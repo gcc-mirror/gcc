@@ -1682,7 +1682,7 @@ package Sem_Util is
    function Is_Effectively_Volatile (Id : Entity_Id) return Boolean;
    --  Determine whether a type or object denoted by entity Id is effectively
    --  volatile (SPARK RM 7.1.2). To qualify as such, the entity must be either
-   --    * Volatile
+   --    * Volatile without No_Caching
    --    * An array type subject to aspect Volatile_Components
    --    * An array type whose component type is effectively volatile
    --    * A protected type
@@ -2386,6 +2386,11 @@ package Sem_Util is
    --  Node is a global item from a list, obtained through calling First_Global
    --  and possibly Next_Global a number of times. Returns the next global item
    --  with the same mode.
+
+   function No_Caching_Enabled (Id : Entity_Id) return Boolean;
+   --  Given the entity of a variable, determine whether Id is subject to
+   --  volatility property No_Caching and if it is, the related expression
+   --  evaluates to True.
 
    function No_Heap_Finalization (Typ : Entity_Id) return Boolean;
    --  Determine whether type Typ is subject to pragma No_Heap_Finalization

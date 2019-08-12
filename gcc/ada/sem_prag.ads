@@ -218,8 +218,9 @@ package Sem_Prag is
      (N        : Node_Id;
       Expr_Val : out Boolean);
    --  Perform full analysis of delayed pragmas Async_Readers, Async_Writers,
-   --  Effective_Reads and Effective_Writes. Flag Expr_Val contains the Boolean
-   --  argument of the pragma or a default True if no argument is present.
+   --  Effective_Reads, Effective_Writes and No_Caching. Flag Expr_Val contains
+   --  the Boolean argument of the pragma or a default True if no argument
+   --  is present.
 
    procedure Analyze_Global_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Global. This routine is also

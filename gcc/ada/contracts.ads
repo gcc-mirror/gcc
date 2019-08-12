@@ -50,6 +50,7 @@ package Contracts is
    --    Initial_Condition
    --    Initializes
    --    Interrupt_Handler
+   --    No_Caching
    --    Part_Of
    --    Postcondition
    --    Precondition

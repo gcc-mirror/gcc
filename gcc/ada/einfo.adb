@@ -7589,6 +7589,7 @@ package body Einfo is
                  Id = Pragma_Initial_Condition          or else
                  Id = Pragma_Initializes                or else
                  Id = Pragma_Interrupt_Handler          or else
+                 Id = Pragma_No_Caching                 or else
                  Id = Pragma_Part_Of                    or else
                  Id = Pragma_Refined_Depends            or else
                  Id = Pragma_Refined_Global             or else

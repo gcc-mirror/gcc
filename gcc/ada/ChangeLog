@@ -1,5 +1,28 @@
 2019-08-12  Yannick Moy  <moy@adacore.com>
 
+	* aspects.adb, aspects.ads (Aspect_No_Caching): New aspect.
+	* contracts.adb, contracts.ads (Add_Contract_Item): Add handling
+	of No_Caching.
+	(Analyze_Object_Contract): Add handling of No_Caching.
+	* einfo.adb, einfo.ads
+	(Get_Pragma): Add handling of No_Caching.
+	* doc/gnat_rm/implementation_defined_aspects.rst,
+	doc/gnat_rm/implementation_defined_pragmas.rst: Document new
+	aspect/pragma.
+	* gnat_rm.texi: Regenerate.
+	* par-prag.adb (Prag): New pragma Pragma_No_Caching.
+	* sem_ch13.adb (Analyze_Aspect_Specifications,
+	Check_Aspect_At_Freeze_Point): Add handling of No_Caching.
+	* sem_prag.adb (Analyze_Pragma): Deal with pragma No_Caching.
+	* sem_prag.ads (Analyze_External_Property_In_Decl_Part): Now
+	applies to No_Caching.
+	* sem_util.adb, sem_util.ads (Is_Effectively_Volatile): Add
+	handling of No_Caching.
+	(No_Caching_Enabled): New query function.
+	* snames.ads-tmpl: New names for pragma.
+
+2019-08-12  Yannick Moy  <moy@adacore.com>
+
 	* sem_util.adb, sem_util.ads (Traverse_More_Func,
 	Traverse_More_Proc): Add formal parameter for Itypes traversal.
 

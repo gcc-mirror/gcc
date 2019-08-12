@@ -2824,7 +2824,7 @@ package body Sem_Ch13 is
                   Insert_Pragma (Aitem);
                   goto Continue;
 
-               --  Aspect Effecitve_Reads is never delayed because it is
+               --  Aspect Effective_Reads is never delayed because it is
                --  equivalent to a source pragma which appears after the
                --  related object declaration.
 
@@ -3022,6 +3022,21 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Max_Queue_Length);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
+               --  Aspect No_Caching is never delayed because it is equivalent
+               --  to a source pragma which appears after the related object
+               --  declaration.
+
+               when Aspect_No_Caching =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_No_Caching);
 
                   Decorate (Aspect, Aitem);
                   Insert_Pragma (Aitem);
@@ -9637,6 +9652,7 @@ package body Sem_Ch13 is
             | Aspect_Initializes
             | Aspect_Max_Entry_Queue_Depth
             | Aspect_Max_Queue_Length
+            | Aspect_No_Caching
             | Aspect_Obsolescent
             | Aspect_Part_Of
             | Aspect_Post

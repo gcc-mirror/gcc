@@ -8429,6 +8429,7 @@ package Einfo is
    --    Initial_Condition
    --    Initializes
    --    Interrupt_Handler
+   --    No_Caching
    --    Part_Of
    --    Precondition
    --    Postcondition
