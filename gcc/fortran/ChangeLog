@@ -1,5 +1,11 @@
 2019-08-12  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/91359
+	* trans-decl.c (gfc_generate_return): Ensure something is returned
+	from a function.
+
+2019-08-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/42546
 	* check.c(gfc_check_allocated): Add comment pointing to ...
  	* intrinsic.c(sort_actual): ... the checking done here.
