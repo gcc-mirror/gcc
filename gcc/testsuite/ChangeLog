@@ -1,3 +1,7 @@
+2019-08-12  Yannick Moy  <moy@adacore.com>
+
+	* gnat.dg/no_caching.adb, gnat.dg/no_caching.ads: New testcase.
+
 2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/range_check7.adb: New testcase.

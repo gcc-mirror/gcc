@@ -317,6 +317,7 @@ package body Contracts is
       --    Effective_Reads
       --    Effective_Writes
       --    Global
+      --    No_Caching
       --    Part_Of
 
       elsif Ekind (Id) = E_Variable then
@@ -327,6 +328,7 @@ package body Contracts is
                               Name_Effective_Reads,
                               Name_Effective_Writes,
                               Name_Global,
+                              Name_No_Caching,
                               Name_Part_Of)
          then
             Add_Classification;
@@ -741,6 +743,7 @@ package body Contracts is
       AW_Val   : Boolean := False;
       ER_Val   : Boolean := False;
       EW_Val   : Boolean := False;
+      NC_Val   : Boolean := False;
       Items    : Node_Id;
       Prag     : Node_Id;
       Ref_Elmt : Elmt_Id;
@@ -845,6 +848,14 @@ package body Contracts is
 
          if Seen then
             Check_External_Properties (Obj_Id, AR_Val, AW_Val, ER_Val, EW_Val);
+         end if;
+
+         --  Analyze the non-external volatility property No_Caching
+
+         Prag := Get_Pragma (Obj_Id, Pragma_No_Caching);
+
+         if Present (Prag) then
+            Analyze_External_Property_In_Decl_Part (Prag, NC_Val);
          end if;
 
          --  The anonymous object created for a single concurrent type carries

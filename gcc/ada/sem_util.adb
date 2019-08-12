@@ -14605,8 +14605,11 @@ package body Sem_Util is
       --  Otherwise Id denotes an object
 
       else
+         --  A volatile object for which No_Caching is enabled is not
+         --  effectively volatile.
+
          return
-           Is_Volatile (Id)
+           (Is_Volatile (Id) and then not No_Caching_Enabled (Id))
              or else Has_Volatile_Components (Id)
              or else Is_Effectively_Volatile (Etype (Id));
       end if;
@@ -21651,6 +21654,38 @@ package body Sem_Util is
          return True;
       end if;
    end New_Requires_Transient_Scope;
+
+   ------------------------
+   -- No_Caching_Enabled --
+   ------------------------
+
+   function No_Caching_Enabled (Id : Entity_Id) return Boolean is
+      Prag : constant Node_Id := Get_Pragma (Id, Pragma_No_Caching);
+      Arg1 : Node_Id;
+
+   begin
+      if Present (Prag) then
+         Arg1 := First (Pragma_Argument_Associations (Prag));
+
+         --  The pragma has an optional Boolean expression, the related
+         --  property is enabled only when the expression evaluates to True.
+
+         if Present (Arg1) then
+            return Is_True (Expr_Value (Get_Pragma_Arg (Arg1)));
+
+         --  Otherwise the lack of expression enables the property by
+         --  default.
+
+         else
+            return True;
+         end if;
+
+      --  The property was never set in the first place
+
+      else
+         return False;
+      end if;
+   end No_Caching_Enabled;
 
    --------------------------
    -- No_Heap_Finalization --
