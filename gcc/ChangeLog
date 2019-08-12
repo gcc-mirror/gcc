@@ -1,3 +1,27 @@
+2019-08-12  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR lto/91375
+	* tree.c (free_lang_data_in_type): Do not free TYPE_BINFO dependent on
+	flag_devirtualize.
+
+	2019-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR driver/91130
+	* lto-wrapper.c (get_options_from_collect_gcc_options): Remove
+	lang_mask option, always use CL_DRIVER.
+	(find_and_merge_options): Adjust.
+	(run_gcc): Likewise.
+
+	2019-08-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR driver/91130
+	* lto-wrapper.c (find_and_merge_options): Use CL_DRIVER when
+	processing COLLECT_GCC_OPTIONS.
+	(run_gcc): Likewise.
+
 2019-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 9.2.1.
