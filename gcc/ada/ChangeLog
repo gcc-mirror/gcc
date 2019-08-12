@@ -1,5 +1,9 @@
 2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sprint.ads: Minor comment tweak.
+
+2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* checks.adb (Insert_Valid_Check): Do not retrieve the
 	Do_Range_Check flag from the Original_Node but from the
 	Validated_Object.  Remove useless bypass for floating-point
