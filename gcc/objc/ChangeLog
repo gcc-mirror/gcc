@@ -5,23 +5,23 @@
 
 2019-05-18  Iain Sandoe  <iain@sandoe.co.uk>
 
-	* objc/objc-act.h (OCTI_INSTANCE_TYPE, OCTI_INSTANCETYPE_NAME): New.
+	* objc-act.h (OCTI_INSTANCE_TYPE, OCTI_INSTANCETYPE_NAME): New.
 	(objc_global_trees): Add instance type and name.
 	(INSTANCE_TYPEDEF_NAME): New.
-	* objc/objc-act.c (synth_module_prologue): Build decls for
+	* objc-act.c (synth_module_prologue): Build decls for
 	objc_instancetype_type and objc_instancetype_name.
 
 2019-05-16  Martin Sebor  <msebor@redhat.com>
 
-        * objc-act.c (objc_begin_catch_clause): Quote keywords and options
-        in diagnostics.
-        (objc_build_throw_stmt): Same.
-        (objc_finish_message_expr): Same.
-        (get_super_receiver): Same.
-        * objc-next-runtime-abi-01.c (objc_next_runtime_abi_01_init): Spell
-        out "less than" in English./
-        * objc-next-runtime-abi-02.c (objc_next_runtime_abi_02_init): Spell
-        out "greater" in English.
+	* objc-act.c (objc_begin_catch_clause): Quote keywords and options
+	in diagnostics.
+	(objc_build_throw_stmt): Same.
+	(objc_finish_message_expr): Same.
+	(get_super_receiver): Same.
+	* objc-next-runtime-abi-01.c (objc_next_runtime_abi_01_init): Spell
+	out "less than" in English./
+	* objc-next-runtime-abi-02.c (objc_next_runtime_abi_02_init): Spell
+	out "greater" in English.
 
 2019-05-10  Jakub Jelinek  <jakub@redhat.com>
 
@@ -422,7 +422,7 @@
 
 2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
 
-	* objc/objc-act.c: Add required include files from gimple.h.
+	* objc-act.c: Add required include files from gimple.h.
 
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
@@ -535,7 +535,7 @@
 	Include c-family/c-target.h.
 	(handle_next_class_ref): Rewrite to emit top-level asm statements.
 	(handle_next_impent): Likewise.
-	* objc/Make-lang.in: Fix dependencies for objc-next-runtime-abi-01.o.
+	* Make-lang.in: Fix dependencies for objc-next-runtime-abi-01.o.
 
 2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
 
@@ -1199,7 +1199,7 @@
 
 2010-12-18  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* objc/objc-act.c (objc_eh_personality): Select personality name on
+	* objc-act.c (objc_eh_personality): Select personality name on
 	runtime.
 	(objc_init_exceptions): New.
 	(objc_begin_try_stmt): Use objc_init_exceptions.
@@ -1773,7 +1773,7 @@
 
 	Based on the CFString implementation in FSF apple/trunk branch.
 
-	* objc/objc-act.c (objc_build_string_object): Handle CFStrings.
+	* objc-act.c (objc_build_string_object): Handle CFStrings.
 
 2010-10-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
@@ -1825,10 +1825,10 @@
 	to gcc_alloc_xxx calls in hash_init and hash_class_name_enter to
 	get it to compile in the current trunk.
 
-	2006-01-27 Fariborz Jahanian  <fjahanian@apple.com>
+	2006-01-27  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4345837
-	* objc/objc-act.c (hash_class_name_enter): New.
+	* objc-act.c (hash_class_name_enter): New.
 	(hash_class_name_lookup): New.
 	(objc_declare_alias): Enter alias name into hash table.
 	(objc_declare_class): Enter class name into hash table.
@@ -1867,7 +1867,7 @@
 	2006-03-10  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4407151
-	* objc/objc-act.c (objc_is_class_name): template parameter is not
+	* objc-act.c (objc_is_class_name): template parameter is not
 	an objective class name.
 	(objc_generate_cxx_cdtors): Check for the null
 	objc_implementation_context.
@@ -1879,7 +1879,7 @@
 	2005-11-08  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4330422
-	* objc/objc-act.c (objc_non_volatilized_type): New
+	* objc-act.c (objc_non_volatilized_type): New
 
 	2005-10-07  Fariborz Jahanian  <fjahanian@apple.com>
 
@@ -1895,7 +1895,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2006-03-27 Fariborz Jahanian  <fjahanian@apple.com>
+	2006-03-27  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4133425
 	* objc-act.c (objc_diagnose_private_ivar): New.
@@ -1966,10 +1966,10 @@
 
 	merge from FSF apple 'trunk' branch.
 
-	2006-04-26 Fariborz Jahanian  <fjahanian@apple.com>
+	2006-04-26  Fariborz Jahanian  <fjahanian@apple.com>
 	Radar 3803157 (method attributes)
-	* objc/objc-act.h (METHOD_TYPE_ATTRIBUTES): New macro.
-	* objc/objc-act.c (objc_decl_method_attributes): New.
+	* objc-act.h (METHOD_TYPE_ATTRIBUTES): New macro.
+	* objc-act.c (objc_decl_method_attributes): New.
 	(objc_add_method_declaration): Process method's attribute.
 	(objc_start_method_definition): Ditto.
 	(build_objc_method_call): Inject method attribute into
@@ -1997,7 +1997,7 @@
 
 2010-10-07  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* objc-act.c (objc_build_message_expr):  Call mark_exp_read () to
+	* objc-act.c (objc_build_message_expr): Call mark_exp_read () to
 	signal that the receiver has been used.
 
 2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
@@ -2024,7 +2024,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2006-04-12 Fariborz Jahanian  <fjahanian@apple.com>
+	2006-04-12  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4507230
 	* objc-act.c (objc_type_valid_for_messaging): New routine to check
@@ -2052,14 +2052,14 @@
 	2006-01-30  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4386773
-	* objc/objc-act.c (objc_set_method_opt): New function.
+	* objc-act.c (objc_set_method_opt): New function.
 	(objc_start_protocol, objc_finish_interface): Reset
 	objc_method_optional_flag flag.
 	(objc_add_method_declaration): Pass on the new
 	flag to objc_add_method.
 	(objc_add_method): Add optional methods to new chain in
 	the protocol class.
-	* objc/objc-act.h (CLASS_OPTIONAL_CLS_METHODS)
+	* objc-act.h (CLASS_OPTIONAL_CLS_METHODS)
 	(CLASS_OPTIONAL_NST_METHODS): New macros accessing a protocol
 	class's optional method chains.
 
@@ -2230,16 +2230,16 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2006-03-09 Fariborz Jahanian  <fjahanian@apple.com>
+	2006-03-09  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4457381
-	* objc/objc-act.c (objc_finish_message_expr): Look for message in
+	* objc-act.c (objc_finish_message_expr): Look for message in
 	@class's protocol list.
 
 	2006-02-07  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4219590
-	* objc/objc-act.c (objc_start_method_definition): Initialize
+	* objc-act.c (objc_start_method_definition): Initialize
 	break/continue labels.
 
 	2005-08-22  Ziemowit Laski  <zlaski@apple.com>
@@ -2259,7 +2259,7 @@
 
 2010-09-10  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	* objc/objc-act.c (objc_begin_try_stmt): Generate an error if
+	* objc-act.c (objc_begin_try_stmt): Generate an error if
 	-fobjc-exceptions was not used.  (objc_build_throw_stmt): Same
 	change.
 
@@ -2293,7 +2293,7 @@
 	to be extracted within the routine.  Do not start new vars,
 	but finish the ones collcted during parsing.
 	(generate_shared_structures): Likewise.
-	(finish_objc):  Reorder code so that we finish variables before
+	(finish_objc): Reorder code so that we finish variables before
 	referencing them.  Save the global data before calling meta-data
 	creation routines, and pass the current reference to the two
 	main routines.  Only call generate_objc_image_info () for the
@@ -2471,7 +2471,7 @@
 	(objc_build_exc_ptr): Use __builtin_eh_pointer.
 
 2009-09-13  Richard Guenther  <rguenther@suse.de>
-	Rafael Avila de Espindola  <espindola@google.com>
+	    Rafael Avila de Espindola  <espindola@google.com>
 
 	* objc-act.c (objc_eh_runtime_type): Export.
 	(objc_init_exceptions): Remove.  Move warning code ...
@@ -2652,8 +2652,8 @@
 
 2009-04-21  Taras Glek  <tglek@mozilla.com>
 
-	* objc-act.c: Update GTY annotations to new syntax
-	* objc-act.h: Likewise
+	* objc-act.c: Update GTY annotations to new syntax.
+	* objc-act.h: Likewise.
 
 2009-04-21  Joseph Myers  <joseph@codesourcery.com>
 
@@ -2728,7 +2728,7 @@
 2008-09-17  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/18071
-	* objc/objc-act.c (objc_finish_method_definition): Do not set
+	* objc-act.c (objc_finish_method_definition): Do not set
 	DECL_INLINE.
 
 2008-09-01  Aldy Hernandez  <aldyh@redhat.com>
@@ -2866,7 +2866,7 @@
 2007-04-04  Stuart Hastings  <stuart@apple.com>
 
 	PR 31281
-	* objc/objc-act.c (next_sjlj_build_catch_list): Delete volatile from rethrow decl.
+	* objc-act.c (next_sjlj_build_catch_list): Delete volatile from rethrow decl.
 
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
@@ -2874,7 +2874,7 @@
 
 2007-02-18  Kazu Hirata  <kazu@codesourcery.com>
 
-	* objc/objc-act.c: Fix comment typos.
+	* objc-act.c: Fix comment typos.
 
 2007-02-15  Sandra Loosemore  <sandra@codesourcery.com>
 	    Brooks Moses  <brooks.moses@codesourcery.com>
@@ -2908,7 +2908,7 @@
 	* objc-act.c (objc_finish_file): Remove ifdef clause for OBJCPLUS and
 	content where we called cp_finish_file.
 
-2006-10-23 Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+2006-10-23  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
 	* objc-act.c (synth_module_prologue): Replace calls to
 	builtin_function with add_builtin_function.
@@ -2955,7 +2955,7 @@
 	PR objc/27240
 	* objc-act.c (objc_is_public): Return early on invalid type.
 
-2006-03-02 Fariborz Jahanian  <fjahanian@apple.com>
+2006-03-02  Fariborz Jahanian  <fjahanian@apple.com>
 
 	* objc-act.c (init_module_descriptor): Remove file name from
 	module descriptor.
@@ -2963,15 +2963,15 @@
 
 2006-02-20  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
-	* Make-lang.in (OBJC): Remove
-	(OBJECTIVE-C): Remove
-	(objective-c): Remove
-	(.PHONY): Remove objective-c and ObjC
+	* Make-lang.in (OBJC): Remove.
+	(OBJECTIVE-C): Remove.
+	(objective-c): Remove.
+	(.PHONY): Remove objective-c and ObjC.
 
 2005-12-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR objc/25360
-	* objc/objc-act.c (encode_type): Encode Complex types as 'j' followed
+	* objc-act.c (encode_type): Encode Complex types as 'j' followed
 	by the inner type.
 
 2005-12-12  Andrew Pinski  <pinskia@physics.uc.edu>
@@ -3322,7 +3322,7 @@
 2005-02-25  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* Make-lang.in (objc/objc-parse.o-warn, objc/objc-parse.o,
-	objc/objc-parse.c, objc/objc-parse.y): Remove
+	objc/objc-parse.c, objc/objc-parse.y): Remove.
 	(OBJC_OBJS, objc.srcextra, objc.tags, objc.mostlyclean,
 	objc.distclean, objc.maintainer-clean): Update for new parser.
 	* config-lang.in (gtfiles): Update for new parser.

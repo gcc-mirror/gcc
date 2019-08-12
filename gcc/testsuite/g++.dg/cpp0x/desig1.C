@@ -25,5 +25,5 @@ struct C
   constexpr operator SE() const { return SE::se0; }
 };
 
-int c[] = { [C()] = 0 }; // { dg-error "integral constant-expression" }
+int c[] = { [C()] = 0 }; // { dg-error "14:C99 designator .C\\\(\\\). is not an integral constant-expression" }
 			 // { dg-warning "does not allow C99 designated initializers" "" { target *-*-* } .-1 }

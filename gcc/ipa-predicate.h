@@ -31,7 +31,7 @@ struct GTY(()) condition
      loaded.  */
   HOST_WIDE_INT offset;
   /* Size of the access reading the data (or the PARM_DECL SSA_NAME).  */
-  HOST_WIDE_INT size;
+  poly_int64 size;
   tree val;
   int operand_num;
   ENUM_BITFIELD(tree_code) code : 16;
@@ -228,5 +228,5 @@ private:
 
 void dump_condition (FILE *f, conditions conditions, int cond);
 predicate add_condition (class ipa_fn_summary *summary, int operand_num,
-			 HOST_WIDE_INT size, struct agg_position_info *aggpos,
+			 poly_int64 size, struct agg_position_info *aggpos,
 			 enum tree_code code, tree val);

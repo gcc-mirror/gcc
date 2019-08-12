@@ -2080,6 +2080,11 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " optimize_size");
   if (parallelized_function)
     fprintf (f, " parallelized_function");
+  if (DECL_IS_OPERATOR_NEW_P (decl))
+    fprintf (f, " operator_new");
+  if (DECL_IS_OPERATOR_DELETE_P (decl))
+    fprintf (f, " operator_delete");
+
 
   fprintf (f, "\n");
 

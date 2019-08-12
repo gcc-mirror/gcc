@@ -753,6 +753,16 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 	  || sym->attr.allocatable)
       && !DECL_ARTIFICIAL (decl))
     {
+      gfc_warning (OPT_Wsurprising,
+		   "Array %qs at %L is larger than limit set by"
+		   " %<-fmax-stack-var-size=%>, moved from stack to static"
+		   " storage. This makes the procedure unsafe when called"
+		   " recursively, or concurrently from multiple threads."
+		   " Consider using %<-frecursive%>, or increase the"
+		   " %<-fmax-stack-var-size=%> limit, or change the code to"
+		   " use an ALLOCATABLE array.",
+		   sym->name, &sym->declared_at);
+
       TREE_STATIC (decl) = 1;
 
       /* Because the size of this variable isn't known until now, we may have
@@ -6448,6 +6458,20 @@ gfc_generate_return (void)
 	  result = fold_build2_loc (input_location, MODIFY_EXPR,
 				    TREE_TYPE (result), DECL_RESULT (fndecl),
 				    result);
+	}
+      else
+	{
+	  /* If the function does not have a result variable, result is
+	     NULL_TREE, and a 'return' is generated without a variable.
+	     The following generates a 'return __result_XXX' where XXX is
+	     the function name.  */
+	  if (sym == sym->result && sym->attr.function)
+	    {
+	      result = gfc_get_fake_result_decl (sym, 0);
+	      result = fold_build2_loc (input_location, MODIFY_EXPR,
+					TREE_TYPE (result),
+					DECL_RESULT (fndecl), result);
+	    }
 	}
     }
 

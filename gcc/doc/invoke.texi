@@ -230,7 +230,8 @@ in the following sections.
 -fvisibility-inlines-hidden @gol
 -fvisibility-ms-compat @gol
 -fext-numeric-literals @gol
--Wabi=@var{n}  -Wabi-tag  -Wconversion-null  -Wctor-dtor-privacy @gol
+-Wabi=@var{n}  -Wabi-tag  -Wcomma-subscript  -Wconversion-null @gol
+-Wctor-dtor-privacy @gol
 -Wdelete-non-virtual-dtor  -Wdeprecated-copy  -Wdeprecated-copy-dtor @gol
 -Wliteral-suffix @gol
 -Wmultiple-inheritance  -Wno-init-list-lifetime @gol
@@ -3040,6 +3041,24 @@ union U @{
 Warn when a type with an ABI tag is used in a context that does not
 have that ABI tag.  See @ref{C++ Attributes} for more information
 about ABI tags.
+
+@item -Wcomma-subscript @r{(C++ and Objective-C++ only)}
+@opindex Wcomma-subscript
+@opindex Wno-comma-subscript
+Warn about uses of a comma expression within a subscripting expression.
+This usage was deprecated in C++2a.  However, a comma expression wrapped
+in @code{( )} is not deprecated.  Example:
+
+@smallexample
+@group
+void f(int *a, int b, int c) @{
+    a[b,c];     // deprecated
+    a[(b,c)];   // OK
+@}
+@end group
+@end smallexample
+
+Enabled by default with @option{-std=c++2a}.
 
 @item -Wctor-dtor-privacy @r{(C++ and Objective-C++ only)}
 @opindex Wctor-dtor-privacy
@@ -10400,8 +10419,7 @@ If you specify the optional @var{n}, the optimization and code
 generation done at link time is executed in parallel using @var{n}
 parallel jobs by utilizing an installed @command{make} program.  The
 environment variable @env{MAKE} may be used to override the program
-used.  The default value for @var{n} is automatically detected based
-on number of cores.
+used.
 
 You can also specify @option{-flto=jobserver} to use GNU make's
 job server mode to determine the number of parallel jobs. This
@@ -10409,6 +10427,10 @@ is useful when the Makefile calling GCC is already executing in parallel.
 You must prepend a @samp{+} to the command recipe in the parent Makefile
 for this to work.  This option likely only works if @env{MAKE} is
 GNU make.
+
+Use @option{-flto=auto} to use GNU make's job server, if available,
+or otherwise fall back to autodetection of the number of CPU threads
+present in your system.
 
 @item -flto-partition=@var{alg}
 @opindex flto-partition

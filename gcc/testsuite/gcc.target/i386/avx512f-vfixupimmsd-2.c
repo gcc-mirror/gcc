@@ -5,7 +5,7 @@
 
 #include "avx512f-check.h"
 #include "avx512f-helper.h"
-#include <math.h>
+#include "math_m_pi.h"
 #include <float.h>
 #include "avx512f-mask-type.h"
 

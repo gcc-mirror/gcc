@@ -1238,11 +1238,14 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  break;
 
 	case OMP_CLAUSE_USE_DEVICE_PTR:
+	case OMP_CLAUSE_USE_DEVICE_ADDR:
 	  decl = OMP_CLAUSE_DECL (c);
-	  if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-	    install_var_field (decl, true, 3, ctx);
+	  if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
+	       && !omp_is_reference (decl))
+	      || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+	    install_var_field (decl, true, 11, ctx);
 	  else
-	    install_var_field (decl, false, 3, ctx);
+	    install_var_field (decl, false, 11, ctx);
 	  if (DECL_SIZE (decl)
 	      && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
 	    {
@@ -1635,6 +1638,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_ORDER:
 	case OMP_CLAUSE_BIND:
 	case OMP_CLAUSE_USE_DEVICE_PTR:
+	case OMP_CLAUSE_USE_DEVICE_ADDR:
 	case OMP_CLAUSE_NONTEMPORAL:
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
@@ -5139,8 +5143,17 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		x = NULL;
 	    do_private:
 	      tree nx;
-	      nx = lang_hooks.decls.omp_clause_default_ctor
-						(c, unshare_expr (new_var), x);
+	      bool copy_ctor;
+	      copy_ctor = false;
+	      nx = unshare_expr (new_var);
+	      if (is_simd
+		  && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
+		  && OMP_CLAUSE_LASTPRIVATE_LOOP_IV (c))
+		copy_ctor = true;
+	      if (copy_ctor)
+		nx = lang_hooks.decls.omp_clause_copy_ctor (c, nx, x);
+	      else
+		nx = lang_hooks.decls.omp_clause_default_ctor (c, nx, x);
 	      if (is_simd)
 		{
 		  tree y = lang_hooks.decls.omp_clause_dtor (c, new_var);
@@ -5165,8 +5178,16 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			}
 
 		      if (nx)
-			x = lang_hooks.decls.omp_clause_default_ctor
-						(c, unshare_expr (ivar), x);
+			{
+			  tree iv = unshare_expr (ivar);
+			  if (copy_ctor)
+			    x = lang_hooks.decls.omp_clause_copy_ctor (c, iv,
+								       x);
+			  else
+			    x = lang_hooks.decls.omp_clause_default_ctor (c,
+									  iv,
+									  x);
+			}
 		      else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE__CONDTEMP_)
 			{
 			  x = build2 (MODIFY_EXPR, TREE_TYPE (ivar),
@@ -6469,9 +6490,9 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *body_p,
 
 	  x = NULL_TREE;
 	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
-	      && OMP_CLAUSE_LASTPRIVATE_TASKLOOP_IV (c))
+	      && OMP_CLAUSE_LASTPRIVATE_LOOP_IV (c)
+	      && is_taskloop_ctx (ctx))
 	    {
-	      gcc_checking_assert (is_taskloop_ctx (ctx));
 	      tree ovar = maybe_lookup_decl_in_outer_ctx (var,
 							  ctx->outer->outer);
 	      if (is_global_var (ovar))
@@ -11448,6 +11469,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	break;
 
       case OMP_CLAUSE_USE_DEVICE_PTR:
+      case OMP_CLAUSE_USE_DEVICE_ADDR:
       case OMP_CLAUSE_IS_DEVICE_PTR:
 	var = OMP_CLAUSE_DECL (c);
 	map_cnt++;
@@ -11464,7 +11486,9 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    SET_DECL_VALUE_EXPR (new_var, x);
 	    DECL_HAS_VALUE_EXPR_P (new_var) = 1;
 	  }
-	else if (TREE_CODE (TREE_TYPE (var)) == ARRAY_TYPE)
+	else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
+		  && !omp_is_reference (var))
+		 || TREE_CODE (TREE_TYPE (var)) == ARRAY_TYPE)
 	  {
 	    tree new_var = lookup_decl (var, ctx);
 	    tree type = build_pointer_type (TREE_TYPE (var));
@@ -11829,23 +11853,32 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    break;
 
 	  case OMP_CLAUSE_USE_DEVICE_PTR:
+	  case OMP_CLAUSE_USE_DEVICE_ADDR:
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
 	    ovar = OMP_CLAUSE_DECL (c);
 	    var = lookup_decl_in_outer_ctx (ovar, ctx);
-	    x = build_sender_ref (ovar, ctx);
-	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_PTR)
-	      tkind = GOMP_MAP_USE_DEVICE_PTR;
+	    if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IS_DEVICE_PTR)
+	      {
+		tkind = GOMP_MAP_USE_DEVICE_PTR;
+		x = build_sender_ref ((splay_tree_key) &DECL_UID (ovar), ctx);
+	      }
 	    else
-	      tkind = GOMP_MAP_FIRSTPRIVATE_INT;
+	      {
+		tkind = GOMP_MAP_FIRSTPRIVATE_INT;
+		x = build_sender_ref (ovar, ctx);
+	      }
 	    type = TREE_TYPE (ovar);
-	    if (TREE_CODE (type) == ARRAY_TYPE)
+	    if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
+		 && !omp_is_reference (ovar))
+		|| TREE_CODE (type) == ARRAY_TYPE)
 	      var = build_fold_addr_expr (var);
 	    else
 	      {
 		if (omp_is_reference (ovar))
 		  {
 		    type = TREE_TYPE (type);
-		    if (TREE_CODE (type) != ARRAY_TYPE)
+		    if (TREE_CODE (type) != ARRAY_TYPE
+			&& OMP_CLAUSE_CODE (c) != OMP_CLAUSE_USE_DEVICE_ADDR)
 		      var = build_simple_mem_ref (var);
 		    var = fold_convert (TREE_TYPE (x), var);
 		  }
@@ -12000,10 +12033,11 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      }
 	    break;
 	  case OMP_CLAUSE_USE_DEVICE_PTR:
+	  case OMP_CLAUSE_USE_DEVICE_ADDR:
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
 	    var = OMP_CLAUSE_DECL (c);
-	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_PTR)
-	      x = build_sender_ref (var, ctx);
+	    if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IS_DEVICE_PTR)
+	      x = build_sender_ref ((splay_tree_key) &DECL_UID (var), ctx);
 	    else
 	      x = build_receiver_ref (var, false, ctx);
 	    if (is_variable_sized (var))
@@ -12017,7 +12051,9 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		gimple_seq_add_stmt (&new_body,
 				     gimple_build_assign (new_var, x));
 	      }
-	    else if (TREE_CODE (TREE_TYPE (var)) == ARRAY_TYPE)
+	    else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
+		      && !omp_is_reference (var))
+		     || TREE_CODE (TREE_TYPE (var)) == ARRAY_TYPE)
 	      {
 		tree new_var = lookup_decl (var, ctx);
 		new_var = DECL_VALUE_EXPR (new_var);
@@ -12035,7 +12071,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		if (omp_is_reference (var))
 		  {
 		    type = TREE_TYPE (type);
-		    if (TREE_CODE (type) != ARRAY_TYPE)
+		    if (TREE_CODE (type) != ARRAY_TYPE
+			&& OMP_CLAUSE_CODE (c) != OMP_CLAUSE_USE_DEVICE_ADDR)
 		      {
 			tree v = create_tmp_var_raw (type, get_name (var));
 			gimple_add_tmp_var (v);

@@ -775,14 +775,27 @@ gimple_add_tmp_var (tree tmp)
       if (gimplify_omp_ctxp)
 	{
 	  struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
+	  int flag = GOVD_LOCAL;
 	  while (ctx
 		 && (ctx->region_type == ORT_WORKSHARE
 		     || ctx->region_type == ORT_TASKGROUP
 		     || ctx->region_type == ORT_SIMD
 		     || ctx->region_type == ORT_ACC))
-	    ctx = ctx->outer_context;
+	    {
+	      if (ctx->region_type == ORT_SIMD
+		  && TREE_ADDRESSABLE (tmp)
+		  && !TREE_STATIC (tmp))
+		{
+		  if (TREE_CODE (DECL_SIZE_UNIT (tmp)) != INTEGER_CST)
+		    ctx->add_safelen1 = true;
+		  else
+		    flag = GOVD_PRIVATE;
+		  break;
+		}
+	      ctx = ctx->outer_context;
+	    }
 	  if (ctx)
-	    omp_add_variable (ctx, tmp, GOVD_LOCAL | GOVD_SEEN);
+	    omp_add_variable (ctx, tmp, flag | GOVD_SEEN);
 	}
     }
   else if (cfun)
@@ -6919,8 +6932,10 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
 	    nflags = GOVD_MAP | GOVD_MAP_TO_ONLY | GOVD_EXPLICIT;
 	  else if (flags & GOVD_PRIVATE)
 	    nflags = GOVD_PRIVATE;
-	  else if ((ctx->region_type & (ORT_TARGET | ORT_TARGET_DATA)) != 0
-		   && (flags & GOVD_FIRSTPRIVATE))
+	  else if (((ctx->region_type & (ORT_TARGET | ORT_TARGET_DATA)) != 0
+		    && (flags & GOVD_FIRSTPRIVATE))
+		   || (ctx->region_type == ORT_TARGET_DATA
+		       && (flags & GOVD_DATA_SHARE_CLASS) == 0))
 	    nflags = GOVD_PRIVATE | GOVD_EXPLICIT;
 	  else
 	    nflags = GOVD_FIRSTPRIVATE;
@@ -9002,8 +9017,10 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  goto do_notice;
 
 	case OMP_CLAUSE_USE_DEVICE_PTR:
-	  flags = GOVD_FIRSTPRIVATE | GOVD_EXPLICIT;
+	case OMP_CLAUSE_USE_DEVICE_ADDR:
+	  flags = GOVD_EXPLICIT;
 	  goto do_add;
+
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	  flags = GOVD_FIRSTPRIVATE | GOVD_EXPLICIT;
 	  goto do_add;
@@ -10251,6 +10268,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_ORDER:
 	case OMP_CLAUSE_BIND:
 	case OMP_CLAUSE_USE_DEVICE_PTR:
+	case OMP_CLAUSE_USE_DEVICE_ADDR:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
@@ -10590,6 +10608,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 
   orig_for_stmt = for_stmt = *expr_p;
 
+  bool loop_p = (omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_BIND)
+		 != NULL_TREE);
   if (OMP_FOR_INIT (for_stmt) == NULL_TREE)
     {
       tree *data[4] = { NULL, NULL, NULL, NULL };
@@ -10641,7 +10661,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	}
 
       for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (inner_for_stmt)); i++)
-	if (OMP_FOR_ORIG_DECLS (inner_for_stmt)
+	if (!loop_p
+	    && OMP_FOR_ORIG_DECLS (inner_for_stmt)
 	    && TREE_CODE (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (inner_for_stmt),
 					i)) == TREE_LIST
 	    && TREE_PURPOSE (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (inner_for_stmt),
@@ -10649,7 +10670,9 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  {
 	    tree orig = TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (inner_for_stmt), i);
 	    /* Class iterators aren't allowed on OMP_SIMD, so the only
-	       case we need to solve is distribute parallel for.  */
+	       case we need to solve is distribute parallel for.  They are
+	       allowed on the loop construct, but that is already handled
+	       in gimplify_omp_loop.  */
 	    gcc_assert (TREE_CODE (inner_for_stmt) == OMP_FOR
 			&& TREE_CODE (for_stmt) == OMP_DISTRIBUTE
 			&& data[1]);
@@ -10791,8 +10814,6 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  }
     }
 
-  bool loop_p = (omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_BIND)
-		 != NULL_TREE);
   if (TREE_CODE (for_stmt) != OMP_TASKLOOP)
     gimplify_scan_omp_clauses (&OMP_FOR_CLAUSES (for_stmt), pre_p, ort,
 			       loop_p && TREE_CODE (for_stmt) != OMP_SIMD
@@ -11163,6 +11184,13 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		   || !bitmap_bit_p (has_decl_expr, DECL_UID (decl)));
 	      if (TREE_PRIVATE (t))
 		lastprivate = false;
+	      if (loop_p && OMP_FOR_ORIG_DECLS (for_stmt))
+		{
+		  tree elt = TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (for_stmt), i);
+		  if (TREE_CODE (elt) == TREE_LIST && TREE_PURPOSE (elt))
+		    lastprivate = false;
+		}
+
 	      struct gimplify_omp_ctx *outer
 		= gimplify_omp_ctxp->outer_context;
 	      if (outer && lastprivate)
@@ -11485,7 +11513,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 
   BITMAP_FREE (has_decl_expr);
 
-  if (TREE_CODE (orig_for_stmt) == OMP_TASKLOOP)
+  if (TREE_CODE (orig_for_stmt) == OMP_TASKLOOP
+      || (loop_p && orig_for_stmt == for_stmt))
     {
       push_gimplify_context ();
       if (TREE_CODE (OMP_FOR_BODY (orig_for_stmt)) != BIND_EXPR)
@@ -11500,7 +11529,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
   gimple *g = gimplify_and_return_first (OMP_FOR_BODY (orig_for_stmt),
 					 &for_body);
 
-  if (TREE_CODE (orig_for_stmt) == OMP_TASKLOOP)
+  if (TREE_CODE (orig_for_stmt) == OMP_TASKLOOP
+      || (loop_p && orig_for_stmt == for_stmt))
     {
       if (gimple_code (g) == GIMPLE_BIND)
 	pop_gimplify_context (g);
@@ -11539,6 +11569,11 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
     case OACC_LOOP: kind = GF_OMP_FOR_KIND_OACC_LOOP; break;
     default:
       gcc_unreachable ();
+    }
+  if (loop_p && kind == GF_OMP_FOR_KIND_SIMD)
+    {
+      gimplify_seq_add_seq (pre_p, for_pre_body);
+      for_pre_body = NULL;
     }
   gfor = gimple_build_omp_for (for_body, kind, OMP_FOR_CLAUSES (orig_for_stmt),
 			       TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)),
@@ -11640,7 +11675,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	     a shared clause on task.  If the same decl is also firstprivate,
 	     add also firstprivate clause on the inner taskloop.  */
 	  case OMP_CLAUSE_LASTPRIVATE:
-	    if (OMP_CLAUSE_LASTPRIVATE_TASKLOOP_IV (c))
+	    if (OMP_CLAUSE_LASTPRIVATE_LOOP_IV (c))
 	      {
 		/* For taskloop C++ lastprivate IVs, we want:
 		   1) private on outer taskloop
@@ -11963,6 +11998,21 @@ gimplify_omp_loop (tree *expr_p, gimple_seq *pre_p)
 	  OMP_PARALLEL_BODY (*expr_p) = bind;
 	  OMP_PARALLEL_COMBINED (*expr_p) = 1;
 	  SET_EXPR_LOCATION (*expr_p, EXPR_LOCATION (for_stmt));
+	  tree *pc = &OMP_PARALLEL_CLAUSES (*expr_p);
+	  for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)); i++)
+	    if (OMP_FOR_ORIG_DECLS (for_stmt)
+		&& (TREE_CODE (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (for_stmt), i))
+		    == TREE_LIST))
+	      {
+		tree elt = TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (for_stmt), i);
+		if (TREE_PURPOSE (elt) && TREE_VALUE (elt))
+		  {
+		    *pc = build_omp_clause (UNKNOWN_LOCATION,
+					    OMP_CLAUSE_FIRSTPRIVATE);
+		    OMP_CLAUSE_DECL (*pc) = TREE_VALUE (elt);
+		    pc = &OMP_CLAUSE_CHAIN (*pc);
+		  }
+	      }
 	}
       tree t = make_node (pass == 2 ? OMP_DISTRIBUTE : OMP_FOR);
       tree *pc = &OMP_FOR_CLAUSES (t);
@@ -11979,12 +12029,29 @@ gimplify_omp_loop (tree *expr_p, gimple_seq *pre_p)
 	    pc = &OMP_CLAUSE_CHAIN (*pc);
 	    break;
 	  case OMP_CLAUSE_PRIVATE:
+	  case OMP_CLAUSE_FIRSTPRIVATE:
 	    /* Only needed on innermost.  */
 	    break;
 	  case OMP_CLAUSE_LASTPRIVATE:
+	    if (OMP_CLAUSE_LASTPRIVATE_LOOP_IV (c) && pass != last)
+	      {
+		*pc = build_omp_clause (OMP_CLAUSE_LOCATION (c),
+					OMP_CLAUSE_FIRSTPRIVATE);
+		OMP_CLAUSE_DECL (*pc) = OMP_CLAUSE_DECL (c);
+		lang_hooks.decls.omp_finish_clause (*pc, NULL);
+		pc = &OMP_CLAUSE_CHAIN (*pc);
+	      }
 	    *pc = copy_node (c);
 	    OMP_CLAUSE_LASTPRIVATE_STMT (*pc) = NULL_TREE;
 	    TREE_TYPE (*pc) = unshare_expr (TREE_TYPE (c));
+	    if (OMP_CLAUSE_LASTPRIVATE_LOOP_IV (c))
+	      {
+		if (pass != last)
+		  OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE (*pc) = 1;
+		else
+		  lang_hooks.decls.omp_finish_clause (*pc, NULL);
+		OMP_CLAUSE_LASTPRIVATE_LOOP_IV (*pc) = 0;
+	      }
 	    pc = &OMP_CLAUSE_CHAIN (*pc);
 	    break;
 	  case OMP_CLAUSE_REDUCTION:
@@ -12342,8 +12409,27 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
 				      OMP_CLAUSES (expr));
       break;
     case OMP_TARGET_DATA:
-      stmt = gimple_build_omp_target (body, GF_OMP_TARGET_KIND_DATA,
-				      OMP_CLAUSES (expr));
+      /* Put use_device_{ptr,addr} clauses last, as map clauses are supposed
+	 to be evaluated before the use_device_{ptr,addr} clauses if they
+	 refer to the same variables.  */
+      {
+	tree use_device_clauses;
+	tree *pc, *uc = &use_device_clauses;
+	for (pc = &OMP_CLAUSES (expr); *pc; )
+	  if (OMP_CLAUSE_CODE (*pc) == OMP_CLAUSE_USE_DEVICE_PTR
+	      || OMP_CLAUSE_CODE (*pc) == OMP_CLAUSE_USE_DEVICE_ADDR)
+	    {
+	      *uc = *pc;
+	      *pc = OMP_CLAUSE_CHAIN (*pc);
+	      uc = &OMP_CLAUSE_CHAIN (*uc);
+	    }
+	  else
+	    pc = &OMP_CLAUSE_CHAIN (*pc);
+	*uc = NULL_TREE;
+	*pc = use_device_clauses;
+	stmt = gimple_build_omp_target (body, GF_OMP_TARGET_KIND_DATA,
+					OMP_CLAUSES (expr));
+      }
       break;
     case OMP_TEAMS:
       stmt = gimple_build_omp_teams (body, OMP_CLAUSES (expr));

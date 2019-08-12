@@ -1,3 +1,178 @@
+2019-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_name): Parse device_type.
+	(cp_parser_omp_clause_device_type): New function.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_DEVICE_TYPE.
+	(OMP_DECLARE_TARGET_CLAUSE_MASK): Add PRAGMA_OMP_CLAUSE_DEVICE_TYPE.
+	(cp_parser_omp_declare_target): Handle device_type clauses.  Remove
+	diagnostics for declare target with clauses nested in clause-less
+	declare target declaration-definition-seq.
+	* semantics.c (finish_omp_clauses): Handle OMP_CLAUSE_DEVICE_TYPE.
+
+2019-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (check_no_duplicate_clause): Simplify using
+	omp_find_clause.
+	(cp_parser_omp_clause_if): Fix up printing of target {enter,exit} data
+	directive name modifiers.
+
+	PR c/91401
+	* parser.c (cp_parser_omp_clause_dist_schedule): Comment out the
+	check_no_duplicate_clause call, instead emit a warning for duplicate
+	dist_schedule clauses.
+
+2019-08-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use id_loc and EXPR_LOCATION in
+	a few error messages.
+
+2019-08-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87519 - bogus warning with -Wsign-conversion.
+	* typeck.c (cp_build_binary_op): Use same_type_p instead of comparing
+	the types directly.
+
+	* constexpr.c (inline_asm_in_constexpr_error): New.
+	(cxx_eval_constant_expression) <case ASM_EXPR>: Call it.
+	(potential_constant_expression_1) <case ASM_EXPR>: Likewise.
+
+2019-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (finish_omp_clauses): For C_ORT_OMP
+	OMP_CLAUSE_USE_DEVICE_* clauses use oacc_reduction_head bitmap
+	instead of generic_head to track duplicates.
+
+2019-08-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81429 - wrong parsing of constructor with C++11 attribute.
+	* parser.c (cp_parser_constructor_declarator_p): Handle the scenario
+	when a parameter declaration begins with [[attribute]].
+
+2019-08-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91346 - Implement P1668R1, allow unevaluated asm in constexpr.
+	* constexpr.c (cxx_eval_constant_expression): Handle ASM_EXPR.
+	(potential_constant_expression_1) <case ASM_EXPR>: Allow.
+	* cp-tree.h (finish_asm_stmt): Adjust.
+	* parser.c (cp_parser_asm_definition): Grab the locaion of "asm" and
+	use it.  Change an error to a pedwarn.  Allow asm in C++2a, warn
+	otherwise.
+	* pt.c (tsubst_expr): Pass a location down to finish_asm_stmt.
+	* semantics.c (finish_asm_stmt): New location_t parameter.  Use it.
+
+2019-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_name): Parse use_device_addr clause.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_USE_DEVICE_ADDR.
+	(OMP_TARGET_DATA_CLAUSE_MASK): Add PRAGMA_OMP_CLAUSE_USE_DEVICE_ADDR.
+	(cp_parser_omp_target_data): Handle PRAGMA_OMP_CLAUSE_USE_DEVICE_ADDR
+	like PRAGMA_OMP_CLAUSE_USE_DEVICE_PTR, adjust diagnostics about no
+	map or use_device_* clauses.
+	* semantics.c (finish_omp_clauses): For OMP_CLAUSE_USE_DEVICE_PTR
+	in OpenMP, require pointer or reference to pointer type rather than
+	pointer or array or reference to pointer or array type. Handle
+	OMP_CLAUSE_USE_DEVICE_ADDR.
+	* pt.c (tsubst_omp_clauses): Handle OMP_CLAUSE_USE_DEVICE_ADDR.
+
+2019-08-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91378 - ICE with noexcept and auto return type.
+	* pt.c (maybe_instantiate_noexcept): push_to_top_level.
+
+2019-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (check_array_designated_initializer): Use
+	cp_expr_loc_or_input_loc in one place.
+
+2019-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_for_loop): For OMP_LOOP, ignore parallel
+	clauses and predetermine iterator as lastprivate.
+	* semantics.c (handle_omp_for_class_iterator): Use
+	OMP_CLAUSE_LASTPRIVATE_LOOP_IV instead of
+	OMP_CLAUSE_LASTPRIVATE_TASKLOOP_IV, set it for lastprivate also
+	on OMP_LOOP construct.  If a clause is missing for class iterator
+	on OMP_LOOP, add firstprivate clause, and if there is private
+	clause, turn it into firstprivate too.
+	(finish_omp_for): Formatting fix.  For OMP_LOOP, adjust
+	OMP_CLAUSE_LASTPRIVATE_LOOP_IV clause CP_CLAUSE_INFO, so that it
+	uses copy ctor instead of default ctor.
+	* cp-gimplify.c (cp_gimplify_expr): Handle OMP_LOOP like
+	OMP_DISTRIBUTE etc.
+	(cp_fold_r): Likewise.
+	(cp_genericize_r): Likewise.
+	(cxx_omp_finish_clause): Also finish lastprivate clause with
+	OMP_CLAUSE_LASTPRIVATE_LOOP_IV flag.
+	* pt.c (tsubst_omp_clauses): Handle OMP_CLAUSE_BIND.
+	(tsubst_omp_for_iterator): For OMP_LOOP, ignore parallel
+	clauses and predetermine iterator as lastprivate.
+	* constexpr.c (potential_constant_expression_1): Handle OMP_LOOP
+	like OMP_DISTRIBUTE etc.
+
+2019-08-05  Marek Polacek  <polacek@redhat.com>
+
+	DR 2413 - typename in conversion-function-ids.
+	* parser.c (cp_parser_conversion_type_id): Call
+	cp_parser_type_specifier_seq with CP_PARSER_FLAGS_TYPENAME_OPTIONAL
+	instead of CP_PARSER_FLAGS_NONE.
+
+2019-08-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (cp_expr_loc_or_input_loc): New.
+	(cxx_incomplete_type_diagnostic): Use it.
+	* call.c (build_converted_constant_expr_internal, convert_like_real,
+	convert_arg_to_ellipsis, convert_for_arg_passing, build_over_call,
+	build_cxx_call, perform_implicit_conversion_flags,
+	initialize_reference): Likewise.
+	* constexpr.c (cxx_eval_internal_function, cxx_eval_call_expression,
+	eval_and_check_array_index, cxx_eval_store_expression,
+	cxx_eval_statement_list, cxx_eval_loop_expr,
+	cxx_eval_constant_expression, potential_constant_expression_1):
+	Likewise.
+	* constraint.cc (check_for_logical_overloads,
+	satisfy_predicate_constraint): Likewise.
+	* cp-gimplify.c (cp_gimplify_expr): Likewise.
+	* cvt.c (cp_convert_to_pointer, convert_to_reference,
+	cp_convert_and_check, ocp_convert, maybe_warn_nodiscard): Likewise.
+	* decl.c (pop_switch): Likewise.
+	* decl2.c (delete_sanity): Likewise.
+	* error.c (location_of): Likewise.
+	* init.c (maybe_warn_list_ctor, build_aggr_init,
+	warn_placement_new_too_small, build_new_1, build_vec_init): Likewise.
+	* lex.c (unqualified_name_lookup_error): Likewise.
+	* parser.c (cp_parser_initializer_list, cp_parser_omp_for_cond):
+	Likewise.
+	* pt.c (check_for_bare_parameter_packs, check_valid_ptrmem_cst_expr,
+	unify_arg_conversion, convert_nontype_argument,
+	tsubst_copy_and_build, resolve_typename_type): Likewise.
+	* semantics.c (maybe_convert_cond, finish_call_expr,
+	cp_build_vec_convert): Likewise.
+	* typeck.c (decay_conversion, rationalize_conditional_expr,
+	cp_build_unary_op, build_x_compound_expr_from_list,
+	maybe_warn_about_returning_address_of_local,
+	maybe_warn_pessimizing_move): Likewise.
+	* typeck2.c (check_narrowing, digest_init_r,
+	process_init_constructor_array): Likewise.
+
+2019-08-05  Tom Honermann  <tom@honermann.net>
+
+	* parser.c (cp_parser_template_declaration_after_parameters): Enable
+	class template argument deduction for non-type template parameters
+	in literal operator templates.
+
+2019-08-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91338 - Implement P1161R3: Deprecate a[b,c].
+	* parser.c (cp_parser_postfix_open_square_expression): Warn about uses
+	of a comma operator within a subscripting expression.
+	(cp_parser_skip_to_closing_square_bracket_1): New function, made out
+	of...
+	(cp_parser_skip_to_closing_square_bracket): ...this.
+
+2019-08-05  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (force_paren_expr): Preserve location.
+
 2019-08-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91230 - wrong error with __PRETTY_FUNCTION__ and generic lambda.
@@ -209,15 +384,14 @@
 	* cp-tree.h (cp_omp_emit_unmappable_type_notes): New prototype.
 	* decl.c (cp_finish_decl): Call cp_omp_emit_unmappable_type_notes.
 	* decl2.c (cp_omp_mappable_type): Move contents to ...
-	(cp_omp_mappable_type_1):  ... here and add note output.
+	(cp_omp_mappable_type_1): ... here and add note output.
 	(cp_omp_emit_unmappable_type_notes): New function.
 	* semantics.c (finish_omp_clauses): Call
 	cp_omp_emit_unmappable_type_notes in four places.
 
 2019-07-03  Martin Liska  <mliska@suse.cz>
 
-	* call.c (build_new_op_1): Remove
-	dead assignemts.
+	* call.c (build_new_op_1): Remove dead assignemts.
 	* typeck.c (cp_build_binary_op): Likewise.
 
 2019-06-27  Jason Merrill  <jason@redhat.com>
@@ -258,6 +432,15 @@
 	PR c++/90969
 	* constexpr.c (cxx_eval_array_reference): Don't look through VCE from
 	vector type if lval.
+
+2019-06-25  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* lex.c (init_reswords): Create keyword for "__intN__" type.
+	* cp-tree.h (cp_decl_specifier_seq): New bitfield "int_n_alt".
+	* decl.c (grokdeclarator): Don't pedwarn about "__intN" ISO
+	C incompatibility if alternate "__intN__" form is used.
+	* parser.c (cp_parser_simple_type_specifier): Set
+	decl_specs->int_n_alt if "__intN__" form is used.
 
 2019-06-24  Jan Hubicka  <jh@suse.cz>
 
@@ -507,7 +690,7 @@
 	PR c++/90449 - add -Winaccessible-base option.
 	* class.c (warn_about_ambiguous_bases): Changed name to:
 	maybe_warn_about_inaccessible_bases.
-	(maybe_warn_about_inaccessible_bases):  Implemented new
+	(maybe_warn_about_inaccessible_bases): Implemented new
 	Winaccessible-base warning option for both direct and virtual
 	base warnings.
 	(layout_class_type): Call to warn_about_ambiguous_bases changed to fit
@@ -653,7 +836,7 @@
 
 	* cp-tree.h (IDENTIFIER_LAMBDA_P): New.
 	(TYPE_ANON_P): New.
-	(LAMBDA_TYPE_P, TYPE_UNNAMED_P):  Likewise.
+	(LAMBDA_TYPE_P, TYPE_UNNAMED_P): Likewise.
 	(LAMBDANAME_PREFIX, LAMBDANAME_FORMAT): Delete.
 	(make_lambda_name): Don't declare.
 	* error.c (dump_aggr_type): Check for lambdas before other
@@ -835,92 +1018,92 @@
 
 2019-05-16  Martin Sebor  <msebor@redhat.com>
 
-        * call.c (print_z_candidate): Wrap diagnostic text in a gettext
-        macro.  Adjust.
-        (print_z_candidates): Same.
-        (build_conditional_expr_1): Quote keywords, operators, and types
-        in diagnostics.
-        (build_op_delete_call): Same.
-        (maybe_print_user_conv_context): Wrap diagnostic text in a gettext
-        macro.
-        (convert_like_real): Same.
-        (convert_arg_to_ellipsis): Quote keywords, operators, and types
-        in diagnostics.
-        (build_over_call): Same.
-        (joust): Break up an overlong line.  Wrap diagnostic text in a gettext
-        macro.
-        * constexpr.c (cxx_eval_check_shift_p): Spell out >= in English.
-        (cxx_eval_constant_expression): Quote keywords, operators, and types
-        in diagnostics.
-        (potential_constant_expression_1): Same.
-        * cp-gimplify.c (cp_genericize_r): Same.
-        * cvt.c (maybe_warn_nodiscard): Quote keywords, operators, and types
-        in diagnostics.
-        (type_promotes_to): Same.
-        * decl.c (check_previous_goto_1): Same.
-        (check_goto): Same.
-        (start_decl): Same.
-        (cp_finish_decl): Avoid parenthesizing a sentence for consistency.
-        (grok_op_properties): Quote keywords, operators, and types
-        in diagnostics.
-        * decl2.c (grokfield): Same.
-        (coerce_delete_type): Same.
-        * except.c (is_admissible_throw_operand_or_catch_parameter): Same.
-        * friend.c (do_friend): Quote C++ tokens.
-        * init.c (build_new_1): Quote keywords, operators, and types
-        in diagnostics.
-        (build_vec_delete_1): Same.
-        (build_delete): Same.
-        * lex.c (parse_strconst_pragma): Same.
-        (handle_pragma_implementation): Same.
-        (unqualified_fn_lookup_error): Same.
-        * mangle.c (write_type): Same.
-        * method.c (defaulted_late_check): Avoid two consecutive punctuators.
-        * name-lookup.c (cp_binding_level_debug): Remove a trailing newline.
-        (pop_everything): Same.
-        * parser.c (cp_lexer_start_debugging): Quote a macro name.
-        in a diagnostic
-        (cp_lexer_stop_debugging): Same.
-        (cp_parser_userdef_numeric_literal): Quote a C++ header name
-        in a diagnostic.
-        (cp_parser_nested_name_specifier_opt): Quote keywords, operators,
-        and types in diagnostics.
-        (cp_parser_question_colon_clause): Same.
-        (cp_parser_asm_definition): Same.
-        (cp_parser_init_declarator): Same.
-        (cp_parser_template_declaration_after_parameters): Avoid capitalizing
-        a sentence in a diagnostic.
-        (cp_parser_omp_declare_reduction): Quote keywords, operators, and types
-        in diagnostics.
-        (cp_parser_transaction): Same.
-        * pt.c (maybe_process_partial_specialization): Replace second call
-        to permerror with inform for consistency with other uses.
-        (expand_integer_pack): Quote keywords, operators, and types
-        in diagnostics.
-        * rtti.c (get_typeid): Quote keywords, operators, and types
-        in diagnostics.
-        (build_dynamic_cast_1): Same.
-        * semantics.c (finish_asm_stmt): Same.
-        (finish_label_decl): Same.
-        (finish_bases): Same.
-        (finish_offsetof): Same.
-        (cp_check_omp_declare_reduction): Same.
-        (finish_decltype_type): Same.
-        * tree.c (handle_init_priority_attribute): Same.  Add detail
-        to diagnostics.
-        (maybe_warn_zero_as_null_pointer_constant): Same.
-        * typeck.c (cp_build_binary_op): Quote keywords, operators, and types
-        in diagnostics.
-        (cp_build_unary_op): Same.
-        (check_for_casting_away_constness): Same.
-        (build_static_cast): Same.
-        (build_const_cast_1): Same.
-        (maybe_warn_about_returning_address_of_local): Same.
-        (check_return_expr): Same.
-        * typeck2.c (abstract_virtuals_error_sfinae): Same.
-        (digest_init_r): Replace a tab with spaces in a diagnostic.
-        (build_functional_cast): Quote keywords, operators, and types
-        in diagnostics.
+	* call.c (print_z_candidate): Wrap diagnostic text in a gettext
+	macro.  Adjust.
+	(print_z_candidates): Same.
+	(build_conditional_expr_1): Quote keywords, operators, and types
+	in diagnostics.
+	(build_op_delete_call): Same.
+	(maybe_print_user_conv_context): Wrap diagnostic text in a gettext
+	macro.
+	(convert_like_real): Same.
+	(convert_arg_to_ellipsis): Quote keywords, operators, and types
+	in diagnostics.
+	(build_over_call): Same.
+	(joust): Break up an overlong line.  Wrap diagnostic text in a gettext
+	macro.
+	* constexpr.c (cxx_eval_check_shift_p): Spell out >= in English.
+	(cxx_eval_constant_expression): Quote keywords, operators, and types
+	in diagnostics.
+	(potential_constant_expression_1): Same.
+	* cp-gimplify.c (cp_genericize_r): Same.
+	* cvt.c (maybe_warn_nodiscard): Quote keywords, operators, and types
+	in diagnostics.
+	(type_promotes_to): Same.
+	* decl.c (check_previous_goto_1): Same.
+	(check_goto): Same.
+	(start_decl): Same.
+	(cp_finish_decl): Avoid parenthesizing a sentence for consistency.
+	(grok_op_properties): Quote keywords, operators, and types
+	in diagnostics.
+	* decl2.c (grokfield): Same.
+	(coerce_delete_type): Same.
+	* except.c (is_admissible_throw_operand_or_catch_parameter): Same.
+	* friend.c (do_friend): Quote C++ tokens.
+	* init.c (build_new_1): Quote keywords, operators, and types
+	in diagnostics.
+	(build_vec_delete_1): Same.
+	(build_delete): Same.
+	* lex.c (parse_strconst_pragma): Same.
+	(handle_pragma_implementation): Same.
+	(unqualified_fn_lookup_error): Same.
+	* mangle.c (write_type): Same.
+	* method.c (defaulted_late_check): Avoid two consecutive punctuators.
+	* name-lookup.c (cp_binding_level_debug): Remove a trailing newline.
+	(pop_everything): Same.
+	* parser.c (cp_lexer_start_debugging): Quote a macro name.
+	in a diagnostic
+	(cp_lexer_stop_debugging): Same.
+	(cp_parser_userdef_numeric_literal): Quote a C++ header name
+	in a diagnostic.
+	(cp_parser_nested_name_specifier_opt): Quote keywords, operators,
+	and types in diagnostics.
+	(cp_parser_question_colon_clause): Same.
+	(cp_parser_asm_definition): Same.
+	(cp_parser_init_declarator): Same.
+	(cp_parser_template_declaration_after_parameters): Avoid capitalizing
+	a sentence in a diagnostic.
+	(cp_parser_omp_declare_reduction): Quote keywords, operators, and types
+	in diagnostics.
+	(cp_parser_transaction): Same.
+	* pt.c (maybe_process_partial_specialization): Replace second call
+	to permerror with inform for consistency with other uses.
+	(expand_integer_pack): Quote keywords, operators, and types
+	in diagnostics.
+	* rtti.c (get_typeid): Quote keywords, operators, and types
+	in diagnostics.
+	(build_dynamic_cast_1): Same.
+	* semantics.c (finish_asm_stmt): Same.
+	(finish_label_decl): Same.
+	(finish_bases): Same.
+	(finish_offsetof): Same.
+	(cp_check_omp_declare_reduction): Same.
+	(finish_decltype_type): Same.
+	* tree.c (handle_init_priority_attribute): Same.  Add detail
+	to diagnostics.
+	(maybe_warn_zero_as_null_pointer_constant): Same.
+	* typeck.c (cp_build_binary_op): Quote keywords, operators, and types
+	in diagnostics.
+	(cp_build_unary_op): Same.
+	(check_for_casting_away_constness): Same.
+	(build_static_cast): Same.
+	(build_const_cast_1): Same.
+	(maybe_warn_about_returning_address_of_local): Same.
+	(check_return_expr): Same.
+	* typeck2.c (abstract_virtuals_error_sfinae): Same.
+	(digest_init_r): Replace a tab with spaces in a diagnostic.
+	(build_functional_cast): Quote keywords, operators, and types
+	in diagnostics.
 
 2019-05-15  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1325,12 +1508,12 @@
 	PR c++/47488
 	* decl.c (reshape_init_array_1): Strip trailing zero-initializers
 	from arrays of trivial type and known size.
-        * mangle.c (write_expression): Convert braced initializer lists
-        to STRING_CSTs.
+	* mangle.c (write_expression): Convert braced initializer lists
+	to STRING_CSTs.
 	(write_expression): Trim trailing zero-initializers from arrays
 	of trivial type.
-        (write_template_arg_literal): Mangle strings the same as braced
-        initializer lists.
+	(write_template_arg_literal): Mangle strings the same as braced
+	initializer lists.
 
 2019-04-03  Jason Merrill  <jason@redhat.com>
 
@@ -2010,7 +2193,7 @@
 	* pt.c (maybe_instantiate_noexcept): Keep error_mark_node.
 	* typeck2.c (merge_exception_specifiers): Handle error_mark_node.
 
-2019-02-19  Chung-Lin Tang <cltang@codesourcery.com>
+2019-02-19  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR c/87924
 	* parser.c (cp_parser_oacc_clause_wait): Add representation of wait
@@ -2064,7 +2247,7 @@
 	* semantics.c (finish_compound_literal): Call
 	instantiate_non_dependent_expr_sfinae.
 
-2019-02-13  Alexandre Oliva <aoliva@redhat.com>
+2019-02-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/86379
 	* cp-tree.h (USING_DECL_SCOPE): Use result rather than type.
@@ -2135,7 +2318,7 @@
 	invalid_array_size_error
 	(build_new): Call valid_array_size_p instead of error.
 
-2019-02-07  Alexandre Oliva <aoliva@redhat.com>
+2019-02-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/86218
 	* call.c (compare_ics): Deal with ck_aggr in either cs.
@@ -2164,7 +2347,7 @@
 	* call.c (convert_like_real) <case ck_user>: Call mark_exp_read
 	instead of mark_rvalue_use.
 
-2019-02-05  Alexandre Oliva <aoliva@redhat.com>
+2019-02-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/87770
 	* pt.c (instantiates_primary_template_p): New.
@@ -2265,7 +2448,7 @@
 	PR c++/89024 - ICE with incomplete enum type.
 	* call.c (standard_conversion): When converting an
 	ARITHMETIC_TYPE_P to an incomplete type, return NULL.
-	
+
 2019-01-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/88969
@@ -2369,7 +2552,7 @@
 	* semantics.c (process_outer_var_ref): Only skip dependent types
 	in templates.
 
-2019-01-17  Alexandre Oliva <aoliva@redhat.com>
+2019-01-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/87768
 	* cp-tree.h (saved_scope): Add suppress_location_wrappers.

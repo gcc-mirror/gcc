@@ -579,9 +579,10 @@ match_old_style_init (const char *name)
 	  && nd->var->expr->ts.type != BT_REAL
 	  && nd->value->expr->ts.type == BT_BOZ)
 	{
-	  gfc_error ("Mismatch in variable type and BOZ literal constant "
-		     "at %L in an old-style initialization",
-		     &nd->value->expr->where);
+	  gfc_error ("BOZ literal constant near %L cannot be assigned to "
+		     "a %qs variable in an old-style initialization",
+		     &nd->value->expr->where,
+		     gfc_typename (&nd->value->expr->ts));
 	  return MATCH_ERROR;
 	}
     }
@@ -624,9 +625,10 @@ gfc_match_data (void)
   char c;
 
   /* DATA has been matched.  In free form source code, the next character
-     needs to be whitespace.  Check that here.  */
+     needs to be whitespace or '(' from an implied do-loop.  Check that
+     here.  */
   c = gfc_peek_ascii_char ();
-  if (gfc_current_form == FORM_FREE && !gfc_is_whitespace (c))
+  if (gfc_current_form == FORM_FREE && !gfc_is_whitespace (c) && c != '(')
     return MATCH_NO;
 
   /* Before parsing the rest of a DATA statement, check F2008:c1206.  */

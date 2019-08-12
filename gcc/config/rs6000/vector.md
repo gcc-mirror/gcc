@@ -1260,6 +1260,19 @@
   "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
+;; Expanders for rotatert to make use of vrotl
+(define_expand "vrotr<mode>3"
+  [(set (match_operand:VEC_I 0 "vint_operand")
+	(rotatert:VEC_I (match_operand:VEC_I 1 "vint_operand")
+		(match_operand:VEC_I 2 "vint_operand")))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+{
+  rtx rot_count = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_neg<mode>2 (rot_count, operands[2]));
+  emit_insn (gen_vrotl<mode>3 (operands[0], operands[1], rot_count));
+  DONE;
+})
+
 ;; Expanders for arithmetic shift left on each vector element
 (define_expand "vashl<mode>3"
   [(set (match_operand:VEC_I 0 "vint_operand")

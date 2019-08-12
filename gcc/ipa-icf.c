@@ -1024,20 +1024,23 @@ sem_function::merge (sem_item *alias_item)
   bool original_address_matters = original->address_matters_p ();
   bool alias_address_matters = alias->address_matters_p ();
 
+  AUTO_DUMP_SCOPE ("merge",
+		   dump_user_location_t::from_function_decl (decl));
+
   if (DECL_EXTERNAL (alias->decl))
     {
-      if (dump_file)
-	fprintf (dump_file, "Not unifying; alias is external.\n\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_MISSED_OPTIMIZATION,
+		     "Not unifying; alias is external.\n");
       return false;
     }
 
   if (DECL_NO_INLINE_WARNING_P (original->decl)
       != DECL_NO_INLINE_WARNING_P (alias->decl))
     {
-      if (dump_file)
-	fprintf (dump_file,
-		 "Not unifying; "
-		 "DECL_NO_INLINE_WARNING mismatch.\n\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_MISSED_OPTIMIZATION,
+		     "Not unifying; DECL_NO_INLINE_WARNING mismatch.\n");
       return false;
     }
 
@@ -1047,21 +1050,20 @@ sem_function::merge (sem_item *alias_item)
        || (DECL_SECTION_NAME (alias->decl) && !alias->implicit_section))
       && DECL_SECTION_NAME (original->decl) != DECL_SECTION_NAME (alias->decl))
     {
-      if (dump_file)
-	fprintf (dump_file,
-		 "Not unifying; "
-		 "original and alias are in different sections.\n\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_MISSED_OPTIMIZATION,
+		     "Not unifying; "
+		     "original and alias are in different sections.\n");
       return false;
     }
 
   if (!original->in_same_comdat_group_p (alias)
       || original->comdat_local_p ())
     {
-      if (dump_file)
-	fprintf (dump_file,
-		 "Not unifying; alias nor wrapper cannot be created; "
-		 "across comdat group boundary\n\n");
-
+      if (dump_enabled_p ())
+	dump_printf (MSG_MISSED_OPTIMIZATION,
+		     "Not unifying; alias nor wrapper cannot be created; "
+		     "across comdat group boundary\n");
       return false;
     }
 
@@ -1106,10 +1108,10 @@ sem_function::merge (sem_item *alias_item)
       if (!sem_item::compare_referenced_symbol_properties (NULL, original, alias,
 							   alias->address_taken))
         {
-	  if (dump_file)
-	    fprintf (dump_file,
-		     "Wrapper cannot be created because referenced symbol "
-		     "properties mismatch\n");
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_MISSED_OPTIMIZATION,
+			 "Wrapper cannot be created because referenced symbol "
+			 "properties mismatch\n");
         }
       /* Do not turn function in one comdat group into wrapper to another
 	 comdat group. Other compiler producing the body of the
@@ -1120,40 +1122,41 @@ sem_function::merge (sem_item *alias_item)
 	       && (DECL_COMDAT_GROUP (alias->decl)
 		   != DECL_COMDAT_GROUP (original->decl)))
 	{
-	  if (dump_file)
-	    fprintf (dump_file,
-		     "Wrapper cannot be created because of COMDAT\n");
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_MISSED_OPTIMIZATION,
+			 "Wrapper cannot be created because of COMDAT\n");
 	}
       else if (DECL_STATIC_CHAIN (alias->decl)
 	       || DECL_STATIC_CHAIN (original->decl))
         {
-	  if (dump_file)
-	    fprintf (dump_file,
-		     "Cannot create wrapper of nested function.\n");
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_MISSED_OPTIMIZATION,
+			 "Cannot create wrapper of nested function.\n");
         }
       /* TODO: We can also deal with variadic functions never calling
 	 VA_START.  */
       else if (stdarg_p (TREE_TYPE (alias->decl)))
 	{
-	  if (dump_file)
-	    fprintf (dump_file,
-		     "cannot create wrapper of stdarg function.\n");
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_MISSED_OPTIMIZATION,
+			 "cannot create wrapper of stdarg function.\n");
 	}
       else if (ipa_fn_summaries
 	       && ipa_fn_summaries->get (alias) != NULL
 	       && ipa_fn_summaries->get (alias)->self_size <= 2)
 	{
-	  if (dump_file)
-	    fprintf (dump_file, "Wrapper creation is not "
-		     "profitable (function is too small).\n");
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_MISSED_OPTIMIZATION, "Wrapper creation is not "
+			 "profitable (function is too small).\n");
 	}
       /* If user paid attention to mark function noinline, assume it is
 	 somewhat special and do not try to turn it into a wrapper that
 	 cannot be undone by inliner.  */
       else if (lookup_attribute ("noinline", DECL_ATTRIBUTES (alias->decl)))
 	{
-	  if (dump_file)
-	    fprintf (dump_file, "Wrappers are not created for noinline.\n");
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_MISSED_OPTIMIZATION,
+			 "Wrappers are not created for noinline.\n");
 	}
       else
         create_wrapper = true;
@@ -1171,9 +1174,10 @@ sem_function::merge (sem_item *alias_item)
 
       if (!redirect_callers && !create_wrapper)
 	{
-	  if (dump_file)
-	    fprintf (dump_file, "Not unifying; cannot redirect callers nor "
-		     "produce wrapper\n\n");
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_MISSED_OPTIMIZATION,
+			 "Not unifying; cannot redirect callers nor "
+			 "produce wrapper\n");
 	  return false;
 	}
 
@@ -1202,17 +1206,18 @@ sem_function::merge (sem_item *alias_item)
         redirect_callers = false;
       if (!local_original)
 	{
-	  if (dump_file)
-	    fprintf (dump_file, "Not unifying; "
-		     "cannot produce local alias.\n\n");
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_MISSED_OPTIMIZATION,
+			 "Not unifying; cannot produce local alias.\n");
 	  return false;
 	}
 
       if (!redirect_callers && !create_wrapper)
 	{
-	  if (dump_file)
-	    fprintf (dump_file, "Not unifying; "
-		     "cannot redirect callers nor produce a wrapper\n\n");
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_MISSED_OPTIMIZATION,
+			 "Not unifying; "
+			 "cannot redirect callers nor produce a wrapper\n");
 	  return false;
 	}
       if (!create_wrapper
@@ -1220,9 +1225,10 @@ sem_function::merge (sem_item *alias_item)
 						  NULL, true)
 	  && !alias->can_remove_if_no_direct_calls_p ())
 	{
-	  if (dump_file)
-	    fprintf (dump_file, "Not unifying; cannot make wrapper and "
-		     "function has other uses than direct calls\n\n");
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_MISSED_OPTIMIZATION,
+			 "Not unifying; cannot make wrapper and "
+			 "function has other uses than direct calls\n");
 	  return false;
 	}
     }
@@ -1238,9 +1244,10 @@ sem_function::merge (sem_item *alias_item)
 	  alias->icf_merged = true;
 	  local_original->icf_merged = true;
 
-	  if (dump_file && nredirected)
-	    fprintf (dump_file, "%i local calls have been "
-		     "redirected.\n", nredirected);
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_NOTE,
+			 "%i local calls have been "
+			 "redirected.\n", nredirected);
 	}
 
       /* If all callers was redirected, do not produce wrapper.  */
@@ -1272,8 +1279,9 @@ sem_function::merge (sem_item *alias_item)
       original->call_for_symbol_thunks_and_aliases
 	 (set_local, (void *)(size_t) original->local_p (), true);
 
-      if (dump_file)
-	fprintf (dump_file, "Unified; Function alias has been created.\n\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_OPTIMIZED_LOCATIONS,
+		     "Unified; Function alias has been created.\n");
     }
   if (create_wrapper)
     {
@@ -1285,8 +1293,9 @@ sem_function::merge (sem_item *alias_item)
       ipa_merge_profiles (original, alias, true);
       alias->create_wrapper (local_original);
 
-      if (dump_file)
-	fprintf (dump_file, "Unified; Wrapper has been created.\n\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_OPTIMIZED_LOCATIONS,
+		     "Unified; Wrapper has been created.\n");
     }
 
   /* It's possible that redirection can hit thunks that block
@@ -1299,8 +1308,8 @@ sem_function::merge (sem_item *alias_item)
      on this optimization.  */
   if (original->merged_comdat && !alias->merged_comdat)
     {
-      if (dump_file)
-	fprintf (dump_file, "Dropping merged_comdat flag.\n\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE, "Dropping merged_comdat flag.\n");
       if (local_original)
         local_original->merged_comdat = false;
       original->merged_comdat = false;
@@ -1313,8 +1322,9 @@ sem_function::merge (sem_item *alias_item)
       alias->reset ();
       alias->body_removed = true;
       alias->icf_merged = true;
-      if (dump_file)
-	fprintf (dump_file, "Unified; Function body was removed.\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_OPTIMIZED_LOCATIONS,
+		     "Unified; Function body was removed.\n");
     }
 
   return true;
@@ -2085,18 +2095,21 @@ sem_variable::merge (sem_item *alias_item)
 {
   gcc_assert (alias_item->type == VAR);
 
+  AUTO_DUMP_SCOPE ("merge",
+		   dump_user_location_t::from_function_decl (decl));
   if (!sem_item::target_supports_symbol_aliases_p ())
     {
-      if (dump_file)
-	fprintf (dump_file, "Not unifying; "
-		 "Symbol aliases are not supported by target\n\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_MISSED_OPTIMIZATION, "Not unifying; "
+		     "Symbol aliases are not supported by target\n");
       return false;
     }
 
   if (DECL_EXTERNAL (alias_item->decl))
     {
-      if (dump_file)
-	fprintf (dump_file, "Not unifying; alias is external.\n\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_MISSED_OPTIMIZATION,
+		     "Not unifying; alias is external.\n");
       return false;
     }
 
@@ -2128,9 +2141,9 @@ sem_variable::merge (sem_item *alias_item)
   if (DECL_IN_CONSTANT_POOL (alias->decl)
       || DECL_IN_CONSTANT_POOL (original->decl))
     {
-      if (dump_file)
-	fprintf (dump_file,
-		 "Not unifying; constant pool variables.\n\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_MISSED_OPTIMIZATION,
+		     "Not unifying; constant pool variables.\n");
       return false;
     }
 
@@ -2140,45 +2153,48 @@ sem_variable::merge (sem_item *alias_item)
        || (DECL_SECTION_NAME (alias->decl) && !alias->implicit_section))
       && DECL_SECTION_NAME (original->decl) != DECL_SECTION_NAME (alias->decl))
     {
-      if (dump_file)
-	fprintf (dump_file,
-		 "Not unifying; "
-		 "original and alias are in different sections.\n\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_MISSED_OPTIMIZATION,
+		     "Not unifying; "
+		     "original and alias are in different sections.\n");
       return false;
     }
 
   /* We cannot merge if address comparsion metters.  */
   if (alias_address_matters && flag_merge_constants < 2)
     {
-      if (dump_file)
-	fprintf (dump_file,
-		 "Not unifying; address of original may be compared.\n\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_MISSED_OPTIMIZATION,
+		     "Not unifying; address of original may be compared.\n");
       return false;
     }
 
   if (DECL_ALIGN (original->decl) < DECL_ALIGN (alias->decl))
     {
-      if (dump_file)
-	fprintf (dump_file, "Not unifying; "
-		 "original and alias have incompatible alignments\n\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_MISSED_OPTIMIZATION,
+		     "Not unifying; "
+		     "original and alias have incompatible alignments\n");
 
       return false;
     }
 
   if (DECL_COMDAT_GROUP (original->decl) != DECL_COMDAT_GROUP (alias->decl))
     {
-      if (dump_file)
-	fprintf (dump_file, "Not unifying; alias cannot be created; "
-		 "across comdat group boundary\n\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_MISSED_OPTIMIZATION,
+		     "Not unifying; alias cannot be created; "
+		     "across comdat group boundary\n");
 
       return false;
     }
 
   if (original_discardable)
     {
-      if (dump_file)
-	fprintf (dump_file, "Not unifying; alias cannot be created; "
-		 "target is discardable\n\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_MISSED_OPTIMIZATION,
+		     "Not unifying; alias cannot be created; "
+		     "target is discardable\n");
 
       return false;
     }
@@ -2199,8 +2215,9 @@ sem_variable::merge (sem_item *alias_item)
       varpool_node::create_alias (alias_var->decl, decl);
       alias->resolve_alias (original);
 
-      if (dump_file)
-	fprintf (dump_file, "Unified; Variable alias has been created.\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_OPTIMIZED_LOCATIONS,
+		     "Unified; Variable alias has been created.\n");
 
       return true;
     }
@@ -3477,23 +3494,26 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 	    if (alias == source)
 	      continue;
 
-	    if (dump_file)
+	    dump_user_location_t loc
+	      = dump_user_location_t::from_function_decl (source->decl);
+	    if (dump_enabled_p ())
 	      {
-		fprintf (dump_file, "Semantic equality hit:%s->%s\n",
-			 xstrdup_for_dump (source->node->name ()),
-			 xstrdup_for_dump (alias->node->name ()));
-		fprintf (dump_file, "Assembler symbol names:%s->%s\n",
-			 xstrdup_for_dump (source->node->asm_name ()),
-			 xstrdup_for_dump (alias->node->asm_name ()));
+		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+				 "Semantic equality hit:%s->%s\n",
+				 xstrdup_for_dump (source->node->name ()),
+				 xstrdup_for_dump (alias->node->name ()));
+		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+				 "Assembler symbol names:%s->%s\n",
+				 xstrdup_for_dump (source->node->asm_name ()),
+				 xstrdup_for_dump (alias->node->asm_name ()));
 	      }
 
 	    if (lookup_attribute ("no_icf", DECL_ATTRIBUTES (alias->decl)))
 	      {
-	        if (dump_file)
-		  fprintf (dump_file,
-			   "Merge operation is skipped due to no_icf "
-			   "attribute.\n\n");
-
+		if (dump_enabled_p ())
+		  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+				   "Merge operation is skipped due to no_icf "
+				   "attribute.\n");
 		continue;
 	      }
 

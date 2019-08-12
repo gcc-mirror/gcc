@@ -793,8 +793,16 @@ alias_ptr_types_compatible_p (tree t1, tree t2)
       || ref_all_alias_ptr_type_p (t2))
     return false;
 
-  return (TYPE_MAIN_VARIANT (TREE_TYPE (t1))
-	  == TYPE_MAIN_VARIANT (TREE_TYPE (t2)));
+    /* This function originally abstracts from simply comparing
+       get_deref_alias_set so that we are sure this still computes
+       the same result after LTO type merging is applied.
+       When in LTO type merging is done we can actually do this compare.
+    */
+  if (in_lto_p)
+    return get_deref_alias_set (t1) == get_deref_alias_set (t2);
+  else
+    return (TYPE_MAIN_VARIANT (TREE_TYPE (t1))
+	    == TYPE_MAIN_VARIANT (TREE_TYPE (t2)));
 }
 
 /* Create emptry alias set entry.  */

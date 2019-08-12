@@ -2786,12 +2786,16 @@ add_functions (void)
 	     gfc_check_real, gfc_simplify_real, gfc_resolve_real,
 	     a, BT_UNKNOWN, dr, REQUIRED, kind, BT_INTEGER, di, OPTIONAL);
 
+  make_generic ("real", GFC_ISYM_REAL, GFC_STD_F77);
+
   /* This provides compatibility with g77.  */
-  add_sym_1 ("realpart", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
+  add_sym_1 ("realpart", GFC_ISYM_REALPART, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
 	     gfc_check_fn_c, gfc_simplify_realpart, gfc_resolve_realpart,
 	     a, BT_UNKNOWN, dr, REQUIRED);
 
-  add_sym_1 ("float", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F77,
+  make_generic ("realpart", GFC_ISYM_REALPART, GFC_STD_F77);
+
+  add_sym_1 ("float", GFC_ISYM_FLOAT, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F77,
 	     gfc_check_float, gfc_simplify_float, NULL,
 	     a, BT_INTEGER, di, REQUIRED);
 
@@ -2802,15 +2806,19 @@ add_functions (void)
       make_alias ("floatk", GFC_STD_GNU);
     }
 
-  add_sym_1 ("dfloat", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dd, GFC_STD_GNU,
+  make_generic ("float", GFC_ISYM_FLOAT, GFC_STD_F77);
+
+  add_sym_1 ("dfloat", GFC_ISYM_DFLOAT, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dd, GFC_STD_GNU,
 	     gfc_check_float, gfc_simplify_dble, gfc_resolve_dble,
 	     a, BT_REAL, dr, REQUIRED);
 
-  add_sym_1 ("sngl", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F77,
+  make_generic ("dfloat", GFC_ISYM_DFLOAT, GFC_STD_F77);
+
+  add_sym_1 ("sngl", GFC_ISYM_SNGL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F77,
 	     gfc_check_sngl, gfc_simplify_sngl, NULL,
 	     a, BT_REAL, dd, REQUIRED);
 
-  make_generic ("real", GFC_ISYM_REAL, GFC_STD_F77);
+  make_generic ("sngl", GFC_ISYM_SNGL, GFC_STD_F77);
 
   add_sym_2 ("rename", GFC_ISYM_RENAME, CLASS_IMPURE, ACTUAL_NO, BT_INTEGER, di,
 	     GFC_STD_GNU, gfc_check_rename, NULL, gfc_resolve_rename,
@@ -4180,6 +4188,40 @@ sort_actual (const char *name, gfc_actual_arglist **ap,
   if (f == NULL && a == NULL)	/* No arguments */
     return true;
 
+  /* ALLOCATED has two mutually exclusive keywords, but only one
+     can be present at time and neither is optional. */
+  if (strcmp (name, "allocated") == 0 && a->name)
+    {
+      if (strcmp (a->name, "scalar") == 0)
+	{
+          if (a->next)
+	    goto whoops;
+	  if (a->expr->rank != 0)
+	    {
+	      gfc_error ("Scalar entity required at %L", &a->expr->where);
+	      return false;
+	    }
+          return true;
+	}
+      else if (strcmp (a->name, "array") == 0)
+	{
+          if (a->next)
+	    goto whoops;
+	  if (a->expr->rank == 0)
+	    {
+	      gfc_error ("Array entity required at %L", &a->expr->where);
+	      return false;
+	    }
+          return true;
+	}
+      else
+	{
+	  gfc_error ("Invalid keyword %qs in %qs intrinsic function at %L",
+		     a->name, name, &a->expr->where);
+	  return false;
+	}
+    }
+
   for (;;)
     {		/* Put the nonkeyword arguments in a 1:1 correspondence */
       if (f == NULL)
@@ -4199,6 +4241,7 @@ sort_actual (const char *name, gfc_actual_arglist **ap,
   if (a == NULL)
     goto do_sort;
 
+whoops:
   gfc_error ("Too many arguments in call to %qs at %L", name, where);
   return false;
 
@@ -4798,7 +4841,8 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
     }
 
   if ((isym->id == GFC_ISYM_REAL || isym->id == GFC_ISYM_DBLE
-       || isym->id == GFC_ISYM_CMPLX)
+       || isym->id == GFC_ISYM_CMPLX || isym->id == GFC_ISYM_FLOAT
+       || isym->id == GFC_ISYM_SNGL || isym->id == GFC_ISYM_DFLOAT)
       && gfc_init_expr_flag
       && !gfc_notify_std (GFC_STD_F2003, "Function %qs as initialization "
 			  "expression at %L", name, &expr->where))

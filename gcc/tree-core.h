@@ -307,8 +307,11 @@ enum omp_clause_code {
   OMP_CLAUSE_MAP,
 
   /* OpenACC clause: use_device (variable-list).
-     OpenMP clause: use_device_ptr (variable-list).  */
+     OpenMP clause: use_device_ptr (ptr-list).  */
   OMP_CLAUSE_USE_DEVICE_PTR,
+
+  /* OpenMP clause: use_device_addr (variable-list).  */
+  OMP_CLAUSE_USE_DEVICE_ADDR,
 
   /* OpenMP clause: is_device_ptr (variable-list).  */
   OMP_CLAUSE_IS_DEVICE_PTR,
@@ -411,6 +414,9 @@ enum omp_clause_code {
 
   /* OpenMP clause: simdlen (constant-integer-expression).  */
   OMP_CLAUSE_SIMDLEN,
+
+  /* OpenMP clause: device_type ({host,nohost,any}).  */
+  OMP_CLAUSE_DEVICE_TYPE,
 
   /* OpenMP clause: for.  */
   OMP_CLAUSE_FOR,
@@ -1465,6 +1471,13 @@ enum omp_clause_proc_bind_kind
   OMP_CLAUSE_PROC_BIND_LAST
 };
 
+enum omp_clause_device_type_kind
+{
+  OMP_CLAUSE_DEVICE_TYPE_HOST = 1,
+  OMP_CLAUSE_DEVICE_TYPE_NOHOST = 2,
+  OMP_CLAUSE_DEVICE_TYPE_ANY = 3
+};
+
 enum omp_clause_linear_kind
 {
   OMP_CLAUSE_LINEAR_DEFAULT,
@@ -1541,6 +1554,7 @@ struct GTY(()) tree_omp_clause {
     enum tree_code                 if_modifier;
     enum omp_clause_defaultmap_kind defaultmap_kind;
     enum omp_clause_bind_kind      bind_kind;
+    enum omp_clause_device_type_kind device_type_kind;
     /* The dimension a OMP_CLAUSE__GRIDDIM_ clause of a gridified target
        construct describes.  */
     unsigned int		   dimension;
@@ -1857,36 +1871,32 @@ struct GTY(()) tree_function_decl {
   tree vindex;
 
   /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is
-     DECL_FUNCTION_CODE.  Otherwise unused.
-     ???  The bitfield needs to be able to hold all target function
-	  codes as well.  */
-  ENUM_BITFIELD(built_in_function) function_code : 12;
-  ENUM_BITFIELD(built_in_class) built_in_class : 2;
+     DECL_FUNCTION_CODE.  Otherwise unused.  */
+  enum built_in_function function_code;
 
+  ENUM_BITFIELD(built_in_class) built_in_class : 2;
   unsigned static_ctor_flag : 1;
   unsigned static_dtor_flag : 1;
-
   unsigned uninlinable : 1;
   unsigned possibly_inlined : 1;
   unsigned novops_flag : 1;
   unsigned returns_twice_flag : 1;
+
   unsigned malloc_flag : 1;
   unsigned declared_inline_flag : 1;
   unsigned no_inline_warning_flag : 1;
-
   unsigned no_instrument_function_entry_exit : 1;
-
-  /* Align the bitfield to boundary of a byte.  */
-  ENUM_BITFIELD(function_decl_type) decl_type: 2;
-
   unsigned no_limit_stack : 1;
   unsigned disregard_inline_limits : 1;
   unsigned pure_flag : 1;
   unsigned looping_const_or_pure_flag : 1;
+
+  /* Align the bitfield to boundary of a byte.  */
+  ENUM_BITFIELD(function_decl_type) decl_type: 2;
   unsigned has_debug_args_flag : 1;
   unsigned versioned_function : 1;
 
-  /* 0 bits left.  */
+  /* 12 bits left for future expansion.  */
 };
 
 struct GTY(()) tree_translation_unit_decl {

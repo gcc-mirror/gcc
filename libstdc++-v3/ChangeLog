@@ -1,3 +1,49 @@
+2019-08-09  Corentin Gay  <gay@adacore.com>
+
+	* testsuite/ext/random/beta_distribution/operators/serialize.cc,
+	testsuite/ext/random/hypergeometric_distribution/operators/serialize.cc,
+	testsuite/ext/random/normal_mv_distribution/operators/serialize.cc,
+	testsuite/ext/random/triangular_distribution/operators/serialize.cc,
+	testsuite/ext/random/von_mises_distribution/operators/serialize.cc:
+	Add call to `VERIFY`.
+
+2019-08-09  Alexandre Oliva <oliva@adacore.com>
+
+	* include/ext/random
+	(normal_mv_distribution::param_type::param_type): New private
+	ctor taking a decomposed varcov matrix, for use by...
+	(operator>>): ... this, befriended.
+	* include/ext/random.tcc (operator>>): Use it.
+	(normal_mv_distribution::param_type::_M_init_lower): Adjust
+	member function name in exception message.
+
+2019-08-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	P0325R4 to_array from LFTS with updates
+	* include/experimental/array (to_array): Qualify call to __to_array.
+	* include/std/array (__cpp_lib_to_array, to_array): Define for C++20.
+	* include/std/version (__cpp_lib_to_array): Likewise.
+	* testsuite/23_containers/array/creation/1.cc: New test.
+	* testsuite/23_containers/array/creation/2.cc: New test.
+	* testsuite/23_containers/array/creation/3_neg.cc: New test.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Use zero for dg-error line number.
+
+2019-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	P1651R0 bind_front should not unwrap reference_wrapper
+	* include/std/functional (bind_front): Don't unwrap reference_wrapper.
+	* include/std/version (__cpp_lib_bind_front): Update value.
+	* testsuite/20_util/function_objects/bind_front/1.cc: Fix test for
+	feature test macro.
+	* testsuite/20_util/function_objects/bind_front/2.cc: New test.
+
+	* include/std/numbers [!__STRICT_ANSI__ && _GLIBCXX_USE_FLOAT128]
+	(e_v, log2e_v, log10e_v, pi_v, inv_pi_v, inv_sqrtpi_v, ln2_v, ln10_v)
+	(sqrt2_v, sqrt3_v, inv_sqrt3, egamma_v, phi_v): Add explicit
+	specializations for __float128.
+	* testsuite/26_numerics/numbers/float128.cc: New test.
+
 2019-08-04  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/documentation_hacking.xml: doxygen.org is now

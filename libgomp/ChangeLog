@@ -1,3 +1,30 @@
+2019-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* target.c (gomp_map_vars_internal): For GOMP_MAP_USE_DEVICE_PTR
+	perform the lookup in the first loop only if !not_found_cnt, otherwise
+	perform lookups for it in the second loop guarded with
+	if (not_found_cnt || has_firstprivate).
+	* testsuite/libgomp.c/target-37.c: New test.
+	* testsuite/libgomp.c++/target-22.C: New test.
+
+2019-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/target-18.c (struct S): New type.
+	(foo): Use use_device_addr clause instead of use_device_ptr clause
+	where required by OpenMP 5.0, add further tests for both use_device_ptr
+	and use_device_addr clauses.
+	* testsuite/libgomp.c++/target-9.C (struct S): New type.
+	(foo): Use use_device_addr clause instead of use_device_ptr clause
+	where required by OpenMP 5.0, add further tests for both use_device_ptr
+	and use_device_addr clauses.  Add t and u arguments.
+	(main): Adjust caller.
+
+2019-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c++/loop-13.C: New test.
+	* testsuite/libgomp.c++/loop-14.C: New test.
+	* testsuite/libgomp.c++/loop-15.C: New test.
+
 2019-07-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/91301

@@ -6719,6 +6719,33 @@ attributes.
 The following attributes are supported on most targets.
 
 @table @code
+
+@item alias ("@var{target}")
+@cindex @code{alias} variable attribute
+The @code{alias} variable attribute causes the declaration to be emitted
+as an alias for another symbol known as an @dfn{alias target}.  Except
+for top-level qualifiers the alias target must have the same type as
+the alias.  For instance, the following
+
+@smallexample
+int var_target;
+extern int __attribute__ ((alias ("var_target"))) var_alias;
+@end smallexample
+
+@noindent
+defines @code{var_alias} to be an alias for the @code{var_target} variable.
+
+It is an error if the alias target is not defined in the same translation
+unit as the alias.
+
+Note that in the absence of the attribute GCC assumes that distinct
+declarations with external linkage denote distinct objects.  Using both
+the alias and the alias target to access the same object is undefined
+in a translation unit without a declaration of the alias with the attribute.
+
+This attribute requires assembler and object file support, and may not be
+available on all targets.
+
 @cindex @code{aligned} variable attribute
 @item aligned
 @itemx aligned (@var{alignment})
@@ -16245,10 +16272,10 @@ v8i16 __builtin_msa_insve_h (v8i16, imm0_7, v8i16);
 v4i32 __builtin_msa_insve_w (v4i32, imm0_3, v4i32);
 v2i64 __builtin_msa_insve_d (v2i64, imm0_1, v2i64);
 
-v16i8 __builtin_msa_ld_b (void *, imm_n512_511);
-v8i16 __builtin_msa_ld_h (void *, imm_n1024_1022);
-v4i32 __builtin_msa_ld_w (void *, imm_n2048_2044);
-v2i64 __builtin_msa_ld_d (void *, imm_n4096_4088);
+v16i8 __builtin_msa_ld_b (const void *, imm_n512_511);
+v8i16 __builtin_msa_ld_h (const void *, imm_n1024_1022);
+v4i32 __builtin_msa_ld_w (const void *, imm_n2048_2044);
+v2i64 __builtin_msa_ld_d (const void *, imm_n4096_4088);
 
 v16i8 __builtin_msa_ldi_b (imm_n512_511);
 v8i16 __builtin_msa_ldi_h (imm_n512_511);

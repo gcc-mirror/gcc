@@ -114,8 +114,8 @@
        (match_test "aarch64_float_const_zero_rtx_p (op)")))
 
 (define_constraint "Z"
-  "Integer constant zero."
-  (match_test "op == const0_rtx"))
+  "Integer or floating-point constant zero."
+  (match_test "op == CONST0_RTX (GET_MODE (op))"))
 
 (define_constraint "Ush"
   "A constraint that matches an absolute symbolic address high part."

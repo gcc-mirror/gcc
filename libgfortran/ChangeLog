@@ -1,3 +1,9 @@
+2019-08-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/53796
+	* io/inquire.c (inquire_via_filename): Set recl to -1 for
+	unconnected units.
+
 2019-07-21  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/91030

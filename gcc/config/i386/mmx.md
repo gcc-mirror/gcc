@@ -1973,8 +1973,8 @@
 (define_expand "usadv8qi"
   [(match_operand:V2SI 0 "register_operand")
    (match_operand:V8QI 1 "register_operand")
-   (match_operand:V8QI 2 "vector_operand")
-   (match_operand:V2SI 3 "vector_operand")]
+   (match_operand:V8QI 2 "register_operand")
+   (match_operand:V2SI 3 "register_operand")]
   "TARGET_MMX_WITH_SSE"
 {
   rtx t1 = gen_reg_rtx (V1DImode);

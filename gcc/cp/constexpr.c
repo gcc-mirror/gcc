@@ -1527,7 +1527,7 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
 
     default:
       if (!ctx->quiet)
-	error_at (cp_expr_loc_or_loc (t, input_location),
+	error_at (cp_expr_loc_or_input_loc (t),
 		  "call to internal function %qE", t);
       *non_constant_p = true;
       return t;
@@ -1542,7 +1542,7 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
 
   if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
     {
-      location_t loc = cp_expr_loc_or_loc (t, input_location);
+      location_t loc = cp_expr_loc_or_input_loc (t);
       tree type = TREE_TYPE (TREE_TYPE (t));
       tree result = fold_binary_loc (loc, opcode, type,
 				     fold_convert_loc (loc, type, arg0),
@@ -1584,7 +1584,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 			  bool lval,
 			  bool *non_constant_p, bool *overflow_p)
 {
-  location_t loc = cp_expr_loc_or_loc (t, input_location);
+  location_t loc = cp_expr_loc_or_input_loc (t);
   tree fun = get_function_named_in_call (t);
   constexpr_call new_call
     = { NULL, NULL, NULL, 0, ctx->manifestly_const_eval };
@@ -2580,7 +2580,7 @@ eval_and_check_array_index (const constexpr_ctx *ctx,
 			    tree t, bool allow_one_past,
 			    bool *non_constant_p, bool *overflow_p)
 {
-  location_t loc = cp_expr_loc_or_loc (t, input_location);
+  location_t loc = cp_expr_loc_or_input_loc (t);
   tree ary = TREE_OPERAND (t, 0);
   t = TREE_OPERAND (t, 1);
   tree index = cxx_eval_constant_expression (ctx, t, false,
@@ -3909,7 +3909,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	      if (cxx_dialect < cxx2a)
 		{
 		  if (!ctx->quiet)
-		    error_at (cp_expr_loc_or_loc (t, input_location),
+		    error_at (cp_expr_loc_or_input_loc (t),
 			      "change of the active member of a union "
 			      "from %qD to %qD",
 			      CONSTRUCTOR_ELT (*valp, 0)->index,
@@ -4220,7 +4220,7 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
       /* We aren't communicating the jump to our caller, so give up.  We don't
 	 need to support evaluation of jumps out of statement-exprs.  */
       if (!ctx->quiet)
-	error_at (cp_expr_loc_or_loc (r, input_location),
+	error_at (cp_expr_loc_or_input_loc (r),
 		  "statement is not a constant expression");
       *non_constant_p = true;
     }
@@ -4320,7 +4320,7 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
       if (++count >= constexpr_loop_limit)
 	{
 	  if (!ctx->quiet)
-	    error_at (cp_expr_loc_or_loc (t, input_location),
+	    error_at (cp_expr_loc_or_input_loc (t),
 		      "%<constexpr%> loop iteration count exceeds limit of %d "
 		      "(use %<-fconstexpr-loop-limit=%> to increase the limit)",
 		      constexpr_loop_limit);
@@ -4411,6 +4411,17 @@ lookup_placeholder (const constexpr_ctx *ctx, bool lval, tree type)
   return ob;
 }
 
+/* Complain about an attempt to evaluate inline assembly.  */
+
+static void
+inline_asm_in_constexpr_error (location_t loc)
+{
+  auto_diagnostic_group d;
+  error_at (loc, "inline assembly is not a constant expression");
+  inform (loc, "only unevaluated inline assembly is allowed in a "
+	  "%<constexpr%> function in C++2a");
+}
+
 /* Attempt to reduce the expression T to a constant value.
    On failure, issue diagnostic and return error_mark_node.  */
 /* FIXME unify with c_fully_fold */
@@ -4482,7 +4493,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
   if (++*ctx->constexpr_ops_count >= constexpr_ops_limit)
     {
       if (!ctx->quiet)
-	error_at (cp_expr_loc_or_loc (t, input_location),
+	error_at (cp_expr_loc_or_input_loc (t),
 		  "%<constexpr%> evaluation operation count exceeds limit of "
 		  "%wd (use %<-fconstexpr-ops-limit=%> to increase the limit)",
 		  constexpr_ops_limit);
@@ -5036,7 +5047,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       if (REINTERPRET_CAST_P (t))
 	{
 	  if (!ctx->quiet)
-	    error_at (cp_expr_loc_or_loc (t, input_location),
+	    error_at (cp_expr_loc_or_input_loc (t),
 		      "%<reinterpret_cast%> is not a constant expression");
 	  *non_constant_p = true;
 	  return t;
@@ -5077,7 +5088,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		if (TYPE_REF_P (type))
 		  {
 		    if (!ctx->quiet)
-		      error_at (cp_expr_loc_or_loc (t, input_location),
+		      error_at (cp_expr_loc_or_input_loc (t),
 				"dereferencing a null pointer");
 		    *non_constant_p = true;
 		    return t;
@@ -5089,7 +5100,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		    if (!can_convert (type, from, tf_none))
 		      {
 			if (!ctx->quiet)
-			  error_at (cp_expr_loc_or_loc (t, input_location),
+			  error_at (cp_expr_loc_or_input_loc (t),
 				    "conversion of %qT null pointer to %qT "
 				    "is not a constant expression",
 				    from, type);
@@ -5104,7 +5115,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		     reinterpret_cast<void*>(sizeof 0)
 		*/
 		if (!ctx->quiet)
-		  error_at (cp_expr_loc_or_loc (t, input_location),
+		  error_at (cp_expr_loc_or_input_loc (t),
 			    "%<reinterpret_cast<%T>(%E)%> is not "
 			    "a constant expression",
 			    type, op);
@@ -5178,7 +5189,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case BASELINK:
     case OFFSET_REF:
       if (!ctx->quiet)
-        error_at (cp_expr_loc_or_loc (t, input_location),
+        error_at (cp_expr_loc_or_input_loc (t),
 		  "expression %qE is not a constant expression", t);
       *non_constant_p = true;
       break;
@@ -5196,7 +5207,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    || !DECL_P (get_base_address (TREE_OPERAND (obj, 0))))
 	  {
 	    if (!ctx->quiet)
-	      error_at (cp_expr_loc_or_loc (t, input_location),
+	      error_at (cp_expr_loc_or_input_loc (t),
 			"expression %qE is not a constant expression", t);
 	    *non_constant_p = true;
 	    return t;
@@ -5288,6 +5299,12 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case USING_STMT:
       r = void_node;
       break;
+
+    case ASM_EXPR:
+      if (!ctx->quiet)
+	inline_asm_in_constexpr_error (cp_expr_loc_or_input_loc (t));
+      *non_constant_p = true;
+      return t;
 
     default:
       if (STATEMENT_CODE_P (TREE_CODE (t)))
@@ -5960,7 +5977,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     return false;
   if (t == NULL_TREE)
     return true;
-  location_t loc = cp_expr_loc_or_loc (t, input_location);
+  location_t loc = cp_expr_loc_or_input_loc (t);
 
   if (*jump_target)
     /* If we are jumping, ignore everything.  This is simpler than the
@@ -6437,6 +6454,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case OMP_SIMD:
     case OMP_DISTRIBUTE:
     case OMP_TASKLOOP:
+    case OMP_LOOP:
     case OMP_TEAMS:
     case OMP_TARGET_DATA:
     case OMP_TARGET:
@@ -6468,11 +6486,15 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       /* GCC internal stuff.  */
     case VA_ARG_EXPR:
     case TRANSACTION_EXPR:
-    case ASM_EXPR:
     case AT_ENCODE_EXPR:
     fail:
       if (flags & tf_error)
 	error_at (loc, "expression %qE is not a constant expression", t);
+      return false;
+
+    case ASM_EXPR:
+      if (flags & tf_error)
+	inline_asm_in_constexpr_error (loc);
       return false;
 
     case OBJ_TYPE_REF:

@@ -28,6 +28,11 @@
    UNSPEC_MOVSD_STORE
   ])
 
+; Either of the two decimal modes.
+(define_mode_iterator DDTD [DD TD])
+
+(define_mode_attr q [(DD "") (TD "q")])
+
 
 (define_insn "movsd_store"
   [(set (match_operand:DD 0 "nonimmediate_operand" "=m")
@@ -150,84 +155,44 @@
   [(set_attr "type" "dfp")
    (set_attr "length" "8")])
 
-(define_insn "adddd3"
-  [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
-	(plus:DD (match_operand:DD 1 "gpc_reg_operand" "%d")
-		 (match_operand:DD 2 "gpc_reg_operand" "d")))]
+(define_insn "add<mode>3"
+  [(set (match_operand:DDTD 0 "gpc_reg_operand" "=d")
+	(plus:DDTD (match_operand:DDTD 1 "gpc_reg_operand" "%d")
+		   (match_operand:DDTD 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
-  "dadd %0,%1,%2"
+  "dadd<q> %0,%1,%2"
   [(set_attr "type" "dfp")])
 
-(define_insn "addtd3"
-  [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
-	(plus:TD (match_operand:TD 1 "gpc_reg_operand" "%d")
-		 (match_operand:TD 2 "gpc_reg_operand" "d")))]
+(define_insn "sub<mode>3"
+  [(set (match_operand:DDTD 0 "gpc_reg_operand" "=d")
+	(minus:DDTD (match_operand:DDTD 1 "gpc_reg_operand" "d")
+		    (match_operand:DDTD 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
-  "daddq %0,%1,%2"
+  "dsub<q> %0,%1,%2"
   [(set_attr "type" "dfp")])
 
-(define_insn "subdd3"
-  [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
-	(minus:DD (match_operand:DD 1 "gpc_reg_operand" "d")
-		  (match_operand:DD 2 "gpc_reg_operand" "d")))]
+(define_insn "mul<mode>3"
+  [(set (match_operand:DDTD 0 "gpc_reg_operand" "=d")
+	(mult:DDTD (match_operand:DDTD 1 "gpc_reg_operand" "%d")
+		   (match_operand:DDTD 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
-  "dsub %0,%1,%2"
+  "dmul<q> %0,%1,%2"
   [(set_attr "type" "dfp")])
 
-(define_insn "subtd3"
-  [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
-	(minus:TD (match_operand:TD 1 "gpc_reg_operand" "d")
-		  (match_operand:TD 2 "gpc_reg_operand" "d")))]
+(define_insn "div<mode>3"
+  [(set (match_operand:DDTD 0 "gpc_reg_operand" "=d")
+	(div:DDTD (match_operand:DDTD 1 "gpc_reg_operand" "d")
+		  (match_operand:DDTD 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
-  "dsubq %0,%1,%2"
+  "ddiv<q> %0,%1,%2"
   [(set_attr "type" "dfp")])
 
-(define_insn "muldd3"
-  [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
-	(mult:DD (match_operand:DD 1 "gpc_reg_operand" "%d")
-		 (match_operand:DD 2 "gpc_reg_operand" "d")))]
-  "TARGET_DFP"
-  "dmul %0,%1,%2"
-  [(set_attr "type" "dfp")])
-
-(define_insn "multd3"
-  [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
-	(mult:TD (match_operand:TD 1 "gpc_reg_operand" "%d")
-		 (match_operand:TD 2 "gpc_reg_operand" "d")))]
-  "TARGET_DFP"
-  "dmulq %0,%1,%2"
-  [(set_attr "type" "dfp")])
-
-(define_insn "divdd3"
-  [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
-	(div:DD (match_operand:DD 1 "gpc_reg_operand" "d")
-		(match_operand:DD 2 "gpc_reg_operand" "d")))]
-  "TARGET_DFP"
-  "ddiv %0,%1,%2"
-  [(set_attr "type" "dfp")])
-
-(define_insn "divtd3"
-  [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
-	(div:TD (match_operand:TD 1 "gpc_reg_operand" "d")
-		(match_operand:TD 2 "gpc_reg_operand" "d")))]
-  "TARGET_DFP"
-  "ddivq %0,%1,%2"
-  [(set_attr "type" "dfp")])
-
-(define_insn "*cmpdd_internal1"
+(define_insn "*cmp<mode>_internal1"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(compare:CCFP (match_operand:DD 1 "gpc_reg_operand" "d")
-		      (match_operand:DD 2 "gpc_reg_operand" "d")))]
+	(compare:CCFP (match_operand:DDTD 1 "gpc_reg_operand" "d")
+		      (match_operand:DDTD 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
-  "dcmpu %0,%1,%2"
-  [(set_attr "type" "dfp")])
-
-(define_insn "*cmptd_internal1"
-  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(compare:CCFP (match_operand:TD 1 "gpc_reg_operand" "d")
-		      (match_operand:TD 2 "gpc_reg_operand" "d")))]
-  "TARGET_DFP"
-  "dcmpuq %0,%1,%2"
+  "dcmpu<q> %0,%1,%2"
   [(set_attr "type" "dfp")])
 
 (define_insn "floatdidd2"
@@ -244,46 +209,25 @@
   "dcffixq %0,%1"
   [(set_attr "type" "dfp")])
 
-;; Convert a decimal64 to a decimal64 whose value is an integer.
+;; Convert a decimal64/128 to a decimal64/128 whose value is an integer.
 ;; This is the first stage of converting it to an integer type.
 
-(define_insn "ftruncdd2"
-  [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
-	(fix:DD (match_operand:DD 1 "gpc_reg_operand" "d")))]
+(define_insn "ftrunc<mode>2"
+  [(set (match_operand:DDTD 0 "gpc_reg_operand" "=d")
+	(fix:DDTD (match_operand:DDTD 1 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
-  "drintn. 0,%0,%1,1"
+  "drintn<q>. 0,%0,%1,1"
   [(set_attr "type" "dfp")])
 
-;; Convert a decimal64 whose value is an integer to an actual integer.
+;; Convert a decimal64/128 whose value is an integer to an actual integer.
 ;; This is the second stage of converting decimal float to integer type.
 
-(define_insn "fixdddi2"
+(define_insn "fix<mode>di2"
   [(set (match_operand:DI 0 "gpc_reg_operand" "=d")
-	(fix:DI (match_operand:DD 1 "gpc_reg_operand" "d")))]
+	(fix:DI (match_operand:DDTD 1 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
-  "dctfix %0,%1"
+  "dctfix<q> %0,%1"
   [(set_attr "type" "dfp")])
-
-;; Convert a decimal128 to a decimal128 whose value is an integer.
-;; This is the first stage of converting it to an integer type.
-
-(define_insn "ftrunctd2"
-  [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
-	(fix:TD (match_operand:TD 1 "gpc_reg_operand" "d")))]
-  "TARGET_DFP"
-  "drintnq. 0,%0,%1,1"
-  [(set_attr "type" "dfp")])
-
-;; Convert a decimal128 whose value is an integer to an actual integer.
-;; This is the second stage of converting decimal float to integer type.
-
-(define_insn "fixtddi2"
-  [(set (match_operand:DI 0 "gpc_reg_operand" "=d")
-	(fix:DI (match_operand:TD 1 "gpc_reg_operand" "d")))]
-  "TARGET_DFP"
-  "dctfixq %0,%1"
-  [(set_attr "type" "dfp")])
-
 
 ;; Decimal builtin support
 
@@ -298,70 +242,62 @@
 
 (define_code_iterator DFP_TEST [eq lt gt unordered])
 
-(define_mode_iterator D64_D128 [DD TD])
-
-(define_mode_attr dfp_suffix [(DD "")
-			      (TD "q")])
-
 (define_insn "dfp_ddedpd_<mode>"
-  [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
-	(unspec:D64_D128 [(match_operand:QI 1 "const_0_to_3_operand" "i")
-			  (match_operand:D64_D128 2 "gpc_reg_operand" "d")]
-			 UNSPEC_DDEDPD))]
+  [(set (match_operand:DDTD 0 "gpc_reg_operand" "=d")
+	(unspec:DDTD [(match_operand:QI 1 "const_0_to_3_operand" "i")
+		      (match_operand:DDTD 2 "gpc_reg_operand" "d")]
+		     UNSPEC_DDEDPD))]
   "TARGET_DFP"
-  "ddedpd<dfp_suffix> %1,%0,%2"
+  "ddedpd<q> %1,%0,%2"
   [(set_attr "type" "dfp")])
 
 (define_insn "dfp_denbcd_<mode>"
-  [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
-	(unspec:D64_D128 [(match_operand:QI 1 "const_0_to_1_operand" "i")
-			  (match_operand:D64_D128 2 "gpc_reg_operand" "d")]
-			 UNSPEC_DENBCD))]
+  [(set (match_operand:DDTD 0 "gpc_reg_operand" "=d")
+	(unspec:DDTD [(match_operand:QI 1 "const_0_to_1_operand" "i")
+		      (match_operand:DDTD 2 "gpc_reg_operand" "d")]
+		     UNSPEC_DENBCD))]
   "TARGET_DFP"
-  "denbcd<dfp_suffix> %1,%0,%2"
+  "denbcd<q> %1,%0,%2"
   [(set_attr "type" "dfp")])
 
 (define_insn "dfp_dxex_<mode>"
   [(set (match_operand:DI 0 "gpc_reg_operand" "=d")
-	(unspec:DI [(match_operand:D64_D128 1 "gpc_reg_operand" "d")]
+	(unspec:DI [(match_operand:DDTD 1 "gpc_reg_operand" "d")]
 		   UNSPEC_DXEX))]
   "TARGET_DFP"
-  "dxex<dfp_suffix> %0,%1"
+  "dxex<q> %0,%1"
   [(set_attr "type" "dfp")])
 
 (define_insn "dfp_diex_<mode>"
-  [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
-	(unspec:D64_D128 [(match_operand:DI 1 "gpc_reg_operand" "d")
-			  (match_operand:D64_D128 2 "gpc_reg_operand" "d")]
-			 UNSPEC_DXEX))]
+  [(set (match_operand:DDTD 0 "gpc_reg_operand" "=d")
+	(unspec:DDTD [(match_operand:DI 1 "gpc_reg_operand" "d")
+		      (match_operand:DDTD 2 "gpc_reg_operand" "d")]
+		     UNSPEC_DXEX))]
   "TARGET_DFP"
-  "diex<dfp_suffix> %0,%1,%2"
+  "diex<q> %0,%1,%2"
   [(set_attr "type" "dfp")])
 
 (define_expand "dfptstsfi_<code>_<mode>"
   [(set (match_dup 3)
-	(compare:CCFP
-         (unspec:D64_D128
-	  [(match_operand:SI 1 "const_int_operand")
-	   (match_operand:D64_D128 2 "gpc_reg_operand")]
-	  UNSPEC_DTSTSFI)
-	 (match_dup 4)))
+	(compare:CCFP (unspec:DDTD [(match_operand:SI 1 "const_int_operand")
+				    (match_operand:DDTD 2 "gpc_reg_operand")]
+				   UNSPEC_DTSTSFI)
+		      (const_int 0)))
    (set (match_operand:SI 0 "register_operand")
-   	(DFP_TEST:SI (match_dup 3)
+	(DFP_TEST:SI (match_dup 3)
 		     (const_int 0)))
   ]
   "TARGET_P9_MISC"
 {
   operands[3] = gen_reg_rtx (CCFPmode);
-  operands[4] = const0_rtx;
 })
 
 (define_insn "*dfp_sgnfcnc_<mode>"
   [(set (match_operand:CCFP 0 "" "=y")
-        (compare:CCFP
-	 (unspec:D64_D128 [(match_operand:SI 1 "const_int_operand" "n")
-	 	           (match_operand:D64_D128 2 "gpc_reg_operand" "d")]
-          UNSPEC_DTSTSFI)
+	(compare:CCFP
+	 (unspec:DDTD [(match_operand:SI 1 "const_int_operand" "n")
+		       (match_operand:DDTD 2 "gpc_reg_operand" "d")]
+		      UNSPEC_DTSTSFI)
 	 (match_operand:SI 3 "zero_constant" "j")))]
   "TARGET_P9_MISC"
 {
@@ -370,24 +306,24 @@
      immediate operand values greater than 63.  */
   if (!(IN_RANGE (INTVAL (operands[1]), 0, 63)))
     operands[1] = GEN_INT (63);
-  return "dtstsfi<dfp_suffix> %0,%1,%2";
+  return "dtstsfi<q> %0,%1,%2";
 }
   [(set_attr "type" "fp")])
 
 (define_insn "dfp_dscli_<mode>"
-  [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
-	(unspec:D64_D128 [(match_operand:D64_D128 1 "gpc_reg_operand" "d")
-			  (match_operand:QI 2 "immediate_operand" "i")]
-			 UNSPEC_DSCLI))]
+  [(set (match_operand:DDTD 0 "gpc_reg_operand" "=d")
+	(unspec:DDTD [(match_operand:DDTD 1 "gpc_reg_operand" "d")
+		      (match_operand:QI 2 "immediate_operand" "i")]
+		     UNSPEC_DSCLI))]
   "TARGET_DFP"
-  "dscli<dfp_suffix> %0,%1,%2"
+  "dscli<q> %0,%1,%2"
   [(set_attr "type" "dfp")])
 
 (define_insn "dfp_dscri_<mode>"
-  [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
-	(unspec:D64_D128 [(match_operand:D64_D128 1 "gpc_reg_operand" "d")
-			  (match_operand:QI 2 "immediate_operand" "i")]
-			 UNSPEC_DSCRI))]
+  [(set (match_operand:DDTD 0 "gpc_reg_operand" "=d")
+	(unspec:DDTD [(match_operand:DDTD 1 "gpc_reg_operand" "d")
+		      (match_operand:QI 2 "immediate_operand" "i")]
+		     UNSPEC_DSCRI))]
   "TARGET_DFP"
-  "dscri<dfp_suffix> %0,%1,%2"
+  "dscri<q> %0,%1,%2"
   [(set_attr "type" "dfp")])

@@ -17097,17 +17097,17 @@ aarch64_unspec_cond_code (rtx_code code)
   switch (code)
     {
     case NE:
-      return UNSPEC_COND_NE;
+      return UNSPEC_COND_FCMNE;
     case EQ:
-      return UNSPEC_COND_EQ;
+      return UNSPEC_COND_FCMEQ;
     case LT:
-      return UNSPEC_COND_LT;
+      return UNSPEC_COND_FCMLT;
     case GT:
-      return UNSPEC_COND_GT;
+      return UNSPEC_COND_FCMGT;
     case LE:
-      return UNSPEC_COND_LE;
+      return UNSPEC_COND_FCMLE;
     case GE:
-      return UNSPEC_COND_GE;
+      return UNSPEC_COND_FCMGE;
     default:
       gcc_unreachable ();
     }
@@ -18546,19 +18546,21 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
   /* Sort the operands.  */
   qsort (temp_operands, 4, 2 * sizeof (rtx *), aarch64_ldrstr_offset_compare);
 
+  /* Copy the memory operands so that if we have to bail for some
+     reason the original addresses are unchanged.  */
   if (load)
     {
-      mem_1 = temp_operands[1];
-      mem_2 = temp_operands[3];
-      mem_3 = temp_operands[5];
-      mem_4 = temp_operands[7];
+      mem_1 = copy_rtx (temp_operands[1]);
+      mem_2 = copy_rtx (temp_operands[3]);
+      mem_3 = copy_rtx (temp_operands[5]);
+      mem_4 = copy_rtx (temp_operands[7]);
     }
   else
     {
-      mem_1 = temp_operands[0];
-      mem_2 = temp_operands[2];
-      mem_3 = temp_operands[4];
-      mem_4 = temp_operands[6];
+      mem_1 = copy_rtx (temp_operands[0]);
+      mem_2 = copy_rtx (temp_operands[2]);
+      mem_3 = copy_rtx (temp_operands[4]);
+      mem_4 = copy_rtx (temp_operands[6]);
       gcc_assert (code == UNKNOWN);
     }
 

@@ -504,7 +504,7 @@ tree
 unqualified_name_lookup_error (tree name, location_t loc)
 {
   if (loc == UNKNOWN_LOCATION)
-    loc = cp_expr_loc_or_loc (name, input_location);
+    loc = cp_expr_loc_or_input_loc (name);
 
   if (IDENTIFIER_ANY_OP_P (name))
     error_at (loc, "%qD not defined", name);

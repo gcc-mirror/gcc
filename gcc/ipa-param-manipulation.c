@@ -452,14 +452,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
   gimple_call_set_chain (new_stmt, gimple_call_chain (stmt));
   gimple_call_copy_flags (new_stmt, stmt);
   if (gimple_in_ssa_p (cfun))
-    {
-      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-      if (gimple_vdef (stmt))
-	{
-	  gimple_set_vdef (new_stmt, gimple_vdef (stmt));
-	  SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
-	}
-    }
+    gimple_move_vops (new_stmt, stmt);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
