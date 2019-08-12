@@ -1591,6 +1591,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { }
 
 #if __cplusplus >= 201703L
+
+  // Unpack a std::tuple into a type trait and use its value.
+  // For cv std::tuple<_Up> the result is _Trait<_Tp, cv _Up...>::value.
+  // For cv std::tuple<_Up>& the result is _Trait<_Tp, cv _Up&...>::value.
+  // Otherwise the result is false (because we don't know if std::get throws).
+  template<template<typename...> class _Trait, typename _Tp, typename _Tuple>
+    inline constexpr bool __unpack_std_tuple = false;
+
+  template<template<typename...> class _Trait, typename _Tp, typename... _Up>
+    inline constexpr bool __unpack_std_tuple<_Trait, _Tp, tuple<_Up...>>
+      = _Trait<_Tp, _Up...>::value;
+
+  template<template<typename...> class _Trait, typename _Tp, typename... _Up>
+    inline constexpr bool __unpack_std_tuple<_Trait, _Tp, tuple<_Up...>&>
+      = _Trait<_Tp, _Up&...>::value;
+
+  template<template<typename...> class _Trait, typename _Tp, typename... _Up>
+    inline constexpr bool __unpack_std_tuple<_Trait, _Tp, const tuple<_Up...>>
+      = _Trait<_Tp, const _Up...>::value;
+
+  template<template<typename...> class _Trait, typename _Tp, typename... _Up>
+    inline constexpr bool __unpack_std_tuple<_Trait, _Tp, const tuple<_Up...>&>
+      = _Trait<_Tp, const _Up&...>::value;
+
 # define __cpp_lib_apply 201603
 
   template <typename _Fn, typename _Tuple, size_t... _Idx>
@@ -1604,6 +1628,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Fn, typename _Tuple>
     constexpr decltype(auto)
     apply(_Fn&& __f, _Tuple&& __t)
+    noexcept(__unpack_std_tuple<is_nothrow_invocable, _Fn, _Tuple>)
     {
       using _Indices
 	= make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>;
@@ -1622,6 +1647,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Tp, typename _Tuple>
     constexpr _Tp
     make_from_tuple(_Tuple&& __t)
+    noexcept(__unpack_std_tuple<is_nothrow_constructible, _Tp, _Tuple>)
     {
       return __make_from_tuple_impl<_Tp>(
         std::forward<_Tuple>(__t),
