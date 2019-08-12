@@ -227,6 +227,13 @@ package body Exp_SPARK is
             end if;
          end;
 
+      elsif Attr_Id = Attribute_Object_Size
+        or else Attr_Id = Attribute_Size
+        or else Attr_Id = Attribute_Value_Size
+        or else Attr_Id = Attribute_VADS_Size
+      then
+         Exp_Attr.Expand_Size_Attribute (N);
+
       --  For attributes which return Universal_Integer, introduce a conversion
       --  to the expected type with the appropriate check flags set.
 
@@ -241,10 +248,6 @@ package body Exp_SPARK is
         or else Attr_Id = Attribute_Pos
         or else Attr_Id = Attribute_Position
         or else Attr_Id = Attribute_Range_Length
-        or else Attr_Id = Attribute_Object_Size
-        or else Attr_Id = Attribute_Size
-        or else Attr_Id = Attribute_Value_Size
-        or else Attr_Id = Attribute_VADS_Size
         or else Attr_Id = Attribute_Aft
         or else Attr_Id = Attribute_Max_Alignment_For_Allocation
       then

@@ -3598,8 +3598,8 @@ package body Exp_Attr is
       --    Result_Type (System.Fore (Universal_Real (Type'First)),
       --                              Universal_Real (Type'Last))
 
-      --  Note that we know that the type is a non-static subtype, or Fore
-      --  would have itself been computed dynamically in Eval_Attribute.
+      --  Note that we know that the type is a nonstatic subtype, or Fore would
+      --  have itself been computed dynamically in Eval_Attribute.
 
       when Attribute_Fore =>
          Rewrite (N,
@@ -5849,7 +5849,6 @@ package body Exp_Attr is
          | Attribute_VADS_Size
       =>
          Size : declare
-            Siz      : Uint;
             New_Node : Node_Id;
 
          begin
@@ -5961,128 +5960,12 @@ package body Exp_Attr is
                Rewrite (N, New_Node);
                Analyze_And_Resolve (N, Typ);
                return;
-
-            --  Case of known RM_Size of a type
-
-            elsif (Id = Attribute_Size or else Id = Attribute_Value_Size)
-              and then Is_Entity_Name (Pref)
-              and then Is_Type (Entity (Pref))
-              and then Known_Static_RM_Size (Entity (Pref))
-            then
-               Siz := RM_Size (Entity (Pref));
-
-            --  Case of known Esize of a type
-
-            elsif Id = Attribute_Object_Size
-              and then Is_Entity_Name (Pref)
-              and then Is_Type (Entity (Pref))
-              and then Known_Static_Esize (Entity (Pref))
-            then
-               Siz := Esize (Entity (Pref));
-
-            --  Case of known size of object
-
-            elsif Id = Attribute_Size
-              and then Is_Entity_Name (Pref)
-              and then Is_Object (Entity (Pref))
-              and then Known_Esize (Entity (Pref))
-              and then Known_Static_Esize (Entity (Pref))
-            then
-               Siz := Esize (Entity (Pref));
-
-            --  For an array component, we can do Size in the front end if the
-            --  component_size of the array is set.
-
-            elsif Nkind (Pref) = N_Indexed_Component then
-               Siz := Component_Size (Etype (Prefix (Pref)));
-
-            --  For a record component, we can do Size in the front end if
-            --  there is a component clause, or if the record is packed and the
-            --  component's size is known at compile time.
-
-            elsif Nkind (Pref) = N_Selected_Component then
-               declare
-                  Rec  : constant Entity_Id := Etype (Prefix (Pref));
-                  Comp : constant Entity_Id := Entity (Selector_Name (Pref));
-
-               begin
-                  if Present (Component_Clause (Comp)) then
-                     Siz := Esize (Comp);
-
-                  elsif Is_Packed (Rec) then
-                     Siz := RM_Size (Ptyp);
-
-                  else
-                     Apply_Universal_Integer_Attribute_Checks (N);
-                     return;
-                  end if;
-               end;
-
-            --  All other cases are handled by the back end
-
-            else
-               Apply_Universal_Integer_Attribute_Checks (N);
-
-               --  If Size is applied to a formal parameter that is of a packed
-               --  array subtype, then apply Size to the actual subtype.
-
-               if Is_Entity_Name (Pref)
-                 and then Is_Formal (Entity (Pref))
-                 and then Is_Array_Type (Ptyp)
-                 and then Is_Packed (Ptyp)
-               then
-                  Rewrite (N,
-                    Make_Attribute_Reference (Loc,
-                      Prefix         =>
-                        New_Occurrence_Of (Get_Actual_Subtype (Pref), Loc),
-                      Attribute_Name => Name_Size));
-                  Analyze_And_Resolve (N, Typ);
-               end if;
-
-               --  If Size applies to a dereference of an access to
-               --  unconstrained packed array, the back end needs to see its
-               --  unconstrained nominal type, but also a hint to the actual
-               --  constrained type.
-
-               if Nkind (Pref) = N_Explicit_Dereference
-                 and then Is_Array_Type (Ptyp)
-                 and then not Is_Constrained (Ptyp)
-                 and then Is_Packed (Ptyp)
-               then
-                  Set_Actual_Designated_Subtype (Pref,
-                    Get_Actual_Subtype (Pref));
-               end if;
-
-               return;
             end if;
 
-            --  Common processing for record and array component case
+            --  Call Expand_Size_Attribute to do the final part of the
+            --  expansion which is shared with GNATprove expansion.
 
-            if Siz /= No_Uint and then Siz /= 0 then
-               declare
-                  CS : constant Boolean := Comes_From_Source (N);
-
-               begin
-                  Rewrite (N, Make_Integer_Literal (Loc, Siz));
-
-                  --  This integer literal is not a static expression. We do
-                  --  not call Analyze_And_Resolve here, because this would
-                  --  activate the circuit for deciding that a static value
-                  --  was out of range, and we don't want that.
-
-                  --  So just manually set the type, mark the expression as
-                  --  non-static, and then ensure that the result is checked
-                  --  properly if the attribute comes from source (if it was
-                  --  internally generated, we never need a constraint check).
-
-                  Set_Etype (N, Typ);
-                  Set_Is_Static_Expression (N, False);
-
-                  if CS then
-                     Apply_Constraint_Check (N, Typ);
-                  end if;
-               end;
-            end if;
+            Expand_Size_Attribute (N);
          end Size;
 
       ------------------
@@ -7607,6 +7490,140 @@ package body Exp_Attr is
              Reason => CE_Overflow_Check_Failed));
       end if;
    end Expand_Pred_Succ_Attribute;
+
+   ---------------------------
+   -- Expand_Size_Attribute --
+   ---------------------------
+
+   procedure Expand_Size_Attribute (N : Node_Id) is
+      Loc   : constant Source_Ptr   := Sloc (N);
+      Typ   : constant Entity_Id    := Etype (N);
+      Pref  : constant Node_Id      := Prefix (N);
+      Ptyp  : constant Entity_Id    := Etype (Pref);
+      Id    : constant Attribute_Id := Get_Attribute_Id (Attribute_Name (N));
+      Siz   : Uint;
+
+   begin
+      --  Case of known RM_Size of a type
+
+      if (Id = Attribute_Size or else Id = Attribute_Value_Size)
+        and then Is_Entity_Name (Pref)
+        and then Is_Type (Entity (Pref))
+        and then Known_Static_RM_Size (Entity (Pref))
+      then
+         Siz := RM_Size (Entity (Pref));
+
+      --  Case of known Esize of a type
+
+      elsif Id = Attribute_Object_Size
+        and then Is_Entity_Name (Pref)
+        and then Is_Type (Entity (Pref))
+        and then Known_Static_Esize (Entity (Pref))
+      then
+         Siz := Esize (Entity (Pref));
+
+      --  Case of known size of object
+
+      elsif Id = Attribute_Size
+        and then Is_Entity_Name (Pref)
+        and then Is_Object (Entity (Pref))
+        and then Known_Esize (Entity (Pref))
+        and then Known_Static_Esize (Entity (Pref))
+      then
+         Siz := Esize (Entity (Pref));
+
+      --  For an array component, we can do Size in the front end if the
+      --  component_size of the array is set.
+
+      elsif Nkind (Pref) = N_Indexed_Component then
+         Siz := Component_Size (Etype (Prefix (Pref)));
+
+      --  For a record component, we can do Size in the front end if there is a
+      --  component clause, or if the record is packed and the component's size
+      --  is known at compile time.
+
+      elsif Nkind (Pref) = N_Selected_Component then
+         declare
+            Rec  : constant Entity_Id := Etype (Prefix (Pref));
+            Comp : constant Entity_Id := Entity (Selector_Name (Pref));
+
+         begin
+            if Present (Component_Clause (Comp)) then
+               Siz := Esize (Comp);
+
+            elsif Is_Packed (Rec) then
+               Siz := RM_Size (Ptyp);
+
+            else
+               Apply_Universal_Integer_Attribute_Checks (N);
+               return;
+            end if;
+         end;
+
+      --  All other cases are handled by the back end
+
+      else
+         Apply_Universal_Integer_Attribute_Checks (N);
+
+         --  If Size is applied to a formal parameter that is of a packed
+         --  array subtype, then apply Size to the actual subtype.
+
+         if Is_Entity_Name (Pref)
+           and then Is_Formal (Entity (Pref))
+           and then Is_Array_Type (Ptyp)
+           and then Is_Packed (Ptyp)
+         then
+            Rewrite (N,
+              Make_Attribute_Reference (Loc,
+                Prefix         =>
+                  New_Occurrence_Of (Get_Actual_Subtype (Pref), Loc),
+                Attribute_Name => Name_Size));
+            Analyze_And_Resolve (N, Typ);
+         end if;
+
+         --  If Size applies to a dereference of an access to unconstrained
+         --  packed array, the back end needs to see its unconstrained nominal
+         --  type, but also a hint to the actual constrained type.
+
+         if Nkind (Pref) = N_Explicit_Dereference
+           and then Is_Array_Type (Ptyp)
+           and then not Is_Constrained (Ptyp)
+           and then Is_Packed (Ptyp)
+         then
+            Set_Actual_Designated_Subtype (Pref, Get_Actual_Subtype (Pref));
+         end if;
+
+         return;
+      end if;
+
+      --  Common processing for record and array component case
+
+      if Siz /= No_Uint and then Siz /= 0 then
+         declare
+            CS : constant Boolean := Comes_From_Source (N);
+
+         begin
+            Rewrite (N, Make_Integer_Literal (Loc, Siz));
+
+            --  This integer literal is not a static expression. We do not
+            --  call Analyze_And_Resolve here, because this would activate
+            --  the circuit for deciding that a static value was out of range,
+            --  and we don't want that.
+
+            --  So just manually set the type, mark the expression as
+            --  nonstatic, and then ensure that the result is checked
+            --  properly if the attribute comes from source (if it was
+            --  internally generated, we never need a constraint check).
+
+            Set_Etype (N, Typ);
+            Set_Is_Static_Expression (N, False);
+
+            if CS then
+               Apply_Constraint_Check (N, Typ);
+            end if;
+         end;
+      end if;
+   end Expand_Size_Attribute;
 
    -----------------------------
    -- Expand_Update_Attribute --
