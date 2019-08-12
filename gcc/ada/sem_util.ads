@@ -25,6 +25,7 @@
 
 --  Package containing utility procedures used throughout the semantics
 
+with Atree;   use Atree;
 with Einfo;   use Einfo;
 with Exp_Tss; use Exp_Tss;
 with Namet;   use Namet;
@@ -2810,6 +2811,22 @@ package Sem_Util is
    procedure Transfer_Entities (From : Entity_Id; To : Entity_Id);
    --  Move a list of entities from one scope to another, and recompute
    --  Is_Public based upon the new scope.
+
+   generic
+      with function Process (N : Node_Id) return Traverse_Result is <>;
+   function Traverse_More_Func (Node : Node_Id) return Traverse_Final_Result;
+   --  This is a version of Atree.Traverse_Func that not only traverses
+   --  syntactic children of nodes, but also semantic children which are
+   --  logically children of the node. This concerns currently lists of
+   --  action nodes and ranges under Itypes, both inserted by the compiler.
+
+   generic
+      with function Process (N : Node_Id) return Traverse_Result is <>;
+   procedure Traverse_More_Proc (Node : Node_Id);
+   pragma Inline (Traverse_More_Proc);
+   --  This is the same as Traverse_More_Func except that no result is
+   --  returned, i.e. Traverse_More_Func is called and the result is simply
+   --  discarded.
 
    function Type_Access_Level (Typ : Entity_Id) return Uint;
    --  Return the accessibility level of Typ
