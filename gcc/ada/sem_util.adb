@@ -26,7 +26,6 @@
 with Treepr; -- ???For debugging code below
 
 with Aspects;  use Aspects;
-with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -25436,6 +25435,205 @@ package body Sem_Util is
          Set_Last_Entity  (From, Empty);
       end if;
    end Transfer_Entities;
+
+   ------------------------
+   -- Traverse_More_Func --
+   ------------------------
+
+   function Traverse_More_Func (Node : Node_Id) return Traverse_Final_Result is
+
+      Processing_Itype : Boolean := False;
+      --  Set to True while traversing the nodes under an Itype, to prevent
+      --  looping on Itype handling during that traversal.
+
+      function Process_More (N : Node_Id) return Traverse_Result;
+      --  Wrapper over the Process callback to handle parts of the AST that
+      --  are not normally traversed as syntactic children.
+
+      function Traverse_Rec (N : Node_Id) return Traverse_Final_Result;
+      --  Main recursive traversal implemented as an instantiation of
+      --  Traverse_Func over a modified Process callback.
+
+      ------------------
+      -- Process_More --
+      ------------------
+
+      function Process_More (N : Node_Id) return Traverse_Result is
+
+         procedure Traverse_More (N   : Node_Id;
+                                  Res : in out Traverse_Result);
+         procedure Traverse_More (L   : List_Id;
+                                  Res : in out Traverse_Result);
+         --  Traverse a node or list and update the traversal result to value
+         --  Abandon when needed.
+
+         -------------------
+         -- Traverse_More --
+         -------------------
+
+         procedure Traverse_More (N   : Node_Id;
+                                  Res : in out Traverse_Result)
+         is
+         begin
+            --  Do not process any more nodes if Abandon was reached
+
+            if Res = Abandon then
+               return;
+            end if;
+
+            if Traverse_Rec (N) = Abandon then
+               Res := Abandon;
+            end if;
+         end Traverse_More;
+
+         procedure Traverse_More (L   : List_Id;
+                                  Res : in out Traverse_Result)
+         is
+            N : Node_Id := First (L);
+
+         begin
+            --  Do not process any more nodes if Abandon was reached
+
+            if Res = Abandon then
+               return;
+            end if;
+
+            while Present (N) loop
+               Traverse_More (N, Res);
+               Next (N);
+            end loop;
+         end Traverse_More;
+
+         --  Local variables
+
+         Node   : Node_Id;
+         Result : Traverse_Result;
+
+      --  Start of processing for Process_More
+
+      begin
+         --  Initial callback to Process. Return immediately on Skip/Abandon.
+         --  Otherwise update the value of Node for further processing of
+         --  non-syntactic children.
+
+         Result := Process (N);
+
+         case Result is
+            when OK      => Node := N;
+            when OK_Orig => Node := Original_Node (N);
+            when Skip    => return Skip;
+            when Abandon => return Abandon;
+         end case;
+
+         --  Process the relevant semantic children which are a logical part of
+         --  the AST under this node before returning for the processing of
+         --  syntactic children.
+
+         --  Start with all non-syntactic lists of action nodes
+
+         case Nkind (Node) is
+            when N_Component_Association =>
+               Traverse_More (Loop_Actions (Node),      Result);
+
+            when N_Elsif_Part =>
+               Traverse_More (Condition_Actions (Node), Result);
+
+            when N_Short_Circuit =>
+               Traverse_More (Actions (Node),           Result);
+
+            when N_Case_Expression_Alternative =>
+               Traverse_More (Actions (Node),           Result);
+
+            when N_Iteration_Scheme =>
+               Traverse_More (Condition_Actions (Node), Result);
+
+            when N_If_Expression =>
+               Traverse_More (Then_Actions (Node),      Result);
+               Traverse_More (Else_Actions (Node),      Result);
+
+            --  Various nodes have a field Actions as a syntactic node,
+            --  so it will be traversed in the regular syntactic traversal.
+
+            when N_Compilation_Unit_Aux
+               | N_Compound_Statement
+               | N_Expression_With_Actions
+               | N_Freeze_Entity
+            =>
+               null;
+
+            when others =>
+               null;
+         end case;
+
+         --  Then process unattached nodes which come from Itypes. This only
+         --  concerns currently ranges of scalar (possibly as index) types.
+         --  This traversal is protected against looping with Processing_Itype.
+
+         if not Processing_Itype
+           and then Nkind (Node) in N_Has_Etype
+           and then Present (Etype (Node))
+           and then Is_Itype (Etype (Node))
+         then
+            declare
+               Typ : constant Entity_Id := Etype (Node);
+            begin
+               Processing_Itype := True;
+
+               case Ekind (Typ) is
+                  when Scalar_Kind =>
+                     Traverse_More (Scalar_Range (Typ), Result);
+
+                  when Array_Kind =>
+                     declare
+                        Index : Node_Id := First_Index (Typ);
+                        Rng   : Node_Id;
+                     begin
+                        while Present (Index) loop
+                           if Nkind (Index) in N_Has_Entity then
+                              Rng := Scalar_Range (Entity (Index));
+                           else
+                              Rng := Index;
+                           end if;
+
+                           Traverse_More (Rng,          Result);
+                           Next_Index (Index);
+                        end loop;
+                     end;
+                  when others =>
+                     null;
+               end case;
+
+               Processing_Itype := False;
+            end;
+         end if;
+
+         return Result;
+      end Process_More;
+
+      --  Define Traverse_Rec as a renaming of the instantiation, as an
+      --  instantiation cannot complete a previous spec.
+
+      function Traverse_Recursive is new Traverse_Func (Process_More);
+      function Traverse_Rec (N : Node_Id) return Traverse_Final_Result
+                             renames Traverse_Recursive;
+
+   --  Start of processing for Traverse_More_Func
+
+   begin
+      return Traverse_Rec (Node);
+   end Traverse_More_Func;
+
+   ------------------------
+   -- Traverse_More_Proc --
+   ------------------------
+
+   procedure Traverse_More_Proc (Node : Node_Id) is
+      function Traverse is new Traverse_More_Func (Process);
+      Discard : Traverse_Final_Result;
+      pragma Warnings (Off, Discard);
+   begin
+      Discard := Traverse (Node);
+   end Traverse_More_Proc;
 
    -----------------------
    -- Type_Access_Level --
