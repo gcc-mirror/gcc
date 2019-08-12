@@ -738,7 +738,8 @@ package GNAT.Command_Line is
      (Config      : Command_Line_Configuration;
       Callback    : Switch_Handler := null;
       Parser      : Opt_Parser := Command_Line_Parser;
-      Concatenate : Boolean := True);
+      Concatenate : Boolean := True;
+      Quiet       : Boolean := False);
    --  Similar to the standard Getopt function. For each switch found on the
    --  command line, this calls Callback, if the switch is not handled
    --  automatically.
@@ -756,6 +757,7 @@ package GNAT.Command_Line is
    --  to display the help message and raises Exit_From_Command_Line.
    --  If an invalid switch is specified on the command line, this procedure
    --  will display an error message and raises Invalid_Switch again.
+   --  If the Quiet parameter is True then the error message is not displayed.
    --
    --  This function automatically expands switches:
    --
