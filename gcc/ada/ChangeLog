@@ -1,5 +1,17 @@
 2019-08-12  Yannick Moy  <moy@adacore.com>
 
+	* exp_attr.adb, exp_attr.ads (Expand_Size_Attribute): New
+	procedure to share part of the attribute expansion with
+	GNATprove mode.
+	(Expand_N_Attribute_Reference): Extract part of the
+	Size/Object_Size expansion in the new procedure
+	Expand_Size_Attribute.
+	* exp_spark.adb (Expand_SPARK_N_Attribute_Reference): Expand
+	Size/Object_Size attributes using the new procedure
+	Expand_Size_Attribute.
+
+2019-08-12  Yannick Moy  <moy@adacore.com>
+
 	* exp_spark.adb (Expand_SPARK_N_Attribute_Reference): Only
 	expand Enum_Rep attribute when its parameter is a literal.
 
