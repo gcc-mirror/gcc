@@ -25565,11 +25565,13 @@ package body Sem_Util is
                null;
          end case;
 
-         --  Then process unattached nodes which come from Itypes. This only
-         --  concerns currently ranges of scalar (possibly as index) types.
-         --  This traversal is protected against looping with Processing_Itype.
+         --  If Process_Itypes is True, process unattached nodes which come
+         --  from Itypes. This only concerns currently ranges of scalar
+         --  (possibly as index) types. This traversal is protected against
+         --  looping with Processing_Itype.
 
-         if not Processing_Itype
+         if Process_Itypes
+           and then not Processing_Itype
            and then Nkind (Node) in N_Has_Etype
            and then Present (Etype (Node))
            and then Is_Itype (Etype (Node))
@@ -25628,7 +25630,7 @@ package body Sem_Util is
    ------------------------
 
    procedure Traverse_More_Proc (Node : Node_Id) is
-      function Traverse is new Traverse_More_Func (Process);
+      function Traverse is new Traverse_More_Func (Process, Process_Itypes);
       Discard : Traverse_Final_Result;
       pragma Warnings (Off, Discard);
    begin
