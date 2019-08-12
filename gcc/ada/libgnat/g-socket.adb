@@ -1797,7 +1797,7 @@ package body GNAT.Sockets is
          end if;
       end loop;
 
-      return Colons <= 8;
+      return Colons in 2 .. 8;
    end Is_IPv6_Address;
 
    ---------------------

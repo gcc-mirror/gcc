@@ -1,5 +1,10 @@
 2019-08-12  Dmitriy Anisimkov  <anisimko@adacore.com>
 
+	* libgnat/g-socket.adb (Is_IPv6_Address): Check that no less
+	then 2 colons in IPv6 numeric address.
+
+2019-08-12  Dmitriy Anisimkov  <anisimko@adacore.com>
+
 	* libgnat/g-comlin.ads, libgnat/g-comlin.adb (Getopt): Add
 	parameter Quiet. Need to do not output error messages to
 	console. Invalid_Switch exception generation surrounded by an
