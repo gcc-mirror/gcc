@@ -1,3 +1,7 @@
+2019-08-12  Release Manager
+
+	* GCC 9.2.0 released.
+
 2019-07-25  Richard Biener  <rguenther@suse.de>
 
 	PR lto/90924
