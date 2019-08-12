@@ -3636,10 +3636,15 @@ package body Sem_Ch5 is
             then
                Rng := Range_Expression (Constraint (Rng));
 
-               --  Preanalyze the bounds of the range constraint
+               --  Preanalyze the bounds of the range constraint, setting
+               --  parent fields to associate the copied bounds with the range,
+               --  allowing proper tree climbing during preanalysis.
 
                Low  := New_Copy_Tree (Low_Bound  (Rng));
                High := New_Copy_Tree (High_Bound (Rng));
+
+               Set_Parent (Low, Rng);
+               Set_Parent (High, Rng);
 
                Preanalyze (Low);
                Preanalyze (High);

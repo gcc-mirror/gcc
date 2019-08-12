@@ -1,3 +1,10 @@
+2019-08-12  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch5.adb (Prepare_Param_Spec_Loop): Set the parents of the
+	copied low and high bounds in the case where the loop range is
+	given by a discrete_subtype_indication, to prevent hanging (or
+	Assert_Failure) in Insert_Actions.
+
 2019-08-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (heck_Untagged_Equality): Verify that user-defined
