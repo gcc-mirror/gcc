@@ -1,5 +1,8 @@
 2019-08-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/90361
+	* src/c++17/string-inst.cc: Use _GLIBCXX_USE_CXX11_ABI=1 by default.
+
 	* include/std/tuple (__unpack_std_tuple): New variable template and
 	partial specializations.
 	(apply, make_from_tuple): Add noexcept-specifier.
