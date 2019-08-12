@@ -127,7 +127,7 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	calloc.c choose-temp.c clock.c concat.c cp-demangle.c		\
 	 cp-demint.c cplus-dem.c crc32.c				\
 	d-demangle.c dwarfnames.c dyn-string.c				\
-	fdmatch.c ffs.c fibheap.c filename_cmp.c floatformat.c		\
+	fdmatch.c ffs.c fibheap.c filedescriptor.c filename_cmp.c floatformat.c		\
 	fnmatch.c fopen_unlocked.c					\
 	getcwd.c getopt.c getopt1.c getpagesize.c getpwd.c getruntime.c	\
          gettimeofday.c                                                 \
@@ -171,6 +171,7 @@ REQUIRED_OFILES =							\
 	./cp-demint.$(objext) ./crc32.$(objext) ./d-demangle.$(objext)	\
 	./dwarfnames.$(objext) ./dyn-string.$(objext)			\
 	./fdmatch.$(objext) ./fibheap.$(objext)				\
+	./filedescriptor.$(objext)	\
 	./filename_cmp.$(objext) ./floatformat.$(objext)		\
 	./fnmatch.$(objext) ./fopen_unlocked.$(objext)			\
 	./getopt.$(objext) ./getopt1.$(objext) ./getpwd.$(objext)	\
@@ -755,6 +756,17 @@ $(CONFIGURED_OFILES): stamp-picdir stamp-noasandir
 	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/fibheap.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/fibheap.c $(OUTPUT_OPTION)
+
+./filedescriptor.$(objext): $(srcdir)/filedescriptor.c config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/libiberty.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/filedescriptor.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/filedescriptor.c -o noasan/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/filedescriptor.c $(OUTPUT_OPTION)
+
 
 ./filename_cmp.$(objext): $(srcdir)/filename_cmp.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/filenames.h $(INCDIR)/hashtab.h \
