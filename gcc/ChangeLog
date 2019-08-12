@@ -1,3 +1,13 @@
+2019-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/83250
+	PR target/91340
+	* config/i386/avxintrin.h (_mm256_zextpd128_pd256,
+	_mm256_zextps128_ps256, _mm256_zextsi128_si256): New intrinsics.
+	* config/i386/avx512fintrin.h (_mm512_zextpd128_pd512,
+	_mm512_zextps128_ps512, _mm512_zextsi128_si512, _mm512_zextpd256_pd512,
+	_mm512_zextps256_ps512, _mm512_zextsi256_si512): Likewise.
+
 2019-08-12  Richard Biener  <rguenther@suse.de>
 
 	PR lto/91375
