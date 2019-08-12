@@ -549,7 +549,7 @@ add_condition (class ipa_fn_summary *summary, int operand_num,
   for (i = 0; vec_safe_iterate (summary->conds, i, &c); i++)
     {
       if (c->operand_num == operand_num
-	  && maybe_ne (c->size, size)
+	  && known_eq (c->size, size)
 	  && c->code == code
 	  && c->val == val
 	  && c->agg_contents == agg_contents
