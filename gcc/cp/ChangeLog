@@ -1,3 +1,9 @@
+2019-08-12  Tom Honermann  <tom@honermann.net>
+
+	* parser.c (cp_parser_template_declaration_after_parameters): Enable
+	class template argument deduction for non-type template parameters
+	in literal operator templates.
+
 2019-08-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/91378 - ICE with noexcept and auto return type.
