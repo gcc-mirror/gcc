@@ -1,3 +1,13 @@
+2019-08-02  Tom Honermann  <tom@honermann.net>
+
+	PR c++/88095
+	* g++.dg/cpp2a/udlit-class-nttp-ctad.C: New test.
+	* g++.dg/cpp2a/udlit-class-nttp-ctad-neg.C: New test.
+	* g++.dg/cpp2a/udlit-class-nttp-ctad-neg2.C: New test.
+	* g++.dg/cpp2a/udlit-class-nttp.C: New test.
+	* g++.dg/cpp2a/udlit-class-nttp-neg.C: New test.
+	* g++.dg/cpp2a/udlit-class-nttp-neg2.C: New test.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.
