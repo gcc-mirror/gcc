@@ -1,3 +1,9 @@
+2019-08-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (heck_Untagged_Equality): Verify that user-defined
+	equality has the same profile as the predefined equality before
+	applying legality rule in RM 4.5.2 (9.8).
+
 2019-08-12  Bob Duff  <duff@adacore.com>
 
 	* libgnat/a-except.ads: Update obsolete comment, still making

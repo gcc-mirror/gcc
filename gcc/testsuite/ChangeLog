@@ -1,3 +1,7 @@
+2019-08-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/equal10.adb, gnat.dg/equal10.ads: New testcase.
+
 2019-08-12  Gary Dismukes  <dismukes@adacore.com>
 
 	* gnat.dg/suppress_initialization2.adb,
