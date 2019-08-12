@@ -14669,6 +14669,7 @@ package body Sem_Util is
       return
         Nkind (E) = N_Function_Call
           and then not Configurable_Run_Time_Mode
+          and then Nkind (Original_Node (E)) = N_Attribute_Reference
           and then (Entity (Name (E)) = RTE (RE_Get_Ceiling)
                      or else Entity (Name (E)) = RTE (RO_PE_Get_Ceiling));
    end Is_Expanded_Priority_Attribute;

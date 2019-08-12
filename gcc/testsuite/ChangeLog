@@ -1,3 +1,7 @@
+2019-08-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/renaming15.adb: New testcase.
+
 2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/slice10.adb: New testcase.
