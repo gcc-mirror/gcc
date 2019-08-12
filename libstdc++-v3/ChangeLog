@@ -1,3 +1,11 @@
+2019-08-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple (__unpack_std_tuple): New variable template and
+	partial specializations.
+	(apply, make_from_tuple): Add noexcept-specifier.
+	* testsuite/20_util/tuple/apply/2.cc: New test.
+	* testsuite/20_util/tuple/make_from_tuple/2.cc: New test.
+
 2019-08-09  Corentin Gay  <gay@adacore.com>
 
 	* testsuite/ext/random/beta_distribution/operators/serialize.cc,
