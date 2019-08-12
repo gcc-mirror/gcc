@@ -924,6 +924,10 @@ gfc_check_all_any (gfc_expr *mask, gfc_expr *dim)
 }
 
 
+/* Limited checking for ALLOCATED intrinsic.  Additional checking
+   is performed in intrinsic.c(sort_actual), because ALLOCATED
+   has two mutually exclusive non-optional arguments.  */
+
 bool
 gfc_check_allocated (gfc_expr *array)
 {
