@@ -24169,7 +24169,7 @@ package body Sem_Prag is
                   Error_Pragma_Arg
                     ("argument of pragma% cannot be an incomplete type", Arg1);
                else
-                  Set_Suppress_Initialization (Full_View (Base_Type (E)));
+                  Set_Suppress_Initialization (Full_View (E));
                end if;
 
             --  For first subtype, set flag on base type
