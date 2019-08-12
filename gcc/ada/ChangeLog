@@ -1,3 +1,10 @@
+2019-08-12  Justin Squirek  <squirek@adacore.com>
+
+	* sem_eval.adb (Check_Non_Static_Context): Add a condition to
+	determine if a range violation constitues a warning or an error.
+	(Out_Of_Range): Add a condition to determine if a range
+	violation constitues a warning or an error.
+
 2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch4.adb (Real_Range_Check): Do not rewrite the conversion
