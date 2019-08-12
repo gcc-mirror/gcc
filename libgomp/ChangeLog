@@ -1,3 +1,9 @@
+2019-08-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91422
+	* testsuite/libgomp.oacc-fortran/routine-7.f90: Correct array
+	dimension.
+
 2019-08-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* target.c (gomp_map_vars_internal): For GOMP_MAP_USE_DEVICE_PTR
@@ -32,9 +38,9 @@
 
 2019-07-23  Steven G. Kargl  <kargl@gcc.gnu.org>
 
-	* testsuite/libgomp.fortran/reduction4.f90: Update BOZ usage
+	* testsuite/libgomp.fortran/reduction4.f90: Update BOZ usage.
 	* testsuite/libgomp.fortran/reduction5.f90: Ditto.
-	
+
 2019-07-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/loop-1.c: New test.
