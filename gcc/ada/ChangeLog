@@ -1,5 +1,10 @@
 2019-08-12  Yannick Moy  <moy@adacore.com>
 
+	* sem_util.adb, sem_util.ads (Traverse_More_Func,
+	Traverse_More_Proc): Add formal parameter for Itypes traversal.
+
+2019-08-12  Yannick Moy  <moy@adacore.com>
+
 	* exp_attr.adb, exp_attr.ads (Expand_Size_Attribute): New
 	procedure to share part of the attribute expansion with
 	GNATprove mode.

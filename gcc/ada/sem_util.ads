@@ -2814,14 +2814,17 @@ package Sem_Util is
 
    generic
       with function Process (N : Node_Id) return Traverse_Result is <>;
+      Process_Itypes : Boolean := False;
    function Traverse_More_Func (Node : Node_Id) return Traverse_Final_Result;
    --  This is a version of Atree.Traverse_Func that not only traverses
    --  syntactic children of nodes, but also semantic children which are
    --  logically children of the node. This concerns currently lists of
    --  action nodes and ranges under Itypes, both inserted by the compiler.
+   --  Itypes are only traversed when Process_Itypes is True.
 
    generic
       with function Process (N : Node_Id) return Traverse_Result is <>;
+      Process_Itypes : Boolean := False;
    procedure Traverse_More_Proc (Node : Node_Id);
    pragma Inline (Traverse_More_Proc);
    --  This is the same as Traverse_More_Func except that no result is
