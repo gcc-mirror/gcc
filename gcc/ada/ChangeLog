@@ -1,3 +1,10 @@
+2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Activate_Range_Check): Remove redundant argument.
+	(Generate_Range_Check): Likewise.
+	(Apply_Float_Conversion_Check): Reset the Do_Range_Check flag on
+	entry and remove redundant condition.
+
 2019-08-02  Alexandre Oliva  <oliva@adacore.com>
 
 	* libgnat/a-exexpr.adb (Begin_Handler_v1, End_Handler_v1): New.

@@ -445,7 +445,7 @@ package body Checks is
 
    procedure Activate_Range_Check (N : Node_Id) is
    begin
-      Set_Do_Range_Check (N, True);
+      Set_Do_Range_Check (N);
       Possible_Local_Raise (N, Standard_Constraint_Error);
    end Activate_Range_Check;
 
@@ -2031,6 +2031,12 @@ package body Checks is
          return;
       end if;
 
+      --  Here we will generate an explicit range check, so we don't want to
+      --  set the Do_Range check flag, since the range check is taken care of
+      --  by the code we will generate.
+
+      Set_Do_Range_Check (Ck_Node, False);
+
       if not Compile_Time_Known_Value (LB)
           or not Compile_Time_Known_Value (HB)
       then
@@ -2079,7 +2085,6 @@ package body Checks is
       if Nkind (Ck_Node) = N_Real_Literal
         and then Etype (Ck_Node) = Universal_Real
         and then Is_Integer_Type (Target_Typ)
-        and then Nkind (Parent (Ck_Node)) = N_Type_Conversion
       then
          declare
             Int_Val : constant Uint := UR_To_Uint (Realval (Ck_Node));
@@ -6936,7 +6941,7 @@ package body Checks is
       --  flag set, we do not want to generate the explicit range check code.
 
       if GNATprove_Mode or else not Expander_Active then
-         Set_Do_Range_Check (N, True);
+         Set_Do_Range_Check (N);
          return;
       end if;
 
