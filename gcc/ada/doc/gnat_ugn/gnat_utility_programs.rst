@@ -1797,9 +1797,6 @@ Alternatively, you may run the script using the following command line:
   .. index:: ! gnatmetric
   .. index:: Metric tool
 
-  This documentation is for the new libadalang-based version
-  of ``gnatmetric``, which replaces the ASIS-based version.
-
   The ``gnatmetric`` tool is a utility
   for computing various program metrics.
   It takes an Ada source file as input and generates a file containing the
@@ -1822,14 +1819,16 @@ Alternatively, you may run the script using the following command line:
   * ``switches`` specify the metrics to compute and define the destination for
     the output
 
-  * Each ``filename`` is the name (including the extension) of a source
-    file to process. 'Wildcards' are allowed, and
-    the file name may contain path information.
-    If no ``filename`` is supplied, then the ``switches`` list must contain
-    at least one
-    :switch:`--files` switch (see :ref:`Other_gnatmetric_Switches`).
-    Including both a :switch:`--files` switch and one or more
-    ``filename`` arguments is permitted.
+  * Each ``filename`` is the name of a source file to process. 'Wildcards' are
+    allowed, and the file name may contain path information.  If no
+    ``filename`` is supplied, then the ``switches`` list must contain at least
+    one :switch:`--files` switch (see :ref:`Other_gnatmetric_Switches`).
+    Including both a :switch:`--files` switch and one or more ``filename``
+    arguments is permitted.
+
+    Note that it is no longer necessary to specify the Ada language version;
+    ``gnatmetric`` can process Ada source code written in any version from
+    Ada 83 onward without specifying any language version switch.
 
   The following subsections describe the various switches accepted by
   ``gnatmetric``, organized by category.
@@ -1927,6 +1926,16 @@ Alternatively, you may run the script using the following command line:
     path. The :switch:`--short-file-names` switch causes ``gnatmetric``
     to exclude all directory information from the file names that are
     output.)
+
+   .. index:: --wide-character-encoding (gnatmetric)
+
+   :switch:`--wide-character-encoding={e}`
+     Specify the wide character encoding method for the input and output
+     files. ``e`` is one of the following:
+
+     * *8* - UTF-8 encoding
+
+     * *b* - Brackets encoding (default value)
 
 
   .. index:: Disable Metrics For Local Units in gnatmetric
@@ -2811,6 +2820,11 @@ Alternatively, you may run the script using the following command line:
   :switch:`-sfn`
     :switch:`--short-file-names`
 
+  .. index:: -W (gnatsmetric)
+
+  :switch:`-W{e}`
+    :switch:`--wide-character-encoding={e}`
+
   .. index:: -nolocal (gnatmetric)
 
   :switch:`-nolocal`
@@ -2846,9 +2860,6 @@ Alternatively, you may run the script using the following command line:
    .. index:: ! gnatpp
    .. index:: pretty printer
 
-   This documentation is for the new libadalang-based version
-   of ``gnatpp``, which replaces the ASIS-based version.
-
    The ``gnatpp`` tool is a utility for source reformatting / pretty
    printing. It takes an Ada source file as input and generates a
    reformatted version as output. You can specify various style
@@ -2879,6 +2890,10 @@ Alternatively, you may run the script using the following command line:
      or several file names on the same gnatpp command are allowed. The
      file name may contain path information; it does not have to follow
      the GNAT file naming rules
+
+     Note that it is no longer necessary to specify the Ada language version;
+     ``gnatpp`` can process Ada source code written in any version from
+     Ada 83 onward without specifying any language version switch.
 
 
    .. _Switches_for_gnatpp:
@@ -3633,30 +3648,6 @@ Alternatively, you may run the script using the following command line:
    all the immediate units of the argument project.
 
 
-   .. index:: --gnat83 (gnatpp)
-
-   :switch:`--gnat83`
-     Ada 83 mode
-
-
-   .. index:: --gnat95 (gnatpp)
-
-   :switch:`--gnat95`
-     Ada 95 mode
-
-
-   .. index:: --gnat2005 (gnatpp)
-
-   :switch:`--gnat2005`
-     Ada 2005 mode
-
-
-   .. index:: --gnat2012 (gnatpp)
-
-   :switch:`--gnat2012`
-     Ada 2012 mode
-
-
    .. _Formatting_Rules:
 
    Formatting Rules
@@ -4243,6 +4234,10 @@ Alternatively, you may run the script using the following command line:
       or creates the name file to generate using the standard GNAT
       naming conventions.
 
+      Note that it is no longer necessary to specify the Ada language version;
+      ``gnatmetric`` can process Ada source code written in any version from
+      Ada 83 onward without specifying any language version switch.
+
   * *switches*
       is an optional sequence of switches as described in the next section
 
@@ -4400,30 +4395,6 @@ Alternatively, you may run the script using the following command line:
     * *8* - UTF-8 encoding
 
     * *b* - Brackets encoding (default value)
-
-
-  .. index:: --gnat83 (gnatstub)
-
-  :switch:`--gnat83`
-    Ada 83 mode
-
-
-  .. index:: --gnat95 (gnatstub)
-
-  :switch:`--gnat95`
-    Ada 95 mode
-
-
-  .. index:: --gnat2005 (gnatstub)
-
-  :switch:`--gnat2005`
-    Ada 2005 mode
-
-
-  .. index:: --gnat2012 (gnatstub)
-
-  :switch:`--gnat2012`
-    Ada 2012 mode
 
 
   .. index:: --quiet (gnatstub)
