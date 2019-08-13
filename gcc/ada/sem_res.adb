@@ -6952,9 +6952,7 @@ package body Sem_Res is
       --  Check the dimensions of the actuals in the call. For function calls,
       --  propagate the dimensions from the returned type to N.
 
-      if not In_Inlined_Body then
-         Analyze_Dimension_Call (N, Nam);
-      end if;
+      Analyze_Dimension_Call (N, Nam);
 
       --  All done, evaluate call and deal with elaboration issues
 

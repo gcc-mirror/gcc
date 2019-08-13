@@ -1,3 +1,12 @@
+2019-08-13  Yannick Moy  <moy@adacore.com>
+
+	* sem_dim.adb (Analyze_Dimension,
+	Analyze_Dimension_Array_Aggregate, Analyze_Dimension_Call,
+	Analyze_Dimension_Extension_Or_Record_Aggregate): Return
+	immediately when inside an inlined body.
+	* sem_res.adb (Resolve_Call): Remove special checking now done
+	inside Analyze_Dimension_Call.
+
 2019-08-13  Justin Squirek  <squirek@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Allocator): Add condition to detect
