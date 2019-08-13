@@ -1395,6 +1395,7 @@ package body Sem is
          Restore_Scope_Stack  (List);
          Restore_Ghost_Region (Saved_GM, Saved_IGR);
          Style_Max_Line_Length := Saved_ML;
+         Style_Check_Max_Line_Length := Style_Max_Line_Length /= 0;
       end Do_Analyze;
 
       --  Local variables

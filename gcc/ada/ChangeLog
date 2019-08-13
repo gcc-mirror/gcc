@@ -1,3 +1,8 @@
+2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem.adb (Do_Analyze): Recompute Style_Check_Max_Line_Length
+	after restoring Style_Max_Line_Length.
+
 2019-08-13  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_ch13.adb (Check_Iterator_Functions): Protect against
