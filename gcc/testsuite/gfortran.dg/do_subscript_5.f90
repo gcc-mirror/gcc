@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-additional-options "-Wdo-subscript" }
 ! PR 90563 - this used to be rejected, wrongly
 ! Original test case by Tobias Neumann
 program test
@@ -9,9 +10,11 @@ program test
 
       p = 0.0
 
-      do j=1,6
+      ! The following warnings are actually bogus, but we are not yet
+      ! clever enough to suppress them.
+      do j=1,6 ! { dg-warning "out of bounds" }
           if (j<5) then
-              p(j) = p(swap(j))
+              p(j) = p(swap(j)) ! { dg-warning "out of bounds" }
           endif
       enddo
 end program
