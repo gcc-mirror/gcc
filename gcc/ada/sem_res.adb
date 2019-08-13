@@ -10598,6 +10598,10 @@ package body Sem_Res is
 
          pragma Assert (Found);
          Resolve (P, It1.Typ);
+
+         --  In general the expected type is the type of the context, not the
+         --  type of the candidate selected component.
+
          Set_Etype (N, Typ);
          Set_Entity_With_Checks (S, Comp1);
 
@@ -10609,6 +10613,17 @@ package body Sem_Res is
          --  the point of use. This determines what activation record to use.
 
          if Ekind (Typ) = E_Anonymous_Access_Subprogram_Type then
+            Set_Etype (N, Etype (Comp1));
+
+         --  When the type of the component is an access to a class-wide type
+         --  the relevant type is that of the component (since in such case we
+         --  may need to generate implicit type conversions or dispatching
+         --  calls).
+
+         elsif Is_Access_Type (Typ)
+           and then not Is_Class_Wide_Type (Designated_Type (Typ))
+           and then Is_Class_Wide_Type (Designated_Type (Etype (Comp1)))
+         then
             Set_Etype (N, Etype (Comp1));
          end if;
 
