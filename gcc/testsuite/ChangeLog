@@ -1,3 +1,8 @@
+2019-08-13  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/tagged3.adb, gnat.dg/tagged3_pkg.adb,
+	gnat.dg/tagged3_pkg.ads: New testcase.
+
 2019-08-13  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/aggr27.adb: New testcase.
