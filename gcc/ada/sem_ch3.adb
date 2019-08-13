@@ -6831,7 +6831,9 @@ package body Sem_Ch3 is
       Parent_Type  : Entity_Id;
       Derived_Type : Entity_Id)
    is
-      Loc : constant Source_Ptr := Sloc (N);
+      Loc   : constant Source_Ptr := Sloc (N);
+      Def   : constant Node_Id    := Type_Definition (N);
+      Indic : constant Node_Id    := Subtype_Indication (Def);
 
       Corr_Record      : constant Entity_Id := Make_Temporary (Loc, 'C');
       Corr_Decl        : Node_Id;
@@ -6842,8 +6844,7 @@ package body Sem_Ch3 is
       --  this case.
 
       Constraint_Present : constant Boolean :=
-                             Nkind (Subtype_Indication (Type_Definition (N))) =
-                                                          N_Subtype_Indication;
+                                          Nkind (Indic) = N_Subtype_Indication;
 
       D_Constraint   : Node_Id;
       New_Constraint : Elist_Id := No_Elist;
@@ -6918,36 +6919,50 @@ package body Sem_Ch3 is
               Expand_To_Stored_Constraint
                 (Parent_Type,
                  Build_Discriminant_Constraints
-                   (Parent_Type,
-                    Subtype_Indication (Type_Definition (N)), True));
+                   (Parent_Type, Indic, True));
          end if;
 
          End_Scope;
 
       elsif Constraint_Present then
 
-         --  Build constrained subtype, copying the constraint, and derive
-         --  from it to create a derived constrained type.
+         --  Build an unconstrained derived type and rewrite the derived type
+         --  as a subtype of this new base type.
 
          declare
-            Loc  : constant Source_Ptr := Sloc (N);
-            Anon : constant Entity_Id :=
-                     Make_Defining_Identifier (Loc,
-                       Chars => New_External_Name (Chars (Derived_Type), 'T'));
-            Decl : Node_Id;
+            Parent_Base : constant Entity_Id := Base_Type (Parent_Type);
+            New_Base    : Entity_Id;
+            New_Decl    : Node_Id;
+            New_Indic   : Node_Id;
 
          begin
-            Decl :=
-              Make_Subtype_Declaration (Loc,
-                Defining_Identifier => Anon,
-                Subtype_Indication =>
-                  New_Copy_Tree (Subtype_Indication (Type_Definition (N))));
-            Insert_Before (N, Decl);
-            Analyze (Decl);
+            New_Base :=
+                     Create_Itype (Ekind (Derived_Type), N, Derived_Type, 'B');
 
-            Rewrite (Subtype_Indication (Type_Definition (N)),
-              New_Occurrence_Of (Anon, Loc));
-            Set_Analyzed (Derived_Type, False);
+            New_Decl :=
+              Make_Full_Type_Declaration (Loc,
+                 Defining_Identifier => New_Base,
+                 Type_Definition     =>
+                   Make_Derived_Type_Definition (Loc,
+                     Abstract_Present      => Abstract_Present (Def),
+                     Limited_Present       => Limited_Present (Def),
+                     Subtype_Indication    =>
+                       New_Occurrence_Of (Parent_Base, Loc)));
+
+            Mark_Rewrite_Insertion (New_Decl);
+            Insert_Before (N, New_Decl);
+            Analyze (New_Decl);
+
+            New_Indic :=
+              Make_Subtype_Indication (Loc,
+                Subtype_Mark => New_Occurrence_Of (New_Base, Loc),
+                Constraint   => Relocate_Node (Constraint (Indic)));
+
+            Rewrite (N,
+              Make_Subtype_Declaration (Loc,
+                Defining_Identifier => Derived_Type,
+                Subtype_Indication  => New_Indic));
+
             Analyze (N);
             return;
          end;
@@ -6978,10 +6993,7 @@ package body Sem_Ch3 is
 
             --  Verify that new discriminants are used to constrain old ones
 
-            D_Constraint :=
-              First
-                (Constraints
-                  (Constraint (Subtype_Indication (Type_Definition (N)))));
+            D_Constraint := First (Constraints (Constraint (Indic)));
 
             Old_Disc := First_Discriminant (Parent_Type);
 
@@ -7662,14 +7674,15 @@ package body Sem_Ch3 is
             Full_Parent := Underlying_Full_View (Full_Parent);
          end if;
 
-         --  For record, access and most enumeration types, derivation from
-         --  the full view requires a fully-fledged declaration. In the other
-         --  cases, just use an itype.
+         --  For record, concurrent, access and most enumeration types, the
+         --  derivation from full view requires a fully-fledged declaration.
+         --  In the other cases, just use an itype.
 
-         if Ekind (Full_Parent) in Record_Kind
-           or else Ekind (Full_Parent) in Access_Kind
+         if Is_Record_Type (Full_Parent)
+           or else Is_Concurrent_Type (Full_Parent)
+           or else Is_Access_Type (Full_Parent)
            or else
-             (Ekind (Full_Parent) in Enumeration_Kind
+             (Is_Enumeration_Type (Full_Parent)
                and then not Is_Standard_Character_Type (Full_Parent)
                and then not Is_Generic_Type (Root_Type (Full_Parent)))
          then
@@ -7698,7 +7711,7 @@ package body Sem_Ch3 is
             --  is now installed. Subprograms have been derived on the partial
             --  view, the completion does not derive them anew.
 
-            if Ekind (Full_Parent) in Record_Kind then
+            if Is_Record_Type (Full_Parent) then
 
                --  If parent type is tagged, the completion inherits the proper
                --  primitive operations.
@@ -7900,12 +7913,10 @@ package body Sem_Ch3 is
          --  Build the full derivation if this is not the anonymous derived
          --  base type created by Build_Derived_Record_Type in the constrained
          --  case (see point 5. of its head comment) since we build it for the
-         --  derived subtype. And skip it for synchronized types altogether, as
-         --  gigi does not use these types directly.
+         --  derived subtype.
 
          if Present (Full_View (Parent_Type))
            and then not Is_Itype (Derived_Type)
-           and then not Is_Concurrent_Type (Full_View (Parent_Type))
          then
             declare
                Der_Base   : constant Entity_Id := Base_Type (Derived_Type);
@@ -8651,6 +8662,8 @@ package body Sem_Ch3 is
             end if;
          end if;
       end Check_Generic_Ancestors;
+
+   --  Start of processing for Build_Derived_Record_Type
 
    begin
       if Ekind (Parent_Type) = E_Record_Type_With_Private
@@ -12265,10 +12278,9 @@ package body Sem_Ch3 is
       Save_Next_Entity := Next_Entity (Full);
       Save_Homonym     := Homonym (Priv);
 
-      if Ekind (Full_Base) in Private_Kind
-        or else Ekind (Full_Base) in Protected_Kind
-        or else Ekind (Full_Base) in Record_Kind
-        or else Ekind (Full_Base) in Task_Kind
+      if Is_Private_Type (Full_Base)
+        or else Is_Record_Type (Full_Base)
+        or else Is_Concurrent_Type (Full_Base)
       then
          Copy_Node (Priv, Full);
 
@@ -12411,7 +12423,7 @@ package body Sem_Ch3 is
       --  If the full base is itself derived from private, build a congruent
       --  subtype of its underlying full view, for use by the back end.
 
-      elsif Ekind (Full_Base) in Private_Kind
+      elsif Is_Private_Type (Full_Base)
         and then Present (Underlying_Full_View (Full_Base))
       then
          declare

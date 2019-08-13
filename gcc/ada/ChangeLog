@@ -1,3 +1,16 @@
+2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Concurrent_Type): Add a couple of
+	local variables and use them.  When the derived type fully
+	constrains the parent type, rewrite it as a subtype of an
+	implicit (unconstrained) derived type instead of the other way
+	around.
+	(Copy_And_Build): Deal with concurrent types and use predicates.
+	(Build_Derived_Private_Type): Build the full derivation if
+	needed for concurrent types too.
+	(Build_Derived_Record_Type): Add marker comment.
+	(Complete_Private_Subtype): Use predicates.
+
 2019-08-13  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Check_Generic_Ancestor): New subprogram,
