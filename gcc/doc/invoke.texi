@@ -23044,7 +23044,12 @@ command line.  The script's name is the name of the MCU with
 command line defines the C preprocessor symbol @code{__XXX__} and
 cause the linker to search for a script called @file{xxx.ld}.
 
-This option is also passed on to the assembler.
+The ISA and hardware multiply supported for the different MCUs is hard-coded
+into GCC.  However, an external @samp{devices.csv} file can be used to
+extend device support beyond those that have been hard-coded.
+
+GCC searches for the @samp{devices.csv} file on the paths specified
+with the @code{-I} and @code{-L} options.
 
 @item -mwarn-mcu
 @itemx -mno-warn-mcu
@@ -23132,6 +23137,13 @@ the named silicon errata.
 @opindex msilicon-errata-warn
 This option passes on a request to the assembler to enable warning
 messages when a silicon errata might need to be applied.
+
+@item -mwarn-devices-csv
+@itemx -mno-warn-devices-csv
+@opindex mwarn-devices-csv
+@opindex mno-warn-devices-csv
+Warn if @samp{devices.csv} is not found or there are problem parsing it
+(default: on).
 
 @end table
 

@@ -94,7 +94,21 @@ proc msp430_device_permutations_runtest { tests } {
 	    continue
 	}
 	foreach { mcu_flags } [msp430_get_opts $test_file] {
-	    dg-runtest $test_file "$mcu_flags" "$MSP430_DEFAULT_CFLAGS"
+	    if { [string match "csv-*" [file tail $test_file]] } {
+		# Specify the path to devices.csv for devices/csv-* tests with -I.
+		# Note that the csv-* tests do not have dg-options directives,
+		# they only have dg-additional-options to pass -mmcu.  This is
+		# so we can set the path to devices.csv as a "default" flag
+		# with -I, and the path won't show up in the test results
+		# summary.  If there were dg-options directives, then these
+		# default flags passed as the 3rd argument to dg-runtest would
+		# not be used.
+		dg-runtest $test_file "$mcu_flags" "-I[file dirname $test_file] $MSP430_DEFAULT_CFLAGS"
+	    } elseif { [string match "bad-devices*" [file tail $test_file]] } {
+		dg-runtest $test_file "$mcu_flags" "-mdevices-csv-loc=[file dirname $test_file]/[file tail $test_file]sv $MSP430_DEFAULT_CFLAGS"
+	    } else {
+		dg-runtest $test_file "$mcu_flags" "$MSP430_DEFAULT_CFLAGS"
+	    }
 	}
     }
 }

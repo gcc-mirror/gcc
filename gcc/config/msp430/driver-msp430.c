@@ -54,6 +54,29 @@ msp430_select_cpu (int argc, const char ** argv)
   return NULL;
 }
 
+/* Spec function to set a global variable to a specific value in the driver.
+   The first argument is the variable name, and the second is the value to set
+   it to.
+   Currently only "msp430_warn_devices_csv" and "msp430_devices_csv_loc" are
+   supported.
+   The intention is that we can take a "Target" option and set the variable
+   associated with it in the driver as well.  Whilst the driver sees "Target"
+   options, it does not set the variables associated with that option.  */
+const char *
+msp430_set_driver_var (int argc, const char ** argv)
+{
+  if (argc != 2)
+    error ("%<msp430_set_driver_var%> expects 2 arguments");
+  else if (strcmp (argv[0], "msp430_warn_devices_csv") == 0)
+    msp430_warn_devices_csv = atoi (argv[1]);
+  else if (strcmp (argv[0], "msp430_devices_csv_loc") == 0)
+    msp430_devices_csv_loc = argv[1];
+  else
+    error ("unhandled arguments %qs and %qs to %<msp430_set_driver_var%>",
+	   argv[0], argv[1]);
+  return NULL;
+}
+
 /* Implement spec function `msp430_hwmult_lib´.  */
 
 const char *

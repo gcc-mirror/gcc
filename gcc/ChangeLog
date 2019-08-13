@@ -1,3 +1,25 @@
+2019-08-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/driver-msp430.c (msp430_set_driver_var): New.
+	* config/msp430/msp430-devices.c (canonicalize_path_dirsep): New.
+	(msp430_check_path_for_devices): New.
+	(parse_devices_csv_1): New.
+	(parse_devices_csv): New.
+	(msp430_extract_mcu_data): Try to find devices.csv and search for the
+	MCU data in devices.csv before using the hard-coded data.
+	Warn if devices.csv isn't found and the MCU wasn't found in the
+	hard-coded data either.
+	* config/msp430/msp430.h (DRIVER_SELF_SPECS): Call
+	msp430_set_driver_var for -mno-warn-devices-csv and -mdevices-csv-loc.
+	Search for devices.csv on -I and -L paths.
+	(EXTRA_SPEC_FUNCTIONS): Add msp430_check_path_for_devices and
+	msp430_set_driver_var.
+	* config/msp430/msp430.opt: Add -mwarn-devices-csv and
+	-mdevices-csv-loc=.
+	* doc/invoke.texi (-mmcu): Document that -I and -L paths are
+	searched for devices.csv.
+	(mwarn-devices-csv): Document option.
+
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_output_ptrue): Delete.
@@ -25,26 +47,26 @@
 
 2019-08-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
-	* gcc/config.gcc (msp430*-*-*): Add msp430-devices.o to extra_objs and
+	* config.gcc (msp430*-*-*): Add msp430-devices.o to extra_objs and
 	extra_gcc_objs.
-	* gcc/config/msp430/driver-msp430.c: Remove msp430_mcu_data.
+	* config/msp430/driver-msp430.c: Remove msp430_mcu_data.
 	(msp430_select_cpu): New spec function.
 	(msp430_select_hwmult_lib): Use msp430_extract_mcu_data to extract
 	MCU data.
-	* gcc/config/msp430/msp430-devices.c: New file.
-	* gcc/config/msp430/msp430-devices.h: New file.
-	* gcc/config/msp430/msp430.c: Remove msp430_mcu_data.
+	* config/msp430/msp430-devices.c: New file.
+	* config/msp430/msp430-devices.h: New file.
+	* config/msp430/msp430.c: Remove msp430_mcu_data.
 	(msp430_option_override): Use msp430_extract_mcu_data to extract
 	MCU data.
 	(msp430_use_f5_series_hwmult): Likewise.
 	(use_32bit_hwmult): Likewise.
 	(msp430_no_hwmult): Likewise.
-	* gcc/config/msp430/msp430.h (ASM_SPEC): Don't pass -mmcu to the
+	* config/msp430/msp430.h (ASM_SPEC): Don't pass -mmcu to the
 	assembler.
 	(DRIVER_SELF_SPECS): Call msp430_select_cpu if -mmcu is used without
 	and -mcpu option.
 	(EXTRA_SPEC_FUNCTIONS): Add msp430_select_cpu.
-	* gcc/config/msp430/t-msp430: Add rule to build msp430-devices.o.
+	* config/msp430/t-msp430: Add rule to build msp430-devices.o.
 	Remove hard-coded MCU multilib data.
 
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>

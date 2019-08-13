@@ -75,14 +75,22 @@ extern bool msp430x;
     "%e-mcode-region requires the large memory model (-mlarge)}}"	\
   " %{!mlarge:%{mdata-region=*:"	\
     "%e-mdata-region requires the large memory model (-mlarge)}}"	\
+  " %{mno-warn-devices-csv:%:msp430_set_driver_var(msp430_warn_devices_csv 0)}"\
+  " %{mdevices-csv-loc=*:%:msp430_set_driver_var(msp430_devices_csv_loc %*)}"\
+  " %{I*:%:msp430_check_path_for_devices(%{I*:%*})}"       \
+  " %{L*:%:msp430_check_path_for_devices(%{L*:%*})}"       \
   " %{!mcpu=*:%{mmcu=*:%:msp430_select_cpu(%{mmcu=*:%*})}}"
 
 extern const char * msp430_select_hwmult_lib (int, const char **);
 extern const char * msp430_select_cpu (int, const char **);
+extern const char * msp430_set_driver_var (int, const char **);
+extern const char * msp430_check_path_for_devices (int, const char **);
 
 # define EXTRA_SPEC_FUNCTIONS				\
   { "msp430_hwmult_lib", msp430_select_hwmult_lib },	\
-  { "msp430_select_cpu", msp430_select_cpu },
+  { "msp430_select_cpu", msp430_select_cpu },		\
+  { "msp430_set_driver_var", msp430_set_driver_var },		\
+  { "msp430_check_path_for_devices", msp430_check_path_for_devices },
 
 /* Specify the libraries to include on the linker command line.
 

@@ -1,5 +1,43 @@
 2019-08-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* gcc.target/msp430/msp430.exp (msp430_device_permutations_runtest):
+	Handle csv-* and bad-devices-* tests.
+	* gcc.target/msp430/devices/README: Document how bad-devices-* tests
+	work.
+	* gcc.target/msp430/devices/bad-devices-1.c: New test.
+	* gcc.target/msp430/devices/bad-devices-2.c: Likewise.
+	* gcc.target/msp430/devices/bad-devices-3.c: Likewise.
+	* gcc.target/msp430/devices/bad-devices-4.c: Likewise.
+	* gcc.target/msp430/devices/bad-devices-5.c: Likewise.
+	* gcc.target/msp430/devices/bad-devices-6.c: Likewise.
+	* gcc.target/msp430/devices/csv-device-order.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_00.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_01.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_02.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_04.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_08.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_10.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_11.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_12.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_14.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_18.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_20.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_21.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_22.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_24.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430_28.c: Likewise.
+	* gcc.target/msp430/devices/csv-msp430fr5969.c: Likewise.
+	* gcc.target/msp430/devices/hard-foo.c: Likewise.
+	* gcc.target/msp430/devices/bad-devices-1.csv: New test support file.
+	* gcc.target/msp430/devices/bad-devices-2.csv: Likewise.
+	* gcc.target/msp430/devices/bad-devices-3.csv: Likewise.
+	* gcc.target/msp430/devices/bad-devices-4.csv: Likewise.
+	* gcc.target/msp430/devices/bad-devices-5.csv: Likewise.
+	* gcc.target/msp430/devices/bad-devices-6.csv: Likewise.
+	* gcc.target/msp430/devices/devices.csv: Likewise.
+
+2019-08-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* gcc.target/msp430/msp430.exp
 	(check_effective_target_msp430_430_selected): New.
 	(check_effective_target_msp430_430x_selected): New.

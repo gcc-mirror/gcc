@@ -35,8 +35,254 @@ struct t_msp430_mcu_data extracted_mcu_data;
 /* Initialized at the bottom of this file.  */
 extern struct t_msp430_mcu_data hard_msp430_mcu_data[605];
 
+/* Set to the full path to devices.csv if it is found by searching the -I and
+   -L paths.  */
+char * derived_devices_csv_loc = NULL;
+
+/* This is to canonicalize the directory separators in the path.
+   On Windows we could have a mix of '/' and '\' in the path.  */
+static void
+canonicalize_path_dirsep (char **path)
+{
+  char *t_path = *path;
+  int len = strlen (t_path);
+  int i;
+  for (i = 0; i < len; i++)
+    if (IS_DIR_SEPARATOR (t_path[i]))
+      t_path[i] = DIR_SEPARATOR;
+}
+
+/* Spec function which searches the paths passed to the -I and -L options for
+   the "devices.csv" file.  If it is found then the -mdevices-csv-loc option is
+   placed on the command line so the compiler knows the location of the
+   file.  */
+const char *
+msp430_check_path_for_devices (int argc, const char **argv)
+{
+  const char dirsep[2] = { DIR_SEPARATOR, 0 };
+  FILE * devices_file = NULL;
+  char * local_devices_csv_loc = NULL;
+  int i;
+  /* msp430_devices_csv_loc is set by -mdevices-csv-loc, derived_devices_csv_loc
+     is set by this function only.  */
+  if (msp430_devices_csv_loc || derived_devices_csv_loc)
+    return NULL;
+  for (i = 0; i < argc; i++)
+    {
+      char *inc_path = ASTRDUP (argv[i]);
+      canonicalize_path_dirsep (&inc_path);
+      if (!IS_DIR_SEPARATOR (inc_path[strlen (inc_path) - 1]))
+	inc_path = concat (inc_path, dirsep, NULL);
+      local_devices_csv_loc = concat (inc_path, "devices.csv", NULL);
+      devices_file = fopen (local_devices_csv_loc, "r");
+      if (devices_file != NULL)
+	{
+	  fclose (devices_file);
+	  derived_devices_csv_loc = local_devices_csv_loc;
+	  return concat ("-mdevices-csv-loc=", local_devices_csv_loc, NULL);
+	}
+    }
+  return NULL;
+}
+
+/* Search the devices.csv file for the given MCU name, and load the device
+   data into extracted_mcu_data.
+   Return 1 if MCU wasn't found in devices.csv, or the data couldn't be loaded
+   into extracted_mcu_data.
+   devices.csv has a specific format.  There is a row for column headings which
+   begins with "# Device Name".  The column numbers for CPU_TYPE (MSP430 ISA)
+   and MPY_TYPE (hwmult support) are extracted from this row and used later to
+   extract the ISA and hwmult supported for the given device.
+   The rows containing the MCU data are expected to begin immediately after the
+   column headings.  */
+static int
+parse_devices_csv_1 (const char * real_devices_csv_loc, const char * mcu_name)
+{
+  FILE * devices_file = fopen (real_devices_csv_loc, "r");
+  /* Some devices have a large number of errata, which means that MPY_TYPE
+     isn't found until the ~100th character in the line.  line_buf_size is set
+     to 200 to account for further possible additions to errata.  */
+  const size_t line_buf_size = 200;
+  char line[line_buf_size];
+  char * res;
+  bool found_headings = false;
+  bool found_mcu = false;
+  int cpu_type = -1;
+  int mpy_type = -1;
+  int cpu_type_column = -1;
+  int mpy_type_column = -1;
+  const char * device_name_heading = "# Device Name";
+  const char * cpu_type_heading = "CPU_TYPE";
+  const char * mpy_type_heading = "MPY_TYPE";
+  /* devices_file should never be NULL at this stage.  */
+  if (devices_file == NULL)
+    {
+      if (msp430_warn_devices_csv)
+	warning (0, "unexpected error opening %<devices.csv%>");
+      return 1;
+    }
+  while (1)
+    {
+      res = fgets (line, line_buf_size, devices_file);
+      if (res == NULL)
+	{
+	  /* The device has not been found in devices.csv.  Don't warn now in
+	     case it is in the hard-coded data.  We will warn later if the
+	     device was not found in the hard-coded data either.  */
+	  goto end;
+	}
+      else if (!found_headings
+	       && strncmp (line, device_name_heading,
+			   strlen (device_name_heading)) == 0)
+	{
+	  int curr_column = 0;
+	  char * heading = strtok (line, ",");
+	  found_headings = true;
+	  /* Find which column MPY_TYPE and CPU_TYPE are in.  */
+	  while (heading != NULL)
+	    {
+	      if (strncmp (heading, cpu_type_heading,
+			   strlen (cpu_type_heading)) == 0)
+		  cpu_type_column = curr_column;
+	      else if (strncmp (heading, mpy_type_heading,
+			   strlen (mpy_type_heading)) == 0)
+		  mpy_type_column = curr_column;
+	      if (cpu_type_column != -1 && mpy_type_column != -1)
+		break;
+	      heading = strtok (NULL, ",");
+	      curr_column++;
+	    }
+	  if (cpu_type_column == -1 || mpy_type_column == -1)
+	    {
+	      if (msp430_warn_devices_csv)
+		{
+		  if (cpu_type_column == -1 && mpy_type_column != -1)
+		    warning (0, "%<CPU_TYPE%> column heading is missing from "
+			     "%<devices.csv%>");
+		  else if (mpy_type_column == -1 && cpu_type_column != -1)
+		    warning (0, "%<MPY_TYPE%> column heading is missing from "
+			     "%<devices.csv%>");
+		  else
+		    warning (0, "%<CPU_TYPE%> and %<MPY_TYPE%> column headings "
+			     "are missing from %<devices.csv%>");
+		}
+	      goto end;
+	    }
+	}
+      else if (strncasecmp (line, mcu_name, strlen (mcu_name)) == 0
+	       && *(line + strlen (mcu_name)) == ',')
+	{
+	  if (!found_headings)
+	    {
+	      if (msp430_warn_devices_csv)
+		warning (0, "format of column headings in %<devices.csv%> "
+			 "is incorrect");
+	      goto end;
+	    }
+	  char * val = strtok (line, ",");
+	  int final_col_num = ((mpy_type_column > cpu_type_column)
+			       ? mpy_type_column : cpu_type_column);
+	  int curr_col;
+	  bool found_cpu = false;
+	  bool found_mpy = false;
+	  for (curr_col = 0; curr_col <= final_col_num; curr_col++)
+	    {
+	      /* Strip any new line characters from the last token.  */
+	      if (curr_col == final_col_num && strlen (val) > 1
+		  /* ASCII digit 10 == LF, 13 == CR.  */
+		  && (val[1] == 10 || val[1] == 13))
+		{
+		  /* Terminate the string after the first character.  */
+		  val[1] = 0;
+		}
+	      if (curr_col == cpu_type_column)
+		{
+		  cpu_type = atoi (val);
+		  /* Only a single '0', '1' or '2' is accepted.  */
+		  if (strlen (val) != 1
+		      /* atoi will return 0 if the string passed as an argument
+			 is empty or contains only whitespace characters, so we
+			 must error if 0 is returned but the first character in
+			 the original string is not '0'.  */
+		      || (cpu_type == 0 && val[0] != '0')
+		      || cpu_type > 2 || cpu_type < 0)
+		    {
+		      if (msp430_warn_devices_csv)
+			warning (0, "invalid %<CPU_TYPE%> value of %qs read "
+				 "from %<devices.csv%> for %qs", val, mcu_name);
+		      goto end;
+		    }
+		  extracted_mcu_data.revision = cpu_type;
+		  found_cpu = true;
+		}
+	      else if (curr_col == mpy_type_column)
+		{
+		  mpy_type = atoi (val);
+		  /* Only a single '0', '1', '2', '4' or '8' is accepted.  */
+		  if (strlen (val) != 1
+		      || (mpy_type == 0 && val[0] != '0')
+		      || !(mpy_type == 0
+			   || mpy_type == 1
+			   || mpy_type == 2
+			   || mpy_type == 4
+			   || mpy_type == 8))
+		    {
+		      if (msp430_warn_devices_csv)
+			warning (0, "invalid %<MPY_TYPE%> value of %qs read "
+				 "from %<devices.csv%> for %qs", val, mcu_name);
+		      goto end;
+		    }
+		  extracted_mcu_data.hwmpy = mpy_type;
+		  found_mpy = true;
+		}
+	      if (found_cpu && found_mpy)
+		{
+		  extracted_mcu_data.name = mcu_name;
+		  found_mcu = true;
+		  goto end;
+		}
+	      val = strtok (NULL, ",");
+	    }
+	  if (msp430_warn_devices_csv && (cpu_type == -1 || mpy_type == -1))
+	    warning (0, "unknown error reading %s from "
+		     "%<devices.csv%>",
+		     (cpu_type != -1 ? "%<MPY_TYPE%>"
+		      : (mpy_type != -1 ? "%<CPU_TYPE%>"
+			 : "%<CPU_TYPE%> and %<MPY_TYPE%>")));
+	  goto end;
+	}
+    }
+end:
+  fclose (devices_file);
+  if (!found_mcu)
+    return 1;
+  return 0;
+}
+
+/* Wrapper for the parse_devices_csv_1 work function.
+   A return code of 0 indicates that the MCU data has been successfully
+   extracted into extracted_mcu_data.
+   A return code of 1 indicates that the specified MCU wasn't found in
+   devices.csv.
+   A return code of 2 indicates that devices.csv wasn't found at all.  */
+static int
+parse_devices_csv (const char * mcu_name)
+{
+  /* First check if the path to devices.csv was set by -mdevices-csv-loc.  */
+  if (msp430_devices_csv_loc != NULL)
+    return parse_devices_csv_1 (msp430_devices_csv_loc, mcu_name);
+  /* Otherwise check if the path to devices.csv was found another way.  */
+  else if (derived_devices_csv_loc != NULL)
+    return parse_devices_csv_1 (derived_devices_csv_loc, mcu_name);
+  /* devices.csv was not found.  */
+  return 2;
+}
+
 /* Main entry point to load the MCU data for the given -mmcu into
-   extracted_mcu_data.  hard_msp430_mcu_data (initialized at the bottom of this
+   extracted_mcu_data.
+   First, the "devices.csv" MCU data file is searched for, if it is found, and
+   the MCU has a record in it, then that data is used.
+   Otherwise, hard_msp430_mcu_data (initialized at the bottom of this
    file) is searched for the MCU name.
    This function only needs to be executed once, but it can be first called
    from a number of different locations.  */
@@ -44,10 +290,27 @@ void
 msp430_extract_mcu_data (const char * mcu_name)
 {
   static int executed = 0;
+  int devices_csv_not_found = 0;
   int i;
   if (mcu_name == NULL || executed == 1)
     return;
   executed = 1;
+  /* If parse_devices_csv returns non-zero we need to use the
+     hard-coded data.  */
+  switch (parse_devices_csv (mcu_name))
+    {
+    case 0:
+      return;
+    case 1:
+      /* MCU not found in devices.csv.  Warn later if it's not in the
+	 hard-coded data either.  */
+      break;
+    case 2:
+      devices_csv_not_found = 1;
+      break;
+    default:
+      gcc_unreachable ();
+    }
   /* FIXME: This array is alpha sorted - we could use a binary search.  */
   for (i = ARRAY_SIZE (hard_msp430_mcu_data); i--;)
     if (strcasecmp (mcu_name, hard_msp430_mcu_data[i].name) == 0)
@@ -81,6 +344,17 @@ msp430_extract_mcu_data (const char * mcu_name)
 		       "%<hard_msp430_mcu_data[%d]%>: %qd", i,
 		       hard_msp430_mcu_data[i].revision);
 	}
+    }
+  else if (msp430_warn_devices_csv && devices_csv_not_found)
+    warning (0, "could not locate MCU data file %<devices.csv%>");
+  else if (msp430_warn_mcu && extracted_mcu_data.name == NULL)
+    {
+      /* FIXME: We should warn here that the MCU name is unrecognized, but
+	 msp430_option_override will warn about an unrecognized MCU as well.
+	 The benefit of warning here is that this is code common to both the
+	 driver and compiler proper, so a warning will be emitted when
+	 assembling/linking via the driver, whilst msp430_option_override will
+	 only be called when preprocessing or compiling.  */
     }
 }
 
