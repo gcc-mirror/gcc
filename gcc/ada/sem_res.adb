@@ -7062,6 +7062,15 @@ package body Sem_Res is
                      end if;
                   end if;
 
+               --  Cannot inline a call inside the definition of a record type,
+               --  typically inside the constraints of the type. Calls in
+               --  default expressions are also not inlined, but this is
+               --  filtered out above when testing In_Default_Expr.
+
+               elsif Is_Record_Type (Current_Scope) then
+                  Cannot_Inline
+                    ("cannot inline & (inside record type)?", N, Nam_UA);
+
                --  With the one-pass inlining technique, a call cannot be
                --  inlined if the corresponding body has not been seen yet.
 
