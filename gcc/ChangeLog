@@ -1,5 +1,10 @@
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_classify_vector_mode): Switch
+	based on the mode instead of testing properties of it.
+
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* doc/md.texi: Document the x and y constraints for AArch64.
 	* config/aarch64/aarch64.h (FP_LO8_REGNUM_P): New macro.
 	(FP_LO8_REGS): New reg_class.
