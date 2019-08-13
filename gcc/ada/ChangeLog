@@ -1,3 +1,9 @@
+2019-08-13  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-cfinve.adb, libgnat/a-cofove.adb (Find_Index,
+	Reverse_Find_Index): Use bigger type to avoid range check
+	failure at the last loop iteration.
+
 2019-08-12  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* libgnat/g-socket.adb (Is_IPv6_Address): Check that no less
