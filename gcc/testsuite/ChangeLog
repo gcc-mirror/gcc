@@ -1,3 +1,7 @@
+2019-08-13  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-prof/ic-misattribution-1.c: Use -fdump-ipa-profile-node.
+
 2019-08-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/91424

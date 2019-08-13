@@ -1,5 +1,10 @@
 2019-08-13  Martin Liska  <mliska@suse.cz>
 
+	* value-prof.c (gimple_ic_transform): Add new line.
+	Print details with MSG_NOTE.
+
+2019-08-13  Martin Liska  <mliska@suse.cz>
+
 	* doc/invoke.texi: Document automatic detection of jobserver.
 	* lto-wrapper.c (run_gcc): Detect jobserver always.
 
