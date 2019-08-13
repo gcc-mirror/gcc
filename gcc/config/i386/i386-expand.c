@@ -14617,6 +14617,11 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
   switch (mode)
     {
     case E_V2SImode:
+      use_vec_extr = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
+      if (use_vec_extr)
+	break;
+      /* FALLTHRU */
+
     case E_V2SFmode:
       if (!mmx_ok)
 	break;
@@ -14866,7 +14871,10 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
       return;
 
     case E_V8QImode:
+      use_vec_extr = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
       /* ??? Could extract the appropriate HImode element and shift.  */
+      break;
+
     default:
       break;
     }

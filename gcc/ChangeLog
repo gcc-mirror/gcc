@@ -1,3 +1,14 @@
+2019-08-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (ix86_expand_vector_extract) <case E_V2SImode>:
+	Use vec_extr path for TARGET_MMX_WITH_SSE && TARGET_SSE4_1.
+	<case E_V8QImode>: Ditto.
+	* config/i386/mmx.md (*mmx_pextrw_zext): Rename from mmx_pextrw.
+	Use SWI48 mode iterator.  Use %k to output operand 0.
+	(*mmx_pextrw): New insn pattern.
+	(*mmx_pextrb): Ditto.
+	(*mmx_pextrb_zext): Ditto.
+
 2019-08-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* target.def (libc_has_function, libc_has_fast_function): Improve
@@ -23,7 +34,7 @@
 	* cfgrtl.c (patch_jump_insn): Use it.
 	* dwarf2cfi.c (create_trace_edges): Use it.
 
-2019-08-13  Wilco Dijkstra  <wdijkstr@arm.com>  
+2019-08-13  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/81800
 	* gcc/config/aarch64/aarch64.md (lrint): Disable lrint pattern if GPF
