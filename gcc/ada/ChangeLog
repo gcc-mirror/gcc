@@ -1,5 +1,14 @@
 2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sem_ch4.adb (Analyze_One_Call): Remove bypass for type
+	mismatch in nested instantiations.
+	* sem_ch8.adb (Find_Nearer_Entity): New function.
+	(Find_Renamed_Entity): Use it to disambiguate the candidates for
+	the renaming generated for an instantiation when it is
+	ambiguous.
+
+2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat1drv.adb (Adjust_Global_Switches): Do not set
 	Back_End_Inlining in ASIS mode either.
 
