@@ -1,3 +1,7 @@
+2019-08-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat.dg/aggr26.adb: New testcase.
+
 2019-08-13  Yannick Moy  <moy@adacore.com>
 
 	* gnat.dg/allocator2.adb, gnat.dg/allocator2.ads: New testcase.
