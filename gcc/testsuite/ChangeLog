@@ -1,3 +1,8 @@
+2019-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90473 - wrong code with nullptr in default argument.
+	* g++.dg/cpp0x/nullptr42.C: New test.
+
 2019-08-13  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/casesi.ad[bs], test_casesi.adb: New test.

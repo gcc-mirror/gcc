@@ -1,5 +1,12 @@
 2019-08-13  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/90473 - wrong code with nullptr in default argument.
+	* call.c (null_ptr_cst_p): Update quote from the standard.
+	* decl.c (check_default_argument): Don't return nullptr when the arg
+	has side-effects.
+
+2019-08-13  Marek Polacek  <polacek@redhat.com>
+
 	* cp-tree.h (DECL_MUTABLE_P): Use FIELD_DECL_CHECK.
 
 2019-08-10  Jakub Jelinek  <jakub@redhat.com>
