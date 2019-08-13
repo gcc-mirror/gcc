@@ -1,3 +1,12 @@
+2019-08-13  Olivier Hainque  <hainque@adacore.com>
+
+	* rtlanal.c (tablejump_casesi_pattern): New function, to
+	determine if a tablejump insn is a casesi dispatcher. Extracted
+	from patch_jump_insn.
+	* rtl.h (tablejump_casesi_pattern): Declare.
+	* cfgrtl.c (patch_jump_insn): Use it.
+	* dwarf2cfi.c (create_trace_edges): Use it.
+
 2019-08-13  Wilco Dijkstra  <wdijkstr@arm.com>  
 
 	PR target/81800
