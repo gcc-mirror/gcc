@@ -712,7 +712,7 @@ static const struct tune_params generic_tunings =
   4, /* memmov_cost  */
   2, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
-  "8",	/* function_align.  */
+  "16:12",	/* function_align.  */
   "4",	/* jump_align.  */
   "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
