@@ -1816,8 +1816,15 @@ package body Repinfo is
    begin
       --  For record types, list Bit_Order if not default, or if SSO is shown
 
+      --  Also, when -gnatR4 is in effect always list bit order and scalar
+      --  storage order explicitly, so that you don't need to know the native
+      --  endianness of the target for which the output was produced in order
+      --  to interpret it.
+
       if Is_Record_Type (Ent)
-        and then (List_SSO or else Reverse_Bit_Order (Ent))
+        and then (List_SSO
+                   or else Reverse_Bit_Order (Ent)
+                   or else List_Representation_Info = 4)
       then
          List_Attr ("Bit_Order", Reverse_Bit_Order (Ent));
       end if;
@@ -1825,7 +1832,7 @@ package body Repinfo is
       --  List SSO if required. If not, then storage is supposed to be in
       --  native order.
 
-      if List_SSO then
+      if List_SSO or else List_Representation_Info = 4 then
          List_Attr ("Scalar_Storage_Order", Reverse_Storage_Order (Ent));
       else
          pragma Assert (not Reverse_Storage_Order (Ent));
