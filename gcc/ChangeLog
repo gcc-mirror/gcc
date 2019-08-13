@@ -1,3 +1,11 @@
+2019-08-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (ix86_expand_vector_set) <case E_V2SImode>:
+	Use vec_merge path for TARGET_MMX_WITH_SSE && TARGET_SSE4_1.
+	<case E_V8QImode>: Ditto.
+	* config/i386/mmx.md (*mmx_pinsrd): New insn pattern.
+	(*mmx_pinsrb): Ditto.
+
 2019-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/83250
