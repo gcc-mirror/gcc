@@ -5591,12 +5591,12 @@ macro, a reasonable default is used.
 
 @deftypefn {Target Hook} bool TARGET_LIBC_HAS_FUNCTION (enum function_class @var{fn_class})
 This hook determines whether a function from a class of functions
-@var{fn_class} is present at the runtime.
+@var{fn_class} is present in the target C library.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_LIBC_HAS_FAST_FUNCTION (int @var{fcode})
 This hook determines whether a function from a class of functions
-@var{fn_class} has a fast implementation.
+@code{(enum function_class)}@var{fcode} has a fast implementation.
 @end deftypefn
 
 @defmac NEXT_OBJC_RUNTIME
