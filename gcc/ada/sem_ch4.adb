@@ -676,9 +676,15 @@ package body Sem_Ch4 is
 
                --  In GNATprove mode we need to preserve the link between
                --  the original subtype indication and the anonymous subtype,
-               --  to extend proofs to constrained acccess types.
+               --  to extend proofs to constrained acccess types. We only do
+               --  that outside of spec expressions, otherwise the declaration
+               --  cannot be inserted and analyzed. In such a case, GNATprove
+               --  later rejects the allocator as it is not used here in
+               --  a non-interfering context (SPARK 4.8(2) and 7.1.3(12)).
 
-               if Expander_Active or else GNATprove_Mode then
+               if Expander_Active
+                 or else (GNATprove_Mode and then not In_Spec_Expression)
+               then
                   Def_Id := Make_Temporary (Loc, 'S');
 
                   Insert_Action (E,
