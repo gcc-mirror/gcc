@@ -2945,7 +2945,6 @@ extern rtvec shallow_copy_rtvec (rtvec);
 extern bool shared_const_p (const_rtx);
 extern rtx copy_rtx (rtx);
 extern enum rtx_code classify_insn (rtx);
-extern rtx tablejump_casesi_pattern (const rtx_insn *insn);
 extern void dump_rtx_statistics (void);
 
 /* In emit-rtl.c */
@@ -3482,6 +3481,7 @@ extern void replace_label (rtx *, rtx, rtx, bool);
 extern void replace_label_in_insn (rtx_insn *, rtx_insn *, rtx_insn *, bool);
 extern bool rtx_referenced_p (const_rtx, const_rtx);
 extern bool tablejump_p (const rtx_insn *, rtx_insn **, rtx_jump_table_data **);
+extern rtx tablejump_casesi_pattern (const rtx_insn *insn);
 extern int computed_jump_p (const rtx_insn *);
 extern bool tls_referenced_p (const_rtx);
 extern bool contains_mem_rtx_p (rtx x);
