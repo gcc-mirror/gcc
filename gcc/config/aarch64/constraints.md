@@ -272,6 +272,12 @@
        (match_test "aarch64_legitimate_address_p (V2DImode,
 						  XEXP (op, 0), 1)")))
 
+(define_memory_constraint "UtQ"
+  "@internal
+   An address valid for SVE LD1RQs."
+  (and (match_code "mem")
+       (match_test "aarch64_sve_ld1rq_operand_p (op)")))
+
 (define_memory_constraint "Uty"
   "@internal
    An address valid for SVE LD1Rs."

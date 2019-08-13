@@ -1,3 +1,39 @@
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* machmode.h (opt_mode::else_mode): New function.
+	(opt_mode::else_blk): Use it.
+	* config/aarch64/aarch64-protos.h (aarch64_vq_mode): Declare.
+	(aarch64_full_sve_mode, aarch64_sve_ld1rq_operand_p): Likewise.
+	(aarch64_gen_stepped_int_parallel): Likewise.
+	(aarch64_stepped_int_parallel_p): Likewise.
+	(aarch64_expand_mov_immediate): Remove the optional gen_vec_duplicate
+	argument.
+	* config/aarch64/aarch64.c
+	(aarch64_expand_sve_widened_duplicate): Delete.
+	(aarch64_expand_sve_dupq, aarch64_expand_sve_ld1rq): New functions.
+	(aarch64_expand_sve_const_vector): Rewrite to handle more cases.
+	(aarch64_expand_mov_immediate): Remove the optional gen_vec_duplicate
+	argument.  Use early returns in the !CONST_INT_P handling.
+	Pass all SVE data vectors to aarch64_expand_sve_const_vector rather
+	than handling some inline.
+	(aarch64_full_sve_mode, aarch64_vq_mode): New functions, split out
+	from...
+	(aarch64_simd_container_mode): ...here.
+	(aarch64_gen_stepped_int_parallel, aarch64_stepped_int_parallel_p)
+	(aarch64_sve_ld1rq_operand_p): New functions.
+	* config/aarch64/predicates.md (descending_int_parallel)
+	(aarch64_sve_ld1rq_operand): New predicates.
+	* config/aarch64/constraints.md (UtQ): New constraint.
+	* config/aarch64/aarch64.md (UNSPEC_REINTERPRET): New unspec.
+	* config/aarch64/aarch64-sve.md (mov<SVE_ALL:mode>): Remove the
+	gen_vec_duplicate from call to aarch64_expand_mov_immediate.
+	(@aarch64_sve_reinterpret<mode>): New expander.
+	(*aarch64_sve_reinterpret<mode>): New pattern.
+	(@aarch64_vec_duplicate_vq<mode>_le): New pattern.
+	(@aarch64_vec_duplicate_vq<mode>_be): Likewise.
+	(*sve_ld1rq<Vesize>): Replace with...
+	(@aarch64_sve_ld1rq<mode>): ...this new pattern.
+
 2019-08-13  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (generic_tunings): Set function alignment to

@@ -28,22 +28,6 @@
   T (int64_t)
 
 #define FOR_EACH_LOAD_BROADCAST_IMM(T)					\
-  T (int16_t, 129, imm_129)						\
-  T (int32_t, 129, imm_129)						\
-  T (int64_t, 129, imm_129)						\
-									\
-  T (int16_t, -130, imm_m130)						\
-  T (int32_t, -130, imm_m130)						\
-  T (int64_t, -130, imm_m130)						\
-									\
-  T (int16_t, 0x1234, imm_0x1234)					\
-  T (int32_t, 0x1234, imm_0x1234)					\
-  T (int64_t, 0x1234, imm_0x1234)					\
-									\
-  T (int16_t, 0xFEDC, imm_0xFEDC)					\
-  T (int32_t, 0xFEDC, imm_0xFEDC)					\
-  T (int64_t, 0xFEDC, imm_0xFEDC)					\
-									\
   T (int32_t, 0x12345678, imm_0x12345678)				\
   T (int64_t, 0x12345678, imm_0x12345678)				\
 									\
@@ -56,6 +40,6 @@ FOR_EACH_LOAD_BROADCAST (DEF_LOAD_BROADCAST)
 FOR_EACH_LOAD_BROADCAST_IMM (DEF_LOAD_BROADCAST_IMM)
 
 /* { dg-final { scan-assembler-times {\tld1rb\tz[0-9]+\.b, p[0-7]/z, } 1 } } */
-/* { dg-final { scan-assembler-times {\tld1rh\tz[0-9]+\.h, p[0-7]/z, } 5 } } */
-/* { dg-final { scan-assembler-times {\tld1rw\tz[0-9]+\.s, p[0-7]/z, } 7 } } */
-/* { dg-final { scan-assembler-times {\tld1rd\tz[0-9]+\.d, p[0-7]/z, } 8 } } */
+/* { dg-final { scan-assembler-times {\tld1rh\tz[0-9]+\.h, p[0-7]/z, } 1 } } */
+/* { dg-final { scan-assembler-times {\tld1rw\tz[0-9]+\.s, p[0-7]/z, } 3 } } */
+/* { dg-final { scan-assembler-times {\tld1rd\tz[0-9]+\.d, p[0-7]/z, } 4 } } */

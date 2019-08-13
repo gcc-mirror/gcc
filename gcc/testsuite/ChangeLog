@@ -1,3 +1,22 @@
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/init_2.c: Expect ld1rd to be used
+	instead of a full vector load.
+	* gcc.target/aarch64/sve/init_4.c: Likewise.
+	* gcc.target/aarch64/sve/ld1r_2.c: Remove constants that no longer
+	need to be loaded from memory.
+	* gcc.target/aarch64/sve/slp_2.c: Expect the same output for
+	big and little endian.
+	* gcc.target/aarch64/sve/slp_3.c: Likewise.  Expect 3 of the
+	doubles to be moved via integer registers rather than loaded
+	from memory.
+	* gcc.target/aarch64/sve/slp_4.c: Likewise but for 4 doubles.
+	* gcc.target/aarch64/sve/spill_4.c: Expect 16-bit constants to be
+	loaded via an integer register rather than from memory.
+	* gcc.target/aarch64/sve/const_1.c: New test.
+	* gcc.target/aarch64/sve/const_2.c: Likewise.
+	* gcc.target/aarch64/sve/const_3.c: Likewise.
+
 2019-08-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc.target/msp430/msp430.exp (msp430_device_permutations_runtest):
