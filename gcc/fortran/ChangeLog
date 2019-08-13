@@ -1,7 +1,13 @@
+2013-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90563
+	* frontend-passes.c (insert_index): Suppress errors while
+	simplifying the resulting expression.
+
 2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/89647
-	resolve.c (resolve_typebound_procedure): Allow host associated 
+	resolve.c (resolve_typebound_procedure): Allow host associated
 	procedure to be a binding target.  While here, wrap long line.
 
 2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
