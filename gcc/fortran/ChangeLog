@@ -1,3 +1,9 @@
+2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/87993
+	* expr.c (gfc_simplify_expr): Simplifcation of an array with a kind
+	type inquiry suffix yields a constant expression.
+
 2019-08-13  Janne Blomqvist  <jb@gcc.gnu.org>
 
         PR fortran/91414
