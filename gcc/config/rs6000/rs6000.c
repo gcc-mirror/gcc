@@ -5335,7 +5335,7 @@ rs6000_builtin_md_vectorized_function (tree fndecl, tree type_out,
   in_n = TYPE_VECTOR_SUBPARTS (type_in);
 
   enum rs6000_builtins fn
-    = (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
+    = (enum rs6000_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   switch (fn)
     {
     case RS6000_BUILTIN_RSQRTF:
@@ -21300,7 +21300,7 @@ rs6000_ira_change_pseudo_allocno_class (int regno ATTRIBUTE_UNUSED,
 static tree
 rs6000_builtin_reciprocal (tree fndecl)
 {
-  switch (DECL_FUNCTION_CODE (fndecl))
+  switch (DECL_MD_FUNCTION_CODE (fndecl))
     {
     case VSX_BUILTIN_XVSQRTDP:
       if (!RS6000_RECIP_AUTO_RSQRTE_P (V2DFmode))

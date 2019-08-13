@@ -2089,7 +2089,7 @@ msp430_expand_builtin (tree exp,
 		       int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   rtx arg1 = expand_normal (CALL_EXPR_ARG (exp, 0));
 
   if (fcode == MSP430_BUILTIN_DELAY_CYCLES)

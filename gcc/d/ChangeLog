@@ -1,3 +1,8 @@
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91421
+	* intrinsics.cc (maybe_set_intrinsic): Use set_decl_built_in_function.
+
 2019-08-11  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/90601

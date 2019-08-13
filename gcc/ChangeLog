@@ -1,6 +1,91 @@
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/91421
+	* tree-core.h (function_decl::function_code): Change type to
+	unsigned int.
+	* tree.h (DECL_FUNCTION_CODE): Rename old definition to...
+	(DECL_UNCHECKED_FUNCTION_CODE): ...this.
+	(DECL_BUILT_IN_CLASS): Make an rvalue macro only.
+	(DECL_FUNCTION_CODE): New function.  Assert that the built-in class
+	is BUILT_IN_NORMAL.
+	(DECL_MD_FUNCTION_CODE, DECL_FE_FUNCTION_CODE): New functions.
+	(set_decl_built_in_function, copy_decl_built_in_function): Likewise.
+	(fndecl_built_in_p): Change the type of the "name" argument to
+	unsigned int.
+	* builtins.c (expand_builtin): Move DECL_FUNCTION_CODE use
+	after check for DECL_BUILT_IN_CLASS.
+	* cgraphclones.c (build_function_decl_skip_args): Use
+	set_decl_built_in_function.
+	* ipa-param-manipulation.c (ipa_modify_formal_parameters): Likewise.
+	* ipa-split.c (split_function): Likewise.
+	* langhooks.c (add_builtin_function_common): Likewise.
+	* omp-simd-clone.c (simd_clone_create): Likewise.
+	* tree-streamer-in.c (unpack_ts_function_decl_value_fields): Likewise.
+	* config/darwin.c (darwin_init_cfstring_builtins): Likewise.
+	(darwin_fold_builtin): Use DECL_MD_FUNCTION_CODE instead of
+	DECL_FUNCTION_CODE.
+	* fold-const.c (operand_equal_p): Compare DECL_UNCHECKED_FUNCTION_CODE
+	instead of DECL_FUNCTION_CODE.
+	* lto-streamer-out.c (hash_tree): Use DECL_UNCHECKED_FUNCTION_CODE
+	instead of DECL_FUNCTION_CODE.
+	* tree-streamer-out.c (pack_ts_function_decl_value_fields): Likewise.
+	* print-tree.c (print_node): Use DECL_MD_FUNCTION_CODE when
+	printing DECL_BUILT_IN_MD.  Handle DECL_BUILT_IN_FRONTEND.
+	* config/aarch64/aarch64-builtins.c (aarch64_expand_builtin)
+	(aarch64_fold_builtin, aarch64_gimple_fold_builtin): Use
+	DECL_MD_FUNCTION_CODE instead of DECL_FUNCTION_CODE.
+	* config/aarch64/aarch64.c (aarch64_builtin_reciprocal): Likewise.
+	* config/alpha/alpha.c (alpha_expand_builtin, alpha_fold_builtin):
+	(alpha_gimple_fold_builtin): Likewise.
+	* config/arc/arc.c (arc_expand_builtin): Likewise.
+	* config/arm/arm-builtins.c (arm_expand_builtin): Likewise.
+	* config/avr/avr-c.c (avr_resolve_overloaded_builtin): Likewise.
+	* config/avr/avr.c (avr_expand_builtin, avr_fold_builtin): Likewise.
+	* config/bfin/bfin.c (bfin_expand_builtin): Likewise.
+	* config/c6x/c6x.c (c6x_expand_builtin): Likewise.
+	* config/frv/frv.c (frv_expand_builtin): Likewise.
+	* config/gcn/gcn.c (gcn_expand_builtin_1): Likewise.
+	(gcn_expand_builtin): Likewise.
+	* config/i386/i386-builtins.c (ix86_builtin_reciprocal): Likewise.
+	(fold_builtin_cpu): Likewise.
+	* config/i386/i386-expand.c (ix86_expand_builtin): Likewise.
+	* config/i386/i386.c (ix86_fold_builtin): Likewise.
+	(ix86_gimple_fold_builtin): Likewise.
+	* config/ia64/ia64.c (ia64_fold_builtin): Likewise.
+	(ia64_expand_builtin): Likewise.
+	* config/iq2000/iq2000.c (iq2000_expand_builtin): Likewise.
+	* config/mips/mips.c (mips_expand_builtin): Likewise.
+	* config/msp430/msp430.c (msp430_expand_builtin): Likewise.
+	* config/nds32/nds32-intrinsic.c (nds32_expand_builtin_impl): Likewise.
+	* config/nios2/nios2.c (nios2_expand_builtin): Likewise.
+	* config/nvptx/nvptx.c (nvptx_expand_builtin): Likewise.
+	* config/pa/pa.c (pa_expand_builtin): Likewise.
+	* config/pru/pru.c (pru_expand_builtin): Likewise.
+	* config/riscv/riscv-builtins.c (riscv_expand_builtin): Likewise.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Likewise.
+	* config/rs6000/rs6000-call.c (htm_expand_builtin): Likewise.
+	(altivec_expand_dst_builtin, altivec_expand_builtin): Likewise.
+	(rs6000_gimple_fold_builtin, rs6000_expand_builtin): Likewise.
+	* config/rs6000/rs6000.c (rs6000_builtin_md_vectorized_function)
+	(rs6000_builtin_reciprocal): Likewise.
+	* config/rx/rx.c (rx_expand_builtin): Likewise.
+	* config/s390/s390-c.c (s390_resolve_overloaded_builtin): Likewise.
+	* config/s390/s390.c (s390_expand_builtin): Likewise.
+	* config/sh/sh.c (sh_expand_builtin): Likewise.
+	* config/sparc/sparc.c (sparc_expand_builtin): Likewise.
+	(sparc_fold_builtin): Likewise.
+	* config/spu/spu-c.c (spu_resolve_overloaded_builtin): Likewise.
+	* config/spu/spu.c (spu_expand_builtin): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_expand_builtin): Likewise.
+	* config/tilegx/tilegx.c (tilegx_expand_builtin): Likewise.
+	* config/tilepro/tilepro.c (tilepro_expand_builtin): Likewise.
+	* config/xtensa/xtensa.c (xtensa_fold_builtin): Likewise.
+	(xtensa_expand_builtin): Likewise.
+
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91421
 	* attribs.c (decl_attributes): Check the DECL_BUILT_IN_CLASS
 	before the DECL_FUNCTION_CODE.
 	* calls.c (maybe_warn_alloc_args_overflow): Use fndecl_built_in_p

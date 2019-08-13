@@ -3546,7 +3546,7 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 		      struct gcn_builtin_description *)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  switch (DECL_FUNCTION_CODE (fndecl))
+  switch (DECL_MD_FUNCTION_CODE (fndecl))
     {
     case GCN_BUILTIN_FLAT_LOAD_INT32:
       {
@@ -3773,7 +3773,7 @@ gcn_expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 		    int ignore)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   struct gcn_builtin_description *d;
 
   gcc_assert (fcode < GCN_BUILTIN_MAX);

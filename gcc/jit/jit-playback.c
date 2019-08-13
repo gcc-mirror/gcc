@@ -453,12 +453,11 @@ new_function (location *loc,
 
   if (builtin_id)
     {
-      DECL_FUNCTION_CODE (fndecl) = builtin_id;
       gcc_assert (loc == NULL);
       DECL_SOURCE_LOCATION (fndecl) = BUILTINS_LOCATION;
 
-      DECL_BUILT_IN_CLASS (fndecl) =
-	builtins_manager::get_class (builtin_id);
+      built_in_class fclass = builtins_manager::get_class (builtin_id);
+      set_decl_built_in_function (fndecl, fclass, builtin_id);
       set_builtin_decl (builtin_id, fndecl,
 			builtins_manager::implicit_p (builtin_id));
 

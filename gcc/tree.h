@@ -2518,10 +2518,10 @@ extern machine_mode vector_type_mode (const_tree);
   (DECL_COMMON_CHECK (NODE)->decl_common.mode = (MODE))
 
 /* For FUNCTION_DECL, if it is built-in, this identifies which built-in
-   operation it is.  Note, however, that this field is overloaded, with
-   DECL_BUILT_IN_CLASS as the discriminant, so the latter must always be
-   checked before any access to the former.  */
-#define DECL_FUNCTION_CODE(NODE) \
+   operation it is.  This is only intended for low-level accesses;
+   normally DECL_FUNCTION_CODE, DECL_FE_FUNCTION_CODE or DECL_MD_FUNCTION
+   should be used instead.  */
+#define DECL_UNCHECKED_FUNCTION_CODE(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.function_code)
 
 /* Test if FCODE is a function code for an alloca operation.  */
@@ -3143,10 +3143,9 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
 #define DECL_STRUCT_FUNCTION(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.f)
 
-
 /* For a builtin function, identify which part of the compiler defined it.  */
 #define DECL_BUILT_IN_CLASS(NODE) \
-   (FUNCTION_DECL_CHECK (NODE)->function_decl.built_in_class)
+   ((built_in_class) FUNCTION_DECL_CHECK (NODE)->function_decl.built_in_class)
 
 /* In FUNCTION_DECL, a chain of ..._DECL nodes.  */
 #define DECL_ARGUMENTS(NODE) \
@@ -3883,6 +3882,61 @@ valid_vector_subparts_p (poly_uint64 subparts)
 	return false;
     }
   return true;
+}
+
+/* Return the built-in function that DECL represents, given that it is known
+   to be a FUNCTION_DECL with built-in class BUILT_IN_NORMAL.  */
+inline built_in_function
+DECL_FUNCTION_CODE (const_tree decl)
+{
+  const tree_function_decl &fndecl = FUNCTION_DECL_CHECK (decl)->function_decl;
+  gcc_checking_assert (fndecl.built_in_class == BUILT_IN_NORMAL);
+  return (built_in_function) fndecl.function_code;
+}
+
+/* Return the target-specific built-in function that DECL represents,
+   given that it is known to be a FUNCTION_DECL with built-in class
+   BUILT_IN_MD.  */
+inline int
+DECL_MD_FUNCTION_CODE (const_tree decl)
+{
+  const tree_function_decl &fndecl = FUNCTION_DECL_CHECK (decl)->function_decl;
+  gcc_checking_assert (fndecl.built_in_class == BUILT_IN_MD);
+  return fndecl.function_code;
+}
+
+/* Return the frontend-specific built-in function that DECL represents,
+   given that it is known to be a FUNCTION_DECL with built-in class
+   BUILT_IN_FRONTEND.  */
+inline int
+DECL_FE_FUNCTION_CODE (const_tree decl)
+{
+  const tree_function_decl &fndecl = FUNCTION_DECL_CHECK (decl)->function_decl;
+  gcc_checking_assert (fndecl.built_in_class == BUILT_IN_FRONTEND);
+  return fndecl.function_code;
+}
+
+/* Record that FUNCTION_DECL DECL represents built-in function FCODE of
+   class FCLASS.  */
+inline void
+set_decl_built_in_function (tree decl, built_in_class fclass,
+			    unsigned int fcode)
+{
+  tree_function_decl &fndecl = FUNCTION_DECL_CHECK (decl)->function_decl;
+  fndecl.built_in_class = fclass;
+  fndecl.function_code = fcode;
+}
+
+/* Record that FUNCTION_DECL NEWDECL represents the same built-in function
+   as OLDDECL (or none, if OLDDECL doesn't represent a built-in function).  */
+inline void
+copy_decl_built_in_function (tree newdecl, const_tree olddecl)
+{
+  tree_function_decl &newfndecl = FUNCTION_DECL_CHECK (newdecl)->function_decl;
+  const tree_function_decl &oldfndecl
+    = FUNCTION_DECL_CHECK (olddecl)->function_decl;
+  newfndecl.built_in_class = oldfndecl.built_in_class;
+  newfndecl.function_code = oldfndecl.function_code;
 }
 
 /* In NON_LVALUE_EXPR and VIEW_CONVERT_EXPR, set when this node is merely a
@@ -6077,9 +6131,10 @@ fndecl_built_in_p (const_tree node, built_in_class klass)
    of class KLASS with name equal to NAME.  */
 
 inline bool
-fndecl_built_in_p (const_tree node, int name, built_in_class klass)
+fndecl_built_in_p (const_tree node, unsigned int name, built_in_class klass)
 {
-  return (fndecl_built_in_p (node, klass) && DECL_FUNCTION_CODE (node) == name);
+  return (fndecl_built_in_p (node, klass)
+	  && DECL_UNCHECKED_FUNCTION_CODE (node) == name);
 }
 
 /* Return true if a FUNCTION_DECL NODE is a GCC built-in function

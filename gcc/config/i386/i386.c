@@ -16817,8 +16817,8 @@ ix86_fold_builtin (tree fndecl, int n_args,
 {
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
     {
-      enum ix86_builtins fn_code = (enum ix86_builtins)
-				   DECL_FUNCTION_CODE (fndecl);
+      enum ix86_builtins fn_code
+	= (enum ix86_builtins) DECL_MD_FUNCTION_CODE (fndecl);
       enum rtx_code rcode;
       bool is_vshift;
       unsigned HOST_WIDE_INT mask;
@@ -17283,7 +17283,8 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   tree fndecl = gimple_call_fndecl (stmt);
   gcc_checking_assert (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_MD));
   int n_args = gimple_call_num_args (stmt);
-  enum ix86_builtins fn_code = (enum ix86_builtins) DECL_FUNCTION_CODE (fndecl);
+  enum ix86_builtins fn_code
+    = (enum ix86_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   tree decl = NULL_TREE;
   tree arg0, arg1, arg2;
   enum rtx_code rcode;

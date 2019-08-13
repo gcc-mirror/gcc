@@ -493,8 +493,7 @@ gigi (Node_Id gnat_root,
        build_function_type_list (integer_type_node, jmpbuf_ptr_type,
 				 NULL_TREE),
        NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
-  DECL_BUILT_IN_CLASS (setjmp_decl) = BUILT_IN_NORMAL;
-  DECL_FUNCTION_CODE (setjmp_decl) = BUILT_IN_SETJMP;
+  set_decl_built_in_function (setjmp_decl, BUILT_IN_NORMAL, BUILT_IN_SETJMP);
 
   /* update_setjmp_buf updates a setjmp buffer from the current stack pointer
      address.  */
@@ -503,8 +502,8 @@ gigi (Node_Id gnat_root,
       (get_identifier ("__builtin_update_setjmp_buf"), NULL_TREE,
        build_function_type_list (void_type_node, jmpbuf_ptr_type, NULL_TREE),
        NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
-  DECL_BUILT_IN_CLASS (update_setjmp_buf_decl) = BUILT_IN_NORMAL;
-  DECL_FUNCTION_CODE (update_setjmp_buf_decl) = BUILT_IN_UPDATE_SETJMP_BUF;
+  set_decl_built_in_function (update_setjmp_buf_decl, BUILT_IN_NORMAL,
+			      BUILT_IN_UPDATE_SETJMP_BUF);
 
   /* Indicate that it never returns.  */
   ftype = build_function_type_list (void_type_node,
@@ -5535,7 +5534,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       tree pred_cst = build_int_cst (integer_type_node, PRED_BUILTIN_EXPECT);
       enum internal_fn icode = IFN_BUILTIN_EXPECT;
 
-      switch (DECL_FUNCTION_CODE (gnu_subprog))
+      switch (DECL_FE_FUNCTION_CODE (gnu_subprog))
 	{
 	case BUILT_IN_EXPECT:
 	  break;

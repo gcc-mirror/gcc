@@ -1351,10 +1351,7 @@ split_function (basic_block return_bb, class split_point *split_point,
      changes.  For partial inlining we however cannot expect the part
      of builtin implementation to have same semantic as the whole.  */
   if (fndecl_built_in_p (node->decl))
-    {
-      DECL_BUILT_IN_CLASS (node->decl) = NOT_BUILT_IN;
-      DECL_FUNCTION_CODE (node->decl) = (enum built_in_function) 0;
-    }
+    set_decl_built_in_function (node->decl, NOT_BUILT_IN, 0);
 
   /* If return_bb contains any clobbers that refer to SSA_NAMEs
      set in the split part, remove them.  Also reset debug stmts that

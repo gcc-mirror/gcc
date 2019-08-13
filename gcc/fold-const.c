@@ -3466,7 +3466,8 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       return (TREE_CODE (arg0) == FUNCTION_DECL
 	      && fndecl_built_in_p (arg0) && fndecl_built_in_p (arg1)
 	      && DECL_BUILT_IN_CLASS (arg0) == DECL_BUILT_IN_CLASS (arg1)
-	      && DECL_FUNCTION_CODE (arg0) == DECL_FUNCTION_CODE (arg1));
+	      && (DECL_UNCHECKED_FUNCTION_CODE (arg0)
+		  == DECL_UNCHECKED_FUNCTION_CODE (arg1)));
 
     case tcc_exceptional:
       if (TREE_CODE (arg0) == CONSTRUCTOR)

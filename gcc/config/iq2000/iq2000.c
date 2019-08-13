@@ -2707,7 +2707,7 @@ iq2000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 		       int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  int fcode = DECL_FUNCTION_CODE (fndecl);
+  int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   enum rtx_code code [5];
 
   code[0] = REG;

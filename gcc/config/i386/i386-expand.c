@@ -10978,7 +10978,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
   tree arg0, arg1, arg2, arg3, arg4;
   rtx op0, op1, op2, op3, op4, pat, pat2, insn;
   machine_mode mode0, mode1, mode2, mode3, mode4;
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
 
   /* For CPU builtins that can be folded, fold first and expand the fold.  */
   switch (fcode)
@@ -12535,7 +12535,7 @@ rdseed_step:
 		  tree fndecl = gimple_call_fndecl (def_stmt);
 		  if (fndecl
 		      && fndecl_built_in_p (fndecl, BUILT_IN_MD))
-		    switch ((unsigned int) DECL_FUNCTION_CODE (fndecl))
+		    switch (DECL_MD_FUNCTION_CODE (fndecl))
 		      {
 		      case IX86_BUILTIN_CMPPD:
 		      case IX86_BUILTIN_CMPPS:

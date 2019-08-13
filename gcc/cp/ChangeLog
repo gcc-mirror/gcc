@@ -1,3 +1,9 @@
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91421
+	* decl.c (duplicate_decls):  Use copy_decl_built_in_function.
+	* pt.c (declare_integer_pack): Use set_decl_built_in_function.
+
 2019-08-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90473 - wrong code with nullptr in default argument.

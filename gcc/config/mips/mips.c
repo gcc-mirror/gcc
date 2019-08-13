@@ -17215,7 +17215,7 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   const struct mips_builtin_description *d;
 
   fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  fcode = DECL_FUNCTION_CODE (fndecl);
+  fcode = DECL_MD_FUNCTION_CODE (fndecl);
   gcc_assert (fcode < ARRAY_SIZE (mips_builtins));
   d = &mips_builtins[fcode];
   avail = d->avail ();

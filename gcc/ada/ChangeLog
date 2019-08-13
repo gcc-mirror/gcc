@@ -1,3 +1,9 @@
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91421
+	* gcc-interface/trans.c (gigi): Call set_decl_buillt_in_function.
+	(Call_to_gnu): Use DECL_FE_FUNCTION_CODE instead of DECL_FUNCTION_CODE.
+
 2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ali.ads (Linker_Option_Record): Remove Original_Pos component.

@@ -6124,7 +6124,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
   vec<tree, va_gc> *arglist = static_cast<vec<tree, va_gc> *> (passed_arglist);
   unsigned int nargs = vec_safe_length (arglist);
   enum rs6000_builtins fcode
-    = (enum rs6000_builtins)DECL_FUNCTION_CODE (fndecl);
+    = (enum rs6000_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   tree fnargs = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
   tree types[3], args[3];
   const struct altivec_builtin_types *desc;
