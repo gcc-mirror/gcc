@@ -1,5 +1,12 @@
 2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(-gnateT): Document Double_Float_Alignment parameter and fix
+	description of Double_Scalar_Alignment parameter.
+	* gnat_ugn.texi: Regenerate.
+
+2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* exp_ch6.adb (Expand_Call_Helper): If back-end inlining is
 	enabled, also instantiate the body of a generic unit containing
 	a subprogram subject to aspect/pragma Inline_Always at
