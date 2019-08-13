@@ -2220,6 +2220,11 @@ gfc_simplify_expr (gfc_expr *p, int type)
       if (!simplify_ref_chain (p->ref, type, &p))
 	return false;
 
+      /* If the following conditions hold, we found something like kind type
+	 inquiry of the form a(2)%kind while simplify the ref chain.  */
+      if (p->expr_type == EXPR_CONSTANT && !p->ref && !p->rank && !p->shape)
+	return true;
+
       if (!simplify_constructor (p->value.constructor, type))
 	return false;
 
