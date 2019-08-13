@@ -4421,10 +4421,13 @@ package body Exp_Ch4 is
 
    begin
       --  Warn on the presence of an allocator of an anonymous access type when
-      --  enabled.
+      --  enabled except when its an object declaration at library level.
 
       if Warn_On_Anonymous_Allocators
         and then Ekind (PtrT) = E_Anonymous_Access_Type
+        and then not (Is_Library_Level_Entity (PtrT)
+                       and then Nkind (Associated_Node_For_Itype (PtrT)) =
+                                  N_Object_Declaration)
       then
          Error_Msg_N ("?use of an anonymous access type allocator", N);
       end if;

@@ -1,3 +1,7 @@
+2019-08-13  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/anon3.adb, gnat.dg/anon3.ads: New testcase.
+
 2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/generic_inst8.adb, gnat.dg/generic_inst8.ads,
