@@ -116,7 +116,8 @@ package Aspects is
       Aspect_Link_Name,
       Aspect_Linker_Section,                -- GNAT
       Aspect_Machine_Radix,
-      Aspect_Max_Entry_Queue_Depth,
+      Aspect_Max_Entry_Queue_Depth,         -- GNAT
+      Aspect_Max_Entry_Queue_Length,
       Aspect_Max_Queue_Length,              -- GNAT
       Aspect_No_Caching,                    -- GNAT
       Aspect_Object_Size,                   -- GNAT
@@ -253,6 +254,7 @@ package Aspects is
       Aspect_Invariant                  => True,
       Aspect_Lock_Free                  => True,
       Aspect_Max_Entry_Queue_Depth      => True,
+      Aspect_Max_Entry_Queue_Length     => True,
       Aspect_Max_Queue_Length           => True,
       Aspect_Object_Size                => True,
       Aspect_Persistent_BSS             => True,
@@ -376,6 +378,7 @@ package Aspects is
       Aspect_Linker_Section             => Expression,
       Aspect_Machine_Radix              => Expression,
       Aspect_Max_Entry_Queue_Depth      => Expression,
+      Aspect_Max_Entry_Queue_Length     => Expression,
       Aspect_Max_Queue_Length           => Expression,
       Aspect_No_Caching                 => Optional_Expression,
       Aspect_Object_Size                => Expression,
@@ -487,6 +490,7 @@ package Aspects is
       Aspect_Lock_Free                    => Name_Lock_Free,
       Aspect_Machine_Radix                => Name_Machine_Radix,
       Aspect_Max_Entry_Queue_Depth        => Name_Max_Entry_Queue_Depth,
+      Aspect_Max_Entry_Queue_Length       => Name_Max_Entry_Queue_Length,
       Aspect_Max_Queue_Length             => Name_Max_Queue_Length,
       Aspect_No_Caching                   => Name_No_Caching,
       Aspect_No_Elaboration_Code_All      => Name_No_Elaboration_Code_All,
@@ -765,6 +769,7 @@ package Aspects is
       Aspect_Initial_Condition            => Never_Delay,
       Aspect_Initializes                  => Never_Delay,
       Aspect_Max_Entry_Queue_Depth        => Never_Delay,
+      Aspect_Max_Entry_Queue_Length       => Never_Delay,
       Aspect_Max_Queue_Length             => Never_Delay,
       Aspect_No_Caching                   => Never_Delay,
       Aspect_No_Elaboration_Code_All      => Never_Delay,

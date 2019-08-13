@@ -592,7 +592,8 @@ package Snames is
    Name_Machine_Attribute              : constant Name_Id := N + $; -- GNAT
    Name_Main                           : constant Name_Id := N + $; -- GNAT
    Name_Main_Storage                   : constant Name_Id := N + $; -- GNAT
-   Name_Max_Entry_Queue_Depth          : constant Name_Id := N + $; -- Ada 12
+   Name_Max_Entry_Queue_Depth          : constant Name_Id := N + $; -- GNAT
+   Name_Max_Entry_Queue_Length         : constant Name_Id := N + $; -- Ada 12
    Name_Max_Queue_Length               : constant Name_Id := N + $; -- GNAT
    Name_Memory_Size                    : constant Name_Id := N + $; -- Ada 83
    Name_No_Body                        : constant Name_Id := N + $; -- GNAT
@@ -782,7 +783,6 @@ package Snames is
    Name_Link_Name                      : constant Name_Id := N + $;
    Name_Low_Order_First                : constant Name_Id := N + $;
    Name_Lowercase                      : constant Name_Id := N + $;
-   Name_Max_Entry_Queue_Length         : constant Name_Id := N + $;
    Name_Max_Size                       : constant Name_Id := N + $;
    Name_Mechanism                      : constant Name_Id := N + $;
    Name_Message                        : constant Name_Id := N + $;
@@ -2007,6 +2007,7 @@ package Snames is
       Pragma_Main,
       Pragma_Main_Storage,
       Pragma_Max_Entry_Queue_Depth,
+      Pragma_Max_Entry_Queue_Length,
       Pragma_Max_Queue_Length,
       Pragma_Memory_Size,
       Pragma_No_Body,

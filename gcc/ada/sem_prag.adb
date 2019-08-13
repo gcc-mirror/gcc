@@ -19572,16 +19572,18 @@ package body Sem_Prag is
             end loop;
          end Main_Storage;
 
-         ----------------------
-         -- Max_Queue_Length --
-         ----------------------
+         ----------------------------
+         -- Max_Entry_Queue_Length --
+         ----------------------------
 
-         --  pragma Max_Queue_Length (static_integer_EXPRESSION);
+         --  pragma Max_Entry_Queue_Length (static_integer_EXPRESSION);
 
-         --  This processing is shared by Pragma_Max_Entry_Queue_Depth
+         --  This processing is shared by Pragma_Max_Entry_Queue_Depth and
+         --  Pragma_Max_Queue_Length.
 
-         when Pragma_Max_Queue_Length
+         when Pragma_Max_Entry_Queue_Length
             | Pragma_Max_Entry_Queue_Depth
+            | Pragma_Max_Queue_Length
          =>
          Max_Queue_Length : declare
             Arg        : Node_Id;
@@ -19590,7 +19592,9 @@ package body Sem_Prag is
             Val        : Uint;
 
          begin
-            if Prag_Id = Pragma_Max_Queue_Length then
+            if Prag_Id = Pragma_Max_Entry_Queue_Depth
+              or else Prag_Id = Pragma_Max_Queue_Length
+            then
                GNAT_Pragma;
             end if;
 
@@ -31059,6 +31063,7 @@ package body Sem_Prag is
       Pragma_Main                           => -1,
       Pragma_Main_Storage                   => -1,
       Pragma_Max_Entry_Queue_Depth          =>  0,
+      Pragma_Max_Entry_Queue_Length         =>  0,
       Pragma_Max_Queue_Length               =>  0,
       Pragma_Memory_Size                    =>  0,
       Pragma_No_Body                        =>  0,
