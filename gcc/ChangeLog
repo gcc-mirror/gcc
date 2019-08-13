@@ -1,3 +1,9 @@
+2019-08-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* target.def (libc_has_function, libc_has_fast_function): Improve
+	documentation strings.
+	* doc/tm.texi: Regenerate.
+
 2019-08-13  Caroline Tice  <cmtice@google.com>
 
 	PR other/91396

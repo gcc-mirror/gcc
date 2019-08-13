@@ -2545,14 +2545,14 @@ set via @code{__attribute__}.",
 DEFHOOK
 (libc_has_function,
  "This hook determines whether a function from a class of functions\n\
-@var{fn_class} is present at the runtime.",
+@var{fn_class} is present in the target C library.",
  bool, (enum function_class fn_class),
  default_libc_has_function)
 
 DEFHOOK
 (libc_has_fast_function,
  "This hook determines whether a function from a class of functions\n\
-@var{fn_class} has a fast implementation.",
+@code{(enum function_class)}@var{fcode} has a fast implementation.",
  bool, (int fcode),
  default_libc_has_fast_function)
 
