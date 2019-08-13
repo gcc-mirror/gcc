@@ -1,3 +1,10 @@
+2019-08-13  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Traverse_More_Func): Take into account
+	Loop_Actions inside N_Iterated_Component_Association nodes.
+	* sinfo.ads: Document correctly Loop_Actions as a field of nodes
+	of kind N_Iterated_Component_Association.
+
 2019-08-13  Claire Dross  <dross@adacore.com>
 
 	* libgnat/a-cfinve.adb, libgnat/a-cofove.adb (Find_Index,

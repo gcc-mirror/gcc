@@ -25580,6 +25580,9 @@ package body Sem_Util is
             when N_Case_Expression_Alternative =>
                Traverse_More (Actions (Node),           Result);
 
+            when N_Iterated_Component_Association =>
+               Traverse_More (Loop_Actions (Node),      Result);
+
             when N_Iteration_Scheme =>
                Traverse_More (Condition_Actions (Node), Result);
 
