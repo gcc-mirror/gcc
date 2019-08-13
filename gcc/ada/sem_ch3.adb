@@ -232,18 +232,6 @@ package body Sem_Ch3 is
    --  Needs a more complete spec--what are the parameters exactly, and what
    --  exactly is the returned value, and how is Bound affected???
 
-   procedure Build_Underlying_Full_View
-     (N   : Node_Id;
-      Typ : Entity_Id;
-      Par : Entity_Id);
-   --  If the completion of a private type is itself derived from a private
-   --  type, or if the full view of a private subtype is itself private, the
-   --  back-end has no way to compute the actual size of this type. We build
-   --  an internal subtype declaration of the proper parent type to convey
-   --  this information. This extra mechanism is needed because a full
-   --  view cannot itself have a full view (it would get clobbered during
-   --  view exchanges).
-
    procedure Check_Access_Discriminant_Requires_Limited
      (D   : Node_Id;
       Loc : Node_Id);
@@ -10447,111 +10435,6 @@ package body Sem_Ch3 is
       return New_Bound;
    end Build_Scalar_Bound;
 
-   --------------------------------
-   -- Build_Underlying_Full_View --
-   --------------------------------
-
-   procedure Build_Underlying_Full_View
-     (N   : Node_Id;
-      Typ : Entity_Id;
-      Par : Entity_Id)
-   is
-      Loc  : constant Source_Ptr := Sloc (N);
-      Subt : constant Entity_Id :=
-               Make_Defining_Identifier
-                 (Loc, New_External_Name (Chars (Typ), 'S'));
-
-      Constr : Node_Id;
-      Indic  : Node_Id;
-      C      : Node_Id;
-      Id     : Node_Id;
-
-      procedure Set_Discriminant_Name (Id : Node_Id);
-      --  If the derived type has discriminants, they may rename discriminants
-      --  of the parent. When building the full view of the parent, we need to
-      --  recover the names of the original discriminants if the constraint is
-      --  given by named associations.
-
-      ---------------------------
-      -- Set_Discriminant_Name --
-      ---------------------------
-
-      procedure Set_Discriminant_Name (Id : Node_Id) is
-         Disc : Entity_Id;
-
-      begin
-         Set_Original_Discriminant (Id, Empty);
-
-         if Has_Discriminants (Typ) then
-            Disc := First_Discriminant (Typ);
-            while Present (Disc) loop
-               if Chars (Disc) = Chars (Id)
-                 and then Present (Corresponding_Discriminant (Disc))
-               then
-                  Set_Chars (Id, Chars (Corresponding_Discriminant (Disc)));
-               end if;
-               Next_Discriminant (Disc);
-            end loop;
-         end if;
-      end Set_Discriminant_Name;
-
-   --  Start of processing for Build_Underlying_Full_View
-
-   begin
-      if Nkind (N) = N_Full_Type_Declaration then
-         Constr := Constraint (Subtype_Indication (Type_Definition (N)));
-
-      elsif Nkind (N) = N_Subtype_Declaration then
-         Constr := New_Copy_Tree (Constraint (Subtype_Indication (N)));
-
-      elsif Nkind (N) = N_Component_Declaration then
-         Constr :=
-           New_Copy_Tree
-             (Constraint (Subtype_Indication (Component_Definition (N))));
-
-      else
-         raise Program_Error;
-      end if;
-
-      C := First (Constraints (Constr));
-      while Present (C) loop
-         if Nkind (C) = N_Discriminant_Association then
-            Id := First (Selector_Names (C));
-            while Present (Id) loop
-               Set_Discriminant_Name (Id);
-               Next (Id);
-            end loop;
-         end if;
-
-         Next (C);
-      end loop;
-
-      Indic :=
-        Make_Subtype_Declaration (Loc,
-          Defining_Identifier => Subt,
-          Subtype_Indication  =>
-            Make_Subtype_Indication (Loc,
-              Subtype_Mark => New_Occurrence_Of (Par, Loc),
-              Constraint   => New_Copy_Tree (Constr)));
-
-      --  If this is a component subtype for an outer itype, it is not
-      --  a list member, so simply set the parent link for analysis: if
-      --  the enclosing type does not need to be in a declarative list,
-      --  neither do the components.
-
-      if Is_List_Member (N)
-        and then Nkind (N) /= N_Component_Declaration
-      then
-         Insert_Before (N, Indic);
-      else
-         Set_Parent (Indic, Parent (N));
-      end if;
-
-      Analyze (Indic);
-      Set_Underlying_Full_View (Typ, Full_View (Subt));
-      Set_Is_Underlying_Full_View (Full_View (Subt));
-   end Build_Underlying_Full_View;
-
    -------------------------------
    -- Check_Abstract_Overriding --
    -------------------------------
@@ -12471,7 +12354,6 @@ package body Sem_Ch3 is
 
       Set_Freeze_Node (Full, Empty);
       Set_Is_Frozen (Full, False);
-      Set_Full_View (Priv, Full);
 
       if Has_Discriminants (Full) then
          Set_Stored_Constraint_From_Discriminant_Constraint (Full);
@@ -12492,26 +12374,24 @@ package body Sem_Ch3 is
            (Full, Related_Nod, Full_Base, Discriminant_Constraint (Priv));
 
       --  If the full base is itself derived from private, build a congruent
-      --  subtype of its underlying type, for use by the back end. For a
-      --  constrained record component, the declaration cannot be placed on
-      --  the component list, but it must nevertheless be built an analyzed, to
-      --  supply enough information for Gigi to compute the size of component.
+      --  subtype of its underlying full view, for use by the back end.
 
       elsif Ekind (Full_Base) in Private_Kind
-        and then Is_Derived_Type (Full_Base)
-        and then Has_Discriminants (Full_Base)
-        and then (Ekind (Current_Scope) /= E_Record_Subtype)
+        and then Present (Underlying_Full_View (Full_Base))
       then
-         if not Is_Itype (Priv)
-           and then
-             Nkind (Subtype_Indication (Parent (Priv))) = N_Subtype_Indication
-         then
-            Build_Underlying_Full_View
-              (Parent (Priv), Full, Etype (Full_Base));
-
-         elsif Nkind (Related_Nod) = N_Component_Declaration then
-            Build_Underlying_Full_View (Related_Nod, Full, Etype (Full_Base));
-         end if;
+         declare
+            Underlying_Full_Base : constant Entity_Id
+                                           := Underlying_Full_View (Full_Base);
+            Underlying_Full : constant Entity_Id
+                       := Make_Defining_Identifier (Sloc (Priv), Chars (Priv));
+         begin
+            Set_Is_Itype (Underlying_Full);
+            Set_Associated_Node_For_Itype (Underlying_Full, Related_Nod);
+            Complete_Private_Subtype
+              (Priv, Underlying_Full, Underlying_Full_Base, Related_Nod);
+            Set_Underlying_Full_View (Full, Underlying_Full);
+            Set_Is_Underlying_Full_View (Underlying_Full);
+         end;
 
       elsif Is_Record_Type (Full_Base) then
 
@@ -19928,19 +19808,11 @@ package body Sem_Ch3 is
       Related_Nod : Node_Id)
    is
       Id_B   : constant Entity_Id := Base_Type (Id);
-      Full_B : Entity_Id := Full_View (Id_B);
+      Full_B : constant Entity_Id := Full_View (Id_B);
       Full   : Entity_Id;
 
    begin
       if Present (Full_B) then
-
-         --  Get to the underlying full view if necessary
-
-         if Is_Private_Type (Full_B)
-           and then Present (Underlying_Full_View (Full_B))
-         then
-            Full_B := Underlying_Full_View (Full_B);
-         end if;
 
          --  The Base_Type is already completed, we can complete the subtype
          --  now. We have to create a new entity with the same name, Thus we
@@ -19950,6 +19822,7 @@ package body Sem_Ch3 is
          Set_Is_Itype (Full);
          Set_Associated_Node_For_Itype (Full, Related_Nod);
          Complete_Private_Subtype (Id, Full, Full_B, Related_Nod);
+         Set_Full_View (Id, Full);
       end if;
 
       --  The parent subtype may be private, but the base might not, in some
@@ -20755,6 +20628,7 @@ package body Sem_Ch3 is
                end if;
 
                Complete_Private_Subtype (Full, Priv, Full_T, N);
+               Set_Full_View (Full, Priv);
 
                if Present (Priv_Scop) then
                   Pop_Scope;

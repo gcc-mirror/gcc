@@ -6804,7 +6804,12 @@ package body Sem_Ch12 is
                Check_Private_View (Subtype_Indication (Parent (E)));
             end if;
 
-            Set_Is_Generic_Actual_Type (E, True);
+            Set_Is_Generic_Actual_Type (E);
+
+            if Is_Private_Type (E) and then Present (Full_View (E)) then
+               Set_Is_Generic_Actual_Type (Full_View (E));
+            end if;
+
             Set_Is_Hidden (E, False);
             Set_Is_Potentially_Use_Visible (E, In_Use (Instance));
 
@@ -14603,6 +14608,10 @@ package body Sem_Ch12 is
                null;
             else
                Set_Is_Generic_Actual_Type (E, False);
+
+               if Is_Private_Type (E) and then Present (Full_View (E)) then
+                  Set_Is_Generic_Actual_Type (Full_View (E), False);
+               end if;
             end if;
 
             --  An unusual case of aliasing: the actual may also be directly

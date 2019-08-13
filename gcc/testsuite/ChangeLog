@@ -1,3 +1,8 @@
+2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/generic_inst10.adb, gnat.dg/generic_inst10_pkg.ads:
+	New testcase.
+
 2019-08-13  Javier Miranda  <miranda@adacore.com>
 
 	* gnat.dg/tagged3.adb, gnat.dg/tagged3_pkg.adb,
