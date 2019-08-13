@@ -1,3 +1,9 @@
+2019-08-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR fortran/91414
+        * check.c (gfc_check_random_seed): Reduce seed_size.
+        * intrinsic.texi (RANDOM_NUMBER): Update to match new PRNG.
+
 2019-08-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/91424

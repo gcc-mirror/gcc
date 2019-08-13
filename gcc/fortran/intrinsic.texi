@@ -11792,10 +11792,10 @@ end program test_random_seed
 Returns a single pseudorandom number or an array of pseudorandom numbers
 from the uniform distribution over the range @math{ 0 \leq x < 1}.
 
-The runtime-library implements the xorshift1024* random number
-generator (RNG). This generator has a period of @math{2^{1024} - 1},
-and when using multiple threads up to @math{2^{512}} threads can each
-generate @math{2^{512}} random numbers before any aliasing occurs.
+The runtime-library implements the xoshiro256** pseudorandom number
+generator (PRNG). This generator has a period of @math{2^{256} - 1},
+and when using multiple threads up to @math{2^{128}} threads can each
+generate @math{2^{128}} random numbers before any aliasing occurs.
 
 Note that in a multi-threaded program (e.g. using OpenMP directives),
 each thread will have its own random number state. For details of the
@@ -11852,7 +11852,7 @@ called either without arguments or with the @var{PUT} argument, the
 given seed is copied into a master seed as well as the seed of the
 current thread. When a new thread uses @code{RANDOM_NUMBER} for the
 first time, the seed is copied from the master seed, and forwarded
-@math{N * 2^{512}} steps to guarantee that the random stream does not
+@math{N * 2^{128}} steps to guarantee that the random stream does not
 alias any other stream in the system, where @var{N} is the number of
 threads that have used @code{RANDOM_NUMBER} so far during the program
 execution.

@@ -1,3 +1,8 @@
+2019-08-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR fortran/91414
+        * gfortran.dg/random_seed_1.f90: Update to match new seed size.
+
 2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/discr56.adb, gnat.dg/discr56.ads,
