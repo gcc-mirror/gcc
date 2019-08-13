@@ -241,6 +241,7 @@ package body Impunit is
     ("g-binenv", F),  -- GNAT.Bind_Environment
     ("g-boubuf", F),  -- GNAT.Bounded_Buffers
     ("g-boumai", F),  -- GNAT.Bounded_Mailboxes
+    ("g-brapre", F),  -- GNAT.Branch_Prediction
     ("g-bubsor", F),  -- GNAT.Bubble_Sort
     ("g-busora", F),  -- GNAT.Bubble_Sort_A
     ("g-busorg", F),  -- GNAT.Bubble_Sort_G
