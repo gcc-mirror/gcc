@@ -1474,34 +1474,68 @@ aarch64_classify_vector_mode (machine_mode mode)
   if (aarch64_sve_pred_mode_p (mode))
     return VEC_SVE_PRED;
 
-  scalar_mode inner = GET_MODE_INNER (mode);
-  if (VECTOR_MODE_P (mode)
-      && (inner == QImode
-	  || inner == HImode
-	  || inner == HFmode
-	  || inner == SImode
-	  || inner == SFmode
-	  || inner == DImode
-	  || inner == DFmode))
+  /* Make the decision based on the mode's enum value rather than its
+     properties, so that we keep the correct classification regardless
+     of -msve-vector-bits.  */
+  switch (mode)
     {
-      if (TARGET_SVE)
-	{
-	  if (known_eq (GET_MODE_BITSIZE (mode), BITS_PER_SVE_VECTOR))
-	    return VEC_SVE_DATA;
-	  if (known_eq (GET_MODE_BITSIZE (mode), BITS_PER_SVE_VECTOR * 2)
-	      || known_eq (GET_MODE_BITSIZE (mode), BITS_PER_SVE_VECTOR * 3)
-	      || known_eq (GET_MODE_BITSIZE (mode), BITS_PER_SVE_VECTOR * 4))
-	    return VEC_SVE_DATA | VEC_STRUCT;
-	}
+    /* Single SVE vectors.  */
+    case E_VNx16QImode:
+    case E_VNx8HImode:
+    case E_VNx4SImode:
+    case E_VNx2DImode:
+    case E_VNx8HFmode:
+    case E_VNx4SFmode:
+    case E_VNx2DFmode:
+      return TARGET_SVE ? VEC_SVE_DATA : 0;
 
-      /* This includes V1DF but not V1DI (which doesn't exist).  */
-      if (TARGET_SIMD
-	  && (known_eq (GET_MODE_BITSIZE (mode), 64)
-	      || known_eq (GET_MODE_BITSIZE (mode), 128)))
-	return VEC_ADVSIMD;
+    /* x2 SVE vectors.  */
+    case E_VNx32QImode:
+    case E_VNx16HImode:
+    case E_VNx8SImode:
+    case E_VNx4DImode:
+    case E_VNx16HFmode:
+    case E_VNx8SFmode:
+    case E_VNx4DFmode:
+    /* x3 SVE vectors.  */
+    case E_VNx48QImode:
+    case E_VNx24HImode:
+    case E_VNx12SImode:
+    case E_VNx6DImode:
+    case E_VNx24HFmode:
+    case E_VNx12SFmode:
+    case E_VNx6DFmode:
+    /* x4 SVE vectors.  */
+    case E_VNx64QImode:
+    case E_VNx32HImode:
+    case E_VNx16SImode:
+    case E_VNx8DImode:
+    case E_VNx32HFmode:
+    case E_VNx16SFmode:
+    case E_VNx8DFmode:
+      return TARGET_SVE ? VEC_SVE_DATA | VEC_STRUCT : 0;
+
+    /* 64-bit Advanced SIMD vectors.  */
+    case E_V8QImode:
+    case E_V4HImode:
+    case E_V2SImode:
+    /* ...E_V1DImode doesn't exist.  */
+    case E_V4HFmode:
+    case E_V2SFmode:
+    case E_V1DFmode:
+    /* 128-bit Advanced SIMD vectors.  */
+    case E_V16QImode:
+    case E_V8HImode:
+    case E_V4SImode:
+    case E_V2DImode:
+    case E_V8HFmode:
+    case E_V4SFmode:
+    case E_V2DFmode:
+      return TARGET_SIMD ? VEC_ADVSIMD : 0;
+
+    default:
+      return 0;
     }
-
-  return 0;
 }
 
 /* Return true if MODE is any of the data vector modes, including
