@@ -118,6 +118,19 @@ gfc_evaluate_now (tree expr, stmtblock_t * pblock)
   return gfc_evaluate_now_loc (input_location, expr, pblock);
 }
 
+/* Like gfc_evaluate_now, but add the created variable to the
+   function scope.  */
+
+tree
+gfc_evaluate_now_function_scope (tree expr, stmtblock_t * pblock)
+{
+  tree var;
+  var = gfc_create_var_np (TREE_TYPE (expr), NULL);
+  gfc_add_decl_to_function (var);
+  gfc_add_modify (pblock, var, expr);
+
+  return var;
+}
 
 /* Build a MODIFY_EXPR node and add it to a given statement block PBLOCK.
    A MODIFY_EXPR is an assignment:
