@@ -1,3 +1,8 @@
+2019-08-13  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Allocator): Add condition to detect
+	library-level object declarations
+
 2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
