@@ -1416,8 +1416,15 @@ queue_push_callback (struct goacc_asyncqueue *aq, void (*fn)(void *),
 		     void *data)
 {
   if (aq->queue_n == ASYNC_QUEUE_SIZE)
-    GOMP_PLUGIN_fatal ("Async thread %d:%d: error: queue overflowed",
-		       aq->agent->device_id, aq->id);
+    {
+      pthread_mutex_lock (&aq->mutex);
+
+      /* Queue is full.  Wait for it to not be full.  */
+      while (aq->queue_n == ASYNC_QUEUE_SIZE)
+	pthread_cond_wait (&aq->queue_cond_out, &aq->mutex);
+
+      pthread_mutex_unlock (&aq->mutex);
+    }
 
   pthread_mutex_lock (&aq->mutex);
 

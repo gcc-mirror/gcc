@@ -1,5 +1,10 @@
 2019-08-13  Julian Brown  <julian@codesourcery.com>
 
+	* plugin/plugin-gcn.c (queue_push_callback): Wait on queue-full
+	condition.
+
+2019-08-13  Julian Brown  <julian@codesourcery.com>
+
 	* plugin/plugin-gcn.c (struct copy_data): Add using_src_copy field.
 	(copy_data): Free temporary buffer if using.
 	(queue_push_copy): Add using_src_copy parameter.
