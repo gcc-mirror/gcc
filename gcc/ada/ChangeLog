@@ -1,3 +1,9 @@
+2019-08-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Aggr_Assignment_OK_For_Backend):  Preanalyze
+	expression, rather do a full analysis, to prevent unwanted
+	removal of side effects which mask the intent of the expression.
+
 2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* impunit.adb (Non_Imp_File_Names_95): Add

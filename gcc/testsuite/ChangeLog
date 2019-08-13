@@ -1,3 +1,7 @@
+2019-08-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/aggr27.adb: New testcase.
+
 2019-08-13  Gary Dismukes  <dismukes@adacore.com>
 
 	* gnat.dg/aggr26.adb: New testcase.
