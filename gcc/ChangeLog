@@ -1,3 +1,9 @@
+2019-08-13  Wilco Dijkstra  <wdijkstr@arm.com>  
+
+	PR target/81800
+	* gcc/config/aarch64/aarch64.md (lrint): Disable lrint pattern if GPF
+	operand is larger than a long int.
+
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* machmode.h (opt_mode::else_mode): New function.

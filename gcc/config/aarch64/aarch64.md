@@ -6323,7 +6323,7 @@
   [(match_operand:GPI 0 "register_operand")
    (match_operand:GPF 1 "register_operand")]
   "TARGET_FLOAT
-   && ((GET_MODE_SIZE (<GPF:MODE>mode) <= GET_MODE_SIZE (<GPI:MODE>mode))
+   && ((GET_MODE_BITSIZE (<GPF:MODE>mode) <= LONG_TYPE_SIZE)
    || !flag_trapping_math || flag_fp_int_builtin_inexact)"
 {
   rtx cvt = gen_reg_rtx (<GPF:MODE>mode);
