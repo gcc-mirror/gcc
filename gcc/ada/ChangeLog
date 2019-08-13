@@ -1,3 +1,12 @@
+2019-08-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Check_Generic_Ancestor): New subprogram,
+	aubsidiary to Build_Derived_Record_Type. to enforce the rule
+	that a type extension declared in a generic body cznnot have an
+	ancestor that is a generic formal (RM 3.9.1 (4/2)). The rule
+	applies to all ancestors of the type, including interface
+	progenitors.
+
 2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch3.adb (Build_Underlying_Full_View): Delete.

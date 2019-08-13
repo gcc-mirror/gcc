@@ -1,3 +1,7 @@
+2019-08-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/tagged4.adb: New testcase.
+
 2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/generic_inst10.adb, gnat.dg/generic_inst10_pkg.ads:
