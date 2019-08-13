@@ -1,3 +1,10 @@
+2019-08-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c/80619
+	* c-format.c (printf_length_specs): Set FMT_LEN_w for "w".
+	(asm_fprintf_length_spec): Same.
+	* c-format.h (format_lengths): Add FMT_LEN_w.
+
 2019-08-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-pragma.h (enum pragma_omp_clause): Add

@@ -1,3 +1,8 @@
+2019-08-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c/80619
+	* gcc.dg/format/pr80619.c: New test.
+
 2019-08-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90473 - wrong code with nullptr in default argument.
