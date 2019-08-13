@@ -10422,7 +10422,8 @@ job server mode to determine the number of parallel jobs. This
 is useful when the Makefile calling GCC is already executing in parallel.
 You must prepend a @samp{+} to the command recipe in the parent Makefile
 for this to work.  This option likely only works if @env{MAKE} is
-GNU make.
+GNU make.  Even without the option value, GCC tries to automatically
+detect a running GNU make's job server.
 
 Use @option{-flto=auto} to use GNU make's job server, if available,
 or otherwise fall back to autodetection of the number of CPU threads
