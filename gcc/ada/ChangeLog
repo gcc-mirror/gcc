@@ -1,5 +1,11 @@
 2019-08-13  Justin Squirek  <squirek@adacore.com>
 
+	* repinfo.adb (List_Scalar_Storage_Order): Modify conditionals
+	for displaying ordering to always be triggered when -gnatR4 is
+	in effect.
+
+2019-08-13  Justin Squirek  <squirek@adacore.com>
+
 	* aspects.adb, aspects.ads: Register new aspect.
 	* par-prag.adb (Prag): Register new pragma
 	* sem_ch13.adb (Analyze_Aspect_Specifications): Add processing
