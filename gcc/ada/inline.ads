@@ -143,6 +143,9 @@ package Inline is
    --  Add E's enclosing unit to Inlined_Bodies so that E can be subsequently
    --  retrieved and analyzed. N is the node giving rise to the call to E.
 
+   procedure Add_Pending_Instantiation (Inst : Node_Id; Act_Decl : Node_Id);
+   --  Add an entry in the table of generic bodies to be instantiated.
+
    procedure Analyze_Inlined_Bodies;
    --  At end of compilation, analyze the bodies of all units that contain
    --  inlined subprograms that are actually called.
