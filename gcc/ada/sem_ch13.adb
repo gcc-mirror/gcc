@@ -4653,10 +4653,12 @@ package body Sem_Ch13 is
          end if;
 
          if not Is_Overloaded (Expr) then
-            if not Check_Primitive_Function (Entity (Expr)) then
+            if Entity (Expr) /= Any_Id
+              and then not Check_Primitive_Function (Entity (Expr))
+            then
                Error_Msg_NE
                  ("aspect Indexing requires a function that applies to type&",
-                   Entity (Expr), Ent);
+                  Entity (Expr), Ent);
             end if;
 
             --  Flag the default_iterator as well as the denoted function.
