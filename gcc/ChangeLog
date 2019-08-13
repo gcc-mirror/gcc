@@ -1,5 +1,18 @@
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-protos.h (aarch64_output_ptrue): Delete.
+	* config/aarch64/aarch64-sve.md (*aarch64_sve_mov<PRED_ALL:mode>):
+	Use a single Dn alternative instead of separate Dz and Dm
+	alternatives.  Use aarch64_output_sve_move_immediate.
+	* config/aarch64/aarch64.c (aarch64_sve_element_int_mode): New
+	function.
+	(aarch64_simd_valid_immediate): Fill in the simd_immediate_info
+	for predicates too.
+	(aarch64_output_sve_mov_immediate): Handle predicate modes.
+	(aarch64_output_ptrue): Delete.
+
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.c (simd_immediate_info::insn_type): Add
 	INDEX.
 	(simd_immediate_info::value, simd_immediate_info::step)

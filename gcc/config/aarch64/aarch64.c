@@ -1635,6 +1635,16 @@ aarch64_get_mask_mode (poly_uint64 nunits, poly_uint64 nbytes)
   return default_get_mask_mode (nunits, nbytes);
 }
 
+/* Return the integer element mode associated with SVE mode MODE.  */
+
+static scalar_int_mode
+aarch64_sve_element_int_mode (machine_mode mode)
+{
+  unsigned int elt_bits = vector_element_size (BITS_PER_SVE_VECTOR,
+					       GET_MODE_NUNITS (mode));
+  return int_mode_for_size (elt_bits, 0).require ();
+}
+
 /* Implement TARGET_PREFERRED_ELSE_VALUE.  For binary operations,
    prefer to use the first arithmetic operand as the else value if
    the else value doesn't matter, since that exactly matches the SVE
@@ -14700,8 +14710,18 @@ aarch64_simd_valid_immediate (rtx op, simd_immediate_info *info,
 
   /* Handle PFALSE and PTRUE.  */
   if (vec_flags & VEC_SVE_PRED)
-    return (op == CONST0_RTX (mode)
-	    || op == CONSTM1_RTX (mode));
+    {
+      if (op == CONST0_RTX (mode) || op == CONSTM1_RTX (mode))
+	{
+	  if (info)
+	    {
+	      scalar_int_mode int_mode = aarch64_sve_element_int_mode (mode);
+	      *info = simd_immediate_info (int_mode, op == CONSTM1_RTX (mode));
+	    }
+	  return true;
+	}
+      return false;
+    }
 
   scalar_float_mode elt_float_mode;
   if (n_elts == 1
@@ -16393,6 +16413,21 @@ aarch64_output_sve_mov_immediate (rtx const_vector)
 
   element_char = sizetochar (GET_MODE_BITSIZE (info.elt_mode));
 
+  machine_mode vec_mode = GET_MODE (const_vector);
+  if (aarch64_sve_pred_mode_p (vec_mode))
+    {
+      static char buf[sizeof ("ptrue\t%0.N, vlNNNNN")];
+      unsigned int total_bytes;
+      if (info.u.mov.value == const0_rtx)
+	snprintf (buf, sizeof (buf), "pfalse\t%%0.b");
+      else if (BYTES_PER_SVE_VECTOR.is_constant (&total_bytes))
+	snprintf (buf, sizeof (buf), "ptrue\t%%0.%c, vl%d", element_char,
+		  total_bytes / GET_MODE_SIZE (info.elt_mode));
+      else
+	snprintf (buf, sizeof (buf), "ptrue\t%%0.%c, all", element_char);
+      return buf;
+    }
+
   if (info.insn == simd_immediate_info::INDEX)
     {
       snprintf (templ, sizeof (templ), "index\t%%0.%c, #"
@@ -16423,21 +16458,6 @@ aarch64_output_sve_mov_immediate (rtx const_vector)
   snprintf (templ, sizeof (templ), "mov\t%%0.%c, #" HOST_WIDE_INT_PRINT_DEC,
 	    element_char, INTVAL (info.u.mov.value));
   return templ;
-}
-
-/* Return the asm format for a PTRUE instruction whose destination has
-   mode MODE.  SUFFIX is the element size suffix.  */
-
-char *
-aarch64_output_ptrue (machine_mode mode, char suffix)
-{
-  unsigned int nunits;
-  static char buf[sizeof ("ptrue\t%0.N, vlNNNNN")];
-  if (GET_MODE_NUNITS (mode).is_constant (&nunits))
-    snprintf (buf, sizeof (buf), "ptrue\t%%0.%c, vl%d", suffix, nunits);
-  else
-    snprintf (buf, sizeof (buf), "ptrue\t%%0.%c, all", suffix);
-  return buf;
 }
 
 /* Split operands into moves from op[1] + op[2] into op[0].  */

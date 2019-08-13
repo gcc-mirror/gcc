@@ -462,7 +462,6 @@ char *aarch64_output_scalar_simd_mov_immediate (rtx, scalar_int_mode);
 char *aarch64_output_simd_mov_immediate (rtx, unsigned,
 			enum simd_immediate_check w = AARCH64_CHECK_MOV);
 char *aarch64_output_sve_mov_immediate (rtx);
-char *aarch64_output_ptrue (machine_mode, char);
 bool aarch64_pad_reg_upward (machine_mode, const_tree, bool);
 bool aarch64_regno_ok_for_base_p (int, bool);
 bool aarch64_regno_ok_for_index_p (int, bool);
