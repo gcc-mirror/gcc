@@ -1394,6 +1394,36 @@
    (set_attr "type" "mmxcvt,sselog,sselog")
    (set_attr "mode" "DI,TI,TI")])
 
+(define_insn "*mmx_pinsrd"
+  [(set (match_operand:V2SI 0 "register_operand" "=x,Yv")
+        (vec_merge:V2SI
+          (vec_duplicate:V2SI
+            (match_operand:SI 2 "nonimmediate_operand" "rm,rm"))
+	  (match_operand:V2SI 1 "register_operand" "0,Yv")
+          (match_operand:SI 3 "const_int_operand")))]
+  "TARGET_MMX_WITH_SSE && TARGET_SSE4_1
+   && ((unsigned) exact_log2 (INTVAL (operands[3]))
+       < GET_MODE_NUNITS (V2SImode))"
+{
+  operands[3] = GEN_INT (exact_log2 (INTVAL (operands[3])));
+  switch (which_alternative)
+    {
+    case 1:
+      return "vpinsrd\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+    case 0:
+      return "pinsrd\t{%3, %2, %0|%0, %2, %3}";
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "type" "sselog")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "TI")])
+
 (define_expand "mmx_pinsrw"
   [(set (match_operand:V4HI 0 "register_operand")
         (vec_merge:V4HI
@@ -1443,6 +1473,42 @@
    (set_attr "type" "mmxcvt,sselog,sselog")
    (set_attr "length_immediate" "1")
    (set_attr "mode" "DI,TI,TI")])
+
+(define_insn "*mmx_pinsrb"
+  [(set (match_operand:V8QI 0 "register_operand" "=x,Yv")
+        (vec_merge:V8QI
+          (vec_duplicate:V8QI
+            (match_operand:QI 2 "nonimmediate_operand" "rm,rm"))
+	  (match_operand:V8QI 1 "register_operand" "0,Yv")
+          (match_operand:SI 3 "const_int_operand")))]
+  "TARGET_MMX_WITH_SSE && TARGET_SSE4_1
+   && ((unsigned) exact_log2 (INTVAL (operands[3]))
+       < GET_MODE_NUNITS (V8QImode))"
+{
+  operands[3] = GEN_INT (exact_log2 (INTVAL (operands[3])));
+  switch (which_alternative)
+    {
+    case 1:
+      if (MEM_P (operands[2]))
+	return "vpinsrb\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+      else
+	return "vpinsrb\t{%3, %k2, %1, %0|%0, %1, %k2, %3}";
+    case 0:
+      if (MEM_P (operands[2]))
+	return "pinsrb\t{%3, %2, %0|%0, %2, %3}";
+      else
+	return "pinsrb\t{%3, %k2, %0|%0, %k2, %3}";
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "TI")])
 
 (define_insn "mmx_pextrw"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
