@@ -1,3 +1,8 @@
+2019-08-13  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-comlin.adb (Getopt): Quote unrecognized switch in
+	Invalid_Switch exception message.
+
 2019-08-13  Yannick Moy  <moy@adacore.com>
 
 	* sem_util.adb (Traverse_More_Func): Take into account

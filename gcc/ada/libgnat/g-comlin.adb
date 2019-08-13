@@ -754,7 +754,7 @@ package body GNAT.Command_Line is
             Parser.Current_Index := End_Index + 1;
 
             raise Invalid_Switch with
-              "Unrecognized option " & Full_Switch (Parser);
+              "Unrecognized option '" & Full_Switch (Parser) & ''';
          end if;
 
          End_Index := Parser.Current_Index + Max_Length - 1;
@@ -885,7 +885,7 @@ package body GNAT.Command_Line is
                      Extra   => Parser.Switch_Character);
                   Parser.Current_Index := Arg'Last + 1;
                   raise Invalid_Switch with
-                    "Unrecognized option " & Full_Switch (Parser);
+                    "Unrecognized option '" & Full_Switch (Parser) & ''';
                end if;
          end case;
 
