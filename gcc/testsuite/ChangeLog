@@ -1,3 +1,8 @@
+2013-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90563
+	* gfortran.dg/do_subsript_5.f90: New test.
+
 2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/89647
@@ -22,7 +27,7 @@
 
 	* gnat.dg/casesi.ad[bs], test_casesi.adb: New test.
 
-2019-08-13  Wilco Dijkstra  <wdijkstr@arm.com>  
+2019-08-13  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/81800
 	* gcc.target/aarch64/no-inline-lrint_3.c: New test.

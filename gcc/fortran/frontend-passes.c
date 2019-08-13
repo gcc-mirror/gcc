@@ -2518,7 +2518,12 @@ insert_index (gfc_expr *e, gfc_symbol *sym, mpz_t val, mpz_t ret)
   data.sym = sym;
   mpz_init_set (data.val, val);
   gfc_expr_walker (&n, callback_insert_index, (void *) &data);
+
+  /* Suppress errors here - we could get errors here such as an
+     out of bounds access for arrays, see PR 90563.  */
+  gfc_push_suppress_errors ();
   gfc_simplify_expr (n, 0);
+  gfc_pop_suppress_errors ();
 
   if (n->expr_type == EXPR_CONSTANT)
     {
