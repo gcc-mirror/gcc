@@ -1,3 +1,7 @@
+2019-08-13  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (DECL_MUTABLE_P): Use FIELD_DECL_CHECK.
+
 2019-08-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_clause_name): Parse device_type.
