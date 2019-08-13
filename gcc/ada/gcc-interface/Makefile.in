@@ -563,7 +563,7 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR) install-gcc-specs
 	$(RM) ../stamp-gnatlib-$(RTSDIR)
 
 ../stamp-gnatlib1-$(RTSDIR): Makefile ../stamp-gnatlib2-$(RTSDIR)
-	$(MAKE) MULTISUBDIR="$(MULTISUBDIR)" THREAD_KIND="$(THREAD_KIND)" setup-rts
+	$(MAKE) MULTISUBDIR="$(MULTISUBDIR)" THREAD_KIND="$(THREAD_KIND)" LN_S="$(LN_S)" setup-rts
 # Copy tsystem.h
 	$(CP) $(srcdir)/tsystem.h $(RTSDIR)
 	$(RM) ../stamp-gnatlib-$(RTSDIR)
@@ -651,6 +651,7 @@ gnatlib-shared-default:
 	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C) $(PICFLAG_FOR_TARGET)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
+	     LN_S="$(LN_S)" \
              gnatlib
 	$(RM) $(RTSDIR)/libgna*$(soext)
 	cd $(RTSDIR); `echo "$(GCC_FOR_TARGET)" \
@@ -681,7 +682,6 @@ gnatlib-shared-default:
 	   $(addprefix $(RTSDIR)/,$(GNATRTL_TASKING_OBJS))
 	$(RANLIB_FOR_TARGET) $(RTSDIR)/libgnarl_pic$(arext)
 
-
 gnatlib-shared-dual:
 	$(MAKE) $(FLAGS_TO_PASS) \
              GNATLIBFLAGS="$(GNATLIBFLAGS)" \
@@ -690,6 +690,7 @@ gnatlib-shared-dual:
 	     PICFLAG_FOR_TARGET="$(PICFLAG_FOR_TARGET)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
+	     LN_S="$(LN_S)" \
              gnatlib-shared-default
 	$(MV) $(RTSDIR)/libgna*$(soext) .
 	$(MV) $(RTSDIR)/libgnat_pic$(arext) .
@@ -701,7 +702,8 @@ gnatlib-shared-dual:
 	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
-             gnatlib
+	     LN_S="$(LN_S)" \
+	     gnatlib
 	$(MV) libgna*$(soext) $(RTSDIR)
 	$(MV) libgnat_pic$(arext) $(RTSDIR)
 	$(MV) libgnarl_pic$(arext) $(RTSDIR)
@@ -714,7 +716,8 @@ gnatlib-shared-dual-win32:
 	     PICFLAG_FOR_TARGET="$(PICFLAG_FOR_TARGET)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
-             gnatlib-shared-win32
+	     LN_S="$(LN_S)" \
+	     gnatlib-shared-win32
 	$(MV) $(RTSDIR)/libgna*$(soext) .
 	$(RM) ../stamp-gnatlib2-$(RTSDIR)
 	$(MAKE) $(FLAGS_TO_PASS) \
@@ -723,7 +726,8 @@ gnatlib-shared-dual-win32:
 	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
-             gnatlib
+	     LN_S="$(LN_S)" \
+	     gnatlib
 	$(MV) libgna*$(soext) $(RTSDIR)
 
 # ??? we need to add the option to support auto-import of arrays/records to
@@ -737,7 +741,8 @@ gnatlib-shared-win32:
 	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C) $(PICFLAG_FOR_TARGET)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
-             gnatlib
+	     LN_S="$(LN_S)" \
+	     gnatlib
 	$(RM) $(RTSDIR)/libgna*$(soext)
 	$(CP) $(RTSDIR)/libgnat$(arext) $(RTSDIR)/libgnat_pic$(arext)
 	$(CP) $(RTSDIR)/libgnarl$(arext) $(RTSDIR)/libgnarl_pic$(arext)
@@ -762,6 +767,7 @@ gnatlib-shared-darwin:
 	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C) $(PICFLAG_FOR_TARGET) -fno-common" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
+	     LN_S="$(LN_S)" \
 	     gnatlib
 	$(RM) $(RTSDIR)/libgnat$(soext) $(RTSDIR)/libgnarl$(soext)
 	$(CP) $(RTSDIR)/libgnat$(arext) $(RTSDIR)/libgnat_pic$(arext)
@@ -794,8 +800,9 @@ gnatlib-shared:
 	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
+	     LN_S="$(LN_S)" \
 	     PICFLAG_FOR_TARGET="$(PICFLAG_FOR_TARGET)" \
-             $(GNATLIB_SHARED)
+	     $(GNATLIB_SHARED)
 
 # When building a SJLJ runtime for VxWorks, we need to ensure that the extra
 # linker options needed for ZCX are not passed to prevent the inclusion of
@@ -808,6 +815,7 @@ gnatlib-sjlj:
 	     EH_MECHANISM="" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
+	     LN_S="$(LN_S)" \
 	     ../stamp-gnatlib1-$(RTSDIR)
 	sed \
 	  -e 's/Frontend_Exceptions.*/Frontend_Exceptions       : constant Boolean := True;/' \
@@ -822,6 +830,7 @@ gnatlib-sjlj:
 	     FORCE_DEBUG_ADAFLAGS="$(FORCE_DEBUG_ADAFLAGS)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
+	     LN_S="$(LN_S)" \
 	     gnatlib
 
 gnatlib-zcx:
@@ -829,6 +838,7 @@ gnatlib-zcx:
 	     EH_MECHANISM="-gcc" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
+	     LN_S="$(LN_S)" \
 	     ../stamp-gnatlib1-$(RTSDIR)
 	sed \
 	  -e 's/Frontend_Exceptions.*/Frontend_Exceptions       : constant Boolean := False;/' \
@@ -843,6 +853,7 @@ gnatlib-zcx:
 	     FORCE_DEBUG_ADAFLAGS="$(FORCE_DEBUG_ADAFLAGS)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
+	     LN_S="$(LN_S)" \
 	     gnatlib
 
 # Compiling object files from source files.

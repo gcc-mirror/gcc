@@ -1,3 +1,10 @@
+2019-08-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Remove unused TRACE variable. Pass
+	LN_S to relevant gnatlib targets.
+	* gcc-interface/Makefile.in: Systematically pass LN_S to
+	relevant gnatlib targets.
+
 2019-08-13  Yannick Moy  <moy@adacore.com>
 
 	* sem_dim.adb (Analyze_Dimension,
