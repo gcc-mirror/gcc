@@ -1,5 +1,10 @@
 2019-08-13  Gary Dismukes  <dismukes@adacore.com>
 
+	* exp_dbug.adb (Fully_Qualify_Name): Add full name qualification
+	for the E_Exception case.
+
+2019-08-13  Gary Dismukes  <dismukes@adacore.com>
+
 	* exp_aggr.adb (Aggr_Size_OK): Compute the aggregate size using
 	universal arithmetic, to avoid situations where the size
 	computation overflows.
