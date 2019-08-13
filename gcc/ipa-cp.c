@@ -2436,8 +2436,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 	  if (can_refer)
 	    {
 	      if (!target
-		  || (TREE_CODE (TREE_TYPE (target)) == FUNCTION_TYPE
-		      && DECL_FUNCTION_CODE (target) == BUILT_IN_UNREACHABLE)
+		  || fndecl_built_in_p (target, BUILT_IN_UNREACHABLE)
 		  || !possible_polymorphic_call_target_p
 		       (ie, cgraph_node::get (target)))
 		{
