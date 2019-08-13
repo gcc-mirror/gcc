@@ -14,6 +14,10 @@ mwarn-mcu
 Target Report Var(msp430_warn_mcu) Init(1)
 Warn if an MCU name is unrecognized or conflicts with other options (default: on).
 
+mwarn-devices-csv
+Target Report Var(msp430_warn_devices_csv) Init(1)
+Warn if devices.csv is not found or there are problem parsing it (default: on).
+
 mcpu=
 Target Report Joined RejectNegative Var(target_cpu)
 Specify the ISA to build for: msp430, msp430x, msp430xv2.
@@ -92,3 +96,8 @@ Passes on a request to the assembler to enable fixes for various silicon errata.
 msilicon-errata-warn=
 Target Joined RejectNegative Report ToLower
 Passes on a request to the assembler to warn about various silicon errata.
+
+mdevices-csv-loc=
+Target Joined Var(msp430_devices_csv_loc) RejectNegative Report
+The path to devices.csv.  The GCC driver can normally locate devices.csv itself
+and pass this option to the compiler, so the user shouldn't need to pass this.

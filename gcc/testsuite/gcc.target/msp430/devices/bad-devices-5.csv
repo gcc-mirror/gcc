@@ -1,0 +1,3 @@
+# Test bad CPU_TYPE value
+# Device Name,CPU_TYPE,MPY_TYPE
+msp430_00,5,0
