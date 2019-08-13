@@ -2445,6 +2445,13 @@ create_trace_edges (rtx_insn *insn)
 	      rtx_insn *lab = as_a <rtx_insn *> (XEXP (RTVEC_ELT (vec, i), 0));
 	      maybe_record_trace_start (lab, insn);
 	    }
+
+	  /* Handle casesi dispatch insns.  */
+	  if ((tmp = tablejump_casesi_pattern (insn)) != NULL_RTX)
+	    {
+	      rtx_insn * lab = label_ref_label (XEXP (SET_SRC (tmp), 2));
+	      maybe_record_trace_start (lab, insn);
+	    }
 	}
       else if (computed_jump_p (insn))
 	{
