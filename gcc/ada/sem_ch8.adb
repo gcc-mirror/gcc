@@ -3368,7 +3368,16 @@ package body Sem_Ch8 is
 
             if CW_Actual then
                null;
-            elsif not Is_Actual or else No (Enclosing_Instance) then
+
+            --  No need for a redundant error message if this is a nested
+            --  instance, unless the current instantiation (of a child unit)
+            --  is a compilation unit, which is not analyzed when the parent
+            --  generic is analyzed.
+
+            elsif not Is_Actual
+               or else No (Enclosing_Instance)
+               or else Is_Compilation_Unit (Current_Scope)
+            then
                Check_Mode_Conformant (New_S, Old_S);
             end if;
 
