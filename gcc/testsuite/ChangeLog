@@ -1,3 +1,8 @@
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/asm-x-constraint-1.c: New test.
+	* gcc.target/aarch64/asm-y-constraint-1.c: Likewise.
+
 2019-08-13  Janne Blomqvist  <jb@gcc.gnu.org>
 
         PR fortran/91414

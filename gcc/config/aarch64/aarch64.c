@@ -1610,6 +1610,7 @@ aarch64_hard_regno_nregs (unsigned regno, machine_mode mode)
     {
     case FP_REGS:
     case FP_LO_REGS:
+    case FP_LO8_REGS:
       if (aarch64_sve_data_mode_p (mode))
 	return exact_div (GET_MODE_SIZE (mode),
 			  BYTES_PER_SVE_VECTOR).to_constant ();
@@ -8279,7 +8280,8 @@ aarch64_regno_regclass (unsigned regno)
     return POINTER_REGS;
 
   if (FP_REGNUM_P (regno))
-    return FP_LO_REGNUM_P (regno) ?  FP_LO_REGS : FP_REGS;
+    return (FP_LO8_REGNUM_P (regno) ? FP_LO8_REGS
+	    : FP_LO_REGNUM_P (regno) ? FP_LO_REGS : FP_REGS);
 
   if (PR_REGNUM_P (regno))
     return PR_LO_REGNUM_P (regno) ? PR_LO_REGS : PR_HI_REGS;
@@ -8569,6 +8571,7 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
     case POINTER_AND_FP_REGS:
     case FP_REGS:
     case FP_LO_REGS:
+    case FP_LO8_REGS:
       if (aarch64_sve_data_mode_p (mode)
 	  && constant_multiple_p (GET_MODE_SIZE (mode),
 				  BYTES_PER_SVE_VECTOR, &nregs))
