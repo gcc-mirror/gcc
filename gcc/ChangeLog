@@ -1,3 +1,15 @@
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (simd_immediate_info::insn_type): Add
+	INDEX.
+	(simd_immediate_info::value, simd_immediate_info::step)
+	(simd_immediate_info::modifier, simd_immediate_info::shift): Replace
+	with...
+	(simd_immediate_info::u): ...this new union.
+	(simd_immediate_info::simd_immediate_info): Update accordingly.
+	(aarch64_output_simd_mov_immediate): Likewise.
+	(aarch64_output_sve_mov_immediate): Likewise.
+
 2019-08-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc/config.gcc (msp430*-*-*): Add msp430-devices.o to extra_objs and
