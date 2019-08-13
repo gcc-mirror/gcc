@@ -1,3 +1,11 @@
+2019-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/91424
+	* frontend-passes.c (do_subscript): Do not warn for an
+	expression a second time.  Do not warn about a zero-trip loop.
+	(doloop_warn): Also look at contained namespaces.
+
 2019-08-12  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91359

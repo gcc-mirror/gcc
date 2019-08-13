@@ -18,12 +18,13 @@ contains
     integer (ii4), dimension(40,40) :: c
     integer  i, j
 
-    do i=1,20
-      b(i,j) = 123 * a(i,j) + 34 * a(i,j+1) &
-             + 34 * a(i,j-1) + a(i+1,j+1) &
-             + a(i+1,j-1) + a(i-1,j+1) &
-             + a(i-1,j-1)
-      c(i,j) = 123
+    j = 10
+    do i=11,30
+       b(i,j) = 123 * a(i,j) + 34 * a(i,j+1) &
+            + 34 * a(i,j-1) + a(i+1,j+1) &
+            + a(i+1,j-1) + a(i-1,j+1) &
+            + a(i-1,j-1)
+       c(i,j) = 123
     end do
 
     where ((xyz(:,:,2) /= 0) .and. (c /= 0))
