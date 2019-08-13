@@ -127,7 +127,7 @@ NR == 1 {
   if (lang == "") lang = " "$2" "; else lang = " ";
 }
 $2 == "version" { save = $0; $1 = ""; $2 = ""; version = $0; gsub(/^ */, "", version); gsub(/\r$/, "", version); $0 = save; }
-/\===.*Summary/ { print ""; print; blanks=1; }
+/===.*Summary/ { print ""; print; blanks=1; }
 /tests ===/ || /^(Target|Host|Native)/ || $2 == "version" { print; blanks=1; }
 /^(XPASS|FAIL|UNRESOLVED|WARNING|ERROR|# of )/ { sub ("\r", ""); print; }
 /^using:/ { print ""; print; print ""; }
