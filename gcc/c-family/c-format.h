@@ -36,6 +36,7 @@ enum format_lengths
   FMT_LEN_H,
   FMT_LEN_D,
   FMT_LEN_DD,
+  FMT_LEN_w,   /* GCC's HOST_WIDE_INT.  */
   FMT_LEN_MAX
 };
 
