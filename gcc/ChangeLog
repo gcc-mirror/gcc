@@ -1,5 +1,9 @@
 2019-08-13  Olivier Hainque  <hainque@adacore.com>
 
+	* rtl.h (tablejump_casesi_pattern): Move declaration to proper spot.
+
+2019-08-13  Olivier Hainque  <hainque@adacore.com>
+
 	* rtlanal.c (tablejump_casesi_pattern): New function, to
 	determine if a tablejump insn is a casesi dispatcher. Extracted
 	from patch_jump_insn.
