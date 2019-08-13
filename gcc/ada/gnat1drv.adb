@@ -803,6 +803,10 @@ procedure Gnat1drv is
 
         not Generate_C_Code
 
+        --  No back-end inlining available in ASIS mode
+
+        and then not ASIS_Mode
+
         --  No back-end inlining in GNATprove mode, since it just confuses
         --  the formal verification process.
 
