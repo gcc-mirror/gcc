@@ -1,3 +1,8 @@
+2019-08-13  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Do not inline calls inside record
+	types.
+
 2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch4.adb (Analyze_One_Call): Remove bypass for type
