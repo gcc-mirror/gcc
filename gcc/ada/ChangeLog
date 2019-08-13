@@ -1,5 +1,10 @@
 2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* ali.ads (Linker_Option_Record): Remove Original_Pos component.
+	* ali.adb (Scan_ALI): Do not set it.
+
+2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* sem_ch3.adb (Build_Derived_Concurrent_Type): Add a couple of
 	local variables and use them.  When the derived type fully
 	constrains the parent type, rewrite it as a subtype of an

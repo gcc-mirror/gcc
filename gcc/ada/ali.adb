@@ -3204,9 +3204,6 @@ package body ALI is
 
             Linker_Options.Table (Linker_Options.Last).Internal_File :=
               Is_Internal_File_Name (F);
-
-            Linker_Options.Table (Linker_Options.Last).Original_Pos :=
-              Linker_Options.Last;
          end if;
 
          --  If there are notes present, scan them

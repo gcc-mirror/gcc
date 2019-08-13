@@ -725,15 +725,11 @@ package ALI is
       --  Set True if the linker options are from an internal file. This is
       --  used to insert certain standard entries after all the user entries
       --  but before the entries from the run-time.
-
-      Original_Pos : Positive;
-      --  Keep track of original position in the linker options table. This
-      --  is used to implement a stable sort when we sort the linker options
-      --  table.
    end record;
 
-   --  The indexes of active entries in this table range from 1 to the
-   --  value of Linker_Options.Last. The zero'th element is for sort call.
+   --  The indexes of active entries in this table range from 1 to
+   --  the value of Linker_Options.Last. The zero'th element is for
+   --  convenience if the table needs to be sorted.
 
    package Linker_Options is new Table.Table (
      Table_Component_Type => Linker_Option_Record,
@@ -770,8 +766,8 @@ package ALI is
    end record;
 
    --  The indexes of active entries in this table range from 1 to the
-   --  value of Linker_Options.Last. The zero'th element is for convenience
-   --  if the table needs to be sorted.
+   --  value of Notes.Last. The zero'th element is for convenience if
+   --  the table needs to be sorted.
 
    package Notes is new Table.Table (
      Table_Component_Type => Notes_Record,
