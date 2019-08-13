@@ -1,3 +1,16 @@
+2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): If back-end inlining is
+	enabled, also instantiate the body of a generic unit containing
+	a subprogram subject to aspect/pragma Inline_Always at
+	optimization level zero.
+	* sem_ch12.adb (Might_Inline_Subp): Minor tweak.
+	(Analyze_Package_Instantiation): Do not instantiate the package
+	body because of inlining considerations if the instantiation is
+	done in a generic unit.  Move around similar condition involving
+	the main unit.  Add test on Back_End_Inlining to processing for
+	front-end inlining.
+
 2019-08-13  Javier Miranda  <miranda@adacore.com>
 
 	* exp_disp.adb (Make_Secondary_DT): Handle record type
