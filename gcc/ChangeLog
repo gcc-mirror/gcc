@@ -1,3 +1,8 @@
+2019-08-13  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Document automatic detection of jobserver.
+	* lto-wrapper.c (run_gcc): Detect jobserver always.
+
 2019-08-13  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (ix86_expand_vector_set) <case E_V2SImode>:
