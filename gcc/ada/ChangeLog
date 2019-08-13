@@ -1,5 +1,10 @@
 2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* impunit.adb (Non_Imp_File_Names_95): Add
+	GNAT.Branch_Prediction.
+
+2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* exp_ch6.adb: Remove with and use clauses for Sem_Ch12.
 	(Expand_Call_Helper): Swap the back-end inlining case and the
 	special front-end expansion case.  In back-end inlining mode, do
