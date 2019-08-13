@@ -4314,6 +4314,7 @@ extern tree build_vector_from_val (tree, tree);
 extern tree build_uniform_cst (tree, tree);
 extern tree build_vec_series (tree, tree, tree);
 extern tree build_index_vector (tree, poly_uint64, poly_uint64);
+extern tree build_vector_a_then_b (tree, unsigned int, tree, tree);
 extern void recompute_constructor_flags (tree);
 extern void verify_constructor_flags (tree);
 extern tree build_constructor (tree, vec<constructor_elt, va_gc> * CXX_MEM_STAT_INFO);

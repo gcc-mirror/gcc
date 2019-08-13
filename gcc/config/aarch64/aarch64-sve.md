@@ -481,12 +481,18 @@
   {
     if (GET_CODE (operands[0]) == MEM)
       operands[1] = force_reg (<MODE>mode, operands[1]);
+
+    if (CONSTANT_P (operands[1]))
+      {
+	aarch64_expand_mov_immediate (operands[0], operands[1]);
+	DONE;
+      }
   }
 )
 
 (define_insn "*aarch64_sve_mov<mode>"
   [(set (match_operand:PRED_ALL 0 "nonimmediate_operand" "=Upa, m, Upa, Upa")
-	(match_operand:PRED_ALL 1 "general_operand" "Upa, Upa, m, Dn"))]
+	(match_operand:PRED_ALL 1 "aarch64_mov_operand" "Upa, Upa, m, Dn"))]
   "TARGET_SVE
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
@@ -2923,7 +2929,7 @@
 
 ;; Set element I of the result if operand1 + J < operand2 for all J in [0, I],
 ;; with the comparison being unsigned.
-(define_insn "while_ult<GPI:mode><PRED_ALL:mode>"
+(define_insn "@while_ult<GPI:mode><PRED_ALL:mode>"
   [(set (match_operand:PRED_ALL 0 "register_operand" "=Upa")
 	(unspec:PRED_ALL [(match_operand:GPI 1 "aarch64_reg_or_zero" "rZ")
 			  (match_operand:GPI 2 "aarch64_reg_or_zero" "rZ")]

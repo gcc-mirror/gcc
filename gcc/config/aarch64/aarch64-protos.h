@@ -406,6 +406,33 @@ extern enum aarch64_key_type aarch64_ra_sign_key;
 
 extern struct tune_params aarch64_tune_params;
 
+/* The available SVE predicate patterns, known in the ACLE as "svpattern".  */
+#define AARCH64_FOR_SVPATTERN(T) \
+  T (POW2, pow2, 0) \
+  T (VL1, vl1, 1) \
+  T (VL2, vl2, 2) \
+  T (VL3, vl3, 3) \
+  T (VL4, vl4, 4) \
+  T (VL5, vl5, 5) \
+  T (VL6, vl6, 6) \
+  T (VL7, vl7, 7) \
+  T (VL8, vl8, 8) \
+  T (VL16, vl16, 9) \
+  T (VL32, vl32, 10) \
+  T (VL64, vl64, 11) \
+  T (VL128, vl128, 12) \
+  T (VL256, vl256, 13) \
+  T (MUL4, mul4, 29) \
+  T (MUL3, mul3, 30) \
+  T (ALL, all, 31)
+
+#define AARCH64_SVENUM(UPPER, LOWER, VALUE) AARCH64_SV_##UPPER = VALUE,
+enum aarch64_svpattern {
+  AARCH64_FOR_SVPATTERN (AARCH64_SVENUM)
+  AARCH64_NUM_SVPATTERNS
+};
+#undef AARCH64_SVENUM
+
 void aarch64_post_cfi_startproc (void);
 poly_int64 aarch64_initial_elimination_offset (unsigned, unsigned);
 int aarch64_get_condition_code (rtx);
