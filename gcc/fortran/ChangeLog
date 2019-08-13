@@ -1,3 +1,9 @@
+2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88072
+	* misc.c (gfc_typename): Do not point to something that ought not to 
+	be pointed at.
+
 2013-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/90563
