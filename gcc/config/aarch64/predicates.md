@@ -53,8 +53,7 @@
 
 (define_predicate "aarch64_simd_register"
   (and (match_code "reg")
-       (ior (match_test "REGNO_REG_CLASS (REGNO (op)) == FP_LO_REGS")
-            (match_test "REGNO_REG_CLASS (REGNO (op)) == FP_REGS"))))
+       (match_test "FP_REGNUM_P (REGNO (op))")))
 
 (define_predicate "aarch64_reg_or_zero"
   (and (match_code "reg,subreg,const_int,const_double")

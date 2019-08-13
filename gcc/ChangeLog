@@ -1,5 +1,17 @@
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* doc/md.texi: Document the x and y constraints for AArch64.
+	* config/aarch64/aarch64.h (FP_LO8_REGNUM_P): New macro.
+	(FP_LO8_REGS): New reg_class.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS): Add an entry for FP_LO8_REGS.
+	* config/aarch64/aarch64.c (aarch64_hard_regno_nregs)
+	(aarch64_regno_regclass, aarch64_class_max_nregs): Handle FP_LO8_REGS.
+	* config/aarch64/predicates.md (aarch64_simd_register): Use
+	FP_REGNUM_P instead of checking the classes manually.
+	* config/aarch64/constraints.md (y): New constraint.
+
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (perm_insn): Include the "1"/"2" suffix.
 	(perm_hilo): Remove UNSPEC_ZIP*, UNSEPC_TRN* and UNSPEC_UZP*.
 	* config/aarch64/aarch64-simd.md
