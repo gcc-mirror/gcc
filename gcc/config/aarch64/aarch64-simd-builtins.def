@@ -424,7 +424,7 @@
   BUILTIN_VB (UNOP, rbit, 0)
 
   /* Implemented by
-     aarch64_<PERMUTE:perm_insn><PERMUTE:perm_hilo><mode>.  */
+     aarch64_<PERMUTE:perm_insn><mode>.  */
   BUILTIN_VALL (BINOP, zip1, 0)
   BUILTIN_VALL (BINOP, zip2, 0)
   BUILTIN_VALL (BINOP, uzp1, 0)

@@ -1,3 +1,20 @@
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (perm_insn): Include the "1"/"2" suffix.
+	(perm_hilo): Remove UNSPEC_ZIP*, UNSEPC_TRN* and UNSPEC_UZP*.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_<PERMUTE:perm_insn><PERMUTE:perm_hilo><mode>): Rename to..
+	(aarch64_<PERMUTE:perm_insn><mode>): ...this and remove perm_hilo
+	from the asm template.
+	* config/aarch64/aarch64-sve.md
+	(aarch64_<perm_insn><perm_hilo><PRED_ALL:mode>): Rename to..
+	(aarch64_<perm_insn><PRED_ALL:mode>): ...this and remove perm_hilo
+	from the asm template.
+	(aarch64_<perm_insn><perm_hilo><SVE_ALL:mode>): Rename to..
+	(aarch64_<perm_insn><SVE_ALL:mode>): ...this and remove perm_hilo
+	from the asm template.
+	* config/aarch64/aarch64-simd-builtins.def: Update comment.
+
 2019-08-13  Martin Liska  <mliska@suse.cz>
 
 	* value-prof.c (gimple_ic_transform): Add new line.
