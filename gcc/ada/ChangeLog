@@ -1,5 +1,10 @@
 2019-08-13  Yannick Moy  <moy@adacore.com>
 
+	* sem_ch4.adb (Analyze_Allocator): Do not insert subtype
+	declaration for allocator inside a spec expression.
+
+2019-08-13  Yannick Moy  <moy@adacore.com>
+
 	* sem_res.adb (Resolve_Call): Do not inline calls inside record
 	types.
 
