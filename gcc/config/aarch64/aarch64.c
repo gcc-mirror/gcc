@@ -83,7 +83,7 @@
 /* Information about a legitimate vector immediate operand.  */
 struct simd_immediate_info
 {
-  enum insn_type { MOV, MVN };
+  enum insn_type { MOV, MVN, INDEX };
   enum modifier_type { LSL, MSL };
 
   simd_immediate_info () {}
@@ -96,29 +96,43 @@ struct simd_immediate_info
   /* The mode of the elements.  */
   scalar_mode elt_mode;
 
-  /* The value of each element if all elements are the same, or the
-     first value if the constant is a series.  */
-  rtx value;
-
-  /* The value of the step if the constant is a series, null otherwise.  */
-  rtx step;
-
   /* The instruction to use to move the immediate into a vector.  */
   insn_type insn;
 
-  /* The kind of shift modifier to use, and the number of bits to shift.
-     This is (LSL, 0) if no shift is needed.  */
-  modifier_type modifier;
-  unsigned int shift;
+  union
+  {
+    /* For MOV and MVN.  */
+    struct
+    {
+      /* The value of each element.  */
+      rtx value;
+
+      /* The kind of shift modifier to use, and the number of bits to shift.
+	 This is (LSL, 0) if no shift is needed.  */
+      modifier_type modifier;
+      unsigned int shift;
+    } mov;
+
+    /* For INDEX.  */
+    struct
+    {
+      /* The value of the first element and the step to be added for each
+	 subsequent element.  */
+      rtx base, step;
+    } index;
+  } u;
 };
 
 /* Construct a floating-point immediate in which each element has mode
    ELT_MODE_IN and value VALUE_IN.  */
 inline simd_immediate_info
 ::simd_immediate_info (scalar_float_mode elt_mode_in, rtx value_in)
-  : elt_mode (elt_mode_in), value (value_in), step (NULL_RTX), insn (MOV),
-    modifier (LSL), shift (0)
-{}
+  : elt_mode (elt_mode_in), insn (MOV)
+{
+  u.mov.value = value_in;
+  u.mov.modifier = LSL;
+  u.mov.shift = 0;
+}
 
 /* Construct an integer immediate in which each element has mode ELT_MODE_IN
    and value VALUE_IN.  The other parameters are as for the structure
@@ -128,17 +142,22 @@ inline simd_immediate_info
 		       unsigned HOST_WIDE_INT value_in,
 		       insn_type insn_in, modifier_type modifier_in,
 		       unsigned int shift_in)
-  : elt_mode (elt_mode_in), value (gen_int_mode (value_in, elt_mode_in)),
-    step (NULL_RTX), insn (insn_in), modifier (modifier_in), shift (shift_in)
-{}
+  : elt_mode (elt_mode_in), insn (insn_in)
+{
+  u.mov.value = gen_int_mode (value_in, elt_mode_in);
+  u.mov.modifier = modifier_in;
+  u.mov.shift = shift_in;
+}
 
 /* Construct an integer immediate in which each element has mode ELT_MODE_IN
-   and where element I is equal to VALUE_IN + I * STEP_IN.  */
+   and where element I is equal to BASE_IN + I * STEP_IN.  */
 inline simd_immediate_info
-::simd_immediate_info (scalar_mode elt_mode_in, rtx value_in, rtx step_in)
-  : elt_mode (elt_mode_in), value (value_in), step (step_in), insn (MOV),
-    modifier (LSL), shift (0)
-{}
+::simd_immediate_info (scalar_mode elt_mode_in, rtx base_in, rtx step_in)
+  : elt_mode (elt_mode_in), insn (INDEX)
+{
+  u.index.base = base_in;
+  u.index.step = step_in;
+}
 
 /* The current code model.  */
 enum aarch64_code_model aarch64_cmodel;
@@ -16275,17 +16294,18 @@ aarch64_output_simd_mov_immediate (rtx const_vector, unsigned width,
 
   if (GET_MODE_CLASS (info.elt_mode) == MODE_FLOAT)
     {
-      gcc_assert (info.shift == 0 && info.insn == simd_immediate_info::MOV);
+      gcc_assert (info.insn == simd_immediate_info::MOV
+		  && info.u.mov.shift == 0);
       /* For FP zero change it to a CONST_INT 0 and use the integer SIMD
 	 move immediate path.  */
-      if (aarch64_float_const_zero_rtx_p (info.value))
-        info.value = GEN_INT (0);
+      if (aarch64_float_const_zero_rtx_p (info.u.mov.value))
+        info.u.mov.value = GEN_INT (0);
       else
 	{
 	  const unsigned int buf_size = 20;
 	  char float_buf[buf_size] = {'\0'};
 	  real_to_decimal_for_mode (float_buf,
-				    CONST_DOUBLE_REAL_VALUE (info.value),
+				    CONST_DOUBLE_REAL_VALUE (info.u.mov.value),
 				    buf_size, buf_size, 1, info.elt_mode);
 
 	  if (lane_count == 1)
@@ -16297,36 +16317,39 @@ aarch64_output_simd_mov_immediate (rtx const_vector, unsigned width,
 	}
     }
 
-  gcc_assert (CONST_INT_P (info.value));
+  gcc_assert (CONST_INT_P (info.u.mov.value));
 
   if (which == AARCH64_CHECK_MOV)
     {
       mnemonic = info.insn == simd_immediate_info::MVN ? "mvni" : "movi";
-      shift_op = info.modifier == simd_immediate_info::MSL ? "msl" : "lsl";
+      shift_op = (info.u.mov.modifier == simd_immediate_info::MSL
+		  ? "msl" : "lsl");
       if (lane_count == 1)
 	snprintf (templ, sizeof (templ), "%s\t%%d0, " HOST_WIDE_INT_PRINT_HEX,
-		  mnemonic, UINTVAL (info.value));
-      else if (info.shift)
+		  mnemonic, UINTVAL (info.u.mov.value));
+      else if (info.u.mov.shift)
 	snprintf (templ, sizeof (templ), "%s\t%%0.%d%c, "
 		  HOST_WIDE_INT_PRINT_HEX ", %s %d", mnemonic, lane_count,
-		  element_char, UINTVAL (info.value), shift_op, info.shift);
+		  element_char, UINTVAL (info.u.mov.value), shift_op,
+		  info.u.mov.shift);
       else
 	snprintf (templ, sizeof (templ), "%s\t%%0.%d%c, "
 		  HOST_WIDE_INT_PRINT_HEX, mnemonic, lane_count,
-		  element_char, UINTVAL (info.value));
+		  element_char, UINTVAL (info.u.mov.value));
     }
   else
     {
       /* For AARCH64_CHECK_BIC and AARCH64_CHECK_ORR.  */
       mnemonic = info.insn == simd_immediate_info::MVN ? "bic" : "orr";
-      if (info.shift)
+      if (info.u.mov.shift)
 	snprintf (templ, sizeof (templ), "%s\t%%0.%d%c, #"
 		  HOST_WIDE_INT_PRINT_DEC ", %s #%d", mnemonic, lane_count,
-		  element_char, UINTVAL (info.value), "lsl", info.shift);
+		  element_char, UINTVAL (info.u.mov.value), "lsl",
+		  info.u.mov.shift);
       else
 	snprintf (templ, sizeof (templ), "%s\t%%0.%d%c, #"
 		  HOST_WIDE_INT_PRINT_DEC, mnemonic, lane_count,
-		  element_char, UINTVAL (info.value));
+		  element_char, UINTVAL (info.u.mov.value));
     }
   return templ;
 }
@@ -16370,24 +16393,25 @@ aarch64_output_sve_mov_immediate (rtx const_vector)
 
   element_char = sizetochar (GET_MODE_BITSIZE (info.elt_mode));
 
-  if (info.step)
+  if (info.insn == simd_immediate_info::INDEX)
     {
       snprintf (templ, sizeof (templ), "index\t%%0.%c, #"
 		HOST_WIDE_INT_PRINT_DEC ", #" HOST_WIDE_INT_PRINT_DEC,
-		element_char, INTVAL (info.value), INTVAL (info.step));
+		element_char, INTVAL (info.u.index.base),
+		INTVAL (info.u.index.step));
       return templ;
     }
 
   if (GET_MODE_CLASS (info.elt_mode) == MODE_FLOAT)
     {
-      if (aarch64_float_const_zero_rtx_p (info.value))
-	info.value = GEN_INT (0);
+      if (aarch64_float_const_zero_rtx_p (info.u.mov.value))
+	info.u.mov.value = GEN_INT (0);
       else
 	{
 	  const int buf_size = 20;
 	  char float_buf[buf_size] = {};
 	  real_to_decimal_for_mode (float_buf,
-				    CONST_DOUBLE_REAL_VALUE (info.value),
+				    CONST_DOUBLE_REAL_VALUE (info.u.mov.value),
 				    buf_size, buf_size, 1, info.elt_mode);
 
 	  snprintf (templ, sizeof (templ), "fmov\t%%0.%c, #%s",
@@ -16397,7 +16421,7 @@ aarch64_output_sve_mov_immediate (rtx const_vector)
     }
 
   snprintf (templ, sizeof (templ), "mov\t%%0.%c, #" HOST_WIDE_INT_PRINT_DEC,
-	    element_char, INTVAL (info.value));
+	    element_char, INTVAL (info.u.mov.value));
   return templ;
 }
 
