@@ -7332,8 +7332,6 @@ tree
 resolve_overloaded_builtin (location_t loc, tree function,
 			    vec<tree, va_gc> *params)
 {
-  enum built_in_function orig_code = DECL_FUNCTION_CODE (function);
-
   /* Is function one of the _FETCH_OP_ or _OP_FETCH_ built-ins?
      Those are not valid to call with a pointer to _Bool (or C++ bool)
      and so must be rejected.  */
@@ -7355,6 +7353,7 @@ resolve_overloaded_builtin (location_t loc, tree function,
     }
 
   /* Handle BUILT_IN_NORMAL here.  */
+  enum built_in_function orig_code = DECL_FUNCTION_CODE (function);
   switch (orig_code)
     {
     case BUILT_IN_SPECULATION_SAFE_VALUE_N:

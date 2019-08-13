@@ -11180,7 +11180,7 @@ aarch64_builtin_reciprocal (tree fndecl)
 
   if (!use_rsqrt_p (mode))
     return NULL_TREE;
-  return aarch64_builtin_rsqrt (DECL_FUNCTION_CODE (fndecl));
+  return aarch64_builtin_rsqrt (DECL_MD_FUNCTION_CODE (fndecl));
 }
 
 /* Emit instruction sequence to compute either the approximate square root

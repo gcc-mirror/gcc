@@ -5498,7 +5498,7 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
   enum insn_code icode;
   const struct builtin_description *d;
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   tree arg0, arg1, arg2;
   rtx op0, op1, op2, accvec, pat, tmp1, tmp2, a0reg, a1reg;
   machine_mode tmode, mode0;

@@ -1,3 +1,10 @@
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91421
+	* lto-common.c (compare_tree_sccs_1): Use DECL_UNCHECKED_FUNCTION_CODE
+	instead of DECL_FUNCTION_CODE.
+	* lto-symtab.c (lto_symtab_merge_p): Likewise.
+
 2019-08-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* Make-lang.in (lto.install-common): Remove unnecessary slash

@@ -7236,7 +7236,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 		int ignore)
 {
   tree fndecl = get_callee_fndecl (exp);
-  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   machine_mode target_mode = TYPE_MODE (TREE_TYPE (exp));
   int flags;
 
@@ -7248,6 +7247,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
      redundant checks and be sure, that possible overflow will be detected
      by ASan.  */
 
+  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   if ((flag_sanitize & SANITIZE_ADDRESS) && asan_intercepted_p (fcode))
     return expand_call (exp, target, ignore);
 

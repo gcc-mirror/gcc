@@ -1241,7 +1241,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       compare_values (DECL_CXX_CONSTRUCTOR_P);
       compare_values (DECL_CXX_DESTRUCTOR_P);
       if (DECL_BUILT_IN_CLASS (t1) != NOT_BUILT_IN)
-	compare_values (DECL_FUNCTION_CODE);
+	compare_values (DECL_UNCHECKED_FUNCTION_CODE);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))

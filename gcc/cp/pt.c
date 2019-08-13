@@ -28331,9 +28331,8 @@ declare_integer_pack (void)
 							 NULL_TREE),
 			       NULL_TREE, ECF_CONST);
   DECL_DECLARED_CONSTEXPR_P (ipfn) = true;
-  DECL_BUILT_IN_CLASS (ipfn) = BUILT_IN_FRONTEND;
-  DECL_FUNCTION_CODE (ipfn)
-    = (enum built_in_function) (int) CP_BUILT_IN_INTEGER_PACK;
+  set_decl_built_in_function (ipfn, BUILT_IN_FRONTEND,
+			      CP_BUILT_IN_INTEGER_PACK);
 }
 
 /* Set up the hash tables for template instantiations.  */

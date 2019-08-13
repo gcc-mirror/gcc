@@ -9113,7 +9113,7 @@ frv_expand_builtin (tree exp,
                     int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned fcode = (unsigned)DECL_FUNCTION_CODE (fndecl);
+  unsigned fcode = DECL_MD_FUNCTION_CODE (fndecl);
   unsigned i;
   struct builtin_description *d;
 

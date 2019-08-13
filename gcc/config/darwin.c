@@ -3439,8 +3439,7 @@ darwin_init_cfstring_builtins (unsigned builtin_cfstring)
      in place of the existing, which may be NULL.  */
   DECL_LANG_SPECIFIC (cfsfun) = NULL;
   (*lang_hooks.dup_lang_specific_decl) (cfsfun);
-  DECL_BUILT_IN_CLASS (cfsfun) = BUILT_IN_MD;
-  DECL_FUNCTION_CODE (cfsfun) = darwin_builtin_cfstring;
+  set_decl_built_in_function (cfsfun, BUILT_IN_MD, darwin_builtin_cfstring);
   lang_hooks.builtin_function (cfsfun);
 
   /* extern int __CFConstantStringClassReference[];  */
@@ -3464,7 +3463,7 @@ tree
 darwin_fold_builtin (tree fndecl, int n_args, tree *argp,
 		     bool ARG_UNUSED (ignore))
 {
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
 
   if (fcode == darwin_builtin_cfstring)
     {

@@ -615,12 +615,8 @@ add_builtin_function_common (const char *name,
 
   TREE_PUBLIC (decl)         = 1;
   DECL_EXTERNAL (decl)       = 1;
-  DECL_BUILT_IN_CLASS (decl) = cl;
 
-  DECL_FUNCTION_CODE (decl)  = (enum built_in_function) function_code;
-
-  /* DECL_FUNCTION_CODE is a bitfield; verify that the value fits.  */
-  gcc_assert (DECL_FUNCTION_CODE (decl) == function_code);
+  set_decl_built_in_function (decl, cl, function_code);
 
   if (library_name)
     {

@@ -1,3 +1,8 @@
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91421
+	* jit-playback.c (new_function): Use set_decl_built_in_function.
+
 2019-07-22  Andrea Corallo  <andrea.corallo@arm.com>
 
 	* jit-recording.c (unary_op_reproducer_strings): Make it extern.

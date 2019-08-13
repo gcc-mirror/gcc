@@ -1,6 +1,11 @@
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/91421
+	* c-decl.c (merge_decls): Use copy_decl_built_in_function.
+
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91421
 	* c-decl.c (header_for_builtin_fn): Take a FUNCTION_DECL instead
 	of a built_in_function.
 	(diagnose_mismatched_decls, implicitly_declare): Update accordingly.

@@ -2616,7 +2616,7 @@ rx_expand_builtin (tree exp,
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   tree arg    = call_expr_nargs (exp) >= 1 ? CALL_EXPR_ARG (exp, 0) : NULL_TREE;
   rtx  op     = arg ? expand_normal (arg) : NULL_RTX;
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
 
   switch (fcode)
     {

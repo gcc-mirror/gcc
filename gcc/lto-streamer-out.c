@@ -1137,7 +1137,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       hstate.add_flag (DECL_LOOPING_CONST_OR_PURE_P (t));
       hstate.commit_flag ();
       if (DECL_BUILT_IN_CLASS (t) != NOT_BUILT_IN)
-	hstate.add_int (DECL_FUNCTION_CODE (t));
+	hstate.add_int (DECL_UNCHECKED_FUNCTION_CODE (t));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))

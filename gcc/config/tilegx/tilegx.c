@@ -3531,7 +3531,7 @@ tilegx_expand_builtin (tree exp,
 #define MAX_BUILTIN_ARGS 4
 
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   tree arg;
   call_expr_arg_iterator iter;
   enum insn_code icode;

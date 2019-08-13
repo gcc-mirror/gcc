@@ -993,7 +993,7 @@ nds32_expand_builtin_impl (tree exp,
 			   int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   unsigned i;
   struct builtin_description *d;
 
