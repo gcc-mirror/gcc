@@ -1,3 +1,14 @@
+2019-08-13  Justin Squirek  <squirek@adacore.com>
+
+	* gnatcmd.adb (GNATCmd): Add constant for new compiler switch
+	--help-ada, and include usage subprogram. Add line to usage help
+	explaining the new flag.
+	(GNATCmd_Usage): Rename from locally declared Usage so as not to
+	confuse with the newly imported version. Add new argument case
+	for --help-ada and add bug report email to implicit display of
+	help without the --help flag so as to unify output between the
+	two cases.
+
 2019-08-13  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* libgnat/g-comlin.adb (Getopt): Quote unrecognized switch in
