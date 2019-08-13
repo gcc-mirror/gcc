@@ -788,7 +788,7 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 rtx
 machopic_indirect_call_target (rtx target)
 {
-  if (! darwin_picsymbol_stubs)
+  if (! darwin_symbol_stubs)
     return target;
 
   if (GET_CODE (target) != MEM)
@@ -3268,13 +3268,13 @@ darwin_override_options (void)
      Linkers that don't need stubs, don't need the EH symbol markers either.
   */
 
-  if (!global_options_set.x_darwin_picsymbol_stubs)
+  if (!global_options_set.x_darwin_symbol_stubs)
     {
       if (darwin_target_linker)
 	{
 	  if (strverscmp (darwin_target_linker, MIN_LD64_OMIT_STUBS) < 0)
 	    {
-	      darwin_picsymbol_stubs = true;
+	      darwin_symbol_stubs = true;
 	      ld_needs_eh_markers = true;
 	    }
 	}
@@ -3283,15 +3283,15 @@ darwin_override_options (void)
 	  /* If we don't know the linker version and we're targeting an old
 	     system, we know no better than to assume the use of an earlier
 	     linker.  */
-	  darwin_picsymbol_stubs = true;
+	  darwin_symbol_stubs = true;
 	  ld_needs_eh_markers = true;
 	}
     }
-  else if (DARWIN_X86 && darwin_picsymbol_stubs && TARGET_64BIT)
+  else if (DARWIN_X86 && darwin_symbol_stubs && TARGET_64BIT)
     {
       inform (input_location,
 	      "%<-mpic-symbol-stubs%> is not required for 64b code (ignored)");
-      darwin_picsymbol_stubs = false;
+      darwin_symbol_stubs = false;
     }
 
   if (generating_for_darwin_version >= 9)

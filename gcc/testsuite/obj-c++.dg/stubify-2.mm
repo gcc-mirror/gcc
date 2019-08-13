@@ -4,7 +4,7 @@
 /* { dg-do compile { target *-*-darwin* } } */
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-options "-mdynamic-no-pic -fdump-rtl-jump -mmacosx-version-min=10.4 -mpic-symbol-stubs" } */
+/* { dg-options "-mdynamic-no-pic -fdump-rtl-jump -mmacosx-version-min=10.4 -msymbol-stubs" } */
 
 typedef struct objc_object { } *id ;
 int x = 41 ;
