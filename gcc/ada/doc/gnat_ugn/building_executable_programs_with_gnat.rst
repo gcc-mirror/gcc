@@ -1714,11 +1714,13 @@ Alphabetical List of All Switches
   GCC macro ``BITS_PER_WORD`` documented as follows: `Number of bits in a word;
   normally 32.`
 
-  ``Double_Scalar_Alignment`` is the alignment for a scalar whose size is two
-  machine words. It should be the same as the alignment for C ``long_long`` on
-  most targets.
+  ``Double_Float_Alignment``, if not zero, is the maximum alignment that the
+  compiler can choose by default for a 64-bit floating-point type or object.
 
-  ``Maximum_Alignment`` is the maximum alignment that the compiler might choose
+  ``Double_Scalar_Alignment``, if not zero, is the maximum alignment that the
+  compiler can choose by default for a 64-bit or larger scalar type or object.
+
+  ``Maximum_Alignment`` is the maximum alignment that the compiler can choose
   by default for a type or object, which is also the maximum alignment that can
   be specified in GNAT. It is computed for GCC backends as ``BIGGEST_ALIGNMENT
   / BITS_PER_UNIT`` where GCC macro ``BIGGEST_ALIGNMENT`` is documented as
