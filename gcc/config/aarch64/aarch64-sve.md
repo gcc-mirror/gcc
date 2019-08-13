@@ -453,8 +453,8 @@
 )
 
 (define_insn "*aarch64_sve_mov<mode>"
-  [(set (match_operand:PRED_ALL 0 "nonimmediate_operand" "=Upa, m, Upa, Upa, Upa")
-	(match_operand:PRED_ALL 1 "general_operand" "Upa, Upa, m, Dz, Dm"))]
+  [(set (match_operand:PRED_ALL 0 "nonimmediate_operand" "=Upa, m, Upa, Upa")
+	(match_operand:PRED_ALL 1 "general_operand" "Upa, Upa, m, Dn"))]
   "TARGET_SVE
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
@@ -462,8 +462,7 @@
    mov\t%0.b, %1.b
    str\t%1, %0
    ldr\t%0, %1
-   pfalse\t%0.b
-   * return aarch64_output_ptrue (<MODE>mode, '<Vetype>');"
+   * return aarch64_output_sve_mov_immediate (operands[1]);"
 )
 
 ;; =========================================================================
