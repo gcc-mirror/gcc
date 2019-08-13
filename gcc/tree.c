@@ -1981,6 +1981,23 @@ build_index_vector (tree vec_type, poly_uint64 base, poly_uint64 step)
   return v.build ();
 }
 
+/* Return a VECTOR_CST of type VEC_TYPE in which the first NUM_A
+   elements are A and the rest are B.  */
+
+tree
+build_vector_a_then_b (tree vec_type, unsigned int num_a, tree a, tree b)
+{
+  gcc_assert (known_le (num_a, TYPE_VECTOR_SUBPARTS (vec_type)));
+  unsigned int count = constant_lower_bound (TYPE_VECTOR_SUBPARTS (vec_type));
+  /* Optimize the constant case.  */
+  if ((count & 1) == 0 && TYPE_VECTOR_SUBPARTS (vec_type).is_constant ())
+    count /= 2;
+  tree_vector_builder builder (vec_type, count, 2);
+  for (unsigned int i = 0; i < count * 2; ++i)
+    builder.quick_push (i < num_a ? a : b);
+  return builder.build ();
+}
+
 /* Something has messed with the elements of CONSTRUCTOR C after it was built;
    calculate TREE_CONSTANT and TREE_SIDE_EFFECTS.  */
 

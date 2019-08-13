@@ -1,3 +1,34 @@
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree.h (build_vector_a_then_b): Declare.
+	* tree.c (build_vector_a_then_b): New function.
+	* fold-const-call.c (fold_while_ult): Likewise.
+	(fold_const_call): Use it to handle IFN_WHILE_ULT.
+	* config/aarch64/aarch64-protos.h (AARCH64_FOR_SVPATTERN): New macro.
+	(aarch64_svpattern): New enum.
+	* config/aarch64/aarch64-sve.md (mov<PRED_ALL:mode>): Pass
+	constants through aarch64_expand_mov_immediate.
+	(*aarch64_sve_mov<PRED_ALL:mode>): Use aarch64_mov_operand rather
+	than general_operand as the predicate for operand 1.
+	(while_ult<GPI:mode><PRED_ALL:mode>): Add a '@' marker.
+	* config/aarch64/aarch64.c (simd_immediate_info::PTRUE): New
+	insn_type.
+	(simd_immediate_info::simd_immediate_info): New overload that
+	takes a scalar_int_mode and an svpattern.
+	(simd_immediate_info::u): Add a "pattern" field.
+	(svpattern_token): New function.
+	(aarch64_get_sve_pred_bits, aarch64_widest_sve_pred_elt_size)
+	(aarch64_partial_ptrue_length, aarch64_svpattern_for_vl)
+	(aarch64_sve_move_pred_via_while): New functions.
+	(aarch64_expand_mov_immediate): Try using
+	aarch64_sve_move_pred_via_while for predicates that contain N ones
+	followed by M zeros but that do not correspond to a VLnnn pattern.
+	(aarch64_sve_pred_valid_immediate): New function.
+	(aarch64_simd_valid_immediate): Use it instead of dealing directly
+	with PTRUE and PFALSE.
+	(aarch64_output_sve_mov_immediate): Handle new simd_immediate_info
+	forms.
+
 2019-08-13 Iain Sandoe <iain@sandoe.co.uk>
 
 	* config/darwin.c (machopic_indirect_call_target): Rename symbol stub

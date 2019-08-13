@@ -1,3 +1,13 @@
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/spill_2.c: Increase iteration counts
+	beyond the range of a PTRUE.
+	* gcc.target/aarch64/sve/while_6.c: New test.
+	* gcc.target/aarch64/sve/while_7.c: Likewise.
+	* gcc.target/aarch64/sve/while_8.c: Likewise.
+	* gcc.target/aarch64/sve/while_9.c: Likewise.
+	* gcc.target/aarch64/sve/while_10.c: Likewise.
+
 2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org> 
 
 	PR fortran/88072
