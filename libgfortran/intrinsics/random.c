@@ -358,7 +358,10 @@ init_rand_state (prng_state* rs, const bool locked)
       uint64_t os_seed;
       getosrandom (&os_seed, sizeof (os_seed));
       for (uint64_t i = 0; i < sizeof (master_state) / sizeof (uint64_t); i++)
-	master_state[i] = splitmix64 (os_seed);
+	{
+          os_seed = splitmix64 (os_seed);
+          master_state[i] = os_seed;
+        }
       njumps = 0;
       master_init = true;
     }
