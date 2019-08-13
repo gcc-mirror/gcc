@@ -1,3 +1,10 @@
+2013-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/90563
+	* frontend-passes.c (insert_index): Suppress errors while
+	simplifying the resulting expression.
+
 2019-08-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	Paul Thomas <pault@gcc.gnu.org>
 
