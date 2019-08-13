@@ -1,3 +1,13 @@
+2019-08-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	Partial backport from trunk
+	PR fortran/91414
+	* intrinsics/random.c (lcg_parkmiller): Replace with splitmix64.
+	(splitmix64): New function.
+	(getosrandom): Fix return value, simplify.
+	(init_rand_state): Use getosrandom only to get 8 bytes, splitmix64
+	to fill rest of state.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.
