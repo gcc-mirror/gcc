@@ -63,6 +63,7 @@ package System.Win32 is
    type BYTE   is new Interfaces.C.unsigned_char;
    type LONG   is new Interfaces.C.long;
    type CHAR   is new Interfaces.C.char;
+   type SIZE_T is new Interfaces.C.size_t;
 
    type BOOL   is new Interfaces.C.int;
    for BOOL'Size use Interfaces.C.int'Size;
@@ -238,7 +239,7 @@ package System.Win32 is
       dwDesiredAccess      : DWORD;
       dwFileOffsetHigh     : DWORD;
       dwFileOffsetLow      : DWORD;
-      dwNumberOfBytesToMap : DWORD) return System.Address;
+      dwNumberOfBytesToMap : SIZE_T) return System.Address;
    pragma Import (Stdcall, MapViewOfFile, "MapViewOfFile");
 
    function UnmapViewOfFile (lpBaseAddress : System.Address) return BOOL;
