@@ -1,3 +1,7 @@
+2019-08-13  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/tag2.adb, gnat.dg/tag2_pkg.ads: New testcase.
+
 2019-08-13  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/tree-prof/ic-misattribution-1.c: Use -fdump-ipa-profile-node.

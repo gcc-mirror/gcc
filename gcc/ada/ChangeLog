@@ -1,3 +1,17 @@
+2019-08-13  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_Secondary_DT): Handle record type
+	derivations that have interface components located at fixed
+	positions and interface components located at variable offset.
+	The offset of components located at fixed positions is computed
+	using the dummy object (similar to the case where all the
+	interface components are located at fixed positions).
+	(Make_DT): Build the dummy object for all tagged types that
+	implement interface types (that is, build it also for types with
+	variable size components), and use the dummy object to compute
+	the offset of all tag components located at fixed positions when
+	initializing the Interface_Table object.
+
 2019-08-13  Justin Squirek  <squirek@adacore.com>
 
 	* gnatcmd.adb (GNATCmd): Add constant for new compiler switch
