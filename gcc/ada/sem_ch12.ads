@@ -37,10 +37,6 @@ package Sem_Ch12 is
    procedure Analyze_Formal_Subprogram_Declaration      (N : Node_Id);
    procedure Analyze_Formal_Package_Declaration         (N : Node_Id);
 
-   procedure Add_Pending_Instantiation (Inst : Node_Id; Act_Decl : Node_Id);
-   --  Add an entry in the table of instance bodies that must be analyzed
-   --  when inlining requires its body or the body of a nested instance.
-
    function Build_Function_Wrapper
      (Formal_Subp : Entity_Id;
       Actual_Subp : Entity_Id) return Node_Id;

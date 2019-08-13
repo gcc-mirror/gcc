@@ -1025,26 +1025,6 @@ package body Sem_Ch12 is
       raise Instantiation_Error;
    end Abandon_Instantiation;
 
-   --------------------------------
-   --  Add_Pending_Instantiation --
-   --------------------------------
-
-   procedure Add_Pending_Instantiation (Inst : Node_Id; Act_Decl : Node_Id) is
-   begin
-      --  Capture the body of the generic instantiation along with its context
-      --  for later processing by Instantiate_Bodies.
-
-      Pending_Instantiations.Append
-        ((Act_Decl                 => Act_Decl,
-          Config_Switches          => Save_Config_Switches,
-          Current_Sem_Unit         => Current_Sem_Unit,
-          Expander_Status          => Expander_Active,
-          Inst_Node                => Inst,
-          Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
-          Scope_Suppress           => Scope_Suppress,
-          Warnings                 => Save_Warnings));
-   end Add_Pending_Instantiation;
-
    ----------------------------------
    -- Adjust_Inherited_Pragma_Sloc --
    ----------------------------------

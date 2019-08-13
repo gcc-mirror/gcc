@@ -60,7 +60,6 @@ with Sem;       use Sem;
 with Sem_Aux;   use Sem_Aux;
 with Sem_Ch6;   use Sem_Ch6;
 with Sem_Ch8;   use Sem_Ch8;
-with Sem_Ch12;  use Sem_Ch12;
 with Sem_Ch13;  use Sem_Ch13;
 with Sem_Dim;   use Sem_Dim;
 with Sem_Disp;  use Sem_Disp;
@@ -4316,15 +4315,15 @@ package body Exp_Ch6 is
          if not Is_Inlined (Subp) then
             null;
 
-         --  Frontend inlining of expression functions (performed also when
-         --  backend inlining is enabled).
+         --  Front-end inlining of expression functions (performed also when
+         --  back-end inlining is enabled).
 
          elsif Is_Inlinable_Expression_Function (Subp) then
             Rewrite (N, New_Copy (Expression_Of_Expression_Function (Subp)));
             Analyze (N);
             return;
 
-         --  Handle frontend inlining
+         --  Handle front-end inlining
 
          elsif not Back_End_Inlining then
             Inlined_Subprogram : declare
@@ -4420,27 +4419,36 @@ package body Exp_Ch6 is
                end if;
             end Inlined_Subprogram;
 
-         --  Back end inlining: let the back end handle it
+         --  Front-end expansion of simple functions returning unconstrained
+         --  types (see Check_And_Split_Unconstrained_Function). Note that the
+         --  case of a simple renaming (Body_To_Inline in N_Entity below, see
+         --  also Build_Renamed_Body) cannot be expanded here because this may
+         --  give rise to order-of-elaboration issues for the types of the
+         --  parameters of the subprogram, if any.
 
-         elsif No (Unit_Declaration_Node (Subp))
-           or else Nkind (Unit_Declaration_Node (Subp)) /=
-                                                 N_Subprogram_Declaration
-           or else No (Body_To_Inline (Unit_Declaration_Node (Subp)))
-           or else Nkind (Body_To_Inline (Unit_Declaration_Node (Subp))) in
-                                                                      N_Entity
+         elsif Present (Unit_Declaration_Node (Subp))
+           and then Nkind (Unit_Declaration_Node (Subp)) =
+                                                       N_Subprogram_Declaration
+           and then Present (Body_To_Inline (Unit_Declaration_Node (Subp)))
+           and then
+             Nkind (Body_To_Inline (Unit_Declaration_Node (Subp))) not in
+                                                                       N_Entity
+         then
+            Expand_Inlined_Call (Call_Node, Subp, Orig_Subp);
+
+         --  Back-end inlining either if optimization is enabled or the call is
+         --  required to be inlined.
+
+         elsif Optimization_Level > 0
+           or else Has_Pragma_Inline_Always (Subp)
          then
             Add_Inlined_Body (Subp, Call_Node);
 
-            --  If the inlined call appears within an instantiation and either
-            --  is required to be inlined or optimization is enabled, ensure
+            --  If the inlined call appears within an instance, then ensure
             --  that the enclosing instance body is available so the back end
             --  can actually perform the inlining.
 
-            if In_Instance
-              and then Comes_From_Source (Subp)
-              and then (Has_Pragma_Inline_Always (Subp)
-                         or else Optimization_Level > 0)
-            then
+            if In_Instance and then Comes_From_Source (Subp) then
                declare
                   Decl      : Node_Id;
                   Inst      : Entity_Id;
@@ -4491,16 +4499,6 @@ package body Exp_Ch6 is
                   end if;
                end;
             end if;
-
-         --  Front end expansion of simple functions returning unconstrained
-         --  types (see Check_And_Split_Unconstrained_Function). Note that the
-         --  case of a simple renaming (Body_To_Inline in N_Entity above, see
-         --  also Build_Renamed_Body) cannot be expanded here because this may
-         --  give rise to order-of-elaboration issues for the types of the
-         --  parameters of the subprogram, if any.
-
-         else
-            Expand_Inlined_Call (Call_Node, Subp, Orig_Subp);
          end if;
       end if;
 

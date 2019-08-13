@@ -1,5 +1,19 @@
 2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* exp_ch6.adb: Remove with and use clauses for Sem_Ch12.
+	(Expand_Call_Helper): Swap the back-end inlining case and the
+	special front-end expansion case.  In back-end inlining mode, do
+	not invoke Add_Inlined_Body unless the call may be inlined.
+	* inline.ads (Add_Pending_Instantiation): New function moved
+	from...
+	* inline.adb (Add_Inlined_Body): Simplify comment.  Turn test on
+	the enclosing unit into assertion.
+	(Add_Pending_Instantiation): New function moved from...
+	* sem_ch12.ads (Add_Pending_Instantiation): ...here.
+	* sem_ch12.adb (Add_Pending_Instantiation): ...here.
+
+2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* sem.adb (Do_Analyze): Recompute Style_Check_Max_Line_Length
 	after restoring Style_Max_Line_Length.
 
