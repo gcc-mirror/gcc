@@ -251,7 +251,8 @@ public:
   ALWAYS_INLINE opt_mode (from_int m) : m_mode (machine_mode (m)) {}
 
   machine_mode else_void () const;
-  machine_mode else_blk () const;
+  machine_mode else_blk () const { return else_mode (BLKmode); }
+  machine_mode else_mode (machine_mode) const;
   T require () const;
 
   bool exists () const;
@@ -271,13 +272,13 @@ opt_mode<T>::else_void () const
   return m_mode;
 }
 
-/* If the T exists, return its enum value, otherwise return E_BLKmode.  */
+/* If the T exists, return its enum value, otherwise return FALLBACK.  */
 
 template<typename T>
 inline machine_mode
-opt_mode<T>::else_blk () const
+opt_mode<T>::else_mode (machine_mode fallback) const
 {
-  return m_mode == E_VOIDmode ? E_BLKmode : m_mode;
+  return m_mode == E_VOIDmode ? fallback : m_mode;
 }
 
 /* Assert that the object contains a T and return it.  */

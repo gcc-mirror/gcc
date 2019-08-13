@@ -3242,32 +3242,55 @@ aarch64_expand_vec_series (rtx dest, rtx base, rtx step)
   emit_set_insn (dest, gen_rtx_VEC_SERIES (mode, base, step));
 }
 
-/* Try to duplicate SRC into SVE register DEST, given that SRC is an
-   integer of mode INT_MODE.  Return true on success.  */
+/* Duplicate 128-bit Advanced SIMD vector SRC so that it fills an SVE
+   register of mode MODE.  Use TARGET for the result if it's nonnull
+   and convenient.
+
+   The two vector modes must have the same element mode.  The behavior
+   is to duplicate architectural lane N of SRC into architectural lanes
+   N + I * STEP of the result.  On big-endian targets, architectural
+   lane 0 of an Advanced SIMD vector is the last element of the vector
+   in memory layout, so for big-endian targets this operation has the
+   effect of reversing SRC before duplicating it.  Callers need to
+   account for this.  */
+
+rtx
+aarch64_expand_sve_dupq (rtx target, machine_mode mode, rtx src)
+{
+  machine_mode src_mode = GET_MODE (src);
+  gcc_assert (GET_MODE_INNER (mode) == GET_MODE_INNER (src_mode));
+  insn_code icode = (BYTES_BIG_ENDIAN
+		     ? code_for_aarch64_vec_duplicate_vq_be (mode)
+		     : code_for_aarch64_vec_duplicate_vq_le (mode));
+
+  unsigned int i = 0;
+  expand_operand ops[3];
+  create_output_operand (&ops[i++], target, mode);
+  create_output_operand (&ops[i++], src, src_mode);
+  if (BYTES_BIG_ENDIAN)
+    {
+      /* Create a PARALLEL describing the reversal of SRC.  */
+      unsigned int nelts_per_vq = 128 / GET_MODE_UNIT_BITSIZE (mode);
+      rtx sel = aarch64_gen_stepped_int_parallel (nelts_per_vq,
+						  nelts_per_vq - 1, -1);
+      create_fixed_operand (&ops[i++], sel);
+    }
+  expand_insn (icode, i, ops);
+  return ops[0].value;
+}
+
+/* Try to force 128-bit vector value SRC into memory and use LD1RQ to fetch
+   the memory image into DEST.  Return true on success.  */
 
 static bool
-aarch64_expand_sve_widened_duplicate (rtx dest, scalar_int_mode src_mode,
-				      rtx src)
+aarch64_expand_sve_ld1rq (rtx dest, rtx src)
 {
-  /* If the constant is smaller than 128 bits, we can do the move
-     using a vector of SRC_MODEs.  */
-  if (src_mode != TImode)
-    {
-      poly_uint64 count = exact_div (GET_MODE_SIZE (GET_MODE (dest)),
-				     GET_MODE_SIZE (src_mode));
-      machine_mode dup_mode = mode_for_vector (src_mode, count).require ();
-      emit_move_insn (gen_lowpart (dup_mode, dest),
-		      gen_const_vec_duplicate (dup_mode, src));
-      return true;
-    }
-
-  /* Use LD1RQ[BHWD] to load the 128 bits from memory.  */
-  src = force_const_mem (src_mode, src);
+  src = force_const_mem (GET_MODE (src), src);
   if (!src)
     return false;
 
   /* Make sure that the address is legitimate.  */
-  if (!aarch64_sve_ld1r_operand_p (src))
+  if (!aarch64_sve_ld1rq_operand_p (src))
     {
       rtx addr = force_reg (Pmode, XEXP (src, 0));
       src = replace_equiv_address (src, addr);
@@ -3277,46 +3300,127 @@ aarch64_expand_sve_widened_duplicate (rtx dest, scalar_int_mode src_mode,
   unsigned int elem_bytes = GET_MODE_UNIT_SIZE (mode);
   machine_mode pred_mode = aarch64_sve_pred_mode (elem_bytes).require ();
   rtx ptrue = aarch64_ptrue_reg (pred_mode);
-  src = gen_rtx_UNSPEC (mode, gen_rtvec (2, ptrue, src), UNSPEC_LD1RQ);
-  emit_insn (gen_rtx_SET (dest, src));
+  emit_insn (gen_aarch64_sve_ld1rq (mode, dest, src, ptrue));
   return true;
 }
 
-/* Expand a move of general CONST_VECTOR SRC into DEST, given that it
-   isn't a simple duplicate or series.  */
+/* Return a register containing CONST_VECTOR SRC, given that SRC has an
+   SVE data mode and isn't a legitimate constant.  Use TARGET for the
+   result if convenient.
 
-static void
-aarch64_expand_sve_const_vector (rtx dest, rtx src)
+   The returned register can have whatever mode seems most natural
+   given the contents of SRC.  */
+
+static rtx
+aarch64_expand_sve_const_vector (rtx target, rtx src)
 {
   machine_mode mode = GET_MODE (src);
   unsigned int npatterns = CONST_VECTOR_NPATTERNS (src);
   unsigned int nelts_per_pattern = CONST_VECTOR_NELTS_PER_PATTERN (src);
-  gcc_assert (npatterns > 1);
+  scalar_mode elt_mode = GET_MODE_INNER (mode);
+  unsigned int elt_bits = GET_MODE_BITSIZE (elt_mode);
+  unsigned int encoded_bits = npatterns * nelts_per_pattern * elt_bits;
 
-  if (nelts_per_pattern == 1)
+  if (nelts_per_pattern == 1 && encoded_bits == 128)
     {
-      /* The constant is a repeating seqeuence of at least two elements,
-	 where the repeating elements occupy no more than 128 bits.
-	 Get an integer representation of the replicated value.  */
-      scalar_int_mode int_mode;
-      if (BYTES_BIG_ENDIAN)
-	/* For now, always use LD1RQ to load the value on big-endian
-	   targets, since the handling of smaller integers includes a
-	   subreg that is semantically an element reverse.  */
-	int_mode = TImode;
-      else
-	{
-	  unsigned int int_bits = GET_MODE_UNIT_BITSIZE (mode) * npatterns;
-	  gcc_assert (int_bits <= 128);
-	  int_mode = int_mode_for_size (int_bits, 0).require ();
-	}
-      rtx int_value = simplify_gen_subreg (int_mode, src, mode, 0);
-      if (int_value
-	  && aarch64_expand_sve_widened_duplicate (dest, int_mode, int_value))
-	return;
+      /* The constant is a duplicated quadword but can't be narrowed
+	 beyond a quadword.  Get the memory image of the first quadword
+	 as a 128-bit vector and try using LD1RQ to load it from memory.
+
+	 The effect for both endiannesses is to load memory lane N into
+	 architectural lanes N + I * STEP of the result.  On big-endian
+	 targets, the layout of the 128-bit vector in an Advanced SIMD
+	 register would be different from its layout in an SVE register,
+	 but this 128-bit vector is a memory value only.  */
+      machine_mode vq_mode = aarch64_vq_mode (elt_mode).require ();
+      rtx vq_value = simplify_gen_subreg (vq_mode, src, mode, 0);
+      if (vq_value && aarch64_expand_sve_ld1rq (target, vq_value))
+	return target;
     }
 
+  if (nelts_per_pattern == 1 && encoded_bits < 128)
+    {
+      /* The vector is a repeating sequence of 64 bits or fewer.
+	 See if we can load them using an Advanced SIMD move and then
+	 duplicate it to fill a vector.  This is better than using a GPR
+	 move because it keeps everything in the same register file.  */
+      machine_mode vq_mode = aarch64_vq_mode (elt_mode).require ();
+      rtx_vector_builder builder (vq_mode, npatterns, 1);
+      for (unsigned int i = 0; i < npatterns; ++i)
+	{
+	  /* We want memory lane N to go into architectural lane N,
+	     so reverse for big-endian targets.  The DUP .Q pattern
+	     has a compensating reverse built-in.  */
+	  unsigned int srci = BYTES_BIG_ENDIAN ? npatterns - i - 1 : i;
+	  builder.quick_push (CONST_VECTOR_ENCODED_ELT (src, srci));
+	}
+      rtx vq_src = builder.build ();
+      if (aarch64_simd_valid_immediate (vq_src, NULL))
+	{
+	  vq_src = force_reg (vq_mode, vq_src);
+	  return aarch64_expand_sve_dupq (target, mode, vq_src);
+	}
+
+      /* Get an integer representation of the repeating part of Advanced
+	 SIMD vector VQ_SRC.  This preserves the endianness of VQ_SRC,
+	 which for big-endian targets is lane-swapped wrt a normal
+	 Advanced SIMD vector.  This means that for both endiannesses,
+	 memory lane N of SVE vector SRC corresponds to architectural
+	 lane N of a register holding VQ_SRC.  This in turn means that
+	 memory lane 0 of SVE vector SRC is in the lsb of VQ_SRC (viewed
+	 as a single 128-bit value) and thus that memory lane 0 of SRC is
+	 in the lsb of the integer.  Duplicating the integer therefore
+	 ensures that memory lane N of SRC goes into architectural lane
+	 N + I * INDEX of the SVE register.  */
+      scalar_mode int_mode = int_mode_for_size (encoded_bits, 0).require ();
+      rtx elt_value = simplify_gen_subreg (int_mode, vq_src, vq_mode, 0);
+      if (elt_value)
+	{
+	  /* Pretend that we had a vector of INT_MODE to start with.  */
+	  elt_mode = int_mode;
+	  mode = aarch64_full_sve_mode (int_mode).require ();
+
+	  /* If the integer can be moved into a general register by a
+	     single instruction, do that and duplicate the result.  */
+	  if (CONST_INT_P (elt_value)
+	      && aarch64_move_imm (INTVAL (elt_value), elt_mode))
+	    {
+	      elt_value = force_reg (elt_mode, elt_value);
+	      return expand_vector_broadcast (mode, elt_value);
+	    }
+	}
+      else if (npatterns == 1)
+	/* We're duplicating a single value, but can't do better than
+	   force it to memory and load from there.  This handles things
+	   like symbolic constants.  */
+	elt_value = CONST_VECTOR_ENCODED_ELT (src, 0);
+
+      if (elt_value)
+	{
+	  /* Load the element from memory if we can, otherwise move it into
+	     a register and use a DUP.  */
+	  rtx op = force_const_mem (elt_mode, elt_value);
+	  if (!op)
+	    op = force_reg (elt_mode, elt_value);
+	  return expand_vector_broadcast (mode, op);
+	}
+    }
+
+  /* Try using INDEX.  */
+  rtx base, step;
+  if (const_vec_series_p (src, &base, &step))
+    {
+      aarch64_expand_vec_series (target, base, step);
+      return target;
+    }
+
+  /* From here on, it's better to force the whole constant to memory
+     if we can.  */
+  if (GET_MODE_NUNITS (mode).is_constant ())
+    return NULL_RTX;
+
   /* Expand each pattern individually.  */
+  gcc_assert (npatterns > 1);
   rtx_vector_builder builder;
   auto_vec<rtx, 16> vectors (npatterns);
   for (unsigned int i = 0; i < npatterns; ++i)
@@ -3333,22 +3437,20 @@ aarch64_expand_sve_const_vector (rtx dest, rtx src)
       npatterns /= 2;
       for (unsigned int i = 0; i < npatterns; ++i)
 	{
-	  rtx tmp = (npatterns == 1 ? dest : gen_reg_rtx (mode));
+	  rtx tmp = (npatterns == 1 ? target : gen_reg_rtx (mode));
 	  rtvec v = gen_rtvec (2, vectors[i], vectors[i + npatterns]);
 	  emit_set_insn (tmp, gen_rtx_UNSPEC (mode, v, UNSPEC_ZIP1));
 	  vectors[i] = tmp;
 	}
     }
-  gcc_assert (vectors[0] == dest);
+  gcc_assert (vectors[0] == target);
+  return target;
 }
 
-/* Set DEST to immediate IMM.  For SVE vector modes, GEN_VEC_DUPLICATE
-   is a pattern that can be used to set DEST to a replicated scalar
-   element.  */
+/* Set DEST to immediate IMM.  */
 
 void
-aarch64_expand_mov_immediate (rtx dest, rtx imm,
-			      rtx (*gen_vec_duplicate) (rtx, rtx))
+aarch64_expand_mov_immediate (rtx dest, rtx imm)
 {
   machine_mode mode = GET_MODE (dest);
 
@@ -3471,38 +3573,24 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm,
 
   if (!CONST_INT_P (imm))
     {
-      rtx base, step, value;
       if (GET_CODE (imm) == HIGH
 	  || aarch64_simd_valid_immediate (imm, NULL))
-	emit_insn (gen_rtx_SET (dest, imm));
-      else if (const_vec_series_p (imm, &base, &step))
-	aarch64_expand_vec_series (dest, base, step);
-      else if (const_vec_duplicate_p (imm, &value))
 	{
-	  /* If the constant is out of range of an SVE vector move,
-	     load it from memory if we can, otherwise move it into
-	     a register and use a DUP.  */
-	  scalar_mode inner_mode = GET_MODE_INNER (mode);
-	  rtx op = force_const_mem (inner_mode, value);
-	  if (!op)
-	    op = force_reg (inner_mode, value);
-	  else if (!aarch64_sve_ld1r_operand_p (op))
-	    {
-	      rtx addr = force_reg (Pmode, XEXP (op, 0));
-	      op = replace_equiv_address (op, addr);
-	    }
-	  emit_insn (gen_vec_duplicate (dest, op));
-	}
-      else if (GET_CODE (imm) == CONST_VECTOR
-	       && !GET_MODE_NUNITS (GET_MODE (imm)).is_constant ())
-	aarch64_expand_sve_const_vector (dest, imm);
-      else
-	{
-	  rtx mem = force_const_mem (mode, imm);
-	  gcc_assert (mem);
-	  emit_move_insn (dest, mem);
+	  emit_insn (gen_rtx_SET (dest, imm));
+	  return;
 	}
 
+      if (GET_CODE (imm) == CONST_VECTOR && aarch64_sve_data_mode_p (mode))
+	if (rtx res = aarch64_expand_sve_const_vector (dest, imm))
+	  {
+	    if (dest != res)
+	      emit_insn (gen_aarch64_sve_reinterpret (mode, dest, res));
+	    return;
+	  }
+
+      rtx mem = force_const_mem (mode, imm);
+      gcc_assert (mem);
+      emit_move_insn (dest, mem);
       return;
     }
 
@@ -14172,55 +14260,71 @@ aarch64_vector_mode_supported_p (machine_mode mode)
   return vec_flags != 0 && (vec_flags & VEC_STRUCT) == 0;
 }
 
+/* Return the full-width SVE vector mode for element mode MODE, if one
+   exists.  */
+opt_machine_mode
+aarch64_full_sve_mode (scalar_mode mode)
+{
+  switch (mode)
+    {
+    case E_DFmode:
+      return VNx2DFmode;
+    case E_SFmode:
+      return VNx4SFmode;
+    case E_HFmode:
+      return VNx8HFmode;
+    case E_DImode:
+	return VNx2DImode;
+    case E_SImode:
+      return VNx4SImode;
+    case E_HImode:
+      return VNx8HImode;
+    case E_QImode:
+      return VNx16QImode;
+    default:
+      return opt_machine_mode ();
+    }
+}
+
+/* Return the 128-bit Advanced SIMD vector mode for element mode MODE,
+   if it exists.  */
+opt_machine_mode
+aarch64_vq_mode (scalar_mode mode)
+{
+  switch (mode)
+    {
+    case E_DFmode:
+      return V2DFmode;
+    case E_SFmode:
+      return V4SFmode;
+    case E_HFmode:
+      return V8HFmode;
+    case E_SImode:
+      return V4SImode;
+    case E_HImode:
+      return V8HImode;
+    case E_QImode:
+      return V16QImode;
+    case E_DImode:
+      return V2DImode;
+    default:
+      return opt_machine_mode ();
+    }
+}
+
 /* Return appropriate SIMD container
    for MODE within a vector of WIDTH bits.  */
 static machine_mode
 aarch64_simd_container_mode (scalar_mode mode, poly_int64 width)
 {
   if (TARGET_SVE && known_eq (width, BITS_PER_SVE_VECTOR))
-    switch (mode)
-      {
-      case E_DFmode:
-	return VNx2DFmode;
-      case E_SFmode:
-	return VNx4SFmode;
-      case E_HFmode:
-	return VNx8HFmode;
-      case E_DImode:
-	return VNx2DImode;
-      case E_SImode:
-	return VNx4SImode;
-      case E_HImode:
-	return VNx8HImode;
-      case E_QImode:
-	return VNx16QImode;
-      default:
-	return word_mode;
-      }
+    return aarch64_full_sve_mode (mode).else_mode (word_mode);
 
   gcc_assert (known_eq (width, 64) || known_eq (width, 128));
   if (TARGET_SIMD)
     {
       if (known_eq (width, 128))
-	switch (mode)
-	  {
-	  case E_DFmode:
-	    return V2DFmode;
-	  case E_SFmode:
-	    return V4SFmode;
-	  case E_HFmode:
-	    return V8HFmode;
-	  case E_SImode:
-	    return V4SImode;
-	  case E_HImode:
-	    return V8HImode;
-	  case E_QImode:
-	    return V16QImode;
-	  case E_DImode:
-	    return V2DImode;
-	  default:
-	    break;
-	  }
+	return aarch64_vq_mode (mode).else_mode (word_mode);
       else
 	switch (mode)
 	  {
@@ -14946,6 +15050,36 @@ aarch64_simd_check_vect_par_cnst_half (rtx op, machine_mode mode,
   return true;
 }
 
+/* Return a PARALLEL containing NELTS elements, with element I equal
+   to BASE + I * STEP.  */
+
+rtx
+aarch64_gen_stepped_int_parallel (unsigned int nelts, int base, int step)
+{
+  rtvec vec = rtvec_alloc (nelts);
+  for (unsigned int i = 0; i < nelts; ++i)
+    RTVEC_ELT (vec, i) = gen_int_mode (base + i * step, DImode);
+  return gen_rtx_PARALLEL (VOIDmode, vec);
+}
+
+/* Return true if OP is a PARALLEL of CONST_INTs that form a linear
+   series with step STEP.  */
+
+bool
+aarch64_stepped_int_parallel_p (rtx op, int step)
+{
+  if (GET_CODE (op) != PARALLEL || !CONST_INT_P (XVECEXP (op, 0, 0)))
+    return false;
+
+  unsigned HOST_WIDE_INT base = UINTVAL (XVECEXP (op, 0, 0));
+  for (int i = 1; i < XVECLEN (op, 0); ++i)
+    if (!CONST_INT_P (XVECEXP (op, 0, i))
+	|| UINTVAL (XVECEXP (op, 0, i)) != base + i * step)
+      return false;
+
+  return true;
+}
+
 /* Bounds-check lanes.  Ensure OPERAND lies between LOW (inclusive) and
    HIGH (exclusive).  */
 void
@@ -14996,6 +15130,25 @@ aarch64_sve_ld1r_operand_p (rtx op)
 	  && aarch64_classify_address (&addr, XEXP (op, 0), mode, false)
 	  && addr.type == ADDRESS_REG_IMM
 	  && offset_6bit_unsigned_scaled_p (mode, addr.const_offset));
+}
+
+/* Return true if OP is a valid MEM operand for an SVE LD1RQ instruction.  */
+bool
+aarch64_sve_ld1rq_operand_p (rtx op)
+{
+  struct aarch64_address_info addr;
+  scalar_mode elem_mode = GET_MODE_INNER (GET_MODE (op));
+  if (!MEM_P (op)
+      || !aarch64_classify_address (&addr, XEXP (op, 0), elem_mode, false))
+    return false;
+
+  if (addr.type == ADDRESS_REG_IMM)
+    return offset_4bit_signed_scaled_p (TImode, addr.const_offset);
+
+  if (addr.type == ADDRESS_REG_REG)
+    return (1U << addr.shift) == GET_MODE_SIZE (elem_mode);
+
+  return false;
 }
 
 /* Return true if OP is a valid MEM operand for an SVE LDR instruction.

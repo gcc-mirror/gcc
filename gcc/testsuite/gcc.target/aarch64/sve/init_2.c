@@ -11,9 +11,9 @@ typedef int32_t vnx4si __attribute__((vector_size (32)));
 /*
 ** foo:
 **	...
-**	ld1w	(z[0-9]+\.s), p[0-9]+/z, \[x[0-9]+\]
-**	insr	\1, w1
-**	insr	\1, w0
+**	ld1rd	(z[0-9]+)\.d, p[0-9]+/z, \[x[0-9]+\]
+**	insr	\1\.s, w1
+**	insr	\1\.s, w0
 **	...
 */
 __attribute__((noipa))

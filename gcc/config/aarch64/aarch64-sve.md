@@ -207,8 +207,7 @@
 
     if (CONSTANT_P (operands[1]))
       {
-	aarch64_expand_mov_immediate (operands[0], operands[1],
-				      gen_vec_duplicate<mode>);
+	aarch64_expand_mov_immediate (operands[0], operands[1]);
 	DONE;
       }
 
@@ -322,6 +321,39 @@
   [(const_int 0)]
   {
     aarch64_split_sve_subreg_move (operands[0], operands[1], operands[2]);
+    DONE;
+  }
+)
+
+;; Reinterpret operand 1 in operand 0's mode, without changing its contents.
+;; This is equivalent to a subreg on little-endian targets but not for
+;; big-endian; see the comment at the head of the file for details.
+(define_expand "@aarch64_sve_reinterpret<mode>"
+  [(set (match_operand:SVE_ALL 0 "register_operand")
+	(unspec:SVE_ALL [(match_operand 1 "aarch64_any_register_operand")]
+			UNSPEC_REINTERPRET))]
+  "TARGET_SVE"
+  {
+    if (!BYTES_BIG_ENDIAN)
+      {
+	emit_move_insn (operands[0], gen_lowpart (<MODE>mode, operands[1]));
+	DONE;
+      }
+  }
+)
+
+;; A pattern for handling type punning on big-endian targets.  We use a
+;; special predicate for operand 1 to reduce the number of patterns.
+(define_insn_and_split "*aarch64_sve_reinterpret<mode>"
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
+	(unspec:SVE_ALL [(match_operand 1 "aarch64_any_register_operand" "0")]
+			UNSPEC_REINTERPRET))]
+  "TARGET_SVE"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (match_dup 1))]
+  {
+    emit_note (NOTE_INSN_DELETED);
     DONE;
   }
 )
@@ -787,6 +819,39 @@
   [(set_attr "length" "4,4,8")]
 )
 
+;; Duplicate an Advanced SIMD vector to fill an SVE vector (LE version).
+(define_insn "@aarch64_vec_duplicate_vq<mode>_le"
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
+	(vec_duplicate:SVE_ALL
+	  (match_operand:<V128> 1 "register_operand" "w")))]
+  "TARGET_SVE && !BYTES_BIG_ENDIAN"
+  {
+    operands[1] = gen_rtx_REG (<MODE>mode, REGNO (operands[1]));
+    return "dup\t%0.q, %1.q[0]";
+  }
+)
+
+;; Duplicate an Advanced SIMD vector to fill an SVE vector (BE version).
+;; The SVE register layout puts memory lane N into (architectural)
+;; register lane N, whereas the Advanced SIMD layout puts the memory
+;; lsb into the register lsb.  We therefore have to describe this in rtl
+;; terms as a reverse of the V128 vector followed by a duplicate.
+(define_insn "@aarch64_vec_duplicate_vq<mode>_be"
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
+	(vec_duplicate:SVE_ALL
+	  (vec_select:<V128>
+	    (match_operand:<V128> 1 "register_operand" "w")
+	    (match_operand 2 "descending_int_parallel"))))]
+  "TARGET_SVE
+   && BYTES_BIG_ENDIAN
+   && known_eq (INTVAL (XVECEXP (operands[2], 0, 0)),
+		GET_MODE_NUNITS (<V128>mode) - 1)"
+  {
+    operands[1] = gen_rtx_REG (<MODE>mode, REGNO (operands[1]));
+    return "dup\t%0.q, %1.q[0]";
+  }
+)
+
 ;; This is used for vec_duplicate<mode>s from memory, but can also
 ;; be used by combine to optimize selects of a a vec_duplicate<mode>
 ;; with zero.
@@ -802,17 +867,19 @@
   "ld1r<Vesize>\t%0.<Vetype>, %1/z, %2"
 )
 
-;; Load 128 bits from memory and duplicate to fill a vector.  Since there
-;; are so few operations on 128-bit "elements", we don't define a VNx1TI
-;; and simply use vectors of bytes instead.
-(define_insn "*sve_ld1rq<Vesize>"
+;; Load 128 bits from memory under predicate control and duplicate to
+;; fill a vector.
+(define_insn "@aarch64_sve_ld1rq<mode>"
   [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
 	(unspec:SVE_ALL
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (match_operand:TI 2 "aarch64_sve_ld1r_operand" "Uty")]
+	  [(match_operand:<VPRED> 2 "register_operand" "Upl")
+	   (match_operand:<V128> 1 "aarch64_sve_ld1rq_operand" "UtQ")]
 	  UNSPEC_LD1RQ))]
   "TARGET_SVE"
-  "ld1rq<Vesize>\t%0.<Vetype>, %1/z, %2"
+  {
+    operands[1] = gen_rtx_MEM (<VEL>mode, XEXP (operands[1], 0));
+    return "ld1rq<Vesize>\t%0.<Vetype>, %2/z, %1";
+  }
 )
 
 ;; -------------------------------------------------------------------------
