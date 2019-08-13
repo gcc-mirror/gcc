@@ -1,3 +1,22 @@
+2019-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Build_Underlying_Full_View): Delete.
+	(Complete_Private_Subtype): Do not set the full view on the
+	private subtype here.  If the full base is itself derived from
+	private, do not re-derive the parent type but instead constrain
+	an existing underlying full view.
+	(Prepare_Private_Subtype_Completion): Do not get to the
+	underlying full view, if any.  Set the full view on the private
+	subtype here.
+	(Process_Full_View): Likewise.
+	* sem_ch12.adb (Check_Generic_Actuals): Also set
+	Is_Generic_Actual_Type on the full view if the type of the
+	actual is private.
+	(Restore_Private_Views): Also reset Is_Generic_Actual_Type on
+	the full view if the type of the actual is private.
+	* sem_eval.adb (Subtypes_Statically_Match): Remove bypass for
+	generic actual types.
+
 2019-08-13  Javier Miranda  <miranda@adacore.com>
 
 	* sem_res.adb (Resolve_Selected_Component): When the type of the
