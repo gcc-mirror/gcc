@@ -1,3 +1,10 @@
+2019-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/91422
+	* testsuite/libgomp.oacc-fortran/routine-7.f90: Correct array
+	dimension.
+
 2019-08-12  Release Manager
 
 	* GCC 9.2.0 released.
