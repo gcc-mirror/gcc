@@ -53,7 +53,7 @@ extern bool msp430x;
   "%{minrt:%:if-exists(crtn-minrt.o%s)}%{!minrt:%:if-exists(crtn.o%s)} -lgcc"
 
 #define ASM_SPEC "-mP " /* Enable polymorphic instructions.  */ \
-  "%{mcpu=*:-mcpu=%*}%{!mcpu=*:%{mmcu=*:-mmcu=%*}} " /* Pass the CPU type on to the assembler.  */ \
+  "%{mcpu=*:-mcpu=%*} " /* Pass the CPU type on to the assembler.  */ \
   "%{mrelax=-mQ} " /* Pass the relax option on to the assembler.  */ \
   "%{mlarge:-ml} " /* Tell the assembler if we are building for the LARGE pointer model.  */ \
   "%{!msim:-md} %{msim:%{mlarge:-md}} " /* Copy data from ROM to RAM if necessary.  */ \
@@ -74,11 +74,15 @@ extern bool msp430x;
   " %{!mlarge:%{mcode-region=*:"	\
     "%e-mcode-region requires the large memory model (-mlarge)}}"	\
   " %{!mlarge:%{mdata-region=*:"	\
-    "%e-mdata-region requires the large memory model (-mlarge)}}"
+    "%e-mdata-region requires the large memory model (-mlarge)}}"	\
+  " %{!mcpu=*:%{mmcu=*:%:msp430_select_cpu(%{mmcu=*:%*})}}"
 
 extern const char * msp430_select_hwmult_lib (int, const char **);
+extern const char * msp430_select_cpu (int, const char **);
+
 # define EXTRA_SPEC_FUNCTIONS				\
-  { "msp430_hwmult_lib", msp430_select_hwmult_lib },
+  { "msp430_hwmult_lib", msp430_select_hwmult_lib },	\
+  { "msp430_select_cpu", msp430_select_cpu },
 
 /* Specify the libraries to include on the linker command line.
 

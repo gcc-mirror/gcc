@@ -18,7 +18,85 @@
 
 # Exit immediately if this isn't the right target.
 if { ![istarget msp430-*-*] } then {
-  return
+    return
+}
+
+# Below are msp430-specific effective target keywords, required for checking
+# device related warnings/errors
+proc check_effective_target_msp430_430_selected { } {
+    return [check-flags [list "" { *-*-* } { "-mcpu=msp430" } { "" } ]]
+}
+
+proc check_effective_target_msp430_430x_selected { } {
+    return [check-flags [list "" { *-*-* } \
+    { "-mcpu=msp430x" "-mcpu=msp430xv2" } { "" } ]]
+}
+
+proc check_effective_target_msp430_mlarge_selected { } {
+    return [check-flags [list "" { *-*-* } { "-mlarge" } { "" } ]]
+}
+
+proc check_effective_target_msp430_hwmul_not_none { } {
+    return [check-flags [list "" { *-*-* } \
+    { "-mhwmult=16bit" "-mhwmult=32bit" "-mhwmult=f5series" } { "" } ]]
+}
+
+proc check_effective_target_msp430_hwmul_not_16bit { } {
+    return [check-flags [list "" { *-*-* } \
+    { "-mhwmult=f5series" "-mhwmult=32bit" } { "" } ]]
+}
+
+proc check_effective_target_msp430_hwmul_not_32bit { } {
+    return [check-flags [list "" { *-*-* } \
+    { "-mhwmult=16bit" "-mhwmult=f5series" } { "" } ]]
+}
+
+proc check_effective_target_msp430_hwmul_not_f5 { } {
+    return [check-flags [list "" { *-*-* } \
+    { "-mhwmult=16bit" "-mhwmult=32bit" } { "" } ]]
+}
+
+# Return a list of msp430-specific options we can run the test with.
+# The mcu name is extracted from the file name, not from the -mmcu option
+# specified in the test file.
+proc msp430_get_opts { test_file } {
+    global board_info
+    # If the mcu name is not recognized, run the test as normal without
+    # additional options.
+    if { ![regexp {[a-z0-9]+430[a-z0-9_]+(?=\.c)} $test_file mcu_name] } {
+	return { "" }
+    }
+    # If the testsuite has been invoked with specific MSP430 options, don't run
+    # in this torture style.
+    set multi_flags [board_info [target_info name] multilib_flags]
+    if { [string match "*mlarge*" $multi_flags]
+	|| [string match "*msmall*" $multi_flags]
+	|| [string match "*mcpu*" $multi_flags]
+	|| [string match "*mmcu*" $multi_flags]
+	|| [string match "*mhwmult*" $multi_flags] } {
+	return { "" }
+    }
+    # Test all device related options. The compiler will warn about
+    # incompatibilities, so ensure dg-warning or dg-error directives are set up
+    # in the test sources.
+    return {"" -mhwmult=none -mhwmult=16bit -mhwmult=32bit -mhwmult=f5series \
+        -mcpu=msp430 -mcpu=msp430x -mcpu=msp430xv2 -mlarge}
+}
+
+# Run each test file in 'tests' with every possible value for -mcpu and
+# -mhwmult, and with -mlarge.
+proc msp430_device_permutations_runtest { tests } {
+    # The specific tests being run
+    global runtests
+    global MSP430_DEFAULT_CFLAGS
+    foreach { test_file } $tests {
+	if { ![runtest_file_p $runtests $test_file] } {
+	    continue
+	}
+	foreach { mcu_flags } [msp430_get_opts $test_file] {
+	    dg-runtest $test_file "$mcu_flags" "$MSP430_DEFAULT_CFLAGS"
+	}
+    }
 }
 
 # Load support procs.
@@ -41,6 +119,8 @@ dg-init
 # Main loop.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]] \
 	"" $MSP430_DEFAULT_CFLAGS
+
+msp430_device_permutations_runtest [lsort [glob -nocomplain $srcdir/$subdir/devices/*.\[cCS\]]]
 
 # All done.
 dg-finish
