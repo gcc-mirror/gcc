@@ -75,9 +75,9 @@ mone-byte-bool
 Target RejectNegative Report Var(darwin_one_byte_bool)
 Set sizeof(bool) to 1.
 
-mpic-symbol-stubs
-Target Report Var(darwin_picsymbol_stubs) Init(0)
-Force generation of PIC symbol stubs.
+msymbol-stubs
+Target Report Var(darwin_symbol_stubs) Init(0)
+Force generation of external symbol indirection stubs.
 
 ; Some code-gen may be improved / adjusted if the linker is sufficiently modern.
 mtarget-linker=

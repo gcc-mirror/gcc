@@ -1019,7 +1019,7 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
    _tested_ version known to support this so far.  */
 #define MIN_LD64_NO_COAL_SECTS "236.4"
 
-/* From at least version 62.1, ld64 can build PIC indirection stubs as
+/* From at least version 62.1, ld64 can build symbol indirection stubs as
    needed, and there is no need for the compiler to emit them.  */
 #define MIN_LD64_OMIT_STUBS "62.1"
 

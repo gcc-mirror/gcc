@@ -1,3 +1,10 @@
+2019-08-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/stubify-1.mm: Rename symbol stub option.
+	* obj-c++.dg/stubify-2.mm: Likewise.
+	* objc.dg/stubify-1.m: Likewise.
+	* objc.dg/stubify-2.m: Likewise.
+
 2013-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/90563
