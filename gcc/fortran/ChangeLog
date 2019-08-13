@@ -1,7 +1,14 @@
+2013-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/90563
+	* frontend-passes.c (insert_index): Suppress errors while
+	simplifying the resulting expression.
+
 2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88072
-	* misc.c (gfc_typename): Do not point to something that ought not to 
+	* misc.c (gfc_typename): Do not point to something that ought not to
 	be pointed at.
 
 2019-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
