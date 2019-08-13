@@ -1297,7 +1297,7 @@ vect_recog_pow_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
     {
       if (flag_unsafe_math_optimizations
 	  && TREE_CODE (base) == REAL_CST
-	  && !gimple_call_internal_p (last_stmt))
+	  && gimple_call_builtin_p (last_stmt, BUILT_IN_NORMAL))
 	{
 	  combined_fn log_cfn;
 	  built_in_function exp_bfn;

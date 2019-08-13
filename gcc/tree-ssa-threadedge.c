@@ -331,6 +331,7 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	{
 	  tree fndecl = gimple_call_fndecl (stmt);
 	  if (fndecl
+	      && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
 	      && (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_OBJECT_SIZE
 		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CONSTANT_P))
 	    continue;

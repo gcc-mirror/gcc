@@ -605,7 +605,7 @@ static tree grokparms (struct c_arg_info *, bool);
 static void layout_array_type (tree);
 static void warn_defaults_to (location_t, int, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
-static const char *header_for_builtin_fn (enum built_in_function);
+static const char *header_for_builtin_fn (tree);
 
 /* T is a statement.  Add it to the statement-tree.  This is the
    C/ObjC version--C++ has a slightly different version of this
@@ -1953,7 +1953,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
   if (!comptypes (oldtype, newtype))
     {
       if (TREE_CODE (olddecl) == FUNCTION_DECL
-	  && fndecl_built_in_p (olddecl) && !C_DECL_DECLARED_BUILTIN (olddecl))
+	  && fndecl_built_in_p (olddecl, BUILT_IN_NORMAL)
+	  && !C_DECL_DECLARED_BUILTIN (olddecl))
 	{
 	  /* Accept "harmless" mismatches in function types such
 	     as missing qualifiers or pointer vs same size integer
@@ -1975,8 +1976,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	      /* If types don't match for a built-in, throw away the
 		 built-in.  No point in calling locate_old_decl here, it
 		 won't print anything.  */
-	      const char *header
-		= header_for_builtin_fn (DECL_FUNCTION_CODE (olddecl));
+	      const char *header = header_for_builtin_fn (olddecl);
 	      location_t loc = DECL_SOURCE_LOCATION (newdecl);
 	      if (warning_at (loc, OPT_Wbuiltin_declaration_mismatch,
 			      "conflicting types for built-in function %q+D; "
@@ -3339,13 +3339,17 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
     hint.suppress ();
 }
 
-/* This function represents mapping of a function code FCODE
-   to its respective header.  */
+/* Return the name of the header file that declares built-in function
+   FNDECL, or null if either we don't know or don't expect to see an
+   explicit declaration.  */
 
 static const char *
-header_for_builtin_fn (enum built_in_function fcode)
+header_for_builtin_fn (tree fndecl)
 {
-  switch (fcode)
+  if (DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+    return NULL;
+
+  switch (DECL_FUNCTION_CODE (fndecl))
     {
     CASE_FLT_FN (BUILT_IN_ACOS):
     CASE_FLT_FN (BUILT_IN_ACOSH):
@@ -3595,8 +3599,7 @@ implicitly_declare (location_t loc, tree functionid)
 					    "declaration of built-in "
 					    "function %qD", decl);
 		  /* See if we can hint which header to include.  */
-		  const char *header
-		    = header_for_builtin_fn (DECL_FUNCTION_CODE (decl));
+		  const char *header = header_for_builtin_fn (decl);
 		  if (header != NULL && warned)
 		    {
 		      rich_location richloc (line_table, loc);

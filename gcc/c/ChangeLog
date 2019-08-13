@@ -1,3 +1,10 @@
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91421
+	* c-decl.c (header_for_builtin_fn): Take a FUNCTION_DECL instead
+	of a built_in_function.
+	(diagnose_mismatched_decls, implicitly_declare): Update accordingly.
+
 2019-08-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_clause_name): Parse device_type.
