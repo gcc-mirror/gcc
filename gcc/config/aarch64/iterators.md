@@ -1888,18 +1888,15 @@
 				   (UNSPEC_AUTIA1716 "12")
 				   (UNSPEC_AUTIB1716 "14")])
 
-(define_int_attr perm_insn [(UNSPEC_ZIP1 "zip") (UNSPEC_ZIP2 "zip")
-			    (UNSPEC_TRN1 "trn") (UNSPEC_TRN2 "trn")
-			    (UNSPEC_UZP1 "uzp") (UNSPEC_UZP2 "uzp")])
+(define_int_attr perm_insn [(UNSPEC_ZIP1 "zip1") (UNSPEC_ZIP2 "zip2")
+			    (UNSPEC_TRN1 "trn1") (UNSPEC_TRN2 "trn2")
+			    (UNSPEC_UZP1 "uzp1") (UNSPEC_UZP2 "uzp2")])
 
 ; op code for REV instructions (size within which elements are reversed).
 (define_int_attr rev_op [(UNSPEC_REV64 "64") (UNSPEC_REV32 "32")
 			 (UNSPEC_REV16 "16")])
 
-(define_int_attr perm_hilo [(UNSPEC_ZIP1 "1") (UNSPEC_ZIP2 "2")
-			    (UNSPEC_TRN1 "1") (UNSPEC_TRN2 "2")
-			    (UNSPEC_UZP1 "1") (UNSPEC_UZP2 "2")
-			    (UNSPEC_UNPACKSHI "hi") (UNSPEC_UNPACKUHI "hi")
+(define_int_attr perm_hilo [(UNSPEC_UNPACKSHI "hi") (UNSPEC_UNPACKUHI "hi")
 			    (UNSPEC_UNPACKSLO "lo") (UNSPEC_UNPACKULO "lo")])
 
 ;; Return true if the associated optab refers to the high-numbered lanes,
