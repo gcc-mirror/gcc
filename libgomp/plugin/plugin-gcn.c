@@ -3063,6 +3063,7 @@ struct copy_data
   const void *src;
   size_t len;
   bool use_hsa_memory_copy;
+  bool using_src_copy;
   struct goacc_asyncqueue *aq;
 };
 
@@ -3077,12 +3078,14 @@ copy_data (void *data_)
     hsa_fns.hsa_memory_copy_fn (data->dst, data->src, data->len);
   else
     memcpy (data->dst, data->src, data->len);
+  if (data->using_src_copy)
+    free ((void *) data->src);
   free (data);
 }
 
 static void
 queue_push_copy (struct goacc_asyncqueue *aq, void *dst, const void *src,
-		 size_t len, bool use_hsa_memory_copy)
+		 size_t len, bool use_hsa_memory_copy, bool using_src_copy)
 {
   if (DEBUG_QUEUES)
     HSA_DEBUG ("queue_push_copy %d:%d: %zu bytes from (%p) to (%p)\n",
@@ -3093,6 +3096,7 @@ queue_push_copy (struct goacc_asyncqueue *aq, void *dst, const void *src,
   data->src = src;
   data->len = len;
   data->use_hsa_memory_copy = use_hsa_memory_copy;
+  data->using_src_copy = using_src_copy;
   data->aq = aq;
   queue_push_callback (aq, copy_data, data);
 }
@@ -3137,7 +3141,7 @@ GOMP_OFFLOAD_dev2dev (int device, void *dst, const void *src, size_t n)
     {
       struct agent_info *agent = get_agent_info (device);
       maybe_init_omp_async (agent);
-      queue_push_copy (agent->omp_async_queue, dst, src, n, false);
+      queue_push_copy (agent->omp_async_queue, dst, src, n, false, false);
       return true;
     }
 
@@ -3469,7 +3473,15 @@ GOMP_OFFLOAD_openacc_async_host2dev (int device, void *dst, const void *src,
 {
   struct agent_info *agent = get_agent_info (device);
   assert (agent == aq->agent);
-  queue_push_copy (aq, dst, src, n, image_address_p (agent, dst));
+  /* The source data does not necessarily remain live until the deferred
+     copy happens.  Taking a snapshot of the data here avoids reading
+     uninitialised data later, but means that (a) data is copied twice and
+     (b) modifications to the copied data between the "spawning" point of
+     the asynchronous kernel and when it is executed will not be seen.
+     But, that is probably correct.  */
+  void *src_copy = GOMP_PLUGIN_malloc (n);
+  memcpy (src_copy, src, n);
+  queue_push_copy (aq, dst, src_copy, n, image_address_p (agent, dst), true);
   return true;
 }
 
@@ -3479,7 +3491,7 @@ GOMP_OFFLOAD_openacc_async_dev2host (int device, void *dst, const void *src,
 {
   struct agent_info *agent = get_agent_info (device);
   assert (agent == aq->agent);
-  queue_push_copy (aq, dst, src, n, image_address_p (agent, src));
+  queue_push_copy (aq, dst, src, n, image_address_p (agent, src), false);
   return true;
 }
 

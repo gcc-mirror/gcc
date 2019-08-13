@@ -303,10 +303,9 @@ gomp_to_device_kind_p (int kind)
 }
 
 /* Copy host memory to an offload device.  In asynchronous mode (if AQ is
-   non-NULL), this is only safe when the source memory is a global or heap
-   location (otherwise a copy may take place from a dangling pointer to an
-   expired stack frame).  Use copy_host2dev_immediate for copies from stack
-   locations.  */
+   non-NULL), H may point to a stack location.  It is up to the underlying
+   plugin to ensure that this data is read immediately, rather than at some
+   later point when the stack frame will likely have been destroyed.  */
 
 attribute_hidden void
 gomp_copy_host2dev (struct gomp_device_descr *devicep,
@@ -344,17 +343,6 @@ gomp_copy_host2dev (struct gomp_device_descr *devicep,
 			     "dev", d, "host", h, sz, aq);
   else
     gomp_device_copy (devicep, devicep->host2dev_func, "dev", d, "host", h, sz);
-}
-
-/* Use this variant for host-to-device copies from stack locations that may not
-   be live at the time an asynchronous copy operation takes place.  */
-
-static void
-copy_host2dev_immediate (struct gomp_device_descr *devicep, void *d,
-			 const void *h, size_t sz,
-			 struct gomp_coalesce_buf *cbuf)
-{
-  gomp_copy_host2dev (devicep, NULL, d, h, sz, cbuf);
 }
 
 attribute_hidden void
@@ -617,10 +605,10 @@ gomp_map_pointer (struct target_mem_desc *tgt, struct goacc_asyncqueue *aq,
   if (cur_node.host_start == (uintptr_t) NULL)
     {
       cur_node.tgt_offset = (uintptr_t) NULL;
-      copy_host2dev_immediate (devicep,
-			       (void *) (tgt->tgt_start + target_offset),
-			       (void *) &cur_node.tgt_offset,
-			       sizeof (void *), cbuf);
+      gomp_copy_host2dev (devicep, aq,
+			  (void *) (tgt->tgt_start + target_offset),
+			  (void *) &cur_node.tgt_offset, sizeof (void *),
+			  cbuf);
       return;
     }
   /* Add bias to the pointer value.  */
@@ -639,9 +627,8 @@ gomp_map_pointer (struct target_mem_desc *tgt, struct goacc_asyncqueue *aq,
      array section.  Now subtract bias to get what we want
      to initialize the pointer with.  */
   cur_node.tgt_offset -= bias;
-  copy_host2dev_immediate (devicep, (void *) (tgt->tgt_start + target_offset),
-			   (void *) &cur_node.tgt_offset, sizeof (void *),
-			   cbuf);
+  gomp_copy_host2dev (devicep, aq, (void *) (tgt->tgt_start + target_offset),
+		      (void *) &cur_node.tgt_offset, sizeof (void *), cbuf);
 }
 
 static void
@@ -1460,13 +1447,13 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		  cur_node.tgt_offset = gomp_map_val (tgt, hostaddrs, i - 1);
 		if (cur_node.tgt_offset)
 		  cur_node.tgt_offset -= sizes[i];
-		copy_host2dev_immediate (devicep,
-					 (void *) (n->tgt->tgt_start
-						   + n->tgt_offset
-						   + cur_node.host_start
-						   - n->host_start),
-					 (void *) &cur_node.tgt_offset,
-					 sizeof (void *), cbufp);
+		gomp_copy_host2dev (devicep, aq,
+				    (void *) (n->tgt->tgt_start
+					      + n->tgt_offset
+					      + cur_node.host_start
+					      - n->host_start),
+				    (void *) &cur_node.tgt_offset,
+				    sizeof (void *), cbufp);
 		cur_node.tgt_offset = n->tgt->tgt_start + n->tgt_offset
 				      + cur_node.host_start - n->host_start;
 		continue;
@@ -1705,8 +1692,8 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		    void *tgt_addr = (void *) (tgt->tgt_start + k->tgt_offset);
 		    /* We intentionally do not use coalescing here, as it's not
 		       data allocated by the current call to this function.  */
-		    copy_host2dev_immediate (devicep, (void *) n->tgt_offset,
-					     &tgt_addr, sizeof (void *), NULL);
+		    gomp_copy_host2dev (devicep, aq, (void *) n->tgt_offset,
+					&tgt_addr, sizeof (void *), NULL);
 		  }
 		array++;
 	      }
@@ -1828,9 +1815,10 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
       for (i = 0; i < mapnum; i++)
 	{
 	  cur_node.tgt_offset = gomp_map_val (tgt, hostaddrs, i);
-	  copy_host2dev_immediate (devicep,
-	    (void *) (tgt->tgt_start + i * sizeof (void *)),
-	    (void *) &cur_node.tgt_offset, sizeof (void *), cbufp);
+	  gomp_copy_host2dev (devicep, aq,
+			      (void *) (tgt->tgt_start + i * sizeof (void *)),
+			      (void *) &cur_node.tgt_offset, sizeof (void *),
+			      cbufp);
 	}
     }
 

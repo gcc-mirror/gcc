@@ -1,3 +1,17 @@
+2019-08-13  Julian Brown  <julian@codesourcery.com>
+
+	* plugin/plugin-gcn.c (struct copy_data): Add using_src_copy field.
+	(copy_data): Free temporary buffer if using.
+	(queue_push_copy): Add using_src_copy parameter.
+	(GOMP_OFFLOAD_dev2dev, GOMP_OFFLOAD_async_dev2host): Update calls to
+	queue_push_copy.
+	(GOMP_OFFLOAD_async_host2dev): Likewise.  Allocate temporary buffer and
+	copy source data to it immediately.
+	* target.c (gomp_copy_host2dev): Update function comment.
+	(copy_host2dev_immediate): Remove.
+	(gomp_map_pointer, gomp_map_vars_internal): Replace calls to
+	copy_host2dev_immediate with calls to gomp_copy_host2dev.
+
 2019-08-08  Julian Brown  <julian@codesourcery.com>
 
 	* plugin/plugin-gcn.c (gcn_exec): Use 1 for the default number of
