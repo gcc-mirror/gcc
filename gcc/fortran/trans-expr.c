@@ -10603,7 +10603,8 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       if (expr1->ts.deferred
 	  && gfc_expr_attr (expr1).allocatable
 	  && gfc_check_dependency (expr1, expr2, true))
-	rse.string_length = gfc_evaluate_now (rse.string_length, &rse.pre);
+	rse.string_length =
+	  gfc_evaluate_now_function_scope (rse.string_length, &rse.pre);
       string_length = rse.string_length;
     }
   else

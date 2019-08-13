@@ -1,7 +1,15 @@
+2019-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/90561
+	* trans.h (gfc_evaluate_now_function_scope): New function.
+	* trans.c (gfc_evaluate_now_function_scope): New function.
+	* trans-expr.c (gfc_trans_assignment): Use it.
+
 2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/89647
-	resolve.c (resolve_typebound_procedure): Allow host associated 
+	resolve.c (resolve_typebound_procedure): Allow host associated
 	procedure to be a binding target.  While here, wrap long line.
 
 2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
