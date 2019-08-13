@@ -4431,14 +4431,15 @@ package body Exp_Ch6 is
          then
             Add_Inlined_Body (Subp, Call_Node);
 
-            --  If the inlined call appears within an instantiation and some
-            --  level of optimization is required, ensure that the enclosing
-            --  instance body is available so that the back-end can actually
-            --  perform the inlining.
+            --  If the inlined call appears within an instantiation and either
+            --  is required to be inlined or optimization is enabled, ensure
+            --  that the enclosing instance body is available so the back end
+            --  can actually perform the inlining.
 
             if In_Instance
               and then Comes_From_Source (Subp)
-              and then Optimization_Level > 0
+              and then (Has_Pragma_Inline_Always (Subp)
+                         or else Optimization_Level > 0)
             then
                declare
                   Decl      : Node_Id;
