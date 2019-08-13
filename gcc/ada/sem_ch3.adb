@@ -8574,6 +8574,84 @@ package body Sem_Ch3 is
       --  An empty Discs list means that there were no constraints in the
       --  subtype indication or that there was an error processing it.
 
+      procedure Check_Generic_Ancestors;
+      --  In Ada 2005 (AI-344), the restriction that a derived tagged type
+      --  cannot be declared at a deeper level than its parent type is
+      --  removed. The check on derivation within a generic body is also
+      --  relaxed, but there's a restriction that a derived tagged type
+      --  cannot be declared in a generic body if it's derived directly
+      --  or indirectly from a formal type of that generic. This applies
+      --  to progenitors as well.
+
+      -----------------------------
+      -- Check_Generic_Ancestors --
+      -----------------------------
+
+      procedure Check_Generic_Ancestors is
+         Ancestor_Type : Entity_Id;
+         Intf_List     : List_Id;
+         Intf_Name     : Node_Id;
+
+         procedure Check_Ancestor;
+         --  For parent and progenitors.
+
+         --------------------
+         -- Check_Ancestor --
+         --------------------
+
+         procedure Check_Ancestor is
+         begin
+            --  If the derived type does have a formal type as an ancestor
+            --  then it's an error if the derived type is declared within
+            --  the body of the generic unit that declares the formal type
+            --  in its generic formal part. It's sufficient to check whether
+            --  the ancestor type is declared inside the same generic body
+            --  as the derived type (such as within a nested generic spec),
+            --  in which case the derivation is legal. If the formal type is
+            --  declared outside of that generic body, then it's certain
+            --  that the derived type is declared within the generic body
+            --  of the generic unit declaring the formal type.
+
+            if Is_Generic_Type (Ancestor_Type)
+              and then Enclosing_Generic_Body (Ancestor_Type) /=
+                         Enclosing_Generic_Body (Derived_Type)
+            then
+               Error_Msg_NE
+                 ("ancestor type& is formal type of enclosing"
+                    & " generic unit (RM 3.9.1 (4/2))",
+                      Indic, Ancestor_Type);
+            end if;
+         end Check_Ancestor;
+
+      begin
+         if Nkind (N) = N_Private_Extension_Declaration then
+            Intf_List := Interface_List (N);
+         else
+            Intf_List := Interface_List (Type_Definition (N));
+         end if;
+
+         if Present (Enclosing_Generic_Body (Derived_Type)) then
+            Ancestor_Type := Parent_Type;
+
+            while not Is_Generic_Type (Ancestor_Type)
+              and then Etype (Ancestor_Type) /= Ancestor_Type
+            loop
+               Ancestor_Type := Etype (Ancestor_Type);
+            end loop;
+
+            Check_Ancestor;
+
+            if Present (Intf_List) then
+               Intf_Name := First (Intf_List);
+               while Present (Intf_Name) loop
+                  Ancestor_Type := Entity (Intf_Name);
+                  Check_Ancestor;
+                  Next (Intf_Name);
+               end loop;
+            end if;
+         end if;
+      end Check_Generic_Ancestors;
+
    begin
       if Ekind (Parent_Type) = E_Record_Type_With_Private
         and then Present (Full_View (Parent_Type))
@@ -8680,7 +8758,8 @@ package body Sem_Ch3 is
 
       --  Indic can either be an N_Identifier if the subtype indication
       --  contains no constraint or an N_Subtype_Indication if the subtype
-      --  indication has a constraint.
+      --  indecation has a constraint. In either case it can include an
+      --  interface list.
 
       Indic := Subtype_Indication (Type_Def);
       Constraint_Present := (Nkind (Indic) = N_Subtype_Indication);
@@ -8909,52 +8988,8 @@ package body Sem_Ch3 is
             Freeze_Before (N, Parent_Type);
          end if;
 
-         --  In Ada 2005 (AI-344), the restriction that a derived tagged type
-         --  cannot be declared at a deeper level than its parent type is
-         --  removed. The check on derivation within a generic body is also
-         --  relaxed, but there's a restriction that a derived tagged type
-         --  cannot be declared in a generic body if it's derived directly
-         --  or indirectly from a formal type of that generic.
-
          if Ada_Version >= Ada_2005 then
-            if Present (Enclosing_Generic_Body (Derived_Type)) then
-               declare
-                  Ancestor_Type : Entity_Id;
-
-               begin
-                  --  Check to see if any ancestor of the derived type is a
-                  --  formal type.
-
-                  Ancestor_Type := Parent_Type;
-                  while not Is_Generic_Type (Ancestor_Type)
-                    and then Etype (Ancestor_Type) /= Ancestor_Type
-                  loop
-                     Ancestor_Type := Etype (Ancestor_Type);
-                  end loop;
-
-                  --  If the derived type does have a formal type as an
-                  --  ancestor, then it's an error if the derived type is
-                  --  declared within the body of the generic unit that
-                  --  declares the formal type in its generic formal part. It's
-                  --  sufficient to check whether the ancestor type is declared
-                  --  inside the same generic body as the derived type (such as
-                  --  within a nested generic spec), in which case the
-                  --  derivation is legal. If the formal type is declared
-                  --  outside of that generic body, then it's guaranteed that
-                  --  the derived type is declared within the generic body of
-                  --  the generic unit declaring the formal type.
-
-                  if Is_Generic_Type (Ancestor_Type)
-                    and then Enclosing_Generic_Body (Ancestor_Type) /=
-                               Enclosing_Generic_Body (Derived_Type)
-                  then
-                     Error_Msg_NE
-                       ("parent type of& must not be descendant of formal type"
-                          & " of an enclosing generic body",
-                            Indic, Derived_Type);
-                  end if;
-               end;
-            end if;
+            Check_Generic_Ancestors;
 
          elsif Type_Access_Level (Derived_Type) /=
                  Type_Access_Level (Parent_Type)
