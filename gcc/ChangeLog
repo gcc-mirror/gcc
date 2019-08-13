@@ -1,3 +1,27 @@
+2019-08-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc/config.gcc (msp430*-*-*): Add msp430-devices.o to extra_objs and
+	extra_gcc_objs.
+	* gcc/config/msp430/driver-msp430.c: Remove msp430_mcu_data.
+	(msp430_select_cpu): New spec function.
+	(msp430_select_hwmult_lib): Use msp430_extract_mcu_data to extract
+	MCU data.
+	* gcc/config/msp430/msp430-devices.c: New file.
+	* gcc/config/msp430/msp430-devices.h: New file.
+	* gcc/config/msp430/msp430.c: Remove msp430_mcu_data.
+	(msp430_option_override): Use msp430_extract_mcu_data to extract
+	MCU data.
+	(msp430_use_f5_series_hwmult): Likewise.
+	(use_32bit_hwmult): Likewise.
+	(msp430_no_hwmult): Likewise.
+	* gcc/config/msp430/msp430.h (ASM_SPEC): Don't pass -mmcu to the
+	assembler.
+	(DRIVER_SELF_SPECS): Call msp430_select_cpu if -mmcu is used without
+	and -mcpu option.
+	(EXTRA_SPEC_FUNCTIONS): Add msp430_select_cpu.
+	* gcc/config/msp430/t-msp430: Add rule to build msp430-devices.o.
+	Remove hard-coded MCU multilib data.
+
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_classify_vector_mode): Switch

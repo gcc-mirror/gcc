@@ -1,3 +1,24 @@
+2019-08-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/msp430.exp
+	(check_effective_target_msp430_430_selected): New.
+	(check_effective_target_msp430_430x_selected): New.
+	(check_effective_target_msp430_mlarge_selected): New.
+	(check_effective_target_msp430_hwmul_not_none): New.
+	(check_effective_target_msp430_hwmul_not_16bit): New.
+	(check_effective_target_msp430_hwmul_not_32bit): New.
+	(check_effective_target_msp430_hwmul_not_f5): New.
+	(msp430_get_opts): New.
+	(msp430_device_permutations_runtest): New.
+	* gcc.target/msp430/devices/README: New file.
+	* gcc.target/msp430/devices-main.c: New test.
+	* gcc.target/msp430/devices/hard-cc430f5123.c: Likewise.
+	* gcc.target/msp430/devices/hard-foo.c: Likewise.
+	* gcc.target/msp430/devices/hard-msp430afe253.c: Likewise.
+	* gcc.target/msp430/devices/hard-msp430cg4616.c: Likewise.
+	* gcc.target/msp430/devices/hard-msp430f4783.c: Likewise.
+	* gcc.target/msp430/devices/hard-rf430frl154h_rom.c: Likewise.
+
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/asm-x-constraint-1.c: New test.
