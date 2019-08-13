@@ -13583,14 +13583,34 @@ resolve_typebound_procedure (gfc_symtree* stree)
     }
   else
     {
+      /* If proc has not been resolved at this point, proc->name may 
+	 actually be a USE associated entity. See PR fortran/89647. */
+      if (!proc->resolved
+	  && proc->attr.function == 0 && proc->attr.subroutine == 0)
+	{
+	  gfc_symbol *tmp;
+	  gfc_find_symbol (proc->name, gfc_current_ns->parent, 1, &tmp);
+	  if (tmp && tmp->attr.use_assoc)
+	    {
+	      proc->module = tmp->module;
+	      proc->attr.proc = tmp->attr.proc;
+	      proc->attr.function = tmp->attr.function;
+	      proc->attr.subroutine = tmp->attr.subroutine;
+	      proc->attr.use_assoc = tmp->attr.use_assoc;
+	      proc->ts = tmp->ts;
+	      proc->result = tmp->result;
+	    }
+	}
+
       /* Check for F08:C465.  */
       if ((!proc->attr.subroutine && !proc->attr.function)
 	  || (proc->attr.proc != PROC_MODULE
 	      && proc->attr.if_source != IFSRC_IFBODY)
 	  || proc->attr.abstract)
 	{
-	  gfc_error ("%qs must be a module procedure or an external procedure with"
-		    " an explicit interface at %L", proc->name, &where);
+	  gfc_error ("%qs must be a module procedure or an external "
+		     "procedure with an explicit interface at %L",
+		     proc->name, &where);
 	  goto error;
 	}
     }
