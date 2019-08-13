@@ -1,3 +1,17 @@
+2019-08-13  Justin Squirek  <squirek@adacore.com>
+
+	* aspects.adb, aspects.ads: Register new aspect.
+	* par-prag.adb (Prag): Register new pragma
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add processing
+	for new aspect similar to Aspect_Max_Entry_Queue_Length.
+	* sem_prag.adb, sem_prag.ads (Analyze_Pragma): Register new
+	pragma and set it to use the same processing as
+	Pragma_Max_Queue_Length.
+	* snames.ads-tmpl: Move definition of
+	Name_Max_Entry_Queue_Length so that it can be processed as a
+	pragma in addition to a restriction and add an entry for the
+	pragma itself.
+
 2019-08-13  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch4.adb (Analyze_Allocator): Do not insert subtype
