@@ -1,5 +1,11 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/iterators.md (SVE_INT_UNARY): Add clrsb and clz.
+	(optab, sve_int_op): Handle them.
+	* config/aarch64/aarch64-sve.md: Expand comment.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/predicates.md (const_1_to_3_operand): New predicate.
 	* config/aarch64/aarch64-sve.md (*aarch64_adr_uxtw)
 	(*aarch64_adr<mode>_shift, *aarch64_adr_shift_uxtw): New patterns.
