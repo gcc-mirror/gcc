@@ -1,3 +1,7 @@
+2019-08-14  Bob Duff  <duff@adacore.com>
+
+	* gnat.dg/discr57.adb: New testcase.
+
 2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/generic_inst11.adb, gnat.dg/generic_inst11_pkg.adb,
