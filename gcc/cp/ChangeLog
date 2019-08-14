@@ -1,3 +1,7 @@
+2019-08-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* name-lookup.c (get_std_name_hint): Add more entries.
+
 2019-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl2.c (grok_array_decl): Use the location of the open square
