@@ -1,3 +1,27 @@
+2019-08-14  Bob Duff  <duff@adacore.com>
+
+	* sem_prag.ads, sem_prag.adb
+	(Process_Compile_Time_Warning_Or_Error): In parameterless
+	version, improve detection of whether we are in a generic unit
+	to cover the case of an instance within a generic unit.
+	(Process_Compile_Time_Warning_Or_Error): Rename the
+	two-parameter version to be
+	Validate_Compile_Time_Warning_Or_Error, and do not export it.
+	Issue a warning if the condition is not known at compile time.
+	The key point is that the warning must be given only for pragmas
+	deferred to the back end, because the back end discovers
+	additional values that are known at compile time.  Previous
+	changes in this ticket have enabled this by deferring to the
+	back end without checking for special cases such as 'Size.
+	(Validate_Compile_Time_Warning_Or_Error): Rename to be
+	Defer_Compile_Time_Warning_Error_To_BE.
+	* warnsw.ads, warnsw.adb (Warn_On_Unknown_Compile_Time_Warning):
+	Add new switches -gnatw_c and -gnatw_C to control the above
+	warning.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Document new switches.
+	* gnat_ugn.texi: Regenerate.
+
 2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch12.adb (Might_Inline_Subp): Rework comment and restrict
