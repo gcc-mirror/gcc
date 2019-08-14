@@ -151,7 +151,8 @@ package Sem_Disp is
    --  Returns True if E is a null procedure that is an interface primitive
 
    function Is_Overriding_Subprogram (E : Entity_Id) return Boolean;
-   --  Returns True if E is an overriding subprogram
+   --  Returns True if E is an overriding subprogram and False otherwise, in
+   --  particular for an inherited subprogram.
 
    function Is_Tag_Indeterminate (N : Node_Id) return Boolean;
    --  Returns true if the expression N is tag-indeterminate. An expression
