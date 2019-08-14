@@ -1,7 +1,8 @@
 //===-- sanitizer_posix.h -------------------------------------------------===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -14,6 +15,7 @@
 // ----------- ATTENTION -------------
 // This header should NOT include any other headers from sanitizer runtime.
 #include "sanitizer_internal_defs.h"
+#include "sanitizer_platform_limits_freebsd.h"
 #include "sanitizer_platform_limits_netbsd.h"
 #include "sanitizer_platform_limits_openbsd.h"
 #include "sanitizer_platform_limits_posix.h"
@@ -46,13 +48,18 @@ uptr internal_filesize(fd_t fd);  // -1 on error.
 uptr internal_stat(const char *path, void *buf);
 uptr internal_lstat(const char *path, void *buf);
 uptr internal_fstat(fd_t fd, void *buf);
+uptr internal_dup(int oldfd);
 uptr internal_dup2(int oldfd, int newfd);
 uptr internal_readlink(const char *path, char *buf, uptr bufsize);
 uptr internal_unlink(const char *path);
 uptr internal_rename(const char *oldpath, const char *newpath);
 uptr internal_lseek(fd_t fd, OFF_T offset, int whence);
 
+#if SANITIZER_NETBSD
+uptr internal_ptrace(int request, int pid, void *addr, int data);
+#else
 uptr internal_ptrace(int request, int pid, void *addr, void *data);
+#endif
 uptr internal_waitpid(int pid, int *status, int options);
 
 int internal_fork();
@@ -95,6 +102,23 @@ uptr internal_execve(const char *filename, char *const argv[],
                      char *const envp[]);
 
 bool IsStateDetached(int state);
+
+// Move the fd out of {0, 1, 2} range.
+fd_t ReserveStandardFds(fd_t fd);
+
+bool ShouldMockFailureToOpen(const char *path);
+
+// Create a non-file mapping with a given /proc/self/maps name.
+uptr MmapNamed(void *addr, uptr length, int prot, int flags, const char *name);
+
+// Platforms should implement at most one of these.
+// 1. Provide a pre-decorated file descriptor to use instead of an anonymous
+// mapping.
+int GetNamedMappingFd(const char *name, uptr size, int *flags);
+// 2. Add name to an existing anonymous mapping. The caller must keep *name
+// alive at least as long as the mapping exists.
+void DecorateMapping(uptr addr, uptr size, const char *name);
+
 
 }  // namespace __sanitizer
 

@@ -1,7 +1,8 @@
 //===-- sanitizer_atomic_clang_mips.h ---------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -113,3 +114,4 @@ INLINE void atomic_store(volatile atomic_uint64_t *ptr, atomic_uint64_t::Type v,
 }  // namespace __sanitizer
 
 #endif  // SANITIZER_ATOMIC_CLANG_MIPS_H
+

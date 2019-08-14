@@ -1,3 +1,9 @@
+2019-08-14  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/89832
+	PR sanitizer/91325
+	* All source files: Merge from upstream 368656.
+
 2019-06-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* sanitizer_common/sanitizer_posix_libcdep.cc: Cherry-pick
