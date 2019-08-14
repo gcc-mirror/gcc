@@ -1963,7 +1963,8 @@
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand")
 	   (unspec:SVE_F
-	     [(match_operand:SVE_F 2 "register_operand")
+	     [(match_dup 1)
+	      (match_operand:SVE_F 2 "register_operand")
 	      (match_operand:SVE_F 3 "register_operand")]
 	     SVE_COND_FP_BINARY)
 	   (match_operand:SVE_F 4 "aarch64_simd_reg_or_zero")]
@@ -1977,7 +1978,8 @@
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_F
-	     [(match_operand:SVE_F 2 "register_operand" "0, w")
+	     [(match_dup 1)
+	      (match_operand:SVE_F 2 "register_operand" "0, w")
 	      (match_operand:SVE_F 3 "register_operand" "w, w")]
 	     SVE_COND_FP_BINARY)
 	   (match_dup 2)]
@@ -1995,7 +1997,8 @@
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_F
-	     [(match_operand:SVE_F 2 "register_operand" "w, w")
+	     [(match_dup 1)
+	      (match_operand:SVE_F 2 "register_operand" "w, w")
 	      (match_operand:SVE_F 3 "register_operand" "0, w")]
 	     SVE_COND_FP_BINARY)
 	   (match_dup 3)]
@@ -2013,7 +2016,8 @@
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl")
 	   (unspec:SVE_F
-	     [(match_operand:SVE_F 2 "register_operand" "0, w, w, w, w")
+	     [(match_dup 1)
+	      (match_operand:SVE_F 2 "register_operand" "0, w, w, w, w")
 	      (match_operand:SVE_F 3 "register_operand" "w, 0, w, w, w")]
 	     SVE_COND_FP_BINARY)
 	   (match_operand:SVE_F 4 "aarch64_simd_reg_or_zero" "Dz, Dz, Dz, 0, w")]
@@ -2051,10 +2055,9 @@
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
 	  [(match_dup 3)
-	   (plus:SVE_F
-	     (match_operand:SVE_F 1 "register_operand")
-	     (match_operand:SVE_F 2 "aarch64_sve_float_arith_with_sub_operand"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SVE_F 1 "register_operand")
+	   (match_operand:SVE_F 2 "aarch64_sve_float_arith_with_sub_operand")]
+	  UNSPEC_COND_FADD))]
   "TARGET_SVE"
   {
     operands[3] = aarch64_ptrue_reg (<VPRED>mode);
@@ -2066,10 +2069,9 @@
   [(set (match_operand:SVE_F 0 "register_operand" "=w, w, w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
-	   (plus:SVE_F
-	      (match_operand:SVE_F 2 "register_operand" "%0, 0, w")
-	      (match_operand:SVE_F 3 "aarch64_sve_float_arith_with_sub_operand" "vsA, vsN, w"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SVE_F 2 "register_operand" "%0, 0, w")
+	   (match_operand:SVE_F 3 "aarch64_sve_float_arith_with_sub_operand" "vsA, vsN, w")]
+	  UNSPEC_COND_FADD))]
   "TARGET_SVE"
   "@
    fadd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
@@ -2098,10 +2100,9 @@
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
 	  [(match_dup 3)
-	   (minus:SVE_F
-	     (match_operand:SVE_F 1 "aarch64_sve_float_arith_operand")
-	     (match_operand:SVE_F 2 "register_operand"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SVE_F 1 "aarch64_sve_float_arith_operand")
+	   (match_operand:SVE_F 2 "register_operand")]
+	  UNSPEC_COND_FSUB))]
   "TARGET_SVE"
   {
     operands[3] = aarch64_ptrue_reg (<VPRED>mode);
@@ -2113,10 +2114,9 @@
   [(set (match_operand:SVE_F 0 "register_operand" "=w, w, w, w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl")
-	   (minus:SVE_F
-	     (match_operand:SVE_F 2 "aarch64_sve_float_arith_operand" "0, 0, vsA, w")
-	     (match_operand:SVE_F 3 "aarch64_sve_float_arith_with_sub_operand" "vsA, vsN, 0, w"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SVE_F 2 "aarch64_sve_float_arith_operand" "0, 0, vsA, w")
+	   (match_operand:SVE_F 3 "aarch64_sve_float_arith_with_sub_operand" "vsA, vsN, 0, w")]
+	  UNSPEC_COND_FSUB))]
   "TARGET_SVE
    && (register_operand (operands[2], <MODE>mode)
        || register_operand (operands[3], <MODE>mode))"
@@ -2147,10 +2147,12 @@
   [(set (match_operand:SVE_F 0 "register_operand" "=w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (minus:SVE_F
-	     (match_operand:SVE_F 2 "register_operand" "0")
-	     (match_operand:SVE_F 3 "register_operand" "w"))]
-	UNSPEC_COND_FABS))]
+	   (unspec:SVE_F
+	     [(match_dup 1)
+	      (match_operand:SVE_F 2 "register_operand" "0")
+	      (match_operand:SVE_F 3 "register_operand" "w")]
+	     UNSPEC_COND_FSUB)]
+	  UNSPEC_COND_FABS))]
   "TARGET_SVE"
   "fabd\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
 )
@@ -2167,10 +2169,9 @@
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
 	  [(match_dup 3)
-	   (mult:SVE_F
-	     (match_operand:SVE_F 1 "register_operand")
-	     (match_operand:SVE_F 2 "aarch64_sve_float_mul_operand"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SVE_F 1 "register_operand")
+	   (match_operand:SVE_F 2 "aarch64_sve_float_mul_operand")]
+	  UNSPEC_COND_FMUL))]
   "TARGET_SVE"
   {
     operands[3] = aarch64_ptrue_reg (<VPRED>mode);
@@ -2182,10 +2183,9 @@
   [(set (match_operand:SVE_F 0 "register_operand" "=w, w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (mult:SVE_F
-	     (match_operand:SVE_F 2 "register_operand" "%0, w")
-	     (match_operand:SVE_F 3 "aarch64_sve_float_mul_operand" "vsM, w"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SVE_F 2 "register_operand" "%0, w")
+	   (match_operand:SVE_F 3 "aarch64_sve_float_mul_operand" "vsM, w")]
+	  UNSPEC_COND_FMUL))]
   "TARGET_SVE"
   "@
    fmul\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
@@ -2212,9 +2212,9 @@
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
 	  [(match_dup 3)
-	   (div:SVE_F (match_operand:SVE_F 1 "register_operand")
-		      (match_operand:SVE_F 2 "register_operand"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SVE_F 1 "register_operand")
+	   (match_operand:SVE_F 2 "register_operand")]
+	  UNSPEC_COND_FDIV))]
   "TARGET_SVE"
   {
     operands[3] = aarch64_ptrue_reg (<VPRED>mode);
@@ -2226,9 +2226,9 @@
   [(set (match_operand:SVE_F 0 "register_operand" "=w, w, ?&w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
-	   (div:SVE_F (match_operand:SVE_F 2 "register_operand" "0, w, w")
-		      (match_operand:SVE_F 3 "register_operand" "w, 0, w"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SVE_F 2 "register_operand" "0, w, w")
+	   (match_operand:SVE_F 3 "register_operand" "w, 0, w")]
+	  UNSPEC_COND_FDIV))]
   "TARGET_SVE"
   "@
    fdiv\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
