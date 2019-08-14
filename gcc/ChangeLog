@@ -1,4 +1,14 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* config/aarch64/aarch64-sve.md (bic<mode>3): Rename to...
+	(*bic<SVE_I:mode>3): ...this.  Match the form that an SVE inverse
+	actually has, rather than relying on REG_EQUAL notes.
+	Make the insn operand order match the SVE operand order.
+	(*<nlogical><PRED_ALL:mode>3): Make the insn operand order match
+	the SVE operand order.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_target_reg): New function.
 	(aarch64_emit_set_immediate): Likewise.

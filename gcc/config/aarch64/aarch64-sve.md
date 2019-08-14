@@ -1779,15 +1779,20 @@
 ;; - BIC
 ;; -------------------------------------------------------------------------
 
-;; REG_EQUAL notes on "not<mode>3" should ensure that we can generate
-;; this pattern even though the NOT instruction itself is predicated.
-(define_insn "bic<mode>3"
+(define_insn_and_rewrite "*bic<mode>3"
   [(set (match_operand:SVE_I 0 "register_operand" "=w")
 	(and:SVE_I
-	  (not:SVE_I (match_operand:SVE_I 1 "register_operand" "w"))
-	  (match_operand:SVE_I 2 "register_operand" "w")))]
+	  (unspec:SVE_I
+	    [(match_operand 3)
+	     (not:SVE_I (match_operand:SVE_I 2 "register_operand" "w"))]
+	    UNSPEC_MERGE_PTRUE)
+	  (match_operand:SVE_I 1 "register_operand" "w")))]
   "TARGET_SVE"
-  "bic\t%0.d, %2.d, %1.d"
+  "bic\t%0.d, %1.d, %2.d"
+  "&& !CONSTANT_P (operands[3])"
+  {
+    operands[3] = CONSTM1_RTX (<VPRED>mode);
+  }
 )
 
 ;; -------------------------------------------------------------------------
@@ -2451,11 +2456,11 @@
   [(set (match_operand:PRED_ALL 0 "register_operand" "=Upa")
 	(and:PRED_ALL
 	  (NLOGICAL:PRED_ALL
-	    (not:PRED_ALL (match_operand:PRED_ALL 2 "register_operand" "Upa"))
-	    (match_operand:PRED_ALL 3 "register_operand" "Upa"))
+	    (not:PRED_ALL (match_operand:PRED_ALL 3 "register_operand" "Upa"))
+	    (match_operand:PRED_ALL 2 "register_operand" "Upa"))
 	  (match_operand:PRED_ALL 1 "register_operand" "Upa")))]
   "TARGET_SVE"
-  "<nlogical>\t%0.b, %1/z, %3.b, %2.b"
+  "<nlogical>\t%0.b, %1/z, %2.b, %3.b"
 )
 
 ;; -------------------------------------------------------------------------
