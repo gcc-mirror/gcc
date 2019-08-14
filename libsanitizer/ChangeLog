@@ -1,5 +1,24 @@
 2019-08-14  Martin Liska  <mliska@suse.cz>
 
+	* asan/asan_globals.cpp (CheckODRViolationViaIndicator): Reapply
+	patch from trunk.
+	(CheckODRViolationViaPoisoning): Likewise.
+	(RegisterGlobal): Likewise.
+	* asan/asan_mapping.h: Likewise.
+	* sanitizer_common/sanitizer_linux_libcdep.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_mac.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_platform_limits_linux.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_platform_limits_posix.h (defined): Likewise.
+	* sanitizer_common/sanitizer_stacktrace.cpp (GetCanonicFrame): Likewise.
+	* ubsan/ubsan_handlers.cpp (__ubsan::__ubsan_handle_cfi_bad_icall): Likewise.
+	(__ubsan::__ubsan_handle_cfi_bad_icall_abort): Likewise.
+	* ubsan/ubsan_handlers.h (struct CFIBadIcallData): Likewise.
+	(struct CFICheckFailData): Likewise.
+	(RECOVERABLE): Likewise.
+	* ubsan/ubsan_platform.h: Likewise.
+
+2019-08-14  Martin Liska  <mliska@suse.cz>
+
 	PR sanitizer/89832
 	PR sanitizer/91325
 	* All source files: Merge from upstream 368656.
