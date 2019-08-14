@@ -1,5 +1,30 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/constraints.md (vsb): New constraint.
+	(vsm): Generalize description.
+	* config/aarch64/iterators.md (SVE_INT_BINARY_IMM): New code
+	iterator.
+	(sve_imm_con): Handle smax, smin, umax and umin.
+	(sve_imm_prefix): New code attribute.
+	* config/aarch64/predicates.md (aarch64_sve_vsb_immediate)
+	(aarch64_sve_vsb_operand): New predicates.
+	(aarch64_sve_mul_immediate): Rename to...
+	(aarch64_sve_vsm_immediate): ...this.
+	(aarch64_sve_mul_operand): Rename to...
+	(aarch64_sve_vsm_operand): ...this.
+	* config/aarch64/aarch64-sve.md (mul<mode>3): Generalize to...
+	(<SVE_INT_BINARY_IMM:optab><SVE_I:mode>3): ...this.
+	(*mul<mode>3, *post_ra_mul<mode>3): Generalize to...
+	(*<SVE_INT_BINARY_IMM:optab><SVE_I:mode>3)
+	(*post_ra_<SVE_INT_BINARY_IMM:optab><SVE_I:mode>3): ...these and
+	add movprfx support for the immediate alternatives.
+	(<su><maxmin><mode>3, *<su><maxmin><mode>3): Delete in favor
+	of the above.
+	(*<SVE_INT_BINARY_SD:optab><SVE_SDI:mode>3): Fix incorrect predicate
+	for operand 3.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/predicates.md (aarch64_simd_imm_one): New predicate.
 	* config/aarch64/aarch64-sve.md (*cnot<mode>): New pattern.
 	(*cond_cnot<mode>_2, *cond_cnot<mode>_any): Likewise.
