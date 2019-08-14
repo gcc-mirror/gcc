@@ -1,3 +1,7 @@
+2019-08-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.c-torture/execute/noinit-attribute.c: Fix typo.
+
 2019-08-14  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/91294

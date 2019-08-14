@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target noinit */
+/* { dg-require-effective-target noinit } */
 /* { dg-options "-O2" } */
 
 /* This test checks that noinit data is handled correctly.  */
