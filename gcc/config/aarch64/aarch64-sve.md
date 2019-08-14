@@ -23,6 +23,7 @@
 ;;
 ;; == General notes
 ;; ---- Note on the handling of big-endian SVE
+;; ---- Description of UNSPEC_PTEST
 ;;
 ;; == Moves
 ;; ---- Moves of single vectors
@@ -166,7 +167,67 @@
 ;;   the order of the bytes within the elements is different.  We instead
 ;;   access spill slots via LD1 and ST1, using secondary reloads to
 ;;   reserve a predicate register.
-
+;;
+;; -------------------------------------------------------------------------
+;; ---- Description of UNSPEC_PTEST
+;; -------------------------------------------------------------------------
+;;
+;; SVE provides a PTEST instruction for testing the active lanes of a
+;; predicate and setting the flags based on the result.  The associated
+;; condition code tests are:
+;;
+;; - any   (= ne): at least one active bit is set
+;; - none  (= eq): all active bits are clear (*)
+;; - first (= mi): the first active bit is set
+;; - nfrst (= pl): the first active bit is clear (*)
+;; - last  (= cc): the last active bit is set
+;; - nlast (= cs): the last active bit is clear (*)
+;;
+;; where the conditions marked (*) are also true when there are no active
+;; lanes (i.e. when the governing predicate is a PFALSE).  The flags results
+;; of a PTEST use the condition code mode CC_NZC.
+;;
+;; PTEST is always a .B operation (i.e. it always operates on VNx16BI).
+;; This means that for other predicate modes, we need a governing predicate
+;; in which all bits are defined.
+;;
+;; For example, most predicated .H operations ignore the odd bits of the
+;; governing predicate, so that an active lane is represented by the
+;; bits "1x" and an inactive lane by the bits "0x", where "x" can be
+;; any value.  To test a .H predicate, we instead need "10" and "00"
+;; respectively, so that the condition only tests the even bits of the
+;; predicate.
+;;
+;; Several instructions set the flags as a side-effect, in the same way
+;; that a separate PTEST would.  It's important for code quality that we
+;; use these flags results as often as possible, particularly in the case
+;; of WHILE* and RDFFR.
+;;
+;; Also, some of the instructions that set the flags are unpredicated
+;; and instead implicitly test all .B, .H, .S or .D elements, as though
+;; they were predicated on a PTRUE of that size.  For example, a .S
+;; WHILELO sets the flags in the same way as a PTEST with a .S PTRUE
+;; would.
+;;
+;; We therefore need to represent PTEST operations in a way that
+;; makes it easy to combine them with both predicated and unpredicated
+;; operations, while using a VNx16BI governing predicate for all
+;; predicate modes.  We do this using:
+;;
+;;   (unspec:CC_NZC [gp cast_gp ptrue_flag op] UNSPEC_PTEST)
+;;
+;; where:
+;;
+;; - GP is the real VNx16BI governing predicate
+;;
+;; - CAST_GP is GP cast to the mode of OP.  All bits dropped by casting
+;;   GP to CAST_GP are guaranteed to be clear in GP.
+;;
+;; - PTRUE_FLAG is a CONST_INT (conceptually of mode SI) that has the value
+;;   SVE_KNOWN_PTRUE if we know that CAST_GP (rather than GP) is all-true and
+;;   SVE_MAYBE_NOT_PTRUE otherwise.
+;;
+;; - OP is the predicate we want to test, of the same mode as CAST_GP.
 
 ;; =========================================================================
 ;; == Moves
@@ -2343,7 +2404,7 @@
 )
 
 ;; Predicated predicate AND, EOR and ORR.
-(define_insn "pred_<optab><mode>3"
+(define_insn "@aarch64_pred_<optab><mode>_z"
   [(set (match_operand:PRED_ALL 0 "register_operand" "=Upa")
 	(and:PRED_ALL
 	  (LOGICAL:PRED_ALL
@@ -2355,23 +2416,23 @@
 )
 
 ;; Perform a logical operation on operands 2 and 3, using operand 1 as
-;; the GP (which is known to be a PTRUE).  Store the result in operand 0
-;; and set the flags in the same way as for PTEST.  The (and ...) in the
-;; UNSPEC_PTEST_PTRUE is logically redundant, but means that the tested
-;; value is structurally equivalent to rhs of the second set.
+;; the GP.  Store the result in operand 0 and set the flags in the same
+;; way as for PTEST.
 (define_insn "*<optab><mode>3_cc"
   [(set (reg:CC_NZC CC_REGNUM)
 	(unspec:CC_NZC
-	  [(match_operand:PRED_ALL 1 "register_operand" "Upa")
+	  [(match_operand:VNx16BI 1 "register_operand" "Upa")
+	   (match_operand 4)
+	   (match_operand:SI 5 "aarch64_sve_ptrue_flag")
 	   (and:PRED_ALL
 	     (LOGICAL:PRED_ALL
 	       (match_operand:PRED_ALL 2 "register_operand" "Upa")
 	       (match_operand:PRED_ALL 3 "register_operand" "Upa"))
-	     (match_dup 1))]
-	  UNSPEC_PTEST_PTRUE))
+	     (match_dup 4))]
+	  UNSPEC_PTEST))
    (set (match_operand:PRED_ALL 0 "register_operand" "=Upa")
 	(and:PRED_ALL (LOGICAL:PRED_ALL (match_dup 2) (match_dup 3))
-		      (match_dup 1)))]
+		      (match_dup 4)))]
   "TARGET_SVE"
   "<logical>s\t%0.b, %1/z, %2.b, %3.b"
 )
@@ -2836,17 +2897,19 @@
 (define_insn "*cmp<cmp_op><mode>_cc"
   [(set (reg:CC_NZC CC_REGNUM)
 	(unspec:CC_NZC
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	  [(match_operand:VNx16BI 1 "register_operand" "Upl, Upl")
+	   (match_operand 4)
+	   (match_operand:SI 5 "aarch64_sve_ptrue_flag")
 	   (unspec:<VPRED>
-	     [(match_dup 1)
+	     [(match_dup 4)
 	      (SVE_INT_CMP:<VPRED>
 		(match_operand:SVE_I 2 "register_operand" "w, w")
 		(match_operand:SVE_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
 	     UNSPEC_MERGE_PTRUE)]
-	  UNSPEC_PTEST_PTRUE))
+	  UNSPEC_PTEST))
    (set (match_operand:<VPRED> 0 "register_operand" "=Upa, Upa")
 	(unspec:<VPRED>
-	  [(match_dup 1)
+	  [(match_dup 4)
 	   (SVE_INT_CMP:<VPRED>
 	     (match_dup 2)
 	     (match_dup 3))]
@@ -2862,14 +2925,16 @@
 (define_insn "*cmp<cmp_op><mode>_ptest"
   [(set (reg:CC_NZC CC_REGNUM)
 	(unspec:CC_NZC
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	  [(match_operand:VNx16BI 1 "register_operand" "Upl, Upl")
+	   (match_operand 4)
+	   (match_operand:SI 5 "aarch64_sve_ptrue_flag")
 	   (unspec:<VPRED>
-	     [(match_dup 1)
+	     [(match_dup 4)
 	      (SVE_INT_CMP:<VPRED>
 		(match_operand:SVE_I 2 "register_operand" "w, w")
 		(match_operand:SVE_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
 	     UNSPEC_MERGE_PTRUE)]
-	  UNSPEC_PTEST_PTRUE))
+	  UNSPEC_PTEST))
    (clobber (match_scratch:<VPRED> 0 "=Upa, Upa"))]
   "TARGET_SVE"
   "@
@@ -2940,28 +3005,31 @@
 )
 
 ;; WHILELO sets the flags in the same way as a PTEST with a PTRUE GP.
-;; Handle the case in which both results are useful.  The GP operand
-;; to the PTEST isn't needed, so we allow it to be anything.
+;; Handle the case in which both results are useful.  The GP operands
+;; to the PTEST aren't needed, so we allow them to be anything.
 (define_insn_and_rewrite "*while_ult<GPI:mode><PRED_ALL:mode>_cc"
   [(set (reg:CC_NZC CC_REGNUM)
 	(unspec:CC_NZC
-	  [(match_operand:PRED_ALL 1)
+	  [(match_operand 3)
+	   (match_operand 4)
+	   (const_int SVE_KNOWN_PTRUE)
 	   (unspec:PRED_ALL
-	     [(match_operand:GPI 2 "aarch64_reg_or_zero" "rZ")
-	      (match_operand:GPI 3 "aarch64_reg_or_zero" "rZ")]
+	     [(match_operand:GPI 1 "aarch64_reg_or_zero" "rZ")
+	      (match_operand:GPI 2 "aarch64_reg_or_zero" "rZ")]
 	     UNSPEC_WHILE_LO)]
-	  UNSPEC_PTEST_PTRUE))
+	  UNSPEC_PTEST))
    (set (match_operand:PRED_ALL 0 "register_operand" "=Upa")
-	(unspec:PRED_ALL [(match_dup 2)
-			  (match_dup 3)]
+	(unspec:PRED_ALL [(match_dup 1)
+			  (match_dup 2)]
 			 UNSPEC_WHILE_LO))]
   "TARGET_SVE"
-  "whilelo\t%0.<PRED_ALL:Vetype>, %<w>2, %<w>3"
+  "whilelo\t%0.<PRED_ALL:Vetype>, %<w>1, %<w>2"
   ;; Force the compiler to drop the unused predicate operand, so that we
   ;; don't have an unnecessary PTRUE.
-  "&& !CONSTANT_P (operands[1])"
+  "&& (!CONSTANT_P (operands[3]) || !CONSTANT_P (operands[4]))"
   {
-    operands[1] = CONSTM1_RTX (<PRED_ALL:MODE>mode);
+    operands[3] = CONSTM1_RTX (VNx16BImode);
+    operands[4] = CONSTM1_RTX (<PRED_ALL:MODE>mode);
   }
 )
 
@@ -3133,36 +3201,34 @@
 	  (pc)))]
   ""
   {
-    rtx ptrue = aarch64_ptrue_reg (<MODE>mode);
+    rtx ptrue = force_reg (VNx16BImode, aarch64_ptrue_all (<data_bytes>));
+    rtx cast_ptrue = gen_lowpart (<MODE>mode, ptrue);
+    rtx ptrue_flag = gen_int_mode (SVE_KNOWN_PTRUE, SImode);
     rtx pred;
     if (operands[2] == CONST0_RTX (<MODE>mode))
       pred = operands[1];
     else
       {
 	pred = gen_reg_rtx (<MODE>mode);
-	emit_insn (gen_pred_xor<mode>3 (pred, ptrue, operands[1],
-					operands[2]));
+	emit_insn (gen_aarch64_pred_xor<mode>_z (pred, cast_ptrue, operands[1],
+						 operands[2]));
       }
-    emit_insn (gen_ptest_ptrue<mode> (ptrue, pred));
+    emit_insn (gen_aarch64_ptest<mode> (ptrue, cast_ptrue, ptrue_flag, pred));
     operands[1] = gen_rtx_REG (CC_NZCmode, CC_REGNUM);
     operands[2] = const0_rtx;
   }
 )
 
-;; Test all bits of operand 1.  Operand 0 is a GP that is known to hold PTRUE.
-;;
-;; Using UNSPEC_PTEST_PTRUE allows combine patterns to assume that the GP
-;; is a PTRUE even if the optimizers haven't yet been able to propagate
-;; the constant.  We would use a separate unspec code for PTESTs involving
-;; GPs that might not be PTRUEs.
-(define_insn "ptest_ptrue<mode>"
+;; See "Description of UNSPEC_PTEST" above for details.
+(define_insn "aarch64_ptest<mode>"
   [(set (reg:CC_NZC CC_REGNUM)
-	(unspec:CC_NZC
-	  [(match_operand:PRED_ALL 0 "register_operand" "Upa")
-	   (match_operand:PRED_ALL 1 "register_operand" "Upa")]
-	  UNSPEC_PTEST_PTRUE))]
+	(unspec:CC_NZC [(match_operand:VNx16BI 0 "register_operand" "Upa")
+			(match_operand 1)
+			(match_operand:SI 2 "aarch64_sve_ptrue_flag")
+			(match_operand:PRED_ALL 3 "register_operand" "Upa")]
+		       UNSPEC_PTEST))]
   "TARGET_SVE"
-  "ptest\t%0, %1.b"
+  "ptest\t%0, %3.b"
 )
 
 ;; =========================================================================

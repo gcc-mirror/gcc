@@ -1,3 +1,25 @@
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_ptrue_all): Declare.
+	* config/aarch64/aarch64.c (aarch64_ptrue_all): New function.
+	* config/aarch64/aarch64.md (UNSPEC_PTEST_PTRUE): Delete.
+	(UNSPEC_PTEST): New unspec.
+	(SVE_MAYBE_NOT_PTRUE, SVE_KNOWN_PTRUE): New constants.
+	* config/aarch64/iterators.md (data_bytes): New mode attribute.
+	* config/aarch64/predicates.md (aarch64_sve_ptrue_flag): New predicate.
+	* config/aarch64/aarch64-sve.md: Add a new section describing the
+	handling of UNSPEC_PTEST.
+	(pred_<LOGICAL:optab><PRED_ALL:mode>3): Rename to...
+	(@aarch64_pred_<LOGICAL:optab><PRED_ALL:mode>_z): ...this.
+	(ptest_ptrue<mode>): Replace with...
+	(aarch64_ptest<mode>): ...this new pattern.
+	(cbranch<mode>4): Update after above changes.
+	(*<LOGICAL:optab><PRED_ALL:mode>3_cc): Use UNSPEC_PTEST instead of
+	UNSPEC_PTEST_PTRUE.
+	(*cmp<SVE_INT_CMP:cmp_op><SVE_I:mode>_cc): Likewise.
+	(*cmp<SVE_INT_CMP:cmp_op><SVE_I:mode>_ptest): Likewise.
+	(*while_ult<GPI:mode><PRED_ALL:mode>_cc): Likewise.
+
 2019-08-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
 
 	PR lto/91287
