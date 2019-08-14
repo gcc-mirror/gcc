@@ -13383,6 +13383,9 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
     case E_V8HImode:
       use_vector_set = TARGET_SSE2;
       break;
+    case E_V8QImode:
+      use_vector_set = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
+      break;
     case E_V4HImode:
       use_vector_set = TARGET_SSE || TARGET_3DNOW_A;
       break;
@@ -13590,6 +13593,8 @@ ix86_expand_vector_init_one_var (bool mmx_ok, machine_mode mode,
       wmode = V8HImode;
       goto widen;
     case E_V8QImode:
+      if (TARGET_MMX_WITH_SSE && TARGET_SSE4_1)
+	break;
       wmode = V4HImode;
       goto widen;
     widen:
