@@ -1,5 +1,11 @@
 2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/87991
+	* resolve.c (check_data_variable): data-stmt-object with pointer
+	attribute requires a data-stmt-value with the target attribute.
+
+2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/88072
 	* misc.c (gfc_typename): Do not point to something that ought not to 
 	be pointed at.
