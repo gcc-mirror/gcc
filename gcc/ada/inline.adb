@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Alloc;
 with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Debug;    use Debug;
@@ -51,8 +52,12 @@ with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
-with Uname;    use Uname;
+with Table;
 with Tbuild;   use Tbuild;
+with Uintp;    use Uintp;
+with Uname;    use Uname;
+
+with GNAT.HTable;
 
 package body Inline is
 
@@ -82,11 +87,82 @@ package body Inline is
    Backend_Calls : Elist_Id;
    --  List of inline calls passed to the backend
 
+   Backend_Instances : Elist_Id;
+   --  List of instances inlined for the backend
+
    Backend_Inlined_Subps : Elist_Id;
    --  List of subprograms inlined by the backend
 
    Backend_Not_Inlined_Subps : Elist_Id;
    --  List of subprograms that cannot be inlined by the backend
+
+   -----------------------------
+   --  Pending_Instantiations --
+   -----------------------------
+
+   --  We make entries in this table for the pending instantiations of generic
+   --  bodies that are created during semantic analysis. After the analysis is
+   --  complete, calling Instantiate_Bodies performs the actual instantiations.
+
+   package Pending_Instantiations is new Table.Table (
+     Table_Component_Type => Pending_Body_Info,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 0,
+     Table_Initial        => Alloc.Pending_Instantiations_Initial,
+     Table_Increment      => Alloc.Pending_Instantiations_Increment,
+     Table_Name           => "Pending_Instantiations");
+
+   -------------------------------------
+   --  Called_Pending_Instantiations  --
+   -------------------------------------
+
+   --  With back-end inlining, the pending instantiations that are not in the
+   --  main unit or subunit are performed only after a call to the subprogram
+   --  instance, or to a subprogram within the package instance, is inlined.
+   --  Since such a call can be within a subsequent pending instantiation,
+   --  we make entries in this table that stores the index of these "called"
+   --  pending instantiations and perform them when the table is populated.
+
+   package Called_Pending_Instantiations is new Table.Table (
+     Table_Component_Type => Int,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 0,
+     Table_Initial        => Alloc.Pending_Instantiations_Initial,
+     Table_Increment      => Alloc.Pending_Instantiations_Increment,
+     Table_Name           => "Called_Pending_Instantiations");
+
+   ---------------------------------
+   --  To_Pending_Instantiations  --
+   ---------------------------------
+
+   --  With back-end inlining, we also need to have a map from the pending
+   --  instantiations to their index in the Pending_Instantiations table.
+
+   Node_Table_Size : constant := 257;
+   --  Number of headers in hash table
+
+   subtype Node_Header_Num is Integer range 0 .. Node_Table_Size - 1;
+   --  Range of headers in hash table
+
+   function Node_Hash (Id : Node_Id) return Node_Header_Num;
+   --  Simple hash function for Node_Ids
+
+   package To_Pending_Instantiations is new GNAT.Htable.Simple_HTable
+     (Header_Num => Node_Header_Num,
+      Element    => Int,
+      No_Element => -1,
+      Key        => Node_Id,
+      Hash       => Node_Hash,
+      Equal      => "=");
+
+   -----------------
+   -- Node_Hash --
+   -----------------
+
+   function Node_Hash (Id : Node_Id) return Node_Header_Num is
+   begin
+      return Node_Header_Num (Id mod Node_Table_Size);
+   end Node_Hash;
 
    --------------------
    -- Inlined Bodies --
@@ -179,8 +255,11 @@ package body Inline is
    --  called, and for the inlined subprogram that contains the call. If
    --  the call is in the main compilation unit, Caller is Empty.
 
+   procedure Add_Inlined_Instance (E : Entity_Id);
+   --  Add instance E to the list of of inlined instances for the unit
+
    procedure Add_Inlined_Subprogram (E : Entity_Id);
-   --  Add subprogram E to the list of inlined subprogram for the unit
+   --  Add subprogram E to the list of inlined subprograms for the unit
 
    function Add_Subp (E : Entity_Id) return Subp_Index;
    --  Make entry in Inlined table for subprogram E, or return table index
@@ -429,17 +508,22 @@ package body Inline is
          return Dont_Inline;
       end Must_Inline;
 
-      Level : Inline_Level_Type;
+      Inst      : Entity_Id;
+      Inst_Decl : Node_Id;
+      Inst_Node : Node_Id;
+      Level     : Inline_Level_Type;
 
    --  Start of processing for Add_Inlined_Body
 
    begin
       Append_New_Elmt (N, To => Backend_Calls);
 
-      --  Skip subprograms that cannot be inlined outside their unit
+      --  Skip subprograms that cannot or need not be inlined outside their
+      --  unit or parent subprogram.
 
       if Is_Abstract_Subprogram (E)
         or else Convention (E) = Convention_Protected
+        or else In_Main_Unit_Or_Subunit (E)
         or else Is_Nested (E)
       then
          return;
@@ -455,6 +539,22 @@ package body Inline is
       if Level = Dont_Inline then
          return;
       end if;
+
+      --  If a previous call to the subprogram has been inlined, nothing to do
+
+      if Is_Called (E) then
+         return;
+      end if;
+
+      --  If the subprogram is an instance, then inline the instance
+
+      if Is_Generic_Instance (E) then
+         Add_Inlined_Instance (E);
+      end if;
+
+      --  Mark the subprogram as called
+
+      Set_Is_Called (E);
 
       --  If the call was generated by the compiler and is to a subprogram in
       --  a run-time unit, we need to suppress debugging information for it,
@@ -476,7 +576,6 @@ package body Inline is
       --  in the spec.
 
       if Is_Non_Loading_Expression_Function (E) then
-         Set_Is_Called (E);
          return;
       end if;
 
@@ -489,14 +588,66 @@ package body Inline is
          Pack : constant Entity_Id := Get_Code_Unit_Entity (E);
 
       begin
-         Set_Is_Called (E);
-
          if Pack = E then
             Inlined_Bodies.Increment_Last;
             Inlined_Bodies.Table (Inlined_Bodies.Last) := E;
 
          else
             pragma Assert (Ekind (Pack) = E_Package);
+
+            --  If the subprogram is within an instance, inline the instance
+
+            if Comes_From_Source (E) then
+               Inst := Scope (E);
+
+               while Present (Inst) and then Inst /= Standard_Standard loop
+                  exit when Is_Generic_Instance (Inst);
+                  Inst := Scope (Inst);
+               end loop;
+
+               if Present (Inst)
+                 and then Is_Generic_Instance (Inst)
+                 and then not Is_Called (Inst)
+               then
+                  --  Do not add a pending instantiation if the body exits
+                  --  already, or if the instance is a compilation unit, or
+                  --  the instance node is missing.
+
+                  Inst_Decl := Unit_Declaration_Node (Inst);
+                  if Present (Corresponding_Body (Inst_Decl))
+                    or else Nkind (Parent (Inst_Decl)) = N_Compilation_Unit
+                    or else No (Next (Inst_Decl))
+                  then
+                     Set_Is_Called (Inst);
+
+                  else
+                     --  If the inlined call itself appears within an instance,
+                     --  ensure that the enclosing instance body is available.
+                     --  This is necessary because Sem_Ch12.Might_Inline_Subp
+                     --  does not recurse into nested instantiations.
+
+                     if not Is_Inlined (Inst) and then In_Instance then
+                        Set_Is_Inlined (Inst);
+
+                        --  The instantiation node usually follows the package
+                        --  declaration for the instance. If the generic unit
+                        --  has aspect specifications, they are transformed
+                        --  into pragmas in the instance, and the instance node
+                        --  appears after them.
+
+                        Inst_Node := Next (Inst_Decl);
+
+                        while Nkind (Inst_Node) /= N_Package_Instantiation loop
+                           Inst_Node := Next (Inst_Node);
+                        end loop;
+
+                        Add_Pending_Instantiation (Inst_Node, Inst_Decl);
+                     end if;
+
+                     Add_Inlined_Instance (Inst);
+                  end if;
+               end if;
+            end if;
 
             --  If the unit containing E is an instance, then the instance body
             --  will be analyzed in any case, see Sem_Ch12.Might_Inline_Subp.
@@ -534,6 +685,39 @@ package body Inline is
       end;
    end Add_Inlined_Body;
 
+   --------------------------
+   -- Add_Inlined_Instance --
+   --------------------------
+
+   procedure Add_Inlined_Instance (E : Entity_Id) is
+      Decl_Node : constant Node_Id := Unit_Declaration_Node (E);
+      Index     : Int;
+
+   begin
+      --  This machinery is only used with back-end inlining
+
+      if not Back_End_Inlining then
+         return;
+      end if;
+
+      --  Register the instance in the list
+
+      Append_New_Elmt (Decl_Node, To => Backend_Instances);
+
+      --  Retrieve the index of its corresponding pending instantiation
+      --  and mark this corresponding pending instantiation as needed.
+
+      Index := To_Pending_Instantiations.Get (Decl_Node);
+      if Index >= 0 then
+         Called_Pending_Instantiations.Append (Index);
+      else
+         pragma Assert (False);
+         null;
+      end if;
+
+      Set_Is_Called (E);
+   end Add_Inlined_Instance;
+
    ----------------------------
    -- Add_Inlined_Subprogram --
    ----------------------------
@@ -570,21 +754,17 @@ package body Inline is
    --  Start of processing for Add_Inlined_Subprogram
 
    begin
-      --  If the subprogram is to be inlined, and if its unit is known to be
-      --  inlined or is an instance whose body will be analyzed anyway or the
-      --  subprogram was generated as a body by the compiler (for example an
-      --  initialization procedure) or its declaration was provided along with
-      --  the body (for example an expression function), and if it is declared
-      --  at the library level not in the main unit, and if it can be inlined
-      --  by the back-end, then insert it in the list of inlined subprograms.
+      --  We can inline the subprogram if its unit is known to be inlined or is
+      --  an instance whose body will be analyzed anyway or the subprogram was
+      --  generated as a body by the compiler (for example an initialization
+      --  procedure) or its declaration was provided along with the body (for
+      --  example an expression function) and it does not declare types with
+      --  nontrivial initialization procedures.
 
-      if Is_Inlined (E)
-        and then (Is_Inlined (Pack)
-                   or else Is_Generic_Instance (Pack)
-                   or else Nkind (Decl) = N_Subprogram_Body
-                   or else Present (Corresponding_Body (Decl)))
-        and then not In_Main_Unit_Or_Subunit (E)
-        and then not Is_Nested (E)
+      if (Is_Inlined (Pack)
+           or else Is_Generic_Instance (Pack)
+           or else Nkind (Decl) = N_Subprogram_Body
+           or else Present (Corresponding_Body (Decl)))
         and then not Has_Initialized_Type (E)
       then
          Register_Backend_Inlined_Subprogram (E);
@@ -607,7 +787,20 @@ package body Inline is
    --------------------------------
 
    procedure Add_Pending_Instantiation (Inst : Node_Id; Act_Decl : Node_Id) is
+      Act_Decl_Id : Entity_Id;
+      Index       : Int;
+
    begin
+      --  Here is a defense against a ludicrous number of instantiations
+      --  caused by a circular set of instantiation attempts.
+
+      if Pending_Instantiations.Last > Maximum_Instantiations then
+         Error_Msg_Uint_1 := UI_From_Int (Maximum_Instantiations);
+         Error_Msg_N ("too many instantiations, exceeds max of^", Inst);
+         Error_Msg_N ("\limit can be changed using -gnateinn switch", Inst);
+         raise Unrecoverable_Error;
+      end if;
+
       --  Capture the body of the generic instantiation along with its context
       --  for later processing by Instantiate_Bodies.
 
@@ -620,6 +813,30 @@ package body Inline is
           Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
           Scope_Suppress           => Scope_Suppress,
           Warnings                 => Save_Warnings));
+
+      --  With back-end inlining, also associate the index to the instantiation
+
+      if Back_End_Inlining then
+         Act_Decl_Id := Defining_Entity (Act_Decl);
+         Index := Pending_Instantiations.Last;
+
+         To_Pending_Instantiations.Set (Act_Decl, Index);
+
+         --  If an instantiation is either a compilation unit or is in the main
+         --  unit or subunit or is a nested subprogram, then its body is needed
+         --  as per the analysis already done in Analyze_Package_Instantiation
+         --  and Analyze_Subprogram_Instantiation.
+
+         if Nkind (Parent (Inst)) = N_Compilation_Unit
+           or else In_Main_Unit_Or_Subunit (Act_Decl_Id)
+           or else (Is_Subprogram (Act_Decl_Id)
+                     and then Is_Nested (Act_Decl_Id))
+         then
+            Called_Pending_Instantiations.Append (Index);
+
+            Set_Is_Called (Act_Decl_Id);
+         end if;
+      end if;
    end Add_Pending_Instantiation;
 
    ------------------------
@@ -4220,6 +4437,7 @@ package body Inline is
 
       Inlined_Calls := No_Elist;
       Backend_Calls := No_Elist;
+      Backend_Instances := No_Elist;
       Backend_Inlined_Subps := No_Elist;
       Backend_Not_Inlined_Subps := No_Elist;
    end Initialize;
@@ -4236,8 +4454,35 @@ package body Inline is
    --  the body is an internal error.
 
    procedure Instantiate_Bodies is
-      J    : Nat;
+
+      procedure Instantiate_Body (Info : Pending_Body_Info);
+      --  Instantiate a pending body
+
+      ------------------------
+      --  Instantiate_Body  --
+      ------------------------
+
+      procedure Instantiate_Body (Info : Pending_Body_Info) is
+      begin
+         --  If the instantiation node is absent, it has been removed as part
+         --  of unreachable code.
+
+         if No (Info.Inst_Node) then
+            null;
+
+         elsif Nkind (Info.Act_Decl) = N_Package_Declaration then
+            Instantiate_Package_Body (Info);
+            Add_Scope_To_Clean (Defining_Entity (Info.Act_Decl));
+
+         else
+            Instantiate_Subprogram_Body (Info);
+         end if;
+      end Instantiate_Body;
+
+      J, K  : Nat;
       Info : Pending_Body_Info;
+
+   --  Start of processing for Instantiate_Bodies
 
    begin
       if Serious_Errors_Detected = 0 then
@@ -4251,36 +4496,41 @@ package body Inline is
 
          --  A body instantiation may generate additional instantiations, so
          --  the following loop must scan to the end of a possibly expanding
-         --  set (that's why we can't simply use a FOR loop here).
+         --  set (that's why we cannot simply use a FOR loop here). We must
+         --  also capture the element lest the set be entirely reallocated.
 
          J := 0;
-         while J <= Pending_Instantiations.Last
-           and then Serious_Errors_Detected = 0
-         loop
-            Info := Pending_Instantiations.Table (J);
+         if Back_End_Inlining then
+            while J <= Called_Pending_Instantiations.Last
+              and then Serious_Errors_Detected = 0
+            loop
+               K := Called_Pending_Instantiations.Table (J);
+               Info := Pending_Instantiations.Table (K);
+               Instantiate_Body (Info);
 
-            --  If the instantiation node is absent, it has been removed
-            --  as part of unreachable code.
+               J := J + 1;
+            end loop;
 
-            if No (Info.Inst_Node) then
-               null;
+         else
+            while J <= Pending_Instantiations.Last
+              and then Serious_Errors_Detected = 0
+            loop
+               Info := Pending_Instantiations.Table (J);
+               Instantiate_Body (Info);
 
-            elsif Nkind (Info.Act_Decl) = N_Package_Declaration then
-               Instantiate_Package_Body (Info);
-               Add_Scope_To_Clean (Defining_Entity (Info.Act_Decl));
-
-            else
-               Instantiate_Subprogram_Body (Info);
-            end if;
-
-            J := J + 1;
-         end loop;
+               J := J + 1;
+            end loop;
+         end if;
 
          --  Reset the table of instantiations. Additional instantiations
          --  may be added through inlining, when additional bodies are
          --  analyzed.
 
-         Pending_Instantiations.Init;
+         if Back_End_Inlining then
+            Called_Pending_Instantiations.Init;
+         else
+            Pending_Instantiations.Init;
+         end if;
 
          --  We can now complete the cleanup actions of scopes that contain
          --  pending instantiations (skipped for generic units, since we
@@ -4308,7 +4558,7 @@ package body Inline is
    begin
       Scop := Scope (E);
       while Scop /= Standard_Standard loop
-         if Ekind (Scop) in Subprogram_Kind then
+         if Is_Subprogram (Scop) then
             return True;
 
          elsif Ekind (Scop) = E_Task_Type
@@ -4380,6 +4630,34 @@ package body Inline is
 
                if Count = 1 then
                   Write_Str ("List of inlined calls passed to the backend");
+                  Write_Eol;
+               end if;
+
+               Write_Str ("  ");
+               Write_Int (Count);
+               Write_Str (":");
+               Write_Location (Sloc (Nod));
+               Output.Write_Eol;
+            end if;
+
+            Next_Elmt (Elmt);
+         end loop;
+      end if;
+
+      --  Generate listing of instances inlined for the backend
+
+      if Present (Backend_Instances) then
+         Count := 0;
+
+         Elmt := First_Elmt (Backend_Instances);
+         while Present (Elmt) loop
+            Nod := Node (Elmt);
+
+            if not In_Internal_Unit (Nod) then
+               Count := Count + 1;
+
+               if Count = 1 then
+                  Write_Str ("List of instances inlined for the backend");
                   Write_Eol;
                end if;
 

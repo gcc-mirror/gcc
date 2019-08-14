@@ -2366,9 +2366,9 @@ package Einfo is
 --       i.e. Standard.Boolean and all types ultimately derived from it.
 
 --    Is_Called (Flag102)
---       Defined in subprograms. Returns true if the subprogram is called
---       in the unit being compiled or in a unit in the context. Used for
---       inlining.
+--       Defined in subprograms and packages. Set if a subprogram is called
+--       from the unit being compiled or a unit in the closure. Also set for
+--       a package that contains called subprograms. Used only for inlining.
 
 --    Is_Character_Type (Flag63)
 --       Defined in all entities. Set for character types and subtypes,
@@ -6406,12 +6406,13 @@ package Einfo is
    --    Has_Master_Entity                   (Flag21)
    --    Has_RACW                            (Flag214)  (non-generic case only)
    --    Ignore_SPARK_Mode_Pragmas           (Flag301)
-   --    In_Package_Body                     (Flag48)
-   --    In_Use                              (Flag8)
+   --    Is_Called                           (Flag102)  (non-generic case only)
    --    Is_Elaboration_Checks_OK_Id         (Flag148)
    --    Is_Elaboration_Warnings_OK_Id       (Flag304)
    --    Is_Instantiated                     (Flag126)
+   --    In_Package_Body                     (Flag48)
    --    Is_Private_Descendant               (Flag53)
+   --    In_Use                              (Flag8)
    --    Is_Visible_Lib_Unit                 (Flag116)
    --    Renamed_In_Spec                     (Flag231)  (non-generic case only)
    --    SPARK_Aux_Pragma_Inherited          (Flag266)

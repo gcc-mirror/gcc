@@ -3861,6 +3861,12 @@ package body Sem_Ch12 is
 
       begin
          if Inline_Processing_Required then
+            --  No need to recompute the answer if we know it is positive
+
+            if Is_Inlined (Gen_Unit) then
+               return True;
+            end if;
+
             E := First_Entity (Gen_Unit);
             while Present (E) loop
                if Is_Subprogram (E) and then Is_Inlined (E) then
@@ -3870,6 +3876,7 @@ package body Sem_Ch12 is
                      Has_Inline_Always := True;
                   end if;
 
+                  Set_Is_Inlined (Gen_Unit);
                   return True;
                end if;
 
@@ -4425,17 +4432,6 @@ package body Sem_Ch12 is
          end if;
 
          if Needs_Body then
-
-            --  Here is a defence against a ludicrous number of instantiations
-            --  caused by a circular set of instantiation attempts.
-
-            if Pending_Instantiations.Last > Maximum_Instantiations then
-               Error_Msg_Uint_1 := UI_From_Int (Maximum_Instantiations);
-               Error_Msg_N ("too many instantiations, exceeds max of^", N);
-               Error_Msg_N ("\limit can be changed using -gnateinn switch", N);
-               raise Unrecoverable_Error;
-            end if;
-
             --  Indicate that the enclosing scopes contain an instantiation,
             --  and that cleanup actions should be delayed until after the
             --  instance body is expanded.
@@ -4633,11 +4629,10 @@ package body Sem_Ch12 is
          --  The instantiation results in a guaranteed ABE
 
          if Is_Known_Guaranteed_ABE (N) and then Needs_Body then
-
             --  Do not instantiate the corresponding body because gigi cannot
             --  handle certain types of premature instantiations.
 
-            Pending_Instantiations.Decrement_Last;
+            Remove_Dead_Instance (N);
 
             --  Create completing bodies for all subprogram declarations since
             --  their real bodies will not be instantiated.

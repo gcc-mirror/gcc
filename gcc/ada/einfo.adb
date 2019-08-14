@@ -2140,7 +2140,7 @@ package body Einfo is
 
    function Is_Called (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Procedure, E_Function));
+      pragma Assert (Ekind_In (Id, E_Procedure, E_Function, E_Package));
       return Flag102 (Id);
    end Is_Called;
 
@@ -5344,7 +5344,7 @@ package body Einfo is
 
    procedure Set_Is_Called (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Procedure, E_Function));
+      pragma Assert (Ekind_In (Id, E_Procedure, E_Function, E_Package));
       Set_Flag102 (Id, V);
    end Set_Is_Called;
 

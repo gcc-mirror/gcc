@@ -4443,62 +4443,6 @@ package body Exp_Ch6 is
            or else Has_Pragma_Inline_Always (Subp)
          then
             Add_Inlined_Body (Subp, Call_Node);
-
-            --  If the inlined call appears within an instance, then ensure
-            --  that the enclosing instance body is available so the back end
-            --  can actually perform the inlining.
-
-            if In_Instance and then Comes_From_Source (Subp) then
-               declare
-                  Decl      : Node_Id;
-                  Inst      : Entity_Id;
-                  Inst_Node : Node_Id;
-
-               begin
-                  Inst := Scope (Subp);
-
-                  --  Find enclosing instance
-
-                  while Present (Inst) and then Inst /= Standard_Standard loop
-                     exit when Is_Generic_Instance (Inst);
-                     Inst := Scope (Inst);
-                  end loop;
-
-                  if Present (Inst)
-                    and then Is_Generic_Instance (Inst)
-                    and then not Is_Inlined (Inst)
-                  then
-                     Set_Is_Inlined (Inst);
-                     Decl := Unit_Declaration_Node (Inst);
-
-                     --  Do not add a pending instantiation if the body exits
-                     --  already, or if the instance is a compilation unit, or
-                     --  the instance node is missing.
-
-                     if Present (Corresponding_Body (Decl))
-                       or else Nkind (Parent (Decl)) = N_Compilation_Unit
-                       or else No (Next (Decl))
-                     then
-                        null;
-
-                     else
-                        --  The instantiation node usually follows the package
-                        --  declaration for the instance. If the generic unit
-                        --  has aspect specifications, they are transformed
-                        --  into pragmas in the instance, and the instance node
-                        --  appears after them.
-
-                        Inst_Node := Next (Decl);
-
-                        while Nkind (Inst_Node) /= N_Package_Instantiation loop
-                           Inst_Node := Next (Inst_Node);
-                        end loop;
-
-                        Add_Pending_Instantiation (Inst_Node, Decl);
-                     end if;
-                  end if;
-               end;
-            end if;
          end if;
       end if;
 

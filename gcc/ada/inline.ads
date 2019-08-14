@@ -42,10 +42,8 @@
 --  Inline_Always subprograms, but there are fewer restrictions on the source
 --  of subprograms.
 
-with Alloc;
 with Opt;    use Opt;
 with Sem;    use Sem;
-with Table;
 with Types;  use Types;
 with Warnsw; use Warnsw;
 
@@ -99,14 +97,6 @@ package Inline is
       Warnings : Warning_Record;
       --  Capture values of warning flags
    end record;
-
-   package Pending_Instantiations is new Table.Table (
-     Table_Component_Type => Pending_Body_Info,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 0,
-     Table_Initial        => Alloc.Pending_Instantiations_Initial,
-     Table_Increment      => Alloc.Pending_Instantiations_Increment,
-     Table_Name           => "Pending_Instantiations");
 
    -----------------
    -- Subprograms --
