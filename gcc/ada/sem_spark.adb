@@ -4266,6 +4266,12 @@ package body Sem_SPARK is
    is
    begin
       return Is_Path_Expression (Expr, Is_Traversal)
+
+        or else (Nkind_In (Expr, N_Qualified_Expression,
+                                 N_Type_Conversion,
+                                 N_Unchecked_Type_Conversion)
+                  and then Is_Subpath_Expression (Expression (Expr)))
+
         or else (Nkind (Expr) = N_Attribute_Reference
                   and then
                     (Get_Attribute_Id (Attribute_Name (Expr)) =
@@ -4276,7 +4282,8 @@ package body Sem_SPARK is
                      or else
                      Get_Attribute_Id (Attribute_Name (Expr)) =
                        Attribute_Image))
-       or else Nkind (Expr) = N_Op_Concat;
+
+        or else Nkind (Expr) = N_Op_Concat;
    end Is_Subpath_Expression;
 
    ---------------------------
