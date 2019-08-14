@@ -1,3 +1,9 @@
+2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Add_Inlined_Body): Tweak comments.
+	(List_Inlining_Info): Also list information about non-main
+	units.
+
 2019-08-14  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch4.adb (Analyze_Selected_Component): In the case where

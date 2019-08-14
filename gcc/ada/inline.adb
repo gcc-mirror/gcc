@@ -481,12 +481,6 @@ package body Inline is
       end if;
 
       --  Find unit containing E, and add to list of inlined bodies if needed.
-      --  If the body is already present, no need to load any other unit. This
-      --  is the case for an initialization procedure, which appears in the
-      --  package declaration that contains the type. It is also the case if
-      --  the body has already been analyzed. Finally, if the unit enclosing
-      --  E is an instance, the instance body will be analyzed in any case.
-
       --  Library-level functions must be handled specially, because there is
       --  no enclosing package to retrieve. In this case, it is the body of
       --  the function that will have to be loaded.
@@ -504,6 +498,9 @@ package body Inline is
          else
             pragma Assert (Ekind (Pack) = E_Package);
 
+            --  If the unit containing E is an instance, then the instance body
+            --  will be analyzed in any case, see Sem_Ch12.Might_Inline_Subp.
+
             if Is_Generic_Instance (Pack) then
                null;
 
@@ -514,7 +511,7 @@ package body Inline is
             --  Do not inline it either if it is in the main unit.
             --  Extend the -gnatn2 processing to -gnatn1 for Inline_Always
             --  calls if the back-end takes care of inlining the call.
-            --  Note that Level in Inline_Package | Inline_Call here.
+            --  Note that Level is in Inline_Call | Inline_Packag here.
 
             elsif ((Level = Inline_Call
                       and then Has_Pragma_Inline_Always (E)
@@ -4350,7 +4347,7 @@ package body Inline is
          while Present (Elmt) loop
             Nod := Node (Elmt);
 
-            if In_Extended_Main_Code_Unit (Nod) then
+            if not In_Internal_Unit (Nod) then
                Count := Count + 1;
 
                if Count = 1 then
@@ -4379,7 +4376,7 @@ package body Inline is
          while Present (Elmt) loop
             Nod := Node (Elmt);
 
-            if In_Extended_Main_Code_Unit (Nod) then
+            if not In_Internal_Unit (Nod) then
                Count := Count + 1;
 
                if Count = 1 then
@@ -4407,22 +4404,24 @@ package body Inline is
          while Present (Elmt) loop
             Nod := Node (Elmt);
 
-            Count := Count + 1;
+            if not In_Internal_Unit (Nod) then
+               Count := Count + 1;
 
-            if Count = 1 then
-               Write_Str
-                 ("List of inlined subprograms passed to the backend");
-               Write_Eol;
+               if Count = 1 then
+                  Write_Str
+                    ("List of inlined subprograms passed to the backend");
+                  Write_Eol;
+               end if;
+
+               Write_Str ("  ");
+               Write_Int (Count);
+               Write_Str (":");
+               Write_Name (Chars (Nod));
+               Write_Str (" (");
+               Write_Location (Sloc (Nod));
+               Write_Str (")");
+               Output.Write_Eol;
             end if;
-
-            Write_Str ("  ");
-            Write_Int (Count);
-            Write_Str (":");
-            Write_Name (Chars (Nod));
-            Write_Str (" (");
-            Write_Location (Sloc (Nod));
-            Write_Str (")");
-            Output.Write_Eol;
 
             Next_Elmt (Elmt);
          end loop;
@@ -4437,22 +4436,24 @@ package body Inline is
          while Present (Elmt) loop
             Nod := Node (Elmt);
 
-            Count := Count + 1;
+            if not In_Internal_Unit (Nod) then
+               Count := Count + 1;
 
-            if Count = 1 then
-               Write_Str
-                 ("List of subprograms that cannot be inlined by the backend");
-               Write_Eol;
+               if Count = 1 then
+                  Write_Str
+                    ("List of subprograms that cannot be inlined by backend");
+                  Write_Eol;
+               end if;
+
+               Write_Str ("  ");
+               Write_Int (Count);
+               Write_Str (":");
+               Write_Name (Chars (Nod));
+               Write_Str (" (");
+               Write_Location (Sloc (Nod));
+               Write_Str (")");
+               Output.Write_Eol;
             end if;
-
-            Write_Str ("  ");
-            Write_Int (Count);
-            Write_Str (":");
-            Write_Name (Chars (Nod));
-            Write_Str (" (");
-            Write_Location (Sloc (Nod));
-            Write_Str (")");
-            Output.Write_Eol;
 
             Next_Elmt (Elmt);
          end loop;
