@@ -1,5 +1,12 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/smax_1.c: New test.
+	* gcc.target/aarch64/sve/smin_1.c: Likewise.
+	* gcc.target/aarch64/sve/umax_1.c: Likewise.
+	* gcc.target/aarch64/sve/umin_1.c: Likewise.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/cnot_1.c: New test.
 	* gcc.target/aarch64/sve/cond_cnot_1.c: Likewise.
 	* gcc.target/aarch64/sve/cond_cnot_1_run.c: Likewise.
