@@ -10313,8 +10313,24 @@ package body Exp_Ch3 is
              Result_Definition        => New_Occurrence_Of (Ret_Type, Loc));
       end if;
 
+      --  Declare an abstract subprogram for primitive subprograms of an
+      --  interface type (except for "=").
+
       if Is_Interface (Tag_Typ) then
-         return Make_Abstract_Subprogram_Declaration (Loc, Spec);
+         if Name /= Name_Op_Eq then
+            return Make_Abstract_Subprogram_Declaration (Loc, Spec);
+
+         --  The equality function (if any) for an interface type is defined
+         --  to be nonabstract, so we create an expression function for it that
+         --  always returns False. Note that the function can never actually be
+         --  invoked because interface types are abstract, so there aren't any
+         --  objects of such types (and their equality operation will always
+         --  dispatch).
+
+         else
+            return Make_Expression_Function
+                     (Loc, Spec, New_Occurrence_Of (Standard_False, Loc));
+         end if;
 
       --  If body case, return empty subprogram body. Note that this is ill-
       --  formed, because there is not even a null statement, and certainly not

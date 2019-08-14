@@ -1,3 +1,9 @@
+2019-08-14  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat.dg/equal11.adb, gnat.dg/equal11_interface.ads,
+	gnat.dg/equal11_record.adb, gnat.dg/equal11_record.ads: New
+	testcase.
+
 2019-08-14  Bob Duff  <duff@adacore.com>
 
 	* gnat.dg/discr57.adb: New testcase.
