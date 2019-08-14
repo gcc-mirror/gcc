@@ -1,3 +1,9 @@
+2019-08-14  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91294
+	* tree-ssa-strlen.c (handle_store): Avoid treating lower bound of
+	source length as exact.
+
 2019-08-14  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* doc/extend.texi: Add "noinit" attribute documentation.
