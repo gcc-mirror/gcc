@@ -1,6 +1,15 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
+	* gcc.target/aarch64/sve/cond_unary_1.c: Add tests for
+	floating-point types.
+	* gcc.target/aarch64/sve/cond_unary_2.c: Likewise.
+	* gcc.target/aarch64/sve/cond_unary_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_unary_4.c: Likewise.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
 	* gcc.target/aarch64/sve/cond_unary_1.c: New test.
 	* gcc.target/aarch64/sve/cond_unary_1_run.c: Likewise.
 	* gcc.target/aarch64/sve/cond_unary_2.c: Likewise.

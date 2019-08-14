@@ -2,6 +2,13 @@
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
 	* config/aarch64/aarch64-sve.md
+	(*cond_<SVE_COND_FP_UNARY:optab><SVE_F:mode>_2): New pattern.
+	(*cond_<SVE_COND_FP_UNARY:optab><SVE_F:mode>_any): Likewise.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* config/aarch64/aarch64-sve.md
 	(*cond_<SVE_INT_UNARY:optab><SVE_I:mode>_2): New pattern.
 	(*cond_<SVE_INT_UNARY:optab><SVE_I:mode>_any): Likewise.
 
