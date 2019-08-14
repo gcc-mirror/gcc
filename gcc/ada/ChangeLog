@@ -1,3 +1,8 @@
+2019-08-14  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Is_CCG_Supported_Aggregate): Return False for
+	arrays with bounds not known at compile time.
+
 2019-08-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (New_Copy_Tree, Visit_Entity): A quantified

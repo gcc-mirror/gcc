@@ -7707,15 +7707,36 @@ package body Exp_Aggr is
          P := Parent (P);
       end loop;
 
-      --  Cases where aggregates are supported by the CCG backend
+      --  Check cases where aggregates are supported by the CCG backend
 
       if Nkind (P) = N_Object_Declaration then
-         return True;
+         declare
+            P_Typ : constant Entity_Id := Etype (Defining_Identifier (P));
 
-      elsif Nkind (P) = N_Qualified_Expression
-        and then Nkind_In (Parent (P), N_Allocator, N_Object_Declaration)
-      then
-         return True;
+         begin
+            if Is_Record_Type (P_Typ) then
+               return True;
+            else
+               return Compile_Time_Known_Bounds (P_Typ);
+            end if;
+         end;
+
+      elsif Nkind (P) = N_Qualified_Expression then
+         if Nkind (Parent (P)) = N_Object_Declaration then
+            declare
+               P_Typ : constant Entity_Id :=
+                         Etype (Defining_Identifier (Parent (P)));
+            begin
+               if Is_Record_Type (P_Typ) then
+                  return True;
+               else
+                  return Compile_Time_Known_Bounds (P_Typ);
+               end if;
+            end;
+
+         elsif Nkind (Parent (P)) = N_Allocator then
+            return True;
+         end if;
       end if;
 
       return False;
