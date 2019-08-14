@@ -220,7 +220,7 @@
     UNSPEC_LD1_GATHER
     UNSPEC_ST1_SCATTER
     UNSPEC_MERGE_PTRUE
-    UNSPEC_PTEST_PTRUE
+    UNSPEC_PTEST
     UNSPEC_UNPACKSHI
     UNSPEC_UNPACKUHI
     UNSPEC_UNPACKSLO
@@ -258,6 +258,15 @@
     UNSPECV_TCANCEL		; Represent transaction cancel.
   ]
 )
+
+;; These constants are used as a const_int in various SVE unspecs
+;; to indicate whether the governing predicate is known to be a PTRUE.
+(define_constants
+  [; Indicates that the predicate might not be a PTRUE.
+   (SVE_MAYBE_NOT_PTRUE 0)
+
+   ; Indicates that the predicate is known to be a PTRUE.
+   (SVE_KNOWN_PTRUE 1)])
 
 ;; If further include files are added the defintion of MD_INCLUDES
 ;; must be updated.

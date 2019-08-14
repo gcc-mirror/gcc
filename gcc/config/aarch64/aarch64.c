@@ -2699,6 +2699,22 @@ aarch64_svpattern_for_vl (machine_mode pred_mode, int vl)
   return AARCH64_NUM_SVPATTERNS;
 }
 
+/* Return a VNx16BImode constant in which every sequence of ELT_SIZE
+   bits has the lowest bit set and the upper bits clear.  This is the
+   VNx16BImode equivalent of a PTRUE for controlling elements of
+   ELT_SIZE bytes.  However, because the constant is VNx16BImode,
+   all bits are significant, even the upper zeros.  */
+
+rtx
+aarch64_ptrue_all (unsigned int elt_size)
+{
+  rtx_vector_builder builder (VNx16BImode, elt_size, 1);
+  builder.quick_push (const1_rtx);
+  for (unsigned int i = 1; i < elt_size; ++i)
+    builder.quick_push (const0_rtx);
+  return builder.build ();
+}
+
 /* Return an all-true predicate register of mode MODE.  */
 
 rtx

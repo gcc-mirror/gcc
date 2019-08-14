@@ -1169,6 +1169,10 @@
 				    (V4HF "<Vetype>[%4]") (V8HF "<Vetype>[%4]")
 				    ])
 
+;; The number of bytes controlled by a predicate
+(define_mode_attr data_bytes [(VNx16BI "1") (VNx8BI "2")
+			      (VNx4BI "4") (VNx2BI "8")])
+
 ;; -------------------------------------------------------------------
 ;; Code Iterators
 ;; -------------------------------------------------------------------
