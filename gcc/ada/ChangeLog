@@ -1,3 +1,8 @@
+2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Might_Inline_Subp): Rework comment and restrict
+	the shortcut based on Is_Inlined to the back-end inlining case.
+
 2019-08-14  Bob Duff  <duff@adacore.com>
 
 	* inline.adb (Check_And_Split_Unconstrained_Function): Ignore
