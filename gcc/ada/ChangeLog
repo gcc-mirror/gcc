@@ -1,3 +1,7 @@
+2019-08-14  Bob Duff  <duff@adacore.com>
+
+	* sem.ads (Inside_A_Generic): Remove the ??? comment.
+
 2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* inline.ads (Pending_Descriptor): Delete.
