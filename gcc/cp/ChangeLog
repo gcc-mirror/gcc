@@ -1,5 +1,10 @@
 2019-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* decl2.c (grok_array_decl): Use the location of the open square
+	bracket in error message about invalid types.
+
+2019-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* decl.c (grokdeclarator): Check here for typedef a function
 	definition or a member function definition.
 	(start_function): Adjust.
