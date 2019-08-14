@@ -178,7 +178,7 @@ extern GTY(()) int darwin_ms_struct;
     %(linker)" \
     LINK_PLUGIN_SPEC \
     "%{flto*:%<fcompare-debug*} \
-    %{flto*} \
+     %{flto} %{fno-lto} %{flto=*} \
     %l " LINK_COMPRESS_DEBUG_SPEC \
    "%X %{s} %{t} %{Z} %{u*} \
     %{e*} %{r} \

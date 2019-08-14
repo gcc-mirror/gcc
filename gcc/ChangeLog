@@ -1,3 +1,11 @@
+2019-08-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2018-08-22 Iain Sandoe <iain@sandoe.co.uk>
+
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Update lto options
+	to match gcc/gcc.c.
+
 2019-08-05  Kito Cheng  <kito.cheng@sifive.com>
 
 	Backport from mainline
