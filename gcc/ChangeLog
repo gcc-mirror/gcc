@@ -1,6 +1,17 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
+	* config/aarch64/aarch64-sve.md (add<mode>3, *add<mode>3)
+	(sub<mode>3, *sub<mode>3, *fabd<mode>3, mul<mode>3, *mul<mode>3)
+	(div<mode>3, *div<mode>3): Use SVE_COND_FP_* unspecs instead of
+	rtx codes.
+	(cond_<optab><mode>, *cond_<optab><mode>_2, *cond_<optab><mode>_3)
+	(*cond_<optab><mode>_any): Add the predicate to the SVE_COND_FP_*
+	unspecs.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
 	* config/aarch64/aarch64-sve.md (bic<mode>3): Rename to...
 	(*bic<SVE_I:mode>3): ...this.  Match the form that an SVE inverse
 	actually has, rather than relying on REG_EQUAL notes.
