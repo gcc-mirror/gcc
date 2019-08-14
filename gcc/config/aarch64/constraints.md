@@ -293,7 +293,7 @@
 (define_constraint "Ufc"
   "A floating point constant which can be used with an\
    FMOV immediate operation."
-  (and (match_code "const_double")
+  (and (match_code "const_double,const_vector")
        (match_test "aarch64_float_const_representable_p (op)")))
 
 (define_constraint "Uvi"
@@ -399,6 +399,12 @@
    A constraint that matches a signed immediate operand valid for SVE
    CMP instructions."
  (match_operand 0 "aarch64_sve_cmp_vsc_immediate"))
+
+(define_constraint "vss"
+  "@internal
+   A constraint that matches a signed immediate operand valid for SVE
+   DUP instructions."
+ (match_test "aarch64_sve_dup_immediate_p (op)"))
 
 (define_constraint "vsd"
   "@internal

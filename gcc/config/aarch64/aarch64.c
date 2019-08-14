@@ -1482,6 +1482,16 @@ aarch64_dbx_register_number (unsigned regno)
    return DWARF_FRAME_REGISTERS;
 }
 
+/* If X is a CONST_DOUBLE, return its bit representation as a constant
+   integer, otherwise return X unmodified.  */
+static rtx
+aarch64_bit_representation (rtx x)
+{
+  if (CONST_DOUBLE_P (x))
+    x = gen_lowpart (int_mode_for_mode (GET_MODE (x)).require (), x);
+  return x;
+}
+
 /* Return true if MODE is any of the Advanced SIMD structure modes.  */
 static bool
 aarch64_advsimd_struct_mode_p (machine_mode mode)
@@ -8275,7 +8285,8 @@ aarch64_print_vector_float_operand (FILE *f, rtx x, bool negate)
   if (negate)
     r = real_value_negate (&r);
 
-  /* We only handle the SVE single-bit immediates here.  */
+  /* Handle the SVE single-bit immediates specially, since they have a
+     fixed form in the assembly syntax.  */
   if (real_equal (&r, &dconst0))
     asm_fprintf (f, "0.0");
   else if (real_equal (&r, &dconst1))
@@ -8283,7 +8294,13 @@ aarch64_print_vector_float_operand (FILE *f, rtx x, bool negate)
   else if (real_equal (&r, &dconsthalf))
     asm_fprintf (f, "0.5");
   else
-    return false;
+    {
+      const int buf_size = 20;
+      char float_buf[buf_size] = {'\0'};
+      real_to_decimal_for_mode (float_buf, &r, buf_size, buf_size,
+				1, GET_MODE (elt));
+      asm_fprintf (f, "%s", float_buf);
+    }
 
   return true;
 }
@@ -8312,6 +8329,11 @@ sizetochar (int size)
 			and print it as an unsigned integer, in decimal.
      'e':		Print the sign/zero-extend size as a character 8->b,
 			16->h, 32->w.
+     'I':		If the operand is a duplicated vector constant,
+			replace it with the duplicated scalar.  If the
+			operand is then a floating-point constant, replace
+			it with the integer bit representation.  Print the
+			transformed constant as a signed decimal number.
      'p':		Prints N such that 2^N == X (X must be power of 2 and
 			const int).
      'P':		Print the number of non-zero bits in X (a const_int).
@@ -8443,6 +8465,19 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 
       asm_fprintf (f, "%s", reg_names [REGNO (x) + 1]);
       break;
+
+    case 'I':
+      {
+	x = aarch64_bit_representation (unwrap_const_vec_duplicate (x));
+	if (CONST_INT_P (x))
+	  asm_fprintf (f, "%wd", INTVAL (x));
+	else
+	  {
+	    output_operand_lossage ("invalid operand for '%%%c'", code);
+	    return;
+	  }
+	break;
+      }
 
     case 'M':
     case 'm':
@@ -15116,13 +15151,11 @@ aarch64_sve_bitmask_immediate_p (rtx x)
 bool
 aarch64_sve_dup_immediate_p (rtx x)
 {
-  rtx elt;
-
-  if (!const_vec_duplicate_p (x, &elt)
-      || !CONST_INT_P (elt))
+  x = aarch64_bit_representation (unwrap_const_vec_duplicate (x));
+  if (!CONST_INT_P (x))
     return false;
 
-  HOST_WIDE_INT val = INTVAL (elt);
+  HOST_WIDE_INT val = INTVAL (x);
   if (val & 0xff)
     return IN_RANGE (val, -0x80, 0x7f);
   return IN_RANGE (val, -0x8000, 0x7f00);
@@ -16965,6 +16998,7 @@ aarch64_float_const_representable_p (rtx x)
   REAL_VALUE_TYPE r, m;
   bool fail;
 
+  x = unwrap_const_vec_duplicate (x);
   if (!CONST_DOUBLE_P (x))
     return false;
 
@@ -18085,6 +18119,13 @@ aarch64_expand_sve_vcond (machine_mode data_mode, machine_mode cmp_mode,
     }
   else
     aarch64_expand_sve_vec_cmp_int (pred, GET_CODE (ops[3]), ops[4], ops[5]);
+
+  if (!aarch64_sve_reg_or_dup_imm (ops[1], data_mode))
+    ops[1] = force_reg (data_mode, ops[1]);
+  /* The "false" value can only be zero if the "true" value is a constant.  */
+  if (register_operand (ops[1], data_mode)
+      || !aarch64_simd_reg_or_zero (ops[2], data_mode))
+    ops[2] = force_reg (data_mode, ops[2]);
 
   rtvec vec = gen_rtvec (3, pred, ops[1], ops[2]);
   emit_set_insn (ops[0], gen_rtx_UNSPEC (data_mode, vec, UNSPEC_SEL));
