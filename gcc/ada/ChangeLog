@@ -1,3 +1,50 @@
+2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Is_Called): Document new usage on E_Package
+	entities.
+	* einfo.adb (Is_Called): Accept E_Package entities.
+	(Set_Is_Called): Likewise.
+	* exp_ch6.adb (Expand_Call_Helper): Move code dealing with
+	instances for back-end inlining to Add_Inlined_Body.
+	* inline.ads: Remove with clauses for Alloc and Table.
+	(Pending_Instantiations): Move to...
+	* inline.adb: Add with clauses for Alloc, Uintp, Table and
+	GNAT.HTable.
+	(Backend_Instances): New variable.
+	(Pending_Instantiations): ...here.
+	(Called_Pending_Instantiations): New table.
+	(Node_Table_Size): New constant.
+	(Node_Header_Num): New subtype.
+	(Node_Hash): New function.
+	(To_Pending_Instantiations): New hash table.
+	(Add_Inlined_Body): Bail out early for subprograms in the main
+	unit or subunit.  Likewise if the Is_Called flag is set.  If the
+	subprogram is an instance, invoke Add_Inlined_Instance.  Call
+	Set_Is_Called earlier.  If the subrogram is within an instance,
+	invoke Add_Inlined_Instance.  Also deal with the case where the
+	call itself is within an instance.
+	(Add_Inlined_Instance): New procedure.
+	(Add_Inlined_Subprogram): Remove conditions always fulfilled.
+	(Add_Pending_Instantiation): Move the defence against ludicruous
+	number of instantiations to here. When back-end inlining is
+	enabled, associate an instantiation with its index in table and
+	mark a few selected kinds of instantiations as always needed.
+	(Initialize): Set Backend_Instances to No_Elist.
+	(Instantiate_Body): New procedure doing the work extracted
+	from...
+	(Instantiate_Bodies): ...here.  When back-end inlining is
+	enabled, loop over Called_Pending_Instantiations instead of
+	Pending_Instantiations.
+	(Is_Nested): Minor tweak.
+	(List_Inlining_Info): Also list the contents of
+	Backend_Instances.
+	* sem_ch12.adb (Might_Inline_Subp): Return early if Is_Inlined
+	is set and otherwise set it before returning true.
+	(Analyze_Package_Instantiation): Remove the defence against
+	ludicruous number of instantiations.  Invoke
+	Remove_Dead_Instance instead of doing the removal manually if
+	there is a guaranteed ABE.
+
 2019-08-14  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch3.adb (Predef_Spec_Or_Body): For an equality operation
