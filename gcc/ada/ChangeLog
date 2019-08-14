@@ -1,3 +1,12 @@
+2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch7.adb (Install_Private_Declarations)
+	<Swap_Private_Dependents>: Do not rely solely on the
+	Is_Child_Unit flag on the unit to recurse.
+	(Uninstall_Declarations) <Swap_Private_Dependents>: New
+	function.  Use it to recurse on the private dependent entities
+	for child units.
+
 2019-08-14  Javier Miranda  <miranda@adacore.com>
 
 	* exp_aggr.adb (Is_CCG_Supported_Aggregate): Return False for

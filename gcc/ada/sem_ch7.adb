@@ -2261,13 +2261,14 @@ package body Sem_Ch7 is
       procedure Swap_Private_Dependents (Priv_Deps : Elist_Id);
       --  When the full view of a private type is made available, we do the
       --  same for its private dependents under proper visibility conditions.
-      --  When compiling a grandchild unit this needs to be done recursively.
+      --  When compiling a child unit this needs to be done recursively.
 
       -----------------------------
       -- Swap_Private_Dependents --
       -----------------------------
 
       procedure Swap_Private_Dependents (Priv_Deps : Elist_Id) is
+         Cunit     : Entity_Id;
          Deps      : Elist_Id;
          Priv      : Entity_Id;
          Priv_Elmt : Elmt_Id;
@@ -2285,6 +2286,7 @@ package body Sem_Ch7 is
             if Present (Full_View (Priv)) and then Is_Visible_Dependent (Priv)
             then
                if Is_Private_Type (Priv) then
+                  Cunit := Cunit_Entity (Current_Sem_Unit);
                   Deps := Private_Dependents (Priv);
                   Is_Priv := True;
                else
@@ -2312,11 +2314,14 @@ package body Sem_Ch7 is
                Set_Is_Potentially_Use_Visible
                  (Priv, Is_Potentially_Use_Visible (Node (Priv_Elmt)));
 
-               --  Within a child unit, recurse, except in generic child unit,
-               --  which (unfortunately) handle private_dependents separately.
+               --  Recurse for child units, except in generic child units,
+               --  which unfortunately handle private_dependents separately.
+               --  Note that the current unit may not have been analyzed,
+               --  for example a package body, so we cannot rely solely on
+               --  the Is_Child_Unit flag, but that's only an optimization.
 
                if Is_Priv
-                 and then Is_Child_Unit (Cunit_Entity (Current_Sem_Unit))
+                 and then (No (Etype (Cunit)) or else Is_Child_Unit (Cunit))
                  and then not Is_Empty_Elmt_List (Deps)
                  and then not Inside_A_Generic
                then
@@ -2701,12 +2706,15 @@ package body Sem_Ch7 is
       Decl      : constant Node_Id := Unit_Declaration_Node (P);
       Id        : Entity_Id;
       Full      : Entity_Id;
-      Priv_Elmt : Elmt_Id;
-      Priv_Sub  : Entity_Id;
 
       procedure Preserve_Full_Attributes (Priv : Entity_Id; Full : Entity_Id);
       --  Copy to the private declaration the attributes of the full view that
       --  need to be available for the partial view also.
+
+      procedure Swap_Private_Dependents (Priv_Deps : Elist_Id);
+      --  When the full view of a private type is made unavailable, we do the
+      --  same for its private dependents under proper visibility conditions.
+      --  When compiling a child unit this needs to be done recursively.
 
       function Type_In_Use (T : Entity_Id) return Boolean;
       --  Check whether type or base type appear in an active use_type clause
@@ -2825,6 +2833,66 @@ package body Sem_Ch7 is
             end if;
          end if;
       end Preserve_Full_Attributes;
+
+      -----------------------------
+      -- Swap_Private_Dependents --
+      -----------------------------
+
+      procedure Swap_Private_Dependents (Priv_Deps : Elist_Id) is
+         Cunit     : Entity_Id;
+         Deps      : Elist_Id;
+         Priv      : Entity_Id;
+         Priv_Elmt : Elmt_Id;
+         Is_Priv   : Boolean;
+
+      begin
+         Priv_Elmt := First_Elmt (Priv_Deps);
+         while Present (Priv_Elmt) loop
+            Priv := Node (Priv_Elmt);
+
+            --  Before we do the swap, we verify the presence of the Full_View
+            --  field, which may be empty due to a swap by a previous call to
+            --  End_Package_Scope (e.g. from the freezing mechanism).
+
+            if Present (Full_View (Priv)) then
+               if Is_Private_Type (Priv) then
+                  Cunit := Cunit_Entity (Current_Sem_Unit);
+                  Deps := Private_Dependents (Priv);
+                  Is_Priv := True;
+               else
+                  Is_Priv := False;
+               end if;
+
+               if Scope (Priv) = P
+                 or else not In_Open_Scopes (Scope (Priv))
+               then
+                  Set_Is_Immediately_Visible (Priv, False);
+               end if;
+
+               if Is_Visible_Dependent (Priv) then
+                  Preserve_Full_Attributes (Priv, Full_View (Priv));
+                  Replace_Elmt (Priv_Elmt, Full_View (Priv));
+                  Exchange_Declarations (Priv);
+
+                  --  Recurse for child units, except in generic child units,
+                  --  which unfortunately handle private_dependents separately.
+                  --  Note that the current unit may not have been analyzed,
+                  --  for example a package body, so we cannot rely solely on
+                  --  the Is_Child_Unit flag, but that's only an optimization.
+
+                  if Is_Priv
+                    and then (No (Etype (Cunit)) or else Is_Child_Unit (Cunit))
+                    and then not Is_Empty_Elmt_List (Deps)
+                    and then not Inside_A_Generic
+                  then
+                     Swap_Private_Dependents (Deps);
+                  end if;
+               end if;
+            end if;
+
+            Next_Elmt (Priv_Elmt);
+         end loop;
+      end Swap_Private_Dependents;
 
       -----------------
       -- Type_In_Use --
@@ -3077,31 +3145,7 @@ package body Sem_Ch7 is
             --  were compiled in this scope, or installed previously
             --  by Install_Private_Declarations.
 
-            --  Before we do the swap, we verify the presence of the Full_View
-            --  field which may be empty due to a swap by a previous call to
-            --  End_Package_Scope (e.g. from the freezing mechanism).
-
-            Priv_Elmt := First_Elmt (Private_Dependents (Id));
-            while Present (Priv_Elmt) loop
-               Priv_Sub := Node (Priv_Elmt);
-
-               if Present (Full_View (Priv_Sub)) then
-                  if Scope (Priv_Sub) = P
-                     or else not In_Open_Scopes (Scope (Priv_Sub))
-                  then
-                     Set_Is_Immediately_Visible (Priv_Sub, False);
-                  end if;
-
-                  if Is_Visible_Dependent (Priv_Sub) then
-                     Preserve_Full_Attributes
-                       (Priv_Sub, Full_View (Priv_Sub));
-                     Replace_Elmt (Priv_Elmt, Full_View (Priv_Sub));
-                     Exchange_Declarations (Priv_Sub);
-                  end if;
-               end if;
-
-               Next_Elmt (Priv_Elmt);
-            end loop;
+            Swap_Private_Dependents (Private_Dependents (Id));
 
             --  Now restore the type itself to its private view
 
