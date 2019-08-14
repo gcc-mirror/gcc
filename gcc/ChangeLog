@@ -1,3 +1,42 @@
+2019-08-14  Richard Biener  <rguenther@suse.de>
+	Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91154
+	* config/i386/i386-features.h (scalar_chain::scalar_chain): Add
+	mode arguments.
+	(scalar_chain::smode): New member.
+	(scalar_chain::vmode): Likewise.
+	(dimode_scalar_chain): Rename to...
+	(general_scalar_chain): ... this.
+	(general_scalar_chain::general_scalar_chain): Take mode arguments.
+	(timode_scalar_chain::timode_scalar_chain): Initialize scalar_chain
+	base with TImode and V1TImode.
+	* config/i386/i386-features.c (scalar_chain::scalar_chain): Adjust.
+	(general_scalar_chain::vector_const_cost): Adjust for SImode
+	chains.
+	(general_scalar_chain::compute_convert_gain): Likewise.  Add
+	{S,U}{MIN,MAX} support.
+	(general_scalar_chain::replace_with_subreg): Use vmode/smode.
+	(general_scalar_chain::make_vector_copies): Likewise.  Handle
+	non-DImode chains appropriately.
+	(general_scalar_chain::convert_reg): Likewise.
+	(general_scalar_chain::convert_op): Likewise.
+	(general_scalar_chain::convert_insn): Likewise.  Add
+	fatal_insn_not_found if the result is not recognized.
+	(convertible_comparison_p): Pass in the scalar mode and use that.
+	(general_scalar_to_vector_candidate_p): Likewise.  Rename from
+	dimode_scalar_to_vector_candidate_p.  Add {S,U}{MIN,MAX} support.
+	(scalar_to_vector_candidate_p): Remove by inlining into single
+	caller.
+	(general_remove_non_convertible_regs): Rename from
+	dimode_remove_non_convertible_regs.
+	(remove_non_convertible_regs): Remove by inlining into single caller.
+	(convert_scalars_to_vector): Handle SImode and DImode chains
+	in addition to TImode chains.
+	* config/i386/i386.md (<maxmin><MAXMIN_IMODE>3): New expander.
+	(*<maxmin><MAXMIN_IMODE>3_1): New insn-and-split.
+	(*<maxmin>di3_doubleword): Likewise.
+
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
