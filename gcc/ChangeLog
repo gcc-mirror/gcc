@@ -1,5 +1,31 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-protos.h (aarch64_sve_same_pred_for_ptest_p):
+	Declare.
+	* config/aarch64/aarch64.c (aarch64_sve_same_pred_for_ptest_p)
+	(aarch64_sve_emit_int_cmp): New functions.
+	(aarch64_convert_sve_data_to_pred): Use aarch64_sve_emit_int_cmp.
+	(aarch64_sve_cmp_operand_p, aarch64_emit_sve_ptrue_op_cc): Delete.
+	(aarch64_expand_sve_vec_cmp_int): Use aarch64_sve_emit_int_cmp.
+	* config/aarch64/aarch64.md (UNSPEC_MERGE_PTRUE): Delete.
+	(UNSPEC_PRED_Z): New unspec.
+	(set_clobber_cc_nzc): Delete.
+	* config/aarch64/aarch64-sve.md: Add a block comment about
+	UNSPEC_PRED_Z.
+	(*cmp<SVE_INT_CMP:cmp_op><mode>): Rename to...
+	(@aarch64_pred_cmp<SVE_INT_CMP:cmp_op><mode>): ...this, replacing
+	the old pattern with that name.  Use UNSPEC_PRED_Z instead of
+	UNSPEC_MERGE_PTRUE.
+	(*cmp<SVE_INT_CMP:cmp_op><mode>_cc): Use UNSPEC_PRED_Z instead of
+	UNSPEC_MERGE_PTRUE.  Use aarch64_sve_same_pred_for_ptest_p to
+	check for compatible predicates.
+	(*cmp<cmp_op><SVE_INT_CMP:mode>_ptest): Likewise.
+	(*cmp<cmp_op><mode>_and): Match a known-ptrue UNSPEC_PRED_Z instead
+	of UNSPEC_MERGE_PTRUE.  Split into the new form of predicated
+	comparisons above.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.md (UNSPEC_PRED_X): New unspec.
 	* config/aarch64/aarch64-sve.md: Add a section describing it.
 	(@aarch64_pred_mov<mode>, @aarch64_pred_mov<mode>)

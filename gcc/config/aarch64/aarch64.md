@@ -219,8 +219,8 @@
     UNSPEC_LD1RQ
     UNSPEC_LD1_GATHER
     UNSPEC_ST1_SCATTER
-    UNSPEC_MERGE_PTRUE
     UNSPEC_PRED_X
+    UNSPEC_PRED_Z
     UNSPEC_PTEST
     UNSPEC_UNPACKSHI
     UNSPEC_UNPACKUHI
@@ -7154,12 +7154,6 @@
   "hint\t38 // bti jc"
   [(set_attr "type" "no_insn")]
 )
-
-;; Helper for aarch64.c code.
-(define_expand "set_clobber_cc_nzc"
-  [(parallel [(set (match_operand 0)
-		   (match_operand 1))
-	      (clobber (reg:CC_NZC CC_REGNUM))])])
 
 ;; Hard speculation barrier.
 (define_insn "speculation_barrier"
