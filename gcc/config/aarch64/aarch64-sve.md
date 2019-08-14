@@ -846,7 +846,7 @@
     [(set (match_operand:SVE_ALL 0 "register_operand")
 	  (vec_duplicate:SVE_ALL
 	    (match_operand:<VEL> 1 "aarch64_sve_dup_operand")))
-     (clobber (scratch:<VPRED>))])]
+     (clobber (scratch:VNx16BI))])]
   "TARGET_SVE"
   {
     if (MEM_P (operands[1]))
@@ -867,7 +867,7 @@
   [(set (match_operand:SVE_ALL 0 "register_operand" "=w, w, w")
 	(vec_duplicate:SVE_ALL
 	  (match_operand:<VEL> 1 "aarch64_sve_dup_operand" "r, w, Uty")))
-   (clobber (match_scratch:<VPRED> 2 "=X, X, Upl"))]
+   (clobber (match_scratch:VNx16BI 2 "=X, X, Upl"))]
   "TARGET_SVE"
   "@
    mov\t%0.<Vetype>, %<vwcore>1
@@ -877,9 +877,10 @@
   [(const_int 0)]
   {
     if (GET_CODE (operands[2]) == SCRATCH)
-      operands[2] = gen_reg_rtx (<VPRED>mode);
-    emit_move_insn (operands[2], CONSTM1_RTX (<VPRED>mode));
-    emit_insn (gen_sve_ld1r<mode> (operands[0], operands[2], operands[1],
+      operands[2] = gen_reg_rtx (VNx16BImode);
+    emit_move_insn (operands[2], CONSTM1_RTX (VNx16BImode));
+    rtx gp = gen_lowpart (<VPRED>mode, operands[2]);
+    emit_insn (gen_sve_ld1r<mode> (operands[0], gp, operands[1],
 				   CONST0_RTX (<MODE>mode)));
     DONE;
   }
@@ -2971,7 +2972,7 @@
 )
 
 ;; Predicated integer comparisons.
-(define_insn "*pred_cmp<cmp_op><mode>"
+(define_insn "@aarch64_pred_cmp<cmp_op><mode>"
   [(set (match_operand:<VPRED> 0 "register_operand" "=Upa, Upa")
 	(and:<VPRED>
 	  (SVE_INT_CMP:<VPRED>
