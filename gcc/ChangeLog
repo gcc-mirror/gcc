@@ -1,5 +1,11 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/predicates.md (const_1_to_3_operand): New predicate.
+	* config/aarch64/aarch64-sve.md (*aarch64_adr_uxtw)
+	(*aarch64_adr<mode>_shift, *aarch64_adr_shift_uxtw): New patterns.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_expand_sve_const_pred_eor)
 	(aarch64_expand_sve_const_pred_trn): New functions.
 	(aarch64_expand_sve_const_pred_1): Add a recurse_p parameter and

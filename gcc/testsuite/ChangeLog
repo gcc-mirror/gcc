@@ -1,3 +1,16 @@
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/adr_1.c: New test.
+	* gcc.target/aarch64/sve/adr_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/adr_2.c: Likewise.
+	* gcc.target/aarch64/sve/adr_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/adr_3.c: Likewise.
+	* gcc.target/aarch64/sve/adr_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/adr_4.c: Likewise.
+	* gcc.target/aarch64/sve/adr_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/adr_5.c: Likewise.
+	* gcc.target/aarch64/sve/adr_5_run.c: Likewise.
+
 2019-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/conversion/simd4.C: Test locations.

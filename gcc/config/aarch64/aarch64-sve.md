@@ -61,6 +61,7 @@
 ;; ---- [INT] General binary arithmetic corresponding to rtx codes
 ;; ---- [INT] Addition
 ;; ---- [INT] Subtraction
+;; ---- [INT] Take address
 ;; ---- [INT] Absolute difference
 ;; ---- [INT] Multiplication
 ;; ---- [INT] Highpart multiplication
@@ -1670,6 +1671,65 @@
 )
 
 ;; Merging forms are handled through SVE_INT_BINARY.
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Take address
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - ADR
+;; -------------------------------------------------------------------------
+
+;; Unshifted ADR, with the offset being zero-extended from the low 32 bits.
+(define_insn "*aarch64_adr_uxtw"
+  [(set (match_operand:VNx2DI 0 "register_operand" "=w")
+	(plus:VNx2DI
+	  (and:VNx2DI
+	    (match_operand:VNx2DI 2 "register_operand" "w")
+	    (match_operand:VNx2DI 3 "aarch64_sve_uxtw_immediate"))
+	  (match_operand:VNx2DI 1 "register_operand" "w")))]
+  "TARGET_SVE"
+  "adr\t%0.d, [%1.d, %2.d, uxtw]"
+)
+
+;; ADR with a nonzero shift.
+(define_insn_and_rewrite "*aarch64_adr<mode>_shift"
+  [(set (match_operand:SVE_SDI 0 "register_operand" "=w")
+	(plus:SVE_SDI
+	  (unspec:SVE_SDI
+	    [(match_operand 4)
+	     (ashift:SVE_SDI
+	       (match_operand:SVE_SDI 2 "register_operand" "w")
+	       (match_operand:SVE_SDI 3 "const_1_to_3_operand"))]
+	    UNSPEC_PRED_X)
+	  (match_operand:SVE_SDI 1 "register_operand" "w")))]
+  "TARGET_SVE"
+  "adr\t%0.<Vetype>, [%1.<Vetype>, %2.<Vetype>, lsl %3]"
+  "&& !CONSTANT_P (operands[4])"
+  {
+    operands[4] = CONSTM1_RTX (<VPRED>mode);
+  }
+)
+
+;; Same, but with the index being zero-extended from the low 32 bits.
+(define_insn_and_rewrite "*aarch64_adr_shift_uxtw"
+  [(set (match_operand:VNx2DI 0 "register_operand" "=w")
+	(plus:VNx2DI
+	  (unspec:VNx2DI
+	    [(match_operand 5)
+	     (ashift:VNx2DI
+	       (and:VNx2DI
+		 (match_operand:VNx2DI 2 "register_operand" "w")
+		 (match_operand:VNx2DI 4 "aarch64_sve_uxtw_immediate"))
+	       (match_operand:VNx2DI 3 "const_1_to_3_operand"))]
+	    UNSPEC_PRED_X)
+	  (match_operand:VNx2DI 1 "register_operand" "w")))]
+  "TARGET_SVE"
+  "adr\t%0.d, [%1.d, %2.d, uxtw %3]"
+  "&& !CONSTANT_P (operands[5])"
+  {
+    operands[5] = CONSTM1_RTX (VNx2BImode);
+  }
+)
 
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Absolute difference
