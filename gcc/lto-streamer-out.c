@@ -2642,12 +2642,6 @@ write_symbol (struct streamer_tree_cache_d *cache,
   const char *comdat;
   unsigned char c;
 
-  gcc_checking_assert (TREE_PUBLIC (t)
-		       && (TREE_CODE (t) != FUNCTION_DECL
-			   || !fndecl_built_in_p (t))
-		       && !DECL_ABSTRACT_P (t)
-		       && (!VAR_P (t) || !DECL_HARD_REGISTER (t)));
-
   gcc_assert (VAR_OR_FUNCTION_DECL_P (t));
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (t));
