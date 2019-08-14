@@ -1,3 +1,14 @@
+2019-08-14  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/91419
+	* lib/target-supports.exp (natural_alignment_32): Amend target
+	list based on BIGGEST_ALIGNMENT.
+	(natural_alignment_64): Targets not natural_alignment_32 cannot
+	be natural_alignment_64.
+	* gcc.dg/tree-ssa/pr91091-2.c: XFAIL for !natural_alignment_32.
+	* gcc.dg/tree-ssa/ssa-fre-77.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-61.c: Require natural_alignment_32.
+
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/vcond_21.c: New test.
