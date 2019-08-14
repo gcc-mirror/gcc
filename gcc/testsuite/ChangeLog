@@ -1,5 +1,16 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/cond_uxt_1.c: New test.
+	* gcc.target/aarch64/sve/cond_uxt_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_2.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_uxt_4_run.c: Likewise.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/cond_convert_1.c: New test.
 	* gcc.target/aarch64/sve/cond_convert_1_run.c: Likewise.
 	* gcc.target/aarch64/sve/cond_convert_2.c: Likewise.

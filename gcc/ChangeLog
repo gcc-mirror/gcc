@@ -1,5 +1,18 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_print_operand): Allow %e to
+	take the equivalent mask, as well as a bit count.
+	* config/aarch64/predicates.md (aarch64_sve_uxtb_immediate)
+	(aarch64_sve_uxth_immediate, aarch64_sve_uxt_immediate)
+	(aarch64_sve_pred_and_operand): New predicates.
+	* config/aarch64/iterators.md (sve_pred_int_rhs2_operand): New
+	code attribute.
+	* config/aarch64/aarch64-sve.md
+	(cond_<SVE_INT_BINARY:optab><SVE_I:mode>): Use it.
+	(*cond_uxt<mode>_2, *cond_uxt<mode>_any): New patterns.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve.md
 	(*cond_<SVE_COND_FCVTI:optab>_nontrunc<SVE_F:mode><SVE_HSDI:mode>)
 	(*cond_<SVE_COND_ICVTF:optab>_nonextend<SVE_HSDI:mode><SVE_F:mode>):

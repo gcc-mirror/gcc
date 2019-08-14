@@ -1525,6 +1525,20 @@
 				  (umax "D")
 				  (umin "D")])
 
+;; The predicate to use for the second input operand in a cond_<optab><mode>
+;; pattern.
+(define_code_attr sve_pred_int_rhs2_operand
+  [(plus "register_operand")
+   (minus "register_operand")
+   (mult "register_operand")
+   (smax "register_operand")
+   (umax "register_operand")
+   (smin "register_operand")
+   (umin "register_operand")
+   (and "aarch64_sve_pred_and_operand")
+   (ior "register_operand")
+   (xor "register_operand")])
+
 ;; -------------------------------------------------------------------
 ;; Int Iterators.
 ;; -------------------------------------------------------------------
