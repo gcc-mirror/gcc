@@ -1,3 +1,13 @@
+2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/inline18.adb, gnat.dg/inline18.ads,
+	gnat.dg/inline18_gen1-inner_g.ads, gnat.dg/inline18_gen1.adb,
+	gnat.dg/inline18_gen1.ads, gnat.dg/inline18_gen2.adb,
+	gnat.dg/inline18_gen2.ads, gnat.dg/inline18_gen3.adb,
+	gnat.dg/inline18_gen3.ads, gnat.dg/inline18_pkg1.adb,
+	gnat.dg/inline18_pkg1.ads, gnat.dg/inline18_pkg2-child.ads,
+	gnat.dg/inline18_pkg2.ads: New testcase.
+
 2019-08-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/predicate12.adb, gnat.dg/predicate12.ads: New
