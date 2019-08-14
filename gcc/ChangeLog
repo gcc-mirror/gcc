@@ -1,5 +1,11 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/predicates.md (aarch64_simd_imm_one): New predicate.
+	* config/aarch64/aarch64-sve.md (*cnot<mode>): New pattern.
+	(*cond_cnot<mode>_2, *cond_cnot<mode>_any): Likewise.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (SVE_INT_UNARY): Add clrsb and clz.
 	(optab, sve_int_op): Handle them.
 	* config/aarch64/aarch64-sve.md: Expand comment.

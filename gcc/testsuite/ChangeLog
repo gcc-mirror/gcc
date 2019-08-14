@@ -1,5 +1,15 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/cnot_1.c: New test.
+	* gcc.target/aarch64/sve/cond_cnot_1.c: Likewise.
+	* gcc.target/aarch64/sve/cond_cnot_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_cnot_2.c: Likewise.
+	* gcc.target/aarch64/sve/cond_cnot_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_cnot_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_cnot_3_run.c: Likewise.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/vect-clz.c: Force SVE off.
 	* gcc.target/aarch64/sve/clrsb_1.c: New test.
 	* gcc.target/aarch64/sve/clrsb_1_run.c: Likewise.

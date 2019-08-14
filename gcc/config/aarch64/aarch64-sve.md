@@ -54,6 +54,7 @@
 ;;
 ;; == Unary arithmetic
 ;; ---- [INT] General unary arithmetic corresponding to rtx codes
+;; ---- [INT] Logical inverse
 ;; ---- [FP] General unary arithmetic corresponding to unspecs
 ;; ---- [PRED] Inverse
 
@@ -1452,6 +1453,95 @@
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
   "<sve_int_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Logical inverse
+;; -------------------------------------------------------------------------
+
+;; Predicated logical inverse.
+(define_insn "*cnot<mode>"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w")
+	(unspec:SVE_I
+	  [(unspec:<VPRED>
+	     [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	      (match_operand:SI 5 "aarch64_sve_ptrue_flag")
+	      (eq:<VPRED>
+		(match_operand:SVE_I 2 "register_operand" "w")
+		(match_operand:SVE_I 3 "aarch64_simd_imm_zero"))]
+	     UNSPEC_PRED_Z)
+	   (match_operand:SVE_I 4 "aarch64_simd_imm_one")
+	   (match_dup 3)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "cnot\t%0.<Vetype>, %1/m, %2.<Vetype>"
+)
+
+;; Predicated logical inverse, merging with the first input.
+(define_insn_and_rewrite "*cond_cnot<mode>_2"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   ;; Logical inverse of operand 2 (as above).
+	   (unspec:SVE_I
+	     [(unspec:<VPRED>
+		[(match_operand 5)
+		 (const_int SVE_KNOWN_PTRUE)
+		 (eq:<VPRED>
+		   (match_operand:SVE_I 2 "register_operand" "0, w")
+		   (match_operand:SVE_I 3 "aarch64_simd_imm_zero"))]
+		UNSPEC_PRED_Z)
+	      (match_operand:SVE_I 4 "aarch64_simd_imm_one")
+	      (match_dup 3)]
+	     UNSPEC_SEL)
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   cnot\t%0.<Vetype>, %1/m, %0.<Vetype>
+   movprfx\t%0, %2\;cnot\t%0.<Vetype>, %1/m, %2.<Vetype>"
+  "&& !CONSTANT_P (operands[5])"
+  {
+    operands[5] = CONSTM1_RTX (<VPRED>mode);
+  }
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Predicated logical inverse, merging with an independent value.
+;;
+;; The earlyclobber isn't needed for the first alternative, but omitting
+;; it would only help the case in which operands 2 and 6 are the same,
+;; which is handled above rather than here.  Marking all the alternatives
+;; as earlyclobber helps to make the instruction more regular to the
+;; register allocator.
+(define_insn_and_rewrite "*cond_cnot<mode>_any"
+  [(set (match_operand:SVE_I 0 "register_operand" "=&w, ?&w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   ;; Logical inverse of operand 2 (as above).
+	   (unspec:SVE_I
+	     [(unspec:<VPRED>
+		[(match_operand 5)
+		 (const_int SVE_KNOWN_PTRUE)
+		 (eq:<VPRED>
+		   (match_operand:SVE_I 2 "register_operand" "w, w, w")
+		   (match_operand:SVE_I 3 "aarch64_simd_imm_zero"))]
+		UNSPEC_PRED_Z)
+	      (match_operand:SVE_I 4 "aarch64_simd_imm_one")
+	      (match_dup 3)]
+	     UNSPEC_SEL)
+	   (match_operand:SVE_I 6 "aarch64_simd_reg_or_zero" "0, Dz, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && !rtx_equal_p (operands[2], operands[6])"
+  "@
+   cnot\t%0.<Vetype>, %1/m, %2.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;cnot\t%0.<Vetype>, %1/m, %2.<Vetype>
+   movprfx\t%0, %6\;cnot\t%0.<Vetype>, %1/m, %2.<Vetype>"
+  "&& !CONSTANT_P (operands[5])"
+  {
+    operands[5] = CONSTM1_RTX (<VPRED>mode);
+  }
+  [(set_attr "movprfx" "*,yes,yes")]
 )
 
 ;; -------------------------------------------------------------------------

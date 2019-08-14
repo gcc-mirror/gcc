@@ -460,6 +460,10 @@
   (and (match_code "const,const_vector")
        (match_test "op == CONST0_RTX (GET_MODE (op))")))
 
+(define_predicate "aarch64_simd_imm_one"
+  (and (match_code "const_vector")
+       (match_test "op == CONST1_RTX (GET_MODE (op))")))
+
 (define_predicate "aarch64_simd_or_scalar_imm_zero"
   (and (match_code "const_int,const_double,const,const_vector")
        (match_test "op == CONST0_RTX (GET_MODE (op))")))
