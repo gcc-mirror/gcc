@@ -1,5 +1,9 @@
 2019-08-14  Martin Liska  <mliska@suse.cz>
 
+	* LOCAL_PATCHES: Refresh based on what was committed.
+
+2019-08-14  Martin Liska  <mliska@suse.cz>
+
 	* asan/asan_globals.cpp (CheckODRViolationViaIndicator): Reapply
 	patch from trunk.
 	(CheckODRViolationViaPoisoning): Likewise.
