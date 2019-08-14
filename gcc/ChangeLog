@@ -1,5 +1,24 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.md (UNSPEC_PRED_X): New unspec.
+	* config/aarch64/aarch64-sve.md: Add a section describing it.
+	(@aarch64_pred_mov<mode>, @aarch64_pred_mov<mode>)
+	(<SVE_INT_UNARY:optab><mode>2, *<SVE_INT_UNARY:optab><mode>2)
+	(aarch64_<su>abd<mode>_3, mul<SVE_I:mode>3, *mul<SVE_I:mode>3)
+	(<su>mul<mode>3_highpart, *<su>mul<mode>3_highpart)
+	(<SVE_INT_BINARY:optab><mode>3, *<SVE_INT_BINARY:optab><mode>3)
+	(*bic<mode>3, v<ASHIFT:optab><mode>3, *v<ASHIFT:optab><mode>3)
+	(<su><maxmin><mode>3, *<su><maxmin><mode>3, *madd<SVE_I:mode>)
+	(*msub<SVE_I:mode>3, *aarch64_sve_rev64<mode>)
+	(*aarch64_sve_rev32<mode>, *aarch64_sve_rev16vnx16qi): Use
+	UNSPEC_PRED_X instead of UNSPEC_MERGE_PTRUE.
+	* config/aarch64/aarch64-sve2.md (<u>avg<mode>3_floor)
+	(<u>avg<mode>3_ceil, *<sur>h<addsub><mode>): Likewise.
+	* config/aarch64/aarch64.c (aarch64_split_sve_subreg_move)
+	(aarch64_evpc_rev_local): Update accordingly.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (VNx4SI_ONLY, VNx2DF_ONLY): New mode
 	iterators.
 	(SVE_BHSI, SVE_SDI): Tweak comment.
