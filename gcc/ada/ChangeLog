@@ -1,3 +1,8 @@
+2019-08-14  Bob Duff  <duff@adacore.com>
+
+	* exp_aggr.adb (Init_Hidden_Discriminants): Avoid processing the
+	wrong discriminant, which could be of the wrong type.
+
 2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch12.adb (Analyze_Instance_And_Renamings): Do not reset
