@@ -1,4 +1,10 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (SVE_COND_FP_ABS_CMP): New iterator.
+	* config/aarch64/aarch64-sve.md (*aarch64_pred_fac<cmp_op><mode>):
+	New pattern.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
 	* config/aarch64/aarch64-sve.md (*aarch64_sel_dup<mode>): New pattern.
