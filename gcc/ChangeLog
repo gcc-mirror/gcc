@@ -1,3 +1,11 @@
+2019-08-14  Richard Biener  <rguenther@suse.de>
+
+	PR target/91154
+	* config/i386/i386-features.c
+	(dimode_scalar_chain::compute_convert_gain): Compute and dump
+	individual instruction gain.  Fix reg-reg copy GRP cost.  Use
+	ix86_cost->sse_op for vector instruction costs.
+
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/iterators.md (UNSPEC_COND_FCMUO): New unspec.

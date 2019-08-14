@@ -497,22 +497,23 @@ dimode_scalar_chain::compute_convert_gain ()
       rtx def_set = single_set (insn);
       rtx src = SET_SRC (def_set);
       rtx dst = SET_DEST (def_set);
+      int igain = 0;
 
       if (REG_P (src) && REG_P (dst))
-	gain += COSTS_N_INSNS (2) - ix86_cost->xmm_move;
+	igain += 2 - ix86_cost->xmm_move;
       else if (REG_P (src) && MEM_P (dst))
-	gain += 2 * ix86_cost->int_store[2] - ix86_cost->sse_store[1];
+	igain += 2 * ix86_cost->int_store[2] - ix86_cost->sse_store[1];
       else if (MEM_P (src) && REG_P (dst))
-	gain += 2 * ix86_cost->int_load[2] - ix86_cost->sse_load[1];
+	igain += 2 * ix86_cost->int_load[2] - ix86_cost->sse_load[1];
       else if (GET_CODE (src) == ASHIFT
 	       || GET_CODE (src) == ASHIFTRT
 	       || GET_CODE (src) == LSHIFTRT)
 	{
     	  if (CONST_INT_P (XEXP (src, 0)))
-	    gain -= vector_const_cost (XEXP (src, 0));
-	  gain += ix86_cost->shift_const;
+	    igain -= vector_const_cost (XEXP (src, 0));
+	  igain += 2 * ix86_cost->shift_const - ix86_cost->sse_op;
 	  if (INTVAL (XEXP (src, 1)) >= 32)
-	    gain -= COSTS_N_INSNS (1);
+	    igain -= COSTS_N_INSNS (1);
 	}
       else if (GET_CODE (src) == PLUS
 	       || GET_CODE (src) == MINUS
@@ -520,20 +521,20 @@ dimode_scalar_chain::compute_convert_gain ()
 	       || GET_CODE (src) == XOR
 	       || GET_CODE (src) == AND)
 	{
-	  gain += ix86_cost->add;
+	  igain += 2 * ix86_cost->add - ix86_cost->sse_op;
 	  /* Additional gain for andnot for targets without BMI.  */
 	  if (GET_CODE (XEXP (src, 0)) == NOT
 	      && !TARGET_BMI)
-	    gain += 2 * ix86_cost->add;
+	    igain += 2 * ix86_cost->add;
 
 	  if (CONST_INT_P (XEXP (src, 0)))
-	    gain -= vector_const_cost (XEXP (src, 0));
+	    igain -= vector_const_cost (XEXP (src, 0));
 	  if (CONST_INT_P (XEXP (src, 1)))
-	    gain -= vector_const_cost (XEXP (src, 1));
+	    igain -= vector_const_cost (XEXP (src, 1));
 	}
       else if (GET_CODE (src) == NEG
 	       || GET_CODE (src) == NOT)
-	gain += ix86_cost->add - COSTS_N_INSNS (1);
+	igain += 2 * ix86_cost->add - ix86_cost->sse_op - COSTS_N_INSNS (1);
       else if (GET_CODE (src) == COMPARE)
 	{
 	  /* Assume comparison cost is the same.  */
@@ -541,13 +542,20 @@ dimode_scalar_chain::compute_convert_gain ()
       else if (CONST_INT_P (src))
 	{
 	  if (REG_P (dst))
-	    gain += COSTS_N_INSNS (2);
+	    igain += 2 * COSTS_N_INSNS (1);
 	  else if (MEM_P (dst))
-	    gain += 2 * ix86_cost->int_store[2] - ix86_cost->sse_store[1];
-	  gain -= vector_const_cost (src);
+	    igain += 2 * ix86_cost->int_store[2] - ix86_cost->sse_store[1];
+	  igain -= vector_const_cost (src);
 	}
       else
 	gcc_unreachable ();
+
+      if (igain != 0 && dump_file)
+	{
+	  fprintf (dump_file, "  Instruction gain %d for ", igain);
+	  dump_insn_slim (dump_file, insn);
+	}
+      gain += igain;
     }
 
   if (dump_file)
