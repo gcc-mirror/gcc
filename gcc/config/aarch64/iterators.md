@@ -278,6 +278,10 @@
 (define_mode_iterator SVE_ALL [VNx16QI VNx8HI VNx4SI VNx2DI
 			       VNx8HF VNx4SF VNx2DF])
 
+;; Iterators for single modes, for "@" patterns.
+(define_mode_iterator VNx4SI_ONLY [VNx4SI])
+(define_mode_iterator VNx2DF_ONLY [VNx2DF])
+
 ;; All SVE vector structure modes.
 (define_mode_iterator SVE_STRUCT [VNx32QI VNx16HI VNx8SI VNx4DI
 				  VNx16HF VNx8SF VNx4DF
@@ -292,14 +296,20 @@
 ;; All SVE vector modes that have 8-bit, 16-bit or 32-bit elements.
 (define_mode_iterator SVE_BHS [VNx16QI VNx8HI VNx4SI VNx8HF VNx4SF])
 
-;; All SVE integer vector modes that have 8-bit, 16-bit or 32-bit elements.
+;; SVE integer vector modes that have 8-bit, 16-bit or 32-bit elements.
 (define_mode_iterator SVE_BHSI [VNx16QI VNx8HI VNx4SI])
 
-;; All SVE integer vector modes that have 16-bit, 32-bit or 64-bit elements.
-(define_mode_iterator SVE_HSDI [VNx16QI VNx8HI VNx4SI])
+;; SVE integer vector modes that have 16-bit, 32-bit or 64-bit elements.
+(define_mode_iterator SVE_HSDI [VNx8HI VNx4SI VNx2DI])
 
-;; All SVE floating-point vector modes that have 16-bit or 32-bit elements.
+;; SVE floating-point vector modes that have 16-bit or 32-bit elements.
 (define_mode_iterator SVE_HSF [VNx8HF VNx4SF])
+
+;; SVE integer vector modes that have 32-bit or 64-bit elements.
+(define_mode_iterator SVE_SDI [VNx4SI VNx2DI])
+
+;; SVE floating-point vector modes that have 32-bit or 64-bit elements.
+(define_mode_iterator SVE_SDF [VNx4SF VNx2DF])
 
 ;; All SVE vector modes that have 16-bit, 32-bit or 64-bit elements.
 (define_mode_iterator SVE_HSD [VNx8HI VNx4SI VNx2DI VNx8HF VNx4SF VNx2DF])
@@ -312,9 +322,6 @@
 
 ;; All SVE vector modes that have 64-bit elements.
 (define_mode_iterator SVE_D [VNx2DI VNx2DF])
-
-;; All SVE integer vector modes that have 32-bit or 64-bit elements.
-(define_mode_iterator SVE_SDI [VNx4SI VNx2DI])
 
 ;; All SVE integer vector modes.
 (define_mode_iterator SVE_I [VNx16QI VNx8HI VNx4SI VNx2DI])
@@ -628,6 +635,11 @@
 ;; Give the ordinal of the MSB in the mode
 (define_mode_attr sizem1 [(QI "#7") (HI "#15") (SI "#31") (DI "#63")
 			  (HF "#15") (SF "#31") (DF "#63")])
+
+;; The number of bits in a vector element, or controlled by a predicate
+;; element.
+(define_mode_attr elem_bits [(VNx8HI "16") (VNx4SI "32") (VNx2DI "64")
+			     (VNx8HF "16") (VNx4SF "32") (VNx2DF "64")])
 
 ;; Attribute to describe constants acceptable in logical operations
 (define_mode_attr lconst [(SI "K") (DI "L")])
@@ -1647,6 +1659,7 @@
 					UNSPEC_COND_FRINTZ
 					UNSPEC_COND_FSQRT])
 
+(define_int_iterator SVE_COND_FCVT [UNSPEC_COND_FCVT])
 (define_int_iterator SVE_COND_FCVTI [UNSPEC_COND_FCVTZS UNSPEC_COND_FCVTZU])
 (define_int_iterator SVE_COND_ICVTF [UNSPEC_COND_SCVTF UNSPEC_COND_UCVTF])
 
