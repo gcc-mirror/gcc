@@ -275,7 +275,6 @@ package Sem is
    --  flag is False to disable any code expansion (see package Expander). Only
    --  the generic processing can modify the status of this flag, any other
    --  client should regard it as read-only.
-   --  Probably should be called Inside_A_Generic_Template ???
 
    Inside_Freezing_Actions : Nat := 0;
    --  Flag indicating whether we are within a call to Expand_N_Freeze_Actions.
