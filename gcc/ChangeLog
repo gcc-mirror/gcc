@@ -1,5 +1,27 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_target_reg): New function.
+	(aarch64_emit_set_immediate): Likewise.
+	(aarch64_ptrue_reg): Build a VNx16BI constant and then bitcast it.
+	(aarch64_pfalse_reg): Likewise.
+	(aarch64_convert_sve_data_to_pred): New function.
+	(aarch64_sve_move_pred_via_while): Take an optional target register
+	and the required register mode.
+	(aarch64_expand_sve_const_pred_1): New function.
+	(aarch64_expand_sve_const_pred): Likewise.
+	(aarch64_expand_mov_immediate): Build an all-true predicate
+	if the significant bits of the immediate are all true.  Use
+	aarch64_expand_sve_const_pred for all compile-time predicate constants.
+	(aarch64_mov_operand_p): Force predicate constants to be VNx16BI
+	before register allocation.
+	* config/aarch64/aarch64-sve.md (*vec_duplicate<mode>_reg): Use
+	a VNx16BI PTRUE when splitting the memory alternative.
+	(vec_duplicate<mode>): Update accordingly.
+	(*pred_cmp<cmp_op><mode>): Rename to...
+	(@aarch64_pred_cmp<cmp_op><mode>): ...this.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-protos.h (aarch64_ptrue_all): Declare.
 	* config/aarch64/aarch64.c (aarch64_ptrue_all): New function.
 	* config/aarch64/aarch64.md (UNSPEC_PTEST_PTRUE): Delete.

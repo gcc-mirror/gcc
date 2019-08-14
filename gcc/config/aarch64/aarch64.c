@@ -2546,6 +2546,36 @@ aarch64_zero_extend_const_eq (machine_mode xmode, rtx x,
 }
 			      
 
+/* Return TARGET if it is nonnull and a register of mode MODE.
+   Otherwise, return a fresh register of mode MODE if we can,
+   or TARGET reinterpreted as MODE if we can't.  */
+
+static rtx
+aarch64_target_reg (rtx target, machine_mode mode)
+{
+  if (target && REG_P (target) && GET_MODE (target) == mode)
+    return target;
+  if (!can_create_pseudo_p ())
+    {
+      gcc_assert (target);
+      return gen_lowpart (mode, target);
+    }
+  return gen_reg_rtx (mode);
+}
+
+/* Return a register that contains the constant in BUILDER, given that
+   the constant is a legitimate move operand.  Use TARGET as the register
+   if it is nonnull and convenient.  */
+
+static rtx
+aarch64_emit_set_immediate (rtx target, rtx_vector_builder &builder)
+{
+  rtx src = builder.build ();
+  target = aarch64_target_reg (target, GET_MODE (src));
+  emit_insn (gen_rtx_SET (target, src));
+  return target;
+}
+
 static rtx
 aarch64_force_temporary (machine_mode mode, rtx x, rtx value)
 {
@@ -2721,7 +2751,8 @@ rtx
 aarch64_ptrue_reg (machine_mode mode)
 {
   gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL);
-  return force_reg (mode, CONSTM1_RTX (mode));
+  rtx reg = force_reg (VNx16BImode, CONSTM1_RTX (VNx16BImode));
+  return gen_lowpart (mode, reg);
 }
 
 /* Return an all-false predicate register of mode MODE.  */
@@ -2730,7 +2761,26 @@ rtx
 aarch64_pfalse_reg (machine_mode mode)
 {
   gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL);
-  return force_reg (mode, CONST0_RTX (mode));
+  rtx reg = force_reg (VNx16BImode, CONST0_RTX (VNx16BImode));
+  return gen_lowpart (mode, reg);
+}
+
+/* Use a comparison to convert integer vector SRC into MODE, which is
+   the corresponding SVE predicate mode.  Use TARGET for the result
+   if it's nonnull and convenient.  */
+
+static rtx
+aarch64_convert_sve_data_to_pred (rtx target, machine_mode mode, rtx src)
+{
+  machine_mode src_mode = GET_MODE (src);
+  insn_code icode = code_for_aarch64_pred_cmp (NE, src_mode);
+  expand_operand ops[4];
+  create_output_operand (&ops[0], target, mode);
+  create_input_operand (&ops[1], CONSTM1_RTX (mode), mode);
+  create_input_operand (&ops[2], src, src_mode);
+  create_input_operand (&ops[3], CONST0_RTX (src_mode), src_mode);
+  expand_insn (icode, 4, ops);
+  return ops[0].value;
 }
 
 /* Return true if we can move VALUE into a register using a single
@@ -3633,15 +3683,80 @@ aarch64_expand_sve_const_vector (rtx target, rtx src)
   return target;
 }
 
-/* Use WHILE to set predicate register DEST so that the first VL bits
-   are set and the rest are clear.  */
+/* Use WHILE to set a predicate register of mode MODE in which the first
+   VL bits are set and the rest are clear.  Use TARGET for the register
+   if it's nonnull and convenient.  */
 
-static void
-aarch64_sve_move_pred_via_while (rtx dest, unsigned int vl)
+static rtx
+aarch64_sve_move_pred_via_while (rtx target, machine_mode mode,
+				 unsigned int vl)
 {
   rtx limit = force_reg (DImode, gen_int_mode (vl, DImode));
-  emit_insn (gen_while_ult (DImode, GET_MODE (dest),
-			    dest, const0_rtx, limit));
+  target = aarch64_target_reg (target, mode);
+  emit_insn (gen_while_ult (DImode, mode, target, const0_rtx, limit));
+  return target;
+}
+
+/* Subroutine of aarch64_expand_sve_const_pred.  Try to load the VNx16BI
+   constant in BUILDER into an SVE predicate register.  Return the register
+   on success, otherwise return null.  Use TARGET for the register if
+   nonnull and convenient.  */
+
+static rtx
+aarch64_expand_sve_const_pred_1 (rtx target, rtx_vector_builder &builder)
+{
+  if (builder.encoded_nelts () == 1)
+    /* A PFALSE or a PTRUE .B ALL.  */
+    return aarch64_emit_set_immediate (target, builder);
+
+  unsigned int elt_size = aarch64_widest_sve_pred_elt_size (builder);
+  if (int vl = aarch64_partial_ptrue_length (builder, elt_size))
+    {
+      /* If we can load the constant using PTRUE, use it as-is.  */
+      machine_mode mode = aarch64_sve_pred_mode (elt_size).require ();
+      if (aarch64_svpattern_for_vl (mode, vl) != AARCH64_NUM_SVPATTERNS)
+	return aarch64_emit_set_immediate (target, builder);
+
+      /* Otherwise use WHILE to set the first VL bits.  */
+      return aarch64_sve_move_pred_via_while (target, mode, vl);
+    }
+
+  return NULL_RTX;
+}
+
+/* Return an SVE predicate register that contains the VNx16BImode
+   constant in BUILDER, without going through the move expanders.
+
+   The returned register can have whatever mode seems most natural
+   given the contents of BUILDER.  Use TARGET for the result if
+   convenient.  */
+
+static rtx
+aarch64_expand_sve_const_pred (rtx target, rtx_vector_builder &builder)
+{
+  /* Try loading the constant using pure predicate operations.  */
+  if (rtx res = aarch64_expand_sve_const_pred_1 (target, builder))
+    return res;
+
+  /* Try forcing the constant to memory.  */
+  if (builder.full_nelts ().is_constant ())
+    if (rtx mem = force_const_mem (VNx16BImode, builder.build ()))
+      {
+	target = aarch64_target_reg (target, VNx16BImode);
+	emit_move_insn (target, mem);
+	return target;
+      }
+
+  /* The last resort is to load the constant as an integer and then
+     compare it against zero.  Use -1 for set bits in order to increase
+     the changes of using SVE DUPM or an Advanced SIMD byte mask.  */
+  rtx_vector_builder int_builder (VNx16QImode, builder.npatterns (),
+				  builder.nelts_per_pattern ());
+  for (unsigned int i = 0; i < builder.encoded_nelts (); ++i)
+    int_builder.quick_push (INTVAL (builder.elt (i))
+			    ? constm1_rtx : const0_rtx);
+  return aarch64_convert_sve_data_to_pred (target, VNx16BImode,
+					   int_builder.build ());
 }
 
 /* Set DEST to immediate IMM.  */
@@ -3770,24 +3885,37 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 
   if (!CONST_INT_P (imm))
     {
+      if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+	{
+	  /* Only the low bit of each .H, .S and .D element is defined,
+	     so we can set the upper bits to whatever we like.  If the
+	     predicate is all-true in MODE, prefer to set all the undefined
+	     bits as well, so that we can share a single .B predicate for
+	     all modes.  */
+	  if (imm == CONSTM1_RTX (mode))
+	    imm = CONSTM1_RTX (VNx16BImode);
+
+	  /* All methods for constructing predicate modes wider than VNx16BI
+	     will set the upper bits of each element to zero.  Expose this
+	     by moving such constants as a VNx16BI, so that all bits are
+	     significant and so that constants for different modes can be
+	     shared.  The wider constant will still be available as a
+	     REG_EQUAL note.  */
+	  rtx_vector_builder builder;
+	  if (aarch64_get_sve_pred_bits (builder, imm))
+	    {
+	      rtx res = aarch64_expand_sve_const_pred (dest, builder);
+	      if (dest != res)
+		emit_move_insn (dest, gen_lowpart (mode, res));
+	      return;
+	    }
+	}
+
       if (GET_CODE (imm) == HIGH
 	  || aarch64_simd_valid_immediate (imm, NULL))
 	{
 	  emit_insn (gen_rtx_SET (dest, imm));
 	  return;
-	}
-
-      rtx_vector_builder builder;
-      if (GET_MODE_CLASS (GET_MODE (imm)) == MODE_VECTOR_BOOL
-	  && aarch64_get_sve_pred_bits (builder, imm))
-	{
-	  unsigned int elt_size = aarch64_widest_sve_pred_elt_size (builder);
-	  int vl = aarch64_partial_ptrue_length (builder, elt_size);
-	  if (vl > 0)
-	    {
-	      aarch64_sve_move_pred_via_while (dest, vl);
-	      return;
-	    }
 	}
 
       if (GET_CODE (imm) == CONST_VECTOR && aarch64_sve_data_mode_p (mode))
@@ -15178,7 +15306,17 @@ aarch64_mov_operand_p (rtx x, machine_mode mode)
     return true;
 
   if (VECTOR_MODE_P (GET_MODE (x)))
-    return aarch64_simd_valid_immediate (x, NULL);
+    {
+      /* Require predicate constants to be VNx16BI before RA, so that we
+	 force everything to have a canonical form.  */
+      if (!lra_in_progress
+	  && !reload_completed
+	  && GET_MODE_CLASS (GET_MODE (x)) == MODE_VECTOR_BOOL
+	  && GET_MODE (x) != VNx16BImode)
+	return false;
+
+      return aarch64_simd_valid_immediate (x, NULL);
+    }
 
   if (GET_CODE (x) == SYMBOL_REF && mode == DImode && CONSTANT_ADDRESS_P (x))
     return true;
