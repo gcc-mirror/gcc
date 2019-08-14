@@ -4071,6 +4071,39 @@
   "fcvtz<su>\t%0.<VNx4SI_ONLY:Vetype>, %1/m, %2.<VNx2DF_ONLY:Vetype>"
 )
 
+;; Predicated float-to-integer conversion with merging, either to the same
+;; width or wider.
+;;
+;; The first alternative doesn't need the earlyclobber, but the only case
+;; it would help is the uninteresting one in which operands 2 and 3 are
+;; the same register (despite having different modes).  Making all the
+;; alternatives earlyclobber makes things more consistent for the
+;; register allocator.
+(define_insn_and_rewrite "*cond_<optab>_nontrunc<SVE_F:mode><SVE_HSDI:mode>"
+  [(set (match_operand:SVE_HSDI 0 "register_operand" "=&w, &w, ?&w")
+	(unspec:SVE_HSDI
+	  [(match_operand:<SVE_HSDI:VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (unspec:SVE_HSDI
+	     [(match_operand 4)
+	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (match_operand:SVE_F 2 "register_operand" "w, w, w")]
+	     SVE_COND_FCVTI)
+	   (match_operand:SVE_HSDI 3 "aarch64_simd_reg_or_zero" "0, Dz, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE
+   && <SVE_HSDI:elem_bits> >= <SVE_F:elem_bits>
+   && aarch64_sve_pred_dominates_p (&operands[4], operands[1])"
+  "@
+   fcvtz<su>\t%0.<SVE_HSDI:Vetype>, %1/m, %2.<SVE_F:Vetype>
+   movprfx\t%0.<SVE_HSDI:Vetype>, %1/z, %2.<SVE_HSDI:Vetype>\;fcvtz<su>\t%0.<SVE_HSDI:Vetype>, %1/m, %2.<SVE_F:Vetype>
+   movprfx\t%0, %3\;fcvtz<su>\t%0.<SVE_HSDI:Vetype>, %1/m, %2.<SVE_F:Vetype>"
+  "&& !rtx_equal_p (operands[1], operands[4])"
+  {
+    operands[4] = copy_rtx (operands[1]);
+  }
+  [(set_attr "movprfx" "*,yes,yes")]
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [INT<-FP] Packs
 ;; -------------------------------------------------------------------------
@@ -4153,6 +4186,39 @@
 	  SVE_COND_ICVTF))]
   "TARGET_SVE"
   "<su>cvtf\t%0.<VNx2DF_ONLY:Vetype>, %1/m, %2.<VNx4SI_ONLY:Vetype>"
+)
+
+;; Predicated integer-to-float conversion with merging, either to the same
+;; width or narrower.
+;;
+;; The first alternative doesn't need the earlyclobber, but the only case
+;; it would help is the uninteresting one in which operands 2 and 3 are
+;; the same register (despite having different modes).  Making all the
+;; alternatives earlyclobber makes things more consistent for the
+;; register allocator.
+(define_insn_and_rewrite "*cond_<optab>_nonextend<SVE_HSDI:mode><SVE_F:mode>"
+  [(set (match_operand:SVE_F 0 "register_operand" "=&w, &w, ?&w")
+	(unspec:SVE_F
+	  [(match_operand:<SVE_HSDI:VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (unspec:SVE_F
+	     [(match_operand 4)
+	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (match_operand:SVE_HSDI 2 "register_operand" "w, w, w")]
+	     SVE_COND_ICVTF)
+	   (match_operand:SVE_F 3 "aarch64_simd_reg_or_zero" "0, Dz, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE
+   && <SVE_HSDI:elem_bits> >= <SVE_F:elem_bits>
+   && aarch64_sve_pred_dominates_p (&operands[4], operands[1])"
+  "@
+   <su>cvtf\t%0.<SVE_F:Vetype>, %1/m, %2.<SVE_HSDI:Vetype>
+   movprfx\t%0.<SVE_HSDI:Vetype>, %1/z, %2.<SVE_HSDI:Vetype>\;<su>cvtf\t%0.<SVE_F:Vetype>, %1/m, %2.<SVE_HSDI:Vetype>
+   movprfx\t%0, %3\;<su>cvtf\t%0.<SVE_F:Vetype>, %1/m, %2.<SVE_HSDI:Vetype>"
+  "&& !rtx_equal_p (operands[1], operands[4])"
+  {
+    operands[4] = copy_rtx (operands[1]);
+  }
+  [(set_attr "movprfx" "*,yes,yes")]
 )
 
 ;; -------------------------------------------------------------------------
