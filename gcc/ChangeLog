@@ -1,4 +1,11 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md
+	(*cond_<SVE_COND_FCVTI:optab>_nontrunc<SVE_F:mode><SVE_HSDI:mode>)
+	(*cond_<SVE_COND_ICVTF:optab>_nonextend<SVE_HSDI:mode><SVE_F:mode>):
+	New patterns.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
 	* config/aarch64/aarch64-sve.md
