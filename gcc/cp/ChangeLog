@@ -1,3 +1,11 @@
+2019-08-14  Martin Sebor  <msebor@redhat.com>
+
+	2019-08-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/90947
+	* decl.c (reshape_init_array_1): Avoid truncating initializer
+	lists containing string literals.
+
 2019-08-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/91436
@@ -45,7 +53,7 @@
 
 	Backported from mainline
 	2019-08-02  Marek Polacek  <polacek@redhat.com>
-	
+
 	PR c++/91230 - wrong error with __PRETTY_FUNCTION__ and generic lambda.
 	* pt.c (value_dependent_expression_p): Consider __PRETTY_FUNCTION__
 	inside a template function value-dependent.

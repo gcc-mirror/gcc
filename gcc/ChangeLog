@@ -1,3 +1,18 @@
+2019-08-14  Martin Sebor  <msebor@redhat.com>
+
+	Backport from mainline
+
+	2019-08-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/90947
+	* tree.c (type_initializer_zero_p): Define.
+	* tree.h (type_initializer_zero_p): New function.
+
+	2019-08-05  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (Common Variable Attributes): Document alias
+	attribute.
+
 2019-08-12  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

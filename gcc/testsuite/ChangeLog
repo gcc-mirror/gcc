@@ -1,3 +1,15 @@
+2019-08-14  Martin Sebor  <msebor@redhat.com>
+
+	Backport from mainline
+
+	2019-08-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/90947
+	* c-c++-common/array-1.c: New test.
+	* g++.dg/abi/mangle73.C: New test.
+	* g++.dg/cpp2a/nontype-class23.C: New test.
+	* g++.dg/init/array53.C: New test.
+
 2019-08-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/91436
@@ -10,7 +22,7 @@
 
 	PR fortran/87991
 	* gfortran.dg/pr87991.f90: New test.
- 
+
 2013-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
