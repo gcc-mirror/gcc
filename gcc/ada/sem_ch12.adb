@@ -3846,26 +3846,11 @@ package body Sem_Ch12 is
    procedure Analyze_Package_Instantiation (N : Node_Id) is
       Has_Inline_Always : Boolean := False;
 
-      procedure Delay_Descriptors (E : Entity_Id);
-      --  Delay generation of subprogram descriptors for given entity
-
       function Might_Inline_Subp (Gen_Unit : Entity_Id) return Boolean;
       --  If inlining is active and the generic contains inlined subprograms,
       --  we instantiate the body. This may cause superfluous instantiations,
       --  but it is simpler than detecting the need for the body at the point
       --  of inlining, when the context of the instance is not available.
-
-      -----------------------
-      -- Delay_Descriptors --
-      -----------------------
-
-      procedure Delay_Descriptors (E : Entity_Id) is
-      begin
-         if not Delay_Subprogram_Descriptors (E) then
-            Set_Delay_Subprogram_Descriptors (E);
-            Pending_Descriptor.Append (E);
-         end if;
-      end Delay_Descriptors;
 
       -----------------------
       -- Might_Inline_Subp --
@@ -4468,10 +4453,10 @@ package body Sem_Ch12 is
                      if Ekind (Enclosing_Master) = E_Package then
                         if Is_Compilation_Unit (Enclosing_Master) then
                            if In_Package_Body (Enclosing_Master) then
-                              Delay_Descriptors
+                              Set_Delay_Subprogram_Descriptors
                                 (Body_Entity (Enclosing_Master));
                            else
-                              Delay_Descriptors
+                              Set_Delay_Subprogram_Descriptors
                                 (Enclosing_Master);
                            end if;
 
@@ -4511,7 +4496,7 @@ package body Sem_Ch12 is
                         end loop;
 
                         if Is_Subprogram (Enclosing_Master) then
-                           Delay_Descriptors (Enclosing_Master);
+                           Set_Delay_Subprogram_Descriptors (Enclosing_Master);
 
                         elsif Is_Task_Type (Enclosing_Master) then
                            declare
@@ -4520,7 +4505,7 @@ package body Sem_Ch12 is
                                         (Enclosing_Master);
                            begin
                               if Present (TBP) then
-                                 Delay_Descriptors  (TBP);
+                                 Set_Delay_Subprogram_Descriptors (TBP);
                                  Set_Delay_Cleanups (TBP);
                               end if;
                            end;

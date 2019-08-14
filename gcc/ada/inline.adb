@@ -4209,7 +4209,6 @@ package body Inline is
 
    procedure Initialize is
    begin
-      Pending_Descriptor.Init;
       Pending_Instantiations.Init;
       Inlined_Bodies.Init;
       Successors.Init;
