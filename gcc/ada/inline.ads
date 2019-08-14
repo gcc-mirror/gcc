@@ -108,20 +108,6 @@ package Inline is
      Table_Increment      => Alloc.Pending_Instantiations_Increment,
      Table_Name           => "Pending_Instantiations");
 
-   --  The following table records subprograms and packages for which
-   --  generation of subprogram descriptors must be delayed.
-
-   package Pending_Descriptor is new Table.Table (
-     Table_Component_Type => Entity_Id,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 0,
-     Table_Initial        => Alloc.Pending_Instantiations_Initial,
-     Table_Increment      => Alloc.Pending_Instantiations_Increment,
-     Table_Name           => "Pending_Descriptor");
-
-   --  The following should be initialized in an init call in Frontend, we
-   --  have thoughts of making the frontend reusable in future ???
-
    -----------------
    -- Subprograms --
    -----------------
