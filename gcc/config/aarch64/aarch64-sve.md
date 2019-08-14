@@ -1454,6 +1454,45 @@
   "<sve_int_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
 )
 
+;; Predicated integer unary arithmetic, merging with the first input.
+(define_insn "*cond_<optab><mode>_2"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (SVE_INT_UNARY:SVE_I
+	     (match_operand:SVE_I 2 "register_operand" "0, w"))
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   <sve_int_op>\t%0.<Vetype>, %1/m, %0.<Vetype>
+   movprfx\t%0, %2\;<sve_int_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Predicated integer unary arithmetic, merging with an independent value.
+;;
+;; The earlyclobber isn't needed for the first alternative, but omitting
+;; it would only help the case in which operands 2 and 3 are the same,
+;; which is handled above rather than here.  Marking all the alternatives
+;; as earlyclobber helps to make the instruction more regular to the
+;; register allocator.
+(define_insn "*cond_<optab><mode>_any"
+  [(set (match_operand:SVE_I 0 "register_operand" "=&w, ?&w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (SVE_INT_UNARY:SVE_I
+	     (match_operand:SVE_I 2 "register_operand" "w, w, w"))
+	   (match_operand:SVE_I 3 "aarch64_simd_reg_or_zero" "0, Dz, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && !rtx_equal_p (operands[2], operands[3])"
+  "@
+   <sve_int_op>\t%0.<Vetype>, %1/m, %2.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;<sve_int_op>\t%0.<Vetype>, %1/m, %2.<Vetype>
+   movprfx\t%0, %3\;<sve_int_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
+  [(set_attr "movprfx" "*,yes,yes")]
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Logical inverse
 ;; -------------------------------------------------------------------------
