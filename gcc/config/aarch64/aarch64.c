@@ -2783,6 +2783,48 @@ aarch64_sve_pred_dominates_p (rtx *pred1, rtx pred2)
 	  || rtx_equal_p (pred1[0], pred2));
 }
 
+/* PRED1[0] is a PTEST predicate and PRED1[1] is an aarch64_sve_ptrue_flag
+   for it.  PRED2[0] is the predicate for the instruction whose result
+   is tested by the PTEST and PRED2[1] is again an aarch64_sve_ptrue_flag
+   for it.  Return true if we can prove that the two predicates are
+   equivalent for PTEST purposes; that is, if we can replace PRED2[0]
+   with PRED1[0] without changing behavior.  */
+
+bool
+aarch64_sve_same_pred_for_ptest_p (rtx *pred1, rtx *pred2)
+{
+  machine_mode mode = GET_MODE (pred1[0]);
+  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
+	      && mode == GET_MODE (pred2[0])
+	      && aarch64_sve_ptrue_flag (pred1[1], SImode)
+	      && aarch64_sve_ptrue_flag (pred2[1], SImode));
+
+  bool ptrue1_p = (pred1[0] == CONSTM1_RTX (mode)
+		   || INTVAL (pred1[1]) == SVE_KNOWN_PTRUE);
+  bool ptrue2_p = (pred2[0] == CONSTM1_RTX (mode)
+		   || INTVAL (pred2[1]) == SVE_KNOWN_PTRUE);
+  return (ptrue1_p && ptrue2_p) || rtx_equal_p (pred1[0], pred2[0]);
+}
+
+/* Emit a comparison CMP between OP0 and OP1, both of which have mode
+   DATA_MODE, and return the result in a predicate of mode PRED_MODE.
+   Use TARGET as the target register if nonnull and convenient.  */
+
+static rtx
+aarch64_sve_emit_int_cmp (rtx target, machine_mode pred_mode, rtx_code cmp,
+			  machine_mode data_mode, rtx op1, rtx op2)
+{
+  insn_code icode = code_for_aarch64_pred_cmp (cmp, data_mode);
+  expand_operand ops[5];
+  create_output_operand (&ops[0], target, pred_mode);
+  create_input_operand (&ops[1], CONSTM1_RTX (pred_mode), pred_mode);
+  create_integer_operand (&ops[2], SVE_KNOWN_PTRUE);
+  create_input_operand (&ops[3], op1, data_mode);
+  create_input_operand (&ops[4], op2, data_mode);
+  expand_insn (icode, 5, ops);
+  return ops[0].value;
+}
+
 /* Use a comparison to convert integer vector SRC into MODE, which is
    the corresponding SVE predicate mode.  Use TARGET for the result
    if it's nonnull and convenient.  */
@@ -2791,14 +2833,8 @@ static rtx
 aarch64_convert_sve_data_to_pred (rtx target, machine_mode mode, rtx src)
 {
   machine_mode src_mode = GET_MODE (src);
-  insn_code icode = code_for_aarch64_pred_cmp (NE, src_mode);
-  expand_operand ops[4];
-  create_output_operand (&ops[0], target, mode);
-  create_input_operand (&ops[1], CONSTM1_RTX (mode), mode);
-  create_input_operand (&ops[2], src, src_mode);
-  create_input_operand (&ops[3], CONST0_RTX (src_mode), src_mode);
-  expand_insn (icode, 4, ops);
-  return ops[0].value;
+  return aarch64_sve_emit_int_cmp (target, mode, NE, src_mode,
+				   src, CONST0_RTX (src_mode));
 }
 
 /* Return true if we can move VALUE into a register using a single
@@ -17667,51 +17703,6 @@ aarch64_reverse_mask (machine_mode mode, unsigned int nunits)
   return force_reg (V16QImode, mask);
 }
 
-/* Return true if X is a valid second operand for the SVE instruction
-   that implements integer comparison OP_CODE.  */
-
-static bool
-aarch64_sve_cmp_operand_p (rtx_code op_code, rtx x)
-{
-  if (register_operand (x, VOIDmode))
-    return true;
-
-  switch (op_code)
-    {
-    case LTU:
-    case LEU:
-    case GEU:
-    case GTU:
-      return aarch64_sve_cmp_immediate_p (x, false);
-    case LT:
-    case LE:
-    case GE:
-    case GT:
-    case NE:
-    case EQ:
-      return aarch64_sve_cmp_immediate_p (x, true);
-    default:
-      gcc_unreachable ();
-    }
-}
-
-/* Use predicated SVE instructions to implement the equivalent of:
-
-     (set TARGET OP)
-
-   given that PTRUE is an all-true predicate of the appropriate mode
-   and that the instruction clobbers the condition codes.  */
-
-static void
-aarch64_emit_sve_ptrue_op_cc (rtx target, rtx ptrue, rtx op)
-{
-  rtx unspec = gen_rtx_UNSPEC (GET_MODE (target),
-			       gen_rtvec (2, ptrue, op),
-			       UNSPEC_MERGE_PTRUE);
-  rtx_insn *insn = emit_insn (gen_set_clobber_cc_nzc (target, unspec));
-  set_unique_reg_note (insn, REG_EQUAL, copy_rtx (op));
-}
-
 /* Expand an SVE integer comparison using the SVE equivalent of:
 
      (set TARGET (CODE OP0 OP1)).  */
@@ -17721,13 +17712,10 @@ aarch64_expand_sve_vec_cmp_int (rtx target, rtx_code code, rtx op0, rtx op1)
 {
   machine_mode pred_mode = GET_MODE (target);
   machine_mode data_mode = GET_MODE (op0);
-
-  if (!aarch64_sve_cmp_operand_p (code, op1))
-    op1 = force_reg (data_mode, op1);
-
-  rtx ptrue = aarch64_ptrue_reg (pred_mode);
-  rtx cond = gen_rtx_fmt_ee (code, pred_mode, op0, op1);
-  aarch64_emit_sve_ptrue_op_cc (target, ptrue, cond);
+  rtx res = aarch64_sve_emit_int_cmp (target, pred_mode, code, data_mode,
+				      op0, op1);
+  if (!rtx_equal_p (target, res))
+    emit_move_insn (target, res);
 }
 
 /* Return the UNSPEC_COND_* code for comparison CODE.  */

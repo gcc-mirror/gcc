@@ -24,6 +24,7 @@
 ;; == General notes
 ;; ---- Note on the handling of big-endian SVE
 ;; ---- Description of UNSPEC_PTEST
+;; ---- Description of UNSPEC_PRED_Z
 ;; ---- Note on predicated integer arithemtic and UNSPEC_PRED_X
 ;; ---- Note on predicated FP arithmetic patterns and GP "strictness"
 ;;
@@ -229,6 +230,52 @@
 ;;   SVE_MAYBE_NOT_PTRUE otherwise.
 ;;
 ;; - OP is the predicate we want to test, of the same mode as CAST_GP.
+;;
+;; -------------------------------------------------------------------------
+;; ---- Description of UNSPEC_PRED_Z
+;; -------------------------------------------------------------------------
+;;
+;; SVE integer comparisons are predicated and return zero for inactive
+;; lanes.  Sometimes we use them with predicates that are all-true and
+;; sometimes we use them with general predicates.
+;;
+;; The integer comparisons also set the flags and so build-in the effect
+;; of a PTEST.  We therefore want to be able to combine integer comparison
+;; patterns with PTESTs of the result.  One difficulty with doing this is
+;; that (as noted above) the PTEST is always a .B operation and so can place
+;; stronger requirements on the governing predicate than the comparison does.
+;;
+;; For example, when applying a separate PTEST to the result of a full-vector
+;; .H comparison, the PTEST must be predicated on a .H PTRUE instead of a
+;; .B PTRUE.  In constrast, the comparison might be predicated on either
+;; a .H PTRUE or a .B PTRUE, since the values of odd-indexed predicate
+;; bits don't matter for .H operations.
+;;
+;; We therefore can't rely on a full-vector comparison using the same
+;; predicate register as a following PTEST.  We instead need to remember
+;; whether a comparison is known to be a full-vector comparison and use
+;; this information in addition to a check for equal predicate registers.
+;; At the same time, it's useful to have a common representation for all
+;; integer comparisons, so that they can be handled by a single set of
+;; patterns.
+;;
+;; We therefore take a similar approach to UNSPEC_PTEST above and use:
+;;
+;;   (unspec:<M:VPRED> [gp ptrue_flag (code:M op0 op1)] UNSPEC_PRED_Z)
+;;
+;; where:
+;;
+;; - GP is the governing predicate, of mode <M:VPRED>
+;;
+;; - PTRUE_FLAG is a CONST_INT (conceptually of mode SI) that has the value
+;;   SVE_KNOWN_PTRUE if we know that GP is all-true and SVE_MAYBE_NOT_PTRUE
+;;   otherwise
+;;
+;; - CODE is the comparison code
+;;
+;; - OP0 and OP1 are the values being compared, of mode M
+;;
+;; The "Z" in UNSPEC_PRED_Z indicates that inactive lanes are zero.
 ;;
 ;; -------------------------------------------------------------------------
 ;; ---- Note on predicated integer arithemtic and UNSPEC_PRED_X
@@ -3008,113 +3055,117 @@
   }
 )
 
-;; Integer comparisons predicated with a PTRUE.
-(define_insn "*cmp<cmp_op><mode>"
+;; Predicated integer comparisons.
+(define_insn "@aarch64_pred_cmp<cmp_op><mode>"
   [(set (match_operand:<VPRED> 0 "register_operand" "=Upa, Upa")
 	(unspec:<VPRED>
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (match_operand:SI 2 "aarch64_sve_ptrue_flag")
 	   (SVE_INT_CMP:<VPRED>
-	     (match_operand:SVE_I 2 "register_operand" "w, w")
-	     (match_operand:SVE_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
-	  UNSPEC_MERGE_PTRUE))
+	     (match_operand:SVE_I 3 "register_operand" "w, w")
+	     (match_operand:SVE_I 4 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
+	  UNSPEC_PRED_Z))
    (clobber (reg:CC_NZC CC_REGNUM))]
   "TARGET_SVE"
   "@
-   cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #%3
-   cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
+   cmp<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, #%4
+   cmp<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.<Vetype>"
 )
 
-;; Integer comparisons predicated with a PTRUE in which both the flag and
-;; predicate results are interesting.
-(define_insn "*cmp<cmp_op><mode>_cc"
+;; Predicated integer comparisons in which both the flag and predicate
+;; results are interesting.
+(define_insn_and_rewrite "*cmp<cmp_op><mode>_cc"
   [(set (reg:CC_NZC CC_REGNUM)
 	(unspec:CC_NZC
 	  [(match_operand:VNx16BI 1 "register_operand" "Upl, Upl")
 	   (match_operand 4)
 	   (match_operand:SI 5 "aarch64_sve_ptrue_flag")
 	   (unspec:<VPRED>
-	     [(match_dup 4)
+	     [(match_operand 6)
+	      (match_operand:SI 7 "aarch64_sve_ptrue_flag")
 	      (SVE_INT_CMP:<VPRED>
 		(match_operand:SVE_I 2 "register_operand" "w, w")
 		(match_operand:SVE_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
-	     UNSPEC_MERGE_PTRUE)]
+	     UNSPEC_PRED_Z)]
 	  UNSPEC_PTEST))
    (set (match_operand:<VPRED> 0 "register_operand" "=Upa, Upa")
 	(unspec:<VPRED>
-	  [(match_dup 4)
+	  [(match_dup 6)
+	   (match_dup 7)
 	   (SVE_INT_CMP:<VPRED>
 	     (match_dup 2)
 	     (match_dup 3))]
-	  UNSPEC_MERGE_PTRUE))]
-  "TARGET_SVE"
+	  UNSPEC_PRED_Z))]
+  "TARGET_SVE
+   && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
   "@
    cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #%3
    cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
+  "&& !rtx_equal_p (operands[4], operands[6])"
+  {
+    operands[6] = copy_rtx (operands[4]);
+    operands[7] = operands[5];
+  }
 )
 
-;; Integer comparisons predicated with a PTRUE in which only the flags result
-;; is interesting.
-(define_insn "*cmp<cmp_op><mode>_ptest"
+;; Predicated integer comparisons in which only the flags result is
+;; interesting.
+(define_insn_and_rewrite "*cmp<cmp_op><mode>_ptest"
   [(set (reg:CC_NZC CC_REGNUM)
 	(unspec:CC_NZC
 	  [(match_operand:VNx16BI 1 "register_operand" "Upl, Upl")
 	   (match_operand 4)
 	   (match_operand:SI 5 "aarch64_sve_ptrue_flag")
 	   (unspec:<VPRED>
-	     [(match_dup 4)
+	     [(match_operand 6)
+	      (match_operand:SI 7 "aarch64_sve_ptrue_flag")
 	      (SVE_INT_CMP:<VPRED>
 		(match_operand:SVE_I 2 "register_operand" "w, w")
 		(match_operand:SVE_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
-	     UNSPEC_MERGE_PTRUE)]
+	     UNSPEC_PRED_Z)]
 	  UNSPEC_PTEST))
    (clobber (match_scratch:<VPRED> 0 "=Upa, Upa"))]
-  "TARGET_SVE"
+  "TARGET_SVE
+   && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
   "@
    cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #%3
    cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
+  "&& !rtx_equal_p (operands[4], operands[6])"
+  {
+    operands[6] = copy_rtx (operands[4]);
+    operands[7] = operands[5];
+  }
 )
 
 ;; Predicated integer comparisons, formed by combining a PTRUE-predicated
 ;; comparison with an AND.  Split the instruction into its preferred form
-;; (below) at the earliest opportunity, in order to get rid of the
-;; redundant operand 1.
-(define_insn_and_split "*pred_cmp<cmp_op><mode>_combine"
+;; at the earliest opportunity, in order to get rid of the redundant
+;; operand 4.
+(define_insn_and_split "*cmp<cmp_op><mode>_and"
   [(set (match_operand:<VPRED> 0 "register_operand" "=Upa, Upa")
-       (and:<VPRED>
-	 (unspec:<VPRED>
-	   [(match_operand:<VPRED> 1)
-	    (SVE_INT_CMP:<VPRED>
-	      (match_operand:SVE_I 2 "register_operand" "w, w")
-	      (match_operand:SVE_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
-	   UNSPEC_MERGE_PTRUE)
-	 (match_operand:<VPRED> 4 "register_operand" "Upl, Upl")))
+	(and:<VPRED>
+	  (unspec:<VPRED>
+	    [(match_operand 4)
+	     (const_int SVE_KNOWN_PTRUE)
+	     (SVE_INT_CMP:<VPRED>
+	       (match_operand:SVE_I 2 "register_operand" "w, w")
+	       (match_operand:SVE_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
+	    UNSPEC_PRED_Z)
+	  (match_operand:<VPRED> 1 "register_operand" "Upl, Upl")))
    (clobber (reg:CC_NZC CC_REGNUM))]
   "TARGET_SVE"
   "#"
   "&& 1"
   [(parallel
      [(set (match_dup 0)
-	  (and:<VPRED>
-	    (SVE_INT_CMP:<VPRED>
-	      (match_dup 2)
-	      (match_dup 3))
-	    (match_dup 4)))
+	   (unspec:<VPRED>
+	     [(match_dup 1)
+	      (const_int SVE_MAYBE_NOT_PTRUE)
+	      (SVE_INT_CMP:<VPRED>
+		(match_dup 2)
+		(match_dup 3))]
+	     UNSPEC_PRED_Z))
       (clobber (reg:CC_NZC CC_REGNUM))])]
-)
-
-;; Predicated integer comparisons.
-(define_insn "@aarch64_pred_cmp<cmp_op><mode>"
-  [(set (match_operand:<VPRED> 0 "register_operand" "=Upa, Upa")
-	(and:<VPRED>
-	  (SVE_INT_CMP:<VPRED>
-	    (match_operand:SVE_I 2 "register_operand" "w, w")
-	    (match_operand:SVE_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))
-	  (match_operand:<VPRED> 1 "register_operand" "Upl, Upl")))
-   (clobber (reg:CC_NZC CC_REGNUM))]
-  "TARGET_SVE"
-  "@
-   cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #%3
-   cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
 )
 
 ;; -------------------------------------------------------------------------
