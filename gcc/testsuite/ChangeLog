@@ -1,3 +1,7 @@
+2019-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/parse/typedef9.C: Test locations too.
+
 2019-08-14  Martin Liska  <mliska@suse.cz>
 
 	* c-c++-common/asan/memcmp-1.c: There's a new function in the
@@ -21,7 +25,7 @@
 
 	PR fortran/87991
 	* gfortran.dg/pr87991.f90: New test.
- 
+
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/spill_2.c: Increase iteration counts
@@ -32,7 +36,7 @@
 	* gcc.target/aarch64/sve/while_9.c: Likewise.
 	* gcc.target/aarch64/sve/while_10.c: Likewise.
 
-2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org> 
+2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88072
 	* gfortran.dg/unlimited_polymorphic_28.f90: Fix error message.  Left
