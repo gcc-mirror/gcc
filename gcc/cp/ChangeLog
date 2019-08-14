@@ -1,3 +1,15 @@
+2019-08-14  Jakub Jelinek  <jakub@redhat.com>
+	    Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91391 - bogus -Wcomma-subscript warning.
+	* parser.c (cp_parser_postfix_open_square_expression): Don't warn about
+	a deprecated comma here.  Pass warn_comma_subscript down to
+	cp_parser_expression.
+	(cp_parser_expression): New bool parameter.  Warn about uses of a comma
+	operator within a subscripting expression.
+	(cp_parser_skip_to_closing_square_bracket): Revert to pre-r274121 state.
+	(cp_parser_skip_to_closing_square_bracket_1): Remove.
+
 2019-08-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* name-lookup.c (get_std_name_hint): Add more entries.
