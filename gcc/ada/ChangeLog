@@ -1,3 +1,9 @@
+2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Analyze_Instance_And_Renamings): Do not reset
+	the Is_Generic_Instance flag previously set on the package
+	generated for the instantiation of a generic subprogram.
+
 2019-08-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Quantified_Expression): Freeze

@@ -1,3 +1,8 @@
+2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/generic_inst11.adb, gnat.dg/generic_inst11_pkg.adb,
+	gnat.dg/generic_inst11_pkg.ads: New testcase.
+
 2019-08-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/assert2.adb, gnat.dg/assert2.ads: New testcase.
