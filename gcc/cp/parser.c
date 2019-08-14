@@ -2102,7 +2102,7 @@ static cp_expr cp_parser_assignment_expression
 static enum tree_code cp_parser_assignment_operator_opt
   (cp_parser *);
 static cp_expr cp_parser_expression
-  (cp_parser *, cp_id_kind * = NULL, bool = false, bool = false);
+  (cp_parser *, cp_id_kind * = NULL, bool = false, bool = false, bool = false);
 static cp_expr cp_parser_constant_expression
   (cp_parser *, bool = false, bool * = NULL, bool = false);
 static cp_expr cp_parser_builtin_offsetof
@@ -2669,8 +2669,6 @@ static bool cp_parser_init_statement_p
   (cp_parser *);
 static bool cp_parser_skip_to_closing_square_bracket
   (cp_parser *);
-static int cp_parser_skip_to_closing_square_bracket_1
-  (cp_parser *, enum cpp_ttype);
 
 /* Concept-related syntactic transformations */
 
@@ -7524,33 +7522,9 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
 	  index = cp_parser_braced_list (parser, &expr_nonconst_p);
 	}
       else
-	{
-	  /* [depr.comma.subscript]: A comma expression appearing as
-	     the expr-or-braced-init-list of a subscripting expression
-	     is deprecated.  A parenthesized comma expression is not
-	     deprecated.  */
-	  if (warn_comma_subscript)
-	    {
-	      /* Save tokens so that we can put them back.  */
-	      cp_lexer_save_tokens (parser->lexer);
-
-	      /* Look for ',' that is not nested in () or {}.  */
-	      if (cp_parser_skip_to_closing_square_bracket_1 (parser,
-							      CPP_COMMA) == -1)
-		{
-		  auto_diagnostic_group d;
-		  warning_at (cp_lexer_peek_token (parser->lexer)->location,
-			      OPT_Wcomma_subscript,
-			      "top-level comma expression in array subscript "
-			      "is deprecated");
-		}
-
-	      /* Roll back the tokens we skipped.  */
-	      cp_lexer_rollback_tokens (parser->lexer);
-	    }
-
-	  index = cp_parser_expression (parser);
-	}
+	index = cp_parser_expression (parser, NULL, /*cast_p=*/false,
+				      /*decltype_p=*/false,
+				      /*warn_comma_p=*/warn_comma_subscript);
     }
 
   parser->greater_than_is_operator_p = saved_greater_than_is_operator_p;
@@ -9932,12 +9906,13 @@ cp_parser_assignment_operator_opt (cp_parser* parser)
    CAST_P is true if this expression is the target of a cast.
    DECLTYPE_P is true if this expression is the immediate operand of decltype,
      except possibly parenthesized or on the RHS of a comma (N3276).
+   WARN_COMMA_P is true if a comma should be diagnosed.
 
    Returns a representation of the expression.  */
 
 static cp_expr
 cp_parser_expression (cp_parser* parser, cp_id_kind * pidk,
-		      bool cast_p, bool decltype_p)
+		      bool cast_p, bool decltype_p, bool warn_comma_p)
 {
   cp_expr expression = NULL_TREE;
   location_t loc = UNKNOWN_LOCATION;
@@ -9984,6 +9959,17 @@ cp_parser_expression (cp_parser* parser, cp_id_kind * pidk,
 	break;
       /* Consume the `,'.  */
       loc = cp_lexer_peek_token (parser->lexer)->location;
+      if (warn_comma_p)
+	{
+	  /* [depr.comma.subscript]: A comma expression appearing as
+	     the expr-or-braced-init-list of a subscripting expression
+	     is deprecated.  A parenthesized comma expression is not
+	     deprecated.  */
+	  warning_at (loc, OPT_Wcomma_subscript,
+		      "top-level comma expression in array subscript "
+		      "is deprecated");
+	  warn_comma_p = false;
+	}
       cp_lexer_consume_token (parser->lexer);
       /* A comma operator cannot appear in a constant-expression.  */
       if (cp_parser_non_integral_constant_expression (parser, NIC_COMMA))
@@ -22888,25 +22874,16 @@ cp_parser_braced_list (cp_parser* parser, bool* non_constant_p)
 }
 
 /* Consume tokens up to, and including, the next non-nested closing `]'.
-   Returns 1 iff we found a closing `]'.  Returns -1 if OR_TTYPE is not
-   CPP_EOF and we found an unnested token of that type.  */
+   Returns true iff we found a closing `]'.  */
 
-static int
-cp_parser_skip_to_closing_square_bracket_1 (cp_parser *parser,
-					    enum cpp_ttype or_ttype)
+static bool
+cp_parser_skip_to_closing_square_bracket (cp_parser *parser)
 {
   unsigned square_depth = 0;
-  unsigned paren_depth = 0;
-  unsigned brace_depth = 0;
 
   while (true)
     {
-      cp_token *token = cp_lexer_peek_token (parser->lexer);
-
-      /* Have we found what we're looking for before the closing square?  */
-      if (token->type == or_ttype && or_ttype != CPP_EOF
-	  && brace_depth == 0 && paren_depth == 0 && square_depth == 0)
-	return -1;
+      cp_token * token = cp_lexer_peek_token (parser->lexer);
 
       switch (token->type)
 	{
@@ -22916,36 +22893,18 @@ cp_parser_skip_to_closing_square_bracket_1 (cp_parser *parser,
 	  /* FALLTHRU */
 	case CPP_EOF:
 	  /* If we've run out of tokens, then there is no closing `]'.  */
-	  return 0;
+	  return false;
 
         case CPP_OPEN_SQUARE:
           ++square_depth;
           break;
 
         case CPP_CLOSE_SQUARE:
-	  if (square_depth-- == 0)
+	  if (!square_depth--)
 	    {
 	      cp_lexer_consume_token (parser->lexer);
-	      return 1;
+	      return true;
 	    }
-	  break;
-
-	case CPP_OPEN_BRACE:
-	  ++brace_depth;
-	  break;
-
-	case CPP_CLOSE_BRACE:
-	  if (brace_depth-- == 0)
-	    return 0;
-	  break;
-
-	case CPP_OPEN_PAREN:
-	  ++paren_depth;
-	  break;
-
-	case CPP_CLOSE_PAREN:
-	  if (paren_depth-- == 0)
-	    return 0;
 	  break;
 
 	default:
@@ -22955,15 +22914,6 @@ cp_parser_skip_to_closing_square_bracket_1 (cp_parser *parser,
       /* Consume the token.  */
       cp_lexer_consume_token (parser->lexer);
     }
-}
-
-/* Consume tokens up to, and including, the next non-nested closing `]'.
-   Returns true iff we found a closing `]'.  */
-
-static bool
-cp_parser_skip_to_closing_square_bracket (cp_parser *parser)
-{
-  return cp_parser_skip_to_closing_square_bracket_1 (parser, CPP_EOF) == 1;
 }
 
 /* Return true if we are looking at an array-designator, false otherwise.  */
