@@ -1,4 +1,18 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* gcc.target/aarch64/sve/cond_logical_1.c: New test.
+	* gcc.target/aarch64/sve/cond_logical_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_logical_2.c: Likewise.
+	* gcc.target/aarch64/sve/cond_logical_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_logical_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_logical_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_logical_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_logical_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_logical_5.c: Likewise.
+	* gcc.target/aarch64/sve/cond_logical_5_run.c: Likewise.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/cond_uxt_1.c: New test.
 	* gcc.target/aarch64/sve/cond_uxt_1_run.c: Likewise.

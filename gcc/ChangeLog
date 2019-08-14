@@ -1,4 +1,10 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* config/aarch64/aarch64-sve.md (*cond_bic<mode>_2)
+	(*cond_bic<mode>_any): New patterns.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_print_operand): Allow %e to
 	take the equivalent mask, as well as a bit count.
