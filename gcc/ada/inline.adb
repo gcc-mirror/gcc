@@ -2041,6 +2041,8 @@ package body Inline is
          Original_Body   : Node_Id;
          Body_To_Analyze : Node_Id;
 
+      --  Start of processing for Build_Body_To_Inline
+
       begin
          pragma Assert (Current_Scope = Spec_Id);
 
@@ -2446,6 +2448,18 @@ package body Inline is
       --  declarations (see Freeze.Build_Renamed_Body).
 
       elsif Present (Body_To_Inline (Decl)) then
+         return;
+
+      --  Do not generate a body to inline for protected functions, because the
+      --  transformation generates a call to a protected procedure, causing
+      --  spurious errors. We don't inline protected operations anyway, so
+      --  this is no loss. We might as well ignore intrinsics and foreign
+      --  conventions as well -- just allow Ada conventions.
+
+      elsif not (Convention (Spec_Id) = Convention_Ada
+        or else Convention (Spec_Id) = Convention_Ada_Pass_By_Copy
+        or else Convention (Spec_Id) = Convention_Ada_Pass_By_Reference)
+      then
          return;
 
       --  Check excluded declarations
