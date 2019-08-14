@@ -5264,10 +5264,6 @@ package body Sem_Ch12 is
 
          Analyze (Pack_Decl);
          Check_Formal_Packages (Pack_Id);
-         Set_Is_Generic_Instance (Pack_Id, False);
-
-         --  Why do we clear Is_Generic_Instance??? We set it 20 lines
-         --  above???
 
          --  Body of the enclosing package is supplied when instantiating the
          --  subprogram body, after semantic analysis is completed.
