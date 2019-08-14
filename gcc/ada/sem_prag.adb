@@ -7598,46 +7598,7 @@ package body Sem_Prag is
       -------------------------------------------
 
       procedure Process_Compile_Time_Warning_Or_Error is
-         Validation_Needed : Boolean := False;
-
-         function Check_Node (N : Node_Id) return Traverse_Result;
-         --  Tree visitor that checks if N is an attribute reference that can
-         --  be statically computed by the back end. Validation_Needed is set
-         --  to True if found.
-
-         ----------------
-         -- Check_Node --
-         ----------------
-
-         function Check_Node (N : Node_Id) return Traverse_Result is
-         begin
-            if Nkind (N) = N_Attribute_Reference
-              and then Is_Entity_Name (Prefix (N))
-              and then not Is_Generic_Unit (Scope (Entity (Prefix (N))))
-            then
-               declare
-                  Attr_Id : constant Attribute_Id :=
-                              Get_Attribute_Id (Attribute_Name (N));
-               begin
-                  if Attr_Id = Attribute_Alignment
-                    or else Attr_Id = Attribute_Size
-                  then
-                     Validation_Needed := True;
-                  end if;
-               end;
-            end if;
-
-            return OK;
-         end Check_Node;
-
-         procedure Check_Expression is new Traverse_Proc (Check_Node);
-
-         --  Local variables
-
          Arg1x : constant Node_Id := Get_Pragma_Arg (Arg1);
-
-      --  Start of processing for Process_Compile_Time_Warning_Or_Error
-
       begin
          --  In GNATprove mode, pragmas Compile_Time_Error and
          --  Compile_Time_Warning are ignored, as the analyzer may not have the
@@ -7655,20 +7616,18 @@ package body Sem_Prag is
          Check_Arg_Is_OK_Static_Expression (Arg2, Standard_String);
          Analyze_And_Resolve (Arg1x, Standard_Boolean);
 
+         --  If the condition is known at compile time (now), process it now.
+         --  Otherwise, register the expression for validation after the back
+         --  end has been called, because it might be known at compile time
+         --  then. For example, if the expression is "Record_Type'Size /= 32"
+         --  it might be known after the back end has determined the size of
+         --  Record_Type. We do not defer processing if we're inside a generic
+         --  unit, because we will have more information in the instances.
+
          if Compile_Time_Known_Value (Arg1x) then
             Process_Compile_Time_Warning_Or_Error (N, Sloc (Arg1));
-
-         --  Register the expression for its validation after the back end has
-         --  been called if it has occurrences of attributes Size or Alignment
-         --  (because they may be statically computed by the back end and hence
-         --  the whole expression needs to be reevaluated).
-
-         else
-            Check_Expression (Arg1x);
-
-            if Validation_Needed then
-               Validate_Compile_Time_Warning_Error (N);
-            end if;
+         elsif not Inside_A_Generic then
+            Validate_Compile_Time_Warning_Error (N);
          end if;
       end Process_Compile_Time_Warning_Or_Error;
 
@@ -14449,25 +14408,17 @@ package body Sem_Prag is
 
          --  Processing for this pragma is shared with Psect_Object
 
-         ------------------------
-         -- Compile_Time_Error --
-         ------------------------
+         ----------------------------------------------
+         -- Compile_Time_Error, Compile_Time_Warning --
+         ----------------------------------------------
 
          --  pragma Compile_Time_Error
          --    (boolean_EXPRESSION, static_string_EXPRESSION);
 
-         when Pragma_Compile_Time_Error =>
-            GNAT_Pragma;
-            Process_Compile_Time_Warning_Or_Error;
-
-         --------------------------
-         -- Compile_Time_Warning --
-         --------------------------
-
          --  pragma Compile_Time_Warning
          --    (boolean_EXPRESSION, static_string_EXPRESSION);
 
-         when Pragma_Compile_Time_Warning =>
+         when Pragma_Compile_Time_Error | Pragma_Compile_Time_Warning =>
             GNAT_Pragma;
             Process_Compile_Time_Warning_Or_Error;
 
