@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Jul 31, 2019
+GNAT Reference Manual , Aug 01, 2019
 
 AdaCore
 
@@ -18369,9 +18369,11 @@ and this section describes the additional capabilities provided.
 
 @geindex Alignment Clause
 
-GNAT requires that all alignment clauses specify a power of 2, and all
-default alignments are always a power of 2.  The default alignment
-values are as follows:
+GNAT requires that all alignment clauses specify 0 or a power of 2, and
+all default alignments are always a power of 2. Specifying 0 is the
+same as specifying 1.
+
+The default alignment values are as follows:
 
 
 @itemize *

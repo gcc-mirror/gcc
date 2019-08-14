@@ -1,5 +1,9 @@
 2019-08-14  Bob Duff  <duff@adacore.com>
 
+	* gnat.dg/alignment15.adb: New testcase.
+
+2019-08-14  Bob Duff  <duff@adacore.com>
+
 	* gnat.dg/warn27.adb: New testcase.
 
 2019-08-14  Bob Duff  <duff@adacore.com>

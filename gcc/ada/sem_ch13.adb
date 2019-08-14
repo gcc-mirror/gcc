@@ -11509,7 +11509,7 @@ package body Sem_Ch13 is
       if Align = No_Uint then
          return No_Uint;
 
-      elsif Align <= 0 then
+      elsif Align < 0 then
 
          --  This error is suppressed in ASIS mode to allow for different ASIS
          --  back ends or ASIS-based tools to query the illegal clause.
@@ -11519,6 +11519,11 @@ package body Sem_Ch13 is
          end if;
 
          return No_Uint;
+
+      --  If Alignment is specified to be 0, we treat it the same as 1
+
+      elsif Align = 0 then
+         return Uint_1;
 
       else
          for J in Int range 0 .. 64 loop
