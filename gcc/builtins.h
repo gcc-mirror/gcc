@@ -150,5 +150,6 @@ extern internal_fn replacement_internal_fn (gcall *);
 
 extern void warn_string_no_nul (location_t, const char *, tree, tree);
 extern tree unterminated_array (tree, tree * = NULL, bool * = NULL);
+extern bool builtin_with_linkage_p (tree);
 
 #endif /* GCC_BUILTINS_H */

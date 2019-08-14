@@ -1,3 +1,12 @@
+2019-08-14  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	PR lto/91287
+	* builtins.c (builtin_with_linkage_p): New function.
+	* builtins.h (builtin_with_linkage_p): New function.
+	* symtab.c (write_symbol): Remove redundant assert.
+	* lto-streamer-out.c (symtab_node::output_to_lto_symbol_table_p):
+	Remove FIXME and use builtin_with_linkage_p.
+
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/91421
