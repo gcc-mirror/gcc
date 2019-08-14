@@ -2765,6 +2765,24 @@ aarch64_pfalse_reg (machine_mode mode)
   return gen_lowpart (mode, reg);
 }
 
+/* Return true if predicate PRED1[0] is true whenever predicate PRED2 is
+   true, or alternatively if we know that the operation predicated by
+   PRED1[0] is safe to perform whenever PRED2 is true.  PRED1[1] is a
+   aarch64_sve_gp_strictness operand that describes the operation
+   predicated by PRED1[0].  */
+
+bool
+aarch64_sve_pred_dominates_p (rtx *pred1, rtx pred2)
+{
+  machine_mode mode = GET_MODE (pred2);
+  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
+	      && mode == GET_MODE (pred1[0])
+	      && aarch64_sve_gp_strictness (pred1[1], SImode));
+  return (pred1[0] == CONSTM1_RTX (mode)
+	  || INTVAL (pred1[1]) == SVE_RELAXED_GP
+	  || rtx_equal_p (pred1[0], pred2));
+}
+
 /* Use a comparison to convert integer vector SRC into MODE, which is
    the corresponding SVE predicate mode.  Use TARGET for the result
    if it's nonnull and convenient.  */

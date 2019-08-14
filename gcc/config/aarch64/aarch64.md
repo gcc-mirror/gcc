@@ -268,6 +268,18 @@
    ; Indicates that the predicate is known to be a PTRUE.
    (SVE_KNOWN_PTRUE 1)])
 
+;; These constants are used as a const_int in predicated SVE FP arithmetic
+;; to indicate whether the operation is allowed to make additional lanes
+;; active without worrying about the effect on faulting behavior.
+(define_constants
+  [; Indicates either that all lanes are active or that the instruction may
+   ; operate on inactive inputs even if doing so could induce a fault.
+   (SVE_RELAXED_GP 0)
+
+   ; Indicates that some lanes might be inactive and that the instruction
+   ; must not operate on inactive inputs if doing so could induce a fault.
+   (SVE_STRICT_GP 1)])
+
 ;; If further include files are added the defintion of MD_INCLUDES
 ;; must be updated.
 

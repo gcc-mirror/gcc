@@ -689,6 +689,11 @@
        (ior (match_test "INTVAL (op) == SVE_MAYBE_NOT_PTRUE")
 	    (match_test "INTVAL (op) == SVE_KNOWN_PTRUE"))))
 
+(define_predicate "aarch64_sve_gp_strictness"
+  (and (match_code "const_int")
+       (ior (match_test "INTVAL (op) == SVE_RELAXED_GP")
+	    (match_test "INTVAL (op) == SVE_STRICT_GP"))))
+
 (define_predicate "aarch64_gather_scale_operand_w"
   (and (match_code "const_int")
        (match_test "INTVAL (op) == 1 || INTVAL (op) == 4")))
