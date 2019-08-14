@@ -1,5 +1,18 @@
 2019-08-14  Yannick Moy  <moy@adacore.com>
 
+	* sem_spark.adb, sem_spark.ads (Is_Legal): New function exposed
+	for use in GNATprove, to test legality rules not related to
+	permissions.
+	(Check_Declaration_Legality): Extract the part of
+	Check_Declaration that checks rules not related to permissions.
+	(Check_Declaration): Call the new Check_Declaration_Legality.
+	(Check_Type_Legality): Rename of Check_Type. Introduce
+	parameters to force or not checking, and update a flag detecting
+	illegalities.
+	(Check_Node): Ignore attribute references in statement position.
+
+2019-08-14  Yannick Moy  <moy@adacore.com>
+
 	* sem_spark.adb (Check_Old_Loop_Entry): New procedure to check
 	correct use of Old  and Loop_Entry.
 	(Check_Node): Check subprogram contracts.

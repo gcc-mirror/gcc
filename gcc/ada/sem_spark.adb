@@ -637,6 +637,14 @@ package body Sem_SPARK is
 
    procedure Check_Declaration (Decl : Node_Id);
 
+   procedure Check_Declaration_Legality
+     (Decl  : Node_Id;
+      Force : Boolean;
+      Legal : in out Boolean);
+   --  Check the legality of declaration Decl regarding rules not related to
+   --  permissions. Update Legal to False if a rule is violated. Issue an
+   --  error message if Force is True and Emit_Messages returns True.
+
    procedure Check_Expression (Expr : Node_Id; Mode : Extended_Checking_Mode);
    pragma Precondition (Nkind_In (Expr, N_Index_Or_Discriminant_Constraint,
                                         N_Range_Constraint,
@@ -686,7 +694,10 @@ package body Sem_SPARK is
 
    procedure Check_Statement (Stmt : Node_Id);
 
-   procedure Check_Type (Typ : Entity_Id);
+   procedure Check_Type_Legality
+     (Typ   : Entity_Id;
+      Force : Boolean;
+      Legal : in out Boolean);
    --  Check that type Typ is either not deep, or that it is an observing or
    --  owning type according to SPARK RM 3.10
 
@@ -1138,11 +1149,12 @@ package body Sem_SPARK is
       Expr_Root   : Entity_Id;
       Perm        : Perm_Kind;
       Status      : Error_Status;
+      Dummy       : Boolean := True;
 
    --  Start of processing for Check_Assignment
 
    begin
-      Check_Type (Target_Typ);
+      Check_Type_Legality (Target_Typ, Force => True, Legal => Dummy);
 
       if Is_Anonymous_Access_Type (Target_Typ) then
          Check_Source_Of_Borrow_Or_Observe (Expr, Status);
@@ -1410,11 +1422,18 @@ package body Sem_SPARK is
       Target     : constant Entity_Id := Defining_Identifier (Decl);
       Target_Typ : constant Node_Id := Etype (Target);
       Expr       : Node_Id;
+      Dummy      : Boolean := True;
 
    begin
+      --  Start with legality rules not related to permissions
+
+      Check_Declaration_Legality (Decl, Force => True, Legal => Dummy);
+
+      --  Now check permission-related legality rules
+
       case N_Declaration'(Nkind (Decl)) is
          when N_Full_Type_Declaration =>
-            Check_Type (Target);
+            null;
 
             --  ??? What about component declarations with defaults.
 
@@ -1423,35 +1442,6 @@ package body Sem_SPARK is
 
          when N_Object_Declaration =>
             Expr := Expression (Decl);
-
-            Check_Type (Target_Typ);
-
-            --  A declaration of a stand-alone object of an anonymous access
-            --  type shall have an explicit initial value and shall occur
-            --  immediately within a subprogram body, an entry body, or a
-            --  block statement (SPARK RM 3.10(4)).
-
-            if Is_Anonymous_Access_Type (Target_Typ) then
-               declare
-                  Scop : constant Entity_Id := Scope (Target);
-               begin
-                  if not Is_Local_Context (Scop) then
-                     if Emit_Messages then
-                        Error_Msg_N
-                          ("object of anonymous access type must be declared "
-                           & "immediately within a subprogram, entry or block "
-                           & "(SPARK RM 3.10(4))", Decl);
-                     end if;
-                  end if;
-               end;
-
-               if No (Expr) then
-                  if Emit_Messages then
-                     Error_Msg_N ("object of anonymous access type must be "
-                                  & "initialized (SPARK RM 3.10(4))", Decl);
-                  end if;
-               end if;
-            end if;
 
             if Present (Expr) then
                Check_Assignment (Target => Target,
@@ -1505,6 +1495,113 @@ package body Sem_SPARK is
             raise Program_Error;
       end case;
    end Check_Declaration;
+
+   --------------------------------
+   -- Check_Declaration_Legality --
+   --------------------------------
+
+   procedure Check_Declaration_Legality
+     (Decl  : Node_Id;
+      Force : Boolean;
+      Legal : in out Boolean)
+   is
+      function Original_Emit_Messages return Boolean renames Emit_Messages;
+
+      function Emit_Messages return Boolean;
+      --  Local wrapper around generic formal parameter Emit_Messages, to
+      --  check the value of parameter Force before calling the original
+      --  Emit_Messages, and setting Legal to False.
+
+      -------------------
+      -- Emit_Messages --
+      -------------------
+
+      function Emit_Messages return Boolean is
+      begin
+         Legal := False;
+         return Force and then Original_Emit_Messages;
+      end Emit_Messages;
+
+      --  Local variables
+
+      Target     : constant Entity_Id := Defining_Identifier (Decl);
+      Target_Typ : constant Node_Id := Etype (Target);
+      Expr       : Node_Id;
+
+   --  Start of processing for Check_Declaration_Legality
+
+   begin
+      case N_Declaration'(Nkind (Decl)) is
+         when N_Full_Type_Declaration =>
+            Check_Type_Legality (Target, Force, Legal);
+
+         when N_Subtype_Declaration =>
+            null;
+
+         when N_Object_Declaration =>
+            Expr := Expression (Decl);
+
+            Check_Type_Legality (Target_Typ, Force, Legal);
+
+            --  A declaration of a stand-alone object of an anonymous access
+            --  type shall have an explicit initial value and shall occur
+            --  immediately within a subprogram body, an entry body, or a
+            --  block statement (SPARK RM 3.10(4)).
+
+            if Is_Anonymous_Access_Type (Target_Typ) then
+               declare
+                  Scop : constant Entity_Id := Scope (Target);
+               begin
+                  if not Is_Local_Context (Scop) then
+                     if Emit_Messages then
+                        Error_Msg_N
+                          ("object of anonymous access type must be declared "
+                           & "immediately within a subprogram, entry or block "
+                           & "(SPARK RM 3.10(4))", Decl);
+                     end if;
+                  end if;
+               end;
+
+               if No (Expr) then
+                  if Emit_Messages then
+                     Error_Msg_N ("object of anonymous access type must be "
+                                  & "initialized (SPARK RM 3.10(4))", Decl);
+                  end if;
+               end if;
+            end if;
+
+         when N_Iterator_Specification =>
+            null;
+
+         when N_Loop_Parameter_Specification =>
+            null;
+
+         --  Checking should not be called directly on these nodes
+
+         when N_Function_Specification
+            | N_Entry_Declaration
+            | N_Procedure_Specification
+            | N_Component_Declaration
+         =>
+            raise Program_Error;
+
+         --  Ignored constructs for pointer checking
+
+         when N_Formal_Object_Declaration
+            | N_Formal_Type_Declaration
+            | N_Incomplete_Type_Declaration
+            | N_Private_Extension_Declaration
+            | N_Private_Type_Declaration
+            | N_Protected_Type_Declaration
+         =>
+            null;
+
+         --  The following nodes are rewritten by semantic analysis
+
+         when N_Expression_Function =>
+            raise Program_Error;
+      end case;
+   end Check_Declaration_Legality;
 
    ----------------------
    -- Check_Expression --
@@ -2668,6 +2765,12 @@ package body Sem_SPARK is
          when N_Subprogram_Declaration =>
             Check_Subprogram_Contract (N);
 
+         --  Attribute references in statement position are not supported in
+         --  SPARK and will be rejected by GNATprove.
+
+         when N_Attribute_Reference =>
+            null;
+
          --  Ignored constructs for pointer checking
 
          when N_Abstract_Subprogram_Declaration
@@ -3503,12 +3606,37 @@ package body Sem_SPARK is
       end case;
    end Check_Statement;
 
-   ----------------
-   -- Check_Type --
-   ----------------
+   -------------------------
+   -- Check_Type_Legality --
+   -------------------------
 
-   procedure Check_Type (Typ : Entity_Id) is
+   procedure Check_Type_Legality
+     (Typ   : Entity_Id;
+      Force : Boolean;
+      Legal : in out Boolean)
+   is
+      function Original_Emit_Messages return Boolean renames Emit_Messages;
+
+      function Emit_Messages return Boolean;
+      --  Local wrapper around generic formal parameter Emit_Messages, to
+      --  check the value of parameter Force before calling the original
+      --  Emit_Messages, and setting Legal to False.
+
+      -------------------
+      -- Emit_Messages --
+      -------------------
+
+      function Emit_Messages return Boolean is
+      begin
+         Legal := False;
+         return Force and then Original_Emit_Messages;
+      end Emit_Messages;
+
+      --  Local variables
+
       Check_Typ : constant Entity_Id := Retysp (Typ);
+
+   --  Start of processing for Check_Type_Legality
 
    begin
       case Type_Kind'(Ekind (Check_Typ)) is
@@ -3519,7 +3647,7 @@ package body Sem_SPARK is
                =>
                   null;
                when E_Access_Subtype =>
-                  Check_Type (Base_Type (Check_Typ));
+                  Check_Type_Legality (Base_Type (Check_Typ), Force, Legal);
                when E_Access_Attribute_Type =>
                   if Emit_Messages then
                      Error_Msg_N ("access attribute not allowed in SPARK",
@@ -3546,7 +3674,7 @@ package body Sem_SPARK is
          when E_Array_Type
             | E_Array_Subtype
          =>
-            Check_Type (Component_Type (Check_Typ));
+            Check_Type_Legality (Component_Type (Check_Typ), Force, Legal);
 
          when Record_Kind =>
             if Is_Deep (Check_Typ)
@@ -3569,7 +3697,7 @@ package body Sem_SPARK is
                      --  Ignore components which are not visible in SPARK
 
                      if Component_Is_Visible_In_SPARK (Comp) then
-                        Check_Type (Etype (Comp));
+                        Check_Type_Legality (Etype (Comp), Force, Legal);
                      end if;
                      Next_Component_Or_Discriminant (Comp);
                   end loop;
@@ -3595,7 +3723,7 @@ package body Sem_SPARK is
          =>
             null;
       end case;
-   end Check_Type;
+   end Check_Type_Legality;
 
    --------------
    -- Get_Expl --
@@ -4140,6 +4268,24 @@ package body Sem_SPARK is
             return False;
       end case;
    end Is_Deep;
+
+   --------------
+   -- Is_Legal --
+   --------------
+
+   function Is_Legal (N : Node_Id) return Boolean is
+      Legal : Boolean := True;
+
+   begin
+      case Nkind (N) is
+         when N_Declaration =>
+            Check_Declaration_Legality (N, Force => False, Legal => Legal);
+         when others =>
+            null;
+      end case;
+
+      return Legal;
+   end Is_Legal;
 
    ----------------------
    -- Is_Local_Context --
