@@ -2274,6 +2274,50 @@
   }
 )
 
+;; Predicated integer BIC, merging with the first input.
+(define_insn "*cond_bic<mode>_2"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (and:SVE_I
+	     (not:SVE_I (match_operand:SVE_I 3 "register_operand" "w, w"))
+	     (match_operand:SVE_I 2 "register_operand" "0, w"))
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   bic\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0, %2\;bic\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Predicated integer BIC, merging with an independent value.
+(define_insn_and_rewrite "*cond_bic<mode>_any"
+  [(set (match_operand:SVE_I 0 "register_operand" "=&w, &w, &w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl")
+	   (and:SVE_I
+	     (not:SVE_I (match_operand:SVE_I 3 "register_operand" "w, w, w, w"))
+	     (match_operand:SVE_I 2 "register_operand" "0, w, w, w"))
+	   (match_operand:SVE_I 4 "aarch64_simd_reg_or_zero" "Dz, Dz, 0, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && !rtx_equal_p (operands[2], operands[4])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;bic\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;bic\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/m, %2.<Vetype>\;bic\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   #"
+  "&& reload_completed
+   && register_operand (operands[4], <MODE>mode)
+   && !rtx_equal_p (operands[0], operands[4])"
+  {
+    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[2],
+					     operands[4], operands[1]));
+    operands[4] = operands[2] = operands[0];
+  }
+  [(set_attr "movprfx" "yes")]
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Shifts
 ;; -------------------------------------------------------------------------
