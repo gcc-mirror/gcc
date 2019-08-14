@@ -1022,9 +1022,11 @@ procedure Gnat1drv is
 
       Atree.Unlock;
       Nlists.Unlock;
+      Elists.Unlock;
       Sem.Unlock;
       Sem_Prag.Validate_Compile_Time_Warning_Errors;
       Sem.Lock;
+      Elists.Lock;
       Nlists.Lock;
       Atree.Lock;
 

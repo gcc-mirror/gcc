@@ -1,3 +1,18 @@
+2019-08-14  Bob Duff  <duff@adacore.com>
+
+	* sem_prag.adb (Process_Compile_Time_Warning_Or_Error): Defer
+	processing to the back end in all cases where the pragma's
+	condition is not known at compile time during the front end
+	(except in generics), as opposed to detecting 'Size attributes
+	and the like. This ensures that we take advantage of whatever
+	can be compile-time known after running the back end, as opposed
+	to having the front end guess what the back end can do.  Remove
+	a little duplicated code at the call site.
+	* gnat1drv.adb (Post_Compilation_Validation_Checks): Unlock the
+	Elists while in Validate_Compile_Time_Warning_Errors, because it
+	does analysis and name resolution, which sometimes involves
+	adding Elists.
+
 2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* einfo.ads (Is_Called): Document new usage on E_Package
