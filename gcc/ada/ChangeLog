@@ -1,3 +1,11 @@
+2019-08-14  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Get_Alignment_Value): Return 1 for Alignment 0,
+	and do not give an error.
+	* doc/gnat_rm/representation_clauses_and_pragmas.rst: Update the
+	corresponding documentation.
+	* gnat_rm.texi: Regenerate.
+
 2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* inline.adb (Add_Pending_Instantiation): Fix off-by-one error
