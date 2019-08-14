@@ -1,3 +1,8 @@
+2019-08-14  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.adb (Is_Generic_Actual_Subprogram): Replace repeated
+	calls to Ekind with Ekind_In.
+
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/91421
