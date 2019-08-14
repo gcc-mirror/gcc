@@ -1,6 +1,44 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
+	* config/aarch64/aarch64.md (SVE_RELAXED_GP, SVE_STRICT_GP): New
+	constants.
+	* config/aarch64/predicates.md (aarch64_sve_gp_strictness): New
+	predicate.
+	* config/aarch64/aarch64-protos.h (aarch64_sve_pred_dominates_p):
+	Declare.
+	* config/aarch64/aarch64.c (aarch64_sve_pred_dominates_p): New
+	function.
+	* config/aarch64/aarch64-sve.md: Add a block comment about the
+	handling of predicated FP operations.
+	(<SVE_COND_FP_UNARY:optab><SVE_F:mode>2, add<SVE_F:mode>3)
+	(sub<SVE_F:mode>3, mul<SVE_F:mode>3, div<SVE_F:mode>3)
+	(<SVE_COND_FP_MAXMIN_PUBLIC:optab><SVE_F:mode>3)
+	(<SVE_COND_FP_MAXMIN_PUBLIC:maxmin_uns><SVE_F:mode>3)
+	(<SVE_COND_FP_TERNARY:optab><SVE_F:mode>4): Add an SVE_RELAXED_GP
+	operand.
+	(cond_<SVE_COND_FP_BINARY:optab><SVE_F:mode>)
+	(cond_<SVE_COND_FP_TERNARY:optab><SVE_F:mode>): Add an SVE_STRICT_GP
+	operand.
+	(*<SVE_COND_FP_UNARY:optab><SVE_F:mode>2)
+	(*cond_<SVE_COND_FP_BINARY:optab><SVE_F:mode>_2)
+	(*cond_<SVE_COND_FP_BINARY:optab><SVE_F:mode>_3)
+	(*cond_<SVE_COND_FP_BINARY:optab><SVE_F:mode>_any)
+	(*fabd<SVE_F:mode>3, *div<SVE_F:mode>3)
+	(*<SVE_COND_FP_MAXMIN_PUBLIC:optab><SVE_F:mode>3)
+	(*<SVE_COND_FP_TERNARY:optab><SVE_F:mode>4)
+	(*cond_<SVE_COND_FP_TERNARY:optab><SVE_F:mode>_2)
+	(*cond_<SVE_COND_FP_TERNARY:optab><SVE_F:mode>_4)
+	(*cond_<SVE_COND_FP_TERNARY:optab><SVE_F:mode>_any): Match the
+	strictness operands.  Use aarch64_sve_pred_dominates_p to check
+	whether the predicate on the conditional operation is suitable
+	for merging.  Split patterns into the canonical equal-predicate form.
+	(*add<SVE_F:mode>3, *sub<SVE_F:mode>3, *mul<SVE_F:mode>3): Likewise.
+	Restrict the unpredicated alternatives to SVE_RELAXED_GP.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
 	* config/aarch64/aarch64-sve.md (add<mode>3, *add<mode>3)
 	(sub<mode>3, *sub<mode>3, *fabd<mode>3, mul<mode>3, *mul<mode>3)
 	(div<mode>3, *div<mode>3): Use SVE_COND_FP_* unspecs instead of

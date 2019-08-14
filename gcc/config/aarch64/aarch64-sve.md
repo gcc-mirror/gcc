@@ -24,6 +24,7 @@
 ;; == General notes
 ;; ---- Note on the handling of big-endian SVE
 ;; ---- Description of UNSPEC_PTEST
+;; ---- Note on predicated FP arithmetic patterns and GP "strictness"
 ;;
 ;; == Moves
 ;; ---- Moves of single vectors
@@ -228,6 +229,83 @@
 ;;   SVE_MAYBE_NOT_PTRUE otherwise.
 ;;
 ;; - OP is the predicate we want to test, of the same mode as CAST_GP.
+;;
+;; -------------------------------------------------------------------------
+;; ---- Note on predicated FP arithmetic patterns and GP "strictness"
+;; -------------------------------------------------------------------------
+;;
+;; Most SVE floating-point operations are predicated.  We can generate
+;; them from four sources:
+;;
+;; (1) Using normal unpredicated optabs.  In this case we need to create
+;;     an all-true predicate register to act as the governing predicate
+;;     for the SVE instruction.  There are no inactive lanes, and thus
+;;     the values of inactive lanes don't matter.
+;;
+;; (2) Using _x ACLE functions.  In this case the function provides a
+;;     specific predicate and some lanes might be inactive.  However,
+;;     as for (1), the values of the inactive lanes don't matter.
+;;
+;;     The instruction must have the same exception behavior as the
+;;     function call unless things like command-line flags specifically
+;;     allow otherwise.  For example, with -ffast-math, it is OK to
+;;     raise exceptions for inactive lanes, but normally it isn't.
+;;
+;; (3) Using cond_* optabs that correspond to IFN_COND_* internal functions.
+;;     These optabs have a predicate operand that specifies which lanes are
+;;     active and another operand that provides the values of inactive lanes.
+;;
+;; (4) Using _m and _z ACLE functions.  These functions map to the same
+;;     patterns as (3), with the _z functions setting inactive lanes to zero
+;;     and the _m functions setting the inactive lanes to one of the function
+;;     arguments.
+;;
+;; So:
+;;
+;; - In (1), the predicate is known to be all true and the pattern can use
+;;   unpredicated operations where available.
+;;
+;; - In (2), the predicate might or might not be all true.  The pattern can
+;;   use unpredicated instructions if the predicate is all-true or if things
+;;   like command-line flags allow exceptions for inactive lanes.
+;;
+;; - (3) and (4) represent a native SVE predicated operation.  Some lanes
+;;   might be inactive and inactive lanes of the result must have specific
+;;   values.  There is no scope for using unpredicated instructions (and no
+;;   reason to want to), so the question about command-line flags doesn't
+;;   arise.
+;;
+;; It would be inaccurate to model (2) as an rtx code like (sqrt ...)
+;; in combination with a separate predicate operand, e.g.
+;;
+;;   (unspec [(match_operand:<VPRED> 1 "register_operand" "Upl")
+;;	      (sqrt:SVE_F 2 "register_operand" "w")]
+;;	     ....)
+;;
+;; because (sqrt ...) can raise an exception for any lane, including
+;; inactive ones.  We therefore need to use an unspec instead.
+;;
+;; Also, (2) requires some way of distinguishing the case in which the
+;; predicate might have inactive lanes and cannot be changed from the
+;; case in which the predicate has no inactive lanes or can be changed.
+;; This information is also useful when matching combined FP patterns
+;; in which the predicates might not be equal.
+;;
+;; We therefore model FP operations as an unspec of the form:
+;;
+;;   (unspec [pred strictness op0 op1 ...] UNSPEC_COND_<MNEMONIC>)
+;;
+;; where:
+;;
+;; - PRED is the governing predicate.
+;;
+;; - STRICTNESS is a CONST_INT that conceptually has mode SI.  It has the
+;;   value SVE_STRICT_GP if PRED might have inactive lanes and if those
+;;   lanes must remain inactive.  It has the value SVE_RELAXED_GP otherwise.
+;;
+;; - OP0 OP1 ... are the normal input operands to the operation.
+;;
+;; - MNEMONIC is the mnemonic of the associated SVE instruction.
 
 ;; =========================================================================
 ;; == Moves
@@ -1290,6 +1368,7 @@
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
 	  [(match_dup 2)
+	   (const_int SVE_RELAXED_GP)
 	   (match_operand:SVE_F 1 "register_operand")]
 	  SVE_COND_FP_UNARY))]
   "TARGET_SVE"
@@ -1303,6 +1382,7 @@
   [(set (match_operand:SVE_F 0 "register_operand" "=w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
 	   (match_operand:SVE_F 2 "register_operand" "w")]
 	  SVE_COND_FP_UNARY))]
   "TARGET_SVE"
@@ -1964,6 +2044,7 @@
 	  [(match_operand:<VPRED> 1 "register_operand")
 	   (unspec:SVE_F
 	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
 	      (match_operand:SVE_F 2 "register_operand")
 	      (match_operand:SVE_F 3 "register_operand")]
 	     SVE_COND_FP_BINARY)
@@ -1973,40 +2054,50 @@
 )
 
 ;; Predicated floating-point operations, merging with the first input.
-(define_insn "*cond_<optab><mode>_2"
+(define_insn_and_rewrite "*cond_<optab><mode>_2"
   [(set (match_operand:SVE_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_F
-	     [(match_dup 1)
+	     [(match_operand 4)
+	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
 	      (match_operand:SVE_F 2 "register_operand" "0, w")
 	      (match_operand:SVE_F 3 "register_operand" "w, w")]
 	     SVE_COND_FP_BINARY)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
-  "TARGET_SVE"
+  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[4], operands[1])"
   "@
    <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
    movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
+  "&& !rtx_equal_p (operands[1], operands[4])"
+  {
+    operands[4] = copy_rtx (operands[1]);
+  }
   [(set_attr "movprfx" "*,yes")]
 )
 
 ;; Predicated floating-point operations, merging with the second input.
-(define_insn "*cond_<optab><mode>_3"
+(define_insn_and_rewrite "*cond_<optab><mode>_3"
   [(set (match_operand:SVE_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_F
-	     [(match_dup 1)
+	     [(match_operand 4)
+	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
 	      (match_operand:SVE_F 2 "register_operand" "w, w")
 	      (match_operand:SVE_F 3 "register_operand" "0, w")]
 	     SVE_COND_FP_BINARY)
 	   (match_dup 3)]
 	  UNSPEC_SEL))]
-  "TARGET_SVE"
+  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[4], operands[1])"
   "@
    <sve_fp_op_rev>\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>
    movprfx\t%0, %3\;<sve_fp_op_rev>\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>"
+  "&& !rtx_equal_p (operands[1], operands[4])"
+  {
+    operands[4] = copy_rtx (operands[1]);
+  }
   [(set_attr "movprfx" "*,yes")]
 )
 
@@ -2016,7 +2107,8 @@
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl")
 	   (unspec:SVE_F
-	     [(match_dup 1)
+	     [(match_operand 5)
+	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
 	      (match_operand:SVE_F 2 "register_operand" "0, w, w, w, w")
 	      (match_operand:SVE_F 3 "register_operand" "w, 0, w, w, w")]
 	     SVE_COND_FP_BINARY)
@@ -2024,20 +2116,28 @@
 	  UNSPEC_SEL))]
   "TARGET_SVE
    && !rtx_equal_p (operands[2], operands[4])
-   && !rtx_equal_p (operands[3], operands[4])"
+   && !rtx_equal_p (operands[3], operands[4])
+   && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
   "@
    movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
    movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;<sve_fp_op_rev>\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>
    movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
    movprfx\t%0.<Vetype>, %1/m, %2.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
    #"
-  "&& reload_completed
-   && register_operand (operands[4], <MODE>mode)
-   && !rtx_equal_p (operands[0], operands[4])"
+  "&& 1"
   {
-    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[2],
-					     operands[4], operands[1]));
-    operands[4] = operands[2] = operands[0];
+    if (reload_completed
+        && register_operand (operands[4], <MODE>mode)
+        && !rtx_equal_p (operands[0], operands[4]))
+      {
+	emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[2],
+						 operands[4], operands[1]));
+	operands[4] = operands[2] = operands[0];
+      }
+    else if (!rtx_equal_p (operands[1], operands[5]))
+      operands[5] = copy_rtx (operands[1]);
+    else
+      FAIL;
   }
   [(set_attr "movprfx" "yes")]
 )
@@ -2055,6 +2155,7 @@
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
 	  [(match_dup 3)
+	   (const_int SVE_RELAXED_GP)
 	   (match_operand:SVE_F 1 "register_operand")
 	   (match_operand:SVE_F 2 "aarch64_sve_float_arith_with_sub_operand")]
 	  UNSPEC_COND_FADD))]
@@ -2064,11 +2165,12 @@
   }
 )
 
-;; Floating-point addition predicated with a PTRUE.
+;; Predicated floating-point addition.
 (define_insn_and_split "*add<mode>3"
   [(set (match_operand:SVE_F 0 "register_operand" "=w, w, w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (match_operand:SI 4 "aarch64_sve_gp_strictness" "i, i, Z")
 	   (match_operand:SVE_F 2 "register_operand" "%0, 0, w")
 	   (match_operand:SVE_F 3 "aarch64_sve_float_arith_with_sub_operand" "vsA, vsN, w")]
 	  UNSPEC_COND_FADD))]
@@ -2100,6 +2202,7 @@
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
 	  [(match_dup 3)
+	   (const_int SVE_RELAXED_GP)
 	   (match_operand:SVE_F 1 "aarch64_sve_float_arith_operand")
 	   (match_operand:SVE_F 2 "register_operand")]
 	  UNSPEC_COND_FSUB))]
@@ -2109,11 +2212,12 @@
   }
 )
 
-;; Floating-point subtraction predicated with a PTRUE.
+;; Predicated floating-point subtraction.
 (define_insn_and_split "*sub<mode>3"
   [(set (match_operand:SVE_F 0 "register_operand" "=w, w, w, w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl")
+	   (match_operand:SI 4 "aarch64_sve_gp_strictness" "i, i, i, Z")
 	   (match_operand:SVE_F 2 "aarch64_sve_float_arith_operand" "0, 0, vsA, w")
 	   (match_operand:SVE_F 3 "aarch64_sve_float_arith_with_sub_operand" "vsA, vsN, 0, w")]
 	  UNSPEC_COND_FSUB))]
@@ -2143,18 +2247,24 @@
 ;; -------------------------------------------------------------------------
 
 ;; Predicated floating-point absolute difference.
-(define_insn "*fabd<mode>3"
+(define_insn_and_rewrite "*fabd<mode>3"
   [(set (match_operand:SVE_F 0 "register_operand" "=w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	   (match_operand:SI 4 "aarch64_sve_gp_strictness")
 	   (unspec:SVE_F
-	     [(match_dup 1)
+	     [(match_operand 5)
+	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
 	      (match_operand:SVE_F 2 "register_operand" "0")
 	      (match_operand:SVE_F 3 "register_operand" "w")]
 	     UNSPEC_COND_FSUB)]
 	  UNSPEC_COND_FABS))]
-  "TARGET_SVE"
+  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
   "fabd\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
+  "&& !rtx_equal_p (operands[1], operands[5])"
+  {
+    operands[5] = copy_rtx (operands[1]);
+  }
 )
 
 ;; -------------------------------------------------------------------------
@@ -2169,6 +2279,7 @@
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
 	  [(match_dup 3)
+	   (const_int SVE_RELAXED_GP)
 	   (match_operand:SVE_F 1 "register_operand")
 	   (match_operand:SVE_F 2 "aarch64_sve_float_mul_operand")]
 	  UNSPEC_COND_FMUL))]
@@ -2178,11 +2289,12 @@
   }
 )
 
-;; Floating-point multiplication predicated with a PTRUE.
+;; Predicated floating-point multiplication.
 (define_insn_and_split "*mul<mode>3"
   [(set (match_operand:SVE_F 0 "register_operand" "=w, w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (match_operand:SI 4 "aarch64_sve_gp_strictness" "i, Z")
 	   (match_operand:SVE_F 2 "register_operand" "%0, w")
 	   (match_operand:SVE_F 3 "aarch64_sve_float_mul_operand" "vsM, w")]
 	  UNSPEC_COND_FMUL))]
@@ -2212,6 +2324,7 @@
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
 	  [(match_dup 3)
+	   (const_int SVE_RELAXED_GP)
 	   (match_operand:SVE_F 1 "register_operand")
 	   (match_operand:SVE_F 2 "register_operand")]
 	  UNSPEC_COND_FDIV))]
@@ -2221,11 +2334,12 @@
   }
 )
 
-;; Floating-point division predicated with a PTRUE.
+;; Predicated floating-point division.
 (define_insn "*div<mode>3"
   [(set (match_operand:SVE_F 0 "register_operand" "=w, w, ?&w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (match_operand:SI 4 "aarch64_sve_gp_strictness")
 	   (match_operand:SVE_F 2 "register_operand" "0, w, w")
 	   (match_operand:SVE_F 3 "register_operand" "w, 0, w")]
 	  UNSPEC_COND_FDIV))]
@@ -2334,6 +2448,7 @@
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
 	  [(match_dup 3)
+	   (const_int SVE_RELAXED_GP)
 	   (match_operand:SVE_F 1 "register_operand")
 	   (match_operand:SVE_F 2 "register_operand")]
 	  SVE_COND_FP_MAXMIN_PUBLIC))]
@@ -2348,6 +2463,7 @@
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
 	  [(match_dup 3)
+	   (const_int SVE_RELAXED_GP)
 	   (match_operand:SVE_F 1 "register_operand")
 	   (match_operand:SVE_F 2 "register_operand")]
 	  SVE_COND_FP_MAXMIN_PUBLIC))]
@@ -2362,6 +2478,7 @@
   [(set (match_operand:SVE_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (match_operand:SI 4 "aarch64_sve_gp_strictness")
 	   (match_operand:SVE_F 2 "register_operand" "%0, w")
 	   (match_operand:SVE_F 3 "register_operand" "w, w")]
 	  SVE_COND_FP_MAXMIN_PUBLIC))]
@@ -2612,6 +2729,7 @@
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
 	  [(match_dup 4)
+	   (const_int SVE_RELAXED_GP)
 	   (match_operand:SVE_F 1 "register_operand")
 	   (match_operand:SVE_F 2 "register_operand")
 	   (match_operand:SVE_F 3 "register_operand")]
@@ -2627,6 +2745,7 @@
   [(set (match_operand:SVE_F 0 "register_operand" "=w, w, ?&w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (match_operand:SI 5 "aarch64_sve_gp_strictness")
 	   (match_operand:SVE_F 2 "register_operand" "%w, 0, w")
 	   (match_operand:SVE_F 3 "register_operand" "w, w, w")
 	   (match_operand:SVE_F 4 "register_operand" "0, w, w")]
@@ -2646,6 +2765,7 @@
 	  [(match_operand:<VPRED> 1 "register_operand")
 	   (unspec:SVE_F
 	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
 	      (match_operand:SVE_F 2 "register_operand")
 	      (match_operand:SVE_F 3 "register_operand")
 	      (match_operand:SVE_F 4 "register_operand")]
@@ -2662,43 +2782,53 @@
 
 ;; Predicated floating-point ternary operations, merging with the
 ;; first input.
-(define_insn "*cond_<optab><mode>_2"
+(define_insn_and_rewrite "*cond_<optab><mode>_2"
   [(set (match_operand:SVE_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_F
-	     [(match_dup 1)
+	     [(match_operand 5)
+	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
 	      (match_operand:SVE_F 2 "register_operand" "0, w")
 	      (match_operand:SVE_F 3 "register_operand" "w, w")
 	      (match_operand:SVE_F 4 "register_operand" "w, w")]
 	     SVE_COND_FP_TERNARY)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
-  "TARGET_SVE"
+  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
   "@
    <sve_fmad_op>\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
    movprfx\t%0, %2\;<sve_fmad_op>\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>"
+  "&& !rtx_equal_p (operands[1], operands[5])"
+  {
+    operands[5] = copy_rtx (operands[1]);
+  }
   [(set_attr "movprfx" "*,yes")]
 )
 
 ;; Predicated floating-point ternary operations, merging with the
 ;; third input.
-(define_insn "*cond_<optab><mode>_4"
+(define_insn_and_rewrite "*cond_<optab><mode>_4"
   [(set (match_operand:SVE_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_F
-	     [(match_dup 1)
+	     [(match_operand 5)
+	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
 	      (match_operand:SVE_F 2 "register_operand" "w, w")
 	      (match_operand:SVE_F 3 "register_operand" "w, w")
 	      (match_operand:SVE_F 4 "register_operand" "0, w")]
 	     SVE_COND_FP_TERNARY)
 	   (match_dup 4)]
 	  UNSPEC_SEL))]
-  "TARGET_SVE"
+  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
   "@
    <sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
    movprfx\t%0, %4\;<sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
+  "&& !rtx_equal_p (operands[1], operands[5])"
+  {
+    operands[5] = copy_rtx (operands[1]);
+  }
   [(set_attr "movprfx" "*,yes")]
 )
 
@@ -2709,7 +2839,8 @@
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
 	   (unspec:SVE_F
-	     [(match_dup 1)
+	     [(match_operand 6)
+	      (match_operand:SI 7 "aarch64_sve_gp_strictness")
 	      (match_operand:SVE_F 2 "register_operand" "w, w, w")
 	      (match_operand:SVE_F 3 "register_operand" "w, w, w")
 	      (match_operand:SVE_F 4 "register_operand" "w, w, w")]
@@ -2719,18 +2850,26 @@
   "TARGET_SVE
    && !rtx_equal_p (operands[2], operands[5])
    && !rtx_equal_p (operands[3], operands[5])
-   && !rtx_equal_p (operands[4], operands[5])"
+   && !rtx_equal_p (operands[4], operands[5])
+   && aarch64_sve_pred_dominates_p (&operands[6], operands[1])"
   "@
    movprfx\t%0.<Vetype>, %1/z, %4.<Vetype>\;<sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
    movprfx\t%0.<Vetype>, %1/m, %4.<Vetype>\;<sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
    #"
-  "&& reload_completed
-   && !CONSTANT_P (operands[5])
-   && !rtx_equal_p (operands[0], operands[5])"
+  "&& 1"
   {
-    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[4],
-					     operands[5], operands[1]));
-    operands[5] = operands[4] = operands[0];
+    if (reload_completed
+        && register_operand (operands[5], <MODE>mode)
+        && !rtx_equal_p (operands[0], operands[5]))
+      {
+	emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[4],
+						 operands[5], operands[1]));
+	operands[5] = operands[4] = operands[0];
+      }
+    else if (!rtx_equal_p (operands[1], operands[6]))
+      operands[6] = copy_rtx (operands[1]);
+    else
+      FAIL;
   }
   [(set_attr "movprfx" "yes")]
 )
