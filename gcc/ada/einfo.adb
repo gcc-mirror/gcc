@@ -2314,7 +2314,7 @@ package body Einfo is
 
    function Is_Generic_Actual_Subprogram (Id : E) return B is
    begin
-      pragma Assert (Ekind (Id) = E_Function or else Ekind (Id) = E_Procedure);
+      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
       return Flag274 (Id);
    end Is_Generic_Actual_Subprogram;
 
