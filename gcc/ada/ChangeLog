@@ -1,3 +1,13 @@
+2019-08-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (New_Copy_Tree, Visit_Entity): A quantified
+	expression includes the implicit declaration of the loop
+	parameter. When a quantified expression is copied during
+	expansion, for example when building the precondition code from
+	the generated pragma, a new loop parameter must be created for
+	the new tree, to prevent duplicate declarations for the same
+	symbol.
+
 2019-08-14  Yannick Moy  <moy@adacore.com>
 
 	* sem_disp.adb (Check_Dispatching_Operation): Update assertion

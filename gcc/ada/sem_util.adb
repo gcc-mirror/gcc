@@ -20799,13 +20799,24 @@ package body Sem_Util is
          --  this restriction leads to a performance penalty.
 
          --  ??? this list is flaky, and may hide dormant bugs
+         --  Should functions be included???
+
+         --  Loop parameters appear within quantified expressions and contain
+         --  an entity declaration that must be replaced when the expander is
+         --  active if the expression has been preanalyzed or analyzed.
 
          elsif not Ekind_In (Id, E_Block,
                                  E_Constant,
                                  E_Label,
+                                 E_Loop_Parameter,
                                  E_Procedure,
                                  E_Variable)
            and then not Is_Type (Id)
+         then
+            return;
+
+         elsif Ekind (Id) = E_Loop_Parameter
+           and then No (Etype (Condition (Parent (Parent (Id)))))
          then
             return;
 
@@ -21081,7 +21092,14 @@ package body Sem_Util is
       begin
          pragma Assert (Nkind (N) not in N_Entity);
 
-         if Nkind (N) = N_Expression_With_Actions then
+         --  If the node is a quantified expression and expander is active,
+         --  it contains an implicit declaration that may require a new entity
+         --  when the condition has already been (pre)analyzed.
+
+         if Nkind (N) = N_Expression_With_Actions
+           or else
+             (Nkind (N) = N_Quantified_Expression and then Expander_Active)
+         then
             EWA_Level := EWA_Level + 1;
 
          elsif EWA_Level > 0
@@ -21224,6 +21242,12 @@ package body Sem_Util is
 
       --    * Semantic fields of nodes such as First_Real_Statement must be
       --      updated to reference the proper replicated nodes.
+
+      --  Finally, quantified expressions contain an implicit delaration for
+      --  the bound variable. Given that quantified expressions appearing
+      --  in contracts are copied to create pragmas and eventually checking
+      --  procedures, a new bound variable must be created for each copy, to
+      --  prevent multiple declarations of the same symbol.
 
       --  To meet all these demands, routine New_Copy_Tree is split into two
       --  phases.
