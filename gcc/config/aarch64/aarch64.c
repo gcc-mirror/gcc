@@ -8328,7 +8328,8 @@ sizetochar (int size)
      'D':		Take the duplicated element in a vector constant
 			and print it as an unsigned integer, in decimal.
      'e':		Print the sign/zero-extend size as a character 8->b,
-			16->h, 32->w.
+			16->h, 32->w.  Can also be used for masks:
+			0xff->b, 0xffff->h, 0xffffffff->w.
      'I':		If the operand is a duplicated vector constant,
 			replace it with the duplicated scalar.  If the
 			operand is then a floating-point constant, replace
@@ -8399,27 +8400,22 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 
     case 'e':
       {
-	int n;
-
-	if (!CONST_INT_P (x)
-	    || (n = exact_log2 (INTVAL (x) & ~7)) <= 0)
+	x = unwrap_const_vec_duplicate (x);
+	if (!CONST_INT_P (x))
 	  {
 	    output_operand_lossage ("invalid operand for '%%%c'", code);
 	    return;
 	  }
 
-	switch (n)
+	HOST_WIDE_INT val = INTVAL (x);
+	if ((val & ~7) == 8 || val == 0xff)
+	  fputc ('b', f);
+	else if ((val & ~7) == 16 || val == 0xffff)
+	  fputc ('h', f);
+	else if ((val & ~7) == 32 || val == 0xffffffff)
+	  fputc ('w', f);
+	else
 	  {
-	  case 3:
-	    fputc ('b', f);
-	    break;
-	  case 4:
-	    fputc ('h', f);
-	    break;
-	  case 5:
-	    fputc ('w', f);
-	    break;
-	  default:
 	    output_operand_lossage ("invalid operand for '%%%c'", code);
 	    return;
 	  }

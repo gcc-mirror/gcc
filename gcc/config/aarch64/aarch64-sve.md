@@ -54,6 +54,7 @@
 ;;
 ;; == Unary arithmetic
 ;; ---- [INT] General unary arithmetic corresponding to rtx codes
+;; ---- [INT] Zero extension
 ;; ---- [INT] Logical inverse
 ;; ---- [FP] General unary arithmetic corresponding to unspecs
 ;; ---- [PRED] Inverse
@@ -1494,6 +1495,58 @@
 )
 
 ;; -------------------------------------------------------------------------
+;; ---- [INT] Zero extension
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - UXTB
+;; - UXTH
+;; - UXTW
+;; -------------------------------------------------------------------------
+
+;; Match UXT[BHW] as a conditional AND of a constant, merging with the
+;; first input.
+(define_insn "*cond_uxt<mode>_2"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (and:SVE_I
+	     (match_operand:SVE_I 2 "register_operand" "0, w")
+	     (match_operand:SVE_I 3 "aarch64_sve_uxt_immediate"))
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   uxt%e3\t%0.<Vetype>, %1/m, %0.<Vetype>
+   movprfx\t%0, %2\;uxt%e3\t%0.<Vetype>, %1/m, %2.<Vetype>"
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Match UXT[BHW] as a conditional AND of a constant, merging with an
+;; independent value.
+;;
+;; The earlyclobber isn't needed for the first alternative, but omitting
+;; it would only help the case in which operands 2 and 4 are the same,
+;; which is handled above rather than here.  Marking all the alternatives
+;; as early-clobber helps to make the instruction more regular to the
+;; register allocator.
+(define_insn "*cond_uxt<mode>_any"
+  [(set (match_operand:SVE_I 0 "register_operand" "=&w, ?&w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (and:SVE_I
+	     (match_operand:SVE_I 2 "register_operand" "w, w, w")
+	     (match_operand:SVE_I 3 "aarch64_sve_uxt_immediate"))
+	   (match_operand:SVE_I 4 "aarch64_simd_reg_or_zero" "0, Dz, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && !rtx_equal_p (operands[2], operands[4])"
+  "@
+   uxt%e3\t%0.<Vetype>, %1/m, %2.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;uxt%e3\t%0.<Vetype>, %1/m, %2.<Vetype>
+   movprfx\t%0, %4\;uxt%e3\t%0.<Vetype>, %1/m, %2.<Vetype>"
+  [(set_attr "movprfx" "*,yes,yes")]
+)
+
+;; -------------------------------------------------------------------------
 ;; ---- [INT] Logical inverse
 ;; -------------------------------------------------------------------------
 
@@ -1794,7 +1847,7 @@
 	  [(match_operand:<VPRED> 1 "register_operand")
 	   (SVE_INT_BINARY:SVE_I
 	     (match_operand:SVE_I 2 "register_operand")
-	     (match_operand:SVE_I 3 "register_operand"))
+	     (match_operand:SVE_I 3 "<sve_pred_int_rhs2_operand>"))
 	   (match_operand:SVE_I 4 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE"

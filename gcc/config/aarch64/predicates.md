@@ -606,10 +606,25 @@
   (and (match_code "const,const_vector")
        (match_test "aarch64_sve_inc_dec_immediate_p (op)")))
 
+(define_predicate "aarch64_sve_uxtb_immediate"
+  (and (match_code "const_vector")
+       (match_test "GET_MODE_UNIT_BITSIZE (GET_MODE (op)) > 8")
+       (match_test "aarch64_const_vec_all_same_int_p (op, 0xff)")))
+
+(define_predicate "aarch64_sve_uxth_immediate"
+  (and (match_code "const_vector")
+       (match_test "GET_MODE_UNIT_BITSIZE (GET_MODE (op)) > 16")
+       (match_test "aarch64_const_vec_all_same_int_p (op, 0xffff)")))
+
 (define_predicate "aarch64_sve_uxtw_immediate"
   (and (match_code "const_vector")
        (match_test "GET_MODE_UNIT_BITSIZE (GET_MODE (op)) > 32")
        (match_test "aarch64_const_vec_all_same_int_p (op, 0xffffffff)")))
+
+(define_predicate "aarch64_sve_uxt_immediate"
+  (ior (match_operand 0 "aarch64_sve_uxtb_immediate")
+       (match_operand 0 "aarch64_sve_uxth_immediate")
+       (match_operand 0 "aarch64_sve_uxtw_immediate")))
 
 (define_predicate "aarch64_sve_logical_immediate"
   (and (match_code "const,const_vector")
@@ -669,6 +684,10 @@
   (ior (match_operand 0 "aarch64_sve_arith_operand")
        (match_operand 0 "aarch64_sve_sub_arith_immediate")
        (match_operand 0 "aarch64_sve_inc_dec_immediate")))
+
+(define_predicate "aarch64_sve_pred_and_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "aarch64_sve_uxt_immediate")))
 
 (define_predicate "aarch64_sve_logical_operand"
   (ior (match_operand 0 "register_operand")
