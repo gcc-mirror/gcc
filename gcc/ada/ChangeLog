@@ -1,3 +1,10 @@
+2019-08-14  Bob Duff  <duff@adacore.com>
+
+	* table.adb: Assert that the table is not locked when increasing
+	Last, even if it doesn't cause reallocation.  In other words,
+	assert that on operations that MIGHT cause reallocation.
+	* table.ads: Fix comment accordingly.
+
 2019-08-14  Arnaud Charlet  <charlet@adacore.com>
 
 	* doc/gnat_ugn/gnat_and_program_execution.rst: Remove

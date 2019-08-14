@@ -80,6 +80,7 @@ package body Table is
 
       procedure Append (New_Val : Table_Component_Type) is
       begin
+         pragma Assert (not Locked);
          Set_Item (Table_Index_Type (Last_Val + 1), New_Val);
       end Append;
 
@@ -120,6 +121,7 @@ package body Table is
 
       procedure Increment_Last is
       begin
+         pragma Assert (not Locked);
          Last_Val := Last_Val + 1;
 
          if Last_Val > Max then
@@ -384,6 +386,8 @@ package body Table is
 
       procedure Set_Last (New_Val : Table_Index_Type) is
       begin
+         pragma Assert (Int (New_Val) <= Last_Val or else not Locked);
+
          if Int (New_Val) < Last_Val then
             Last_Val := Int (New_Val);
 

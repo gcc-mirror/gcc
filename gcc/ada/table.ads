@@ -130,14 +130,15 @@ package Table is
       --  First .. Last.
 
       Locked : Boolean := False;
-      --  Table expansion is permitted only if this switch is set to False. A
-      --  client may set Locked to True, in which case any attempt to expand
-      --  the table will cause an assertion failure. Note that while a table
-      --  is locked, its address in memory remains fixed and unchanging. This
-      --  feature is used to control table expansion during Gigi processing.
-      --  Gigi assumes that tables other than the Uint and Ureal tables do
-      --  not move during processing, which means that they cannot be expanded.
-      --  The Locked flag is used to enforce this restriction.
+      --  Increasing the value of Last is permitted only if this switch is set
+      --  to False. A client may set Locked to True, in which case any attempt
+      --  to increase the value of Last (which might expand the table) will
+      --  cause an assertion failure. Note that while a table is locked, its
+      --  address in memory remains fixed and unchanging. This feature is used
+      --  to control table expansion during Gigi processing.  Gigi assumes that
+      --  tables other than the Uint and Ureal tables do not move during
+      --  processing, which means that they cannot be expanded.  The Locked
+      --  flag is used to enforce this restriction.
 
       procedure Init;
       --  This procedure allocates a new table of size Initial (freeing any
