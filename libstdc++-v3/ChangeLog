@@ -1,3 +1,44 @@
+2019-08-14  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement C++20 p0879 - Constexpr for swap and swap related functions.
+	* include/std/version (__cpp_lib_constexpr_swap_algorithms): New macro.
+	* include/bits/algorithmfwd.h (__cpp_lib_constexpr_swap_algorithms):
+	New macro.
+	(iter_swap, make_heap, next_permutation, partial_sort_copy, pop_heap)
+	(prev_permutation, push_heap, reverse, rotate, sort_heap, swap)
+	(swap_ranges, nth_element, partial_sort, sort): Add constexpr.
+	* include/bits/move.h (swap): Add constexpr.
+	* include/bits/stl_algo.h (__move_median_to_first, __reverse, reverse)
+	(__gcd, __rotate, rotate, __partition, __heap_select)
+	(__partial_sort_copy, partial_sort_copy, __unguarded_partition)
+	(__unguarded_partition_pivot, __partial_sort, __introsort_loop, __sort)
+	(__introselect, __chunk_insertion_sort, next_permutation)
+	(prev_permutation, partition, partial_sort, nth_element, sort)
+	(__iter_swap::iter_swap, iter_swap, swap_ranges): Add constexpr.
+	* include/bits/stl_algobase.h (__iter_swap::iter_swap, iter_swap)
+	(swap_ranges): Add constexpr.
+	* include/bits/stl_heap.h (__push_heap, push_heap, __adjust_heap,
+	__pop_heap, pop_heap, __make_heap, make_heap, __sort_heap, sort_heap):
+	Add constexpr.
+	* include/std/type_traits (swap): Add constexpr.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Add constexpr.
+	* testsuite/25_algorithms/iter_swap/constexpr.cc: New test.
+	* testsuite/25_algorithms/make_heap/constexpr.cc: New test.
+	* testsuite/25_algorithms/next_permutation/constexpr.cc: New test.
+	* testsuite/25_algorithms/nth_element/constexpr.cc: New test.
+	* testsuite/25_algorithms/partial_sort/constexpr.cc: New test.
+	* testsuite/25_algorithms/partial_sort_copy/constexpr.cc: New test.
+	* testsuite/25_algorithms/partition/constexpr.cc: New test.
+	* testsuite/25_algorithms/pop_heap/constexpr.cc: New test.
+	* testsuite/25_algorithms/prev_permutation/constexpr.cc: New test.
+	* testsuite/25_algorithms/push_heap/constexpr.cc: New test.
+	* testsuite/25_algorithms/reverse/constexpr.cc: New test.
+	* testsuite/25_algorithms/rotate/constexpr.cc: New test.
+	* testsuite/25_algorithms/sort/constexpr.cc: New test.
+	* testsuite/25_algorithms/sort_heap/constexpr.cc: New test.
+	* testsuite/25_algorithms/swap/constexpr.cc: New test.
+	* testsuite/25_algorithms/swap_ranges/constexpr.cc: New test.
+
 2019-08-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90361

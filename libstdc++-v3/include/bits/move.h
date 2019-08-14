@@ -175,6 +175,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @return   Nothing.
   */
   template<typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline
 #if __cplusplus >= 201103L
     typename enable_if<__and_<__not_<__is_tuple_like<_Tp>>,
@@ -199,6 +200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // DR 809. std::swap should be overloaded for array types.
   /// Swap the contents of two arrays.
   template<typename _Tp, size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     inline
 #if __cplusplus >= 201103L
     typename enable_if<__is_swappable<_Tp>::value>::type

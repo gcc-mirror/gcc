@@ -74,6 +74,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Swaps the median value of *__a, *__b and *__c under __comp to *__result
   template<typename _Iterator, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void
     __move_median_to_first(_Iterator __result,_Iterator __a, _Iterator __b,
 			   _Iterator __c, _Compare __comp)
@@ -1162,6 +1163,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  overloaded for bidirectional iterators.
   */
   template<typename _BidirectionalIterator>
+    _GLIBCXX20_CONSTEXPR
     void
     __reverse(_BidirectionalIterator __first, _BidirectionalIterator __last,
 	      bidirectional_iterator_tag)
@@ -1182,6 +1184,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  overloaded for random access iterators.
   */
   template<typename _RandomAccessIterator>
+    _GLIBCXX20_CONSTEXPR
     void
     __reverse(_RandomAccessIterator __first, _RandomAccessIterator __last,
 	      random_access_iterator_tag)
@@ -1210,6 +1213,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  swaps @p *(__first+i) and @p *(__last-(i+1))
   */
   template<typename _BidirectionalIterator>
+    _GLIBCXX20_CONSTEXPR
     inline void
     reverse(_BidirectionalIterator __first, _BidirectionalIterator __last)
     {
@@ -1263,6 +1267,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  It returns the greatest common divisor of two integer values.
   */
   template<typename _EuclideanRingElement>
+    _GLIBCXX20_CONSTEXPR
     _EuclideanRingElement
     __gcd(_EuclideanRingElement __m, _EuclideanRingElement __n)
     {
@@ -1280,6 +1285,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// This is a helper function for the rotate algorithm.
   template<typename _ForwardIterator>
+    _GLIBCXX20_CONSTEXPR
     _ForwardIterator
     __rotate(_ForwardIterator __first,
 	     _ForwardIterator __middle,
@@ -1321,6 +1327,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
    /// This is a helper function for the rotate algorithm.
   template<typename _BidirectionalIterator>
+    _GLIBCXX20_CONSTEXPR
     _BidirectionalIterator
     __rotate(_BidirectionalIterator __first,
 	     _BidirectionalIterator __middle,
@@ -1359,6 +1366,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// This is a helper function for the rotate algorithm.
   template<typename _RandomAccessIterator>
+    _GLIBCXX20_CONSTEXPR
     _RandomAccessIterator
     __rotate(_RandomAccessIterator __first,
 	     _RandomAccessIterator __middle,
@@ -1465,6 +1473,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  for each @p n in the range @p [0,__last-__first).
   */
   template<typename _ForwardIterator>
+    _GLIBCXX20_CONSTEXPR
     inline _ForwardIterator
     rotate(_ForwardIterator __first, _ForwardIterator __middle,
 	   _ForwardIterator __last)
@@ -1520,6 +1529,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// This is a helper function...
   template<typename _ForwardIterator, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     _ForwardIterator
     __partition(_ForwardIterator __first, _ForwardIterator __last,
 		_Predicate __pred, forward_iterator_tag)
@@ -1545,6 +1555,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// This is a helper function...
   template<typename _BidirectionalIterator, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     _BidirectionalIterator
     __partition(_BidirectionalIterator __first, _BidirectionalIterator __last,
 		_Predicate __pred, bidirectional_iterator_tag)
@@ -1699,6 +1710,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// This is a helper function for the sort routines.
   template<typename _RandomAccessIterator, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void
     __heap_select(_RandomAccessIterator __first,
 		  _RandomAccessIterator __middle,
@@ -1714,6 +1726,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _InputIterator, typename _RandomAccessIterator,
 	   typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     _RandomAccessIterator
     __partial_sort_copy(_InputIterator __first, _InputIterator __last,
 			_RandomAccessIterator __result_first,
@@ -1768,6 +1781,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  The value returned is @p __result_first+N.
   */
   template<typename _InputIterator, typename _RandomAccessIterator>
+    _GLIBCXX20_CONSTEXPR
     inline _RandomAccessIterator
     partial_sort_copy(_InputIterator __first, _InputIterator __last,
 		      _RandomAccessIterator __result_first,
@@ -1818,6 +1832,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<typename _InputIterator, typename _RandomAccessIterator,
 	   typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     inline _RandomAccessIterator
     partial_sort_copy(_InputIterator __first, _InputIterator __last,
 		      _RandomAccessIterator __result_first,
@@ -1931,6 +1946,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// This is a helper function...
   template<typename _RandomAccessIterator, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     _RandomAccessIterator
     __unguarded_partition(_RandomAccessIterator __first,
 			  _RandomAccessIterator __last,
@@ -1952,6 +1968,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// This is a helper function...
   template<typename _RandomAccessIterator, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     inline _RandomAccessIterator
     __unguarded_partition_pivot(_RandomAccessIterator __first,
 				_RandomAccessIterator __last, _Compare __comp)
@@ -1963,6 +1980,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _RandomAccessIterator, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     inline void
     __partial_sort(_RandomAccessIterator __first,
 		   _RandomAccessIterator __middle,
@@ -1975,6 +1993,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// This is a helper function for the sort routine.
   template<typename _RandomAccessIterator, typename _Size, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void
     __introsort_loop(_RandomAccessIterator __first,
 		     _RandomAccessIterator __last,
@@ -1998,6 +2017,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // sort
 
   template<typename _RandomAccessIterator, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     inline void
     __sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
 	   _Compare __comp)
@@ -2012,6 +2032,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _RandomAccessIterator, typename _Size, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void
     __introselect(_RandomAccessIterator __first, _RandomAccessIterator __nth,
 		  _RandomAccessIterator __last, _Size __depth_limit,
@@ -2728,6 +2749,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _RandomAccessIterator, typename _Distance,
 	   typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void
     __chunk_insertion_sort(_RandomAccessIterator __first,
 			   _RandomAccessIterator __last,
@@ -2997,6 +3019,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  is the largest of the set, the smallest is generated and false returned.
   */
   template<typename _BidirectionalIterator>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     next_permutation(_BidirectionalIterator __first,
 		     _BidirectionalIterator __last)
@@ -3029,6 +3052,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  smallest is generated and false returned.
   */
   template<typename _BidirectionalIterator, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     next_permutation(_BidirectionalIterator __first,
 		     _BidirectionalIterator __last, _Compare __comp)
@@ -3098,6 +3122,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  returned.
   */
   template<typename _BidirectionalIterator>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     prev_permutation(_BidirectionalIterator __first,
 		     _BidirectionalIterator __last)
@@ -3130,6 +3155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  the largest is generated and false returned.
   */
   template<typename _BidirectionalIterator, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     prev_permutation(_BidirectionalIterator __first,
 		     _BidirectionalIterator __last, _Compare __comp)
@@ -4757,6 +4783,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @p stable_partition() if this is needed.
   */
   template<typename _ForwardIterator, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     inline _ForwardIterator
     partition(_ForwardIterator __first, _ForwardIterator __last,
 	      _Predicate   __pred)
@@ -4790,6 +4817,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  the range @p [__middle,__last) then *j<*i and *k<*i are both false.
   */
   template<typename _RandomAccessIterator>
+    _GLIBCXX20_CONSTEXPR
     inline void
     partial_sort(_RandomAccessIterator __first,
 		 _RandomAccessIterator __middle,
@@ -4828,6 +4856,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  are both false.
   */
   template<typename _RandomAccessIterator, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     inline void
     partial_sort(_RandomAccessIterator __first,
 		 _RandomAccessIterator __middle,
@@ -4864,6 +4893,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  holds that *j < *i is false.
   */
   template<typename _RandomAccessIterator>
+    _GLIBCXX20_CONSTEXPR
     inline void
     nth_element(_RandomAccessIterator __first, _RandomAccessIterator __nth,
 		_RandomAccessIterator __last)
@@ -4903,6 +4933,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  holds that @p __comp(*j,*i) is false.
   */
   template<typename _RandomAccessIterator, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     inline void
     nth_element(_RandomAccessIterator __first, _RandomAccessIterator __nth,
 		_RandomAccessIterator __last, _Compare __comp)
@@ -4940,6 +4971,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @p stable_sort() if this is needed.
   */
   template<typename _RandomAccessIterator>
+    _GLIBCXX20_CONSTEXPR
     inline void
     sort(_RandomAccessIterator __first, _RandomAccessIterator __last)
     {
@@ -4970,6 +5002,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @p stable_sort() if this is needed.
   */
   template<typename _RandomAccessIterator, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     inline void
     sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
 	 _Compare __comp)
