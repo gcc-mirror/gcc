@@ -1,6 +1,16 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
+	* g++.target/aarch64/sve/dup_sel_1.C: New test.
+	* g++.target/aarch64/sve/dup_sel_2.C: Likewise.
+	* g++.target/aarch64/sve/dup_sel_3.C: Likewise.
+	* g++.target/aarch64/sve/dup_sel_4.C: Likewise.
+	* g++.target/aarch64/sve/dup_sel_5.C: Likewise.
+	* g++.target/aarch64/sve/dup_sel_6.C: Likewise.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
 	* gcc.target/aarch64/sve/vcond_18.c: New test.
 	* gcc.target/aarch64/sve/vcond_18_run.c: Likewise.
 	* gcc.target/aarch64/sve/vcond_19.c: Likewise.

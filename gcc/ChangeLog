@@ -1,6 +1,11 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
+	* config/aarch64/aarch64-sve.md (*aarch64_sel_dup<mode>): New pattern.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
 	* config/aarch64/aarch64.c (aarch64_bit_representation): New function.
 	(aarch64_print_vector_float_operand): Also handle 8-bit floats.
 	(aarch64_print_operand): Add support for %I.

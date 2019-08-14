@@ -3070,6 +3070,29 @@
   [(set_attr "movprfx" "*,*,*,*,yes,yes,yes")]
 )
 
+;; Optimize selects between a duplicated scalar variable and another vector,
+;; the latter of which can be a zero constant or a variable.  Treat duplicates
+;; of GPRs as being more expensive than duplicates of FPRs, since they
+;; involve a cross-file move.
+(define_insn "*aarch64_sel_dup<mode>"
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=?w, w, ??w, ?&w, ??&w, ?&w")
+	(unspec:SVE_ALL
+	  [(match_operand:<VPRED> 3 "register_operand" "Upa, Upa, Upl, Upl, Upl, Upl")
+	   (vec_duplicate:SVE_ALL
+	     (match_operand:<VEL> 1 "register_operand" "r, w, r, w, r, w"))
+	   (match_operand:SVE_ALL 2 "aarch64_simd_reg_or_zero" "0, 0, Dz, Dz, w, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   mov\t%0.<Vetype>, %3/m, %<vwcore>1
+   mov\t%0.<Vetype>, %3/m, %<Vetype>1
+   movprfx\t%0.<Vetype>, %3/z, %0.<Vetype>\;mov\t%0.<Vetype>, %3/m, %<vwcore>1
+   movprfx\t%0.<Vetype>, %3/z, %0.<Vetype>\;mov\t%0.<Vetype>, %3/m, %<Vetype>1
+   movprfx\t%0, %2\;mov\t%0.<Vetype>, %3/m, %<vwcore>1
+   movprfx\t%0, %2\;mov\t%0.<Vetype>, %3/m, %<Vetype>1"
+  [(set_attr "movprfx" "*,*,yes,yes,yes,yes")]
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [INT,FP] Compare and select
 ;; -------------------------------------------------------------------------
