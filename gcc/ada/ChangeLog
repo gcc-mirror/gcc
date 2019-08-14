@@ -1,3 +1,21 @@
+2019-08-14  Joffrey Huguet  <huguet@adacore.com>
+
+	* libgnat/a-cofuba.ads: Add a Length attribute to type
+	Container. Add a type Array_Base which replaces the previous
+	Elements attribute of Container.
+	(Content_Init): New subprogram. It is used to initialize the
+	Base attribute of Container.
+	* libgnat/a-cofuba.adb (Resize): New subprogram. It is used to
+	resize the underlying array of a container if necessary.
+	(=, <=, Find, Get, Intersection, Length, Num_Overlaps, Set,
+	Union): Update to match changes in type declarations.
+	(Add): Modify body to damp the time and space cost in a specific
+	case.
+	(Content_Init): New subprogram. It is used to initialize the
+	Base attribute of Container.
+	(Remove): Modify body to damp the time and space cost in a
+	specific case.
+
 2019-08-14  Bob Duff  <duff@adacore.com>
 
 	* sem_ch13.adb (Get_Alignment_Value): Return 1 for Alignment 0,
