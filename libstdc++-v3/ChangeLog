@@ -1,3 +1,7 @@
+2019-08-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__is_nullptr_t): Add deprecated attribute.
+
 2019-08-14  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement C++20 p0879 - Constexpr for swap and swap related functions.
