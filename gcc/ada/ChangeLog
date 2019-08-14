@@ -1,3 +1,11 @@
+2019-08-14  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): In the case where
+	the prefix is of a concurrent type, and the selected entity
+	matching the selector is the first private declaration of the
+	type (such as the first local variable in a task's body), set
+	Is_Private_Op.
+
 2019-08-14  Piotr Trojanek  <trojanek@adacore.com>
 
 	* einfo.adb (Is_Generic_Actual_Subprogram): Replace repeated
