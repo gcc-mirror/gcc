@@ -3845,12 +3845,16 @@ package body Sem_Ch12 is
 
    procedure Analyze_Package_Instantiation (N : Node_Id) is
       Has_Inline_Always : Boolean := False;
+      --  Set if the generic unit contains any subprograms with Inline_Always.
+      --  Only relevant when back-end inlining is not enabled.
 
       function Might_Inline_Subp (Gen_Unit : Entity_Id) return Boolean;
       --  If inlining is active and the generic contains inlined subprograms,
-      --  we instantiate the body. This may cause superfluous instantiations,
-      --  but it is simpler than detecting the need for the body at the point
-      --  of inlining, when the context of the instance is not available.
+      --  we either instantiate the body when front-end inlining is enabled,
+      --  or we add a pending instantiation when back-end inlining is enabled.
+      --  In the former case, this may cause superfluous instantiations, but
+      --  in either case we need to perform the instantiation of the body in
+      --  the context of the instance and not in that of the point of inlining.
 
       -----------------------
       -- Might_Inline_Subp --
@@ -3862,8 +3866,9 @@ package body Sem_Ch12 is
       begin
          if Inline_Processing_Required then
             --  No need to recompute the answer if we know it is positive
+            --  and back-end inlining is enabled.
 
-            if Is_Inlined (Gen_Unit) then
+            if Is_Inlined (Gen_Unit) and then Back_End_Inlining then
                return True;
             end if;
 
