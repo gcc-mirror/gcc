@@ -1,10 +1,16 @@
+2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/87991
+	* resolve.c (check_data_variable): data-stmt-object with pointer
+	attribute requires a data-stmt-value with the target attribute.
+
 2013-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
 	PR fortran/90563
 	* frontend-passes.c (insert_index): Suppress errors while
 	simplifying the resulting expression.
-
+ 
 2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88072
