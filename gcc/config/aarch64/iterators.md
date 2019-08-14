@@ -2075,7 +2075,7 @@
 (define_int_attr sve_pred_fp_rhs2_operand
   [(UNSPEC_COND_FADD "aarch64_sve_float_arith_with_sub_operand")
    (UNSPEC_COND_FDIV "register_operand")
-   (UNSPEC_COND_FMAXNM "register_operand")
-   (UNSPEC_COND_FMINNM "register_operand")
+   (UNSPEC_COND_FMAXNM "aarch64_sve_float_maxmin_operand")
+   (UNSPEC_COND_FMINNM "aarch64_sve_float_maxmin_operand")
    (UNSPEC_COND_FMUL "aarch64_sve_float_mul_operand")
    (UNSPEC_COND_FSUB "register_operand")])

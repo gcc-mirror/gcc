@@ -2604,7 +2604,7 @@
 	  [(match_dup 3)
 	   (const_int SVE_RELAXED_GP)
 	   (match_operand:SVE_F 1 "register_operand")
-	   (match_operand:SVE_F 2 "register_operand")]
+	   (match_operand:SVE_F 2 "aarch64_sve_float_maxmin_operand")]
 	  SVE_COND_FP_MAXMIN_PUBLIC))]
   "TARGET_SVE"
   {
@@ -2614,18 +2614,20 @@
 
 ;; Predicated floating-point maximum/minimum.
 (define_insn "*<optab><mode>3"
-  [(set (match_operand:SVE_F 0 "register_operand" "=w, ?&w")
+  [(set (match_operand:SVE_F 0 "register_operand" "=w, w, ?&w, ?&w")
 	(unspec:SVE_F
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl")
 	   (match_operand:SI 4 "aarch64_sve_gp_strictness")
-	   (match_operand:SVE_F 2 "register_operand" "%0, w")
-	   (match_operand:SVE_F 3 "register_operand" "w, w")]
+	   (match_operand:SVE_F 2 "register_operand" "%0, 0, w, w")
+	   (match_operand:SVE_F 3 "aarch64_sve_float_maxmin_operand" "vsB, w, vsB, w")]
 	  SVE_COND_FP_MAXMIN_PUBLIC))]
   "TARGET_SVE"
   "@
+   <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
    <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
    movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
-  [(set_attr "movprfx" "*,yes")]
+  [(set_attr "movprfx" "*,*,yes,yes")]
 )
 
 ;; Merging forms are handled through SVE_COND_FP_BINARY.
