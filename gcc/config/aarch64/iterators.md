@@ -1646,6 +1646,8 @@
 					 UNSPEC_COND_FMUL
 					 UNSPEC_COND_FSUB])
 
+(define_int_iterator SVE_COND_FP_BINARY_REG [UNSPEC_COND_FDIV])
+
 ;; Floating-point max/min operations that correspond to optabs,
 ;; as opposed to those that are internal to the port.
 (define_int_iterator SVE_COND_FP_MAXMIN_PUBLIC [UNSPEC_COND_FMAXNM
@@ -2003,3 +2005,23 @@
 			      (UNSPEC_COND_FMLS "fmsb")
 			      (UNSPEC_COND_FNMLA "fnmad")
 			      (UNSPEC_COND_FNMLS "fnmsb")])
+
+;; The predicate to use for the first input operand in a floating-point
+;; <optab><mode>3 pattern.
+(define_int_attr sve_pred_fp_rhs1_operand
+  [(UNSPEC_COND_FADD "register_operand")
+   (UNSPEC_COND_FDIV "register_operand")
+   (UNSPEC_COND_FMAXNM "register_operand")
+   (UNSPEC_COND_FMINNM "register_operand")
+   (UNSPEC_COND_FMUL "register_operand")
+   (UNSPEC_COND_FSUB "aarch64_sve_float_arith_operand")])
+
+;; The predicate to use for the second input operand in a floating-point
+;; <optab><mode>3 pattern.
+(define_int_attr sve_pred_fp_rhs2_operand
+  [(UNSPEC_COND_FADD "aarch64_sve_float_arith_with_sub_operand")
+   (UNSPEC_COND_FDIV "register_operand")
+   (UNSPEC_COND_FMAXNM "register_operand")
+   (UNSPEC_COND_FMINNM "register_operand")
+   (UNSPEC_COND_FMUL "aarch64_sve_float_mul_operand")
+   (UNSPEC_COND_FSUB "register_operand")])

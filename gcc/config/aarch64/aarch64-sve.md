@@ -73,7 +73,6 @@
 ;; ---- [FP] Subtraction
 ;; ---- [FP] Absolute difference
 ;; ---- [FP] Multiplication
-;; ---- [FP] Division
 ;; ---- [FP] Binary logical operations
 ;; ---- [FP] Sign copying
 ;; ---- [FP] Maximum and minimum
@@ -2037,6 +2036,38 @@
 ;; - FSUBR
 ;; -------------------------------------------------------------------------
 
+;; Unpredicated floating-point binary operations.
+(define_expand "<optab><mode>3"
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
+	  [(match_dup 3)
+	   (const_int SVE_RELAXED_GP)
+	   (match_operand:SVE_F 1 "<sve_pred_fp_rhs1_operand>")
+	   (match_operand:SVE_F 2 "<sve_pred_fp_rhs2_operand>")]
+	  SVE_COND_FP_BINARY))]
+  "TARGET_SVE"
+  {
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
+  }
+)
+
+;; Predicated floating-point binary operations that have no immediate forms.
+(define_insn "*<optab><mode>3"
+  [(set (match_operand:SVE_F 0 "register_operand" "=w, w, ?&w")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (match_operand:SI 4 "aarch64_sve_gp_strictness")
+	   (match_operand:SVE_F 2 "register_operand" "0, w, w")
+	   (match_operand:SVE_F 3 "register_operand" "w, 0, w")]
+	  SVE_COND_FP_BINARY_REG))]
+  "TARGET_SVE"
+  "@
+   <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   <sve_fp_op_rev>\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>
+   movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
+  [(set_attr "movprfx" "*,*,yes")]
+)
+
 ;; Predicated floating-point operations with merging.
 (define_expand "cond_<optab><mode>"
   [(set (match_operand:SVE_F 0 "register_operand")
@@ -2150,21 +2181,6 @@
 ;; - FSUB
 ;; -------------------------------------------------------------------------
 
-;; Unpredicated floating-point addition.
-(define_expand "add<mode>3"
-  [(set (match_operand:SVE_F 0 "register_operand")
-	(unspec:SVE_F
-	  [(match_dup 3)
-	   (const_int SVE_RELAXED_GP)
-	   (match_operand:SVE_F 1 "register_operand")
-	   (match_operand:SVE_F 2 "aarch64_sve_float_arith_with_sub_operand")]
-	  UNSPEC_COND_FADD))]
-  "TARGET_SVE"
-  {
-    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
-  }
-)
-
 ;; Predicated floating-point addition.
 (define_insn_and_split "*add<mode>3"
   [(set (match_operand:SVE_F 0 "register_operand" "=w, w, w")
@@ -2196,21 +2212,6 @@
 ;; - FSUB
 ;; - FSUBR
 ;; -------------------------------------------------------------------------
-
-;; Unpredicated floating-point subtraction.
-(define_expand "sub<mode>3"
-  [(set (match_operand:SVE_F 0 "register_operand")
-	(unspec:SVE_F
-	  [(match_dup 3)
-	   (const_int SVE_RELAXED_GP)
-	   (match_operand:SVE_F 1 "aarch64_sve_float_arith_operand")
-	   (match_operand:SVE_F 2 "register_operand")]
-	  UNSPEC_COND_FSUB))]
-  "TARGET_SVE"
-  {
-    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
-  }
-)
 
 ;; Predicated floating-point subtraction.
 (define_insn_and_split "*sub<mode>3"
@@ -2274,21 +2275,6 @@
 ;; - FMUL
 ;; -------------------------------------------------------------------------
 
-;; Unpredicated floating-point multiplication.
-(define_expand "mul<mode>3"
-  [(set (match_operand:SVE_F 0 "register_operand")
-	(unspec:SVE_F
-	  [(match_dup 3)
-	   (const_int SVE_RELAXED_GP)
-	   (match_operand:SVE_F 1 "register_operand")
-	   (match_operand:SVE_F 2 "aarch64_sve_float_mul_operand")]
-	  UNSPEC_COND_FMUL))]
-  "TARGET_SVE"
-  {
-    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
-  }
-)
-
 ;; Predicated floating-point multiplication.
 (define_insn_and_split "*mul<mode>3"
   [(set (match_operand:SVE_F 0 "register_operand" "=w, w")
@@ -2307,48 +2293,6 @@
   "&& reload_completed
    && register_operand (operands[3], <MODE>mode)"
   [(set (match_dup 0) (mult:SVE_F (match_dup 2) (match_dup 3)))]
-)
-
-;; Merging forms are handled through SVE_COND_FP_BINARY.
-
-;; -------------------------------------------------------------------------
-;; ---- [FP] Division
-;; -------------------------------------------------------------------------
-;; Includes:
-;; - FDIV
-;; - FDIVR
-;; -------------------------------------------------------------------------
-
-;; Unpredicated floating-point division.
-(define_expand "div<mode>3"
-  [(set (match_operand:SVE_F 0 "register_operand")
-	(unspec:SVE_F
-	  [(match_dup 3)
-	   (const_int SVE_RELAXED_GP)
-	   (match_operand:SVE_F 1 "register_operand")
-	   (match_operand:SVE_F 2 "register_operand")]
-	  UNSPEC_COND_FDIV))]
-  "TARGET_SVE"
-  {
-    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
-  }
-)
-
-;; Predicated floating-point division.
-(define_insn "*div<mode>3"
-  [(set (match_operand:SVE_F 0 "register_operand" "=w, w, ?&w")
-	(unspec:SVE_F
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
-	   (match_operand:SI 4 "aarch64_sve_gp_strictness")
-	   (match_operand:SVE_F 2 "register_operand" "0, w, w")
-	   (match_operand:SVE_F 3 "register_operand" "w, 0, w")]
-	  UNSPEC_COND_FDIV))]
-  "TARGET_SVE"
-  "@
-   fdiv\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
-   fdivr\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>
-   movprfx\t%0, %2\;fdiv\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
-  [(set_attr "movprfx" "*,*,yes")]
 )
 
 ;; Merging forms are handled through SVE_COND_FP_BINARY.
@@ -2442,23 +2386,8 @@
 ;; - FMINNM
 ;; -------------------------------------------------------------------------
 
-;; Unpredicated floating-point MAX/MIN (the rtx codes).  These are more
-;; relaxed than fmax/fmin, but we implement them in the same way.
-(define_expand "<optab><mode>3"
-  [(set (match_operand:SVE_F 0 "register_operand")
-	(unspec:SVE_F
-	  [(match_dup 3)
-	   (const_int SVE_RELAXED_GP)
-	   (match_operand:SVE_F 1 "register_operand")
-	   (match_operand:SVE_F 2 "register_operand")]
-	  SVE_COND_FP_MAXMIN_PUBLIC))]
-  "TARGET_SVE"
-  {
-    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
-  }
-)
-
-;; Unpredicated fmax/fmin (the libm functions).
+;; Unpredicated fmax/fmin (the libm functions).  The optabs for the
+;; smin/smax rtx codes are handled in the generic section above.
 (define_expand "<maxmin_uns><mode>3"
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
