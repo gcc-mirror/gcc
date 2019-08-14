@@ -1,7 +1,8 @@
 //===-- sanitizer_allocator.h -----------------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -12,13 +13,15 @@
 #ifndef SANITIZER_ALLOCATOR_H
 #define SANITIZER_ALLOCATOR_H
 
-#include "sanitizer_internal_defs.h"
 #include "sanitizer_common.h"
+#include "sanitizer_internal_defs.h"
+#include "sanitizer_lfstack.h"
 #include "sanitizer_libc.h"
 #include "sanitizer_list.h"
+#include "sanitizer_local_address_space_view.h"
 #include "sanitizer_mutex.h"
-#include "sanitizer_lfstack.h"
 #include "sanitizer_procmaps.h"
+#include "sanitizer_type_traits.h"
 
 namespace __sanitizer {
 

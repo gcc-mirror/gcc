@@ -18,7 +18,7 @@ get_current_rev() {
 }
 
 list_files() {
-  (cd $1; ls *.{cc,h,inc,S} 2> /dev/null)
+  (cd $1; ls *.{cc,cpp,h,inc,S} 2> /dev/null)
 
 }
 
@@ -74,6 +74,7 @@ merge lib/tsan/rtl tsan
 merge lib/sanitizer_common sanitizer_common
 merge lib/interception interception
 merge lib/ubsan ubsan
+merge lib/BlocksRuntime/ BlocksRuntime
 
 # Need to merge lib/builtins/assembly.h file:
 mkdir -p builtins

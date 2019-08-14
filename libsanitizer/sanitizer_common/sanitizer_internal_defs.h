@@ -1,7 +1,8 @@
 //===-- sanitizer_internal_defs.h -------------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -195,7 +196,9 @@ typedef u64 tid_t;
 // This header should NOT include any other headers to avoid portability issues.
 
 // Common defs.
+#ifndef INLINE
 #define INLINE inline
+#endif
 #define INTERFACE_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 #define SANITIZER_WEAK_DEFAULT_IMPL \
   extern "C" SANITIZER_INTERFACE_ATTRIBUTE SANITIZER_WEAK_ATTRIBUTE NOINLINE
@@ -419,7 +422,6 @@ inline void Trap() {
 namespace __asan  { using namespace __sanitizer; }  // NOLINT
 namespace __dsan  { using namespace __sanitizer; }  // NOLINT
 namespace __dfsan { using namespace __sanitizer; }  // NOLINT
-namespace __esan  { using namespace __sanitizer; }  // NOLINT
 namespace __lsan  { using namespace __sanitizer; }  // NOLINT
 namespace __msan  { using namespace __sanitizer; }  // NOLINT
 namespace __hwasan  { using namespace __sanitizer; }  // NOLINT
