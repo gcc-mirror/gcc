@@ -3751,13 +3751,163 @@ aarch64_sve_move_pred_via_while (rtx target, machine_mode mode,
   return target;
 }
 
+static rtx
+aarch64_expand_sve_const_pred_1 (rtx, rtx_vector_builder &, bool);
+
+/* BUILDER is a constant predicate in which the index of every set bit
+   is a multiple of ELT_SIZE (which is <= 8).  Try to load the constant
+   by inverting every element at a multiple of ELT_SIZE and EORing the
+   result with an ELT_SIZE PTRUE.
+
+   Return a register that contains the constant on success, otherwise
+   return null.  Use TARGET as the register if it is nonnull and
+   convenient.  */
+
+static rtx
+aarch64_expand_sve_const_pred_eor (rtx target, rtx_vector_builder &builder,
+				   unsigned int elt_size)
+{
+  /* Invert every element at a multiple of ELT_SIZE, keeping the
+     other bits zero.  */
+  rtx_vector_builder inv_builder (VNx16BImode, builder.npatterns (),
+				  builder.nelts_per_pattern ());
+  for (unsigned int i = 0; i < builder.encoded_nelts (); ++i)
+    if ((i & (elt_size - 1)) == 0 && INTVAL (builder.elt (i)) == 0)
+      inv_builder.quick_push (const1_rtx);
+    else
+      inv_builder.quick_push (const0_rtx);
+  inv_builder.finalize ();
+
+  /* See if we can load the constant cheaply.  */
+  rtx inv = aarch64_expand_sve_const_pred_1 (NULL_RTX, inv_builder, false);
+  if (!inv)
+    return NULL_RTX;
+
+  /* EOR the result with an ELT_SIZE PTRUE.  */
+  rtx mask = aarch64_ptrue_all (elt_size);
+  mask = force_reg (VNx16BImode, mask);
+  target = aarch64_target_reg (target, VNx16BImode);
+  emit_insn (gen_aarch64_pred_z (XOR, VNx16BImode, target, mask, inv, mask));
+  return target;
+}
+
+/* BUILDER is a constant predicate in which the index of every set bit
+   is a multiple of ELT_SIZE (which is <= 8).  Try to load the constant
+   using a TRN1 of size PERMUTE_SIZE, which is >= ELT_SIZE.  Return the
+   register on success, otherwise return null.  Use TARGET as the register
+   if nonnull and convenient.  */
+
+static rtx
+aarch64_expand_sve_const_pred_trn (rtx target, rtx_vector_builder &builder,
+				   unsigned int elt_size,
+				   unsigned int permute_size)
+{
+  /* We're going to split the constant into two new constants A and B,
+     with element I of BUILDER going into A if (I & PERMUTE_SIZE) == 0
+     and into B otherwise.  E.g. for PERMUTE_SIZE == 4 && ELT_SIZE == 1:
+
+     A: { 0, 1, 2, 3, _, _, _, _, 8, 9, 10, 11, _, _, _, _ }
+     B: { 4, 5, 6, 7, _, _, _, _, 12, 13, 14, 15, _, _, _, _ }
+
+     where _ indicates elements that will be discarded by the permute.
+
+     First calculate the ELT_SIZEs for A and B.  */
+  unsigned int a_elt_size = GET_MODE_SIZE (DImode);
+  unsigned int b_elt_size = GET_MODE_SIZE (DImode);
+  for (unsigned int i = 0; i < builder.encoded_nelts (); i += elt_size)
+    if (INTVAL (builder.elt (i)) != 0)
+      {
+	if (i & permute_size)
+	  b_elt_size |= i - permute_size;
+	else
+	  a_elt_size |= i;
+      }
+  a_elt_size &= -a_elt_size;
+  b_elt_size &= -b_elt_size;
+
+  /* Now construct the vectors themselves.  */
+  rtx_vector_builder a_builder (VNx16BImode, builder.npatterns (),
+				builder.nelts_per_pattern ());
+  rtx_vector_builder b_builder (VNx16BImode, builder.npatterns (),
+				builder.nelts_per_pattern ());
+  unsigned int nelts = builder.encoded_nelts ();
+  for (unsigned int i = 0; i < nelts; ++i)
+    if (i & (elt_size - 1))
+      {
+	a_builder.quick_push (const0_rtx);
+	b_builder.quick_push (const0_rtx);
+      }
+    else if ((i & permute_size) == 0)
+      {
+	/* The A and B elements are significant.  */
+	a_builder.quick_push (builder.elt (i));
+	b_builder.quick_push (builder.elt (i + permute_size));
+      }
+    else
+      {
+	/* The A and B elements are going to be discarded, so pick whatever
+	   is likely to give a nice constant.  We are targeting element
+	   sizes A_ELT_SIZE and B_ELT_SIZE for A and B respectively,
+	   with the aim of each being a sequence of ones followed by
+	   a sequence of zeros.  So:
+
+	   * if X_ELT_SIZE <= PERMUTE_SIZE, the best approach is to
+	     duplicate the last X_ELT_SIZE element, to extend the
+	     current sequence of ones or zeros.
+
+	   * if X_ELT_SIZE > PERMUTE_SIZE, the best approach is to add a
+	     zero, so that the constant really does have X_ELT_SIZE and
+	     not a smaller size.  */
+	if (a_elt_size > permute_size)
+	  a_builder.quick_push (const0_rtx);
+	else
+	  a_builder.quick_push (a_builder.elt (i - a_elt_size));
+	if (b_elt_size > permute_size)
+	  b_builder.quick_push (const0_rtx);
+	else
+	  b_builder.quick_push (b_builder.elt (i - b_elt_size));
+      }
+  a_builder.finalize ();
+  b_builder.finalize ();
+
+  /* Try loading A into a register.  */
+  rtx_insn *last = get_last_insn ();
+  rtx a = aarch64_expand_sve_const_pred_1 (NULL_RTX, a_builder, false);
+  if (!a)
+    return NULL_RTX;
+
+  /* Try loading B into a register.  */
+  rtx b = a;
+  if (a_builder != b_builder)
+    {
+      b = aarch64_expand_sve_const_pred_1 (NULL_RTX, b_builder, false);
+      if (!b)
+	{
+	  delete_insns_since (last);
+	  return NULL_RTX;
+	}
+    }
+
+  /* Emit the TRN1 itself.  */
+  machine_mode mode = aarch64_sve_pred_mode (permute_size).require ();
+  target = aarch64_target_reg (target, mode);
+  emit_insn (gen_aarch64_sve (UNSPEC_TRN1, mode, target,
+			      gen_lowpart (mode, a),
+			      gen_lowpart (mode, b)));
+  return target;
+}
+
 /* Subroutine of aarch64_expand_sve_const_pred.  Try to load the VNx16BI
    constant in BUILDER into an SVE predicate register.  Return the register
    on success, otherwise return null.  Use TARGET for the register if
-   nonnull and convenient.  */
+   nonnull and convenient.
+
+   ALLOW_RECURSE_P is true if we can use methods that would call this
+   function recursively.  */
 
 static rtx
-aarch64_expand_sve_const_pred_1 (rtx target, rtx_vector_builder &builder)
+aarch64_expand_sve_const_pred_1 (rtx target, rtx_vector_builder &builder,
+				 bool allow_recurse_p)
 {
   if (builder.encoded_nelts () == 1)
     /* A PFALSE or a PTRUE .B ALL.  */
@@ -3775,6 +3925,22 @@ aarch64_expand_sve_const_pred_1 (rtx target, rtx_vector_builder &builder)
       return aarch64_sve_move_pred_via_while (target, mode, vl);
     }
 
+  if (!allow_recurse_p)
+    return NULL_RTX;
+
+  /* Try inverting the vector in element size ELT_SIZE and then EORing
+     the result with an ELT_SIZE PTRUE.  */
+  if (INTVAL (builder.elt (0)) == 0)
+    if (rtx res = aarch64_expand_sve_const_pred_eor (target, builder,
+						     elt_size))
+      return res;
+
+  /* Try using TRN1 to permute two simpler constants.  */
+  for (unsigned int i = elt_size; i <= 8; i *= 2)
+    if (rtx res = aarch64_expand_sve_const_pred_trn (target, builder,
+						     elt_size, i))
+      return res;
+
   return NULL_RTX;
 }
 
@@ -3789,7 +3955,7 @@ static rtx
 aarch64_expand_sve_const_pred (rtx target, rtx_vector_builder &builder)
 {
   /* Try loading the constant using pure predicate operations.  */
-  if (rtx res = aarch64_expand_sve_const_pred_1 (target, builder))
+  if (rtx res = aarch64_expand_sve_const_pred_1 (target, builder, true))
     return res;
 
   /* Try forcing the constant to memory.  */

@@ -1,5 +1,16 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_expand_sve_const_pred_eor)
+	(aarch64_expand_sve_const_pred_trn): New functions.
+	(aarch64_expand_sve_const_pred_1): Add a recurse_p parameter and
+	use the above functions when the parameter is true.
+	(aarch64_expand_sve_const_pred): Update call accordingly.
+	* config/aarch64/aarch64-sve.md (*aarch64_sve_<perm_insn><mode>):
+	Rename to...
+	(@aarch64_sve_<perm_insn><mode>): ...this.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-protos.h (aarch64_sve_same_pred_for_ptest_p):
 	Declare.
 	* config/aarch64/aarch64.c (aarch64_sve_same_pred_for_ptest_p)
