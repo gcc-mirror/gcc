@@ -1,6 +1,20 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
+	* config/aarch64/iterators.md (SVE_COND_FP_BINARY_REG): New int
+	iterator.
+	(sve_pred_fp_rhs1_operand, sve_pred_fp_rhs1_operand): New int
+	attributes.
+	* config/aarch64/aarch64-sve.md (add<SVE_F:mode>3, sub<SVE_F:mode>3)
+	(mul<SVE_F:mode>3, div<SVE_F:mode>3)
+	(<SVE_COND_FP_MAXMIN_PUBLIC:optab><SVE_F:mode>3): Merge into...
+	(<SVE_COND_FP_BINARY:optab><SVE_F:mode>3): ...this new expander.
+	(*div<SVE_F:mode>3): Generalize to...
+	(*<SVE_COND_FP_BINARY:optab><SVE_F:mode>3): ...this.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
 	* config/aarch64/aarch64.md (SVE_RELAXED_GP, SVE_STRICT_GP): New
 	constants.
 	* config/aarch64/predicates.md (aarch64_sve_gp_strictness): New
