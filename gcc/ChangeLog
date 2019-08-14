@@ -1,5 +1,30 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/iterators.md (UNSPEC_COND_FCMUO): New unspec.
+	(cmp_op): Handle it.
+	(SVE_COND_FP_CMP): Rename to...
+	(SVE_COND_FP_CMP_I0): ...this.
+	(SVE_FP_CMP): Remove.
+	* config/aarch64/aarch64-sve.md
+	(*fcm<SVE_FP_CMP:cmp_op><SVE_F:mode>): Replace with...
+	(*fcm<SVE_COND_FP_CMP_I0:cmp_op><SVE_F:mode>): ...this new pattern,
+	using unspecs to represent the comparison.
+	(*fcmuo<SVE_F:mode>): Use UNSPEC_COND_FCMUO.
+	(*fcm<cmp_op><mode>_and_combine, *fcmuo<mode>_and_combine): Update
+	accordingly.
+	* config/aarch64/aarch64.c (aarch64_emit_sve_ptrue_op): Delete.
+	(aarch64_unspec_cond_code): Move after integer code.  Handle
+	UNORDERED.
+	(aarch64_emit_sve_predicated_cond): Replace with...
+	(aarch64_emit_sve_fp_cond): ...this new function.
+	(aarch64_emit_sve_or_conds): Replace with...
+	(aarch64_emit_sve_or_fp_conds): ...this new function.
+	(aarch64_emit_sve_inverted_cond): Replace with...
+	(aarch64_emit_sve_invert_fp_cond): ...this new function.
+	(aarch64_expand_sve_vec_cmp_float): Update accordingly.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (SVE_HSD): New mode iterator.
 	(V_FP_EQUIV, v_fp_equiv): Handle VNx8HI and VNx8HF.
 	* config/aarch64/aarch64-sve.md (vcond<mode><v_fp_equiv>): Use

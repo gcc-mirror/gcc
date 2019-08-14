@@ -3136,15 +3136,15 @@
   }
 )
 
-;; Floating-point comparisons predicated with a PTRUE.
+;; Predicated floating-point comparisons.
 (define_insn "*fcm<cmp_op><mode>"
   [(set (match_operand:<VPRED> 0 "register_operand" "=Upa, Upa")
 	(unspec:<VPRED>
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (SVE_FP_CMP:<VPRED>
-	     (match_operand:SVE_F 2 "register_operand" "w, w")
-	     (match_operand:SVE_F 3 "aarch64_simd_reg_or_zero" "Dz, w"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SI 4 "aarch64_sve_ptrue_flag")
+	   (match_operand:SVE_F 2 "register_operand" "w, w")
+	   (match_operand:SVE_F 3 "aarch64_simd_reg_or_zero" "Dz, w")]
+	  SVE_COND_FP_CMP_I0))]
   "TARGET_SVE"
   "@
    fcm<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #0.0
@@ -3156,10 +3156,10 @@
   [(set (match_operand:<VPRED> 0 "register_operand" "=Upa")
 	(unspec:<VPRED>
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (unordered:<VPRED>
-	     (match_operand:SVE_F 2 "register_operand" "w")
-	     (match_operand:SVE_F 3 "register_operand" "w"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SI 4 "aarch64_sve_ptrue_flag")
+	   (match_operand:SVE_F 2 "register_operand" "w")
+	   (match_operand:SVE_F 3 "register_operand" "w")]
+	  UNSPEC_COND_FCMUO))]
   "TARGET_SVE"
   "fcmuo\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
 )
@@ -3177,20 +3177,21 @@
 	(and:<VPRED>
 	  (unspec:<VPRED>
 	    [(match_operand:<VPRED> 1)
-	     (SVE_FP_CMP
-	       (match_operand:SVE_F 2 "register_operand" "w, w")
-	       (match_operand:SVE_F 3 "aarch64_simd_reg_or_zero" "Dz, w"))]
-	    UNSPEC_MERGE_PTRUE)
+	     (const_int SVE_KNOWN_PTRUE)
+	     (match_operand:SVE_F 2 "register_operand" "w, w")
+	     (match_operand:SVE_F 3 "aarch64_simd_reg_or_zero" "Dz, w")]
+	    SVE_COND_FP_CMP_I0)
 	  (match_operand:<VPRED> 4 "register_operand" "Upl, Upl")))]
   "TARGET_SVE"
   "#"
   "&& 1"
   [(set (match_dup 0)
-	(and:<VPRED>
-	  (SVE_FP_CMP:<VPRED>
-	    (match_dup 2)
-	    (match_dup 3))
-	  (match_dup 4)))]
+	(unspec:<VPRED>
+	  [(match_dup 4)
+	   (const_int SVE_MAYBE_NOT_PTRUE)
+	   (match_dup 2)
+	   (match_dup 3)]
+	  SVE_COND_FP_CMP_I0))]
 )
 
 ;; Same for unordered comparisons.
@@ -3199,62 +3200,21 @@
 	(and:<VPRED>
 	  (unspec:<VPRED>
 	    [(match_operand:<VPRED> 1)
-	     (unordered
-	       (match_operand:SVE_F 2 "register_operand" "w")
-	       (match_operand:SVE_F 3 "register_operand" "w"))]
-	    UNSPEC_MERGE_PTRUE)
+	     (const_int SVE_KNOWN_PTRUE)
+	     (match_operand:SVE_F 2 "register_operand" "w")
+	     (match_operand:SVE_F 3 "register_operand" "w")]
+	    UNSPEC_COND_FCMUO)
 	  (match_operand:<VPRED> 4 "register_operand" "Upl")))]
   "TARGET_SVE"
   "#"
   "&& 1"
   [(set (match_dup 0)
-	(and:<VPRED>
-	  (unordered:<VPRED>
-	    (match_dup 2)
-	    (match_dup 3))
-	  (match_dup 4)))]
-)
-
-;; Unpredicated floating-point comparisons, with the results ANDed with
-;; another predicate.  This is a valid fold for the same reasons as above.
-(define_insn "*fcm<cmp_op><mode>_and"
-  [(set (match_operand:<VPRED> 0 "register_operand" "=Upa, Upa")
-	(and:<VPRED>
-	  (SVE_FP_CMP:<VPRED>
-	    (match_operand:SVE_F 2 "register_operand" "w, w")
-	    (match_operand:SVE_F 3 "aarch64_simd_reg_or_zero" "Dz, w"))
-	  (match_operand:<VPRED> 1 "register_operand" "Upl, Upl")))]
-  "TARGET_SVE"
-  "@
-   fcm<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #0.0
-   fcm<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
-)
-
-;; Same for unordered comparisons.
-(define_insn "*fcmuo<mode>_and"
-  [(set (match_operand:<VPRED> 0 "register_operand" "=Upa")
-	(and:<VPRED>
-	  (unordered:<VPRED>
-	    (match_operand:SVE_F 2 "register_operand" "w")
-	    (match_operand:SVE_F 3 "register_operand" "w"))
-	  (match_operand:<VPRED> 1 "register_operand" "Upl")))]
-  "TARGET_SVE"
-  "fcmuo\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
-)
-
-;; Predicated floating-point comparisons.  We don't need a version
-;; of this for unordered comparisons.
-(define_insn "*pred_fcm<cmp_op><mode>"
-  [(set (match_operand:<VPRED> 0 "register_operand" "=Upa, Upa")
 	(unspec:<VPRED>
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (match_operand:SVE_F 2 "register_operand" "w, w")
-	   (match_operand:SVE_F 3 "aarch64_simd_reg_or_zero" "Dz, w")]
-	  SVE_COND_FP_CMP))]
-  "TARGET_SVE"
-  "@
-   fcm<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #0.0
-   fcm<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
+	  [(match_dup 4)
+	   (const_int SVE_MAYBE_NOT_PTRUE)
+	   (match_dup 2)
+	   (match_dup 3)]
+	  UNSPEC_COND_FCMUO))]
 )
 
 ;; -------------------------------------------------------------------------

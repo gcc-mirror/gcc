@@ -479,6 +479,7 @@
     UNSPEC_COND_FCMLE	; Used in aarch64-sve.md.
     UNSPEC_COND_FCMLT	; Used in aarch64-sve.md.
     UNSPEC_COND_FCMNE	; Used in aarch64-sve.md.
+    UNSPEC_COND_FCMUO	; Used in aarch64-sve.md.
     UNSPEC_COND_FDIV	; Used in aarch64-sve.md.
     UNSPEC_COND_FMAXNM	; Used in aarch64-sve.md.
     UNSPEC_COND_FMINNM	; Used in aarch64-sve.md.
@@ -1273,9 +1274,6 @@
 ;; SVE integer comparisons.
 (define_code_iterator SVE_INT_CMP [lt le eq ne ge gt ltu leu geu gtu])
 
-;; SVE floating-point comparisons.
-(define_code_iterator SVE_FP_CMP [lt le eq ne ge gt])
-
 ;; -------------------------------------------------------------------
 ;; Code Attributes
 ;; -------------------------------------------------------------------
@@ -1663,12 +1661,13 @@
 					  UNSPEC_COND_FNMLA
 					  UNSPEC_COND_FNMLS])
 
-(define_int_iterator SVE_COND_FP_CMP [UNSPEC_COND_FCMEQ
-				      UNSPEC_COND_FCMGE
-				      UNSPEC_COND_FCMGT
-				      UNSPEC_COND_FCMLE
-				      UNSPEC_COND_FCMLT
-				      UNSPEC_COND_FCMNE])
+;; SVE FP comparisons that accept #0.0.
+(define_int_iterator SVE_COND_FP_CMP_I0 [UNSPEC_COND_FCMEQ
+					 UNSPEC_COND_FCMGE
+					 UNSPEC_COND_FCMGT
+					 UNSPEC_COND_FCMLE
+					 UNSPEC_COND_FCMLT
+					 UNSPEC_COND_FCMNE])
 
 (define_int_iterator FCADD [UNSPEC_FCADD90
 			    UNSPEC_FCADD270])
@@ -1955,7 +1954,8 @@
 			 (UNSPEC_COND_FCMGT "gt")
 			 (UNSPEC_COND_FCMLE "le")
 			 (UNSPEC_COND_FCMLT "lt")
-			 (UNSPEC_COND_FCMNE "ne")])
+			 (UNSPEC_COND_FCMNE "ne")
+			 (UNSPEC_COND_FCMUO "uo")])
 
 (define_int_attr sve_int_op [(UNSPEC_ANDV "andv")
 			     (UNSPEC_IORV "orv")
