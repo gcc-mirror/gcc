@@ -39,6 +39,13 @@
   (and (match_code "const_int")
        (match_test "op == CONST0_RTX (mode)")))
 
+(define_predicate "const_1_to_3_operand"
+  (match_code "const_int,const_vector")
+{
+  op = unwrap_const_vec_duplicate (op);
+  return CONST_INT_P (op) && IN_RANGE (INTVAL (op), 1, 3);
+})
+
 (define_special_predicate "subreg_lowpart_operator"
   (and (match_code "subreg")
        (match_test "subreg_lowpart_p (op)")))
@@ -594,6 +601,11 @@
 (define_predicate "aarch64_sve_inc_dec_immediate"
   (and (match_code "const,const_vector")
        (match_test "aarch64_sve_inc_dec_immediate_p (op)")))
+
+(define_predicate "aarch64_sve_uxtw_immediate"
+  (and (match_code "const_vector")
+       (match_test "GET_MODE_UNIT_BITSIZE (GET_MODE (op)) > 32")
+       (match_test "aarch64_const_vec_all_same_int_p (op, 0xffffffff)")))
 
 (define_predicate "aarch64_sve_logical_immediate"
   (and (match_code "const,const_vector")
