@@ -1,3 +1,9 @@
+2019-08-14  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/asan/memcmp-1.c: There's a new function in the
+	stack-trace on the top.  So shift expected output in stack
+	trace.
+
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/vcond_17.c: New test.
