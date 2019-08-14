@@ -85,10 +85,12 @@ void test_copy_cond_unequal_length_i64 (void)
 }
 
 
-#if __SIZEOF_INT128__ == 16
+#if __i386__ && __SIZEOF_INT128__ == 16
 
 /* The following tests assume GCC transforms the memcpy calls into
-   int128_t assignments which it does only when int128_t is supported.  */
+   int128_t assignments which it does only on targets that define
+   the MOVE_MAX macro to 16.  That's only spu, s390, and i386 with
+   int128_t support.  */
 
 const char a8[32] = "01234567";
 const char b8[32] = "76543210";
@@ -127,7 +129,7 @@ void test_copy_cond_unequal_length_i128 (void)
   T (0 <, 32, 16, i0 ? a8 + 4 : b8 + 7);
 }
 
-#endif   /* int128_t exists */
+#endif   /* Support for i128_t stores.  */
 
 /* { dg-final { scan-tree-dump-times "strlen" 0 "optimized" } }
    { dg-final { scan-tree-dump-times "_not_eliminated_" 0 "optimized" } } */
