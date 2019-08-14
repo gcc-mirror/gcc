@@ -1404,9 +1404,9 @@
   "TARGET_SVE"
   {
     rtx tmp = gen_reg_rtx (<MODE>mode);
-    emit_insn (gen_aarch64_sve_dup<mode>_const (tmp, operands[1],
-						CONST1_RTX (<MODE>mode),
-						CONST0_RTX (<MODE>mode)));
+    emit_insn (gen_vcond_mask_<mode><vpred> (tmp, operands[1],
+					     CONST1_RTX (<MODE>mode),
+					     CONST0_RTX (<MODE>mode)));
     emit_insn (gen_vec_extract<mode><Vel> (operands[0], tmp, operands[2]));
     DONE;
   }
@@ -3023,6 +3023,7 @@
 ;; ---- [INT,FP] Select based on predicates
 ;; -------------------------------------------------------------------------
 ;; Includes merging patterns for:
+;; - FMOV
 ;; - MOV
 ;; - SEL
 ;; -------------------------------------------------------------------------
@@ -3030,27 +3031,43 @@
 ;; vcond_mask operand order: true, false, mask
 ;; UNSPEC_SEL operand order: mask, true, false (as for VEC_COND_EXPR)
 ;; SEL operand order:        mask, true, false
-(define_insn "vcond_mask_<mode><vpred>"
-  [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
+(define_expand "vcond_mask_<mode><vpred>"
+  [(set (match_operand:SVE_ALL 0 "register_operand")
 	(unspec:SVE_ALL
-	  [(match_operand:<VPRED> 3 "register_operand" "Upa")
-	   (match_operand:SVE_ALL 1 "register_operand" "w")
-	   (match_operand:SVE_ALL 2 "register_operand" "w")]
+	  [(match_operand:<VPRED> 3 "register_operand")
+	   (match_operand:SVE_ALL 1 "aarch64_sve_reg_or_dup_imm")
+	   (match_operand:SVE_ALL 2 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE"
-  "sel\t%0.<Vetype>, %3, %1.<Vetype>, %2.<Vetype>"
+  {
+    if (register_operand (operands[1], <MODE>mode))
+      operands[2] = force_reg (<MODE>mode, operands[2]);
+  }
 )
 
-;; Selects between a duplicated immediate and zero.
-(define_insn "aarch64_sve_dup<mode>_const"
-  [(set (match_operand:SVE_I 0 "register_operand" "=w")
-	(unspec:SVE_I
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (match_operand:SVE_I 2 "aarch64_sve_dup_immediate")
-	   (match_operand:SVE_I 3 "aarch64_simd_imm_zero")]
+;; Selects between:
+;; - two registers
+;; - a duplicated immediate and a register
+;; - a duplicated immediate and zero
+(define_insn "*vcond_mask_<mode><vpred>"
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w, w, w, w, ?w, ?&w, ?&w")
+	(unspec:SVE_ALL
+	  [(match_operand:<VPRED> 3 "register_operand" "Upa, Upa, Upa, Upa, Upl, Upl, Upl")
+	   (match_operand:SVE_ALL 1 "aarch64_sve_reg_or_dup_imm" "w, vss, vss, Ufc, Ufc, vss, Ufc")
+	   (match_operand:SVE_ALL 2 "aarch64_simd_reg_or_zero" "w, 0, Dz, 0, Dz, w, w")]
 	  UNSPEC_SEL))]
-  "TARGET_SVE"
-  "mov\t%0.<Vetype>, %1/z, #%2"
+  "TARGET_SVE
+   && (!register_operand (operands[1], <MODE>mode)
+       || register_operand (operands[2], <MODE>mode))"
+  "@
+   sel\t%0.<Vetype>, %3, %1.<Vetype>, %2.<Vetype>
+   mov\t%0.<Vetype>, %3/m, #%I1
+   mov\t%0.<Vetype>, %3/z, #%I1
+   fmov\t%0.<Vetype>, %3/m, #%1
+   movprfx\t%0.<Vetype>, %3/z, %0.<Vetype>\;fmov\t%0.<Vetype>, %3/m, #%1
+   movprfx\t%0, %2\;mov\t%0.<Vetype>, %3/m, #%I1
+   movprfx\t%0, %2\;fmov\t%0.<Vetype>, %3/m, #%1"
+  [(set_attr "movprfx" "*,*,*,*,yes,yes,yes")]
 )
 
 ;; -------------------------------------------------------------------------
@@ -3067,8 +3084,8 @@
 	  (match_operator 3 "comparison_operator"
 	    [(match_operand:<V_INT_EQUIV> 4 "register_operand")
 	     (match_operand:<V_INT_EQUIV> 5 "nonmemory_operand")])
-	  (match_operand:SVE_ALL 1 "register_operand")
-	  (match_operand:SVE_ALL 2 "register_operand")))]
+	  (match_operand:SVE_ALL 1 "nonmemory_operand")
+	  (match_operand:SVE_ALL 2 "nonmemory_operand")))]
   "TARGET_SVE"
   {
     aarch64_expand_sve_vcond (<MODE>mode, <V_INT_EQUIV>mode, operands);
@@ -3084,8 +3101,8 @@
 	  (match_operator 3 "comparison_operator"
 	    [(match_operand:<V_INT_EQUIV> 4 "register_operand")
 	     (match_operand:<V_INT_EQUIV> 5 "nonmemory_operand")])
-	  (match_operand:SVE_ALL 1 "register_operand")
-	  (match_operand:SVE_ALL 2 "register_operand")))]
+	  (match_operand:SVE_ALL 1 "nonmemory_operand")
+	  (match_operand:SVE_ALL 2 "nonmemory_operand")))]
   "TARGET_SVE"
   {
     aarch64_expand_sve_vcond (<MODE>mode, <V_INT_EQUIV>mode, operands);
@@ -3101,8 +3118,8 @@
 	  (match_operator 3 "comparison_operator"
 	    [(match_operand:<V_FP_EQUIV> 4 "register_operand")
 	     (match_operand:<V_FP_EQUIV> 5 "aarch64_simd_reg_or_zero")])
-	  (match_operand:SVE_HSD 1 "register_operand")
-	  (match_operand:SVE_HSD 2 "register_operand")))]
+	  (match_operand:SVE_HSD 1 "nonmemory_operand")
+	  (match_operand:SVE_HSD 2 "nonmemory_operand")))]
   "TARGET_SVE"
   {
     aarch64_expand_sve_vcond (<MODE>mode, <V_FP_EQUIV>mode, operands);

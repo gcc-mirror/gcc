@@ -1,4 +1,14 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* gcc.target/aarch64/sve/vcond_18.c: New test.
+	* gcc.target/aarch64/sve/vcond_18_run.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_19.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_19_run.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_20.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_20_run.c: Likewise.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/fmaxnm_1.c: New test.
 	* gcc.target/aarch64/sve/fminnm_1.c: Likewise.

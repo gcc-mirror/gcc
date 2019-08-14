@@ -1,4 +1,37 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* config/aarch64/aarch64.c (aarch64_bit_representation): New function.
+	(aarch64_print_vector_float_operand): Also handle 8-bit floats.
+	(aarch64_print_operand): Add support for %I.
+	(aarch64_sve_dup_immediate_p): Handle scalars as well as vectors.
+	Bitcast floating-point constants to the corresponding integer constant.
+	(aarch64_float_const_representable_p): Handle vectors as well
+	as scalars.
+	(aarch64_expand_sve_vcond): Make sure that the operands are valid
+	for the new vcond_mask_<mode><vpred> expander.
+	* config/aarch64/predicates.md (aarch64_sve_dup_immediate): Also
+	test aarch64_float_const_representable_p.
+	(aarch64_sve_reg_or_dup_imm): New predicate.
+	* config/aarch64/aarch64-sve.md (vec_extract<vpred><Vel>): Use
+	gen_vcond_mask_<mode><vpred> instead of
+	gen_aarch64_sve_dup<mode>_const.
+	(vcond_mask_<mode><vpred>): Turn into a define_expand that
+	accepts aarch64_sve_reg_or_dup_imm and aarch64_simd_reg_or_zero
+	for operands 1 and 2 respectively.  Force operand 2 into a
+	register if operand 1 is a register.  Fold old define_insn...
+	(aarch64_sve_dup<mode>_const): ...and this define_insn...
+	(*vcond_mask_<mode><vpred>): ...into this new pattern.  Handle
+	floating-point constants that can be moved as integers.  Add
+	alternatives for MOV /M and FMOV /M.
+	(vcond<mode><v_int_equiv>, vcondu<mode><v_int_equiv>)
+	(vcond<mode><v_fp_equiv>): Accept nonmemory_operand for operands
+	1 and 2 respectively.
+	* config/aarch64/constraints.md (Ufc): Handle vectors as well
+	as scalars.
+	(vss): New constraint.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/predicates.md (aarch64_sve_float_maxmin_immediate)
 	(aarch64_sve_float_maxmin_operand): New predicates.
