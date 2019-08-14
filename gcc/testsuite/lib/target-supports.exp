@@ -6294,9 +6294,18 @@ proc check_effective_target_vect_aligned_arrays { } {
 
 proc check_effective_target_natural_alignment_32 { } {
     # FIXME: 32bit powerpc: guaranteed only if MASK_ALIGN_NATURAL/POWER.
+    # FIXME: m68k has -malign-int
     return [check_cached_effective_target_indexed natural_alignment_32 {
       if { ([istarget *-*-darwin*] && [is-effective-target lp64])
-	    || [istarget avr-*-*] } {
+	   || [istarget avr-*-*]
+	   || [istarget m68k-*-linux*]
+	   || [istarget pru-*-*]
+	   || [istarget stormy16-*-*]
+	   || [istarget rl78-*-*]
+	   || [istarget pdp11-*-*]
+	   || [istarget msp430-*-*]
+	   || [istarget m32c-*-*]
+	   || [istarget cris-*-*] } {
 	   return 0
 	 } else {
 	   return 1
@@ -6311,8 +6320,9 @@ proc check_effective_target_natural_alignment_32 { } {
 
 proc check_effective_target_natural_alignment_64 { } {
     return [check_cached_effective_target_indexed natural_alignment_64 {
-      expr { ([is-effective-target lp64] && ![istarget *-*-darwin*])
-	      || [istarget spu-*-*] }
+      expr { [is-effective-target natural_alignment_32]
+             && (([is-effective-target lp64] && ![istarget *-*-darwin*])
+		 || [istarget spu-*-*]) }
     }]
 }
 
