@@ -1,3 +1,7 @@
+2019-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/conversion/simd4.C: Test locations.
+
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/peel_ind_1.c: Look for an inverted .B VL1.
