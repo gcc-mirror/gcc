@@ -1,3 +1,11 @@
+2019-08-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_vector_init_one_nonzero)
+	<case E_V8QImode>: Use vector_set path for
+	TARGET_MMX_WITH_SSE && TARGET_SSE4_1.
+	(ix86_expand_vector_init_one_nonzero) <case E_V8QImode>:
+	Do not widen for TARGET_MMX_WITH_SSE && TARGET_SSE4_1.
+
 2019-08-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* builtins.c (expand_builtin_init_descriptor): Set memory alignment.
@@ -15,10 +23,11 @@
 	* varasm.c (default_section_type_flags): Add support for "noinit"
 	section.
 	(default_elf_select_section): Add support for "noinit" attribute.
-	* config/msp430/msp430.c (msp430_attribute_table): Remove "noinit" entry.
+	* config/msp430/msp430.c (msp430_attribute_table): Remove
+	"noinit" entry.
 
 2019-08-14  Richard Biener  <rguenther@suse.de>
-	Uroš Bizjak  <ubizjak@gmail.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/91154
 	* config/i386/i386-features.h (scalar_chain::scalar_chain): Add
@@ -644,8 +653,9 @@
 
 2019-08-13  Uroš Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.md (ix86_expand_vector_extract) <case E_V2SImode>:
-	Use vec_extr path for TARGET_MMX_WITH_SSE && TARGET_SSE4_1.
+	* config/i386/i386-expand.c (ix86_expand_vector_extract)
+	<case E_V2SImode>: Use vec_extr path for
+	TARGET_MMX_WITH_SSE && TARGET_SSE4_1.
 	<case E_V8QImode>: Ditto.
 	* config/i386/mmx.md (*mmx_pextrw_zext): Rename from mmx_pextrw.
 	Use SWI48 mode iterator.  Use %k to output operand 0.
@@ -842,8 +852,9 @@
 
 2019-08-13  Uroš Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.md (ix86_expand_vector_set) <case E_V2SImode>:
-	Use vec_merge path for TARGET_MMX_WITH_SSE && TARGET_SSE4_1.
+	* config/i386/i386-expand.c (ix86_expand_vector_set)
+	<case E_V2SImode>: Use vec_merge path for
+	TARGET_MMX_WITH_SSE && TARGET_SSE4_1.
 	<case E_V8QImode>: Ditto.
 	* config/i386/mmx.md (*mmx_pinsrd): New insn pattern.
 	(*mmx_pinsrb): Ditto.
