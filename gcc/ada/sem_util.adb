@@ -20427,6 +20427,21 @@ package body Sem_Util is
                Update_First_Real_Statement
                  (Old_HSS => N,
                   New_HSS => Result);
+
+            --  Update the Chars attribute of identifiers
+
+            elsif Nkind (N) = N_Identifier then
+
+               --  The Entity field of identifiers that denote aspects is used
+               --  to store arbitrary expressions (and hence we must check that
+               --  they reference an actual entity before copying their Chars
+               --  value).
+
+               if Present (Entity (Result))
+                 and then Nkind (Entity (Result)) in N_Entity
+               then
+                  Set_Chars (Result, Chars (Entity (Result)));
+               end if;
             end if;
          end if;
 

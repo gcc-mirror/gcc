@@ -1,3 +1,8 @@
+2019-08-14  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (New_Copy_Tree.Copy_Node_With_Replacement):
+	Update the Chars attribute of identifiers.
+
 2019-08-14  Yannick Moy  <moy@adacore.com>
 
 	* sem_spark.adb, sem_spark.ads (Is_Legal): New function exposed
