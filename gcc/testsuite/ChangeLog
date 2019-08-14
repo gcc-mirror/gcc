@@ -1,5 +1,10 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/vcond_17.c: New test.
+	* gcc.target/aarch64/sve/vcond_17_run.c: Likewise.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/spill_4.c: Expect all ptrues to be .Bs.
 	* gcc.target/aarch64/sve/single_1.c: Likewise.
 	* gcc.target/aarch64/sve/single_2.c: Likewise.

@@ -2884,13 +2884,13 @@
 ;; Floating-point vcond.  All comparisons except FCMUO allow a zero operand;
 ;; aarch64_expand_sve_vcond handles the case of an FCMUO with zero.
 (define_expand "vcond<mode><v_fp_equiv>"
-  [(set (match_operand:SVE_SD 0 "register_operand")
-	(if_then_else:SVE_SD
+  [(set (match_operand:SVE_HSD 0 "register_operand")
+	(if_then_else:SVE_HSD
 	  (match_operator 3 "comparison_operator"
 	    [(match_operand:<V_FP_EQUIV> 4 "register_operand")
 	     (match_operand:<V_FP_EQUIV> 5 "aarch64_simd_reg_or_zero")])
-	  (match_operand:SVE_SD 1 "register_operand")
-	  (match_operand:SVE_SD 2 "register_operand")))]
+	  (match_operand:SVE_HSD 1 "register_operand")
+	  (match_operand:SVE_HSD 2 "register_operand")))]
   "TARGET_SVE"
   {
     aarch64_expand_sve_vcond (<MODE>mode, <V_FP_EQUIV>mode, operands);

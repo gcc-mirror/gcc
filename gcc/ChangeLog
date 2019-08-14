@@ -1,4 +1,11 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (SVE_HSD): New mode iterator.
+	(V_FP_EQUIV, v_fp_equiv): Handle VNx8HI and VNx8HF.
+	* config/aarch64/aarch64-sve.md (vcond<mode><v_fp_equiv>): Use
+	SVE_HSD instead of SVE_SD.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
 	* config/aarch64/iterators.md (SVE_COND_FP_BINARY_REG): New int
