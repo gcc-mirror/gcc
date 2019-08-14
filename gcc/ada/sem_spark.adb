@@ -663,6 +663,9 @@ package body Sem_SPARK is
    procedure Check_Node (N : Node_Id);
    --  Main traversal procedure to check safe pointer usage
 
+   procedure Check_Old_Loop_Entry (N : Node_Id);
+   --  Check SPARK RM 3.10(14) regarding 'Old and 'Loop_Entry
+
    procedure Check_Package_Body (Pack : Node_Id);
 
    procedure Check_Package_Spec (Pack : Node_Id);
@@ -2583,6 +2586,43 @@ package body Sem_SPARK is
    ----------------
 
    procedure Check_Node (N : Node_Id) is
+
+      procedure Check_Subprogram_Contract (N : Node_Id);
+      --  Check the postcondition-like contracts for use of 'Old
+
+      -------------------------------
+      -- Check_Subprogram_Contract --
+      -------------------------------
+
+      procedure Check_Subprogram_Contract (N : Node_Id) is
+      begin
+         if Nkind (N) = N_Subprogram_Declaration
+           or else Acts_As_Spec (N)
+         then
+            declare
+               E        : constant Entity_Id := Unique_Defining_Entity (N);
+               Post     : constant Node_Id :=
+                 Get_Pragma (E, Pragma_Postcondition);
+               Cases    : constant Node_Id :=
+                 Get_Pragma (E, Pragma_Contract_Cases);
+            begin
+               Check_Old_Loop_Entry (Post);
+               Check_Old_Loop_Entry (Cases);
+            end;
+
+         elsif Nkind (N) = N_Subprogram_Body then
+            declare
+               E        : constant Entity_Id := Defining_Entity (N);
+               Ref_Post : constant Node_Id :=
+                 Get_Pragma (E, Pragma_Refined_Post);
+            begin
+               Check_Old_Loop_Entry (Ref_Post);
+            end;
+         end if;
+      end Check_Subprogram_Contract;
+
+   --  Start of processing for Check_Node
+
    begin
       case Nkind (N) is
          when N_Declaration =>
@@ -2602,13 +2642,16 @@ package body Sem_SPARK is
                Check_Package_Body (N);
             end if;
 
-         when N_Subprogram_Body
-            | N_Entry_Body
-            | N_Task_Body
-         =>
+         when N_Subprogram_Body =>
             if not Is_Generic_Unit (Unique_Defining_Entity (N)) then
+               Check_Subprogram_Contract (N);
                Check_Callable_Body (N);
             end if;
+
+         when N_Entry_Body
+            | N_Task_Body
+         =>
+            Check_Callable_Body (N);
 
          when N_Protected_Body =>
             Check_List (Declarations (N));
@@ -2621,6 +2664,9 @@ package body Sem_SPARK is
 
          when N_Pragma =>
             Check_Pragma (N);
+
+         when N_Subprogram_Declaration =>
+            Check_Subprogram_Contract (N);
 
          --  Ignored constructs for pointer checking
 
@@ -2655,7 +2701,6 @@ package body Sem_SPARK is
             | N_Procedure_Instantiation
             | N_Raise_xxx_Error
             | N_Record_Representation_Clause
-            | N_Subprogram_Declaration
             | N_Subprogram_Renaming_Declaration
             | N_Task_Type_Declaration
             | N_Use_Package_Clause
@@ -2676,6 +2721,65 @@ package body Sem_SPARK is
             raise Program_Error;
       end case;
    end Check_Node;
+
+   --------------------------
+   -- Check_Old_Loop_Entry --
+   --------------------------
+
+   procedure Check_Old_Loop_Entry (N : Node_Id) is
+
+      function Check_Attribute (N : Node_Id) return Traverse_Result;
+
+      ---------------------
+      -- Check_Attribute --
+      ---------------------
+
+      function Check_Attribute (N : Node_Id) return Traverse_Result is
+         Attr_Id : Attribute_Id;
+         Aname   : Name_Id;
+         Pref    : Node_Id;
+
+      begin
+         if Nkind (N) = N_Attribute_Reference then
+            Attr_Id := Get_Attribute_Id (Attribute_Name (N));
+            Aname   := Attribute_Name (N);
+
+            if Attr_Id = Attribute_Old
+              or else Attr_Id = Attribute_Loop_Entry
+            then
+               Pref := Prefix (N);
+
+               if Is_Deep (Etype (Pref)) then
+                  if Nkind (Pref) /= N_Function_Call then
+                     if Emit_Messages then
+                        Error_Msg_Name_1 := Aname;
+                        Error_Msg_N
+                          ("prefix of % attribute must be a function call "
+                           & "(SPARK RM 3.10(14))", Pref);
+                     end if;
+
+                  elsif Is_Traversal_Function_Call (Pref) then
+                     if Emit_Messages then
+                        Error_Msg_Name_1 := Aname;
+                        Error_Msg_N
+                          ("prefix of % attribute should not call a traversal "
+                           & "function (SPARK RM 3.10(14))", Pref);
+                     end if;
+                  end if;
+               end if;
+            end if;
+         end if;
+
+         return OK;
+      end Check_Attribute;
+
+      procedure Check_All is new Traverse_Proc (Check_Attribute);
+
+   --  Start of processing for Check_Old_Loop_Entry
+
+   begin
+      Check_All (N);
+   end Check_Old_Loop_Entry;
 
    ------------------------
    -- Check_Package_Body --
@@ -2869,7 +2973,17 @@ package body Sem_SPARK is
                Expr : constant Node_Id := Expression (Arg2);
             begin
                Check_Expression (Expr, Read);
+
+               --  Prefix of Loop_Entry should be checked inside any assertion
+               --  where it may appear.
+
+               Check_Old_Loop_Entry (Expr);
             end;
+
+         --  Prefix of Loop_Entry should be checked inside a Loop_Variant
+
+         when Pragma_Loop_Variant =>
+            Check_Old_Loop_Entry (Prag);
 
          --  There is no need to check contracts, as these can only access
          --  inputs and outputs of the subprogram. Inputs are checked
@@ -2963,6 +3077,7 @@ package body Sem_SPARK is
 
          when N_Package_Body
             | N_Package_Declaration
+            | N_Subprogram_Declaration
             | N_Subprogram_Body
          =>
             declare

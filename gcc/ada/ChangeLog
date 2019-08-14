@@ -1,5 +1,15 @@
 2019-08-14  Yannick Moy  <moy@adacore.com>
 
+	* sem_spark.adb (Check_Old_Loop_Entry): New procedure to check
+	correct use of Old  and Loop_Entry.
+	(Check_Node): Check subprogram contracts.
+	(Check_Pragma): Check Loop_Variant.
+	(Check_Safe_Pointers): Apply checking to library-level
+	subprogram  declarations as well, in order to check their
+	contract.
+
+2019-08-14  Yannick Moy  <moy@adacore.com>
+
 	* sem_spark.adb (Is_Subpath_Expression): Take into account
 	conversion and qualification.
 
