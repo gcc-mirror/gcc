@@ -10337,8 +10337,30 @@ package body Exp_Ch4 is
       Flag      : Entity_Id;
       Scheme    : Node_Id;
       Stmts     : List_Id;
+      Var       : Entity_Id;
 
    begin
+      --  Ensure that the bound variable is properly frozen. We must do
+      --  this before expansion because the expression is about to be
+      --  converted into a loop, and resulting freeze nodes may end up
+      --  in the wrong place in the tree.
+
+      if Present (Iter_Spec) then
+         Var := Defining_Identifier (Iter_Spec);
+      else
+         Var := Defining_Identifier (Loop_Spec);
+      end if;
+
+      declare
+         P : Node_Id := Parent (N);
+      begin
+         while Nkind (P) in N_Subexpr loop
+            P := Parent (P);
+         end loop;
+
+         Freeze_Before (P, Etype (Var));
+      end;
+
       --  Create the declaration of the flag which tracks the status of the
       --  quantified expression. Generate:
 
