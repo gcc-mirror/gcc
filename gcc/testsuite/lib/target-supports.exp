@@ -364,6 +364,18 @@ proc check_weak_override_available { } {
     return [check_weak_available]
 }
 
+# The noinit attribute is only supported by some targets.
+# This proc returns 1 if it's supported, 0 if it's not.
+
+proc check_effective_target_noinit { } {
+    if { [istarget arm*-*-eabi]
+	 || [istarget msp430-*-*] } {
+	return 1
+    }
+
+    return 0
+}
+
 ###############################
 # proc check_visibility_available { what_kind }
 ###############################
