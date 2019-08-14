@@ -1,3 +1,12 @@
+2019-08-14  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch3.adb (Predef_Spec_Or_Body): For an equality operation
+	of an interface type, create an expression function (that
+	returns False) rather than declaring an abstract function.
+	* freeze.adb (Check_Inherited_Conditions): Set Needs_Wrapper to
+	False unconditionally at the start of the loop creating wrappers
+	for inherited operations.
+
 2019-08-14  Bob Duff  <duff@adacore.com>
 
 	* table.adb: Assert that the table is not locked when increasing

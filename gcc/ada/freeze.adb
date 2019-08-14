@@ -1526,11 +1526,11 @@ package body Freeze is
       --  so that LSP can be verified/enforced.
 
       Op_Node := First_Elmt (Prim_Ops);
-      Needs_Wrapper := False;
 
       while Present (Op_Node) loop
-         Decls := Empty_List;
-         Prim  := Node (Op_Node);
+         Decls         := Empty_List;
+         Prim          := Node (Op_Node);
+         Needs_Wrapper := False;
 
          if not Comes_From_Source (Prim) and then Present (Alias (Prim)) then
             Par_Prim := Alias (Prim);
@@ -1601,8 +1601,6 @@ package body Freeze is
                     (Par_R, New_List (New_Decl, New_Body));
                end if;
             end;
-
-            Needs_Wrapper := False;
          end if;
 
          Next_Elmt (Op_Node);
