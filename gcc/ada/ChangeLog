@@ -1,3 +1,11 @@
+2019-08-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aux.adb (Next_Rep_Item): If a node in the rep chain
+	involves a Ghost aspect it may have been replaced by a null
+	statement; use the original node to find next Rep_Item.
+	* repinfo.adb (List_Entities): Do not list an Ignored
+	Ghost_Entity, for which information may have been deleted.
+
 2019-08-14  Bob Duff  <duff@adacore.com>
 
 	* sem_prag.ads, sem_prag.adb
