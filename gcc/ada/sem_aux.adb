@@ -569,6 +569,12 @@ package body Sem_Aux is
             elsif Entity (N) = E then
                return N;
             end if;
+
+         --  A Ghost-related aspect, if disabled, may have been replaced by a
+         --  null statement.
+
+         elsif Nkind (N) = N_Null_Statement then
+            N := Original_Node (N);
          end if;
 
          Next_Rep_Item (N);
