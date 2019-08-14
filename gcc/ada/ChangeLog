@@ -1,3 +1,8 @@
+2019-08-14  Yannick Moy  <moy@adacore.com>
+
+	* sem_spark.adb (Is_Subpath_Expression): Take into account
+	conversion and qualification.
+
 2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch7.adb (Install_Private_Declarations)
