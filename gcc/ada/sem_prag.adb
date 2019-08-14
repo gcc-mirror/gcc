@@ -336,8 +336,8 @@ package body Sem_Prag is
    --  and alignment values performed by the back end.
 
    --  Note: the reason we store a Source_Ptr value instead of a Node_Id is
-   --  that by the time Validate_Unchecked_Conversions is called, Sprint will
-   --  already have modified all Sloc values if the -gnatD option is set.
+   --  that by the time Validate_Compile_Time_Warning_Errors is called, Sprint
+   --  will already have modified all Sloc values if the -gnatD option is set.
 
    type CTWE_Entry is record
       Eloc  : Source_Ptr;
@@ -32147,9 +32147,10 @@ package body Sem_Prag is
    -----------------------------------------
 
    procedure Validate_Compile_Time_Warning_Error (N : Node_Id) is
+      Arg1  : constant Node_Id := First (Pragma_Argument_Associations (N));
    begin
       Compile_Time_Warnings_Errors.Append
-        (New_Val => CTWE_Entry'(Eloc  => Sloc (N),
+        (New_Val => CTWE_Entry'(Eloc  => Sloc (Arg1),
                                 Scope => Current_Scope,
                                 Prag  => N));
    end Validate_Compile_Time_Warning_Error;

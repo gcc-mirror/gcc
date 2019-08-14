@@ -1,5 +1,14 @@
 2019-08-14  Bob Duff  <duff@adacore.com>
 
+	* sem_prag.adb (Validate_Compile_Time_Warning_Error): Attach the
+	warning to the Sloc of the first pragma argument, rather than to
+	the pragma itself. This is to make pragmas processed after the
+	back end use the same Sloc as pragmas processed earlier, in the
+	front end. There's no reason for this discrepancy, and it
+	hinders further work on this ticket.
+
+2019-08-14  Bob Duff  <duff@adacore.com>
+
 	* sem.ads (Inside_A_Generic): Remove the ??? comment.
 
 2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
