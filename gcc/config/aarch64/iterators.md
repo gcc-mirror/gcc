@@ -480,6 +480,9 @@
     UNSPEC_COND_FCMLT	; Used in aarch64-sve.md.
     UNSPEC_COND_FCMNE	; Used in aarch64-sve.md.
     UNSPEC_COND_FCMUO	; Used in aarch64-sve.md.
+    UNSPEC_COND_FCVT	; Used in aarch64-sve.md.
+    UNSPEC_COND_FCVTZS	; Used in aarch64-sve.md.
+    UNSPEC_COND_FCVTZU	; Used in aarch64-sve.md.
     UNSPEC_COND_FDIV	; Used in aarch64-sve.md.
     UNSPEC_COND_FMAXNM	; Used in aarch64-sve.md.
     UNSPEC_COND_FMINNM	; Used in aarch64-sve.md.
@@ -498,6 +501,8 @@
     UNSPEC_COND_FRINTZ	; Used in aarch64-sve.md.
     UNSPEC_COND_FSQRT	; Used in aarch64-sve.md.
     UNSPEC_COND_FSUB	; Used in aarch64-sve.md.
+    UNSPEC_COND_SCVTF	; Used in aarch64-sve.md.
+    UNSPEC_COND_UCVTF	; Used in aarch64-sve.md.
     UNSPEC_LASTB	; Used in aarch64-sve.md.
     UNSPEC_FCADD90	; Used in aarch64-simd.md.
     UNSPEC_FCADD270	; Used in aarch64-simd.md.
@@ -1642,6 +1647,9 @@
 					UNSPEC_COND_FRINTZ
 					UNSPEC_COND_FSQRT])
 
+(define_int_iterator SVE_COND_FCVTI [UNSPEC_COND_FCVTZS UNSPEC_COND_FCVTZU])
+(define_int_iterator SVE_COND_ICVTF [UNSPEC_COND_SCVTF UNSPEC_COND_UCVTF])
+
 (define_int_iterator SVE_COND_FP_BINARY [UNSPEC_COND_FADD
 					 UNSPEC_COND_FDIV
 					 UNSPEC_COND_FMAXNM
@@ -1715,6 +1723,9 @@
 			(UNSPEC_FMINV "smin_nan")
 			(UNSPEC_COND_FABS "abs")
 			(UNSPEC_COND_FADD "add")
+			(UNSPEC_COND_FCVT "fcvt")
+			(UNSPEC_COND_FCVTZS "fix_trunc")
+			(UNSPEC_COND_FCVTZU "fixuns_trunc")
 			(UNSPEC_COND_FDIV "div")
 			(UNSPEC_COND_FMAXNM "smax")
 			(UNSPEC_COND_FMINNM "smin")
@@ -1732,7 +1743,9 @@
 			(UNSPEC_COND_FRINTX "rint")
 			(UNSPEC_COND_FRINTZ "btrunc")
 			(UNSPEC_COND_FSQRT "sqrt")
-			(UNSPEC_COND_FSUB "sub")])
+			(UNSPEC_COND_FSUB "sub")
+			(UNSPEC_COND_SCVTF "float")
+			(UNSPEC_COND_UCVTF "floatuns")])
 
 (define_int_attr  maxmin_uns [(UNSPEC_UMAXV "umax")
 			      (UNSPEC_UMINV "umin")
@@ -1773,7 +1786,11 @@
 		     (UNSPEC_UNPACKSLO "s")
 		     (UNSPEC_UNPACKULO "u")
 		     (UNSPEC_SMUL_HIGHPART "s")
-		     (UNSPEC_UMUL_HIGHPART "u")])
+		     (UNSPEC_UMUL_HIGHPART "u")
+		     (UNSPEC_COND_FCVTZS "s")
+		     (UNSPEC_COND_FCVTZU "u")
+		     (UNSPEC_COND_SCVTF "s")
+		     (UNSPEC_COND_UCVTF "u")])
 
 (define_int_attr sur [(UNSPEC_SHADD "s") (UNSPEC_UHADD "u")
 		      (UNSPEC_SRHADD "sr") (UNSPEC_URHADD "ur")

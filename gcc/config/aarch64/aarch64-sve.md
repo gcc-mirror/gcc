@@ -3643,13 +3643,13 @@
 
 ;; Unpredicated conversion of floats to integers of the same size (HF to HI,
 ;; SF to SI or DF to DI).
-(define_expand "<fix_trunc_optab><mode><v_int_equiv>2"
+(define_expand "<optab><mode><v_int_equiv>2"
   [(set (match_operand:<V_INT_EQUIV> 0 "register_operand")
 	(unspec:<V_INT_EQUIV>
 	  [(match_dup 2)
-	   (FIXUORS:<V_INT_EQUIV>
-	     (match_operand:SVE_F 1 "register_operand"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (const_int SVE_RELAXED_GP)
+	   (match_operand:SVE_F 1 "register_operand")]
+	  SVE_COND_FCVTI))]
   "TARGET_SVE"
   {
     operands[2] = aarch64_ptrue_reg (<VPRED>mode);
@@ -3657,37 +3657,37 @@
 )
 
 ;; Conversion of SF to DI, SI or HI, predicated with a PTRUE.
-(define_insn "*<fix_trunc_optab>v16hsf<mode>2"
+(define_insn "*<optab>v16hsf<mode>2"
   [(set (match_operand:SVE_HSDI 0 "register_operand" "=w")
 	(unspec:SVE_HSDI
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (FIXUORS:SVE_HSDI
-	     (match_operand:VNx8HF 2 "register_operand" "w"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
+	   (match_operand:VNx8HF 2 "register_operand" "w")]
+	  SVE_COND_FCVTI))]
   "TARGET_SVE"
   "fcvtz<su>\t%0.<Vetype>, %1/m, %2.h"
 )
 
 ;; Conversion of SF to DI or SI, predicated with a PTRUE.
-(define_insn "*<fix_trunc_optab>vnx4sf<mode>2"
+(define_insn "*<optab>vnx4sf<mode>2"
   [(set (match_operand:SVE_SDI 0 "register_operand" "=w")
 	(unspec:SVE_SDI
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (FIXUORS:SVE_SDI
-	     (match_operand:VNx4SF 2 "register_operand" "w"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
+	   (match_operand:VNx4SF 2 "register_operand" "w")]
+	  SVE_COND_FCVTI))]
   "TARGET_SVE"
   "fcvtz<su>\t%0.<Vetype>, %1/m, %2.s"
 )
 
 ;; Conversion of DF to DI or SI, predicated with a PTRUE.
-(define_insn "*<fix_trunc_optab>vnx2df<mode>2"
+(define_insn "*<optab>vnx2df<mode>2"
   [(set (match_operand:SVE_SDI 0 "register_operand" "=w")
 	(unspec:SVE_SDI
 	  [(match_operand:VNx2BI 1 "register_operand" "Upl")
-	   (FIXUORS:SVE_SDI
-	     (match_operand:VNx2DF 2 "register_operand" "w"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
+	   (match_operand:VNx2DF 2 "register_operand" "w")]
+	  SVE_COND_FCVTI))]
   "TARGET_SVE"
   "fcvtz<su>\t%0.<Vetype>, %1/m, %2.d"
 )
@@ -3703,13 +3703,15 @@
   [(set (match_dup 4)
 	(unspec:VNx4SI
 	  [(match_dup 3)
-	   (FIXUORS:VNx4SI (match_operand:VNx2DF 1 "register_operand"))]
-	  UNSPEC_MERGE_PTRUE))
+	   (const_int SVE_RELAXED_GP)
+	   (match_operand:VNx2DF 1 "register_operand")]
+	  SVE_COND_FCVTI))
    (set (match_dup 5)
 	(unspec:VNx4SI
 	  [(match_dup 3)
-	   (FIXUORS:VNx4SI (match_operand:VNx2DF 2 "register_operand"))]
-	  UNSPEC_MERGE_PTRUE))
+	   (const_int SVE_RELAXED_GP)
+	   (match_operand:VNx2DF 2 "register_operand")]
+	  SVE_COND_FCVTI))
    (set (match_operand:VNx4SI 0 "register_operand")
 	(unspec:VNx4SI [(match_dup 4) (match_dup 5)] UNSPEC_UZP1))]
   "TARGET_SVE"
@@ -3740,9 +3742,9 @@
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
 	  [(match_dup 2)
-	   (FLOATUORS:SVE_F
-	     (match_operand:<V_INT_EQUIV> 1 "register_operand"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (const_int SVE_RELAXED_GP)
+	   (match_operand:<V_INT_EQUIV> 1 "register_operand")]
+	  SVE_COND_ICVTF))]
   "TARGET_SVE"
   {
     operands[2] = aarch64_ptrue_reg (<VPRED>mode);
@@ -3755,11 +3757,11 @@
   [(set (match_operand:VNx8HF 0 "register_operand" "=w")
 	(unspec:VNx8HF
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (FLOATUORS:VNx8HF
-	     (match_operand:SVE_HSDI 2 "register_operand" "w"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
+	   (match_operand:SVE_HSDI 2 "register_operand" "w")]
+	  SVE_COND_ICVTF))]
   "TARGET_SVE"
-  "<su_optab>cvtf\t%0.h, %1/m, %2.<Vetype>"
+  "<su>cvtf\t%0.h, %1/m, %2.<Vetype>"
 )
 
 ;; Conversion of DI or SI to the same number of SFs, predicated with a PTRUE.
@@ -3767,11 +3769,11 @@
   [(set (match_operand:VNx4SF 0 "register_operand" "=w")
 	(unspec:VNx4SF
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (FLOATUORS:VNx4SF
-	     (match_operand:SVE_SDI 2 "register_operand" "w"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
+	   (match_operand:SVE_SDI 2 "register_operand" "w")]
+	  SVE_COND_ICVTF))]
   "TARGET_SVE"
-  "<su_optab>cvtf\t%0.s, %1/m, %2.<Vetype>"
+  "<su>cvtf\t%0.s, %1/m, %2.<Vetype>"
 )
 
 ;; Conversion of DI or SI to DF, predicated with a PTRUE.
@@ -3779,11 +3781,11 @@
   [(set (match_operand:VNx2DF 0 "register_operand" "=w")
 	(unspec:VNx2DF
 	  [(match_operand:VNx2BI 1 "register_operand" "Upl")
-	   (FLOATUORS:VNx2DF
-	     (match_operand:SVE_SDI 2 "register_operand" "w"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
+	   (match_operand:SVE_SDI 2 "register_operand" "w")]
+	  SVE_COND_ICVTF))]
   "TARGET_SVE"
-  "<su_optab>cvtf\t%0.d, %1/m, %2.<Vetype>"
+  "<su>cvtf\t%0.d, %1/m, %2.<Vetype>"
 )
 
 ;; -------------------------------------------------------------------------
@@ -3818,8 +3820,9 @@
 		: gen_aarch64_sve_zip1vnx4si)
 	       (temp, operands[1], operands[1]));
     rtx ptrue = aarch64_ptrue_reg (VNx2BImode);
-    emit_insn (gen_aarch64_sve_<FLOATUORS:optab>vnx4sivnx2df2 (operands[0],
-							       ptrue, temp));
+    rtx strictness = gen_int_mode (SVE_RELAXED_GP, SImode);
+    emit_insn (gen_aarch64_sve_<FLOATUORS:optab>vnx4sivnx2df2
+	       (operands[0], ptrue, temp, strictness));
     DONE;
   }
 )
@@ -3837,15 +3840,15 @@
   [(set (match_dup 4)
 	(unspec:SVE_HSF
 	  [(match_dup 3)
-	   (unspec:SVE_HSF [(match_operand:<VWIDE> 1 "register_operand")]
-			   UNSPEC_FLOAT_CONVERT)]
-	  UNSPEC_MERGE_PTRUE))
+	   (const_int SVE_RELAXED_GP)
+	   (match_operand:<VWIDE> 1 "register_operand")]
+	  UNSPEC_COND_FCVT))
    (set (match_dup 5)
 	(unspec:SVE_HSF
 	  [(match_dup 3)
-	   (unspec:SVE_HSF [(match_operand:<VWIDE> 2 "register_operand")]
-			   UNSPEC_FLOAT_CONVERT)]
-	  UNSPEC_MERGE_PTRUE))
+	   (const_int SVE_RELAXED_GP)
+	   (match_operand:<VWIDE> 2 "register_operand")]
+	  UNSPEC_COND_FCVT))
    (set (match_operand:SVE_HSF 0 "register_operand")
 	(unspec:SVE_HSF [(match_dup 4) (match_dup 5)] UNSPEC_UZP1))]
   "TARGET_SVE"
@@ -3862,10 +3865,9 @@
   [(set (match_operand:SVE_HSF 0 "register_operand" "=w")
 	(unspec:SVE_HSF
 	  [(match_operand:<VWIDE_PRED> 1 "register_operand" "Upl")
-	   (unspec:SVE_HSF
-	     [(match_operand:<VWIDE> 2 "register_operand" "w")]
-	     UNSPEC_FLOAT_CONVERT)]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
+	   (match_operand:<VWIDE> 2 "register_operand" "w")]
+	  UNSPEC_COND_FCVT))]
   "TARGET_SVE"
   "fcvt\t%0.<Vetype>, %1/m, %2.<Vewtype>"
 )
@@ -3896,8 +3898,9 @@
 		: gen_aarch64_sve_zip1<mode>)
 		(temp, operands[1], operands[1]));
     rtx ptrue = aarch64_ptrue_reg (<VWIDE_PRED>mode);
-    emit_insn (gen_aarch64_sve_extend<mode><Vwide>2 (operands[0],
-						     ptrue, temp));
+    rtx strictness = gen_int_mode (SVE_RELAXED_GP, SImode);
+    emit_insn (gen_aarch64_sve_extend<mode><Vwide>2
+	       (operands[0], ptrue, temp, strictness));
     DONE;
   }
 )
@@ -3908,10 +3911,9 @@
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
 	(unspec:<VWIDE>
 	  [(match_operand:<VWIDE_PRED> 1 "register_operand" "Upl")
-	   (unspec:<VWIDE>
-	     [(match_operand:SVE_HSF 2 "register_operand" "w")]
-	     UNSPEC_FLOAT_CONVERT)]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
+	   (match_operand:SVE_HSF 2 "register_operand" "w")]
+	  UNSPEC_COND_FCVT))]
   "TARGET_SVE"
   "fcvt\t%0.<Vewtype>, %1/m, %2.<Vetype>"
 )
