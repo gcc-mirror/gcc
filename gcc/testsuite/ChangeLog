@@ -1,4 +1,9 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/vcond_21.c: New test.
+	* gcc.target/aarch64/sve/vcond_21_run.c: Likewise.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
 	* g++.target/aarch64/sve/dup_sel_1.C: New test.

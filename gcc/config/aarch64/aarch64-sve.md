@@ -94,7 +94,8 @@
 ;; ---- [INT,FP] Compare and select
 ;; ---- [INT] Comparisons
 ;; ---- [INT] While tests
-;; ---- [FP] Comparisons
+;; ---- [FP] Direct comparisons
+;; ---- [FP] Absolute comparisons
 ;; ---- [PRED] Test bits
 ;;
 ;; == Reductions
@@ -3364,7 +3365,7 @@
 )
 
 ;; -------------------------------------------------------------------------
-;; ---- [FP] Comparisons
+;; ---- [FP] Direct comparisons
 ;; -------------------------------------------------------------------------
 ;; Includes:
 ;; - FCMEQ
@@ -3471,6 +3472,45 @@
 	   (match_dup 2)
 	   (match_dup 3)]
 	  UNSPEC_COND_FCMUO))]
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Absolute comparisons
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - FACGE
+;; - FACGT
+;; - FACLE
+;; - FACLT
+;; -------------------------------------------------------------------------
+
+;; Predicated floating-point absolute comparisons.
+(define_insn_and_rewrite "*aarch64_pred_fac<cmp_op><mode>"
+  [(set (match_operand:<VPRED> 0 "register_operand" "=Upa")
+	(unspec:<VPRED>
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	   (match_operand:SI 4 "aarch64_sve_ptrue_flag")
+	   (unspec:SVE_F
+	     [(match_operand 5)
+	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (match_operand:SVE_F 2 "register_operand" "w")]
+	     UNSPEC_COND_FABS)
+	   (unspec:SVE_F
+	     [(match_operand 7)
+	      (match_operand:SI 8 "aarch64_sve_gp_strictness")
+	      (match_operand:SVE_F 3 "register_operand" "w")]
+	     UNSPEC_COND_FABS)]
+	  SVE_COND_FP_ABS_CMP))]
+  "TARGET_SVE
+   && aarch64_sve_pred_dominates_p (&operands[5], operands[1])
+   && aarch64_sve_pred_dominates_p (&operands[7], operands[1])"
+  "fac<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
+  "&& (!rtx_equal_p (operands[1], operands[5])
+       || !rtx_equal_p (operands[1], operands[7]))"
+  {
+    operands[5] = copy_rtx (operands[1]);
+    operands[7] = copy_rtx (operands[1]);
+  }
 )
 
 ;; -------------------------------------------------------------------------
