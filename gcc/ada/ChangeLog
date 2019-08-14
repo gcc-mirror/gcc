@@ -1,5 +1,10 @@
 2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* inline.adb (Add_Pending_Instantiation): Fix off-by-one error
+	in the comparison against the maximum number of instantiations.
+
+2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* inline.adb (Add_Pending_Instantiation): Use greater-or-equal
 	in the comparison against the maximum number of instantiations.
 

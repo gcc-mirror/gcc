@@ -794,7 +794,7 @@ package body Inline is
       --  Here is a defense against a ludicrous number of instantiations
       --  caused by a circular set of instantiation attempts.
 
-      if Pending_Instantiations.Last >= Maximum_Instantiations then
+      if Pending_Instantiations.Last + 1 >= Maximum_Instantiations then
          Error_Msg_Uint_1 := UI_From_Int (Maximum_Instantiations);
          Error_Msg_N ("too many instantiations, exceeds max of^", Inst);
          Error_Msg_N ("\limit can be changed using -gnateinn switch", Inst);
