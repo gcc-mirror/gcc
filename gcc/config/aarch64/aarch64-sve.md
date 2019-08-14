@@ -3656,40 +3656,28 @@
   }
 )
 
-;; Conversion of SF to DI, SI or HI, predicated with a PTRUE.
-(define_insn "*<optab>v16hsf<mode>2"
+;; Predicated float-to-integer conversion, either to the same width or wider.
+(define_insn "*aarch64_sve_<optab>_nontrunc<SVE_F:mode><SVE_HSDI:mode>"
   [(set (match_operand:SVE_HSDI 0 "register_operand" "=w")
 	(unspec:SVE_HSDI
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	  [(match_operand:<SVE_HSDI:VPRED> 1 "register_operand" "Upl")
 	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
-	   (match_operand:VNx8HF 2 "register_operand" "w")]
+	   (match_operand:SVE_F 2 "register_operand" "w")]
 	  SVE_COND_FCVTI))]
-  "TARGET_SVE"
-  "fcvtz<su>\t%0.<Vetype>, %1/m, %2.h"
+  "TARGET_SVE && <SVE_HSDI:elem_bits> >= <SVE_F:elem_bits>"
+  "fcvtz<su>\t%0.<SVE_HSDI:Vetype>, %1/m, %2.<SVE_F:Vetype>"
 )
 
-;; Conversion of SF to DI or SI, predicated with a PTRUE.
-(define_insn "*<optab>vnx4sf<mode>2"
-  [(set (match_operand:SVE_SDI 0 "register_operand" "=w")
-	(unspec:SVE_SDI
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
-	   (match_operand:VNx4SF 2 "register_operand" "w")]
-	  SVE_COND_FCVTI))]
-  "TARGET_SVE"
-  "fcvtz<su>\t%0.<Vetype>, %1/m, %2.s"
-)
-
-;; Conversion of DF to DI or SI, predicated with a PTRUE.
-(define_insn "*<optab>vnx2df<mode>2"
-  [(set (match_operand:SVE_SDI 0 "register_operand" "=w")
-	(unspec:SVE_SDI
+;; Predicated narrowing float-to-integer conversion.
+(define_insn "*aarch64_sve_<optab>_trunc<VNx2DF_ONLY:mode><VNx4SI_ONLY:mode>"
+  [(set (match_operand:VNx4SI_ONLY 0 "register_operand" "=w")
+	(unspec:VNx4SI_ONLY
 	  [(match_operand:VNx2BI 1 "register_operand" "Upl")
 	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
-	   (match_operand:VNx2DF 2 "register_operand" "w")]
+	   (match_operand:VNx2DF_ONLY 2 "register_operand" "w")]
 	  SVE_COND_FCVTI))]
   "TARGET_SVE"
-  "fcvtz<su>\t%0.<Vetype>, %1/m, %2.d"
+  "fcvtz<su>\t%0.<VNx4SI_ONLY:Vetype>, %1/m, %2.<VNx2DF_ONLY:Vetype>"
 )
 
 ;; -------------------------------------------------------------------------
@@ -3751,41 +3739,29 @@
   }
 )
 
-;; Conversion of DI, SI or HI to the same number of HFs, predicated
-;; with a PTRUE.
-(define_insn "*<optab><mode>vnx8hf2"
-  [(set (match_operand:VNx8HF 0 "register_operand" "=w")
-	(unspec:VNx8HF
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+;; Predicated integer-to-float conversion, either to the same width or
+;; narrower.
+(define_insn "*aarch64_sve_<optab>_nonextend<SVE_HSDI:mode><SVE_F:mode>"
+  [(set (match_operand:SVE_F 0 "register_operand" "=w")
+	(unspec:SVE_F
+	  [(match_operand:<SVE_HSDI:VPRED> 1 "register_operand" "Upl")
 	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
 	   (match_operand:SVE_HSDI 2 "register_operand" "w")]
 	  SVE_COND_ICVTF))]
-  "TARGET_SVE"
-  "<su>cvtf\t%0.h, %1/m, %2.<Vetype>"
+  "TARGET_SVE && <SVE_HSDI:elem_bits> >= <SVE_F:elem_bits>"
+  "<su>cvtf\t%0.<SVE_F:Vetype>, %1/m, %2.<SVE_HSDI:Vetype>"
 )
 
-;; Conversion of DI or SI to the same number of SFs, predicated with a PTRUE.
-(define_insn "*<optab><mode>vnx4sf2"
-  [(set (match_operand:VNx4SF 0 "register_operand" "=w")
-	(unspec:VNx4SF
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
-	   (match_operand:SVE_SDI 2 "register_operand" "w")]
-	  SVE_COND_ICVTF))]
-  "TARGET_SVE"
-  "<su>cvtf\t%0.s, %1/m, %2.<Vetype>"
-)
-
-;; Conversion of DI or SI to DF, predicated with a PTRUE.
-(define_insn "aarch64_sve_<optab><mode>vnx2df2"
-  [(set (match_operand:VNx2DF 0 "register_operand" "=w")
-	(unspec:VNx2DF
+;; Predicated widening integer-to-float conversion.
+(define_insn "aarch64_sve_<optab>_extend<VNx4SI_ONLY:mode><VNx2DF_ONLY:mode>"
+  [(set (match_operand:VNx2DF_ONLY 0 "register_operand" "=w")
+	(unspec:VNx2DF_ONLY
 	  [(match_operand:VNx2BI 1 "register_operand" "Upl")
 	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
-	   (match_operand:SVE_SDI 2 "register_operand" "w")]
+	   (match_operand:VNx4SI_ONLY 2 "register_operand" "w")]
 	  SVE_COND_ICVTF))]
   "TARGET_SVE"
-  "<su>cvtf\t%0.d, %1/m, %2.<Vetype>"
+  "<su>cvtf\t%0.<VNx2DF_ONLY:Vetype>, %1/m, %2.<VNx4SI_ONLY:Vetype>"
 )
 
 ;; -------------------------------------------------------------------------
@@ -3821,7 +3797,7 @@
 	       (temp, operands[1], operands[1]));
     rtx ptrue = aarch64_ptrue_reg (VNx2BImode);
     rtx strictness = gen_int_mode (SVE_RELAXED_GP, SImode);
-    emit_insn (gen_aarch64_sve_<FLOATUORS:optab>vnx4sivnx2df2
+    emit_insn (gen_aarch64_sve_<FLOATUORS:optab>_extendvnx4sivnx2df
 	       (operands[0], ptrue, temp, strictness));
     DONE;
   }
@@ -3859,17 +3835,16 @@
   }
 )
 
-;; Conversion of DFs to the same number of SFs, or SFs to the same number
-;; of HFs.
-(define_insn "*trunc<Vwide><mode>2"
+;; Predicated float-to-float truncation.
+(define_insn "*aarch64_sve_<optab>_trunc<SVE_SDF:mode><SVE_HSF:mode>"
   [(set (match_operand:SVE_HSF 0 "register_operand" "=w")
 	(unspec:SVE_HSF
-	  [(match_operand:<VWIDE_PRED> 1 "register_operand" "Upl")
+	  [(match_operand:<SVE_SDF:VPRED> 1 "register_operand" "Upl")
 	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
-	   (match_operand:<VWIDE> 2 "register_operand" "w")]
-	  UNSPEC_COND_FCVT))]
-  "TARGET_SVE"
-  "fcvt\t%0.<Vetype>, %1/m, %2.<Vewtype>"
+	   (match_operand:SVE_SDF 2 "register_operand" "w")]
+	  SVE_COND_FCVT))]
+  "TARGET_SVE && <SVE_SDF:elem_bits> > <SVE_HSF:elem_bits>"
+  "fcvt\t%0.<SVE_HSF:Vetype>, %1/m, %2.<SVE_SDF:Vetype>"
 )
 
 ;; -------------------------------------------------------------------------
@@ -3899,23 +3874,22 @@
 		(temp, operands[1], operands[1]));
     rtx ptrue = aarch64_ptrue_reg (<VWIDE_PRED>mode);
     rtx strictness = gen_int_mode (SVE_RELAXED_GP, SImode);
-    emit_insn (gen_aarch64_sve_extend<mode><Vwide>2
+    emit_insn (gen_aarch64_sve_fcvt_nontrunc<mode><Vwide>
 	       (operands[0], ptrue, temp, strictness));
     DONE;
   }
 )
 
-;; Conversion of SFs to the same number of DFs, or HFs to the same number
-;; of SFs.
-(define_insn "aarch64_sve_extend<mode><Vwide>2"
-  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-	(unspec:<VWIDE>
-	  [(match_operand:<VWIDE_PRED> 1 "register_operand" "Upl")
+;; Predicated float-to-float extension.
+(define_insn "aarch64_sve_<optab>_nontrunc<SVE_HSF:mode><SVE_SDF:mode>"
+  [(set (match_operand:SVE_SDF 0 "register_operand" "=w")
+	(unspec:SVE_SDF
+	  [(match_operand:<SVE_SDF:VPRED> 1 "register_operand" "Upl")
 	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
 	   (match_operand:SVE_HSF 2 "register_operand" "w")]
-	  UNSPEC_COND_FCVT))]
-  "TARGET_SVE"
-  "fcvt\t%0.<Vewtype>, %1/m, %2.<Vetype>"
+	  SVE_COND_FCVT))]
+  "TARGET_SVE && <SVE_SDF:elem_bits> > <SVE_HSF:elem_bits>"
+  "fcvt\t%0.<SVE_SDF:Vetype>, %1/m, %2.<SVE_HSF:Vetype>"
 )
 
 ;; -------------------------------------------------------------------------

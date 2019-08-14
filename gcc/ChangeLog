@@ -1,5 +1,37 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/iterators.md (VNx4SI_ONLY, VNx2DF_ONLY): New mode
+	iterators.
+	(SVE_BHSI, SVE_SDI): Tweak comment.
+	(SVE_HSDI): Likewise.  Fix definition.
+	(SVE_SDF): New mode iterator.
+	(elem_bits): New mode attribute.
+	(SVE_COND_FCVT): New int iterator.
+	* config/aarch64/aarch64-sve.md
+	(*<SVE_COND_ICVTF:optab>v16hsf<SVE_HSDI:mode>2)
+	(*<SVE_COND_ICVTF:optab>vnx4sf<SVE_SDI:mode>2)
+	(*<SVE_COND_ICVTF:optab>vnx2df<SVE_SDI:mode>2): Merge into...
+	(*aarch64_sve_<SVE_COND_ICVTF:optab>_nontrunc<SVE_F:mode><SVE_HSDI:mode>)
+	(*aarch64_sve_<SVE_COND_ICVTF:optab>_trunc<VNx2DF_ONLY:mode><VNx4SI_ONLY:mode>):
+	...these new patterns.
+	(*<SVE_COND_FCVTI:optab><SVE_HSDI:mode>vnx8hf2)
+	(*<SVE_COND_FCVTI:optab><SVE_SDI:mode>vnx4sf2)
+	(aarch64_sve_<SVE_COND_FCVTI:optab><SVE_SDI:mode>vnx2df2):
+	Merge into...
+	(*aarch64_sve_<SVE_COND_FCVTI:optab>_nonextend<SVE_HSDI:mode><SVE_F:mode>)
+	(aarch64_sve_<SVE_COND_FCVTI:optab>_extend<VNx4SI_ONLY:mode><VNx2DF_ONLY:mode>):
+	...these new patterns.
+	(vec_unpack<su_optab>_float_<perm_hilo>_vnx4si): Update accordingly.
+	(*trunc<Vwide><SVE_SDF:mode>2): Replace with...
+	(*aarch64_sve_<SVE_COND_FCVT:optab>_trunc<SVE_SDF:mode><SVE_HSF:mode>):
+	...this new pattern.
+	(aarch64_sve_extend<SVE_HSDF:mode><Vwide>2): Replace with...
+	(aarch64_sve_<SVE_COND_FCVT:optab>_nontrunc<SVE_HSF:mode><SVE_SDF:mode>):
+	...this new pattern.
+	(vec_unpacks_<perm_hilo>_<mode>): Update accordingly.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.md (UNSPEC_FLOAT_CONVERT): Delete.
 	* config/aarch64/iterators.md (UNSPEC_COND_FCVT, UNSPEC_COND_FCVTZS)
 	(UNSPEC_COND_FCVTZU, UNSPEC_COND_SCVTF, UNSPEC_COND_UCVTF): New
