@@ -1195,13 +1195,12 @@ adjust_last_stmt (strinfo *si, gimple *stmt, bool is_strcat)
    to constants.  */
 
 tree
-set_strlen_range (tree lhs, wide_int max, tree bound /* = NULL_TREE */)
+set_strlen_range (tree lhs, wide_int min, wide_int max,
+		  tree bound /* = NULL_TREE */)
 {
   if (TREE_CODE (lhs) != SSA_NAME
       || !INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
     return NULL_TREE;
-
-  wide_int min = wi::zero (max.get_precision ());
 
   if (bound)
     {
@@ -1312,7 +1311,8 @@ maybe_set_strlen_range (tree lhs, tree src, tree bound)
 	}
     }
 
-  return set_strlen_range (lhs, max, bound);
+  wide_int min = wi::zero (max.get_precision ());
+  return set_strlen_range (lhs, min, max, bound);
 }
 
 /* Handle a strlen call.  If strlen of the argument is known, replace
@@ -1434,6 +1434,12 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
 		  tree adj = fold_build2_loc (loc, MINUS_EXPR,
 					      TREE_TYPE (lhs), lhs, old);
 		  adjust_related_strinfos (loc, si, adj);
+		  /* Use the constant minimim length as the lower bound
+		     of the non-constant length.  */
+		  wide_int min = wi::to_wide (old);
+		  wide_int max
+		    = wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node)) - 2;
+		  set_strlen_range (lhs, min, max);
 		}
 	      else
 		{
@@ -3386,9 +3392,51 @@ int ssa_name_limit_t::next_ssa_name (tree ssa_name)
    on success and false otherwise.  */
 
 static bool
-count_nonzero_bytes (tree exp, unsigned lenrange[3], bool *nulterm,
+count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
+		     unsigned HOST_WIDE_INT nbytes,
+		     unsigned lenrange[3], bool *nulterm,
 		     bool *allnul, bool *allnonnul, ssa_name_limit_t &snlim)
 {
+  int idx = get_stridx (exp);
+  if (idx > 0)
+    {
+      strinfo *si = get_strinfo (idx);
+      /* FIXME: Handle non-constant lengths in some range.  */
+      if (!si || !tree_fits_shwi_p (si->nonzero_chars))
+	return false;
+
+      unsigned len = tree_to_shwi (si->nonzero_chars);
+      unsigned size = len + si->full_string_p;
+      if (size <= offset)
+	return false;
+
+      len -= offset;
+      size -= offset;
+
+      if (size < nbytes)
+	return false;
+
+      if (len < lenrange[0])
+	lenrange[0] = len;
+      if (lenrange[1] < len)
+	lenrange[1] = len;
+
+      if (!si->full_string_p)
+	*nulterm = false;
+
+      /* Since only the length of the string are known and
+	 its contents, clear ALLNUL and ALLNONNUL purely on
+	 the basis of the length.  */
+      if (len)
+	*allnul = false;
+      else
+	*allnonnul = false;
+      return true;
+    }
+
+  if (TREE_CODE (exp) == ADDR_EXPR)
+    exp = TREE_OPERAND (exp, 0);
+
   if (TREE_CODE (exp) == SSA_NAME)
     {
       /* Handle a single-character specially.  */
@@ -3401,7 +3449,8 @@ count_nonzero_bytes (tree exp, unsigned lenrange[3], bool *nulterm,
 	     (even if its exact value is not known) and if so, recurse
 	     once to set the range, etc.  */
 	  if (tree_expr_nonzero_p (exp))
-	    return count_nonzero_bytes (build_int_cst (type, 1), lenrange,
+	    return count_nonzero_bytes (build_int_cst (type, 1),
+					offset, nbytes, lenrange,
 					nulterm, allnul, allnonnul, snlim);
 	  /* Don't know whether EXP is or isn't nonzero.  */
 	  return false;
@@ -3422,35 +3471,28 @@ count_nonzero_bytes (tree exp, unsigned lenrange[3], bool *nulterm,
       for (unsigned i = 0; i != n; i++)
 	{
 	  tree def = gimple_phi_arg_def (stmt, i);
-	  if (!count_nonzero_bytes (def, lenrange, nulterm, allnul, allnonnul,
-				    snlim))
+	  if (!count_nonzero_bytes (def, offset, nbytes, lenrange, nulterm,
+				    allnul, allnonnul, snlim))
 	    return false;
 	}
 
       return true;
     }
 
-  /* Offset from the beginning of the representation bytes, a pointer
-     to the representation, and the number of bytes of the representation
-     to consider (may be less than the object size for MEM_REF).  */
-  unsigned HOST_WIDE_INT offset = 0;
-  const char *prep = NULL;
-  unsigned nbytes = 0;
-
   if (TREE_CODE (exp) == MEM_REF)
     {
-      /* If the MEM_REF operand is the address of an object such as
-	 a string or integer, extract it and the offset into it.  */
       tree arg = TREE_OPERAND (exp, 0);
-      if (TREE_CODE (arg) != ADDR_EXPR)
-	return false;
-
       tree off = TREE_OPERAND (exp, 1);
+
       if (TREE_CODE (off) != INTEGER_CST
 	  || !tree_fits_uhwi_p (off))
 	return false;
 
-      offset = tree_to_uhwi (off);
+      unsigned HOST_WIDE_INT wioff = tree_to_uhwi (off);
+      if (INT_MAX < wioff)
+	return false;
+
+      offset += wioff;
       if (INT_MAX < offset)
 	return false;
 
@@ -3458,38 +3500,12 @@ count_nonzero_bytes (tree exp, unsigned lenrange[3], bool *nulterm,
       tree type = TREE_TYPE (exp);
       if (tree typesize = TYPE_SIZE_UNIT (type))
 	nbytes = tree_to_uhwi (typesize);
+      else
+	return false;
 
-      if (offset == 0 && TREE_CODE (exp) != STRING_CST)
-	{
-	  int idx = get_stridx (arg);
-	  if (idx > 0)
-	    {
-	      strinfo *si = get_strinfo (idx);
-	      if (si && tree_fits_shwi_p (si->nonzero_chars))
-		{
-		  unsigned len = tree_to_shwi (si->nonzero_chars);
-		  if (len < lenrange[0])
-		    lenrange[0] = len;
-		  if (lenrange[1] < len)
-		    lenrange[1] = len;
-
-		  if (!si->full_string_p)
-		    *nulterm = false;
-
-		  /* Since only the length of the string are known and
-		     its contents, clear ALLNUL and ALLNONNUL purely on
-		     the basis of the length.  */
-		  if (len)
-		    *allnul = false;
-		  else
-		    *allnonnul = false;
-		  return true;
-		}
-	    }
-	}
-
-      /* Proceed to extract the object representation below.  */
-      exp = TREE_OPERAND (arg, 0);
+      /* Handle MEM_REF = SSA_NAME types of assignments.  */
+      return count_nonzero_bytes (arg, offset, nbytes, lenrange, nulterm,
+				  allnul, allnonnul, snlim);
     }
 
   if (TREE_CODE (exp) == VAR_DECL && TREE_READONLY (exp))
@@ -3499,20 +3515,18 @@ count_nonzero_bytes (tree exp, unsigned lenrange[3], bool *nulterm,
 	return false;
     }
 
+  const char *prep = NULL;
   if (TREE_CODE (exp) == STRING_CST)
     {
-      /* Set PREP and NBYTES to the string representation.  */
-      gcc_assert (offset <= INT_MAX);
+      unsigned nchars = TREE_STRING_LENGTH (exp);
+      if (nchars < offset)
+	return false;
 
       if (!nbytes)
-	{
-	  /* Unless NBYTES has already been determined above from
-	     MEM_REF, set it here.  It includes all internal nuls,
-	     including the terminating one if the string has one.  */
-	  nbytes = TREE_STRING_LENGTH (exp);
-	  if (nbytes <= offset)
-	    return false;
-	}
+	/* If NBYTES hasn't been determined earlier from MEM_REF,
+	   set it here.  It includes all internal nuls, including
+	   the terminating one if the string has one.  */
+	nbytes = nchars - offset;
 
       prep = TREE_STRING_POINTER (exp) + offset;
     }
@@ -3520,12 +3534,14 @@ count_nonzero_bytes (tree exp, unsigned lenrange[3], bool *nulterm,
   unsigned char buf[256];
   if (!prep)
     {
-      /* Try to extract the representation of the constant object.  */
-      nbytes = native_encode_expr (exp, buf, sizeof buf, -1);
+      /* If the pointer to representation hasn't been set above
+	 for STRING_CST point it at the buffer.  */
+      prep = reinterpret_cast <char *>(buf);
+      /* Try to extract the representation of the constant object
+	 or expression starting from the offset.  */
+      nbytes = native_encode_expr (exp, buf, sizeof buf, offset);
       if (!nbytes)
 	return false;
-
-      prep = reinterpret_cast <char *>(buf);
     }
 
   /* Compute the number of leading nonzero bytes in the representation
@@ -3591,7 +3607,8 @@ count_nonzero_bytes (tree exp, unsigned lenrange[3], bool *nulterm,
   *allnonnul = true;
 
   ssa_name_limit_t snlim;
-  return count_nonzero_bytes (exp, lenrange, nulterm, allnul, allnonnul, snlim);
+  return count_nonzero_bytes (exp, 0, 0, lenrange, nulterm, allnul, allnonnul,
+			      snlim);
 }
 
 /* Handle a single or multibyte store other than by a built-in function,
@@ -3664,11 +3681,14 @@ handle_store (gimple_stmt_iterator *gsi)
 
       if (tree dstsize = compute_objsize (lhs, 1))
 	if (compare_tree_int (dstsize, lenrange[2]) < 0)
-	  warning_n (gimple_location (stmt), OPT_Wstringop_overflow_,
-		     lenrange[2],
-		     "%Gwriting %u byte into a region of size %E",
-		     "%Gwriting %u bytes into a region of size %E",
-		     stmt, lenrange[2], dstsize);
+	  {
+	    location_t loc = gimple_nonartificial_location (stmt);
+	    warning_n (loc, OPT_Wstringop_overflow_,
+		       lenrange[2],
+		       "%Gwriting %u byte into a region of size %E",
+		       "%Gwriting %u bytes into a region of size %E",
+		       stmt, lenrange[2], dstsize);
+	  }
     }
   else
     {
@@ -3795,7 +3815,14 @@ handle_store (gimple_stmt_iterator *gsi)
 	    }
 	  else
 	    si->nonzero_chars = build_int_cst (size_type_node, offset);
-	  si->full_string_p = full_string_p;
+
+	  /* Set FULL_STRING_P only if the length of the strings being
+	     written is the same, and clear it if the strings have
+	     different lengths.  In the latter case the length stored
+	     in si->NONZERO_CHARS becomes the lower bound.
+	     FIXME: Handle the upper bound of the length if possible.  */
+	  si->full_string_p = full_string_p && lenrange[0] == lenrange[1];
+
 	  if (storing_all_zeros_p
 	      && ssaname
 	      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ssaname))
@@ -3825,10 +3852,23 @@ handle_store (gimple_stmt_iterator *gsi)
       if (idx != 0)
 	{
 	  tree ptr = (ssaname ? ssaname : build_fold_addr_expr (lhs));
-	  HOST_WIDE_INT slen = (storing_all_zeros_p
-				? 0
-				: (storing_nonzero_p
-				   && ranges_valid ? lenrange[0] : -1));
+
+	  HOST_WIDE_INT slen;
+	  if (storing_all_zeros_p)
+	    slen = 0;
+	  else if (storing_nonzero_p && ranges_valid)
+	    {
+	      /* FIXME: Handle the upper bound of the length when
+		 LENRANGE[0] != LENRANGE[1].  */
+	      slen = lenrange[0];
+	      if (lenrange[0] != lenrange[1])
+		/* Set the minimum length but ignore the maximum
+		   for now.  */
+		full_string_p = false;
+	    }
+	  else
+	    slen = -1;
+
 	  tree len = (slen <= 0
 		      ? size_zero_node
 		      : build_int_cst (size_type_node, slen));

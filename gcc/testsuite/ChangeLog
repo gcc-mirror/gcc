@@ -1,3 +1,14 @@
+2019-08-14  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91294
+	* gcc.dg/strlenopt-44.c: Adjust tested result.
+	* gcc.dg/strlenopt-70.c: Avoid exercising unimplemnted optimization.
+	* gcc.dg/strlenopt-73.c: New test.
+	* gcc.dg/strlenopt-74.c: New test.
+	* gcc.dg/strlenopt-75.c: New test.
+	* gcc.dg/strlenopt-76.c: New test.
+	* gcc.dg/strlenopt-77.c: New test.
+
 2019-08-14  Jakub Jelinek  <jakub@redhat.com>
 	    Marek Polacek  <polacek@redhat.com>
 
