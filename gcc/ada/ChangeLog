@@ -1,3 +1,11 @@
+2019-08-14  Yannick Moy  <moy@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Operation): Update assertion
+	for the separate declarations created in GNATprove mode.
+	* sem_disp.ads (Is_Overriding_Subprogram): Update comment.
+	* sem_elab.adb (SPARK_Processor): Fix test for checking of
+	overriding primitives.
+
 2019-08-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* inline.adb (Add_Inlined_Body): Tweak comments.
