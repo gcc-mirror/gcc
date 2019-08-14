@@ -655,6 +655,11 @@
   (and (match_code "const,const_vector")
        (match_test "aarch64_sve_float_mul_immediate_p (op)")))
 
+(define_predicate "aarch64_sve_float_maxmin_immediate"
+  (and (match_code "const_vector")
+       (ior (match_test "op == CONST0_RTX (GET_MODE (op))")
+	    (match_test "op == CONST1_RTX (GET_MODE (op))"))))
+
 (define_predicate "aarch64_sve_arith_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_sve_arith_immediate")))
@@ -707,6 +712,10 @@
 (define_predicate "aarch64_sve_float_mul_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_sve_float_mul_immediate")))
+
+(define_predicate "aarch64_sve_float_maxmin_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "aarch64_sve_float_maxmin_immediate")))
 
 (define_predicate "aarch64_sve_vec_perm_operand"
   (ior (match_operand 0 "register_operand")

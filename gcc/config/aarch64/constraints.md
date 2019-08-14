@@ -436,9 +436,16 @@
    and FSUB operations."
  (match_operand 0 "aarch64_sve_float_arith_immediate"))
 
+;; "B" for "bound".
+(define_constraint "vsB"
+  "@internal
+   A constraint that matches an immediate operand valid for SVE FMAX
+   and FMIN operations."
+ (match_operand 0 "aarch64_sve_float_maxmin_immediate"))
+
 (define_constraint "vsM"
   "@internal
-   A constraint that matches an imediate operand valid for SVE FMUL
+   A constraint that matches an immediate operand valid for SVE FMUL
    operations."
  (match_operand 0 "aarch64_sve_float_mul_immediate"))
 

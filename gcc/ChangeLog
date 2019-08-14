@@ -1,5 +1,19 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/predicates.md (aarch64_sve_float_maxmin_immediate)
+	(aarch64_sve_float_maxmin_operand): New predicates.
+	* config/aarch64/constraints.md (vsB): New constraint.
+	(vsM): Fix typo.
+	* config/aarch64/iterators.md (sve_pred_fp_rhs2_operand): Use
+	aarch64_sve_float_maxmin_operand for UNSPEC_COND_FMAXNM and
+	UNSPEC_COND_FMINNM.
+	* config/aarch64/aarch64-sve.md (<maxmin_uns><SVE_F:mode>3):
+	Use aarch64_sve_float_maxmin_operand for operand 2.
+	(*<SVE_COND_FP_MAXMIN_PUBLIC:optab><SVE_F:mode>3): Likewise.
+	Add alternatives for the constant forms.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/constraints.md (vsb): New constraint.
 	(vsm): Generalize description.
 	* config/aarch64/iterators.md (SVE_INT_BINARY_IMM): New code

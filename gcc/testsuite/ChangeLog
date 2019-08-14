@@ -1,5 +1,10 @@
 2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/fmaxnm_1.c: New test.
+	* gcc.target/aarch64/sve/fminnm_1.c: Likewise.
+
+2019-08-14  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/smax_1.c: New test.
 	* gcc.target/aarch64/sve/smin_1.c: Likewise.
 	* gcc.target/aarch64/sve/umax_1.c: Likewise.
