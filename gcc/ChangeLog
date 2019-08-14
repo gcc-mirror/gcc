@@ -1,3 +1,12 @@
+2019-08-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/extend.texi: Add "noinit" attribute documentation.
+	* doc/sourcebuild.texi: Add noinit effective target documentation.
+	* varasm.c (default_section_type_flags): Add support for "noinit"
+	section.
+	(default_elf_select_section): Add support for "noinit" attribute.
+	* config/msp430/msp430.c (msp430_attribute_table): Remove "noinit" entry.
+
 2019-08-14  Richard Biener  <rguenther@suse.de>
 	Uroš Bizjak  <ubizjak@gmail.com>
 

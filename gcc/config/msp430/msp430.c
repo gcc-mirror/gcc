@@ -1521,8 +1521,6 @@ const struct attribute_spec msp430_attribute_table[] =
   { ATTR_EITHER,      0, 0, true,  false, false, false, msp430_section_attr,
     NULL },
 
-  { ATTR_NOINIT,      0, 0, true,  false, false, false, msp430_data_attr,
-    NULL },
   { ATTR_PERSIST,     0, 0, true,  false, false, false, msp430_data_attr,
     NULL },
 
@@ -1751,6 +1749,8 @@ msp430_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
     {
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	return text_section;
+      /* FIXME: ATTR_NOINIT is handled generically in
+	 default_elf_select_section.  */
       else if (has_attr (ATTR_NOINIT, decl))
 	return noinit_section;
       else if (has_attr (ATTR_PERSIST, decl))
