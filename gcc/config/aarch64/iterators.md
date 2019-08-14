@@ -301,6 +301,9 @@
 ;; All SVE floating-point vector modes that have 16-bit or 32-bit elements.
 (define_mode_iterator SVE_HSF [VNx8HF VNx4SF])
 
+;; All SVE vector modes that have 16-bit, 32-bit or 64-bit elements.
+(define_mode_iterator SVE_HSD [VNx8HI VNx4SI VNx2DI VNx8HF VNx4SF VNx2DF])
+
 ;; All SVE vector modes that have 32-bit or 64-bit elements.
 (define_mode_iterator SVE_SD [VNx4SI VNx2DI VNx4SF VNx2DF])
 
@@ -928,9 +931,11 @@
 ])
 
 ;; Floating-point equivalent of selected modes.
-(define_mode_attr V_FP_EQUIV [(VNx4SI "VNx4SF") (VNx4SF "VNx4SF")
+(define_mode_attr V_FP_EQUIV [(VNx8HI "VNx8HF") (VNx8HF "VNx8HF")
+			      (VNx4SI "VNx4SF") (VNx4SF "VNx4SF")
 			      (VNx2DI "VNx2DF") (VNx2DF "VNx2DF")])
-(define_mode_attr v_fp_equiv [(VNx4SI "vnx4sf") (VNx4SF "vnx4sf")
+(define_mode_attr v_fp_equiv [(VNx8HI "vnx8hf") (VNx8HF "vnx8hf")
+			      (VNx4SI "vnx4sf") (VNx4SF "vnx4sf")
 			      (VNx2DI "vnx2df") (VNx2DF "vnx2df")])
 
 ;; Mode for vector conditional operations where the comparison has
