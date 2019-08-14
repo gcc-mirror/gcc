@@ -77,7 +77,7 @@ struct value_type
 namespace std {
 template<>
 struct __domain_allocator_traits<value_type, std::pmr::polymorphic_allocator<void>> : std::true_type {
-    static my_alloc*  rebind(std::pmr::polymorphic_allocator<void> _a) { return &test_alloc; };
+    static my_alloc*  convert(std::pmr::polymorphic_allocator<void> _a) { return &test_alloc; };
 };
 }
 int main()

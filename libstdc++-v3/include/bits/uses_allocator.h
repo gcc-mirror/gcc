@@ -45,11 +45,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	template <class _Tp, class _Alloc>
 	struct __domain_allocator_detector< _Tp, _Alloc,
-	__void_t<decltype(_Tp::domain_alloc_rebind)>>
-	: __is_invocable<decltype(_Tp::domain_alloc_rebind), const _Alloc&>::type
+	__void_t<decltype(_Tp::domain_alloc_convert)>>
+	: true_type
 	{
-		using __rT = decltype(_Tp::domain_alloc_rebind);
-		inline static __rT* rebind = &_Tp::domain_alloc_rebind;
+		using __rT = decltype(_Tp::domain_alloc_convert);
+		inline static __rT* convert = &_Tp::domain_alloc_convert;
 	};
 
   template <class _Tp, class _Alloc>
@@ -60,7 +60,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Alloc>
   struct __uses_domain_allocator
-  : __domain_allocator_traits<_Tp,_Alloc>::type
+  : __domain_allocator_traits<_Tp,_Alloc>
   { };
 
   // This is used for std::experimental::erased_type from Library Fundamentals.
@@ -226,7 +226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void __uses_allocator_construct_impl(__uses_alloc3<_Alloc> __a, _Tp* __ptr,
   					 _Args&&... __args)
     { ::new ((void*)__ptr) _Tp(std::forward<_Args>(__args)...,
-			       __domain_allocator_traits<_Tp, _Alloc>::rebind(*__a._M_a)); }
+			       __domain_allocator_traits<_Tp, _Alloc>::convert(*__a._M_a)); }
 
   template<typename _Tp, typename _Alloc, typename... _Args>
     void __uses_allocator_construct(const _Alloc& __a, _Tp* __ptr,
