@@ -152,6 +152,12 @@ generic
 
 package Sem_SPARK is
 
+   function Is_Legal (N : Node_Id) return Boolean;
+   --  Test the legality of a node wrt ownership-checking rules. This does not
+   --  check rules related to the validity of permissions associated with paths
+   --  from objects, so that it can be called from GNATprove on code of library
+   --  units analyzed in SPARK_Mode Auto.
+
    procedure Check_Safe_Pointers (N : Node_Id);
    --  The entry point of this package. It analyzes a node and reports errors
    --  when there are violations of ownership rules.
