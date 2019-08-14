@@ -4097,8 +4097,7 @@ aarch64_split_sve_subreg_move (rtx dest, rtx ptrue, rtx src)
 
   /* Emit:
 
-       (set DEST (unspec [PTRUE (unspec [SRC] UNSPEC_REV<nn>)]
-			 UNSPEC_MERGE_PTRUE))
+       (set DEST (unspec [PTRUE (unspec [SRC] UNSPEC_REV<nn>)] UNSPEC_PRED_X))
 
      with the appropriate modes.  */
   ptrue = gen_lowpart (pred_mode, ptrue);
@@ -4106,7 +4105,7 @@ aarch64_split_sve_subreg_move (rtx dest, rtx ptrue, rtx src)
   src = aarch64_replace_reg_mode (src, mode_with_narrower_elts);
   src = gen_rtx_UNSPEC (mode_with_narrower_elts, gen_rtvec (1, src), unspec);
   src = gen_rtx_UNSPEC (mode_with_narrower_elts, gen_rtvec (2, ptrue, src),
-			UNSPEC_MERGE_PTRUE);
+			UNSPEC_PRED_X);
   emit_insn (gen_rtx_SET (dest, src));
 }
 
@@ -17434,7 +17433,7 @@ aarch64_evpc_rev_local (struct expand_vec_perm_d *d)
     {
       rtx pred = aarch64_ptrue_reg (pred_mode);
       src = gen_rtx_UNSPEC (d->vmode, gen_rtvec (2, pred, src),
-			    UNSPEC_MERGE_PTRUE);
+			    UNSPEC_PRED_X);
     }
   emit_set_insn (d->target, src);
   return true;
