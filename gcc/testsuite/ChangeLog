@@ -1,3 +1,7 @@
+2019-08-14  Bob Duff  <duff@adacore.com>
+
+	* gnat.dg/inline19.adb, gnat.dg/inline19.ads: New testcase.
+
 2019-08-14  Gary Dismukes  <dismukes@adacore.com>
 
 	* gnat.dg/equal11.adb, gnat.dg/equal11_interface.ads,

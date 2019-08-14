@@ -1,5 +1,12 @@
 2019-08-14  Bob Duff  <duff@adacore.com>
 
+	* inline.adb (Check_And_Split_Unconstrained_Function): Ignore
+	protected functions to get rid of spurious error. The
+	transformation done by this procedure triggers legality errors
+	in the generated code in this case.
+
+2019-08-14  Bob Duff  <duff@adacore.com>
+
 	* sem_prag.adb (Process_Compile_Time_Warning_Or_Error): Defer
 	processing to the back end in all cases where the pragma's
 	condition is not known at compile time during the front end
