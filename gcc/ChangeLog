@@ -1,5 +1,10 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_simd_vector_alignment): Return
+	16 for SVE predicates even if they are fixed-length.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve.md (and<PRED_ALL:mode>3): Make the
 	operand order match the MOV /Z alias.
 
