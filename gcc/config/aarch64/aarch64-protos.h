@@ -475,6 +475,7 @@ bool aarch64_masks_and_shift_for_bfi_p (scalar_int_mode, unsigned HOST_WIDE_INT,
 bool aarch64_zero_extend_const_eq (machine_mode, rtx, machine_mode, rtx);
 bool aarch64_move_imm (HOST_WIDE_INT, machine_mode);
 opt_machine_mode aarch64_sve_pred_mode (unsigned int);
+bool aarch64_sve_mode_p (machine_mode);
 bool aarch64_sve_cnt_immediate_p (rtx);
 bool aarch64_sve_scalar_inc_dec_immediate_p (rtx);
 bool aarch64_sve_addvl_addpl_immediate_p (rtx);
