@@ -15915,11 +15915,13 @@ aarch64_simd_attr_length_rglist (machine_mode mode)
 static HOST_WIDE_INT
 aarch64_simd_vector_alignment (const_tree type)
 {
+  /* ??? Checking the mode isn't ideal, but VECTOR_BOOLEAN_TYPE_P can
+     be set for non-predicate vectors of booleans.  Modes are the most
+     direct way we have of identifying real SVE predicate types.  */
+  if (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_VECTOR_BOOL)
+    return 16;
   if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
-    /* ??? Checking the mode isn't ideal, but VECTOR_BOOLEAN_TYPE_P can
-       be set for non-predicate vectors of booleans.  Modes are the most
-       direct way we have of identifying real SVE predicate types.  */
-    return GET_MODE_CLASS (TYPE_MODE (type)) == MODE_VECTOR_BOOL ? 16 : 128;
+    return 128;
   return wi::umin (wi::to_wide (TYPE_SIZE (type)), 128).to_uhwi ();
 }
 
