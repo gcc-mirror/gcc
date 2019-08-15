@@ -2060,7 +2060,7 @@
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (minus:SVE_I
 	     (USMAX:SVE_I
-	       (match_operand:SVE_I 2 "register_operand" "0, w")
+	       (match_operand:SVE_I 2 "register_operand" "%0, w")
 	       (match_operand:SVE_I 3 "register_operand" "w, w"))
 	     (<max_opp>:SVE_I
 	       (match_dup 2)
