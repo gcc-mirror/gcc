@@ -1,5 +1,15 @@
+2019-08-15  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2019-08-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81429 - wrong parsing of constructor with C++11 attribute.
+	* parser.c (cp_parser_constructor_declarator_p): Handle the scenario
+	when a parameter declaration begins with [[attribute]].
+
 2019-08-14  Martin Sebor  <msebor@redhat.com>
 
+	Backported from mainline
 	2019-08-01  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/90947
