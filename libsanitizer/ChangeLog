@@ -1,3 +1,7 @@
+2019-08-15  Martin Liska  <mliska@suse.cz>
+
+	* tsan/tsan_rtl_ppc64.S: Reapply.
+
 2019-08-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR bootstrap/91455
