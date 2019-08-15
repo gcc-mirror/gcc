@@ -2073,6 +2073,84 @@
   [(set_attr "movprfx" "*,yes")]
 )
 
+;; Predicated integer absolute difference, merging with the first input.
+(define_insn_and_rewrite "*aarch64_cond_<su>abd<mode>_2"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (minus:SVE_I
+	     (unspec:SVE_I
+	       [(match_operand 4)
+		(USMAX:SVE_I
+		  (match_operand:SVE_I 2 "register_operand" "0, w")
+		  (match_operand:SVE_I 3 "register_operand" "w, w"))]
+	       UNSPEC_PRED_X)
+	     (unspec:SVE_I
+	       [(match_operand 5)
+		(<max_opp>:SVE_I
+		  (match_dup 2)
+		  (match_dup 3))]
+	       UNSPEC_PRED_X))
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   <su>abd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0, %2\;<su>abd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
+  "&& (!CONSTANT_P (operands[4]) || !CONSTANT_P (operands[5]))"
+  {
+    operands[4] = operands[5] = CONSTM1_RTX (<VPRED>mode);
+  }
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Predicated integer absolute difference, merging with an independent value.
+(define_insn_and_rewrite "*aarch64_cond_<su>abd<mode>_any"
+  [(set (match_operand:SVE_I 0 "register_operand" "=&w, &w, &w, &w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl")
+	   (minus:SVE_I
+	     (unspec:SVE_I
+	       [(match_operand 5)
+		(USMAX:SVE_I
+		  (match_operand:SVE_I 2 "register_operand" "0, w, w, w, w")
+		  (match_operand:SVE_I 3 "register_operand" "w, 0, w, w, w"))]
+	       UNSPEC_PRED_X)
+	     (unspec:SVE_I
+	       [(match_operand 6)
+		(<max_opp>:SVE_I
+		  (match_dup 2)
+		  (match_dup 3))]
+	       UNSPEC_PRED_X))
+	   (match_operand:SVE_I 4 "aarch64_simd_reg_or_zero" "Dz, Dz, Dz, 0, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE
+   && !rtx_equal_p (operands[2], operands[4])
+   && !rtx_equal_p (operands[3], operands[4])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;<su>abd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;<su>abd\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;<su>abd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/m, %2.<Vetype>\;<su>abd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   #"
+  "&& 1"
+  {
+    if (!CONSTANT_P (operands[5]) || !CONSTANT_P (operands[6]))
+      operands[5] = operands[6] = CONSTM1_RTX (<VPRED>mode);
+    else if (reload_completed
+	     && register_operand (operands[4], <MODE>mode)
+	     && !rtx_equal_p (operands[0], operands[4]))
+      {
+	emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[2],
+						 operands[4], operands[1]));
+	operands[4] = operands[2] = operands[0];
+      }
+    else
+      FAIL;
+  }
+  [(set_attr "movprfx" "yes")]
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Highpart multiplication
 ;; -------------------------------------------------------------------------
