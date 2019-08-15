@@ -311,7 +311,6 @@ msp430_extract_mcu_data (const char * mcu_name)
     default:
       gcc_unreachable ();
     }
-  /* FIXME: This array is alpha sorted - we could use a binary search.  */
   for (i = ARRAY_SIZE (hard_msp430_mcu_data); i--;)
     if (strcasecmp (mcu_name, hard_msp430_mcu_data[i].name) == 0)
       {

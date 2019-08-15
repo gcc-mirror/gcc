@@ -35,7 +35,7 @@ msp430_select_cpu (int argc, const char ** argv)
 {
   if (argc == 0)
     {
-      error ("expected an argument to %<msp430_select_cpu>%");
+      error ("expected an argument to %<msp430_select_cpu%>");
       return NULL;
     }
   msp430_extract_mcu_data (argv[0]);
@@ -80,7 +80,8 @@ msp430_set_driver_var (int argc, const char ** argv)
 /* Implement spec function `msp430_hwmult_lib´.  */
 
 const char *
-msp430_select_hwmult_lib (int argc ATTRIBUTE_UNUSED, const char ** argv ATTRIBUTE_UNUSED)
+msp430_select_hwmult_lib (int argc ATTRIBUTE_UNUSED,
+			  const char ** argv ATTRIBUTE_UNUSED)
 {
   int i;
 
@@ -137,7 +138,8 @@ msp430_select_hwmult_lib (int argc ATTRIBUTE_UNUSED, const char ** argv ATTRIBUT
 	    }
 	}
       else
-	error ("unexpected first argument to msp430_select_hwmult_lib: %s", argv[0]);
+	error ("unexpected first argument to msp430_select_hwmult_lib: %s",
+	       argv[0]);
       break;
 
     case 0:

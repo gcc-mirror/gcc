@@ -45,7 +45,8 @@ extern bool msp430x;
   while (0)
 
 #undef  STARTFILE_SPEC
-#define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{minrt:crt0-minrt.o%s}%{!minrt:crt0.o%s}} %{!minrt:crtbegin.o%s}"
+#define STARTFILE_SPEC "%{pg:gcrt0.o%s}" \
+  "%{!pg:%{minrt:crt0-minrt.o%s}%{!minrt:crt0.o%s}} %{!minrt:crtbegin.o%s}"
 
 /* -lgcc is included because crtend.o needs __mspabi_func_epilog_1.  */
 #undef  ENDFILE_SPEC
@@ -55,16 +56,20 @@ extern bool msp430x;
 #define ASM_SPEC "-mP " /* Enable polymorphic instructions.  */ \
   "%{mcpu=*:-mcpu=%*} " /* Pass the CPU type on to the assembler.  */ \
   "%{mrelax=-mQ} " /* Pass the relax option on to the assembler.  */ \
-  "%{mlarge:-ml} " /* Tell the assembler if we are building for the LARGE pointer model.  */ \
-  "%{!msim:-md} %{msim:%{mlarge:-md}} " /* Copy data from ROM to RAM if necessary.  */ \
-  "%{msilicon-errata=*:-msilicon-errata=%*} " /* Pass on -msilicon-errata.  */ \
-  "%{msilicon-errata-warn=*:-msilicon-errata-warn=%*} " /* Pass on -msilicon-errata-warn.  */ \
-  "%{ffunction-sections:-gdwarf-sections} " /* If function sections are being created then create DWARF line number sections as well.  */ \
-  "%{mdata-region=*:-mdata-region=%*} " /* Pass on -mdata-region.  */
+  /* Tell the assembler if we are building for the LARGE pointer model.  */ \
+  "%{mlarge:-ml} " \
+  /* Copy data from ROM to RAM if necessary.  */ \
+  "%{!msim:-md} %{msim:%{mlarge:-md}} " \
+  "%{msilicon-errata=*:-msilicon-errata=%*} " \
+  "%{msilicon-errata-warn=*:-msilicon-errata-warn=%*} " \
+  /* Create DWARF line number sections for -ffunction-sections.  */ \
+  "%{ffunction-sections:-gdwarf-sections} " \
+  "%{mdata-region=*:-mdata-region=%*} "
 
 /* Enable linker section garbage collection by default, unless we
    are creating a relocatable binary (gc does not work) or debugging
-   is enabled  (the GDB testsuite relies upon unused entities not being deleted).  */
+   is enabled  (the GDB testsuite relies upon unused entities not being
+   deleted).  */
 #define LINK_SPEC "%{mrelax:--relax} %{mlarge:%{!r:%{!g:--gc-sections}}} " \
   "%{mcode-region=*:--code-region=%*} %{mdata-region=*:--data-region=%*}"
 
@@ -110,7 +115,8 @@ extern const char * msp430_check_path_for_devices (int, const char **);
 #undef  LIB_SPEC
 #define LIB_SPEC "					\
 --start-group						\
-%{mhwmult=auto:%{mmcu=*:%:msp430_hwmult_lib(mcu %{mmcu=*:%*});:%:msp430_hwmult_lib(default)}; \
+%{mhwmult=auto:%{mmcu=*:%:msp430_hwmult_lib(mcu %{mmcu=*:%*});\
+  :%:msp430_hwmult_lib(default)};			\
   mhwmult=*:%:msp430_hwmult_lib(hwmult %{mhwmult=*:%*}); \
   mmcu=*:%:msp430_hwmult_lib(mcu %{mmcu=*:%*});		\
   :%:msp430_hwmult_lib(default)}			\
@@ -395,7 +401,8 @@ typedef struct
   (((N) < 3) ? ((N) + 12) : INVALID_REGNUM)
 
 #define EH_RETURN_HANDLER_RTX \
-  gen_rtx_MEM(Pmode, gen_rtx_PLUS (Pmode, gen_rtx_REG(Pmode, SP_REGNO), gen_rtx_REG (Pmode, 15)))
+  gen_rtx_MEM (Pmode, gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, SP_REGNO), \
+				   gen_rtx_REG (Pmode, 15)))
 
 #define EH_RETURN_STACKADJ_RTX gen_rtx_REG (Pmode, 15)
 
@@ -459,7 +466,8 @@ typedef struct
 /* Prevent reload (and others) from choosing HImode stack slots
    when spilling hard registers when they may contain PSImode values.  */
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO,NREGS,MODE) \
-  ((TARGET_LARGE && ((NREGS) <= 2)) ? PSImode : choose_hard_reg_mode ((REGNO), (NREGS), false))
+  ((TARGET_LARGE && ((NREGS) <= 2)) ? PSImode \
+   : choose_hard_reg_mode ((REGNO), (NREGS), false))
 
 #define ACCUMULATE_OUTGOING_ARGS 1
 

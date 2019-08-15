@@ -1,5 +1,49 @@
 2019-08-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	MSP430: Fix lines over 80 characters long in
+	config/msp430/*.{c,h} files
+
+	* config/msp430/driver-msp430.c (msp430_select_cpu): Fix format
+	specifier in string.
+	(msp430_select_hwmult_lib): Split line more than 80 characters long.
+	* config/msp430/msp430-devices.c (msp430_extract_mcu_data): Remove
+	redundant old comment.
+	* config/msp430/msp430-protos.h (msp430_output_aligned_decl_common):
+	Split line more than 80 characters long.
+	* config/msp430/msp430.c (msp430_option_override): Likewise.
+	(msp430_return_in_memory): Likewise.
+	(msp430_gimplify_va_arg_expr): Likewise.
+	(TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P): Likewise.
+	(msp430_legitimate_constant): Likewise.
+	(TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS): Likewise.
+	(msp430_attr): Likewise.
+	(msp430_data_attr): Likewise.
+	(msp430_start_function): Likewise.
+	(gen_prefix): Likewise.
+	(msp430_init_sections): Likewise.
+	(msp430_select_section): Likewise.
+	(msp430_function_section): Likewise.
+	(msp430_unique_section): Likewise.
+	(msp430_output_aligned_decl_common): Likewise.
+	(msp430_do_not_relax_short_jumps): Likewise.
+	(msp430_init_builtins): Likewise.
+	(msp430_expand_delay_cycles): Likewise.
+	(msp430_expand_prologue): Likewise.
+	(msp430_expand_epilogue): Likewise.
+	(msp430_expand_helper): Likewise.
+	(msp430_split_movsi): Likewise.
+	(msp430_print_operand): Likewise.
+	(msp430_return_addr_rtx): Likewise.
+	(msp430x_extendhisi): Likewise.
+	* config/msp430/msp430.h (STARTFILE_SPEC): Likewise.
+	(ASM_SPEC): Likewise.
+	Remove very obvious comments.
+	(LIB_SPEC): Split line more than 80 characters long.
+	(EH_RETURN_HANDLER_RTX): Likewise.
+	(HARD_REGNO_CALLER_SAVE_MODE): Likewise.
+
+2019-08-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	MSP430: Fix whitespace errors and incorrect indentation in
 	config/msp430/*.{c,h} files
 
