@@ -498,7 +498,6 @@ simd_clone_adjust_return_type (struct cgraph_node *node)
   /* Adjust the function return type.  */
   if (orig_rettype == void_type_node)
     return NULL_TREE;
-  TREE_TYPE (fndecl) = build_distinct_type_copy (TREE_TYPE (fndecl));
   t = TREE_TYPE (TREE_TYPE (fndecl));
   if (INTEGRAL_TYPE_P (t) || POINTER_TYPE_P (t))
     veclen = node->simdclone->vecsize_int;
@@ -724,11 +723,7 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	  else
 	    new_reversed = void_list_node;
 	}
-
-      tree new_type = build_distinct_type_copy (TREE_TYPE (node->decl));
-      TYPE_ARG_TYPES (new_type) = new_reversed;
-      TREE_TYPE (node->decl) = new_type;
-
+      TYPE_ARG_TYPES (TREE_TYPE (node->decl)) = new_reversed;
       adjustments.release ();
     }
   args.release ();
@@ -1164,6 +1159,7 @@ simd_clone_adjust (struct cgraph_node *node)
 {
   push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 
+  TREE_TYPE (node->decl) = build_distinct_type_copy (TREE_TYPE (node->decl));
   targetm.simd_clone.adjust (node);
 
   tree retval = simd_clone_adjust_return_type (node);
@@ -1737,6 +1733,8 @@ expand_simd_clones (struct cgraph_node *node)
 	    simd_clone_adjust (n);
 	  else
 	    {
+	      TREE_TYPE (n->decl)
+		= build_distinct_type_copy (TREE_TYPE (n->decl));
 	      targetm.simd_clone.adjust (n);
 	      simd_clone_adjust_return_type (n);
 	      simd_clone_adjust_argument_types (n);
