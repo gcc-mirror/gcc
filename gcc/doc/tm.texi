@@ -5314,12 +5314,6 @@ This hook is used by expand pass to emit insn to store @var{bounds}
 returned by function call into @var{slot}.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SETUP_INCOMING_VARARG_BOUNDS (cumulative_args_t @var{args_so_far}, machine_mode @var{mode}, tree @var{type}, int *@var{pretend_args_size}, int @var{second_time})
-Use it to store bounds for anonymous register arguments stored
-into the stack.  Arguments meaning is similar to
-@code{TARGET_SETUP_INCOMING_VARARGS}.
-@end deftypefn
-
 @node Trampolines
 @section Support for Nested Functions
 @cindex support for nested functions

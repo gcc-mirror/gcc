@@ -4126,34 +4126,6 @@ ix86_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
     setup_incoming_varargs_64 (&next_cum);
 }
 
-static void
-ix86_setup_incoming_vararg_bounds (cumulative_args_t cum_v,
-				   machine_mode mode,
-				   tree type,
-				   int *pretend_size ATTRIBUTE_UNUSED,
-				   int no_rtl)
-{
-  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  CUMULATIVE_ARGS next_cum;
-  tree fntype;
-
-  gcc_assert (!no_rtl);
-
-  /* Do nothing if we use plain pointer to argument area.  */
-  if (!TARGET_64BIT || cum->call_abi == MS_ABI)
-    return;
-
-  fntype = TREE_TYPE (current_function_decl);
-
-  /* For varargs, we do not want to skip the dummy va_dcl argument.
-     For stdargs, we do want to skip the last named argument.  */
-  next_cum = *cum;
-  if (stdarg_p (fntype))
-    ix86_function_arg_advance (pack_cumulative_args (&next_cum), mode, type,
-			       true);
-}
-
-
 /* Checks if TYPE is of kind va_list char *.  */
 
 static bool
@@ -23048,9 +23020,6 @@ ix86_run_selftests (void)
 
 #undef TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS
 #define TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS true
-
-#undef TARGET_SETUP_INCOMING_VARARG_BOUNDS
-#define TARGET_SETUP_INCOMING_VARARG_BOUNDS ix86_setup_incoming_vararg_bounds
 
 #undef TARGET_OFFLOAD_OPTIONS
 #define TARGET_OFFLOAD_OPTIONS \

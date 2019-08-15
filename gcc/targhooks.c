@@ -2274,15 +2274,6 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   return build_va_arg_indirect_ref (addr);
 }
 
-void
-default_setup_incoming_vararg_bounds (cumulative_args_t ca ATTRIBUTE_UNUSED,
-				      machine_mode mode ATTRIBUTE_UNUSED,
-				      tree type ATTRIBUTE_UNUSED,
-				      int *pretend_arg_size ATTRIBUTE_UNUSED,
-				      int second_time ATTRIBUTE_UNUSED)
-{
-}
-
 /* An implementation of TARGET_CAN_USE_DOLOOP_P for targets that do
    not support nested low-overhead loops.  */
 

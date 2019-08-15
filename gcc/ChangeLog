@@ -1,3 +1,13 @@
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def (setup_incoming_vararg_bounds): Remove.
+	* doc/tm.texi.in (TARGET_SETUP_INCOMING_VARARG_BOUNDS): Remove.
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (default_setup_incoming_vararg_bounds): Delete.
+	* targhooks.h (default_setup_incoming_vararg_bounds): Likewise.
+	* config/i386/i386.c (ix86_setup_incoming_vararg_bounds): Likewise.
+	(TARGET_SETUP_INCOMING_VARARG_BOUNDS): Likewise.
+
 2019-08-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	MSP430: Fix lines over 80 characters long in
