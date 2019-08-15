@@ -26,10 +26,10 @@
 extern bool msp430x;
 #endif
 
-#define TARGET_CPU_CPP_BUILTINS()               \
-  do                                            \
-    {                                           \
-      builtin_define ("NO_TRAMPOLINES");        \
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define ("NO_TRAMPOLINES");	\
       builtin_define ("__MSP430__"); 		\
       builtin_define (msp430_mcu_name ());	\
       if (msp430x)				\
@@ -41,7 +41,7 @@ extern bool msp430x;
 	}					\
       else					\
 	builtin_assert ("cpu=MSP430"); 		\
-    }                                           \
+    }						\
   while (0)
 
 #undef  STARTFILE_SPEC
@@ -305,9 +305,9 @@ enum reg_class
 #define INDEX_REG_CLASS			GEN_REGS
 #define N_REG_CLASSES			(int) LIM_REG_CLASSES
 
-#define PC_REGNUM 		        0
-#define STACK_POINTER_REGNUM 	        1
-#define CC_REGNUM                       2
+#define PC_REGNUM			0
+#define STACK_POINTER_REGNUM		1
+#define CC_REGNUM 			2
 #define FRAME_POINTER_REGNUM 		4 /* not usually used, call preserved */
 #define ARG_POINTER_REGNUM 		16
 #define STATIC_CHAIN_REGNUM 		5 /* FIXME */
@@ -439,7 +439,7 @@ typedef struct
   do						\
     {						\
       if ((LOG) == 0)				\
-        break;					\
+	break;					\
       fprintf (STREAM, "\t.balign %d\n", 1 << (LOG));	\
     }						\
   while (0)

@@ -1,3 +1,63 @@
+2019-08-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	MSP430: Fix whitespace errors and incorrect indentation in
+	config/msp430/*.{c,h} files
+
+	* config/msp430/driver-msp430.c (msp430_select_cpu): Fix indentation.
+	(msp430_select_hwmult_lib): Likewise.
+	* config/msp430/msp430-devices.c (parse_devices_csv_1): Likewise.
+	(msp430_extract_mcu_data): Likewise.
+	(struct t_msp430_mcu_data): Likewise.
+	* config/msp430/msp430.c (struct machine_function): Remove whitespace
+	before left square bracket.
+	(msp430_option_override): Fix indentation.
+	(msp430_hard_regno_nregs_with_padding): Likewise.
+	(msp430_initial_elimination_offset): Likewise.
+	(msp430_special_register_convention_p): Remove whitespace before left
+	square bracket and after exclamation mark.
+	(msp430_evaluate_arg): Likewise.
+	(msp430_callee_copies): Fix indentation.
+	(msp430_gimplify_va_arg_expr): Likewise.
+	(msp430_function_arg_advance): Remove whitespace before left square
+	bracket.
+	(reg_ok_for_addr): Likewise.
+	(msp430_preserve_reg_p): Likewise.
+	(msp430_compute_frame_info): Likewise.
+	(msp430_asm_output_addr_const_extra): Add space between function name
+	and open parenthesis.
+	(has_section_name): Fix indentation.
+	(msp430_attr): Remove trailing whitespace.
+	(msp430_section_attr): Likewise.
+	(msp430_data_attr): Likewise.
+	(struct msp430_attribute_table): Fix comment and whitespace.
+	(msp430_start_function): Remove whitespace before left square bracket.
+	Add space between function name and open parenthesis.
+	(msp430_select_section): Remove trailing whitespace.
+	(msp430_section_type_flags): Remove trailing whitespace.
+	(msp430_unique_section): Remove space before closing parenthesis.
+	(msp430_output_aligned_decl_common): Change 8 spaces to a tab.
+	(msp430_builtins): Remove whitespace before left square bracket.
+	(msp430_init_builtins):	Fix indentation.
+	(msp430_expand_prologue): Remove whitespace before left square bracket.
+	Remove space before closing parenthesis.
+	(msp430_expand_epilogue): Remove whitespace before left square bracket.
+	(msp430_split_movsi): Remove space before closing parenthesis.
+	(helper_function_name_mappings): Fix indentation.
+	(msp430_use_f5_series_hwmult): Fix whitespace.
+	(use_32bit_hwmult): Likewise.
+	(msp430_no_hwmult): Likewise.
+	(msp430_output_labelref): Remove whitespace before left square bracket.
+	(msp430_print_operand_raw): Likewise.
+	(msp430_print_operand_addr): Likewise.
+	(msp430_print_operand): Add two spaces after '.' in comment.
+	Fix trailing whitespace.
+	(msp430x_extendhisi): Fix indentation.
+	* config/msp430/msp430.h (TARGET_CPU_CPP_BUILTINS): Change 8 spaces to
+	tab.
+	(PC_REGNUM): Likewise.
+	(STACK_POINTER_REGNUM): Likewise.
+	(CC_REGNUM): Likewise.
+
 2019-08-15  Richard Biener  <rguenther@suse.de>
 
 	PR target/91454

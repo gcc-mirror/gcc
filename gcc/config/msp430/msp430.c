@@ -64,7 +64,7 @@ struct GTY(()) machine_function
   /* If set, the rest of the fields have been computed.  */
   int computed;
   /* Which registers need to be saved in the pro/epilogue.  */
-  int need_to_save [FIRST_PSEUDO_REGISTER];
+  int need_to_save[FIRST_PSEUDO_REGISTER];
 
   /* These fields describe the frame layout...  */
   /* arg pointer */
@@ -149,8 +149,8 @@ hwmult_name (unsigned int val)
 static void
 msp430_option_override (void)
 {
-  /* The MSP430 architecture can safely dereference a NULL pointer. In fact,
-  there are memory mapped registers there.  */
+  /* The MSP430 architecture can safely dereference a NULL pointer.  In fact,
+     there are memory mapped registers there.  */
   flag_delete_null_pointer_checks = 0;
 
   init_machine_status = msp430_init_machine_status;
@@ -169,44 +169,44 @@ msp430_option_override (void)
     {
       msp430_extract_mcu_data (target_mcu);
 
-	if (extracted_mcu_data.name != NULL)
-	  {
-	    bool xisa = extracted_mcu_data.revision >= 1;
+      if (extracted_mcu_data.name != NULL)
+	{
+	  bool xisa = extracted_mcu_data.revision >= 1;
 
-	    if (msp430_warn_mcu)
-	      {
-		if (target_cpu && msp430x != xisa)
-		  warning (0, "MCU %qs supports %s ISA but %<-mcpu%> option "
-			   "is set to %s",
-			   target_mcu, xisa ? "430X" : "430", msp430x ? "430X" : "430");
+	  if (msp430_warn_mcu)
+	    {
+	      if (target_cpu && msp430x != xisa)
+		warning (0, "MCU %qs supports %s ISA but %<-mcpu%> option "
+			 "is set to %s",
+			 target_mcu, xisa ? "430X" : "430", msp430x ? "430X" : "430");
 
-		if (extracted_mcu_data.hwmpy == 0
-		    && msp430_hwmult_type != MSP430_HWMULT_AUTO
-		    && msp430_hwmult_type != MSP430_HWMULT_NONE)
-		  warning (0, "MCU %qs does not have hardware multiply "
-			   "support, but %<-mhwmult%> is set to %s",
-			   target_mcu,
-			   msp430_hwmult_type == MSP430_HWMULT_SMALL ? "16-bit"
-			   : msp430_hwmult_type == MSP430_HWMULT_LARGE ? "32-bit" : "f5series");
-		else if (msp430_hwmult_type == MSP430_HWMULT_SMALL
-		    && extracted_mcu_data.hwmpy != 1
-		    && extracted_mcu_data.hwmpy != 2)
-		  warning (0, "MCU %qs supports %s hardware multiply, "
-			   "but %<-mhwmult%> is set to 16-bit",
-			   target_mcu, hwmult_name (extracted_mcu_data.hwmpy));
-		else if (msp430_hwmult_type == MSP430_HWMULT_LARGE
-			 && extracted_mcu_data.hwmpy != 4)
-		  warning (0, "MCU %qs supports %s hardware multiply, "
-			   "but %<-mhwmult%> is set to 32-bit",
-			   target_mcu, hwmult_name (extracted_mcu_data.hwmpy));
-		else if (msp430_hwmult_type == MSP430_HWMULT_F5SERIES
-			 && extracted_mcu_data.hwmpy != 8)
-		  warning (0, "MCU %qs supports %s hardware multiply, "
-			   "but %<-mhwmult%> is set to f5series",
-			   target_mcu, hwmult_name (extracted_mcu_data.hwmpy));
-	      }
-	    msp430x = xisa;
-	  }
+	      if (extracted_mcu_data.hwmpy == 0
+		  && msp430_hwmult_type != MSP430_HWMULT_AUTO
+		  && msp430_hwmult_type != MSP430_HWMULT_NONE)
+		warning (0, "MCU %qs does not have hardware multiply "
+			 "support, but %<-mhwmult%> is set to %s",
+			 target_mcu,
+			 msp430_hwmult_type == MSP430_HWMULT_SMALL ? "16-bit"
+			 : msp430_hwmult_type == MSP430_HWMULT_LARGE ? "32-bit" : "f5series");
+	      else if (msp430_hwmult_type == MSP430_HWMULT_SMALL
+		       && extracted_mcu_data.hwmpy != 1
+		       && extracted_mcu_data.hwmpy != 2)
+		warning (0, "MCU %qs supports %s hardware multiply, "
+			 "but %<-mhwmult%> is set to 16-bit",
+			 target_mcu, hwmult_name (extracted_mcu_data.hwmpy));
+	      else if (msp430_hwmult_type == MSP430_HWMULT_LARGE
+		       && extracted_mcu_data.hwmpy != 4)
+		warning (0, "MCU %qs supports %s hardware multiply, "
+			 "but %<-mhwmult%> is set to 32-bit",
+			 target_mcu, hwmult_name (extracted_mcu_data.hwmpy));
+	      else if (msp430_hwmult_type == MSP430_HWMULT_F5SERIES
+		       && extracted_mcu_data.hwmpy != 8)
+		warning (0, "MCU %qs supports %s hardware multiply, "
+			 "but %<-mhwmult%> is set to f5series",
+			 target_mcu, hwmult_name (extracted_mcu_data.hwmpy));
+	    }
+	  msp430x = xisa;
+	}
       else
 	{
 	  if (msp430_hwmult_type == MSP430_HWMULT_AUTO)
@@ -348,7 +348,7 @@ msp430_hard_regno_nregs_has_padding (int regno ATTRIBUTE_UNUSED,
 /* Implements HARD_REGNO_NREGS_WITH_PADDING.  */
 int
 msp430_hard_regno_nregs_with_padding (int regno ATTRIBUTE_UNUSED,
-				     machine_mode mode)
+				      machine_mode mode)
 {
   if (mode == PSImode)
     return 2;
@@ -421,7 +421,7 @@ msp430_initial_elimination_offset (int from, int to)
       /* Allow for the saved return address.  */
       rv += (TARGET_LARGE ? 4 : 2);
       /* NB/ No need to allow for crtl->args.pretend_args_size.
-         GCC does that for us.  */
+	 GCC does that for us.  */
       break;
     default:
       gcc_unreachable ();
@@ -531,7 +531,7 @@ msp430_addr_space_convert (rtx op, tree from_type, tree to_type)
 
 /* For each function, we list the gcc version and the TI version on
    each line, where we're converting the function names.  */
-static char const * const special_convention_function_names [] =
+static char const * const special_convention_function_names[] =
 {
   "__muldi3", "__mspabi_mpyll",
   "__udivdi3", "__mspabi_divull",
@@ -556,8 +556,8 @@ msp430_special_register_convention_p (const char *name)
 {
   int i;
 
-  for (i = 0; special_convention_function_names [i]; i++)
-    if (! strcmp (name, special_convention_function_names [i]))
+  for (i = 0; special_convention_function_names[i]; i++)
+    if (!strcmp (name, special_convention_function_names[i]))
       return true;
 
   return false;
@@ -653,7 +653,7 @@ msp430_evaluate_arg (cumulative_args_t cap,
     {
     case 1:
       for (i = 0; i < 4; i++)
-	if (! ca->reg_used [i])
+	if (!ca->reg_used[i])
 	  {
 	    ca->reg_count = 1;
 	    ca->start_reg = CA_FIRST_REG + i;
@@ -662,13 +662,13 @@ msp430_evaluate_arg (cumulative_args_t cap,
       break;
     case 2:
       for (i = 0; i < 3; i++)
-	if (! ca->reg_used [i] && ! ca->reg_used [i + 1])
+	if (!ca->reg_used[i] && !ca->reg_used[i + 1])
 	  {
 	    ca->reg_count = 2;
 	    ca->start_reg = CA_FIRST_REG + i;
 	    return;
 	  }
-      if (! ca->reg_used [3] && ca->can_split)
+      if (!ca->reg_used[3] && ca->can_split)
 	{
 	  ca->reg_count = 1;
 	  ca->mem_count = 2;
@@ -679,10 +679,10 @@ msp430_evaluate_arg (cumulative_args_t cap,
     case 3:
     case 4:
       ca->can_split = 0;
-      if (! ca->reg_used [0]
-	  && ! ca->reg_used [1]
-	  && ! ca->reg_used [2]
-	  && ! ca->reg_used [3])
+      if (!ca->reg_used[0]
+	  && !ca->reg_used[1]
+	  && !ca->reg_used[2]
+	  && !ca->reg_used[3])
 	{
 	  ca->reg_count = 4;
 	  ca->start_reg = CA_FIRST_REG;
@@ -758,9 +758,9 @@ msp430_pass_by_reference (cumulative_args_t cap ATTRIBUTE_UNUSED,
 
 static bool
 msp430_callee_copies (cumulative_args_t cap ATTRIBUTE_UNUSED,
-                     machine_mode mode ATTRIBUTE_UNUSED,
-                     const_tree type ATTRIBUTE_UNUSED,
-                     bool named ATTRIBUTE_UNUSED)
+		      machine_mode mode ATTRIBUTE_UNUSED,
+		      const_tree type ATTRIBUTE_UNUSED,
+		      bool named ATTRIBUTE_UNUSED)
 {
   return true;
 }
@@ -781,7 +781,7 @@ msp430_function_arg_advance (cumulative_args_t cap,
 
   if (ca->start_reg >= CA_FIRST_REG)
     for (i = 0; i < ca->reg_count; i ++)
-      ca->reg_used [i + ca->start_reg - CA_FIRST_REG] = 1;
+      ca->reg_used[i + ca->start_reg - CA_FIRST_REG] = 1;
 
   ca->special_p = 0;
 }
@@ -845,7 +845,7 @@ msp430_get_raw_result_mode (int regno ATTRIBUTE_UNUSED)
 
 static tree
 msp430_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
-			  gimple_seq *post_p)
+			     gimple_seq *post_p)
 {
   tree addr, t, type_size, rounded_size, valist_tmp;
   unsigned HOST_WIDE_INT align, boundary;
@@ -942,7 +942,7 @@ reg_ok_for_addr (rtx r, bool strict)
   int rn = REGNO (r);
 
   if (strict && rn >= FIRST_PSEUDO_REGISTER)
-    rn = reg_renumber [rn];
+    rn = reg_renumber[rn];
   if (strict && 0 <= rn && rn < FIRST_PSEUDO_REGISTER)
     return true;
   if (!strict)
@@ -1036,7 +1036,7 @@ msp430_asm_integer (rtx x, unsigned int size, int aligned_p)
 static bool
 msp430_asm_output_addr_const_extra (FILE *file ATTRIBUTE_UNUSED, rtx x)
 {
-  debug_rtx(x);
+  debug_rtx (x);
   return false;
 }
 
@@ -1146,7 +1146,7 @@ msp430_preserve_reg_p (int regno)
     return true;
 
   /* Shouldn't be more than the above, but just in case...  */
-  if (fixed_regs [regno])
+  if (fixed_regs[regno])
     return false;
 
   /* For interrupt functions we must save and restore the used regs that
@@ -1163,7 +1163,7 @@ msp430_preserve_reg_p (int regno)
 	return true;
     }
 
-  if (!call_used_regs [regno]
+  if (!call_used_regs[regno]
       && df_regs_ever_live_p (regno))
     return true;
 
@@ -1185,11 +1185,11 @@ msp430_compute_frame_info (void)
   for (i = 0; i < ARG_POINTER_REGNUM; i ++)
     if (msp430_preserve_reg_p (i))
       {
-	cfun->machine->need_to_save [i] = 1;
+	cfun->machine->need_to_save[i] = 1;
 	cfun->machine->framesize_regs += (TARGET_LARGE ? 4 : 2);
       }
     else
-      cfun->machine->need_to_save [i] = 0;
+      cfun->machine->need_to_save[i] = 0;
 
   if ((cfun->machine->framesize_locals + cfun->machine->framesize_outgoing) & 1)
     cfun->machine->framesize_locals ++;
@@ -1264,7 +1264,7 @@ has_section_name (const char * name, tree decl = current_function_decl)
   if (decl == NULL_TREE)
     return false;
   return (DECL_SECTION_NAME (decl)
-    && (strcmp (name, DECL_SECTION_NAME (decl)) == 0));
+	  && (strcmp (name, DECL_SECTION_NAME (decl)) == 0));
 }
 
 #undef  TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS
@@ -1390,7 +1390,7 @@ msp430_attr (tree * node,
       warning (OPT_Wattributes, message, name);
       * no_add_attrs = true;
     }
-    
+
   return NULL_TREE;
 }
 
@@ -1448,7 +1448,7 @@ msp430_section_attr (tree * node,
       warning (OPT_Wattributes, message, name);
       * no_add_attrs = true;
     }
-    
+
   return NULL_TREE;
 }
 
@@ -1494,7 +1494,7 @@ msp430_data_attr (tree * node,
       warning (OPT_Wattributes, message, name);
       * no_add_attrs = true;
     }
-    
+
   return NULL_TREE;
 }
 
@@ -1504,28 +1504,27 @@ msp430_data_attr (tree * node,
 
 /* Table of MSP430-specific attributes.  */
 const struct attribute_spec msp430_attribute_table[] =
-{
-  /* Name        min_num_args     type_req,             handler
-		      max_num_args,     fn_type_req		exclude
-                          decl_req               affects_type_identity.  */
-  { ATTR_INTR,        0, 1, true,  false, false, false, msp430_attr, NULL },
-  { ATTR_NAKED,       0, 0, true,  false, false, false, msp430_attr, NULL },
-  { ATTR_REENT,       0, 0, true,  false, false, false, msp430_attr, NULL },
-  { ATTR_CRIT,        0, 0, true,  false, false, false, msp430_attr, NULL },
-  { ATTR_WAKEUP,      0, 0, true,  false, false, false, msp430_attr, NULL },
+  {
+    /* { name, min_num_args, max_num_args, decl_req, type_req, fn_type_req,
+	 affects_type_identity, handler, exclude } */
+    { ATTR_INTR,	0, 1, true,  false, false, false, msp430_attr, NULL },
+    { ATTR_NAKED,       0, 0, true,  false, false, false, msp430_attr, NULL },
+    { ATTR_REENT,       0, 0, true,  false, false, false, msp430_attr, NULL },
+    { ATTR_CRIT,	0, 0, true,  false, false, false, msp430_attr, NULL },
+    { ATTR_WAKEUP,      0, 0, true,  false, false, false, msp430_attr, NULL },
 
-  { ATTR_LOWER,       0, 0, true,  false, false, false, msp430_section_attr,
-    NULL },
-  { ATTR_UPPER,       0, 0, true,  false, false, false, msp430_section_attr,
-    NULL },
-  { ATTR_EITHER,      0, 0, true,  false, false, false, msp430_section_attr,
-    NULL },
+    { ATTR_LOWER,       0, 0, true,  false, false, false, msp430_section_attr,
+      NULL },
+    { ATTR_UPPER,       0, 0, true,  false, false, false, msp430_section_attr,
+      NULL },
+    { ATTR_EITHER,      0, 0, true,  false, false, false, msp430_section_attr,
+      NULL },
 
-  { ATTR_PERSIST,     0, 0, true,  false, false, false, msp430_data_attr,
-    NULL },
+    { ATTR_PERSIST,     0, 0, true,  false, false, false, msp430_data_attr,
+      NULL },
 
-  { NULL,             0, 0, false, false, false, false, NULL,  NULL }
-};
+    { NULL,		0, 0, false, false, false, false, NULL,  NULL }
+  };
 
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE	msp430_start_function
@@ -1563,9 +1562,9 @@ msp430_start_function (FILE *outfile)
   n = 0;
   fprintf (outfile, "; saved regs:");
   for (r = 0; r < ARG_POINTER_REGNUM; r++)
-    if (cfun->machine->need_to_save [r])
+    if (cfun->machine->need_to_save[r])
       {
-	fprintf (outfile, " %s", reg_names [r]);
+	fprintf (outfile, " %s", reg_names[r]);
 	n = 1;
       }
   if (n == 0)
@@ -1644,7 +1643,7 @@ msp430_start_function (FILE *file, const char *name, tree decl)
     }
 
   switch_to_section (function_section (decl));
-  ASM_OUTPUT_TYPE_DIRECTIVE(file, name, "function");
+  ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");
   ASM_OUTPUT_FUNCTION_LABEL (file, name, decl);
 }
 
@@ -1738,7 +1737,7 @@ msp430_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
       || TREE_CODE (decl) == VECTOR_CST
       || TREE_CODE (decl) == COMPLEX_CST)
     return default_select_section (decl, reloc, align);
-  
+
   /* In large mode we must make sure that interrupt handlers are put into
      low memory as the vector table only accepts 16-bit addresses.  */
   if (TARGET_LARGE && TREE_CODE (decl) == FUNCTION_DECL && is_interrupt_func (decl))
@@ -1758,7 +1757,7 @@ msp430_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
       else
 	return default_select_section (decl, reloc, align);
     }
-  
+
   const char * sec;
   switch (categorize_decl_for_section (decl, reloc))
     {
@@ -1784,7 +1783,7 @@ msp430_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
     default:
       gcc_unreachable ();
     }
-  
+
   const char * dec_name = DECL_SECTION_NAME (decl);
   char * name = ACONCAT ((prefix, sec, dec_name, NULL));
 
@@ -1827,7 +1826,7 @@ msp430_section_type_flags (tree decl, const char * name, int reloc)
     return SECTION_WRITE | SECTION_BSS | SECTION_NOTYPE;
   else if (strcmp (name, ".persistent") == 0)
     return SECTION_WRITE | SECTION_NOTYPE;
-  
+
   return default_section_type_flags (decl, name, reloc);
 }
 
@@ -1856,8 +1855,7 @@ msp430_unique_section (tree decl, int reloc)
       || TREE_CODE (decl) == INTEGER_CST
       || TREE_CODE (decl) == VECTOR_CST
       || TREE_CODE (decl) == COMPLEX_CST
-      || (prefix = gen_prefix (decl)) == NULL
-      )
+      || (prefix = gen_prefix (decl)) == NULL)
     return;
 
   const char * dec_name = DECL_SECTION_NAME (decl);
@@ -1871,11 +1869,11 @@ msp430_unique_section (tree decl, int reloc)
    equivalent .bss section instead.  */
 
 void
-msp430_output_aligned_decl_common (FILE *                 stream,
-				   const tree             decl,
-				   const char *           name,
+msp430_output_aligned_decl_common (FILE *		  stream,
+				   const tree		  decl,
+				   const char *		  name,
 				   unsigned HOST_WIDE_INT size,
-				   unsigned int           align)
+				   unsigned int		  align)
 {
   if (msp430_data_region == MSP430_REGION_ANY)
     {
@@ -1933,7 +1931,7 @@ enum msp430_builtin
   MSP430_BUILTIN_max
 };
 
-static GTY(()) tree msp430_builtins [(int) MSP430_BUILTIN_max];
+static GTY(()) tree msp430_builtins[(int) MSP430_BUILTIN_max];
 
 static void
 msp430_init_builtins (void)
@@ -1943,15 +1941,15 @@ msp430_init_builtins (void)
 
   msp430_builtins[MSP430_BUILTIN_BIC_SR] =
     add_builtin_function ( "__bic_SR_register_on_exit", void_ftype_int,
-			   MSP430_BUILTIN_BIC_SR, BUILT_IN_MD, NULL, NULL_TREE);
+			  MSP430_BUILTIN_BIC_SR, BUILT_IN_MD, NULL, NULL_TREE);
 
   msp430_builtins[MSP430_BUILTIN_BIS_SR] =
     add_builtin_function ( "__bis_SR_register_on_exit", void_ftype_int,
-			   MSP430_BUILTIN_BIS_SR, BUILT_IN_MD, NULL, NULL_TREE);
+			  MSP430_BUILTIN_BIS_SR, BUILT_IN_MD, NULL, NULL_TREE);
 
   msp430_builtins[MSP430_BUILTIN_DELAY_CYCLES] =
     add_builtin_function ( "__delay_cycles", void_ftype_longlong,
-			   MSP430_BUILTIN_DELAY_CYCLES, BUILT_IN_MD, NULL, NULL_TREE);
+			  MSP430_BUILTIN_DELAY_CYCLES, BUILT_IN_MD, NULL, NULL_TREE);
 }
 
 static tree
@@ -2184,7 +2182,7 @@ msp430_expand_prologue (void)
     }
 
   for (i = 15; i >= 4; i--)
-    if (cfun->machine->need_to_save [i])
+    if (cfun->machine->need_to_save[i])
       {
 	int seq, count;
 	rtx note;
@@ -2223,7 +2221,7 @@ msp430_expand_prologue (void)
 
 		XVECEXP (note, 0, j + 1) =
 		  F (gen_rtx_SET (gen_rtx_MEM (Pmode, addr),
-				  gen_rtx_REG (Pmode, i - j)) );
+				  gen_rtx_REG (Pmode, i - j)));
 	      }
 
 	    add_reg_note (p, REG_FRAME_RELATED_EXPR, note);
@@ -2258,16 +2256,16 @@ msp430_expand_epilogue (int is_eh)
       return;
     }
 
-  if (cfun->machine->need_to_save [10])
+  if (cfun->machine->need_to_save[10])
     {
       /* Check for a helper function.  */
       helper_n = 7; /* For when the loop below never sees a match.  */
       for (i = 9; i >= 4; i--)
-	if (!cfun->machine->need_to_save [i])
+	if (!cfun->machine->need_to_save[i])
 	  {
 	    helper_n = 10 - i;
 	    for (; i >= 4; i--)
-	      if (cfun->machine->need_to_save [i])
+	      if (cfun->machine->need_to_save[i])
 		{
 		  helper_n = 0;
 		  break;
@@ -2311,7 +2309,7 @@ msp430_expand_epilogue (int is_eh)
     }
 
   for (i = 4; i <= 15; i++)
-    if (cfun->machine->need_to_save [i])
+    if (cfun->machine->need_to_save[i])
       {
 	int seq, count;
 
@@ -2432,7 +2430,7 @@ static struct
   int need_430x;
   rtx (*genfunc)(rtx,rtx);
 }
-  const_shift_helpers[] =
+const_shift_helpers[] =
 {
 #define CSH(N,C,X,G) { "__mspabi_" N, C, X, gen_##G }
 
@@ -2624,8 +2622,7 @@ msp430_split_movsi (rtx *operands)
 	   /* Catch the case where we are loading (rN, rN+1) from mem (rN).  */
 	   || (REG_P (op00) && reg_mentioned_p (op00, op10))
 	   /* Or storing (rN) into mem (rN).  */
-	   || (REG_P (op10) && reg_mentioned_p (op10, op00))
-	   )
+	   || (REG_P (op10) && reg_mentioned_p (op10, op00)))
     {
       operands[2] = op02;
       operands[4] = op12;
@@ -2650,82 +2647,82 @@ static const struct
   char const * const gcc_name;
   char const * const ti_name;
 }
-  helper_function_name_mappings [] =
-{
-  /* Floating point to/from integer conversions.  */
-  { "__truncdfsf2", "__mspabi_cvtdf" },
-  { "__extendsfdf2", "__mspabi_cvtfd" },
-  { "__fixdfhi", "__mspabi_fixdi" },
-  { "__fixdfsi", "__mspabi_fixdli" },
-  { "__fixdfdi", "__mspabi_fixdlli" },
-  { "__fixunsdfhi", "__mspabi_fixdu" },
-  { "__fixunsdfsi", "__mspabi_fixdul" },
-  { "__fixunsdfdi", "__mspabi_fixdull" },
-  { "__fixsfhi", "__mspabi_fixfi" },
-  { "__fixsfsi", "__mspabi_fixfli" },
-  { "__fixsfdi", "__mspabi_fixflli" },
-  { "__fixunsfhi", "__mspabi_fixfu" },
-  { "__fixunsfsi", "__mspabi_fixful" },
-  { "__fixunsfdi", "__mspabi_fixfull" },
-  { "__floathisf", "__mspabi_fltif" },
-  { "__floatsisf", "__mspabi_fltlif" },
-  { "__floatdisf", "__mspabi_fltllif" },
-  { "__floathidf", "__mspabi_fltid" },
-  { "__floatsidf", "__mspabi_fltlid" },
-  { "__floatdidf", "__mspabi_fltllid" },
-  { "__floatunhisf", "__mspabi_fltuf" },
-  { "__floatunsisf", "__mspabi_fltulf" },
-  { "__floatundisf", "__mspabi_fltullf" },
-  { "__floatunhidf", "__mspabi_fltud" },
-  { "__floatunsidf", "__mspabi_fltuld" },
-  { "__floatundidf", "__mspabi_fltulld" },
+helper_function_name_mappings[] =
+  {
+    /* Floating point to/from integer conversions.  */
+    { "__truncdfsf2", "__mspabi_cvtdf" },
+    { "__extendsfdf2", "__mspabi_cvtfd" },
+    { "__fixdfhi", "__mspabi_fixdi" },
+    { "__fixdfsi", "__mspabi_fixdli" },
+    { "__fixdfdi", "__mspabi_fixdlli" },
+    { "__fixunsdfhi", "__mspabi_fixdu" },
+    { "__fixunsdfsi", "__mspabi_fixdul" },
+    { "__fixunsdfdi", "__mspabi_fixdull" },
+    { "__fixsfhi", "__mspabi_fixfi" },
+    { "__fixsfsi", "__mspabi_fixfli" },
+    { "__fixsfdi", "__mspabi_fixflli" },
+    { "__fixunsfhi", "__mspabi_fixfu" },
+    { "__fixunsfsi", "__mspabi_fixful" },
+    { "__fixunsfdi", "__mspabi_fixfull" },
+    { "__floathisf", "__mspabi_fltif" },
+    { "__floatsisf", "__mspabi_fltlif" },
+    { "__floatdisf", "__mspabi_fltllif" },
+    { "__floathidf", "__mspabi_fltid" },
+    { "__floatsidf", "__mspabi_fltlid" },
+    { "__floatdidf", "__mspabi_fltllid" },
+    { "__floatunhisf", "__mspabi_fltuf" },
+    { "__floatunsisf", "__mspabi_fltulf" },
+    { "__floatundisf", "__mspabi_fltullf" },
+    { "__floatunhidf", "__mspabi_fltud" },
+    { "__floatunsidf", "__mspabi_fltuld" },
+    { "__floatundidf", "__mspabi_fltulld" },
 
-  /* Floating point comparisons.  */
-  /* GCC uses individual functions for each comparison, TI uses one
-     compare <=> function.  */
+    /* Floating point comparisons.  */
+    /* GCC uses individual functions for each comparison, TI uses one
+       compare <=> function.  */
 
-  /* Floating point arithmatic */
-  { "__adddf3", "__mspabi_addd" },
-  { "__addsf3", "__mspabi_addf" },
-  { "__divdf3", "__mspabi_divd" },
-  { "__divsf3", "__mspabi_divf" },
-  { "__muldf3", "__mspabi_mpyd" },
-  { "__mulsf3", "__mspabi_mpyf" },
-  { "__subdf3", "__mspabi_subd" },
-  { "__subsf3", "__mspabi_subf" },
-  /* GCC does not use helper functions for negation */
+    /* Floating point arithmetic.  */
+    { "__adddf3", "__mspabi_addd" },
+    { "__addsf3", "__mspabi_addf" },
+    { "__divdf3", "__mspabi_divd" },
+    { "__divsf3", "__mspabi_divf" },
+    { "__muldf3", "__mspabi_mpyd" },
+    { "__mulsf3", "__mspabi_mpyf" },
+    { "__subdf3", "__mspabi_subd" },
+    { "__subsf3", "__mspabi_subf" },
+    /* GCC does not use helper functions for negation.  */
 
-  /* Integer multiply, divide, remainder.  */
-  { "__mulhi3", "__mspabi_mpyi" },
-  { "__mulsi3", "__mspabi_mpyl" },
-  { "__muldi3", "__mspabi_mpyll" },
+    /* Integer multiply, divide, remainder.  */
+    { "__mulhi3", "__mspabi_mpyi" },
+    { "__mulsi3", "__mspabi_mpyl" },
+    { "__muldi3", "__mspabi_mpyll" },
 #if 0
-  /* Clarify signed vs unsigned first.  */
-  { "__mulhisi3", "__mspabi_mpysl" }, /* gcc doesn't use widening multiply (yet?) */
-  { "__mulsidi3", "__mspabi_mpysll" }, /* gcc doesn't use widening multiply (yet?) */
+    /* Clarify signed vs unsigned first.  */
+    { "__mulhisi3", "__mspabi_mpysl" }, /* gcc doesn't use widening multiply (yet?) */
+    { "__mulsidi3", "__mspabi_mpysll" }, /* gcc doesn't use widening multiply (yet?) */
 #endif
 
-  { "__divhi3", "__mspabi_divi" },
-  { "__divsi3", "__mspabi_divli" },
-  { "__divdi3", "__mspabi_divlli" },
-  { "__udivhi3", "__mspabi_divu" },
-  { "__udivsi3", "__mspabi_divul" },
-  { "__udivdi3", "__mspabi_divull" },
-  { "__modhi3", "__mspabi_remi" },
-  { "__modsi3", "__mspabi_remli" },
-  { "__moddi3", "__mspabi_remlli" },
-  { "__umodhi3", "__mspabi_remu" },
-  { "__umodsi3", "__mspabi_remul" },
-  { "__umoddi3", "__mspabi_remull" },
+    { "__divhi3", "__mspabi_divi" },
+    { "__divsi3", "__mspabi_divli" },
+    { "__divdi3", "__mspabi_divlli" },
+    { "__udivhi3", "__mspabi_divu" },
+    { "__udivsi3", "__mspabi_divul" },
+    { "__udivdi3", "__mspabi_divull" },
+    { "__modhi3", "__mspabi_remi" },
+    { "__modsi3", "__mspabi_remli" },
+    { "__moddi3", "__mspabi_remlli" },
+    { "__umodhi3", "__mspabi_remu" },
+    { "__umodsi3", "__mspabi_remul" },
+    { "__umoddi3", "__mspabi_remull" },
 
-  /* Bitwise operations.  */
-  /* Rotation - no rotation support yet.  */
-  /* Logical left shift - gcc already does these itself.  */
-  /* Arithmetic left shift - gcc already does these itself.  */
-  /* Arithmetic right shift - gcc already does these itself.  */
+    /* Bitwise operations.  */
+    /* Rotation - no rotation support yet.  */
+    /* Logical left shift - gcc already does these itself.  */
+    /* Arithmetic left shift - gcc already does these itself.  */
+    /* Arithmetic right shift - gcc already does these itself.  */
 
-  { NULL, NULL }
-};
+    { NULL, NULL }
+  };
 
 /* Returns true if the current MCU supports an F5xxx series
    hardware multiper.  */
@@ -2734,7 +2731,7 @@ bool
 msp430_use_f5_series_hwmult (void)
 {
   static const char * cached_match = NULL;
-  static bool         cached_result;
+  static bool cached_result;
 
   if (msp430_hwmult_type == MSP430_HWMULT_F5SERIES)
     return true;
@@ -2769,7 +2766,7 @@ static bool
 use_32bit_hwmult (void)
 {
   static const char * cached_match = NULL;
-  static bool         cached_result;
+  static bool cached_result;
 
   if (msp430_hwmult_type == MSP430_HWMULT_LARGE)
     return true;
@@ -2796,7 +2793,7 @@ static bool
 msp430_no_hwmult (void)
 {
   static const char * cached_match = NULL;
-  static bool         cached_result;
+  static bool cached_result;
 
   if (msp430_hwmult_type == MSP430_HWMULT_NONE)
     return true;
@@ -2829,10 +2826,10 @@ msp430_output_labelref (FILE *file, const char *name)
 {
   int i;
 
-  for (i = 0; helper_function_name_mappings [i].gcc_name; i++)
-    if (strcmp (helper_function_name_mappings [i].gcc_name, name) == 0)
+  for (i = 0; helper_function_name_mappings[i].gcc_name; i++)
+    if (strcmp (helper_function_name_mappings[i].gcc_name, name) == 0)
       {
-	name = helper_function_name_mappings [i].ti_name;
+	name = helper_function_name_mappings[i].ti_name;
 	break;
       }
 
@@ -2874,7 +2871,7 @@ msp430_print_operand_raw (FILE * file, rtx op)
   switch (GET_CODE (op))
     {
     case REG:
-      fprintf (file, "%s", reg_names [REGNO (op)]);
+      fprintf (file, "%s", reg_names[REGNO (op)]);
       break;
 
     case CONST_INT:
@@ -2919,7 +2916,7 @@ msp430_print_operand_addr (FILE * file, machine_mode /*mode*/, rtx addr)
     case PLUS:
       msp430_print_operand_raw (file, XEXP (addr, 1));
       gcc_assert (REG_P (XEXP (addr, 0)));
-      fprintf (file, "(%s)", reg_names [REGNO (XEXP (addr, 0))]);
+      fprintf (file, "(%s)", reg_names[REGNO (XEXP (addr, 0))]);
       return;
 
     case REG:
@@ -3021,7 +3018,7 @@ msp430_print_operand (FILE * file, rtx op, int letter)
 	  break;
 	}
       return;
-    case 'p': /* Bit position. 0 == 0x01, 3 = 0x08 etc.  */
+    case 'p': /* Bit position.  0 == 0x01, 3 = 0x08 etc.  */
       gcc_assert (CONST_INT_P (op));
       fprintf (file, "#%d", 1 << INTVAL (op));
       return;
@@ -3170,7 +3167,7 @@ msp430_print_operand (FILE * file, rtx op, int letter)
 	      msp430_print_operand_raw (file, XEXP (op, 0));
 	      fprintf (file, ")");
 	      break;
-	  
+
 	    case 16:
 	      fprintf (file, "#hi (");
 	      msp430_print_operand_raw (file, XEXP (op, 0));
@@ -3245,10 +3242,10 @@ msp430x_extendhisi (rtx * operands)
     /* Note: This sequence is approximately the same length as invoking a helper
        function to perform the sign-extension, as in:
 
-         MOV.W  %1, %L0
-	 MOV.W  %1, r12
-	 CALL   __mspabi_srai_15
-	 MOV.W  r12, %H0
+       MOV.W  %1, %L0
+       MOV.W  %1, r12
+       CALL   __mspabi_srai_15
+       MOV.W  r12, %H0
 
        but this version does not involve any function calls or using argument
        registers, so it reduces register pressure.  */
