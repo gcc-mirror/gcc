@@ -1,6 +1,25 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
+	* config/aarch64/aarch64-protos.h (aarch64_prepare_sve_int_fma)
+	(aarch64_prepare_sve_cond_int_fma): Declare.
+	* config/aarch64/aarch64.c (aarch64_convert_mult_to_shift)
+	(aarch64_prepare_sve_int_fma): New functions.
+	(aarch64_prepare_sve_cond_int_fma): Likewise.
+	* config/aarch64/aarch64-sve.md
+	(cond_<SVE_INT_BINARY:optab><SVE_I:mode>): Add a "@" marker.
+	(fma<SVE_I:mode>4, cond_fma<SVE_I:mode>, *cond_fma<SVE_I:mode>_2)
+	(*cond_fma<SVE_I:mode>_4, *cond_fma<SVE_I:mode>_any, fnma<SVE_I:mode>4)
+	(cond_fnma<SVE_I:mode>, *cond_fnma<SVE_I:mode>_2)
+	(*cond_fnma<SVE_I:mode>_4, *cond_fnma<SVE_I:mode>_any): New patterns.
+	(*madd<mode>): Rename to...
+	(*fma<mode>4): ...this.
+	(*msub<mode>): Rename to...
+	(*fnma<mode>4): ...this.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
 	* config/aarch64/aarch64.c (aarch64_print_vector_float_operand):
 	Print 2.0 naturally.
 	(aarch64_sve_float_mul_immediate_p): Return true for 2.0.

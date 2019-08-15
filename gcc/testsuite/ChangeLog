@@ -1,6 +1,26 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
+	* gcc.target/aarch64/sve/cond_mla_1.c: New test.
+	* gcc.target/aarch64/sve/cond_mla_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_mla_2.c: Likewise.
+	* gcc.target/aarch64/sve/cond_mla_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_mla_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_mla_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_mla_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_mla_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_mla_5.c: Likewise.
+	* gcc.target/aarch64/sve/cond_mla_5_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_mla_6.c: Likewise.
+	* gcc.target/aarch64/sve/cond_mla_6_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_mla_7.c: Likewise.
+	* gcc.target/aarch64/sve/cond_mla_7_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_mla_8.c: Likewise.
+	* gcc.target/aarch64/sve/cond_mla_8_run.c: Likewise.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
 	* gcc.target/aarch64/sve/cond_fadd_1.c: New test.
 	* gcc.target/aarch64/sve/cond_fadd_1_run.c: Likewise.
 	* gcc.target/aarch64/sve/cond_fadd_2.c: Likewise.

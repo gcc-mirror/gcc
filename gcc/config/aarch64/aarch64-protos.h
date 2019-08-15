@@ -630,6 +630,9 @@ bool aarch64_gen_adjusted_ldpstp (rtx *, bool, scalar_mode, RTX_CODE);
 void aarch64_expand_sve_vec_cmp_int (rtx, rtx_code, rtx, rtx);
 bool aarch64_expand_sve_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
 void aarch64_expand_sve_vcond (machine_mode, machine_mode, rtx *);
+
+bool aarch64_prepare_sve_int_fma (rtx *, rtx_code);
+bool aarch64_prepare_sve_cond_int_fma (rtx *, rtx_code);
 #endif /* RTX_CODE */
 
 void aarch64_init_builtins (void);

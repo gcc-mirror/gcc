@@ -1844,7 +1844,7 @@
 )
 
 ;; Predicated integer operations with merging.
-(define_expand "cond_<optab><mode>"
+(define_expand "@cond_<optab><mode>"
   [(set (match_operand:SVE_I 0 "register_operand")
 	(unspec:SVE_I
 	  [(match_operand:<VPRED> 1 "register_operand")
@@ -3384,8 +3384,26 @@
 ;; - MLA
 ;; -------------------------------------------------------------------------
 
+;; Unpredicated integer addition of product.
+(define_expand "fma<mode>4"
+  [(set (match_operand:SVE_I 0 "register_operand")
+	(plus:SVE_I
+	  (unspec:SVE_I
+	    [(match_dup 4)
+	     (mult:SVE_I (match_operand:SVE_I 1 "register_operand")
+			 (match_operand:SVE_I 2 "nonmemory_operand"))]
+	    UNSPEC_PRED_X)
+	  (match_operand:SVE_I 3 "register_operand")))]
+  "TARGET_SVE"
+  {
+    if (aarch64_prepare_sve_int_fma (operands, PLUS))
+      DONE;
+    operands[4] = aarch64_ptrue_reg (<VPRED>mode);
+  }
+)
+
 ;; Predicated integer addition of product.
-(define_insn "*madd<mode>"
+(define_insn "*fma<mode>4"
   [(set (match_operand:SVE_I 0 "register_operand" "=w, w, ?&w")
 	(plus:SVE_I
 	  (unspec:SVE_I
@@ -3402,6 +3420,97 @@
   [(set_attr "movprfx" "*,*,yes")]
 )
 
+;; Predicated integer addition of product with merging.
+(define_expand "cond_fma<mode>"
+  [(set (match_operand:SVE_I 0 "register_operand")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand")
+	   (plus:SVE_I
+	     (mult:SVE_I (match_operand:SVE_I 2 "register_operand")
+			 (match_operand:SVE_I 3 "general_operand"))
+	     (match_operand:SVE_I 4 "register_operand"))
+	   (match_operand:SVE_I 5 "aarch64_simd_reg_or_zero")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  {
+    if (aarch64_prepare_sve_cond_int_fma (operands, PLUS))
+      DONE;
+    /* Swap the multiplication operands if the fallback value is the
+       second of the two.  */
+    if (rtx_equal_p (operands[3], operands[5]))
+      std::swap (operands[2], operands[3]);
+  }
+)
+
+;; Predicated integer addition of product, merging with the first input.
+(define_insn "*cond_fma<mode>_2"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (plus:SVE_I
+	     (mult:SVE_I (match_operand:SVE_I 2 "register_operand" "0, w")
+			 (match_operand:SVE_I 3 "register_operand" "w, w"))
+	     (match_operand:SVE_I 4 "register_operand" "w, w"))
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   mad\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
+   movprfx\t%0, %2\;mad\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>"
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Predicated integer addition of product, merging with the third input.
+(define_insn "*cond_fma<mode>_4"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (plus:SVE_I
+	     (mult:SVE_I (match_operand:SVE_I 2 "register_operand" "w, w")
+			 (match_operand:SVE_I 3 "register_operand" "w, w"))
+	     (match_operand:SVE_I 4 "register_operand" "0, w"))
+	   (match_dup 4)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   mla\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   movprfx\t%0, %4\;mla\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Predicated integer addition of product, merging with an independent value.
+(define_insn_and_rewrite "*cond_fma<mode>_any"
+  [(set (match_operand:SVE_I 0 "register_operand" "=&w, &w, &w, &w, &w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl, Upl")
+	   (plus:SVE_I
+	     (mult:SVE_I (match_operand:SVE_I 2 "register_operand" "w, w, 0, w, w, w")
+			 (match_operand:SVE_I 3 "register_operand" "w, w, w, 0, w, w"))
+	     (match_operand:SVE_I 4 "register_operand" "w, 0, w, w, w, w"))
+	   (match_operand:SVE_I 5 "aarch64_simd_reg_or_zero" "Dz, Dz, Dz, Dz, 0, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE
+   && !rtx_equal_p (operands[2], operands[5])
+   && !rtx_equal_p (operands[3], operands[5])
+   && !rtx_equal_p (operands[4], operands[5])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %4.<Vetype>\;mla\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;mla\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;mad\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;mad\t%0.<Vetype>, %1/m, %2.<Vetype>, %4.<Vetype>
+   movprfx\t%0.<Vetype>, %1/m, %4.<Vetype>\;mla\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   #"
+  "&& reload_completed
+   && register_operand (operands[5], <MODE>mode)
+   && !rtx_equal_p (operands[0], operands[5])"
+  {
+    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[4],
+					     operands[5], operands[1]));
+    operands[5] = operands[4] = operands[0];
+  }
+  [(set_attr "movprfx" "yes")]
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] MLS and MSB
 ;; -------------------------------------------------------------------------
@@ -3410,8 +3519,26 @@
 ;; - MSB
 ;; -------------------------------------------------------------------------
 
+;; Unpredicated integer subtraction of product.
+(define_expand "fnma<mode>4"
+  [(set (match_operand:SVE_I 0 "register_operand")
+	(minus:SVE_I
+	  (match_operand:SVE_I 3 "register_operand")
+	  (unspec:SVE_I
+	    [(match_dup 4)
+	     (mult:SVE_I (match_operand:SVE_I 1 "register_operand")
+			 (match_operand:SVE_I 2 "general_operand"))]
+	    UNSPEC_PRED_X)))]
+  "TARGET_SVE"
+  {
+    if (aarch64_prepare_sve_int_fma (operands, MINUS))
+      DONE;
+    operands[4] = aarch64_ptrue_reg (<VPRED>mode);
+  }
+)
+
 ;; Predicated integer subtraction of product.
-(define_insn "*msub<mode>3"
+(define_insn "*fnma<mode>3"
   [(set (match_operand:SVE_I 0 "register_operand" "=w, w, ?&w")
 	(minus:SVE_I
 	  (match_operand:SVE_I 4 "register_operand" "w, 0, w")
@@ -3426,6 +3553,98 @@
    mls\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
    movprfx\t%0, %4\;mls\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
   [(set_attr "movprfx" "*,*,yes")]
+)
+
+;; Predicated integer subtraction of product with merging.
+(define_expand "cond_fnma<mode>"
+  [(set (match_operand:SVE_I 0 "register_operand")
+   (unspec:SVE_I
+	[(match_operand:<VPRED> 1 "register_operand")
+	 (minus:SVE_I
+	   (match_operand:SVE_I 4 "register_operand")
+	   (mult:SVE_I (match_operand:SVE_I 2 "register_operand")
+		       (match_operand:SVE_I 3 "general_operand")))
+	 (match_operand:SVE_I 5 "aarch64_simd_reg_or_zero")]
+	UNSPEC_SEL))]
+  "TARGET_SVE"
+  {
+    if (aarch64_prepare_sve_cond_int_fma (operands, MINUS))
+      DONE;
+    /* Swap the multiplication operands if the fallback value is the
+       second of the two.  */
+    if (rtx_equal_p (operands[3], operands[5]))
+      std::swap (operands[2], operands[3]);
+  }
+)
+
+;; Predicated integer subtraction of product, merging with the first input.
+(define_insn "*cond_fnma<mode>_2"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (minus:SVE_I
+	     (match_operand:SVE_I 4 "register_operand" "w, w")
+	     (mult:SVE_I (match_operand:SVE_I 2 "register_operand" "0, w")
+			 (match_operand:SVE_I 3 "register_operand" "w, w")))
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   msb\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
+   movprfx\t%0, %2\;msb\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>"
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Predicated integer subtraction of product, merging with the third input.
+(define_insn "*cond_fnma<mode>_4"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (minus:SVE_I
+	     (match_operand:SVE_I 4 "register_operand" "0, w")
+	     (mult:SVE_I (match_operand:SVE_I 2 "register_operand" "w, w")
+			 (match_operand:SVE_I 3 "register_operand" "w, w")))
+	   (match_dup 4)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   mls\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   movprfx\t%0, %4\;mls\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Predicated integer subtraction of product, merging with an
+;; independent value.
+(define_insn_and_rewrite "*cond_fnma<mode>_any"
+  [(set (match_operand:SVE_I 0 "register_operand" "=&w, &w, &w, &w, &w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl, Upl")
+	   (minus:SVE_I
+	     (match_operand:SVE_I 4 "register_operand" "w, 0, w, w, w, w")
+	     (mult:SVE_I (match_operand:SVE_I 2 "register_operand" "w, w, 0, w, w, w")
+			 (match_operand:SVE_I 3 "register_operand" "w, w, w, 0, w, w")))
+	   (match_operand:SVE_I 5 "aarch64_simd_reg_or_zero" "Dz, Dz, Dz, Dz, 0, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE
+   && !rtx_equal_p (operands[2], operands[5])
+   && !rtx_equal_p (operands[3], operands[5])
+   && !rtx_equal_p (operands[4], operands[5])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %4.<Vetype>\;mls\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;mls\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;msb\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;msb\t%0.<Vetype>, %1/m, %2.<Vetype>, %4.<Vetype>
+   movprfx\t%0.<Vetype>, %1/m, %4.<Vetype>\;mls\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   #"
+  "&& reload_completed
+   && register_operand (operands[5], <MODE>mode)
+   && !rtx_equal_p (operands[0], operands[5])"
+  {
+    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[4],
+					     operands[5], operands[1]));
+    operands[5] = operands[4] = operands[0];
+  }
+  [(set_attr "movprfx" "yes")]
 )
 
 ;; -------------------------------------------------------------------------

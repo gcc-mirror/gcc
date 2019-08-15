@@ -16469,6 +16469,98 @@ aarch64_sve_expand_vector_init (rtx target, rtx vals)
     aarch64_sve_expand_vector_init_insert_elems (target, v, nelts);
 }
 
+/* Check whether VALUE is a vector constant in which every element
+   is either a power of 2 or a negated power of 2.  If so, return
+   a constant vector of log2s, and flip CODE between PLUS and MINUS
+   if VALUE contains negated powers of 2.  Return NULL_RTX otherwise.  */
+
+static rtx
+aarch64_convert_mult_to_shift (rtx value, rtx_code &code)
+{
+  if (GET_CODE (value) != CONST_VECTOR)
+    return NULL_RTX;
+
+  rtx_vector_builder builder;
+  if (!builder.new_unary_operation (GET_MODE (value), value, false))
+    return NULL_RTX;
+
+  scalar_mode int_mode = GET_MODE_INNER (GET_MODE (value));
+  /* 1 if the result of the multiplication must be negated,
+     0 if it mustn't, or -1 if we don't yet care.  */
+  int negate = -1;
+  unsigned int encoded_nelts = const_vector_encoded_nelts (value);
+  for (unsigned int i = 0; i < encoded_nelts; ++i)
+    {
+      rtx elt = CONST_VECTOR_ENCODED_ELT (value, i);
+      if (!CONST_SCALAR_INT_P (elt))
+	return NULL_RTX;
+      rtx_mode_t val (elt, int_mode);
+      wide_int pow2 = wi::neg (val);
+      if (val != pow2)
+	{
+	  /* It matters whether we negate or not.  Make that choice,
+	     and make sure that it's consistent with previous elements.  */
+	  if (negate == !wi::neg_p (val))
+	    return NULL_RTX;
+	  negate = wi::neg_p (val);
+	  if (!negate)
+	    pow2 = val;
+	}
+      /* POW2 is now the value that we want to be a power of 2.  */
+      int shift = wi::exact_log2 (pow2);
+      if (shift < 0)
+	return NULL_RTX;
+      builder.quick_push (gen_int_mode (shift, int_mode));
+    }
+  if (negate == -1)
+    /* PLUS and MINUS are equivalent; canonicalize on PLUS.  */
+    code = PLUS;
+  else if (negate == 1)
+    code = code == PLUS ? MINUS : PLUS;
+  return builder.build ();
+}
+
+/* Prepare for an integer SVE multiply-add or multiply-subtract pattern;
+   CODE is PLUS for the former and MINUS for the latter.  OPERANDS is the
+   operands array, in the same order as for fma_optab.  Return true if
+   the function emitted all the necessary instructions, false if the caller
+   should generate the pattern normally with the new OPERANDS array.  */
+
+bool
+aarch64_prepare_sve_int_fma (rtx *operands, rtx_code code)
+{
+  machine_mode mode = GET_MODE (operands[0]);
+  if (rtx shifts = aarch64_convert_mult_to_shift (operands[2], code))
+    {
+      rtx product = expand_binop (mode, vashl_optab, operands[1], shifts,
+				  NULL_RTX, true, OPTAB_DIRECT);
+      force_expand_binop (mode, code == PLUS ? add_optab : sub_optab,
+			  operands[3], product, operands[0], true,
+			  OPTAB_DIRECT);
+      return true;
+    }
+  operands[2] = force_reg (mode, operands[2]);
+  return false;
+}
+
+/* Likewise, but for a conditional pattern.  */
+
+bool
+aarch64_prepare_sve_cond_int_fma (rtx *operands, rtx_code code)
+{
+  machine_mode mode = GET_MODE (operands[0]);
+  if (rtx shifts = aarch64_convert_mult_to_shift (operands[3], code))
+    {
+      rtx product = expand_binop (mode, vashl_optab, operands[2], shifts,
+				  NULL_RTX, true, OPTAB_DIRECT);
+      emit_insn (gen_cond (code, mode, operands[0], operands[1],
+			   operands[4], product, operands[5]));
+      return true;
+    }
+  operands[3] = force_reg (mode, operands[3]);
+  return false;
+}
+
 static unsigned HOST_WIDE_INT
 aarch64_shift_truncation_mask (machine_mode mode)
 {
