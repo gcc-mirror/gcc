@@ -1606,6 +1606,14 @@ aarch64_vector_data_mode_p (machine_mode mode)
   return aarch64_classify_vector_mode (mode) & VEC_ANY_DATA;
 }
 
+/* Return true if MODE is any form of SVE mode, including predicates,
+   vectors and structures.  */
+bool
+aarch64_sve_mode_p (machine_mode mode)
+{
+  return aarch64_classify_vector_mode (mode) & VEC_ANY_SVE;
+}
+
 /* Return true if MODE is an SVE data vector mode; either a single vector
    or a structure of vectors.  */
 static bool
@@ -19962,12 +19970,8 @@ aarch64_select_early_remat_modes (sbitmap modes)
   /* SVE values are not normally live across a call, so it should be
      worth doing early rematerialization even in VL-specific mode.  */
   for (int i = 0; i < NUM_MACHINE_MODES; ++i)
-    {
-      machine_mode mode = (machine_mode) i;
-      unsigned int vec_flags = aarch64_classify_vector_mode (mode);
-      if (vec_flags & VEC_ANY_SVE)
-	bitmap_set_bit (modes, i);
-    }
+    if (aarch64_sve_mode_p ((machine_mode) i))
+      bitmap_set_bit (modes, i);
 }
 
 /* Override the default target speculation_safe_value.  */
