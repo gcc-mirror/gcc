@@ -1,6 +1,13 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
+	* config/aarch64/aarch64-sve.md (*aarch64_cond_abd<SVE_F:mode>_2)
+	(*aarch64_cond_abd<SVE_F:mode>_3)
+	(*aarch64_cond_abd<SVE_F:mode>_any): New patterns.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
 	* config/aarch64/aarch64-sve.md (*aarch64_cond_<su>abd<mode>_2)
 	(*aarch64_cond_<su>abd<mode>_any): New patterns.
 
