@@ -1,4 +1,18 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* gcc.target/aarch64/sve/cond_abd_1.c: New test.
+	* gcc.target/aarch64/sve/cond_abd_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_abd_2.c: Likewise.
+	* gcc.target/aarch64/sve/cond_abd_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_abd_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_abd_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_abd_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_abd_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_abd_5.c: Likewise.
+	* gcc.target/aarch64/sve/cond_abd_5_run.c: Likewise.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gcc.target/aarch64/sve/cond_shift_1.c: New test.
