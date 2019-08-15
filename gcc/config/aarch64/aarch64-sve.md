@@ -3317,12 +3317,14 @@
 ;; -------------------------------------------------------------------------
 
 ;; Predicate AND.  We can reuse one of the inputs as the GP.
+;; Doubling the second operand is the preferred implementation
+;; of the MOV alias, so we use that instead of %1/z, %1, %2.
 (define_insn "and<mode>3"
   [(set (match_operand:PRED_ALL 0 "register_operand" "=Upa")
 	(and:PRED_ALL (match_operand:PRED_ALL 1 "register_operand" "Upa")
 		      (match_operand:PRED_ALL 2 "register_operand" "Upa")))]
   "TARGET_SVE"
-  "and\t%0.b, %1/z, %1.b, %2.b"
+  "and\t%0.b, %1/z, %2.b, %2.b"
 )
 
 ;; Unpredicated predicate EOR and ORR.
