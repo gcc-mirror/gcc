@@ -1,5 +1,43 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-protos.h
+	(aarch64_sve_scalar_inc_dec_immediate_p): Declare.
+	(aarch64_sve_inc_dec_immediate_p): Rename to...
+	(aarch64_sve_vector_inc_dec_immediate_p): ...this.
+	(aarch64_output_sve_addvl_addpl): Take a single rtx argument.
+	(aarch64_output_sve_scalar_inc_dec): Declare.
+	(aarch64_output_sve_inc_dec_immediate): Rename to...
+	(aarch64_output_sve_vector_inc_dec): ...this.
+	* config/aarch64/aarch64.c (aarch64_sve_scalar_inc_dec_immediate_p)
+	(aarch64_output_sve_scalar_inc_dec): New functions.
+	(aarch64_output_sve_addvl_addpl): Remove the base and offset
+	arguments.  Only handle true ADDVL and ADDPL instructions;
+	don't emit an INC or DEC.
+	(aarch64_sve_inc_dec_immediate_p): Rename to...
+	(aarch64_sve_vector_inc_dec_immediate_p): ...this.
+	(aarch64_output_sve_inc_dec_immediate): Rename to...
+	(aarch64_output_sve_vector_inc_dec): ...this.  Update call to
+	aarch64_sve_vector_inc_dec_immediate_p.
+	* config/aarch64/predicates.md (aarch64_sve_scalar_inc_dec_immediate)
+	(aarch64_sve_plus_immediate): New predicates.
+	(aarch64_pluslong_operand): Accept aarch64_sve_plus_immediate
+	rather than aarch64_sve_addvl_addpl_immediate.
+	(aarch64_sve_inc_dec_immediate): Rename to...
+	(aarch64_sve_vector_inc_dec_immediate): ...this.  Update call to
+	aarch64_sve_vector_inc_dec_immediate_p.
+	(aarch64_sve_add_operand): Update accordingly.
+	* config/aarch64/constraints.md (Uai): New constraint.
+	(vsi): Update call to aarch64_sve_vector_inc_dec_immediate_p.
+	* config/aarch64/aarch64.md (add<GPI:mode>3): Don't force the second
+	operand into a register if it satisfies aarch64_sve_plus_immediate.
+	(*add<GPI:mode>3_aarch64, *add<GPI:mode>3_poly_1): Add an alternative
+	for Uai.  Update calls to aarch64_output_sve_addvl_addpl.
+	* config/aarch64/aarch64-sve.md (add<mode>3): Call
+	aarch64_output_sve_vector_inc_dec instead of
+	aarch64_output_sve_inc_dec_immediate.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (UNSPEC_REVB, UNSPEC_REVH)
 	(UNSPEC_REVW): New constants.
 	(elem_bits): New mode attribute.

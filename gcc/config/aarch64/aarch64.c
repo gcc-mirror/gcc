@@ -2950,6 +2950,33 @@ aarch64_output_sve_cnt_immediate (const char *prefix, const char *operands,
 					   value.coeffs[1], 0);
 }
 
+/* Return true if we can add X using a single SVE INC or DEC instruction.  */
+
+bool
+aarch64_sve_scalar_inc_dec_immediate_p (rtx x)
+{
+  poly_int64 value;
+  return (poly_int_rtx_p (x, &value)
+	  && (aarch64_sve_cnt_immediate_p (value)
+	      || aarch64_sve_cnt_immediate_p (-value)));
+}
+
+/* Return the asm string for adding SVE INC/DEC immediate OFFSET to
+   operand 0.  */
+
+char *
+aarch64_output_sve_scalar_inc_dec (rtx offset)
+{
+  poly_int64 offset_value = rtx_to_poly_int64 (offset);
+  gcc_assert (offset_value.coeffs[0] == offset_value.coeffs[1]);
+  if (offset_value.coeffs[1] > 0)
+    return aarch64_output_sve_cnt_immediate ("inc", "%x0",
+					     offset_value.coeffs[1], 0);
+  else
+    return aarch64_output_sve_cnt_immediate ("dec", "%x0",
+					     -offset_value.coeffs[1], 0);
+}
+
 /* Return true if we can add VALUE to a register using a single ADDVL
    or ADDPL instruction.  */
 
@@ -2975,26 +3002,15 @@ aarch64_sve_addvl_addpl_immediate_p (rtx x)
 	  && aarch64_sve_addvl_addpl_immediate_p (value));
 }
 
-/* Return the asm string for adding ADDVL or ADDPL immediate X to operand 1
-   and storing the result in operand 0.  */
+/* Return the asm string for adding ADDVL or ADDPL immediate OFFSET
+   to operand 1 and storing the result in operand 0.  */
 
 char *
-aarch64_output_sve_addvl_addpl (rtx dest, rtx base, rtx offset)
+aarch64_output_sve_addvl_addpl (rtx offset)
 {
   static char buffer[sizeof ("addpl\t%x0, %x1, #-") + 3 * sizeof (int)];
   poly_int64 offset_value = rtx_to_poly_int64 (offset);
   gcc_assert (aarch64_sve_addvl_addpl_immediate_p (offset_value));
-
-  /* Use INC or DEC if possible.  */
-  if (rtx_equal_p (dest, base) && GP_REGNUM_P (REGNO (dest)))
-    {
-      if (aarch64_sve_cnt_immediate_p (offset_value))
-	return aarch64_output_sve_cnt_immediate ("inc", "%x0",
-						 offset_value.coeffs[1], 0);
-      if (aarch64_sve_cnt_immediate_p (-offset_value))
-	return aarch64_output_sve_cnt_immediate ("dec", "%x0",
-						 -offset_value.coeffs[1], 0);
-    }
 
   int factor = offset_value.coeffs[1];
   if ((factor & 15) == 0)
@@ -3010,8 +3026,8 @@ aarch64_output_sve_addvl_addpl (rtx dest, rtx base, rtx offset)
    factor in *FACTOR_OUT (if nonnull).  */
 
 bool
-aarch64_sve_inc_dec_immediate_p (rtx x, int *factor_out,
-				 unsigned int *nelts_per_vq_out)
+aarch64_sve_vector_inc_dec_immediate_p (rtx x, int *factor_out,
+					unsigned int *nelts_per_vq_out)
 {
   rtx elt;
   poly_int64 value;
@@ -3045,9 +3061,9 @@ aarch64_sve_inc_dec_immediate_p (rtx x, int *factor_out,
    instruction.  */
 
 bool
-aarch64_sve_inc_dec_immediate_p (rtx x)
+aarch64_sve_vector_inc_dec_immediate_p (rtx x)
 {
-  return aarch64_sve_inc_dec_immediate_p (x, NULL, NULL);
+  return aarch64_sve_vector_inc_dec_immediate_p (x, NULL, NULL);
 }
 
 /* Return the asm template for an SVE vector INC or DEC instruction.
@@ -3055,11 +3071,11 @@ aarch64_sve_inc_dec_immediate_p (rtx x)
    value of the vector count operand itself.  */
 
 char *
-aarch64_output_sve_inc_dec_immediate (const char *operands, rtx x)
+aarch64_output_sve_vector_inc_dec (const char *operands, rtx x)
 {
   int factor;
   unsigned int nelts_per_vq;
-  if (!aarch64_sve_inc_dec_immediate_p (x, &factor, &nelts_per_vq))
+  if (!aarch64_sve_vector_inc_dec_immediate_p (x, &factor, &nelts_per_vq))
     gcc_unreachable ();
   if (factor < 0)
     return aarch64_output_sve_cnt_immediate ("dec", operands, -factor,

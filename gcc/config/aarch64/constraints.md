@@ -49,6 +49,12 @@
   (and (match_code "const_int")
        (match_test "aarch64_pluslong_strict_immedate (op, VOIDmode)")))
 
+(define_constraint "Uai"
+  "@internal
+   A constraint that matches a VG-based constant that can be added by
+   a single INC or DEC."
+  (match_operand 0 "aarch64_sve_scalar_inc_dec_immediate"))
+
 (define_constraint "Uav"
   "@internal
    A constraint that matches a VG-based constant that can be added by
@@ -416,7 +422,7 @@
   "@internal
    A constraint that matches a vector count operand valid for SVE INC and
    DEC instructions."
- (match_operand 0 "aarch64_sve_inc_dec_immediate"))
+ (match_operand 0 "aarch64_sve_vector_inc_dec_immediate"))
 
 (define_constraint "vsn"
   "@internal

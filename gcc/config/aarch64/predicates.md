@@ -144,9 +144,17 @@
   (and (match_operand 0 "aarch64_pluslong_immediate")
        (not (match_operand 0 "aarch64_plus_immediate"))))
 
+(define_predicate "aarch64_sve_scalar_inc_dec_immediate"
+  (and (match_code "const_poly_int")
+       (match_test "aarch64_sve_scalar_inc_dec_immediate_p (op)")))
+
 (define_predicate "aarch64_sve_addvl_addpl_immediate"
   (and (match_code "const_poly_int")
        (match_test "aarch64_sve_addvl_addpl_immediate_p (op)")))
+
+(define_predicate "aarch64_sve_plus_immediate"
+  (ior (match_operand 0 "aarch64_sve_scalar_inc_dec_immediate")
+       (match_operand 0 "aarch64_sve_addvl_addpl_immediate")))
 
 (define_predicate "aarch64_split_add_offset_immediate"
   (and (match_code "const_poly_int")
@@ -155,7 +163,8 @@
 (define_predicate "aarch64_pluslong_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_pluslong_immediate")
-       (match_operand 0 "aarch64_sve_addvl_addpl_immediate")))
+       (and (match_test "TARGET_SVE")
+	    (match_operand 0 "aarch64_sve_plus_immediate"))))
 
 (define_predicate "aarch64_pluslong_or_poly_operand"
   (ior (match_operand 0 "aarch64_pluslong_operand")
@@ -602,9 +611,9 @@
   (and (match_code "const,const_vector")
        (match_test "aarch64_sve_arith_immediate_p (op, true)")))
 
-(define_predicate "aarch64_sve_inc_dec_immediate"
+(define_predicate "aarch64_sve_vector_inc_dec_immediate"
   (and (match_code "const,const_vector")
-       (match_test "aarch64_sve_inc_dec_immediate_p (op)")))
+       (match_test "aarch64_sve_vector_inc_dec_immediate_p (op)")))
 
 (define_predicate "aarch64_sve_uxtb_immediate"
   (and (match_code "const_vector")
@@ -687,7 +696,7 @@
 (define_predicate "aarch64_sve_add_operand"
   (ior (match_operand 0 "aarch64_sve_arith_operand")
        (match_operand 0 "aarch64_sve_sub_arith_immediate")
-       (match_operand 0 "aarch64_sve_inc_dec_immediate")))
+       (match_operand 0 "aarch64_sve_vector_inc_dec_immediate")))
 
 (define_predicate "aarch64_sve_pred_and_operand"
   (ior (match_operand 0 "register_operand")
