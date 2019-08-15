@@ -1,3 +1,10 @@
+2019-08-15  Richard Biener  <rguenther@suse.de>
+
+	PR target/91454
+	* config/i386/i386-features.c (gen_gpr_to_xmm_move_src): New
+	helper.
+	(general_scalar_chain::make_vector_copies): Use it.
+
 2019-08-15  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* function.c (assign_parm_setup_reg): Handle misaligned stack arguments.

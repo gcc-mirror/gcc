@@ -658,6 +658,25 @@ scalar_chain::emit_conversion_insns (rtx insns, rtx_insn *after)
   emit_insn_after (insns, BB_HEAD (new_bb));
 }
 
+/* Generate the canonical SET_SRC to move GPR to a VMODE vector register,
+   zeroing the upper parts.  */
+
+static rtx
+gen_gpr_to_xmm_move_src (enum machine_mode vmode, rtx gpr)
+{
+  switch (GET_MODE_NUNITS (vmode))
+    {
+    case 1:
+      return gen_rtx_SUBREG (vmode, gpr, 0);
+    case 2:
+      return gen_rtx_VEC_CONCAT (vmode, gpr,
+				 CONST0_RTX (GET_MODE_INNER (vmode)));
+    default:
+      return gen_rtx_VEC_MERGE (vmode, gen_rtx_VEC_DUPLICATE (vmode, gpr),
+				CONST0_RTX (vmode), GEN_INT (HOST_WIDE_INT_1U));
+    }
+}
+
 /* Make vector copies for all register REGNO definitions
    and replace its uses in a chain.  */
 
@@ -684,13 +703,8 @@ general_scalar_chain::make_vector_copies (unsigned regno)
 	      }
 	    else
 	      emit_move_insn (tmp, reg);
-	    emit_insn (gen_rtx_SET
-		        (gen_rtx_SUBREG (vmode, vreg, 0),
-			 gen_rtx_VEC_MERGE (vmode,
-					    gen_rtx_VEC_DUPLICATE (vmode,
-								   tmp),
-					    CONST0_RTX (vmode),
-					    GEN_INT (HOST_WIDE_INT_1U))));
+	    emit_insn (gen_rtx_SET (gen_rtx_SUBREG (vmode, vreg, 0),
+				    gen_gpr_to_xmm_move_src (vmode, tmp)));
 	  }
 	else if (!TARGET_64BIT && smode == DImode)
 	  {
@@ -720,13 +734,8 @@ general_scalar_chain::make_vector_copies (unsigned regno)
 	      }
 	  }
 	else
-	  emit_insn (gen_rtx_SET
-		       (gen_rtx_SUBREG (vmode, vreg, 0),
-			gen_rtx_VEC_MERGE (vmode,
-					   gen_rtx_VEC_DUPLICATE (vmode,
-								  reg),
-					   CONST0_RTX (vmode),
-					   GEN_INT (HOST_WIDE_INT_1U))));
+	  emit_insn (gen_rtx_SET (gen_rtx_SUBREG (vmode, vreg, 0),
+				  gen_gpr_to_xmm_move_src (vmode, reg)));
 	rtx_insn *seq = get_insns ();
 	end_sequence ();
 	rtx_insn *insn = DF_REF_INSN (ref);
