@@ -1184,8 +1184,8 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
 	  bitmap visited = NULL;
 	  /* Try to find a vuse that dominates this phi node by skipping
 	     non-clobbering statements.  */
-	  vuse = get_continuation_for_phi (phi, &ref, cnt, &visited, false,
-					   NULL, NULL);
+	  vuse = get_continuation_for_phi (phi, &ref, true,
+					   cnt, &visited, false, NULL, NULL);
 	  if (visited)
 	    BITMAP_FREE (visited);
 	}

@@ -1,3 +1,14 @@
+2019-08-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91445
+	* gcc.dg/torture/pr91445.c: New testcase.
+
+	Backport from mainline
+	2019-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91091
+	* gcc.dg/tree-ssa/pr91091-2.c: New testcase.
+
 2019-08-14  Martin Sebor  <msebor@redhat.com>
 
 	Backport from mainline

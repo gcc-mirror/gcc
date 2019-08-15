@@ -1,3 +1,38 @@
+2019-08-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91445
+	Backport from mainline
+	2019-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91091
+	* tree-ssa-alias.h (get_continuation_for_phi): Add tbaa_p parameter.
+	(walk_non_aliased_vuses): Likewise.
+	* tree-ssa-alias.c (maybe_skip_until): Pass down tbaa_p.
+	(get_continuation_for_phi): New tbaa_p parameter and pass
+	it down.
+	(walk_non_aliased_vuses): Likewise.
+	* tree-ssa-pre.c (translate_vuse_through_block): Likewise.
+	* tree-ssa-scopedtables.c (avail_exprs_stack::lookup_avail_expr):
+	Likewise.
+	* tree-ssa-sccvn.c (struct vn_walk_cb_data): Add tbaa_p flag.
+	(vn_reference_lookup_3): Handle and pass down tbaa_p flag.
+	(vn_reference_lookup_pieces): Adjust.
+	(vn_reference_lookup): Remove alias-set altering, instead pass
+	down false as tbaa_p.
+
+	2019-07-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.h (vn_reference_lookup): Add last_vuse_ptr
+	argument.
+	* tree-ssa-sccvn.c (last_vuse_ptr, vn_walk_kind): Move
+	globals into...
+	(struct vn_walk_cb_data): New callback data struct.
+	(vn_reference_lookup_2): Adjust.
+	(vn_reference_lookup_3): Likewise.
+	(vn_reference_lookup_pieces): Likewise.
+	(vn_reference_lookup): Likewise, get last_vuse_ptr argument.
+	(visit_reference_op_load): Adjust.
+
 2019-08-14  Martin Sebor  <msebor@redhat.com>
 
 	Backport from mainline
