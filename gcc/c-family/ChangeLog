@@ -1,3 +1,8 @@
+2019-08-15  Richard Biener  <rguenther@suse.de>
+
+	* c-common.c (c_stddef_cpp_builtins): When the GIMPLE FE is
+	enabled, define __SIZETYPE__.
+
 2019-08-14  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* c-attribs.c (c_common_attribute_table): Add "noinit" entry. Add
