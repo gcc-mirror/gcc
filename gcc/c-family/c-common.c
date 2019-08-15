@@ -5148,6 +5148,10 @@ c_stddef_cpp_builtins(void)
     builtin_define_with_value ("__INTPTR_TYPE__", INTPTR_TYPE, 0);
   if (UINTPTR_TYPE)
     builtin_define_with_value ("__UINTPTR_TYPE__", UINTPTR_TYPE, 0);
+  /* GIMPLE FE testcases need access to the GCC internal 'sizetype'.
+     Expose it as __SIZETYPE__.  */
+  if (flag_gimple)
+    builtin_define_with_value ("__SIZETYPE__", SIZETYPE, 0);
 }
 
 static void
