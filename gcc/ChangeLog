@@ -1,5 +1,12 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR middle-end/91444
+	* tree-vect-stmts.c (vectorizable_call): Check that the function
+	is a BUILT_IN_MD function before passing it to
+	targetm.vectorize.builtin_md_vectorized_function.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-protos.h (aarch64_sve_mode_p): Declare.
 	* config/aarch64/aarch64.c (aarch64_sve_mode_p): New function.
 	(aarch64_select_early_remat_modes): Use it.
