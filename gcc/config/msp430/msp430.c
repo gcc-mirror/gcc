@@ -97,7 +97,8 @@ msp430_init_machine_status (void)
 #define TARGET_OPTION_OVERRIDE		msp430_option_override
 
 /* Generate a C preprocessor symbol based upon the MCU selected by the user.
-   If a specific MCU has not been selected then return a generic symbol instead.  */
+   If a specific MCU has not been selected then return a generic symbol
+   instead.  */
 
 const char *
 msp430_mcu_name (void)
@@ -178,7 +179,8 @@ msp430_option_override (void)
 	      if (target_cpu && msp430x != xisa)
 		warning (0, "MCU %qs supports %s ISA but %<-mcpu%> option "
 			 "is set to %s",
-			 target_mcu, xisa ? "430X" : "430", msp430x ? "430X" : "430");
+			 target_mcu, xisa ? "430X" : "430",
+			 msp430x ? "430X" : "430");
 
 	      if (extracted_mcu_data.hwmpy == 0
 		  && msp430_hwmult_type != MSP430_HWMULT_AUTO
@@ -187,7 +189,8 @@ msp430_option_override (void)
 			 "support, but %<-mhwmult%> is set to %s",
 			 target_mcu,
 			 msp430_hwmult_type == MSP430_HWMULT_SMALL ? "16-bit"
-			 : msp430_hwmult_type == MSP430_HWMULT_LARGE ? "32-bit" : "f5series");
+			 : msp430_hwmult_type == MSP430_HWMULT_LARGE
+			 ? "32-bit" : "f5series");
 	      else if (msp430_hwmult_type == MSP430_HWMULT_SMALL
 		       && extracted_mcu_data.hwmpy != 1
 		       && extracted_mcu_data.hwmpy != 2)
@@ -247,7 +250,8 @@ msp430_option_override (void)
     }
 
   /* The F5 series are all able to support the 430X ISA.  */
-  if (target_cpu == NULL && target_mcu == NULL && msp430_hwmult_type == MSP430_HWMULT_F5SERIES)
+  if (target_cpu == NULL && target_mcu == NULL
+      && msp430_hwmult_type == MSP430_HWMULT_F5SERIES)
     msp430x = true;
 
   if (TARGET_LARGE && !msp430x)
@@ -804,7 +808,8 @@ msp430_function_arg_boundary (machine_mode mode, const_tree type)
 #define TARGET_RETURN_IN_MEMORY msp430_return_in_memory
 
 static bool
-msp430_return_in_memory (const_tree ret_type, const_tree fntype ATTRIBUTE_UNUSED)
+msp430_return_in_memory (const_tree ret_type,
+			 const_tree fntype ATTRIBUTE_UNUSED)
 {
   machine_mode mode = TYPE_MODE (ret_type);
 
@@ -886,7 +891,8 @@ msp430_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
 		      fold_build2 (BIT_AND_EXPR, TREE_TYPE (valist),
 				   valist_tmp,
-				   build_int_cst (TREE_TYPE (valist), -boundary)));
+				   build_int_cst (TREE_TYPE (valist),
+						  -boundary)));
 	  gimplify_and_add (t, pre_p);
 	}
     }
@@ -994,7 +1000,8 @@ msp430_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 }
 
 #undef  TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
-#define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P msp430_addr_space_legitimate_address_p
+#define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P \
+  msp430_addr_space_legitimate_address_p
 
 bool
 msp430_addr_space_legitimate_address_p (machine_mode mode,
@@ -1051,7 +1058,8 @@ msp430_legitimate_constant (machine_mode mode, rtx x)
     /* GCC does not know the width of the PSImode, so make
        sure that it does not try to use a constant value that
        is out of range.  */
-    || (INTVAL (x) < (1 << 20) && INTVAL (x) >= (HOST_WIDE_INT)(HOST_WIDE_INT_M1U << 20));
+    || (INTVAL (x) < (1 << 20)
+	&& INTVAL (x) >= (HOST_WIDE_INT)(HOST_WIDE_INT_M1U << 20));
 }
 
 
@@ -1268,7 +1276,8 @@ has_section_name (const char * name, tree decl = current_function_decl)
 }
 
 #undef  TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS
-#define TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS	msp430_allocate_stack_slots_for_args
+#define TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS \
+  msp430_allocate_stack_slots_for_args
 
 static bool
 msp430_allocate_stack_slots_for_args (void)
@@ -1329,8 +1338,8 @@ msp430_attr (tree * node,
 
 	default:
 	  warning (OPT_Wattributes,
-		   "argument of %qE attribute is not a string constant or number",
-		   name);
+		   "argument of %qE attribute is not a string constant "
+		   "or number", name);
 	  *no_add_attrs = true;
 	  break;
 	}
@@ -1470,7 +1479,8 @@ msp430_data_attr (tree * node,
   /* Check that it's possible for the variable to have a section.  */
   if ((TREE_STATIC (* node) || DECL_EXTERNAL (* node) || in_lto_p)
       && DECL_SECTION_NAME (* node))
-    message = G_("%qE attribute cannot be applied to variables with specific sections");
+    message = G_("%qE attribute cannot be applied to variables with specific "
+		 "sections");
 
   if (!message && TREE_NAME_EQ (name, ATTR_PERSIST) && !TREE_STATIC (* node)
       && !TREE_PUBLIC (* node) && !DECL_EXTERNAL (* node))
@@ -1485,7 +1495,8 @@ msp430_data_attr (tree * node,
     set_decl_section_name (* node, ".persistent");
 
   /* If this var is thought to be common, then change this.  Common variables
-     are assigned to sections before the backend has a chance to process them.  */
+     are assigned to sections before the backend has a chance to process
+     them.  */
   if (DECL_COMMON (* node))
     DECL_COMMON (* node) = 0;
 
@@ -1552,12 +1563,19 @@ msp430_start_function (FILE *outfile)
       fprintf (outfile, "\n");
     }
 
-  fprintf (outfile, "; framesize_regs:     %d\n", cfun->machine->framesize_regs);
-  fprintf (outfile, "; framesize_locals:   %d\n", cfun->machine->framesize_locals);
-  fprintf (outfile, "; framesize_outgoing: %d\n", cfun->machine->framesize_outgoing);
+  fprintf (outfile, "; framesize_regs:     %d\n",
+	   cfun->machine->framesize_regs);
+  fprintf (outfile, "; framesize_locals:   %d\n",
+	   cfun->machine->framesize_locals);
+  fprintf (outfile, "; framesize_outgoing: %d\n",
+	   cfun->machine->framesize_outgoing);
   fprintf (outfile, "; framesize:          %d\n", cfun->machine->framesize);
-  fprintf (outfile, "; elim ap -> fp       %d\n", msp430_initial_elimination_offset (ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM));
-  fprintf (outfile, "; elim fp -> sp       %d\n", msp430_initial_elimination_offset (FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM));
+  fprintf (outfile, "; elim ap -> fp       %d\n",
+	   msp430_initial_elimination_offset (ARG_POINTER_REGNUM,
+					      FRAME_POINTER_REGNUM));
+  fprintf (outfile, "; elim fp -> sp       %d\n",
+	   msp430_initial_elimination_offset (FRAME_POINTER_REGNUM,
+					      STACK_POINTER_REGNUM));
 
   n = 0;
   fprintf (outfile, "; saved regs:");
@@ -1618,7 +1636,8 @@ msp430_start_function (FILE *file, const char *name, tree decl)
 	     functions implies multiple definitions.  */
 	  if (DECL_WEAK (decl))
 	    {
-	      error ("argument to interrupt attribute is unsupported for weak functions");
+	      error ("argument to interrupt attribute is unsupported for weak "
+		     "functions");
 	    }
 
 	  intr_vector = TREE_VALUE (intr_vector);
@@ -1660,7 +1679,8 @@ gen_prefix (tree decl)
   if (DECL_ONE_ONLY (decl))
     return NULL;
 
-  /* If the user has specified a particular section then do not use any prefix.  */
+  /* If the user has specified a particular section then do not use any
+     prefix.  */
   if (has_attr ("section", decl))
     return NULL;
 
@@ -1674,7 +1694,8 @@ gen_prefix (tree decl)
   if (has_attr (ATTR_LOWER, decl))
     return lower_prefix;
 
-  /* If we are compiling for the MSP430 then we do not support the upper region.  */
+  /* If we are compiling for the MSP430 then we do not support the upper
+     region.  */
   if (! msp430x)
     return NULL;
 
@@ -1719,8 +1740,10 @@ static section * persist_section;
 static void
 msp430_init_sections (void)
 {
-  noinit_section = get_unnamed_section (0, output_section_asm_op, ".section .noinit,\"aw\"");
-  persist_section = get_unnamed_section (0, output_section_asm_op, ".section .persistent,\"aw\"");
+  noinit_section = get_unnamed_section (0, output_section_asm_op,
+					".section .noinit,\"aw\"");
+  persist_section = get_unnamed_section (0, output_section_asm_op,
+					 ".section .persistent,\"aw\"");
 }
 
 #undef  TARGET_ASM_SELECT_SECTION
@@ -1740,7 +1763,8 @@ msp430_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
 
   /* In large mode we must make sure that interrupt handlers are put into
      low memory as the vector table only accepts 16-bit addresses.  */
-  if (TARGET_LARGE && TREE_CODE (decl) == FUNCTION_DECL && is_interrupt_func (decl))
+  if (TARGET_LARGE && TREE_CODE (decl) == FUNCTION_DECL
+      && is_interrupt_func (decl))
     return get_section (".lowtext", SECTION_CODE | SECTION_WRITE , decl);
 
   const char * prefix = gen_prefix (decl);
@@ -1794,7 +1818,8 @@ msp430_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
 #define TARGET_ASM_FUNCTION_SECTION msp430_function_section
 
 static section *
-msp430_function_section (tree decl, enum node_frequency freq, bool startup, bool exit)
+msp430_function_section (tree decl, enum node_frequency freq, bool startup,
+			 bool exit)
 {
   const char * name;
 
@@ -1840,7 +1865,8 @@ msp430_unique_section (tree decl, int reloc)
 
   /* In large mode we must make sure that interrupt handlers are put into
      low memory as the vector table only accepts 16-bit addresses.  */
-  if (TARGET_LARGE && TREE_CODE (decl) == FUNCTION_DECL && is_interrupt_func (decl))
+  if (TARGET_LARGE && TREE_CODE (decl) == FUNCTION_DECL
+      && is_interrupt_func (decl))
     {
       set_decl_section_name (decl, ".lowtext");
       return;
@@ -1891,9 +1917,15 @@ msp430_output_aligned_decl_common (FILE *		  stream,
       else
 	switch (msp430_data_region)
 	  {
-	  case MSP430_REGION_UPPER: sec = get_named_section (NULL, ".upper.bss", 0); break;
-	  case MSP430_REGION_LOWER: sec = get_named_section (NULL, ".lower.bss", 0); break;
-	  case MSP430_REGION_EITHER: sec = get_named_section (NULL, ".either.bss", 0); break;
+	  case MSP430_REGION_UPPER:
+	    sec = get_named_section (NULL, ".upper.bss", 0);
+	    break;
+	  case MSP430_REGION_LOWER:
+	    sec = get_named_section (NULL, ".lower.bss", 0);
+	    break;
+	  case MSP430_REGION_EITHER:
+	    sec = get_named_section (NULL, ".either.bss", 0);
+	    break;
 	  default:
 	    gcc_unreachable ();
 	  }
@@ -1911,11 +1943,11 @@ msp430_output_aligned_decl_common (FILE *		  stream,
 bool
 msp430_do_not_relax_short_jumps (void)
 {
-  /* When placing code into "either" low or high memory we do not want the linker
-     to grow the size of sections, which it can do if it is encounters a branch to
-     a label that is too far away.  So we tell the cbranch patterns to avoid using
-     short jumps when there is a chance that the instructions will end up in a low
-     section.  */
+  /* When placing code into "either" low or high memory we do not want the
+     linker to grow the size of sections, which it can do if it is encounters a
+     branch to a label that is too far away.  So we tell the cbranch patterns to
+     avoid using short jumps when there is a chance that the instructions will
+     end up in a low section.  */
   return
     msp430_code_region == MSP430_REGION_EITHER
     || msp430_code_region == MSP430_REGION_LOWER
@@ -1936,8 +1968,11 @@ static GTY(()) tree msp430_builtins[(int) MSP430_BUILTIN_max];
 static void
 msp430_init_builtins (void)
 {
-  tree void_ftype_int = build_function_type_list (void_type_node, integer_type_node, NULL);
-  tree void_ftype_longlong = build_function_type_list (void_type_node, long_long_integer_type_node, NULL);
+  tree void_ftype_int = build_function_type_list (void_type_node,
+						  integer_type_node, NULL);
+  tree void_ftype_longlong
+    = build_function_type_list (void_type_node, long_long_integer_type_node,
+				NULL);
 
   msp430_builtins[MSP430_BUILTIN_BIC_SR] =
     add_builtin_function ( "__bic_SR_register_on_exit", void_ftype_int,
@@ -1949,7 +1984,8 @@ msp430_init_builtins (void)
 
   msp430_builtins[MSP430_BUILTIN_DELAY_CYCLES] =
     add_builtin_function ( "__delay_cycles", void_ftype_longlong,
-			  MSP430_BUILTIN_DELAY_CYCLES, BUILT_IN_MD, NULL, NULL_TREE);
+			  MSP430_BUILTIN_DELAY_CYCLES, BUILT_IN_MD, NULL,
+			  NULL_TREE);
 }
 
 static tree
@@ -2016,7 +2052,8 @@ msp430_expand_delay_cycles (rtx arg)
   if (c > 3 * 0xffff + CYCX (7, 10))
     {
       n = c;
-      /* There's 4 cycles in the short (i>0xffff) loop and 7 in the long (x<=0xffff) loop */
+      /* There's 4 cycles in the short (i>0xffff) loop and 7 in the long
+	 (x<=0xffff) loop.  */
       if (c >= 0x10000 * 7 + CYCX (14, 16))
 	{
 	  i = 0x10000;
@@ -2046,7 +2083,8 @@ msp430_expand_delay_cycles (rtx arg)
 	emit_insn (gen_delay_cycles_32 (GEN_INT (i), GEN_INT (n - c)));
     }
 
-  /* For 16-bit loops, there's 7(10) + 3x cycles - so the max cycles is 0x30004(7).  */
+  /* For 16-bit loops, there's 7(10) + 3x cycles - so the max cycles is
+     0x30004(7).  */
   if (c > 12)
     {
       n = c;
@@ -2168,7 +2206,8 @@ msp430_expand_prologue (void)
 
       /* Document the stack decrement...  */
       note = F (gen_rtx_SET (stack_pointer_rtx,
-			     gen_rtx_MINUS (Pmode, stack_pointer_rtx, GEN_INT (2))));
+			     gen_rtx_MINUS (Pmode,
+					    stack_pointer_rtx, GEN_INT (2))));
       add_reg_note (p, REG_FRAME_RELATED_EXPR, note);
 
       /* ...and the establishment of a new location for the return address.  */
@@ -2193,7 +2232,8 @@ msp430_expand_prologue (void)
 
 	if (msp430x)
 	  {
-	    /* Note: with TARGET_LARGE we still use PUSHM as PUSHX.A is two bytes bigger.  */
+	    /* Note: with TARGET_LARGE we still use PUSHM as PUSHX.A is two
+	       bytes bigger.  */
 	    p = F (emit_insn (gen_pushm (gen_rtx_REG (Pmode, i),
 					 GEN_INT (count))));
 
@@ -2203,7 +2243,8 @@ msp430_expand_prologue (void)
 	      = F (gen_rtx_SET (stack_pointer_rtx,
 				gen_rtx_PLUS (Pmode,
 					      stack_pointer_rtx,
-					      GEN_INT (count * (TARGET_LARGE ? -4 : -2)))));
+					      GEN_INT (count * (TARGET_LARGE
+								? -4 : -2)))));
 
 	    /* *sp-- = R[i-j] */
 	    /* sp+N	R10
@@ -2276,7 +2317,8 @@ msp430_expand_epilogue (int is_eh)
 
   emit_insn (gen_epilogue_start_marker ());
 
-  if (cfun->decl && strcmp (IDENTIFIER_POINTER (DECL_NAME (cfun->decl)), "main") == 0)
+  if (cfun->decl && strcmp (IDENTIFIER_POINTER (DECL_NAME (cfun->decl)),
+			    "main") == 0)
     emit_insn (gen_msp430_refsym_need_exit ());
 
   if (is_wakeup_func ())
@@ -2305,7 +2347,9 @@ msp430_expand_epilogue (int is_eh)
       emit_move_insn (r12, stack_pointer_rtx);
       emit_insn (addPmode (r12, r12, EH_RETURN_STACKADJ_RTX));
       emit_insn (addPmode (r12, r12, GEN_INT (i)));
-      emit_move_insn (gen_rtx_MEM (Pmode, plus_constant (Pmode, stack_pointer_rtx, i)), r12);
+      emit_move_insn (gen_rtx_MEM (Pmode, plus_constant (Pmode,
+							 stack_pointer_rtx,
+							 i)), r12);
     }
 
   for (i = 4; i <= 15; i++)
@@ -2330,7 +2374,8 @@ msp430_expand_epilogue (int is_eh)
 		 && ! is_reentrant_func ()
 		 && ! is_critical_func ()
 		 && crtl->args.pretend_args_size == 0
-		 /* Calling the helper takes as many bytes as the POP;RET sequence.  */
+		 /* Calling the helper takes as many bytes as the POP;RET
+		    sequence.  */
 		 && helper_n > 1
 		 && !is_eh)
 	  {
@@ -2346,7 +2391,8 @@ msp430_expand_epilogue (int is_eh)
       /* Also pop SP, which puts us into the EH return frame.  Except
 	 that you can't "pop" sp, you have to just load it off the
 	 stack.  */
-      emit_move_insn (stack_pointer_rtx, gen_rtx_MEM (Pmode, stack_pointer_rtx));
+      emit_move_insn (stack_pointer_rtx, gen_rtx_MEM (Pmode,
+						      stack_pointer_rtx));
     }
 
   if (crtl->args.pretend_args_size)
@@ -2453,7 +2499,8 @@ const_shift_helpers[] =
    emit such a function, using the table above to optimize some
    cases.  */
 void
-msp430_expand_helper (rtx *operands, const char *helper_name, bool const_variants)
+msp430_expand_helper (rtx *operands, const char *helper_name,
+		      bool const_variants)
 {
   rtx c, f;
   char *helper_const = NULL;
@@ -2475,7 +2522,8 @@ msp430_expand_helper (rtx *operands, const char *helper_name, bool const_variant
 	      && strcmp (helper_name, const_shift_helpers[i].name) == 0
 	      && INTVAL (operands[2]) == const_shift_helpers[i].count)
 	    {
-	      emit_insn (const_shift_helpers[i].genfunc (operands[0], operands[1]));
+	      emit_insn (const_shift_helpers[i].genfunc (operands[0],
+							 operands[1]));
 	      return;
 	    }
 	}
@@ -2504,10 +2552,12 @@ msp430_expand_helper (rtx *operands, const char *helper_name, bool const_variant
       && INTVAL (operands[2]) >= 1
       && INTVAL (operands[2]) <= 15)
     {
-      /* Note that the INTVAL is limited in value and length by the conditional above.  */
+      /* Note that the INTVAL is limited in value and length by the conditional
+	 above.  */
       int len = strlen (helper_name) + 4;
       helper_const = (char *) xmalloc (len);
-      snprintf (helper_const, len, "%s_%d", helper_name, (int) INTVAL (operands[2]));
+      snprintf (helper_const, len, "%s_%d", helper_name,
+		(int) INTVAL (operands[2]));
     }
 
   emit_move_insn (gen_rtx_REG (arg1mode, arg1),
@@ -2517,7 +2567,9 @@ msp430_expand_helper (rtx *operands, const char *helper_name, bool const_variant
 		    operands[2]);
 
   c = gen_call_value_internal (gen_rtx_REG (arg0mode, 12),
-			       gen_rtx_SYMBOL_REF (VOIDmode, helper_const ? helper_const : helper_name),
+			       gen_rtx_SYMBOL_REF (VOIDmode, helper_const
+						   ? helper_const
+						   : helper_name),
 			       GEN_INT (0));
   c = emit_call_insn (c);
   RTL_CONST_CALL_P (c) = 1;
@@ -2600,9 +2652,11 @@ msp430_split_movsi (rtx *operands)
   if (GET_CODE (operands[1]) == CONST
       || GET_CODE (operands[1]) == SYMBOL_REF)
     {
-      op10 = gen_rtx_ZERO_EXTRACT (HImode, operands[1], GEN_INT (16), GEN_INT (0));
+      op10 = gen_rtx_ZERO_EXTRACT (HImode, operands[1], GEN_INT (16),
+				   GEN_INT (0));
       op10 = gen_rtx_CONST (HImode, op10);
-      op12 = gen_rtx_ZERO_EXTRACT (HImode, operands[1], GEN_INT (16), GEN_INT (16));
+      op12 = gen_rtx_ZERO_EXTRACT (HImode, operands[1], GEN_INT (16),
+				   GEN_INT (16));
       op12 = gen_rtx_CONST (HImode, op12);
     }
   else
@@ -2698,8 +2752,10 @@ helper_function_name_mappings[] =
     { "__muldi3", "__mspabi_mpyll" },
 #if 0
     /* Clarify signed vs unsigned first.  */
-    { "__mulhisi3", "__mspabi_mpysl" }, /* gcc doesn't use widening multiply (yet?) */
-    { "__mulsidi3", "__mspabi_mpysll" }, /* gcc doesn't use widening multiply (yet?) */
+    { "__mulhisi3", "__mspabi_mpysl" }, /* gcc doesn't use widening multiply
+					   (yet?) */
+    { "__mulsidi3", "__mspabi_mpysll" }, /* gcc doesn't use widening multiply
+					    (yet?) */
 #endif
 
     { "__divhi3", "__mspabi_divi" },
@@ -3130,9 +3186,11 @@ msp430_print_operand (FILE * file, rtx op, int letter)
     case 'O':
       /* Computes the offset to the top of the stack for the current frame.
 	 This has to be done here rather than in, say, msp430_expand_builtin()
-	 because builtins are expanded before the frame layout is determined.  */
+	 because builtins are expanded before the frame layout is
+	 determined.  */
       fprintf (file, "%d",
-	       msp430_initial_elimination_offset (ARG_POINTER_REGNUM, STACK_POINTER_REGNUM)
+	       msp430_initial_elimination_offset (ARG_POINTER_REGNUM,
+						  STACK_POINTER_REGNUM)
 	       - (TARGET_LARGE ? 4 : 2));
       return;
 
@@ -3216,7 +3274,8 @@ msp430_return_addr_rtx (int count)
   if (crtl->args.pretend_args_size)
     ra_size += 2;
 
-  return gen_rtx_MEM (Pmode, gen_rtx_PLUS (Pmode, arg_pointer_rtx, GEN_INT (- ra_size)));
+  return gen_rtx_MEM (Pmode, gen_rtx_PLUS (Pmode, arg_pointer_rtx,
+					   GEN_INT (- ra_size)));
 }
 
 rtx
@@ -3235,8 +3294,8 @@ const char *
 msp430x_extendhisi (rtx * operands)
 {
   if (REGNO (operands[0]) == REGNO (operands[1]))
-    /* Low word of dest == source word.  */
-    return "BIT.W\t#0x8000, %L0 { SUBC.W\t%H0, %H0 { INV.W\t%H0, %H0"; /* 8-bytes.  */
+    /* Low word of dest == source word.  8-byte sequence.  */
+    return "BIT.W\t#0x8000, %L0 { SUBC.W\t%H0, %H0 { INV.W\t%H0, %H0";
 
   if (! msp430x)
     /* Note: This sequence is approximately the same length as invoking a helper
@@ -3248,15 +3307,16 @@ msp430x_extendhisi (rtx * operands)
        MOV.W  r12, %H0
 
        but this version does not involve any function calls or using argument
-       registers, so it reduces register pressure.  */
-    return "MOV.W\t%1, %L0 { BIT.W\t#0x8000, %L0 { SUBC.W\t%H0, %H0 { INV.W\t%H0, %H0"; /* 10-bytes.  */
+       registers, so it reduces register pressure.  10-byte sequence.  */
+    return "MOV.W\t%1, %L0 { BIT.W\t#0x8000, %L0 { SUBC.W\t%H0, %H0 "
+      "{ INV.W\t%H0, %H0";
 
   if (REGNO (operands[0]) + 1 == REGNO (operands[1]))
-    /* High word of dest == source word.  */
-    return "MOV.W\t%1, %L0 { RPT\t#15 { RRAX.W\t%H0"; /* 6-bytes.  */
+    /* High word of dest == source word.  6-byte sequence.  */
+    return "MOV.W\t%1, %L0 { RPT\t#15 { RRAX.W\t%H0";
 
-  /* No overlap between dest and source.  */
-  return "MOV.W\t%1, %L0 { MOV.W\t%1, %H0 { RPT\t#15 { RRAX.W\t%H0"; /* 8-bytes.  */
+  /* No overlap between dest and source.  8-byte sequence.  */
+  return "MOV.W\t%1, %L0 { MOV.W\t%1, %H0 { RPT\t#15 { RRAX.W\t%H0";
 }
 
 /* Likewise for logical right shifts.  */
