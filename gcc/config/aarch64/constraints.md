@@ -458,4 +458,4 @@
 (define_constraint "vsN"
   "@internal
    A constraint that matches the negative of vsA"
- (match_operand 0 "aarch64_sve_float_arith_with_sub_immediate"))
+ (match_operand 0 "aarch64_sve_float_negated_arith_immediate"))

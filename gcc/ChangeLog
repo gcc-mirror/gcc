@@ -1,6 +1,32 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
+	* config/aarch64/aarch64.c (aarch64_print_vector_float_operand):
+	Print 2.0 naturally.
+	(aarch64_sve_float_mul_immediate_p): Return true for 2.0.
+	* config/aarch64/predicates.md
+	(aarch64_sve_float_negated_arith_immediate): New predicate,
+	renamed from aarch64_sve_float_arith_with_sub_immediate.
+	(aarch64_sve_float_arith_with_sub_immediate): Test for both
+	positive and negative constants.
+	(aarch64_sve_float_arith_with_sub_operand): Redefine as a register
+	or an aarch64_sve_float_arith_with_sub_immediate.
+	* config/aarch64/constraints.md (vsN): Use
+	aarch64_sve_float_negated_arith_immediate.
+	* config/aarch64/iterators.md (SVE_COND_FP_BINARY_I1): New int
+	iterator.
+	(sve_pred_fp_rhs2_immediate): New int attribute.
+	* config/aarch64/aarch64-sve.md
+	(cond_<SVE_COND_FP_BINARY:optab><SVE_F:mode>): Use
+	sve_pred_fp_rhs1_operand and sve_pred_fp_rhs2_operand.
+	(*cond_<SVE_COND_FP_BINARY_I1:optab><SVE_F:mode>_2_const)
+	(*cond_<SVE_COND_FP_BINARY_I1:optab><SVE_F:mode>_any_const)
+	(*cond_add<SVE_F:mode>_2_const, *cond_add<SVE_F:mode>_any_const)
+	(*cond_sub<mode>_3_const, *cond_sub<mode>_any_const): New patterns.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
 	* config/aarch64/aarch64-sve.md (*aarch64_cond_abd<SVE_F:mode>_2)
 	(*aarch64_cond_abd<SVE_F:mode>_3)
 	(*aarch64_cond_abd<SVE_F:mode>_any): New patterns.

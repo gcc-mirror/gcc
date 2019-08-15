@@ -2553,14 +2553,14 @@
 ;; ---- [FP] General binary arithmetic corresponding to unspecs
 ;; -------------------------------------------------------------------------
 ;; Includes merging forms of:
-;; - FADD
+;; - FADD    (constant forms handled in the "Addition" section)
 ;; - FDIV
 ;; - FDIVR
-;; - FMAXNM
-;; - FMINNM
-;; - FMUL
-;; - FSUB
-;; - FSUBR
+;; - FMAXNM  (including #0.0 and #1.0)
+;; - FMINNM  (including #0.0 and #1.0)
+;; - FMUL    (including #0.5 and #2.0)
+;; - FSUB    (constant forms handled in the "Addition" section)
+;; - FSUBR   (constant forms handled in the "Subtraction" section)
 ;; -------------------------------------------------------------------------
 
 ;; Unpredicated floating-point binary operations.
@@ -2603,8 +2603,8 @@
 	   (unspec:SVE_F
 	     [(match_dup 1)
 	      (const_int SVE_STRICT_GP)
-	      (match_operand:SVE_F 2 "register_operand")
-	      (match_operand:SVE_F 3 "register_operand")]
+	      (match_operand:SVE_F 2 "<sve_pred_fp_rhs1_operand>")
+	      (match_operand:SVE_F 3 "<sve_pred_fp_rhs2_operand>")]
 	     SVE_COND_FP_BINARY)
 	   (match_operand:SVE_F 4 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
@@ -2628,6 +2628,30 @@
   "@
    <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
    movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
+  "&& !rtx_equal_p (operands[1], operands[4])"
+  {
+    operands[4] = copy_rtx (operands[1]);
+  }
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Same for operations that take a 1-bit constant.
+(define_insn_and_rewrite "*cond_<optab><mode>_2_const"
+  [(set (match_operand:SVE_F 0 "register_operand" "=w, ?w")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_F
+	     [(match_operand 4)
+	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (match_operand:SVE_F 2 "register_operand" "0, w")
+	      (match_operand:SVE_F 3 "<sve_pred_fp_rhs2_immediate>")]
+	     SVE_COND_FP_BINARY_I1)
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[4], operands[1])"
+  "@
+   <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+   movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3"
   "&& !rtx_equal_p (operands[1], operands[4])"
   {
     operands[4] = copy_rtx (operands[1]);
@@ -2700,6 +2724,44 @@
   [(set_attr "movprfx" "yes")]
 )
 
+;; Same for operations that take a 1-bit constant.
+(define_insn_and_rewrite "*cond_<optab><mode>_any_const"
+  [(set (match_operand:SVE_F 0 "register_operand" "=w, w, ?w")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (unspec:SVE_F
+	     [(match_operand 5)
+	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (match_operand:SVE_F 2 "register_operand" "w, w, w")
+	      (match_operand:SVE_F 3 "<sve_pred_fp_rhs2_immediate>")]
+	     SVE_COND_FP_BINARY_I1)
+	   (match_operand:SVE_F 4 "aarch64_simd_reg_or_zero" "Dz, 0, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE
+   && !rtx_equal_p (operands[2], operands[4])
+   && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+   movprfx\t%0.<Vetype>, %1/m, %2.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+   #"
+  "&& 1"
+  {
+    if (reload_completed
+        && register_operand (operands[4], <MODE>mode)
+        && !rtx_equal_p (operands[0], operands[4]))
+      {
+	emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[2],
+						 operands[4], operands[1]));
+	operands[4] = operands[2] = operands[0];
+      }
+    else if (!rtx_equal_p (operands[1], operands[5]))
+      operands[5] = copy_rtx (operands[1]);
+    else
+      FAIL;
+  }
+  [(set_attr "movprfx" "yes")]
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [FP] Addition
 ;; -------------------------------------------------------------------------
@@ -2729,7 +2791,76 @@
   [(set (match_dup 0) (plus:SVE_F (match_dup 2) (match_dup 3)))]
 )
 
-;; Merging forms are handled through SVE_COND_FP_BINARY.
+;; Predicated floating-point addition of a constant, merging with the
+;; first input.
+(define_insn_and_rewrite "*cond_add<mode>_2_const"
+  [(set (match_operand:SVE_F 0 "register_operand" "=w, w, ?w, ?w")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl")
+	   (unspec:SVE_F
+	     [(match_operand 4)
+	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (match_operand:SVE_F 2 "register_operand" "0, 0, w, w")
+	      (match_operand:SVE_F 3 "aarch64_sve_float_arith_with_sub_immediate" "vsA, vsN, vsA, vsN")]
+	     UNSPEC_COND_FADD)
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[4], operands[1])"
+  "@
+   fadd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+   fsub\t%0.<Vetype>, %1/m, %0.<Vetype>, #%N3
+   movprfx\t%0, %2\;fadd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+   movprfx\t%0, %2\;fsub\t%0.<Vetype>, %1/m, %0.<Vetype>, #%N3"
+  "&& !rtx_equal_p (operands[1], operands[4])"
+  {
+    operands[4] = copy_rtx (operands[1]);
+  }
+  [(set_attr "movprfx" "*,*,yes,yes")]
+)
+
+;; Predicated floating-point addition of a constant, merging with an
+;; independent value.
+(define_insn_and_rewrite "*cond_add<mode>_any_const"
+  [(set (match_operand:SVE_F 0 "register_operand" "=w, w, w, w, ?w, ?w")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl, Upl")
+	   (unspec:SVE_F
+	     [(match_operand 5)
+	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (match_operand:SVE_F 2 "register_operand" "w, w, w, w, w, w")
+	      (match_operand:SVE_F 3 "aarch64_sve_float_arith_with_sub_immediate" "vsA, vsN, vsA, vsN, vsA, vsN")]
+	     UNSPEC_COND_FADD)
+	   (match_operand:SVE_F 4 "aarch64_simd_reg_or_zero" "Dz, Dz, 0, 0, w, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE
+   && !rtx_equal_p (operands[2], operands[4])
+   && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;fadd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;fsub\t%0.<Vetype>, %1/m, %0.<Vetype>, #%N3
+   movprfx\t%0.<Vetype>, %1/m, %2.<Vetype>\;fadd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+   movprfx\t%0.<Vetype>, %1/m, %2.<Vetype>\;fsub\t%0.<Vetype>, %1/m, %0.<Vetype>, #%N3
+   #
+   #"
+  "&& 1"
+  {
+    if (reload_completed
+        && register_operand (operands[4], <MODE>mode)
+        && !rtx_equal_p (operands[0], operands[4]))
+      {
+	emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[2],
+						 operands[4], operands[1]));
+	operands[4] = operands[2] = operands[0];
+      }
+    else if (!rtx_equal_p (operands[1], operands[5]))
+      operands[5] = copy_rtx (operands[1]);
+    else
+      FAIL;
+  }
+  [(set_attr "movprfx" "yes")]
+)
+
+;; Register merging forms are handled through SVE_COND_FP_BINARY.
 
 ;; -------------------------------------------------------------------------
 ;; ---- [FP] Subtraction
@@ -2765,7 +2896,71 @@
   [(set (match_dup 0) (minus:SVE_F (match_dup 2) (match_dup 3)))]
 )
 
-;; Merging forms are handled through SVE_COND_FP_BINARY.
+;; Predicated floating-point subtraction from a constant, merging with the
+;; second input.
+(define_insn_and_rewrite "*cond_sub<mode>_3_const"
+  [(set (match_operand:SVE_F 0 "register_operand" "=w, ?w")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_F
+	     [(match_operand 4)
+	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (match_operand:SVE_F 2 "aarch64_sve_float_arith_immediate")
+	      (match_operand:SVE_F 3 "register_operand" "0, w")]
+	     UNSPEC_COND_FSUB)
+	   (match_dup 3)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[4], operands[1])"
+  "@
+   fsubr\t%0.<Vetype>, %1/m, %0.<Vetype>, #%2
+   movprfx\t%0, %3\;fsubr\t%0.<Vetype>, %1/m, %0.<Vetype>, #%2"
+  "&& !rtx_equal_p (operands[1], operands[4])"
+  {
+    operands[4] = copy_rtx (operands[1]);
+  }
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Predicated floating-point subtraction from a constant, merging with an
+;; independent value.
+(define_insn_and_rewrite "*cond_sub<mode>_any_const"
+  [(set (match_operand:SVE_F 0 "register_operand" "=w, w, ?w")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (unspec:SVE_F
+	     [(match_operand 5)
+	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (match_operand:SVE_F 2 "aarch64_sve_float_arith_immediate")
+	      (match_operand:SVE_F 3 "register_operand" "w, w, w")]
+	     UNSPEC_COND_FSUB)
+	   (match_operand:SVE_F 4 "aarch64_simd_reg_or_zero" "Dz, 0, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE
+   && !rtx_equal_p (operands[3], operands[4])
+   && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %3.<Vetype>\;fsubr\t%0.<Vetype>, %1/m, %0.<Vetype>, #%2
+   movprfx\t%0.<Vetype>, %1/m, %3.<Vetype>\;fsubr\t%0.<Vetype>, %1/m, %0.<Vetype>, #%2
+   #"
+  "&& 1"
+  {
+    if (reload_completed
+        && register_operand (operands[4], <MODE>mode)
+        && !rtx_equal_p (operands[0], operands[4]))
+      {
+	emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[3],
+						 operands[4], operands[1]));
+	operands[4] = operands[3] = operands[0];
+      }
+    else if (!rtx_equal_p (operands[1], operands[5]))
+      operands[5] = copy_rtx (operands[1]);
+    else
+      FAIL;
+  }
+  [(set_attr "movprfx" "yes")]
+)
+
+;; Register merging forms are handled through SVE_COND_FP_BINARY.
 
 ;; -------------------------------------------------------------------------
 ;; ---- [FP] Absolute difference
@@ -2939,7 +3134,8 @@
   [(set (match_dup 0) (mult:SVE_F (match_dup 2) (match_dup 3)))]
 )
 
-;; Merging forms are handled through SVE_COND_FP_BINARY.
+;; Merging forms are handled through SVE_COND_FP_BINARY and
+;; SVE_COND_FP_BINARY_I1.
 
 ;; -------------------------------------------------------------------------
 ;; ---- [FP] Binary logical operations
@@ -3064,7 +3260,8 @@
   [(set_attr "movprfx" "*,*,yes,yes")]
 )
 
-;; Merging forms are handled through SVE_COND_FP_BINARY.
+;; Merging forms are handled through SVE_COND_FP_BINARY and
+;; SVE_COND_FP_BINARY_I1.
 
 ;; -------------------------------------------------------------------------
 ;; ---- [PRED] Binary logical operations

@@ -1,6 +1,50 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
+	* gcc.target/aarch64/sve/cond_fadd_1.c: New test.
+	* gcc.target/aarch64/sve/cond_fadd_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fadd_2.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fadd_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fadd_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fadd_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fadd_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fadd_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fsubr_1.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fsubr_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fsubr_2.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fsubr_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fsubr_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fsubr_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fsubr_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fsubr_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmaxnm_1.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmaxnm_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmaxnm_2.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmaxnm_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmaxnm_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmaxnm_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmaxnm_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmaxnm_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_1.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_2.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmul_1.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmul_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmul_2.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmul_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmul_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmul_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmul_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmul_4_run.c: Likewise.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
 	* gcc.target/aarch64/sve/cond_fabd_1.c: New test.
 	* gcc.target/aarch64/sve/cond_fabd_1_run.c: Likewise.
 	* gcc.target/aarch64/sve/cond_fabd_2.c: Likewise.

@@ -663,9 +663,13 @@
   (and (match_code "const,const_vector")
        (match_test "aarch64_sve_float_arith_immediate_p (op, false)")))
 
-(define_predicate "aarch64_sve_float_arith_with_sub_immediate"
+(define_predicate "aarch64_sve_float_negated_arith_immediate"
   (and (match_code "const,const_vector")
        (match_test "aarch64_sve_float_arith_immediate_p (op, true)")))
+
+(define_predicate "aarch64_sve_float_arith_with_sub_immediate"
+  (ior (match_operand 0 "aarch64_sve_float_arith_immediate")
+       (match_operand 0 "aarch64_sve_float_negated_arith_immediate")))
 
 (define_predicate "aarch64_sve_float_mul_immediate"
   (and (match_code "const,const_vector")
@@ -730,7 +734,7 @@
        (match_operand 0 "aarch64_sve_float_arith_immediate")))
 
 (define_predicate "aarch64_sve_float_arith_with_sub_operand"
-  (ior (match_operand 0 "aarch64_sve_float_arith_operand")
+  (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_sve_float_arith_with_sub_immediate")))
 
 (define_predicate "aarch64_sve_float_mul_operand"
