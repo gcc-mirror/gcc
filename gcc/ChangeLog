@@ -1,3 +1,37 @@
+2019-08-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (value_range_base::set): Merge in code from
+	value_range_base::set_and_canonicalize.
+	Enforce canonicalization at set time.
+	Normalize [MIN, MAX] into VARYING and ~[MIN, MAX] into UNDEFINED.
+	(value_range_base::set_undefined): Inline call to set().
+	(value_range_base::set_varying): Same.
+	(value_range_base::singleton_p): Handle VR_ANTI_RANGEs.
+	(vrp_val_max): New argument handle_pointers.
+	(vrp_val_min): Same.
+	(ranges_from_anti_range): Same.
+	(extract_range_into_wide_ints): Use tree argument instead of sign
+	and precision.
+	(extract_range_from_multiplicative_op): Take in tree type instead
+	of precision and sign.  Adapt function for canonicalized ranges.
+	(extract_range_from_binary_expr): Pass type to
+	extract_range_from_multiplicative_op.
+	Adapt for canonicalized ranges.
+	(extract_range_from_unary_expr): Same.
+	(value_range_base::intersect_helper): Adjust for canonicalized
+	ranges.
+	(value_range_base::union_helper): Same.
+	(value_range_base::normalize_symbolics): New.
+	* tree-vrp.h (class value_range_base): Remove
+	set_and_canonicalize.
+	New prototype for normalize_symbolics.
+	(class value_range): Remove set_and_canonicalize.
+	(vrp_val_min): Adjust prototype.
+	(vrp_val_max): Same.
+	* vr-values.c
+	(vr_values::extract_range_for_var_from_comparison_expr):  Call set
+	instead of set_and_canonicalize.
+
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/91444

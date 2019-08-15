@@ -71,11 +71,12 @@ public:
   /* Misc methods.  */
   tree type () const;
   bool may_contain_p (tree) const;
-  void set_and_canonicalize (enum value_range_kind, tree, tree);
   bool zero_p () const;
   bool nonzero_p () const;
   bool singleton_p (tree *result = NULL) const;
   void dump (FILE *) const;
+
+  value_range_base normalize_symbolics () const;
 
 protected:
   void check ();
@@ -143,7 +144,6 @@ class GTY((user)) value_range : public value_range_base
 
   /* Misc methods.  */
   void deep_copy (const value_range *);
-  void set_and_canonicalize (enum value_range_kind, tree, tree, bitmap = NULL);
   void dump (FILE *) const;
 
  private:
@@ -270,8 +270,8 @@ extern int operand_less_p (tree, tree);
 extern bool vrp_val_is_min (const_tree);
 extern bool vrp_val_is_max (const_tree);
 
-extern tree vrp_val_min (const_tree);
-extern tree vrp_val_max (const_tree);
+extern tree vrp_val_min (const_tree, bool handle_pointers = false);
+extern tree vrp_val_max (const_tree, bool handle_pointers = false);
 
 extern void extract_range_from_unary_expr (value_range_base *vr,
 					   enum tree_code code,
