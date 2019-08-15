@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -I $(top_srcdir)/include -isystem $(top_srcdir)/include/system
+AM_CPPFLAGS = -I $(top_srcdir)/include -I $(top_srcdir) -isystem $(top_srcdir)/include/system
 
 # May be used by toolexeclibdir.
 gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
@@ -10,7 +10,6 @@ AM_CXXFLAGS += -std=gnu++11
 AM_CXXFLAGS += $(EXTRA_CXXFLAGS)
 if LIBBACKTRACE_SUPPORTED
 AM_CXXFLAGS += -DSANITIZER_LIBBACKTRACE -DSANITIZER_CP_DEMANGLE \
-	       -I $(top_srcdir)/ \
 	       -I $(top_srcdir)/../libbacktrace \
 	       -I $(top_builddir)/libbacktrace \
 	       -I $(top_srcdir)/../include \
