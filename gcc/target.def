@@ -4551,15 +4551,6 @@ returned by function call into @var{slot}.",
  default_store_returned_bounds)
 
 DEFHOOK
-(setup_incoming_vararg_bounds,
- "Use it to store bounds for anonymous register arguments stored\n\
-into the stack.  Arguments meaning is similar to\n\
-@code{TARGET_SETUP_INCOMING_VARARGS}.",
- void, (cumulative_args_t args_so_far, machine_mode mode, tree type,
-	int *pretend_args_size, int second_time),
- default_setup_incoming_vararg_bounds)
-
-DEFHOOK
 (call_args,
  "While generating RTL for a function call, this target hook is invoked once\n\
 for each argument passed to the function, either a register returned by\n\

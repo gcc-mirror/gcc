@@ -265,11 +265,6 @@ extern rtx default_load_bounds_for_arg (rtx, rtx, rtx);
 extern void default_store_bounds_for_arg (rtx, rtx, rtx, rtx);
 extern rtx default_load_returned_bounds (rtx);
 extern void default_store_returned_bounds (rtx,rtx);
-extern void default_setup_incoming_vararg_bounds (cumulative_args_t ca ATTRIBUTE_UNUSED,
-						  machine_mode mode ATTRIBUTE_UNUSED,
-						  tree type ATTRIBUTE_UNUSED,
-						  int *pretend_arg_size ATTRIBUTE_UNUSED,
-						  int second_time ATTRIBUTE_UNUSED);
 extern bool default_optab_supported_p (int, machine_mode, machine_mode,
 				       optimization_type);
 extern unsigned int default_max_noce_ifcvt_seq_cost (edge);
