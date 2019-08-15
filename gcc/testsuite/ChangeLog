@@ -1,3 +1,14 @@
+2019-08-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline.
+	2019-08-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/91436
+	* g++.dg/lookup/missing-std-include-5.C: Limit test to C++14 and up.
+	* g++.dg/lookup/missing-std-include-6.C: Don't check make_unique in
+	test that runs for C++11.
+	* g++.dg/lookup/missing-std-include-8.C: Check make_unique here.
+
 2019-08-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.

@@ -5509,7 +5509,7 @@ get_std_name_hint (const char *name)
     {"bitset", "<bitset>", cxx11},
     /* <complex>.  */
     {"complex", "<complex>", cxx98},
-    {"complex_literals", "<complex>", cxx98},
+    {"complex_literals", "<complex>", cxx14},
     /* <condition_variable>. */
     {"condition_variable", "<condition_variable>", cxx11},
     {"condition_variable_any", "<condition_variable>", cxx11},
@@ -5571,7 +5571,7 @@ get_std_name_hint (const char *name)
     {"multimap", "<map>", cxx98},
     /* <memory>.  */
     {"make_shared", "<memory>", cxx11},
-    {"make_unique", "<memory>", cxx11},
+    {"make_unique", "<memory>", cxx14},
     {"shared_ptr", "<memory>", cxx11},
     {"unique_ptr", "<memory>", cxx11},
     {"weak_ptr", "<memory>", cxx11},

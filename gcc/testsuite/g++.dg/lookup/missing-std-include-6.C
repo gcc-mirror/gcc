@@ -11,15 +11,6 @@ void test_make_shared ()
   // { dg-error "expected primary-expression before '\\)' token" "" { target *-*-* } .-3 }
 }
 
-template<class T>
-void test_make_unique ()
-{
-  auto p = std::make_unique<T>(); // { dg-error "'make_unique' is not a member of 'std'" }
-  // { dg-message "'#include <memory>'" "" { target *-*-* } .-1 }
-  // { dg-error "expected primary-expression before '>' token" "" { target *-*-* } .-2 }
-  // { dg-error "expected primary-expression before '\\)' token" "" { target *-*-* } .-3 }
-}
-
 std::shared_ptr<int> test_shared_ptr; // { dg-error "'shared_ptr' in namespace 'std' does not name a template type" }
 // { dg-message "'#include <memory>'" "" { target *-*-* } .-1 }
 
