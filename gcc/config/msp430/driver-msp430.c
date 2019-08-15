@@ -47,7 +47,7 @@ msp430_select_cpu (int argc, const char ** argv)
 	case 1: return "-mcpu=msp430x";
 	case 2: return "-mcpu=msp430xv2";
 	default:
-		gcc_unreachable ();
+	  gcc_unreachable ();
 	}
     }
   /* MCU wasn't found, the compiler proper will warn about this.  */
@@ -85,41 +85,41 @@ msp430_select_hwmult_lib (int argc ATTRIBUTE_UNUSED, const char ** argv ATTRIBUT
   int i;
 
   switch (argc)
-  {
-  case 1:
-    if (strcasecmp (argv[0], "default"))
-      error ("unexpected argument to msp430_select_hwmult_lib: %s", argv[0]);
-    break;
+    {
+    case 1:
+      if (strcasecmp (argv[0], "default"))
+	error ("unexpected argument to msp430_select_hwmult_lib: %s", argv[0]);
+      break;
 
-  default:
-    /* We can get three or more arguments passed to this function.
-       This happens when the same option is repeated on the command line.
-       For example:
-         msp430-elf-gcc -mhwmult=none -mhwmult=16bit foo.c
-       We have to use the last argument as our selector.  */
-    if (strcasecmp (argv[0], "hwmult") == 0)
-      {
-	static struct hwmult_options
+    default:
+      /* We can get three or more arguments passed to this function.
+	 This happens when the same option is repeated on the command line.
+	 For example:
+	 msp430-elf-gcc -mhwmult=none -mhwmult=16bit foo.c
+	 We have to use the last argument as our selector.  */
+      if (strcasecmp (argv[0], "hwmult") == 0)
 	{
-	  const char * name;
-	  const char * lib;
-	} hwmult_options [] =
-	{
-	  { "none", "-lmul_none" },
-	  { "auto", "-lmul_AUTO" }, /* Should not see this one... */
-	  { "16bit", "-lmul_16" },
-	  { "32bit", "-lmul_32" },
-	  { "f5series", "-lmul_f5" }
-	};
+	  static struct hwmult_options
+	    {
+	      const char * name;
+	      const char * lib;
+	    } hwmult_options[] =
+	    {
+	      { "none", "-lmul_none" },
+	      { "auto", "-lmul_AUTO" }, /* Should not see this one... */
+	      { "16bit", "-lmul_16" },
+	      { "32bit", "-lmul_32" },
+	      { "f5series", "-lmul_f5" }
+	    };
 
 	for (i = ARRAY_SIZE (hwmult_options); i--;)
 	  if (strcasecmp (argv[argc - 1], hwmult_options[i].name) == 0)
 	    return hwmult_options[i].lib;
-      }
-    else if (strcasecmp (argv[0], "mcu") == 0)
-      {
-	msp430_extract_mcu_data (argv[argc - 1]);
-	if (extracted_mcu_data.name != NULL)
+	}
+      else if (strcasecmp (argv[0], "mcu") == 0)
+	{
+	  msp430_extract_mcu_data (argv[argc - 1]);
+	  if (extracted_mcu_data.name != NULL)
 	    {
 	      switch (extracted_mcu_data.hwmpy)
 		{
@@ -129,21 +129,21 @@ msp430_select_hwmult_lib (int argc ATTRIBUTE_UNUSED, const char ** argv ATTRIBUT
 		case 4: return "-lmul_32";
 		case 8: return "-lmul_f5";
 		default:
-			/* We have already checked the hwmpy values for
-			   validity in msp430_extract_mcu_data.  */
-			gcc_unreachable ();
+		  /* We have already checked the hwmpy values for
+		     validity in msp430_extract_mcu_data.  */
+		  gcc_unreachable ();
 		  break;
 		}
 	    }
-      }
-    else
-      error ("unexpected first argument to msp430_select_hwmult_lib: %s", argv[0]);
-    break;
+	}
+      else
+	error ("unexpected first argument to msp430_select_hwmult_lib: %s", argv[0]);
+      break;
 
-  case 0:
-    error ("msp430_select_hwmult_lib needs one or more arguments");
-    break;
-  }
-  
+    case 0:
+      error ("msp430_select_hwmult_lib needs one or more arguments");
+      break;
+    }
+
   return "-lmul_none";
 }
