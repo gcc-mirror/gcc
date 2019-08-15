@@ -39,13 +39,13 @@ TEST_ALL (DEF_LOOP)
 /* { dg-final { scan-assembler-times {\t(?:mls|msb)\tz[0-9]+\.s, p[0-7]/m,} 1 } } */
 /* { dg-final { scan-assembler-times {\t(?:mls|msb)\tz[0-9]+\.d, p[0-7]/m,} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tfmla\tz[0-9]+\.h, p[0-7]/m,} 1 } } */
-/* { dg-final { scan-assembler-times {\tfmla\tz[0-9]+\.s, p[0-7]/m,} 1 } } */
-/* { dg-final { scan-assembler-times {\tfmla\tz[0-9]+\.d, p[0-7]/m,} 1 } } */
+/* { dg-final { scan-assembler-times {\t(?:fmla|fmad)\tz[0-9]+\.h, p[0-7]/m,} 1 } } */
+/* { dg-final { scan-assembler-times {\t(?:fmla|fmad)\tz[0-9]+\.s, p[0-7]/m,} 1 } } */
+/* { dg-final { scan-assembler-times {\t(?:fmla|fmad)\tz[0-9]+\.d, p[0-7]/m,} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tfmls\tz[0-9]+\.h, p[0-7]/m,} 1 } } */
-/* { dg-final { scan-assembler-times {\tfmls\tz[0-9]+\.s, p[0-7]/m,} 1 } } */
-/* { dg-final { scan-assembler-times {\tfmls\tz[0-9]+\.d, p[0-7]/m,} 1 } } */
+/* { dg-final { scan-assembler-times {\t(?:fmls|fmsb)\tz[0-9]+\.h, p[0-7]/m,} 1 } } */
+/* { dg-final { scan-assembler-times {\t(?:fmls|fmsb)\tz[0-9]+\.s, p[0-7]/m,} 1 } } */
+/* { dg-final { scan-assembler-times {\t(?:fmls|fmsb)\tz[0-9]+\.d, p[0-7]/m,} 1 } } */
 
 /* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.b, p[0-7]/z,} 2 } } */
 /* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.h, p[0-7]/z,} 4 } } */

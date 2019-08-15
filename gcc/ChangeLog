@@ -1,4 +1,12 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* config/aarch64/aarch64-sve.md
+	(*cond_<SVE_COND_FP_TERNARY:optab><SVE_F:mode>_any): Add /z
+	alternatives in which one of the inputs is in the same register
+	as the output.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64-sve.md (*vec_extract<mode><Vel>_ext)
 	(*aarch64_sve_ext<mode>): Add MOVPRFX alternatives.

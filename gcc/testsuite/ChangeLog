@@ -1,4 +1,10 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* gcc.target/aarch64/sve/cond_mla_5.c: Allow FMAD as well as FMLA
+	and FMSB as well as FMLS.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/ext_2.c: Expect a MOVPRFX.
 	* gcc.target/aarch64/sve/ext_3.c: New test.
