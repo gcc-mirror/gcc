@@ -2506,8 +2506,7 @@ gfc_explicit_interface_required (gfc_symbol *sym, char *errmsg, int err_len)
 
 
 static void
-resolve_global_procedure (gfc_symbol *sym, locus *where,
-			  gfc_actual_arglist **actual, int sub)
+resolve_global_procedure (gfc_symbol *sym, locus *where, int sub)
 {
   gfc_gsymbol * gsym;
   gfc_namespace *ns;
@@ -2615,14 +2614,6 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 			 " %s", sym->name, &sym->declared_at, reason);
 	  goto done;
 	}
-
-      if (!pedantic
-	  || ((gfc_option.warn_std & GFC_STD_LEGACY)
-	      && !(gfc_option.warn_std & GFC_STD_GNU)))
-	gfc_errors_to_warnings (true);
-
-      if (sym->attr.if_source != IFSRC_IFBODY)
-	gfc_procedure_use (def_sym, actual, where);
     }
 
 done:
@@ -3198,8 +3189,7 @@ resolve_function (gfc_expr *expr)
 
   /* If the procedure is external, check for usage.  */
   if (sym && is_external_proc (sym))
-    resolve_global_procedure (sym, &expr->where,
-			      &expr->value.function.actual, 0);
+    resolve_global_procedure (sym, &expr->where, 0);
 
   if (sym && sym->ts.type == BT_CHARACTER
       && sym->ts.u.cl
@@ -3675,7 +3665,7 @@ resolve_call (gfc_code *c)
 
   /* If external, check for usage.  */
   if (csym && is_external_proc (csym))
-    resolve_global_procedure (csym, &c->loc, &c->ext.actual, 1);
+    resolve_global_procedure (csym, &c->loc, 1);
 
   t = true;
   if (c->resolved_sym == NULL)

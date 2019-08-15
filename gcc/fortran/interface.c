@@ -2979,10 +2979,15 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 
       if (a->expr == NULL)
 	{
-	  if (where)
-	    gfc_error_now ("Unexpected alternate return specifier in "
-			   "subroutine call at %L", where);
-	  return false;
+	  if (f->sym->attr.optional)
+	    continue;
+	  else
+	    {
+	      if (where)
+		gfc_error_now ("Unexpected alternate return specifier in "
+			       "subroutine call at %L", where);
+	      return false;
+	    }
 	}
 
       /* Make sure that intrinsic vtables exist for calls to unlimited
@@ -3723,6 +3728,9 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 
       for (a = *ap; a; a = a->next)
 	{
+	  if (a->expr && a->expr->error)
+	    return false;
+
 	  /* Skip g77 keyword extensions like %VAL, %REF, %LOC.  */
 	  if (a->name != NULL && a->name[0] != '%')
 	    {
@@ -3738,6 +3746,7 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	      gfc_error ("Assumed-type argument %s at %L requires an explicit "
 			 "interface", a->expr->symtree->n.sym->name,
 			 &a->expr->where);
+	      a->expr->error = 1;
 	      break;
 	    }
 
@@ -3751,6 +3760,7 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	      gfc_error ("Actual argument of LOCK_TYPE or with LOCK_TYPE "
 			 "component at %L requires an explicit interface for "
 			 "procedure %qs", &a->expr->where, sym->name);
+	      a->expr->error = 1;
 	      break;
 	    }
 
@@ -3764,13 +3774,16 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	      gfc_error ("Actual argument of EVENT_TYPE or with EVENT_TYPE "
 			 "component at %L requires an explicit interface for "
 			 "procedure %qs", &a->expr->where, sym->name);
+	      a->expr->error = 1;
 	      break;
 	    }
 
 	  if (a->expr && a->expr->expr_type == EXPR_NULL
 	      && a->expr->ts.type == BT_UNKNOWN)
 	    {
-	      gfc_error ("MOLD argument to NULL required at %L", &a->expr->where);
+	      gfc_error ("MOLD argument to NULL required at %L",
+			 &a->expr->where);
+	      a->expr->error = 1;
 	      return false;
 	    }
 
@@ -3780,6 +3793,7 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	    {
 	      gfc_error ("Assumed-rank argument requires an explicit interface "
 			 "at %L", &a->expr->where);
+	      a->expr->error = 1;
 	      return false;
 	    }
 	}

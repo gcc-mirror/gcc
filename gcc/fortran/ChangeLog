@@ -1,3 +1,21 @@
+2019-08-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91443
+	* frontend-passes.c (check_externals_expr): New function.
+	(check_externals_code): New function.
+	(gfc_check_externals): New function.
+	* gfortran.h (debug): Add prototypes for gfc_symbol * and
+	gfc_expr *.
+	(gfc_check_externals): Add prototype.
+	* interface.c (compare_actual_formal): Do not complain about
+	alternate returns if the formal argument is optional.
+	(gfc_procedure_use): Handle cases when an error has been issued
+	previously.  Break long line.
+	* parse.c (gfc_parse_file): Call gfc_check_externals for all
+	external procedures.
+	* resolve.c (resolve_global_procedure): Remove checking of
+	argument list.
+
 2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/87991
@@ -7,7 +25,7 @@
 2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88072
-	* misc.c (gfc_typename): Do not point to something that ought not to 
+	* misc.c (gfc_typename): Do not point to something that ought not to
 	be pointed at.
 
 2013-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
