@@ -20,6 +20,12 @@
 	* decl.c (check_default_argument): Don't return nullptr when the arg
 	has side-effects.
 
+	2019-06-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90884 - stray note with -Wctor-dtor-privacy.
+	* class.c (maybe_warn_about_overly_private_class): Guard the call to
+	inform.
+
 2019-08-14  Martin Sebor  <msebor@redhat.com>
 
 	Backported from mainline
