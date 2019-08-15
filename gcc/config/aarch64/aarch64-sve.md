@@ -3844,17 +3844,17 @@
 ;; Predicated floating-point ternary operations, merging with an
 ;; independent value.
 (define_insn_and_rewrite "*cond_<optab><mode>_any"
-  [(set (match_operand:SVE_F 0 "register_operand" "=&w, &w, ?&w")
+  [(set (match_operand:SVE_F 0 "register_operand" "=&w, &w, &w, &w, &w, ?&w")
 	(unspec:SVE_F
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl, Upl")
 	   (unspec:SVE_F
 	     [(match_operand 6)
 	      (match_operand:SI 7 "aarch64_sve_gp_strictness")
-	      (match_operand:SVE_F 2 "register_operand" "w, w, w")
-	      (match_operand:SVE_F 3 "register_operand" "w, w, w")
-	      (match_operand:SVE_F 4 "register_operand" "w, w, w")]
+	      (match_operand:SVE_F 2 "register_operand" "w, w, 0, w, w, w")
+	      (match_operand:SVE_F 3 "register_operand" "w, w, w, 0, w, w")
+	      (match_operand:SVE_F 4 "register_operand" "w, 0, w, w, w, w")]
 	     SVE_COND_FP_TERNARY)
-	   (match_operand:SVE_F 5 "aarch64_simd_reg_or_zero" "Dz, 0, w")]
+	   (match_operand:SVE_F 5 "aarch64_simd_reg_or_zero" "Dz, Dz, Dz, Dz, 0, w")]
 	  UNSPEC_SEL))]
   "TARGET_SVE
    && !rtx_equal_p (operands[2], operands[5])
@@ -3863,6 +3863,9 @@
    && aarch64_sve_pred_dominates_p (&operands[6], operands[1])"
   "@
    movprfx\t%0.<Vetype>, %1/z, %4.<Vetype>\;<sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;<sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;<sve_fmad_op>\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;<sve_fmad_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %4.<Vetype>
    movprfx\t%0.<Vetype>, %1/m, %4.<Vetype>\;<sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
    #"
   "&& 1"
