@@ -3464,6 +3464,30 @@ cgraph_node::verify_node (void)
 	  e->aux = 0;
 	}
     }
+
+  if (nested != NULL)
+    {
+      for (cgraph_node *n = nested; n != NULL; n = n->next_nested)
+	{
+	  if (n->origin == NULL)
+	    {
+	      error ("missing origin for a node in a nested list");
+	      error_found = true;
+	    }
+	  else if (n->origin != this)
+	    {
+	      error ("origin points to a different parent");
+	      error_found = true;
+	      break;
+	    }
+	}
+    }
+  if (next_nested != NULL && origin == NULL)
+    {
+      error ("missing origin for a node in a nested list");
+      error_found = true;
+    }
+
   if (error_found)
     {
       dump (stderr);
