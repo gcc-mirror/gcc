@@ -1,5 +1,9 @@
 2019-08-15  Martin Liska  <mliska@suse.cz>
 
+	* LOCAL_PATCHES: Add r274540
+
+2019-08-15  Martin Liska  <mliska@suse.cz>
+
 	* tsan/tsan_rtl_ppc64.S: Reapply.
 
 2019-08-15  Iain Sandoe  <iain@sandoe.co.uk>
