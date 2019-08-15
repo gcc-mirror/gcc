@@ -1,4 +1,11 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* config/aarch64/aarch64-sve.md (add<SVE_I:mode>3, sub<SVE_I:mode>3)
+	(<LOGICAL:optab><SVE_I:mode>3, *add<SVE_F:mode>3, *mul<SVE_F:mode>3)
+	(*fabd<SVE_F:mode>3): Add more MOVPRFX alternatives.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* config/aarch64/aarch64-sve.md (*v<ASHIFT:optab><SVE_I:mode>3):
