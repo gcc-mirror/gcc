@@ -2795,6 +2795,123 @@
   }
 )
 
+;; Predicated floating-point absolute difference, merging with the first
+;; input.
+(define_insn_and_rewrite "*aarch64_cond_abd<mode>_2"
+  [(set (match_operand:SVE_F 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_F
+	     [(match_operand 4)
+	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (unspec:SVE_F
+		[(match_operand 6)
+		 (match_operand:SI 7 "aarch64_sve_gp_strictness")
+		 (match_operand:SVE_F 2 "register_operand" "0, w")
+		 (match_operand:SVE_F 3 "register_operand" "w, w")]
+		UNSPEC_COND_FSUB)]
+	     UNSPEC_COND_FABS)
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE
+   && aarch64_sve_pred_dominates_p (&operands[4], operands[1])
+   && aarch64_sve_pred_dominates_p (&operands[6], operands[1])"
+  "@
+   fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0, %2\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
+  "&& (!rtx_equal_p (operands[1], operands[4])
+       || !rtx_equal_p (operands[1], operands[6]))"
+  {
+    operands[4] = copy_rtx (operands[1]);
+    operands[6] = copy_rtx (operands[1]);
+  }
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Predicated floating-point absolute difference, merging with the second
+;; input.
+(define_insn_and_rewrite "*aarch64_cond_abd<mode>_3"
+  [(set (match_operand:SVE_F 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_F
+	     [(match_operand 4)
+	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (unspec:SVE_F
+		[(match_operand 6)
+		 (match_operand:SI 7 "aarch64_sve_gp_strictness")
+		 (match_operand:SVE_F 2 "register_operand" "w, w")
+		 (match_operand:SVE_F 3 "register_operand" "0, w")]
+		UNSPEC_COND_FSUB)]
+	     UNSPEC_COND_FABS)
+	   (match_dup 3)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE
+   && aarch64_sve_pred_dominates_p (&operands[4], operands[1])
+   && aarch64_sve_pred_dominates_p (&operands[6], operands[1])"
+  "@
+   fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>
+   movprfx\t%0, %3\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>"
+  "&& (!rtx_equal_p (operands[1], operands[4])
+       || !rtx_equal_p (operands[1], operands[6]))"
+  {
+    operands[4] = copy_rtx (operands[1]);
+    operands[6] = copy_rtx (operands[1]);
+  }
+  [(set_attr "movprfx" "*,yes")]
+)
+
+;; Predicated floating-point absolute difference, merging with an
+;; independent value.
+(define_insn_and_rewrite "*aarch64_cond_abd<mode>_any"
+  [(set (match_operand:SVE_F 0 "register_operand" "=&w, &w, &w, &w, ?&w")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl")
+	   (unspec:SVE_F
+	     [(match_operand 5)
+	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (unspec:SVE_F
+		[(match_operand 7)
+		 (match_operand:SI 8 "aarch64_sve_gp_strictness")
+		 (match_operand:SVE_F 2 "register_operand" "0, w, w, w, w")
+		 (match_operand:SVE_F 3 "register_operand" "w, 0, w, w, w")]
+		UNSPEC_COND_FSUB)]
+	     UNSPEC_COND_FABS)
+	   (match_operand:SVE_F 4 "aarch64_simd_reg_or_zero" "Dz, Dz, Dz, 0, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE
+   && !rtx_equal_p (operands[2], operands[4])
+   && !rtx_equal_p (operands[3], operands[4])
+   && aarch64_sve_pred_dominates_p (&operands[5], operands[1])
+   && aarch64_sve_pred_dominates_p (&operands[7], operands[1])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/m, %2.<Vetype>\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   #"
+  "&& 1"
+  {
+    if (reload_completed
+        && register_operand (operands[4], <MODE>mode)
+        && !rtx_equal_p (operands[0], operands[4]))
+      {
+	emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[3],
+						 operands[4], operands[1]));
+	operands[4] = operands[3] = operands[0];
+      }
+    else if (!rtx_equal_p (operands[1], operands[5])
+	     || !rtx_equal_p (operands[1], operands[7]))
+      {
+	operands[5] = copy_rtx (operands[1]);
+	operands[7] = copy_rtx (operands[1]);
+      }
+    else
+      FAIL;
+  }
+  [(set_attr "movprfx" "yes")]
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [FP] Multiplication
 ;; -------------------------------------------------------------------------
