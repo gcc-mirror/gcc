@@ -1675,6 +1675,22 @@ aarch64_get_mask_mode (poly_uint64 nunits, poly_uint64 nbytes)
   return default_get_mask_mode (nunits, nbytes);
 }
 
+/* Return the SVE vector mode that has NUNITS elements of mode INNER_MODE.  */
+
+static opt_machine_mode
+aarch64_sve_data_mode (scalar_mode inner_mode, poly_uint64 nunits)
+{
+  enum mode_class mclass = (is_a <scalar_float_mode> (inner_mode)
+			    ? MODE_VECTOR_FLOAT : MODE_VECTOR_INT);
+  machine_mode mode;
+  FOR_EACH_MODE_IN_CLASS (mode, mclass)
+    if (inner_mode == GET_MODE_INNER (mode)
+	&& known_eq (nunits, GET_MODE_NUNITS (mode))
+	&& aarch64_sve_data_mode_p (mode))
+      return mode;
+  return opt_machine_mode ();
+}
+
 /* Return the integer element mode associated with SVE mode MODE.  */
 
 static scalar_int_mode
@@ -1683,6 +1699,17 @@ aarch64_sve_element_int_mode (machine_mode mode)
   unsigned int elt_bits = vector_element_size (BITS_PER_SVE_VECTOR,
 					       GET_MODE_NUNITS (mode));
   return int_mode_for_size (elt_bits, 0).require ();
+}
+
+/* Return the integer vector mode associated with SVE mode MODE.
+   Unlike mode_for_int_vector, this can handle the case in which
+   MODE is a predicate (and thus has a different total size).  */
+
+static machine_mode
+aarch64_sve_int_mode (machine_mode mode)
+{
+  scalar_int_mode int_mode = aarch64_sve_element_int_mode (mode);
+  return aarch64_sve_data_mode (int_mode, GET_MODE_NUNITS (mode)).require ();
 }
 
 /* Implement TARGET_PREFERRED_ELSE_VALUE.  For binary operations,
@@ -4280,14 +4307,29 @@ aarch64_replace_reg_mode (rtx x, machine_mode mode)
   return x;
 }
 
+/* Return the SVE REV[BHW] unspec for reversing quantites of mode MODE
+   stored in wider integer containers.  */
+
+static unsigned int
+aarch64_sve_rev_unspec (machine_mode mode)
+{
+  switch (GET_MODE_UNIT_SIZE (mode))
+    {
+    case 1: return UNSPEC_REVB;
+    case 2: return UNSPEC_REVH;
+    case 4: return UNSPEC_REVW;
+    }
+  gcc_unreachable ();
+}
+
 /* Split a *aarch64_sve_mov<mode>_subreg_be pattern with the given
    operands.  */
 
 void
 aarch64_split_sve_subreg_move (rtx dest, rtx ptrue, rtx src)
 {
-  /* Decide which REV operation we need.  The mode with narrower elements
-     determines the mode of the operands and the mode with the wider
+  /* Decide which REV operation we need.  The mode with wider elements
+     determines the mode of the operands and the mode with the narrower
      elements determines the reverse width.  */
   machine_mode mode_with_wider_elts = GET_MODE (dest);
   machine_mode mode_with_narrower_elts = GET_MODE (src);
@@ -4295,30 +4337,16 @@ aarch64_split_sve_subreg_move (rtx dest, rtx ptrue, rtx src)
       < GET_MODE_UNIT_SIZE (mode_with_narrower_elts))
     std::swap (mode_with_wider_elts, mode_with_narrower_elts);
 
+  unsigned int unspec = aarch64_sve_rev_unspec (mode_with_narrower_elts);
   unsigned int wider_bytes = GET_MODE_UNIT_SIZE (mode_with_wider_elts);
-  unsigned int unspec;
-  if (wider_bytes == 8)
-    unspec = UNSPEC_REV64;
-  else if (wider_bytes == 4)
-    unspec = UNSPEC_REV32;
-  else if (wider_bytes == 2)
-    unspec = UNSPEC_REV16;
-  else
-    gcc_unreachable ();
   machine_mode pred_mode = aarch64_sve_pred_mode (wider_bytes).require ();
 
-  /* Emit:
-
-       (set DEST (unspec [PTRUE (unspec [SRC] UNSPEC_REV<nn>)] UNSPEC_PRED_X))
-
-     with the appropriate modes.  */
+  /* Get the operands in the appropriate modes and emit the instruction.  */
   ptrue = gen_lowpart (pred_mode, ptrue);
-  dest = aarch64_replace_reg_mode (dest, mode_with_narrower_elts);
-  src = aarch64_replace_reg_mode (src, mode_with_narrower_elts);
-  src = gen_rtx_UNSPEC (mode_with_narrower_elts, gen_rtvec (1, src), unspec);
-  src = gen_rtx_UNSPEC (mode_with_narrower_elts, gen_rtvec (2, ptrue, src),
-			UNSPEC_PRED_X);
-  emit_insn (gen_rtx_SET (dest, src));
+  dest = aarch64_replace_reg_mode (dest, mode_with_wider_elts);
+  src = aarch64_replace_reg_mode (src, mode_with_wider_elts);
+  emit_insn (gen_aarch64_pred (unspec, mode_with_wider_elts,
+			       dest, ptrue, src));
 }
 
 static bool
@@ -17753,13 +17781,31 @@ aarch64_evpc_rev_local (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  rtx src = gen_rtx_UNSPEC (d->vmode, gen_rtvec (1, d->op0), unspec);
   if (d->vec_flags == VEC_SVE_DATA)
     {
-      rtx pred = aarch64_ptrue_reg (pred_mode);
-      src = gen_rtx_UNSPEC (d->vmode, gen_rtvec (2, pred, src),
-			    UNSPEC_PRED_X);
+      machine_mode int_mode = aarch64_sve_int_mode (pred_mode);
+      rtx target = gen_reg_rtx (int_mode);
+      if (BYTES_BIG_ENDIAN)
+	/* The act of taking a subreg between INT_MODE and d->vmode
+	   is itself a reversing operation on big-endian targets;
+	   see the comment at the head of aarch64-sve.md for details.
+	   First reinterpret OP0 as INT_MODE without using a subreg
+	   and without changing the contents.  */
+	emit_insn (gen_aarch64_sve_reinterpret (int_mode, target, d->op0));
+      else
+	{
+	  /* For SVE we use REV[BHW] unspecs derived from the element size
+	     of v->mode and vector modes whose elements have SIZE bytes.
+	     This ensures that the vector modes match the predicate modes.  */
+	  int unspec = aarch64_sve_rev_unspec (d->vmode);
+	  rtx pred = aarch64_ptrue_reg (pred_mode);
+	  emit_insn (gen_aarch64_pred (unspec, int_mode, target, pred,
+				       gen_lowpart (int_mode, d->op0)));
+	}
+      emit_move_insn (d->target, gen_lowpart (d->vmode, target));
+      return true;
     }
+  rtx src = gen_rtx_UNSPEC (d->vmode, gen_rtvec (1, d->op0), unspec);
   emit_set_insn (d->target, src);
   return true;
 }

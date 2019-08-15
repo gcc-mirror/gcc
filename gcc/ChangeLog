@@ -1,4 +1,23 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (UNSPEC_REVB, UNSPEC_REVH)
+	(UNSPEC_REVW): New constants.
+	(elem_bits): New mode attribute.
+	(SVE_INT_UNARY): New int iterator.
+	(optab): Handle UNSPEC_REV[BHW].
+	(sve_int_op): New int attribute.
+	(min_elem_bits): Handle VNx16QI and the predicate modes.
+	* config/aarch64/aarch64-sve.md (*aarch64_sve_rev64<mode>)
+	(*aarch64_sve_rev32<mode>, *aarch64_sve_rev16vnx16qi): Delete.
+	(@aarch64_pred_<SVE_INT_UNARY:optab><SVE_I:mode>): New pattern.
+	* config/aarch64/aarch64.c (aarch64_sve_data_mode): New function.
+	(aarch64_sve_int_mode, aarch64_sve_rev_unspec): Likewise.
+	(aarch64_split_sve_subreg_move): Use UNSPEC_REV[BHW] instead of
+	unspecs based on the total width of the reversed data.
+	(aarch64_evpc_rev_local): Likewise (for SVE only).  Use a
+	reinterpret followed by a subreg on big-endian targets.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
 	* config/aarch64/aarch64-sve.md

@@ -54,6 +54,7 @@
 ;;
 ;; == Unary arithmetic
 ;; ---- [INT] General unary arithmetic corresponding to rtx codes
+;; ---- [INT] General unary arithmetic corresponding to unspecs
 ;; ---- [INT] Zero extension
 ;; ---- [INT] Logical inverse
 ;; ---- [FP] General unary arithmetic corresponding to unspecs
@@ -1495,6 +1496,28 @@
    movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;<sve_int_op>\t%0.<Vetype>, %1/m, %2.<Vetype>
    movprfx\t%0, %3\;<sve_int_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
   [(set_attr "movprfx" "*,yes,yes")]
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] General unary arithmetic corresponding to unspecs
+;; -------------------------------------------------------------------------
+;; Includes
+;; - REVB
+;; - REVH
+;; - REVW
+;; -------------------------------------------------------------------------
+
+;; Predicated integer unary operations.
+(define_insn "@aarch64_pred_<optab><mode>"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	   (unspec:SVE_I
+	     [(match_operand:SVE_I 2 "register_operand" "w")]
+	     SVE_INT_UNARY)]
+	  UNSPEC_PRED_X))]
+  "TARGET_SVE && <elem_bits> >= <min_elem_bits>"
+  "<sve_int_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
 )
 
 ;; -------------------------------------------------------------------------
@@ -4619,9 +4642,6 @@
 ;; Includes:
 ;; - DUP
 ;; - REV
-;; - REVB
-;; - REVH
-;; - REVW
 ;; -------------------------------------------------------------------------
 
 ;; Duplicate one element of a vector.
@@ -4643,42 +4663,6 @@
 			UNSPEC_REV))]
   "TARGET_SVE"
   "rev\t%0.<Vetype>, %1.<Vetype>")
-
-;; Reverse the order elements within a 64-bit container.
-(define_insn "*aarch64_sve_rev64<mode>"
-  [(set (match_operand:SVE_BHS 0 "register_operand" "=w")
-	(unspec:SVE_BHS
-	  [(match_operand:VNx2BI 1 "register_operand" "Upl")
-	   (unspec:SVE_BHS [(match_operand:SVE_BHS 2 "register_operand" "w")]
-			   UNSPEC_REV64)]
-	  UNSPEC_PRED_X))]
-  "TARGET_SVE"
-  "rev<Vesize>\t%0.d, %1/m, %2.d"
-)
-
-;; Reverse the order elements within a 32-bit container.
-(define_insn "*aarch64_sve_rev32<mode>"
-  [(set (match_operand:SVE_BH 0 "register_operand" "=w")
-	(unspec:SVE_BH
-	  [(match_operand:VNx4BI 1 "register_operand" "Upl")
-	   (unspec:SVE_BH [(match_operand:SVE_BH 2 "register_operand" "w")]
-			  UNSPEC_REV32)]
-	  UNSPEC_PRED_X))]
-  "TARGET_SVE"
-  "rev<Vesize>\t%0.s, %1/m, %2.s"
-)
-
-;; Reverse the order elements within a 16-bit container.
-(define_insn "*aarch64_sve_rev16vnx16qi"
-  [(set (match_operand:VNx16QI 0 "register_operand" "=w")
-	(unspec:VNx16QI
-	  [(match_operand:VNx8BI 1 "register_operand" "Upl")
-	   (unspec:VNx16QI [(match_operand:VNx16QI 2 "register_operand" "w")]
-			   UNSPEC_REV16)]
-	  UNSPEC_PRED_X))]
-  "TARGET_SVE"
-  "revb\t%0.h, %1/m, %2.h"
-)
 
 ;; -------------------------------------------------------------------------
 ;; ---- [INT,FP] Special-purpose binary permutes

@@ -1,4 +1,14 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/revb_1.c: Restrict to little-endian targets.
+	Avoid including stdint.h.
+	* gcc.target/aarch64/sve/revh_1.c: Likewise.
+	* gcc.target/aarch64/sve/revw_1.c: Likewise.
+	* gcc.target/aarch64/sve/revb_2.c: New big-endian test.
+	* gcc.target/aarch64/sve/revh_2.c: Likewise.
+	* gcc.target/aarch64/sve/revw_2.c: Likewise.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
 	* gcc.target/aarch64/sve/cond_mla_5.c: Allow FMAD as well as FMLA
