@@ -1,3 +1,9 @@
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/aarch64/aarch64-sve.md (*v<ASHIFT:optab><SVE_I:mode>3):
+	Add an alternative that uses reversed shifts.
+
 2019-08-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-cores.def (cortex-a76): Use neoversen1 tuning

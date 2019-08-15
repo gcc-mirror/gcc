@@ -2455,23 +2455,24 @@
 ;; likely to gain much and would make the instruction seem less uniform
 ;; to the register allocator.
 (define_insn_and_split "*v<optab><mode>3"
-  [(set (match_operand:SVE_I 0 "register_operand" "=w, w, ?&w")
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, w, w, ?&w")
 	(unspec:SVE_I
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl")
 	   (ASHIFT:SVE_I
-	     (match_operand:SVE_I 2 "register_operand" "w, 0, w")
-	     (match_operand:SVE_I 3 "aarch64_sve_<lr>shift_operand" "D<lr>, w, w"))]
+	     (match_operand:SVE_I 2 "register_operand" "w, 0, w, w")
+	     (match_operand:SVE_I 3 "aarch64_sve_<lr>shift_operand" "D<lr>, w, 0, w"))]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
   "@
    #
    <shift>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   <shift>r\t%0.<Vetype>, %1/m, %3.<Vetype>, %2.<Vetype>
    movprfx\t%0, %2\;<shift>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
   "&& reload_completed
    && !register_operand (operands[3], <MODE>mode)"
   [(set (match_dup 0) (ASHIFT:SVE_I (match_dup 2) (match_dup 3)))]
   ""
-  [(set_attr "movprfx" "*,*,yes")]
+  [(set_attr "movprfx" "*,*,*,yes")]
 )
 
 ;; Unpredicated shift operations by a constant (post-RA only).
