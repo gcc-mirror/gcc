@@ -1,3 +1,8 @@
+2019-08-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-cores.def (cortex-a76): Use neoversen1 tuning
+	struct.
+
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64-sve.md (aarch64_<su>abd<mode>_3): Add
