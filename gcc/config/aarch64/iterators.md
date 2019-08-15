@@ -476,6 +476,9 @@
     UNSPEC_ANDF		; Used in aarch64-sve.md.
     UNSPEC_IORF		; Used in aarch64-sve.md.
     UNSPEC_XORF		; Used in aarch64-sve.md.
+    UNSPEC_REVB		; Used in aarch64-sve.md.
+    UNSPEC_REVH		; Used in aarch64-sve.md.
+    UNSPEC_REVW		; Used in aarch64-sve.md.
     UNSPEC_SMUL_HIGHPART ; Used in aarch64-sve.md.
     UNSPEC_UMUL_HIGHPART ; Used in aarch64-sve.md.
     UNSPEC_COND_FABS	; Used in aarch64-sve.md.
@@ -638,7 +641,10 @@
 
 ;; The number of bits in a vector element, or controlled by a predicate
 ;; element.
-(define_mode_attr elem_bits [(VNx8HI "16") (VNx4SI "32") (VNx2DI "64")
+(define_mode_attr elem_bits [(VNx16BI "8") (VNx8BI "16")
+			     (VNx4BI "32") (VNx2BI "64")
+			     (VNx16QI "8") (VNx8HI "16")
+			     (VNx4SI "32") (VNx2DI "64")
 			     (VNx8HF "16") (VNx4SF "32") (VNx2DF "64")])
 
 ;; Attribute to describe constants acceptable in logical operations
@@ -1677,6 +1683,8 @@
 
 (define_int_iterator MUL_HIGHPART [UNSPEC_SMUL_HIGHPART UNSPEC_UMUL_HIGHPART])
 
+(define_int_iterator SVE_INT_UNARY [UNSPEC_REVB UNSPEC_REVH UNSPEC_REVW])
+
 (define_int_iterator SVE_INT_REDUCTION [UNSPEC_ANDV
 					UNSPEC_IORV
 					UNSPEC_SMAXV
@@ -1777,6 +1785,9 @@
 			(UNSPEC_ANDV "and")
 			(UNSPEC_IORV "ior")
 			(UNSPEC_XORV "xor")
+			(UNSPEC_REVB "revb")
+			(UNSPEC_REVH "revh")
+			(UNSPEC_REVW "revw")
 			(UNSPEC_UMAXV "umax")
 			(UNSPEC_UMINV "umin")
 			(UNSPEC_SMAXV "smax")
@@ -2045,7 +2056,10 @@
 			     (UNSPEC_UMAXV "umaxv")
 			     (UNSPEC_UMINV "uminv")
 			     (UNSPEC_SMAXV "smaxv")
-			     (UNSPEC_SMINV "sminv")])
+			     (UNSPEC_SMINV "sminv")
+			     (UNSPEC_REVB "revb")
+			     (UNSPEC_REVH "revh")
+			     (UNSPEC_REVW "revw")])
 
 (define_int_attr sve_fp_op [(UNSPEC_FADDV "faddv")
 			    (UNSPEC_FMAXNMV "fmaxnmv")
@@ -2118,3 +2132,8 @@
   [(UNSPEC_COND_FMAXNM "aarch64_sve_float_maxmin_immediate")
    (UNSPEC_COND_FMINNM "aarch64_sve_float_maxmin_immediate")
    (UNSPEC_COND_FMUL "aarch64_sve_float_mul_immediate")])
+
+;; The minimum number of element bits that an instruction can handle.
+(define_int_attr min_elem_bits [(UNSPEC_REVB "16")
+				(UNSPEC_REVH "32")
+				(UNSPEC_REVW "64")])
