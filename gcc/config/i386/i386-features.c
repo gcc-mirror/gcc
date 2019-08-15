@@ -1273,7 +1273,7 @@ has_non_address_hard_reg (rtx_insn *insn)
 		     (const_int 0 [0])))  */
 
 static bool
-convertible_comparison_p (rtx_insn *insn, machine_mode mode)
+convertible_comparison_p (rtx_insn *insn, enum machine_mode mode)
 {
   /* ??? Currently convertible for double-word DImode chain only.  */
   if (TARGET_64BIT || mode != DImode)
