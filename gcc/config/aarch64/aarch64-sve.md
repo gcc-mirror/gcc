@@ -1356,16 +1356,19 @@
 ;; Extract an element outside the range of DUP.  This pattern requires the
 ;; source and destination to be the same.
 (define_insn "*vec_extract<mode><Vel>_ext"
-  [(set (match_operand:<VEL> 0 "register_operand" "=w")
+  [(set (match_operand:<VEL> 0 "register_operand" "=w, ?&w")
 	(vec_select:<VEL>
-	  (match_operand:SVE_ALL 1 "register_operand" "0")
+	  (match_operand:SVE_ALL 1 "register_operand" "0, w")
 	  (parallel [(match_operand:SI 2 "const_int_operand")])))]
   "TARGET_SVE && INTVAL (operands[2]) * GET_MODE_SIZE (<VEL>mode) >= 64"
   {
     operands[0] = gen_rtx_REG (<MODE>mode, REGNO (operands[0]));
     operands[2] = GEN_INT (INTVAL (operands[2]) * GET_MODE_SIZE (<VEL>mode));
-    return "ext\t%0.b, %0.b, %0.b, #%2";
+    return (which_alternative == 0
+	    ? "ext\t%0.b, %0.b, %0.b, #%2"
+	    : "movprfx\t%0, %1\;ext\t%0.b, %0.b, %1.b, #%2");
   }
+  [(set_attr "movprfx" "*,yes")]
 )
 
 ;; -------------------------------------------------------------------------
@@ -4700,17 +4703,20 @@
 ;; Concatenate two vectors and extract a subvector.  Note that the
 ;; immediate (third) operand is the lane index not the byte index.
 (define_insn "*aarch64_sve_ext<mode>"
-  [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
-	(unspec:SVE_ALL [(match_operand:SVE_ALL 1 "register_operand" "0")
-			 (match_operand:SVE_ALL 2 "register_operand" "w")
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_ALL [(match_operand:SVE_ALL 1 "register_operand" "0, w")
+			 (match_operand:SVE_ALL 2 "register_operand" "w, w")
 			 (match_operand:SI 3 "const_int_operand")]
 			UNSPEC_EXT))]
   "TARGET_SVE
    && IN_RANGE (INTVAL (operands[3]) * GET_MODE_SIZE (<VEL>mode), 0, 255)"
   {
     operands[3] = GEN_INT (INTVAL (operands[3]) * GET_MODE_SIZE (<VEL>mode));
-    return "ext\\t%0.b, %0.b, %2.b, #%3";
+    return (which_alternative == 0
+	    ? "ext\\t%0.b, %0.b, %2.b, #%3"
+	    : "movprfx\t%0, %1\;ext\\t%0.b, %0.b, %2.b, #%3");
   }
+  [(set_attr "movprfx" "*,yes")]
 )
 
 ;; -------------------------------------------------------------------------
