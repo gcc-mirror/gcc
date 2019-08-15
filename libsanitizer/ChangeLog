@@ -1,3 +1,18 @@
+2019-08-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/91455
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* asan/Makefile.in: Likewise.
+	* configure: Likewise.
+	* interception/Makefile.in: Likewise.
+	* libbacktrace/Makefile.in: Likewise.
+	* lsan/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.am: Include top_srcdir unconditionally.
+	* sanitizer_common/Makefile.in: Regenerated.
+	* tsan/Makefile.in: Likewise.
+	* ubsan/Makefile.in: Likewise.
+
 2019-08-14  Martin Liska  <mliska@suse.cz>
 
 	* LOCAL_PATCHES: Refresh based on what was committed.
