@@ -1971,7 +1971,7 @@
   "@
    add\t%0.<Vetype>, %0.<Vetype>, #%D2
    sub\t%0.<Vetype>, %0.<Vetype>, #%N2
-   * return aarch64_output_sve_inc_dec_immediate (\"%0.<Vetype>\", operands[2]);
+   * return aarch64_output_sve_vector_inc_dec (\"%0.<Vetype>\", operands[2]);
    movprfx\t%0, %1\;add\t%0.<Vetype>, %0.<Vetype>, #%D2
    movprfx\t%0, %1\;sub\t%0.<Vetype>, %0.<Vetype>, #%N2
    add\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>"

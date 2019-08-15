@@ -1753,6 +1753,7 @@
   /* If the constant is too large for a single instruction and isn't frame
      based, split off the immediate so it is available for CSE.  */
   if (!aarch64_plus_immediate (operands[2], <MODE>mode)
+      && !(TARGET_SVE && aarch64_sve_plus_immediate (operands[2], <MODE>mode))
       && can_create_pseudo_p ()
       && (!REG_P (op1)
 	 || !REGNO_PTR_FRAME_P (REGNO (op1))))
@@ -1770,10 +1771,10 @@
 
 (define_insn "*add<mode>3_aarch64"
   [(set
-    (match_operand:GPI 0 "register_operand" "=rk,rk,w,rk,r,rk")
+    (match_operand:GPI 0 "register_operand" "=rk,rk,w,rk,r,r,rk")
     (plus:GPI
-     (match_operand:GPI 1 "register_operand" "%rk,rk,w,rk,rk,rk")
-     (match_operand:GPI 2 "aarch64_pluslong_operand" "I,r,w,J,Uaa,Uav")))]
+     (match_operand:GPI 1 "register_operand" "%rk,rk,w,rk,rk,0,rk")
+     (match_operand:GPI 2 "aarch64_pluslong_operand" "I,r,w,J,Uaa,Uai,Uav")))]
   ""
   "@
   add\\t%<w>0, %<w>1, %2
@@ -1781,10 +1782,11 @@
   add\\t%<rtn>0<vas>, %<rtn>1<vas>, %<rtn>2<vas>
   sub\\t%<w>0, %<w>1, #%n2
   #
-  * return aarch64_output_sve_addvl_addpl (operands[0], operands[1], operands[2]);"
-  ;; The "alu_imm" type for ADDVL/ADDPL is just a placeholder.
-  [(set_attr "type" "alu_imm,alu_sreg,neon_add,alu_imm,multiple,alu_imm")
-   (set_attr "arch" "*,*,simd,*,*,*")]
+  * return aarch64_output_sve_scalar_inc_dec (operands[2]);
+  * return aarch64_output_sve_addvl_addpl (operands[2]);"
+  ;; The "alu_imm" types for INC/DEC and ADDVL/ADDPL are just placeholders.
+  [(set_attr "type" "alu_imm,alu_sreg,neon_add,alu_imm,multiple,alu_imm,alu_imm")
+   (set_attr "arch" "*,*,simd,*,*,sve,sve")]
 )
 
 ;; zero_extend version of above
@@ -1863,17 +1865,18 @@
 ;; this pattern.
 (define_insn_and_split "*add<mode>3_poly_1"
   [(set
-    (match_operand:GPI 0 "register_operand" "=r,r,r,r,r,&r")
+    (match_operand:GPI 0 "register_operand" "=r,r,r,r,r,r,&r")
     (plus:GPI
-     (match_operand:GPI 1 "register_operand" "%rk,rk,rk,rk,rk,rk")
-     (match_operand:GPI 2 "aarch64_pluslong_or_poly_operand" "I,r,J,Uaa,Uav,Uat")))]
+     (match_operand:GPI 1 "register_operand" "%rk,rk,rk,rk,rk,0,rk")
+     (match_operand:GPI 2 "aarch64_pluslong_or_poly_operand" "I,r,J,Uaa,Uav,Uai,Uat")))]
   "TARGET_SVE && operands[0] != stack_pointer_rtx"
   "@
   add\\t%<w>0, %<w>1, %2
   add\\t%<w>0, %<w>1, %<w>2
   sub\\t%<w>0, %<w>1, #%n2
   #
-  * return aarch64_output_sve_addvl_addpl (operands[0], operands[1], operands[2]);
+  * return aarch64_output_sve_scalar_inc_dec (operands[2]);
+  * return aarch64_output_sve_addvl_addpl (operands[2]);
   #"
   "&& epilogue_completed
    && !reg_overlap_mentioned_p (operands[0], operands[1])
@@ -1884,8 +1887,8 @@
 			      operands[2], operands[0], NULL_RTX);
     DONE;
   }
-  ;; The "alu_imm" type for ADDVL/ADDPL is just a placeholder.
-  [(set_attr "type" "alu_imm,alu_sreg,alu_imm,multiple,alu_imm,multiple")]
+  ;; The "alu_imm" types for INC/DEC and ADDVL/ADDPL are just placeholders.
+  [(set_attr "type" "alu_imm,alu_sreg,alu_imm,multiple,alu_imm,alu_imm,multiple")]
 )
 
 (define_split
