@@ -1,5 +1,10 @@
 2019-08-15  Martin Liska  <mliska@suse.cz>
 
+	* cgraph.c (cgraph_node::verify_node): Verify origin, nested
+	and next_nested.
+
+2019-08-15  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/91404
 	* passes.c (order): Remove.
 	(uid_hash_t): Likewise).
