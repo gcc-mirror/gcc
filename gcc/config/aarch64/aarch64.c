@@ -73,6 +73,7 @@
 #include "selftest-rtl.h"
 #include "rtx-vector-builder.h"
 #include "intl.h"
+#include "expmed.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -3465,20 +3466,36 @@ aarch64_add_offset (scalar_int_mode mode, rtx dest, rtx src,
 	}
       else
 	{
-	  /* Use CNTD, then multiply it by FACTOR.  */
-	  val = gen_int_mode (poly_int64 (2, 2), mode);
+	  /* Base the factor on LOW_BIT if we can calculate LOW_BIT
+	     directly, since that should increase the chances of being
+	     able to use a shift and add sequence.  If LOW_BIT itself
+	     is out of range, just use CNTD.  */
+	  if (low_bit <= 16 * 8)
+	    factor /= low_bit;
+	  else
+	    low_bit = 1;
+
+	  val = gen_int_mode (poly_int64 (low_bit * 2, low_bit * 2), mode);
 	  val = aarch64_force_temporary (mode, temp1, val);
 
-	  /* Go back to using a negative multiplication factor if we have
-	     no register from which to subtract.  */
-	  if (code == MINUS && src == const0_rtx)
+	  if (can_create_pseudo_p ())
 	    {
-	      factor = -factor;
-	      code = PLUS;
+	      rtx coeff1 = gen_int_mode (factor, mode);
+	      val = expand_mult (mode, val, coeff1, NULL_RTX, false, true);
 	    }
-	  rtx coeff1 = gen_int_mode (factor, mode);
-	  coeff1 = aarch64_force_temporary (mode, temp2, coeff1);
-	  val = gen_rtx_MULT (mode, val, coeff1);
+	  else
+	    {
+	      /* Go back to using a negative multiplication factor if we have
+		 no register from which to subtract.  */
+	      if (code == MINUS && src == const0_rtx)
+		{
+		  factor = -factor;
+		  code = PLUS;
+		}
+	      rtx coeff1 = gen_int_mode (factor, mode);
+	      coeff1 = aarch64_force_temporary (mode, temp2, coeff1);
+	      val = gen_rtx_MULT (mode, val, coeff1);
+	    }
 	}
 
       if (shift > 0)

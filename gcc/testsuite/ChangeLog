@@ -1,5 +1,10 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/loop_add_4.c: Expect 10 INCWs and
+	INCDs rather than 8.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/revb_1.c: Restrict to little-endian targets.
 	Avoid including stdint.h.
 	* gcc.target/aarch64/sve/revh_1.c: Likewise.

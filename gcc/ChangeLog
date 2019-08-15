@@ -1,5 +1,12 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_add_offset): In the fallback
+	multiplication case, try to compute VG * (lowest set bit) directly
+	rather than always basing the multiplication on VG.  Use
+	expand_mult for the multiplication if we can.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-protos.h
 	(aarch64_sve_scalar_inc_dec_immediate_p): Declare.
 	(aarch64_sve_inc_dec_immediate_p): Rename to...
