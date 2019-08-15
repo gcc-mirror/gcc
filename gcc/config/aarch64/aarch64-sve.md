@@ -1937,16 +1937,19 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn "add<mode>3"
-  [(set (match_operand:SVE_I 0 "register_operand" "=w, w, w, w")
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, w, w, ?w, ?w, w")
 	(plus:SVE_I
-	  (match_operand:SVE_I 1 "register_operand" "%0, 0, 0, w")
-	  (match_operand:SVE_I 2 "aarch64_sve_add_operand" "vsa, vsn, vsi, w")))]
+	  (match_operand:SVE_I 1 "register_operand" "%0, 0, 0, w, w, w")
+	  (match_operand:SVE_I 2 "aarch64_sve_add_operand" "vsa, vsn, vsi, vsa, vsn, w")))]
   "TARGET_SVE"
   "@
    add\t%0.<Vetype>, %0.<Vetype>, #%D2
    sub\t%0.<Vetype>, %0.<Vetype>, #%N2
    * return aarch64_output_sve_inc_dec_immediate (\"%0.<Vetype>\", operands[2]);
+   movprfx\t%0, %1\;add\t%0.<Vetype>, %0.<Vetype>, #%D2
+   movprfx\t%0, %1\;sub\t%0.<Vetype>, %0.<Vetype>, #%N2
    add\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>"
+  [(set_attr "movprfx" "*,*,*,yes,yes,*")]
 )
 
 ;; Merging forms are handled through SVE_INT_BINARY.
@@ -1960,14 +1963,16 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn "sub<mode>3"
-  [(set (match_operand:SVE_I 0 "register_operand" "=w, w")
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, w, ?&w")
 	(minus:SVE_I
-	  (match_operand:SVE_I 1 "aarch64_sve_arith_operand" "w, vsa")
-	  (match_operand:SVE_I 2 "register_operand" "w, 0")))]
+	  (match_operand:SVE_I 1 "aarch64_sve_arith_operand" "w, vsa, vsa")
+	  (match_operand:SVE_I 2 "register_operand" "w, 0, w")))]
   "TARGET_SVE"
   "@
    sub\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>
-   subr\t%0.<Vetype>, %0.<Vetype>, #%D1"
+   subr\t%0.<Vetype>, %0.<Vetype>, #%D1
+   movprfx\t%0, %2\;subr\t%0.<Vetype>, %0.<Vetype>, #%D1"
+  [(set_attr "movprfx" "*,*,yes")]
 )
 
 ;; Merging forms are handled through SVE_INT_BINARY.
@@ -2320,14 +2325,16 @@
 
 ;; Unpredicated integer binary logical operations.
 (define_insn "<optab><mode>3"
-  [(set (match_operand:SVE_I 0 "register_operand" "=w, w")
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?w, w")
 	(LOGICAL:SVE_I
-	  (match_operand:SVE_I 1 "register_operand" "%0, w")
-	  (match_operand:SVE_I 2 "aarch64_sve_logical_operand" "vsl, w")))]
+	  (match_operand:SVE_I 1 "register_operand" "%0, w, w")
+	  (match_operand:SVE_I 2 "aarch64_sve_logical_operand" "vsl, vsl, w")))]
   "TARGET_SVE"
   "@
    <logical>\t%0.<Vetype>, %0.<Vetype>, #%C2
+   movprfx\t%0, %1\;<logical>\t%0.<Vetype>, %0.<Vetype>, #%C2
    <logical>\t%0.d, %1.d, %2.d"
+  [(set_attr "movprfx" "*,yes,*")]
 )
 
 ;; Merging forms are handled through SVE_INT_BINARY.
@@ -2773,23 +2780,27 @@
 
 ;; Predicated floating-point addition.
 (define_insn_and_split "*add<mode>3"
-  [(set (match_operand:SVE_F 0 "register_operand" "=w, w, w")
+  [(set (match_operand:SVE_F 0 "register_operand" "=w, w, w, ?&w, ?&w")
 	(unspec:SVE_F
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
-	   (match_operand:SI 4 "aarch64_sve_gp_strictness" "i, i, Z")
-	   (match_operand:SVE_F 2 "register_operand" "%0, 0, w")
-	   (match_operand:SVE_F 3 "aarch64_sve_float_arith_with_sub_operand" "vsA, vsN, w")]
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl")
+	   (match_operand:SI 4 "aarch64_sve_gp_strictness" "i, i, Z, i, i")
+	   (match_operand:SVE_F 2 "register_operand" "%0, 0, w, w, w")
+	   (match_operand:SVE_F 3 "aarch64_sve_float_arith_with_sub_operand" "vsA, vsN, w, vsA, vsN")]
 	  UNSPEC_COND_FADD))]
   "TARGET_SVE"
   "@
    fadd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
    fsub\t%0.<Vetype>, %1/m, %0.<Vetype>, #%N3
-   #"
+   #
+   movprfx\t%0, %2\;fadd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+   movprfx\t%0, %2\;fsub\t%0.<Vetype>, %1/m, %0.<Vetype>, #%N3"
   ; Split the unpredicated form after reload, so that we don't have
   ; the unnecessary PTRUE.
   "&& reload_completed
    && register_operand (operands[3], <MODE>mode)"
   [(set (match_dup 0) (plus:SVE_F (match_dup 2) (match_dup 3)))]
+  ""
+  [(set_attr "movprfx" "*,*,*,yes,yes")]
 )
 
 ;; Predicated floating-point addition of a constant, merging with the
@@ -2972,23 +2983,26 @@
 
 ;; Predicated floating-point absolute difference.
 (define_insn_and_rewrite "*fabd<mode>3"
-  [(set (match_operand:SVE_F 0 "register_operand" "=w")
+  [(set (match_operand:SVE_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_F
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (match_operand:SI 4 "aarch64_sve_gp_strictness")
 	   (unspec:SVE_F
 	     [(match_operand 5)
 	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
-	      (match_operand:SVE_F 2 "register_operand" "0")
-	      (match_operand:SVE_F 3 "register_operand" "w")]
+	      (match_operand:SVE_F 2 "register_operand" "%0, w")
+	      (match_operand:SVE_F 3 "register_operand" "w, w")]
 	     UNSPEC_COND_FSUB)]
 	  UNSPEC_COND_FABS))]
   "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
-  "fabd\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
+  "@
+   fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0, %2\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
   "&& !rtx_equal_p (operands[1], operands[5])"
   {
     operands[5] = copy_rtx (operands[1]);
   }
+  [(set_attr "movprfx" "*,yes")]
 )
 
 ;; Predicated floating-point absolute difference, merging with the first
@@ -3117,22 +3131,25 @@
 
 ;; Predicated floating-point multiplication.
 (define_insn_and_split "*mul<mode>3"
-  [(set (match_operand:SVE_F 0 "register_operand" "=w, w")
+  [(set (match_operand:SVE_F 0 "register_operand" "=w, w, ?&w")
 	(unspec:SVE_F
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (match_operand:SI 4 "aarch64_sve_gp_strictness" "i, Z")
-	   (match_operand:SVE_F 2 "register_operand" "%0, w")
-	   (match_operand:SVE_F 3 "aarch64_sve_float_mul_operand" "vsM, w")]
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (match_operand:SI 4 "aarch64_sve_gp_strictness" "i, Z, i")
+	   (match_operand:SVE_F 2 "register_operand" "%0, w, 0")
+	   (match_operand:SVE_F 3 "aarch64_sve_float_mul_operand" "vsM, w, vsM")]
 	  UNSPEC_COND_FMUL))]
   "TARGET_SVE"
   "@
    fmul\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
-   #"
+   #
+   movprfx\t%0, %2\;fmul\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3"
   ; Split the unpredicated form after reload, so that we don't have
   ; the unnecessary PTRUE.
   "&& reload_completed
    && register_operand (operands[3], <MODE>mode)"
   [(set (match_dup 0) (mult:SVE_F (match_dup 2) (match_dup 3)))]
+  ""
+  [(set_attr "movprfx" "*,*,yes")]
 )
 
 ;; Merging forms are handled through SVE_COND_FP_BINARY and
