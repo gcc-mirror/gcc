@@ -1,5 +1,10 @@
 2019-08-15  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/91445
+	* gcc.dg/torture/pr91445.c: New testcase.
+
+2019-08-15  Richard Biener  <rguenther@suse.de>
+
 	* gcc.dg/pr80170.c: Adjust to use __SIZETYPE__.
 
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
