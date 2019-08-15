@@ -1,3 +1,19 @@
+2019-08-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/90878
+	* config/i386/i386.c (inline_memory_move_cost): Use hard_register
+	for costs of hard register moves.
+	(ix86_register_move_cost): Likewise.
+	* config/i386/i386.h (processor_costs): Move costs of hard
+	register moves to hard_register.  Add int_load, int_store,
+	xmm_move, ymm_move, zmm_move, sse_to_integer, integer_to_sse,
+	sse_load, sse_store, sse_unaligned_load and sse_unaligned_store
+	for costs of RTL expressions.
+	* config/i386/x86-tune-costs.h: Move costs of hard register
+	moves to hard_register.  Duplicate int_load, int_store,
+	xmm_move, ymm_move, zmm_move, sse_to_integer, integer_to_sse,
+	sse_load, sse_store for costs of RTL expressions.
+
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* target.def (setup_incoming_vararg_bounds): Remove.

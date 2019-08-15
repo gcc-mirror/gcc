@@ -18464,8 +18464,10 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
 	    return 100;
 	}
       if (in == 2)
-        return MAX (ix86_cost->fp_load [index], ix86_cost->fp_store [index]);
-      return in ? ix86_cost->fp_load [index] : ix86_cost->fp_store [index];
+        return MAX (ix86_cost->hard_register.fp_load [index],
+		    ix86_cost->hard_register.fp_store [index]);
+      return in ? ix86_cost->hard_register.fp_load [index]
+		: ix86_cost->hard_register.fp_store [index];
     }
   if (SSE_CLASS_P (regclass))
     {
@@ -18473,8 +18475,10 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
       if (index == -1)
 	return 100;
       if (in == 2)
-        return MAX (ix86_cost->sse_load [index], ix86_cost->sse_store [index]);
-      return in ? ix86_cost->sse_load [index] : ix86_cost->sse_store [index];
+        return MAX (ix86_cost->hard_register.sse_load [index],
+		    ix86_cost->hard_register.sse_store [index]);
+      return in ? ix86_cost->hard_register.sse_load [index]
+		: ix86_cost->hard_register.sse_store [index];
     }
   if (MMX_CLASS_P (regclass))
     {
@@ -18491,8 +18495,10 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
 	    return 100;
 	}
       if (in == 2)
-        return MAX (ix86_cost->mmx_load [index], ix86_cost->mmx_store [index]);
-      return in ? ix86_cost->mmx_load [index] : ix86_cost->mmx_store [index];
+        return MAX (ix86_cost->hard_register.mmx_load [index],
+		    ix86_cost->hard_register.mmx_store [index]);
+      return in ? ix86_cost->hard_register.mmx_load [index]
+		: ix86_cost->hard_register.mmx_store [index];
     }
   switch (GET_MODE_SIZE (mode))
     {
@@ -18500,37 +18506,41 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
 	if (Q_CLASS_P (regclass) || TARGET_64BIT)
 	  {
 	    if (!in)
-	      return ix86_cost->int_store[0];
+	      return ix86_cost->hard_register.int_store[0];
 	    if (TARGET_PARTIAL_REG_DEPENDENCY
 	        && optimize_function_for_speed_p (cfun))
-	      cost = ix86_cost->movzbl_load;
+	      cost = ix86_cost->hard_register.movzbl_load;
 	    else
-	      cost = ix86_cost->int_load[0];
+	      cost = ix86_cost->hard_register.int_load[0];
 	    if (in == 2)
-	      return MAX (cost, ix86_cost->int_store[0]);
+	      return MAX (cost, ix86_cost->hard_register.int_store[0]);
 	    return cost;
 	  }
 	else
 	  {
 	   if (in == 2)
-	     return MAX (ix86_cost->movzbl_load, ix86_cost->int_store[0] + 4);
+	     return MAX (ix86_cost->hard_register.movzbl_load,
+			 ix86_cost->hard_register.int_store[0] + 4);
 	   if (in)
-	     return ix86_cost->movzbl_load;
+	     return ix86_cost->hard_register.movzbl_load;
 	   else
-	     return ix86_cost->int_store[0] + 4;
+	     return ix86_cost->hard_register.int_store[0] + 4;
 	  }
 	break;
       case 2:
 	if (in == 2)
-	  return MAX (ix86_cost->int_load[1], ix86_cost->int_store[1]);
-	return in ? ix86_cost->int_load[1] : ix86_cost->int_store[1];
+	  return MAX (ix86_cost->hard_register.int_load[1],
+		      ix86_cost->hard_register.int_store[1]);
+	return in ? ix86_cost->hard_register.int_load[1]
+		  : ix86_cost->hard_register.int_store[1];
       default:
 	if (in == 2)
-	  cost = MAX (ix86_cost->int_load[2], ix86_cost->int_store[2]);
+	  cost = MAX (ix86_cost->hard_register.int_load[2],
+		      ix86_cost->hard_register.int_store[2]);
 	else if (in)
-	  cost = ix86_cost->int_load[2];
+	  cost = ix86_cost->hard_register.int_load[2];
 	else
-	  cost = ix86_cost->int_store[2];
+	  cost = ix86_cost->hard_register.int_store[2];
 	/* Multiply with the number of GPR moves needed.  */
 	return cost * CEIL ((int) GET_MODE_SIZE (mode), UNITS_PER_WORD);
     }
@@ -18600,20 +18610,21 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
        because of missing QImode and HImode moves to, from or between
        MMX/SSE registers.  */
     return MAX (8, SSE_CLASS_P (class1)
-		? ix86_cost->sse_to_integer : ix86_cost->integer_to_sse);
+		? ix86_cost->hard_register.sse_to_integer
+		: ix86_cost->hard_register.integer_to_sse);
 
   if (MAYBE_FLOAT_CLASS_P (class1))
-    return ix86_cost->fp_move;
+    return ix86_cost->hard_register.fp_move;
   if (MAYBE_SSE_CLASS_P (class1))
     {
       if (GET_MODE_BITSIZE (mode) <= 128)
-	return ix86_cost->xmm_move;
+	return ix86_cost->hard_register.xmm_move;
       if (GET_MODE_BITSIZE (mode) <= 256)
-	return ix86_cost->ymm_move;
-      return ix86_cost->zmm_move;
+	return ix86_cost->hard_register.ymm_move;
+      return ix86_cost->hard_register.zmm_move;
     }
   if (MAYBE_MMX_CLASS_P (class1))
-    return ix86_cost->mmx_move;
+    return ix86_cost->hard_register.mmx_move;
   return 2;
 }
 
