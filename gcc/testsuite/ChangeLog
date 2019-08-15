@@ -1,3 +1,25 @@
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.target/aarch64/sve/cond_shift_1.c: New test.
+	* gcc.target/aarch64/sve/cond_shift_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_shift_2.c: Likewise.
+	* gcc.target/aarch64/sve/cond_shift_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_shift_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_shift_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_shift_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_shift_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_shift_5.c: Likewise.
+	* gcc.target/aarch64/sve/cond_shift_5_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_shift_6.c: Likewise.
+	* gcc.target/aarch64/sve/cond_shift_6_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_shift_7.c: Likewise.
+	* gcc.target/aarch64/sve/cond_shift_7_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_shift_8.c: Likewise.
+	* gcc.target/aarch64/sve/cond_shift_8_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_shift_9.c: Likewise.
+	* gcc.target/aarch64/sve/cond_shift_9_run.c: Likewise.
+
 2019-08-14  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/91449

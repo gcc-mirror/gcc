@@ -1,3 +1,20 @@
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* internal-fn.def (IFN_COND_SHL, IFN_COND_SHR): New internal functions.
+	* internal-fn.c (FOR_EACH_CODE_MAPPING): Handle shifts.
+	* match.pd (UNCOND_BINARY, COND_BINARY): Likewise.
+	* optabs.def (cond_ashl_optab, cond_ashr_optab, cond_lshr_optab): New
+	optabs.
+	* optabs.h (create_convert_operand_from): Expand comment.
+	* optabs.c (maybe_legitimize_operand): Allow implicit broadcasts
+	when mapping scalar rtxes to vector operands.
+	* config/aarch64/iterators.md (SVE_INT_BINARY): Add ashift,
+	ashiftrt and lshiftrt.
+	(sve_int_op, sve_int_op_rev, sve_pred_int_rhs2_operand): Handle them.
+	* config/aarch64/aarch64-sve.md (*cond_<optab><mode>_2_const)
+	(*cond_<optab><mode>_any_const): New patterns.
+
 2019-08-15  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/91438
