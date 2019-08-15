@@ -1,4 +1,9 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/ext_2.c: Expect a MOVPRFX.
+	* gcc.target/aarch64/sve/ext_3.c: New test.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gcc.target/aarch64/sve/shift_1.c: Accept reversed shifts.

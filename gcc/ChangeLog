@@ -1,5 +1,10 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-sve.md (*vec_extract<mode><Vel>_ext)
+	(*aarch64_sve_ext<mode>): Add MOVPRFX alternatives.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve.md (*sub<SVE_F:mode>3): Remove immediate
 	FADD and FSUB alternatives.  Add a MOVPRFX alternative for FSUBR.
 
