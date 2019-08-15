@@ -2883,13 +2883,48 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // __is_invocable (std::is_invocable for C++11)
 
-  template<typename _Result, typename _Ret, typename = void>
+  // The primary template is used for invalid INVOKE expressions.
+  template<typename _Result, typename _Ret,
+	   bool = is_void<_Ret>::value, typename = void>
     struct __is_invocable_impl : false_type { };
 
+  // Used for valid INVOKE and INVOKE<void> expressions.
   template<typename _Result, typename _Ret>
-    struct __is_invocable_impl<_Result, _Ret, __void_t<typename _Result::type>>
-    : __or_<is_void<_Ret>, is_convertible<typename _Result::type, _Ret>>::type
+    struct __is_invocable_impl<_Result, _Ret,
+			       /* is_void<_Ret> = */ true,
+			       __void_t<typename _Result::type>>
+    : true_type
     { };
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
+  // Used for INVOKE<R> expressions to check the implicit conversion to R.
+  template<typename _Result, typename _Ret>
+    struct __is_invocable_impl<_Result, _Ret,
+			       /* is_void<_Ret> = */ false,
+			       __void_t<typename _Result::type>>
+    {
+    private:
+      // The type of the INVOKE expression.
+      // Unlike declval, this doesn't add_rvalue_reference.
+      static typename _Result::type _S_get();
+
+      template<typename _Tp>
+	static void _S_conv(_Tp);
+
+      // This overload is viable if INVOKE(f, args...) can convert to _Tp.
+      template<typename _Tp, typename = decltype(_S_conv<_Tp>(_S_get()))>
+	static true_type
+	_S_test(int);
+
+      template<typename _Tp>
+	static false_type
+	_S_test(...);
+
+    public:
+      using type = decltype(_S_test<_Ret>(1));
+    };
+#pragma GCC diagnostic pop
 
   template<typename _Fn, typename... _ArgTypes>
     struct __is_invocable
