@@ -2902,16 +2902,17 @@ aarch64_sve_cnt_immediate_p (rtx x)
    operand (a vector pattern followed by a multiplier in the range [1, 16]).
    PREFIX is the mnemonic without the size suffix and OPERANDS is the
    first part of the operands template (the part that comes before the
-   vector size itself).  FACTOR is the number of quadwords.
-   NELTS_PER_VQ, if nonzero, is the number of elements in each quadword.
-   If it is zero, we can use any element size.  */
+   vector size itself).  PATTERN is the pattern to use.  FACTOR is the
+   number of quadwords.  NELTS_PER_VQ, if nonzero, is the number of elements
+   in each quadword.  If it is zero, we can use any element size.  */
 
 static char *
 aarch64_output_sve_cnt_immediate (const char *prefix, const char *operands,
+				  aarch64_svpattern pattern,
 				  unsigned int factor,
 				  unsigned int nelts_per_vq)
 {
-  static char buffer[sizeof ("sqincd\t%x0, %w0, all, mul #16")];
+  static char buffer[sizeof ("sqincd\t%x0, %w0, vl256, mul #16")];
 
   if (nelts_per_vq == 0)
     /* There is some overlap in the ranges of the four CNT instructions.
@@ -2924,12 +2925,16 @@ aarch64_output_sve_cnt_immediate (const char *prefix, const char *operands,
 
   factor >>= shift;
   unsigned int written;
-  if (factor == 1)
+  if (pattern == AARCH64_SV_ALL && factor == 1)
     written = snprintf (buffer, sizeof (buffer), "%s%c\t%s",
 			prefix, suffix, operands);
+  else if (factor == 1)
+    written = snprintf (buffer, sizeof (buffer), "%s%c\t%s, %s",
+			prefix, suffix, operands, svpattern_token (pattern));
   else
-    written = snprintf (buffer, sizeof (buffer), "%s%c\t%s, all, mul #%d",
-			prefix, suffix, operands, factor);
+    written = snprintf (buffer, sizeof (buffer), "%s%c\t%s, %s, mul #%d",
+			prefix, suffix, operands, svpattern_token (pattern),
+			factor);
   gcc_assert (written < sizeof (buffer));
   return buffer;
 }
@@ -2939,7 +2944,8 @@ aarch64_output_sve_cnt_immediate (const char *prefix, const char *operands,
    PREFIX is the mnemonic without the size suffix and OPERANDS is the
    first part of the operands template (the part that comes before the
    vector size itself).  X is the value of the vector size operand,
-   as a polynomial integer rtx.  */
+   as a polynomial integer rtx; we need to convert this into an "all"
+   pattern with a multiplier.  */
 
 char *
 aarch64_output_sve_cnt_immediate (const char *prefix, const char *operands,
@@ -2947,7 +2953,7 @@ aarch64_output_sve_cnt_immediate (const char *prefix, const char *operands,
 {
   poly_int64 value = rtx_to_poly_int64 (x);
   gcc_assert (aarch64_sve_cnt_immediate_p (value));
-  return aarch64_output_sve_cnt_immediate (prefix, operands,
+  return aarch64_output_sve_cnt_immediate (prefix, operands, AARCH64_SV_ALL,
 					   value.coeffs[1], 0);
 }
 
@@ -2971,10 +2977,10 @@ aarch64_output_sve_scalar_inc_dec (rtx offset)
   poly_int64 offset_value = rtx_to_poly_int64 (offset);
   gcc_assert (offset_value.coeffs[0] == offset_value.coeffs[1]);
   if (offset_value.coeffs[1] > 0)
-    return aarch64_output_sve_cnt_immediate ("inc", "%x0",
+    return aarch64_output_sve_cnt_immediate ("inc", "%x0", AARCH64_SV_ALL,
 					     offset_value.coeffs[1], 0);
   else
-    return aarch64_output_sve_cnt_immediate ("dec", "%x0",
+    return aarch64_output_sve_cnt_immediate ("dec", "%x0", AARCH64_SV_ALL,
 					     -offset_value.coeffs[1], 0);
 }
 
@@ -3079,11 +3085,11 @@ aarch64_output_sve_vector_inc_dec (const char *operands, rtx x)
   if (!aarch64_sve_vector_inc_dec_immediate_p (x, &factor, &nelts_per_vq))
     gcc_unreachable ();
   if (factor < 0)
-    return aarch64_output_sve_cnt_immediate ("dec", operands, -factor,
-					     nelts_per_vq);
+    return aarch64_output_sve_cnt_immediate ("dec", operands, AARCH64_SV_ALL,
+					     -factor, nelts_per_vq);
   else
-    return aarch64_output_sve_cnt_immediate ("inc", operands, factor,
-					     nelts_per_vq);
+    return aarch64_output_sve_cnt_immediate ("inc", operands, AARCH64_SV_ALL,
+					     factor, nelts_per_vq);
 }
 
 static int

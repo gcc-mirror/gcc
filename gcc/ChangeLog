@@ -1,5 +1,13 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_output_sve_cnt_immediate): Take
+	the vector pattern as an aarch64_svpattern argument.  Update the
+	overloaded caller accordingly.
+	(aarch64_output_sve_scalar_inc_dec): Update call accordingly.
+	(aarch64_output_sve_vector_inc_dec): Likewise.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_add_offset): In the fallback
 	multiplication case, try to compute VG * (lowest set bit) directly
 	rather than always basing the multiplication on VG.  Use
