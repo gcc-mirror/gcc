@@ -1713,6 +1713,10 @@
 					 UNSPEC_COND_FMUL
 					 UNSPEC_COND_FSUB])
 
+(define_int_iterator SVE_COND_FP_BINARY_I1 [UNSPEC_COND_FMAXNM
+					    UNSPEC_COND_FMINNM
+					    UNSPEC_COND_FMUL])
+
 (define_int_iterator SVE_COND_FP_BINARY_REG [UNSPEC_COND_FDIV])
 
 ;; Floating-point max/min operations that correspond to optabs,
@@ -2108,3 +2112,9 @@
    (UNSPEC_COND_FMINNM "aarch64_sve_float_maxmin_operand")
    (UNSPEC_COND_FMUL "aarch64_sve_float_mul_operand")
    (UNSPEC_COND_FSUB "register_operand")])
+
+;; Likewise for immediates only.
+(define_int_attr sve_pred_fp_rhs2_immediate
+  [(UNSPEC_COND_FMAXNM "aarch64_sve_float_maxmin_immediate")
+   (UNSPEC_COND_FMINNM "aarch64_sve_float_maxmin_immediate")
+   (UNSPEC_COND_FMUL "aarch64_sve_float_mul_immediate")])

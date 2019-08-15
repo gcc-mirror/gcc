@@ -8289,6 +8289,8 @@ aarch64_print_vector_float_operand (FILE *f, rtx x, bool negate)
      fixed form in the assembly syntax.  */
   if (real_equal (&r, &dconst0))
     asm_fprintf (f, "0.0");
+  else if (real_equal (&r, &dconst2))
+    asm_fprintf (f, "2.0");
   else if (real_equal (&r, &dconst1))
     asm_fprintf (f, "1.0");
   else if (real_equal (&r, &dconsthalf))
@@ -15205,11 +15207,10 @@ aarch64_sve_float_mul_immediate_p (rtx x)
 {
   rtx elt;
 
-  /* GCC will never generate a multiply with an immediate of 2, so there is no
-     point testing for it (even though it is a valid constant).  */
   return (const_vec_duplicate_p (x, &elt)
 	  && GET_CODE (elt) == CONST_DOUBLE
-	  && real_equal (CONST_DOUBLE_REAL_VALUE (elt), &dconsthalf));
+	  && (real_equal (CONST_DOUBLE_REAL_VALUE (elt), &dconsthalf)
+	      || real_equal (CONST_DOUBLE_REAL_VALUE (elt), &dconst2)));
 }
 
 /* Return true if replicating VAL32 is a valid 2-byte or 4-byte immediate
