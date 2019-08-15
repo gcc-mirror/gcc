@@ -1,3 +1,12 @@
+2019-08-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90393 - ICE with thow in ?:
+
+	PR c++/64372, DR 1560 - Gratuitous lvalue-to-rvalue conversion in ?:
+	* tree.c (lvalue_kind): Handle throw in one arm.
+	* typeck.c (rationalize_conditional_expr): Likewise.
+	(cp_build_modify_expr): Likewise.
+
 2019-08-14  Jason Merrill  <jason@redhat.com>
 
 	Implement P0848R3, Conditionally Trivial Special Member Functions.
