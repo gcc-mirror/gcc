@@ -1,3 +1,14 @@
+2019-08-14  Jason Merrill  <jason@redhat.com>
+
+	Implement P0848R3, Conditionally Trivial Special Member Functions.
+	* tree.c (special_memfn_p): New.
+	* class.c (add_method): When overloading, hide ineligible special
+	member fns.
+	(check_methods): Set TYPE_HAS_COMPLEX_* here.
+	* decl.c (grok_special_member_properties): Not here.
+	* name-lookup.c (push_class_level_binding_1): Move overloaded
+	functions case down, accept FUNCTION_DECL as target_decl.
+
 2019-08-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/91436
