@@ -1,3 +1,15 @@
+2019-08-15  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/91404
+	* passes.c (order): Remove.
+	(uid_hash_t): Likewise).
+	(remove_cgraph_node_from_order): Remove from set
+	of pointers (cgraph_node *).
+	(insert_cgraph_node_to_order): New.
+	(duplicate_cgraph_node_to_order): New.
+	(do_per_function_toporder): Register all 3 cgraph hooks.
+	Skip removed_nodes now as we know about all of them.
+
 2019-08-14  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-expand.c (ix86_expand_vector_init_one_nonzero)
