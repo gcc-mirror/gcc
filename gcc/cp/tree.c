@@ -236,10 +236,23 @@ lvalue_kind (const_tree ref)
 	  gcc_assert (!type_dependent_expression_p (CONST_CAST_TREE (ref)));
 	  goto default_;
 	}
-      op1_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 1)
-				    ? TREE_OPERAND (ref, 1)
-				    : TREE_OPERAND (ref, 0));
-      op2_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 2));
+      {
+	tree op1 = TREE_OPERAND (ref, 1);
+	if (!op1) op1 = TREE_OPERAND (ref, 0);
+	tree op2 = TREE_OPERAND (ref, 2);
+	op1_lvalue_kind = lvalue_kind (op1);
+	op2_lvalue_kind = lvalue_kind (op2);
+	if (!op1_lvalue_kind != !op2_lvalue_kind)
+	  {
+	    /* The second or the third operand (but not both) is a
+	       throw-expression; the result is of the type
+	       and value category of the other.  */
+	    if (op1_lvalue_kind && TREE_CODE (op2) == THROW_EXPR)
+	      op2_lvalue_kind = op1_lvalue_kind;
+	    else if (op2_lvalue_kind && TREE_CODE (op1) == THROW_EXPR)
+	      op1_lvalue_kind = op2_lvalue_kind;
+	  }
+      }
       break;
 
     case MODOP_EXPR:
