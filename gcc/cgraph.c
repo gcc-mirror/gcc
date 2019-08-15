@@ -1767,8 +1767,6 @@ cgraph_node::release_body (bool keep_arguments)
 void
 cgraph_node::remove (void)
 {
-  cgraph_node *n;
-
   if (symtab->ipa_clones_dump_file && symtab->cloned_nodes.contains (this))
     fprintf (symtab->ipa_clones_dump_file,
 	     "Callgraph removal;%s;%d;%s;%d;%d\n", asm_name (), order,
@@ -1785,8 +1783,13 @@ cgraph_node::remove (void)
      */
   force_output = false;
   forced_by_abi = false;
-  for (n = nested; n; n = n->next_nested)
+  cgraph_node *next = nested;
+  for (cgraph_node *n = nested; n; n = next)
+  {
+    next = n->next_nested;
     n->origin = NULL;
+    n->next_nested = NULL;
+  }
   nested = NULL;
   if (origin)
     {
@@ -1840,7 +1843,7 @@ cgraph_node::remove (void)
      */
   if (symtab->state != LTO_STREAMING)
     {
-      n = cgraph_node::get (decl);
+      cgraph_node *n = cgraph_node::get (decl);
       if (!n
 	  || (!n->clones && !n->clone_of && !n->global.inlined_to
 	      && ((symtab->global_info_ready || in_lto_p)
