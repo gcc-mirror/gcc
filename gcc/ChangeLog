@@ -1,4 +1,9 @@
 2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (*sub<SVE_F:mode>3): Remove immediate
+	FADD and FSUB alternatives.  Add a MOVPRFX alternative for FSUBR.
+
+2019-08-15  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
 	* config/aarch64/aarch64-sve.md (add<SVE_I:mode>3, sub<SVE_I:mode>3)

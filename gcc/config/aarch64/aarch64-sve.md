@@ -2878,34 +2878,31 @@
 ;; ---- [FP] Subtraction
 ;; -------------------------------------------------------------------------
 ;; Includes:
-;; - FADD
 ;; - FSUB
 ;; - FSUBR
 ;; -------------------------------------------------------------------------
 
 ;; Predicated floating-point subtraction.
 (define_insn_and_split "*sub<mode>3"
-  [(set (match_operand:SVE_F 0 "register_operand" "=w, w, w, w")
+  [(set (match_operand:SVE_F 0 "register_operand" "=w, w, ?&w")
 	(unspec:SVE_F
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl")
-	   (match_operand:SI 4 "aarch64_sve_gp_strictness" "i, i, i, Z")
-	   (match_operand:SVE_F 2 "aarch64_sve_float_arith_operand" "0, 0, vsA, w")
-	   (match_operand:SVE_F 3 "aarch64_sve_float_arith_with_sub_operand" "vsA, vsN, 0, w")]
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (match_operand:SI 4 "aarch64_sve_gp_strictness" "i, Z, i")
+	   (match_operand:SVE_F 2 "aarch64_sve_float_arith_operand" "vsA, w, vsA")
+	   (match_operand:SVE_F 3 "register_operand" "0, w, 0")]
 	  UNSPEC_COND_FSUB))]
-  "TARGET_SVE
-   && (register_operand (operands[2], <MODE>mode)
-       || register_operand (operands[3], <MODE>mode))"
+  "TARGET_SVE"
   "@
-   fsub\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
-   fadd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%N3
    fsubr\t%0.<Vetype>, %1/m, %0.<Vetype>, #%2
-   #"
+   #
+   movprfx\t%0, %3\;fsubr\t%0.<Vetype>, %1/m, %0.<Vetype>, #%2"
   ; Split the unpredicated form after reload, so that we don't have
   ; the unnecessary PTRUE.
   "&& reload_completed
-   && register_operand (operands[2], <MODE>mode)
-   && register_operand (operands[3], <MODE>mode)"
+   && register_operand (operands[2], <MODE>mode)"
   [(set (match_dup 0) (minus:SVE_F (match_dup 2) (match_dup 3)))]
+  ""
+  [(set_attr "movprfx" "*,*,yes")]
 )
 
 ;; Predicated floating-point subtraction from a constant, merging with the
