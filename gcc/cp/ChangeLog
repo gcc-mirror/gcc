@@ -13,6 +13,13 @@
 	* typeck.c (cp_build_binary_op): Use same_type_p instead of comparing
 	the types directly.
 
+	2019-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90473 - wrong code with nullptr in default argument.
+	* call.c (null_ptr_cst_p): Update quote from the standard.
+	* decl.c (check_default_argument): Don't return nullptr when the arg
+	has side-effects.
+
 2019-08-14  Martin Sebor  <msebor@redhat.com>
 
 	Backported from mainline
