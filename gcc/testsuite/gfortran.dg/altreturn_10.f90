@@ -14,6 +14,6 @@ subroutine sub (x)
 end
 subroutine sub2
    call sub (*99) ! { dg-error "Unexpected alternate return specifier" }
-   call sub (99.) ! { dg-warning "Type mismatch in argument" }
+   call sub (99.) ! { dg-error "Type mismatch in argument" }
 99 stop
 end

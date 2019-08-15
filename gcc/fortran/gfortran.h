@@ -3477,6 +3477,8 @@ void gfc_dump_parse_tree (gfc_namespace *, FILE *);
 void gfc_dump_c_prototypes (gfc_namespace *, FILE *);
 void gfc_dump_external_c_prototypes (FILE *);
 void gfc_dump_global_symbols (FILE *);
+void debug (gfc_symbol *);
+void debug (gfc_expr *);
 
 /* parse.c */
 bool gfc_parse_file (void);
@@ -3551,6 +3553,7 @@ int gfc_dummy_code_callback (gfc_code **, int *, void *);
 int gfc_expr_walker (gfc_expr **, walk_expr_fn_t, void *);
 int gfc_code_walker (gfc_code **, walk_code_fn_t, walk_expr_fn_t, void *);
 bool gfc_has_dimen_vector_ref (gfc_expr *e);
+void gfc_check_externals (gfc_namespace *);
 
 /* simplify.c */
 

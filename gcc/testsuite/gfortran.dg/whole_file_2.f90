@@ -14,8 +14,8 @@ end function
 program gg
 real :: h
 character (5) :: chr = 'hello'
-h = a(); ! { dg-warning "Missing actual argument" }
-call test ([chr]) ! { dg-warning "Rank mismatch" }
+h = a(); ! { dg-error "Missing actual argument" }
+call test ([chr]) ! { dg-error "Rank mismatch" }
 end program gg
 
 subroutine test (a)
