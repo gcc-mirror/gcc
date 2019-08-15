@@ -3127,6 +3127,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
   int unsignedp = TYPE_UNSIGNED (TREE_TYPE (parm));
   bool did_conversion = false;
   bool need_conversion, moved;
+  enum insn_code icode;
   rtx rtl;
 
   /* Store the parm in a pseudoregister during the function, but we may
@@ -3188,7 +3189,6 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	 conversion.  We verify that this insn does not clobber any
 	 hard registers.  */
 
-      enum insn_code icode;
       rtx op0, op1;
 
       icode = can_extend_p (promoted_nominal_mode, data->passed_mode,
@@ -3290,6 +3290,23 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
       end_sequence ();
 
       did_conversion = true;
+    }
+  else if (MEM_P (data->entry_parm)
+	   && GET_MODE_ALIGNMENT (promoted_nominal_mode)
+	      > MEM_ALIGN (data->entry_parm)
+	   && (((icode = optab_handler (movmisalign_optab,
+					promoted_nominal_mode))
+		!= CODE_FOR_nothing)
+	       || targetm.slow_unaligned_access (promoted_nominal_mode,
+						 MEM_ALIGN (data->entry_parm))))
+    {
+      if (icode != CODE_FOR_nothing)
+	emit_insn (GEN_FCN (icode) (parmreg, validated_mem));
+      else
+	rtl = parmreg = extract_bit_field (validated_mem,
+			GET_MODE_BITSIZE (promoted_nominal_mode), 0,
+			unsignedp, parmreg,
+			promoted_nominal_mode, VOIDmode, false, NULL);
     }
   else
     emit_move_insn (parmreg, validated_mem);

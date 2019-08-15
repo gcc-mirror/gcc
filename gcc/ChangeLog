@@ -1,3 +1,7 @@
+2019-08-15  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* function.c (assign_parm_setup_reg): Handle misaligned stack arguments.
+
 2019-08-15  Martin Liska  <mliska@suse.cz>
 
 	* tree-ssa-dce.c (propagate_necessity): We can't reach now
