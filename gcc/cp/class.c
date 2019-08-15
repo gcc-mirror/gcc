@@ -994,6 +994,9 @@ add_method (tree type, tree method, bool via_using)
   tree *slot = find_member_slot (type, DECL_NAME (method));
   tree current_fns = slot ? *slot : NULL_TREE;
 
+  /* See below.  */
+  int losem = -1;
+
   /* Check to see if we've already got this method.  */
   for (ovl_iterator iter (current_fns); iter; ++iter)
     {
@@ -1070,9 +1073,48 @@ add_method (tree type, tree method, bool via_using)
       if (compparms (parms1, parms2)
 	  && (!DECL_CONV_FN_P (fn)
 	      || same_type_p (TREE_TYPE (fn_type),
-			      TREE_TYPE (method_type)))
-          && equivalently_constrained (fn, method))
+			      TREE_TYPE (method_type))))
 	{
+          if (!equivalently_constrained (fn, method))
+	    {
+	      special_function_kind sfk = special_memfn_p (method);
+
+	      if (sfk == sfk_none)
+		/* Non-special member functions coexist if they are not
+		   equivalently constrained.  */
+		continue;
+
+	      /* P0848: For special member functions, deleted, unsatisfied, or
+		 less constrained overloads are ineligible.  We implement this
+		 by removing them from CLASSTYPE_MEMBER_VEC.  Destructors don't
+		 use the notion of eligibility, and the selected destructor can
+		 be deleted, but removing unsatisfied or less constrained
+		 overloads has the same effect as overload resolution.  */
+	      bool dtor = (sfk == sfk_destructor);
+	      if (losem == -1)
+		losem = ((!dtor && DECL_DELETED_FN (method))
+			 || !constraints_satisfied_p (method));
+	      bool losef = ((!dtor && DECL_DELETED_FN (fn))
+			    || !constraints_satisfied_p (fn));
+	      int win;
+	      if (losem || losef)
+		win = losem - losef;
+	      else
+		win = more_constrained (fn, method);
+	      if (win > 0)
+		/* Leave FN in the method vec, discard METHOD.  */
+		return false;
+	      else if (win < 0)
+		{
+		  /* Remove FN, add METHOD.  */
+		  current_fns = iter.remove_node (current_fns);
+		  continue;
+		}
+	      else
+		/* Let them coexist for now.  */
+		continue;
+	    }
+
 	  /* If these are versions of the same function, process and
 	     move on.  */
 	  if (TREE_CODE (fn) == FUNCTION_DECL
@@ -4468,11 +4510,6 @@ check_methods (tree t)
 	      vec_safe_push (CLASSTYPE_PURE_VIRTUALS (t), x);
 	  }
 
-	/* All user-provided destructors are non-trivial.
-	   Constructors and assignment ops are handled in
-	   grok_special_member_properties.  */
-	if (DECL_DESTRUCTOR_P (x) && user_provided_p (x))
-	  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = 1;
 	if (!DECL_VIRTUAL_P (x)
 	    && lookup_attribute ("transaction_safe_dynamic",
 				 DECL_ATTRIBUTES (x)))
@@ -4480,6 +4517,51 @@ check_methods (tree t)
 		    "%<transaction_safe_dynamic%> may only be specified for "
 		    "a virtual function");
       }
+
+  /* Check whether the eligible special member functions (P0848) are
+     user-provided.  add_method arranged that the CLASSTYPE_MEMBER_VEC only
+     has the eligible ones; TYPE_FIELDS also contains ineligible overloads,
+     which is why this needs to be separate from the loop above.  */
+
+  if (tree dtor = CLASSTYPE_DESTRUCTOR (t))
+    {
+      if (TREE_CODE (dtor) == OVERLOAD)
+	{
+	  /* P0848: At the end of the definition of a class, overload
+	     resolution is performed among the prospective destructors declared
+	     in that class with an empty argument list to select the destructor
+	     for the class, also known as the selected destructor. The program
+	     is ill-formed if overload resolution fails. */
+	  auto_diagnostic_group d;
+	  error_at (location_of (t), "destructor for %qT is ambiguous", t);
+	  print_candidates (dtor);
+	}
+      else if (user_provided_p (dtor))
+	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = true;
+    }
+
+  for (ovl_iterator i (CLASSTYPE_CONSTRUCTORS (t)); i; ++i)
+    {
+      tree fn = *i;
+      if (!user_provided_p (fn))
+	/* Might be trivial.  */;
+      else if (copy_fn_p (fn))
+	TYPE_HAS_COMPLEX_COPY_CTOR (t) = true;
+      else if (move_fn_p (fn))
+	TYPE_HAS_COMPLEX_MOVE_CTOR (t) = true;
+    }
+
+  for (ovl_iterator i (get_class_binding_direct (t, assign_op_identifier));
+       i; ++i)
+    {
+      tree fn = *i;
+      if (!user_provided_p (fn))
+	/* Might be trivial.  */;
+      else if (copy_fn_p (fn))
+	TYPE_HAS_COMPLEX_COPY_ASSIGN (t) = true;
+      else if (move_fn_p (fn))
+	TYPE_HAS_COMPLEX_MOVE_ASSIGN (t) = true;
+    }
 }
 
 /* FN is a constructor or destructor.  Clone the declaration to create
@@ -4950,7 +5032,7 @@ set_method_tm_attributes (tree t)
 /* Returns true if FN is a default constructor.  */
 
 bool
-default_ctor_p (tree fn)
+default_ctor_p (const_tree fn)
 {
   return (DECL_CONSTRUCTOR_P (fn)
 	  && sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (fn)));

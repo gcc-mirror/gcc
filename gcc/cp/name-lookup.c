@@ -4504,9 +4504,6 @@ push_class_level_binding_1 (tree name, tree x)
 		binding->type = NULL_TREE;
 	    }
 	}
-      else if (TREE_CODE (target_decl) == OVERLOAD
-	       && OVL_P (target_bval))
-	old_decl = bval;
       else if (TREE_CODE (decl) == USING_DECL
 	       && TREE_CODE (bval) == USING_DECL
 	       && same_type_p (USING_DECL_SCOPE (decl),
@@ -4525,6 +4522,9 @@ push_class_level_binding_1 (tree name, tree x)
       else if (TREE_CODE (bval) == USING_DECL
 	       && OVL_P (target_decl))
 	return true;
+      else if (OVL_P (target_decl)
+	       && OVL_P (target_bval))
+	old_decl = bval;
 
       if (old_decl && binding->scope == class_binding_level)
 	{

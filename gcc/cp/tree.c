@@ -5015,6 +5015,31 @@ special_function_p (const_tree decl)
   return sfk_none;
 }
 
+/* As above, but only if DECL is a special member function as per 11.3.3
+   [special]: default/copy/move ctor, copy/move assignment, or destructor.  */
+
+special_function_kind
+special_memfn_p (const_tree decl)
+{
+  switch (special_function_kind sfk = special_function_p (decl))
+    {
+    case sfk_constructor:
+      if (!default_ctor_p (decl))
+	break;
+      gcc_fallthrough();
+    case sfk_copy_constructor:
+    case sfk_copy_assignment:
+    case sfk_move_assignment:
+    case sfk_move_constructor:
+    case sfk_destructor:
+      return sfk;
+
+    default:
+      break;
+    }
+  return sfk_none;
+}
+
 /* Returns nonzero if TYPE is a character type, including wchar_t.  */
 
 int

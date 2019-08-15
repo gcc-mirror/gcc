@@ -13534,15 +13534,11 @@ grok_special_member_properties (tree decl)
 	     are no other parameters or else all other parameters have
 	     default arguments.  */
 	  TYPE_HAS_COPY_CTOR (class_type) = 1;
-	  if (user_provided_p (decl))
-	    TYPE_HAS_COMPLEX_COPY_CTOR (class_type) = 1;
 	  if (ctor > 1)
 	    TYPE_HAS_CONST_COPY_CTOR (class_type) = 1;
 	}
       else if (sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (decl)))
 	TYPE_HAS_DEFAULT_CONSTRUCTOR (class_type) = 1;
-      else if (move_fn_p (decl) && user_provided_p (decl))
-	TYPE_HAS_COMPLEX_MOVE_CTOR (class_type) = 1;
       else if (is_list_ctor (decl))
 	TYPE_HAS_LIST_CTOR (class_type) = 1;
 
@@ -13563,13 +13559,9 @@ grok_special_member_properties (tree decl)
       if (assop)
 	{
 	  TYPE_HAS_COPY_ASSIGN (class_type) = 1;
-	  if (user_provided_p (decl))
-	    TYPE_HAS_COMPLEX_COPY_ASSIGN (class_type) = 1;
 	  if (assop != 1)
 	    TYPE_HAS_CONST_COPY_ASSIGN (class_type) = 1;
 	}
-      else if (move_fn_p (decl) && user_provided_p (decl))
-	TYPE_HAS_COMPLEX_MOVE_ASSIGN (class_type) = 1;
     }
   else if (IDENTIFIER_CONV_OP_P (DECL_NAME (decl)))
     TYPE_HAS_CONVERSION (class_type) = true;
