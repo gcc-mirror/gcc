@@ -1,3 +1,9 @@
+2019-08-15  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-dce.c (propagate_necessity): We can't reach now
+	operators with no arguments.
+	(eliminate_unnecessary_stmts): Likewise here.
+
 2019-08-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-features.c (general_scalar_chain::convert_insn)
