@@ -1280,6 +1280,7 @@
 
 ;; SVE integer binary operations.
 (define_code_iterator SVE_INT_BINARY [plus minus mult smax umax smin umin
+				      ashift ashiftrt lshiftrt
 				      and ior xor])
 
 ;; SVE integer binary division operations.
@@ -1475,6 +1476,9 @@
 			      (smax "smax")
 			      (umin "umin")
 			      (umax "umax")
+			      (ashift "lsl")
+			      (ashiftrt "asr")
+			      (lshiftrt "lsr")
 			      (and "and")
 			      (ior "orr")
 			      (xor "eor")
@@ -1484,17 +1488,20 @@
 			      (popcount "cnt")])
 
 (define_code_attr sve_int_op_rev [(plus "add")
-			          (minus "subr")
-			          (mult "mul")
-			          (div "sdivr")
-			          (udiv "udivr")
-			          (smin "smin")
-			          (smax "smax")
-			          (umin "umin")
-			          (umax "umax")
-			          (and "and")
-			          (ior "orr")
-			          (xor "eor")])
+				  (minus "subr")
+				  (mult "mul")
+				  (div "sdivr")
+				  (udiv "udivr")
+				  (smin "smin")
+				  (smax "smax")
+				  (umin "umin")
+				  (umax "umax")
+				  (ashift "lslr")
+				  (ashiftrt "asrr")
+				  (lshiftrt "lsrr")
+				  (and "and")
+				  (ior "orr")
+				  (xor "eor")])
 
 ;; The floating-point SVE instruction that implements an rtx code.
 (define_code_attr sve_fp_op [(plus "fadd")
@@ -1535,6 +1542,9 @@
    (umax "register_operand")
    (smin "register_operand")
    (umin "register_operand")
+   (ashift "aarch64_sve_lshift_operand")
+   (ashiftrt "aarch64_sve_rshift_operand")
+   (lshiftrt "aarch64_sve_rshift_operand")
    (and "aarch64_sve_pred_and_operand")
    (ior "register_operand")
    (xor "register_operand")])
