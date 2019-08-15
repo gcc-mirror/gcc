@@ -1,3 +1,10 @@
+2019-08-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-features.c (general_scalar_chain::convert_insn)
+	<case COMPARE>: Revert 2019-08-14 change.
+	(convertible_comparison_p): Revert 2019-08-14 change.  Return false
+	for (TARGET_64BIT || mode != DImode).
+
 2019-08-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp.c (value_range_base::set): Merge in code from
@@ -272,7 +279,7 @@
 	* config/i386/i386-expand.c (ix86_expand_vector_init_one_nonzero)
 	<case E_V8QImode>: Use vector_set path for
 	TARGET_MMX_WITH_SSE && TARGET_SSE4_1.
-	(ix86_expand_vector_init_one_nonzero) <case E_V8QImode>:
+	(ix86_expand_vector_init_one_var) <case E_V8QImode>:
 	Do not widen for TARGET_MMX_WITH_SSE && TARGET_SSE4_1.
 
 2019-08-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
