@@ -31,8 +31,14 @@
    (4 bytes) to do the operation; for Vector regs, 2 instructions are
    required (8 bytes.).   */
 
+/* With some assemblers, we need the correct machine directive to get the
+   right CPU type / subtype in the file header.  */
+#if	__ppc64__
+	.machine ppc64
+#else
 	.machine ppc7400
-.text
+#endif
+	.text
 	.align 2
 
 .private_extern saveVEC
