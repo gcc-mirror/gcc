@@ -1,5 +1,7 @@
 2019-08-16  Alexandre Oliva <oliva@adacore.com>
 
+	* gcc.target/i386/pr85044.c: Require support for trampolines.
+
 	* gcc.target/i386/asm-4.c: Use amd64 natural addressing mode
 	on all __LP64__ targets.
 
