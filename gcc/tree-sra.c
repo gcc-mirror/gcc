@@ -1812,10 +1812,14 @@ build_reconstructed_reference (location_t, tree base, struct access *model)
   while (!types_compatible_p (TREE_TYPE (expr), TREE_TYPE (base)))
     {
       if (!handled_component_p (expr))
-	return NULL;
+	return NULL_TREE;
       prev_expr = expr;
       expr = TREE_OPERAND (expr, 0);
     }
+
+  /* Guard against broken VIEW_CONVERT_EXPRs...  */
+  if (!prev_expr)
+    return NULL_TREE;
 
   TREE_OPERAND (prev_expr, 0) = base;
   tree ref = unshare_expr (model->expr);
