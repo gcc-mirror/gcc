@@ -5428,7 +5428,7 @@ gfc_conv_intrinsic_findloc (gfc_se *se, gfc_expr *expr)
   tree type;
   tree tmp;
   tree found;
-  tree forward_branch;
+  tree forward_branch = NULL_TREE;
   tree back_branch;
   gfc_loopinfo loop;
   gfc_ss *arrayss;

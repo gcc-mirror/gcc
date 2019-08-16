@@ -1403,7 +1403,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 				   build_int_cst (TREE_TYPE (len1), src_len));
 	      update_stmt (stmt1);
 	      unlink_stmt_vdef (stmt2);
-	      gsi_remove (gsi_p, true);
+	      gsi_replace (gsi_p, gimple_build_nop (), false);
 	      fwprop_invalidate_lattice (gimple_get_lhs (stmt2));
 	      release_defs (stmt2);
 	      if (lhs1 && DECL_FUNCTION_CODE (callee1) == BUILT_IN_MEMPCPY)
@@ -2299,13 +2299,14 @@ pass_forwprop::execute (function *fun)
   int postorder_num = pre_and_rev_post_order_compute_fn (cfun, NULL,
 							 postorder, false);
   auto_vec<gimple *, 4> to_fixup;
+  auto_vec<gimple *, 32> to_remove;
   to_purge = BITMAP_ALLOC (NULL);
   for (int i = 0; i < postorder_num; ++i)
     {
       gimple_stmt_iterator gsi;
       basic_block bb = BASIC_BLOCK_FOR_FN (fun, postorder[i]);
 
-      /* Propagate into PHIs and record degenerate ones in the lattice.  */
+      /* Record degenerate PHIs in the lattice.  */
       for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
 	   gsi_next (&si))
 	{
@@ -2321,17 +2322,20 @@ pass_forwprop::execute (function *fun)
 	  FOR_EACH_PHI_ARG (use_p, phi, it, SSA_OP_USE)
 	    {
 	      tree use = USE_FROM_PTR (use_p);
-	      tree tem = fwprop_ssa_val (use);
 	      if (! first)
-		first = tem;
-	      else if (! operand_equal_p (first, tem, 0))
-		all_same = false;
-	      if (tem != use
-		  && may_propagate_copy (use, tem))
-		propagate_value (use_p, tem);
+		first = use;
+	      else if (! operand_equal_p (first, use, 0))
+		{
+		  all_same = false;
+		  break;
+		}
 	    }
 	  if (all_same)
-	    fwprop_set_lattice_val (res, first);
+	    {
+	      if (may_propagate_copy (res, first))
+		to_remove.safe_push (phi);
+	      fwprop_set_lattice_val (res, first);
+	    }
 	}
 
       /* Apply forward propagation to all stmts in the basic-block.
@@ -2648,147 +2652,222 @@ pass_forwprop::execute (function *fun)
 
       /* Combine stmts with the stmts defining their operands.
 	 Note we update GSI within the loop as necessary.  */
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
-	  gimple *orig_stmt = stmt;
-	  bool changed = false;
-	  bool was_noreturn = (is_gimple_call (stmt)
-			       && gimple_call_noreturn_p (stmt));
 
 	  /* Mark stmt as potentially needing revisiting.  */
 	  gimple_set_plf (stmt, GF_PLF_1, false);
 
-	  if (fold_stmt (&gsi, fwprop_ssa_val))
+	  /* Substitute from our lattice.  We need to do so only once.  */
+	  bool substituted_p = false;
+	  use_operand_p usep;
+	  ssa_op_iter iter;
+	  FOR_EACH_SSA_USE_OPERAND (usep, stmt, iter, SSA_OP_USE)
 	    {
-	      changed = true;
-	      stmt = gsi_stmt (gsi);
-	      if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt))
-		bitmap_set_bit (to_purge, bb->index);
-	      if (!was_noreturn
-		  && is_gimple_call (stmt) && gimple_call_noreturn_p (stmt))
-		to_fixup.safe_push (stmt);
-	      /* Cleanup the CFG if we simplified a condition to
-	         true or false.  */
-	      if (gcond *cond = dyn_cast <gcond *> (stmt))
-		if (gimple_cond_true_p (cond)
-		    || gimple_cond_false_p (cond))
-		  cfg_changed = true;
-	      update_stmt (stmt);
-	    }
-
-	  switch (gimple_code (stmt))
-	    {
-	    case GIMPLE_ASSIGN:
-	      {
-		tree rhs1 = gimple_assign_rhs1 (stmt);
-		enum tree_code code = gimple_assign_rhs_code (stmt);
-
-		if (code == COND_EXPR
-		    || code == VEC_COND_EXPR)
-		  {
-		    /* In this case the entire COND_EXPR is in rhs1. */
-		    if (forward_propagate_into_cond (&gsi))
-		      {
-			changed = true;
-			stmt = gsi_stmt (gsi);
-		      }
-		  }
-		else if (TREE_CODE_CLASS (code) == tcc_comparison)
-		  {
-		    int did_something;
-		    did_something = forward_propagate_into_comparison (&gsi);
-		    if (maybe_clean_or_replace_eh_stmt (stmt, gsi_stmt (gsi)))
-		      bitmap_set_bit (to_purge, bb->index);
-		    if (did_something == 2)
-		      cfg_changed = true;
-		    changed = did_something != 0;
-		  }
-		else if ((code == PLUS_EXPR
-			  || code == BIT_IOR_EXPR
-			  || code == BIT_XOR_EXPR)
-			 && simplify_rotate (&gsi))
-		  changed = true;
-		else if (code == VEC_PERM_EXPR)
-		  {
-		    int did_something = simplify_permutation (&gsi);
-		    if (did_something == 2)
-		      cfg_changed = true;
-		    changed = did_something != 0;
-		  }
-		else if (code == BIT_FIELD_REF)
-		  changed = simplify_bitfield_ref (&gsi);
-                else if (code == CONSTRUCTOR
-                         && TREE_CODE (TREE_TYPE (rhs1)) == VECTOR_TYPE)
-                  changed = simplify_vector_constructor (&gsi);
-		break;
-	      }
-
-	    case GIMPLE_SWITCH:
-	      changed = simplify_gimple_switch (as_a <gswitch *> (stmt));
-	      break;
-
-	    case GIMPLE_COND:
-	      {
-		int did_something
-		  = forward_propagate_into_gimple_cond (as_a <gcond *> (stmt));
-		if (did_something == 2)
-		  cfg_changed = true;
-		changed = did_something != 0;
-		break;
-	      }
-
-	    case GIMPLE_CALL:
-	      {
-		tree callee = gimple_call_fndecl (stmt);
-		if (callee != NULL_TREE
-		    && fndecl_built_in_p (callee, BUILT_IN_NORMAL))
-		  changed = simplify_builtin_call (&gsi, callee);
-		break;
-	      }
-
-	    default:;
-	    }
-
-	  if (changed)
-	    {
-	      /* If the stmt changed then re-visit it and the statements
-		 inserted before it.  */
-	      for (; !gsi_end_p (gsi); gsi_prev (&gsi))
-		if (gimple_plf (gsi_stmt (gsi), GF_PLF_1))
-		  break;
-	      if (gsi_end_p (gsi))
-		gsi = gsi_start_bb (bb);
-	      else
-		gsi_next (&gsi);
-	    }
-	  else
-	    {
-	      /* Stmt no longer needs to be revisited.  */
-	      gimple_set_plf (stmt, GF_PLF_1, true);
-
-	      /* Fill up the lattice.  */
-	      if (gimple_assign_single_p (stmt))
+	      tree use = USE_FROM_PTR (usep);
+	      tree val = fwprop_ssa_val (use);
+	      if (val && val != use && may_propagate_copy (use, val))
 		{
-		  tree lhs = gimple_assign_lhs (stmt);
-		  tree rhs = gimple_assign_rhs1 (stmt);
-		  if (TREE_CODE (lhs) == SSA_NAME)
-		    {
-		      tree val = lhs;
-		      if (TREE_CODE (rhs) == SSA_NAME)
-			val = fwprop_ssa_val (rhs);
-		      else if (is_gimple_min_invariant (rhs))
-			val = rhs;
-		      fwprop_set_lattice_val (lhs, val);
-		    }
+		  propagate_value (usep, val);
+		  substituted_p = true;
+		}
+	    }
+	  if (substituted_p
+	      && is_gimple_assign (stmt)
+	      && gimple_assign_rhs_code (stmt) == ADDR_EXPR)
+	    recompute_tree_invariant_for_addr_expr (gimple_assign_rhs1 (stmt));
+
+	  bool changed;
+	  do
+	    {
+	      gimple *orig_stmt = stmt = gsi_stmt (gsi);
+	      bool was_noreturn = (is_gimple_call (stmt)
+				   && gimple_call_noreturn_p (stmt));
+	      changed = false;
+
+	      if (fold_stmt (&gsi, fwprop_ssa_val))
+		{
+		  changed = true;
+		  stmt = gsi_stmt (gsi);
+		  /* Cleanup the CFG if we simplified a condition to
+		     true or false.  */
+		  if (gcond *cond = dyn_cast <gcond *> (stmt))
+		    if (gimple_cond_true_p (cond)
+			|| gimple_cond_false_p (cond))
+		      cfg_changed = true;
 		}
 
-	      gsi_next (&gsi);
+	      if (changed || substituted_p)
+		{
+		  if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt))
+		    bitmap_set_bit (to_purge, bb->index);
+		  if (!was_noreturn
+		      && is_gimple_call (stmt) && gimple_call_noreturn_p (stmt))
+		    to_fixup.safe_push (stmt);
+		  update_stmt (stmt);
+		  substituted_p = false;
+		}
+
+	      switch (gimple_code (stmt))
+		{
+		case GIMPLE_ASSIGN:
+		  {
+		    tree rhs1 = gimple_assign_rhs1 (stmt);
+		    enum tree_code code = gimple_assign_rhs_code (stmt);
+
+		    if (code == COND_EXPR
+			|| code == VEC_COND_EXPR)
+		      {
+			/* In this case the entire COND_EXPR is in rhs1. */
+			if (forward_propagate_into_cond (&gsi))
+			  {
+			    changed = true;
+			    stmt = gsi_stmt (gsi);
+			  }
+		      }
+		    else if (TREE_CODE_CLASS (code) == tcc_comparison)
+		      {
+			int did_something;
+			did_something = forward_propagate_into_comparison (&gsi);
+			if (maybe_clean_or_replace_eh_stmt (stmt, gsi_stmt (gsi)))
+			  bitmap_set_bit (to_purge, bb->index);
+			if (did_something == 2)
+			  cfg_changed = true;
+			changed = did_something != 0;
+		      }
+		    else if ((code == PLUS_EXPR
+			      || code == BIT_IOR_EXPR
+			      || code == BIT_XOR_EXPR)
+			     && simplify_rotate (&gsi))
+		      changed = true;
+		    else if (code == VEC_PERM_EXPR)
+		      {
+			int did_something = simplify_permutation (&gsi);
+			if (did_something == 2)
+			  cfg_changed = true;
+			changed = did_something != 0;
+		      }
+		    else if (code == BIT_FIELD_REF)
+		      changed = simplify_bitfield_ref (&gsi);
+		    else if (code == CONSTRUCTOR
+			     && TREE_CODE (TREE_TYPE (rhs1)) == VECTOR_TYPE)
+		      changed = simplify_vector_constructor (&gsi);
+		    break;
+		  }
+
+		case GIMPLE_SWITCH:
+		  changed = simplify_gimple_switch (as_a <gswitch *> (stmt));
+		  break;
+
+		case GIMPLE_COND:
+		  {
+		    int did_something = forward_propagate_into_gimple_cond
+							(as_a <gcond *> (stmt));
+		    if (did_something == 2)
+		      cfg_changed = true;
+		    changed = did_something != 0;
+		    break;
+		  }
+
+		case GIMPLE_CALL:
+		  {
+		    tree callee = gimple_call_fndecl (stmt);
+		    if (callee != NULL_TREE
+			&& fndecl_built_in_p (callee, BUILT_IN_NORMAL))
+		      changed = simplify_builtin_call (&gsi, callee);
+		    break;
+		  }
+
+		default:;
+		}
+
+	      if (changed)
+		{
+		  /* If the stmt changed then re-visit it and the statements
+		     inserted before it.  */
+		  for (; !gsi_end_p (gsi); gsi_prev (&gsi))
+		    if (gimple_plf (gsi_stmt (gsi), GF_PLF_1))
+		      break;
+		  if (gsi_end_p (gsi))
+		    gsi = gsi_start_bb (bb);
+		  else
+		    gsi_next (&gsi);
+		}
 	    }
+	  while (changed);
+
+	  /* Stmt no longer needs to be revisited.  */
+	  stmt = gsi_stmt (gsi);
+	  gcc_checking_assert (!gimple_plf (stmt, GF_PLF_1));
+	  gimple_set_plf (stmt, GF_PLF_1, true);
+
+	  /* Fill up the lattice.  */
+	  if (gimple_assign_single_p (stmt))
+	    {
+	      tree lhs = gimple_assign_lhs (stmt);
+	      tree rhs = gimple_assign_rhs1 (stmt);
+	      if (TREE_CODE (lhs) == SSA_NAME)
+		{
+		  tree val = lhs;
+		  if (TREE_CODE (rhs) == SSA_NAME)
+		    val = fwprop_ssa_val (rhs);
+		  else if (is_gimple_min_invariant (rhs))
+		    val = rhs;
+		  /* If we can propagate the lattice-value mark the
+		     stmt for removal.  */
+		  if (val != lhs
+		      && may_propagate_copy (lhs, val))
+		    to_remove.safe_push (stmt);
+		  fwprop_set_lattice_val (lhs, val);
+		}
+	    }
+	  else if (gimple_nop_p (stmt))
+	    to_remove.safe_push (stmt);
 	}
+
+      /* Substitute in destination PHI arguments.  */
+      edge_iterator ei;
+      edge e;
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	for (gphi_iterator gsi = gsi_start_phis (e->dest);
+	     !gsi_end_p (gsi); gsi_next (&gsi))
+	  {
+	    gphi *phi = gsi.phi ();
+	    use_operand_p use_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, e);
+	    tree arg = USE_FROM_PTR (use_p);
+	    if (TREE_CODE (arg) != SSA_NAME
+		|| virtual_operand_p (arg))
+	      continue;
+	    tree val = fwprop_ssa_val (arg);
+	    if (val != arg
+		&& may_propagate_copy (arg, val))
+	      propagate_value (use_p, val);
+	  }
     }
   free (postorder);
   lattice.release ();
+
+  /* Remove stmts in reverse order to make debug stmt creation possible.  */
+  while (!to_remove.is_empty())
+    {
+      gimple *stmt = to_remove.pop ();
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Removing dead stmt ");
+	  print_gimple_stmt (dump_file, stmt, 0);
+	  fprintf (dump_file, "\n");
+	}
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+      if (gimple_code (stmt) == GIMPLE_PHI)
+	remove_phi_node (&gsi, true);
+      else
+	{
+	  unlink_stmt_vdef (stmt);
+	  gsi_remove (&gsi, true);
+	  release_defs (stmt);
+	}
+    }
 
   /* Fixup stmts that became noreturn calls.  This may require splitting
      blocks and thus isn't possible during the walk.  Do this
