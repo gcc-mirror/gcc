@@ -1,5 +1,15 @@
 2019-08-16  Richard Biener  <rguenther@suse.de>
 
+	* tree-scalar-evolution.c (follow_ssa_edge_expr): Declare.
+	(follow_ssa_edge_binary): Call follow_ssa_edge_expr instead of
+	follow_ssa_edge.
+	(follow_ssa_edge_in_condition_phi_branch): Likewise.
+	(analyze_evolution_in_loop): Likewise.
+	(follow_ssa_edge, follow_ssa_edge_in_rhs): Inline into ...
+	(follow_ssa_edge_expr): ... here.  Refactor code.
+
+2019-08-16  Richard Biener  <rguenther@suse.de>
+
 	PR target/91469
 	* config/i386/i386-features.c
 	(general_scalar_chain::replace_with_subreg): Stop at memory operands.
