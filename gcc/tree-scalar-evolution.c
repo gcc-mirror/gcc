@@ -876,8 +876,8 @@ enum t_bool {
 };
 
 
-static t_bool follow_ssa_edge (class loop *loop, gimple *, gphi *,
-			       tree *, int);
+static t_bool follow_ssa_edge_expr (class loop *loop, gimple *, tree, gphi *,
+				    tree *, int);
 
 /* Follow the ssa edge into the binary expression RHS0 CODE RHS1.
    Return true if the strongly connected component has been found.  */
@@ -912,8 +912,8 @@ follow_ssa_edge_binary (class loop *loop, gimple *at_stmt,
 		  (loop->num,
 		   chrec_convert (type, evol, at_stmt),
 		   code, rhs1, at_stmt);
-	      res = follow_ssa_edge
-		(loop, SSA_NAME_DEF_STMT (rhs0), halting_phi, &evol, limit);
+	      res = follow_ssa_edge_expr
+		(loop, at_stmt, rhs0, halting_phi, &evol, limit);
 	      if (res == t_true)
 		*evolution_of_loop = evol;
 	      else if (res == t_false)
@@ -922,8 +922,8 @@ follow_ssa_edge_binary (class loop *loop, gimple *at_stmt,
 		      (loop->num,
 		       chrec_convert (type, *evolution_of_loop, at_stmt),
 		       code, rhs0, at_stmt);
-		  res = follow_ssa_edge
-		    (loop, SSA_NAME_DEF_STMT (rhs1), halting_phi,
+		  res = follow_ssa_edge_expr
+		    (loop, at_stmt, rhs1, halting_phi,
 		     evolution_of_loop, limit);
 		  if (res == t_true)
 		    ;
@@ -943,8 +943,8 @@ follow_ssa_edge_binary (class loop *loop, gimple *at_stmt,
 		  (loop->num, chrec_convert (type, *evolution_of_loop,
 					     at_stmt),
 		   code, rhs1, at_stmt);
-	      res = follow_ssa_edge
-		(loop, SSA_NAME_DEF_STMT (rhs0), halting_phi,
+	      res = follow_ssa_edge_expr
+		(loop, at_stmt, rhs0, halting_phi,
 		 evolution_of_loop, limit);
 	      if (res == t_true)
 		;	
@@ -961,8 +961,8 @@ follow_ssa_edge_binary (class loop *loop, gimple *at_stmt,
 	      (loop->num, chrec_convert (type, *evolution_of_loop,
 					 at_stmt),
 	       code, rhs0, at_stmt);
-	  res = follow_ssa_edge
-	    (loop, SSA_NAME_DEF_STMT (rhs1), halting_phi,
+	  res = follow_ssa_edge_expr
+	    (loop, at_stmt, rhs1, halting_phi,
 	     evolution_of_loop, limit);
 	  if (res == t_true)
 	    ;
@@ -993,8 +993,8 @@ follow_ssa_edge_binary (class loop *loop, gimple *at_stmt,
 	  *evolution_of_loop = add_to_evolution
 	      (loop->num, chrec_convert (type, *evolution_of_loop, at_stmt),
 	       MINUS_EXPR, rhs1, at_stmt);
-	  res = follow_ssa_edge (loop, SSA_NAME_DEF_STMT (rhs0), halting_phi,
-				 evolution_of_loop, limit);
+	  res = follow_ssa_edge_expr (loop, at_stmt, rhs0, halting_phi,
+				      evolution_of_loop, limit);
 	  if (res == t_true)
 	    ;
 	  else if (res == t_dont_know)
@@ -1009,140 +1009,6 @@ follow_ssa_edge_binary (class loop *loop, gimple *at_stmt,
 
     default:
       res = t_false;
-    }
-
-  return res;
-}
-
-/* Follow the ssa edge into the expression EXPR.
-   Return true if the strongly connected component has been found.  */
-
-static t_bool
-follow_ssa_edge_expr (class loop *loop, gimple *at_stmt, tree expr,
-		      gphi *halting_phi, tree *evolution_of_loop,
-		      int limit)
-{
-  enum tree_code code = TREE_CODE (expr);
-  tree type = TREE_TYPE (expr), rhs0, rhs1;
-  t_bool res;
-
-  /* The EXPR is one of the following cases:
-     - an SSA_NAME,
-     - an INTEGER_CST,
-     - a PLUS_EXPR,
-     - a POINTER_PLUS_EXPR,
-     - a MINUS_EXPR,
-     - an ASSERT_EXPR,
-     - other cases are not yet handled.  */
-
-  switch (code)
-    {
-    CASE_CONVERT:
-      /* This assignment is under the form "a_1 = (cast) rhs.  */
-      res = follow_ssa_edge_expr (loop, at_stmt, TREE_OPERAND (expr, 0),
-				  halting_phi, evolution_of_loop, limit);
-      *evolution_of_loop = chrec_convert (type, *evolution_of_loop, at_stmt);
-      break;
-
-    case INTEGER_CST:
-      /* This assignment is under the form "a_1 = 7".  */
-      res = t_false;
-      break;
-
-    case SSA_NAME:
-      /* This assignment is under the form: "a_1 = b_2".  */
-      res = follow_ssa_edge
-	(loop, SSA_NAME_DEF_STMT (expr), halting_phi, evolution_of_loop, limit);
-      break;
-
-    case POINTER_PLUS_EXPR:
-    case PLUS_EXPR:
-    case MINUS_EXPR:
-      /* This case is under the form "rhs0 +- rhs1".  */
-      rhs0 = TREE_OPERAND (expr, 0);
-      rhs1 = TREE_OPERAND (expr, 1);
-      type = TREE_TYPE (rhs0);
-      STRIP_USELESS_TYPE_CONVERSION (rhs0);
-      STRIP_USELESS_TYPE_CONVERSION (rhs1);
-      res = follow_ssa_edge_binary (loop, at_stmt, type, rhs0, code, rhs1,
-				    halting_phi, evolution_of_loop, limit);
-      break;
-
-    case ADDR_EXPR:
-      /* Handle &MEM[ptr + CST] which is equivalent to POINTER_PLUS_EXPR.  */
-      if (TREE_CODE (TREE_OPERAND (expr, 0)) == MEM_REF)
-	{
-	  expr = TREE_OPERAND (expr, 0);
-	  rhs0 = TREE_OPERAND (expr, 0);
-	  rhs1 = TREE_OPERAND (expr, 1);
-	  type = TREE_TYPE (rhs0);
-	  STRIP_USELESS_TYPE_CONVERSION (rhs0);
-	  STRIP_USELESS_TYPE_CONVERSION (rhs1);
-	  res = follow_ssa_edge_binary (loop, at_stmt, type,
-					rhs0, POINTER_PLUS_EXPR, rhs1,
-					halting_phi, evolution_of_loop, limit);
-	}
-      else
-	res = t_false;
-      break;
-
-    case ASSERT_EXPR:
-      /* This assignment is of the form: "a_1 = ASSERT_EXPR <a_2, ...>"
-	 It must be handled as a copy assignment of the form a_1 = a_2.  */
-      rhs0 = ASSERT_EXPR_VAR (expr);
-      if (TREE_CODE (rhs0) == SSA_NAME)
-	res = follow_ssa_edge (loop, SSA_NAME_DEF_STMT (rhs0),
-			       halting_phi, evolution_of_loop, limit);
-      else
-	res = t_false;
-      break;
-
-    default:
-      res = t_false;
-      break;
-    }
-
-  return res;
-}
-
-/* Follow the ssa edge into the right hand side of an assignment STMT.
-   Return true if the strongly connected component has been found.  */
-
-static t_bool
-follow_ssa_edge_in_rhs (class loop *loop, gimple *stmt,
-			gphi *halting_phi, tree *evolution_of_loop,
-			int limit)
-{
-  enum tree_code code = gimple_assign_rhs_code (stmt);
-  tree type = gimple_expr_type (stmt), rhs1, rhs2;
-  t_bool res;
-
-  switch (code)
-    {
-    CASE_CONVERT:
-      /* This assignment is under the form "a_1 = (cast) rhs.  */
-      res = follow_ssa_edge_expr (loop, stmt, gimple_assign_rhs1 (stmt),
-				  halting_phi, evolution_of_loop, limit);
-      *evolution_of_loop = chrec_convert (type, *evolution_of_loop, stmt);
-      break;
-
-    case POINTER_PLUS_EXPR:
-    case PLUS_EXPR:
-    case MINUS_EXPR:
-      rhs1 = gimple_assign_rhs1 (stmt);
-      rhs2 = gimple_assign_rhs2 (stmt);
-      type = TREE_TYPE (rhs1);
-      res = follow_ssa_edge_binary (loop, stmt, type, rhs1, code, rhs2,
-				    halting_phi, evolution_of_loop, limit);
-      break;
-
-    default:
-      if (get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS)
-	res = follow_ssa_edge_expr (loop, stmt, gimple_assign_rhs1 (stmt),
-				    halting_phi, evolution_of_loop, limit);
-      else
-	res = t_false;
-      break;
     }
 
   return res;
@@ -1187,8 +1053,8 @@ follow_ssa_edge_in_condition_phi_branch (int i,
   if (TREE_CODE (branch) == SSA_NAME)
     {
       *evolution_of_branch = init_cond;
-      return follow_ssa_edge (loop, SSA_NAME_DEF_STMT (branch), halting_phi,
-			      evolution_of_branch, limit);
+      return follow_ssa_edge_expr (loop, condition_phi, branch, halting_phi,
+				   evolution_of_branch, limit);
     }
 
   /* This case occurs when one of the condition branches sets
@@ -1295,65 +1161,158 @@ follow_ssa_edge_inner_loop_phi (class loop *outer_loop,
 			       evolution_of_loop, limit);
 }
 
-/* Follow an SSA edge from a loop-phi-node to itself, constructing a
-   path that is analyzed on the return walk.  */
+/* Follow the ssa edge into the expression EXPR.
+   Return true if the strongly connected component has been found.  */
 
 static t_bool
-follow_ssa_edge (class loop *loop, gimple *def, gphi *halting_phi,
-		 tree *evolution_of_loop, int limit)
+follow_ssa_edge_expr (class loop *loop, gimple *at_stmt, tree expr,
+		      gphi *halting_phi, tree *evolution_of_loop,
+		      int limit)
 {
-  class loop *def_loop;
+  enum tree_code code;
+  tree type, rhs0, rhs1 = NULL_TREE;
 
-  if (gimple_nop_p (def))
-    return t_false;
+  /* The EXPR is one of the following cases:
+     - an SSA_NAME,
+     - an INTEGER_CST,
+     - a PLUS_EXPR,
+     - a POINTER_PLUS_EXPR,
+     - a MINUS_EXPR,
+     - an ASSERT_EXPR,
+     - other cases are not yet handled.  */
 
-  /* Give up if the path is longer than the MAX that we allow.  */
-  if (limit > PARAM_VALUE (PARAM_SCEV_MAX_EXPR_COMPLEXITY))
-    return t_dont_know;
-
-  def_loop = loop_containing_stmt (def);
-
-  switch (gimple_code (def))
+  /* For SSA_NAME look at the definition statement, handling
+     PHI nodes and otherwise expand appropriately for the expression
+     handling below.  */
+  if (TREE_CODE (expr) == SSA_NAME)
     {
-    case GIMPLE_PHI:
-      if (!loop_phi_node_p (def))
-	/* DEF is a condition-phi-node.  Follow the branches, and
-	   record their evolutions.  Finally, merge the collected
-	   information and set the approximation to the main
-	   variable.  */
-	return follow_ssa_edge_in_condition_phi
-	  (loop, as_a <gphi *> (def), halting_phi, evolution_of_loop,
-	   limit);
+      gimple *def = SSA_NAME_DEF_STMT (expr);
 
-      /* When the analyzed phi is the halting_phi, the
-	 depth-first search is over: we have found a path from
-	 the halting_phi to itself in the loop.  */
-      if (def == halting_phi)
-	return t_true;
-
-      /* Otherwise, the evolution of the HALTING_PHI depends
-	 on the evolution of another loop-phi-node, i.e. the
-	 evolution function is a higher degree polynomial.  */
-      if (def_loop == loop)
+      if (gimple_nop_p (def))
 	return t_false;
 
-      /* Inner loop.  */
-      if (flow_loop_nested_p (loop, def_loop))
-	return follow_ssa_edge_inner_loop_phi
-	  (loop, as_a <gphi *> (def), halting_phi, evolution_of_loop,
-	   limit + 1);
+      /* Give up if the path is longer than the MAX that we allow.  */
+      if (limit > PARAM_VALUE (PARAM_SCEV_MAX_EXPR_COMPLEXITY))
+	return t_dont_know;
 
-      /* Outer loop.  */
-      return t_false;
+      if (gphi *phi = dyn_cast <gphi *>(def))
+	{
+	  if (!loop_phi_node_p (phi))
+	    /* DEF is a condition-phi-node.  Follow the branches, and
+	       record their evolutions.  Finally, merge the collected
+	       information and set the approximation to the main
+	       variable.  */
+	    return follow_ssa_edge_in_condition_phi
+		(loop, phi, halting_phi, evolution_of_loop, limit);
 
-    case GIMPLE_ASSIGN:
-      return follow_ssa_edge_in_rhs (loop, def, halting_phi,
-				     evolution_of_loop, limit);
+	  /* When the analyzed phi is the halting_phi, the
+	     depth-first search is over: we have found a path from
+	     the halting_phi to itself in the loop.  */
+	  if (phi == halting_phi)
+	    return t_true;
 
-    default:
+	  /* Otherwise, the evolution of the HALTING_PHI depends
+	     on the evolution of another loop-phi-node, i.e. the
+	     evolution function is a higher degree polynomial.  */
+	  class loop *def_loop = loop_containing_stmt (def);
+	  if (def_loop == loop)
+	    return t_false;
+
+	  /* Inner loop.  */
+	  if (flow_loop_nested_p (loop, def_loop))
+	    return follow_ssa_edge_inner_loop_phi
+		(loop, phi, halting_phi, evolution_of_loop,
+		 limit + 1);
+
+	  /* Outer loop.  */
+	  return t_false;
+	}
+
       /* At this level of abstraction, the program is just a set
 	 of GIMPLE_ASSIGNs and PHI_NODEs.  In principle there is no
-	 other node to be handled.  */
+	 other def to be handled.  */
+      if (!is_gimple_assign (def))
+	return t_false;
+
+      code = gimple_assign_rhs_code (def);
+      switch (get_gimple_rhs_class (code))
+	{
+	case GIMPLE_BINARY_RHS:
+	  rhs0 = gimple_assign_rhs1 (def);
+	  rhs1 = gimple_assign_rhs2 (def);
+	  break;
+	case GIMPLE_UNARY_RHS:
+	case GIMPLE_SINGLE_RHS:
+	  rhs0 = gimple_assign_rhs1 (def);
+	  break;
+	default:
+	  return t_false;
+	}
+      type = TREE_TYPE (gimple_assign_lhs (def));
+      at_stmt = def;
+    }
+  else
+    {
+      code = TREE_CODE (expr);
+      type = TREE_TYPE (expr);
+      switch (code)
+	{
+	CASE_CONVERT:
+	  rhs0 = TREE_OPERAND (expr, 0);
+	  break;
+	case POINTER_PLUS_EXPR:
+	case PLUS_EXPR:
+	case MINUS_EXPR:
+	  rhs0 = TREE_OPERAND (expr, 0);
+	  rhs1 = TREE_OPERAND (expr, 1);
+	  break;
+	default:
+	  rhs0 = expr;
+	}
+    }
+
+  switch (code)
+    {
+    CASE_CONVERT:
+      {
+	/* This assignment is under the form "a_1 = (cast) rhs.  */
+	t_bool res = follow_ssa_edge_expr (loop, at_stmt, rhs0, halting_phi,
+					   evolution_of_loop, limit);
+	*evolution_of_loop = chrec_convert (type, *evolution_of_loop, at_stmt);
+	return res;
+      }
+
+    case INTEGER_CST:
+      /* This assignment is under the form "a_1 = 7".  */
+      return t_false;
+
+    case ADDR_EXPR:
+      {
+	/* Handle &MEM[ptr + CST] which is equivalent to POINTER_PLUS_EXPR.  */
+	if (TREE_CODE (TREE_OPERAND (rhs0, 0)) != MEM_REF)
+	  return t_false;
+	tree mem = TREE_OPERAND (rhs0, 0);
+	rhs0 = TREE_OPERAND (mem, 0);
+	rhs1 = TREE_OPERAND (mem, 1);
+	code = POINTER_PLUS_EXPR;
+      }
+      /* Fallthru.  */
+    case POINTER_PLUS_EXPR:
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      /* This case is under the form "rhs0 +- rhs1".  */
+      STRIP_USELESS_TYPE_CONVERSION (rhs0);
+      STRIP_USELESS_TYPE_CONVERSION (rhs1);
+      return follow_ssa_edge_binary (loop, at_stmt, type, rhs0, code, rhs1,
+				     halting_phi, evolution_of_loop, limit);
+
+    case ASSERT_EXPR:
+      /* This assignment is of the form: "a_1 = ASSERT_EXPR <a_2, ...>"
+	 It must be handled as a copy assignment of the form a_1 = a_2.  */
+      return follow_ssa_edge_expr (loop, at_stmt, ASSERT_EXPR_VAR (rhs0),
+				   halting_phi, evolution_of_loop, limit);
+
+    default:
       return t_false;
     }
 }
@@ -1447,7 +1406,6 @@ analyze_evolution_in_loop (gphi *loop_phi_node,
   for (i = 0; i < n; i++)
     {
       tree arg = PHI_ARG_DEF (loop_phi_node, i);
-      gimple *ssa_chain;
       tree ev_fn;
       t_bool res;
 
@@ -1460,11 +1418,10 @@ analyze_evolution_in_loop (gphi *loop_phi_node,
 	{
 	  bool val = false;
 
-	  ssa_chain = SSA_NAME_DEF_STMT (arg);
-
 	  /* Pass in the initial condition to the follow edge function.  */
 	  ev_fn = init_cond;
-	  res = follow_ssa_edge (loop, ssa_chain, loop_phi_node, &ev_fn, 0);
+	  res = follow_ssa_edge_expr (loop, loop_phi_node, arg,
+				      loop_phi_node, &ev_fn, 0);
 
 	  /* If ev_fn has no evolution in the inner loop, and the
 	     init_cond is not equal to ev_fn, then we have an
