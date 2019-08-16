@@ -1,3 +1,7 @@
+2019-08-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* asan/asan_interceptors.h: Reapply r272406.
+
 2019-08-15  Martin Liska  <mliska@suse.cz>
 
 	* LOCAL_PATCHES: Add r274540
