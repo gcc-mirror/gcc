@@ -1,3 +1,8 @@
+2019-08-16  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc.misc-tests/options.exp: Match /ld and -ld besides
+	/collect2.
+
 2019-08-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/91443
