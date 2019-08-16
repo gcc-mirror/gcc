@@ -1,3 +1,24 @@
+2019-08-16  Jeff Law <law@redhat.com>
+	    Mark Eggleston <mark.eggleston@codethink.com>
+
+	* gfortran.h: Add gfc_check_conflict declaration.
+	* symbol.c (check_conflict): Rename cfg_check_conflict and remove
+	static.
+	* symbol.c (cfg_check_conflict): Remove automatic in equivalence
+	conflict check.
+	* symbol.c (save_symbol): Add check for in equivalence to stop the
+	the save attribute being added.
+	* trans-common.c (build_equiv_decl): Add is_auto parameter and
+	add !is_auto to condition where TREE_STATIC (decl) is set.
+	* trans-common.c (build_equiv_decl): Add local variable is_auto,
+	set it true if an atomatic attribute is encountered in the variable
+	list.  Call build_equiv_decl with is_auto as an additional parameter.
+	flag_dec_format_defaults is enabled.
+	* trans-common.c (accumulate_equivalence_attributes) : New subroutine.
+	* trans-common.c (find_equivalence) : New local variable dummy_symbol,
+	accumulated equivalence attributes from each symbol then check for
+	conflicts.
+  
 2019-08-16  Richard Biener  <rguenther@suse.de>
 
 	* trans-intrinsic.c (gfc_conv_intrinsic_findloc): Initialize
