@@ -10294,7 +10294,13 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
 		  {
 		    Type* itype = Type::lookup_integer_type("uint64");
 		    arg = Expression::make_cast(itype, arg, location);
-                    code = Runtime::PRINTUINT;
+                    if (gogo->compiling_runtime()
+                        && type->named_type() != NULL
+                        && gogo->unpack_hidden_name(type->named_type()->name())
+                           == "hex")
+                      code = Runtime::PRINTHEX;
+                    else
+                      code = Runtime::PRINTUINT;
 		  }
 		else if (type->integer_type() != NULL)
 		  {
