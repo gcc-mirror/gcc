@@ -1,3 +1,10 @@
+2019-08-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (simplify_builtin_call): Do not remove
+	stmt at gsi_p, instead replace it with a NOP removed later.
+	(pass_forwprop::execute): Fully propagate lattice, DCE stmts
+	that became dead because of that.
+
 2019-08-16  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-ssa-evrp-analyze.c (record_ranges_from_phis): Skip PHIs

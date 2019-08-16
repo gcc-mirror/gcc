@@ -1,3 +1,8 @@
+2019-08-16  Richard Biener  <rguenther@suse.de>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_findloc): Initialize
+	forward_branch to avoid bogus uninitialized warning.
+
 2019-08-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/91443
