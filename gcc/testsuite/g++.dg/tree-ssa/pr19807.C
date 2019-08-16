@@ -11,8 +11,7 @@ void foo(void)
 	z = 1 + &a[1];
 }
 
-/* { dg-final { scan-tree-dump-times "&MEM\\\[\\\(void .\\\)&a \\\+ 8B\\\]" 3 "optimized" { target { ! store_merge } } } }
-   { dg-final { scan-tree-dump-times "&MEM <int> \\\[\\\(void .\\\)&a \\\+ 8B\\\]" 3 "optimized" { target { store_merge } } } } */
+/* { dg-final { scan-tree-dump-times "&MEM <int> \\\[\\\(void .\\\)&a \\\+ 8B\\\]" 3 "optimized" } } */
 
 
 void bar(int i)
