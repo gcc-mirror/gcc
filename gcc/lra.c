@@ -2587,7 +2587,11 @@ lra (FILE *f)
 	  lra_create_live_ranges (lra_reg_spill_p, true);
 	  live_p = true;
 	  if (! lra_need_for_spills_p ())
-	    break;
+	    {
+	      if (lra_need_for_scratch_reg_p ())
+		continue;
+	      break;
+	    }
 	}
       lra_spill ();
       /* Assignment of stack slots changes elimination offsets for
