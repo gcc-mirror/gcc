@@ -58,6 +58,9 @@
 ;; Mapping from integer vector mode to mnemonic suffix
 (define_mode_attr mmxvecsize [(V8QI "b") (V4HI "w") (V2SI "d") (V1DI "q")])
 
+(define_mode_attr mmxdoublemode
+  [(V8QI "V8HI") (V4HI "V4SI")])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Move patterns
@@ -1948,24 +1951,24 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_expand "mmx_uavgv8qi3"
-  [(set (match_operand:V8QI 0 "register_operand")
-	(truncate:V8QI
-	  (lshiftrt:V8HI
-	    (plus:V8HI
-	      (plus:V8HI
-		(zero_extend:V8HI
-		  (match_operand:V8QI 1 "register_mmxmem_operand"))
-		(zero_extend:V8HI
-		  (match_operand:V8QI 2 "register_mmxmem_operand")))
-	      (const_vector:V8HI [(const_int 1) (const_int 1)
-				  (const_int 1) (const_int 1)
-				  (const_int 1) (const_int 1)
-				  (const_int 1) (const_int 1)]))
+(define_expand "mmx_uavg<mode>3"
+  [(set (match_operand:MMXMODE12 0 "register_operand")
+	(truncate:MMXMODE12
+	  (lshiftrt:<mmxdoublemode>
+	    (plus:<mmxdoublemode>
+	      (plus:<mmxdoublemode>
+		(zero_extend:<mmxdoublemode>
+		  (match_operand:MMXMODE12 1 "register_mmxmem_operand"))
+		(zero_extend:<mmxdoublemode>
+		  (match_operand:MMXMODE12 2 "register_mmxmem_operand")))
+	      (match_dup 3))
 	    (const_int 1))))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW)"
-  "ix86_fixup_binary_operands_no_copy (PLUS, V8QImode, operands);")
+{
+  operands[3] = CONST1_RTX(<mmxdoublemode>mode);
+  ix86_fixup_binary_operands_no_copy (PLUS, <MODE>mode, operands);
+})
 
 (define_insn "*mmx_uavgv8qi3"
   [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yv")
@@ -1984,7 +1987,7 @@
 	    (const_int 1))))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW)
-   && ix86_binary_operator_ok (PLUS, V8QImode, operands)"
+   && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
 {
   switch (which_alternative)
     {
@@ -2013,23 +2016,6 @@
        (const_string "*")))
    (set_attr "mode" "DI,TI,TI")])
 
-(define_expand "mmx_uavgv4hi3"
-  [(set (match_operand:V4HI 0 "register_operand")
-	(truncate:V4HI
-	  (lshiftrt:V4SI
-	    (plus:V4SI
-	      (plus:V4SI
-		(zero_extend:V4SI
-		  (match_operand:V4HI 1 "register_mmxmem_operand"))
-		(zero_extend:V4SI
-		  (match_operand:V4HI 2 "register_mmxmem_operand")))
-	      (const_vector:V4SI [(const_int 1) (const_int 1)
-				  (const_int 1) (const_int 1)]))
-	    (const_int 1))))]
-  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
-   && (TARGET_SSE || TARGET_3DNOW_A)"
-  "ix86_fixup_binary_operands_no_copy (PLUS, V4HImode, operands);")
-
 (define_insn "*mmx_uavgv4hi3"
   [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
 	(truncate:V4HI
@@ -2045,7 +2031,7 @@
 	    (const_int 1))))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)
-   && ix86_binary_operator_ok (PLUS, V4HImode, operands)"
+   && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "@
    pavgw\t{%2, %0|%0, %2}
    pavgw\t{%2, %0|%0, %2}
@@ -2054,6 +2040,24 @@
    (set_attr "mmx_isa" "native,*,*")
    (set_attr "type" "mmxshft,sseiadd,sseiadd")
    (set_attr "mode" "DI,TI,TI")])
+
+(define_expand "uavg<mode>3_ceil"
+  [(set (match_operand:MMXMODE12 0 "register_operand")
+	(truncate:MMXMODE12
+	  (lshiftrt:<mmxdoublemode>
+	    (plus:<mmxdoublemode>
+	      (plus:<mmxdoublemode>
+		(zero_extend:<mmxdoublemode>
+		  (match_operand:MMXMODE12 1 "register_operand"))
+		(zero_extend:<mmxdoublemode>
+		  (match_operand:MMXMODE12 2 "register_operand")))
+	      (match_dup 3))
+	    (const_int 1))))]
+  "TARGET_MMX_WITH_SSE"
+{
+  operands[3] = CONST1_RTX(<mmxdoublemode>mode);
+  ix86_fixup_binary_operands_no_copy (PLUS, <MODE>mode, operands);
+})
 
 (define_insn "mmx_psadbw"
   [(set (match_operand:V1DI 0 "register_operand" "=y,x,Yv")

@@ -11900,7 +11900,7 @@
 	    (const_int 1))))]
   "TARGET_SSE2"
 {
-  operands[3] = CONST1_RTX(<MODE>mode);
+  operands[3] = CONST1_RTX(<ssedoublemode>mode);
   ix86_fixup_binary_operands_no_copy (PLUS, <MODE>mode, operands);
 })
 
@@ -15641,7 +15641,7 @@
 	    (const_int 1))))]
   "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
 {
-  operands[<mask_expand_op3>] = CONST1_RTX(<MODE>mode);
+  operands[<mask_expand_op3>] = CONST1_RTX(<ssedoublemode>mode);
   ix86_fixup_binary_operands_no_copy (PLUS, <MODE>mode, operands);
 })
 
@@ -15655,7 +15655,7 @@
 		  (match_operand:VI12_AVX2 1 "vector_operand" "%0,v"))
 		(zero_extend:<ssedoublemode>
 		  (match_operand:VI12_AVX2 2 "vector_operand" "xBm,vm")))
-	      (match_operand:VI12_AVX2 <mask_expand_op3> "const1_operand"))
+	      (match_operand:<ssedoublemode> <mask_expand_op3> "const1_operand"))
 	    (const_int 1))))]
   "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>
    && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
