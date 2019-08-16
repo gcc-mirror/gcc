@@ -1,5 +1,12 @@
 2019-08-16  Alexandre Oliva <oliva@adacore.com>
 
+	* gcc.target/arc/interrupt-6.c: Use __builtin_alloca, require
+	effective target support for alloca, drop include of alloca.h.
+	* gcc.target/i386/pr80969-3.c: Likewise.
+	* gcc.target/sparc/setjmp-1.c: Likewise.
+	* gcc.target/x86_64/abi/ms-sysv/gen.cc: Likewise.
+	* gcc.target/x86_64/abi/ms-sysv/ms-sysv.c: Likewise.
+
 	* gcc.misc-tests/options.exp: Match /ld and -ld besides
 	/collect2.
 

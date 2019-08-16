@@ -49,6 +49,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* { dg-do run } */
 /* { dg-additional-sources "do-test.S" } */
 /* { dg-additional-options "-Wall" } */
+/* { dg-require-effective-target alloca } */
 
 #include <stdio.h>
 #include <string.h>
@@ -56,7 +57,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <signal.h>
 #include <unistd.h>
 #include <stdint.h>
-#include <alloca.h>
 #include <stdarg.h>
 #include <assert.h>
 #include <errno.h>
