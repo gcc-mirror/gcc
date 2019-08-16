@@ -1,3 +1,15 @@
+2019-08-16  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (mmxdoublemode): New mode attribute.
+	(mmx_uavg<mode>3): Macroize expaner from mmx_uavgv8qi3 and
+	mmx_uavgv4hi3 using MMXMODE12 mode iterator.
+	(uavg<mode>3_ceil): New expander.
+	* config/i386/sse.md (uavg<mode>3_ceil): Use ssedoublemode
+	mode iterator when creating CONST1_RTX.
+	(<sse2_avx2>_uavg<mode>3<mask_name>): Ditto.
+	(*<sse2_avx2>_uavg<mode>3<mask_name>): Use ssedoublemode
+	mode iterator for const1_operand predicate.
+
 2019-08-16  Richard Biener  <rguenther@suse.de>
 
 	* tree-scalar-evolution.c (follow_ssa_edge_expr): Declare.
