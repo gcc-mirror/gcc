@@ -1,3 +1,9 @@
+2019-08-16  Richard Biener  <rguenther@suse.de>
+
+	PR target/91469
+	* config/i386/i386-features.c
+	(general_scalar_chain::replace_with_subreg): Stop at memory operands.
+
 2019-08-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR other/91255
