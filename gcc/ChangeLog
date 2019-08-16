@@ -1,3 +1,9 @@
+2019-08-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR other/91255
+	* gensupport.c (has_subst_attribute): Error out on set_attr_alternative
+	only if subst_name matches curr_attr string.
+
 2019-08-16  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (simplify_builtin_call): Do not remove
