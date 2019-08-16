@@ -613,6 +613,10 @@ general_scalar_chain::replace_with_subreg (rtx x, rtx reg, rtx new_reg)
   if (x == reg)
     return gen_rtx_SUBREG (vmode, new_reg, 0);
 
+  /* But not in memory addresses.  */
+  if (MEM_P (x))
+    return x;
+
   const char *fmt = GET_RTX_FORMAT (GET_CODE (x));
   int i, j;
   for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
