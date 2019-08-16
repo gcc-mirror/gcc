@@ -58,7 +58,7 @@ public:
   bool constant_p () const;
   bool undefined_p () const;
   bool varying_p () const;
-  void set_varying ();
+  void set_varying (tree type);
   void set_undefined ();
 
   void union_ (const value_range_base *);
@@ -75,7 +75,9 @@ public:
   bool nonzero_p () const;
   bool singleton_p (tree *result = NULL) const;
   void dump (FILE *) const;
+  void dump () const;
 
+  static bool supports_type_p (tree);
   value_range_base normalize_symbolics () const;
 
 protected:
@@ -135,7 +137,7 @@ class GTY((user)) value_range : public value_range_base
 
   /* Types of value ranges.  */
   void set_undefined ();
-  void set_varying ();
+  void set_varying (tree);
 
   /* Equivalence bitmap methods.  */
   bitmap equiv () const;
@@ -145,6 +147,7 @@ class GTY((user)) value_range : public value_range_base
   /* Misc methods.  */
   void deep_copy (const value_range *);
   void dump (FILE *) const;
+  void dump () const;
 
  private:
   /* Deep-copies bitmap argument.  */
@@ -253,6 +256,17 @@ struct assert_info
   /* Expression to compare.  */
   tree expr;
 };
+
+// Return true if TYPE is a valid type for value_range to operate on.
+// Otherwise return FALSE.
+
+inline bool
+value_range_base::supports_type_p (tree type)
+{
+  if (type && (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type)))
+    return type;
+  return NULL;
+}
 
 extern void register_edge_assert_for (tree, edge, enum tree_code,
 				      tree, tree, vec<assert_info> &);
