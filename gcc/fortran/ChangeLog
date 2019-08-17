@@ -1,3 +1,9 @@
+2019-08-17  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82992
+	* module.c (gfc_match_use):  When renaming a module entity, search
+	current namespace for conflicting symbol.
+
 2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/87991
