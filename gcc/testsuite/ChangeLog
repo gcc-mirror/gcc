@@ -1,3 +1,8 @@
+2019-08-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85827
+	* g++.dg/cpp1z/constexpr-if29.C: New test.
+
 2019-08-16  Jeff Law  <law@redhat.com>
 
 	* gcc.target/sh/pr54236-6.c: Use -fno-tree-forwprop.
