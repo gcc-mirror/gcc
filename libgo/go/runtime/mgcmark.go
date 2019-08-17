@@ -657,6 +657,11 @@ func scanstack(gp *g, gcw *gcWork) {
 		scanstackblock(uintptr(unsafe.Pointer(&gp.context)), unsafe.Sizeof(gp.context), gcw)
 	}
 
+	// Note: in the gc runtime scanstack also scans defer records.
+	// This is necessary as it uses stack objects (a.k.a. stack tracing).
+	// We don't (yet) do stack objects, and regular stack/heap scan
+	// will take care of defer records just fine.
+
 	gp.gcscanvalid = true
 }
 
