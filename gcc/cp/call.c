@@ -5185,46 +5185,56 @@ build_conditional_expr_1 (const op_location_t &loc,
   arg3_type = unlowered_expr_type (arg3);
   if (VOID_TYPE_P (arg2_type) || VOID_TYPE_P (arg3_type))
     {
-      /* 'void' won't help in resolving an overloaded expression on the
-	 other side, so require it to resolve by itself.  */
-      if (arg2_type == unknown_type_node)
-	{
-	  arg2 = resolve_nondeduced_context_or_error (arg2, complain);
-	  arg2_type = TREE_TYPE (arg2);
-	}
-      if (arg3_type == unknown_type_node)
-	{
-	  arg3 = resolve_nondeduced_context_or_error (arg3, complain);
-	  arg3_type = TREE_TYPE (arg3);
-	}
+      /* Do the conversions.  We don't these for `void' type arguments
+	 since it can't have any effect and since decay_conversion
+	 does not handle that case gracefully.  */
+      if (!VOID_TYPE_P (arg2_type))
+	arg2 = decay_conversion (arg2, complain);
+      if (!VOID_TYPE_P (arg3_type))
+	arg3 = decay_conversion (arg3, complain);
+      arg2_type = TREE_TYPE (arg2);
+      arg3_type = TREE_TYPE (arg3);
 
       /* [expr.cond]
 
 	 One of the following shall hold:
 
 	 --The second or the third operand (but not both) is a
-	   throw-expression (_except.throw_); the result is of the type
-	   and value category of the other.
+	   throw-expression (_except.throw_); the result is of the
+	   type of the other and is an rvalue.
 
 	 --Both the second and the third operands have type void; the
-	   result is of type void and is a prvalue.  */
+	   result is of type void and is an rvalue.
+
+	 We must avoid calling force_rvalue for expressions of type
+	 "void" because it will complain that their value is being
+	 used.  */
       if (TREE_CODE (arg2) == THROW_EXPR
 	  && TREE_CODE (arg3) != THROW_EXPR)
 	{
+	  if (!VOID_TYPE_P (arg3_type))
+	    {
+	      arg3 = force_rvalue (arg3, complain);
+	      if (arg3 == error_mark_node)
+		return error_mark_node;
+	    }
+	  arg3_type = TREE_TYPE (arg3);
 	  result_type = arg3_type;
-	  is_glvalue = glvalue_p (arg3);
 	}
       else if (TREE_CODE (arg2) != THROW_EXPR
 	       && TREE_CODE (arg3) == THROW_EXPR)
 	{
+	  if (!VOID_TYPE_P (arg2_type))
+	    {
+	      arg2 = force_rvalue (arg2, complain);
+	      if (arg2 == error_mark_node)
+		return error_mark_node;
+	    }
+	  arg2_type = TREE_TYPE (arg2);
 	  result_type = arg2_type;
-	  is_glvalue = glvalue_p (arg2);
 	}
       else if (VOID_TYPE_P (arg2_type) && VOID_TYPE_P (arg3_type))
-	{
-	  result_type = void_type_node;
-	  is_glvalue = false;
-	}
+	result_type = void_type_node;
       else
 	{
           if (complain & tf_error)
@@ -5243,6 +5253,7 @@ build_conditional_expr_1 (const op_location_t &loc,
 	  return error_mark_node;
 	}
 
+      is_glvalue = false;
       goto valid_operands;
     }
   /* [expr.cond]
@@ -5360,6 +5371,10 @@ build_conditional_expr_1 (const op_location_t &loc,
       && same_type_p (arg2_type, arg3_type))
     {
       result_type = arg2_type;
+      if (processing_template_decl)
+	/* Let lvalue_kind know this was a glvalue.  */
+	result_type = cp_build_reference_type (result_type, xvalue_p (arg2));
+
       arg2 = mark_lvalue_use (arg2);
       arg3 = mark_lvalue_use (arg3);
       goto valid_operands;
@@ -5557,13 +5572,6 @@ build_conditional_expr_1 (const op_location_t &loc,
     return error_mark_node;
 
  valid_operands:
-  if (processing_template_decl && is_glvalue)
-    {
-      /* Let lvalue_kind know this was a glvalue.  */
-      tree arg = (result_type == arg2_type ? arg2 : arg3);
-      result_type = cp_build_reference_type (result_type, xvalue_p (arg));
-    }
-
   result = build3_loc (loc, COND_EXPR, result_type, arg1, arg2, arg3);
 
   /* If the ARG2 and ARG3 are the same and don't have side-effects,
