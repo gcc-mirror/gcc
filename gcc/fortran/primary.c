@@ -2559,12 +2559,10 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 	    break;
 
 	  case AR_UNKNOWN:
-	    /* If any of start, end or stride is not integer, there will
-	       already have been an error issued.  */
-	    int errors;
-	    gfc_get_errors (NULL, &errors);
-	    if (errors == 0)
-	      gfc_internal_error ("gfc_variable_attr(): Bad array reference");
+	    /* For standard conforming code, AR_UNKNOWN should not happen.
+	       For nonconforming code, gfortran can end up here.  Treat it 
+	       as a no-op.  */
+	    break;
 	  }
 
 	break;
