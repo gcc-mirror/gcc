@@ -462,6 +462,9 @@ class Lex
   static bool
   is_hex_digit(char);
 
+  static bool
+  is_base_digit(int base, char);
+
   static unsigned char
   octal_value(char c)
   { return c - '0'; }
@@ -482,10 +485,13 @@ class Lex
   gather_identifier();
 
   static bool
-  could_be_exponent(const char*, const char*);
+  could_be_exponent(int base, const char*, const char*);
 
   Token
   gather_number();
+
+  void
+  skip_exponent();
 
   Token
   gather_character();
