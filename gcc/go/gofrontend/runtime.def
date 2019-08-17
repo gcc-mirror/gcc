@@ -287,6 +287,10 @@ DEF_GO_RUNTIME(GO, "__go_go", P2(UINTPTR, POINTER), R1(POINTER))
 DEF_GO_RUNTIME(DEFERPROC, "runtime.deferproc", P3(BOOLPTR, UINTPTR, POINTER),
 	       R0())
 
+// Defer a function, with stack-allocated defer structure.
+DEF_GO_RUNTIME(DEFERPROCSTACK, "runtime.deferprocStack",
+               P4(POINTER, BOOLPTR, UINTPTR, POINTER), R0())
+
 
 // Convert an empty interface to an empty interface, returning ok.
 DEF_GO_RUNTIME(IFACEE2E2, "runtime.ifaceE2E2", P1(EFACE), R2(EFACE, BOOL))
