@@ -997,28 +997,7 @@ co_await_expander (tree *stmt, int */*do_subtree*/, void *d)
   r = coro_build_cvt_void_expr_stmt (r, loc);
   append_to_statement_list (r, &body_list);
 
-  /* Make a TARGET_EXPR for the handle argument to the suspend call
-     i.e. coroutine_handle::from_address ((void *) frame_pointer).
-     from_address is a static member function.  */
-  tree handle_type = TREE_TYPE (data->self_h);
-  tree hfa_m = lookup_member (handle_type, get_identifier ("from_address"),
-			     1, 0, tf_warning_or_error);
-
-  r = build1 (CONVERT_EXPR, build_pointer_type (void_type_node), data->coro_fp);
-  vec<tree, va_gc>* args = make_tree_vector_single (r);
-  /* Dummy instance for the method call.  */
-  tree tmp_hdl = build_lang_decl (VAR_DECL, NULL_TREE, handle_type);
-  tree hfa = build_new_method_call (tmp_hdl, hfa_m, &args, NULL_TREE,
-				    LOOKUP_NORMAL, NULL, tf_warning_or_error);
-
   tree suspend = TREE_VEC_ELT (awaiter_calls, 1); /* await_suspend().  */
-
-  /* FIXME: we shouldn't do this twice, but actually replace the handle proxy
-     here and discard the frame.self_h.  */
-  struct __proxy_replace xform;
-  xform.from = data->self_h;
-  xform.to = hfa;
-  cp_walk_tree (&suspend, replace_proxy, &xform, NULL);
 
   if (sv_handle == NULL_TREE)
     {
