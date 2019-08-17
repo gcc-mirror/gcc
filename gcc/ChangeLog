@@ -1,3 +1,8 @@
+2019-08-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/include/gpl_v3.texi (Copying): Adjust the link to "Why
+	not LGPL".
+
 2019-08-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-sra.c (build_reconstructed_reference): Return NULL_TREE instead
