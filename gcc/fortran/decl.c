@@ -1363,9 +1363,9 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
 	}
 
       /* Trap declarations of attributes in encompassing scope.  The
-	 signature for this is that ts.kind is set.  Legitimate
-	 references only set ts.type.  */
-      if (sym->ts.kind != 0
+	 signature for this is that ts.kind is nonzero for no-CLASS
+	 entity.  For a CLASS entity, ts.kind is zero.  */
+      if ((sym->ts.kind != 0 || sym->ts.type == BT_CLASS)
 	  && !sym->attr.implicit_type
 	  && sym->attr.proc == 0
 	  && gfc_current_ns->parent != NULL
