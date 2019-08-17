@@ -1,5 +1,9 @@
 2019-08-17  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/ux.texi (User Experience Guidelines): Update reference.
+
+2019-08-17  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* doc/include/gpl_v3.texi (Copying): Adjust the link to "Why
 	not LGPL".
 
