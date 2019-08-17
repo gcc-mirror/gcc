@@ -285,8 +285,15 @@ func wbBufFlush1(_p_ *p) {
 			// path to reduce the rate of flushes?
 			continue
 		}
-		obj, span, objIndex := findObject(ptr, 0, 0, false)
+		obj, span, objIndex := findObject(ptr, 0, 0, !usestackmaps)
 		if obj == 0 {
+			continue
+		}
+		if span.isFree(objIndex) {
+			// For gccgo, it is possible that we have a write barrier
+			// writing to unintialized stack memory. So we could see
+			// a bad pointer in the write barrier buffer. Don't mark
+			// it in this case.
 			continue
 		}
 		// TODO: Consider making two passes where the first
