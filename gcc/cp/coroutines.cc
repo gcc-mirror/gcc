@@ -46,9 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cxx-pretty-print.h"
 #include "gcc-rich-location.h"
 
-/* Investigation of different strategies.  */
-#define USE_SWITCH_CO_YIELD_GUARD 1
-
 /* DEBUG remove me.  */
 extern void debug_tree(tree);
 
@@ -1040,7 +1037,6 @@ co_await_expander (tree *stmt, int */*do_subtree*/, void *d)
 
   susp_idx = build_int_cst (integer_type_node, data->index);
 
-#if USE_SWITCH_CO_YIELD_GUARD
   tree sw = begin_switch_stmt ();
   tree cond = build_decl (loc, VAR_DECL, NULL_TREE, integer_type_node);
   DECL_ARTIFICIAL (cond) = 1;
@@ -1075,41 +1071,6 @@ co_await_expander (tree *stmt, int */*do_subtree*/, void *d)
   SWITCH_STMT_SCOPE (sw) = NULL;
   r = do_poplevel (scope);
   append_to_statement_list (r, &body_list);
-#else
-  /* anon temp. */
-  tree cond = build_decl (loc, VAR_DECL, NULL_TREE, integer_type_node);
-  DECL_ARTIFICIAL (cond) = 1;
-  DECL_IGNORED_P (cond) = 1;
-  layout_decl (cond, 0);
-  r =  build_call_expr_internal_loc (loc, IFN_CO_YIELD, integer_type_node, 5,
-				     susp_idx, final_susp, r_l, d_l, data->coro_fp);
-  r = build2 (INIT_EXPR, integer_type_node, cond, r);
-  r = build1 (CLEANUP_POINT_EXPR, integer_type_node, r);
-  append_to_statement_list (r, &body_list);
-  tree ret_list = NULL_TREE;
-  tree alt_list = NULL_TREE;
-
-  tree outer_if = begin_if_stmt ();
-  tree cmp1 = build2 (EQ_EXPR, integer_type_node, cond, integer_zero_node);
-  finish_if_stmt_cond (cmp1, outer_if);
-  r = build1_loc (loc, GOTO_EXPR, void_type_node, data->cororet);
-  add_stmt (r); // if 0 goto return;
-  finish_then_clause (outer_if);
-  tree inner_if = begin_if_stmt ();
-   tree cmp2 = build2 (EQ_EXPR, integer_type_node, cond, integer_one_node);
-   finish_if_stmt_cond (cmp2, inner_if);
-   r = build1_loc (loc, GOTO_EXPR, void_type_node, resume_label);
-   add_stmt (r); // else if 1 goto resume;
-   finish_then_clause (inner_if);
-   r = build1_loc (loc, GOTO_EXPR, void_type_node, destroy_label);
-   add_stmt (r); // else goto resume;
-   finish_if_stmt (inner_if);
-  /* Most of finish if for the outer.  */
-  tree scope = IF_SCOPE (outer_if);
-  IF_SCOPE (outer_if) = NULL;
-  r = do_poplevel (scope);
-  append_to_statement_list (r, &body_list);
-#endif
 
   destroy_label = build_stmt (loc, LABEL_EXPR, destroy_label);
   append_to_statement_list (destroy_label, &body_list);

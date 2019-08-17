@@ -1,6 +1,11 @@
 2019-08-17  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (co_await_expander): Remove unused lowering.
+
+2019-08-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (co_await_expander): Delete dead code.
 
 2019-08-12  Iain Sandoe  <iain@sandoe.co.uk>
