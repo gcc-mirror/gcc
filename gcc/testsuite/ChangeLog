@@ -1,5 +1,12 @@
 2019-08-17  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/78719
+	* gfortran.dg/pr78719_1.f90: New test.
+	* gfortran.dg/pr78719_2.f90: Ditto.
+	* gfortran.dg/pr78719_3.f90: Ditto.
+
+2019-08-17  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/91471
 	* gfortran.dg/pr91471.f90: New test.
 

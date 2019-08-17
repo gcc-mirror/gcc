@@ -1,5 +1,11 @@
 2019-08-17  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/78719
+	* decl.c (get_proc_name): Check for a CLASS entity when trying to
+	add attributes to an entity that already has an explicit interface.
+
+2019-08-17  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/91471
 	* primary.c (gfc_variable_attr): Remove a gfc_internal_error(),
 	which cannot be reached by conforming Fortran code, but seems to
