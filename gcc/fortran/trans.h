@@ -803,7 +803,7 @@ extern GTY(()) tree gfor_fndecl_error_stop_string;
 extern GTY(()) tree gfor_fndecl_runtime_error;
 extern GTY(()) tree gfor_fndecl_runtime_error_at;
 extern GTY(()) tree gfor_fndecl_runtime_warning_at;
-extern GTY(()) tree gfor_fndecl_os_error;
+extern GTY(()) tree gfor_fndecl_os_error_at;
 extern GTY(()) tree gfor_fndecl_generate_error;
 extern GTY(()) tree gfor_fndecl_set_fpe;
 extern GTY(()) tree gfor_fndecl_set_options;

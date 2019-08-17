@@ -102,7 +102,7 @@ tree gfor_fndecl_error_stop_string;
 tree gfor_fndecl_runtime_error;
 tree gfor_fndecl_runtime_error_at;
 tree gfor_fndecl_runtime_warning_at;
-tree gfor_fndecl_os_error;
+tree gfor_fndecl_os_error_at;
 tree gfor_fndecl_generate_error;
 tree gfor_fndecl_set_args;
 tree gfor_fndecl_set_fpe;
@@ -3679,11 +3679,11 @@ gfc_build_builtin_function_decls (void)
 	void_type_node, 3, pvoid_type_node, integer_type_node,
 	pchar_type_node);
 
-  gfor_fndecl_os_error = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("os_error")), ".R",
-	void_type_node, 1, pchar_type_node);
-  /* The runtime_error function does not return.  */
-  TREE_THIS_VOLATILE (gfor_fndecl_os_error) = 1;
+  gfor_fndecl_os_error_at = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("os_error_at")), ".RR",
+	void_type_node, -2, pchar_type_node, pchar_type_node);
+  /* The os_error_at function does not return.  */
+  TREE_THIS_VOLATILE (gfor_fndecl_os_error_at) = 1;
 
   gfor_fndecl_set_args = gfc_build_library_function_decl (
 	get_identifier (PREFIX("set_args")),

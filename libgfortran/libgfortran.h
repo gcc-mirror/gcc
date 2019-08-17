@@ -728,6 +728,10 @@ internal_proto(gfc_xtoa);
 extern _Noreturn void os_error (const char *);
 iexport_proto(os_error);
 
+extern _Noreturn void os_error_at (const char *, const char *, ...)
+  __attribute__ ((format (gfc_printf, 2, 3)));
+iexport_proto(os_error_at);
+
 extern void show_locus (st_parameter_common *);
 internal_proto(show_locus);
 

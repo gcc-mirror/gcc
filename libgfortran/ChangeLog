@@ -1,3 +1,11 @@
+2019-08-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/68401
+	* gfortran.map: Add GFORTRAN_10 node, add _gfortran_os_error_at
+	symbol.
+	* libgfortran.h (os_error_at): New prototype.
+	* runtime/error.c (os_error_at): New function.
+
 2019-08-13  Janne Blomqvist  <jb@gcc.gnu.org>
 
         PR fortran/91414
