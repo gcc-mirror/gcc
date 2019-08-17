@@ -1,3 +1,8 @@
+2019-08-17  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91471
+	* gfortran.dg/pr91471.f90: New test.
+
 2019-08-16  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/85827
