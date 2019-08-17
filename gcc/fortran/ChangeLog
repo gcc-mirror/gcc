@@ -1,3 +1,18 @@
+2019-08-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/68401
+	* trans-decl.c (gfc_build_builtin_function_decls): Replace
+	os_error with os_error_at decl.
+	* trans.c (trans_runtime_error_vararg): Modify so the error
+	function decl is passed directly.
+	(gfc_trans_runtime_error): Pass correct error function decl.
+	(gfc_trans_runtime_check): Likewise.
+	(trans_os_error_at): New function.
+	(gfc_call_malloc): Use trans_os_error_at.
+	(gfc_allocate_using_malloc): Likewise.
+	(gfc_call_realloc): Likewise.
+	* trans.h (gfor_fndecl_os_error): Replace with gfor_fndecl_os_error_at.
+
 2019-08-16  Jeff Law <law@redhat.com>
 	    Mark Eggleston <mark.eggleston@codethink.com>
 
@@ -18,7 +33,7 @@
 	* trans-common.c (find_equivalence) : New local variable dummy_symbol,
 	accumulated equivalence attributes from each symbol then check for
 	conflicts.
-  
+
 2019-08-16  Richard Biener  <rguenther@suse.de>
 
 	* trans-intrinsic.c (gfc_conv_intrinsic_findloc): Initialize

@@ -1602,3 +1602,8 @@ GFORTRAN_9.2 {
   _gfortran_mfindloc1_r10;
   _gfortran_sfindloc1_r10;
 } GFORTRAN_9;
+
+GFORTRAN_10 {
+  global:
+  _gfortran_os_error_at;
+} GFORTRAN_9.2;
