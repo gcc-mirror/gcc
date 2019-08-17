@@ -1,5 +1,11 @@
 2019-08-17  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/82992
+	* module.c (gfc_match_use):  When renaming a module entity, search
+	current namespace for conflicting symbol.
+
+2019-08-17  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/78739
 	* match.c (gfc_match_st_function):  When matching a statement function,
 	need to check if the statement function name shadows the function
