@@ -1,3 +1,8 @@
+2019-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h (TARGET_OS_CPP_BUILTINS): Add asserts
+	for cpu and machine.  Factor 64/32b builtins.
+
 2019-08-18  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific, bfin): blackfin.uclinux.org is
