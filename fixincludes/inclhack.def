@@ -195,6 +195,33 @@ fix = {
 };
 
 /*
+ *  SDKs for 10.13 and 10.14 omit the definitions for API_AVAILABLE where
+ *  __attribute__((availability)) is not supported.
+ */
+fix = {
+    hackname  = darwin_api_availability;
+    mach      = "*-*-darwin*";
+    files     = os/availability.h;
+    bypass    = "__IPHONE_OS_VERSION_MIN_REQUIRED";
+    select    =
+    " *#define __API_AVAILABLE.*\n"
+    " *#define __API_DEPRECATED.*\n"
+    " *#define __API_DEPRECATED_WITH_REPLACEMENT.*\n"
+    " *#define __API_UNAVAILABLE.*\n";
+    c_fix     = format;
+    c_fix_arg =
+    "    #define API_AVAILABLE(...)\n"
+    "    #define API_DEPRECATED(...)\n"
+    "    #define API_DEPRECATED_WITH_REPLACEMENT(...)\n"
+    "    #define API_UNAVAILABLE(...)\n";
+    test_text =
+    "#define __API_AVAILABLE(...)\n"
+    "#define __API_DEPRECATED(...)\n"
+    "#define __API_DEPRECATED_WITH_REPLACEMENT(...)\n"
+    "#define __API_UNAVAILABLE(...)\n";
+};
+
+/*
  *  This fixes __FD_ZERO bug for linux 2.x.y (x <= 2 && y <= some n)
  */
 fix = {
