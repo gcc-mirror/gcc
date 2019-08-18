@@ -223,7 +223,6 @@ value_range_base::check ()
 	break;
       }
     case VR_UNDEFINED:
-      gcc_assert (!min () && !max ());
       break;
     case VR_VARYING:
       gcc_assert (m_min && m_max);

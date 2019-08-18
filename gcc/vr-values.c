@@ -187,7 +187,7 @@ vr_values::get_lattice_entry (const_tree var)
       return vr;
     }
 
-  vr->set_undefined ();
+  vr->set_undefined (TREE_TYPE (var));
 
   /* If VAR is a default definition of a parameter, the variable can
      take any value in VAR's type.  */
