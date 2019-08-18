@@ -5,7 +5,7 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DASAN_HAS_EXCEPTIONS=1 -DASAN_NEEDS_SEGV=1 -DCAN_SANITIZE_UB=0
 if USING_MAC_INTERPOSE
-DEFS += -DMAC_INTERPOSE_FUNCTIONS -DMISSING_BLOCKS_SUPPORT
+DEFS += -DMAC_INTERPOSE_FUNCTIONS -DMISSING_BLOCKS_SUPPORT -DASAN_HAS_CXA_RETHROW_PRIMARY_EXCEPTION=0
 endif
 AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long-long  -fPIC -fno-builtin -fno-exceptions -fno-rtti -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros -fno-ipa-icf
 AM_CXXFLAGS += $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
