@@ -1,5 +1,10 @@
-2019-08-17  Gerald Pfeifer  <gerald@pfeifer.com>
+2019-08-18  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/install.texi (Specific, bfin): blackfin.uclinux.org is
+	gone, point to sourceforge.net.
+
+2019-08-17  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* doc/ux.texi (User Experience Guidelines): Update reference.
 
 2019-08-17  Gerald Pfeifer  <gerald@pfeifer.com>
