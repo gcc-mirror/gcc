@@ -1,3 +1,13 @@
+2019-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (struct __susp_frame_data): Add a counter for awaits.
+	(register_awaits): Account the handled await.
+	(await_statement_walker): New, walk statements checking each for
+	awaits.
+	(morph_fn_to_coro): Use await_statement_walker instead of calling
+	register_awaits directly.
+
 2019-08-17  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/

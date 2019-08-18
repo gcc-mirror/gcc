@@ -1923,6 +1923,7 @@ struct __susp_frame_data {
   tree *field_list;
   tree handle_type;
   unsigned count;
+  unsigned saw_awaits;
 };
 
 /* Helper to return the type of an awaiter's await_suspend() method.
@@ -1967,6 +1968,10 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
       *stmt = aw_expr;
     }
 
+  /* Count how many awaits full expression contains.  This is not the same
+     as the counter used for the function-wide await point number.  */
+  data->saw_awaits++;
+
   /* The required field has the same type as the proxy stored in the
       await expr.  */
   tree aw_field_type = TREE_TYPE (TREE_OPERAND (aw_expr, 1));
@@ -2005,6 +2010,53 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 
   data->count++;
   return NULL_TREE;
+}
+
+static tree
+await_statement_walker (tree *stmt, int *do_subtree, void *d)
+{
+  tree res = NULL_TREE;
+  struct __susp_frame_data *awpts = (struct __susp_frame_data *) d;
+  if (TREE_CODE (*stmt) == STATEMENT_LIST)
+    {
+      tree_stmt_iterator i;
+      for (i = tsi_start (*stmt); ! tsi_end_p (i); tsi_next (&i))
+	{
+	  tree *new_stmt = tsi_stmt_ptr (i);
+	  if (STATEMENT_CLASS_P (*new_stmt)
+	      || !EXPR_P (*new_stmt)
+	      || TREE_CODE (*new_stmt) == BIND_EXPR)
+	    res = cp_walk_tree (new_stmt, await_statement_walker, d, NULL);
+	  else
+	    {
+	      hash_set<tree> visited;
+	      awpts->saw_awaits = 0;
+	      res = cp_walk_tree (new_stmt, register_awaits, d, &visited);
+	      if (awpts->saw_awaits > 0)
+		{
+		  /* do something here if the statement contained an await.  */
+		}
+	    }
+	  if (res)
+	    return res;
+	}
+      *do_subtree = 0; /* Done subtrees.  */
+    }
+  else if (!STATEMENT_CLASS_P (*stmt)
+	   && EXPR_P (*stmt)
+	   && TREE_CODE (*stmt) != BIND_EXPR)
+    {
+      hash_set<tree> visited;
+      awpts->saw_awaits = 0;
+      res = cp_walk_tree (stmt, register_awaits, d, &visited);
+      if (awpts->saw_awaits > 0)
+	{
+	  /* do something here if the statement contained an await.  */
+	}
+      *do_subtree = 0; /* Done subtrees.  */
+    }
+  /* If it wasn't a statement list, or a single statement, continue.  */
+  return res;
 }
 
 /* For figuring out what param usage we have.  */
@@ -2294,11 +2346,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 		       init_susp_name, ret_typ, init_hand_name);
 
   /* Now insert the data for any body await points.  */
-  struct __susp_frame_data body_aw_points = { &field_list, handle_type, 0 };
-  /* we don't want to duplicate.  */
-  hash_set<tree> *visited = new hash_set<tree>;
-  cp_walk_tree (&fnbody, register_awaits, &body_aw_points, visited);
-  delete visited;
+  struct __susp_frame_data body_aw_points = { &field_list, handle_type, 0, 0};
+  cp_walk_tree (&fnbody, await_statement_walker, &body_aw_points, NULL);
 
   /* Final suspend is mandated.  */
   tree fin_susp_name = coro_make_frame_entry (&field_list, "__aw_s.fs",
