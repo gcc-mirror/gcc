@@ -6319,6 +6319,12 @@ done:
   /* Do the resolution.  */
   resolve_all_program_units (gfc_global_ns_list);
 
+
+  /* Fixup for external procedures.  */
+  for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
+       gfc_current_ns = gfc_current_ns->sibling)
+    gfc_check_externals (gfc_current_ns);
+
   /* Do the parse tree dump.  */
   gfc_current_ns = flag_dump_fortran_original ? gfc_global_ns_list : NULL;
 
@@ -6366,6 +6372,13 @@ done:
   /* Do the translation.  */
   translate_all_program_units (gfc_global_ns_list);
 
+  /* Dump the global symbol ist.  We only do this here because part
+     of it is generated after mangling the identifiers in
+     trans-decl.c.  */
+
+  if (flag_dump_fortran_global)
+    gfc_dump_global_symbols (stdout);
+  
   gfc_end_source_files ();
   return true;
 

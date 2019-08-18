@@ -1887,7 +1887,7 @@
 ;; Argument 2 is the length
 ;; Argument 3 is the alignment
 
-(define_expand "movmemsi"
+(define_expand "cpymemsi"
   [(parallel [(set (match_operand:BLK 0 "" "")
 		   (match_operand:BLK 1 "" ""))
 	      (use (match_operand:SI 2 "" ""))

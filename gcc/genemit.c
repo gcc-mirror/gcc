@@ -811,42 +811,45 @@ handle_overloaded_code_for (overloaded_name *oname)
 static void
 handle_overloaded_gen (overloaded_name *oname)
 {
+  unsigned HOST_WIDE_INT seen = 0;
   /* All patterns must have the same number of operands.  */
-  pattern_stats stats;
-  get_pattern_stats (&stats, XVEC (oname->first_instance->insn, 1));
   for (overloaded_instance *instance = oname->first_instance->next;
        instance; instance = instance->next)
     {
-      pattern_stats stats2;
-      get_pattern_stats (&stats2, XVEC (instance->insn, 1));
-      if (stats.num_generator_args != stats2.num_generator_args)
-	fatal_at (get_file_location (instance->insn),
-		  "inconsistent number of operands for '%s'; "
-		  "this instance has %d, but previous instances had %d",
-		  oname->name, stats2.num_generator_args,
-		  stats.num_generator_args);
+      pattern_stats stats;
+      get_pattern_stats (&stats, XVEC (instance->insn, 1));
+      unsigned HOST_WIDE_INT mask
+	= HOST_WIDE_INT_1U << stats.num_generator_args;
+      if (seen & mask)
+	continue;
+
+      seen |= mask;
+
+      /* Print the function prototype.  */
+      printf ("\nrtx\nmaybe_gen_%s (", oname->name);
+      print_overload_arguments (oname);
+      for (int i = 0; i < stats.num_generator_args; ++i)
+	printf (", rtx x%d", i);
+      printf (")\n{\n");
+
+      /* Use maybe_code_for_*, instead of duplicating the selection
+	 logic here.  */
+      printf ("  insn_code code = maybe_code_for_%s (", oname->name);
+      for (unsigned int i = 0; i < oname->arg_types.length (); ++i)
+	printf ("%sarg%d", i == 0 ? "" : ", ", i);
+      printf (");\n"
+	      "  if (code != CODE_FOR_nothing)\n"
+	      "    {\n"
+	      "      gcc_assert (insn_data[code].n_generator_args == %d);\n"
+	      "      return GEN_FCN (code) (", stats.num_generator_args);
+      for (int i = 0; i < stats.num_generator_args; ++i)
+	printf ("%sx%d", i == 0 ? "" : ", ", i);
+      printf (");\n"
+	      "    }\n"
+	      "  else\n"
+	      "    return NULL_RTX;\n"
+	      "}\n");
     }
-
-  /* Print the function prototype.  */
-  printf ("\nrtx\nmaybe_gen_%s (", oname->name);
-  print_overload_arguments (oname);
-  for (int i = 0; i < stats.num_generator_args; ++i)
-    printf (", rtx x%d", i);
-  printf (")\n{\n");
-
-  /* Use maybe_code_for_*, instead of duplicating the selection logic here.  */
-  printf ("  insn_code code = maybe_code_for_%s (", oname->name);
-  for (unsigned int i = 0; i < oname->arg_types.length (); ++i)
-    printf ("%sarg%d", i == 0 ? "" : ", ", i);
-  printf (");\n"
-	  "  if (code != CODE_FOR_nothing)\n"
-	  "    return GEN_FCN (code) (");
-  for (int i = 0; i < stats.num_generator_args; ++i)
-    printf ("%sx%d", i == 0 ? "" : ", ", i);
-  printf (");\n"
-	  "  else\n"
-	  "    return NULL_RTX;\n"
-	  "}\n");
 }
 
 int

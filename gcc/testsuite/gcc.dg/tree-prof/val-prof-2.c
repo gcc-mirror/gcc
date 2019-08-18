@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-profile" } */
+/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-profile-optimized" } */
 unsigned int a[1000];
 unsigned int b = 256;
 unsigned int c = 1024;
@@ -25,8 +25,5 @@ main ()
   return 0;
 }
 /* autofdo does not do value profiling so far */
-/* { dg-final-use-not-autofdo { scan-ipa-dump "Transformation done: mod power of 2" "profile" } } */
-/* This is part of code checking that n is power of 2, so we are sure that the transformation
-   didn't get optimized out.  */
-/* { dg-final-use-not-autofdo { scan-tree-dump "n_\[0-9\]* \\+ (4294967295|0x0*ffffffff)" "optimized"} } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump "Transformation done: div/mod by constant 256" "profile" } } */
 /* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized"} } */

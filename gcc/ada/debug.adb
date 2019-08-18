@@ -128,7 +128,7 @@ package body Debug is
    --  d.H  GNSA mode for ASIS
    --  d.I  Do not ignore enum representation clauses in CodePeer mode
    --  d.J  Relaxed rules for pragma No_Return
-   --  d.K  Enable generation of contract-only procedures in CodePeer mode
+   --  d.K
    --  d.L  Depend on back end for limited types in if and case expressions
    --  d.M  Relaxed RM semantics
    --  d.N  Add node to all entities
@@ -154,7 +154,7 @@ package body Debug is
    --  d_g
    --  d_h
    --  d_i  Ignore activations and calls to instances for elaboration
-   --  d_j
+   --  d_j  Read JSON files and populate Repinfo tables (opposite of -gnatRjs)
    --  d_k
    --  d_l
    --  d_m
@@ -177,7 +177,7 @@ package body Debug is
    --  d_C
    --  d_D
    --  d_E
-   --  d_F
+   --  d_F  Encode full invocation paths in ALI files
    --  d_G
    --  d_H
    --  d_I
@@ -191,7 +191,7 @@ package body Debug is
    --  d_Q
    --  d_R
    --  d_S
-   --  d_T
+   --  d_T  Output trace information on invocation path recording
    --  d_U
    --  d_V
    --  d_W
@@ -257,6 +257,161 @@ package body Debug is
    --  dx  Force binder to read xref information from ali files
    --  dy
    --  dz
+
+   --  dA
+   --  dB
+   --  dC
+   --  dD
+   --  dE
+   --  dF
+   --  dG
+   --  dH
+   --  dI
+   --  dJ
+   --  dK
+   --  dL
+   --  dM
+   --  dN
+   --  dO
+   --  dP
+   --  dQ
+   --  dR
+   --  dS
+   --  dT
+   --  dU
+   --  dV
+   --  dW
+   --  dX
+   --  dY
+   --  dZ
+
+   --  d.a
+   --  d.b
+   --  d.c
+   --  d.d
+   --  d.e
+   --  d.f
+   --  d.g
+   --  d.h
+   --  d.i
+   --  d.j
+   --  d.k
+   --  d.l
+   --  d.m
+   --  d.n
+   --  d.o
+   --  d.p
+   --  d.q
+   --  d.r
+   --  d.s
+   --  d.t
+   --  d.u
+   --  d.v
+   --  d.w
+   --  d.x
+   --  d.y
+   --  d.z
+
+   --  d.A
+   --  d.B
+   --  d.C
+   --  d.D
+   --  d.E
+   --  d.F
+   --  d.G
+   --  d.H
+   --  d.I
+   --  d.J
+   --  d.K
+   --  d.L
+   --  d.M
+   --  d.N
+   --  d.O
+   --  d.P
+   --  d.Q
+   --  d.R
+   --  d.S
+   --  d.T
+   --  d.U
+   --  d.V
+   --  d.W
+   --  d.X
+   --  d.Y
+   --  d.Z
+
+   --  d.1
+   --  d.2
+   --  d.3
+   --  d.4
+   --  d.5
+   --  d.6
+   --  d.7
+   --  d.8
+   --  d.9
+
+   --  d_a  Ignore the effects of pragma Elaborate_All
+   --  d_b  Ignore the effects of pragma Elaborate_Body
+   --  d_c
+   --  d_d
+   --  d_e  Ignore the effects of pragma Elaborate
+   --  d_f
+   --  d_g
+   --  d_h
+   --  d_i
+   --  d_j
+   --  d_k
+   --  d_l
+   --  d_m
+   --  d_n
+   --  d_o
+   --  d_p
+   --  d_q
+   --  d_r
+   --  d_s
+   --  d_t  Output cycle-detection trace information
+   --  d_u
+   --  d_v
+   --  d_w
+   --  d_x
+   --  d_y
+   --  d_z
+
+   --  d_A  Output ALI invocation tables
+   --  d_B
+   --  d_C  Diagnose all cycles
+   --  d_D
+   --  d_E
+   --  d_F
+   --  d_G
+   --  d_H
+   --  d_I  Output invocation graph
+   --  d_J
+   --  d_K
+   --  d_L  Output library graph
+   --  d_M
+   --  d_N
+   --  d_O
+   --  d_P  Output cycle paths
+   --  d_Q
+   --  d_R
+   --  d_S  Output elaboration-order status
+   --  d_T  Output elaboration-order trace information
+   --  d_U
+   --  d_V  Validate bindo cycles, graphs, and order
+   --  d_W
+   --  d_X
+   --  d_Y
+   --  d_Z
+
+   --  d_1
+   --  d_2
+   --  d_3
+   --  d_4
+   --  d_5
+   --  d_6
+   --  d_7
+   --  d_8
+   --  d_9
 
    --  Debug flags used in package Make and its clients (e.g. GNATMAKE)
 
@@ -447,10 +602,11 @@ package body Debug is
    --  dE   Apply compile time elaboration checking for with relations between
    --       predefined units. Normally no checks are made.
 
-   --  dF   Perform the new SPARK checking rules for pointer aliasing. This is
-   --       only activated in GNATprove mode and on SPARK code. These rules are
-   --       not yet part of the official SPARK language, but are expected to be
-   --       included in a future version of SPARK.
+   --  dF   Disable the new SPARK checking rules for pointer aliasing. This is
+   --       only activated as part of GNATprove mode and on SPARK code. Now
+   --       that pointer support is part of the official SPARK language, this
+   --       switch allows reverting to the previous version of GNATprove
+   --       rejecting pointers.
 
    --  dG   Generate all warnings. Normally Errout suppresses warnings on
    --       units that are not part of the main extended source, and also
@@ -750,13 +906,6 @@ package body Debug is
    --       for that. If the procedure does in fact return normally, execution
    --       is erroneous, and therefore unpredictable.
 
-   --  d.K  Enable generation of contract-only procedures in CodePeer mode and
-   --       report a warning on subprograms for which the contract-only body
-   --       cannot be built. Currently reported on subprograms defined in
-   --       nested package specs that have some formal (or return type) whose
-   --       type is a private type defined in some enclosing package and that
-   --       have pre/postconditions.
-
    --  d.L  Normally the front end generates special expansion for conditional
    --       expressions of a limited type. This debug flag removes this special
    --       case expansion, leaving it up to the back end to handle conditional
@@ -840,6 +989,10 @@ package body Debug is
    --       subprogram or task type defined in an external instance for both
    --       the static and dynamic elaboration models.
 
+   --  d_j  The compiler reads JSON files that would be generated by the same
+   --       compilation session if -gnatRjs was passed, in order to populate
+   --       the internal tables of the Repinfo unit from them.
+
    --  d_p  The compiler ignores calls to subprograms which verify the run-time
    --       semantics of invariants and postconditions in both the static and
    --       dynamic elaboration models.
@@ -850,10 +1003,17 @@ package body Debug is
 
    --  d_A  Do not generate ALI files by setting Opt.Disable_ALI_File.
 
+   --  d_F  The compiler encodes the full path from an invocation construct to
+   --       an external target, offering additional information to GNATBIND for
+   --       purposes of error diagnostics.
+
    --  d_L  Output trace information on elaboration checking. This debug switch
    --       causes output to be generated showing each call or instantiation as
    --       it is checked, and the progress of the recursive trace through
    --       elaboration calls at compile time.
+
+   --  d_T  The compiler outputs trance information to standard output whenever
+   --       an invocation path is recorded.
 
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when
@@ -954,11 +1114,10 @@ package body Debug is
    --      dependencies) except that internal units are included in the
    --      listing.
 
-   --  di  Normally gnatbind calls Read_Ali with Ignore_Errors set to
-   --      False, since the binder really needs correct version ALI
-   --      files to do its job. This debug flag causes Ignore_Errors
-   --      mode to be set for the binder (and is particularly useful
-   --      for testing ignore errors mode).
+   --  di  Normally GNATBIND calls Read_Ali with Ignore_Errors set to False,
+   --      since the binder really needs correct version ALI files to do its
+   --      job. This debug flag causes Ignore_Errors mode to be set for the
+   --      binder (and is particularly useful for testing ignore errors mode).
 
    --  dn  List details of manipulation of Num_Pred values during execution of
    --      the algorithm used to determine a correct order of elaboration. This
@@ -984,6 +1143,43 @@ package body Debug is
 
    --  dx  Force the binder to read (and then ignore) the xref information
    --      in ali files (used to check that read circuit is working OK).
+
+   --  d_a  GNATBIND ignores the effects of pragma Elaborate_All in the case of
+   --       elaboration order and treats the associated dependency as a regular
+   --       with edge.
+
+   --  d_b  GNATBIND ignores the effects of pragma Elaborate_Body in the case
+   --       of elaboration order and treats the spec and body as decoupled.
+
+   --  d_e  GNATBIND ignores the effects of pragma Elaborate in the case of
+   --       elaboration order and no longer creates an implicit dependency on
+   --       the body of the argument.
+
+   --  d_t  GNATBIND output trace information of cycle-detection activities to
+   --       standard output.
+
+   --  d_A  GNATBIND output the contents of all ALI invocation-related tables
+   --       in textual format to standard output.
+
+   --  d_C  GNATBIND diagnoses all unique cycles within the bind, rather than
+   --       just the most important one.
+
+   --  d_I  GNATBIND outputs the contents of the invocation graph in textual
+   --       format to standard output.
+
+   --  d_L  GNATBIND outputs the contents of the library graph in textual
+   --       format to standard output.
+
+   --  d_P  GNATBIND outputs the cycle paths to standard output
+
+   --  d_S  GNATBIND outputs trace information concerning the status of its
+   --       various phases to standard output.
+
+   --  d_T  GNATBIND outputs trace information of elaboration order detection
+   --       activities to standard output.
+
+   --  d_V  GNATBIND validates the invocation graph, library graph along with
+   --       its cycles, and the elaboration order.
 
    --------------------------------------------
    -- Documentation for gnatmake Debug Flags --

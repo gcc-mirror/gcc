@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 struct record_reference_ctx
 {
   bool only_vars;
-  class varpool_node *varpool_node;
+  struct varpool_node *varpool_node;
 };
 
 /* Walk tree and record all calls and references to functions/variables.

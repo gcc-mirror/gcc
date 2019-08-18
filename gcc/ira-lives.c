@@ -80,8 +80,9 @@ static int last_call_num;
 /* The number of last call at which given allocno was saved.  */
 static int *allocno_saved_at_call;
 
-/* The value of get_preferred_alternatives for the current instruction,
-   supplemental to recog_data.  */
+/* The value returned by ira_setup_alts for the current instruction;
+   i.e. the set of alternatives that we should consider to be likely
+   candidates during reloading.  */
 static alternative_mask preferred_alternatives;
 
 /* If non-NULL, the source operand of a register to register copy for which
@@ -1236,9 +1237,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		  }
 	      }
 
-	  extract_insn (insn);
-	  preferred_alternatives = get_preferred_alternatives (insn);
-	  preprocess_constraints (insn);
+	  preferred_alternatives = ira_setup_alts (insn);
 	  process_single_reg_class_operands (false, freq);
 
 	  if (call_p)

@@ -724,6 +724,9 @@ Gogo::init_imports(std::vector<Bstatement*>& init_stmts, Bfunction *bfunction)
        p != this->imported_init_fns_.end();
        ++p)
     {
+      // Don't include dummy inits. They are not real functions.
+      if ((*p)->is_dummy())
+        continue;
       if ((*p)->priority() < 0)
 	go_error_at(Linemap::unknown_location(),
 		    "internal error: failed to set init priority for %s",
@@ -941,7 +944,7 @@ Gogo::build_type_descriptor_list()
   Btype* bat = list_type->field(1)->type()->get_backend(this);
 
   // Create the variable
-  std::string name = this->type_descriptor_list_symbol(this->package_);
+  std::string name = this->type_descriptor_list_symbol(this->pkgpath_symbol());
   Bvariable* bv = this->backend()->implicit_variable(name, name, bt,
                                                      false, true, false,
                                                      0);
@@ -986,20 +989,29 @@ Gogo::register_type_descriptors(std::vector<Bstatement*>& init_stmts,
   Struct_type* list_type = type_descriptor_list_type(1);
   Btype* bt = list_type->get_backend(this);
 
+  // Collect type lists from transitive imports.
+  std::vector<std::string> list_names;
+  for (Import_init_set::iterator it = this->imported_init_fns_.begin();
+       it != this->imported_init_fns_.end();
+       ++it)
+    {
+      std::string pkgpath =
+        this->pkgpath_from_init_fn_name((*it)->init_name());
+      list_names.push_back(this->type_descriptor_list_symbol(pkgpath));
+    }
+  // Add the main package itself.
+  list_names.push_back(this->type_descriptor_list_symbol("main"));
+
   // Build a list of lists.
   std::vector<unsigned long> indexes;
   std::vector<Bexpression*> vals;
   unsigned long i = 0;
-  for (Packages::iterator it = this->packages_.begin();
-       it != this->packages_.end();
-       ++it)
+  for (std::vector<std::string>::iterator p = list_names.begin();
+       p != list_names.end();
+       ++p)
     {
-      if (it->second->pkgpath() == "unsafe")
-        continue;
-
-      std::string name = this->type_descriptor_list_symbol(it->second);
       Bvariable* bv =
-        this->backend()->implicit_variable_reference(name, name, bt);
+        this->backend()->implicit_variable_reference(*p, *p, bt);
       Bexpression* bexpr = this->backend()->var_expression(bv, builtin_loc);
       bexpr = this->backend()->address_expression(bexpr, builtin_loc);
 
@@ -3410,24 +3422,6 @@ Gogo::create_function_descriptors()
   this->traverse(&cfd);
 }
 
-// Look for interface types to finalize methods of inherited
-// interfaces.
-
-class Finalize_methods : public Traverse
-{
- public:
-  Finalize_methods(Gogo* gogo)
-    : Traverse(traverse_types),
-      gogo_(gogo)
-  { }
-
-  int
-  type(Type*);
-
- private:
-  Gogo* gogo_;
-};
-
 // Finalize the methods of an interface type.
 
 int
@@ -4103,6 +4097,15 @@ Gogo::order_evaluations()
   this->traverse(&order_eval);
 }
 
+// Order evaluations in a block.
+
+void
+Gogo::order_block(Block* block)
+{
+  Order_eval order_eval(this);
+  block->traverse(&order_eval);
+}
+
 // A traversal class used to find a single shortcut operator within an
 // expression.
 
@@ -4310,6 +4313,15 @@ Gogo::remove_shortcuts()
 {
   Shortcuts shortcuts(this);
   this->traverse(&shortcuts);
+}
+
+// Turn shortcut operators into explicit if statements in a block.
+
+void
+Gogo::remove_shortcuts_in_block(Block* block)
+{
+  Shortcuts shortcuts(this);
+  block->traverse(&shortcuts);
 }
 
 // Traversal to flatten parse tree after order of evaluation rules are applied.
@@ -5066,9 +5078,10 @@ Inline_within_budget::expression(Expression** pexpr)
 class Mark_inline_candidates : public Traverse
 {
  public:
-  Mark_inline_candidates()
+  Mark_inline_candidates(Unordered_set(Named_object*)* marked)
     : Traverse(traverse_functions
-	       | traverse_types)
+	       | traverse_types),
+      marked_functions_(marked)
   { }
 
   int
@@ -5085,6 +5098,9 @@ class Mark_inline_candidates : public Traverse
   // budget is a heuristic.  In the usual GCC spirit, we could
   // consider setting this via a command line option.
   const int budget_heuristic = 80;
+
+  // Set of named objects that are marked as inline candidates.
+  Unordered_set(Named_object*)* marked_functions_;
 };
 
 // Mark a function if it is an inline candidate.
@@ -5093,11 +5109,16 @@ int
 Mark_inline_candidates::function(Named_object* no)
 {
   Function* func = no->func_value();
+  if ((func->pragmas() & GOPRAGMA_NOINLINE) != 0)
+    return TRAVERSE_CONTINUE;
   int budget = budget_heuristic;
   Inline_within_budget iwb(&budget);
   func->block()->traverse(&iwb);
   if (budget >= 0)
-    func->set_export_for_inlining();
+    {
+      func->set_export_for_inlining();
+      this->marked_functions_->insert(no);
+    }
   return TRAVERSE_CONTINUE;
 }
 
@@ -5119,11 +5140,16 @@ Mark_inline_candidates::type(Type* t)
       Named_object* no = *p;
       go_assert(no->is_function());
       Function *func = no->func_value();
+      if ((func->pragmas() & GOPRAGMA_NOINLINE) != 0)
+        continue;
       int budget = budget_heuristic;
       Inline_within_budget iwb(&budget);
       func->block()->traverse(&iwb);
       if (budget >= 0)
-	func->set_export_for_inlining();
+        {
+          func->set_export_for_inlining();
+          this->marked_functions_->insert(no);
+        }
     }
   return TRAVERSE_CONTINUE;
 }
@@ -5138,7 +5164,8 @@ Gogo::do_exports()
 
   // Mark any functions whose body should be exported for inlining by
   // other packages.
-  Mark_inline_candidates mic;
+  Unordered_set(Named_object*) marked_functions;
+  Mark_inline_candidates mic(&marked_functions);
   this->traverse(&mic);
 
   // For now we always stream to a section.  Later we may want to
@@ -5158,6 +5185,14 @@ Gogo::do_exports()
   else
     prefix = "go";
 
+  std::string init_fn_name;
+  if (this->is_main_package())
+    init_fn_name = "";
+  else if (this->need_init_fn_)
+    init_fn_name = this->get_init_fn_name();
+  else
+    init_fn_name = this->dummy_init_fn_name();
+
   Export exp(&stream);
   exp.register_builtin_types(this);
   exp.export_globals(this->package_name(),
@@ -5165,11 +5200,10 @@ Gogo::do_exports()
 		     pkgpath,
 		     this->packages_,
 		     this->imports_,
-		     (this->need_init_fn_ && !this->is_main_package()
-		      ? this->get_init_fn_name()
-		      : ""),
+		     init_fn_name,
 		     this->imported_init_fns_,
-		     this->package_->bindings());
+		     this->package_->bindings(),
+                     &marked_functions);
 
   if (!this->c_header_.empty() && !saw_errors())
     this->write_c_header();
@@ -6244,7 +6278,8 @@ Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no)
 
 	  if (this->asm_name_ == "runtime.gopanic"
 	      || this->asm_name_ == "__go_runtime_error"
-              || this->asm_name_ == "runtime.panicdottype")
+              || this->asm_name_ == "runtime.panicdottype"
+              || this->asm_name_ == "runtime.block")
 	    flags |= Backend::function_does_not_return;
 	}
 

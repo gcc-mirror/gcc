@@ -433,7 +433,6 @@ statement_sink_location (gimple *stmt, basic_block frombb,
 
       if (gimple_code (use) != GIMPLE_PHI)
 	{
-	  sinkbb = gimple_bb (use);
 	  sinkbb = select_best_block (frombb, gimple_bb (use), stmt);
 
 	  if (sinkbb == frombb)

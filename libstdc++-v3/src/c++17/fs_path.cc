@@ -1928,20 +1928,20 @@ fs::hash_value(const path& p) noexcept
 
 struct fs::filesystem_error::_Impl
 {
-  _Impl(const string& what_arg, const path& p1, const path& p2)
+  _Impl(string_view what_arg, const path& p1, const path& p2)
   : path1(p1), path2(p2), what(make_what(what_arg, &p1, &p2))
   { }
 
-  _Impl(const string& what_arg, const path& p1)
+  _Impl(string_view what_arg, const path& p1)
   : path1(p1), path2(), what(make_what(what_arg, &p1, nullptr))
   { }
 
-  _Impl(const string& what_arg)
+  _Impl(string_view what_arg)
   : what(make_what(what_arg, nullptr, nullptr))
   { }
 
   static std::string
-  make_what(const std::string& s, const path* p1, const path* p2)
+  make_what(string_view s, const path* p1, const path* p2)
   {
     const std::string pstr1 = p1 ? p1->u8string() : std::string{};
     const std::string pstr2 = p2 ? p2->u8string() : std::string{};
@@ -1977,20 +1977,20 @@ template class std::__shared_ptr<const fs::filesystem_error::_Impl>;
 fs::filesystem_error::
 filesystem_error(const string& what_arg, error_code ec)
 : system_error(ec, what_arg),
-  _M_impl(std::__make_shared<_Impl>(what_arg))
+  _M_impl(std::__make_shared<_Impl>(system_error::what()))
 { }
 
 fs::filesystem_error::
 filesystem_error(const string& what_arg, const path& p1, error_code ec)
 : system_error(ec, what_arg),
-  _M_impl(std::__make_shared<_Impl>(what_arg, p1))
+  _M_impl(std::__make_shared<_Impl>(system_error::what(), p1))
 { }
 
 fs::filesystem_error::
 filesystem_error(const string& what_arg, const path& p1, const path& p2,
 		 error_code ec)
 : system_error(ec, what_arg),
-  _M_impl(std::__make_shared<_Impl>(what_arg, p1, p2))
+  _M_impl(std::__make_shared<_Impl>(system_error::what(), p1, p2))
 { }
 
 fs::filesystem_error::~filesystem_error() = default;

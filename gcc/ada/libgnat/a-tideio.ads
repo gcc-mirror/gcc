@@ -52,35 +52,58 @@ package Ada.Text_IO.Decimal_IO is
    procedure Get
      (File  : File_Type;
       Item  : out Num;
-      Width : Field := 0);
+      Width : Field := 0)
+   with
+     Pre    => Is_Open (File) and then Mode (File) = In_File,
+     Global => (In_Out => File_System);
 
    procedure Get
      (Item  : out Num;
-      Width : Field := 0);
+      Width : Field := 0)
+   with
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length,
+     Global => (In_Out => File_System);
 
    procedure Put
      (File : File_Type;
       Item : Num;
       Fore : Field := Default_Fore;
       Aft  : Field := Default_Aft;
-      Exp  : Field := Default_Exp);
+      Exp  : Field := Default_Exp)
+   with
+     Pre    => Is_Open (File) and then Mode (File) /= In_File,
+     Post   =>
+       Line_Length (File)'Old = Line_Length (File)
+       and Page_Length (File)'Old = Page_Length (File),
+     Global => (In_Out => File_System);
 
    procedure Put
      (Item : Num;
       Fore : Field := Default_Fore;
       Aft  : Field := Default_Aft;
-      Exp  : Field := Default_Exp);
+      Exp  : Field := Default_Exp)
+   with
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length,
+     Global => (In_Out => File_System);
 
    procedure Get
      (From : String;
       Item : out Num;
-      Last : out Positive);
+      Last : out Positive)
+   with
+     Global => null;
 
    procedure Put
      (To   : out String;
       Item : Num;
       Aft  : Field := Default_Aft;
-      Exp  : Field := Default_Exp);
+      Exp  : Field := Default_Exp)
+   with
+     Global => null;
 
 private
    pragma Inline (Get);

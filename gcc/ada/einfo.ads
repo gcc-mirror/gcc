@@ -320,7 +320,7 @@ package Einfo is
 --  an attempt to set the attribute on a subtype will raise an assert error.
 
 --  Other attributes are noted as applying to the [implementation base type
---  only].  These are representation attributes which must always apply to a
+--  only]. These are representation attributes which must always apply to a
 --  full non-private type, and where the attributes are always on the full
 --  type. The attribute can be referenced on a subtype (and automatically
 --  retrieves the value from the implementation base type). However, it is an
@@ -2366,9 +2366,9 @@ package Einfo is
 --       i.e. Standard.Boolean and all types ultimately derived from it.
 
 --    Is_Called (Flag102)
---       Defined in subprograms. Returns true if the subprogram is called
---       in the unit being compiled or in a unit in the context. Used for
---       inlining.
+--       Defined in subprograms and packages. Set if a subprogram is called
+--       from the unit being compiled or a unit in the closure. Also set for
+--       a package that contains called subprograms. Used only for inlining.
 
 --    Is_Character_Type (Flag63)
 --       Defined in all entities. Set for character types and subtypes,
@@ -2607,12 +2607,6 @@ package Einfo is
 
 --    Is_Formal_Subprogram (Flag111)
 --       Defined in all entities. Set for generic formal subprograms.
-
---    Is_For_Access_Subtype (Flag118)
---       Defined in E_Private_Subtype and E_Record_Subtype entities. Means the
---       sole purpose of the type is to be designated by an Access_Subtype and
---       hence should not be expanded into components because the type may not
---       have been found or frozen yet.
 
 --    Is_Frozen (Flag4)
 --       Defined in all type and subtype entities. Set if type or subtype has
@@ -3779,7 +3773,7 @@ package Einfo is
 
 --    Optimize_Alignment_Space (Flag241)
 --       Defined in type, subtype, variable, and constant entities. This
---       flag records that the type or object is to be layed out in a manner
+--       flag records that the type or object is to be laid out in a manner
 --       consistent with Optimize_Alignment (Space) mode. The compiler and
 --       binder ensure a consistent view of any given type or object. If pragma
 --       Optimize_Alignment (Off) mode applies to the type/object, then neither
@@ -3787,7 +3781,7 @@ package Einfo is
 
 --    Optimize_Alignment_Time (Flag242)
 --       Defined in type, subtype, variable, and constant entities. This
---       flag records that the type or object is to be layed out in a manner
+--       flag records that the type or object is to be laid out in a manner
 --       consistent with Optimize_Alignment (Time) mode. The compiler and
 --       binder ensure a consistent view of any given type or object. If pragma
 --       Optimize_Alignment (Off) mode applies to the type/object, then neither
@@ -4133,7 +4127,7 @@ package Einfo is
 --       Defined in generic subprograms, generic packages, and their
 --       instances. Also defined in the instances of the corresponding
 --       bodies. Denotes the renaming map (generic entities => instance
---       entities) used to construct the instance by givin an index into
+--       entities) used to construct the instance by giving an index into
 --       the tables used to represent these maps. See Sem_Ch12 for further
 --       details. The maps for package instances are also used when the
 --       instance is the actual corresponding to a formal package.
@@ -4490,7 +4484,7 @@ package Einfo is
 --    Suppress_Initialization (Flag105)
 --       Defined in all variable, type and subtype entities. If set for a base
 --       type, then the generation of initialization procedures is suppressed
---       for the type. Any other implicit initialiation (e.g. from the use of
+--       for the type. Any other implicit initialization (e.g. from the use of
 --       pragma Initialize_Scalars) is also suppressed if this flag is set for
 --       either the subtype in question, or for the base type. For variables,
 --       this flag suppresses all implicit initialization for the object, even
@@ -6412,12 +6406,13 @@ package Einfo is
    --    Has_Master_Entity                   (Flag21)
    --    Has_RACW                            (Flag214)  (non-generic case only)
    --    Ignore_SPARK_Mode_Pragmas           (Flag301)
-   --    In_Package_Body                     (Flag48)
-   --    In_Use                              (Flag8)
+   --    Is_Called                           (Flag102)  (non-generic case only)
    --    Is_Elaboration_Checks_OK_Id         (Flag148)
    --    Is_Elaboration_Warnings_OK_Id       (Flag304)
    --    Is_Instantiated                     (Flag126)
+   --    In_Package_Body                     (Flag48)
    --    Is_Private_Descendant               (Flag53)
+   --    In_Use                              (Flag8)
    --    Is_Visible_Lib_Unit                 (Flag116)
    --    Renamed_In_Spec                     (Flag231)  (non-generic case only)
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
@@ -6458,7 +6453,6 @@ package Einfo is
    --    Stored_Constraint                   (Elist23)
    --    Has_Completion                      (Flag26)
    --    Is_Controlled_Active                (Flag42)   (base type only)
-   --    Is_For_Access_Subtype               (Flag118)  (subtype only)
    --    (plus type attributes)
 
    --  E_Procedure
@@ -7311,7 +7305,6 @@ package Einfo is
    function Is_Exported                         (Id : E) return B;
    function Is_Finalized_Transient              (Id : E) return B;
    function Is_First_Subtype                    (Id : E) return B;
-   function Is_For_Access_Subtype               (Id : E) return B;
    function Is_Frozen                           (Id : E) return B;
    function Is_Generic_Instance                 (Id : E) return B;
    function Is_Hidden                           (Id : E) return B;
@@ -8012,7 +8005,6 @@ package Einfo is
    procedure Set_Is_Exported                     (Id : E; V : B := True);
    procedure Set_Is_Finalized_Transient          (Id : E; V : B := True);
    procedure Set_Is_First_Subtype                (Id : E; V : B := True);
-   procedure Set_Is_For_Access_Subtype           (Id : E; V : B := True);
    procedure Set_Is_Formal_Subprogram            (Id : E; V : B := True);
    procedure Set_Is_Frozen                       (Id : E; V : B := True);
    procedure Set_Is_Generic_Actual_Subprogram    (Id : E; V : B := True);
@@ -8438,6 +8430,7 @@ package Einfo is
    --    Initial_Condition
    --    Initializes
    --    Interrupt_Handler
+   --    No_Caching
    --    Part_Of
    --    Precondition
    --    Postcondition
@@ -8859,7 +8852,6 @@ package Einfo is
    pragma Inline (Is_First_Subtype);
    pragma Inline (Is_Fixed_Point_Type);
    pragma Inline (Is_Floating_Point_Type);
-   pragma Inline (Is_For_Access_Subtype);
    pragma Inline (Is_Formal);
    pragma Inline (Is_Formal_Object);
    pragma Inline (Is_Formal_Subprogram);
@@ -9376,7 +9368,6 @@ package Einfo is
    pragma Inline (Set_Is_Exported);
    pragma Inline (Set_Is_Finalized_Transient);
    pragma Inline (Set_Is_First_Subtype);
-   pragma Inline (Set_Is_For_Access_Subtype);
    pragma Inline (Set_Is_Formal_Subprogram);
    pragma Inline (Set_Is_Frozen);
    pragma Inline (Set_Is_Generic_Actual_Subprogram);

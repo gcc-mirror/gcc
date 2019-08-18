@@ -794,9 +794,9 @@
    (set_attr "conds" "clob,nocond,nocond,nocond,nocond,clob,nocond")])
 
 (define_expand "thumb_movhi_clobber"
-  [(set (match_operand:HI     0 "memory_operand"   "")
-	(match_operand:HI     1 "register_operand" ""))
-   (clobber (match_operand:DI 2 "register_operand" ""))]
+  [(set (match_operand:HI     0 "memory_operand")
+	(match_operand:HI     1 "register_operand"))
+   (clobber (match_operand:DI 2 "register_operand"))]
   "TARGET_THUMB1"
   "
   if (strict_memory_address_p (HImode, XEXP (operands[0], 0))
@@ -928,7 +928,7 @@
 
 ;; Thumb block-move insns
 
-(define_insn "movmem12b"
+(define_insn "cpymem12b"
   [(set (mem:SI (match_operand:SI 2 "register_operand" "0"))
 	(mem:SI (match_operand:SI 3 "register_operand" "1")))
    (set (mem:SI (plus:SI (match_dup 2) (const_int 4)))
@@ -950,7 +950,7 @@
    (set_attr "type" "store_12")]
 )
 
-(define_insn "movmem8b"
+(define_insn "cpymem8b"
   [(set (mem:SI (match_operand:SI 2 "register_operand" "0"))
 	(mem:SI (match_operand:SI 3 "register_operand" "1")))
    (set (mem:SI (plus:SI (match_dup 2) (const_int 4)))
@@ -977,8 +977,8 @@
 (define_expand "cbranchqi4"
   [(set (pc) (if_then_else
 	      (match_operator 0 "lt_ge_comparison_operator"
-	       [(match_operand:QI 1 "memory_operand" "")
-	        (match_operand:QI 2 "const0_operand" "")])
+	       [(match_operand:QI 1 "memory_operand")
+	        (match_operand:QI 2 "const0_operand")])
 	      (label_ref (match_operand 3 "" ""))
 	      (pc)))]
   "TARGET_THUMB1"
@@ -1616,8 +1616,8 @@
 
 (define_expand "cstoresi_eq0_thumb1"
   [(parallel
-    [(set (match_operand:SI 0 "s_register_operand" "")
-	  (eq:SI (match_operand:SI 1 "s_register_operand" "")
+    [(set (match_operand:SI 0 "s_register_operand")
+	  (eq:SI (match_operand:SI 1 "s_register_operand")
 		 (const_int 0)))
      (clobber (match_dup:SI 2))])]
   "TARGET_THUMB1"
@@ -1626,8 +1626,8 @@
 
 (define_expand "cstoresi_ne0_thumb1"
   [(parallel
-    [(set (match_operand:SI 0 "s_register_operand" "")
-	  (ne:SI (match_operand:SI 1 "s_register_operand" "")
+    [(set (match_operand:SI 0 "s_register_operand")
+	  (ne:SI (match_operand:SI 1 "s_register_operand")
 		 (const_int 0)))
      (clobber (match_dup:SI 2))])]
   "TARGET_THUMB1"
@@ -1838,8 +1838,8 @@
 )
 
 (define_expand "thumb1_casesi_internal_pic"
-  [(match_operand:SI 0 "s_register_operand" "")
-   (match_operand:SI 1 "thumb1_cmp_operand" "")
+  [(match_operand:SI 0 "s_register_operand")
+   (match_operand:SI 1 "thumb1_cmp_operand")
    (match_operand 2 "" "")
    (match_operand 3 "" "")]
   "TARGET_THUMB1"
@@ -1911,7 +1911,7 @@
 
 ;; Miscellaneous Thumb patterns
 (define_expand "tablejump"
-  [(parallel [(set (pc) (match_operand:SI 0 "register_operand" ""))
+  [(parallel [(set (pc) (match_operand:SI 0 "register_operand"))
 	      (use (label_ref (match_operand 1 "" "")))])]
   "TARGET_THUMB1"
   "

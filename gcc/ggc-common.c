@@ -818,8 +818,9 @@ init_ggc_heuristics (void)
 }
 
 /* GGC memory usage.  */
-struct ggc_usage: public mem_usage
+class ggc_usage: public mem_usage
 {
+public:
   /* Default constructor.  */
   ggc_usage (): m_freed (0), m_collected (0), m_overhead (0) {}
   /* Constructor.  */

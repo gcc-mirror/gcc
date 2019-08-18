@@ -40,33 +40,33 @@ package Validsw is
    --  or in the argument of a Validity_Checks pragma to activate the option.
    --  The corresponding upper case letter deactivates the option.
 
-   Validity_Check_Copies : Boolean := False;
-   --  Controls the validity checking of copies. If this switch is set to
-   --  true using -gnatVc, or a 'c' in the argument of a Validity_Checks
-   --  pragma, then the right side of assignments and also initializing
-   --  expressions in object declarations are checked for validity.
-
    Validity_Check_Components : Boolean := False;
    --  Controls validity checking for assignment to elementary components of
-   --  records. If this switch is set true using -gnatVe, or an 'e' in the
-   --  argument of Validity_Checks pragma, then the right hand of an assignment
-   --  to such a component is checked for validity.
+   --  records. If this switch is set to True using -gnatVe, or an 'e' in the
+   --  argument of Validity_Checks pragma, then the right-hand side of an
+   --  assignment to such a component is checked for validity.
+
+   Validity_Check_Copies : Boolean := False;
+   --  Controls the validity checking of copies. If this switch is set to
+   --  True using -gnatVc, or a 'c' in the argument of a Validity_Checks
+   --  pragma, then the right-hand side of assignments and also initializing
+   --  expressions in object declarations are checked for validity.
 
    Validity_Check_Default : Boolean := True;
    --  Controls default (reference manual) validity checking. If this switch is
    --  set to True using -gnatVd or a 'd' in the argument of a Validity_Checks
-   --  pragma (or the initial default value is used, set True), then left side
-   --  subscripts and case statement arguments are checked for validity. This
-   --  switch is also set by default if no -gnatV switch is used and no
+   --  pragma (or the initial default value is used, set True), then left-hand
+   --  side subscripts and case statement arguments are checked for validity.
+   --  This switch is also set by default if no -gnatV switch is used and no
    --  Validity_Checks pragma is processed.
 
    Validity_Check_Floating_Point : Boolean := False;
-   --  Normally validity checking applies only to discrete values (integer
-   --  and enumeration types). If this switch is set to True using -gnatVf
-   --  or an 'f' in the argument of a Validity_Checks pragma, then floating-
-   --  point values are also checked. The context in which such checks
-   --  occur depends on other flags, e.g. if Validity_Check_Copies is also
-   --  set then floating-point values on the right side of an assignment
+   --  Normally validity checking applies only to discrete values (integer and
+   --  enumeration types). If this switch is set to True using -gnatVf or an
+   --  'f' in the argument of a Validity_Checks pragma, then floating-point
+   --  values are also checked. If the context in which such checks occur
+   --  depends on other flags, e.g. if Validity_Check_Copies is also set,
+   --  then floating-point values on the right-hand side of an assignment
    --  will be validity checked.
 
    Validity_Check_In_Out_Params : Boolean := False;
@@ -103,13 +103,13 @@ package Validsw is
    --  pragma, then the expression in a RETURN statement is validity checked.
 
    Validity_Check_Subscripts : Boolean := False;
-   --  Controls validity checking of subscripts. If this switch is set to
-   --  True using -gnatVs, or an 's' in the argument of a Validity_Checks
-   --  pragma, then all subscripts are checked for validity. Note that left
-   --  side subscript checking is controlled also by Validity_Check_Default.
-   --  If Validity_Check_Subscripts is True, then all subscripts are checked,
-   --  otherwise if Validity_Check_Default is True, then left side subscripts
-   --  are checked, otherwise no subscripts are checked.
+   --  Controls validity checking of subscripts. If this switch is set to True
+   --  using -gnatVs, or an 's' in the argument of a Validity_Checks pragma,
+   --  then all subscripts are checked for validity. Note that left-hand side
+   --  subscript checking is also controlled by Validity_Check_Default. If
+   --  Validity_Check_Subscripts is True, then all subscripts are checked,
+   --  otherwise if Validity_Check_Default is True, then left-hand side
+   --  subscripts are checked; otherwise no subscripts are checked.
 
    Validity_Check_Tests : Boolean := False;
    --  Controls validity checking of tests that occur in conditions (i.e. the

@@ -28,22 +28,8 @@
 
 with ALI;   use ALI;
 with Namet; use Namet;
-with Types; use Types;
-
-with GNAT.Dynamic_Tables;
 
 package Binde is
-
-   package Unit_Id_Tables is new GNAT.Dynamic_Tables
-     (Table_Component_Type => Unit_Id,
-      Table_Index_Type     => Nat,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 500,
-      Table_Increment      => 200);
-   use Unit_Id_Tables;
-
-   subtype Unit_Id_Table is Unit_Id_Tables.Instance;
-   subtype Unit_Id_Array is Unit_Id_Tables.Table_Type;
 
    procedure Find_Elab_Order
      (Elab_Order          : out Unit_Id_Table;

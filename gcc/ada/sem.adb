@@ -1395,6 +1395,7 @@ package body Sem is
          Restore_Scope_Stack  (List);
          Restore_Ghost_Region (Saved_GM, Saved_IGR);
          Style_Max_Line_Length := Saved_ML;
+         Style_Check_Max_Line_Length := Style_Max_Line_Length /= 0;
       end Do_Analyze;
 
       --  Local variables
@@ -1579,7 +1580,7 @@ package body Sem is
            and then Nkind (Unit (Comp_Unit)) in N_Proper_Body
            and then (Nkind (Unit (Comp_Unit)) /= N_Subprogram_Body
                        or else not Acts_As_Spec (Comp_Unit))
-           and then not In_Extended_Main_Source_Unit (Comp_Unit)
+           and then not Ext_Main_Source_Unit
          then
             null;
 

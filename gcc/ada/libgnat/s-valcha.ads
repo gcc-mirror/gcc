@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 package System.Val_Char is
-   pragma Pure;
+   pragma Preelaborate;
 
    function Value_Character (Str : String) return Character;
    --  Computes Character'Value (Str)

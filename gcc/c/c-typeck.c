@@ -13667,6 +13667,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   tree last_iterators = NULL_TREE;
   bool last_iterators_remove = false;
   tree *nogroup_seen = NULL;
+  tree *order_clause = NULL;
   /* 1 if normal/task reduction has been seen, -1 if inscan reduction
      has been seen, -2 if mixed inscan/normal reduction diagnosed.  */
   int reduction_seen = 0;
@@ -13679,7 +13680,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   /* If ort == C_ORT_OMP_DECLARE_SIMD used as uniform_head instead.  */
   bitmap_initialize (&map_head, &bitmap_default_obstack);
   bitmap_initialize (&map_field_head, &bitmap_default_obstack);
-  /* If ort == C_ORT_OMP used as nontemporal_head instead.  */
+  /* If ort == C_ORT_OMP used as nontemporal_head or use_device_xxx_head
+     instead.  */
   bitmap_initialize (&oacc_reduction_head, &bitmap_default_obstack);
 
   if (ort & C_ORT_ACC)
@@ -14071,13 +14073,19 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
-	  else if (ort == C_ORT_ACC
-		   && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
+	  else if ((ort == C_ORT_ACC
+		    && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
+		   || (ort == C_ORT_OMP
+		       && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_PTR
+			   || (OMP_CLAUSE_CODE (c)
+			       == OMP_CLAUSE_USE_DEVICE_ADDR))))
 	    {
 	      if (bitmap_bit_p (&oacc_reduction_head, DECL_UID (t)))
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "%qD appears more than once in reduction clauses",
+			    ort == C_ORT_ACC
+			    ? "%qD appears more than once in reduction clauses"
+			    : "%qD appears more than once in data clauses",
 			    t);
 		  remove = true;
 		}
@@ -14608,14 +14616,30 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	  t = OMP_CLAUSE_DECL (c);
-	  if (TREE_CODE (TREE_TYPE (t)) != POINTER_TYPE
-	      && TREE_CODE (TREE_TYPE (t)) != ARRAY_TYPE)
+	  if (TREE_CODE (TREE_TYPE (t)) != POINTER_TYPE)
 	    {
-	      error_at (OMP_CLAUSE_LOCATION (c),
-			"%qs variable is neither a pointer nor an array",
-			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-	      remove = true;
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_PTR
+		  && ort == C_ORT_OMP)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qs variable is not a pointer",
+			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  remove = true;
+		}
+	      else if (TREE_CODE (TREE_TYPE (t)) != ARRAY_TYPE)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qs variable is neither a pointer nor an array",
+			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  remove = true;
+		}
 	    }
+	  goto check_dup_generic;
+
+	case OMP_CLAUSE_USE_DEVICE_ADDR:
+	  t = OMP_CLAUSE_DECL (c);
+	  if (VAR_P (t) || TREE_CODE (t) == PARM_DECL)
+	    c_mark_addressable (t);
 	  goto check_dup_generic;
 
 	case OMP_CLAUSE_NOWAIT:
@@ -14628,6 +14652,25 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      break;
 	    }
 	  nowait_clause = pc;
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
+
+	case OMP_CLAUSE_ORDER:
+	  if (ordered_clause)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<order%> clause must not be used together "
+			"with %<ordered%>");
+	      remove = true;
+	      break;
+	    }
+	  else if (order_clause)
+	    {
+	      /* Silently remove duplicates.  */
+	      remove = true;
+	      break;
+	    }
+	  order_clause = pc;
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 
@@ -14647,6 +14690,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_SECTIONS:
 	case OMP_CLAUSE_TASKGROUP:
 	case OMP_CLAUSE_PROC_BIND:
+	case OMP_CLAUSE_DEVICE_TYPE:
 	case OMP_CLAUSE_PRIORITY:
 	case OMP_CLAUSE_GRAINSIZE:
 	case OMP_CLAUSE_NUM_TASKS:
@@ -14654,6 +14698,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_HINT:
 	case OMP_CLAUSE_DEFAULTMAP:
+	case OMP_CLAUSE_BIND:
 	case OMP_CLAUSE_NUM_GANGS:
 	case OMP_CLAUSE_NUM_WORKERS:
 	case OMP_CLAUSE_VECTOR_LENGTH:
@@ -14683,6 +14728,14 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
 	case OMP_CLAUSE_ORDERED:
 	  ordered_clause = c;
+	  if (order_clause)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (*order_clause),
+			"%<order%> clause must not be used together "
+			"with %<ordered%>");
+	      *order_clause = OMP_CLAUSE_CHAIN (*order_clause);
+	      order_clause = NULL;
+	    }
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 

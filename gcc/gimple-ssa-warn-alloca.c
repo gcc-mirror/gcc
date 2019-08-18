@@ -112,7 +112,8 @@ enum alloca_type {
 };
 
 // Type of an alloca call with its corresponding limit, if applicable.
-struct alloca_type_and_limit {
+class alloca_type_and_limit {
+public:
   enum alloca_type type;
   // For ALLOCA_BOUND_MAYBE_LARGE and ALLOCA_BOUND_DEFINITELY_LARGE
   // types, this field indicates the assumed limit if known or
@@ -178,7 +179,7 @@ alloca_call_type_by_arg (unsigned HOST_WIDE_INT max_size)
 // corresponding limit (if applicable).  IS_VLA is set if the alloca
 // call was created by the gimplifier for a VLA.
 
-static struct alloca_type_and_limit
+static class alloca_type_and_limit
 alloca_call_type (global_ranger &ranger, gimple *stmt, bool is_vla)
 {
   gcc_assert (gimple_alloca_call_p (stmt));
@@ -294,7 +295,7 @@ pass_walloca::execute (function *fun)
 	  else if (warn_alloca_limit < 0)
 	    continue;
 
-	  struct alloca_type_and_limit t
+	  class alloca_type_and_limit t
 	    = alloca_call_type (ranger, stmt, is_vla);
 
 	  unsigned HOST_WIDE_INT adjusted_alloca_limit

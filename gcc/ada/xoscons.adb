@@ -229,8 +229,7 @@ procedure XOSCons is
             case Lang is
                when Lang_Ada =>
                   Put ("   subtype " & Info.Constant_Name.all
-                       & " is Interfaces.C."
-                       & Info.Text_Value.all & ";");
+                       & " is " & Info.Text_Value.all & ";");
                when Lang_C =>
                   Put ("#define " & Info.Constant_Name.all & " "
                        & Info.Text_Value.all);

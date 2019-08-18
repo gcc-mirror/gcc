@@ -80,7 +80,7 @@ typedef struct _var_map
 /* Value used to represent no partition number.  */
 #define NO_PARTITION		-1
 
-extern var_map init_var_map (int, struct loop* = NULL);
+extern var_map init_var_map (int, class loop* = NULL);
 extern void delete_var_map (var_map);
 extern int var_union (var_map, tree, tree);
 extern void partition_view_normal (var_map);

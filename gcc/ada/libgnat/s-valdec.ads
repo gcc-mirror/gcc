@@ -34,7 +34,7 @@
 --  Decimal_IO, and the Value attribute for such decimal types.
 
 package System.Val_Dec is
-   pragma Pure;
+   pragma Preelaborate;
 
    function Scan_Decimal
      (Str   : String;

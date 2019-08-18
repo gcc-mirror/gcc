@@ -459,7 +459,7 @@ procedure Gnatlink is
 
                      when 'v' =>
 
-                        --  Support "double" verbose mode.  Second -v
+                        --  Support "double" verbose mode. Second -v
                         --  gets sent to the linker and binder phases.
 
                         if Verbose_Mode then
@@ -1884,6 +1884,7 @@ begin
       Clean_Link_Option_Set : declare
          J                  : Natural;
          Shared_Libgcc_Seen : Boolean := False;
+         Static_Libgcc_Seen : Boolean := False;
 
       begin
          J := Linker_Options.First;
@@ -1905,7 +1906,7 @@ begin
                end if;
             end if;
 
-            --  Remove duplicate -shared-libgcc switch
+            --  Remove duplicate -shared-libgcc switches
 
             if Linker_Options.Table (J).all = Shared_Libgcc_String then
                if Shared_Libgcc_Seen then
@@ -1916,6 +1917,20 @@ begin
 
                else
                   Shared_Libgcc_Seen := True;
+               end if;
+            end if;
+
+            --  Remove duplicate -static-libgcc switches
+
+            if Linker_Options.Table (J).all = Static_Libgcc_String then
+               if Static_Libgcc_Seen then
+                  Linker_Options.Table (J .. Linker_Options.Last - 1) :=
+                    Linker_Options.Table (J + 1 .. Linker_Options.Last);
+                  Linker_Options.Decrement_Last;
+                  Num_Args := Num_Args - 1;
+
+               else
+                  Static_Libgcc_Seen := True;
                end if;
             end if;
 
@@ -1950,12 +1965,25 @@ begin
             --  libgcc, if gcc is not called with -shared-libgcc, call it
             --  with -static-libgcc, as there are some platforms where one
             --  of these two switches is compulsory to link.
+            --  Don't push extra switches if we already saw one.
 
             if Shared_Libgcc_Default = 'T'
               and then not Shared_Libgcc_Seen
+              and then not Static_Libgcc_Seen
             then
                Linker_Options.Increment_Last;
                Linker_Options.Table (Linker_Options.Last) := Static_Libgcc;
+               Num_Args := Num_Args + 1;
+            end if;
+
+            --  Likewise, the reverse.
+
+            if Shared_Libgcc_Default = 'H'
+              and then not Static_Libgcc_Seen
+              and then not Shared_Libgcc_Seen
+            then
+               Linker_Options.Increment_Last;
+               Linker_Options.Table (Linker_Options.Last) := Shared_Libgcc;
                Num_Args := Num_Args + 1;
             end if;
          end if;
@@ -2040,7 +2068,7 @@ begin
    end Link_Step;
 
    --  Only keep the binder output file and it's associated object
-   --  file if compiling with the -g option.  These files are only
+   --  file if compiling with the -g option. These files are only
    --  useful if debugging.
 
    if not Debug_Flag_Present then

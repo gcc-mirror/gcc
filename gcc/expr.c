@@ -73,7 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 int cse_not_expected;
 
 static bool block_move_libcall_safe_for_call_parm (void);
-static bool emit_block_move_via_movmem (rtx, rtx, rtx, unsigned, unsigned, HOST_WIDE_INT,
+static bool emit_block_move_via_cpymem (rtx, rtx, rtx, unsigned, unsigned, HOST_WIDE_INT,
 					unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
 					unsigned HOST_WIDE_INT);
 static void emit_block_move_via_loop (rtx, rtx, rtx, unsigned);
@@ -1624,7 +1624,7 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 
   if (CONST_INT_P (size) && can_move_by_pieces (INTVAL (size), align))
     move_by_pieces (x, y, INTVAL (size), align, RETURN_BEGIN);
-  else if (emit_block_move_via_movmem (x, y, size, align,
+  else if (emit_block_move_via_cpymem (x, y, size, align,
 				       expected_align, expected_size,
 				       min_size, max_size, probable_max_size))
     ;
@@ -1722,18 +1722,16 @@ block_move_libcall_safe_for_call_parm (void)
   return true;
 }
 
-/* A subroutine of emit_block_move.  Expand a movmem pattern;
+/* A subroutine of emit_block_move.  Expand a cpymem pattern;
    return true if successful.  */
 
 static bool
-emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
+emit_block_move_via_cpymem (rtx x, rtx y, rtx size, unsigned int align,
 			    unsigned int expected_align, HOST_WIDE_INT expected_size,
 			    unsigned HOST_WIDE_INT min_size,
 			    unsigned HOST_WIDE_INT max_size,
 			    unsigned HOST_WIDE_INT probable_max_size)
 {
-  int save_volatile_ok = volatile_ok;
-
   if (expected_align < align)
     expected_align = align;
   if (expected_size != -1)
@@ -1745,7 +1743,7 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
     }
 
   /* Since this is a move insn, we don't care about volatility.  */
-  volatile_ok = 1;
+  temporary_volatile_ok v (true);
 
   /* Try the most limited insn first, because there's no point
      including more than one in the machine description unless
@@ -1755,7 +1753,7 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
   FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
     {
       scalar_int_mode mode = mode_iter.require ();
-      enum insn_code code = direct_optab_handler (movmem_optab, mode);
+      enum insn_code code = direct_optab_handler (cpymem_optab, mode);
 
       if (code != CODE_FOR_nothing
 	  /* We don't need MODE to be narrower than BITS_PER_HOST_WIDE_INT
@@ -1769,7 +1767,7 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
 	      || max_size <= (GET_MODE_MASK (mode) >> 1)
 	      || GET_MODE_BITSIZE (mode) >= GET_MODE_BITSIZE (Pmode)))
 	{
-	  struct expand_operand ops[9];
+	  class expand_operand ops[9];
 	  unsigned int nops;
 
 	  /* ??? When called via emit_block_move_for_call, it'd be
@@ -1809,14 +1807,10 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
 		create_fixed_operand (&ops[8], NULL);
 	    }
 	  if (maybe_expand_insn (code, nops, ops))
-	    {
-	      volatile_ok = save_volatile_ok;
-	      return true;
-	    }
+	    return true;
 	}
     }
 
-  volatile_ok = save_volatile_ok;
   return false;
 }
 
@@ -1932,7 +1926,7 @@ expand_cmpstrn_or_cmpmem (insn_code icode, rtx target, rtx arg1_rtx,
   if (target && (!REG_P (target) || HARD_REGISTER_P (target)))
     target = NULL_RTX;
 
-  struct expand_operand ops[5];
+  class expand_operand ops[5];
   create_output_operand (&ops[0], target, insn_mode);
   create_fixed_operand (&ops[1], arg1_rtx);
   create_fixed_operand (&ops[2], arg2_rtx);
@@ -3137,7 +3131,7 @@ set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align,
 	      || max_size <= (GET_MODE_MASK (mode) >> 1)
 	      || GET_MODE_BITSIZE (mode) >= GET_MODE_BITSIZE (Pmode)))
 	{
-	  struct expand_operand ops[9];
+	  class expand_operand ops[9];
 	  unsigned int nops;
 
 	  nops = insn_data[(int) code].n_generator_args;
@@ -4181,7 +4175,7 @@ emit_single_push_insn_1 (machine_mode mode, rtx x, tree type)
   icode = optab_handler (push_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
-      struct expand_operand ops[1];
+      class expand_operand ops[1];
 
       create_input_operand (&ops[0], x, mode);
       if (maybe_expand_insn (icode, 1, ops))
@@ -5027,7 +5021,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 
       if (icode != CODE_FOR_nothing)
 	{
-	  struct expand_operand ops[2];
+	  class expand_operand ops[2];
 
 	  create_fixed_operand (&ops[0], mem);
 	  create_input_operand (&ops[1], reg, mode);
@@ -5456,7 +5450,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 bool
 emit_storent_insn (rtx to, rtx from)
 {
-  struct expand_operand ops[2];
+  class expand_operand ops[2];
   machine_mode mode = GET_MODE (to);
   enum insn_code code = optab_handler (storent_optab, mode);
 
@@ -6759,7 +6753,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 		!= CODE_FOR_nothing)
 	    && (elt = uniform_vector_p (exp)))
 	  {
-	    struct expand_operand ops[2];
+	    class expand_operand ops[2];
 	    create_output_operand (&ops[0], target, mode);
 	    create_input_operand (&ops[1], expand_normal (elt), eltmode);
 	    expand_insn (icode, 2, ops);
@@ -9554,7 +9548,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  && mode == TYPE_MODE (TREE_TYPE (treeop0))
 	  && SCALAR_INT_MODE_P (mode))
 	{
-	  struct expand_operand eops[4];
+	  class expand_operand eops[4];
 	  machine_mode imode = TYPE_MODE (TREE_TYPE (treeop0));
 	  expand_operands (treeop0, treeop1,
 			   subtarget, &op0, &op1, EXPAND_NORMAL);
@@ -10292,7 +10286,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    && ((icode = optab_handler (movmisalign_optab, mode))
 		!= CODE_FOR_nothing))
 	  {
-	    struct expand_operand ops[2];
+	    class expand_operand ops[2];
 
 	    /* We've already validated the memory, and we're creating a
 	       new pseudo destination.  The predicates really can't fail,
@@ -10374,7 +10368,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    if ((icode = optab_handler (movmisalign_optab, mode))
 		!= CODE_FOR_nothing)
 	      {
-		struct expand_operand ops[2];
+		class expand_operand ops[2];
 
 		/* We've already validated the memory, and we're creating a
 		   new pseudo destination.  The predicates really can't fail,
@@ -10893,12 +10887,12 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    if (MEM_P (op0) && REG_P (XEXP (op0, 0)))
 	      mark_reg_pointer (XEXP (op0, 0), MEM_ALIGN (op0));
 
-	    /* If the result has a record type and the extraction is done in
+	    /* If the result has aggregate type and the extraction is done in
 	       an integral mode, then the field may be not aligned on a byte
 	       boundary; in this case, if it has reverse storage order, it
 	       needs to be extracted as a scalar field with reverse storage
 	       order and put back into memory order afterwards.  */
-	    if (TREE_CODE (type) == RECORD_TYPE
+	    if (AGGREGATE_TYPE_P (type)
 		&& GET_MODE_CLASS (ext_mode) == MODE_INT)
 	      reversep = TYPE_REVERSE_STORAGE_ORDER (type);
 
@@ -10908,13 +10902,13 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 				      ? NULL_RTX : target),
 				     ext_mode, ext_mode, reversep, alt_rtl);
 
-	    /* If the result has a record type and the mode of OP0 is an
+	    /* If the result has aggregate type and the mode of OP0 is an
 	       integral mode then, if BITSIZE is narrower than this mode
 	       and this is for big-endian data, we must put the field
 	       into the high-order bits.  And we must also put it back
 	       into memory order if it has been previously reversed.  */
 	    scalar_int_mode op0_mode;
-	    if (TREE_CODE (type) == RECORD_TYPE
+	    if (AGGREGATE_TYPE_P (type)
 		&& is_int_mode (GET_MODE (op0), &op0_mode))
 	      {
 		HOST_WIDE_INT size = GET_MODE_BITSIZE (op0_mode);
@@ -11292,6 +11286,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
     case CATCH_EXPR:
     case EH_FILTER_EXPR:
     case TRY_FINALLY_EXPR:
+    case EH_ELSE_EXPR:
       /* Lowered by tree-eh.c.  */
       gcc_unreachable ();
 
@@ -12179,7 +12174,7 @@ try_casesi (tree index_type, tree index_expr, tree minval, tree range,
 	    rtx table_label, rtx default_label, rtx fallback_label,
             profile_probability default_probability)
 {
-  struct expand_operand ops[5];
+  class expand_operand ops[5];
   scalar_int_mode index_mode = SImode;
   rtx op1, op2, index;
 

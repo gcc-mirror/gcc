@@ -507,6 +507,7 @@ void gfc_conv_label_variable (gfc_se * se, gfc_expr * expr);
 /* If the value is not constant, Create a temporary and copy the value.  */
 tree gfc_evaluate_now_loc (location_t, tree, stmtblock_t *);
 tree gfc_evaluate_now (tree, stmtblock_t *);
+tree gfc_evaluate_now_function_scope (tree, stmtblock_t *);
 
 /* Find the appropriate variant of a math intrinsic.  */
 tree gfc_builtin_decl_for_float_kind (enum built_in_function, int);

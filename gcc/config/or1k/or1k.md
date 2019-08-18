@@ -60,10 +60,10 @@
 (define_attr "length" "" (const_int 4))
 
 (define_attr "type"
-  "alu,st,ld,control,multi"
+  "alu,st,ld,control,multi,fpu"
   (const_string "alu"))
 
-(define_attr "insn_support" "class1,sext,sfimm,shftimm" (const_string "class1"))
+(define_attr "insn_support" "class1,sext,sfimm,shftimm,ror,rori" (const_string "class1"))
 
 (define_attr "enabled" ""
   (cond [(eq_attr "insn_support" "class1") (const_int 1)
@@ -72,7 +72,11 @@
 	 (and (eq_attr "insn_support" "sfimm")
 	      (ne (symbol_ref "TARGET_SFIMM") (const_int 0))) (const_int 1)
 	 (and (eq_attr "insn_support" "shftimm")
-	      (ne (symbol_ref "TARGET_SHFTIMM") (const_int 0))) (const_int 1)]
+	      (ne (symbol_ref "TARGET_SHFTIMM") (const_int 0))) (const_int 1)
+	 (and (eq_attr "insn_support" "ror")
+	      (ne (symbol_ref "TARGET_ROR") (const_int 0))) (const_int 1)
+	 (and (eq_attr "insn_support" "rori")
+	      (ne (symbol_ref "TARGET_RORI") (const_int 0))) (const_int 1)]
 	(const_int 0)))
 
 ;; Describe a user's asm statement.
@@ -93,6 +97,10 @@
 (define_insn_reservation "control" 1
   (eq_attr "type" "control")
   "cpu")
+(define_insn_reservation "fpu" 2
+  (eq_attr "type" "fpu")
+  "cpu")
+
 
 ; Define delay slots for any branch
 (define_delay (eq_attr "type" "control")
@@ -156,6 +164,47 @@
   "l.sub\t%0, %r1, %2")
 
 ;; -------------------------------------------------------------------------
+;; Floating Point Arithmetic instructions
+;; -------------------------------------------------------------------------
+
+;; Mode iterator for single/double float
+(define_mode_iterator F [(SF "TARGET_HARD_FLOAT")
+			 (DF "TARGET_DOUBLE_FLOAT")])
+(define_mode_attr f [(SF "s") (DF "d")])
+(define_mode_attr fr [(SF "r") (DF "d")])
+(define_mode_attr fi [(SF "si") (DF "di")])
+(define_mode_attr FI [(SF "SI") (DF "DI")])
+
+;; Basic arithmetic instructions
+(define_code_iterator FOP [plus minus mult div])
+(define_code_attr fop [(plus "add") (minus "sub") (mult "mul") (div "div")])
+
+(define_insn "<fop><F:mode>3"
+  [(set (match_operand:F 0 "register_operand" "=<fr>")
+	(FOP:F (match_operand:F 1 "register_operand" "<fr>")
+	       (match_operand:F 2 "register_operand" "<fr>")))]
+  "TARGET_HARD_FLOAT"
+  "lf.<fop>.<f>\t%d0, %d1, %d2"
+  [(set_attr "type" "fpu")])
+
+;; Basic float<->int conversion
+(define_insn "float<fi><F:mode>2"
+  [(set (match_operand:F 0 "register_operand" "=<fr>")
+	(float:F
+	    (match_operand:<FI> 1 "register_operand" "<fr>")))]
+  "TARGET_HARD_FLOAT"
+  "lf.itof.<f>\t%d0, %d1"
+  [(set_attr "type" "fpu")])
+
+(define_insn "fix_trunc<F:mode><fi>2"
+  [(set (match_operand:<FI> 0 "register_operand" "=<fr>")
+	(fix:<FI>
+	    (match_operand:F 1 "register_operand" "<fr>")))]
+  "TARGET_HARD_FLOAT"
+  "lf.ftoi.<f>\t%d0, %d1"
+  [(set_attr "type" "fpu")])
+
+;; -------------------------------------------------------------------------
 ;; Logical operators
 ;; -------------------------------------------------------------------------
 
@@ -178,12 +227,12 @@
 (define_insn "rotrsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(rotatert:SI (match_operand:SI 1 "register_operand"  "r,r")
-		  (match_operand:SI 2 "reg_or_u6_operand" "r,n")))]
-  "TARGET_ROR"
+		     (match_operand:SI 2 "ror_reg_or_u6_operand" "r,n")))]
+  "TARGET_ROR || TARGET_RORI"
   "@
    l.ror\t%0, %1, %2
    l.rori\t%0, %1, %2"
-  [(set_attr "insn_support" "*,shftimm")])
+  [(set_attr "insn_support" "ror,rori")])
 
 (define_insn "andsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -328,11 +377,11 @@
 ;; Sign Extending
 ;; -------------------------------------------------------------------------
 
-;; Zero extension can always be done with AND and an extending load.
+;; Zero extension can always be done with AND or an extending load.
 
 (define_insn "zero_extend<mode>si2"
   [(set (match_operand:SI 0 "register_operand"                     "=r,r")
-	(zero_extend:SI (match_operand:I12 1 "nonimmediate_operand" "r,m")))]
+	(zero_extend:SI (match_operand:I12 1 "reg_or_mem_operand" "r,m")))]
   ""
   "@
    l.andi\t%0, %1, <zext_andi>
@@ -344,7 +393,7 @@
 
 (define_insn "extend<mode>si2"
   [(set (match_operand:SI 0 "register_operand"                      "=r,r")
-	(sign_extend:SI (match_operand:I12 1 "nonimmediate_operand"  "r,m")))]
+	(sign_extend:SI (match_operand:I12 1 "reg_or_mem_operand"  "r,m")))]
   "TARGET_SEXT"
   "@
    l.ext<ldst>s\t%0, %1
@@ -376,7 +425,7 @@
 (define_code_iterator intcmpcc [ne eq lt ltu gt gtu ge le geu leu])
 (define_code_attr insn [(ne "ne") (eq "eq") (lt "lts") (ltu "ltu")
 			(gt "gts") (gtu "gtu") (ge "ges") (le "les")
-			(geu "geu") (leu "leu") ])
+			(geu "geu") (leu "leu")])
 
 (define_insn "*sf_insn"
   [(set (reg:BI SR_F_REGNUM)
@@ -387,6 +436,36 @@
    l.sf<insn>\t%r0, %1
    l.sf<insn>i\t%r0, %1"
   [(set_attr "insn_support" "*,sfimm")])
+
+;; Support FP comparisons too
+
+;; The OpenRISC FPU supports these comparisons:
+;;
+;;    lf.sfeq.{d,s} - equality, r r, double or single precision
+;;    lf.sfge.{d,s} - greater than or equal, r r, double or single precision
+;;    lf.sfgt.{d,s} - greater than, r r, double or single precision
+;;    lf.sfle.{d,s} - less than or equal, r r, double or single precision
+;;    lf.sflt.{d,s} - less than, r r, double or single precision
+;;    lf.sfne.{d,s} - not equal, r r, double or single precision
+;;
+;; Double precision is only supported on some hardware.  Only register/register
+;; comparisons are supported.  All comparisons are signed.
+
+(define_code_iterator fpcmpcc [ne eq lt gt ge le uneq unle unlt ungt unge
+			       unordered])
+(define_code_attr fpcmpinsn [(ne "ne") (eq "eq") (lt "lt") (gt "gt") (ge "ge")
+			     (le "le") (uneq "ueq") (unle "ule") (unlt "ult")
+			     (ungt "ugt") (unge "uge") (unordered "un")])
+
+
+(define_insn "*sf_fp_insn"
+  [(set (reg:BI SR_F_REGNUM)
+	(fpcmpcc:BI (match_operand:F 0 "register_operand" "<fr>")
+		    (match_operand:F 1 "register_operand" "<fr>")))]
+  "TARGET_HARD_FLOAT"
+  "lf.sf<fpcmpinsn>.<f>\t%d0, %d1"
+  [(set_attr "type" "fpu")])
+
 
 ;; -------------------------------------------------------------------------
 ;; Conditional Store instructions
@@ -401,6 +480,23 @@
 	  (match_dup 0)
 	  (const_int 0)))]
   ""
+{
+  or1k_expand_compare (operands + 1);
+  PUT_MODE (operands[1], SImode);
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
+  DONE;
+})
+
+;; Support FP cstores too
+(define_expand "cstore<F:mode>4"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(if_then_else:F
+	  (match_operator 1 "fp_comparison_operator"
+	    [(match_operand:F 2 "register_operand" "")
+	     (match_operand:F 3 "register_operand" "")])
+	  (match_dup 0)
+	  (const_int 0)))]
+  "TARGET_HARD_FLOAT"
 {
   or1k_expand_compare (operands + 1);
   PUT_MODE (operands[1], SImode);
@@ -497,6 +593,21 @@
 	  (label_ref (match_operand 3 "" ""))
 	  (pc)))]
   ""
+{
+  or1k_expand_compare (operands);
+})
+
+;; Support FP branching
+
+(define_expand "cbranch<F:mode>4"
+  [(set (pc)
+	(if_then_else
+	  (match_operator 0 "fp_comparison_operator"
+	    [(match_operand:F 1 "register_operand" "")
+	     (match_operand:F 2 "register_operand" "")])
+	  (label_ref (match_operand 3 "" ""))
+	  (pc)))]
+  "TARGET_HARD_FLOAT"
 {
   or1k_expand_compare (operands);
 })

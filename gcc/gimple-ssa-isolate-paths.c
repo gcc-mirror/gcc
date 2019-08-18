@@ -128,9 +128,9 @@ insert_trap (gimple_stmt_iterator *si_p, tree op)
 
    DUPLICATE is a pre-existing duplicate, use it as BB' if it exists.
 
-   Return BB'.  */
+   Return BB' (which may be equal to DUPLICATE).  */
 
-basic_block
+ATTRIBUTE_RETURNS_NONNULL basic_block
 isolate_path (basic_block bb, basic_block duplicate,
 	      edge e, gimple *stmt, tree op, bool ret_zero)
 {
@@ -341,6 +341,322 @@ stmt_uses_0_or_null_in_undefined_way (gimple *stmt)
   return false;
 }
 
+/* Describes the property of a return statement that may return
+   the address of one or more local variables.  The type must
+   be safely assignable and copyable so that it can be stored in
+   a hash_map.  */
+class args_loc_t
+{
+ public:
+
+  args_loc_t (): nargs (), locvec (), ptr (&ptr)
+  {
+    locvec.create (4);
+  }
+
+  args_loc_t (const args_loc_t &rhs)
+    : nargs (rhs.nargs), locvec (rhs.locvec.copy ()), ptr (&ptr) { }
+
+  args_loc_t& operator= (const args_loc_t &rhs)
+  {
+    nargs = rhs.nargs;
+    locvec.release ();
+    locvec = rhs.locvec.copy ();
+    return *this;
+  }
+
+  ~args_loc_t ()
+  {
+    locvec.release ();
+    gcc_assert (ptr == &ptr);
+  }
+
+  /* For a PHI in a return statement its number of arguments.  When greater
+     than LOCVEC.LENGTH () implies that an address of one of the locals in
+     LOCVEC may but need not be returned by the statement.  Otherwise,
+     unless both are zero, it implies it definitely is returned.  */
+  unsigned nargs;
+  /* The locations of local variables/alloca calls returned by the return
+     statement.  Avoid using auto_vec here since it's not safe to copy due
+     to pr90904.  */
+  vec <location_t> locvec;
+  void *ptr;
+};
+
+/* A mapping from a return statement to the locations of local variables
+   whose addresses it may return.  */
+typedef hash_map <gimple *, args_loc_t> locmap_t;
+
+/* Given the LOCMAP mapping, issue diagnostics about returning addresses
+   of local variables.  When MAYBE is set, all diagnostics will be of
+   the "may return" kind.  Otherwise each will be determined based on
+   the equality of the corresponding NARGS and LOCVEC.LENGTH () values.  */
+
+static void
+diag_returned_locals (bool maybe, const locmap_t &locmap)
+{
+  for (locmap_t::iterator it = locmap.begin (); it != locmap.end (); ++it)
+    {
+      gimple *stmt = (*it).first;
+      const args_loc_t &argsloc = (*it).second;
+      location_t stmtloc = gimple_location (stmt);
+
+      auto_diagnostic_group d;
+      unsigned nargs = argsloc.locvec.length ();
+      if (warning_at (stmtloc, OPT_Wreturn_local_addr,
+		      (maybe || argsloc.nargs > nargs
+		       ? G_("function may return address of local variable")
+		       : G_("function returns address of local variable"))))
+	{
+	  for (unsigned i = 0; i != nargs; ++i)
+	    inform (argsloc.locvec[i], "declared here");
+	}
+    }
+}
+
+/* Return true if EXPR is an expression of pointer type that refers
+   to the address of one or more variables with automatic storage
+   duration.  If so, add an entry to *PLOCMAP and insert into
+   PLOCMAP->LOCVEC the locations of the corresponding local variables
+   whose address is returned by the RETURN_STMT (which may be set to
+   (gimple*)-1 as a placeholder for such a statement).  VISITED is
+   a bitmap of PHI nodes already visited by recursive calls.  When
+   null, PHI expressions are not considered.  */
+
+static bool
+is_addr_local (gimple *return_stmt, tree exp, locmap_t *plocmap,
+	       hash_set<gphi *> *visited)
+{
+  if (TREE_CODE (exp) == ADDR_EXPR)
+    {
+      tree baseaddr = get_base_address (TREE_OPERAND (exp, 0));
+      if (TREE_CODE (baseaddr) == MEM_REF)
+	return is_addr_local (return_stmt, TREE_OPERAND (baseaddr, 0),
+			      plocmap, visited);
+
+      if ((!VAR_P (baseaddr)
+	   || is_global_var (baseaddr))
+	  && TREE_CODE (baseaddr) != PARM_DECL)
+	return false;
+
+      args_loc_t &argsloc = plocmap->get_or_insert (return_stmt);
+      argsloc.locvec.safe_push (DECL_SOURCE_LOCATION (baseaddr));
+      return true;
+    }
+
+  if (!POINTER_TYPE_P (TREE_TYPE (exp)))
+    return false;
+
+  if (TREE_CODE (exp) == SSA_NAME)
+    {
+      gimple *def_stmt = SSA_NAME_DEF_STMT (exp);
+      enum gimple_code code = gimple_code (def_stmt);
+
+      if (is_gimple_assign (def_stmt))
+	{
+	  tree type = TREE_TYPE (gimple_assign_lhs (def_stmt));
+	  if (POINTER_TYPE_P (type))
+	    {
+	      tree_code code = gimple_assign_rhs_code (def_stmt);
+	      tree ptr1 = NULL_TREE, ptr2 = NULL_TREE;
+
+	      /* Set to the number of arguments examined that should
+		 be added to ARGSLOC->NARGS to identify expressions
+		 only some but not all of whose operands refer to local
+		 addresses.  */
+	      unsigned nargs = 0;
+	      if (code == COND_EXPR)
+		{
+		  ptr1 = gimple_assign_rhs2 (def_stmt);
+		  ptr2 = gimple_assign_rhs3 (def_stmt);
+		  nargs = 2;
+		}
+	      else if (code == MAX_EXPR || code == MIN_EXPR)
+		{
+		  ptr1 = gimple_assign_rhs1 (def_stmt);
+		  ptr2 = gimple_assign_rhs2 (def_stmt);
+		  nargs = 2;
+		}
+	      else if (code == ADDR_EXPR
+		       || code == NOP_EXPR
+		       || code == POINTER_PLUS_EXPR)
+		/* Leave NARGS at zero and let the recursive call set it.  */
+		ptr1 = gimple_assign_rhs1 (def_stmt);
+
+	      /* Avoid short-circuiting the logical OR result in case
+		 both operands refer to local variables, in which case
+		 both should be considered and identified in the warning.  */
+	      bool res1 = false, res2 = false;
+	      if (ptr1)
+		res1 = is_addr_local (return_stmt, ptr1, plocmap, visited);
+	      if (ptr2)
+		res2 = is_addr_local (return_stmt, ptr2, plocmap, visited);
+
+	      if (nargs)
+		if (args_loc_t *argsloc = plocmap->get (return_stmt))
+		  argsloc->nargs += nargs;
+
+	      return res1 || res2;
+	    }
+	  return false;
+	}
+
+      if (code == GIMPLE_CALL
+	  && gimple_call_builtin_p (def_stmt, BUILT_IN_NORMAL))
+	{
+	  /* Handle alloca and friends that return pointers to automatic
+	     storage.  */
+	  tree fn = gimple_call_fndecl (def_stmt);
+	  int code = DECL_FUNCTION_CODE (fn);
+	  if (code == BUILT_IN_ALLOCA
+	      || code == BUILT_IN_ALLOCA_WITH_ALIGN
+	      || code == BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX)
+	    {
+	      args_loc_t &argsloc = plocmap->get_or_insert (return_stmt);
+	      argsloc.locvec.safe_push (gimple_location (def_stmt));
+	      return true;
+	    }
+
+	  if (gimple_call_num_args (def_stmt) < 1)
+	    return false;
+
+	  /* Recursively examine the first argument of calls to built-ins
+	     that return it.  */
+	  switch (code)
+	    {
+	    case BUILT_IN_MEMCPY:
+	    case BUILT_IN_MEMCPY_CHK:
+	    case BUILT_IN_MEMPCPY:
+	    case BUILT_IN_MEMPCPY_CHK:
+	    case BUILT_IN_MEMMOVE:
+	    case BUILT_IN_MEMMOVE_CHK:
+	    case BUILT_IN_STPCPY:
+	    case BUILT_IN_STPCPY_CHK:
+	    case BUILT_IN_STPNCPY:
+	    case BUILT_IN_STPNCPY_CHK:
+	    case BUILT_IN_STRCAT:
+	    case BUILT_IN_STRCAT_CHK:
+	    case BUILT_IN_STRCHR:
+	    case BUILT_IN_STRCPY:
+	    case BUILT_IN_STRCPY_CHK:
+	    case BUILT_IN_STRNCAT:
+	    case BUILT_IN_STRNCAT_CHK:
+	    case BUILT_IN_STRNCPY:
+	    case BUILT_IN_STRNCPY_CHK:
+	    case BUILT_IN_STRRCHR:
+	    case BUILT_IN_STRSTR:
+	      return is_addr_local (return_stmt,
+				    gimple_call_arg (def_stmt, 0),
+				    plocmap, visited);
+	    default:
+	      return false;
+	    }
+	}
+
+      if (code == GIMPLE_PHI && visited)
+	{
+	  gphi *phi_stmt = as_a <gphi *> (def_stmt);
+	  if (visited->add (phi_stmt))
+	    return false;
+
+	  unsigned count = 0;
+	  unsigned nargs = gimple_phi_num_args (phi_stmt);
+	  args_loc_t &argsloc = plocmap->get_or_insert (return_stmt);
+	  /* Bump up the number of operands examined by the number of
+	     operands of this PHI.  */
+	  argsloc.nargs += nargs;
+	  for (unsigned i = 0; i < gimple_phi_num_args (phi_stmt); ++i)
+	    {
+	      tree arg = gimple_phi_arg_def (phi_stmt, i);
+	      if (is_addr_local (return_stmt, arg, plocmap, visited))
+		++count;
+	    }
+	  return count != 0;
+	}
+    }
+
+  return false;
+}
+
+/* Detect returning the address of a local variable in a PHI result LHS
+   and argument ARG and PHI edge E in basic block BB.  Add an entry for
+   each use to LOCMAP, setting its NARGS member to the NARGS argument
+   (the number of PHI operands) plus the number of arguments in binary
+   expressions refereced by ARG.  Call isolate_path for each returned
+   address and set *ISOLATED to true if called.
+   Return either DUPLICATE or the most recent result of isolate_path.  */
+
+static basic_block
+handle_return_addr_local_phi_arg (basic_block bb, basic_block duplicate,
+				  tree lhs, tree arg, edge e, locmap_t &locmap,
+				  unsigned nargs, bool *isolated)
+{
+  /* Use (gimple*)-1 as a temporary placeholder and replace it with
+     the return statement below once it is known.  Using a null doesn't
+     work because it's used by the hash_map to mean "no-entry."  Pass
+     null instead of a visited_phis bitmap to avoid descending into
+     PHIs since they are being processed by the caller.  Those that
+     remain will be checked again later.  */
+  if (!is_addr_local ((gimple*)-1, arg, &locmap, NULL))
+    {
+      /* Remove the placeholder regardless of success or failure.  */
+      locmap.remove ((gimple*)-1);
+      return duplicate;
+    }
+
+  const args_loc_t* const placeargsloc = locmap.get ((gimple*)-1);
+  const unsigned nlocs = placeargsloc->locvec.length ();
+  gcc_assert (nlocs);
+
+  /* Add to the number of PHI arguments determined by the caller
+     the number of operands of the expressions referenced by ARG.
+     This lets the caller determine whether it's dealing with
+     a "may return" or "definitely returns."  */
+  nargs += placeargsloc->nargs;
+
+  /* Set to true if any expressions referenced by ARG involve
+     multiple addresses only some of which are those of locals.  */
+  bool maybe = placeargsloc->nargs > placeargsloc->locvec.length ();
+
+  gimple *use_stmt;
+  imm_use_iterator iter;
+
+  /* Look for uses of the PHI result LHS in return statements.  */
+  FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
+    {
+      greturn *return_stmt = dyn_cast <greturn *> (use_stmt);
+      if (!return_stmt)
+	continue;
+
+      if (gimple_return_retval (return_stmt) != lhs)
+	continue;
+
+      /* Add an entry for the return statement and the locations
+	 oof the PHI arguments obtained above to the map.  */
+      args_loc_t &argsloc = locmap.get_or_insert (use_stmt);
+      argsloc.nargs = nargs;
+      unsigned nelts = argsloc.locvec.length () + nlocs;
+      argsloc.locvec.reserve (nelts);
+      argsloc.locvec.splice (placeargsloc->locvec);
+
+      if (!maybe
+	  && (flag_isolate_erroneous_paths_dereference
+	      || flag_isolate_erroneous_paths_attribute)
+	  && gimple_bb (use_stmt) == bb)
+	{
+	  duplicate = isolate_path (bb, duplicate, e,
+				    use_stmt, lhs, true);
+
+	  /* Let caller know the path has been isolated.  */
+	  *isolated = true;
+	}
+    }
+
+  locmap.remove ((gimple*)-1);
+
+  return duplicate;
+}
+
 /* Look for PHI nodes which feed statements in the same block where
    the value of the PHI node implies the statement is erroneous.
 
@@ -352,6 +668,8 @@ stmt_uses_0_or_null_in_undefined_way (gimple *stmt)
 static void
 find_implicit_erroneous_behavior (void)
 {
+  locmap_t locmap;
+
   basic_block bb;
 
   FOR_EACH_BB_FN (bb, cfun)
@@ -388,69 +706,45 @@ find_implicit_erroneous_behavior (void)
 	  gphi *phi = si.phi ();
 	  tree lhs = gimple_phi_result (phi);
 
+	  /* Initial number of PHI arguments.  The result may change
+	     from one iteration of the loop below to the next in
+	     response to changes to the CFG but only the initial
+	     value is stored below for use by diagnostics.  */
+	  unsigned nargs = gimple_phi_num_args (phi);
+
 	  /* PHI produces a pointer result.  See if any of the PHI's
 	     arguments are NULL.
 
 	     When we remove an edge, we want to reprocess the current
-	     index, hence the ugly way we update I for each iteration.  */
+	     index since the argument at that index will have been
+	     removed, hence the ugly way we update I for each iteration.  */
 	  basic_block duplicate = NULL;
 	  for (unsigned i = 0, next_i = 0;
-	       i < gimple_phi_num_args (phi);
-	       i = next_i)
+	       i < gimple_phi_num_args (phi); i = next_i)
 	    {
-	      tree op = gimple_phi_arg_def (phi, i);
+	      tree arg = gimple_phi_arg_def (phi, i);
 	      edge e = gimple_phi_arg_edge (phi, i);
-	      imm_use_iterator iter;
-	      gimple *use_stmt;
 
+	      /* Advance the argument index unless a path involving
+		 the current argument has been isolated.  */
 	      next_i = i + 1;
-
-	      if (TREE_CODE (op) == ADDR_EXPR)
+	      bool isolated = false;
+	      duplicate = handle_return_addr_local_phi_arg (bb, duplicate, lhs,
+							    arg, e, locmap,
+							    nargs, &isolated);
+	      if (isolated)
 		{
-		  tree valbase = get_base_address (TREE_OPERAND (op, 0));
-		  if ((VAR_P (valbase) && !is_global_var (valbase))
-		      || TREE_CODE (valbase) == PARM_DECL)
-		    {
-		      FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
-			{
-			  greturn *return_stmt
-			    = dyn_cast <greturn *> (use_stmt);
-			  if (!return_stmt)
-			    continue;
-
-			  if (gimple_return_retval (return_stmt) != lhs)
-			    continue;
-
-			  {
-			    auto_diagnostic_group d;
-			    if (warning_at (gimple_location (use_stmt),
-					      OPT_Wreturn_local_addr,
-					      "function may return address "
-					      "of local variable"))
-			      inform (DECL_SOURCE_LOCATION(valbase),
-					"declared here");
-			  }
-
-			  if ((flag_isolate_erroneous_paths_dereference
-			       || flag_isolate_erroneous_paths_attribute)
-			      && gimple_bb (use_stmt) == bb)
-			    {
-			      duplicate = isolate_path (bb, duplicate, e,
-							use_stmt, lhs, true);
-
-			      /* When we remove an incoming edge, we need to
-				 reprocess the Ith element.  */
-			      next_i = i;
-			      cfg_altered = true;
-			    }
-			}
-		    }
+		  cfg_altered = true;
+		  next_i = i;
 		}
 
-	      if (!integer_zerop (op))
+	      if (!integer_zerop (arg))
 		continue;
 
 	      location_t phi_arg_loc = gimple_phi_arg_location (phi, i);
+
+	      imm_use_iterator iter;
+	      gimple *use_stmt;
 
 	      /* We've got a NULL PHI argument.  Now see if the
  	         PHI's result is dereferenced within BB.  */
@@ -479,6 +773,57 @@ find_implicit_erroneous_behavior (void)
 		}
 	    }
 	}
+    }
+
+  diag_returned_locals (false, locmap);
+}
+
+/* Detect and diagnose returning the address of a local variable
+   in RETURN_STMT in basic block BB.  This only becomes undefined
+   behavior if the result is used, so we do not insert a trap and
+   only return NULL instead.  */
+
+static void
+warn_return_addr_local (basic_block bb, greturn *return_stmt)
+{
+  tree val = gimple_return_retval (return_stmt);
+  if (!val)
+    return;
+
+  locmap_t locmap;
+  hash_set<gphi *> visited_phis;
+  if (!is_addr_local (return_stmt, val, &locmap, &visited_phis))
+    return;
+
+  /* We only need it for this particular case.  */
+  calculate_dominance_info (CDI_POST_DOMINATORS);
+
+  const args_loc_t *argsloc = locmap.get (return_stmt);
+  gcc_assert (argsloc);
+
+  bool maybe = argsloc->nargs > argsloc->locvec.length ();
+  if (!maybe)
+    maybe = !dominated_by_p (CDI_POST_DOMINATORS,
+			     single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)), bb);
+
+  diag_returned_locals (maybe, locmap);
+
+  /* Bail if the statement isn't certain to return the address
+     of a local (e.g., if it involves a conditional expression
+     that wasn't trasnformed into a PHI or if it involves
+     a MAX_EXPR or MIN_EXPR only one of whose operands is a local
+     (even though such an expression isn't valid in C or has
+     defined semantics in C++).  */
+  if (maybe)
+    return;
+
+  /* Do not modify code if the user only asked for warnings.  */
+  if (flag_isolate_erroneous_paths_dereference
+      || flag_isolate_erroneous_paths_attribute)
+    {
+      tree zero = build_zero_cst (TREE_TYPE (val));
+      gimple_return_set_retval (return_stmt, zero);
+      update_stmt (return_stmt);
     }
 }
 
@@ -525,49 +870,10 @@ find_explicit_erroneous_behavior (void)
 	      break;
 	    }
 
-	  /* Detect returning the address of a local variable.  This only
-	     becomes undefined behavior if the result is used, so we do not
-	     insert a trap and only return NULL instead.  */
+	  /* Look for a return statement that returns the address
+	     of a local variable or the result of alloca.  */
 	  if (greturn *return_stmt = dyn_cast <greturn *> (stmt))
-	    {
-	      tree val = gimple_return_retval (return_stmt);
-	      if (val && TREE_CODE (val) == ADDR_EXPR)
-		{
-		  tree valbase = get_base_address (TREE_OPERAND (val, 0));
-		  if ((VAR_P (valbase) && !is_global_var (valbase))
-		      || TREE_CODE (valbase) == PARM_DECL)
-		    {
-		      /* We only need it for this particular case.  */
-		      calculate_dominance_info (CDI_POST_DOMINATORS);
-		      const char* msg;
-		      bool always_executed = dominated_by_p
-			(CDI_POST_DOMINATORS,
-			 single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)), bb);
-		      if (always_executed)
-			msg = N_("function returns address of local variable");
-		      else
-			msg = N_("function may return address of "
-				 "local variable");
-		      {
-			auto_diagnostic_group d;
-			if (warning_at (gimple_location (stmt),
-					  OPT_Wreturn_local_addr, msg))
-			  inform (DECL_SOURCE_LOCATION(valbase),
-				  "declared here");
-		      }
-
-		      /* Do not modify code if the user only asked for
-			 warnings.  */
-		      if (flag_isolate_erroneous_paths_dereference
-			  || flag_isolate_erroneous_paths_attribute)
-			{
-			  tree zero = build_zero_cst (TREE_TYPE (val));
-			  gimple_return_set_retval (return_stmt, zero);
-			  update_stmt (stmt);
-			}
-		    }
-		}
-	    }
+	    warn_return_addr_local (bb, return_stmt);
 	}
     }
 }

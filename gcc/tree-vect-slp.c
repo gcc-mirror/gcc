@@ -857,7 +857,7 @@ vect_build_slp_tree_1 (unsigned char *swap,
 	      continue;
 	    }
 
-	  if (rhs_code == CALL_EXPR)
+	  if (!load_p && rhs_code == CALL_EXPR)
 	    {
 	      if (!compatible_calls_p (as_a <gcall *> (stmts[0]->stmt),
 				       as_a <gcall *> (stmt)))
@@ -1140,7 +1140,8 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  FOR_EACH_VEC_ELT (stmts, i, other_info)
 	    {
 	      /* But for reduction chains only check on the first stmt.  */
-	      if (REDUC_GROUP_FIRST_ELEMENT (other_info)
+	      if (!STMT_VINFO_DATA_REF (other_info)
+		  && REDUC_GROUP_FIRST_ELEMENT (other_info)
 		  && REDUC_GROUP_FIRST_ELEMENT (other_info) != stmt_info)
 		continue;
 	      if (STMT_VINFO_DEF_TYPE (other_info) != def_type)
@@ -1295,6 +1296,9 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  && nops == 2
 	  && oprnds_info[1]->first_dt == vect_internal_def
 	  && is_gimple_assign (stmt_info->stmt)
+	  /* Swapping operands for reductions breaks assumptions later on.  */
+	  && STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def
+	  && STMT_VINFO_DEF_TYPE (stmt_info) != vect_double_reduction_def
 	  /* Do so only if the number of not successful permutes was nor more
 	     than a cut-ff as re-trying the recursive match on
 	     possibly each level of the tree would expose exponential
@@ -2019,7 +2023,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
       else
 	{
 	  /* Create a new SLP instance.  */
-	  new_instance = XNEW (struct _slp_instance);
+	  new_instance = XNEW (class _slp_instance);
 	  SLP_INSTANCE_TREE (new_instance) = node;
 	  SLP_INSTANCE_GROUP_SIZE (new_instance) = group_size;
 	  SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;
@@ -2861,7 +2865,7 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
 
   /* Analyze the data references.  */
 
-  if (!vect_analyze_data_refs (bb_vinfo, &min_vf))
+  if (!vect_analyze_data_refs (bb_vinfo, &min_vf, NULL))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

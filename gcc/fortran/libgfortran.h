@@ -73,9 +73,11 @@ along with GCC; see the file COPYING3.  If not see
 #define GFC_RTCHECK_DO          (1<<3)
 #define GFC_RTCHECK_POINTER     (1<<4)
 #define GFC_RTCHECK_MEM         (1<<5)
+#define GFC_RTCHECK_BITS        (1<<6)
 #define GFC_RTCHECK_ALL        (GFC_RTCHECK_BOUNDS | GFC_RTCHECK_ARRAY_TEMPS \
 				| GFC_RTCHECK_RECURSION | GFC_RTCHECK_DO \
-				| GFC_RTCHECK_POINTER | GFC_RTCHECK_MEM)
+				| GFC_RTCHECK_POINTER | GFC_RTCHECK_MEM \
+				| GFC_RTCHECK_BITS)
 
 /* Special unit numbers used to convey certain conditions.  Numbers -4
    thru -9 available.  NEWUNIT values start at -10.  */
@@ -172,6 +174,6 @@ typedef enum
 typedef enum
 { BT_UNKNOWN = 0, BT_INTEGER, BT_LOGICAL, BT_REAL, BT_COMPLEX,
   BT_DERIVED, BT_CHARACTER, BT_CLASS, BT_PROCEDURE, BT_HOLLERITH, BT_VOID,
-  BT_ASSUMED, BT_UNION
+  BT_ASSUMED, BT_UNION, BT_BOZ
 }
 bt;

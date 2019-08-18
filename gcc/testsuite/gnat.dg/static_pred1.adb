@@ -8,7 +8,7 @@ package body Static_Pred1 is
      Enum_Subrange in A | C;
 
    function "not" (Kind : Enum_Subrange) return Enum_Subrange is
-     (case Kind is -- { dg-error "missing case value: \"B\"" }
+     (case Kind is
       when A => C,
       when C => A);
 

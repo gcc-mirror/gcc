@@ -713,8 +713,9 @@ struct transformed_insns
 
 /* Indexed by INSN_LUID, the collection of all data associated with
    a single instruction that is in the stream.  */
-struct _sel_insn_data
+class _sel_insn_data
 {
+public:
   /* The expression that contains vinsn for this insn and some
      flow-sensitive data like priority.  */
   expr_def expr;
@@ -745,7 +746,7 @@ struct _sel_insn_data
   htab_t transformed_insns;
 
   /* A context incapsulating this insn.  */
-  struct deps_desc deps_context;
+  class deps_desc deps_context;
 
   /* This field is initialized at the beginning of scheduling and is used
      to handle sched group instructions.  If it is non-null, then it points
@@ -774,7 +775,7 @@ struct _sel_insn_data
   BOOL_BITFIELD after_stall_p : 1;
 };
 
-typedef struct _sel_insn_data sel_insn_data_def;
+typedef class _sel_insn_data sel_insn_data_def;
 typedef sel_insn_data_def *sel_insn_data_t;
 
 extern vec<sel_insn_data_def> s_i_d;
@@ -953,7 +954,7 @@ extern vec<sel_region_bb_info_def> sel_region_bb_info;
 extern bitmap_head *forced_ebb_heads;
 
 /* The loop nest being pipelined.  */
-extern struct loop *current_loop_nest;
+extern class loop *current_loop_nest;
 
 /* Saves pipelined blocks.  Bitmap is indexed by bb->index.  */
 extern sbitmap bbs_pipelined;
@@ -1042,7 +1043,7 @@ extern bool in_current_region_p (basic_block);
 static inline bool
 inner_loop_header_p (basic_block bb)
 {
-  struct loop *inner_loop;
+  class loop *inner_loop;
 
   if (!current_loop_nest)
     return false;
@@ -1068,7 +1069,7 @@ inner_loop_header_p (basic_block bb)
 
 /* Return exit edges of LOOP, filtering out edges with the same dest bb.  */
 static inline vec<edge> 
-get_loop_exit_edges_unique_dests (const struct loop *loop)
+get_loop_exit_edges_unique_dests (const class loop *loop)
 {
   vec<edge> edges = vNULL;
   struct loop_exit *exit;
@@ -1141,8 +1142,8 @@ get_all_loop_exits (basic_block bb)
   /* And now check whether we should skip over inner loop.  */
   if (inner_loop_header_p (bb))
     {
-      struct loop *this_loop;
-      struct loop *pred_loop = NULL;
+      class loop *this_loop;
+      class loop *pred_loop = NULL;
       int i;
       unsigned this_depth;
       edge e;
@@ -1641,7 +1642,7 @@ extern void sel_init_pipelining (void);
 extern void sel_finish_pipelining (void);
 extern void sel_sched_region (int);
 extern loop_p get_loop_nest_for_rgn (unsigned int);
-extern bool considered_for_pipelining_p (struct loop *);
+extern bool considered_for_pipelining_p (class loop *);
 extern void make_region_from_loop_preheader (vec<basic_block> *&);
 extern void sel_add_loop_preheaders (bb_vec_t *);
 extern bool sel_is_loop_preheader_p (basic_block);

@@ -1682,18 +1682,34 @@ package body Exp_Disp is
       while Present (Formal) loop
          Formal_Typ := Etype (Formal);
 
+         if Has_Non_Limited_View (Formal_Typ) then
+            Formal_Typ := Non_Limited_View (Formal_Typ);
+         end if;
+
          if Ekind (Formal_Typ) = E_Record_Type_With_Private then
             Formal_Typ := Full_View (Formal_Typ);
          end if;
 
          if Is_Access_Type (Formal_Typ) then
             Formal_DDT := Directly_Designated_Type (Formal_Typ);
+
+            if Has_Non_Limited_View (Formal_DDT) then
+               Formal_DDT := Non_Limited_View (Formal_DDT);
+            end if;
          end if;
 
          Actual_Typ := Etype (Actual);
 
+         if Has_Non_Limited_View (Actual_Typ) then
+            Actual_Typ := Non_Limited_View (Actual_Typ);
+         end if;
+
          if Is_Access_Type (Actual_Typ) then
             Actual_DDT := Directly_Designated_Type (Actual_Typ);
+
+            if Has_Non_Limited_View (Actual_DDT) then
+               Actual_DDT := Non_Limited_View (Actual_DDT);
+            end if;
          end if;
 
          if Is_Interface (Formal_Typ)
@@ -3748,7 +3764,7 @@ package body Exp_Disp is
       Dummy_Object : Entity_Id := Empty;
       --  Extra nonexistent object of type Typ internally used to compute the
       --  offset to the components that reference secondary dispatch tables.
-      --  Used to statically allocate secondary dispatch tables.
+      --  Used to compute the offset of components located at fixed position.
 
       procedure Check_Premature_Freezing
         (Subp        : Entity_Id;
@@ -4175,13 +4191,15 @@ package body Exp_Disp is
              Prefix         => New_Occurrence_Of (Predef_Prims, Loc),
              Attribute_Name => Name_Address));
 
-         --  If the location of the component that references this secondary
-         --  dispatch table is variable then we have not declared the internal
-         --  dummy object; the value of Offset_To_Top will be set by the init
-         --  subprogram.
+         --  Interface component located at variable offset; the value of
+         --  Offset_To_Top will be set by the init subprogram.
 
-         if No (Dummy_Object) then
+         if No (Dummy_Object)
+           or else Is_Variable_Size_Record (Etype (Scope (Iface_Comp)))
+         then
             Append_To (DT_Aggr_List, Make_Integer_Literal (Loc, 0));
+
+         --  Interface component located at fixed offset
 
          else
             Append_To (DT_Aggr_List,
@@ -4428,7 +4446,7 @@ package body Exp_Disp is
            Make_Object_Declaration (Loc,
              Defining_Identifier => Iface_DT,
              Aliased_Present     => True,
-             Constant_Present    => Present (Dummy_Object),
+             Constant_Present    => Building_Static_Secondary_DT (Typ),
 
              Object_Definition   =>
                Make_Subtype_Indication (Loc,
@@ -4707,9 +4725,10 @@ package body Exp_Disp is
          end;
       end if;
 
-      if Building_Static_Secondary_DT (Typ) then
+      if not Is_Interface (Typ) and then Has_Interfaces (Typ) then
          declare
             Cannot_Have_Null_Disc : Boolean := False;
+            Dummy_Object_Typ      : constant Entity_Id := Typ;
             Name_Dummy_Object     : constant Name_Id :=
                                       New_External_Name (Tname,
                                         'P', Suffix_Index => -1);
@@ -4738,19 +4757,20 @@ package body Exp_Disp is
 
             Set_Is_Internal (Dummy_Object);
 
-            if not Has_Discriminants (Typ) then
+            if not Has_Discriminants (Dummy_Object_Typ) then
                Append_To (Result,
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Dummy_Object,
                    Constant_Present    => True,
-                   Object_Definition   => New_Occurrence_Of (Typ, Loc)));
+                   Object_Definition   => New_Occurrence_Of
+                                           (Dummy_Object_Typ, Loc)));
             else
                declare
                   Constr_List  : constant List_Id := New_List;
                   Discrim      : Node_Id;
 
                begin
-                  Discrim := First_Discriminant (Typ);
+                  Discrim := First_Discriminant (Dummy_Object_Typ);
                   while Present (Discrim) loop
                      if Is_Discrete_Type (Etype (Discrim)) then
                         Append_To (Constr_List,
@@ -4776,7 +4796,8 @@ package body Exp_Disp is
                       Constant_Present    => True,
                       Object_Definition   =>
                         Make_Subtype_Indication (Loc,
-                          Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+                          Subtype_Mark =>
+                            New_Occurrence_Of (Dummy_Object_Typ, Loc),
                           Constraint   =>
                             Make_Index_Or_Discriminant_Constraint (Loc,
                               Constraints => Constr_List))));
@@ -5484,11 +5505,13 @@ package body Exp_Disp is
             declare
                TSD_Ifaces_List  : constant List_Id := New_List;
                Elmt             : Elmt_Id;
-               Ifaces_List      : Elist_Id := No_Elist;
-               Ifaces_Comp_List : Elist_Id := No_Elist;
-               Ifaces_Tag_List  : Elist_Id;
                Offset_To_Top    : Node_Id;
                Sec_DT_Tag       : Node_Id;
+
+               Dummy_Object_Ifaces_List      : Elist_Id := No_Elist;
+               Dummy_Object_Ifaces_Comp_List : Elist_Id := No_Elist;
+               Dummy_Object_Ifaces_Tag_List  : Elist_Id := No_Elist;
+               --  Interfaces information of the dummy object
 
             begin
                --  Collect interfaces information if we need to compute the
@@ -5496,7 +5519,9 @@ package body Exp_Disp is
 
                if Present (Dummy_Object) then
                   Collect_Interfaces_Info (Typ,
-                    Ifaces_List, Ifaces_Comp_List, Ifaces_Tag_List);
+                    Ifaces_List     => Dummy_Object_Ifaces_List,
+                    Components_List => Dummy_Object_Ifaces_Comp_List,
+                    Tags_List       => Dummy_Object_Ifaces_Tag_List);
                end if;
 
                AI := First_Elmt (Typ_Ifaces);
@@ -5534,8 +5559,8 @@ package body Exp_Disp is
                          (Node (Next_Elmt (Next_Elmt (Elmt))), Loc);
                   end if;
 
-                  --  For static dispatch tables compute Offset_To_Top using
-                  --  the dummy object.
+                  --  Use the dummy object to compute Offset_To_Top of
+                  --  components located at fixed position.
 
                   if Present (Dummy_Object) then
                      declare
@@ -5545,8 +5570,10 @@ package body Exp_Disp is
                         Iface_Elmt       : Elmt_Id;
 
                      begin
-                        Iface_Elmt      := First_Elmt (Ifaces_List);
-                        Iface_Comp_Elmt := First_Elmt (Ifaces_Comp_List);
+                        Iface_Elmt :=
+                          First_Elmt (Dummy_Object_Ifaces_List);
+                        Iface_Comp_Elmt :=
+                          First_Elmt (Dummy_Object_Ifaces_Comp_List);
 
                         while Present (Iface_Elmt) loop
                            if Node (Iface_Elmt) = Iface then
@@ -5560,16 +5587,22 @@ package body Exp_Disp is
 
                         pragma Assert (Present (Iface_Comp));
 
-                        Offset_To_Top :=
-                          Make_Op_Minus (Loc,
-                            Make_Attribute_Reference (Loc,
-                              Prefix         =>
-                                Make_Selected_Component (Loc,
-                                  Prefix        =>
-                                    New_Occurrence_Of (Dummy_Object, Loc),
-                                  Selector_Name =>
-                                    New_Occurrence_Of (Iface_Comp, Loc)),
-                              Attribute_Name => Name_Position));
+                        if not
+                          Is_Variable_Size_Record (Etype (Scope (Iface_Comp)))
+                        then
+                           Offset_To_Top :=
+                             Make_Op_Minus (Loc,
+                               Make_Attribute_Reference (Loc,
+                                 Prefix         =>
+                                   Make_Selected_Component (Loc,
+                                     Prefix        =>
+                                       New_Occurrence_Of (Dummy_Object, Loc),
+                                     Selector_Name =>
+                                       New_Occurrence_Of (Iface_Comp, Loc)),
+                                 Attribute_Name => Name_Position));
+                        else
+                           Offset_To_Top := Make_Integer_Literal (Loc, 0);
+                        end if;
                      end;
                   else
                      Offset_To_Top := Make_Integer_Literal (Loc, 0);
@@ -5618,7 +5651,7 @@ package body Exp_Disp is
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => ITable,
                    Aliased_Present     => True,
-                   Constant_Present    => Present (Dummy_Object),
+                   Constant_Present    => Building_Static_Secondary_DT (Typ),
                    Object_Definition   =>
                      Make_Subtype_Indication (Loc,
                        Subtype_Mark =>
@@ -7637,7 +7670,7 @@ package body Exp_Disp is
                      Unchecked_Convert_To (RTE (RE_Prim_Ptr),
                        Make_Attribute_Reference (Loc,
                          Prefix         =>
-                           New_Occurrence_Of (Alias (Prim), Loc),
+                           New_Occurrence_Of (Ultimate_Alias (Prim), Loc),
                          Attribute_Name => Name_Unrestricted_Access))));
 
             end if;

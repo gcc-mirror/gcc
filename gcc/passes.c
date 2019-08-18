@@ -1646,23 +1646,38 @@ do_per_function (void (*callback) (function *, void *data), void *data)
     }
 }
 
-/* Because inlining might remove no-longer reachable nodes, we need to
-   keep the array visible to garbage collector to avoid reading collected
-   out nodes.  */
-static int nnodes;
-static GTY ((length ("nnodes"))) cgraph_node **order;
-
-#define uid_hash_t hash_set<int_hash <int, 0, -1> >
-
 /* Hook called when NODE is removed and therefore should be
    excluded from order vector.  DATA is a hash set with removed nodes.  */
 
 static void
 remove_cgraph_node_from_order (cgraph_node *node, void *data)
 {
-  uid_hash_t *removed_nodes = (uid_hash_t *)data;
-  removed_nodes->add (node->get_uid ());
+  hash_set<cgraph_node *> *removed_nodes = (hash_set<cgraph_node *> *)data;
+  removed_nodes->add (node);
 }
+
+/* Hook called when NODE is insert and therefore should be
+   excluded from removed_nodes.  DATA is a hash set with removed nodes.  */
+
+static void
+insert_cgraph_node_to_order (cgraph_node *node, void *data)
+{
+  hash_set<cgraph_node *> *removed_nodes = (hash_set<cgraph_node *> *)data;
+  removed_nodes->remove (node);
+}
+
+/* Hook called when NODE is duplicated and therefore should be
+   excluded from removed_nodes.  DATA is a hash set with removed nodes.  */
+
+static void
+duplicate_cgraph_node_to_order (cgraph_node *node, cgraph_node *node2,
+				void *data)
+{
+  hash_set<cgraph_node *> *removed_nodes = (hash_set<cgraph_node *> *)data;
+  gcc_checking_assert (!removed_nodes->contains (node));
+  removed_nodes->remove (node2);
+}
+
 
 /* If we are in IPA mode (i.e., current_function_decl is NULL), call
    function CALLBACK for every function in the call graph.  Otherwise,
@@ -1677,26 +1692,30 @@ do_per_function_toporder (void (*callback) (function *, void *data), void *data)
     callback (cfun, data);
   else
     {
-      cgraph_node_hook_list *hook;
-      uid_hash_t removed_nodes;
-      gcc_assert (!order);
-      order = ggc_vec_alloc<cgraph_node *> (symtab->cgraph_count);
+      hash_set<cgraph_node *> removed_nodes;
+      unsigned nnodes = symtab->cgraph_count;
+      cgraph_node **order = XNEWVEC (cgraph_node *, nnodes);
 
       nnodes = ipa_reverse_postorder (order);
       for (i = nnodes - 1; i >= 0; i--)
 	order[i]->process = 1;
-      hook = symtab->add_cgraph_removal_hook (remove_cgraph_node_from_order,
-					      &removed_nodes);
+      cgraph_node_hook_list *removal_hook
+	= symtab->add_cgraph_removal_hook (remove_cgraph_node_from_order,
+					   &removed_nodes);
+      cgraph_node_hook_list *insertion_hook
+	= symtab->add_cgraph_insertion_hook (insert_cgraph_node_to_order,
+					     &removed_nodes);
+      cgraph_2node_hook_list *duplication_hook
+	= symtab->add_cgraph_duplication_hook (duplicate_cgraph_node_to_order,
+					       &removed_nodes);
       for (i = nnodes - 1; i >= 0; i--)
 	{
 	  cgraph_node *node = order[i];
 
 	  /* Function could be inlined and removed as unreachable.  */
-	  if (node == NULL || removed_nodes.contains (node->get_uid ()))
+	  if (node == NULL || removed_nodes.contains (node))
 	    continue;
 
-	  /* Allow possibly removed nodes to be garbage collected.  */
-	  order[i] = NULL;
 	  node->process = 0;
 	  if (node->has_gimple_body_p ())
 	    {
@@ -1706,11 +1725,12 @@ do_per_function_toporder (void (*callback) (function *, void *data), void *data)
 	      pop_cfun ();
 	    }
 	}
-      symtab->remove_cgraph_removal_hook (hook);
+      symtab->remove_cgraph_removal_hook (removal_hook);
+      symtab->remove_cgraph_insertion_hook (insertion_hook);
+      symtab->remove_cgraph_duplication_hook (duplication_hook);
+
+      free (order);
     }
-  ggc_free (order);
-  order = NULL;
-  nnodes = 0;
 }
 
 /* Helper function to perform function body dump.  */
@@ -2182,7 +2202,7 @@ execute_ipa_summary_passes (ipa_opt_pass_d *ipa_pass)
 
 static void
 execute_one_ipa_transform_pass (struct cgraph_node *node,
-				ipa_opt_pass_d *ipa_pass)
+				ipa_opt_pass_d *ipa_pass, bool do_not_collect)
 {
   opt_pass *pass = ipa_pass;
   unsigned int todo_after = 0;
@@ -2228,14 +2248,14 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
   redirect_edge_var_map_empty ();
 
   /* Signal this is a suitable GC collection point.  */
-  if (!(todo_after & TODO_do_not_ggc_collect))
+  if (!do_not_collect && !(todo_after & TODO_do_not_ggc_collect))
     ggc_collect ();
 }
 
 /* For the current function, execute all ipa transforms. */
 
 void
-execute_all_ipa_transforms (void)
+execute_all_ipa_transforms (bool do_not_collect)
 {
   struct cgraph_node *node;
   if (!cfun)
@@ -2247,7 +2267,8 @@ execute_all_ipa_transforms (void)
       unsigned int i;
 
       for (i = 0; i < node->ipa_transforms_to_apply.length (); i++)
-	execute_one_ipa_transform_pass (node, node->ipa_transforms_to_apply[i]);
+	execute_one_ipa_transform_pass (node, node->ipa_transforms_to_apply[i],
+					do_not_collect);
       node->ipa_transforms_to_apply.release ();
     }
 }
@@ -3045,5 +3066,3 @@ function_called_by_processed_nodes_p (void)
     }
   return e != NULL;
 }
-
-#include "gt-passes.h"

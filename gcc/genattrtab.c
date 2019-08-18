@@ -133,9 +133,10 @@ static struct obstack *temp_obstack = &obstack2;
    `struct insn_def'.  This is done to allow attribute definitions to occur
    anywhere in the file.  */
 
-struct insn_def
+class insn_def
 {
-  struct insn_def *next;	/* Next insn in chain.  */
+public:
+  class insn_def *next;	/* Next insn in chain.  */
   rtx def;			/* The DEFINE_...  */
   int insn_code;		/* Instruction number.  */
   int insn_index;		/* Expression number in file, for errors.  */
@@ -151,7 +152,7 @@ struct insn_def
 struct insn_ent
 {
   struct insn_ent *next;	/* Next in chain.  */
-  struct insn_def *def;		/* Instruction definition.  */
+  class insn_def *def;		/* Instruction definition.  */
 };
 
 /* Each value of an attribute (either constant or computed) is assigned a
@@ -169,11 +170,12 @@ struct attr_value
 
 /* Structure for each attribute.  */
 
-struct attr_desc
+class attr_desc
 {
+public:
   char *name;			/* Name of attribute.  */
   const char *enum_name;	/* Enum name for DEFINE_ENUM_NAME.  */
-  struct attr_desc *next;	/* Next attribute.  */
+  class attr_desc *next;	/* Next attribute.  */
   struct attr_value *first_value; /* First value of this attribute.  */
   struct attr_value *default_val; /* Default value for this attribute.  */
   file_location loc;		/* Where in the .md files it occurs.  */
@@ -184,10 +186,11 @@ struct attr_desc
 
 /* Structure for each DEFINE_DELAY.  */
 
-struct delay_desc
+class delay_desc
 {
+public:
   rtx def;			/* DEFINE_DELAY expression.  */
-  struct delay_desc *next;	/* Next DEFINE_DELAY.  */
+  class delay_desc *next;	/* Next DEFINE_DELAY.  */
   file_location loc;		/* Where in the .md files it occurs.  */
   int num;			/* Number of DEFINE_DELAY, starting at 1.  */
 };
@@ -196,7 +199,7 @@ struct attr_value_list
 {
   struct attr_value *av;
   struct insn_ent *ie;
-  struct attr_desc *attr;
+  class attr_desc *attr;
   struct attr_value_list *next;
 };
 
@@ -204,9 +207,9 @@ struct attr_value_list
 
 /* This one is indexed by the first character of the attribute name.  */
 #define MAX_ATTRS_INDEX 256
-static struct attr_desc *attrs[MAX_ATTRS_INDEX];
-static struct insn_def *defs;
-static struct delay_desc *delays;
+static class attr_desc *attrs[MAX_ATTRS_INDEX];
+static class insn_def *defs;
+static class delay_desc *delays;
 struct attr_value_list **insn_code_values;
 
 /* Other variables.  */
@@ -257,7 +260,7 @@ static char *attr_string           (const char *, int);
 static char *attr_printf           (unsigned int, const char *, ...)
   ATTRIBUTE_PRINTF_2;
 static rtx make_numeric_value      (int);
-static struct attr_desc *find_attr (const char **, int);
+static class attr_desc *find_attr (const char **, int);
 static rtx mk_attr_alt             (alternative_mask);
 static char *next_comma_elt	   (const char **);
 static rtx insert_right_side	   (enum rtx_code, rtx, rtx, int, int);
@@ -275,15 +278,15 @@ static rtx copy_rtx_unchanging	   (rtx);
 static bool attr_alt_subset_p      (rtx, rtx);
 static bool attr_alt_subset_of_compl_p (rtx, rtx);
 static void clear_struct_flag      (rtx);
-static void write_attr_valueq	   (FILE *, struct attr_desc *, const char *);
-static struct attr_value *find_most_used  (struct attr_desc *);
-static void write_attr_set	   (FILE *, struct attr_desc *, int, rtx,
+static void write_attr_valueq	   (FILE *, class attr_desc *, const char *);
+static struct attr_value *find_most_used  (class attr_desc *);
+static void write_attr_set	   (FILE *, class attr_desc *, int, rtx,
 				    const char *, const char *, rtx,
 				    int, int, unsigned int);
-static void write_attr_case	   (FILE *, struct attr_desc *,
+static void write_attr_case	   (FILE *, class attr_desc *,
 				    struct attr_value *,
 				    int, const char *, const char *, int, rtx);
-static void write_attr_value	   (FILE *, struct attr_desc *, rtx);
+static void write_attr_value	   (FILE *, class attr_desc *, rtx);
 static void write_upcase	   (FILE *, const char *);
 static void write_indent	   (FILE *, int);
 static rtx identity_fn		   (rtx);
@@ -844,7 +847,7 @@ check_attr_test (file_location loc, rtx exp, attr_desc *attr)
    Return a perhaps modified replacement expression for the value.  */
 
 static rtx
-check_attr_value (file_location loc, rtx exp, struct attr_desc *attr)
+check_attr_value (file_location loc, rtx exp, class attr_desc *attr)
 {
   struct attr_value *av;
   const char *p;
@@ -954,7 +957,7 @@ check_attr_value (file_location loc, rtx exp, struct attr_desc *attr)
 
     case ATTR:
       {
-	struct attr_desc *attr2 = find_attr (&XSTR (exp, 0), 0);
+	class attr_desc *attr2 = find_attr (&XSTR (exp, 0), 0);
 	if (attr2 == NULL)
 	  error_at (loc, "unknown attribute `%s' in ATTR",
 		    XSTR (exp, 0));
@@ -988,7 +991,7 @@ check_attr_value (file_location loc, rtx exp, struct attr_desc *attr)
    It becomes a COND with each test being (eq_attr "alternative" "n") */
 
 static rtx
-convert_set_attr_alternative (rtx exp, struct insn_def *id)
+convert_set_attr_alternative (rtx exp, class insn_def *id)
 {
   int num_alt = id->num_alternatives;
   rtx condexp;
@@ -1024,7 +1027,7 @@ convert_set_attr_alternative (rtx exp, struct insn_def *id)
    list of values is given, convert to SET_ATTR_ALTERNATIVE first.  */
 
 static rtx
-convert_set_attr (rtx exp, struct insn_def *id)
+convert_set_attr (rtx exp, class insn_def *id)
 {
   rtx newexp;
   const char *name_ptr;
@@ -1058,8 +1061,8 @@ convert_set_attr (rtx exp, struct insn_def *id)
 static void
 check_defs (void)
 {
-  struct insn_def *id;
-  struct attr_desc *attr;
+  class insn_def *id;
+  class attr_desc *attr;
   int i;
   rtx value;
 
@@ -1116,7 +1119,7 @@ check_defs (void)
    value.  LOC is the location to use for error reporting.  */
 
 static rtx
-make_canonical (file_location loc, struct attr_desc *attr, rtx exp)
+make_canonical (file_location loc, class attr_desc *attr, rtx exp)
 {
   int i;
   rtx newexp;
@@ -1223,7 +1226,7 @@ copy_boolean (rtx exp)
    alternatives.  LOC is the location to use for error reporting.  */
 
 static struct attr_value *
-get_attr_value (file_location loc, rtx value, struct attr_desc *attr,
+get_attr_value (file_location loc, rtx value, class attr_desc *attr,
 		int insn_code)
 {
   struct attr_value *av;
@@ -1273,7 +1276,7 @@ get_attr_value (file_location loc, rtx value, struct attr_desc *attr,
 static void
 expand_delays (void)
 {
-  struct delay_desc *delay;
+  class delay_desc *delay;
   rtx condexp;
   rtx newexp;
   int i;
@@ -1359,11 +1362,11 @@ expand_delays (void)
    the attribute.  */
 
 static void
-fill_attr (struct attr_desc *attr)
+fill_attr (class attr_desc *attr)
 {
   struct attr_value *av;
   struct insn_ent *ie;
-  struct insn_def *id;
+  class insn_def *id;
   int i;
   rtx value;
 
@@ -1488,7 +1491,7 @@ make_length_attrs (void)
   static rtx (*const address_fn[]) (rtx)
     = {max_fn, min_fn, one_fn, identity_fn};
   size_t i;
-  struct attr_desc *length_attr, *new_attr;
+  class attr_desc *length_attr, *new_attr;
   struct attr_value *av, *new_av;
   struct insn_ent *ie, *new_ie;
 
@@ -1562,7 +1565,7 @@ min_fn (rtx exp)
 static void
 write_length_unit_log (FILE *outf)
 {
-  struct attr_desc *length_attr = find_attr (&length_str, 0);
+  class attr_desc *length_attr = find_attr (&length_str, 0);
   struct attr_value *av;
   struct insn_ent *ie;
   unsigned int length_unit_log, length_or;
@@ -1921,7 +1924,7 @@ make_alternative_compare (alternative_mask mask)
    corresponding to INSN_CODE and INSN_INDEX.  */
 
 static rtx
-evaluate_eq_attr (rtx exp, struct attr_desc *attr, rtx value,
+evaluate_eq_attr (rtx exp, class attr_desc *attr, rtx value,
 		  int insn_code, int insn_index)
 {
   rtx orexp, andexp;
@@ -2414,7 +2417,7 @@ static rtx
 simplify_test_exp (rtx exp, int insn_code, int insn_index)
 {
   rtx left, right;
-  struct attr_desc *attr;
+  class attr_desc *attr;
   struct attr_value *av;
   struct insn_ent *ie;
   struct attr_value_list *iv;
@@ -2755,7 +2758,7 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
    otherwise return 0.  */
 
 static int
-tests_attr_p (rtx p, struct attr_desc *attr)
+tests_attr_p (rtx p, class attr_desc *attr)
 {
   const char *fmt;
   int i, ie, j, je;
@@ -2796,18 +2799,18 @@ tests_attr_p (rtx p, struct attr_desc *attr)
    attr_desc pointers), and return the size of that array.  */
 
 static int
-get_attr_order (struct attr_desc ***ret)
+get_attr_order (class attr_desc ***ret)
 {
   int i, j;
   int num = 0;
-  struct attr_desc *attr;
-  struct attr_desc **all, **sorted;
+  class attr_desc *attr;
+  class attr_desc **all, **sorted;
   char *handled;
   for (i = 0; i < MAX_ATTRS_INDEX; i++)
     for (attr = attrs[i]; attr; attr = attr->next)
       num++;
-  all = XNEWVEC (struct attr_desc *, num);
-  sorted = XNEWVEC (struct attr_desc *, num);
+  all = XNEWVEC (class attr_desc *, num);
+  sorted = XNEWVEC (class attr_desc *, num);
   handled = XCNEWVEC (char, num);
   num = 0;
   for (i = 0; i < MAX_ATTRS_INDEX; i++)
@@ -2855,7 +2858,7 @@ get_attr_order (struct attr_desc ***ret)
   if (DEBUG)
     for (j = 0; j < num; j++)
       {
-	struct attr_desc *attr2;
+	class attr_desc *attr2;
 	struct attr_value *av;
 
 	attr = sorted[j];
@@ -2886,14 +2889,14 @@ get_attr_order (struct attr_desc ***ret)
 static void
 optimize_attrs (int num_insn_codes)
 {
-  struct attr_desc *attr;
+  class attr_desc *attr;
   struct attr_value *av;
   struct insn_ent *ie;
   rtx newexp;
   int i;
   struct attr_value_list *ivbuf;
   struct attr_value_list *iv;
-  struct attr_desc **topsort;
+  class attr_desc **topsort;
   int topnum;
 
   /* For each insn code, make a list of all the insn_ent's for it,
@@ -3041,7 +3044,7 @@ clear_struct_flag (rtx x)
 /* Add attribute value NAME to the beginning of ATTR's list.  */
 
 static void
-add_attr_value (struct attr_desc *attr, const char *name)
+add_attr_value (class attr_desc *attr, const char *name)
 {
   struct attr_value *av;
 
@@ -3061,7 +3064,7 @@ gen_attr (md_rtx_info *info)
 {
   struct enum_type *et;
   struct enum_value *ev;
-  struct attr_desc *attr;
+  class attr_desc *attr;
   const char *name_ptr;
   char *p;
   rtx def = info->def;
@@ -3192,10 +3195,10 @@ compares_alternatives_p (rtx exp)
 static void
 gen_insn (md_rtx_info *info)
 {
-  struct insn_def *id;
+  class insn_def *id;
   rtx def = info->def;
 
-  id = oballoc (struct insn_def);
+  id = oballoc (class insn_def);
   id->next = defs;
   defs = id;
   id->def = def;
@@ -3240,7 +3243,7 @@ gen_insn (md_rtx_info *info)
 static void
 gen_delay (md_rtx_info *info)
 {
-  struct delay_desc *delay;
+  class delay_desc *delay;
   int i;
 
   rtx def = info->def;
@@ -3259,7 +3262,7 @@ gen_delay (md_rtx_info *info)
 	have_annul_false = 1;
     }
 
-  delay = oballoc (struct delay_desc);
+  delay = oballoc (class delay_desc);
   delay->def = def;
   delay->num = ++num_delays;
   delay->next = delays;
@@ -3286,7 +3289,7 @@ find_attrs_to_cache (rtx exp, bool create)
 {
   int i;
   const char *name;
-  struct attr_desc *attr;
+  class attr_desc *attr;
 
   if (exp == NULL)
     return;
@@ -3366,7 +3369,7 @@ write_test_expr (FILE *outf, rtx exp, unsigned int attrs_cached, int flags,
 {
   int comparison_operator = 0;
   RTX_CODE code;
-  struct attr_desc *attr;
+  class attr_desc *attr;
 
   if (emit_parens)
     fprintf (outf, "(");
@@ -4039,7 +4042,7 @@ walk_attr_value (rtx exp)
 /* Write out a function to obtain the attribute for a given INSN.  */
 
 static void
-write_attr_get (FILE *outf, struct attr_desc *attr)
+write_attr_get (FILE *outf, class attr_desc *attr)
 {
   struct attr_value *av, *common_av;
   int i, j;
@@ -4096,7 +4099,7 @@ write_attr_get (FILE *outf, struct attr_desc *attr)
     if ((attrs_seen_more_than_once & (1U << i)) != 0)
       {
 	const char *name = cached_attrs[i];
-	struct attr_desc *cached_attr;
+	class attr_desc *cached_attr;
 	if (i != j)
 	  cached_attrs[j] = name;
 	cached_attr = find_attr (&name, 0);
@@ -4160,7 +4163,7 @@ eliminate_known_true (rtx known_true, rtx exp, int insn_code, int insn_index)
    and ";").  */
 
 static void
-write_attr_set (FILE *outf, struct attr_desc *attr, int indent, rtx value,
+write_attr_set (FILE *outf, class attr_desc *attr, int indent, rtx value,
 		const char *prefix, const char *suffix, rtx known_true,
 		int insn_code, int insn_index, unsigned int attrs_cached)
 {
@@ -4288,7 +4291,7 @@ write_insn_cases (FILE *outf, struct insn_ent *ie, int indent)
 /* Write out the computation for one attribute value.  */
 
 static void
-write_attr_case (FILE *outf, struct attr_desc *attr, struct attr_value *av,
+write_attr_case (FILE *outf, class attr_desc *attr, struct attr_value *av,
 		 int write_case_lines, const char *prefix, const char *suffix,
 		 int indent, rtx known_true)
 {
@@ -4352,7 +4355,7 @@ write_attr_case (FILE *outf, struct attr_desc *attr, struct attr_value *av,
 /* Utilities to write in various forms.  */
 
 static void
-write_attr_valueq (FILE *outf, struct attr_desc *attr, const char *s)
+write_attr_valueq (FILE *outf, class attr_desc *attr, const char *s)
 {
   if (attr->is_numeric)
     {
@@ -4372,7 +4375,7 @@ write_attr_valueq (FILE *outf, struct attr_desc *attr, const char *s)
 }
 
 static void
-write_attr_value (FILE *outf, struct attr_desc *attr, rtx value)
+write_attr_value (FILE *outf, class attr_desc *attr, rtx value)
 {
   int op;
 
@@ -4392,7 +4395,7 @@ write_attr_value (FILE *outf, struct attr_desc *attr, rtx value)
 
     case ATTR:
       {
-	struct attr_desc *attr2 = find_attr (&XSTR (value, 0), 0);
+	class attr_desc *attr2 = find_attr (&XSTR (value, 0), 0);
 	if (attr->enum_name)
 	  fprintf (outf, "(enum %s)", attr->enum_name);
 	else if (!attr->is_numeric)
@@ -4500,11 +4503,11 @@ write_dummy_eligible_delay (FILE *outf, const char *kind)
 static void
 write_eligible_delay (FILE *outf, const char *kind)
 {
-  struct delay_desc *delay;
+  class delay_desc *delay;
   int max_slots;
   char str[50];
   const char *pstr;
-  struct attr_desc *attr;
+  class attr_desc *attr;
   struct attr_value *av, *common_av;
   int i;
 
@@ -4636,14 +4639,14 @@ next_comma_elt (const char **pstr)
   return attr_string (start, *pstr - start);
 }
 
-/* Return a `struct attr_desc' pointer for a given named attribute.  If CREATE
+/* Return a `class attr_desc' pointer for a given named attribute.  If CREATE
    is nonzero, build a new attribute, if one does not exist.  *NAME_P is
    replaced by a pointer to a canonical copy of the string.  */
 
-static struct attr_desc *
+static class attr_desc *
 find_attr (const char **name_p, int create)
 {
-  struct attr_desc *attr;
+  class attr_desc *attr;
   int index;
   const char *name = *name_p;
 
@@ -4668,7 +4671,7 @@ find_attr (const char **name_p, int create)
   if (! create)
     return NULL;
 
-  attr = oballoc (struct attr_desc);
+  attr = oballoc (class attr_desc);
   attr->name = DEF_ATTR_STRING (name);
   attr->enum_name = 0;
   attr->first_value = attr->default_val = NULL;
@@ -4686,7 +4689,7 @@ find_attr (const char **name_p, int create)
 static void
 make_internal_attr (const char *name, rtx value, int special)
 {
-  struct attr_desc *attr;
+  class attr_desc *attr;
 
   attr = find_attr (&name, 1);
   gcc_assert (!attr->default_val);
@@ -4701,7 +4704,7 @@ make_internal_attr (const char *name, rtx value, int special)
 /* Find the most used value of an attribute.  */
 
 static struct attr_value *
-find_most_used (struct attr_desc *attr)
+find_most_used (class attr_desc *attr)
 {
   struct attr_value *av;
   struct attr_value *most_used;
@@ -4756,7 +4759,7 @@ copy_rtx_unchanging (rtx orig)
 static void
 write_const_num_delay_slots (FILE *outf)
 {
-  struct attr_desc *attr = find_attr (&num_delay_slots_str, 0);
+  class attr_desc *attr = find_attr (&num_delay_slots_str, 0);
   struct attr_value *av;
 
   if (attr)
@@ -4812,7 +4815,7 @@ gen_insn_reserv (md_rtx_info *info)
   struct insn_reserv *decl = oballoc (struct insn_reserv);
   rtx def = info->def;
 
-  struct attr_desc attr = { };
+  class attr_desc attr = { };
 
   attr.name = DEF_ATTR_STRING (XSTR (def, 0));
   attr.loc = info->loc;
@@ -4929,10 +4932,10 @@ check_tune_attr (const char *name, rtx exp)
 
 /* Try to find a const attribute (usually cpu or tune) that is used
    in all define_insn_reservation conditions.  */
-static struct attr_desc *
+static class attr_desc *
 find_tune_attr (rtx exp)
 {
-  struct attr_desc *attr;
+  class attr_desc *attr;
 
   switch (GET_CODE (exp))
     {
@@ -4976,7 +4979,7 @@ make_automaton_attrs (void)
   int i;
   struct insn_reserv *decl;
   rtx code_exp, lats_exp, byps_exp;
-  struct attr_desc *tune_attr;
+  class attr_desc *tune_attr;
 
   if (n_insn_reservs == 0)
     return;
@@ -5242,8 +5245,8 @@ handle_arg (const char *arg)
 int
 main (int argc, const char **argv)
 {
-  struct attr_desc *attr;
-  struct insn_def *id;
+  class attr_desc *attr;
+  class insn_def *id;
   int i;
 
   progname = "genattrtab";

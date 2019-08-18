@@ -190,7 +190,7 @@ done
 #   /usr/bin/sphinx-1.0-build
 # so we need to override SPHINXBUILD with this when invoking "make".
 pushd gcc/gcc/jit/docs
-make SPHINXBUILD=/usr/bin/sphinx-1.0-build html
+make SPHINXBUILD=/usr/bin/sphinx-1.0-build html || true
 popd
 cp -a gcc/gcc/jit/docs/_build/html jit
 mkdir -p $DOCSDIR/jit

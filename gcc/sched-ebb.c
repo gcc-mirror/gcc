@@ -472,7 +472,7 @@ basic_block
 schedule_ebb (rtx_insn *head, rtx_insn *tail, bool modulo_scheduling)
 {
   basic_block first_bb, target_bb;
-  struct deps_desc tmp_deps;
+  class deps_desc tmp_deps;
   bool success;
 
   /* Blah.  We should fix the rest of the code not to get confused by

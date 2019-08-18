@@ -651,9 +651,11 @@ build_address (tree exp)
   if (TREE_CODE (exp) == CONST_DECL)
     exp = DECL_INITIAL (exp);
 
-  /* Some expression lowering may request an address of a compile-time constant.
-     Make sure it is assigned to a location we can reference.  */
-  if (CONSTANT_CLASS_P (exp) && TREE_CODE (exp) != STRING_CST)
+  /* Some expression lowering may request an address of a compile-time constant,
+     or other non-lvalue expression.  Make sure it is assigned to a location we
+     can reference.  */
+  if ((CONSTANT_CLASS_P (exp) && TREE_CODE (exp) != STRING_CST)
+      || TREE_CODE (exp) == CALL_EXPR)
     exp = force_target_expr (exp);
 
   d_mark_addressable (exp);

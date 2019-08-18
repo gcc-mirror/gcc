@@ -82,7 +82,7 @@ extern rtx avr_to_int_mode (rtx);
 
 extern void avr_expand_prologue (void);
 extern void avr_expand_epilogue (bool);
-extern bool avr_emit_movmemhi (rtx*);
+extern bool avr_emit_cpymemhi (rtx*);
 extern int avr_epilogue_uses (int regno);
 
 extern void avr_output_addr_vec (rtx_insn*, rtx);
@@ -92,7 +92,7 @@ extern const char* avr_out_plus (rtx, rtx*, int* =NULL, int* =NULL, bool =true);
 extern const char* avr_out_round (rtx_insn *, rtx*, int* =NULL);
 extern const char* avr_out_addto_sp (rtx*, int*);
 extern const char* avr_out_xload (rtx_insn *, rtx*, int*);
-extern const char* avr_out_movmem (rtx_insn *, rtx*, int*);
+extern const char* avr_out_cpymem (rtx_insn *, rtx*, int*);
 extern const char* avr_out_insert_bits (rtx*, int*);
 extern bool avr_popcount_each_byte (rtx, int, int);
 extern bool avr_has_nibble_0xf (rtx);

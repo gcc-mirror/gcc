@@ -1,3 +1,152 @@
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91421
+	* c-decl.c (merge_decls): Use copy_decl_built_in_function.
+
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91421
+	* c-decl.c (header_for_builtin_fn): Take a FUNCTION_DECL instead
+	of a built_in_function.
+	(diagnose_mismatched_decls, implicitly_declare): Update accordingly.
+
+2019-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Parse device_type.
+	(c_parser_omp_clause_device_type): New function.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_DEVICE_TYPE.
+	(OMP_DECLARE_TARGET_CLAUSE_MASK): Add PRAGMA_OMP_CLAUSE_DEVICE_TYPE.
+	(c_parser_omp_declare_target): Handle device_type clauses.  Remove
+	diagnostics for declare target with clauses nested in clause-less
+	declare target declaration-definition-seq.
+	* c-typeck.c (c_finish_omp_clauses): Handle OMP_CLAUSE_DEVICE_TYPE.
+
+2019-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (check_no_duplicate_clause): Simplify using
+	omp_find_clause.
+	(c_parser_omp_clause_if): Fix up printing of target {enter,exit} data
+	directive name modifiers.
+	(c_parser_omp_clause_proc_bind): Check for duplicate proc_bind clause.
+
+	PR c/91401
+	* c-parser.c (c_parser_omp_clause_dist_schedule): Fix up typos in the
+	check_no_duplicate_clause call.  Comment it out, instead emit a
+	warning for duplicate dist_schedule clauses.
+
+2019-08-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-decl.c (finish_enum): Clear C_TYPE_BEING_DEFINED.
+
+2019-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_finish_omp_clauses): For C_ORT_OMP
+	OMP_CLAUSE_USE_DEVICE_* clauses use oacc_reduction_head bitmap
+	instead of generic_head to track duplicates.
+
+2019-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Parse use_device_addr clause.
+	(c_parser_omp_clause_use_device_addr): New function.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_USE_DEVICE_ADDR.
+	(OMP_TARGET_DATA_CLAUSE_MASK): Add PRAGMA_OMP_CLAUSE_USE_DEVICE_ADDR.
+	(c_parser_omp_target_data): Handle PRAGMA_OMP_CLAUSE_USE_DEVICE_ADDR
+	like PRAGMA_OMP_CLAUSE_USE_DEVICE_PTR, adjust diagnostics about no
+	map or use_device_* clauses.
+	* c-typeck.c (c_finish_omp_clauses): For OMP_CLAUSE_USE_DEVICE_PTR
+	in OpenMP, require pointer type rather than pointer or array type.
+	Handle OMP_CLAUSE_USE_DEVICE_ADDR.
+
+2019-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/91192
+	* c-parser.c (c_parser_sizeof_expression): Call set_c_expr_source_range
+	even if finish is UNKNOWN_LOCATION, just use start as finish in that
+	case.
+
+2019-07-25  Martin Liska  <mliska@suse.cz>
+	    Dominik Infuhr  <dominik.infuehr@theobroma-systems.com>
+
+	PR c++/23383
+	* c-decl.c (merge_decls): Merge OPERATOR_DELETE flag.
+
+2019-07-25  Martin Liska  <mliska@suse.cz>
+
+	* c-decl.c (merge_decls): Use new macros
+	(e.g. DECL_SET_LAMBDA_FUNCTION and DECL_LAMBDA_FUNCTION_P).
+
+2019-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83518
+	* gimple-parser.c (c_parser_parse_gimple_body): When we have
+	a CFG also rebuild cgraph edges.
+
+2019-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Handle bind clause.
+	(c_parser_omp_clause_bind): New function.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_BIND.
+	(OMP_LOOP_CLAUSE_MASK): Define.
+	(c_parser_omp_loop): New function.
+	(c_parser_omp_parallel, c_parser_omp_teams): Handle parsing of
+	loop combined with parallel or teams.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_LOOP.
+	* c-typeck.c (c_finish_omp_clauses): Handle OMP_CLAUSE_BIND.
+
+2019-07-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/53633
+	* c-decl.c (finish_function): Check targetm.warn_func_return
+	before issuing a -Wreturn-type warning.
+
+2019-07-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* gimple-parser.c (c_parser_gimple_try_stmt): New.
+	(c_parser_compound_statement): Call it.
+
+2019-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Handle order clause.
+	(c_parser_omp_clause_order): New function.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_ORDER.
+	(OMP_SIMD_CLAUSE_MASK, OMP_FOR_CLAUSE_MASK): Add
+	PRAGMA_OMP_CLAUSE_ORDER.
+	* c-typeck.c (c_finish_omp_clauses): Handle OMP_CLAUSE_ORDER.
+
+2019-07-10  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Support
+	_Literal (int *) &x for address literals.
+
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* c-decl.c (xref_tag): Change class-key of PODs to struct and others
+	to class.
+	(field_decl_cmp): Same.
+	* c-parser.c (c_parser_struct_or_union_specifier): Same.
+	* c-tree.h: Same.
+	* gimple-parser.c (c_parser_gimple_compound_statement): Same.
+
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* c-decl.c: Change class-key from class to struct and vice versa
+	to match convention and avoid -Wclass-is-pod and -Wstruct-no-pod.
+	* gimple-parser.c: Same.
+
+2019-07-01  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Handle
+	_Literal (char *) &"foo" for address literals pointing to
+	STRING_CSTs.
+
+2019-06-25  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* c-parser.c (c_parse_init): Create keyword for "__intN__" type.
+	* c-decl.c (declspecs_add_type): Don't pedwarn about "__intN" ISO
+	C incompatibility if alternate "__intN__" form is used.
+
 2019-06-24  Martin Sebor  <msebor@redhat.com>
 
 	* c-typeck.c (build_binary_op): Hyphenate floating-point.
@@ -46,17 +195,17 @@
 
 2019-05-16  Martin Sebor  <msebor@redhat.com>
 
-        * c-decl.c (start_decl): Quote keywords, operators, and
-        types in diagnostics.
-        (finish_decl): Same.
-        * c-parser.c (c_parser_asm_statement): Same.
-        (c_parser_conditional_expression): Same.
-        (c_parser_transaction_cancel): Same.
-        * c-typeck.c (c_common_type): Same.
-        (build_conditional_expr): Same.
-        (digest_init): Same.
-        (process_init_element): Same.
-        (build_binary_op): Same.
+	* c-decl.c (start_decl): Quote keywords, operators, and
+	types in diagnostics.
+	(finish_decl): Same.
+	* c-parser.c (c_parser_asm_statement): Same.
+	(c_parser_conditional_expression): Same.
+	(c_parser_transaction_cancel): Same.
+	* c-typeck.c (c_common_type): Same.
+	(build_conditional_expr): Same.
+	(digest_init): Same.
+	(process_init_element): Same.
+	(build_binary_op): Same.
 
 2019-05-17  Richard Biener  <rguenther@suse.de>
 
@@ -215,7 +364,7 @@
 	(c_parser_oacc_simple_clause): Replace parser with loc formal
 	parameter.  Adjust all users.
 
-2019-02-19  Chung-Lin Tang <cltang@codesourcery.com>
+2019-02-19  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR c/87924
 	* c-parser.c (c_parser_oacc_clause_wait): Add representation of wait
@@ -595,7 +744,7 @@
 
 	PR c/87347
 	* c-parser.c (warn_for_abs): Bail out if TYPE_ARG_TYPES is NULL.  Fix
-        comment.
+	comment.
 
 2018-09-17  David Malcolm  <dmalcolm@redhat.com>
 
@@ -687,7 +836,7 @@
 	(build_binary_op): Use it when calling binary_op_error.
 
 2018-08-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
-	
+
 	* c-decl.c (start_decl): Do not warn if variables is named as main
 	and is a local variable.
 
@@ -728,8 +877,8 @@
 	type here, instead add "omp declare target implicit" attribute.
 	(finish_decl): Diagnose vars without mappable type here.
 
-2018-06-20  Chung-Lin Tang <cltang@codesourcery.com>
-	    Thomas Schwinge <thomas@codesourcery.com>
+2018-06-20  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
 	* c-parser.c (c_parser_omp_clause_name): Add support for finalize
@@ -972,7 +1121,7 @@
 	PR c/82679
 	* c-decl.c (grokdeclarator): Check declspecs insted of atomicp.
 
-2017-12-12  Alexandre Oliva <aoliva@redhat.com>
+2017-12-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* c-objc-common.h (LANG_HOOKS_EMITS_BEGIN_STMT): Redefine as true.
 	* c-parser.c (add_debug_begin_stmt): New.
@@ -1084,7 +1233,7 @@
 	* c-typeck.c (c_start_case): Build SWITCH_EXPR using build2 instead
 	of build3.
 
-2017-11-14 Boris Kolpackov  <boris@codesynthesis.com>
+2017-11-14  Boris Kolpackov  <boris@codesynthesis.com>
 
 	* Make-lang.in (c.install-plugin): Install backend import library.
 
@@ -1492,7 +1641,7 @@
 
 	PR c/81417
 	* c-array-notation.c (fix_builtin_array_notation_fn): Update calls to
-	build_conditional_expr.	
+	build_conditional_expr.
 	* c-parser.c (c_parser_conditional_expression): Create locations for
 	EXP1 and EXP2 from their source ranges.  Pass the locations down to
 	build_conditional_expr.
@@ -1520,7 +1669,7 @@
 	* c-warn.c (warn_for_multistatement_macros): Prevent bogus
 	warnings.  Avoid walking MACRO_MAP_LOCATIONS.
 
-2017-07-31  Jan Hubicka <hubicka@ucw.cz>
+2017-07-31  Jan Hubicka  <hubicka@ucw.cz>
 	    Martin Liska  <mliska@suse.cz>
 
 	* c-typeck.c (c_finish_goto_label): Build gimple predict
@@ -1716,7 +1865,7 @@
 	* c-convert.c (convert): Replace c_save_expr with save_expr.  Don't
 	call c_fully_fold.
 	(convert) <case COMPLEX_TYPE>: Remove special handling of COMPLEX_TYPEs.
-	* c-decl.c (grokdeclarator): Replace c_save_expr with save_expr. 
+	* c-decl.c (grokdeclarator): Replace c_save_expr with save_expr.
 	* c-fold.c (c_fully_fold_internal): Handle SAVE_EXPR.
 	* c-parser.c (c_parser_declaration_or_fndef): Replace c_save_expr with
 	save_expr.
@@ -1948,7 +2097,7 @@
 	set_c_expr_source_range when parsing ssa-name.
 
 2017-02-10  Prasad Ghangal  <prasad.ghangal@gmail.com>
-	Richard Biener  <rguenther@suse.de>
+	    Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.c (c_parser_gimple_binary_expression): Avoid
 	building IL when arguments are error_mark_node.
@@ -3393,7 +3542,6 @@
 	    Julian Brown  <julian@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 
-	c/
 	* c-parser.c (c_parser_declaration_or_fndef): Add OpenACC
 	routine arg.
 	(c_parser_declaration_or_fndef): Call c_finish_oacc_routine.
@@ -4815,7 +4963,7 @@
 
 	PR c/49706
 	* c-typeck.c (parser_build_binary_op): Warn when logical not is used
-	on the left hand side operand of a comparison. 
+	on the left hand side operand of a comparison.
 
 2014-06-05  Marek Polacek  <polacek@redhat.com>
 
@@ -5633,7 +5781,7 @@
 	(build_cilk_spawn): New function.
 	(build_cilk_sync): Likewise.
 	* Makefile.in (c-decl.o): Added cilk.h in dependency list.
-	
+
 2013-10-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR other/33426
@@ -5918,7 +6066,7 @@
 
 	* c-array-notation.c (expand_array_notation_exprs): Added
 	ARRAY_NOTATION_REF case.
-	
+
 2013-06-07  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-array-notation.c (length_mismatch_in_expr_p): Moved this
@@ -5934,7 +6082,7 @@
 	(replace_invariant_exprs): Initialized additional_tcodes to NULL.
 	(struct inv_list): Moved this to c-family/array-notation-common.c.
 	* c-tree.h (is_cilkplus_builtin_reduce): Remove prototype.
-	
+
 2013-06-05  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-typeck.c (convert_arguments): Moved checking of builtin cilkplus
@@ -5953,7 +6101,7 @@
 	to the end of function parsing.
 	* c-array-notation.c (fix_conditional_array_notations_1): Expanded the
 	whole if-statement instead of just the condition.
-	(expand_array_notation_exprs): Added MODIFY_EXPR case.	
+	(expand_array_notation_exprs): Added MODIFY_EXPR case.
 
 2013-06-03  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
@@ -5961,7 +6109,7 @@
 	* c-array-notation.c (build_array_notation_expr): Initialized rhs_length
 	array to NULL_TREE if they are unused.  Also added a check for the
 	field to be NULL before its fields are used in future.
-	
+
 2013-05-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/57450
@@ -6009,7 +6157,7 @@
 	(c_parser_array_notation): New function.
 	* c-array-notation.c: New file.
 	* c-tree.h (is_cilkplus_reduce_builtin): Protoize.
-	
+
 2013-05-23  Mike Stump  <mikestump@comcast.net>
 
 	* c-typeck.c (convert_for_assignment): Handle references to memory

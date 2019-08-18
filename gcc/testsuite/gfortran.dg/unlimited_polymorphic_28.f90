@@ -21,7 +21,7 @@ implicit none
 
   type,abstract,extends(c_base) :: c_derived
   contains
-    procedure :: f_base => f_derived ! { dg-error "Type mismatch in function result \\(CLASS\\(\\*\\)/CLASS\\(c_base\\)\\)" }
+    procedure :: f_base => f_derived ! { dg-error "Type mismatch in function result" }
   end type c_derived
 
 contains

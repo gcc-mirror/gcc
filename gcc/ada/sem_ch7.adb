@@ -389,6 +389,8 @@ package body Sem_Ch7 is
                      end if;
 
                      --  An inlined subprogram body acts as a referencer
+                     --  unless we generate C code since inlining is then
+                     --  handled by the C compiler.
 
                      --  Note that we test Has_Pragma_Inline here in addition
                      --  to Is_Inlined. We are doing this for a client, since
@@ -397,8 +399,9 @@ package body Sem_Ch7 is
                      --  should occur, so we need to catch all cases where the
                      --  subprogram may be inlined by the client.
 
-                     if Is_Inlined (Decl_Id)
-                       or else Has_Pragma_Inline (Decl_Id)
+                     if not Generate_C_Code
+                       and then (Is_Inlined (Decl_Id)
+                                  or else Has_Pragma_Inline (Decl_Id))
                      then
                         Has_Referencer_Of_Non_Subprograms := True;
 
@@ -415,9 +418,12 @@ package body Sem_Ch7 is
                      Decl_Id := Defining_Entity (Decl);
 
                      --  An inlined subprogram body acts as a referencer
+                     --  unless we generate C code since inlining is then
+                     --  handled by the C compiler.
 
-                     if Is_Inlined (Decl_Id)
-                       or else Has_Pragma_Inline (Decl_Id)
+                     if not Generate_C_Code
+                       and then (Is_Inlined (Decl_Id)
+                                  or else Has_Pragma_Inline (Decl_Id))
                      then
                         Has_Referencer_Of_Non_Subprograms := True;
 
@@ -784,7 +790,7 @@ package body Sem_Ch7 is
       --  Deactivate expansion inside the body of ignored Ghost entities,
       --  as this code will ultimately be ignored. This avoids requiring the
       --  presence of run-time units which are not needed. Only do this for
-      --  user entities, as internally generated entitities might still need
+      --  user entities, as internally generated entities might still need
       --  to be expanded (e.g. those generated for types).
 
       if Present (Ignored_Ghost_Region)
@@ -1057,7 +1063,7 @@ package body Sem_Ch7 is
       --  to the linker as their Is_Public flag is set to True. This proactive
       --  approach is necessary because an inlined or a generic body for which
       --  code is generated in other units may need to see these entities. Cut
-      --  down the number of global symbols that do not neet public visibility
+      --  down the number of global symbols that do not need public visibility
       --  as this has two beneficial effects:
       --    (1) It makes the compilation process more efficient.
       --    (2) It gives the code generator more leeway to optimize within each
@@ -1751,7 +1757,7 @@ package body Sem_Ch7 is
          end if;
 
       --  There may be inherited private subprograms that need to be declared,
-      --  even in the absence of an explicit private part.  If there are any
+      --  even in the absence of an explicit private part. If there are any
       --  public declarations in the package and the package is a public child
       --  unit, then an implicit private part is assumed.
 
@@ -1877,7 +1883,7 @@ package body Sem_Ch7 is
       end if;
 
       --  Nested package specs that do not require bodies are not checked for
-      --  ineffective use clauses due to the possbility of subunits. This is
+      --  ineffective use clauses due to the possibility of subunits. This is
       --  because at this stage it is impossible to tell whether there will be
       --  a separate body.
 
@@ -2255,13 +2261,14 @@ package body Sem_Ch7 is
       procedure Swap_Private_Dependents (Priv_Deps : Elist_Id);
       --  When the full view of a private type is made available, we do the
       --  same for its private dependents under proper visibility conditions.
-      --  When compiling a grand-chid unit this needs to be done recursively.
+      --  When compiling a child unit this needs to be done recursively.
 
       -----------------------------
       -- Swap_Private_Dependents --
       -----------------------------
 
       procedure Swap_Private_Dependents (Priv_Deps : Elist_Id) is
+         Cunit     : Entity_Id;
          Deps      : Elist_Id;
          Priv      : Entity_Id;
          Priv_Elmt : Elmt_Id;
@@ -2279,6 +2286,7 @@ package body Sem_Ch7 is
             if Present (Full_View (Priv)) and then Is_Visible_Dependent (Priv)
             then
                if Is_Private_Type (Priv) then
+                  Cunit := Cunit_Entity (Current_Sem_Unit);
                   Deps := Private_Dependents (Priv);
                   Is_Priv := True;
                else
@@ -2306,11 +2314,14 @@ package body Sem_Ch7 is
                Set_Is_Potentially_Use_Visible
                  (Priv, Is_Potentially_Use_Visible (Node (Priv_Elmt)));
 
-               --  Within a child unit, recurse, except in generic child unit,
-               --  which (unfortunately) handle private_dependents separately.
+               --  Recurse for child units, except in generic child units,
+               --  which unfortunately handle private_dependents separately.
+               --  Note that the current unit may not have been analyzed,
+               --  for example a package body, so we cannot rely solely on
+               --  the Is_Child_Unit flag, but that's only an optimization.
 
                if Is_Priv
-                 and then Is_Child_Unit (Cunit_Entity (Current_Sem_Unit))
+                 and then (No (Etype (Cunit)) or else Is_Child_Unit (Cunit))
                  and then not Is_Empty_Elmt_List (Deps)
                  and then not Inside_A_Generic
                then
@@ -2695,12 +2706,15 @@ package body Sem_Ch7 is
       Decl      : constant Node_Id := Unit_Declaration_Node (P);
       Id        : Entity_Id;
       Full      : Entity_Id;
-      Priv_Elmt : Elmt_Id;
-      Priv_Sub  : Entity_Id;
 
       procedure Preserve_Full_Attributes (Priv : Entity_Id; Full : Entity_Id);
       --  Copy to the private declaration the attributes of the full view that
       --  need to be available for the partial view also.
+
+      procedure Swap_Private_Dependents (Priv_Deps : Elist_Id);
+      --  When the full view of a private type is made unavailable, we do the
+      --  same for its private dependents under proper visibility conditions.
+      --  When compiling a child unit this needs to be done recursively.
 
       function Type_In_Use (T : Entity_Id) return Boolean;
       --  Check whether type or base type appear in an active use_type clause
@@ -2819,6 +2833,66 @@ package body Sem_Ch7 is
             end if;
          end if;
       end Preserve_Full_Attributes;
+
+      -----------------------------
+      -- Swap_Private_Dependents --
+      -----------------------------
+
+      procedure Swap_Private_Dependents (Priv_Deps : Elist_Id) is
+         Cunit     : Entity_Id;
+         Deps      : Elist_Id;
+         Priv      : Entity_Id;
+         Priv_Elmt : Elmt_Id;
+         Is_Priv   : Boolean;
+
+      begin
+         Priv_Elmt := First_Elmt (Priv_Deps);
+         while Present (Priv_Elmt) loop
+            Priv := Node (Priv_Elmt);
+
+            --  Before we do the swap, we verify the presence of the Full_View
+            --  field, which may be empty due to a swap by a previous call to
+            --  End_Package_Scope (e.g. from the freezing mechanism).
+
+            if Present (Full_View (Priv)) then
+               if Is_Private_Type (Priv) then
+                  Cunit := Cunit_Entity (Current_Sem_Unit);
+                  Deps := Private_Dependents (Priv);
+                  Is_Priv := True;
+               else
+                  Is_Priv := False;
+               end if;
+
+               if Scope (Priv) = P
+                 or else not In_Open_Scopes (Scope (Priv))
+               then
+                  Set_Is_Immediately_Visible (Priv, False);
+               end if;
+
+               if Is_Visible_Dependent (Priv) then
+                  Preserve_Full_Attributes (Priv, Full_View (Priv));
+                  Replace_Elmt (Priv_Elmt, Full_View (Priv));
+                  Exchange_Declarations (Priv);
+
+                  --  Recurse for child units, except in generic child units,
+                  --  which unfortunately handle private_dependents separately.
+                  --  Note that the current unit may not have been analyzed,
+                  --  for example a package body, so we cannot rely solely on
+                  --  the Is_Child_Unit flag, but that's only an optimization.
+
+                  if Is_Priv
+                    and then (No (Etype (Cunit)) or else Is_Child_Unit (Cunit))
+                    and then not Is_Empty_Elmt_List (Deps)
+                    and then not Inside_A_Generic
+                  then
+                     Swap_Private_Dependents (Deps);
+                  end if;
+               end if;
+            end if;
+
+            Next_Elmt (Priv_Elmt);
+         end loop;
+      end Swap_Private_Dependents;
 
       -----------------
       -- Type_In_Use --
@@ -3071,31 +3145,7 @@ package body Sem_Ch7 is
             --  were compiled in this scope, or installed previously
             --  by Install_Private_Declarations.
 
-            --  Before we do the swap, we verify the presence of the Full_View
-            --  field which may be empty due to a swap by a previous call to
-            --  End_Package_Scope (e.g. from the freezing mechanism).
-
-            Priv_Elmt := First_Elmt (Private_Dependents (Id));
-            while Present (Priv_Elmt) loop
-               Priv_Sub := Node (Priv_Elmt);
-
-               if Present (Full_View (Priv_Sub)) then
-                  if Scope (Priv_Sub) = P
-                     or else not In_Open_Scopes (Scope (Priv_Sub))
-                  then
-                     Set_Is_Immediately_Visible (Priv_Sub, False);
-                  end if;
-
-                  if Is_Visible_Dependent (Priv_Sub) then
-                     Preserve_Full_Attributes
-                       (Priv_Sub, Full_View (Priv_Sub));
-                     Replace_Elmt (Priv_Elmt, Full_View (Priv_Sub));
-                     Exchange_Declarations (Priv_Sub);
-                  end if;
-               end if;
-
-               Next_Elmt (Priv_Elmt);
-            end loop;
+            Swap_Private_Dependents (Private_Dependents (Id));
 
             --  Now restore the type itself to its private view
 
@@ -3190,7 +3240,7 @@ package body Sem_Ch7 is
       E : Entity_Id;
 
       Requires_Body : Boolean := False;
-      --  Flag set when the unit has at least one construct that requries
+      --  Flag set when the unit has at least one construct that requires
       --  completion in a body.
 
    begin
@@ -3253,7 +3303,7 @@ package body Sem_Ch7 is
 
       --  A [generic] package that defines at least one non-null abstract state
       --  requires a completion only when at least one other construct requires
-      --  a completion in a body (SPARK RM 7.1.4(4) and (6)). This check is not
+      --  a completion in a body (SPARK RM 7.1.4(4) and (5)). This check is not
       --  performed if the caller requests this behavior.
 
       if Do_Abstract_States

@@ -396,6 +396,12 @@ built together with GCC.  Alternatively, the @option{--with-isl} configure
 option should be used if isl is not installed in your default library
 search path.
 
+@item zstd Library.
+
+Necessary to build GCC with zstd compression used for LTO bytecode.
+The library is searched in your default library patch search.
+Alternatively, the @option{--with-zstd} configure option should be used.
+
 @end table
 
 @heading Tools/packages necessary for modifying GCC
@@ -436,10 +442,7 @@ Necessary when modifying @command{gperf} input files, e.g.@:
 @itemx Tcl
 
 Necessary to run the GCC testsuite; see the section on testing for
-details.  Tcl 8.6 has a known regression in RE pattern handling that
-make parts of the testsuite fail.  See
-@uref{http://core.tcl.tk/tcl/tktview/267b7e2334ee2e9de34c4b00d6e72e2f1997085f}
-for more information.  This bug has been fixed in 8.6.1.
+details.
 
 @item autogen version 5.5.4 (or later) and
 @itemx guile version 1.4.1 (or later)
@@ -1283,6 +1286,11 @@ assumptions made by the configure test are incorrect.
 @item --disable-tls
 Specify that the target does not support TLS.
 This is an alias for @option{--enable-tls=no}.
+
+@item --disable-tm-clone-registry
+Disable TM clone registry in libgcc. It is enabled in libgcc by default.
+This option helps to reduce code size for embedded targets which do
+not use transactional memory.
 
 @item --with-cpu=@var{cpu}
 @itemx --with-cpu-32=@var{cpu}
@@ -2524,6 +2532,7 @@ Removes any @option{-O}-started option from @code{BOOT_CFLAGS}, and adds
 @samp{BOOT_CFLAGS='-g -O1'}.
 
 @item @samp{bootstrap-O3}
+@itemx @samp{bootstrap-Og}
 Analogous to @code{bootstrap-O1}.
 
 @item @samp{bootstrap-lto}

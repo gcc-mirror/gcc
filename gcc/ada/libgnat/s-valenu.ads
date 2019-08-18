@@ -34,7 +34,7 @@
 --  details of the format of constructed image tables.
 
 package System.Val_Enum is
-   pragma Pure;
+   pragma Preelaborate;
 
    function Value_Enumeration_8
      (Names   : String;

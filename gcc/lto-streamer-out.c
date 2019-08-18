@@ -1121,12 +1121,12 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       hstate.add_int (DECL_BUILT_IN_CLASS (t));
       hstate.add_flag (DECL_STATIC_CONSTRUCTOR (t));
       hstate.add_flag (DECL_STATIC_DESTRUCTOR (t));
+      hstate.add_flag (FUNCTION_DECL_DECL_TYPE (t));
       hstate.add_flag (DECL_UNINLINABLE (t));
       hstate.add_flag (DECL_POSSIBLY_INLINED (t));
       hstate.add_flag (DECL_IS_NOVOPS (t));
       hstate.add_flag (DECL_IS_RETURNS_TWICE (t));
       hstate.add_flag (DECL_IS_MALLOC (t));
-      hstate.add_flag (DECL_IS_OPERATOR_NEW (t));
       hstate.add_flag (DECL_DECLARED_INLINE_P (t));
       hstate.add_flag (DECL_STATIC_CHAIN (t));
       hstate.add_flag (DECL_NO_INLINE_WARNING_P (t));
@@ -1137,7 +1137,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       hstate.add_flag (DECL_LOOPING_CONST_OR_PURE_P (t));
       hstate.commit_flag ();
       if (DECL_BUILT_IN_CLASS (t) != NOT_BUILT_IN)
-	hstate.add_int (DECL_FUNCTION_CODE (t));
+	hstate.add_int (DECL_UNCHECKED_FUNCTION_CODE (t));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
@@ -1911,7 +1911,7 @@ output_cfg (struct output_block *ob, struct function *fn)
   /* Output each loop, skipping the tree root which has number zero.  */
   for (unsigned i = 1; i < number_of_loops (fn); ++i)
     {
-      struct loop *loop = get_loop (fn, i);
+      class loop *loop = get_loop (fn, i);
 
       /* Write the index of the loop header.  That's enough to rebuild
          the loop tree on the reader side.  Stream -1 for an unused
@@ -1973,10 +1973,6 @@ produce_asm (struct output_block *ob, tree fn)
 
   /* The entire header is stream computed here.  */
   memset (&header, 0, sizeof (struct lto_function_header));
-
-  /* Write the header.  */
-  header.major_version = LTO_major_version;
-  header.minor_version = LTO_minor_version;
 
   if (section_type == LTO_section_function_body)
     header.cfg_size = ob->cfg_stream->total_size;
@@ -2270,10 +2266,6 @@ lto_output_toplevel_asms (void)
   /* The entire header stream is computed here.  */
   memset (&header, 0, sizeof (header));
 
-  /* Write the header.  */
-  header.major_version = LTO_major_version;
-  header.minor_version = LTO_minor_version;
-
   header.main_size = ob->main_stream->total_size;
   header.string_size = ob->string_stream->total_size;
   lto_write_data (&header, sizeof header);
@@ -2390,6 +2382,34 @@ prune_offload_funcs (void)
     DECL_PRESERVE_P (fn_decl) = 1;
 }
 
+/* Produce LTO section that contains global information
+   about LTO bytecode.  */
+
+static void
+produce_lto_section ()
+{
+  /* Stream LTO meta section.  */
+  output_block *ob = create_output_block (LTO_section_lto);
+
+  char * section_name = lto_get_section_name (LTO_section_lto, NULL, NULL);
+  lto_begin_section (section_name, false);
+  free (section_name);
+
+#ifdef HAVE_ZSTD_H
+  lto_compression compression = ZSTD;
+#else
+  lto_compression compression = ZLIB;
+#endif
+
+  bool slim_object = flag_generate_lto && !flag_fat_lto_objects;
+  lto_section s
+    = { LTO_major_version, LTO_minor_version, slim_object, 0 };
+  s.set_compression (compression);
+  lto_write_data (&s, sizeof s);
+  lto_end_section ();
+  destroy_output_block (ob);
+}
+
 /* Main entry point from the pass manager.  */
 
 void
@@ -2411,6 +2431,8 @@ lto_output (void)
 
   /* Initialize the streamer.  */
   lto_streamer_init ();
+
+  produce_lto_section ();
 
   n_nodes = lto_symtab_encoder_size (encoder);
   /* Process only the functions with bodies.  */
@@ -2620,12 +2642,6 @@ write_symbol (struct streamer_tree_cache_d *cache,
   const char *comdat;
   unsigned char c;
 
-  gcc_checking_assert (TREE_PUBLIC (t)
-		       && (TREE_CODE (t) != FUNCTION_DECL
-			   || !fndecl_built_in_p (t))
-		       && !DECL_ABSTRACT_P (t)
-		       && (!VAR_P (t) || !DECL_HARD_REGISTER (t)));
-
   gcc_assert (VAR_OR_FUNCTION_DECL_P (t));
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (t));
@@ -2827,10 +2843,6 @@ lto_write_mode_table (void)
   struct lto_simple_header_with_strings header;
   memset (&header, 0, sizeof (header));
 
-  /* Write the header.  */
-  header.major_version = LTO_major_version;
-  header.minor_version = LTO_minor_version;
-
   header.main_size = ob->main_stream->total_size;
   header.string_size = ob->string_stream->total_size;
   lto_write_data (&header, sizeof header);
@@ -2900,9 +2912,6 @@ produce_asm_for_decls (void)
 		    (DECL_ASSEMBLER_NAME (fn_out_state->fn_decl)));
       lto_output_decl_state_streams (ob, fn_out_state);
     }
-
-  header.major_version = LTO_major_version;
-  header.minor_version = LTO_minor_version;
 
   /* Currently not used.  This field would allow us to preallocate
      the globals vector, so that it need not be resized as it is extended.  */

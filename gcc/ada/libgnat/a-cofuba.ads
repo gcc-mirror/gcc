@@ -105,13 +105,26 @@ private
    type Element_Array is
      array (Positive_Count_Type range <>) of Element_Access;
 
-   type Element_Array_Access is not null access Element_Array;
+   type Element_Array_Access_Base is access Element_Array;
+
+   subtype Element_Array_Access is not null Element_Array_Access_Base;
 
    Empty_Element_Array_Access : constant Element_Array_Access :=
      new Element_Array'(1 .. 0 => null);
 
+   type Array_Base is record
+     Max_Length : Count_Type;
+     Elements   : Element_Array_Access;
+   end record;
+
+   type Array_Base_Access is not null access Array_Base;
+
+   function Content_Init (L : Count_Type := 0) return Array_Base_Access;
+   --  Used to initialize the content of an array base with length L
+
    type Container is record
-      Elements : Element_Array_Access := Empty_Element_Array_Access;
+      Length : Count_Type := 0;
+      Base   : Array_Base_Access := Content_Init;
    end record;
 
 end Ada.Containers.Functional_Base;

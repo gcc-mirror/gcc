@@ -1,3 +1,55 @@
+2019-08-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR fortran/91414
+        * intrinsics/random.c (prng_state): Update state struct.
+        (master_state): Update to match new size.
+        (get_rand_state): Update to match new PRNG.
+        (rotl): New function.
+        (xorshift1024star): Replace with prng_next.
+        (prng_next): New function.
+        (jump): Update for new PRNG.
+        (lcg_parkmiller): Replace with splitmix64.
+        (splitmix64): New function.
+        (getosrandom): Fix return value, simplify.
+        (init_rand_state): Use getosrandom only to get 8 bytes, splitmix64
+        to fill rest of state.
+        (random_r4): Update to new function and struct names.
+        (random_r8): Likewise.
+        (random_r10): Likewise.
+        (random_r16): Likewise.
+        (arandom_r4): Liekwise.
+        (arandom_r8): Likewise.
+        (arandom_r10): Likwewise.
+        (arandom_r16): Likewise.
+        (xor_keys): Reduce size to match new PRNG.
+        (random_seed_i4): Update to new function and struct names, remove
+        special handling of variable p used in previous PRNG.
+        (random_seed_i8): Likewise.
+
+2019-08-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/53796
+	* io/inquire.c (inquire_via_filename): Set recl to -1 for
+	unconnected units.
+
+2019-07-21  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/91030
+	* io/unix.c (BUFFER_SIZE): Delete.
+	(BUFFER_FORMATTED_SIZE_DEFAULT): New variable.
+	(BUFFER_UNFORMATTED_SIZE_DEFAULT): New variable.
+	(unix_stream): Add buffer_size.
+	(buf_read): Use s->buffer_size instead of BUFFER_SIZE.
+	(buf_write): Likewise.
+	(buf_init): Add argument unformatted.  Handle block sizes
+	for unformatted vs. formatted, using defaults if provided.
+	(fd_to_stream): Add argument unformatted in call to buf_init.
+	* libgfortran.h (options_t): Add buffer_size_formatted and
+	buffer_size_unformatted.
+	* runtime/environ.c (variable_table): Add
+	GFORTRAN_UNFORMATTED_BUFFER_SIZE and
+	GFORTRAN_FORMATTED_BUFFER_SIZE.
+
 2019-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
             Andrew Stubbs  <ams@codesourcery.com>
 

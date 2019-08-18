@@ -33,14 +33,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version of Ada.Exceptions fully supports Ada 95 and later language
---  versions.  It is used in all situations except for the build of the
---  compiler and other basic tools. For these latter builds, we use an
---  Ada 95-only version.
-
---  The reason for this splitting off of a separate version is to support
---  older bootstrap compilers that do not support Ada 2005 features, and
---  Ada.Exceptions is part of the compiler sources.
+--  This is the default version of this package. We also have cert and zfp
+--  versions.
 
 pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get
@@ -284,7 +278,7 @@ private
    --  Traceback array stored in exception occurrence
 
    type Exception_Occurrence is record
-      Id : Exception_Id;
+      Id : Exception_Id := Null_Id;
       --  Exception_Identity for this exception occurrence
 
       Machine_Occurrence : System.Address;
@@ -336,14 +330,6 @@ private
    pragma Stream_Convert (Exception_Occurrence, String_To_EO, EO_To_String);
    --  Functions for implementing Exception_Occurrence stream attributes
 
-   Null_Occurrence : constant Exception_Occurrence := (
-     Id                 => null,
-     Machine_Occurrence => System.Null_Address,
-     Msg_Length         => 0,
-     Msg                => (others => ' '),
-     Exception_Raised   => False,
-     Pid                => 0,
-     Num_Tracebacks     => 0,
-     Tracebacks         => (others => TBE.Null_TB_Entry));
+   Null_Occurrence : constant Exception_Occurrence := (others => <>);
 
 end Ada.Exceptions;

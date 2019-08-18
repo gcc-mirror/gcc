@@ -225,7 +225,10 @@ package body Aspects is
             Owner := Root_Type (Owner);
          end if;
 
-         if Is_Private_Type (Owner) and then Present (Full_View (Owner)) then
+         if Is_Private_Type (Owner)
+            and then Present (Full_View (Owner))
+            and then not Operational_Aspect (A)
+         then
             Owner := Full_View (Owner);
          end if;
       end if;
@@ -569,7 +572,9 @@ package body Aspects is
     Aspect_Lock_Free                    => Aspect_Lock_Free,
     Aspect_Machine_Radix                => Aspect_Machine_Radix,
     Aspect_Max_Entry_Queue_Depth        => Aspect_Max_Entry_Queue_Depth,
+    Aspect_Max_Entry_Queue_Length       => Aspect_Max_Entry_Queue_Length,
     Aspect_Max_Queue_Length             => Aspect_Max_Queue_Length,
+    Aspect_No_Caching                   => Aspect_No_Caching,
     Aspect_No_Elaboration_Code_All      => Aspect_No_Elaboration_Code_All,
     Aspect_No_Inline                    => Aspect_No_Inline,
     Aspect_No_Return                    => Aspect_No_Return,

@@ -20,8 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_EMIT_RTL_H
 #define GCC_EMIT_RTL_H
 
-struct temp_slot;
-typedef struct temp_slot *temp_slot_p;
+class temp_slot;
+typedef class temp_slot *temp_slot_p;
 
 /* Information mainlined about RTL representation of incoming arguments.  */
 struct GTY(()) incoming_args {
@@ -110,7 +110,7 @@ struct GTY(()) rtl_data {
   vec<rtx, va_gc> *x_stack_slot_list;
 
   /* List of empty areas in the stack frame.  */
-  struct frame_space *frame_space_list;
+  class frame_space *frame_space_list;
 
   /* Place after which to insert the tail_recursion_label if we need one.  */
   rtx_note *x_stack_check_probe_note;
@@ -136,7 +136,7 @@ struct GTY(()) rtl_data {
   vec<temp_slot_p, va_gc> *x_used_temp_slots;
 
   /* List of available temp slots.  */
-  struct temp_slot *x_avail_temp_slots;
+  class temp_slot *x_avail_temp_slots;
 
   /* Current nesting level for temporaries.  */
   int x_temp_slot_level;
@@ -319,7 +319,7 @@ extern GTY(()) struct rtl_data x_rtl;
 #define crtl (&x_rtl)
 
 /* Return whether two MEM_ATTRs are equal.  */
-bool mem_attrs_eq_p (const struct mem_attrs *, const struct mem_attrs *);
+bool mem_attrs_eq_p (const class mem_attrs *, const class mem_attrs *);
 
 /* Set the alias set of MEM to SET.  */
 extern void set_mem_alias_set (rtx, alias_set_type);

@@ -228,8 +228,12 @@ package body Ch3 is
          raise Error_Resync;
       end if;
 
+      if Style_Check then
+         Style.Check_Defining_Identifier_Casing;
+      end if;
+
       Ident_Node := Token_Node;
-      Scan; -- past the reserved identifier
+      Scan; -- past the identifier
 
       --  If we already have a defining identifier, clean it out and make
       --  a new clean identifier. This situation arises in some error cases

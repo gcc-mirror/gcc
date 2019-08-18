@@ -29,11 +29,7 @@
  *                                                                          *
  ****************************************************************************/
 
-#ifdef IN_RTS
-#include "tconfig.h"
-#include "tsystem.h"
-#include <sys/stat.h>
-#else
+#ifndef IN_RTS
 #include "config.h"
 #include "system.h"
 #endif

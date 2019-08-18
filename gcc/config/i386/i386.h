@@ -237,9 +237,46 @@ struct stringop_algs
   } size [MAX_STRINGOP_ALGS];
 };
 
-/* Define the specific costs for a given cpu */
+/* Define the specific costs for a given cpu.  NB: hard_register is used
+   by TARGET_REGISTER_MOVE_COST and TARGET_MEMORY_MOVE_COST to compute
+   hard register move costs by register allocator.  Relative costs of
+   pseudo register load and store versus pseudo register moves in RTL
+   expressions for TARGET_RTX_COSTS can be different from relative
+   costs of hard registers to get the most efficient operations with
+   pseudo registers.  */
 
 struct processor_costs {
+  /* Costs used by register allocator.  integer->integer register move
+     cost is 2.  */
+  struct
+    {
+      const int movzbl_load;	/* cost of loading using movzbl */
+      const int int_load[3];	/* cost of loading integer registers
+				   in QImode, HImode and SImode relative
+				   to reg-reg move (2).  */
+      const int int_store[3];	/* cost of storing integer register
+				   in QImode, HImode and SImode */
+      const int fp_move;	/* cost of reg,reg fld/fst */
+      const int fp_load[3];	/* cost of loading FP register
+				   in SFmode, DFmode and XFmode */
+      const int fp_store[3];	/* cost of storing FP register
+				   in SFmode, DFmode and XFmode */
+      const int mmx_move;	/* cost of moving MMX register.  */
+      const int mmx_load[2];	/* cost of loading MMX register
+				   in SImode and DImode */
+      const int mmx_store[2];	/* cost of storing MMX register
+				   in SImode and DImode */
+      const int xmm_move;	/* cost of moving XMM register.  */
+      const int ymm_move;	/* cost of moving XMM register.  */
+      const int zmm_move;	/* cost of moving XMM register.  */
+      const int sse_load[5];	/* cost of loading SSE register
+				   in 32bit, 64bit, 128bit, 256bit and 512bit */
+      const int sse_store[5];	/* cost of storing SSE register
+				   in SImode, DImode and TImode.  */
+      const int sse_to_integer;	/* cost of moving SSE register to integer.  */
+      const int integer_to_sse;	/* cost of moving integer register to SSE. */
+    } hard_register;
+
   const int add;		/* cost of an add instruction */
   const int lea;		/* cost of a lea instruction */
   const int shift_var;		/* variable shift costs */
@@ -254,32 +291,20 @@ struct processor_costs {
   const int large_insn;		/* insns larger than this cost more */
   const int move_ratio;		/* The threshold of number of scalar
 				   memory-to-memory move insns.  */
-  const int movzbl_load;	/* cost of loading using movzbl */
   const int int_load[3];	/* cost of loading integer registers
 				   in QImode, HImode and SImode relative
 				   to reg-reg move (2).  */
   const int int_store[3];	/* cost of storing integer register
 				   in QImode, HImode and SImode */
-  const int fp_move;		/* cost of reg,reg fld/fst */
-  const int fp_load[3];		/* cost of loading FP register
-				   in SFmode, DFmode and XFmode */
-  const int fp_store[3];	/* cost of storing FP register
-				   in SFmode, DFmode and XFmode */
-  const int mmx_move;		/* cost of moving MMX register.  */
-  const int mmx_load[2];	/* cost of loading MMX register
-				   in SImode and DImode */
-  const int mmx_store[2];	/* cost of storing MMX register
-				   in SImode and DImode */
-  const int xmm_move, ymm_move, /* cost of moving XMM and YMM register.  */
-	    zmm_move;
   const int sse_load[5];	/* cost of loading SSE register
 				   in 32bit, 64bit, 128bit, 256bit and 512bit */
-  const int sse_unaligned_load[5];/* cost of unaligned load.  */
   const int sse_store[5];	/* cost of storing SSE register
-				   in SImode, DImode and TImode.  */
+				   in 32bit, 64bit, 128bit, 256bit and 512bit */
+  const int sse_unaligned_load[5];/* cost of unaligned load.  */
   const int sse_unaligned_store[5];/* cost of unaligned store.  */
+  const int xmm_move, ymm_move, /* cost of moving XMM and YMM register.  */
+	    zmm_move;
   const int sse_to_integer;	/* cost of moving SSE register to integer.  */
-  const int integer_to_sse;	/* cost of moving integer register to SSE. */
   const int gather_static, gather_per_elt; /* Cost of gather load is computed
 				   as static + per_item * nelts. */
   const int scatter_static, scatter_per_elt; /* Cost of gather store is
@@ -647,7 +672,7 @@ extern tree x86_mfence;
 /* Replace MACH-O, ifdefs by in-line tests, where possible. 
    (a) Macros defined in config/i386/darwin.h  */
 #define TARGET_MACHO 0
-#define TARGET_MACHO_PICSYM_STUBS 0
+#define TARGET_MACHO_SYMBOL_STUBS 0
 #define MACHOPIC_ATT_STUB 0
 /* (b) Macros defined in config/darwin.h  */
 #define MACHO_DYNAMIC_NO_PIC_P 0
@@ -676,6 +701,12 @@ extern tree x86_mfence;
 /* Subtargets may reset this to 1 in order to enable 96-bit long double
    with the rounding mode forced to 53 bits.  */
 #define TARGET_96_ROUND_53_LONG_DOUBLE 0
+
+#ifndef SUBTARGET_DRIVER_SELF_SPECS
+# define SUBTARGET_DRIVER_SELF_SPECS ""
+#endif
+
+#define DRIVER_SELF_SPECS SUBTARGET_DRIVER_SELF_SPECS
 
 /* -march=native handling only makes sense with compiler running on
    an x86 or x86_64 chip.  If changing this condition, also change
@@ -1901,7 +1932,7 @@ typedef struct ix86_args {
    ? GET_MODE_SIZE (TImode) : UNITS_PER_WORD)
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
-   move-instruction pairs, we will do a movmem or libcall instead.
+   move-instruction pairs, we will do a cpymem or libcall instead.
    Increasing the value will always make code faster, but eventually
    incurs high cost in increased code size.
 
@@ -2417,8 +2448,9 @@ const wide_int_bitmask PTA_KNM = PTA_KNL | PTA_AVX5124VNNIW
 
 #include "insn-attr-common.h"
 
-struct pta
+class pta
 {
+public:
   const char *const name;		/* processor name or nickname.  */
   const enum processor_type processor;
   const enum attr_cpu schedule;

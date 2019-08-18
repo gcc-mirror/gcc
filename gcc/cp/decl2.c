@@ -434,8 +434,8 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
 	array_expr = p2, index_exp = i1;
       else
 	{
-	  error ("invalid types %<%T[%T]%> for array subscript",
-		 type, TREE_TYPE (index_exp));
+	  error_at (loc, "invalid types %<%T[%T]%> for array subscript",
+		    type, TREE_TYPE (index_exp));
 	  return error_mark_node;
 	}
 
@@ -487,15 +487,19 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete,
     }
 
   /* An array can't have been allocated by new, so complain.  */
-  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
-    warning (0, "deleting array %q#E", exp);
+  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
+      && (complain & tf_warning))
+    warning_at (cp_expr_loc_or_input_loc (exp), 0,
+		"deleting array %q#E", exp);
 
   t = build_expr_type_conversion (WANT_POINTER, exp, true);
 
   if (t == NULL_TREE || t == error_mark_node)
     {
-      error ("type %q#T argument given to %<delete%>, expected pointer",
-	     TREE_TYPE (exp));
+      if (complain & tf_error)
+	error_at (cp_expr_loc_or_input_loc (exp),
+		  "type %q#T argument given to %<delete%>, expected pointer",
+		  TREE_TYPE (exp));
       return error_mark_node;
     }
 
@@ -506,15 +510,19 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete,
   /* You can't delete functions.  */
   if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
     {
-      error ("cannot delete a function.  Only pointer-to-objects are "
-	     "valid arguments to %<delete%>");
+      if (complain & tf_error)
+	error_at (cp_expr_loc_or_input_loc (exp),
+		  "cannot delete a function.  Only pointer-to-objects are "
+		  "valid arguments to %<delete%>");
       return error_mark_node;
     }
 
   /* Deleting ptr to void is undefined behavior [expr.delete/3].  */
   if (VOID_TYPE_P (TREE_TYPE (type)))
     {
-      warning (OPT_Wdelete_incomplete, "deleting %qT is undefined", type);
+      if (complain & tf_warning)
+	warning_at (cp_expr_loc_or_input_loc (exp), OPT_Wdelete_incomplete,
+		    "deleting %qT is undefined", type);
       doing_vec = 0;
     }
 
@@ -1406,32 +1414,68 @@ cp_check_const_attributes (tree attributes)
     }
 }
 
-/* Return true if TYPE is an OpenMP mappable type.  */
-bool
-cp_omp_mappable_type (tree type)
+/* Return true if TYPE is an OpenMP mappable type.
+   If NOTES is non-zero, emit a note message for each problem.  */
+static bool
+cp_omp_mappable_type_1 (tree type, bool notes)
 {
+  bool result = true;
+
   /* Mappable type has to be complete.  */
   if (type == error_mark_node || !COMPLETE_TYPE_P (type))
-    return false;
+    {
+      if (notes && type != error_mark_node)
+	{
+	  tree decl = TYPE_MAIN_DECL (type);
+	  inform ((decl ? DECL_SOURCE_LOCATION (decl) : input_location),
+		  "incomplete type %qT is not mappable", type);
+	}
+      result = false;
+    }
   /* Arrays have mappable type if the elements have mappable type.  */
   while (TREE_CODE (type) == ARRAY_TYPE)
     type = TREE_TYPE (type);
   /* A mappable type cannot contain virtual members.  */
   if (CLASS_TYPE_P (type) && CLASSTYPE_VTABLES (type))
-    return false;
+    {
+      if (notes)
+	inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
+		"type %qT with virtual members is not mappable", type);
+      result = false;
+    }
   /* All data members must be non-static.  */
   if (CLASS_TYPE_P (type))
     {
       tree field;
       for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	if (VAR_P (field))
-	  return false;
+	  {
+	    if (notes)
+	      inform (DECL_SOURCE_LOCATION (field),
+		      "static field %qD is not mappable", field);
+	    result = false;
+	  }
 	/* All fields must have mappable types.  */
 	else if (TREE_CODE (field) == FIELD_DECL
-		 && !cp_omp_mappable_type (TREE_TYPE (field)))
-	  return false;
+		 && !cp_omp_mappable_type_1 (TREE_TYPE (field), notes))
+	  result = false;
     }
-  return true;
+  return result;
+}
+
+/* Return true if TYPE is an OpenMP mappable type.  */
+bool
+cp_omp_mappable_type (tree type)
+{
+  return cp_omp_mappable_type_1 (type, false);
+}
+
+/* Return true if TYPE is an OpenMP mappable type.
+   Emit an error messages if not.  */
+bool
+cp_omp_emit_unmappable_type_notes (tree type)
+{
+  return cp_omp_mappable_type_1 (type, true);
 }
 
 /* Return the last pushed declaration for the symbol DECL or NULL

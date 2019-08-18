@@ -2326,7 +2326,7 @@ xstormy16_expand_builtin (tree exp, rtx target,
 
   fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   argtree = TREE_OPERAND (exp, 1);
-  i = DECL_FUNCTION_CODE (fndecl);
+  i = DECL_MD_FUNCTION_CODE (fndecl);
   code = s16builtins[i].md_code;
 
   for (a = 0; a < 10 && argtree; a++)

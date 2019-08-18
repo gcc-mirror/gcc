@@ -1069,7 +1069,7 @@ ipa_reference_read_optimization_summary (void)
     {
       const char *data;
       size_t len;
-      struct lto_input_block *ib
+      class lto_input_block *ib
 	= lto_create_simple_input_block (file_data,
 					 LTO_section_ipa_reference,
 					 &data, &len);

@@ -39,6 +39,13 @@
   (and (match_code "const_int")
        (match_test "op == CONST0_RTX (mode)")))
 
+(define_predicate "const_1_to_3_operand"
+  (match_code "const_int,const_vector")
+{
+  op = unwrap_const_vec_duplicate (op);
+  return CONST_INT_P (op) && IN_RANGE (INTVAL (op), 1, 3);
+})
+
 (define_special_predicate "subreg_lowpart_operator"
   (and (match_code "subreg")
        (match_test "subreg_lowpart_p (op)")))
@@ -53,13 +60,12 @@
 
 (define_predicate "aarch64_simd_register"
   (and (match_code "reg")
-       (ior (match_test "REGNO_REG_CLASS (REGNO (op)) == FP_LO_REGS")
-            (match_test "REGNO_REG_CLASS (REGNO (op)) == FP_REGS"))))
+       (match_test "FP_REGNUM_P (REGNO (op))")))
 
 (define_predicate "aarch64_reg_or_zero"
-  (and (match_code "reg,subreg,const_int")
+  (and (match_code "reg,subreg,const_int,const_double")
        (ior (match_operand 0 "register_operand")
-	    (match_test "op == const0_rtx"))))
+	    (match_test "op == CONST0_RTX (GET_MODE (op))"))))
 
 (define_predicate "aarch64_reg_or_fp_zero"
   (ior (match_operand 0 "register_operand")
@@ -138,9 +144,17 @@
   (and (match_operand 0 "aarch64_pluslong_immediate")
        (not (match_operand 0 "aarch64_plus_immediate"))))
 
+(define_predicate "aarch64_sve_scalar_inc_dec_immediate"
+  (and (match_code "const_poly_int")
+       (match_test "aarch64_sve_scalar_inc_dec_immediate_p (op)")))
+
 (define_predicate "aarch64_sve_addvl_addpl_immediate"
   (and (match_code "const_poly_int")
        (match_test "aarch64_sve_addvl_addpl_immediate_p (op)")))
+
+(define_predicate "aarch64_sve_plus_immediate"
+  (ior (match_operand 0 "aarch64_sve_scalar_inc_dec_immediate")
+       (match_operand 0 "aarch64_sve_addvl_addpl_immediate")))
 
 (define_predicate "aarch64_split_add_offset_immediate"
   (and (match_code "const_poly_int")
@@ -149,7 +163,8 @@
 (define_predicate "aarch64_pluslong_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_pluslong_immediate")
-       (match_operand 0 "aarch64_sve_addvl_addpl_immediate")))
+       (and (match_test "TARGET_SVE")
+	    (match_operand 0 "aarch64_sve_plus_immediate"))))
 
 (define_predicate "aarch64_pluslong_or_poly_operand"
   (ior (match_operand 0 "aarch64_pluslong_operand")
@@ -432,6 +447,12 @@
   return aarch64_simd_check_vect_par_cnst_half (op, mode, false);
 })
 
+(define_predicate "descending_int_parallel"
+  (match_code "parallel")
+{
+  return aarch64_stepped_int_parallel_p (op, -1);
+})
+
 (define_special_predicate "aarch64_simd_lshift_imm"
   (match_code "const,const_vector")
 {
@@ -447,6 +468,10 @@
 (define_predicate "aarch64_simd_imm_zero"
   (and (match_code "const,const_vector")
        (match_test "op == CONST0_RTX (GET_MODE (op))")))
+
+(define_predicate "aarch64_simd_imm_one"
+  (and (match_code "const_vector")
+       (match_test "op == CONST1_RTX (GET_MODE (op))")))
 
 (define_predicate "aarch64_simd_or_scalar_imm_zero"
   (and (match_code "const_int,const_double,const,const_vector")
@@ -544,6 +569,10 @@
   (and (match_operand 0 "memory_operand")
        (match_test "aarch64_sve_ld1r_operand_p (op)")))
 
+(define_predicate "aarch64_sve_ld1rq_operand"
+  (and (match_code "mem")
+       (match_test "aarch64_sve_ld1rq_operand_p (op)")))
+
 ;; Like memory_operand, but restricted to addresses that are valid for
 ;; SVE LDR and STR instructions.
 (define_predicate "aarch64_sve_ldr_operand"
@@ -582,21 +611,50 @@
   (and (match_code "const,const_vector")
        (match_test "aarch64_sve_arith_immediate_p (op, true)")))
 
-(define_predicate "aarch64_sve_inc_dec_immediate"
+(define_predicate "aarch64_sve_vector_inc_dec_immediate"
   (and (match_code "const,const_vector")
-       (match_test "aarch64_sve_inc_dec_immediate_p (op)")))
+       (match_test "aarch64_sve_vector_inc_dec_immediate_p (op)")))
+
+(define_predicate "aarch64_sve_uxtb_immediate"
+  (and (match_code "const_vector")
+       (match_test "GET_MODE_UNIT_BITSIZE (GET_MODE (op)) > 8")
+       (match_test "aarch64_const_vec_all_same_int_p (op, 0xff)")))
+
+(define_predicate "aarch64_sve_uxth_immediate"
+  (and (match_code "const_vector")
+       (match_test "GET_MODE_UNIT_BITSIZE (GET_MODE (op)) > 16")
+       (match_test "aarch64_const_vec_all_same_int_p (op, 0xffff)")))
+
+(define_predicate "aarch64_sve_uxtw_immediate"
+  (and (match_code "const_vector")
+       (match_test "GET_MODE_UNIT_BITSIZE (GET_MODE (op)) > 32")
+       (match_test "aarch64_const_vec_all_same_int_p (op, 0xffffffff)")))
+
+(define_predicate "aarch64_sve_uxt_immediate"
+  (ior (match_operand 0 "aarch64_sve_uxtb_immediate")
+       (match_operand 0 "aarch64_sve_uxth_immediate")
+       (match_operand 0 "aarch64_sve_uxtw_immediate")))
 
 (define_predicate "aarch64_sve_logical_immediate"
   (and (match_code "const,const_vector")
        (match_test "aarch64_sve_bitmask_immediate_p (op)")))
 
-(define_predicate "aarch64_sve_mul_immediate"
+;; Used for SVE UMAX and UMIN.
+(define_predicate "aarch64_sve_vsb_immediate"
+  (and (match_code "const_vector")
+       (match_test "GET_MODE_INNER (GET_MODE (op)) == QImode
+		    ? aarch64_const_vec_all_same_in_range_p (op, -128, 127)
+		    : aarch64_const_vec_all_same_in_range_p (op, 0, 255)")))
+
+;; Used for SVE MUL, SMAX and SMIN.
+(define_predicate "aarch64_sve_vsm_immediate"
   (and (match_code "const,const_vector")
        (match_test "aarch64_const_vec_all_same_in_range_p (op, -128, 127)")))
 
 (define_predicate "aarch64_sve_dup_immediate"
   (and (match_code "const,const_vector")
-       (match_test "aarch64_sve_dup_immediate_p (op)")))
+       (ior (match_test "aarch64_sve_dup_immediate_p (op)")
+	    (match_test "aarch64_float_const_representable_p (op)"))))
 
 (define_predicate "aarch64_sve_cmp_vsc_immediate"
   (and (match_code "const,const_vector")
@@ -614,13 +672,22 @@
   (and (match_code "const,const_vector")
        (match_test "aarch64_sve_float_arith_immediate_p (op, false)")))
 
-(define_predicate "aarch64_sve_float_arith_with_sub_immediate"
+(define_predicate "aarch64_sve_float_negated_arith_immediate"
   (and (match_code "const,const_vector")
        (match_test "aarch64_sve_float_arith_immediate_p (op, true)")))
+
+(define_predicate "aarch64_sve_float_arith_with_sub_immediate"
+  (ior (match_operand 0 "aarch64_sve_float_arith_immediate")
+       (match_operand 0 "aarch64_sve_float_negated_arith_immediate")))
 
 (define_predicate "aarch64_sve_float_mul_immediate"
   (and (match_code "const,const_vector")
        (match_test "aarch64_sve_float_mul_immediate_p (op)")))
+
+(define_predicate "aarch64_sve_float_maxmin_immediate"
+  (and (match_code "const_vector")
+       (ior (match_test "op == CONST0_RTX (GET_MODE (op))")
+	    (match_test "op == CONST1_RTX (GET_MODE (op))"))))
 
 (define_predicate "aarch64_sve_arith_operand"
   (ior (match_operand 0 "register_operand")
@@ -629,7 +696,11 @@
 (define_predicate "aarch64_sve_add_operand"
   (ior (match_operand 0 "aarch64_sve_arith_operand")
        (match_operand 0 "aarch64_sve_sub_arith_immediate")
-       (match_operand 0 "aarch64_sve_inc_dec_immediate")))
+       (match_operand 0 "aarch64_sve_vector_inc_dec_immediate")))
+
+(define_predicate "aarch64_sve_pred_and_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "aarch64_sve_uxt_immediate")))
 
 (define_predicate "aarch64_sve_logical_operand"
   (ior (match_operand 0 "register_operand")
@@ -643,9 +714,17 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_simd_rshift_imm")))
 
-(define_predicate "aarch64_sve_mul_operand"
+(define_predicate "aarch64_sve_vsb_operand"
   (ior (match_operand 0 "register_operand")
-       (match_operand 0 "aarch64_sve_mul_immediate")))
+       (match_operand 0 "aarch64_sve_vsb_immediate")))
+
+(define_predicate "aarch64_sve_vsm_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "aarch64_sve_vsm_immediate")))
+
+(define_predicate "aarch64_sve_reg_or_dup_imm"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "aarch64_sve_dup_immediate")))
 
 (define_predicate "aarch64_sve_cmp_vsc_operand"
   (ior (match_operand 0 "register_operand")
@@ -664,16 +743,30 @@
        (match_operand 0 "aarch64_sve_float_arith_immediate")))
 
 (define_predicate "aarch64_sve_float_arith_with_sub_operand"
-  (ior (match_operand 0 "aarch64_sve_float_arith_operand")
+  (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_sve_float_arith_with_sub_immediate")))
 
 (define_predicate "aarch64_sve_float_mul_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_sve_float_mul_immediate")))
 
+(define_predicate "aarch64_sve_float_maxmin_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "aarch64_sve_float_maxmin_immediate")))
+
 (define_predicate "aarch64_sve_vec_perm_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_constant_vector_operand")))
+
+(define_predicate "aarch64_sve_ptrue_flag"
+  (and (match_code "const_int")
+       (ior (match_test "INTVAL (op) == SVE_MAYBE_NOT_PTRUE")
+	    (match_test "INTVAL (op) == SVE_KNOWN_PTRUE"))))
+
+(define_predicate "aarch64_sve_gp_strictness"
+  (and (match_code "const_int")
+       (ior (match_test "INTVAL (op) == SVE_RELAXED_GP")
+	    (match_test "INTVAL (op) == SVE_STRICT_GP"))))
 
 (define_predicate "aarch64_gather_scale_operand_w"
   (and (match_code "const_int")

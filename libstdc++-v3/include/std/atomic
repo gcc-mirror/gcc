@@ -39,7 +39,6 @@
 #else
 
 #include <bits/atomic_base.h>
-#include <bits/move.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -1471,6 +1470,71 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     atomic_fetch_xor(volatile __atomic_base<_ITp>* __a,
 		     __atomic_val_t<_ITp> __i) noexcept
     { return atomic_fetch_xor_explicit(__a, __i, memory_order_seq_cst); }
+
+#if __cplusplus > 201703L
+  template<>
+    struct atomic<float> : __atomic_float<float>
+    {
+      atomic() noexcept = default;
+
+      constexpr
+      atomic(float __fp) noexcept : __atomic_float<float>(__fp)
+      { }
+
+      atomic& operator=(const atomic&) volatile = delete;
+      atomic& operator=(const atomic&) = delete;
+
+      using __atomic_float<float>::operator=;
+    };
+
+  template<>
+    struct atomic<double> : __atomic_float<double>
+    {
+      atomic() noexcept = default;
+
+      constexpr
+      atomic(double __fp) noexcept : __atomic_float<double>(__fp)
+      { }
+
+      atomic& operator=(const atomic&) volatile = delete;
+      atomic& operator=(const atomic&) = delete;
+
+      using __atomic_float<double>::operator=;
+    };
+
+  template<>
+    struct atomic<long double> : __atomic_float<long double>
+    {
+      atomic() noexcept = default;
+
+      constexpr
+      atomic(long double __fp) noexcept : __atomic_float<long double>(__fp)
+      { }
+
+      atomic& operator=(const atomic&) volatile = delete;
+      atomic& operator=(const atomic&) = delete;
+
+      using __atomic_float<long double>::operator=;
+    };
+
+#define __cpp_lib_atomic_ref 201806L
+
+  /// Class template to provide atomic operations on a non-atomic variable.
+  template<typename _Tp>
+    struct atomic_ref : __atomic_ref<_Tp>
+    {
+      explicit
+      atomic_ref(_Tp& __t) noexcept : __atomic_ref<_Tp>(__t)
+      { }
+
+      atomic_ref& operator=(const atomic_ref&) = delete;
+
+      atomic_ref(const atomic_ref&) = default;
+
+      using __atomic_ref<_Tp>::operator=;
+    };
+
+#endif // C++2a
 
   // @} group atomics
 

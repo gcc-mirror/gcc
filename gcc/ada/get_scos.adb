@@ -179,12 +179,6 @@ procedure Get_SCOs is
          Skipc;
          C := Nextc;
          exit when C /= LF and then C /= CR;
-
-         if C = ' ' then
-            Skip_Spaces;
-            C := Nextc;
-            exit when C /= LF and then C /= CR;
-         end if;
       end loop;
    end Skip_EOL;
 

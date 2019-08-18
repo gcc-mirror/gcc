@@ -133,5 +133,5 @@
     return "movep\t%2,%0,%z3,%z1";
 }
   [(set_attr "type" "move")
-   (set_attr "mode" "<MODE>")
+   (set_attr "mode" "<MOVEP1:MODE>")
    (set_attr "can_delay" "no")])

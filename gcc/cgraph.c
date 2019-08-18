@@ -846,17 +846,8 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
       gcc_assert (is_gimple_call (call_stmt));
     }
 
-  if (free_edges)
-    {
-      edge = free_edges;
-      free_edges = NEXT_FREE_EDGE (edge);
-    }
-  else
-    {
-      edge = ggc_alloc<cgraph_edge> ();
-      edge->m_summary_id = -1;
-    }
-
+  edge = ggc_alloc<cgraph_edge> ();
+  edge->m_summary_id = -1;
   edges_count++;
 
   gcc_assert (++edges_max_uid != 0);
@@ -1013,16 +1004,13 @@ cgraph_edge::remove_caller (void)
 void
 symbol_table::free_edge (cgraph_edge *e)
 {
+  edges_count--;
+  if (e->m_summary_id != -1)
+    edge_released_summary_ids.safe_push (e->m_summary_id);
+
   if (e->indirect_info)
     ggc_free (e->indirect_info);
-
-  /* Clear out the edge so we do not dangle pointers.  */
-  int summary_id = e->m_summary_id;
-  memset (e, 0, sizeof (*e));
-  e->m_summary_id = summary_id;
-  NEXT_FREE_EDGE (e) = free_edges;
-  free_edges = e;
-  edges_count--;
+  ggc_free (e);
 }
 
 /* Remove the edge in the cgraph.  */
@@ -1227,7 +1215,7 @@ cgraph_edge::make_direct (cgraph_node *callee)
       edge = edge->resolve_speculation (callee->decl);
 
       /* On successful speculation just return the pre existing direct edge.  */
-      if (!indirect_unknown_callee)
+      if (!edge->indirect_unknown_callee)
         return edge;
     }
 
@@ -1779,8 +1767,6 @@ cgraph_node::release_body (bool keep_arguments)
 void
 cgraph_node::remove (void)
 {
-  cgraph_node *n;
-
   if (symtab->ipa_clones_dump_file && symtab->cloned_nodes.contains (this))
     fprintf (symtab->ipa_clones_dump_file,
 	     "Callgraph removal;%s;%d;%s;%d;%d\n", asm_name (), order,
@@ -1797,8 +1783,13 @@ cgraph_node::remove (void)
      */
   force_output = false;
   forced_by_abi = false;
-  for (n = nested; n; n = n->next_nested)
+  cgraph_node *next = nested;
+  for (cgraph_node *n = nested; n; n = next)
+  {
+    next = n->next_nested;
     n->origin = NULL;
+    n->next_nested = NULL;
+  }
   nested = NULL;
   if (origin)
     {
@@ -1852,7 +1843,7 @@ cgraph_node::remove (void)
      */
   if (symtab->state != LTO_STREAMING)
     {
-      n = cgraph_node::get (decl);
+      cgraph_node *n = cgraph_node::get (decl);
       if (!n
 	  || (!n->clones && !n->clone_of && !n->global.inlined_to
 	      && ((symtab->global_info_ready || in_lto_p)
@@ -2092,6 +2083,11 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " optimize_size");
   if (parallelized_function)
     fprintf (f, " parallelized_function");
+  if (DECL_IS_OPERATOR_NEW_P (decl))
+    fprintf (f, " operator_new");
+  if (DECL_IS_OPERATOR_DELETE_P (decl))
+    fprintf (f, " operator_delete");
+
 
   fprintf (f, "\n");
 
@@ -2203,6 +2199,22 @@ cgraph_node::dump (FILE *f)
 	edge->indirect_info->context.dump (f);
     }
 }
+
+/* Dump call graph node to file F in graphviz format.  */
+
+void
+cgraph_node::dump_graphviz (FILE *f)
+{
+  cgraph_edge *edge;
+
+  for (edge = callees; edge; edge = edge->next_callee)
+    {
+      cgraph_node *callee = edge->callee;
+
+      fprintf (f, "\t\"%s\" -> \"%s\"\n", name (), callee->name ());
+    }
+}
+
 
 /* Dump call graph node NODE to stderr.  */
 
@@ -2714,8 +2726,6 @@ bool
 cgraph_node::set_pure_flag (bool pure, bool looping)
 {
   struct set_pure_flag_info info = {pure, looping, false};
-  if (!pure)
-    looping = false;
   call_for_symbol_thunks_and_aliases (set_pure_flag_1, &info, !pure, true);
   return info.changed;
 }
@@ -2757,7 +2767,7 @@ cgraph_edge::cannot_lead_to_return_p (void)
     return callee->cannot_return_p ();
 }
 
-/* Return true if the call can be hot.  */
+/* Return true if the edge may be considered hot.  */
 
 bool
 cgraph_edge::maybe_hot_p (void)
@@ -2783,8 +2793,7 @@ cgraph_edge::maybe_hot_p (void)
   if (caller->frequency == NODE_FREQUENCY_EXECUTED_ONCE
       && sreal_frequency () * 2 < 3)
     return false;
-  if (PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) == 0
-      || sreal_frequency () * PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) <= 1)
+  if (sreal_frequency () * PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) <= 1)
     return false;
   return true;
 }
@@ -3458,6 +3467,30 @@ cgraph_node::verify_node (void)
 	  e->aux = 0;
 	}
     }
+
+  if (nested != NULL)
+    {
+      for (cgraph_node *n = nested; n != NULL; n = n->next_nested)
+	{
+	  if (n->origin == NULL)
+	    {
+	      error ("missing origin for a node in a nested list");
+	      error_found = true;
+	    }
+	  else if (n->origin != this)
+	    {
+	      error ("origin points to a different parent");
+	      error_found = true;
+	      break;
+	    }
+	}
+    }
+  if (next_nested != NULL && origin == NULL)
+    {
+      error ("missing origin for a node in a nested list");
+      error_found = true;
+    }
+
   if (error_found)
     {
       dump (stderr);
@@ -3620,7 +3653,7 @@ cgraph_node::get_body (void)
       set_dump_file (NULL);
 
       push_cfun (DECL_STRUCT_FUNCTION (decl));
-      execute_all_ipa_transforms ();
+      execute_all_ipa_transforms (true);
       cgraph_edge::rebuild_edges ();
       free_dominance_info (CDI_DOMINATORS);
       free_dominance_info (CDI_POST_DOMINATORS);

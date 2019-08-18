@@ -1118,9 +1118,7 @@ use_internal_fn (gcall *call)
 	{
 	  gimple_stmt_iterator gsi = gsi_for_stmt (call);
 	  gcall *new_call = gimple_build_call_internal (IFN_SET_EDOM, 0);
-	  gimple_set_vuse (new_call, gimple_vuse (call));
-	  gimple_set_vdef (new_call, gimple_vdef (call));
-	  SSA_NAME_DEF_STMT (gimple_vdef (new_call)) = new_call;
+	  gimple_move_vops (new_call, call);
 	  gimple_set_location (new_call, gimple_location (call));
 	  gsi_replace (&gsi, new_call, false);
 	  call = new_call;

@@ -509,8 +509,11 @@ is
 
    procedure Free (HT : in out Map; X : Count_Type) is
    begin
-      HT.Nodes (X).Has_Element := False;
-      HT_Ops.Free (HT, X);
+      if X /= 0 then
+         pragma Assert (X <= HT.Capacity);
+         HT.Nodes (X).Has_Element := False;
+         HT_Ops.Free (HT, X);
+      end if;
    end Free;
 
    ----------------------

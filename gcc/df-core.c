@@ -298,12 +298,12 @@ There are 4 ways to obtain access to refs:
 
    Artificial defs and uses occur both at the beginning and ends of blocks.
 
-     For blocks that area at the destination of eh edges, the
+     For blocks that are at the destination of eh edges, the
      artificial uses and defs occur at the beginning.  The defs relate
      to the registers specified in EH_RETURN_DATA_REGNO and the uses
-     relate to the registers specified in ED_USES.  Logically these
+     relate to the registers specified in EH_USES.  Logically these
      defs and uses should really occur along the eh edge, but there is
-     no convenient way to do this.  Artificial edges that occur at the
+     no convenient way to do this.  Artificial defs that occur at the
      beginning of the block have the DF_REF_AT_TOP flag set.
 
      Artificial uses occur at the end of all blocks.  These arise from
@@ -407,7 +407,7 @@ bitmap_obstack df_bitmap_obstack;
   Functions to create, destroy and manipulate an instance of df.
 ----------------------------------------------------------------------------*/
 
-struct df_d *df;
+class df_d *df;
 
 /* Add PROBLEM (and any dependent problems) to the DF instance.  */
 
@@ -684,7 +684,7 @@ static unsigned int
 rest_of_handle_df_initialize (void)
 {
   gcc_assert (!df);
-  df = XCNEW (struct df_d);
+  df = XCNEW (class df_d);
   df->changeable_flags = 0;
 
   bitmap_obstack_initialize (&df_bitmap_obstack);
@@ -1293,7 +1293,7 @@ df_analyze (void)
    Returns the number of blocks which is always loop->num_nodes.  */
 
 static int
-loop_post_order_compute (int *post_order, struct loop *loop)
+loop_post_order_compute (int *post_order, class loop *loop)
 {
   edge_iterator *stack;
   int sp;
@@ -1354,7 +1354,7 @@ loop_post_order_compute (int *post_order, struct loop *loop)
    by LOOP.  Returns the number of blocks which is always loop->num_nodes.  */
 
 static void
-loop_inverted_post_order_compute (vec<int> *post_order, struct loop *loop)
+loop_inverted_post_order_compute (vec<int> *post_order, class loop *loop)
 {
   basic_block bb;
   edge_iterator *stack;
@@ -1419,7 +1419,7 @@ loop_inverted_post_order_compute (vec<int> *post_order, struct loop *loop)
 /* Analyze dataflow info for the basic blocks contained in LOOP.  */
 
 void
-df_analyze_loop (struct loop *loop)
+df_analyze_loop (class loop *loop)
 {
   free (df->postorder);
 

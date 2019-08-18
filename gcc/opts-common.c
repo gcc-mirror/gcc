@@ -537,7 +537,8 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
 
   extra_args = 0;
 
-  opt_index = find_opt (argv[0] + 1, lang_mask);
+  const char *opt_value = argv[0] + 1;
+  opt_index = find_opt (opt_value, lang_mask);
   i = 0;
   while (opt_index == OPT_SPECIAL_unknown
 	 && i < ARRAY_SIZE (option_map))
@@ -745,6 +746,23 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   /* Check if this is a switch for a different front end.  */
   if (!option_ok_for_language (option, lang_mask))
     errors |= CL_ERR_WRONG_LANG;
+  else if (strcmp (option->opt_text, "-Werror=") == 0
+	   && strchr (opt_value, ',') == NULL)
+    {
+      /* Verify that -Werror argument is a valid warning
+	 for a language.  */
+      char *werror_arg = xstrdup (opt_value + 6);
+      werror_arg[0] = 'W';
+
+      size_t warning_index = find_opt (werror_arg, lang_mask);
+      if (warning_index != OPT_SPECIAL_unknown)
+	{
+	  const struct cl_option *warning_option
+	    = &cl_options[warning_index];
+	  if (!option_ok_for_language (warning_option, lang_mask))
+	    errors |= CL_ERR_WRONG_LANG;
+	}
+    }
 
   /* Convert the argument to lowercase if appropriate.  */
   if (arg && option->cl_tolower)
@@ -1508,9 +1526,15 @@ option_flag_var (int opt_index, struct gcc_options *opts)
    or -1 if it isn't a simple on-off switch.  */
 
 int
-option_enabled (int opt_idx, void *opts)
+option_enabled (int opt_idx, unsigned lang_mask, void *opts)
 {
   const struct cl_option *option = &(cl_options[opt_idx]);
+
+  /* A language-specific option can only be considered enabled when it's
+     valid for the current language.  */
+  if (option->flags & CL_LANG_ALL && !(option->flags | lang_mask))
+    return 0;
+
   struct gcc_options *optsg = (struct gcc_options *) opts;
   void *flag_var = option_flag_var (opt_idx, optsg);
 
@@ -1580,7 +1604,7 @@ get_option_state (struct gcc_options *opts, int option,
 
     case CLVC_BIT_CLEAR:
     case CLVC_BIT_SET:
-      state->ch = option_enabled (option, opts);
+      state->ch = option_enabled (option, -1, opts);
       state->data = &state->ch;
       state->size = 1;
       break;

@@ -675,7 +675,7 @@ aff_combination_mult (aff_tree *c1, aff_tree *c2, aff_tree *r)
    element exists.  If IDX is not NULL, it is set to the index of VAL in
    COMB.  */
 
-static struct aff_comb_elt *
+static class aff_comb_elt *
 aff_combination_find_elt (aff_tree *comb, tree val, unsigned *idx)
 {
   unsigned i;
@@ -695,8 +695,9 @@ aff_combination_find_elt (aff_tree *comb, tree val, unsigned *idx)
 /* Element of the cache that maps ssa name NAME to its expanded form
    as an affine expression EXPANSION.  */
 
-struct name_expansion
+class name_expansion
 {
+public:
   aff_tree expansion;
 
   /* True if the expansion for the name is just being generated.  */
@@ -715,7 +716,7 @@ aff_combination_expand (aff_tree *comb ATTRIBUTE_UNUSED,
   tree e;
   gimple *def;
   widest_int scale;
-  struct name_expansion *exp;
+  class name_expansion *exp;
 
   aff_combination_zero (&to_add, comb->type);
   for (i = 0; i < comb->n; i++)
@@ -794,7 +795,7 @@ aff_combination_expand (aff_tree *comb ATTRIBUTE_UNUSED,
 	    default:
 	      continue;
 	    }
-	  exp = XNEW (struct name_expansion);
+	  exp = XNEW (class name_expansion);
 	  exp->in_progress = 1;
 	  if (!*cache)
 	    *cache = new hash_map<tree, name_expansion *>;
@@ -931,7 +932,7 @@ aff_combination_constant_multiple_p (aff_tree *val, aff_tree *div,
 
   for (i = 0; i < div->n; i++)
     {
-      struct aff_comb_elt *elt
+      class aff_comb_elt *elt
 	      = aff_combination_find_elt (val, div->elts[i].val, NULL);
       if (!elt)
 	return false;

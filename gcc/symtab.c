@@ -956,12 +956,29 @@ symtab_node::dump (FILE *f)
 }
 
 void
+symtab_node::dump_graphviz (FILE *f)
+{
+  if (cgraph_node *cnode = dyn_cast <cgraph_node *> (this))
+    cnode->dump_graphviz (f);
+}
+
+void
 symbol_table::dump (FILE *f)
 {
   symtab_node *node;
   fprintf (f, "Symbol table:\n\n");
   FOR_EACH_SYMBOL (node)
     node->dump (f);
+}
+
+void
+symbol_table::dump_graphviz (FILE *f)
+{
+  symtab_node *node;
+  fprintf (f, "digraph symtab {\n");
+  FOR_EACH_SYMBOL (node)
+    node->dump_graphviz (f);
+  fprintf (f, "}\n");
 }
 
 DEBUG_FUNCTION void
@@ -2358,10 +2375,18 @@ symtab_node::output_to_lto_symbol_table_p (void)
      first place.  */
   if (VAR_P (decl) && DECL_HARD_REGISTER (decl))
     return false;
-  /* FIXME: Builtins corresponding to real functions probably should have
-     symbol table entries.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL && fndecl_built_in_p (decl))
-    return false;
+  if (TREE_CODE (decl) == FUNCTION_DECL && !definition
+      && fndecl_built_in_p (decl))
+    {
+      /* Builtins like those for most math functions have actual implementations
+	 in libraries so make sure to output references into the symbol table to
+	 make those libraries referenced.  Note this is incomplete handling for
+	 now and only covers math functions.  */
+      if (builtin_with_linkage_p (decl))
+	return true;
+      else
+	return false;
+    }
 
   /* We have real symbol that should be in symbol table.  However try to trim
      down the refernces to libraries bit more because linker will otherwise

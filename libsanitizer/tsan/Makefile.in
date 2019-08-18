@@ -148,10 +148,9 @@ am__objects_1 = tsan_clock.lo tsan_debugging.lo tsan_external.lo \
 	tsan_fd.lo tsan_flags.lo tsan_ignoreset.lo \
 	tsan_interceptors.lo tsan_interceptors_mac.lo \
 	tsan_interface_ann.lo tsan_interface_atomic.lo \
-	tsan_interface.lo tsan_interface_java.lo \
-	tsan_libdispatch_mac.lo tsan_malloc_mac.lo tsan_md5.lo \
-	tsan_mman.lo tsan_mutex.lo tsan_mutexset.lo tsan_new_delete.lo \
-	tsan_platform_linux.lo tsan_platform_mac.lo \
+	tsan_interface.lo tsan_interface_java.lo tsan_malloc_mac.lo \
+	tsan_md5.lo tsan_mman.lo tsan_mutex.lo tsan_mutexset.lo \
+	tsan_new_delete.lo tsan_platform_linux.lo tsan_platform_mac.lo \
 	tsan_platform_posix.lo tsan_platform_windows.lo tsan_report.lo \
 	tsan_rtl.lo tsan_rtl_mutex.lo tsan_rtl_proc.lo \
 	tsan_rtl_report.lo tsan_rtl_thread.lo tsan_stack_trace.lo \
@@ -416,40 +415,39 @@ ACLOCAL_AMFLAGS = -I m4
 toolexeclib_LTLIBRARIES = libtsan.la
 nodist_toolexeclib_HEADERS = libtsan_preinit.o
 tsan_files = \
-	tsan_clock.cc \
-	tsan_debugging.cc \
-	tsan_external.cc \
-	tsan_fd.cc \
-	tsan_flags.cc \
-	tsan_ignoreset.cc \
-	tsan_interceptors.cc \
-	tsan_interceptors_mac.cc \
-	tsan_interface_ann.cc \
-	tsan_interface_atomic.cc \
-	tsan_interface.cc \
-	tsan_interface_java.cc \
-	tsan_libdispatch_mac.cc \
-	tsan_malloc_mac.cc \
-	tsan_md5.cc \
-	tsan_mman.cc \
-	tsan_mutex.cc \
-	tsan_mutexset.cc \
-	tsan_new_delete.cc \
-	tsan_platform_linux.cc \
-	tsan_platform_mac.cc \
-	tsan_platform_posix.cc \
-	tsan_platform_windows.cc \
-	tsan_report.cc \
-	tsan_rtl.cc \
-	tsan_rtl_mutex.cc \
-	tsan_rtl_proc.cc \
-	tsan_rtl_report.cc \
-	tsan_rtl_thread.cc \
-	tsan_stack_trace.cc \
-	tsan_stat.cc \
-	tsan_suppressions.cc \
-	tsan_symbolize.cc \
-	tsan_sync.cc 
+	tsan_clock.cpp \
+	tsan_debugging.cpp \
+	tsan_external.cpp \
+	tsan_fd.cpp \
+	tsan_flags.cpp \
+	tsan_ignoreset.cpp \
+	tsan_interceptors.cpp \
+	tsan_interceptors_mac.cpp \
+	tsan_interface_ann.cpp \
+	tsan_interface_atomic.cpp \
+	tsan_interface.cpp \
+	tsan_interface_java.cpp \
+	tsan_malloc_mac.cpp \
+	tsan_md5.cpp \
+	tsan_mman.cpp \
+	tsan_mutex.cpp \
+	tsan_mutexset.cpp \
+	tsan_new_delete.cpp \
+	tsan_platform_linux.cpp \
+	tsan_platform_mac.cpp \
+	tsan_platform_posix.cpp \
+	tsan_platform_windows.cpp \
+	tsan_report.cpp \
+	tsan_rtl.cpp \
+	tsan_rtl_mutex.cpp \
+	tsan_rtl_proc.cpp \
+	tsan_rtl_report.cpp \
+	tsan_rtl_thread.cpp \
+	tsan_stack_trace.cpp \
+	tsan_stat.cpp \
+	tsan_suppressions.cpp \
+	tsan_symbolize.cpp \
+	tsan_sync.cpp 
 
 libtsan_la_SOURCES = $(tsan_files)
 EXTRA_libtsan_la_SOURCES = tsan_rtl_amd64.S tsan_rtl_aarch64.S tsan_rtl_mips64.S tsan_rtl_ppc64.S
@@ -506,7 +504,7 @@ MAKEOVERRIDES =
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .S .cc .lo .o .obj
+.SUFFIXES: .S .cpp .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -593,7 +591,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface_ann.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface_atomic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface_java.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_libdispatch_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_malloc_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_md5.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_mman.Plo@am__quote@
@@ -641,21 +638,21 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCCAS_FALSE@	DEPDIR=$(DEPDIR) $(CCASDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCCAS_FALSE@	$(AM_V_CPPAS@am__nodep@)$(LTCPPASCOMPILE) -c -o $@ $<
 
-.cc.o:
+.cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ $<
 
-.cc.obj:
+.cpp.obj:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-.cc.lo:
+.cpp.lo:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@

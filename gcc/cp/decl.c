@@ -100,6 +100,7 @@ static tree build_cp_library_fn (tree, enum tree_code, tree, int);
 static void store_parm_decls (tree);
 static void initialize_local_var (tree, tree);
 static void expand_static_init (tree, tree);
+static location_t smallest_type_location (const cp_decl_specifier_seq*);
 
 /* The following symbols are subsumed in the cp_global_trees array, and
    listed here individually for documentation purposes.
@@ -2292,7 +2293,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (newdecl)
 	    |= DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (olddecl);
 	  DECL_NO_LIMIT_STACK (newdecl) |= DECL_NO_LIMIT_STACK (olddecl);
-	  DECL_IS_OPERATOR_NEW (newdecl) |= DECL_IS_OPERATOR_NEW (olddecl);
+	  if (DECL_IS_OPERATOR_NEW_P (olddecl))
+	    DECL_SET_IS_OPERATOR_NEW (newdecl, true);
 	  DECL_LOOPING_CONST_OR_PURE_P (newdecl)
 	    |= DECL_LOOPING_CONST_OR_PURE_P (olddecl);
 
@@ -2542,8 +2544,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       if (fndecl_built_in_p (olddecl)
 	  && (new_defines_function ? GNU_INLINE_P (newdecl) : types_match))
 	{
-	  DECL_BUILT_IN_CLASS (newdecl) = DECL_BUILT_IN_CLASS (olddecl);
-	  DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
+	  copy_decl_built_in_function (newdecl, olddecl);
 	  /* If we're keeping the built-in definition, keep the rtl,
 	     regardless of declaration matches.  */
 	  COPY_DECL_RTL (olddecl, newdecl);
@@ -3558,7 +3559,7 @@ pop_switch (void)
   location_t switch_location;
 
   /* Emit warnings as needed.  */
-  switch_location = cp_expr_loc_or_loc (cs->switch_stmt, input_location);
+  switch_location = cp_expr_loc_or_input_loc (cs->switch_stmt);
   const bool bool_cond_p
     = (SWITCH_STMT_TYPE (cs->switch_stmt)
        && TREE_CODE (SWITCH_STMT_TYPE (cs->switch_stmt)) == BOOLEAN_TYPE);
@@ -3629,16 +3630,23 @@ case_conversion (tree type, tree value)
 
   value = mark_rvalue_use (value);
 
+  if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
+    type = type_promotes_to (type);
+
+  tree ovalue = value;
+  /* The constant-expression VALUE shall be a converted constant expression
+     of the adjusted type of the switch condition, which doesn't allow
+     narrowing conversions.  */
+  value = build_converted_constant_expr (type, value, tf_warning_or_error);
+
   if (cxx_dialect >= cxx11
       && (SCOPED_ENUM_P (type)
-	  || !INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (value))))
-    {
-      if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
-	type = type_promotes_to (type);
-      value = (perform_implicit_conversion_flags
-	       (type, value, tf_warning_or_error,
-		LOOKUP_IMPLICIT | LOOKUP_NO_NON_INTEGRAL));
-    }
+	  || !INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (ovalue))))
+    /* Use the converted value.  */;
+  else
+    /* The already integral case.  */
+    value = ovalue;
+
   return cxx_constant_value (value);
 }
 
@@ -4357,12 +4365,14 @@ cxx_init_decl_processing (void)
     deltype = build_exception_variant (deltype, empty_except_spec);
     tree opnew = push_cp_library_fn (NEW_EXPR, newtype, 0);
     DECL_IS_MALLOC (opnew) = 1;
-    DECL_IS_OPERATOR_NEW (opnew) = 1;
+    DECL_SET_IS_OPERATOR_NEW (opnew, true);
     opnew = push_cp_library_fn (VEC_NEW_EXPR, newtype, 0);
     DECL_IS_MALLOC (opnew) = 1;
-    DECL_IS_OPERATOR_NEW (opnew) = 1;
-    push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
-    push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+    DECL_SET_IS_OPERATOR_NEW (opnew, true);
+    tree opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
+    DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+    opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+    DECL_SET_IS_OPERATOR_DELETE (opdel, true);
     if (flag_sized_deallocation)
       {
 	/* Also push the sized deallocation variants:
@@ -4374,8 +4384,10 @@ cxx_init_decl_processing (void)
 	deltype = cp_build_type_attribute_variant (void_ftype_ptr_size,
 						   extvisattr);
 	deltype = build_exception_variant (deltype, empty_except_spec);
-	push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
-	push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+	opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
+	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
       }
 
     if (aligned_new_threshold)
@@ -4393,18 +4405,20 @@ cxx_init_decl_processing (void)
 	newtype = build_exception_variant (newtype, new_eh_spec);
 	opnew = push_cp_library_fn (NEW_EXPR, newtype, 0);
 	DECL_IS_MALLOC (opnew) = 1;
-	DECL_IS_OPERATOR_NEW (opnew) = 1;
+	DECL_SET_IS_OPERATOR_NEW (opnew, true);
 	opnew = push_cp_library_fn (VEC_NEW_EXPR, newtype, 0);
 	DECL_IS_MALLOC (opnew) = 1;
-	DECL_IS_OPERATOR_NEW (opnew) = 1;
+	DECL_SET_IS_OPERATOR_NEW (opnew, true);
 
 	/* operator delete (void *, align_val_t); */
 	deltype = build_function_type_list (void_type_node, ptr_type_node,
 					    align_type_node, NULL_TREE);
 	deltype = cp_build_type_attribute_variant (deltype, extvisattr);
 	deltype = build_exception_variant (deltype, empty_except_spec);
-	push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
-	push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+	opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
+	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
 
 	if (flag_sized_deallocation)
 	  {
@@ -4414,8 +4428,10 @@ cxx_init_decl_processing (void)
 						NULL_TREE);
 	    deltype = cp_build_type_attribute_variant (deltype, extvisattr);
 	    deltype = build_exception_variant (deltype, empty_except_spec);
-	    push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
-	    push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+	    opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
+	    DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	    opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+	    DECL_SET_IS_OPERATOR_DELETE (opdel, true);
 	  }
       }
 
@@ -4802,6 +4818,24 @@ warn_misplaced_attr_for_class_type (location_t location,
 	    class_type, class_key_or_enum_as_string (class_type));
 }
 
+/* Returns the cv-qualifiers that apply to the type specified
+   by the DECLSPECS.  */
+
+static int
+get_type_quals (const cp_decl_specifier_seq *declspecs)
+{
+  int type_quals = TYPE_UNQUALIFIED;
+
+  if (decl_spec_seq_has_spec_p (declspecs, ds_const))
+    type_quals |= TYPE_QUAL_CONST;
+  if (decl_spec_seq_has_spec_p (declspecs, ds_volatile))
+    type_quals |= TYPE_QUAL_VOLATILE;
+  if (decl_spec_seq_has_spec_p (declspecs, ds_restrict))
+    type_quals |= TYPE_QUAL_RESTRICT;
+
+  return type_quals;
+}
+
 /* Make sure that a declaration with no declarator is well-formed, i.e.
    just declares a tagged type or anonymous union.
 
@@ -4821,7 +4855,8 @@ check_tag_decl (cp_decl_specifier_seq *declspecs,
   bool error_p = false;
 
   if (declspecs->multiple_types_p)
-    error ("multiple types in one declaration");
+    error_at (smallest_type_location (declspecs),
+	      "multiple types in one declaration");
   else if (declspecs->redefined_builtin_type)
     {
       if (!in_system_header_at (input_location))
@@ -5484,8 +5519,9 @@ check_array_designated_initializer (constructor_elt *ce,
 	    sorry ("non-trivial designated initializers not supported");
 	}
       else
-	error ("C99 designator %qE is not an integral constant-expression",
-	       ce->index);
+	error_at (cp_expr_loc_or_input_loc (ce->index),
+		  "C99 designator %qE is not an integral constant-expression",
+		  ce->index);
 
       return false;
     }
@@ -5863,8 +5899,9 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
       /* Pointers initialized to strings must be treated as non-zero
 	 even if the string is empty.  */
       tree init_type = TREE_TYPE (elt_init);
-      if ((POINTER_TYPE_P (elt_type) != POINTER_TYPE_P (init_type))
-	  || !initializer_zerop (elt_init))
+      if ((POINTER_TYPE_P (elt_type) != POINTER_TYPE_P (init_type)))
+	last_nonzero = index;
+      else if (!type_initializer_zero_p (elt_type, elt_init))
 	last_nonzero = index;
 
       /* This can happen with an invalid initializer (c++/54501).  */
@@ -6401,7 +6438,7 @@ build_aggr_init_full_exprs (tree decl, tree init, int flags)
 static tree
 check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 {
-  tree type = TREE_TYPE (decl);
+  tree type;
   tree init_code = NULL;
   tree core_type;
 
@@ -7433,8 +7470,11 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 			    DECL_ATTRIBUTES (decl));
       complete_type (TREE_TYPE (decl));
       if (!cp_omp_mappable_type (TREE_TYPE (decl)))
-	error ("%q+D in declare target directive does not have mappable type",
-	       decl);
+	{
+	  error ("%q+D in declare target directive does not have mappable"
+		 " type", decl);
+	  cp_omp_emit_unmappable_type_notes (TREE_TYPE (decl));
+	}
       else if (!lookup_attribute ("omp declare target",
 				  DECL_ATTRIBUTES (decl))
 	       && !lookup_attribute ("omp declare target link",
@@ -10139,6 +10179,13 @@ smallest_type_location (int type_quals, const location_t* locations)
   return min_location (loc, locations[ds_type_spec]);
 }
 
+static location_t
+smallest_type_location (const cp_decl_specifier_seq *declspecs)
+{
+  int type_quals = get_type_quals (declspecs);
+  return smallest_type_location (type_quals, declspecs->locations);
+}
+
 /* Check that it's OK to declare a function with the indicated TYPE
    and TYPE_QUALS.  SFK indicates the kind of special function (if any)
    that this function is.  OPTYPE is the type given in a conversion
@@ -10404,7 +10451,7 @@ grokdeclarator (const cp_declarator *declarator,
      a member function.  */
   cp_ref_qualifier rqual = REF_QUAL_NONE;
   /* cv-qualifiers that apply to the type specified by the DECLSPECS.  */
-  int type_quals = TYPE_UNQUALIFIED;
+  int type_quals = get_type_quals (declspecs);
   tree raises = NULL_TREE;
   int template_count = 0;
   tree returned_attrs = NULL_TREE;
@@ -10450,13 +10497,6 @@ grokdeclarator (const cp_declarator *declarator,
   bool concept_p = decl_spec_seq_has_spec_p (declspecs, ds_concept);
   if (concept_p)
     constexpr_p = true;
-
-  if (decl_spec_seq_has_spec_p (declspecs, ds_const))
-    type_quals |= TYPE_QUAL_CONST;
-  if (decl_spec_seq_has_spec_p (declspecs, ds_volatile))
-    type_quals |= TYPE_QUAL_VOLATILE;
-  if (decl_spec_seq_has_spec_p (declspecs, ds_restrict))
-    type_quals |= TYPE_QUAL_RESTRICT;
 
   if (decl_context == FUNCDEF)
     funcdef_flag = true, decl_context = NORMAL;
@@ -10538,7 +10578,8 @@ grokdeclarator (const cp_declarator *declarator,
 		    ctype = qualifying_scope;
 		    if (!MAYBE_CLASS_TYPE_P (ctype))
 		      {
-			error ("%q#T is not a class or a namespace", ctype);
+			error_at (id_declarator->id_loc,
+				  "%q#T is not a class or namespace", ctype);
 			ctype = NULL_TREE;
 		      }
 		    else if (innermost_code != cdk_function
@@ -10560,13 +10601,15 @@ grokdeclarator (const cp_declarator *declarator,
 		{
 		  if (innermost_code != cdk_function)
 		    {
-		      error ("declaration of %qD as non-function", decl);
+		      error_at (EXPR_LOCATION (decl),
+				"declaration of %qE as non-function", decl);
 		      return error_mark_node;
 		    }
 		  else if (!qualifying_scope
 			   && !(current_class_type && at_class_scope_p ()))
 		    {
-		      error ("declaration of %qD as non-member", decl);
+		      error_at (EXPR_LOCATION (decl),
+				"declaration of %qE as non-member", decl);
 		      return error_mark_node;
 		    }
 
@@ -10996,7 +11039,8 @@ grokdeclarator (const cp_declarator *declarator,
   if (decl_spec_seq_has_spec_p (declspecs, ds_complex))
     {
       if (TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != REAL_TYPE)
-	error ("complex invalid for %qs", name);
+	error_at (declspecs->locations[ds_complex],
+		  "complex invalid for %qs", name);
       /* If a modifier is specified, the resulting complex is the complex
 	 form of TYPE.  E.g, "complex short" is "complex short int".  */
       else if (type == integer_type_node)
@@ -11575,9 +11619,12 @@ grokdeclarator (const cp_declarator *declarator,
 		   virtual.  A constructor may not be static.
 		   A constructor may not be declared with ref-qualifier. */
 		if (staticp == 2)
-		  error ((flags == DTOR_FLAG)
-			 ? G_("destructor cannot be static member function")
-			 : G_("constructor cannot be static member function"));
+		  error_at (declspecs->locations[ds_storage_class],
+			    (flags == DTOR_FLAG)
+			    ? G_("destructor cannot be static member "
+				 "function")
+			    : G_("constructor cannot be static member "
+				 "function"));
 		if (memfn_quals)
 		  {
 		    error ((flags == DTOR_FLAG)
@@ -12117,6 +12164,17 @@ grokdeclarator (const cp_declarator *declarator,
       bool alias_p = decl_spec_seq_has_spec_p (declspecs, ds_alias);
       tree decl;
 
+      if (funcdef_flag)
+	{
+	  if (decl_context == NORMAL)
+	    error_at (id_loc,
+		      "typedef may not be a function definition");
+	  else
+	    error_at (id_loc,
+		      "typedef may not be a member function definition");
+	  return error_mark_node;
+	}
+
       /* This declaration:
 
 	   typedef void f(int) const;
@@ -12435,7 +12493,7 @@ grokdeclarator (const cp_declarator *declarator,
 		&& (TREE_CODE (ctype) == UNION_TYPE
 		    || TREE_CODE (ctype) == QUAL_UNION_TYPE))
 	      {
-		error ("flexible array member in union");
+		error_at (id_loc, "flexible array member in union");
 		type = error_mark_node;
 	      }
 	    else
@@ -12465,7 +12523,7 @@ grokdeclarator (const cp_declarator *declarator,
 	else if (in_namespace && !friendp)
 	  {
 	    /* Something like struct S { int N::j; };  */
-	    error ("invalid use of %<::%>");
+	    error_at (id_loc, "invalid use of %<::%>");
 	    return error_mark_node;
 	  }
 	else if (FUNC_OR_METHOD_TYPE_P (type) && unqualified_id)
@@ -12520,15 +12578,15 @@ grokdeclarator (const cp_declarator *declarator,
 		if (!ctype)
 		  {
 		    gcc_assert (friendp);
-		    error ("expected qualified name in friend declaration "
-			   "for destructor %qD", uqname);
+		    error_at (id_loc, "expected qualified name in friend "
+			      "declaration for destructor %qD", uqname);
 		    return error_mark_node;
 		  }
 
 		if (!check_dtor_name (ctype, TREE_OPERAND (uqname, 0)))
 		  {
-		    error ("declaration of %qD as member of %qT",
-			   uqname, ctype);
+		    error_at (id_loc, "declaration of %qD as member of %qT",
+			      uqname, ctype);
 		    return error_mark_node;
 		  }
                 if (concept_p)
@@ -13129,7 +13187,9 @@ check_default_argument (tree decl, tree arg, tsubst_flags_t complain)
   /* Avoid redundant -Wzero-as-null-pointer-constant warnings at
      the call sites.  */
   if (TYPE_PTR_OR_PTRMEM_P (decl_type)
-      && null_ptr_cst_p (arg))
+      && null_ptr_cst_p (arg)
+      /* Don't lose side-effects as in PR90473.  */
+      && !TREE_SIDE_EFFECTS (arg))
     return nullptr_node;
 
   /* [dcl.fct.default]
@@ -13474,15 +13534,11 @@ grok_special_member_properties (tree decl)
 	     are no other parameters or else all other parameters have
 	     default arguments.  */
 	  TYPE_HAS_COPY_CTOR (class_type) = 1;
-	  if (user_provided_p (decl))
-	    TYPE_HAS_COMPLEX_COPY_CTOR (class_type) = 1;
 	  if (ctor > 1)
 	    TYPE_HAS_CONST_COPY_CTOR (class_type) = 1;
 	}
       else if (sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (decl)))
 	TYPE_HAS_DEFAULT_CONSTRUCTOR (class_type) = 1;
-      else if (move_fn_p (decl) && user_provided_p (decl))
-	TYPE_HAS_COMPLEX_MOVE_CTOR (class_type) = 1;
       else if (is_list_ctor (decl))
 	TYPE_HAS_LIST_CTOR (class_type) = 1;
 
@@ -13503,13 +13559,9 @@ grok_special_member_properties (tree decl)
       if (assop)
 	{
 	  TYPE_HAS_COPY_ASSIGN (class_type) = 1;
-	  if (user_provided_p (decl))
-	    TYPE_HAS_COMPLEX_COPY_ASSIGN (class_type) = 1;
 	  if (assop != 1)
 	    TYPE_HAS_CONST_COPY_ASSIGN (class_type) = 1;
 	}
-      else if (move_fn_p (decl) && user_provided_p (decl))
-	TYPE_HAS_COMPLEX_MOVE_ASSIGN (class_type) = 1;
     }
   else if (IDENTIFIER_CONV_OP_P (DECL_NAME (decl)))
     TYPE_HAS_CONVERSION (class_type) = true;
@@ -13634,10 +13686,13 @@ grok_op_properties (tree decl, bool complain)
 	}
 
       if (op_flags & OVL_OP_FLAG_DELETE)
-	coerce_delete_type (decl, loc);
+	{
+	  DECL_SET_IS_OPERATOR_DELETE (decl, true);
+	  coerce_delete_type (decl, loc);
+	}
       else
 	{
-	  DECL_IS_OPERATOR_NEW (decl) = 1;
+	  DECL_SET_IS_OPERATOR_NEW (decl, true);
 	  TREE_TYPE (decl) = coerce_new_type (TREE_TYPE (decl), loc);
 	}
 
@@ -15724,13 +15779,6 @@ start_function (cp_decl_specifier_seq *declspecs,
   invoke_plugin_callbacks (PLUGIN_START_PARSE_FUNCTION, decl1);
   if (decl1 == error_mark_node)
     return false;
-  /* If the declarator is not suitable for a function definition,
-     cause a syntax error.  */
-  if (decl1 == NULL_TREE || TREE_CODE (decl1) != FUNCTION_DECL)
-    {
-      error ("invalid function declaration");
-      return false;
-    }
 
   if (DECL_MAIN_P (decl1))
     /* main must return int.  grokfndecl should have corrected it
@@ -16274,6 +16322,7 @@ finish_function (bool inline_p)
 	      && same_type_ignoring_top_level_qualifiers_p
 		  (TREE_TYPE (valtype), TREE_TYPE (current_class_ref))
 	      && global_dc->option_enabled (OPT_Wreturn_type,
+					    global_dc->lang_mask,
 					    global_dc->option_state))
 	    add_return_star_this_fixit (&richloc, fndecl);
 	}
@@ -16383,12 +16432,6 @@ grokmethod (cp_decl_specifier_seq *declspecs,
 
   if (fndecl == error_mark_node)
     return error_mark_node;
-
-  if (fndecl == NULL || TREE_CODE (fndecl) != FUNCTION_DECL)
-    {
-      error ("invalid member function declaration");
-      return error_mark_node;
-    }
 
   if (attrlist)
     cplus_decl_attributes (&fndecl, attrlist, 0);

@@ -59,14 +59,15 @@ package body GNAT.Sockets.Thin_Common is
    -----------------
 
    function Get_Address (Sin : Sockaddr) return Sock_Addr_Type is
+      use type C.unsigned_short;
       Family : constant C.unsigned_short :=
         (if SOSC.Has_Sockaddr_Len = 0 then Sin.Sin_Family.Short_Family
          else C.unsigned_short (Sin.Sin_Family.Char_Family));
+      AF_INET6_Defined : constant Boolean := SOSC.AF_INET6 > 0;
       Result : Sock_Addr_Type
-        (case Family is
-            when SOSC.AF_INET6 => Family_Inet6,
-            when SOSC.AF_INET  => Family_Inet,
-            when others        => Family_Unspec);
+        (if AF_INET6_Defined and then SOSC.AF_INET6 = Family then Family_Inet6
+         elsif SOSC.AF_INET = Family then Family_Inet
+         else Family_Unspec);
    begin
       Result.Port := Port_Type (Network_To_Short (Sin.Sin_Port));
 

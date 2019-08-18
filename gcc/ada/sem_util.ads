@@ -25,6 +25,7 @@
 
 --  Package containing utility procedures used throughout the semantics
 
+with Atree;   use Atree;
 with Einfo;   use Einfo;
 with Exp_Tss; use Exp_Tss;
 with Namet;   use Namet;
@@ -622,11 +623,11 @@ package Sem_Util is
    --  private components of protected objects, but is generally useful when
    --  restriction No_Implicit_Heap_Allocation is active.
 
-   function Dynamic_Accessibility_Level (Expr : Node_Id) return Node_Id;
-   --  Expr should be an expression of an access type. Builds an integer
-   --  literal except in cases involving anonymous access types, where
-   --  accessibility levels are tracked at run time (access parameters and
-   --  Ada 2012 stand-alone objects).
+   function Dynamic_Accessibility_Level (N : Node_Id) return Node_Id;
+   --  N should be an expression of an access type. Builds an integer literal
+   --  except in cases involving anonymous access types, where accessibility
+   --  levels are tracked at run time (access parameters and Ada 2012 stand-
+   --  alone objects).
 
    function Effective_Extra_Accessibility (Id : Entity_Id) return Entity_Id;
    --  Same as Einfo.Extra_Accessibility except thtat object renames
@@ -707,6 +708,10 @@ package Sem_Util is
    --  entity of the earliest renamed source abstract state or whole object.
    --  If no suitable entity is available, return Empty. This routine carries
    --  out actions that are tied to SPARK semantics.
+
+   function Exceptions_OK return Boolean;
+   --  Determine whether exceptions are allowed to be caught, propagated, or
+   --  raised.
 
    procedure Explain_Limited_Type (T : Entity_Id; N : Node_Id);
    --  This procedure is called after issuing a message complaining about an
@@ -1406,6 +1411,9 @@ package Sem_Util is
    --  Returns True if node N appears within a pre/postcondition pragma. Note
    --  the pragma Check equivalents are NOT considered.
 
+   function In_Quantified_Expression (N : Node_Id) return Boolean;
+   --  Returns true if the expression N occurs within a quantified expression
+
    function In_Reverse_Storage_Order_Object (N : Node_Id) return Boolean;
    --  Returns True if N denotes a component or subcomponent in a record or
    --  array that has Reverse_Storage_Order.
@@ -1674,7 +1682,7 @@ package Sem_Util is
    function Is_Effectively_Volatile (Id : Entity_Id) return Boolean;
    --  Determine whether a type or object denoted by entity Id is effectively
    --  volatile (SPARK RM 7.1.2). To qualify as such, the entity must be either
-   --    * Volatile
+   --    * Volatile without No_Caching
    --    * An array type subject to aspect Volatile_Components
    --    * An array type whose component type is effectively volatile
    --    * A protected type
@@ -2182,6 +2190,10 @@ package Sem_Util is
    --    Modes    - Save the Ghost and SPARK modes in effect (if applicable)
    --    Warnings - Save the status of Elab_Warnings
 
+   procedure Mark_Save_Invocation_Graph_Of_Body;
+   --  Notify the body of the main unit that the invocation constructs and
+   --  relations expressed within it must be recorded by the ABE mechanism.
+
    function Matching_Static_Array_Bounds
      (L_Typ : Node_Id;
       R_Typ : Node_Id) return Boolean;
@@ -2208,6 +2220,10 @@ package Sem_Util is
    function Nearest_Enclosing_Instance (E : Entity_Id) return Entity_Id;
    --  Return the entity of the nearest enclosing instance which encapsulates
    --  entity E. If no such instance exits, return Empty.
+
+   function Needs_Finalization (Typ : Entity_Id) return Boolean;
+   --  Determine whether type Typ is controlled and this requires finalization
+   --  actions.
 
    function Needs_One_Actual (E : Entity_Id) return Boolean;
    --  Returns True if a function has defaults for all but its first formal,
@@ -2370,6 +2386,11 @@ package Sem_Util is
    --  Node is a global item from a list, obtained through calling First_Global
    --  and possibly Next_Global a number of times. Returns the next global item
    --  with the same mode.
+
+   function No_Caching_Enabled (Id : Entity_Id) return Boolean;
+   --  Given the entity of a variable, determine whether Id is subject to
+   --  volatility property No_Caching and if it is, the related expression
+   --  evaluates to True.
 
    function No_Heap_Finalization (Typ : Entity_Id) return Boolean;
    --  Determine whether type Typ is subject to pragma No_Heap_Finalization
@@ -2796,6 +2817,25 @@ package Sem_Util is
    --  Move a list of entities from one scope to another, and recompute
    --  Is_Public based upon the new scope.
 
+   generic
+      with function Process (N : Node_Id) return Traverse_Result is <>;
+      Process_Itypes : Boolean := False;
+   function Traverse_More_Func (Node : Node_Id) return Traverse_Final_Result;
+   --  This is a version of Atree.Traverse_Func that not only traverses
+   --  syntactic children of nodes, but also semantic children which are
+   --  logically children of the node. This concerns currently lists of
+   --  action nodes and ranges under Itypes, both inserted by the compiler.
+   --  Itypes are only traversed when Process_Itypes is True.
+
+   generic
+      with function Process (N : Node_Id) return Traverse_Result is <>;
+      Process_Itypes : Boolean := False;
+   procedure Traverse_More_Proc (Node : Node_Id);
+   pragma Inline (Traverse_More_Proc);
+   --  This is the same as Traverse_More_Func except that no result is
+   --  returned, i.e. Traverse_More_Func is called and the result is simply
+   --  discarded.
+
    function Type_Access_Level (Typ : Entity_Id) return Uint;
    --  Return the accessibility level of Typ
 
@@ -2842,6 +2882,10 @@ package Sem_Util is
    function Unique_Name (E : Entity_Id) return String;
    --  Return a unique name for entity E, which could be used to identify E
    --  across compilation units.
+
+   Child_Prefix : constant String := "ada___";
+   --  Prefix for child packages when building a unique name for an entity. It
+   --  is included here to share between Unique_Name and gnatprove.
 
    function Unit_Is_Visible (U : Entity_Id) return Boolean;
    --  Determine whether a compilation unit is visible in the current context,

@@ -461,9 +461,8 @@ gcov_read_profile_dir (const char* dir_name, int recompute_summary ATTRIBUTE_UNU
 #ifdef HAVE_FTW_H
   ftw (".", ftw_read_file, 50);
 #endif
-  ret = chdir (pwd);
+  chdir (pwd);
   free (pwd);
-
 
   return gcov_info_head;;
 }
@@ -681,6 +680,9 @@ gcov_profile_merge (struct gcov_info *tgt_profile, struct gcov_info *src_profile
       tgt_tail = gi_ptr;
     }
 
+  free (in_src_not_tgt);
+  free (tgt_infos);
+
   return 0;
 }
 
@@ -723,11 +725,11 @@ __gcov_time_profile_counter_op (gcov_type *counters ATTRIBUTE_UNUSED,
   /* Do nothing.  */
 }
 
-/* Performing FN upon single counters.  */
+/* Performing FN upon TOP N counters.  */
 
 static void
-__gcov_single_counter_op (gcov_type *counters, unsigned n_counters,
-                          counter_op_fn fn, void *data1, void *data2)
+__gcov_topn_counter_op (gcov_type *counters, unsigned n_counters,
+			counter_op_fn fn, void *data1, void *data2)
 {
   unsigned i, n_measures;
 
@@ -1279,6 +1281,8 @@ calculate_overlap (struct gcov_info *gcov_list1,
       prg_val += val;
 
     }
+
+  free (all_infos);
 
   if (overlap_obj_level)
     printf("   SUM:%36s  overlap = %6.2f%% (%5.2f%% %5.2f%%)\n",

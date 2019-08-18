@@ -42,10 +42,8 @@
 --  Inline_Always subprograms, but there are fewer restrictions on the source
 --  of subprograms.
 
-with Alloc;
 with Opt;    use Opt;
 with Sem;    use Sem;
-with Table;
 with Types;  use Types;
 with Warnsw; use Warnsw;
 
@@ -100,28 +98,6 @@ package Inline is
       --  Capture values of warning flags
    end record;
 
-   package Pending_Instantiations is new Table.Table (
-     Table_Component_Type => Pending_Body_Info,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 0,
-     Table_Initial        => Alloc.Pending_Instantiations_Initial,
-     Table_Increment      => Alloc.Pending_Instantiations_Increment,
-     Table_Name           => "Pending_Instantiations");
-
-   --  The following table records subprograms and packages for which
-   --  generation of subprogram descriptors must be delayed.
-
-   package Pending_Descriptor is new Table.Table (
-     Table_Component_Type => Entity_Id,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 0,
-     Table_Initial        => Alloc.Pending_Instantiations_Initial,
-     Table_Increment      => Alloc.Pending_Instantiations_Increment,
-     Table_Name           => "Pending_Descriptor");
-
-   --  The following should be initialized in an init call in Frontend, we
-   --  have thoughts of making the frontend reusable in future ???
-
    -----------------
    -- Subprograms --
    -----------------
@@ -142,6 +118,9 @@ package Inline is
    --  a discriminant check for which gigi builds a call or an at-end handler.
    --  Add E's enclosing unit to Inlined_Bodies so that E can be subsequently
    --  retrieved and analyzed. N is the node giving rise to the call to E.
+
+   procedure Add_Pending_Instantiation (Inst : Node_Id; Act_Decl : Node_Id);
+   --  Add an entry in the table of generic bodies to be instantiated.
 
    procedure Analyze_Inlined_Bodies;
    --  At end of compilation, analyze the bodies of all units that contain

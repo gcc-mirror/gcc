@@ -115,7 +115,7 @@ package body Sem_Dim is
 
    type Symbol_Array is
      array (Dimension_Position range
-              Low_Position_Bound ..  High_Position_Bound) of String_Id;
+              Low_Position_Bound .. High_Position_Bound) of String_Id;
    --  Store the symbols of all units within a system
 
    No_Symbols : constant Symbol_Array := (others => No_String);
@@ -151,7 +151,7 @@ package body Sem_Dim is
 
    type Dimension_Type is
      array (Dimension_Position range
-              Low_Position_Bound ..  High_Position_Bound) of Rational;
+              Low_Position_Bound .. High_Position_Bound) of Rational;
 
    Null_Dimension : constant Dimension_Type := (others => Zero);
 
@@ -399,9 +399,9 @@ package body Sem_Dim is
 
    function "+" (Left, Right : Rational) return Rational is
       R : constant Rational :=
-            Rational'(Numerator   =>  Left.Numerator   * Right.Denominator +
-                                      Left.Denominator * Right.Numerator,
-                      Denominator => Left.Denominator  * Right.Denominator);
+            Rational'(Numerator   => Left.Numerator   * Right.Denominator +
+                                     Left.Denominator * Right.Numerator,
+                      Denominator => Left.Denominator * Right.Denominator);
    begin
       return Reduce (R);
    end "+";
@@ -1142,6 +1142,11 @@ package body Sem_Dim is
       if Ada_Version < Ada_2012 then
          return;
 
+      --  Inlined bodies have already been checked for dimensionality
+
+      elsif In_Inlined_Body then
+         return;
+
       elsif not Comes_From_Source (N) then
          if Nkind_In (N, N_Explicit_Dereference,
                          N_Identifier,
@@ -1233,8 +1238,9 @@ package body Sem_Dim is
       Dims_Of_Comp_Typ : constant Dimension_Type := Dimensions_Of (Comp_Typ);
       Exps             : constant List_Id        := Expressions (N);
 
-      Comp : Node_Id;
-      Expr : Node_Id;
+      Comp         : Node_Id;
+      Dims_Of_Expr : Dimension_Type;
+      Expr         : Node_Id;
 
       Error_Detected : Boolean := False;
       --  This flag is used in order to indicate if an error has been detected
@@ -1244,10 +1250,13 @@ package body Sem_Dim is
       --  Aspect is an Ada 2012 feature. Nothing to do here if the component
       --  base type is not a dimensioned type.
 
+      --  Inlined bodies have already been checked for dimensionality.
+
       --  Note that here the original node must come from source since the
       --  original array aggregate may not have been entirely decorated.
 
       if Ada_Version < Ada_2012
+        or else In_Inlined_Body
         or else not Comes_From_Source (Original_Node (N))
         or else not Has_Dimension_System (Base_Type (Comp_Typ))
       then
@@ -1281,11 +1290,19 @@ package body Sem_Dim is
          --  (may happen when an aggregate is converted into a positional
          --  aggregate). We also must verify that this is a scalar component,
          --  and not a subaggregate of a multidimensional aggregate.
+         --  The expression may be an identifier that has been copied several
+         --  times during expansion, its dimensions are those of its type.
+
+         if Is_Entity_Name (Expr) then
+            Dims_Of_Expr := Dimensions_Of (Etype (Expr));
+         else
+            Dims_Of_Expr := Dimensions_Of (Expr);
+         end if;
 
          if Comes_From_Source (Original_Node (Expr))
            and then Present (Etype (Expr))
            and then Is_Numeric_Type (Etype (Expr))
-           and then Dimensions_Of (Expr) /= Dims_Of_Comp_Typ
+           and then Dims_Of_Expr /= Dims_Of_Comp_Typ
            and then Sloc (Comp) /= Sloc (Prev (Comp))
          then
             --  Check if an error has already been encountered so far
@@ -1625,10 +1642,11 @@ package body Sem_Dim is
 
    begin
       --  Aspect is an Ada 2012 feature. Note that there is no need to check
-      --  dimensions for calls that don't come from source, or those that may
-      --  have semantic errors.
+      --  dimensions for calls in inlined bodies, or calls that don't come
+      --  from source, or those that may have semantic errors.
 
       if Ada_Version < Ada_2012
+        or else In_Inlined_Body
         or else not Comes_From_Source (N)
         or else Error_Posted (N)
       then
@@ -1957,11 +1975,12 @@ package body Sem_Dim is
 
    begin
       --  Aspect is an Ada 2012 feature. Note that there is no need to check
-      --  dimensions for aggregates that don't come from source, or if we are
-      --  within an initialization procedure, whose expressions have been
-      --  checked at the point of record declaration.
+      --  dimensions in inlined bodies, or for aggregates that don't come
+      --  from source, or if we are within an initialization procedure, whose
+      --  expressions have been checked at the point of record declaration.
 
       if Ada_Version < Ada_2012
+        or else In_Inlined_Body
         or else not Comes_From_Source (N)
         or else Inside_Init_Proc
       then
@@ -2897,7 +2916,7 @@ package body Sem_Dim is
          New_Aspects  := Empty_List;
 
          List_Of_Dims := New_List;
-         for Position in Dims_Of_N'First ..  System.Count loop
+         for Position in Dims_Of_N'First .. System.Count loop
             Dim_Power := Dims_Of_N (Position);
             Append_To (List_Of_Dims,
                Make_Op_Divide (Loc,
@@ -3014,7 +3033,7 @@ package body Sem_Dim is
    --  System.Dim.Float_IO or System.Dim.Integer_IO, the default string
    --  parameter is rewritten to include the unit symbol (or the dimension
    --  symbols if not a defined quantity) in the output of a dimensioned
-   --  object.  If a value is already supplied by the user for the parameter
+   --  object. If a value is already supplied by the user for the parameter
    --  Symbol, it is used as is.
 
    --  Case 1. Item is dimensionless

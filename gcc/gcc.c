@@ -57,7 +57,7 @@ compilation is specified by a string called a "spec".  */
      getenv ();
    Hence we need to use "get" for the accessor method, not "getenv".  */
 
-class env_manager
+struct env_manager
 {
  public:
   void init (bool can_restore, bool debug);
@@ -6791,6 +6791,11 @@ print_configuration (FILE *file)
 #endif
 
   fnotice (file, "Thread model: %s\n", thrmod);
+  fnotice (file, "Supported LTO compression algorithms: zlib");
+#ifdef HAVE_ZSTD_H
+  fnotice (file, " zstd");
+#endif
+  fnotice (file, "\n");
 
   /* compiler_version is truncated at the first space when initialized
   from version string, so truncate version_string at the first space
@@ -8263,6 +8268,8 @@ driver::maybe_run_linker (const char *argv0) const
     {
       int tmp = execution_count;
 
+      detect_jobserver ();
+
       if (! have_c)
 	{
 #if HAVE_LTO_PLUGIN > 0
@@ -8349,6 +8356,46 @@ driver::final_actions () const
     {
       printf (("\nFor bug reporting instructions, please see:\n"));
       printf ("%s\n", bug_report_url);
+    }
+}
+
+/* Detect whether jobserver is active and working.  If not drop
+   --jobserver-auth from MAKEFLAGS.  */
+
+void
+driver::detect_jobserver () const
+{
+  /* Detect jobserver and drop it if it's not working.  */
+  const char *makeflags = env.get ("MAKEFLAGS");
+  if (makeflags != NULL)
+    {
+      const char *needle = "--jobserver-auth=";
+      const char *n = strstr (makeflags, needle);
+      if (n != NULL)
+	{
+	  int rfd = -1;
+	  int wfd = -1;
+
+	  bool jobserver
+	    = (sscanf (n + strlen (needle), "%d,%d", &rfd, &wfd) == 2
+	       && rfd > 0
+	       && wfd > 0
+	       && is_valid_fd (rfd)
+	       && is_valid_fd (wfd));
+
+	  /* Drop the jobserver if it's not working now.  */
+	  if (!jobserver)
+	    {
+	      unsigned offset = n - makeflags;
+	      char *dup = xstrdup (makeflags);
+	      dup[offset] = '\0';
+
+	      const char *space = strchr (makeflags + offset, ' ');
+	      if (space != NULL)
+		strcpy (dup + offset, space);
+	      xputenv (concat ("MAKEFLAGS=", dup, NULL));
+	    }
+	}
     }
 }
 
@@ -8574,7 +8621,7 @@ static int n_mdswitches;
 /* Check whether a particular argument was used.  The first time we
    canonicalize the switches to keep only the ones we care about.  */
 
-class used_arg_t
+struct used_arg_t
 {
  public:
   int operator () (const char *p, int len);

@@ -569,6 +569,12 @@ package body Sem_Aux is
             elsif Entity (N) = E then
                return N;
             end if;
+
+         --  A Ghost-related aspect, if disabled, may have been replaced by a
+         --  null statement.
+
+         elsif Nkind (N) = N_Null_Statement then
+            N := Original_Node (N);
          end if;
 
          Next_Rep_Item (N);
@@ -1323,6 +1329,19 @@ package body Sem_Aux is
          return False;
       end if;
    end Is_Limited_View;
+
+   ----------------------------
+   -- Is_Protected_Operation --
+   ----------------------------
+
+   function Is_Protected_Operation (E : Entity_Id) return Boolean is
+   begin
+      return
+        Is_Entry (E)
+          or else (Is_Subprogram (E)
+                    and then Nkind (Parent (Unit_Declaration_Node (E))) =
+                               N_Protected_Definition);
+   end Is_Protected_Operation;
 
    ----------------------
    -- Nearest_Ancestor --

@@ -427,23 +427,31 @@ DEFPARAM(PARAM_SMS_LOOP_AVERAGE_COUNT_THRESHOLD,
 
 DEFPARAM(HOT_BB_COUNT_FRACTION,
 	 "hot-bb-count-fraction",
-	 "Select fraction of the maximal count of repetitions of basic block in program given basic "
-	 "block needs to have to be considered hot (used in non-LTO mode).",
+	 "The denominator n of fraction 1/n of the maximal execution count of "
+	 "a basic block in the entire program that a basic block needs to at "
+	 "least have in order to be considered hot (used in non-LTO mode).",
 	 10000, 0, 0)
+
 DEFPARAM(HOT_BB_COUNT_WS_PERMILLE,
 	 "hot-bb-count-ws-permille",
-         "A basic block profile count is considered hot if it contributes to "
-         "the given permillage of the entire profiled execution (used in LTO mode).",
+	 "The number of most executed permilles of the profiled execution of "
+	 "the entire program to which the execution count of a basic block "
+	 "must be part of in order to be considered hot (used in LTO mode).",
 	 990, 0, 1000)
+
 DEFPARAM(HOT_BB_FREQUENCY_FRACTION,
 	 "hot-bb-frequency-fraction",
-	 "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot.",
+	 "The denominator n of fraction 1/n of the execution frequency of the "
+	 "entry block of a function that a basic block of this function needs "
+	 "to at least have in order to be considered hot.",
 	 1000, 0, 0)
 
 DEFPARAM(UNLIKELY_BB_COUNT_FRACTION,
 	 "unlikely-bb-count-fraction",
-         "The minimum fraction of profile runs a given basic block execution count must be not to be considered unlikely.",
-	 20, 1, 10000)
+	 "The denominator n of fraction 1/n of the number of profiled runs of "
+	 "the entire program below which the execution count of a basic block "
+	 "must be in order for the basic block to be considered unlikely.",
+	 20, 0, 0)
 
 DEFPARAM (PARAM_ALIGN_THRESHOLD,
 	  "align-threshold",
@@ -1109,12 +1117,6 @@ DEFPARAM (PARAM_IPA_CP_LOOP_HINT_BONUS,
 	  "bounds or strides known.",
 	  64, 0, 0)
 
-DEFPARAM (PARAM_IPA_CP_ARRAY_INDEX_HINT_BONUS,
-	  "ipa-cp-array-index-hint-bonus",
-	  "Compile-time bonus IPA-CP assigns to candidates which make an array "
-	  "index known.",
-	  48, 0, 0)
-
 DEFPARAM (PARAM_IPA_MAX_AA_STEPS,
 	  "ipa-max-aa-steps",
 	  "Maximum number of statements that will be visited by IPA formal "
@@ -1445,6 +1447,12 @@ DEFPARAM(PARAM_HASH_TABLE_VERIFICATION_LIMIT,
 	 "The number of elements for which hash table verification is done for "
 	 "each searched element.",
 	 10, 0, 0)
+
+DEFPARAM(PARAM_SSA_NAME_DEF_CHAIN_LIMIT,
+	 "ssa-name-def-chain-limit",
+	 "The maximum number of SSA_NAME assignments to follow in determining "
+	 "a value.",
+	 512, 0, 0)
 
 /*
 

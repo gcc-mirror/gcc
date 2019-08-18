@@ -3546,7 +3546,7 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 		      struct gcn_builtin_description *)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  switch (DECL_FUNCTION_CODE (fndecl))
+  switch (DECL_MD_FUNCTION_CODE (fndecl))
     {
     case GCN_BUILTIN_FLAT_LOAD_INT32:
       {
@@ -3773,7 +3773,7 @@ gcn_expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 		    int ignore)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   struct gcn_builtin_description *d;
 
   gcc_assert (fcode < GCN_BUILTIN_MAX);
@@ -4516,7 +4516,9 @@ gcn_md_reorg (void)
   {
     rtx_insn *insn;
     attr_unit unit;
+    attr_delayeduse delayeduse;
     HARD_REG_SET writes;
+    HARD_REG_SET reads;
     int age;
   } back[max_waits];
   int oldest = 0;
@@ -4535,6 +4537,7 @@ gcn_md_reorg (void)
 
       attr_type itype = get_attr_type (insn);
       attr_unit iunit = get_attr_unit (insn);
+      attr_delayeduse idelayeduse = get_attr_delayeduse (insn);
       HARD_REG_SET ireads, iwrites;
       CLEAR_HARD_REG_SET (ireads);
       CLEAR_HARD_REG_SET (iwrites);
@@ -4610,6 +4613,14 @@ gcn_md_reorg (void)
 		  (regs, reg_class_contents[(int) VGPR_REGS]))
 		nops_rqd = 2 - prev_insn->age;
 	    }
+
+	  /* Store that requires input registers are not overwritten by
+	     following instruction.  */
+	  if ((prev_insn->age + nops_rqd) < 1
+	      && prev_insn->delayeduse == DELAYEDUSE_YES
+	      && ((hard_reg_set_intersect_p
+		   (prev_insn->reads, iwrites))))
+	    nops_rqd = 1 - prev_insn->age;
 	}
 
       /* Insert the required number of NOPs.  */
@@ -4637,7 +4648,9 @@ gcn_md_reorg (void)
       /* Track the current instruction as a previous instruction.  */
       back[oldest].insn = insn;
       back[oldest].unit = iunit;
+      back[oldest].delayeduse = idelayeduse;
       COPY_HARD_REG_SET (back[oldest].writes, iwrites);
+      COPY_HARD_REG_SET (back[oldest].reads, ireads);
       back[oldest].age = 0;
       oldest = (oldest + 1) % max_waits;
 

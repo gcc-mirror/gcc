@@ -7,7 +7,7 @@ constexpr int f(int i) {
   thread_local int l = i;	// { dg-error "thread_local" }
   goto foo;			// { dg-error "goto" }
  foo:
-  asm("foo");			// { dg-error "asm" }
+  asm("foo");			// { dg-error "asm" "" { target c++17_down } }
   int k;			// { dg-error "uninitialized" }
   A a;				// { dg-error "non-literal" }
   return i;

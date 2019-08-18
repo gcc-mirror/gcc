@@ -1214,7 +1214,7 @@ The following switches are available:
 
 :samp:`f`
   By default, gnathtml will generate html links only for global entities
-  ('with'ed units, global variables and types,...).  If you specify
+  ('with'ed units, global variables and types,...). If you specify
   :switch:`-f` on the command line, then links will be generated for local
   entities too.
 
@@ -1310,7 +1310,7 @@ Alternatively, you may run the script using the following command line:
 
   ``gnat2xml`` is a project-aware tool
   (see :ref:`Using_Project_Files_with_GNAT_Tools` for a description of
-  the project-related switches).  The project file package that can specify
+  the project-related switches). The project file package that can specify
   ``gnat2xml`` switches is named ``gnat2xml``.
 
   .. _Switches_for_``gnat2xml``:
@@ -1780,7 +1780,7 @@ Alternatively, you may run the script using the following command line:
 
   ``gnatcheck`` is a project-aware tool
   (see :ref:`Using_Project_Files_with_GNAT_Tools` for a description of
-  the project-related switches).  The project file package that can specify
+  the project-related switches). The project file package that can specify
   ``gnatcheck`` switches is named ``Check``.
 
   For full details, plese refer to :title:`GNATcheck Reference Manual`.
@@ -1797,18 +1797,15 @@ Alternatively, you may run the script using the following command line:
   .. index:: ! gnatmetric
   .. index:: Metric tool
 
-  This documentation is for the new libadalang-based version
-  of ``gnatmetric``, which replaces the ASIS-based version.
-
   The ``gnatmetric`` tool is a utility
   for computing various program metrics.
   It takes an Ada source file as input and generates a file containing the
   metrics data as output. Various switches control which
-  metrics are computed and output.
+  metrics are reported.
 
   ``gnatmetric`` is a project-aware tool
   (see :ref:`Using_Project_Files_with_GNAT_Tools` for a description of
-  the project-related switches).  The project file package that can specify
+  the project-related switches). The project file package that can specify
   ``gnatmetric`` switches is named ``Metrics``.
 
   The ``gnatmetric`` command has the form
@@ -1822,14 +1819,16 @@ Alternatively, you may run the script using the following command line:
   * ``switches`` specify the metrics to compute and define the destination for
     the output
 
-  * Each ``filename`` is the name (including the extension) of a source
-    file to process. 'Wildcards' are allowed, and
-    the file name may contain path information.
-    If no ``filename`` is supplied, then the ``switches`` list must contain
-    at least one
-    :switch:`--files` switch (see :ref:`Other_gnatmetric_Switches`).
-    Including both a :switch:`--files` switch and one or more
-    ``filename`` arguments is permitted.
+  * Each ``filename`` is the name of a source file to process. 'Wildcards' are
+    allowed, and the file name may contain path information.  If no
+    ``filename`` is supplied, then the ``switches`` list must contain at least
+    one :switch:`--files` switch (see :ref:`Other_gnatmetric_Switches`).
+    Including both a :switch:`--files` switch and one or more ``filename``
+    arguments is permitted.
+
+    Note that it is no longer necessary to specify the Ada language version;
+    ``gnatmetric`` can process Ada source code written in any version from
+    Ada 83 onward without specifying any language version switch.
 
   The following subsections describe the various switches accepted by
   ``gnatmetric``, organized by category.
@@ -1921,12 +1920,22 @@ Alternatively, you may run the script using the following command line:
   .. index:: --short-file-names (gnatmetric)
 
   :switch:`--short-file-names`
-    Use 'short' source file names in the output.  (The ``gnatmetric``
+    Use 'short' source file names in the output. (The ``gnatmetric``
     output includes the name(s) of the Ada source file(s) from which the
-    metrics are computed.  By default each name includes the absolute
+    metrics are computed. By default each name includes the absolute
     path. The :switch:`--short-file-names` switch causes ``gnatmetric``
     to exclude all directory information from the file names that are
     output.)
+
+   .. index:: --wide-character-encoding (gnatmetric)
+
+   :switch:`--wide-character-encoding={e}`
+     Specify the wide character encoding method for the input and output
+     files. ``e`` is one of the following:
+
+     * *8* - UTF-8 encoding
+
+     * *b* - Brackets encoding (default value)
 
 
   .. index:: Disable Metrics For Local Units in gnatmetric
@@ -1980,12 +1989,11 @@ Alternatively, you may run the script using the following command line:
   Specifying a set of metrics to compute
   --------------------------------------
 
-  By default all the metrics are computed and reported. The switches
-  described in this subsection allow you to control, on an individual
-  basis, whether metrics are computed and reported. If at least one
-  positive metric switch is specified (that is, a switch that defines
-  that a given metric or set of metrics is to be computed), then only
-  explicitly specified metrics are reported.
+  By default all the metrics are reported. The switches described in this
+  subsection allow you to control, on an individual basis, whether metrics are
+  reported. If at least one positive metric switch is specified (that is, a
+  switch that defines that a given metric or set of metrics is to be computed),
+  then only explicitly specified metrics are reported.
 
   .. _Line_Metrics_Control:
 
@@ -2023,7 +2031,7 @@ Alternatively, you may run the script using the following command line:
   code lines in bodies.
 
   You can use the following switches to select the specific line metrics
-  to be computed and reported.
+  to be reported.
 
 
   .. index:: --lines (gnatmetric)
@@ -2089,10 +2097,9 @@ Alternatively, you may run the script using the following command line:
 
 
   :switch:`--lines-average`
-    Report the average number of code lines in subprogram bodies, task
-    bodies, entry bodies and statement sequences in package bodies. The
-    metric is computed and reported for the whole set of processed Ada
-    sources only.
+    Report the average number of code lines in subprogram bodies, task bodies,
+    entry bodies and statement sequences in package bodies. The metric is
+    reported for the whole set of processed Ada sources only.
 
 
   :switch:`--no-lines-average`
@@ -2173,7 +2180,7 @@ Alternatively, you may run the script using the following command line:
       declarations. It is the total number of types that can be
       referenced from outside this compilation unit, plus the number of
       types from all the visible parts of all the visible generic
-      packages. Generic formal types are not counted.  Only types, not
+      packages. Generic formal types are not counted. Only types, not
       subtypes, are included.
 
       Along with the total number of public types, the following
@@ -2193,14 +2200,14 @@ Alternatively, you may run the script using the following command line:
   * *All types*
       This metric is computed for any compilation unit. It is equal to
       the total number of the declarations of different types given in
-      the compilation unit.  The private and the corresponding full type
+      the compilation unit. The private and the corresponding full type
       declaration are counted as one type declaration. Incomplete type
       declarations and generic formal types are not counted.
       No distinction is made among different kinds of types (abstract,
-      private etc.); the total number of types is computed and reported.
+      private etc.); the total number of types is reported.
 
-  By default, all the syntax metrics are computed and reported. You can
-  use the following switches to select specific syntax metrics.
+  By default, all the syntax metrics are reported. You can use the following
+  switches to select specific syntax metrics.
 
 
   .. index:: --syntax (gnatmetric)
@@ -2311,7 +2318,7 @@ Alternatively, you may run the script using the following command line:
 
   According to McCabe, both control statements and short-circuit control
   forms should be taken into account when computing cyclomatic
-  complexity.  For Ada 2012 we have also take into account conditional
+  complexity. For Ada 2012 we have also take into account conditional
   expressions and quantified expressions. For each body, we compute
   three metric values:
 
@@ -2364,9 +2371,8 @@ Alternatively, you may run the script using the following command line:
   code of assertions and predicates (that is, subprogram preconditions and
   postconditions, subtype predicates and type invariants) is also skipped.
 
-  By default, all the complexity metrics are computed and reported.
-  For more fine-grained control you can use
-  the following switches:
+  By default, all the complexity metrics are reported. For more fine-grained
+  control you can use the following switches:
 
 
   .. index:: --complexity (gnatmetric)
@@ -2408,8 +2414,7 @@ Alternatively, you may run the script using the following command line:
   :switch:`--complexity-average`
     Report the average McCabe Cyclomatic Complexity for all the subprogram bodies,
     task bodies, entry bodies and statement sequences in package bodies.
-    The metric is computed and reported for whole set of processed Ada sources
-    only.
+    The metric is reported for whole set of processed Ada sources only.
 
 
   :switch:`--no-complexity-average`
@@ -2623,8 +2628,8 @@ Alternatively, you may run the script using the following command line:
   by invoking ``gnatmetric`` with the corresponding project file
   and with the :switch:`-U` option.
 
-  By default, all the coupling metrics are disabled. You can use the following
-  switches to specify the coupling metrics to be computed and reported:
+  By default, all the coupling metrics are reported. You can use the following
+  switches to select specific syntax metrics.
 
   .. index:: --tagged-coupling (gnatmetric)
   .. index:: --hierarchy-coupling (gnatmetric)
@@ -2815,6 +2820,11 @@ Alternatively, you may run the script using the following command line:
   :switch:`-sfn`
     :switch:`--short-file-names`
 
+  .. index:: -W (gnatsmetric)
+
+  :switch:`-W{e}`
+    :switch:`--wide-character-encoding={e}`
+
   .. index:: -nolocal (gnatmetric)
 
   :switch:`-nolocal`
@@ -2850,18 +2860,15 @@ Alternatively, you may run the script using the following command line:
    .. index:: ! gnatpp
    .. index:: pretty printer
 
-   This documentation is for the new libadalang-based version
-   of ``gnatpp``, which replaces the ASIS-based version.
-
    The ``gnatpp`` tool is a utility for source reformatting / pretty
-   printing.  It takes an Ada source file as input and generates a
-   reformatted version as output.  You can specify various style
+   printing. It takes an Ada source file as input and generates a
+   reformatted version as output. You can specify various style
    directives via switches; e.g., identifier case conventions, rules of
    indentation, and comment layout.
 
    ``gnatpp`` is a project-aware tool
    (see :ref:`Using_Project_Files_with_GNAT_Tools` for a description of
-   the project-related switches).  The project file package that can specify
+   the project-related switches). The project file package that can specify
    ``gnatpp`` switches is named ``Pretty_Printer``.
 
    ``gnatpp`` cannot process sources that contain preprocessing
@@ -2883,6 +2890,10 @@ Alternatively, you may run the script using the following command line:
      or several file names on the same gnatpp command are allowed. The
      file name may contain path information; it does not have to follow
      the GNAT file naming rules
+
+     Note that it is no longer necessary to specify the Ada language version;
+     ``gnatpp`` can process Ada source code written in any version from
+     Ada 83 onward without specifying any language version switch.
 
 
    .. _Switches_for_gnatpp:
@@ -3019,7 +3030,7 @@ Alternatively, you may run the script using the following command line:
    .. index:: --enum-upper-case (gnatpp)
 
    :switch:`--enum-upper-case`
-     Enumeration literals are in upper case.  Overrides -n casing
+     Enumeration literals are in upper case. Overrides -n casing
      setting.
 
    .. index:: --enum-lower-case (gnatpp)
@@ -3133,7 +3144,7 @@ Alternatively, you may run the script using the following command line:
    compatible.
 
    This group of ``gnatpp`` switches controls the layout of comments and
-   complex syntactic constructs.  See :ref:`Formatting_Comments` for details
+   complex syntactic constructs. See :ref:`Formatting_Comments` for details
    on their effect.
 
 
@@ -3181,20 +3192,47 @@ Alternatively, you may run the script using the following command line:
      Do not place the keyword ``is`` on a separate line in a subprogram body in
      case if the spec occupies more than one line.
 
+   .. index:: --separate-loop (gnatpp)
+
+
+   :switch:`--separate-loop`
+     Place the keyword ``loop`` in FOR and WHILE loop statements
+     on a separate line.
+
+   .. index:: --no-separate-then (gnatpp)
+
+
+   :switch:`--separate-then`
+     Place the keyword ``then`` in IF statements
+     on a separate line.
+
+   .. index:: --no-separate-loop (gnatpp)
+
+
+   :switch:`--no-separate-loop`
+     Do not place the keyword ``loop`` in FOR and WHILE loop statements
+     on a separate line. This option is
+     incompatible with the :switch:`--separate-loop` option.
+
+   .. index:: --no-separate-then (gnatpp)
+
+
+   :switch:`--no-separate-then`
+     Do not place the keyword ``then`` in IF statements
+     on a separate line. This option is
+     incompatible with the :switch:`--separate-then` option.
+
    .. index:: --separate-loop-then (gnatpp)
 
 
    :switch:`--separate-loop-then`
-     Place the keyword ``loop`` in FOR and WHILE loop statements and the
-     keyword ``then`` in IF statements on a separate line.
+     Equivalent to :switch:`--separate-loop` :switch:`--separate-then`.
 
    .. index:: --no-separate-loop-then (gnatpp)
 
 
    :switch:`--no-separate-loop-then`
-     Do not place the keyword ``loop`` in FOR and WHILE loop statements and the
-     keyword ``then`` in IF statements on a separate line. This option is
-     incompatible with the :switch:`--separate-loop-then` option.
+     Equivalent to :switch:`--no-separate-loop` :switch:`--no-separate-then`.
 
    .. index:: --use-on-new-line (gnatpp)
 
@@ -3221,6 +3259,20 @@ Alternatively, you may run the script using the following command line:
 
    :switch:`--preserve-line-breaks`
      Preserve line breaks in the input, to the extent possible.
+     By default, line breaks are also inserted at appropriate
+     places.
+
+   .. index:: --source-line-breaks (gnatpp)
+
+   :switch:`--source-line-breaks`
+     Keep the line breaks from the source; do not insert or delete any
+     line breaks.
+
+   .. index:: --spaces-only (gnatpp)
+
+   :switch:`--spaces-only`
+     Disable all formatting except for inserting and removing spaces.
+     This implies --source-line-breaks.
 
    The ``--comments`` switches are compatible with one another, except
    that the ``--comments-unchanged`` switch disables all other comment
@@ -3308,12 +3360,6 @@ Alternatively, you may run the script using the following command line:
    :switch:`--RM-style-spacing`
      Do not insert an extra blank before various occurrences of
      '(' and ':'. This also turns off alignment.
-
-
-   .. index:: --ff-after-pragma-page (gnatpp)
-
-   :switch:`--ff-after-pragma-page`
-     Insert a Form Feed character after a pragma Page.
 
 
    .. index:: --call_threshold (gnatpp)
@@ -3458,6 +3504,8 @@ Alternatively, you may run the script using the following command line:
      * *unix* - UNIX style, lines end with LF character*
      * *lf* -  the same as *unix*
 
+     The default is to use the same end-of-line convention as the input.
+
    .. index:: --wide-character-encoding (gnatpp)
 
    :switch:`--wide-character-encoding={e}`
@@ -3600,30 +3648,6 @@ Alternatively, you may run the script using the following command line:
    all the immediate units of the argument project.
 
 
-   .. index:: --gnat83 (gnatpp)
-
-   :switch:`--gnat83`
-     Ada 83 mode
-
-
-   .. index:: --gnat95 (gnatpp)
-
-   :switch:`--gnat95`
-     Ada 95 mode
-
-
-   .. index:: --gnat2005 (gnatpp)
-
-   :switch:`--gnat2005`
-     Ada 2005 mode
-
-
-   .. index:: --gnat2012 (gnatpp)
-
-   :switch:`--gnat2012`
-     Ada 2012 mode
-
-
    .. _Formatting_Rules:
 
    Formatting Rules
@@ -3713,10 +3737,10 @@ Alternatively, you may run the script using the following command line:
      the same line.
 
    A whole-line comment is indented according to the surrounding code,
-   with some exceptions.  Comments that start in column 1 are kept
-   there.  If possible, comments are not moved so far to the right that
-   the maximum line length is exceeded.  The ``--comments-unchanged``
-   option turns off comment formatting.  Special-form comments such as
+   with some exceptions. Comments that start in column 1 are kept
+   there. If possible, comments are not moved so far to the right that
+   the maximum line length is exceeded. The ``--comments-unchanged``
+   option turns off comment formatting. Special-form comments such as
    SPARK-style ``--#...`` are left alone.
 
    For an end-of-line comment, ``gnatpp`` tries to leave the same
@@ -3741,7 +3765,7 @@ Alternatively, you may run the script using the following command line:
    are formatted according to the ``--comments-gnat-beginning`` and
    ``--comments-fill`` switches; other formatting switches are ignored. For
    example, ``--comments-only --comments-fill`` means to fill comment
-   paragraphs, and do nothing else.  Likewise, ``--comments-only
+   paragraphs, and do nothing else. Likewise, ``--comments-only
    --comments-gnat-beginning`` ensures comments start with at least two
    spaces after ``--``, and ``--comments-only --comments-gnat-beginning
    --comments-fill`` does both. If ``--comments-only`` is given without
@@ -3758,11 +3782,11 @@ Alternatively, you may run the script using the following command line:
    the same casing as the corresponding defining identifier.
 
    You control the casing for defining occurrences via the ``--name...``
-   switches.  With ``--name-case-as-declared``, which is the default,
+   switches. With ``--name-case-as-declared``, which is the default,
    defining occurrences appear exactly as in the source file where they
-   are declared.  The other values for this switch --
+   are declared. The other values for this switch --
    ``--name-upper-case``, ``--name-lower-case``, ``--name-mixed-case``
-   -- result in upper, lower, or mixed case, respectively.  If
+   -- result in upper, lower, or mixed case, respectively. If
    ``gnatpp`` changes the casing of a defining occurrence, it
    analogously changes the casing of all the usage occurrences of this
    name.
@@ -3770,7 +3794,7 @@ Alternatively, you may run the script using the following command line:
    If the defining occurrence of a name is not in the source compilation
    unit currently being processed by ``gnatpp``, the casing of each
    reference to this name is changed according to the switch (subject to
-   the dictionary file mechanism described below).  Thus ``gnatpp`` acts
+   the dictionary file mechanism described below). Thus ``gnatpp`` acts
    as though the switch had affected the casing for the defining
    occurrence of the name.
 
@@ -3807,7 +3831,7 @@ Alternatively, you may run the script using the following command line:
    ``-n`` switch or explicit dictionary files. For
    example, by default the names ``Ada.Text_IO`` and
    ``GNAT.OS_Lib`` will appear as just shown, even in the presence of
-   a ``--name-upper-case`` switch.  To ensure that even
+   a ``--name-upper-case`` switch. To ensure that even
    such names are rendered in uppercase, additionally supply the
    --dictionary=- switch (or else place these names
    in upper case in a dictionary file).
@@ -3903,6 +3927,67 @@ Alternatively, you may run the script using the following command line:
         begin
            Name2_NAME3_Name4 := Name4_NAME3_Name2 > NAME1;
         end Test;
+
+   .. _Preprocessor_directives:
+
+   Preprocessor Directives
+   ^^^^^^^^^^^^^^^^^^^^^^^
+
+   ``gnatpp`` has some support for preprocessor directives.
+   You can use preprocessor symbols, as in ``$symbol``.
+   In addition, you can use conditional compilation,
+   so long as the program text is syntactically legal Ada code
+   after removing all the preprocessor directives (lines starting
+   with ``#``). For example, ``gnatpp`` can format the following:
+
+     .. code-block:: ada
+
+        package P is
+        #IF SOMETHING
+           X : constant Integer := 123;
+        #ELSE
+           X : constant Integer := 456;
+        #END IF;
+        end P;
+
+   which will be formatted as if it were:
+
+     .. code-block:: ada
+
+        package P is
+           X : constant Integer := 123;
+           X : constant Integer := 456;
+        end P;
+
+   except that the ``#`` lines will be preserved.
+   However, ``gnatpp`` cannot format the following:
+
+     .. code-block:: ada
+
+        procedure P is
+        begin
+        #IF SOMETHING
+           if X = 0 then
+        #ELSE
+           if X = 1 then
+        #END IF;
+              null;
+           end if;
+        end P;
+
+   because removing the ``#`` lines gives:
+
+     .. code-block:: ada
+
+        procedure P is
+        begin
+           if X = 0 then
+           if X = 1 then
+              null;
+           end if;
+        end P;
+
+   which is not syntactically legal.
 
    Legacy Switches
    ^^^^^^^^^^^^^^^
@@ -4033,11 +4118,6 @@ Alternatively, you may run the script using the following command line:
    :switch:`-cl{nnn}`
      :switch:`--indent-continuation={nnn}`
 
-   .. index:: -ff (gnatpp)
-
-   :switch:`-ff`
-     :switch:`--ff-after-pragma-page`
-
    .. index:: -pipe (gnatpp)
 
    :switch:`-pipe`
@@ -4153,6 +4233,10 @@ Alternatively, you may run the script using the following command line:
       project file provided as a parameter of ``-P`` switch if any,
       or creates the name file to generate using the standard GNAT
       naming conventions.
+
+      Note that it is no longer necessary to specify the Ada language version;
+      ``gnatmetric`` can process Ada source code written in any version from
+      Ada 83 onward without specifying any language version switch.
 
   * *switches*
       is an optional sequence of switches as described in the next section
@@ -4311,30 +4395,6 @@ Alternatively, you may run the script using the following command line:
     * *8* - UTF-8 encoding
 
     * *b* - Brackets encoding (default value)
-
-
-  .. index:: --gnat83 (gnatstub)
-
-  :switch:`--gnat83`
-    Ada 83 mode
-
-
-  .. index:: --gnat95 (gnatstub)
-
-  :switch:`--gnat95`
-    Ada 95 mode
-
-
-  .. index:: --gnat2005 (gnatstub)
-
-  :switch:`--gnat2005`
-    Ada 2005 mode
-
-
-  .. index:: --gnat2012 (gnatstub)
-
-  :switch:`--gnat2012`
-    Ada 2012 mode
 
 
   .. index:: --quiet (gnatstub)
@@ -4661,7 +4721,7 @@ Alternatively, you may run the script using the following command line:
   :switch:`--subdir={dirname}`
     Test packages are placed in a subdirectory of the corresponding source
     directory, with the name ``dirname``. Thus, each set of unit tests is located
-    in a subdirectory of the code under test.  If the sources are in separate
+    in a subdirectory of the code under test. If the sources are in separate
     directories, each source directory has a test subdirectory named ``dirname``.
 
 

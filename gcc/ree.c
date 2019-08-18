@@ -579,8 +579,9 @@ struct ATTRIBUTE_PACKED ext_modified
 };
 
 /* Vectors used by combine_reaching_defs and its helpers.  */
-struct ext_state
+class ext_state
 {
+public:
   /* In order to avoid constant alloc/free, we keep these
      4 vectors live through the entire find_and_remove_re and just
      truncate them each time.  */

@@ -87,10 +87,10 @@ static void dump_prediction (FILE *, enum br_predictor, int, basic_block,
 			     enum predictor_reason, edge);
 static void predict_paths_leading_to (basic_block, enum br_predictor,
 				      enum prediction,
-				      struct loop *in_loop = NULL);
+				      class loop *in_loop = NULL);
 static void predict_paths_leading_to_edge (edge, enum br_predictor,
 					   enum prediction,
-					   struct loop *in_loop = NULL);
+					   class loop *in_loop = NULL);
 static bool can_predict_insn_p (const rtx_insn *);
 static HOST_WIDE_INT get_predictor_value (br_predictor, HOST_WIDE_INT);
 static void determine_unlikely_bbs ();
@@ -132,11 +132,15 @@ get_hot_bb_threshold ()
 {
   if (min_count == -1)
     {
-      gcov_type t = profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION);
-      set_hot_bb_threshold (t);
+      const int hot_frac = PARAM_VALUE (HOT_BB_COUNT_FRACTION);
+      const gcov_type min_hot_count
+	= hot_frac
+	  ? profile_info->sum_max / hot_frac
+	  : (gcov_type)profile_count::max_count;
+      set_hot_bb_threshold (min_hot_count);
       if (dump_file)
 	fprintf (dump_file, "Setting hotness threshold to %" PRId64 ".\n",
-		 min_count);
+		 min_hot_count);
     }
   return min_count;
 }
@@ -149,7 +153,7 @@ set_hot_bb_threshold (gcov_type min)
   min_count = min;
 }
 
-/* Return TRUE if frequency FREQ is considered to be hot.  */
+/* Return TRUE if COUNT is considered to be hot in function FUN.  */
 
 bool
 maybe_hot_count_p (struct function *fun, profile_count count)
@@ -173,8 +177,6 @@ maybe_hot_count_p (struct function *fun, profile_count count)
       if (node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
 	  && count < (ENTRY_BLOCK_PTR_FOR_FN (fun)->count.apply_scale (2, 3)))
 	return false;
-      if (PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) == 0)
-	return false;
       if (count.apply_scale (PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION), 1)
 	  < ENTRY_BLOCK_PTR_FOR_FN (fun)->count)
 	return false;
@@ -186,8 +188,8 @@ maybe_hot_count_p (struct function *fun, profile_count count)
   return (count.to_gcov_type () >= get_hot_bb_threshold ());
 }
 
-/* Return true in case BB can be CPU intensive and should be optimized
-   for maximal performance.  */
+/* Return true if basic block BB of function FUN can be CPU intensive
+   and should thus be optimized for maximum performance.  */
 
 bool
 maybe_hot_bb_p (struct function *fun, const_basic_block bb)
@@ -196,8 +198,8 @@ maybe_hot_bb_p (struct function *fun, const_basic_block bb)
   return maybe_hot_count_p (fun, bb->count);
 }
 
-/* Return true in case BB can be CPU intensive and should be optimized
-   for maximal performance.  */
+/* Return true if edge E can be CPU intensive and should thus be optimized
+   for maximum performance.  */
 
 bool
 maybe_hot_edge_p (edge e)
@@ -205,12 +207,11 @@ maybe_hot_edge_p (edge e)
   return maybe_hot_count_p (cfun, e->count ());
 }
 
-/* Return true if profile COUNT and FREQUENCY, or function FUN static
-   node frequency reflects never being executed.  */
+/* Return true if COUNT is considered to be never executed in function FUN
+   or if function FUN is considered so in the static profile.  */
    
 static bool
-probably_never_executed (struct function *fun,
-                         profile_count count)
+probably_never_executed (struct function *fun, profile_count count)
 {
   gcc_checking_assert (fun);
   if (count.ipa () == profile_count::zero ())
@@ -222,8 +223,8 @@ probably_never_executed (struct function *fun,
      desirable.  */
   if (count.precise_p () && profile_status_for_fn (fun) == PROFILE_READ)
     {
-      int unlikely_count_fraction = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
-      if (count.apply_scale (unlikely_count_fraction, 1) >= profile_info->runs)
+      const int unlikely_frac = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
+      if (count.apply_scale (unlikely_frac, 1) >= profile_info->runs)
 	return false;
       return true;
     }
@@ -234,8 +235,7 @@ probably_never_executed (struct function *fun,
   return false;
 }
 
-
-/* Return true in case BB is probably never executed.  */
+/* Return true if basic block BB of function FUN is probably never executed.  */
 
 bool
 probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
@@ -243,8 +243,7 @@ probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
   return probably_never_executed (fun, bb->count);
 }
 
-
-/* Return true if E is unlikely executed for obvious reasons.  */
+/* Return true if edge E is unlikely executed for obvious reasons.  */
 
 static bool
 unlikely_executed_edge_p (edge e)
@@ -254,7 +253,7 @@ unlikely_executed_edge_p (edge e)
 	 || (e->flags & (EDGE_EH | EDGE_FAKE));
 }
 
-/* Return true in case edge E is probably never executed.  */
+/* Return true if edge E of function FUN is probably never executed.  */
 
 bool
 probably_never_executed_edge_p (struct function *fun, edge e)
@@ -264,7 +263,7 @@ probably_never_executed_edge_p (struct function *fun, edge e)
   return probably_never_executed (fun, e->count ());
 }
 
-/* Return true when current function should always be optimized for size.  */
+/* Return true if function FUN should always be optimized for size.  */
 
 bool
 optimize_function_for_size_p (struct function *fun)
@@ -275,7 +274,7 @@ optimize_function_for_size_p (struct function *fun)
   return n && n->optimize_for_size_p ();
 }
 
-/* Return true when current function should always be optimized for speed.  */
+/* Return true if function FUN should always be optimized for speed.  */
 
 bool
 optimize_function_for_speed_p (struct function *fun)
@@ -283,7 +282,7 @@ optimize_function_for_speed_p (struct function *fun)
   return !optimize_function_for_size_p (fun);
 }
 
-/* Return the optimization type that should be used for the function FUN.  */
+/* Return the optimization type that should be used for function FUN.  */
 
 optimization_type
 function_optimization_type (struct function *fun)
@@ -293,7 +292,7 @@ function_optimization_type (struct function *fun)
 	  : OPTIMIZE_FOR_SIZE);
 }
 
-/* Return TRUE when BB should be optimized for size.  */
+/* Return TRUE if basic block BB should be optimized for size.  */
 
 bool
 optimize_bb_for_size_p (const_basic_block bb)
@@ -302,7 +301,7 @@ optimize_bb_for_size_p (const_basic_block bb)
 	  || (bb && !maybe_hot_bb_p (cfun, bb)));
 }
 
-/* Return TRUE when BB should be optimized for speed.  */
+/* Return TRUE if basic block BB should be optimized for speed.  */
 
 bool
 optimize_bb_for_speed_p (const_basic_block bb)
@@ -310,7 +309,7 @@ optimize_bb_for_speed_p (const_basic_block bb)
   return !optimize_bb_for_size_p (bb);
 }
 
-/* Return the optimization type that should be used for block BB.  */
+/* Return the optimization type that should be used for basic block BB.  */
 
 optimization_type
 bb_optimization_type (const_basic_block bb)
@@ -320,7 +319,7 @@ bb_optimization_type (const_basic_block bb)
 	  : OPTIMIZE_FOR_SIZE);
 }
 
-/* Return TRUE when BB should be optimized for size.  */
+/* Return TRUE if edge E should be optimized for size.  */
 
 bool
 optimize_edge_for_size_p (edge e)
@@ -328,7 +327,7 @@ optimize_edge_for_size_p (edge e)
   return optimize_function_for_size_p (cfun) || !maybe_hot_edge_p (e);
 }
 
-/* Return TRUE when BB should be optimized for speed.  */
+/* Return TRUE if edge E should be optimized for speed.  */
 
 bool
 optimize_edge_for_speed_p (edge e)
@@ -336,7 +335,7 @@ optimize_edge_for_speed_p (edge e)
   return !optimize_edge_for_size_p (e);
 }
 
-/* Return TRUE when BB should be optimized for size.  */
+/* Return TRUE if the current function is optimized for size.  */
 
 bool
 optimize_insn_for_size_p (void)
@@ -344,7 +343,7 @@ optimize_insn_for_size_p (void)
   return optimize_function_for_size_p (cfun) || !crtl->maybe_hot_insn_p;
 }
 
-/* Return TRUE when BB should be optimized for speed.  */
+/* Return TRUE if the current function is optimized for speed.  */
 
 bool
 optimize_insn_for_speed_p (void)
@@ -352,28 +351,28 @@ optimize_insn_for_speed_p (void)
   return !optimize_insn_for_size_p ();
 }
 
-/* Return TRUE when LOOP should be optimized for size.  */
+/* Return TRUE if LOOP should be optimized for size.  */
 
 bool
-optimize_loop_for_size_p (struct loop *loop)
+optimize_loop_for_size_p (class loop *loop)
 {
   return optimize_bb_for_size_p (loop->header);
 }
 
-/* Return TRUE when LOOP should be optimized for speed.  */
+/* Return TRUE if LOOP should be optimized for speed.  */
 
 bool
-optimize_loop_for_speed_p (struct loop *loop)
+optimize_loop_for_speed_p (class loop *loop)
 {
   return optimize_bb_for_speed_p (loop->header);
 }
 
-/* Return TRUE when LOOP nest should be optimized for speed.  */
+/* Return TRUE if nest rooted at LOOP should be optimized for speed.  */
 
 bool
-optimize_loop_nest_for_speed_p (struct loop *loop)
+optimize_loop_nest_for_speed_p (class loop *loop)
 {
-  struct loop *l = loop;
+  class loop *l = loop;
   if (optimize_loop_for_speed_p (loop))
     return true;
   l = loop->inner;
@@ -396,15 +395,15 @@ optimize_loop_nest_for_speed_p (struct loop *loop)
   return false;
 }
 
-/* Return TRUE when LOOP nest should be optimized for size.  */
+/* Return TRUE if nest rooted at LOOP should be optimized for size.  */
 
 bool
-optimize_loop_nest_for_size_p (struct loop *loop)
+optimize_loop_nest_for_size_p (class loop *loop)
 {
   return !optimize_loop_nest_for_speed_p (loop);
 }
 
-/* Return true when edge E is likely to be well predictable by branch
+/* Return true if edge E is likely to be well predictable by branch
    predictor.  */
 
 bool
@@ -1471,7 +1470,7 @@ get_base_value (tree t)
    Otherwise return false and set LOOP_INVAIANT to NULL.  */
 
 static bool
-is_comparison_with_loop_invariant_p (gcond *stmt, struct loop *loop,
+is_comparison_with_loop_invariant_p (gcond *stmt, class loop *loop,
 				     tree *loop_invariant,
 				     enum tree_code *compare_code,
 				     tree *loop_step,
@@ -1637,7 +1636,7 @@ predicted_by_loop_heuristics_p (basic_block bb)
   In this loop, we will predict the branch inside the loop to be taken.  */
 
 static void
-predict_iv_comparison (struct loop *loop, basic_block bb,
+predict_iv_comparison (class loop *loop, basic_block bb,
 		       tree loop_bound_var,
 		       tree loop_iv_base_var,
 		       enum tree_code loop_bound_code,
@@ -1896,9 +1895,9 @@ predict_extra_loop_exits (edge exit_edge)
 static void
 predict_loops (void)
 {
-  struct loop *loop;
+  class loop *loop;
   basic_block bb;
-  hash_set <struct loop *> with_recursion(10);
+  hash_set <class loop *> with_recursion(10);
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -1923,9 +1922,9 @@ predict_loops (void)
       basic_block bb, *bbs;
       unsigned j, n_exits = 0;
       vec<edge> exits;
-      struct tree_niter_desc niter_desc;
+      class tree_niter_desc niter_desc;
       edge ex;
-      struct nb_iter_bound *nb_iter;
+      class nb_iter_bound *nb_iter;
       enum tree_code loop_bound_code = ERROR_MARK;
       tree loop_bound_step = NULL;
       tree loop_bound_var = NULL;
@@ -2450,7 +2449,7 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 	      return NULL;
 	    }
 
-	  if (DECL_IS_MALLOC (decl) || DECL_IS_OPERATOR_NEW (decl))
+	  if (DECL_IS_MALLOC (decl) || DECL_IS_OPERATOR_NEW_P (decl))
 	    {
 	      if (predictor)
 		*predictor = PRED_MALLOC_NONNULL;
@@ -3135,7 +3134,7 @@ static void
 predict_paths_for_bb (basic_block cur, basic_block bb,
 		      enum br_predictor pred,
 		      enum prediction taken,
-		      bitmap visited, struct loop *in_loop = NULL)
+		      bitmap visited, class loop *in_loop = NULL)
 {
   edge e;
   edge_iterator ei;
@@ -3201,7 +3200,7 @@ predict_paths_for_bb (basic_block cur, basic_block bb,
 
 static void
 predict_paths_leading_to (basic_block bb, enum br_predictor pred,
-			  enum prediction taken, struct loop *in_loop)
+			  enum prediction taken, class loop *in_loop)
 {
   predict_paths_for_bb (bb, bb, pred, taken, auto_bitmap (), in_loop);
 }
@@ -3210,7 +3209,7 @@ predict_paths_leading_to (basic_block bb, enum br_predictor pred,
 
 static void
 predict_paths_leading_to_edge (edge e, enum br_predictor pred,
-			       enum prediction taken, struct loop *in_loop)
+			       enum prediction taken, class loop *in_loop)
 {
   bool has_nonloop_edge = false;
   edge_iterator ei;
@@ -3236,8 +3235,9 @@ predict_paths_leading_to_edge (edge e, enum br_predictor pred,
 /* This is used to carry information about basic blocks.  It is
    attached to the AUX field of the standard CFG block.  */
 
-struct block_info
+class block_info
 {
+public:
   /* Estimated frequency of execution of basic_block.  */
   sreal frequency;
 
@@ -3249,8 +3249,9 @@ struct block_info
 };
 
 /* Similar information for edges.  */
-struct edge_prob_info
+class edge_prob_info
 {
+public:
   /* In case edge is a loopback edge, the probability edge will be reached
      in case header is.  Estimated number of iterations of the loop can be
      then computed as 1 / (1 - back_edge_prob).  */
@@ -3398,9 +3399,9 @@ propagate_freq (basic_block head, bitmap tovisit)
 /* Estimate frequencies in loops at same nest level.  */
 
 static void
-estimate_loops_at_level (struct loop *first_loop)
+estimate_loops_at_level (class loop *first_loop)
 {
-  struct loop *loop;
+  class loop *loop;
 
   for (loop = first_loop; loop; loop = loop->next)
     {
@@ -3530,8 +3531,8 @@ drop_profile (struct cgraph_node *node, profile_count call_count)
 void
 handle_missing_profiles (void)
 {
+  const int unlikely_frac = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
   struct cgraph_node *node;
-  int unlikely_count_fraction = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
   auto_vec<struct cgraph_node *, 64> worklist;
 
   /* See if 0 count function has non-0 count callers.  In this case we
@@ -3561,8 +3562,7 @@ handle_missing_profiles (void)
 
       if (call_count > 0
           && fn && fn->cfg
-          && (call_count.apply_scale (unlikely_count_fraction, 1)
-	      >= profile_info->runs))
+          && call_count.apply_scale (unlikely_frac, 1) >= profile_info->runs)
         {
           drop_profile (node, call_count);
           worklist.safe_push (node);
@@ -4050,7 +4050,7 @@ pass_profile::execute (function *fun)
     profile_status_for_fn (fun) = PROFILE_GUESSED;
  if (dump_file && (dump_flags & TDF_DETAILS))
    {
-     struct loop *loop;
+     class loop *loop;
      FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
        if (loop->header->count.initialized_p ())
          fprintf (dump_file, "Loop got predicted %d to iterate %i times.\n",

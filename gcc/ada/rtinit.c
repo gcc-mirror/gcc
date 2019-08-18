@@ -41,8 +41,6 @@
 #endif
 
 #ifdef IN_RTS
-#include "tconfig.h"
-#include "tsystem.h"
 /* We don't have libiberty, so use malloc.  */
 #define xmalloc(S) malloc (S)
 #define xrealloc(V,S) realloc (V,S)
@@ -62,7 +60,7 @@ extern "C" {
 /* __gnat_runtime_initialize (NT-mingw32 Version) */
 /**************************************************/
 
-extern void __gnat_install_handler(void);
+extern void __gnat_install_handler (void);
 
 int __gnat_wide_text_translation_required = 0;
 /* wide text translation, 0=none, 1=activated */
@@ -89,6 +87,189 @@ extern HANDLE ProcListEvt;
 int __gnat_do_argv_expansion = 1;
 #pragma weak __gnat_do_argv_expansion
 
+/* Assuming we are pointing to the beginning of a quoted part of an
+argument, skip until the end of the quoted part.  */
+static void skip_quoted_string (const WCHAR **current_in,
+				WCHAR **current_out)
+{
+  /* Number of backslashes buffered.  */
+  int qbs_count = 0;
+
+  /* Pointer to current input character.  */
+  const WCHAR *ci = *current_in;
+
+  /* Pointer to next output character.  */
+  WCHAR *co = *current_out;
+
+  /* Skip initial quote.  */
+  ci++;
+
+  while (*ci)
+    {
+      if (*ci == '\\')
+	{
+	  /* Buffer incoming backslashes.  */
+	  qbs_count++;
+	}
+      else if (*ci == '"')
+	{
+	  /* Append qbs_count / 2 backslahes.  */
+	  for (int i=0; i<qbs_count / 2; i++)
+	    {
+	      *co = '\\';
+	      co++;
+	    }
+	  if ((qbs_count & 1) == 0)
+	    {
+	      /* 2n backslashes means that the quotation mark is the end of
+	         the quoted portion.  */
+	      qbs_count = 0;
+	      break;
+	    }
+	  else
+	    {
+	      /* Otherwise this is a double quote literal.  */
+	      qbs_count = 0;
+	      *co = '"'; co++;
+	    }
+	}
+      else
+	{
+	  /* If the character is not a double quote we should append
+	     qbs_count backslashes.  */
+	  for (int i=0; i<qbs_count; i++)
+	    {
+	      *co = '\\';
+	      co++;
+	    }
+	  *co = *ci; co++;
+	  qbs_count = 0;
+	}
+      ci++;
+    }
+  *current_in = ci;
+  *current_out = co;
+}
+
+/* Assuming that this is the beginning of an argument. Skip characters
+   until we reach the character right after the last argument character.  */
+static void skip_argument (const WCHAR **current_in,
+			   WCHAR **current_out)
+{
+  /* Number of backslashes buffered.  */
+  int bs_count = 0;
+
+  /* Pointer to current input character.  */
+  const WCHAR *ci = *current_in;
+
+  /* Pointer to next output character.  */
+  WCHAR *co = *current_out;
+
+  while (*ci && ! (*ci == ' ' || *ci == '\t'))
+    {
+      if (*ci == '\\')
+	{
+	  /* Buffer incoming backslashes.  */
+	  bs_count++;
+	}
+      else if (*ci == '"')
+	{
+	  /* Append qbs_count / 2 backslahes.  */
+	  for (int i=0; i< bs_count / 2; i++)
+	    {
+	      *co = '\\'; co++;
+	    }
+	  if ((bs_count & 1) == 0)
+	    {
+	      /* 2n backslashes followed by a quotation mark means that
+		 this is a start of a quoted string.  */
+	      skip_quoted_string (&ci, &co);
+	    }
+	  else
+	    {
+	      /* Otherwise this is quotation mark literal.  */
+	      *co = '"';
+	      co++;
+	    }
+	  bs_count = 0;
+	}
+      else
+	{
+	  /* This is a regular character. */
+	  /* Backslashes are interpreted literally.  */
+	  for (int i=0; i<bs_count; i++)
+	    {
+	      *co = '\\';
+	      co++;
+	    }
+	  bs_count = 0;
+	  *co = *ci; co++;
+	}
+      ci++;
+    }
+
+  for (int i=0; i<bs_count; i++)
+    {
+      *co = '\\';
+      co++;
+    }
+
+  /* End the argument with a null character. */
+  *co = '\0';
+  co++;
+
+  *current_in = ci;
+  *current_out = co;
+}
+
+
+void __gnat_get_argw (const WCHAR *command_line, WCHAR ***argv, int *argc)
+{
+  WCHAR *inline_argv;
+  WCHAR *co;
+  int arg_count = 1;
+  const WCHAR *ci;
+
+  inline_argv =
+    (WCHAR *) xmalloc ((wcslen (command_line) + 1) * sizeof (WCHAR));
+  co = inline_argv;
+
+  /* Start iteration on command line characters. */
+  ci = command_line;
+
+  /* Skip command name. Note that if the command line starts with whitechars
+     then the command name will be the empty string. */
+  skip_argument (&ci, &co);
+
+  /* Count remaining arguments. */
+  while (*ci)
+    {
+      /* skip whitechar */
+      while (*ci && (*ci == ' ' || *ci == '\t')) { ci++; }
+      if (*ci)
+	{
+	  skip_argument (&ci, &co);
+	  arg_count++;
+	}
+      else
+	break;
+    }
+
+  /* Allocate table with pointer to each arguments */
+  argv[0] = (WCHAR **) xmalloc (arg_count * sizeof (WCHAR *));
+
+  for (int idx = 0; idx < arg_count; idx++)
+    {
+      argv[0][idx] = inline_argv;
+      while (*inline_argv)
+	{
+	  inline_argv++;
+	}
+      inline_argv++;
+     }
+  *argc = arg_count;
+}
+
 static void
 append_arg (int *index, LPWSTR dir, LPWSTR value,
 	    char ***argv, int *last, int quoted)
@@ -102,14 +283,14 @@ append_arg (int *index, LPWSTR dir, LPWSTR value,
     {
       /* no dir prefix */
       dirlen = 0;
-      fullvalue = (LPWSTR) xmalloc ((vallen + 1) * sizeof(TCHAR));
+      fullvalue = (LPWSTR) xmalloc ((vallen + 1) * sizeof (TCHAR));
     }
   else
     {
       /* Add dir first */
       dirlen = _tcslen (dir);
 
-      fullvalue = (LPWSTR) xmalloc ((dirlen + vallen + 1) * sizeof(TCHAR));
+      fullvalue = (LPWSTR) xmalloc ((dirlen + vallen + 1) * sizeof (TCHAR));
       _tcscpy (fullvalue, dir);
     }
 
@@ -118,7 +299,7 @@ append_arg (int *index, LPWSTR dir, LPWSTR value,
   if (quoted)
     {
       _tcsncpy (fullvalue + dirlen, value + 1, vallen - 1);
-      fullvalue [dirlen + vallen - sizeof(TCHAR)] = _T('\0');
+      fullvalue [dirlen + vallen - sizeof (TCHAR)] = _T ('\0');
     }
   else
     _tcscpy (fullvalue + dirlen, value);
@@ -130,7 +311,7 @@ append_arg (int *index, LPWSTR dir, LPWSTR value,
     }
 
   size = WS2SC (NULL, fullvalue, 0);
-  (*argv)[*index] = (char *) xmalloc (size + sizeof(TCHAR));
+  (*argv)[*index] = (char *) xmalloc (size + sizeof (TCHAR));
   WS2SC ((*argv)[*index], fullvalue, size);
 
   free (fullvalue);
@@ -140,7 +321,7 @@ append_arg (int *index, LPWSTR dir, LPWSTR value,
 #endif
 
 void
-__gnat_runtime_initialize(int install_handler)
+__gnat_runtime_initialize (int install_handler)
 {
   /*  increment the reference counter */
 
@@ -223,7 +404,7 @@ __gnat_runtime_initialize(int install_handler)
      TCHAR result [MAX_PATH];
      int quoted;
 
-     wargv = CommandLineToArgvW (GetCommandLineW(), &wargc);
+     __gnat_get_argw (GetCommandLineW (), &wargv, &wargc);
 
      if (wargv != NULL)
        {
@@ -297,7 +478,8 @@ __gnat_runtime_initialize(int install_handler)
 	       }
 	   }
 
-	 LocalFree (wargv);
+	 free (wargv[0]);
+	 free (wargv);
 	 gnat_argc = argc_expanded;
 	 gnat_argv = (char **) xrealloc
 	   (gnat_argv, argc_expanded * sizeof (char *));

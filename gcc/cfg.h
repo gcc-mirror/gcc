@@ -122,8 +122,8 @@ extern void set_bb_original (basic_block, basic_block);
 extern basic_block get_bb_original (basic_block);
 extern void set_bb_copy (basic_block, basic_block);
 extern basic_block get_bb_copy (basic_block);
-void set_loop_copy (struct loop *, struct loop *);
-struct loop *get_loop_copy (struct loop *);
+void set_loop_copy (class loop *, class loop *);
+class loop *get_loop_copy (class loop *);
 
 /* Generic RAII class to allocate a bit from storage of integer type T.
    The allocated bit is accessible as mask with the single bit set

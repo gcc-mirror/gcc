@@ -43,9 +43,8 @@
    Ada.Command_Line.Environment package.  */
 
 #ifdef IN_RTS
-#include "tconfig.h"
-#include "tsystem.h"
-#include <sys/stat.h>
+#include "runtime.h"
+#include <string.h>
 #else
 #include "config.h"
 #include "system.h"

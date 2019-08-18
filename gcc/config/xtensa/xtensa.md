@@ -1026,7 +1026,7 @@
 
 ;; Block moves
 
-(define_expand "movmemsi"
+(define_expand "cpymemsi"
   [(parallel [(set (match_operand:BLK 0 "" "")
 		   (match_operand:BLK 1 "" ""))
 	      (use (match_operand:SI 2 "arith_operand" ""))

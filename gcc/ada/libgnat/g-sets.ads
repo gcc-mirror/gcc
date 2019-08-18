@@ -42,12 +42,12 @@ package GNAT.Sets is
    --  The following package offers a membership set abstraction with the
    --  following characteristics:
    --
-   --    * Creation of multiple instances, of different sizes.
-   --    * Iterable elements.
+   --    * Creation of multiple instances, of different sizes
+   --    * Iterable elements
    --
    --  The following use pattern must be employed with this set:
    --
-   --    Set : Instance := Create (<some size>);
+   --    Set : Membership_Set := Create (<some size>);
    --
    --    <various operations>
    --
@@ -65,7 +65,7 @@ package GNAT.Sets is
       with function Hash (Key : Element_Type) return Bucket_Range_Type;
       --  Map an arbitrary key into the range of buckets
 
-   package Membership_Set is
+   package Membership_Sets is
 
       --------------------
       -- Set operations --
@@ -74,36 +74,50 @@ package GNAT.Sets is
       --  The following type denotes a membership set handle. Each instance
       --  must be created using routine Create.
 
-      type Instance is private;
-      Nil : constant Instance;
+      type Membership_Set is private;
+      Nil : constant Membership_Set;
 
-      function Contains (S : Instance; Elem : Element_Type) return Boolean;
+      function Contains
+        (S    : Membership_Set;
+         Elem : Element_Type) return Boolean;
       --  Determine whether membership set S contains element Elem
 
-      function Create (Initial_Size : Positive) return Instance;
+      function Create (Initial_Size : Positive) return Membership_Set;
       --  Create a new membership set with bucket capacity Initial_Size. This
       --  routine must be called at the start of the membership set's lifetime.
 
-      procedure Delete (S : Instance; Elem : Element_Type);
+      procedure Delete
+        (S    : Membership_Set;
+         Elem : Element_Type);
       --  Delete element Elem from membership set S. The routine has no effect
       --  if the element is not present in the membership set. This action will
       --  raise Iterated if the membership set has outstanding iterators.
 
-      procedure Destroy (S : in out Instance);
+      procedure Destroy (S : in out Membership_Set);
       --  Destroy the contents of membership set S, rendering it unusable. This
       --  routine must be called at the end of the membership set's lifetime.
       --  This action will raise Iterated if the hash table has outstanding
       --  iterators.
 
-      procedure Insert (S : Instance; Elem : Element_Type);
+      procedure Insert
+        (S    : Membership_Set;
+         Elem : Element_Type);
       --  Insert element Elem in membership set S. The routine has no effect
       --  if the element is already present in the membership set. This action
       --  will raise Iterated if the membership set has outstanding iterators.
 
-      function Is_Empty (S : Instance) return Boolean;
+      function Is_Empty (S : Membership_Set) return Boolean;
       --  Determine whether set S is empty
 
-      function Size (S : Instance) return Natural;
+      function Present (S : Membership_Set) return Boolean;
+      --  Determine whether set S exists
+
+      procedure Reset (S : Membership_Set);
+      --  Destroy the contents of membership set S, and reset it to its initial
+      --  created state. This action will raise Iterated if the membership set
+      --  has outstanding iterators.
+
+      function Size (S : Membership_Set) return Natural;
       --  Obtain the number of elements in membership set S
 
       -------------------------
@@ -124,7 +138,7 @@ package GNAT.Sets is
 
       type Iterator is private;
 
-      function Iterate (S : Instance) return Iterator;
+      function Iterate (S : Membership_Set) return Iterator;
       --  Obtain an iterator over the elements of membership set S. This action
       --  locks all mutation functionality of the associated membership set.
 
@@ -141,7 +155,10 @@ package GNAT.Sets is
       --  raises Iterator_Exhausted.
 
    private
-      package Hashed_Set is new Dynamic_HTable
+      procedure Destroy (B : in out Boolean);
+      --  Destroy boolean B
+
+      package Hashed_Set is new Dynamic_Hash_Tables
         (Key_Type              => Element_Type,
          Value_Type            => Boolean,
          No_Value              => False,
@@ -150,12 +167,13 @@ package GNAT.Sets is
          Compression_Threshold => 0.3,
          Compression_Factor    => 2,
          "="                   => "=",
+         Destroy_Value         => Destroy,
          Hash                  => Hash);
 
-      type Instance is new Hashed_Set.Instance;
-      Nil : constant Instance := Instance (Hashed_Set.Nil);
+      type Membership_Set is new Hashed_Set.Dynamic_Hash_Table;
+      Nil : constant Membership_Set := Membership_Set (Hashed_Set.Nil);
 
       type Iterator is new Hashed_Set.Iterator;
-   end Membership_Set;
+   end Membership_Sets;
 
 end GNAT.Sets;

@@ -215,7 +215,7 @@ create_ddg_dep_from_intra_loop_link (ddg_ptr g, ddg_node_ptr src_node,
         {
           int regno = REGNO (SET_DEST (set));
           df_ref first_def;
-          struct df_rd_bb_info *bb_info = DF_RD_BB_INFO (g->bb);
+	  class df_rd_bb_info *bb_info = DF_RD_BB_INFO (g->bb);
 
           first_def = df_bb_regno_first_def_find (g->bb, regno);
           gcc_assert (first_def);
@@ -288,7 +288,7 @@ add_cross_iteration_register_deps (ddg_ptr g, df_ref last_def)
 
   if (flag_checking && DF_REF_ID (last_def) != DF_REF_ID (first_def))
     {
-      struct df_rd_bb_info *bb_info = DF_RD_BB_INFO (g->bb);
+      class df_rd_bb_info *bb_info = DF_RD_BB_INFO (g->bb);
       gcc_assert (!bitmap_bit_p (&bb_info->gen, DF_REF_ID (first_def)));
     }
 
@@ -369,7 +369,7 @@ static void
 build_inter_loop_deps (ddg_ptr g)
 {
   unsigned rd_num;
-  struct df_rd_bb_info *rd_bb_info;
+  class df_rd_bb_info *rd_bb_info;
   bitmap_iterator bi;
 
   rd_bb_info = DF_RD_BB_INFO (g->bb);
@@ -475,7 +475,7 @@ build_intra_loop_deps (ddg_ptr g)
 {
   int i;
   /* Hold the dependency analysis state during dependency calculations.  */
-  struct deps_desc tmp_deps;
+  class deps_desc tmp_deps;
   rtx_insn *head, *tail;
 
   /* Build the dependence information, using the sched_analyze function.  */

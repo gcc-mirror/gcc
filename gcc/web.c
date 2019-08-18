@@ -74,7 +74,7 @@ unionfind_union (web_entry_base *first, web_entry_base *second)
   return false;
 }
 
-class web_entry : public web_entry_base
+struct web_entry : public web_entry_base
 {
  private:
   rtx reg_pvt;

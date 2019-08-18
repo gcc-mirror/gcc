@@ -36,10 +36,10 @@ DEF_GCOV_COUNTER(GCOV_COUNTER_V_INTERVAL, "interval", _add)
 DEF_GCOV_COUNTER(GCOV_COUNTER_V_POW2, "pow2", _add)
 
 /* The most common value of expression.  */
-DEF_GCOV_COUNTER(GCOV_COUNTER_V_SINGLE, "single", _single)
+DEF_GCOV_COUNTER(GCOV_COUNTER_V_TOPN, "topn", _topn)
 
 /* The most common indirect address.  */
-DEF_GCOV_COUNTER(GCOV_COUNTER_V_INDIR, "indirect_call", _single)
+DEF_GCOV_COUNTER(GCOV_COUNTER_V_INDIR, "indirect_call", _topn)
 
 /* Compute average value passed to the counter.  */
 DEF_GCOV_COUNTER(GCOV_COUNTER_AVERAGE, "average", _add)

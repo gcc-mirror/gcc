@@ -1,6 +1,7 @@
 /* { dg-do link } */
 /* { dg-options "--save-temps -msim -flto -Os" } */
 /* { dg-final { scan-file "pr80993.exe.ltrans0.s" no_ref_handler } } */
+/* { dg-final { cleanup-saved-temps } } */
 
 void __attribute__((interrupt)) no_ref_handler (void)
 {

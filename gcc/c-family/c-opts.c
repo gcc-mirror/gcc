@@ -460,6 +460,10 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       cpp_opts->extended_identifiers = value;
       break;
 
+    case OPT_fmax_include_depth_:
+	cpp_opts->max_include_depth = value;
+      break;
+
     case OPT_foperator_names:
       cpp_opts->operator_names = value;
       break;
@@ -912,6 +916,10 @@ c_common_post_options (const char **pfilename)
   if (!global_options_set.x_warn_register)
     warn_register = cxx_dialect >= cxx17;
 
+  /* -Wcomma-subscript is enabled by default in C++20.  */
+  if (!global_options_set.x_warn_comma_subscript)
+    warn_comma_subscript = (cxx_dialect >= cxx2a && warn_deprecated);
+
   /* Declone C++ 'structors if -Os.  */
   if (flag_declone_ctor_dtor == -1)
     flag_declone_ctor_dtor = optimize_size;
@@ -1283,7 +1291,7 @@ handle_deferred_opts (void)
   if (!deps_seen)
     return;
 
-  struct mkdeps *deps = cpp_get_deps (parse_in);
+  mkdeps *deps = cpp_get_deps (parse_in);
 
   for (size_t i = 0; i < deferred_count; i++)
     {

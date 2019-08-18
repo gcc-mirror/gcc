@@ -23,11 +23,14 @@ along with GCC; see the file COPYING3.  If not see
 
 /* The following trees are unique elements.  Thus the comparison of another
    element to these elements should be done on the pointer to these trees,
-   and not on their value.  */
+   and not on their value.
 
-extern tree chrec_not_analyzed_yet;
-extern GTY(()) tree chrec_dont_know;
-extern GTY(()) tree chrec_known;
+   extern tree chrec_not_analyzed_yet;
+   extern tree chrec_dont_know;
+   extern tree chrec_known;
+
+   chrec_not_analyzed_yet is NULL_TREE and the others are defined
+   in global_trees[].  */
 
 /* After having added an automatically generated element, please
    include it in the following function.  */
@@ -74,13 +77,13 @@ extern tree hide_evolution_in_other_loops_than_loop (tree, unsigned);
 extern tree reset_evolution_in_loop (unsigned, tree, tree);
 extern tree chrec_merge (tree, tree);
 extern void for_each_scev_op (tree *, bool (*) (tree *, void *), void *);
-extern bool convert_affine_scev (struct loop *, tree, tree *, tree *, gimple *,
+extern bool convert_affine_scev (class loop *, tree, tree *, tree *, gimple *,
 				 bool, tree = NULL);
 
 /* Observers.  */
 extern bool eq_evolutions_p (const_tree, const_tree);
 extern bool is_multivariate_chrec (const_tree);
-extern bool chrec_contains_symbols (const_tree, struct loop * = NULL);
+extern bool chrec_contains_symbols (const_tree, class loop * = NULL);
 extern bool chrec_contains_symbols_defined_in_loop (const_tree, unsigned);
 extern bool chrec_contains_undetermined (const_tree);
 extern bool tree_contains_chrecs (const_tree, int *);

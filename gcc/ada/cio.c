@@ -30,8 +30,7 @@
  ****************************************************************************/
 
 #ifdef IN_RTS
-#include "tconfig.h"
-#include "tsystem.h"
+#include "runtime.h"
 #include <sys/stat.h>
 #else
 #include "config.h"

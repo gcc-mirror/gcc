@@ -20,6 +20,21 @@
 
 #include <bit>
 
+template<typename T>
+  constexpr T max = std::numeric_limits<T>::max();
+// Largest representable power of two (i.e. has most significant bit set)
+template<typename T>
+  constexpr T maxpow2 = T(1) << (std::numeric_limits<T>::digits - 1);
+
+// Detect whether std::ceil2(N) is a constant expression.
+template<auto N, typename = void>
+  struct ceil2_valid
+  : std::false_type { };
+
+template<auto N>
+  struct ceil2_valid<N, std::void_t<char[(std::ceil2(N), 1)]>>
+  : std::true_type { };
+
 template<typename UInt>
 constexpr auto
 test(UInt x)
@@ -55,13 +70,18 @@ test(UInt x)
     static_assert( std::ceil2(UInt(3) << 64) == (UInt(4) << 64) );
   }
 
-  constexpr UInt msb = UInt(1) << (std::numeric_limits<UInt>::digits - 1);
+  constexpr UInt msb = maxpow2<UInt>;
+  static_assert( ceil2_valid<msb>() );
   static_assert( std::ceil2( msb ) == msb );
-  // Larger values cannot be represented so the return value is unspecified,
-  // but must still be valid in constant expressions, i.e. not undefined.
-  static_assert( std::ceil2( UInt(msb + 1) ) != 77 );
-  static_assert( std::ceil2( UInt(msb + 2) ) != 77 );
-  static_assert( std::ceil2( UInt(msb + 77) ) != 77 );
+  static_assert( std::ceil2( UInt(msb - 1) ) == msb );
+  static_assert( std::ceil2( UInt(msb - 2) ) == msb );
+  static_assert( std::ceil2( UInt(msb - 3) ) == msb );
+
+  // P1355R2: not a constant expression if the result is not representable
+  static_assert( !ceil2_valid<UInt(msb + 1)>() );
+  static_assert( !ceil2_valid<max<UInt>>() );
+  static_assert( !ceil2_valid<UInt(max<UInt> - 1)>() );
+  static_assert( !ceil2_valid<UInt(max<UInt> - 2)>() );
 
   return true;
 }

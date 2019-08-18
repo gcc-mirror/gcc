@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
    IB.  Write the length to RLEN.  */
 
 static const char *
-string_for_index (struct data_in *data_in, unsigned int loc, unsigned int *rlen)
+string_for_index (class data_in *data_in, unsigned int loc, unsigned int *rlen)
 {
   unsigned int len;
   const char *result;
@@ -62,8 +62,8 @@ string_for_index (struct data_in *data_in, unsigned int loc, unsigned int *rlen)
    IB.  Write the length to RLEN.  */
 
 const char *
-streamer_read_indexed_string (struct data_in *data_in,
-			      struct lto_input_block *ib, unsigned int *rlen)
+streamer_read_indexed_string (class data_in *data_in,
+			      class lto_input_block *ib, unsigned int *rlen)
 {
   return string_for_index (data_in, streamer_read_uhwi (ib), rlen);
 }
@@ -72,7 +72,7 @@ streamer_read_indexed_string (struct data_in *data_in,
 /* Read a NULL terminated string from the string table in DATA_IN.  */
 
 const char *
-streamer_read_string (struct data_in *data_in, struct lto_input_block *ib)
+streamer_read_string (class data_in *data_in, class lto_input_block *ib)
 {
   unsigned int len;
   const char *ptr;
@@ -91,7 +91,7 @@ streamer_read_string (struct data_in *data_in, struct lto_input_block *ib)
    Write the length to RLEN.  */
 
 const char *
-bp_unpack_indexed_string (struct data_in *data_in,
+bp_unpack_indexed_string (class data_in *data_in,
 			  struct bitpack_d *bp, unsigned int *rlen)
 {
   return string_for_index (data_in, bp_unpack_var_len_unsigned (bp), rlen);
@@ -101,7 +101,7 @@ bp_unpack_indexed_string (struct data_in *data_in,
 /* Read a NULL terminated string from the string table in DATA_IN.  */
 
 const char *
-bp_unpack_string (struct data_in *data_in, struct bitpack_d *bp)
+bp_unpack_string (class data_in *data_in, struct bitpack_d *bp)
 {
   unsigned int len;
   const char *ptr;
@@ -119,7 +119,7 @@ bp_unpack_string (struct data_in *data_in, struct bitpack_d *bp)
 /* Read an unsigned HOST_WIDE_INT number from IB.  */
 
 unsigned HOST_WIDE_INT
-streamer_read_uhwi (struct lto_input_block *ib)
+streamer_read_uhwi (class lto_input_block *ib)
 {
   unsigned HOST_WIDE_INT result;
   int shift;
@@ -154,7 +154,7 @@ streamer_read_uhwi (struct lto_input_block *ib)
 /* Read a HOST_WIDE_INT number from IB.  */
 
 HOST_WIDE_INT
-streamer_read_hwi (struct lto_input_block *ib)
+streamer_read_hwi (class lto_input_block *ib)
 {
   HOST_WIDE_INT result = 0;
   int shift = 0;
@@ -175,10 +175,21 @@ streamer_read_hwi (struct lto_input_block *ib)
     }
 }
 
+/* Read a poly_uint64 from IB.  */
+
+poly_uint64
+streamer_read_poly_uint64 (class lto_input_block *ib)
+{
+  poly_uint64 res;
+  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    res.coeffs[i] = streamer_read_uhwi (ib);
+  return res;
+}
+
 /* Read gcov_type value from IB.  */
 
 gcov_type
-streamer_read_gcov_count (struct lto_input_block *ib)
+streamer_read_gcov_count (class lto_input_block *ib)
 {
   gcov_type ret = streamer_read_hwi (ib);
   return ret;
@@ -188,7 +199,7 @@ streamer_read_gcov_count (struct lto_input_block *ib)
    input block IB.  */
 
 wide_int
-streamer_read_wide_int (struct lto_input_block *ib)
+streamer_read_wide_int (class lto_input_block *ib)
 {
   HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
   int i;
@@ -203,7 +214,7 @@ streamer_read_wide_int (struct lto_input_block *ib)
    input block IB.  */
 
 widest_int
-streamer_read_widest_int (struct lto_input_block *ib)
+streamer_read_widest_int (class lto_input_block *ib)
 {
   HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
   int i;

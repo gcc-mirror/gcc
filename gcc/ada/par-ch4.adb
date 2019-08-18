@@ -2262,7 +2262,7 @@ package body Ch4 is
          --  capacity-exceeded error. The purpose of this trick is to avoid
          --  creating a deeply nested tree, which would cause deep recursion
          --  during semantics, causing stack overflow. This way, we can handle
-         --  enormous concatenations in the normal case of predefined "&".  We
+         --  enormous concatenations in the normal case of predefined "&". We
          --  first build up the normal tree, and then rewrite it if
          --  appropriate.
 

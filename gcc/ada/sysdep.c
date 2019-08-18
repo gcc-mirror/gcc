@@ -33,6 +33,7 @@
    GNAT Run Time Library */
 
 #ifdef __vxworks
+#include "vxWorks.h"
 #include "ioLib.h"
 #if ! defined (VTHREADS)
 #include "dosFsLib.h"
@@ -41,7 +42,6 @@
 # include "nfsLib.h"
 #endif
 #include "selectLib.h"
-#include "vxWorks.h"
 #include "version.h"
 #if defined (__RTP__)
 #  include "vwModNum.h"
@@ -54,8 +54,10 @@
 
 #ifdef IN_RTS
 #define POSIX
-#include "tconfig.h"
-#include "tsystem.h"
+#include "runtime.h"
+#include <string.h>
+#include <unistd.h>
+
 #include <fcntl.h>
 #include <sys/stat.h>
 #else
@@ -300,7 +302,7 @@ __gnat_set_mode (int handle ATTRIBUTE_UNUSED, int mode ATTRIBUTE_UNUSED)
 }
 
 char *
-__gnat_ttyname (int filedes)
+__gnat_ttyname (int filedes ATTRIBUTE_UNUSED)
 {
 #if defined (__vxworks)
   return "";
@@ -896,30 +898,34 @@ __gnat_get_task_options (void)
 #endif
 
 int
-__gnat_is_file_not_found_error (int errno_val) {
-   switch (errno_val) {
-      case ENOENT:
+__gnat_is_file_not_found_error (int errno_val)
+ {
+    /* WARNING: Do not rewrite this as a switch/case statement.
+     * Some of the "cases" are duplicated in some versions of
+     * Vxworks, notably VxWorks7r2 SR0610.  */
+    if (errno_val == ENOENT)
+      return 1;
 #ifdef __vxworks
-      /* In the case of VxWorks, we also have to take into account various
-       * filesystem-specific variants of this error.
-       */
+    /* In the case of VxWorks, we also have to take into account various
+     * filesystem-specific variants of this error.
+     */
 #if ! defined (VTHREADS) && (_WRS_VXWORKS_MAJOR < 7)
-      case S_dosFsLib_FILE_NOT_FOUND:
+    else if (errno_val == S_dosFsLib_FILE_NOT_FOUND)
+      return 1;
 #endif
 #if ! defined (__RTP__) && (! defined (VTHREADS) || defined (__VXWORKSMILS__))
-      case S_nfsLib_NFSERR_NOENT:
+    else if (errno_val ==  S_nfsLib_NFSERR_NOENT)
+      return 1;
 #endif
 #if defined (__RTP__)
-	/* An RTP can return an NFS file not found, and the NFS bits must
-	   first be masked on to check the errno.  */
-      case M_nfsStat | ENOENT:
+    /* An RTP can return an NFS file not found, and the NFS bits must
+       first be masked on to check the errno.  */
+    else if (errno_val == (M_nfsStat | ENOENT))
+      return 1;
 #endif
 #endif
-         return 1;
-
-      default:
-        return 0;
-   }
+    else
+      return 0;
 }
 
 #if defined (__linux__)
@@ -1066,4 +1072,3 @@ __gnat_name_case_equivalence ()
   return 1;
 #endif
 }
-

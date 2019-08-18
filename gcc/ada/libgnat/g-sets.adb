@@ -31,46 +31,59 @@
 
 package body GNAT.Sets is
 
-   --------------------
-   -- Membership_Set --
-   --------------------
+   ---------------------
+   -- Membership_Sets --
+   ---------------------
 
-   package body Membership_Set is
+   package body Membership_Sets is
 
       --------------
       -- Contains --
       --------------
 
-      function Contains (S : Instance; Elem : Element_Type) return Boolean is
+      function Contains
+        (S    : Membership_Set;
+         Elem : Element_Type) return Boolean
+      is
       begin
-         return Hashed_Set.Get (Hashed_Set.Instance (S), Elem);
+         return Hashed_Set.Contains (Hashed_Set.Dynamic_Hash_Table (S), Elem);
       end Contains;
 
       ------------
       -- Create --
       ------------
 
-      function Create (Initial_Size : Positive) return Instance is
+      function Create (Initial_Size : Positive) return Membership_Set is
       begin
-         return Instance (Hashed_Set.Create (Initial_Size));
+         return Membership_Set (Hashed_Set.Create (Initial_Size));
       end Create;
 
       ------------
       -- Delete --
       ------------
 
-      procedure Delete (S : Instance; Elem : Element_Type) is
+      procedure Delete (S : Membership_Set; Elem : Element_Type) is
       begin
-         Hashed_Set.Delete (Hashed_Set.Instance (S), Elem);
+         Hashed_Set.Delete (Hashed_Set.Dynamic_Hash_Table (S), Elem);
       end Delete;
 
       -------------
       -- Destroy --
       -------------
 
-      procedure Destroy (S : in out Instance) is
+      procedure Destroy (B : in out Boolean) is
+         pragma Unreferenced (B);
       begin
-         Hashed_Set.Destroy (Hashed_Set.Instance (S));
+         null;
+      end Destroy;
+
+      -------------
+      -- Destroy --
+      -------------
+
+      procedure Destroy (S : in out Membership_Set) is
+      begin
+         Hashed_Set.Destroy (Hashed_Set.Dynamic_Hash_Table (S));
       end Destroy;
 
       --------------
@@ -86,46 +99,71 @@ package body GNAT.Sets is
       -- Insert --
       ------------
 
-      procedure Insert (S : Instance; Elem : Element_Type) is
+      procedure Insert
+        (S    : Membership_Set;
+         Elem : Element_Type)
+      is
       begin
-         Hashed_Set.Put (Hashed_Set.Instance (S), Elem, True);
+         Hashed_Set.Put (Hashed_Set.Dynamic_Hash_Table (S), Elem, True);
       end Insert;
 
       --------------
       -- Is_Empty --
       --------------
 
-      function Is_Empty (S : Instance) return Boolean is
+      function Is_Empty (S : Membership_Set) return Boolean is
       begin
-         return Hashed_Set.Is_Empty (Hashed_Set.Instance (S));
+         return Hashed_Set.Is_Empty (Hashed_Set.Dynamic_Hash_Table (S));
       end Is_Empty;
 
       -------------
       -- Iterate --
       -------------
 
-      function Iterate (S : Instance) return Iterator is
+      function Iterate (S : Membership_Set) return Iterator is
       begin
-         return Iterator (Hashed_Set.Iterate (Hashed_Set.Instance (S)));
+         return
+           Iterator (Hashed_Set.Iterate (Hashed_Set.Dynamic_Hash_Table (S)));
       end Iterate;
 
       ----------
       -- Next --
       ----------
 
-      procedure Next (Iter : in out Iterator; Elem : out Element_Type) is
+      procedure Next
+        (Iter : in out Iterator;
+         Elem : out Element_Type)
+      is
       begin
          Hashed_Set.Next (Hashed_Set.Iterator (Iter), Elem);
       end Next;
+
+      -------------
+      -- Present --
+      -------------
+
+      function Present (S : Membership_Set) return Boolean is
+      begin
+         return Hashed_Set.Present (Hashed_Set.Dynamic_Hash_Table (S));
+      end Present;
+
+      -----------
+      -- Reset --
+      -----------
+
+      procedure Reset (S : Membership_Set) is
+      begin
+         Hashed_Set.Reset (Hashed_Set.Dynamic_Hash_Table (S));
+      end Reset;
 
       ----------
       -- Size --
       ----------
 
-      function Size (S : Instance) return Natural is
+      function Size (S : Membership_Set) return Natural is
       begin
-         return Hashed_Set.Size (Hashed_Set.Instance (S));
+         return Hashed_Set.Size (Hashed_Set.Dynamic_Hash_Table (S));
       end Size;
-   end Membership_Set;
+   end Membership_Sets;
 
 end GNAT.Sets;

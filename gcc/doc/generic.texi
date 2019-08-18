@@ -2180,6 +2180,11 @@ After the second sequence is executed, if it completes normally by
 falling off the end, execution continues wherever the first sequence
 would have continued, by falling off the end, or doing a goto, etc.
 
+If the second sequence is an @code{EH_ELSE_EXPR} selector, then the
+sequence in its first operand is used when the first sequence completes
+normally, and that in its second operand is used for exceptional
+cleanups, i.e., when an exception propagates out of the first sequence.
+
 @code{TRY_FINALLY_EXPR} complicates the flow graph, since the cleanup
 needs to appear on every edge out of the controlled block; this
 reduces the freedom to move code across these edges.  Therefore, the

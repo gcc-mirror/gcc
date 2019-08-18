@@ -29,15 +29,7 @@
  *                                                                          *
  ****************************************************************************/
 
-
-#if defined(IN_RTS)
-#include "tconfig.h"
-#include "tsystem.h"
-#elif defined(IN_GCC)
-#include "config.h"
-#include "system.h"
-#endif
-
+#include "runtime.h"
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>

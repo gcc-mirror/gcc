@@ -263,10 +263,8 @@ static int
 gcov_exit_open_gcda_file (struct gcov_info *gi_ptr,
 			  struct gcov_filename *gf)
 {
-  const char *fname = gi_ptr->filename;
   int append_slash = 0;
-
-  fname = gi_ptr->filename;
+  const char *fname = gi_ptr->filename;
 
   /* Build relocated filename, stripping off leading
      directories from the initial filename if requested. */

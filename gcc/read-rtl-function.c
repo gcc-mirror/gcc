@@ -52,8 +52,9 @@ class fixup;
    at LOC, which will be turned into an actual CFG edge once
    the "insn-chain" is fully parsed.  */
 
-struct deferred_edge
+class deferred_edge
 {
+public:
   deferred_edge (file_location loc, int src_bb_idx, int dest_bb_idx, int flags)
   : m_loc (loc), m_src_bb_idx (src_bb_idx), m_dest_bb_idx (dest_bb_idx),
     m_flags (flags)

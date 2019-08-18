@@ -100,7 +100,7 @@ package Sem_Ch6 is
       Overridden_Subp : Entity_Id;
       Is_Primitive    : Boolean);
    --  Verify the consistency of an overriding_indicator given for subprogram
-   --  declaration, body, renaming, or instantiation.  Overridden_Subp is set
+   --  declaration, body, renaming, or instantiation. Overridden_Subp is set
    --  if the scope where we are introducing the subprogram contains a
    --  type-conformant subprogram that becomes hidden by the new subprogram.
    --  Is_Primitive indicates whether the subprogram is primitive.

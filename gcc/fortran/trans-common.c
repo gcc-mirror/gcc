@@ -1007,10 +1007,8 @@ static void
 add_equivalences (bool *saw_equiv)
 {
   segment_info *f;
-  bool seen_one, more;
+  bool more = TRUE;
 
-  seen_one = false;
-  more = TRUE;
   while (more)
     {
       more = FALSE;
@@ -1019,7 +1017,7 @@ add_equivalences (bool *saw_equiv)
 	  if (!f->sym->equiv_built)
 	    {
 	      f->sym->equiv_built = 1;
-	      seen_one = find_equivalence (f);
+	      bool seen_one = find_equivalence (f);
 	      if (seen_one)
 		{
 		  *saw_equiv = true;

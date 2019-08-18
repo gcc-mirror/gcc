@@ -35,6 +35,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-compress.h"
 #include "timevar.h"
 
+#ifdef HAVE_ZSTD_H
+#include <zstd.h>
+#endif
+
 /* Compression stream structure, holds the flush callback and opaque token,
    the buffered data, and a note of whether compressing or uncompressing.  */
 
@@ -92,6 +96,88 @@ lto_normalized_zlib_level (void)
   return level;
 }
 
+/* Free the buffer and memory associated with STREAM.  */
+
+static void
+lto_destroy_compression_stream (struct lto_compression_stream *stream)
+{
+  free (stream->buffer);
+  free (stream);
+}
+
+#ifdef HAVE_ZSTD_H
+/* Return a zstd compression level that zstd will not reject.  Normalizes
+   the compression level from the command line flag, clamping non-default
+   values to the appropriate end of their valid range.  */
+
+static int
+lto_normalized_zstd_level (void)
+{
+  int level = flag_lto_compression_level;
+
+  if (level < 0)
+    level = 0;
+  else if (level > ZSTD_maxCLevel ())
+    level = ZSTD_maxCLevel ();
+
+  return level;
+}
+
+/* Compress STREAM using ZSTD algorithm.  */
+
+static void
+lto_compression_zstd (struct lto_compression_stream *stream)
+{
+  unsigned char *cursor = (unsigned char *) stream->buffer;
+  size_t size = stream->bytes;
+
+  timevar_push (TV_IPA_LTO_COMPRESS);
+  size_t const outbuf_length = ZSTD_compressBound (size);
+  char *outbuf = (char *) xmalloc (outbuf_length);
+
+  size_t const csize = ZSTD_compress (outbuf, outbuf_length, cursor, size,
+				      lto_normalized_zstd_level ());
+
+  if (ZSTD_isError (csize))
+    internal_error ("compressed stream: %s", ZSTD_getErrorName (csize));
+
+  stream->callback (outbuf, csize, NULL);
+
+  lto_destroy_compression_stream (stream);
+  free (outbuf);
+  timevar_pop (TV_IPA_LTO_COMPRESS);
+}
+
+/* Uncompress STREAM using ZSTD algorithm.  */
+
+static void
+lto_uncompression_zstd (struct lto_compression_stream *stream)
+{
+  unsigned char *cursor = (unsigned char *) stream->buffer;
+  size_t size = stream->bytes;
+
+  timevar_push (TV_IPA_LTO_DECOMPRESS);
+  unsigned long long const rsize = ZSTD_getFrameContentSize (cursor, size);
+  if (rsize == ZSTD_CONTENTSIZE_ERROR)
+    internal_error ("original not compressed with zstd");
+  else if (rsize == ZSTD_CONTENTSIZE_UNKNOWN)
+    internal_error ("original size unknown");
+
+  char *outbuf = (char *) xmalloc (rsize);
+  size_t const dsize = ZSTD_decompress (outbuf, rsize, cursor, size);
+
+  if (ZSTD_isError (dsize))
+    internal_error ("decompressed stream: %s", ZSTD_getErrorName (dsize));
+
+  stream->callback (outbuf, dsize, stream->opaque);
+
+  lto_destroy_compression_stream (stream);
+  free (outbuf);
+  timevar_pop (TV_IPA_LTO_DECOMPRESS);
+}
+
+#endif
+
 /* Create a new compression stream, with CALLBACK flush function passed
    OPAQUE token, IS_COMPRESSION indicates if compressing or uncompressing.  */
 
@@ -132,15 +218,6 @@ lto_append_to_compression_stream (struct lto_compression_stream *stream,
   stream->bytes += num_chars;
 }
 
-/* Free the buffer and memory associated with STREAM.  */
-
-static void
-lto_destroy_compression_stream (struct lto_compression_stream *stream)
-{
-  free (stream->buffer);
-  free (stream);
-}
-
 /* Return a new compression stream, with CALLBACK flush function passed
    OPAQUE token.  */
 
@@ -163,10 +240,8 @@ lto_compress_block (struct lto_compression_stream *stream,
   lto_stats.num_output_il_bytes += num_chars;
 }
 
-/* Finalize STREAM compression, and free stream allocations.  */
-
-void
-lto_end_compression (struct lto_compression_stream *stream)
+static void ATTRIBUTE_UNUSED
+lto_compression_zlib (struct lto_compression_stream *stream)
 {
   unsigned char *cursor = (unsigned char *) stream->buffer;
   size_t remaining = stream->bytes;
@@ -226,6 +301,16 @@ lto_end_compression (struct lto_compression_stream *stream)
   timevar_pop (TV_IPA_LTO_COMPRESS);
 }
 
+void
+lto_end_compression (struct lto_compression_stream *stream)
+{
+#ifdef HAVE_ZSTD_H
+  lto_compression_zstd (stream);
+#else
+  lto_compression_zlib (stream);
+#endif
+}
+
 /* Return a new uncompression stream, with CALLBACK flush function passed
    OPAQUE token.  */
 
@@ -248,14 +333,8 @@ lto_uncompress_block (struct lto_compression_stream *stream,
   lto_stats.num_input_il_bytes += num_chars;
 }
 
-/* Finalize STREAM uncompression, and free stream allocations.
-
-   Because of the way LTO IL streams are compressed, there may be several
-   concatenated compressed segments in the accumulated data, so for this
-   function we iterate decompressions until no data remains.  */
-
-void
-lto_end_uncompression (struct lto_compression_stream *stream)
+static void
+lto_uncompression_zlib (struct lto_compression_stream *stream)
 {
   unsigned char *cursor = (unsigned char *) stream->buffer;
   size_t remaining = stream->bytes;
@@ -317,4 +396,21 @@ lto_end_uncompression (struct lto_compression_stream *stream)
   lto_destroy_compression_stream (stream);
   free (outbuf);
   timevar_pop (TV_IPA_LTO_DECOMPRESS);
+}
+
+void
+lto_end_uncompression (struct lto_compression_stream *stream,
+		       lto_compression compression)
+{
+#ifdef HAVE_ZSTD_H
+  if (compression == ZSTD)
+    {
+      lto_uncompression_zstd (stream);
+      return;
+    }
+#endif
+  if (compression == ZSTD)
+    internal_error ("compiler does not support ZSTD LTO compression");
+
+  lto_uncompression_zlib (stream);
 }

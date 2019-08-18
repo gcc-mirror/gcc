@@ -2755,23 +2755,23 @@ package Rtsfind is
      RE_W_WC                             => System_Stream_Attributes,
      RE_W_WWC                            => System_Stream_Attributes,
 
-     RE_Storage_Array_Input              =>  System_Strings_Stream_Ops,
-     RE_Storage_Array_Input_Blk_IO       =>  System_Strings_Stream_Ops,
-     RE_Storage_Array_Output             =>  System_Strings_Stream_Ops,
-     RE_Storage_Array_Output_Blk_IO      =>  System_Strings_Stream_Ops,
-     RE_Storage_Array_Read               =>  System_Strings_Stream_Ops,
-     RE_Storage_Array_Read_Blk_IO        =>  System_Strings_Stream_Ops,
-     RE_Storage_Array_Write              =>  System_Strings_Stream_Ops,
-     RE_Storage_Array_Write_Blk_IO       =>  System_Strings_Stream_Ops,
+     RE_Storage_Array_Input              => System_Strings_Stream_Ops,
+     RE_Storage_Array_Input_Blk_IO       => System_Strings_Stream_Ops,
+     RE_Storage_Array_Output             => System_Strings_Stream_Ops,
+     RE_Storage_Array_Output_Blk_IO      => System_Strings_Stream_Ops,
+     RE_Storage_Array_Read               => System_Strings_Stream_Ops,
+     RE_Storage_Array_Read_Blk_IO        => System_Strings_Stream_Ops,
+     RE_Storage_Array_Write              => System_Strings_Stream_Ops,
+     RE_Storage_Array_Write_Blk_IO       => System_Strings_Stream_Ops,
 
-     RE_Stream_Element_Array_Input          =>  System_Strings_Stream_Ops,
-     RE_Stream_Element_Array_Input_Blk_IO   =>  System_Strings_Stream_Ops,
-     RE_Stream_Element_Array_Output         =>  System_Strings_Stream_Ops,
-     RE_Stream_Element_Array_Output_Blk_IO  =>  System_Strings_Stream_Ops,
-     RE_Stream_Element_Array_Read           =>  System_Strings_Stream_Ops,
-     RE_Stream_Element_Array_Read_Blk_IO    =>  System_Strings_Stream_Ops,
-     RE_Stream_Element_Array_Write          =>  System_Strings_Stream_Ops,
-     RE_Stream_Element_Array_Write_Blk_IO   =>  System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Input          => System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Input_Blk_IO   => System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Output         => System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Output_Blk_IO  => System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Read           => System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Read_Blk_IO    => System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Write          => System_Strings_Stream_Ops,
+     RE_Stream_Element_Array_Write_Blk_IO   => System_Strings_Stream_Ops,
 
      RE_String_Input                     => System_Strings_Stream_Ops,
      RE_String_Input_Blk_IO              => System_Strings_Stream_Ops,
@@ -3155,7 +3155,7 @@ package Rtsfind is
    --  immediately, since obviously Ent cannot be the entity in question if the
    --  corresponding unit has not been loaded.
 
-   function Is_RTU (Ent : Entity_Id;  U : RTU_Id) return Boolean;
+   function Is_RTU (Ent : Entity_Id; U : RTU_Id) return Boolean;
    pragma Inline (Is_RTU);
    --  This function determines if the given entity corresponds to the entity
    --  for the unit referenced by U. If this unit has not been loaded, the

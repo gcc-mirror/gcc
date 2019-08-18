@@ -23,9 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package implements an anti-aliasing analysis for access types. The
---  rules that are enforced are defined in the anti-aliasing section of the
---  SPARK RM 6.4.2
+--  This package implements an ownership analysis for access types. The rules
+--  that are enforced are defined in section 3.10 of the SPARK Reference
+--  Manual.
 --
 --  Check_Safe_Pointers is called by Gnat1drv, when GNATprove mode is
 --  activated. It does an analysis of the source code, looking for code that is
@@ -132,12 +132,44 @@
 --  get read-write permission, which can be specified using the node's
 --  Children_Permission field.
 
+--  The implementation is done as a generic, so that GNATprove can instantiate
+--  it with suitable formal arguments that depend on the SPARK_Mode boundary
+--  as well as the two-phase architecture of GNATprove (which runs the GNAT
+--  front end twice, once for global generation and once for analysis).
+
 with Types; use Types;
+
+generic
+   with function Retysp (X : Entity_Id) return Entity_Id;
+   --  Return the representative type in SPARK for a type.
+
+   with function Component_Is_Visible_In_SPARK (C : Entity_Id) return Boolean;
+   --  Return whether a component is visible in SPARK. No aliasing check is
+   --  performed for a component that is visible.
+
+   with function Emit_Messages return Boolean;
+   --  Return True when error messages should be emitted.
 
 package Sem_SPARK is
 
+   function Is_Legal (N : Node_Id) return Boolean;
+   --  Test the legality of a node wrt ownership-checking rules. This does not
+   --  check rules related to the validity of permissions associated with paths
+   --  from objects, so that it can be called from GNATprove on code of library
+   --  units analyzed in SPARK_Mode Auto.
+
    procedure Check_Safe_Pointers (N : Node_Id);
    --  The entry point of this package. It analyzes a node and reports errors
-   --  when there are violations of aliasing rules.
+   --  when there are violations of ownership rules.
+
+   function Is_Deep (Typ : Entity_Id) return Boolean;
+   --  A function that can tell whether a type is deep. Returns True if the
+   --  type passed as argument is deep.
+
+   function Is_Traversal_Function (E : Entity_Id) return Boolean;
+
+   function Is_Local_Context (Scop : Entity_Id) return Boolean;
+   --  Return if a given scope defines a local context where it is legal to
+   --  declare a variable of anonymous access type.
 
 end Sem_SPARK;

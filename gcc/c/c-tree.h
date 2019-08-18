@@ -525,7 +525,7 @@ extern void gen_aux_info_record (tree, int, int, int);
 
 /* in c-decl.c */
 struct c_spot_bindings;
-struct c_struct_parse_info;
+class c_struct_parse_info;
 extern struct obstack parser_obstack;
 extern tree c_break_label;
 extern tree c_cont_label;
@@ -562,7 +562,7 @@ extern void finish_decl (tree, location_t, tree, tree, tree);
 extern tree finish_enum (tree, tree, tree);
 extern void finish_function (void);
 extern tree finish_struct (location_t, tree, tree, tree,
-			   struct c_struct_parse_info *);
+			   class c_struct_parse_info *);
 extern struct c_arg_info *build_arg_info (void);
 extern struct c_arg_info *get_parm_info (bool, tree);
 extern tree grokfield (location_t, struct c_declarator *,
@@ -586,7 +586,7 @@ extern bool start_function (struct c_declspecs *, struct c_declarator *, tree);
 extern tree start_decl (struct c_declarator *, struct c_declspecs *, bool,
 			tree);
 extern tree start_struct (location_t, enum tree_code, tree,
-			  struct c_struct_parse_info **);
+			  class c_struct_parse_info **);
 extern void store_parm_decls (void);
 extern void store_parm_decls_from (struct c_arg_info *);
 extern void temp_store_parm_decls (tree, tree);

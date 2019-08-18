@@ -30,31 +30,19 @@
 ------------------------------------------------------------------------------
 
 --  This package extends the tree nodes with fields that are used to reference
---  the SCIL node and the Contract_Only_Body of a subprogram with aspects.
+--  the SCIL node.
 
 with Types; use Types;
 
 package SCIL_LL is
 
-   function Get_Contract_Only_Body (N : Node_Id) return Node_Id;
-   --  Read the value of attribute Contract_Only_Body
-
    function Get_SCIL_Node (N : Node_Id) return Node_Id;
    --  Read the value of attribute SCIL node
-
-   procedure Set_Contract_Only_Body (N : Node_Id; Value : Node_Id);
-   --  Set the value of attribute Contract_Only_Body
 
    procedure Set_SCIL_Node (N : Node_Id; Value : Node_Id);
    --  Set the value of attribute SCIL node
 
    procedure Initialize;
    --  Initialize the table of SCIL nodes
-
-   function Is_Contract_Only_Body (E : Entity_Id) return Boolean;
-   --  Return True if E is a Contract_Only_Body subprogram
-
-   procedure Set_Is_Contract_Only_Body (E : Entity_Id);
-   --  Set E as Contract_Only_Body subprogram
 
 end SCIL_LL;

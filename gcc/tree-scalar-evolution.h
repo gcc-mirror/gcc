@@ -21,27 +21,27 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_SCALAR_EVOLUTION_H
 #define GCC_TREE_SCALAR_EVOLUTION_H
 
-extern tree number_of_latch_executions (struct loop *);
-extern gcond *get_loop_exit_condition (const struct loop *);
+extern tree number_of_latch_executions (class loop *);
+extern gcond *get_loop_exit_condition (const class loop *);
 
 extern void scev_initialize (void);
 extern bool scev_initialized_p (void);
 extern void scev_reset (void);
 extern void scev_reset_htab (void);
 extern void scev_finalize (void);
-extern tree analyze_scalar_evolution (struct loop *, tree);
-extern tree instantiate_scev (edge, struct loop *, tree);
-extern tree resolve_mixers (struct loop *, tree, bool *);
+extern tree analyze_scalar_evolution (class loop *, tree);
+extern tree instantiate_scev (edge, class loop *, tree);
+extern tree resolve_mixers (class loop *, tree, bool *);
 extern void gather_stats_on_scev_database (void);
-extern bool final_value_replacement_loop (struct loop *);
+extern bool final_value_replacement_loop (class loop *);
 extern unsigned int scev_const_prop (void);
 extern bool expression_expensive_p (tree);
-extern bool simple_iv_with_niters (struct loop *, struct loop *, tree,
+extern bool simple_iv_with_niters (class loop *, class loop *, tree,
 				   struct affine_iv *, tree *, bool);
-extern bool simple_iv (struct loop *, struct loop *, tree, struct affine_iv *,
+extern bool simple_iv (class loop *, class loop *, tree, struct affine_iv *,
 		       bool);
-extern bool iv_can_overflow_p (struct loop *, tree, tree, tree);
-extern tree compute_overall_effect_of_inner_loop (struct loop *, tree);
+extern bool iv_can_overflow_p (class loop *, tree, tree, tree);
+extern tree compute_overall_effect_of_inner_loop (class loop *, tree);
 
 /* Returns the basic block preceding LOOP, or the CFG entry block when
    the loop is function's body.  */
@@ -58,14 +58,14 @@ block_before_loop (loop_p loop)
    be analyzed and instantiated.  */
 
 static inline tree
-instantiate_parameters (struct loop *loop, tree chrec)
+instantiate_parameters (class loop *loop, tree chrec)
 {
   return instantiate_scev (loop_preheader_edge (loop), loop, chrec);
 }
 
 /* Returns the loop of the polynomial chrec CHREC.  */
 
-static inline struct loop *
+static inline class loop *
 get_chrec_loop (const_tree chrec)
 {
   return get_loop (cfun, CHREC_VARIABLE (chrec));

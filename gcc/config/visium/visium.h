@@ -1138,8 +1138,8 @@ do									\
    always make code faster, but eventually incurs high cost in
    increased code size.
 
-   Since we have a movmemsi pattern, the default MOVE_RATIO is 2, which
-   is too low given that movmemsi will invoke a libcall.  */
+   Since we have a cpymemsi pattern, the default MOVE_RATIO is 2, which
+   is too low given that cpymemsi will invoke a libcall.  */
 #define MOVE_RATIO(speed) ((speed) ? 9 : 3)
 
 /* `CLEAR_RATIO (SPEED)`

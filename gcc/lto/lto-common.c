@@ -1,5 +1,5 @@
 /* Top-level LTO routines.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2019 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -56,6 +56,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "builtins.h"
 #include "lto-common.h"
+#include "tree-pretty-print.h"
+
+/* True when no new types are going to be streamd from the global stream.  */
+
+static bool type_streaming_finished = false;
 
 GTY(()) tree first_personality_decl;
 
@@ -174,7 +179,7 @@ lto_splay_tree_new (void)
    input.  */
 
 static const uint32_t *
-lto_read_in_decl_state (struct data_in *data_in, const uint32_t *data,
+lto_read_in_decl_state (class data_in *data_in, const uint32_t *data,
 			struct lto_in_decl_state *state)
 {
   uint32_t ix;
@@ -217,9 +222,14 @@ static hash_map<const_tree, hashval_t> *canonical_type_hash_cache;
 static unsigned long num_canonical_type_hash_entries;
 static unsigned long num_canonical_type_hash_queries;
 
+/* Types postponed for registration to the canonical type table.
+   During streaming we postpone all TYPE_CXX_ODR_P types so we can alter
+   decide whether there is conflict with non-ODR type or not.  */
+static GTY(()) vec<tree, va_gc> *types_to_register = NULL;
+
 static void iterative_hash_canonical_type (tree type, inchash::hash &hstate);
 static hashval_t gimple_canonical_type_hash (const void *p);
-static void gimple_register_canonical_type_1 (tree t, hashval_t hash);
+static hashval_t gimple_register_canonical_type_1 (tree t, hashval_t hash);
 
 /* Returning a hash value for gimple type TYPE.
 
@@ -357,9 +367,9 @@ iterative_hash_canonical_type (tree type, inchash::hash &hstate)
 	 optimal order.  To avoid quadratic behavior also register the
 	 type here.  */
       v = hash_canonical_type (type);
-      gimple_register_canonical_type_1 (type, v);
+      v = gimple_register_canonical_type_1 (type, v);
     }
-  hstate.add_int (v);
+  hstate.merge_hash (v);
 }
 
 /* Returns the hash for a canonical type P.  */
@@ -388,7 +398,7 @@ gimple_canonical_type_eq (const void *p1, const void *p2)
 
 /* Main worker for gimple_register_canonical_type.  */
 
-static void
+static hashval_t
 gimple_register_canonical_type_1 (tree t, hashval_t hash)
 {
   void **slot;
@@ -396,6 +406,81 @@ gimple_register_canonical_type_1 (tree t, hashval_t hash)
   gcc_checking_assert (TYPE_P (t) && !TYPE_CANONICAL (t)
 		       && type_with_alias_set_p (t)
 		       && canonical_type_used_p (t));
+
+  /* ODR types for which there is no ODR violation and we did not record
+     structurally equivalent non-ODR type can be treated as unique by their
+     name.
+
+     hash passed to gimple_register_canonical_type_1 is a structural hash
+     that we can use to lookup structurally equivalent non-ODR type.
+     In case we decide to treat type as unique ODR type we recompute hash based
+     on name and let TBAA machinery know about our decision.  */
+  if (RECORD_OR_UNION_TYPE_P (t)
+      && odr_type_p (t) && !odr_type_violation_reported_p (t))
+    {
+      /* Anonymous namespace types never conflict with non-C++ types.  */
+      if (type_with_linkage_p (t) && type_in_anonymous_namespace_p (t))
+	slot = NULL;
+      else
+	{
+	  /* Here we rely on fact that all non-ODR types was inserted into
+	     canonical type hash and thus we can safely detect conflicts between
+	     ODR types and interoperable non-ODR types.  */
+	  gcc_checking_assert (type_streaming_finished
+			       && TYPE_MAIN_VARIANT (t) == t);
+	  slot = htab_find_slot_with_hash (gimple_canonical_types, t, hash,
+					   NO_INSERT);
+	}
+      if (slot && !TYPE_CXX_ODR_P (*(tree *)slot))
+	{
+	  tree nonodr = *(tree *)slot;
+	  if (symtab->dump_file)
+	    {
+	      fprintf (symtab->dump_file,
+		       "ODR and non-ODR type conflict: ");
+	      print_generic_expr (symtab->dump_file, t);
+	      fprintf (symtab->dump_file, " and ");
+	      print_generic_expr (symtab->dump_file, nonodr);
+	      fprintf (symtab->dump_file, " mangled:%s\n",
+			 IDENTIFIER_POINTER
+			   (DECL_ASSEMBLER_NAME (TYPE_NAME (t))));
+	    }
+	  /* Set canonical for T and all other ODR equivalent duplicates
+	     including incomplete structures.  */
+	  set_type_canonical_for_odr_type (t, nonodr);
+	}
+      else
+	{
+	  tree prevail = prevailing_odr_type (t);
+
+	  if (symtab->dump_file)
+	    {
+	      fprintf (symtab->dump_file,
+		       "New canonical ODR type: ");
+	      print_generic_expr (symtab->dump_file, t);
+	      fprintf (symtab->dump_file, " mangled:%s\n",
+			 IDENTIFIER_POINTER
+			   (DECL_ASSEMBLER_NAME (TYPE_NAME (t))));
+	    }
+	  /* Set canonical for T and all other ODR equivalent duplicates
+	     including incomplete structures.  */
+	  set_type_canonical_for_odr_type (t, prevail);
+	  enable_odr_based_tbaa (t);
+	  if (!type_in_anonymous_namespace_p (t))
+	    hash = htab_hash_string (IDENTIFIER_POINTER
+					   (DECL_ASSEMBLER_NAME
+						   (TYPE_NAME (t))));
+	  else
+	    hash = TYPE_UID (t);
+
+	  /* All variants of t now have TYPE_CANONICAL set to prevail.
+	     Update canonical type hash cache accordingly.  */
+	  num_canonical_type_hash_entries++;
+	  bool existed_p = canonical_type_hash_cache->put (prevail, hash);
+	  gcc_checking_assert (!existed_p);
+	}
+      return hash;
+    }
 
   slot = htab_find_slot_with_hash (gimple_canonical_types, t, hash, INSERT);
   if (*slot)
@@ -413,6 +498,7 @@ gimple_register_canonical_type_1 (tree t, hashval_t hash)
       bool existed_p = canonical_type_hash_cache->put (t, hash);
       gcc_assert (!existed_p);
     }
+  return hash;
 }
 
 /* Register type T in the global type table gimple_types and set
@@ -462,6 +548,43 @@ lto_register_canonical_types (tree node, bool first_p)
 
  if (!first_p)
     gimple_register_canonical_type (node);
+}
+
+/* Finish canonical type calculation: after all units has been streamed in we
+   can check if given ODR type structurally conflicts with a non-ODR type.  In
+   the first case we set type canonical according to the canonical type hash.
+   In the second case we use type names.  */
+
+static void
+lto_register_canonical_types_for_odr_types ()
+{
+  tree t;
+  unsigned int i;
+
+  if (!types_to_register)
+    return;
+
+  type_streaming_finished = true;
+
+  /* Be sure that no types derived from ODR types was
+     not inserted into the hash table.  */
+  if (flag_checking)
+    FOR_EACH_VEC_ELT (*types_to_register, i, t)
+      gcc_assert (!TYPE_CANONICAL (t));
+
+  /* Register all remaining types.  */
+  FOR_EACH_VEC_ELT (*types_to_register, i, t)
+    {
+      /* For pre-streamed types like va-arg it is possible that main variant
+	 is !CXX_ODR_P while the variant (which is streamed) is.
+	 Copy CXX_ODR_P to make type verifier happy.  This is safe because
+	 in canonical type calculation we only consider main variants.
+	 However we can not change this flag before streaming is finished
+	 to not affect tree merging.  */
+      TYPE_CXX_ODR_P (t) = TYPE_CXX_ODR_P (TYPE_MAIN_VARIANT (t));
+      if (!TYPE_CANONICAL (t))
+        gimple_register_canonical_type (t);
+    }
 }
 
 
@@ -751,7 +874,7 @@ mentions_vars_p (tree t)
 /* Return the resolution for the decl with index INDEX from DATA_IN.  */
 
 static enum ld_plugin_symbol_resolution
-get_resolution (struct data_in *data_in, unsigned index)
+get_resolution (class data_in *data_in, unsigned index)
 {
   if (data_in->globals_resolution.exists ())
     {
@@ -794,7 +917,7 @@ register_resolution (struct lto_file_decl_data *file_data, tree decl,
    different files.  */
 
 static void
-lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl,
+lto_register_var_decl_in_symtab (class data_in *data_in, tree decl,
 				 unsigned ix)
 {
   tree context;
@@ -819,7 +942,7 @@ lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl,
    file being read.  */
 
 static void
-lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl,
+lto_register_function_decl_in_symtab (class data_in *data_in, tree decl,
 				      unsigned ix)
 {
   /* If this variable has already been declared, queue the
@@ -832,7 +955,7 @@ lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl,
 /* Check if T is a decl and needs register its resolution info.  */
 
 static void
-lto_maybe_register_decl (struct data_in *data_in, tree t, unsigned ix)
+lto_maybe_register_decl (class data_in *data_in, tree t, unsigned ix)
 {
   if (TREE_CODE (t) == VAR_DECL)
     lto_register_var_decl_in_symtab (data_in, t, ix);
@@ -1105,7 +1228,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       compare_values (DECL_IS_NOVOPS);
       compare_values (DECL_IS_RETURNS_TWICE);
       compare_values (DECL_IS_MALLOC);
-      compare_values (DECL_IS_OPERATOR_NEW);
+      compare_values (DECL_IS_OPERATOR_NEW_P);
       compare_values (DECL_DECLARED_INLINE_P);
       compare_values (DECL_STATIC_CHAIN);
       compare_values (DECL_NO_INLINE_WARNING_P);
@@ -1118,7 +1241,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       compare_values (DECL_CXX_CONSTRUCTOR_P);
       compare_values (DECL_CXX_DESTRUCTOR_P);
       if (DECL_BUILT_IN_CLASS (t1) != NOT_BUILT_IN)
-	compare_values (DECL_FUNCTION_CODE);
+	compare_values (DECL_UNCHECKED_FUNCTION_CODE);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
@@ -1507,7 +1630,7 @@ cmp_tree (const void *p1_, const void *p2_)
    that was successful, otherwise return false.  */
 
 static bool
-unify_scc (struct data_in *data_in, unsigned from,
+unify_scc (class data_in *data_in, unsigned from,
 	   unsigned len, unsigned scc_entry_len, hashval_t scc_hash)
 {
   bool unified_p = false;
@@ -1523,11 +1646,14 @@ unify_scc (struct data_in *data_in, unsigned from,
       tree t = streamer_tree_cache_get_tree (cache, from + i);
       scc->entries[i] = t;
       /* Do not merge SCCs with local entities inside them.  Also do
-	 not merge TRANSLATION_UNIT_DECLs.  */
+	 not merge TRANSLATION_UNIT_DECLs and anonymous namespace types.  */
       if (TREE_CODE (t) == TRANSLATION_UNIT_DECL
 	  || (VAR_OR_FUNCTION_DECL_P (t)
 	      && !(TREE_PUBLIC (t) || DECL_EXTERNAL (t)))
-	  || TREE_CODE (t) == LABEL_DECL)
+	  || TREE_CODE (t) == LABEL_DECL
+	  || (TYPE_P (t)
+	      && type_with_linkage_p (TYPE_MAIN_VARIANT (t))
+	      && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t))))
 	{
 	  /* Avoid doing any work for these cases and do not worry to
 	     record the SCCs for further merging.  */
@@ -1657,6 +1783,7 @@ unify_scc (struct data_in *data_in, unsigned from,
 }
 
 
+
 /* Read all the symbols from buffer DATA, using descriptors in DECL_DATA.
    RESOLUTIONS is the set of symbols picked by the linker (read from the
    resolution file when the linker plugin is being used).  */
@@ -1669,7 +1796,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
   const int decl_offset = sizeof (struct lto_decl_header);
   const int main_offset = decl_offset + header->decl_state_size;
   const int string_offset = main_offset + header->main_size;
-  struct data_in *data_in;
+  class data_in *data_in;
   unsigned int i;
   const uint32_t *data_ptr, *data_end;
   uint32_t num_decl_states;
@@ -1749,12 +1876,23 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 		  num_prevailing_types++;
 		  lto_fixup_prevailing_type (t);
 
-		  /* Compute the canonical type of all types.
+		  /* Compute the canonical type of all non-ODR types.
+		     Delay ODR types for the end of merging process - the canonical
+		     type for those can be computed using the (unique) name however
+		     we want to do this only if units in other languages do not
+		     contain structurally equivalent type.
+
 		     Because SCC components are streamed in random (hash) order
 		     we may have encountered the type before while registering
 		     type canonical of a derived type in the same SCC.  */
 		  if (!TYPE_CANONICAL (t))
-		    gimple_register_canonical_type (t);
+		    {
+		      if (!RECORD_OR_UNION_TYPE_P (t)
+			  || !TYPE_CXX_ODR_P (t))
+		        gimple_register_canonical_type (t);
+		      else if (COMPLETE_TYPE_P (t))
+			vec_safe_push (types_to_register, t);
+		    }
 		  if (TYPE_MAIN_VARIANT (t) == t && odr_type_p (t))
 		    register_odr_type (t);
 		}
@@ -2060,6 +2198,21 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
 #else
   file_data->mode_table = lto_mode_identity_table;
 #endif
+
+  /* Read and verify LTO section.  */
+  data = lto_get_section_data (file_data, LTO_section_lto, NULL, &len, false);
+  if (data == NULL)
+    {
+      fatal_error (input_location, "bytecode stream in file %qs generated "
+		   "with GCC compiler older than 10.0", file_data->file_name);
+      return;
+    }
+
+  memcpy (&file_data->lto_section_header, data, sizeof (lto_section));
+  lto_check_version (file_data->lto_section_header.major_version,
+		     file_data->lto_section_header.minor_version,
+		     file_data->file_name);
+
   data = lto_get_section_data (file_data, LTO_section_decls, NULL, &len);
   if (data == NULL)
     {
@@ -2604,6 +2757,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   lto_stats.num_input_files = count;
   ggc_free(decl_data);
   real_file_decl_data = NULL;
+
+  lto_register_canonical_types_for_odr_types ();
 
   if (resolution_file_name)
     fclose (resolution);

@@ -438,6 +438,11 @@ package GNAT.Sockets.Thin_Common is
    renames Short_To_Network;
    --  Symmetric operation
 
+   function Minus_500ms_Windows_Timeout return C.int;
+   --  Microsoft Windows desktop older then 8.0 and Microsoft Windows Server
+   --  older than 2019 need timeout correction for 500 milliseconds. This
+   --  routine returns 1 for such versions.
+
 private
    pragma Import (C, Get_Socket_From_Set, "__gnat_get_socket_from_set");
    pragma Import (C, Is_Socket_In_Set, "__gnat_is_socket_in_set");
@@ -469,5 +474,7 @@ private
    pragma Import (C, Hostent_H_Addrtype, "__gnat_hostent_h_addrtype");
    pragma Import (C, Hostent_H_Length,   "__gnat_hostent_h_length");
    pragma Import (C, Hostent_H_Addr,     "__gnat_hostent_h_addr");
+
+   pragma Import (C, Minus_500ms_Windows_Timeout, "__gnat_minus_500ms");
 
 end GNAT.Sockets.Thin_Common;

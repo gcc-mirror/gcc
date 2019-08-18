@@ -35,30 +35,30 @@ enum
 extern edge mfb_kj_edge;
 
 extern bool remove_path (edge, bool * = NULL, bitmap = NULL);
-extern void place_new_loop (struct function *, struct loop *);
-extern void add_loop (struct loop *, struct loop *);
-extern void scale_loop_frequencies (struct loop *, profile_probability);
-extern void scale_loop_profile (struct loop *, profile_probability, gcov_type);
+extern void place_new_loop (struct function *, class loop *);
+extern void add_loop (class loop *, class loop *);
+extern void scale_loop_frequencies (class loop *, profile_probability);
+extern void scale_loop_profile (class loop *, profile_probability, gcov_type);
 extern edge create_empty_if_region_on_edge (edge, tree);
-extern struct loop *create_empty_loop_on_edge (edge, tree, tree, tree, tree,
-					       tree *, tree *, struct loop *);
-extern struct loop *loopify (edge, edge,
+extern class loop *create_empty_loop_on_edge (edge, tree, tree, tree, tree,
+					       tree *, tree *, class loop *);
+extern class loop *loopify (edge, edge,
 			     basic_block, edge, edge, bool,
 			     profile_probability, profile_probability);
-extern void unloop (struct loop *, bool *, bitmap);
-extern void copy_loop_info (struct loop *loop, struct loop *target);
-extern struct loop * duplicate_loop (struct loop *, struct loop *,
-				     struct loop * = NULL);
-extern void duplicate_subloops (struct loop *, struct loop *);
-extern bool can_duplicate_loop_p (const struct loop *loop);
-extern bool duplicate_loop_to_header_edge (struct loop *, edge,
+extern void unloop (class loop *, bool *, bitmap);
+extern void copy_loop_info (class loop *loop, class loop *target);
+extern class loop * duplicate_loop (class loop *, class loop *,
+				     class loop * = NULL);
+extern void duplicate_subloops (class loop *, class loop *);
+extern bool can_duplicate_loop_p (const class loop *loop);
+extern bool duplicate_loop_to_header_edge (class loop *, edge,
 					   unsigned, sbitmap, edge,
  					   vec<edge> *, int);
 extern bool mfb_keep_just (edge);
-basic_block create_preheader (struct loop *, int);
+basic_block create_preheader (class loop *, int);
 extern void create_preheaders (int);
 extern void force_single_succ_latches (void);
-struct loop * loop_version (struct loop *, void *,
+class loop * loop_version (class loop *, void *,
 			    basic_block *,
 			    profile_probability, profile_probability,
 			    profile_probability, profile_probability, bool);

@@ -479,17 +479,17 @@ Attribute Img
 =============
 .. index:: Img
 
-The ``Img`` attribute differs from ``Image`` in that it is applied
-directly to an object, and yields the same result as
-``Image`` for the subtype of the object.  This is convenient for
-debugging:
+The ``Img`` attribute differs from ``Image`` in that, while both can be
+applied directly to an object, ``Img`` cannot be applied to types.
+
+Example usage of the attribute:
 
 .. code-block:: ada
 
   Put_Line ("X = " & X'Img);
 
 
-has the same meaning as the more verbose:
+which has the same meaning as the more verbose:
 
 .. code-block:: ada
 
@@ -967,8 +967,8 @@ of the use of this feature:
      --  the former is used.
 
 
-Other properties are as for standard representation attribute ``Bit_Order``,
-as defined by Ada RM 13.5.3(4). The default is ``System.Default_Bit_Order``.
+Other properties are as for the standard representation attribute ``Bit_Order``
+defined by Ada RM 13.5.3(4). The default is ``System.Default_Bit_Order``.
 
 For a record type ``T``, if ``T'Scalar_Storage_Order`` is
 specified explicitly, it shall be equal to ``T'Bit_Order``. Note:
@@ -978,8 +978,8 @@ specified explicitly and set to the same value.
 
 Derived types inherit an explicitly set scalar storage order from their parent
 types. This may be overridden for the derived type by giving an explicit scalar
-storage order for the derived type. For a record extension, the derived type
-must have the same scalar storage order as the parent type.
+storage order for it. However, for a record extension, the derived type must
+have the same scalar storage order as the parent type.
 
 A component of a record type that is itself a record or an array and that does
 not start and end on a byte boundary must have have the same scalar storage
@@ -1018,14 +1018,17 @@ inheritance in the case of a derived type), then the default is normally
 the native ordering of the target, but this default can be overridden using
 pragma ``Default_Scalar_Storage_Order``.
 
-Note that if a component of ``T`` is itself of a record or array type,
-the specfied ``Scalar_Storage_Order`` does *not* apply to that nested type:
-an explicit attribute definition clause must be provided for the component
-type as well if desired.
+If a component of ``T`` is itself of a record or array type, the specfied
+``Scalar_Storage_Order`` does *not* apply to that nested type: an explicit
+attribute definition clause must be provided for the component type as well
+if desired.
 
 Note that the scalar storage order only affects the in-memory data
 representation. It has no effect on the representation used by stream
 attributes.
+
+Note that debuggers may be unable to display the correct value of scalar
+components of a type for which the opposite storage order is specified.
 
 .. _Attribute_Simple_Storage_Pool:
 

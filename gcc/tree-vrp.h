@@ -56,7 +56,7 @@ public:
   bool constant_p () const;
   bool undefined_p () const;
   bool varying_p () const;
-  void set_varying (tree);
+  void set_varying (tree type);
   void set_undefined (tree = NULL);
 
   void union_ (const value_range_base *);
@@ -73,10 +73,13 @@ public:
   bool nonzero_p () const;
   bool singleton_p (tree *result = NULL) const;
   void dump (FILE *) const;
+  void dump () const;
+
+  static bool supports_type_p (tree);
+  value_range_base normalize_symbolics () const;
 
   /* Support machinery for irange.  */
   static const unsigned int m_max_pairs = 2;
-  static bool supports_type_p (tree type);
   static bool supports_ssa_p (tree ssa);
   static bool supports_p (tree expr);
   void cast (tree);
@@ -86,8 +89,6 @@ public:
   wide_int upper_bound (unsigned) const;
   wide_int upper_bound () const;
   void invert ();
-  void dump () const;
-  value_range_base normalize_symbolics () const;
   void union_ (const value_range_base &);
   void intersect (const value_range_base &);
 

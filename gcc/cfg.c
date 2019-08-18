@@ -1145,7 +1145,7 @@ get_bb_copy (basic_block bb)
    initialized so passes not needing this don't need to care.  */
 
 void
-set_loop_copy (struct loop *loop, struct loop *copy)
+set_loop_copy (class loop *loop, class loop *copy)
 {
   if (!copy)
     copy_original_table_clear (loop_copy, loop->num);
@@ -1155,8 +1155,8 @@ set_loop_copy (struct loop *loop, struct loop *copy)
 
 /* Get the copy of LOOP.  */
 
-struct loop *
-get_loop_copy (struct loop *loop)
+class loop *
+get_loop_copy (class loop *loop)
 {
   struct htab_bb_copy_original_entry *entry;
   struct htab_bb_copy_original_entry key;

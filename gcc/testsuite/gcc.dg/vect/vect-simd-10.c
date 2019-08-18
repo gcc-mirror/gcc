@@ -7,6 +7,12 @@
 #include "tree-vect.h"
 #endif
 
+#ifdef __FAST_MATH__
+#define FLT_MIN_VALUE (-__FLT_MAX__)
+#else
+#define FLT_MIN_VALUE (-__builtin_inff ())
+#endif
+
 float r = 1.0f, a[1024], b[1024];
 
 __attribute__((noipa)) void
@@ -24,7 +30,7 @@ foo (float *a, float *b)
 __attribute__((noipa)) float
 bar (void)
 {
-  float s = -__builtin_inff ();
+  float s = FLT_MIN_VALUE;
   #pragma omp simd reduction (inscan, max:s)
   for (int i = 0; i < 1024; i++)
     {
@@ -84,7 +90,7 @@ main ()
     }
   if (bar () != 592.0f)
     abort ();
-  s = -__builtin_inff ();
+  s = FLT_MIN_VALUE;
   for (int i = 0; i < 1024; ++i)
     {
       if (s < a[i])

@@ -788,7 +788,7 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 rtx
 machopic_indirect_call_target (rtx target)
 {
-  if (! darwin_picsymbol_stubs)
+  if (! darwin_symbol_stubs)
     return target;
 
   if (GET_CODE (target) != MEM)
@@ -3232,8 +3232,6 @@ darwin_override_options (void)
       /* so no tables either.. */
       flag_unwind_tables = 0;
       flag_asynchronous_unwind_tables = 0;
-      /* We still need to emit branch islands for kernel context.  */
-      darwin_picsymbol_stubs = true;
     }
 
   if (flag_var_tracking_uninit == 0
@@ -3243,6 +3241,8 @@ darwin_override_options (void)
       && write_symbols == DWARF2_DEBUG)
     flag_var_tracking_uninit = flag_var_tracking;
 
+  /* Final check on PCI options; for Darwin these are not dependent on the PIE
+     ones, although PIE does require PIC to support it.  */
   if (MACHO_DYNAMIC_NO_PIC_P)
     {
       if (flag_pic)
@@ -3251,9 +3251,11 @@ darwin_override_options (void)
 		 " %<-fpie%> or %<-fPIE%>");
       flag_pic = 0;
     }
-  else if (flag_pic == 1)
+  else if (flag_pic == 1
+	   || (flag_pic == 0 && !(flag_mkernel || flag_apple_kext)))
     {
-      /* Darwin's -fpic is -fPIC.  */
+      /* Darwin's -fpic is -fPIC.
+	 We only support "static" code in the kernel and kernel exts.  */
       flag_pic = 2;
     }
 
@@ -3266,13 +3268,13 @@ darwin_override_options (void)
      Linkers that don't need stubs, don't need the EH symbol markers either.
   */
 
-  if (!global_options_set.x_darwin_picsymbol_stubs)
+  if (!global_options_set.x_darwin_symbol_stubs)
     {
       if (darwin_target_linker)
 	{
 	  if (strverscmp (darwin_target_linker, MIN_LD64_OMIT_STUBS) < 0)
 	    {
-	      darwin_picsymbol_stubs = true;
+	      darwin_symbol_stubs = true;
 	      ld_needs_eh_markers = true;
 	    }
 	}
@@ -3281,15 +3283,15 @@ darwin_override_options (void)
 	  /* If we don't know the linker version and we're targeting an old
 	     system, we know no better than to assume the use of an earlier
 	     linker.  */
-	  darwin_picsymbol_stubs = true;
+	  darwin_symbol_stubs = true;
 	  ld_needs_eh_markers = true;
 	}
     }
-  else if (DARWIN_X86 && darwin_picsymbol_stubs && TARGET_64BIT)
+  else if (DARWIN_X86 && darwin_symbol_stubs && TARGET_64BIT)
     {
       inform (input_location,
 	      "%<-mpic-symbol-stubs%> is not required for 64b code (ignored)");
-      darwin_picsymbol_stubs = false;
+      darwin_symbol_stubs = false;
     }
 
   if (generating_for_darwin_version >= 9)
@@ -3437,8 +3439,7 @@ darwin_init_cfstring_builtins (unsigned builtin_cfstring)
      in place of the existing, which may be NULL.  */
   DECL_LANG_SPECIFIC (cfsfun) = NULL;
   (*lang_hooks.dup_lang_specific_decl) (cfsfun);
-  DECL_BUILT_IN_CLASS (cfsfun) = BUILT_IN_MD;
-  DECL_FUNCTION_CODE (cfsfun) = darwin_builtin_cfstring;
+  set_decl_built_in_function (cfsfun, BUILT_IN_MD, darwin_builtin_cfstring);
   lang_hooks.builtin_function (cfsfun);
 
   /* extern int __CFConstantStringClassReference[];  */
@@ -3462,7 +3463,7 @@ tree
 darwin_fold_builtin (tree fndecl, int n_args, tree *argp,
 		     bool ARG_UNUSED (ignore))
 {
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
 
   if (fcode == darwin_builtin_cfstring)
     {

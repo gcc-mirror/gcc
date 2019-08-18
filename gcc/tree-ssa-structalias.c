@@ -1393,8 +1393,9 @@ static bitmap changed;
 
 /* Strongly Connected Component visitation info.  */
 
-struct scc_info
+class scc_info
 {
+public:
   scc_info (size_t size);
   ~scc_info ();
 
@@ -1419,7 +1420,7 @@ struct scc_info
    number 1, pages 9-14.  */
 
 static void
-scc_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
+scc_visit (constraint_graph_t graph, class scc_info *si, unsigned int n)
 {
   unsigned int i;
   bitmap_iterator bi;
@@ -2022,7 +2023,7 @@ static int location_equiv_class;
    and label it's nodes with DFS numbers.  */
 
 static void
-condense_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
+condense_visit (constraint_graph_t graph, class scc_info *si, unsigned int n)
 {
   unsigned int i;
   bitmap_iterator bi;
@@ -2070,36 +2071,73 @@ condense_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
   /* See if any components have been identified.  */
   if (si->dfs[n] == my_dfs)
     {
-      while (si->scc_stack.length () != 0
-	     && si->dfs[si->scc_stack.last ()] >= my_dfs)
+      if (si->scc_stack.length () != 0
+	  && si->dfs[si->scc_stack.last ()] >= my_dfs)
 	{
-	  unsigned int w = si->scc_stack.pop ();
-	  si->node_mapping[w] = n;
-
-	  if (!bitmap_bit_p (graph->direct_nodes, w))
+	  /* Find the first node of the SCC and do non-bitmap work.  */
+	  bool direct_p = true;
+	  unsigned first = si->scc_stack.length ();
+	  do
+	    {
+	      --first;
+	      unsigned int w = si->scc_stack[first];
+	      si->node_mapping[w] = n;
+	      if (!bitmap_bit_p (graph->direct_nodes, w))
+		direct_p = false;
+	    }
+	  while (first > 0
+		 && si->dfs[si->scc_stack[first - 1]] >= my_dfs);
+	  if (!direct_p)
 	    bitmap_clear_bit (graph->direct_nodes, n);
 
-	  /* Unify our nodes.  */
-	  if (graph->preds[w])
+	  /* Want to reduce to node n, push that first.  */
+	  si->scc_stack.reserve (1);
+	  si->scc_stack.quick_push (si->scc_stack[first]);
+	  si->scc_stack[first] = n;
+
+	  unsigned scc_size = si->scc_stack.length () - first;
+	  unsigned split = scc_size / 2;
+	  unsigned carry = scc_size - split * 2;
+	  while (split > 0)
 	    {
-	      if (!graph->preds[n])
-		graph->preds[n] = BITMAP_ALLOC (&predbitmap_obstack);
-	      bitmap_ior_into (graph->preds[n], graph->preds[w]);
+	      for (unsigned i = 0; i < split; ++i)
+		{
+		  unsigned a = si->scc_stack[first + i];
+		  unsigned b = si->scc_stack[first + split + carry + i];
+
+		  /* Unify our nodes.  */
+		  if (graph->preds[b])
+		    {
+		      if (!graph->preds[a])
+			std::swap (graph->preds[a], graph->preds[b]);
+		      else
+			bitmap_ior_into_and_free (graph->preds[a],
+						  &graph->preds[b]);
+		    }
+		  if (graph->implicit_preds[b])
+		    {
+		      if (!graph->implicit_preds[a])
+			std::swap (graph->implicit_preds[a],
+				   graph->implicit_preds[b]);
+		      else
+			bitmap_ior_into_and_free (graph->implicit_preds[a],
+						  &graph->implicit_preds[b]);
+		    }
+		  if (graph->points_to[b])
+		    {
+		      if (!graph->points_to[a])
+			std::swap (graph->points_to[a], graph->points_to[b]);
+		      else
+			bitmap_ior_into_and_free (graph->points_to[a],
+						  &graph->points_to[b]);
+		    }
+		}
+	      unsigned remain = split + carry;
+	      split = remain / 2;
+	      carry = remain - split * 2;
 	    }
-	  if (graph->implicit_preds[w])
-	    {
-	      if (!graph->implicit_preds[n])
-		graph->implicit_preds[n] = BITMAP_ALLOC (&predbitmap_obstack);
-	      bitmap_ior_into (graph->implicit_preds[n],
-			       graph->implicit_preds[w]);
-	    }
-	  if (graph->points_to[w])
-	    {
-	      if (!graph->points_to[n])
-		graph->points_to[n] = BITMAP_ALLOC (&predbitmap_obstack);
-	      bitmap_ior_into (graph->points_to[n],
-			       graph->points_to[w]);
-	    }
+	  /* Actually pop the SCC.  */
+	  si->scc_stack.truncate (first);
 	}
       bitmap_set_bit (si->deleted, n);
     }
@@ -2127,7 +2165,7 @@ condense_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
    3. Hashable.  */
 
 static void
-label_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
+label_visit (constraint_graph_t graph, class scc_info *si, unsigned int n)
 {
   unsigned int i, first_pred;
   bitmap_iterator bi;
@@ -2214,7 +2252,7 @@ label_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
 /* Print the pred graph in dot format.  */
 
 static void
-dump_pred_graph (struct scc_info *si, FILE *file)
+dump_pred_graph (class scc_info *si, FILE *file)
 {
   unsigned int i;
 
@@ -2289,7 +2327,7 @@ dump_pred_graph (struct scc_info *si, FILE *file)
 /* Perform offline variable substitution, discovering equivalence
    classes, and eliminating non-pointer variables.  */
 
-static struct scc_info *
+static class scc_info *
 perform_var_substitution (constraint_graph_t graph)
 {
   unsigned int i;
@@ -2423,7 +2461,7 @@ perform_var_substitution (constraint_graph_t graph)
    substitution.  */
 
 static void
-free_var_substitution_info (struct scc_info *si)
+free_var_substitution_info (class scc_info *si)
 {
   delete si;
   free (graph->pointer_label);
@@ -2547,7 +2585,7 @@ move_complex_constraints (constraint_graph_t graph)
 
 static void
 rewrite_constraints (constraint_graph_t graph,
-		     struct scc_info *si)
+		     class scc_info *si)
 {
   int i;
   constraint_t c;
@@ -3251,9 +3289,29 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
       return;
     }
 
-  /* Pretend to take the address of the base, we'll take care of
-     adding the required subset of sub-fields below.  */
-  get_constraint_for_1 (t, results, true, lhs_p);
+  /* Avoid creating pointer-offset constraints, so handle MEM_REF
+     offsets directly.  Pretend to take the address of the base,
+     we'll take care of adding the required subset of sub-fields below.  */
+  if (TREE_CODE (t) == MEM_REF
+      && !integer_zerop (TREE_OPERAND (t, 0)))
+    {
+      poly_offset_int off = mem_ref_offset (t);
+      off <<= LOG2_BITS_PER_UNIT;
+      off += bitpos;
+      poly_int64 off_hwi;
+      if (off.to_shwi (&off_hwi))
+	bitpos = off_hwi;
+      else
+	{
+	  bitpos = 0;
+	  bitmaxsize = -1;
+	}
+      get_constraint_for_1 (TREE_OPERAND (t, 0), results, false, lhs_p);
+      do_deref (results);
+    }
+  else
+    get_constraint_for_1 (t, results, true, lhs_p);
+
   /* Strip off nothing_id.  */
   if (results->length () == 2)
     {
@@ -5955,7 +6013,6 @@ create_function_info_for (tree decl, const char *name, bool add_id,
 
       gcc_assert (prev_vi->offset < argvi->offset);
       prev_vi->next = argvi->id;
-      prev_vi = argvi;
     }
 
   return vi;
@@ -7184,7 +7241,7 @@ remove_preds_and_fake_succs (constraint_graph_t graph)
 static void
 solve_constraints (void)
 {
-  struct scc_info *si;
+  class scc_info *si;
 
   /* Sort varinfos so that ones that cannot be pointed to are last.
      This makes bitmaps more efficient.  */

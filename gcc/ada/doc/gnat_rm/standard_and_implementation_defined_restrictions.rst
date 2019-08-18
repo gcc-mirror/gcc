@@ -356,7 +356,9 @@ No_Exceptions
 .. index:: No_Exceptions
 
 [RM H.4] This restriction ensures at compile time that there are no
-raise statements and no exception handlers.
+raise statements and no exception handlers and also suppresses the
+generation of language-defined run-time checks.
+
 
 No_Finalization
 ---------------
@@ -510,15 +512,14 @@ No_Multiple_Elaboration
 -----------------------
 .. index:: No_Multiple_Elaboration
 
-[GNAT] When this restriction is active, we are not requesting control-flow
-preservation with -fpreserve-control-flow, and the static elaboration model is
-used, the compiler is allowed to suppress the elaboration counter normally
-associated with the unit, even if the unit has elaboration code. This counter
-is typically used to check for access before elaboration and to control
-multiple elaboration attempts. If the restriction is used, then the
-situations in which multiple elaboration is possible, including non-Ada main
-programs and Stand Alone libraries, are not permitted and will be diagnosed
-by the binder.
+[GNAT] When this restriction is active and the static elaboration model is
+used, and -fpreserve-control-flow is not used, the compiler is allowed to
+suppress the elaboration counter normally associated with the unit, even if
+the unit has elaboration code. This counter is typically used to check for
+access before elaboration and to control multiple elaboration attempts. If the
+restriction is used, then the situations in which multiple elaboration is
+possible, including non-Ada main programs and Stand Alone libraries, are not
+permitted and will be diagnosed by the binder.
 
 No_Nested_Finalization
 ----------------------
@@ -634,7 +635,7 @@ No_Stream_Optimizations
 [GNAT] This restriction affects the performance of stream operations on types
 ``String``, ``Wide_String`` and ``Wide_Wide_String``. By default, the
 compiler uses block reads and writes when manipulating ``String`` objects
-due to their supperior performance. When this restriction is in effect, the
+due to their superior performance. When this restriction is in effect, the
 compiler performs all IO operations on a per-character basis.
 
 No_Streams

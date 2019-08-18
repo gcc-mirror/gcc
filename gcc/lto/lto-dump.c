@@ -38,10 +38,14 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Stores details of symbols for dumping symbol list.  */
 
-struct symbol_entry
+class symbol_entry
 {
+public:
   symtab_node *node;
   symbol_entry (symtab_node *node_): node (node_)
+  {}
+
+  virtual ~symbol_entry ()
   {}
 
   char* get_name () const
@@ -67,9 +71,13 @@ struct symbol_entry
 
 /* Stores variable specific details of symbols for dumping symbol list.  */
 
-struct variable_entry: public symbol_entry
+class variable_entry: public symbol_entry
 {
+public:
   variable_entry (varpool_node *node_): symbol_entry (node_)
+  {}
+
+  virtual ~variable_entry ()
   {}
 
   virtual size_t get_size () const
@@ -94,9 +102,13 @@ struct variable_entry: public symbol_entry
 
 /* Stores function specific details of symbols for dumping symbol list.  */
 
-struct function_entry: public symbol_entry
+class function_entry: public symbol_entry
 {
+public:
   function_entry (cgraph_node *node_): symbol_entry (node_)
+  {}
+
+  virtual ~function_entry ()
   {}
 
   virtual void dump ()
@@ -166,7 +178,10 @@ void dump_list_functions (void)
   int i=0;
   symbol_entry* e;
   FOR_EACH_VEC_ELT (v, i, e)
-    e->dump ();
+    {
+      e->dump ();
+      delete e;
+    }
 }
 
 /* Dump list of variables and their details.  */
@@ -194,7 +209,16 @@ void dump_list_variables (void)
   int i=0;
   symbol_entry* e;
   FOR_EACH_VEC_ELT (v, i, e)
-    e->dump ();
+    {
+      e->dump ();
+      delete e;
+    }
+}
+
+/* Dump symbol table in graphviz format.  */
+void dump_symtab_graphviz (void)
+{
+  symtab->dump_graphviz (stdout);
 }
 
 /* Dump symbol list.  */
@@ -251,26 +275,27 @@ void dump_body ()
 /* List of command line options for dumping.  */
 void dump_tool_help ()
 {
-  printf ("Usage: lto-dump [OPTION]... SUB_COMMAND [OPTION]...\n\n");
-  printf ("LTO dump tool command line options.\n\n");
-  printf ("  -list [options]           Dump the symbol list.\n");
-  printf ("    -demangle               Dump the demangled output.\n");
-  printf ("    -defined-only           Dump only the defined symbols.\n");
-  printf ("    -print-value            Dump initial values of the "
-	  "variables.\n");
-  printf ("    -name-sort              Sort the symbols alphabetically.\n");
-  printf ("    -size-sort              Sort the symbols according to size.\n");
-  printf ("    -reverse-sort           Dump the symbols in reverse order.\n");
-  printf ("  -symbol=                  Dump the details of specific symbol.\n");
-  printf ("  -objects                  Dump the details of LTO objects.\n");
-  printf ("  -type-stats               Dump statistics of tree types.\n");
-  printf ("  -tree-stats               Dump statistics of trees.\n");
-  printf ("  -gimple-stats             Dump statistics of gimple "
-	  "statements.\n");
-  printf ("  -dump-body=               Dump the specific gimple body.\n");
-  printf ("  -dump-level=              Deciding the optimization level "
-	  "of body.\n");
-  printf ("  -help                     Display the dump tool help.\n");
+  const char *msg =
+    "Usage: lto-dump [OPTION]... SUB_COMMAND [OPTION]...\n\n"
+    "LTO dump tool command line options.\n\n"
+    "  -list [options]           Dump the symbol list.\n"
+    "    -demangle               Dump the demangled output.\n"
+    "    -defined-only           Dump only the defined symbols.\n"
+    "    -print-value            Dump initial values of the variables.\n"
+    "    -name-sort              Sort the symbols alphabetically.\n"
+    "    -size-sort              Sort the symbols according to size.\n"
+    "    -reverse-sort           Dump the symbols in reverse order.\n"
+    "  -symbol=                  Dump the details of specific symbol.\n"
+    "  -objects                  Dump the details of LTO objects.\n"
+    "  -callgraph                Dump the callgraph in graphviz format.\n"
+    "  -type-stats               Dump statistics of tree types.\n"
+    "  -tree-stats               Dump statistics of trees.\n"
+    "  -gimple-stats             Dump statistics of gimple statements.\n"
+    "  -dump-body=               Dump the specific gimple body.\n"
+    "  -dump-level=              Deciding the optimization level of body.\n"
+    "  -help                     Display the dump tool help.\n";
+
+  fputs (msg, stdout);
   return;
 }
 
@@ -342,6 +367,11 @@ lto_main (void)
     {
       /* Dump specific gimple body of specified function.  */
       dump_body ();
+      return;
+    }
+  else if (flag_dump_callgraph)
+    {
+      dump_symtab_graphviz ();
       return;
     }
 }

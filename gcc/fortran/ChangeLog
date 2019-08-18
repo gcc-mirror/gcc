@@ -1,12 +1,329 @@
+2019-08-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91443
+	* frontend-passes.c (check_externals_expr): New function.
+	(check_externals_code): New function.
+	(gfc_check_externals): New function.
+	* gfortran.h (debug): Add prototypes for gfc_symbol * and
+	gfc_expr *.
+	(gfc_check_externals): Add prototype.
+	* interface.c (compare_actual_formal): Do not complain about
+	alternate returns if the formal argument is optional.
+	(gfc_procedure_use): Handle cases when an error has been issued
+	previously.  Break long line.
+	* parse.c (gfc_parse_file): Call gfc_check_externals for all
+	external procedures.
+	* resolve.c (resolve_global_procedure): Remove checking of
+	argument list.
+
+2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/87991
+	* resolve.c (check_data_variable): data-stmt-object with pointer
+	attribute requires a data-stmt-value with the target attribute.
+
+2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88072
+	* misc.c (gfc_typename): Do not point to something that ought not to
+	be pointed at.
+
+2013-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90563
+	* frontend-passes.c (insert_index): Suppress errors while
+	simplifying the resulting expression.
+
+2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/89647
+	resolve.c (resolve_typebound_procedure): Allow host associated
+	procedure to be a binding target.  While here, wrap long line.
+
+2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/87993
+	* expr.c (gfc_simplify_expr): Simplifcation of an array with a kind
+	type inquiry suffix yields a constant expression.
+
+2019-08-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR fortran/91414
+        * check.c (gfc_check_random_seed): Reduce seed_size.
+        * intrinsic.texi (RANDOM_NUMBER): Update to match new PRNG.
+
+2019-08-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91424
+	* frontend-passes.c (do_subscript): Do not warn for an
+	expression a second time.  Do not warn about a zero-trip loop.
+	(doloop_warn): Also look at contained namespaces.
+
+2019-08-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/91413
+	* invoke.texi (-fmax-stack-var-size): Document increased default.
+	* options.c (gfc_post_options): Increase default stack var size to
+	65536 bytes.
+	* trans-decl.c (gfc_finish_var_decl): Generate warning when local
+	array moved to static storage.
+
+2019-08-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* decl.c (match_old_style_init): Use a clearer error message.
+	* expr.c (gfc_check_assign): Update BOZ checking to provide a stricter
+	adherence to the Fortran standard.  Use gfc_invalid_boz () to
+	relax errors into warnings.
+	* gfortran.h (gfc_isym_id): Add new ids GFC_ISYM_DFLOAT,
+	GFC_ISYM_FLOAT, GFC_ISYM_REALPART, and GFC_ISYM_SNGL
+	* intrinsic.c (add_functions): Use new ids to split REAL generic into
+	REAL, FLOAT, DFLOAT, SNGL, and REALPART generics.
+	(gfc_intrinsic_func_interface): Allow new intrinsics in an
+	initialization expression
+	* resolve.c (resolve_operator): Deal with BOZ as operands.
+        Use gfc_invalid_boz to allow for errors or warnings via the
+	-fallow-invalid-boz option.  A BOZ cannot be an operand to an
+	unary operator.  Both operands of a binary operator cannot be BOZ.
+        For binary operators, convert a BOZ operand into the type and
+	kind of the other operand for REAL or INTEGER operand.
+	* trans-intrinsic.c: Use new ids to cause conversions to happen.
+
+2019-08-06  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91359
+	* trans-decl.c (gfc_generate_return): Ensure something is returned
+	from a function.
+
+2019-08-06  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/42546
+	* check.c(gfc_check_allocated): Add comment pointing to ...
+ 	* intrinsic.c(sort_actual): ... the checking done here.
+
+2019-08-05  Steven g. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91372
+	* decl.c (gfc_match_data): Allow an implied do-loop to nestle against
+	DATA.
+
+2019-08-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88227
+	* check.c (oct2bin): New function.  Convert octal string to binary.
+	(hex2bin): New function.  Convert hexidecimal string to binary.
+	(bin2real): New function.  Convert binary string to REAL.  Use
+	oct2bin and hex2bin.
+	(gfc_boz2real): Use fallback conversion bin2real.
+
+2019-08-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90985
+	* decl.c (gfc_match_data): In free-form code, DATA be followed by
+	whitespace.
+
+2019-08-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90986
+	* match.c (gfc_match_equivalence): Check that EQUIVALENCE is followed
+	by '('.
+
+2019-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91296
+	* interface.c (compare_actual_expr): When checking for aliasing, add
+	a case to handle REF_INQUIRY (e.g., foo(x%re, x%im) do not alias).
+
+2019-07-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90813
+	* dump-parse-tree.c (show_global_symbol): New function.
+	(gfc_dump_global_symbols): New function.
+	* gfortran.h (gfc_traverse_gsymbol): Add prototype.
+	(gfc_dump_global_symbols): Likewise.
+	* invoke.texi: Document -fdump-fortran-global.
+	* lang.opt: Add -fdump-fortran-global.
+	* parse.c (gfc_parse_file): Handle flag_dump_fortran_global.
+	* symbol.c (gfc_traverse_gsymbol): New function.
+	* trans-decl.c (sym_identifier): New function.
+	(mangled_identifier): New function, doing most of the work
+	of gfc_sym_mangled_identifier.
+	(gfc_sym_mangled_identifier): Use mangled_identifier.  Add mangled
+	identifier to global symbol table.
+	(get_proc_pointer_decl): Use backend decl from global identifier
+	if present.
+
+2019-07-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/65819
+	* dependency.h (gfc_dep_resovler): Add optional argument identical.
+	* dependency.c (gfc_check_dependency): Do not alway return 1 if
+	the symbol is the same. Pass on identical to gfc_dep_resolver.
+	(gfc_check_element_vs_element): Whitespace fix.
+	(gfc_dep_resolver): Adjust comment for function.  If identical is
+	true, return 1 if any overlap has been found.
+
+2019-07-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/54072
+	* check.c (gfc_invalid_boz): Fix comment.
+	(illegal_boz_arg): New function.
+	(gfc_check_transfer): Use to arguments.
+	(gfc_check_storage_size): Ditto.
+	(gfc_check_complex): Remove leftover comment from BOZ patch.
+	* primary.c (match_boz_constant): Remove leftover comment.
+
+2019-07-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* arith.c (gfc_convert_integer, gfc_convert_real, gfc_convert_complex):
+	Move to ...
+	* primary.c (convert_integer, convert_real, convert_complex): ... here.
+	Rename and make static functions.
+	(match_integer_constant): Use convert_integer
+	(match_real_constant): Use convert_real.
+	(match_complex_constant: Use convert_complex.
+	* arith.h (gfc_convert_integer, gfc_convert_real, gfc_convert_complex):
+	Remove prototypes.
+	* array.c (match_array_cons_element): A BOZ cannot be a data
+	statement value.  Jump to a common exit point.
+	* check.c (gfc_invalid_boz): New function.  Emit error or warning
+	for a BOZ in an invalid context.
+	(boz_args_check): Move to top of file to prevent need of forward
+	declaration.
+	(is_boz_constant): New function.  Check that BOZ expr is constant.
+	(gfc_boz2real): New function. In-place conversion of BOZ literal
+	constant to REAL in accordance to F2018.
+	(gfc_boz2int): New function. In-place conversion of BOZ literal
+	constant to INTEGER in accordance to F2018.
+	(gfc_check_achar, gfc_check_char, gfc_check_float): Use gfc_invalid_boz.  Convert BOZ
+	as needed.
+	(gfc_check_bge_bgt_ble_blt): Enforce F2018 requirements on BGE,
+	BGT, BLE, and BLT intrinsic functions.
+	(gfc_check_cmplx): Re-organize to check kind, if present, first.
+	Convert BOZ real and/or imaginary parts as needed in accordance to
+	F2018.
+	(gfc_check_complex): Use gfc_invalid_boz.  Convert BOZ as needed.
+	(gfc_check_dcmplx, gfc_check_dble ): Convert BOZ as needed.
+	(gfc_check_dshift): Make dshift[lr] conform to F2018 standard.
+ 	gfc_check_float (gfc_expr *a)
+	(gfc_check_iand_ieor_ior): Make IAND, IEOR, and IOR conform to
+	F2018 standard.
+	(gfc_check_int): Conform to F2018 standard.
+	(gfc_check_intconv): Deprecate SHORT and LONG aliases for INT2 and
+	INT.  Simply return for a BOZ argument. See gfc_simplify_intconv.
+	(gfc_check_merge_bits): Make MERGE_BITS conform to Fortran 2018
+	standard.
+	(gfc_check_real): Remove incorrect comment. Check kind, if present,
+	first.  Simply return for a BOZ argument. See gfc_simplify_real.
+	(gfc_check_and): Re-do error handling for BOZ arguments.  Remove
+	special casing ts.type != BT_INTEGER or BT_LOGICAL.
+	* decl.c (match_old_style_init): Check for BOZ in old-style
+	initialization.  Issue error or warning depending on
+	-fallow-invalid-boz option.  Issue error if variable is not an
+	INTEGER or REAL and the value is BOZ.
+	* expr.c (gfc_copy_expr): Copy a BT_BOZ gfc_expr.
+	(gfc_check_assign): Re-do error handling for a BOZ in an assignment
+	statement.  Do in-place conversion of RHS based on LHS type of
+	INTEGER or REAL.
+	* gfortran.h (gfc_expr): Add a boz component.  Remove is_boz component.
+	(gfc_boz2int, gfc_boz2real, gfc_invalid_boz): New prototypes.
+	* interface.c (gfc_extend_assign): Guard against replacing an
+	intrinsic involving a BOZ literal constant on RHS.
+	* invoke.texi: Doument -fallow-invalid-boz.
+	* lang.opt: New option. -fallow-invalid-boz.
+	* libgfortran.h (bt): Elevate BOZ to a basic type.
+	* misc.c (gfc_basic_typename, gfc_typename): Translate BT_BOZ to BOZ.
+	* primary.c (convert_integer, convert_real, convert_complex): to here.
+	Rename and make static functions.
+	* primary.c(match_boz_constant): Rewrite parsing of a BOZ. Re-do
+	error handling.  Deprecate 'X' for hexidecimal and postfix notation.
+	Use -fallow-invalid-boz and gfc_invalid_boz to accept deprecated code.
+	* resolve.c (resolve_ordinary_assign): Rework a RHS that is a
+	BOZ literal constant.  Use gfc_invalid_boz to allow previous
+	nonstandard behavior.  Remove range checking of BOZ conversion.
+	* simplify.c (convert_boz): Remove function.
+	(simplify_cmplx): Remove conversion of BOZ constants, because
+	conversion is done in gfc_check_cmplx.
+	(gfc_simplify_float): Remove conversion of BOZ constant, because
+	conversion is done in gfc_check_float.
+	(simplify_intconv): Use gfc_boz2int to convert BOZ to INTEGER.
+	Remove range checking for BOZ conversion.
+	(gfc_simplify_real): Use k, if present, to determine kind.  Convert
+	BOZ to REAL.  Remove range checking for BOZ conversion.
+	target-memory.c (gfc_convert_boz): Rewrite to deal with convert of
+	a BOZ to a REAL value.
+
+2019-07-21  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/91030
+	* gfortran.texi (GFORTRAN_FORMATTED_BUFFER_SIZE): Document
+	(GFORTRAN_UNFORMATTED_BUFFER_SIZE): Likewise.
+
+2019-07-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/90903
+	* libgfortran.h: Add mask for -fcheck=bits option.
+	* options.c (gfc_handle_runtime_check_option): Add option "bits"
+	to run-time checks selectable via -fcheck.
+	* trans-intrinsic.c (gfc_conv_intrinsic_btest)
+	(gfc_conv_intrinsic_singlebitop, gfc_conv_intrinsic_ibits)
+	(gfc_conv_intrinsic_shift, gfc_conv_intrinsic_ishft)
+	(gfc_conv_intrinsic_ishftc): Implement run-time checks for the
+	POS, LEN, SHIFT, and SIZE arguments.
+	* gfortran.texi: Document run-time checks for bit manipulation
+	intrinsics.
+	* invoke.texi: Document new -fcheck=bits option.
+
+2019-07-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/87233
+	* expr.c (check_restricted): Relax constraint C1279 which was
+	removed from F2008 and above.
+
+2019-07-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91077
+	* trans-array.c (gfc_conv_scalarized_array_ref) Delete code
+	that gave symbol backend decl for subref arrays and deferred
+	length variables.
+
+2019-07-05  Andrew Stubbs  <ams@codesourcery.com>
+
+	* openmp.c (resolve_omp_clauses): Add custom error messages for
+	parameters in map clauses.
+
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	* check.c (gfc_check_c_funloc): Remove
+	dead assignemts.
+	* decl.c (variable_decl): Likewise.
+	* resolve.c (resolve_typebound_function): Likewise.
+	* simplify.c (gfc_simplify_matmul): Likewise.
+	(gfc_simplify_scan): Likewise.
+	* trans-array.c (gfc_could_be_alias): Likewise.
+	* trans-common.c (add_equivalences): Likewise.
+	* trans-expr.c (trans_class_vptr_len_assignment): Likewise.
+	(gfc_trans_array_constructor_copy): Likewise.
+	(gfc_trans_assignment_1): Likewise.
+	* trans-intrinsic.c (conv_intrinsic_atomic_op): Likewise.
+	* trans-openmp.c (gfc_omp_finish_clause): Likewise.
+	* trans-types.c (gfc_get_array_descriptor_base): Likewise.
+	* trans.c (gfc_build_final_call): Likewise.
+
+2019-06-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90987
+	* gfortran.dg/common_1.f: new test.
+	* gfortran.dg/common_26.f90: Ditto.
+
 2019-06-26  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR Fortran/90988
-	ChangeLog forgotten with revision 272698
+	ChangeLog forgotten with revision 272667
 	* decl.c (access_attr_decl): Use temporary variable to reduce
 	unreadability of code.  Normalize jumping to return.
-	(gfc_match_protected): Fix parsing error.  Add comments to 
+	(gfc_match_protected): Fix parsing error.  Add comments to
 	explain code.  Remove dead code.
-	(gfc_match_private): Use temporary variable to reduce unreadability 
+	(gfc_match_private): Use temporary variable to reduce unreadability
 	of code. Fix parsing error.  Move code to test for blank PRIVATE.
 	Remove dead code.
 	(gfc_match_public): Move code to test for blank PUBLIC.  Fix
@@ -61,7 +378,7 @@
 2019-06-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/69499
-	* match.c (gfc_match_select_type):  SELECT TYPE is an executable
+	* match.c (gfc_match_select_type): SELECT TYPE is an executable
 	statement, and cannot appear in MODULE or SUBMODULE scope.
 
 2019-06-19  Steven G. Kargl  <kargl@gcc.gnu.org>
@@ -178,7 +495,7 @@
 	only checking the reference chain.
 
 2019-06-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
-	Tomáš Trnka  <trnka@scm.com>
+	    Tomáš Trnka  <trnka@scm.com>
 
 	PR fortran/90744
 	* trans-types.c (get_formal_from_actual_arglist): Unset typespec
@@ -383,7 +700,7 @@
 	* module.c (write_module): Initialize module_column before writing
 	module to ensure line break occurs at correct column.
 
-2019-05-01 Dominique d'Humieres  <dominiq@gcc.gnu.org>
+2019-05-01  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	PR fortran/60144
 	* match.c (gfc_match_parens): Change the location for missing ')'.
@@ -503,7 +820,7 @@
 
 2019-03-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
-	* dump-parse-tree.c (debug):  Add for symbol_attribute *,
+	* dump-parse-tree.c (debug): Add for symbol_attribute *,
 	symbol_attribute and gfc_ref * arguments.
 
 2019-03-30  Paul Thomas  <pault@gcc.gnu.org>
@@ -764,7 +1081,7 @@
 2019-03-09  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/71203
-	* decl.c (add_init_expr_to_sym):  Add shape if init has none.  Add
+	* decl.c (add_init_expr_to_sym): Add shape if init has none.  Add
 	asserts that it has to be an EXPR_ARRAY in this case.
 
 2019-03-08  Jakub Jelinek  <jakub@redhat.com>
@@ -827,6 +1144,10 @@
 	the actual arglist has no expression, the corresponding
 	formal arglist is an alternate return.
 
+2019-02-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* invoke.texi (-ffpe-trap): Use @var for every item in the list.
+
 2019-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/43210
@@ -859,7 +1180,7 @@
 	* class.c (find_intrinsic_vtab): Likewise.
 	* simplify.c (gfc_simplify_sizeof): Likewise.
 
-2019-02-23  Jerry DeLisle <jvdelisle@gcc.gnu.org>
+2019-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/84387
 	* trans-io.c (transfer_expr): Do not return if there are no
@@ -1009,7 +1330,7 @@
 2019-02-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/71066
-	* trans-decl.c (generate_coarray_sym_init):  For an array
+	* trans-decl.c (generate_coarray_sym_init): For an array
 	constructor in a DATA statement of a coarray variable, set the
 	rank to 1 to avoid confusion later on.  If the constructor
 	contains only one value, use that for initiailizig.
@@ -1195,7 +1516,7 @@
 	* io.c (match_io_element): input-item cannot be an external function.
 
 2018-01-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
-	Paul Thomas  <pault@gcc.gnu.org>
+	    Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/56789
 	* trans-expr.c (gfc_conv_procedure_call): Call
@@ -1351,8 +1672,8 @@
 	directly build the expected GENERIC tree.
 
 2019-01-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
-	Harald Anlauf <anlauf@gmx.de>
-	Tobias Burnus <burnus@gcc.gnu.org>
+	    Harald Anlauf  <anlauf@gmx.de>
+	    Tobias Burnus  <burnus@gcc.gnu.org>
 
 	PR fortran/45424
 	* check.c (gfc_check_is_contiguous): New function.

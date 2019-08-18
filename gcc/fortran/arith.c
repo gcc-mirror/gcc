@@ -1892,56 +1892,6 @@ gfc_le (gfc_expr *op1, gfc_expr *op2, gfc_intrinsic_op op)
 }
 
 
-/* Convert an integer string to an expression node.  */
-
-gfc_expr *
-gfc_convert_integer (const char *buffer, int kind, int radix, locus *where)
-{
-  gfc_expr *e;
-  const char *t;
-
-  e = gfc_get_constant_expr (BT_INTEGER, kind, where);
-  /* A leading plus is allowed, but not by mpz_set_str.  */
-  if (buffer[0] == '+')
-    t = buffer + 1;
-  else
-    t = buffer;
-  mpz_set_str (e->value.integer, t, radix);
-
-  return e;
-}
-
-
-/* Convert a real string to an expression node.  */
-
-gfc_expr *
-gfc_convert_real (const char *buffer, int kind, locus *where)
-{
-  gfc_expr *e;
-
-  e = gfc_get_constant_expr (BT_REAL, kind, where);
-  mpfr_set_str (e->value.real, buffer, 10, GFC_RND_MODE);
-
-  return e;
-}
-
-
-/* Convert a pair of real, constant expression nodes to a single
-   complex expression node.  */
-
-gfc_expr *
-gfc_convert_complex (gfc_expr *real, gfc_expr *imag, int kind)
-{
-  gfc_expr *e;
-
-  e = gfc_get_constant_expr (BT_COMPLEX, kind, &real->where);
-  mpc_set_fr_fr (e->value.complex, real->value.real, imag->value.real,
-		 GFC_MPC_RND_MODE);
-
-  return e;
-}
-
-
 /******* Simplification of intrinsic functions with constant arguments *****/
 
 

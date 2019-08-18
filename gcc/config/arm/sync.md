@@ -170,11 +170,11 @@
 })
 
 (define_expand "atomic_compare_and_swap<mode>"
-  [(match_operand:SI 0 "s_register_operand" "")		;; bool out
-   (match_operand:QHSD 1 "s_register_operand" "")	;; val out
-   (match_operand:QHSD 2 "mem_noofs_operand" "")	;; memory
-   (match_operand:QHSD 3 "general_operand" "")		;; expected
-   (match_operand:QHSD 4 "s_register_operand" "")	;; desired
+  [(match_operand:SI 0 "s_register_operand")		;; bool out
+   (match_operand:QHSD 1 "s_register_operand")		;; val out
+   (match_operand:QHSD 2 "mem_noofs_operand")		;; memory
+   (match_operand:QHSD 3 "general_operand")		;; expected
+   (match_operand:QHSD 4 "s_register_operand")		;; desired
    (match_operand:SI 5 "const_int_operand")		;; is_weak
    (match_operand:SI 6 "const_int_operand")		;; mod_s
    (match_operand:SI 7 "const_int_operand")]		;; mod_f
@@ -201,7 +201,7 @@
 	   (match_operand:SI 7 "const_int_operand")]		;; mod_f
 	  VUNSPEC_ATOMIC_CAS))
    (clobber (match_scratch:SI 8 "=&r,X,X,X"))]
-  "<sync_predtab>"
+  "<NARROW:sync_predtab>"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -225,14 +225,14 @@
 	(match_operand:SIDI 2 "mem_noofs_operand" "+Ua,Ua,Ua,Ua"))	;; memory
    (set (match_dup 2)
 	(unspec_volatile:SIDI
-	  [(match_operand:SIDI 3 "<cas_cmp_operand>" "<cas_cmp_str>,lIL*h,J,*r") ;; expect
+	  [(match_operand:SIDI 3 "<SIDI:cas_cmp_operand>" "<SIDI:cas_cmp_str>,lIL*h,J,*r") ;; expect
 	   (match_operand:SIDI 4 "s_register_operand" "r,r,r,r")	;; desired
 	   (match_operand:SI 5 "const_int_operand")		;; is_weak
 	   (match_operand:SI 6 "const_int_operand")		;; mod_s
 	   (match_operand:SI 7 "const_int_operand")]		;; mod_f
 	  VUNSPEC_ATOMIC_CAS))
    (clobber (match_scratch:SI 8 "=&r,X,X,X"))]
-  "<sync_predtab>"
+  "<SIDI:sync_predtab>"
   "#"
   "&& reload_completed"
   [(const_int 0)]

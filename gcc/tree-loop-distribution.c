@@ -506,7 +506,7 @@ bb_top_order_cmp (const void *x, const void *y)
    statements in loop copies.  */
 
 static void
-stmts_from_loop (struct loop *loop, vec<gimple *> *stmts)
+stmts_from_loop (class loop *loop, vec<gimple *> *stmts)
 {
   unsigned int i;
   basic_block *bbs = get_loop_body_in_custom_order (loop, bb_top_order_cmp);
@@ -564,7 +564,7 @@ free_rdg (struct graph *rdg)
    collected and recorded in global data DATAREFS_VEC.  */
 
 static struct graph *
-build_rdg (struct loop *loop, control_dependences *cd)
+build_rdg (class loop *loop, control_dependences *cd)
 {
   struct graph *rdg;
 
@@ -787,10 +787,10 @@ stmt_has_scalar_dependences_outside_loop (loop_p loop, gimple *stmt)
 
 /* Return a copy of LOOP placed before LOOP.  */
 
-static struct loop *
-copy_loop_before (struct loop *loop)
+static class loop *
+copy_loop_before (class loop *loop)
 {
-  struct loop *res;
+  class loop *res;
   edge preheader = loop_preheader_edge (loop);
 
   initialize_original_copy_tables ();
@@ -805,7 +805,7 @@ copy_loop_before (struct loop *loop)
 /* Creates an empty basic block after LOOP.  */
 
 static void
-create_bb_after_loop (struct loop *loop)
+create_bb_after_loop (class loop *loop)
 {
   edge exit = single_exit (loop);
 
@@ -822,7 +822,7 @@ create_bb_after_loop (struct loop *loop)
    basic blocks of a loop are taken in dom order.  */
 
 static void
-generate_loops_for_partition (struct loop *loop, partition *partition,
+generate_loops_for_partition (class loop *loop, partition *partition,
 			      bool copy_p)
 {
   unsigned i;
@@ -994,7 +994,7 @@ const_with_all_bytes_same (tree val)
 /* Generate a call to memset for PARTITION in LOOP.  */
 
 static void
-generate_memset_builtin (struct loop *loop, partition *partition)
+generate_memset_builtin (class loop *loop, partition *partition)
 {
   gimple_stmt_iterator gsi;
   tree mem, fn, nb_bytes;
@@ -1048,7 +1048,7 @@ generate_memset_builtin (struct loop *loop, partition *partition)
 /* Generate a call to memcpy for PARTITION in LOOP.  */
 
 static void
-generate_memcpy_builtin (struct loop *loop, partition *partition)
+generate_memcpy_builtin (class loop *loop, partition *partition)
 {
   gimple_stmt_iterator gsi;
   gimple *fn_call;
@@ -1092,7 +1092,7 @@ generate_memcpy_builtin (struct loop *loop, partition *partition)
 /* Remove and destroy the loop LOOP.  */
 
 static void
-destroy_loop (struct loop *loop)
+destroy_loop (class loop *loop)
 {
   unsigned nbbs = loop->num_nodes;
   edge exit = single_exit (loop);
@@ -1169,7 +1169,7 @@ destroy_loop (struct loop *loop)
 /* Generates code for PARTITION.  Return whether LOOP needs to be destroyed.  */
 
 static bool 
-generate_code_for_partition (struct loop *loop,
+generate_code_for_partition (class loop *loop,
 			     partition *partition, bool copy_p)
 {
   switch (partition->kind)
@@ -1346,7 +1346,7 @@ build_rdg_partition_for_vertex (struct graph *rdg, int v)
    data references.  */
 
 static bool
-find_single_drs (struct loop *loop, struct graph *rdg, partition *partition,
+find_single_drs (class loop *loop, struct graph *rdg, partition *partition,
 		 data_reference_p *dst_dr, data_reference_p *src_dr)
 {
   unsigned i;
@@ -1469,7 +1469,7 @@ compute_access_range (loop_p loop_nest, data_reference_p dr, tree *base,
 {
   location_t loc = gimple_location (DR_STMT (dr));
   basic_block bb = gimple_bb (DR_STMT (dr));
-  struct loop *loop = bb->loop_father;
+  class loop *loop = bb->loop_father;
   tree ref = DR_REF (dr);
   tree access_base = build_fold_addr_expr (ref);
   tree access_size = TYPE_SIZE_UNIT (TREE_TYPE (ref));
@@ -2426,7 +2426,7 @@ data_ref_segment_size (struct data_reference *dr, tree niters)
    DR.  */
 
 static inline bool
-latch_dominated_by_data_ref (struct loop *loop, data_reference *dr)
+latch_dominated_by_data_ref (class loop *loop, data_reference *dr)
 {
   return dominated_by_p (CDI_DOMINATORS, single_exit (loop)->src,
 			 gimple_bb (DR_STMT (dr)));
@@ -2436,7 +2436,7 @@ latch_dominated_by_data_ref (struct loop *loop, data_reference *dr)
    data dependence relations ALIAS_DDRS.  */
 
 static void
-compute_alias_check_pairs (struct loop *loop, vec<ddr_p> *alias_ddrs,
+compute_alias_check_pairs (class loop *loop, vec<ddr_p> *alias_ddrs,
 			   vec<dr_with_seg_len_pair_t> *comp_alias_pairs)
 {
   unsigned int i;
@@ -2508,11 +2508,11 @@ compute_alias_check_pairs (struct loop *loop, vec<ddr_p> *alias_ddrs,
 
 static void
 version_loop_by_alias_check (vec<struct partition *> *partitions,
-			     struct loop *loop, vec<ddr_p> *alias_ddrs)
+			     class loop *loop, vec<ddr_p> *alias_ddrs)
 {
   profile_probability prob;
   basic_block cond_bb;
-  struct loop *nloop;
+  class loop *nloop;
   tree lhs, arg0, cond_expr = NULL_TREE;
   gimple_seq cond_stmts = NULL;
   gimple *call_stmt = NULL;
@@ -2723,7 +2723,7 @@ fuse_memset_builtins (vec<struct partition *> *partitions)
    ALIAS_DDRS contains ddrs which need runtime alias check.  */
 
 static void
-finalize_partitions (struct loop *loop, vec<struct partition *> *partitions,
+finalize_partitions (class loop *loop, vec<struct partition *> *partitions,
 		     vec<ddr_p> *alias_ddrs)
 {
   unsigned i;
@@ -2780,7 +2780,7 @@ finalize_partitions (struct loop *loop, vec<struct partition *> *partitions,
    Set *DESTROY_P to whether LOOP needs to be destroyed.  */
 
 static int
-distribute_loop (struct loop *loop, vec<gimple *> stmts,
+distribute_loop (class loop *loop, vec<gimple *> stmts,
 		 control_dependences *cd, int *nb_calls, bool *destroy_p,
 		 bool only_patterns_p)
 {
@@ -3060,7 +3060,7 @@ public:
    WORK_LIST.  Return false if there is nothing for distribution.  */
 
 static bool
-find_seed_stmts_for_distribution (struct loop *loop, vec<gimple *> *work_list)
+find_seed_stmts_for_distribution (class loop *loop, vec<gimple *> *work_list)
 {
   basic_block *bbs = get_loop_body_in_dom_order (loop);
 
@@ -3114,10 +3114,10 @@ find_seed_stmts_for_distribution (struct loop *loop, vec<gimple *> *work_list)
 /* Given innermost LOOP, return the outermost enclosing loop that forms a
    perfect loop nest.  */
 
-static struct loop *
-prepare_perfect_loop_nest (struct loop *loop)
+static class loop *
+prepare_perfect_loop_nest (class loop *loop)
 {
-  struct loop *outer = loop_outer (loop);
+  class loop *outer = loop_outer (loop);
   tree niters = number_of_latch_executions (loop);
 
   /* TODO: We only support the innermost 3-level loop nest distribution
@@ -3143,7 +3143,7 @@ prepare_perfect_loop_nest (struct loop *loop)
 unsigned int
 pass_loop_distribution::execute (function *fun)
 {
-  struct loop *loop;
+  class loop *loop;
   bool changed = false;
   basic_block bb;
   control_dependences *cd = NULL;

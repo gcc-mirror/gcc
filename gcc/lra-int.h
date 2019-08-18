@@ -64,8 +64,9 @@ struct lra_copy
 };
 
 /* Common info about a register (pseudo or hard register).  */
-struct lra_reg
+class lra_reg
 {
+public:
   /* Bitmap of UIDs of insns (including debug insns) referring the
      reg.  */
   bitmap_head insn_bitmap;
@@ -118,7 +119,7 @@ struct lra_reg
 };
 
 /* References to the common info about each register.  */
-extern struct lra_reg *lra_reg_info;
+extern class lra_reg *lra_reg_info;
 
 extern HARD_REG_SET hard_regs_spilled_into;
 
@@ -141,10 +142,6 @@ struct lra_operand_data
   unsigned int strict_low : 1;
   /* True if the operand is an operator.  */
   unsigned int is_operator : 1;
-  /* True if there is an early clobber alternative for this operand.
-     This field is set up every time when corresponding
-     operand_alternative in lra_static_insn_data is set up.  */
-  unsigned int early_clobber : 1;
   /* True if the operand is an address.  */
   unsigned int is_address : 1;
 };
@@ -163,9 +160,6 @@ struct lra_insn_reg
   /* True if the reg is accessed through a subreg and the subreg is
      just a part of the register.  */
   unsigned int subreg_p : 1;
-  /* True if there is an early clobber alternative for this
-     operand.  */
-  unsigned int early_clobber : 1;
   /* True if the reg is clobber highed by the operand.  */
   unsigned int clobber_high : 1;
   /* The corresponding regno of the register.  */
@@ -210,8 +204,9 @@ struct lra_static_insn_data
 
 /* LRA internal info about an insn (LRA internal insn
    representation).  */
-struct lra_insn_recog_data
+class lra_insn_recog_data
 {
+public:
   /* The insn code.  */
   int icode;
   /* The alternative should be used for the insn, LRA_UNKNOWN_ALT if
@@ -242,7 +237,7 @@ struct lra_insn_recog_data
   struct lra_insn_reg *regs;
 };
 
-typedef struct lra_insn_recog_data *lra_insn_recog_data_t;
+typedef class lra_insn_recog_data *lra_insn_recog_data_t;
 
 /* Whether the clobber is used temporary in LRA.  */
 #define LRA_TEMP_CLOBBER_P(x) \

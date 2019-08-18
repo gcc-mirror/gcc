@@ -517,8 +517,9 @@ get_concept_definition (tree decl)
 
 int expansion_level = 0;
 
-struct expanding_concept_sentinel
+class expanding_concept_sentinel
 {
+public:
   expanding_concept_sentinel ()
   {
     ++expansion_level;
@@ -804,7 +805,7 @@ check_for_logical_overloads (tree t)
 
   if (DECL_OVERLOADED_OPERATOR_P (fn))
     {
-      location_t loc = cp_expr_loc_or_loc (t, input_location);
+      location_t loc = cp_expr_loc_or_input_loc (t);
       error_at (loc, "constraint %qE, uses overloaded operator", t);
       return true;
     }
@@ -2015,7 +2016,7 @@ satisfy_predicate_constraint (tree t, tree args,
   tree type = cv_unqualified (TREE_TYPE (expr));
   if (!same_type_p (type, boolean_type_node))
     {
-      error_at (cp_expr_loc_or_loc (expr, input_location),
+      error_at (cp_expr_loc_or_input_loc (expr),
                 "constraint %qE does not have type %qT",
                 expr, boolean_type_node);
       return boolean_false_node;

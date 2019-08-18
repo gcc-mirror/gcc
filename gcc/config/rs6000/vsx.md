@@ -923,7 +923,7 @@
    mr %0,%L1\;mr %L0,%1
    ld%U1%X1 %0,%L1\;ld%U1%X1 %L0,%1
    std%U0%X0 %L1,%0\;std%U0%X0 %1,%L0"
-  [(set_attr "length" "4,4,4,8,8,8")
+  [(set_attr "length" "*,*,*,8,8,8")
    (set_attr "type" "vecperm,vecload,vecstore,*,load,store")])
 
 (define_insn_and_split "*vsx_le_undo_permute_<mode>"
@@ -1150,9 +1150,9 @@
                 store,     load,      store,     *,         vecsimple, vecsimple,
                 vecsimple, *,         *,         vecstore,  vecload")
    (set_attr "length"
-               "4,         4,         4,         8,         4,         8,
-                8,         8,         8,         8,         4,         4,
-                4,         20,        8,         4,         4")
+               "*,         *,         *,         8,         *,         8,
+                8,         8,         8,         8,         *,         *,
+                *,         20,        8,         *,         *")
    (set_attr "isa"
                "<VSisa>,   <VSisa>,   <VSisa>,   *,         *,         *,
                 *,         *,         *,         *,         p9v,       *,
@@ -1183,9 +1183,9 @@
                 vecsimple, vecsimple, vecsimple, *,         *,
                 vecstore,  vecload")
    (set_attr "length"
-               "4,         4,         4,         16,        16,        16,
-                4,         4,         4,         20,        16,
-                4,         4")
+               "*,         *,         *,         16,        16,        16,
+                *,         *,         *,         20,        16,
+                *,         *")
    (set_attr "isa"
                "<VSisa>,   <VSisa>,   <VSisa>,   *,         *,         *,
                 p9v,       *,         <VSisa>,   *,         *,
@@ -3828,7 +3828,7 @@
 {
   operands[4] = gen_rtx_REG (DImode, REGNO (operands[3]));
 }
-  [(set_attr "isa" "<VSisa>")])
+  [(set_attr "isa" "<FL_CONV:VSisa>")])
 
 (define_insn_and_split "*vsx_ext_<VSX_EXTRACT_I:VS_scalar>_ufl_<FL_CONV:mode>"
   [(set (match_operand:FL_CONV 0 "gpc_reg_operand" "=wa")
@@ -3851,7 +3851,7 @@
 {
   operands[4] = gen_rtx_REG (DImode, REGNO (operands[3]));
 }
-  [(set_attr "isa" "<VSisa>")])
+  [(set_attr "isa" "<FL_CONV:VSisa>")])
 
 ;; V4SI/V8HI/V16QI set operation on ISA 3.0
 (define_insn "vsx_set_<mode>_p9"
@@ -4112,7 +4112,7 @@
 		      (const_int 0)] UNSPEC_VSX_XXSPLTW))]
   ""
   [(set_attr "type" "vecload,vecperm,mftgpr")
-   (set_attr "length" "4,8,4")
+   (set_attr "length" "*,8,*")
    (set_attr "isa" "*,p8v,*")])
 
 ;; V4SF/V4SI splat from a vector element

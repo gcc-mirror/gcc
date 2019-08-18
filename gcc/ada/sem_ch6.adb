@@ -1056,9 +1056,17 @@ package body Sem_Ch6 is
          --  Apply constraint check. Note that this is done before the implicit
          --  conversion of the expression done for anonymous access types to
          --  ensure correct generation of the null-excluding check associated
-         --  with null-excluding expressions found in return statements.
+         --  with null-excluding expressions found in return statements. We
+         --  don't need a check if the subtype of the return object is the
+         --  same as the result subtype of the function.
 
-         Apply_Constraint_Check (Expr, R_Type);
+         if Nkind (N) /= N_Extended_Return_Statement
+           or else Nkind (Obj_Decl) /= N_Object_Declaration
+           or else Nkind (Object_Definition (Obj_Decl)) not in N_Has_Entity
+           or else Entity (Object_Definition (Obj_Decl)) /= R_Type
+         then
+            Apply_Constraint_Check (Expr, R_Type);
+         end if;
 
          --  The return value is converted to the return type of the function,
          --  which implies a predicate check if the return type is predicated.
@@ -3689,7 +3697,7 @@ package body Sem_Ch6 is
          --  generated. Freeze nodes, if any, are inserted before the current
          --  body. These freeze actions are also needed in ASIS mode and in
          --  Compile_Only mode to enable the proper back-end type annotations.
-         --  They are necessary in any case to insure order of elaboration
+         --  They are necessary in any case to ensure proper elaboration order
          --  in gigi.
 
          if Nkind (N) = N_Subprogram_Body
@@ -3698,13 +3706,16 @@ package body Sem_Ch6 is
            and then Serious_Errors_Detected = 0
            and then (Expander_Active
                       or else ASIS_Mode
-                      or else Operating_Mode = Check_Semantics)
+                      or else Operating_Mode = Check_Semantics
+                      or else Is_Ignored_Ghost_Entity (Spec_Id))
          then
             --  The body generated for an expression function that is not a
             --  completion is a freeze point neither for the profile nor for
             --  anything else. That's why, in order to prevent any freezing
             --  during analysis, we need to mask types declared outside the
             --  expression (and in an outer scope) that are not yet frozen.
+            --  This also needs to be done in the case of an ignored Ghost
+            --  expression function, where the expander isn't active.
 
             Set_Is_Frozen (Spec_Id);
             Mask_Types := Mask_Unfrozen_Types (Spec_Id);
@@ -5444,10 +5455,14 @@ package body Sem_Ch6 is
                and then Directly_Designated_Type (Old_Formal_Base) =
                                     Directly_Designated_Type (New_Formal_Base)
            and then ((Is_Itype (Old_Formal_Base)
-                       and then Can_Never_Be_Null (Old_Formal_Base))
+                       and then (Can_Never_Be_Null (Old_Formal_Base)
+                                  or else Is_Access_Constant
+                                            (Old_Formal_Base)))
                      or else
                       (Is_Itype (New_Formal_Base)
-                        and then Can_Never_Be_Null (New_Formal_Base)));
+                        and then (Can_Never_Be_Null (New_Formal_Base)
+                                   or else Is_Access_Constant
+                                             (New_Formal_Base))));
 
          --  Types must always match. In the visible part of an instance,
          --  usual overloading rules for dispatching operations apply, and
@@ -5953,7 +5968,7 @@ package body Sem_Ch6 is
               Access_Definition (N, Discriminant_Type (New_Discr));
 
          else
-            Analyze (Discriminant_Type (New_Discr));
+            Find_Type (Discriminant_Type (New_Discr));
             New_Discr_Type := Etype (Discriminant_Type (New_Discr));
 
             --  Ada 2005: if the discriminant definition carries a null
@@ -8413,11 +8428,12 @@ package body Sem_Ch6 is
 
    begin
       --  This check applies only if we have a subprogram declaration with an
-      --  untagged record type.
+      --  untagged record type that is conformant to the predefined op.
 
       if Nkind (Decl) /= N_Subprogram_Declaration
         or else not Is_Record_Type (Typ)
         or else Is_Tagged_Type (Typ)
+        or else Etype (Next_Formal (First_Formal (Eq_Op))) /= Typ
       then
          return;
       end if;
@@ -10148,7 +10164,7 @@ package body Sem_Ch6 is
 
                         --  Here, S is "function ... return T;" declared in
                         --  the private part, not overriding some visible
-                        --  operation.  That's illegal in the tagged case
+                        --  operation. That's illegal in the tagged case
                         --  (but not if the private type is untagged).
 
                         if ((Present (Partial_View)
@@ -11335,7 +11351,13 @@ package body Sem_Ch6 is
                goto Continue;
             end if;
 
-            Formal_Type := Entity (Ptype);
+            --  Protect against malformed parameter types
+
+            if Nkind (Ptype) not in N_Has_Entity then
+               Formal_Type := Any_Type;
+            else
+               Formal_Type := Entity (Ptype);
+            end if;
 
             if Is_Incomplete_Type (Formal_Type)
               or else

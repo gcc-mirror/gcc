@@ -21,47 +21,77 @@
 ; See the GCC internals manual (options.texi) for a description of
 ; this file's format.
 
-; Please try to keep this file in ASCII collating order.
-
 mhard-div
 Target RejectNegative InverseMask(SOFT_DIV)
-Use hardware divide instructions, use -msoft-div for emulation.
-
-mhard-mul
-Target RejectNegative InverseMask(SOFT_MUL).
-Use hardware multiply instructions, use -msoft-mul for emulation.
-
-mcmov
-Target RejectNegative Mask(CMOV)
-Allows generation of binaries which use the l.cmov instruction.  If your target
-does not support this the compiler will generate the equivalent using set and
-branch.
-
-mror
-Target RejectNegative Mask(ROR)
-Allows generation of binaries which use the l.rori instructions.
-
-msext
-Target RejectNegative Mask(SEXT)
-Allows generation of binaries which use sign-extension instructions.  If your
-target does not support this the compiler will use memory loads to perform sign
-extension.
-
-msfimm
-Target RejectNegative Mask(SFIMM)
-Allows generation of binaries which use l.sf*i instructions.  If your target
-does not support this the compiler will generate instructions to store the
-immediate to a register first.
-
-mshftimm
-Target RejectNegative Mask(SHFTIMM)
-Allows generation of binaries which support shifts and rotate instructions
-supporting immediate arguments, for example l.rori.
+Enable generation of hardware divide (l.div, l.divu) instructions.  This is the
+default; use -msoft-div to override.
 
 msoft-div
 Target RejectNegative Mask(SOFT_DIV)
-Use divide emulation.
+Enable generation of binaries which use functions from libgcc to perform divide
+operations.  The default is -mhard-div.
+
+mhard-mul
+Target RejectNegative InverseMask(SOFT_MUL).
+Enable generation of hardware multiply instructions (l.mul, l.muli) instructions.
+This is the default; use -msoft-mul to override.
 
 msoft-mul
 Target RejectNegative Mask(SOFT_MUL).
-Use multiply emulation.
+Enable generation of binaries which use functions from libgcc to perform
+multiply operations. The default is -mhard-mul.
+
+msoft-float
+Target RejectNegative InverseMask(HARD_FLOAT)
+Enable generation of binaries which use functions from libgcc to perform
+floating point operations.  This is the default; use -mhard-float to override.
+
+mhard-float
+Target RejectNegative Mask(HARD_FLOAT)
+Enable generation of hardware floating point instructions. The default is
+-msoft-float.
+
+mdouble-float
+Target Mask(DOUBLE_FLOAT)
+When -mhard-float is selected, enables generation of double-precision floating
+point instructions.  By default functions from libgcc are used to perform
+double-precision floating point operations.
+
+munordered-float
+Target RejectNegative Mask(FP_UNORDERED)
+When -mhard-float is selected, enables generation of unordered floating point
+compare and set flag (lf.sfun*) instructions.  By default functions from libgcc
+are used to perform unordered floating point compare and set flag operations.
+
+mcmov
+Target RejectNegative Mask(CMOV)
+Enable generation of conditional move (l.cmov) instructions.  By default the
+equivalent will be generated using using set and branch.
+
+mror
+Target RejectNegative Mask(ROR)
+Enable generation of rotate right (l.ror) instructions.  By default functions
+from libgcc are used to perform rotate right operations.
+
+mrori
+Target RejectNegative Mask(RORI)
+Enable generation of rotate right with immediate (l.rori) instructions.  By
+default functions from libgcc are used to perform rotate right with immediate
+operations.
+
+msext
+Target RejectNegative Mask(SEXT)
+Enable generation of sign extension (l.ext*) instructions.  By default memory
+loads are used to perform sign extension.
+
+msfimm
+Target RejectNegative Mask(SFIMM)
+Enable generation of compare and set flag with immediate (l.sf*i) instructions.
+By default extra instructions will be generated to store the immediate to a
+register first.
+
+mshftimm
+Target RejectNegative Mask(SHFTIMM)
+Enable generation of shift with immediate (l.srai, l.srli, l.slli) instructions.
+By default extra instructions will be generated to store the immediate to a
+register first.

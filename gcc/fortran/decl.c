@@ -547,7 +547,7 @@ match_old_style_init (const char *name)
   match m;
   gfc_symtree *st;
   gfc_symbol *sym;
-  gfc_data *newdata;
+  gfc_data *newdata, *nd;
 
   /* Set up data structure to hold initializers.  */
   gfc_find_sym_tree (name, NULL, 0, &st);
@@ -565,6 +565,26 @@ match_old_style_init (const char *name)
     {
       free (newdata);
       return m;
+    }
+
+  /* Check that a BOZ did not creep into an old-style initialization.  */
+  for (nd = newdata; nd; nd = nd->next)
+    {
+      if (nd->value->expr->ts.type == BT_BOZ
+	  && gfc_invalid_boz ("BOZ at %L cannot appear in an old-style "
+			      "initialization", &nd->value->expr->where))
+	return MATCH_ERROR;
+
+      if (nd->var->expr->ts.type != BT_INTEGER
+	  && nd->var->expr->ts.type != BT_REAL
+	  && nd->value->expr->ts.type == BT_BOZ)
+	{
+	  gfc_error ("BOZ literal constant near %L cannot be assigned to "
+		     "a %qs variable in an old-style initialization",
+		     &nd->value->expr->where,
+		     gfc_typename (&nd->value->expr->ts));
+	  return MATCH_ERROR;
+	}
     }
 
   if (gfc_pure (NULL))
@@ -602,6 +622,14 @@ gfc_match_data (void)
   gfc_expr *e;
   gfc_ref *ref;
   match m;
+  char c;
+
+  /* DATA has been matched.  In free form source code, the next character
+     needs to be whitespace or '(' from an implied do-loop.  Check that
+     here.  */
+  c = gfc_peek_ascii_char ();
+  if (gfc_current_form == FORM_FREE && !gfc_is_whitespace (c) && c != '(')
+    return MATCH_NO;
 
   /* Before parsing the rest of a DATA statement, check F2008:c1206.  */
   if ((gfc_current_state () == COMP_FUNCTION
@@ -2455,7 +2483,6 @@ variable_decl (int elem)
 
       /* %FILL components are given invalid fortran names.  */
       snprintf (name, GFC_MAX_SYMBOL_LEN + 1, "%%FILL%u", fill_id++);
-      m = MATCH_YES;
     }
 
   var_locus = gfc_current_locus;

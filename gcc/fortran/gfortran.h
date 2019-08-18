@@ -423,6 +423,7 @@ enum gfc_isym_id
   GFC_ISYM_C_SIZEOF,
   GFC_ISYM_DATE_AND_TIME,
   GFC_ISYM_DBLE,
+  GFC_ISYM_DFLOAT,
   GFC_ISYM_DIGITS,
   GFC_ISYM_DIM,
   GFC_ISYM_DOT_PRODUCT,
@@ -448,6 +449,7 @@ enum gfc_isym_id
   GFC_ISYM_FGET,
   GFC_ISYM_FGETC,
   GFC_ISYM_FINDLOC,
+  GFC_ISYM_FLOAT,
   GFC_ISYM_FLOOR,
   GFC_ISYM_FLUSH,
   GFC_ISYM_FNUM,
@@ -573,6 +575,7 @@ enum gfc_isym_id
   GFC_ISYM_RANGE,
   GFC_ISYM_RANK,
   GFC_ISYM_REAL,
+  GFC_ISYM_REALPART,
   GFC_ISYM_RENAME,
   GFC_ISYM_REPEAT,
   GFC_ISYM_RESHAPE,
@@ -598,6 +601,7 @@ enum gfc_isym_id
   GFC_ISYM_SIZE,
   GFC_ISYM_SLEEP,
   GFC_ISYM_SIZEOF,
+  GFC_ISYM_SNGL,
   GFC_ISYM_SPACING,
   GFC_ISYM_SPREAD,
   GFC_ISYM_SQRT,
@@ -2152,9 +2156,8 @@ typedef struct gfc_expr
      is not a variable.  */
   struct gfc_expr *base_expr;
 
-  /* is_boz is true if the integer is regarded as BOZ bit pattern and is_snan
-     denotes a signalling not-a-number.  */
-  unsigned int is_boz : 1, is_snan : 1;
+  /* is_snan denotes a signalling not-a-number.  */
+  unsigned int is_snan : 1;
 
   /* Sometimes, when an error has been emitted, it is necessary to prevent
       it from recurring.  */
@@ -2197,6 +2200,14 @@ typedef struct gfc_expr
     char *string;
   }
   representation;
+
+  struct
+  {
+    int len;	/* Length of BOZ string without terminating NULL.  */
+    int rdx;	/* Radix of BOZ.  */
+    char *str;	/* BOZ string with NULL terminating character.  */
+  }
+  boz;
 
   union
   {
@@ -3121,6 +3132,7 @@ void gfc_enforce_clean_symbol_state (void);
 gfc_gsymbol *gfc_get_gsymbol (const char *, bool bind_c);
 gfc_gsymbol *gfc_find_gsymbol (gfc_gsymbol *, const char *);
 gfc_gsymbol *gfc_find_case_gsymbol (gfc_gsymbol *, const char *);
+void gfc_traverse_gsymbol (gfc_gsymbol *, void (*)(gfc_gsymbol *, void *), void *);
 
 gfc_typebound_proc* gfc_get_typebound_proc (gfc_typebound_proc*);
 gfc_symbol* gfc_get_derived_super_type (gfc_symbol*);
@@ -3464,6 +3476,9 @@ void gfc_delete_bbt (void *, void *, compare_fn);
 void gfc_dump_parse_tree (gfc_namespace *, FILE *);
 void gfc_dump_c_prototypes (gfc_namespace *, FILE *);
 void gfc_dump_external_c_prototypes (FILE *);
+void gfc_dump_global_symbols (FILE *);
+void debug (gfc_symbol *);
+void debug (gfc_expr *);
 
 /* parse.c */
 bool gfc_parse_file (void);
@@ -3479,6 +3494,10 @@ bool gfc_dep_difference (gfc_expr *, gfc_expr *, mpz_t *);
 bool gfc_check_same_strlen (const gfc_expr*, const gfc_expr*, const char*);
 bool gfc_calculate_transfer_sizes (gfc_expr*, gfc_expr*, gfc_expr*,
 				      size_t*, size_t*, size_t*);
+bool gfc_boz2int (gfc_expr *, int);
+bool gfc_boz2real (gfc_expr *, int);
+bool gfc_invalid_boz (const char *, locus *);
+
 
 /* class.c */
 void gfc_fix_class_refs (gfc_expr *e);
@@ -3534,6 +3553,7 @@ int gfc_dummy_code_callback (gfc_code **, int *, void *);
 int gfc_expr_walker (gfc_expr **, walk_expr_fn_t, void *);
 int gfc_code_walker (gfc_code **, walk_code_fn_t, walk_expr_fn_t, void *);
 bool gfc_has_dimen_vector_ref (gfc_expr *e);
+void gfc_check_externals (gfc_namespace *);
 
 /* simplify.c */
 

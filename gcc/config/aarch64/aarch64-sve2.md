@@ -26,7 +26,7 @@
 	   (unspec:SVE_I [(match_operand:SVE_I 1 "register_operand")
 			  (match_operand:SVE_I 2 "register_operand")]
 			 HADD)]
-	  UNSPEC_MERGE_PTRUE))]
+	  UNSPEC_PRED_X))]
   "TARGET_SVE2"
   {
     operands[3] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
@@ -41,7 +41,7 @@
 	   (unspec:SVE_I [(match_operand:SVE_I 1 "register_operand")
 			  (match_operand:SVE_I 2 "register_operand")]
 			 RHADD)]
-	  UNSPEC_MERGE_PTRUE))]
+	  UNSPEC_PRED_X))]
   "TARGET_SVE2"
   {
     operands[3] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
@@ -56,7 +56,7 @@
 	   (unspec:SVE_I [(match_operand:SVE_I 2 "register_operand" "%0, w")
 			  (match_operand:SVE_I 3 "register_operand" "w, w")]
 			 HADDSUB)]
-	  UNSPEC_MERGE_PTRUE))]
+	  UNSPEC_PRED_X))]
   "TARGET_SVE2"
   "@
    <sur>h<addsub>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>

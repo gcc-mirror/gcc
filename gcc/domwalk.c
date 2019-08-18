@@ -128,14 +128,12 @@ along with GCC; see the file COPYING3.  If not see
     which is currently an abstraction over walking tree statements.  Thus
     the dominator walker is currently only useful for trees.  */
 
-/* Reverse postorder index of each basic block.  */
-static int *bb_postorder;
-
 static int
-cmp_bb_postorder (const void *a, const void *b)
+cmp_bb_postorder (const void *a, const void *b, void *data)
 {
   basic_block bb1 = *(const basic_block *)(a);
   basic_block bb2 = *(const basic_block *)(b);
+  int *bb_postorder = (int *)data;
   /* Place higher completion number first (pop off lower number first).  */
   return bb_postorder[bb2->index] - bb_postorder[bb1->index];
 }
@@ -144,7 +142,7 @@ cmp_bb_postorder (const void *a, const void *b)
    i.e. by descending number in BB_POSTORDER array.  */
 
 static void
-sort_bbs_postorder (basic_block *bbs, int n)
+sort_bbs_postorder (basic_block *bbs, int n, int *bb_postorder)
 {
   if (__builtin_expect (n == 2, true))
     {
@@ -166,7 +164,7 @@ sort_bbs_postorder (basic_block *bbs, int n)
       bbs[0] = bb0, bbs[1] = bb1, bbs[2] = bb2;
     }
   else
-    qsort (bbs, n, sizeof *bbs, cmp_bb_postorder);
+    gcc_sort_r (bbs, n, sizeof *bbs, cmp_bb_postorder, bb_postorder);
 }
 
 /* Set EDGE_EXECUTABLE on every edge within FN's CFG.  */
@@ -294,7 +292,6 @@ dom_walker::walk (basic_block bb)
   basic_block *worklist = XNEWVEC (basic_block,
 				   n_basic_blocks_for_fn (cfun) * 2);
   int sp = 0;
-  bb_postorder = m_bb_to_rpo;
 
   while (true)
     {
@@ -339,7 +336,8 @@ dom_walker::walk (basic_block bb)
 	      if (sp - saved_sp > 1
 		  && m_dom_direction == CDI_DOMINATORS
 		  && m_bb_to_rpo)
-		sort_bbs_postorder (&worklist[saved_sp], sp - saved_sp);
+		sort_bbs_postorder (&worklist[saved_sp], sp - saved_sp,
+				    m_bb_to_rpo);
 	    }
 	}
       /* NULL is used to mark pop operations in the recursion stack.  */
@@ -360,6 +358,5 @@ dom_walker::walk (basic_block bb)
       else
 	break;
     }
-  bb_postorder = NULL;
   free (worklist);
 }

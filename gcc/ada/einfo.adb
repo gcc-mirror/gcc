@@ -421,7 +421,6 @@ package body Einfo is
    --    Never_Set_In_Source             Flag115
    --    Is_Visible_Lib_Unit             Flag116
    --    Is_Unchecked_Union              Flag117
-   --    Is_For_Access_Subtype           Flag118
    --    Has_Convention_Pragma           Flag119
    --    Has_Primitive_Operations        Flag120
 
@@ -2141,7 +2140,7 @@ package body Einfo is
 
    function Is_Called (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Procedure, E_Function));
+      pragma Assert (Ekind_In (Id, E_Procedure, E_Function, E_Package));
       return Flag102 (Id);
    end Is_Called;
 
@@ -2303,12 +2302,6 @@ package body Einfo is
       return Flag70 (Id);
    end Is_First_Subtype;
 
-   function Is_For_Access_Subtype (Id : E) return B is
-   begin
-      pragma Assert (Ekind_In (Id, E_Record_Subtype, E_Private_Subtype));
-      return Flag118 (Id);
-   end Is_For_Access_Subtype;
-
    function Is_Formal_Subprogram (Id : E) return B is
    begin
       return Flag111 (Id);
@@ -2321,7 +2314,7 @@ package body Einfo is
 
    function Is_Generic_Actual_Subprogram (Id : E) return B is
    begin
-      pragma Assert (Ekind (Id) = E_Function or else Ekind (Id) = E_Procedure);
+      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
       return Flag274 (Id);
    end Is_Generic_Actual_Subprogram;
 
@@ -5351,7 +5344,7 @@ package body Einfo is
 
    procedure Set_Is_Called (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Procedure, E_Function));
+      pragma Assert (Ekind_In (Id, E_Procedure, E_Function, E_Package));
       Set_Flag102 (Id, V);
    end Set_Is_Called;
 
@@ -5525,12 +5518,6 @@ package body Einfo is
    begin
       Set_Flag70 (Id, V);
    end Set_Is_First_Subtype;
-
-   procedure Set_Is_For_Access_Subtype (Id : E; V : B := True) is
-   begin
-      pragma Assert (Ekind_In (Id, E_Record_Subtype, E_Private_Subtype));
-      Set_Flag118 (Id, V);
-   end Set_Is_For_Access_Subtype;
 
    procedure Set_Is_Formal_Subprogram (Id : E; V : B := True) is
    begin
@@ -7602,6 +7589,7 @@ package body Einfo is
                  Id = Pragma_Initial_Condition          or else
                  Id = Pragma_Initializes                or else
                  Id = Pragma_Interrupt_Handler          or else
+                 Id = Pragma_No_Caching                 or else
                  Id = Pragma_Part_Of                    or else
                  Id = Pragma_Refined_Depends            or else
                  Id = Pragma_Refined_Global             or else
@@ -8127,7 +8115,7 @@ package body Einfo is
    function Is_Elaboration_Target (Id : Entity_Id) return Boolean is
    begin
       return
-        Ekind_In (Id, E_Constant, E_Variable)
+        Ekind_In (Id, E_Constant, E_Package, E_Variable)
           or else Is_Entry        (Id)
           or else Is_Generic_Unit (Id)
           or else Is_Subprogram   (Id)
@@ -8141,7 +8129,7 @@ package body Einfo is
    function Is_External_State (Id : E) return B is
    begin
       --  To qualify, the abstract state must appear with option "external" or
-      --  "synchronous" (SPARK RM 7.1.4(8) and (10)).
+      --  "synchronous" (SPARK RM 7.1.4(7) and (9)).
 
       return
         Ekind (Id) = E_Abstract_State
@@ -8319,7 +8307,7 @@ package body Einfo is
    function Is_Synchronized_State (Id : E) return B is
    begin
       --  To qualify, the abstract state must appear with simple option
-      --  "synchronous" (SPARK RM 7.1.4(10)).
+      --  "synchronous" (SPARK RM 7.1.4(9)).
 
       return
         Ekind (Id) = E_Abstract_State
@@ -9826,7 +9814,6 @@ package body Einfo is
       W ("Is_Exported",                     Flag99  (Id));
       W ("Is_Finalized_Transient",          Flag252 (Id));
       W ("Is_First_Subtype",                Flag70  (Id));
-      W ("Is_For_Access_Subtype",           Flag118 (Id));
       W ("Is_Formal_Subprogram",            Flag111 (Id));
       W ("Is_Frozen",                       Flag4   (Id));
       W ("Is_Generic_Actual_Subprogram",    Flag274 (Id));

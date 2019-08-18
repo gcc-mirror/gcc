@@ -36,14 +36,21 @@
     the file must be compiled with IN_GCC defined, even for the library.  */
 
 #ifdef IN_RTS
+
+#ifndef STANDALONE
 #include "tconfig.h"
 #include "tsystem.h"
+#endif
+
 #else
 #include "config.h"
 #include "system.h"
 #endif
+
+#ifndef STANDALONE
 #include "coretypes.h"
 #include "tm.h"
+#endif
 
 #ifndef TARGET_OBJECT_SUFFIX
 #define TARGET_OBJECT_SUFFIX ".o"

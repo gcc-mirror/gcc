@@ -6070,7 +6070,7 @@ gen_function_def_parameters ()
   for (parm = DECL_ARGUMENTS (cfun->decl); parm;
        parm = DECL_CHAIN (parm))
     {
-      struct hsa_symbol **slot;
+      class hsa_symbol **slot;
 
       hsa_symbol *arg
 	= new hsa_symbol (BRIG_TYPE_NONE, hsa_cfun->m_kern_p
@@ -6128,7 +6128,7 @@ gen_function_def_parameters ()
 
   if (!VOID_TYPE_P (TREE_TYPE (TREE_TYPE (cfun->decl))))
     {
-      struct hsa_symbol **slot;
+      class hsa_symbol **slot;
 
       hsa_cfun->m_output_arg = new hsa_symbol (BRIG_TYPE_NONE, BRIG_SEGMENT_ARG,
 					       BRIG_LINKAGE_FUNCTION);
@@ -6213,8 +6213,9 @@ transformable_switch_to_sbr_p (gswitch *s)
 /* Structure hold connection between PHI nodes and immediate
    values hold by there nodes.  */
 
-struct phi_definition
+class phi_definition
 {
+public:
   phi_definition (unsigned phi_i, unsigned label_i, tree imm):
     phi_index (phi_i), label_index (label_i), phi_value (imm)
   {}

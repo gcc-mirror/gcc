@@ -30,6 +30,9 @@ namespace gcc {
 
 namespace jit {
 
+extern const char * const unary_op_reproducer_strings[];
+extern const char * const binary_op_reproducer_strings[];
+
 class result;
 class dump;
 class reproducer;
@@ -94,6 +97,12 @@ public:
   new_field (location *loc,
 	     type *type,
 	     const char *name);
+
+  field *
+  new_bitfield (location *loc,
+                type *type,
+                int width,
+                const char *name);
 
   struct_ *
   new_struct_type (location *loc,
@@ -822,9 +831,9 @@ public:
   compound_type * get_container () const { return m_container; }
   void set_container (compound_type *c) { m_container = c; }
 
-  void replay_into (replayer *) FINAL OVERRIDE;
+  void replay_into (replayer *) OVERRIDE;
 
-  void write_to_dump (dump &d) FINAL OVERRIDE;
+  void write_to_dump (dump &d) OVERRIDE;
 
   playback::field *
   playback_field () const
@@ -833,14 +842,39 @@ public:
   }
 
 private:
-  string * make_debug_string () FINAL OVERRIDE;
-  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+  string * make_debug_string () OVERRIDE;
+  void write_reproducer (reproducer &r) OVERRIDE;
 
-private:
+protected:
   location *m_loc;
   type *m_type;
   string *m_name;
   compound_type *m_container;
+};
+
+
+class bitfield : public field
+{
+public:
+  bitfield (context *ctxt,
+	    location *loc,
+	    type *type,
+	    int width,
+	    string *name)
+    : field (ctxt, loc, type, name),
+      m_width (width)
+  {}
+
+  void replay_into (replayer *) FINAL OVERRIDE;
+
+  void write_to_dump (dump &d) FINAL OVERRIDE;
+
+private:
+  string * make_debug_string () FINAL OVERRIDE;
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+
+private:
+  int m_width;
 };
 
 /* Base class for struct_ and union_ */

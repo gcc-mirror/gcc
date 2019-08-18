@@ -75,23 +75,23 @@ along with GCC; see the file COPYING3.  If not see
    tree-ssa-loop-im.c ensures that all the suitable conditions are in this
    shape.  */
 
-static struct loop *tree_unswitch_loop (struct loop *, basic_block, tree);
-static bool tree_unswitch_single_loop (struct loop *, int);
-static tree tree_may_unswitch_on (basic_block, struct loop *);
-static bool tree_unswitch_outer_loop (struct loop *);
-static edge find_loop_guard (struct loop *);
-static bool empty_bb_without_guard_p (struct loop *, basic_block);
-static bool used_outside_loop_p (struct loop *, tree);
-static void hoist_guard (struct loop *, edge);
-static bool check_exit_phi (struct loop *);
-static tree get_vop_from_header (struct loop *);
+static class loop *tree_unswitch_loop (class loop *, basic_block, tree);
+static bool tree_unswitch_single_loop (class loop *, int);
+static tree tree_may_unswitch_on (basic_block, class loop *);
+static bool tree_unswitch_outer_loop (class loop *);
+static edge find_loop_guard (class loop *);
+static bool empty_bb_without_guard_p (class loop *, basic_block);
+static bool used_outside_loop_p (class loop *, tree);
+static void hoist_guard (class loop *, edge);
+static bool check_exit_phi (class loop *);
+static tree get_vop_from_header (class loop *);
 
 /* Main entry point.  Perform loop unswitching on all suitable loops.  */
 
 unsigned int
 tree_ssa_unswitch_loops (void)
 {
-  struct loop *loop;
+  class loop *loop;
   bool changed = false;
 
   /* Go through all loops starting from innermost.  */
@@ -114,7 +114,7 @@ tree_ssa_unswitch_loops (void)
    considering for unswitching and LOOP is the loop it appears in.  */
 
 static bool
-is_maybe_undefined (const tree name, gimple *stmt, struct loop *loop)
+is_maybe_undefined (const tree name, gimple *stmt, class loop *loop)
 {
   /* The loop header is the only block we can trivially determine that
      will always be executed.  If the comparison is in the loop
@@ -187,7 +187,7 @@ is_maybe_undefined (const tree name, gimple *stmt, struct loop *loop)
    basic blocks (for what it means see comments below).  */
 
 static tree
-tree_may_unswitch_on (basic_block bb, struct loop *loop)
+tree_may_unswitch_on (basic_block bb, class loop *loop)
 {
   gimple *last, *def;
   gcond *stmt;
@@ -232,7 +232,7 @@ tree_may_unswitch_on (basic_block bb, struct loop *loop)
    unnecessarily).  */
 
 static tree
-simplify_using_entry_checks (struct loop *loop, tree cond)
+simplify_using_entry_checks (class loop *loop, tree cond)
 {
   edge e = loop_preheader_edge (loop);
   gimple *stmt;
@@ -265,10 +265,10 @@ simplify_using_entry_checks (struct loop *loop, tree cond)
    grow exponentially.  */
 
 static bool
-tree_unswitch_single_loop (struct loop *loop, int num)
+tree_unswitch_single_loop (class loop *loop, int num)
 {
   basic_block *bbs;
-  struct loop *nloop;
+  class loop *nloop;
   unsigned i, found;
   tree cond = NULL_TREE;
   gimple *stmt;
@@ -476,8 +476,8 @@ tree_unswitch_single_loop (struct loop *loop, int num)
    loop is entered -- the new loop is entered if COND is true.  Returns NULL
    if impossible, new loop otherwise.  */
 
-static struct loop *
-tree_unswitch_loop (struct loop *loop,
+static class loop *
+tree_unswitch_loop (class loop *loop,
 		    basic_block unswitch_on, tree cond)
 {
   profile_probability prob_true;
@@ -500,7 +500,7 @@ tree_unswitch_loop (struct loop *loop,
 /* Unswitch outer loops by hoisting invariant guard on
    inner loop without code duplication.  */
 static bool
-tree_unswitch_outer_loop (struct loop *loop)
+tree_unswitch_outer_loop (class loop *loop)
 {
   edge exit, guard;
   HOST_WIDE_INT iterations;
@@ -544,7 +544,7 @@ tree_unswitch_outer_loop (struct loop *loop)
    otherwise returns NULL.  */
 
 static edge
-find_loop_guard (struct loop *loop)
+find_loop_guard (class loop *loop)
 {
   basic_block header = loop->header;
   edge guard_edge, te, fe;
@@ -701,7 +701,7 @@ end:
    are invariant or not.  */
 
 static bool
-empty_bb_without_guard_p (struct loop *loop, basic_block bb)
+empty_bb_without_guard_p (class loop *loop, basic_block bb)
 {
   basic_block exit_bb = single_exit (loop)->src;
   bool may_be_used_outside = (bb == exit_bb
@@ -749,7 +749,7 @@ empty_bb_without_guard_p (struct loop *loop, basic_block bb)
 /* Return true if NAME is used outside of LOOP.  */
 
 static bool
-used_outside_loop_p (struct loop *loop, tree name)
+used_outside_loop_p (class loop *loop, tree name)
 {
   imm_use_iterator it;
   use_operand_p use;
@@ -767,7 +767,7 @@ used_outside_loop_p (struct loop *loop, tree name)
 /* Return argument for loop preheader edge in header virtual phi if any.  */
 
 static tree
-get_vop_from_header (struct loop *loop)
+get_vop_from_header (class loop *loop)
 {
   for (gphi_iterator gsi = gsi_start_phis (loop->header);
        !gsi_end_p (gsi); gsi_next (&gsi))
@@ -783,7 +783,7 @@ get_vop_from_header (struct loop *loop)
 /* Move the check of GUARD outside of LOOP.  */
 
 static void
-hoist_guard (struct loop *loop, edge guard)
+hoist_guard (class loop *loop, edge guard)
 {
   edge exit = single_exit (loop);
   edge preh = loop_preheader_edge (loop);
@@ -934,7 +934,7 @@ hoist_guard (struct loop *loop, edge guard)
    for edge around loop.  */
 
 static bool
-check_exit_phi (struct loop *loop)
+check_exit_phi (class loop *loop)
 {
   edge exit = single_exit (loop);
   basic_block pre_header = loop_preheader_edge (loop)->src;

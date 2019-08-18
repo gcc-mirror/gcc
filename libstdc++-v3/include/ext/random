@@ -752,6 +752,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				_InputIterator2 __varbegin,
 				_InputIterator2 __varend);
 
+	// param_type constructors apply Cholesky decomposition to the
+	// varcov matrix in _M_init_full and _M_init_lower, but the
+	// varcov matrix output ot a stream is already decomposed, so
+	// we need means to restore it as-is when reading it back in.
+	template<size_t _Dimen1, typename _RealType1,
+		 typename _CharT, typename _Traits>
+	friend std::basic_istream<_CharT, _Traits>&
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   __gnu_cxx::normal_mv_distribution<_Dimen1, _RealType1>&
+		   __x);
+	param_type(std::array<_RealType, _Dimen> const &__mean,
+		   std::array<_RealType, _M_t_size> const &__varcov)
+	  : _M_mean (__mean), _M_t (__varcov)
+	{}
+
 	std::array<_RealType, _Dimen> _M_mean;
 	std::array<_RealType, _M_t_size> _M_t;
       };

@@ -118,6 +118,19 @@ gfc_evaluate_now (tree expr, stmtblock_t * pblock)
   return gfc_evaluate_now_loc (input_location, expr, pblock);
 }
 
+/* Like gfc_evaluate_now, but add the created variable to the
+   function scope.  */
+
+tree
+gfc_evaluate_now_function_scope (tree expr, stmtblock_t * pblock)
+{
+  tree var;
+  var = gfc_create_var_np (TREE_TYPE (expr), NULL);
+  gfc_add_decl_to_function (var);
+  gfc_add_modify (pblock, var, expr);
+
+  return var;
+}
 
 /* Build a MODIFY_EXPR node and add it to a given statement block PBLOCK.
    A MODIFY_EXPR is an assignment:
@@ -1014,9 +1027,6 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
 	  gfc_add_block_to_block (&block, &se.pre);
 	  gcc_assert (se.post.head == NULL_TREE);
 	  array = se.expr;
-	  if (TREE_CODE (array) == ADDR_EXPR
-	      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (array, 0))))
-	    tmp = TREE_OPERAND (array, 0);
 
 	  if (!gfc_is_coarray (array_expr))
 	    {

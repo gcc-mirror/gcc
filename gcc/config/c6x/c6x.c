@@ -1083,6 +1083,14 @@ c6x_section_type_flags (tree decl, const char *name, int reloc)
 
   flags |= default_section_type_flags (decl, name, reloc);
 
+  /* The ".far" section will be declared with @nobits elsewhere.
+     But when declared via this path it will not have the @nobits
+     flag because of SECTION_NOTYPE.  This causes linker warnings
+     due to the mismatched attribute.  Clearing SECTION_NOTYPE
+     for the ".far" section is sufficient to fix this problem.  */
+  if (strcmp (name, ".far") == 0)
+    flags &= ~SECTION_NOTYPE;
+
   return flags;
 }
 
@@ -1686,10 +1694,10 @@ c6x_valid_mask_p (HOST_WIDE_INT val)
   return true;
 }
 
-/* Expand a block move for a movmemM pattern.  */
+/* Expand a block move for a cpymemM pattern.  */
 
 bool
-c6x_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
+c6x_expand_cpymem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 		   rtx expected_align_exp ATTRIBUTE_UNUSED,
 		   rtx expected_size_exp ATTRIBUTE_UNUSED)
 {
@@ -6653,7 +6661,7 @@ c6x_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
   size_t i;
   const struct builtin_description *d;
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
 
   for (i = 0, d = bdesc_2arg; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
     if (d->code == fcode)

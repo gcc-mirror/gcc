@@ -124,8 +124,9 @@ static cand_t *regno_cands;
 
 /* Data about basic blocks used for the rematerialization
    sub-pass.  */
-struct remat_bb_data
+class remat_bb_data
 {
+public:
   /* Basic block about which the below data are.  */
   basic_block bb;
   /* Registers changed in the basic block: */
@@ -144,7 +145,7 @@ struct remat_bb_data
 };
 
 /* Array for all BB data.  Indexed by the corresponding BB index.  */
-typedef struct remat_bb_data *remat_bb_data_t;
+typedef class remat_bb_data *remat_bb_data_t;
 
 /* Basic blocks for data flow problems -- all bocks except the special
    ones.  */
@@ -509,7 +510,7 @@ create_remat_bb_data (void)
   basic_block bb;
   remat_bb_data_t bb_info;
 
-  remat_bb_data = XNEWVEC (struct remat_bb_data,
+  remat_bb_data = XNEWVEC (class remat_bb_data,
 			   last_basic_block_for_fn (cfun));
   FOR_ALL_BB_FN (bb, cfun)
     {
@@ -1020,7 +1021,6 @@ get_hard_regs (struct lra_insn_reg *reg, int &nregs)
 static void
 update_scratch_ops (rtx_insn *remat_insn)
 {
-  int hard_regno;
   lra_insn_recog_data_t id = lra_get_insn_recog_data (remat_insn);
   struct lra_static_insn_data *static_id = id->insn_static_data;
   for (int i = 0; i < static_id->n_operands; i++)
@@ -1031,17 +1031,9 @@ update_scratch_ops (rtx_insn *remat_insn)
       int regno = REGNO (*loc);
       if (! lra_former_scratch_p (regno))
 	continue;
-      hard_regno = reg_renumber[regno];
       *loc = lra_create_new_reg (GET_MODE (*loc), *loc,
 				 lra_get_allocno_class (regno),
 				 "scratch pseudo copy");
-      if (hard_regno >= 0)
-	{
-	  reg_renumber[REGNO (*loc)] = hard_regno;
-	  if (lra_dump_file)
-	    fprintf (lra_dump_file, "	 Assigning the same %d to r%d\n",
-		     REGNO (*loc), hard_regno);
-	}
       lra_register_new_scratch_op (remat_insn, i, id->icode);
     }
   

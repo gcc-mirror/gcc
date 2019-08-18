@@ -34,7 +34,7 @@ package Layout is
 
    --  The following procedures are called from Freeze, so all entities
    --  for types and objects that get frozen (which should be all such
-   --  entities which are seen by the back end) will get layed out by one
+   --  entities which are seen by the back end) will get laid out by one
    --  of these two procedures.
 
    procedure Layout_Type (E : Entity_Id);

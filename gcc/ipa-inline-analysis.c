@@ -128,7 +128,7 @@ do_estimate_edge_time (struct cgraph_edge *edge)
   vec<tree> known_vals;
   vec<ipa_polymorphic_call_context> known_contexts;
   vec<ipa_agg_jump_function_p> known_aggs;
-  struct ipa_call_summary *es = ipa_call_summaries->get (edge);
+  class ipa_call_summary *es = ipa_call_summaries->get (edge);
   int min_size;
 
   callee = edge->callee->ultimate_alias_target ();
@@ -264,7 +264,7 @@ int
 estimate_size_after_inlining (struct cgraph_node *node,
 			      struct cgraph_edge *edge)
 {
-  struct ipa_call_summary *es = ipa_call_summaries->get (edge);
+  class ipa_call_summary *es = ipa_call_summaries->get (edge);
   ipa_fn_summary *s = ipa_fn_summaries->get (node);
   if (!es->predicate || *es->predicate != false)
     {
@@ -321,7 +321,7 @@ int
 estimate_growth (struct cgraph_node *node)
 {
   struct growth_data d = { node, false, false, 0 };
-  struct ipa_fn_summary *info = ipa_fn_summaries->get (node);
+  class ipa_fn_summary *info = ipa_fn_summaries->get (node);
 
   node->call_for_symbol_and_aliases (do_estimate_growth_1, &d, true);
 

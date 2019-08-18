@@ -1801,7 +1801,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_split_wide_types != 0; }
+  virtual bool gate (function *) { return flag_split_wide_types
+					  && flag_split_wide_types_early; }
   virtual unsigned int execute (function *)
     {
       decompose_multiword_subregs (true);
@@ -1816,4 +1817,47 @@ rtl_opt_pass *
 make_pass_lower_subreg2 (gcc::context *ctxt)
 {
   return new pass_lower_subreg2 (ctxt);
+}
+
+/* Implement third lower subreg pass.  */
+
+namespace {
+
+const pass_data pass_data_lower_subreg3 =
+{
+  RTL_PASS, /* type */
+  "subreg3", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_LOWER_SUBREG, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_df_finish, /* todo_flags_finish */
+};
+
+class pass_lower_subreg3 : public rtl_opt_pass
+{
+public:
+  pass_lower_subreg3 (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_lower_subreg3, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *) { return flag_split_wide_types
+					  && !flag_split_wide_types_early; }
+  virtual unsigned int execute (function *)
+    {
+      decompose_multiword_subregs (true);
+      return 0;
+    }
+
+}; // class pass_lower_subreg3
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_lower_subreg3 (gcc::context *ctxt)
+{
+  return new pass_lower_subreg3 (ctxt);
 }

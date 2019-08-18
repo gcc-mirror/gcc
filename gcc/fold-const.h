@@ -67,7 +67,8 @@ extern tree fold_build_call_array_loc (location_t, tree, tree, int, tree *);
 #define fold_build_call_array_initializer(T1,T2,N,T4)\
    fold_build_call_array_initializer_loc (UNKNOWN_LOCATION, T1, T2, N, T4)
 extern tree fold_build_call_array_initializer_loc (location_t, tree, tree, int, tree *);
-extern tree get_array_ctor_element_at_index (tree, offset_int);
+extern tree get_array_ctor_element_at_index (tree, offset_int,
+					     unsigned * = NULL);
 extern bool fold_convertible_p (const_tree, const_tree);
 #define fold_convert(T1,T2)\
    fold_convert_loc (UNKNOWN_LOCATION, T1, T2)
@@ -83,7 +84,7 @@ extern bool fold_deferring_overflow_warnings_p (void);
 extern void fold_overflow_warning (const char*, enum warn_strict_overflow_code);
 extern enum tree_code fold_div_compare (enum tree_code, tree, tree,
 					tree *, tree *, bool *);
-extern int operand_equal_p (const_tree, const_tree, unsigned int);
+extern bool operand_equal_p (const_tree, const_tree, unsigned int);
 extern int multiple_of_p (tree, const_tree, const_tree);
 #define omit_one_operand(T1,T2,T3)\
    omit_one_operand_loc (UNKNOWN_LOCATION, T1, T2, T3)

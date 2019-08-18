@@ -206,9 +206,8 @@ package System.OS_Interface is
    function nanosleep (rqtp, rmtp : access timespec) return int;
    pragma Import (C, nanosleep, "nanosleep");
 
-   type clockid_t is private;
-
-   CLOCK_REALTIME : constant clockid_t;
+   type clockid_t is new int;
+   CLOCK_REALTIME : constant clockid_t := 0;
 
    function clock_gettime
      (clock_id : clockid_t;
@@ -606,9 +605,6 @@ private
       tv_nsec : long;
    end record;
    pragma Convention (C, timespec);
-
-   type clockid_t is new int;
-   CLOCK_REALTIME : constant clockid_t := 0;
 
    type pthread_attr_t is record
       detachstate   : int;

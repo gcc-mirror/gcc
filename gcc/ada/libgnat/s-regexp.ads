@@ -77,7 +77,7 @@ package System.Regexp is
    --  See also regexp(1) man page on Unix systems for further details
 
    --  A second kind of regular expressions is provided. This one is more
-   --  like the wild card patterns used in file names by the Unix shell (or
+   --  like the wildcard patterns used in file names by the Unix shell (or
    --  DOS prompt) command lines. The grammar is the following:
 
    --     regexp ::= term

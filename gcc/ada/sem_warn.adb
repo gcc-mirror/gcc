@@ -333,6 +333,11 @@ package body Sem_Warn is
 
             elsif Has_Warnings_Off (Entity (Name (N))) then
                return;
+
+            --  Forget it if the parameter is not In
+
+            elsif Has_Out_Or_In_Out_Parameter (Entity (Name (N))) then
+               return;
             end if;
 
             --  OK, see if we have one argument
@@ -632,9 +637,16 @@ package body Sem_Warn is
 
                Expression := Condition (Iter);
 
-            --  For iteration, do not process, since loop will always terminate
+            --  For Loop_Parameter_Specification, do not process, since loop
+            --  will always terminate. For Iterator_Specification, also do not
+            --  process. Either it will always terminate (e.g. "for X of
+            --  Some_Array ..."), or we can't tell if it's going to terminate
+            --  without looking at the iterator, so any warning here would be
+            --  noise.
 
-            elsif Present (Loop_Parameter_Specification (Iter)) then
+            elsif Present (Loop_Parameter_Specification (Iter))
+              or else Present (Iterator_Specification (Iter))
+            then
                return;
             end if;
          end if;
@@ -1401,9 +1413,13 @@ package body Sem_Warn is
                   goto Continue;
                end if;
 
-               --  Check for unset reference
+               --  Check for unset reference. If type of object has
+               --  preelaborable initialization, warning is misleading.
 
-               if Warn_On_No_Value_Assigned and then Present (UR) then
+               if Warn_On_No_Value_Assigned
+                 and then Present (UR)
+                 and then not Known_To_Have_Preelab_Init (Etype (E1))
+               then
 
                   --  For other than access type, go back to original node to
                   --  deal with case where original unset reference has been
@@ -2691,7 +2707,7 @@ package body Sem_Warn is
 
       --  Flag any unused with clauses. For a subunit, check only the units
       --  in its context, not those of the parent, which may be needed by other
-      --  subunits.  We will get the full warnings when we compile the parent,
+      --  subunits. We will get the full warnings when we compile the parent,
       --  but the following is helpful when compiling a subunit by itself.
 
       if Nkind (Unit (Cunit (Main_Unit))) = N_Subunit then

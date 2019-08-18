@@ -1345,7 +1345,6 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
   location_t loc = EXPR_LOCATION (exp);
 
   tree fntype = fn ? TREE_TYPE (fn) : TREE_TYPE (TREE_TYPE (exp));
-  built_in_function fncode = fn ? DECL_FUNCTION_CODE (fn) : BUILT_IN_NONE;
   bool warned = false;
 
   /* Validate each argument individually.  */
@@ -1371,11 +1370,10 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
 		 friends.
 		 Also avoid issuing the warning for calls to function named
 		 "alloca".  */
-	      if ((fncode == BUILT_IN_ALLOCA
-		   && IDENTIFIER_LENGTH (DECL_NAME (fn)) != 6)
-		  || (fncode != BUILT_IN_ALLOCA
-		      && !lookup_attribute ("returns_nonnull",
-					    TYPE_ATTRIBUTES (fntype))))
+	      if (fn && fndecl_built_in_p (fn, BUILT_IN_ALLOCA)
+		  ? IDENTIFIER_LENGTH (DECL_NAME (fn)) != 6
+		  : !lookup_attribute ("returns_nonnull",
+				       TYPE_ATTRIBUTES (fntype)))
 		warned = warning_at (loc, OPT_Walloc_zero,
 				     "%Kargument %i value is zero",
 				     exp, idx[i] + 1);
@@ -1390,7 +1388,7 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
 		  && fn
 		  && !args[1]
 		  && lang_GNU_CXX ()
-		  && DECL_IS_OPERATOR_NEW (fn)
+		  && DECL_IS_OPERATOR_NEW_P (fn)
 		  && integer_all_onesp (args[i]))
 		continue;
 

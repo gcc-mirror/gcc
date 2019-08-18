@@ -82,7 +82,7 @@ package System.Linux is
    SIGILL     : constant := 4; --  illegal instruction (not reset)
    SIGTRAP    : constant := 5; --  trace trap (not reset)
    SIGIOT     : constant := 6; --  IOT instruction
-   SIGABRT    : constant := 6; --  used by abort, replace SIGIOT in the  future
+   SIGABRT    : constant := 6; --  used by abort, replace SIGIOT in the future
    SIGFPE     : constant := 8; --  floating point exception
    SIGKILL    : constant := 9; --  kill (cannot be caught or ignored)
    SIGBUS     : constant := 10; --  bus error

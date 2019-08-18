@@ -398,8 +398,8 @@ predicate::remap_after_duplication (clause_t possible_truths)
    for other purposes).  */
 
 predicate
-predicate::remap_after_inlining (struct ipa_fn_summary *info,
-				 struct ipa_fn_summary *callee_info,
+predicate::remap_after_inlining (class ipa_fn_summary *info,
+				 class ipa_fn_summary *callee_info,
 				 vec<int> operand_map,
 				 vec<int> offset_map,
 				 clause_t possible_truths,
@@ -483,7 +483,7 @@ predicate::remap_after_inlining (struct ipa_fn_summary *info,
 /* Read predicate from IB.  */
 
 void
-predicate::stream_in (struct lto_input_block *ib)
+predicate::stream_in (class lto_input_block *ib)
 {
   clause_t clause;
   int k = 0;
@@ -522,8 +522,8 @@ predicate::stream_out (struct output_block *ob)
    It can be NULL, which means this not a load from an aggregate.  */
 
 predicate
-add_condition (struct ipa_fn_summary *summary, int operand_num,
-	       HOST_WIDE_INT size, struct agg_position_info *aggpos,
+add_condition (class ipa_fn_summary *summary, int operand_num,
+	       poly_int64 size, struct agg_position_info *aggpos,
 	       enum tree_code code, tree val)
 {
   int i;
@@ -549,7 +549,7 @@ add_condition (struct ipa_fn_summary *summary, int operand_num,
   for (i = 0; vec_safe_iterate (summary->conds, i, &c); i++)
     {
       if (c->operand_num == operand_num
-	  && c->size == size
+	  && known_eq (c->size, size)
 	  && c->code == code
 	  && c->val == val
 	  && c->agg_contents == agg_contents

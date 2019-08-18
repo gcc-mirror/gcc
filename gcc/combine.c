@@ -6592,7 +6592,6 @@ simplify_if_then_else (rtx x)
 	  || reg_mentioned_p (true_rtx, false_rtx)
 	  || rtx_equal_p (false_rtx, XEXP (cond, 0))))
     {
-      true_code = reversed_comparison_code (cond, NULL);
       SUBST (XEXP (x, 0), reversed_comparison (cond, GET_MODE (cond)));
       SUBST (XEXP (x, 1), false_rtx);
       SUBST (XEXP (x, 2), true_rtx);
@@ -7830,7 +7829,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
      For memory, assume that the desired extraction_mode and pos_mode
      are the same as for a register operation, since at present we don't
      have named patterns for aligned memory structures.  */
-  struct extraction_insn insn;
+  class extraction_insn insn;
   unsigned int inner_size;
   if (GET_MODE_BITSIZE (inner_mode).is_constant (&inner_size)
       && get_best_reg_extraction_insn (&insn, pattern, inner_size, mode))

@@ -1,3 +1,55 @@
+2019-08-15  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Add r274540
+
+2019-08-15  Martin Liska  <mliska@suse.cz>
+
+	* tsan/tsan_rtl_ppc64.S: Reapply.
+
+2019-08-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/91455
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* asan/Makefile.in: Likewise.
+	* configure: Likewise.
+	* interception/Makefile.in: Likewise.
+	* libbacktrace/Makefile.in: Likewise.
+	* lsan/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.am: Include top_srcdir unconditionally.
+	* sanitizer_common/Makefile.in: Regenerated.
+	* tsan/Makefile.in: Likewise.
+	* ubsan/Makefile.in: Likewise.
+
+2019-08-14  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Refresh based on what was committed.
+
+2019-08-14  Martin Liska  <mliska@suse.cz>
+
+	* asan/asan_globals.cpp (CheckODRViolationViaIndicator): Reapply
+	patch from trunk.
+	(CheckODRViolationViaPoisoning): Likewise.
+	(RegisterGlobal): Likewise.
+	* asan/asan_mapping.h: Likewise.
+	* sanitizer_common/sanitizer_linux_libcdep.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_mac.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_platform_limits_linux.cpp (defined): Likewise.
+	* sanitizer_common/sanitizer_platform_limits_posix.h (defined): Likewise.
+	* sanitizer_common/sanitizer_stacktrace.cpp (GetCanonicFrame): Likewise.
+	* ubsan/ubsan_handlers.cpp (__ubsan::__ubsan_handle_cfi_bad_icall): Likewise.
+	(__ubsan::__ubsan_handle_cfi_bad_icall_abort): Likewise.
+	* ubsan/ubsan_handlers.h (struct CFIBadIcallData): Likewise.
+	(struct CFICheckFailData): Likewise.
+	(RECOVERABLE): Likewise.
+	* ubsan/ubsan_platform.h: Likewise.
+
+2019-08-14  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/89832
+	PR sanitizer/91325
+	* All source files: Merge from upstream 368656.
+
 2019-06-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* sanitizer_common/sanitizer_posix_libcdep.cc: Cherry-pick

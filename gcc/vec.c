@@ -49,8 +49,9 @@ along with GCC; see the file COPYING3.  If not see
 vnull vNULL;
 
 /* Vector memory usage.  */
-struct vec_usage: public mem_usage
+class vec_usage: public mem_usage
 {
+public:
   /* Default constructor.  */
   vec_usage (): m_items (0), m_items_peak (0), m_element_size (0) {}
 
@@ -191,21 +192,23 @@ dump_vec_loc_statistics (void)
 ATTRIBUTE_NORETURN ATTRIBUTE_COLD
 static void
 qsort_chk_error (const void *p1, const void *p2, const void *p3,
-		 int (*cmp) (const void *, const void *))
+		 sort_r_cmp_fn *cmp, void *data)
 {
   if (!p3)
     {
-      int r1 = cmp (p1, p2), r2 = cmp (p2, p1);
-      error ("qsort comparator not anti-commutative: %d, %d", r1, r2);
+      int r1 = cmp (p1, p2, data), r2 = cmp (p2, p1, data);
+      error ("qsort comparator not anti-symmetric: %d, %d", r1, r2);
     }
   else if (p1 == p2)
     {
-      int r = cmp (p1, p3);
+      int r = cmp (p1, p3, data);
       error ("qsort comparator non-negative on sorted output: %d", r);
     }
   else
     {
-      int r1 = cmp (p1, p2), r2 = cmp (p2, p3), r3 = cmp (p1, p3);
+      int r1 = cmp (p1, p2, data);
+      int r2 = cmp (p2, p3, data);
+      int r3 = cmp (p1, p3, data);
       error ("qsort comparator not transitive: %d, %d, %d", r1, r2, r3);
     }
   internal_error ("qsort checking failed");
@@ -214,8 +217,7 @@ qsort_chk_error (const void *p1, const void *p2, const void *p3,
 /* Verify anti-symmetry and transitivity for comparator CMP on sorted array
    of N SIZE-sized elements pointed to by BASE.  */
 void
-qsort_chk (void *base, size_t n, size_t size,
-	   int (*cmp)(const void *, const void *))
+qsort_chk (void *base, size_t n, size_t size, sort_r_cmp_fn *cmp, void *data)
 {
 #if 0
 #define LIM(n) (n)
@@ -224,9 +226,9 @@ qsort_chk (void *base, size_t n, size_t size,
 #define LIM(n) ((n) <= 16 ? (n) : 12 + floor_log2 (n))
 #endif
 #define ELT(i) ((const char *) base + (i) * size)
-#define CMP(i, j) cmp (ELT (i), ELT (j))
-#define ERR2(i, j) qsort_chk_error (ELT (i), ELT (j), NULL, cmp)
-#define ERR3(i, j, k) qsort_chk_error (ELT (i), ELT (j), ELT (k), cmp)
+#define CMP(i, j) cmp (ELT (i), ELT (j), data)
+#define ERR2(i, j) qsort_chk_error (ELT (i), ELT (j), NULL, cmp, data)
+#define ERR3(i, j, k) qsort_chk_error (ELT (i), ELT (j), ELT (k), cmp, data)
   size_t i1, i2, i, j;
   /* This outer loop iterates over maximum spans [i1, i2) such that
      elements within each span compare equal to each other.  */

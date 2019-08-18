@@ -5452,7 +5452,7 @@ nvptx_expand_builtin (tree exp, rtx target, rtx ARG_UNUSED (subtarget),
 		      machine_mode mode, int ignore)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  switch (DECL_FUNCTION_CODE (fndecl))
+  switch (DECL_MD_FUNCTION_CODE (fndecl))
     {
     case NVPTX_BUILTIN_SHUFFLE:
     case NVPTX_BUILTIN_SHUFFLELL:

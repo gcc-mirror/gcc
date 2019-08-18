@@ -1122,8 +1122,6 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
   rtx_insn *insn;
   rtx scratch, tmp0, tmp1, tmp2;
   rtx (*gen_divmod4_1) (rtx, rtx, rtx, rtx);
-  rtx (*gen_zero_extend) (rtx, rtx);
-  rtx (*gen_test_ccno_1) (rtx, rtx);
 
   switch (mode)
     {
@@ -1135,21 +1133,16 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
 	  else
 	    gen_divmod4_1
 	      = unsigned_p ? gen_udivmodsi4_zext_2 : gen_divmodsi4_zext_2;
-	  gen_zero_extend = gen_zero_extendqisi2;
 	}
       else
-	{
-	  gen_divmod4_1
-	    = unsigned_p ? gen_udivmodsi4_zext_1 : gen_divmodsi4_zext_1;
-	  gen_zero_extend = gen_zero_extendqidi2;
-	}
-      gen_test_ccno_1 = gen_testsi_ccno_1;
+	gen_divmod4_1
+	  = unsigned_p ? gen_udivmodsi4_zext_1 : gen_divmodsi4_zext_1;
       break;
+
     case E_DImode:
       gen_divmod4_1 = unsigned_p ? gen_udivmoddi4_1 : gen_divmoddi4_1;
-      gen_test_ccno_1 = gen_testdi_ccno_1;
-      gen_zero_extend = gen_zero_extendqidi2;
       break;
+
     default:
       gcc_unreachable ();
     }
@@ -1164,7 +1157,7 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
   emit_move_insn (scratch, operands[2]);
   scratch = expand_simple_binop (mode, IOR, scratch, operands[3],
 				 scratch, 1, OPTAB_DIRECT);
-  emit_insn (gen_test_ccno_1 (scratch, GEN_INT (-0x100)));
+  emit_insn (gen_test_ccno_1 (mode, scratch, GEN_INT (-0x100)));
   tmp0 = gen_rtx_REG (CCNOmode, FLAGS_REG);
   tmp0 = gen_rtx_EQ (VOIDmode, tmp0, const0_rtx);
   tmp0 = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp0,
@@ -1227,7 +1220,9 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
 
   /* Zero extend quotient from AL.  */
   tmp1 = gen_lowpart (QImode, tmp0);
-  insn = emit_insn (gen_zero_extend (operands[0], tmp1));
+  insn = emit_insn (gen_extend_insn
+		    (operands[0], tmp1,
+		     GET_MODE (operands[0]), QImode, 1));
   set_unique_reg_note (insn, REG_EQUAL, div);
 
   emit_label (end_label);
@@ -2291,16 +2286,16 @@ ix86_unordered_fp_compare (enum rtx_code code)
 
   switch (code)
     {
-    case GT:
-    case GE:
     case LT:
     case LE:
+    case GT:
+    case GE:
+    case LTGT:
       return false;
 
     case EQ:
     case NE:
 
-    case LTGT:
     case UNORDERED:
     case ORDERED:
     case UNLT:
@@ -5801,7 +5796,7 @@ counter_mode (rtx count_exp)
 
 
 static void
-expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
+expand_set_or_cpymem_via_loop (rtx destmem, rtx srcmem,
 			       rtx destptr, rtx srcptr, rtx value,
 			       rtx count, machine_mode mode, int unroll,
 			       int expected_size, bool issetmem)
@@ -5954,7 +5949,7 @@ scale_counter (rtx countreg, int scale)
    Other arguments have same meaning as for previous function.  */
 
 static void
-expand_set_or_movmem_via_rep (rtx destmem, rtx srcmem,
+expand_set_or_cpymem_via_rep (rtx destmem, rtx srcmem,
 			   rtx destptr, rtx srcptr, rtx value, rtx orig_value,
 			   rtx count,
 			   machine_mode mode, bool issetmem)
@@ -6121,7 +6116,7 @@ ix86_expand_aligntest (rtx variable, int value, bool epilogue)
 /* Output code to copy at most count & (max_size - 1) bytes from SRC to DEST.  */
 
 static void
-expand_movmem_epilogue (rtx destmem, rtx srcmem,
+expand_cpymem_epilogue (rtx destmem, rtx srcmem,
 			rtx destptr, rtx srcptr, rtx count, int max_size)
 {
   rtx src, dest;
@@ -6146,7 +6141,7 @@ expand_movmem_epilogue (rtx destmem, rtx srcmem,
     {
       count = expand_simple_binop (GET_MODE (count), AND, count, GEN_INT (max_size - 1),
 				    count, 1, OPTAB_DIRECT);
-      expand_set_or_movmem_via_loop (destmem, srcmem, destptr, srcptr, NULL,
+      expand_set_or_cpymem_via_loop (destmem, srcmem, destptr, srcptr, NULL,
 				     count, QImode, 1, 4, false);
       return;
     }
@@ -6295,7 +6290,7 @@ expand_setmem_epilogue_via_loop (rtx destmem, rtx destptr, rtx value,
 {
   count = expand_simple_binop (counter_mode (count), AND, count,
 			       GEN_INT (max_size - 1), count, 1, OPTAB_DIRECT);
-  expand_set_or_movmem_via_loop (destmem, NULL, destptr, NULL,
+  expand_set_or_cpymem_via_loop (destmem, NULL, destptr, NULL,
 				 gen_lowpart (QImode, value), count, QImode,
 				 1, max_size / 2, true);
 }
@@ -6416,7 +6411,7 @@ ix86_adjust_counter (rtx countreg, HOST_WIDE_INT value)
    Return value is updated DESTMEM.  */
 
 static rtx
-expand_set_or_movmem_prologue (rtx destmem, rtx srcmem,
+expand_set_or_cpymem_prologue (rtx destmem, rtx srcmem,
 				  rtx destptr, rtx srcptr, rtx value,
 				  rtx vec_value, rtx count, int align,
 				  int desired_alignment, bool issetmem)
@@ -6449,7 +6444,7 @@ expand_set_or_movmem_prologue (rtx destmem, rtx srcmem,
    or setmem sequence that is valid for SIZE..2*SIZE-1 bytes
    and jump to DONE_LABEL.  */
 static void
-expand_small_movmem_or_setmem (rtx destmem, rtx srcmem,
+expand_small_cpymem_or_setmem (rtx destmem, rtx srcmem,
 			       rtx destptr, rtx srcptr,
 			       rtx value, rtx vec_value,
 			       rtx count, int size,
@@ -6575,7 +6570,7 @@ expand_small_movmem_or_setmem (rtx destmem, rtx srcmem,
    done_label:
   */
 static void
-expand_set_or_movmem_prologue_epilogue_by_misaligned_moves (rtx destmem, rtx srcmem,
+expand_set_or_cpymem_prologue_epilogue_by_misaligned_moves (rtx destmem, rtx srcmem,
 							    rtx *destptr, rtx *srcptr,
 							    machine_mode mode,
 							    rtx value, rtx vec_value,
@@ -6616,7 +6611,7 @@ expand_set_or_movmem_prologue_epilogue_by_misaligned_moves (rtx destmem, rtx src
 
       /* Handle sizes > 3.  */
       for (;size2 > 2; size2 >>= 1)
-	expand_small_movmem_or_setmem (destmem, srcmem,
+	expand_small_cpymem_or_setmem (destmem, srcmem,
 				       *destptr, *srcptr,
 				       value, vec_value,
 				       *count,
@@ -6771,7 +6766,7 @@ expand_set_or_movmem_prologue_epilogue_by_misaligned_moves (rtx destmem, rtx src
    is returned, but also of SRC, which is passed as a pointer for that
    reason.  */
 static rtx
-expand_set_or_movmem_constant_prologue (rtx dst, rtx *srcp, rtx destreg,
+expand_set_or_cpymem_constant_prologue (rtx dst, rtx *srcp, rtx destreg,
 					   rtx srcreg, rtx value, rtx vec_value,
 					   int desired_align, int align_bytes,
 					   bool issetmem)
@@ -7214,7 +7209,7 @@ ix86_copy_addr_to_reg (rtx addr)
      3) Main body: the copying loop itself, copying in SIZE_NEEDED chunks
 	with specified algorithm.  */
 bool
-ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
+ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 			   rtx align_exp, rtx expected_align_exp,
 			   rtx expected_size_exp, rtx min_size_exp,
 			   rtx max_size_exp, rtx probable_max_size_exp,
@@ -7436,7 +7431,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   if (misaligned_prologue_used)
     {
       /* Misaligned move prologue handled small blocks by itself.  */
-      expand_set_or_movmem_prologue_epilogue_by_misaligned_moves
+      expand_set_or_cpymem_prologue_epilogue_by_misaligned_moves
 	   (dst, src, &destreg, &srcreg,
 	    move_mode, promoted_val, vec_promoted_val,
 	    &count_exp,
@@ -7553,7 +7548,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 	  dst = change_address (dst, BLKmode, destreg);
 	  if (!issetmem)
 	    src = change_address (src, BLKmode, srcreg);
-	  dst = expand_set_or_movmem_prologue (dst, src, destreg, srcreg,
+	  dst = expand_set_or_cpymem_prologue (dst, src, destreg, srcreg,
 					    promoted_val, vec_promoted_val,
 					    count_exp, align, desired_align,
 					    issetmem);
@@ -7567,7 +7562,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 	{
 	  /* If we know how many bytes need to be stored before dst is
 	     sufficiently aligned, maintain aliasing info accurately.  */
-	  dst = expand_set_or_movmem_constant_prologue (dst, &src, destreg,
+	  dst = expand_set_or_cpymem_constant_prologue (dst, &src, destreg,
 							   srcreg,
 							   promoted_val,
 							   vec_promoted_val,
@@ -7626,19 +7621,19 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
     case loop_1_byte:
     case loop:
     case unrolled_loop:
-      expand_set_or_movmem_via_loop (dst, src, destreg, srcreg, promoted_val,
+      expand_set_or_cpymem_via_loop (dst, src, destreg, srcreg, promoted_val,
 				     count_exp, move_mode, unroll_factor,
 				     expected_size, issetmem);
       break;
     case vector_loop:
-      expand_set_or_movmem_via_loop (dst, src, destreg, srcreg,
+      expand_set_or_cpymem_via_loop (dst, src, destreg, srcreg,
 				     vec_promoted_val, count_exp, move_mode,
 				     unroll_factor, expected_size, issetmem);
       break;
     case rep_prefix_8_byte:
     case rep_prefix_4_byte:
     case rep_prefix_1_byte:
-      expand_set_or_movmem_via_rep (dst, src, destreg, srcreg, promoted_val,
+      expand_set_or_cpymem_via_rep (dst, src, destreg, srcreg, promoted_val,
 				       val_exp, count_exp, move_mode, issetmem);
       break;
     }
@@ -7691,7 +7686,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 				    vec_promoted_val, count_exp,
 				    epilogue_size_needed);
 	  else
-	    expand_movmem_epilogue (dst, src, destreg, srcreg, count_exp,
+	    expand_cpymem_epilogue (dst, src, destreg, srcreg, count_exp,
 				    epilogue_size_needed);
 	}
     }
@@ -9573,15 +9568,6 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case USI_FTYPE_V32HI_V32HI_INT_USI:
     case UHI_FTYPE_V16HI_V16HI_INT_UHI:
     case UQI_FTYPE_V8HI_V8HI_INT_UQI:
-    case V32HI_FTYPE_V32HI_V32HI_V32HI_INT:
-    case V16HI_FTYPE_V16HI_V16HI_V16HI_INT:
-    case V8HI_FTYPE_V8HI_V8HI_V8HI_INT:
-    case V8SI_FTYPE_V8SI_V8SI_V8SI_INT:
-    case V4DI_FTYPE_V4DI_V4DI_V4DI_INT:
-    case V8DI_FTYPE_V8DI_V8DI_V8DI_INT:
-    case V16SI_FTYPE_V16SI_V16SI_V16SI_INT:
-    case V2DI_FTYPE_V2DI_V2DI_V2DI_INT:
-    case V4SI_FTYPE_V4SI_V4SI_V4SI_INT:
       nargs = 4;
       mask_pos = 1;
       nargs_constant = 1;
@@ -10992,7 +10978,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
   tree arg0, arg1, arg2, arg3, arg4;
   rtx op0, op1, op2, op3, op4, pat, pat2, insn;
   machine_mode mode0, mode1, mode2, mode3, mode4;
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
 
   /* For CPU builtins that can be folded, fold first and expand the fold.  */
   switch (fcode)
@@ -12549,7 +12535,7 @@ rdseed_step:
 		  tree fndecl = gimple_call_fndecl (def_stmt);
 		  if (fndecl
 		      && fndecl_built_in_p (fndecl, BUILT_IN_MD))
-		    switch ((unsigned int) DECL_FUNCTION_CODE (fndecl))
+		    switch (DECL_MD_FUNCTION_CODE (fndecl))
 		      {
 		      case IX86_BUILTIN_CMPPD:
 		      case IX86_BUILTIN_CMPPS:
@@ -13397,6 +13383,9 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
     case E_V8HImode:
       use_vector_set = TARGET_SSE2;
       break;
+    case E_V8QImode:
+      use_vector_set = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
+      break;
     case E_V4HImode:
       use_vector_set = TARGET_SSE || TARGET_3DNOW_A;
       break;
@@ -13604,6 +13593,8 @@ ix86_expand_vector_init_one_var (bool mmx_ok, machine_mode mode,
       wmode = V8HImode;
       goto widen;
     case E_V8QImode:
+      if (TARGET_MMX_WITH_SSE && TARGET_SSE4_1)
+	break;
       wmode = V4HImode;
       goto widen;
     widen:
@@ -14257,8 +14248,13 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 
   switch (mode)
     {
-    case E_V2SFmode:
     case E_V2SImode:
+      use_vec_merge = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
+      if (use_vec_merge)
+	break;
+      /* FALLTHRU */
+
+    case E_V2SFmode:
       if (mmx_ok)
 	{
 	  tmp = gen_reg_rtx (GET_MODE_INNER (mode));
@@ -14423,6 +14419,7 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       break;
 
     case E_V8QImode:
+      use_vec_merge = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
       break;
 
     case E_V32QImode:
@@ -14625,6 +14622,11 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
   switch (mode)
     {
     case E_V2SImode:
+      use_vec_extr = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
+      if (use_vec_extr)
+	break;
+      /* FALLTHRU */
+
     case E_V2SFmode:
       if (!mmx_ok)
 	break;
@@ -14720,6 +14722,17 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
 
     case E_V16QImode:
       use_vec_extr = TARGET_SSE4_1;
+      if (!use_vec_extr
+	  && TARGET_SSE2
+	  && elt == 0
+	  && (optimize_insn_for_size_p () || TARGET_INTER_UNIT_MOVES_FROM_VEC))
+	{
+	  tmp = gen_reg_rtx (SImode);
+	  ix86_expand_vector_extract (false, tmp, gen_lowpart (V4SImode, vec),
+				      0);
+	  emit_insn (gen_rtx_SET (target, gen_lowpart (QImode, tmp)));
+	  return;
+	}
       break;
 
     case E_V8SFmode:
@@ -14863,7 +14876,10 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
       return;
 
     case E_V8QImode:
+      use_vec_extr = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
       /* ??? Could extract the appropriate HImode element and shift.  */
+      break;
+
     default:
       break;
     }
@@ -16052,14 +16068,13 @@ ix86_expand_rounddf_32 (rtx operand0, rtx operand1)
 			       0, OPTAB_DIRECT);
 
   /* Compensate.  */
-  tmp = gen_reg_rtx (mode);
   /* xa2 = xa2 - (dxa > 0.5 ? 1 : 0) */
   tmp = ix86_expand_sse_compare_mask (UNGT, dxa, half, false);
-  emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (mode, one, tmp)));
+  emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (mode, tmp, one)));
   xa2 = expand_simple_binop (mode, MINUS, xa2, tmp, NULL_RTX, 0, OPTAB_DIRECT);
   /* xa2 = xa2 + (dxa <= -0.5 ? 1 : 0) */
   tmp = ix86_expand_sse_compare_mask (UNGE, mhalf, dxa, false);
-  emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (mode, one, tmp)));
+  emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (mode, tmp, one)));
   xa2 = expand_simple_binop (mode, PLUS, xa2, tmp, NULL_RTX, 0, OPTAB_DIRECT);
 
   /* res = copysign (xa2, operand1) */
@@ -16400,7 +16415,8 @@ static bool
 expand_vec_perm_blend (struct expand_vec_perm_d *d)
 {
   machine_mode mmode, vmode = d->vmode;
-  unsigned i, mask, nelt = d->nelt;
+  unsigned i, nelt = d->nelt;
+  unsigned HOST_WIDE_INT mask;
   rtx target, op0, op1, maskop, x;
   rtx rperm[32], vperm;
 
@@ -16454,7 +16470,7 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
     case E_V16SImode:
     case E_V8DImode:
       for (i = 0; i < nelt; ++i)
-	mask |= (d->perm[i] >= nelt) << i;
+	mask |= ((unsigned HOST_WIDE_INT) (d->perm[i] >= nelt)) << i;
       break;
 
     case E_V2DImode:
@@ -19780,8 +19796,7 @@ ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
       emit_insn (gen_vec_widen_umult_even_v4si (t5, 
 					gen_lowpart (V4SImode, op1),
 					gen_lowpart (V4SImode, op2)));
-      op0 = expand_binop (mode, add_optab, t5, t4, op0, 1, OPTAB_DIRECT);
-
+      force_expand_binop (mode, add_optab, t5, t4, op0, 1, OPTAB_DIRECT);
     }
   else
     {

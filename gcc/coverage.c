@@ -643,7 +643,7 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
 		     (DECL_ASSEMBLER_NAME (current_function_decl)));
   gcov_write_unsigned (DECL_ARTIFICIAL (current_function_decl)
 		       && !DECL_FUNCTION_VERSIONED (current_function_decl)
-		       && !DECL_LAMBDA_FUNCTION (current_function_decl));
+		       && !DECL_LAMBDA_FUNCTION_P (current_function_decl));
   gcov_write_filename (xloc.file);
   gcov_write_unsigned (xloc.line);
   gcov_write_unsigned (xloc.column);
@@ -1255,9 +1255,14 @@ coverage_init (const char *filename)
   /* Name of bbg file.  */
   if (flag_test_coverage && !flag_compare_debug)
     {
-      bbg_file_name = XNEWVEC (char, len + strlen (GCOV_NOTE_SUFFIX) + 1);
-      memcpy (bbg_file_name, filename, len);
-      strcpy (bbg_file_name + len, GCOV_NOTE_SUFFIX);
+      if (profile_note_location)
+	bbg_file_name = xstrdup (profile_note_location);
+      else
+	{
+	  bbg_file_name = XNEWVEC (char, len + strlen (GCOV_NOTE_SUFFIX) + 1);
+	  memcpy (bbg_file_name, filename, len);
+	  strcpy (bbg_file_name + len, GCOV_NOTE_SUFFIX);
+	}
 
       if (!gcov_open (bbg_file_name, -1))
 	{

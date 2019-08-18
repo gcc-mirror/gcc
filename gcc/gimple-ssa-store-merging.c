@@ -1324,8 +1324,9 @@ namespace {
    and the other fields also reflect the memory load, or an SSA name, then
    VAL represents the SSA name and all the other fields are zero,  */
 
-struct store_operand_info
+class store_operand_info
 {
+public:
   tree val;
   tree base_addr;
   poly_uint64 bitsize;
@@ -1347,8 +1348,9 @@ store_operand_info::store_operand_info ()
    to memory.  These are created in the first phase and coalesced into
    merged_store_group objects in the second phase.  */
 
-struct store_immediate_info
+class store_immediate_info
 {
+public:
   unsigned HOST_WIDE_INT bitsize;
   unsigned HOST_WIDE_INT bitpos;
   unsigned HOST_WIDE_INT bitregion_start;
@@ -1413,8 +1415,9 @@ store_immediate_info::store_immediate_info (unsigned HOST_WIDE_INT bs,
    These are produced by the second phase (coalescing) and consumed in the
    third phase that outputs the widened stores.  */
 
-struct merged_store_group
+class merged_store_group
 {
+public:
   unsigned HOST_WIDE_INT start;
   unsigned HOST_WIDE_INT width;
   unsigned HOST_WIDE_INT bitregion_start;
@@ -2083,8 +2086,9 @@ merged_store_group::apply_stores ()
 
 /* Structure describing the store chain.  */
 
-struct imm_store_chain_info
+class imm_store_chain_info
 {
+public:
   /* Doubly-linked list that imposes an order on chain processing.
      PNXP (prev's next pointer) points to the head of a list, or to
      the next field in the previous chain in the list.
@@ -2155,7 +2159,7 @@ public:
   virtual unsigned int execute (function *);
 
 private:
-  hash_map<tree_operand_hash, struct imm_store_chain_info *> m_stores;
+  hash_map<tree_operand_hash, class imm_store_chain_info *> m_stores;
 
   /* Form a doubly-linked stack of the elements of m_stores, so that
      we can iterate over them in a predictable way.  Using this order
@@ -3064,8 +3068,9 @@ get_location_for_stmts (vec<gimple *> &stmts)
 /* Used to decribe a store resulting from splitting a wide store in smaller
    regularly-sized stores in split_group.  */
 
-struct split_store
+class split_store
 {
+public:
   unsigned HOST_WIDE_INT bytepos;
   unsigned HOST_WIDE_INT size;
   unsigned HOST_WIDE_INT align;
@@ -3092,7 +3097,7 @@ split_store::split_store (unsigned HOST_WIDE_INT bp,
    if there is exactly one original store in the range.  */
 
 static store_immediate_info *
-find_constituent_stores (struct merged_store_group *group,
+find_constituent_stores (class merged_store_group *group,
 			 vec<store_immediate_info *> *stores,
 			 unsigned int *first,
 			 unsigned HOST_WIDE_INT bitpos,
@@ -3235,7 +3240,7 @@ count_multiple_uses (store_immediate_info *info)
 static unsigned int
 split_group (merged_store_group *group, bool allow_unaligned_store,
 	     bool allow_unaligned_load, bool bzero_first,
-	     vec<struct split_store *> *split_stores,
+	     vec<split_store *> *split_stores,
 	     unsigned *total_orig,
 	     unsigned *total_new)
 {
@@ -3272,7 +3277,7 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
 	  if (align_bitpos)
 	    align = least_bit_hwi (align_bitpos);
 	  bytepos = group->start / BITS_PER_UNIT;
-	  struct split_store *store
+	  split_store *store
 	    = new split_store (bytepos, group->width, align);
 	  unsigned int first = 0;
 	  find_constituent_stores (group, &store->orig_stores,
@@ -3330,7 +3335,7 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
       ret = 1;
       if (split_stores)
 	{
-	  struct split_store *store
+	  split_store *store
 	    = new split_store (bytepos, group->stores[0]->bitsize, align_base);
 	  store->orig_stores.safe_push (group->stores[0]);
 	  store->orig = true;
@@ -3457,7 +3462,7 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
 
       if (split_stores)
 	{
-	  struct split_store *store
+	  split_store *store
 	    = new split_store (try_pos, try_size, align);
 	  info = find_constituent_stores (group, &store->orig_stores,
 					  &first, try_bitpos, try_size);
@@ -3478,7 +3483,7 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
   if (total_orig)
     {
       unsigned int i;
-      struct split_store *store;
+      split_store *store;
       /* If we are reusing some original stores and any of the
 	 original SSA_NAMEs had multiple uses, we need to subtract
 	 those now before we add the new ones.  */
@@ -3645,7 +3650,7 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
   if (orig_num_stmts < 2)
     return false;
 
-  auto_vec<struct split_store *, 32> split_stores;
+  auto_vec<class split_store *, 32> split_stores;
   bool allow_unaligned_store
     = !STRICT_ALIGNMENT && PARAM_VALUE (PARAM_STORE_MERGING_ALLOW_UNALIGNED);
   bool allow_unaligned_load = allow_unaligned_store;
@@ -4605,7 +4610,7 @@ pass_store_merging::process_store (gimple *stmt)
   if (!ins_stmt)
     memset (&n, 0, sizeof (n));
 
-  struct imm_store_chain_info **chain_info = NULL;
+  class imm_store_chain_info **chain_info = NULL;
   if (base_addr)
     chain_info = m_stores.get (base_addr);
 
@@ -4641,7 +4646,7 @@ pass_store_merging::process_store (gimple *stmt)
   /* Store aliases any existing chain?  */
   terminate_all_aliasing_chains (NULL, stmt);
   /* Start a new chain.  */
-  struct imm_store_chain_info *new_chain
+  class imm_store_chain_info *new_chain
     = new imm_store_chain_info (m_stores_head, base_addr);
   info = new store_immediate_info (const_bitsize, const_bitpos,
 				   const_bitregion_start,

@@ -1400,7 +1400,7 @@ expand_builtin_prefetch (tree exp)
 
   if (targetm.have_prefetch ())
     {
-      struct expand_operand ops[3];
+      class expand_operand ops[3];
 
       create_address_operand (&ops[0], op0);
       create_integer_operand (&ops[1], INTVAL (op1));
@@ -1416,7 +1416,7 @@ expand_builtin_prefetch (tree exp)
 }
 
 /* Get a MEM rtx for expression EXP which is the address of an operand
-   to be used in a string instruction (cmpstrsi, movmemsi, ..).  LEN is
+   to be used in a string instruction (cmpstrsi, cpymemsi, ..).  LEN is
    the maximum length of the block of memory that might be accessed or
    NULL if unknown.  */
 
@@ -1638,11 +1638,8 @@ expand_builtin_apply_args_1 (void)
   /* Save the structure value address unless this is passed as an
      "invisible" first argument.  */
   if (struct_incoming_value)
-    {
-      emit_move_insn (adjust_address (registers, Pmode, size),
-		      copy_to_reg (struct_incoming_value));
-      size += GET_MODE_SIZE (Pmode);
-    }
+    emit_move_insn (adjust_address (registers, Pmode, size),
+		    copy_to_reg (struct_incoming_value));
 
   /* Return the address of the block.  */
   return copy_addr_to_reg (XEXP (registers, 0));
@@ -1791,7 +1788,6 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
       emit_move_insn (struct_value, value);
       if (REG_P (struct_value))
 	use_reg (&call_fusage, struct_value);
-      size += GET_MODE_SIZE (Pmode);
     }
 
   /* All arguments and registers used for the call are set up by now!  */
@@ -2449,7 +2445,7 @@ expand_builtin_interclass_mathfn (tree exp, rtx target)
 
   if (icode != CODE_FOR_nothing)
     {
-      struct expand_operand ops[1];
+      class expand_operand ops[1];
       rtx_insn *last = get_last_insn ();
       tree orig_arg = arg;
 
@@ -2950,7 +2946,7 @@ expand_builtin_strlen (tree exp, rtx target,
   if (!validate_arglist (exp, POINTER_TYPE, VOID_TYPE))
     return NULL_RTX;
 
-  struct expand_operand ops[4];
+  class expand_operand ops[4];
   rtx pat;
   tree len;
   tree src = CALL_EXPR_ARG (exp, 0);
@@ -3656,6 +3652,20 @@ compute_objsize (tree dest, int ostype)
   if (!ostype)
     return NULL_TREE;
 
+  if (TREE_CODE (dest) == MEM_REF)
+    {
+      tree ref = TREE_OPERAND (dest, 0);
+      tree off = TREE_OPERAND (dest, 1);
+      if (tree size = compute_objsize (ref, ostype))
+	{
+	  if (tree_int_cst_lt (off, size))
+	    return fold_build2 (MINUS_EXPR, size_type_node, size, off);
+	  return integer_zero_node;
+	}
+
+      return NULL_TREE;
+    }
+
   if (TREE_CODE (dest) != ADDR_EXPR)
     return NULL_TREE;
 
@@ -3927,7 +3937,7 @@ expand_builtin_mempcpy_args (tree dest, tree src, tree len,
 static rtx
 expand_movstr (tree dest, tree src, rtx target, memop_ret retmode)
 {
-  struct expand_operand ops[3];
+  class expand_operand ops[3];
   rtx dest_mem;
   rtx src_mem;
 
@@ -4637,7 +4647,7 @@ expand_cmpstr (insn_code icode, rtx target, rtx arg1_rtx, rtx arg2_rtx,
   if (target && (!REG_P (target) || HARD_REGISTER_P (target)))
     target = NULL_RTX;
 
-  struct expand_operand ops[4];
+  class expand_operand ops[4];
   create_output_operand (&ops[0], target, insn_mode);
   create_fixed_operand (&ops[1], arg1_rtx);
   create_fixed_operand (&ops[2], arg2_rtx);
@@ -5610,7 +5620,7 @@ expand_builtin___clear_cache (tree exp)
 
   if (targetm.have_clear_cache ())
     {
-      struct expand_operand ops[2];
+      class expand_operand ops[2];
 
       begin = CALL_EXPR_ARG (exp, 0);
       begin_rtx = expand_expr (begin, NULL_RTX, Pmode, EXPAND_NORMAL);
@@ -5746,6 +5756,7 @@ expand_builtin_init_descriptor (tree exp)
   r_descr = expand_normal (t_descr);
   m_descr = gen_rtx_MEM (BLKmode, r_descr);
   MEM_NOTRAP_P (m_descr) = 1;
+  set_mem_align (m_descr, GET_MODE_ALIGNMENT (ptr_mode));
 
   r_func = expand_normal (t_func);
   r_chain = expand_normal (t_chain);
@@ -6570,7 +6581,7 @@ expand_ifn_atomic_bit_test_and (gcall *call)
   machine_mode mode = TYPE_MODE (TREE_TYPE (flag));
   enum rtx_code code;
   optab optab;
-  struct expand_operand ops[5];
+  class expand_operand ops[5];
 
   gcc_assert (flag_inline_atomics);
 
@@ -6878,7 +6889,7 @@ expand_builtin_thread_pointer (tree exp, rtx target)
   icode = direct_optab_handler (get_thread_pointer_optab, Pmode);
   if (icode != CODE_FOR_nothing)
     {
-      struct expand_operand op;
+      class expand_operand op;
       /* If the target is not sutitable then create a new target. */
       if (target == NULL_RTX
 	  || !REG_P (target)
@@ -6901,7 +6912,7 @@ expand_builtin_set_thread_pointer (tree exp)
   icode = direct_optab_handler (set_thread_pointer_optab, Pmode);
   if (icode != CODE_FOR_nothing)
     {
-      struct expand_operand op;
+      class expand_operand op;
       rtx val = expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 			     Pmode, EXPAND_NORMAL);      
       create_input_operand (&op, val, Pmode);
@@ -7122,8 +7133,19 @@ inline_expand_builtin_string_cmp (tree exp, rtx target)
     return NULL_RTX;
 
   /* For strncmp, if the length is not a const, not qualify.  */
-  if (is_ncmp && !tree_fits_uhwi_p (len3_tree))
-    return NULL_RTX;
+  if (is_ncmp)
+    {
+      if (!tree_fits_uhwi_p (len3_tree))
+	return NULL_RTX;
+      else
+	len3 = tree_to_uhwi (len3_tree);
+    }
+
+  if (src_str1 != NULL)
+    len1 = strnlen (src_str1, len1) + 1;
+
+  if (src_str2 != NULL)
+    len2 = strnlen (src_str2, len2) + 1;
 
   int const_str_n = 0;
   if (!len1)
@@ -7138,7 +7160,7 @@ inline_expand_builtin_string_cmp (tree exp, rtx target)
   gcc_checking_assert (const_str_n > 0);
   length = (const_str_n == 1) ? len1 : len2;
 
-  if (is_ncmp && (len3 = tree_to_uhwi (len3_tree)) < length)
+  if (is_ncmp && len3 < length)
     length = len3;
 
   /* If the length of the comparision is larger than the threshold,
@@ -7215,7 +7237,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 		int ignore)
 {
   tree fndecl = get_callee_fndecl (exp);
-  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   machine_mode target_mode = TYPE_MODE (TREE_TYPE (exp));
   int flags;
 
@@ -7227,6 +7248,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
      redundant checks and be sure, that possible overflow will be detected
      by ASan.  */
 
+  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   if ((flag_sanitize & SANITIZE_ADDRESS) && asan_intercepted_p (fcode))
     return expand_call (exp, target, ignore);
 
@@ -11222,4 +11244,91 @@ target_char_cst_p (tree t, char *p)
 
   *p = (char)tree_to_uhwi (t);
   return true;
+}
+
+/* Return true if the builtin DECL is implemented in a standard library.
+   Otherwise returns false which doesn't guarantee it is not (thus the list of
+   handled builtins below may be incomplete).  */
+
+bool
+builtin_with_linkage_p (tree decl)
+{
+  if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
+    switch (DECL_FUNCTION_CODE (decl))
+    {
+      CASE_FLT_FN (BUILT_IN_ACOS):
+      CASE_FLT_FN (BUILT_IN_ACOSH):
+      CASE_FLT_FN (BUILT_IN_ASIN):
+      CASE_FLT_FN (BUILT_IN_ASINH):
+      CASE_FLT_FN (BUILT_IN_ATAN):
+      CASE_FLT_FN (BUILT_IN_ATANH):
+      CASE_FLT_FN (BUILT_IN_ATAN2):
+      CASE_FLT_FN (BUILT_IN_CBRT):
+      CASE_FLT_FN (BUILT_IN_CEIL):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_CEIL):
+      CASE_FLT_FN (BUILT_IN_COPYSIGN):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_COPYSIGN):
+      CASE_FLT_FN (BUILT_IN_COS):
+      CASE_FLT_FN (BUILT_IN_COSH):
+      CASE_FLT_FN (BUILT_IN_ERF):
+      CASE_FLT_FN (BUILT_IN_ERFC):
+      CASE_FLT_FN (BUILT_IN_EXP):
+      CASE_FLT_FN (BUILT_IN_EXP2):
+      CASE_FLT_FN (BUILT_IN_EXPM1):
+      CASE_FLT_FN (BUILT_IN_FABS):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_FABS):
+      CASE_FLT_FN (BUILT_IN_FDIM):
+      CASE_FLT_FN (BUILT_IN_FLOOR):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_FLOOR):
+      CASE_FLT_FN (BUILT_IN_FMA):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMA):
+      CASE_FLT_FN (BUILT_IN_FMAX):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMAX):
+      CASE_FLT_FN (BUILT_IN_FMIN):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMIN):
+      CASE_FLT_FN (BUILT_IN_FMOD):
+      CASE_FLT_FN (BUILT_IN_FREXP):
+      CASE_FLT_FN (BUILT_IN_HYPOT):
+      CASE_FLT_FN (BUILT_IN_ILOGB):
+      CASE_FLT_FN (BUILT_IN_LDEXP):
+      CASE_FLT_FN (BUILT_IN_LGAMMA):
+      CASE_FLT_FN (BUILT_IN_LLRINT):
+      CASE_FLT_FN (BUILT_IN_LLROUND):
+      CASE_FLT_FN (BUILT_IN_LOG):
+      CASE_FLT_FN (BUILT_IN_LOG10):
+      CASE_FLT_FN (BUILT_IN_LOG1P):
+      CASE_FLT_FN (BUILT_IN_LOG2):
+      CASE_FLT_FN (BUILT_IN_LOGB):
+      CASE_FLT_FN (BUILT_IN_LRINT):
+      CASE_FLT_FN (BUILT_IN_LROUND):
+      CASE_FLT_FN (BUILT_IN_MODF):
+      CASE_FLT_FN (BUILT_IN_NAN):
+      CASE_FLT_FN (BUILT_IN_NEARBYINT):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_NEARBYINT):
+      CASE_FLT_FN (BUILT_IN_NEXTAFTER):
+      CASE_FLT_FN (BUILT_IN_NEXTTOWARD):
+      CASE_FLT_FN (BUILT_IN_POW):
+      CASE_FLT_FN (BUILT_IN_REMAINDER):
+      CASE_FLT_FN (BUILT_IN_REMQUO):
+      CASE_FLT_FN (BUILT_IN_RINT):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_RINT):
+      CASE_FLT_FN (BUILT_IN_ROUND):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_ROUND):
+      CASE_FLT_FN (BUILT_IN_SCALBLN):
+      CASE_FLT_FN (BUILT_IN_SCALBN):
+      CASE_FLT_FN (BUILT_IN_SIN):
+      CASE_FLT_FN (BUILT_IN_SINH):
+      CASE_FLT_FN (BUILT_IN_SINCOS):
+      CASE_FLT_FN (BUILT_IN_SQRT):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_SQRT):
+      CASE_FLT_FN (BUILT_IN_TAN):
+      CASE_FLT_FN (BUILT_IN_TANH):
+      CASE_FLT_FN (BUILT_IN_TGAMMA):
+      CASE_FLT_FN (BUILT_IN_TRUNC):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_TRUNC):
+	return true;
+      default:
+	break;
+    }
+  return false;
 }

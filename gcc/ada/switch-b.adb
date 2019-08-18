@@ -51,6 +51,9 @@ package body Switch.B is
       --  Used for -d and -D to scan stack size including handling k/m. S is
       --  set to 'd' or 'D' to indicate the switch being scanned.
 
+      procedure Scan_Debug_Switches;
+      --  Scan out debug switches
+
       ---------------------------
       -- Get_Optional_Filename --
       ---------------------------
@@ -114,6 +117,70 @@ package body Switch.B is
          return Result;
       end Get_Stack_Size;
 
+      -------------------------
+      -- Scan_Debug_Switches --
+      -------------------------
+
+      procedure Scan_Debug_Switches is
+         Dot        : Boolean := False;
+         Underscore : Boolean := False;
+
+      begin
+         while Ptr <= Max loop
+            C := Switch_Chars (Ptr);
+
+            --  Binder debug flags come in the following forms:
+            --
+            --       letter
+            --     . letter
+            --     _ letter
+            --
+            --       digit
+            --     . digit
+            --     _ digit
+            --
+            --  Note that the processing of switch -d aleady takes care of the
+            --  case where the first flag is a digit (default stack size).
+
+            if C in '1' .. '9' or else
+               C in 'a' .. 'z' or else
+               C in 'A' .. 'Z'
+            then
+               --  . letter
+               --  . digit
+
+               if Dot then
+                  Set_Dotted_Debug_Flag (C);
+                  Dot := False;
+
+               --  _ letter
+               --  _ digit
+
+               elsif Underscore then
+                  Set_Underscored_Debug_Flag (C);
+                  Underscore := False;
+
+               --    letter
+               --    digit
+
+               else
+                  Set_Debug_Flag (C);
+               end if;
+
+            elsif C = '.' then
+               Dot := True;
+
+            elsif C = '_' then
+               Underscore := True;
+
+            else
+               Bad_Switch (Switch_Chars);
+            end if;
+
+            Ptr := Ptr + 1;
+         end loop;
+      end Scan_Debug_Switches;
+
    --  Start of processing for Scan_Binder_Switches
 
    begin
@@ -170,7 +237,6 @@ package body Switch.B is
          --  Processing for d switch
 
          when 'd' =>
-
             if Ptr = Max then
                Bad_Switch (Switch_Chars);
             end if;
@@ -189,26 +255,7 @@ package body Switch.B is
             --  Case where character after -d is not digit (debug flags)
 
             else
-               --  Note: for the debug switch, the remaining characters in this
-               --  switch field must all be debug flags, since all valid switch
-               --  characters are also valid debug characters. This switch is
-               --  not documented on purpose because it is only used by the
-               --  implementors.
-
-               --  Loop to scan out debug flags
-
-               loop
-                  C := Switch_Chars (Ptr);
-
-                  if C in 'a' .. 'z' or else C in 'A' .. 'Z' then
-                     Set_Debug_Flag (C);
-                  else
-                     Bad_Switch (Switch_Chars);
-                  end if;
-
-                  Ptr := Ptr + 1;
-                  exit when Ptr > Max;
-               end loop;
+               Scan_Debug_Switches;
             end if;
 
          --  Processing for D switch
@@ -294,11 +341,23 @@ package body Switch.B is
                Debugger_Level := 2;
             end if;
 
+         --  Processing for G switch
+
+         when 'G' =>
+            Ptr := Ptr + 1;
+            Generate_C_Code := True;
+
          --  Processing for h switch
 
          when 'h' =>
             Ptr := Ptr + 1;
             Usage_Requested := True;
+
+         --  Processing for H switch
+
+         when 'H' =>
+            Ptr := Ptr + 1;
+            Legacy_Elaboration_Order := True;
 
          --  Processing for i switch
 

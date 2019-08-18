@@ -246,7 +246,7 @@ package System.OS_Lib is
       Success  : out Boolean;
       Mode     : Copy_Mode := Copy;
       Preserve : Attribute := Time_Stamps);
-   --  Copy a file. Name must designate a single file (no wild cards allowed).
+   --  Copy a file. Name must designate a single file (no wildcards allowed).
    --  Pathname can be a filename or directory name. In the latter case Name
    --  is copied into the directory preserving the same file name. Mode
    --  defines the kind of copy, see above with the default being a normal

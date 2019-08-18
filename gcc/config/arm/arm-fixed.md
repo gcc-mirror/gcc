@@ -98,9 +98,9 @@
 ; Note: none of these do any rounding.
 
 (define_expand "mulqq3"
-  [(set (match_operand:QQ 0 "s_register_operand" "")
-	(mult:QQ (match_operand:QQ 1 "s_register_operand" "")
-		 (match_operand:QQ 2 "s_register_operand" "")))]
+  [(set (match_operand:QQ 0 "s_register_operand")
+	(mult:QQ (match_operand:QQ 1 "s_register_operand")
+		 (match_operand:QQ 2 "s_register_operand")))]
   "TARGET_DSP_MULTIPLY && arm_arch_thumb2"
 {
   rtx tmp1 = gen_reg_rtx (HImode);
@@ -116,9 +116,9 @@
 })
 
 (define_expand "mulhq3"
-  [(set (match_operand:HQ 0 "s_register_operand" "")
-	(mult:HQ (match_operand:HQ 1 "s_register_operand" "")
-		 (match_operand:HQ 2 "s_register_operand" "")))]
+  [(set (match_operand:HQ 0 "s_register_operand")
+	(mult:HQ (match_operand:HQ 1 "s_register_operand")
+		 (match_operand:HQ 2 "s_register_operand")))]
   "TARGET_DSP_MULTIPLY && arm_arch_thumb2"
 {
   rtx tmp = gen_reg_rtx (SImode);
@@ -134,9 +134,9 @@
 })
 
 (define_expand "mulsq3"
-  [(set (match_operand:SQ 0 "s_register_operand" "")
-	(mult:SQ (match_operand:SQ 1 "s_register_operand" "")
-		 (match_operand:SQ 2 "s_register_operand" "")))]
+  [(set (match_operand:SQ 0 "s_register_operand")
+	(mult:SQ (match_operand:SQ 1 "s_register_operand")
+		 (match_operand:SQ 2 "s_register_operand")))]
   "TARGET_32BIT"
 {
   rtx tmp1 = gen_reg_rtx (DImode);
@@ -156,9 +156,9 @@
 ;; Accumulator multiplies.
 
 (define_expand "mulsa3"
-  [(set (match_operand:SA 0 "s_register_operand" "")
-	(mult:SA (match_operand:SA 1 "s_register_operand" "")
-		 (match_operand:SA 2 "s_register_operand" "")))]
+  [(set (match_operand:SA 0 "s_register_operand")
+	(mult:SA (match_operand:SA 1 "s_register_operand")
+		 (match_operand:SA 2 "s_register_operand")))]
   "TARGET_32BIT"
 {
   rtx tmp1 = gen_reg_rtx (DImode);
@@ -175,9 +175,9 @@
 })
 
 (define_expand "mulusa3"
-  [(set (match_operand:USA 0 "s_register_operand" "")
-	(mult:USA (match_operand:USA 1 "s_register_operand" "")
-		  (match_operand:USA 2 "s_register_operand" "")))]
+  [(set (match_operand:USA 0 "s_register_operand")
+	(mult:USA (match_operand:USA 1 "s_register_operand")
+		  (match_operand:USA 2 "s_register_operand")))]
   "TARGET_32BIT"
 {
   rtx tmp1 = gen_reg_rtx (DImode);
@@ -317,9 +317,9 @@
 		      (const_int 32)))])
 
 (define_expand "mulha3"
-  [(set (match_operand:HA 0 "s_register_operand" "")
-	(mult:HA (match_operand:HA 1 "s_register_operand" "")
-		 (match_operand:HA 2 "s_register_operand" "")))]
+  [(set (match_operand:HA 0 "s_register_operand")
+	(mult:HA (match_operand:HA 1 "s_register_operand")
+		 (match_operand:HA 2 "s_register_operand")))]
   "TARGET_DSP_MULTIPLY && arm_arch_thumb2"
 {
   rtx tmp = gen_reg_rtx (SImode);
@@ -333,9 +333,9 @@
 })
 
 (define_expand "muluha3"
-  [(set (match_operand:UHA 0 "s_register_operand" "")
-	(mult:UHA (match_operand:UHA 1 "s_register_operand" "")
-		  (match_operand:UHA 2 "s_register_operand" "")))]
+  [(set (match_operand:UHA 0 "s_register_operand")
+	(mult:UHA (match_operand:UHA 1 "s_register_operand")
+		  (match_operand:UHA 2 "s_register_operand")))]
   "TARGET_DSP_MULTIPLY"
 {
   rtx tmp1 = gen_reg_rtx (SImode);
@@ -353,9 +353,9 @@
 })
 
 (define_expand "ssmulha3"
-  [(set (match_operand:HA 0 "s_register_operand" "")
-	(ss_mult:HA (match_operand:HA 1 "s_register_operand" "")
-		    (match_operand:HA 2 "s_register_operand" "")))]
+  [(set (match_operand:HA 0 "s_register_operand")
+	(ss_mult:HA (match_operand:HA 1 "s_register_operand")
+		    (match_operand:HA 2 "s_register_operand")))]
   "TARGET_32BIT && TARGET_DSP_MULTIPLY && arm_arch6"
 {
   rtx tmp = gen_reg_rtx (SImode);
@@ -373,9 +373,9 @@
 })
 
 (define_expand "usmuluha3"
-  [(set (match_operand:UHA 0 "s_register_operand" "")
-	(us_mult:UHA (match_operand:UHA 1 "s_register_operand" "")
-		     (match_operand:UHA 2 "s_register_operand" "")))]
+  [(set (match_operand:UHA 0 "s_register_operand")
+	(us_mult:UHA (match_operand:UHA 1 "s_register_operand")
+		     (match_operand:UHA 2 "s_register_operand")))]
   "TARGET_INT_SIMD"
 {
   rtx tmp1 = gen_reg_rtx (SImode);

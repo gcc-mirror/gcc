@@ -40,14 +40,14 @@
 ;; 1 = source (mem:BLK ...)
 ;; 2 = count
 ;; 3 = alignment
-(define_expand "movmemhi"
+(define_expand "cpymemhi"
   [(match_operand 0 "ap_operand" "")
    (match_operand 1 "ap_operand" "")
    (match_operand 2 "m32c_r3_operand" "")
    (match_operand 3 "" "")
    ]
   ""
-  "if (m32c_expand_movmemhi(operands)) DONE; FAIL;"
+  "if (m32c_expand_cpymemhi(operands)) DONE; FAIL;"
   )
 
 ;; We can't use mode iterators for these because M16C uses r1h to extend
@@ -60,7 +60,7 @@
 ;; 3 = dest (in)
 ;; 4 = src (in)
 ;; 5 = count (in)
-(define_insn "movmemhi_bhi_op"
+(define_insn "cpymemhi_bhi_op"
   [(set (mem:QI (match_operand:HI 3 "ap_operand" "0"))
 	(mem:QI (match_operand:HI 4 "ap_operand" "1")))
    (set (match_operand:HI 2 "m32c_r3_operand" "=R3w")
@@ -75,7 +75,7 @@
   "TARGET_A16"
   "mov.b:q\t#0,r1h\n\tsmovf.b\t; %0[0..%2-1]=r1h%1[]"
   )
-(define_insn "movmemhi_bpsi_op"
+(define_insn "cpymemhi_bpsi_op"
   [(set (mem:QI (match_operand:PSI 3 "ap_operand" "0"))
 	(mem:QI (match_operand:PSI 4 "ap_operand" "1")))
    (set (match_operand:HI 2 "m32c_r3_operand" "=R3w")
@@ -89,7 +89,7 @@
   "TARGET_A24"
   "smovf.b\t; %0[0..%2-1]=%1[]"
   )
-(define_insn "movmemhi_whi_op"
+(define_insn "cpymemhi_whi_op"
   [(set (mem:HI (match_operand:HI 3 "ap_operand" "0"))
 	(mem:HI (match_operand:HI 4 "ap_operand" "1")))
    (set (match_operand:HI 2 "m32c_r3_operand" "=R3w")
@@ -104,7 +104,7 @@
   "TARGET_A16"
   "mov.b:q\t#0,r1h\n\tsmovf.w\t; %0[0..%2-1]=r1h%1[]"
   )
-(define_insn "movmemhi_wpsi_op"
+(define_insn "cpymemhi_wpsi_op"
   [(set (mem:HI (match_operand:PSI 3 "ap_operand" "0"))
 	(mem:HI (match_operand:PSI 4 "ap_operand" "1")))
    (set (match_operand:HI 2 "m32c_r3_operand" "=R3w")

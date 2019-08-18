@@ -135,7 +135,7 @@ loop_optimizer_init (unsigned flags)
 void
 loop_optimizer_finalize (struct function *fn)
 {
-  struct loop *loop;
+  class loop *loop;
   basic_block bb;
 
   timevar_push (TV_LOOP_FINI);
@@ -194,7 +194,7 @@ fix_loop_structure (bitmap changed_bbs)
 {
   basic_block bb;
   int record_exits = 0;
-  struct loop *loop;
+  class loop *loop;
   unsigned old_nloops, i;
 
   timevar_push (TV_LOOP_INIT);
@@ -237,7 +237,7 @@ fix_loop_structure (bitmap changed_bbs)
 
       while (loop->inner)
 	{
-	  struct loop *ploop = loop->inner;
+	  class loop *ploop = loop->inner;
 	  flow_loop_tree_node_remove (ploop);
 	  flow_loop_tree_node_add (loop_outer (loop), ploop);
 	}

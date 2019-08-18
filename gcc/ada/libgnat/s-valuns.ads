@@ -35,7 +35,7 @@
 with System.Unsigned_Types;
 
 package System.Val_Uns is
-   pragma Pure;
+   pragma Preelaborate;
 
    function Scan_Raw_Unsigned
      (Str : String;

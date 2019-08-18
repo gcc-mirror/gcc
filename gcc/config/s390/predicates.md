@@ -556,3 +556,38 @@
 {
   return memory_operand (op, mode) && !contains_symbol_ref_p (op);
 })
+
+;; Check for a valid shift count operand with an implicit
+;; shift truncation mask of 63.
+
+(define_predicate "shift_count_operand"
+ (and (match_code "reg, subreg, and, plus, const_int")
+  (match_test "CONST_INT_P (op) || GET_MODE (op) == E_QImode"))
+{
+  return s390_valid_shift_count (op, 63);
+}
+)
+
+;; This is used as operand predicate.  As we do not know
+;; the mode of the first operand here and the shift truncation
+;; mask depends on the mode, we cannot check the mask.
+;; This is supposed to happen in the insn condition which
+;; calls s390_valid_shift_count with the proper mode size.
+;; We need two separate predicates for non-vector and vector
+;; shifts since the (less restrictive) insn condition is checked
+;; after the more restrictive operand predicate which will
+;; disallow the operand before we can check the condition.
+
+(define_predicate "shift_count_operand_vec"
+ (and (match_code "reg, subreg, and, plus, const_int")
+  (match_test "CONST_INT_P (op) || GET_MODE (op) == E_QImode"))
+{
+  return s390_valid_shift_count (op, 0);
+}
+)
+
+; An integer constant which can be used in a signed add with overflow
+; pattern without being reloaded.
+(define_predicate "addv_const_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) >= -32768 && INTVAL (op) <= 32767")))

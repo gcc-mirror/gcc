@@ -168,6 +168,13 @@ along with GCC; see the file COPYING3.  If not see
    mode that should actually be used.  We allow pairs of registers.  */
 #define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (TARGET_64BIT ? TImode : DImode)
 
+/* DATA_ALIGNMENT and LOCAL_ALIGNMENT common definition.  */
+#define RISCV_EXPAND_ALIGNMENT(COND, TYPE, ALIGN)			\
+  (((COND) && ((ALIGN) < BITS_PER_WORD)					\
+    && (TREE_CODE (TYPE) == ARRAY_TYPE					\
+	|| TREE_CODE (TYPE) == UNION_TYPE				\
+	|| TREE_CODE (TYPE) == RECORD_TYPE)) ? BITS_PER_WORD : (ALIGN))
+
 /* If defined, a C expression to compute the alignment for a static
    variable.  TYPE is the data type, and ALIGN is the alignment that
    the object would ordinarily have.  The value of this macro is used
@@ -180,18 +187,16 @@ along with GCC; see the file COPYING3.  If not see
    cause character arrays to be word-aligned so that `strcpy' calls
    that copy constants to character arrays can be done inline.  */
 
-#define DATA_ALIGNMENT(TYPE, ALIGN)					\
-  ((((ALIGN) < BITS_PER_WORD)						\
-    && (TREE_CODE (TYPE) == ARRAY_TYPE					\
-	|| TREE_CODE (TYPE) == UNION_TYPE				\
-	|| TREE_CODE (TYPE) == RECORD_TYPE)) ? BITS_PER_WORD : (ALIGN))
+#define DATA_ALIGNMENT(TYPE, ALIGN)						\
+  RISCV_EXPAND_ALIGNMENT (riscv_align_data_type == riscv_align_data_type_xlen,	\
+			  TYPE, ALIGN)
 
 /* We need this for the same reason as DATA_ALIGNMENT, namely to cause
    character arrays to be word-aligned so that `strcpy' calls that copy
    constants to character arrays can be done inline, and 'strcmp' can be
    optimised to use word loads. */
 #define LOCAL_ALIGNMENT(TYPE, ALIGN) \
-  DATA_ALIGNMENT (TYPE, ALIGN)
+  RISCV_EXPAND_ALIGNMENT (true, TYPE, ALIGN)
 
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */
@@ -840,20 +845,20 @@ while (0)
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE (POINTER_SIZE == 64 ? "long int" : "int")
 
-/* The maximum number of bytes copied by one iteration of a movmemsi loop.  */
+/* The maximum number of bytes copied by one iteration of a cpymemsi loop.  */
 
 #define RISCV_MAX_MOVE_BYTES_PER_LOOP_ITER (UNITS_PER_WORD * 4)
 
 /* The maximum number of bytes that can be copied by a straight-line
-   movmemsi implementation.  */
+   cpymemsi implementation.  */
 
 #define RISCV_MAX_MOVE_BYTES_STRAIGHT (RISCV_MAX_MOVE_BYTES_PER_LOOP_ITER * 3)
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
-   move-instruction pairs, we will do a movmem or libcall instead.
+   move-instruction pairs, we will do a cpymem or libcall instead.
    Do not use move_by_pieces at all when strict alignment is not
    in effect but the target has slow unaligned accesses; in this
-   case, movmem or libcall is more efficient.  */
+   case, cpymem or libcall is more efficient.  */
 
 #define MOVE_RATIO(speed)						\
   (!STRICT_ALIGNMENT && riscv_slow_unaligned_access_p ? 1 :		\

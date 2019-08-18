@@ -465,6 +465,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
     case OMP_CLAUSE_USE_DEVICE_PTR:
       name = "use_device_ptr";
       goto print_remap;
+    case OMP_CLAUSE_USE_DEVICE_ADDR:
+      name = "use_device_addr";
+      goto print_remap;
     case OMP_CLAUSE_IS_DEVICE_PTR:
       name = "is_device_ptr";
       goto print_remap;
@@ -482,6 +485,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       goto print_remap;
     case OMP_CLAUSE__CONDTEMP_:
       name = "_condtemp_";
+      goto print_remap;
+    case OMP_CLAUSE__SCANTEMP_:
+      name = "_scantemp_";
       goto print_remap;
     case OMP_CLAUSE_TO_DECLARE:
       name = "to";
@@ -945,6 +951,25 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_right_paren (pp);
       break;
 
+    case OMP_CLAUSE_DEVICE_TYPE:
+      pp_string (pp, "device_type(");
+      switch (OMP_CLAUSE_DEVICE_TYPE_KIND (clause))
+	{
+	case OMP_CLAUSE_DEVICE_TYPE_HOST:
+	  pp_string (pp, "host");
+	  break;
+	case OMP_CLAUSE_DEVICE_TYPE_NOHOST:
+	  pp_string (pp, "nohost");
+	  break;
+	case OMP_CLAUSE_DEVICE_TYPE_ANY:
+	  pp_string (pp, "any");
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      pp_right_paren (pp);
+      break;
+
     case OMP_CLAUSE_SAFELEN:
       pp_string (pp, "safelen(");
       dump_generic_node (pp, OMP_CLAUSE_SAFELEN_EXPR (clause),
@@ -1030,6 +1055,29 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	  break;
 	case OMP_CLAUSE_DEFAULTMAP_CATEGORY_POINTER:
 	  pp_string (pp, ":pointer");
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      pp_right_paren (pp);
+      break;
+
+    case OMP_CLAUSE_ORDER:
+      pp_string (pp, "order(concurrent)");
+      break;
+
+    case OMP_CLAUSE_BIND:
+      pp_string (pp, "bind(");
+      switch (OMP_CLAUSE_BIND_KIND (clause))
+	{
+	case OMP_CLAUSE_BIND_TEAMS:
+	  pp_string (pp, "teams");
+	  break;
+	case OMP_CLAUSE_BIND_PARALLEL:
+	  pp_string (pp, "parallel");
+	  break;
+	case OMP_CLAUSE_BIND_THREAD:
+	  pp_string (pp, "thread");
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -2812,12 +2860,34 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       newline_and_indent (pp, spc+2);
       pp_right_brace (pp);
       newline_and_indent (pp, spc);
-      pp_string (pp,
-			 (TREE_CODE (node) == TRY_CATCH_EXPR) ? "catch" : "finally");
+      if (TREE_CODE (node) == TRY_CATCH_EXPR)
+	{
+	  node = TREE_OPERAND (node, 1);
+	  pp_string (pp, "catch");
+	}
+      else
+	{
+	  gcc_assert (TREE_CODE (node) == TRY_FINALLY_EXPR);
+	  node = TREE_OPERAND (node, 1);
+	  pp_string (pp, "finally");
+	  if (TREE_CODE (node) == EH_ELSE_EXPR)
+	    {
+	      newline_and_indent (pp, spc+2);
+	      pp_left_brace (pp);
+	      newline_and_indent (pp, spc+4);
+	      dump_generic_node (pp, TREE_OPERAND (node, 0), spc+4,
+				 flags, true);
+	      newline_and_indent (pp, spc+2);
+	      pp_right_brace (pp);
+	      newline_and_indent (pp, spc);
+	      node = TREE_OPERAND (node, 1);
+	      pp_string (pp, "else");
+	    }
+	}
       newline_and_indent (pp, spc+2);
       pp_left_brace (pp);
       newline_and_indent (pp, spc+4);
-      dump_generic_node (pp, TREE_OPERAND (node, 1), spc+4, flags, true);
+      dump_generic_node (pp, node, spc+4, flags, true);
       newline_and_indent (pp, spc+2);
       pp_right_brace (pp);
       is_expr = false;
@@ -3230,6 +3300,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case OMP_TASKLOOP:
       pp_string (pp, "#pragma omp taskloop");
+      goto dump_omp_loop;
+
+    case OMP_LOOP:
+      pp_string (pp, "#pragma omp loop");
       goto dump_omp_loop;
 
     case OACC_LOOP:

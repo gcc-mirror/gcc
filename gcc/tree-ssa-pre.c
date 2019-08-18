@@ -428,8 +428,9 @@ get_or_alloc_expr_for_name (tree name)
 
 /* An unordered bitmap set.  One bitmap tracks values, the other,
    expressions.  */
-typedef struct bitmap_set
+typedef class bitmap_set
 {
+public:
   bitmap_head expressions;
   bitmap_head values;
 } *bitmap_set_t;
@@ -1185,8 +1186,8 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
 	  bitmap visited = NULL;
 	  /* Try to find a vuse that dominates this phi node by skipping
 	     non-clobbering statements.  */
-	  vuse = get_continuation_for_phi (phi, &ref, cnt, &visited, false,
-					   NULL, NULL);
+	  vuse = get_continuation_for_phi (phi, &ref, true,
+					   cnt, &visited, false, NULL, NULL);
 	  if (visited)
 	    BITMAP_FREE (visited);
 	}
@@ -2012,8 +2013,6 @@ prune_clobbered_mems (bitmap_set_t set, basic_block block)
     }
 }
 
-static sbitmap has_abnormal_preds;
-
 /* Compute the ANTIC set for BLOCK.
 
    If succs(BLOCK) > 1 then
@@ -2351,7 +2350,7 @@ compute_antic (void)
 
   /* If any predecessor edges are abnormal, we punt, so antic_in is empty.
      We pre-build the map of blocks with incoming abnormal edges here.  */
-  has_abnormal_preds = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  auto_sbitmap has_abnormal_preds (last_basic_block_for_fn (cfun));
   bitmap_clear (has_abnormal_preds);
 
   FOR_ALL_BB_FN (block, cfun)
@@ -2435,8 +2434,6 @@ compute_antic (void)
 						   block->index));
 	}
     }
-
-  sbitmap_free (has_abnormal_preds);
 }
 
 

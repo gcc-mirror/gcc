@@ -562,23 +562,31 @@ package body Sem_Eval is
       elsif Is_Out_Of_Range (N, Base_Type (T), Assume_Valid => True) then
          Out_Of_Range (N);
 
-      --  Give warning if outside subtype (where one or both of the bounds of
-      --  the subtype is static). This warning is omitted if the expression
-      --  appears in a range that could be null (warnings are handled elsewhere
-      --  for this case).
+      --  Give a warning or error on the value outside the subtype. A
+      --  warning is omitted if the expression appears in a range that could
+      --  be null (warnings are handled elsewhere for this case).
 
       elsif T /= Base_Type (T) and then Nkind (Parent (N)) /= N_Range then
          if Is_In_Range (N, T, Assume_Valid => True) then
             null;
 
          elsif Is_Out_Of_Range (N, T, Assume_Valid => True) then
-
             --  Ignore out of range values for System.Priority in CodePeer
             --  mode since the actual target compiler may provide a wider
             --  range.
 
             if CodePeer_Mode and then T = RTE (RE_Priority) then
                Set_Do_Range_Check (N, False);
+
+            --  Determine if the out of range violation constitutes a warning
+            --  or an error based on context according to RM 4.9 (34/3).
+
+            elsif Nkind_In (Original_Node (N), N_Type_Conversion,
+                                               N_Qualified_Expression)
+              and then Comes_From_Source (Original_Node (N))
+            then
+               Apply_Compile_Time_Constraint_Error
+                 (N, "value not in range of}", CE_Range_Check_Failed);
             else
                Apply_Compile_Time_Constraint_Error
                  (N, "value not in range of}<<", CE_Range_Check_Failed);
@@ -986,12 +994,32 @@ package body Sem_Eval is
          Lf : constant Node_Id := Compare_Fixup (L);
          Rf : constant Node_Id := Compare_Fixup (R);
 
+         function Is_Rewritten_Loop_Entry (N : Node_Id) return Boolean;
+         --  An attribute reference to Loop_Entry may have been rewritten into
+         --  its prefix as a way to avoid generating a constant for that
+         --  attribute when the corresponding pragma is ignored. These nodes
+         --  should be ignored when deciding if they can be equal to one
+         --  another.
+
          function Is_Same_Subscript (L, R : List_Id) return Boolean;
          --  L, R are the Expressions values from two attribute nodes for First
          --  or Last attributes. Either may be set to No_List if no expressions
          --  are present (indicating subscript 1). The result is True if both
          --  expressions represent the same subscript (note one case is where
          --  one subscript is missing and the other is explicitly set to 1).
+
+         -----------------------------
+         -- Is_Rewritten_Loop_Entry --
+         -----------------------------
+
+         function Is_Rewritten_Loop_Entry (N : Node_Id) return Boolean is
+            Orig_N : constant Node_Id := Original_Node (N);
+         begin
+            return Orig_N /= N
+              and then Nkind (Orig_N) = N_Attribute_Reference
+              and then Get_Attribute_Id (Attribute_Name (Orig_N)) =
+                Attribute_Loop_Entry;
+         end Is_Rewritten_Loop_Entry;
 
          -----------------------
          -- Is_Same_Subscript --
@@ -1018,23 +1046,32 @@ package body Sem_Eval is
       --  Start of processing for Is_Same_Value
 
       begin
+         --  Loop_Entry nodes rewritten into their prefix inside ignored
+         --  pragmas should never lead to a decision of equality.
+
+         if Is_Rewritten_Loop_Entry (Lf)
+           or else Is_Rewritten_Loop_Entry (Rf)
+         then
+            return False;
+
          --  Values are the same if they refer to the same entity and the
-         --  entity is non-volatile. This does not however apply to Float
-         --  types, since we may have two NaN values and they should never
-         --  compare equal.
+         --  entity is nonvolatile.
 
-         --  If the entity is a discriminant, the two expressions may be bounds
-         --  of components of objects of the same discriminated type. The
-         --  values of the discriminants are not static, and therefore the
-         --  result is unknown.
-
-         --  It would be better to comment individual branches of this test ???
-
-         if Nkind_In (Lf, N_Identifier, N_Expanded_Name)
+         elsif Nkind_In (Lf, N_Identifier, N_Expanded_Name)
            and then Nkind_In (Rf, N_Identifier, N_Expanded_Name)
            and then Entity (Lf) = Entity (Rf)
+
+           --  If the entity is a discriminant, the two expressions may be
+           --  bounds of components of objects of the same discriminated type.
+           --  The values of the discriminants are not static, and therefore
+           --  the result is unknown.
+
            and then Ekind (Entity (Lf)) /= E_Discriminant
            and then Present (Entity (Lf))
+
+           --  This does not however apply to Float types, since we may have
+           --  two NaN values and they should never compare equal.
+
            and then not Is_Floating_Point_Type (Etype (L))
            and then not Is_Volatile_Reference (L)
            and then not Is_Volatile_Reference (R)
@@ -4281,7 +4318,15 @@ package body Sem_Eval is
          return Ent;
       else
          pragma Assert (Ekind (Ent) = E_Constant);
-         return Expr_Value_E (Constant_Value (Ent));
+
+         --  We may be dealing with a enumerated character type constant, so
+         --  handle that case here.
+
+         if Nkind (Constant_Value (Ent)) = N_Character_Literal then
+            return Ent;
+         else
+            return Expr_Value_E (Constant_Value (Ent));
+         end if;
       end if;
    end Expr_Value_E;
 
@@ -4611,10 +4656,14 @@ package body Sem_Eval is
       --  will cause semantic errors if it is marked as static), and after
       --  the Resolve step (since Resolve in some cases sets this flag).
 
+      --  We mark the node as analyzed so that its type is not erased by
+      --  calling Analyze_Real_Literal.
+
       Analyze (N);
       Set_Is_Static_Expression (N, Static);
       Set_Etype (N, Typ);
       Resolve (N);
+      Set_Analyzed (N);
       Set_Is_Static_Expression (N, Static);
    end Fold_Ureal;
 
@@ -5474,8 +5523,18 @@ package body Sem_Eval is
          --  CodePeer mode where the target runtime may have more priorities.
 
          elsif not CodePeer_Mode or else Etype (N) /= RTE (RE_Priority) then
-            Apply_Compile_Time_Constraint_Error
-              (N, "value not in range of}", CE_Range_Check_Failed);
+            --  Determine if the out of range violation constitutes a warning
+            --  or an error based on context according to RM 4.9 (34/3).
+
+            if Nkind (Original_Node (N)) = N_Type_Conversion
+              and then not Comes_From_Source (Original_Node (N))
+            then
+               Apply_Compile_Time_Constraint_Error
+                 (N, "value not in range of}??", CE_Range_Check_Failed);
+            else
+               Apply_Compile_Time_Constraint_Error
+                 (N, "value not in range of}", CE_Range_Check_Failed);
+            end if;
          end if;
 
       --  Here we generate a warning for the Ada 83 case, or when we are in an
@@ -5972,17 +6031,7 @@ package body Sem_Eval is
          --  same base type.
 
          if Has_Discriminants (T1) /= Has_Discriminants (T2) then
-            --  A generic actual type is declared through a subtype declaration
-            --  and may have an inconsistent indication of the presence of
-            --  discriminants, so check the type it renames.
-
-            if Is_Generic_Actual_Type (T1)
-              and then not Has_Discriminants (Etype (T1))
-              and then not Has_Discriminants (T2)
-            then
-               return True;
-
-            elsif In_Instance then
+            if In_Instance then
                if Is_Private_Type (T2)
                  and then Present (Full_View (T2))
                  and then Has_Discriminants (Full_View (T2))

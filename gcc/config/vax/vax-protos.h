@@ -31,7 +31,6 @@ extern void vax_expand_addsub_di_operands (rtx *, enum rtx_code);
 extern const char * vax_output_int_move (rtx, rtx *, machine_mode);
 extern const char * vax_output_int_add (rtx_insn *, rtx *, machine_mode);
 extern const char * vax_output_int_subtract (rtx_insn *, rtx *, machine_mode);
-extern const char * vax_output_movmemsi (rtx, rtx *);
 #endif /* RTX_CODE */
 
 #ifdef REAL_VALUE_TYPE

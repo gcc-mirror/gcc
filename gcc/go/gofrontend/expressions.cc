@@ -8910,10 +8910,16 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
           a2 = Expression::make_type_info(element_type, TYPE_INFO_SIZE);
           a2 = Expression::make_binary(OPERATOR_MULT, a2, ref, loc);
 
-          Runtime::Function code = (element_type->has_pointer()
-                                    ? Runtime::MEMCLRHASPTR
-                                    : Runtime::MEMCLRNOPTR);
-          call = Runtime::make_call(code, loc, 2, a1, a2);
+          if (element_type->has_pointer())
+            call = Runtime::make_call(Runtime::MEMCLRHASPTR, loc, 2, a1, a2);
+          else
+            {
+              Type* int32_type = Type::lookup_integer_type("int32");
+              Expression* zero =
+                Expression::make_integer_ul(0, int32_type, loc);
+              call = Runtime::make_call(Runtime::BUILTIN_MEMSET, loc, 3, a1,
+                                        zero, a2);
+            }
 
           if (element_type->has_pointer())
             {
@@ -18332,6 +18338,7 @@ Expression::import_expression(Import_expression* imp, Location loc)
 	    }
 	  imp->require_c_string(")");
 	  expr = Expression::make_call(expr, args, is_varargs, loc);
+          expr->call_expression()->set_varargs_are_lowered();
 	}
       else if (imp->match_c_string("["))
 	{
@@ -19383,4 +19390,3 @@ Numeric_constant::hash(unsigned int seed) const
 
   return (static_cast<unsigned int>(val) + seed) * PRIME;
 }
-

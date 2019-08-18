@@ -504,7 +504,24 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
 		  gsi = gsi_for_stmt (arg0_def_stmt);
 		  gsi_prev_nondebug (&gsi);
 		  if (!gsi_end_p (gsi))
-		    return NULL;
+		    {
+		      if (gassign *assign
+			    = dyn_cast <gassign *> (gsi_stmt (gsi)))
+			{
+			  tree lhs = gimple_assign_lhs (assign);
+			  enum tree_code ass_code
+			    = gimple_assign_rhs_code (assign);
+			  if (ass_code != MAX_EXPR && ass_code != MIN_EXPR)
+			    return NULL;
+			  if (lhs != gimple_assign_rhs1 (arg0_def_stmt))
+			    return NULL;
+			  gsi_prev_nondebug (&gsi);
+			  if (!gsi_end_p (gsi))
+			    return NULL;
+			}
+		      else
+			return NULL;
+		    }
 		  gsi = gsi_for_stmt (arg0_def_stmt);
 		  gsi_next_nondebug (&gsi);
 		  if (!gsi_end_p (gsi))
@@ -2179,7 +2196,8 @@ get_non_trapping (void)
 
    We check that MIDDLE_BB contains only one store, that that store
    doesn't trap (not via NOTRAP, but via checking if an access to the same
-   memory location dominates us) and that the store has a "simple" RHS.  */
+   memory location dominates us, or the store is to a local addressable
+   object) and that the store has a "simple" RHS.  */
 
 static bool
 cond_store_replacement (basic_block middle_bb, basic_block join_bb,
@@ -2198,11 +2216,17 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
       || gimple_has_volatile_ops (assign))
     return false;
 
+  /* And no PHI nodes so all uses in the single stmt are also
+     available where we insert to.  */
+  if (!gimple_seq_empty_p (phi_nodes (middle_bb)))
+    return false;
+
   locus = gimple_location (assign);
   lhs = gimple_assign_lhs (assign);
   rhs = gimple_assign_rhs1 (assign);
-  if (TREE_CODE (lhs) != MEM_REF
-      || TREE_CODE (TREE_OPERAND (lhs, 0)) != SSA_NAME
+  if ((TREE_CODE (lhs) != MEM_REF
+       && TREE_CODE (lhs) != ARRAY_REF
+       && TREE_CODE (lhs) != COMPONENT_REF)
       || !is_gimple_reg_type (TREE_TYPE (lhs)))
     return false;
 
@@ -2210,7 +2234,13 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
      TREE_THIS_NOTRAP here, but in that case we also could move stores,
      whose value is not available readily, which we want to avoid.  */
   if (!nontrap->contains (lhs))
-    return false;
+    {
+      /* If LHS is a local variable without address-taken, we could
+	 always safely move down the store.  */
+      tree base = get_base_address (lhs);
+      if (!auto_var_p (base) || TREE_ADDRESSABLE (base))
+	return false;
+    }
 
   /* Now we've checked the constraints, so do the transformation:
      1) Remove the single store.  */
@@ -2262,6 +2292,14 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
     }
   else
     gsi_insert_before (&gsi, new_stmt, GSI_NEW_STMT);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "\nConditional store replacement happened!");
+      fprintf (dump_file, "\nReplaced the store with a load.");
+      fprintf (dump_file, "\nInserted a new PHI statement in joint block:\n");
+      print_gimple_stmt (dump_file, new_stmt, 0, TDF_VOPS|TDF_MEMSYMS);
+    }
 
   return true;
 }

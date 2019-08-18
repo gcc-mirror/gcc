@@ -104,7 +104,7 @@ namespace autofdo
 /* Intermediate edge info used when propagating AutoFDO profile information.
    We can't edge->count() directly since it's computed from edge's probability
    while probability is yet not decided during propagation.  */
-#define AFDO_EINFO(e)                     ((struct edge_info *) e->aux)
+#define AFDO_EINFO(e)                     ((class edge_info *) e->aux)
 class edge_info
 {
 public:
@@ -136,8 +136,9 @@ typedef std::map<unsigned, gcov_type> icall_target_map;
 typedef std::set<gimple *> stmt_set;
 
 /* Represent count info of an inline stack.  */
-struct count_info
+class count_info
 {
+public:
   /* Sampled count of the inline stack.  */
   gcov_type count;
 

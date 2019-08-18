@@ -13,5 +13,5 @@ store_data (vector double *datap, double *address, size_t length)
 {
   vector double data = *datap;
 
-  __builtin_vec_stxvl (data, address, length); /* { dg-error "builtin function '__builtin_vec_stxvl' not supported in this compiler configuration" } */
+  __builtin_vec_stxvl (data, address, length); /* { dg-error "'__builtin_vec_stxvl' is not supported in this compiler configuration" } */
 }

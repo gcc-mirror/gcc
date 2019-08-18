@@ -157,7 +157,8 @@ typedef enum
   VARYING
 } ccp_lattice_t;
 
-struct ccp_prop_value_t {
+class ccp_prop_value_t {
+public:
     /* Lattice value.  */
     ccp_lattice_t lattice_val;
 
@@ -2597,7 +2598,7 @@ optimize_stack_restore (gimple_stmt_iterator i)
 	  || ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (callee)))
 	return NULL_TREE;
 
-      if (DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_RESTORE)
+      if (fndecl_built_in_p (callee, BUILT_IN_STACK_RESTORE))
 	goto second_stack_restore;
     }
 
@@ -2655,9 +2656,6 @@ optimize_stdarg_builtin (gimple *call)
   tree callee, lhs, rhs, cfun_va_list;
   bool va_list_simple_ptr;
   location_t loc = gimple_location (call);
-
-  if (gimple_code (call) != GIMPLE_CALL)
-    return NULL_TREE;
 
   callee = gimple_call_fndecl (call);
 
@@ -2961,12 +2959,10 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 				    bit, flag);
   gimple_call_set_lhs (g, new_lhs);
   gimple_set_location (g, gimple_location (call));
-  gimple_set_vuse (g, gimple_vuse (call));
-  gimple_set_vdef (g, gimple_vdef (call));
+  gimple_move_vops (g, call);
   bool throws = stmt_can_throw_internal (cfun, call);
   gimple_call_set_nothrow (as_a <gcall *> (g),
 			   gimple_call_nothrow_p (as_a <gcall *> (call)));
-  SSA_NAME_DEF_STMT (gimple_vdef (call)) = g;
   gimple_stmt_iterator gsi = *gsip;
   gsi_insert_after (&gsi, g, GSI_NEW_STMT);
   edge e = NULL;

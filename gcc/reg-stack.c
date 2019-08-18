@@ -484,7 +484,6 @@ check_asm_stack_operands (rtx_insn *insn)
 
   if (which_alternative < 0)
     {
-      malformed_asm = 1;
       /* Avoid further trouble with this insn.  */
       PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
       return 0;
@@ -2930,6 +2929,7 @@ compensate_edge (edge e)
       seq = get_insns ();
       end_sequence ();
 
+      set_insn_locations (seq, e->goto_locus);
       insert_insn_on_edge (seq, e);
       return true;
     }

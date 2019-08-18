@@ -1935,8 +1935,8 @@ Specify the algorithm to partition symbols and vars at linktime.
 
 ; The initial value of -1 comes from Z_DEFAULT_COMPRESSION in zlib.h.
 flto-compression-level=
-Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1) IntegerRange(0, 9)
--flto-compression-level=<number>	Use zlib compression level <number> for IL.
+Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1) IntegerRange(0, 19)
+-flto-compression-level=<number>	Use zlib/zstd compression level <number> for IL.
 
 flto-odr-type-merging
 Common Ignore
@@ -2002,7 +2002,7 @@ Common Var(flag_dce) Init(1) Optimization
 Use the RTL dead code elimination pass.
 
 fdse
-Common Var(flag_dse) Init(1) Optimization
+Common Var(flag_dse) Init(0) Optimization
 Use the RTL dead store elimination pass.
 
 freschedule-modulo-scheduled-loops
@@ -2143,6 +2143,10 @@ Common Joined RejectNegative Var(profile_data_prefix)
 Set the top-level directory for storing the profile data.
 The default is 'pwd'.
 
+fprofile-note=
+Common Joined RejectNegative Var(profile_note_location)
+Select the name for storing the profile note file.
+
 fprofile-correction
 Common Report Var(flag_profile_correction)
 Enable correction of flow inconsistent profile data input.
@@ -2253,6 +2257,10 @@ Enum(live_patching_level) String(inline-only-static) Value(LIVE_PATCHING_INLINE_
 
 EnumValue
 Enum(live_patching_level) String(inline-clone) Value(LIVE_PATCHING_INLINE_CLONE)
+
+fallocation-dce
+Common Report Var(flag_allocation_dce) Init(1) Optimization
+Tell DCE to remove unused C++ allocations.
 
 flive-range-shrinkage
 Common Report Var(flag_live_range_shrinkage) Init(0) Optimization
@@ -2472,6 +2480,10 @@ Generate discontiguous stack frames.
 fsplit-wide-types
 Common Report Var(flag_split_wide_types) Optimization
 Split wide types into independent registers.
+
+fsplit-wide-types-early
+Common Report Var(flag_split_wide_types_early) Optimization
+Split wide types into independent registers earlier.
 
 fssa-backprop
 Common Report Var(flag_ssa_backprop) Init(1) Optimization

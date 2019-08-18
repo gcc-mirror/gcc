@@ -25,9 +25,9 @@
 
 mboard=
 Target RejectNegative Joined
-Configure board specific runtime.
+Configure the newlib board specific runtime.  The default is or1ksim.
 
 mnewlib
 Target RejectNegative
-For compatibility, it's always newlib for elf now.
-
+This option is ignored; it is provided for compatibility purposes only.  This
+used to select linker and preprocessor options for use with newlib.

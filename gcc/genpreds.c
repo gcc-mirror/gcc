@@ -666,10 +666,11 @@ write_one_predicate_function (struct pred_data *p)
    verify that there are no duplicate names.  */
 
 /* All data from one constraint definition.  */
-struct constraint_data
+class constraint_data
 {
-  struct constraint_data *next_this_letter;
-  struct constraint_data *next_textual;
+public:
+  class constraint_data *next_this_letter;
+  class constraint_data *next_textual;
   const char *name;
   const char *c_name;    /* same as .name unless mangling is necessary */
   file_location loc;     /* location of definition */
@@ -689,13 +690,13 @@ struct constraint_data
 
 /* Overview of all constraints beginning with a given letter.  */
 
-static struct constraint_data *
+static class constraint_data *
 constraints_by_letter_table[1<<CHAR_BIT];
 
 /* For looking up all the constraints in the order that they appeared
    in the machine description.  */
-static struct constraint_data *first_constraint;
-static struct constraint_data **last_constraint_ptr = &first_constraint;
+static class constraint_data *first_constraint;
+static class constraint_data **last_constraint_ptr = &first_constraint;
 
 #define FOR_ALL_CONSTRAINTS(iter_) \
   for (iter_ = first_constraint; iter_; iter_ = iter_->next_textual)
@@ -774,7 +775,7 @@ add_constraint (const char *name, const char *regclass,
 		rtx exp, bool is_memory, bool is_special_memory,
 		bool is_address, file_location loc)
 {
-  struct constraint_data *c, **iter, **slot;
+  class constraint_data *c, **iter, **slot;
   const char *p;
   bool need_mangled_name = false;
   bool is_const_int;
@@ -908,7 +909,7 @@ add_constraint (const char *name, const char *regclass,
     }
 
 
-  c = XOBNEW (rtl_obstack, struct constraint_data);
+  c = XOBNEW (rtl_obstack, class constraint_data);
   c->name = name;
   c->c_name = need_mangled_name ? mangle (name) : name;
   c->loc = loc;
@@ -979,7 +980,7 @@ process_define_register_constraint (md_rtx_info *info)
 static void
 choose_enum_order (void)
 {
-  struct constraint_data *c;
+  class constraint_data *c;
 
   enum_order = XNEWVEC (const constraint_data *, num_constraints);
   unsigned int next = 0;
@@ -1076,7 +1077,7 @@ write_lookup_constraint_1 (void)
 
   for (i = 0; i < ARRAY_SIZE (constraints_by_letter_table); i++)
     {
-      struct constraint_data *c = constraints_by_letter_table[i];
+      class constraint_data *c = constraints_by_letter_table[i];
       if (!c)
 	continue;
 
@@ -1116,7 +1117,7 @@ write_lookup_constraint_array (void)
     {
       if (i != 0)
 	printf (",\n  ");
-      struct constraint_data *c = constraints_by_letter_table[i];
+      class constraint_data *c = constraints_by_letter_table[i];
       if (!c)
 	printf ("CONSTRAINT__UNKNOWN");
       else if (c->namelen == 1)
@@ -1142,7 +1143,7 @@ write_insn_constraint_len (void)
 
   for (i = 0; i < ARRAY_SIZE (constraints_by_letter_table); i++)
     {
-      struct constraint_data *c = constraints_by_letter_table[i];
+      class constraint_data *c = constraints_by_letter_table[i];
 
       if (!c
       	  || c->namelen == 1)
@@ -1151,7 +1152,7 @@ write_insn_constraint_len (void)
       /* Constraints with multiple characters should have the same
 	 length.  */
       {
-	struct constraint_data *c2 = c->next_this_letter;
+	class constraint_data *c2 = c->next_this_letter;
 	size_t len = c->namelen;
 	while (c2)
 	  {
@@ -1177,7 +1178,7 @@ write_insn_constraint_len (void)
 static void
 write_reg_class_for_constraint_1 (void)
 {
-  struct constraint_data *c;
+  class constraint_data *c;
 
   puts ("enum reg_class\n"
 	"reg_class_for_constraint_1 (enum constraint_num c)\n"
@@ -1200,7 +1201,7 @@ write_reg_class_for_constraint_1 (void)
 static void
 write_tm_constrs_h (void)
 {
-  struct constraint_data *c;
+  class constraint_data *c;
 
   printf ("\
 /* Generated automatically by the program '%s'\n\
@@ -1287,7 +1288,7 @@ write_constraint_satisfied_p_array (void)
 static void
 write_insn_const_int_ok_for_constraint (void)
 {
-  struct constraint_data *c;
+  class constraint_data *c;
 
   puts ("bool\n"
 	"insn_const_int_ok_for_constraint (HOST_WIDE_INT ival, "

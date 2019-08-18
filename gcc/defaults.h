@@ -1318,10 +1318,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
-   move-instruction sequences, we will do a movmem or libcall instead.  */
+   move-instruction sequences, we will do a cpymem or libcall instead.  */
 
 #ifndef MOVE_RATIO
-#if defined (HAVE_movmemqi) || defined (HAVE_movmemhi) || defined (HAVE_movmemsi) || defined (HAVE_movmemdi) || defined (HAVE_movmemti)
+#if defined (HAVE_cpymemqi) || defined (HAVE_cpymemhi) || defined (HAVE_cpymemsi) || defined (HAVE_cpymemdi) || defined (HAVE_cpymemti)
 #define MOVE_RATIO(speed) 2
 #else
 /* If we are optimizing for space (-Os), cut down the default move ratio.  */
@@ -1342,7 +1342,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 /* If a memory set (to value other than zero) operation would take
-   SET_RATIO or more simple move-instruction sequences, we will do a movmem
+   SET_RATIO or more simple move-instruction sequences, we will do a setmem
    or libcall instead.  */
 #ifndef SET_RATIO
 #define SET_RATIO(speed) MOVE_RATIO (speed)

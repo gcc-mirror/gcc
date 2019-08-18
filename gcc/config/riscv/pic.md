@@ -29,14 +29,14 @@
   "<default_load>\t%0,%1"
   [(set (attr "length") (const_int 8))])
 
-(define_insn "*local_pic_load_s<mode>"
+(define_insn "*local_pic_load_s<SUBX:mode>"
   [(set (match_operand:SUPERQI 0 "register_operand" "=r")
 	(sign_extend:SUPERQI (mem:SUBX (match_operand 1 "absolute_symbolic_operand" ""))))]
   "USE_LOAD_ADDRESS_MACRO (operands[1])"
   "<SUBX:load>\t%0,%1"
   [(set (attr "length") (const_int 8))])
 
-(define_insn "*local_pic_load_u<mode>"
+(define_insn "*local_pic_load_u<SUBX:mode>"
   [(set (match_operand:SUPERQI 0 "register_operand" "=r")
 	(zero_extend:SUPERQI (mem:SUBX (match_operand 1 "absolute_symbolic_operand" ""))))]
   "USE_LOAD_ADDRESS_MACRO (operands[1])"

@@ -519,7 +519,11 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	  if (code == FUNCTION_DECL && fndecl_built_in_p (node))
 	    {
 	      if (DECL_BUILT_IN_CLASS (node) == BUILT_IN_MD)
-		fprintf (file, " built-in: BUILT_IN_MD:%d", DECL_FUNCTION_CODE (node));
+		fprintf (file, " built-in: BUILT_IN_MD:%d",
+			 DECL_MD_FUNCTION_CODE (node));
+	      else if (DECL_BUILT_IN_CLASS (node) == BUILT_IN_FRONTEND)
+		fprintf (file, " built-in: BUILT_IN_FRONTEND:%d",
+			 DECL_FE_FUNCTION_CODE (node));
 	      else
 		fprintf (file, " built-in: %s:%s",
 			 built_in_class_names[(int) DECL_BUILT_IN_CLASS (node)],

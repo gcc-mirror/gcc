@@ -10556,8 +10556,8 @@ ia64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 {
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
     {
-      enum ia64_builtins fn_code = (enum ia64_builtins)
-				   DECL_FUNCTION_CODE (fndecl);
+      enum ia64_builtins fn_code
+	= (enum ia64_builtins) DECL_MD_FUNCTION_CODE (fndecl);
       switch (fn_code)
 	{
 	case IA64_BUILTIN_NANQ:
@@ -10591,7 +10591,7 @@ ia64_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 		     int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
 
   switch (fcode)
     {

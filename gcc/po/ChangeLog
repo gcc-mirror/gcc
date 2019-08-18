@@ -1,3 +1,7 @@
+2019-08-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* uk.po: Update.
+
 2019-06-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* sv.po: Update.
@@ -1576,7 +1580,7 @@
 
 2010-01-11  Joseph Myers  <joseph@codesourcery.com>
 	    Shujing Zhao  <pearly.zhao@oracle.com>
-	    
+
 	PR translation/42467
 	* exgettext: Keep the text before tab character in the option help
 	string at *.opt file.
@@ -3626,7 +3630,7 @@ notice and this notice are preserved.
 
 2010-01-11  Joseph Myers  <joseph@codesourcery.com>
 	    Shujing Zhao  <pearly.zhao@oracle.com>
-	    
+
 	PR translation/42467
 	* exgettext: Keep the text before tab character in the option help
 	string at *.opt file.

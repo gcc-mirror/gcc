@@ -204,6 +204,18 @@
   (match_test "s390_decompose_addrstyle_without_index (op, NULL, NULL)"  ))
 
 
+;; Shift count operands are not necessarily legitimate addresses
+;; but the predicate shift_count_operand will only allow
+;; proper operands.  If reload/lra need to change e.g. a spilled register
+;; they can still do so via the special handling of address constraints.
+;; To avoid further reloading (caused by a non-matching constraint) we
+;; always return true here as the predicate's checks are already sufficient.
+
+(define_address_constraint "jsc"
+  "Address style operand used as shift count."
+  (match_test "true" ))
+
+
 ;;    N -- Multiple letter constraint followed by 4 parameter letters.
 ;;         0..9,x:  number of the part counting from most to least significant
 ;;         S,H,Q:   mode of the part

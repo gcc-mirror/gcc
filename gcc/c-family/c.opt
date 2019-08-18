@@ -428,6 +428,10 @@ Wclobbered
 C ObjC C++ ObjC++ Var(warn_clobbered) Warning EnabledBy(Wextra)
 Warn about variables that might be changed by \"longjmp\" or \"vfork\".
 
+Wcomma-subscript
+C++ ObjC++ Var(warn_comma_subscript) Warning
+Warn about uses of a comma operator within a subscripting expression.
+
 Wcomment
 C ObjC C++ ObjC++ CPP(warn_comments) CppReason(CPP_W_COMMENTS) Var(cpp_warn_comment) Init(0) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about possibly nested block comments, and C++ comments spanning more than one physical line.
@@ -1424,6 +1428,10 @@ fconstexpr-depth=
 C++ ObjC++ Joined RejectNegative UInteger Var(max_constexpr_depth) Init(512)
 -fconstexpr-depth=<number>	Specify maximum constexpr recursion depth.
 
+fconstexpr-cache-depth=
+C++ ObjC++ Joined RejectNegative UInteger Var(constexpr_cache_depth) Init(8)
+-fconstexpr-cache-depth=<number>	Specify maximum constexpr recursion cache depth.
+
 fconstexpr-loop-limit=
 C++ ObjC++ Joined RejectNegative UInteger Var(constexpr_loop_limit) Init(262144)
 -fconstexpr-loop-limit=<number>	Specify maximum constexpr loop iteration count.
@@ -1570,6 +1578,10 @@ C++ ObjC++ Deprecated
 flax-vector-conversions
 C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
 Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types.
+
+fmax-include-depth=
+C ObjC C++ ObjC++ Joined RejectNegative UInteger
+fmax-include-depth=<number> Set the maximum depth of the nested #include.
 
 fms-extensions
 C ObjC C++ ObjC++ Var(flag_ms_extensions)

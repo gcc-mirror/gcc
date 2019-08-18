@@ -540,6 +540,7 @@ typedef struct
 
   int all_unbuffered, unbuffered_preconnected;
   int fpe, backtrace;
+  int unformatted_buffer_size, formatted_buffer_size;
 }
 options_t;
 

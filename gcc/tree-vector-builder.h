@@ -24,10 +24,11 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This class is used to build VECTOR_CSTs from a sequence of elements.
    See vector_builder for more details.  */
-class tree_vector_builder : public vector_builder<tree, tree_vector_builder>
+class tree_vector_builder : public vector_builder<tree, tree,
+						  tree_vector_builder>
 {
-  typedef vector_builder<tree, tree_vector_builder> parent;
-  friend class vector_builder<tree, tree_vector_builder>;
+  typedef vector_builder<tree, tree, tree_vector_builder> parent;
+  friend class vector_builder<tree, tree, tree_vector_builder>;
 
 public:
   tree_vector_builder () : m_type (0) {}
@@ -37,10 +38,6 @@ public:
   tree type () const { return m_type; }
 
   void new_vector (tree, unsigned int, unsigned int);
-  bool new_unary_operation (tree, tree, bool);
-  bool new_binary_operation (tree, tree, tree, bool);
-
-  static unsigned int binary_encoded_nelts (tree, tree);
 
 private:
   bool equal_p (const_tree, const_tree) const;
@@ -50,6 +47,15 @@ private:
   tree apply_step (tree, unsigned int, const wide_int &) const;
   bool can_elide_p (const_tree) const;
   void note_representative (tree *, tree);
+
+  static poly_uint64 shape_nelts (const_tree t)
+    { return TYPE_VECTOR_SUBPARTS (t); }
+  static poly_uint64 nelts_of (const_tree t)
+    { return VECTOR_CST_NELTS (t); }
+  static unsigned int npatterns_of (const_tree t)
+    { return VECTOR_CST_NPATTERNS (t); }
+  static unsigned int nelts_per_pattern_of (const_tree t)
+    { return VECTOR_CST_NELTS_PER_PATTERN (t); }
 
   tree m_type;
 };

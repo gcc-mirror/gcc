@@ -1970,7 +1970,7 @@ DEFHOOK
  "non-NULL, it identifies the loop being vectorized; otherwise a single block "
  "is being vectorized.",
  void *,
- (struct loop *loop_info),
+ (class loop *loop_info),
  default_init_cost)
 
 /* Target function to record N statements of the given kind using the
@@ -1987,7 +1987,7 @@ DEFHOOK
  "revised.",
  unsigned,
  (void *data, int count, enum vect_cost_for_stmt kind,
-  struct _stmt_vec_info *stmt_info, int misalign,
+  class _stmt_vec_info *stmt_info, int misalign,
   enum vect_cost_model_location where),
  default_add_stmt_cost)
 
@@ -2545,14 +2545,14 @@ set via @code{__attribute__}.",
 DEFHOOK
 (libc_has_function,
  "This hook determines whether a function from a class of functions\n\
-@var{fn_class} is present at the runtime.",
+@var{fn_class} is present in the target C library.",
  bool, (enum function_class fn_class),
  default_libc_has_function)
 
 DEFHOOK
 (libc_has_fast_function,
  "This hook determines whether a function from a class of functions\n\
-@var{fn_class} has a fast implementation.",
+@code{(enum function_class)}@var{fcode} has a fast implementation.",
  bool, (int fcode),
  default_libc_has_fast_function)
 
@@ -2665,7 +2665,7 @@ the loop is to be unrolled. The parameter @var{loop} is a pointer to\n\
 the loop, which is going to be checked for unrolling. This target hook\n\
 is required only when the target has special constraints like maximum\n\
 number of memory accesses.",
- unsigned, (unsigned nunroll, struct loop *loop),
+ unsigned, (unsigned nunroll, class loop *loop),
  NULL)
 
 /* True if X is a legitimate MODE-mode immediate operand.  */
@@ -3182,7 +3182,7 @@ DEFHOOK
   version of this hook assumes the system C library errno location\
   is either a declaration of type int or accessed by dereferencing\
   a pointer to int.",
- bool, (struct ao_ref *ref),
+ bool, (ao_ref *ref),
  default_ref_may_alias_errno)
 
 /* Support for named address spaces.  */
@@ -3531,7 +3531,7 @@ two areas of memory, or to set, clear or store to memory, for example\n\
 when copying a @code{struct}. The @code{by_pieces} infrastructure\n\
 implements such memory operations as a sequence of load, store or move\n\
 insns.  Alternate strategies are to expand the\n\
-@code{movmem} or @code{setmem} optabs, to emit a library call, or to emit\n\
+@code{cpymem} or @code{setmem} optabs, to emit a library call, or to emit\n\
 unit-by-unit, loop-based operations.\n\
 \n\
 This target hook should return true if, for a memory operation with a\n\
@@ -3550,7 +3550,7 @@ optimized for speed rather than size.\n\
 \n\
 Returning true for higher values of @var{size} can improve code generation\n\
 for speed if the target does not provide an implementation of the\n\
-@code{movmem} or @code{setmem} standard names, if the @code{movmem} or\n\
+@code{cpymem} or @code{setmem} standard names, if the @code{cpymem} or\n\
 @code{setmem} implementation would be more expensive than a sequence of\n\
 insns, or if the overhead of a library call would dominate that of\n\
 the body of the memory operation.\n\
@@ -4243,7 +4243,7 @@ for a particular loop.  The parameter @var{loop} is a pointer to the loop.\n\
 This target hook is required only when the target supports low-overhead\n\
 loops, and will help ivopts to make some decisions.\n\
 The default version of this hook returns false.",
- bool, (struct loop *loop),
+ bool, (class loop *loop),
  default_predict_doloop_p)
 
 DEFHOOK
@@ -4549,15 +4549,6 @@ DEFHOOK
 returned by function call into @var{slot}.",
  void, (rtx slot, rtx bounds),
  default_store_returned_bounds)
-
-DEFHOOK
-(setup_incoming_vararg_bounds,
- "Use it to store bounds for anonymous register arguments stored\n\
-into the stack.  Arguments meaning is similar to\n\
-@code{TARGET_SETUP_INCOMING_VARARGS}.",
- void, (cumulative_args_t args_so_far, machine_mode mode, tree type,
-	int *pretend_args_size, int second_time),
- default_setup_incoming_vararg_bounds)
 
 DEFHOOK
 (call_args,

@@ -192,8 +192,8 @@ ipa_profile_generate_summary (void)
 		  if (h)
 		    {
 		      gcov_type val, count, all;
-		      if (get_most_common_single_value (NULL, "indirect call",
-							h, &val, &count, &all))
+		      if (get_nth_most_common_value (NULL, "indirect call", h,
+						     &val, &count, &all))
 			{
 			  struct cgraph_edge * e = node->get_edge (stmt);
 			  if (e && !e->indirect_unknown_callee)
@@ -258,7 +258,7 @@ ipa_profile_read_summary (void)
     {
       const char *data;
       size_t len;
-      struct lto_input_block *ib
+      class lto_input_block *ib
 	= lto_create_simple_input_block (file_data,
 					 LTO_section_ipa_profile,
 					 &data, &len);

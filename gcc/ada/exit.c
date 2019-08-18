@@ -29,21 +29,6 @@
  *                                                                          *
  ****************************************************************************/
 
-#ifdef __alpha_vxworks
-#include "vxWorks.h"
-#endif
-
-#ifdef IN_RTS
-#include "tconfig.h"
-#include "tsystem.h"
-#include <sys/stat.h>
-#else
-#include "config.h"
-#include "system.h"
-#endif
-
-#include "adaint.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

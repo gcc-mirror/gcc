@@ -29,12 +29,9 @@ vec_slp_##TYPE (TYPE *restrict a, int n)			\
 
 TEST_ALL (VEC_PERM)
 
-/* { dg-final { scan-assembler-times {\tld1rh\tz[0-9]+\.h, } 2 { target aarch64_little_endian } } } */
-/* { dg-final { scan-assembler-times {\tld1rqb\tz[0-9]+\.b, } 2 { target aarch64_big_endian } } } */
-/* { dg-final { scan-assembler-times {\tld1rw\tz[0-9]+\.s, } 3 { target aarch64_little_endian } } } */
-/* { dg-final { scan-assembler-times {\tld1rqh\tz[0-9]+\.h, } 3 { target aarch64_big_endian } } } */
-/* { dg-final { scan-assembler-times {\tld1rd\tz[0-9]+\.d, } 3 { target aarch64_little_endian } } } */
-/* { dg-final { scan-assembler-times {\tld1rqw\tz[0-9]+\.s, } 3 { target aarch64_big_endian } } } */
+/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.h, w[0-9]+\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tld1rw\tz[0-9]+\.s, } 3 } } */
+/* { dg-final { scan-assembler-times {\tld1rd\tz[0-9]+\.d, } 3 } } */
 /* { dg-final { scan-assembler-times {\tld1rqd\tz[0-9]+\.d, } 3 } } */
 /* { dg-final { scan-assembler-not {\tzip1\t} } } */
 /* { dg-final { scan-assembler-not {\tzip2\t} } } */

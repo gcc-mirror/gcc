@@ -1483,9 +1483,9 @@ package body Sprint is
             end;
 
          when N_Decimal_Fixed_Point_Definition =>
-            Write_Str_With_Col_Check_Sloc (" delta ");
+            Write_Str_With_Col_Check_Sloc ("delta ");
             Sprint_Node (Delta_Expression (Node));
-            Write_Str_With_Col_Check ("digits ");
+            Write_Str_With_Col_Check (" digits ");
             Sprint_Node (Digits_Expression (Node));
             Sprint_Opt_Node (Real_Range_Specification (Node));
 
@@ -4187,15 +4187,15 @@ package body Sprint is
 
          declare
             B : constant Node_Id := Etype (Typ);
-            X : Node_Id;
             P : constant Node_Id := Parent (Typ);
-
             S : constant Saved_Output_Buffer := Save_Output_Buffer;
             --  Save current output buffer
 
             Old_Sloc : Source_Ptr;
             --  Save sloc of related node, so it is not modified when
             --  printing with -gnatD.
+
+            X : Node_Id;
 
          begin
             --  Write indentation at start of line
@@ -4324,8 +4324,8 @@ package body Sprint is
                      declare
                         L  : constant Node_Id := Type_Low_Bound (Typ);
                         H  : constant Node_Id := Type_High_Bound (Typ);
-                        LE : Node_Id;
-                        HE : Node_Id;
+                        BL : Node_Id;
+                        BH : Node_Id;
 
                      begin
                         --  B can either be a scalar type, in which case the
@@ -4335,29 +4335,29 @@ package body Sprint is
                         --  constraint.
 
                         if Is_Scalar_Type (B) then
-                           LE := Type_Low_Bound (B);
-                           HE := Type_High_Bound (B);
+                           BL := Type_Low_Bound (B);
+                           BH := Type_High_Bound (B);
                         else
-                           LE := Empty;
-                           HE := Empty;
+                           BL := Empty;
+                           BH := Empty;
                         end if;
 
-                        if No (LE)
+                        if No (BL)
                           or else (True
                             and then Nkind (L) = N_Integer_Literal
                             and then Nkind (H) = N_Integer_Literal
-                            and then Nkind (LE) = N_Integer_Literal
-                            and then Nkind (HE) = N_Integer_Literal
-                            and then UI_Eq (Intval (L), Intval (LE))
-                            and then UI_Eq (Intval (H), Intval (HE)))
+                            and then Nkind (BL) = N_Integer_Literal
+                            and then Nkind (BH) = N_Integer_Literal
+                            and then UI_Eq (Intval (L), Intval (BL))
+                            and then UI_Eq (Intval (H), Intval (BH)))
                         then
                            null;
 
                         else
                            Write_Str (" range ");
-                           Sprint_Node (Type_Low_Bound (Typ));
+                           Sprint_Node (L);
                            Write_Str (" .. ");
-                           Sprint_Node (Type_High_Bound (Typ));
+                           Sprint_Node (H);
                         end if;
                      end;
 
@@ -4368,7 +4368,7 @@ package body Sprint is
                      Write_Str ("mod ");
                      Write_Uint_With_Col_Check (Modulus (Typ), Auto);
 
-                  --  Floating point types and subtypes
+                  --  Floating-point types and subtypes
 
                   when E_Floating_Point_Subtype
                      | E_Floating_Point_Type
@@ -4379,9 +4379,9 @@ package body Sprint is
                         Write_Str ("new ");
                      end if;
 
-                     Write_Id (Etype (Typ));
+                     Write_Id (B);
 
-                     if Digits_Value (Typ) /= Digits_Value (Etype (Typ)) then
+                     if Digits_Value (Typ) /= Digits_Value (B) then
                         Write_Str (" digits ");
                         Write_Uint_With_Col_Check
                           (Digits_Value (Typ), Decimal);
@@ -4392,26 +4392,53 @@ package body Sprint is
                      declare
                         L  : constant Node_Id := Type_Low_Bound (Typ);
                         H  : constant Node_Id := Type_High_Bound (Typ);
-                        LE : constant Node_Id := Type_Low_Bound (B);
-                        HE : constant Node_Id := Type_High_Bound (B);
+                        BL : constant Node_Id := Type_Low_Bound (B);
+                        BH : constant Node_Id := Type_High_Bound (B);
 
                      begin
-                        if Nkind (L) = N_Real_Literal
+                        if True
+                          and then Nkind (L) = N_Real_Literal
                           and then Nkind (H) = N_Real_Literal
-                          and then Nkind (LE) = N_Real_Literal
-                          and then Nkind (HE) = N_Real_Literal
-                          and then UR_Eq (Realval (L), Realval (LE))
-                          and then UR_Eq (Realval (H), Realval (HE))
+                          and then Nkind (BL) = N_Real_Literal
+                          and then Nkind (BH) = N_Real_Literal
+                          and then UR_Eq (Realval (L), Realval (BL))
+                          and then UR_Eq (Realval (H), Realval (BH))
                         then
                            null;
 
                         else
                            Write_Str (" range ");
-                           Sprint_Node (Type_Low_Bound (Typ));
+                           Sprint_Node (L);
                            Write_Str (" .. ");
-                           Sprint_Node (Type_High_Bound (Typ));
+                           Sprint_Node (H);
                         end if;
                      end;
+
+                  --  Ordinary fixed-point types and subtypes
+
+                  when E_Ordinary_Fixed_Point_Subtype
+                     | E_Ordinary_Fixed_Point_Type
+                  =>
+                     Write_Header (Ekind (Typ) = E_Ordinary_Fixed_Point_Type);
+
+                     Write_Str ("delta ");
+                     Write_Ureal_With_Col_Check_Sloc (Delta_Value (Typ));
+                     Write_Str (" range ");
+                     Sprint_Node (Type_Low_Bound (Typ));
+                     Write_Str (" .. ");
+                     Sprint_Node (Type_High_Bound (Typ));
+
+                  --  Decimal fixed-point types and subtypes
+
+                  when E_Decimal_Fixed_Point_Subtype
+                     | E_Decimal_Fixed_Point_Type
+                  =>
+                     Write_Header (Ekind (Typ) = E_Decimal_Fixed_Point_Type);
+
+                     Write_Str ("delta ");
+                     Write_Ureal_With_Col_Check_Sloc (Delta_Value (Typ));
+                     Write_Str (" digits ");
+                     Write_Uint_With_Col_Check (Digits_Value (Typ), Decimal);
 
                   --  Record subtypes
 
@@ -4493,16 +4520,16 @@ package body Sprint is
 
                   when E_String_Literal_Subtype =>
                      declare
-                        LB  : constant Uint :=
+                        L   : constant Uint :=
                                 Expr_Value (String_Literal_Low_Bound (Typ));
                         Len : constant Uint :=
                                 String_Literal_Length (Typ);
                      begin
                         Write_Header (False);
                         Write_Str ("String (");
-                        Write_Int (UI_To_Int (LB));
+                        Write_Int (UI_To_Int (L));
                         Write_Str (" .. ");
-                        Write_Int (UI_To_Int (LB + Len) - 1);
+                        Write_Int (UI_To_Int (L + Len) - 1);
                         Write_Str (");");
                      end;
 

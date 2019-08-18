@@ -613,8 +613,8 @@ hard_reg_set_iter_next (hard_reg_set_iterator *iter, unsigned *regno)
 
 extern char global_regs[FIRST_PSEUDO_REGISTER];
 
-struct simplifiable_subreg;
-struct subreg_shape;
+class simplifiable_subreg;
+class subreg_shape;
 
 struct simplifiable_subregs_hasher : nofree_ptr_hash <simplifiable_subreg>
 {

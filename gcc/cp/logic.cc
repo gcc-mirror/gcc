@@ -104,8 +104,9 @@ struct term_hasher : ggc_ptr_hash<term_entry>
    Each term list maintains an iterator that refers to the current
    term. This can be used by various tactics to support iteration
    and stateful manipulation of the list. */
-struct term_list
+class term_list
 {
+public:
   typedef std::list<tree>::iterator iterator;
 
   term_list ();
@@ -220,8 +221,9 @@ term_list::replace (iterator iter, tree t1, tree t2)
    conclusions written as propositions in the constraint
    language (i.e., lists of trees). */
 
-struct proof_goal
+class proof_goal
 {
+public:
   term_list assumptions;
   term_list conclusions;
 };
@@ -230,8 +232,9 @@ struct proof_goal
    current sub-goal. The class also provides facilities
    for managing subgoals and constructing term lists. */
 
-struct proof_state : std::list<proof_goal>
+class proof_state : public std::list<proof_goal>
 {
+public:
   proof_state ();
 
   iterator branch (iterator i);

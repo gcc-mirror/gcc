@@ -443,7 +443,7 @@ package body GNAT.Command_Line is
 
       Parser.Current_Argument := Parser.Current_Argument + 1;
 
-      --  Could it be a file name with wild cards to expand?
+      --  Could it be a file name with wildcards to expand?
 
       if Do_Expansion then
          declare
@@ -753,7 +753,8 @@ package body GNAT.Command_Line is
 
             Parser.Current_Index := End_Index + 1;
 
-            raise Invalid_Switch;
+            raise Invalid_Switch with
+              "Unrecognized option '" & Full_Switch (Parser) & ''';
          end if;
 
          End_Index := Parser.Current_Index + Max_Length - 1;
@@ -883,7 +884,8 @@ package body GNAT.Command_Line is
                      Last    => Arg'Last,
                      Extra   => Parser.Switch_Character);
                   Parser.Current_Index := Arg'Last + 1;
-                  raise Invalid_Switch;
+                  raise Invalid_Switch with
+                    "Unrecognized option '" & Full_Switch (Parser) & ''';
                end if;
          end case;
 
@@ -3365,7 +3367,8 @@ package body GNAT.Command_Line is
      (Config      : Command_Line_Configuration;
       Callback    : Switch_Handler := null;
       Parser      : Opt_Parser := Command_Line_Parser;
-      Concatenate : Boolean := True)
+      Concatenate : Boolean := True;
+      Quiet       : Boolean := False)
    is
       Local_Config    : Command_Line_Configuration := Config;
       Getopt_Switches : String_Access;
@@ -3575,12 +3578,14 @@ package body GNAT.Command_Line is
 
          --  Message inspired by "ls" on Unix
 
-         Put_Line (Standard_Error,
-                   Base_Name (Ada.Command_Line.Command_Name)
-                   & ": unrecognized option '"
-                   & Full_Switch (Parser)
-                   & "'");
-         Try_Help;
+         if not Quiet then
+            Put_Line (Standard_Error,
+                      Base_Name (Ada.Command_Line.Command_Name)
+                      & ": unrecognized option '"
+                      & Full_Switch (Parser)
+                      & "'");
+            Try_Help;
+         end if;
 
          raise;
 

@@ -19,14 +19,16 @@ struct B
 struct C
 {
   friend int C ();
-  friend int ~C ();		// { dg-error "return type|in friend decl" }
+  friend int ~C ();		// { dg-error "10:return type" }
+  // { dg-error "14:expected qualified name in friend decl" "" { target *-*-* } .-1 }
   friend int C (const C &);
 };
 
 struct D
 {
   friend int D () {}
-  friend int ~D () {}		// { dg-error "return type|in friend decl" }
+  friend int ~D () {}		// { dg-error "10:return type" }
+  // { dg-error "14:expected qualified name in friend decl" "" { target *-*-* } .-1 }
   friend int D (const D &) {}
 };
 

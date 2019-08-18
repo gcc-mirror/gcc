@@ -79,7 +79,7 @@ procedure Labl is
       --  then we have an error.
 
       --  Note that in the worst case, this is quadratic in the number
-      --  of labels.  However, labels are not all that common, and this
+      --  of labels. However, labels are not all that common, and this
       --  is only called for explicit labels.
 
       --  ???Nonetheless, the efficiency could be improved. For example,

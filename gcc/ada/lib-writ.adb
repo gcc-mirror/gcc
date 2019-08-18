@@ -59,8 +59,32 @@ with System.WCh_Con;   use System.WCh_Con;
 package body Lib.Writ is
 
    -----------------------
-   -- Local Subprograms --
+   -- Local subprograms --
    -----------------------
+
+   function Present (N_Id : Name_Id) return Boolean;
+   pragma Inline (Present);
+   --  Determine whether a name with id N_Id exists
+
+   procedure Write_Invocation_Construct (IC_Id : Invocation_Construct_Id);
+   pragma Inline (Write_Invocation_Construct);
+   --  Write invocation construct IC_Id to the ALI file
+
+   procedure Write_Invocation_Graph;
+   pragma Inline (Write_Invocation_Graph);
+   --  Write out the invocation graph
+
+   procedure Write_Invocation_Graph_Attributes;
+   pragma Inline (Write_Invocation_Graph_Attributes);
+   --  Write out the attributes of the invocation graph
+
+   procedure Write_Invocation_Relation (IR_Id : Invocation_Relation_Id);
+   pragma Inline (Write_Invocation_Relation);
+   --  Write invocation relation IR_Id to the ALI file
+
+   procedure Write_Invocation_Signature (IS_Id : Invocation_Signature_Id);
+   pragma Inline (Write_Invocation_Signature);
+   --  Write invocation signature IS_Id to the ALI file
 
    procedure Write_Unit_Name (N : Node_Id);
    --  Used to write out the unit name for R (pragma Restriction) lines
@@ -119,7 +143,7 @@ package body Lib.Writ is
       --  Nothing to do if we already compiled System
 
       for Unum in Units.First .. Last_Unit loop
-         if Units.Table (Unum).Source_Index = System_Source_File_Index then
+         if Source_Index (Unum) = System_Source_File_Index then
             return;
          end if;
       end loop;
@@ -184,6 +208,15 @@ package body Lib.Writ is
          Multiple_Unit_Index := Save_Mindex;
       end;
    end Ensure_System_Dependency;
+
+   -------------
+   -- Present --
+   -------------
+
+   function Present (N_Id : Name_Id) return Boolean is
+   begin
+      return N_Id /= No_Name;
+   end Present;
 
    ---------------
    -- Write_ALI --
@@ -398,7 +431,7 @@ package body Lib.Writ is
 
          Id := First_Sdep_Entry;
          for J in 1 .. Num_Sdep loop
-            Sind := Units.Table (Sdep_Table (J)).Source_Index;
+            Sind := Source_Index (Sdep_Table (J));
 
             while Sdep.Table (Id).Sfile /= File_Name (Sind) loop
                if Id = Sdep.Last then
@@ -1048,7 +1081,7 @@ package body Lib.Writ is
 
    begin
       --  We never write an ALI file if the original operating mode was
-      --  syntax-only (-gnats switch used in compiler invocation line)
+      --  syntax-only (-gnats switch used in compiler invocation line).
 
       if Original_Operating_Mode = Check_Syntax then
          return;
@@ -1530,7 +1563,7 @@ package body Lib.Writ is
          for J in 1 .. Num_Sdep loop
             Unum := Sdep_Table (J);
             Units.Table (Unum).Dependency_Num := J;
-            Sind := Units.Table (Unum).Source_Index;
+            Sind := Source_Index (Unum);
 
             Write_Info_Initiate ('D');
             Write_Info_Char (' ');
@@ -1618,6 +1651,10 @@ package body Lib.Writ is
          end loop;
       end;
 
+      --  Output the invocation graph
+
+      Write_Invocation_Graph;
+
       --  Output cross-references
 
       if Opt.Xref_Active then
@@ -1637,6 +1674,179 @@ package body Lib.Writ is
       Write_Info_Terminate;
       Close_Output_Library_Info;
    end Write_ALI;
+
+   --------------------------------
+   -- Write_Invocation_Construct --
+   --------------------------------
+
+   procedure Write_Invocation_Construct (IC_Id : Invocation_Construct_Id) is
+   begin
+      --  G header
+
+      Write_Info_Initiate ('G');
+      Write_Info_Char     (' ');
+
+      --  line-kind
+
+      Write_Info_Char
+        (Invocation_Graph_Line_Kind_To_Code (Invocation_Construct_Line));
+      Write_Info_Char (' ');
+
+      --  construct-kind
+
+      Write_Info_Char (Invocation_Construct_Kind_To_Code (Kind (IC_Id)));
+      Write_Info_Char (' ');
+
+      --  construct-spec-placement
+
+      Write_Info_Char
+        (Declaration_Placement_Kind_To_Code (Spec_Placement (IC_Id)));
+      Write_Info_Char (' ');
+
+      --  construct-body-placement
+
+      Write_Info_Char
+        (Declaration_Placement_Kind_To_Code (Body_Placement (IC_Id)));
+      Write_Info_Char (' ');
+
+      --  construct-signature
+
+      Write_Invocation_Signature (Signature (IC_Id));
+      Write_Info_EOL;
+   end Write_Invocation_Construct;
+
+   ---------------------------------------
+   -- Write_Invocation_Graph_Attributes --
+   ---------------------------------------
+
+   procedure Write_Invocation_Graph_Attributes is
+   begin
+      --  G header
+
+      Write_Info_Initiate ('G');
+      Write_Info_Char     (' ');
+
+      --  line-kind
+
+      Write_Info_Char
+        (Invocation_Graph_Line_Kind_To_Code
+          (Invocation_Graph_Attributes_Line));
+      Write_Info_Char (' ');
+
+      --  encoding-kind
+
+      Write_Info_Char
+        (Invocation_Graph_Encoding_Kind_To_Code (Invocation_Graph_Encoding));
+      Write_Info_EOL;
+   end Write_Invocation_Graph_Attributes;
+
+   ----------------------------
+   -- Write_Invocation_Graph --
+   ----------------------------
+
+   procedure Write_Invocation_Graph is
+   begin
+      Write_Invocation_Graph_Attributes;
+
+      --  First write out all invocation constructs declared within the current
+      --  unit. This ensures that when this invocation is read, the invocation
+      --  constructs are materialized before they are referenced by invocation
+      --  relations.
+
+      For_Each_Invocation_Construct (Write_Invocation_Construct'Access);
+
+      --  Write out all invocation relations that originate from invocation
+      --  constructs delared in the current unit.
+
+      For_Each_Invocation_Relation (Write_Invocation_Relation'Access);
+   end Write_Invocation_Graph;
+
+   -------------------------------
+   -- Write_Invocation_Relation --
+   -------------------------------
+
+   procedure Write_Invocation_Relation (IR_Id : Invocation_Relation_Id) is
+   begin
+      --  G header
+
+      Write_Info_Initiate ('G');
+      Write_Info_Char     (' ');
+
+      --  line-kind
+
+      Write_Info_Char
+        (Invocation_Graph_Line_Kind_To_Code (Invocation_Relation_Line));
+      Write_Info_Char (' ');
+
+      --  relation-kind
+
+      Write_Info_Char (Invocation_Kind_To_Code (Kind (IR_Id)));
+      Write_Info_Char (' ');
+
+      --  (extra-name | "none")
+
+      if Present (Extra (IR_Id)) then
+         Write_Info_Name (Extra (IR_Id));
+      else
+         Write_Info_Str ("none");
+      end if;
+
+      Write_Info_Char (' ');
+
+      --  invoker-signature
+
+      Write_Invocation_Signature (Invoker (IR_Id));
+      Write_Info_Char (' ');
+
+      --  target-signature
+
+      Write_Invocation_Signature (Target (IR_Id));
+
+      Write_Info_EOL;
+   end Write_Invocation_Relation;
+
+   --------------------------------
+   -- Write_Invocation_Signature --
+   --------------------------------
+
+   procedure Write_Invocation_Signature (IS_Id : Invocation_Signature_Id) is
+   begin
+      --  [
+
+      Write_Info_Char ('[');
+
+      --  name
+
+      Write_Info_Name (Name (IS_Id));
+      Write_Info_Char (' ');
+
+      --  scope
+
+      Write_Info_Name (Scope (IS_Id));
+      Write_Info_Char (' ');
+
+      --  line
+
+      Write_Info_Nat  (Line (IS_Id));
+      Write_Info_Char (' ');
+
+      --  column
+
+      Write_Info_Nat  (Column (IS_Id));
+      Write_Info_Char (' ');
+
+      --  (locations | "none")
+
+      if Present (Locations (IS_Id)) then
+         Write_Info_Name (Locations (IS_Id));
+      else
+         Write_Info_Str ("none");
+      end if;
+
+      --  ]
+
+      Write_Info_Char (']');
+   end Write_Invocation_Signature;
 
    ---------------------
    -- Write_Unit_Name --

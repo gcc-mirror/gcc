@@ -39,9 +39,9 @@
 
 /* Override rs6000.h definition.  */
 #undef	ASM_DEFAULT_SPEC
-#define	ASM_DEFAULT_SPEC "-mppc"
+#define	ASM_DEFAULT_SPEC "-mppc%{m64:64}"
 
-#define	TARGET_TOC		(TARGET_64BIT				\
+#define	TARGET_HAS_TOC		(TARGET_64BIT				\
 				 || (TARGET_MINIMAL_TOC			\
 				     && flag_pic > 1)			\
 				 || DEFAULT_ABI != ABI_V4)
@@ -50,7 +50,6 @@
 #define	TARGET_BIG_ENDIAN	(! TARGET_LITTLE_ENDIAN)
 #define	TARGET_PROTOTYPE	target_prototype
 #define	TARGET_NO_PROTOTYPE	(! TARGET_PROTOTYPE)
-#define	TARGET_NO_TOC		(! TARGET_TOC)
 #define	TARGET_NO_EABI		(! TARGET_EABI)
 #define	TARGET_REGNAMES		rs6000_regnames
 

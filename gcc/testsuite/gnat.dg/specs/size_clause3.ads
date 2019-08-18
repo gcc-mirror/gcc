@@ -14,7 +14,7 @@ package Size_Clause3 is
     rr : R1; -- size must be 40
   end record;
   for S1 use record
-    rr at 0 range 0 .. 39;  -- { dg-error "size of .rr. with aliased or tagged" }
+    rr at 0 range 0 .. 39;  -- { dg-error "size for .rr. too small" }
   end record;
 
   -- The record is explicitly given alignment 1 so its real type is 40.
@@ -44,7 +44,7 @@ package Size_Clause3 is
     rr : R3; -- size must be 40
   end record;
   for S3 use record
-    rr at 0 range 0 .. 39;  -- { dg-error "size of .rr. with aliased or tagged" }
+    rr at 0 range 0 .. 39;  -- { dg-error "size for .rr. too small" }
   end record;
 
 end Size_Clause3;

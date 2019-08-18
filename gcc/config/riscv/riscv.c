@@ -2383,7 +2383,8 @@ typedef struct {
 static int
 riscv_flatten_aggregate_field (const_tree type,
 			       riscv_aggregate_field fields[2],
-			       int n, HOST_WIDE_INT offset)
+			       int n, HOST_WIDE_INT offset,
+			       bool ignore_zero_width_bit_field_p)
 {
   switch (TREE_CODE (type))
     {
@@ -2400,8 +2401,21 @@ riscv_flatten_aggregate_field (const_tree type,
 	    if (!TYPE_P (TREE_TYPE (f)))
 	      return -1;
 
-	    HOST_WIDE_INT pos = offset + int_byte_position (f);
-	    n = riscv_flatten_aggregate_field (TREE_TYPE (f), fields, n, pos);
+	    /* The C++ front end strips zero-length bit-fields from structs.
+	       So we need to ignore them in the C front end to make C code
+	       compatible with C++ code.  */
+	    if (ignore_zero_width_bit_field_p
+		&& DECL_BIT_FIELD (f)
+		&& (DECL_SIZE (f) == NULL_TREE
+		    || integer_zerop (DECL_SIZE (f))))
+	      ;
+	    else
+	      {
+		HOST_WIDE_INT pos = offset + int_byte_position (f);
+		n = riscv_flatten_aggregate_field (TREE_TYPE (f),
+						   fields, n, pos,
+						   ignore_zero_width_bit_field_p);
+	      }
 	    if (n < 0)
 	      return -1;
 	  }
@@ -2414,7 +2428,8 @@ riscv_flatten_aggregate_field (const_tree type,
 	tree index = TYPE_DOMAIN (type);
 	tree elt_size = TYPE_SIZE_UNIT (TREE_TYPE (type));
 	int n_subfields = riscv_flatten_aggregate_field (TREE_TYPE (type),
-							 subfields, 0, offset);
+							 subfields, 0, offset,
+							 ignore_zero_width_bit_field_p);
 
 	/* Can't handle incomplete types nor sizes that are not fixed.  */
 	if (n_subfields <= 0
@@ -2487,12 +2502,14 @@ riscv_flatten_aggregate_field (const_tree type,
 
 static int
 riscv_flatten_aggregate_argument (const_tree type,
-				  riscv_aggregate_field fields[2])
+				  riscv_aggregate_field fields[2],
+				  bool ignore_zero_width_bit_field_p)
 {
   if (!type || TREE_CODE (type) != RECORD_TYPE)
     return -1;
 
-  return riscv_flatten_aggregate_field (type, fields, 0, 0);
+  return riscv_flatten_aggregate_field (type, fields, 0, 0,
+					ignore_zero_width_bit_field_p);
 }
 
 /* See whether TYPE is a record whose fields should be returned in one or
@@ -2502,13 +2519,34 @@ static unsigned
 riscv_pass_aggregate_in_fpr_pair_p (const_tree type,
 				    riscv_aggregate_field fields[2])
 {
-  int n = riscv_flatten_aggregate_argument (type, fields);
+  static int warned = 0;
 
-  for (int i = 0; i < n; i++)
+  /* This is the old ABI, which differs for C++ and C.  */
+  int n_old = riscv_flatten_aggregate_argument (type, fields, false);
+  for (int i = 0; i < n_old; i++)
     if (!SCALAR_FLOAT_TYPE_P (fields[i].type))
-      return 0;
+      {
+	n_old = -1;
+	break;
+      }
 
-  return n > 0 ? n : 0;
+  /* This is the new ABI, which is the same for C++ and C.  */
+  int n_new = riscv_flatten_aggregate_argument (type, fields, true);
+  for (int i = 0; i < n_new; i++)
+    if (!SCALAR_FLOAT_TYPE_P (fields[i].type))
+      {
+	n_new = -1;
+	break;
+      }
+
+  if ((n_old != n_new) && (warned == 0))
+    {
+      warning (0, "ABI for flattened struct with zero-length bit-fields "
+	       "changed in GCC 10");
+      warned = 1;
+    }
+
+  return n_new > 0 ? n_new : 0;
 }
 
 /* See whether TYPE is a record whose fields should be returned in one or
@@ -2519,16 +2557,38 @@ static bool
 riscv_pass_aggregate_in_fpr_and_gpr_p (const_tree type,
 				       riscv_aggregate_field fields[2])
 {
-  unsigned num_int = 0, num_float = 0;
-  int n = riscv_flatten_aggregate_argument (type, fields);
+  static int warned = 0;
 
-  for (int i = 0; i < n; i++)
+  /* This is the old ABI, which differs for C++ and C.  */
+  unsigned num_int_old = 0, num_float_old = 0;
+  int n_old = riscv_flatten_aggregate_argument (type, fields, false);
+  for (int i = 0; i < n_old; i++)
     {
-      num_float += SCALAR_FLOAT_TYPE_P (fields[i].type);
-      num_int += INTEGRAL_TYPE_P (fields[i].type);
+      num_float_old += SCALAR_FLOAT_TYPE_P (fields[i].type);
+      num_int_old += INTEGRAL_TYPE_P (fields[i].type);
     }
 
-  return num_int == 1 && num_float == 1;
+  /* This is the new ABI, which is the same for C++ and C.  */
+  unsigned num_int_new = 0, num_float_new = 0;
+  int n_new = riscv_flatten_aggregate_argument (type, fields, true);
+  for (int i = 0; i < n_new; i++)
+    {
+      num_float_new += SCALAR_FLOAT_TYPE_P (fields[i].type);
+      num_int_new += INTEGRAL_TYPE_P (fields[i].type);
+    }
+
+  if (((num_int_old == 1 && num_float_old == 1
+	&& (num_int_old != num_int_new || num_float_old != num_float_new))
+       || (num_int_new == 1 && num_float_new == 1
+	   && (num_int_old != num_int_new || num_float_old != num_float_new)))
+      && (warned == 0))
+    {
+      warning (0, "ABI for flattened struct with zero-length bit-fields "
+	       "changed in GCC 10");
+      warned = 1;
+    }
+
+  return num_int_new == 1 && num_float_new == 1;
 }
 
 /* Return the representation of an argument passed or returned in an FPR
@@ -3050,7 +3110,7 @@ riscv_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
     emit_insn(gen_nop ());
 }
 
-/* Expand a movmemsi instruction, which copies LENGTH bytes from
+/* Expand a cpymemsi instruction, which copies LENGTH bytes from
    memory reference SRC to memory reference DEST.  */
 
 bool
@@ -4904,9 +4964,36 @@ riscv_can_change_mode_class (machine_mode, machine_mode, reg_class_t rclass)
 static HOST_WIDE_INT
 riscv_constant_alignment (const_tree exp, HOST_WIDE_INT align)
 {
-  if (TREE_CODE (exp) == STRING_CST || TREE_CODE (exp) == CONSTRUCTOR)
+  if ((TREE_CODE (exp) == STRING_CST || TREE_CODE (exp) == CONSTRUCTOR)
+      && (riscv_align_data_type == riscv_align_data_type_xlen))
     return MAX (align, BITS_PER_WORD);
   return align;
+}
+
+/* Implement TARGET_PROMOTE_FUNCTION_MODE.  */
+
+/* This function is equivalent to default_promote_function_mode_always_promote
+   except that it returns a promoted mode even if type is NULL_TREE.  This is
+   needed by libcalls which have no type (only a mode) such as fixed conversion
+   routines that take a signed or unsigned char/short/int argument and convert
+   it to a fixed type.  */
+
+static machine_mode
+riscv_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
+			     machine_mode mode,
+			     int *punsignedp ATTRIBUTE_UNUSED,
+			     const_tree fntype ATTRIBUTE_UNUSED,
+			     int for_return ATTRIBUTE_UNUSED)
+{
+  int unsignedp;
+
+  if (type != NULL_TREE)
+    return promote_mode (type, mode, punsignedp);
+
+  unsignedp = *punsignedp;
+  PROMOTE_MODE (mode, unsignedp, type);
+  *punsignedp = unsignedp;
+  return mode;
 }
 
 /* Initialize the GCC target structure.  */
@@ -4950,7 +5037,7 @@ riscv_constant_alignment (const_tree exp, HOST_WIDE_INT align)
 #define TARGET_EXPAND_BUILTIN_VA_START riscv_va_start
 
 #undef  TARGET_PROMOTE_FUNCTION_MODE
-#define TARGET_PROMOTE_FUNCTION_MODE default_promote_function_mode_always_promote
+#define TARGET_PROMOTE_FUNCTION_MODE riscv_promote_function_mode
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY riscv_return_in_memory

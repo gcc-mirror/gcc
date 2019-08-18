@@ -103,6 +103,15 @@ package body GNAT.Serial_Communications is
       Unimplemented;
    end Read;
 
+   ------------
+   -- To_Ada --
+   ------------
+
+   procedure To_Ada (Port : out Serial_Port; Fd : Serial_Port_Descriptor) is
+   begin
+      Unimplemented;
+   end To_Ada;
+
    -----------
    -- Write --
    -----------

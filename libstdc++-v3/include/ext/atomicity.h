@@ -44,24 +44,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // __exchange_and_add_dispatch
   // __atomic_add_dispatch
 #ifdef _GLIBCXX_ATOMIC_BUILTINS
-  static inline _Atomic_word 
+  inline _Atomic_word
+  __attribute__((__always_inline__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val)
   { return __atomic_fetch_add(__mem, __val, __ATOMIC_ACQ_REL); }
 
-  static inline void
+  inline void
+  __attribute__((__always_inline__))
   __atomic_add(volatile _Atomic_word* __mem, int __val)
   { __atomic_fetch_add(__mem, __val, __ATOMIC_ACQ_REL); }
 #else
   _Atomic_word
-  __attribute__ ((__unused__))
-  __exchange_and_add(volatile _Atomic_word*, int) throw ();
+  __exchange_and_add(volatile _Atomic_word*, int) _GLIBCXX_NOTHROW;
 
   void
-  __attribute__ ((__unused__))
-  __atomic_add(volatile _Atomic_word*, int) throw ();
+  __atomic_add(volatile _Atomic_word*, int) _GLIBCXX_NOTHROW;
 #endif
 
-  static inline _Atomic_word
+  inline _Atomic_word
+  __attribute__((__always_inline__))
   __exchange_and_add_single(_Atomic_word* __mem, int __val)
   {
     _Atomic_word __result = *__mem;
@@ -69,36 +70,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __result;
   }
 
-  static inline void
+  inline void
+  __attribute__((__always_inline__))
   __atomic_add_single(_Atomic_word* __mem, int __val)
   { *__mem += __val; }
 
-  static inline _Atomic_word
-  __attribute__ ((__unused__))
+  inline _Atomic_word
+  __attribute__ ((__always_inline__))
   __exchange_and_add_dispatch(_Atomic_word* __mem, int __val)
   {
 #ifdef __GTHREADS
     if (__gthread_active_p())
       return __exchange_and_add(__mem, __val);
-    else
-      return __exchange_and_add_single(__mem, __val);
-#else
-    return __exchange_and_add_single(__mem, __val);
 #endif
+    return __exchange_and_add_single(__mem, __val);
   }
 
-  static inline void
-  __attribute__ ((__unused__))
+  inline void
+  __attribute__ ((__always_inline__))
   __atomic_add_dispatch(_Atomic_word* __mem, int __val)
   {
 #ifdef __GTHREADS
     if (__gthread_active_p())
-      __atomic_add(__mem, __val);
-    else
-      __atomic_add_single(__mem, __val);
-#else
-    __atomic_add_single(__mem, __val);
+      {
+	__atomic_add(__mem, __val);
+	return;
+      }
 #endif
+    __atomic_add_single(__mem, __val);
   }
 
 _GLIBCXX_END_NAMESPACE_VERSION

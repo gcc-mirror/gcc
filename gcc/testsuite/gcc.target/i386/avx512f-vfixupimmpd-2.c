@@ -9,7 +9,7 @@
 
 #define SIZE (AVX512F_LEN / 64)
 #include "avx512f-mask-type.h"
-#include "math.h"
+#include "math_m_pi.h"
 #include "float.h"
 
 

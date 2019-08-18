@@ -166,8 +166,9 @@ public:
 private:
   /* Information on an optinfo_item that was generated during phase 2 of
      formatting.  */
-  struct stashed_item
+  class stashed_item
   {
+  public:
     stashed_item (const char **buffer_ptr_, optinfo_item *item_)
       : buffer_ptr (buffer_ptr_), item (item_) {}
     const char **buffer_ptr;

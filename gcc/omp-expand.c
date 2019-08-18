@@ -2516,7 +2516,7 @@ expand_omp_for_ordered_loops (struct omp_for_data *fd, tree *counts,
 
       if (e2)
 	{
-	  struct loop *loop = alloc_loop ();
+	  class loop *loop = alloc_loop ();
 	  loop->header = new_header;
 	  loop->latch = e2->src;
 	  add_loop (loop, body_bb->loop_father);
@@ -3477,14 +3477,14 @@ expand_omp_for_generic (struct omp_region *region,
       /* We enter expand_omp_for_generic with a loop.  This original loop may
 	 have its own loop struct, or it may be part of an outer loop struct
 	 (which may be the fake loop).  */
-      struct loop *outer_loop = entry_bb->loop_father;
+      class loop *outer_loop = entry_bb->loop_father;
       bool orig_loop_has_loop_struct = l1_bb->loop_father != outer_loop;
 
       add_bb_to_loop (l2_bb, outer_loop);
 
       /* We've added a new loop around the original loop.  Allocate the
 	 corresponding loop struct.  */
-      struct loop *new_loop = alloc_loop ();
+      class loop *new_loop = alloc_loop ();
       new_loop->header = l0_bb;
       new_loop->latch = l2_bb;
       add_loop (new_loop, outer_loop);
@@ -3494,12 +3494,104 @@ expand_omp_for_generic (struct omp_region *region,
       if (!orig_loop_has_loop_struct
 	  && !gimple_omp_for_combined_p (fd->for_stmt))
 	{
-	  struct loop *orig_loop = alloc_loop ();
+	  class loop *orig_loop = alloc_loop ();
 	  orig_loop->header = l1_bb;
 	  /* The loop may have multiple latches.  */
 	  add_loop (orig_loop, new_loop);
 	}
     }
+}
+
+/* Helper function for expand_omp_for_static_nochunk.  If PTR is NULL,
+   compute needed allocation size.  If !ALLOC of team allocations,
+   if ALLOC of thread allocation.  SZ is the initial needed size for
+   other purposes, ALLOC_ALIGN guaranteed alignment of allocation in bytes,
+   CNT number of elements of each array, for !ALLOC this is
+   omp_get_num_threads (), for ALLOC number of iterations handled by the
+   current thread.  If PTR is non-NULL, it is the start of the allocation
+   and this routine shall assign to OMP_CLAUSE_DECL (c) of those _scantemp_
+   clauses pointers to the corresponding arrays.  */
+
+static tree
+expand_omp_scantemp_alloc (tree clauses, tree ptr, unsigned HOST_WIDE_INT sz,
+			   unsigned HOST_WIDE_INT alloc_align, tree cnt,
+			   gimple_stmt_iterator *gsi, bool alloc)
+{
+  tree eltsz = NULL_TREE;
+  unsigned HOST_WIDE_INT preval = 0;
+  if (ptr && sz)
+    ptr = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (ptr),
+		       ptr, size_int (sz));
+  for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE__SCANTEMP_
+	&& !OMP_CLAUSE__SCANTEMP__CONTROL (c)
+	&& (!OMP_CLAUSE__SCANTEMP__ALLOC (c)) != alloc)
+      {
+	tree pointee_type = TREE_TYPE (TREE_TYPE (OMP_CLAUSE_DECL (c)));
+	unsigned HOST_WIDE_INT al = TYPE_ALIGN_UNIT (pointee_type);
+	if (tree_fits_uhwi_p (TYPE_SIZE_UNIT (pointee_type)))
+	  {
+	    unsigned HOST_WIDE_INT szl
+	      = tree_to_uhwi (TYPE_SIZE_UNIT (pointee_type));
+	    szl = least_bit_hwi (szl);
+	    if (szl)
+	      al = MIN (al, szl);
+	  }
+	if (ptr == NULL_TREE)
+	  {
+	    if (eltsz == NULL_TREE)
+	      eltsz = TYPE_SIZE_UNIT (pointee_type);
+	    else
+	      eltsz = size_binop (PLUS_EXPR, eltsz,
+				  TYPE_SIZE_UNIT (pointee_type));
+	  }
+	if (preval == 0 && al <= alloc_align)
+	  {
+	    unsigned HOST_WIDE_INT diff = ROUND_UP (sz, al) - sz;
+	    sz += diff;
+	    if (diff && ptr)
+	      ptr = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (ptr),
+				 ptr, size_int (diff));
+	  }
+	else if (al > preval)
+	  {
+	    if (ptr)
+	      {
+		ptr = fold_convert (pointer_sized_int_node, ptr);
+		ptr = fold_build2 (PLUS_EXPR, pointer_sized_int_node, ptr,
+				   build_int_cst (pointer_sized_int_node,
+						  al - 1));
+		ptr = fold_build2 (BIT_AND_EXPR, pointer_sized_int_node, ptr,
+				   build_int_cst (pointer_sized_int_node,
+						  -(HOST_WIDE_INT) al));
+		ptr = fold_convert (ptr_type_node, ptr);
+	      }
+	    else
+	      sz += al - 1;
+	  }
+	if (tree_fits_uhwi_p (TYPE_SIZE_UNIT (pointee_type)))
+	  preval = al;
+	else
+	  preval = 1;
+	if (ptr)
+	  {
+	    expand_omp_build_assign (gsi, OMP_CLAUSE_DECL (c), ptr, false);
+	    ptr = OMP_CLAUSE_DECL (c);
+	    ptr = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (ptr), ptr,
+			       size_binop (MULT_EXPR, cnt,
+					   TYPE_SIZE_UNIT (pointee_type)));
+	  }
+      }
+
+  if (ptr == NULL_TREE)
+    {
+      eltsz = size_binop (MULT_EXPR, eltsz, cnt);
+      if (sz)
+	eltsz = size_binop (PLUS_EXPR, eltsz, size_int (sz));
+      return eltsz;
+    }
+  else
+    return ptr;
 }
 
 /* A subroutine of expand_omp_for.  Generate code for a parallel
@@ -3544,11 +3636,12 @@ expand_omp_for_static_nochunk (struct omp_region *region,
 			       struct omp_for_data *fd,
 			       gimple *inner_stmt)
 {
-  tree n, q, s0, e0, e, t, tt, nthreads, threadid;
+  tree n, q, s0, e0, e, t, tt, nthreads = NULL_TREE, threadid;
   tree type, itype, vmain, vback;
   basic_block entry_bb, second_bb, third_bb, exit_bb, seq_start_bb;
   basic_block body_bb, cont_bb, collapse_bb = NULL;
-  basic_block fin_bb;
+  basic_block fin_bb, fourth_bb = NULL, fifth_bb = NULL, sixth_bb = NULL;
+  basic_block exit1_bb = NULL, exit2_bb = NULL, exit3_bb = NULL;
   gimple_stmt_iterator gsi, gsip;
   edge ep;
   bool broken_loop = region->cont == NULL;
@@ -3650,7 +3743,11 @@ expand_omp_for_static_nochunk (struct omp_region *region,
       c = omp_find_clause (OMP_CLAUSE_CHAIN (c), OMP_CLAUSE__CONDTEMP_);
       cond_var = OMP_CLAUSE_DECL (c);
     }
-  if (fd->have_reductemp || fd->have_pointer_condtemp)
+  if (fd->have_reductemp
+      /* For scan, we don't want to reinitialize condtemp before the
+	 second loop.  */
+      || (fd->have_pointer_condtemp && !fd->have_scantemp)
+      || fd->have_nonctrl_scantemp)
     {
       tree t1 = build_int_cst (long_integer_type_node, 0);
       tree t2 = build_int_cst (long_integer_type_node, 1);
@@ -3660,8 +3757,11 @@ expand_omp_for_static_nochunk (struct omp_region *region,
       gimple_stmt_iterator gsi2 = gsi_none ();
       gimple *g = NULL;
       tree mem = null_pointer_node, memv = NULL_TREE;
+      unsigned HOST_WIDE_INT condtemp_sz = 0;
+      unsigned HOST_WIDE_INT alloc_align = 0;
       if (fd->have_reductemp)
 	{
+	  gcc_assert (!fd->have_nonctrl_scantemp);
 	  tree c = omp_find_clause (clauses, OMP_CLAUSE__REDUCTEMP_);
 	  reductions = OMP_CLAUSE_DECL (c);
 	  gcc_assert (TREE_CODE (reductions) == SSA_NAME);
@@ -3678,16 +3778,40 @@ expand_omp_for_static_nochunk (struct omp_region *region,
 	    gsi2 = gsip;
 	  reductions = null_pointer_node;
 	}
-      if (fd->have_pointer_condtemp)
+      if (fd->have_pointer_condtemp || fd->have_nonctrl_scantemp)
 	{
-	  tree type = TREE_TYPE (condtemp);
+	  tree type;
+	  if (fd->have_pointer_condtemp)
+	    type = TREE_TYPE (condtemp);
+	  else
+	    type = ptr_type_node;
 	  memv = create_tmp_var (type);
 	  TREE_ADDRESSABLE (memv) = 1;
-	  unsigned HOST_WIDE_INT sz
-	    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type)));
-	  sz *= fd->lastprivate_conditional;
-	  expand_omp_build_assign (&gsi2, memv, build_int_cst (type, sz),
-				   false);
+	  unsigned HOST_WIDE_INT sz = 0;
+	  tree size = NULL_TREE;
+	  if (fd->have_pointer_condtemp)
+	    {
+	      sz = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type)));
+	      sz *= fd->lastprivate_conditional;
+	      condtemp_sz = sz;
+	    }
+	  if (fd->have_nonctrl_scantemp)
+	    {
+	      nthreads = builtin_decl_explicit (BUILT_IN_OMP_GET_NUM_THREADS);
+	      gimple *g = gimple_build_call (nthreads, 0);
+	      nthreads = create_tmp_var (integer_type_node);
+	      gimple_call_set_lhs (g, nthreads);
+	      gsi_insert_before (&gsi2, g, GSI_SAME_STMT);
+	      nthreads = fold_convert (sizetype, nthreads);
+	      alloc_align = TYPE_ALIGN_UNIT (long_long_integer_type_node);
+	      size = expand_omp_scantemp_alloc (clauses, NULL_TREE, sz,
+						alloc_align, nthreads, NULL,
+						false);
+	      size = fold_convert (type, size);
+	    }
+	  else
+	    size = build_int_cst (type, sz);
+	  expand_omp_build_assign (&gsi2, memv, size, false);
 	  mem = build_fold_addr_expr (memv);
 	}
       tree t
@@ -3698,6 +3822,12 @@ expand_omp_for_static_nochunk (struct omp_region *region,
 				true, GSI_SAME_STMT);
       if (fd->have_pointer_condtemp)
 	expand_omp_build_assign (&gsi2, condtemp, memv, false);
+      if (fd->have_nonctrl_scantemp)
+	{
+	  tree ptr = fd->have_pointer_condtemp ? condtemp : memv;
+	  expand_omp_scantemp_alloc (clauses, ptr, condtemp_sz,
+				     alloc_align, nthreads, &gsi2, false);
+	}
       if (fd->have_reductemp)
 	{
 	  gsi_remove (&gsi2, true);
@@ -3787,6 +3917,72 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   third_bb = split_block (second_bb, assign_stmt)->dest;
   gsi = gsi_last_nondebug_bb (third_bb);
   gcc_assert (gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_FOR);
+
+  if (fd->have_nonctrl_scantemp)
+    {
+      tree clauses = gimple_omp_for_clauses (fd->for_stmt);
+      tree controlp = NULL_TREE, controlb = NULL_TREE;
+      for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE__SCANTEMP_
+	    && OMP_CLAUSE__SCANTEMP__CONTROL (c))
+	  {
+	    if (TREE_TYPE (OMP_CLAUSE_DECL (c)) == boolean_type_node)
+	      controlb = OMP_CLAUSE_DECL (c);
+	    else
+	      controlp = OMP_CLAUSE_DECL (c);
+	    if (controlb && controlp)
+	      break;
+	  }
+      gcc_assert (controlp && controlb);
+      tree cnt = create_tmp_var (sizetype);
+      gimple *g = gimple_build_assign (cnt, NOP_EXPR, q);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      unsigned HOST_WIDE_INT alloc_align = TYPE_ALIGN_UNIT (ptr_type_node);
+      tree sz = expand_omp_scantemp_alloc (clauses, NULL_TREE, 0,
+					   alloc_align, cnt, NULL, true);
+      tree size = create_tmp_var (sizetype);
+      expand_omp_build_assign (&gsi, size, sz, false);
+      tree cmp = fold_build2 (GT_EXPR, boolean_type_node,
+			      size, size_int (16384));
+      expand_omp_build_assign (&gsi, controlb, cmp);
+      g = gimple_build_cond (NE_EXPR, controlb, boolean_false_node,
+			     NULL_TREE, NULL_TREE);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      fourth_bb = split_block (third_bb, g)->dest;
+      gsi = gsi_last_nondebug_bb (fourth_bb);
+      /* FIXME: Once we have allocators, this should use allocator.  */
+      g = gimple_build_call (builtin_decl_explicit (BUILT_IN_MALLOC), 1, size);
+      gimple_call_set_lhs (g, controlp);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      expand_omp_scantemp_alloc (clauses, controlp, 0, alloc_align, cnt,
+				 &gsi, true);
+      gsi_prev (&gsi);
+      g = gsi_stmt (gsi);
+      fifth_bb = split_block (fourth_bb, g)->dest;
+      gsi = gsi_last_nondebug_bb (fifth_bb);
+
+      g = gimple_build_call (builtin_decl_implicit (BUILT_IN_STACK_SAVE), 0);
+      gimple_call_set_lhs (g, controlp);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      tree alloca_decl = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN);
+      for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE__SCANTEMP_
+	    && OMP_CLAUSE__SCANTEMP__ALLOC (c))
+	  {
+	    tree tmp = create_tmp_var (sizetype);
+	    tree pointee_type = TREE_TYPE (TREE_TYPE (OMP_CLAUSE_DECL (c)));
+	    g = gimple_build_assign (tmp, MULT_EXPR, cnt,
+				     TYPE_SIZE_UNIT (pointee_type));
+	    gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	    g = gimple_build_call (alloca_decl, 2, tmp,
+				   size_int (TYPE_ALIGN (pointee_type)));
+	    gimple_call_set_lhs (g, OMP_CLAUSE_DECL (c));
+	    gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	  }
+
+      sixth_bb = split_block (fifth_bb, g)->dest;
+      gsi = gsi_last_nondebug_bb (sixth_bb);
+    }
 
   t = build2 (MULT_EXPR, itype, q, threadid);
   t = build2 (PLUS_EXPR, itype, t, tt);
@@ -4018,7 +4214,9 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   if (!gimple_omp_return_nowait_p (gsi_stmt (gsi)))
     {
       t = gimple_omp_return_lhs (gsi_stmt (gsi));
-      if (fd->have_reductemp || fd->have_pointer_condtemp)
+      if (fd->have_reductemp
+	  || ((fd->have_pointer_condtemp || fd->have_scantemp)
+	      && !fd->have_nonctrl_scantemp))
 	{
 	  tree fn;
 	  if (t)
@@ -4039,6 +4237,45 @@ expand_omp_for_static_nochunk (struct omp_region *region,
       else
 	gsi_insert_after (&gsi, omp_build_barrier (t), GSI_SAME_STMT);
     }
+  else if ((fd->have_pointer_condtemp || fd->have_scantemp)
+	   && !fd->have_nonctrl_scantemp)
+    {
+      tree fn = builtin_decl_explicit (BUILT_IN_GOMP_LOOP_END_NOWAIT);
+      gcall *g = gimple_build_call (fn, 0);
+      gsi_insert_after (&gsi, g, GSI_SAME_STMT);
+    }
+  if (fd->have_scantemp && !fd->have_nonctrl_scantemp)
+    {
+      tree clauses = gimple_omp_for_clauses (fd->for_stmt);
+      tree controlp = NULL_TREE, controlb = NULL_TREE;
+      for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE__SCANTEMP_
+	    && OMP_CLAUSE__SCANTEMP__CONTROL (c))
+	  {
+	    if (TREE_TYPE (OMP_CLAUSE_DECL (c)) == boolean_type_node)
+	      controlb = OMP_CLAUSE_DECL (c);
+	    else
+	      controlp = OMP_CLAUSE_DECL (c);
+	    if (controlb && controlp)
+	      break;
+	  }
+      gcc_assert (controlp && controlb);
+      gimple *g = gimple_build_cond (NE_EXPR, controlb, boolean_false_node,
+				     NULL_TREE, NULL_TREE);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      exit1_bb = split_block (exit_bb, g)->dest;
+      gsi = gsi_after_labels (exit1_bb);
+      g = gimple_build_call (builtin_decl_explicit (BUILT_IN_FREE), 1,
+			     controlp);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      exit2_bb = split_block (exit1_bb, g)->dest;
+      gsi = gsi_after_labels (exit2_bb);
+      g = gimple_build_call (builtin_decl_implicit (BUILT_IN_STACK_RESTORE), 1,
+			     controlp);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      exit3_bb = split_block (exit2_bb, g)->dest;
+      gsi = gsi_after_labels (exit3_bb);
+    }
   gsi_remove (&gsi, true);
 
   /* Connect all the blocks.  */
@@ -4047,8 +4284,34 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   ep = find_edge (entry_bb, second_bb);
   ep->flags = EDGE_TRUE_VALUE;
   ep->probability = profile_probability::guessed_always ().apply_scale (1, 4);
-  find_edge (third_bb, seq_start_bb)->flags = EDGE_FALSE_VALUE;
-  find_edge (third_bb, fin_bb)->flags = EDGE_TRUE_VALUE;
+  if (fourth_bb)
+    {
+      ep = make_edge (third_bb, fifth_bb, EDGE_FALSE_VALUE);
+      ep->probability
+	= profile_probability::guessed_always ().apply_scale (1, 2);
+      ep = find_edge (third_bb, fourth_bb);
+      ep->flags = EDGE_TRUE_VALUE;
+      ep->probability
+	= profile_probability::guessed_always ().apply_scale (1, 2);
+      ep = find_edge (fourth_bb, fifth_bb);
+      redirect_edge_and_branch (ep, sixth_bb);
+    }
+  else
+    sixth_bb = third_bb;
+  find_edge (sixth_bb, seq_start_bb)->flags = EDGE_FALSE_VALUE;
+  find_edge (sixth_bb, fin_bb)->flags = EDGE_TRUE_VALUE;
+  if (exit1_bb)
+    {
+      ep = make_edge (exit_bb, exit2_bb, EDGE_FALSE_VALUE);
+      ep->probability
+	= profile_probability::guessed_always ().apply_scale (1, 2);
+      ep = find_edge (exit_bb, exit1_bb);
+      ep->flags = EDGE_TRUE_VALUE;
+      ep->probability
+	= profile_probability::guessed_always ().apply_scale (1, 2);
+      ep = find_edge (exit1_bb, exit2_bb);
+      redirect_edge_and_branch (ep, exit3_bb);
+    }
 
   if (!broken_loop)
     {
@@ -4076,14 +4339,24 @@ expand_omp_for_static_nochunk (struct omp_region *region,
 
   set_immediate_dominator (CDI_DOMINATORS, second_bb, entry_bb);
   set_immediate_dominator (CDI_DOMINATORS, third_bb, entry_bb);
-  set_immediate_dominator (CDI_DOMINATORS, seq_start_bb, third_bb);
+  if (fourth_bb)
+    {
+      set_immediate_dominator (CDI_DOMINATORS, fifth_bb, third_bb);
+      set_immediate_dominator (CDI_DOMINATORS, sixth_bb, third_bb);
+    }
+  set_immediate_dominator (CDI_DOMINATORS, seq_start_bb, sixth_bb);
 
   set_immediate_dominator (CDI_DOMINATORS, body_bb,
 			   recompute_dominator (CDI_DOMINATORS, body_bb));
   set_immediate_dominator (CDI_DOMINATORS, fin_bb,
 			   recompute_dominator (CDI_DOMINATORS, fin_bb));
+  if (exit1_bb)
+    {
+      set_immediate_dominator (CDI_DOMINATORS, exit2_bb, exit_bb);
+      set_immediate_dominator (CDI_DOMINATORS, exit3_bb, exit_bb);
+    }
 
-  struct loop *loop = body_bb->loop_father;
+  class loop *loop = body_bb->loop_father;
   if (loop != entry_bb->loop_father)
     {
       gcc_assert (broken_loop || loop->header == body_bb);
@@ -4696,6 +4969,12 @@ expand_omp_for_static_chunk (struct omp_region *region,
       else
 	gsi_insert_after (&gsi, omp_build_barrier (t), GSI_SAME_STMT);
     }
+  else if (fd->have_pointer_condtemp)
+    {
+      tree fn = builtin_decl_explicit (BUILT_IN_GOMP_LOOP_END_NOWAIT);
+      gcall *g = gimple_build_call (fn, 0);
+      gsi_insert_after (&gsi, g, GSI_SAME_STMT);
+    }
   gsi_remove (&gsi, true);
 
   /* Connect the new blocks.  */
@@ -4825,8 +5104,8 @@ expand_omp_for_static_chunk (struct omp_region *region,
 
   if (!broken_loop)
     {
-      struct loop *loop = body_bb->loop_father;
-      struct loop *trip_loop = alloc_loop ();
+      class loop *loop = body_bb->loop_father;
+      class loop *trip_loop = alloc_loop ();
       trip_loop->header = iter_part_bb;
       trip_loop->latch = trip_update_bb;
       add_loop (trip_loop, iter_part_bb->loop_father);
@@ -5244,7 +5523,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 
   if (!broken_loop)
     {
-      struct loop *loop = alloc_loop ();
+      class loop *loop = alloc_loop ();
       loop->header = l1_bb;
       loop->latch = cont_bb;
       add_loop (loop, l1_bb->loop_father);
@@ -5665,7 +5944,7 @@ expand_omp_taskloop_for_inner (struct omp_region *region,
 
   if (!broken_loop && !gimple_omp_for_combined_p (fd->for_stmt))
     {
-      struct loop *loop = alloc_loop ();
+      class loop *loop = alloc_loop ();
       loop->header = body_bb;
       if (collapse_bb == NULL)
 	loop->latch = cont_bb;
@@ -6182,12 +6461,12 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
     {
       /* We now have one, two or three nested loops.  Update the loop
 	 structures.  */
-      struct loop *parent = entry_bb->loop_father;
-      struct loop *body = body_bb->loop_father;
+      class loop *parent = entry_bb->loop_father;
+      class loop *body = body_bb->loop_father;
 
       if (chunking)
 	{
-	  struct loop *chunk_loop = alloc_loop ();
+	  class loop *chunk_loop = alloc_loop ();
 	  chunk_loop->header = head_bb;
 	  chunk_loop->latch = bottom_bb;
 	  add_loop (chunk_loop, parent);
@@ -6203,7 +6482,7 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
 
       if (parent)
 	{
-	  struct loop *body_loop = alloc_loop ();
+	  class loop *body_loop = alloc_loop ();
 	  body_loop->header = body_bb;
 	  body_loop->latch = cont_bb;
 	  add_loop (body_loop, parent);
@@ -6211,7 +6490,7 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
 	  if (fd->tiling)
 	    {
 	      /* Insert tiling's element loop.  */
-	      struct loop *inner_loop = alloc_loop ();
+	      class loop *inner_loop = alloc_loop ();
 	      inner_loop->header = elem_body_bb;
 	      inner_loop->latch = elem_cont_bb;
 	      add_loop (inner_loop, body_loop);
@@ -6253,7 +6532,7 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
        original loops from being detected.  Fix that up.  */
     loops_state_set (LOOPS_NEED_FIXUP);
 
-  if (gimple_omp_for_kind (fd.for_stmt) & GF_OMP_FOR_SIMD)
+  if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_SIMD)
     expand_omp_simd (region, &fd);
   else if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_OACC_LOOP)
     {
@@ -7196,7 +7475,7 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
   /* Remove GIMPLE_OMP_ATOMIC_STORE.  */
   gsi_remove (&si, true);
 
-  struct loop *loop = alloc_loop ();
+  class loop *loop = alloc_loop ();
   loop->header = loop_header;
   loop->latch = store_bb;
   add_loop (loop, loop_header->loop_father);
@@ -7346,14 +7625,14 @@ static void
 mark_loops_in_oacc_kernels_region (basic_block region_entry,
 				   basic_block region_exit)
 {
-  struct loop *outer = region_entry->loop_father;
+  class loop *outer = region_entry->loop_father;
   gcc_assert (region_exit == NULL || outer == region_exit->loop_father);
 
   /* Don't parallelize the kernels region if it contains more than one outer
      loop.  */
   unsigned int nr_outer_loops = 0;
-  struct loop *single_outer = NULL;
-  for (struct loop *loop = outer->inner; loop != NULL; loop = loop->next)
+  class loop *single_outer = NULL;
+  for (class loop *loop = outer->inner; loop != NULL; loop = loop->next)
     {
       gcc_assert (loop_outer (loop) == outer);
 
@@ -7370,14 +7649,14 @@ mark_loops_in_oacc_kernels_region (basic_block region_entry,
   if (nr_outer_loops != 1)
     return;
 
-  for (struct loop *loop = single_outer->inner;
+  for (class loop *loop = single_outer->inner;
        loop != NULL;
        loop = loop->inner)
     if (loop->next)
       return;
 
   /* Mark the loops in the region.  */
-  for (struct loop *loop = single_outer; loop != NULL; loop = loop->inner)
+  for (class loop *loop = single_outer; loop != NULL; loop = loop->inner)
     loop->in_oacc_kernels_region = true;
 }
 

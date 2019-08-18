@@ -81,7 +81,7 @@ package System.Linux is
    SIGQUIT    : constant := 3; --  quit (ASCD FS)
    SIGILL     : constant := 4; --  illegal instruction (not reset)
    SIGTRAP    : constant := 5; --  trace trap (not reset)
-   SIGABRT    : constant := 6; --  used by abort, replace SIGIOT in the  future
+   SIGABRT    : constant := 6; --  used by abort, replace SIGIOT in the future
    SIGIOT     : constant := 6; --  IOT instruction
    SIGEMT     : constant := 7; --  EMT
    SIGFPE     : constant := 8; --  floating point exception

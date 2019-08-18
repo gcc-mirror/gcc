@@ -626,8 +626,7 @@ finish_update_gimple_call (gimple_stmt_iterator *si_p, gimple *new_stmt,
 {
   gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
   move_ssa_defining_stmt_for_defs (new_stmt, stmt);
-  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-  gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+  gimple_move_vops (new_stmt, stmt);
   gimple_set_location (new_stmt, gimple_location (stmt));
   if (gimple_block (new_stmt) == NULL_TREE)
     gimple_set_block (new_stmt, gimple_block (stmt));
@@ -707,8 +706,7 @@ update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
           STRIP_USELESS_TYPE_CONVERSION (expr);
           new_stmt = gimple_build_assign (lhs, expr);
           move_ssa_defining_stmt_for_defs (new_stmt, stmt);
-	  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-	  gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+	  gimple_move_vops (new_stmt, stmt);
         }
       else if (!TREE_SIDE_EFFECTS (expr))
         {
@@ -733,8 +731,7 @@ update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 	  else
 	    lhs = create_tmp_var (TREE_TYPE (expr));
           new_stmt = gimple_build_assign (lhs, expr);
-	  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-	  gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+	  gimple_move_vops (new_stmt, stmt);
           move_ssa_defining_stmt_for_defs (new_stmt, stmt);
         }
       gimple_set_location (new_stmt, gimple_location (stmt));

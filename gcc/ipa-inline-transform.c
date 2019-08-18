@@ -237,10 +237,13 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
     }
 }
 
-/* Check all speculations in N and resolve them if they seems useless. */
+/* Check all speculations in N and if any seem useless, resolve them.  When a
+   first edge is resolved, pop all edges from NEW_EDGES and insert them to
+   EDGE_SET.  Then remove each resolved edge from EDGE_SET, if it is there.  */
 
 static bool
-check_speculations (cgraph_node *n)
+check_speculations_1 (cgraph_node *n, vec<cgraph_edge *> *new_edges,
+		      hash_set <cgraph_edge *> *edge_set)
 {
   bool speculation_removed = false;
   cgraph_edge *next;
@@ -250,13 +253,44 @@ check_speculations (cgraph_node *n)
       next = e->next_callee;
       if (e->speculative && !speculation_useful_p (e, true))
 	{
+	  while (new_edges && !new_edges->is_empty ())
+	    edge_set->add (new_edges->pop ());
+	  edge_set->remove (e);
+
 	  e->resolve_speculation (NULL);
 	  speculation_removed = true;
 	}
       else if (!e->inline_failed)
-	speculation_removed |= check_speculations (e->callee);
+	speculation_removed |= check_speculations_1 (e->callee, new_edges,
+						     edge_set);
     }
   return speculation_removed;
+}
+
+/* Push E to NEW_EDGES.  Called from hash_set traverse method, which
+   unfortunately means this function has to have external linkage, otherwise
+   the code will not compile with gcc 4.8.  */
+
+bool
+push_all_edges_in_set_to_vec (cgraph_edge * const &e,
+			      vec<cgraph_edge *> *new_edges)
+{
+  new_edges->safe_push (e);
+  return true;
+}
+
+/* Check all speculations in N and if any seem useless, resolve them and remove
+   them from NEW_EDGES.  */
+
+static bool
+check_speculations (cgraph_node *n, vec<cgraph_edge *> *new_edges)
+{
+  hash_set <cgraph_edge *> edge_set;
+  bool res = check_speculations_1 (n, new_edges, &edge_set);
+  if (!edge_set.is_empty ())
+    edge_set.traverse <vec<cgraph_edge *> *,
+		       push_all_edges_in_set_to_vec> (new_edges);
+  return res;
 }
 
 /* Mark all call graph edges coming out of NODE and all nodes that have been
@@ -450,7 +484,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
     mark_all_inlined_calls_cdtor (e->callee);
   if (opt_for_fn (e->caller->decl, optimize))
     new_edges_found = ipa_propagate_indirect_call_infos (curr, new_edges);
-  check_speculations (e->callee);
+  check_speculations (e->callee, new_edges);
   if (update_overall_summary)
     ipa_update_overall_fn_summary (to);
   else

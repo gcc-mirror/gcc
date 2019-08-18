@@ -497,7 +497,7 @@ static const format_length_info printf_length_specs[] =
 static const format_length_info asm_fprintf_length_specs[] =
 {
   { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C89, 0 },
-  { "w", FMT_LEN_none, STD_C89, NO_FMT, 0 },
+  { "w", FMT_LEN_w, STD_C89, NO_FMT, 0 },
   { NO_FMT, NO_FMT, 0 }
 };
 
@@ -505,7 +505,7 @@ static const format_length_info asm_fprintf_length_specs[] =
 static const format_length_info gcc_diag_length_specs[] =
 {
   { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C89, 0 },
-  { "w", FMT_LEN_none, STD_C89, NO_FMT, 0 },
+  { "w", FMT_LEN_w, STD_C89, NO_FMT, 0 },
   { NO_FMT, NO_FMT, 0 }
 };
 
@@ -1839,8 +1839,9 @@ class flag_chars_t
 /* Support struct for argument_parser and check_format_info_main.
    Encapsulates any length modifier applied to the current argument.  */
 
-struct length_modifier
+class length_modifier
 {
+public:
   length_modifier ()
   : chars (NULL), val (FMT_LEN_none), std (STD_C89),
     scalar_identity_flag (0)
@@ -2853,8 +2854,9 @@ check_argument_type (const format_char_info *fci,
 /* Describes "paired tokens" within the format string that are
    expected to be balanced.  */
 
-struct baltoks_t
+class baltoks_t
 {
+public:
   baltoks_t (): singlequote (), doublequote () { }
 
   typedef auto_vec<const char *> balanced_tokens_t;

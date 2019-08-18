@@ -33,6 +33,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced by
+--  setting the corresponding assertion policy to Ignore.
+
+pragma Assertion_Policy (Pre => Ignore);
+
 with Ada.Strings.Maps;
 with Ada.Strings.Superbounded;
 
@@ -43,7 +49,9 @@ package Ada.Strings.Bounded is
       Max : Positive;
       --  Maximum length of a Bounded_String
 
-   package Generic_Bounded_Length is
+   package Generic_Bounded_Length with
+     Initial_Condition => Length (Null_Bounded_String) = 0
+   is
 
       Max_Length : constant Positive := Max;
 
@@ -54,7 +62,8 @@ package Ada.Strings.Bounded is
 
       subtype Length_Range is Natural range 0 .. Max_Length;
 
-      function Length (Source : Bounded_String) return Length_Range;
+      function Length (Source : Bounded_String) return Length_Range with
+        Global => null;
 
       --------------------------------------------------------
       -- Conversion, Concatenation, and Selection Functions --
@@ -62,162 +71,302 @@ package Ada.Strings.Bounded is
 
       function To_Bounded_String
         (Source : String;
-         Drop   : Truncation := Error) return Bounded_String;
+         Drop   : Truncation := Error) return Bounded_String
+      with
+        Pre    => (if Source'Length > Max_Length then Drop /= Error),
+        Post   =>
+          Length (To_Bounded_String'Result)
+        = Natural'Min (Max_Length, Source'Length),
+        Global => null;
 
-      function To_String (Source : Bounded_String) return String;
+      function To_String (Source : Bounded_String) return String with
+        Post   => To_String'Result'Length = Length (Source),
+        Global => null;
 
       procedure Set_Bounded_String
         (Target : out Bounded_String;
          Source : String;
-         Drop   : Truncation := Error);
+         Drop   : Truncation := Error)
+      with
+        Pre    => (if Source'Length > Max_Length then Drop /= Error),
+        Post   => Length (Target) = Natural'Min (Max_Length, Source'Length),
+        Global => null;
       pragma Ada_05 (Set_Bounded_String);
 
       function Append
         (Left  : Bounded_String;
          Right : Bounded_String;
-         Drop  : Truncation  := Error) return Bounded_String;
+         Drop  : Truncation  := Error) return Bounded_String
+      with
+        Pre    =>
+          (if Length (Left) > Max_Length - Length (Right)
+           then Drop /= Error),
+        Post   =>
+          Length (Append'Result)
+        = Natural'Min (Max_Length, Length (Left) + Length (Right)),
+        Global => null;
 
       function Append
         (Left  : Bounded_String;
          Right : String;
-         Drop  : Truncation := Error) return Bounded_String;
+         Drop  : Truncation := Error) return Bounded_String
+      with
+        Pre    =>
+          (if Right'Length > Max_Length - Length (Left)
+           then Drop /= Error),
+        Post   =>
+          Length (Append'Result)
+        = Natural'Min (Max_Length, Length (Left) + Right'Length),
+        Global => null;
 
       function Append
         (Left  : String;
          Right : Bounded_String;
-         Drop  : Truncation := Error) return Bounded_String;
+         Drop  : Truncation := Error) return Bounded_String
+      with
+        Pre    =>
+          (if Left'Length > Max_Length - Length (Right)
+           then Drop /= Error),
+        Post   =>
+          Length (Append'Result)
+        = Natural'Min (Max_Length, Left'Length + Length (Right)),
+        Global => null;
 
       function Append
         (Left  : Bounded_String;
          Right : Character;
-         Drop  : Truncation := Error) return Bounded_String;
+         Drop  : Truncation := Error) return Bounded_String
+      with
+        Pre    => (if Length (Left) = Max_Length then Drop /= Error),
+        Post   =>
+          Length (Append'Result)
+        = Natural'Min (Max_Length, Length (Left) + 1),
+        Global => null;
 
       function Append
         (Left  : Character;
          Right : Bounded_String;
-         Drop  : Truncation := Error) return Bounded_String;
+         Drop  : Truncation := Error) return Bounded_String
+      with
+        Pre    => (if Length (Right) = Max_Length then Drop /= Error),
+        Post   =>
+          Length (Append'Result)
+        = Natural'Min (Max_Length, 1 + Length (Right)),
+        Global => null;
 
       procedure Append
         (Source   : in out Bounded_String;
          New_Item : Bounded_String;
-         Drop     : Truncation  := Error);
+         Drop     : Truncation  := Error)
+      with
+        Pre    =>
+          (if Length (Source) > Max_Length - Length (New_Item)
+           then Drop /= Error),
+        Post   =>
+          Length (Source)
+        = Natural'Min (Max_Length, Length (Source)'Old + Length (New_Item)),
+        Global => null;
 
       procedure Append
         (Source   : in out Bounded_String;
          New_Item : String;
-         Drop     : Truncation  := Error);
+         Drop     : Truncation  := Error)
+      with
+        Pre    =>
+          (if New_Item'Length > Max_Length - Length (Source)
+           then Drop /= Error),
+        Post   =>
+          Length (Source)
+        = Natural'Min (Max_Length, Length (Source)'Old + New_Item'Length),
+        Global => null;
 
       procedure Append
         (Source   : in out Bounded_String;
          New_Item : Character;
-         Drop     : Truncation  := Error);
+         Drop     : Truncation  := Error)
+      with
+        Pre    => (if Length (Source) = Max_Length then Drop /= Error),
+        Post   =>
+          Length (Source)
+        = Natural'Min (Max_Length, Length (Source)'Old + 1),
+        Global => null;
 
       function "&"
         (Left  : Bounded_String;
-         Right : Bounded_String) return Bounded_String;
+         Right : Bounded_String) return Bounded_String
+      with
+        Pre    => Length (Left) <= Max_Length - Length (Right),
+        Post   => Length ("&"'Result) = Length (Left) + Length (Right),
+        Global => null;
 
       function "&"
         (Left  : Bounded_String;
-         Right : String) return Bounded_String;
+         Right : String) return Bounded_String
+      with
+        Pre    => Right'Length <= Max_Length - Length (Left),
+        Post   => Length ("&"'Result) = Length (Left) + Right'Length,
+        Global => null;
 
       function "&"
         (Left  : String;
-         Right : Bounded_String) return Bounded_String;
+         Right : Bounded_String) return Bounded_String
+      with
+        Pre    => Left'Length <= Max_Length - Length (Right),
+        Post   => Length ("&"'Result) = Left'Length + Length (Right),
+        Global => null;
 
       function "&"
         (Left  : Bounded_String;
-         Right : Character) return Bounded_String;
+         Right : Character) return Bounded_String
+      with
+        Pre    => Length (Left) < Max_Length,
+        Post   => Length ("&"'Result) = Length (Left) + 1,
+        Global => null;
 
       function "&"
         (Left  : Character;
-         Right : Bounded_String) return Bounded_String;
+         Right : Bounded_String) return Bounded_String
+      with
+        Pre    => Length (Right) < Max_Length,
+        Post   => Length ("&"'Result) = 1 + Length (Right),
+        Global => null;
 
       function Element
         (Source : Bounded_String;
-         Index  : Positive) return Character;
+         Index  : Positive) return Character
+      with
+        Pre    => Index <= Length (Source),
+        Global => null;
 
       procedure Replace_Element
         (Source : in out Bounded_String;
          Index  : Positive;
-         By     : Character);
+         By     : Character)
+      with
+        Pre    => Index <= Length (Source),
+        Post   => Length (Source) = Length (Source)'Old,
+        Global => null;
 
       function Slice
         (Source : Bounded_String;
          Low    : Positive;
-         High   : Natural) return String;
+         High   : Natural) return String
+      with
+        Pre    => Low - 1 <= Length (Source) and then High <= Length (Source),
+        Post   => Slice'Result'Length = Natural'Max (0, High - Low + 1),
+        Global => null;
 
       function Bounded_Slice
         (Source : Bounded_String;
          Low    : Positive;
-         High   : Natural) return Bounded_String;
+         High   : Natural) return Bounded_String
+       with
+        Pre    => Low - 1 <= Length (Source) and then High <= Length (Source),
+        Post   =>
+          Length (Bounded_Slice'Result) = Natural'Max (0, High - Low + 1),
+        Global => null;
       pragma Ada_05 (Bounded_Slice);
 
       procedure Bounded_Slice
         (Source : Bounded_String;
          Target : out Bounded_String;
          Low    : Positive;
-         High   : Natural);
+         High   : Natural)
+      with
+        Pre    => Low - 1 <= Length (Source) and then High <= Length (Source),
+        Post   => Length (Target) = Natural'Max (0, High - Low + 1),
+        Global => null;
       pragma Ada_05 (Bounded_Slice);
 
       function "="
         (Left  : Bounded_String;
-         Right : Bounded_String) return Boolean;
+         Right : Bounded_String) return Boolean
+      with
+        Global => null;
 
       function "="
         (Left  : Bounded_String;
-         Right : String) return Boolean;
+         Right : String) return Boolean
+      with
+        Global => null;
 
       function "="
         (Left  : String;
-         Right : Bounded_String) return Boolean;
+         Right : Bounded_String) return Boolean
+      with
+        Global => null;
 
       function "<"
         (Left  : Bounded_String;
-         Right : Bounded_String) return Boolean;
+         Right : Bounded_String) return Boolean
+      with
+        Global => null;
 
       function "<"
         (Left  : Bounded_String;
-         Right : String) return Boolean;
+         Right : String) return Boolean
+      with
+        Global => null;
 
       function "<"
         (Left  : String;
-         Right : Bounded_String) return Boolean;
+         Right : Bounded_String) return Boolean
+      with
+        Global => null;
 
       function "<="
         (Left  : Bounded_String;
-         Right : Bounded_String) return Boolean;
+         Right : Bounded_String) return Boolean
+      with
+        Global => null;
 
       function "<="
         (Left  : Bounded_String;
-         Right : String) return Boolean;
+         Right : String) return Boolean
+      with
+        Global => null;
 
       function "<="
         (Left  : String;
-         Right : Bounded_String) return Boolean;
+         Right : Bounded_String) return Boolean
+      with
+        Global => null;
 
       function ">"
         (Left  : Bounded_String;
-         Right : Bounded_String) return Boolean;
+         Right : Bounded_String) return Boolean
+      with
+        Global => null;
 
       function ">"
         (Left  : Bounded_String;
-         Right : String) return Boolean;
+         Right : String) return Boolean
+      with
+        Global => null;
 
       function ">"
         (Left  : String;
-         Right : Bounded_String) return Boolean;
+         Right : Bounded_String) return Boolean
+      with
+        Global => null;
 
       function ">="
         (Left  : Bounded_String;
-         Right : Bounded_String) return Boolean;
+         Right : Bounded_String) return Boolean
+      with
+        Global => null;
 
       function ">="
         (Left  : Bounded_String;
-         Right : String) return Boolean;
+         Right : String) return Boolean
+      with
+        Global => null;
 
       function ">="
         (Left  : String;
-         Right : Bounded_String) return Boolean;
+         Right : Bounded_String) return Boolean
+      with
+        Global => null;
 
       ----------------------
       -- Search Functions --
@@ -227,26 +376,40 @@ package Ada.Strings.Bounded is
         (Source  : Bounded_String;
          Pattern : String;
          Going   : Direction := Forward;
-         Mapping : Maps.Character_Mapping := Maps.Identity) return Natural;
+         Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
+      with
+        Pre    => Pattern'Length /= 0,
+        Global => null;
 
       function Index
         (Source  : Bounded_String;
          Pattern : String;
          Going   : Direction := Forward;
-         Mapping : Maps.Character_Mapping_Function) return Natural;
+         Mapping : Maps.Character_Mapping_Function) return Natural
+      with
+        Pre    => Pattern'Length /= 0,
+        Global => null;
 
       function Index
         (Source : Bounded_String;
          Set    : Maps.Character_Set;
          Test   : Membership := Inside;
-         Going  : Direction  := Forward) return Natural;
+         Going  : Direction  := Forward) return Natural
+      with
+        Global => null;
 
       function Index
         (Source  : Bounded_String;
          Pattern : String;
          From    : Positive;
          Going   : Direction := Forward;
-         Mapping : Maps.Character_Mapping := Maps.Identity) return Natural;
+         Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
+      with
+        Pre    =>
+          (if Length (Source) /= 0
+           then From <= Length (Source))
+                  and then Pattern'Length /= 0,
+        Global => null;
       pragma Ada_05 (Index);
 
       function Index
@@ -254,7 +417,13 @@ package Ada.Strings.Bounded is
          Pattern : String;
          From    : Positive;
          Going   : Direction := Forward;
-         Mapping : Maps.Character_Mapping_Function) return Natural;
+         Mapping : Maps.Character_Mapping_Function) return Natural
+      with
+        Pre    =>
+          (if Length (Source) /= 0
+           then From <= Length (Source))
+                  and then Pattern'Length /= 0,
+        Global => null;
       pragma Ada_05 (Index);
 
       function Index
@@ -262,32 +431,48 @@ package Ada.Strings.Bounded is
          Set     : Maps.Character_Set;
          From    : Positive;
          Test    : Membership := Inside;
-         Going   : Direction := Forward) return Natural;
+         Going   : Direction := Forward) return Natural
+      with
+        Pre    => (if Length (Source) /= 0 then From <= Length (Source)),
+        Global => null;
       pragma Ada_05 (Index);
 
       function Index_Non_Blank
         (Source : Bounded_String;
-         Going  : Direction := Forward) return Natural;
+         Going  : Direction := Forward) return Natural
+      with
+        Global => null;
 
       function Index_Non_Blank
         (Source : Bounded_String;
          From   : Positive;
-         Going  : Direction := Forward) return Natural;
+         Going  : Direction := Forward) return Natural
+      with
+        Pre    => (if Length (Source) /= 0 then From <= Length (Source)),
+        Global => null;
       pragma Ada_05 (Index_Non_Blank);
 
       function Count
         (Source  : Bounded_String;
          Pattern : String;
-         Mapping : Maps.Character_Mapping := Maps.Identity) return Natural;
+         Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
+      with
+        Pre    => Pattern'Length /= 0,
+        Global => null;
 
       function Count
         (Source  : Bounded_String;
          Pattern : String;
-         Mapping : Maps.Character_Mapping_Function) return Natural;
+         Mapping : Maps.Character_Mapping_Function) return Natural
+      with
+        Pre    => Pattern'Length /= 0,
+        Global => null;
 
       function Count
         (Source : Bounded_String;
-         Set    : Maps.Character_Set) return Natural;
+         Set    : Maps.Character_Set) return Natural
+      with
+        Global => null;
 
       procedure Find_Token
         (Source : Bounded_String;
@@ -295,7 +480,10 @@ package Ada.Strings.Bounded is
          From   : Positive;
          Test   : Membership;
          First  : out Positive;
-         Last   : out Natural);
+         Last   : out Natural)
+      with
+        Pre    => (if Length (Source) /= 0 then From <= Length (Source)),
+        Global => null;
       pragma Ada_2012 (Find_Token);
 
       procedure Find_Token
@@ -303,7 +491,9 @@ package Ada.Strings.Bounded is
          Set    : Maps.Character_Set;
          Test   : Membership;
          First  : out Positive;
-         Last   : out Natural);
+         Last   : out Natural)
+      with
+        Global => null;
 
       ------------------------------------
       -- String Translation Subprograms --
@@ -311,19 +501,31 @@ package Ada.Strings.Bounded is
 
       function Translate
         (Source  : Bounded_String;
-         Mapping : Maps.Character_Mapping) return Bounded_String;
+         Mapping : Maps.Character_Mapping) return Bounded_String
+      with
+        Post   => Length (Translate'Result) = Length (Source),
+        Global => null;
 
       procedure Translate
         (Source   : in out Bounded_String;
-         Mapping  : Maps.Character_Mapping);
+         Mapping  : Maps.Character_Mapping)
+      with
+        Post   => Length (Source) = Length (Source)'Old,
+        Global => null;
 
       function Translate
         (Source  : Bounded_String;
-         Mapping : Maps.Character_Mapping_Function) return Bounded_String;
+         Mapping : Maps.Character_Mapping_Function) return Bounded_String
+      with
+        Post   => Length (Translate'Result) = Length (Source),
+        Global => null;
 
       procedure Translate
         (Source  : in out Bounded_String;
-         Mapping : Maps.Character_Mapping_Function);
+         Mapping : Maps.Character_Mapping_Function)
+      with
+        Post   => Length (Source) = Length (Source)'Old,
+        Global => null;
 
       ---------------------------------------
       -- String Transformation Subprograms --
@@ -334,48 +536,149 @@ package Ada.Strings.Bounded is
          Low    : Positive;
          High   : Natural;
          By     : String;
-         Drop   : Truncation := Error) return Bounded_String;
+         Drop   : Truncation := Error) return Bounded_String
+      with
+        Pre            =>
+          Low - 1 <= Length (Source)
+            and then
+          (if Drop = Error
+           then (if High >= Low
+                 then Low - 1
+                   <= Max_Length - By'Length
+                    - Natural'Max (Length (Source) - High, 0)
+                 else Length (Source) <= Max_Length - By'Length)),
+        Contract_Cases =>
+          (High >= Low =>
+             Length (Replace_Slice'Result)
+           = Natural'Min
+             (Max_Length,
+              Low - 1 + By'Length + Natural'Max (Length (Source) - High,
+                                                  0)),
+           others      =>
+             Length (Replace_Slice'Result)
+           = Natural'Min (Max_Length, Length (Source) + By'Length)),
+        Global         => null;
 
       procedure Replace_Slice
         (Source   : in out Bounded_String;
          Low      : Positive;
          High     : Natural;
          By       : String;
-         Drop     : Truncation := Error);
+         Drop     : Truncation := Error)
+      with
+        Pre            =>
+          Low - 1 <= Length (Source)
+            and then
+          (if Drop = Error
+           then (if High >= Low
+                 then Low - 1
+                   <= Max_Length - By'Length
+                    - Natural'Max (Length (Source) - High, 0)
+                 else Length (Source) <= Max_Length - By'Length)),
+        Contract_Cases =>
+          (High >= Low =>
+            Length (Source)
+          = Natural'Min
+              (Max_Length,
+               Low - 1 + By'Length + Natural'Max (Length (Source)'Old - High,
+                                                  0)),
+           others      =>
+             Length (Source)
+           = Natural'Min (Max_Length, Length (Source)'Old + By'Length)),
+        Global         => null;
 
       function Insert
         (Source   : Bounded_String;
          Before   : Positive;
          New_Item : String;
-         Drop     : Truncation := Error) return Bounded_String;
+         Drop     : Truncation := Error) return Bounded_String
+      with
+        Pre    =>
+          Before - 1 <= Length (Source)
+            and then (if New_Item'Length > Max_Length - Length (Source)
+                      then Drop /= Error),
+        Post   =>
+          Length (Insert'Result)
+        = Natural'Min (Max_Length, Length (Source) + New_Item'Length),
+        Global => null;
 
       procedure Insert
         (Source   : in out Bounded_String;
          Before   : Positive;
          New_Item : String;
-         Drop     : Truncation := Error);
+         Drop     : Truncation := Error)
+      with
+        Pre    =>
+          Before - 1 <= Length (Source)
+            and then (if New_Item'Length > Max_Length - Length (Source)
+                      then Drop /= Error),
+        Post   =>
+          Length (Source)
+        = Natural'Min (Max_Length, Length (Source)'Old + New_Item'Length),
+        Global => null;
 
       function Overwrite
         (Source   : Bounded_String;
          Position : Positive;
          New_Item : String;
-         Drop     : Truncation := Error) return Bounded_String;
+         Drop     : Truncation := Error) return Bounded_String
+      with
+        Pre    =>
+          Position - 1 <= Length (Source)
+            and then (if New_Item'Length > Max_Length - (Position - 1)
+                      then Drop /= Error),
+        Post   =>
+          Length (Overwrite'Result)
+        = Natural'Max
+            (Length (Source),
+             Natural'Min (Max_Length, Position - 1 + New_Item'Length)),
+        Global => null;
 
       procedure Overwrite
         (Source    : in out Bounded_String;
          Position  : Positive;
          New_Item  : String;
-         Drop      : Truncation := Error);
+         Drop      : Truncation := Error)
+      with
+        Pre    =>
+          Position - 1 <= Length (Source)
+            and then (if New_Item'Length > Max_Length - (Position - 1)
+                      then Drop /= Error),
+        Post   =>
+          Length (Source)
+        = Natural'Max
+            (Length (Source)'Old,
+             Natural'Min (Max_Length, Position - 1 + New_Item'Length)),
+        Global => null;
 
       function Delete
         (Source  : Bounded_String;
          From    : Positive;
-         Through : Natural) return Bounded_String;
+         Through : Natural) return Bounded_String
+      with
+        Pre            =>
+          (if Through <= From then From - 1 <= Length (Source)),
+        Contract_Cases =>
+          (Through >= From =>
+             Length (Delete'Result) = Length (Source) - (Through - From + 1),
+           others          =>
+             Length (Delete'Result) = Length (Source)),
+
+        Global         => null;
 
       procedure Delete
         (Source  : in out Bounded_String;
          From    : Positive;
-         Through : Natural);
+         Through : Natural)
+      with
+        Pre            =>
+          (if Through <= From then From - 1 <= Length (Source)),
+        Contract_Cases =>
+          (Through >= From =>
+             Length (Source) = Length (Source)'Old - (Through - From + 1),
+           others          =>
+             Length (Source) = Length (Source)'Old),
+        Global         => null;
 
       ---------------------------------
       -- String Selector Subprograms --
@@ -383,45 +686,73 @@ package Ada.Strings.Bounded is
 
       function Trim
         (Source : Bounded_String;
-         Side   : Trim_End) return Bounded_String;
+         Side   : Trim_End) return Bounded_String
+      with
+        Post   => Length (Trim'Result) <= Length (Source),
+        Global => null;
 
       procedure Trim
         (Source : in out Bounded_String;
-         Side   : Trim_End);
+         Side   : Trim_End)
+      with
+        Post   => Length (Source) <= Length (Source)'Old,
+        Global => null;
 
       function Trim
         (Source : Bounded_String;
          Left   : Maps.Character_Set;
-         Right  : Maps.Character_Set) return Bounded_String;
+         Right  : Maps.Character_Set) return Bounded_String
+      with
+        Post   => Length (Trim'Result) <= Length (Source),
+        Global => null;
 
       procedure Trim
         (Source : in out Bounded_String;
          Left   : Maps.Character_Set;
-         Right  : Maps.Character_Set);
+         Right  : Maps.Character_Set)
+      with
+        Post   => Length (Source) <= Length (Source)'Old,
+        Global => null;
 
       function Head
         (Source : Bounded_String;
          Count  : Natural;
          Pad    : Character := Space;
-         Drop   : Truncation := Error) return Bounded_String;
+         Drop   : Truncation := Error) return Bounded_String
+      with
+        Pre    => (if Count > Max_Length then Drop /= Error),
+        Post   => Length (Head'Result) = Natural'Min (Max_Length, Count),
+        Global => null;
 
       procedure Head
         (Source : in out Bounded_String;
          Count  : Natural;
          Pad    : Character  := Space;
-         Drop   : Truncation := Error);
+         Drop   : Truncation := Error)
+      with
+        Pre    => (if Count > Max_Length then Drop /= Error),
+        Post   => Length (Source) = Natural'Min (Max_Length, Count),
+        Global => null;
 
       function Tail
         (Source : Bounded_String;
          Count  : Natural;
          Pad    : Character  := Space;
-         Drop   : Truncation := Error) return Bounded_String;
+         Drop   : Truncation := Error) return Bounded_String
+      with
+        Pre    => (if Count > Max_Length then Drop /= Error),
+        Post   => Length (Tail'Result) = Natural'Min (Max_Length, Count),
+        Global => null;
 
       procedure Tail
         (Source : in out Bounded_String;
          Count  : Natural;
          Pad    : Character  := Space;
-         Drop   : Truncation := Error);
+         Drop   : Truncation := Error)
+      with
+        Pre    => (if Count > Max_Length then Drop /= Error),
+        Post   => Length (Source) = Natural'Min (Max_Length, Count),
+        Global => null;
 
       ------------------------------------
       -- String Constructor Subprograms --
@@ -429,30 +760,66 @@ package Ada.Strings.Bounded is
 
       function "*"
         (Left  : Natural;
-         Right : Character) return Bounded_String;
+         Right : Character) return Bounded_String
+      with
+        Pre    => Left <= Max_Length,
+        Post   => Length ("*"'Result) = Left,
+        Global => null;
 
       function "*"
         (Left  : Natural;
-         Right : String) return Bounded_String;
+         Right : String) return Bounded_String
+      with
+        Pre    => (if Left /= 0 then Right'Length <= Max_Length / Left),
+        Post   => Length ("*"'Result) = Left * Right'Length,
+        Global => null;
 
       function "*"
         (Left  : Natural;
-         Right : Bounded_String) return Bounded_String;
+         Right : Bounded_String) return Bounded_String
+      with
+        Pre    => (if Left /= 0 then Length (Right) <= Max_Length / Left),
+        Post   => Length ("*"'Result) = Left * Length (Right),
+        Global => null;
 
       function Replicate
         (Count : Natural;
          Item  : Character;
-         Drop  : Truncation := Error) return Bounded_String;
+         Drop  : Truncation := Error) return Bounded_String
+      with
+        Pre    => (if Count > Max_Length then Drop /= Error),
+        Post   =>
+          Length (Replicate'Result)
+        = Natural'Min (Max_Length, Count),
+        Global => null;
 
       function Replicate
         (Count : Natural;
          Item  : String;
-         Drop  : Truncation := Error) return Bounded_String;
+         Drop  : Truncation := Error) return Bounded_String
+      with
+        Pre    =>
+          (if Item'Length /= 0
+             and then Count > Max_Length / Item'Length
+           then Drop /= Error),
+        Post   =>
+          Length (Replicate'Result)
+        = Natural'Min (Max_Length, Count * Item'Length),
+        Global => null;
 
       function Replicate
         (Count : Natural;
          Item  : Bounded_String;
-         Drop  : Truncation := Error) return Bounded_String;
+         Drop  : Truncation := Error) return Bounded_String
+      with
+        Pre    =>
+          (if Length (Item) /= 0
+             and then Count > Max_Length / Length (Item)
+           then Drop /= Error),
+        Post   =>
+          Length (Replicate'Result)
+        = Natural'Min (Max_Length, Count * Length (Item)),
+        Global => null;
 
    private
       --  Most of the implementation is in the separate non generic package

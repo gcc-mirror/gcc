@@ -3592,7 +3592,7 @@ m32c_expand_setmemhi(rtx *operands)
    addresses, not [mem] syntax.  $0 is the destination (MEM:BLK), $1
    is the source (MEM:BLK), and $2 the count (HI).  */
 int
-m32c_expand_movmemhi(rtx *operands)
+m32c_expand_cpymemhi(rtx *operands)
 {
   rtx desta, srca, count;
   rtx desto, srco, counto;
@@ -3620,9 +3620,9 @@ m32c_expand_movmemhi(rtx *operands)
     {
       count = copy_to_mode_reg (HImode, GEN_INT (INTVAL (count) / 2));
       if (TARGET_A16)
-	emit_insn (gen_movmemhi_whi_op (desto, srco, counto, desta, srca, count));
+	emit_insn (gen_cpymemhi_whi_op (desto, srco, counto, desta, srca, count));
       else
-	emit_insn (gen_movmemhi_wpsi_op (desto, srco, counto, desta, srca, count));
+	emit_insn (gen_cpymemhi_wpsi_op (desto, srco, counto, desta, srca, count));
       return 1;
     }
 
@@ -3632,9 +3632,9 @@ m32c_expand_movmemhi(rtx *operands)
     count = copy_to_mode_reg (HImode, count);
 
   if (TARGET_A16)
-    emit_insn (gen_movmemhi_bhi_op (desto, srco, counto, desta, srca, count));
+    emit_insn (gen_cpymemhi_bhi_op (desto, srco, counto, desta, srca, count));
   else
-    emit_insn (gen_movmemhi_bpsi_op (desto, srco, counto, desta, srca, count));
+    emit_insn (gen_cpymemhi_bpsi_op (desto, srco, counto, desta, srca, count));
 
   return 1;
 }

@@ -88,7 +88,7 @@ _cpp_preprocess_dir_only (cpp_reader *pfile,
 	{
 	  if (c != '#' && (flags & DO_BOL))
 	  {
-	    struct line_maps *line_table;
+	    class line_maps *line_table;
 
 	    if (!pfile->state.skipping && next_line != base)
 	      cb->print_lines (lines, base, next_line - base);

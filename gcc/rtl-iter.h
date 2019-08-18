@@ -56,8 +56,9 @@ class generic_subrtx_iterator
   typedef typename T::rtunion_type rtunion_type;
 
 public:
-  struct array_type
+  class array_type
   {
+  public:
     array_type ();
     ~array_type ();
     value_type stack[LOCAL_ELEMS];

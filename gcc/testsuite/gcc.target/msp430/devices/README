@@ -1,0 +1,17 @@
+Some tests in this directory are run in a msp430-specific "torture" style,
+where all target specific options (that change code generation) are each used
+on each test source file in turn.
+
+The criteria for this torture style of testing is:
+  - The source file has a .c suffix
+  - The source file is in this "devices" subdirectory of the msp430 tests
+  - Somewhere in the test file name matches the regex:
+    [a-z0-9]+430[a-z0-9_]+(?=\.c).
+
+Some of the options used to run the tests will produce warnings/errors for the
+mcus, so ensure the test has dg-warning and dg-error directives as appropriate.
+
+The "bad-device-*.c" tests expect a corresponding "bad-devices-*.csv", which
+msp430.exp will pass as the argument to -mdevices-csv-loc=.  These tests are for
+checking the warnings in msp430-devices.c about a corrupted devices.csv work as
+expected.

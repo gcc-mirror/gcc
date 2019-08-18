@@ -1258,6 +1258,72 @@ if test $gcc_cv_header_inttypes_h = yes; then
 	[Define if you have a working <inttypes.h> header file.])
 fi
 
+# Look for the ZSTD package.
+ZSTD_INCLUDE=
+ZSTD_LIB=
+AC_SUBST(ZSTD_INCLUDE)
+AC_SUBST(ZSTD_LIB)
+ZSTD_CPPFLAGS=
+ZSTD_LDFLAGS=
+AC_ARG_WITH(zstd,
+	[AS_HELP_STRING([--with-zstd=PATH],
+		[specify prefix directory for installed zstd library.
+		 Equivalent to --with-zstd-include=PATH/include
+		 plus --with-zstd-lib=PATH/lib])])
+AC_ARG_WITH(zstd-include,
+	[AS_HELP_STRING([--with-zstd-include=PATH],
+		[specify directory for installed zstd include files])])
+AC_ARG_WITH(zstd-lib,
+	[AS_HELP_STRING([--with-zstd-lib=PATH],
+		[specify directory for the installed zstd library])])
+case "x$with_zstd" in
+  x) ;;
+  xno)
+    ZSTD_INCLUDE=no
+    ZSTD_LIB=no
+    ;;
+  *) ZSTD_INCLUDE=$with_zstd/include
+     ZSTD_LIB=$with_zstd/lib
+     ;;
+esac
+if test "x$with_zstd_include" != x; then
+  ZSTD_INCLUDE=$with_zstd_include
+fi
+if test "x$with_zstd_lib" != x; then
+  ZSTD_LIB=$with_zstd_lib
+fi
+if test "x$ZSTD_INCLUDE" != x \
+   && test "x$ZSTD_INCLUDE" != xno; then
+  ZSTD_CPPFLAGS=-I$ZSTD_INCLUDE
+fi
+if test "x$ZSTD_LIB" != x \
+   && test "x$ZSTD_LIB" != xno; then
+  ZSTD_LDFLAGS=-L$ZSTD_LIB
+fi
+
+CXXFLAGS="$CXXFLAGS $ZSTD_CPPFLAGS"
+LDFLAGS="$LDFLAGS $ZSTD_LDFLAGS"
+
+AC_MSG_CHECKING(for zstd.h)
+AC_CACHE_VAL(gcc_cv_header_zstd_h,
+[AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+[[#include <zstd.h>]])],
+  [gcc_cv_header_zstd_h=yes],
+  [gcc_cv_header_zstd_h=no])])
+AC_MSG_RESULT($gcc_cv_header_zstd_h)
+if test $gcc_cv_header_zstd_h = yes; then
+  AC_DEFINE(HAVE_ZSTD_H, 1,
+	[Define if you have a working <zstd.h> header file.])
+fi
+
+# LTO can use zstd compression algorithm
+save_LIBS="$LIBS"
+LIBS=
+AC_SEARCH_LIBS(ZSTD_compress, zstd)
+ZSTD_LIB="$LIBS"
+LIBS="$save_LIBS"
+AC_SUBST(ZSTD_LIB)
+
 dnl Disabled until we have a complete test for buggy enum bitfields.
 dnl gcc_AC_C_ENUM_BF_UNSIGNED
 

@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 package System.Val_Real is
-   pragma Pure;
+   pragma Preelaborate;
 
    function Scan_Real
      (Str : String;

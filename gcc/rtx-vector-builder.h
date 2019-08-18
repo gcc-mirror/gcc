@@ -24,10 +24,11 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This class is used to build VECTOR_CSTs from a sequence of elements.
    See vector_builder for more details.  */
-class rtx_vector_builder : public vector_builder<rtx, rtx_vector_builder>
+class rtx_vector_builder : public vector_builder<rtx, machine_mode,
+						 rtx_vector_builder>
 {
-  typedef vector_builder<rtx, rtx_vector_builder> parent;
-  friend class vector_builder<rtx, rtx_vector_builder>;
+  typedef vector_builder<rtx, machine_mode, rtx_vector_builder> parent;
+  friend class vector_builder<rtx, machine_mode, rtx_vector_builder>;
 
 public:
   rtx_vector_builder () : m_mode (VOIDmode) {}
@@ -47,6 +48,15 @@ private:
   rtx apply_step (rtx, unsigned int, const wide_int &) const;
   bool can_elide_p (rtx) const { return true; }
   void note_representative (rtx *, rtx) {}
+
+  static poly_uint64 shape_nelts (machine_mode mode)
+    { return GET_MODE_NUNITS (mode); }
+  static poly_uint64 nelts_of (const_rtx x)
+    { return CONST_VECTOR_NUNITS (x); }
+  static unsigned int npatterns_of (const_rtx x)
+    { return CONST_VECTOR_NPATTERNS (x); }
+  static unsigned int nelts_per_pattern_of (const_rtx x)
+    { return CONST_VECTOR_NELTS_PER_PATTERN (x); }
 
   rtx find_cached_value ();
 

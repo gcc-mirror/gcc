@@ -104,7 +104,7 @@ extern void s390_reload_symref_address (rtx , rtx , rtx , bool);
 extern void s390_expand_plus_operand (rtx, rtx, rtx);
 extern void emit_symbolic_move (rtx *);
 extern void s390_load_address (rtx, rtx);
-extern bool s390_expand_movmem (rtx, rtx, rtx);
+extern bool s390_expand_cpymem (rtx, rtx, rtx);
 extern void s390_expand_setmem (rtx, rtx, rtx);
 extern bool s390_expand_cmpmem (rtx, rtx, rtx, rtx);
 extern void s390_expand_vec_strlen (rtx, rtx, rtx);
@@ -141,6 +141,7 @@ extern void s390_emit_tpf_eh_return (rtx);
 extern bool s390_legitimate_address_without_index_p (rtx);
 extern bool s390_decompose_addrstyle_without_index (rtx, rtx *,
 						    HOST_WIDE_INT *);
+extern bool s390_valid_shift_count (rtx op, HOST_WIDE_INT required_mask = 63);
 extern int s390_branch_condition_mask (rtx);
 extern int s390_compare_and_branch_condition_mask (rtx);
 extern bool s390_extzv_shift_ok (int, int, unsigned HOST_WIDE_INT);

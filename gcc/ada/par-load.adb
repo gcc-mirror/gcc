@@ -36,7 +36,6 @@ with Uname;    use Uname;
 with Osint;    use Osint;
 with Sinput.L; use Sinput.L;
 with Stylesw;  use Stylesw;
-with Validsw;  use Validsw;
 
 with GNAT.Spelling_Checker; use GNAT.Spelling_Checker;
 
@@ -60,10 +59,6 @@ procedure Load is
    Save_Style_Check  : Boolean;
    Save_Style_Checks : Style_Check_Options;
    --  Save style check so it can be restored later
-
-   Save_Validity_Check  : Boolean;
-   Save_Validity_Checks : Validity_Check_Options;
-   --  Save validity check so it can be restored later
 
    With_Cunit : Node_Id;
    --  Compilation unit node for withed unit
@@ -133,9 +128,6 @@ begin
 
    Save_Style_Check_Options (Save_Style_Checks);
    Save_Style_Check := Opt.Style_Check;
-
-   Save_Validity_Check_Options (Save_Validity_Checks);
-   Save_Validity_Check := Opt.Validity_Checks_On;
 
    --  If main unit, set Main_Unit_Entity (this will get overwritten if
    --  the main unit has a separate spec, that happens later on in Load)
@@ -318,11 +310,10 @@ begin
      or else Nkind (Unit (Curunit)) in N_Generic_Instantiation
      or else Nkind (Unit (Curunit)) in N_Renaming_Declaration
    then
-      --  Turn style and validity checks off for parent unit
+      --  Turn style checks off for parent unit
 
       if not GNAT_Mode then
          Reset_Style_Check_Options;
-         Reset_Validity_Check_Options;
       end if;
 
       Spec_Name := Get_Parent_Spec_Name (Unit_Name (Cur_Unum));
@@ -356,11 +347,10 @@ begin
       end if;
    end if;
 
-   --  Now we load with'ed units, with style/validity checks turned off
+   --  Now we load with'ed units, with style checks turned off
 
    if not GNAT_Mode then
       Reset_Style_Check_Options;
-      Reset_Validity_Check_Options;
    end if;
 
    --  Load the context items in two rounds: the first round handles normal
@@ -470,6 +460,4 @@ begin
 
    Set_Style_Check_Options (Save_Style_Checks);
    Opt.Style_Check := Save_Style_Check;
-   Set_Validity_Check_Options (Save_Validity_Checks);
-   Opt.Validity_Checks_On := Save_Validity_Check;
 end Load;

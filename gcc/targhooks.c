@@ -651,7 +651,7 @@ default_has_ifunc_p (void)
    if the target can take advantage of it.  */
 
 bool
-default_predict_doloop_p (struct loop *loop ATTRIBUTE_UNUSED)
+default_predict_doloop_p (class loop *loop ATTRIBUTE_UNUSED)
 {
   return false;
 }
@@ -1366,7 +1366,7 @@ default_empty_mask_is_expensive (unsigned ifn)
    array of three unsigned ints, set it to zero, and return its address.  */
 
 void *
-default_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
+default_init_cost (class loop *loop_info ATTRIBUTE_UNUSED)
 {
   unsigned *cost = XNEWVEC (unsigned, 3);
   cost[vect_prologue] = cost[vect_body] = cost[vect_epilogue] = 0;
@@ -1379,7 +1379,7 @@ default_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
 
 unsigned
 default_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
-		       struct _stmt_vec_info *stmt_info, int misalign,
+		       class _stmt_vec_info *stmt_info, int misalign,
 		       enum vect_cost_model_location where)
 {
   unsigned *cost = (unsigned *) data;
@@ -1746,9 +1746,9 @@ get_move_ratio (bool speed_p ATTRIBUTE_UNUSED)
 #ifdef MOVE_RATIO
   move_ratio = (unsigned int) MOVE_RATIO (speed_p);
 #else
-#if defined (HAVE_movmemqi) || defined (HAVE_movmemhi) || defined (HAVE_movmemsi) || defined (HAVE_movmemdi) || defined (HAVE_movmemti)
+#if defined (HAVE_cpymemqi) || defined (HAVE_cpymemhi) || defined (HAVE_cpymemsi) || defined (HAVE_cpymemdi) || defined (HAVE_cpymemti)
   move_ratio = 2;
-#else /* No movmem patterns, pick a default.  */
+#else /* No cpymem patterns, pick a default.  */
   move_ratio = ((speed_p) ? 15 : 3);
 #endif
 #endif
@@ -1756,7 +1756,7 @@ get_move_ratio (bool speed_p ATTRIBUTE_UNUSED)
 }
 
 /* Return TRUE if the move_by_pieces/set_by_pieces infrastructure should be
-   used; return FALSE if the movmem/setmem optab should be expanded, or
+   used; return FALSE if the cpymem/setmem optab should be expanded, or
    a call to memcpy emitted.  */
 
 bool
@@ -2272,15 +2272,6 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
     addr = build_va_arg_indirect_ref (addr);
 
   return build_va_arg_indirect_ref (addr);
-}
-
-void
-default_setup_incoming_vararg_bounds (cumulative_args_t ca ATTRIBUTE_UNUSED,
-				      machine_mode mode ATTRIBUTE_UNUSED,
-				      tree type ATTRIBUTE_UNUSED,
-				      int *pretend_arg_size ATTRIBUTE_UNUSED,
-				      int second_time ATTRIBUTE_UNUSED)
-{
 }
 
 /* An implementation of TARGET_CAN_USE_DOLOOP_P for targets that do

@@ -7381,7 +7381,7 @@ visl")
   ""
 {
   rtx i7 = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
-  rtx r_label = copy_to_reg (operands[1]);
+  rtx r_label = operands[1];
   rtx r_sp = adjust_address (operands[2], Pmode, 0);
   rtx r_fp = operands[3];
   rtx r_i7 = adjust_address (operands[2], Pmode, GET_MODE_SIZE (Pmode));
@@ -7394,9 +7394,18 @@ visl")
   emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
   emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
-  /* Restore frame pointer for containing function.  */
-  emit_move_insn (hard_frame_pointer_rtx, r_fp);
+  r_label = copy_to_reg (r_label);
+
+  /* Restore the frame pointer and stack pointer.  We must use a
+     temporary since the setjmp buffer may be a local.  */
+  r_fp = copy_to_reg (r_fp);
   emit_stack_restore (SAVE_NONLOCAL, r_sp);
+  r_i7 = copy_to_reg (r_i7);
+
+  /* Ensure the frame pointer move is not optimized.  */
+  emit_insn (gen_blockage ());
+  emit_clobber (hard_frame_pointer_rtx);
+  emit_move_insn (hard_frame_pointer_rtx, r_fp);
   emit_move_insn (i7, r_i7);
 
   /* USE of hard_frame_pointer_rtx added for consistency;
@@ -7405,8 +7414,7 @@ visl")
   emit_use (stack_pointer_rtx);
   emit_use (i7);
 
-  emit_jump_insn (gen_indirect_jump (r_label));
-  emit_barrier ();
+  emit_indirect_jump (r_label);
   DONE;
 })
 

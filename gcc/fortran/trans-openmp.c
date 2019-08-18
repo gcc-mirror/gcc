@@ -1199,7 +1199,6 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p)
     {
       OMP_CLAUSE_CHAIN (c4) = OMP_CLAUSE_CHAIN (last);
       OMP_CLAUSE_CHAIN (last) = c4;
-      last = c4;
     }
 }
 

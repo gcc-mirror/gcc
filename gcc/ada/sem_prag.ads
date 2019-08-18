@@ -218,8 +218,9 @@ package Sem_Prag is
      (N        : Node_Id;
       Expr_Val : out Boolean);
    --  Perform full analysis of delayed pragmas Async_Readers, Async_Writers,
-   --  Effective_Reads and Effective_Writes. Flag Expr_Val contains the Boolean
-   --  argument of the pragma or a default True if no argument is present.
+   --  Effective_Reads, Effective_Writes and No_Caching. Flag Expr_Val contains
+   --  the Boolean argument of the pragma or a default True if no argument
+   --  is present.
 
    procedure Analyze_Global_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Global. This routine is also
@@ -398,6 +399,7 @@ package Sem_Prag is
    --    Global
    --    Initializes
    --    Max_Entry_Queue_Depth
+   --    Max_Entry_Queue_Length
    --    Max_Queue_Length
    --    Post
    --    Post_Class
@@ -497,14 +499,6 @@ package Sem_Prag is
    --  Name_uInvariant, and Name_uType_Invariant (_Pre, _Post, _Invariant,
    --  and _Type_Invariant).
 
-   procedure Process_Compile_Time_Warning_Or_Error
-     (N    : Node_Id;
-      Eloc : Source_Ptr);
-   --  Common processing for Compile_Time_Error and Compile_Time_Warning of
-   --  pragma N. Called when the pragma is processed as part of its regular
-   --  analysis but also called after calling the back end to validate these
-   --  pragmas for size and alignment appropriateness.
-
    procedure Process_Compilation_Unit_Pragmas (N : Node_Id);
    --  Called at the start of processing compilation unit N to deal with any
    --  special issues regarding pragmas. In particular, we have to deal with
@@ -554,5 +548,11 @@ package Sem_Prag is
    --    the argument appears in positional form.
    --
    --    Empty if there is no such argument
+
+   procedure Validate_Compile_Time_Warning_Errors;
+   --  This routine is called after calling the back end to validate pragmas
+   --  Compile_Time_Error and Compile_Time_Warning for size and alignment
+   --  appropriateness. The reason it is called that late is to take advantage
+   --  of any back-annotation of size and alignment performed by the back end.
 
 end Sem_Prag;

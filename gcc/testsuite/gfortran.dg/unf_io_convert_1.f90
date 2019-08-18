@@ -18,9 +18,9 @@ program main
   integer i
   character(4) str
 
-  m(1) = Z'11223344' ! { dg-warning "BOZ literal at .1. outside a DATA statement" }
-  m(2) = Z'55667788' ! { dg-warning "BOZ literal at .1. outside a DATA statement" }
-  n    = Z'77AABBCC' ! { dg-warning "BOZ literal at .1. outside a DATA statement" }
+  m(1) = int(Z'11223344')
+  m(2) = int(Z'55667788')
+  n    = int(Z'77AABBCC')
   str = 'asdf'
   do i = 1,size
      r(i) = i
@@ -46,7 +46,7 @@ program main
   read(9) str
   !
   ! check results
-  if (m(1).ne.Z'11223344') then
+  if (m(1).ne.int(Z'11223344')) then
      if (debug) then
         print '(A,Z8)','m(1) incorrect.  m(1) = ',m(1)
      else
@@ -54,7 +54,7 @@ program main
      endif
   endif
   
-  if (m(2).ne.Z'55667788') then
+  if (m(2).ne.int(Z'55667788')) then
      if (debug) then
         print '(A,Z8)','m(2) incorrect.  m(2) = ',m(2)
      else
@@ -62,7 +62,7 @@ program main
      endif
   endif
   
-  if (n.ne.Z'77AABBCC') then
+  if (n.ne.int(Z'77AABBCC')) then
      if (debug) then
         print '(A,Z8)','n incorrect.  n = ',n
      else

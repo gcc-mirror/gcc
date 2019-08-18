@@ -32,8 +32,7 @@
 #define TARGET_AIX_OS 1
 
 /* AIX always has a TOC.  */
-#define TARGET_NO_TOC 0
-#define TARGET_TOC 1
+#define TARGET_HAS_TOC 1
 #define FIXED_R2 1
 
 /* AIX allows r13 to be used in 32-bit mode.  */

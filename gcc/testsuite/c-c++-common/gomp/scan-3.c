@@ -8,7 +8,7 @@ f1 (int *c, int *d)
   for (i = 0; i < 64; i++)
     {
       d[i] = a;
-      #pragma omp scan inclusive (a)		/* { dg-message "sorry, unimplemented: '#pragma omp scan' not supported yet" } */
+      #pragma omp scan inclusive (a)
       a += c[i];
     }
 }

@@ -1040,14 +1040,9 @@ pass_cse_reciprocals::execute (function *fun)
 		      else
 			stmt2 = gimple_build_call_internal_vec (ifn, args);
 		      gimple_call_set_lhs (stmt2, arg1);
-		      if (gimple_vdef (call))
-			{
-			  gimple_set_vdef (stmt2, gimple_vdef (call));
-			  SSA_NAME_DEF_STMT (gimple_vdef (stmt2)) = stmt2;
-			}
+		      gimple_move_vops (stmt2, call);
 		      gimple_call_set_nothrow (stmt2,
 					       gimple_call_nothrow_p (call));
-		      gimple_set_vuse (stmt2, gimple_vuse (call));
 		      gimple_stmt_iterator gsi2 = gsi_for_stmt (call);
 		      gsi_replace (&gsi2, stmt2, true);
 		    }
@@ -3044,6 +3039,8 @@ last_fma_candidate_feeds_initial_phi (fma_deferring_state *state,
 /* Combine the multiplication at MUL_STMT with operands MULOP1 and MULOP2
    with uses in additions and subtractions to form fused multiply-add
    operations.  Returns true if successful and MUL_STMT should be removed.
+   If MUL_COND is nonnull, the multiplication in MUL_STMT is conditional
+   on MUL_COND, otherwise it is unconditional.
 
    If STATE indicates that we are deferring FMA transformation, that means
    that we do not produce FMAs for basic blocks which look like:
@@ -3060,7 +3057,7 @@ last_fma_candidate_feeds_initial_phi (fma_deferring_state *state,
 
 static bool
 convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
-		     fma_deferring_state *state)
+		     fma_deferring_state *state, tree mul_cond = NULL_TREE)
 {
   tree mul_result = gimple_get_lhs (mul_stmt);
   tree type = TREE_TYPE (mul_result);
@@ -3173,6 +3170,9 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 	  /* FMA can only be formed from PLUS and MINUS.  */
 	  return false;
 	}
+
+      if (mul_cond && cond != mul_cond)
+	return false;
 
       if (cond)
 	{
@@ -3785,38 +3785,48 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	}
       else if (is_gimple_call (stmt))
 	{
-	  tree fndecl = gimple_call_fndecl (stmt);
-	  if (fndecl && gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
+	  switch (gimple_call_combined_fn (stmt))
 	    {
-	      switch (DECL_FUNCTION_CODE (fndecl))
+	    CASE_CFN_POW:
+	      if (gimple_call_lhs (stmt)
+		  && TREE_CODE (gimple_call_arg (stmt, 1)) == REAL_CST
+		  && real_equal (&TREE_REAL_CST (gimple_call_arg (stmt, 1)),
+				 &dconst2)
+		  && convert_mult_to_fma (stmt,
+					  gimple_call_arg (stmt, 0),
+					  gimple_call_arg (stmt, 0),
+					  &fma_state))
 		{
-		case BUILT_IN_POWF:
-		case BUILT_IN_POW:
-		case BUILT_IN_POWL:
-		  if (gimple_call_lhs (stmt)
-		      && TREE_CODE (gimple_call_arg (stmt, 1)) == REAL_CST
-		      && real_equal
-		      (&TREE_REAL_CST (gimple_call_arg (stmt, 1)),
-		       &dconst2)
-		      && convert_mult_to_fma (stmt,
-					      gimple_call_arg (stmt, 0),
-					      gimple_call_arg (stmt, 0),
-					      &fma_state))
-		    {
-		      unlink_stmt_vdef (stmt);
-		      if (gsi_remove (&gsi, true)
-			  && gimple_purge_dead_eh_edges (bb))
-			*m_cfg_changed_p = true;
-		      release_defs (stmt);
-		      continue;
-		    }
-		  break;
-
-		default:;
+		  unlink_stmt_vdef (stmt);
+		  if (gsi_remove (&gsi, true)
+		      && gimple_purge_dead_eh_edges (bb))
+		    *m_cfg_changed_p = true;
+		  release_defs (stmt);
+		  continue;
 		}
+	      break;
+
+	    case CFN_COND_MUL:
+	      if (convert_mult_to_fma (stmt,
+				       gimple_call_arg (stmt, 1),
+				       gimple_call_arg (stmt, 2),
+				       &fma_state,
+				       gimple_call_arg (stmt, 0)))
+
+		{
+		  gsi_remove (&gsi, true);
+		  release_defs (stmt);
+		  continue;
+		}
+	      break;
+
+	    case CFN_LAST:
+	      cancel_fma_deferring (&fma_state);
+	      break;
+
+	    default:
+	      break;
 	    }
-	  else
-	    cancel_fma_deferring (&fma_state);
 	}
       gsi_next (&gsi);
     }

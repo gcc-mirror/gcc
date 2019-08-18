@@ -14,6 +14,7 @@ import (
 // themselves, so that the compiler will export them.
 //
 //go:linkname selectgo runtime.selectgo
+//go:linkname block runtime.block
 
 const debugSelect = false
 

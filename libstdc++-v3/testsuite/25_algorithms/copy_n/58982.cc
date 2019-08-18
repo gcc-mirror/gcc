@@ -36,6 +36,7 @@ void
 test01(T* result)
 {
   T t[1];
-  std::copy_n(t, 1, result); // { dg-error "here" }
+  std::copy_n(t, 1, result); // { dg-error "here|deleted" }
 }
 // { dg-prune-output "not assignable" }
+// { dg-prune-output "use of deleted" }

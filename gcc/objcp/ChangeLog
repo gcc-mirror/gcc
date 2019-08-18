@@ -149,7 +149,7 @@
 	(objcp/objcp-act.o): Reordered dependencies.  Added dependency on
 	objc-encoding.h.
 	(objcp/objc-encoding.o): New rule.
-	
+
 2011-04-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objcp-decl.c (objcp_finish_struct): Use
@@ -169,7 +169,7 @@
 	* config-lang.in (gtfiles): Added cp/parser.h and reorganized list
 	so that it is more obvious that it is identical to the C++ one
 	with the addition of some files at the end.
-	
+
 2011-03-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* lang-specs.h: Match -save-temps* instead of -save-temps.
@@ -194,7 +194,7 @@
 	(LANG_HOOKS_EH_PERSONALITY): Removed.
 	(LANG_HOOKS_EH_RUNTIME_TYPE): Removed.
 	(objcp_eh_personality_decl): Removed.
-	
+
 2011-02-07  Mike Stump  <mikestump@comcast.net>
 
 	* Make-lang.in (obj-c++.tags): Don't include *.y.
@@ -234,9 +234,9 @@
 
 2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
 
-	merge from FSF apple 'trunk' branch. 
+	merge from FSF apple 'trunk' branch.
 	2006 Fariborz Jahanian  <fjahanian@apple.com>
-	
+
 	Radars 4436866, 4505126, 4506903, 4517826
 	* objcp-lang.c (objcxx_init_ts): Update for property_decl.
 
@@ -268,7 +268,7 @@
 
 2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	PR objc/25965	
+	PR objc/25965
 	* objcp-decl.c (objcp_finish_struct): Call
 	objc_get_interface_ivars() and check for duplicate ivars.
 
@@ -402,13 +402,13 @@
 
 	2008-02-07  Andreas Tobler  <andreast-list@fgznet.ch>
 		    Douglas Gregor  <doug.gregor@gmail.com>
- 
+
 	PR bootstrap/35115
 	* objcp-decl.c (objcp_comptypes): Call cp_comptypes, not comptypes.
 
 2008-02-07  Andreas Tobler  <andreast-list@fgznet.ch>
 	    Douglas Gregor  <doug.gregor@gmail.com>
- 
+
 	PR bootstrap/35115
 	* objcp-decl.c (objcp_comptypes): Call cp_comptypes, not comptypes.
 
@@ -429,7 +429,7 @@
 
 	* Make-lang.in: Add dummy lang.install-pdf target.
 
-2006-10-23 Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+2006-10-23  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
 	* objcp-decl.h (objcp_builtin_function): Remove.
 
@@ -533,7 +533,7 @@
 	    Mike Stump  <mrs@apple.com>
 
 	Yet more Objective-C++...
-	
+
 	* Make-lang.in (objcp/objcp-lang.o): Add tree-gimple.h
 	(objcp/objcp-decl.o): Likewise.
 	(objcp/objcp-act.o): Likewise.

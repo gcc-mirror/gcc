@@ -54,7 +54,7 @@ avr_resolve_overloaded_builtin (unsigned int iloc, tree fndecl, void *vargs)
   location_t loc = (location_t) iloc;
   vec<tree, va_gc> &args = * (vec<tree, va_gc>*) vargs;
 
-  switch (DECL_FUNCTION_CODE (fndecl))
+  switch (DECL_MD_FUNCTION_CODE (fndecl))
     {
     default:
       break;

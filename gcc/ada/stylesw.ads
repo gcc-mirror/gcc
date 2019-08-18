@@ -113,6 +113,10 @@ package Stylesw is
    --  the line terminator must be a single LF, without an associated CR (e.g.
    --  DOS line terminator sequence CR/LF not allowed).
 
+   Style_Check_Mixed_Case_Decls : Boolean := False;
+   --  This can be set True by using the -gnatyD switch. If it is True, then
+   --  declared identifiers must be in Mixed_Case.
+
    Style_Check_End_Labels : Boolean := False;
    --  This can be set True by using the -gnatye switch. If it is True, then
    --  optional END labels must always be present.

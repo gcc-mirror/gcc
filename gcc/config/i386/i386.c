@@ -4126,39 +4126,6 @@ ix86_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
     setup_incoming_varargs_64 (&next_cum);
 }
 
-static void
-ix86_setup_incoming_vararg_bounds (cumulative_args_t cum_v,
-				   machine_mode mode,
-				   tree type,
-				   int *pretend_size ATTRIBUTE_UNUSED,
-				   int no_rtl)
-{
-  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  CUMULATIVE_ARGS next_cum;
-  tree fntype;
-  int max;
-
-  gcc_assert (!no_rtl);
-
-  /* Do nothing if we use plain pointer to argument area.  */
-  if (!TARGET_64BIT || cum->call_abi == MS_ABI)
-    return;
-
-  fntype = TREE_TYPE (current_function_decl);
-
-  /* For varargs, we do not want to skip the dummy va_dcl argument.
-     For stdargs, we do want to skip the last named argument.  */
-  next_cum = *cum;
-  if (stdarg_p (fntype))
-    ix86_function_arg_advance (pack_cumulative_args (&next_cum), mode, type,
-			       true);
-
-  max = cum->regno + cfun->va_list_gpr_size / UNITS_PER_WORD;
-  if (max > X86_64_REGPARM_MAX)
-    max = X86_64_REGPARM_MAX;
-}
-
-
 /* Checks if TYPE is of kind va_list char *.  */
 
 static bool
@@ -6291,7 +6258,6 @@ choose_basereg (HOST_WIDE_INT cfa_offset, rtx &base_reg,
 	    {
 	      base_reg = hard_frame_pointer_rtx;
 	      base_offset = toffset;
-	      len = tlen;
 	    }
 	}
     }
@@ -7695,7 +7661,7 @@ ix86_emit_outlined_ms2sysv_save (const struct ix86_frame &frame)
   rtx_insn *insn;
   rtx sym, addr;
   rtx rax = gen_rtx_REG (word_mode, AX_REG);
-  const struct xlogue_layout &xlogue = xlogue_layout::get_instance ();
+  const class xlogue_layout &xlogue = xlogue_layout::get_instance ();
 
   /* AL should only be live with sysv_abi.  */
   gcc_assert (!ix86_eax_live_at_start_p ());
@@ -8003,8 +7969,7 @@ ix86_expand_prologue (void)
 				   GEN_INT (-allocate), -1, false);
 
       /* Align the stack.  */
-      insn = emit_insn (gen_and2_insn (stack_pointer_rtx,
-				       GEN_INT (-align_bytes)));
+      emit_insn (gen_and2_insn (stack_pointer_rtx, GEN_INT (-align_bytes)));
       m->fs.sp_offset = ROUND_UP (m->fs.sp_offset, align_bytes);
       m->fs.sp_realigned_offset = m->fs.sp_offset
 					      - frame.stack_realign_allocate;
@@ -8499,7 +8464,7 @@ ix86_emit_outlined_ms2sysv_restore (const struct ix86_frame &frame,
   rtx sym, tmp;
   rtx rsi = gen_rtx_REG (word_mode, SI_REG);
   rtx r10 = NULL_RTX;
-  const struct xlogue_layout &xlogue = xlogue_layout::get_instance ();
+  const class xlogue_layout &xlogue = xlogue_layout::get_instance ();
   HOST_WIDE_INT stub_ptr_offset = xlogue.get_stub_ptr_offset ();
   HOST_WIDE_INT rsi_offset = frame.stack_realign_offset + stub_ptr_offset;
   rtx rsi_frame_load = NULL_RTX;
@@ -11452,7 +11417,7 @@ output_pic_addr_const (FILE *file, rtx x, int code)
       break;
 
     case SYMBOL_REF:
-      if (TARGET_64BIT || ! TARGET_MACHO_PICSYM_STUBS)
+      if (TARGET_64BIT || ! TARGET_MACHO_SYMBOL_STUBS)
 	output_addr_const (file, x);
       else
 	{
@@ -16824,8 +16789,8 @@ ix86_fold_builtin (tree fndecl, int n_args,
 {
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
     {
-      enum ix86_builtins fn_code = (enum ix86_builtins)
-				   DECL_FUNCTION_CODE (fndecl);
+      enum ix86_builtins fn_code
+	= (enum ix86_builtins) DECL_MD_FUNCTION_CODE (fndecl);
       enum rtx_code rcode;
       bool is_vshift;
       unsigned HOST_WIDE_INT mask;
@@ -17290,7 +17255,8 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   tree fndecl = gimple_call_fndecl (stmt);
   gcc_checking_assert (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_MD));
   int n_args = gimple_call_num_args (stmt);
-  enum ix86_builtins fn_code = (enum ix86_builtins) DECL_FUNCTION_CODE (fndecl);
+  enum ix86_builtins fn_code
+    = (enum ix86_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   tree decl = NULL_TREE;
   tree arg0, arg1, arg2;
   enum rtx_code rcode;
@@ -18176,12 +18142,10 @@ ix86_preferred_reload_class (rtx x, reg_class_t regclass)
 static reg_class_t
 ix86_preferred_output_reload_class (rtx x, reg_class_t regclass)
 {
-  machine_mode mode = GET_MODE (x);
-
   /* Restrict the output reload class to the register bank that we are doing
      math on.  If we would like not to return a subset of CLASS, reject this
      alternative: if reload cannot do this, it will still use its choice.  */
-  mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
     return MAYBE_SSE_CLASS_P (regclass) ? ALL_SSE_REGS : NO_REGS;
 
@@ -18500,8 +18464,10 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
 	    return 100;
 	}
       if (in == 2)
-        return MAX (ix86_cost->fp_load [index], ix86_cost->fp_store [index]);
-      return in ? ix86_cost->fp_load [index] : ix86_cost->fp_store [index];
+        return MAX (ix86_cost->hard_register.fp_load [index],
+		    ix86_cost->hard_register.fp_store [index]);
+      return in ? ix86_cost->hard_register.fp_load [index]
+		: ix86_cost->hard_register.fp_store [index];
     }
   if (SSE_CLASS_P (regclass))
     {
@@ -18509,8 +18475,10 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
       if (index == -1)
 	return 100;
       if (in == 2)
-        return MAX (ix86_cost->sse_load [index], ix86_cost->sse_store [index]);
-      return in ? ix86_cost->sse_load [index] : ix86_cost->sse_store [index];
+        return MAX (ix86_cost->hard_register.sse_load [index],
+		    ix86_cost->hard_register.sse_store [index]);
+      return in ? ix86_cost->hard_register.sse_load [index]
+		: ix86_cost->hard_register.sse_store [index];
     }
   if (MMX_CLASS_P (regclass))
     {
@@ -18527,8 +18495,10 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
 	    return 100;
 	}
       if (in == 2)
-        return MAX (ix86_cost->mmx_load [index], ix86_cost->mmx_store [index]);
-      return in ? ix86_cost->mmx_load [index] : ix86_cost->mmx_store [index];
+        return MAX (ix86_cost->hard_register.mmx_load [index],
+		    ix86_cost->hard_register.mmx_store [index]);
+      return in ? ix86_cost->hard_register.mmx_load [index]
+		: ix86_cost->hard_register.mmx_store [index];
     }
   switch (GET_MODE_SIZE (mode))
     {
@@ -18536,37 +18506,41 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
 	if (Q_CLASS_P (regclass) || TARGET_64BIT)
 	  {
 	    if (!in)
-	      return ix86_cost->int_store[0];
+	      return ix86_cost->hard_register.int_store[0];
 	    if (TARGET_PARTIAL_REG_DEPENDENCY
 	        && optimize_function_for_speed_p (cfun))
-	      cost = ix86_cost->movzbl_load;
+	      cost = ix86_cost->hard_register.movzbl_load;
 	    else
-	      cost = ix86_cost->int_load[0];
+	      cost = ix86_cost->hard_register.int_load[0];
 	    if (in == 2)
-	      return MAX (cost, ix86_cost->int_store[0]);
+	      return MAX (cost, ix86_cost->hard_register.int_store[0]);
 	    return cost;
 	  }
 	else
 	  {
 	   if (in == 2)
-	     return MAX (ix86_cost->movzbl_load, ix86_cost->int_store[0] + 4);
+	     return MAX (ix86_cost->hard_register.movzbl_load,
+			 ix86_cost->hard_register.int_store[0] + 4);
 	   if (in)
-	     return ix86_cost->movzbl_load;
+	     return ix86_cost->hard_register.movzbl_load;
 	   else
-	     return ix86_cost->int_store[0] + 4;
+	     return ix86_cost->hard_register.int_store[0] + 4;
 	  }
 	break;
       case 2:
 	if (in == 2)
-	  return MAX (ix86_cost->int_load[1], ix86_cost->int_store[1]);
-	return in ? ix86_cost->int_load[1] : ix86_cost->int_store[1];
+	  return MAX (ix86_cost->hard_register.int_load[1],
+		      ix86_cost->hard_register.int_store[1]);
+	return in ? ix86_cost->hard_register.int_load[1]
+		  : ix86_cost->hard_register.int_store[1];
       default:
 	if (in == 2)
-	  cost = MAX (ix86_cost->int_load[2], ix86_cost->int_store[2]);
+	  cost = MAX (ix86_cost->hard_register.int_load[2],
+		      ix86_cost->hard_register.int_store[2]);
 	else if (in)
-	  cost = ix86_cost->int_load[2];
+	  cost = ix86_cost->hard_register.int_load[2];
 	else
-	  cost = ix86_cost->int_store[2];
+	  cost = ix86_cost->hard_register.int_store[2];
 	/* Multiply with the number of GPR moves needed.  */
 	return cost * CEIL ((int) GET_MODE_SIZE (mode), UNITS_PER_WORD);
     }
@@ -18636,20 +18610,21 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
        because of missing QImode and HImode moves to, from or between
        MMX/SSE registers.  */
     return MAX (8, SSE_CLASS_P (class1)
-		? ix86_cost->sse_to_integer : ix86_cost->integer_to_sse);
+		? ix86_cost->hard_register.sse_to_integer
+		: ix86_cost->hard_register.integer_to_sse);
 
   if (MAYBE_FLOAT_CLASS_P (class1))
-    return ix86_cost->fp_move;
+    return ix86_cost->hard_register.fp_move;
   if (MAYBE_SSE_CLASS_P (class1))
     {
       if (GET_MODE_BITSIZE (mode) <= 128)
-	return ix86_cost->xmm_move;
+	return ix86_cost->hard_register.xmm_move;
       if (GET_MODE_BITSIZE (mode) <= 256)
-	return ix86_cost->ymm_move;
-      return ix86_cost->zmm_move;
+	return ix86_cost->hard_register.ymm_move;
+      return ix86_cost->hard_register.zmm_move;
     }
   if (MAYBE_MMX_CLASS_P (class1))
-    return ix86_cost->mmx_move;
+    return ix86_cost->hard_register.mmx_move;
   return 2;
 }
 
@@ -21512,7 +21487,7 @@ ix86_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
 /* Implement targetm.vectorize.init_cost.  */
 
 static void *
-ix86_init_cost (struct loop *)
+ix86_init_cost (class loop *)
 {
   unsigned *cost = XNEWVEC (unsigned, 3);
   cost[vect_prologue] = cost[vect_body] = cost[vect_epilogue] = 0;
@@ -21523,7 +21498,7 @@ ix86_init_cost (struct loop *)
 
 static unsigned
 ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
-		    struct _stmt_vec_info *stmt_info, int misalign,
+		    class _stmt_vec_info *stmt_info, int misalign,
 		    enum vect_cost_model_location where)
 {
   unsigned *cost = (unsigned *) data;
@@ -21951,7 +21926,7 @@ ix86_simd_clone_usable (struct cgraph_node *node)
    (value 32 is used) as a heuristic. */
 
 static unsigned
-ix86_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
+ix86_loop_unroll_adjust (unsigned nunroll, class loop *loop)
 {
   basic_block *bbs;
   rtx_insn *insn;
@@ -23056,9 +23031,6 @@ ix86_run_selftests (void)
 
 #undef TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS
 #define TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS true
-
-#undef TARGET_SETUP_INCOMING_VARARG_BOUNDS
-#define TARGET_SETUP_INCOMING_VARARG_BOUNDS ix86_setup_incoming_vararg_bounds
 
 #undef TARGET_OFFLOAD_OPTIONS
 #define TARGET_OFFLOAD_OPTIONS \

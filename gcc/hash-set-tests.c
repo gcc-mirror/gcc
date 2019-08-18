@@ -134,12 +134,167 @@ test_set_of_strings ()
   ASSERT_EQ (2, t.elements ());
 }
 
+typedef class hash_set_test_value_t
+{
+public:
+  static int ndefault;
+  static int ncopy;
+  static int nassign;
+  static int ndtor;
+
+  hash_set_test_value_t (int v = 1): pval (&val), val (v)
+  {
+    ++ndefault;
+  }
+
+  hash_set_test_value_t (const hash_set_test_value_t &rhs)
+    : pval (&val), val (rhs.val)
+  {
+    ++ncopy;
+  }
+
+  hash_set_test_value_t& operator= (const hash_set_test_value_t &rhs)
+    {
+     ++nassign;
+     val = rhs.val;
+     return *this;
+    }
+
+  ~hash_set_test_value_t ()
+    {
+     /* Verify that the value hasn't been corrupted.  */
+     gcc_assert (*pval > 0);
+     gcc_assert (pval == &val);
+     *pval = -3;
+     ++ndtor;
+    }
+
+  int *pval;
+  int val;
+} val_t;
+
+int val_t::ndefault;
+int val_t::ncopy;
+int val_t::nassign;
+int val_t::ndtor;
+
+struct value_hash_traits: int_hash<int, -1, -2>
+{
+  typedef int_hash<int, -1, -2> base_type;
+  typedef val_t                 value_type;
+  typedef value_type            compare_type;
+
+  static hashval_t hash (const value_type &v)
+  {
+    return base_type::hash (v.val);
+  }
+
+  static bool equal (const value_type &a, const compare_type &b)
+  {
+    return base_type::equal (a.val, b.val);
+  }
+
+  static void mark_deleted (value_type &v)
+  {
+    base_type::mark_deleted (v.val);
+  }
+
+  static void mark_empty (value_type &v)
+  {
+    base_type::mark_empty (v.val);
+  }
+
+  static bool is_deleted (const value_type &v)
+  {
+    return base_type::is_deleted (v.val);
+  }
+
+  static bool is_empty (const value_type &v)
+  {
+    return base_type::is_empty (v.val);
+  }
+
+  static void remove (value_type &v)
+  {
+    v.~value_type ();
+  }
+};
+
+static void
+test_set_of_type_with_ctor_and_dtor ()
+{
+  typedef hash_set <val_t, false, value_hash_traits> Set;
+
+  {
+    Set s;
+    (void)&s;
+  }
+
+  ASSERT_TRUE (val_t::ndefault == 0);
+  ASSERT_TRUE (val_t::ncopy == 0);
+  ASSERT_TRUE (val_t::nassign == 0);
+  ASSERT_TRUE (val_t::ndtor == 0);
+
+  {
+    Set s;
+    ASSERT_EQ (false, s.add (val_t ()));
+    ASSERT_EQ (true, 1 == s.elements ());
+  }
+
+  ASSERT_TRUE (val_t::ndefault + val_t::ncopy == val_t::ndtor);
+
+  {
+    Set s;
+    ASSERT_EQ (false, s.add (val_t ()));
+    ASSERT_EQ (true, s.add (val_t ()));
+    ASSERT_EQ (true, 1 == s.elements ());
+  }
+
+  ASSERT_TRUE (val_t::ndefault + val_t::ncopy == val_t::ndtor);
+
+  {
+    Set s;
+    val_t v1 (1), v2 (2), v3 (3);
+    int ndefault = val_t::ndefault;
+    int nassign = val_t::nassign;
+
+    ASSERT_EQ (false, s.add (v1));
+    ASSERT_EQ (true, s.contains (v1));
+    ASSERT_EQ (true, 1 == s.elements ());
+
+    ASSERT_EQ (false, s.add (v2));
+    ASSERT_EQ (true, s.contains (v2));
+    ASSERT_EQ (true, 2 == s.elements ());
+
+    ASSERT_EQ (false, s.add (v3));
+    ASSERT_EQ (true, s.contains (v3));
+    ASSERT_EQ (true, 3 == s.elements ());
+
+    ASSERT_EQ (true, s.add (v2));
+    ASSERT_EQ (true, s.contains (v2));
+    ASSERT_EQ (true, 3 == s.elements ());
+
+    s.remove (v2);
+    ASSERT_EQ (true, 2 == s.elements ());
+    s.remove (v3);
+    ASSERT_EQ (true, 1 == s.elements ());
+
+    /* Verify that no default ctors or assignment operators have
+       been called.  */
+    ASSERT_EQ (true, ndefault == val_t::ndefault);
+    ASSERT_EQ (true, nassign == val_t::nassign);
+  }
+
+  ASSERT_TRUE (val_t::ndefault + val_t::ncopy == val_t::ndtor);
+}
+
 /* Run all of the selftests within this file.  */
 
 void
 hash_set_tests_c_tests ()
 {
   test_set_of_strings ();
+  test_set_of_type_with_ctor_and_dtor ();
 }
 
 } // namespace selftest

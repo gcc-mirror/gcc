@@ -1,7 +1,8 @@
 //===-- sanitizer_file.h ---------------------------------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===---------------------------------------------------------------------===//
 //
@@ -63,9 +64,6 @@ bool ReadFromFile(fd_t fd, void *buff, uptr buff_size,
                   uptr *bytes_read = nullptr, error_t *error_p = nullptr);
 bool WriteToFile(fd_t fd, const void *buff, uptr buff_size,
                  uptr *bytes_written = nullptr, error_t *error_p = nullptr);
-
-bool RenameFile(const char *oldpath, const char *newpath,
-                error_t *error_p = nullptr);
 
 // Scoped file handle closer.
 struct FileCloser {

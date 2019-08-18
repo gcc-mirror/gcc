@@ -43,14 +43,6 @@ int have_error = 0;
 #endif /* #ifndef GENERATOR_FILE */
 
 
-/* Associates PTR (which can be a string, etc.) with the file location
-   specified by FILENAME and LINENO.  */
-struct ptr_loc {
-  const void *ptr;
-  const char *filename;
-  int lineno;
-};
-
 /* This callback will be invoked whenever an md include directive is
    processed.  To be used for creation of the dependency file.  */
 void (*include_callback) (const char *);
@@ -94,25 +86,24 @@ leading_ptr_eq_p (const void *def1, const void *def2)
   return *(const void *const *) def1 == *(const void *const *) def2;
 }
 
-/* Associate PTR with the file position given by FILENAME and LINENO.  */
+/* Associate PTR with the file position given by FILE_LOC.  */
 
 void
-md_reader::set_md_ptr_loc (const void *ptr, const char *filename, int lineno)
+md_reader::set_md_ptr_loc (const void *ptr, file_location file_loc)
 {
   struct ptr_loc *loc;
 
   loc = (struct ptr_loc *) obstack_alloc (&m_ptr_loc_obstack,
 					  sizeof (struct ptr_loc));
   loc->ptr = ptr;
-  loc->filename = filename;
-  loc->lineno = lineno;
+  loc->loc = file_loc;
   *htab_find_slot (m_ptr_locs, loc, INSERT) = loc;
 }
 
 /* Return the position associated with pointer PTR.  Return null if no
    position was set.  */
 
-const struct ptr_loc *
+const md_reader::ptr_loc *
 md_reader::get_md_ptr_loc (const void *ptr)
 {
   return (const struct ptr_loc *) htab_find (m_ptr_locs, &ptr);
@@ -125,7 +116,7 @@ md_reader::copy_md_ptr_loc (const void *new_ptr, const void *old_ptr)
 {
   const struct ptr_loc *loc = get_md_ptr_loc (old_ptr);
   if (loc != 0)
-    set_md_ptr_loc (new_ptr, loc->filename, loc->lineno);
+    set_md_ptr_loc (new_ptr, loc->loc);
 }
 
 /* If PTR is associated with a known file position, print a #line
@@ -136,7 +127,7 @@ md_reader::fprint_md_ptr_loc (FILE *outf, const void *ptr)
 {
   const struct ptr_loc *loc = get_md_ptr_loc (ptr);
   if (loc != 0)
-    fprintf (outf, "#line %d \"%s\"\n", loc->lineno, loc->filename);
+    fprintf (outf, "#line %d \"%s\"\n", loc->loc.lineno, loc->loc.filename);
 }
 
 /* Special fprint_md_ptr_loc for writing to STDOUT.  */
@@ -672,7 +663,7 @@ md_reader::read_string (int star_if_braced)
 {
   char *stringbuf;
   int saw_paren = 0;
-  int c, old_lineno;
+  int c;
 
   c = read_skip_spaces ();
   if (c == '(')
@@ -681,7 +672,7 @@ md_reader::read_string (int star_if_braced)
       c = read_skip_spaces ();
     }
 
-  old_lineno = get_lineno ();
+  file_location loc = get_current_location ();
   if (c == '"')
     stringbuf = read_quoted_string ();
   else if (c == '{')
@@ -704,7 +695,7 @@ md_reader::read_string (int star_if_braced)
   if (saw_paren)
     require_char_ws (')');
 
-  set_md_ptr_loc (stringbuf, get_filename (), old_lineno);
+  set_md_ptr_loc (stringbuf, loc);
   return stringbuf;
 }
 

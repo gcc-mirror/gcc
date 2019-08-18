@@ -854,7 +854,7 @@ package body Clean is
                               then
                                  Project_File_Name :=
                                    new String'
-                                     (Prj (Prj'First + 1 ..  Prj'Last));
+                                     (Prj (Prj'First + 1 .. Prj'Last));
                               else
                                  Project_File_Name := new String'(Prj);
                               end if;

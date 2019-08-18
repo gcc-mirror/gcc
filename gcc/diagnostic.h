@@ -180,7 +180,7 @@ struct diagnostic_context
 
   /* Client hook to say whether the option controlling a diagnostic is
      enabled.  Returns nonzero if enabled, zero if disabled.  */
-  int (*option_enabled) (int, void *);
+  int (*option_enabled) (int, unsigned, void *);
 
   /* Client information to pass as second argument to
      option_enabled.  */
@@ -205,6 +205,9 @@ struct diagnostic_context
   const line_map_ordinary *last_module;
 
   int lock;
+
+  /* A copy of lang_hooks.option_lang_mask ().  */
+  unsigned lang_mask;
 
   bool inhibit_notes_p;
 

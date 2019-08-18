@@ -82,7 +82,7 @@ enum unroll_level
    if they are not NULL.  */
 
 void
-create_canonical_iv (struct loop *loop, edge exit, tree niter,
+create_canonical_iv (class loop *loop, edge exit, tree niter,
 		     tree *var_before = NULL, tree *var_after = NULL)
 {
   edge in;
@@ -161,7 +161,7 @@ struct loop_size
 /* Return true if OP in STMT will be constant after peeling LOOP.  */
 
 static bool
-constant_after_peeling (tree op, gimple *stmt, struct loop *loop)
+constant_after_peeling (tree op, gimple *stmt, class loop *loop)
 {
   if (is_gimple_min_invariant (op))
     return true;
@@ -211,7 +211,7 @@ constant_after_peeling (tree op, gimple *stmt, struct loop *loop)
    Stop estimating after UPPER_BOUND is met.  Return true in this case.  */
 
 static bool
-tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel,
+tree_estimate_loop_size (class loop *loop, edge exit, edge edge_to_cancel,
 			 struct loop_size *size, int upper_bound)
 {
   basic_block *body = get_loop_body (loop);
@@ -441,7 +441,7 @@ estimated_unrolled_size (struct loop_size *size,
    The other cases are hopefully rare and will be cleaned up later.  */
 
 static edge
-loop_edge_to_cancel (struct loop *loop)
+loop_edge_to_cancel (class loop *loop)
 {
   vec<edge> exits;
   unsigned i;
@@ -495,9 +495,9 @@ loop_edge_to_cancel (struct loop *loop)
    known to not be executed.  */
 
 static bool
-remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
+remove_exits_and_undefined_stmts (class loop *loop, unsigned int npeeled)
 {
-  struct nb_iter_bound *elt;
+  class nb_iter_bound *elt;
   bool changed = false;
 
   for (elt = loop->bounds; elt; elt = elt->next)
@@ -553,9 +553,9 @@ remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
    discovered.  */
 
 static bool
-remove_redundant_iv_tests (struct loop *loop)
+remove_redundant_iv_tests (class loop *loop)
 {
-  struct nb_iter_bound *elt;
+  class nb_iter_bound *elt;
   bool changed = false;
 
   if (!loop->any_upper_bound)
@@ -569,7 +569,7 @@ remove_redundant_iv_tests (struct loop *loop)
 	{
 	  basic_block bb = gimple_bb (elt->stmt);
 	  edge exit_edge = EDGE_SUCC (bb, 0);
-	  struct tree_niter_desc niter;
+	  class tree_niter_desc niter;
 
 	  if (!loop_exit_edge_p (loop, exit_edge))
 	    exit_edge = EDGE_SUCC (bb, 1);
@@ -629,7 +629,7 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
 {
   while (loops_to_unloop.length ())
     {
-      struct loop *loop = loops_to_unloop.pop ();
+      class loop *loop = loops_to_unloop.pop ();
       int n_unroll = loops_to_unloop_nunroll.pop ();
       basic_block latch = loop->latch;
       edge latch_edge = loop_latch_edge (loop);
@@ -688,7 +688,7 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
    a summary of the unroll to the dump file.  */
 
 static bool
-try_unroll_loop_completely (struct loop *loop,
+try_unroll_loop_completely (class loop *loop,
 			    edge exit, tree niter, bool may_be_zero,
 			    enum unroll_level ul,
 			    HOST_WIDE_INT maxiter,
@@ -986,7 +986,7 @@ estimated_peeled_sequence_size (struct loop_size *size,
    Parameters are the same as for try_unroll_loops_completely */
 
 static bool
-try_peel_loop (struct loop *loop,
+try_peel_loop (class loop *loop,
 	       edge exit, tree niter, bool may_be_zero,
 	       HOST_WIDE_INT maxiter)
 {
@@ -1155,7 +1155,7 @@ try_peel_loop (struct loop *loop,
    Returns true if cfg is changed.   */
 
 static bool
-canonicalize_loop_induction_variables (struct loop *loop,
+canonicalize_loop_induction_variables (class loop *loop,
 				       bool create_iv, enum unroll_level ul,
 				       bool try_eval, bool allow_peel)
 {
@@ -1164,7 +1164,7 @@ canonicalize_loop_induction_variables (struct loop *loop,
   HOST_WIDE_INT maxiter;
   bool modified = false;
   dump_user_location_t locus;
-  struct tree_niter_desc niter_desc;
+  class tree_niter_desc niter_desc;
   bool may_be_zero = false;
 
   /* For unrolling allow conditional constant or zero iterations, thus
@@ -1282,7 +1282,7 @@ canonicalize_loop_induction_variables (struct loop *loop,
 unsigned int
 canonicalize_induction_variables (void)
 {
-  struct loop *loop;
+  class loop *loop;
   bool changed = false;
   bool irred_invalidated = false;
   bitmap loop_closed_ssa_invalidated = BITMAP_ALLOC (NULL);
@@ -1324,11 +1324,11 @@ canonicalize_induction_variables (void)
 
 static bool
 tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
-				bitmap father_bbs, struct loop *loop)
+				bitmap father_bbs, class loop *loop)
 {
-  struct loop *loop_father;
+  class loop *loop_father;
   bool changed = false;
-  struct loop *inner;
+  class loop *inner;
   enum unroll_level ul;
   unsigned num = number_of_loops (cfun);
 

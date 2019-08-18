@@ -259,6 +259,20 @@ addr_for_mem_ref (struct mem_address *addr, addr_space_t as,
 	 ? expand_expr (addr->index, NULL_RTX, pointer_mode, EXPAND_NORMAL)
 	 : NULL_RTX);
 
+  /* addr->base could be an SSA_NAME that was set to a constant value.  The
+     call to expand_expr may expose that constant.  If so, fold the value
+     into OFF and clear BSE.  Otherwise we may later try to pull a mode from
+     BSE to generate a REG, which won't work with constants because they
+     are modeless.  */
+  if (bse && GET_CODE (bse) == CONST_INT)
+    {
+      if (off)
+	off = simplify_gen_binary (PLUS, pointer_mode, bse, off);
+      else
+	off = bse;
+      gcc_assert (GET_CODE (off) == CONST_INT);
+      bse = NULL_RTX;
+    }
   gen_addr_rtx (pointer_mode, sym, bse, idx, st, off, &address, NULL, NULL);
   if (pointer_mode != address_mode)
     address = convert_memory_address (address_mode, address);

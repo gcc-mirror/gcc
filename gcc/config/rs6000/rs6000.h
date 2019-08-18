@@ -54,6 +54,13 @@
 #define TARGET_AIX_OS 0
 #endif
 
+/* Turn off TOC support if pc-relative addressing is used.  */
+#define TARGET_TOC             (TARGET_HAS_TOC && !TARGET_PCREL)
+
+/* On 32-bit systems without a TOC or pc-relative addressing, we need to use
+   ADDIS/ADDI to load up the address of a symbol.  */
+#define TARGET_NO_TOC_OR_PCREL (!TARGET_HAS_TOC && !TARGET_PCREL)
+
 /* Control whether function entry points use a "dot" symbol when
    ABI_AIX.  */
 #define DOT_SYMBOLS 1
@@ -69,6 +76,20 @@
 #else
 #define PPC405_ERRATUM77 0
 #endif
+
+#ifndef SUBTARGET_DRIVER_SELF_SPECS
+# define SUBTARGET_DRIVER_SELF_SPECS ""
+#endif
+
+/* Only for use in the testsuite: -mdejagnu-cpu= simply overrides -mcpu=.
+   With older versions of Dejagnu the command line arguments you set in
+   RUNTESTFLAGS override those set in the testcases; with this option,
+   the testcase will always win.  Ditto for -mdejagnu-tune=.  */
+#define DRIVER_SELF_SPECS \
+  "%{mdejagnu-cpu=*: %<mcpu=* -mcpu=%*}", \
+  "%{mdejagnu-tune=*: %<mtune=* -mtune=%*}", \
+  "%{mdejagnu-*: %<mdejagnu-*}", \
+   SUBTARGET_DRIVER_SELF_SPECS
 
 #if CHECKING_P
 #define ASM_OPT_ANY ""
@@ -150,6 +171,7 @@ ASM_OPT_ANY
 #define CPP_DEFAULT_SPEC ""
 
 #define ASM_DEFAULT_SPEC ""
+#define ASM_DEFAULT_EXTRA ""
 
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
@@ -167,7 +189,7 @@ ASM_OPT_ANY
   { "cpp_default",		CPP_DEFAULT_SPEC },			\
   { "asm_cpu",			ASM_CPU_SPEC },				\
   { "asm_cpu_native",		ASM_CPU_NATIVE_SPEC },			\
-  { "asm_default",		ASM_DEFAULT_SPEC },			\
+  { "asm_default",		ASM_DEFAULT_SPEC ASM_DEFAULT_EXTRA },	\
   { "cc1_cpu",			CC1_CPU_SPEC },				\
   SUBTARGET_EXTRA_SPECS
 
@@ -2526,23 +2548,27 @@ typedef struct GTY(()) machine_function
 #pragma GCC poison TARGET_FLOAT128 OPTION_MASK_FLOAT128 MASK_FLOAT128
 #endif
 
-/* Whether a given VALUE is a valid 16- or 34-bit signed offset.  EXTRA is the
-   amount that we can't touch at the high end of the range (typically if the
-   address is split into smaller addresses, the extra covers the addresses
-   which might be generated when the insn is split).  */
-#define SIGNED_16BIT_OFFSET_P(VALUE, EXTRA)				\
-  IN_RANGE (VALUE,							\
+/* Whether a given VALUE is a valid 16 or 34-bit signed offset.  */
+#define SIGNED_16BIT_OFFSET_P(VALUE)					\
+  IN_RANGE ((VALUE),							\
+	    -(HOST_WIDE_INT_1 << 15),					\
+	    (HOST_WIDE_INT_1 << 15) - 1)
+
+#define SIGNED_34BIT_OFFSET_P(VALUE)					\
+  IN_RANGE ((VALUE),							\
+	    -(HOST_WIDE_INT_1 << 33),					\
+	    (HOST_WIDE_INT_1 << 33) - 1)
+
+/* Like SIGNED_16BIT_OFFSET_P and SIGNED_34BIT_OFFSET_P, but with an extra
+   argument that gives a length to validate a range of addresses, to allow for
+   splitting insns into several insns, each of which has an offsettable
+   address.  */
+#define SIGNED_16BIT_OFFSET_EXTRA_P(VALUE, EXTRA)			\
+  IN_RANGE ((VALUE),							\
 	    -(HOST_WIDE_INT_1 << 15),					\
 	    (HOST_WIDE_INT_1 << 15) - 1 - (EXTRA))
 
-#define SIGNED_34BIT_OFFSET_P(VALUE, EXTRA)				\
-  IN_RANGE (VALUE,							\
+#define SIGNED_34BIT_OFFSET_EXTRA_P(VALUE, EXTRA)			\
+  IN_RANGE ((VALUE),							\
 	    -(HOST_WIDE_INT_1 << 33),					\
 	    (HOST_WIDE_INT_1 << 33) - 1 - (EXTRA))
-
-/* Flag to mark SYMBOL_REF objects to say they are local addresses and are used
-   in pc-relative addresses.  */
-#define SYMBOL_FLAG_PCREL	SYMBOL_FLAG_MACH_DEP
-
-#define SYMBOL_REF_PCREL_P(X)						\
-  (SYMBOL_REF_P (X) && SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_PCREL)

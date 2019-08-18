@@ -23,20 +23,21 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Binderr;  use Binderr;
-with Butil;    use Butil;
-with Debug;    use Debug;
-with Fname;    use Fname;
-with Opt;      use Opt;
+with Binderr; use Binderr;
+with Butil;   use Butil;
+with Debug;   use Debug;
+with Fname;   use Fname;
+with Opt;     use Opt;
 with Osint;
-with Output;   use Output;
+with Output;  use Output;
 with Table;
+with Types;   use Types;
 
 with System.Case_Util; use System.Case_Util;
 with System.HTable;
-with System.OS_Lib;
 
 package body Binde is
+   use Unit_Id_Tables;
 
    --  We now have Elab_New, a new elaboration-order algorithm.
    --
@@ -113,7 +114,7 @@ package body Binde is
       --  elaborated before After is elaborated.
 
       Forced,
-      --  Before and After come from a pair of lines in the forced elaboration
+      --  Before and After come from a pair of lines in the forced-elaboration-
       --  order file.
 
       Elab,
@@ -380,7 +381,7 @@ package body Binde is
    --  "$ must be elaborated before $ ..." where ... is the reason.
 
    procedure Force_Elab_Order;
-   --  Gather dependencies from the forced elaboration order file (-f switch)
+   --  Gather dependencies from the forced-elaboration-order file (-f switch)
 
    procedure Gather_Dependencies;
    --  Compute dependencies, building the Succ and UNR tables
@@ -1793,30 +1794,13 @@ package body Binde is
    ----------------------
 
    procedure Force_Elab_Order is
-      use System.OS_Lib;
-      --  There is a lot of fiddly string manipulation below, because we don't
-      --  want to depend on misc utility packages like Ada.Characters.Handling.
-
-      function Get_Line return String;
-      --  Read the next line from the file content read by Read_File. Strip
-      --  all leading and trailing blanks. Convert "(spec)" or "(body)" to
-      --  "%s"/"%b". Remove comments (Ada style; "--" to end of line).
-
-      function Read_File (Name : String) return String_Ptr;
-      --  Read the entire contents of the named file
-
       subtype Header_Num is Unit_Name_Type'Base range 0 .. 2**16 - 1;
-      type Line_Number is new Nat;
-      No_Line_Number  : constant Line_Number := 0;
-      Cur_Line_Number : Line_Number := 0;
-      --  Current line number in the Force_Elab_Order_File.
-      --  Incremented by Get_Line. Used in error messages.
 
       function Hash (N : Unit_Name_Type) return Header_Num;
 
       package Name_Map is new System.HTable.Simple_HTable
         (Header_Num => Header_Num,
-         Element    => Line_Number,
+         Element    => Logical_Line_Number,
          No_Element => No_Line_Number,
          Key        => Unit_Name_Type,
          Hash       => Hash,
@@ -1837,234 +1821,86 @@ package body Binde is
          return (N - Unit_Name_Type'First) mod (Header_Num'Last + 1);
       end Hash;
 
-      ---------------
-      -- Read_File --
-      ---------------
-
-      function Read_File (Name : String) return String_Ptr is
-
-         --  All of the following calls should succeed, because we checked the
-         --  file in Switch.B, but we double check and raise Program_Error on
-         --  failure, just in case.
-
-         F : constant File_Descriptor := Open_Read (Name, Binary);
-
-      begin
-         if F = Invalid_FD then
-            raise Program_Error;
-         end if;
-
-         declare
-            Len      : constant Natural    := Natural (File_Length (F));
-            Result   : constant String_Ptr := new String (1 .. Len);
-            Len_Read : constant Natural    :=
-                         Read (F, Result (1)'Address, Len);
-
-            Status : Boolean;
-
-         begin
-            if Len_Read /= Len then
-               raise Program_Error;
-            end if;
-
-            Close (F, Status);
-
-            if not Status then
-               raise Program_Error;
-            end if;
-
-            return Result;
-         end;
-      end Read_File;
-
-      Cur : Positive   := 1;
-      S   : String_Ptr := Read_File (Force_Elab_Order_File.all);
-
-      --------------
-      -- Get_Line --
-      --------------
-
-      function Get_Line return String is
-         First : Positive := Cur;
-         Last  : Natural;
-
-      begin
-         Cur_Line_Number := Cur_Line_Number + 1;
-
-         --  Skip to end of line
-
-         while Cur <= S'Last
-           and then S (Cur) /= ASCII.LF
-           and then S (Cur) /= ASCII.CR
-         loop
-            Cur := Cur + 1;
-         end loop;
-
-         --  Strip leading blanks
-
-         while First <= S'Last and then S (First) = ' ' loop
-            First := First + 1;
-         end loop;
-
-         --  Strip trailing blanks and comment
-
-         Last := Cur - 1;
-
-         for J in First .. Last - 1 loop
-            if S (J .. J + 1) = "--" then
-               Last := J - 1;
-               exit;
-            end if;
-         end loop;
-
-         while Last >= First and then S (Last) = ' ' loop
-            Last := Last - 1;
-         end loop;
-
-         --  Convert "(spec)" or "(body)" to "%s"/"%b", strip trailing blanks
-         --  again.
-
-         declare
-            Body_String : constant String   := "(body)";
-            BL          : constant Positive := Body_String'Length;
-            Spec_String : constant String   := "(spec)";
-            SL          : constant Positive := Spec_String'Length;
-
-            Line : String renames S (First .. Last);
-
-            Is_Body : Boolean := False;
-            Is_Spec : Boolean := False;
-
-         begin
-            if Line'Length >= SL
-              and then Line (Last - SL + 1 .. Last) = Spec_String
-            then
-               Is_Spec := True;
-               Last := Last - SL;
-            elsif Line'Length >= BL
-              and then Line (Last - BL + 1 .. Last) = Body_String
-            then
-               Is_Body := True;
-               Last := Last - BL;
-            end if;
-
-            while Last >= First and then S (Last) = ' ' loop
-               Last := Last - 1;
-            end loop;
-
-            --  Skip past LF or CR/LF
-
-            if Cur <= S'Last and then S (Cur) = ASCII.CR then
-               Cur := Cur + 1;
-            end if;
-
-            if Cur <= S'Last and then S (Cur) = ASCII.LF then
-               Cur := Cur + 1;
-            end if;
-
-            if Is_Spec then
-               return Line (First .. Last) & "%s";
-            elsif Is_Body then
-               return Line (First .. Last) & "%b";
-            else
-               return Line;
-            end if;
-         end;
-      end Get_Line;
-
       --  Local variables
 
-      Empty_Name : constant Unit_Name_Type := Name_Find ("");
-      Prev_Unit  : Unit_Id := No_Unit_Id;
+      Cur_Line_Number : Logical_Line_Number;
+      Error           : Boolean := False;
+      Iter            : Forced_Units_Iterator;
+      Prev_Unit       : Unit_Id := No_Unit_Id;
+      Uname           : Unit_Name_Type;
 
    --  Start of processing for Force_Elab_Order
 
    begin
-      --  Loop through the file content, and build a dependency link for each
-      --  pair of lines. Ignore lines that should be ignored.
+      Iter := Iterate_Forced_Units;
+      while Has_Next (Iter) loop
+         Next (Iter, Uname, Cur_Line_Number);
 
-      while Cur <= S'Last loop
          declare
-            Uname : constant Unit_Name_Type := Name_Find (Get_Line);
-            Error : Boolean := False;
-
+            Dup : constant Logical_Line_Number := Name_Map.Get (Uname);
          begin
-            if Uname = Empty_Name then
-               null; -- silently skip blank lines
-            else
-               declare
-                  Dup : constant Line_Number := Name_Map.Get (Uname);
-               begin
-                  if Dup = No_Line_Number then
-                     Name_Map.Set (Uname, Cur_Line_Number);
+            if Dup = No_Line_Number then
+               Name_Map.Set (Uname, Cur_Line_Number);
 
-                     --  We don't need to give the "not present" message in
-                     --  the case of "duplicate unit", because we would have
-                     --  already given the "not present" message on the
-                     --  first occurrence.
+               --  We don't need to give the "not present" message in the case
+               --  of "duplicate unit", because we would have already given the
+               --  "not present" message on the first occurrence.
 
-                     if Get_Name_Table_Int (Uname) = 0
-                       or else Unit_Id (Get_Name_Table_Int (Uname)) =
-                                 No_Unit_Id
-                     then
-                        Error := True;
-                        if Doing_New then
-                           Write_Line
-                             ("""" & Get_Name_String (Uname)
-                              & """: not present; ignored");
-                        end if;
-                     end if;
-
-                  else
-                     Error := True;
-                     if Doing_New then
-                        Error_Msg_Nat_1  := Nat (Cur_Line_Number);
-                        Error_Msg_Unit_1 := Uname;
-                        Error_Msg_Nat_2  := Nat (Dup);
-                        Error_Msg
-                          (Force_Elab_Order_File.all
-                           & ":#: duplicate unit name $ from line #");
-                     end if;
+               if Get_Name_Table_Int (Uname) = 0
+                 or else Unit_Id (Get_Name_Table_Int (Uname)) = No_Unit_Id
+               then
+                  Error := True;
+                  if Doing_New then
+                     Write_Line
+                       ("""" & Get_Name_String (Uname)
+                        & """: not present; ignored");
                   end if;
-               end;
+               end if;
 
-               if not Error then
-                  declare
-                     Cur_Unit : constant Unit_Id := Unit_Id_Of (Uname);
-                  begin
-                     if Is_Internal_File_Name
-                          (Units.Table (Cur_Unit).Sfile)
-                     then
-                        if Doing_New then
-                           Write_Line
-                             ("""" & Get_Name_String (Uname)
-                              & """: predefined unit ignored");
-                        end if;
-
-                     else
-                        if Prev_Unit /= No_Unit_Id then
-                           if Doing_New then
-                              Write_Unit_Name (Units.Table (Prev_Unit).Uname);
-                              Write_Str (" <-- ");
-                              Write_Unit_Name (Units.Table (Cur_Unit).Uname);
-                              Write_Eol;
-                           end if;
-
-                           Build_Link
-                             (Before => Prev_Unit,
-                              After  => Cur_Unit,
-                              R      => Forced);
-                        end if;
-
-                        Prev_Unit := Cur_Unit;
-                     end if;
-                  end;
+            else
+               Error := True;
+               if Doing_New then
+                  Error_Msg_Nat_1  := Nat (Cur_Line_Number);
+                  Error_Msg_Unit_1 := Uname;
+                  Error_Msg_Nat_2  := Nat (Dup);
+                  Error_Msg
+                    (Force_Elab_Order_File.all
+                     & ":#: duplicate unit name $ from line #");
                end if;
             end if;
          end;
-      end loop;
 
-      Free (S);
+         if not Error then
+            declare
+               Cur_Unit : constant Unit_Id := Unit_Id_Of (Uname);
+            begin
+               if Is_Internal_File_Name (Units.Table (Cur_Unit).Sfile) then
+                  if Doing_New then
+                     Write_Line
+                       ("""" & Get_Name_String (Uname)
+                        & """: predefined unit ignored");
+                  end if;
+
+               else
+                  if Prev_Unit /= No_Unit_Id then
+                     if Doing_New then
+                        Write_Unit_Name (Units.Table (Prev_Unit).Uname);
+                        Write_Str (" <-- ");
+                        Write_Unit_Name (Units.Table (Cur_Unit).Uname);
+                        Write_Eol;
+                     end if;
+
+                     Build_Link
+                       (Before => Prev_Unit,
+                        After  => Cur_Unit,
+                        R      => Forced);
+                  end if;
+
+                  Prev_Unit := Cur_Unit;
+               end if;
+            end;
+         end if;
+      end loop;
    end Force_Elab_Order;
 
    -------------------------

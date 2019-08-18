@@ -1,8 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "Not available for ARCv1" { arc700 || arc6xx } } */
 /* { dg-options "-O2 -mirq-ctrl-saved=r0-ilink" } */
-
-#include <alloca.h>
+/* { dg-require-effective-target alloca } */
 
 /* Check if ilink is recognized. Check how FP and BLINK are saved.
    BLINK is saved last on the stack because the IRQ autosave will do
@@ -14,7 +13,7 @@ extern int bar (void *);
 void  __attribute__ ((interrupt("ilink")))
 foo(void)
 {
-  int *p = alloca (10);
+  int *p = __builtin_alloca (10);
   bar (p);
 }
 /* { dg-final { scan-assembler-not ".*fp,\\\[sp" } } */

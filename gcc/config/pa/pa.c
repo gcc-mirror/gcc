@@ -107,7 +107,7 @@ static int pa_can_combine_p (rtx_insn *, rtx_insn *, rtx_insn *, int, rtx,
 static bool forward_branch_p (rtx_insn *);
 static void compute_zdepwi_operands (unsigned HOST_WIDE_INT, unsigned *);
 static void compute_zdepdi_operands (unsigned HOST_WIDE_INT, unsigned *);
-static int compute_movmem_length (rtx_insn *);
+static int compute_cpymem_length (rtx_insn *);
 static int compute_clrmem_length (rtx_insn *);
 static bool pa_assemble_integer (rtx, unsigned int, int);
 static void remove_useless_addtr_insns (int);
@@ -653,7 +653,7 @@ pa_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 		   int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
 
   switch (fcode)
     {
@@ -2985,7 +2985,7 @@ pa_output_block_move (rtx *operands, int size_is_constant ATTRIBUTE_UNUSED)
    count insns rather than emit them.  */
 
 static int
-compute_movmem_length (rtx_insn *insn)
+compute_cpymem_length (rtx_insn *insn)
 {
   rtx pat = PATTERN (insn);
   unsigned int align = INTVAL (XEXP (XVECEXP (pat, 0, 7), 0));
@@ -5060,7 +5060,7 @@ pa_adjust_insn_length (rtx_insn *insn, int length)
       && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 1)) == MEM
       && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 0)) == BLKmode
       && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 1)) == BLKmode)
-    length += compute_movmem_length (insn) - 4;
+    length += compute_cpymem_length (insn) - 4;
   /* Block clear pattern.  */
   else if (NONJUMP_INSN_P (insn)
 	   && GET_CODE (pat) == PARALLEL
@@ -9805,19 +9805,22 @@ pa_som_asm_init_sections (void)
       = get_unnamed_section (0, output_section_asm_op,
 			     "\t.SPACE $PRIVATE$\n\t.SUBSPA $TM_CLONE_TABLE$");
 
-  /* FIXME: HPUX ld generates incorrect GOT entries for "T" fixups
-     which reference data within the $TEXT$ space (for example constant
+  /* HPUX ld generates incorrect GOT entries for "T" fixups which
+     reference data within the $TEXT$ space (for example constant
      strings in the $LIT$ subspace).
 
      The assemblers (GAS and HP as) both have problems with handling
-     the difference of two symbols which is the other correct way to
+     the difference of two symbols.  This is the other correct way to
      reference constant data during PIC code generation.
 
-     So, there's no way to reference constant data which is in the
-     $TEXT$ space during PIC generation.  Instead place all constant
-     data into the $PRIVATE$ subspace (this reduces sharing, but it
-     works correctly).  */
-  readonly_data_section = flag_pic ? data_section : som_readonly_data_section;
+     Thus, we can't put constant data needing relocation in the $TEXT$
+     space during PIC generation.
+
+     Previously, we placed all constant data into the $DATA$ subspace
+     when generating PIC code.  This reduces sharing, but it works
+     correctly.  Now we rely on pa_reloc_rw_mask() for section selection.
+     This puts constant data not needing relocation into the $TEXT$ space.  */
+  readonly_data_section = som_readonly_data_section;
 
   /* We must not have a reference to an external symbol defined in a
      shared library in a readonly section, else the SOM linker will
@@ -9850,7 +9853,7 @@ pa_select_section (tree exp, int reloc,
       && DECL_INITIAL (exp)
       && (DECL_INITIAL (exp) == error_mark_node
           || TREE_CONSTANT (DECL_INITIAL (exp)))
-      && !reloc)
+      && !(reloc & pa_reloc_rw_mask ()))
     {
       if (TARGET_SOM
 	  && DECL_ONE_ONLY (exp)
@@ -9859,7 +9862,8 @@ pa_select_section (tree exp, int reloc,
       else
 	return readonly_data_section;
     }
-  else if (CONSTANT_CLASS_P (exp) && !reloc)
+  else if (CONSTANT_CLASS_P (exp)
+	   && !(reloc & pa_reloc_rw_mask ()))
     return readonly_data_section;
   else if (TARGET_SOM
 	   && TREE_CODE (exp) == VAR_DECL
@@ -9875,12 +9879,11 @@ pa_select_section (tree exp, int reloc,
 static int
 pa_reloc_rw_mask (void)
 {
-  /* We force (const (plus (symbol) (const_int))) to memory when the
-     const_int doesn't fit in a 14-bit integer.  The SOM linker can't
-     handle this construct in read-only memory and we want to avoid
-     this for ELF.  So, we always force an RTX needing relocation to
-     the data section.  */
-  return 3;
+  if (flag_pic || (TARGET_SOM && !TARGET_HPUX_11))
+    return 3;
+
+  /* HP linker does not support global relocs in readonly memory.  */
+  return TARGET_SOM ? 2 : 0;
 }
 
 static void

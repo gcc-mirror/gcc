@@ -424,6 +424,7 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
   // Fallback implementation of the function in bits/stl_iterator.h used to
   // remove the move_iterator wrapper.
   template<typename _Iterator>
+    _GLIBCXX20_CONSTEXPR
     inline _Iterator
     __miter_base(_Iterator __it)
     { return __it; }

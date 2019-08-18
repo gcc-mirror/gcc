@@ -50,14 +50,10 @@
 extern "C" {
 #endif
 
-#ifdef __alpha_vxworks
-#include "vxWorks.h"
-#endif
-
 #ifdef IN_RTS
 #define POSIX
-#include "tconfig.h"
-#include "tsystem.h"
+#include "runtime.h"
+#include <stddef.h>
 #else
 #include "config.h"
 #include "system.h"

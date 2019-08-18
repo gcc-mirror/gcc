@@ -134,31 +134,43 @@ handle_overloaded_code_for (FILE *file, overloaded_name *oname)
 static void
 handle_overloaded_gen (FILE *file, overloaded_name *oname)
 {
-  pattern_stats stats;
-  get_pattern_stats (&stats, XVEC (oname->first_instance->insn, 1));
+  unsigned HOST_WIDE_INT seen = 0;
+  for (overloaded_instance *instance = oname->first_instance->next;
+       instance; instance = instance->next)
+    {
+      pattern_stats stats;
+      get_pattern_stats (&stats, XVEC (instance->insn, 1));
+      unsigned HOST_WIDE_INT mask
+	= HOST_WIDE_INT_1U << stats.num_generator_args;
+      if (seen & mask)
+	continue;
 
-  fprintf (file, "\nextern rtx maybe_gen_%s (", oname->name);
-  for (unsigned int i = 0; i < oname->arg_types.length (); ++i)
-    fprintf (file, "%s%s", i == 0 ? "" : ", ", oname->arg_types[i]);
-  for (int i = 0; i < stats.num_generator_args; ++i)
-    fprintf (file, ", rtx");
-  fprintf (file, ");\n");
+      seen |= mask;
 
-  fprintf (file, "inline rtx\ngen_%s (", oname->name);
-  for (unsigned int i = 0; i < oname->arg_types.length (); ++i)
-    fprintf (file, "%s%s arg%d", i == 0 ? "" : ", ", oname->arg_types[i], i);
-  for (int i = 0; i < stats.num_generator_args; ++i)
-    fprintf (file, ", rtx x%d", i);
-  fprintf (file, ")\n{\n  rtx res = maybe_gen_%s (", oname->name);
-  for (unsigned int i = 0; i < oname->arg_types.length (); ++i)
-    fprintf (file, "%sarg%d", i == 0 ? "" : ", ", i);
-  for (int i = 0; i < stats.num_generator_args; ++i)
-    fprintf (file, ", x%d", i);
-  fprintf (file,
-	   ");\n"
-	   "  gcc_assert (res);\n"
-	   "  return res;\n"
-	   "}\n");
+      fprintf (file, "\nextern rtx maybe_gen_%s (", oname->name);
+      for (unsigned int i = 0; i < oname->arg_types.length (); ++i)
+	fprintf (file, "%s%s", i == 0 ? "" : ", ", oname->arg_types[i]);
+      for (int i = 0; i < stats.num_generator_args; ++i)
+	fprintf (file, ", rtx");
+      fprintf (file, ");\n");
+
+      fprintf (file, "inline rtx\ngen_%s (", oname->name);
+      for (unsigned int i = 0; i < oname->arg_types.length (); ++i)
+	fprintf (file, "%s%s arg%d", i == 0 ? "" : ", ",
+		 oname->arg_types[i], i);
+      for (int i = 0; i < stats.num_generator_args; ++i)
+	fprintf (file, ", rtx x%d", i);
+      fprintf (file, ")\n{\n  rtx res = maybe_gen_%s (", oname->name);
+      for (unsigned int i = 0; i < oname->arg_types.length (); ++i)
+	fprintf (file, "%sarg%d", i == 0 ? "" : ", ", i);
+      for (int i = 0; i < stats.num_generator_args; ++i)
+	fprintf (file, ", x%d", i);
+      fprintf (file,
+	       ");\n"
+	       "  gcc_assert (res);\n"
+	       "  return res;\n"
+	       "}\n");
+    }
 }
 
 int

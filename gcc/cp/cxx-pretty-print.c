@@ -3023,7 +3023,6 @@ pp_cxx_constraint (cxx_pretty_printer *pp, tree t)
     }
 }
 
-
 
 typedef c_pretty_print_fn pp_fun;
 

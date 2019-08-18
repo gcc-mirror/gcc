@@ -950,11 +950,6 @@
 		 "exynos_m1_crypto_simple, exynos_m1_crypto_complex,\
 		  exynos_m1_crypto_poly*")
 
-;; AES{D,E}/AESMC pairs can feed each other instantly.
-(define_bypass 0 "exynos_m1_crypto_simple"
-		 "exynos_m1_crypto_simple"
-		 "aarch_crypto_can_dual_issue")
-
 ;; Predicted branches take no time, but mispredicted ones take forever anyway.
 (define_bypass 1 "exynos_m1_*"
 		 "exynos_m1_call, exynos_m1_branch")

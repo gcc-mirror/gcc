@@ -26,8 +26,9 @@ typedef struct ifsese_s *ifsese;
 
 /* A Single Entry, Single Exit region is a part of the CFG delimited
    by two edges.  */
-struct sese_l
+class sese_l
 {
+public:
   sese_l (edge e, edge x) : entry (e), exit (x) {}
 
   operator bool () const { return entry && exit; }
@@ -71,8 +72,9 @@ vec_find (const vec<T> &v, const T &elem)
 }
 
 /* A helper structure for bookkeeping information about a scop in graphite.  */
-typedef struct sese_info_t
+typedef class sese_info_t
 {
+public:
   /* The SESE region.  */
   sese_l region;
 
@@ -99,7 +101,7 @@ typedef struct sese_info_t
 extern sese_info_p new_sese_info (edge, edge);
 extern void free_sese_info (sese_info_p);
 extern void sese_insert_phis_for_liveouts (sese_info_p, basic_block, edge, edge);
-extern struct loop *outermost_loop_in_sese (sese_l &, basic_block);
+extern class loop *outermost_loop_in_sese (sese_l &, basic_block);
 extern tree scalar_evolution_in_region (const sese_l &, loop_p, tree);
 extern bool scev_analyzable_p (tree, sese_l &);
 extern bool invariant_in_sese_p_rec (tree, const sese_l &, bool *);
@@ -154,7 +156,7 @@ defined_in_sese_p (tree name, const sese_l &r)
 /* Returns true when LOOP is in REGION.  */
 
 static inline bool
-loop_in_sese_p (struct loop *loop, const sese_l &region)
+loop_in_sese_p (class loop *loop, const sese_l &region)
 {
   return (bb_in_sese_p (loop->header, region)
 	  && bb_in_sese_p (loop->latch, region));
@@ -270,7 +272,7 @@ typedef struct gimple_poly_bb
 
 /* Return the innermost loop that contains the basic block GBB.  */
 
-static inline struct loop *
+static inline class loop *
 gbb_loop (gimple_poly_bb_p gbb)
 {
   return GBB_BB (gbb)->loop_father;

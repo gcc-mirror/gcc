@@ -8,6 +8,13 @@
    hooks provided by each test case.  */
 #define COMBINED_TEST
 
+/* test-accessing-bitfield.c */
+#define create_code create_code_accessing_bitfield
+#define verify_code verify_code_accessing_bitfield
+#include "test-accessing-bitfield.c"
+#undef create_code
+#undef verify_code
+
 /* test-accessing-struct.c */
 #define create_code create_code_accessing_struct
 #define verify_code verify_code_accessing_struct
@@ -266,6 +273,9 @@ struct testcase
 };
 
 const struct testcase testcases[] = {
+  {"accessing_bitfield",
+   create_code_accessing_bitfield,
+   verify_code_accessing_bitfield},
   {"accessing_struct",
    create_code_accessing_struct,
    verify_code_accessing_struct},

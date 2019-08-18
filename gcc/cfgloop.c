@@ -59,7 +59,7 @@ flow_loops_cfg_dump (FILE *file)
 /* Return nonzero if the nodes of LOOP are a subset of OUTER.  */
 
 bool
-flow_loop_nested_p (const struct loop *outer, const struct loop *loop)
+flow_loop_nested_p (const class loop *outer, const class loop *loop)
 {
   unsigned odepth = loop_depth (outer);
 
@@ -70,8 +70,8 @@ flow_loop_nested_p (const struct loop *outer, const struct loop *loop)
 /* Returns the loop such that LOOP is nested DEPTH (indexed from zero)
    loops within LOOP.  */
 
-struct loop *
-superloop_at_depth (struct loop *loop, unsigned depth)
+class loop *
+superloop_at_depth (class loop *loop, unsigned depth)
 {
   unsigned ldepth = loop_depth (loop);
 
@@ -86,7 +86,7 @@ superloop_at_depth (struct loop *loop, unsigned depth)
 /* Returns the list of the latch edges of LOOP.  */
 
 static vec<edge> 
-get_loop_latch_edges (const struct loop *loop)
+get_loop_latch_edges (const class loop *loop)
 {
   edge_iterator ei;
   edge e;
@@ -105,8 +105,8 @@ get_loop_latch_edges (const struct loop *loop)
    using auxiliary dump callback function LOOP_DUMP_AUX if non null.  */
 
 void
-flow_loop_dump (const struct loop *loop, FILE *file,
-		void (*loop_dump_aux) (const struct loop *, FILE *, int),
+flow_loop_dump (const class loop *loop, FILE *file,
+		void (*loop_dump_aux) (const class loop *, FILE *, int),
 		int verbose)
 {
   basic_block *bbs;
@@ -160,9 +160,9 @@ flow_loop_dump (const struct loop *loop, FILE *file,
    using auxiliary dump callback function LOOP_DUMP_AUX if non null.  */
 
 void
-flow_loops_dump (FILE *file, void (*loop_dump_aux) (const struct loop *, FILE *, int), int verbose)
+flow_loops_dump (FILE *file, void (*loop_dump_aux) (const class loop *, FILE *, int), int verbose)
 {
-  struct loop *loop;
+  class loop *loop;
 
   if (!current_loops || ! file)
     return;
@@ -181,7 +181,7 @@ flow_loops_dump (FILE *file, void (*loop_dump_aux) (const struct loop *, FILE *,
 /* Free data allocated for LOOP.  */
 
 void
-flow_loop_free (struct loop *loop)
+flow_loop_free (class loop *loop)
 {
   struct loop_exit *exit, *next;
 
@@ -229,7 +229,7 @@ flow_loops_free (struct loops *loops)
    Return the number of nodes within the loop.  */
 
 int
-flow_loop_nodes_find (basic_block header, struct loop *loop)
+flow_loop_nodes_find (basic_block header, class loop *loop)
 {
   vec<basic_block> stack = vNULL;
   int num_nodes = 1;
@@ -278,7 +278,7 @@ flow_loop_nodes_find (basic_block header, struct loop *loop)
    superloop is FATHER.  */
 
 static void
-establish_preds (struct loop *loop, struct loop *father)
+establish_preds (class loop *loop, class loop *father)
 {
   loop_p ploop;
   unsigned depth = loop_depth (father) + 1;
@@ -302,8 +302,8 @@ establish_preds (struct loop *loop, struct loop *father)
    of FATHERs siblings.  */
 
 void
-flow_loop_tree_node_add (struct loop *father, struct loop *loop,
-			 struct loop *after)
+flow_loop_tree_node_add (class loop *father, class loop *loop,
+			 class loop *after)
 {
   if (after)
     {
@@ -322,9 +322,9 @@ flow_loop_tree_node_add (struct loop *father, struct loop *loop,
 /* Remove LOOP from the loop hierarchy tree.  */
 
 void
-flow_loop_tree_node_remove (struct loop *loop)
+flow_loop_tree_node_remove (class loop *loop)
 {
-  struct loop *prev, *father;
+  class loop *prev, *father;
 
   father = loop_outer (loop);
 
@@ -343,10 +343,10 @@ flow_loop_tree_node_remove (struct loop *loop)
 
 /* Allocates and returns new loop structure.  */
 
-struct loop *
+class loop *
 alloc_loop (void)
 {
-  struct loop *loop = ggc_cleared_alloc<struct loop> ();
+  class loop *loop = ggc_cleared_alloc<class loop> ();
 
   loop->exits = ggc_cleared_alloc<loop_exit> ();
   loop->exits->next = loop->exits->prev = loop->exits;
@@ -365,7 +365,7 @@ void
 init_loops_structure (struct function *fn,
 		      struct loops *loops, unsigned num_loops)
 {
-  struct loop *root;
+  class loop *root;
 
   memset (loops, 0, sizeof *loops);
   vec_alloc (loops->larray, num_loops);
@@ -460,7 +460,7 @@ flow_loops_find (struct loops *loops)
       basic_block header = BASIC_BLOCK_FOR_FN (cfun, rc_order[b]);
       if (bb_loop_header_p (header))
 	{
-	  struct loop *loop;
+	  class loop *loop;
 
 	  /* The current active loop tree has valid loop-fathers for
 	     header blocks.  */
@@ -503,7 +503,7 @@ flow_loops_find (struct loops *loops)
      and assign basic-block ownership.  */
   for (i = 0; i < larray.length (); ++i)
     {
-      struct loop *loop = larray[i];
+      class loop *loop = larray[i];
       basic_block header = loop->header;
       edge_iterator ei;
       edge e;
@@ -539,8 +539,8 @@ static int *sort_sibling_loops_cmp_rpo;
 static int
 sort_sibling_loops_cmp (const void *la_, const void *lb_)
 {
-  const struct loop *la = *(const struct loop * const *)la_;
-  const struct loop *lb = *(const struct loop * const *)lb_;
+  const class loop *la = *(const class loop * const *)la_;
+  const class loop *lb = *(const class loop * const *)lb_;
   return (sort_sibling_loops_cmp_rpo[la->header->index]
 	  - sort_sibling_loops_cmp_rpo[lb->header->index]);
 }
@@ -643,7 +643,7 @@ find_subloop_latch_edge_by_profile (vec<edge> latches)
    another edge.  */
 
 static edge
-find_subloop_latch_edge_by_ivs (struct loop *loop ATTRIBUTE_UNUSED, vec<edge> latches)
+find_subloop_latch_edge_by_ivs (class loop *loop ATTRIBUTE_UNUSED, vec<edge> latches)
 {
   edge e, latch = latches[0];
   unsigned i;
@@ -695,7 +695,7 @@ find_subloop_latch_edge_by_ivs (struct loop *loop ATTRIBUTE_UNUSED, vec<edge> la
    returns NULL.  */
 
 static edge
-find_subloop_latch_edge (struct loop *loop)
+find_subloop_latch_edge (class loop *loop)
 {
   vec<edge> latches = get_loop_latch_edges (loop);
   edge latch = NULL;
@@ -729,11 +729,11 @@ mfb_redirect_edges_in_set (edge e)
 /* Creates a subloop of LOOP with latch edge LATCH.  */
 
 static void
-form_subloop (struct loop *loop, edge latch)
+form_subloop (class loop *loop, edge latch)
 {
   edge_iterator ei;
   edge e, new_entry;
-  struct loop *new_loop;
+  class loop *new_loop;
 
   mfb_reis_set = new hash_set<edge>;
   FOR_EACH_EDGE (e, ei, loop->header->preds)
@@ -759,7 +759,7 @@ form_subloop (struct loop *loop, edge latch)
    a new latch of LOOP.  */
 
 static void
-merge_latch_edges (struct loop *loop)
+merge_latch_edges (class loop *loop)
 {
   vec<edge> latches = get_loop_latch_edges (loop);
   edge latch, e;
@@ -792,7 +792,7 @@ merge_latch_edges (struct loop *loop)
    loops with single latch edge.  */
 
 static void
-disambiguate_multiple_latches (struct loop *loop)
+disambiguate_multiple_latches (class loop *loop)
 {
   edge e;
 
@@ -836,7 +836,7 @@ disambiguate_multiple_latches (struct loop *loop)
 void
 disambiguate_loops_with_multiple_latches (void)
 {
-  struct loop *loop;
+  class loop *loop;
 
   FOR_EACH_LOOP (loop, 0)
     {
@@ -847,9 +847,9 @@ disambiguate_loops_with_multiple_latches (void)
 
 /* Return nonzero if basic block BB belongs to LOOP.  */
 bool
-flow_bb_inside_loop_p (const struct loop *loop, const_basic_block bb)
+flow_bb_inside_loop_p (const class loop *loop, const_basic_block bb)
 {
-  struct loop *source_loop;
+  class loop *source_loop;
 
   if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)
       || bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
@@ -863,7 +863,7 @@ flow_bb_inside_loop_p (const struct loop *loop, const_basic_block bb)
 static bool
 glb_enum_p (const_basic_block bb, const void *glb_loop)
 {
-  const struct loop *const loop = (const struct loop *) glb_loop;
+  const class loop *const loop = (const class loop *) glb_loop;
   return (bb != loop->header
 	  && dominated_by_p (CDI_DOMINATORS, bb, loop->header));
 }
@@ -876,7 +876,7 @@ glb_enum_p (const_basic_block bb, const void *glb_loop)
    returned.  */
 
 unsigned
-get_loop_body_with_size (const struct loop *loop, basic_block *body,
+get_loop_body_with_size (const class loop *loop, basic_block *body,
 			 unsigned max_size)
 {
   return dfs_enumerate_from (loop->header, 1, glb_enum_p,
@@ -888,7 +888,7 @@ get_loop_body_with_size (const struct loop *loop, basic_block *body,
    header != latch, latch is the 1-st block.  */
 
 basic_block *
-get_loop_body (const struct loop *loop)
+get_loop_body (const class loop *loop)
 {
   basic_block *body, bb;
   unsigned tv = 0;
@@ -918,7 +918,7 @@ get_loop_body (const struct loop *loop)
    array TOVISIT from index *TV.  */
 
 static void
-fill_sons_in_loop (const struct loop *loop, basic_block bb,
+fill_sons_in_loop (const class loop *loop, basic_block bb,
 		   basic_block *tovisit, int *tv)
 {
   basic_block son, postpone = NULL;
@@ -948,7 +948,7 @@ fill_sons_in_loop (const struct loop *loop, basic_block bb,
    the latch, then only blocks dominated by s are be after it.  */
 
 basic_block *
-get_loop_body_in_dom_order (const struct loop *loop)
+get_loop_body_in_dom_order (const class loop *loop)
 {
   basic_block *tovisit;
   int tv;
@@ -970,7 +970,7 @@ get_loop_body_in_dom_order (const struct loop *loop)
 /* Gets body of a LOOP sorted via provided BB_COMPARATOR.  */
 
 basic_block *
-get_loop_body_in_custom_order (const struct loop *loop,
+get_loop_body_in_custom_order (const class loop *loop,
 			       int (*bb_comparator) (const void *, const void *))
 {
   basic_block *bbs = get_loop_body (loop);
@@ -983,7 +983,7 @@ get_loop_body_in_custom_order (const struct loop *loop,
 /* Get body of a LOOP in breadth first sort order.  */
 
 basic_block *
-get_loop_body_in_bfs_order (const struct loop *loop)
+get_loop_body_in_bfs_order (const class loop *loop)
 {
   basic_block *blocks;
   basic_block bb;
@@ -1069,7 +1069,7 @@ void
 rescan_loop_exit (edge e, bool new_edge, bool removed)
 {
   struct loop_exit *exits = NULL, *exit;
-  struct loop *aloop, *cloop;
+  class loop *aloop, *cloop;
 
   if (!loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
     return;
@@ -1190,7 +1190,7 @@ release_recorded_exits (function *fn)
 /* Returns the list of the exit edges of a LOOP.  */
 
 vec<edge> 
-get_loop_exit_edges (const struct loop *loop)
+get_loop_exit_edges (const class loop *loop)
 {
   vec<edge> edges = vNULL;
   edge e;
@@ -1226,7 +1226,7 @@ get_loop_exit_edges (const struct loop *loop)
 /* Counts the number of conditional branches inside LOOP.  */
 
 unsigned
-num_loop_branches (const struct loop *loop)
+num_loop_branches (const class loop *loop)
 {
   unsigned i, n;
   basic_block * body;
@@ -1245,7 +1245,7 @@ num_loop_branches (const struct loop *loop)
 
 /* Adds basic block BB to LOOP.  */
 void
-add_bb_to_loop (basic_block bb, struct loop *loop)
+add_bb_to_loop (basic_block bb, class loop *loop)
 {
   unsigned i;
   loop_p ploop;
@@ -1273,7 +1273,7 @@ void
 remove_bb_from_loops (basic_block bb)
 {
   unsigned i;
-  struct loop *loop = bb->loop_father;
+  class loop *loop = bb->loop_father;
   loop_p ploop;
   edge_iterator ei;
   edge e;
@@ -1295,8 +1295,8 @@ remove_bb_from_loops (basic_block bb)
 }
 
 /* Finds nearest common ancestor in loop tree for given loops.  */
-struct loop *
-find_common_loop (struct loop *loop_s, struct loop *loop_d)
+class loop *
+find_common_loop (class loop *loop_s, class loop *loop_d)
 {
   unsigned sdepth, ddepth;
 
@@ -1322,7 +1322,7 @@ find_common_loop (struct loop *loop_s, struct loop *loop_d)
 /* Removes LOOP from structures and frees its data.  */
 
 void
-delete_loop (struct loop *loop)
+delete_loop (class loop *loop)
 {
   /* Remove the loop from structure.  */
   flow_loop_tree_node_remove (loop);
@@ -1337,11 +1337,11 @@ delete_loop (struct loop *loop)
 /* Cancels the LOOP; it must be innermost one.  */
 
 static void
-cancel_loop (struct loop *loop)
+cancel_loop (class loop *loop)
 {
   basic_block *bbs;
   unsigned i;
-  struct loop *outer = loop_outer (loop);
+  class loop *outer = loop_outer (loop);
 
   gcc_assert (!loop->inner);
 
@@ -1356,7 +1356,7 @@ cancel_loop (struct loop *loop)
 
 /* Cancels LOOP and all its subloops.  */
 void
-cancel_loop_tree (struct loop *loop)
+cancel_loop_tree (class loop *loop)
 {
   while (loop->inner)
     cancel_loop_tree (loop->inner);
@@ -1385,7 +1385,7 @@ verify_loop_structure (void)
 {
   unsigned *sizes, i, j;
   basic_block bb, *bbs;
-  struct loop *loop;
+  class loop *loop;
   int err = 0;
   edge e;
   unsigned num = number_of_loops (cfun);
@@ -1727,14 +1727,14 @@ verify_loop_structure (void)
 
 /* Returns latch edge of LOOP.  */
 edge
-loop_latch_edge (const struct loop *loop)
+loop_latch_edge (const class loop *loop)
 {
   return find_edge (loop->latch, loop->header);
 }
 
 /* Returns preheader edge of LOOP.  */
 edge
-loop_preheader_edge (const struct loop *loop)
+loop_preheader_edge (const class loop *loop)
 {
   edge e;
   edge_iterator ei;
@@ -1758,7 +1758,7 @@ loop_preheader_edge (const struct loop *loop)
 /* Returns true if E is an exit of LOOP.  */
 
 bool
-loop_exit_edge_p (const struct loop *loop, const_edge e)
+loop_exit_edge_p (const class loop *loop, const_edge e)
 {
   return (flow_bb_inside_loop_p (loop, e->src)
 	  && !flow_bb_inside_loop_p (loop, e->dest));
@@ -1769,7 +1769,7 @@ loop_exit_edge_p (const struct loop *loop, const_edge e)
    is returned always.  */
 
 edge
-single_exit (const struct loop *loop)
+single_exit (const class loop *loop)
 {
   struct loop_exit *exit = loop->exits->next;
 
@@ -1785,7 +1785,7 @@ single_exit (const struct loop *loop)
 /* Returns true when BB has an incoming edge exiting LOOP.  */
 
 bool
-loop_exits_to_bb_p (struct loop *loop, basic_block bb)
+loop_exits_to_bb_p (class loop *loop, basic_block bb)
 {
   edge e;
   edge_iterator ei;
@@ -1800,7 +1800,7 @@ loop_exits_to_bb_p (struct loop *loop, basic_block bb)
 /* Returns true when BB has an outgoing edge exiting LOOP.  */
 
 bool
-loop_exits_from_bb_p (struct loop *loop, basic_block bb)
+loop_exits_from_bb_p (class loop *loop, basic_block bb)
 {
   edge e;
   edge_iterator ei;
@@ -1815,10 +1815,10 @@ loop_exits_from_bb_p (struct loop *loop, basic_block bb)
 /* Return location corresponding to the loop control condition if possible.  */
 
 dump_user_location_t
-get_loop_location (struct loop *loop)
+get_loop_location (class loop *loop)
 {
   rtx_insn *insn = NULL;
-  struct niter_desc *desc = NULL;
+  class niter_desc *desc = NULL;
   edge exit;
 
   /* For a for or while loop, we would like to return the location
@@ -1869,7 +1869,7 @@ get_loop_location (struct loop *loop)
    I_BOUND times.  */
 
 void
-record_niter_bound (struct loop *loop, const widest_int &i_bound,
+record_niter_bound (class loop *loop, const widest_int &i_bound,
 		    bool realistic, bool upper)
 {
   /* Update the bounds only when there is no previous estimation, or when the
@@ -1920,7 +1920,7 @@ record_niter_bound (struct loop *loop, const widest_int &i_bound,
    on the number of iterations of LOOP could not be derived, returns -1.  */
 
 HOST_WIDE_INT
-get_estimated_loop_iterations_int (struct loop *loop)
+get_estimated_loop_iterations_int (class loop *loop)
 {
   widest_int nit;
   HOST_WIDE_INT hwi_nit;
@@ -1940,7 +1940,7 @@ get_estimated_loop_iterations_int (struct loop *loop)
    the number of execution of the latch by one.  */
 
 HOST_WIDE_INT
-max_stmt_executions_int (struct loop *loop)
+max_stmt_executions_int (class loop *loop)
 {
   HOST_WIDE_INT nit = get_max_loop_iterations_int (loop);
   HOST_WIDE_INT snit;
@@ -1959,7 +1959,7 @@ max_stmt_executions_int (struct loop *loop)
    the number of execution of the latch by one.  */
 
 HOST_WIDE_INT
-likely_max_stmt_executions_int (struct loop *loop)
+likely_max_stmt_executions_int (class loop *loop)
 {
   HOST_WIDE_INT nit = get_likely_max_loop_iterations_int (loop);
   HOST_WIDE_INT snit;
@@ -1978,7 +1978,7 @@ likely_max_stmt_executions_int (struct loop *loop)
    returns true.  */
 
 bool
-get_estimated_loop_iterations (struct loop *loop, widest_int *nit)
+get_estimated_loop_iterations (class loop *loop, widest_int *nit)
 {
   /* Even if the bound is not recorded, possibly we can derrive one from
      profile.  */
@@ -2002,7 +2002,7 @@ get_estimated_loop_iterations (struct loop *loop, widest_int *nit)
    false, otherwise returns true.  */
 
 bool
-get_max_loop_iterations (const struct loop *loop, widest_int *nit)
+get_max_loop_iterations (const class loop *loop, widest_int *nit)
 {
   if (!loop->any_upper_bound)
     return false;
@@ -2016,7 +2016,7 @@ get_max_loop_iterations (const struct loop *loop, widest_int *nit)
    on the number of iterations of LOOP could not be derived, returns -1.  */
 
 HOST_WIDE_INT
-get_max_loop_iterations_int (const struct loop *loop)
+get_max_loop_iterations_int (const class loop *loop)
 {
   widest_int nit;
   HOST_WIDE_INT hwi_nit;
@@ -2036,7 +2036,7 @@ get_max_loop_iterations_int (const struct loop *loop)
    false, otherwise returns true.  */
 
 bool
-get_likely_max_loop_iterations (struct loop *loop, widest_int *nit)
+get_likely_max_loop_iterations (class loop *loop, widest_int *nit)
 {
   if (!loop->any_likely_upper_bound)
     return false;
@@ -2050,7 +2050,7 @@ get_likely_max_loop_iterations (struct loop *loop, widest_int *nit)
    on the number of iterations of LOOP could not be derived, returns -1.  */
 
 HOST_WIDE_INT
-get_likely_max_loop_iterations_int (struct loop *loop)
+get_likely_max_loop_iterations_int (class loop *loop)
 {
   widest_int nit;
   HOST_WIDE_INT hwi_nit;

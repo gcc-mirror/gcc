@@ -23,7 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include <profile-count.h>
 
 /* Control flow edge information.  */
-struct GTY((user)) edge_def {
+class GTY((user)) edge_def {
+public:
   /* The two blocks at the ends of the edge.  */
   basic_block src;
   basic_block dest;
@@ -122,7 +123,7 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
   PTR GTY ((skip (""))) aux;
 
   /* Innermost loop containing the block.  */
-  struct loop *loop_father;
+  class loop *loop_father;
 
   /* The dominance and postdominance information node.  */
   struct et_node * GTY ((skip (""))) dom[2];
@@ -507,6 +508,8 @@ ei_cond (edge_iterator ei, edge *p)
 #define CLEANUP_CFGLAYOUT	32	/* Do cleanup in cfglayout mode.  */
 #define CLEANUP_CFG_CHANGED	64      /* The caller changed the CFG.  */
 #define CLEANUP_NO_PARTITIONING	128     /* Do not try to fix partitions.  */
+#define CLEANUP_FORCE_FAST_DCE	0x100	/* Force run_fast_dce to be called
+					   at least once.  */
 
 /* Return true if BB is in a transaction.  */
 

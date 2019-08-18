@@ -31,4 +31,9 @@ package Exp_Attr is
 
    procedure Expand_N_Attribute_Reference (N : Node_Id);
 
+   procedure Expand_Size_Attribute (N : Node_Id);
+   --  Handles part of the expansion of attributes 'Object_Size, 'Size,
+   --  'Value_Size, and 'VADS_Size, so that it can also be used in the special
+   --  expansion in GNATprove mode.
+
 end Exp_Attr;

@@ -65,7 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Forward decls.  */
-struct opt_pass;
+class opt_pass;
 class optinfo_item;
 
 /* Return true if any of the active optinfo destinations make use

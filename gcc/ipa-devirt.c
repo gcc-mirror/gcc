@@ -213,6 +213,8 @@ struct GTY(()) odr_type_d
   bool odr_violated;
   /* Set when virtual table without RTTI previaled table with.  */
   bool rtti_broken;
+  /* Set when the canonical type is determined using the type name.  */
+  bool tbaa_enabled;
 };
 
 /* Return TRUE if all derived types of T are known and thus
@@ -1001,7 +1003,7 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
 	n2 = DECL_NAME (n2);
       /* Most of the time, the type names will match, do not be unnecesarily
          verbose.  */
-      if (IDENTIFIER_POINTER (n1) != IDENTIFIER_POINTER (n2))
+      if (n1 != n2)
         inform (loc_t1,
 	        "type %qT defined in anonymous namespace cannot match "
 	        "type %qT across the translation unit boundary",
@@ -1610,6 +1612,9 @@ add_type_duplicate (odr_type val, tree type)
 
   val->types_set->add (type);
 
+  if (!odr_hash)
+    return false;
+
   gcc_checking_assert (can_be_name_hashed_p (type)
 		       && can_be_name_hashed_p (val->type));
 
@@ -1987,6 +1992,46 @@ prevailing_odr_type (tree type)
   if (!t || t->odr_violated)
     return type;
   return t->type;
+}
+
+/* Set tbaa_enabled flag for TYPE.  */
+
+void
+enable_odr_based_tbaa (tree type)
+{
+  odr_type t = get_odr_type (type, true);
+  t->tbaa_enabled = true;
+}
+
+/* True if canonical type of TYPE is determined using ODR name.  */
+
+bool
+odr_based_tbaa_p (const_tree type)
+{
+  if (!RECORD_OR_UNION_TYPE_P (type))
+    return false;
+  odr_type t = get_odr_type (const_cast <tree> (type), false);
+  if (!t || !t->tbaa_enabled)
+    return false;
+  return true;
+}
+
+/* Set TYPE_CANONICAL of type and all its variants and duplicates
+   to CANONICAL.  */
+
+void
+set_type_canonical_for_odr_type (tree type, tree canonical)
+{
+  odr_type t = get_odr_type (type, false);
+  unsigned int i;
+  tree tt;
+
+  for (tree t2 = t->type; t2; t2 = TYPE_NEXT_VARIANT (t2))
+    TYPE_CANONICAL (t2) = canonical;
+  if (t->types)
+    FOR_EACH_VEC_ELT (*t->types, i, tt)
+      for (tree t2 = tt; t2; t2 = TYPE_NEXT_VARIANT (t2))
+        TYPE_CANONICAL (t2) = canonical;
 }
 
 /* Return true if we reported some ODR violation on TYPE.  */
@@ -2581,8 +2626,9 @@ possible_polymorphic_call_targets_1 (vec <cgraph_node *> &nodes,
    polymorphic calls in the program, so we memoize all the previous
    queries and avoid duplicated work.  */
 
-struct polymorphic_call_target_d
+class polymorphic_call_target_d
 {
+public:
   HOST_WIDE_INT otr_token;
   ipa_polymorphic_call_context context;
   odr_type type;
@@ -2904,8 +2950,9 @@ struct decl_warn_count
 
 /* Information about type and decl warnings.  */
 
-struct final_warning_record
+class final_warning_record
 {
+public:
   /* If needed grow type_warnings vector and initialize new decl_warn_count
      to have dyn_count set to profile_count::zero ().  */
   void grow_type_warnings (unsigned newlen);
@@ -2927,7 +2974,7 @@ final_warning_record::grow_type_warnings (unsigned newlen)
     }
 }
 
-struct final_warning_record *final_warning_records;
+class final_warning_record *final_warning_records;
 
 /* Return vector containing possible targets of polymorphic call of type
    OTR_TYPE calling method OTR_TOKEN within type of OTR_OUTER_TYPE and OFFSET.
@@ -3379,12 +3426,10 @@ possible_polymorphic_call_target_p (tree otr_type,
 {
   vec <cgraph_node *> targets;
   unsigned int i;
-  enum built_in_function fcode;
   bool final;
 
-  if (TREE_CODE (TREE_TYPE (n->decl)) == FUNCTION_TYPE
-      && ((fcode = DECL_FUNCTION_CODE (n->decl)) == BUILT_IN_UNREACHABLE
-          || fcode == BUILT_IN_TRAP))
+  if (fndecl_built_in_p (n->decl, BUILT_IN_UNREACHABLE)
+      || fndecl_built_in_p (n->decl, BUILT_IN_TRAP))
     return true;
 
   if (is_cxa_pure_virtual_p (n->decl))
@@ -3479,7 +3524,7 @@ likely_target_p (struct cgraph_node *n)
 /* Compare type warning records P1 and P2 and choose one with larger count;
    helper for qsort.  */
 
-int
+static int
 type_warning_cmp (const void *p1, const void *p2)
 {
   const odr_type_warn_count *t1 = (const odr_type_warn_count *)p1;
@@ -3495,7 +3540,7 @@ type_warning_cmp (const void *p1, const void *p2)
 /* Compare decl warning records P1 and P2 and choose one with larger count;
    helper for qsort.  */
 
-int
+static int
 decl_warning_cmp (const void *p1, const void *p2)
 {
   const decl_warn_count *t1 = *(const decl_warn_count * const *)p1;

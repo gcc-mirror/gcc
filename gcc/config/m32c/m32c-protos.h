@@ -43,7 +43,7 @@ void m32c_emit_eh_epilogue (rtx);
 int  m32c_expand_cmpstr (rtx *);
 int  m32c_expand_insv (rtx *);
 int  m32c_expand_movcc (rtx *);
-int  m32c_expand_movmemhi (rtx *);
+int  m32c_expand_cpymemhi (rtx *);
 int  m32c_expand_movstr (rtx *);
 void m32c_expand_neg_mulpsi3 (rtx *);
 int  m32c_expand_setmemhi (rtx *);

@@ -209,8 +209,9 @@ in the following sections.
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control @gol
 -faligned-new=@var{n}  -fargs-in-order=@var{n}  -fchar8_t  -fcheck-new @gol
--fconstexpr-depth=@var{n}  -fconstexpr-loop-limit=@var{n} @gol
--fconstexpr-ops-limit=@var{n} -fno-elide-constructors @gol
+-fconstexpr-depth=@var{n}  -fconstexpr-cache-depth=@var{n} @gol
+-fconstexpr-loop-limit=@var{n}  -fconstexpr-ops-limit=@var{n} @gol
+-fno-elide-constructors @gol
 -fno-enforce-eh-specs @gol
 -fno-gnu-keywords @gol
 -fno-implicit-templates @gol
@@ -229,7 +230,8 @@ in the following sections.
 -fvisibility-inlines-hidden @gol
 -fvisibility-ms-compat @gol
 -fext-numeric-literals @gol
--Wabi=@var{n}  -Wabi-tag  -Wconversion-null  -Wctor-dtor-privacy @gol
+-Wabi=@var{n}  -Wabi-tag  -Wcomma-subscript  -Wconversion-null @gol
+-Wctor-dtor-privacy @gol
 -Wdelete-non-virtual-dtor  -Wdeprecated-copy  -Wdeprecated-copy-dtor @gol
 -Wliteral-suffix @gol
 -Wmultiple-inheritance  -Wno-init-list-lifetime @gol
@@ -466,7 +468,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsignaling-nans @gol
 -fsingle-precision-constant  -fsplit-ivs-in-unroller  -fsplit-loops@gol
 -fsplit-paths @gol
--fsplit-wide-types  -fssa-backprop  -fssa-phiopt @gol
+-fsplit-wide-types  -fsplit-wide-types-early  -fssa-backprop  -fssa-phiopt @gol
 -fstdarg-opt  -fstore-merging  -fstrict-aliasing @gol
 -fthread-jumps  -ftracer  -ftree-bit-ccp @gol
 -ftree-builtin-call-dce  -ftree-ccp  -ftree-ch @gol
@@ -492,8 +494,8 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-p  -pg  -fprofile-arcs  --coverage  -ftest-coverage @gol
 -fprofile-abs-path @gol
 -fprofile-dir=@var{path}  -fprofile-generate  -fprofile-generate=@var{path} @gol
--fprofile-update=@var{method}  -fprofile-filter-files=@var{regex} @gol
--fprofile-exclude-files=@var{regex} @gol
+-fprofile-note=@var{path}  -fprofile-update=@var{method} @gol
+-fprofile-filter-files=@var{regex}  -fprofile-exclude-files=@var{regex} @gol
 -fsanitize=@var{style}  -fsanitize-recover  -fsanitize-recover=@var{style} @gol
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},... @gol
 -fsanitize-undefined-trap-on-error  -fbounds-check @gol
@@ -517,6 +519,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdebug-cpp  -fdirectives-only  -fdollars-in-identifiers  @gol
 -fexec-charset=@var{charset}  -fextended-identifiers  @gol
 -finput-charset=@var{charset}  -fmacro-prefix-map=@var{old}=@var{new}  @gol
+-fmax-include-depth=@var{depth} @gol
 -fno-canonical-system-headers  -fpch-deps  -fpch-preprocess  @gol
 -fpreprocessed  -ftabstop=@var{width}  -ftrack-macro-expansion  @gol
 -fwide-exec-charset=@var{charset}  -fworking-directory @gol
@@ -1032,7 +1035,8 @@ Objective-C and Objective-C++ Dialects}.
 @emph{OpenRISC Options}
 @gccoptlist{-mboard=@var{name}  -mnewlib  -mhard-mul  -mhard-div @gol
 -msoft-mul  -msoft-div @gol
--mcmov  -mror  -msext  -msfimm  -mshftimm}
+-msoft-float  -mhard-float  -mdouble-float -munordered-float @gol
+-mcmov  -mror  -mrori  -msext  -msfimm  -mshftimm}
 
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
@@ -1065,7 +1069,8 @@ See RS/6000 and PowerPC Options.
 -mcmodel=medlow  -mcmodel=medany @gol
 -mexplicit-relocs  -mno-explicit-relocs @gol
 -mrelax  -mno-relax @gol
--mriscv-attribute  -mmo-riscv-attribute}
+-mriscv-attribute  -mmo-riscv-attribute @gol
+-malign-data=@var{type}}
 
 @emph{RL78 Options}
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs @gol
@@ -2527,6 +2532,17 @@ to @var{n}.  A limit is needed to detect endless recursion during
 constant expression evaluation.  The minimum specified by the standard
 is 512.
 
+@item -fconstexpr-cache-depth=@var{n}
+@opindex fconstexpr-cache-depth
+Set the maximum level of nested evaluation depth for C++11 constexpr
+functions that will be cached to @var{n}.  This is a heuristic that
+trades off compilation speed (when the cache avoids repeated
+calculations) against memory consumption (when the cache grows very
+large from highly recursive evaluations).  The default is 8.  Very few
+users are likely to want to adjust it, but if your code does heavy
+constexpr calculations you might want to experiment to find which
+value works best for you.
+
 @item -fconstexpr-loop-limit=@var{n}
 @opindex fconstexpr-loop-limit
 Set the maximum number of iterations for a loop in C++14 constexpr functions
@@ -3021,6 +3037,24 @@ union U @{
 Warn when a type with an ABI tag is used in a context that does not
 have that ABI tag.  See @ref{C++ Attributes} for more information
 about ABI tags.
+
+@item -Wcomma-subscript @r{(C++ and Objective-C++ only)}
+@opindex Wcomma-subscript
+@opindex Wno-comma-subscript
+Warn about uses of a comma expression within a subscripting expression.
+This usage was deprecated in C++2a.  However, a comma expression wrapped
+in @code{( )} is not deprecated.  Example:
+
+@smallexample
+@group
+void f(int *a, int b, int c) @{
+    a[b,c];     // deprecated
+    a[(b,c)];   // OK
+@}
+@end group
+@end smallexample
+
+Enabled by default with @option{-std=c++2a}.
 
 @item -Wctor-dtor-privacy @r{(C++ and Objective-C++ only)}
 @opindex Wctor-dtor-privacy
@@ -5995,8 +6029,9 @@ Warn about types with virtual methods where code quality would be improved
 if the type were declared with the C++11 @code{final} specifier, 
 or, if possible,
 declared in an anonymous namespace. This allows GCC to more aggressively
-devirtualize the polymorphic calls. This warning is more effective with link
-time optimization, where the information about the class hierarchy graph is
+devirtualize the polymorphic calls. This warning is more effective with 
+link-time optimization, 
+where the information about the class hierarchy graph is
 more complete.
 
 @item -Wsuggest-final-methods
@@ -8407,10 +8442,10 @@ no effect.  Otherwise @option{-Og} enables all @option{-O1}
 optimization flags except for those that may interfere with debugging:
 
 @gccoptlist{-fbranch-count-reg  -fdelayed-branch @gol
--fif-conversion  -fif-conversion2  @gol
+-fdse  -fif-conversion  -fif-conversion2  @gol
 -finline-functions-called-once @gol
 -fmove-loop-invariants  -fssa-phiopt @gol
--ftree-bit-ccp  -ftree-pta  -ftree-sra}
+-ftree-bit-ccp  -ftree-dse  -ftree-pta  -ftree-sra}
 
 @end table
 
@@ -8716,6 +8751,13 @@ but may make debugging more difficult.
 
 Enabled at levels @option{-O}, @option{-O2}, @option{-O3},
 @option{-Os}.
+
+@item -fsplit-wide-types-early
+@opindex fsplit-wide-types-early
+Fully split wide types early, instead of very late.
+This option has no effect unless @option{-fsplit-wide-types} is turned on.
+
+This is the default on some targets.
 
 @item -fcse-follow-jumps
 @opindex fcse-follow-jumps
@@ -9849,6 +9891,9 @@ This optimization is enabled by default.
 With this option, the compiler creates multiple copies of some
 local variables when unrolling a loop, which can result in superior code.
 
+This optimization is enabled by default for PowerPC targets, but disabled
+by default otherwise.
+
 @item -fpartial-inlining
 @opindex fpartial-inlining
 Inline parts of functions.  This option has any effect only
@@ -10370,14 +10415,19 @@ If you specify the optional @var{n}, the optimization and code
 generation done at link time is executed in parallel using @var{n}
 parallel jobs by utilizing an installed @command{make} program.  The
 environment variable @env{MAKE} may be used to override the program
-used.  The default value for @var{n} is 1.
+used.
 
 You can also specify @option{-flto=jobserver} to use GNU make's
 job server mode to determine the number of parallel jobs. This
 is useful when the Makefile calling GCC is already executing in parallel.
 You must prepend a @samp{+} to the command recipe in the parent Makefile
 for this to work.  This option likely only works if @env{MAKE} is
-GNU make.
+GNU make.  Even without the option value, GCC tries to automatically
+detect a running GNU make's job server.
+
+Use @option{-flto=auto} to use GNU make's job server, if available,
+or otherwise fall back to autodetection of the number of CPU threads
+present in your system.
 
 @item -flto-partition=@var{alg}
 @opindex flto-partition
@@ -11416,13 +11466,38 @@ for vectorizer. Value -1 means no limit.
 The maximum number of iterations of a loop the brute-force algorithm
 for analysis of the number of iterations of the loop tries to evaluate.
 
+@item hot-bb-count-fraction
+The denominator n of fraction 1/n of the maximal execution count of a
+basic block in the entire program that a basic block needs to at least
+have in order to be considered hot.  The default is 10000, which means
+that a basic block is considered hot if its execution count is greater
+than 1/10000 of the maximal execution count.  0 means that it is never
+considered hot.  Used in non-LTO mode.
+
 @item hot-bb-count-ws-permille
-A basic block profile count is considered hot if it contributes to 
-the given permillage (i.e.@: 0...1000) of the entire profiled execution.
+The number of most executed permilles, ranging from 0 to 1000, of the
+profiled execution of the entire program to which the execution count
+of a basic block must be part of in order to be considered hot.  The
+default is 990, which means that a basic block is considered hot if
+its execution count contributes to the upper 990 permilles, or 99.0%,
+of the profiled execution of the entire program.  0 means that it is
+never considered hot.  Used in LTO mode.
 
 @item hot-bb-frequency-fraction
-Select fraction of the entry block frequency of executions of basic block in
-function given basic block needs to have to be considered hot.
+The denominator n of fraction 1/n of the execution frequency of the
+entry block of a function that a basic block of this function needs
+to at least have in order to be considered hot.  The default is 1000,
+which means that a basic block is considered hot in a function if it
+is executed more frequently than 1/1000 of the frequency of the entry
+block of the function.  0 means that it is never considered hot.
+
+@item unlikely-bb-count-fraction
+The denominator n of fraction 1/n of the number of profiled runs of
+the entire program below which the execution count of a basic block
+must be in order for the basic block to be considered unlikely executed.
+The default is 20, which means that a basic block is considered unlikely
+executed if it is executed in fewer than 1/20, or 5%, of the runs of
+the program.  0 means that it is always considered unlikely executed.
 
 @item max-predicted-iterations
 The maximum number of loop iterations we predict statically.  This is useful
@@ -11871,12 +11946,6 @@ of iterations of a loop known, it adds a bonus of
 @option{ipa-cp-loop-hint-bonus} to the profitability score of
 the candidate.
 
-@item ipa-cp-array-index-hint-bonus
-When IPA-CP determines that a cloning candidate would make the index of
-an array access known, it adds a bonus of
-@option{ipa-cp-array-index-hint-bonus} to the profitability
-score of the candidate.
-
 @item ipa-max-aa-steps
 During its analysis of function bodies, IPA-CP employs alias analysis
 in order to track values pointed to by function parameters.  In order
@@ -12109,11 +12178,6 @@ A threshold on the average loop count considered by the swing modulo scheduler.
 The number of cycles the swing modulo scheduler considers when checking
 conflicts using DFA.
 
-@item hot-bb-count-fraction
-Select fraction of the maximal count of repetitions of basic block
-in program given basic block needs
-to have to be considered hot (used in non-LTO mode)
-
 @item max-inline-insns-recursive-auto
 The maximum number of instructions non-inline function
 can grow to via recursive inlining.
@@ -12150,10 +12214,6 @@ Maximum number of arrays per scop.
 
 @item max-vartrack-reverse-op-size
 Max. size of loc list for which reverse ops should be added.
-
-@item unlikely-bb-count-fraction
-The minimum fraction of profile runs a given basic block execution count
-must be not to be considered unlikely.
 
 @item tracer-dynamic-coverage-feedback
 The percentage of function, weighted by execution frequency,
@@ -12200,6 +12260,13 @@ The maximum number of instructions that an outer loop can have
 before the loop versioning pass considers it too big to copy,
 discounting any instructions in inner loops that directly benefit
 from versioning.
+
+@item ssa-name-def-chain-limit
+The maximum number of SSA_NAME assignments to follow in determining
+a property of a variable such as its value.  This limits the number
+of iterations or recursive calls GCC performs when optimizing certain
+statements or when determining their validity prior to issuing
+diagnostics.
 
 @end table
 @end table
@@ -12352,7 +12419,7 @@ profile data file appears in the same directory as the object file.
 In order to prevent the file name clashing, if the object file name is
 not an absolute path, we mangle the absolute path of the
 @file{@var{sourcename}.gcda} file and use it as the file name of a
-@file{.gcda} file.
+@file{.gcda} file.  See similar option @option{-fprofile-note}.
 
 When an executable is run in a massive parallel environment, it is recommended
 to save profile to different folders.  That can be done with variables
@@ -12386,6 +12453,13 @@ the profile feedback data files. See @option{-fprofile-dir}.
 
 To optimize the program based on the collected profile information, use
 @option{-fprofile-use}.  @xref{Optimize Options}, for more information.
+
+@item -fprofile-note=@var{path}
+@opindex fprofile-note
+
+If @var{path} is specified, GCC saves @file{.gcno} file into @var{path}
+location.  If you combine the option with multiple source files,
+the @file{.gcno} file will be overwritten.
 
 @item -fprofile-update=@var{method}
 @opindex fprofile-update
@@ -13175,49 +13249,49 @@ Options}.
 
 @item -flinker-output=@var{type}
 @opindex flinker-output
-This option controls code generation of the link time optimizer.  By
+This option controls code generation of the link-time optimizer.  By
 default the linker output is automatically determined by the linker
 plugin.  For debugging the compiler and if incremental linking with a 
 non-LTO object file is desired, it may be useful to control the type
 manually.
 
-If @var{type} is @samp{exec} code generation produces a static
+If @var{type} is @samp{exec}, code generation produces a static
 binary. In this case @option{-fpic} and @option{-fpie} are both
 disabled.
 
-If @var{type} is @samp{dyn} code generation produces a shared
+If @var{type} is @samp{dyn}, code generation produces a shared
 library.  In this case @option{-fpic} or @option{-fPIC} is preserved,
 but not enabled automatically.  This allows to build shared libraries
-without position independent code on architectures where this is
+without position-independent code on architectures where this is
 possible, i.e.@: on x86.
 
-If @var{type} is @samp{pie} code generation produces an @option{-fpie}
+If @var{type} is @samp{pie}, code generation produces an @option{-fpie}
 executable. This results in similar optimizations as @samp{exec}
 except that @option{-fpie} is not disabled if specified at compilation
 time.
 
-If @var{type} is @samp{rel} the compiler assumes that incremental linking is
+If @var{type} is @samp{rel}, the compiler assumes that incremental linking is
 done.  The sections containing intermediate code for link-time optimization are
 merged, pre-optimized, and output to the resulting object file. In addition, if
-@option{-ffat-lto-objects} is specified the binary code is produced for future
-non-LTO linking. The object file produced by incremental linking will be smaller
+@option{-ffat-lto-objects} is specified, binary code is produced for future
+non-LTO linking. The object file produced by incremental linking is smaller
 than a static library produced from the same object files.  At link time the
-result of incremental linking will also load faster to compiler than a static
+result of incremental linking also loads faster than a static
 library assuming that the majority of objects in the library are used.
 
 Finally @samp{nolto-rel} configures the compiler for incremental linking where
-code generation is forced, a final binary is produced and the intermediate
+code generation is forced, a final binary is produced, and the intermediate
 code for later link-time optimization is stripped. When multiple object files
-are linked together the resulting code will be optimized better than with
-link-time optimizations disabled (for example, cross-module inlining will
-happen), most of benefits of whole program optimizations are however lost. 
+are linked together the resulting code is better optimized than with
+link-time optimizations disabled (for example, cross-module inlining 
+happens), but most of benefits of whole program optimizations are lost. 
 
-During the incremental link (by @option{-r}) the linker plugin will default to
+During the incremental link (by @option{-r}) the linker plugin defaults to
 @option{rel}. With current interfaces to GNU Binutils it is however not
 possible to incrementally link LTO objects and non-LTO objects into a single
-mixed object file.  In the case any of object files in incremental link cannot
-be used for link-time optimization the linker plugin will issue a warning and
-use @samp{nolto-rel}. To maintain the whole program optimization it is
+mixed object file.  If any of object files in incremental link cannot
+be used for link-time optimization, the linker plugin issues a warning and
+uses @samp{nolto-rel}. To maintain whole program optimization, it is
 recommended to link such objects into static library instead. Alternatively it
 is possible to use H.J. Lu's binutils with support for mixed objects.
 
@@ -15364,8 +15438,8 @@ Disabled by default.
 
 @item -flto-report-wpa
 @opindex flto-report-wpa
-Like @option{-flto-report}, but only print for the WPA phase of Link
-Time Optimization.
+Like @option{-flto-report}, but only print for the WPA phase of link-time
+optimization.
 
 @item -fmem-report
 @opindex fmem-report
@@ -16051,7 +16125,7 @@ not affect code generation.  This option is enabled by default for
 @item sve2
 Enable the Armv8-a Scalable Vector Extension 2.  This also enables SVE
 instructions.
-@item bitperm
+@item sve2-bitperm
 Enable SVE2 bitperm instructions.  This also enables SVE2 instructions.
 @item sve2-sm4
 Enable SVE2 sm4 instructions.  This also enables SVE2 instructions.
@@ -16060,6 +16134,8 @@ Enable SVE2 aes instructions.  This also enables SVE2 instructions.
 @item sve2-sha3
 Enable SVE2 sha3 instructions.  This also enables SVE2 instructions.
 @option{-march=armv8.5-a}.
+@item tme
+Enable the Transactional Memory Extension.
 
 @end table
 
@@ -22968,7 +23044,12 @@ command line.  The script's name is the name of the MCU with
 command line defines the C preprocessor symbol @code{__XXX__} and
 cause the linker to search for a script called @file{xxx.ld}.
 
-This option is also passed on to the assembler.
+The ISA and hardware multiply supported for the different MCUs is hard-coded
+into GCC.  However, an external @samp{devices.csv} file can be used to
+extend device support beyond those that have been hard-coded.
+
+GCC searches for the @samp{devices.csv} file on the paths specified
+with the @code{-I} and @code{-L} options.
 
 @item -mwarn-mcu
 @itemx -mno-warn-mcu
@@ -23056,6 +23137,13 @@ the named silicon errata.
 @opindex msilicon-errata-warn
 This option passes on a request to the assembler to enable warning
 messages when a silicon errata might need to be applied.
+
+@item -mwarn-devices-csv
+@itemx -mno-warn-devices-csv
+@opindex mwarn-devices-csv
+@opindex mno-warn-devices-csv
+Warn if @samp{devices.csv} is not found or there are problem parsing it
+(default: on).
 
 @end table
 
@@ -23617,50 +23705,76 @@ newlib board library linking.  The default is @code{or1ksim}.
 
 @item -mnewlib
 @opindex mnewlib
-For compatibility, it's always newlib for elf now.
+This option is ignored; it is for compatibility purposes only.  This used to
+select linker and preprocessor options for use with newlib.
 
-@item -mhard-div
+@item -msoft-div
+@itemx -mhard-div
+@opindex msoft-div
 @opindex mhard-div
-Generate code for hardware which supports divide instructions.  This is the
-default.
+Select software or hardware divide (@code{l.div}, @code{l.divu}) instructions.
+This default is hardware divide.
 
-@item -mhard-mul
+@item -msoft-mul
+@itemx -mhard-mul
+@opindex msoft-mul
 @opindex mhard-mul
-Generate code for hardware which supports multiply instructions.  This is the
-default.
+Select software or hardware multiply (@code{l.mul}, @code{l.muli}) instructions.
+This default is hardware multiply.
+
+@item -msoft-float
+@itemx -mhard-float
+@opindex msoft-float
+@opindex mhard-float
+Select software or hardware for floating point operations.
+The default is software.
+
+@item -mdouble-float
+@opindex mdouble-float
+When @option{-mhard-float} is selected, enables generation of double-precision
+floating point instructions.  By default functions from @file{libgcc} are used
+to perform double-precision floating point operations.
+
+@item -munordered-float
+@opindex munordered-float
+When @option{-mhard-float} is selected, enables generation of unordered
+floating point compare and set flag (@code{lf.sfun*}) instructions.  By default
+functions from @file{libgcc} are used to perform unordered floating point
+compare and set flag operations.
 
 @item -mcmov
 @opindex mcmov
-Generate code for hardware which supports the conditional move (@code{l.cmov})
-instruction.
+Enable generation of conditional move (@code{l.cmov}) instructions.  By
+default the equivalent will be generated using using set and branch.
 
 @item -mror
 @opindex mror
-Generate code for hardware which supports rotate right instructions.
+Enable generation of rotate right (@code{l.ror}) instructions.  By default
+functions from @file{libgcc} are used to perform rotate right operations.
+
+@item -mrori
+@opindex mrori
+Enable generation of rotate right with immediate (@code{l.rori}) instructions.
+By default functions from @file{libgcc} are used to perform rotate right with
+immediate operations.
 
 @item -msext
 @opindex msext
-Generate code for hardware which supports sign-extension instructions.
+Enable generation of sign extension (@code{l.ext*}) instructions.  By default
+memory loads are used to perform sign extension.
 
 @item -msfimm
 @opindex msfimm
-Generate code for hardware which supports set flag immediate (@code{l.sf*i})
-instructions.
+Enable generation of compare and set flag with immediate (@code{l.sf*i})
+instructions.  By default extra instructions will be generated to store the
+immediate to a register first.
 
 @item -mshftimm
 @opindex mshftimm
-Generate code for hardware which supports shift immediate related instructions
-(i.e. @code{l.srai}, @code{l.srli}, @code{l.slli}, @code{1.rori}).  Note, to
-enable generation of the @code{l.rori} instruction the @option{-mror} flag must
-also be specified.
+Enable generation of shift with immediate (@code{l.srai}, @code{l.srli},
+@code{l.slli}) instructions.  By default extra instructions will be generated
+to store the immediate to a register first.
 
-@item -msoft-div
-@opindex msoft-div
-Generate code for hardware which requires divide instruction emulation.
-
-@item -msoft-mul
-@opindex msoft-mul
-Generate code for hardware which requires multiply instruction emulation.
 
 @end table
 
@@ -23980,6 +24094,13 @@ linker relaxations.
 @itemx -mno-emit-attribute
 Emit (do not emit) RISC-V attribute to record extra information into ELF
 objects.  This feature requires at least binutils 2.32.
+
+@item -malign-data=@var{type}
+@opindex malign-data
+Control how GCC aligns variables and constants of array, structure, or union
+types.  Supported values for @var{type} are @samp{xlen} which uses x register
+width as the alignment value, and @samp{natural} which uses natural alignment.
+@samp{xlen} is the default.
 @end table
 
 @node RL78 Options

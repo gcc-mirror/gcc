@@ -79,7 +79,7 @@ var_map_base_fini (var_map map)
    function.  */
 
 var_map
-init_var_map (int size, struct loop *loop)
+init_var_map (int size, class loop *loop)
 {
   var_map map;
 
@@ -852,7 +852,7 @@ remove_unused_locals (void)
 
   if (cfun->has_simduid_loops)
     {
-      struct loop *loop;
+      class loop *loop;
       FOR_EACH_LOOP (loop, 0)
 	if (loop->simduid && !is_used_p (loop->simduid))
 	  loop->simduid = NULL_TREE;

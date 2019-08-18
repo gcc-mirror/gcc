@@ -68,18 +68,18 @@ __udivmodsi3_internal:
 	   is not clobbered by this routine, and use that as to
 	   save a return address without creating a stack frame.  */
 
-	l.sfeqi		r4, 0		/* division by zero; return 0.  */
+	l.sfeq		r4, r0		/* division by zero; return 0.  */
 	l.ori		r11, r0, 0	/* initial quotient */
 	l.bf		9f
 	 l.ori		r12, r3, 0	/* initial remainder */
 
 	/* Given X/Y, shift Y left until Y >= X.  */
 	l.ori		r6, r0, 1	/* mask = 1 */
-1:	l.sfltsi	r4, 0		/* y has msb set */
+1:	l.sflts		r4, r0		/* y has msb set */
 	l.bf		2f
 	 l.sfltu	r4, r12		/* y < x */
 	l.add		r4, r4, r4	/* y <<= 1 */
-	l.bnf		1b
+	l.bf		1b
 	 l.add		r6, r6, r6	/* mask <<= 1 */
 
 	/* Shift Y back to the right again, subtracting from X.  */

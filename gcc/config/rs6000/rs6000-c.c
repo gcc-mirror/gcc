@@ -6124,7 +6124,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
   vec<tree, va_gc> *arglist = static_cast<vec<tree, va_gc> *> (passed_arglist);
   unsigned int nargs = vec_safe_length (arglist);
   enum rs6000_builtins fcode
-    = (enum rs6000_builtins)DECL_FUNCTION_CODE (fndecl);
+    = (enum rs6000_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   tree fnargs = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
   tree types[3], args[3];
   const struct altivec_builtin_types *desc;
@@ -7036,8 +7036,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 		    name, internal_name);
 	  }
 	else
-	  error ("builtin function %qs not supported in this compiler "
-		 "configuration", name);
+	  error ("%qs is not supported in this compiler configuration", name);
 	/* If an error-representing  result tree was returned from
 	   altivec_build_resolved_builtin above, use it.  */
 	return (result != NULL) ? result : error_mark_node;

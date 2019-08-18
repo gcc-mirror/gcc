@@ -220,8 +220,9 @@ static bitmap scratch = NULL;
 struct insn_info_type;
 
 /* This structure holds information about a candidate store.  */
-struct store_info
+class store_info
 {
+public:
 
   /* False means this is a clobber.  */
   bool is_set;
@@ -277,7 +278,7 @@ struct store_info
     } positions_needed;
 
   /* The next store info for this insn.  */
-  struct store_info *next;
+  class store_info *next;
 
   /* The right hand side of the store.  This is used if there is a
      subsequent reload of the mems address somewhere later in the
@@ -309,8 +310,9 @@ static object_allocator<store_info> rtx_store_info_pool ("rtx_store_info_pool");
 
 /* This structure holds information about a load.  These are only
    built for rtx bases.  */
-struct read_info_type
+class read_info_type
 {
+public:
   /* The id of the mem group of the base address.  */
   int group_id;
 
@@ -324,9 +326,9 @@ struct read_info_type
   rtx mem;
 
   /* The next read_info for this insn.  */
-  struct read_info_type *next;
+  class read_info_type *next;
 };
-typedef struct read_info_type *read_info_t;
+typedef class read_info_type *read_info_t;
 
 static object_allocator<read_info_type> read_info_type_pool ("read_info_pool");
 
@@ -1507,7 +1509,7 @@ record_store (rtx body, bb_info_t bb_info)
   while (ptr)
     {
       insn_info_t next = ptr->next_local_store;
-      struct store_info *s_info = ptr->store_rec;
+      class store_info *s_info = ptr->store_rec;
       bool del = true;
 
       /* Skip the clobbers. We delete the active insn if this insn
@@ -3619,7 +3621,10 @@ rest_of_handle_dse (void)
   if ((locally_deleted || globally_deleted)
       && cfun->can_throw_non_call_exceptions
       && purge_all_dead_edges ())
-    cleanup_cfg (0);
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      cleanup_cfg (0);
+    }
 
   return 0;
 }

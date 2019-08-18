@@ -103,6 +103,11 @@ class Import_init
   precursors() const
   { return this->precursor_functions_; }
 
+  // Whether this is a dummy init, which is used only to record transitive import.
+  bool
+  is_dummy() const
+  { return this->init_name_[0] == '~'; }
+
  private:
   // The name of the package being imported.
   std::string package_name_;
@@ -744,9 +749,17 @@ class Gogo
   void
   remove_shortcuts();
 
+  // Turn short-cut operators into explicit if statements in a block.
+  void
+  remove_shortcuts_in_block(Block*);
+
   // Use temporary variables to force order of evaluation.
   void
   order_evaluations();
+
+  // Order evaluations in a block.
+  void
+  order_block(Block*);
 
   // Add write barriers as needed.
   void
@@ -912,13 +925,23 @@ class Gogo
   const std::string&
   get_init_fn_name();
 
+  // Return the name for a dummy init function, which is not a real
+  // function but only for tracking transitive import.
+  std::string
+  dummy_init_fn_name();
+
+  // Return the package path symbol from an init function name, which
+  // can be a real init function or a dummy one.
+  std::string
+  pkgpath_from_init_fn_name(std::string);
+
   // Return the name for a type descriptor symbol.
   std::string
-  type_descriptor_name(Type*, Named_type*);
+  type_descriptor_name(const Type*, Named_type*);
 
   // Return the name of the type descriptor list symbol of a package.
   std::string
-  type_descriptor_list_symbol(Package*);
+  type_descriptor_list_symbol(std::string);
 
   // Return the name of the list of all type descriptor lists.
   std::string
@@ -3539,6 +3562,24 @@ class Traverse
   Types_seen* types_seen_;
   // Expressions which have been seen in this traversal.
   Expressions_seen* expressions_seen_;
+};
+
+// This class looks for interface types to finalize methods of inherited
+// interfaces.
+
+class Finalize_methods : public Traverse
+{
+ public:
+  Finalize_methods(Gogo* gogo)
+    : Traverse(traverse_types),
+      gogo_(gogo)
+  { }
+
+  int
+  type(Type*);
+
+ private:
+  Gogo* gogo_;
 };
 
 // A class which makes it easier to insert new statements before the

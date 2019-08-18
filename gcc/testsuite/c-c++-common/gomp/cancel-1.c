@@ -336,14 +336,14 @@ f2 (void)
   }
   #pragma omp target teams
   {
-    #pragma omp cancel parallel			/* { dg-error "only .distribute. or .parallel. regions are allowed to be strictly nested" } */
-    #pragma omp cancel for			/* { dg-error "only .distribute. or .parallel. regions are allowed to be strictly nested" } */
-    #pragma omp cancel sections			/* { dg-error "only .distribute. or .parallel. regions are allowed to be strictly nested" } */
-    #pragma omp cancel taskgroup		/* { dg-error "only .distribute. or .parallel. regions are allowed to be strictly nested" } */
-    #pragma omp cancellation point parallel	/* { dg-error "only .distribute. or .parallel. regions are allowed to be strictly nested" } */
-    #pragma omp cancellation point for		/* { dg-error "only .distribute. or .parallel. regions are allowed to be strictly nested" } */
-    #pragma omp cancellation point sections	/* { dg-error "only .distribute. or .parallel. regions are allowed to be strictly nested" } */
-    #pragma omp cancellation point taskgroup	/* { dg-error "only .distribute. or .parallel. regions are allowed to be strictly nested" } */
+    #pragma omp cancel parallel			/* { dg-error "only .distribute., .parallel. or .loop. regions are allowed to be strictly nested" } */
+    #pragma omp cancel for			/* { dg-error "only .distribute., .parallel. or .loop. regions are allowed to be strictly nested" } */
+    #pragma omp cancel sections			/* { dg-error "only .distribute., .parallel. or .loop. regions are allowed to be strictly nested" } */
+    #pragma omp cancel taskgroup		/* { dg-error "only .distribute., .parallel. or .loop. regions are allowed to be strictly nested" } */
+    #pragma omp cancellation point parallel	/* { dg-error "only .distribute., .parallel. or .loop. regions are allowed to be strictly nested" } */
+    #pragma omp cancellation point for		/* { dg-error "only .distribute., .parallel. or .loop. regions are allowed to be strictly nested" } */
+    #pragma omp cancellation point sections	/* { dg-error "only .distribute., .parallel. or .loop. regions are allowed to be strictly nested" } */
+    #pragma omp cancellation point taskgroup	/* { dg-error "only .distribute., .parallel. or .loop. regions are allowed to be strictly nested" } */
   }
   #pragma omp target teams distribute
   for (i = 0; i < 10; i++)

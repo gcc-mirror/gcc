@@ -676,9 +676,15 @@ package body Sem_Ch4 is
 
                --  In GNATprove mode we need to preserve the link between
                --  the original subtype indication and the anonymous subtype,
-               --  to extend proofs to constrained acccess types.
+               --  to extend proofs to constrained acccess types. We only do
+               --  that outside of spec expressions, otherwise the declaration
+               --  cannot be inserted and analyzed. In such a case, GNATprove
+               --  later rejects the allocator as it is not used here in
+               --  a non-interfering context (SPARK 4.8(2) and 7.1.3(12)).
 
-               if Expander_Active or else GNATprove_Mode then
+               if Expander_Active
+                 or else (GNATprove_Mode and then not In_Spec_Expression)
+               then
                   Def_Id := Make_Temporary (Loc, 'S');
 
                   Insert_Action (E,
@@ -1699,7 +1705,7 @@ package body Sem_Ch4 is
 
       --  If the case expression is a formal object of mode in out, then
       --  treat it as having a nonstatic subtype by forcing use of the base
-      --  type (which has to get passed to Check_Case_Choices below).  Also
+      --  type (which has to get passed to Check_Case_Choices below). Also
       --  use base type when the case expression is parenthesized.
 
       if Paren_Count (Expr) > 0
@@ -2101,21 +2107,12 @@ package body Sem_Ch4 is
       if not Is_Overloaded (P) then
          if Is_Access_Type (Etype (P)) then
 
-            --  Set the Etype. We need to go through Is_For_Access_Subtypes to
-            --  avoid other problems caused by the Private_Subtype and it is
-            --  safe to go to the Base_Type because this is the same as
-            --  converting the access value to its Base_Type.
+            --  Set the Etype
 
             declare
-               DT : Entity_Id := Designated_Type (Etype (P));
+               DT : constant Entity_Id := Designated_Type (Etype (P));
 
             begin
-               if Ekind (DT) = E_Private_Subtype
-                 and then Is_For_Access_Subtype (DT)
-               then
-                  DT := Base_Type (DT);
-               end if;
-
                --  An explicit dereference is a legal occurrence of an
                --  incomplete type imported through a limited_with clause, if
                --  the full view is visible, or if we are within an instance
@@ -3628,59 +3625,6 @@ package body Sem_Ch4 is
                   Next_Actual (Actual);
                   Next_Formal (Formal);
 
-               --  In a complex case where an enclosing generic and a nested
-               --  generic package, both declared with partially parameterized
-               --  formal subprograms with the same names, are instantiated
-               --  with the same type, the types of the actual parameter and
-               --  that of the formal may appear incompatible at first sight.
-
-               --   generic
-               --      type Outer_T is private;
-               --      with function Func (Formal : Outer_T)
-               --                         return ... is <>;
-
-               --   package Outer_Gen is
-               --      generic
-               --         type Inner_T is private;
-               --         with function Func (Formal : Inner_T)   --  (1)
-               --           return ... is <>;
-
-               --      package Inner_Gen is
-               --         function Inner_Func (Formal : Inner_T)  --  (2)
-               --           return ... is (Func (Formal));
-               --      end Inner_Gen;
-               --   end Outer_Generic;
-
-               --   package Outer_Inst is new Outer_Gen (Actual_T);
-               --   package Inner_Inst is new Outer_Inst.Inner_Gen (Actual_T);
-
-               --  In the example above, the type of parameter
-               --  Inner_Func.Formal at (2) is incompatible with the type of
-               --  Func.Formal at (1) in the context of instantiations
-               --  Outer_Inst and Inner_Inst. In reality both types are generic
-               --  actual subtypes renaming base type Actual_T as part of the
-               --  generic prologues for the instantiations.
-
-               --  Recognize this case and add a type conversion to allow this
-               --  kind of generic actual subtype conformance. Note that this
-               --  is done only when the call is non-overloaded because the
-               --  resolution mechanism already has the means to disambiguate
-               --  similar cases.
-
-               elsif not Is_Overloaded (Name (N))
-                 and then Is_Type (Etype (Actual))
-                 and then Is_Type (Etype (Formal))
-                 and then Is_Generic_Actual_Type (Etype (Actual))
-                 and then Is_Generic_Actual_Type (Etype (Formal))
-                 and then Base_Type (Etype (Actual)) =
-                          Base_Type (Etype (Formal))
-               then
-                  Rewrite (Actual,
-                    Convert_To (Etype (Formal), Relocate_Node (Actual)));
-                  Analyze_And_Resolve (Actual, Etype (Formal));
-                  Next_Actual (Actual);
-                  Next_Formal (Formal);
-
                --  Handle failed type check
 
                else
@@ -5050,7 +4994,15 @@ package body Sem_Ch4 is
                if Comp = First_Private_Entity (Type_To_Use) then
                   if Etype (Sel) /= Any_Type then
 
-                     --  We have a candiate
+                     --  If the first private entity's name matches, then treat
+                     --  it as a private op: needed for the error check for
+                     --  illegal selection of private entities further below.
+
+                     if Chars (Comp) = Chars (Sel) then
+                        Is_Private_Op := True;
+                     end if;
+
+                     --  We have a candidate, so exit the loop
 
                      exit;
 
@@ -6173,33 +6125,57 @@ package body Sem_Ch4 is
 
       if Nkind (N) = N_Function_Call then
          Get_First_Interp (Nam, X, It);
-         while Present (It.Nam) loop
-            if Ekind_In (It.Nam, E_Function, E_Operator) then
-               return;
-            else
-               Get_Next_Interp (X, It);
-            end if;
-         end loop;
 
-         --  If all interpretations are procedures, this deserves a
-         --  more precise message. Ditto if this appears as the prefix
-         --  of a selected component, which may be a lexical error.
-
-         Error_Msg_N
-           ("\context requires function call, found procedure name", Nam);
-
-         if Nkind (Parent (N)) = N_Selected_Component
-           and then N = Prefix (Parent (N))
+         if No (It.Typ)
+           and then Ekind (Entity (Name (N))) = E_Function
+           and then Present (Homonym (Entity (Name (N))))
          then
-            Error_Msg_N -- CODEFIX
-              ("\period should probably be semicolon", Parent (N));
+            --  A name may appear overloaded if it has a homonym, even if that
+            --  homonym is non-overloadable, in which case the overload list is
+            --  in fact empty. This specialized case deserves a special message
+            --  if the homonym is a child package.
+
+            declare
+               Nam : constant Node_Id := Name (N);
+               H   : constant Entity_Id := Homonym (Entity (Nam));
+
+            begin
+               if Ekind (H) = E_Package and then Is_Child_Unit (H) then
+                  Error_Msg_Qual_Level := 2;
+                  Error_Msg_NE ("if an entity in package& is meant, ", Nam, H);
+                  Error_Msg_NE ("\use a fully qualified name", Nam, H);
+                  Error_Msg_Qual_Level := 0;
+               end if;
+            end;
+
+         else
+            while Present (It.Nam) loop
+               if Ekind_In (It.Nam, E_Function, E_Operator) then
+                  return;
+               else
+                  Get_Next_Interp (X, It);
+               end if;
+            end loop;
+
+            --  If all interpretations are procedures, this deserves a more
+            --  precise message. Ditto if this appears as the prefix of a
+            --  selected component, which may be a lexical error.
+
+            Error_Msg_N
+              ("\context requires function call, found procedure name", Nam);
+
+            if Nkind (Parent (N)) = N_Selected_Component
+              and then N = Prefix (Parent (N))
+            then
+               Error_Msg_N -- CODEFIX
+                 ("\period should probably be semicolon", Parent (N));
+            end if;
          end if;
 
       elsif Nkind (N) = N_Procedure_Call_Statement
         and then not Void_Interp_Seen
       then
-         Error_Msg_N (
-         "\function name found in procedure call", Nam);
+         Error_Msg_N ("\function name found in procedure call", Nam);
       end if;
 
       All_Errors_Mode := Err_Mode;
@@ -7375,7 +7351,7 @@ package body Sem_Ch4 is
                                   Etype (Next_Formal (First_Formal (Op_Id))))
                            then
                               Error_Msg_N
-                                ("No legal interpretation for operator&", N);
+                                ("no legal interpretation for operator&", N);
                               Error_Msg_NE
                                 ("\use clause on& would make operation legal",
                                  N, Scope (Op_Id));
@@ -7392,6 +7368,26 @@ package body Sem_Ch4 is
                         if Nkind (N) /= N_Op_Concat then
                            Error_Msg_NE ("\left operand has}!",  N, Etype (L));
                            Error_Msg_NE ("\right operand has}!", N, Etype (R));
+
+                           --  For multiplication and division operators with
+                           --  a fixed-point operand and an integer operand,
+                           --  indicate that the integer operand should be of
+                           --  type Integer.
+
+                           if Nkind_In (N, N_Op_Multiply, N_Op_Divide)
+                             and then Is_Fixed_Point_Type (Etype (L))
+                             and then Is_Integer_Type (Etype (R))
+                           then
+                              Error_Msg_N
+                                ("\convert right operand to `Integer`", N);
+
+                           elsif Nkind (N) = N_Op_Multiply
+                             and then Is_Fixed_Point_Type (Etype (R))
+                             and then Is_Integer_Type (Etype (L))
+                           then
+                              Error_Msg_N
+                                ("\convert left operand to `Integer`", N);
+                           end if;
 
                         --  For concatenation operators it is more difficult to
                         --  determine which is the wrong operand. It is worth
@@ -7786,7 +7782,7 @@ package body Sem_Ch4 is
                   --  In_Parameter, but for now we examine the formal that
                   --  corresponds to the indexing, and assume that variable
                   --  indexing is required if some interpretation has an
-                  --  assignable formal at that position.  Still does not
+                  --  assignable formal at that position. Still does not
                   --  cover the most complex cases ???
 
                   if Is_Overloaded (Name (Parent (Par))) then

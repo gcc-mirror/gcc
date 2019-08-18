@@ -126,7 +126,7 @@ extern tree make_aligning_type (tree type, unsigned int align, tree size,
    MAX_ALIGN alignment if the value is non-zero.  If so, return the new
    type; if not, return the original type.  */
 extern tree make_packable_type (tree type, bool in_record,
-				unsigned int max_align = 0);
+				unsigned int max_align);
 
 /* Given a type TYPE, return a new type whose size is appropriate for SIZE.
    If TYPE is the best type, return it.  Otherwise, make a new type.  We
@@ -837,7 +837,7 @@ extern unsigned int known_alignment (tree exp);
 
 /* Return true if VALUE is a multiple of FACTOR. FACTOR must be a power
    of 2.  */
-extern bool value_factor_p (tree value, HOST_WIDE_INT factor);
+extern bool value_factor_p (tree value, unsigned HOST_WIDE_INT factor);
 
 /* Build an atomic load for the underlying atomic object in SRC.  SYNC is
    true if the load requires synchronization.  */

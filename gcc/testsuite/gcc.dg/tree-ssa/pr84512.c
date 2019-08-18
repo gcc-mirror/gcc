@@ -13,4 +13,4 @@ int foo()
 }
 
 /* Listed targets xfailed due to PR84958.  */
-/* { dg-final { scan-tree-dump "return 285;" "optimized" { xfail { { alpha*-*-* amdgcn*-*-* nvptx*-*-* } || { sparc*-*-* && lp64 } } } } } */
+/* { dg-final { scan-tree-dump "return 285;" "optimized" { xfail { amdgcn*-*-* nvptx*-*-* } } } } */

@@ -69,18 +69,23 @@ package body Exp_Imgv is
    ------------------------------------
 
    procedure Build_Enumeration_Image_Tables (E : Entity_Id; N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (E);
-      Str  : String_Id;
+      Loc : constant Source_Ptr := Sloc (E);
+
+      Eind : Entity_Id;
+      Estr : Entity_Id;
       Ind  : List_Id;
+      Ityp : Node_Id;
+      Len  : Nat;
       Lit  : Entity_Id;
       Nlit : Nat;
-      Len  : Nat;
-      Estr : Entity_Id;
-      Eind : Entity_Id;
-      Ityp : Node_Id;
+      Str  : String_Id;
+
+      Saved_SSO : constant Character := Opt.Default_SSO;
+      --  Used to save the current scalar storage order during the generation
+      --  of the literal lookup table.
 
    begin
-      --  Nothing to do for other than a root enumeration type
+      --  Nothing to do for types other than a root enumeration type
 
       if E /= Root_Type (E) then
          return;
@@ -138,6 +143,15 @@ package body Exp_Imgv is
       Set_Lit_Strings (E, Estr);
       Set_Lit_Indexes (E, Eind);
 
+      --  Temporarily set the current scalar storage order to the default
+      --  during the generation of the literals table, since both the Image and
+      --  Value attributes rely on runtime routines for interpreting table
+      --  values.
+
+      Opt.Default_SSO := ' ';
+
+      --  Generate literal table
+
       Insert_Actions (N,
         New_List (
           Make_Object_Declaration (Loc,
@@ -168,6 +182,10 @@ package body Exp_Imgv is
               Make_Aggregate (Loc,
                 Expressions => Ind))),
         Suppress => All_Checks);
+
+      --  Reset the scalar storage order to the saved value
+
+      Opt.Default_SSO := Saved_SSO;
    end Build_Enumeration_Image_Tables;
 
    ----------------------------
@@ -433,13 +451,13 @@ package body Exp_Imgv is
 
       --  Local variables
 
+      Enum_Case : Boolean;
       Imid      : RE_Id;
+      Proc_Ent  : Entity_Id;
       Ptyp      : Entity_Id;
       Rtyp      : Entity_Id;
       Tent      : Entity_Id := Empty;
       Ttyp      : Entity_Id;
-      Proc_Ent  : Entity_Id;
-      Enum_Case : Boolean;
 
       Arg_List : List_Id;
       --  List of arguments for run-time procedure call
@@ -449,6 +467,8 @@ package body Exp_Imgv is
 
       Snn : constant Entity_Id := Make_Temporary (Loc, 'S');
       Pnn : constant Entity_Id := Make_Temporary (Loc, 'P');
+
+   --  Start of processing for Expand_Image_Attribute
 
    begin
       if Is_Object_Image (Pref) then

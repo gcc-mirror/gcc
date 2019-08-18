@@ -610,6 +610,31 @@ package body Styleg is
       end if;
    end Check_Comment;
 
+   --------------------------------------
+   -- Check_Defining_Identifier_Casing --
+   --------------------------------------
+
+   procedure Check_Defining_Identifier_Casing is
+   begin
+      if Style_Check_Mixed_Case_Decls then
+         case Determine_Token_Casing is
+            when All_Lower_Case
+               | All_Upper_Case
+            =>
+               Error_Msg_SC -- CODEFIX
+                 ("(style) bad capitalization, mixed case required");
+
+            --  The Unknown case is something like A_B_C, which is both all
+            --  caps and mixed case.
+
+            when Mixed_Case
+               | Unknown
+            =>
+               null; -- OK
+         end case;
+      end if;
+   end Check_Defining_Identifier_Casing;
+
    -------------------
    -- Check_Dot_Dot --
    -------------------

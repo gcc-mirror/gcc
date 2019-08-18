@@ -219,6 +219,16 @@ is emitted (as opposed to those warnings that are suppressed by
 command-line options).
 end
 
+define reload-gdbhooks
+python import imp; imp.reload(gdbhooks)
+end
+
+document reload-gdbhooks
+Load the gdbhooks.py module again in order to pick up any changes made to it.
+end
+
+alias rh = reload-gdbhooks
+
 # Define some macros helpful to gdb when it is expanding macros.
 macro define __FILE__ "gdb"
 macro define __LINE__ 1

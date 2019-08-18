@@ -133,10 +133,20 @@ package body Bindusg is
       Write_Line
         ("  -F        Force checking of elaboration Flags");
 
+      --  Line for -G switch
+
+      Write_Line
+        ("  -G        Generate binder file suitable for CCG");
+
       --  Line for -h switch
 
       Write_Line
         ("  -h        Output this usage (help) information");
+
+      --  Line for -H switch
+
+      Write_Line
+        ("  -H        Legacy elaboration order model enabled");
 
       --  Lines for -I switch
 
@@ -167,6 +177,12 @@ package body Bindusg is
       Write_Line
         ("  -mnnn     Limit number of detected errors/warnings to nnn "
          & "(1-999999)");
+
+      --  Line for -minimal switch
+
+      Write_Line
+        ("  -minimal  Generate binder file suitable for space-constrained "
+         & "applications");
 
       --  Line for -M switch
 

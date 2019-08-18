@@ -1108,7 +1108,6 @@ setup_profitable_hard_regs (void)
 	  || empty_profitable_hard_regs (a))
 	continue;
       data = ALLOCNO_COLOR_DATA (a);
-      mode = ALLOCNO_MODE (a);
       if ((costs = ALLOCNO_UPDATED_HARD_REG_COSTS (a)) != NULL
 	  || (costs = ALLOCNO_HARD_REG_COSTS (a)) != NULL)
 	{
@@ -4558,7 +4557,7 @@ ira_reuse_stack_slot (int regno, poly_uint64 inherent_size,
   ira_allocno_t another_allocno, allocno = ira_regno_allocno_map[regno];
   rtx x;
   bitmap_iterator bi;
-  struct ira_spilled_reg_stack_slot *slot = NULL;
+  class ira_spilled_reg_stack_slot *slot = NULL;
 
   ira_assert (! ira_use_lra_p);
 
@@ -4670,7 +4669,7 @@ ira_reuse_stack_slot (int regno, poly_uint64 inherent_size,
 void
 ira_mark_new_stack_slot (rtx x, int regno, poly_uint64 total_size)
 {
-  struct ira_spilled_reg_stack_slot *slot;
+  class ira_spilled_reg_stack_slot *slot;
   int slot_num;
   ira_allocno_t allocno;
 

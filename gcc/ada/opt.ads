@@ -746,9 +746,9 @@ package Opt is
    --  file name with extension stripped.
 
    Generate_C_Code : Boolean := False;
-   --  GNAT
+   --  GNAT, GNATBIND
    --  If True, the Cprint circuitry to generate C code output is activated.
-   --  Set True by use of -gnateg or -gnatd.V.
+   --  Set True by use of -gnateg or -gnatd.V for GNAT, and -G for GNATBIND.
 
    Generate_CodePeer_Messages : Boolean := False;
    --  GNAT
@@ -947,6 +947,11 @@ package Opt is
    --  Set to True when the pre-18.x access-before-elaboration model is to be
    --  used. Modified by use of -gnatH.
 
+   Legacy_Elaboration_Order : Boolean := False;
+   --  GNATBIND
+   --  Set to True when the pre-20.x elaboration-order model is to be used.
+   --  Modified by use of -H.
+
    Link_Only : Boolean := False;
    --  GNATMAKE, GPRBUILD
    --  Set to True to skip compile and bind steps (except when Bind_Only is
@@ -1114,6 +1119,12 @@ package Opt is
    --  GNATMAKE, GPRBUILD
    --  Maximum number of processes that should be spawned to carry out
    --  compilations.
+
+   Minimal_Binder : Boolean := False;
+   --  GNATBIND
+   --  Set to True to suppress the generation of objects by the binder that
+   --  are not strictly required for a program to run. Intended for ZFP
+   --  applications that have tight memory constraints.
 
    Minimal_Recompilation : Boolean := False;
    --  GNATMAKE
@@ -1979,7 +1990,7 @@ package Opt is
    --  set by the command line switches -gnat83/95/2005/2012, and possibly
    --  modified by the use of configuration pragmas Ada_*. This switch is used
    --  to set the initial value for Ada_Version mode at the start of analysis
-   --  of a unit.  Note however that the setting of this flag is ignored for
+   --  of a unit. Note however that the setting of this flag is ignored for
    --  internal and predefined units (which are always compiled in the most up
    --  to date version of Ada).
 

@@ -79,6 +79,7 @@ package body Stylesw is
       Style_Check_Boolean_And_Or        := False;
       Style_Check_Comments              := False;
       Style_Check_DOS_Line_Terminator   := False;
+      Style_Check_Mixed_Case_Decls      := False;
       Style_Check_End_Labels            := False;
       Style_Check_Form_Feeds            := False;
       Style_Check_Horizontal_Tabs       := False;
@@ -168,6 +169,7 @@ package body Stylesw is
       end if;
 
       Add ('d', Style_Check_DOS_Line_Terminator);
+      Add ('D', Style_Check_Mixed_Case_Decls);
       Add ('e', Style_Check_End_Labels);
       Add ('f', Style_Check_Form_Feeds);
       Add ('h', Style_Check_Horizontal_Tabs);
@@ -336,6 +338,9 @@ package body Stylesw is
             when 'd' =>
                Style_Check_DOS_Line_Terminator   := True;
 
+            when 'D' =>
+               Style_Check_Mixed_Case_Decls      := True;
+
             when 'e' =>
                Style_Check_End_Labels            := True;
 
@@ -502,6 +507,9 @@ package body Stylesw is
 
             when 'd' =>
                Style_Check_DOS_Line_Terminator   := False;
+
+            when 'D' =>
+               Style_Check_Mixed_Case_Decls      := False;
 
             when 'e' =>
                Style_Check_End_Labels            := False;

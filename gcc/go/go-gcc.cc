@@ -613,6 +613,15 @@ Gcc_backend::Gcc_backend()
 						NULL_TREE),
 		       false, false);
 
+  // We use __builtin_memset for zeroing data.
+  this->define_builtin(BUILT_IN_MEMSET, "__builtin_memset", "memset",
+		       build_function_type_list(void_type_node,
+						ptr_type_node,
+						integer_type_node,
+						size_type_node,
+						NULL_TREE),
+		       false, false);
+
   // Used by runtime/internal/sys and math/bits.
   this->define_builtin(BUILT_IN_CTZ, "__builtin_ctz", "ctz",
 		       build_function_type_list(integer_type_node,

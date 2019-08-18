@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Alloc;
 with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Debug;    use Debug;
@@ -51,8 +52,12 @@ with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
-with Uname;    use Uname;
+with Table;
 with Tbuild;   use Tbuild;
+with Uintp;    use Uintp;
+with Uname;    use Uname;
+
+with GNAT.HTable;
 
 package body Inline is
 
@@ -82,11 +87,82 @@ package body Inline is
    Backend_Calls : Elist_Id;
    --  List of inline calls passed to the backend
 
+   Backend_Instances : Elist_Id;
+   --  List of instances inlined for the backend
+
    Backend_Inlined_Subps : Elist_Id;
    --  List of subprograms inlined by the backend
 
    Backend_Not_Inlined_Subps : Elist_Id;
    --  List of subprograms that cannot be inlined by the backend
+
+   -----------------------------
+   --  Pending_Instantiations --
+   -----------------------------
+
+   --  We make entries in this table for the pending instantiations of generic
+   --  bodies that are created during semantic analysis. After the analysis is
+   --  complete, calling Instantiate_Bodies performs the actual instantiations.
+
+   package Pending_Instantiations is new Table.Table (
+     Table_Component_Type => Pending_Body_Info,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 0,
+     Table_Initial        => Alloc.Pending_Instantiations_Initial,
+     Table_Increment      => Alloc.Pending_Instantiations_Increment,
+     Table_Name           => "Pending_Instantiations");
+
+   -------------------------------------
+   --  Called_Pending_Instantiations  --
+   -------------------------------------
+
+   --  With back-end inlining, the pending instantiations that are not in the
+   --  main unit or subunit are performed only after a call to the subprogram
+   --  instance, or to a subprogram within the package instance, is inlined.
+   --  Since such a call can be within a subsequent pending instantiation,
+   --  we make entries in this table that stores the index of these "called"
+   --  pending instantiations and perform them when the table is populated.
+
+   package Called_Pending_Instantiations is new Table.Table (
+     Table_Component_Type => Int,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 0,
+     Table_Initial        => Alloc.Pending_Instantiations_Initial,
+     Table_Increment      => Alloc.Pending_Instantiations_Increment,
+     Table_Name           => "Called_Pending_Instantiations");
+
+   ---------------------------------
+   --  To_Pending_Instantiations  --
+   ---------------------------------
+
+   --  With back-end inlining, we also need to have a map from the pending
+   --  instantiations to their index in the Pending_Instantiations table.
+
+   Node_Table_Size : constant := 257;
+   --  Number of headers in hash table
+
+   subtype Node_Header_Num is Integer range 0 .. Node_Table_Size - 1;
+   --  Range of headers in hash table
+
+   function Node_Hash (Id : Node_Id) return Node_Header_Num;
+   --  Simple hash function for Node_Ids
+
+   package To_Pending_Instantiations is new GNAT.Htable.Simple_HTable
+     (Header_Num => Node_Header_Num,
+      Element    => Int,
+      No_Element => -1,
+      Key        => Node_Id,
+      Hash       => Node_Hash,
+      Equal      => "=");
+
+   -----------------
+   -- Node_Hash --
+   -----------------
+
+   function Node_Hash (Id : Node_Id) return Node_Header_Num is
+   begin
+      return Node_Header_Num (Id mod Node_Table_Size);
+   end Node_Hash;
 
    --------------------
    -- Inlined Bodies --
@@ -179,8 +255,11 @@ package body Inline is
    --  called, and for the inlined subprogram that contains the call. If
    --  the call is in the main compilation unit, Caller is Empty.
 
+   procedure Add_Inlined_Instance (E : Entity_Id);
+   --  Add instance E to the list of of inlined instances for the unit
+
    procedure Add_Inlined_Subprogram (E : Entity_Id);
-   --  Add subprogram E to the list of inlined subprogram for the unit
+   --  Add subprogram E to the list of inlined subprograms for the unit
 
    function Add_Subp (E : Entity_Id) return Subp_Index;
    --  Make entry in Inlined table for subprogram E, or return table index
@@ -429,17 +508,22 @@ package body Inline is
          return Dont_Inline;
       end Must_Inline;
 
-      Level : Inline_Level_Type;
+      Inst      : Entity_Id;
+      Inst_Decl : Node_Id;
+      Inst_Node : Node_Id;
+      Level     : Inline_Level_Type;
 
    --  Start of processing for Add_Inlined_Body
 
    begin
       Append_New_Elmt (N, To => Backend_Calls);
 
-      --  Skip subprograms that cannot be inlined outside their unit
+      --  Skip subprograms that cannot or need not be inlined outside their
+      --  unit or parent subprogram.
 
       if Is_Abstract_Subprogram (E)
         or else Convention (E) = Convention_Protected
+        or else In_Main_Unit_Or_Subunit (E)
         or else Is_Nested (E)
       then
          return;
@@ -455,6 +539,22 @@ package body Inline is
       if Level = Dont_Inline then
          return;
       end if;
+
+      --  If a previous call to the subprogram has been inlined, nothing to do
+
+      if Is_Called (E) then
+         return;
+      end if;
+
+      --  If the subprogram is an instance, then inline the instance
+
+      if Is_Generic_Instance (E) then
+         Add_Inlined_Instance (E);
+      end if;
+
+      --  Mark the subprogram as called
+
+      Set_Is_Called (E);
 
       --  If the call was generated by the compiler and is to a subprogram in
       --  a run-time unit, we need to suppress debugging information for it,
@@ -476,19 +576,10 @@ package body Inline is
       --  in the spec.
 
       if Is_Non_Loading_Expression_Function (E) then
-         Set_Is_Called (E);
          return;
       end if;
 
       --  Find unit containing E, and add to list of inlined bodies if needed.
-      --  If the body is already present, no need to load any other unit. This
-      --  is the case for an initialization procedure, which appears in the
-      --  package declaration that contains the type. It is also the case if
-      --  the body has already been analyzed. Finally, if the unit enclosing
-      --  E is an instance, the instance body will be analyzed in any case,
-      --  and there is no need to add the enclosing unit (whose body might not
-      --  be available).
-
       --  Library-level functions must be handled specially, because there is
       --  no enclosing package to retrieve. In this case, it is the body of
       --  the function that will have to be loaded.
@@ -498,12 +589,68 @@ package body Inline is
 
       begin
          if Pack = E then
-            Set_Is_Called (E);
             Inlined_Bodies.Increment_Last;
             Inlined_Bodies.Table (Inlined_Bodies.Last) := E;
 
-         elsif Ekind (Pack) = E_Package then
-            Set_Is_Called (E);
+         else
+            pragma Assert (Ekind (Pack) = E_Package);
+
+            --  If the subprogram is within an instance, inline the instance
+
+            if Comes_From_Source (E) then
+               Inst := Scope (E);
+
+               while Present (Inst) and then Inst /= Standard_Standard loop
+                  exit when Is_Generic_Instance (Inst);
+                  Inst := Scope (Inst);
+               end loop;
+
+               if Present (Inst)
+                 and then Is_Generic_Instance (Inst)
+                 and then not Is_Called (Inst)
+               then
+                  --  Do not add a pending instantiation if the body exits
+                  --  already, or if the instance is a compilation unit, or
+                  --  the instance node is missing.
+
+                  Inst_Decl := Unit_Declaration_Node (Inst);
+                  if Present (Corresponding_Body (Inst_Decl))
+                    or else Nkind (Parent (Inst_Decl)) = N_Compilation_Unit
+                    or else No (Next (Inst_Decl))
+                  then
+                     Set_Is_Called (Inst);
+
+                  else
+                     --  If the inlined call itself appears within an instance,
+                     --  ensure that the enclosing instance body is available.
+                     --  This is necessary because Sem_Ch12.Might_Inline_Subp
+                     --  does not recurse into nested instantiations.
+
+                     if not Is_Inlined (Inst) and then In_Instance then
+                        Set_Is_Inlined (Inst);
+
+                        --  The instantiation node usually follows the package
+                        --  declaration for the instance. If the generic unit
+                        --  has aspect specifications, they are transformed
+                        --  into pragmas in the instance, and the instance node
+                        --  appears after them.
+
+                        Inst_Node := Next (Inst_Decl);
+
+                        while Nkind (Inst_Node) /= N_Package_Instantiation loop
+                           Inst_Node := Next (Inst_Node);
+                        end loop;
+
+                        Add_Pending_Instantiation (Inst_Node, Inst_Decl);
+                     end if;
+
+                     Add_Inlined_Instance (Inst);
+                  end if;
+               end if;
+            end if;
+
+            --  If the unit containing E is an instance, then the instance body
+            --  will be analyzed in any case, see Sem_Ch12.Might_Inline_Subp.
 
             if Is_Generic_Instance (Pack) then
                null;
@@ -515,7 +662,7 @@ package body Inline is
             --  Do not inline it either if it is in the main unit.
             --  Extend the -gnatn2 processing to -gnatn1 for Inline_Always
             --  calls if the back-end takes care of inlining the call.
-            --  Note that Level in Inline_Package | Inline_Call here.
+            --  Note that Level is in Inline_Call | Inline_Packag here.
 
             elsif ((Level = Inline_Call
                       and then Has_Pragma_Inline_Always (E)
@@ -537,6 +684,39 @@ package body Inline is
          Inline_Processing_Required := True;
       end;
    end Add_Inlined_Body;
+
+   --------------------------
+   -- Add_Inlined_Instance --
+   --------------------------
+
+   procedure Add_Inlined_Instance (E : Entity_Id) is
+      Decl_Node : constant Node_Id := Unit_Declaration_Node (E);
+      Index     : Int;
+
+   begin
+      --  This machinery is only used with back-end inlining
+
+      if not Back_End_Inlining then
+         return;
+      end if;
+
+      --  Register the instance in the list
+
+      Append_New_Elmt (Decl_Node, To => Backend_Instances);
+
+      --  Retrieve the index of its corresponding pending instantiation
+      --  and mark this corresponding pending instantiation as needed.
+
+      Index := To_Pending_Instantiations.Get (Decl_Node);
+      if Index >= 0 then
+         Called_Pending_Instantiations.Append (Index);
+      else
+         pragma Assert (False);
+         null;
+      end if;
+
+      Set_Is_Called (E);
+   end Add_Inlined_Instance;
 
    ----------------------------
    -- Add_Inlined_Subprogram --
@@ -574,21 +754,17 @@ package body Inline is
    --  Start of processing for Add_Inlined_Subprogram
 
    begin
-      --  If the subprogram is to be inlined, and if its unit is known to be
-      --  inlined or is an instance whose body will be analyzed anyway or the
-      --  subprogram was generated as a body by the compiler (for example an
-      --  initialization procedure) or its declaration was provided along with
-      --  the body (for example an expression function), and if it is declared
-      --  at the library level not in the main unit, and if it can be inlined
-      --  by the back-end, then insert it in the list of inlined subprograms.
+      --  We can inline the subprogram if its unit is known to be inlined or is
+      --  an instance whose body will be analyzed anyway or the subprogram was
+      --  generated as a body by the compiler (for example an initialization
+      --  procedure) or its declaration was provided along with the body (for
+      --  example an expression function) and it does not declare types with
+      --  nontrivial initialization procedures.
 
-      if Is_Inlined (E)
-        and then (Is_Inlined (Pack)
-                   or else Is_Generic_Instance (Pack)
-                   or else Nkind (Decl) = N_Subprogram_Body
-                   or else Present (Corresponding_Body (Decl)))
-        and then not In_Main_Unit_Or_Subunit (E)
-        and then not Is_Nested (E)
+      if (Is_Inlined (Pack)
+           or else Is_Generic_Instance (Pack)
+           or else Nkind (Decl) = N_Subprogram_Body
+           or else Present (Corresponding_Body (Decl)))
         and then not Has_Initialized_Type (E)
       then
          Register_Backend_Inlined_Subprogram (E);
@@ -605,6 +781,63 @@ package body Inline is
          Register_Backend_Not_Inlined_Subprogram (E);
       end if;
    end Add_Inlined_Subprogram;
+
+   --------------------------------
+   --  Add_Pending_Instantiation --
+   --------------------------------
+
+   procedure Add_Pending_Instantiation (Inst : Node_Id; Act_Decl : Node_Id) is
+      Act_Decl_Id : Entity_Id;
+      Index       : Int;
+
+   begin
+      --  Here is a defense against a ludicrous number of instantiations
+      --  caused by a circular set of instantiation attempts.
+
+      if Pending_Instantiations.Last + 1 >= Maximum_Instantiations then
+         Error_Msg_Uint_1 := UI_From_Int (Maximum_Instantiations);
+         Error_Msg_N ("too many instantiations, exceeds max of^", Inst);
+         Error_Msg_N ("\limit can be changed using -gnateinn switch", Inst);
+         raise Unrecoverable_Error;
+      end if;
+
+      --  Capture the body of the generic instantiation along with its context
+      --  for later processing by Instantiate_Bodies.
+
+      Pending_Instantiations.Append
+        ((Act_Decl                 => Act_Decl,
+          Config_Switches          => Save_Config_Switches,
+          Current_Sem_Unit         => Current_Sem_Unit,
+          Expander_Status          => Expander_Active,
+          Inst_Node                => Inst,
+          Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
+          Scope_Suppress           => Scope_Suppress,
+          Warnings                 => Save_Warnings));
+
+      --  With back-end inlining, also associate the index to the instantiation
+
+      if Back_End_Inlining then
+         Act_Decl_Id := Defining_Entity (Act_Decl);
+         Index := Pending_Instantiations.Last;
+
+         To_Pending_Instantiations.Set (Act_Decl, Index);
+
+         --  If an instantiation is either a compilation unit or is in the main
+         --  unit or subunit or is a nested subprogram, then its body is needed
+         --  as per the analysis already done in Analyze_Package_Instantiation
+         --  and Analyze_Subprogram_Instantiation.
+
+         if Nkind (Parent (Inst)) = N_Compilation_Unit
+           or else In_Main_Unit_Or_Subunit (Act_Decl_Id)
+           or else (Is_Subprogram (Act_Decl_Id)
+                     and then Is_Nested (Act_Decl_Id))
+         then
+            Called_Pending_Instantiations.Append (Index);
+
+            Set_Is_Called (Act_Decl_Id);
+         end if;
+      end if;
+   end Add_Pending_Instantiation;
 
    ------------------------
    -- Add_Scope_To_Clean --
@@ -1706,10 +1939,28 @@ package body Inline is
       --  Use generic machinery to build an unexpanded body for the subprogram.
       --  This body is subsequently used for inline expansions at call sites.
 
+      procedure Build_Return_Object_Formal
+        (Loc      : Source_Ptr;
+         Obj_Decl : Node_Id;
+         Formals  : List_Id);
+      --  Create a formal parameter for return object declaration Obj_Decl of
+      --  an extended return statement and add it to list Formals.
+
       function Can_Split_Unconstrained_Function (N : Node_Id) return Boolean;
       --  Return true if we generate code for the function body N, the function
       --  body N has no local declarations and its unique statement is a single
       --  extended return statement with a handled statements sequence.
+
+      procedure Copy_Formals
+        (Loc     : Source_Ptr;
+         Subp_Id : Entity_Id;
+         Formals : List_Id);
+      --  Create new formal parameters from the formal parameters of subprogram
+      --  Subp_Id and add them to list Formals.
+
+      function Copy_Return_Object (Obj_Decl : Node_Id) return Node_Id;
+      --  Create a copy of return object declaration Obj_Decl of an extended
+      --  return statement.
 
       procedure Split_Unconstrained_Function
         (N       : Node_Id;
@@ -1733,7 +1984,7 @@ package body Inline is
          --  occurrences of pragmas referencing the formals are removed since
          --  they have no meaning when the body is inlined and the formals are
          --  rewritten (the analysis of the non-inlined body will handle these
-         --  pragmas).  A new internal name is associated with Body_To_Inline.
+         --  pragmas). A new internal name is associated with Body_To_Inline.
 
          ------------------------------
          -- Generate_Subprogram_Body --
@@ -1757,6 +2008,9 @@ package body Inline is
                Body_To_Inline :=
                  Copy_Generic_Node (N, Empty, Instantiating => True);
             else
+               --  ??? Shouldn't this use New_Copy_Tree? What about global
+               --  references captured in the body to inline?
+
                Body_To_Inline := Copy_Separate_Tree (N);
             end if;
 
@@ -1786,6 +2040,8 @@ package body Inline is
          Decl            : constant Node_Id := Unit_Declaration_Node (Spec_Id);
          Original_Body   : Node_Id;
          Body_To_Analyze : Node_Id;
+
+      --  Start of processing for Build_Body_To_Inline
 
       begin
          pragma Assert (Current_Scope = Spec_Id);
@@ -1845,30 +2101,70 @@ package body Inline is
          Set_Ekind (Defining_Entity (Original_Body), Ekind (Spec_Id));
       end Build_Body_To_Inline;
 
+      --------------------------------
+      -- Build_Return_Object_Formal --
+      --------------------------------
+
+      procedure Build_Return_Object_Formal
+        (Loc      : Source_Ptr;
+         Obj_Decl : Node_Id;
+         Formals  : List_Id)
+      is
+         Obj_Def : constant Node_Id   := Object_Definition (Obj_Decl);
+         Obj_Id  : constant Entity_Id := Defining_Entity   (Obj_Decl);
+         Typ_Def : Node_Id;
+
+      begin
+         --  Build the type definition of the formal parameter. The use of
+         --  New_Copy_Tree ensures that global references preserved in the
+         --  case of generics.
+
+         if Is_Entity_Name (Obj_Def) then
+            Typ_Def := New_Copy_Tree (Obj_Def);
+         else
+            Typ_Def := New_Copy_Tree (Subtype_Mark (Obj_Def));
+         end if;
+
+         --  Generate:
+         --
+         --    Obj_Id : [out] Typ_Def
+
+         --  Mode OUT should not be used when the return object is declared as
+         --  a constant. Check the definition of the object declaration because
+         --  the object has not been analyzed yet.
+
+         Append_To (Formals,
+           Make_Parameter_Specification (Loc,
+             Defining_Identifier    =>
+               Make_Defining_Identifier (Loc, Chars (Obj_Id)),
+             In_Present             => False,
+             Out_Present            => not Constant_Present (Obj_Decl),
+             Null_Exclusion_Present => False,
+             Parameter_Type         => Typ_Def));
+      end Build_Return_Object_Formal;
+
       --------------------------------------
       -- Can_Split_Unconstrained_Function --
       --------------------------------------
 
       function Can_Split_Unconstrained_Function (N : Node_Id) return Boolean is
-         Ret_Node : constant Node_Id :=
-                      First (Statements (Handled_Statement_Sequence (N)));
-         D : Node_Id;
+         Stmt : constant Node_Id :=
+                  First (Statements (Handled_Statement_Sequence (N)));
+         Decl : Node_Id;
 
       begin
          --  No user defined declarations allowed in the function except inside
          --  the unique return statement; implicit labels are the only allowed
          --  declarations.
 
-         if not Is_Empty_List (Declarations (N)) then
-            D := First (Declarations (N));
-            while Present (D) loop
-               if Nkind (D) /= N_Implicit_Label_Declaration then
-                  return False;
-               end if;
+         Decl := First (Declarations (N));
+         while Present (Decl) loop
+            if Nkind (Decl) /= N_Implicit_Label_Declaration then
+               return False;
+            end if;
 
-               Next (D);
-            end loop;
-         end if;
+            Next (Decl);
+         end loop;
 
          --  We only split the inlined function when we are generating the code
          --  of its body; otherwise we leave duplicated split subprograms in
@@ -1876,11 +2172,70 @@ package body Inline is
          --  time.
 
          return In_Extended_Main_Code_Unit (N)
-           and then Present (Ret_Node)
-           and then Nkind (Ret_Node) = N_Extended_Return_Statement
-           and then No (Next (Ret_Node))
-           and then Present (Handled_Statement_Sequence (Ret_Node));
+           and then Present (Stmt)
+           and then Nkind (Stmt) = N_Extended_Return_Statement
+           and then No (Next (Stmt))
+           and then Present (Handled_Statement_Sequence (Stmt));
       end Can_Split_Unconstrained_Function;
+
+      ------------------
+      -- Copy_Formals --
+      ------------------
+
+      procedure Copy_Formals
+        (Loc     : Source_Ptr;
+         Subp_Id : Entity_Id;
+         Formals : List_Id)
+      is
+         Formal : Entity_Id;
+         Spec   : Node_Id;
+
+      begin
+         Formal := First_Formal (Subp_Id);
+         while Present (Formal) loop
+            Spec := Parent (Formal);
+
+            --  Create an exact copy of the formal parameter. The use of
+            --  New_Copy_Tree ensures that global references are preserved
+            --  in case of generics.
+
+            Append_To (Formals,
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier    =>
+                  Make_Defining_Identifier (Sloc (Formal), Chars (Formal)),
+                In_Present             => In_Present  (Spec),
+                Out_Present            => Out_Present (Spec),
+                Null_Exclusion_Present => Null_Exclusion_Present (Spec),
+                Parameter_Type         =>
+                  New_Copy_Tree (Parameter_Type (Spec)),
+                Expression             => New_Copy_Tree (Expression (Spec))));
+
+            Next_Formal (Formal);
+         end loop;
+      end Copy_Formals;
+
+      ------------------------
+      -- Copy_Return_Object --
+      ------------------------
+
+      function Copy_Return_Object (Obj_Decl : Node_Id) return Node_Id is
+         Obj_Id  : constant Entity_Id := Defining_Entity (Obj_Decl);
+
+      begin
+         --  The use of New_Copy_Tree ensures that global references are
+         --  preserved in case of generics.
+
+         return
+           Make_Object_Declaration (Sloc (Obj_Decl),
+             Defining_Identifier    =>
+               Make_Defining_Identifier (Sloc (Obj_Id), Chars (Obj_Id)),
+             Aliased_Present        => Aliased_Present  (Obj_Decl),
+             Constant_Present       => Constant_Present (Obj_Decl),
+             Null_Exclusion_Present => Null_Exclusion_Present (Obj_Decl),
+             Object_Definition      =>
+               New_Copy_Tree (Object_Definition (Obj_Decl)),
+             Expression             => New_Copy_Tree (Expression (Obj_Decl)));
+      end Copy_Return_Object;
 
       ----------------------------------
       -- Split_Unconstrained_Function --
@@ -1891,10 +2246,10 @@ package body Inline is
          Spec_Id  : Entity_Id)
       is
          Loc      : constant Source_Ptr := Sloc (N);
-         Ret_Node : constant Node_Id :=
+         Ret_Stmt : constant Node_Id :=
                       First (Statements (Handled_Statement_Sequence (N)));
          Ret_Obj  : constant Node_Id :=
-                      First (Return_Object_Declarations (Ret_Node));
+                      First (Return_Object_Declarations (Ret_Stmt));
 
          procedure Build_Procedure
            (Proc_Id   : out Entity_Id;
@@ -1910,63 +2265,35 @@ package body Inline is
            (Proc_Id   : out Entity_Id;
             Decl_List : out List_Id)
          is
-            Formal         : Entity_Id;
-            Formal_List    : constant List_Id := New_List;
-            Proc_Spec      : Node_Id;
-            Proc_Body      : Node_Id;
-            Subp_Name      : constant Name_Id := New_Internal_Name ('F');
-            Body_Decl_List : List_Id := No_List;
-            Param_Type     : Node_Id;
+            Formals   : constant List_Id   := New_List;
+            Subp_Name : constant Name_Id   := New_Internal_Name ('F');
+
+            Body_Decls : List_Id := No_List;
+            Decl       : Node_Id;
+            Proc_Body  : Node_Id;
+            Proc_Spec  : Node_Id;
 
          begin
-            if Nkind (Object_Definition (Ret_Obj)) = N_Identifier then
-               Param_Type :=
-                 New_Copy (Object_Definition (Ret_Obj));
-            else
-               Param_Type :=
-                 New_Copy (Subtype_Mark (Object_Definition (Ret_Obj)));
-            end if;
+            --  Create formal parameters for the return object and all formals
+            --  of the unconstrained function in order to pass their values to
+            --  the procedure.
 
-            Append_To (Formal_List,
-              Make_Parameter_Specification (Loc,
-                Defining_Identifier    =>
-                  Make_Defining_Identifier (Loc,
-                    Chars => Chars (Defining_Identifier (Ret_Obj))),
-                In_Present             => False,
-                Out_Present            => True,
-                Null_Exclusion_Present => False,
-                Parameter_Type         => Param_Type));
+            Build_Return_Object_Formal
+              (Loc      => Loc,
+               Obj_Decl => Ret_Obj,
+               Formals  => Formals);
 
-            Formal := First_Formal (Spec_Id);
-
-            --  Note that we copy the parameter type rather than creating
-            --  a reference to it, because it may be a class-wide entity
-            --  that will not be retrieved by name.
-
-            while Present (Formal) loop
-               Append_To (Formal_List,
-                 Make_Parameter_Specification (Loc,
-                   Defining_Identifier    =>
-                     Make_Defining_Identifier (Sloc (Formal),
-                       Chars => Chars (Formal)),
-                   In_Present             => In_Present (Parent (Formal)),
-                   Out_Present            => Out_Present (Parent (Formal)),
-                   Null_Exclusion_Present =>
-                     Null_Exclusion_Present (Parent (Formal)),
-                   Parameter_Type         =>
-                     New_Copy_Tree (Parameter_Type (Parent (Formal))),
-                   Expression             =>
-                     Copy_Separate_Tree (Expression (Parent (Formal)))));
-
-               Next_Formal (Formal);
-            end loop;
+            Copy_Formals
+              (Loc     => Loc,
+               Subp_Id => Spec_Id,
+               Formals => Formals);
 
             Proc_Id := Make_Defining_Identifier (Loc, Chars => Subp_Name);
 
             Proc_Spec :=
               Make_Procedure_Specification (Loc,
                 Defining_Unit_Name       => Proc_Id,
-                Parameter_Specifications => Formal_List);
+                Parameter_Specifications => Formals);
 
             Decl_List := New_List;
 
@@ -1978,37 +2305,30 @@ package body Inline is
             --  Copy these declarations to the built procedure.
 
             if Present (Declarations (N)) then
-               Body_Decl_List := New_List;
+               Body_Decls := New_List;
 
-               declare
-                  D     : Node_Id;
-                  New_D : Node_Id;
+               Decl := First (Declarations (N));
+               while Present (Decl) loop
+                  pragma Assert (Nkind (Decl) = N_Implicit_Label_Declaration);
 
-               begin
-                  D := First (Declarations (N));
-                  while Present (D) loop
-                     pragma Assert (Nkind (D) = N_Implicit_Label_Declaration);
+                  Append_To (Body_Decls,
+                    Make_Implicit_Label_Declaration (Loc,
+                      Make_Defining_Identifier (Loc,
+                        Chars => Chars (Defining_Identifier (Decl))),
+                      Label_Construct => Empty));
 
-                     New_D :=
-                       Make_Implicit_Label_Declaration (Loc,
-                         Make_Defining_Identifier (Loc,
-                           Chars => Chars (Defining_Identifier (D))),
-                         Label_Construct => Empty);
-                     Append_To (Body_Decl_List, New_D);
-
-                     Next (D);
-                  end loop;
-               end;
+                  Next (Decl);
+               end loop;
             end if;
 
-            pragma Assert (Present (Handled_Statement_Sequence (Ret_Node)));
+            pragma Assert (Present (Handled_Statement_Sequence (Ret_Stmt)));
 
             Proc_Body :=
               Make_Subprogram_Body (Loc,
-                Specification => Copy_Separate_Tree (Proc_Spec),
-                Declarations  => Body_Decl_List,
+                Specification              => Copy_Subprogram_Spec (Proc_Spec),
+                Declarations               => Body_Decls,
                 Handled_Statement_Sequence =>
-                  Copy_Separate_Tree (Handled_Statement_Sequence (Ret_Node)));
+                  New_Copy_Tree (Handled_Statement_Sequence (Ret_Stmt)));
 
             Set_Defining_Unit_Name (Specification (Proc_Body),
                Make_Defining_Identifier (Loc, Subp_Name));
@@ -2018,10 +2338,10 @@ package body Inline is
 
          --  Local variables
 
-         New_Obj   : constant Node_Id := Copy_Separate_Tree (Ret_Obj);
+         New_Obj   : constant Node_Id := Copy_Return_Object (Ret_Obj);
          Blk_Stmt  : Node_Id;
-         Proc_Id   : Entity_Id;
          Proc_Call : Node_Id;
+         Proc_Id   : Entity_Id;
 
       --  Start of processing for Split_Unconstrained_Function
 
@@ -2089,7 +2409,7 @@ package body Inline is
                        New_Occurrence_Of
                          (Defining_Identifier (New_Obj), Loc)))));
 
-         Rewrite (Ret_Node, Blk_Stmt);
+         Rewrite (Ret_Stmt, Blk_Stmt);
       end Split_Unconstrained_Function;
 
       --  Local variables
@@ -2128,6 +2448,18 @@ package body Inline is
       --  declarations (see Freeze.Build_Renamed_Body).
 
       elsif Present (Body_To_Inline (Decl)) then
+         return;
+
+      --  Do not generate a body to inline for protected functions, because the
+      --  transformation generates a call to a protected procedure, causing
+      --  spurious errors. We don't inline protected operations anyway, so
+      --  this is no loss. We might as well ignore intrinsics and foreign
+      --  conventions as well -- just allow Ada conventions.
+
+      elsif not (Convention (Spec_Id) = Convention_Ada
+        or else Convention (Spec_Id) = Convention_Ada_Pass_By_Copy
+        or else Convention (Spec_Id) = Convention_Ada_Pass_By_Reference)
+      then
          return;
 
       --  Check excluded declarations
@@ -2386,10 +2718,21 @@ package body Inline is
       --  sets Exit_Lab (the label node) and Lab_Decl (corresponding implicit
       --  declaration). Does nothing if Exit_Lab already set.
 
+      procedure Make_Loop_Labels_Unique (HSS : Node_Id);
+      --  When compiling for CCG and performing front-end inlining, replace
+      --  loop names and references to them so that they do not conflict with
+      --  homographs in the current subprogram.
+
       function Process_Formals (N : Node_Id) return Traverse_Result;
       --  Replace occurrence of a formal with the corresponding actual, or the
       --  thunk generated for it. Replace a return statement with an assignment
       --  to the target of the call, with appropriate conversions if needed.
+
+      function Process_Formals_In_Aspects (N : Node_Id) return Traverse_Result;
+      --  Because aspects are linked indirectly to the rest of the tree,
+      --  replacement of formals appearing in aspect specifications must
+      --  be performed in a separate pass, using an instantiation of the
+      --  previous subprogram over aspect specifications reachable from N.
 
       function Process_Sloc (Nod : Node_Id) return Traverse_Result;
       --  If the call being expanded is that of an internal subprogram, set the
@@ -2473,6 +2816,61 @@ package body Inline is
                 Label_Construct     => Exit_Lab);
          end if;
       end Make_Exit_Label;
+
+      -----------------------------
+      -- Make_Loop_Labels_Unique --
+      -----------------------------
+
+      procedure Make_Loop_Labels_Unique (HSS : Node_Id) is
+         function Process_Loop (N : Node_Id) return Traverse_Result;
+
+         ------------------
+         -- Process_Loop --
+         ------------------
+
+         function Process_Loop (N : Node_Id) return Traverse_Result is
+            Id  : Entity_Id;
+
+         begin
+            if Nkind (N) = N_Loop_Statement
+              and then Present (Identifier (N))
+            then
+               --  Create new external name for loop and update the
+               --  corresponding entity.
+
+               Id := Entity (Identifier (N));
+               Set_Chars (Id, New_External_Name (Chars (Id), 'L', -1));
+               Set_Chars (Identifier (N), Chars (Id));
+
+            elsif Nkind (N) = N_Exit_Statement
+              and then Present (Name (N))
+            then
+               --  The exit statement must name an enclosing loop, whose name
+               --  has already been updated.
+
+               Set_Chars (Name (N), Chars (Entity (Name (N))));
+            end if;
+
+            return OK;
+         end Process_Loop;
+
+         procedure Update_Loop_Names is new Traverse_Proc (Process_Loop);
+
+         --  Local variables
+
+         Stmt : Node_Id;
+
+      --  Start of processing for Make_Loop_Labels_Unique
+
+      begin
+         if Modify_Tree_For_C then
+            Stmt := First (Statements (HSS));
+            while Present (Stmt) loop
+               Update_Loop_Names (Stmt);
+               Next (Stmt);
+            end loop;
+         end if;
+      end Make_Loop_Labels_Unique;
 
       ---------------------
       -- Process_Formals --
@@ -2676,6 +3074,30 @@ package body Inline is
 
       procedure Replace_Formals is new Traverse_Proc (Process_Formals);
 
+      --------------------------------
+      -- Process_Formals_In_Aspects --
+      --------------------------------
+
+      function Process_Formals_In_Aspects
+        (N : Node_Id) return Traverse_Result
+      is
+         A : Node_Id;
+
+      begin
+         if Has_Aspects (N) then
+            A := First (Aspect_Specifications (N));
+            while Present (A) loop
+               Replace_Formals (Expression (A));
+
+               Next (A);
+            end loop;
+         end if;
+         return OK;
+      end Process_Formals_In_Aspects;
+
+      procedure Replace_Formals_In_Aspects is
+        new Traverse_Proc (Process_Formals_In_Aspects);
+
       ------------------
       -- Process_Sloc --
       ------------------
@@ -2742,6 +3164,8 @@ package body Inline is
          Fst : constant Node_Id := First (Statements (HSS));
 
       begin
+         Make_Loop_Labels_Unique (HSS);
+
          --  Optimize simple case: function body is a single return statement,
          --  which has been expanded into an assignment.
 
@@ -2829,6 +3253,8 @@ package body Inline is
          HSS  : constant Node_Id := Handled_Statement_Sequence (Blk);
 
       begin
+         Make_Loop_Labels_Unique (HSS);
+
          --  If there is a transient scope for N, this will be the scope of the
          --  actions for N, and the statements in Blk need to be within this
          --  scope. For example, they need to have visibility on the constant
@@ -3484,6 +3910,7 @@ package body Inline is
       --  Attach block to tree before analysis and rewriting.
 
       Replace_Formals (Blk);
+      Replace_Formals_In_Aspects (Blk);
       Set_Parent (Blk, N);
 
       if GNATprove_Mode then
@@ -4013,7 +4440,6 @@ package body Inline is
 
    procedure Initialize is
    begin
-      Pending_Descriptor.Init;
       Pending_Instantiations.Init;
       Inlined_Bodies.Init;
       Successors.Init;
@@ -4025,6 +4451,7 @@ package body Inline is
 
       Inlined_Calls := No_Elist;
       Backend_Calls := No_Elist;
+      Backend_Instances := No_Elist;
       Backend_Inlined_Subps := No_Elist;
       Backend_Not_Inlined_Subps := No_Elist;
    end Initialize;
@@ -4041,8 +4468,35 @@ package body Inline is
    --  the body is an internal error.
 
    procedure Instantiate_Bodies is
-      J    : Nat;
+
+      procedure Instantiate_Body (Info : Pending_Body_Info);
+      --  Instantiate a pending body
+
+      ------------------------
+      --  Instantiate_Body  --
+      ------------------------
+
+      procedure Instantiate_Body (Info : Pending_Body_Info) is
+      begin
+         --  If the instantiation node is absent, it has been removed as part
+         --  of unreachable code.
+
+         if No (Info.Inst_Node) then
+            null;
+
+         elsif Nkind (Info.Act_Decl) = N_Package_Declaration then
+            Instantiate_Package_Body (Info);
+            Add_Scope_To_Clean (Defining_Entity (Info.Act_Decl));
+
+         else
+            Instantiate_Subprogram_Body (Info);
+         end if;
+      end Instantiate_Body;
+
+      J, K  : Nat;
       Info : Pending_Body_Info;
+
+   --  Start of processing for Instantiate_Bodies
 
    begin
       if Serious_Errors_Detected = 0 then
@@ -4056,36 +4510,41 @@ package body Inline is
 
          --  A body instantiation may generate additional instantiations, so
          --  the following loop must scan to the end of a possibly expanding
-         --  set (that's why we can't simply use a FOR loop here).
+         --  set (that's why we cannot simply use a FOR loop here). We must
+         --  also capture the element lest the set be entirely reallocated.
 
          J := 0;
-         while J <= Pending_Instantiations.Last
-           and then Serious_Errors_Detected = 0
-         loop
-            Info := Pending_Instantiations.Table (J);
+         if Back_End_Inlining then
+            while J <= Called_Pending_Instantiations.Last
+              and then Serious_Errors_Detected = 0
+            loop
+               K := Called_Pending_Instantiations.Table (J);
+               Info := Pending_Instantiations.Table (K);
+               Instantiate_Body (Info);
 
-            --  If the instantiation node is absent, it has been removed
-            --  as part of unreachable code.
+               J := J + 1;
+            end loop;
 
-            if No (Info.Inst_Node) then
-               null;
+         else
+            while J <= Pending_Instantiations.Last
+              and then Serious_Errors_Detected = 0
+            loop
+               Info := Pending_Instantiations.Table (J);
+               Instantiate_Body (Info);
 
-            elsif Nkind (Info.Act_Decl) = N_Package_Declaration then
-               Instantiate_Package_Body (Info);
-               Add_Scope_To_Clean (Defining_Entity (Info.Act_Decl));
-
-            else
-               Instantiate_Subprogram_Body (Info);
-            end if;
-
-            J := J + 1;
-         end loop;
+               J := J + 1;
+            end loop;
+         end if;
 
          --  Reset the table of instantiations. Additional instantiations
          --  may be added through inlining, when additional bodies are
          --  analyzed.
 
-         Pending_Instantiations.Init;
+         if Back_End_Inlining then
+            Called_Pending_Instantiations.Init;
+         else
+            Pending_Instantiations.Init;
+         end if;
 
          --  We can now complete the cleanup actions of scopes that contain
          --  pending instantiations (skipped for generic units, since we
@@ -4113,7 +4572,7 @@ package body Inline is
    begin
       Scop := Scope (E);
       while Scop /= Standard_Standard loop
-         if Ekind (Scop) in Subprogram_Kind then
+         if Is_Subprogram (Scop) then
             return True;
 
          elsif Ekind (Scop) = E_Task_Type
@@ -4151,7 +4610,7 @@ package body Inline is
          while Present (Elmt) loop
             Nod := Node (Elmt);
 
-            if In_Extended_Main_Code_Unit (Nod) then
+            if not In_Internal_Unit (Nod) then
                Count := Count + 1;
 
                if Count = 1 then
@@ -4180,11 +4639,39 @@ package body Inline is
          while Present (Elmt) loop
             Nod := Node (Elmt);
 
-            if In_Extended_Main_Code_Unit (Nod) then
+            if not In_Internal_Unit (Nod) then
                Count := Count + 1;
 
                if Count = 1 then
                   Write_Str ("List of inlined calls passed to the backend");
+                  Write_Eol;
+               end if;
+
+               Write_Str ("  ");
+               Write_Int (Count);
+               Write_Str (":");
+               Write_Location (Sloc (Nod));
+               Output.Write_Eol;
+            end if;
+
+            Next_Elmt (Elmt);
+         end loop;
+      end if;
+
+      --  Generate listing of instances inlined for the backend
+
+      if Present (Backend_Instances) then
+         Count := 0;
+
+         Elmt := First_Elmt (Backend_Instances);
+         while Present (Elmt) loop
+            Nod := Node (Elmt);
+
+            if not In_Internal_Unit (Nod) then
+               Count := Count + 1;
+
+               if Count = 1 then
+                  Write_Str ("List of instances inlined for the backend");
                   Write_Eol;
                end if;
 
@@ -4208,22 +4695,24 @@ package body Inline is
          while Present (Elmt) loop
             Nod := Node (Elmt);
 
-            Count := Count + 1;
+            if not In_Internal_Unit (Nod) then
+               Count := Count + 1;
 
-            if Count = 1 then
-               Write_Str
-                 ("List of inlined subprograms passed to the backend");
-               Write_Eol;
+               if Count = 1 then
+                  Write_Str
+                    ("List of inlined subprograms passed to the backend");
+                  Write_Eol;
+               end if;
+
+               Write_Str ("  ");
+               Write_Int (Count);
+               Write_Str (":");
+               Write_Name (Chars (Nod));
+               Write_Str (" (");
+               Write_Location (Sloc (Nod));
+               Write_Str (")");
+               Output.Write_Eol;
             end if;
-
-            Write_Str ("  ");
-            Write_Int (Count);
-            Write_Str (":");
-            Write_Name (Chars (Nod));
-            Write_Str (" (");
-            Write_Location (Sloc (Nod));
-            Write_Str (")");
-            Output.Write_Eol;
 
             Next_Elmt (Elmt);
          end loop;
@@ -4238,22 +4727,24 @@ package body Inline is
          while Present (Elmt) loop
             Nod := Node (Elmt);
 
-            Count := Count + 1;
+            if not In_Internal_Unit (Nod) then
+               Count := Count + 1;
 
-            if Count = 1 then
-               Write_Str
-                 ("List of subprograms that cannot be inlined by the backend");
-               Write_Eol;
+               if Count = 1 then
+                  Write_Str
+                    ("List of subprograms that cannot be inlined by backend");
+                  Write_Eol;
+               end if;
+
+               Write_Str ("  ");
+               Write_Int (Count);
+               Write_Str (":");
+               Write_Name (Chars (Nod));
+               Write_Str (" (");
+               Write_Location (Sloc (Nod));
+               Write_Str (")");
+               Output.Write_Eol;
             end if;
-
-            Write_Str ("  ");
-            Write_Int (Count);
-            Write_Str (":");
-            Write_Name (Chars (Nod));
-            Write_Str (" (");
-            Write_Location (Sloc (Nod));
-            Write_Str (")");
-            Output.Write_Eol;
 
             Next_Elmt (Elmt);
          end loop;

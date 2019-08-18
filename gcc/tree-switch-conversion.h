@@ -44,8 +44,9 @@ enum cluster_type
      |-jump_table_cluster (JUMP_TABLE)
      `-bit_test_cluster   (BIT_TEST).  */
 
-struct cluster
+class cluster
 {
+public:
   /* Constructor.  */
   cluster (tree case_label_expr, basic_block case_bb, profile_probability prob,
 	   profile_probability subtree_prob);
@@ -117,8 +118,9 @@ cluster::cluster (tree case_label_expr, basic_block case_bb,
 /* Subclass of cluster representing a simple contiguous range
    from [low..high].  */
 
-struct simple_cluster: public cluster
+class simple_cluster: public cluster
 {
+public:
   /* Constructor.  */
   simple_cluster (tree low, tree high, tree case_label_expr,
 		  basic_block case_bb, profile_probability prob);
@@ -196,8 +198,9 @@ simple_cluster::simple_cluster (tree low, tree high, tree case_label_expr,
 /* Abstract subclass of jump table and bit test cluster,
    handling a collection of simple_cluster instances.  */
 
-struct group_cluster: public cluster
+class group_cluster: public cluster
 {
+public:
   /* Constructor.  */
   group_cluster (vec<cluster *> &clusters, unsigned start, unsigned end);
 
@@ -233,8 +236,9 @@ struct group_cluster: public cluster
    The "emit" vfunc gernerates a nested switch statement which
    is later lowered to a jump table.  */
 
-struct jump_table_cluster: public group_cluster
+class jump_table_cluster: public group_cluster
 {
+public:
   /* Constructor.  */
   jump_table_cluster (vec<cluster *> &clusters, unsigned start, unsigned end)
   : group_cluster (clusters, start, end)
@@ -332,8 +336,9 @@ This transformation was contributed by Roger Sayle, see this e-mail:
    http://gcc.gnu.org/ml/gcc-patches/2003-01/msg01950.html
 */
 
-struct bit_test_cluster: public group_cluster
+class bit_test_cluster: public group_cluster
 {
+public:
   /* Constructor.  */
   bit_test_cluster (vec<cluster *> &clusters, unsigned start, unsigned end,
 		    bool handles_entire_switch)
@@ -417,8 +422,9 @@ struct bit_test_cluster: public group_cluster
 
 /* Helper struct to find minimal clusters.  */
 
-struct min_cluster_item
+class min_cluster_item
 {
+public:
   /* Constructor.  */
   min_cluster_item (unsigned count, unsigned start, unsigned non_jt_cases):
     m_count (count), m_start (start), m_non_jt_cases (non_jt_cases)
@@ -436,8 +442,9 @@ struct min_cluster_item
 
 /* Helper struct to represent switch decision tree.  */
 
-struct case_tree_node
+class case_tree_node
 {
+public:
   /* Empty Constructor.  */
   case_tree_node ();
 
@@ -503,8 +510,9 @@ bool jump_table_cluster::is_enabled (void)
    is used to quickly identify all cases in this set without
    looking at label_to_block for every case label.  */
 
-struct case_bit_test
+class case_bit_test
 {
+public:
   wide_int mask;
   basic_block target_bb;
   tree label;
@@ -515,8 +523,9 @@ struct case_bit_test
   static int cmp (const void *p1, const void *p2);
 };
 
-struct switch_decision_tree
+class switch_decision_tree
 {
+public:
   /* Constructor.  */
   switch_decision_tree (gswitch *swtch): m_switch (swtch), m_phi_mapping (),
     m_case_bbs (), m_case_node_pool ("struct case_node pool"),
@@ -681,8 +690,9 @@ This transformation was contributed by Martin Jambor, see this e-mail:
    http://gcc.gnu.org/ml/gcc-patches/2008-07/msg00011.html  */
 
 /* The main structure of the pass.  */
-struct switch_conversion
+class switch_conversion
 {
+public:
   /* Constructor.  */
   switch_conversion ();
 

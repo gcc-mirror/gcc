@@ -41,7 +41,7 @@ along with GCC; see the file COPYING3.  If not see
    block IB.  */
 
 tree
-streamer_read_string_cst (struct data_in *data_in, struct lto_input_block *ib)
+streamer_read_string_cst (class data_in *data_in, class lto_input_block *ib)
 {
   unsigned int len;
   const char * ptr;
@@ -57,7 +57,7 @@ streamer_read_string_cst (struct data_in *data_in, struct lto_input_block *ib)
    block IB.  */
 
 static tree
-input_identifier (struct data_in *data_in, struct lto_input_block *ib)
+input_identifier (class data_in *data_in, class lto_input_block *ib)
 {
   unsigned int len;
   const char *ptr;
@@ -73,7 +73,7 @@ input_identifier (struct data_in *data_in, struct lto_input_block *ib)
    tables and descriptors for the file being read.  */
 
 tree
-streamer_read_chain (struct lto_input_block *ib, struct data_in *data_in)
+streamer_read_chain (class lto_input_block *ib, class data_in *data_in)
 {
   tree first, prev, curr;
 
@@ -324,8 +324,7 @@ unpack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
 static void
 unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 {
-  DECL_BUILT_IN_CLASS (expr) = bp_unpack_enum (bp, built_in_class,
-					       BUILT_IN_LAST);
+  built_in_class cl = bp_unpack_enum (bp, built_in_class, BUILT_IN_LAST);
   DECL_STATIC_CONSTRUCTOR (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_STATIC_DESTRUCTOR (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_UNINLINABLE (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -333,7 +332,8 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
   DECL_IS_NOVOPS (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_IS_RETURNS_TWICE (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_IS_MALLOC (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_IS_OPERATOR_NEW (expr) = (unsigned) bp_unpack_value (bp, 1);
+  DECL_SET_IS_OPERATOR_NEW (expr, (unsigned) bp_unpack_value (bp, 1));
+  DECL_SET_IS_OPERATOR_DELETE (expr, (unsigned) bp_unpack_value (bp, 1));
   DECL_DECLARED_INLINE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_STATIC_CHAIN (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_NO_INLINE_WARNING_P (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -343,22 +343,22 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
   DECL_DISREGARD_INLINE_LIMITS (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_LOOPING_CONST_OR_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  if (DECL_BUILT_IN_CLASS (expr) != NOT_BUILT_IN)
+  unsigned int fcode = 0;
+  if (cl != NOT_BUILT_IN)
     {
-      DECL_FUNCTION_CODE (expr) = (enum built_in_function) bp_unpack_value (bp,
-	                                                                    12);
-      if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_NORMAL
-	  && DECL_FUNCTION_CODE (expr) >= END_BUILTINS)
+      fcode = bp_unpack_value (bp, 32);
+      if (cl == BUILT_IN_NORMAL && fcode >= END_BUILTINS)
 	fatal_error (input_location,
 		     "machine independent builtin code out of range");
-      else if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_MD)
+      else if (cl == BUILT_IN_MD)
 	{
-          tree result = targetm.builtin_decl (DECL_FUNCTION_CODE (expr), true);
+          tree result = targetm.builtin_decl (fcode, true);
 	  if (!result || result == error_mark_node)
 	    fatal_error (input_location,
 			 "target specific builtin not available");
 	}
     }
+  set_decl_built_in_function (expr, cl, fcode);
 }
 
 
@@ -404,7 +404,7 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
    of expression EXPR from bitpack BP.  */
 
 static void
-unpack_ts_block_value_fields (struct data_in *data_in,
+unpack_ts_block_value_fields (class data_in *data_in,
 			      struct bitpack_d *bp, tree expr)
 {
   /* BLOCK_NUMBER is recomputed.  */
@@ -415,7 +415,7 @@ unpack_ts_block_value_fields (struct data_in *data_in,
    structure of expression EXPR from bitpack BP.  */
 
 static void
-unpack_ts_translation_unit_decl_value_fields (struct data_in *data_in,
+unpack_ts_translation_unit_decl_value_fields (class data_in *data_in,
 					      struct bitpack_d *bp, tree expr)
 {
   TRANSLATION_UNIT_LANGUAGE (expr) = xstrdup (bp_unpack_string (data_in, bp));
@@ -427,7 +427,7 @@ unpack_ts_translation_unit_decl_value_fields (struct data_in *data_in,
    structure of expression EXPR from bitpack BP.  */
 
 static void
-unpack_ts_omp_clause_value_fields (struct data_in *data_in,
+unpack_ts_omp_clause_value_fields (class data_in *data_in,
 				   struct bitpack_d *bp, tree expr)
 {
   stream_input_location (&OMP_CLAUSE_LOCATION (expr), bp, data_in);
@@ -473,8 +473,8 @@ unpack_ts_omp_clause_value_fields (struct data_in *data_in,
    bitfield values that the writer may have written.  */
 
 void
-streamer_read_tree_bitfields (struct lto_input_block *ib,
-			      struct data_in *data_in, tree expr)
+streamer_read_tree_bitfields (class lto_input_block *ib,
+			      class data_in *data_in, tree expr)
 {
   enum tree_code code;
   struct bitpack_d bp;
@@ -570,7 +570,7 @@ streamer_read_tree_bitfields (struct lto_input_block *ib,
    *IX_P the index into the reader cache where the new tree is stored.  */
 
 tree
-streamer_alloc_tree (struct lto_input_block *ib, struct data_in *data_in,
+streamer_alloc_tree (class lto_input_block *ib, class data_in *data_in,
 		     enum LTO_tags tag)
 {
   enum tree_code code;
@@ -640,8 +640,8 @@ streamer_alloc_tree (struct lto_input_block *ib, struct data_in *data_in,
 
 
 static void
-lto_input_ts_common_tree_pointers (struct lto_input_block *ib,
-				   struct data_in *data_in, tree expr)
+lto_input_ts_common_tree_pointers (class lto_input_block *ib,
+				   class data_in *data_in, tree expr)
 {
   if (TREE_CODE (expr) != IDENTIFIER_NODE)
     TREE_TYPE (expr) = stream_read_tree (ib, data_in);
@@ -653,8 +653,8 @@ lto_input_ts_common_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_vector_tree_pointers (struct lto_input_block *ib,
-				   struct data_in *data_in, tree expr)
+lto_input_ts_vector_tree_pointers (class lto_input_block *ib,
+				   class data_in *data_in, tree expr)
 {
   unsigned int count = vector_cst_encoded_nelts (expr);
   for (unsigned int i = 0; i < count; ++i)
@@ -667,8 +667,8 @@ lto_input_ts_vector_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_poly_tree_pointers (struct lto_input_block *ib,
-				 struct data_in *data_in, tree expr)
+lto_input_ts_poly_tree_pointers (class lto_input_block *ib,
+				 class data_in *data_in, tree expr)
 {
   for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
     POLY_INT_CST_COEFF (expr, i) = stream_read_tree (ib, data_in);
@@ -680,8 +680,8 @@ lto_input_ts_poly_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_complex_tree_pointers (struct lto_input_block *ib,
-				    struct data_in *data_in, tree expr)
+lto_input_ts_complex_tree_pointers (class lto_input_block *ib,
+				    class data_in *data_in, tree expr)
 {
   TREE_REALPART (expr) = stream_read_tree (ib, data_in);
   TREE_IMAGPART (expr) = stream_read_tree (ib, data_in);
@@ -693,8 +693,8 @@ lto_input_ts_complex_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_decl_minimal_tree_pointers (struct lto_input_block *ib,
-					 struct data_in *data_in, tree expr)
+lto_input_ts_decl_minimal_tree_pointers (class lto_input_block *ib,
+					 class data_in *data_in, tree expr)
 {
   DECL_NAME (expr) = stream_read_tree (ib, data_in);
   DECL_CONTEXT (expr) = stream_read_tree (ib, data_in);
@@ -706,8 +706,8 @@ lto_input_ts_decl_minimal_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_decl_common_tree_pointers (struct lto_input_block *ib,
-					struct data_in *data_in, tree expr)
+lto_input_ts_decl_common_tree_pointers (class lto_input_block *ib,
+					class data_in *data_in, tree expr)
 {
   DECL_SIZE (expr) = stream_read_tree (ib, data_in);
   DECL_SIZE_UNIT (expr) = stream_read_tree (ib, data_in);
@@ -733,8 +733,8 @@ lto_input_ts_decl_common_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_decl_non_common_tree_pointers (struct lto_input_block *,
-					    struct data_in *, tree)
+lto_input_ts_decl_non_common_tree_pointers (class lto_input_block *,
+					    class data_in *, tree)
 {
 }
 
@@ -744,8 +744,8 @@ lto_input_ts_decl_non_common_tree_pointers (struct lto_input_block *,
    file being read.  */
 
 static void
-lto_input_ts_decl_with_vis_tree_pointers (struct lto_input_block *ib,
-				          struct data_in *data_in, tree expr)
+lto_input_ts_decl_with_vis_tree_pointers (class lto_input_block *ib,
+				          class data_in *data_in, tree expr)
 {
   tree id;
 
@@ -763,8 +763,8 @@ lto_input_ts_decl_with_vis_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_field_decl_tree_pointers (struct lto_input_block *ib,
-				       struct data_in *data_in, tree expr)
+lto_input_ts_field_decl_tree_pointers (class lto_input_block *ib,
+				       class data_in *data_in, tree expr)
 {
   DECL_FIELD_OFFSET (expr) = stream_read_tree (ib, data_in);
   DECL_BIT_FIELD_TYPE (expr) = stream_read_tree (ib, data_in);
@@ -778,8 +778,8 @@ lto_input_ts_field_decl_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
-					  struct data_in *data_in, tree expr)
+lto_input_ts_function_decl_tree_pointers (class lto_input_block *ib,
+					  class data_in *data_in, tree expr)
 {
   /* DECL_STRUCT_FUNCTION is loaded on demand by cgraph_get_body.  */
   DECL_FUNCTION_PERSONALITY (expr) = stream_read_tree (ib, data_in);
@@ -816,8 +816,8 @@ lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
    being read.  */
 
 static void
-lto_input_ts_type_common_tree_pointers (struct lto_input_block *ib,
-					struct data_in *data_in, tree expr)
+lto_input_ts_type_common_tree_pointers (class lto_input_block *ib,
+					class data_in *data_in, tree expr)
 {
   TYPE_SIZE (expr) = stream_read_tree (ib, data_in);
   TYPE_SIZE_UNIT (expr) = stream_read_tree (ib, data_in);
@@ -838,8 +838,8 @@ lto_input_ts_type_common_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_type_non_common_tree_pointers (struct lto_input_block *ib,
-					    struct data_in *data_in,
+lto_input_ts_type_non_common_tree_pointers (class lto_input_block *ib,
+					    class data_in *data_in,
 					    tree expr)
 {
   if (TREE_CODE (expr) == ENUMERAL_TYPE)
@@ -863,8 +863,8 @@ lto_input_ts_type_non_common_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_list_tree_pointers (struct lto_input_block *ib,
-				 struct data_in *data_in, tree expr)
+lto_input_ts_list_tree_pointers (class lto_input_block *ib,
+				 class data_in *data_in, tree expr)
 {
   TREE_PURPOSE (expr) = stream_read_tree (ib, data_in);
   TREE_VALUE (expr) = stream_read_tree (ib, data_in);
@@ -877,8 +877,8 @@ lto_input_ts_list_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_vec_tree_pointers (struct lto_input_block *ib,
-				struct data_in *data_in, tree expr)
+lto_input_ts_vec_tree_pointers (class lto_input_block *ib,
+				class data_in *data_in, tree expr)
 {
   int i;
 
@@ -895,8 +895,8 @@ lto_input_ts_vec_tree_pointers (struct lto_input_block *ib,
 
 
 static void
-lto_input_ts_exp_tree_pointers (struct lto_input_block *ib,
-			        struct data_in *data_in, tree expr)
+lto_input_ts_exp_tree_pointers (class lto_input_block *ib,
+			        class data_in *data_in, tree expr)
 {
   int i;
   tree block;
@@ -921,8 +921,8 @@ lto_input_ts_exp_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_block_tree_pointers (struct lto_input_block *ib,
-				  struct data_in *data_in, tree expr)
+lto_input_ts_block_tree_pointers (class lto_input_block *ib,
+				  class data_in *data_in, tree expr)
 {
   BLOCK_VARS (expr) = streamer_read_chain (ib, data_in);
 
@@ -967,8 +967,8 @@ lto_input_ts_block_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
-				  struct data_in *data_in, tree expr)
+lto_input_ts_binfo_tree_pointers (class lto_input_block *ib,
+				  class data_in *data_in, tree expr)
 {
   tree t;
 
@@ -999,8 +999,8 @@ lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_constructor_tree_pointers (struct lto_input_block *ib,
-				        struct data_in *data_in, tree expr)
+lto_input_ts_constructor_tree_pointers (class lto_input_block *ib,
+				        class data_in *data_in, tree expr)
 {
   unsigned i;
 
@@ -1019,8 +1019,8 @@ lto_input_ts_constructor_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_omp_clause_tree_pointers (struct lto_input_block *ib,
-				       struct data_in *data_in, tree expr)
+lto_input_ts_omp_clause_tree_pointers (class lto_input_block *ib,
+				       class data_in *data_in, tree expr)
 {
   int i;
 
@@ -1034,7 +1034,7 @@ lto_input_ts_omp_clause_tree_pointers (struct lto_input_block *ib,
    contains tables and descriptors for the file being read.  */
 
 void
-streamer_read_tree_body (struct lto_input_block *ib, struct data_in *data_in,
+streamer_read_tree_body (class lto_input_block *ib, class data_in *data_in,
 			 tree expr)
 {
   enum tree_code code;
@@ -1104,7 +1104,7 @@ streamer_read_tree_body (struct lto_input_block *ib, struct data_in *data_in,
    DATA_IN->FILE_DATA->GLOBALS_INDEX[IX].  */
 
 tree
-streamer_get_pickled_tree (struct lto_input_block *ib, struct data_in *data_in)
+streamer_get_pickled_tree (class lto_input_block *ib, class data_in *data_in)
 {
   unsigned HOST_WIDE_INT ix;
   tree result;

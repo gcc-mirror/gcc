@@ -62,6 +62,7 @@ with Sem_Util;  use Sem_Util;
 with Sinfo;     use Sinfo;
 with Snames;    use Snames;
 with Stand;     use Stand;
+with Stringt;   use Stringt;
 with Targparm;  use Targparm;
 with Tbuild;    use Tbuild;
 with Ttypes;    use Ttypes;
@@ -407,11 +408,14 @@ package body Freeze is
       --  calls to the renamed entity. The body must be generated in any case
       --  for calls that may appear elsewhere. This is not done in the case
       --  where the subprogram is an instantiation because the actual proper
-      --  body has not been built yet.
+      --  body has not been built yet. This is also not done in GNATprove mode
+      --  as we need to check other conditions for creating a body to inline
+      --  in that case, which are controlled in Analyze_Subprogram_Body_Helper.
 
       if Ekind_In (Old_S, E_Function, E_Procedure)
         and then Nkind (Decl) = N_Subprogram_Declaration
         and then not Is_Generic_Instance (Old_S)
+        and then not GNATprove_Mode
       then
          Set_Body_To_Inline (Decl, Old_S);
       end if;
@@ -1522,11 +1526,11 @@ package body Freeze is
       --  so that LSP can be verified/enforced.
 
       Op_Node := First_Elmt (Prim_Ops);
-      Needs_Wrapper := False;
 
       while Present (Op_Node) loop
-         Decls := Empty_List;
-         Prim  := Node (Op_Node);
+         Decls         := Empty_List;
+         Prim          := Node (Op_Node);
+         Needs_Wrapper := False;
 
          if not Comes_From_Source (Prim) and then Present (Alias (Prim)) then
             Par_Prim := Alias (Prim);
@@ -1597,8 +1601,6 @@ package body Freeze is
                     (Par_R, New_List (New_Decl, New_Body));
                end if;
             end;
-
-            Needs_Wrapper := False;
          end if;
 
          Next_Elmt (Op_Node);
@@ -5943,16 +5945,28 @@ package body Freeze is
             Inherit_Aspects_At_Freeze_Point (E);
          end if;
 
-         --  Check for incompatible size and alignment for record type
+         --  Case of array type
+
+         if Is_Array_Type (E) then
+            Freeze_Array_Type (E);
+         end if;
+
+         --  Check for incompatible size and alignment for array/record type
 
          if Warn_On_Size_Alignment
-           and then Is_Record_Type (E)
-           and then Has_Size_Clause (E) and then Has_Alignment_Clause (E)
+           and then (Is_Array_Type (E) or else Is_Record_Type (E))
+           and then Has_Size_Clause (E)
+           and then Has_Alignment_Clause (E)
 
            --  If explicit Object_Size clause given assume that the programmer
            --  knows what he is doing, and expects the compiler behavior.
 
            and then not Has_Object_Size_Clause (E)
+
+           --  It does not really make sense to warn for the minimum alignment
+           --  since the programmer could not get rid of the warning.
+
+           and then Alignment (E) > 1
 
            --  Check for size not a multiple of alignment
 
@@ -5994,15 +6008,10 @@ package body Freeze is
             end;
          end if;
 
-         --  Array type
-
-         if Is_Array_Type (E) then
-            Freeze_Array_Type (E);
-
          --  For a class-wide type, the corresponding specific type is
          --  frozen as well (RM 13.14(15))
 
-         elsif Is_Class_Wide_Type (E) then
+         if Is_Class_Wide_Type (E) then
             Freeze_And_Append (Root_Type (E), N, Result);
 
             --  If the base type of the class-wide type is still incomplete,
@@ -6792,7 +6801,7 @@ package body Freeze is
          --  Do not allow a size clause for a type which does not have a size
          --  that is known at compile time
 
-         if Has_Size_Clause (E)
+         if (Has_Size_Clause (E) or else Has_Object_Size_Clause (E))
            and then not Size_Known_At_Compile_Time (E)
          then
             --  Suppress this message if errors posted on E, even if we are
@@ -7665,9 +7674,8 @@ package body Freeze is
         or else Ekind (Current_Scope) = E_Void
       then
          declare
-            N            : constant Node_Id := Current_Scope;
-            Freeze_Nodes : List_Id          := No_List;
-            Pos          : Int              := Scope_Stack.Last;
+            Freeze_Nodes : List_Id := No_List;
+            Pos          : Int     := Scope_Stack.Last;
 
          begin
             if Present (Desig_Typ) then
@@ -7700,7 +7708,19 @@ package body Freeze is
             end if;
 
             if Is_Non_Empty_List (Freeze_Nodes) then
-               if No (Scope_Stack.Table (Pos).Pending_Freeze_Actions) then
+
+               --  When the current scope is transient, insert the freeze nodes
+               --  prior to the expression that produced them. Transient scopes
+               --  may create additional declarations when finalizing objects
+               --  or managing the secondary stack. Inserting the freeze nodes
+               --  of those constructs prior to the scope would result in a
+               --  freeze-before-declaration, therefore the freeze node must
+               --  remain interleaved with their constructs.
+
+               if Scope_Is_Transient then
+                  Insert_Actions (N, Freeze_Nodes);
+
+               elsif No (Scope_Stack.Table (Pos).Pending_Freeze_Actions) then
                   Scope_Stack.Table (Pos).Pending_Freeze_Actions :=
                     Freeze_Nodes;
                else
@@ -7981,6 +8001,7 @@ package body Freeze is
       Brng  : constant Node_Id    := Scalar_Range (Btyp);
       BLo   : constant Node_Id    := Low_Bound (Brng);
       BHi   : constant Node_Id    := High_Bound (Brng);
+      Par   : constant Entity_Id  := First_Subtype (Typ);
       Small : constant Ureal      := Small_Value (Typ);
       Loval : Ureal;
       Hival : Ureal;
@@ -8031,6 +8052,16 @@ package body Freeze is
          else
             Set_Esize (Typ, Esize (Base_Type (Typ)));
          end if;
+      end if;
+
+      --  The 'small attribute may have been specified with an aspect,
+      --  in which case it is processed after a subtype declaration, so
+      --  inherit now the specified value.
+
+      if Typ /= Par
+        and then Present (Find_Aspect (Par, Aspect_Small))
+      then
+         Set_Small_Value (Typ, Small_Value (Par));
       end if;
 
       --  Immediate return if the range is already analyzed. This means that
@@ -8743,6 +8774,20 @@ package body Freeze is
         and then not Is_Intrinsic_Subprogram (E)
       then
          Set_Is_Pure (E, False);
+      end if;
+
+      --  For C++ constructors check that their external name has been given
+      --  (either in pragma CPP_Constructor or in a pragma import).
+
+      if Is_Constructor (E)
+        and then
+           (No (Interface_Name (E))
+              or else String_Equal
+                        (L => Strval (Interface_Name (E)),
+                         R => Strval (Get_Default_External_Name (E))))
+      then
+         Error_Msg_N
+           ("'C++ constructor must have external name or link name", E);
       end if;
 
       --  We also reset the Pure indication on a subprogram with an Address

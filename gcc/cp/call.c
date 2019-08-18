@@ -529,9 +529,8 @@ null_ptr_cst_p (tree t)
 
   /* [conv.ptr]
 
-     A null pointer constant is an integral constant expression
-     (_expr.const_) rvalue of integer type that evaluates to zero or
-     an rvalue of type std::nullptr_t. */
+     A null pointer constant is an integer literal ([lex.icon]) with value
+     zero or a prvalue of type std::nullptr_t.  */
   if (NULLPTR_TYPE_P (type))
     return true;
 
@@ -4184,7 +4183,7 @@ build_converted_constant_expr_internal (tree type, tree expr,
   conversion *conv;
   void *p;
   tree t;
-  location_t loc = cp_expr_loc_or_loc (expr, input_location);
+  location_t loc = cp_expr_loc_or_input_loc (expr);
 
   if (error_operand_p (expr))
     return error_mark_node;
@@ -4278,6 +4277,11 @@ build_converted_constant_expr_internal (tree type, tree expr,
 
   if (conv)
     {
+      /* Don't copy a class in a template.  */
+      if (CLASS_TYPE_P (type) && conv->kind == ck_rvalue
+	  && processing_template_decl)
+	conv = next_conversion (conv);
+
       conv->check_narrowing = true;
       conv->check_narrowing_const_only = true;
       expr = convert_like (conv, expr, complain);
@@ -6167,7 +6171,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	      conv = cand->convs[2];
 	      if (conv->kind == ck_ref_bind)
 		conv = next_conversion (conv);
-	      arg3 = convert_like (conv, arg3, complain);
+	      convert_like (conv, arg3, complain);
 	    }
 
 	}
@@ -6956,7 +6960,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
   tree totype = convs->type;
   diagnostic_t diag_kind;
   int flags;
-  location_t loc = cp_expr_loc_or_loc (expr, input_location);
+  location_t loc = cp_expr_loc_or_input_loc (expr);
 
   if (convs->bad_p && !(complain & tf_error))
     return error_mark_node;
@@ -7476,7 +7480,7 @@ tree
 convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 {
   tree arg_type;
-  location_t loc = cp_expr_loc_or_loc (arg, input_location);
+  location_t loc = cp_expr_loc_or_input_loc (arg);
 
   /* [expr.call]
 
@@ -7784,7 +7788,7 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
 		     "argument of function call might be a candidate "
 		     "for a format attribute");
 	}
-      maybe_warn_parm_abi (type, cp_expr_loc_or_loc (val, input_location));
+      maybe_warn_parm_abi (type, cp_expr_loc_or_input_loc (val));
     }
 
   if (complain & tf_warning)
@@ -8241,10 +8245,17 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    return error_mark_node;
 	}
 
-      /* See if the function member or the whole class type is declared
-	 final and the call can be devirtualized.  */
+      /* Optimize away vtable lookup if we know that this
+	 function can't be overridden.  We need to check if
+	 the context and the type where we found fn are the same,
+	 actually FN might be defined in a different class
+	 type because of a using-declaration. In this case, we
+	 do not want to perform a non-virtual call.  Note that
+	 resolves_to_fixed_type_p checks CLASSTYPE_FINAL too.  */
       if (DECL_FINAL_P (fn)
-	  || CLASSTYPE_FINAL (TYPE_METHOD_BASETYPE (TREE_TYPE (fn))))
+	  || (resolves_to_fixed_type_p (arg, 0)
+	      && same_type_ignoring_top_level_qualifiers_p
+	      (DECL_CONTEXT (fn), BINFO_TYPE (cand->conversion_path)))) 
 	flags |= LOOKUP_NONVIRTUAL;
 
       /* [class.mfct.nonstatic]: If a nonstatic member function of a class
@@ -8583,7 +8594,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       tree type = TREE_TYPE (to);
       tree as_base = CLASSTYPE_AS_BASE (type);
       tree arg = argarray[1];
-      location_t loc = cp_expr_loc_or_loc (arg, input_location);
+      location_t loc = cp_expr_loc_or_input_loc (arg);
 
       if (is_really_empty_class (type, /*ignore_vptr*/true))
 	{
@@ -9131,7 +9142,7 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
   tree fndecl;
 
   /* Remember roughly where this call is.  */
-  location_t loc = cp_expr_loc_or_loc (fn, input_location);
+  location_t loc = cp_expr_loc_or_input_loc (fn);
   fn = build_call_a (fn, nargs, argarray);
   SET_EXPR_LOCATION (fn, loc);
 
@@ -9557,7 +9568,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
   struct z_candidate *candidates = 0, *cand;
   tree explicit_targs = NULL_TREE;
   tree basetype = NULL_TREE;
-  tree access_binfo, binfo;
+  tree access_binfo;
   tree optype;
   tree first_mem_arg = NULL_TREE;
   tree name;
@@ -9596,7 +9607,6 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
   if (!conversion_path)
     conversion_path = BASELINK_BINFO (fns);
   access_binfo = BASELINK_ACCESS_BINFO (fns);
-  binfo = BASELINK_BINFO (fns);
   optype = BASELINK_OPTYPE (fns);
   fns = BASELINK_FUNCTIONS (fns);
   if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
@@ -9845,17 +9855,6 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 
 	  if (call != error_mark_node)
 	    {
-	      /* Optimize away vtable lookup if we know that this
-		 function can't be overridden.  We need to check if
-		 the context and the type where we found fn are the same,
-		 actually FN might be defined in a different class
-		 type because of a using-declaration. In this case, we
-		 do not want to perform a non-virtual call.  */
-	      if (DECL_VINDEX (fn) && ! (flags & LOOKUP_NONVIRTUAL)
-		  && same_type_ignoring_top_level_qualifiers_p
-		  (DECL_CONTEXT (fn), BINFO_TYPE (binfo))
-		  && resolves_to_fixed_type_p (instance, 0))
-		flags |= LOOKUP_NONVIRTUAL;
               if (explicit_targs)
                 flags |= LOOKUP_EXPLICIT_TMPL_ARGS;
 	      /* Now we know what function is being called.  */
@@ -11183,7 +11182,7 @@ perform_implicit_conversion_flags (tree type, tree expr,
 {
   conversion *conv;
   void *p;
-  location_t loc = cp_expr_loc_or_loc (expr, input_location);
+  location_t loc = cp_expr_loc_or_input_loc (expr);
 
   if (TYPE_REF_P (type))
     expr = mark_lvalue_use (expr);
@@ -11532,7 +11531,7 @@ initialize_reference (tree type, tree expr,
 {
   conversion *conv;
   void *p;
-  location_t loc = cp_expr_loc_or_loc (expr, input_location);
+  location_t loc = cp_expr_loc_or_input_loc (expr);
 
   if (type == error_mark_node || error_operand_p (expr))
     return error_mark_node;

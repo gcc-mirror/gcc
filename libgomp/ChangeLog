@@ -1,3 +1,101 @@
+2019-08-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91422
+	* testsuite/libgomp.oacc-fortran/routine-7.f90: Correct array
+	dimension.
+
+2019-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* target.c (gomp_map_vars_internal): For GOMP_MAP_USE_DEVICE_PTR
+	perform the lookup in the first loop only if !not_found_cnt, otherwise
+	perform lookups for it in the second loop guarded with
+	if (not_found_cnt || has_firstprivate).
+	* testsuite/libgomp.c/target-37.c: New test.
+	* testsuite/libgomp.c++/target-22.C: New test.
+
+2019-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/target-18.c (struct S): New type.
+	(foo): Use use_device_addr clause instead of use_device_ptr clause
+	where required by OpenMP 5.0, add further tests for both use_device_ptr
+	and use_device_addr clauses.
+	* testsuite/libgomp.c++/target-9.C (struct S): New type.
+	(foo): Use use_device_addr clause instead of use_device_ptr clause
+	where required by OpenMP 5.0, add further tests for both use_device_ptr
+	and use_device_addr clauses.  Add t and u arguments.
+	(main): Adjust caller.
+
+2019-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c++/loop-13.C: New test.
+	* testsuite/libgomp.c++/loop-14.C: New test.
+	* testsuite/libgomp.c++/loop-15.C: New test.
+
+2019-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91301
+	* testsuite/libgomp.c++/for-27.C: New test.
+
+2019-07-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* testsuite/libgomp.fortran/reduction4.f90: Update BOZ usage.
+	* testsuite/libgomp.fortran/reduction5.f90: Ditto.
+
+2019-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/loop-1.c: New test.
+
+2019-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c++/scan-13.C: Replace xfail with target x86.
+	* testsuite/libgomp.c++/scan-16.C: Likewise.
+
+2019-07-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/scan-19.c: New test.
+	* testsuite/libgomp.c/scan-20.c: New test.
+
+	* testsuite/libgomp.c/scan-11.c: New test.
+	* testsuite/libgomp.c/scan-12.c: New test.
+	* testsuite/libgomp.c/scan-13.c: New test.
+	* testsuite/libgomp.c/scan-14.c: New test.
+	* testsuite/libgomp.c/scan-15.c: New test.
+	* testsuite/libgomp.c/scan-16.c: New test.
+	* testsuite/libgomp.c/scan-17.c: New test.
+	* testsuite/libgomp.c/scan-18.c: New test.
+	* testsuite/libgomp.c++/scan-9.C: New test.
+	* testsuite/libgomp.c++/scan-10.C: New test.
+	* testsuite/libgomp.c++/scan-11.C: New test.
+	* testsuite/libgomp.c++/scan-12.C: New test.
+	* testsuite/libgomp.c++/scan-13.C: New test.
+	* testsuite/libgomp.c++/scan-14.C: New test.
+	* testsuite/libgomp.c++/scan-15.C: New test.
+	* testsuite/libgomp.c++/scan-16.C: New test.
+
+2019-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/scan-9.c: New test.
+	* testsuite/libgomp.c/scan-10.c: New test.
+
+2019-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c++/scan-1.C: New test.
+	* testsuite/libgomp.c++/scan-2.C: New test.
+	* testsuite/libgomp.c++/scan-3.C: New test.
+	* testsuite/libgomp.c++/scan-4.C: New test.
+	* testsuite/libgomp.c++/scan-5.C: New test.
+	* testsuite/libgomp.c++/scan-6.C: New test.
+	* testsuite/libgomp.c++/scan-7.C: New test.
+	* testsuite/libgomp.c++/scan-8.C: New test.
+	* testsuite/libgomp.c/scan-1.c: New test.
+	* testsuite/libgomp.c/scan-2.c: New test.
+	* testsuite/libgomp.c/scan-3.c: New test.
+	* testsuite/libgomp.c/scan-4.c: New test.
+	* testsuite/libgomp.c/scan-5.c: New test.
+	* testsuite/libgomp.c/scan-6.c: New test.
+	* testsuite/libgomp.c/scan-7.c: New test.
+	* testsuite/libgomp.c/scan-8.c: New test.
+
 2019-06-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c++/firstprivate-mappings-1.C: New file.

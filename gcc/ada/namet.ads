@@ -204,6 +204,10 @@ package Namet is
    subtype Valid_Name_Id is Name_Id range First_Name_Id .. Name_Id'Last;
    --  All but No_Name and Error_Name
 
+   function Present (Nam : Name_Id) return Boolean;
+   pragma Inline (Present);
+   --  Determine whether name Nam exists
+
    ------------------------------
    -- Name_Id Membership Tests --
    ------------------------------
@@ -427,7 +431,7 @@ package Namet is
    --  Uhh encoding (hh = hex code), other 16-bit wide character values are
    --  stored using the Whhhh (hhhh = hex code) encoding, and other 32-bit wide
    --  wide character values are stored using the WWhhhhhhhh (hhhhhhhh = hex
-   --  code).  Note that this procedure does not fold upper case letters (they
+   --  code). Note that this procedure does not fold upper case letters (they
    --  are stored using the Uhh encoding).
 
    procedure Set_Character_Literal_Name
@@ -626,6 +630,10 @@ package Namet is
    --  Constant used to indicate no file is present (this is used for example
    --  when a search for a file indicates that no file of the name exists).
 
+   function Present (Nam : File_Name_Type) return Boolean;
+   pragma Inline (Present);
+   --  Determine whether file name Nam exists
+
    Error_File_Name : constant File_Name_Type := File_Name_Type (Error_Name);
    --  The special File_Name_Type value Error_File_Name is used to indicate
    --  a unit name where some previous processing has found an error.
@@ -649,6 +657,10 @@ package Namet is
 
    No_Unit_Name : constant Unit_Name_Type := Unit_Name_Type (No_Name);
    --  Constant used to indicate no file name present
+
+   function Present (Nam : Unit_Name_Type) return Boolean;
+   pragma Inline (Present);
+   --  Determine whether unit name Nam exists
 
    Error_Unit_Name : constant Unit_Name_Type := Unit_Name_Type (Error_Name);
    --  The special Unit_Name_Type value Error_Unit_Name is used to indicate

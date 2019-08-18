@@ -181,7 +181,7 @@ class maybe_range_label_for_tree_type_mismatch : public range_label
   tree m_other_expr;
 };
 
-struct op_location_t;
+class op_location_t;
 
 /* A subclass of rich_location for showing problems with binary operations.
 

@@ -2708,14 +2708,13 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
       && GET_CODE (PATTERN (new_thread)) != ASM_INPUT
       && asm_noperands (PATTERN (new_thread)) < 0)
     {
-      rtx pat = PATTERN (new_thread);
       rtx dest;
       rtx src;
 
       /* We know "new_thread" is an insn due to NONJUMP_INSN_P (new_thread)
 	 above.  */
       trial = as_a <rtx_insn *> (new_thread);
-      pat = PATTERN (trial);
+      rtx pat = PATTERN (trial);
 
       if (!NONJUMP_INSN_P (trial)
 	  || GET_CODE (pat) != SET

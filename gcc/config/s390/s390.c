@@ -770,7 +770,7 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 #define MAX_ARGS 6
 
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   enum insn_code icode;
   rtx op[MAX_ARGS], pat;
   int arity;
@@ -1378,6 +1378,7 @@ s390_match_ccmode_set (rtx set, machine_mode req_mode)
     case E_CCSRmode:
     case E_CCUmode:
     case E_CCURmode:
+    case E_CCOmode:
     case E_CCLmode:
     case E_CCL1mode:
     case E_CCL2mode:
@@ -2067,6 +2068,15 @@ s390_branch_condition_mask (rtx code)
 	case GT:	return CC2 | CC3;
 	case LE:	return CC0 | CC1;
 	case GE:	return CC0 | CC2 | CC3;
+	default:	return -1;
+	}
+      break;
+
+    case E_CCOmode:
+      switch (GET_CODE (code))
+	{
+	case EQ:	return CC0 | CC1 | CC2;
+	case NE:	return CC3;
 	default:	return -1;
 	}
       break;
@@ -3131,6 +3141,49 @@ s390_decompose_addrstyle_without_index (rtx op, rtx *base,
    return true;
 }
 
+/*  Check that OP is a valid shift count operand.
+    It should be of the following structure:
+      (subreg (and (plus (reg imm_op)) 2^k-1) 7)
+    where subreg, and and plus are optional.
+
+    If IMPLICIT_MASK is > 0 and OP contains and
+      (AND ... immediate)
+    it is checked whether IMPLICIT_MASK and the immediate match.
+    Otherwise, no checking is performed.
+  */
+bool
+s390_valid_shift_count (rtx op, HOST_WIDE_INT implicit_mask)
+{
+  /* Strip subreg.  */
+  while (GET_CODE (op) == SUBREG && subreg_lowpart_p (op))
+    op = XEXP (op, 0);
+
+  /* Check for an and with proper constant.  */
+  if (GET_CODE (op) == AND)
+  {
+    rtx op1 = XEXP (op, 0);
+    rtx imm = XEXP (op, 1);
+
+    if (GET_CODE (op1) == SUBREG && subreg_lowpart_p (op1))
+      op1 = XEXP (op1, 0);
+
+    if (!(register_operand (op1, GET_MODE (op1)) || GET_CODE (op1) == PLUS))
+      return false;
+
+    if (!immediate_operand (imm, GET_MODE (imm)))
+      return false;
+
+    HOST_WIDE_INT val = INTVAL (imm);
+    if (implicit_mask > 0
+	&& (val & implicit_mask) != implicit_mask)
+      return false;
+
+    op = op1;
+  }
+
+  /* Check the rest.  */
+  return s390_decompose_addrstyle_without_index (op, NULL, NULL);
+}
 
 /* Return true if CODE is a valid address without index.  */
 
@@ -5394,7 +5447,7 @@ legitimize_reload_address (rtx ad, machine_mode mode ATTRIBUTE_UNUSED,
 /* Emit code to move LEN bytes from DST to SRC.  */
 
 bool
-s390_expand_movmem (rtx dst, rtx src, rtx len)
+s390_expand_cpymem (rtx dst, rtx src, rtx len)
 {
   /* When tuning for z10 or higher we rely on the Glibc functions to
      do the right thing. Only for constant lengths below 64k we will
@@ -5419,14 +5472,14 @@ s390_expand_movmem (rtx dst, rtx src, rtx len)
 	{
 	  rtx newdst = adjust_address (dst, BLKmode, o);
 	  rtx newsrc = adjust_address (src, BLKmode, o);
-	  emit_insn (gen_movmem_short (newdst, newsrc,
+	  emit_insn (gen_cpymem_short (newdst, newsrc,
 				       GEN_INT (l > 256 ? 255 : l - 1)));
 	}
     }
 
   else if (TARGET_MVCLE)
     {
-      emit_insn (gen_movmem_long (dst, src, convert_to_mode (Pmode, len, 1)));
+      emit_insn (gen_cpymem_long (dst, src, convert_to_mode (Pmode, len, 1)));
     }
 
   else
@@ -5488,7 +5541,7 @@ s390_expand_movmem (rtx dst, rtx src, rtx len)
 	  emit_insn (prefetch);
 	}
 
-      emit_insn (gen_movmem_short (dst, src, GEN_INT (255)));
+      emit_insn (gen_cpymem_short (dst, src, GEN_INT (255)));
       s390_load_address (dst_addr,
 			 gen_rtx_PLUS (Pmode, dst_addr, GEN_INT (256)));
       s390_load_address (src_addr,
@@ -5505,7 +5558,7 @@ s390_expand_movmem (rtx dst, rtx src, rtx len)
       emit_jump (loop_start_label);
       emit_label (loop_end_label);
 
-      emit_insn (gen_movmem_short (dst, src,
+      emit_insn (gen_cpymem_short (dst, src,
 				   convert_to_mode (Pmode, count, 1)));
       emit_label (end_label);
     }
@@ -5557,7 +5610,7 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
 	    if (l > 1)
 	      {
 		rtx newdstp1 = adjust_address (dst, BLKmode, o + 1);
-		emit_insn (gen_movmem_short (newdstp1, newdst,
+		emit_insn (gen_cpymem_short (newdstp1, newdst,
 					     GEN_INT (l > 257 ? 255 : l - 2)));
 	      }
 	  }
@@ -5664,7 +5717,7 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
 	  /* Set the first byte in the block to the value and use an
 	     overlapping mvc for the block.  */
 	  emit_move_insn (adjust_address (dst, QImode, 0), val);
-	  emit_insn (gen_movmem_short (dstp1, dst, GEN_INT (254)));
+	  emit_insn (gen_cpymem_short (dstp1, dst, GEN_INT (254)));
 	}
       s390_load_address (dst_addr,
 			 gen_rtx_PLUS (Pmode, dst_addr, GEN_INT (256)));
@@ -5688,7 +5741,7 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
 	  emit_move_insn (adjust_address (dst, QImode, 0), val);
 	  /* execute only uses the lowest 8 bits of count that's
 	     exactly what we need here.  */
-	  emit_insn (gen_movmem_short (dstp1, dst,
+	  emit_insn (gen_cpymem_short (dstp1, dst,
 				       convert_to_mode (Pmode, count, 1)));
 	}
 
@@ -6330,7 +6383,7 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
 
 	  dest = adjust_address (dest, BLKmode, 0);
 	  set_mem_size (dest, size);
-	  s390_expand_movmem (dest, src_mem, GEN_INT (size));
+	  s390_expand_cpymem (dest, src_mem, GEN_INT (size));
 	  return true;
 	}
 
@@ -7448,6 +7501,27 @@ print_addrstyle_operand (FILE *file, rtx op)
     fprintf (file, "(%s)", reg_names[REGNO (base)]);
 }
 
+/* Print the shift count operand OP to FILE.
+   OP is an address-style operand in a form which
+   s390_valid_shift_count permits.  Subregs and no-op
+   and-masking of the operand are stripped.  */
+
+static void
+print_shift_count_operand (FILE *file, rtx op)
+{
+  /* No checking of the and mask required here.  */
+  if (!s390_valid_shift_count (op, 0))
+    gcc_unreachable ();
+
+  while (op && GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  if (GET_CODE (op) == AND)
+    op = XEXP (op, 0);
+
+  print_addrstyle_operand (file, op);
+}
+
 /* Assigns the number of NOP halfwords to be emitted before and after the
    function label to *HW_BEFORE and *HW_AFTER.  Both pointers must not be NULL.
    If hotpatching is disabled for the function, the values are set to zero.
@@ -7912,7 +7986,7 @@ print_operand (FILE *file, rtx x, int code)
       break;
 
     case 'Y':
-      print_addrstyle_operand (file, x);
+      print_shift_count_operand (file, x);
       return;
     }
 
@@ -16348,7 +16422,13 @@ s390_sched_dependencies_evaluation (rtx_insn *head, rtx_insn *tail)
   add_dependence (r11_restore, r15_restore, REG_DEP_ANTI);
 }
 
+/* Implement TARGET_SHIFT_TRUNCATION_MASK for integer shifts.  */
 
+static unsigned HOST_WIDE_INT
+s390_shift_truncation_mask (machine_mode mode)
+{
+  return mode == DImode || mode == SImode ? 63 : 0;
+}
 
 /* Initialize GCC target structure.  */
 
@@ -16645,6 +16725,8 @@ s390_sched_dependencies_evaluation (rtx_insn *head, rtx_insn *tail)
 #define TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK \
   s390_sched_dependencies_evaluation
 
+#undef TARGET_SHIFT_TRUNCATION_MASK
+#define TARGET_SHIFT_TRUNCATION_MASK s390_shift_truncation_mask
 
 /* Use only short displacement, since long displacement is not available for
    the floating point instructions.  */

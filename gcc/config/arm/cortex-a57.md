@@ -236,7 +236,12 @@
 			   neon_store1_4reg, neon_store1_4reg_q,\
 			   neon_store1_one_lane, neon_store1_one_lane_q,\
 			   neon_store2_one_lane, neon_store2_one_lane_q")
-	    (const_string "neon_store_complex")]
+	    (const_string "neon_store_complex")
+;; If it doesn't match any of the above that we want to treat specially but is
+;; still a NEON type, treat it as a basic NEON type.  This is better than
+;; dropping it on the floor and making no assumptions about it whatsoever.
+	  (eq_attr "is_neon_type" "yes")
+	    (const_string "neon_arith_basic")]
 	  (const_string "unknown")))
 
 ;; The Cortex-A57 core is modelled as a triple issue pipeline that has
@@ -796,9 +801,3 @@
 ;; help.
 (define_bypass 1 "cortex_a57_*"
 		 "cortex_a57_call,cortex_a57_branch")
-
-;; AESE+AESMC and AESD+AESIMC pairs forward with zero latency
-(define_bypass 0 "cortex_a57_crypto_simple"
-		 "cortex_a57_crypto_simple"
-		 "aarch_crypto_can_dual_issue")
-

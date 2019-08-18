@@ -248,7 +248,14 @@ package body Opt is
             SPARK_Mode_Pragma        := SPARK_Mode_Pragma_Config;
 
          else
-            if GNAT_Mode_Config then
+            --  In GNATprove mode assertions should be always enabled, even
+            --  when analysing internal units.
+
+            if GNATprove_Mode then
+               pragma Assert (Assertions_Enabled);
+               null;
+
+            elsif GNAT_Mode_Config then
                Assertions_Enabled    := Assertions_Enabled_Config;
             else
                Assertions_Enabled    := False;
