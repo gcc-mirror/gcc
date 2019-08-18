@@ -3584,7 +3584,7 @@ See ``Blackfin Options'' in the main manual
 @end ifhtml
 
 More information, and a version of binutils with support for this processor,
-is available at @uref{https://blackfin.uclinux.org}
+are available at @uref{https://sourceforge.net/projects/adi-toolchain/}.
 
 @html
 <hr />
