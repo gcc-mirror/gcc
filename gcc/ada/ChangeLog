@@ -1,3 +1,8 @@
+2019-08-19  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/s-os_lib.ads, libgnat/s-os_lib.adb (To_Ada, To_C): New
+	routines.
+
 2019-08-19  Bob Duff  <duff@adacore.com>
 
 	* exp_attr.adb (Attribute_Valid): Correct the handling of
