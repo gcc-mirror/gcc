@@ -1,3 +1,8 @@
+2019-08-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* opt.ads: Clean up left-overs of earlier implementation in
+	comment:
+
 2019-08-19  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Derived_Enumeration_Type): Do no freeze anonymous
