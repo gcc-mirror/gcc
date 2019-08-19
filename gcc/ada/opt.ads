@@ -501,7 +501,7 @@ package Opt is
    type Distribution_Stub_Mode_Type is
    --  GNAT
      (No_Stubs,
-      --  Normal mode, no generation/compilation of distribution stubs
+      --  Normal mode, no generation of distribution stubs
 
       Generate_Receiver_Stub_Body,
       --  The unit being compiled is the RCI body, and the compiler will
@@ -513,8 +513,8 @@ package Opt is
 
    Distribution_Stub_Mode : Distribution_Stub_Mode_Type := No_Stubs;
    --  GNAT
-   --  This enumeration variable indicates the five states of distribution
-   --  annex stub generation/compilation.
+   --  This enumeration variable indicates the three states of distribution
+   --  annex stub generation.
 
    Do_Not_Execute : Boolean := False;
    --  GNATMAKE
