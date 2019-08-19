@@ -1,3 +1,9 @@
+2019-08-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Call): A call to an expression function
+	freezes when expander is active, unless the call appears within
+	the body of another expression function,
+
 2019-08-19  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* libgnat/s-os_lib.ads, libgnat/s-os_lib.adb (To_Ada, To_C): New
