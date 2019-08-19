@@ -1,3 +1,12 @@
+2019-08-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backport from mainline
+	2019-09-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/91386
+	* config/aarch64/aarch64.c (aarch64_gen_adjusted_ldpstp): Use copy_rtx
+	to preserve the contents of the original insns.
+
 2019-08-16  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	Backport from mainline
