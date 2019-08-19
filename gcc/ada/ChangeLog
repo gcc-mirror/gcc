@@ -1,3 +1,11 @@
+2019-08-19  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Record_Hole_Check): Procedure to check for holes
+	that incudes processing type extensions. A type extension is
+	processed by first calling Record_Hole_Check recursively on the
+	parent type to compute the bit number after the last component
+	of the parent.
+
 2019-08-19  Gary Dismukes  <dismukes@adacore.com>
 
 	* checks.adb (Length_Mismatch_Info_Message): New function in
