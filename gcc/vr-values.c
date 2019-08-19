@@ -187,7 +187,7 @@ vr_values::get_lattice_entry (const_tree var)
       return vr;
     }
 
-  vr->set_undefined (TREE_TYPE (var));
+  vr->set_undefined ();
 
   /* If VAR is a default definition of a parameter, the variable can
      take any value in VAR's type.  */
@@ -1032,7 +1032,7 @@ vr_values::extract_range_from_unary_expr (value_range *vr, enum tree_code code,
   else
     vr0.set_varying (type);
 
-  range_fold_unary_expr (vr, code, type, &vr0);
+  range_fold_unary_expr (vr, code, type, &vr0, TREE_TYPE (op0));
 }
 
 

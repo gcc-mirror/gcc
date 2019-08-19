@@ -74,14 +74,14 @@ class irange
   static bool supports_p (tree expr);
 
   void set_varying (tree);
-  void set_undefined (tree = NULL);
+  void set_undefined ();
 
   unsigned num_pairs () const;
   wide_int lower_bound (unsigned pair = 0) const;
   wide_int upper_bound () const;
   wide_int upper_bound (unsigned pair) const;
 
-  tree type () const { return m_type; }
+  tree type () const;
 
   void cast (tree type);
 
@@ -164,11 +164,17 @@ irange::num_pairs () const
   return m_nitems / 2;
 }
 
-inline void
-irange::set_undefined (tree type)
+inline tree
+irange::type () const
 {
-  if (type)
-    m_type = type;
+  gcc_checking_assert (!undefined_p ());
+  return m_type;
+}
+
+inline void
+irange::set_undefined ()
+{
+  m_type = NULL;
   m_nitems = 0;
 }
 
@@ -181,6 +187,8 @@ irange::undefined_p () const
 inline bool
 irange::zero_p () const
 {
+  if (m_nitems != 2)
+    return false;
   wide_int z = wi::zero (TYPE_PRECISION (m_type));
   return (m_nitems == 2 && m_bounds[0] == z && m_bounds[1] == z);
 }
@@ -188,6 +196,8 @@ irange::zero_p () const
 inline bool
 irange::nonzero_p () const
 {
+  if (undefined_p ())
+    return false;
   unsigned prec = TYPE_PRECISION (m_type);
   return *this == irange (VR_ANTI_RANGE, m_type,
 			  wi::zero (prec), wi::zero (prec));
@@ -213,7 +223,7 @@ irange::varying_p () const
 // To store an irange class X into an irange_storage use:
 //
 // 	irange X = ...;
-// 	irange_storage *stow = irange_storage::alloc (X);
+// 	irange_storage *stow = irange_storage::alloc (X, range_type);
 //
 // To convert it back into an irange use:
 //
@@ -231,12 +241,12 @@ class GTY((variable_size)) irange_storage
   friend class irange;
 
  public:
-  static irange_storage *alloc (const irange &);
-  bool update (const irange &);
+  static irange_storage *alloc (const irange &, tree type);
+  bool update (const irange &, tree type);
 
  private:
   static size_t size (unsigned precision);
-  void set (const irange &);
+  void set (const irange &, tree type);
   bool empty_pair_p (unsigned, unsigned, tree) const;
   void set_empty_pair (unsigned, unsigned, tree);
   void set_nonzero_bits (const wide_int &);
@@ -276,12 +286,17 @@ irange_storage::size (unsigned precision)
 // initialize it to IR.
 
 inline irange_storage *
-irange_storage::alloc (const irange &ir)
+irange_storage::alloc (const irange &ir, tree type)
 {
-  unsigned precision = TYPE_PRECISION (ir.m_type);
+  if (type)
+    gcc_checking_assert (ir.undefined_p ()
+			 || types_compatible_p (type, ir.type ()));
+  else
+    type = ir.type ();
+  unsigned precision = TYPE_PRECISION (type);
   irange_storage *stow = static_cast<irange_storage *> (ggc_internal_alloc
 							(size (precision)));
-  stow->set (ir);
+  stow->set (ir, type);
   stow->set_nonzero_bits (wi::shwi (-1, precision));
   return stow;
 }

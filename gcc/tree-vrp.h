@@ -57,7 +57,7 @@ public:
   bool undefined_p () const;
   bool varying_p () const;
   void set_varying (tree type);
-  void set_undefined (tree = NULL);
+  void set_undefined ();
 
   void union_ (const value_range_base *);
   void intersect (const value_range_base *);
@@ -148,7 +148,7 @@ class GTY((user)) value_range : public value_range_base
   bool equal_p (const value_range &, bool ignore_equivs) const;
 
   /* Types of value ranges.  */
-  void set_undefined (tree = NULL);
+  void set_undefined ();
   void set_varying (tree);
 
   /* Equivalence bitmap methods.  */
@@ -175,19 +175,14 @@ class value_range_storage
 {
   friend class value_range_base;
 public:
-  static value_range_storage *alloc (const value_range_base &r)
+  static value_range_storage *alloc (const value_range_base &r, tree type);
+  bool update (const value_range_base &r, tree type)
   {
-    value_range_storage *p = ggc_alloc<value_range_storage> ();
-    p->set (r);
-    return p;
-  }
-  bool update (const value_range_base &r)
-  {
-    set (r);
+    set (r, type);
     return true;
   }
 private:
-  void set (const value_range_base &r)
+  void set (const value_range_base &r, tree type ATTRIBUTE_UNUSED)
   {
     m_vr = r;
   }
@@ -372,16 +367,18 @@ void range_fold_binary_expr (value_range_base *, enum tree_code, tree,
 			     const value_range_base *,
 			     const value_range_base *);
 void range_fold_unary_expr (value_range_base *, enum tree_code, tree,
-			    const value_range_base *);
+			    const value_range_base *, tree);
 
 /* Return TRUE if *VR includes the value zero.  */
 
 inline bool
 range_includes_zero_p (const value_range_base *vr)
 {
-  /* UNDEFINED may not have a type in uninitialized ranges.  */
   if (vr->undefined_p ())
     return false;
+
+  if (vr->varying_p ())
+    return true;
 
   return vr->may_contain_p (build_zero_cst (vr->type ()));
 }

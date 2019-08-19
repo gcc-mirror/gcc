@@ -127,7 +127,7 @@ range_negatives (tree type)
   signop sign = TYPE_SIGN (type);
   irange r;
   if (sign == UNSIGNED)
-    r.set_undefined (type);
+    r.set_undefined ();
   else
     r = irange (type, wi::min_value (prec, sign), wi::minus_one (prec));
   return r;
@@ -370,7 +370,7 @@ range_tests ()
   r0 = range_zero (boolean_type_node);
   ASSERT_TRUE (r0 == irange (build_zero_cst (boolean_type_node),
 			     build_zero_cst (boolean_type_node)));
-  r0.invert();
+  r0.invert ();
   ASSERT_TRUE (r0 == irange (build_one_cst (boolean_type_node),
 			     build_one_cst (boolean_type_node)));
 
@@ -611,14 +611,14 @@ range_tests ()
 
   // Test irange_storage.
   r0 = irange (INT (5), INT (10));
-  irange_storage *stow = irange_storage::alloc (r0);
+  irange_storage *stow = irange_storage::alloc (r0, integer_type_node);
   r1 = irange (integer_type_node, stow);
   ASSERT_TRUE (r0 == r1);
 
   // Test irange_storage with signed 1-bit fields.
   tree s1bit_type = make_signed_type (1);
   r0 = irange (build_int_cst (s1bit_type, -1), build_int_cst (s1bit_type, 0));
-  stow = irange_storage::alloc (r0);
+  stow = irange_storage::alloc (r0, s1bit_type);
   r1 = irange (s1bit_type, stow);
   ASSERT_TRUE (r0 == r1);
 
@@ -667,7 +667,7 @@ irange::init (tree type, const wide_int &lbound, const wide_int &ubound,
 {
   if (rt == VR_UNDEFINED)
     {
-      set_undefined (type);
+      set_undefined ();
       return;
     }
   if (rt == VR_VARYING)
@@ -1025,8 +1025,6 @@ irange::canonicalize ()
 void
 irange::union_ (const irange &r)
 {
-  gcc_checking_assert (range_compatible_p (m_type, r.m_type));
-
   if (undefined_p ())
     {
       *this = r;
@@ -1034,6 +1032,8 @@ irange::union_ (const irange &r)
     }
   else if (r.undefined_p ())
     return;
+
+  gcc_checking_assert (range_compatible_p (m_type, r.m_type));
 
   // Do not worry about merging and such by reserving twice as many
   // pairs as needed, and then simply sort the 2 ranges into this
@@ -1141,8 +1141,10 @@ irange::union_ (const irange &r)
 void
 irange::intersect (const wide_int &x, const wide_int &y)
 {
-  unsigned pos = 0;
+  if (undefined_p ())
+    return;
 
+  unsigned pos = 0;
   for (unsigned i = 0; i < m_nitems; i += 2)
     {
       signop sign = TYPE_SIGN (m_type);
@@ -1169,13 +1171,16 @@ irange::intersect (const wide_int &x, const wide_int &y)
 void
 irange::intersect (const irange &r)
 {
-  gcc_checking_assert (range_compatible_p (m_type, r.m_type));
   irange orig_range (*this);
 
   // Intersection with an empty range is an empty range.
-  set_undefined ();
   if (orig_range.undefined_p () || r.undefined_p ())
-    return;
+    {
+      set_undefined ();
+      return;
+    }
+
+  gcc_checking_assert (range_compatible_p (m_type, r.m_type));
 
   // The general algorithm is as follows.
   //
@@ -1188,6 +1193,7 @@ irange::intersect (const irange &r)
   // Step 2: [10,20][30,40][50,60] ^ [38,51] => [38,40]
   // Step 3: [10,20][30,40][50,60] ^ [55,70] => [55,60]
   // Final:  [15,20] U [38,40] U [55,60] => [15,20][38,40][55,60]
+  set_undefined ();
   for (unsigned i = 0; i < r.m_nitems; i += 2)
     {
       irange tmp (orig_range);
@@ -1203,6 +1209,9 @@ irange::intersect (const irange &r)
 void
 irange::invert ()
 {
+  if (undefined_p ())
+    return;
+
   // We always need one more set of bounds to represent an inverse, so
   // if we're at the limit, we can't properly represent things.
   //
@@ -1225,13 +1234,6 @@ irange::invert ()
     {
       m_bounds[1] = max;
       m_nitems = 2;
-      return;
-    }
-
-  // The inverse of the empty set is the entire domain.
-  if (undefined_p ())
-    {
-      set_varying (m_type);
       return;
     }
 
@@ -1301,6 +1303,13 @@ irange::invert ()
 void
 irange::dump (pretty_printer *buffer) const
 {
+  if (undefined_p ())
+    {
+      pp_string (buffer, "[]");
+      pp_flush (buffer);
+      return;
+    }
+
   wide_int min = wi::min_value (TYPE_PRECISION (m_type), TYPE_SIGN (m_type));
   wide_int max = wi::max_value (TYPE_PRECISION (m_type), TYPE_SIGN (m_type));
   if (POINTER_TYPE_P (m_type) && nonzero_p ())
@@ -1343,8 +1352,6 @@ irange::dump (pretty_printer *buffer) const
 	else
 	  pp_character (buffer, ']');
       }
-  if (undefined_p ())
-    pp_string (buffer, "[]");
 
   pp_character (buffer, ' ');
   dump_generic_node (buffer, m_type, 0, TDF_NONE, false);
@@ -1377,9 +1384,14 @@ irange::dump () const
 // Initialize the current irange_storage to the irange in IR.
 
 void
-irange_storage::set (const irange &ir)
+irange_storage::set (const irange &ir, tree type)
 {
-  unsigned precision = TYPE_PRECISION (ir.type ());
+  if (type)
+    gcc_checking_assert (ir.undefined_p ()
+			 || types_compatible_p (type, ir.type ()));
+  else
+    type = ir.type ();
+  unsigned precision = TYPE_PRECISION (type);
   trailing_bounds.set_precision (precision);
   unsigned i;
   for (i = 0; i < ir.num_pairs () * 2; ++i)
@@ -1387,7 +1399,7 @@ irange_storage::set (const irange &ir)
 
   // Clear the remaining empty ranges.
   for (; i < irange::m_max_pairs * 2; i += 2)
-    set_empty_pair (i, i + 1, ir.type ());
+    set_empty_pair (i, i + 1, type);
 }
 
 // Update a previously initialized irange_storage to NEW_RANGE, iff the
@@ -1395,11 +1407,11 @@ irange_storage::set (const irange &ir)
 // the new range.  Return TRUE if update was successful.
 
 bool
-irange_storage::update (const irange &new_range)
+irange_storage::update (const irange &new_range, tree type)
 {
-  if (trailing_bounds.get_precision () == TYPE_PRECISION (new_range.type ()))
+  if (trailing_bounds.get_precision () == TYPE_PRECISION (type))
     {
-      set (new_range);
+      set (new_range, type);
       return true;
     }
   return false;
@@ -1432,7 +1444,7 @@ irange_to_value_range (const irange &r)
     }
   if (r.undefined_p ())
     {
-      vr.set_undefined (r.type ());
+      vr.set_undefined ();
       return vr;
     }
   tree type = r.type ();
@@ -1485,13 +1497,12 @@ irange_to_value_range (const irange &r)
 static irange
 value_range_to_irange (const value_range_base &vr)
 {
-  tree type = vr.type ();
   if (vr.varying_p ())
-    return irange (type);
+    return irange (vr.type ());
   if (vr.undefined_p ())
     {
       irange r;
-      r.set_undefined (type);
+      r.set_undefined ();
       return r;
     }
   return irange (vr.kind (), vr.min (), vr.max ());

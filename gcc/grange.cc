@@ -279,7 +279,7 @@ grange_op::fold (irange &res, const irange &orig_r1) const
   if (lhs ())
     r2.set_varying (TREE_TYPE (lhs ()));
   else
-    r2.set_undefined (r1.type ());
+    r2.set_undefined ();
 
   return fold (res, r1, r2);
 }
@@ -327,7 +327,7 @@ grange_op::calc_op1_irange (irange &r, const irange &lhs_range) const
   tree type = TREE_TYPE (operand1 ());
   if (lhs_range.undefined_p ())
     {
-      r.set_undefined (type);
+      r.set_undefined ();
       return true;
     }
   // Unary operations require the type of the first operand in the second range
@@ -352,7 +352,7 @@ grange_op::calc_op1_irange (irange &r, const irange &lhs_range,
   // An empty range is viral, so return an empty range.
   if (op2_range.undefined_p () || lhs_range.undefined_p ())
     {
-      r.set_undefined (type);
+      r.set_undefined ();
       return true;
     }
   return handler ()->op1_range (r, type, lhs_range, op2_range);
@@ -370,7 +370,7 @@ grange_op::calc_op2_irange (irange &r, const irange &lhs_range,
   // An empty range is viral, so return an empty range.
   if (op1_range.undefined_p () || lhs_range.undefined_p ())
     {
-      r.set_undefined (type);
+      r.set_undefined ();
       return true;
     }
   return handler ()->op2_range (r, type, lhs_range, op1_range);

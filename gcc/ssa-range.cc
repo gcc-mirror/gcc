@@ -227,7 +227,7 @@ switch_edge_manager::calc_single_range (irange &r, gswitch *sw, edge e)
 
   if (e != gimple_switch_default_edge (cfun, sw))
     {
-      r.set_undefined (type);
+      r.set_undefined ();
       // Loop through all the switches edges, ignoring the default edge.
       // unioning the ranges together.
       for (x = 1; x < lim; x++)
@@ -387,7 +387,7 @@ ssa_ranger::range_on_edge (irange &r, edge e, tree name)
   gcc_checking_assert (valid_ssa_p (name));
 
   range_on_exit (r, e->src, name);
-  gcc_checking_assert  (r.type() == TREE_TYPE (name));
+  gcc_checking_assert  (r.undefined_p () || r.type() == TREE_TYPE (name));
 
   // Check to see if NAME is defined on edge e.
   if (outgoing_edge_range_p (edge_range, e, name, &r))
@@ -432,6 +432,8 @@ ssa_ranger::range_of_stmt (irange &r, gimple *s, tree name)
     }
   if (res)
     {
+      if (r.undefined_p ())
+	return true;
       if (name && TREE_TYPE (name) != r.type ())
         r.cast (TREE_TYPE (name));
       return true;
@@ -474,7 +476,7 @@ ssa_ranger::range_on_entry (irange &r, basic_block bb, tree name)
   gcc_checking_assert (irange::supports_type_p (type));
 
   // Start with an empty range.
-  r.set_undefined (type);
+  r.set_undefined ();
 
   gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
@@ -507,7 +509,7 @@ ssa_ranger::range_on_exit (irange &r, basic_block bb, tree name)
     range_on_entry (r, bb, name);
   else
     gcc_assert (range_of_expr (r, name, s));
-  gcc_checking_assert (r.type() == TREE_TYPE (name));
+  gcc_checking_assert (r.undefined_p () || r.type() == TREE_TYPE (name));
 }
 
 // Calculate a range for range_op statement S given RANGE1 and RANGE2 and 
@@ -660,7 +662,7 @@ ssa_ranger::range_of_phi (irange &r, gphi *phi, tree name,
     return false;
 
   // And start with an empty range, unioning in each argument's range.
-  r.set_undefined (type);
+  r.set_undefined ();
   for (x = 0; x < gimple_phi_num_args (phi); x++)
     {
       irange arg_range;

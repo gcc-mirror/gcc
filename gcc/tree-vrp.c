@@ -298,32 +298,16 @@ value_range_base::constant_p () const
 }
 
 void
-value_range_base::set_undefined (tree type)
+value_range_base::set_undefined ()
 {
   m_kind = VR_UNDEFINED;
-  if (type)
-    {
-      if (supports_type_p (type))
-	{
-	  m_min = vrp_val_min (type, true);
-	  m_max = vrp_val_max (type, true);
-	}
-      else
-	{
-	  /* This is a temporary kludge for ipa-cp which is building
-	     undefined/varying of floats.  ??  */
-	  m_min = m_max = build1 (NOP_EXPR, type, type);
-	}
-    }
-  else
-    m_min = m_max = NULL;
+  m_min = m_max = NULL;
 }
 
 void
-value_range::set_undefined (tree type)
+value_range::set_undefined ()
 {
-  value_range_base::set_undefined (type);
-  equiv_clear ();
+  set (VR_UNDEFINED, NULL, NULL, NULL);
 }
 
 void
@@ -421,25 +405,19 @@ value_range_base::singleton_p (tree *result) const
 tree
 value_range_base::type () const
 {
-  gcc_assert (m_min || undefined_p ());
+  gcc_assert (m_min);
   return TREE_TYPE (min ());
 }
 
 void
 value_range_base::dump (FILE *file) const
 {
-  tree ttype;
-  if (undefined_p () && !m_min)
-    ttype = void_type_node;
-  else ttype = TREE_TYPE (m_min);
-
   if (undefined_p ())
-    {
-      print_generic_expr (file, ttype);
-      fprintf (file, " UNDEFINED");
-    }
+    fprintf (file, "UNDEFINED");
   else if (m_kind == VR_RANGE || m_kind == VR_ANTI_RANGE)
     {
+      tree ttype = type ();
+
       print_generic_expr (file, ttype);
       fprintf (file, " ");
 
@@ -737,10 +715,7 @@ value_range_base::set (enum value_range_kind kind, tree min, tree max)
 {
   if (kind == VR_UNDEFINED)
     {
-      if (min)
-	set_undefined (TREE_TYPE (min));
-      else
-	set_undefined ();
+      set_undefined ();
       return;
     }
   else if (kind == VR_VARYING)
@@ -863,7 +838,7 @@ value_range_base::set (enum value_range_kind kind, tree min, tree max)
       if (kind == VR_RANGE)
 	set_varying (type);
       else if (kind == VR_ANTI_RANGE)
-	set_undefined (type);
+	set_undefined ();
       else
 	gcc_unreachable ();
       return;
@@ -1323,8 +1298,8 @@ ranges_from_anti_range (const value_range_base *ar,
 
   tree type = ar->type ();
 
-  vr0->set_undefined (type);
-  vr1->set_undefined (type);
+  vr0->set_undefined ();
+  vr1->set_undefined ();
 
   /* As a future improvement, we could handle ~[0, A] as: [-INF, -1] U
      [A+1, +INF].  Not sure if this helps in practice, though.  */
@@ -1347,7 +1322,7 @@ ranges_from_anti_range (const value_range_base *ar,
   if (vr0->undefined_p ())
     {
       *vr0 = *vr1;
-      vr1->set_undefined (type);
+      vr1->set_undefined ();
     }
 
   return !vr0->undefined_p ();
@@ -1608,7 +1583,7 @@ extract_range_from_binary_expr (value_range_base *vr,
   /* If both ranges are UNDEFINED, so is the result.  */
   if (vr0.undefined_p () && vr1.undefined_p ())
     {
-      vr->set_undefined (expr_type);
+      vr->set_undefined ();
       return;
     }
   /* If one of the ranges is UNDEFINED drop it to VARYING for the following
@@ -1921,7 +1896,7 @@ extract_range_from_binary_expr (value_range_base *vr,
       /* Special case explicit division by zero as undefined.  */
       if (vr1.zero_p ())
 	{
-	  vr->set_undefined (expr_type);
+	  vr->set_undefined ();
 	  return;
 	}
 
@@ -1960,7 +1935,7 @@ extract_range_from_binary_expr (value_range_base *vr,
     {
       if (vr1.zero_p ())
 	{
-	  vr->set_undefined (expr_type);
+	  vr->set_undefined ();
 	  return;
 	}
       wide_int wmin, wmax, tmp;
@@ -2101,7 +2076,7 @@ extract_range_from_unary_expr (value_range_base *vr,
   /* If VR0 is UNDEFINED, so is the result.  */
   if (vr0.undefined_p ())
     {
-      vr->set_undefined (type);
+      vr->set_undefined ();
       return;
     }
 
@@ -2421,7 +2396,7 @@ range_ops_fold_binary_expr (value_range_base *vr,
   value_range_base vr0 = *vr0_, vr1 = *vr1_;
   if (vr0.undefined_p () && vr1.undefined_p ())
     {
-      vr->set_undefined (expr_type);
+      vr->set_undefined ();
       return;
     }
   if (vr0.undefined_p ())
@@ -2473,7 +2448,7 @@ range_ops_fold_unary_expr (value_range_base *vr,
     }
   if (vr0->undefined_p ())
     {
-      vr->set_undefined (expr_type);
+      vr->set_undefined ();
       return;
     }
 
@@ -2535,8 +2510,10 @@ range_fold_binary_expr (value_range_base *vr,
 			const value_range_base *vr1)
 {
   if (!value_range_base::supports_type_p (expr_type)
-      || !value_range_base::supports_type_p (vr0->type ())
-      || !value_range_base::supports_type_p (vr1->type ()))
+      || (!vr0->undefined_p ()
+	  && !value_range_base::supports_type_p (vr0->type ()))
+      || (!vr1->undefined_p ()
+	  && !value_range_base::supports_type_p (vr1->type ())))
     {
       *vr = value_range (expr_type);
       return;
@@ -2562,10 +2539,11 @@ void
 range_fold_unary_expr (value_range_base *vr,
 		       enum tree_code code,
 		       tree expr_type,
-		       const value_range_base *vr0)
+		       const value_range_base *vr0,
+		       tree vr0_type)
 {
   if (!value_range_base::supports_type_p (expr_type)
-      || !value_range_base::supports_type_p (vr0->type ()))
+      || !value_range_base::supports_type_p (vr0_type))
     {
       *vr = value_range (expr_type);
       return;
@@ -2575,7 +2553,7 @@ range_fold_unary_expr (value_range_base *vr,
   if (flag_ranges_mode & RANGES_VRP)
     {
       value_range_base old;
-      extract_range_from_unary_expr (&old, code, expr_type, vr0, vr0->type ());
+      extract_range_from_unary_expr (&old, code, expr_type, vr0, vr0_type);
       if (flag_ranges_mode & RANGES_CHECKING)
 	{
 	  value_range_base vr1 (expr_type);
@@ -6464,7 +6442,7 @@ value_range_base::intersect_helper (const value_range_base *vr0,
      fall back to vr0 when this turns things to varying.  */
   value_range_base tem;
   if (vr0type == VR_UNDEFINED)
-    tem.set_undefined (TREE_TYPE (vr0->min ()));
+    tem.set_undefined ();
   else if (vr0type == VR_VARYING)
     tem.set_varying (TREE_TYPE (vr0->min ()));
   else
@@ -6574,7 +6552,7 @@ value_range_base::union_helper (const value_range_base *vr0,
   /* Work on a temporary so we can still use vr0 when union returns varying.  */
   value_range_base tem;
   if (vr0type == VR_UNDEFINED)
-    tem.set_undefined (TREE_TYPE (vr0->min ()));
+    tem.set_undefined ();
   else if (vr0type == VR_VARYING)
     tem.set_varying (vr0->type ());
   else
@@ -6815,15 +6793,28 @@ void
 value_range_base::invert ()
 {
   if (undefined_p ())
-    set_varying (type ());
-  else if (varying_p ())
-    set_undefined (type ());
+    return;
+  if (varying_p ())
+    set_undefined ();
   else if (m_kind == VR_RANGE)
     m_kind = VR_ANTI_RANGE;
   else if (m_kind == VR_ANTI_RANGE)
     m_kind = VR_RANGE;
   else
     gcc_unreachable ();
+}
+
+value_range_storage *
+value_range_storage::alloc (const value_range_base &r, tree type)
+{
+  if (type)
+    gcc_checking_assert (r.undefined_p ()
+			 || types_compatible_p (type, r.type ()));
+  else
+    type = r.type ();
+  value_range_storage *p = ggc_alloc<value_range_storage> ();
+  p->set (r, type);
+  return p;
 }
 
 void

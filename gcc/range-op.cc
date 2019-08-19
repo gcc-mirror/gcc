@@ -69,7 +69,7 @@ range_operator::fold_range (irange &r, tree type, const irange &lh,
   bool res = false;
 
   // Clear and set result type.
-  r.set_undefined (type);
+  r.set_undefined ();
 
   if (lh.undefined_p () || rh.undefined_p ())
     return true;
@@ -132,11 +132,11 @@ min_limit (const_tree type)
 // undefined and return true.  
 
 inline bool
-empty_range_check (irange &r, const irange &op1, const irange & op2, tree type)
+empty_range_check (irange &r, const irange &op1, const irange & op2)
 {
   if (op1.undefined_p () || op2.undefined_p ())
     {
-      r.set_undefined (type);
+      r.set_undefined ();
       return true;
     }
   else
@@ -309,7 +309,7 @@ get_bool_state (irange &r, const irange &lhs, tree val_type)
   /* If there is no result, then this is unexectuable, so no range. */
   if (lhs.undefined_p ())
     {
-      r.set_undefined (val_type);
+      r.set_undefined ();
       return BRS_EMPTY;
     }
 
@@ -345,7 +345,7 @@ bool
 operator_equal::fold_range (irange &r, tree type, const irange &op1,
 			    const irange &op2) const
 {
-  if (empty_range_check (r, op1, op2, type))
+  if (empty_range_check (r, op1, op2))
     return true;
 
   /* We can be sure the values are always equal or not if both ranges
@@ -425,7 +425,7 @@ bool
 operator_not_equal::fold_range (irange &r, tree type, const irange &op1,
 				const irange &op2) const
 {
-  if (empty_range_check (r, op1, op2, type))
+  if (empty_range_check (r, op1, op2))
     return true;
 
   /* We can be sure the values are always equal or not if both ranges
@@ -497,7 +497,7 @@ build_lt (irange &r, tree type, const wide_int &val)
 
   /* If val - 1 underflows, check is X < MIN, which is an empty range.  */
   if (ov)
-    r.set_undefined (type);
+    r.set_undefined ();
   else
     r = irange (type, min_limit (type), lim);
 }
@@ -517,7 +517,7 @@ build_gt (irange &r, tree type, const wide_int &val)
   wide_int lim = wi::add (val, 1, TYPE_SIGN (type), &ov);
   /* If val + 1 overflows, check is for X > MAX , which is an empty range.  */
   if (ov)
-    r.set_undefined (type);
+    r.set_undefined ();
   else
     r = irange (type, lim, max_limit (type));
 }
@@ -545,7 +545,7 @@ public:
 bool
 operator_lt::fold_range (irange &r, tree type, const irange &op1, const irange &op2) const
 {
-  if (empty_range_check (r, op1, op2, type))
+  if (empty_range_check (r, op1, op2))
     return true;
 
   signop sign = TYPE_SIGN (op1.type ());
@@ -616,7 +616,7 @@ public:
 bool
 operator_le::fold_range (irange &r, tree type, const irange &op1, const irange &op2) const
 {
-  if (empty_range_check (r, op1, op2, type))
+  if (empty_range_check (r, op1, op2))
     return true;
 
   signop sign = TYPE_SIGN (op1.type ());
@@ -687,7 +687,7 @@ public:
 bool
 operator_gt::fold_range (irange &r, tree type, const irange &op1, const irange &op2) const
 {
-  if (empty_range_check (r, op1, op2, type))
+  if (empty_range_check (r, op1, op2))
     return true;
 
   signop sign = TYPE_SIGN (op1.type ());
@@ -759,7 +759,7 @@ public:
 bool
 operator_ge::fold_range (irange &r, tree type, const irange &op1, const irange &op2) const
 {
-  if (empty_range_check (r, op1, op2, type))
+  if (empty_range_check (r, op1, op2))
     return true;
 
   signop sign = TYPE_SIGN (op1.type ());
@@ -1195,9 +1195,10 @@ public:
    r = (type_of(rh)) lh.  */
 
 bool
-operator_cast::fold_range (irange &r, tree type, const irange &lh, const irange &rh) const
+operator_cast::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
+			   const irange &lh, const irange &rh) const
 {
-  if (empty_range_check (r, lh, rh, type))
+  if (empty_range_check (r, lh, rh))
     return true;
 
   if (lh.type () != rh.type ())
@@ -1309,7 +1310,7 @@ bool
 operator_logical_and::fold_range (irange &r, tree type, const irange &lh,
 				  const irange &rh) const
 {
-  if (empty_range_check (r, lh, rh, type))
+  if (empty_range_check (r, lh, rh))
     return true;
 
   // 0 && anything is 0
@@ -1400,7 +1401,7 @@ operator_bitwise_and::wi_fold (irange &r, tree type,
       // For AND, calculate each subrange separately, and then union
       // the results.
       irange tmp;
-      tmp.set_undefined (type);
+      tmp.set_undefined ();
       accumulate_range (tmp, type, new_lb, new_ub);
       r.union_ (tmp);
       return true;
@@ -1441,10 +1442,10 @@ public:
 
 
 bool
-operator_logical_or::fold_range (irange &r, tree type, const irange &lh,
-				  const irange &rh) const
+operator_logical_or::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
+				 const irange &lh, const irange &rh) const
 {
-  if (empty_range_check (r, lh, rh, type))
+  if (empty_range_check (r, lh, rh))
     return true;
 
   r = range_union (lh, rh);
@@ -1632,7 +1633,7 @@ bool
 operator_logical_not::fold_range (irange &r, tree type, const irange &lh,
 				  const irange &rh ATTRIBUTE_UNUSED) const
 {
-  if (empty_range_check (r, lh, rh, type))
+  if (empty_range_check (r, lh, rh))
     return true;
 
   if (lh.varying_p () || lh.undefined_p ())
@@ -1668,7 +1669,7 @@ bool
 operator_bitwise_not::fold_range (irange &r, tree type, const irange &lh,
 				  const irange &rh) const
 {
-  if (empty_range_check (r, lh, rh, type))
+  if (empty_range_check (r, lh, rh))
     return true;
 
   // ~X is simply -1 - X.
@@ -1777,7 +1778,7 @@ bool
 operator_abs::op1_range (irange &r, tree type,
 			 const irange &lhs, const irange &op2) const
 {
-  if (empty_range_check (r, lhs, op2, type))
+  if (empty_range_check (r, lhs, op2))
     return true;
   if (TYPE_UNSIGNED (type))
     {
@@ -1859,7 +1860,7 @@ bool
 operator_negate::fold_range (irange &r, tree type,
 			     const irange &lh, const irange &rh) const
 {
-  if (empty_range_check (r, lh, rh, type))
+  if (empty_range_check (r, lh, rh))
     return true;
   // -X is simply 0 - X.
   return range_op_handler (MINUS_EXPR, type)->fold_range (r, type, range_zero (type),
@@ -1879,7 +1880,7 @@ bool
 operator_addr_expr::fold_range (irange &r, tree type, const irange &lh,
 				const irange &rh) const
 {
-  if (empty_range_check (r, lh, rh, type))
+  if (empty_range_check (r, lh, rh))
     return true;
 
   // Return a non-null pointer of the LHS type (passed in op2)

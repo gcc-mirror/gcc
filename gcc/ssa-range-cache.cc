@@ -168,7 +168,7 @@ ssa_block_ranges::ssa_block_ranges (tree t)
 
   // Create the cached type range.
   tr.set_varying (t);
-  m_type_range = irange_storage::alloc (tr);
+  m_type_range = irange_storage::alloc (tr, t);
 
   m_tab[ENTRY_BLOCK_PTR_FOR_FN (cfun)->index] = m_type_range;
 }
@@ -188,10 +188,10 @@ ssa_block_ranges::set_bb_range (const basic_block bb, const irange &r)
   irange_storage *m = m_tab[bb->index];
 
   // If there is already range memory for this block, reuse it.
-  if (m && m != m_type_range && m->update (r))
+  if (m && m != m_type_range && m->update (r, m_type))
     ;
   else
-    m = irange_storage::alloc (r);
+    m = irange_storage::alloc (r, m_type);
 
   m_tab[bb->index] = m;
 }
@@ -429,11 +429,11 @@ ssa_global_cache::set_global_range (tree name, const irange& r)
     m_tab.safe_grow_cleared (num_ssa_names + 1);
   irange_storage *m = m_tab[v];
 
-  if (m && m->update (r))
+  if (m && m->update (r, TREE_TYPE (name)))
     ;
   else
     {
-      m = irange_storage::alloc (r);
+      m = irange_storage::alloc (r, TREE_TYPE (name));
       m_tab[SSA_NAME_VERSION (name)] = m;
     }
 }
@@ -631,7 +631,7 @@ if (DEBUG_CACHE) fprintf (dump_file, "FWD visiting block %d\n", bb->index);
 
       gcc_assert (m_on_entry.get_bb_range (current_range, name, bb));
       // Calculate the "new" range on entry by unioning the pred edges..
-      new_range.set_undefined (TREE_TYPE (name));
+      new_range.set_undefined ();
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
 	  gcc_assert (edge_range (e_range, e, name));
@@ -678,7 +678,7 @@ gori_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
   // the range_on_entry cache for.
   m_workback.truncate (0);
   m_workback.quick_push (bb);
-  undefined.set_undefined (TREE_TYPE (name));
+  undefined.set_undefined ();
   m_on_entry.set_bb_range (name, bb, undefined);
   gcc_checking_assert (m_update_list.length () == 0);
 

@@ -738,7 +738,7 @@ gori_compute::compute_operand_range_op (irange &r, grange_op *stmt,
   // Empty ranges are viral as they are on a path which isn't executable.
   if (lhs.undefined_p ())
     {
-      r.set_undefined (TREE_TYPE (name));
+      r.set_undefined ();
       return true;
     }
 
@@ -1165,9 +1165,11 @@ gori_compute::range_from_import (irange &r, tree name, irange &import_range)
   bool res;
   tree import = terminal_name (name);
 
-  gcc_checking_assert (import &&
-		       useless_type_conversion_p (TREE_TYPE (import),
-						  import_range.type ()));
+  gcc_checking_assert
+    (import
+     && (import_range.undefined_p ()
+	 || useless_type_conversion_p (TREE_TYPE (import),
+				       import_range.type ())));
 
   // Only handling range_ops until we find a cond-expr that matters.
   // We process this specially so we can handle self-referencing chains. ie:
