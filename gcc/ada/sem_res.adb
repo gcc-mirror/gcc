@@ -6968,6 +6968,10 @@ package body Sem_Res is
 
       Build_Call_Marker (N);
 
+      Mark_Use_Clauses (Subp);
+
+      Warn_On_Overlapping_Actuals (Nam, N);
+
       --  In GNATprove mode, expansion is disabled, but we want to inline some
       --  subprograms to facilitate formal verification. Indirect calls through
       --  a subprogram type or within a generic cannot be inlined. Inlining is
@@ -7116,10 +7120,6 @@ package body Sem_Res is
             end if;
          end if;
       end if;
-
-      Mark_Use_Clauses (Subp);
-
-      Warn_On_Overlapping_Actuals (Nam, N);
    end Resolve_Call;
 
    -----------------------------

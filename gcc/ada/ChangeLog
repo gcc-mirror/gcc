@@ -1,3 +1,8 @@
+2019-08-19  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Check non-aliasing rules before
+	GNATprove inlining.
+
 2019-08-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* inline.adb (Add_Inlined_Body): Do not add pending
