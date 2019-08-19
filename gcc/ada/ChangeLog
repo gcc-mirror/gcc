@@ -1,3 +1,11 @@
+2019-08-19  Joffrey Huguet  <huguet@adacore.com>
+
+	* libgnat/a-cfdlli.ads, libgnat/a-cfhama.ads,
+	libgnat/a-cfinve.ads, libgnat/a-cforma.ads,
+	libgnat/a-cofove.ads, libgnat/a-cofuma.ads,
+	libgnat/a-cofuve.ads: Add formal function parameter "=" (L, R :
+	Element_Type) to the generic packages.
+
 2019-08-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* opt.ads: Clean up left-overs of earlier implementation in

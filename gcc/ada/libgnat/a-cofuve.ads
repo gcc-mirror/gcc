@@ -38,6 +38,7 @@ generic
    --  should have at least one more element at the low end than Index_Type.
 
    type Element_Type (<>) is private;
+   with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Functional_Vectors with SPARK_Mode is
 

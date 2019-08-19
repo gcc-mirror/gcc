@@ -34,6 +34,7 @@ with Ada.Containers.Functional_Maps;
 
 generic
    type Element_Type is private;
+   with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Formal_Doubly_Linked_Lists with
   SPARK_Mode
