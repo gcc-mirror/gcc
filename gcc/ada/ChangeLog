@@ -1,3 +1,10 @@
+2019-08-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_dist.adb (Is_Generic_Actual_Subtype): New predicate.
+	(Build_From_Any_Call, Build_To_Any_Call, Build_TypeCode_Call):
+	Use it instead of Is_Generic_Actual_Type flag to detect subtypes
+	representing generic actual types.
+
 2019-08-19  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_warn.adb (Check_References, Generic_Body_Formal): When a

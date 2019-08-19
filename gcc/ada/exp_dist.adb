@@ -8201,6 +8201,12 @@ package body Exp_Dist is
          --  type from Interfaces, or the smallest floating point type from
          --  Standard whose range encompasses that of Typ.
 
+         function Is_Generic_Actual_Subtype (Typ : Entity_Id) return Boolean;
+         --  Return true if Typ is a subtype representing a generic formal type
+         --  as a subtype of the actual type in an instance. This is needed to
+         --  recognize these subtypes because the Is_Generic_Actual_Type flag
+         --  can only be relied upon within the instance.
+
          function Make_Helper_Function_Name
            (Loc : Source_Ptr;
             Typ : Entity_Id;
@@ -8453,7 +8459,7 @@ package body Exp_Dist is
             --  For the subtype representing a generic actual type, go to the
             --  actual type.
 
-            if Is_Generic_Actual_Type (U_Type) then
+            if Is_Generic_Actual_Subtype (U_Type) then
                U_Type := Underlying_Type (Base_Type (U_Type));
             end if;
 
@@ -9262,7 +9268,7 @@ package body Exp_Dist is
             --  For the subtype representing a generic actual type, go to the
             --  actual type.
 
-            if Is_Generic_Actual_Type (U_Type) then
+            if Is_Generic_Actual_Subtype (U_Type) then
                U_Type := Underlying_Type (Base_Type (U_Type));
             end if;
 
@@ -10116,7 +10122,7 @@ package body Exp_Dist is
             --  For the subtype representing a generic actual type, go to the
             --  actual type.
 
-            if Is_Generic_Actual_Type (U_Type) then
+            if Is_Generic_Actual_Subtype (U_Type) then
                U_Type := Underlying_Type (Base_Type (U_Type));
             end if;
 
@@ -10900,6 +10906,30 @@ package body Exp_Dist is
             --  TBverified numeric types with a biased representation???
 
          end Find_Numeric_Representation;
+
+         ---------------------------------
+         --  Is_Generic_Actual_Subtype  --
+         ---------------------------------
+
+         function Is_Generic_Actual_Subtype (Typ : Entity_Id) return Boolean is
+         begin
+            if Is_Itype (Typ)
+              and then Present (Associated_Node_For_Itype (Typ))
+            then
+               declare
+                  N : constant Node_Id := Associated_Node_For_Itype (Typ);
+               begin
+                  if Nkind (N) = N_Subtype_Declaration
+                    and then Nkind (Parent (N)) = N_Package_Specification
+                    and then Is_Generic_Instance (Scope_Of_Spec (Parent (N)))
+                  then
+                     return True;
+                  end if;
+               end;
+            end if;
+
+            return False;
+         end Is_Generic_Actual_Subtype;
 
          ---------------------------
          -- Append_Array_Traversal --
