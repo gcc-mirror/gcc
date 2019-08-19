@@ -150,6 +150,9 @@ generic
    with function Emit_Messages return Boolean;
    --  Return True when error messages should be emitted.
 
+   with function Is_Pledge_Function (E : Entity_Id) return Boolean;
+   --  Return True if E is annotated with a pledge annotation
+
 package Sem_SPARK is
 
    function Is_Legal (N : Node_Id) return Boolean;

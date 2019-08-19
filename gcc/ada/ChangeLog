@@ -1,3 +1,13 @@
+2019-08-19  Claire Dross  <dross@adacore.com>
+
+	* sem_spark.ads, sem_spark.adb (Is_Pledge_Function): New
+	parameter of the generic. Function used to decide whether a
+	function is a pledge function.
+	(Check_Not_Borrowed): Disable check inside the second parameter
+	of a pledge function for the path borrowed by the first
+	parameter. Also disable checks for entities inside a Global
+	contract.
+
 2019-08-19  Joffrey Huguet  <huguet@adacore.com>
 
 	* libgnat/a-cfdlli.ads, libgnat/a-cfhama.ads,

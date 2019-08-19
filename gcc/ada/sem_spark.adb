@@ -5008,13 +5008,49 @@ package body Sem_SPARK is
               Get_First_Key (Current_Borrowers);
             Var      : Entity_Id;
             Borrowed : Node_Id;
+            B_Pledge : Entity_Id := Empty;
 
          begin
+            --  Search for a call to a pledge function or a global pragma in
+            --  the parents of Expr.
+
+            declare
+               Call : Node_Id := Expr;
+            begin
+               while Present (Call)
+                 and then
+                   (Nkind (Call) /= N_Function_Call
+                     or else not Is_Pledge_Function (Get_Called_Entity (Call)))
+               loop
+                  --  Do not check for borrowed objects in global contracts
+                  --  ??? However we should keep these objects in the borrowed
+                  --  state when verifying the subprogram so that we can make
+                  --  sure that they are only read inside pledges.
+                  --  ??? There is probably a better way to disable checking of
+                  --  borrows inside global contracts.
+
+                  if Nkind (Call) = N_Pragma
+                    and then Get_Pragma_Id (Pragma_Name (Call)) = Pragma_Global
+                  then
+                     return;
+                  end if;
+
+                  Call := Parent (Call);
+               end loop;
+
+               if Present (Call)
+                 and then Nkind (First_Actual (Call)) in N_Has_Entity
+               then
+                  B_Pledge := Entity (First_Actual (Call));
+               end if;
+            end;
+
             while Key.Present loop
                Var := Key.K;
                Borrowed := Get (Current_Borrowers, Var);
 
                if Is_Prefix_Or_Almost (Pref => Borrowed, Expr => Expr)
+                 and then Var /= B_Pledge
                  and then Emit_Messages
                then
                   Error_Msg_Sloc := Sloc (Borrowed);
