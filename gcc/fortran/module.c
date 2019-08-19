@@ -647,7 +647,7 @@ gfc_match_use (void)
 	    new_use->op = INTRINSIC_USER;
 
 	  st = gfc_find_symtree (gfc_current_ns->sym_root, name);
-	  if (st)
+	  if (st && type != INTERFACE_USER_OP)
 	    {
 	      if (m == MATCH_YES)
 		gfc_error ("Symbol %qs at %L conflicts with the rename symbol "
