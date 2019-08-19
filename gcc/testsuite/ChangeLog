@@ -1,3 +1,7 @@
+2019-08-19  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/openacc1.adb: New testcase.
+
 2019-08-19  Kito Cheng  <kito.cheng@sifive.com>
 
 	PR target/91441

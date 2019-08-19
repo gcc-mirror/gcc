@@ -3398,9 +3398,6 @@ independent_iterations_p (tree stmt_list)
 static tree
 Acc_Loop_to_gnu (Node_Id gnat_loop)
 {
-  const struct loop_info_d * const gnu_loop_info = gnu_loop_stack->last ();
-  tree gnu_loop_stmt = gnu_loop_info->stmt;
-
   tree acc_loop = make_node (OACC_LOOP);
   tree acc_bind_expr = NULL_TREE;
   Node_Id cur_loop = gnat_loop;
@@ -3517,7 +3514,7 @@ Acc_Loop_to_gnu (Node_Id gnat_loop)
 
   BIND_EXPR_BODY (acc_bind_expr) = acc_loop;
 
-  return gnu_loop_stmt;
+  return acc_bind_expr;
 }
 
 /* Helper for Loop_Statement_to_gnu, to translate the body of a loop not
