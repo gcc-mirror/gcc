@@ -4416,6 +4416,7 @@ package body Inline is
    procedure Initialize is
    begin
       Pending_Instantiations.Init;
+      Called_Pending_Instantiations.Init;
       Inlined_Bodies.Init;
       Successors.Init;
       Inlined.Init;
@@ -4734,6 +4735,8 @@ package body Inline is
    begin
       Pending_Instantiations.Release;
       Pending_Instantiations.Locked := True;
+      Called_Pending_Instantiations.Release;
+      Called_Pending_Instantiations.Locked := True;
       Inlined_Bodies.Release;
       Inlined_Bodies.Locked := True;
       Successors.Release;
