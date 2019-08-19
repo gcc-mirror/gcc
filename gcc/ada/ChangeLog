@@ -1,3 +1,9 @@
+2019-08-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Derived_Enumeration_Type): Do no freeze anonymous
+	base type if the bounds in the derived type declaration are
+	literals of the type.
+
 2019-08-19  Yannick Moy  <moy@adacore.com>
 
 	* sem_res.adb (Resolve_Call): Check non-aliasing rules before
