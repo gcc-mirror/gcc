@@ -806,6 +806,7 @@ with_gmp
 with_gmp_include
 with_gmp_lib
 with_stage1_libs
+with_static_standard_libraries
 with_stage1_ldflags
 with_boot_libs
 with_boot_ldflags
@@ -1579,6 +1580,9 @@ Optional Packages:
   --with-gmp-include=PATH specify directory for installed GMP include files
   --with-gmp-lib=PATH     specify directory for the installed GMP library
   --with-stage1-libs=LIBS libraries for stage1
+  --with-static-standard-libraries
+                          use -static-libstdc++ and -static-libgcc
+                          (default=auto)
   --with-stage1-ldflags=FLAGS
                           linker flags for stage1
   --with-boot-libs=LIBS   libraries for stage2 and later
@@ -5877,6 +5881,23 @@ fi
 
 
 
+# Whether or not to use -static-libstdc++ and -static-libgcc.  The
+# default is yes if gcc is being built; no otherwise.  The reason for
+# this default is that gdb is sometimes linked against GNU Source
+# Highlight, which is a shared library that uses C++ exceptions.  In
+# this case, -static-libstdc++ will cause crashes.
+
+# Check whether --with-static-standard-libraries was given.
+if test "${with_static_standard_libraries+set}" = set; then :
+  withval=$with_static_standard_libraries;
+else
+  with_static_standard_libraries=auto
+fi
+
+if test "$with_static_standard_libraries" = auto; then
+  with_static_standard_libraries=$have_compiler
+fi
+
 # Linker flags to use for stage1 or when not bootstrapping.
 
 # Check whether --with-stage1-ldflags was given.
@@ -5891,7 +5912,8 @@ else
  # In stage 1, default to linking libstdc++ and libgcc statically with GCC
  # if supported.  But if the user explicitly specified the libraries to use,
  # trust that they are doing what they want.
- if test "$stage1_libs" = "" -a "$have_static_libs" = yes; then
+ if test "$with_static_standard_libraries" = yes -a "$stage1_libs" = "" \
+     -a "$have_static_libs" = yes; then
    stage1_ldflags="-static-libstdc++ -static-libgcc"
  fi
 fi
