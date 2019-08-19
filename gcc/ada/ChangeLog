@@ -1,3 +1,11 @@
+2019-08-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Add_Inlined_Body): Do not add pending
+	instantiations.
+	* sem_ch12.adb (Needs_Body_Instantiated): New predicate.
+	(Analyze_Package_Instantiation): Use it to decide whether to add
+	a pending instantiation for the body of the package.
+
 2019-08-19  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/trans.c (Acc_Loop_to_gnu): Return the openacc
