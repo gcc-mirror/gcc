@@ -1,3 +1,11 @@
+2019-08-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Synchronized_Overriding): Complete
+	predicate that applies legality check in 9.4 (11.9/2): if an
+	inherited subprogram is implemented by a protected procedure or
+	entry, its first paarameter must be out, in_out or
+	access_to_varible.
+
 2019-08-19  Javier Miranda  <miranda@adacore.com>
 
 	PR ada/65696
