@@ -1,3 +1,17 @@
+2019-08-19  Bob Duff  <duff@adacore.com>
+
+	* exp_attr.adb (Attribute_Valid): Correct the handling of
+	private types where the full type is modular. System.Address is
+	an example. Otherwise, we convert uncheckedly to a signed type,
+	so we get an incorrect range 0 .. -1, for which all values will
+	fail.  The 'Valid attribute is illegal for such types, but we
+	generate such illegal attribute_references for 'Valid_Scalars,
+	and we generate 'Valid_Scalars when the -gnateV switch is used.
+	Rename Btyp --> PBtyp to avoid hiding the outer Btyp, which was
+	confusing.
+	* libgnat/a-except.adb: Set the Exception_Raised component.
+	Otherwise, we have incorrect reads of invalid data.
+
 2019-08-19  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* libgnat/a-cgaaso.ads, libgnat/a-cgarso.ads,
