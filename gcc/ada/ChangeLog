@@ -1,3 +1,9 @@
+2019-08-19  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/trans.c (Acc_Loop_to_gnu): Return the openacc
+	BIND_EXPR node we have constructed on purpose.  Remove unused
+	variable.
+
 2019-08-19  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gcc-interface/lang.opt (fdump-scos): Define.
