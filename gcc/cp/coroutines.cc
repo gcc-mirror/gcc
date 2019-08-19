@@ -1050,8 +1050,9 @@ co_await_expander (tree *stmt, int */*do_subtree*/, void *d)
   r = build_case_label (build_int_cst (integer_type_node, 0), NULL_TREE,
 			create_anon_label_with_ctx (loc, actor));
   add_stmt (r); // case 0:
-  // Hide the suspend return from the cleanup machinery.
-  r =  build_call_expr_internal_loc (loc, IFN_CO_SUSPN, void_type_node, 1, susp);
+  // Implement the suspend, a scope exit without clean ups.
+  r = build_call_expr_internal_loc (loc, IFN_CO_SUSPN, void_type_node, 1, susp);
+  r = coro_build_cvt_void_expr_stmt (r, loc);
   add_stmt (r); //   goto ret;
   r = build_case_label (build_int_cst (integer_type_node, 1), NULL_TREE,
 			create_anon_label_with_ctx (loc, actor));

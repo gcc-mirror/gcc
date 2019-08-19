@@ -1,3 +1,9 @@
+2019-08-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (co_await_expander): Wrap the internal fn
+	call for IFN_CO_SUSPN into a full expression.
+
 2019-08-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
