@@ -577,7 +577,7 @@ Implementation Advice
 * RM 13.9(14-17); Unchecked Conversion: RM 13 9 14-17 Unchecked Conversion. 
 * RM 13.11(23-25); Implicit Heap Usage: RM 13 11 23-25 Implicit Heap Usage. 
 * RM 13.11.2(17); Unchecked Deallocation: RM 13 11 2 17 Unchecked Deallocation. 
-* RM 13.13.2(17); Stream Oriented Attributes: RM 13 13 2 17 Stream Oriented Attributes. 
+* RM 13.13.2(1.6); Stream Oriented Attributes: RM 13 13 2 1 6 Stream Oriented Attributes. 
 * RM A.1(52); Names of Predefined Numeric Types: RM A 1 52 Names of Predefined Numeric Types. 
 * RM A.3.2(49); Ada.Characters.Handling: RM A 3 2 49 Ada Characters Handling. 
 * RM A.4.4(106); Bounded-Length String Handling: RM A 4 4 106 Bounded-Length String Handling. 
@@ -13845,7 +13845,7 @@ case the text describes what GNAT does and why.
 * RM 13.9(14-17); Unchecked Conversion: RM 13 9 14-17 Unchecked Conversion. 
 * RM 13.11(23-25); Implicit Heap Usage: RM 13 11 23-25 Implicit Heap Usage. 
 * RM 13.11.2(17); Unchecked Deallocation: RM 13 11 2 17 Unchecked Deallocation. 
-* RM 13.13.2(17); Stream Oriented Attributes: RM 13 13 2 17 Stream Oriented Attributes. 
+* RM 13.13.2(1.6); Stream Oriented Attributes: RM 13 13 2 1 6 Stream Oriented Attributes. 
 * RM A.1(52); Names of Predefined Numeric Types: RM A 1 52 Names of Predefined Numeric Types. 
 * RM A.3.2(49); Ada.Characters.Handling: RM A 3 2 49 Ada Characters Handling. 
 * RM A.4.4(106); Bounded-Length String Handling: RM A 4 4 106 Bounded-Length String Handling. 
@@ -14846,7 +14846,7 @@ Followed.
 
 @geindex Unchecked deallocation
 
-@node RM 13 11 2 17 Unchecked Deallocation,RM 13 13 2 17 Stream Oriented Attributes,RM 13 11 23-25 Implicit Heap Usage,Implementation Advice
+@node RM 13 11 2 17 Unchecked Deallocation,RM 13 13 2 1 6 Stream Oriented Attributes,RM 13 11 23-25 Implicit Heap Usage,Implementation Advice
 @anchor{gnat_rm/implementation_advice rm-13-11-2-17-unchecked-deallocation}@anchor{235}
 @section RM 13.11.2(17): Unchecked Deallocation
 
@@ -14861,28 +14861,28 @@ Followed.
 
 @geindex Stream oriented attributes
 
-@node RM 13 13 2 17 Stream Oriented Attributes,RM A 1 52 Names of Predefined Numeric Types,RM 13 11 2 17 Unchecked Deallocation,Implementation Advice
-@anchor{gnat_rm/implementation_advice rm-13-13-2-17-stream-oriented-attributes}@anchor{236}
-@section RM 13.13.2(17): Stream Oriented Attributes
+@node RM 13 13 2 1 6 Stream Oriented Attributes,RM A 1 52 Names of Predefined Numeric Types,RM 13 11 2 17 Unchecked Deallocation,Implementation Advice
+@anchor{gnat_rm/implementation_advice rm-13-13-2-1-6-stream-oriented-attributes}@anchor{236}
+@section RM 13.13.2(1.6): Stream Oriented Attributes
 
 
 @quotation
 
-"If a stream element is the same size as a storage element, then the
-normal in-memory representation should be used by @code{Read} and
-@code{Write} for scalar objects.  Otherwise, @code{Read} and @code{Write}
-should use the smallest number of stream elements needed to represent
-all values in the base range of the scalar type."
+"If not specified, the value of Stream_Size for an elementary type
+should be the number of bits that corresponds to the minimum number of
+stream elements required by the first subtype of the type, rounded up
+to the nearest factor or multiple of the word size that is also a
+multiple of the stream element size."
 @end quotation
 
-Followed.  By default, GNAT uses the interpretation suggested by AI-195,
-which specifies using the size of the first subtype.
+Followed, except that the number of stream elements is a power of 2.
+The Stream_Size may be used to override the default choice.
+
 However, such an implementation is based on direct binary
-representations and is therefore target- and endianness-dependent.
-To address this issue, GNAT also supplies an alternate implementation
-of the stream attributes @code{Read} and @code{Write},
-which uses the target-independent XDR standard representation
-for scalar types.
+representations and is therefore target- and endianness-dependent.  To
+address this issue, GNAT also supplies an alternate implementation of
+the stream attributes @code{Read} and @code{Write}, which uses the
+target-independent XDR standard representation for scalar types.
 
 @geindex XDR representation
 
@@ -14916,7 +14916,7 @@ Rebuild the GNAT run-time library as documented in
 the @emph{GNAT and Libraries} section of the @cite{GNAT User's Guide}.
 @end itemize
 
-@node RM A 1 52 Names of Predefined Numeric Types,RM A 3 2 49 Ada Characters Handling,RM 13 13 2 17 Stream Oriented Attributes,Implementation Advice
+@node RM A 1 52 Names of Predefined Numeric Types,RM A 3 2 49 Ada Characters Handling,RM 13 13 2 1 6 Stream Oriented Attributes,Implementation Advice
 @anchor{gnat_rm/implementation_advice rm-a-1-52-names-of-predefined-numeric-types}@anchor{237}
 @section RM A.1(52): Names of Predefined Numeric Types
 
