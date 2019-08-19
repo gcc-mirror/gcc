@@ -376,7 +376,7 @@ static arm_builtin_datum neon_builtin_data[] =
 #undef CF
 #undef VAR1
 #define VAR1(T, N, A) \
-  {#N, UP (A), CODE_FOR_##N, 0, T##_QUALIFIERS},
+  {#N, UP (A), CODE_FOR_arm_##N, 0, T##_QUALIFIERS},
 
 static arm_builtin_datum acle_builtin_data[] =
 {
@@ -2555,7 +2555,7 @@ arm_expand_builtin (tree exp,
   rtx               op1;
   rtx               op2;
   rtx               pat;
-  unsigned int      fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int      fcode = DECL_MD_FUNCTION_CODE (fndecl);
   size_t            i;
   machine_mode tmode;
   machine_mode mode0;

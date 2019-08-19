@@ -4,9 +4,9 @@
 /* { dg-do run { target *-*-solaris2.* *-*-linux* *-*-*bsd* } } */
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-fPIC" } */
+/* { dg-require-effective-target alloca } */
 
 #include <stdio.h>
-#include <alloca.h>
 #include <setjmp.h>
 #include <string.h>
 #include <stdlib.h>
@@ -26,7 +26,7 @@ int main (void)
 {
   setjmp (jb);
 
-  char *p = alloca (256);
+  char *p = __builtin_alloca (256);
   memset (p, 0, 256);
   sprintf (p, "%d\n", foo);
 

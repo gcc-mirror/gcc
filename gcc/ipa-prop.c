@@ -1059,7 +1059,7 @@ bool
 ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
 			vec<ipa_param_descriptor, va_gc> *descriptors,
 			gimple *stmt, tree op, int *index_p,
-			HOST_WIDE_INT *offset_p, HOST_WIDE_INT *size_p,
+			HOST_WIDE_INT *offset_p, poly_int64 *size_p,
 			bool *by_ref_p, bool *guaranteed_unmodified)
 {
   int index;
@@ -3331,8 +3331,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 	  if (can_refer)
 	    {
 	      if (!t
-		  || (TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE
-		      && DECL_FUNCTION_CODE (t) == BUILT_IN_UNREACHABLE)
+		  || fndecl_built_in_p (t, BUILT_IN_UNREACHABLE)
 		  || !possible_polymorphic_call_target_p
 		       (ie, cgraph_node::get (t)))
 		{
@@ -4917,7 +4916,8 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
       struct ipa_agg_replacement_value *v;
       gimple *stmt = gsi_stmt (gsi);
       tree rhs, val, t;
-      HOST_WIDE_INT offset, size;
+      HOST_WIDE_INT offset;
+      poly_int64 size;
       int index;
       bool by_ref, vce;
 
@@ -4952,7 +4952,8 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
 	  break;
       if (!v
 	  || v->by_ref != by_ref
-	  || tree_to_shwi (TYPE_SIZE (TREE_TYPE (v->value))) != size)
+	  || maybe_ne (tree_to_poly_int64 (TYPE_SIZE (TREE_TYPE (v->value))),
+		       size))
 	continue;
 
       gcc_checking_assert (is_gimple_ip_invariant (v->value));

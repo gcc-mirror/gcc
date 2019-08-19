@@ -446,7 +446,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
   template<typename _Iterator>
-    auto
+    _GLIBCXX20_CONSTEXPR auto
     __niter_base(reverse_iterator<_Iterator> __it)
     -> decltype(__make_reverse_iterator(__niter_base(__it.base())))
     { return __make_reverse_iterator(__niter_base(__it.base())); }
@@ -457,7 +457,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   template<typename _Iterator>
-    auto
+    _GLIBCXX20_CONSTEXPR auto
     __miter_base(reverse_iterator<_Iterator> __it)
     -> decltype(__make_reverse_iterator(__miter_base(__it.base())))
     { return __make_reverse_iterator(__miter_base(__it.base())); }

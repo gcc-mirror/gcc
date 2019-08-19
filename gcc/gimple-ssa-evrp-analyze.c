@@ -84,7 +84,7 @@ evrp_range_analyzer::try_find_new_range (tree name,
 				    tree op, tree_code code, tree limit)
 {
   value_range vr;
-  value_range *old_vr = get_value_range (name);
+  const value_range *old_vr = get_value_range (name);
 
   /* Discover VR when condition is true.  */
   vr_values->extract_range_for_var_from_comparison_expr (name, code, op,
@@ -209,12 +209,15 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	      /* But make sure we do not weaken ranges like when
 	         getting first [64, +INF] and then ~[0, 0] from
 		 conditions like (s & 0x3cc0) == 0).  */
-	      value_range *old_vr = get_value_range (vrs[i].first);
+	      const value_range *old_vr = get_value_range (vrs[i].first);
 	      value_range_base tem (old_vr->kind (), old_vr->min (),
 				    old_vr->max ());
 	      tem.intersect (vrs[i].second);
 	      if (tem.equal_p (*old_vr))
-		continue;
+		{
+		  vr_values->free_value_range (vrs[i].second);
+		  continue;
+		}
 	      push_value_range (vrs[i].first, vrs[i].second);
 	      if (is_fallthru
 		  && m_update_global_ranges
@@ -251,13 +254,18 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
       if (virtual_operand_p (lhs))
 	continue;
 
+      /* Skips floats and other things we can't represent in a
+	 range.  */
+      if (!value_range_base::supports_type_p (TREE_TYPE (lhs)))
+	continue;
+
       value_range vr_result;
       bool interesting = stmt_interesting_for_vrp (phi);
       if (!has_unvisited_preds && interesting)
 	vr_values->extract_range_from_phi_node (phi, &vr_result);
       else
 	{
-	  vr_result.set_varying ();
+	  vr_result.set_varying (TREE_TYPE (lhs));
 	  /* When we have an unvisited executable predecessor we can't
 	     use PHI arg ranges which may be still UNDEFINED but have
 	     to use VARYING for them.  But we can still resort to
@@ -393,7 +401,7 @@ evrp_range_analyzer::pop_to_marker (void)
 {
   gcc_checking_assert (!stack.is_empty ());
   while (stack.last ().first != NULL_TREE)
-    pop_value_range (stack.last ().first);
+    pop_value_range ();
   stack.pop ();
 }
 
@@ -421,17 +429,18 @@ evrp_range_analyzer::push_value_range (tree var, value_range *vr)
       dump_value_range (dump_file, vr);
       fprintf (dump_file, "\n");
     }
-  stack.safe_push (std::make_pair (var, get_value_range (var)));
-  vr_values->set_vr_value (var, vr);
+  value_range *old_vr = vr_values->swap_vr_value (var, vr);
+  stack.safe_push (std::make_pair (var, old_vr));
 }
 
-/* Pop the Value Range from the vrp_stack and update VAR with it.  */
+/* Pop a Value Range from the vrp_stack.  */
 
-value_range *
-evrp_range_analyzer::pop_value_range (tree var)
+void
+evrp_range_analyzer::pop_value_range ()
 {
-  value_range *vr = stack.last ().second;
-  gcc_checking_assert (var == stack.last ().first);
+  std::pair<tree, value_range *> e = stack.pop ();
+  tree var = e.first;
+  value_range *vr = e.second;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "popping range for ");
@@ -440,7 +449,9 @@ evrp_range_analyzer::pop_value_range (tree var)
       dump_value_range (dump_file, vr);
       fprintf (dump_file, "\n");
     }
-  vr_values->set_vr_value (var, vr);
-  stack.pop ();
-  return vr;
+  /* We saved off a lattice entry, now give it back and release
+     the one we popped.  */
+  value_range *popped_vr = vr_values->swap_vr_value (var, vr);
+  if (popped_vr)
+    vr_values->free_value_range (popped_vr);
 }

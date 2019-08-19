@@ -713,45 +713,38 @@ gimple_divmod_fixed_value (gassign *stmt, tree value, profile_probability prob,
   return tmp2;
 }
 
-/* Return most common value of TOPN_VALUE histogram.  If
-   there's a unique value, return true and set VALUE and COUNT
+/* Return the n-th value count of TOPN_VALUE histogram.  If
+   there's a value, return true and set VALUE and COUNT
    arguments.  */
 
 bool
-get_most_common_single_value (gimple *stmt, const char *counter_type,
-			      histogram_value hist,
-			      gcov_type *value, gcov_type *count,
-			      gcov_type *all)
+get_nth_most_common_value (gimple *stmt, const char *counter_type,
+			   histogram_value hist, gcov_type *value,
+			   gcov_type *count, gcov_type *all, unsigned n)
 {
   if (hist->hvalue.counters[2] == -1)
     return false;
+
+  gcc_assert (n < GCOV_TOPN_VALUES);
 
   *count = 0;
   *value = 0;
 
   gcov_type read_all = hist->hvalue.counters[0];
 
-  for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
-    {
-      gcov_type v = hist->hvalue.counters[2 * i + 1];
-      gcov_type c = hist->hvalue.counters[2 * i + 2];
+  gcov_type v = hist->hvalue.counters[2 * n + 1];
+  gcov_type c = hist->hvalue.counters[2 * n + 2];
 
-      /* Indirect calls can't be vereified.  */
-      if (stmt && check_counter (stmt, counter_type, &c, &read_all,
-				 gimple_bb (stmt)->count))
-	return false;
+  /* Indirect calls can't be verified.  */
+  if (stmt
+      && check_counter (stmt, counter_type, &c, &read_all,
+			gimple_bb (stmt)->count))
+    return false;
 
-      *all = read_all;
+  *all = read_all;
 
-      if (c > *count)
-	{
-	  *value = v;
-	  *count = c;
-	}
-      else if (c == *count && v > *value)
-	*value = v;
-    }
-
+  *value = v;
+  *count = c;
   return true;
 }
 
@@ -784,8 +777,8 @@ gimple_divmod_fixed_value_transform (gimple_stmt_iterator *si)
   if (!histogram)
     return false;
 
-  if (!get_most_common_single_value (stmt, "divmod", histogram, &val, &count,
-				     &all))
+  if (!get_nth_most_common_value (stmt, "divmod", histogram, &val, &count,
+				  &all))
     return false;
 
   value = histogram->hvalue.value;
@@ -816,12 +809,9 @@ gimple_divmod_fixed_value_transform (gimple_stmt_iterator *si)
     }
   result = gimple_divmod_fixed_value (stmt, tree_val, prob, count, all);
 
-  if (dump_file)
-    {
-      fprintf (dump_file, "Transformation done: div/mod by constant ");
-      print_generic_expr (dump_file, tree_val, TDF_SLIM);
-      fprintf (dump_file, "\n");
-    }
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
+		     "Transformation done: div/mod by constant %T\n", tree_val);
 
   gimple_assign_set_rhs_from_tree (si, result);
   update_stmt (gsi_stmt (*si));
@@ -956,8 +946,9 @@ gimple_mod_pow2_value_transform (gimple_stmt_iterator *si)
   if (check_counter (stmt, "pow2", &count, &all, gimple_bb (stmt)->count))
     return false;
 
-  if (dump_file)
-    fprintf (dump_file, "Transformation done: mod power of 2\n");
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
+		     "Transformation done: mod power of 2\n");
 
   if (all > 0)
     prob = profile_probability::probability_in_gcov_type (count, all);
@@ -1140,8 +1131,9 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
     return false;
 
   gimple_remove_histogram_value (cfun, stmt, histogram);
-  if (dump_file)
-    fprintf (dump_file, "Transformation done: mod subtract\n");
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
+		     "Transformation done: mod subtract\n");
 
   /* Compute probability of taking the optimal path(s).  */
   if (all > 0)
@@ -1192,37 +1184,40 @@ init_node_map (bool local)
     if (n->has_gimple_body_p () || n->thunk.thunk_p)
       {
 	cgraph_node **val;
+	dump_user_location_t loc
+	  = dump_user_location_t::from_function_decl (n->decl);
 	if (local)
 	  {
 	    n->profile_id = coverage_compute_profile_id (n);
 	    while ((val = cgraph_node_map->get (n->profile_id))
 		   || !n->profile_id)
 	      {
-		if (dump_file)
-		  fprintf (dump_file, "Local profile-id %i conflict"
-			   " with nodes %s %s\n",
-			   n->profile_id,
-			   n->dump_name (),
-			   (*val)->dump_name ());
+		if (dump_enabled_p ())
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+				   "Local profile-id %i conflict"
+				   " with nodes %s %s\n",
+				   n->profile_id,
+				   n->dump_name (),
+				   (*val)->dump_name ());
 		n->profile_id = (n->profile_id + 1) & 0x7fffffff;
 	      }
 	  }
 	else if (!n->profile_id)
 	  {
-	    if (dump_file)
-	      fprintf (dump_file,
-		       "Node %s has no profile-id"
-		       " (profile feedback missing?)\n",
-		       n->dump_name ());
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			       "Node %s has no profile-id"
+			       " (profile feedback missing?)\n",
+			       n->dump_name ());
 	    continue;
 	  }
 	else if ((val = cgraph_node_map->get (n->profile_id)))
 	  {
-	    if (dump_file)
-	      fprintf (dump_file,
-		       "Node %s has IP profile-id %i conflict. "
-		       "Giving up.\n",
-		       n->dump_name (), n->profile_id);
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			       "Node %s has IP profile-id %i conflict. "
+			       "Giving up.\n",
+			       n->dump_name (), n->profile_id);
 	    *val = NULL;
 	    continue;
 	  }
@@ -1439,8 +1434,8 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
   if (!histogram)
     return false;
 
-  if (!get_most_common_single_value (NULL, "indirect call", histogram, &val,
-				     &count, &all))
+  if (!get_nth_most_common_value (NULL, "indirect call", histogram, &val,
+				  &count, &all))
     return false;
 
   if (4 * count <= 3 * all)
@@ -1452,41 +1447,35 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
     {
       if (val)
 	{
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "Indirect call -> direct call from other module");
-	      print_generic_expr (dump_file, gimple_call_fn (stmt), TDF_SLIM);
-	      fprintf (dump_file, "=> %i (will resolve only with LTO)\n", (int)val);
-	    }
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, stmt,
+			     "Indirect call -> direct call from other "
+			     "module %T=> %i (will resolve only with LTO)\n",
+			     gimple_call_fn (stmt), (int)val);
 	}
       return false;
     }
 
   if (!check_ic_target (stmt, direct_call))
     {
-      if (dump_file)
-	{
-	  fprintf (dump_file, "Indirect call -> direct call ");
-	  print_generic_expr (dump_file, gimple_call_fn (stmt), TDF_SLIM);
-	  fprintf (dump_file, "=> ");
-	  print_generic_expr (dump_file, direct_call->decl, TDF_SLIM);
-	  fprintf (dump_file, " transformation skipped because of type mismatch");
-	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-	}
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, stmt,
+			 "Indirect call -> direct call %T => %T "
+			 "transformation skipped because of type mismatch: %G",
+			 gimple_call_fn (stmt), direct_call->decl, stmt);
       gimple_remove_histogram_value (cfun, stmt, histogram);
       return false;
     }
 
-  if (dump_file)
+  if (dump_enabled_p ())
     {
-      fprintf (dump_file, "Indirect call -> direct call ");
-      print_generic_expr (dump_file, gimple_call_fn (stmt), TDF_SLIM);
-      fprintf (dump_file, "=> ");
-      print_generic_expr (dump_file, direct_call->decl, TDF_SLIM);
-      fprintf (dump_file, " transformation on insn postponned to ipa-profile");
-      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-      fprintf (dump_file, "hist->count %" PRId64
-	       " hist->all %" PRId64"\n", count, all);
+      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
+		       "Indirect call -> direct call "
+		       "%T => %T transformation on insn postponed\n",
+		       gimple_call_fn (stmt), direct_call->decl);
+      dump_printf_loc (MSG_NOTE, stmt,
+		       "hist->count %" PRId64
+		       " hist->all %" PRId64"\n", count, all);
     }
 
   return true;
@@ -1658,8 +1647,8 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
   if (!histogram)
     return false;
 
-  if (!get_most_common_single_value (stmt, "stringops", histogram, &val,
-				     &count, &all))
+  if (!get_nth_most_common_value (stmt, "stringops", histogram, &val, &count,
+				  &all))
     return false;
 
   gimple_remove_histogram_value (cfun, stmt, histogram);
@@ -1715,10 +1704,10 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
 	TYPE_PRECISION (get_gcov_type ()), false));
     }
 
-  if (dump_file)
-    fprintf (dump_file,
-	     "Transformation done: single value %i stringop for %s\n",
-	     (int)val, built_in_names[(int)fcode]);
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
+		     "Transformation done: single value %i stringop for %s\n",
+		     (int)val, built_in_names[(int)fcode]);
 
   gimple_stringop_fixed_value (stmt, tree_val, prob, count, all);
 

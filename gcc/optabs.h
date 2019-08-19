@@ -129,7 +129,11 @@ create_convert_operand_to (class expand_operand *op, rtx value,
 /* Make OP describe an input operand that should have the same value
    as VALUE, after any mode conversion that the backend might request.
    If VALUE is a CONST_INT, it should be treated as having mode MODE.
-   UNSIGNED_P says whether VALUE is unsigned.  */
+   UNSIGNED_P says whether VALUE is unsigned.
+
+   The conversion of VALUE can include a combination of numerical
+   conversion (as for convert_modes) and duplicating a scalar to fill
+   a vector (if VALUE is a scalar but the operand is a vector).  */
 
 static inline void
 create_convert_operand_from (class expand_operand *op, rtx value,

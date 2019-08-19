@@ -1583,7 +1583,7 @@ gimple_call_nonnull_result_p (gcall *call)
   if (!fndecl)
     return false;
   if (flag_delete_null_pointer_checks && !flag_check_new
-      && DECL_IS_OPERATOR_NEW (fndecl)
+      && DECL_IS_OPERATOR_NEW_P (fndecl)
       && !TREE_NOTHROW (fndecl))
     return true;
 
@@ -2057,6 +2057,18 @@ gimple_copy (gimple *stmt)
   return copy;
 }
 
+/* Move OLD_STMT's vuse and vdef operands to NEW_STMT, on the assumption
+   that OLD_STMT is about to be removed.  */
+
+void
+gimple_move_vops (gimple *new_stmt, gimple *old_stmt)
+{
+  tree vdef = gimple_vdef (old_stmt);
+  gimple_set_vuse (new_stmt, gimple_vuse (old_stmt));
+  gimple_set_vdef (new_stmt, vdef);
+  if (vdef && TREE_CODE (vdef) == SSA_NAME)
+    SSA_NAME_DEF_STMT (vdef) = new_stmt;
+}
 
 /* Return true if statement S has side-effects.  We consider a
    statement to have side effects if:
@@ -2693,6 +2705,18 @@ gimple_builtin_call_types_compatible_p (const gimple *stmt, tree fndecl)
   if (targs && !VOID_TYPE_P (TREE_VALUE (targs)))
     return false;
   return true;
+}
+
+/* Return true when STMT is operator delete call.  */
+
+bool
+gimple_call_operator_delete_p (const gcall *stmt)
+{
+  tree fndecl;
+
+  if ((fndecl = gimple_call_fndecl (stmt)) != NULL_TREE)
+    return DECL_IS_OPERATOR_DELETE_P (fndecl);
+  return false;
 }
 
 /* Return true when STMT is builtins call.  */

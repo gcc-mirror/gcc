@@ -47,12 +47,13 @@ along with GCC; see the file COPYING3.  If not see
    image.
    Therefore, for 64b exes at least, we must use the libunwind implementation,
    even when static-libgcc is specified.  We put libSystem first so that
-   unwinder symbols are satisfied from there. */
+   unwinder symbols are satisfied from there.
+   We default to 64b for single-arch builds, so apply this unconditionally. */
 #undef REAL_LIBGCC_SPEC
 #define REAL_LIBGCC_SPEC						   \
    "%{static-libgcc|static: 						   \
-      %{m64:%:version-compare(>= 10.6 mmacosx-version-min= -lSystem)}	   \
-        -lgcc_eh -lgcc;							   \
+       %:version-compare(>= 10.6 mmacosx-version-min= -lSystem)		   \
+       -lgcc_eh -lgcc;							   \
       shared-libgcc|fexceptions|fgnu-runtime:				   \
        %:version-compare(!> 10.5 mmacosx-version-min= -lgcc_s.10.4)	   \
        %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lgcc_s.10.5)   \
@@ -90,8 +91,8 @@ along with GCC; see the file COPYING3.  If not see
 #define WCHAR_TYPE_SIZE 32
 
 /* Generate pic symbol indirection stubs if this is true.  */
-#undef TARGET_MACHO_PICSYM_STUBS
-#define TARGET_MACHO_PICSYM_STUBS (darwin_picsymbol_stubs)
+#undef TARGET_MACHO_SYMBOL_STUBS
+#define TARGET_MACHO_SYMBOL_STUBS (darwin_symbol_stubs)
 
 /* For compatibility with OSX system tools, use the new style of pic stub
    if this is set (default).  */
@@ -139,9 +140,6 @@ along with GCC; see the file COPYING3.  If not see
   " ASM_OPTIONS " -force_cpusubtype_ALL \
   %{static}" ASM_MMACOSX_VERSION_MIN_SPEC
 
-#define DARWIN_ARCH_SPEC "%{m64:x86_64;:i386}"
-#define DARWIN_SUBARCH_SPEC DARWIN_ARCH_SPEC
-
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
   "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
@@ -149,12 +147,15 @@ along with GCC; see the file COPYING3.  If not see
    %{mpc64:crtprec64.o%s} \
    %{mpc80:crtprec80.o%s}" TM_DESTRUCTOR
 
+/* We default to x86_64 for single-arch builds, bi-arch overrides.  */
+#define DARWIN_ARCH_SPEC "x86_64"
+
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS                                   \
   DARWIN_EXTRA_SPECS                                            \
-  { "darwin_arch", DARWIN_ARCH_SPEC },                          \
+  { "darwin_arch", DARWIN_ARCH_SPEC },				\
   { "darwin_crt2", "" },                                        \
-  { "darwin_subarch", DARWIN_SUBARCH_SPEC },
+  { "darwin_subarch", DARWIN_ARCH_SPEC },
 
 /* The Darwin assembler mostly follows AT&T syntax.  */
 #undef ASSEMBLER_DIALECT
@@ -242,7 +243,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)				\
   do {									\
-    if (TARGET_MACHO_PICSYM_STUBS 					\
+    if (TARGET_MACHO_SYMBOL_STUBS 					\
 	&& MACHOPIC_INDIRECT && !TARGET_64BIT)				\
       {									\
 	const char *name = machopic_mcount_stub_name ();		\

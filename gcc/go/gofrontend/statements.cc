@@ -2614,7 +2614,11 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
   if (this->classification() == STATEMENT_GO)
     s = Statement::make_go_statement(call, location);
   else if (this->classification() == STATEMENT_DEFER)
-    s = Statement::make_defer_statement(call, location);
+    {
+      s = Statement::make_defer_statement(call, location);
+      if ((Node::make_node(this)->encoding() & ESCAPE_MASK) == Node::ESCAPE_NONE)
+        s->defer_statement()->set_on_stack();
+    }
   else
     go_unreachable();
 
@@ -3019,11 +3023,43 @@ Defer_statement::do_get_backend(Translate_context* context)
   Location loc = this->location();
   Expression* ds = context->function()->func_value()->defer_stack(loc);
 
-  Expression* call = Runtime::make_call(Runtime::DEFERPROC, loc, 3,
-					ds, fn, arg);
+  Expression* call;
+  if (this->on_stack_)
+    {
+      if (context->gogo()->debug_optimization())
+        go_debug(loc, "stack allocated defer");
+
+      Type* defer_type = Defer_statement::defer_struct_type();
+      Expression* defer = Expression::make_allocation(defer_type, loc);
+      defer->allocation_expression()->set_allocate_on_stack();
+      defer->allocation_expression()->set_no_zero();
+      call = Runtime::make_call(Runtime::DEFERPROCSTACK, loc, 4,
+                                defer, ds, fn, arg);
+    }
+  else
+    call = Runtime::make_call(Runtime::DEFERPROC, loc, 3,
+                              ds, fn, arg);
   Bexpression* bcall = call->get_backend(context);
   Bfunction* bfunction = context->function()->func_value()->get_decl();
   return context->backend()->expression_statement(bfunction, bcall);
+}
+
+Type*
+Defer_statement::defer_struct_type()
+{
+  Type* ptr_type = Type::make_pointer_type(Type::make_void_type());
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+  Type* bool_type = Type::make_boolean_type();
+  return Type::make_builtin_struct_type(9,
+                                        "link", ptr_type,
+                                        "frame", ptr_type,
+                                        "panicStack", ptr_type,
+                                        "_panic", ptr_type,
+                                        "pfn", uintptr_type,
+                                        "arg", ptr_type,
+                                        "retaddr", uintptr_type,
+                                        "makefunccanrecover", bool_type,
+                                        "heap", bool_type);
 }
 
 // Dump the AST representation for defer statement.

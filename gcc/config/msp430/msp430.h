@@ -26,10 +26,10 @@
 extern bool msp430x;
 #endif
 
-#define TARGET_CPU_CPP_BUILTINS()               \
-  do                                            \
-    {                                           \
-      builtin_define ("NO_TRAMPOLINES");        \
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define ("NO_TRAMPOLINES");	\
       builtin_define ("__MSP430__"); 		\
       builtin_define (msp430_mcu_name ());	\
       if (msp430x)				\
@@ -41,35 +41,61 @@ extern bool msp430x;
 	}					\
       else					\
 	builtin_assert ("cpu=MSP430"); 		\
-    }                                           \
+    }						\
   while (0)
 
 #undef  STARTFILE_SPEC
-#define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{minrt:crt0-minrt.o%s}%{!minrt:crt0.o%s}} %{!minrt:crtbegin.o%s}"
+#define STARTFILE_SPEC "%{pg:gcrt0.o%s}" \
+  "%{!pg:%{minrt:crt0-minrt.o%s}%{!minrt:crt0.o%s}} %{!minrt:crtbegin.o%s}"
 
 /* -lgcc is included because crtend.o needs __mspabi_func_epilog_1.  */
 #undef  ENDFILE_SPEC
-#define ENDFILE_SPEC "%{!minrt:crtend.o%s} %{minrt:crtn-minrt.o%s}%{!minrt:crtn.o%s} -lgcc"
+#define ENDFILE_SPEC "%{!minrt:crtend.o%s} " \
+  "%{minrt:%:if-exists(crtn-minrt.o%s)}%{!minrt:%:if-exists(crtn.o%s)} -lgcc"
 
 #define ASM_SPEC "-mP " /* Enable polymorphic instructions.  */ \
-  "%{mcpu=*:-mcpu=%*}%{!mcpu=*:%{mmcu=*:-mmcu=%*}} " /* Pass the CPU type on to the assembler.  */ \
+  "%{mcpu=*:-mcpu=%*} " /* Pass the CPU type on to the assembler.  */ \
   "%{mrelax=-mQ} " /* Pass the relax option on to the assembler.  */ \
-  "%{mlarge:-ml} " /* Tell the assembler if we are building for the LARGE pointer model.  */ \
-  "%{!msim:-md} %{msim:%{mlarge:-md}} " /* Copy data from ROM to RAM if necessary.  */ \
-  "%{msilicon-errata=*:-msilicon-errata=%*} " /* Pass on -msilicon-errata.  */ \
-  "%{msilicon-errata-warn=*:-msilicon-errata-warn=%*} " /* Pass on -msilicon-errata-warn.  */ \
-  "%{ffunction-sections:-gdwarf-sections} " /* If function sections are being created then create DWARF line number sections as well.  */ \
-  "%{mdata-region=*:-mdata-region=%*} " /* Pass on -mdata-region.  */
+  /* Tell the assembler if we are building for the LARGE pointer model.  */ \
+  "%{mlarge:-ml} " \
+  /* Copy data from ROM to RAM if necessary.  */ \
+  "%{!msim:-md} %{msim:%{mlarge:-md}} " \
+  "%{msilicon-errata=*:-msilicon-errata=%*} " \
+  "%{msilicon-errata-warn=*:-msilicon-errata-warn=%*} " \
+  /* Create DWARF line number sections for -ffunction-sections.  */ \
+  "%{ffunction-sections:-gdwarf-sections} " \
+  "%{mdata-region=*:-mdata-region=%*} "
 
 /* Enable linker section garbage collection by default, unless we
    are creating a relocatable binary (gc does not work) or debugging
-   is enabled  (the GDB testsuite relies upon unused entities not being deleted).  */
+   is enabled  (the GDB testsuite relies upon unused entities not being
+   deleted).  */
 #define LINK_SPEC "%{mrelax:--relax} %{mlarge:%{!r:%{!g:--gc-sections}}} " \
   "%{mcode-region=*:--code-region=%*} %{mdata-region=*:--data-region=%*}"
 
+#define DRIVER_SELF_SPECS \
+  " %{!mlarge:%{mcode-region=*:%{mdata-region=*:%e-mcode-region and "	\
+    "-mdata-region require the large memory model (-mlarge)}}}" \
+  " %{!mlarge:%{mcode-region=*:"	\
+    "%e-mcode-region requires the large memory model (-mlarge)}}"	\
+  " %{!mlarge:%{mdata-region=*:"	\
+    "%e-mdata-region requires the large memory model (-mlarge)}}"	\
+  " %{mno-warn-devices-csv:%:msp430_set_driver_var(msp430_warn_devices_csv 0)}"\
+  " %{mdevices-csv-loc=*:%:msp430_set_driver_var(msp430_devices_csv_loc %*)}"\
+  " %{I*:%:msp430_check_path_for_devices(%{I*:%*})}"       \
+  " %{L*:%:msp430_check_path_for_devices(%{L*:%*})}"       \
+  " %{!mcpu=*:%{mmcu=*:%:msp430_select_cpu(%{mmcu=*:%*})}}"
+
 extern const char * msp430_select_hwmult_lib (int, const char **);
+extern const char * msp430_select_cpu (int, const char **);
+extern const char * msp430_set_driver_var (int, const char **);
+extern const char * msp430_check_path_for_devices (int, const char **);
+
 # define EXTRA_SPEC_FUNCTIONS				\
-  { "msp430_hwmult_lib", msp430_select_hwmult_lib },
+  { "msp430_hwmult_lib", msp430_select_hwmult_lib },	\
+  { "msp430_select_cpu", msp430_select_cpu },		\
+  { "msp430_set_driver_var", msp430_set_driver_var },		\
+  { "msp430_check_path_for_devices", msp430_check_path_for_devices },
 
 /* Specify the libraries to include on the linker command line.
 
@@ -89,7 +115,8 @@ extern const char * msp430_select_hwmult_lib (int, const char **);
 #undef  LIB_SPEC
 #define LIB_SPEC "					\
 --start-group						\
-%{mhwmult=auto:%{mmcu=*:%:msp430_hwmult_lib(mcu %{mmcu=*:%*});:%:msp430_hwmult_lib(default)}; \
+%{mhwmult=auto:%{mmcu=*:%:msp430_hwmult_lib(mcu %{mmcu=*:%*});\
+  :%:msp430_hwmult_lib(default)};			\
   mhwmult=*:%:msp430_hwmult_lib(hwmult %{mhwmult=*:%*}); \
   mmcu=*:%:msp430_hwmult_lib(mcu %{mmcu=*:%*});		\
   :%:msp430_hwmult_lib(default)}			\
@@ -224,6 +251,28 @@ extern const char * msp430_select_hwmult_lib (int, const char **);
   "argptr"							\
 }
 
+/* Allow lowercase "r" to be used in register names instead of upper
+   case "R".  */
+#define ADDITIONAL_REGISTER_NAMES	\
+{					\
+    { "r0",  0 },			\
+    { "r1",  1 },			\
+    { "r2",  2 },			\
+    { "r3",  3 },			\
+    { "r4",  4 },			\
+    { "r5",  5 },			\
+    { "r6",  6 },			\
+    { "r7",  7 },			\
+    { "r8",  8 },			\
+    { "r9",  9 },			\
+    { "r10", 10 },			\
+    { "r11", 11 },			\
+    { "r12", 12 },			\
+    { "r13", 13 },			\
+    { "r14", 14 },			\
+    { "r15", 15 }			\
+}
+
 enum reg_class
 {
   NO_REGS,
@@ -262,9 +311,9 @@ enum reg_class
 #define INDEX_REG_CLASS			GEN_REGS
 #define N_REG_CLASSES			(int) LIM_REG_CLASSES
 
-#define PC_REGNUM 		        0
-#define STACK_POINTER_REGNUM 	        1
-#define CC_REGNUM                       2
+#define PC_REGNUM			0
+#define STACK_POINTER_REGNUM		1
+#define CC_REGNUM 			2
 #define FRAME_POINTER_REGNUM 		4 /* not usually used, call preserved */
 #define ARG_POINTER_REGNUM 		16
 #define STATIC_CHAIN_REGNUM 		5 /* FIXME */
@@ -352,7 +401,8 @@ typedef struct
   (((N) < 3) ? ((N) + 12) : INVALID_REGNUM)
 
 #define EH_RETURN_HANDLER_RTX \
-  gen_rtx_MEM(Pmode, gen_rtx_PLUS (Pmode, gen_rtx_REG(Pmode, SP_REGNO), gen_rtx_REG (Pmode, 15)))
+  gen_rtx_MEM (Pmode, gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, SP_REGNO), \
+				   gen_rtx_REG (Pmode, 15)))
 
 #define EH_RETURN_STACKADJ_RTX gen_rtx_REG (Pmode, 15)
 
@@ -396,7 +446,7 @@ typedef struct
   do						\
     {						\
       if ((LOG) == 0)				\
-        break;					\
+	break;					\
       fprintf (STREAM, "\t.balign %d\n", 1 << (LOG));	\
     }						\
   while (0)
@@ -416,7 +466,8 @@ typedef struct
 /* Prevent reload (and others) from choosing HImode stack slots
    when spilling hard registers when they may contain PSImode values.  */
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO,NREGS,MODE) \
-  ((TARGET_LARGE && ((NREGS) <= 2)) ? PSImode : choose_hard_reg_mode ((REGNO), (NREGS), false))
+  ((TARGET_LARGE && ((NREGS) <= 2)) ? PSImode \
+   : choose_hard_reg_mode ((REGNO), (NREGS), false))
 
 #define ACCUMULATE_OUTGOING_ARGS 1
 

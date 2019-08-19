@@ -344,7 +344,7 @@ package body Exp_Aggr is
       Lo   : Node_Id;
       Hi   : Node_Id;
       Indx : Node_Id;
-      Siz  : Int;
+      Size : Uint;
       Lov  : Uint;
       Hiv  : Uint;
 
@@ -468,7 +468,7 @@ package body Exp_Aggr is
          Max_Aggr_Size := 5000;
       end if;
 
-      Siz  := Component_Count (Component_Type (Typ));
+      Size := UI_From_Int (Component_Count (Component_Type (Typ)));
 
       Indx := First_Index (Typ);
       while Present (Indx) loop
@@ -538,14 +538,17 @@ package body Exp_Aggr is
                return False;
             end if;
 
-            Siz := Siz * UI_To_Int (Rng);
-         end;
+            --  Compute the size using universal arithmetic to avoid the
+            --  possibility of overflow on very large aggregates.
 
-         if Siz <= 0
-           or else Siz > Max_Aggr_Size
-         then
-            return False;
-         end if;
+            Size := Size * Rng;
+
+            if Size <= 0
+              or else Size > Max_Aggr_Size
+            then
+               return False;
+            end if;
+         end;
 
          --  Bounds must be in integer range, for later array construction
 
@@ -2686,8 +2689,10 @@ package body Exp_Aggr is
                Discr_Constr :=
                  First_Elmt (Stored_Constraint (Full_View (Base_Typ)));
 
+            --  Otherwise, no discriminant to process
+
             else
-               Discr_Constr := First_Elmt (Stored_Constraint (Typ));
+               Discr_Constr := No_Elmt;
             end if;
 
             while Present (Discr) and then Present (Discr_Constr) loop
@@ -5318,6 +5323,16 @@ package body Exp_Aggr is
             return False;
          end if;
 
+         --  If the expression has side effects (e.g. contains calls with
+         --  potential side effects) reject as well. We only preanalyze the
+         --  expression to prevent the removal of intended side effects.
+
+         Preanalyze_And_Resolve (Expr, Ctyp);
+
+         if not Side_Effect_Free (Expr) then
+            return False;
+         end if;
+
          --  The expression needs to be analyzed if True is returned
 
          Analyze_And_Resolve (Expr, Ctyp);
@@ -7694,15 +7709,36 @@ package body Exp_Aggr is
          P := Parent (P);
       end loop;
 
-      --  Cases where aggregates are supported by the CCG backend
+      --  Check cases where aggregates are supported by the CCG backend
 
       if Nkind (P) = N_Object_Declaration then
-         return True;
+         declare
+            P_Typ : constant Entity_Id := Etype (Defining_Identifier (P));
 
-      elsif Nkind (P) = N_Qualified_Expression
-        and then Nkind_In (Parent (P), N_Allocator, N_Object_Declaration)
-      then
-         return True;
+         begin
+            if Is_Record_Type (P_Typ) then
+               return True;
+            else
+               return Compile_Time_Known_Bounds (P_Typ);
+            end if;
+         end;
+
+      elsif Nkind (P) = N_Qualified_Expression then
+         if Nkind (Parent (P)) = N_Object_Declaration then
+            declare
+               P_Typ : constant Entity_Id :=
+                         Etype (Defining_Identifier (Parent (P)));
+            begin
+               if Is_Record_Type (P_Typ) then
+                  return True;
+               else
+                  return Compile_Time_Known_Bounds (P_Typ);
+               end if;
+            end;
+
+         elsif Nkind (Parent (P)) = N_Allocator then
+            return True;
+         end if;
       end if;
 
       return False;

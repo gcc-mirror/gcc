@@ -219,14 +219,14 @@
     UNSPEC_LD1RQ
     UNSPEC_LD1_GATHER
     UNSPEC_ST1_SCATTER
-    UNSPEC_MERGE_PTRUE
-    UNSPEC_PTEST_PTRUE
+    UNSPEC_PRED_X
+    UNSPEC_PRED_Z
+    UNSPEC_PTEST
     UNSPEC_UNPACKSHI
     UNSPEC_UNPACKUHI
     UNSPEC_UNPACKSLO
     UNSPEC_UNPACKULO
     UNSPEC_PACK
-    UNSPEC_FLOAT_CONVERT
     UNSPEC_WHILE_LO
     UNSPEC_LDN
     UNSPEC_STN
@@ -234,8 +234,10 @@
     UNSPEC_CLASTB
     UNSPEC_FADDA
     UNSPEC_REV_SUBREG
+    UNSPEC_REINTERPRET
     UNSPEC_SPECULATION_TRACKER
     UNSPEC_COPYSIGN
+    UNSPEC_TTEST		; Represent transaction test.
 ])
 
 (define_c_enum "unspecv" [
@@ -251,8 +253,32 @@
     UNSPECV_BTI_C		; Represent BTI c.
     UNSPECV_BTI_J		; Represent BTI j.
     UNSPECV_BTI_JC		; Represent BTI jc.
+    UNSPECV_TSTART		; Represent transaction start.
+    UNSPECV_TCOMMIT		; Represent transaction commit.
+    UNSPECV_TCANCEL		; Represent transaction cancel.
   ]
 )
+
+;; These constants are used as a const_int in various SVE unspecs
+;; to indicate whether the governing predicate is known to be a PTRUE.
+(define_constants
+  [; Indicates that the predicate might not be a PTRUE.
+   (SVE_MAYBE_NOT_PTRUE 0)
+
+   ; Indicates that the predicate is known to be a PTRUE.
+   (SVE_KNOWN_PTRUE 1)])
+
+;; These constants are used as a const_int in predicated SVE FP arithmetic
+;; to indicate whether the operation is allowed to make additional lanes
+;; active without worrying about the effect on faulting behavior.
+(define_constants
+  [; Indicates either that all lanes are active or that the instruction may
+   ; operate on inactive inputs even if doing so could induce a fault.
+   (SVE_RELAXED_GP 0)
+
+   ; Indicates that some lanes might be inactive and that the instruction
+   ; must not operate on inactive inputs if doing so could induce a fault.
+   (SVE_STRICT_GP 1)])
 
 ;; If further include files are added the defintion of MD_INCLUDES
 ;; must be updated.
@@ -1727,6 +1753,7 @@
   /* If the constant is too large for a single instruction and isn't frame
      based, split off the immediate so it is available for CSE.  */
   if (!aarch64_plus_immediate (operands[2], <MODE>mode)
+      && !(TARGET_SVE && aarch64_sve_plus_immediate (operands[2], <MODE>mode))
       && can_create_pseudo_p ()
       && (!REG_P (op1)
 	 || !REGNO_PTR_FRAME_P (REGNO (op1))))
@@ -1744,10 +1771,10 @@
 
 (define_insn "*add<mode>3_aarch64"
   [(set
-    (match_operand:GPI 0 "register_operand" "=rk,rk,w,rk,r,rk")
+    (match_operand:GPI 0 "register_operand" "=rk,rk,w,rk,r,r,rk")
     (plus:GPI
-     (match_operand:GPI 1 "register_operand" "%rk,rk,w,rk,rk,rk")
-     (match_operand:GPI 2 "aarch64_pluslong_operand" "I,r,w,J,Uaa,Uav")))]
+     (match_operand:GPI 1 "register_operand" "%rk,rk,w,rk,rk,0,rk")
+     (match_operand:GPI 2 "aarch64_pluslong_operand" "I,r,w,J,Uaa,Uai,Uav")))]
   ""
   "@
   add\\t%<w>0, %<w>1, %2
@@ -1755,10 +1782,11 @@
   add\\t%<rtn>0<vas>, %<rtn>1<vas>, %<rtn>2<vas>
   sub\\t%<w>0, %<w>1, #%n2
   #
-  * return aarch64_output_sve_addvl_addpl (operands[0], operands[1], operands[2]);"
-  ;; The "alu_imm" type for ADDVL/ADDPL is just a placeholder.
-  [(set_attr "type" "alu_imm,alu_sreg,neon_add,alu_imm,multiple,alu_imm")
-   (set_attr "arch" "*,*,simd,*,*,*")]
+  * return aarch64_output_sve_scalar_inc_dec (operands[2]);
+  * return aarch64_output_sve_addvl_addpl (operands[2]);"
+  ;; The "alu_imm" types for INC/DEC and ADDVL/ADDPL are just placeholders.
+  [(set_attr "type" "alu_imm,alu_sreg,neon_add,alu_imm,multiple,alu_imm,alu_imm")
+   (set_attr "arch" "*,*,simd,*,*,sve,sve")]
 )
 
 ;; zero_extend version of above
@@ -1837,17 +1865,18 @@
 ;; this pattern.
 (define_insn_and_split "*add<mode>3_poly_1"
   [(set
-    (match_operand:GPI 0 "register_operand" "=r,r,r,r,r,&r")
+    (match_operand:GPI 0 "register_operand" "=r,r,r,r,r,r,&r")
     (plus:GPI
-     (match_operand:GPI 1 "register_operand" "%rk,rk,rk,rk,rk,rk")
-     (match_operand:GPI 2 "aarch64_pluslong_or_poly_operand" "I,r,J,Uaa,Uav,Uat")))]
+     (match_operand:GPI 1 "register_operand" "%rk,rk,rk,rk,rk,0,rk")
+     (match_operand:GPI 2 "aarch64_pluslong_or_poly_operand" "I,r,J,Uaa,Uav,Uai,Uat")))]
   "TARGET_SVE && operands[0] != stack_pointer_rtx"
   "@
   add\\t%<w>0, %<w>1, %2
   add\\t%<w>0, %<w>1, %<w>2
   sub\\t%<w>0, %<w>1, #%n2
   #
-  * return aarch64_output_sve_addvl_addpl (operands[0], operands[1], operands[2]);
+  * return aarch64_output_sve_scalar_inc_dec (operands[2]);
+  * return aarch64_output_sve_addvl_addpl (operands[2]);
   #"
   "&& epilogue_completed
    && !reg_overlap_mentioned_p (operands[0], operands[1])
@@ -1858,8 +1887,8 @@
 			      operands[2], operands[0], NULL_RTX);
     DONE;
   }
-  ;; The "alu_imm" type for ADDVL/ADDPL is just a placeholder.
-  [(set_attr "type" "alu_imm,alu_sreg,alu_imm,multiple,alu_imm,multiple")]
+  ;; The "alu_imm" types for INC/DEC and ADDVL/ADDPL are just placeholders.
+  [(set_attr "type" "alu_imm,alu_sreg,alu_imm,multiple,alu_imm,alu_imm,multiple")]
 )
 
 (define_split
@@ -6022,6 +6051,44 @@
   [(set_attr "type" "f_cvtf2i")]
 )
 
+;; Equal width integer to fp and multiply combine.
+(define_insn "*aarch64_<su_optab>cvtf<fcvt_target><GPF:mode>2_mult"
+  [(set (match_operand:GPF 0 "register_operand" "=w,w")
+	(mult:GPF (FLOATUORS:GPF
+		   (match_operand:<FCVT_TARGET> 1 "register_operand" "w,?r"))
+		   (match_operand:GPF 2 "aarch64_fp_pow2_recip" "Dt,Dt")))]
+  "TARGET_FLOAT"
+  {
+    operands[2] = GEN_INT (aarch64_fpconst_pow2_recip (operands[2]));
+    switch (which_alternative)
+    {
+      case 0:
+	return "<su_optab>cvtf\t%<GPF:s>0, %<s>1, #%2";
+      case 1:
+	return "<su_optab>cvtf\t%<GPF:s>0, %<w1>1, #%2";
+      default:
+	gcc_unreachable ();
+    }
+  }
+  [(set_attr "type" "neon_int_to_fp_<Vetype>,f_cvti2f")
+   (set_attr "arch" "simd,fp")]
+)
+
+;; Unequal width integer to fp and multiply combine.
+(define_insn "*aarch64_<su_optab>cvtf<fcvt_iesize><GPF:mode>2_mult"
+  [(set (match_operand:GPF 0 "register_operand" "=w")
+	(mult:GPF (FLOATUORS:GPF
+		   (match_operand:<FCVT_IESIZE> 1 "register_operand" "r"))
+		   (match_operand:GPF 2 "aarch64_fp_pow2_recip" "Dt")))]
+  "TARGET_FLOAT"
+  {
+    operands[2] = GEN_INT (aarch64_fpconst_pow2_recip (operands[2]));
+    return "<su_optab>cvtf\t%<GPF:s>0, %<w2>1, #%2";
+  }
+  [(set_attr "type" "f_cvti2f")]
+)
+
+;; Equal width integer to fp conversion.
 (define_insn "<optab><fcvt_target><GPF:mode>2"
   [(set (match_operand:GPF 0 "register_operand" "=w,w")
         (FLOATUORS:GPF (match_operand:<FCVT_TARGET> 1 "register_operand" "w,?r")))]
@@ -6033,6 +6100,7 @@
    (set_attr "arch" "simd,fp")]
 )
 
+;; Unequal width integer to fp conversions.
 (define_insn "<optab><fcvt_iesize><GPF:mode>2"
   [(set (match_operand:GPF 0 "register_operand" "=w")
         (FLOATUORS:GPF (match_operand:<FCVT_IESIZE> 1 "register_operand" "r")))]
@@ -6318,7 +6386,7 @@
   [(match_operand:GPI 0 "register_operand")
    (match_operand:GPF 1 "register_operand")]
   "TARGET_FLOAT
-   && ((GET_MODE_SIZE (<GPF:MODE>mode) <= GET_MODE_SIZE (<GPI:MODE>mode))
+   && ((GET_MODE_BITSIZE (<GPF:MODE>mode) <= LONG_TYPE_SIZE)
    || !flag_trapping_math || flag_fp_int_builtin_inexact)"
 {
   rtx cvt = gen_reg_rtx (<GPF:MODE>mode);
@@ -7129,12 +7197,6 @@
   [(set_attr "type" "no_insn")]
 )
 
-;; Helper for aarch64.c code.
-(define_expand "set_clobber_cc_nzc"
-  [(parallel [(set (match_operand 0)
-		   (match_operand 1))
-	      (clobber (reg:CC_NZC CC_REGNUM))])])
-
 ;; Hard speculation barrier.
 (define_insn "speculation_barrier"
   [(unspec_volatile [(const_int 0)] UNSPECV_SPECULATION_BARRIER)]
@@ -7240,6 +7302,43 @@
   [(set_attr "type" "block")
    (set_attr "length" "12")
    (set_attr "speculation_barrier" "true")]
+)
+
+;; Transactional Memory Extension (TME) instructions.
+
+(define_insn "tstart"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec_volatile:DI [(const_int 0)] UNSPECV_TSTART))
+   (clobber (mem:BLK (scratch)))]
+  "TARGET_TME"
+  "tstart\\t%0"
+  [(set_attr "type" "tme")]
+)
+
+(define_insn "ttest"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec_volatile:DI [(const_int 0)] UNSPEC_TTEST))
+   (clobber (mem:BLK (scratch)))]
+  "TARGET_TME"
+  "ttest\\t%0"
+  [(set_attr "type" "tme")]
+)
+
+(define_insn "tcommit"
+  [(unspec_volatile:BLK [(const_int 0)] UNSPECV_TCOMMIT)
+   (clobber (mem:BLK (scratch)))]
+  "TARGET_TME"
+  "tcommit"
+  [(set_attr "type" "tme")]
+)
+
+(define_insn "tcancel"
+  [(unspec_volatile:BLK
+     [(match_operand 0 "const_int_operand" "n")] UNSPECV_TCANCEL)
+   (clobber (mem:BLK (scratch)))]
+  "TARGET_TME && (UINTVAL (operands[0]) <= 65535)"
+  "tcancel\\t#%0"
+  [(set_attr "type" "tme")]
 )
 
 ;; AdvSIMD Stuff

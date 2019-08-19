@@ -134,10 +134,7 @@ maybe_set_intrinsic (FuncDeclaration *decl)
 	  /* If there is no function body, then the implementation is always
 	     provided by the compiler.  */
 	  if (!decl->fbody)
-	    {
-	      DECL_BUILT_IN_CLASS (decl->csym) = BUILT_IN_FRONTEND;
-	      DECL_FUNCTION_CODE (decl->csym) = (built_in_function) code;
-	    }
+	    set_decl_built_in_function (decl->csym, BUILT_IN_FRONTEND, code);
 
 	  /* Infer whether the intrinsic can be used for CTFE, let the
 	     front-end know that it can be evaluated at compile-time.  */

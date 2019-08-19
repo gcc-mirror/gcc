@@ -142,10 +142,6 @@ struct lra_operand_data
   unsigned int strict_low : 1;
   /* True if the operand is an operator.  */
   unsigned int is_operator : 1;
-  /* True if there is an early clobber alternative for this operand.
-     This field is set up every time when corresponding
-     operand_alternative in lra_static_insn_data is set up.  */
-  unsigned int early_clobber : 1;
   /* True if the operand is an address.  */
   unsigned int is_address : 1;
 };
@@ -164,9 +160,6 @@ struct lra_insn_reg
   /* True if the reg is accessed through a subreg and the subreg is
      just a part of the register.  */
   unsigned int subreg_p : 1;
-  /* True if there is an early clobber alternative for this
-     operand.  */
-  unsigned int early_clobber : 1;
   /* True if the reg is clobber highed by the operand.  */
   unsigned int clobber_high : 1;
   /* The corresponding regno of the register.  */
@@ -403,6 +396,7 @@ extern bool lra_coalesce (void);
 
 /* lra-spills.c:  */
 
+extern bool lra_need_for_scratch_reg_p (void);
 extern bool lra_need_for_spills_p (void);
 extern void lra_spill (void);
 extern void lra_final_code_change (void);

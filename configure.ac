@@ -1640,6 +1640,19 @@ AC_ARG_WITH(stage1-libs,
 [stage1_libs=])
 AC_SUBST(stage1_libs)
 
+# Whether or not to use -static-libstdc++ and -static-libgcc.  The
+# default is yes if gcc is being built; no otherwise.  The reason for
+# this default is that gdb is sometimes linked against GNU Source
+# Highlight, which is a shared library that uses C++ exceptions.  In
+# this case, -static-libstdc++ will cause crashes.
+AC_ARG_WITH(static-standard-libraries,
+[AS_HELP_STRING([--with-static-standard-libraries],
+                [use -static-libstdc++ and -static-libgcc (default=auto)])],
+[], [with_static_standard_libraries=auto])
+if test "$with_static_standard_libraries" = auto; then
+  with_static_standard_libraries=$have_compiler
+fi
+
 # Linker flags to use for stage1 or when not bootstrapping.
 AC_ARG_WITH(stage1-ldflags,
 [AS_HELP_STRING([--with-stage1-ldflags=FLAGS], [linker flags for stage1])],
@@ -1652,7 +1665,8 @@ AC_ARG_WITH(stage1-ldflags,
  # In stage 1, default to linking libstdc++ and libgcc statically with GCC
  # if supported.  But if the user explicitly specified the libraries to use,
  # trust that they are doing what they want.
- if test "$stage1_libs" = "" -a "$have_static_libs" = yes; then
+ if test "$with_static_standard_libraries" = yes -a "$stage1_libs" = "" \
+     -a "$have_static_libs" = yes; then
    stage1_ldflags="-static-libstdc++ -static-libgcc"
  fi])
 AC_SUBST(stage1_ldflags)

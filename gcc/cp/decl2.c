@@ -434,8 +434,8 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
 	array_expr = p2, index_exp = i1;
       else
 	{
-	  error ("invalid types %<%T[%T]%> for array subscript",
-		 type, TREE_TYPE (index_exp));
+	  error_at (loc, "invalid types %<%T[%T]%> for array subscript",
+		    type, TREE_TYPE (index_exp));
 	  return error_mark_node;
 	}
 
@@ -487,15 +487,19 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete,
     }
 
   /* An array can't have been allocated by new, so complain.  */
-  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
-    warning (0, "deleting array %q#E", exp);
+  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
+      && (complain & tf_warning))
+    warning_at (cp_expr_loc_or_input_loc (exp), 0,
+		"deleting array %q#E", exp);
 
   t = build_expr_type_conversion (WANT_POINTER, exp, true);
 
   if (t == NULL_TREE || t == error_mark_node)
     {
-      error ("type %q#T argument given to %<delete%>, expected pointer",
-	     TREE_TYPE (exp));
+      if (complain & tf_error)
+	error_at (cp_expr_loc_or_input_loc (exp),
+		  "type %q#T argument given to %<delete%>, expected pointer",
+		  TREE_TYPE (exp));
       return error_mark_node;
     }
 
@@ -506,15 +510,19 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete,
   /* You can't delete functions.  */
   if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
     {
-      error ("cannot delete a function.  Only pointer-to-objects are "
-	     "valid arguments to %<delete%>");
+      if (complain & tf_error)
+	error_at (cp_expr_loc_or_input_loc (exp),
+		  "cannot delete a function.  Only pointer-to-objects are "
+		  "valid arguments to %<delete%>");
       return error_mark_node;
     }
 
   /* Deleting ptr to void is undefined behavior [expr.delete/3].  */
   if (VOID_TYPE_P (TREE_TYPE (type)))
     {
-      warning (OPT_Wdelete_incomplete, "deleting %qT is undefined", type);
+      if (complain & tf_warning)
+	warning_at (cp_expr_loc_or_input_loc (exp), OPT_Wdelete_incomplete,
+		    "deleting %qT is undefined", type);
       doing_vec = 0;
     }
 

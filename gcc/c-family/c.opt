@@ -428,6 +428,10 @@ Wclobbered
 C ObjC C++ ObjC++ Var(warn_clobbered) Warning EnabledBy(Wextra)
 Warn about variables that might be changed by \"longjmp\" or \"vfork\".
 
+Wcomma-subscript
+C++ ObjC++ Var(warn_comma_subscript) Warning
+Warn about uses of a comma operator within a subscripting expression.
+
 Wcomment
 C ObjC C++ ObjC++ CPP(warn_comments) CppReason(CPP_W_COMMENTS) Var(cpp_warn_comment) Init(0) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about possibly nested block comments, and C++ comments spanning more than one physical line.

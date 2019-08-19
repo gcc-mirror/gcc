@@ -1,7 +1,8 @@
 //===-- sanitizer_interceptors_ioctl_netbsd.inc -----------------*- C++ -*-===//
 //
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -23,7 +24,7 @@ struct ioctl_desc {
   const char *name;
 };
 
-const unsigned ioctl_table_max = 1198;
+const unsigned ioctl_table_max = 1236;
 static ioctl_desc ioctl_table[ioctl_table_max];
 static unsigned ioctl_table_size = 0;
 
@@ -286,6 +287,8 @@ static void ioctl_table_fill() {
   _(MLX_GET_CINFO, WRITE, struct_mlx_cinfo_sz);
   /* Entries from file: dev/ic/nvmeio.h */
   _(NVME_PASSTHROUGH_CMD, READWRITE, struct_nvme_pt_command_sz);
+  /* Entries from file: dev/ic/qemufwcfgio.h */
+  _(FWCFGIO_SET_INDEX, READ, sizeof(u16));
   /* Entries from file: dev/ir/irdaio.h */
   _(IRDA_RESET_PARAMS, NONE, 0);
   _(IRDA_SET_PARAMS, READ, struct_irda_params_sz);
@@ -294,9 +297,6 @@ static void ioctl_table_fill() {
   _(IRFRAMETTY_GET_DEVICE, WRITE, sizeof(unsigned int));
   _(IRFRAMETTY_GET_DONGLE, WRITE, sizeof(unsigned int));
   _(IRFRAMETTY_SET_DONGLE, READ, sizeof(unsigned int));
-  /* Entries from file: dev/isa/satlinkio.h */
-  _(SATIORESET, NONE, 0);
-  _(SATIOGID, WRITE, struct_satlink_id_sz);
   /* Entries from file: dev/isa/isvio.h */
   _(ISV_CMD, READWRITE, struct_isv_cmd_sz);
   /* Entries from file: dev/isa/wtreg.h */
@@ -645,6 +645,30 @@ static void ioctl_table_fill() {
   _(SPKRTUNE, NONE, 0);
   _(SPKRGETVOL, WRITE, sizeof(unsigned int));
   _(SPKRSETVOL, READ, sizeof(unsigned int));
+#if defined(__x86_64__)
+  /* Entries from file: dev/nvmm/nvmm_ioctl.h */
+  _(NVMM_IOC_CAPABILITY, WRITE, struct_nvmm_ioc_capability_sz);
+  _(NVMM_IOC_MACHINE_CREATE, READWRITE, struct_nvmm_ioc_machine_create_sz);
+  _(NVMM_IOC_MACHINE_DESTROY, READ, struct_nvmm_ioc_machine_destroy_sz);
+  _(NVMM_IOC_MACHINE_CONFIGURE, READ, struct_nvmm_ioc_machine_configure_sz);
+  _(NVMM_IOC_VCPU_CREATE, READ, struct_nvmm_ioc_vcpu_create_sz);
+  _(NVMM_IOC_VCPU_DESTROY, READ, struct_nvmm_ioc_vcpu_destroy_sz);
+  _(NVMM_IOC_VCPU_SETSTATE, READ, struct_nvmm_ioc_vcpu_setstate_sz);
+  _(NVMM_IOC_VCPU_GETSTATE, READ, struct_nvmm_ioc_vcpu_getstate_sz);
+  _(NVMM_IOC_VCPU_INJECT, READ, struct_nvmm_ioc_vcpu_inject_sz);
+  _(NVMM_IOC_VCPU_RUN, READWRITE, struct_nvmm_ioc_vcpu_run_sz);
+  _(NVMM_IOC_GPA_MAP, READ, struct_nvmm_ioc_gpa_map_sz);
+  _(NVMM_IOC_GPA_UNMAP, READ, struct_nvmm_ioc_gpa_unmap_sz);
+  _(NVMM_IOC_HVA_MAP, READ, struct_nvmm_ioc_hva_map_sz);
+  _(NVMM_IOC_HVA_UNMAP, READ, struct_nvmm_ioc_hva_unmap_sz);
+  _(NVMM_IOC_CTL, READ, struct_nvmm_ioc_ctl_sz);
+#endif
+  /* Entries from file: dev/spi/spi_io.h */
+  _(SPI_IOCTL_CONFIGURE, READ, struct_spi_ioctl_configure_sz);
+  _(SPI_IOCTL_TRANSFER, READ, struct_spi_ioctl_transfer_sz);
+  /* Entries from file: fs/autofs/autofs_ioctl.h */
+  _(AUTOFSREQUEST, WRITE, struct_autofs_daemon_request_sz);
+  _(AUTOFSDONE, READ, struct_autofs_daemon_done_sz);
   /* Entries from file: net/bpf.h */
   _(BIOCGBLEN, WRITE, sizeof(unsigned int));
   _(BIOCSBLEN, READWRITE, sizeof(unsigned int));
@@ -664,20 +688,12 @@ static void ioctl_table_fill() {
   _(BIOCSHDRCMPLT, READ, sizeof(unsigned int));
   _(BIOCSDLT, READ, sizeof(unsigned int));
   _(BIOCGDLTLIST, READWRITE, struct_bpf_dltlist_sz);
-  _(BIOCGSEESENT, WRITE, sizeof(unsigned int));
-  _(BIOCSSEESENT, READ, sizeof(unsigned int));
+  _(BIOCGDIRECTION, WRITE, sizeof(unsigned int));
+  _(BIOCSDIRECTION, READ, sizeof(unsigned int));
   _(BIOCSRTIMEOUT, READ, struct_timeval_sz);
   _(BIOCGRTIMEOUT, WRITE, struct_timeval_sz);
   _(BIOCGFEEDBACK, WRITE, sizeof(unsigned int));
   _(BIOCSFEEDBACK, READ, sizeof(unsigned int));
-  /* Entries from file: net/if_atm.h */
-  _(SIOCRAWATM, READWRITE, sizeof(int));
-  _(SIOCATMENA, READWRITE, struct_atm_pseudoioctl_sz);
-  _(SIOCATMDIS, READWRITE, struct_atm_pseudoioctl_sz);
-  _(SIOCSPVCTX, READWRITE, struct_pvctxreq_sz);
-  _(SIOCGPVCTX, READWRITE, struct_pvctxreq_sz);
-  _(SIOCSPVCSIF, READWRITE, struct_ifreq_sz);
-  _(SIOCGPVCSIF, READWRITE, struct_ifreq_sz);
   /* Entries from file: net/if_gre.h */
   _(GRESADDRS, READ, struct_ifreq_sz);
   _(GRESADDRD, READ, struct_ifreq_sz);
@@ -713,12 +729,12 @@ static void ioctl_table_fill() {
   /* Entries from file: net/npf.h */
   _(IOC_NPF_VERSION, WRITE, sizeof(int));
   _(IOC_NPF_SWITCH, READ, sizeof(int));
-  _(IOC_NPF_LOAD, READWRITE, struct_plistref_sz);
+  _(IOC_NPF_LOAD, READWRITE, struct_nvlist_ref_sz);
   _(IOC_NPF_TABLE, READ, struct_npf_ioctl_table_sz);
   _(IOC_NPF_STATS, READ, sizeof(uptr));
-  _(IOC_NPF_SAVE, WRITE, struct_plistref_sz);
-  _(IOC_NPF_RULE, READWRITE, struct_plistref_sz);
-  _(IOC_NPF_CONN_LOOKUP, READWRITE, struct_plistref_sz);
+  _(IOC_NPF_SAVE, WRITE, struct_nvlist_ref_sz);
+  _(IOC_NPF_RULE, READWRITE, struct_nvlist_ref_sz);
+  _(IOC_NPF_CONN_LOOKUP, READWRITE, struct_nvlist_ref_sz);
   /* Entries from file: net/if_pppoe.h */
   _(PPPOESETPARMS, READ, struct_pppoediscparms_sz);
   _(PPPOEGETPARMS, READWRITE, struct_pppoediscparms_sz);
@@ -841,6 +857,9 @@ static void ioctl_table_fill() {
   _(SIOCGNATS, READWRITE, struct_ipfobj_sz);
   _(SIOCGNATL, READWRITE, struct_ipfobj_sz);
   _(SIOCPURGENAT, READWRITE, struct_ipfobj_sz);
+  /* Entries from file: netinet/sctp_uio.h */
+  _(SIOCCONNECTX, READWRITE, struct_sctp_connectx_addrs_sz);
+  _(SIOCCONNECTXDEL, READWRITE, struct_sctp_connectx_addrs_sz);
   /* Entries from file: netinet6/in6_var.h */
   _(SIOCSIFINFO_FLAGS, READWRITE, struct_in6_ndireq_sz);
   _(SIOCAADDRCTL_POLICY, READ, struct_in6_addrpolicy_sz);
@@ -880,6 +899,9 @@ static void ioctl_table_fill() {
   _(AUDIO_GETBUFINFO, WRITE, struct_audio_info_sz);
   _(AUDIO_SETCHAN, READ, sizeof(int));
   _(AUDIO_GETCHAN, WRITE, sizeof(int));
+  _(AUDIO_QUERYFORMAT, READWRITE, struct_audio_format_query_sz);
+  _(AUDIO_GETFORMAT, WRITE, struct_audio_info_sz);
+  _(AUDIO_SETFORMAT, READ, struct_audio_info_sz);
   _(AUDIO_MIXER_READ, READWRITE, struct_mixer_ctrl_sz);
   _(AUDIO_MIXER_WRITE, READWRITE, struct_mixer_ctrl_sz);
   _(AUDIO_MIXER_DEVINFO, READWRITE, struct_mixer_devinfo_sz);
@@ -970,6 +992,7 @@ static void ioctl_table_fill() {
   _(DIOCMWEDGES, WRITE, sizeof(int));
   _(DIOCGSECTORSIZE, WRITE, sizeof(unsigned int));
   _(DIOCGMEDIASIZE, WRITE, sizeof(uptr));
+  _(DIOCRMWEDGES, WRITE, sizeof(int));
   /* Entries from file: sys/drvctlio.h */
   _(DRVDETACHDEV, READ, struct_devdetachargs_sz);
   _(DRVRESCANBUS, READ, struct_devrescanargs_sz);
@@ -1000,6 +1023,8 @@ static void ioctl_table_fill() {
   /* Entries from file: sys/filio.h */
   _(FIOCLEX, NONE, 0);
   _(FIONCLEX, NONE, 0);
+  _(FIOSEEKDATA, READWRITE, sizeof(uptr));
+  _(FIOSEEKHOLE, READWRITE, sizeof(uptr));
   _(FIONREAD, WRITE, sizeof(int));
   _(FIONBIO, READ, sizeof(int));
   _(FIOASYNC, READ, sizeof(int));
@@ -1093,7 +1118,6 @@ static void ioctl_table_fill() {
   /* Entries from file: sys/power.h */
   _(POWER_EVENT_RECVDICT, READWRITE, struct_plistref_sz);
   _(POWER_IOC_GET_TYPE, WRITE, struct_power_type_sz);
-  _(POWER_IOC_GET_TYPE_WITH_LOSSAGE, WRITE, sizeof(uptr));
   /* Entries from file: sys/radioio.h */
   _(RIOCGINFO, WRITE, struct_radio_info_sz);
   _(RIOCSINFO, READWRITE, struct_radio_info_sz);
@@ -1131,6 +1155,7 @@ static void ioctl_table_fill() {
   _(SIOCATMARK, WRITE, sizeof(int));
   _(SIOCSPGRP, READ, sizeof(int));
   _(SIOCGPGRP, WRITE, sizeof(int));
+  _(SIOCPEELOFF, READWRITE, sizeof(int));
   _(SIOCADDRT, READ, struct_ortentry_sz);
   _(SIOCDELRT, READ, struct_ortentry_sz);
   _(SIOCSIFADDR, READ, struct_ifreq_sz);
@@ -1188,6 +1213,12 @@ static void ioctl_table_fill() {
   _(SIOCSLINKSTR, READ, struct_ifdrv_sz);
   _(SIOCGETHERCAP, READWRITE, struct_eccapreq_sz);
   _(SIOCGIFINDEX, READWRITE, struct_ifreq_sz);
+  _(SIOCSETHERCAP, READ, struct_eccapreq_sz);
+  _(SIOCSIFDESCR, READ, struct_ifreq_sz);
+  _(SIOCGIFDESCR, READWRITE, struct_ifreq_sz);
+  _(SIOCGUMBINFO, READWRITE, struct_ifreq_sz);
+  _(SIOCSUMBPARAM, READ, struct_ifreq_sz);
+  _(SIOCGUMBPARAM, READWRITE, struct_ifreq_sz);
   _(SIOCSETPFSYNC, READ, struct_ifreq_sz);
   _(SIOCGETPFSYNC, READWRITE, struct_ifreq_sz);
   /* Entries from file: sys/timepps.h */
@@ -1314,6 +1345,21 @@ static void ioctl_table_fill() {
   _(WDOGIOC_TICKLE, NONE, 0);
   _(WDOGIOC_GTICKLER, WRITE, sizeof(int));
   _(WDOGIOC_GWDOGS, READWRITE, struct_wdog_conf_sz);
+  /* Entries from file: sys/kcov.h */
+  _(KCOV_IOC_SETBUFSIZE, READ, sizeof(u64));
+  _(KCOV_IOC_ENABLE, READ, sizeof(int));
+  _(KCOV_IOC_DISABLE, NONE, 0);
+  /* Entries from file: sys/ipmi.h */
+  _(IPMICTL_RECEIVE_MSG_TRUNC, READWRITE, struct_ipmi_recv_sz);
+  _(IPMICTL_RECEIVE_MSG, READWRITE, struct_ipmi_recv_sz);
+  _(IPMICTL_SEND_COMMAND, READ, struct_ipmi_req_sz);
+  _(IPMICTL_REGISTER_FOR_CMD, READ, struct_ipmi_cmdspec_sz);
+  _(IPMICTL_UNREGISTER_FOR_CMD, READ, struct_ipmi_cmdspec_sz);
+  _(IPMICTL_SET_GETS_EVENTS_CMD, READ, sizeof(int));
+  _(IPMICTL_SET_MY_ADDRESS_CMD, READ, sizeof(unsigned int));
+  _(IPMICTL_GET_MY_ADDRESS_CMD, WRITE, sizeof(unsigned int));
+  _(IPMICTL_SET_MY_LUN_CMD, READ, sizeof(unsigned int));
+  _(IPMICTL_GET_MY_LUN_CMD, WRITE, sizeof(unsigned int));
   /* Entries from file: soundcard.h */
   _(SNDCTL_DSP_RESET, NONE, 0);
   _(SNDCTL_DSP_SYNC, NONE, 0);

@@ -585,3 +585,9 @@
   return s390_valid_shift_count (op, 0);
 }
 )
+
+; An integer constant which can be used in a signed add with overflow
+; pattern without being reloaded.
+(define_predicate "addv_const_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) >= -32768 && INTVAL (op) <= 32767")))

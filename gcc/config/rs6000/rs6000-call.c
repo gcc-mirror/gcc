@@ -4003,7 +4003,8 @@ htm_expand_builtin (tree exp, rtx target, bool * expandedp)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   bool nonvoid = TREE_TYPE (TREE_TYPE (fndecl)) != void_type_node;
-  enum rs6000_builtins fcode = (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
+  enum rs6000_builtins fcode
+    = (enum rs6000_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   const struct builtin_description *d;
   size_t i;
 
@@ -4472,7 +4473,8 @@ altivec_expand_dst_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 			    bool *expandedp)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  enum rs6000_builtins fcode = (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
+  enum rs6000_builtins fcode
+    = (enum rs6000_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   tree arg0, arg1, arg2;
   machine_mode mode0, mode1;
   rtx pat, op0, op1, op2;
@@ -4666,7 +4668,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
   rtx op0, pat;
   machine_mode tmode, mode0;
   enum rs6000_builtins fcode
-    = (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
+    = (enum rs6000_builtins) DECL_MD_FUNCTION_CODE (fndecl);
 
   if (rs6000_overloaded_builtin_p (fcode))
     {
@@ -5325,7 +5327,7 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   tree fndecl = gimple_call_fndecl (stmt);
   gcc_checking_assert (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD);
   enum rs6000_builtins fn_code
-    = (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
+    = (enum rs6000_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   tree arg0, arg1, lhs, temp;
   enum tree_code bcode;
   gimple *g;
@@ -6216,7 +6218,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   enum rs6000_builtins fcode
-    = (enum rs6000_builtins)DECL_FUNCTION_CODE (fndecl);
+    = (enum rs6000_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   size_t uns_fcode = (size_t)fcode;
   const struct builtin_description *d;
   size_t i;
@@ -8099,20 +8101,7 @@ rs6000_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   funexp = XEXP (DECL_RTL (function), 0);
   funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
 
-#if TARGET_MACHO
-  if (MACHOPIC_INDIRECT)
-    funexp = machopic_indirect_call_target (funexp);
-#endif
-
-  /* gen_sibcall expects reload to convert scratch pseudo to LR so we must
-     generate sibcall RTL explicitly.  */
-  insn = emit_call_insn (
-	   gen_rtx_PARALLEL (VOIDmode,
-	     gen_rtvec (3,
-			gen_rtx_CALL (VOIDmode,
-				      funexp, const0_rtx),
-			gen_rtx_USE (VOIDmode, const0_rtx),
-			simple_return_rtx)));
+  insn = emit_call_insn (gen_sibcall (funexp, const0_rtx, const0_rtx));
   SIBLING_CALL_P (insn) = 1;
   emit_barrier ();
 

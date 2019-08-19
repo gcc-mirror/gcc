@@ -15437,6 +15437,48 @@ _mm512_castsi256_si512 (__m256i __A)
   return (__m512i)__builtin_ia32_si512_256si ((__v8si)__A);
 }
 
+extern __inline __m512d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_zextpd128_pd512 (__m128d __A)
+{
+  return (__m512d) _mm512_insertf32x4 (_mm512_setzero_ps (), (__m128) __A, 0);
+}
+
+extern __inline __m512
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_zextps128_ps512 (__m128 __A)
+{
+  return _mm512_insertf32x4 (_mm512_setzero_ps (), __A, 0);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_zextsi128_si512 (__m128i __A)
+{
+  return _mm512_inserti32x4 (_mm512_setzero_si512 (), __A, 0);
+}
+
+extern __inline __m512d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_zextpd256_pd512 (__m256d __A)
+{
+  return _mm512_insertf64x4 (_mm512_setzero_pd (), __A, 0);
+}
+
+extern __inline __m512
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_zextps256_ps512 (__m256 __A)
+{
+  return (__m512) _mm512_insertf64x4 (_mm512_setzero_pd (), (__m256d) __A, 0);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_zextsi256_si512 (__m256i __A)
+{
+  return _mm512_inserti64x4 (_mm512_setzero_si512 (), __A, 0);
+}
+
 extern __inline __mmask16
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_cmpeq_epu32_mask (__m512i __A, __m512i __B)

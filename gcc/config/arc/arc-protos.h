@@ -25,7 +25,6 @@ extern machine_mode arc_select_cc_mode (enum rtx_code, rtx, rtx);
 extern struct rtx_def *gen_compare_reg (rtx, machine_mode);
 
 /* Declarations for various fns used in the .md file.  */
-extern void arc_output_function_epilogue (FILE *, HOST_WIDE_INT, int);
 extern const char *output_shift (rtx *);
 extern bool compact_sda_memory_operand (rtx, machine_mode, bool);
 extern bool arc_double_limm_p (rtx);
@@ -42,8 +41,6 @@ extern void arc_expand_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
 extern void arc_split_compare_and_swap (rtx *);
 extern void arc_expand_compare_and_swap (rtx *);
 extern bool compact_memory_operand_p (rtx, machine_mode, bool, bool);
-extern int arc_return_address_register (unsigned int);
-extern unsigned int arc_compute_function_type (struct function *);
 extern bool arc_is_uncached_mem_p (rtx);
 extern bool gen_operands_ldd_std (rtx *operands, bool load, bool commute);
 extern bool arc_check_multi (rtx, bool);
@@ -52,9 +49,9 @@ extern bool arc_check_ior_const (HOST_WIDE_INT );
 extern void arc_split_ior (rtx *);
 extern bool arc_check_mov_const (HOST_WIDE_INT );
 extern bool arc_split_mov_const (rtx *);
+extern bool arc_can_use_return_insn (void);
 #endif /* RTX_CODE */
 
-extern unsigned int arc_compute_frame_size (int);
 extern bool arc_ccfsm_branch_deleted_p (void);
 extern void arc_ccfsm_record_branch_deleted (void);
 
@@ -71,7 +68,6 @@ extern bool arc_is_longcall_p (rtx);
 extern bool arc_is_shortcall_p (rtx);
 extern bool valid_brcc_with_delay_p (rtx *);
 extern bool arc_ccfsm_cond_exec_p (void);
-struct secondary_reload_info;
 extern rtx disi_highpart (rtx);
 extern int arc_adjust_insn_length (rtx_insn *, int, bool);
 extern int arc_corereg_hazard (rtx, rtx);
@@ -89,7 +85,6 @@ extern void arc_expand_prologue (void);
 extern void arc_expand_epilogue (int);
 extern void arc_init_expanders (void);
 extern int arc_check_millicode (rtx op, int offset, int load_p);
-extern int arc_get_unalign (void);
 extern void arc_clear_unalign (void);
 extern void arc_toggle_unalign (void);
 extern void split_addsi (rtx *);

@@ -40,9 +40,5 @@ begin
    --  The null exception is uniquely identified by the fact that the Id value
    --  is null. No other exception occurrence can have a null Id.
 
-   if X.Id = Null_Id then
-      return True;
-   else
-      return False;
-   end if;
+   return X.Id = Null_Id;
 end Ada.Exceptions.Is_Null_Occurrence;

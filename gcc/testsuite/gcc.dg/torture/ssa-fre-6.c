@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target int32 } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 /* { dg-additional-options "-fgimple -fdump-tree-fre1" } */
 

@@ -3881,6 +3881,20 @@ such a way that a body needed before is no longer needed. The provision of a
 dummy body with a No_Body pragma ensures that there is no interference from
 earlier versions of the package body.
 
+.. _Pragma-No_Caching:
+
+Pragma No_Caching
+=================
+
+Syntax:
+
+.. code-block:: ada
+
+  pragma No_Caching [ (boolean_EXPRESSION) ];
+
+For the semantics of this pragma, see the entry for aspect ``No_Caching`` in
+the SPARK 2014 Reference Manual, section 7.1.2.
+
 Pragma No_Component_Reordering
 ==============================
 
@@ -7355,6 +7369,7 @@ validity checks as shown in the following example:
   pragma Validity_Checks (On);  -- turn validity checks back on
   A := C;                       -- C will be validity checked
 
+.. _Pragma-Volatile:
 
 Pragma Volatile
 ===============

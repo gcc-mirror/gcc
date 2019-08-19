@@ -25,7 +25,6 @@ if (ishft (1_8, 0) /= 1) STOP 19
 if (ishft (1_8, 1) /= 2) STOP 20
 if (ishft (3_8, 1) /= 6) STOP 21
 if (ishft (-1_8, 1) /= -2) STOP 22
-if (ishft (-1_8, -60) /= z'F') STOP 23
 
 if (ishftc (1_1, 0) /= 1) STOP 24
 if (ishftc (1_1, 1) /= 2) STOP 25

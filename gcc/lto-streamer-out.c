@@ -1121,12 +1121,12 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       hstate.add_int (DECL_BUILT_IN_CLASS (t));
       hstate.add_flag (DECL_STATIC_CONSTRUCTOR (t));
       hstate.add_flag (DECL_STATIC_DESTRUCTOR (t));
+      hstate.add_flag (FUNCTION_DECL_DECL_TYPE (t));
       hstate.add_flag (DECL_UNINLINABLE (t));
       hstate.add_flag (DECL_POSSIBLY_INLINED (t));
       hstate.add_flag (DECL_IS_NOVOPS (t));
       hstate.add_flag (DECL_IS_RETURNS_TWICE (t));
       hstate.add_flag (DECL_IS_MALLOC (t));
-      hstate.add_flag (DECL_IS_OPERATOR_NEW (t));
       hstate.add_flag (DECL_DECLARED_INLINE_P (t));
       hstate.add_flag (DECL_STATIC_CHAIN (t));
       hstate.add_flag (DECL_NO_INLINE_WARNING_P (t));
@@ -1137,7 +1137,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       hstate.add_flag (DECL_LOOPING_CONST_OR_PURE_P (t));
       hstate.commit_flag ();
       if (DECL_BUILT_IN_CLASS (t) != NOT_BUILT_IN)
-	hstate.add_int (DECL_FUNCTION_CODE (t));
+	hstate.add_int (DECL_UNCHECKED_FUNCTION_CODE (t));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
@@ -2641,12 +2641,6 @@ write_symbol (struct streamer_tree_cache_d *cache,
   uint64_t size;
   const char *comdat;
   unsigned char c;
-
-  gcc_checking_assert (TREE_PUBLIC (t)
-		       && (TREE_CODE (t) != FUNCTION_DECL
-			   || !fndecl_built_in_p (t))
-		       && !DECL_ABSTRACT_P (t)
-		       && (!VAR_P (t) || !DECL_HARD_REGISTER (t)));
 
   gcc_assert (VAR_OR_FUNCTION_DECL_P (t));
 

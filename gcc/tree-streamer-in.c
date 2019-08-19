@@ -324,8 +324,7 @@ unpack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
 static void
 unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 {
-  DECL_BUILT_IN_CLASS (expr) = bp_unpack_enum (bp, built_in_class,
-					       BUILT_IN_LAST);
+  built_in_class cl = bp_unpack_enum (bp, built_in_class, BUILT_IN_LAST);
   DECL_STATIC_CONSTRUCTOR (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_STATIC_DESTRUCTOR (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_UNINLINABLE (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -333,7 +332,8 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
   DECL_IS_NOVOPS (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_IS_RETURNS_TWICE (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_IS_MALLOC (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_IS_OPERATOR_NEW (expr) = (unsigned) bp_unpack_value (bp, 1);
+  DECL_SET_IS_OPERATOR_NEW (expr, (unsigned) bp_unpack_value (bp, 1));
+  DECL_SET_IS_OPERATOR_DELETE (expr, (unsigned) bp_unpack_value (bp, 1));
   DECL_DECLARED_INLINE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_STATIC_CHAIN (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_NO_INLINE_WARNING_P (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -343,22 +343,22 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
   DECL_DISREGARD_INLINE_LIMITS (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_LOOPING_CONST_OR_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  if (DECL_BUILT_IN_CLASS (expr) != NOT_BUILT_IN)
+  unsigned int fcode = 0;
+  if (cl != NOT_BUILT_IN)
     {
-      DECL_FUNCTION_CODE (expr) = (enum built_in_function) bp_unpack_value (bp,
-	                                                                    12);
-      if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_NORMAL
-	  && DECL_FUNCTION_CODE (expr) >= END_BUILTINS)
+      fcode = bp_unpack_value (bp, 32);
+      if (cl == BUILT_IN_NORMAL && fcode >= END_BUILTINS)
 	fatal_error (input_location,
 		     "machine independent builtin code out of range");
-      else if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_MD)
+      else if (cl == BUILT_IN_MD)
 	{
-          tree result = targetm.builtin_decl (DECL_FUNCTION_CODE (expr), true);
+          tree result = targetm.builtin_decl (fcode, true);
 	  if (!result || result == error_mark_node)
 	    fatal_error (input_location,
 			 "target specific builtin not available");
 	}
     }
+  set_decl_built_in_function (expr, cl, fcode);
 }
 
 

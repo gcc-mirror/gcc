@@ -77,7 +77,10 @@ DEFTREECODE (BLOCK, "block", tcc_exceptional, 0)
 /* Each data type is represented by a tree node whose code is one of
    the following:  */
 /* Each node that represents a data type has a component TYPE_SIZE
-   containing a tree that is an expression for the size in bits.
+   that evaluates either to a tree that is a (potentially non-constant)
+   expression representing the type size in bits, or to a null pointer
+   when the size of the type is unknown (for example, for incomplete
+   types such as arrays of unspecified bound).
    The TYPE_MODE contains the machine mode for values of this type.
    The TYPE_POINTER_TO field contains a type for a pointer to this type,
      or zero if no such has been created yet.

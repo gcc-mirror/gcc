@@ -10461,7 +10461,7 @@ sh_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 		   machine_mode mode ATTRIBUTE_UNUSED, int ignore)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   const struct builtin_description *d = &bdesc[fcode];
   enum insn_code icode = d->icode;
   int signature = d->signature;

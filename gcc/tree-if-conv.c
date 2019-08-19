@@ -2141,9 +2141,7 @@ predicate_load_or_store (gimple_stmt_iterator *gsi, gassign *stmt, tree mask)
       new_stmt
 	= gimple_build_call_internal (IFN_MASK_STORE, 4, addr, ptr,
 				      mask, rhs);
-      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-      gimple_set_vdef (new_stmt, gimple_vdef (stmt));
-      SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
+      gimple_move_vops (new_stmt, stmt);
     }
   gimple_call_set_nothrow (new_stmt, true);
   return new_stmt;

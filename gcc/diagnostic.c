@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "edit-context.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
+#include "opts.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -696,6 +697,7 @@ diagnostic_classify_diagnostic (diagnostic_context *context,
       if (old_kind == DK_UNSPECIFIED)
 	{
 	  old_kind = !context->option_enabled (option_index,
+					       context->lang_mask,
 					       context->option_state)
 	    ? DK_IGNORED : (context->warning_as_error_requested
 			    ? DK_ERROR : DK_WARNING);
@@ -957,6 +959,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       /* This tests if the user provided the appropriate -Wfoo or
 	 -Wno-foo option.  */
       if (! context->option_enabled (diagnostic->option_index,
+				     context->lang_mask,
 				     context->option_state))
 	return false;
 

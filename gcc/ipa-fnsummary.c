@@ -382,7 +382,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	  continue;
 	}
 
-      if (tree_to_shwi (TYPE_SIZE (TREE_TYPE (val))) != c->size)
+      if (maybe_ne (tree_to_poly_int64 (TYPE_SIZE (TREE_TYPE (val))), c->size))
 	{
 	  clause |= 1 << (i + predicate::first_dynamic_condition);
 	  nonspec_clause |= 1 << (i + predicate::first_dynamic_condition);
@@ -922,7 +922,7 @@ mark_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef ATTRIBUTE_UNUSED,
 
 static tree
 unmodified_parm_1 (ipa_func_body_info *fbi, gimple *stmt, tree op,
-		   HOST_WIDE_INT *size_p)
+		   poly_int64 *size_p)
 {
   /* SSA_NAME referring to parm default def?  */
   if (TREE_CODE (op) == SSA_NAME
@@ -930,7 +930,7 @@ unmodified_parm_1 (ipa_func_body_info *fbi, gimple *stmt, tree op,
       && TREE_CODE (SSA_NAME_VAR (op)) == PARM_DECL)
     {
       if (size_p)
-	*size_p = tree_to_shwi (TYPE_SIZE (TREE_TYPE (op)));
+	*size_p = tree_to_poly_int64 (TYPE_SIZE (TREE_TYPE (op)));
       return SSA_NAME_VAR (op);
     }
   /* Non-SSA parm reference?  */
@@ -951,7 +951,7 @@ unmodified_parm_1 (ipa_func_body_info *fbi, gimple *stmt, tree op,
       if (!modified)
 	{
 	  if (size_p)
-	    *size_p = tree_to_shwi (TYPE_SIZE (TREE_TYPE (op)));
+	    *size_p = tree_to_poly_int64 (TYPE_SIZE (TREE_TYPE (op)));
 	  return op;
 	}
     }
@@ -965,7 +965,7 @@ unmodified_parm_1 (ipa_func_body_info *fbi, gimple *stmt, tree op,
 
 static tree
 unmodified_parm (ipa_func_body_info *fbi, gimple *stmt, tree op,
-		 HOST_WIDE_INT *size_p)
+		 poly_int64 *size_p)
 {
   tree res = unmodified_parm_1 (fbi, stmt, op, size_p);
   if (res)
@@ -990,7 +990,7 @@ unmodified_parm (ipa_func_body_info *fbi, gimple *stmt, tree op,
 static bool
 unmodified_parm_or_parm_agg_item (struct ipa_func_body_info *fbi,
 				  gimple *stmt, tree op, int *index_p,
-				  HOST_WIDE_INT *size_p,
+				  poly_int64 *size_p,
 				  struct agg_position_info *aggpos)
 {
   tree res = unmodified_parm_1 (fbi, stmt, op, size_p);
@@ -1169,7 +1169,7 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   gimple *last;
   tree op;
   int index;
-  HOST_WIDE_INT size;
+  poly_int64 size;
   struct agg_position_info aggpos;
   enum tree_code code, inverted_code;
   edge e;
@@ -1254,7 +1254,7 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   gimple *lastg;
   tree op;
   int index;
-  HOST_WIDE_INT size;
+  poly_int64 size;
   struct agg_position_info aggpos;
   edge e;
   edge_iterator ei;
@@ -1393,7 +1393,7 @@ will_be_nonconstant_expr_predicate (ipa_func_body_info *fbi,
 {
   tree parm;
   int index;
-  HOST_WIDE_INT size;
+  poly_int64 size;
 
   while (UNARY_CLASS_P (expr))
     expr = TREE_OPERAND (expr, 0);
@@ -1468,7 +1468,7 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
   predicate op_non_const;
   bool is_load;
   int base_index;
-  HOST_WIDE_INT size;
+  poly_int64 size;
   struct agg_position_info aggpos;
 
   /* What statments might be optimized away
@@ -1524,7 +1524,7 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
     op_non_const = false;
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
-      HOST_WIDE_INT size;
+      poly_int64 size;
       tree parm = unmodified_parm (fbi, stmt, use, &size);
       int index;
 
@@ -3292,7 +3292,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	{
 	  struct condition c;
 	  c.operand_num = streamer_read_uhwi (&ib);
-	  c.size = streamer_read_uhwi (&ib);
+	  c.size = streamer_read_poly_uint64 (&ib);
 	  c.code = (enum tree_code) streamer_read_uhwi (&ib);
 	  c.val = stream_read_tree (&ib, data_in);
 	  bp = streamer_read_bitpack (&ib);
@@ -3446,7 +3446,7 @@ ipa_fn_summary_write (void)
 	  for (i = 0; vec_safe_iterate (info->conds, i, &c); i++)
 	    {
 	      streamer_write_uhwi (ob, c->operand_num);
-	      streamer_write_uhwi (ob, c->size);
+	      streamer_write_poly_uint64 (ob, c->size);
 	      streamer_write_uhwi (ob, c->code);
 	      stream_write_tree (ob, c->val, true);
 	      bp = bitpack_create (ob->main_stream);

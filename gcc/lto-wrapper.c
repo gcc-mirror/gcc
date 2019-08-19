@@ -128,12 +128,11 @@ maybe_unlink (const char *file)
 #define DUMPBASE_SUFFIX ".ltrans18446744073709551615"
 
 /* Create decoded options from the COLLECT_GCC and COLLECT_GCC_OPTIONS
-   environment according to LANG_MASK.  */
+   environment.  */
 
 static void
 get_options_from_collect_gcc_options (const char *collect_gcc,
 				      const char *collect_gcc_options,
-				      unsigned int lang_mask,
 				      struct cl_decoded_option **decoded_options,
 				      unsigned int *decoded_options_count)
 {
@@ -176,8 +175,7 @@ get_options_from_collect_gcc_options (const char *collect_gcc,
   argc = obstack_object_size (&argv_obstack) / sizeof (void *) - 1;
   argv = XOBFINISH (&argv_obstack, const char **);
 
-  decode_cmdline_options_to_array (argc, (const char **)argv,
-				   lang_mask,
+  decode_cmdline_options_to_array (argc, (const char **)argv, CL_DRIVER,
 				   decoded_options, decoded_options_count);
   obstack_free (&argv_obstack, NULL);
 }
@@ -1009,8 +1007,7 @@ find_and_merge_options (int fd, off_t file_offset, const char *prefix,
     {
       struct cl_decoded_option *f2decoded_options;
       unsigned int f2decoded_options_count;
-      get_options_from_collect_gcc_options (collect_gcc,
-					    fopts, CL_LANG_ALL,
+      get_options_from_collect_gcc_options (collect_gcc, fopts,
 					    &f2decoded_options,
 					    &f2decoded_options_count);
       if (!fdecoded_options)
@@ -1110,6 +1107,136 @@ cmp_priority (const void *a, const void *b)
   return *((const int *)b)-*((const int *)a);
 }
 
+/* Number of CPUs that can be used for parallel LTRANS phase.  */
+
+static unsigned long nthreads_var = 0;
+
+#ifdef HAVE_PTHREAD_AFFINITY_NP
+unsigned long cpuset_size;
+static unsigned long get_cpuset_size;
+cpu_set_t *cpusetp;
+
+unsigned long
+static cpuset_popcount (unsigned long cpusetsize, cpu_set_t *cpusetp)
+{
+#ifdef CPU_COUNT_S
+  /* glibc 2.7 and above provide a macro for this.  */
+  return CPU_COUNT_S (cpusetsize, cpusetp);
+#else
+#ifdef CPU_COUNT
+  if (cpusetsize == sizeof (cpu_set_t))
+    /* glibc 2.6 and above provide a macro for this.  */
+    return CPU_COUNT (cpusetp);
+#endif
+  size_t i;
+  unsigned long ret = 0;
+  STATIC_ASSERT (sizeof (cpusetp->__bits[0]) == sizeof (unsigned long int));
+  for (i = 0; i < cpusetsize / sizeof (cpusetp->__bits[0]); i++)
+    {
+      unsigned long int mask = cpusetp->__bits[i];
+      if (mask == 0)
+	continue;
+      ret += __builtin_popcountl (mask);
+    }
+  return ret;
+#endif
+}
+#endif
+
+/* At startup, determine the default number of threads.  It would seem
+   this should be related to the number of cpus online.  */
+
+static void
+init_num_threads (void)
+{
+#ifdef HAVE_PTHREAD_AFFINITY_NP
+#if defined (_SC_NPROCESSORS_CONF) && defined (CPU_ALLOC_SIZE)
+  cpuset_size = sysconf (_SC_NPROCESSORS_CONF);
+  cpuset_size = CPU_ALLOC_SIZE (cpuset_size);
+#else
+  cpuset_size = sizeof (cpu_set_t);
+#endif
+
+  cpusetp = (cpu_set_t *) xmalloc (gomp_cpuset_size);
+  do
+    {
+      int ret = pthread_getaffinity_np (pthread_self (), gomp_cpuset_size,
+					cpusetp);
+      if (ret == 0)
+	{
+	  /* Count only the CPUs this process can use.  */
+	  nthreads_var = cpuset_popcount (cpuset_size, cpusetp);
+	  if (nthreads_var == 0)
+	    break;
+	  get_cpuset_size = cpuset_size;
+#ifdef CPU_ALLOC_SIZE
+	  unsigned long i;
+	  for (i = cpuset_size * 8; i; i--)
+	    if (CPU_ISSET_S (i - 1, cpuset_size, cpusetp))
+	      break;
+	  cpuset_size = CPU_ALLOC_SIZE (i);
+#endif
+	  return;
+	}
+      if (ret != EINVAL)
+	break;
+#ifdef CPU_ALLOC_SIZE
+      if (cpuset_size < sizeof (cpu_set_t))
+	cpuset_size = sizeof (cpu_set_t);
+      else
+	cpuset_size = cpuset_size * 2;
+      if (cpuset_size < 8 * sizeof (cpu_set_t))
+	cpusetp
+	  = (cpu_set_t *) realloc (cpusetp, cpuset_size);
+      else
+	{
+	  /* Avoid fatal if too large memory allocation would be
+	     requested, e.g. kernel returning EINVAL all the time.  */
+	  void *p = realloc (cpusetp, cpuset_size);
+	  if (p == NULL)
+	    break;
+	  cpusetp = (cpu_set_t *) p;
+	}
+#else
+      break;
+#endif
+    }
+  while (1);
+  cpuset_size = 0;
+  nthreads_var = 1;
+  free (cpusetp);
+  cpusetp = NULL;
+#endif
+#ifdef _SC_NPROCESSORS_ONLN
+  nthreads_var = sysconf (_SC_NPROCESSORS_ONLN);
+#endif
+}
+
+/* FIXME: once using -std=c11, we can use std::thread::hardware_concurrency.  */
+
+/* Return true when a jobserver is running and can accept a job.  */
+
+static bool
+jobserver_active_p (void)
+{
+  const char *makeflags = getenv ("MAKEFLAGS");
+  if (makeflags == NULL)
+    return false;
+
+  const char *needle = "--jobserver-auth=";
+  const char *n = strstr (makeflags, needle);
+  if (n == NULL)
+    return false;
+
+  int rfd = -1;
+  int wfd = -1;
+
+  return (sscanf (n + strlen (needle), "%d,%d", &rfd, &wfd) == 2
+	  && rfd > 0
+	  && wfd > 0
+	  && is_valid_fd (rfd)
+	  && is_valid_fd (wfd));
+}
 
 /* Execute gcc. ARGC is the number of arguments. ARGV contains the arguments. */
 
@@ -1124,6 +1251,7 @@ run_gcc (unsigned argc, char *argv[])
   const char *collect_gcc, *collect_gcc_options;
   int parallel = 0;
   int jobserver = 0;
+  int auto_parallel = 0;
   bool no_partition = false;
   struct cl_decoded_option *fdecoded_options = NULL;
   struct cl_decoded_option *offload_fdecoded_options = NULL;
@@ -1151,7 +1279,6 @@ run_gcc (unsigned argc, char *argv[])
     fatal_error (input_location,
 		 "environment variable %<COLLECT_GCC_OPTIONS%> must be set");
   get_options_from_collect_gcc_options (collect_gcc, collect_gcc_options,
-					CL_LANG_ALL,
 					&decoded_options,
 					&decoded_options_count);
 
@@ -1247,9 +1374,11 @@ run_gcc (unsigned argc, char *argv[])
 
 	case OPT_flto_:
 	  if (strcmp (option->arg, "jobserver") == 0)
+	    jobserver = 1;
+	  else if (strcmp (option->arg, "auto") == 0)
 	    {
-	      jobserver = 1;
 	      parallel = 1;
+	      auto_parallel = 1;
 	    }
 	  else
 	    {
@@ -1291,8 +1420,11 @@ run_gcc (unsigned argc, char *argv[])
     {
       lto_mode = LTO_MODE_LTO;
       jobserver = 0;
+      auto_parallel = 0;
       parallel = 0;
     }
+  else if (!jobserver)
+    jobserver = jobserver_active_p ();
 
   if (linker_output)
     {
@@ -1484,7 +1616,21 @@ cont1:
       strcpy (tmp, ltrans_output_file);
 
       if (jobserver)
-	obstack_ptr_grow (&argv_obstack, xstrdup ("-fwpa=jobserver"));
+	{
+	  if (verbose)
+	    fprintf (stderr, "Using make jobserver\n");
+	  obstack_ptr_grow (&argv_obstack, xstrdup ("-fwpa=jobserver"));
+	}
+      else if (auto_parallel)
+	{
+	  char buf[256];
+	  init_num_threads ();
+	  if (verbose)
+	    fprintf (stderr, "LTO parallelism level set to %ld\n",
+		     nthreads_var);
+	  sprintf (buf, "-fwpa=%ld", nthreads_var);
+	  obstack_ptr_grow (&argv_obstack, xstrdup (buf));
+	}
       else if (parallel > 1)
 	{
 	  char buf[256];
@@ -1692,7 +1838,8 @@ cont:
 	  i = 3;
 	  if (!jobserver)
 	    {
-	      snprintf (jobs, 31, "-j%d", parallel);
+	      snprintf (jobs, 31, "-j%ld",
+			auto_parallel ? nthreads_var : parallel);
 	      new_argv[i++] = jobs;
 	    }
 	  new_argv[i++] = "all";

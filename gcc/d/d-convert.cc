@@ -588,7 +588,6 @@ convert_expr (tree exp, Type *etype, Type *totype)
 	  return compound_expr (exp, build_zero_cst (build_ctype (tbtype)));
 	}
 
-      exp = fold_convert (build_ctype (etype), exp);
       gcc_assert (TREE_CODE (exp) != STRING_CST);
       break;
     }

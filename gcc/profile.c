@@ -743,6 +743,42 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
   free_aux_for_blocks ();
 }
 
+/* Sort the histogram value and count for TOPN and INDIR_CALL type.  */
+
+static void
+sort_hist_values (histogram_value hist)
+{
+  /* counters[2] equal to -1 means that all counters are invalidated.  */
+  if (hist->hvalue.counters[2] == -1)
+    return;
+
+  gcc_assert (hist->type == HIST_TYPE_TOPN_VALUES
+	      || hist->type == HIST_TYPE_INDIR_CALL);
+
+  gcc_assert (hist->n_counters == GCOV_TOPN_VALUES_COUNTERS);
+
+  /* Hist value is organized as:
+     [total_executions, value1, counter1, ..., value4, counter4]
+     Use decrease bubble sort to rearrange it.  The sort starts from <value1,
+     counter1> and compares counter first.  If counter is same, compares the
+     value, exchange it if small to keep stable.  */
+  for (unsigned i = 0; i < GCOV_TOPN_VALUES - 1; i++)
+    {
+      bool swapped = false;
+      for (unsigned j = 0; j < GCOV_TOPN_VALUES - 1 - i; j++)
+	{
+	  gcov_type *p = &hist->hvalue.counters[2 * j + 1];
+	  if (p[1] < p[3] || (p[1] == p[3] && p[0] < p[2]))
+	    {
+	      std::swap (p[0], p[2]);
+	      std::swap (p[1], p[3]);
+	      swapped = true;
+	    }
+	}
+      if (!swapped)
+	break;
+    }
+}
 /* Load value histograms values whose description is stored in VALUES array
    from .gcda file.  
 
@@ -807,6 +843,10 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
           hist->hvalue.counters[j] = aact_count[j];
         else
           hist->hvalue.counters[j] = 0;
+
+      if (hist->type == HIST_TYPE_TOPN_VALUES
+	  || hist->type == HIST_TYPE_INDIR_CALL)
+	sort_hist_values (hist);
 
       /* Time profiler counter is not related to any statement,
          so that we have to read the counter and set the value to

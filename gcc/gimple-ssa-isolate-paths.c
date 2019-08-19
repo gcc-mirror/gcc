@@ -502,7 +502,7 @@ is_addr_local (gimple *return_stmt, tree exp, locmap_t *plocmap,
 	}
 
       if (code == GIMPLE_CALL
-	  && gimple_call_builtin_p (def_stmt))
+	  && gimple_call_builtin_p (def_stmt, BUILT_IN_NORMAL))
 	{
 	  /* Handle alloca and friends that return pointers to automatic
 	     storage.  */

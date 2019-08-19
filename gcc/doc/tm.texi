@@ -5314,12 +5314,6 @@ This hook is used by expand pass to emit insn to store @var{bounds}
 returned by function call into @var{slot}.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SETUP_INCOMING_VARARG_BOUNDS (cumulative_args_t @var{args_so_far}, machine_mode @var{mode}, tree @var{type}, int *@var{pretend_args_size}, int @var{second_time})
-Use it to store bounds for anonymous register arguments stored
-into the stack.  Arguments meaning is similar to
-@code{TARGET_SETUP_INCOMING_VARARGS}.
-@end deftypefn
-
 @node Trampolines
 @section Support for Nested Functions
 @cindex support for nested functions
@@ -5591,12 +5585,12 @@ macro, a reasonable default is used.
 
 @deftypefn {Target Hook} bool TARGET_LIBC_HAS_FUNCTION (enum function_class @var{fn_class})
 This hook determines whether a function from a class of functions
-@var{fn_class} is present at the runtime.
+@var{fn_class} is present in the target C library.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_LIBC_HAS_FAST_FUNCTION (int @var{fcode})
 This hook determines whether a function from a class of functions
-@var{fn_class} has a fast implementation.
+@code{(enum function_class)}@var{fcode} has a fast implementation.
 @end deftypefn
 
 @defmac NEXT_OBJC_RUNTIME

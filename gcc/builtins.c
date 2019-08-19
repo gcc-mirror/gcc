@@ -3652,6 +3652,20 @@ compute_objsize (tree dest, int ostype)
   if (!ostype)
     return NULL_TREE;
 
+  if (TREE_CODE (dest) == MEM_REF)
+    {
+      tree ref = TREE_OPERAND (dest, 0);
+      tree off = TREE_OPERAND (dest, 1);
+      if (tree size = compute_objsize (ref, ostype))
+	{
+	  if (tree_int_cst_lt (off, size))
+	    return fold_build2 (MINUS_EXPR, size_type_node, size, off);
+	  return integer_zero_node;
+	}
+
+      return NULL_TREE;
+    }
+
   if (TREE_CODE (dest) != ADDR_EXPR)
     return NULL_TREE;
 
@@ -5742,6 +5756,7 @@ expand_builtin_init_descriptor (tree exp)
   r_descr = expand_normal (t_descr);
   m_descr = gen_rtx_MEM (BLKmode, r_descr);
   MEM_NOTRAP_P (m_descr) = 1;
+  set_mem_align (m_descr, GET_MODE_ALIGNMENT (ptr_mode));
 
   r_func = expand_normal (t_func);
   r_chain = expand_normal (t_chain);
@@ -7222,7 +7237,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 		int ignore)
 {
   tree fndecl = get_callee_fndecl (exp);
-  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   machine_mode target_mode = TYPE_MODE (TREE_TYPE (exp));
   int flags;
 
@@ -7234,6 +7248,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
      redundant checks and be sure, that possible overflow will be detected
      by ASan.  */
 
+  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   if ((flag_sanitize & SANITIZE_ADDRESS) && asan_intercepted_p (fcode))
     return expand_call (exp, target, ignore);
 
@@ -11229,4 +11244,91 @@ target_char_cst_p (tree t, char *p)
 
   *p = (char)tree_to_uhwi (t);
   return true;
+}
+
+/* Return true if the builtin DECL is implemented in a standard library.
+   Otherwise returns false which doesn't guarantee it is not (thus the list of
+   handled builtins below may be incomplete).  */
+
+bool
+builtin_with_linkage_p (tree decl)
+{
+  if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
+    switch (DECL_FUNCTION_CODE (decl))
+    {
+      CASE_FLT_FN (BUILT_IN_ACOS):
+      CASE_FLT_FN (BUILT_IN_ACOSH):
+      CASE_FLT_FN (BUILT_IN_ASIN):
+      CASE_FLT_FN (BUILT_IN_ASINH):
+      CASE_FLT_FN (BUILT_IN_ATAN):
+      CASE_FLT_FN (BUILT_IN_ATANH):
+      CASE_FLT_FN (BUILT_IN_ATAN2):
+      CASE_FLT_FN (BUILT_IN_CBRT):
+      CASE_FLT_FN (BUILT_IN_CEIL):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_CEIL):
+      CASE_FLT_FN (BUILT_IN_COPYSIGN):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_COPYSIGN):
+      CASE_FLT_FN (BUILT_IN_COS):
+      CASE_FLT_FN (BUILT_IN_COSH):
+      CASE_FLT_FN (BUILT_IN_ERF):
+      CASE_FLT_FN (BUILT_IN_ERFC):
+      CASE_FLT_FN (BUILT_IN_EXP):
+      CASE_FLT_FN (BUILT_IN_EXP2):
+      CASE_FLT_FN (BUILT_IN_EXPM1):
+      CASE_FLT_FN (BUILT_IN_FABS):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_FABS):
+      CASE_FLT_FN (BUILT_IN_FDIM):
+      CASE_FLT_FN (BUILT_IN_FLOOR):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_FLOOR):
+      CASE_FLT_FN (BUILT_IN_FMA):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMA):
+      CASE_FLT_FN (BUILT_IN_FMAX):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMAX):
+      CASE_FLT_FN (BUILT_IN_FMIN):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMIN):
+      CASE_FLT_FN (BUILT_IN_FMOD):
+      CASE_FLT_FN (BUILT_IN_FREXP):
+      CASE_FLT_FN (BUILT_IN_HYPOT):
+      CASE_FLT_FN (BUILT_IN_ILOGB):
+      CASE_FLT_FN (BUILT_IN_LDEXP):
+      CASE_FLT_FN (BUILT_IN_LGAMMA):
+      CASE_FLT_FN (BUILT_IN_LLRINT):
+      CASE_FLT_FN (BUILT_IN_LLROUND):
+      CASE_FLT_FN (BUILT_IN_LOG):
+      CASE_FLT_FN (BUILT_IN_LOG10):
+      CASE_FLT_FN (BUILT_IN_LOG1P):
+      CASE_FLT_FN (BUILT_IN_LOG2):
+      CASE_FLT_FN (BUILT_IN_LOGB):
+      CASE_FLT_FN (BUILT_IN_LRINT):
+      CASE_FLT_FN (BUILT_IN_LROUND):
+      CASE_FLT_FN (BUILT_IN_MODF):
+      CASE_FLT_FN (BUILT_IN_NAN):
+      CASE_FLT_FN (BUILT_IN_NEARBYINT):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_NEARBYINT):
+      CASE_FLT_FN (BUILT_IN_NEXTAFTER):
+      CASE_FLT_FN (BUILT_IN_NEXTTOWARD):
+      CASE_FLT_FN (BUILT_IN_POW):
+      CASE_FLT_FN (BUILT_IN_REMAINDER):
+      CASE_FLT_FN (BUILT_IN_REMQUO):
+      CASE_FLT_FN (BUILT_IN_RINT):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_RINT):
+      CASE_FLT_FN (BUILT_IN_ROUND):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_ROUND):
+      CASE_FLT_FN (BUILT_IN_SCALBLN):
+      CASE_FLT_FN (BUILT_IN_SCALBN):
+      CASE_FLT_FN (BUILT_IN_SIN):
+      CASE_FLT_FN (BUILT_IN_SINH):
+      CASE_FLT_FN (BUILT_IN_SINCOS):
+      CASE_FLT_FN (BUILT_IN_SQRT):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_SQRT):
+      CASE_FLT_FN (BUILT_IN_TAN):
+      CASE_FLT_FN (BUILT_IN_TANH):
+      CASE_FLT_FN (BUILT_IN_TGAMMA):
+      CASE_FLT_FN (BUILT_IN_TRUNC):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_TRUNC):
+	return true;
+      default:
+	break;
+    }
+  return false;
 }

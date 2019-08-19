@@ -51,10 +51,10 @@
 
 2019-02-05  Nikhil Benesch  <nikhil.benesch@gmail.com>
 
-        PR go/89019
-        * go-gcc.cc (Gcc_backend::placeholder_struct_type): Mark
-        placeholder structs as requiring structural equality.
-        (Gcc_backend::set_placeholder_pointer_type): Propagate the
+	PR go/89019
+	* go-gcc.cc (Gcc_backend::placeholder_struct_type): Mark
+	placeholder structs as requiring structural equality.
+	(Gcc_backend::set_placeholder_pointer_type): Propagate the
 	canonical type from the desired pointer type to the placeholder
 	pointer type.
 
@@ -952,7 +952,7 @@
 2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* go-gcc.cc: Add required include files from gimple.h.
-	* go-lang.c: Likewise
+	* go-lang.c: Likewise.
 
 2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 

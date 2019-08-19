@@ -1833,7 +1833,7 @@ tree
 ix86_builtin_reciprocal (tree fndecl)
 {
   enum ix86_builtins fn_code
-    = (enum ix86_builtins) DECL_FUNCTION_CODE (fndecl);
+    = (enum ix86_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   switch (fn_code)
     {
       /* Vectorized version of sqrt to rsqrt conversion.  */
@@ -2407,8 +2407,8 @@ tree
 fold_builtin_cpu (tree fndecl, tree *args)
 {
   unsigned int i;
-  enum ix86_builtins fn_code = (enum ix86_builtins)
-				DECL_FUNCTION_CODE (fndecl);
+  enum ix86_builtins fn_code
+    = (enum ix86_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   tree param_string_cst = NULL;
 
   tree __processor_model_type = build_processor_model_struct ();

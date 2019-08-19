@@ -1,3 +1,323 @@
+2019-08-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
+
+2019-08-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91456
+	* include/bits/std_function.h (__check_func_return_type): Remove.
+	(function::_Callable): Use std::__is_invocable_impl instead of
+	__check_func_return_type.
+	* include/std/type_traits (__is_invocable_impl): Add another defaulted
+	template parameter. Define a separate partial specialization for
+	INVOKE and INVOKE<void>. For INVOKE<R> replace is_convertible check
+	with a check that models delayed temporary materialization.
+	* testsuite/20_util/function/91456.cc: New test.
+	* testsuite/20_util/is_invocable/91456.cc: New test.
+
+2019-08-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__is_nullptr_t): Add deprecated attribute.
+
+2019-08-14  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement C++20 p0879 - Constexpr for swap and swap related functions.
+	* include/std/version (__cpp_lib_constexpr_swap_algorithms): New macro.
+	* include/bits/algorithmfwd.h (__cpp_lib_constexpr_swap_algorithms):
+	New macro.
+	(iter_swap, make_heap, next_permutation, partial_sort_copy, pop_heap)
+	(prev_permutation, push_heap, reverse, rotate, sort_heap, swap)
+	(swap_ranges, nth_element, partial_sort, sort): Add constexpr.
+	* include/bits/move.h (swap): Add constexpr.
+	* include/bits/stl_algo.h (__move_median_to_first, __reverse, reverse)
+	(__gcd, __rotate, rotate, __partition, __heap_select)
+	(__partial_sort_copy, partial_sort_copy, __unguarded_partition)
+	(__unguarded_partition_pivot, __partial_sort, __introsort_loop, __sort)
+	(__introselect, __chunk_insertion_sort, next_permutation)
+	(prev_permutation, partition, partial_sort, nth_element, sort)
+	(__iter_swap::iter_swap, iter_swap, swap_ranges): Add constexpr.
+	* include/bits/stl_algobase.h (__iter_swap::iter_swap, iter_swap)
+	(swap_ranges): Add constexpr.
+	* include/bits/stl_heap.h (__push_heap, push_heap, __adjust_heap,
+	__pop_heap, pop_heap, __make_heap, make_heap, __sort_heap, sort_heap):
+	Add constexpr.
+	* include/std/type_traits (swap): Add constexpr.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Add constexpr.
+	* testsuite/25_algorithms/iter_swap/constexpr.cc: New test.
+	* testsuite/25_algorithms/make_heap/constexpr.cc: New test.
+	* testsuite/25_algorithms/next_permutation/constexpr.cc: New test.
+	* testsuite/25_algorithms/nth_element/constexpr.cc: New test.
+	* testsuite/25_algorithms/partial_sort/constexpr.cc: New test.
+	* testsuite/25_algorithms/partial_sort_copy/constexpr.cc: New test.
+	* testsuite/25_algorithms/partition/constexpr.cc: New test.
+	* testsuite/25_algorithms/pop_heap/constexpr.cc: New test.
+	* testsuite/25_algorithms/prev_permutation/constexpr.cc: New test.
+	* testsuite/25_algorithms/push_heap/constexpr.cc: New test.
+	* testsuite/25_algorithms/reverse/constexpr.cc: New test.
+	* testsuite/25_algorithms/rotate/constexpr.cc: New test.
+	* testsuite/25_algorithms/sort/constexpr.cc: New test.
+	* testsuite/25_algorithms/sort_heap/constexpr.cc: New test.
+	* testsuite/25_algorithms/swap/constexpr.cc: New test.
+	* testsuite/25_algorithms/swap_ranges/constexpr.cc: New test.
+
+2019-08-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90361
+	* src/c++17/string-inst.cc: Use _GLIBCXX_USE_CXX11_ABI=1 by default.
+
+	* include/std/tuple (__unpack_std_tuple): New variable template and
+	partial specializations.
+	(apply, make_from_tuple): Add noexcept-specifier.
+	* testsuite/20_util/tuple/apply/2.cc: New test.
+	* testsuite/20_util/tuple/make_from_tuple/2.cc: New test.
+
+2019-08-09  Corentin Gay  <gay@adacore.com>
+
+	* testsuite/ext/random/beta_distribution/operators/serialize.cc,
+	testsuite/ext/random/hypergeometric_distribution/operators/serialize.cc,
+	testsuite/ext/random/normal_mv_distribution/operators/serialize.cc,
+	testsuite/ext/random/triangular_distribution/operators/serialize.cc,
+	testsuite/ext/random/von_mises_distribution/operators/serialize.cc:
+	Add call to `VERIFY`.
+
+2019-08-09  Alexandre Oliva <oliva@adacore.com>
+
+	* include/ext/random
+	(normal_mv_distribution::param_type::param_type): New private
+	ctor taking a decomposed varcov matrix, for use by...
+	(operator>>): ... this, befriended.
+	* include/ext/random.tcc (operator>>): Use it.
+	(normal_mv_distribution::param_type::_M_init_lower): Adjust
+	member function name in exception message.
+
+2019-08-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	P0325R4 to_array from LFTS with updates
+	* include/experimental/array (to_array): Qualify call to __to_array.
+	* include/std/array (__cpp_lib_to_array, to_array): Define for C++20.
+	* include/std/version (__cpp_lib_to_array): Likewise.
+	* testsuite/23_containers/array/creation/1.cc: New test.
+	* testsuite/23_containers/array/creation/2.cc: New test.
+	* testsuite/23_containers/array/creation/3_neg.cc: New test.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Use zero for dg-error line number.
+
+2019-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	P1651R0 bind_front should not unwrap reference_wrapper
+	* include/std/functional (bind_front): Don't unwrap reference_wrapper.
+	* include/std/version (__cpp_lib_bind_front): Update value.
+	* testsuite/20_util/function_objects/bind_front/1.cc: Fix test for
+	feature test macro.
+	* testsuite/20_util/function_objects/bind_front/2.cc: New test.
+
+	* include/std/numbers [!__STRICT_ANSI__ && _GLIBCXX_USE_FLOAT128]
+	(e_v, log2e_v, log10e_v, pi_v, inv_pi_v, inv_sqrtpi_v, ln2_v, ln10_v)
+	(sqrt2_v, sqrt3_v, inv_sqrt3, egamma_v, phi_v): Add explicit
+	specializations for __float128.
+	* testsuite/26_numerics/numbers/float128.cc: New test.
+
+2019-08-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: doxygen.org is now
+	doxygen.nl.
+
+2019-08-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement C++20 p0202 - Add Constexpr Modifiers to Functions
+	in <algorithm> and <utility> Headers.
+	Implement C++20 p1023 - constexpr comparison operators for std::array.
+	* include/bits/algorithmfwd.h (all_of, any_of, binary_search, copy,
+	copy_backward, copy_if, copy_n, equal_range, fill, find_end,
+	find_if_not, includes, is_heap, is_heap_until, is_partitioned,
+	is_permutation, is_sorted, is_sorted_until, iter_swap, lower_bound,
+	none_of, partition_copy, partition_point, remove, remove_if,
+	remove_copy, remove_copy_if, replace_copy, replace_copy_if,
+	reverse_copy, rotate_copy, uunique, upper_bound, adjacent_find, count,
+	count_if, equal, find, find_first_of, find_if, for_each, generate,
+	generate_n, lexicographical_compare, merge, mismatch, replace,
+	replace_if, search, search_n, set_difference, set_intersection,
+	set_symmetric_difference, set_union, transform, unique_copy):
+	Mark constexpr.
+	* include/bits/cpp_type_traits.h (__miter_base): Mark constexpr.
+	* include/bits/predefined_ops.h (_Iter_less_val::operator(),
+	_Val_less_iter::operator(), _Iter_equal_to_iter::operator(),
+	_Iter_equal_to_val::operator(), _Iter_equals_val::operator()):
+	 Use const ref instead of ref arg;
+	(_Iter_less_val, __iter_less_val, _Val_less_iter, __val_less_iter,
+	__iter_equal_to_iter, __iter_equal_to_val, __iter_comp_val,
+	_Iter_comp_val, _Val_comp_iter, __val_comp_iter, __iter_equals_val,
+	_Iter_equals_iter, __iter_comp_iter, _Iter_pred, __pred_iter,
+	_Iter_comp_to_val, __iter_comp_val, _Iter_comp_to_iter,
+	__iter_comp_iter): Mark constexpr.
+	* include/bits/stl_algo.h (__find_if, __find_if_not, __find_if_not_n,
+	__search, __search_n_aux, __search_n, __find_end, find_end, all_of,
+	none_of, any_of, find_if_not, is_partitioned, partition_point,
+	__remove_copy_if, remove_copy, remove_copy_if, copy_if, __copy_n,
+	copy_n, partition_copy, __remove_if, remove, remove_if, __adjacent_find,
+	__unique, unique, __unique_copy, reverse_copy, rotate_copy,
+	__unguarded_linear_insert, __insertion_sort, __unguarded_insertion_sort,
+	__final_insertion_sort, lower_bound, __upper_bound, upper_bound,
+	__equal_range, equal_range, binary_search, __includes, includes,
+	__next_permutation, __prev_permutation, __replace_copy_if, replace_copy,
+	replace_copy_if, __count_if, is_sorted, __is_sorted_until,
+	is_sorted_until, __is_permutation, is_permutation, for_each, find,
+	find_if, find_first_of, adjacent_find, count, count_if, search,
+	search_n, transform, replace, replace_if, generate, generate_n,
+	unique_copy, __merge, merge, __set_union, set_union, __set_intersection,
+	set_intersection, __set_difference, set_difference,
+	__set_symmetric_difference, set_symmetric_difference):  Mark constexpr.
+	* include/bits/stl_algobase.h (__memmove, __memcmp): New maybe constexpr
+	wrappers around __builtin_memmove and __builtin_memcmp
+	respectively;
+	(__niter_base, __niter_wrap, __copy_m, __copy_move_a, __copy_move_a2,
+	copy, move, __copy_move_b, __copy_move_backward_a,
+	__copy_move_backward_a2, copy_backward, move_backward, __fill_a, fill,
+	__fill_n_a, fill_n, equal, __lc_rai::__newlast1, __lc_rai::__cnd2,
+	__lexicographical_compare_impl, __lexicographical_compare,
+	__lexicographical_compare<true>::__lc, __lexicographical_compare_aux,
+	__lower_bound, lower_bound, equal, __equal4, lexicographical_compare,
+	__mismatch, mismatch, __is_heap_until, __is_heap, is_heap_until,
+	is_heap): Mark constexpr.
+	* include/bits/stl_heap.h (__is_heap_until, __is_heap, is_heap_until,
+	is_heap): Mark constexpr.
+	* include/bits/stl_iterator.h (__niter_base, __miter_base): Mark constexpr.
+	* include/std/array: Make comparison ops constexpr.
+	* include/std/utility: Make exchange constexpr.
+	* include/std/version (__cpp_lib_constexpr_algorithms): New macro.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_neg.cc: Adjust.
+	* testsuite/20_util/exchange/constexpr.cc: New.
+	* testsuite/23_containers/array/comparison_operators/constexpr.cc: New.
+	* testsuite/25_algorithms/constexpr_macro.cc: New.
+	* testsuite/25_algorithms/adjacent_find/constexpr.cc: New.
+	* testsuite/25_algorithms/all_of/constexpr.cc: New.
+	* testsuite/25_algorithms/any_of/constexpr.cc: New.
+	* testsuite/25_algorithms/binary_search/constexpr.cc: New.
+	* testsuite/25_algorithms/copy/constexpr.cc: New.
+	* testsuite/25_algorithms/copy_backward/constexpr.cc: New.
+	* testsuite/25_algorithms/copy_if/constexpr.cc: New.
+	* testsuite/25_algorithms/copy_n/constexpr.cc: New.
+	* testsuite/25_algorithms/count/constexpr.cc: New.
+	* testsuite/25_algorithms/count_if/constexpr.cc: New.
+	* testsuite/25_algorithms/equal/constexpr.cc: New.
+	* testsuite/25_algorithms/equal_range/constexpr.cc: New.
+	* testsuite/25_algorithms/fill/constexpr.cc: New.
+	* testsuite/25_algorithms/fill_n/constexpr.cc: New.
+	* testsuite/25_algorithms/find/constexpr.cc: New.
+	* testsuite/25_algorithms/find_end/constexpr.cc: New.
+	* testsuite/25_algorithms/find_first_of/constexpr.cc: New.
+	* testsuite/25_algorithms/find_if/constexpr.cc: New.
+	* testsuite/25_algorithms/find_if_not/constexpr.cc: New.
+	* testsuite/25_algorithms/for_each/constexpr.cc: New.
+	* testsuite/25_algorithms/generate/constexpr.cc: New.
+	* testsuite/25_algorithms/generate_n/constexpr.cc: New.
+	* testsuite/25_algorithms/is_heap/constexpr.cc: New.
+	* testsuite/25_algorithms/is_heap_until/constexpr.cc: New.
+	* testsuite/25_algorithms/is_partitioned/constexpr.cc: New.
+	* testsuite/25_algorithms/is_permutation/constexpr.cc: New.
+	* testsuite/25_algorithms/is_sorted/constexpr.cc: New.
+	* testsuite/25_algorithms/is_sorted_until/constexpr.cc: New.
+	* testsuite/25_algorithms/lexicographical_compare/constexpr.cc: New.
+	* testsuite/25_algorithms/lower_bound/constexpr.cc: New.
+	* testsuite/25_algorithms/merge/constexpr.cc: New.
+	* testsuite/25_algorithms/mismatch/constexpr.cc: New.
+	* testsuite/25_algorithms/none_of/constexpr.cc: New.
+	* testsuite/25_algorithms/partition_copy/constexpr.cc: New.
+	* testsuite/25_algorithms/partition_point/constexpr.cc: New.
+	* testsuite/25_algorithms/remove/constexpr.cc: New.
+	* testsuite/25_algorithms/remove_copy/constexpr.cc: New.
+	* testsuite/25_algorithms/remove_copy_if/constexpr.cc: New.
+	* testsuite/25_algorithms/remove_if/constexpr.cc: New.
+	* testsuite/25_algorithms/replace_copy/constexpr.cc: New.
+	* testsuite/25_algorithms/replace_copy_if/constexpr.cc: New.
+	* testsuite/25_algorithms/replace_if/constexpr.cc: New.
+	* testsuite/25_algorithms/reverse_copy/constexpr.cc: New.
+	* testsuite/25_algorithms/rotate_copy/constexpr.cc: New.
+	* testsuite/25_algorithms/search/constexpr.cc: New.
+	* testsuite/25_algorithms/search_n/constexpr.cc: New.
+	* testsuite/25_algorithms/set_difference/constexpr.cc: New.
+	* testsuite/25_algorithms/set_intersection/constexpr.cc: New.
+	* testsuite/25_algorithms/set_symmetric_difference/constexpr.cc: New.
+	* testsuite/25_algorithms/set_union/constexpr.cc: New.
+	* testsuite/25_algorithms/transform/constexpr.cc: New.
+	* testsuite/25_algorithms/unique/constexpr.cc: New.
+	* testsuite/25_algorithms/unique_copy/constexpr.cc: New.
+	* testsuite/25_algorithms/upper_bound/constexpr.cc: New.
+
+2019-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory (make_obj_using_allocator): Qualify call to
+	uses_allocator_construction_args.
+
+	P0631R4 Math Constants
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Include new header.
+	* include/std/numbers: New header.
+	* include/std/version (__cpp_lib_math_constants): Define.
+	* testsuite/26_numerics/numbers/1.cc: New test.
+	* testsuite/26_numerics/numbers/2.cc: New test.
+	* testsuite/26_numerics/numbers/3.cc: New test.
+	* testsuite/26_numerics/numbers/nonfloat_neg.cc: New test.
+
+	* include/std/bit: Add Doxygen comments.
+
+	PR libstdc++/91308
+	* include/bits/unique_ptr.h (unique_ptr::__safe_conversion_up): Remove
+	constraints on deleter that should only apply to the constructor.
+	(unique_ptr<T[], D>::__safe_conversion_up): Likewise.
+	(unique_ptr<T[], D>::unique_ptr(unique_ptr<U, D>&&)): Restore
+	constraints on deleter here.
+	* testsuite/20_util/unique_ptr/assign/91308.cc: New test.
+
+2019-07-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/51333
+	* libsupc++/cxxabi.h (__gnu_cxx::recursive_init_error): Do not define
+	constructor inline.
+	* libsupc++/guard_error.cc (__gnu_cxx::recursive_init_error): Define
+	constructor.
+	* testsuite/18_support/51333.cc: New test.
+
+2019-07-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Fix broken reference
+	to the Doxygen manual. Avoid a "here" link on the way.
+	Fix another broken link to Doxygen docblocks.
+
+2019-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bit (__cpp_lib_endian): Define.
+	* include/std/version (__cpp_lib_endian): Define.
+	* testsuite/26_numerics/endian/2.cc: New.
+	* testsuite/26_numerics/endian/3.cc: New.
+	* testsuite/26_numerics/endian/4.cc: New.
+
+2019-07-26  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/util/testsuite_iterators.h
+	(bidirectional_iterator_wrapper): Fix type comment.
+	(random_access_iterator_wrapper): Likewise.
+
+2019-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bit (endian): Move definition here as per P1612R1.
+	* include/std/type_traits (endian): Remove definition from here.
+	* testsuite/20_util/endian/1.cc: Rename to ...
+	* testsuite/26_numerics/endian/1.cc: ... here. Adjust header.
+
+2019-07-25  Martin Liska  <mliska@suse.cz>
+	    Dominik Infuhr  <dominik.infuehr@theobroma-systems.com>
+
+	PR c++/23383
+	* testsuite/ext/bitmap_allocator/check_delete.cc: Add
+	-fno-allocation-dce.
+	* testsuite/ext/bitmap_allocator/check_new.cc: Likewise.
+	* testsuite/ext/new_allocator/check_delete.cc: Likewise.
+	* testsuite/ext/new_allocator/check_new.cc: Likewise.
+
 2019-07-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/26_numerics/bit/bitops.count/*: Rename to ...

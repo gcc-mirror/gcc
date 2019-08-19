@@ -21,7 +21,9 @@
 
 
 NORET (nop)
+#if !defined (__ARC600__) && !defined (__ARC601__)
 NORET (rtie)
+#endif
 
 #ifdef __A7__
  NORET (sync)

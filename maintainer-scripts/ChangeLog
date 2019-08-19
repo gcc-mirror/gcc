@@ -1,3 +1,8 @@
+2019-08-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* update_web_docs_svn: Proceed even if the invocation of
+	sphinx fails.
+
 2019-05-04  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* crontab: Snapshots from trunk are now GCC 10 related.

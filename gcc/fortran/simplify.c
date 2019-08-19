@@ -211,26 +211,6 @@ gfc_convert_mpz_to_signed (mpz_t x, int bitsize)
 }
 
 
-/* In-place convert BOZ to REAL of the specified kind.  */
-
-static gfc_expr *
-convert_boz (gfc_expr *x, int kind)
-{
-  if (x && x->ts.type == BT_INTEGER && x->is_boz)
-    {
-      gfc_typespec ts;
-      gfc_clear_ts (&ts);
-      ts.type = BT_REAL;
-      ts.kind = kind;
-
-      if (!gfc_convert_boz (x, &ts))
-	return &gfc_bad_expr;
-    }
-
-  return x;
-}
-
-
 /* Test that the expression is a constant array, simplifying if
    we are dealing with a parameter array.  */
 
@@ -1660,12 +1640,6 @@ simplify_cmplx (const char *name, gfc_expr *x, gfc_expr *y, int kind)
 {
   gfc_expr *result;
 
-  if (convert_boz (x, kind) == &gfc_bad_expr)
-    return &gfc_bad_expr;
-
-  if (convert_boz (y, kind) == &gfc_bad_expr)
-    return &gfc_bad_expr;
-
   if (x->expr_type != EXPR_CONSTANT
       || (y != NULL && y->expr_type != EXPR_CONSTANT))
     return NULL;
@@ -2218,9 +2192,6 @@ gfc_simplify_dble (gfc_expr *e)
 
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
-
-  if (convert_boz (e, gfc_default_double_kind) == &gfc_bad_expr)
-    return &gfc_bad_expr;
 
   result = gfc_convert_constant (e, BT_REAL, gfc_default_double_kind);
   if (result == &gfc_bad_expr)
@@ -2965,15 +2936,7 @@ gfc_simplify_float (gfc_expr *a)
   if (a->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  if (a->is_boz)
-    {
-      if (convert_boz (a, gfc_default_real_kind) == &gfc_bad_expr)
-	return &gfc_bad_expr;
-
-      result = gfc_copy_expr (a);
-    }
-  else
-    result = gfc_int2real (a, gfc_default_real_kind);
+  result = gfc_int2real (a, gfc_default_real_kind);
 
   return range_check (result, "FLOAT");
 }
@@ -3609,6 +3572,15 @@ static gfc_expr *
 simplify_intconv (gfc_expr *e, int kind, const char *name)
 {
   gfc_expr *result = NULL;
+
+  /* Convert BOZ to integer, and return without range checking.  */
+  if (e->ts.type == BT_BOZ)
+    {
+      if (!gfc_boz2int (e, kind))
+	return NULL;
+      result = gfc_copy_expr (e);
+      return result;
+    }
 
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -6497,6 +6469,21 @@ gfc_simplify_real (gfc_expr *e, gfc_expr *k)
   gfc_expr *result = NULL;
   int kind;
 
+  /* Convert BOZ to real, and return without range checking.  */
+  if (e->ts.type == BT_BOZ)
+    {
+      /* Determine kind for conversion of the BOZ.  */
+      if (k)
+	gfc_extract_int (k, &kind);
+      else
+	kind = gfc_default_real_kind;
+
+      if (!gfc_boz2real (e, kind))
+	return NULL;
+      result = gfc_copy_expr (e);
+      return result;
+    }
+
   if (e->ts.type == BT_COMPLEX)
     kind = get_kind (BT_REAL, k, "REAL", e->ts.kind);
   else
@@ -6507,9 +6494,6 @@ gfc_simplify_real (gfc_expr *e, gfc_expr *k)
 
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
-
-  if (convert_boz (e, kind) == &gfc_bad_expr)
-    return &gfc_bad_expr;
 
   result = gfc_convert_constant (e, BT_REAL, kind);
   if (result == &gfc_bad_expr)

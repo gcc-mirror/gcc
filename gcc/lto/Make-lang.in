@@ -49,7 +49,7 @@ lto.rest.encap:
 lto.tags:
 lto.install-common: installdirs
 	$(INSTALL_PROGRAM) $(LTO_DUMP_EXE) \
-	$(DESTDIR)/$(bindir)/$(LTO_DUMP_INSTALL_NAME)$(exeext)
+	$(DESTDIR)$(bindir)/$(LTO_DUMP_INSTALL_NAME)$(exeext)
 
 lto.install-man:
 lto.install-info:

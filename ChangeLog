@@ -1,3 +1,16 @@
+2019-08-19  Tom Tromey  <tom@tromey.com>
+
+	* configure: Rebuild.
+	* configure.ac: Add --with-static-standard-libraries.
+
+2019-08-16  Alexandre Oliva <oliva@gnu.org>
+
+	* MAINTAINERS: aoliva from @redhat.com to @gcc.gnu.org.
+
+2019-08-13  Mark Eggleston  <mark.eggleston@codethink.co.uk>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2019-07-08  Kito Cheng  <kito.cheng@sifive.com>
 
 	* MAINTAINERS (Write After Approval): Remove myself, already listed in

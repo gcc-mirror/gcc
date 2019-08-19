@@ -706,7 +706,9 @@ inquire_via_filename (st_parameter_inquire *iqp)
     }
 
   if ((cf & IOPARM_INQUIRE_HAS_RECL_OUT) != 0)
-    *iqp->recl_out = 0;
+    /* F2018 (N2137) 12.10.2.26: If there is no connection, recl is
+       assigned the value -1.  */
+    *iqp->recl_out = -1;
 
   if ((cf & IOPARM_INQUIRE_HAS_NEXTREC) != 0)
     *iqp->nextrec = 0;

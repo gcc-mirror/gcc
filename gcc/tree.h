@@ -1517,10 +1517,11 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ(NODE) \
   (OMP_CLAUSE_CHECK (NODE))->omp_clause.gimple_reduction_init
 
-/* True if a LASTPRIVATE clause is for a C++ class IV on taskloop construct
-   (thus should be lastprivate on the outer taskloop and firstprivate on
-   task).  */
-#define OMP_CLAUSE_LASTPRIVATE_TASKLOOP_IV(NODE) \
+/* True if a LASTPRIVATE clause is for a C++ class IV on taskloop or
+   loop construct (thus should be lastprivate on the outer taskloop and
+   firstprivate on task for the taskloop construct and carefully handled
+   for loop construct).  */
+#define OMP_CLAUSE_LASTPRIVATE_LOOP_IV(NODE) \
   TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LASTPRIVATE))
 
 /* True if a LASTPRIVATE clause has CONDITIONAL: modifier.  */
@@ -1618,6 +1619,9 @@ class auto_suppress_location_wrappers
 
 #define OMP_CLAUSE_PROC_BIND_KIND(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_PROC_BIND)->omp_clause.subcode.proc_bind_kind)
+
+#define OMP_CLAUSE_DEVICE_TYPE_KIND(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_DEVICE_TYPE)->omp_clause.subcode.device_type_kind)
 
 #define OMP_CLAUSE_COLLAPSE_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_COLLAPSE), 0)
@@ -1948,7 +1952,10 @@ class auto_suppress_location_wrappers
    so they must be checked as well.  */
 
 #define TYPE_UID(NODE) (TYPE_CHECK (NODE)->type_common.uid)
+/* Type size in bits as a tree expression.  Need not be constant
+   and may be null.  */
 #define TYPE_SIZE(NODE) (TYPE_CHECK (NODE)->type_common.size)
+/* Likewise, type size in bytes.  */
 #define TYPE_SIZE_UNIT(NODE) (TYPE_CHECK (NODE)->type_common.size_unit)
 #define TYPE_POINTER_TO(NODE) (TYPE_CHECK (NODE)->type_common.pointer_to)
 #define TYPE_REFERENCE_TO(NODE) (TYPE_CHECK (NODE)->type_common.reference_to)
@@ -2476,7 +2483,7 @@ extern machine_mode vector_type_mode (const_tree);
 #define DECL_INITIAL(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.initial)
 
 /* Holds the size of the datum, in bits, as a tree expression.
-   Need not be constant.  */
+   Need not be constant and may be null.  */
 #define DECL_SIZE(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.size)
 /* Likewise for the size in bytes.  */
 #define DECL_SIZE_UNIT(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.size_unit)
@@ -2514,10 +2521,10 @@ extern machine_mode vector_type_mode (const_tree);
   (DECL_COMMON_CHECK (NODE)->decl_common.mode = (MODE))
 
 /* For FUNCTION_DECL, if it is built-in, this identifies which built-in
-   operation it is.  Note, however, that this field is overloaded, with
-   DECL_BUILT_IN_CLASS as the discriminant, so the latter must always be
-   checked before any access to the former.  */
-#define DECL_FUNCTION_CODE(NODE) \
+   operation it is.  This is only intended for low-level accesses;
+   normally DECL_FUNCTION_CODE, DECL_FE_FUNCTION_CODE or DECL_MD_FUNCTION
+   should be used instead.  */
+#define DECL_UNCHECKED_FUNCTION_CODE(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.function_code)
 
 /* Test if FCODE is a function code for an alloca operation.  */
@@ -2994,11 +3001,45 @@ extern void decl_fini_priority_insert (tree, priority_type);
 #define DECL_IS_MALLOC(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.malloc_flag)
 
+/* Macro for direct set and get of function_decl.decl_type.  */
+#define FUNCTION_DECL_DECL_TYPE(NODE) \
+  (NODE->function_decl.decl_type)
+
+/* Set decl_type of a DECL.  Set it to T when SET is true, or reset
+   it to NONE.  */
+
+static inline void
+set_function_decl_type (tree decl, function_decl_type t, bool set)
+{
+  if (set)
+    {
+      gcc_assert (FUNCTION_DECL_DECL_TYPE (decl) == NONE
+		  || FUNCTION_DECL_DECL_TYPE (decl) == t);
+      decl->function_decl.decl_type = t;
+    }
+  else if (FUNCTION_DECL_DECL_TYPE (decl) == t)
+    FUNCTION_DECL_DECL_TYPE (decl) = NONE;
+}
+
 /* Nonzero in a FUNCTION_DECL means this function should be treated as
    C++ operator new, meaning that it returns a pointer for which we
    should not use type based aliasing.  */
-#define DECL_IS_OPERATOR_NEW(NODE) \
-  (FUNCTION_DECL_CHECK (NODE)->function_decl.operator_new_flag)
+#define DECL_IS_OPERATOR_NEW_P(NODE) \
+  (FUNCTION_DECL_CHECK (NODE)->function_decl.decl_type == OPERATOR_NEW)
+
+#define DECL_IS_REPLACEABLE_OPERATOR_NEW_P(NODE) \
+  (DECL_IS_OPERATOR_NEW_P (NODE) && DECL_IS_MALLOC (NODE))
+
+#define DECL_SET_IS_OPERATOR_NEW(NODE, VAL) \
+  set_function_decl_type (FUNCTION_DECL_CHECK (NODE), OPERATOR_NEW, VAL)
+
+/* Nonzero in a FUNCTION_DECL means this function should be treated as
+   C++ operator delete.  */
+#define DECL_IS_OPERATOR_DELETE_P(NODE) \
+  (FUNCTION_DECL_CHECK (NODE)->function_decl.decl_type == OPERATOR_DELETE)
+
+#define DECL_SET_IS_OPERATOR_DELETE(NODE, VAL) \
+  set_function_decl_type (FUNCTION_DECL_CHECK (NODE), OPERATOR_DELETE, VAL)
 
 /* Nonzero in a FUNCTION_DECL means this function may return more
    than once.  */
@@ -3105,10 +3146,9 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
 #define DECL_STRUCT_FUNCTION(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.f)
 
-
 /* For a builtin function, identify which part of the compiler defined it.  */
 #define DECL_BUILT_IN_CLASS(NODE) \
-   (FUNCTION_DECL_CHECK (NODE)->function_decl.built_in_class)
+   ((built_in_class) FUNCTION_DECL_CHECK (NODE)->function_decl.built_in_class)
 
 /* In FUNCTION_DECL, a chain of ..._DECL nodes.  */
 #define DECL_ARGUMENTS(NODE) \
@@ -3143,8 +3183,11 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
    (FUNCTION_DECL_CHECK (NODE)->decl_with_vis.cxx_destructor)
 
 /* In FUNCTION_DECL, this is set if this function is a lambda function.  */
-#define DECL_LAMBDA_FUNCTION(NODE) \
-  (FUNCTION_DECL_CHECK (NODE)->function_decl.lambda_function)
+#define DECL_LAMBDA_FUNCTION_P(NODE) \
+  (FUNCTION_DECL_CHECK (NODE)->function_decl.decl_type == LAMBDA_FUNCTION)
+
+#define DECL_SET_LAMBDA_FUNCTION(NODE, VAL) \
+  set_function_decl_type (FUNCTION_DECL_CHECK (NODE), LAMBDA_FUNCTION, VAL)
 
 /* In FUNCTION_DECL that represent an virtual method this is set when
    the method is final.  */
@@ -3844,6 +3887,61 @@ valid_vector_subparts_p (poly_uint64 subparts)
   return true;
 }
 
+/* Return the built-in function that DECL represents, given that it is known
+   to be a FUNCTION_DECL with built-in class BUILT_IN_NORMAL.  */
+inline built_in_function
+DECL_FUNCTION_CODE (const_tree decl)
+{
+  const tree_function_decl &fndecl = FUNCTION_DECL_CHECK (decl)->function_decl;
+  gcc_checking_assert (fndecl.built_in_class == BUILT_IN_NORMAL);
+  return (built_in_function) fndecl.function_code;
+}
+
+/* Return the target-specific built-in function that DECL represents,
+   given that it is known to be a FUNCTION_DECL with built-in class
+   BUILT_IN_MD.  */
+inline int
+DECL_MD_FUNCTION_CODE (const_tree decl)
+{
+  const tree_function_decl &fndecl = FUNCTION_DECL_CHECK (decl)->function_decl;
+  gcc_checking_assert (fndecl.built_in_class == BUILT_IN_MD);
+  return fndecl.function_code;
+}
+
+/* Return the frontend-specific built-in function that DECL represents,
+   given that it is known to be a FUNCTION_DECL with built-in class
+   BUILT_IN_FRONTEND.  */
+inline int
+DECL_FE_FUNCTION_CODE (const_tree decl)
+{
+  const tree_function_decl &fndecl = FUNCTION_DECL_CHECK (decl)->function_decl;
+  gcc_checking_assert (fndecl.built_in_class == BUILT_IN_FRONTEND);
+  return fndecl.function_code;
+}
+
+/* Record that FUNCTION_DECL DECL represents built-in function FCODE of
+   class FCLASS.  */
+inline void
+set_decl_built_in_function (tree decl, built_in_class fclass,
+			    unsigned int fcode)
+{
+  tree_function_decl &fndecl = FUNCTION_DECL_CHECK (decl)->function_decl;
+  fndecl.built_in_class = fclass;
+  fndecl.function_code = fcode;
+}
+
+/* Record that FUNCTION_DECL NEWDECL represents the same built-in function
+   as OLDDECL (or none, if OLDDECL doesn't represent a built-in function).  */
+inline void
+copy_decl_built_in_function (tree newdecl, const_tree olddecl)
+{
+  tree_function_decl &newfndecl = FUNCTION_DECL_CHECK (newdecl)->function_decl;
+  const tree_function_decl &oldfndecl
+    = FUNCTION_DECL_CHECK (olddecl)->function_decl;
+  newfndecl.built_in_class = oldfndecl.built_in_class;
+  newfndecl.function_code = oldfndecl.function_code;
+}
+
 /* In NON_LVALUE_EXPR and VIEW_CONVERT_EXPR, set when this node is merely a
    wrapper added to express a location_t on behalf of the node's child
    (e.g. by maybe_wrap_with_location).  */
@@ -4273,6 +4371,7 @@ extern tree build_vector_from_val (tree, tree);
 extern tree build_uniform_cst (tree, tree);
 extern tree build_vec_series (tree, tree, tree);
 extern tree build_index_vector (tree, poly_uint64, poly_uint64);
+extern tree build_vector_a_then_b (tree, unsigned int, tree, tree);
 extern void recompute_constructor_flags (tree);
 extern void verify_constructor_flags (tree);
 extern tree build_constructor (tree, vec<constructor_elt, va_gc> * CXX_MEM_STAT_INFO);
@@ -4585,6 +4684,12 @@ extern tree first_field (const_tree);
 
 extern bool initializer_zerop (const_tree, bool * = NULL);
 extern bool initializer_each_zero_or_onep (const_tree);
+
+/* Analogous to initializer_zerop but also examines the type for
+   which the initializer is being used.  Unlike initializer_zerop,
+   considers empty strings to be zero initializers for arrays and
+   non-zero for pointers.  */
+extern bool type_initializer_zero_p (tree, tree);
 
 extern wide_int vector_cst_int_elt (const_tree, unsigned int);
 extern tree vector_cst_elt (const_tree, unsigned int);
@@ -6029,9 +6134,10 @@ fndecl_built_in_p (const_tree node, built_in_class klass)
    of class KLASS with name equal to NAME.  */
 
 inline bool
-fndecl_built_in_p (const_tree node, int name, built_in_class klass)
+fndecl_built_in_p (const_tree node, unsigned int name, built_in_class klass)
 {
-  return (fndecl_built_in_p (node, klass) && DECL_FUNCTION_CODE (node) == name);
+  return (fndecl_built_in_p (node, klass)
+	  && DECL_UNCHECKED_FUNCTION_CODE (node) == name);
 }
 
 /* Return true if a FUNCTION_DECL NODE is a GCC built-in function

@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fdec-structure" }
+! { dg-options "-fdec-structure -fallow-invalid-boz" }
 !
 ! Test old-style CLIST initializers in STRUCTURE.
 !
@@ -21,7 +21,7 @@ structure /s8/
   integer   o(as) /as*9/    ! ok, parameter array spec
   integer   p(2,2) /1,2,3,4/! ok
   real      q(3) /1_2,3.5,2.4E-12_8/ ! ok, with some implicit conversions
-  integer :: canary = z'3D3D3D3D'
+  integer :: canary = z'3D3D3D3D'    ! { dg-warning "BOZ literal constant" }
 end structure
 
 record /s8/ r8
@@ -41,6 +41,6 @@ if ( r8.o(1) /= 9 .or. r8.o(2) /= 9 .or. r8.o(3) /= 9 ) call aborts ("r8.o")
 if (     r8.p(1,1) /= 1 .or. r8.p(2,1) /= 2 .or. r8.p(1,2) /= 3 &
     .or. r8.p(2,2) /= 4) &
   call aborts ("r8.p")
-if ( r8.canary /= z'3D3D3D3D' ) call aborts ("r8.canary")
+if ( r8.canary /= int(z'3D3D3D3D') ) call aborts ("r8.canary")
 
 end

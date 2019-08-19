@@ -3376,7 +3376,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (cfn != CFN_LAST)
 	fndecl = targetm.vectorize.builtin_vectorized_function
 	  (cfn, vectype_out, vectype_in);
-      else if (callee)
+      else if (callee && fndecl_built_in_p (callee, BUILT_IN_MD))
 	fndecl = targetm.vectorize.builtin_md_vectorized_function
 	  (callee, vectype_out, vectype_in);
     }
@@ -9510,8 +9510,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		    new_stmt = gimple_build_assign (vec_dest, data_ref);
 		    new_temp = make_ssa_name (vec_dest, new_stmt);
 		    gimple_assign_set_lhs (new_stmt, new_temp);
-		    gimple_set_vdef (new_stmt, gimple_vdef (stmt_info->stmt));
-		    gimple_set_vuse (new_stmt, gimple_vuse (stmt_info->stmt));
+		    gimple_move_vops (new_stmt, stmt_info->stmt);
 		    vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
 		    msq = new_temp;
 

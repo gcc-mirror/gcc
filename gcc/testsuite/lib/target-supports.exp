@@ -364,6 +364,18 @@ proc check_weak_override_available { } {
     return [check_weak_available]
 }
 
+# The noinit attribute is only supported by some targets.
+# This proc returns 1 if it's supported, 0 if it's not.
+
+proc check_effective_target_noinit { } {
+    if { [istarget arm*-*-eabi]
+	 || [istarget msp430-*-*] } {
+	return 1
+    }
+
+    return 0
+}
+
 ###############################
 # proc check_visibility_available { what_kind }
 ###############################
@@ -6294,9 +6306,18 @@ proc check_effective_target_vect_aligned_arrays { } {
 
 proc check_effective_target_natural_alignment_32 { } {
     # FIXME: 32bit powerpc: guaranteed only if MASK_ALIGN_NATURAL/POWER.
+    # FIXME: m68k has -malign-int
     return [check_cached_effective_target_indexed natural_alignment_32 {
       if { ([istarget *-*-darwin*] && [is-effective-target lp64])
-	    || [istarget avr-*-*] } {
+	   || [istarget avr-*-*]
+	   || [istarget m68k-*-linux*]
+	   || [istarget pru-*-*]
+	   || [istarget stormy16-*-*]
+	   || [istarget rl78-*-*]
+	   || [istarget pdp11-*-*]
+	   || [istarget msp430-*-*]
+	   || [istarget m32c-*-*]
+	   || [istarget cris-*-*] } {
 	   return 0
 	 } else {
 	   return 1
@@ -6311,8 +6332,9 @@ proc check_effective_target_natural_alignment_32 { } {
 
 proc check_effective_target_natural_alignment_64 { } {
     return [check_cached_effective_target_indexed natural_alignment_64 {
-      expr { ([is-effective-target lp64] && ![istarget *-*-darwin*])
-	      || [istarget spu-*-*] }
+      expr { [is-effective-target natural_alignment_32]
+             && (([is-effective-target lp64] && ![istarget *-*-darwin*])
+		 || [istarget spu-*-*]) }
     }]
 }
 
@@ -9461,6 +9483,16 @@ proc check_effective_target_arm_v8_3a_complex_neon_hw { } {
           return (results[0] == 8 && results[1] == 24) ? 1 : 0;
         }
     } [add_options_for_arm_v8_3a_complex_neon ""]]
+}
+
+# Return 1 if the assembler supports assembling the Armv8.3 pointer authentication B key directive
+proc check_effective_target_arm_v8_3a_bkey_directive { } {
+	return [check_no_compiler_messages cet object {
+		int main(void) {
+			asm (".cfi_b_key_frame");
+			return 0;
+		}
+	}]
 }
 
 # Returns 1 if the target is using glibc, 0 otherwise.

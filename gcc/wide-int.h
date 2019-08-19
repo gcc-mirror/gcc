@@ -730,6 +730,7 @@ public:
   /* Public accessors for the interior of a wide int.  */
   HOST_WIDE_INT sign_mask () const;
   HOST_WIDE_INT elt (unsigned int) const;
+  HOST_WIDE_INT sext_elt (unsigned int) const;
   unsigned HOST_WIDE_INT ulow () const;
   unsigned HOST_WIDE_INT uhigh () const;
   HOST_WIDE_INT slow () const;
@@ -907,6 +908,23 @@ generic_wide_int <storage>::elt (unsigned int i) const
     return sign_mask ();
   else
     return this->get_val ()[i];
+}
+
+/* Like elt, but sign-extend beyond the upper bit, instead of returning
+   the raw encoding.  */
+template <typename storage>
+inline HOST_WIDE_INT
+generic_wide_int <storage>::sext_elt (unsigned int i) const
+{
+  HOST_WIDE_INT elt_i = elt (i);
+  if (!is_sign_extended)
+    {
+      unsigned int precision = this->get_precision ();
+      unsigned int lsb = i * HOST_BITS_PER_WIDE_INT;
+      if (precision - lsb < HOST_BITS_PER_WIDE_INT)
+	elt_i = sext_hwi (elt_i, precision - lsb);
+    }
+  return elt_i;
 }
 
 template <typename storage>

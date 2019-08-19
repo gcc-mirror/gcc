@@ -102,7 +102,7 @@ tree gfor_fndecl_error_stop_string;
 tree gfor_fndecl_runtime_error;
 tree gfor_fndecl_runtime_error_at;
 tree gfor_fndecl_runtime_warning_at;
-tree gfor_fndecl_os_error;
+tree gfor_fndecl_os_error_at;
 tree gfor_fndecl_generate_error;
 tree gfor_fndecl_set_args;
 tree gfor_fndecl_set_fpe;
@@ -345,39 +345,45 @@ gfc_get_label_decl (gfc_st_label * lp)
     }
 }
 
+/* Return the name of an identifier.  */
+
+static const char *
+sym_identifier (gfc_symbol *sym)
+{
+  if (sym->attr.is_main_program && strcmp (sym->name, "main") == 0)
+    return "MAIN__";
+  else
+    return sym->name;
+}
 
 /* Convert a gfc_symbol to an identifier of the same name.  */
 
 static tree
 gfc_sym_identifier (gfc_symbol * sym)
 {
-  if (sym->attr.is_main_program && strcmp (sym->name, "main") == 0)
-    return (get_identifier ("MAIN__"));
-  else
-    return (get_identifier (sym->name));
+  return get_identifier (sym_identifier (sym));
 }
 
+/* Construct mangled name from symbol name.   */
 
-/* Construct mangled name from symbol name.  */
-
-static tree
-gfc_sym_mangled_identifier (gfc_symbol * sym)
+static const char *
+mangled_identifier (gfc_symbol *sym)
 {
-  char name[GFC_MAX_MANGLED_SYMBOL_LEN + 1];
-
+  static char name[GFC_MAX_MANGLED_SYMBOL_LEN + 1];
   /* Prevent the mangling of identifiers that have an assigned
      binding label (mainly those that are bind(c)).  */
+
   if (sym->attr.is_bind_c == 1 && sym->binding_label)
-    return get_identifier (sym->binding_label);
+    return sym->binding_label;
 
   if (!sym->fn_result_spec)
     {
       if (sym->module == NULL)
-	return gfc_sym_identifier (sym);
+	return sym_identifier (sym);
       else
 	{
 	  snprintf (name, sizeof name, "__%s_MOD_%s", sym->module, sym->name);
-	  return get_identifier (name);
+	  return name;
 	}
     }
   else
@@ -392,17 +398,40 @@ gfc_sym_mangled_identifier (gfc_symbol * sym)
 		    sym->ns->proc_name->module,
 		    sym->ns->proc_name->name,
 		    sym->name);
-	  return get_identifier (name);
+	  return name;
 	}
       else
 	{
 	  snprintf (name, sizeof name, "__%s_PROC_%s",
 		    sym->ns->proc_name->name, sym->name);
-	  return get_identifier (name);
+	  return name;
 	}
     }
 }
 
+/* Get mangled identifier, adding the symbol to the global table if
+   it is not yet already there.  */
+
+static tree
+gfc_sym_mangled_identifier (gfc_symbol * sym)
+{
+  tree result;
+  gfc_gsymbol *gsym;
+  const char *name;
+
+  name = mangled_identifier (sym);
+  result = get_identifier (name);
+
+  gsym = gfc_find_gsymbol (gfc_gsym_root, name);
+  if (gsym == NULL)
+    {
+      gsym = gfc_get_gsymbol (name, false);
+      gsym->ns = sym->ns;
+      gsym->sym_name = sym->name;
+    }
+
+  return result;
+}
 
 /* Construct mangled function name from symbol name.  */
 
@@ -724,6 +753,16 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 	  || sym->attr.allocatable)
       && !DECL_ARTIFICIAL (decl))
     {
+      gfc_warning (OPT_Wsurprising,
+		   "Array %qs at %L is larger than limit set by"
+		   " %<-fmax-stack-var-size=%>, moved from stack to static"
+		   " storage. This makes the procedure unsafe when called"
+		   " recursively, or concurrently from multiple threads."
+		   " Consider using %<-frecursive%>, or increase the"
+		   " %<-fmax-stack-var-size=%> limit, or change the code to"
+		   " use an ALLOCATABLE array.",
+		   sym->name, &sym->declared_at);
+
       TREE_STATIC (decl) = 1;
 
       /* Because the size of this variable isn't known until now, we may have
@@ -1913,6 +1952,22 @@ get_proc_pointer_decl (gfc_symbol *sym)
 {
   tree decl;
   tree attributes;
+
+  if (sym->module || sym->fn_result_spec)
+    {
+      const char *name;
+      gfc_gsymbol *gsym;
+
+      name = mangled_identifier (sym);
+      gsym = gfc_find_gsymbol (gfc_gsym_root, name);
+      if (gsym != NULL)
+	{
+	  gfc_symbol *s;
+	  gfc_find_symbol (sym->name, gsym->ns, 0, &s);
+	  if (s && s->backend_decl)
+	    return s->backend_decl;
+	}
+    }
 
   decl = sym->backend_decl;
   if (decl)
@@ -3624,11 +3679,11 @@ gfc_build_builtin_function_decls (void)
 	void_type_node, 3, pvoid_type_node, integer_type_node,
 	pchar_type_node);
 
-  gfor_fndecl_os_error = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("os_error")), ".R",
-	void_type_node, 1, pchar_type_node);
-  /* The runtime_error function does not return.  */
-  TREE_THIS_VOLATILE (gfor_fndecl_os_error) = 1;
+  gfor_fndecl_os_error_at = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("os_error_at")), ".RR",
+	void_type_node, -2, pchar_type_node, pchar_type_node);
+  /* The os_error_at function does not return.  */
+  TREE_THIS_VOLATILE (gfor_fndecl_os_error_at) = 1;
 
   gfor_fndecl_set_args = gfc_build_library_function_decl (
 	get_identifier (PREFIX("set_args")),
@@ -6403,6 +6458,20 @@ gfc_generate_return (void)
 	  result = fold_build2_loc (input_location, MODIFY_EXPR,
 				    TREE_TYPE (result), DECL_RESULT (fndecl),
 				    result);
+	}
+      else
+	{
+	  /* If the function does not have a result variable, result is
+	     NULL_TREE, and a 'return' is generated without a variable.
+	     The following generates a 'return __result_XXX' where XXX is
+	     the function name.  */
+	  if (sym == sym->result && sym->attr.function)
+	    {
+	      result = gfc_get_fake_result_decl (sym, 0);
+	      result = fold_build2_loc (input_location, MODIFY_EXPR,
+					TREE_TYPE (result),
+					DECL_RESULT (fndecl), result);
+	    }
 	}
     }
 

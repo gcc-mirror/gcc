@@ -199,6 +199,9 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_SVE2_SHA3	(1ULL << 31)
 #define AARCH64_FL_SVE2_BITPERM	(1ULL << 32)
 
+/* Transactional Memory Extension.  */
+#define AARCH64_FL_TME	      (1ULL << 33)  /* Has TME instructions.  */
+
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
 
@@ -243,6 +246,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_F16FML	   (aarch64_isa_flags & AARCH64_FL_F16FML)
 #define AARCH64_ISA_RCPC8_4	   (aarch64_isa_flags & AARCH64_FL_RCPC8_4)
 #define AARCH64_ISA_V8_5	   (aarch64_isa_flags & AARCH64_FL_V8_5)
+#define AARCH64_ISA_TME		   (aarch64_isa_flags & AARCH64_FL_TME)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
@@ -286,6 +290,9 @@ extern unsigned aarch64_architecture_version;
 
 /* Armv8.3-a Complex number extension to AdvSIMD extensions.  */
 #define TARGET_COMPLEX (TARGET_SIMD && TARGET_ARMV8_3)
+
+/* TME instructions are enabled.  */
+#define TARGET_TME (AARCH64_ISA_TME)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */
@@ -556,6 +563,9 @@ extern unsigned aarch64_architecture_version;
 #define FP_LO_REGNUM_P(REGNO)            \
   (((unsigned) (REGNO - V0_REGNUM)) <= (V15_REGNUM - V0_REGNUM))
 
+#define FP_LO8_REGNUM_P(REGNO)            \
+  (((unsigned) (REGNO - V0_REGNUM)) <= (V7_REGNUM - V0_REGNUM))
+
 #define PR_REGNUM_P(REGNO)\
   (((unsigned) (REGNO - P0_REGNUM)) <= (P15_REGNUM - P0_REGNUM))
 
@@ -574,6 +584,7 @@ enum reg_class
   GENERAL_REGS,
   STACK_REG,
   POINTER_REGS,
+  FP_LO8_REGS,
   FP_LO_REGS,
   FP_REGS,
   POINTER_AND_FP_REGS,
@@ -593,6 +604,7 @@ enum reg_class
   "GENERAL_REGS",				\
   "STACK_REG",					\
   "POINTER_REGS",				\
+  "FP_LO8_REGS",				\
   "FP_LO_REGS",					\
   "FP_REGS",					\
   "POINTER_AND_FP_REGS",			\
@@ -609,6 +621,7 @@ enum reg_class
   { 0x7fffffff, 0x00000000, 0x00000003 },	/* GENERAL_REGS */	\
   { 0x80000000, 0x00000000, 0x00000000 },	/* STACK_REG */		\
   { 0xffffffff, 0x00000000, 0x00000003 },	/* POINTER_REGS */	\
+  { 0x00000000, 0x000000ff, 0x00000000 },       /* FP_LO8_REGS  */	\
   { 0x00000000, 0x0000ffff, 0x00000000 },       /* FP_LO_REGS  */	\
   { 0x00000000, 0xffffffff, 0x00000000 },       /* FP_REGS  */		\
   { 0xffffffff, 0xffffffff, 0x00000003 },	/* POINTER_AND_FP_REGS */\

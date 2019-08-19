@@ -1,9 +1,9 @@
 ! { dg-do run }
-! { dg-options "-std=gnu" }
+! { dg-options "-std=legacy" }
 ! PR43217 Output of Hollerith constants which are not a multiple of 4 bytes
 ! Test case prepared from OP by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 program hello2
-  call wrtout (9hHELLO YOU, 9)
+  call wrtout (9hHELLO YOU, 9) ! { dg-warning "Rank mismatch" }
   stop
 end
 
@@ -22,5 +22,3 @@ subroutine wrtout (iarray, nchrs)
  &    outstr.ne."48454C4C 4F20594F 55202020") STOP 1
   return
 end
-! { dg-warning "Hollerith constant" "" { target *-*-* } 6 }
-! { dg-warning "Rank mismatch" "" { target *-*-* } 6 }

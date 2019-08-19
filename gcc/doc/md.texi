@@ -1748,6 +1748,12 @@ The stack pointer register (@code{SP})
 @item w
 Floating point register, Advanced SIMD vector register or SVE vector register
 
+@item x
+Like @code{w}, but restricted to registers 0 to 15 inclusive.
+
+@item y
+Like @code{w}, but restricted to registers 0 to 7 inclusive.
+
 @item Upl
 One of the low eight SVE predicate registers (@code{P0} to @code{P7})
 

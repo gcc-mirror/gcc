@@ -109,7 +109,7 @@ end subroutine gang
 
 subroutine seq (a)
   !$acc routine seq
-  integer, intent (inout) :: a(M)
+  integer, intent (inout) :: a(N)
   integer :: i
 
   do i = 1, N

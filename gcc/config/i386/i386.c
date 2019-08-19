@@ -4126,34 +4126,6 @@ ix86_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
     setup_incoming_varargs_64 (&next_cum);
 }
 
-static void
-ix86_setup_incoming_vararg_bounds (cumulative_args_t cum_v,
-				   machine_mode mode,
-				   tree type,
-				   int *pretend_size ATTRIBUTE_UNUSED,
-				   int no_rtl)
-{
-  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  CUMULATIVE_ARGS next_cum;
-  tree fntype;
-
-  gcc_assert (!no_rtl);
-
-  /* Do nothing if we use plain pointer to argument area.  */
-  if (!TARGET_64BIT || cum->call_abi == MS_ABI)
-    return;
-
-  fntype = TREE_TYPE (current_function_decl);
-
-  /* For varargs, we do not want to skip the dummy va_dcl argument.
-     For stdargs, we do want to skip the last named argument.  */
-  next_cum = *cum;
-  if (stdarg_p (fntype))
-    ix86_function_arg_advance (pack_cumulative_args (&next_cum), mode, type,
-			       true);
-}
-
-
 /* Checks if TYPE is of kind va_list char *.  */
 
 static bool
@@ -11445,7 +11417,7 @@ output_pic_addr_const (FILE *file, rtx x, int code)
       break;
 
     case SYMBOL_REF:
-      if (TARGET_64BIT || ! TARGET_MACHO_PICSYM_STUBS)
+      if (TARGET_64BIT || ! TARGET_MACHO_SYMBOL_STUBS)
 	output_addr_const (file, x);
       else
 	{
@@ -16817,8 +16789,8 @@ ix86_fold_builtin (tree fndecl, int n_args,
 {
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
     {
-      enum ix86_builtins fn_code = (enum ix86_builtins)
-				   DECL_FUNCTION_CODE (fndecl);
+      enum ix86_builtins fn_code
+	= (enum ix86_builtins) DECL_MD_FUNCTION_CODE (fndecl);
       enum rtx_code rcode;
       bool is_vshift;
       unsigned HOST_WIDE_INT mask;
@@ -17283,7 +17255,8 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   tree fndecl = gimple_call_fndecl (stmt);
   gcc_checking_assert (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_MD));
   int n_args = gimple_call_num_args (stmt);
-  enum ix86_builtins fn_code = (enum ix86_builtins) DECL_FUNCTION_CODE (fndecl);
+  enum ix86_builtins fn_code
+    = (enum ix86_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   tree decl = NULL_TREE;
   tree arg0, arg1, arg2;
   enum rtx_code rcode;
@@ -18491,8 +18464,10 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
 	    return 100;
 	}
       if (in == 2)
-        return MAX (ix86_cost->fp_load [index], ix86_cost->fp_store [index]);
-      return in ? ix86_cost->fp_load [index] : ix86_cost->fp_store [index];
+        return MAX (ix86_cost->hard_register.fp_load [index],
+		    ix86_cost->hard_register.fp_store [index]);
+      return in ? ix86_cost->hard_register.fp_load [index]
+		: ix86_cost->hard_register.fp_store [index];
     }
   if (SSE_CLASS_P (regclass))
     {
@@ -18500,8 +18475,10 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
       if (index == -1)
 	return 100;
       if (in == 2)
-        return MAX (ix86_cost->sse_load [index], ix86_cost->sse_store [index]);
-      return in ? ix86_cost->sse_load [index] : ix86_cost->sse_store [index];
+        return MAX (ix86_cost->hard_register.sse_load [index],
+		    ix86_cost->hard_register.sse_store [index]);
+      return in ? ix86_cost->hard_register.sse_load [index]
+		: ix86_cost->hard_register.sse_store [index];
     }
   if (MMX_CLASS_P (regclass))
     {
@@ -18518,8 +18495,10 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
 	    return 100;
 	}
       if (in == 2)
-        return MAX (ix86_cost->mmx_load [index], ix86_cost->mmx_store [index]);
-      return in ? ix86_cost->mmx_load [index] : ix86_cost->mmx_store [index];
+        return MAX (ix86_cost->hard_register.mmx_load [index],
+		    ix86_cost->hard_register.mmx_store [index]);
+      return in ? ix86_cost->hard_register.mmx_load [index]
+		: ix86_cost->hard_register.mmx_store [index];
     }
   switch (GET_MODE_SIZE (mode))
     {
@@ -18527,37 +18506,41 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
 	if (Q_CLASS_P (regclass) || TARGET_64BIT)
 	  {
 	    if (!in)
-	      return ix86_cost->int_store[0];
+	      return ix86_cost->hard_register.int_store[0];
 	    if (TARGET_PARTIAL_REG_DEPENDENCY
 	        && optimize_function_for_speed_p (cfun))
-	      cost = ix86_cost->movzbl_load;
+	      cost = ix86_cost->hard_register.movzbl_load;
 	    else
-	      cost = ix86_cost->int_load[0];
+	      cost = ix86_cost->hard_register.int_load[0];
 	    if (in == 2)
-	      return MAX (cost, ix86_cost->int_store[0]);
+	      return MAX (cost, ix86_cost->hard_register.int_store[0]);
 	    return cost;
 	  }
 	else
 	  {
 	   if (in == 2)
-	     return MAX (ix86_cost->movzbl_load, ix86_cost->int_store[0] + 4);
+	     return MAX (ix86_cost->hard_register.movzbl_load,
+			 ix86_cost->hard_register.int_store[0] + 4);
 	   if (in)
-	     return ix86_cost->movzbl_load;
+	     return ix86_cost->hard_register.movzbl_load;
 	   else
-	     return ix86_cost->int_store[0] + 4;
+	     return ix86_cost->hard_register.int_store[0] + 4;
 	  }
 	break;
       case 2:
 	if (in == 2)
-	  return MAX (ix86_cost->int_load[1], ix86_cost->int_store[1]);
-	return in ? ix86_cost->int_load[1] : ix86_cost->int_store[1];
+	  return MAX (ix86_cost->hard_register.int_load[1],
+		      ix86_cost->hard_register.int_store[1]);
+	return in ? ix86_cost->hard_register.int_load[1]
+		  : ix86_cost->hard_register.int_store[1];
       default:
 	if (in == 2)
-	  cost = MAX (ix86_cost->int_load[2], ix86_cost->int_store[2]);
+	  cost = MAX (ix86_cost->hard_register.int_load[2],
+		      ix86_cost->hard_register.int_store[2]);
 	else if (in)
-	  cost = ix86_cost->int_load[2];
+	  cost = ix86_cost->hard_register.int_load[2];
 	else
-	  cost = ix86_cost->int_store[2];
+	  cost = ix86_cost->hard_register.int_store[2];
 	/* Multiply with the number of GPR moves needed.  */
 	return cost * CEIL ((int) GET_MODE_SIZE (mode), UNITS_PER_WORD);
     }
@@ -18627,20 +18610,21 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
        because of missing QImode and HImode moves to, from or between
        MMX/SSE registers.  */
     return MAX (8, SSE_CLASS_P (class1)
-		? ix86_cost->sse_to_integer : ix86_cost->integer_to_sse);
+		? ix86_cost->hard_register.sse_to_integer
+		: ix86_cost->hard_register.integer_to_sse);
 
   if (MAYBE_FLOAT_CLASS_P (class1))
-    return ix86_cost->fp_move;
+    return ix86_cost->hard_register.fp_move;
   if (MAYBE_SSE_CLASS_P (class1))
     {
       if (GET_MODE_BITSIZE (mode) <= 128)
-	return ix86_cost->xmm_move;
+	return ix86_cost->hard_register.xmm_move;
       if (GET_MODE_BITSIZE (mode) <= 256)
-	return ix86_cost->ymm_move;
-      return ix86_cost->zmm_move;
+	return ix86_cost->hard_register.ymm_move;
+      return ix86_cost->hard_register.zmm_move;
     }
   if (MAYBE_MMX_CLASS_P (class1))
-    return ix86_cost->mmx_move;
+    return ix86_cost->hard_register.mmx_move;
   return 2;
 }
 
@@ -23047,9 +23031,6 @@ ix86_run_selftests (void)
 
 #undef TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS
 #define TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS true
-
-#undef TARGET_SETUP_INCOMING_VARARG_BOUNDS
-#define TARGET_SETUP_INCOMING_VARARG_BOUNDS ix86_setup_incoming_vararg_bounds
 
 #undef TARGET_OFFLOAD_OPTIONS
 #define TARGET_OFFLOAD_OPTIONS \

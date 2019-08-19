@@ -167,7 +167,7 @@ package body GNAT.Serial_Communications is
          Raise_Error ("read error");
       end if;
 
-      Last := Last_Index (Buffer'First, size_t (Read_Last));
+      Last := Last_Index (Buffer'First, CRTL.size_t (Read_Last));
    end Read;
 
    ---------

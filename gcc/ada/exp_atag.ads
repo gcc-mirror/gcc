@@ -109,9 +109,10 @@ package Exp_Atag is
    --  generated code handles primary and secondary dispatch tables of Typ.
 
    function Build_Inherit_Predefined_Prims
-     (Loc          : Source_Ptr;
-      Old_Tag_Node : Node_Id;
-      New_Tag_Node : Node_Id) return Node_Id;
+     (Loc              : Source_Ptr;
+      Old_Tag_Node     : Node_Id;
+      New_Tag_Node     : Node_Id;
+      Num_Predef_Prims : Int) return Node_Id;
    --  Build code that inherits the predefined primitives of the parent.
    --
    --  Generates: Predefined_DT (New_T).D (All_Predefined_Prims) :=

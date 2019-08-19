@@ -28,8 +28,8 @@ subroutine sub ()
     end union
   end structure
   record /s6/ r6
-  r6.ibuf(1) = z'badbeef'
-  r6.ibuf(2) = z'badbeef'
+  r6.ibuf(1) = int(z'badbeef')
+  r6.ibuf(2) = int(z'badbeef')
 end subroutine
 
 ! Repeat definition from subroutine sub with different size parameter.
@@ -55,7 +55,7 @@ integer :: r6_canary = 0
 ! Copied type declaration - this should not cause problems
 i = 1
 do while (i < siz)
-  r6.ibuf(i) = z'badbeef'
+  r6.ibuf(i) = int(z'badbeef')
   i = i + 1
 end do
 

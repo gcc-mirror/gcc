@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
    We represent them in the frontend here, however there's no guarantee that
    the compiler implementation actually matches the actual implementation.  */
 
-enum libcall_type
+enum d_libcall_type
 {
   LCT_VOID,		    /* void		    */
   LCT_BYTE,		    /* byte		    */
@@ -81,7 +81,7 @@ static tree libcall_decls[LIBCALL_LAST];
    arrayOf() will return cached types if they have been requested before.  */
 
 static Type *
-get_libcall_type (libcall_type type)
+get_libcall_type (d_libcall_type type)
 {
   if (libcall_types[type])
     return libcall_types[type];
@@ -212,7 +212,7 @@ get_libcall_type (libcall_type type)
    the number of arguments, the types of which are provided in `...'.  */
 
 static tree
-build_libcall_decl (const char *name, libcall_type return_type,
+build_libcall_decl (const char *name, d_libcall_type return_type,
 		    int flags, int nparams, ...)
 {
   tree *args = XALLOCAVEC (tree, nparams);
@@ -226,7 +226,7 @@ build_libcall_decl (const char *name, libcall_type return_type,
 
   for (int i = 0; i < nparams; i++)
     {
-      libcall_type ptype = (libcall_type) va_arg (ap, int);
+      d_libcall_type ptype = (d_libcall_type) va_arg (ap, int);
       Type *type = get_libcall_type (ptype);
 
       if (type == Type::tvoid)

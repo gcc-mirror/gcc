@@ -11959,7 +11959,7 @@ package Sinfo is
 
      N_Iterated_Component_Association =>
        (1 => True,    --  Defining_Identifier (Node1)
-        2 => False,   --  unused
+        2 => True,    --  Loop_Actions (List2-Sem)
         3 => True,    --  Expression (Node3)
         4 => True,    --  Discrete_Choices (List4)
         5 => False),  --  unused

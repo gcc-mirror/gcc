@@ -101,7 +101,7 @@ template <typename _Tp, size_t _Nm>
   to_array(_Tp (&__a)[_Nm])
   noexcept(is_nothrow_constructible<remove_cv_t<_Tp>, _Tp&>::value)
   {
-    return __to_array(__a, make_index_sequence<_Nm>{});
+    return experimental::__to_array(__a, make_index_sequence<_Nm>{});
   }
 
   // @} group make_array

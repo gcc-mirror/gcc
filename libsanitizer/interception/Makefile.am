@@ -13,10 +13,10 @@ ACLOCAL_AMFLAGS = -I m4
 noinst_LTLIBRARIES = libinterception.la
 
 interception_files = \
-        interception_linux.cc \
-        interception_mac.cc \
-        interception_win.cc \
-	interception_type_test.cc
+        interception_linux.cpp \
+        interception_mac.cpp \
+        interception_win.cpp \
+	interception_type_test.cpp
 
 libinterception_la_SOURCES = $(interception_files)
 

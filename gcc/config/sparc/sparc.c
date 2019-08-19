@@ -11661,7 +11661,8 @@ sparc_expand_builtin (tree exp, rtx target,
 		      int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  enum sparc_builtins code = (enum sparc_builtins) DECL_FUNCTION_CODE (fndecl);
+  enum sparc_builtins code
+    = (enum sparc_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   enum insn_code icode = sparc_builtins_icode[code];
   bool nonvoid = TREE_TYPE (TREE_TYPE (fndecl)) != void_type_node;
   call_expr_arg_iterator iter;
@@ -11829,7 +11830,8 @@ static tree
 sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 		    tree *args, bool ignore)
 {
-  enum sparc_builtins code = (enum sparc_builtins) DECL_FUNCTION_CODE (fndecl);
+  enum sparc_builtins code
+    = (enum sparc_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   tree rtype = TREE_TYPE (TREE_TYPE (fndecl));
   tree arg0, arg1, arg2;
 

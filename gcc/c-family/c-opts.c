@@ -916,6 +916,10 @@ c_common_post_options (const char **pfilename)
   if (!global_options_set.x_warn_register)
     warn_register = cxx_dialect >= cxx17;
 
+  /* -Wcomma-subscript is enabled by default in C++20.  */
+  if (!global_options_set.x_warn_comma_subscript)
+    warn_comma_subscript = (cxx_dialect >= cxx2a && warn_deprecated);
+
   /* Declone C++ 'structors if -Os.  */
   if (flag_declone_ctor_dtor == -1)
     flag_declone_ctor_dtor = optimize_size;

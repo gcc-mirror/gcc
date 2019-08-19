@@ -13,16 +13,16 @@ ACLOCAL_AMFLAGS = -I m4
 toolexeclib_LTLIBRARIES = libubsan.la
 
 ubsan_plugin_files = \
-	ubsan_diag.cc \
-	ubsan_flags.cc \
-	ubsan_handlers.cc \
-	ubsan_handlers_cxx.cc \
-	ubsan_init.cc \
-	ubsan_monitor.cc \
-	ubsan_type_hash.cc \
-	ubsan_type_hash_itanium.cc \
-	ubsan_type_hash_win.cc \
-	ubsan_value.cc
+	ubsan_diag.cpp \
+	ubsan_flags.cpp \
+	ubsan_handlers.cpp \
+	ubsan_handlers_cxx.cpp \
+	ubsan_init.cpp \
+	ubsan_monitor.cpp \
+	ubsan_type_hash.cpp \
+	ubsan_type_hash_itanium.cpp \
+	ubsan_type_hash_win.cpp \
+	ubsan_value.cpp
 
 ubsan_files = $(ubsan_plugin_files)
 
