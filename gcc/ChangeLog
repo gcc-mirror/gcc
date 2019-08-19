@@ -1,3 +1,12 @@
+2019-08-19  Joel Hutton  <Joel.Hutton@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_fpconst_pow2_recip): New prototype
+	* config/aarch64/aarch64.c (aarch64_fpconst_pow2_recip): New function
+	* config/aarch64/aarch64.md (*aarch64_<su_optab>cvtf<fcvt_target><GPF:mode>2_mult): New pattern
+	(*aarch64_<su_optab>cvtf<fcvt_iesize><GPF:mode>2_mult): New pattern
+	* config/aarch64/constraints.md (Dt): New constraint
+	* config/aarch64/predicates.md (aarch64_fpconst_pow2_recip): New predicate
+
 2019-08-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91403

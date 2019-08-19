@@ -6051,6 +6051,44 @@
   [(set_attr "type" "f_cvtf2i")]
 )
 
+;; Equal width integer to fp and multiply combine.
+(define_insn "*aarch64_<su_optab>cvtf<fcvt_target><GPF:mode>2_mult"
+  [(set (match_operand:GPF 0 "register_operand" "=w,w")
+	(mult:GPF (FLOATUORS:GPF
+		   (match_operand:<FCVT_TARGET> 1 "register_operand" "w,?r"))
+		   (match_operand:GPF 2 "aarch64_fp_pow2_recip" "Dt,Dt")))]
+  "TARGET_FLOAT"
+  {
+    operands[2] = GEN_INT (aarch64_fpconst_pow2_recip (operands[2]));
+    switch (which_alternative)
+    {
+      case 0:
+	return "<su_optab>cvtf\t%<GPF:s>0, %<s>1, #%2";
+      case 1:
+	return "<su_optab>cvtf\t%<GPF:s>0, %<w1>1, #%2";
+      default:
+	gcc_unreachable ();
+    }
+  }
+  [(set_attr "type" "neon_int_to_fp_<Vetype>,f_cvti2f")
+   (set_attr "arch" "simd,fp")]
+)
+
+;; Unequal width integer to fp and multiply combine.
+(define_insn "*aarch64_<su_optab>cvtf<fcvt_iesize><GPF:mode>2_mult"
+  [(set (match_operand:GPF 0 "register_operand" "=w")
+	(mult:GPF (FLOATUORS:GPF
+		   (match_operand:<FCVT_IESIZE> 1 "register_operand" "r"))
+		   (match_operand:GPF 2 "aarch64_fp_pow2_recip" "Dt")))]
+  "TARGET_FLOAT"
+  {
+    operands[2] = GEN_INT (aarch64_fpconst_pow2_recip (operands[2]));
+    return "<su_optab>cvtf\t%<GPF:s>0, %<w2>1, #%2";
+  }
+  [(set_attr "type" "f_cvti2f")]
+)
+
+;; Equal width integer to fp conversion.
 (define_insn "<optab><fcvt_target><GPF:mode>2"
   [(set (match_operand:GPF 0 "register_operand" "=w,w")
         (FLOATUORS:GPF (match_operand:<FCVT_TARGET> 1 "register_operand" "w,?r")))]
@@ -6062,6 +6100,7 @@
    (set_attr "arch" "simd,fp")]
 )
 
+;; Unequal width integer to fp conversions.
 (define_insn "<optab><fcvt_iesize><GPF:mode>2"
   [(set (match_operand:GPF 0 "register_operand" "=w")
         (FLOATUORS:GPF (match_operand:<FCVT_IESIZE> 1 "register_operand" "r")))]
