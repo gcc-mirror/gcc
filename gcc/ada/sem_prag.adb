@@ -7146,10 +7146,11 @@ package body Sem_Prag is
          Item : Node_Id := First (Decls);
 
       begin
-         --  Only other pragmas can come before this pragma
+         --  Only other pragmas can come before this pragma, but they might
+         --  have been rewritten so check the original node.
 
          loop
-            if No (Item) or else Nkind (Item) /= N_Pragma then
+            if No (Item) or else Nkind (Original_Node (Item)) /= N_Pragma then
                return False;
 
             elsif Item = Pragma_Node then

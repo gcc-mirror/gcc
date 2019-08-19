@@ -1,3 +1,8 @@
+2019-08-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_prag.adb (Is_Before_First_Decl): Deal with rewritten
+	pragmas.
+
 2019-08-19  Bob Duff  <duff@adacore.com>
 
 	* sem_warn.adb (Warn_On_Unreferenced_Entity): Suppress warning
