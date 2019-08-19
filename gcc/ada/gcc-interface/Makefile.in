@@ -516,6 +516,8 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR) install-gcc-specs
 	for file in $(RTSDIR)/*.ali; do \
 	    $(INSTALL_DATA_DATE) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	done
+	$(INSTALL_DATA_DATE) $(RTSDIR)/ada_target_properties \
+	    $(DESTDIR)$(ADA_RTL_OBJ_DIR)/../
 	-cd $(RTSDIR); for file in *$(arext);do \
 	    $(INSTALL_DATA) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	    $(RANLIB_FOR_TARGET) $(DESTDIR)$(ADA_RTL_OBJ_DIR)/$$file; \

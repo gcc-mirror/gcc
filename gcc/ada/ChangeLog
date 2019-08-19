@@ -1,3 +1,10 @@
+2019-08-19  Jerome Guitton  <guitton@adacore.com>
+
+	* Makefile.rtl (system.o): New target to add generation of
+	target properties.
+	* gcc-interface/Makefile.in (install-gnatlib): Install
+	ada_target_properties.
+
 2019-08-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* inline.adb (Add_Inlined_Body): Do not special-case instances
