@@ -1,3 +1,9 @@
+2019-08-19  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* gfortran.texi: Delete paragraph about integer overload errors
+	when initialising integer variables with BOZ constants as these
+	no longer occur.
+
 2019-08-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91485
