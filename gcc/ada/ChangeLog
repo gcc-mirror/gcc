@@ -1,3 +1,11 @@
+2019-08-19  Patrick Bernardi  <bernardi@adacore.com>
+
+	* socket.c: Removed the redefinition of getaddrinfo, getnameinfo
+	and freeaddrinfo to internal VxWorks kernel calls because they
+	are, well, internal kernel calls and cannot be called from RTPs.
+	VxWorks provides the necessary components to call these routines
+	directly.
+
 2019-08-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_dist.adb (Is_Generic_Actual_Subtype): New predicate.
