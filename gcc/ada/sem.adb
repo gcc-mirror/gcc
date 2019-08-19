@@ -1729,15 +1729,13 @@ package body Sem is
          MCU : constant Node_Id := Unit (Main_CU);
 
       begin
-         CL := First (Context_Items (CU));
-
          --  Problem does not arise with main subprograms
 
-         if
-           not Nkind_In (MCU, N_Package_Body, N_Package_Declaration)
-         then
+         if not Nkind_In (MCU, N_Package_Body, N_Package_Declaration) then
             return False;
          end if;
+
+         CL := First (Context_Items (CU));
 
          while Present (CL) loop
             if Nkind (CL) = N_With_Clause

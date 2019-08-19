@@ -8953,10 +8953,7 @@ package body Sem_Ch12 is
             Decl := Unit_Declaration_Node (Corresponding_Body (Decl));
          end if;
 
-         if Nkind_In (Original_Node (Decl), N_Function_Instantiation,
-                                            N_Package_Instantiation,
-                                            N_Procedure_Instantiation)
-         then
+         if Nkind (Original_Node (Decl)) in N_Generic_Instantiation then
             return Original_Node (Decl);
          else
             return Unit (Parent (Decl));

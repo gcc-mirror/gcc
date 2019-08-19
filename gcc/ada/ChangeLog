@@ -1,3 +1,10 @@
+2019-08-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch12.adb (Get_Unit_Instantiation_Node): Simplify Nkind_In
+	membership test.
+	* sem.adb (Depends_On_Main): Whitespace cleanup; only assign a
+	local variable if needed.
+
 2019-08-19  Claire Dross  <dross@adacore.com>
 
 	* sem_spark.ads, sem_spark.adb (Is_Pledge_Function): New
