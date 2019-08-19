@@ -510,7 +510,6 @@ package body Inline is
 
       Inst      : Entity_Id;
       Inst_Decl : Node_Id;
-      Inst_Node : Node_Id;
       Level     : Inline_Level_Type;
 
    --  Start of processing for Add_Inlined_Body
@@ -609,48 +608,24 @@ package body Inline is
                  and then Is_Generic_Instance (Inst)
                  and then not Is_Called (Inst)
                then
-                  --  Do not add a pending instantiation if the body exits
-                  --  already, or if the instance is a compilation unit, or
-                  --  the instance node is missing.
-
                   Inst_Decl := Unit_Declaration_Node (Inst);
+
+                  --  Do not inline the instance if the body already exists,
+                  --  or if the instance is a compilation unit, or else if
+                  --  the instance node is simply missing.
+
                   if Present (Corresponding_Body (Inst_Decl))
                     or else Nkind (Parent (Inst_Decl)) = N_Compilation_Unit
                     or else No (Next (Inst_Decl))
                   then
                      Set_Is_Called (Inst);
-
                   else
-                     --  If the inlined call itself appears within an instance,
-                     --  ensure that the enclosing instance body is available.
-                     --  This is necessary because Sem_Ch12.Might_Inline_Subp
-                     --  does not recurse into nested instantiations.
-
-                     if not Is_Inlined (Inst) and then In_Instance then
-                        Set_Is_Inlined (Inst);
-
-                        --  The instantiation node usually follows the package
-                        --  declaration for the instance. If the generic unit
-                        --  has aspect specifications, they are transformed
-                        --  into pragmas in the instance, and the instance node
-                        --  appears after them.
-
-                        Inst_Node := Next (Inst_Decl);
-
-                        while Nkind (Inst_Node) /= N_Package_Instantiation loop
-                           Inst_Node := Next (Inst_Node);
-                        end loop;
-
-                        Add_Pending_Instantiation (Inst_Node, Inst_Decl);
-                     end if;
-
                      Add_Inlined_Instance (Inst);
                   end if;
                end if;
             end if;
 
-            --  If the unit containing E is an instance, then the instance body
-            --  will be analyzed in any case, see Sem_Ch12.Might_Inline_Subp.
+            --  If the unit containing E is an instance, nothing more to do
 
             if Is_Generic_Instance (Pack) then
                null;
