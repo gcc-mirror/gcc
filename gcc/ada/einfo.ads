@@ -4674,7 +4674,7 @@ package Einfo is
 --  They all overlap because they are supposed to apply to different entity
 --  kinds. They are semantically related, and have the following intended uses:
 
---  a) Renamed_Entity appplies to entities in renaming declarations that rename
+--  a) Renamed_Entity applies to entities in renaming declarations that rename
 --  an entity, so the value of the attribute IS an entity. This applies to
 --  generic renamings, package renamings, exception renamings, and subprograms
 --  renamings that rename a subprogram (rather than an attribute, an entry, a
@@ -6141,7 +6141,7 @@ package Einfo is
    --    DTC_Entity                          (Node16)
    --    First_Entity                        (Node17)
    --    Alias                               (Node18)   (non-generic case only)
-   --    Renamed_Entity                      (Node18)   (generic case only)
+   --    Renamed_Entity                      (Node18)
    --    Extra_Accessibility_Of_Result       (Node19)   (non-generic case only)
    --    Last_Entity                         (Node20)
    --    Interface_Name                      (Node21)
@@ -6467,7 +6467,7 @@ package Einfo is
    --    DTC_Entity                          (Node16)
    --    First_Entity                        (Node17)
    --    Alias                               (Node18)   (non-generic case only)
-   --    Renamed_Entity                      (Node18)   (generic case only)
+   --    Renamed_Entity                      (Node18)
    --    Receiving_Entry                     (Node19)   (non-generic case only)
    --    Last_Entity                         (Node20)
    --    Interface_Name                      (Node21)
