@@ -5358,11 +5358,12 @@ package body Sem_Util is
    -----------------------------------
 
    function Compile_Time_Constraint_Error
-     (N    : Node_Id;
-      Msg  : String;
-      Ent  : Entity_Id  := Empty;
-      Loc  : Source_Ptr := No_Location;
-      Warn : Boolean    := False) return Node_Id
+     (N         : Node_Id;
+      Msg       : String;
+      Ent       : Entity_Id  := Empty;
+      Loc       : Source_Ptr := No_Location;
+      Warn      : Boolean    := False;
+      Extra_Msg : String     := "") return Node_Id
    is
       Msgc : String (1 .. Msg'Length + 3);
       --  Copy of message, with room for possible ?? or << and ! at end
@@ -5454,6 +5455,12 @@ package body Sem_Util is
                Error_Msg_NEL (Msgc (1 .. Msgl), N, Ent, Eloc);
             else
                Error_Msg_NEL (Msgc (1 .. Msgl), N, Etype (N), Eloc);
+            end if;
+
+            --  Emit any extra message as a continuation
+
+            if Extra_Msg /= "" then
+               Error_Msg_N ('\' & Extra_Msg, N);
             end if;
 
             if Wmsg then
