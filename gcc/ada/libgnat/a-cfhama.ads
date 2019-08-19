@@ -59,6 +59,7 @@ generic
    with function Equivalent_Keys
      (Left  : Key_Type;
       Right : Key_Type) return Boolean is "=";
+   with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Formal_Hashed_Maps with
   SPARK_Mode

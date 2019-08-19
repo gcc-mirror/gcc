@@ -58,6 +58,7 @@ generic
    type Element_Type is private;
 
    with function "<" (Left, Right : Key_Type) return Boolean is <>;
+   with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Formal_Ordered_Maps with
   SPARK_Mode
