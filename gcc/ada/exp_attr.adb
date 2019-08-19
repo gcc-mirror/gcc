@@ -6545,7 +6545,7 @@ package body Exp_Attr is
       --  See separate sections below for the generated code in each case.
 
       when Attribute_Valid => Valid : declare
-         Btyp : Entity_Id := Base_Type (Ptyp);
+         PBtyp : Entity_Id := Base_Type (Ptyp);
 
          Save_Validity_Checks_On : constant Boolean := Validity_Checks_On;
          --  Save the validity checking mode. We always turn off validity
@@ -6555,7 +6555,7 @@ package body Exp_Attr is
 
          function Make_Range_Test return Node_Id;
          --  Build the code for a range test of the form
-         --    Btyp!(Pref) in Btyp!(Ptyp'First) .. Btyp!(Ptyp'Last)
+         --    PBtyp!(Pref) in PBtyp!(Ptyp'First) .. PBtyp!(Ptyp'Last)
 
          ---------------------
          -- Make_Range_Test --
@@ -6594,16 +6594,16 @@ package body Exp_Attr is
 
             return
               Make_In (Loc,
-                Left_Opnd  => Unchecked_Convert_To (Btyp, Temp),
+                Left_Opnd  => Unchecked_Convert_To (PBtyp, Temp),
                 Right_Opnd =>
                   Make_Range (Loc,
                     Low_Bound  =>
-                      Unchecked_Convert_To (Btyp,
+                      Unchecked_Convert_To (PBtyp,
                         Make_Attribute_Reference (Loc,
                           Prefix         => New_Occurrence_Of (Ptyp, Loc),
                           Attribute_Name => Name_First)),
                     High_Bound =>
-                      Unchecked_Convert_To (Btyp,
+                      Unchecked_Convert_To (PBtyp,
                         Make_Attribute_Reference (Loc,
                           Prefix         => New_Occurrence_Of (Ptyp, Loc),
                           Attribute_Name => Name_Last))));
@@ -6631,8 +6631,8 @@ package body Exp_Attr is
          --  Retrieve the base type. Handle the case where the base type is a
          --  private enumeration type.
 
-         if Is_Private_Type (Btyp) and then Present (Full_View (Btyp)) then
-            Btyp := Full_View (Btyp);
+         if Is_Private_Type (PBtyp) and then Present (Full_View (PBtyp)) then
+            PBtyp := Full_View (PBtyp);
          end if;
 
          --  Floating-point case. This case is handled by the Valid attribute
@@ -6665,7 +6665,7 @@ package body Exp_Attr is
             begin
                --  The C and AAMP back-ends handle Valid for fpt types
 
-               if Modify_Tree_For_C or else Float_Rep (Btyp) = AAMP then
+               if Modify_Tree_For_C or else Float_Rep (PBtyp) = AAMP then
                   Analyze_And_Resolve (Pref, Ptyp);
                   Set_Etype (N, Standard_Boolean);
                   Set_Analyzed (N);
@@ -6758,13 +6758,13 @@ package body Exp_Attr is
                --  The way we do the range check is simply to create the
                --  expression: Valid (N) and then Base_Type(Pref) in Typ.
 
-               if not Subtypes_Statically_Match (Ptyp, Btyp) then
+               if not Subtypes_Statically_Match (Ptyp, PBtyp) then
                   Rewrite (N,
                     Make_And_Then (Loc,
                       Left_Opnd  => Relocate_Node (N),
                       Right_Opnd =>
                         Make_In (Loc,
-                          Left_Opnd  => Convert_To (Btyp, Pref),
+                          Left_Opnd  => Convert_To (PBtyp, Pref),
                           Right_Opnd => New_Occurrence_Of (Ptyp, Loc))));
                end if;
             end Float_Valid;
@@ -6793,24 +6793,24 @@ package body Exp_Attr is
          --       (X >= type(X)'First and then type(X)'Last <= X)
 
          elsif Is_Enumeration_Type (Ptyp)
-           and then Present (Enum_Pos_To_Rep (Btyp))
+           and then Present (Enum_Pos_To_Rep (PBtyp))
          then
             Tst :=
               Make_Op_Ge (Loc,
                 Left_Opnd =>
                   Make_Function_Call (Loc,
                     Name =>
-                      New_Occurrence_Of (TSS (Btyp, TSS_Rep_To_Pos), Loc),
+                      New_Occurrence_Of (TSS (PBtyp, TSS_Rep_To_Pos), Loc),
                     Parameter_Associations => New_List (
                       Pref,
                       New_Occurrence_Of (Standard_False, Loc))),
                 Right_Opnd => Make_Integer_Literal (Loc, 0));
 
-            if Ptyp /= Btyp
+            if Ptyp /= PBtyp
               and then
-                (Type_Low_Bound (Ptyp) /= Type_Low_Bound (Btyp)
+                (Type_Low_Bound (Ptyp) /= Type_Low_Bound (PBtyp)
                   or else
-                 Type_High_Bound (Ptyp) /= Type_High_Bound (Btyp))
+                 Type_High_Bound (Ptyp) /= Type_High_Bound (PBtyp))
             then
                --  The call to Make_Range_Test will create declarations
                --  that need a proper insertion point, but Pref is now
@@ -6843,16 +6843,16 @@ package body Exp_Attr is
          --  test has to take this into account, and the proper form of the
          --  test is:
 
-         --    Btyp!(Pref) < Btyp!(Ptyp'Range_Length)
+         --    PBtyp!(Pref) < PBtyp!(Ptyp'Range_Length)
 
          elsif Has_Biased_Representation (Ptyp) then
-            Btyp := RTE (RE_Unsigned_32);
+            PBtyp := RTE (RE_Unsigned_32);
             Rewrite (N,
               Make_Op_Lt (Loc,
                 Left_Opnd =>
-                  Unchecked_Convert_To (Btyp, Duplicate_Subexpr (Pref)),
+                  Unchecked_Convert_To (PBtyp, Duplicate_Subexpr (Pref)),
                 Right_Opnd =>
-                  Unchecked_Convert_To (Btyp,
+                  Unchecked_Convert_To (PBtyp,
                     Make_Attribute_Reference (Loc,
                       Prefix => New_Occurrence_Of (Ptyp, Loc),
                       Attribute_Name => Name_Range_Length))));
@@ -6867,11 +6867,11 @@ package body Exp_Attr is
          --  the Valid attribute is exactly that this test does not work).
          --  What will work is:
 
-         --     Btyp!(X) >= Btyp!(type(X)'First)
+         --     PBtyp!(X) >= PBtyp!(type(X)'First)
          --       and then
-         --     Btyp!(X) <= Btyp!(type(X)'Last)
+         --     PBtyp!(X) <= PBtyp!(type(X)'Last)
 
-         --  where Btyp is an integer type large enough to cover the full
+         --  where PBtyp is an integer type large enough to cover the full
          --  range of possible stored values (i.e. it is chosen on the basis
          --  of the size of the type, not the range of the values). We write
          --  this as two tests, rather than a range check, so that static
@@ -6895,11 +6895,13 @@ package body Exp_Attr is
          --  correct, even though a value greater than 127 looks signed to a
          --  signed comparison.
 
-         elsif Is_Unsigned_Type (Ptyp) then
+         elsif Is_Unsigned_Type (Ptyp)
+           or else (Is_Private_Type (Ptyp) and then Is_Unsigned_Type (Btyp))
+         then
             if Esize (Ptyp) <= 32 then
-               Btyp := RTE (RE_Unsigned_32);
+               PBtyp := RTE (RE_Unsigned_32);
             else
-               Btyp := RTE (RE_Unsigned_64);
+               PBtyp := RTE (RE_Unsigned_64);
             end if;
 
             Rewrite (N, Make_Range_Test);
@@ -6908,9 +6910,9 @@ package body Exp_Attr is
 
          else
             if Esize (Ptyp) <= Esize (Standard_Integer) then
-               Btyp := Standard_Integer;
+               PBtyp := Standard_Integer;
             else
-               Btyp := Universal_Integer;
+               PBtyp := Universal_Integer;
             end if;
 
             Rewrite (N, Make_Range_Test);
