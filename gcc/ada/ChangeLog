@@ -1,3 +1,8 @@
+2019-08-19  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Document missing
+	metrics switches.
+
 2019-08-19  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_ch12.adb (Get_Unit_Instantiation_Node): Simplify Nkind_In
