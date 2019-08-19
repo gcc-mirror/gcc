@@ -226,7 +226,7 @@ grange_op::grange_adjust_handler () const
 inline range_operator *
 grange_op::handler () const
 {
-  return range_op_handler (gimple_expr_code (this));
+  return range_op_handler (gimple_expr_code (this), gimple_expr_type (this));
 }
 
 // Return the first operand of this statement if it is a valid operand 
@@ -297,7 +297,7 @@ grange_op::fold (irange &res, const irange &r1, const irange &r2) const
   if (grange_adjust_handler ())
     adj = grange_adjust_handler()->lhs_adjust (adj_range, this);
   if (handler ())
-    hand = handler()->fold_range (res, r1, r2);
+    hand = handler()->fold_range (res, gimple_expr_type (this), r1, r2);
 
   // Handle common case first where res was set by handler
   // This handles whatever handler() would ahve returned.
@@ -323,15 +323,17 @@ grange_op::calc_op1_irange (irange &r, const irange &lhs_range) const
   irange type_range;
   gcc_checking_assert (gimple_num_ops (this) < 3);
   // An empty range is viral, so return an empty range.
+  
+  tree type = TREE_TYPE (operand1 ());
   if (lhs_range.undefined_p ())
     {
-      r.set_undefined (TREE_TYPE (operand1 ()));
+      r.set_undefined (type);
       return true;
     }
   // Unary operations require the type of the first operand in the second range
   // position.
-  type_range.set_varying (TREE_TYPE (operand1 ()));
-  return handler ()->op1_range (r, lhs_range, type_range);
+  type_range.set_varying (type);
+  return handler ()->op1_range (r, type, lhs_range, type_range);
 }
 
 // Calculate what we can determine of the range of this statement's first 
@@ -346,13 +348,14 @@ grange_op::calc_op1_irange (irange &r, const irange &lhs_range,
   // as there are often additional restrictions beyond the type which can
   // be imposed.  See operator_cast::op1_irange.()
   
+  tree type = TREE_TYPE (operand1 ());
   // An empty range is viral, so return an empty range.
   if (op2_range.undefined_p () || lhs_range.undefined_p ())
     {
-      r.set_undefined (op2_range.type ());
+      r.set_undefined (type);
       return true;
     }
-  return handler ()->op1_range (r, lhs_range, op2_range);
+  return handler ()->op1_range (r, type, lhs_range, op2_range);
 }
 
 // Calculate what we can determine of the range of this statement's second
@@ -363,13 +366,14 @@ bool
 grange_op::calc_op2_irange (irange &r, const irange &lhs_range,
 			    const irange &op1_range) const
 {  
+  tree type = TREE_TYPE (operand2 ());
   // An empty range is viral, so return an empty range.
   if (op1_range.undefined_p () || lhs_range.undefined_p ())
     {
-      r.set_undefined (op1_range.type ());
+      r.set_undefined (type);
       return true;
     }
-  return handler ()->op2_range (r, lhs_range, op1_range);
+  return handler ()->op2_range (r, type, lhs_range, op1_range);
 }
 
 

@@ -387,6 +387,7 @@ ssa_ranger::range_on_edge (irange &r, edge e, tree name)
   gcc_checking_assert (valid_ssa_p (name));
 
   range_on_exit (r, e->src, name);
+  gcc_checking_assert  (r.type() == TREE_TYPE (name));
 
   // Check to see if NAME is defined on edge e.
   if (outgoing_edge_range_p (edge_range, e, name, &r))
@@ -402,30 +403,40 @@ ssa_ranger::range_on_edge (irange &r, edge e, tree name)
 bool
 ssa_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 {
+  bool res = false;
   // If name is specified, make sure it a LHS of S.
   gcc_checking_assert (name ? SSA_NAME_DEF_STMT (name) == s : true);
 
   if (is_a<grange_op *> (s))
-    return range_of_range_op (r, as_a<grange_op *> (s));
-  if (is_a<gphi *>(s))
-    return range_of_phi (r, as_a<gphi *> (s));
-  if (is_a<gcall *>(s))
-    return range_of_call (r, as_a<gcall *> (s));
-  if (is_a<gassign *> (s) && gimple_assign_rhs_code (s) == COND_EXPR)
-    return range_of_cond_expr (r, as_a<gassign *> (s));
-
-  // If no name is specified, try the expression kind.
-  if (!name)
+    res = range_of_range_op (r, as_a<grange_op *> (s));
+  else if (is_a<gphi *>(s))
+    res = range_of_phi (r, as_a<gphi *> (s));
+  else if (is_a<gcall *>(s))
+    res = range_of_call (r, as_a<gcall *> (s));
+  else if (is_a<gassign *> (s) && gimple_assign_rhs_code (s) == COND_EXPR)
+    res = range_of_cond_expr (r, as_a<gassign *> (s));
+  else
     {
-      tree t = gimple_expr_type (s);
-      if (!irange::supports_type_p (t))
-	return false;
-      r.set_varying (t);
+      // If no name is specified, try the expression kind.
+      if (!name)
+	{
+	  tree t = gimple_expr_type (s);
+	  if (!irange::supports_type_p (t))
+	    return false;
+	  r.set_varying (t);
+	  return true;
+	}
+      // We don't understand the stmt, so return the global range.
+      r = range_from_ssa (name);
       return true;
     }
-  // We don't understand the stmt, so return the global range.
-  r = range_from_ssa (name);
-  return true;
+  if (res)
+    {
+      if (name && TREE_TYPE (name) != r.type ())
+        r.cast (TREE_TYPE (name));
+      return true;
+    }
+  return false;
 }
 
 // Calculate a range for statement S and return it in R.  If NAME is found
@@ -496,6 +507,7 @@ ssa_ranger::range_on_exit (irange &r, basic_block bb, tree name)
     range_on_entry (r, bb, name);
   else
     gcc_assert (range_of_expr (r, name, s));
+  gcc_checking_assert (r.type() == TREE_TYPE (name));
 }
 
 // Calculate a range for range_op statement S given RANGE1 and RANGE2 and 

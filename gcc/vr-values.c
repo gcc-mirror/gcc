@@ -3337,7 +3337,11 @@ range_misc::simplify_min_or_max_using_ranges (gimple_stmt_iterator *gsi,
   tree t;
   irange res;
   enum tree_code code = gimple_assign_rhs_code (stmt);
-  range_op_handler (code)->fold_range (res, ir0, ir1);
+  if (!range_op_handler (code, TREE_TYPE (op0))->fold_range (res,
+							     TREE_TYPE (op0),
+							     ir0, ir1))
+    res.set_varying (TREE_TYPE (op0));
+
   if (res == ir0)
     t = op0;
   else if (res == ir1)

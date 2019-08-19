@@ -1650,21 +1650,6 @@ extract_range_from_binary_expr (value_range_base *vr,
       && ranges_from_anti_range (&vr1, &vrtem0, &vrtem1))
     {
       extract_range_from_binary_expr (vr, code, expr_type, vr0_, &vrtem0);
-      /* On a division, if dividing one sub-range returned UNDEFINED,
-	 it's a division by zero, and the entire thing is
-	 UNDEFINED.
-
-	 Imagine unsigned [X,Y] .DIV. ~[1,1].  This is done as:
-	 ([X,Y] .DIV. [0,0]) U ([X,Y] .DIV. [2,MAX]).  Once we get the
-	 undefined from the first sub-range, we can bail.  */
-      if (vr->undefined_p ()
-	  && (code == TRUNC_DIV_EXPR
-	      || code == FLOOR_DIV_EXPR
-	      || code == CEIL_DIV_EXPR
-	      || code == EXACT_DIV_EXPR
-	      || code == ROUND_DIV_EXPR
-	      || code == TRUNC_MOD_EXPR))
-	return;
       if (!vrtem1.undefined_p ())
 	{
 	  value_range_base vrres;
@@ -2427,7 +2412,7 @@ range_ops_fold_binary_expr (value_range_base *vr,
 {
   /* Mimic any behavior users of extract_range_from_unary_expr may
      expect.  */
-  range_operator *op = range_op_handler (code);
+  range_operator *op = range_op_handler (code, expr_type);
   if (!op)
     {
       vr->set_varying (expr_type);
@@ -2461,10 +2446,13 @@ range_ops_fold_binary_expr (value_range_base *vr,
   value_range_base n1 = normalize_for_range_ops (vr1);
 #if USE_IRANGE
   irange ir;
-  op->fold_range (ir, n0, n1);
-  *vr = ir;
+  if (op->fold_range (ir, expr_type, n0, n1))
+    *vr = ir;
+  else
+    vr->set_varying (expr_type);
 #else
-  op->fold_range (*vr, n0, n1);
+  if (!op->fold_range (*vr, expr_type, n0, n1))
+    vr->set_varying (expr_type);
 #endif
 }
 
@@ -2477,7 +2465,7 @@ range_ops_fold_unary_expr (value_range_base *vr,
 {
   /* Mimic any behavior users of extract_range_from_unary_expr may
      expect.  */
-  range_operator *op = range_op_handler (code);
+  range_operator *op = range_op_handler (code, expr_type);
   if (!op)
     {
       vr->set_varying (expr_type);
@@ -2525,10 +2513,13 @@ range_ops_fold_unary_expr (value_range_base *vr,
   value_range_base n1 (expr_type);
 #if USE_IRANGE
   irange ir;
-  op->fold_range (ir, n0, n1);
-  *vr = ir;
+  if (op->fold_range (ir, expr_type, n0, n1))
+    *vr = ir;
+  else
+    vr->set_varying (expr_type);
 #else
-  op->fold_range (*vr, n0, n1);
+  if (!op->fold_range (*vr, expr_type, n0, n1))
+    vr->set_varying (expr_type);
 #endif
 }
 

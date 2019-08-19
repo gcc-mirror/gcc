@@ -100,7 +100,8 @@ is_a_helper <const grange_op *>::test (const gimple *gs)
   if (dyn_cast<const gassign *> (gs) || dyn_cast<const gcond *>(gs))
     {
       enum tree_code c = gimple_expr_code (gs);
-      return range_op_handler (c) || gimple_range_adjust_handler (c);
+      tree expr_type = gimple_expr_type (gs);
+      return range_op_handler (c, expr_type) || gimple_range_adjust_handler (c);
     }
   return false;
 }
@@ -116,7 +117,8 @@ is_a_helper <grange_op *>::test (gimple *gs)
   if (dyn_cast<gassign *> (gs) || dyn_cast<gcond *>(gs))
     {
       enum tree_code c = gimple_expr_code (gs);
-      return range_op_handler (c) || gimple_range_adjust_handler (c);
+      tree expr_type = gimple_expr_type (gs);
+      return range_op_handler (c, expr_type) || gimple_range_adjust_handler (c);
     }
   return false;
 }
