@@ -1,3 +1,9 @@
+2019-08-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/generic_inst12.adb, gnat.dg/generic_inst12_pkg1.adb,
+	gnat.dg/generic_inst12_pkg1.ads,
+	gnat.dg/generic_inst12_pkg2.ads: New testcase.
+
 2019-08-19  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/warn28.adb, gnat.dg/warn28.ads: New testcase.

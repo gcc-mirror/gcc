@@ -611,12 +611,11 @@ package body Inline is
                   Inst_Decl := Unit_Declaration_Node (Inst);
 
                   --  Do not inline the instance if the body already exists,
-                  --  or if the instance is a compilation unit, or else if
-                  --  the instance node is simply missing.
+                  --  or the instance node is simply missing.
 
                   if Present (Corresponding_Body (Inst_Decl))
-                    or else Nkind (Parent (Inst_Decl)) = N_Compilation_Unit
-                    or else No (Next (Inst_Decl))
+                    or else (Nkind (Parent (Inst_Decl)) /= N_Compilation_Unit
+                              and then No (Next (Inst_Decl)))
                   then
                      Set_Is_Called (Inst);
                   else
@@ -797,13 +796,11 @@ package body Inline is
 
          To_Pending_Instantiations.Set (Act_Decl, Index);
 
-         --  If an instantiation is either a compilation unit or is in the main
-         --  unit or subunit or is a nested subprogram, then its body is needed
-         --  as per the analysis already done in Analyze_Package_Instantiation
-         --  and Analyze_Subprogram_Instantiation.
+         --  If an instantiation is in the main unit or subunit, or is a nested
+         --  subprogram, then its body is needed as per the analysis done in
+         --  Analyze_Package_Instantiation & Analyze_Subprogram_Instantiation.
 
-         if Nkind (Parent (Inst)) = N_Compilation_Unit
-           or else In_Main_Unit_Or_Subunit (Act_Decl_Id)
+         if In_Main_Unit_Or_Subunit (Act_Decl_Id)
            or else (Is_Subprogram (Act_Decl_Id)
                      and then Is_Nested (Act_Decl_Id))
          then
@@ -4458,6 +4455,13 @@ package body Inline is
          --  of unreachable code.
 
          if No (Info.Inst_Node) then
+            null;
+
+         --  If the instantiation node is a package body, this means that the
+         --  instance is a compilation unit and the instantiation has already
+         --  been performed by Build_Instance_Compilation_Unit_Nodes.
+
+         elsif Nkind (Info.Inst_Node) = N_Package_Body then
             null;
 
          elsif Nkind (Info.Act_Decl) = N_Package_Declaration then
