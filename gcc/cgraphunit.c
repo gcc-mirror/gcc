@@ -2613,8 +2613,11 @@ symbol_table::compile (void)
 
   /* Don't run the IPA passes if there was any error or sorry messages.  */
   if (!seen_error ())
+  {
+    timevar_start (TV_CGRAPH_IPA_PASSES);
     ipa_passes ();
-
+    timevar_stop (TV_CGRAPH_IPA_PASSES);
+  }
   /* Do nothing else if any IPA pass found errors or if we are just streaming LTO.  */
   if (seen_error ()
       || ((!in_lto_p || flag_incremental_link == INCREMENTAL_LINK_LTO)
@@ -2680,7 +2683,11 @@ symbol_table::compile (void)
   /* Output first asm statements and anything ordered. The process
      flag is cleared for these nodes, so we skip them later.  */
   output_in_order ();
+
+  timevar_start (TV_CGRAPH_FUNC_EXPANSION);
   expand_all_functions ();
+  timevar_stop (TV_CGRAPH_FUNC_EXPANSION);
+
   output_variables ();
 
   process_new_functions ();

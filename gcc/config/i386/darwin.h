@@ -39,6 +39,33 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 #endif
 
+/* WORKAROUND pr80556:
+   For x86_64 Darwin10 and later, the unwinder is in libunwind (redirected
+   from libSystem).  This doesn't use the keymgr (see keymgr.c) and therefore
+   the calls that libgcc makes to obtain the KEYMGR_GCC3_DW2_OBJ_LIST are not
+   updated to include new images, and might not even be valid for a single
+   image.
+   Therefore, for 64b exes at least, we must use the libunwind implementation,
+   even when static-libgcc is specified.  We put libSystem first so that
+   unwinder symbols are satisfied from there.
+   We default to 64b for single-arch builds, so apply this unconditionally. */
+#undef REAL_LIBGCC_SPEC
+#define REAL_LIBGCC_SPEC						   \
+   "%{static-libgcc|static: 						   \
+       %:version-compare(>= 10.6 mmacosx-version-min= -lSystem)		   \
+       -lgcc_eh -lgcc;							   \
+      shared-libgcc|fexceptions|fgnu-runtime:				   \
+       %:version-compare(!> 10.5 mmacosx-version-min= -lgcc_s.10.4)	   \
+       %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lgcc_s.10.5)   \
+       %:version-compare(!> 10.5 mmacosx-version-min= -lgcc_ext.10.4)	   \
+       %:version-compare(>= 10.5 mmacosx-version-min= -lgcc_ext.10.5)	   \
+       -lgcc ;								   \
+      :%:version-compare(>< 10.3.9 10.5 mmacosx-version-min= -lgcc_s.10.4) \
+       %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lgcc_s.10.5)   \
+       %:version-compare(!> 10.5 mmacosx-version-min= -lgcc_ext.10.4)	   \
+       %:version-compare(>= 10.5 mmacosx-version-min= -lgcc_ext.10.5)	   \
+       -lgcc }"
+
 /* Size of the Obj-C jump buffer.  */
 #define OBJC_JBLEN ((TARGET_64BIT) ? ((9 * 2) + 3 + 16) : (18))
 
@@ -120,9 +147,9 @@ along with GCC; see the file COPYING3.  If not see
    %{mpc64:crtprec64.o%s} \
    %{mpc80:crtprec80.o%s}" TM_DESTRUCTOR
 
+/* We default to x86_64 for single-arch builds, bi-arch overrides.  */
 #define DARWIN_ARCH_SPEC "x86_64"
 
-/* We default to x86_64 for single-arch builds, bi-arch overrides.  */
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS                                   \
   DARWIN_EXTRA_SPECS                                            \

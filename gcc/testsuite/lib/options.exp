@@ -34,21 +34,30 @@ proc check_for_options_with_filter { language gcc_options exclude \
 					 compiler_patterns \
 					 compiler_non_patterns \
 					 expected_failure } {
-    set filename test-[pid]
-    set fd [open $filename.c w]
-    puts $fd "int main (void) { return 0; }"
-    close $fd
-    remote_download host $filename.c
-
     set test "compiler driver $gcc_options option(s):"
     set gcc_options "\{additional_flags=$gcc_options\}"
 
     switch "$language" {
-	"c" { set compiler cc1 }
+	"c" {
+	    set compiler cc1
+	    set suffix c
+	}
+	"c++" {
+	    set compiler cc1plus
+	    set suffix cc
+	}
 	default { error "unknown language" }
     }
-    set gcc_output [gcc_target_compile $filename.c $filename.x executable $gcc_options]
-    remote_file build delete $filename.c $filename.x $filename.gcno
+
+    set filebase test-[pid]
+    set srcfname $filebase.$suffix
+    set fd [open $srcfname w]
+    puts $fd "int main (void) { return 0; }"
+    close $fd
+    remote_download host $srcfname
+
+    set gcc_output [gcc_target_compile $srcfname $filebase.x executable $gcc_options]
+    remote_file build delete $srcfname $filebase.x $filebase.gcno
 
     if { $exclude != "" } {
 	set lines [split $gcc_output "\n"]
