@@ -38,3 +38,19 @@ generic
 
 procedure Ada.Containers.Generic_Sort (First, Last : Index_Type'Base);
 pragma Pure (Ada.Containers.Generic_Sort);
+--  Reorders the elements of an indexable structure, over the range
+--  First .. Last, such that the elements are sorted in the ordering determined
+--  by the generic formal function Before; Before should return True if Left is
+--  to be sorted before Right. The generic formal Before compares the elements
+--  having the given indices, and the generic formal Swap exchanges the values
+--  of the indicated elements. Any exception raised during evaluation of Before
+--  or Swap is propagated.
+--
+--  The actual function for the generic formal function "<" is expected to
+--  return the same value each time it is called with a particular pair of
+--  element values. It should not modify Container and it should define a
+--  strict weak ordering relationship: irreflexive, asymmetric, transitive, and
+--  in addition, if x < y for any values x and y, then for all other values z,
+--  (x < z) or (z < y).  If the actual for "<" behaves in some other manner,
+--  the behavior of the instance of Generic_Sort is unspecified. The number of
+--  times Generic_Sort calls "<" is unspecified.
