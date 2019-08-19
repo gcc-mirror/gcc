@@ -1,3 +1,21 @@
+2019-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91264 - detect modifying const objects in constexpr.
+	* g++.dg/cpp1y/constexpr-tracking-const1.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const2.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const3.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const4.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const5.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const6.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const7.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const8.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const9.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const10.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const11.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const12.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const13.C: New test.
+	* g++.dg/cpp1y/constexpr-tracking-const14.C: New test.
+
 2019-08-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/elab8.adb, gnat.dg/elab8_gen.adb,
