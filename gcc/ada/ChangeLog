@@ -1,3 +1,11 @@
+2019-08-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Check_References, Generic_Body_Formal): When a
+	formal parameter of a generic subprogram is not referenced in
+	the body, place the corresponding warning on the corresponding
+	entity in the specification of the generic body, as is done for
+	non-generic subprograms.
+
 2019-08-19  Bob Duff  <duff@adacore.com>
 
 	* errout.ads (Size_Too_Small_Message): New constant.
