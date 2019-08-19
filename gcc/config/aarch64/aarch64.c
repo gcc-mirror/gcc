@@ -19750,6 +19750,29 @@ aarch64_fpconst_pow_of_2 (rtx x)
   return exact_log2 (real_to_integer (r));
 }
 
+/* If X is a positive CONST_DOUBLE with a value that is the reciprocal of a
+   power of 2 (i.e 1/2^n) return the number of float bits. e.g. for x==(1/2^n)
+   return n. Otherwise return -1.  */
+
+int
+aarch64_fpconst_pow2_recip (rtx x)
+{
+  REAL_VALUE_TYPE r0;
+
+  if (!CONST_DOUBLE_P (x))
+    return -1;
+
+  r0 = *CONST_DOUBLE_REAL_VALUE (x);
+  if (exact_real_inverse (DFmode, &r0)
+      && !REAL_VALUE_NEGATIVE (r0))
+    {
+	int ret = exact_log2 (real_to_integer (&r0));
+	if (ret >= 1 && ret <= 32)
+	    return ret;
+    }
+  return -1;
+}
+
 /* If X is a vector of equal CONST_DOUBLE values and that value is
    Y, return the aarch64_fpconst_pow_of_2 of Y.  Otherwise return -1.  */
 

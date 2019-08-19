@@ -344,6 +344,13 @@
       (match_test "aarch64_simd_scalar_immediate_valid_for_move (op,
 						 QImode)")))
 
+(define_constraint "Dt"
+  "@internal
+ A const_double which is the reciprocal of an exact power of two, can be
+ used in an scvtf with fract bits operation"
+ (and (match_code "const_double")
+      (match_test "aarch64_fpconst_pow2_recip (op) > 0")))
+
 (define_constraint "Dl"
   "@internal
  A constraint that matches vector of immediates for left shifts."

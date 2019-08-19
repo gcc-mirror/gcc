@@ -525,6 +525,7 @@ enum aarch64_symbol_type aarch64_classify_tls_symbol (rtx);
 enum reg_class aarch64_regno_regclass (unsigned);
 int aarch64_asm_preferred_eh_data_format (int, int);
 int aarch64_fpconst_pow_of_2 (rtx);
+int aarch64_fpconst_pow2_recip (rtx);
 machine_mode aarch64_hard_regno_caller_save_mode (unsigned, unsigned,
 						       machine_mode);
 int aarch64_uxt_size (int, HOST_WIDE_INT);

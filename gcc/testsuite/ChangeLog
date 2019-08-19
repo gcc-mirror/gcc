@@ -1,3 +1,7 @@
+2019-08-19  Joel Hutton  <Joel.Hutton@arm.com>
+
+	* gcc.target/aarch64/fmul_scvtf_1.c: New test.
+
 2019-08-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91264 - detect modifying const objects in constexpr.
