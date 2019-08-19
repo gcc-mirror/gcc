@@ -2107,6 +2107,14 @@ Alternatively, you may run the script using the following command line:
     task bodies, entry bodies and statement sequences in package bodies.
 
 
+  :switch:`--lines-spark`
+    Report the number of lines written in SPARK.
+
+
+  :switch:`--no-lines-spark`
+    Do not report the number of lines written in SPARK.
+
+
   .. _Syntax_Metrics_Control:
 
   Syntax Metrics Control
@@ -2293,6 +2301,53 @@ Alternatively, you may run the script using the following command line:
     Do not report the number of subprogram parameters
 
 
+  .. _Contract_Metrics_Control:
+
+  Contract Metrics Control
+  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+  .. index:: Contract metrics control in gnatmetric
+
+  :switch:`--contract-all`
+    Report all the contract metrics
+
+
+  :switch:`--no-contract-all`
+    Do not report any of the contract metrics
+
+
+  :switch:`--contract`
+    Report the number of public subprograms with contracts
+
+
+  :switch:`--no-contract`
+    Do not report the number of public subprograms with contracts
+
+
+  :switch:`--post`
+    Report the number of public subprograms with postconditions
+
+
+  :switch:`--no-post`
+    Do not report the number of public subprograms with postconditions
+
+
+  :switch:`--contract-complete`
+    Report the number of public subprograms with complete contracts
+
+
+  :switch:`--no-contract-complete`
+    Do not report the number of public subprograms with complete contracts
+
+
+  :switch:`--contract-all`
+    Report the McCabe complexity of public subprograms
+
+
+  :switch:`--no-contract-all`
+    Do not report the McCabe complexity of public subprograms
+
+
   .. _Complexity_Metrics_Control:
 
   Complexity Metrics Control
@@ -2384,7 +2439,7 @@ Alternatively, you may run the script using the following command line:
 
 
   :switch:`--no-complexity-all`
-    Do not report any of complexity metrics
+    Do not report any of the complexity metrics
 
 
   :switch:`--complexity-cyclomatic`
