@@ -341,6 +341,9 @@ class Gogo
   set_debug_optimization(bool b)
   { this->debug_optimization_ = b; }
 
+  // Dump to stderr for debugging
+  void debug_dump();
+
   // Return the size threshold used to determine whether to issue
   // a nil-check for a given pointer dereference. A threshold of -1
   // implies that all potentially faulting dereference ops should
@@ -3068,6 +3071,9 @@ class Bindings
   first_declaration()
   { return this->bindings_.empty() ? NULL : this->bindings_.begin()->second; }
 
+  // Dump to stderr for debugging
+  void debug_dump();
+
  private:
   Named_object*
   add_named_object_to_contour(Contour*, Named_object*);
@@ -3745,5 +3751,11 @@ extern Gogo* go_get_gogo();
 // Whether we have seen any errors.  FIXME: Replace with a backend
 // interface.
 extern bool saw_errors();
+
+// For use in the debugger
+extern void debug_go_gogo(Gogo*);
+extern void debug_go_named_object(Named_object*);
+extern void debug_go_bindings(Bindings*);
+
 
 #endif // !defined(GO_GOGO_H)
