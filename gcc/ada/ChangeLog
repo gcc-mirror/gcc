@@ -1,3 +1,22 @@
+2019-08-19  Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.adb (Length_Mismatch_Info_Message): New function in
+	Selected_Length_Checks to return a message indicating the
+	element counts for the mismatched lengths for a failed
+	compile-time length check.
+	(Plural_Or_Singular_Ending): Support function in
+	Length_Mismatch_Info_Message to return either "" or "s", for
+	concatenating to the end of words.
+	(Selected_Length_Checks): Pass the result of
+	Length_Mismatch_Info_Message as an extra warning message to
+	Compile_Time_Constraint_Error to indicate the mismatched lengths
+	for a failed compile-time length check.
+	* sem_util.ads (Compile_Time_Constraint_Error): Add an optional
+	message formal (Extra_Msg), defaulted to the empty string.
+	* sem_util.adb (Compile_Time_Constraint_Error): Output an extra
+	message following the main warning message (when Extra_Msg is
+	not the empty string).
+
 2019-08-19  Patrick Bernardi  <bernardi@adacore.com>
 
 	* socket.c: Removed the redefinition of getaddrinfo, getnameinfo
