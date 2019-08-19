@@ -1,3 +1,9 @@
+2019-08-19  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-interface/lang.opt (fdump-scos): Define.
+	* gcc-interface/misc.c (gnat_handle_option): Handle
+	OPT_fdump_scos.
+
 2019-08-14  Joffrey Huguet  <huguet@adacore.com>
 
 	* libgnat/a-cofuba.ads: Add a Length attribute to type

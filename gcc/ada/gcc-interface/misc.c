@@ -161,6 +161,7 @@ gnat_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_gnatO:
     case OPT_fRTS_:
     case OPT_I:
+    case OPT_fdump_scos:
     case OPT_nostdinc:
     case OPT_nostdlib:
       /* These are handled by the front-end.  */
