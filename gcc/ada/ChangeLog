@@ -1,5 +1,18 @@
 2019-08-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* inline.adb (Add_Inlined_Body): Do not special-case instances
+	that are compilation units.
+	(Add_Pending_Instantiation): Likewise.
+	(Instantiate_Body): Skip instantiations that are compilation
+	units and have already been performed.
+	* sem_ch12.adb (Needs_Body_Instantiated): Do not special-case
+	instances that are compilation units.
+	(Load_Parent_Of_Generic): Be prepared for parent that is a
+	compilation unit but whose instantiation node has not been
+	replaced.
+
+2019-08-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* inline.adb (Initialize, Lock): Deal with
 	Called_Pending_Instantiations.
 

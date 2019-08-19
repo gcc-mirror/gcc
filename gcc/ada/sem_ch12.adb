@@ -3921,19 +3921,15 @@ package body Sem_Ch12 is
             return False;
          end if;
 
-         --  Here we have a special handling for back-end inlining: if the
-         --  instantiation is not a compilation unit, then we want to have
-         --  its body instantiated. The reason is that Might_Inline_Subp
-         --  does not catch all the cases (since it does not recurse into
-         --  nested packages) so this avoids the need to patch things up
-         --  at a later stage. Moreover the instantiations that are not
-         --  compilation units are only performed on demand when back-end
+         --  Here we have a special handling for back-end inlining: if inline
+         --  processing is required, then we unconditionally want to have the
+         --  body instantiated. The reason is that Might_Inline_Subp does not
+         --  catch all the cases (as it does not recurse into nested packages)
+         --  so this avoids the need to patch things up afterwards. Moreover,
+         --  these instantiations are only performed on demand when back-end
          --  inlining is enabled, so this causes very little extra work.
 
-         if Nkind (Parent (N)) /= N_Compilation_Unit
-           and then Inline_Processing_Required
-           and then Back_End_Inlining
-         then
+         if Inline_Processing_Required and then Back_End_Inlining then
             return True;
          end if;
 
@@ -13699,15 +13695,26 @@ package body Sem_Ch12 is
               and then
                 Nkind (Original_Node (True_Parent)) = N_Package_Instantiation
             then
-               --  Parent is a compilation unit that is an instantiation.
-               --  Instantiation node has been replaced with package decl.
+               --  Parent is a compilation unit that is an instantiation, and
+               --  instantiation node has been replaced with package decl.
 
                Inst_Node := Original_Node (True_Parent);
                exit;
 
             elsif Nkind (True_Parent) = N_Package_Declaration
-              and then Present (Generic_Parent (Specification (True_Parent)))
+             and then Nkind (Parent (True_Parent)) = N_Compilation_Unit
+             and then
+               Nkind (Unit (Parent (True_Parent))) = N_Package_Instantiation
+            then
+               --  Parent is a compilation unit that is an instantiation, but
+               --  instantiation node has not been replaced with package decl.
+
+               Inst_Node := Unit (Parent (True_Parent));
+               exit;
+
+            elsif Nkind (True_Parent) = N_Package_Declaration
               and then Nkind (Parent (True_Parent)) /= N_Compilation_Unit
+              and then Present (Generic_Parent (Specification (True_Parent)))
             then
                --  Parent is an instantiation within another specification.
                --  Declaration for instance has been inserted before original
