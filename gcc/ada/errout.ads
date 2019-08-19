@@ -948,4 +948,10 @@ package Errout is
    --  This name is the identifier name as passed, cased according to the
    --  default identifier casing for the given file.
 
+   Size_Too_Small_Message : constant String :=
+     "size for& too small, minimum allowed is ^";
+   --  This message is explicitly tested in Special_Msg_Delete in the package
+   --  body, which is somewhat questionable, but at least by using a constant
+   --  we are obeying the DRY principle.
+
 end Errout;
