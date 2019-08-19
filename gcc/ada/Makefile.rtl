@@ -2696,6 +2696,18 @@ setup-rts: force
 # propagation of exceptions cannot itself be compiled with checks that
 # may give rise to exceptions, e.g. stack overflow checks.
 
+# Generate target-dependent info into a file named ada_target_properties.
+# This information is used by tools for static analysis: they need to know
+# the size of standard types for a given run-time library. This metadata
+# is meant to be saved at the root of the run-time directory.
+
+ADA_TARGET_PROPERTIES = -gnatet=ada_target_properties
+
+system.o  : system.ads
+	$(ADAC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< \
+	  $(ADA_TARGET_PROPERTIES) \
+	  $(OUTPUT_OPTION)
+
 # Force no sibling call optimization on s-traceb.o so the number of stack
 # frames to be skipped when computing a call chain is not modified by
 # optimization. We don't want inlining, either.
