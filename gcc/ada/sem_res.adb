@@ -6314,13 +6314,15 @@ package body Sem_Res is
       --  an expression function may appear when it is part of a default
       --  expression in a call to an initialization procedure, and must be
       --  frozen now, even if the body is inserted at a later point.
+      --  Otherwise, the call freezes the expression if expander is active,
+      --  for example as part of an object declaration.
 
       if Is_Entity_Name (Subp)
         and then not In_Spec_Expression
         and then not Is_Expression_Function_Or_Completion (Current_Scope)
         and then
           (not Is_Expression_Function_Or_Completion (Entity (Subp))
-            or else Scope (Entity (Subp)) = Current_Scope)
+            or else Expander_Active)
       then
          if Is_Expression_Function (Entity (Subp)) then
 
