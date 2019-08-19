@@ -1,3 +1,10 @@
+2019-08-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91403
+	* tree-scalar-evolution.c (follow_ssa_edge_binary): Inline
+	cases we can handle with tail-recursion...
+	(follow_ssa_edge_expr): ... here.  Do so.
+
 2019-08-19  Kito Cheng  <kito.cheng@sifive.com>
 
 	PR target/91441

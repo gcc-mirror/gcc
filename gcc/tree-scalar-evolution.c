@@ -925,32 +925,11 @@ follow_ssa_edge_binary (class loop *loop, gimple *at_stmt,
 		  res = follow_ssa_edge_expr
 		    (loop, at_stmt, rhs1, halting_phi,
 		     evolution_of_loop, limit);
-		  if (res == t_true)
-		    ;
-		  else if (res == t_dont_know)
-		    *evolution_of_loop = chrec_dont_know;
 		}
-
-	      else if (res == t_dont_know)
-		*evolution_of_loop = chrec_dont_know;
 	    }
 
 	  else
-	    {
-	      /* Match an assignment under the form:
-		 "a = b + ...".  */
-	      *evolution_of_loop = add_to_evolution
-		  (loop->num, chrec_convert (type, *evolution_of_loop,
-					     at_stmt),
-		   code, rhs1, at_stmt);
-	      res = follow_ssa_edge_expr
-		(loop, at_stmt, rhs0, halting_phi,
-		 evolution_of_loop, limit);
-	      if (res == t_true)
-		;	
-	      else if (res == t_dont_know)
-		*evolution_of_loop = chrec_dont_know;
-	    }
+	    gcc_unreachable ();  /* Handled in caller.  */
 	}
 
       else if (TREE_CODE (rhs1) == SSA_NAME)
@@ -964,10 +943,6 @@ follow_ssa_edge_binary (class loop *loop, gimple *at_stmt,
 	  res = follow_ssa_edge_expr
 	    (loop, at_stmt, rhs1, halting_phi,
 	     evolution_of_loop, limit);
-	  if (res == t_true)
-	    ;
-	  else if (res == t_dont_know)
-	    *evolution_of_loop = chrec_dont_know;
 	}
 
       else
@@ -980,26 +955,7 @@ follow_ssa_edge_binary (class loop *loop, gimple *at_stmt,
     case MINUS_EXPR:
       /* This case is under the form "opnd0 = rhs0 - rhs1".  */
       if (TREE_CODE (rhs0) == SSA_NAME)
-	{
-	  /* Match an assignment under the form:
-	     "a = b - ...".  */
-
-	  /* We want only assignments of form "name - name" contribute to
-	     LIMIT, as the other cases do not necessarily contribute to
-	     the complexity of the expression.  */
-	  if (TREE_CODE (rhs1) == SSA_NAME)
-	    limit++;
-
-	  *evolution_of_loop = add_to_evolution
-	      (loop->num, chrec_convert (type, *evolution_of_loop, at_stmt),
-	       MINUS_EXPR, rhs1, at_stmt);
-	  res = follow_ssa_edge_expr (loop, at_stmt, rhs0, halting_phi,
-				      evolution_of_loop, limit);
-	  if (res == t_true)
-	    ;
-	  else if (res == t_dont_know)
-	    *evolution_of_loop = chrec_dont_know;
-	}
+	gcc_unreachable (); /* Handled in caller.  */
       else
 	/* Otherwise, match an assignment under the form:
 	   "a = ... - ...".  */
@@ -1184,6 +1140,7 @@ follow_ssa_edge_expr (class loop *loop, gimple *at_stmt, tree expr,
   /* For SSA_NAME look at the definition statement, handling
      PHI nodes and otherwise expand appropriately for the expression
      handling below.  */
+tail_recurse:
   if (TREE_CODE (expr) == SSA_NAME)
     {
       gimple *def = SSA_NAME_DEF_STMT (expr);
@@ -1193,7 +1150,10 @@ follow_ssa_edge_expr (class loop *loop, gimple *at_stmt, tree expr,
 
       /* Give up if the path is longer than the MAX that we allow.  */
       if (limit > PARAM_VALUE (PARAM_SCEV_MAX_EXPR_COMPLEXITY))
-	return t_dont_know;
+	{
+	  *evolution_of_loop = chrec_dont_know;
+	  return t_dont_know;
+	}
 
       if (gphi *phi = dyn_cast <gphi *>(def))
 	{
@@ -1303,14 +1263,28 @@ follow_ssa_edge_expr (class loop *loop, gimple *at_stmt, tree expr,
       /* This case is under the form "rhs0 +- rhs1".  */
       STRIP_USELESS_TYPE_CONVERSION (rhs0);
       STRIP_USELESS_TYPE_CONVERSION (rhs1);
+      if (TREE_CODE (rhs0) == SSA_NAME
+	  && (TREE_CODE (rhs1) != SSA_NAME || code == MINUS_EXPR))
+	{
+	  /* Match an assignment under the form:
+	     "a = b +- ...".
+	     Use tail-recursion for the simple case.  */
+	  *evolution_of_loop = add_to_evolution
+	      (loop->num, chrec_convert (type, *evolution_of_loop,
+					 at_stmt),
+	       code, rhs1, at_stmt);
+	  expr = rhs0;
+	  goto tail_recurse;
+	}
+      /* Else search for the SCC in both rhs0 and rhs1.  */
       return follow_ssa_edge_binary (loop, at_stmt, type, rhs0, code, rhs1,
 				     halting_phi, evolution_of_loop, limit);
 
     case ASSERT_EXPR:
       /* This assignment is of the form: "a_1 = ASSERT_EXPR <a_2, ...>"
 	 It must be handled as a copy assignment of the form a_1 = a_2.  */
-      return follow_ssa_edge_expr (loop, at_stmt, ASSERT_EXPR_VAR (rhs0),
-				   halting_phi, evolution_of_loop, limit);
+      expr = ASSERT_EXPR_VAR (rhs0);
+      goto tail_recurse;
 
     default:
       return t_false;
