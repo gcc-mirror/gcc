@@ -1,3 +1,8 @@
+2019-08-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_dist.adb (Build_Package_Stubs): Do not specifically visit
+	the declarations of an N_Subprogram_Instantiation node.
+
 2019-08-19  Bob Duff  <duff@adacore.com>
 
 	* doc/gnat_ugn/gnat_utility_programs.rst: Document missing

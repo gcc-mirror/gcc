@@ -963,10 +963,8 @@ package body Exp_Dist is
             when N_Package_Declaration =>
 
                --  Case of a nested package or package instantiation coming
-               --  from source. Note that the anonymous wrapper package for
-               --  subprogram instances is not flagged Is_Generic_Instance at
-               --  this point, so there is a distinct circuit to handle them
-               --  (see case N_Subprogram_Instantiation below).
+               --  from source, including the wrapper package for an instance
+               --  of a generic subprogram.
 
                declare
                   Pkg_Ent : constant Entity_Id :=
@@ -981,16 +979,6 @@ package body Exp_Dist is
                      Visit_Nested_Pkg (Decl);
                   end if;
                end;
-
-            when N_Subprogram_Instantiation =>
-
-               --  The subprogram declaration for an instance of a generic
-               --  subprogram is wrapped in a package that does not come from
-               --  source, so we need to explicitly traverse it here.
-
-               if Comes_From_Source (Decl) then
-                  Visit_Nested_Pkg (Instance_Spec (Decl));
-               end if;
 
             when others =>
                null;
