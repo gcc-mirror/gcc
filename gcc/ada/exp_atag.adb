@@ -742,9 +742,10 @@ package body Exp_Atag is
    ------------------------------------
 
    function Build_Inherit_Predefined_Prims
-     (Loc          : Source_Ptr;
-      Old_Tag_Node : Node_Id;
-      New_Tag_Node : Node_Id) return Node_Id
+     (Loc              : Source_Ptr;
+      Old_Tag_Node     : Node_Id;
+      New_Tag_Node     : Node_Id;
+      Num_Predef_Prims : Int) return Node_Id
    is
    begin
       return
@@ -759,7 +760,7 @@ package body Exp_Atag is
                         New_Tag_Node)))),
               Discrete_Range => Make_Range (Loc,
                 Make_Integer_Literal (Loc, Uint_1),
-                New_Occurrence_Of (RTE (RE_Max_Predef_Prims), Loc))),
+                Make_Integer_Literal (Loc, Num_Predef_Prims))),
 
           Expression =>
             Make_Slice (Loc,
@@ -772,7 +773,7 @@ package body Exp_Atag is
               Discrete_Range =>
                 Make_Range (Loc,
                   Make_Integer_Literal (Loc, 1),
-                  New_Occurrence_Of (RTE (RE_Max_Predef_Prims), Loc))));
+                  Make_Integer_Literal (Loc, Num_Predef_Prims))));
    end Build_Inherit_Predefined_Prims;
 
    -------------------------

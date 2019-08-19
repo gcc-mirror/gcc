@@ -1,3 +1,24 @@
+2019-08-19  Javier Miranda  <miranda@adacore.com>
+
+	PR ada/65696
+	* exp_atag.ads, exp_atag.adb (Build_Inherit_Predefined_Prims):
+	Adding formal to specify how many predefined primitives are
+	inherited from the parent type.
+	* exp_disp.adb (Number_Of_Predefined_Prims): New subprogram.
+	(Make_Secondary_DT): Compute the number of predefined primitives
+	of all tagged types (including tagged types not defined at
+	library level).  Previously we unconditionally relied on the
+	Max_Predef_Prims constant value when building the dispatch
+	tables of tagged types not defined at library level (thus
+	consuming more memory for their dispatch tables than required).
+	(Make_DT): Compute the number of predefined primitives that must
+	be inherited from their parent type when building the dispatch
+	tables of tagged types not defined at library level. Previously
+	we unconditionally relied on the Max_Predef_Prims constant value
+	when building the dispatch tables of tagged types not defined at
+	library level (thus copying more data than required from the
+	parent type).
+
 2019-08-19  Bob Duff  <duff@adacore.com>
 
 	* sem_ch13.adb (Record_Hole_Check): Procedure to check for holes
