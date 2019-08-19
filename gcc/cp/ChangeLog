@@ -1,3 +1,17 @@
+2019-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91264 - detect modifying const objects in constexpr.
+	* constexpr.c (modifying_const_object_error): New function.
+	(cxx_eval_call_expression): Set TREE_READONLY on a CONSTRUCTOR of
+	a const-qualified object after it's been fully constructed.
+	(modifying_const_object_p): New function.
+	(cxx_eval_store_expression): Detect modifying a const object
+	during constant expression evaluation.
+	(cxx_eval_increment_expression): Use a better location when building
+	up the store.
+	(cxx_eval_constant_expression) <case DECL_EXPR>: Mark a constant
+	object's constructor TREE_READONLY.
+
 2019-08-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90393 - ICE with thow in ?:
