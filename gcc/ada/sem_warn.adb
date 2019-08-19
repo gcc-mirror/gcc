@@ -4407,11 +4407,31 @@ package body Sem_Warn is
                         E := Body_E;
                      end if;
 
-                     if not Is_Trivial_Subprogram (Scope (E)) then
-                        Error_Msg_NE -- CODEFIX
-                          ("?u?formal parameter & is not referenced!",
-                           E, Spec_E);
-                     end if;
+                     declare
+                        B : constant Node_Id := Parent (Parent (Scope (E)));
+                        S : Entity_Id := Empty;
+                     begin
+                        if Nkind_In (B,
+                                     N_Expression_Function,
+                                     N_Subprogram_Body,
+                                     N_Subprogram_Renaming_Declaration)
+                        then
+                           S := Corresponding_Spec (B);
+                        end if;
+
+                        --  Do not warn for dispatching operations, because
+                        --  that causes too much noise. Also do not warn for
+                        --  trivial subprograms.
+
+                        if (not Present (S)
+                            or else not Is_Dispatching_Operation (S))
+                          and then not Is_Trivial_Subprogram (Scope (E))
+                        then
+                           Error_Msg_NE -- CODEFIX
+                             ("?u?formal parameter & is not referenced!",
+                              E, Spec_E);
+                        end if;
+                     end;
                   end if;
                end if;
 

@@ -1,3 +1,8 @@
+2019-08-19  Bob Duff  <duff@adacore.com>
+
+	* sem_warn.adb (Warn_On_Unreferenced_Entity): Suppress warning
+	on formal parameters of dispatching operations.
+
 2019-08-19  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Resolve_Call): A call to an expression function
