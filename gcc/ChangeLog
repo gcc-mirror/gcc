@@ -1,3 +1,10 @@
+2019-08-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/91441
+	* toplev.c (process_options): Check TARGET_ASAN_SHADOW_OFFSET is
+	implemented for -fsanitize=kernel-address, and merge check logic
+	with -fsanitize=address.
+
 2019-08-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/darwin.h (TARGET_OS_CPP_BUILTINS): Add asserts
