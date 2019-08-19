@@ -7135,6 +7135,27 @@ package body Sem_Ch3 is
       Parent_Type  : Entity_Id;
       Derived_Type : Entity_Id)
    is
+      function Bound_Belongs_To_Type (B : Node_Id) return Boolean;
+      --  When the type declaration includes a constraint, we generate
+      --  a subtype declaration of an anonymous base type, with the constraint
+      --  given in the original type declaration. Conceptually, the bounds
+      --  are converted to the new base type, and this conversion freezes
+      --  (prematurely) that base type, when the bounds are simply literals.
+      --  As a result, a representation clause for the derived type is then
+      --  rejected or ignored. This procedure recognizes the simple case of
+      --  literal bounds, which allows us to indicate that the conversions
+      --  are not freeze points, and the subsequent representation clause
+      --  can be accepted.
+      --  A similar approach might be used to resolve the long-standing
+      --  problem of premature freezing of derived numeric types ???
+
+      function Bound_Belongs_To_Type (B : Node_Id) return Boolean is
+      begin
+         return Nkind (B) = N_Type_Conversion
+           and then Is_Entity_Name (Expression (B))
+           and then Ekind (Entity (Expression (B))) = E_Enumeration_Literal;
+      end Bound_Belongs_To_Type;
+
       Loc           : constant Source_Ptr := Sloc (N);
       Def           : constant Node_Id    := Type_Definition (N);
       Indic         : constant Node_Id    := Subtype_Indication (Def);
@@ -7350,7 +7371,9 @@ package body Sem_Ch3 is
          --  However, if the type inherits predicates the expressions will
          --  be elaborated earlier and must freeze.
 
-         if Nkind (Indic) /= N_Subtype_Indication
+         if (Nkind (Indic) /= N_Subtype_Indication
+           or else
+             (Bound_Belongs_To_Type (Lo) and then Bound_Belongs_To_Type (Hi)))
            and then not Has_Predicates (Derived_Type)
          then
             Set_Must_Not_Freeze (Lo);
