@@ -1,3 +1,9 @@
+2019-08-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/91347
+	* dse.c (scan_insn): Call add_wild_read for non-const/memset tail calls
+	before reload if HARD_FRAME_POINTER_IS_ARG_POINTER.
+
 2019-08-16  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
