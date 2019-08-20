@@ -1,5 +1,9 @@
 2019-08-20  Ed Schonberg  <schonberg@adacore.com>
 
+	* gnat.dg/storage_size1.adb: New testcase.
+
+2019-08-20  Ed Schonberg  <schonberg@adacore.com>
+
 	* gnat.dg/loop_entry2.adb: New testcase.
 
 2019-08-20  Ed Schonberg  <schonberg@adacore.com>
