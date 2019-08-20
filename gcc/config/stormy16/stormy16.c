@@ -1342,7 +1342,7 @@ xstormy16_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   count = build3 (COMPONENT_REF, TREE_TYPE (f_count), valist, f_count,
 		  NULL_TREE);
 
-  must_stack = targetm.calls.must_pass_in_stack (TYPE_MODE (type), type);
+  must_stack = must_pass_va_arg_in_stack (type);
   size_tree = round_up (size_in_bytes (type), UNITS_PER_WORD);
   gimplify_expr (&size_tree, pre_p, NULL, is_gimple_val, fb_rvalue);
 

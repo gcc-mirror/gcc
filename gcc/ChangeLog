@@ -1,5 +1,15 @@
 2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* calls.h (must_pass_va_arg_in_stack): Declare.
+	* calls.c (must_pass_va_arg_in_stack): New function.
+	* config/alpha/alpha.c (alpha_gimplify_va_arg_1): Use it.
+	* config/sh/sh.c (sh_gimplify_va_arg_expr): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_gimplify_va_arg_expr):
+	Likewise.
+	* config/xtensa/xtensa.c (xtensa_gimplify_va_arg_expr): Likewise.
+
+2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* calls.h (pass_va_arg_by_reference): Declare.
 	* calls.c (pass_va_arg_by_reference): New function.
 	* config/aarch64/aarch64.c (aarch64_gimplify_va_arg_expr): Use it.
