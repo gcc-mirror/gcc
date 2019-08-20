@@ -245,6 +245,8 @@ package body Lib.Load is
          Version                => 0,
          OA_Setting             => 'O');
 
+      Init_Unit_Name (Unum, Spec_Name);
+
       Set_Comes_From_Source_Default (Save_CS);
       Set_Error_Posted (Cunit_Entity);
       Set_Error_Posted (Cunit);
@@ -607,11 +609,10 @@ package body Lib.Load is
 
       --  See if we already have an entry for this unit
 
-      Unum := Main_Unit;
-      while Unum <= Units.Last loop
-         exit when Uname_Actual = Units.Table (Unum).Unit_Name;
-         Unum := Unum + 1;
-      end loop;
+      Unum := Unit_Names.Get (Uname_Actual);
+      if Unum = No_Unit then
+         Unum := Units.Last + 1;
+      end if;
 
       --  Whether or not the entry was found, Unum is now the right value,
       --  since it is one more than Units.Last (i.e. the index of the new
@@ -727,7 +728,7 @@ package body Lib.Load is
          --  found case to print the dependency chain including the last entry
 
          Units.Increment_Last;
-         Units.Table (Unum).Unit_Name := Uname_Actual;
+         Init_Unit_Name (Unum, Uname_Actual);
 
          --  File was found
 
@@ -893,14 +894,14 @@ package body Lib.Load is
                --  subsequent missing files.
 
                Load_Stack.Decrement_Last;
-               Units.Decrement_Last;
+               Remove_Unit (Unum);
 
             --  If unit not required, remove load stack entry and the junk
             --  file table entry, and return No_Unit to indicate not found,
 
             else
                Load_Stack.Decrement_Last;
-               Units.Decrement_Last;
+               Remove_Unit (Unum);
             end if;
 
             Unum := No_Unit;
@@ -921,17 +922,17 @@ package body Lib.Load is
    --------------------------
 
    procedure Make_Child_Decl_Unit (N : Node_Id) is
-      Unit_Decl : constant Node_Id := Library_Unit (N);
+      Unit_Decl : constant Node_Id          := Library_Unit (N);
+      Unit_Num  : constant Unit_Number_Type := Get_Cunit_Unit_Number (N);
 
    begin
       Units.Increment_Last;
-      Units.Table (Units.Last) := Units.Table (Get_Cunit_Unit_Number (N));
-      Units.Table (Units.Last).Unit_Name :=
-        Get_Spec_Name (Unit_Name (Get_Cunit_Unit_Number (N)));
+      Units.Table (Units.Last) := Units.Table (Unit_Num);
       Units.Table (Units.Last).Cunit := Unit_Decl;
       Units.Table (Units.Last).Cunit_Entity  :=
         Defining_Identifier
           (Defining_Unit_Name (Specification (Unit (Unit_Decl))));
+      Init_Unit_Name (Units.Last, Get_Spec_Name (Unit_Name (Unit_Num)));
 
       --  The library unit created for of a child subprogram unit plays no
       --  role in code generation and binding, so label it accordingly.
@@ -963,11 +964,13 @@ package body Lib.Load is
          Units.Table (Units.Last)               := Units.Table (Main_Unit);
          Units.Table (Units.Last).Cunit         := Library_Unit (N);
          Units.Table (Units.Last).Generate_Code := True;
+         Init_Unit_Name (Units.Last, Unit_Name (Main_Unit));
+
          Units.Table (Main_Unit).Cunit          := N;
-         Units.Table (Main_Unit).Unit_Name      :=
-           Get_Body_Name
-             (Unit_Name (Get_Cunit_Unit_Number (Library_Unit (N))));
          Units.Table (Main_Unit).Version        := Source_Checksum (Sind);
+         Init_Unit_Name (Main_Unit,
+           Get_Body_Name
+             (Unit_Name (Get_Cunit_Unit_Number (Library_Unit (N)))));
 
       else
          --  Duplicate information from instance unit, for the body. The unit
