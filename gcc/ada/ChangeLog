@@ -1,3 +1,17 @@
+2019-08-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_disp.adb (Build_Class_Wide_Check, Replace_Formals): When a
+	dispatching call tp a subprogram with a class-wide precondition
+	occurrs in the same declarative part as the ancestor subprogram
+	being called, the`expression for the precondition has not been
+	analyzed yet. Such a call may appear, e.g. in an expression
+	function. In that case, the replacement of formals by actuals in
+	the call cannot use the formal entities of the subprogram being
+	called, and the occurrence of the formals in the expression must
+	be located by name (Chars fields) as would be done at a later
+	freeze point, when the expression is resolved in the context of
+	the subprogram itself.
+
 2019-08-20  Bob Duff  <duff@adacore.com>
 
 	* sem_prag.adb (Persistent_BSS): If an initialization is present
