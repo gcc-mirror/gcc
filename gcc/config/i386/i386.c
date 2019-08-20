@@ -1455,19 +1455,19 @@ ix86_function_arg_regno_p (int regno)
   return false;
 }
 
-/* Return if we do not know how to pass TYPE solely in registers.  */
+/* Return if we do not know how to pass ARG solely in registers.  */
 
 static bool
-ix86_must_pass_in_stack (machine_mode mode, const_tree type)
+ix86_must_pass_in_stack (const function_arg_info &arg)
 {
-  if (must_pass_in_stack_var_size_or_pad (mode, type))
+  if (must_pass_in_stack_var_size_or_pad (arg))
     return true;
 
   /* For 32-bit, we want TImode aggregates to go on the stack.  But watch out!
      The layout_type routine is crafty and tries to trick us into passing
      currently unsupported vector types on the stack by using TImode.  */
-  return (!TARGET_64BIT && mode == TImode
-	  && type && TREE_CODE (type) != VECTOR_TYPE);
+  return (!TARGET_64BIT && arg.mode == TImode
+	  && arg.type && TREE_CODE (arg.type) != VECTOR_TYPE);
 }
 
 /* It returns the size, in bytes, of the area reserved for arguments passed
@@ -2062,9 +2062,13 @@ classify_argument (machine_mode mode, const_tree type,
   if (bytes < 0)
     return 0;
 
-  if (mode != VOIDmode
-      && targetm.calls.must_pass_in_stack (mode, type))
-    return 0;
+  if (mode != VOIDmode)
+    {
+      /* The value of "named" doesn't matter.  */
+      function_arg_info arg (const_cast<tree> (type), mode, /*named=*/true);
+      if (targetm.calls.must_pass_in_stack (arg))
+	return 0;
+    }
 
   if (type && AGGREGATE_TYPE_P (type))
     {

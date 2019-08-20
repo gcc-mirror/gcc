@@ -629,7 +629,7 @@ lm32_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
     /* Compute operand 2 of the call insn.  */
     return GEN_INT (0);
 
-  if (targetm.calls.must_pass_in_stack (arg.mode, arg.type))
+  if (targetm.calls.must_pass_in_stack (arg))
     return NULL_RTX;
 
   if (!arg.named

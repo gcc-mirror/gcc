@@ -2118,7 +2118,7 @@ xtensa_function_arg_advance (cumulative_args_t cum,
 	   / UNITS_PER_WORD);
 
   if (*arg_words < max
-      && (targetm.calls.must_pass_in_stack (arg.mode, arg.type)
+      && (targetm.calls.must_pass_in_stack (arg)
 	  || *arg_words + words > max))
     *arg_words = max;
 

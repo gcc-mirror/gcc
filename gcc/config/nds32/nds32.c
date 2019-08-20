@@ -1951,16 +1951,16 @@ nds32_function_arg (cumulative_args_t ca, const function_arg_info &arg)
 }
 
 static bool
-nds32_must_pass_in_stack (machine_mode mode, const_tree type)
+nds32_must_pass_in_stack (const function_arg_info &arg)
 {
   /* Return true if a type must be passed in memory.
      If it is NOT using hard float abi, small aggregates can be
      passed in a register even we are calling a variadic function.
      So there is no need to take padding into consideration.  */
   if (TARGET_HARD_FLOAT)
-    return must_pass_in_stack_var_size_or_pad (mode, type);
+    return must_pass_in_stack_var_size_or_pad (arg);
   else
-    return must_pass_in_stack_var_size (mode, type);
+    return must_pass_in_stack_var_size (arg);
 }
 
 static int

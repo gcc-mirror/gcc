@@ -156,7 +156,7 @@ extern void setup_incoming_varargs (cumulative_args_t,
 				    const function_arg_info &, int *, int);
 extern unsigned int rs6000_function_arg_boundary (machine_mode mode,
 						  const_tree type);
-extern bool rs6000_must_pass_in_stack (machine_mode mode, const_tree type);
+extern bool rs6000_must_pass_in_stack (const function_arg_info &);
 extern int rs6000_arg_partial_bytes (cumulative_args_t,
 				     const function_arg_info &);
 extern void rs6000_function_arg_advance (cumulative_args_t,

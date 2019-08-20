@@ -4630,11 +4630,11 @@ false.",
    Need audit to verify that this is the case.  */
 DEFHOOK
 (must_pass_in_stack,
- "This target hook should return @code{true} if we should not pass @var{type}\n\
+ "This target hook should return @code{true} if we should not pass @var{arg}\n\
 solely in registers.  The file @file{expr.h} defines a\n\
 definition that is usually appropriate, refer to @file{expr.h} for additional\n\
 documentation.",
- bool, (machine_mode mode, const_tree type),
+ bool, (const function_arg_info &arg),
  must_pass_in_stack_var_size_or_pad)
 
 /* Return true if type TYPE, mode MODE, which is passed by reference,

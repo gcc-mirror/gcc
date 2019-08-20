@@ -2139,7 +2139,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       if (args[i].reg)
 	args[i].partial = targetm.calls.arg_partial_bytes (args_so_far, arg);
 
-      args[i].pass_on_stack = targetm.calls.must_pass_in_stack (mode, type);
+      args[i].pass_on_stack = targetm.calls.must_pass_in_stack (arg);
 
       /* If FUNCTION_ARG returned a (parallel [(expr_list (nil) ...) ...]),
 	 it means that we are to pass this arg in the register(s) designated
@@ -5839,22 +5839,21 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
   return sibcall_failure;
 }
 
-/* Nonzero if we do not know how to pass TYPE solely in registers.  */
+/* Nonzero if we do not know how to pass ARG solely in registers.  */
 
 bool
-must_pass_in_stack_var_size (machine_mode mode ATTRIBUTE_UNUSED,
-			     const_tree type)
+must_pass_in_stack_var_size (const function_arg_info &arg)
 {
-  if (!type)
+  if (!arg.type)
     return false;
 
   /* If the type has variable size...  */
-  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+  if (TREE_CODE (TYPE_SIZE (arg.type)) != INTEGER_CST)
     return true;
 
   /* If the type is marked as addressable (it is required
      to be constructed into the stack)...  */
-  if (TREE_ADDRESSABLE (type))
+  if (TREE_ADDRESSABLE (arg.type))
     return true;
 
   return false;
@@ -5865,28 +5864,28 @@ must_pass_in_stack_var_size (machine_mode mode ATTRIBUTE_UNUSED,
 /* ??? Should be able to merge these two by examining BLOCK_REG_PADDING.  */
 
 bool
-must_pass_in_stack_var_size_or_pad (machine_mode mode, const_tree type)
+must_pass_in_stack_var_size_or_pad (const function_arg_info &arg)
 {
-  if (!type)
+  if (!arg.type)
     return false;
 
   /* If the type has variable size...  */
-  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+  if (TREE_CODE (TYPE_SIZE (arg.type)) != INTEGER_CST)
     return true;
 
   /* If the type is marked as addressable (it is required
      to be constructed into the stack)...  */
-  if (TREE_ADDRESSABLE (type))
+  if (TREE_ADDRESSABLE (arg.type))
     return true;
 
-  if (TYPE_EMPTY_P (type))
+  if (TYPE_EMPTY_P (arg.type))
     return false;
 
   /* If the padding and mode of the type is such that a copy into
      a register would put it into the wrong part of the register.  */
-  if (mode == BLKmode
-      && int_size_in_bytes (type) % (PARM_BOUNDARY / BITS_PER_UNIT)
-      && (targetm.calls.function_arg_padding (mode, type)
+  if (arg.mode == BLKmode
+      && int_size_in_bytes (arg.type) % (PARM_BOUNDARY / BITS_PER_UNIT)
+      && (targetm.calls.function_arg_padding (arg.mode, arg.type)
 	  == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
     return true;
 
@@ -5899,7 +5898,8 @@ must_pass_in_stack_var_size_or_pad (machine_mode mode, const_tree type)
 bool
 must_pass_va_arg_in_stack (tree type)
 {
-  return targetm.calls.must_pass_in_stack (TYPE_MODE (type), type);
+  function_arg_info arg (type, /*named=*/false);
+  return targetm.calls.must_pass_in_stack (arg);
 }
 
 /* Tell the garbage collector about GTY markers in this source file.  */

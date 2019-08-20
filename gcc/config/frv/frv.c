@@ -379,7 +379,7 @@ static void frv_output_const_unspec		(FILE *,
 						 const struct frv_unspec *);
 static bool frv_function_ok_for_sibcall		(tree, tree);
 static rtx frv_struct_value_rtx			(tree, int);
-static bool frv_must_pass_in_stack (machine_mode mode, const_tree type);
+static bool frv_must_pass_in_stack (const function_arg_info &);
 static int frv_arg_partial_bytes (cumulative_args_t,
 				  const function_arg_info &);
 static rtx frv_function_arg (cumulative_args_t, const function_arg_info &);
@@ -3077,13 +3077,9 @@ frv_init_cumulative_args (CUMULATIVE_ARGS *cum,
    in registers.  */
 
 static bool
-frv_must_pass_in_stack (machine_mode mode, const_tree type)
+frv_must_pass_in_stack (const function_arg_info &arg)
 {
-  if (mode == BLKmode)
-    return true;
-  if (type == NULL)
-    return false;
-  return AGGREGATE_TYPE_P (type);
+  return arg.mode == BLKmode || arg.aggregate_type_p ();
 }
 
 /* If defined, a C expression that gives the alignment boundary, in bits, of an

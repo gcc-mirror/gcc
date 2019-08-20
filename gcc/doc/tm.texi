@@ -4012,8 +4012,8 @@ defined, the argument will be computed in the stack and then loaded into
 a register.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_MUST_PASS_IN_STACK (machine_mode @var{mode}, const_tree @var{type})
-This target hook should return @code{true} if we should not pass @var{type}
+@deftypefn {Target Hook} bool TARGET_MUST_PASS_IN_STACK (const function_arg_info @var{&arg})
+This target hook should return @code{true} if we should not pass @var{arg}
 solely in registers.  The file @file{expr.h} defines a
 definition that is usually appropriate, refer to @file{expr.h} for additional
 documentation.

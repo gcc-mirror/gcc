@@ -6252,7 +6252,7 @@ mips_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
   else
     {
       /* If we have a variable-sized parameter, we have no choice.  */
-      return targetm.calls.must_pass_in_stack (arg.mode, arg.type);
+      return targetm.calls.must_pass_in_stack (arg);
     }
 }
 

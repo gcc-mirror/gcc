@@ -2300,7 +2300,7 @@ iq2000_pass_by_reference (cumulative_args_t cum_v,
   /* We must pass by reference if we would be both passing in registers
      and the stack.  This is because any subsequent partial arg would be
      handled incorrectly in this case.  */
-  if (cum && targetm.calls.must_pass_in_stack (arg.mode, arg.type))
+  if (cum && targetm.calls.must_pass_in_stack (arg))
      {
        /* Don't pass the actual CUM to FUNCTION_ARG, because we would
 	  get double copies of any offsets generated for small structs
