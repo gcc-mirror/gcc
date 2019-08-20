@@ -635,7 +635,7 @@ c6x_function_value_regno_p (const unsigned int regno)
 }
 
 /* Types larger than 64 bit, and variable sized types, are passed by
-   reference.  The callee must copy them; see c6x_callee_copies.  */
+   reference.  The callee must copy them; see TARGET_CALLEE_COPIES.  */
 
 static bool
 c6x_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
@@ -667,17 +667,6 @@ c6x_return_in_msb (const_tree valtype)
 {
   HOST_WIDE_INT size = int_size_in_bytes (valtype);
   return TARGET_BIG_ENDIAN && AGGREGATE_TYPE_P (valtype) && size == 3;
-}
-
-/* Implement TARGET_CALLEE_COPIES.  */
-
-static bool
-c6x_callee_copies (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
-		   machine_mode mode ATTRIBUTE_UNUSED,
-		   const_tree type ATTRIBUTE_UNUSED,
-		   bool named ATTRIBUTE_UNUSED)
-{
-  return true;
 }
 
 /* Return the type to use as __builtin_va_list.  */
@@ -6726,7 +6715,7 @@ c6x_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE c6x_pass_by_reference
 #undef TARGET_CALLEE_COPIES
-#define TARGET_CALLEE_COPIES c6x_callee_copies
+#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_arg_info_true
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX c6x_struct_value_rtx
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL

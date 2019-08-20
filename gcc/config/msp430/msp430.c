@@ -750,16 +750,7 @@ msp430_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 }
 
 #undef  TARGET_CALLEE_COPIES
-#define TARGET_CALLEE_COPIES msp430_callee_copies
-
-static bool
-msp430_callee_copies (cumulative_args_t cap ATTRIBUTE_UNUSED,
-		      machine_mode mode ATTRIBUTE_UNUSED,
-		      const_tree type ATTRIBUTE_UNUSED,
-		      bool named ATTRIBUTE_UNUSED)
-{
-  return true;
-}
+#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_arg_info_true
 
 #undef  TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE msp430_function_arg_advance

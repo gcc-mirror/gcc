@@ -4080,7 +4080,7 @@ The pointer is passed in whatever way is appropriate for passing a pointer
 to that type.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_CALLEE_COPIES (cumulative_args_t @var{cum}, machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} bool TARGET_CALLEE_COPIES (cumulative_args_t @var{cum}, const function_arg_info @var{&arg})
 The function argument described by the parameters to this hook is
 known to be passed by reference.  The hook should return true if the
 function argument should be copied by the callee instead of copied

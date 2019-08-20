@@ -1,5 +1,51 @@
 2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target.def (callee_copies): Take a function_arg_info instead
+	of a mode, type and named flag.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (hook_callee_copies_named): Take a function_arg_info
+	instead of a mode, type and named flag.
+	(hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false): Delete.
+	(hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true): Likewise.
+	(hook_bool_CUMULATIVE_ARGS_arg_info_true): New function.
+	* targhooks.c (hook_callee_copies_named): Take a function_arg_info
+	instead of a mode, type and named flag.
+	(hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false): Delete.
+	(hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true): Likewise.
+	(hook_bool_CUMULATIVE_ARGS_arg_info_true): New function.
+	* calls.h (reference_callee_copied): Take a function_arg_info
+	instead of a mode, type and named flag.
+	* calls.c (reference_callee_copied): Likewise.
+	(initialize_argument_information): Update call accordingly.
+	(emit_library_call_value_1): Likewise.
+	* function.c (gimplify_parameters): Likewise.
+	* config/aarch64/aarch64.c (TARGET_CALLEE_COPIES): Define to
+	hook_bool_CUMULATIVE_ARGS_arg_info_false instead of
+	hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false.
+	* config/c6x/c6x.c (c6x_callee_copies): Delete.
+	(TARGET_CALLEE_COPIES): Define to
+	hook_bool_CUMULATIVE_ARGS_arg_info_true instead.
+	* config/epiphany/epiphany.c (TARGET_CALLEE_COPIES): Define to
+	hook_bool_CUMULATIVE_ARGS_arg_info_true instead of
+	hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true.
+	* config/mips/mips.c (mips_callee_copies): Take a function_arg_info
+	instead of a mode, type and named flag.
+	* config/mmix/mmix.c (TARGET_CALLEE_COPIES): Define to
+	hook_bool_CUMULATIVE_ARGS_arg_info_true instead of
+	hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true.
+	* config/mn10300/mn10300.c (TARGET_CALLEE_COPIES): Likewise.
+	* config/msp430/msp430.c (msp430_callee_copies): Delete.
+	(TARGET_CALLEE_COPIES): Define to
+	hook_bool_CUMULATIVE_ARGS_arg_info_true instead.
+	* config/pa/pa.c (pa_callee_copies): Take a function_arg_info
+	instead of a mode, type and named flag.
+	* config/sh/sh.c (sh_callee_copies): Likewise.
+	* config/v850/v850.c (TARGET_CALLEE_COPIES): Define to
+	hook_bool_CUMULATIVE_ARGS_arg_info_true instead of
+	hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true.
+
+2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target.def (function_arg_advance): Take a function_arg_info instead
 	of a mode, type and named flag.
 	* doc/tm.texi: Regenerate.

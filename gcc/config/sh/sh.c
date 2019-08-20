@@ -296,8 +296,7 @@ static machine_mode sh_promote_function_mode (const_tree type,
 						   int for_return);
 static bool sh_pass_by_reference (cumulative_args_t,
 				  const function_arg_info &);
-static bool sh_callee_copies (cumulative_args_t, machine_mode,
-			      const_tree, bool);
+static bool sh_callee_copies (cumulative_args_t, const function_arg_info &);
 static int sh_arg_partial_bytes (cumulative_args_t, const function_arg_info &);
 static void sh_function_arg_advance (cumulative_args_t,
 				     const function_arg_info &);
@@ -7915,14 +7914,15 @@ sh_pass_by_reference (cumulative_args_t cum_v, const function_arg_info &arg)
 }
 
 static bool
-sh_callee_copies (cumulative_args_t cum, machine_mode mode,
-		  const_tree type, bool named ATTRIBUTE_UNUSED)
+sh_callee_copies (cumulative_args_t cum, const function_arg_info &arg)
 {
   /* ??? How can it possibly be correct to return true only on the
      caller side of the equation?  Is there someplace else in the
      sh backend that's magically producing the copies?  */
   return (get_cumulative_args (cum)->outgoing
-	  && ((mode == BLKmode ? TYPE_ALIGN (type) : GET_MODE_ALIGNMENT (mode))
+	  && ((arg.mode == BLKmode
+	       ? TYPE_ALIGN (arg.type)
+	       : GET_MODE_ALIGNMENT (arg.mode))
 	      % SH_MIN_ALIGN_FOR_CALLEE_COPY == 0));
 }
 

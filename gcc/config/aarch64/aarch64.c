@@ -20346,7 +20346,7 @@ aarch64_run_selftests (void)
 #define TARGET_BUILD_BUILTIN_VA_LIST aarch64_build_builtin_va_list
 
 #undef TARGET_CALLEE_COPIES
-#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false
+#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_arg_info_false
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE aarch64_can_eliminate

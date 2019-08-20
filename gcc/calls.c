@@ -935,17 +935,15 @@ pass_va_arg_by_reference (tree type)
   return pass_by_reference (NULL, function_arg_info (type, /*named=*/false));
 }
 
-/* Return true if TYPE, which is passed by reference, should be callee
+/* Return true if ARG, which is passed by reference, should be callee
    copied instead of caller copied.  */
 
 bool
-reference_callee_copied (CUMULATIVE_ARGS *ca, machine_mode mode,
-			 tree type, bool named_arg)
+reference_callee_copied (CUMULATIVE_ARGS *ca, const function_arg_info &arg)
 {
-  if (type && TREE_ADDRESSABLE (type))
+  if (arg.type && TREE_ADDRESSABLE (arg.type))
     return false;
-  return targetm.calls.callee_copies (pack_cumulative_args (ca), mode, type,
-				      named_arg);
+  return targetm.calls.callee_copies (pack_cumulative_args (ca), arg);
 }
 
 
@@ -2002,9 +2000,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	  bool callee_copies;
 	  tree base = NULL_TREE;
 
-	  callee_copies
-	    = reference_callee_copied (args_so_far_pnt, TYPE_MODE (type),
-				       type, argpos < n_named_args);
+	  callee_copies = reference_callee_copied (args_so_far_pnt, orig_arg);
 
 	  /* If we're compiling a thunk, pass through invisible references
 	     instead of making a copy.  */
@@ -4911,8 +4907,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       if (pass_by_reference (&args_so_far_v, orig_arg))
 	{
 	  rtx slot;
-	  int must_copy
-	    = !reference_callee_copied (&args_so_far_v, mode, NULL_TREE, 1);
+	  int must_copy = !reference_callee_copied (&args_so_far_v, orig_arg);
 
 	  /* If this was a CONST function, it is now PURE since it now
 	     reads memory.  */

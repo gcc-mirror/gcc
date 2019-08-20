@@ -90,7 +90,7 @@ static rtx_insn *frame_insn (rtx);
 
 #define TARGET_RETURN_IN_MEMORY epiphany_return_in_memory
 #define TARGET_PASS_BY_REFERENCE epiphany_pass_by_reference
-#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
+#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_arg_info_true
 #define TARGET_FUNCTION_VALUE epiphany_function_value
 #define TARGET_LIBCALL_VALUE epiphany_libcall_value
 #define TARGET_FUNCTION_VALUE_REGNO_P epiphany_function_value_regno_p

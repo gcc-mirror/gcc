@@ -118,8 +118,8 @@ extern void fixup_tail_calls (void);
 
 extern bool pass_by_reference (CUMULATIVE_ARGS *, function_arg_info);
 extern bool pass_va_arg_by_reference (tree);
-extern bool reference_callee_copied (CUMULATIVE_ARGS *, machine_mode,
-				     tree, bool);
+extern bool reference_callee_copied (CUMULATIVE_ARGS *,
+				     const function_arg_info &);
 extern void maybe_warn_alloc_args_overflow (tree, tree, tree[2], int[2]);
 extern tree get_attr_nonstring_decl (tree, tree * = NULL);
 extern void maybe_warn_nonstring_arg (tree, tree);
