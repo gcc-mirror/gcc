@@ -1,5 +1,15 @@
 2019-08-20  Bob Duff  <duff@adacore.com>
 
+	* sem_ch13.adb (Is_Null_Array): New function, used to detect the
+	null array case; used to warn about uncheckedly converting to a
+	zero-sized array.  It is unfortunate that we can't just check
+	the size, and warn on all cases of converting from a
+	nonzero-sized type to a zero-sized one. That's because "0" means
+	two different things: "size is zero" and "size is unknown".
+	Until we fix that design flaw, we need this more targeted fix.
+
+2019-08-20  Bob Duff  <duff@adacore.com>
+
 	* libgnat/a-cborma.adb, libgnat/a-cborse.adb (Clear): Repeatedly
 	call Delete. This avoids clearing the free list, which
 	substantially speeds up future Delete operations.
