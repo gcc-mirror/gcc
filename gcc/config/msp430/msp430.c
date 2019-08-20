@@ -728,14 +728,11 @@ msp430_function_arg (cumulative_args_t cap,
 #define TARGET_ARG_PARTIAL_BYTES msp430_arg_partial_bytes
 
 int
-msp430_arg_partial_bytes (cumulative_args_t cap,
-			  machine_mode mode,
-			  tree type,
-			  bool named)
+msp430_arg_partial_bytes (cumulative_args_t cap, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *ca = get_cumulative_args (cap);
 
-  msp430_evaluate_arg (cap, mode, type, named);
+  msp430_evaluate_arg (cap, arg.mode, arg.type, arg.named);
 
   if (ca->reg_count && ca->mem_count)
     return ca->reg_count * UNITS_PER_WORD;

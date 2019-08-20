@@ -2179,10 +2179,7 @@ pru_function_arg (cumulative_args_t cum_v, machine_mode mode,
    between registers and memory, so we can return 0.  */
 
 static int
-pru_arg_partial_bytes (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
-		       machine_mode mode ATTRIBUTE_UNUSED,
-		       tree type ATTRIBUTE_UNUSED,
-		       bool named ATTRIBUTE_UNUSED)
+pru_arg_partial_bytes (cumulative_args_t, const function_arg_info &)
 {
   return 0;
 }

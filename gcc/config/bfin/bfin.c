@@ -1723,12 +1723,9 @@ bfin_function_arg (cumulative_args_t cum_v, machine_mode mode,
    stack.   */
 
 static int
-bfin_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
-			tree type ATTRIBUTE_UNUSED,
-			bool named ATTRIBUTE_UNUSED)
+bfin_arg_partial_bytes (cumulative_args_t cum, const function_arg_info &arg)
 {
-  int bytes
-    = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
+  int bytes = arg.promoted_size_in_bytes ();
   int bytes_left = get_cumulative_args (cum)->nregs * UNITS_PER_WORD;
   
   if (bytes == -1)

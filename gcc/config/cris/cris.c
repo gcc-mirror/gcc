@@ -141,8 +141,8 @@ static bool cris_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static int cris_address_cost (rtx, machine_mode, addr_space_t, bool);
 static bool cris_pass_by_reference (cumulative_args_t, machine_mode,
 				    const_tree, bool);
-static int cris_arg_partial_bytes (cumulative_args_t, machine_mode,
-				   tree, bool);
+static int cris_arg_partial_bytes (cumulative_args_t,
+				   const function_arg_info &);
 static rtx cris_function_arg (cumulative_args_t, machine_mode,
 			      const_tree, bool);
 static rtx cris_function_incoming_arg (cumulative_args_t,
@@ -4111,13 +4111,12 @@ cris_function_value_regno_p (const unsigned int regno)
 }
 
 static int
-cris_arg_partial_bytes (cumulative_args_t ca, machine_mode mode,
-			tree type, bool named ATTRIBUTE_UNUSED)
+cris_arg_partial_bytes (cumulative_args_t ca, const function_arg_info &arg)
 {
   if (get_cumulative_args (ca)->regs == CRIS_MAX_ARGS_IN_REGS - 1
-      && !targetm.calls.must_pass_in_stack (mode, type)
-      && CRIS_FUNCTION_ARG_SIZE (mode, type) > 4
-      && CRIS_FUNCTION_ARG_SIZE (mode, type) <= 8)
+      && !targetm.calls.must_pass_in_stack (arg.mode, arg.type)
+      && CRIS_FUNCTION_ARG_SIZE (arg.mode, arg.type) > 4
+      && CRIS_FUNCTION_ARG_SIZE (arg.mode, arg.type) <= 8)
     return UNITS_PER_WORD;
   else
     return 0;

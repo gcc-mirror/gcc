@@ -3390,20 +3390,11 @@ nios2_function_arg (cumulative_args_t cum_v, machine_mode mode,
    in memory.  */
 
 static int
-nios2_arg_partial_bytes (cumulative_args_t cum_v,
-                         machine_mode mode, tree type ATTRIBUTE_UNUSED,
-                         bool named ATTRIBUTE_UNUSED)
+nios2_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v); 
-  HOST_WIDE_INT param_size;
-
-  if (mode == BLKmode)
-    {
-      param_size = int_size_in_bytes (type);
-      gcc_assert (param_size >= 0);
-    }
-  else
-    param_size = GET_MODE_SIZE (mode);
+  HOST_WIDE_INT param_size = arg.promoted_size_in_bytes ();
+  gcc_assert (param_size >= 0);
 
   /* Convert to words (round up).  */
   param_size = (UNITS_PER_WORD - 1 + param_size) / UNITS_PER_WORD;

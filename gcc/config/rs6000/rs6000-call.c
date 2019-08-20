@@ -2007,8 +2007,8 @@ rs6000_function_arg (cumulative_args_t cum_v, machine_mode mode,
    returns the number of bytes used by the first element of the PARALLEL.  */
 
 int
-rs6000_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
-			  tree type, bool named)
+rs6000_arg_partial_bytes (cumulative_args_t cum_v,
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   bool passed_in_gprs = true;
@@ -2017,12 +2017,13 @@ rs6000_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
   machine_mode elt_mode;
   int n_elts;
 
-  rs6000_discover_homogeneous_aggregate (mode, type, &elt_mode, &n_elts);
+  rs6000_discover_homogeneous_aggregate (arg.mode, arg.type,
+					 &elt_mode, &n_elts);
 
   if (DEFAULT_ABI == ABI_V4)
     return 0;
 
-  if (USE_ALTIVEC_FOR_ARG_P (cum, elt_mode, named))
+  if (USE_ALTIVEC_FOR_ARG_P (cum, elt_mode, arg.named))
     {
       /* If we are passing this arg in the fixed parameter save area (gprs or
          memory) as well as VRs, we do not use the partial bytes mechanism;
@@ -2041,14 +2042,13 @@ rs6000_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
     }
 
   /* In this complicated case we just disable the partial_nregs code.  */
-  if (TARGET_MACHO && rs6000_darwin64_struct_check_p (mode, type))
+  if (TARGET_MACHO && rs6000_darwin64_struct_check_p (arg.mode, arg.type))
     return 0;
 
-  align_words = rs6000_parm_start (mode, type, cum->words);
+  align_words = rs6000_parm_start (arg.mode, arg.type, cum->words);
 
   if (USE_FP_FOR_ARG_P (cum, elt_mode)
-      && !(TARGET_AIX && !TARGET_ELF
-	   && type != NULL && AGGREGATE_TYPE_P (type)))
+      && !(TARGET_AIX && !TARGET_ELF && arg.aggregate_type_p ()))
     {
       unsigned long n_fpreg = (GET_MODE_SIZE (elt_mode) + 7) >> 3;
 
@@ -2056,7 +2056,7 @@ rs6000_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
          (gprs or memory) as well as FPRs, we do not use the partial
 	 bytes mechanism; instead, rs6000_function_arg will return a
 	 PARALLEL including a memory element as necessary.  */
-      if (type
+      if (arg.type
 	  && (cum->nargs_prototype <= 0
 	      || ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
 		  && TARGET_XL_COMPAT
@@ -2087,7 +2087,7 @@ rs6000_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
 
   if (passed_in_gprs
       && align_words < GP_ARG_NUM_REG
-      && GP_ARG_NUM_REG < align_words + rs6000_arg_size (mode, type))
+      && GP_ARG_NUM_REG < align_words + rs6000_arg_size (arg.mode, arg.type))
     ret = (GP_ARG_NUM_REG - align_words) * (TARGET_32BIT ? 4 : 8);
 
   if (ret != 0 && TARGET_DEBUG_ARG)
@@ -2222,7 +2222,8 @@ rs6000_parm_needs_stack (cumulative_args_t args_so_far, tree type)
     return true;
 
   /* Also true if we're partially in registers and partially not.  */
-  if (rs6000_arg_partial_bytes (args_so_far, mode, type, true) != 0)
+  function_arg_info arg (type, mode, /*named=*/true);
+  if (rs6000_arg_partial_bytes (args_so_far, arg) != 0)
     return true;
 
   /* Update info on where next arg arrives in registers.  */

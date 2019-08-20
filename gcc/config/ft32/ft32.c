@@ -711,8 +711,7 @@ ft32_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
    that fit in argument passing registers.  */
 
 static int
-ft32_arg_partial_bytes (cumulative_args_t cum_v,
-                        machine_mode mode, tree type, bool named)
+ft32_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int bytes_left, size;
@@ -720,16 +719,16 @@ ft32_arg_partial_bytes (cumulative_args_t cum_v,
   if (*cum >= 8)
     return 0;
 
-  if (ft32_pass_by_reference (cum_v, mode, type, named))
+  if (ft32_pass_by_reference (cum_v, arg.mode, arg.type, arg.named))
     size = 4;
-  else if (type)
+  else if (arg.type)
     {
-      if (AGGREGATE_TYPE_P (type))
+      if (AGGREGATE_TYPE_P (arg.type))
         return 0;
-      size = int_size_in_bytes (type);
+      size = int_size_in_bytes (arg.type);
     }
   else
-    size = GET_MODE_SIZE (mode);
+    size = GET_MODE_SIZE (arg.mode);
 
   bytes_left = (4 * 6) - ((*cum - 2) * 4);
 

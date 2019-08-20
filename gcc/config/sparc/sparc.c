@@ -668,7 +668,7 @@ static pad_direction sparc_function_arg_padding (machine_mode, const_tree);
 static unsigned int sparc_function_arg_boundary (machine_mode,
 						 const_tree);
 static int sparc_arg_partial_bytes (cumulative_args_t,
-				    machine_mode, tree, bool);
+				    const function_arg_info &);
 static bool sparc_return_in_memory (const_tree, const_tree);
 static rtx sparc_struct_value_rtx (tree, int);
 static rtx sparc_function_value (const_tree, const_tree, bool);
@@ -7533,14 +7533,13 @@ sparc_function_arg_boundary (machine_mode mode, const_tree type)
    mode] will be split between that reg and memory.  */
 
 static int
-sparc_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
-			 tree type, bool named)
+sparc_arg_partial_bytes (cumulative_args_t cum, const function_arg_info &arg)
 {
   int slotno, regno, padding;
 
   /* We pass false for incoming here, it doesn't matter.  */
-  slotno = function_arg_slotno (get_cumulative_args (cum), mode, type, named,
-				false, &regno, &padding);
+  slotno = function_arg_slotno (get_cumulative_args (cum), arg.mode, arg.type,
+				arg.named, false, &regno, &padding);
 
   if (slotno == -1)
     return 0;
@@ -7550,7 +7549,7 @@ sparc_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
       /* We are guaranteed by pass_by_reference that the size of the
 	 argument is not greater than 8 bytes, so we only need to return
 	 one word if the argument is partially passed in registers.  */
-      const int size = GET_MODE_SIZE (mode);
+      const int size = GET_MODE_SIZE (arg.mode);
 
       if (size > UNITS_PER_WORD && slotno == SPARC_INT_ARG_MAX - 1)
 	return UNITS_PER_WORD;
@@ -7560,33 +7559,33 @@ sparc_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
       /* We are guaranteed by pass_by_reference that the size of the
 	 argument is not greater than 16 bytes, so we only need to return
 	 one word if the argument is partially passed in registers.  */
-      if (type && AGGREGATE_TYPE_P (type))
+      if (arg.aggregate_type_p ())
 	{
-	  const int size = int_size_in_bytes (type);
+	  const int size = int_size_in_bytes (arg.type);
 
 	  if (size > UNITS_PER_WORD
 	      && (slotno == SPARC_INT_ARG_MAX - 1
 		  || slotno == SPARC_FP_ARG_MAX - 1))
 	    return UNITS_PER_WORD;
 	}
-      else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
-	       || ((GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
-		    || (type && VECTOR_TYPE_P (type)))
-		   && !(TARGET_FPU && named)))
+      else if (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_INT
+	       || ((GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT
+		    || (arg.type && VECTOR_TYPE_P (arg.type)))
+		   && !(TARGET_FPU && arg.named)))
 	{
-	  const int size = (type && VECTOR_FLOAT_TYPE_P (type))
-			   ? int_size_in_bytes (type)
-			   : GET_MODE_SIZE (mode);
+	  const int size = (arg.type && VECTOR_FLOAT_TYPE_P (arg.type))
+			   ? int_size_in_bytes (arg.type)
+			   : GET_MODE_SIZE (arg.mode);
 
 	  if (size > UNITS_PER_WORD && slotno == SPARC_INT_ARG_MAX - 1)
 	    return UNITS_PER_WORD;
 	}
-      else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
-	       || (type && VECTOR_TYPE_P (type)))
+      else if (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT
+	       || (arg.type && VECTOR_TYPE_P (arg.type)))
 	{
-	  const int size = (type && VECTOR_FLOAT_TYPE_P (type))
-			   ? int_size_in_bytes (type)
-			   : GET_MODE_SIZE (mode);
+	  const int size = (arg.type && VECTOR_FLOAT_TYPE_P (arg.type))
+			   ? int_size_in_bytes (arg.type)
+			   : GET_MODE_SIZE (arg.mode);
 
 	  if (size > UNITS_PER_WORD && slotno == SPARC_FP_ARG_MAX - 1)
 	    return UNITS_PER_WORD;

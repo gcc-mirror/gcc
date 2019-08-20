@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "ifcvt.h"
 #include "rtl-iter.h"
+#include "calls.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -379,8 +380,8 @@ static void frv_output_const_unspec		(FILE *,
 static bool frv_function_ok_for_sibcall		(tree, tree);
 static rtx frv_struct_value_rtx			(tree, int);
 static bool frv_must_pass_in_stack (machine_mode mode, const_tree type);
-static int frv_arg_partial_bytes (cumulative_args_t, machine_mode,
-				  tree, bool);
+static int frv_arg_partial_bytes (cumulative_args_t,
+				  const function_arg_info &);
 static rtx frv_function_arg (cumulative_args_t, machine_mode,
 			     const_tree, bool);
 static rtx frv_function_incoming_arg (cumulative_args_t, machine_mode,
@@ -3183,28 +3184,12 @@ frv_function_arg_advance (cumulative_args_t cum_v,
 }
 
 
-/* A C expression for the number of words, at the beginning of an argument,
-   must be put in registers.  The value must be zero for arguments that are
-   passed entirely in registers or that are entirely pushed on the stack.
-
-   On some machines, certain arguments must be passed partially in registers
-   and partially in memory.  On these machines, typically the first N words of
-   arguments are passed in registers, and the rest on the stack.  If a
-   multi-word argument (a `double' or a structure) crosses that boundary, its
-   first few words must be passed in registers and the rest must be pushed.
-   This macro tells the compiler when this occurs, and how many of the words
-   should go in registers.
-
-   `FUNCTION_ARG' for these arguments should return the first register to be
-   used by the caller for this argument; likewise `FUNCTION_INCOMING_ARG', for
-   the called function.  */
+/* Implement TARGET_ARG_PARTIAL_BYTES.  */
 
 static int
-frv_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
-		       tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
+frv_arg_partial_bytes (cumulative_args_t cum, const function_arg_info &arg)
 {
-
-  machine_mode xmode = (mode == BLKmode) ? SImode : mode;
+  machine_mode xmode = (arg.mode == BLKmode) ? SImode : arg.mode;
   int bytes = GET_MODE_SIZE (xmode);
   int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   int arg_num = *get_cumulative_args (cum);

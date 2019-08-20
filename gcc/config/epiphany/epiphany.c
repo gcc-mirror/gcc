@@ -744,18 +744,20 @@ epiphany_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
 }
 
 static int
-epiphany_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
-			    tree type, bool named ATTRIBUTE_UNUSED)
+epiphany_arg_partial_bytes (cumulative_args_t cum,
+			    const function_arg_info &arg)
 {
   int words = 0, rounded_cum;
 
-  gcc_assert (!epiphany_pass_by_reference (cum, mode, type, /* named */ true));
+  gcc_assert (!epiphany_pass_by_reference (cum, arg.mode, arg.type,
+					   arg.named));
 
-  rounded_cum = ROUND_ADVANCE_CUM (*get_cumulative_args (cum), mode, type);
+  rounded_cum = ROUND_ADVANCE_CUM (*get_cumulative_args (cum),
+				   arg.mode, arg.type);
   if (rounded_cum < MAX_EPIPHANY_PARM_REGS)
     {
       words = MAX_EPIPHANY_PARM_REGS - rounded_cum;
-      if (words >= ROUND_ADVANCE_ARG (mode, type))
+      if (words >= ROUND_ADVANCE_ARG (arg.mode, arg.type))
 	words = 0;
     }
   return words * UNITS_PER_WORD;

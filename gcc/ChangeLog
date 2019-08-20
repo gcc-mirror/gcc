@@ -1,5 +1,62 @@
 2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target.def (arg_partial_bytes): Take a function_arg_info instead
+	of a mode, type and named flag.
+	* doc/tm.texi: Regenerate.
+	* target.h (function_arg_info): Declare.
+	* calls.h (function_arg_info): New class.
+	* targhooks.h (hook_int_CUMULATIVE_ARGS_mode_tree_bool_0): Delete.
+	(hook_int_CUMULATIVE_ARGS_arg_info_0): Declare.
+	* targhooks.c (hook_int_CUMULATIVE_ARGS_mode_tree_bool_0): Delete.
+	(hook_int_CUMULATIVE_ARGS_arg_info_0): New function.
+	* calls.c (initialize_argument_information): Update call to
+	targetm.calls.partial_bytes.
+	(emit_library_call_value_1): Likewise.
+	* expr.c (block_move_libcall_safe_for_call_parm): Likewise.
+	* function.c (assign_parm_find_entry_rtl): Likewise.
+	* config/alpha/alpha.c (alpha_arg_partial_bytes): Take a
+	function_arg_info instead of a mode, type and named flag.
+	* config/arc/arc.c (arc_arg_partial_bytes): Likewise.
+	* config/arm/arm.c (arm_arg_partial_bytes): Likewise.
+	(cmse_func_args_or_return_in_stack): Update accordingly.
+	* config/bfin/bfin.c (bfin_arg_partial_bytes): Take a
+	function_arg_info instead of a mode, type and named flag.
+	* config/cris/cris.c (cris_arg_partial_bytes): Likewise.
+	* config/csky/csky.c (csky_arg_partial_bytes): Likewise.
+	* config/epiphany/epiphany.c (epiphany_arg_partial_bytes): Likewise.
+	* config/fr30/fr30.c: Include calls.h.
+	(fr30_arg_partial_bytes): Take a function_arg_info instead of a mode,
+	type and named flag.
+	* config/frv/frv.c: Include calls.h.
+	(frv_arg_partial_bytes): Take a function_arg_info instead of a mode,
+	type and named flag.
+	* config/ft32/ft32.c (ft32_arg_partial_bytes): Likewise.
+	* config/gcn/gcn.c (gcn_arg_partial_bytes): Likewise.
+	* config/ia64/ia64.c (ia64_arg_partial_bytes): Likewise.
+	* config/iq2000/iq2000.c (iq2000_arg_partial_bytes): Likewise.
+	* config/m32r/m32r.c (m32r_arg_partial_bytes): Likewise.
+	* config/mcore/mcore.c (mcore_arg_partial_bytes): Likewise.
+	* config/microblaze/microblaze.c (function_arg_partial_bytes):
+	Likewise.
+	* config/mips/mips.c (mips_arg_partial_bytes): Likewise.
+	* config/mn10300/mn10300.c (mn10300_arg_partial_bytes): Likewise.
+	* config/moxie/moxie.c (moxie_arg_partial_bytes): Likewise.
+	* config/msp430/msp430.c (msp430_arg_partial_bytes): Likewise.
+	* config/nds32/nds32.c (nds32_arg_partial_bytes): Likewise.
+	* config/nios2/nios2.c (nios2_arg_partial_bytes): Likewise.
+	* config/pa/pa.c (pa_arg_partial_bytes): Likewise.
+	* config/pru/pru.c (pru_arg_partial_bytes): Likewise.
+	* config/riscv/riscv.c (riscv_arg_partial_bytes): Likewise.
+	* config/rs6000/rs6000-internal.h (rs6000_arg_partial_bytes): Likewise.
+	* config/rs6000/rs6000-call.c (rs6000_arg_partial_bytes): Likewise.
+	(rs6000_parm_needs_stack): Update call accordingly.
+	* config/sh/sh.c (sh_arg_partial_bytes): Take a
+	function_arg_info instead of a mode, type and named flag.
+	* config/sparc/sparc.c (sparc_arg_partial_bytes): Likewise.
+	* config/v850/v850.c (v850_arg_partial_bytes): Likewise.
+
+2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* calls.h (must_pass_va_arg_in_stack): Declare.
 	* calls.c (must_pass_va_arg_in_stack): New function.
 	* config/alpha/alpha.c (alpha_gimplify_va_arg_1): Use it.

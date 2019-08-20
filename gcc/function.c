@@ -2559,10 +2559,9 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
     {
       int partial;
 
-      partial = targetm.calls.arg_partial_bytes (all->args_so_far,
-						 data->promoted_mode,
-						 data->passed_type,
-						 data->named_arg);
+      function_arg_info arg (data->passed_type, data->promoted_mode,
+			     data->named_arg);
+      partial = targetm.calls.arg_partial_bytes (all->args_so_far, arg);
       data->partial = partial;
 
       /* The caller might already have allocated stack space for the

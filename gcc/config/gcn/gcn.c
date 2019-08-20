@@ -2349,22 +2349,21 @@ gcn_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
    in registers or that are entirely pushed on the stack.  */
 
 static int
-gcn_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode, tree type,
-		       bool named)
+gcn_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (!named)
+  if (!arg.named)
     return 0;
 
-  if (targetm.calls.must_pass_in_stack (mode, type))
+  if (targetm.calls.must_pass_in_stack (arg.mode, arg.type))
     return 0;
 
   if (cum->num >= NUM_PARM_REGS)
     return 0;
 
   /* If the argument fits entirely in registers, return 0.  */
-  if (cum->num + num_arg_regs (mode, type) <= NUM_PARM_REGS)
+  if (cum->num + num_arg_regs (arg.mode, arg.type) <= NUM_PARM_REGS)
     return 0;
 
   return (NUM_PARM_REGS - cum->num) * UNITS_PER_WORD;

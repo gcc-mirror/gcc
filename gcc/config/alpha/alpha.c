@@ -5635,20 +5635,17 @@ alpha_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 }
 
 static int
-alpha_arg_partial_bytes (cumulative_args_t cum_v,
-			 machine_mode mode ATTRIBUTE_UNUSED,
-			 tree type ATTRIBUTE_UNUSED,
-			 bool named ATTRIBUTE_UNUSED)
+alpha_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   int words = 0;
   CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED = get_cumulative_args (cum_v);
 
 #if TARGET_ABI_OPEN_VMS
   if (cum->num_args < 6
-      && 6 < cum->num_args + ALPHA_ARG_SIZE (mode, type))
+      && 6 < cum->num_args + ALPHA_ARG_SIZE (arg.mode, arg.type))
     words = 6 - cum->num_args;
 #elif TARGET_ABI_OSF
-  if (*cum < 6 && 6 < *cum + ALPHA_ARG_SIZE (mode, type))
+  if (*cum < 6 && 6 < *cum + ALPHA_ARG_SIZE (arg.mode, arg.type))
     words = 6 - *cum;
 #else
 #error Unhandled ABI

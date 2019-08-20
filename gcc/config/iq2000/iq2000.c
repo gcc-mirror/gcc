@@ -161,8 +161,8 @@ static section *iq2000_select_section (tree, int, unsigned HOST_WIDE_INT);
 static rtx  iq2000_legitimize_address (rtx, rtx, machine_mode);
 static bool iq2000_pass_by_reference  (cumulative_args_t, machine_mode,
 				       const_tree, bool);
-static int  iq2000_arg_partial_bytes  (cumulative_args_t, machine_mode,
-				       tree, bool);
+static int  iq2000_arg_partial_bytes  (cumulative_args_t,
+				       const function_arg_info &arg);
 static rtx iq2000_function_arg	      (cumulative_args_t,
 				       machine_mode, const_tree, bool);
 static void iq2000_function_arg_advance (cumulative_args_t,
@@ -1421,13 +1421,12 @@ iq2000_function_arg_boundary (machine_mode mode, const_tree type)
 }
 
 static int
-iq2000_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
-			  tree type ATTRIBUTE_UNUSED,
-			  bool named ATTRIBUTE_UNUSED)
+iq2000_arg_partial_bytes (cumulative_args_t cum_v,
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (mode == DImode && cum->arg_words == MAX_ARGS_IN_REGISTERS - 1)
+  if (arg.mode == DImode && cum->arg_words == MAX_ARGS_IN_REGISTERS - 1)
     {
       if (TARGET_DEBUG_D_MODE)
 	fprintf (stderr, "iq2000_arg_partial_bytes=%d\n", UNITS_PER_WORD);

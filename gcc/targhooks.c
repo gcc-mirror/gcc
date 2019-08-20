@@ -768,10 +768,8 @@ hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true (
 }
 
 int
-hook_int_CUMULATIVE_ARGS_mode_tree_bool_0 (
-	cumulative_args_t ca ATTRIBUTE_UNUSED,
-	machine_mode mode ATTRIBUTE_UNUSED,
-	tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
+hook_int_CUMULATIVE_ARGS_arg_info_0 (cumulative_args_t,
+				     const function_arg_info &)
 {
   return 0;
 }

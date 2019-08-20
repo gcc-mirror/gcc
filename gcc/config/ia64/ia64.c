@@ -201,8 +201,8 @@ static bool ia64_can_eliminate (const int, const int);
 static machine_mode hfa_element_mode (const_tree, bool);
 static void ia64_setup_incoming_varargs (cumulative_args_t, machine_mode,
 					 tree, int *, int);
-static int ia64_arg_partial_bytes (cumulative_args_t, machine_mode,
-				   tree, bool);
+static int ia64_arg_partial_bytes (cumulative_args_t,
+				   const function_arg_info &);
 static rtx ia64_function_arg_1 (cumulative_args_t, machine_mode,
 				const_tree, bool, bool);
 static rtx ia64_function_arg (cumulative_args_t, machine_mode,
@@ -4961,13 +4961,12 @@ ia64_function_incoming_arg (cumulative_args_t cum,
    in memory.  */
 
 static int
-ia64_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
-			tree type, bool named ATTRIBUTE_UNUSED)
+ia64_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  int words = ia64_function_arg_words (type, mode);
-  int offset = ia64_function_arg_offset (cum, type, words);
+  int words = ia64_function_arg_words (arg.type, arg.mode);
+  int offset = ia64_function_arg_offset (cum, arg.type, words);
 
   /* If all argument slots are used, then it must go on the stack.  */
   if (cum->words + offset >= MAX_ARGUMENT_SLOTS)
