@@ -3526,11 +3526,15 @@ module_state::module_state (tree name, module_state *parent, bool partition)
   header_p = direct_p = primary_p = interface_p = exported_p
     = imported_p = from_partition_p = cmi_noted_p = false;
   if (name && TREE_CODE (name) == STRING_CST)
-    header_p = true;
-  gcc_checking_assert (header_p
-		       ? (IS_ABSOLUTE_PATH (TREE_STRING_POINTER (name))
-			  || TREE_STRING_POINTER (name)[0] == '.')
-		       : !name || ISALPHA (IDENTIFIER_POINTER (name)[0]));
+    {
+      header_p = true;
+      const char *string = TREE_STRING_POINTER (name);
+      gcc_checking_assert (string[0] == '.'
+			   ? IS_DIR_SEPARATOR (string[1])
+			   : IS_ABSOLUTE_PATH (string));
+    }
+  else
+    gcc_checking_assert (!name || ISALPHA (IDENTIFIER_POINTER (name)[0]));
   gcc_checking_assert (!(parent && header_p));
 }
 
@@ -11617,7 +11621,7 @@ get_module (tree name, module_state *parent, bool partition)
 static module_state *
 get_module (const char *ptr)
 {
-  if (IS_ABSOLUTE_PATH (ptr) || ptr[0] == '.')
+  if (ptr[0] == '.' ? IS_DIR_SEPARATOR (ptr[1]) : IS_ABSOLUTE_PATH (ptr))
     /* A header name.  */
     return get_module (build_string (strlen (ptr), ptr));
 
@@ -11627,10 +11631,11 @@ get_module (const char *ptr)
   for (const char *probe = ptr;; probe++)
     if (!*probe || *probe == '.' || *probe == ':')
       {
-	size_t len = probe - ptr;
-	if (!len)
+	if (probe == ptr)
 	  return NULL;
-	mod = get_module (get_identifier_with_length (ptr, len), mod, partition);
+
+	mod = get_module (get_identifier_with_length (ptr, probe - ptr),
+			  mod, partition);
 	ptr = probe;
 	if (*ptr == ':')
 	  {
@@ -11642,6 +11647,9 @@ get_module (const char *ptr)
 	if (!*ptr++)
 	  break;
       }
+    else if (!(ISALPHA (*probe) || *probe == '_'
+	       || (probe != ptr && ISDIGIT (*probe))))
+      return NULL;
 
   return mod;
 }
@@ -12014,7 +12022,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 		set_cmi_repo (file);
 		continue;
 	      }
-	    
+
 	    starting = false;
 	    file = maybe_strip_cmi_prefix (file);
 	    module_state *state = get_module (mod);
