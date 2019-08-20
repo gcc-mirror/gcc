@@ -1,3 +1,7 @@
+2019-08-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
+
 2019-08-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
