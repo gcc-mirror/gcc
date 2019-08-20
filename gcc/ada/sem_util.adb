@@ -247,6 +247,39 @@ package body Sem_Util is
       return Interface_List (Nod);
    end Abstract_Interface_List;
 
+   ----------------------------------
+   -- Acquire_Warning_Match_String --
+   ----------------------------------
+
+   function Acquire_Warning_Match_String (Str_Lit : Node_Id) return String is
+      S : constant String := To_String (Strval (Str_Lit));
+   begin
+      if S = "" then
+         return "";
+      else
+         --  Put "*" before or after or both, if it's not already there
+
+         declare
+            F : constant Boolean := S (S'First) = '*';
+            L : constant Boolean := S (S'Last) = '*';
+         begin
+            if F then
+               if L then
+                  return S;
+               else
+                  return S & "*";
+               end if;
+            else
+               if L then
+                  return "*" & S;
+               else
+                  return "*" & S & "*";
+               end if;
+            end if;
+         end;
+      end if;
+   end Acquire_Warning_Match_String;
+
    --------------------------------
    -- Add_Access_Type_To_Process --
    --------------------------------

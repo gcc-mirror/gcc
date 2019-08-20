@@ -1,3 +1,27 @@
+2019-08-20  Bob Duff  <duff@adacore.com>
+
+	* errout.adb (Error_Msg_Internal): Set Warn_Err in case of
+	Is_Style_Msg.
+	* erroutc.adb (Output_Msg_Text): Do Warnings_Treated_As_Errors
+	processing and [warning-as-error] modification for style
+	messages.  Clean up code, simplify, remove unnecessary block
+	statement, add renaming of table entry.
+	* erroutc.ads (Warning_Treated_As_Error): Fix comment: no such
+	thing as Set_Warning_As_Error.
+	* opt.ads: Clean up comments and move related declarations near
+	each other.
+	* par-prag.adb: Process Warning_As_Error. This is necessary
+	because many style warning happen during parsing.
+	* sem_prag.adb: Use new Acquire_Warning_Match_String.
+	* sem_util.ads, sem_util.adb (Acquire_Warning_Match_String): New
+	function shared by par-prag.adb and sem_prag.adb. Replaces the
+	procedure in sem_prag.adb. Avoid use of global variables.
+	* stringt.ads, stringt.adb (To_String): New function to convert
+	String_Id to String.
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Document the
+	new feature.
+	* gnat_rm.texi: Regenerate.
+
 2019-08-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lib.ads: Add with clause for GNAT.HTable.
