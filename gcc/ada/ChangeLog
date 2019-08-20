@@ -1,3 +1,26 @@
+2019-08-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lib.ads: Add with clause for GNAT.HTable.
+	Add pragma Inline for Is_Loaded and alphabetize the list.
+	(Unit_Name_Table_Size): New constant.
+	(Unit_Name_Header_Num): New subtype.
+	(Unit_Name_Hash): New function declaration.
+	(Unit_Names): New simple hash table.
+	(Init_Unit_Name): New procedure declaration.
+	* lib.adb (Set_Unit_Name): Unregister the old name in the table,
+	if any, and then register the new name.
+	(Init_Unit_Name): New procedure.
+	(Is_Loaded): Reimplement using a lookup in the names table.
+	(Remove_Unit): Unregister the name.
+	(Unit_Name_Hash): New function.
+	* lib-load.adb (Create_Dummy_Package_Unit): Call Init_Unit_Name.
+	(Load_Unit): Use a lookup in the names table to find out whether
+	the unit has already been loaded.  Call Init_Unit_Name and then
+	Remove_Unit if the loading has failed.
+	(Make_Child_Decl_Unit): Call Init_Unit_Name.
+	(Make_Instance_Unit): Likewise.
+	* lib-writ.adb (Ensure_System_Dependency): Likewise.
+
 2019-08-20  Bob Duff  <duff@adacore.com>
 
 	* sem_ch13.adb (Record_Hole_Check): Initialize After_Last.
