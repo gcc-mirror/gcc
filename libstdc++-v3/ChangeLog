@@ -1,3 +1,15 @@
+2019-08-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91371
+	* include/std/type_traits (is_function): Simplify definition. Remove
+	partial specializations for function types.
+	(__is_referenceable): Simplify definition.
+	* testsuite/20_util/bind/91371.cc: New test.
+	* testsuite/20_util/is_function/91371.cc: New test.
+	* testsuite/20_util/is_function/value.cc: Check more pointer types.
+	* testsuite/20_util/is_member_function_pointer/91371.cc: New test.
+	* testsuite/20_util/is_object/91371.cc: New test.
+
 2019-08-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
