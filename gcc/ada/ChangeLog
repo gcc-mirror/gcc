@@ -1,5 +1,12 @@
 2019-08-20  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch3.adb (Analyze_Object_Declaration): If actual type is
+	private and distinct from nominal type in declaration, propagate
+	flags Is_Constr_Subt_For_U_Nominal and _UN_Aliased to full view
+	of private type.
+
+2019-08-20  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_attr.adb (Expand_Loop_Entry_Attribute): When expanding a
 	loop entry attribute for a while_loop we construct a function
 	that incorporates the expanded condition of the loop. The itypes
