@@ -1681,6 +1681,15 @@ package body Repinfo is
          Write_Eol;
          Write_Line ("}");
       end if;
+
+      --  The type is relevant for a record subtype
+
+      if List_Representation_Info = 4
+        and then not Is_Base_Type (Ent)
+        and then Is_Itype (Etype (Ent))
+      then
+         Relevant_Entities.Set (Etype (Ent), True);
+      end if;
    end List_Record_Info;
 
    -------------------
