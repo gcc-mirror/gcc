@@ -5019,7 +5019,6 @@ trees_out::core_bools (tree t)
       WB (t->function_decl.novops_flag);
       WB (t->function_decl.returns_twice_flag);
       WB (t->function_decl.malloc_flag);
-      WB (t->function_decl.operator_new_flag);
       WB (t->function_decl.declared_inline_flag);
       WB (t->function_decl.no_inline_warning_flag);
       WB (t->function_decl.no_instrument_function_entry_exit);
@@ -5027,9 +5026,14 @@ trees_out::core_bools (tree t)
       WB (t->function_decl.disregard_inline_limits);
       WB (t->function_decl.pure_flag);
       WB (t->function_decl.looping_const_or_pure_flag);
+
       WB (t->function_decl.has_debug_args_flag);
-      WB (t->function_decl.lambda_function);
       WB (t->function_decl.versioned_function);
+
+      /* decl_type is a (misnamed) 2 bit discriminator.	 */
+      unsigned kind = t->function_decl.decl_type;
+      WB ((kind >> 0) & 1);
+      WB ((kind >> 1) & 1);
     }
 #undef WB
 }
@@ -5161,7 +5165,6 @@ trees_in::core_bools (tree t)
       RB (t->function_decl.novops_flag);
       RB (t->function_decl.returns_twice_flag);
       RB (t->function_decl.malloc_flag);
-      RB (t->function_decl.operator_new_flag);
       RB (t->function_decl.declared_inline_flag);
       RB (t->function_decl.no_inline_warning_flag);
       RB (t->function_decl.no_instrument_function_entry_exit);
@@ -5169,9 +5172,15 @@ trees_in::core_bools (tree t)
       RB (t->function_decl.disregard_inline_limits);
       RB (t->function_decl.pure_flag);
       RB (t->function_decl.looping_const_or_pure_flag);
+      
       RB (t->function_decl.has_debug_args_flag);
-      RB (t->function_decl.lambda_function);
       RB (t->function_decl.versioned_function);
+
+      /* decl_type is a (misnamed) 2 bit discriminator.	 */
+      unsigned kind = 0;
+      kind |= unsigned (b ()) << 0;
+      kind |= unsigned (b ()) << 1;
+      t->function_decl.decl_type = function_decl_type (kind);
     }
 #undef RB
   return !get_overrun ();
@@ -5665,6 +5674,15 @@ trees_out::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     {
+      if (streaming_p ())
+	{
+	  /* Builtins can be streamed by value when a header declares
+	     them.  */
+	  WU (DECL_BUILT_IN_CLASS (t));
+	  if (DECL_BUILT_IN_CLASS (t) != NOT_BUILT_IN)
+	    WU (DECL_FUNCTION_CODE (t));
+	}
+
       chained_decls (t->function_decl.arguments);
       WT (t->function_decl.personality);
       WT (t->function_decl.function_specific_target);
@@ -6143,6 +6161,14 @@ trees_in::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     {
+      unsigned bltin = u ();
+      DECL_BUILT_IN_CLASS (t) = built_in_class (bltin);
+      if (bltin != NOT_BUILT_IN)
+	{
+	  bltin = u ();
+	  DECL_FUNCTION_CODE (t) = built_in_function (bltin);
+	}
+
       t->function_decl.arguments = chained_decls ();
       RT (t->function_decl.personality);
       RT (t->function_decl.function_specific_target);

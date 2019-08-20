@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2019 Free Software Foundation, Inc.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,22 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-options "-fkeep-inline-functions" }
+// { dg-do link }
 
-#include <type_traits>
-
-static_assert( std::is_enum_v<std::endian> );
-static_assert( std::endian::little != std::endian::big );
-static_assert( std::endian::native == std::endian::big
-		|| std::endian::native == std::endian::little );
-
-namespace gnu {
-  int little, big, native;
-}
-
-using namespace std;
-using namespace gnu;
-
-// std::endian is a scoped-enum so these should refer to gnu::native etc.
-int test = little + big + native;
+#include <cxxabi.h>
+int main() { } // PR libstdc++/51333

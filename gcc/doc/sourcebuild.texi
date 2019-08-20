@@ -2669,6 +2669,91 @@ assembly output.
 @item scan-not-hidden @var{symbol} [@{ target/xfail @var{selector} @}]
 Passes if @var{symbol} is not defined as a hidden symbol in the test's
 assembly output.
+
+@item check-function-bodies @var{prefix} @var{terminator} [@var{option}]
+Looks through the source file for comments that give the expected assembly
+output for selected functions.  Each line of expected output starts with the
+prefix string @var{prefix} and the expected output for a function as a whole
+is followed by a line that starts with the string @var{terminator}.
+Specifying an empty terminator is equivalent to specifying @samp{"*/"}.
+
+If @var{option} is specified, the test only applies to command lines
+that contain @var{option}.  This can be useful if a source file is compiled
+both with and without optimization, since it is rarely useful to check the
+assembly output for unoptimized code.
+
+The first line of the expected output for a function @var{fn} has the form:
+
+@smallexample
+@var{prefix} @var{fn}:  [@{ target/xfail @var{selector} @}]
+@end smallexample
+
+Subsequent lines of the expected output also start with @var{prefix}.
+In both cases, whitespace after @var{prefix} is not significant.
+
+The test discards assembly directives such as @code{.cfi_startproc}
+and local label definitions such as @code{.LFB0} from the compiler's
+assembly output.  It then matches the result against the expected
+output for a function as a single regular expression.  This means that
+later lines can use backslashes to refer back to @samp{(@dots{})}
+captures on earlier lines.  For example:
+
+@smallexample
+/* @{ dg-final @{ check-function-bodies "**" "" "-DCHECK_ASM" @} @} */
+@dots{}
+/*
+** add_w0_s8_m:
+**	mov	(z[0-9]+\.b), w0
+**	add	z0\.b, p0/m, z0\.b, \1
+**	ret
+*/
+svint8_t add_w0_s8_m (@dots{}) @{ @dots{} @}
+@dots{}
+/*
+** add_b0_s8_m:
+**	mov	(z[0-9]+\.b), b0
+**	add	z1\.b, p0/m, z1\.b, \1
+**	ret
+*/
+svint8_t add_b0_s8_m (@dots{}) @{ @dots{} @}
+@end smallexample
+
+checks whether the implementations of @code{add_w0_s8_m} and
+@code{add_b0_s8_m} match the regular expressions given.  The test only
+runs when @samp{-DCHECK_ASM} is passed on the command line.
+
+It is possible to create non-capturing multi-line regular expression
+groups of the form @samp{(@var{a}|@var{b}|@dots{})} by putting the
+@samp{(}, @samp{|} and @samp{)} on separate lines (each still using
+@var{prefix}).  For example:
+
+@smallexample
+/*
+** cmple_f16_tied:
+** (
+**	fcmge	p0\.h, p0/z, z1\.h, z0\.h
+** |
+**	fcmle	p0\.h, p0/z, z0\.h, z1\.h
+** )
+**	ret
+*/
+svbool_t cmple_f16_tied (@dots{}) @{ @dots{} @}
+@end smallexample
+
+checks whether @code{cmple_f16_tied} is implemented by the
+@code{fcmge} instruction followed by @code{ret} or by the
+@code{fcmle} instruction followed by @code{ret}.  The test is
+still a single regular rexpression.
+
+A line containing just:
+
+@smallexample
+@var{prefix} ...
+@end smallexample
+
+stands for zero or more unmatched lines; the whitespace after
+@var{prefix} is again not significant.
+
 @end table
 
 @subsubsection Scan optimization dump files

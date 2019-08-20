@@ -713,45 +713,38 @@ gimple_divmod_fixed_value (gassign *stmt, tree value, profile_probability prob,
   return tmp2;
 }
 
-/* Return most common value of TOPN_VALUE histogram.  If
-   there's a unique value, return true and set VALUE and COUNT
+/* Return the n-th value count of TOPN_VALUE histogram.  If
+   there's a value, return true and set VALUE and COUNT
    arguments.  */
 
 bool
-get_most_common_single_value (gimple *stmt, const char *counter_type,
-			      histogram_value hist,
-			      gcov_type *value, gcov_type *count,
-			      gcov_type *all)
+get_nth_most_common_value (gimple *stmt, const char *counter_type,
+			   histogram_value hist, gcov_type *value,
+			   gcov_type *count, gcov_type *all, unsigned n)
 {
   if (hist->hvalue.counters[2] == -1)
     return false;
+
+  gcc_assert (n < GCOV_TOPN_VALUES);
 
   *count = 0;
   *value = 0;
 
   gcov_type read_all = hist->hvalue.counters[0];
 
-  for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
-    {
-      gcov_type v = hist->hvalue.counters[2 * i + 1];
-      gcov_type c = hist->hvalue.counters[2 * i + 2];
+  gcov_type v = hist->hvalue.counters[2 * n + 1];
+  gcov_type c = hist->hvalue.counters[2 * n + 2];
 
-      /* Indirect calls can't be vereified.  */
-      if (stmt && check_counter (stmt, counter_type, &c, &read_all,
-				 gimple_bb (stmt)->count))
-	return false;
+  /* Indirect calls can't be verified.  */
+  if (stmt
+      && check_counter (stmt, counter_type, &c, &read_all,
+			gimple_bb (stmt)->count))
+    return false;
 
-      *all = read_all;
+  *all = read_all;
 
-      if (c > *count)
-	{
-	  *value = v;
-	  *count = c;
-	}
-      else if (c == *count && v > *value)
-	*value = v;
-    }
-
+  *value = v;
+  *count = c;
   return true;
 }
 
@@ -784,8 +777,8 @@ gimple_divmod_fixed_value_transform (gimple_stmt_iterator *si)
   if (!histogram)
     return false;
 
-  if (!get_most_common_single_value (stmt, "divmod", histogram, &val, &count,
-				     &all))
+  if (!get_nth_most_common_value (stmt, "divmod", histogram, &val, &count,
+				  &all))
     return false;
 
   value = histogram->hvalue.value;
@@ -1439,8 +1432,8 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
   if (!histogram)
     return false;
 
-  if (!get_most_common_single_value (NULL, "indirect call", histogram, &val,
-				     &count, &all))
+  if (!get_nth_most_common_value (NULL, "indirect call", histogram, &val,
+				  &count, &all))
     return false;
 
   if (4 * count <= 3 * all)
@@ -1658,8 +1651,8 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
   if (!histogram)
     return false;
 
-  if (!get_most_common_single_value (stmt, "stringops", histogram, &val,
-				     &count, &all))
+  if (!get_nth_most_common_value (stmt, "stringops", histogram, &val, &count,
+				  &all))
     return false;
 
   gimple_remove_histogram_value (cfun, stmt, histogram);

@@ -1121,12 +1121,12 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       hstate.add_int (DECL_BUILT_IN_CLASS (t));
       hstate.add_flag (DECL_STATIC_CONSTRUCTOR (t));
       hstate.add_flag (DECL_STATIC_DESTRUCTOR (t));
+      hstate.add_flag (FUNCTION_DECL_DECL_TYPE (t));
       hstate.add_flag (DECL_UNINLINABLE (t));
       hstate.add_flag (DECL_POSSIBLY_INLINED (t));
       hstate.add_flag (DECL_IS_NOVOPS (t));
       hstate.add_flag (DECL_IS_RETURNS_TWICE (t));
       hstate.add_flag (DECL_IS_MALLOC (t));
-      hstate.add_flag (DECL_IS_OPERATOR_NEW (t));
       hstate.add_flag (DECL_DECLARED_INLINE_P (t));
       hstate.add_flag (DECL_STATIC_CHAIN (t));
       hstate.add_flag (DECL_NO_INLINE_WARNING_P (t));

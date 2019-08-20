@@ -469,7 +469,6 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_1_PLUS, OPT_ftree_copy_prop, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_dce, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_dominator_opts, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_ftree_dse, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_fre, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_sink, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_slsr, NULL, 1 },
@@ -480,14 +479,16 @@ static const struct default_options default_options_table[] =
 #if DELAY_SLOTS
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fdelayed_branch, NULL, 1 },
 #endif
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fdse, NULL, 1 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fif_conversion, NULL, 1 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fif_conversion2, NULL, 1 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_finline_functions_called_once, NULL, 1 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fmove_loop_invariants, NULL, 1 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fssa_phiopt, NULL, 1 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_ftree_bit_ccp, NULL, 1 },
-    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_ftree_sra, NULL, 1 },
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_ftree_dse, NULL, 1 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_ftree_pta, NULL, 1 },
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_ftree_sra, NULL, 1 },
 
     /* -O2 and -Os optimizations.  */
     { OPT_LEVELS_2_PLUS, OPT_fcaller_saves, NULL, 1 },

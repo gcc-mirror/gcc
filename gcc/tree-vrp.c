@@ -909,22 +909,17 @@ operand_less_p (tree val, tree val2)
   /* LT is folded faster than GE and others.  Inline the common case.  */
   if (TREE_CODE (val) == INTEGER_CST && TREE_CODE (val2) == INTEGER_CST)
     return tree_int_cst_lt (val, val2);
+  else if (TREE_CODE (val) == SSA_NAME && TREE_CODE (val2) == SSA_NAME)
+    return val == val2 ? 0 : -2;
   else
     {
-      tree tcmp;
-
-      fold_defer_overflow_warnings ();
-
-      tcmp = fold_binary_to_constant (LT_EXPR, boolean_type_node, val, val2);
-
-      fold_undefer_and_ignore_overflow_warnings ();
-
-      if (!tcmp
-	  || TREE_CODE (tcmp) != INTEGER_CST)
-	return -2;
-
-      if (!integer_zerop (tcmp))
+      int cmp = compare_values (val, val2);
+      if (cmp == -1)
 	return 1;
+      else if (cmp == 0 || cmp == 1)
+	return 0;
+      else
+	return -2;
     }
 
   return 0;
@@ -958,8 +953,8 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
 
   /* Convert the two values into the same type.  This is needed because
      sizetype causes sign extension even for unsigned types.  */
-  val2 = fold_convert (TREE_TYPE (val1), val2);
-  STRIP_USELESS_TYPE_CONVERSION (val2);
+  if (!useless_type_conversion_p (TREE_TYPE (val1), TREE_TYPE (val2)))
+    val2 = fold_convert (TREE_TYPE (val1), val2);
 
   const bool overflow_undefined
     = INTEGRAL_TYPE_P (TREE_TYPE (val1))
@@ -1067,31 +1062,42 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
     }
   else
     {
-      tree t;
+      if (TREE_CODE (val1) == INTEGER_CST && TREE_CODE (val2) == INTEGER_CST)
+	{
+	  /* We cannot compare overflowed values.  */
+	  if (TREE_OVERFLOW (val1) || TREE_OVERFLOW (val2))
+	    return -2;
+
+	  return tree_int_cst_compare (val1, val2);
+	}
 
       /* First see if VAL1 and VAL2 are not the same.  */
-      if (val1 == val2 || operand_equal_p (val1, val2, 0))
+      if (operand_equal_p (val1, val2, 0))
 	return 0;
 
+      fold_defer_overflow_warnings ();
+
       /* If VAL1 is a lower address than VAL2, return -1.  */
-      if (operand_less_p (val1, val2) == 1)
-	return -1;
+      tree t = fold_binary_to_constant (LT_EXPR, boolean_type_node, val1, val2);
+      if (t && integer_onep (t))
+	{
+	  fold_undefer_and_ignore_overflow_warnings ();
+	  return -1;
+	}
 
       /* If VAL1 is a higher address than VAL2, return +1.  */
-      if (operand_less_p (val2, val1) == 1)
-	return 1;
-
-      /* If VAL1 is different than VAL2, return +2.
-	 For integer constants we either have already returned -1 or 1
-	 or they are equivalent.  We still might succeed in proving
-	 something about non-trivial operands.  */
-      if (TREE_CODE (val1) != INTEGER_CST
-	  || TREE_CODE (val2) != INTEGER_CST)
+      t = fold_binary_to_constant (LT_EXPR, boolean_type_node, val2, val1);
+      if (t && integer_onep (t))
 	{
-          t = fold_binary_to_constant (NE_EXPR, boolean_type_node, val1, val2);
-	  if (t && integer_onep (t))
-	    return 2;
+	  fold_undefer_and_ignore_overflow_warnings ();
+	  return 1;
 	}
+
+      /* If VAL1 is different than VAL2, return +2.  */
+      t = fold_binary_to_constant (NE_EXPR, boolean_type_node, val1, val2);
+      fold_undefer_and_ignore_overflow_warnings ();
+      if (t && integer_onep (t))
+	return 2;
 
       return -2;
     }
@@ -1238,7 +1244,7 @@ extract_range_into_wide_ints (const value_range_base *vr,
 
 static void
 extract_range_from_multiplicative_op (value_range_base *vr,
-				      enum tree_code code,
+				      enum tree_code code, tree type,
 				      const value_range_base *vr0,
 				      const value_range_base *vr1)
 {
@@ -1253,7 +1259,6 @@ extract_range_from_multiplicative_op (value_range_base *vr,
   gcc_assert (vr0->kind () == VR_RANGE
 	      && vr0->kind () == vr1->kind ());
 
-  tree type = vr0->type ();
   wide_int res_lb, res_ub;
   wide_int vr0_lb = wi::to_wide (vr0->min ());
   wide_int vr0_ub = wi::to_wide (vr0->max ());
@@ -1785,7 +1790,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 	  vr->set_varying ();
 	  return;
 	}
-      extract_range_from_multiplicative_op (vr, code, &vr0, &vr1);
+      extract_range_from_multiplicative_op (vr, code, expr_type, &vr0, &vr1);
       return;
     }
   else if (code == RSHIFT_EXPR
@@ -1806,7 +1811,8 @@ extract_range_from_binary_expr (value_range_base *vr,
 	      if (vr0.kind () != VR_RANGE || vr0.symbolic_p ())
 		vr0.set (VR_RANGE, vrp_val_min (expr_type),
 			 vrp_val_max (expr_type));
-	      extract_range_from_multiplicative_op (vr, code, &vr0, &vr1);
+	      extract_range_from_multiplicative_op (vr, code, expr_type,
+						    &vr0, &vr1);
 	      return;
 	    }
 	  else if (code == LSHIFT_EXPR
@@ -4292,10 +4298,12 @@ class vrp_prop : public ssa_propagation_engine
 
   class vr_values vr_values;
   /* Temporary delegator to minimize code churn.  */
-  value_range *get_value_range (const_tree op)
+  const value_range *get_value_range (const_tree op)
     { return vr_values.get_value_range (op); }
+  void set_def_to_varying (const_tree def)
+    { vr_values.set_def_to_varying (def); }
   void set_defs_to_varying (gimple *stmt)
-    { return vr_values.set_defs_to_varying (stmt); }
+    { vr_values.set_defs_to_varying (stmt); }
   void extract_range_from_stmt (gimple *stmt, edge *taken_edge_p,
 				tree *output_p, value_range *vr)
     { vr_values.extract_range_from_stmt (stmt, taken_edge_p, output_p, vr); }
@@ -5148,7 +5156,7 @@ vrp_prop::vrp_initialize ()
 	  if (!stmt_interesting_for_vrp (phi))
 	    {
 	      tree lhs = PHI_RESULT (phi);
-	      get_value_range (lhs)->set_varying ();
+	      set_def_to_varying (lhs);
 	      prop_set_simulate_again (phi, false);
 	    }
 	  else
@@ -5343,7 +5351,7 @@ vrp_prop::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 	    use_operand_p use_p;
 	    enum ssa_prop_result res = SSA_PROP_VARYING;
 
-	    get_value_range (lhs)->set_varying ();
+	    set_def_to_varying (lhs);
 
 	    FOR_EACH_IMM_USE_FAST (use_p, iter, lhs)
 	      {

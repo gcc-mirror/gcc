@@ -3328,78 +3328,287 @@ handle_pointer_plus (gimple_stmt_iterator *gsi)
     }
 }
 
-/* If RHS, either directly or indirectly, refers to a string of constant
-   length, return the length.  Otherwise, if it refers to a character
-   constant, return 1 if the constant is non-zero and 0 if it is nul.
-   Otherwise, return a negative value.  */
+/* Describes recursion limits used by count_nonzero_bytes.  */
 
-static HOST_WIDE_INT
-get_min_string_length (tree rhs, bool *full_string_p)
+class ssa_name_limit_t
 {
-  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs)))
+  bitmap visited;         /* Bitmap of visited SSA_NAMEs.  */
+  unsigned ssa_def_max;   /* Longest chain of SSA_NAMEs to follow.  */
+
+  /* Not copyable or assignable.  */
+  ssa_name_limit_t (ssa_name_limit_t&);
+  void operator= (ssa_name_limit_t&);
+
+ public:
+
+  ssa_name_limit_t ()
+    : visited (NULL),
+    ssa_def_max (PARAM_VALUE (PARAM_SSA_NAME_DEF_CHAIN_LIMIT)) { }
+
+  int next_ssa_name (tree);
+
+  ~ssa_name_limit_t ()
     {
-      if (tree_expr_nonzero_p (rhs))
+      if (visited)
+	BITMAP_FREE (visited);
+    }
+};
+
+/* If the SSA_NAME has already been "seen" return a positive value.
+   Otherwise add it to VISITED.  If the SSA_NAME limit has been
+   reached, return a negative value.  Otherwise return zero.  */
+
+int ssa_name_limit_t::next_ssa_name (tree ssa_name)
+{
+  if (!visited)
+    visited = BITMAP_ALLOC (NULL);
+
+  /* Return a positive value if SSA_NAME has already been visited.  */
+  if (!bitmap_set_bit (visited, SSA_NAME_VERSION (ssa_name)))
+    return 1;
+
+  /* Return a negative value to let caller avoid recursing beyond
+     the specified limit.  */
+  if (ssa_def_max == 0)
+    return -1;
+
+  --ssa_def_max;
+
+  return 0;
+}
+
+/* Determine the minimum and maximum number of leading non-zero bytes
+   in the representation of EXP and set LENRANGE[0] and LENRANGE[1]
+   to each.  Set LENRANGE[2] to the total number of bytes in
+   the representation.  Set *NULTREM if the representation contains
+   a zero byte, and set *ALLNUL if all the bytes are zero.  Avoid
+   recursing deeper than the limits in SNLIM allow.  Return true
+   on success and false otherwise.  */
+
+static bool
+count_nonzero_bytes (tree exp, unsigned lenrange[3], bool *nulterm,
+		     bool *allnul, bool *allnonnul, ssa_name_limit_t &snlim)
+{
+  if (TREE_CODE (exp) == SSA_NAME)
+    {
+      /* Handle a single-character specially.  */
+      tree type = TREE_TYPE (exp);
+      if (TREE_CODE (type) == INTEGER_TYPE
+	  && TYPE_MODE (type) == TYPE_MODE (char_type_node)
+	  && TYPE_PRECISION (type) == TYPE_PRECISION (char_type_node))
 	{
-	  *full_string_p = false;
-	  return 1;
+	  /* Determine if the character EXP is known to be non-zero
+	     (even if its exact value is not known) and if so, recurse
+	     once to set the range, etc.  */
+	  if (tree_expr_nonzero_p (exp))
+	    return count_nonzero_bytes (build_int_cst (type, 1), lenrange,
+					nulterm, allnul, allnonnul, snlim);
+	  /* Don't know whether EXP is or isn't nonzero.  */
+	  return false;
 	}
 
-      *full_string_p = true;
-      return 0;
+      gimple *stmt = SSA_NAME_DEF_STMT (exp);
+      if (gimple_code (stmt) != GIMPLE_PHI)
+	return false;
+
+      /* Avoid processing an SSA_NAME that has already been visited
+	 or if an SSA_NAME limit has been reached.  Indicate success
+	 if the former and failure if the latter.  */
+      if (int res = snlim.next_ssa_name (exp))
+	return res > 0;
+
+      /* Determine the minimum and maximum from the PHI arguments.  */
+      unsigned int n = gimple_phi_num_args (stmt);
+      for (unsigned i = 0; i != n; i++)
+	{
+	  tree def = gimple_phi_arg_def (stmt, i);
+	  if (!count_nonzero_bytes (def, lenrange, nulterm, allnul, allnonnul,
+				    snlim))
+	    return false;
+	}
+
+      return true;
     }
 
-  if (TREE_CODE (rhs) == MEM_REF
-      && integer_zerop (TREE_OPERAND (rhs, 1)))
-    {
-      rhs = TREE_OPERAND (rhs, 0);
-      if (TREE_CODE (rhs) == ADDR_EXPR)
-	{
-	  tree rhs_addr = rhs;
+  /* Offset from the beginning of the representation bytes, a pointer
+     to the representation, and the number of bytes of the representation
+     to consider (may be less than the object size for MEM_REF).  */
+  unsigned HOST_WIDE_INT offset = 0;
+  const char *prep = NULL;
+  unsigned nbytes = 0;
 
-	  rhs = TREE_OPERAND (rhs, 0);
-	  if (TREE_CODE (rhs) != STRING_CST)
+  if (TREE_CODE (exp) == MEM_REF)
+    {
+      /* If the MEM_REF operand is the address of an object such as
+	 a string or integer, extract it and the offset into it.  */
+      tree arg = TREE_OPERAND (exp, 0);
+      if (TREE_CODE (arg) != ADDR_EXPR)
+	return false;
+
+      tree off = TREE_OPERAND (exp, 1);
+      if (TREE_CODE (off) != INTEGER_CST
+	  || !tree_fits_uhwi_p (off))
+	return false;
+
+      offset = tree_to_uhwi (off);
+      if (INT_MAX < offset)
+	return false;
+
+      /* The size of the MEM_REF access determines the number of bytes.  */
+      tree type = TREE_TYPE (exp);
+      if (tree typesize = TYPE_SIZE_UNIT (type))
+	nbytes = tree_to_uhwi (typesize);
+
+      if (offset == 0 && TREE_CODE (exp) != STRING_CST)
+	{
+	  int idx = get_stridx (arg);
+	  if (idx > 0)
 	    {
-	      int idx = get_stridx (rhs_addr);
-	      if (idx > 0)
+	      strinfo *si = get_strinfo (idx);
+	      if (si && tree_fits_shwi_p (si->nonzero_chars))
 		{
-		  strinfo *si = get_strinfo (idx);
-		  if (si
-		      && tree_fits_shwi_p (si->nonzero_chars))
-		    {
-		      *full_string_p = si->full_string_p;
-		      return tree_to_shwi (si->nonzero_chars);
-		    }
+		  unsigned len = tree_to_shwi (si->nonzero_chars);
+		  if (len < lenrange[0])
+		    lenrange[0] = len;
+		  if (lenrange[1] < len)
+		    lenrange[1] = len;
+
+		  if (!si->full_string_p)
+		    *nulterm = false;
+
+		  /* Since only the length of the string are known and
+		     its contents, clear ALLNUL and ALLNONNUL purely on
+		     the basis of the length.  */
+		  if (len)
+		    *allnul = false;
+		  else
+		    *allnonnul = false;
+		  return true;
 		}
 	    }
 	}
+
+      /* Proceed to extract the object representation below.  */
+      exp = TREE_OPERAND (arg, 0);
     }
 
-  if (TREE_CODE (rhs) == VAR_DECL
-      && TREE_READONLY (rhs))
-    rhs = DECL_INITIAL (rhs);
-
-  if (rhs && TREE_CODE (rhs) == STRING_CST)
+  if (TREE_CODE (exp) == VAR_DECL && TREE_READONLY (exp))
     {
-      HOST_WIDE_INT len = strlen (TREE_STRING_POINTER (rhs));
-      *full_string_p = len < TREE_STRING_LENGTH (rhs);
-      return len;
+      exp = DECL_INITIAL (exp);
+      if (!exp)
+	return false;
     }
 
-  return -1;
+  if (TREE_CODE (exp) == STRING_CST)
+    {
+      /* Set PREP and NBYTES to the string representation.  */
+      gcc_assert (offset <= INT_MAX);
+
+      if (!nbytes)
+	{
+	  /* Unless NBYTES has already been determined above from
+	     MEM_REF, set it here.  It includes all internal nuls,
+	     including the terminating one if the string has one.  */
+	  nbytes = TREE_STRING_LENGTH (exp);
+	  if (nbytes <= offset)
+	    return false;
+	}
+
+      prep = TREE_STRING_POINTER (exp) + offset;
+    }
+
+  unsigned char buf[256];
+  if (!prep)
+    {
+      /* Try to extract the representation of the constant object.  */
+      nbytes = native_encode_expr (exp, buf, sizeof buf, -1);
+      if (!nbytes)
+	return false;
+
+      prep = reinterpret_cast <char *>(buf);
+    }
+
+  /* Compute the number of leading nonzero bytes in the representation
+     and update the minimum and maximum.  */
+  unsigned n = strnlen (prep, nbytes);
+
+  if (n < lenrange[0])
+    lenrange[0] = n;
+  if (lenrange[1] < n)
+    lenrange[1] = n;
+
+  /* Set the size of the representation.  */
+  if (lenrange[2] < nbytes)
+    lenrange[2] = nbytes;
+
+  /* Clear NULTERM if none of the bytes is zero.  */
+  if (n == nbytes)
+    *nulterm = false;
+
+  if (n)
+    {
+      /* When the initial number of non-zero bytes N is non-zero, reset
+       *ALLNUL; if N is less than that the size of the representation
+       also clear *ALLNONNUL.  */
+      *allnul = false;
+      if (n < nbytes)
+	*allnonnul = false;
+    }
+  else if (*allnul || *allnonnul)
+    {
+      *allnonnul = false;
+
+      if (*allnul)
+	{
+	  /* When either ALLNUL is set and N is zero, also determine
+	     whether all subsequent bytes after the first one (which
+	     is nul) are zero or nonzero and clear ALLNUL if not.  */
+	  for (const char *p = prep; p != prep + nbytes; ++p)
+	    if (*p)
+	      {
+		*allnul = false;
+		break;
+	      }
+	}
+    }
+
+  return true;
 }
 
-/* Handle a single or multiple character store either by single
-   character assignment or by multi-character assignment from
-   MEM_REF.  */
+/* Same as above except with an implicit SSA_NAME limit.  */
 
 static bool
-handle_char_store (gimple_stmt_iterator *gsi)
+count_nonzero_bytes (tree exp, unsigned lenrange[3], bool *nulterm,
+		     bool *allnul, bool *allnonnul)
+{
+  /* Set to optimistic values so the caller doesn't have to worry about
+     initializing these and to what.  On success, the function will clear
+     these if it determines their values are different but being recursive
+     it never sets either to true.  On failure, their values are
+     unspecified.  */
+  *nulterm = true;
+  *allnul = true;
+  *allnonnul = true;
+
+  ssa_name_limit_t snlim;
+  return count_nonzero_bytes (exp, lenrange, nulterm, allnul, allnonnul, snlim);
+}
+
+/* Handle a single or multibyte store other than by a built-in function,
+   either via a single character assignment or by multi-byte assignment
+   either via MEM_REF or via a type other than char (such as in
+   '*(int*)a = 12345').  Return true when handled.  */
+
+static bool
+handle_store (gimple_stmt_iterator *gsi)
 {
   int idx = -1;
   strinfo *si = NULL;
   gimple *stmt = gsi_stmt (*gsi);
   tree ssaname = NULL_TREE, lhs = gimple_assign_lhs (stmt);
   tree rhs = gimple_assign_rhs1 (stmt);
+
+  /* The offset of the first byte in LHS modified by the the store.  */
   unsigned HOST_WIDE_INT offset = 0;
 
   if (TREE_CODE (lhs) == MEM_REF
@@ -3428,23 +3637,77 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	si = get_strinfo (idx);
     }
 
+  /* Minimum and maximum leading non-zero bytes and the size of the store.  */
+  unsigned lenrange[] = { UINT_MAX, 0, 0 };
+
+  /* Set to the minimum length of the string being assigned if known.  */
+  unsigned HOST_WIDE_INT rhs_minlen;
+
   /* STORING_NONZERO_P is true iff not all stored characters are zero.
+     STORING_ALL_NONZERO_P is true if all stored characters are zero.
      STORING_ALL_ZEROS_P is true iff all stored characters are zero.
      Both are false when it's impossible to determine which is true.  */
   bool storing_nonzero_p;
-  bool storing_all_zeros_p = initializer_zerop (rhs, &storing_nonzero_p);
-  if (!storing_nonzero_p)
-    storing_nonzero_p = tree_expr_nonzero_p (rhs);
-  bool full_string_p = storing_all_zeros_p;
+  bool storing_all_nonzero_p;
+  bool storing_all_zeros_p;
+  /* FULL_STRING_P is set when the stored sequence of characters form
+     a nul-terminated string.  */
+  bool full_string_p;
 
-  /* Set to the length of the string being assigned if known.  */
-  HOST_WIDE_INT rhslen;
+  const bool ranges_valid
+    = count_nonzero_bytes (rhs, lenrange, &full_string_p,
+			   &storing_all_zeros_p, &storing_all_nonzero_p);
+  if (ranges_valid)
+    {
+      rhs_minlen = lenrange[0];
+      storing_nonzero_p = lenrange[1] > 0;
+
+      if (tree dstsize = compute_objsize (lhs, 1))
+	if (compare_tree_int (dstsize, lenrange[2]) < 0)
+	  warning_n (gimple_location (stmt), OPT_Wstringop_overflow_,
+		     lenrange[2],
+		     "%Gwriting %u byte into a region of size %E",
+		     "%Gwriting %u bytes into a region of size %E",
+		     stmt, lenrange[2], dstsize);
+    }
+  else
+    {
+      rhs_minlen = HOST_WIDE_INT_M1U;
+      full_string_p = false;
+      storing_nonzero_p = false;
+      storing_all_zeros_p = false;
+      storing_all_nonzero_p = false;
+    }
 
   if (si != NULL)
     {
-      int cmp = compare_nonzero_chars (si, offset);
-      gcc_assert (offset == 0 || cmp >= 0);
-      if (storing_all_zeros_p && cmp == 0 && si->full_string_p)
+      /* The corresponding element is set to 1 if the first and last
+	 element, respectively, of the sequence of characters being
+	 written over the string described by SI ends before
+	 the terminating nul (if it has one), to zero if the nul is
+	 being overwritten but not beyond, or negative otherwise.  */
+      int store_before_nul[2];
+      if (ranges_valid)
+	{
+	  /* The offset of the last stored byte.  */
+	  unsigned HOST_WIDE_INT endoff = offset + lenrange[2] - 1;
+	  store_before_nul[0] = compare_nonzero_chars (si, offset);
+	  if (endoff == offset)
+	    store_before_nul[1] = store_before_nul[0];
+	  else
+	    store_before_nul[1] = compare_nonzero_chars (si, endoff);
+	}
+      else
+	{
+	  store_before_nul[0] = compare_nonzero_chars (si, offset);
+	  store_before_nul[1] = store_before_nul[0];
+	  gcc_assert (offset == 0 || store_before_nul[0] >= 0);
+	}
+
+      if (storing_all_zeros_p
+	  && store_before_nul[0] == 0
+	  && store_before_nul[1] == 0
+	  && si->full_string_p)
 	{
 	  /* When overwriting a '\0' with a '\0', the store can be removed
 	     if we know it has been stored in the current function.  */
@@ -3463,16 +3726,21 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	    }
 	}
 
-      if (cmp > 0
+      if (store_before_nul[1] > 0
 	  && storing_nonzero_p
+	  && lenrange[0] == lenrange[1]
+	  && lenrange[0] == lenrange[2]
 	  && TREE_CODE (TREE_TYPE (rhs)) == INTEGER_TYPE)
 	{
-	  /* Handle a single non-nul character store.
+	  /* Handle a store of one or more non-nul characters that ends
+	     before the terminating nul of the destination and so does
+	     not affect its length
 	     If si->nonzero_chars > OFFSET, we aren't overwriting '\0',
-	     and if we aren't storing '\0', we know that the length of the
-	     string and any other zero terminated string in memory remains
-	     the same.  In that case we move to the next gimple statement and
-	     return to signal the caller that it shouldn't invalidate anything.
+	     and if we aren't storing '\0', we know that the length of
+	     the string and any other zero terminated string in memory
+	     remains the same.  In that case we move to the next gimple
+	     statement and return to signal the caller that it shouldn't
+	     invalidate anything.
 
 	     This is benefical for cases like:
 
@@ -3493,7 +3761,7 @@ handle_char_store (gimple_stmt_iterator *gsi)
 
       if (storing_all_zeros_p
 	  || storing_nonzero_p
-	  || (offset != 0 && cmp > 0))
+	  || (offset != 0 && store_before_nul[1] > 0))
 	{
 	  /* When STORING_NONZERO_P, we know that the string will start
 	     with at least OFFSET + 1 nonzero characters.  If storing
@@ -3506,22 +3774,15 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	     OFFSET characters long.
 
 	     Otherwise, we're storing an unknown value at offset OFFSET,
-	     so need to clip the nonzero_chars to OFFSET.  */
-	  bool full_string_p = storing_all_zeros_p;
-	  HOST_WIDE_INT len = 1;
-	  if (storing_nonzero_p)
-	    {
-	      /* Try to get the minimum length of the string (or
-		 individual character) being stored.  If it fails,
-		 STORING_NONZERO_P guarantees it's at least 1.  */
-	      len = get_min_string_length (rhs, &full_string_p);
-	      if (len < 0)
-		len = 1;
-	    }
-
+	     so need to clip the nonzero_chars to OFFSET.
+	     Use the minimum length of the string (or individual character)
+	     being stored if it's known.  Otherwise, STORING_NONZERO_P
+	     guarantees it's at least 1.  */
+	  HOST_WIDE_INT len
+	    = storing_nonzero_p && ranges_valid ? lenrange[0] : 1;
 	  location_t loc = gimple_location (stmt);
 	  tree oldlen = si->nonzero_chars;
-	  if (cmp == 0 && si->full_string_p)
+	  if (store_before_nul[1] == 0 && si->full_string_p)
 	    /* We're overwriting the nul terminator with a nonzero or
 	       unknown character.  If the previous stmt was a memcpy,
 	       its length may be decreased.  */
@@ -3567,8 +3828,7 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	  HOST_WIDE_INT slen = (storing_all_zeros_p
 				? 0
 				: (storing_nonzero_p
-				   ? get_min_string_length (rhs, &full_string_p)
-				   : -1));
+				   && ranges_valid ? lenrange[0] : -1));
 	  tree len = (slen <= 0
 		      ? size_zero_node
 		      : build_int_cst (size_type_node, slen));
@@ -3583,18 +3843,18 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	}
     }
   else if (idx == 0
-	   && (rhslen = get_min_string_length (rhs, &full_string_p)) >= 0
+	   && rhs_minlen < HOST_WIDE_INT_M1U
 	   && ssaname == NULL_TREE
 	   && TREE_CODE (TREE_TYPE (lhs)) == ARRAY_TYPE)
     {
       HOST_WIDE_INT a = int_size_in_bytes (TREE_TYPE (lhs));
-      if (a > 0 && (unsigned HOST_WIDE_INT) a > (unsigned HOST_WIDE_INT) rhslen)
+      if (a > 0 && (unsigned HOST_WIDE_INT) a > rhs_minlen)
 	{
 	  int idx = new_addr_stridx (lhs);
 	  if (idx != 0)
 	    {
 	      si = new_strinfo (build_fold_addr_expr (lhs), idx,
-				build_int_cst (size_type_node, rhslen),
+				build_int_cst (size_type_node, rhs_minlen),
 				full_string_p);
 	      set_strinfo (idx, si);
 	      si->dont_invalidate = true;
@@ -3705,6 +3965,16 @@ fold_strstr_to_strncmp (tree rhs1, tree rhs2, gimple *stmt)
 	    }
 	}
     }
+}
+
+/* Return true if TYPE corresponds to a narrow character type.  */
+
+static bool
+is_char_type (tree type)
+{
+  return (TREE_CODE (type) == INTEGER_TYPE
+	  && TYPE_MODE (type) == TYPE_MODE (char_type_node)
+	  && TYPE_PRECISION (type) == TYPE_PRECISION (char_type_node));
 }
 
 /* Attempt to check for validity of the performed access a single statement
@@ -3907,18 +4177,32 @@ strlen_check_and_optimize_stmt (gimple_stmt_iterator *gsi, bool *cleanup_eh)
 	  }
       }
     else if (TREE_CODE (lhs) != SSA_NAME && !TREE_SIDE_EFFECTS (lhs))
-	{
-	  tree type = TREE_TYPE (lhs);
-	  if (TREE_CODE (type) == ARRAY_TYPE)
-	    type = TREE_TYPE (type);
-	  if (TREE_CODE (type) == INTEGER_TYPE
-	      && TYPE_MODE (type) == TYPE_MODE (char_type_node)
-	      && TYPE_PRECISION (type) == TYPE_PRECISION (char_type_node))
-	    {
-	      if (! handle_char_store (gsi))
-		return false;
-	    }
-	}
+      {
+	tree type = TREE_TYPE (lhs);
+	if (TREE_CODE (type) == ARRAY_TYPE)
+	  type = TREE_TYPE (type);
+
+	bool is_char_store = is_char_type (type);
+	if (!is_char_store && TREE_CODE (lhs) == MEM_REF)
+	  {
+	    /* To consider stores into char objects via integer types
+	       other than char but not those to non-character objects,
+	       determine the type of the destination rather than just
+	       the type of the access.  */
+	    tree ref = TREE_OPERAND (lhs, 0);
+	    type = TREE_TYPE (ref);
+	    if (TREE_CODE (type) == POINTER_TYPE)
+	      type = TREE_TYPE (type);
+	    if (TREE_CODE (type) == ARRAY_TYPE)
+	      type = TREE_TYPE (type);
+	    if (is_char_type (type))
+	      is_char_store = true;
+	  }
+
+	/* Handle a single or multibyte assignment.  */
+	if (is_char_store && !handle_store (gsi))
+	  return false;
+      }
     }
   else if (gcond *cond = dyn_cast<gcond *> (stmt))
     {

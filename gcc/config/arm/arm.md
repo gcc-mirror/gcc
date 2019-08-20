@@ -3981,16 +3981,16 @@
 )
 
 (define_code_iterator SAT [smin smax])
-(define_code_iterator SATrev [smin smax])
+(define_code_attr SATrev [(smin "smax") (smax "smin")])
 (define_code_attr SATlo [(smin "1") (smax "2")])
 (define_code_attr SAThi [(smin "2") (smax "1")])
 
 (define_insn "*satsi_<SAT:code>"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-        (SAT:SI (SATrev:SI (match_operand:SI 3 "s_register_operand" "r")
+        (SAT:SI (<SATrev>:SI (match_operand:SI 3 "s_register_operand" "r")
                            (match_operand:SI 1 "const_int_operand" "i"))
                 (match_operand:SI 2 "const_int_operand" "i")))]
-  "TARGET_32BIT && arm_arch6 && <SAT:CODE> != <SATrev:CODE>
+  "TARGET_32BIT && arm_arch6
    && arm_sat_operator_match (operands[<SAT:SATlo>], operands[<SAT:SAThi>], NULL, NULL)"
 {
   int mask;
@@ -4011,12 +4011,12 @@
 
 (define_insn "*satsi_<SAT:code>_shift"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-        (SAT:SI (SATrev:SI (match_operator:SI 3 "sat_shift_operator"
+        (SAT:SI (<SATrev>:SI (match_operator:SI 3 "sat_shift_operator"
                              [(match_operand:SI 4 "s_register_operand" "r")
                               (match_operand:SI 5 "const_int_operand" "i")])
                            (match_operand:SI 1 "const_int_operand" "i"))
                 (match_operand:SI 2 "const_int_operand" "i")))]
-  "TARGET_32BIT && arm_arch6 && <SAT:CODE> != <SATrev:CODE>
+  "TARGET_32BIT && arm_arch6
    && arm_sat_operator_match (operands[<SAT:SATlo>], operands[<SAT:SAThi>], NULL, NULL)"
 {
   int mask;
@@ -12062,7 +12062,7 @@
    (set_attr "predicable" "yes")])
 
 ;; ARMv8 CRC32 instructions.
-(define_insn "<crc_variant>"
+(define_insn "arm_<crc_variant>"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
         (unspec:SI [(match_operand:SI 1 "s_register_operand" "r")
                     (match_operand:<crc_mode> 2 "s_register_operand" "r")]
@@ -12178,7 +12178,7 @@
   DONE;
 })
 
-(define_insn "<cdp>"
+(define_insn "arm_<cdp>"
   [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "n")
 		     (match_operand:SI 1 "immediate_operand" "n")
 		     (match_operand:SI 2 "immediate_operand" "n")
@@ -12224,19 +12224,19 @@
   [(set_attr "length" "4")
    (set_attr "type" "coproc")])
 
-(define_expand "<ldc>"
+(define_expand "arm_<ldc>"
   [(unspec_volatile [(match_operand:SI 0 "immediate_operand")
 		     (match_operand:SI 1 "immediate_operand")
 		     (mem:SI (match_operand:SI 2 "s_register_operand"))] LDCI)]
   "arm_coproc_builtin_available (VUNSPEC_<LDC>)")
 
-(define_expand "<stc>"
+(define_expand "arm_<stc>"
   [(unspec_volatile [(match_operand:SI 0 "immediate_operand")
 		     (match_operand:SI 1 "immediate_operand")
 		     (mem:SI (match_operand:SI 2 "s_register_operand"))] STCI)]
   "arm_coproc_builtin_available (VUNSPEC_<STC>)")
 
-(define_insn "<mcr>"
+(define_insn "arm_<mcr>"
   [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "n")
 		     (match_operand:SI 1 "immediate_operand" "n")
 		     (match_operand:SI 2 "s_register_operand" "r")
@@ -12256,7 +12256,7 @@
   [(set_attr "length" "4")
    (set_attr "type" "coproc")])
 
-(define_insn "<mrc>"
+(define_insn "arm_<mrc>"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(unspec_volatile:SI [(match_operand:SI 1 "immediate_operand" "n")
 			  (match_operand:SI 2 "immediate_operand" "n")
@@ -12275,7 +12275,7 @@
   [(set_attr "length" "4")
    (set_attr "type" "coproc")])
 
-(define_insn "<mcrr>"
+(define_insn "arm_<mcrr>"
   [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "n")
 		     (match_operand:SI 1 "immediate_operand" "n")
 		     (match_operand:DI 2 "s_register_operand" "r")
@@ -12291,7 +12291,7 @@
   [(set_attr "length" "4")
    (set_attr "type" "coproc")])
 
-(define_insn "<mrrc>"
+(define_insn "arm_<mrrc>"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
 	(unspec_volatile:DI [(match_operand:SI 1 "immediate_operand" "n")
 			  (match_operand:SI 2 "immediate_operand" "n")

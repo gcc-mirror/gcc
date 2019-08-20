@@ -39,7 +39,7 @@
 
 /* Override rs6000.h definition.  */
 #undef	ASM_DEFAULT_SPEC
-#define	ASM_DEFAULT_SPEC "-mppc"
+#define	ASM_DEFAULT_SPEC "-mppc%{m64:64}"
 
 #define	TARGET_HAS_TOC		(TARGET_64BIT				\
 				 || (TARGET_MINIMAL_TOC			\

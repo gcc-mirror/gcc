@@ -3226,14 +3226,6 @@ template <typename _From, typename _To>
 #endif // C++17
 
 #if __cplusplus > 201703L
-  /// Byte order
-  enum class endian
-  {
-    little = __ORDER_LITTLE_ENDIAN__,
-    big    = __ORDER_BIG_ENDIAN__,
-    native = __BYTE_ORDER__
-  };
-
   /// Remove references and cv-qualifiers.
   template<typename _Tp>
     struct remove_cvref

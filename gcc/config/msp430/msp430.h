@@ -49,7 +49,8 @@ extern bool msp430x;
 
 /* -lgcc is included because crtend.o needs __mspabi_func_epilog_1.  */
 #undef  ENDFILE_SPEC
-#define ENDFILE_SPEC "%{!minrt:crtend.o%s} %{minrt:crtn-minrt.o%s}%{!minrt:crtn.o%s} -lgcc"
+#define ENDFILE_SPEC "%{!minrt:crtend.o%s} " \
+  "%{minrt:%:if-exists(crtn-minrt.o%s)}%{!minrt:%:if-exists(crtn.o%s)} -lgcc"
 
 #define ASM_SPEC "-mP " /* Enable polymorphic instructions.  */ \
   "%{mcpu=*:-mcpu=%*}%{!mcpu=*:%{mmcu=*:-mmcu=%*}} " /* Pass the CPU type on to the assembler.  */ \
@@ -66,6 +67,14 @@ extern bool msp430x;
    is enabled  (the GDB testsuite relies upon unused entities not being deleted).  */
 #define LINK_SPEC "%{mrelax:--relax} %{mlarge:%{!r:%{!g:--gc-sections}}} " \
   "%{mcode-region=*:--code-region=%*} %{mdata-region=*:--data-region=%*}"
+
+#define DRIVER_SELF_SPECS \
+  " %{!mlarge:%{mcode-region=*:%{mdata-region=*:%e-mcode-region and "	\
+    "-mdata-region require the large memory model (-mlarge)}}}" \
+  " %{!mlarge:%{mcode-region=*:"	\
+    "%e-mcode-region requires the large memory model (-mlarge)}}"	\
+  " %{!mlarge:%{mdata-region=*:"	\
+    "%e-mdata-region requires the large memory model (-mlarge)}}"
 
 extern const char * msp430_select_hwmult_lib (int, const char **);
 # define EXTRA_SPEC_FUNCTIONS				\
@@ -222,6 +231,28 @@ extern const char * msp430_select_hwmult_lib (int, const char **);
   "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7",		\
     "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15",	\
   "argptr"							\
+}
+
+/* Allow lowercase "r" to be used in register names instead of upper
+   case "R".  */
+#define ADDITIONAL_REGISTER_NAMES	\
+{					\
+    { "r0",  0 },			\
+    { "r1",  1 },			\
+    { "r2",  2 },			\
+    { "r3",  3 },			\
+    { "r4",  4 },			\
+    { "r5",  5 },			\
+    { "r6",  6 },			\
+    { "r7",  7 },			\
+    { "r8",  8 },			\
+    { "r9",  9 },			\
+    { "r10", 10 },			\
+    { "r11", 11 },			\
+    { "r12", 12 },			\
+    { "r13", 13 },			\
+    { "r14", 14 },			\
+    { "r15", 15 }			\
 }
 
 enum reg_class

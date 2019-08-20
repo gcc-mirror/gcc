@@ -16385,7 +16385,8 @@ static bool
 expand_vec_perm_blend (struct expand_vec_perm_d *d)
 {
   machine_mode mmode, vmode = d->vmode;
-  unsigned i, mask, nelt = d->nelt;
+  unsigned i, nelt = d->nelt;
+  unsigned HOST_WIDE_INT mask;
   rtx target, op0, op1, maskop, x;
   rtx rperm[32], vperm;
 
@@ -16439,7 +16440,7 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
     case E_V16SImode:
     case E_V8DImode:
       for (i = 0; i < nelt; ++i)
-	mask |= (d->perm[i] >= nelt) << i;
+	mask |= ((unsigned HOST_WIDE_INT) (d->perm[i] >= nelt)) << i;
       break;
 
     case E_V2DImode:

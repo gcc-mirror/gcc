@@ -684,8 +684,9 @@ namespace __gnu_cxx
    *  @brief Exception thrown by __cxa_guard_acquire.
    *  @ingroup exceptions
    *
-   *  6.7[stmt.dcl]/4: If control re-enters the declaration (recursively)
-   *  while the object is being initialized, the behavior is undefined.
+   *  C++ 2011 6.7 [stmt.dcl]/4: If control re-enters the declaration
+   *  recursively while the variable is being initialized, the behavior
+   *  is undefined.
    *
    *  Since we already have a library function to handle locking, we might
    *  as well check for this situation and throw an exception.
@@ -695,8 +696,8 @@ namespace __gnu_cxx
   class recursive_init_error: public std::exception
   {
   public:
-    recursive_init_error() throw() { }
-    virtual ~recursive_init_error() throw ();
+    recursive_init_error() _GLIBCXX_NOTHROW;
+    virtual ~recursive_init_error() _GLIBCXX_NOTHROW;
   };
 }
 #endif // __cplusplus

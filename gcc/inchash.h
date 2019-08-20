@@ -85,7 +85,7 @@ class hash
   {
     add_int (x.get_len ());
     for (unsigned i = 0; i < x.get_len (); i++)
-      add_hwi (x.elt (i));
+      add_hwi (x.sext_elt (i));
   }
 
   /* Hash in pointer PTR.  */

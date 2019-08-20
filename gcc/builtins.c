@@ -3652,6 +3652,20 @@ compute_objsize (tree dest, int ostype)
   if (!ostype)
     return NULL_TREE;
 
+  if (TREE_CODE (dest) == MEM_REF)
+    {
+      tree ref = TREE_OPERAND (dest, 0);
+      tree off = TREE_OPERAND (dest, 1);
+      if (tree size = compute_objsize (ref, ostype))
+	{
+	  if (tree_int_cst_lt (off, size))
+	    return fold_build2 (MINUS_EXPR, size_type_node, size, off);
+	  return integer_zero_node;
+	}
+
+      return NULL_TREE;
+    }
+
   if (TREE_CODE (dest) != ADDR_EXPR)
     return NULL_TREE;
 

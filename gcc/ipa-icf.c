@@ -344,8 +344,8 @@ sem_item::compare_referenced_symbol_properties (symtab_node *used_by,
 	    return return_false_with_msg ("inline attributes are different");
 	}
 
-      if (DECL_IS_OPERATOR_NEW (n1->decl)
-	  != DECL_IS_OPERATOR_NEW (n2->decl))
+      if (DECL_IS_OPERATOR_NEW_P (n1->decl)
+	  != DECL_IS_OPERATOR_NEW_P (n2->decl))
 	return return_false_with_msg ("operator new flags are different");
     }
 
@@ -409,7 +409,7 @@ sem_item::hash_referenced_symbol_properties (symtab_node *ref,
 	  hstate.add_flag (DECL_DISREGARD_INLINE_LIMITS (ref->decl));
 	  hstate.add_flag (DECL_DECLARED_INLINE_P (ref->decl));
 	}
-      hstate.add_flag (DECL_IS_OPERATOR_NEW (ref->decl));
+      hstate.add_flag (DECL_IS_OPERATOR_NEW_P (ref->decl));
     }
   else if (is_a <varpool_node *> (ref))
     {

@@ -1,3 +1,160 @@
+2019-07-30  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/91270
+	* g++.dg/torture/pr91270.C: New test.
+
+2019-07-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-cond-arith-7.c: New test.
+
+2019-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91282
+	* gcc.dg/type-convert-var.c: Add -fexcess-precision=fast to
+	dg-additional-options.
+
+	PR middle-end/91216
+	* gcc.dg/gomp/pr91216.c: New test.
+
+	PR target/91150
+	* gcc.target/i386/avx512bw-pr91150.c: New test.
+
+2019-07-29  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/pr78818-data-region.c: Add -mlarge to dg-options.
+	* gcc.target/msp430/region-misuse-code.c: New test.
+	* gcc.target/msp430/region-misuse-data.c: Likewise.
+	* gcc.target/msp430/region-misuse-code-data.c: Likewise.
+	* gcc.target/msp430/region-attribute-misuse.c: Likewise.
+
+2019-07-29  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	PR target/70320
+	* gcc.target/msp430/asm-register-names-lower-case.c: New test.
+	* gcc.target/msp430/asm-register-names-upper-case.c: Likewise.
+
+2019-07-29  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/cpp1y/new1.C (test_unused): Add new case that causes
+	ICE.
+
+2019-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91267
+	* gcc.dg/torture/pr91267.c: New testcase.
+
+2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-c++-common/guality/Og-dce-1.c: New test.
+	* c-c++-common/guality/Og-dce-2.c: Likewise.
+	* c-c++-common/guality/Og-dce-3.c: Likewise.
+
+2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-c++-common/guality/Og-global-dse-1.c: New test.
+
+2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-c++-common/guality/Og-static-wo-1.c: New test.
+	* g++.dg/guality/guality.exp: Separate the c-c++-common tests into
+	"Og" and "general" tests.  Run the latter at -O0 and -Og only.
+	* gcc.dg/guality/guality.exp: Likewise.
+
+2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/scanasm.exp (parse_function_bodies, check_function_body)
+	(check-function-bodies): New procedures.
+	* gcc.target/aarch64/sve/init_1.c: Use check-function-bodies
+	instead of scan-assembler.
+	* gcc.target/aarch64/sve/init_2.c: Likewise.
+	* gcc.target/aarch64/sve/init_3.c: Likewise.
+	* gcc.target/aarch64/sve/init_4.c: Likewise.
+	* gcc.target/aarch64/sve/init_5.c: Likewise.
+	* gcc.target/aarch64/sve/init_6.c: Likewise.
+	* gcc.target/aarch64/sve/init_7.c: Likewise.
+	* gcc.target/aarch64/sve/init_8.c: Likewise.
+	* gcc.target/aarch64/sve/init_9.c: Likewise.
+	* gcc.target/aarch64/sve/init_10.c: Likewise.
+	* gcc.target/aarch64/sve/init_11.c: Likewise.
+	* gcc.target/aarch64/sve/init_12.c: Likewise.
+
+2019-07-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/lto/pr89330_0.C (dg-lto-options): Add -fPIC.
+	Require fpic support.
+
+2019-07-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/powerpc/bmi2-bzhi64-1a.c: Add options to enable altivec
+	and vsx.
+
+2019-07-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/scanasm.exp (object-size): Handle Darwin's size command.
+
+2018-07-26  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/type-convert-var.c: New test.
+
+2019-07-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/89330
+	* g++.dg/lto/pr89330_[01].C: New test.
+	* g++.dg/tree-prof/devirt.C: Added -fno-profile-values to dg-options.
+
+2019-07-25  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91183
+	PR tree-optimization/86688
+	* gcc.dg/Wstringop-overflow-14.c: Disable for stricly aligned targets.
+	* gcc.dg/strlenopt-70.c: Fix bugs.
+	* gcc.dg/strlenopt-71.c: Same.
+	* gcc.dg/strlenopt-72.c: Same.
+
+2019-07-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/91223
+	* gcc.target/i386/pr91223.c: New test.
+
+2019-07-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR gcov-profile/91087
+	* g++.dg/gcov/pr16855.C: Xfail the count lines for the DTORs and the
+	"final" line for the failure summaries.  Adjust source layout so that
+	dejagnu xfail expressions work.
+
+2019-07-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/65819
+	* gfortran.dg/dependency_54.f90: New test.
+
+2019-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/case_optimization3.ad[sb]: New test.
+
+2019-07-25  Martin Liska  <mliska@suse.cz
+	    Dominik Infuhr  <dominik.infuehr@theobroma-systems.com>
+
+	PR c++/23383
+	* g++.dg/cpp1y/new1.C: New test.
+
+2019-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR testsuite/91245
+	* gnat.dg/float_value1.adb: Only run on x86.
+
+2019-07-24  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91183
+	PR tree-optimization/86688
+	* gcc/testsuite/c-c++-common/ubsan/object-size-9.c: Disable warnings.
+	* gcc.dg/Wstringop-overflow-14.c: New test.
+	* gcc.dg/attr-nonstring-2.c: Remove xfails.
+	* gcc.dg/strlenopt-70.c: New test.
+	* gcc.dg/strlenopt-71.c: New test.
+	* gcc.dg/strlenopt-72.c: New test.
+	* gcc.dg/strlenopt-8.c: Remove xfails.
+
 2019-07-24  Martin Sebor  <msebor@redhat.com>
 
 	PR driver/80545
