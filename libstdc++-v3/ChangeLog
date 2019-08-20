@@ -1,5 +1,7 @@
 2019-08-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/numeric (reduce): Fix Doxygen markup.
+
 	Backport from mainline
 	2019-06-19  Jonathan Wakely  <jwakely@redhat.com>
 
