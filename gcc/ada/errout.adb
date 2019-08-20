@@ -1100,7 +1100,7 @@ package body Errout is
       --  Test if warning to be treated as error
 
       Warn_Err :=
-        Is_Warning_Msg
+        (Is_Warning_Msg or Is_Style_Msg)
           and then (Warning_Treated_As_Error (Msg_Buffer (1 .. Msglen))
                       or else
                     Warning_Treated_As_Error (Get_Warning_Tag (Cur_Msg)));

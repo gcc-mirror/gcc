@@ -624,155 +624,145 @@ package body Erroutc is
       Length : Nat;
       --  Maximum total length of lines
 
-      Text  : constant String_Ptr := Errors.Table (E).Text;
+      E_Msg : Error_Msg_Object renames Errors.Table (E);
+      Text  : constant String_Ptr := E_Msg.Text;
       Ptr   : Natural;
       Split : Natural;
       Start : Natural;
+      Tag : constant String := Get_Warning_Tag (E);
+      Txt : String_Ptr;
+      Len : Natural;
 
    begin
-      declare
-         Tag : constant String := Get_Warning_Tag (E);
-         Txt : String_Ptr;
-         Len : Natural;
+      --  Postfix warning tag to message if needed
 
-      begin
-         --  Postfix warning tag to message if needed
-
-         if Tag /= "" and then Warning_Doc_Switch then
-            if Include_Subprogram_In_Messages then
-               Txt :=
-                 new String'
-                   (Subprogram_Name_Ptr (Errors.Table (E).Node) &
-                    ": " & Text.all & ' ' & Tag);
-            else
-               Txt := new String'(Text.all & ' ' & Tag);
-            end if;
-
-         elsif Include_Subprogram_In_Messages
-           and then (Errors.Table (E).Warn or else Errors.Table (E).Style)
-         then
+      if Tag /= "" and then Warning_Doc_Switch then
+         if Include_Subprogram_In_Messages then
             Txt :=
               new String'
-                (Subprogram_Name_Ptr (Errors.Table (E).Node) &
-                 ": " & Text.all);
+                (Subprogram_Name_Ptr (E_Msg.Node) &
+                 ": " & Text.all & ' ' & Tag);
          else
-            Txt := Text;
+            Txt := new String'(Text.all & ' ' & Tag);
          end if;
 
-         --  Deal with warning case
+      elsif Include_Subprogram_In_Messages
+        and then (E_Msg.Warn or else E_Msg.Style)
+      then
+         Txt :=
+           new String'(Subprogram_Name_Ptr (E_Msg.Node) & ": " & Text.all);
+      else
+         Txt := Text;
+      end if;
 
-         if Errors.Table (E).Warn or else Errors.Table (E).Info then
+      --  For info messages, prefix message with "info: "
 
-            --  For info messages, prefix message with "info: "
+      if E_Msg.Info then
+         Txt := new String'("info: " & Txt.all);
 
-            if Errors.Table (E).Info then
-               Txt := new String'("info: " & Txt.all);
+      --  Warning treated as error
 
-            --  Warning treated as error
+      elsif E_Msg.Warn_Err then
 
-            elsif Errors.Table (E).Warn_Err then
+      --  We prefix with "error:" rather than warning: and postfix
+      --  [warning-as-error] at the end.
 
-               --  We prefix with "error:" rather than warning: and postfix
-               --  [warning-as-error] at the end.
+         Warnings_Treated_As_Errors := Warnings_Treated_As_Errors + 1;
+         Txt := new String'("error: " & Txt.all & " [warning-as-error]");
 
-               Warnings_Treated_As_Errors := Warnings_Treated_As_Errors + 1;
-               Txt := new String'("error: " & Txt.all & " [warning-as-error]");
+      --  Normal warning, prefix with "warning: "
 
-            --  Normal case, prefix with "warning: "
+      elsif E_Msg.Warn then
+         Txt := new String'("warning: " & Txt.all);
 
-            else
-               Txt := new String'("warning: " & Txt.all);
-            end if;
+      --  No prefix needed for style message, "(style)" is there already
 
-            --  No prefix needed for style message, "(style)" is there already
+      elsif E_Msg.Style then
+         null;
 
-         elsif Errors.Table (E).Style then
-            null;
+      --  No prefix needed for check message, severity is there already
 
-            --  No prefix needed for check message, severity is there already
+      elsif E_Msg.Check then
+         null;
 
-         elsif Errors.Table (E).Check then
-            null;
+      --  All other cases, add "error: " if unique error tag set
 
-            --  All other cases, add "error: " if unique error tag set
+      elsif Opt.Unique_Error_Tag then
+         Txt := new String'("error: " & Txt.all);
+      end if;
 
-         elsif Opt.Unique_Error_Tag then
-            Txt := new String'("error: " & Txt.all);
+      --  Set error message line length and length of message
+
+      if Error_Msg_Line_Length = 0 then
+         Length := Nat'Last;
+      else
+         Length := Error_Msg_Line_Length;
+      end if;
+
+      Max := Integer (Length - Column + 1);
+      Len := Txt'Length;
+
+      --  Here we have to split the message up into multiple lines
+
+      Ptr := 1;
+      loop
+         --  Make sure we do not have ludicrously small line
+
+         Max := Integer'Max (Max, 20);
+
+         --  If remaining text fits, output it respecting LF and we are done
+
+         if Len - Ptr < Max then
+            for J in Ptr .. Len loop
+               if Txt (J) = ASCII.LF then
+                  Write_Eol;
+                  Write_Spaces (Offs);
+               else
+                  Write_Char (Txt (J));
+               end if;
+            end loop;
+
+            return;
+
+         --  Line does not fit
+
+         else
+            Start := Ptr;
+
+            --  First scan forward looking for a hard end of line
+
+            for Scan in Ptr .. Ptr + Max - 1 loop
+               if Txt (Scan) = ASCII.LF then
+                  Split := Scan - 1;
+                  Ptr := Scan + 1;
+                  goto Continue;
+               end if;
+            end loop;
+
+            --  Otherwise scan backwards looking for a space
+
+            for Scan in reverse Ptr .. Ptr + Max - 1 loop
+               if Txt (Scan) = ' ' then
+                  Split := Scan - 1;
+                  Ptr := Scan + 1;
+                  goto Continue;
+               end if;
+            end loop;
+
+            --  If we fall through, no space, so split line arbitrarily
+
+            Split := Ptr + Max - 1;
+            Ptr := Split + 1;
          end if;
 
-         --  Set error message line length and length of message
-
-         if Error_Msg_Line_Length = 0 then
-            Length := Nat'Last;
-         else
-            Length := Error_Msg_Line_Length;
+         <<Continue>>
+         if Start <= Split then
+            Write_Line (Txt (Start .. Split));
+            Write_Spaces (Offs);
          end if;
 
          Max := Integer (Length - Column + 1);
-         Len := Txt'Length;
-
-         --  Here we have to split the message up into multiple lines
-
-         Ptr := 1;
-         loop
-            --  Make sure we do not have ludicrously small line
-
-            Max := Integer'Max (Max, 20);
-
-            --  If remaining text fits, output it respecting LF and we are done
-
-            if Len - Ptr < Max then
-               for J in Ptr .. Len loop
-                  if Txt (J) = ASCII.LF then
-                     Write_Eol;
-                     Write_Spaces (Offs);
-                  else
-                     Write_Char (Txt (J));
-                  end if;
-               end loop;
-
-               return;
-
-            --  Line does not fit
-
-            else
-               Start := Ptr;
-
-               --  First scan forward looking for a hard end of line
-
-               for Scan in Ptr .. Ptr + Max - 1 loop
-                  if Txt (Scan) = ASCII.LF then
-                     Split := Scan - 1;
-                     Ptr := Scan + 1;
-                     goto Continue;
-                  end if;
-               end loop;
-
-               --  Otherwise scan backwards looking for a space
-
-               for Scan in reverse Ptr .. Ptr + Max - 1 loop
-                  if Txt (Scan) = ' ' then
-                     Split := Scan - 1;
-                     Ptr := Scan + 1;
-                     goto Continue;
-                  end if;
-               end loop;
-
-               --  If we fall through, no space, so split line arbitrarily
-
-               Split := Ptr + Max - 1;
-               Ptr := Split + 1;
-            end if;
-
-            <<Continue>>
-            if Start <= Split then
-               Write_Line (Txt (Start .. Split));
-               Write_Spaces (Offs);
-            end if;
-
-            Max := Integer (Length - Column + 1);
-         end loop;
-      end;
+      end loop;
    end Output_Msg_Text;
 
    ---------------------

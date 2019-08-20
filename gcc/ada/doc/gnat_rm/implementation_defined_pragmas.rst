@@ -7467,18 +7467,21 @@ Syntax:
 
 
 This configuration pragma allows the programmer to specify a set
-of warnings that will be treated as errors. Any warning which
+of warnings that will be treated as errors. Any warning that
 matches the pattern given by the pragma argument will be treated
-as an error. This gives much more precise control that -gnatwe
-which treats all warnings as errors.
+as an error. This gives more precise control than -gnatwe,
+which treats warnings as errors.
 
-The pattern may contain asterisks, which match zero or more characters in
-the message. For example, you can use
-``pragma Warning_As_Error ("bits of*unused")`` to treat the warning
-message ``warning: 960 bits of "a" unused`` as an error. No other regular
-expression notations are permitted. All characters other than asterisk in
-these three specific cases are treated as literal characters in the match.
-The match is case insensitive, for example XYZ matches xyz.
+This pragma can apply to regular warnings (messages enabled by -gnatw)
+and to style warnings (messages that start with "(style)",
+enabled by -gnaty).
+
+The pattern may contain asterisks, which match zero or more characters
+in the message. For example, you can use ``pragma Warning_As_Error
+("bits of*unused")`` to treat the warning message ``warning: 960 bits of
+"a" unused`` as an error. All characters other than asterisk are treated
+as literal characters in the match. The match is case insensitive; for
+example XYZ matches xyz.
 
 Note that the pattern matches if it occurs anywhere within the warning
 message string (it is not necessary to put an asterisk at the start and
