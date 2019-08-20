@@ -13309,8 +13309,6 @@ s390_call_saved_register_used (tree call_expr)
   CUMULATIVE_ARGS cum_v;
   cumulative_args_t cum;
   tree parameter;
-  machine_mode mode;
-  tree type;
   rtx parm_rtx;
   int reg, i;
 
@@ -13327,22 +13325,12 @@ s390_call_saved_register_used (tree call_expr)
       if (TREE_CODE (parameter) == ERROR_MARK)
 	return true;
 
-      type = TREE_TYPE (parameter);
-      gcc_assert (type);
-
-      mode = TYPE_MODE (type);
-      gcc_assert (mode);
-
       /* We assume that in the target function all parameters are
 	 named.  This only has an impact on vector argument register
 	 usage none of which is call-saved.  */
-      if (pass_by_reference (&cum_v, function_arg_info (type, /*named=*/true)))
-	{
-	  mode = Pmode;
-	  type = build_pointer_type (type);
-	}
+      function_arg_info arg (TREE_TYPE (parameter), /*named=*/true);
+      apply_pass_by_reference_rules (&cum_v, arg);
 
-       function_arg_info arg (type, mode, /*named=*/true);
        parm_rtx = s390_function_arg (cum, arg);
 
        s390_function_arg_advance (cum, arg);

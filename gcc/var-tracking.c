@@ -6426,28 +6426,24 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 	  }
 	if (t && t != void_list_node)
 	  {
-	    tree argtype = TREE_VALUE (t);
 	    rtx reg;
-	    function_arg_info orig_arg (argtype, /*named=*/true);
-	    if (pass_by_reference (&args_so_far_v, orig_arg))
-	      argtype = build_pointer_type (argtype);
-	    machine_mode mode = TYPE_MODE (argtype);
-	    function_arg_info arg (argtype, /*named=*/true);
+	    function_arg_info arg (TREE_VALUE (t), /*named=*/true);
+	    apply_pass_by_reference_rules (&args_so_far_v, arg);
 	    reg = targetm.calls.function_arg (args_so_far, arg);
-	    if (TREE_CODE (argtype) == REFERENCE_TYPE
-		&& INTEGRAL_TYPE_P (TREE_TYPE (argtype))
+	    if (TREE_CODE (arg.type) == REFERENCE_TYPE
+		&& INTEGRAL_TYPE_P (TREE_TYPE (arg.type))
 		&& reg
 		&& REG_P (reg)
-		&& GET_MODE (reg) == mode
-		&& (GET_MODE_CLASS (mode) == MODE_INT
-		    || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
+		&& GET_MODE (reg) == arg.mode
+		&& (GET_MODE_CLASS (arg.mode) == MODE_INT
+		    || GET_MODE_CLASS (arg.mode) == MODE_PARTIAL_INT)
 		&& REG_P (x)
 		&& REGNO (x) == REGNO (reg)
-		&& GET_MODE (x) == mode
+		&& GET_MODE (x) == arg.mode
 		&& item)
 	      {
 		machine_mode indmode
-		  = TYPE_MODE (TREE_TYPE (argtype));
+		  = TYPE_MODE (TREE_TYPE (arg.type));
 		rtx mem = gen_rtx_MEM (indmode, x);
 		cselib_val *val = cselib_lookup (mem, indmode, 0, VOIDmode);
 		if (val && cselib_preserved_value_p (val))

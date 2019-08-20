@@ -1088,8 +1088,6 @@ c6x_call_saved_register_used (tree call_expr)
   cumulative_args_t cum;
   HARD_REG_SET call_saved_regset;
   tree parameter;
-  machine_mode mode;
-  tree type;
   rtx parm_rtx;
   int i;
 
@@ -1107,19 +1105,9 @@ c6x_call_saved_register_used (tree call_expr)
       if (TREE_CODE (parameter) == ERROR_MARK)
 	return true;
 
-      type = TREE_TYPE (parameter);
-      gcc_assert (type);
+      function_arg_info arg (TREE_TYPE (parameter), /*named=*/true);
+      apply_pass_by_reference_rules (&cum_v, arg);
 
-      mode = TYPE_MODE (type);
-      gcc_assert (mode);
-
-      if (pass_by_reference (&cum_v, function_arg_info (type, /*named=*/true)))
- 	{
- 	  mode = Pmode;
- 	  type = build_pointer_type (type);
- 	}
-
-       function_arg_info arg (type, mode, /*named=*/false);
        parm_rtx = c6x_function_arg (cum, arg);
 
        c6x_function_arg_advance (cum, arg);

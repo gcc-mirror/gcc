@@ -2456,11 +2456,11 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
   /* See if this arg was passed by invisible reference.  */
   {
     function_arg_info arg (passed_type, passed_mode, data->named_arg);
-    if (pass_by_reference (&all->args_so_far_v, arg))
+    if (apply_pass_by_reference_rules (&all->args_so_far_v, arg))
       {
-	passed_type = nominal_type = build_pointer_type (passed_type);
+	passed_type = nominal_type = arg.type;
 	data->passed_pointer = true;
-	passed_mode = nominal_mode = TYPE_MODE (nominal_type);
+	passed_mode = nominal_mode = arg.mode;
       }
   }
 
