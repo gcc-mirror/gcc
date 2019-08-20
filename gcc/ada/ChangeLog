@@ -1,3 +1,8 @@
+2019-08-20  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* adaint.c (__gnat_to_gm_time): On _WIN32, don't round time up
+	to even second.
+
 2019-08-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Analyze_Object_Declaration): If actual type is
