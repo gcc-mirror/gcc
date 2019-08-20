@@ -540,7 +540,7 @@ expand_epilogue_reg_restore (rtx spreg, bool saveall, bool is_inthandler)
 
    CUM is as above.
 
-   MODE and TYPE are the mode and type of the current parameter.
+   ARG is the last named argument.
 
    PRETEND_SIZE is a variable that should be set to the amount of stack
    that must be pushed by the prolog to pretend that our caller pushed
@@ -559,8 +559,7 @@ expand_epilogue_reg_restore (rtx spreg, bool saveall, bool is_inthandler)
 
 static void
 setup_incoming_varargs (cumulative_args_t cum,
-			machine_mode mode ATTRIBUTE_UNUSED,
-			tree type ATTRIBUTE_UNUSED, int *pretend_size,
+			const function_arg_info &, int *pretend_size,
 			int no_rtl)
 {
   rtx mem;

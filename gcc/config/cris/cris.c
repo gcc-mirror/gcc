@@ -108,8 +108,9 @@ static struct machine_function * cris_init_machine_status (void);
 
 static rtx cris_struct_value_rtx (tree, int);
 
-static void cris_setup_incoming_varargs (cumulative_args_t, machine_mode,
-					 tree type, int *, int);
+static void cris_setup_incoming_varargs (cumulative_args_t,
+					 const function_arg_info &,
+					 int *, int);
 
 static int cris_initial_frame_pointer_offset (void);
 
@@ -4021,8 +4022,7 @@ cris_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 
 static void
 cris_setup_incoming_varargs (cumulative_args_t ca_v,
-			     machine_mode mode ATTRIBUTE_UNUSED,
-			     tree type ATTRIBUTE_UNUSED,
+			     const function_arg_info &,
 			     int *pretend_arg_size,
 			     int second_time)
 {

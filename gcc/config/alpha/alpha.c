@@ -6090,14 +6090,15 @@ escapes:
    variable number of arguments.  */
 
 static void
-alpha_setup_incoming_varargs (cumulative_args_t pcum, machine_mode mode,
-			      tree type, int *pretend_size, int no_rtl)
+alpha_setup_incoming_varargs (cumulative_args_t pcum,
+			      const function_arg_info &arg,
+			      int *pretend_size, int no_rtl)
 {
   CUMULATIVE_ARGS cum = *get_cumulative_args (pcum);
 
   /* Skip the current argument.  */
-  targetm.calls.function_arg_advance (pack_cumulative_args (&cum), mode, type,
-				      true);
+  targetm.calls.function_arg_advance (pack_cumulative_args (&cum),
+				      arg.mode, arg.type, arg.named);
 
 #if TARGET_ABI_OPEN_VMS
   /* For VMS, we allocate space for all 6 arg registers plus a count.

@@ -2365,7 +2365,7 @@ rs6000_move_block_from_reg (int regno, rtx x, int nregs)
 
    CUM is as above.
 
-   MODE and TYPE are the mode and type of the current parameter.
+   ARG is the last named argument.
 
    PRETEND_SIZE is a variable that should be set to the amount of stack
    that must be pushed by the prolog to pretend that our caller pushed
@@ -2375,9 +2375,9 @@ rs6000_move_block_from_reg (int regno, rtx x, int nregs)
    stack and set PRETEND_SIZE to the length of the registers pushed.  */
 
 void
-setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
-			tree type, int *pretend_size ATTRIBUTE_UNUSED,
-			int no_rtl)
+setup_incoming_varargs (cumulative_args_t cum,
+			const function_arg_info &arg,
+			int *pretend_size ATTRIBUTE_UNUSED, int no_rtl)
 {
   CUMULATIVE_ARGS next_cum;
   int reg_size = TARGET_32BIT ? 4 : 8;
@@ -2387,7 +2387,7 @@ setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
 
   /* Skip the last named argument.  */
   next_cum = *get_cumulative_args (cum);
-  rs6000_function_arg_advance_1 (&next_cum, mode, type, true, 0);
+  rs6000_function_arg_advance_1 (&next_cum, arg.mode, arg.type, arg.named, 0);
 
   if (DEFAULT_ABI == ABI_V4)
     {
@@ -2461,8 +2461,8 @@ setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
       first_reg_offset = next_cum.words;
       save_area = crtl->args.internal_arg_pointer;
 
-      if (targetm.calls.must_pass_in_stack (mode, type))
-	first_reg_offset += rs6000_arg_size (TYPE_MODE (type), type);
+      if (targetm.calls.must_pass_in_stack (arg.mode, arg.type))
+	first_reg_offset += rs6000_arg_size (TYPE_MODE (arg.type), arg.type);
     }
 
   set = get_varargs_alias_set ();

@@ -4089,8 +4089,9 @@ spu_gimplify_va_arg_expr (tree valist, tree type, gimple_seq * pre_p,
    in the stack then save no registers.  Set pretend_args_size to the
    amount of space needed to save the registers. */
 static void
-spu_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
-			    tree type, int *pretend_size, int no_rtl)
+spu_setup_incoming_varargs (cumulative_args_t cum,
+			    const function_arg_info &arg,
+			    int *pretend_size, int no_rtl)
 {
   if (!no_rtl)
     {
@@ -4101,7 +4102,8 @@ spu_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
 
       /* cum currently points to the last named argument, we want to
          start at the next argument. */
-      spu_function_arg_advance (pack_cumulative_args (&ncum), mode, type, true);
+      spu_function_arg_advance (pack_cumulative_args (&ncum),
+				arg.mode, arg.type, arg.named);
 
       offset = -STACK_POINTER_OFFSET;
       for (regno = ncum; regno < MAX_REGISTER_ARGS; regno++)

@@ -280,8 +280,8 @@ static bool sh_function_value_regno_p (const unsigned int);
 static rtx sh_libcall_value (machine_mode, const_rtx);
 static bool sh_return_in_memory (const_tree, const_tree);
 static rtx sh_builtin_saveregs (void);
-static void sh_setup_incoming_varargs (cumulative_args_t, machine_mode,
-				       tree, int *, int);
+static void sh_setup_incoming_varargs (cumulative_args_t,
+				       const function_arg_info &, int *, int);
 static bool sh_strict_argument_naming (cumulative_args_t);
 static bool sh_pretend_outgoing_varargs_named (cumulative_args_t);
 static void sh_atomic_assign_expand_fenv (tree *, tree *, tree *);
@@ -8184,8 +8184,7 @@ sh_return_in_memory (const_tree type, const_tree fndecl)
    function that tell if a function uses varargs or stdarg.  */
 static void
 sh_setup_incoming_varargs (cumulative_args_t ca,
-			   machine_mode mode,
-			   tree type,
+			   const function_arg_info &arg,
 			   int *pretend_arg_size,
 			   int second_time ATTRIBUTE_UNUSED)
 {
@@ -8194,10 +8193,9 @@ sh_setup_incoming_varargs (cumulative_args_t ca,
     {
       int named_parm_regs, anon_parm_regs;
 
-      named_parm_regs = (sh_round_reg (*get_cumulative_args (ca), mode)
-			 + (mode == BLKmode
-			    ? CEIL (int_size_in_bytes (type), UNITS_PER_WORD)
-			    : CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD)));
+      named_parm_regs = (sh_round_reg (*get_cumulative_args (ca), arg.mode)
+			 + CEIL (arg.promoted_size_in_bytes (),
+				 UNITS_PER_WORD));
       anon_parm_regs = NPARM_REGS (SImode) - named_parm_regs;
       if (anon_parm_regs > 0)
 	*pretend_arg_size = anon_parm_regs * 4;

@@ -113,8 +113,9 @@ static struct fr30_frame_info 	current_frame_info;
 /* Zero structure to initialize current_frame_info.  */
 static struct fr30_frame_info 	zero_frame_info;
 
-static void fr30_setup_incoming_varargs (cumulative_args_t, machine_mode,
-					 tree, int *, int);
+static void fr30_setup_incoming_varargs (cumulative_args_t,
+					 const function_arg_info &,
+					 int *, int);
 static bool fr30_must_pass_in_stack (machine_mode, const_tree);
 static int fr30_arg_partial_bytes (cumulative_args_t,
 				   const function_arg_info &);
@@ -459,12 +460,11 @@ fr30_expand_epilogue (void)
    named argument, from registers into memory.  * copying actually done in
    fr30_expand_prologue().
 
-   ARG_REGS_USED_SO_FAR has *not* been updated for the last named argument
-   which has type TYPE and mode MODE, and we rely on this fact.  */
+   CUM has not been updated for the last named argument which has type TYPE
+   and mode MODE, and we rely on this fact.  */
 void
 fr30_setup_incoming_varargs (cumulative_args_t arg_regs_used_so_far_v,
-			     machine_mode mode,
-			     tree type ATTRIBUTE_UNUSED,
+			     const function_arg_info &arg,
 			     int *pretend_size,
 			     int second_time ATTRIBUTE_UNUSED)
 {
@@ -473,7 +473,7 @@ fr30_setup_incoming_varargs (cumulative_args_t arg_regs_used_so_far_v,
   int size;
 
   /* All BLKmode values are passed by reference.  */
-  gcc_assert (mode != BLKmode);
+  gcc_assert (arg.mode != BLKmode);
 
   /* ??? This run-time test as well as the code inside the if
      statement is probably unnecessary.  */
@@ -481,7 +481,7 @@ fr30_setup_incoming_varargs (cumulative_args_t arg_regs_used_so_far_v,
     /* If TARGET_STRICT_ARGUMENT_NAMING returns true, then the last named
        arg must not be treated as an anonymous arg.  */
     /* ??? This is a pointer increment, which makes no sense.  */
-    arg_regs_used_so_far += fr30_num_arg_regs (mode, type);
+    arg_regs_used_so_far += fr30_num_arg_regs (arg.mode, arg.type);
 
   size = FR30_NUM_ARG_REGS - (* arg_regs_used_so_far);
 

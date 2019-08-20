@@ -2415,12 +2415,12 @@ arc_double_limm_p (rtx value)
    create a register parameter block, and then copy any anonymous arguments
    in registers to memory.
 
-   CUM has not been updated for the last named argument which has type TYPE
-   and mode MODE, and we rely on this fact.  */
+   CUM has not been updated for the last named argument (which is given
+   by ARG), and we rely on this fact.  */
 
 static void
 arc_setup_incoming_varargs (cumulative_args_t args_so_far,
-			    machine_mode mode, tree type,
+			    const function_arg_info &arg,
 			    int *pretend_size, int no_rtl)
 {
   int first_anon_arg;
@@ -2430,7 +2430,7 @@ arc_setup_incoming_varargs (cumulative_args_t args_so_far,
 
   next_cum = *get_cumulative_args (args_so_far);
   arc_function_arg_advance (pack_cumulative_args (&next_cum),
-			    mode, type, true);
+			    arg.mode, arg.type, arg.named);
   first_anon_arg = next_cum;
 
   if (FUNCTION_ARG_REGNO_P (first_anon_arg))

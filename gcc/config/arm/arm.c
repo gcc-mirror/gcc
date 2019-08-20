@@ -212,8 +212,8 @@ static void arm_file_end (void);
 static void arm_file_start (void);
 static void arm_insert_attributes (tree, tree *);
 
-static void arm_setup_incoming_varargs (cumulative_args_t, machine_mode,
-					tree, int *, int);
+static void arm_setup_incoming_varargs (cumulative_args_t,
+					const function_arg_info &, int *, int);
 static bool arm_pass_by_reference (cumulative_args_t,
 				   const function_arg_info &);
 static bool arm_promote_prototypes (const_tree);
@@ -27054,8 +27054,7 @@ arm_output_load_gr (rtx *operands)
 
 static void
 arm_setup_incoming_varargs (cumulative_args_t pcum_v,
-			    machine_mode mode,
-			    tree type,
+			    const function_arg_info &arg,
 			    int *pretend_size,
 			    int second_time ATTRIBUTE_UNUSED)
 {
@@ -27068,17 +27067,17 @@ arm_setup_incoming_varargs (cumulative_args_t pcum_v,
       nregs = pcum->aapcs_ncrn;
       if (nregs & 1)
 	{
-	  int res = arm_needs_doubleword_align (mode, type);
+	  int res = arm_needs_doubleword_align (arg.mode, arg.type);
 	  if (res < 0 && warn_psabi)
 	    inform (input_location, "parameter passing for argument of "
-		    "type %qT changed in GCC 7.1", type);
+		    "type %qT changed in GCC 7.1", arg.type);
 	  else if (res > 0)
 	    {
 	      nregs++;
 	      if (res > 1 && warn_psabi)
 		inform (input_location,
 			"parameter passing for argument of type "
-			"%qT changed in GCC 9.1", type);
+			"%qT changed in GCC 9.1", arg.type);
 	    }
 	}
     }

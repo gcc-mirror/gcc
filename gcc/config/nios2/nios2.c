@@ -3516,8 +3516,8 @@ nios2_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
    own va_arg type.  */
 static void
 nios2_setup_incoming_varargs (cumulative_args_t cum_v,
-                              machine_mode mode, tree type,
-                              int *pretend_size, int second_time)
+			      const function_arg_info &arg,
+			      int *pretend_size, int second_time)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v); 
   CUMULATIVE_ARGS local_cum;
@@ -3527,7 +3527,7 @@ nios2_setup_incoming_varargs (cumulative_args_t cum_v,
 
   cfun->machine->uses_anonymous_args = 1;
   local_cum = *cum;
-  nios2_function_arg_advance (local_cum_v, mode, type, true);
+  nios2_function_arg_advance (local_cum_v, arg.mode, arg.type, arg.named);
 
   regs_to_push = NUM_ARG_REGS - local_cum.regs_used;
 

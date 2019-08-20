@@ -2485,9 +2485,9 @@ assign_parms_setup_varargs (struct assign_parm_data_all *all,
 {
   int varargs_pretend_bytes = 0;
 
-  targetm.calls.setup_incoming_varargs (all->args_so_far,
-					data->promoted_mode,
-					data->passed_type,
+  function_arg_info last_named_arg (data->passed_type, data->promoted_mode,
+				    /*named=*/true);
+  targetm.calls.setup_incoming_varargs (all->args_so_far, last_named_arg,
 					&varargs_pretend_bytes, no_rtl);
 
   /* If the back-end has requested extra stack space, record how much is

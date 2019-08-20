@@ -152,8 +152,8 @@ static void iq2000_init_builtins      (void);
 static rtx  iq2000_expand_builtin     (tree, rtx, rtx, machine_mode, int);
 static bool iq2000_return_in_memory   (const_tree, const_tree);
 static void iq2000_setup_incoming_varargs (cumulative_args_t,
-					   machine_mode, tree, int *,
-					   int);
+					   const function_arg_info &,
+					   int *, int);
 static bool iq2000_rtx_costs          (rtx, machine_mode, int, int, int *, bool);
 static int  iq2000_address_cost       (rtx, machine_mode, addr_space_t,
 				       bool);
@@ -2894,9 +2894,8 @@ iq2000_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
 static void
 iq2000_setup_incoming_varargs (cumulative_args_t cum_v,
-			       machine_mode mode ATTRIBUTE_UNUSED,
-			       tree type ATTRIBUTE_UNUSED, int * pretend_size,
-			       int no_rtl)
+			       const function_arg_info &,
+			       int *pretend_size, int no_rtl)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   unsigned int iq2000_off = ! cum->last_arg_fp; 

@@ -86,8 +86,9 @@ static bool m32r_return_in_memory (const_tree, const_tree);
 static rtx m32r_function_value (const_tree, const_tree, bool);
 static rtx m32r_libcall_value (machine_mode, const_rtx);
 static bool m32r_function_value_regno_p (const unsigned int);
-static void m32r_setup_incoming_varargs (cumulative_args_t, machine_mode,
-					 tree, int *, int);
+static void m32r_setup_incoming_varargs (cumulative_args_t,
+					 const function_arg_info &,
+					 int *, int);
 static void init_idents (void);
 static bool m32r_rtx_costs (rtx, machine_mode, int, int, int *, bool speed);
 static int m32r_memory_move_cost (machine_mode, reg_class_t, bool);
@@ -1280,12 +1281,13 @@ m32r_function_value_regno_p (const unsigned int regno)
    create a register parameter block, and then copy any anonymous arguments
    in registers to memory.
 
-   CUM has not been updated for the last named argument which has type TYPE
-   and mode MODE, and we rely on this fact.  */
+   CUM has not been updated for the last named argument (which is given
+   by ARG), and we rely on this fact.  */
 
 static void
-m32r_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
-			     tree type, int *pretend_size, int no_rtl)
+m32r_setup_incoming_varargs (cumulative_args_t cum,
+			     const function_arg_info &arg,
+			     int *pretend_size, int no_rtl)
 {
   int first_anon_arg;
 
@@ -1293,10 +1295,11 @@ m32r_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
     return;
 
   /* All BLKmode values are passed by reference.  */
-  gcc_assert (mode != BLKmode);
+  gcc_assert (arg.mode != BLKmode);
 
-  first_anon_arg = (ROUND_ADVANCE_CUM (*get_cumulative_args (cum), mode, type)
-		    + ROUND_ADVANCE_ARG (mode, type));
+  first_anon_arg = (ROUND_ADVANCE_CUM (*get_cumulative_args (cum),
+				       arg.mode, arg.type)
+		    + ROUND_ADVANCE_ARG (arg.mode, arg.type));
 
   if (first_anon_arg < M32R_MAX_PARM_REGS)
     {

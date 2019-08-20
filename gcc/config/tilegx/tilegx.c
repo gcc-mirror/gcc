@@ -390,8 +390,8 @@ tilegx_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 /* Implement TARGET_SETUP_INCOMING_VARARGS.  */
 static void
 tilegx_setup_incoming_varargs (cumulative_args_t cum,
-			       machine_mode mode,
-			       tree type, int *pretend_args, int no_rtl)
+			       const function_arg_info &arg,
+			       int *pretend_args, int no_rtl)
 {
   CUMULATIVE_ARGS local_cum = *get_cumulative_args (cum);
   int first_reg;
@@ -400,7 +400,7 @@ tilegx_setup_incoming_varargs (cumulative_args_t cum,
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
   targetm.calls.function_arg_advance (pack_cumulative_args (&local_cum),
-				      mode, type, true);
+				      arg.mode, arg.type, arg.named);
   first_reg = local_cum;
 
   if (local_cum < TILEGX_NUM_ARG_REGS)

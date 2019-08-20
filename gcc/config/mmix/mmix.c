@@ -138,7 +138,7 @@ static void mmix_reorg (void);
 static void mmix_asm_output_mi_thunk
   (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
 static void mmix_setup_incoming_varargs
-  (cumulative_args_t, machine_mode, tree, int *, int);
+  (cumulative_args_t, const function_arg_info &, int *, int);
 static void mmix_file_start (void);
 static void mmix_file_end (void);
 static void mmix_init_libfuncs (void);
@@ -960,8 +960,7 @@ mmix_function_profiler (FILE *stream ATTRIBUTE_UNUSED,
 
 static void
 mmix_setup_incoming_varargs (cumulative_args_t args_so_farp_v,
-			     machine_mode mode,
-			     tree vartype,
+			     const function_arg_info &arg,
 			     int *pretend_sizep,
 			     int second_time ATTRIBUTE_UNUSED)
 {
@@ -974,7 +973,7 @@ mmix_setup_incoming_varargs (cumulative_args_t args_so_farp_v,
 
   /* We assume that one argument takes up one register here.  That should
      be true until we start messing with multi-reg parameters.  */
-  if ((7 + (MMIX_FUNCTION_ARG_SIZE (mode, vartype))) / 8 != 1)
+  if ((7 + (MMIX_FUNCTION_ARG_SIZE (arg.mode, arg.type))) / 8 != 1)
     internal_error ("MMIX Internal: Last named vararg would not fit in a register");
 }
 

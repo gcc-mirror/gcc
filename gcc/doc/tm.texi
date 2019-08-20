@@ -5202,7 +5202,7 @@ return value of this function should be an RTX that contains the value
 to use as the return of @code{__builtin_saveregs}.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SETUP_INCOMING_VARARGS (cumulative_args_t @var{args_so_far}, machine_mode @var{mode}, tree @var{type}, int *@var{pretend_args_size}, int @var{second_time})
+@deftypefn {Target Hook} void TARGET_SETUP_INCOMING_VARARGS (cumulative_args_t @var{args_so_far}, const function_arg_info @var{&arg}, int *@var{pretend_args_size}, int @var{second_time})
 This target hook offers an alternative to using
 @code{__builtin_saveregs} and defining the hook
 @code{TARGET_EXPAND_BUILTIN_SAVEREGS}.  Use it to store the anonymous
@@ -5213,8 +5213,8 @@ pass all their arguments on the stack.
 
 The argument @var{args_so_far} points to the @code{CUMULATIVE_ARGS} data
 structure, containing the values that are obtained after processing the
-named arguments.  The arguments @var{mode} and @var{type} describe the
-last named argument---its machine mode and its data type as a tree node.
+named arguments.  The argument @var{arg} describes the last of these named
+arguments.
 
 The target hook should do two things: first, push onto the stack all the
 argument registers @emph{not} used for the named arguments, and second,

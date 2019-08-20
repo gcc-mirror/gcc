@@ -14511,9 +14511,9 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 /* Implement TARGET_SETUP_INCOMING_VARARGS.  */
 
 static void
-aarch64_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
-				tree type, int *pretend_size ATTRIBUTE_UNUSED,
-				int no_rtl)
+aarch64_setup_incoming_varargs (cumulative_args_t cum_v,
+				const function_arg_info &arg,
+				int *pretend_size ATTRIBUTE_UNUSED, int no_rtl)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   CUMULATIVE_ARGS local_cum;
@@ -14524,7 +14524,8 @@ aarch64_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
   local_cum = *cum;
-  aarch64_function_arg_advance (pack_cumulative_args(&local_cum), mode, type, true);
+  aarch64_function_arg_advance (pack_cumulative_args(&local_cum),
+				arg.mode, arg.type, arg.named);
 
   /* Found out how many registers we need to save.
      Honor tree-stdvar analysis results.  */
