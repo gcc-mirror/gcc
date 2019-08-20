@@ -1,3 +1,8 @@
+2019-08-20  Richard Biener  <rguenther@suse.de>
+
+	PR target/91498
+	* gcc.target/i386/minmax-7.c: New testcase.
+
 2019-08-20  Lili Cui  <lili.cui@intel.com>
 
 	* gcc.target/i386/funcspec-56.inc: Handle new march.

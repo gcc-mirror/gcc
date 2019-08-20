@@ -1,3 +1,13 @@
+2019-08-20  Richard Biener  <rguenther@suse.de>
+
+	PR target/91498
+	* config/i386/i386-features.c (general_scalar_chain::convert_op):
+	Use (vec_merge (vec_duplicate..)) style vector from scalar move.
+	(convert_scalars_to_vector): Add timode_p parameter and use it
+	to guard TImode-only operation.
+	(pass_stv::gate): Adjust so STV runs twice for TARGET_64BIT.
+	(pass_stv::execute): Pass down timode_p.
+
 2019-08-20  Lili Cui  <lili.cui@intel.com>
 
 	* common/config/i386/i386-common.c
