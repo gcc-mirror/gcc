@@ -7478,6 +7478,12 @@ package body Exp_Aggr is
          return;
       end if;
 
+      --  If the pramga Aggregate_Individually_Assign is set always convert to
+      --  assignments.
+
+      if Aggregate_Individually_Assign then
+         Convert_To_Assignments (N, Typ);
+
       --  Ada 2005 (AI-318-2): We need to convert to assignments if components
       --  are build-in-place function calls. The assignments will each turn
       --  into a build-in-place function call. If components are all static,
@@ -7486,7 +7492,7 @@ package body Exp_Aggr is
       --  Extension aggregates, aggregates in extended return statements, and
       --  aggregates for C++ imported types must be expanded.
 
-      if Ada_Version >= Ada_2005 and then Is_Limited_View (Typ) then
+      elsif Ada_Version >= Ada_2005 and then Is_Limited_View (Typ) then
          if not Nkind_In (Parent (N), N_Component_Association,
                                       N_Object_Declaration)
          then

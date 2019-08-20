@@ -12979,6 +12979,18 @@ package body Sem_Prag is
             Ada_Version_Explicit := Ada_2020;
             Ada_Version_Pragma   := N;
 
+         -------------------------------------
+         -- Aggregate_Individually_Assign --
+         -------------------------------------
+
+         --  pragma Aggregate_Individually_Assign;
+
+         when Pragma_Aggregate_Individually_Assign =>
+            GNAT_Pragma;
+            Check_Arg_Count (0);
+            Check_Valid_Configuration_Pragma;
+            Aggregate_Individually_Assign := True;
+
          ----------------------
          -- All_Calls_Remote --
          ----------------------
@@ -30890,6 +30902,7 @@ package body Sem_Prag is
       Pragma_Ada_12                         => -1,
       Pragma_Ada_2012                       => -1,
       Pragma_Ada_2020                       => -1,
+      Pragma_Aggregate_Individually_Assign  => 0,
       Pragma_All_Calls_Remote               => -1,
       Pragma_Allow_Integer_Address          => -1,
       Pragma_Annotate                       => 93,

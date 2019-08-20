@@ -191,6 +191,11 @@ package Opt is
    --  GNAT, GNATBIND
    --  Set True if package System has the line "type Address is private;"
 
+   Aggregate_Individually_Assign : Boolean := False;
+   --  GNAT
+   --  Set True if record aggregates are to be always converted into assignment
+   --  statements. Set through the corresponding pragma.
+
    All_Errors_Mode : Boolean := False;
    --  GNAT
    --  Flag set to force display of multiple errors on a single line and
