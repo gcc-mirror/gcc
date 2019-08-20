@@ -2264,15 +2264,13 @@ struct assign_parm_data_all
 struct assign_parm_data_one
 {
   tree nominal_type;
-  tree passed_type;
+  function_arg_info arg;
   rtx entry_parm;
   rtx stack_parm;
   machine_mode nominal_mode;
   machine_mode passed_mode;
-  machine_mode promoted_mode;
   struct locate_and_pad_arg_data locate;
   int partial;
-  BOOL_BITFIELD named_arg : 1;
   BOOL_BITFIELD passed_pointer : 1;
 };
 
@@ -2407,24 +2405,22 @@ static void
 assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
 			     struct assign_parm_data_one *data)
 {
-  tree nominal_type, passed_type;
-  machine_mode nominal_mode, passed_mode, promoted_mode;
   int unsignedp;
 
-  memset (data, 0, sizeof (*data));
+  *data = assign_parm_data_one ();
 
   /* NAMED_ARG is a misnomer.  We really mean 'non-variadic'. */
   if (!cfun->stdarg)
-    data->named_arg = 1;  /* No variadic parms.  */
+    data->arg.named = 1;  /* No variadic parms.  */
   else if (DECL_CHAIN (parm))
-    data->named_arg = 1;  /* Not the last non-variadic parm. */
+    data->arg.named = 1;  /* Not the last non-variadic parm. */
   else if (targetm.calls.strict_argument_naming (all->args_so_far))
-    data->named_arg = 1;  /* Only variadic ones are unnamed.  */
+    data->arg.named = 1;  /* Only variadic ones are unnamed.  */
   else
-    data->named_arg = 0;  /* Treat as variadic.  */
+    data->arg.named = 0;  /* Treat as variadic.  */
 
-  nominal_type = TREE_TYPE (parm);
-  passed_type = DECL_ARG_TYPE (parm);
+  data->nominal_type = TREE_TYPE (parm);
+  data->arg.type = DECL_ARG_TYPE (parm);
 
   /* Look out for errors propagating this far.  Also, if the parameter's
      type is void then its value doesn't matter.  */
@@ -2432,49 +2428,40 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
       /* This can happen after weird syntax errors
 	 or if an enum type is defined among the parms.  */
       || TREE_CODE (parm) != PARM_DECL
-      || passed_type == NULL
-      || VOID_TYPE_P (nominal_type))
+      || data->arg.type == NULL
+      || VOID_TYPE_P (data->nominal_type))
     {
-      nominal_type = passed_type = void_type_node;
-      nominal_mode = passed_mode = promoted_mode = VOIDmode;
-      goto egress;
+      data->nominal_type = data->arg.type = void_type_node;
+      data->nominal_mode = data->passed_mode = data->arg.mode = VOIDmode;
+      return;
     }
 
   /* Find mode of arg as it is passed, and mode of arg as it should be
      during execution of this function.  */
-  passed_mode = TYPE_MODE (passed_type);
-  nominal_mode = TYPE_MODE (nominal_type);
+  data->passed_mode = data->arg.mode = TYPE_MODE (data->arg.type);
+  data->nominal_mode = TYPE_MODE (data->nominal_type);
 
   /* If the parm is to be passed as a transparent union or record, use the
      type of the first field for the tests below.  We have already verified
      that the modes are the same.  */
-  if ((TREE_CODE (passed_type) == UNION_TYPE
-       || TREE_CODE (passed_type) == RECORD_TYPE)
-      && TYPE_TRANSPARENT_AGGR (passed_type))
-    passed_type = TREE_TYPE (first_field (passed_type));
+  if ((TREE_CODE (data->arg.type) == UNION_TYPE
+       || TREE_CODE (data->arg.type) == RECORD_TYPE)
+      && TYPE_TRANSPARENT_AGGR (data->arg.type))
+    data->arg.type = TREE_TYPE (first_field (data->arg.type));
 
   /* See if this arg was passed by invisible reference.  */
-  {
-    function_arg_info arg (passed_type, passed_mode, data->named_arg);
-    if (apply_pass_by_reference_rules (&all->args_so_far_v, arg))
-      {
-	passed_type = nominal_type = arg.type;
-	data->passed_pointer = true;
-	passed_mode = nominal_mode = arg.mode;
-      }
-  }
+  if (apply_pass_by_reference_rules (&all->args_so_far_v, data->arg))
+    {
+      data->nominal_type = data->arg.type;
+      data->passed_pointer = true;
+      data->passed_mode = data->nominal_mode = data->arg.mode;
+    }
 
   /* Find mode as it is passed by the ABI.  */
-  unsignedp = TYPE_UNSIGNED (passed_type);
-  promoted_mode = promote_function_mode (passed_type, passed_mode, &unsignedp,
-				         TREE_TYPE (current_function_decl), 0);
-
- egress:
-  data->nominal_type = nominal_type;
-  data->passed_type = passed_type;
-  data->nominal_mode = nominal_mode;
-  data->passed_mode = passed_mode;
-  data->promoted_mode = promoted_mode;
+  unsignedp = TYPE_UNSIGNED (data->arg.type);
+  data->arg.mode
+    = promote_function_mode (data->arg.type, data->arg.mode, &unsignedp,
+			     TREE_TYPE (current_function_decl), 0);
 }
 
 /* A subroutine of assign_parms.  Invoke setup_incoming_varargs.  */
@@ -2485,8 +2472,8 @@ assign_parms_setup_varargs (struct assign_parm_data_all *all,
 {
   int varargs_pretend_bytes = 0;
 
-  function_arg_info last_named_arg (data->passed_type, data->promoted_mode,
-				    /*named=*/true);
+  function_arg_info last_named_arg = data->arg;
+  last_named_arg.named = true;
   targetm.calls.setup_incoming_varargs (all->args_so_far, last_named_arg,
 					&varargs_pretend_bytes, no_rtl);
 
@@ -2508,20 +2495,19 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
   rtx entry_parm;
   bool in_regs;
 
-  if (data->promoted_mode == VOIDmode)
+  if (data->arg.mode == VOIDmode)
     {
       data->entry_parm = data->stack_parm = const0_rtx;
       return;
     }
 
   targetm.calls.warn_parameter_passing_abi (all->args_so_far,
-					    data->passed_type);
+					    data->arg.type);
 
-  function_arg_info arg (data->passed_type, data->promoted_mode,
-			 data->named_arg);
-  entry_parm = targetm.calls.function_incoming_arg (all->args_so_far, arg);
+  entry_parm = targetm.calls.function_incoming_arg (all->args_so_far,
+						    data->arg);
   if (entry_parm == 0)
-    data->promoted_mode = data->passed_mode;
+    data->arg.mode = data->passed_mode;
 
   /* Determine parm's home in the stack, in case it arrives in the stack
      or we should pretend it did.  Compute the stack position and rtx where
@@ -2537,13 +2523,13 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
   in_regs = true;
 #endif
-  if (!in_regs && !data->named_arg)
+  if (!in_regs && !data->arg.named)
     {
       if (targetm.calls.pretend_outgoing_varargs_named (all->args_so_far))
 	{
 	  rtx tem;
-	  function_arg_info named_arg (data->passed_type, data->promoted_mode,
-				       /*named=*/true);
+	  function_arg_info named_arg = data->arg;
+	  named_arg.named = true;
 	  tem = targetm.calls.function_incoming_arg (all->args_so_far,
 						     named_arg);
 	  in_regs = tem != NULL;
@@ -2552,16 +2538,14 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
 
   /* If this parameter was passed both in registers and in the stack, use
      the copy on the stack.  */
-  if (targetm.calls.must_pass_in_stack (arg))
+  if (targetm.calls.must_pass_in_stack (data->arg))
     entry_parm = 0;
 
   if (entry_parm)
     {
       int partial;
 
-      function_arg_info arg (data->passed_type, data->promoted_mode,
-			     data->named_arg);
-      partial = targetm.calls.arg_partial_bytes (all->args_so_far, arg);
+      partial = targetm.calls.arg_partial_bytes (all->args_so_far, data->arg);
       data->partial = partial;
 
       /* The caller might already have allocated stack space for the
@@ -2596,7 +2580,7 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
 	}
     }
 
-  locate_and_pad_parm (data->promoted_mode, data->passed_type, in_regs,
+  locate_and_pad_parm (data->arg.mode, data->arg.type, in_regs,
 		       all->reg_parm_stack_space,
 		       entry_parm ? data->partial : 0, current_function_decl,
 		       &all->stack_args_size, &data->locate);
@@ -2667,21 +2651,21 @@ assign_parm_find_stack_rtl (tree parm, struct assign_parm_data_one *data)
   stack_parm = crtl->args.internal_arg_pointer;
   if (offset_rtx != const0_rtx)
     stack_parm = gen_rtx_PLUS (Pmode, stack_parm, offset_rtx);
-  stack_parm = gen_rtx_MEM (data->promoted_mode, stack_parm);
+  stack_parm = gen_rtx_MEM (data->arg.mode, stack_parm);
 
   if (!data->passed_pointer)
     {
       set_mem_attributes (stack_parm, parm, 1);
       /* set_mem_attributes could set MEM_SIZE to the passed mode's size,
 	 while promoted mode's size is needed.  */
-      if (data->promoted_mode != BLKmode
-	  && data->promoted_mode != DECL_MODE (parm))
+      if (data->arg.mode != BLKmode
+	  && data->arg.mode != DECL_MODE (parm))
 	{
-	  set_mem_size (stack_parm, GET_MODE_SIZE (data->promoted_mode));
+	  set_mem_size (stack_parm, GET_MODE_SIZE (data->arg.mode));
 	  if (MEM_EXPR (stack_parm) && MEM_OFFSET_KNOWN_P (stack_parm))
 	    {
 	      poly_int64 offset = subreg_lowpart_offset (DECL_MODE (parm),
-							 data->promoted_mode);
+							 data->arg.mode);
 	      if (maybe_ne (offset, 0))
 		set_mem_offset (stack_parm, MEM_OFFSET (stack_parm) - offset);
 	    }
@@ -2748,8 +2732,7 @@ assign_parm_adjust_entry_rtl (struct assign_parm_data_one *data)
 	 locations.  The Irix 6 ABI has examples of this.  */
       if (GET_CODE (entry_parm) == PARALLEL)
 	emit_group_store (validize_mem (copy_rtx (stack_parm)), entry_parm,
-			  data->passed_type,
-			  int_size_in_bytes (data->passed_type));
+			  data->arg.type, int_size_in_bytes (data->arg.type));
       else
 	{
 	  gcc_assert (data->partial % UNITS_PER_WORD == 0);
@@ -2805,7 +2788,7 @@ assign_parm_remove_parallels (struct assign_parm_data_one *data)
   if (GET_CODE (entry_parm) == PARALLEL && GET_MODE (entry_parm) != BLKmode)
     {
       rtx parmreg = gen_reg_rtx (GET_MODE (entry_parm));
-      emit_group_store (parmreg, entry_parm, data->passed_type,
+      emit_group_store (parmreg, entry_parm, data->arg.type,
 			GET_MODE_SIZE (GET_MODE (entry_parm)));
       entry_parm = parmreg;
     }
@@ -2866,8 +2849,8 @@ assign_parm_setup_block_p (struct assign_parm_data_one *data)
   /* Only assign_parm_setup_block knows how to deal with register arguments
      that are padded at the least significant end.  */
   if (REG_P (data->entry_parm)
-      && known_lt (GET_MODE_SIZE (data->promoted_mode), UNITS_PER_WORD)
-      && (BLOCK_REG_PADDING (data->passed_mode, data->passed_type, 1)
+      && known_lt (GET_MODE_SIZE (data->arg.mode), UNITS_PER_WORD)
+      && (BLOCK_REG_PADDING (data->passed_mode, data->arg.type, 1)
 	  == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
     return true;
 #endif
@@ -2922,7 +2905,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
       data->stack_parm = NULL;
     }
 
-  size = int_size_in_bytes (data->passed_type);
+  size = int_size_in_bytes (data->arg.type);
   size_stored = CEIL_ROUND (size, UNITS_PER_WORD);
   if (stack_parm == 0)
     {
@@ -2977,12 +2960,12 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 
       /* Handle values in multiple non-contiguous locations.  */
       if (GET_CODE (entry_parm) == PARALLEL && !MEM_P (mem))
-	emit_group_store (mem, entry_parm, data->passed_type, size);
+	emit_group_store (mem, entry_parm, data->arg.type, size);
       else if (GET_CODE (entry_parm) == PARALLEL)
 	{
 	  push_to_sequence2 (all->first_conversion_insn,
 			     all->last_conversion_insn);
-	  emit_group_store (mem, entry_parm, data->passed_type, size);
+	  emit_group_store (mem, entry_parm, data->arg.type, size);
 	  all->first_conversion_insn = get_insns ();
 	  all->last_conversion_insn = get_last_insn ();
 	  end_sequence ();
@@ -3002,7 +2985,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	  if (mode != BLKmode
 #ifdef BLOCK_REG_PADDING
 	      && (size == UNITS_PER_WORD
-		  || (BLOCK_REG_PADDING (mode, data->passed_type, 1)
+		  || (BLOCK_REG_PADDING (mode, data->arg.type, 1)
 		      != (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
 #endif
 	      )
@@ -3043,7 +3026,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 		 additional changes to work correctly.  */
 	      gcc_checking_assert (BYTES_BIG_ENDIAN
 				   && (BLOCK_REG_PADDING (mode,
-							  data->passed_type, 1)
+							  data->arg.type, 1)
 				       == PAD_UPWARD));
 
 	      int by = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
@@ -3064,7 +3047,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	     handle all cases (e.g. SIZE == 3).  */
 	  else if (size != UNITS_PER_WORD
 #ifdef BLOCK_REG_PADDING
-		   && (BLOCK_REG_PADDING (mode, data->passed_type, 1)
+		   && (BLOCK_REG_PADDING (mode, data->arg.type, 1)
 		       == PAD_DOWNWARD)
 #else
 		   && BYTES_BIG_ENDIAN
@@ -3088,7 +3071,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	  gcc_checking_assert (size > UNITS_PER_WORD);
 #ifdef BLOCK_REG_PADDING
 	  gcc_checking_assert (BLOCK_REG_PADDING (GET_MODE (mem),
-						  data->passed_type, 0)
+						  data->arg.type, 0)
 			       == PAD_UPWARD);
 #endif
 	  emit_move_insn (mem, entry_parm);
@@ -3159,7 +3142,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
      set rtl appropriately.  */
   if (data->passed_pointer)
     {
-      rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (data->passed_type)), parmreg);
+      rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (data->arg.type)), parmreg);
       set_mem_attributes (rtl, parm, 1);
     }
   else
@@ -3174,7 +3157,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
   validated_mem = validize_mem (copy_rtx (data->entry_parm));
 
   need_conversion = (data->nominal_mode != data->passed_mode
-		     || promoted_nominal_mode != data->promoted_mode);
+		     || promoted_nominal_mode != data->arg.mode);
   moved = false;
 
   if (need_conversion
@@ -3444,7 +3427,7 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
 
   assign_parm_remove_parallels (data);
 
-  if (data->promoted_mode != data->nominal_mode)
+  if (data->arg.mode != data->nominal_mode)
     {
       /* Conversion is required.  */
       rtx tempreg = gen_reg_rtx (GET_MODE (data->entry_parm));
@@ -3477,9 +3460,9 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
 
       if (data->stack_parm == 0)
 	{
-	  int align = STACK_SLOT_ALIGNMENT (data->passed_type,
+	  int align = STACK_SLOT_ALIGNMENT (data->arg.type,
 					    GET_MODE (data->entry_parm),
-					    TYPE_ALIGN (data->passed_type));
+					    TYPE_ALIGN (data->arg.type));
 	  data->stack_parm
 	    = assign_stack_local (GET_MODE (data->entry_parm),
 				  GET_MODE_SIZE (GET_MODE (data->entry_parm)),
@@ -3499,7 +3482,7 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
 	  to_conversion = true;
 
 	  emit_block_move (dest, src,
-			   GEN_INT (int_size_in_bytes (data->passed_type)),
+			   GEN_INT (int_size_in_bytes (data->arg.type)),
 			   BLOCK_OP_NORMAL);
 	}
       else
@@ -3623,10 +3606,9 @@ assign_parms (tree fndecl)
       if (SUPPORTS_STACK_ALIGNMENT)
         {
           unsigned int align
-	    = targetm.calls.function_arg_boundary (data.promoted_mode,
-						   data.passed_type);
-	  align = MINIMUM_ALIGNMENT (data.passed_type, data.promoted_mode,
-				     align);
+	    = targetm.calls.function_arg_boundary (data.arg.mode,
+						   data.arg.type);
+	  align = MINIMUM_ALIGNMENT (data.arg.type, data.arg.mode, align);
 	  if (TYPE_ALIGN (data.nominal_type) > align)
 	    align = MINIMUM_ALIGNMENT (data.nominal_type,
 				       TYPE_MODE (data.nominal_type),
@@ -3651,7 +3633,7 @@ assign_parms (tree fndecl)
       if (data.passed_pointer)
 	{
 	  rtx incoming_rtl
-	    = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (data.passed_type)),
+	    = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (data.arg.type)),
 			   data.entry_parm);
 	  set_decl_incoming_rtl (parm, incoming_rtl, true);
 	}
@@ -3671,9 +3653,7 @@ assign_parms (tree fndecl)
 	assign_parms_setup_varargs (&all, &data, false);
 
       /* Update info on where next arg arrives in registers.  */
-      function_arg_info arg (data.passed_type, data.promoted_mode,
-			     data.named_arg);
-      targetm.calls.function_arg_advance (all.args_so_far, arg);
+      targetm.calls.function_arg_advance (all.args_so_far, data.arg);
     }
 
   if (targetm.calls.split_complex_arg)
@@ -3860,15 +3840,13 @@ gimplify_parameters (gimple_seq *cleanup)
 	continue;
 
       /* Update info on where next arg arrives in registers.  */
-      function_arg_info arg (data.passed_type, data.promoted_mode,
-			     data.named_arg);
-      targetm.calls.function_arg_advance (all.args_so_far, arg);
+      targetm.calls.function_arg_advance (all.args_so_far, data.arg);
 
       /* ??? Once upon a time variable_size stuffed parameter list
 	 SAVE_EXPRs (amongst others) onto a pending sizes list.  This
 	 turned out to be less than manageable in the gimple world.
 	 Now we have to hunt them down ourselves.  */
-      walk_tree_without_duplicates (&data.passed_type,
+      walk_tree_without_duplicates (&data.arg.type,
 				    gimplify_parm_type, &stmts);
 
       if (TREE_CODE (DECL_SIZE_UNIT (parm)) != INTEGER_CST)
@@ -3879,8 +3857,8 @@ gimplify_parameters (gimple_seq *cleanup)
 
       if (data.passed_pointer)
 	{
-          tree type = TREE_TYPE (data.passed_type);
-	  function_arg_info orig_arg (type, data.named_arg);
+	  tree type = TREE_TYPE (data.arg.type);
+	  function_arg_info orig_arg (type, data.arg.named);
 	  if (reference_callee_copied (&all.args_so_far_v, orig_arg))
 	    {
 	      tree local, t;

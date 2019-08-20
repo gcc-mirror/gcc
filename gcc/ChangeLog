@@ -1,5 +1,24 @@
 2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* function.c (assign_parm_data_one): Replace passed_type,
+	promoted_mode and named_arg with a function_arg_info field.
+	(assign_parm_find_data_types): Remove local variables and
+	assign directly to "data".  Make data->passed_mode shadow
+	data->arg.mode until promotion, then assign the promoted
+	mode to data->arg.mode.
+	(assign_parms_setup_varargs, assign_parm_find_entry_rtl)
+	(assign_parm_find_stack_rtl, assign_parm_adjust_entry_rtl)
+	(assign_parm_remove_parallels, assign_parm_setup_block_p)
+	(assign_parm_setup_block, assign_parm_setup_reg)
+	(assign_parm_setup_stack, assign_parms, gimplify_parameters): Use
+	arg.mode instead of promoted_mode, arg.type instead of passed_type
+	and arg.named instead of named_arg.  Use data->arg for
+	function_arg_info structures that had the field values passed_type,
+	promoted_mode and named_arg.  Base other function_arg_infos on
+	data->arg, changing the necessary properties.
+
+2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* calls.h (apply_pass_by_reference_rules): Declare.
 	* calls.c (apply_pass_by_reference_rules): New function.
 	* config/c6x/c6x.c (c6x_call_saved_register_used): Use it.
