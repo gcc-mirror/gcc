@@ -6734,11 +6734,10 @@ Binary_expression::do_check_types(Gogo*)
 	this->report_error(_("shift of non-integer operand"));
 
       if (right_type->is_string_type())
-        this->report_error(_("shift count not unsigned integer"));
+        this->report_error(_("shift count not integer"));
       else if (!right_type->is_abstract()
-	  && (right_type->integer_type() == NULL
-	      || !right_type->integer_type()->is_unsigned()))
-	this->report_error(_("shift count not unsigned integer"));
+	       && right_type->integer_type() == NULL)
+	this->report_error(_("shift count not integer"));
       else
 	{
 	  Numeric_constant nc;
@@ -6746,7 +6745,7 @@ Binary_expression::do_check_types(Gogo*)
 	    {
 	      mpz_t val;
 	      if (!nc.to_int(&val))
-		this->report_error(_("shift count not unsigned integer"));
+		this->report_error(_("shift count not integer"));
 	      else
 		{
 		  if (mpz_sgn(val) < 0)
@@ -6865,9 +6864,11 @@ Binary_expression::do_get_backend(Translate_context* context)
 
   // In Go, a shift larger than the size of the type is well-defined.
   // This is not true in C, so we need to insert a conditional.
+  // We also need to check for a negative shift count.
   if (is_shift_op)
     {
       go_assert(left_type->integer_type() != NULL);
+      go_assert(right_type->integer_type() != NULL);
 
       int bits = left_type->integer_type()->bits();
 
@@ -6908,6 +6909,23 @@ Binary_expression::do_get_backend(Translate_context* context)
 	  ret = gogo->backend()->conditional_expression(bfn, btype, compare,
 							ret, overflow, loc);
 	  mpz_clear(bitsval);
+	}
+
+      if (!right_type->integer_type()->is_unsigned()
+	  && (!this->right_->numeric_constant_value(&nc)
+	      || nc.to_unsigned_long(&ul) != Numeric_constant::NC_UL_VALID))
+	{
+	  Bexpression* zero_expr =
+	    gogo->backend()->integer_constant_expression(right_btype, zero);
+	  Bexpression* compare =
+	    gogo->backend()->binary_expression(OPERATOR_LT, right, zero_expr,
+					       loc);
+	  const int errcode = RUNTIME_ERROR_SHIFT_BY_NEGATIVE;
+	  Bexpression* crash =
+	    gogo->runtime_error(errcode, loc)->get_backend(context);
+	  Bfunction* bfn = context->function()->func_value()->get_decl();
+	  ret = gogo->backend()->conditional_expression(bfn, btype, compare,
+							crash, ret, loc);
 	}
     }
 
