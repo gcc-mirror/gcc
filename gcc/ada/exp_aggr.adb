@@ -5233,6 +5233,12 @@ package body Exp_Aggr is
          Value     : Uint;
 
       begin
+         --  Back end doesn't know about <>
+
+         if Has_Default_Init_Comps (N) then
+            return False;
+         end if;
+
          --  Recurse as far as possible to find the innermost component type
 
          Ctyp := Etype (N);
@@ -6292,9 +6298,7 @@ package body Exp_Aggr is
       --  previously excluded controlled components but this is an old
       --  oversight: the rules in 7.6 (17) are clear.
 
-      if (not Has_Default_Init_Comps (N)
-           or else Is_Limited_Type (Etype (N)))
-        and then Comes_From_Source (Parent_Node)
+      if Comes_From_Source (Parent_Node)
         and then Parent_Kind = N_Object_Declaration
         and then Present (Expression (Parent_Node))
         and then not
