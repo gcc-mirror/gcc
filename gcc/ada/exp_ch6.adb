@@ -5615,7 +5615,23 @@ package body Exp_Ch6 is
       Set_Comes_From_Extended_Return_Statement (Return_Stmt);
 
       Rewrite (N, Result);
-      Analyze (N, Suppress => All_Checks);
+
+      declare
+         T : constant Entity_Id := Etype (Ret_Obj_Id);
+      begin
+         Analyze (N, Suppress => All_Checks);
+
+         --  In some cases, analysis of N can set the Etype of an N_Identifier
+         --  to a subtype of the Etype of the Entity of the N_Identifier, which
+         --  gigi doesn't like. Reset the Etypes correctly here.
+
+         if Nkind (Expression (Return_Stmt)) = N_Identifier
+           and then Entity (Expression (Return_Stmt)) = Ret_Obj_Id
+         then
+            Set_Etype (Ret_Obj_Id, T);
+            Set_Etype (Expression (Return_Stmt), T);
+         end if;
+      end;
    end Expand_N_Extended_Return_Statement;
 
    ----------------------------
@@ -8108,13 +8124,41 @@ package body Exp_Ch6 is
       --  since it is already attached on the related finalization master.
 
       --  Here and in related routines, we must examine the full view of the
-      --  type, because the view at the point of call may differ from that
-      --  that in the function body, and the expansion mechanism depends on
+      --  type, because the view at the point of call may differ from the
+      --  one in the function body, and the expansion mechanism depends on
       --  the characteristics of the full view.
 
-      if Is_Constrained (Underlying_Type (Result_Subt))
-        and then not Needs_Finalization (Underlying_Type (Result_Subt))
-      then
+      if Needs_BIP_Alloc_Form (Function_Id) then
+         Temp_Init := Empty;
+
+         --  Case of a user-defined storage pool. Pass an allocation parameter
+         --  indicating that the function should allocate its result in the
+         --  pool, and pass the pool. Use 'Unrestricted_Access because the
+         --  pool may not be aliased.
+
+         if Present (Associated_Storage_Pool (Acc_Type)) then
+            Alloc_Form := User_Storage_Pool;
+            Pool :=
+              Make_Attribute_Reference (Loc,
+                Prefix         =>
+                  New_Occurrence_Of
+                    (Associated_Storage_Pool (Acc_Type), Loc),
+                Attribute_Name => Name_Unrestricted_Access);
+
+         --  No user-defined pool; pass an allocation parameter indicating that
+         --  the function should allocate its result on the heap.
+
+         else
+            Alloc_Form := Global_Heap;
+            Pool := Make_Null (No_Location);
+         end if;
+
+         --  The caller does not provide the return object in this case, so we
+         --  have to pass null for the object access actual.
+
+         Return_Obj_Actual := Empty;
+
+      else
          --  Replace the initialized allocator of form "new T'(Func (...))"
          --  with an uninitialized allocator of form "new T", where T is the
          --  result subtype of the called function. The call to the function
@@ -8163,35 +8207,6 @@ package body Exp_Ch6 is
       --  perform the allocation of the return object, so we pass parameters
       --  indicating that.
 
-      else
-         Temp_Init := Empty;
-
-         --  Case of a user-defined storage pool. Pass an allocation parameter
-         --  indicating that the function should allocate its result in the
-         --  pool, and pass the pool. Use 'Unrestricted_Access because the
-         --  pool may not be aliased.
-
-         if Present (Associated_Storage_Pool (Acc_Type)) then
-            Alloc_Form := User_Storage_Pool;
-            Pool :=
-              Make_Attribute_Reference (Loc,
-                Prefix         =>
-                  New_Occurrence_Of
-                    (Associated_Storage_Pool (Acc_Type), Loc),
-                Attribute_Name => Name_Unrestricted_Access);
-
-         --  No user-defined pool; pass an allocation parameter indicating that
-         --  the function should allocate its result on the heap.
-
-         else
-            Alloc_Form := Global_Heap;
-            Pool := Make_Null (No_Location);
-         end if;
-
-         --  The caller does not provide the return object in this case, so we
-         --  have to pass null for the object access actual.
-
-         Return_Obj_Actual := Empty;
       end if;
 
       --  Declare the temp object
@@ -9279,30 +9294,8 @@ package body Exp_Ch6 is
    function Needs_BIP_Alloc_Form (Func_Id : Entity_Id) return Boolean is
       pragma Assert (Is_Build_In_Place_Function (Func_Id));
       Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
-
    begin
-      --  A build-in-place function needs to know which allocation form to
-      --  use when:
-      --
-      --  1) The result subtype is unconstrained. In this case, depending on
-      --     the context of the call, the object may need to be created in the
-      --     secondary stack, the heap, or a user-defined storage pool.
-      --
-      --  2) The result subtype is tagged. In this case the function call may
-      --     dispatch on result and thus needs to be treated in the same way as
-      --     calls to functions with class-wide results, because a callee that
-      --     can be dispatched to may have any of various result subtypes, so
-      --     if any of the possible callees would require an allocation form to
-      --     be passed then they all do.
-      --
-      --  3) The result subtype needs finalization actions. In this case, based
-      --     on the context of the call, the object may need to be created at
-      --     the caller site, in the heap, or in a user-defined storage pool.
-
-      return
-        not Is_Constrained (Func_Typ)
-          or else Is_Tagged_Type (Func_Typ)
-          or else Needs_Finalization (Func_Typ);
+      return Requires_Transient_Scope (Func_Typ);
    end Needs_BIP_Alloc_Form;
 
    --------------------------------------

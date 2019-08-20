@@ -1,3 +1,20 @@
+2019-08-20  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Needs_BIP_Alloc_Form): Call
+	Requires_Transient_Scope rather than checking constrainedness
+	and so forth.  We have previously improved
+	Requires_Transient_Scope to return False in various cases,
+	notably a limited record with an access discriminant. This
+	change takes advantage of that to avoid using the secondary
+	stack for functions returning such types.
+	(Make_Build_In_Place_Call_In_Allocator): Be consistent by
+	calling Needs_BIP_Alloc_Form rather than Is_Constrained and so
+	forth.
+	* sem_ch4.adb (Analyze_Allocator): The above change causes the
+	compiler to generate code that is not legal Ada, in particular
+	an uninitialized allocator for indefinite subtype.  This is
+	harmless, so we suppress the error message in this case.
+
 2019-08-20  Gary Dismukes  <dismukes@adacore.com>
 
 	* ali.adb, ali.ads, aspects.adb, checks.ads, checks.adb,
