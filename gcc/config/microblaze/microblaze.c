@@ -1653,30 +1653,25 @@ microblaze_function_arg (cumulative_args_t cum_v, machine_mode mode,
 
 /* Return number of bytes of argument to put in registers. */
 static int
-function_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,	
-			    tree type, bool named ATTRIBUTE_UNUSED)	
+function_arg_partial_bytes (cumulative_args_t cum_v,
+			    const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if ((mode == BLKmode
-       || GET_MODE_CLASS (mode) != MODE_COMPLEX_INT
-       || GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT)
+  if ((arg.mode == BLKmode
+       || GET_MODE_CLASS (arg.mode) != MODE_COMPLEX_INT
+       || GET_MODE_CLASS (arg.mode) != MODE_COMPLEX_FLOAT)
       && cum->arg_words < MAX_ARGS_IN_REGISTERS)
     {
-      int words;
-      if (mode == BLKmode)
-	words = ((int_size_in_bytes (type) + UNITS_PER_WORD - 1)
-		 / UNITS_PER_WORD);
-      else
-	words = (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-
+      int words = ((arg.promoted_size_in_bytes () + UNITS_PER_WORD - 1)
+		   / UNITS_PER_WORD);
       if (words + cum->arg_words <= MAX_ARGS_IN_REGISTERS)
 	return 0;		/* structure fits in registers */
 
       return (MAX_ARGS_IN_REGISTERS - cum->arg_words) * UNITS_PER_WORD;
     }
 
-  else if (mode == DImode && cum->arg_words == MAX_ARGS_IN_REGISTERS - 1)
+  else if (arg.mode == DImode && cum->arg_words == MAX_ARGS_IN_REGISTERS - 1)
     return UNITS_PER_WORD;
 
   return 0;

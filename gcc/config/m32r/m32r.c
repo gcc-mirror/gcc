@@ -93,8 +93,8 @@ static bool m32r_rtx_costs (rtx, machine_mode, int, int, int *, bool speed);
 static int m32r_memory_move_cost (machine_mode, reg_class_t, bool);
 static bool m32r_pass_by_reference (cumulative_args_t, machine_mode,
 				    const_tree, bool);
-static int m32r_arg_partial_bytes (cumulative_args_t, machine_mode,
-				   tree, bool);
+static int m32r_arg_partial_bytes (cumulative_args_t,
+				   const function_arg_info &);
 static rtx m32r_function_arg (cumulative_args_t, machine_mode,
 			      const_tree, bool);
 static void m32r_function_arg_advance (cumulative_args_t, machine_mode,
@@ -1164,17 +1164,13 @@ gen_split_move_double (rtx operands[])
 
 
 static int
-m32r_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
-			tree type, bool named ATTRIBUTE_UNUSED)
+m32r_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   int words;
   unsigned int size =
-    (((mode == BLKmode && type)
-      ? (unsigned int) int_size_in_bytes (type)
-      : GET_MODE_SIZE (mode)) + UNITS_PER_WORD - 1)
-    / UNITS_PER_WORD;
+    (arg.promoted_size_in_bytes () + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   if (*cum >= M32R_MAX_PARM_REGS)
     words = 0;

@@ -1607,8 +1607,8 @@ mn10300_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
    partially in registers and partially in memory.  */
 
 static int
-mn10300_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
-			   tree type, bool named ATTRIBUTE_UNUSED)
+mn10300_arg_partial_bytes (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int size;
@@ -1617,11 +1617,7 @@ mn10300_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
   int nregs = 2;
 
   /* Figure out the size of the object to be passed.  */
-  if (mode == BLKmode)
-    size = int_size_in_bytes (type);
-  else
-    size = GET_MODE_SIZE (mode);
-
+  size = arg.promoted_size_in_bytes ();
   cum->nbytes = (cum->nbytes + 3) & ~3;
 
   /* Don't pass this arg via a register if all the argument registers
@@ -1634,7 +1630,7 @@ mn10300_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
 
   /* Don't pass this arg via a register if it would be split between
      registers and memory.  */
-  if (type == NULL_TREE
+  if (arg.type == NULL_TREE
       && cum->nbytes + size > nregs * UNITS_PER_WORD)
     return 0;
 

@@ -2142,10 +2142,9 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       else
 	args[i].tail_call_reg = args[i].reg;
 
+      function_arg_info arg (type, mode, argpos < n_named_args);
       if (args[i].reg)
-	args[i].partial
-	  = targetm.calls.arg_partial_bytes (args_so_far, mode, type,
-					     argpos < n_named_args);
+	args[i].partial = targetm.calls.arg_partial_bytes (args_so_far, arg);
 
       args[i].pass_on_stack = targetm.calls.must_pass_in_stack (mode, type);
 
@@ -4871,10 +4870,10 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       argvec[count].mode = Pmode;
       argvec[count].partial = 0;
 
+      function_arg_info ptr_arg (Pmode, /*named=*/true);
       argvec[count].reg = targetm.calls.function_arg (args_so_far,
 						      Pmode, NULL_TREE, true);
-      gcc_assert (targetm.calls.arg_partial_bytes (args_so_far, Pmode,
-						   NULL_TREE, 1) == 0);
+      gcc_assert (targetm.calls.arg_partial_bytes (args_so_far, ptr_arg) == 0);
 
       locate_and_pad_parm (Pmode, NULL_TREE,
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
@@ -4952,13 +4951,14 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	}
 
       mode = promote_function_mode (NULL_TREE, mode, &unsigned_p, NULL_TREE, 0);
+      function_arg_info arg (mode, /*named=*/true);
       argvec[count].mode = mode;
       argvec[count].value = convert_modes (mode, GET_MODE (val), val, unsigned_p);
       argvec[count].reg = targetm.calls.function_arg (args_so_far, mode,
 						      NULL_TREE, true);
 
       argvec[count].partial
-	= targetm.calls.arg_partial_bytes (args_so_far, mode, NULL_TREE, 1);
+	= targetm.calls.arg_partial_bytes (args_so_far, arg);
 
       if (argvec[count].reg == 0
 	  || argvec[count].partial != 0

@@ -4677,8 +4677,8 @@ compiler when this occurs, and how many bytes should go in registers.\n\
 @code{TARGET_FUNCTION_ARG} for these arguments should return the first\n\
 register to be used by the caller for this argument; likewise\n\
 @code{TARGET_FUNCTION_INCOMING_ARG}, for the called function.",
- int, (cumulative_args_t cum, machine_mode mode, tree type, bool named),
- hook_int_CUMULATIVE_ARGS_mode_tree_bool_0)
+ int, (cumulative_args_t cum, const function_arg_info &arg),
+ hook_int_CUMULATIVE_ARGS_arg_info_0)
 
 /* Update the state in CA to advance past an argument in the
    argument list.  The values MODE, TYPE, and NAMED describe that

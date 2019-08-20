@@ -196,27 +196,22 @@ v850_function_arg (cumulative_args_t cum_v, machine_mode mode,
 /* Return the number of bytes which must be put into registers
    for values which are part in registers and part in memory.  */
 static int
-v850_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
-                        tree type, bool named)
+v850_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int size, align;
 
-  if (!named)
+  if (!arg.named)
     return 0;
 
-  if (mode == BLKmode)
-    size = int_size_in_bytes (type);
-  else
-    size = GET_MODE_SIZE (mode);
-
+  size = arg.promoted_size_in_bytes ();
   if (size < 1)
     size = 1;
   
   if (!TARGET_GCC_ABI)
     align = UNITS_PER_WORD;
-  else if (type)
-    align = TYPE_ALIGN (type) / BITS_PER_UNIT;
+  else if (arg.type)
+    align = TYPE_ALIGN (arg.type) / BITS_PER_UNIT;
   else
     align = size;
 
@@ -228,7 +223,7 @@ v850_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
   if (cum->nbytes + size <= 4 * UNITS_PER_WORD)
     return 0;
 
-  if (type == NULL_TREE
+  if (arg.type == NULL_TREE
       && cum->nbytes + size > 4 * UNITS_PER_WORD)
     return 0;
 

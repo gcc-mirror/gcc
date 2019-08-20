@@ -6432,17 +6432,15 @@ arc_output_pic_addr_const (FILE * file, rtx x, int code)
 /* Implement TARGET_ARG_PARTIAL_BYTES.  */
 
 static int
-arc_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
-		       tree type, bool named ATTRIBUTE_UNUSED)
+arc_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int bytes = (mode == BLKmode
-	       ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode));
+  int bytes = arg.promoted_size_in_bytes ();
   int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   int arg_num = *cum;
   int ret;
 
-  arg_num = ROUND_ADVANCE_CUM (arg_num, mode, type);
+  arg_num = ROUND_ADVANCE_CUM (arg_num, arg.mode, arg.type);
   ret = GPR_REST_ARG_REGS (arg_num);
 
   /* ICEd at function.c:2361, and ret is copied to data->partial */

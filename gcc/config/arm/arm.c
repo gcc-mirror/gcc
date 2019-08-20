@@ -187,8 +187,8 @@ static int arm_memory_move_cost (machine_mode, reg_class_t, bool);
 static void emit_constant_insn (rtx cond, rtx pattern);
 static rtx_insn *emit_set_insn (rtx, rtx);
 static rtx emit_multi_reg_push (unsigned long, unsigned long);
-static int arm_arg_partial_bytes (cumulative_args_t, machine_mode,
-				  tree, bool);
+static int arm_arg_partial_bytes (cumulative_args_t,
+				  const function_arg_info &);
 static rtx arm_function_arg (cumulative_args_t, machine_mode,
 			     const_tree, bool);
 static void arm_function_arg_advance (cumulative_args_t, machine_mode,
@@ -6754,23 +6754,22 @@ arm_function_arg_boundary (machine_mode mode, const_tree type)
 }
 
 static int
-arm_arg_partial_bytes (cumulative_args_t pcum_v, machine_mode mode,
-		       tree type, bool named)
+arm_arg_partial_bytes (cumulative_args_t pcum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
   int nregs = pcum->nregs;
 
   if (pcum->pcs_variant <= ARM_PCS_AAPCS_LOCAL)
     {
-      aapcs_layout_arg (pcum, mode, type, named);
+      aapcs_layout_arg (pcum, arg.mode, arg.type, arg.named);
       return pcum->aapcs_partial;
     }
 
-  if (TARGET_IWMMXT_ABI && arm_vector_mode_supported_p (mode))
+  if (TARGET_IWMMXT_ABI && arm_vector_mode_supported_p (arg.mode))
     return 0;
 
   if (NUM_ARG_REGS > nregs
-      && (NUM_ARG_REGS < nregs + ARM_NUM_REGS2 (mode, type))
+      && (NUM_ARG_REGS < nregs + ARM_NUM_REGS2 (arg.mode, arg.type))
       && pcum->can_split)
     return (NUM_ARG_REGS - nregs) * UNITS_PER_WORD;
 
@@ -6999,11 +6998,11 @@ cmse_func_args_or_return_in_stack (tree fndecl, tree name, tree fntype)
       if (VOID_TYPE_P (arg_type))
 	continue;
 
+      function_arg_info arg (arg_type, /*named=*/true);
       if (!first_param)
 	arm_function_arg_advance (args_so_far, arg_mode, arg_type, true);
       arg_rtx = arm_function_arg (args_so_far, arg_mode, arg_type, true);
-      if (!arg_rtx
-	  || arm_arg_partial_bytes (args_so_far, arg_mode, arg_type, true))
+      if (!arg_rtx || arm_arg_partial_bytes (args_so_far, arg))
 	{
 	  error ("%qE attribute not available to functions with arguments "
 		 "passed on the stack", name);

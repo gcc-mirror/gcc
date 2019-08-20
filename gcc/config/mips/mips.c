@@ -6140,12 +6140,12 @@ mips_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 /* Implement TARGET_ARG_PARTIAL_BYTES.  */
 
 static int
-mips_arg_partial_bytes (cumulative_args_t cum,
-			machine_mode mode, tree type, bool named)
+mips_arg_partial_bytes (cumulative_args_t cum, const function_arg_info &arg)
 {
   struct mips_arg_info info;
 
-  mips_get_arg_info (&info, get_cumulative_args (cum), mode, type, named);
+  mips_get_arg_info (&info, get_cumulative_args (cum),
+		     arg.mode, arg.type, arg.named);
   return info.stack_words > 0 ? info.reg_words * UNITS_PER_WORD : 0;
 }
 

@@ -1917,11 +1917,10 @@ csky_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
    that are passed entirely in registers or
    that are entirely pushed on the stack.  */
 static int
-csky_arg_partial_bytes (cumulative_args_t pcum_v, machine_mode mode,
-			tree type, bool named ATTRIBUTE_UNUSED)
+csky_arg_partial_bytes (cumulative_args_t pcum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
-  int param_size = csky_num_arg_regs (mode, type);
+  int param_size = csky_num_arg_regs (arg.mode, arg.type);
 
   if (*pcum < CSKY_NPARM_REGS
       && *pcum + param_size > CSKY_NPARM_REGS)

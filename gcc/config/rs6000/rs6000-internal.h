@@ -159,9 +159,8 @@ extern void setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
 extern unsigned int rs6000_function_arg_boundary (machine_mode mode,
 						  const_tree type);
 extern bool rs6000_must_pass_in_stack (machine_mode mode, const_tree type);
-extern int rs6000_arg_partial_bytes (cumulative_args_t cum_v,
-				     machine_mode mode, tree type,
-				     bool named);
+extern int rs6000_arg_partial_bytes (cumulative_args_t,
+				     const function_arg_info &);
 extern void rs6000_function_arg_advance (cumulative_args_t cum,
 					 machine_mode mode,
 					 const_tree type, bool named);

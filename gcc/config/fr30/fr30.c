@@ -39,6 +39,7 @@
 #include "output.h"
 #include "expr.h"
 #include "builtins.h"
+#include "calls.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -115,8 +116,8 @@ static struct fr30_frame_info 	zero_frame_info;
 static void fr30_setup_incoming_varargs (cumulative_args_t, machine_mode,
 					 tree, int *, int);
 static bool fr30_must_pass_in_stack (machine_mode, const_tree);
-static int fr30_arg_partial_bytes (cumulative_args_t, machine_mode,
-				   tree, bool);
+static int fr30_arg_partial_bytes (cumulative_args_t,
+				   const function_arg_info &);
 static rtx fr30_function_arg (cumulative_args_t, machine_mode,
 			      const_tree, bool);
 static void fr30_function_arg_advance (cumulative_args_t, machine_mode,
@@ -770,23 +771,20 @@ fr30_num_arg_regs (machine_mode mode, const_tree type)
   return (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 }
 
-/* Returns the number of bytes in which *part* of a parameter of machine
-   mode MODE and tree type TYPE (which may be NULL if the type is not known).
-   If the argument fits entirely in the argument registers, or entirely on
-   the stack, then 0 is returned.
-   CUM is the number of argument registers already used by earlier
-   parameters to the function.  */
+/* Returns the number of bytes of argument registers required to hold *part*
+   of argument ARG.  If the argument fits entirely in the argument registers,
+   or entirely on the stack, then 0 is returned.  CUM is the number of
+   argument registers already used by earlier parameters to the function.  */
 
 static int
-fr30_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
-			tree type, bool named)
+fr30_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   /* Unnamed arguments, i.e. those that are prototyped as ...
      are always passed on the stack.
      Also check here to see if all the argument registers are full.  */
-  if (named == 0 || *cum >= FR30_NUM_ARG_REGS)
+  if (!arg.named || *cum >= FR30_NUM_ARG_REGS)
     return 0;
 
   /* Work out how many argument registers would be needed if this
@@ -795,7 +793,7 @@ fr30_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
      are needed because the parameter must be passed on the stack)
      then return zero, as this parameter does not require partial
      register, partial stack stack space.  */
-  if (*cum + fr30_num_arg_regs (mode, type) <= FR30_NUM_ARG_REGS)
+  if (*cum + fr30_num_arg_regs (arg.mode, arg.type) <= FR30_NUM_ARG_REGS)
     return 0;
   
   return (FR30_NUM_ARG_REGS - *cum) * UNITS_PER_WORD;

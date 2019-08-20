@@ -298,8 +298,7 @@ static bool sh_pass_by_reference (cumulative_args_t, machine_mode,
 				  const_tree, bool);
 static bool sh_callee_copies (cumulative_args_t, machine_mode,
 			      const_tree, bool);
-static int sh_arg_partial_bytes (cumulative_args_t, machine_mode,
-			         tree, bool);
+static int sh_arg_partial_bytes (cumulative_args_t, const function_arg_info &);
 static void sh_function_arg_advance (cumulative_args_t, machine_mode,
 				     const_tree, bool);
 static rtx sh_function_arg (cumulative_args_t, machine_mode,
@@ -7992,20 +7991,17 @@ sh_pass_in_reg_p (const CUMULATIVE_ARGS& cum, machine_mode mode,
 }
 
 static int
-sh_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
-		      tree type, bool named ATTRIBUTE_UNUSED)
+sh_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int words = 0;
 
-  if (sh_pass_in_reg_p (*cum, mode, type)
+  if (sh_pass_in_reg_p (*cum, arg.mode, arg.type)
       && !TARGET_FPU_DOUBLE
-      && (sh_round_reg (*cum, mode)
-	  + (mode != BLKmode
-	     ? CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD)
-	     : CEIL (int_size_in_bytes (type), UNITS_PER_WORD))
-	  > NPARM_REGS (mode)))
-    words = NPARM_REGS (mode) - sh_round_reg (*cum, mode);
+      && (sh_round_reg (*cum, arg.mode)
+	  + CEIL (arg.promoted_size_in_bytes (), UNITS_PER_WORD)
+	  > NPARM_REGS (arg.mode)))
+    words = NPARM_REGS (arg.mode) - sh_round_reg (*cum, arg.mode);
 
   return words * UNITS_PER_WORD;
 }

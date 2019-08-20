@@ -129,8 +129,7 @@ static bool       mcore_rtx_costs		(rtx, machine_mode, int, int,
 static void       mcore_external_libcall	(rtx);
 static bool       mcore_return_in_memory	(const_tree, const_tree);
 static int        mcore_arg_partial_bytes       (cumulative_args_t,
-						 machine_mode,
-						 tree, bool);
+						 const function_arg_info &);
 static rtx        mcore_function_arg            (cumulative_args_t,
 						 machine_mode,
 						 const_tree, bool);
@@ -2841,22 +2840,19 @@ mcore_function_arg_boundary (machine_mode mode,
 }
 
 /* Returns the number of bytes of argument registers required to hold *part*
-   of a parameter of machine mode MODE and type TYPE (which may be NULL if
-   the type is not known).  If the argument fits entirely in the argument
-   registers, or entirely on the stack, then 0 is returned.  CUM is the
-   number of argument registers already used by earlier parameters to
-   the function.  */
+   of argument ARG.  If the argument fits entirely in the argument registers,
+   or entirely on the stack, then 0 is returned.  CUM is the number of
+   argument registers already used by earlier parameters to the function.  */
 
 static int
-mcore_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
-			 tree type, bool named)
+mcore_arg_partial_bytes (cumulative_args_t cum, const function_arg_info &arg)
 {
-  int reg = ROUND_REG (*get_cumulative_args (cum), mode);
+  int reg = ROUND_REG (*get_cumulative_args (cum), arg.mode);
 
-  if (named == 0)
+  if (!arg.named)
     return 0;
 
-  if (targetm.calls.must_pass_in_stack (mode, type))
+  if (targetm.calls.must_pass_in_stack (arg.mode, arg.type))
     return 0;
       
   /* REG is not the *hardware* register number of the register that holds
@@ -2871,7 +2867,7 @@ mcore_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
     return 0;
 
   /* If the argument fits entirely in registers, return 0.  */
-  if (reg + mcore_num_arg_regs (mode, type) <= NPARM_REGS)
+  if (reg + mcore_num_arg_regs (arg.mode, arg.type) <= NPARM_REGS)
     return 0;
 
   /* The argument overflows the number of available argument registers.
