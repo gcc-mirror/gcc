@@ -5115,6 +5115,47 @@ the implementation of protected operations must be implemented without locks.
 Compilation fails if the compiler cannot generate lock-free code for the
 operations.
 
+The current conditions required to support this pragma are:
+
+
+@itemize *
+
+@item 
+Protected type declarations may not contain entries
+
+@item 
+Protected subprogram declarations may not have nonelementary parameters
+@end itemize
+
+In addition, each protected subprogram body must satisfy:
+
+
+@itemize *
+
+@item 
+May reference only one protected component
+
+@item 
+May not reference nonconstant entities outside the protected subprogram
+scope.
+
+@item 
+May not contain address representation items, allocators, or quantified
+expressions.
+
+@item 
+May not contain delay, goto, loop, or procedure-call statements.
+
+@item 
+May not contain exported and imported entities
+
+@item 
+May not dereferenced access values
+
+@item 
+Function calls and attribute references must be static
+@end itemize
+
 @node Pragma Loop_Invariant,Pragma Loop_Optimize,Pragma Lock_Free,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-loop-invariant}@anchor{98}
 @section Pragma Loop_Invariant
