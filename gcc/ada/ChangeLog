@@ -1,3 +1,8 @@
+2019-08-20  Bob Duff  <duff@adacore.com>
+
+	* libgnat/g-comlin.ads (Exit_From_Command_Line): Fix
+	documentation for GNAT.Command_Line.
+
 2019-08-20  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	PR ada/91492

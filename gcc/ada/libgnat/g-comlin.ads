@@ -731,8 +731,8 @@ package GNAT.Command_Line is
    --  Full_Switch omits the first leading '-'.
 
    Exit_From_Command_Line : exception;
-   --  Emitted when the program should exit. This is called when Getopt below
-   --  has seen -h, --help or an invalid switch.
+   --  Raised when the program should exit because Getopt below has seen
+   --  a -h or --help switch.
 
    procedure Getopt
      (Config      : Command_Line_Configuration;
