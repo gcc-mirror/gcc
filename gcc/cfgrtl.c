@@ -1214,10 +1214,7 @@ patch_jump_insn (rtx_insn *insn, rtx_insn *old_label, basic_block new_bb)
 	  }
 
       /* Handle casesi dispatch insns.  */
-      if ((tmp = single_set (insn)) != NULL
-	  && SET_DEST (tmp) == pc_rtx
-	  && GET_CODE (SET_SRC (tmp)) == IF_THEN_ELSE
-	  && GET_CODE (XEXP (SET_SRC (tmp), 2)) == LABEL_REF
+      if ((tmp = tablejump_casesi_pattern (insn)) != NULL_RTX
 	  && label_ref_label (XEXP (SET_SRC (tmp), 2)) == old_label)
 	{
 	  XEXP (SET_SRC (tmp), 2) = gen_rtx_LABEL_REF (Pmode,

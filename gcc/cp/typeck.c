@@ -2308,13 +2308,15 @@ rationalize_conditional_expr (enum tree_code code, tree t,
                                 complain);
     }
 
+  tree op1 = TREE_OPERAND (t, 1);
+  if (TREE_CODE (op1) != THROW_EXPR)
+    op1 = cp_build_unary_op (code, op1, false, complain);
+  tree op2 = TREE_OPERAND (t, 2);
+  if (TREE_CODE (op2) != THROW_EXPR)
+    op2 = cp_build_unary_op (code, op2, false, complain);
+
   return
-    build_conditional_expr (loc, TREE_OPERAND (t, 0),
-			    cp_build_unary_op (code, TREE_OPERAND (t, 1), false,
-                                               complain),
-			    cp_build_unary_op (code, TREE_OPERAND (t, 2), false,
-                                               complain),
-                            complain);
+    build_conditional_expr (loc, TREE_OPERAND (t, 0), op1, op2, complain);
 }
 
 /* Given the TYPE of an anonymous union field inside T, return the
@@ -8160,8 +8162,9 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	if (!lvalue_or_else (lhs, lv_assign, complain))
 	  return error_mark_node;
 
-	tree op1 = cp_build_modify_expr (loc, TREE_OPERAND (lhs, 1),
-					 modifycode, rhs, complain);
+	tree op1 = TREE_OPERAND (lhs, 1);
+	if (TREE_CODE (op1) != THROW_EXPR)
+	  op1 = cp_build_modify_expr (loc, op1, modifycode, rhs, complain);
 	/* When sanitizing undefined behavior, even when rhs doesn't need
 	   stabilization at this point, the sanitization might add extra
 	   SAVE_EXPRs in there and so make sure there is no tree sharing
@@ -8170,8 +8173,9 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	if (sanitize_flags_p (SANITIZE_UNDEFINED
 			      | SANITIZE_UNDEFINED_NONDEFAULT))
 	  rhs = unshare_expr (rhs);
-	tree op2 = cp_build_modify_expr (loc, TREE_OPERAND (lhs, 2),
-					 modifycode, rhs, complain);
+	tree op2 = TREE_OPERAND (lhs, 2);
+	if (TREE_CODE (op2) != THROW_EXPR)
+	  op2 = cp_build_modify_expr (loc, op2, modifycode, rhs, complain);
 	tree cond = build_conditional_expr (input_location,
 					    TREE_OPERAND (lhs, 0), op1, op2,
 					    complain);

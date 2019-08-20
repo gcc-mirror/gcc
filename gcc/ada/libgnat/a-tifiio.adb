@@ -560,7 +560,7 @@ package body Ada.Text_IO.Fixed_IO is
          E       : Integer)
       is
          pragma Assert (E >= -Max_Digits);
-         AA : constant Field := E + A;
+         AA : constant Field := Integer'Max (E + A, 0);
          N  : constant Natural := (AA + Max_Digits - 1) / Max_Digits + 1;
 
          Q  : array (0 .. N - 1) of Int64 := (others => 0);

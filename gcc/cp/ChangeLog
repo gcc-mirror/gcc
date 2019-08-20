@@ -1,3 +1,88 @@
+2019-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91264 - detect modifying const objects in constexpr.
+	* constexpr.c (modifying_const_object_error): New function.
+	(cxx_eval_call_expression): Set TREE_READONLY on a CONSTRUCTOR of
+	a const-qualified object after it's been fully constructed.
+	(modifying_const_object_p): New function.
+	(cxx_eval_store_expression): Detect modifying a const object
+	during constant expression evaluation.
+	(cxx_eval_increment_expression): Use a better location when building
+	up the store.
+	(cxx_eval_constant_expression) <case DECL_EXPR>: Mark a constant
+	object's constructor TREE_READONLY.
+
+2019-08-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90393 - ICE with thow in ?:
+
+	PR c++/64372, DR 1560 - Gratuitous lvalue-to-rvalue conversion in ?:
+	* tree.c (lvalue_kind): Handle throw in one arm.
+	* typeck.c (rationalize_conditional_expr): Likewise.
+	(cp_build_modify_expr): Likewise.
+
+2019-08-14  Jason Merrill  <jason@redhat.com>
+
+	Implement P0848R3, Conditionally Trivial Special Member Functions.
+	* tree.c (special_memfn_p): New.
+	* class.c (add_method): When overloading, hide ineligible special
+	member fns.
+	(check_methods): Set TYPE_HAS_COMPLEX_* here.
+	* decl.c (grok_special_member_properties): Not here.
+	* name-lookup.c (push_class_level_binding_1): Move overloaded
+	functions case down, accept FUNCTION_DECL as target_decl.
+
+2019-08-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/91436
+	* name-lookup.c (get_std_name_hint): Fix min_dialect field for
+	complex_literals and make_unique entries.
+
+2019-08-14  Jakub Jelinek  <jakub@redhat.com>
+	    Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91391 - bogus -Wcomma-subscript warning.
+	* parser.c (cp_parser_postfix_open_square_expression): Don't warn about
+	a deprecated comma here.  Pass warn_comma_subscript down to
+	cp_parser_expression.
+	(cp_parser_expression): New bool parameter.  Warn about uses of a comma
+	operator within a subscripting expression.
+	(cp_parser_skip_to_closing_square_bracket): Revert to pre-r274121 state.
+	(cp_parser_skip_to_closing_square_bracket_1): Remove.
+
+2019-08-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* name-lookup.c (get_std_name_hint): Add more entries.
+
+2019-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl2.c (grok_array_decl): Use the location of the open square
+	bracket in error message about invalid types.
+
+2019-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Check here for typedef a function
+	definition or a member function definition.
+	(start_function): Adjust.
+	(grokmethod): Likewise.
+
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91421
+	* decl.c (duplicate_decls):  Use copy_decl_built_in_function.
+	* pt.c (declare_integer_pack): Use set_decl_built_in_function.
+
+2019-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90473 - wrong code with nullptr in default argument.
+	* call.c (null_ptr_cst_p): Update quote from the standard.
+	* decl.c (check_default_argument): Don't return nullptr when the arg
+	has side-effects.
+
+2019-08-13  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (DECL_MUTABLE_P): Use FIELD_DECL_CHECK.
+
 2019-08-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_clause_name): Parse device_type.

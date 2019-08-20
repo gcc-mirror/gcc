@@ -691,6 +691,36 @@ fold_const_vec_convert (tree ret_type, tree arg)
 
 /* Try to evaluate:
 
+      IFN_WHILE_ULT (ARG0, ARG1, (TYPE) { ... })
+
+   Return the value on success and null on failure.  */
+
+static tree
+fold_while_ult (tree type, poly_uint64 arg0, poly_uint64 arg1)
+{
+  if (known_ge (arg0, arg1))
+    return build_zero_cst (type);
+
+  if (maybe_ge (arg0, arg1))
+    return NULL_TREE;
+
+  poly_uint64 diff = arg1 - arg0;
+  poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (type);
+  if (known_ge (diff, nelts))
+    return build_all_ones_cst (type);
+
+  unsigned HOST_WIDE_INT const_diff;
+  if (known_le (diff, nelts) && diff.is_constant (&const_diff))
+    {
+      tree minus_one = build_minus_one_cst (TREE_TYPE (type));
+      tree zero = build_zero_cst (TREE_TYPE (type));
+      return build_vector_a_then_b (type, const_diff, minus_one, zero);
+    }
+  return NULL_TREE;
+}
+
+/* Try to evaluate:
+
       *RESULT = FN (*ARG)
 
    in format FORMAT.  Return true on success.  */
@@ -1781,6 +1811,14 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
 			       fold_build_pointer_plus_hwi (arg0, r - p0));
 	}
       return NULL_TREE;
+
+    case CFN_WHILE_ULT:
+      {
+	poly_uint64 parg0, parg1;
+	if (poly_int_tree_p (arg0, &parg0) && poly_int_tree_p (arg1, &parg1))
+	  return fold_while_ult (type, parg0, parg1);
+	return NULL_TREE;
+      }
 
     default:
       return fold_const_call_1 (fn, type, arg0, arg1, arg2);

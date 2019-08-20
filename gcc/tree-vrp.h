@@ -58,7 +58,7 @@ public:
   bool constant_p () const;
   bool undefined_p () const;
   bool varying_p () const;
-  void set_varying ();
+  void set_varying (tree type);
   void set_undefined ();
 
   void union_ (const value_range_base *);
@@ -71,11 +71,14 @@ public:
   /* Misc methods.  */
   tree type () const;
   bool may_contain_p (tree) const;
-  void set_and_canonicalize (enum value_range_kind, tree, tree);
   bool zero_p () const;
   bool nonzero_p () const;
   bool singleton_p (tree *result = NULL) const;
   void dump (FILE *) const;
+  void dump () const;
+
+  static bool supports_type_p (tree);
+  value_range_base normalize_symbolics () const;
 
 protected:
   void check ();
@@ -134,7 +137,7 @@ class GTY((user)) value_range : public value_range_base
 
   /* Types of value ranges.  */
   void set_undefined ();
-  void set_varying ();
+  void set_varying (tree);
 
   /* Equivalence bitmap methods.  */
   bitmap equiv () const;
@@ -143,8 +146,8 @@ class GTY((user)) value_range : public value_range_base
 
   /* Misc methods.  */
   void deep_copy (const value_range *);
-  void set_and_canonicalize (enum value_range_kind, tree, tree, bitmap = NULL);
   void dump (FILE *) const;
+  void dump () const;
 
  private:
   /* Deep-copies bitmap argument.  */
@@ -254,6 +257,17 @@ struct assert_info
   tree expr;
 };
 
+// Return true if TYPE is a valid type for value_range to operate on.
+// Otherwise return FALSE.
+
+inline bool
+value_range_base::supports_type_p (tree type)
+{
+  if (type && (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type)))
+    return type;
+  return NULL;
+}
+
 extern void register_edge_assert_for (tree, edge, enum tree_code,
 				      tree, tree, vec<assert_info> &);
 extern bool stmt_interesting_for_vrp (gimple *);
@@ -270,8 +284,8 @@ extern int operand_less_p (tree, tree);
 extern bool vrp_val_is_min (const_tree);
 extern bool vrp_val_is_max (const_tree);
 
-extern tree vrp_val_min (const_tree);
-extern tree vrp_val_max (const_tree);
+extern tree vrp_val_min (const_tree, bool handle_pointers = false);
+extern tree vrp_val_max (const_tree, bool handle_pointers = false);
 
 extern void extract_range_from_unary_expr (value_range_base *vr,
 					   enum tree_code code,

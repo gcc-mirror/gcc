@@ -1450,7 +1450,7 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, stmt,
 			     "Indirect call -> direct call from other "
-			     "module %T=> %i (will resolve only with LTO)",
+			     "module %T=> %i (will resolve only with LTO)\n",
 			     gimple_call_fn (stmt), (int)val);
 	}
       return false;
@@ -1471,10 +1471,9 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
     {
       dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
 		       "Indirect call -> direct call "
-		       "%T => %T transformation on insn postponed "
-		       "to ipa-profile: %G", gimple_call_fn (stmt),
-		       direct_call->decl, stmt);
-      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
+		       "%T => %T transformation on insn postponed\n",
+		       gimple_call_fn (stmt), direct_call->decl);
+      dump_printf_loc (MSG_NOTE, stmt,
 		       "hist->count %" PRId64
 		       " hist->all %" PRId64"\n", count, all);
     }

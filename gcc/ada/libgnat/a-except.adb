@@ -1624,6 +1624,7 @@ package body Ada.Exceptions is
       Target.Machine_Occurrence := System.Null_Address;
       Target.Msg_Length         := Source.Msg_Length;
       Target.Num_Tracebacks     := Source.Num_Tracebacks;
+      Target.Exception_Raised   := Source.Exception_Raised;
       Target.Pid                := Source.Pid;
 
       Target.Msg (1 .. Target.Msg_Length) :=

@@ -56,7 +56,6 @@ static gfc_expr* check_conjg_transpose_variable (gfc_expr *, bool *,
 static int call_external_blas (gfc_code **, int *, void *);
 static int matmul_temp_args (gfc_code **, int *,void *data);
 static int index_interchange (gfc_code **, int*, void *);
-
 static bool is_fe_temp (gfc_expr *e);
 
 #ifdef CHECKING_P
@@ -2518,7 +2517,12 @@ insert_index (gfc_expr *e, gfc_symbol *sym, mpz_t val, mpz_t ret)
   data.sym = sym;
   mpz_init_set (data.val, val);
   gfc_expr_walker (&n, callback_insert_index, (void *) &data);
+
+  /* Suppress errors here - we could get errors here such as an
+     out of bounds access for arrays, see PR 90563.  */
+  gfc_push_suppress_errors ();
   gfc_simplify_expr (n, 0);
+  gfc_pop_suppress_errors ();
 
   if (n->expr_type == EXPR_CONSTANT)
     {
@@ -2555,6 +2559,12 @@ do_subscript (gfc_expr **e)
   /* Wrong warnings will be generated in an associate list.  */
   if (in_assoc_list)
     return 0;
+
+  /* We already warned about this.  */
+  if (v->do_not_warn)
+    return 0;
+
+  v->do_not_warn = 1;
 
   for (ref = v->ref; ref; ref = ref->next)
     {
@@ -2608,7 +2618,6 @@ do_subscript (gfc_expr **e)
 	      else
 		have_do_start = false;
 
-
 	      if (dl->ext.iterator->end->expr_type == EXPR_CONSTANT)
 		{
 		  have_do_end = true;
@@ -2619,6 +2628,17 @@ do_subscript (gfc_expr **e)
 
 	      if (!have_do_start && !have_do_end)
 		return 0;
+
+	      /* No warning inside a zero-trip loop.  */
+	      if (have_do_start && have_do_end)
+		{
+		  int sgn, cmp;
+
+		  sgn = mpz_cmp_ui (do_step, 0);
+		  cmp = mpz_cmp (do_end, do_start);
+		  if ((sgn > 0 && cmp < 0) || (sgn < 0 && cmp > 0))
+		    break;
+		}
 
 	      /* May have to correct the end value if the step does not equal
 		 one.  */
@@ -2761,6 +2781,12 @@ static void
 doloop_warn (gfc_namespace *ns)
 {
   gfc_code_walker (&ns->code, doloop_code, do_function, NULL);
+
+  for (ns = ns->contained; ns; ns = ns->sibling)
+    {
+      if (ns->code == NULL || ns->code->op != EXEC_BLOCK)
+	doloop_warn (ns);
+    }
 }
 
 /* This selction deals with inlining calls to MATMUL.  */
@@ -5336,4 +5362,101 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	}
     }
   return 0;
+}
+
+/* As a post-resolution step, check that all global symbols which are
+   not declared in the source file match in their call signatures.
+   We do this by looping over the code (and expressions). The first call
+   we happen to find is assumed to be canonical.  */
+
+/* Callback for external functions.  */
+
+static int
+check_externals_expr (gfc_expr **ep, int *walk_subtrees ATTRIBUTE_UNUSED,
+		      void *data ATTRIBUTE_UNUSED)
+{
+  gfc_expr *e = *ep;
+  gfc_symbol *sym, *def_sym;
+  gfc_gsymbol *gsym;
+
+  if (e->expr_type != EXPR_FUNCTION)
+    return 0;
+
+  sym = e->value.function.esym;
+
+  if (sym == NULL || sym->attr.is_bind_c)
+    return 0;
+
+  if (sym->attr.proc != PROC_EXTERNAL && sym->attr.proc != PROC_UNKNOWN)
+    return 0;
+
+  gsym = gfc_find_gsymbol (gfc_gsym_root, sym->name);
+  if (gsym == NULL)
+    return 0;
+
+  gfc_find_symbol (sym->name, gsym->ns, 0, &def_sym);
+
+  if (sym && def_sym)
+    gfc_procedure_use (def_sym, &e->value.function.actual, &e->where);
+
+  return 0;
+}
+
+/* Callback for external code.  */
+
+static int
+check_externals_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
+		      void *data ATTRIBUTE_UNUSED)
+{
+  gfc_code *co = *c;
+  gfc_symbol *sym, *def_sym;
+  gfc_gsymbol *gsym;
+
+  if (co->op != EXEC_CALL)
+    return 0;
+
+  sym = co->resolved_sym;
+  if (sym == NULL || sym->attr.is_bind_c)
+    return 0;
+
+  if (sym->attr.proc != PROC_EXTERNAL && sym->attr.proc != PROC_UNKNOWN)
+    return 0;
+
+  if (sym->attr.if_source == IFSRC_IFBODY || sym->attr.if_source == IFSRC_DECL)
+    return 0;
+
+  gsym = gfc_find_gsymbol (gfc_gsym_root, sym->name);
+  if (gsym == NULL)
+    return 0;
+
+  gfc_find_symbol (sym->name, gsym->ns, 0, &def_sym);
+
+  if (sym && def_sym)
+    gfc_procedure_use (def_sym, &co->ext.actual, &co->loc);
+
+  return 0;
+}
+
+/* Called routine.  */
+
+void
+gfc_check_externals (gfc_namespace *ns)
+{
+
+  gfc_clear_error ();
+
+  /* Turn errors into warnings if -std=legacy is given by the user.  */
+
+  if (!pedantic && !(gfc_option.warn_std & GFC_STD_LEGACY))
+    gfc_errors_to_warnings (true);
+
+  gfc_code_walker (&ns->code, check_externals_code, check_externals_expr, NULL);
+
+  for (ns = ns->contained; ns; ns = ns->sibling)
+    {
+      if (ns->code == NULL || ns->code->op != EXEC_BLOCK)
+	gfc_check_externals (ns);
+    }
+
+  gfc_errors_to_warnings (false);
 }

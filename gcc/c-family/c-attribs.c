@@ -92,6 +92,7 @@ static tree handle_section_attribute (tree *, tree, tree, int, bool *);
 static tree handle_aligned_attribute (tree *, tree, tree, int, bool *);
 static tree handle_warn_if_not_aligned_attribute (tree *, tree, tree,
 						  int, bool *);
+static tree handle_noinit_attribute (tree *, tree, tree, int, bool *);
 static tree handle_weak_attribute (tree *, tree, tree, int, bool *) ;
 static tree handle_noplt_attribute (tree *, tree, tree, int, bool *) ;
 static tree handle_alias_ifunc_attribute (bool, tree *, tree, tree, bool *);
@@ -235,6 +236,13 @@ static const struct attribute_spec::exclusions attr_const_pure_exclusions[] =
   ATTR_EXCL (NULL, false, false, false)
 };
 
+static const struct attribute_spec::exclusions attr_noinit_exclusions[] =
+{
+  ATTR_EXCL ("noinit", true, true, true),
+  ATTR_EXCL ("section", true, true, true),
+  ATTR_EXCL (NULL, false, false, false),
+};
+
 /* Table of machine-independent attributes common to all C-like languages.
 
    Current list of processed common attributes: nonnull.  */
@@ -307,7 +315,7 @@ const struct attribute_spec c_common_attribute_table[] =
   { "mode",                   1, 1, false,  true, false, false,
 			      handle_mode_attribute, NULL },
   { "section",                1, 1, true,  false, false, false,
-			      handle_section_attribute, NULL },
+			      handle_section_attribute, attr_noinit_exclusions },
   { "aligned",                0, 1, false, false, false, false,
 			      handle_aligned_attribute,
 	                      attr_aligned_exclusions },
@@ -458,6 +466,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_nocf_check_attribute, NULL },
   { "copy",                   1, 1, false, false, false, false,
 			      handle_copy_attribute, NULL },
+  { "noinit",		      0, 0, true,  false, false, false,
+			      handle_noinit_attribute, attr_noinit_exclusions },
   { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -2223,6 +2233,54 @@ handle_weak_attribute (tree *node, tree name,
 
   return NULL_TREE;
 }
+
+/* Handle a "noinit" attribute; arguments as in struct
+   attribute_spec.handler.  Check whether the attribute is allowed
+   here and add the attribute to the variable decl tree or otherwise
+   issue a diagnostic.  This function checks NODE is of the expected
+   type and issues diagnostics otherwise using NAME.  If it is not of
+   the expected type *NO_ADD_ATTRS will be set to true.  */
+
+static tree
+handle_noinit_attribute (tree * node,
+		  tree   name,
+		  tree   args,
+		  int    flags ATTRIBUTE_UNUSED,
+		  bool *no_add_attrs)
+{
+  const char *message = NULL;
+
+  gcc_assert (DECL_P (*node));
+  gcc_assert (args == NULL);
+
+  if (TREE_CODE (*node) != VAR_DECL)
+    message = G_("%qE attribute only applies to variables");
+
+  /* Check that it's possible for the variable to have a section.  */
+  else if ((TREE_STATIC (*node) || DECL_EXTERNAL (*node) || in_lto_p)
+	   && DECL_SECTION_NAME (*node))
+    message = G_("%qE attribute cannot be applied to variables "
+		 "with specific sections");
+
+  else if (!targetm.have_switchable_bss_sections)
+    message = G_("%qE attribute is specific to ELF targets");
+
+  if (message)
+    {
+      warning (OPT_Wattributes, message, name);
+      *no_add_attrs = true;
+    }
+  else
+    /* If this var is thought to be common, then change this.  Common
+       variables are assigned to sections before the backend has a
+       chance to process them.  Do this only if the attribute is
+       valid.  */
+    if (DECL_COMMON (*node))
+      DECL_COMMON (*node) = 0;
+
+  return NULL_TREE;
+}
+
 
 /* Handle a "noplt" attribute; arguments as in
    struct attribute_spec.handler.  */

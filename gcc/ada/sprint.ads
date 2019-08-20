@@ -48,8 +48,8 @@ package Sprint is
 
    --    Allocator                           new xxx [storage_pool = xxx]
    --    Cleanup action                      at end procedure name;
-   --    Conversion wi Float_Truncate        target^(source)
    --    Convert wi Conversion_OK            target?(source)
+   --    Convert wi Float_Truncate           target^(source)
    --    Convert wi Rounded_Result           target@(source)
    --    Divide wi Treat_Fixed_As_Integer    x #/ y
    --    Divide wi Rounded_Result            x @/ y

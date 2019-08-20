@@ -403,7 +403,51 @@ os_error (const char *message)
   estr_writev (iov, 5);
   exit_error (1);
 }
-iexport(os_error);
+iexport(os_error); /* TODO, DEPRECATED, ABI: Should not be exported
+		      anymore when bumping so version.  */
+
+
+/* Improved version of os_error with a printf style format string and
+   a locus.  */
+
+void
+os_error_at (const char *where, const char *message, ...)
+{
+  char errmsg[STRERR_MAXSZ];
+  char buffer[STRERR_MAXSZ];
+  struct iovec iov[6];
+  va_list ap;
+  recursion_check ();
+  int written;
+
+  iov[0].iov_base = (char*) where;
+  iov[0].iov_len = strlen (where);
+
+  iov[1].iov_base = (char*) ": ";
+  iov[1].iov_len = strlen (iov[1].iov_base);
+
+  va_start (ap, message);
+  written = vsnprintf (buffer, STRERR_MAXSZ, message, ap);
+  va_end (ap);
+  iov[2].iov_base = buffer;
+  if (written >= 0)
+    iov[2].iov_len = written;
+  else
+    iov[2].iov_len = 0;
+
+  iov[3].iov_base = (char*) ": ";
+  iov[3].iov_len = strlen (iov[3].iov_base);
+
+  iov[4].iov_base = gf_strerror (errno, errmsg, STRERR_MAXSZ);
+  iov[4].iov_len = strlen (iov[4].iov_base);
+
+  iov[5].iov_base = (char*) "\n";
+  iov[5].iov_len = 1;
+
+  estr_writev (iov, 6);
+  exit_error (1);
+}
+iexport(os_error_at);
 
 
 /* void runtime_error()-- These are errors associated with an

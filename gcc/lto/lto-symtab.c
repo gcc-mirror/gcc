@@ -556,7 +556,8 @@ lto_symtab_merge_p (tree prevailing, tree decl)
 	}
       if (fndecl_built_in_p (prevailing)
 	  && (DECL_BUILT_IN_CLASS (prevailing) != DECL_BUILT_IN_CLASS (decl)
-	      || DECL_FUNCTION_CODE (prevailing) != DECL_FUNCTION_CODE (decl)))
+	      || (DECL_UNCHECKED_FUNCTION_CODE (prevailing)
+		  != DECL_UNCHECKED_FUNCTION_CODE (decl))))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Not merging decls; "

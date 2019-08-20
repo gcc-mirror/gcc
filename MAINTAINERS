@@ -64,7 +64,7 @@ c-sky port		Yunhai Shang		<yunhai_shang@c-sky.com>
 epiphany port		Joern Rennecke		<gnu@amylaar.uk>
 fr30 port		Nick Clifton		<nickc@redhat.com>
 frv port		Nick Clifton		<nickc@redhat.com>
-frv port		Alexandre Oliva		<aoliva@redhat.com>
+frv port		Alexandre Oliva		<aoliva@gcc.gnu.org>
 ft32 port		James Bowman		<james.bowman@ftdichip.com>
 h8 port			Jeff Law		<law@redhat.com>
 hppa port		Jeff Law		<law@redhat.com>
@@ -83,7 +83,7 @@ microblaze		Michael Eager		<eager@eagercon.com>
 mips port		Matthew Fortune		<mfortune@gmail.com>
 mmix port		Hans-Peter Nilsson	<hp@bitrange.com>
 mn10300 port		Jeff Law		<law@redhat.com>
-mn10300 port		Alexandre Oliva		<aoliva@redhat.com>
+mn10300 port		Alexandre Oliva		<aoliva@gcc.gnu.org>
 moxie port		Anthony Green		<green@moxielogic.com>
 msp430 port		Nick Clifton		<nickc@redhat.com>
 nds32 port		Chung-Ju Wu		<jasonwucj@gmail.com>
@@ -105,7 +105,7 @@ rx port			Nick Clifton		<nickc@redhat.com>
 s390 port		Hartmut Penner		<hepenner@us.ibm.com>
 s390 port		Ulrich Weigand		<uweigand@de.ibm.com>
 s390 port		Andreas Krebbel		<krebbel@linux.ibm.com>
-sh port			Alexandre Oliva		<aoliva@redhat.com>
+sh port			Alexandre Oliva		<aoliva@gcc.gnu.org>
 sh port			Oleg Endo		<olegendo@gcc.gnu.org>
 sparc port		David S. Miller		<davem@redhat.com>
 sparc port		Eric Botcazou		<ebotcazou@libertysurf.fr>
@@ -213,7 +213,7 @@ diagnostic messages	Dodji Seketeli		<dodji@redhat.com>
 diagnostic messages	David Malcolm		<dmalcolm@redhat.com>
 build machinery (*.in)	Paolo Bonzini		<bonzini@gnu.org>
 build machinery (*.in)	Nathanael Nerode	<neroden@gcc.gnu.org>
-build machinery (*.in)	Alexandre Oliva		<aoliva@redhat.com>
+build machinery (*.in)	Alexandre Oliva		<aoliva@gcc.gnu.org>
 build machinery (*.in)	Ralf Wildenhues		<Ralf.Wildenhues@gmx.de>
 docs co-maintainer	Gerald Pfeifer		<gerald@pfeifer.com>
 docs co-maintainer	Joseph Myers		<joseph@codesourcery.com>
@@ -371,6 +371,7 @@ Benoit Dupont de Dinechin			<benoit.dupont-de-dinechin@st.com>
 Jason Eckhardt					<jle@rice.edu>
 Bernd Edlinger					<bernd.edlinger@hotmail.de>
 Phil Edwards					<pme@gcc.gnu.org>
+Mark Eggleston					<mark.eggleston@codethink.co.uk>
 Steve Ellcey					<sellcey@caviumnetworks.com>
 Mohan Embar					<gnustuff@thisiscool.com>
 Revital Eres					<eres@il.ibm.com>

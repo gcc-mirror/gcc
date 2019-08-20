@@ -49,6 +49,7 @@ with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Disp; use Sem_Disp;
 with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -15233,9 +15234,12 @@ package body Sem_Elab is
          begin
             --  Nothing to do for predefined primitives because they are
             --  artifacts of tagged type expansion and cannot override source
-            --  primitives.
+            --  primitives. Nothing to do as well for inherited primitives as
+            --  the check concerns overridding ones.
 
-            if Is_Predefined_Dispatching_Operation (Prim) then
+            if Is_Predefined_Dispatching_Operation (Prim)
+              or else not Is_Overriding_Subprogram (Prim)
+            then
                return;
             end if;
 

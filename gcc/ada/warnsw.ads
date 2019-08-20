@@ -48,6 +48,10 @@ package Warnsw is
    --  Warn when tagged type public primitives are defined after its private
    --  extensions.
 
+   Warn_On_Unknown_Compile_Time_Warning : Boolean := True;
+   --  Warn on a pragma Compile_Time_Warning or Compile_Time_Error whose
+   --  condition has a value that is not known at compile time.
+
    Warn_On_Overridden_Size : Boolean := False;
    --  Warn when explicit record component clause or array component_size
    --  clause specifies a size that overrides a size for the type which was
@@ -80,56 +84,57 @@ package Warnsw is
    --  Type used to save and restore warnings
 
    type Warning_Record is record
-      Address_Clause_Overlay_Warnings     : Boolean;
-      Check_Unreferenced                  : Boolean;
-      Check_Unreferenced_Formals          : Boolean;
-      Check_Withs                         : Boolean;
-      Constant_Condition_Warnings         : Boolean;
-      Elab_Info_Messages                  : Boolean;
-      Elab_Warnings                       : Boolean;
-      Implementation_Unit_Warnings        : Boolean;
-      Ineffective_Inline_Warnings         : Boolean;
-      List_Body_Required_Info             : Boolean;
-      List_Inherited_Aspects              : Boolean;
-      No_Warn_On_Non_Local_Exception      : Boolean;
-      Warning_Doc_Switch                  : Boolean;
-      Warn_On_Ada_2005_Compatibility      : Boolean;
-      Warn_On_Ada_2012_Compatibility      : Boolean;
-      Warn_On_All_Unread_Out_Parameters   : Boolean;
-      Warn_On_Anonymous_Allocators        : Boolean;
-      Warn_On_Assertion_Failure           : Boolean;
-      Warn_On_Assumed_Low_Bound           : Boolean;
-      Warn_On_Atomic_Synchronization      : Boolean;
-      Warn_On_Bad_Fixed_Value             : Boolean;
-      Warn_On_Biased_Representation       : Boolean;
-      Warn_On_Constant                    : Boolean;
-      Warn_On_Deleted_Code                : Boolean;
-      Warn_On_Dereference                 : Boolean;
-      Warn_On_Export_Import               : Boolean;
-      Warn_On_Hiding                      : Boolean;
-      Warn_On_Late_Primitives             : Boolean;
-      Warn_On_Modified_Unread             : Boolean;
-      Warn_On_No_Value_Assigned           : Boolean;
-      Warn_On_Non_Local_Exception         : Boolean;
-      Warn_On_Object_Renames_Function     : Boolean;
-      Warn_On_Obsolescent_Feature         : Boolean;
-      Warn_On_Overlap                     : Boolean;
-      Warn_On_Overridden_Size             : Boolean;
-      Warn_On_Parameter_Order             : Boolean;
-      Warn_On_Questionable_Layout         : Boolean;
-      Warn_On_Questionable_Missing_Parens : Boolean;
-      Warn_On_Record_Holes                : Boolean;
-      Warn_On_Redundant_Constructs        : Boolean;
-      Warn_On_Reverse_Bit_Order           : Boolean;
-      Warn_On_Size_Alignment              : Boolean;
-      Warn_On_Standard_Redefinition       : Boolean;
-      Warn_On_Suspicious_Contract         : Boolean;
-      Warn_On_Suspicious_Modulus_Value    : Boolean;
-      Warn_On_Unchecked_Conversion        : Boolean;
-      Warn_On_Unordered_Enumeration_Type  : Boolean;
-      Warn_On_Unrecognized_Pragma         : Boolean;
-      Warn_On_Unrepped_Components         : Boolean;
-      Warn_On_Warnings_Off                : Boolean;
+      Address_Clause_Overlay_Warnings      : Boolean;
+      Check_Unreferenced                   : Boolean;
+      Check_Unreferenced_Formals           : Boolean;
+      Check_Withs                          : Boolean;
+      Constant_Condition_Warnings          : Boolean;
+      Elab_Info_Messages                   : Boolean;
+      Elab_Warnings                        : Boolean;
+      Implementation_Unit_Warnings         : Boolean;
+      Ineffective_Inline_Warnings          : Boolean;
+      List_Body_Required_Info              : Boolean;
+      List_Inherited_Aspects               : Boolean;
+      No_Warn_On_Non_Local_Exception       : Boolean;
+      Warning_Doc_Switch                   : Boolean;
+      Warn_On_Ada_2005_Compatibility       : Boolean;
+      Warn_On_Ada_2012_Compatibility       : Boolean;
+      Warn_On_All_Unread_Out_Parameters    : Boolean;
+      Warn_On_Anonymous_Allocators         : Boolean;
+      Warn_On_Assertion_Failure            : Boolean;
+      Warn_On_Assumed_Low_Bound            : Boolean;
+      Warn_On_Atomic_Synchronization       : Boolean;
+      Warn_On_Bad_Fixed_Value              : Boolean;
+      Warn_On_Biased_Representation        : Boolean;
+      Warn_On_Constant                     : Boolean;
+      Warn_On_Deleted_Code                 : Boolean;
+      Warn_On_Dereference                  : Boolean;
+      Warn_On_Export_Import                : Boolean;
+      Warn_On_Hiding                       : Boolean;
+      Warn_On_Late_Primitives              : Boolean;
+      Warn_On_Modified_Unread              : Boolean;
+      Warn_On_No_Value_Assigned            : Boolean;
+      Warn_On_Non_Local_Exception          : Boolean;
+      Warn_On_Object_Renames_Function      : Boolean;
+      Warn_On_Obsolescent_Feature          : Boolean;
+      Warn_On_Overlap                      : Boolean;
+      Warn_On_Overridden_Size              : Boolean;
+      Warn_On_Parameter_Order              : Boolean;
+      Warn_On_Questionable_Layout          : Boolean;
+      Warn_On_Questionable_Missing_Parens  : Boolean;
+      Warn_On_Record_Holes                 : Boolean;
+      Warn_On_Redundant_Constructs         : Boolean;
+      Warn_On_Reverse_Bit_Order            : Boolean;
+      Warn_On_Size_Alignment               : Boolean;
+      Warn_On_Standard_Redefinition        : Boolean;
+      Warn_On_Suspicious_Contract          : Boolean;
+      Warn_On_Suspicious_Modulus_Value     : Boolean;
+      Warn_On_Unchecked_Conversion         : Boolean;
+      Warn_On_Unknown_Compile_Time_Warning : Boolean;
+      Warn_On_Unordered_Enumeration_Type   : Boolean;
+      Warn_On_Unrecognized_Pragma          : Boolean;
+      Warn_On_Unrepped_Components          : Boolean;
+      Warn_On_Warnings_Off                 : Boolean;
    end record;
 
    function Save_Warnings return Warning_Record;

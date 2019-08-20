@@ -3331,8 +3331,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 	  if (can_refer)
 	    {
 	      if (!t
-		  || (TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE
-		      && DECL_FUNCTION_CODE (t) == BUILT_IN_UNREACHABLE)
+		  || fndecl_built_in_p (t, BUILT_IN_UNREACHABLE)
 		  || !possible_polymorphic_call_target_p
 		       (ie, cgraph_node::get (t)))
 		{

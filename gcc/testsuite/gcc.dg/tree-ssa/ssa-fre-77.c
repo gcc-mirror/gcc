@@ -10,4 +10,4 @@ int foo (int *p, int *q)
   return *p;
 }
 
-/* { dg-final { scan-tree-dump "return 1;" "fre1" } } */
+/* { dg-final { scan-tree-dump "return 1;" "fre1" { xfail { ! natural_alignment_32 } } } } */

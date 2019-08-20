@@ -691,6 +691,7 @@ decl_attributes (tree *node, tree attributes, int flags,
 
 	  if (!built_in
 	      || !DECL_P (*anode)
+	      || DECL_BUILT_IN_CLASS (*anode) != BUILT_IN_NORMAL
 	      || (DECL_FUNCTION_CODE (*anode) != BUILT_IN_UNREACHABLE
 		  && (DECL_FUNCTION_CODE (*anode)
 		      != BUILT_IN_UBSAN_HANDLE_BUILTIN_UNREACHABLE)))

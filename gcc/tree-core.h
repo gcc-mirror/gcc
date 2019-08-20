@@ -1870,9 +1870,8 @@ struct GTY(()) tree_function_decl {
   /* Index within a virtual table.  */
   tree vindex;
 
-  /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is
-     DECL_FUNCTION_CODE.  Otherwise unused.  */
-  enum built_in_function function_code;
+  /* In a FUNCTION_DECL this is DECL_UNCHECKED_FUNCTION_CODE.  */
+  unsigned int function_code;
 
   ENUM_BITFIELD(built_in_class) built_in_class : 2;
   unsigned static_ctor_flag : 1;

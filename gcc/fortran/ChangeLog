@@ -1,3 +1,144 @@
+2019-08-19  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* gfortran.texi: Delete paragraph about integer overload errors
+	when initialising integer variables with BOZ constants as these
+	no longer occur.
+
+2019-08-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91485
+	module.c (gfc_match_use): User defined operator cannot conflict with
+	a rename symbol.
+
+2019-08-17  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82992
+	* module.c (gfc_match_use):  When renaming a module entity, search
+	current namespace for conflicting symbol.
+
+2019-08-17  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78739
+	* match.c (gfc_match_st_function):  When matching a statement function,
+	need to check if the statement function name shadows the function
+	name.
+
+2019-08-17  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78719
+	* decl.c (get_proc_name): Check for a CLASS entity when trying to
+	add attributes to an entity that already has an explicit interface.
+
+2019-08-17  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91471
+	* primary.c (gfc_variable_attr): Remove a gfc_internal_error(),
+	which cannot be reached by conforming Fortran code, but seems to
+	be reachable from nonconforming Fortran code.  Treat the AR_UNKNOWN
+	case as a no-op.
+
+2019-08-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/68401
+	* trans-decl.c (gfc_build_builtin_function_decls): Replace
+	os_error with os_error_at decl.
+	* trans.c (trans_runtime_error_vararg): Modify so the error
+	function decl is passed directly.
+	(gfc_trans_runtime_error): Pass correct error function decl.
+	(gfc_trans_runtime_check): Likewise.
+	(trans_os_error_at): New function.
+	(gfc_call_malloc): Use trans_os_error_at.
+	(gfc_allocate_using_malloc): Likewise.
+	(gfc_call_realloc): Likewise.
+	* trans.h (gfor_fndecl_os_error): Replace with gfor_fndecl_os_error_at.
+
+2019-08-16  Jeff Law <law@redhat.com>
+	    Mark Eggleston <mark.eggleston@codethink.com>
+
+	* gfortran.h: Add gfc_check_conflict declaration.
+	* symbol.c (check_conflict): Rename cfg_check_conflict and remove
+	static.
+	* symbol.c (cfg_check_conflict): Remove automatic in equivalence
+	conflict check.
+	* symbol.c (save_symbol): Add check for in equivalence to stop the
+	the save attribute being added.
+	* trans-common.c (build_equiv_decl): Add is_auto parameter and
+	add !is_auto to condition where TREE_STATIC (decl) is set.
+	* trans-common.c (build_equiv_decl): Add local variable is_auto,
+	set it true if an atomatic attribute is encountered in the variable
+	list.  Call build_equiv_decl with is_auto as an additional parameter.
+	flag_dec_format_defaults is enabled.
+	* trans-common.c (accumulate_equivalence_attributes) : New subroutine.
+	* trans-common.c (find_equivalence) : New local variable dummy_symbol,
+	accumulated equivalence attributes from each symbol then check for
+	conflicts.
+
+2019-08-16  Richard Biener  <rguenther@suse.de>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_findloc): Initialize
+	forward_branch to avoid bogus uninitialized warning.
+
+2019-08-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91443
+	* frontend-passes.c (check_externals_expr): New function.
+	(check_externals_code): New function.
+	(gfc_check_externals): New function.
+	* gfortran.h (debug): Add prototypes for gfc_symbol * and
+	gfc_expr *.
+	(gfc_check_externals): Add prototype.
+	* interface.c (compare_actual_formal): Do not complain about
+	alternate returns if the formal argument is optional.
+	(gfc_procedure_use): Handle cases when an error has been issued
+	previously.  Break long line.
+	* parse.c (gfc_parse_file): Call gfc_check_externals for all
+	external procedures.
+	* resolve.c (resolve_global_procedure): Remove checking of
+	argument list.
+
+2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/87991
+	* resolve.c (check_data_variable): data-stmt-object with pointer
+	attribute requires a data-stmt-value with the target attribute.
+
+2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88072
+	* misc.c (gfc_typename): Do not point to something that ought not to
+	be pointed at.
+
+2013-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90563
+	* frontend-passes.c (insert_index): Suppress errors while
+	simplifying the resulting expression.
+
+2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/89647
+	resolve.c (resolve_typebound_procedure): Allow host associated
+	procedure to be a binding target.  While here, wrap long line.
+
+2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/87993
+	* expr.c (gfc_simplify_expr): Simplifcation of an array with a kind
+	type inquiry suffix yields a constant expression.
+
+2019-08-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR fortran/91414
+        * check.c (gfc_check_random_seed): Reduce seed_size.
+        * intrinsic.texi (RANDOM_NUMBER): Update to match new PRNG.
+
+2019-08-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91424
+	* frontend-passes.c (do_subscript): Do not warn for an
+	expression a second time.  Do not warn about a zero-trip loop.
+	(doloop_warn): Also look at contained namespaces.
+
 2019-08-11  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/91413

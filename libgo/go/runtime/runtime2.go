@@ -746,6 +746,12 @@ func extendRandom(r []byte, n int) {
 
 // A _defer holds an entry on the list of deferred calls.
 // If you add a field here, add code to clear it in freedefer.
+// This struct must match the code in Defer_statement::defer_struct_type
+// in the compiler.
+// Some defers will be allocated on the stack and some on the heap.
+// All defers are logically part of the stack, so write barriers to
+// initialize them are not required. All defers must be manually scanned,
+// and for heap defers, marked.
 type _defer struct {
 	// The next entry in the stack.
 	link *_defer
@@ -781,6 +787,9 @@ type _defer struct {
 	// function function will be somewhere in libffi, so __retaddr
 	// is not useful.
 	makefunccanrecover bool
+
+	// Whether the _defer is heap allocated.
+	heap bool
 }
 
 // panics

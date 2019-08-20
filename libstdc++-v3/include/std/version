@@ -154,6 +154,7 @@
 #define __cpp_lib_bind_front 201907L
 #define __cpp_lib_bounded_array_traits 201902L
 #define __cpp_lib_constexpr_algorithms 201711L
+#define __cpp_lib_constexpr_swap_algorithms 201806L
 #if __cpp_impl_destroying_delete
 # define __cpp_lib_destroying_delete 201806L
 #endif

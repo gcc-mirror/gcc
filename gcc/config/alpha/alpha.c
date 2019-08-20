@@ -6657,7 +6657,7 @@ alpha_expand_builtin (tree exp, rtx target,
 #define MAX_ARGS 2
 
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   tree arg;
   call_expr_arg_iterator iter;
   enum insn_code icode;
@@ -7056,7 +7056,7 @@ alpha_fold_builtin (tree fndecl, int n_args, tree *op,
 	}
     }
 
-  switch (DECL_FUNCTION_CODE (fndecl))
+  switch (DECL_MD_FUNCTION_CODE (fndecl))
     {
     case ALPHA_BUILTIN_CMPBGE:
       return alpha_fold_builtin_cmpbge (opint, op_const);
@@ -7172,7 +7172,7 @@ alpha_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	{
 	  tree arg0, arg1;
 
-	  switch (DECL_FUNCTION_CODE (fndecl))
+	  switch (DECL_MD_FUNCTION_CODE (fndecl))
 	    {
 	    case ALPHA_BUILTIN_UMULH:
 	      arg0 = gimple_call_arg (stmt, 0);

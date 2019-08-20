@@ -2302,6 +2302,9 @@ Target uses natural alignment (aligned to type size) for types of
 Target uses natural alignment (aligned to type size) for types of
 64 bits or less.
 
+@item noinit
+Target supports the @code{noinit} variable attribute.
+
 @item nonpic
 Target does not generate PIC by default.
 

@@ -1595,7 +1595,7 @@ aarch64_expand_builtin (tree exp,
 		     int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  int fcode = DECL_FUNCTION_CODE (fndecl);
+  int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   int icode;
   rtx pat, op0;
   tree arg0;
@@ -1881,7 +1881,7 @@ tree
 aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
 		      bool ignore ATTRIBUTE_UNUSED)
 {
-  int fcode = DECL_FUNCTION_CODE (fndecl);
+  int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
 
   switch (fcode)
@@ -1913,7 +1913,7 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       fndecl = gimple_call_fndecl (stmt);
       if (fndecl)
 	{
-	  int fcode = DECL_FUNCTION_CODE (fndecl);
+	  int fcode = DECL_MD_FUNCTION_CODE (fndecl);
 	  unsigned nargs = gimple_call_num_args (stmt);
 	  tree *args = (nargs > 0
 			? gimple_call_arg_ptr (stmt, 0)

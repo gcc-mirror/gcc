@@ -1714,11 +1714,13 @@ Alphabetical List of All Switches
   GCC macro ``BITS_PER_WORD`` documented as follows: `Number of bits in a word;
   normally 32.`
 
-  ``Double_Scalar_Alignment`` is the alignment for a scalar whose size is two
-  machine words. It should be the same as the alignment for C ``long_long`` on
-  most targets.
+  ``Double_Float_Alignment``, if not zero, is the maximum alignment that the
+  compiler can choose by default for a 64-bit floating-point type or object.
 
-  ``Maximum_Alignment`` is the maximum alignment that the compiler might choose
+  ``Double_Scalar_Alignment``, if not zero, is the maximum alignment that the
+  compiler can choose by default for a 64-bit or larger scalar type or object.
+
+  ``Maximum_Alignment`` is the maximum alignment that the compiler can choose
   by default for a type or object, which is also the maximum alignment that can
   be specified in GNAT. It is computed for GCC backends as ``BIGGEST_ALIGNMENT
   / BITS_PER_UNIT`` where GCC macro ``BIGGEST_ALIGNMENT`` is documented as
@@ -2970,13 +2972,37 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   component for which no component clause is present.
 
 
-.. index:: -gnatwC  (gcc)
+.. index:: -gnatw.C  (gcc)
 
 :switch:`-gnatw.C`
   *Suppress warnings on missing component clauses.*
 
   This switch suppresses warnings for record components that are
   missing a component clause in the situation described above.
+
+
+.. index:: -gnatw_c  (gcc)
+
+:switch:`-gnatw_c`
+  *Activate warnings on unknown condition in Compile_Time_Warning.*
+
+  .. index:: Compile_Time_Warning
+  .. index:: Compile_Time_Error
+
+  This switch activates warnings on a pragma Compile_Time_Warning
+  or Compile_Time_Error whose condition has a value that is not
+  known at compile time.
+  The default is that such warnings are generated.
+
+
+.. index:: -gnatw_C  (gcc)
+
+:switch:`-gnatw_C`
+  *Suppress warnings on missing component clauses.*
+
+  This switch supresses warnings on a pragma Compile_Time_Warning
+  or Compile_Time_Error whose condition has a value that is not
+  known at compile time.
 
 
 .. index:: -gnatwd  (gcc)

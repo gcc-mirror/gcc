@@ -1,3 +1,28 @@
+2019-08-15  Richard Biener  <rguenther@suse.de>
+
+	* c-common.c (c_stddef_cpp_builtins): When the GIMPLE FE is
+	enabled, define __SIZETYPE__.
+
+2019-08-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* c-attribs.c (c_common_attribute_table): Add "noinit" entry. Add
+	exclusion with "section" attribute.
+	(attr_noinit_exclusions): New table.
+	(handle_noinit_attribute): New function.
+
+2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91421
+	* c-common.c (resolve_overloaded_builtin): Use
+	copy_decl_built_in_function.
+
+2019-08-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c/80619
+	* c-format.c (printf_length_specs): Set FMT_LEN_w for "w".
+	(asm_fprintf_length_spec): Same.
+	* c-format.h (format_lengths): Add FMT_LEN_w.
+
 2019-08-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-pragma.h (enum pragma_omp_clause): Add

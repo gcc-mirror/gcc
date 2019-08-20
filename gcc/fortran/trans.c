@@ -118,6 +118,19 @@ gfc_evaluate_now (tree expr, stmtblock_t * pblock)
   return gfc_evaluate_now_loc (input_location, expr, pblock);
 }
 
+/* Like gfc_evaluate_now, but add the created variable to the
+   function scope.  */
+
+tree
+gfc_evaluate_now_function_scope (tree expr, stmtblock_t * pblock)
+{
+  tree var;
+  var = gfc_create_var_np (TREE_TYPE (expr), NULL);
+  gfc_add_decl_to_function (var);
+  gfc_add_modify (pblock, var, expr);
+
+  return var;
+}
 
 /* Build a MODIFY_EXPR node and add it to a given statement block PBLOCK.
    A MODIFY_EXPR is an assignment:
@@ -434,7 +447,7 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
    arguments and a locus.  */
 
 static tree
-trans_runtime_error_vararg (bool error, locus* where, const char* msgid,
+trans_runtime_error_vararg (tree errorfunc, locus* where, const char* msgid,
 			    va_list ap)
 {
   stmtblock_t block;
@@ -488,18 +501,13 @@ trans_runtime_error_vararg (bool error, locus* where, const char* msgid,
   /* Build the function call to runtime_(warning,error)_at; because of the
      variable number of arguments, we can't use build_call_expr_loc dinput_location,
      irectly.  */
-  if (error)
-    fntype = TREE_TYPE (gfor_fndecl_runtime_error_at);
-  else
-    fntype = TREE_TYPE (gfor_fndecl_runtime_warning_at);
+  fntype = TREE_TYPE (errorfunc);
 
   loc = where ? where->lb->location : input_location;
   tmp = fold_build_call_array_loc (loc, TREE_TYPE (fntype),
 				   fold_build1_loc (loc, ADDR_EXPR,
 					     build_pointer_type (fntype),
-					     error
-					     ? gfor_fndecl_runtime_error_at
-					     : gfor_fndecl_runtime_warning_at),
+					     errorfunc),
 				   nargs + 2, argarray);
   gfc_add_expr_to_block (&block, tmp);
 
@@ -514,7 +522,10 @@ gfc_trans_runtime_error (bool error, locus* where, const char* msgid, ...)
   tree result;
 
   va_start (ap, msgid);
-  result = trans_runtime_error_vararg (error, where, msgid, ap);
+  result = trans_runtime_error_vararg (error
+				       ? gfor_fndecl_runtime_error_at
+				       : gfor_fndecl_runtime_warning_at,
+				       where, msgid, ap);
   va_end (ap);
   return result;
 }
@@ -553,8 +564,10 @@ gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
   /* The code to generate the error.  */
   va_start (ap, msgid);
   gfc_add_expr_to_block (&block,
-			 trans_runtime_error_vararg (error, where,
-						     msgid, ap));
+			 trans_runtime_error_vararg
+			 (error ? gfor_fndecl_runtime_error_at
+			  : gfor_fndecl_runtime_warning_at,
+			  where, msgid, ap));
   va_end (ap);
 
   if (once)
@@ -582,13 +595,28 @@ gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
 }
 
 
+static tree
+trans_os_error_at (locus* where, const char* msgid, ...)
+{
+  va_list ap;
+  tree result;
+
+  va_start (ap, msgid);
+  result = trans_runtime_error_vararg (gfor_fndecl_os_error_at,
+				       where, msgid, ap);
+  va_end (ap);
+  return result;
+}
+
+
+
 /* Call malloc to allocate size bytes of memory, with special conditions:
       + if size == 0, return a malloced area of size 1,
       + if malloc returns NULL, issue a runtime error.  */
 tree
 gfc_call_malloc (stmtblock_t * block, tree type, tree size)
 {
-  tree tmp, msg, malloc_result, null_result, res, malloc_tree;
+  tree tmp, malloc_result, null_result, res, malloc_tree;
   stmtblock_t block2;
 
   /* Create a variable to hold the result.  */
@@ -613,13 +641,14 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
       null_result = fold_build2_loc (input_location, EQ_EXPR,
 				     logical_type_node, res,
 				     build_int_cst (pvoid_type_node, 0));
-      msg = gfc_build_addr_expr (pchar_type_node,
-	      gfc_build_localized_cstring_const ("Memory allocation failed"));
       tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
 			     null_result,
-	      build_call_expr_loc (input_location,
-				   gfor_fndecl_os_error, 1, msg),
-				   build_empty_stmt (input_location));
+			     trans_os_error_at (NULL,
+						"Error allocating %lu bytes",
+						fold_convert
+						(long_unsigned_type_node,
+						 size)),
+			     build_empty_stmt (input_location));
       gfc_add_expr_to_block (&block2, tmp);
     }
 
@@ -688,11 +717,9 @@ gfc_allocate_using_malloc (stmtblock_t * block, tree pointer,
     }
   else
     {
-      /* Here, os_error already implies PRED_NORETURN.  */
-      tmp = build_call_expr_loc (input_location, gfor_fndecl_os_error, 1,
-		    gfc_build_addr_expr (pchar_type_node,
-				 gfc_build_localized_cstring_const
-				    ("Allocation would exceed memory limit")));
+      /* Here, os_error_at already implies PRED_NORETURN.  */
+      tree lusize = fold_convert (long_unsigned_type_node, size);
+      tmp = trans_os_error_at (NULL, "Error allocating %lu bytes", lusize);
       gfc_add_expr_to_block (&on_error, tmp);
     }
 
@@ -1651,7 +1678,7 @@ internal_realloc (void *mem, size_t size)
 tree
 gfc_call_realloc (stmtblock_t * block, tree mem, tree size)
 {
-  tree msg, res, nonzero, null_result, tmp;
+  tree res, nonzero, null_result, tmp;
   tree type = TREE_TYPE (mem);
 
   /* Only evaluate the size once.  */
@@ -1671,12 +1698,12 @@ gfc_call_realloc (stmtblock_t * block, tree mem, tree size)
 			     build_int_cst (size_type_node, 0));
   null_result = fold_build2_loc (input_location, TRUTH_AND_EXPR, logical_type_node,
 				 null_result, nonzero);
-  msg = gfc_build_addr_expr (pchar_type_node, gfc_build_localized_cstring_const
-			     ("Allocation would exceed memory limit"));
   tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
 			 null_result,
-			 build_call_expr_loc (input_location,
-					      gfor_fndecl_os_error, 1, msg),
+			 trans_os_error_at (NULL,
+					    "Error reallocating to %lu bytes",
+					    fold_convert
+					    (long_unsigned_type_node, size)),
 			 build_empty_stmt (input_location));
   gfc_add_expr_to_block (block, tmp);
 

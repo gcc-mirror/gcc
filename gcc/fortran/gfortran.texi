@@ -1882,13 +1882,6 @@ with @code{2.0}.) As different compilers implement the extension
 differently, one should be careful when doing bitwise initialization
 of non-integer variables.
 
-Note that initializing an @code{INTEGER} variable with a statement such
-as @code{DATA i/Z'FFFFFFFF'/} will give an integer overflow error rather
-than the desired result of @math{-1} when @code{i} is a 32-bit integer
-on a system that supports 64-bit integers.  The @samp{-fno-range-check}
-option can be used as a workaround for legacy code that initializes
-integers in this manner.
-
 @node Real array indices
 @subsection Real array indices
 @cindex array, indices of type real

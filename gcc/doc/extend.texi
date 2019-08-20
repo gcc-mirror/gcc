@@ -7156,6 +7156,14 @@ The @code{visibility} attribute is described in
 The @code{weak} attribute is described in
 @ref{Common Function Attributes}.
 
+@item noinit
+@cindex @code{noinit} variable attribute
+Any data with the @code{noinit} attribute will not be initialized by
+the C runtime startup code, or the program loader.  Not initializing
+data in this way can reduce program startup times.  This attribute is
+specific to ELF targets and relies on the linker to place such data in
+the right location
+
 @end table
 
 @node ARC Variable Attributes

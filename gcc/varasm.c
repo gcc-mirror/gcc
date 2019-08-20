@@ -6430,6 +6430,9 @@ default_section_type_flags (tree decl, const char *name, int reloc)
       || strncmp (name, ".gnu.linkonce.tb.", 17) == 0)
     flags |= SECTION_TLS | SECTION_BSS;
 
+  if (strcmp (name, ".noinit") == 0)
+    flags |= SECTION_WRITE | SECTION_BSS | SECTION_NOTYPE;
+
   /* Various sections have special ELF types that the assembler will
      assign by default based on the name.  They are neither SHT_PROGBITS
      nor SHT_NOBITS, so when changing sections we don't want to print a
@@ -6755,6 +6758,7 @@ default_elf_select_section (tree decl, int reloc,
 			    unsigned HOST_WIDE_INT align)
 {
   const char *sname;
+
   switch (categorize_decl_for_section (decl, reloc))
     {
     case SECCAT_TEXT:
@@ -6792,6 +6796,13 @@ default_elf_select_section (tree decl, int reloc,
       sname = ".tdata";
       break;
     case SECCAT_BSS:
+      if (DECL_P (decl)
+	  && lookup_attribute ("noinit", DECL_ATTRIBUTES (decl)) != NULL_TREE)
+	{
+	  sname = ".noinit";
+	  break;
+	}
+
       if (bss_section)
 	return bss_section;
       sname = ".bss";

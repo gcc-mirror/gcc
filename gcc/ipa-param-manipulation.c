@@ -219,10 +219,7 @@ ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec adjustments)
 
   /* When signature changes, we need to clear builtin info.  */
   if (fndecl_built_in_p (fndecl))
-    {
-      DECL_BUILT_IN_CLASS (fndecl) = NOT_BUILT_IN;
-      DECL_FUNCTION_CODE (fndecl) = (enum built_in_function) 0;
-    }
+    set_decl_built_in_function (fndecl, NOT_BUILT_IN, 0);
 
   TREE_TYPE (fndecl) = new_type;
   DECL_VIRTUAL_P (fndecl) = 0;

@@ -3726,7 +3726,7 @@ gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
 
   /* Set the strlen() range to [0, MAXLEN].  */
   if (tree lhs = gimple_call_lhs (stmt))
-    set_strlen_range (lhs, maxlen);
+    set_strlen_range (lhs, minlen, maxlen);
 
   return false;
 }

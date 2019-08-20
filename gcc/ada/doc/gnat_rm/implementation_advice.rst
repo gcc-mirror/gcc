@@ -703,23 +703,23 @@ Followed.
 
 .. index:: Stream oriented attributes
 
-RM 13.13.2(17): Stream Oriented Attributes
-==========================================
+RM 13.13.2(1.6): Stream Oriented Attributes
+===========================================
 
-  "If a stream element is the same size as a storage element, then the
-  normal in-memory representation should be used by ``Read`` and
-  ``Write`` for scalar objects.  Otherwise, ``Read`` and ``Write``
-  should use the smallest number of stream elements needed to represent
-  all values in the base range of the scalar type."
+  "If not specified, the value of Stream_Size for an elementary type
+  should be the number of bits that corresponds to the minimum number of
+  stream elements required by the first subtype of the type, rounded up
+  to the nearest factor or multiple of the word size that is also a
+  multiple of the stream element size."
 
-Followed.  By default, GNAT uses the interpretation suggested by AI-195,
-which specifies using the size of the first subtype.
+Followed, except that the number of stream elements is a power of 2.
+The Stream_Size may be used to override the default choice.
+
 However, such an implementation is based on direct binary
-representations and is therefore target- and endianness-dependent.
-To address this issue, GNAT also supplies an alternate implementation
-of the stream attributes ``Read`` and ``Write``,
-which uses the target-independent XDR standard representation
-for scalar types.
+representations and is therefore target- and endianness-dependent.  To
+address this issue, GNAT also supplies an alternate implementation of
+the stream attributes ``Read`` and ``Write``, which uses the
+target-independent XDR standard representation for scalar types.
 
 .. index:: XDR representation
 

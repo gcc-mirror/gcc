@@ -193,6 +193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201703L
 #  define __cpp_lib_constexpr_algorithms 201711L
+#  define __cpp_lib_constexpr_swap_algorithms 201806L
 #endif
 
 #if __cplusplus >= 201103L
@@ -377,6 +378,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template<typename _FIter1, typename _FIter2>
+    _GLIBCXX20_CONSTEXPR
     void
     iter_swap(_FIter1, _FIter2);
 
@@ -391,10 +393,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     lower_bound(_FIter, _FIter, const _Tp&, _Compare);
 
   template<typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     void
     make_heap(_RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void
     make_heap(_RAIter, _RAIter, _Compare);
 
@@ -478,10 +482,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // mismatch
 
   template<typename _BIter>
+    _GLIBCXX20_CONSTEXPR
     bool
     next_permutation(_BIter, _BIter);
 
   template<typename _BIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     bool
     next_permutation(_BIter, _BIter, _Compare);
 
@@ -496,10 +502,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // partial_sort
 
   template<typename _IIter, typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     _RAIter
     partial_sort_copy(_IIter, _IIter, _RAIter, _RAIter);
 
   template<typename _IIter, typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     _RAIter
     partial_sort_copy(_IIter, _IIter, _RAIter, _RAIter, _Compare);
 
@@ -519,26 +527,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template<typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     void
     pop_heap(_RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void
     pop_heap(_RAIter, _RAIter, _Compare);
 
   template<typename _BIter>
+    _GLIBCXX20_CONSTEXPR
     bool
     prev_permutation(_BIter, _BIter);
 
   template<typename _BIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     bool
     prev_permutation(_BIter, _BIter, _Compare);
 
   template<typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     void
     push_heap(_RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void
     push_heap(_RAIter, _RAIter, _Compare);
 
@@ -579,6 +593,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // replace_if
 
   template<typename _BIter>
+    _GLIBCXX20_CONSTEXPR
     void
     reverse(_BIter, _BIter);
 
@@ -590,6 +605,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline namespace _V2
   {
     template<typename _FIter>
+      _GLIBCXX20_CONSTEXPR
       _FIter
       rotate(_FIter, _FIter, _FIter);
   }
@@ -613,10 +629,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template<typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     void
     sort_heap(_RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void
     sort_heap(_RAIter, _RAIter, _Compare);
 
@@ -628,15 +646,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // For C++11 swap() is declared in <type_traits>.
 
   template<typename _Tp, size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     inline void
     swap(_Tp& __a, _Tp& __b);
 
   template<typename _Tp, size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     inline void
     swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm]);
 #endif
 
   template<typename _FIter1, typename _FIter2>
+    _GLIBCXX20_CONSTEXPR
     _FIter2
     swap_ranges(_FIter1, _FIter1, _FIter2);
 
@@ -783,22 +804,27 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     mismatch(_IIter1, _IIter1, _IIter2, _BinaryPredicate);
 
   template<typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     void
     nth_element(_RAIter, _RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void
     nth_element(_RAIter, _RAIter, _RAIter, _Compare);
 
   template<typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     void
     partial_sort(_RAIter, _RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void
     partial_sort(_RAIter, _RAIter, _RAIter, _Compare);
 
   template<typename _BIter, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     _BIter
     partition(_BIter, _BIter, _Predicate);
 
@@ -892,10 +918,12 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     set_union(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare);
 
   template<typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     void
     sort(_RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void
     sort(_RAIter, _RAIter, _Compare);
 

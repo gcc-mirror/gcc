@@ -40,6 +40,8 @@ with Ada.Containers.Functional_Vectors;
 generic
    type Index_Type is range <>;
    type Element_Type is private;
+   with function "=" (Left, Right : Element_Type) return Boolean is <>;
+
 package Ada.Containers.Formal_Vectors with
   SPARK_Mode
 is

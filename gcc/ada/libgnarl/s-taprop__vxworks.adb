@@ -192,7 +192,10 @@ package body System.Task_Primitives.Operations is
    procedure Abort_Handler (signo : Signal) is
       pragma Unreferenced (signo);
 
-      Self_ID        : constant Task_Id := Self;
+      --  Do not call Self at this point as we're in a signal handler
+      --  and it may not be available, in particular on targets where we
+      --  support ZCX and where we don't do anything here anyway.
+      Self_ID        : Task_Id;
       Old_Set        : aliased sigset_t;
       Unblocked_Mask : aliased sigset_t;
       Result         : int;
@@ -207,6 +210,8 @@ package body System.Task_Primitives.Operations is
       if ZCX_By_Default then
          return;
       end if;
+
+      Self_ID := Self;
 
       if Self_ID.Deferral_Level = 0
         and then Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level

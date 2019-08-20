@@ -2545,14 +2545,14 @@ set via @code{__attribute__}.",
 DEFHOOK
 (libc_has_function,
  "This hook determines whether a function from a class of functions\n\
-@var{fn_class} is present at the runtime.",
+@var{fn_class} is present in the target C library.",
  bool, (enum function_class fn_class),
  default_libc_has_function)
 
 DEFHOOK
 (libc_has_fast_function,
  "This hook determines whether a function from a class of functions\n\
-@var{fn_class} has a fast implementation.",
+@code{(enum function_class)}@var{fcode} has a fast implementation.",
  bool, (int fcode),
  default_libc_has_fast_function)
 
@@ -4549,15 +4549,6 @@ DEFHOOK
 returned by function call into @var{slot}.",
  void, (rtx slot, rtx bounds),
  default_store_returned_bounds)
-
-DEFHOOK
-(setup_incoming_vararg_bounds,
- "Use it to store bounds for anonymous register arguments stored\n\
-into the stack.  Arguments meaning is similar to\n\
-@code{TARGET_SETUP_INCOMING_VARARGS}.",
- void, (cumulative_args_t args_so_far, machine_mode mode, tree type,
-	int *pretend_args_size, int second_time),
- default_setup_incoming_vararg_bounds)
 
 DEFHOOK
 (call_args,

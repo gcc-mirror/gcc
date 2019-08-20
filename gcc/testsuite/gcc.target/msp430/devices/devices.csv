@@ -1,0 +1,22 @@
+# Text before "#Device Name" is ignored.
+# We add arbitrary/empty fields in some records after the MPY_TYPE column to get
+# more varied testing.
+# Device Name,CPU_TYPE,MPY_TYPE
+msp430_00,0,0
+msp430_01,0,1,
+msp430_02,0,2,1
+msp430_04,0,4
+msp430_08,0,8,
+msp430_10,1,0,0,
+msp430_11,1,1
+msp430_12,1,2
+msp430_14,1,4,,
+msp430_18,1,8
+msp430_20,2,0
+msp430_21,2,1,4,
+msp430_22,2,2
+msp430_24,2,4
+msp430_28,2,8,100,
+msp430fr5969,0,0
+msp430f0123,2,8
+msp430f012,0,1

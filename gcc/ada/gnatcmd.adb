@@ -30,6 +30,7 @@ with Osint;    use Osint;
 with Output;   use Output;
 with Switch;   use Switch;
 with Table;
+with Usage;
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Ada.Command_Line;        use Ada.Command_Line;
@@ -42,6 +43,9 @@ procedure GNATCmd is
    Gprclean : constant String := "gprclean";
    Gprname  : constant String := "gprname";
    Gprls    : constant String := "gprls";
+
+   Ada_Help_Switch : constant String := "--help-ada";
+   --  Flag to display available build switches
 
    Error_Exit : exception;
    --  Raise this exception if error detected
@@ -229,7 +233,7 @@ procedure GNATCmd is
    procedure Output_Version;
    --  Output the version of this program
 
-   procedure Usage;
+   procedure GNATCmd_Usage;
    --  Display usage
 
    --------------------
@@ -244,13 +248,15 @@ procedure GNATCmd is
                 & ", Free Software Foundation, Inc.");
    end Output_Version;
 
-   -----------
-   -- Usage --
-   -----------
+   -------------------
+   -- GNATCmd_Usage --
+   -------------------
 
-   procedure Usage is
+   procedure GNATCmd_Usage is
    begin
       Output_Version;
+      New_Line;
+      Put_Line ("To list Ada build switches use " & Ada_Help_Switch);
       New_Line;
       Put_Line ("List of available commands");
       New_Line;
@@ -276,9 +282,10 @@ procedure GNATCmd is
       end loop;
 
       New_Line;
-   end Usage;
+   end GNATCmd_Usage;
 
-   procedure Check_Version_And_Help is new Check_Version_And_Help_G (Usage);
+   procedure Check_Version_And_Help
+     is new Check_Version_And_Help_G (GNATCmd_Usage);
 
 --  Start of processing for GNATCmd
 
@@ -351,6 +358,12 @@ begin
             Keep_Temporary_Files := True;
             Command_Arg := Command_Arg + 1;
 
+         elsif Command_Arg <= Argument_Count
+           and then Argument (Command_Arg) = Ada_Help_Switch
+         then
+            Usage;
+            Exit_Program (E_Success);
+
          else
             exit;
          end if;
@@ -359,7 +372,12 @@ begin
       --  If there is no command, just output the usage
 
       if Command_Arg > Argument_Count then
-         Usage;
+         GNATCmd_Usage;
+
+         --  Add the following so that output is consistent with or without the
+         --  --help flag.
+         Write_Eol;
+         Write_Line ("Report bugs to report@adacore.com");
          return;
       end if;
 
@@ -379,7 +397,7 @@ begin
 
          exception
             when Constraint_Error =>
-               Usage;
+               GNATCmd_Usage;
                Fail ("unknown command: " & Argument (Command_Arg));
          end;
    end;

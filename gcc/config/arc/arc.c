@@ -6996,7 +6996,7 @@ arc_expand_builtin (tree exp,
 		    int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int id = DECL_FUNCTION_CODE (fndecl);
+  unsigned int id = DECL_MD_FUNCTION_CODE (fndecl);
   const struct arc_builtin_description *d = &arc_bdesc[id];
   int i, j, n_args = call_expr_nargs (exp);
   rtx pat = NULL_RTX;

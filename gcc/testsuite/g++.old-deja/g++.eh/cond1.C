@@ -22,8 +22,8 @@ void fn(int i)
   (i ? throw X() : throw X());  // ok, void
   
   (i ? i : j) = 1; // ok, int &
-  (i ? throw X() : j) = 1; // { dg-error "" } non-lvalue
-  (i ? j : throw X()) = 1; // { dg-error "" } non-lvalue
+  (i ? throw X() : j) = 1; // ok, int &
+  (i ? j : throw X()) = 1; // ok, int &
   (i ? throw X() : throw X()) = 1;  // { dg-error "" } void
   
   (i ? (void)1 : i++); // { dg-error "" } ANSI forbids

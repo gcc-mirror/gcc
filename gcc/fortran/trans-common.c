@@ -339,7 +339,7 @@ build_field (segment_info *h, tree union_type, record_layout_info rli)
 /* Get storage for local equivalence.  */
 
 static tree
-build_equiv_decl (tree union_type, bool is_init, bool is_saved)
+build_equiv_decl (tree union_type, bool is_init, bool is_saved, bool is_auto)
 {
   tree decl;
   char name[18];
@@ -359,8 +359,8 @@ build_equiv_decl (tree union_type, bool is_init, bool is_saved)
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
 
-  if (!gfc_can_put_var_on_stack (DECL_SIZE_UNIT (decl))
-      || is_saved)
+  if (!is_auto && (!gfc_can_put_var_on_stack (DECL_SIZE_UNIT (decl))
+      || is_saved))
     TREE_STATIC (decl) = 1;
 
   TREE_ADDRESSABLE (decl) = 1;
@@ -611,6 +611,7 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
   tree decl;
   bool is_init = false;
   bool is_saved = false;
+  bool is_auto = false;
 
   /* Declare the variables inside the common block.
      If the current common block contains any equivalence object, then
@@ -654,6 +655,10 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
       /* Has SAVE attribute.  */
       if (s->sym->attr.save)
         is_saved = true;
+
+      /* Has AUTOMATIC attribute.  */
+      if (s->sym->attr.automatic)
+	is_auto = true;
     }
 
   finish_record_layout (rli, true);
@@ -661,7 +666,7 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
   if (com)
     decl = build_common_decl (com, union_type, is_init);
   else
-    decl = build_equiv_decl (union_type, is_init, is_saved);
+    decl = build_equiv_decl (union_type, is_init, is_saved, is_auto);
 
   if (is_init)
     {
@@ -948,6 +953,59 @@ add_condition (segment_info *f, gfc_equiv *eq1, gfc_equiv *eq2)
     confirm_condition (f, eq1, n, eq2);
 }
 
+static void
+accumulate_equivalence_attributes (symbol_attribute *dummy_symbol, gfc_equiv *e)
+{
+  symbol_attribute attr = e->expr->symtree->n.sym->attr;
+
+  dummy_symbol->dummy |= attr.dummy;
+  dummy_symbol->pointer |= attr.pointer;
+  dummy_symbol->target |= attr.target;
+  dummy_symbol->external |= attr.external;
+  dummy_symbol->intrinsic |= attr.intrinsic;
+  dummy_symbol->allocatable |= attr.allocatable;
+  dummy_symbol->elemental |= attr.elemental;
+  dummy_symbol->recursive |= attr.recursive;
+  dummy_symbol->in_common |= attr.in_common;
+  dummy_symbol->result |= attr.result;
+  dummy_symbol->in_namelist |= attr.in_namelist;
+  dummy_symbol->optional |= attr.optional;
+  dummy_symbol->entry |= attr.entry;
+  dummy_symbol->function |= attr.function;
+  dummy_symbol->subroutine |= attr.subroutine;
+  dummy_symbol->dimension |= attr.dimension;
+  dummy_symbol->in_equivalence |= attr.in_equivalence;
+  dummy_symbol->use_assoc |= attr.use_assoc;
+  dummy_symbol->cray_pointer |= attr.cray_pointer;
+  dummy_symbol->cray_pointee |= attr.cray_pointee;
+  dummy_symbol->data |= attr.data;
+  dummy_symbol->value |= attr.value;
+  dummy_symbol->volatile_ |= attr.volatile_;
+  dummy_symbol->is_protected |= attr.is_protected;
+  dummy_symbol->is_bind_c |= attr.is_bind_c;
+  dummy_symbol->procedure |= attr.procedure;
+  dummy_symbol->proc_pointer |= attr.proc_pointer;
+  dummy_symbol->abstract |= attr.abstract;
+  dummy_symbol->asynchronous |= attr.asynchronous;
+  dummy_symbol->codimension |= attr.codimension;
+  dummy_symbol->contiguous |= attr.contiguous;
+  dummy_symbol->generic |= attr.generic;
+  dummy_symbol->automatic |= attr.automatic;
+  dummy_symbol->threadprivate |= attr.threadprivate;
+  dummy_symbol->omp_declare_target |= attr.omp_declare_target;
+  dummy_symbol->omp_declare_target_link |= attr.omp_declare_target_link;
+  dummy_symbol->oacc_declare_copyin |= attr.oacc_declare_copyin;
+  dummy_symbol->oacc_declare_create |= attr.oacc_declare_create;
+  dummy_symbol->oacc_declare_deviceptr |= attr.oacc_declare_deviceptr;
+  dummy_symbol->oacc_declare_device_resident
+    |= attr.oacc_declare_device_resident;
+
+  /* Not strictly correct, but probably close enough.  */
+  if (attr.save > dummy_symbol->save)
+    dummy_symbol->save = attr.save;
+  if (attr.access > dummy_symbol->access)
+    dummy_symbol->access = attr.access;
+}
 
 /* Given a segment element, search through the equivalence lists for unused
    conditions that involve the symbol.  Add these rules to the segment.  */
@@ -965,15 +1023,20 @@ find_equivalence (segment_info *n)
       eq = NULL;
 
       /* Search the equivalence list, including the root (first) element
-         for the symbol that owns the segment.  */
+	 for the symbol that owns the segment.  */
+      symbol_attribute dummy_symbol;
+      memset (&dummy_symbol, 0, sizeof (dummy_symbol));
       for (e2 = e1; e2; e2 = e2->eq)
 	{
+	  accumulate_equivalence_attributes (&dummy_symbol, e2);
 	  if (!e2->used && e2->expr->symtree->n.sym == n->sym)
 	    {
 	      eq = e2;
 	      break;
 	    }
 	}
+
+      gfc_check_conflict (&dummy_symbol, e1->expr->symtree->name, &e1->expr->where);
 
       /* Go to the next root element.  */
       if (eq == NULL)

@@ -29,7 +29,7 @@ baz (void)
 {
   /* Darwin loads 64-bit regions above the 4GB boundary so
      we need to use this instead.  */
-#if defined (__LP64__) && defined (__MACH__)
+#if defined (__LP64__)
   __asm ("leaq foo(%%rip), %0" : "=r" (fn));
 #else
   __asm ("movl $foo, %k0" : "=r" (fn));

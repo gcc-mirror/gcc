@@ -165,10 +165,12 @@ namespace std
   // 25.2.2, swap:
 #if __cplusplus < 201103L
   template<typename _Tp> 
+    _GLIBCXX20_CONSTEXPR
     void 
     swap(_Tp&, _Tp& b);
 
   template<typename _Tp, size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     void
     swap(_Tp (&)[_Nm], _Tp (&)[_Nm]);
 #else
@@ -178,10 +180,12 @@ namespace std
 #endif
 
   template<typename _FIter1, typename _FIter2>
+    _GLIBCXX20_CONSTEXPR
     _FIter2 
     swap_ranges(_FIter1 first1, _FIter1, _FIter2);
 
   template<typename _FIter1, typename _FIter2>
+    _GLIBCXX20_CONSTEXPR
     void 
     iter_swap(_FIter1, _FIter2 b);
 
@@ -295,6 +299,7 @@ namespace std
     unique_copy(_IIter, _IIter, _OIter, _BinaryPredicate);
 
   template<typename _BIter>
+    _GLIBCXX20_CONSTEXPR
     void 
     reverse(_BIter, _BIter);
 
@@ -304,6 +309,7 @@ namespace std
     reverse_copy(_BIter, _BIter, _OIter);
 
   template<typename _FIter>
+    _GLIBCXX20_CONSTEXPR
     void 
     rotate(_FIter, _FIter, _FIter);
 
@@ -322,6 +328,7 @@ namespace std
 
   // 25.2.12, partitions:
   template<typename _BIter, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     _BIter 
     partition(_BIter, _BIter, _Predicate);
 
@@ -332,10 +339,12 @@ namespace std
   // 25.3, sorting and related operations:
   // 25.3.1, sorting:
   template<typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     void 
     sort(_RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void 
     sort(_RAIter, _RAIter, _Compare);
 
@@ -348,26 +357,32 @@ namespace std
     stable_sort(_RAIter, _RAIter, _Compare);
 
   template<typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     void 
     partial_sort(_RAIter, _RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void 
     partial_sort(_RAIter, _RAIter, _RAIter, _Compare);
 
   template<typename _IIter, typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     _RAIter
     partial_sort_copy(_IIter, _IIter, _RAIter, _RAIter);
 
   template<typename _IIter, typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     _RAIter
     partial_sort_copy(_IIter, _IIter, _RAIter, _RAIter, _Compare);
 
   template<typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     void 
     nth_element(_RAIter, _RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void 
     nth_element(_RAIter, _RAIter, _RAIter, _Compare);
 
@@ -490,34 +505,42 @@ namespace std
 
   // 25.3.6, heap operations:
   template<typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     void 
     push_heap(_RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void 
     push_heap(_RAIter, _RAIter, _Compare);
 
   template<typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     void 
     pop_heap(_RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void 
     pop_heap(_RAIter, _RAIter, _Compare);
 
   template<typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     void 
     make_heap(_RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void 
     make_heap(_RAIter, _RAIter, _Compare);
 
   template<typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     void 
     sort_heap(_RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     void 
     sort_heap(_RAIter, _RAIter, _Compare);
 
@@ -668,18 +691,22 @@ namespace std
 
   // 25.3.9, permutations
   template<typename _BIter>
+    _GLIBCXX20_CONSTEXPR
     bool 
     next_permutation(_BIter, _BIter);
 
   template<typename _BIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     bool 
     next_permutation(_BIter, _BIter, _Compare);
 
   template<typename _BIter>
+    _GLIBCXX20_CONSTEXPR
     bool 
     prev_permutation(_BIter, _BIter);
 
   template<typename _BIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     bool 
     prev_permutation(_BIter, _BIter, _Compare);
 }

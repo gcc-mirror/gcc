@@ -3764,7 +3764,7 @@ package body Exp_Disp is
       Dummy_Object : Entity_Id := Empty;
       --  Extra nonexistent object of type Typ internally used to compute the
       --  offset to the components that reference secondary dispatch tables.
-      --  Used to statically allocate secondary dispatch tables.
+      --  Used to compute the offset of components located at fixed position.
 
       procedure Check_Premature_Freezing
         (Subp        : Entity_Id;
@@ -3816,6 +3816,9 @@ package body Exp_Disp is
       --  value of Suffix_Index must match the Suffix_Index value assigned to
       --  this secondary dispatch table by Make_Tags when its unique external
       --  name was generated.
+
+      function Number_Of_Predefined_Prims (Typ : Entity_Id) return Nat;
+      --  Returns the number of predefined primitives of Typ
 
       ------------------------------
       -- Check_Premature_Freezing --
@@ -3970,12 +3973,10 @@ package body Exp_Disp is
          DT_Constr_List     : List_Id;
          DT_Aggr_List       : List_Id;
          Empty_DT           : Boolean := False;
-         Nb_Predef_Prims    : Nat := 0;
          Nb_Prim            : Nat;
          New_Node           : Node_Id;
          OSD                : Entity_Id;
          OSD_Aggr_List      : List_Id;
-         Pos                : Nat;
          Prim               : Entity_Id;
          Prim_Elmt          : Elmt_Id;
          Prim_Ops_Aggr_List : List_Id;
@@ -4022,38 +4023,12 @@ package body Exp_Disp is
          --                     predef-prim-op-thunk-n'address);
          --   for Predef_Prims'Alignment use Address'Alignment
 
-         --  Stage 1: Calculate the number of predefined primitives
-
-         if not Building_Static_DT (Typ) then
-            Nb_Predef_Prims := Max_Predef_Prims;
-         else
-            Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
-            while Present (Prim_Elmt) loop
-               Prim := Node (Prim_Elmt);
-
-               if Is_Predefined_Dispatching_Operation (Prim)
-                 and then not Is_Abstract_Subprogram (Prim)
-               then
-                  Pos := UI_To_Int (DT_Position (Prim));
-
-                  if Pos > Nb_Predef_Prims then
-                     Nb_Predef_Prims := Pos;
-                  end if;
-               end if;
-
-               Next_Elmt (Prim_Elmt);
-            end loop;
-         end if;
-
-         if Generate_SCIL then
-            Nb_Predef_Prims := 0;
-         end if;
-
-         --  Stage 2: Create the thunks associated with the predefined
-         --  primitives and save their entity to fill the aggregate.
+         --  Create the thunks associated with the predefined primitives and
+         --  save their entity to fill the aggregate.
 
          declare
-            Prim_Table : array (Nat range 1 .. Nb_Predef_Prims) of Entity_Id;
+            Nb_P_Prims : constant Nat := Number_Of_Predefined_Prims (Typ);
+            Prim_Table : array (Nat range 1 .. Nb_P_Prims) of Entity_Id;
             Decl       : Node_Id;
             Thunk_Id   : Entity_Id;
             Thunk_Code : Node_Id;
@@ -4191,13 +4166,15 @@ package body Exp_Disp is
              Prefix         => New_Occurrence_Of (Predef_Prims, Loc),
              Attribute_Name => Name_Address));
 
-         --  If the location of the component that references this secondary
-         --  dispatch table is variable then we have not declared the internal
-         --  dummy object; the value of Offset_To_Top will be set by the init
-         --  subprogram.
+         --  Interface component located at variable offset; the value of
+         --  Offset_To_Top will be set by the init subprogram.
 
-         if No (Dummy_Object) then
+         if No (Dummy_Object)
+           or else Is_Variable_Size_Record (Etype (Scope (Iface_Comp)))
+         then
             Append_To (DT_Aggr_List, Make_Integer_Literal (Loc, 0));
+
+         --  Interface component located at fixed offset
 
          else
             Append_To (DT_Aggr_List,
@@ -4444,7 +4421,7 @@ package body Exp_Disp is
            Make_Object_Declaration (Loc,
              Defining_Identifier => Iface_DT,
              Aliased_Present     => True,
-             Constant_Present    => Present (Dummy_Object),
+             Constant_Present    => Building_Static_Secondary_DT (Typ),
 
              Object_Definition   =>
                Make_Subtype_Indication (Loc,
@@ -4523,6 +4500,44 @@ package body Exp_Disp is
          Append_Elmt (Iface_DT, DT_Decl);
       end Make_Secondary_DT;
 
+      --------------------------------
+      -- Number_Of_Predefined_Prims --
+      --------------------------------
+
+      function Number_Of_Predefined_Prims (Typ : Entity_Id) return Nat is
+         Nb_Predef_Prims : Nat := 0;
+
+      begin
+         if not Generate_SCIL then
+            declare
+               Prim      : Entity_Id;
+               Prim_Elmt : Elmt_Id;
+               Pos       : Nat;
+
+            begin
+               Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
+               while Present (Prim_Elmt) loop
+                  Prim := Node (Prim_Elmt);
+
+                  if Is_Predefined_Dispatching_Operation (Prim)
+                    and then not Is_Abstract_Subprogram (Prim)
+                  then
+                     Pos := UI_To_Int (DT_Position (Prim));
+
+                     if Pos > Nb_Predef_Prims then
+                        Nb_Predef_Prims := Pos;
+                     end if;
+                  end if;
+
+                  Next_Elmt (Prim_Elmt);
+               end loop;
+            end;
+         end if;
+
+         pragma Assert (Nb_Predef_Prims <= Max_Predef_Prims);
+         return Nb_Predef_Prims;
+      end Number_Of_Predefined_Prims;
+
       --  Local variables
 
       Elab_Code : constant List_Id := New_List;
@@ -4582,7 +4597,6 @@ package body Exp_Disp is
       I_Depth            : Nat := 0;
       Iface_Table_Node   : Node_Id;
       Name_ITable        : Name_Id;
-      Nb_Predef_Prims    : Nat := 0;
       Nb_Prim            : Nat := 0;
       New_Node           : Node_Id;
       Num_Ifaces         : Nat := 0;
@@ -4723,9 +4737,10 @@ package body Exp_Disp is
          end;
       end if;
 
-      if Building_Static_Secondary_DT (Typ) then
+      if not Is_Interface (Typ) and then Has_Interfaces (Typ) then
          declare
             Cannot_Have_Null_Disc : Boolean := False;
+            Dummy_Object_Typ      : constant Entity_Id := Typ;
             Name_Dummy_Object     : constant Name_Id :=
                                       New_External_Name (Tname,
                                         'P', Suffix_Index => -1);
@@ -4754,19 +4769,20 @@ package body Exp_Disp is
 
             Set_Is_Internal (Dummy_Object);
 
-            if not Has_Discriminants (Typ) then
+            if not Has_Discriminants (Dummy_Object_Typ) then
                Append_To (Result,
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Dummy_Object,
                    Constant_Present    => True,
-                   Object_Definition   => New_Occurrence_Of (Typ, Loc)));
+                   Object_Definition   => New_Occurrence_Of
+                                           (Dummy_Object_Typ, Loc)));
             else
                declare
                   Constr_List  : constant List_Id := New_List;
                   Discrim      : Node_Id;
 
                begin
-                  Discrim := First_Discriminant (Typ);
+                  Discrim := First_Discriminant (Dummy_Object_Typ);
                   while Present (Discrim) loop
                      if Is_Discrete_Type (Etype (Discrim)) then
                         Append_To (Constr_List,
@@ -4792,7 +4808,8 @@ package body Exp_Disp is
                       Constant_Present    => True,
                       Object_Definition   =>
                         Make_Subtype_Indication (Loc,
-                          Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+                          Subtype_Mark =>
+                            New_Occurrence_Of (Dummy_Object_Typ, Loc),
                           Constraint   =>
                             Make_Index_Or_Discriminant_Constraint (Loc,
                               Constraints => Constr_List))));
@@ -5500,11 +5517,13 @@ package body Exp_Disp is
             declare
                TSD_Ifaces_List  : constant List_Id := New_List;
                Elmt             : Elmt_Id;
-               Ifaces_List      : Elist_Id := No_Elist;
-               Ifaces_Comp_List : Elist_Id := No_Elist;
-               Ifaces_Tag_List  : Elist_Id;
                Offset_To_Top    : Node_Id;
                Sec_DT_Tag       : Node_Id;
+
+               Dummy_Object_Ifaces_List      : Elist_Id := No_Elist;
+               Dummy_Object_Ifaces_Comp_List : Elist_Id := No_Elist;
+               Dummy_Object_Ifaces_Tag_List  : Elist_Id := No_Elist;
+               --  Interfaces information of the dummy object
 
             begin
                --  Collect interfaces information if we need to compute the
@@ -5512,7 +5531,9 @@ package body Exp_Disp is
 
                if Present (Dummy_Object) then
                   Collect_Interfaces_Info (Typ,
-                    Ifaces_List, Ifaces_Comp_List, Ifaces_Tag_List);
+                    Ifaces_List     => Dummy_Object_Ifaces_List,
+                    Components_List => Dummy_Object_Ifaces_Comp_List,
+                    Tags_List       => Dummy_Object_Ifaces_Tag_List);
                end if;
 
                AI := First_Elmt (Typ_Ifaces);
@@ -5550,8 +5571,8 @@ package body Exp_Disp is
                          (Node (Next_Elmt (Next_Elmt (Elmt))), Loc);
                   end if;
 
-                  --  For static dispatch tables compute Offset_To_Top using
-                  --  the dummy object.
+                  --  Use the dummy object to compute Offset_To_Top of
+                  --  components located at fixed position.
 
                   if Present (Dummy_Object) then
                      declare
@@ -5561,8 +5582,10 @@ package body Exp_Disp is
                         Iface_Elmt       : Elmt_Id;
 
                      begin
-                        Iface_Elmt      := First_Elmt (Ifaces_List);
-                        Iface_Comp_Elmt := First_Elmt (Ifaces_Comp_List);
+                        Iface_Elmt :=
+                          First_Elmt (Dummy_Object_Ifaces_List);
+                        Iface_Comp_Elmt :=
+                          First_Elmt (Dummy_Object_Ifaces_Comp_List);
 
                         while Present (Iface_Elmt) loop
                            if Node (Iface_Elmt) = Iface then
@@ -5576,16 +5599,22 @@ package body Exp_Disp is
 
                         pragma Assert (Present (Iface_Comp));
 
-                        Offset_To_Top :=
-                          Make_Op_Minus (Loc,
-                            Make_Attribute_Reference (Loc,
-                              Prefix         =>
-                                Make_Selected_Component (Loc,
-                                  Prefix        =>
-                                    New_Occurrence_Of (Dummy_Object, Loc),
-                                  Selector_Name =>
-                                    New_Occurrence_Of (Iface_Comp, Loc)),
-                              Attribute_Name => Name_Position));
+                        if not
+                          Is_Variable_Size_Record (Etype (Scope (Iface_Comp)))
+                        then
+                           Offset_To_Top :=
+                             Make_Op_Minus (Loc,
+                               Make_Attribute_Reference (Loc,
+                                 Prefix         =>
+                                   Make_Selected_Component (Loc,
+                                     Prefix        =>
+                                       New_Occurrence_Of (Dummy_Object, Loc),
+                                     Selector_Name =>
+                                       New_Occurrence_Of (Iface_Comp, Loc)),
+                                 Attribute_Name => Name_Position));
+                        else
+                           Offset_To_Top := Make_Integer_Literal (Loc, 0);
+                        end if;
                      end;
                   else
                      Offset_To_Top := Make_Integer_Literal (Loc, 0);
@@ -5634,7 +5663,7 @@ package body Exp_Disp is
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => ITable,
                    Aliased_Present     => True,
-                   Constant_Present    => Present (Dummy_Object),
+                   Constant_Present    => Building_Static_Secondary_DT (Typ),
                    Object_Definition   =>
                      Make_Subtype_Indication (Loc,
                        Subtype_Mark =>
@@ -5907,112 +5936,85 @@ package body Exp_Disp is
 
       else
          declare
-            Pos : Nat;
+            Nb_P_Prims : constant Nat := Number_Of_Predefined_Prims (Typ);
+            Prim_Table : array (Nat range 1 .. Nb_P_Prims) of Entity_Id;
+            Decl       : Node_Id;
+            E          : Entity_Id;
 
          begin
-            if not Building_Static_DT (Typ) then
-               Nb_Predef_Prims := Max_Predef_Prims;
+            Prim_Ops_Aggr_List := New_List;
+            Prim_Table := (others => Empty);
 
-            else
-               Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
+            if Building_Static_DT (Typ) then
+               Prim_Elmt  := First_Elmt (Primitive_Operations (Typ));
                while Present (Prim_Elmt) loop
                   Prim := Node (Prim_Elmt);
 
                   if Is_Predefined_Dispatching_Operation (Prim)
                     and then not Is_Abstract_Subprogram (Prim)
+                    and then not Is_Eliminated (Prim)
+                    and then not Generate_SCIL
+                    and then not Present (Prim_Table
+                                           (UI_To_Int (DT_Position (Prim))))
                   then
-                     Pos := UI_To_Int (DT_Position (Prim));
-
-                     if Pos > Nb_Predef_Prims then
-                        Nb_Predef_Prims := Pos;
-                     end if;
+                     E := Ultimate_Alias (Prim);
+                     pragma Assert (not Is_Abstract_Subprogram (E));
+                     Prim_Table (UI_To_Int (DT_Position (Prim))) := E;
                   end if;
 
                   Next_Elmt (Prim_Elmt);
                end loop;
             end if;
 
-            declare
-               Prim_Table : array
-                              (Nat range 1 .. Nb_Predef_Prims) of Entity_Id;
-               Decl       : Node_Id;
-               E          : Entity_Id;
-
-            begin
-               Prim_Ops_Aggr_List := New_List;
-
-               Prim_Table := (others => Empty);
-
-               if Building_Static_DT (Typ) then
-                  Prim_Elmt  := First_Elmt (Primitive_Operations (Typ));
-                  while Present (Prim_Elmt) loop
-                     Prim := Node (Prim_Elmt);
-
-                     if Is_Predefined_Dispatching_Operation (Prim)
-                       and then not Is_Abstract_Subprogram (Prim)
-                       and then not Is_Eliminated (Prim)
-                       and then not Present (Prim_Table
-                                              (UI_To_Int (DT_Position (Prim))))
-                     then
-                        E := Ultimate_Alias (Prim);
-                        pragma Assert (not Is_Abstract_Subprogram (E));
-                        Prim_Table (UI_To_Int (DT_Position (Prim))) := E;
-                     end if;
-
-                     Next_Elmt (Prim_Elmt);
-                  end loop;
+            for J in Prim_Table'Range loop
+               if Present (Prim_Table (J)) then
+                  New_Node :=
+                    Unchecked_Convert_To (RTE (RE_Prim_Ptr),
+                      Make_Attribute_Reference (Loc,
+                        Prefix         =>
+                          New_Occurrence_Of (Prim_Table (J), Loc),
+                        Attribute_Name => Name_Unrestricted_Access));
+               else
+                  New_Node := Make_Null (Loc);
                end if;
 
-               for J in Prim_Table'Range loop
-                  if Present (Prim_Table (J)) then
-                     New_Node :=
-                       Unchecked_Convert_To (RTE (RE_Prim_Ptr),
-                         Make_Attribute_Reference (Loc,
-                           Prefix         =>
-                             New_Occurrence_Of (Prim_Table (J), Loc),
-                           Attribute_Name => Name_Unrestricted_Access));
-                  else
-                     New_Node := Make_Null (Loc);
-                  end if;
+               Append_To (Prim_Ops_Aggr_List, New_Node);
+            end loop;
 
-                  Append_To (Prim_Ops_Aggr_List, New_Node);
-               end loop;
+            New_Node :=
+              Make_Aggregate (Loc,
+                Expressions => Prim_Ops_Aggr_List);
 
-               New_Node :=
-                 Make_Aggregate (Loc,
-                   Expressions => Prim_Ops_Aggr_List);
+            Decl :=
+              Make_Subtype_Declaration (Loc,
+                Defining_Identifier => Make_Temporary (Loc, 'S'),
+                Subtype_Indication  =>
+                  New_Occurrence_Of (RTE (RE_Address_Array), Loc));
 
-               Decl :=
-                 Make_Subtype_Declaration (Loc,
-                   Defining_Identifier => Make_Temporary (Loc, 'S'),
-                   Subtype_Indication  =>
-                     New_Occurrence_Of (RTE (RE_Address_Array), Loc));
+            Append_To (Result, Decl);
 
-               Append_To (Result, Decl);
+            Append_To (Result,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Predef_Prims,
+                Aliased_Present     => True,
+                Constant_Present    => Building_Static_DT (Typ),
+                Object_Definition   =>
+                  New_Occurrence_Of (Defining_Identifier (Decl), Loc),
+                Expression => New_Node));
 
-               Append_To (Result,
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Predef_Prims,
-                   Aliased_Present     => True,
-                   Constant_Present    => Building_Static_DT (Typ),
-                   Object_Definition   =>
-                     New_Occurrence_Of (Defining_Identifier (Decl), Loc),
-                   Expression => New_Node));
+            --  Remember aggregates initializing dispatch tables
 
-               --  Remember aggregates initializing dispatch tables
+            Append_Elmt (New_Node, DT_Aggr);
 
-               Append_Elmt (New_Node, DT_Aggr);
-
-               Append_To (Result,
-                 Make_Attribute_Definition_Clause (Loc,
-                   Name       => New_Occurrence_Of (Predef_Prims, Loc),
-                   Chars      => Name_Alignment,
-                   Expression =>
-                     Make_Attribute_Reference (Loc,
-                       Prefix         =>
-                         New_Occurrence_Of (RTE (RE_Integer_Address), Loc),
-                       Attribute_Name => Name_Alignment)));
-            end;
+            Append_To (Result,
+              Make_Attribute_Definition_Clause (Loc,
+                Name       => New_Occurrence_Of (Predef_Prims, Loc),
+                Chars      => Name_Alignment,
+                Expression =>
+                  Make_Attribute_Reference (Loc,
+                    Prefix         =>
+                      New_Occurrence_Of (RTE (RE_Integer_Address), Loc),
+                    Attribute_Name => Name_Alignment)));
          end;
 
          --  Stage 1: Initialize the discriminant and the record components
@@ -6284,7 +6286,9 @@ package body Exp_Disp is
                           (Node
                             (Next_Elmt
                               (First_Elmt
-                                (Access_Disp_Table (Typ)))), Loc)));
+                                (Access_Disp_Table (Typ)))), Loc),
+                      Num_Predef_Prims =>
+                        Number_Of_Predefined_Prims (Parent_Typ)));
 
                   if Nb_Prims /= 0 then
                      Append_To (Elab_Code,
@@ -6373,7 +6377,10 @@ package body Exp_Disp is
                                           Unchecked_Convert_To (RTE (RE_Tag),
                                             New_Occurrence_Of
                                               (Node (Next_Elmt (Sec_DT_Typ)),
-                                               Loc))));
+                                               Loc)),
+                                        Num_Predef_Prims =>
+                                          Number_Of_Predefined_Prims
+                                            (Parent_Typ)));
 
                                     if Num_Prims /= 0 then
                                        Append_To (Elab_Code,
@@ -6419,7 +6426,10 @@ package body Exp_Disp is
                                           Unchecked_Convert_To (RTE (RE_Tag),
                                             New_Occurrence_Of
                                               (Node (Next_Elmt (Sec_DT_Typ)),
-                                               Loc))));
+                                               Loc)),
+                                        Num_Predef_Prims =>
+                                          Number_Of_Predefined_Prims
+                                            (Parent_Typ)));
 
                                     if Num_Prims /= 0 then
                                        Append_To (Elab_Code,

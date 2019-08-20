@@ -562,23 +562,31 @@ package body Sem_Eval is
       elsif Is_Out_Of_Range (N, Base_Type (T), Assume_Valid => True) then
          Out_Of_Range (N);
 
-      --  Give warning if outside subtype (where one or both of the bounds of
-      --  the subtype is static). This warning is omitted if the expression
-      --  appears in a range that could be null (warnings are handled elsewhere
-      --  for this case).
+      --  Give a warning or error on the value outside the subtype. A
+      --  warning is omitted if the expression appears in a range that could
+      --  be null (warnings are handled elsewhere for this case).
 
       elsif T /= Base_Type (T) and then Nkind (Parent (N)) /= N_Range then
          if Is_In_Range (N, T, Assume_Valid => True) then
             null;
 
          elsif Is_Out_Of_Range (N, T, Assume_Valid => True) then
-
             --  Ignore out of range values for System.Priority in CodePeer
             --  mode since the actual target compiler may provide a wider
             --  range.
 
             if CodePeer_Mode and then T = RTE (RE_Priority) then
                Set_Do_Range_Check (N, False);
+
+            --  Determine if the out of range violation constitutes a warning
+            --  or an error based on context according to RM 4.9 (34/3).
+
+            elsif Nkind_In (Original_Node (N), N_Type_Conversion,
+                                               N_Qualified_Expression)
+              and then Comes_From_Source (Original_Node (N))
+            then
+               Apply_Compile_Time_Constraint_Error
+                 (N, "value not in range of}", CE_Range_Check_Failed);
             else
                Apply_Compile_Time_Constraint_Error
                  (N, "value not in range of}<<", CE_Range_Check_Failed);
@@ -5515,8 +5523,18 @@ package body Sem_Eval is
          --  CodePeer mode where the target runtime may have more priorities.
 
          elsif not CodePeer_Mode or else Etype (N) /= RTE (RE_Priority) then
-            Apply_Compile_Time_Constraint_Error
-              (N, "value not in range of}", CE_Range_Check_Failed);
+            --  Determine if the out of range violation constitutes a warning
+            --  or an error based on context according to RM 4.9 (34/3).
+
+            if Nkind (Original_Node (N)) = N_Type_Conversion
+              and then not Comes_From_Source (Original_Node (N))
+            then
+               Apply_Compile_Time_Constraint_Error
+                 (N, "value not in range of}??", CE_Range_Check_Failed);
+            else
+               Apply_Compile_Time_Constraint_Error
+                 (N, "value not in range of}", CE_Range_Check_Failed);
+            end if;
          end if;
 
       --  Here we generate a warning for the Ada 83 case, or when we are in an
@@ -6013,17 +6031,7 @@ package body Sem_Eval is
          --  same base type.
 
          if Has_Discriminants (T1) /= Has_Discriminants (T2) then
-            --  A generic actual type is declared through a subtype declaration
-            --  and may have an inconsistent indication of the presence of
-            --  discriminants, so check the type it renames.
-
-            if Is_Generic_Actual_Type (T1)
-              and then not Has_Discriminants (Etype (T1))
-              and then not Has_Discriminants (T2)
-            then
-               return True;
-
-            elsif In_Instance then
+            if In_Instance then
                if Is_Private_Type (T2)
                  and then Present (Full_View (T2))
                  and then Has_Discriminants (Full_View (T2))

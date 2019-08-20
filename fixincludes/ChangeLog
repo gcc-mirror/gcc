@@ -1,3 +1,12 @@
+2019-08-18  C.G. Dogan <gcc+cgdogan.00@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/83531
+	* inclhack.def (darwin_api_availability): New, strip leading
+	underscores from API_XXXX defines.
+	* fixincl.x: Regenerate.
+	* tests/base/os/availability.h: New file.
+
 2019-06-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* inclhack.def: Replace the complex test using __STRICT_ANSI__ and

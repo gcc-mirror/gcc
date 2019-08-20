@@ -39,3 +39,16 @@ generic
 procedure Ada.Containers.Generic_Anonymous_Array_Sort
   (First, Last : Index_Type'Base);
 pragma Pure (Ada.Containers.Generic_Anonymous_Array_Sort);
+--  Reorders the elements of Container such that the elements are sorted
+--  smallest first as determined by the generic formal "<" operator provided.
+--  Any exception raised during evaluation of "<" is propagated.
+--
+--  The actual function for the generic formal function "<" is expected to
+--  return the same value each time it is called with a particular pair of
+--  element values. It should not modify Container and it should define a
+--  strict weak ordering relationship: irreflexive, asymmetric, transitive, and
+--  in addition, if x < y for any values x and y, then for all other values z,
+--  (x < z) or (z < y).  If the actual for "<" behaves in some other manner,
+--  the behavior of the instance of Generic_Anonymous_Array_Sort is
+--  unspecified. The number of times Generic_Anonymous_Array_Sort calls "<" is
+--  unspecified.

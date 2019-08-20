@@ -1142,6 +1142,11 @@ package body Sem_Dim is
       if Ada_Version < Ada_2012 then
          return;
 
+      --  Inlined bodies have already been checked for dimensionality
+
+      elsif In_Inlined_Body then
+         return;
+
       elsif not Comes_From_Source (N) then
          if Nkind_In (N, N_Explicit_Dereference,
                          N_Identifier,
@@ -1245,10 +1250,13 @@ package body Sem_Dim is
       --  Aspect is an Ada 2012 feature. Nothing to do here if the component
       --  base type is not a dimensioned type.
 
+      --  Inlined bodies have already been checked for dimensionality.
+
       --  Note that here the original node must come from source since the
       --  original array aggregate may not have been entirely decorated.
 
       if Ada_Version < Ada_2012
+        or else In_Inlined_Body
         or else not Comes_From_Source (Original_Node (N))
         or else not Has_Dimension_System (Base_Type (Comp_Typ))
       then
@@ -1634,10 +1642,11 @@ package body Sem_Dim is
 
    begin
       --  Aspect is an Ada 2012 feature. Note that there is no need to check
-      --  dimensions for calls that don't come from source, or those that may
-      --  have semantic errors.
+      --  dimensions for calls in inlined bodies, or calls that don't come
+      --  from source, or those that may have semantic errors.
 
       if Ada_Version < Ada_2012
+        or else In_Inlined_Body
         or else not Comes_From_Source (N)
         or else Error_Posted (N)
       then
@@ -1966,11 +1975,12 @@ package body Sem_Dim is
 
    begin
       --  Aspect is an Ada 2012 feature. Note that there is no need to check
-      --  dimensions for aggregates that don't come from source, or if we are
-      --  within an initialization procedure, whose expressions have been
-      --  checked at the point of record declaration.
+      --  dimensions in inlined bodies, or for aggregates that don't come
+      --  from source, or if we are within an initialization procedure, whose
+      --  expressions have been checked at the point of record declaration.
 
       if Ada_Version < Ada_2012
+        or else In_Inlined_Body
         or else not Comes_From_Source (N)
         or else Inside_Init_Proc
       then

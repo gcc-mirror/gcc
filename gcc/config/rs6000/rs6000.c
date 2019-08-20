@@ -5335,7 +5335,7 @@ rs6000_builtin_md_vectorized_function (tree fndecl, tree type_out,
   in_n = TYPE_VECTOR_SUBPARTS (type_in);
 
   enum rs6000_builtins fn
-    = (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
+    = (enum rs6000_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   switch (fn)
     {
     case RS6000_BUILTIN_RSQRTF:
@@ -12943,7 +12943,7 @@ print_operand (FILE *file, rtx x, int code)
 	{
 	  const char *name = XSTR (x, 0);
 #if TARGET_MACHO
-	  if (darwin_picsymbol_stubs
+	  if (darwin_symbol_stubs
 	      && MACHOPIC_INDIRECT
 	      && machopic_classify_symbol (x) == MACHOPIC_UNDEFINED_FUNCTION)
 	    name = machopic_indirection_name (x, /*stub_p=*/true);
@@ -19481,7 +19481,7 @@ get_prev_label (tree function_name)
   return NULL_TREE;
 }
 
-/* Generate PIC and indirect symbol stubs.  */
+/* Generate external symbol indirection stubs (PIC and non-PIC).  */
 
 void
 machopic_output_stub (FILE *file, const char *symb, const char *stub)
@@ -21300,7 +21300,7 @@ rs6000_ira_change_pseudo_allocno_class (int regno ATTRIBUTE_UNUSED,
 static tree
 rs6000_builtin_reciprocal (tree fndecl)
 {
-  switch (DECL_FUNCTION_CODE (fndecl))
+  switch (DECL_MD_FUNCTION_CODE (fndecl))
     {
     case VSX_BUILTIN_XVSQRTDP:
       if (!RS6000_RECIP_AUTO_RSQRTE_P (V2DFmode))
@@ -24523,8 +24523,9 @@ rs6000_call_darwin_1 (rtx value, rtx func_desc, rtx tlsarg,
   if ((cookie_val & CALL_LONG) != 0
       && GET_CODE (func_desc) == SYMBOL_REF)
     {
-      /* FIXME: the longcall opt should not hang off picsymbol stubs.  */
-      if (darwin_picsymbol_stubs && TARGET_32BIT)
+      /* FIXME: the longcall opt should not hang off this flag, it is most
+	 likely incorrect for kernel-mode code-generation.  */
+      if (darwin_symbol_stubs && TARGET_32BIT)
 	make_island = true; /* Do nothing yet, retain the CALL_LONG flag.  */
       else
 	{
