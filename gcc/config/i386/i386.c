@@ -149,8 +149,10 @@ const struct processor_costs *ix86_cost = NULL;
 #define m_ICELAKE_CLIENT (HOST_WIDE_INT_1U<<PROCESSOR_ICELAKE_CLIENT)
 #define m_ICELAKE_SERVER (HOST_WIDE_INT_1U<<PROCESSOR_ICELAKE_SERVER)
 #define m_CASCADELAKE (HOST_WIDE_INT_1U<<PROCESSOR_CASCADELAKE)
+#define m_TIGERLAKE (HOST_WIDE_INT_1U<<PROCESSOR_TIGERLAKE)
 #define m_CORE_AVX512 (m_SKYLAKE_AVX512 | m_CANNONLAKE \
-		       | m_ICELAKE_CLIENT | m_ICELAKE_SERVER | m_CASCADELAKE)
+		       | m_ICELAKE_CLIENT | m_ICELAKE_SERVER \
+		       | m_CASCADELAKE | m_TIGERLAKE)
 #define m_CORE_AVX2 (m_HASWELL | m_SKYLAKE | m_CORE_AVX512)
 #define m_CORE_ALL (m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_CORE_AVX2)
 #define m_GOLDMONT (HOST_WIDE_INT_1U<<PROCESSOR_GOLDMONT)
@@ -894,6 +896,7 @@ static const struct processor_costs *processor_cost_table[] =
   &slm_cost,
   &slm_cost,
   &slm_cost,
+  &skylake_cost,
   &skylake_cost,
   &skylake_cost,
   &skylake_cost,
@@ -32012,7 +32015,8 @@ enum processor_model
   M_INTEL_COREI7_ICELAKE_CLIENT,
   M_INTEL_COREI7_ICELAKE_SERVER,
   M_AMDFAM17H_ZNVER2,
-  M_INTEL_COREI7_CASCADELAKE
+  M_INTEL_COREI7_CASCADELAKE,
+  M_INTEL_COREI7_TIGERLAKE,
 };
 
 struct _arch_names_table
@@ -32041,6 +32045,7 @@ static const _arch_names_table arch_names_table[] =
   {"icelake-client", M_INTEL_COREI7_ICELAKE_CLIENT},
   {"icelake-server", M_INTEL_COREI7_ICELAKE_SERVER},
   {"cascadelake", M_INTEL_COREI7_CASCADELAKE},
+  {"tigerlake", M_INTEL_COREI7_TIGERLAKE},
   {"bonnell", M_INTEL_BONNELL},
   {"silvermont", M_INTEL_SILVERMONT},
   {"goldmont", M_INTEL_GOLDMONT},
@@ -32231,6 +32236,9 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      arg_str = "cascadelake";
 	      priority = P_PROC_AVX512F;
 	      break;
+	    case PROCESSOR_TIGERLAKE:
+	      arg_str = "tigerlake";
+	      priority = P_PROC_AVX512F;
 	    case PROCESSOR_BONNELL:
 	      arg_str = "bonnell";
 	      priority = P_PROC_SSSE3;

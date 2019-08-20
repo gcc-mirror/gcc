@@ -222,6 +222,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__cascadelake");
       def_or_undef (parse_in, "__cascadelake__");
       break;
+    case PROCESSOR_TIGERLAKE:
+      def_or_undef (parse_in, "__tigerlake");
+      def_or_undef (parse_in, "__tigerlake__");
+      break;
     /* use PROCESSOR_max to not set/unset the arch macro.  */
     case PROCESSOR_max:
       break;
@@ -369,6 +373,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       break;
     case PROCESSOR_CASCADELAKE:
       def_or_undef (parse_in, "__tune_cascadelake__");
+      break;
+    case PROCESSOR_TIGERLAKE:
+      def_or_undef (parse_in, "__tune_tigerlake__");
       break;
     case PROCESSOR_INTEL:
     case PROCESSOR_GENERIC:
