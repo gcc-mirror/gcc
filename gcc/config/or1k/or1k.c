@@ -997,20 +997,19 @@ or1k_strict_argument_naming (cumulative_args_t /* ca */)
    maybe be passed in registers r3 to r8.  */
 
 static rtx
-or1k_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		   const_tree /* type */, bool named)
+or1k_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
-  /* VOIDmode is passed as a special flag for "last argument".  */
-  if (mode == VOIDmode)
+  /* Handle the special marker for the end of the arguments.  */
+  if (arg.end_marker_p ())
     return NULL_RTX;
 
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int nreg = CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+  int nreg = CEIL (GET_MODE_SIZE (arg.mode), UNITS_PER_WORD);
 
   /* Note that all large arguments are passed by reference.  */
   gcc_assert (nreg <= 2);
-  if (named && *cum + nreg <= 6)
-    return gen_rtx_REG (mode, *cum + 3);
+  if (arg.named && *cum + nreg <= 6)
+    return gen_rtx_REG (arg.mode, *cum + 3);
   else
     return NULL_RTX;
 }

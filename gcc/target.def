@@ -4732,17 +4732,9 @@ constant size shorter than an @code{int}, and upward otherwise.",
    argument.  */
 DEFHOOK
 (function_arg,
- "Return an RTX indicating whether a function argument is passed in a\n\
-register and if so, which register.\n\
-\n\
-The arguments are @var{ca}, which summarizes all the previous\n\
-arguments; @var{mode}, the machine mode of the argument; @var{type},\n\
-the data type of the argument as a tree node or 0 if that is not known\n\
-(which happens for C support library functions); and @var{named},\n\
-which is @code{true} for an ordinary argument and @code{false} for\n\
-nameless arguments that correspond to @samp{@dots{}} in the called\n\
-function's prototype.  @var{type} can be an incomplete type if a\n\
-syntax error has previously occurred.\n\
+ "Return an RTX indicating whether function argument @var{arg} is passed\n\
+in a register and if so, which register.  Argument @var{ca} summarizes all\n\
+the previous arguments.\n\
 \n\
 The return value is usually either a @code{reg} RTX for the hard\n\
 register in which to pass the argument, or zero to pass the argument\n\
@@ -4788,8 +4780,7 @@ is not defined and @code{TARGET_FUNCTION_ARG} returns nonzero for such an\n\
 argument, the compiler will abort.  If @code{REG_PARM_STACK_SPACE} is\n\
 defined, the argument will be computed in the stack and then loaded into\n\
 a register.",
- rtx, (cumulative_args_t ca, machine_mode mode, const_tree type,
-       bool named),
+ rtx, (cumulative_args_t ca, const function_arg_info &arg),
  default_function_arg)
 
 DEFHOOK
@@ -4811,8 +4802,7 @@ so that it can be used to pass special arguments.\n\
 \n\
 If @code{TARGET_FUNCTION_INCOMING_ARG} is not defined,\n\
 @code{TARGET_FUNCTION_ARG} serves both purposes.",
- rtx, (cumulative_args_t ca, machine_mode mode, const_tree type,
-       bool named),
+ rtx, (cumulative_args_t ca, const function_arg_info &arg),
  default_function_incoming_arg)
 
 DEFHOOK

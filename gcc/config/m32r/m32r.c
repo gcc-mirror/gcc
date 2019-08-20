@@ -96,8 +96,7 @@ static bool m32r_pass_by_reference (cumulative_args_t,
 				    const function_arg_info &arg);
 static int m32r_arg_partial_bytes (cumulative_args_t,
 				   const function_arg_info &);
-static rtx m32r_function_arg (cumulative_args_t, machine_mode,
-			      const_tree, bool);
+static rtx m32r_function_arg (cumulative_args_t, const function_arg_info &);
 static void m32r_function_arg_advance (cumulative_args_t, machine_mode,
 				       const_tree, bool);
 static bool m32r_can_eliminate (const int, const int);
@@ -1201,26 +1200,20 @@ m32r_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
+   ARG is a description of the argument.  */
 /* On the M32R the first M32R_MAX_PARM_REGS args are normally in registers
    and the rest are pushed.  */
 
 static rtx
-m32r_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		   const_tree type ATTRIBUTE_UNUSED,
-		   bool named ATTRIBUTE_UNUSED)
+m32r_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  return (PASS_IN_REG_P (*cum, mode, type)
-	  ? gen_rtx_REG (mode, ROUND_ADVANCE_CUM (*cum, mode, type))
+  return (PASS_IN_REG_P (*cum, arg.mode, arg.type)
+	  ? gen_rtx_REG (arg.mode,
+			 ROUND_ADVANCE_CUM (*cum, arg.mode, arg.type))
 	  : NULL_RTX);
 }
 

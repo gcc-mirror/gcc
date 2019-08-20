@@ -1737,21 +1737,11 @@ rl78_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
   return mode;
 }
 
-/* Return an RTL expression describing the register holding a function
-   parameter of mode MODE and type TYPE or NULL_RTX if the parameter should
-   be passed on the stack.  CUM describes the previous parameters to the
-   function and NAMED is false if the parameter is part of a variable
-   parameter list, or the last named parameter before the start of a
-   variable parameter list.  */
-
 #undef  TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG     	rl78_function_arg
 
 static rtx
-rl78_function_arg (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
-		   machine_mode mode ATTRIBUTE_UNUSED,
-		   const_tree type ATTRIBUTE_UNUSED,
-		   bool named ATTRIBUTE_UNUSED)
+rl78_function_arg (cumulative_args_t, const function_arg_info &)
 {
   return NULL_RTX;
 }

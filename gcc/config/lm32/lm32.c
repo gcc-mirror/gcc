@@ -73,9 +73,7 @@ static bool
 lm32_legitimate_address_p (machine_mode mode, rtx x, bool strict);
 static HOST_WIDE_INT lm32_compute_frame_size (int size);
 static void lm32_option_override (void);
-static rtx lm32_function_arg (cumulative_args_t cum,
-			      machine_mode mode, const_tree type,
-			      bool named);
+static rtx lm32_function_arg (cumulative_args_t, const function_arg_info &);
 static void lm32_function_arg_advance (cumulative_args_t cum,
 				       machine_mode mode,
 				       const_tree type, bool named);
@@ -619,32 +617,27 @@ lm32_print_operand_address (FILE * file, rtx addr)
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
+   ARG is a description of the argument.  */
 
 static rtx
-lm32_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		   const_tree type, bool named)
+lm32_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     /* Compute operand 2 of the call insn.  */
     return GEN_INT (0);
 
-  if (targetm.calls.must_pass_in_stack (mode, type))
+  if (targetm.calls.must_pass_in_stack (arg.mode, arg.type))
     return NULL_RTX;
 
-  if (!named || (*cum + LM32_NUM_REGS2 (mode, type) > LM32_NUM_ARG_REGS))
+  if (!arg.named
+      || *cum + LM32_NUM_REGS2 (arg.mode, arg.type) > LM32_NUM_ARG_REGS)
     return NULL_RTX;
 
-  return gen_rtx_REG (mode, *cum + LM32_FIRST_ARG_REG);
+  return gen_rtx_REG (arg.mode, *cum + LM32_FIRST_ARG_REG);
 }
 
 static void

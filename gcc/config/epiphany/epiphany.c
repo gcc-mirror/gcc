@@ -2254,24 +2254,18 @@ epiphany_conditional_register_usage (void)
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
+   ARG is a description of the argument.  */
 /* On the EPIPHANY the first MAX_EPIPHANY_PARM_REGS args are normally in
    registers and the rest are pushed.  */
 static rtx
-epiphany_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		       const_tree type, bool named ATTRIBUTE_UNUSED)
+epiphany_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS cum = *get_cumulative_args (cum_v);
 
-  if (PASS_IN_REG_P (cum, mode, type))
-    return gen_rtx_REG (mode, ROUND_ADVANCE_CUM (cum, mode, type));
+  if (PASS_IN_REG_P (cum, arg.mode, arg.type))
+    return gen_rtx_REG (arg.mode, ROUND_ADVANCE_CUM (cum, arg.mode, arg.type));
   return 0;
 }
 

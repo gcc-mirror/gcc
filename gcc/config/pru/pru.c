@@ -2152,25 +2152,18 @@ pru_function_arg_regi_mark_slot (int regi,
    push the argument on the stack, or a hard register in which to
    store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-   This is null for libcalls where that information may
-   not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
    the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-   (otherwise it is an extra parameter matching an ellipsis).  */
+   ARG is a description of the argument.  */
 
 static rtx
-pru_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		  const_tree type,
-		  bool named)
+pru_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   rtx return_rtx = NULL_RTX;
-  int regi = pru_function_arg_regi (cum_v, mode, type, named);
+  int regi = pru_function_arg_regi (cum_v, arg.mode, arg.type, arg.named);
 
   if (regi >= 0)
-    return_rtx = gen_rtx_REG (mode, regi);
+    return_rtx = gen_rtx_REG (arg.mode, regi);
 
   return return_rtx;
 }

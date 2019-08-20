@@ -169,8 +169,7 @@ static bool pa_pass_by_reference (cumulative_args_t,
 static int pa_arg_partial_bytes (cumulative_args_t, const function_arg_info &);
 static void pa_function_arg_advance (cumulative_args_t, machine_mode,
 				     const_tree, bool);
-static rtx pa_function_arg (cumulative_args_t, machine_mode,
-			    const_tree, bool);
+static rtx pa_function_arg (cumulative_args_t, const function_arg_info &);
 static pad_direction pa_function_arg_padding (machine_mode, const_tree);
 static unsigned int pa_function_arg_boundary (machine_mode, const_tree);
 static struct machine_function * pa_init_machine_status (void);
@@ -9465,10 +9464,11 @@ pa_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
    ??? We might want to restructure this so that it looks more like other
    ports.  */
 static rtx
-pa_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		 const_tree type, bool named ATTRIBUTE_UNUSED)
+pa_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+  tree type = arg.type;
+  machine_mode mode = arg.mode;
   int max_arg_words = (TARGET_64BIT ? 8 : 4);
   int alignment = 0;
   int arg_size;
@@ -9476,7 +9476,7 @@ pa_function_arg (cumulative_args_t cum_v, machine_mode mode,
   int gpr_reg_base;
   rtx retval;
 
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     return NULL_RTX;
 
   arg_size = pa_function_arg_size (mode, type);

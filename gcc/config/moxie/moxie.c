@@ -423,14 +423,12 @@ moxie_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
    NULL_RTX if there's no more space.  */
 
 static rtx
-moxie_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		    const_tree type ATTRIBUTE_UNUSED,
-		    bool named ATTRIBUTE_UNUSED)
+moxie_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   if (*cum < 8)
-    return gen_rtx_REG (mode, *cum);
+    return gen_rtx_REG (arg.mode, *cum);
   else 
     return NULL_RTX;
 }

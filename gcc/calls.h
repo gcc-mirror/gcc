@@ -77,6 +77,17 @@ public:
     return GET_MODE_SIZE (mode);
   }
 
+  /* True if the argument represents the end of the argument list,
+     as returned by end_marker ().  */
+  bool end_marker_p () const { return mode == VOIDmode; }
+
+  /* Return a function_arg_info that represents the end of the
+     argument list.  */
+  static function_arg_info end_marker ()
+  {
+    return function_arg_info (void_type_node, /*named=*/true);
+  }
+
   /* The type of the argument, or null if not known (which is true for
      libgcc support functions).  */
   tree type;

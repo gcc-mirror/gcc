@@ -189,8 +189,7 @@ static rtx_insn *emit_set_insn (rtx, rtx);
 static rtx emit_multi_reg_push (unsigned long, unsigned long);
 static int arm_arg_partial_bytes (cumulative_args_t,
 				  const function_arg_info &);
-static rtx arm_function_arg (cumulative_args_t, machine_mode,
-			     const_tree, bool);
+static rtx arm_function_arg (cumulative_args_t, const function_arg_info &);
 static void arm_function_arg_advance (cumulative_args_t, machine_mode,
 				      const_tree, bool);
 static pad_direction arm_function_arg_padding (machine_mode, const_tree);
@@ -6658,14 +6657,9 @@ arm_needs_doubleword_align (machine_mode mode, const_tree type)
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).
+   ARG is a description of the argument.
 
    On the ARM, normally the first 16 bytes are passed in registers r0-r3; all
    other arguments are passed on the stack.  If (NAMED == 0) (which happens
@@ -6674,31 +6668,31 @@ arm_needs_doubleword_align (machine_mode mode, const_tree type)
    indeed make it pass in the stack if necessary).  */
 
 static rtx
-arm_function_arg (cumulative_args_t pcum_v, machine_mode mode,
-		  const_tree type, bool named)
+arm_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
   int nregs;
 
   /* Handle the special case quickly.  Pick an arbitrary value for op2 of
      a call insn (op3 of a call_value insn).  */
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     return const0_rtx;
 
   if (pcum->pcs_variant <= ARM_PCS_AAPCS_LOCAL)
     {
-      aapcs_layout_arg (pcum, mode, type, named);
+      aapcs_layout_arg (pcum, arg.mode, arg.type, arg.named);
       return pcum->aapcs_reg;
     }
 
   /* Varargs vectors are treated the same as long long.
      named_count avoids having to change the way arm handles 'named' */
   if (TARGET_IWMMXT_ABI
-      && arm_vector_mode_supported_p (mode)
+      && arm_vector_mode_supported_p (arg.mode)
       && pcum->named_count > pcum->nargs + 1)
     {
       if (pcum->iwmmxt_nregs <= 9)
-	return gen_rtx_REG (mode, pcum->iwmmxt_nregs + FIRST_IWMMXT_REGNUM);
+	return gen_rtx_REG (arg.mode,
+			    pcum->iwmmxt_nregs + FIRST_IWMMXT_REGNUM);
       else
 	{
 	  pcum->can_split = false;
@@ -6709,16 +6703,16 @@ arm_function_arg (cumulative_args_t pcum_v, machine_mode mode,
   /* Put doubleword aligned quantities in even register pairs.  */
   if ((pcum->nregs & 1) && ARM_DOUBLEWORD_ALIGN)
     {
-      int res = arm_needs_doubleword_align (mode, type);
+      int res = arm_needs_doubleword_align (arg.mode, arg.type);
       if (res < 0 && warn_psabi)
 	inform (input_location, "parameter passing for argument of type "
-		"%qT changed in GCC 7.1", type);
+		"%qT changed in GCC 7.1", arg.type);
       else if (res > 0)
 	{
 	  pcum->nregs++;
 	  if (res > 1 && warn_psabi)
 	    inform (input_location, "parameter passing for argument of type "
-		    "%qT changed in GCC 9.1", type);
+		    "%qT changed in GCC 9.1", arg.type);
 	}
     }
 
@@ -6728,12 +6722,12 @@ arm_function_arg (cumulative_args_t pcum_v, machine_mode mode,
   if (pcum->can_split)
     nregs = 1;
   else
-    nregs = ARM_NUM_REGS2 (mode, type);
+    nregs = ARM_NUM_REGS2 (arg.mode, arg.type);
 
-  if (!named || pcum->nregs + nregs > NUM_ARG_REGS)
+  if (!arg.named || pcum->nregs + nregs > NUM_ARG_REGS)
     return NULL_RTX;
 
-  return gen_rtx_REG (mode, pcum->nregs);
+  return gen_rtx_REG (arg.mode, pcum->nregs);
 }
 
 static unsigned int
@@ -6999,7 +6993,7 @@ cmse_func_args_or_return_in_stack (tree fndecl, tree name, tree fntype)
       function_arg_info arg (arg_type, /*named=*/true);
       if (!first_param)
 	arm_function_arg_advance (args_so_far, arg_mode, arg_type, true);
-      arg_rtx = arm_function_arg (args_so_far, arg_mode, arg_type, true);
+      arg_rtx = arm_function_arg (args_so_far, arg);
       if (!arg_rtx || arm_arg_partial_bytes (args_so_far, arg))
 	{
 	  error ("%qE attribute not available to functions with arguments "
@@ -7387,7 +7381,8 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
 	    arm_function_arg_advance (cum_v, TYPE_MODE (type), type, true);
 	}
 
-      if (!arm_function_arg (cum_v, SImode, integer_type_node, true))
+      function_arg_info arg (integer_type_node, /*named=*/true);
+      if (!arm_function_arg (cum_v, arg))
 	return false;
     }
 
@@ -17451,12 +17446,12 @@ cmse_nonsecure_call_clear_caller_saved (void)
 	      if (VOID_TYPE_P (arg_type))
 		continue;
 
+	      function_arg_info arg (arg_type, /*named=*/true);
 	      if (!first_param)
 		arm_function_arg_advance (args_so_far, arg_mode, arg_type,
 					  true);
 
-	      arg_rtx = arm_function_arg (args_so_far, arg_mode, arg_type,
-					  true);
+	      arg_rtx = arm_function_arg (args_so_far, arg);
 	      gcc_assert (REG_P (arg_rtx));
 	      to_clear_args_mask
 		= compute_not_to_clear_mask (arg_type, arg_rtx,

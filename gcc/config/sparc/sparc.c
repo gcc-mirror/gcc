@@ -658,12 +658,9 @@ static bool sparc_pass_by_reference (cumulative_args_t,
 				     const function_arg_info &);
 static void sparc_function_arg_advance (cumulative_args_t,
 					machine_mode, const_tree, bool);
-static rtx sparc_function_arg_1 (cumulative_args_t,
-				 machine_mode, const_tree, bool, bool);
-static rtx sparc_function_arg (cumulative_args_t,
-			       machine_mode, const_tree, bool);
+static rtx sparc_function_arg (cumulative_args_t, const function_arg_info &);
 static rtx sparc_function_incoming_arg (cumulative_args_t,
-					machine_mode, const_tree, bool);
+					const function_arg_info &);
 static pad_direction sparc_function_arg_padding (machine_mode, const_tree);
 static unsigned int sparc_function_arg_boundary (machine_mode,
 						 const_tree);
@@ -7379,24 +7376,22 @@ function_arg_vector_value (int size, int slotno, bool named, int regno)
 
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
-   NAMED is true if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).
+   ARG is a description of the argument.
    INCOMING_P is false for TARGET_FUNCTION_ARG, true for
     TARGET_FUNCTION_INCOMING_ARG.  */
 
 static rtx
-sparc_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
-		      const_tree type, bool named, bool incoming)
+sparc_function_arg_1 (cumulative_args_t cum_v, const function_arg_info &arg,
+		      bool incoming)
 {
   const CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   const int regbase
     = incoming ? SPARC_INCOMING_INT_ARG_FIRST : SPARC_OUTGOING_INT_ARG_FIRST;
   int slotno, regno, padding;
+  tree type = arg.type;
+  machine_mode mode = arg.mode;
   enum mode_class mclass = GET_MODE_CLASS (mode);
+  bool named = arg.named;
 
   slotno
     = function_arg_slotno (cum, mode, type, named, incoming, &regno, &padding);
@@ -7495,19 +7490,18 @@ sparc_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
 /* Handle the TARGET_FUNCTION_ARG target hook.  */
 
 static rtx
-sparc_function_arg (cumulative_args_t cum, machine_mode mode,
-		    const_tree type, bool named)
+sparc_function_arg (cumulative_args_t cum, const function_arg_info &arg)
 {
-  return sparc_function_arg_1 (cum, mode, type, named, false);
+  return sparc_function_arg_1 (cum, arg, false);
 }
 
 /* Handle the TARGET_FUNCTION_INCOMING_ARG target hook.  */
 
 static rtx
-sparc_function_incoming_arg (cumulative_args_t cum, machine_mode mode,
-			     const_tree type, bool named)
+sparc_function_incoming_arg (cumulative_args_t cum,
+			     const function_arg_info &arg)
 {
-  return sparc_function_arg_1 (cum, mode, type, named, true);
+  return sparc_function_arg_1 (cum, arg, true);
 }
 
 /* For sparc64, objects requiring 16 byte alignment are passed that way.  */

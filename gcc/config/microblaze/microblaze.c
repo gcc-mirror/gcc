@@ -1596,13 +1596,11 @@ microblaze_function_arg_advance (cumulative_args_t cum_v,
     }
 }
 
-/* Return an RTL expression containing the register for the given mode,
+/* Return an RTL expression containing the register for the given argument
    or 0 if the argument is to be passed on the stack.  */
 
 static rtx
-microblaze_function_arg (cumulative_args_t cum_v, machine_mode mode, 
-			 const_tree type ATTRIBUTE_UNUSED,
-			 bool named ATTRIBUTE_UNUSED)
+microblaze_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
@@ -1611,7 +1609,7 @@ microblaze_function_arg (cumulative_args_t cum_v, machine_mode mode,
   int *arg_words = &cum->arg_words;
 
   cum->last_arg_fp = 0;
-  switch (mode)
+  switch (arg.mode)
     {
     case E_SFmode:
     case E_DFmode:
@@ -1624,8 +1622,8 @@ microblaze_function_arg (cumulative_args_t cum_v, machine_mode mode,
       regbase = GP_ARG_FIRST;
       break;
     default:
-      gcc_assert (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
-	  || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT);
+      gcc_assert (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_INT
+		  || GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT);
       /* FALLTHRU */
     case E_BLKmode:
       regbase = GP_ARG_FIRST;
@@ -1638,10 +1636,10 @@ microblaze_function_arg (cumulative_args_t cum_v, machine_mode mode,
     {
       gcc_assert (regbase != -1);
 
-      ret = gen_rtx_REG (mode, regbase + *arg_words);
+      ret = gen_rtx_REG (arg.mode, regbase + *arg_words);
     }
 
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     {
       if (cum->num_adjusts > 0)
 	ret = gen_rtx_PARALLEL ((machine_mode) cum->fp_code,
@@ -2916,8 +2914,8 @@ microblaze_expand_prologue (void)
 	  passed_mode = Pmode;
 	}
 
-      entry_parm = targetm.calls.function_arg (args_so_far, passed_mode,
-					       passed_type, true);
+      function_arg_info arg (passed_type, passed_mode, /*named=*/true);
+      entry_parm = targetm.calls.function_arg (args_so_far, arg);
 
       if (entry_parm)
 	{
@@ -2952,8 +2950,8 @@ microblaze_expand_prologue (void)
 
   /* Split parallel insn into a sequence of insns.  */
 
-  next_arg_reg = targetm.calls.function_arg (args_so_far, VOIDmode,
-					     void_type_node, true);
+  next_arg_reg = targetm.calls.function_arg (args_so_far,
+					     function_arg_info::end_marker ());
   if (next_arg_reg != 0 && GET_CODE (next_arg_reg) == PARALLEL)
     {
       rtvec adjust = XVEC (next_arg_reg, 0);

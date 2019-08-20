@@ -161,8 +161,7 @@ static struct machine_function *visium_init_machine_status (void);
 static bool visium_pass_by_reference (cumulative_args_t,
 				      const function_arg_info &);
 
-static rtx visium_function_arg (cumulative_args_t, machine_mode,
-				const_tree, bool);
+static rtx visium_function_arg (cumulative_args_t, const function_arg_info &);
 
 static void visium_function_arg_advance (cumulative_args_t, machine_mode,
 					 const_tree, bool);
@@ -1330,33 +1329,31 @@ visium_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
    in general registers.  */
 
 static rtx
-visium_function_arg (cumulative_args_t pcum_v, machine_mode mode,
-		     const_tree type ATTRIBUTE_UNUSED,
-		     bool named ATTRIBUTE_UNUSED)
+visium_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 {
   int size;
   CUMULATIVE_ARGS *ca = get_cumulative_args (pcum_v);
 
-  size = (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-  if (mode == VOIDmode)
+  size = (GET_MODE_SIZE (arg.mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  if (arg.end_marker_p ())
     return GEN_INT (0);
 
   /* Scalar or complex single precision floating point arguments are returned
      in floating registers.  */
   if (TARGET_FPU
-      && ((GET_MODE_CLASS (mode) == MODE_FLOAT
-	   && GET_MODE_SIZE (mode) <= UNITS_PER_HWFPVALUE)
-	  || (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
-	      && GET_MODE_SIZE (mode) <= UNITS_PER_HWFPVALUE * 2)))
+      && ((GET_MODE_CLASS (arg.mode) == MODE_FLOAT
+	   && GET_MODE_SIZE (arg.mode) <= UNITS_PER_HWFPVALUE)
+	  || (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT
+	      && GET_MODE_SIZE (arg.mode) <= UNITS_PER_HWFPVALUE * 2)))
     {
       if (ca->frcount + size <= MAX_ARGS_IN_FP_REGISTERS)
-	return gen_rtx_REG (mode, FP_ARG_FIRST + ca->frcount);
+	return gen_rtx_REG (arg.mode, FP_ARG_FIRST + ca->frcount);
       else
 	return NULL_RTX;
     }
 
   if (ca->grcount + size <= MAX_ARGS_IN_GP_REGISTERS)
-    return gen_rtx_REG (mode, ca->grcount + GP_ARG_FIRST);
+    return gen_rtx_REG (arg.mode, ca->grcount + GP_ARG_FIRST);
 
   return NULL_RTX;
 }

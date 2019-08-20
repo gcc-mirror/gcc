@@ -119,8 +119,7 @@ static void fr30_setup_incoming_varargs (cumulative_args_t,
 static bool fr30_must_pass_in_stack (machine_mode, const_tree);
 static int fr30_arg_partial_bytes (cumulative_args_t,
 				   const function_arg_info &);
-static rtx fr30_function_arg (cumulative_args_t, machine_mode,
-			      const_tree, bool);
+static rtx fr30_function_arg (cumulative_args_t, const function_arg_info &);
 static void fr30_function_arg_advance (cumulative_args_t, machine_mode,
 				       const_tree, bool);
 static bool fr30_frame_pointer_required (void);
@@ -800,17 +799,16 @@ fr30_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 }
 
 static rtx
-fr30_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		   const_tree type, bool named)
+fr30_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (!named
-      || fr30_must_pass_in_stack (mode, type)
+  if (!arg.named
+      || fr30_must_pass_in_stack (arg.mode, arg.type)
       || *cum >= FR30_NUM_ARG_REGS)
     return NULL_RTX;
   else
-    return gen_rtx_REG (mode, *cum + FIRST_ARG_REGNUM);
+    return gen_rtx_REG (arg.mode, *cum + FIRST_ARG_REGNUM);
 }
 
 /* A C statement (sans semicolon) to update the summarizer variable CUM to

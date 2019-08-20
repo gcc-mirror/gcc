@@ -12021,14 +12021,9 @@ s390_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).
+   ARG is a description of the argument.
 
    On S/390, we use general purpose registers 2 through 6 to
    pass integer, pointer, and certain structure arguments, and
@@ -12037,39 +12032,38 @@ s390_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
    are pushed to the stack.  */
 
 static rtx
-s390_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		   const_tree type, bool named)
+s390_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (!named)
-    s390_check_type_for_vector_abi (type, true, false);
+  if (!arg.named)
+    s390_check_type_for_vector_abi (arg.type, true, false);
 
-  if (s390_function_arg_vector (mode, type))
+  if (s390_function_arg_vector (arg.mode, arg.type))
     {
       /* Vector arguments being part of the ellipsis are passed on the
 	 stack.  */
-      if (!named || (cum->vrs + 1 > VEC_ARG_NUM_REG))
+      if (!arg.named || (cum->vrs + 1 > VEC_ARG_NUM_REG))
 	return NULL_RTX;
 
-      return gen_rtx_REG (mode, cum->vrs + FIRST_VEC_ARG_REGNO);
+      return gen_rtx_REG (arg.mode, cum->vrs + FIRST_VEC_ARG_REGNO);
     }
-  else if (s390_function_arg_float (mode, type))
+  else if (s390_function_arg_float (arg.mode, arg.type))
     {
       if (cum->fprs + 1 > FP_ARG_NUM_REG)
 	return NULL_RTX;
       else
-	return gen_rtx_REG (mode, cum->fprs + 16);
+	return gen_rtx_REG (arg.mode, cum->fprs + 16);
     }
-  else if (s390_function_arg_integer (mode, type))
+  else if (s390_function_arg_integer (arg.mode, arg.type))
     {
-      int size = s390_function_arg_size (mode, type);
+      int size = s390_function_arg_size (arg.mode, arg.type);
       int n_gprs = (size + UNITS_PER_LONG - 1) / UNITS_PER_LONG;
 
       if (cum->gprs + n_gprs > GP_ARG_NUM_REG)
 	return NULL_RTX;
       else if (n_gprs == 1 || UNITS_PER_WORD == UNITS_PER_LONG)
-	return gen_rtx_REG (mode, cum->gprs + 2);
+	return gen_rtx_REG (arg.mode, cum->gprs + 2);
       else if (n_gprs == 2)
 	{
 	  rtvec p = rtvec_alloc (2);
@@ -12081,16 +12075,16 @@ s390_function_arg (cumulative_args_t cum_v, machine_mode mode,
 	    = gen_rtx_EXPR_LIST (SImode, gen_rtx_REG (SImode, cum->gprs + 3),
 					 GEN_INT (4));
 
-	  return gen_rtx_PARALLEL (mode, p);
+	  return gen_rtx_PARALLEL (arg.mode, p);
 	}
     }
 
-  /* After the real arguments, expand_call calls us once again
-     with a void_type_node type.  Whatever we return here is
-     passed as operand 2 to the call expanders.
+  /* After the real arguments, expand_call calls us once again with an
+     end marker.  Whatever we return here is passed as operand 2 to the
+     call expanders.
 
      We don't need this feature ...  */
-  else if (type == void_type_node)
+  else if (arg.end_marker_p ())
     return const0_rtx;
 
   gcc_unreachable ();
@@ -13352,7 +13346,8 @@ s390_call_saved_register_used (tree call_expr)
 	  type = build_pointer_type (type);
 	}
 
-       parm_rtx = s390_function_arg (cum, mode, type, true);
+       function_arg_info arg (type, mode, /*named=*/true);
+       parm_rtx = s390_function_arg (cum, arg);
 
        s390_function_arg_advance (cum, mode, type, true);
 

@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "rtl-iter.h"
 #include "cfgcleanup.h"
+#include "calls.h"
 
 /* This file contains three techniques for performing Dead Store
    Elimination (dse).
@@ -2343,7 +2344,8 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
       if (!is_int_mode (TYPE_MODE (TREE_VALUE (arg)), &mode))
 	return false;
 
-      reg = targetm.calls.function_arg (args_so_far, mode, NULL_TREE, true);
+      function_arg_info arg (mode, /*named=*/true);
+      reg = targetm.calls.function_arg (args_so_far, arg);
       if (!reg || !REG_P (reg) || GET_MODE (reg) != mode)
 	return false;
 

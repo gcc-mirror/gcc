@@ -1,5 +1,105 @@
 2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target.def (function_arg, function_incoming_arg): Take a
+	function_arg_info instead of a mode, tree and named flag.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_function_arg): Take a function_arg_info
+	instead of a mode, tree and named flag.
+	(default_function_incoming_arg): Likewise.
+	* targhooks.c (default_function_arg): Likewise.
+	(default_function_incoming_arg): Likewise.
+	* calls.h (function_arg_info::end_marker_p): New function.
+	(function_arg_info::end_marker): Likewise.
+	* calls.c (prepare_call_address, initialize_argument_information)
+	(expand_call, emit_library_call_value_1): Update calls to
+	targetm.calls.function_arg and targetm.calls.function_incoming_arg.
+	* dse.c: Include calls.h.
+	(get_call_args): Update call to targetm.calls.function_arg.
+	* expr.c (block_move_libcall_safe_for_call_parm): Likewise.
+	* var-tracking.c (prepare_call_arguments): Likewise.
+	* function.c (assign_parm_find_entry_rtl): Update call to
+	targetm.calls.function_incoming_arg.
+	* config/aarch64/aarch64.c (aarch64_function_arg): Take a
+	function_arg_info instead of a mode, tree and named flag.
+	* config/alpha/alpha.c (alpha_function_arg): Likewise.
+	* config/arc/arc.c (arc_function_arg): Likewise.
+	* config/arm/arm.c (arm_function_arg): Likewise.
+	(cmse_func_args_or_return_in_stack): Update call accordingly.
+	(arm_function_ok_for_sibcall): Likewise.
+	(cmse_nonsecure_call_clear_caller_saved): Likewise.
+	* config/avr/avr.c (avr_function_arg): Take a function_arg_info
+	instead of a mode, tree and named flag.
+	* config/bfin/bfin.c (bfin_function_arg): Likewise.
+	* config/c6x/c6x.c (c6x_function_arg): Likewise.
+	(c6x_call_saved_register_used): Update call accordingly.
+	* config/cr16/cr16.c (cr16_function_arg): Take a function_arg_info
+	instead of a mode, tree and named flag.
+	* config/cris/cris.c (cris_function_arg, cris_function_incoming_arg)
+	(cris_function_arg_1): Likewise.
+	* config/csky/csky.c (csky_function_arg): Likewise.
+	* config/epiphany/epiphany.c (epiphany_function_arg): Likewise.
+	* config/fr30/fr30.c (fr30_function_arg): Likewise.
+	* config/frv/frv.c (frv_function_arg, frv_function_incoming_arg)
+	(frv_function_arg_1): Likewise.
+	* config/ft32/ft32.c (ft32_function_arg): Likewise.
+	* config/gcn/gcn.c (gcn_function_arg): Likewise.
+	* config/h8300/h8300.c (h8300_function_arg): Likewise.
+	* config/i386/i386.c (ix86_function_arg): Likewise.
+	* config/ia64/ia64.c (ia64_function_arg, ia64_function_incoming_arg)
+	(ia64_function_arg_1): Likewise.
+	* config/iq2000/iq2000.c (iq2000_function_arg): Likewise.
+	(iq2000_expand_prologue, iq2000_pass_by_reference): Update call
+	accordingly.
+	* config/lm32/lm32.c (lm32_function_arg): Take a function_arg_info
+	instead of a mode, tree and named flag.
+	* config/m32c/m32c.c (m32c_function_arg): Likewise.
+	* config/m32r/m32r.c (m32r_function_arg): Likewise.
+	* config/m68k/m68k.c (m68k_function_arg): Likewise.
+	* config/mcore/mcore.c (mcore_function_arg): Likewise.
+	* config/microblaze/microblaze.c (microblaze_function_arg): Likewise.
+	(microblaze_expand_prologue): Update call accordingly.
+	* config/mips/mips.c (mips_function_arg): Take a function_arg_info
+	instead of a mode, tree and named flag.
+	* config/mmix/mmix.c (mmix_function_incoming_arg, mmix_function_arg)
+	(mmix_function_arg_1): Likewise.
+	* config/mn10300/mn10300.c (mn10300_function_arg): Likewise.
+	* config/moxie/moxie.c (moxie_function_arg): Likewise.
+	* config/msp430/msp430.c (msp430_function_arg): Likewise.
+	* config/nds32/nds32.c (nds32_function_arg): Likewise.
+	* config/nios2/nios2.c (nios2_function_arg): Likewise.
+	* config/nvptx/nvptx.c (nvptx_function_arg): Likewise.
+	(nvptx_function_incoming_arg): Likewise.
+	* config/or1k/or1k.c (or1k_function_arg): Likewise.
+	* config/pa/pa.c (pa_function_arg): Likewise.
+	* config/pdp11/pdp11.c (pdp11_function_arg): Likewise.
+	* config/pru/pru.c (pru_function_arg): Likewise.
+	* config/riscv/riscv.c (riscv_function_arg): Likewise.
+	* config/rl78/rl78.c (rl78_function_arg): Likewise.
+	* config/rs6000/rs6000-internal.h (rs6000_function_arg): Likewise.
+	* config/rs6000/rs6000-call.c (rs6000_function_arg): Likewise.
+	(rs6000_parm_needs_stack): Update call accordingly.
+	* config/rx/rx.c (rx_function_arg): Take a function_arg_info
+	instead of a mode, tree and named flag.
+	* config/s390/s390.c (s390_function_arg): Likewise.
+	(s390_call_saved_register_used): Update call accordingly.
+	* config/sh/sh.c (sh_function_arg): Take a function_arg_info
+	instead of a mode, tree and named flag.
+	(sh_output_mi_thunk): Update call accordingly.
+	* config/sparc/sparc.c (sparc_function_arg_1, sparc_function_arg)
+	(sparc_function_incoming_arg): Take a function_arg_info instead of
+	a mode, tree and named flag.
+	* config/spu/spu.c (spu_function_arg): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_function_arg): Likewise.
+	* config/tilegx/tilegx.c (tilegx_function_arg): Likewise.
+	* config/tilepro/tilepro.c (tilepro_function_arg): Likewise.
+	* config/v850/v850.c (v850_function_arg): Likewise.
+	* config/vax/vax.c (vax_function_arg): Likewise.
+	* config/visium/visium.c (visium_function_arg): Likewise.
+	* config/xtensa/xtensa.c (xtensa_function_arg_1, xtensa_function_arg)
+	(xtensa_function_incoming_arg): Likewise.
+
+2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target.def (setup_incoming_varargs): Take a function_arg_info
 	instead of a mode and tree.
 	* doc/tm.texi: Regenerate.
