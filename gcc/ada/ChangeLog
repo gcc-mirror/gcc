@@ -1,3 +1,8 @@
+2019-08-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprograms, Unnest_Subprogram): Take
+	inlining (-gnatn) into account.
+
 2019-08-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch13.adb (Expand_N_Attribute_Definition_Clause, case
