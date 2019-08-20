@@ -863,15 +863,12 @@
     if (AS_FLAT_P (as))
       {
 	if (TARGET_GCN5_PLUS)
-	  sprintf (buf, "flat_store%%s2\t%%0, %%2 offset:%%1%s\;"
-		   "s_waitcnt\texpcnt(0)", glc);
+	  sprintf (buf, "flat_store%%s2\t%%0, %%2 offset:%%1%s", glc);
 	else
-	  sprintf (buf, "flat_store%%s2\t%%0, %%2%s\;s_waitcnt\texpcnt(0)",
-		   glc);
+	  sprintf (buf, "flat_store%%s2\t%%0, %%2%s", glc);
       }
     else if (AS_GLOBAL_P (as))
-      sprintf (buf, "global_store%%s2\t%%0, %%2, off offset:%%1%s\;"
-	       "s_waitcnt\texpcnt(0)", glc);
+      sprintf (buf, "global_store%%s2\t%%0, %%2, off offset:%%1%s", glc);
     else
       gcc_unreachable ();
 
@@ -895,7 +892,7 @@
   {
     addr_space_t as = INTVAL (operands[3]);
     static char buf[200];
-    sprintf (buf, "ds_write%%b2\t%%0, %%2 offset:%%1%s\;s_waitcnt\texpcnt(0)",
+    sprintf (buf, "ds_write%%b2\t%%0, %%2 offset:%%1%s",
 	     (AS_GDS_P (as) ? " gds" : ""));
     return buf;
   }
@@ -929,8 +926,8 @@
 	/* Work around assembler bug in which a 64-bit register is expected,
 	but a 32-bit value would be correct.  */
 	int reg = REGNO (operands[1]) - FIRST_VGPR_REG;
-	sprintf (buf, "global_store%%s3\tv[%d:%d], %%3, %%0 offset:%%2%s\;"
-		      "s_waitcnt\texpcnt(0)", reg, reg + 1, glc);
+	sprintf (buf, "global_store%%s3\tv[%d:%d], %%3, %%0 offset:%%2%s",
+		 reg, reg + 1, glc);
       }
     else
       gcc_unreachable ();

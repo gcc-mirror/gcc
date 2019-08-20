@@ -195,4 +195,7 @@ AARCH64_OPT_EXTENSION("sve2-bitperm", AARCH64_FL_SVE2_BITPERM, AARCH64_FL_SIMD |
 		      AARCH64_FL_F16 | AARCH64_FL_FP | AARCH64_FL_SVE | \
 		      AARCH64_FL_SVE2, 0, false, "")
 
+/* Enabling or disabling "tme" only changes "tme".  */
+AARCH64_OPT_EXTENSION("tme", AARCH64_FL_TME, 0, 0, false, "")
+
 #undef AARCH64_OPT_EXTENSION

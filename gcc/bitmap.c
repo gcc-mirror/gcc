@@ -267,7 +267,8 @@ bitmap_list_link_element (bitmap head, bitmap_element *element)
    and return it to the freelist.  */
 
 static inline void
-bitmap_list_unlink_element (bitmap head, bitmap_element *element)
+bitmap_list_unlink_element (bitmap head, bitmap_element *element,
+			    bool to_freelist = true)
 {
   bitmap_element *next = element->next;
   bitmap_element *prev = element->prev;
@@ -294,18 +295,21 @@ bitmap_list_unlink_element (bitmap head, bitmap_element *element)
 	head->indx = 0;
     }
 
-  bitmap_elem_to_freelist (head, element);
+  if (to_freelist)
+    bitmap_elem_to_freelist (head, element);
 }
 
-/* Insert a new uninitialized element into bitmap HEAD after element
-   ELT.  If ELT is NULL, insert the element at the start.  Return the
-   new element.  */
+/* Insert a new uninitialized element (or NODE if not NULL) into bitmap
+   HEAD after element ELT.  If ELT is NULL, insert the element at the start.
+   Return the new element.  */
 
 static bitmap_element *
 bitmap_list_insert_element_after (bitmap head,
-				  bitmap_element *elt, unsigned int indx)
+				  bitmap_element *elt, unsigned int indx,
+				  bitmap_element *node = NULL)
 {
-  bitmap_element *node = bitmap_element_allocate (head);
+  if (!node)
+    node = bitmap_element_allocate (head);
   node->indx = indx;
 
   gcc_checking_assert (!head->tree_form);
@@ -2026,6 +2030,56 @@ bitmap_ior_into (bitmap a, const_bitmap b)
   return changed;
 }
 
+/* A |= B.  Return true if A changes.  Free B (re-using its storage
+   for the result).  */
+
+bool
+bitmap_ior_into_and_free (bitmap a, bitmap *b_)
+{
+  bitmap b = *b_;
+  bitmap_element *a_elt = a->first;
+  bitmap_element *b_elt = b->first;
+  bitmap_element *a_prev = NULL;
+  bitmap_element **a_prev_pnext = &a->first;
+  bool changed = false;
+
+  gcc_checking_assert (!a->tree_form && !b->tree_form);
+  gcc_assert (a->obstack == b->obstack);
+  if (a == b)
+    return false;
+
+  while (b_elt)
+    {
+      /* If A lags behind B, just advance it.  */
+      if (!a_elt || a_elt->indx == b_elt->indx)
+	{
+	  changed = bitmap_elt_ior (a, a_elt, a_prev, a_elt, b_elt, changed);
+	  b_elt = b_elt->next;
+	}
+      else if (a_elt->indx > b_elt->indx)
+	{
+	  bitmap_element *b_elt_next = b_elt->next;
+	  bitmap_list_unlink_element (b, b_elt, false);
+	  bitmap_list_insert_element_after (a, a_prev, b_elt->indx, b_elt);
+	  b_elt = b_elt_next;
+	}
+
+      a_prev = *a_prev_pnext;
+      a_prev_pnext = &a_prev->next;
+      a_elt = *a_prev_pnext;
+    }
+
+  gcc_checking_assert (!a->current == !a->first);
+  if (a->current)
+    a->indx = a->current->indx;
+
+  if (b->obstack)
+    BITMAP_FREE (*b_);
+  else
+    bitmap_clear (b);
+  return changed;
+}
+
 /* DST = A ^ B  */
 
 void
@@ -2367,16 +2421,75 @@ bitmap_ior_and_compl (bitmap dst, const_bitmap a, const_bitmap b, const_bitmap k
 bool
 bitmap_ior_and_compl_into (bitmap a, const_bitmap b, const_bitmap c)
 {
-  bitmap_head tmp;
-  bool changed;
+  bitmap_element *a_elt = a->first;
+  const bitmap_element *b_elt = b->first;
+  const bitmap_element *c_elt = c->first;
+  bitmap_element and_elt;
+  bitmap_element *a_prev = NULL;
+  bitmap_element **a_prev_pnext = &a->first;
+  bool changed = false;
+  unsigned ix;
 
   gcc_checking_assert (!a->tree_form && !b->tree_form && !c->tree_form);
 
-  bitmap_initialize (&tmp, &bitmap_default_obstack);
-  bitmap_and_compl (&tmp, b, c);
-  changed = bitmap_ior_into (a, &tmp);
-  bitmap_clear (&tmp);
+  if (a == b)
+    return false;
+  if (bitmap_empty_p (c))
+    return bitmap_ior_into (a, b);
+  else if (bitmap_empty_p (a))
+    return bitmap_and_compl (a, b, c);
 
+  and_elt.indx = -1;
+  while (b_elt)
+    {
+      /* Advance C.  */
+      while (c_elt && c_elt->indx < b_elt->indx)
+	c_elt = c_elt->next;
+
+      const bitmap_element *and_elt_ptr;
+      if (c_elt && c_elt->indx == b_elt->indx)
+	{
+	  BITMAP_WORD overall = 0;
+	  and_elt_ptr = &and_elt;
+	  and_elt.indx = b_elt->indx;
+	  for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
+	    {
+	      and_elt.bits[ix] = b_elt->bits[ix] & ~c_elt->bits[ix];
+	      overall |= and_elt.bits[ix];
+	    }
+	  if (!overall)
+	    {
+	      b_elt = b_elt->next;
+	      continue;
+	    }
+	}
+      else
+	and_elt_ptr = b_elt;
+
+      b_elt = b_elt->next;
+
+      /* Now find a place to insert AND_ELT.  */
+      do
+	{
+	  ix = a_elt ? a_elt->indx : and_elt_ptr->indx;
+          if (ix == and_elt_ptr->indx)
+	    changed = bitmap_elt_ior (a, a_elt, a_prev, a_elt,
+				      and_elt_ptr, changed);
+          else if (ix > and_elt_ptr->indx)
+	    changed = bitmap_elt_copy (a, NULL, a_prev, and_elt_ptr, changed);
+
+          a_prev = *a_prev_pnext;
+          a_prev_pnext = &a_prev->next;
+          a_elt = *a_prev_pnext;
+
+          /* If A lagged behind B/C, we advanced it so loop once more.  */
+	}
+      while (ix < and_elt_ptr->indx);
+    }
+
+  gcc_checking_assert (!a->current == !a->first);
+  if (a->current)
+    a->indx = a->current->indx;
   return changed;
 }
 

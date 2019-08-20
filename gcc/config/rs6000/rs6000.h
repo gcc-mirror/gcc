@@ -77,6 +77,20 @@
 #define PPC405_ERRATUM77 0
 #endif
 
+#ifndef SUBTARGET_DRIVER_SELF_SPECS
+# define SUBTARGET_DRIVER_SELF_SPECS ""
+#endif
+
+/* Only for use in the testsuite: -mdejagnu-cpu= simply overrides -mcpu=.
+   With older versions of Dejagnu the command line arguments you set in
+   RUNTESTFLAGS override those set in the testcases; with this option,
+   the testcase will always win.  Ditto for -mdejagnu-tune=.  */
+#define DRIVER_SELF_SPECS \
+  "%{mdejagnu-cpu=*: %<mcpu=* -mcpu=%*}", \
+  "%{mdejagnu-tune=*: %<mtune=* -mtune=%*}", \
+  "%{mdejagnu-*: %<mdejagnu-*}", \
+   SUBTARGET_DRIVER_SELF_SPECS
+
 #if CHECKING_P
 #define ASM_OPT_ANY ""
 #else

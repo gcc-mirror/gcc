@@ -1897,6 +1897,21 @@
    (set_attr "type" "mmxshft,sseiadd,sseiadd")
    (set_attr "mode" "DI,TI,TI")])
 
+(define_expand "reduc_plus_scal_v8qi"
+ [(plus:V8QI
+    (match_operand:QI 0 "register_operand")
+    (match_operand:V8QI 1 "register_operand"))]
+ "TARGET_MMX_WITH_SSE"
+{
+  rtx tmp = gen_reg_rtx (V8QImode);
+  emit_move_insn (tmp, CONST0_RTX (V8QImode));
+  rtx tmp2 = gen_reg_rtx (V1DImode);
+  emit_insn (gen_mmx_psadbw (tmp2, operands[1], tmp));
+  tmp2 = gen_lowpart (V8QImode, tmp2);
+  emit_insn (gen_vec_extractv8qiqi (operands[0], tmp2, const0_rtx));
+  DONE;
+})
+
 (define_insn_and_split "mmx_pmovmskb"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(unspec:SI [(match_operand:V8QI 1 "register_operand" "y,x")]

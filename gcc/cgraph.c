@@ -1215,7 +1215,7 @@ cgraph_edge::make_direct (cgraph_node *callee)
       edge = edge->resolve_speculation (callee->decl);
 
       /* On successful speculation just return the pre existing direct edge.  */
-      if (!indirect_unknown_callee)
+      if (!edge->indirect_unknown_callee)
         return edge;
     }
 

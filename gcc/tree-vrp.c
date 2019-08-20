@@ -5420,8 +5420,10 @@ union_ranges (enum value_range_kind *vr0type,
 	      enum value_range_kind vr1type,
 	      tree vr1min, tree vr1max)
 {
-  bool mineq = vrp_operand_equal_p (*vr0min, vr1min);
-  bool maxeq = vrp_operand_equal_p (*vr0max, vr1max);
+  int cmpmin = compare_values (*vr0min, vr1min);
+  int cmpmax = compare_values (*vr0max, vr1max);
+  bool mineq = cmpmin == 0;
+  bool maxeq = cmpmax == 0;
 
   /* [] is vr0, () is vr1 in the following classification comments.  */
   if (mineq && maxeq)
@@ -5521,8 +5523,8 @@ union_ranges (enum value_range_kind *vr0type,
       else
 	gcc_unreachable ();
     }
-  else if ((maxeq || operand_less_p (vr1max, *vr0max) == 1)
-	   && (mineq || operand_less_p (*vr0min, vr1min) == 1))
+  else if ((maxeq || cmpmax == 1)
+	   && (mineq || cmpmin == -1))
     {
       /* [ (  ) ] or [(  ) ] or [ (  )] */
       if (*vr0type == VR_RANGE
@@ -5555,8 +5557,8 @@ union_ranges (enum value_range_kind *vr0type,
       else
 	gcc_unreachable ();
     }
-  else if ((maxeq || operand_less_p (*vr0max, vr1max) == 1)
-	   && (mineq || operand_less_p (vr1min, *vr0min) == 1))
+  else if ((maxeq || cmpmax == -1)
+	   && (mineq || cmpmin == 1))
     {
       /* ( [  ] ) or ([  ] ) or ( [  ]) */
       if (*vr0type == VR_RANGE
@@ -5595,10 +5597,10 @@ union_ranges (enum value_range_kind *vr0type,
       else
 	gcc_unreachable ();
     }
-  else if ((operand_less_p (vr1min, *vr0max) == 1
-	    || operand_equal_p (vr1min, *vr0max, 0))
-	   && operand_less_p (*vr0min, vr1min) == 1
-	   && operand_less_p (*vr0max, vr1max) == 1)
+  else if (cmpmin == -1
+	   && cmpmax == -1
+	   && (operand_less_p (vr1min, *vr0max) == 1
+	       || operand_equal_p (vr1min, *vr0max, 0)))
     {
       /* [  (  ]  ) or [   ](   ) */
       if (*vr0type == VR_RANGE
@@ -5632,10 +5634,10 @@ union_ranges (enum value_range_kind *vr0type,
       else
 	gcc_unreachable ();
     }
-  else if ((operand_less_p (*vr0min, vr1max) == 1
-	    || operand_equal_p (*vr0min, vr1max, 0))
-	   && operand_less_p (vr1min, *vr0min) == 1
-	   && operand_less_p (vr1max, *vr0max) == 1)
+  else if (cmpmin == 1
+	   && cmpmax == 1
+	   && (operand_less_p (*vr0min, vr1max) == 1
+	       || operand_equal_p (*vr0min, vr1max, 0)))
     {
       /* (  [  )  ] or (   )[   ] */
       if (*vr0type == VR_RANGE

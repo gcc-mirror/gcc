@@ -40,6 +40,17 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  /**
+   * @defgroup bit_manip Bit manipulation
+   * @ingroup numerics
+   *
+   * Utilities for examining and manipulating individual bits.
+   *
+   * @{
+   */
+
+  /// @cond undoc
+
   template<typename _Tp>
     constexpr _Tp
     __rotl(_Tp __x, int __s) noexcept
@@ -248,19 +259,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _Nd - std::__countl_zero(__x);
     }
 
+  /// @endcond
+
 #if __cplusplus > 201703L
 
+  /// @cond undoc
   template<typename _Tp, typename _Up = _Tp>
     using _If_is_unsigned_integer
       = enable_if_t<__is_unsigned_integer<_Tp>::value, _Up>;
+  /// @endcond
 
   // [bit.rot], rotating
 
+  /// Rotate `x` to the left by `s` bits.
   template<typename _Tp>
     [[nodiscard]] constexpr _If_is_unsigned_integer<_Tp>
     rotl(_Tp __x, int __s) noexcept
     { return std::__rotl(__x, __s); }
 
+  /// Rotate `x` to the right by `s` bits.
   template<typename _Tp>
     [[nodiscard]] constexpr _If_is_unsigned_integer<_Tp>
     rotr(_Tp __x, int __s) noexcept
@@ -268,26 +285,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [bit.count], counting
 
+  /// The number of contiguous zero bits, starting from the highest bit.
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp, int>
     countl_zero(_Tp __x) noexcept
     { return std::__countl_zero(__x); }
 
+  /// The number of contiguous one bits, starting from the highest bit.
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp, int>
     countl_one(_Tp __x) noexcept
     { return std::__countl_one(__x); }
 
+  /// The number of contiguous zero bits, starting from the lowest bit.
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp, int>
     countr_zero(_Tp __x) noexcept
     { return std::__countr_zero(__x); }
 
+  /// The number of contiguous one bits, starting from the lowest bit.
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp, int>
     countr_one(_Tp __x) noexcept
     { return std::__countr_one(__x); }
 
+  /// The number of bits set in `x`.
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp, int>
     popcount(_Tp __x) noexcept
@@ -295,21 +317,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [bit.pow.two], integral powers of 2
 
+  /// True if `x` is a power of two, false otherwise.
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp, bool>
     ispow2(_Tp __x) noexcept
     { return std::__ispow2(__x); }
 
+  /// The smallest power-of-two not less than `x`.
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp>
     ceil2(_Tp __x) noexcept
     { return std::__ceil2(__x); }
 
+  /// The largest power-of-two not greater than `x`.
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp>
     floor2(_Tp __x) noexcept
     { return std::__floor2(__x); }
 
+  /// The smallest integer greater than the base-2 logarithm of `x`.
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp>
     log2p1(_Tp __x) noexcept
@@ -325,6 +351,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     native = __BYTE_ORDER__
   };
 #endif // C++2a
+
+  /// @}
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

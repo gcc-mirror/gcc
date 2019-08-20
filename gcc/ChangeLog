@@ -1,3 +1,210 @@
+2019-07-31  Alexander Monakov  <amonakov@ispras.ru>
+
+	* ipa-devirt.c (type_warning_cmp): Make static.
+	(decl_warning_cmp): Ditto.
+
+2019-07-31  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/91050
+	* config/rs6000/rs6000.opt (mdejagnu-cpu=): Delete option.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Remove
+	use of deleted rs6000_dejagnu_cpu_index variable.
+	* config/rs6000/rs6000.h (DRIVER_SELF_SPECS): Define.
+	(SUBTARGET_DRIVER_SELF_SPECS): Likewise.
+	* config/darwin.h (DRIVER_SELF_SPECS): Rename from this ...
+	(SUBTARGET_DRIVER_SELF_SPECS): ...to this.
+	* config/i386/i386.h (DRIVER_SELF_SPECS): Define.
+	(SUBTARGET_DRIVER_SELF_SPECS): Likewise.
+
+2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91280
+	* tree-ssa-structalias.c (get_constraint_for_component_ref):
+	Decompose MEM_REF manually for offset handling.
+
+2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91293
+	* tree-vect-slp.c (vect_build_slp_tree_2): Do not swap operands
+	of reduction stmts.
+
+2019-07-31  Matt Thomas  <matt@3am-software.com>
+	    Nick Hudson <nick@nthcliff.demon.co.uk>
+	    Matthew Green <mrg@eterna.com.au>
+	    Maya Rashish <coypu@sdf.org>
+
+	* config.gcc (hppa*-*-netbsd*): New target.
+	* config/pa/pa-netbsd.h: New file.
+	* config/pa/pa32-netbsd.h: New file.
+
+2019-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91201
+	* config/i386/mmx.md (reduc_plus_scal_v8qi): New expander.
+
+2019-07-31  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md
+	(scatter<mode>_insn_1offset<exec_scatter>): Remove s_waitcnt.
+	(scatter<mode>_insn_1offset_ds<exec_scatter>): Likewise.
+	(scatter<mode>_insn_2offsets<exec_scatter>): Likewise.
+	* config/gcn/gcn.c (gcn_md_reorg): Add delayeduse and reads to
+	struct ilist. Add nops for delayeduse insns.
+	* config/gcn/gcn.md (delayeduse): New attribute.
+	(*movbi): Remove s_waitcnt from stores.
+	(*mov<mode>_insn): Likewise.
+	(*movti_insn): Likewise. Add delayeduse attribute.
+	(sync_compare_and_swap<mode>_insn): Add delayeduse attribute.
+	(atomic_store<mode>): Remove or adjust s_waitcnt.
+
+2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	* vr-values.h (vr_values::swap_vr_value): New.
+	(vr_values::free_value_range): likewise.
+	* vr-values.c (vr_values::swap_vr_value): Implement.
+	* gimple-ssa-evrp-analyze.h (evrp_range_analyzer::pop_value_range):
+	Do not return a range or take a var.
+	(evrp_range_analyzer::stack): Change back to recording a non-const
+	value_range *.
+	* gimple-ssa-evrp-analyze.c
+	(evrp_range_analyzer::record_ranges_from_stmt): Free unused
+	value-range.
+	(evrp_range_analyzer::pop_to_marker): Adjust.
+	(evrp_range_analyzer::push_value_range): Use new swap_vr_value.
+	(evrp_range_analyzer::pop_value_range): Likewise.  Free the
+	no longer needed value-range.
+
+2019-07-31  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-dce.c (propagate_necessity): Delete operator can
+	have size and (or) alignment as 2nd and later arguments.
+	Mark all of them as necessary.
+
+2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91178
+	* tree-ssa-sccvn.c (vn_reference_maybe_forwprop_address):
+	Use tail-recursion.
+
+2019-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91201
+	* config/i386/sse.md (reduc_plus_scal_v16qi): New expander.
+	(REDUC_PLUS_MODE): Add V32QImode for TARGET_AVX and V64QImode for
+	TARGET_AVX512F.
+	(reduc_plus_scal_<mode>): Improve formatting by introducing
+	a temporary.
+
+2019-07-31  Sudakshina Das  <sudi.das@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (enum aarch64_builtins): Add
+	AARCH64_TME_BUILTIN_TSTART, AARCH64_TME_BUILTIN_TCOMMIT,
+	AARCH64_TME_BUILTIN_TTEST and AARCH64_TME_BUILTIN_TCANCEL.
+	(aarch64_init_tme_builtins): New.
+	(aarch64_init_builtins): Call aarch64_init_tme_builtins.
+	(aarch64_expand_builtin_tme): New.
+	(aarch64_expand_builtin): Handle TME builtins.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_TME when enabled.
+	* config/aarch64/aarch64-option-extensions.def: Add "tme".
+	* config/aarch64/aarch64.h (AARCH64_FL_TME, AARCH64_ISA_TME): New.
+	(TARGET_TME): New.
+	* config/aarch64/aarch64.md (define_c_enum "unspec"): Add UNSPEC_TTEST.
+	(define_c_enum "unspecv"): Add UNSPECV_TSTART, UNSPECV_TCOMMIT and
+	UNSPECV_TCANCEL.
+	(tstart, ttest, tcommit, tcancel): New instructions.
+	* config/aarch64/arm_acle.h (__tstart, __tcommit): New.
+	(__tcancel, __ttest): New.
+	(_TMFAILURE_REASON, _TMFAILURE_RTRY, _TMFAILURE_CNCL): New macro.
+	(_TMFAILURE_MEM, _TMFAILURE_IMP, _TMFAILURE_ERR): Likewise.
+	(_TMFAILURE_SIZE, _TMFAILURE_NEST, _TMFAILURE_DBG): Likewise.
+	(_TMFAILURE_INT, _TMFAILURE_TRIVIAL): Likewise.
+	* config/arm/types.md: Add new tme type attr.
+	* doc/invoke.texi: Document "tme".
+
+2019-07-31  Joel Hutton  <Joel.Hutton@arm.com>
+
+	* config/arm/arm_cmse.h (cmse_nonsecure_caller): Add
+	warn_unused_result attribute.
+	(cmse_check_address_range): Add warn_unused_result attribute.
+
+2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91257
+	* tree-vrp.c (union_ranges): Unify equality and less tests
+	by using compare_values.  Re-order cheap tests first.
+
+2019-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91301
+	* gimplify.c (gimplify_omp_for): If for class iterator on
+	distribute parallel for there is no data sharing clause
+	on inner_for_stmt, look for private clause on combined
+	parallel too and if found, move it to inner_for_stmt.
+
+2019-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lra-int.h (lra_operand_data): Remove early_clobber field.
+	(lra_insn_reg): Likewise.
+	* lra.c (debug_operand_data): Update accordingly.
+	(setup_operand_alternative): Likewise.
+	(new_insn_reg): Likewise.  Remove early_clobber parameter.
+	(collect_non_operand_hard_regs): Update call accordingly.
+	Don't assign to lra_insn_reg::early_clobber.
+	(add_regs_to_insn_regno_info): Remove early_clobber parameter
+	and update calls to new_insn_reg.
+	(lra_update_insn_regno_info): Update calls accordingly.
+	* lra-constraints.c (update_and_check_small_class_inputs): Take the
+	alternative number as a parameter and test whether the operand
+	is earlyclobbered in that particular alternative.
+	(process_alt_operands): Update call accordingly.  Use per-alternative
+	checks for earyclobber here too.
+	* lra-lives.c (reg_early_clobber_p): Check early_clobber_alts
+	against zero for IRA_UNKNOWN_ALT.
+
+2019-07-30  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_option_override): Quote a C type.
+
+2019-07-30  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/thumb2.md (thumb2_movsi_insn): Adjust literal offset.
+	* config/arm/vfp.md (thumb2_movsi_vfp): Likewise.
+
+2019-07-30  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/89330
+	* cgraph.c (cgraph_edge::make_direct): Use
+	edge->indirect_unknown_callee as edge->resolve_speculation can
+	deallocate edge which is this pointer.
+
+2019-07-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91257
+	* bitmap.c (bitmap_ior_and_compl_into): Open-code.
+
+2019-07-30  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Document new behavior.
+	* lto-wrapper.c (cpuset_popcount): New function
+	is a copy of libgomp/config/linux/proc.c.
+	(init_num_threads): Likewise.
+	(run_gcc): Automatically detect core count for -flto.
+	(jobserver_active_p): New function.
+
+2019-07-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91257
+	* bitmap.h (bitmap_ior_into_and_free): Declare.
+	* bitmap.c (bitmap_list_unlink_element): Add defaulted param
+	whether to add the unliked element to the freelist.
+	(bitmap_list_insert_element_after): Add defaulted param for
+	an already allocated element.
+	(bitmap_ior_into_and_free): New function.
+	* tree-ssa-structalias.c (condense_visit): Reduce the
+	ponts-to and edge bitmaps of the SCC members in a
+	logarithmic fashion rather than all to one.
+
 2019-07-30  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-ssa-math-opts.c (convert_mult_to_fma): Add a mul_cond

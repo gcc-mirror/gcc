@@ -677,6 +677,12 @@ extern tree x86_mfence;
    with the rounding mode forced to 53 bits.  */
 #define TARGET_96_ROUND_53_LONG_DOUBLE 0
 
+#ifndef SUBTARGET_DRIVER_SELF_SPECS
+# define SUBTARGET_DRIVER_SELF_SPECS ""
+#endif
+
+#define DRIVER_SELF_SPECS SUBTARGET_DRIVER_SELF_SPECS
+
 /* -march=native handling only makes sense with compiler running on
    an x86 or x86_64 chip.  If changing this condition, also change
    the condition in driver-i386.c.  */

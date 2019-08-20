@@ -5927,8 +5927,8 @@ trees_out::core_vals (tree t)
       break;
 
     case TS_CP_TEMPLATE_INFO:
-      // TI_TEMPLATE -> TYPE
-      WT (t->common.chain); // TI_ARGS
+      WT (((lang_tree_node *)t)->template_info.tmpl);
+      WT (((lang_tree_node *)t)->template_info.args);
       // FIXME: typedefs_needing_access_checking
       break;
 
@@ -6381,8 +6381,8 @@ trees_in::core_vals (tree t)
       break;
 
     case TS_CP_TEMPLATE_INFO:
-      // TI_TEMPLATE -> TYPE
-      RT (t->common.chain); // TI_ARGS
+      RT (((lang_tree_node *)t)->template_info.tmpl);
+      RT (((lang_tree_node *)t)->template_info.args);
       // FIXME: typedefs_needing_access_checking
       break;
 
