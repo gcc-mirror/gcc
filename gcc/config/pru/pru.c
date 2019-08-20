@@ -2177,19 +2177,17 @@ pru_arg_partial_bytes (cumulative_args_t, const function_arg_info &)
   return 0;
 }
 
-/* Update the data in CUM to advance over an argument of mode MODE
-   and data type TYPE; TYPE is null for libcalls where that information
-   may not be available.  */
+/* Update the data in CUM to advance over argument ARG.  */
 
 static void
-pru_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			    const_tree type,
-			    bool named)
+pru_function_arg_advance (cumulative_args_t cum_v,
+			  const function_arg_info &arg)
 {
-  int regi = pru_function_arg_regi (cum_v, mode, type, named);
+  int regi = pru_function_arg_regi (cum_v, arg.mode, arg.type, arg.named);
 
   if (regi >= 0)
-    pru_function_arg_regi_mark_slot (regi, cum_v, mode, type, named);
+    pru_function_arg_regi_mark_slot (regi, cum_v, arg.mode,
+				     arg.type, arg.named);
 }
 
 /* Implement TARGET_FUNCTION_VALUE.  */

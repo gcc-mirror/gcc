@@ -120,8 +120,8 @@ static bool fr30_must_pass_in_stack (machine_mode, const_tree);
 static int fr30_arg_partial_bytes (cumulative_args_t,
 				   const function_arg_info &);
 static rtx fr30_function_arg (cumulative_args_t, const function_arg_info &);
-static void fr30_function_arg_advance (cumulative_args_t, machine_mode,
-				       const_tree, bool);
+static void fr30_function_arg_advance (cumulative_args_t,
+				       const function_arg_info &);
 static bool fr30_frame_pointer_required (void);
 static rtx fr30_function_value (const_tree, const_tree, bool);
 static rtx fr30_libcall_value (machine_mode, const_rtx);
@@ -811,19 +811,13 @@ fr30_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
     return gen_rtx_REG (arg.mode, *cum + FIRST_ARG_REGNUM);
 }
 
-/* A C statement (sans semicolon) to update the summarizer variable CUM to
-   advance past an argument in the argument list.  The values MODE, TYPE and
-   NAMED describe that argument.  Once this is done, the variable CUM is
-   suitable for analyzing the *following* argument with `FUNCTION_ARG', etc.
-
-   This macro need not do anything if the argument in question was passed on
-   the stack.  The compiler knows how to track the amount of stack space used
-   for arguments without any special help.  */
+/* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 static void
-fr30_function_arg_advance (cumulative_args_t cum, machine_mode mode,
-			   const_tree type, bool named)
+fr30_function_arg_advance (cumulative_args_t cum,
+			   const function_arg_info &arg)
 {
-  *get_cumulative_args (cum) += named * fr30_num_arg_regs (mode, type);
+  if (arg.named)
+    *get_cumulative_args (cum) += fr30_num_arg_regs (arg.mode, arg.type);
 }
 
 /*}}}*/

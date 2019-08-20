@@ -197,19 +197,17 @@ tilepro_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 /* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 static void
 tilepro_function_arg_advance (cumulative_args_t cum_v,
-			      machine_mode mode,
-			      const_tree type, bool named ATTRIBUTE_UNUSED)
+			      const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  int byte_size = ((mode == BLKmode)
-		   ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
+  int byte_size = arg.promoted_size_in_bytes ();
   int word_size = (byte_size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   bool doubleword_aligned_p;
 
   /* See whether the argument has doubleword alignment.  */
   doubleword_aligned_p =
-    tilepro_function_arg_boundary (mode, type) > BITS_PER_WORD;
+    tilepro_function_arg_boundary (arg.mode, arg.type) > BITS_PER_WORD;
 
   if (doubleword_aligned_p)
     *cum += *cum & 1;
@@ -348,8 +346,7 @@ tilepro_setup_incoming_varargs (cumulative_args_t cum,
   /* The caller has advanced CUM up to, but not beyond, the last named
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
-  targetm.calls.function_arg_advance (pack_cumulative_args (&local_cum),
-				      arg.mode, arg.type, arg.named);
+  targetm.calls.function_arg_advance (pack_cumulative_args (&local_cum), arg);
   first_reg = local_cum;
 
   if (local_cum < TILEPRO_NUM_ARG_REGS)

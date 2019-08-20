@@ -75,8 +75,7 @@ static HOST_WIDE_INT lm32_compute_frame_size (int size);
 static void lm32_option_override (void);
 static rtx lm32_function_arg (cumulative_args_t, const function_arg_info &);
 static void lm32_function_arg_advance (cumulative_args_t cum,
-				       machine_mode mode,
-				       const_tree type, bool named);
+				       const function_arg_info &);
 static bool lm32_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool lm32_modes_tieable_p (machine_mode, machine_mode);
 static HOST_WIDE_INT lm32_starting_frame_offset (void);
@@ -641,10 +640,10 @@ lm32_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 }
 
 static void
-lm32_function_arg_advance (cumulative_args_t cum, machine_mode mode,
-			   const_tree type, bool named ATTRIBUTE_UNUSED)
+lm32_function_arg_advance (cumulative_args_t cum,
+			   const function_arg_info &arg)
 {
-  *get_cumulative_args (cum) += LM32_NUM_REGS2 (mode, type);
+  *get_cumulative_args (cum) += LM32_NUM_REGS2 (arg.mode, arg.type);
 }
 
 HOST_WIDE_INT

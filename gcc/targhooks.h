@@ -148,7 +148,7 @@ extern void hook_void_CUMULATIVE_ARGS_tree
 extern const char *hook_invalid_arg_for_unprototyped_fn
   (const_tree, const_tree, const_tree);
 extern void default_function_arg_advance
-  (cumulative_args_t, machine_mode, const_tree, bool);
+  (cumulative_args_t, const function_arg_info &);
 extern HOST_WIDE_INT default_function_arg_offset (machine_mode, const_tree);
 extern pad_direction default_function_arg_padding (machine_mode, const_tree);
 extern rtx default_function_arg (cumulative_args_t, const function_arg_info &);

@@ -1205,9 +1205,8 @@ xstormy16_function_profiler (void)
   sorry ("function_profiler support");
 }
 
-/* Update CUM to advance past an argument in the argument list.  The
-   values MODE, TYPE and NAMED describe that argument.  Once this is
-   done, the variable CUM is suitable for analyzing the *following*
+/* Update CUM to advance past argument ARG.  Once this is done,
+   the variable CUM is suitable for analyzing the *following*
    argument with `TARGET_FUNCTION_ARG', etc.
 
    This function need not do anything if the argument in question was
@@ -1217,8 +1216,8 @@ xstormy16_function_profiler (void)
    the word count.  */
 
 static void
-xstormy16_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-				const_tree type, bool named ATTRIBUTE_UNUSED)
+xstormy16_function_arg_advance (cumulative_args_t cum_v,
+				const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
@@ -1226,10 +1225,11 @@ xstormy16_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
      and partially on the stack, the whole of it is passed on the
      stack.  */
   if (*cum < NUM_ARGUMENT_REGISTERS
-      && *cum + XSTORMY16_WORD_SIZE (type, mode) > NUM_ARGUMENT_REGISTERS)
+      && (*cum + XSTORMY16_WORD_SIZE (arg.type, arg.mode)
+	  > NUM_ARGUMENT_REGISTERS))
     *cum = NUM_ARGUMENT_REGISTERS;
 
-  *cum += XSTORMY16_WORD_SIZE (type, mode);
+  *cum += XSTORMY16_WORD_SIZE (arg.type, arg.mode);
 }
 
 static rtx

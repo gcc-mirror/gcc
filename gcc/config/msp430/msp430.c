@@ -766,14 +766,12 @@ msp430_callee_copies (cumulative_args_t cap ATTRIBUTE_UNUSED,
 
 void
 msp430_function_arg_advance (cumulative_args_t cap,
-			     machine_mode mode,
-			     const_tree type,
-			     bool named)
+			     const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *ca = get_cumulative_args (cap);
   int i;
 
-  msp430_evaluate_arg (cap, mode, type, named);
+  msp430_evaluate_arg (cap, arg.mode, arg.type, arg.named);
 
   if (ca->start_reg >= CA_FIRST_REG)
     for (i = 0; i < ca->reg_count; i ++)

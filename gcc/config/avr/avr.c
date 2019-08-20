@@ -3405,11 +3405,11 @@ avr_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
    in the argument list.  */
 
 static void
-avr_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-                          const_tree type, bool named ATTRIBUTE_UNUSED)
+avr_function_arg_advance (cumulative_args_t cum_v,
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int bytes = avr_num_arg_regs (mode, type);
+  int bytes = avr_num_arg_regs (arg.mode, arg.type);
 
   cum->nregs -= bytes;
   cum->regno -= bytes;

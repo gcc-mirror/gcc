@@ -164,7 +164,7 @@ static bool pdp11_function_value_regno_p (const unsigned int);
 static void pdp11_trampoline_init (rtx, tree, rtx);
 static rtx pdp11_function_arg (cumulative_args_t, const function_arg_info &);
 static void pdp11_function_arg_advance (cumulative_args_t,
-					machine_mode, const_tree, bool);
+					const function_arg_info &);
 static void pdp11_conditional_register_usage (void);
 static bool pdp11_legitimate_constant_p (machine_mode, rtx);
 
@@ -2189,19 +2189,15 @@ pdp11_function_arg (cumulative_args_t, const function_arg_info &)
 
 /* Worker function for TARGET_FUNCTION_ARG_ADVANCE.
 
-   Update the data in CUM to advance over an argument of mode MODE and
-   data type TYPE.  (TYPE is null for libcalls where that information
-   may not be available.)  */
+   Update the data in CUM to advance over argument ARG.  */
 
 static void
-pdp11_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			    const_tree type, bool named ATTRIBUTE_UNUSED)
+pdp11_function_arg_advance (cumulative_args_t cum_v,
+			    const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  *cum += (mode != BLKmode
-	   ? GET_MODE_SIZE (mode)
-	   : int_size_in_bytes (type));
+  *cum += arg.promoted_size_in_bytes ();
 }
 
 /* Make sure everything's fine if we *don't* have an FPU.

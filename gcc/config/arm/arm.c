@@ -190,8 +190,8 @@ static rtx emit_multi_reg_push (unsigned long, unsigned long);
 static int arm_arg_partial_bytes (cumulative_args_t,
 				  const function_arg_info &);
 static rtx arm_function_arg (cumulative_args_t, const function_arg_info &);
-static void arm_function_arg_advance (cumulative_args_t, machine_mode,
-				      const_tree, bool);
+static void arm_function_arg_advance (cumulative_args_t,
+				      const function_arg_info &);
 static pad_direction arm_function_arg_padding (machine_mode, const_tree);
 static unsigned int arm_function_arg_boundary (machine_mode, const_tree);
 static rtx aapcs_allocate_return_reg (machine_mode, const_tree,
@@ -6770,24 +6770,22 @@ arm_arg_partial_bytes (cumulative_args_t pcum_v, const function_arg_info &arg)
   return 0;
 }
 
-/* Update the data in PCUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
+/* Update the data in PCUM to advance over argument ARG.  */
 
 static void
-arm_function_arg_advance (cumulative_args_t pcum_v, machine_mode mode,
-			  const_tree type, bool named)
+arm_function_arg_advance (cumulative_args_t pcum_v,
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
 
   if (pcum->pcs_variant <= ARM_PCS_AAPCS_LOCAL)
     {
-      aapcs_layout_arg (pcum, mode, type, named);
+      aapcs_layout_arg (pcum, arg.mode, arg.type, arg.named);
 
       if (pcum->aapcs_cprc_slot >= 0)
 	{
-	  aapcs_cp_arg_layout[pcum->aapcs_cprc_slot].advance (pcum, mode,
-							      type);
+	  aapcs_cp_arg_layout[pcum->aapcs_cprc_slot].advance (pcum, arg.mode,
+							      arg.type);
 	  pcum->aapcs_cprc_slot = -1;
 	}
 
@@ -6800,12 +6798,12 @@ arm_function_arg_advance (cumulative_args_t pcum_v, machine_mode mode,
   else
     {
       pcum->nargs += 1;
-      if (arm_vector_mode_supported_p (mode)
+      if (arm_vector_mode_supported_p (arg.mode)
 	  && pcum->named_count > pcum->nargs
 	  && TARGET_IWMMXT_ABI)
 	pcum->iwmmxt_nregs += 1;
       else
-	pcum->nregs += ARM_NUM_REGS2 (mode, type);
+	pcum->nregs += ARM_NUM_REGS2 (arg.mode, arg.type);
     }
 }
 
@@ -6984,7 +6982,6 @@ cmse_func_args_or_return_in_stack (tree fndecl, tree name, tree fntype)
   FOREACH_FUNCTION_ARGS (fntype, arg_type, args_iter)
     {
       rtx arg_rtx;
-      machine_mode arg_mode = TYPE_MODE (arg_type);
 
       prev_arg_type = arg_type;
       if (VOID_TYPE_P (arg_type))
@@ -6992,7 +6989,9 @@ cmse_func_args_or_return_in_stack (tree fndecl, tree name, tree fntype)
 
       function_arg_info arg (arg_type, /*named=*/true);
       if (!first_param)
-	arm_function_arg_advance (args_so_far, arg_mode, arg_type, true);
+	/* ??? We should advance after processing the argument and pass
+	   the argument we're advancing past.  */
+	arm_function_arg_advance (args_so_far, arg);
       arg_rtx = arm_function_arg (args_so_far, arg);
       if (!arg_rtx || arm_arg_partial_bytes (args_so_far, arg))
 	{
@@ -7378,7 +7377,10 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
 	{
 	  tree type = TREE_VALUE (t);
 	  if (!VOID_TYPE_P (type))
-	    arm_function_arg_advance (cum_v, TYPE_MODE (type), type, true);
+	    {
+	      function_arg_info arg (type, /*named=*/true);
+	      arm_function_arg_advance (cum_v, arg);
+	    }
 	}
 
       function_arg_info arg (integer_type_node, /*named=*/true);
@@ -17441,15 +17443,15 @@ cmse_nonsecure_call_clear_caller_saved (void)
 	    {
 	      rtx arg_rtx;
 	      uint64_t to_clear_args_mask;
-	      machine_mode arg_mode = TYPE_MODE (arg_type);
 
 	      if (VOID_TYPE_P (arg_type))
 		continue;
 
 	      function_arg_info arg (arg_type, /*named=*/true);
 	      if (!first_param)
-		arm_function_arg_advance (args_so_far, arg_mode, arg_type,
-					  true);
+		/* ??? We should advance after processing the argument and pass
+		   the argument we're advancing past.  */
+		arm_function_arg_advance (args_so_far, arg);
 
 	      arg_rtx = arm_function_arg (args_so_far, arg);
 	      gcc_assert (REG_P (arg_rtx));

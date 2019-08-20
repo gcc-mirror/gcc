@@ -1715,8 +1715,7 @@ block_move_libcall_safe_for_call_parm (void)
 	  return false;
 	if (targetm.calls.arg_partial_bytes (args_so_far, arg_info))
 	  return false;
-	targetm.calls.function_arg_advance (args_so_far, mode,
-					    NULL_TREE, true);
+	targetm.calls.function_arg_advance (args_so_far, arg_info);
       }
   }
   return true;

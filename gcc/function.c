@@ -3672,8 +3672,9 @@ assign_parms (tree fndecl)
 	assign_parms_setup_varargs (&all, &data, false);
 
       /* Update info on where next arg arrives in registers.  */
-      targetm.calls.function_arg_advance (all.args_so_far, data.promoted_mode,
-					  data.passed_type, data.named_arg);
+      function_arg_info arg (data.passed_type, data.promoted_mode,
+			     data.named_arg);
+      targetm.calls.function_arg_advance (all.args_so_far, arg);
     }
 
   if (targetm.calls.split_complex_arg)
@@ -3860,8 +3861,9 @@ gimplify_parameters (gimple_seq *cleanup)
 	continue;
 
       /* Update info on where next arg arrives in registers.  */
-      targetm.calls.function_arg_advance (all.args_so_far, data.promoted_mode,
-					  data.passed_type, data.named_arg);
+      function_arg_info arg (data.passed_type, data.promoted_mode,
+			     data.named_arg);
+      targetm.calls.function_arg_advance (all.args_so_far, arg);
 
       /* ??? Once upon a time variable_size stuffed parameter list
 	 SAVE_EXPRs (amongst others) onto a pending sizes list.  This

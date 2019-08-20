@@ -149,8 +149,8 @@ static rtx mmix_struct_value_rtx (tree, int);
 static machine_mode mmix_promote_function_mode (const_tree,
 						     machine_mode,
 	                                             int *, const_tree, int);
-static void mmix_function_arg_advance (cumulative_args_t, machine_mode,
-				       const_tree, bool);
+static void mmix_function_arg_advance (cumulative_args_t,
+				       const function_arg_info &);
 static rtx mmix_function_incoming_arg (cumulative_args_t,
 				       const function_arg_info &);
 static rtx mmix_function_arg (cumulative_args_t, const function_arg_info &);
@@ -615,13 +615,13 @@ mmix_initial_elimination_offset (int fromreg, int toreg)
 }
 
 static void
-mmix_function_arg_advance (cumulative_args_t argsp_v, machine_mode mode,
-			   const_tree type, bool named ATTRIBUTE_UNUSED)
+mmix_function_arg_advance (cumulative_args_t argsp_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *argsp = get_cumulative_args (argsp_v);
-  int arg_size = MMIX_FUNCTION_ARG_SIZE (mode, type);
+  int arg_size = MMIX_FUNCTION_ARG_SIZE (arg.mode, arg.type);
 
-  argsp->regs = ((targetm.calls.must_pass_in_stack (mode, type)
+  argsp->regs = ((targetm.calls.must_pass_in_stack (arg.mode, arg.type)
 		  || (arg_size > 8
 		      && !TARGET_LIBFUNC
 		      && !argsp->lib))

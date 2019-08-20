@@ -2313,17 +2313,17 @@ gcn_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
    argument in the argument list.  */
 
 static void
-gcn_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			  const_tree type, bool named)
+gcn_function_arg_advance (cumulative_args_t cum_v,
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   if (cum->normal_function)
     {
-      if (!named)
+      if (!arg.named)
 	return;
 
-      int num_regs = num_arg_regs (mode, type);
+      int num_regs = num_arg_regs (arg.mode, arg.type);
       if (num_regs > 0)
 	while ((FIRST_PARM_REG + cum->num) % num_regs != 0)
 	  cum->num++;
@@ -2335,7 +2335,7 @@ gcn_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 	cum->num++;
       else
 	{
-	  cum->offset += tree_to_uhwi (TYPE_SIZE_UNIT (type));
+	  cum->offset += tree_to_uhwi (TYPE_SIZE_UNIT (arg.type));
 	  cfun->machine->kernarg_segment_byte_size = cum->offset;
 	}
     }

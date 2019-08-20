@@ -4686,8 +4686,7 @@ register to be used by the caller for this argument; likewise\n\
 DEFHOOK
 (function_arg_advance,
  "This hook updates the summarizer variable pointed to by @var{ca} to\n\
-advance past an argument in the argument list.  The values @var{mode},\n\
-@var{type} and @var{named} describe that argument.  Once this is done,\n\
+advance past argument @var{arg} in the argument list.  Once this is done,\n\
 the variable @var{cum} is suitable for analyzing the @emph{following}\n\
 argument with @code{TARGET_FUNCTION_ARG}, etc.\n\
 \n\
@@ -4695,7 +4694,7 @@ This hook need not do anything if the argument in question was passed\n\
 on the stack.  The compiler knows how to track the amount of stack space\n\
 used for arguments without any special help.",
  void,
- (cumulative_args_t ca, machine_mode mode, const_tree type, bool named),
+ (cumulative_args_t ca, const function_arg_info &arg),
  default_function_arg_advance)
 
 DEFHOOK

@@ -1400,11 +1400,11 @@ rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, machine_mode mode,
 }
 
 void
-rs6000_function_arg_advance (cumulative_args_t cum, machine_mode mode,
-			     const_tree type, bool named)
+rs6000_function_arg_advance (cumulative_args_t cum,
+			     const function_arg_info &arg)
 {
-  rs6000_function_arg_advance_1 (get_cumulative_args (cum), mode, type, named,
-				 0);
+  rs6000_function_arg_advance_1 (get_cumulative_args (cum),
+				 arg.mode, arg.type, arg.named, 0);
 }
 
 /* A subroutine of rs6000_darwin64_record_arg.  Assign the bits of the
@@ -2221,7 +2221,7 @@ rs6000_parm_needs_stack (cumulative_args_t args_so_far, tree type)
     return true;
 
   /* Update info on where next arg arrives in registers.  */
-  rs6000_function_arg_advance (args_so_far, mode, type, true);
+  rs6000_function_arg_advance (args_so_far, arg);
   return false;
 }
 

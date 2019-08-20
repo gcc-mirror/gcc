@@ -1105,10 +1105,10 @@ rx_function_arg (cumulative_args_t cum, const function_arg_info &arg)
 }
 
 static void
-rx_function_arg_advance (cumulative_args_t cum, machine_mode mode,
-			 const_tree type, bool named ATTRIBUTE_UNUSED)
+rx_function_arg_advance (cumulative_args_t cum,
+			 const function_arg_info &arg)
 {
-  *get_cumulative_args (cum) += rx_function_arg_size (mode, type);
+  *get_cumulative_args (cum) += rx_function_arg_size (arg.mode, arg.type);
 }
 
 static unsigned int

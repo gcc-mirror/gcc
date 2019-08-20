@@ -3863,18 +3863,18 @@ spu_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 }
 
 static void
-spu_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			  const_tree type, bool named ATTRIBUTE_UNUSED)
+spu_function_arg_advance (cumulative_args_t cum_v,
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  *cum += (type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
+  *cum += (arg.type && TREE_CODE (TYPE_SIZE (arg.type)) != INTEGER_CST
 	   ? 1
-	   : mode == BLKmode
-	   ? ((int_size_in_bytes (type) + 15) / 16)
-	   : mode == VOIDmode
+	   : arg.mode == BLKmode
+	   ? ((int_size_in_bytes (arg.type) + 15) / 16)
+	   : arg.mode == VOIDmode
 	   ? 1
-	   : spu_hard_regno_nregs (FIRST_ARG_REGNUM, mode));
+	   : spu_hard_regno_nregs (FIRST_ARG_REGNUM, arg.mode));
 }
 
 /* Implement TARGET_FUNCTION_ARG_OFFSET.  The SPU ABI wants 32/64-bit
@@ -4099,8 +4099,7 @@ spu_setup_incoming_varargs (cumulative_args_t cum,
 
       /* cum currently points to the last named argument, we want to
          start at the next argument. */
-      spu_function_arg_advance (pack_cumulative_args (&ncum),
-				arg.mode, arg.type, arg.named);
+      spu_function_arg_advance (pack_cumulative_args (&ncum), arg);
 
       offset = -STACK_POINTER_OFFSET;
       for (regno = ncum; regno < MAX_REGISTER_ARGS; regno++)

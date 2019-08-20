@@ -438,13 +438,13 @@ moxie_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
    : (unsigned) int_size_in_bytes (TYPE))
 
 static void
-moxie_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			    const_tree type, bool named ATTRIBUTE_UNUSED)
+moxie_function_arg_advance (cumulative_args_t cum_v,
+			    const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   *cum = (*cum < MOXIE_R6
-	  ? *cum + ((3 + MOXIE_FUNCTION_ARG_SIZE (mode, type)) / 4)
+	  ? *cum + ((3 + MOXIE_FUNCTION_ARG_SIZE (arg.mode, arg.type)) / 4)
 	  : *cum);
 }
 

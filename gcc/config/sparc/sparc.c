@@ -657,7 +657,7 @@ static bool sparc_mode_dependent_address_p (const_rtx, addr_space_t);
 static bool sparc_pass_by_reference (cumulative_args_t,
 				     const function_arg_info &);
 static void sparc_function_arg_advance (cumulative_args_t,
-					machine_mode, const_tree, bool);
+					const function_arg_info &);
 static rtx sparc_function_arg (cumulative_args_t, const function_arg_info &);
 static rtx sparc_function_incoming_arg (cumulative_args_t,
 					const function_arg_info &);
@@ -7590,19 +7590,19 @@ sparc_arg_partial_bytes (cumulative_args_t cum, const function_arg_info &arg)
 }
 
 /* Handle the TARGET_FUNCTION_ARG_ADVANCE hook.
-   Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   TYPE is null for libcalls where that information may not be available.  */
+   Update the data in CUM to advance over argument ARG.  */
 
 static void
-sparc_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			    const_tree type, bool named)
+sparc_function_arg_advance (cumulative_args_t cum_v,
+			    const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+  tree type = arg.type;
+  machine_mode mode = arg.mode;
   int regno, padding;
 
   /* We pass false for incoming here, it doesn't matter.  */
-  function_arg_slotno (cum, mode, type, named, false, &regno, &padding);
+  function_arg_slotno (cum, mode, type, arg.named, false, &regno, &padding);
 
   /* If argument requires leading padding, add it.  */
   cum->words += padding;

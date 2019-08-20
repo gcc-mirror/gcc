@@ -784,10 +784,7 @@ hook_void_CUMULATIVE_ARGS_tree (cumulative_args_t ca ATTRIBUTE_UNUSED,
 }
 
 void
-default_function_arg_advance (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			      machine_mode mode ATTRIBUTE_UNUSED,
-			      const_tree type ATTRIBUTE_UNUSED,
-			      bool named ATTRIBUTE_UNUSED)
+default_function_arg_advance (cumulative_args_t, const function_arg_info &)
 {
   gcc_unreachable ();
 }

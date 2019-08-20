@@ -5606,23 +5606,21 @@ alpha_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
   return gen_rtx_REG (arg.mode, num_args + basereg);
 }
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
+/* Update the data in CUM to advance over argument ARG.  */
 
 static void
-alpha_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			    const_tree type, bool named ATTRIBUTE_UNUSED)
+alpha_function_arg_advance (cumulative_args_t cum_v,
+			    const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  bool onstack = targetm.calls.must_pass_in_stack (mode, type);
-  int increment = onstack ? 6 : ALPHA_ARG_SIZE (mode, type);
+  bool onstack = targetm.calls.must_pass_in_stack (arg.mode, arg.type);
+  int increment = onstack ? 6 : ALPHA_ARG_SIZE (arg.mode, arg.type);
 
 #if TARGET_ABI_OSF
   *cum += increment;
 #else
   if (!onstack && cum->num_args < 6)
-    cum->atypes[cum->num_args] = alpha_arg_type (mode);
+    cum->atypes[cum->num_args] = alpha_arg_type (arg.mode);
   cum->num_args += increment;
 #endif
 }
@@ -6090,8 +6088,7 @@ alpha_setup_incoming_varargs (cumulative_args_t pcum,
   CUMULATIVE_ARGS cum = *get_cumulative_args (pcum);
 
   /* Skip the current argument.  */
-  targetm.calls.function_arg_advance (pack_cumulative_args (&cum),
-				      arg.mode, arg.type, arg.named);
+  targetm.calls.function_arg_advance (pack_cumulative_args (&cum), arg);
 
 #if TARGET_ABI_OPEN_VMS
   /* For VMS, we allocate space for all 6 arg registers plus a count.

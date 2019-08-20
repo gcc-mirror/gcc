@@ -1647,18 +1647,16 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
   return;
 }
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
+/* Update the data in CUM to advance over argument ARG.  */
 
 static void
-bfin_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			   const_tree type, bool named ATTRIBUTE_UNUSED)
+bfin_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int count, bytes, words;
 
-  bytes = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
+  bytes = arg.promoted_size_in_bytes ();
   words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   cum->words += words;

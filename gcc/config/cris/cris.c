@@ -147,8 +147,8 @@ static int cris_arg_partial_bytes (cumulative_args_t,
 static rtx cris_function_arg (cumulative_args_t, const function_arg_info &);
 static rtx cris_function_incoming_arg (cumulative_args_t,
 				       const function_arg_info &);
-static void cris_function_arg_advance (cumulative_args_t, machine_mode,
-				       const_tree, bool);
+static void cris_function_arg_advance (cumulative_args_t,
+				       const function_arg_info &);
 static rtx_insn *cris_md_asm_adjust (vec<rtx> &, vec<rtx> &,
 				     vec<const char *> &,
 				     vec<rtx> &, HARD_REG_SET &);
@@ -4156,12 +4156,12 @@ cris_function_incoming_arg (cumulative_args_t ca, const function_arg_info &arg)
 /* Worker function for TARGET_FUNCTION_ARG_ADVANCE.  */
 
 static void
-cris_function_arg_advance (cumulative_args_t ca_v, machine_mode mode,
-			   const_tree type, bool named ATTRIBUTE_UNUSED)
+cris_function_arg_advance (cumulative_args_t ca_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
 
-  ca->regs += (3 + CRIS_FUNCTION_ARG_SIZE (mode, type)) / 4;
+  ca->regs += (3 + CRIS_FUNCTION_ARG_SIZE (arg.mode, arg.type)) / 4;
 }
 
 /* Worker function for TARGET_MD_ASM_ADJUST.  */
