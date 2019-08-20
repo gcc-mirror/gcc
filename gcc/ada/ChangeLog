@@ -1,3 +1,8 @@
+2019-08-20  Philippe Gil  <gil@adacore.com>
+
+	* bindgen.adb (Gen_Main): Set gnat_argc/gnat_argv to argc/argv
+	only when still uninitialized.
+
 2019-08-20  Bob Duff  <duff@adacore.com>
 
 	* libgnat/g-comlin.ads (Exit_From_Command_Line): Fix
