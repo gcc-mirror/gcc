@@ -1,5 +1,7 @@
 2019-08-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/doxygen/user.cfg.in (INPUT): Remove profile mode headers.
+
 	* include/std/numeric (reduce): Fix Doxygen markup.
 
 	PR libstdc++/91371
