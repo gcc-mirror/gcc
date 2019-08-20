@@ -1,3 +1,12 @@
+2019-08-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch13.adb (Expand_N_Attribute_Definition_Clause, case
+	Storage_Size): If the expression for Storage_Size is not static
+	it may depend on characterstics of another type that may bot be
+	frozen yet, so the elaboration of the expression for the aspect
+	must be attached directly to the freeze actions of the type to
+	which it applies.
+
 2019-08-20  Piotr Trojanek  <trojanek@adacore.com>
 
 	* exp_util.adb (Build_DIC_Procedure_Declaration): Set the last
