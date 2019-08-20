@@ -12476,7 +12476,7 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 
   s390_check_type_for_vector_abi (type, true, false);
 
-  if (pass_by_reference (NULL, TYPE_MODE (type), type, false))
+  if (pass_va_arg_by_reference (type))
     {
       if (TARGET_DEBUG_ARG)
 	{

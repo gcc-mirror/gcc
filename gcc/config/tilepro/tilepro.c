@@ -419,8 +419,7 @@ tilepro_gimplify_va_arg_expr (tree valist, tree type, gimple_seq * pre_p,
 
   /* if an object is dynamically sized, a pointer to it is passed
      instead of the object itself.  */
-  pass_by_reference_p = pass_by_reference (NULL, TYPE_MODE (type), type,
-					   false);
+  pass_by_reference_p = pass_va_arg_by_reference (type);
 
   if (pass_by_reference_p)
     type = build_pointer_type (type);

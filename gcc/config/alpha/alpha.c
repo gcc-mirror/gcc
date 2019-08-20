@@ -6330,7 +6330,7 @@ alpha_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   t = fold_convert (build_nonstandard_integer_type (64, 0), offset_field);
   offset = get_initialized_tmp_var (t, pre_p, NULL);
 
-  indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  indirect = pass_va_arg_by_reference (type);
 
   if (indirect)
     {

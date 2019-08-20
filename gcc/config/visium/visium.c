@@ -1637,8 +1637,7 @@ visium_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   tree f_ovfl, f_gbase, f_fbase, f_gbytes, f_fbytes;
   tree ovfl, base, bytes;
   HOST_WIDE_INT size, rsize;
-  const bool by_reference_p
-    = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  const bool by_reference_p = pass_va_arg_by_reference (type);
   const bool float_reg_arg_p
     = (TARGET_FPU && !by_reference_p
        && ((GET_MODE_CLASS (TYPE_MODE (type)) == MODE_FLOAT

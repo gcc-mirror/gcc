@@ -6780,7 +6780,7 @@ mips_std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   unsigned HOST_WIDE_INT align, boundary;
   bool indirect;
 
-  indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  indirect = pass_va_arg_by_reference (type);
   if (indirect)
     type = build_pointer_type (type);
 
@@ -6867,7 +6867,7 @@ mips_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   tree addr;
   bool indirect_p;
 
-  indirect_p = pass_by_reference (NULL, TYPE_MODE (type), type, 0);
+  indirect_p = pass_va_arg_by_reference (type);
   if (indirect_p)
     type = build_pointer_type (type);
 

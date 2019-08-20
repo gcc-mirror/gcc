@@ -7935,7 +7935,7 @@ sparc_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   bool indirect;
   tree ptrtype = build_pointer_type (type);
 
-  if (pass_by_reference (NULL, TYPE_MODE (type), type, false))
+  if (pass_va_arg_by_reference (type))
     {
       indirect = true;
       size = rsize = UNITS_PER_WORD;

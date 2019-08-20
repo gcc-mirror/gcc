@@ -927,6 +927,15 @@ pass_by_reference (CUMULATIVE_ARGS *ca, machine_mode mode,
 					  type, named_arg);
 }
 
+/* Return true if TYPE should be passed by reference when passed to
+   the "..." arguments of a function.  */
+
+bool
+pass_va_arg_by_reference (tree type)
+{
+  return pass_by_reference (NULL, TYPE_MODE (type), type, false);
+}
+
 /* Return true if TYPE, which is passed by reference, should be callee
    copied instead of caller copied.  */
 

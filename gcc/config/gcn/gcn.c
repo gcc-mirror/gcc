@@ -2493,7 +2493,7 @@ gcn_gimplify_va_arg_expr (tree valist, tree type,
   tree t, u;
   bool indirect;
 
-  indirect = pass_by_reference (NULL, TYPE_MODE (type), type, 0);
+  indirect = pass_va_arg_by_reference (type);
   if (indirect)
     {
       type = ptr;
