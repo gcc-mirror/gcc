@@ -3745,6 +3745,9 @@ static const int RUNTIME_ERROR_DIVISION_BY_ZERO = 11;
 // Go statement with nil function.
 static const int RUNTIME_ERROR_GO_NIL = 12;
 
+// Shift by negative value.
+static const int RUNTIME_ERROR_SHIFT_BY_NEGATIVE = 13;
+
 // This is used by some of the langhooks.
 extern Gogo* go_get_gogo();
 
