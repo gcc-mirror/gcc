@@ -371,6 +371,21 @@ Syntax:
 This configuration pragma is a synonym for pragma Ada_12 and has the
 same syntax and effect.
 
+Pragma Aggregate_Individually_Assign
+====================================
+
+Syntax:
+
+.. code-block:: ada
+
+  pragma Aggregate_Individually_Assign;
+
+Where possible GNAT will store the binary representation of a record aggregate
+in memory for space and performance reasons. This configuration pragma changes
+this behaviour so that record aggregates are instead always converted into
+individual assignment statements.
+
+
 Pragma Allow_Integer_Address
 ============================
 

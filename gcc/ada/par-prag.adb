@@ -1319,6 +1319,7 @@ begin
          | Pragma_Acc_Kernels
          | Pragma_Acc_Loop
          | Pragma_Acc_Parallel
+         | Pragma_Aggregate_Individually_Assign
          | Pragma_Async_Readers
          | Pragma_Async_Writers
          | Pragma_Assertion_Policy

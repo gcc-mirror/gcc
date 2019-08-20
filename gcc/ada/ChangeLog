@@ -1,3 +1,17 @@
+2019-08-20  Patrick Bernardi  <bernardi@adacore.com>
+
+	* exp_aggr.adb (Expand_Record_Aggregate): Always convert a
+	record Aggregate to assignment statements if the option
+	Aggregate_Individually_Assign is set.
+	* opt.ads (Aggregate_Individually_Assign): New option.
+	* par-prag.adb (Prag): Add Pragma_Aggregate_Individually_Assign.
+	* sem_prag.adb (Analyze_Pragma): Likewise.
+	* snames.ads-tmpl: Add Pragma_Aggregate_Individually_Assign and
+	Name_Aggregate_Individually_Assign.
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Document
+	pragma Aggregate_Individually_Assign.
+	* gnat_rm.texi: Regenerate.
+
 2019-08-20  Bob Duff  <duff@adacore.com>
 
 	* par-ch4.adb: Minor wording change in error messages.
