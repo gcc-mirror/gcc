@@ -1,5 +1,11 @@
 2019-08-20  Bob Duff  <duff@adacore.com>
 
+	* libgnat/a-cborma.adb, libgnat/a-cborse.adb (Clear): Repeatedly
+	call Delete. This avoids clearing the free list, which
+	substantially speeds up future Delete operations.
+
+2019-08-20  Bob Duff  <duff@adacore.com>
+
 	* sem_ch13.adb (Component_Order_Check): New procedure to check
 	for out-of-order clauses.
 	* warnsw.ads, warnsw.adb: New -gnatw_r switch.
