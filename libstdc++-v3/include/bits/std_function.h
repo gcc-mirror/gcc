@@ -293,10 +293,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
-  template<typename _From, typename _To>
-    using __check_func_return_type
-      = __or_<is_void<_To>, is_same<_From, _To>, is_convertible<_From, _To>>;
-
   /**
    *  @brief Primary class template for std::function.
    *  @ingroup functors
@@ -309,8 +305,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       private _Function_base
     {
       template<typename _Func,
-	       typename _Res2 = typename result_of<_Func&(_ArgTypes...)>::type>
-	struct _Callable : __check_func_return_type<_Res2, _Res> { };
+	       typename _Res2 = __invoke_result<_Func&, _ArgTypes...>>
+	struct _Callable
+	: __is_invocable_impl<_Res2, _Res>::type
+	{ };
 
       // Used so the return type convertibility checks aren't done when
       // performing overload resolution for copy construction/assignment.

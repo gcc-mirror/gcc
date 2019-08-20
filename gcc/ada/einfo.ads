@@ -663,8 +663,8 @@ package Einfo is
 --       In that case, this field points to that subtype.
 --
 --       For E_Class_Wide_Subtype, the presence of Equivalent_Type overrides
---       this field. Note that this field ONLY appears in subtype entries, not
---       in type entries, it is not defined, and it is an error to reference
+--       this field. Note that this field ONLY appears in subtype entities, not
+--       in type entities, it is not defined, and it is an error to reference
 --       Cloned_Subtype in an E_Record_Type or E_Class_Wide_Type entity.
 
 --    Comes_From_Source
@@ -915,7 +915,7 @@ package Einfo is
 --       depends on a private type.
 
 --    Derived_Type_Link (Node31)
---       Defined in all type and subtype entries. Set in a base type if
+--       Defined in all type and subtype entities. Set in a base type if
 --       a derived type declaration is encountered which derives from
 --       this base type or one of its subtypes, and there are already
 --       primitive operations declared. In this case, it references the
@@ -1228,7 +1228,7 @@ package Einfo is
 --       initial value). See Exp_Util.Expand_Class_Wide_Subtype for further
 --       details. For E_Exception_Type, this points to the record containing
 --       the data necessary to represent exceptions (for further details, see
---       System.Standard_Library. For access_to_protected subprograms, it
+--       System.Standard_Library). For access to protected subprograms, it
 --       denotes a record that holds pointers to the operation and to the
 --       protected object. For remote Access_To_Subprogram types, it denotes
 --       the record that is the fat pointer representation of an RAST.
@@ -1616,7 +1616,7 @@ package Einfo is
 --       set, signalling that Freeze.Inherit_Delayed_Rep_Aspects must be called
 --       at the freeze point of the derived type.
 
---    Has_DIC (syntherized)
+--    Has_DIC (synthesized)
 --       Defined in all type entities. Set for a private type and its full view
 --       when the type is subject to pragma Default_Initial_Condition (DIC), or
 --       when the type inherits a DIC pragma from a parent type.
@@ -1952,7 +1952,7 @@ package Einfo is
 --       Unmodified and Unreferenced pragmas.
 
 --    Has_Pragma_Unused (Flag294)
---       Defined in all entries. Set if a valid pragma Unused applies to a
+--       Defined in all entities. Set if a valid pragma Unused applies to a
 --       variable or entity, indicating that warnings should not be given if
 --       it is never modified or referenced. Note: This pragma is exactly
 --       equivalent Unmodified and Unreference combined.
@@ -2366,9 +2366,9 @@ package Einfo is
 --       i.e. Standard.Boolean and all types ultimately derived from it.
 
 --    Is_Called (Flag102)
---       Defined in subprograms. Returns true if the subprogram is called
---       in the unit being compiled or in a unit in the context. Used for
---       inlining.
+--       Defined in subprograms and packages. Set if a subprogram is called
+--       from the unit being compiled or a unit in the closure. Also set for
+--       a package that contains called subprograms. Used only for inlining.
 
 --    Is_Character_Type (Flag63)
 --       Defined in all entities. Set for character types and subtypes,
@@ -3327,7 +3327,7 @@ package Einfo is
 --       frozen. If set it indicates that the representation is known to be
 --       unsigned (i.e. that no negative values appear in the range). This is
 --       normally just a reflection of the lower bound of the subtype or base
---       type, but there is one case in which the setting is non-obvious,
+--       type, but there is one case in which the setting is not obvious,
 --       namely the case of an unsigned subtype of a signed type from which
 --       a further subtype is obtained using variable bounds. This further
 --       subtype is still unsigned, but this cannot be determined by looking
@@ -4674,7 +4674,7 @@ package Einfo is
 --  They all overlap because they are supposed to apply to different entity
 --  kinds. They are semantically related, and have the following intended uses:
 
---  a) Renamed_Entity appplies to entities in renaming declarations that rename
+--  a) Renamed_Entity applies to entities in renaming declarations that rename
 --  an entity, so the value of the attribute IS an entity. This applies to
 --  generic renamings, package renamings, exception renamings, and subprograms
 --  renamings that rename a subprogram (rather than an attribute, an entry, a
@@ -6141,7 +6141,7 @@ package Einfo is
    --    DTC_Entity                          (Node16)
    --    First_Entity                        (Node17)
    --    Alias                               (Node18)   (non-generic case only)
-   --    Renamed_Entity                      (Node18)   (generic case only)
+   --    Renamed_Entity                      (Node18)
    --    Extra_Accessibility_Of_Result       (Node19)   (non-generic case only)
    --    Last_Entity                         (Node20)
    --    Interface_Name                      (Node21)
@@ -6406,12 +6406,13 @@ package Einfo is
    --    Has_Master_Entity                   (Flag21)
    --    Has_RACW                            (Flag214)  (non-generic case only)
    --    Ignore_SPARK_Mode_Pragmas           (Flag301)
-   --    In_Package_Body                     (Flag48)
-   --    In_Use                              (Flag8)
+   --    Is_Called                           (Flag102)  (non-generic case only)
    --    Is_Elaboration_Checks_OK_Id         (Flag148)
    --    Is_Elaboration_Warnings_OK_Id       (Flag304)
    --    Is_Instantiated                     (Flag126)
+   --    In_Package_Body                     (Flag48)
    --    Is_Private_Descendant               (Flag53)
+   --    In_Use                              (Flag8)
    --    Is_Visible_Lib_Unit                 (Flag116)
    --    Renamed_In_Spec                     (Flag231)  (non-generic case only)
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
@@ -6466,7 +6467,7 @@ package Einfo is
    --    DTC_Entity                          (Node16)
    --    First_Entity                        (Node17)
    --    Alias                               (Node18)   (non-generic case only)
-   --    Renamed_Entity                      (Node18)   (generic case only)
+   --    Renamed_Entity                      (Node18)
    --    Receiving_Entry                     (Node19)   (non-generic case only)
    --    Last_Entity                         (Node20)
    --    Interface_Name                      (Node21)
@@ -8429,6 +8430,7 @@ package Einfo is
    --    Initial_Condition
    --    Initializes
    --    Interrupt_Handler
+   --    No_Caching
    --    Part_Of
    --    Precondition
    --    Postcondition

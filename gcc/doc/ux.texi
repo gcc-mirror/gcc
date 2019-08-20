@@ -9,7 +9,7 @@
 @cindex guidelines, user experience
 
 To borrow a slogan from
- @uref{https://elm-lang.org/blog/compilers-as-assistants, Elm},
+@uref{https://elm-lang.org/news/compilers-as-assistants, Elm},
 
 @quotation
 @strong{Compilers should be assistants, not adversaries.}  A compiler should

@@ -2822,6 +2822,15 @@ common_handle_option (struct gcc_options *opts,
       opts->x_flag_lto = value ? "" : NULL;
       break;
 
+    case OPT_flto_:
+      if (strcmp (arg, "none") != 0
+	  && strcmp (arg, "jobserver") != 0
+	  && strcmp (arg, "auto") != 0
+	  && atoi (arg) == 0)
+	error_at (loc,
+		  "unrecognized argument to %<-flto=%> option: %qs", arg);
+      break;
+
     case OPT_w:
       dc->dc_inhibit_warnings = true;
       break;

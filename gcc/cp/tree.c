@@ -236,10 +236,23 @@ lvalue_kind (const_tree ref)
 	  gcc_assert (!type_dependent_expression_p (CONST_CAST_TREE (ref)));
 	  goto default_;
 	}
-      op1_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 1)
-				    ? TREE_OPERAND (ref, 1)
-				    : TREE_OPERAND (ref, 0));
-      op2_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 2));
+      {
+	tree op1 = TREE_OPERAND (ref, 1);
+	if (!op1) op1 = TREE_OPERAND (ref, 0);
+	tree op2 = TREE_OPERAND (ref, 2);
+	op1_lvalue_kind = lvalue_kind (op1);
+	op2_lvalue_kind = lvalue_kind (op2);
+	if (!op1_lvalue_kind != !op2_lvalue_kind)
+	  {
+	    /* The second or the third operand (but not both) is a
+	       throw-expression; the result is of the type
+	       and value category of the other.  */
+	    if (op1_lvalue_kind && TREE_CODE (op2) == THROW_EXPR)
+	      op2_lvalue_kind = op1_lvalue_kind;
+	    else if (op2_lvalue_kind && TREE_CODE (op1) == THROW_EXPR)
+	      op1_lvalue_kind = op2_lvalue_kind;
+	  }
+      }
       break;
 
     case MODOP_EXPR:
@@ -2287,8 +2300,6 @@ ovl_iterator::reveal_node (tree overload, tree node)
 tree
 ovl_iterator::remove_node (tree overload, tree node)
 {
-  gcc_assert (TREE_CODE (node) == OVERLOAD);
-
   tree *slot = &overload;
   while (*slot != node)
     {
@@ -4384,7 +4395,8 @@ handle_nodiscard_attribute (tree *node, tree name, tree /*args*/,
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
     {
-      if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (*node))))
+      if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (*node)))
+	  && !DECL_CONSTRUCTOR_P (*node))
 	warning_at (DECL_SOURCE_LOCATION (*node),
 		    OPT_Wattributes, "%qE attribute applied to %qD with void "
 		    "return type", name, *node);
@@ -5034,6 +5046,31 @@ special_function_p (const_tree decl)
   if (deduction_guide_p (decl))
     return sfk_deduction_guide;
 
+  return sfk_none;
+}
+
+/* As above, but only if DECL is a special member function as per 11.3.3
+   [special]: default/copy/move ctor, copy/move assignment, or destructor.  */
+
+special_function_kind
+special_memfn_p (const_tree decl)
+{
+  switch (special_function_kind sfk = special_function_p (decl))
+    {
+    case sfk_constructor:
+      if (!default_ctor_p (decl))
+	break;
+      gcc_fallthrough();
+    case sfk_copy_constructor:
+    case sfk_copy_assignment:
+    case sfk_move_assignment:
+    case sfk_move_constructor:
+    case sfk_destructor:
+      return sfk;
+
+    default:
+      break;
+    }
   return sfk_none;
 }
 

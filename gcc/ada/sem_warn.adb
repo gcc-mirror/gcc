@@ -818,6 +818,14 @@ package body Sem_Warn is
       --  For an entry formal entity from an entry declaration, find the
       --  corresponding body formal from the given accept statement.
 
+      function Generic_Body_Formal (E : Entity_Id) return Entity_Id;
+      --  Warnings on unused formals of subprograms are placed on the entity
+      --  in the subprogram body, which seems preferable because it suggests
+      --  a better codefix for GPS. The analysis of generic subprogram bodies
+      --  uses a different circuitry, so the choice for the proper placement
+      --  of the warning in the generic case takes place here, by finding the
+      --  body entity that corresponds to a formal in a spec.
+
       procedure May_Need_Initialized_Actual (Ent : Entity_Id);
       --  If an entity of a generic type has default initialization, then the
       --  corresponding actual type should be fully initialized, or else there
@@ -875,6 +883,35 @@ package body Sem_Warn is
 
          raise Program_Error;
       end Body_Formal;
+
+      -------------------------
+      -- Generic_Body_Formal --
+      -------------------------
+
+      function Generic_Body_Formal (E : Entity_Id) return Entity_Id is
+         Gen_Decl : constant Node_Id   := Unit_Declaration_Node (Scope (E));
+         Gen_Body : constant Entity_Id := Corresponding_Body (Gen_Decl);
+         Form     : Entity_Id;
+
+      begin
+         if No (Gen_Body) then
+            return E;
+
+         else
+            Form := First_Entity (Gen_Body);
+            while Present (Form) loop
+               if Chars (Form) = Chars (E) then
+                  return Form;
+               end if;
+
+               Next_Entity (Form);
+            end loop;
+         end if;
+
+         --  Should never fall through, should always find a match
+
+         raise Program_Error;
+      end Generic_Body_Formal;
 
       ---------------------------------
       -- May_Need_Initialized_Actual --
@@ -1688,7 +1725,15 @@ package body Sem_Warn is
                   elsif not Warnings_Off_E1
                     and then not Has_Junk_Name (E1)
                   then
-                     Unreferenced_Entities.Append (E1);
+                     if Is_Formal (E1)
+                       and then Nkind (Unit_Declaration_Node (Scope (E1)))
+                         = N_Generic_Subprogram_Declaration
+                     then
+                        Unreferenced_Entities.Append
+                          (Generic_Body_Formal (E1));
+                     else
+                        Unreferenced_Entities.Append (E1);
+                     end if;
                   end if;
                end if;
 
@@ -4362,11 +4407,31 @@ package body Sem_Warn is
                         E := Body_E;
                      end if;
 
-                     if not Is_Trivial_Subprogram (Scope (E)) then
-                        Error_Msg_NE -- CODEFIX
-                          ("?u?formal parameter & is not referenced!",
-                           E, Spec_E);
-                     end if;
+                     declare
+                        B : constant Node_Id := Parent (Parent (Scope (E)));
+                        S : Entity_Id := Empty;
+                     begin
+                        if Nkind_In (B,
+                                     N_Expression_Function,
+                                     N_Subprogram_Body,
+                                     N_Subprogram_Renaming_Declaration)
+                        then
+                           S := Corresponding_Spec (B);
+                        end if;
+
+                        --  Do not warn for dispatching operations, because
+                        --  that causes too much noise. Also do not warn for
+                        --  trivial subprograms.
+
+                        if (not Present (S)
+                            or else not Is_Dispatching_Operation (S))
+                          and then not Is_Trivial_Subprogram (Scope (E))
+                        then
+                           Error_Msg_NE -- CODEFIX
+                             ("?u?formal parameter & is not referenced!",
+                              E, Spec_E);
+                        end if;
+                     end;
                   end if;
                end if;
 

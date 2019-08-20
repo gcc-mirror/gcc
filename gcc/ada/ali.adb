@@ -649,7 +649,7 @@ package body ALI is
       Xref.Init;
       Xref_Section.Init;
 
-      --  Add dummy zero'th item in Linker_Options and Notes for sort calls
+      --  Add dummy zeroth item in Linker_Options and Notes for sort calls
 
       Linker_Options.Increment_Last;
       Notes.Increment_Last;
@@ -3204,9 +3204,6 @@ package body ALI is
 
             Linker_Options.Table (Linker_Options.Last).Internal_File :=
               Is_Internal_File_Name (F);
-
-            Linker_Options.Table (Linker_Options.Last).Original_Pos :=
-              Linker_Options.Last;
          end if;
 
          --  If there are notes present, scan them

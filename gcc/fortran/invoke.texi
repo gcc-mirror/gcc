@@ -1720,7 +1720,7 @@ This option currently only affects local arrays declared with constant
 bounds, and may not apply to all character variables.
 Future versions of GNU Fortran may improve this behavior.
 
-The default value for @var{n} is 32768.
+The default value for @var{n} is 65536.
 
 @item -fstack-arrays
 @opindex @code{fstack-arrays}

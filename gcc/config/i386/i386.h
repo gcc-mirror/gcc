@@ -237,9 +237,46 @@ struct stringop_algs
   } size [MAX_STRINGOP_ALGS];
 };
 
-/* Define the specific costs for a given cpu */
+/* Define the specific costs for a given cpu.  NB: hard_register is used
+   by TARGET_REGISTER_MOVE_COST and TARGET_MEMORY_MOVE_COST to compute
+   hard register move costs by register allocator.  Relative costs of
+   pseudo register load and store versus pseudo register moves in RTL
+   expressions for TARGET_RTX_COSTS can be different from relative
+   costs of hard registers to get the most efficient operations with
+   pseudo registers.  */
 
 struct processor_costs {
+  /* Costs used by register allocator.  integer->integer register move
+     cost is 2.  */
+  struct
+    {
+      const int movzbl_load;	/* cost of loading using movzbl */
+      const int int_load[3];	/* cost of loading integer registers
+				   in QImode, HImode and SImode relative
+				   to reg-reg move (2).  */
+      const int int_store[3];	/* cost of storing integer register
+				   in QImode, HImode and SImode */
+      const int fp_move;	/* cost of reg,reg fld/fst */
+      const int fp_load[3];	/* cost of loading FP register
+				   in SFmode, DFmode and XFmode */
+      const int fp_store[3];	/* cost of storing FP register
+				   in SFmode, DFmode and XFmode */
+      const int mmx_move;	/* cost of moving MMX register.  */
+      const int mmx_load[2];	/* cost of loading MMX register
+				   in SImode and DImode */
+      const int mmx_store[2];	/* cost of storing MMX register
+				   in SImode and DImode */
+      const int xmm_move;	/* cost of moving XMM register.  */
+      const int ymm_move;	/* cost of moving XMM register.  */
+      const int zmm_move;	/* cost of moving XMM register.  */
+      const int sse_load[5];	/* cost of loading SSE register
+				   in 32bit, 64bit, 128bit, 256bit and 512bit */
+      const int sse_store[5];	/* cost of storing SSE register
+				   in SImode, DImode and TImode.  */
+      const int sse_to_integer;	/* cost of moving SSE register to integer.  */
+      const int integer_to_sse;	/* cost of moving integer register to SSE. */
+    } hard_register;
+
   const int add;		/* cost of an add instruction */
   const int lea;		/* cost of a lea instruction */
   const int shift_var;		/* variable shift costs */
@@ -254,32 +291,20 @@ struct processor_costs {
   const int large_insn;		/* insns larger than this cost more */
   const int move_ratio;		/* The threshold of number of scalar
 				   memory-to-memory move insns.  */
-  const int movzbl_load;	/* cost of loading using movzbl */
   const int int_load[3];	/* cost of loading integer registers
 				   in QImode, HImode and SImode relative
 				   to reg-reg move (2).  */
   const int int_store[3];	/* cost of storing integer register
 				   in QImode, HImode and SImode */
-  const int fp_move;		/* cost of reg,reg fld/fst */
-  const int fp_load[3];		/* cost of loading FP register
-				   in SFmode, DFmode and XFmode */
-  const int fp_store[3];	/* cost of storing FP register
-				   in SFmode, DFmode and XFmode */
-  const int mmx_move;		/* cost of moving MMX register.  */
-  const int mmx_load[2];	/* cost of loading MMX register
-				   in SImode and DImode */
-  const int mmx_store[2];	/* cost of storing MMX register
-				   in SImode and DImode */
-  const int xmm_move, ymm_move, /* cost of moving XMM and YMM register.  */
-	    zmm_move;
   const int sse_load[5];	/* cost of loading SSE register
 				   in 32bit, 64bit, 128bit, 256bit and 512bit */
-  const int sse_unaligned_load[5];/* cost of unaligned load.  */
   const int sse_store[5];	/* cost of storing SSE register
-				   in SImode, DImode and TImode.  */
+				   in 32bit, 64bit, 128bit, 256bit and 512bit */
+  const int sse_unaligned_load[5];/* cost of unaligned load.  */
   const int sse_unaligned_store[5];/* cost of unaligned store.  */
+  const int xmm_move, ymm_move, /* cost of moving XMM and YMM register.  */
+	    zmm_move;
   const int sse_to_integer;	/* cost of moving SSE register to integer.  */
-  const int integer_to_sse;	/* cost of moving integer register to SSE. */
   const int gather_static, gather_per_elt; /* Cost of gather load is computed
 				   as static + per_item * nelts. */
   const int scatter_static, scatter_per_elt; /* Cost of gather store is
@@ -415,6 +440,8 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_ICELAKE_CLIENT (ix86_tune == PROCESSOR_ICELAKE_CLIENT)
 #define TARGET_ICELAKE_SERVER (ix86_tune == PROCESSOR_ICELAKE_SERVER)
 #define TARGET_CASCADELAKE (ix86_tune == PROCESSOR_CASCADELAKE)
+#define TARGET_TIGERLAKE (ix86_tune == PROCESSOR_TIGERLAKE)
+#define TARGET_COOPERLAKE (ix86_tune == PROCESSOR_COOPERLAKE)
 #define TARGET_INTEL (ix86_tune == PROCESSOR_INTEL)
 #define TARGET_GENERIC (ix86_tune == PROCESSOR_GENERIC)
 #define TARGET_AMDFAM10 (ix86_tune == PROCESSOR_AMDFAM10)
@@ -647,7 +674,7 @@ extern tree x86_mfence;
 /* Replace MACH-O, ifdefs by in-line tests, where possible. 
    (a) Macros defined in config/i386/darwin.h  */
 #define TARGET_MACHO 0
-#define TARGET_MACHO_PICSYM_STUBS 0
+#define TARGET_MACHO_SYMBOL_STUBS 0
 #define MACHOPIC_ATT_STUB 0
 /* (b) Macros defined in config/darwin.h  */
 #define MACHO_DYNAMIC_NO_PIC_P 0
@@ -2278,6 +2305,8 @@ enum processor_type
   PROCESSOR_ICELAKE_CLIENT,
   PROCESSOR_ICELAKE_SERVER,
   PROCESSOR_CASCADELAKE,
+  PROCESSOR_TIGERLAKE,
+  PROCESSOR_COOPERLAKE,
   PROCESSOR_INTEL,
   PROCESSOR_GEODE,
   PROCESSOR_K6,
@@ -2377,6 +2406,8 @@ const wide_int_bitmask PTA_AVX512VP2INTERSECT (0, HOST_WIDE_INT_1U << 9);
 const wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 9);
 const wide_int_bitmask PTA_PTWRITE (0, HOST_WIDE_INT_1U << 10);
 const wide_int_bitmask PTA_AVX512BF16 (0, HOST_WIDE_INT_1U << 11);
+const wide_int_bitmask PTA_MOVDIRI(0, HOST_WIDE_INT_1U << 13);
+const wide_int_bitmask PTA_MOVDIR64B(0, HOST_WIDE_INT_1U << 14);
 
 const wide_int_bitmask PTA_CORE2 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2
   | PTA_SSE3 | PTA_SSSE3 | PTA_CX16 | PTA_FXSR;
@@ -2397,6 +2428,7 @@ const wide_int_bitmask PTA_SKYLAKE_AVX512 = PTA_SKYLAKE | PTA_AVX512F
   | PTA_AVX512CD | PTA_AVX512VL | PTA_AVX512BW | PTA_AVX512DQ | PTA_PKU
   | PTA_CLWB;
 const wide_int_bitmask PTA_CASCADELAKE = PTA_SKYLAKE_AVX512 | PTA_AVX512VNNI;
+const wide_int_bitmask PTA_COOPERLAKE = PTA_CASCADELAKE | PTA_AVX512BF16;
 const wide_int_bitmask PTA_CANNONLAKE = PTA_SKYLAKE | PTA_AVX512F
   | PTA_AVX512CD | PTA_AVX512VL | PTA_AVX512BW | PTA_AVX512DQ | PTA_PKU
   | PTA_AVX512VBMI | PTA_AVX512IFMA | PTA_SHA;
@@ -2405,6 +2437,8 @@ const wide_int_bitmask PTA_ICELAKE_CLIENT = PTA_CANNONLAKE | PTA_AVX512VNNI
   | PTA_RDPID | PTA_CLWB;
 const wide_int_bitmask PTA_ICELAKE_SERVER = PTA_ICELAKE_CLIENT | PTA_PCONFIG
   | PTA_WBNOINVD;
+const wide_int_bitmask PTA_TIGERLAKE = PTA_ICELAKE_CLIENT | PTA_MOVDIRI
+  | PTA_MOVDIR64B | PTA_AVX512VP2INTERSECT;
 const wide_int_bitmask PTA_KNL = PTA_BROADWELL | PTA_AVX512PF | PTA_AVX512ER
   | PTA_AVX512F | PTA_AVX512CD;
 const wide_int_bitmask PTA_BONNELL = PTA_CORE2 | PTA_MOVBE;

@@ -1144,10 +1144,14 @@ package body Sem_Disp is
          --  3. Subprograms associated with stream attributes (built by
          --     New_Stream_Subprogram)
 
-         --  4. Wrapper built for inherited operations with inherited class-
+         --  4. Wrappers built for inherited operations with inherited class-
          --     wide conditions, where the conditions include calls to other
          --     overridden primitives. The wrappers include checks on these
          --     modified conditions. (AI12-113).
+
+         --  5. Declarations built for subprograms without separate specs that
+         --     are eligible for inlining in GNATprove (inside
+         --     Sem_Ch6.Analyze_Subprogram_Body_Helper).
 
          if Present (Old_Subp)
            and then Present (Overridden_Operation (Subp))
@@ -1168,7 +1172,9 @@ package body Sem_Disp is
               or else Get_TSS_Name (Subp) = TSS_Stream_Read
               or else Get_TSS_Name (Subp) = TSS_Stream_Write
 
-              or else Present (Contract (Overridden_Operation (Subp))));
+              or else Present (Contract (Overridden_Operation (Subp)))
+
+              or else GNATprove_Mode);
 
             Check_Controlling_Formals (Tagged_Type, Subp);
             Override_Dispatching_Operation (Tagged_Type, Old_Subp, Subp);

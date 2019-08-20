@@ -1767,10 +1767,8 @@ package body Ada.Containers.Bounded_Multiway_Trees is
      (Container : Tree;
       From, To  : Count_Type) return Boolean
    is
-      Idx : Count_Type;
-
+      Idx : Count_Type'Base := From;
    begin
-      Idx := From;
       while Idx >= 0 loop
          if Idx = To then
             return True;

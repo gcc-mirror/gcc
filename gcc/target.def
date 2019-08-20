@@ -2545,14 +2545,14 @@ set via @code{__attribute__}.",
 DEFHOOK
 (libc_has_function,
  "This hook determines whether a function from a class of functions\n\
-@var{fn_class} is present at the runtime.",
+@var{fn_class} is present in the target C library.",
  bool, (enum function_class fn_class),
  default_libc_has_function)
 
 DEFHOOK
 (libc_has_fast_function,
  "This hook determines whether a function from a class of functions\n\
-@var{fn_class} has a fast implementation.",
+@code{(enum function_class)}@var{fcode} has a fast implementation.",
  bool, (int fcode),
  default_libc_has_fast_function)
 
@@ -4450,18 +4450,18 @@ or 3-byte structure is returned at the most significant end of a\n\
    from __builtin_va_arg.  */
 DEFHOOK
 (pass_by_reference,
- "This target hook should return @code{true} if an argument at the\n\
+ "This target hook should return @code{true} if argument @var{arg} at the\n\
 position indicated by @var{cum} should be passed by reference.  This\n\
 predicate is queried after target independent reasons for being\n\
-passed by reference, such as @code{TREE_ADDRESSABLE (type)}.\n\
+passed by reference, such as @code{TREE_ADDRESSABLE (@var{arg}.type)}.\n\
 \n\
 If the hook returns true, a copy of that argument is made in memory and a\n\
 pointer to the argument is passed instead of the argument itself.\n\
 The pointer is passed in whatever way is appropriate for passing a pointer\n\
 to that type.",
  bool,
- (cumulative_args_t cum, machine_mode mode, const_tree type, bool named),
- hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false)
+ (cumulative_args_t cum, const function_arg_info &arg),
+ hook_bool_CUMULATIVE_ARGS_arg_info_false)
 
 DEFHOOK
 (expand_builtin_saveregs,
@@ -4486,8 +4486,8 @@ pass all their arguments on the stack.\n\
 \n\
 The argument @var{args_so_far} points to the @code{CUMULATIVE_ARGS} data\n\
 structure, containing the values that are obtained after processing the\n\
-named arguments.  The arguments @var{mode} and @var{type} describe the\n\
-last named argument---its machine mode and its data type as a tree node.\n\
+named arguments.  The argument @var{arg} describes the last of these named\n\
+arguments.\n\
 \n\
 The target hook should do two things: first, push onto the stack all the\n\
 argument registers @emph{not} used for the named arguments, and second,\n\
@@ -4507,7 +4507,7 @@ arguments of the function are being analyzed for the second time.  This\n\
 happens for an inline function, which is not actually compiled until the\n\
 end of the source file.  The hook @code{TARGET_SETUP_INCOMING_VARARGS} should\n\
 not generate any instructions in this case.",
- void, (cumulative_args_t args_so_far, machine_mode mode, tree type,
+ void, (cumulative_args_t args_so_far, const function_arg_info &arg,
 	int *pretend_args_size, int second_time),
  default_setup_incoming_varargs)
 
@@ -4549,15 +4549,6 @@ DEFHOOK
 returned by function call into @var{slot}.",
  void, (rtx slot, rtx bounds),
  default_store_returned_bounds)
-
-DEFHOOK
-(setup_incoming_vararg_bounds,
- "Use it to store bounds for anonymous register arguments stored\n\
-into the stack.  Arguments meaning is similar to\n\
-@code{TARGET_SETUP_INCOMING_VARARGS}.",
- void, (cumulative_args_t args_so_far, machine_mode mode, tree type,
-	int *pretend_args_size, int second_time),
- default_setup_incoming_vararg_bounds)
 
 DEFHOOK
 (call_args,
@@ -4639,11 +4630,11 @@ false.",
    Need audit to verify that this is the case.  */
 DEFHOOK
 (must_pass_in_stack,
- "This target hook should return @code{true} if we should not pass @var{type}\n\
+ "This target hook should return @code{true} if we should not pass @var{arg}\n\
 solely in registers.  The file @file{expr.h} defines a\n\
 definition that is usually appropriate, refer to @file{expr.h} for additional\n\
 documentation.",
- bool, (machine_mode mode, const_tree type),
+ bool, (const function_arg_info &arg),
  must_pass_in_stack_var_size_or_pad)
 
 /* Return true if type TYPE, mode MODE, which is passed by reference,
@@ -4662,8 +4653,8 @@ not be generated.\n\
 \n\
 The default version of this hook always returns false.",
  bool,
- (cumulative_args_t cum, machine_mode mode, const_tree type, bool named),
- hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false)
+ (cumulative_args_t cum, const function_arg_info &arg),
+ hook_bool_CUMULATIVE_ARGS_arg_info_false)
 
 /* Return zero for arguments passed entirely on the stack or entirely
    in registers.  If passed in both, return the number of bytes passed
@@ -4686,8 +4677,8 @@ compiler when this occurs, and how many bytes should go in registers.\n\
 @code{TARGET_FUNCTION_ARG} for these arguments should return the first\n\
 register to be used by the caller for this argument; likewise\n\
 @code{TARGET_FUNCTION_INCOMING_ARG}, for the called function.",
- int, (cumulative_args_t cum, machine_mode mode, tree type, bool named),
- hook_int_CUMULATIVE_ARGS_mode_tree_bool_0)
+ int, (cumulative_args_t cum, const function_arg_info &arg),
+ hook_int_CUMULATIVE_ARGS_arg_info_0)
 
 /* Update the state in CA to advance past an argument in the
    argument list.  The values MODE, TYPE, and NAMED describe that
@@ -4695,8 +4686,7 @@ register to be used by the caller for this argument; likewise\n\
 DEFHOOK
 (function_arg_advance,
  "This hook updates the summarizer variable pointed to by @var{ca} to\n\
-advance past an argument in the argument list.  The values @var{mode},\n\
-@var{type} and @var{named} describe that argument.  Once this is done,\n\
+advance past argument @var{arg} in the argument list.  Once this is done,\n\
 the variable @var{cum} is suitable for analyzing the @emph{following}\n\
 argument with @code{TARGET_FUNCTION_ARG}, etc.\n\
 \n\
@@ -4704,7 +4694,7 @@ This hook need not do anything if the argument in question was passed\n\
 on the stack.  The compiler knows how to track the amount of stack space\n\
 used for arguments without any special help.",
  void,
- (cumulative_args_t ca, machine_mode mode, const_tree type, bool named),
+ (cumulative_args_t ca, const function_arg_info &arg),
  default_function_arg_advance)
 
 DEFHOOK
@@ -4741,17 +4731,9 @@ constant size shorter than an @code{int}, and upward otherwise.",
    argument.  */
 DEFHOOK
 (function_arg,
- "Return an RTX indicating whether a function argument is passed in a\n\
-register and if so, which register.\n\
-\n\
-The arguments are @var{ca}, which summarizes all the previous\n\
-arguments; @var{mode}, the machine mode of the argument; @var{type},\n\
-the data type of the argument as a tree node or 0 if that is not known\n\
-(which happens for C support library functions); and @var{named},\n\
-which is @code{true} for an ordinary argument and @code{false} for\n\
-nameless arguments that correspond to @samp{@dots{}} in the called\n\
-function's prototype.  @var{type} can be an incomplete type if a\n\
-syntax error has previously occurred.\n\
+ "Return an RTX indicating whether function argument @var{arg} is passed\n\
+in a register and if so, which register.  Argument @var{ca} summarizes all\n\
+the previous arguments.\n\
 \n\
 The return value is usually either a @code{reg} RTX for the hard\n\
 register in which to pass the argument, or zero to pass the argument\n\
@@ -4797,8 +4779,7 @@ is not defined and @code{TARGET_FUNCTION_ARG} returns nonzero for such an\n\
 argument, the compiler will abort.  If @code{REG_PARM_STACK_SPACE} is\n\
 defined, the argument will be computed in the stack and then loaded into\n\
 a register.",
- rtx, (cumulative_args_t ca, machine_mode mode, const_tree type,
-       bool named),
+ rtx, (cumulative_args_t ca, const function_arg_info &arg),
  default_function_arg)
 
 DEFHOOK
@@ -4820,8 +4801,7 @@ so that it can be used to pass special arguments.\n\
 \n\
 If @code{TARGET_FUNCTION_INCOMING_ARG} is not defined,\n\
 @code{TARGET_FUNCTION_ARG} serves both purposes.",
- rtx, (cumulative_args_t ca, machine_mode mode, const_tree type,
-       bool named),
+ rtx, (cumulative_args_t ca, const function_arg_info &arg),
  default_function_incoming_arg)
 
 DEFHOOK

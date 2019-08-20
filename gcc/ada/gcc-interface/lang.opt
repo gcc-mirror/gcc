@@ -56,6 +56,10 @@ Wall
 Ada AdaWhy AdaSCIL
 Enable most warning messages.
 
+fdump-scos
+Ada RejectNegative Var(flag_dump_scos) Init(0)
+Dump Source Coverage Obligations.
+
 k8
 Driver
 Synonym of -gnatk8.

@@ -134,12 +134,11 @@ tilepro_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 /* Implement TARGET_PASS_BY_REFERENCE.  Variable sized types are
    passed by reference.  */
 static bool
-tilepro_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-			   machine_mode mode ATTRIBUTE_UNUSED,
-			   const_tree type, bool named ATTRIBUTE_UNUSED)
+tilepro_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  return (type && TYPE_SIZE (type)
-	  && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST);
+  return (arg.type
+	  && TYPE_SIZE (arg.type)
+	  && TREE_CODE (TYPE_SIZE (arg.type)) != INTEGER_CST);
 }
 
 
@@ -169,13 +168,10 @@ tilepro_function_arg_boundary (machine_mode mode, const_tree type)
 
 /* Implement TARGET_FUNCTION_ARG.  */
 static rtx
-tilepro_function_arg (cumulative_args_t cum_v,
-		      machine_mode mode,
-		      const_tree type, bool named ATTRIBUTE_UNUSED)
+tilepro_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS cum = *get_cumulative_args (cum_v);
-  int byte_size = ((mode == BLKmode)
-		   ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
+  int byte_size = arg.promoted_size_in_bytes ();
   bool doubleword_aligned_p;
 
   if (cum >= TILEPRO_NUM_ARG_REGS)
@@ -183,7 +179,7 @@ tilepro_function_arg (cumulative_args_t cum_v,
 
   /* See whether the argument has doubleword alignment.  */
   doubleword_aligned_p =
-    tilepro_function_arg_boundary (mode, type) > BITS_PER_WORD;
+    tilepro_function_arg_boundary (arg.mode, arg.type) > BITS_PER_WORD;
 
   if (doubleword_aligned_p)
     cum += cum & 1;
@@ -194,26 +190,24 @@ tilepro_function_arg (cumulative_args_t cum_v,
       > TILEPRO_NUM_ARG_REGS)
     return NULL_RTX;
 
-  return gen_rtx_REG (mode, cum);
+  return gen_rtx_REG (arg.mode, cum);
 }
 
 
 /* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 static void
 tilepro_function_arg_advance (cumulative_args_t cum_v,
-			      machine_mode mode,
-			      const_tree type, bool named ATTRIBUTE_UNUSED)
+			      const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  int byte_size = ((mode == BLKmode)
-		   ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
+  int byte_size = arg.promoted_size_in_bytes ();
   int word_size = (byte_size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   bool doubleword_aligned_p;
 
   /* See whether the argument has doubleword alignment.  */
   doubleword_aligned_p =
-    tilepro_function_arg_boundary (mode, type) > BITS_PER_WORD;
+    tilepro_function_arg_boundary (arg.mode, arg.type) > BITS_PER_WORD;
 
   if (doubleword_aligned_p)
     *cum += *cum & 1;
@@ -343,8 +337,8 @@ tilepro_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 /* Implement TARGET_SETUP_INCOMING_VARARGS.  */
 static void
 tilepro_setup_incoming_varargs (cumulative_args_t cum,
-				machine_mode mode,
-				tree type, int *pretend_args, int no_rtl)
+				const function_arg_info &arg,
+				int *pretend_args, int no_rtl)
 {
   CUMULATIVE_ARGS local_cum = *get_cumulative_args (cum);
   int first_reg;
@@ -352,8 +346,7 @@ tilepro_setup_incoming_varargs (cumulative_args_t cum,
   /* The caller has advanced CUM up to, but not beyond, the last named
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
-  targetm.calls.function_arg_advance (pack_cumulative_args (&local_cum),
-				      mode, type, true);
+  targetm.calls.function_arg_advance (pack_cumulative_args (&local_cum), arg);
   first_reg = local_cum;
 
   if (local_cum < TILEPRO_NUM_ARG_REGS)
@@ -419,8 +412,7 @@ tilepro_gimplify_va_arg_expr (tree valist, tree type, gimple_seq * pre_p,
 
   /* if an object is dynamically sized, a pointer to it is passed
      instead of the object itself.  */
-  pass_by_reference_p = pass_by_reference (NULL, TYPE_MODE (type), type,
-					   false);
+  pass_by_reference_p = pass_va_arg_by_reference (type);
 
   if (pass_by_reference_p)
     type = build_pointer_type (type);
@@ -3095,7 +3087,7 @@ tilepro_expand_builtin (tree exp,
 #define MAX_BUILTIN_ARGS 4
 
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   tree arg;
   call_expr_arg_iterator iter;
   enum insn_code icode;

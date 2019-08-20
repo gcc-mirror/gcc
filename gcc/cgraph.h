@@ -1746,7 +1746,7 @@ public:
   /* Return true when the edge represents a direct recursion.  */
   bool recursive_p (void);
 
-  /* Return true if the call can be hot.  */
+  /* Return true if the edge may be considered hot.  */
   bool maybe_hot_p (void);
 
   /* Get unique identifier of the edge.  */

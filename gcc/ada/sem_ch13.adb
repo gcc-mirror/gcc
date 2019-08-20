@@ -2824,7 +2824,7 @@ package body Sem_Ch13 is
                   Insert_Pragma (Aitem);
                   goto Continue;
 
-               --  Aspect Effecitve_Reads is never delayed because it is
+               --  Aspect Effective_Reads is never delayed because it is
                --  equivalent to a source pragma which appears after the
                --  related object declaration.
 
@@ -3014,6 +3014,19 @@ package body Sem_Ch13 is
                   Insert_Pragma (Aitem);
                   goto Continue;
 
+               --  Max_Entry_Queue_Length
+
+               when Aspect_Max_Entry_Queue_Length =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name => Name_Max_Entry_Queue_Length);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
                --  Max_Queue_Length
 
                when Aspect_Max_Queue_Length =>
@@ -3022,6 +3035,21 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Max_Queue_Length);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
+               --  Aspect No_Caching is never delayed because it is equivalent
+               --  to a source pragma which appears after the related object
+               --  declaration.
+
+               when Aspect_No_Caching =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_No_Caching);
 
                   Decorate (Aspect, Aitem);
                   Insert_Pragma (Aitem);
@@ -4625,10 +4653,12 @@ package body Sem_Ch13 is
          end if;
 
          if not Is_Overloaded (Expr) then
-            if not Check_Primitive_Function (Entity (Expr)) then
+            if Entity (Expr) /= Any_Id
+              and then not Check_Primitive_Function (Entity (Expr))
+            then
                Error_Msg_NE
                  ("aspect Indexing requires a function that applies to type&",
-                   Entity (Expr), Ent);
+                  Entity (Expr), Ent);
             end if;
 
             --  Flag the default_iterator as well as the denoted function.
@@ -5781,6 +5811,9 @@ package body Sem_Ch13 is
 
                if ASIS_Mode then
                   null;
+
+               elsif Size <= 0 then
+                  Error_Msg_N ("Object_Size must be positive", Expr);
 
                elsif Is_Scalar_Type (U_Ent) then
                   if Size /= 8 and then Size /= 16 and then Size /= 32
@@ -9636,7 +9669,9 @@ package body Sem_Ch13 is
             | Aspect_Initial_Condition
             | Aspect_Initializes
             | Aspect_Max_Entry_Queue_Depth
+            | Aspect_Max_Entry_Queue_Length
             | Aspect_Max_Queue_Length
+            | Aspect_No_Caching
             | Aspect_Obsolescent
             | Aspect_Part_Of
             | Aspect_Post
@@ -10090,6 +10125,19 @@ package body Sem_Ch13 is
       --  issued, since the message was already given. Comp is also set to
       --  Empty if the current "component clause" is in fact a pragma.
 
+      procedure Record_Hole_Check
+        (Rectype : Entity_Id; After_Last : out Uint; Warn : Boolean);
+      --  Checks for gaps in the given Rectype. Compute After_Last, the bit
+      --  number after the last component. Warn is True on the initial call,
+      --  and warnings are given for gaps. For a type extension, this is called
+      --  recursively to compute After_Last for the parent type; in this case
+      --  Warn is False and the warnings are suppressed.
+
+      procedure Component_Order_Check (Rectype : Entity_Id);
+      --  Check that the order of component clauses agrees with the order of
+      --  component declarations, and that the component clauses are given in
+      --  increasing order of bit offset.
+
       -----------------------------
       -- Check_Component_Overlap --
       -----------------------------
@@ -10131,6 +10179,53 @@ package body Sem_Ch13 is
             end;
          end if;
       end Check_Component_Overlap;
+
+      ---------------------------
+      -- Component_Order_Check --
+      ---------------------------
+
+      procedure Component_Order_Check (Rectype : Entity_Id) is
+         Comp : Entity_Id := First_Component (Rectype);
+         Clause : Node_Id := First (Component_Clauses (N));
+         Prev_Bit_Offset : Uint := Uint_0;
+         OOO : constant String :=
+           "?component clause out of order with respect to declaration";
+
+      begin
+         --  Step Comp through components and Clause through component clauses,
+         --  skipping pragmas. We ignore discriminants and variant parts,
+         --  because we get most of the benefit from the plain vanilla
+         --  component cases, without the extra complexity. If we find a Comp
+         --  and Clause that don't match, give a warning on both and quit. If
+         --  we find two subsequent clauses out of order by bit layout, give
+         --  warning and quit. On each iteration, Prev_Bit_Offset is the one
+         --  from the previous iteration (or 0 to start).
+
+         while Present (Comp) and then Present (Clause) loop
+            if Nkind (Clause) = N_Component_Clause
+              and then Ekind (Entity (Component_Name (Clause))) = E_Component
+            then
+               if Entity (Component_Name (Clause)) /= Comp then
+                  Error_Msg_N (OOO, Comp);
+                  Error_Msg_N (OOO, Clause);
+                  exit;
+               end if;
+
+               if not Reverse_Bit_Order (Rectype)
+                 and then not Reverse_Storage_Order (Rectype)
+                 and then Component_Bit_Offset (Comp) < Prev_Bit_Offset
+               then
+                  Error_Msg_N ("?memory layout out of order", Clause);
+                  exit;
+               end if;
+
+               Prev_Bit_Offset := Component_Bit_Offset (Comp);
+               Comp := Next_Component (Comp);
+            end if;
+
+            Next (Clause);
+         end loop;
+      end Component_Order_Check;
 
       --------------------
       -- Find_Component --
@@ -10200,6 +10295,227 @@ package body Sem_Ch13 is
             Lbit := Fbit + Esize (Comp) - 1;
          end if;
       end Find_Component;
+
+      -----------------------
+      -- Record_Hole_Check --
+      -----------------------
+
+      procedure Record_Hole_Check
+        (Rectype : Entity_Id; After_Last : out Uint; Warn : Boolean)
+      is
+         Decl : constant Node_Id := Declaration_Node (Base_Type (Rectype));
+         --  Full declaration of record type
+
+         procedure Check_Component_List
+           (DS   : List_Id;
+            CL   : Node_Id;
+            Sbit : Uint;
+            Abit : out Uint);
+         --  Check component list CL for holes. DS is a list of discriminant
+         --  specifications to be included in the consideration of components.
+         --  Sbit is the starting bit, which is zero if there are no preceding
+         --  components (before a variant part, or a parent type, or a tag
+         --  field). If there are preceding components, Sbit is the bit just
+         --  after the last such component. Abit is set to the bit just after
+         --  the last component of DS and CL.
+
+         --------------------------
+         -- Check_Component_List --
+         --------------------------
+
+         procedure Check_Component_List
+           (DS   : List_Id;
+            CL   : Node_Id;
+            Sbit : Uint;
+            Abit : out Uint)
+         is
+            Compl : Integer;
+
+         begin
+            Compl := Integer (List_Length (Component_Items (CL)));
+
+            if DS /= No_List then
+               Compl := Compl + Integer (List_Length (DS));
+            end if;
+
+            declare
+               Comps : array (Natural range 0 .. Compl) of Entity_Id;
+               --  Gather components (zero entry is for sort routine)
+
+               Ncomps : Natural := 0;
+               --  Number of entries stored in Comps (starting at Comps (1))
+
+               Citem : Node_Id;
+               --  One component item or discriminant specification
+
+               Nbit  : Uint;
+               --  Starting bit for next component
+
+               CEnt  : Entity_Id;
+               --  Component entity
+
+               Variant : Node_Id;
+               --  One variant
+
+               function Lt (Op1, Op2 : Natural) return Boolean;
+               --  Compare routine for Sort
+
+               procedure Move (From : Natural; To : Natural);
+               --  Move routine for Sort
+
+               package Sorting is new GNAT.Heap_Sort_G (Move, Lt);
+
+               --------
+               -- Lt --
+               --------
+
+               function Lt (Op1, Op2 : Natural) return Boolean is
+               begin
+                  return Component_Bit_Offset (Comps (Op1))
+                       < Component_Bit_Offset (Comps (Op2));
+               end Lt;
+
+               ----------
+               -- Move --
+               ----------
+
+               procedure Move (From : Natural; To : Natural) is
+               begin
+                  Comps (To) := Comps (From);
+               end Move;
+
+            begin
+               --  Gather discriminants into Comp
+
+               if DS /= No_List then
+                  Citem := First (DS);
+                  while Present (Citem) loop
+                     if Nkind (Citem) = N_Discriminant_Specification then
+                        declare
+                           Ent : constant Entity_Id :=
+                                   Defining_Identifier (Citem);
+                        begin
+                           if Ekind (Ent) = E_Discriminant then
+                              Ncomps := Ncomps + 1;
+                              Comps (Ncomps) := Ent;
+                           end if;
+                        end;
+                     end if;
+
+                     Next (Citem);
+                  end loop;
+               end if;
+
+               --  Gather component entities into Comp
+
+               Citem := First (Component_Items (CL));
+               while Present (Citem) loop
+                  if Nkind (Citem) = N_Component_Declaration then
+                     Ncomps := Ncomps + 1;
+                     Comps (Ncomps) := Defining_Identifier (Citem);
+                  end if;
+
+                  Next (Citem);
+               end loop;
+
+               --  Now sort the component entities based on the first bit.
+               --  Note we already know there are no overlapping components.
+
+               Sorting.Sort (Ncomps);
+
+               --  Loop through entries checking for holes
+
+               Nbit := Sbit;
+               for J in 1 .. Ncomps loop
+                  CEnt := Comps (J);
+
+                  declare
+                     CBO : constant Uint := Component_Bit_Offset (CEnt);
+
+                  begin
+                     --  Skip components with unknown offsets
+
+                     if CBO /= No_Uint and then CBO >= 0 then
+                        Error_Msg_Uint_1 := CBO - Nbit;
+
+                        if Warn and then Error_Msg_Uint_1 > 0 then
+                           Error_Msg_NE
+                             ("?H?^-bit gap before component&",
+                              Component_Name (Component_Clause (CEnt)),
+                              CEnt);
+                        end if;
+
+                        Nbit := CBO + Esize (CEnt);
+                     end if;
+                  end;
+               end loop;
+
+               --  Set Abit to just after the last nonvariant component
+
+               Abit := Nbit;
+
+               --  Process variant parts recursively if present. Set Abit to
+               --  the maximum for all variant parts.
+
+               if Present (Variant_Part (CL)) then
+                  declare
+                     Var_Start : constant Uint := Nbit;
+                  begin
+                     Variant := First (Variants (Variant_Part (CL)));
+                     while Present (Variant) loop
+                        Check_Component_List
+                          (No_List, Component_List (Variant), Var_Start, Nbit);
+                        Next (Variant);
+                        if Nbit > Abit then
+                           Abit := Nbit;
+                        end if;
+                     end loop;
+                  end;
+               end if;
+            end;
+         end Check_Component_List;
+
+         Sbit : Uint;
+         --  Starting bit for call to Check_Component_List. Zero for an
+         --  untagged type. The size of the Tag for a nonderived tagged
+         --  type. Parent size for a type extension.
+
+         Record_Definition : Node_Id;
+         --  Record_Definition containing Component_List to pass to
+         --  Check_Component_List.
+
+      --  Start of processing for Record_Hole_Check
+
+      begin
+         if Is_Tagged_Type (Rectype) then
+            Sbit := UI_From_Int (System_Address_Size);
+         else
+            Sbit := Uint_0;
+         end if;
+
+         After_Last := Uint_0;
+
+         if Nkind (Decl) = N_Full_Type_Declaration then
+            Record_Definition := Type_Definition (Decl);
+
+            --  If we have a record extension, set Sbit to point after the last
+            --  component of the parent type, by calling Record_Hole_Check
+            --  recursively.
+
+            if Nkind (Record_Definition) = N_Derived_Type_Definition then
+               Record_Definition := Record_Extension_Part (Record_Definition);
+               Record_Hole_Check (Underlying_Type (Parent_Subtype (Rectype)),
+                                  After_Last => Sbit, Warn => False);
+            end if;
+
+            if Nkind (Record_Definition) = N_Record_Definition then
+               Check_Component_List
+                 (Discriminant_Specifications (Decl),
+                  Component_List (Record_Definition),
+                  Sbit, After_Last);
+            end if;
+         end if;
+      end Record_Hole_Check;
 
    --  Start of processing for Check_Record_Representation_Clause
 
@@ -10557,192 +10873,25 @@ package body Sem_Ch13 is
          end Overlap_Check2;
       end if;
 
-      --  The following circuit deals with warning on record holes (gaps). We
-      --  skip this check if overlap was detected, since it makes sense for the
-      --  programmer to fix this illegality before worrying about warnings.
+      --  Skip the following warnings if overlap was detected; programmer
+      --  should fix the errors first.
 
-      if not Overlap_Detected and Warn_On_Record_Holes then
-         Record_Hole_Check : declare
-            Decl : constant Node_Id := Declaration_Node (Base_Type (Rectype));
-            --  Full declaration of record type
+      if not Overlap_Detected then
+         --  Check for record holes (gaps)
 
-            procedure Check_Component_List
-              (CL   : Node_Id;
-               Sbit : Uint;
-               DS   : List_Id);
-            --  Check component list CL for holes. The starting bit should be
-            --  Sbit. which is zero for the main record component list and set
-            --  appropriately for recursive calls for variants. DS is set to
-            --  a list of discriminant specifications to be included in the
-            --  consideration of components. It is No_List if none to consider.
-
-            --------------------------
-            -- Check_Component_List --
-            --------------------------
-
-            procedure Check_Component_List
-              (CL   : Node_Id;
-               Sbit : Uint;
-               DS   : List_Id)
-            is
-               Compl : Integer;
-
-            begin
-               Compl := Integer (List_Length (Component_Items (CL)));
-
-               if DS /= No_List then
-                  Compl := Compl + Integer (List_Length (DS));
-               end if;
-
-               declare
-                  Comps : array (Natural range 0 .. Compl) of Entity_Id;
-                  --  Gather components (zero entry is for sort routine)
-
-                  Ncomps : Natural := 0;
-                  --  Number of entries stored in Comps (starting at Comps (1))
-
-                  Citem : Node_Id;
-                  --  One component item or discriminant specification
-
-                  Nbit  : Uint;
-                  --  Starting bit for next component
-
-                  CEnt  : Entity_Id;
-                  --  Component entity
-
-                  Variant : Node_Id;
-                  --  One variant
-
-                  function Lt (Op1, Op2 : Natural) return Boolean;
-                  --  Compare routine for Sort
-
-                  procedure Move (From : Natural; To : Natural);
-                  --  Move routine for Sort
-
-                  package Sorting is new GNAT.Heap_Sort_G (Move, Lt);
-
-                  --------
-                  -- Lt --
-                  --------
-
-                  function Lt (Op1, Op2 : Natural) return Boolean is
-                  begin
-                     return Component_Bit_Offset (Comps (Op1))
-                       <
-                       Component_Bit_Offset (Comps (Op2));
-                  end Lt;
-
-                  ----------
-                  -- Move --
-                  ----------
-
-                  procedure Move (From : Natural; To : Natural) is
-                  begin
-                     Comps (To) := Comps (From);
-                  end Move;
-
-               begin
-                  --  Gather discriminants into Comp
-
-                  if DS /= No_List then
-                     Citem := First (DS);
-                     while Present (Citem) loop
-                        if Nkind (Citem) = N_Discriminant_Specification then
-                           declare
-                              Ent : constant Entity_Id :=
-                                      Defining_Identifier (Citem);
-                           begin
-                              if Ekind (Ent) = E_Discriminant then
-                                 Ncomps := Ncomps + 1;
-                                 Comps (Ncomps) := Ent;
-                              end if;
-                           end;
-                        end if;
-
-                        Next (Citem);
-                     end loop;
-                  end if;
-
-                  --  Gather component entities into Comp
-
-                  Citem := First (Component_Items (CL));
-                  while Present (Citem) loop
-                     if Nkind (Citem) = N_Component_Declaration then
-                        Ncomps := Ncomps + 1;
-                        Comps (Ncomps) := Defining_Identifier (Citem);
-                     end if;
-
-                     Next (Citem);
-                  end loop;
-
-                  --  Now sort the component entities based on the first bit.
-                  --  Note we already know there are no overlapping components.
-
-                  Sorting.Sort (Ncomps);
-
-                  --  Loop through entries checking for holes
-
-                  Nbit := Sbit;
-                  for J in 1 .. Ncomps loop
-                     CEnt := Comps (J);
-
-                     declare
-                        CBO : constant Uint := Component_Bit_Offset (CEnt);
-
-                     begin
-                        --  Skip components with unknown offsets
-
-                        if CBO /= No_Uint and then CBO >= 0 then
-                           Error_Msg_Uint_1 := CBO - Nbit;
-
-                           if Error_Msg_Uint_1 > 0 then
-                              Error_Msg_NE
-                                ("?H?^-bit gap before component&",
-                                 Component_Name (Component_Clause (CEnt)),
-                                 CEnt);
-                           end if;
-
-                           Nbit := CBO + Esize (CEnt);
-                        end if;
-                     end;
-                  end loop;
-
-                  --  Process variant parts recursively if present
-
-                  if Present (Variant_Part (CL)) then
-                     Variant := First (Variants (Variant_Part (CL)));
-                     while Present (Variant) loop
-                        Check_Component_List
-                          (Component_List (Variant), Nbit, No_List);
-                        Next (Variant);
-                     end loop;
-                  end if;
-               end;
-            end Check_Component_List;
-
-         --  Start of processing for Record_Hole_Check
-
-         begin
+         if Warn_On_Record_Holes then
             declare
-               Sbit : Uint;
-
+               Ignore : Uint;
             begin
-               if Is_Tagged_Type (Rectype) then
-                  Sbit := UI_From_Int (System_Address_Size);
-               else
-                  Sbit := Uint_0;
-               end if;
-
-               if Nkind (Decl) = N_Full_Type_Declaration
-                 and then Nkind (Type_Definition (Decl)) = N_Record_Definition
-               then
-                  Check_Component_List
-                    (Component_List (Type_Definition (Decl)),
-                     Sbit,
-                     Discriminant_Specifications (Decl));
-               end if;
+               Record_Hole_Check (Rectype, After_Last => Ignore, Warn => True);
             end;
-         end Record_Hole_Check;
+         end if;
+
+         --  Check for out-of-order component clauses
+
+         if Warn_On_Component_Order then
+            Component_Order_Check (Rectype);
+         end if;
       end if;
 
       --  For records that have component clauses for all components, and whose
@@ -10803,7 +10952,7 @@ package body Sem_Ch13 is
 
          if not ASIS_Mode then
             Error_Msg_Uint_1 := Min_Siz;
-            Error_Msg_NE ("size for& too small, minimum allowed is ^", N, T);
+            Error_Msg_NE (Size_Too_Small_Message, N, T);
          end if;
       end Size_Too_Small_Error;
 
@@ -11477,7 +11626,7 @@ package body Sem_Ch13 is
       if Align = No_Uint then
          return No_Uint;
 
-      elsif Align <= 0 then
+      elsif Align < 0 then
 
          --  This error is suppressed in ASIS mode to allow for different ASIS
          --  back ends or ASIS-based tools to query the illegal clause.
@@ -11487,6 +11636,11 @@ package body Sem_Ch13 is
          end if;
 
          return No_Uint;
+
+      --  If Alignment is specified to be 0, we treat it the same as 1
+
+      elsif Align = 0 then
+         return Uint_1;
 
       else
          for J in Int range 0 .. 64 loop
@@ -14471,6 +14625,39 @@ package body Sem_Ch13 is
    ------------------------------------
 
    procedure Validate_Unchecked_Conversions is
+      function Is_Null_Array (T : Entity_Id) return Boolean;
+      --  We want to warn in the case of converting to a wrong-sized array of
+      --  bytes, including the zero-size case. This returns True in that case,
+      --  which is necessary because a size of 0 is used to indicate both an
+      --  unknown size and a size of 0. It's OK for this to return True in
+      --  other zero-size cases, but we don't go out of our way; for example,
+      --  we don't bother with multidimensional arrays.
+
+      function Is_Null_Array (T : Entity_Id) return Boolean is
+      begin
+         if Is_Array_Type (T) and then Is_Constrained (T) then
+            declare
+               Index : constant Node_Id := First_Index (T);
+               R : Node_Id; -- N_Range
+            begin
+               case Nkind (Index) is
+                  when N_Range =>
+                     R := Index;
+                  when N_Subtype_Indication =>
+                     R := Range_Expression (Constraint (Index));
+                  when N_Identifier | N_Expanded_Name =>
+                     R := Scalar_Range (Entity (Index));
+                  when others =>
+                     raise Program_Error;
+               end case;
+
+               return Is_Null_Range (Low_Bound (R), High_Bound (R));
+            end;
+         end if;
+
+         return False;
+      end Is_Null_Array;
+
    begin
       for N in Unchecked_Conversions.First .. Unchecked_Conversions.Last loop
          declare
@@ -14487,28 +14674,28 @@ package body Sem_Ch13 is
          begin
             --  Skip if function marked as warnings off
 
-            if Warnings_Off (Act_Unit) then
+            if Warnings_Off (Act_Unit) or else Serious_Errors_Detected > 0 then
                goto Continue;
             end if;
 
-            --  This validation check, which warns if we have unequal sizes for
-            --  unchecked conversion, and thus potentially implementation
-            --  dependent semantics, is one of the few occasions on which we
-            --  use the official RM size instead of Esize. See description in
-            --  Einfo "Handling of Type'Size Values" for details.
+           --  Don't do the check if warnings off for either type, note the
+           --  deliberate use of OR here instead of OR ELSE to get the flag
+           --  Warnings_Off_Used set for both types if appropriate.
 
-            if Serious_Errors_Detected = 0
-              and then Known_Static_RM_Size (Source)
-              and then Known_Static_RM_Size (Target)
+            if Has_Warnings_Off (Source) or Has_Warnings_Off (Target) then
+               goto Continue;
+            end if;
 
-              --  Don't do the check if warnings off for either type, note the
-              --  deliberate use of OR here instead of OR ELSE to get the flag
-              --  Warnings_Off_Used set for both types if appropriate.
-
-              and then not (Has_Warnings_Off (Source)
-                              or
-                            Has_Warnings_Off (Target))
+            if (Known_Static_RM_Size (Source)
+                  and then Known_Static_RM_Size (Target))
+              or else Is_Null_Array (Target)
             then
+               --  This validation check, which warns if we have unequal sizes
+               --  for unchecked conversion, and thus implementation dependent
+               --  semantics, is one of the few occasions on which we use the
+               --  official RM size instead of Esize. See description in Einfo
+               --  "Handling of Type'Size Values" for details.
+
                Source_Siz := RM_Size (Source);
                Target_Siz := RM_Size (Target);
 

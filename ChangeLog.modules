@@ -1,5 +1,7 @@
 2019-08-20  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r274747.
+
 	Merge trunk r273943 (Jason's TEMPLATE_INFO changes).
 
 	Merge trunk r273906 (Martin's function_decl.decl_type changes).

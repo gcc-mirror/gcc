@@ -2286,16 +2286,16 @@ ix86_unordered_fp_compare (enum rtx_code code)
 
   switch (code)
     {
-    case GT:
-    case GE:
     case LT:
     case LE:
+    case GT:
+    case GE:
+    case LTGT:
       return false;
 
     case EQ:
     case NE:
 
-    case LTGT:
     case UNORDERED:
     case ORDERED:
     case UNLT:
@@ -10978,7 +10978,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
   tree arg0, arg1, arg2, arg3, arg4;
   rtx op0, op1, op2, op3, op4, pat, pat2, insn;
   machine_mode mode0, mode1, mode2, mode3, mode4;
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
 
   /* For CPU builtins that can be folded, fold first and expand the fold.  */
   switch (fcode)
@@ -12535,7 +12535,7 @@ rdseed_step:
 		  tree fndecl = gimple_call_fndecl (def_stmt);
 		  if (fndecl
 		      && fndecl_built_in_p (fndecl, BUILT_IN_MD))
-		    switch ((unsigned int) DECL_FUNCTION_CODE (fndecl))
+		    switch (DECL_MD_FUNCTION_CODE (fndecl))
 		      {
 		      case IX86_BUILTIN_CMPPD:
 		      case IX86_BUILTIN_CMPPS:
@@ -13383,6 +13383,9 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
     case E_V8HImode:
       use_vector_set = TARGET_SSE2;
       break;
+    case E_V8QImode:
+      use_vector_set = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
+      break;
     case E_V4HImode:
       use_vector_set = TARGET_SSE || TARGET_3DNOW_A;
       break;
@@ -13590,6 +13593,8 @@ ix86_expand_vector_init_one_var (bool mmx_ok, machine_mode mode,
       wmode = V8HImode;
       goto widen;
     case E_V8QImode:
+      if (TARGET_MMX_WITH_SSE && TARGET_SSE4_1)
+	break;
       wmode = V4HImode;
       goto widen;
     widen:
@@ -14243,8 +14248,13 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 
   switch (mode)
     {
-    case E_V2SFmode:
     case E_V2SImode:
+      use_vec_merge = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
+      if (use_vec_merge)
+	break;
+      /* FALLTHRU */
+
+    case E_V2SFmode:
       if (mmx_ok)
 	{
 	  tmp = gen_reg_rtx (GET_MODE_INNER (mode));
@@ -14409,6 +14419,7 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       break;
 
     case E_V8QImode:
+      use_vec_merge = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
       break;
 
     case E_V32QImode:
@@ -14611,6 +14622,11 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
   switch (mode)
     {
     case E_V2SImode:
+      use_vec_extr = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
+      if (use_vec_extr)
+	break;
+      /* FALLTHRU */
+
     case E_V2SFmode:
       if (!mmx_ok)
 	break;
@@ -14706,6 +14722,17 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
 
     case E_V16QImode:
       use_vec_extr = TARGET_SSE4_1;
+      if (!use_vec_extr
+	  && TARGET_SSE2
+	  && elt == 0
+	  && (optimize_insn_for_size_p () || TARGET_INTER_UNIT_MOVES_FROM_VEC))
+	{
+	  tmp = gen_reg_rtx (SImode);
+	  ix86_expand_vector_extract (false, tmp, gen_lowpart (V4SImode, vec),
+				      0);
+	  emit_insn (gen_rtx_SET (target, gen_lowpart (QImode, tmp)));
+	  return;
+	}
       break;
 
     case E_V8SFmode:
@@ -14849,7 +14876,10 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
       return;
 
     case E_V8QImode:
+      use_vec_extr = TARGET_MMX_WITH_SSE && TARGET_SSE4_1;
       /* ??? Could extract the appropriate HImode element and shift.  */
+      break;
+
     default:
       break;
     }

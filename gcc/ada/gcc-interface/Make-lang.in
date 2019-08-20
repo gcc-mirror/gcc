@@ -74,7 +74,6 @@ GNATLIBCFLAGS= -g -O2 $(TCFLAGS)
 ADA_INCLUDE_DIR = $(libsubdir)/adainclude
 ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
 THREAD_KIND=native
-TRACE=no
 # We do not want the WARN_CFLAGS of the compiler in Ada as it is for C/C++.
 COMMON_FLAGS_TO_PASS = $(filter-out $(WARN_CFLAGS), $(FLAGS_TO_PASS))
 ADA_FLAGS_TO_PASS = \
@@ -701,7 +700,7 @@ gnatlib gnatlib-sjlj gnatlib-zcx gnatlib-shared: force
 	   GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
 	   TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
 	   THREAD_KIND="$(THREAD_KIND)" \
-	   TRACE="$(TRACE)" \
+	   LN_S="$(LN_S)" \
 	   FORCE_DEBUG_ADAFLAGS="$(FORCE_DEBUG_ADAFLAGS)" \
 	   $@
 

@@ -1714,11 +1714,13 @@ Alphabetical List of All Switches
   GCC macro ``BITS_PER_WORD`` documented as follows: `Number of bits in a word;
   normally 32.`
 
-  ``Double_Scalar_Alignment`` is the alignment for a scalar whose size is two
-  machine words. It should be the same as the alignment for C ``long_long`` on
-  most targets.
+  ``Double_Float_Alignment``, if not zero, is the maximum alignment that the
+  compiler can choose by default for a 64-bit floating-point type or object.
 
-  ``Maximum_Alignment`` is the maximum alignment that the compiler might choose
+  ``Double_Scalar_Alignment``, if not zero, is the maximum alignment that the
+  compiler can choose by default for a 64-bit or larger scalar type or object.
+
+  ``Maximum_Alignment`` is the maximum alignment that the compiler can choose
   by default for a type or object, which is also the maximum alignment that can
   be specified in GNAT. It is computed for GCC backends as ``BIGGEST_ALIGNMENT
   / BITS_PER_UNIT`` where GCC macro ``BIGGEST_ALIGNMENT`` is documented as
@@ -2758,7 +2760,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 :switch:`-gnatwa`
   *Activate most optional warnings.*
 
-  This switch activates most optional warning messages.  See the remaining list
+  This switch activates most optional warning messages. See the remaining list
   in this section for details on optional warning messages that can be
   individually controlled.  The warnings that are not turned on by this
   switch are:
@@ -2787,6 +2789,8 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   * :switch:`-gnatw.o` (values set by out parameters ignored)
 
   * :switch:`-gnatw.q` (questionable layout of record types)
+
+  * :switch:`-gnatw_r` (out-of-order record representation clauses)
 
   * :switch:`-gnatw.s` (overridden size clause)
 
@@ -2970,13 +2974,37 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   component for which no component clause is present.
 
 
-.. index:: -gnatwC  (gcc)
+.. index:: -gnatw.C  (gcc)
 
 :switch:`-gnatw.C`
   *Suppress warnings on missing component clauses.*
 
   This switch suppresses warnings for record components that are
   missing a component clause in the situation described above.
+
+
+.. index:: -gnatw_c  (gcc)
+
+:switch:`-gnatw_c`
+  *Activate warnings on unknown condition in Compile_Time_Warning.*
+
+  .. index:: Compile_Time_Warning
+  .. index:: Compile_Time_Error
+
+  This switch activates warnings on a pragma Compile_Time_Warning
+  or Compile_Time_Error whose condition has a value that is not
+  known at compile time.
+  The default is that such warnings are generated.
+
+
+.. index:: -gnatw_C  (gcc)
+
+:switch:`-gnatw_C`
+  *Suppress warnings on missing component clauses.*
+
+  This switch supresses warnings on a pragma Compile_Time_Warning
+  or Compile_Time_Error whose condition has a value that is not
+  known at compile time.
 
 
 .. index:: -gnatwd  (gcc)
@@ -3682,12 +3710,29 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   warnings are given.
 
 
-.. index:: -gnatwT  (gcc)
+.. index:: -gnatw.R  (gcc)
 
 :switch:`-gnatw.R`
   *Suppress warnings for object renaming function.*
 
   This switch suppresses warnings for object renaming function.
+
+
+.. index:: -gnatw_r  (gcc)
+
+:switch:`-gnatw_r`
+  *Activate warnings for out-of-order record representation clauses.*
+
+  This switch activates warnings for record representation clauses,
+  if the order of component declarations, component clauses,
+  and bit-level layout do not all agree.
+  The default is that these warnings are not given.
+
+
+.. index:: -gnatw_R  (gcc)
+
+:switch:`-gnatw_R`
+  *Suppress warnings for out-of-order record representation clauses.*
 
 
 .. index:: -gnatws  (gcc)
@@ -4751,7 +4796,7 @@ checks to be performed. The following checks are defined:
 
   The set of style check switches is set to match that used by the GNAT sources.
   This may be useful when developing code that is eventually intended to be
-  incorporated into GNAT. Currently this is equivalent to :switch:`-gnatwydISux`)
+  incorporated into GNAT. Currently this is equivalent to :switch:`-gnatyydISux`)
   but additional style switches may be added to this set in the future without
   advance notice.
 

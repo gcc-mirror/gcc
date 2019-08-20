@@ -2506,8 +2506,7 @@ gfc_explicit_interface_required (gfc_symbol *sym, char *errmsg, int err_len)
 
 
 static void
-resolve_global_procedure (gfc_symbol *sym, locus *where,
-			  gfc_actual_arglist **actual, int sub)
+resolve_global_procedure (gfc_symbol *sym, locus *where, int sub)
 {
   gfc_gsymbol * gsym;
   gfc_namespace *ns;
@@ -2615,14 +2614,6 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 			 " %s", sym->name, &sym->declared_at, reason);
 	  goto done;
 	}
-
-      if (!pedantic
-	  || ((gfc_option.warn_std & GFC_STD_LEGACY)
-	      && !(gfc_option.warn_std & GFC_STD_GNU)))
-	gfc_errors_to_warnings (true);
-
-      if (sym->attr.if_source != IFSRC_IFBODY)
-	gfc_procedure_use (def_sym, actual, where);
     }
 
 done:
@@ -3198,8 +3189,7 @@ resolve_function (gfc_expr *expr)
 
   /* If the procedure is external, check for usage.  */
   if (sym && is_external_proc (sym))
-    resolve_global_procedure (sym, &expr->where,
-			      &expr->value.function.actual, 0);
+    resolve_global_procedure (sym, &expr->where, 0);
 
   if (sym && sym->ts.type == BT_CHARACTER
       && sym->ts.u.cl
@@ -3675,7 +3665,7 @@ resolve_call (gfc_code *c)
 
   /* If external, check for usage.  */
   if (csym && is_external_proc (csym))
-    resolve_global_procedure (csym, &c->loc, &c->ext.actual, 1);
+    resolve_global_procedure (csym, &c->loc, 1);
 
   t = true;
   if (c->resolved_sym == NULL)
@@ -3930,6 +3920,14 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_PARENTHESES:
       if (!gfc_resolve_expr (e->value.op.op1))
 	return false;
+      if (e->value.op.op1
+	  && e->value.op.op1->ts.type == BT_BOZ && !e->value.op.op2)
+	{
+	  gfc_error ("BOZ literal constant at %L cannot be an operand of "
+		     "unary operator %qs", &e->value.op.op1->where,
+		     gfc_op2string (e->value.op.op));
+	  return false;
+	}
       break;
     }
 
@@ -3938,6 +3936,16 @@ resolve_operator (gfc_expr *e)
   op1 = e->value.op.op1;
   op2 = e->value.op.op2;
   dual_locus_error = false;
+
+  /* op1 and op2 cannot both be BOZ.  */
+  if (op1 && op1->ts.type == BT_BOZ
+      && op2 && op2->ts.type == BT_BOZ)
+    {
+      gfc_error ("Operands at %L and %L cannot appear as operands of "
+		 "binary operator %qs", &op1->where, &op2->where,
+		 gfc_op2string (e->value.op.op));
+      return false;
+    }
 
   if ((op1 && op1->expr_type == EXPR_NULL)
       || (op2 && op2->expr_type == EXPR_NULL))
@@ -4090,6 +4098,36 @@ resolve_operator (gfc_expr *e)
 	  e->ts.type = BT_LOGICAL;
 	  e->ts.kind = gfc_default_logical_kind;
 	  break;
+	}
+
+      /* If op1 is BOZ, then op2 is not!.  Try to convert to type of op2.  */
+      if (op1->ts.type == BT_BOZ)
+	{
+	  if (gfc_invalid_boz ("BOZ literal constant near %L cannot appear as "
+				"an operand of a relational operator",
+				&op1->where))
+	    return false;
+
+	  if (op2->ts.type == BT_INTEGER && !gfc_boz2int (op1, op2->ts.kind))
+	    return false;
+
+	  if (op2->ts.type == BT_REAL && !gfc_boz2real (op1, op2->ts.kind))
+	    return false;
+	}
+
+      /* If op2 is BOZ, then op1 is not!.  Try to convert to type of op2. */
+      if (op2->ts.type == BT_BOZ)
+	{
+	  if (gfc_invalid_boz ("BOZ literal constant near %L cannot appear as "
+				"an operand of a relational operator",
+				&op2->where))
+	    return false;
+
+	  if (op1->ts.type == BT_INTEGER && !gfc_boz2int (op2, op1->ts.kind))
+	    return false;
+
+	  if (op1->ts.type == BT_REAL && !gfc_boz2real (op2, op1->ts.kind))
+	    return false;
 	}
 
       if (gfc_numeric_ts (&op1->ts) && gfc_numeric_ts (&op2->ts))
@@ -6431,6 +6469,7 @@ resolve_compcall (gfc_expr* e, const char **name)
 		 e->value.compcall.name, &e->where);
       return false;
     }
+
 
   /* These must not be assign-calls!  */
   gcc_assert (!e->value.compcall.assign);
@@ -13534,14 +13573,34 @@ resolve_typebound_procedure (gfc_symtree* stree)
     }
   else
     {
+      /* If proc has not been resolved at this point, proc->name may 
+	 actually be a USE associated entity. See PR fortran/89647. */
+      if (!proc->resolved
+	  && proc->attr.function == 0 && proc->attr.subroutine == 0)
+	{
+	  gfc_symbol *tmp;
+	  gfc_find_symbol (proc->name, gfc_current_ns->parent, 1, &tmp);
+	  if (tmp && tmp->attr.use_assoc)
+	    {
+	      proc->module = tmp->module;
+	      proc->attr.proc = tmp->attr.proc;
+	      proc->attr.function = tmp->attr.function;
+	      proc->attr.subroutine = tmp->attr.subroutine;
+	      proc->attr.use_assoc = tmp->attr.use_assoc;
+	      proc->ts = tmp->ts;
+	      proc->result = tmp->result;
+	    }
+	}
+
       /* Check for F08:C465.  */
       if ((!proc->attr.subroutine && !proc->attr.function)
 	  || (proc->attr.proc != PROC_MODULE
 	      && proc->attr.if_source != IFSRC_IFBODY)
 	  || proc->attr.abstract)
 	{
-	  gfc_error ("%qs must be a module procedure or an external procedure with"
-		    " an explicit interface at %L", proc->name, &where);
+	  gfc_error ("%qs must be a module procedure or an external "
+		     "procedure with an explicit interface at %L",
+		     proc->name, &where);
 	  goto error;
 	}
     }
@@ -15657,8 +15716,6 @@ check_data_variable (gfc_data_variable *var, locus *where)
       return false;
     }
 
-  has_pointer = sym->attr.pointer;
-
   if (gfc_is_coindexed (e))
     {
       gfc_error ("DATA element %qs at %L cannot have a coindex", sym->name,
@@ -15666,19 +15723,30 @@ check_data_variable (gfc_data_variable *var, locus *where)
       return false;
     }
 
+  has_pointer = sym->attr.pointer;
+
   for (ref = e->ref; ref; ref = ref->next)
     {
       if (ref->type == REF_COMPONENT && ref->u.c.component->attr.pointer)
 	has_pointer = 1;
 
-      if (has_pointer
-	    && ref->type == REF_ARRAY
-	    && ref->u.ar.type != AR_FULL)
-	  {
-	    gfc_error ("DATA element %qs at %L is a pointer and so must "
-			"be a full array", sym->name, where);
-	    return false;
-	  }
+      if (has_pointer)
+	{
+	  if (ref->type == REF_ARRAY && ref->u.ar.type != AR_FULL)
+	    {
+	      gfc_error ("DATA element %qs at %L is a pointer and so must "
+			 "be a full array", sym->name, where);
+	      return false;
+	    }
+
+	  if (values.vnode->expr->expr_type == EXPR_CONSTANT)
+	    {
+	      gfc_error ("DATA object near %L has the pointer attribute "
+			 "and the corresponding DATA value is not a valid "
+			 "initial-data-target", where);
+	      return false;
+	    }
+	}
     }
 
   if (e->rank == 0 || has_pointer)

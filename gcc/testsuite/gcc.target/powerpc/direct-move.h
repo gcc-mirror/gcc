@@ -179,7 +179,7 @@ main (void)
   for (j = 0; j < 10; j++)
     {
       for (i = 0; i < sizeof (TYPE); i++)
-	u.bytes[i] = (unsigned char) (random () >> 4);
+	u.bytes[i] = (unsigned char) (rand () >> 4);
 
       test_value (u.value);
     }

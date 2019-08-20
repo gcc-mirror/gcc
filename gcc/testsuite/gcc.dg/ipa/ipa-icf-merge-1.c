@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-O2 -fdump-ipa-icf" } */
+/* { dg-additional-options "-O2 -fdump-ipa-icf-optimized" } */
 
 /* Picking 'main' as a candiate target for equivalent functios is not a
    good idea.  */

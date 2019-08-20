@@ -4312,8 +4312,12 @@ visit_nary_op (tree lhs, gassign *stmt)
 	 operation.  */
       if (INTEGRAL_TYPE_P (type)
 	  && TREE_CODE (rhs1) == SSA_NAME
-	  /* We only handle sign-changes or zero-extension -> & mask.  */
-	  && ((TYPE_UNSIGNED (TREE_TYPE (rhs1))
+	  /* We only handle sign-changes, zero-extension -> & mask or
+	     sign-extension if we know the inner operation doesn't
+	     overflow.  */
+	  && (((TYPE_UNSIGNED (TREE_TYPE (rhs1))
+		|| (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+		    && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (rhs1))))
 	       && TYPE_PRECISION (type) > TYPE_PRECISION (TREE_TYPE (rhs1)))
 	      || TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (rhs1))))
 	{
@@ -4347,7 +4351,9 @@ visit_nary_op (tree lhs, gassign *stmt)
 		    {
 		      unsigned lhs_prec = TYPE_PRECISION (type);
 		      unsigned rhs_prec = TYPE_PRECISION (TREE_TYPE (rhs1));
-		      if (lhs_prec == rhs_prec)
+		      if (lhs_prec == rhs_prec
+			  || (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+			      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (rhs1))))
 			{
 			  gimple_match_op match_op (gimple_match_cond::UNCOND,
 						    NOP_EXPR, type, ops[0]);

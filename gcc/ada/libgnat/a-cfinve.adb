@@ -457,7 +457,7 @@ is
       Item      : Element_Type;
       Index     : Index_Type := Index_Type'First) return Extended_Index
    is
-      K    : Capacity_Range;
+      K    : Count_Type;
       Last : constant Index_Type := Last_Index (Container);
 
    begin
@@ -1277,7 +1277,7 @@ is
       Index     : Index_Type := Index_Type'Last) return Extended_Index
    is
       Last : Index_Type'Base;
-      K    : Capacity_Range;
+      K    : Count_Type'Base;
 
    begin
       if Index > Last_Index (Container) then

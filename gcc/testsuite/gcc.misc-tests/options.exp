@@ -65,7 +65,8 @@ proc check_for_all_options {language gcc_options compiler_pattern as_pattern ld_
 	fail "$test (assembler options)"
 	return
     }
-    if {![regexp -- "/collect2(\\.exe)? .*$ld_pattern" $gcc_output]} {
+    # Match /collect2, /ld, or *-ld.
+    if {![regexp -- "(/collect2|\[-/\]ld)(\\.exe)? .*$ld_pattern" $gcc_output]} {
 	fail "$test (linker options)"
 	return
     }

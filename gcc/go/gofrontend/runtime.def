@@ -287,6 +287,10 @@ DEF_GO_RUNTIME(GO, "__go_go", P2(UINTPTR, POINTER), R1(POINTER))
 DEF_GO_RUNTIME(DEFERPROC, "runtime.deferproc", P3(BOOLPTR, UINTPTR, POINTER),
 	       R0())
 
+// Defer a function, with stack-allocated defer structure.
+DEF_GO_RUNTIME(DEFERPROCSTACK, "runtime.deferprocStack",
+               P4(POINTER, BOOLPTR, UINTPTR, POINTER), R0())
+
 
 // Convert an empty interface to an empty interface, returning ok.
 DEF_GO_RUNTIME(IFACEE2E2, "runtime.ifaceE2E2", P1(EFACE), R2(EFACE, BOOL))
@@ -383,6 +387,9 @@ DEF_GO_RUNTIME(PRINTSTRING, "runtime.printstring", P1(STRING), R0())
 
 // Print a uint64 (for print/println).
 DEF_GO_RUNTIME(PRINTUINT, "runtime.printuint", P1(UINT64), R0())
+
+// Print a uint64 in hex (for print/println, used for runtime.hex type).
+DEF_GO_RUNTIME(PRINTHEX, "runtime.printhex", P1(UINT64), R0())
 
 // Print a int64 (for print/println).
 DEF_GO_RUNTIME(PRINTINT, "runtime.printint", P1(INT64), R0())

@@ -137,6 +137,10 @@ extern const char *unix_lbasename (const char *) ATTRIBUTE_RETURNS_NONNULL ATTRI
 
 extern char *lrealpath (const char *);
 
+/* Return true when FD file descriptor exists.  */
+
+extern int is_valid_fd (int fd);
+
 /* Concatenate an arbitrary number of strings.  You must pass NULL as
    the last argument of this function, to terminate the list of
    strings.  Allocates memory using xmalloc.  */

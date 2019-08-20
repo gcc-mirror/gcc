@@ -7,11 +7,11 @@ void f(int i)
 {
   switch (i)
     {
-    case 1.0:;    // { dg-error "could not convert" }
+    case 1.0:;    // { dg-error "could not convert|conversion from" }
     }
 
   switch (i)
     {
-    case g():;    // { dg-error "could not convert" }
+    case g():;    // { dg-error "could not convert|conversion from" }
     }
 }

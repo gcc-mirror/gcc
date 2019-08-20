@@ -499,16 +499,15 @@ c6x_init_cumulative_args (CUMULATIVE_ARGS *cum, const_tree fntype, rtx libname,
     }
 }
 
-/* Implements the macro FUNCTION_ARG defined in c6x.h.  */
+/* Implement TARGET_FUNCTION_ARG.  */
 
 static rtx
-c6x_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		  const_tree type, bool named ATTRIBUTE_UNUSED)
+c6x_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   if (cum->count >= cum->nregs)
     return NULL_RTX;
-  if (type)
+  if (tree type = arg.type)
     {
       HOST_WIDE_INT size = int_size_in_bytes (type);
       if (TARGET_BIG_ENDIAN && AGGREGATE_TYPE_P (type))
@@ -519,18 +518,15 @@ c6x_function_arg (cumulative_args_t cum_v, machine_mode mode,
 	      rtx reg2 = gen_rtx_REG (SImode, argument_registers[cum->count]);
 	      rtvec vec = gen_rtvec (2, gen_rtx_EXPR_LIST (VOIDmode, reg1, const0_rtx),
 				     gen_rtx_EXPR_LIST (VOIDmode, reg2, GEN_INT (4)));
-	      return gen_rtx_PARALLEL (mode, vec);
+	      return gen_rtx_PARALLEL (arg.mode, vec);
 	    }
 	}
     }
-  return gen_rtx_REG (mode, argument_registers[cum->count]);
+  return gen_rtx_REG (arg.mode, argument_registers[cum->count]);
 }
 
 static void
-c6x_function_arg_advance (cumulative_args_t cum_v,
-			  machine_mode mode ATTRIBUTE_UNUSED,
-			  const_tree type ATTRIBUTE_UNUSED,
-			  bool named ATTRIBUTE_UNUSED)
+c6x_function_arg_advance (cumulative_args_t cum_v, const function_arg_info &)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   cum->count++;
@@ -639,18 +635,16 @@ c6x_function_value_regno_p (const unsigned int regno)
 }
 
 /* Types larger than 64 bit, and variable sized types, are passed by
-   reference.  The callee must copy them; see c6x_callee_copies.  */
+   reference.  The callee must copy them; see TARGET_CALLEE_COPIES.  */
 
 static bool
-c6x_pass_by_reference (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
-		       machine_mode mode, const_tree type,
-		       bool named ATTRIBUTE_UNUSED)
+c6x_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
   int size = -1;
-  if (type)
-    size = int_size_in_bytes (type);
-  else if (mode != VOIDmode)
-    size = GET_MODE_SIZE (mode);
+  if (arg.type)
+    size = int_size_in_bytes (arg.type);
+  else if (arg.mode != VOIDmode)
+    size = GET_MODE_SIZE (arg.mode);
   return size > 2 * UNITS_PER_WORD || size == -1;
 }
 
@@ -673,17 +667,6 @@ c6x_return_in_msb (const_tree valtype)
 {
   HOST_WIDE_INT size = int_size_in_bytes (valtype);
   return TARGET_BIG_ENDIAN && AGGREGATE_TYPE_P (valtype) && size == 3;
-}
-
-/* Implement TARGET_CALLEE_COPIES.  */
-
-static bool
-c6x_callee_copies (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
-		   machine_mode mode ATTRIBUTE_UNUSED,
-		   const_tree type ATTRIBUTE_UNUSED,
-		   bool named ATTRIBUTE_UNUSED)
-{
-  return true;
 }
 
 /* Return the type to use as __builtin_va_list.  */
@@ -1105,8 +1088,6 @@ c6x_call_saved_register_used (tree call_expr)
   cumulative_args_t cum;
   HARD_REG_SET call_saved_regset;
   tree parameter;
-  machine_mode mode;
-  tree type;
   rtx parm_rtx;
   int i;
 
@@ -1124,21 +1105,12 @@ c6x_call_saved_register_used (tree call_expr)
       if (TREE_CODE (parameter) == ERROR_MARK)
 	return true;
 
-      type = TREE_TYPE (parameter);
-      gcc_assert (type);
+      function_arg_info arg (TREE_TYPE (parameter), /*named=*/true);
+      apply_pass_by_reference_rules (&cum_v, arg);
 
-      mode = TYPE_MODE (type);
-      gcc_assert (mode);
+       parm_rtx = c6x_function_arg (cum, arg);
 
-      if (pass_by_reference (&cum_v, mode, type, true))
- 	{
- 	  mode = Pmode;
- 	  type = build_pointer_type (type);
- 	}
-
-       parm_rtx = c6x_function_arg (cum, mode, type, 0);
-
-       c6x_function_arg_advance (cum, mode, type, 0);
+       c6x_function_arg_advance (cum, arg);
 
        if (!parm_rtx)
 	 continue;
@@ -6661,7 +6633,7 @@ c6x_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
   size_t i;
   const struct builtin_description *d;
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
 
   for (i = 0, d = bdesc_2arg; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
     if (d->code == fcode)
@@ -6731,7 +6703,7 @@ c6x_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE c6x_pass_by_reference
 #undef TARGET_CALLEE_COPIES
-#define TARGET_CALLEE_COPIES c6x_callee_copies
+#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_arg_info_true
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX c6x_struct_value_rtx
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL

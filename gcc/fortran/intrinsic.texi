@@ -4876,11 +4876,13 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{INTEGER} or @code{REAL}
-@item @var{Y} @tab The type shall be the same type and kind as @var{X}.
+@item @var{Y} @tab The type shall be the same type and kind as @var{X}.  (As
+a GNU extension, arguments of different kinds are permitted.)
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER} or @code{REAL}.
+The return value is of type @code{INTEGER} or @code{REAL}.  (As a GNU
+extension, kind is the largest kind of the actual arguments.)
 
 @item @emph{Example}:
 @smallexample
@@ -10607,14 +10609,16 @@ Elemental function
 @multitable @columnfractions .15 .70
 @item @var{A} @tab Shall be a scalar of type @code{INTEGER} or @code{REAL}.
 @item @var{P} @tab Shall be a scalar of the same type and kind as @var{A} 
-and not equal to zero.
+and not equal to zero.  (As a GNU extension, arguments of different kinds are
+permitted.)
 @end multitable
 
 @item @emph{Return value}:
 The return value is the result of @code{A - (INT(A/P) * P)}. The type
 and kind of the return value is the same as that of the arguments. The
 returned value has the same sign as A and a magnitude less than the
-magnitude of P.
+magnitude of P.  (As a GNU extension, kind is the largest kind of the actual
+arguments.)
 
 @item @emph{Example}:
 @smallexample
@@ -10678,11 +10682,13 @@ Elemental function
 @multitable @columnfractions .15 .70
 @item @var{A} @tab Shall be a scalar of type @code{INTEGER} or @code{REAL}.
 @item @var{P} @tab Shall be a scalar of the same type and kind as @var{A}. 
-It shall not be zero.
+It shall not be zero.  (As a GNU extension, arguments of different kinds are
+permitted.)
 @end multitable
 
 @item @emph{Return value}:
-The type and kind of the result are those of the arguments.
+The type and kind of the result are those of the arguments.  (As a GNU
+extension, kind is the largest kind of the actual arguments.)
 @table @asis
 @item If @var{A} and @var{P} are of type @code{INTEGER}:
 @code{MODULO(A,P)} has the value @var{R} such that @code{A=Q*P+R}, where
@@ -11792,10 +11798,10 @@ end program test_random_seed
 Returns a single pseudorandom number or an array of pseudorandom numbers
 from the uniform distribution over the range @math{ 0 \leq x < 1}.
 
-The runtime-library implements the xorshift1024* random number
-generator (RNG). This generator has a period of @math{2^{1024} - 1},
-and when using multiple threads up to @math{2^{512}} threads can each
-generate @math{2^{512}} random numbers before any aliasing occurs.
+The runtime-library implements the xoshiro256** pseudorandom number
+generator (PRNG). This generator has a period of @math{2^{256} - 1},
+and when using multiple threads up to @math{2^{128}} threads can each
+generate @math{2^{128}} random numbers before any aliasing occurs.
 
 Note that in a multi-threaded program (e.g. using OpenMP directives),
 each thread will have its own random number state. For details of the
@@ -11852,7 +11858,7 @@ called either without arguments or with the @var{PUT} argument, the
 given seed is copied into a master seed as well as the seed of the
 current thread. When a new thread uses @code{RANDOM_NUMBER} for the
 first time, the seed is copied from the master seed, and forwarded
-@math{N * 2^{512}} steps to guarantee that the random stream does not
+@math{N * 2^{128}} steps to guarantee that the random stream does not
 alias any other stream in the system, where @var{N} is the number of
 threads that have used @code{RANDOM_NUMBER} so far during the program
 execution.
@@ -12917,7 +12923,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{A} @tab Shall be of type @code{INTEGER} or @code{REAL}
-@item @var{B} @tab Shall be of the same type and kind as @var{A}
+@item @var{B} @tab Shall be of the same type and kind as @var{A}.
 @end multitable
 
 @item @emph{Return value}:

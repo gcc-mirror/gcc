@@ -5552,6 +5552,15 @@ gfc_match_equivalence (void)
   gfc_common_head *common_head = NULL;
   bool common_flag;
   int cnt;
+  char c;
+
+  /* EQUIVALENCE has been matched.  After gobbling any possible whitespace,
+     the next character needs to be '('.  Check that here, and return
+     MATCH_NO for a variable of the form equivalencej.  */
+  gfc_gobble_whitespace ();
+  c = gfc_peek_ascii_char ();
+  if (c != '(')
+    return MATCH_NO;
 
   tail = NULL;
 
@@ -5742,7 +5751,29 @@ gfc_match_st_function (void)
   gfc_symbol *sym;
   gfc_expr *expr;
   match m;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  locus old_locus;
+  bool fcn;
+  gfc_formal_arglist *ptr;
 
+  /* Read the possible statement function name, and then check to see if
+     a symbol is already present in the namespace.  Record if it is a
+     function and whether it has been referenced.  */
+  fcn = false;
+  ptr = NULL;
+  old_locus = gfc_current_locus;
+  m = gfc_match_name (name);
+  if (m == MATCH_YES)
+    {
+      gfc_find_symbol (name, NULL, 1, &sym);
+      if (sym && sym->attr.function && !sym->attr.referenced)
+	{
+	  fcn = true;
+	  ptr = sym->formal;
+	}
+    }
+
+  gfc_current_locus = old_locus;
   m = gfc_match_symbol (&sym, 0);
   if (m != MATCH_YES)
     return m;
@@ -5767,6 +5798,13 @@ gfc_match_st_function (void)
   if (recursive_stmt_fcn (expr, sym))
     {
       gfc_error ("Statement function at %L is recursive", &expr->where);
+      return MATCH_ERROR;
+    }
+
+  if (fcn && ptr != sym->formal)
+    {
+      gfc_error ("Statement function %qs at %L conflicts with function name",
+		 sym->name, &expr->where);
       return MATCH_ERROR;
     }
 

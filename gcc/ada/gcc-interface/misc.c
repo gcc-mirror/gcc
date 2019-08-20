@@ -161,6 +161,7 @@ gnat_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_gnatO:
     case OPT_fRTS_:
     case OPT_I:
+    case OPT_fdump_scos:
     case OPT_nostdinc:
     case OPT_nostdlib:
       /* These are handled by the front-end.  */
@@ -1135,7 +1136,7 @@ default_pass_by_ref (tree gnu_type)
 			       TYPE_ALIGN (gnu_type)) > 0))
     return true;
 
-  if (pass_by_reference (NULL, TYPE_MODE (gnu_type), gnu_type, true))
+  if (pass_by_reference (NULL, function_arg_info (gnu_type, /*named=*/true)))
     return true;
 
   if (targetm.calls.return_in_memory (gnu_type, NULL_TREE))

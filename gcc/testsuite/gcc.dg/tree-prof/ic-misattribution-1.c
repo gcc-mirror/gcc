@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-ipa-profile" } */
+/* { dg-options "-O2 -fdump-ipa-profile-note" } */
 /* { dg-additional-sources "ic-misattribution-1a.c" } */
 
 extern void other_caller (void);

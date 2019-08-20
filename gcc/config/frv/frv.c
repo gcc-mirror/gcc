@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "ifcvt.h"
 #include "rtl-iter.h"
+#include "calls.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -358,8 +359,8 @@ static bool frv_in_small_data_p			(const_tree);
 static void frv_asm_output_mi_thunk
   (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
 static void frv_setup_incoming_varargs		(cumulative_args_t,
-						 machine_mode,
-						 tree, int *, int);
+						 const function_arg_info &,
+						 int *, int);
 static rtx frv_expand_builtin_saveregs		(void);
 static void frv_expand_builtin_va_start		(tree, rtx);
 static bool frv_rtx_costs			(rtx, machine_mode, int, int,
@@ -378,15 +379,14 @@ static void frv_output_const_unspec		(FILE *,
 						 const struct frv_unspec *);
 static bool frv_function_ok_for_sibcall		(tree, tree);
 static rtx frv_struct_value_rtx			(tree, int);
-static bool frv_must_pass_in_stack (machine_mode mode, const_tree type);
-static int frv_arg_partial_bytes (cumulative_args_t, machine_mode,
-				  tree, bool);
-static rtx frv_function_arg (cumulative_args_t, machine_mode,
-			     const_tree, bool);
-static rtx frv_function_incoming_arg (cumulative_args_t, machine_mode,
-				      const_tree, bool);
-static void frv_function_arg_advance (cumulative_args_t, machine_mode,
-				       const_tree, bool);
+static bool frv_must_pass_in_stack (const function_arg_info &);
+static int frv_arg_partial_bytes (cumulative_args_t,
+				  const function_arg_info &);
+static rtx frv_function_arg (cumulative_args_t, const function_arg_info &);
+static rtx frv_function_incoming_arg (cumulative_args_t,
+				      const function_arg_info &);
+static void frv_function_arg_advance (cumulative_args_t,
+				      const function_arg_info &);
 static unsigned int frv_function_arg_boundary	(machine_mode,
 						 const_tree);
 static void frv_output_dwarf_dtprel		(FILE *, int, rtx)
@@ -2108,17 +2108,16 @@ frv_initial_elimination_offset (int from, int to)
 
 static void
 frv_setup_incoming_varargs (cumulative_args_t cum_v,
-                            machine_mode mode,
-                            tree type ATTRIBUTE_UNUSED,
-                            int *pretend_size,
-                            int second_time)
+			    const function_arg_info &arg,
+			    int *pretend_size,
+			    int second_time)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   if (TARGET_DEBUG_ARG)
     fprintf (stderr,
 	     "setup_vararg: words = %2d, mode = %4s, pretend_size = %d, second_time = %d\n",
-	     *cum, GET_MODE_NAME (mode), *pretend_size, second_time);
+	     *cum, GET_MODE_NAME (arg.mode), *pretend_size, second_time);
 }
 
 
@@ -3078,13 +3077,9 @@ frv_init_cumulative_args (CUMULATIVE_ARGS *cum,
    in registers.  */
 
 static bool
-frv_must_pass_in_stack (machine_mode mode, const_tree type)
+frv_must_pass_in_stack (const function_arg_info &arg)
 {
-  if (mode == BLKmode)
-    return true;
-  if (type == NULL)
-    return false;
-  return AGGREGATE_TYPE_P (type);
+  return arg.mode == BLKmode || arg.aggregate_type_p ();
 }
 
 /* If defined, a C expression that gives the alignment boundary, in bits, of an
@@ -3099,13 +3094,12 @@ frv_function_arg_boundary (machine_mode mode ATTRIBUTE_UNUSED,
 }
 
 static rtx
-frv_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
-		    const_tree type ATTRIBUTE_UNUSED, bool named,
+frv_function_arg_1 (cumulative_args_t cum_v, const function_arg_info &arg,
 		    bool incoming ATTRIBUTE_UNUSED)
 {
   const CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  machine_mode xmode = (mode == BLKmode) ? SImode : mode;
+  machine_mode xmode = (arg.mode == BLKmode) ? SImode : arg.mode;
   int arg_num = *cum;
   rtx ret;
   const char *debstr;
@@ -3132,44 +3126,34 @@ frv_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
   if (TARGET_DEBUG_ARG)
     fprintf (stderr,
 	     "function_arg: words = %2d, mode = %4s, named = %d, size = %3d, arg = %s\n",
-	     arg_num, GET_MODE_NAME (mode), named, GET_MODE_SIZE (mode), debstr);
+	     arg_num, GET_MODE_NAME (arg.mode), arg.named,
+	     GET_MODE_SIZE (arg.mode), debstr);
 
   return ret;
 }
 
 static rtx
-frv_function_arg (cumulative_args_t cum, machine_mode mode,
-		  const_tree type, bool named)
+frv_function_arg (cumulative_args_t cum, const function_arg_info &arg)
 {
-  return frv_function_arg_1 (cum, mode, type, named, false);
+  return frv_function_arg_1 (cum, arg, false);
 }
 
 static rtx
-frv_function_incoming_arg (cumulative_args_t cum, machine_mode mode,
-			   const_tree type, bool named)
+frv_function_incoming_arg (cumulative_args_t cum, const function_arg_info &arg)
 {
-  return frv_function_arg_1 (cum, mode, type, named, true);
+  return frv_function_arg_1 (cum, arg, true);
 }
 
 
-/* A C statement (sans semicolon) to update the summarizer variable CUM to
-   advance past an argument in the argument list.  The values MODE, TYPE and
-   NAMED describe that argument.  Once this is done, the variable CUM is
-   suitable for analyzing the *following* argument with `FUNCTION_ARG', etc.
-
-   This macro need not do anything if the argument in question was passed on
-   the stack.  The compiler knows how to track the amount of stack space used
-   for arguments without any special help.  */
+/* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 
 static void
 frv_function_arg_advance (cumulative_args_t cum_v,
-                          machine_mode mode,
-                          const_tree type ATTRIBUTE_UNUSED,
-                          bool named)
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  machine_mode xmode = (mode == BLKmode) ? SImode : mode;
+  machine_mode xmode = (arg.mode == BLKmode) ? SImode : arg.mode;
   int bytes = GET_MODE_SIZE (xmode);
   int words = (bytes + UNITS_PER_WORD  - 1) / UNITS_PER_WORD;
   int arg_num = *cum;
@@ -3179,32 +3163,17 @@ frv_function_arg_advance (cumulative_args_t cum_v,
   if (TARGET_DEBUG_ARG)
     fprintf (stderr,
 	     "function_adv: words = %2d, mode = %4s, named = %d, size = %3d\n",
-	     arg_num, GET_MODE_NAME (mode), named, words * UNITS_PER_WORD);
+	     arg_num, GET_MODE_NAME (arg.mode), arg.named,
+	     words * UNITS_PER_WORD);
 }
 
 
-/* A C expression for the number of words, at the beginning of an argument,
-   must be put in registers.  The value must be zero for arguments that are
-   passed entirely in registers or that are entirely pushed on the stack.
-
-   On some machines, certain arguments must be passed partially in registers
-   and partially in memory.  On these machines, typically the first N words of
-   arguments are passed in registers, and the rest on the stack.  If a
-   multi-word argument (a `double' or a structure) crosses that boundary, its
-   first few words must be passed in registers and the rest must be pushed.
-   This macro tells the compiler when this occurs, and how many of the words
-   should go in registers.
-
-   `FUNCTION_ARG' for these arguments should return the first register to be
-   used by the caller for this argument; likewise `FUNCTION_INCOMING_ARG', for
-   the called function.  */
+/* Implement TARGET_ARG_PARTIAL_BYTES.  */
 
 static int
-frv_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
-		       tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
+frv_arg_partial_bytes (cumulative_args_t cum, const function_arg_info &arg)
 {
-
-  machine_mode xmode = (mode == BLKmode) ? SImode : mode;
+  machine_mode xmode = (arg.mode == BLKmode) ? SImode : arg.mode;
   int bytes = GET_MODE_SIZE (xmode);
   int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   int arg_num = *get_cumulative_args (cum);
@@ -9113,7 +9082,7 @@ frv_expand_builtin (tree exp,
                     int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned fcode = (unsigned)DECL_FUNCTION_CODE (fndecl);
+  unsigned fcode = DECL_MD_FUNCTION_CODE (fndecl);
   unsigned i;
   struct builtin_description *d;
 

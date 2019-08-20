@@ -1539,6 +1539,7 @@ package body Exp_Dbug is
       elsif Is_Subprogram (Ent)
         or else Ekind (Ent) = E_Subprogram_Body
         or else Is_Type (Ent)
+        or else Ekind (Ent) = E_Exception
       then
          Fully_Qualify_Name (Ent);
          Name_Len := Full_Qualify_Len;

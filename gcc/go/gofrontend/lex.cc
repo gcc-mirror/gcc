@@ -986,6 +986,26 @@ Lex::is_hex_digit(char c)
 	  || (c >= 'a' && c <= 'f'));
 }
 
+// Return whether C is a valid digit in BASE.
+
+bool
+Lex::is_base_digit(int base, char c)
+{
+  switch (base)
+    {
+    case 2:
+      return c == '0' || c == '1';
+    case 8:
+      return c >= '0' && c <= '7';
+    case 10:
+      return c >= '0' && c <= '9';
+    case 16:
+      return Lex::is_hex_digit(c);
+    default:
+      go_unreachable();
+    }
+}
+
 // not a hex value
 #define NHV 100
 
@@ -1032,13 +1052,24 @@ Lex::hex_val(char c)
   return hex_value_lookup_table[static_cast<unsigned char>(c)];
 }
 
-// Return whether an exponent could start at P.
+// Return whether an exponent could start at P, in base BASE.
 
 bool
-Lex::could_be_exponent(const char* p, const char* pend)
+Lex::could_be_exponent(int base, const char* p, const char* pend)
 {
-  if (*p != 'e' && *p != 'E')
-    return false;
+  switch (base)
+    {
+    case 10:
+      if (*p != 'e' && *p != 'E')
+	return false;
+      break;
+    case 16:
+      if (*p != 'p' && *p != 'P')
+	return false;
+      break;
+    default:
+      go_unreachable();
+    }
   ++p;
   if (p >= pend)
     return false;
@@ -1062,87 +1093,160 @@ Lex::gather_number()
 
   Location location = this->location();
 
-  bool neg = false;
-  if (*p == '+')
-    ++p;
-  else if (*p == '-')
-    {
-      ++p;
-      neg = true;
-    }
-
-  const char* pnum = p;
+  int base = 10;
+  std::string num;
   if (*p == '0')
     {
-      int base;
-      if ((p[1] == 'x' || p[1] == 'X')
-	  && Lex::is_hex_digit(p[2]))
+      int basecheck;
+      int off;
+      if (p[1] == 'x' || p[1] == 'X')
 	{
 	  base = 16;
-	  p += 2;
-	  pnum = p;
-	  while (p < pend)
-	    {
-	      if (!Lex::is_hex_digit(*p))
-		break;
-	      ++p;
-	    }
+	  basecheck = 16;
+	  off = 2;
+	}
+      else if (p[1] == 'o' || p[1] == 'O')
+	{
+	  base = 8;
+	  basecheck = 8;
+	  off = 2;
+	}
+      else if (p[1] == 'b' || p[1] == 'B')
+	{
+	  base = 2;
+	  basecheck = 2;
+	  off = 2;
 	}
       else
 	{
+	  // Old style octal literal.  May also be the start of a
+	  // floating-point number (e.g., 09.2, 09e2) or an imaginary
+	  // literal (e.g., 09i), so we have to accept decimal digits.
 	  base = 8;
-	  pnum = p;
-	  while (p < pend)
-	    {
-	      if (*p < '0' || *p > '9')
-		break;
-	      ++p;
-	    }
+	  basecheck = 10;
+	  off = 0;
 	}
 
-      // A partial token that looks like an octal literal might actually be the
-      // beginning of a floating-point or imaginary literal.
-      if (base == 16 || (*p != '.' && *p != 'i' && !Lex::could_be_exponent(p, pend)))
+      p += off;
+      if (*p == '_' && Lex::is_base_digit(basecheck, p[1]))
+	++p;
+
+      while (Lex::is_base_digit(basecheck, *p))
 	{
-	  std::string s(pnum, p - pnum);
-	  mpz_t val;
-	  int r = mpz_init_set_str(val, s.c_str(), base);
-          if (r != 0)
-            {
-              if (base == 8)
-                go_error_at(this->location(), "invalid octal literal");
-              else
-                go_error_at(this->location(), "invalid hex literal");
-            }
+	  num.push_back(*p);
+	  ++p;
+	  if (*p == '_' && Lex::is_base_digit(basecheck, p[1]))
+	    ++p;
+	}
 
-	  if (neg)
-	    mpz_neg(val, val);
-
+      // We must see at least one valid digit, except for a case like
+      // 0x.0p1.
+      if (num.length() == 0 && (base != 16 || *p != '.'))
+	{
+	  go_error_at(this->location(), "invalid numeric literal");
 	  this->lineoff_ = p - this->linebuf_;
+	  mpz_t val;
+	  mpz_init_set_ui(val, 0);
 	  Token ret = Token::make_integer_token(val, location);
 	  mpz_clear(val);
 	  return ret;
+	}
+
+      bool is_float = false;
+      // A number that looks like an old-style octal literal might
+      // actually be the beginning of a floating-point or imaginary
+      // literal, in which case the value is decimal digits.  Handle
+      // that case below by treating the leading '0' as decimal.
+      if (off == 0
+	  && (*p == '.' || *p == 'i' || Lex::could_be_exponent(10, p, pend)))
+	{
+	  is_float = true;
+	  base = 10;
+	}
+      else if (base == 16
+	       && (*p == '.' || Lex::could_be_exponent(16, p, pend)))
+	is_float = true;
+
+      if (!is_float)
+	{
+	  mpz_t val;
+	  int r = mpz_init_set_str(val, num.c_str(), base);
+          if (r != 0)
+            {
+	      const char *errword;
+	      switch (base)
+		{
+		case 2:
+		  errword = "binary";
+		  break;
+		case 8:
+		  errword = "octal";
+		  break;
+		case 16:
+		  errword = "hex";
+		  break;
+		default:
+		  go_unreachable();
+		}
+	      go_error_at(this->location(), "invalid %s literal", errword);
+            }
+
+	  bool is_imaginary = *p == 'i';
+	  if (is_imaginary)
+	    ++p;
+
+	  this->lineoff_ = p - this->linebuf_;
+
+	  if (*p == 'e' || *p == 'E' || *p == 'p' || *p == 'P')
+	    {
+	      go_error_at(location,
+			  "invalid prefix for floating constant");
+	      this->skip_exponent();
+	    }
+
+	  if (!is_imaginary)
+	    {
+	      Token ret = Token::make_integer_token(val, location);
+	      mpz_clear(val);
+	      return ret;
+	    }
+	  else
+	    {
+	      mpfr_t ival;
+	      mpfr_init_set_z(ival, val, GMP_RNDN);
+	      mpz_clear(val);
+	      Token ret = Token::make_imaginary_token(ival, location);
+	      mpfr_clear(ival);
+	      return ret;
+	    }
 	}
     }
 
   while (p < pend)
     {
-      if (*p < '0' || *p > '9')
+      if (*p == '_' && p[1] >= '0' && p[1] <= '9')
+	++p;
+      else if (*p < '0' || *p > '9')
 	break;
+      num.push_back(*p);
       ++p;
     }
 
-  if (*p != '.' && *p != 'i' && !Lex::could_be_exponent(p, pend))
+  if (*p != '.' && *p != 'i' && !Lex::could_be_exponent(base, p, pend))
     {
-      std::string s(pnum, p - pnum);
       mpz_t val;
-      int r = mpz_init_set_str(val, s.c_str(), 10);
+      int r = mpz_init_set_str(val, num.c_str(), 10);
       go_assert(r == 0);
 
-      if (neg)
-	mpz_neg(val, val);
-
       this->lineoff_ = p - this->linebuf_;
+
+      if (*p == 'e' || *p == 'E' || *p == 'p' || *p == 'P')
+	{
+	  go_error_at(location,
+		      "invalid prefix for floating constant");
+	  this->skip_exponent();
+	}
+
       Token ret = Token::make_integer_token(val, location);
       mpz_clear(val);
       return ret;
@@ -1152,48 +1256,76 @@ Lex::gather_number()
     {
       bool dot = *p == '.';
 
+      num.push_back(*p);
       ++p;
 
       if (!dot)
 	{
 	  if (*p == '+' || *p == '-')
-	    ++p;
-	}
-
-      while (p < pend)
-	{
-	  if (*p < '0' || *p > '9')
-	    break;
-	  ++p;
-	}
-
-      if (dot && Lex::could_be_exponent(p, pend))
-	{
-	  ++p;
-	  if (*p == '+' || *p == '-')
-	    ++p;
-	  while (p < pend)
 	    {
-	      if (*p < '0' || *p > '9')
-		break;
+	      num.push_back(*p);
 	      ++p;
 	    }
 	}
+
+      bool first = true;
+      while (p < pend)
+	{
+	  if (!first && *p == '_' && Lex::is_base_digit(base, p[1]))
+	    ++p;
+	  else if (!Lex::is_base_digit(base, *p))
+	    break;
+	  num.push_back(*p);
+	  ++p;
+	  first = false;
+	}
+
+      if (dot && Lex::could_be_exponent(base, p, pend))
+	{
+	  num.push_back(*p);
+	  ++p;
+	  if (*p == '+' || *p == '-')
+	    {
+	      num.push_back(*p);
+	      ++p;
+	    }
+	  first = true;
+	  while (p < pend)
+	    {
+	      if (!first && *p == '_' && p[1] >= '0' && p[1] <= '9')
+		++p;
+	      else if (*p < '0' || *p > '9')
+		break;
+	      num.push_back(*p);
+	      ++p;
+	      first = false;
+	    }
+	}
+      else if (dot && base == 16)
+	{
+	  go_error_at(this->location(),
+		      "invalid hex floating-point literal with no exponent");
+	  num.append("p0");
+	}
     }
 
-  std::string s(pnum, p - pnum);
   mpfr_t val;
-  int r = mpfr_init_set_str(val, s.c_str(), 10, GMP_RNDN);
+  int r = mpfr_init_set_str(val, num.c_str(), base, GMP_RNDN);
   go_assert(r == 0);
-
-  if (neg)
-    mpfr_neg(val, val, GMP_RNDN);
 
   bool is_imaginary = *p == 'i';
   if (is_imaginary)
     ++p;
 
   this->lineoff_ = p - this->linebuf_;
+
+  if (*p == 'e' || *p == 'E' || *p == 'p' || *p == 'P')
+    {
+      go_error_at(location,
+		  "invalid prefix for floating constant");
+      this->skip_exponent();
+    }
+
   if (is_imaginary)
     {
       Token ret = Token::make_imaginary_token(val, location);
@@ -1206,6 +1338,27 @@ Lex::gather_number()
       mpfr_clear(val);
       return ret;
     }
+}
+
+// Skip an exponent after reporting an error.
+
+void
+Lex::skip_exponent()
+{
+  const char* p = this->linebuf_ + this->lineoff_;
+  const char* pend = this->linebuf_ + this->linesize_;
+  if (*p != 'e' && *p != 'E' && *p != 'p' && *p != 'P')
+    return;
+  ++p;
+  if (*p == '+' || *p == '-')
+    ++p;
+  while (p < pend)
+    {
+      if ((*p < '0' || *p > '9') && *p != '_')
+	break;
+      ++p;
+    }
+  this->lineoff_ = p - this->linebuf_;
 }
 
 // Advance one character, possibly escaped.  Return the pointer beyond

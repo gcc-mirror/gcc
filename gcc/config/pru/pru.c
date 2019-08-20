@@ -2152,25 +2152,18 @@ pru_function_arg_regi_mark_slot (int regi,
    push the argument on the stack, or a hard register in which to
    store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-   This is null for libcalls where that information may
-   not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
    the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-   (otherwise it is an extra parameter matching an ellipsis).  */
+   ARG is a description of the argument.  */
 
 static rtx
-pru_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		  const_tree type,
-		  bool named)
+pru_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   rtx return_rtx = NULL_RTX;
-  int regi = pru_function_arg_regi (cum_v, mode, type, named);
+  int regi = pru_function_arg_regi (cum_v, arg.mode, arg.type, arg.named);
 
   if (regi >= 0)
-    return_rtx = gen_rtx_REG (mode, regi);
+    return_rtx = gen_rtx_REG (arg.mode, regi);
 
   return return_rtx;
 }
@@ -2179,27 +2172,22 @@ pru_function_arg (cumulative_args_t cum_v, machine_mode mode,
    between registers and memory, so we can return 0.  */
 
 static int
-pru_arg_partial_bytes (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
-		       machine_mode mode ATTRIBUTE_UNUSED,
-		       tree type ATTRIBUTE_UNUSED,
-		       bool named ATTRIBUTE_UNUSED)
+pru_arg_partial_bytes (cumulative_args_t, const function_arg_info &)
 {
   return 0;
 }
 
-/* Update the data in CUM to advance over an argument of mode MODE
-   and data type TYPE; TYPE is null for libcalls where that information
-   may not be available.  */
+/* Update the data in CUM to advance over argument ARG.  */
 
 static void
-pru_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			    const_tree type,
-			    bool named)
+pru_function_arg_advance (cumulative_args_t cum_v,
+			  const function_arg_info &arg)
 {
-  int regi = pru_function_arg_regi (cum_v, mode, type, named);
+  int regi = pru_function_arg_regi (cum_v, arg.mode, arg.type, arg.named);
 
   if (regi >= 0)
-    pru_function_arg_regi_mark_slot (regi, cum_v, mode, type, named);
+    pru_function_arg_regi_mark_slot (regi, cum_v, arg.mode,
+				     arg.type, arg.named);
 }
 
 /* Implement TARGET_FUNCTION_VALUE.  */
@@ -2873,7 +2861,7 @@ pru_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 		    int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   rtx arg1 = expand_normal (CALL_EXPR_ARG (exp, 0));
 
   if (fcode == PRU_BUILTIN_DELAY_CYCLES)

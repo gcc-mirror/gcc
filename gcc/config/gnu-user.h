@@ -73,9 +73,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    GNU userspace "finalizer" file, `crtn.o'.  */
 
 #define GNU_USER_TARGET_ENDFILE_SPEC \
-  "%{fvtable-verify=none:%s; \
+  "%{!static:%{fvtable-verify=none:%s; \
      fvtable-verify=preinit:vtv_end_preinit.o%s; \
-     fvtable-verify=std:vtv_end.o%s} \
+     fvtable-verify=std:vtv_end.o%s}} \
    %{static:crtend.o%s; \
      shared|static-pie|" PIE_SPEC ":crtendS.o%s; \
      :crtend.o%s} " \

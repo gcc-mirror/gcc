@@ -1526,7 +1526,7 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
 
     default:
       if (!ctx->quiet)
-	error_at (cp_expr_loc_or_loc (t, input_location),
+	error_at (cp_expr_loc_or_input_loc (t),
 		  "call to internal function %qE", t);
       *non_constant_p = true;
       return t;
@@ -1541,7 +1541,7 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
 
   if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
     {
-      location_t loc = cp_expr_loc_or_loc (t, input_location);
+      location_t loc = cp_expr_loc_or_input_loc (t);
       tree type = TREE_TYPE (TREE_TYPE (t));
       tree result = fold_binary_loc (loc, opcode, type,
 				     fold_convert_loc (loc, type, arg0),
@@ -1574,6 +1574,19 @@ clear_no_implicit_zero (tree ctor)
     }
 }
 
+/* Complain about a const object OBJ being modified in a constant expression.
+   EXPR is the MODIFY_EXPR expression performing the modification.  */
+
+static void
+modifying_const_object_error (tree expr, tree obj)
+{
+  location_t loc = cp_expr_loc_or_input_loc (expr);
+  auto_diagnostic_group d;
+  error_at (loc, "modifying a const object %qE is not allowed in "
+	    "a constant expression", TREE_OPERAND (expr, 0));
+  inform (location_of (obj), "originally declared %<const%> here");
+}
+
 /* Subroutine of cxx_eval_constant_expression.
    Evaluate the call expression tree T in the context of OLD_CALL expression
    evaluation.  */
@@ -1583,7 +1596,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 			  bool lval,
 			  bool *non_constant_p, bool *overflow_p)
 {
-  location_t loc = cp_expr_loc_or_loc (t, input_location);
+  location_t loc = cp_expr_loc_or_input_loc (t);
   tree fun = get_function_named_in_call (t);
   constexpr_call new_call
     = { NULL, NULL, NULL, 0, ctx->manifestly_const_eval };
@@ -1774,6 +1787,19 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 
   depth_ok = push_cx_call_context (t);
 
+  /* Remember the object we are constructing.  */
+  tree new_obj = NULL_TREE;
+  if (DECL_CONSTRUCTOR_P (fun))
+    {
+      /* In a constructor, it should be the first `this' argument.
+	 At this point it has already been evaluated in the call
+	 to cxx_bind_parameters_in_call.  */
+      new_obj = TREE_VEC_ELT (new_call.bindings, 0);
+      STRIP_NOPS (new_obj);
+      if (TREE_CODE (new_obj) == ADDR_EXPR)
+	new_obj = TREE_OPERAND (new_obj, 0);
+    }
+
   tree result = NULL_TREE;
 
   constexpr_call *entry = NULL;
@@ -1907,6 +1933,23 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 			   "of the function");
 		  *non_constant_p = true;
 		}
+	    }
+
+	  /* At this point, the object's constructor will have run, so
+	     the object is no longer under construction, and its possible
+	     'const' semantics now apply.  Make a note of this fact by
+	     marking the CONSTRUCTOR TREE_READONLY.  */
+	  if (new_obj
+	      && CLASS_TYPE_P (TREE_TYPE (new_obj))
+	      && CP_TYPE_CONST_P (TREE_TYPE (new_obj)))
+	    {
+	      /* Subobjects might not be stored in ctx->values but we can
+		 get its CONSTRUCTOR by evaluating *this.  */
+	      tree e = cxx_eval_constant_expression (ctx, new_obj,
+						     /*lval*/false,
+						     non_constant_p,
+						     overflow_p);
+	      TREE_READONLY (e) = true;
 	    }
 
 	  /* Forget the saved values of the callee's SAVE_EXPRs.  */
@@ -2579,7 +2622,7 @@ eval_and_check_array_index (const constexpr_ctx *ctx,
 			    tree t, bool allow_one_past,
 			    bool *non_constant_p, bool *overflow_p)
 {
-  location_t loc = cp_expr_loc_or_loc (t, input_location);
+  location_t loc = cp_expr_loc_or_input_loc (t);
   tree ary = TREE_OPERAND (t, 0);
   t = TREE_OPERAND (t, 1);
   tree index = cxx_eval_constant_expression (ctx, t, false,
@@ -3723,6 +3766,26 @@ maybe_simplify_trivial_copy (tree &target, tree &init)
     }
 }
 
+/* Return true if we are modifying something that is const during constant
+   expression evaluation.  CODE is the code of the statement, OBJ is the
+   object in question, MUTABLE_P is true if one of the subobjects were
+   declared mutable.  */
+
+static bool
+modifying_const_object_p (tree_code code, tree obj, bool mutable_p)
+{
+  /* If this is initialization, there's no problem.  */
+  if (code != MODIFY_EXPR)
+    return false;
+
+  /* [basic.type.qualifier] "A const object is an object of type
+     const T or a non-mutable subobject of a const object."  */
+  if (mutable_p)
+    return false;
+
+  return (TREE_READONLY (obj) || CP_TYPE_CONST_P (TREE_TYPE (obj)));
+}
+
 /* Evaluate an INIT_EXPR or MODIFY_EXPR.  */
 
 static tree
@@ -3772,6 +3835,9 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   /* Find the underlying variable.  */
   releasing_vec refs;
   tree object = NULL_TREE;
+  /* If we're modifying a const object, save it.  */
+  tree const_object_being_modified = NULL_TREE;
+  bool mutable_p = false;
   for (tree probe = target; object == NULL_TREE; )
     {
       switch (TREE_CODE (probe))
@@ -3782,6 +3848,12 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  {
 	    tree ob = TREE_OPERAND (probe, 0);
 	    tree elt = TREE_OPERAND (probe, 1);
+	    if (DECL_P (elt) && DECL_MUTABLE_P (elt))
+	      mutable_p = true;
+	    if (evaluated
+		&& modifying_const_object_p (TREE_CODE (t), probe, mutable_p)
+		&& const_object_being_modified == NULL_TREE)
+	      const_object_being_modified = probe;
 	    if (TREE_CODE (probe) == ARRAY_REF)
 	      {
 		elt = eval_and_check_array_index (ctx, probe, false,
@@ -3809,6 +3881,10 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  break;
 	}
     }
+
+  if (modifying_const_object_p (TREE_CODE (t), object, mutable_p)
+      && const_object_being_modified == NULL_TREE)
+    const_object_being_modified = object;
 
   /* And then find/build up our initializer for the path to the subobject
      we're initializing.  */
@@ -3908,7 +3984,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	      if (cxx_dialect < cxx2a)
 		{
 		  if (!ctx->quiet)
-		    error_at (cp_expr_loc_or_loc (t, input_location),
+		    error_at (cp_expr_loc_or_input_loc (t),
 			      "change of the active member of a union "
 			      "from %qD to %qD",
 			      CONSTRUCTOR_ELT (*valp, 0)->index,
@@ -3947,6 +4023,62 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	found:;
 	}
       valp = &cep->value;
+    }
+
+  /* Detect modifying a constant object in constexpr evaluation.
+     We have found a const object that is being modified.  Figure out
+     if we need to issue an error.  Consider
+
+     struct A {
+       int n;
+       constexpr A() : n(1) { n = 2; } // #1
+     };
+     struct B {
+       const A a;
+       constexpr B() { a.n = 3; } // #2
+     };
+    constexpr B b{};
+
+    #1 is OK, since we're modifying an object under construction, but
+    #2 is wrong, since "a" is const and has been fully constructed.
+    To track it, we use the TREE_READONLY bit in the object's CONSTRUCTOR
+    which means that the object is read-only.  For the example above, the
+    *ctors stack at the point of #2 will look like:
+
+      ctors[0] = {.a={.n=2}}  TREE_READONLY = 0
+      ctors[1] = {.n=2}       TREE_READONLY = 1
+
+    and we're modifying "b.a", so we search the stack and see if the
+    constructor for "b.a" has already run.  */
+  if (const_object_being_modified)
+    {
+      bool fail = false;
+      if (!CLASS_TYPE_P (TREE_TYPE (const_object_being_modified)))
+	fail = true;
+      else
+	{
+	  /* [class.ctor]p5 "A constructor can be invoked for a const,
+	     volatile, or const volatile object.  const and volatile
+	     semantics are not applied on an object under construction.
+	     They come into effect when the constructor for the most
+	     derived object ends."  */
+	  tree elt;
+	  unsigned int i;
+	  FOR_EACH_VEC_ELT (*ctors, i, elt)
+	    if (same_type_ignoring_top_level_qualifiers_p
+		(TREE_TYPE (const_object_being_modified), TREE_TYPE (elt)))
+	      {
+		fail = TREE_READONLY (elt);
+		break;
+	      }
+	}
+      if (fail)
+	{
+	  if (!ctx->quiet)
+	    modifying_const_object_error (t, const_object_being_modified);
+	  *non_constant_p = true;
+	  return t;
+	}
     }
 
   if (!preeval)
@@ -4062,7 +4194,8 @@ cxx_eval_increment_expression (const constexpr_ctx *ctx, tree t,
     VERIFY_CONSTANT (mod);
 
   /* Storing the modified value.  */
-  tree store = build2 (MODIFY_EXPR, type, op, mod);
+  tree store = build2_loc (cp_expr_loc_or_loc (t, input_location),
+			   MODIFY_EXPR, type, op, mod);
   cxx_eval_constant_expression (ctx, store,
 				true, non_constant_p, overflow_p);
   ggc_free (store);
@@ -4219,7 +4352,7 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
       /* We aren't communicating the jump to our caller, so give up.  We don't
 	 need to support evaluation of jumps out of statement-exprs.  */
       if (!ctx->quiet)
-	error_at (cp_expr_loc_or_loc (r, input_location),
+	error_at (cp_expr_loc_or_input_loc (r),
 		  "statement is not a constant expression");
       *non_constant_p = true;
     }
@@ -4319,7 +4452,7 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
       if (++count >= constexpr_loop_limit)
 	{
 	  if (!ctx->quiet)
-	    error_at (cp_expr_loc_or_loc (t, input_location),
+	    error_at (cp_expr_loc_or_input_loc (t),
 		      "%<constexpr%> loop iteration count exceeds limit of %d "
 		      "(use %<-fconstexpr-loop-limit=%> to increase the limit)",
 		      constexpr_loop_limit);
@@ -4410,6 +4543,17 @@ lookup_placeholder (const constexpr_ctx *ctx, bool lval, tree type)
   return ob;
 }
 
+/* Complain about an attempt to evaluate inline assembly.  */
+
+static void
+inline_asm_in_constexpr_error (location_t loc)
+{
+  auto_diagnostic_group d;
+  error_at (loc, "inline assembly is not a constant expression");
+  inform (loc, "only unevaluated inline assembly is allowed in a "
+	  "%<constexpr%> function in C++2a");
+}
+
 /* Attempt to reduce the expression T to a constant value.
    On failure, issue diagnostic and return error_mark_node.  */
 /* FIXME unify with c_fully_fold */
@@ -4481,7 +4625,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
   if (++*ctx->constexpr_ops_count >= constexpr_ops_limit)
     {
       if (!ctx->quiet)
-	error_at (cp_expr_loc_or_loc (t, input_location),
+	error_at (cp_expr_loc_or_input_loc (t),
 		  "%<constexpr%> evaluation operation count exceeds limit of "
 		  "%wd (use %<-fconstexpr-ops-limit=%> to increase the limit)",
 		  constexpr_ops_limit);
@@ -4638,6 +4782,11 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 						 non_constant_p, overflow_p);
 	    /* Don't share a CONSTRUCTOR that might be changed.  */
 	    init = unshare_constructor (init);
+	    /* Remember that a constant object's constructor has already
+	       run.  */
+	    if (CLASS_TYPE_P (TREE_TYPE (r))
+		&& CP_TYPE_CONST_P (TREE_TYPE (r)))
+	      TREE_READONLY (init) = true;
 	    ctx->values->put (r, init);
 	  }
 	else if (ctx == &new_ctx)
@@ -5035,7 +5184,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       if (REINTERPRET_CAST_P (t))
 	{
 	  if (!ctx->quiet)
-	    error_at (cp_expr_loc_or_loc (t, input_location),
+	    error_at (cp_expr_loc_or_input_loc (t),
 		      "%<reinterpret_cast%> is not a constant expression");
 	  *non_constant_p = true;
 	  return t;
@@ -5076,7 +5225,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		if (TYPE_REF_P (type))
 		  {
 		    if (!ctx->quiet)
-		      error_at (cp_expr_loc_or_loc (t, input_location),
+		      error_at (cp_expr_loc_or_input_loc (t),
 				"dereferencing a null pointer");
 		    *non_constant_p = true;
 		    return t;
@@ -5088,7 +5237,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		    if (!can_convert (type, from, tf_none))
 		      {
 			if (!ctx->quiet)
-			  error_at (cp_expr_loc_or_loc (t, input_location),
+			  error_at (cp_expr_loc_or_input_loc (t),
 				    "conversion of %qT null pointer to %qT "
 				    "is not a constant expression",
 				    from, type);
@@ -5103,7 +5252,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		     reinterpret_cast<void*>(sizeof 0)
 		*/
 		if (!ctx->quiet)
-		  error_at (cp_expr_loc_or_loc (t, input_location),
+		  error_at (cp_expr_loc_or_input_loc (t),
 			    "%<reinterpret_cast<%T>(%E)%> is not "
 			    "a constant expression",
 			    type, op);
@@ -5177,7 +5326,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case BASELINK:
     case OFFSET_REF:
       if (!ctx->quiet)
-        error_at (cp_expr_loc_or_loc (t, input_location),
+        error_at (cp_expr_loc_or_input_loc (t),
 		  "expression %qE is not a constant expression", t);
       *non_constant_p = true;
       break;
@@ -5195,7 +5344,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    || !DECL_P (get_base_address (TREE_OPERAND (obj, 0))))
 	  {
 	    if (!ctx->quiet)
-	      error_at (cp_expr_loc_or_loc (t, input_location),
+	      error_at (cp_expr_loc_or_input_loc (t),
 			"expression %qE is not a constant expression", t);
 	    *non_constant_p = true;
 	    return t;
@@ -5287,6 +5436,12 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case USING_STMT:
       r = void_node;
       break;
+
+    case ASM_EXPR:
+      if (!ctx->quiet)
+	inline_asm_in_constexpr_error (cp_expr_loc_or_input_loc (t));
+      *non_constant_p = true;
+      return t;
 
     default:
       if (STATEMENT_CODE_P (TREE_CODE (t)))
@@ -5959,7 +6114,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     return false;
   if (t == NULL_TREE)
     return true;
-  location_t loc = cp_expr_loc_or_loc (t, input_location);
+  location_t loc = cp_expr_loc_or_input_loc (t);
 
   if (*jump_target)
     /* If we are jumping, ignore everything.  This is simpler than the
@@ -6436,6 +6591,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case OMP_SIMD:
     case OMP_DISTRIBUTE:
     case OMP_TASKLOOP:
+    case OMP_LOOP:
     case OMP_TEAMS:
     case OMP_TARGET_DATA:
     case OMP_TARGET:
@@ -6467,11 +6623,15 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       /* GCC internal stuff.  */
     case VA_ARG_EXPR:
     case TRANSACTION_EXPR:
-    case ASM_EXPR:
     case AT_ENCODE_EXPR:
     fail:
       if (flags & tf_error)
 	error_at (loc, "expression %qE is not a constant expression", t);
+      return false;
+
+    case ASM_EXPR:
+      if (flags & tf_error)
+	inline_asm_in_constexpr_error (loc);
       return false;
 
     case OBJ_TYPE_REF:

@@ -9,7 +9,7 @@
 */
 
 /* { dg-do compile }  */
-/* { dg-options "-O2" }  */
+/* { dg-options "-O2 -fno-tree-forwprop" }  */
 
 /* { dg-final { scan-assembler-times {tst	#1,r0} 1 } }  */
 /* { dg-final { scan-assembler-times {subc	r} 1 } }  */

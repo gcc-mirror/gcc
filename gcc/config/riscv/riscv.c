@@ -2383,7 +2383,8 @@ typedef struct {
 static int
 riscv_flatten_aggregate_field (const_tree type,
 			       riscv_aggregate_field fields[2],
-			       int n, HOST_WIDE_INT offset)
+			       int n, HOST_WIDE_INT offset,
+			       bool ignore_zero_width_bit_field_p)
 {
   switch (TREE_CODE (type))
     {
@@ -2400,8 +2401,21 @@ riscv_flatten_aggregate_field (const_tree type,
 	    if (!TYPE_P (TREE_TYPE (f)))
 	      return -1;
 
-	    HOST_WIDE_INT pos = offset + int_byte_position (f);
-	    n = riscv_flatten_aggregate_field (TREE_TYPE (f), fields, n, pos);
+	    /* The C++ front end strips zero-length bit-fields from structs.
+	       So we need to ignore them in the C front end to make C code
+	       compatible with C++ code.  */
+	    if (ignore_zero_width_bit_field_p
+		&& DECL_BIT_FIELD (f)
+		&& (DECL_SIZE (f) == NULL_TREE
+		    || integer_zerop (DECL_SIZE (f))))
+	      ;
+	    else
+	      {
+		HOST_WIDE_INT pos = offset + int_byte_position (f);
+		n = riscv_flatten_aggregate_field (TREE_TYPE (f),
+						   fields, n, pos,
+						   ignore_zero_width_bit_field_p);
+	      }
 	    if (n < 0)
 	      return -1;
 	  }
@@ -2414,7 +2428,8 @@ riscv_flatten_aggregate_field (const_tree type,
 	tree index = TYPE_DOMAIN (type);
 	tree elt_size = TYPE_SIZE_UNIT (TREE_TYPE (type));
 	int n_subfields = riscv_flatten_aggregate_field (TREE_TYPE (type),
-							 subfields, 0, offset);
+							 subfields, 0, offset,
+							 ignore_zero_width_bit_field_p);
 
 	/* Can't handle incomplete types nor sizes that are not fixed.  */
 	if (n_subfields <= 0
@@ -2487,12 +2502,14 @@ riscv_flatten_aggregate_field (const_tree type,
 
 static int
 riscv_flatten_aggregate_argument (const_tree type,
-				  riscv_aggregate_field fields[2])
+				  riscv_aggregate_field fields[2],
+				  bool ignore_zero_width_bit_field_p)
 {
   if (!type || TREE_CODE (type) != RECORD_TYPE)
     return -1;
 
-  return riscv_flatten_aggregate_field (type, fields, 0, 0);
+  return riscv_flatten_aggregate_field (type, fields, 0, 0,
+					ignore_zero_width_bit_field_p);
 }
 
 /* See whether TYPE is a record whose fields should be returned in one or
@@ -2502,13 +2519,34 @@ static unsigned
 riscv_pass_aggregate_in_fpr_pair_p (const_tree type,
 				    riscv_aggregate_field fields[2])
 {
-  int n = riscv_flatten_aggregate_argument (type, fields);
+  static int warned = 0;
 
-  for (int i = 0; i < n; i++)
+  /* This is the old ABI, which differs for C++ and C.  */
+  int n_old = riscv_flatten_aggregate_argument (type, fields, false);
+  for (int i = 0; i < n_old; i++)
     if (!SCALAR_FLOAT_TYPE_P (fields[i].type))
-      return 0;
+      {
+	n_old = -1;
+	break;
+      }
 
-  return n > 0 ? n : 0;
+  /* This is the new ABI, which is the same for C++ and C.  */
+  int n_new = riscv_flatten_aggregate_argument (type, fields, true);
+  for (int i = 0; i < n_new; i++)
+    if (!SCALAR_FLOAT_TYPE_P (fields[i].type))
+      {
+	n_new = -1;
+	break;
+      }
+
+  if ((n_old != n_new) && (warned == 0))
+    {
+      warning (0, "ABI for flattened struct with zero-length bit-fields "
+	       "changed in GCC 10");
+      warned = 1;
+    }
+
+  return n_new > 0 ? n_new : 0;
 }
 
 /* See whether TYPE is a record whose fields should be returned in one or
@@ -2519,16 +2557,38 @@ static bool
 riscv_pass_aggregate_in_fpr_and_gpr_p (const_tree type,
 				       riscv_aggregate_field fields[2])
 {
-  unsigned num_int = 0, num_float = 0;
-  int n = riscv_flatten_aggregate_argument (type, fields);
+  static int warned = 0;
 
-  for (int i = 0; i < n; i++)
+  /* This is the old ABI, which differs for C++ and C.  */
+  unsigned num_int_old = 0, num_float_old = 0;
+  int n_old = riscv_flatten_aggregate_argument (type, fields, false);
+  for (int i = 0; i < n_old; i++)
     {
-      num_float += SCALAR_FLOAT_TYPE_P (fields[i].type);
-      num_int += INTEGRAL_TYPE_P (fields[i].type);
+      num_float_old += SCALAR_FLOAT_TYPE_P (fields[i].type);
+      num_int_old += INTEGRAL_TYPE_P (fields[i].type);
     }
 
-  return num_int == 1 && num_float == 1;
+  /* This is the new ABI, which is the same for C++ and C.  */
+  unsigned num_int_new = 0, num_float_new = 0;
+  int n_new = riscv_flatten_aggregate_argument (type, fields, true);
+  for (int i = 0; i < n_new; i++)
+    {
+      num_float_new += SCALAR_FLOAT_TYPE_P (fields[i].type);
+      num_int_new += INTEGRAL_TYPE_P (fields[i].type);
+    }
+
+  if (((num_int_old == 1 && num_float_old == 1
+	&& (num_int_old != num_int_new || num_float_old != num_float_new))
+       || (num_int_new == 1 && num_float_new == 1
+	   && (num_int_old != num_int_new || num_float_old != num_float_new)))
+      && (warned == 0))
+    {
+      warning (0, "ABI for flattened struct with zero-length bit-fields "
+	       "changed in GCC 10");
+      warned = 1;
+    }
+
+  return num_int_new == 1 && num_float_new == 1;
 }
 
 /* Return the representation of an argument passed or returned in an FPR
@@ -2683,28 +2743,27 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
 /* Implement TARGET_FUNCTION_ARG.  */
 
 static rtx
-riscv_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		    const_tree type, bool named)
+riscv_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   struct riscv_arg_info info;
 
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     return NULL;
 
-  return riscv_get_arg_info (&info, cum, mode, type, named, false);
+  return riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
 }
 
 /* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 
 static void
-riscv_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			    const_tree type, bool named)
+riscv_function_arg_advance (cumulative_args_t cum_v,
+			    const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   struct riscv_arg_info info;
 
-  riscv_get_arg_info (&info, cum, mode, type, named, false);
+  riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
 
   /* Advance the register count.  This has the effect of setting
      num_gprs to MAX_ARGS_IN_REGISTERS if a doubleword-aligned
@@ -2718,11 +2777,12 @@ riscv_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 
 static int
 riscv_arg_partial_bytes (cumulative_args_t cum,
-			 machine_mode mode, tree type, bool named)
+			 const function_arg_info &generic_arg)
 {
   struct riscv_arg_info arg;
 
-  riscv_get_arg_info (&arg, get_cumulative_args (cum), mode, type, named, false);
+  riscv_get_arg_info (&arg, get_cumulative_args (cum), generic_arg.mode,
+		      generic_arg.type, generic_arg.named, false);
   return arg.stack_p ? arg.num_gprs * UNITS_PER_WORD : 0;
 }
 
@@ -2754,10 +2814,9 @@ riscv_function_value (const_tree type, const_tree func, machine_mode mode)
 /* Implement TARGET_PASS_BY_REFERENCE. */
 
 static bool
-riscv_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
-			 const_tree type, bool named)
+riscv_pass_by_reference (cumulative_args_t cum_v, const function_arg_info &arg)
 {
-  HOST_WIDE_INT size = type ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
+  HOST_WIDE_INT size = arg.type_size_in_bytes ();
   struct riscv_arg_info info;
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
@@ -2767,7 +2826,7 @@ riscv_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
   if (cum != NULL)
     {
       /* Don't pass by reference if we can use a floating-point register.  */
-      riscv_get_arg_info (&info, cum, mode, type, named, false);
+      riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
       if (info.num_fprs)
 	return false;
     }
@@ -2787,15 +2846,16 @@ riscv_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
   /* The rules for returning in memory are the same as for passing the
      first named argument by reference.  */
   memset (&args, 0, sizeof args);
-  return riscv_pass_by_reference (cum, TYPE_MODE (type), type, true);
+  function_arg_info arg (const_cast<tree> (type), /*named=*/true);
+  return riscv_pass_by_reference (cum, arg);
 }
 
 /* Implement TARGET_SETUP_INCOMING_VARARGS.  */
 
 static void
-riscv_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
-			     tree type, int *pretend_size ATTRIBUTE_UNUSED,
-			     int no_rtl)
+riscv_setup_incoming_varargs (cumulative_args_t cum,
+			      const function_arg_info &arg,
+			      int *pretend_size ATTRIBUTE_UNUSED, int no_rtl)
 {
   CUMULATIVE_ARGS local_cum;
   int gp_saved;
@@ -2804,7 +2864,7 @@ riscv_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
   local_cum = *get_cumulative_args (cum);
-  riscv_function_arg_advance (pack_cumulative_args (&local_cum), mode, type, 1);
+  riscv_function_arg_advance (pack_cumulative_args (&local_cum), arg);
 
   /* Found out how many registers we need to save.  */
   gp_saved = MAX_ARGS_IN_REGISTERS - local_cum.num_gprs;
@@ -4910,6 +4970,32 @@ riscv_constant_alignment (const_tree exp, HOST_WIDE_INT align)
   return align;
 }
 
+/* Implement TARGET_PROMOTE_FUNCTION_MODE.  */
+
+/* This function is equivalent to default_promote_function_mode_always_promote
+   except that it returns a promoted mode even if type is NULL_TREE.  This is
+   needed by libcalls which have no type (only a mode) such as fixed conversion
+   routines that take a signed or unsigned char/short/int argument and convert
+   it to a fixed type.  */
+
+static machine_mode
+riscv_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
+			     machine_mode mode,
+			     int *punsignedp ATTRIBUTE_UNUSED,
+			     const_tree fntype ATTRIBUTE_UNUSED,
+			     int for_return ATTRIBUTE_UNUSED)
+{
+  int unsignedp;
+
+  if (type != NULL_TREE)
+    return promote_mode (type, mode, punsignedp);
+
+  unsignedp = *punsignedp;
+  PROMOTE_MODE (mode, unsignedp, type);
+  *punsignedp = unsignedp;
+  return mode;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -4951,7 +5037,7 @@ riscv_constant_alignment (const_tree exp, HOST_WIDE_INT align)
 #define TARGET_EXPAND_BUILTIN_VA_START riscv_va_start
 
 #undef  TARGET_PROMOTE_FUNCTION_MODE
-#define TARGET_PROMOTE_FUNCTION_MODE default_promote_function_mode_always_promote
+#define TARGET_PROMOTE_FUNCTION_MODE riscv_promote_function_mode
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY riscv_return_in_memory

@@ -1100,7 +1100,7 @@ package body Errout is
       --  Test if warning to be treated as error
 
       Warn_Err :=
-        Is_Warning_Msg
+        (Is_Warning_Msg or Is_Style_Msg)
           and then (Warning_Treated_As_Error (Msg_Buffer (1 .. Msglen))
                       or else
                     Warning_Treated_As_Error (Get_Warning_Tag (Cur_Msg)));
@@ -3259,7 +3259,7 @@ package body Errout is
 
       --  Processing for "Size too small" messages
 
-      elsif Msg = "size for& too small, minimum allowed is ^" then
+      elsif Msg = Size_Too_Small_Message then
 
          --  Suppress "size too small" errors in CodePeer mode, since code may
          --  be analyzed in a different configuration than the one used for

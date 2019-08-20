@@ -5678,9 +5678,10 @@ trees_out::core_vals (tree t)
 	{
 	  /* Builtins can be streamed by value when a header declares
 	     them.  */
+	  // FIXME: Perhaps it's just BUILT_IN_NORMAL that's needed here?
 	  WU (DECL_BUILT_IN_CLASS (t));
 	  if (DECL_BUILT_IN_CLASS (t) != NOT_BUILT_IN)
-	    WU (DECL_FUNCTION_CODE (t));
+	    WU (DECL_UNCHECKED_FUNCTION_CODE (t));
 	}
 
       chained_decls (t->function_decl.arguments);
@@ -6162,11 +6163,11 @@ trees_in::core_vals (tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     {
       unsigned bltin = u ();
-      DECL_BUILT_IN_CLASS (t) = built_in_class (bltin);
+      t->function_decl.built_in_class = built_in_class (bltin);
       if (bltin != NOT_BUILT_IN)
 	{
 	  bltin = u ();
-	  DECL_FUNCTION_CODE (t) = built_in_function (bltin);
+	  DECL_UNCHECKED_FUNCTION_CODE (t) = built_in_function (bltin);
 	}
 
       t->function_decl.arguments = chained_decls ();

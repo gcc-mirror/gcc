@@ -655,20 +655,17 @@ static rtx sparc_legitimize_address (rtx, rtx, machine_mode);
 static rtx sparc_delegitimize_address (rtx);
 static bool sparc_mode_dependent_address_p (const_rtx, addr_space_t);
 static bool sparc_pass_by_reference (cumulative_args_t,
-				     machine_mode, const_tree, bool);
+				     const function_arg_info &);
 static void sparc_function_arg_advance (cumulative_args_t,
-					machine_mode, const_tree, bool);
-static rtx sparc_function_arg_1 (cumulative_args_t,
-				 machine_mode, const_tree, bool, bool);
-static rtx sparc_function_arg (cumulative_args_t,
-			       machine_mode, const_tree, bool);
+					const function_arg_info &);
+static rtx sparc_function_arg (cumulative_args_t, const function_arg_info &);
 static rtx sparc_function_incoming_arg (cumulative_args_t,
-					machine_mode, const_tree, bool);
+					const function_arg_info &);
 static pad_direction sparc_function_arg_padding (machine_mode, const_tree);
 static unsigned int sparc_function_arg_boundary (machine_mode,
 						 const_tree);
 static int sparc_arg_partial_bytes (cumulative_args_t,
-				    machine_mode, tree, bool);
+				    const function_arg_info &);
 static bool sparc_return_in_memory (const_tree, const_tree);
 static rtx sparc_struct_value_rtx (tree, int);
 static rtx sparc_function_value (const_tree, const_tree, bool);
@@ -6743,10 +6740,10 @@ sparc_strict_argument_naming (cumulative_args_t ca ATTRIBUTE_UNUSED)
    Specify whether to pass the argument by reference.  */
 
 static bool
-sparc_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-			 machine_mode mode, const_tree type,
-			 bool named ATTRIBUTE_UNUSED)
+sparc_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
+  tree type = arg.type;
+  machine_mode mode = arg.mode;
   if (TARGET_ARCH32)
     /* Original SPARC 32-bit ABI says that structures and unions,
        and quad-precision floats are passed by reference.
@@ -7379,24 +7376,22 @@ function_arg_vector_value (int size, int slotno, bool named, int regno)
 
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
-   NAMED is true if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).
+   ARG is a description of the argument.
    INCOMING_P is false for TARGET_FUNCTION_ARG, true for
     TARGET_FUNCTION_INCOMING_ARG.  */
 
 static rtx
-sparc_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
-		      const_tree type, bool named, bool incoming)
+sparc_function_arg_1 (cumulative_args_t cum_v, const function_arg_info &arg,
+		      bool incoming)
 {
   const CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   const int regbase
     = incoming ? SPARC_INCOMING_INT_ARG_FIRST : SPARC_OUTGOING_INT_ARG_FIRST;
   int slotno, regno, padding;
+  tree type = arg.type;
+  machine_mode mode = arg.mode;
   enum mode_class mclass = GET_MODE_CLASS (mode);
+  bool named = arg.named;
 
   slotno
     = function_arg_slotno (cum, mode, type, named, incoming, &regno, &padding);
@@ -7495,19 +7490,18 @@ sparc_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
 /* Handle the TARGET_FUNCTION_ARG target hook.  */
 
 static rtx
-sparc_function_arg (cumulative_args_t cum, machine_mode mode,
-		    const_tree type, bool named)
+sparc_function_arg (cumulative_args_t cum, const function_arg_info &arg)
 {
-  return sparc_function_arg_1 (cum, mode, type, named, false);
+  return sparc_function_arg_1 (cum, arg, false);
 }
 
 /* Handle the TARGET_FUNCTION_INCOMING_ARG target hook.  */
 
 static rtx
-sparc_function_incoming_arg (cumulative_args_t cum, machine_mode mode,
-			     const_tree type, bool named)
+sparc_function_incoming_arg (cumulative_args_t cum,
+			     const function_arg_info &arg)
 {
-  return sparc_function_arg_1 (cum, mode, type, named, true);
+  return sparc_function_arg_1 (cum, arg, true);
 }
 
 /* For sparc64, objects requiring 16 byte alignment are passed that way.  */
@@ -7533,14 +7527,13 @@ sparc_function_arg_boundary (machine_mode mode, const_tree type)
    mode] will be split between that reg and memory.  */
 
 static int
-sparc_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
-			 tree type, bool named)
+sparc_arg_partial_bytes (cumulative_args_t cum, const function_arg_info &arg)
 {
   int slotno, regno, padding;
 
   /* We pass false for incoming here, it doesn't matter.  */
-  slotno = function_arg_slotno (get_cumulative_args (cum), mode, type, named,
-				false, &regno, &padding);
+  slotno = function_arg_slotno (get_cumulative_args (cum), arg.mode, arg.type,
+				arg.named, false, &regno, &padding);
 
   if (slotno == -1)
     return 0;
@@ -7550,7 +7543,7 @@ sparc_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
       /* We are guaranteed by pass_by_reference that the size of the
 	 argument is not greater than 8 bytes, so we only need to return
 	 one word if the argument is partially passed in registers.  */
-      const int size = GET_MODE_SIZE (mode);
+      const int size = GET_MODE_SIZE (arg.mode);
 
       if (size > UNITS_PER_WORD && slotno == SPARC_INT_ARG_MAX - 1)
 	return UNITS_PER_WORD;
@@ -7560,33 +7553,33 @@ sparc_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
       /* We are guaranteed by pass_by_reference that the size of the
 	 argument is not greater than 16 bytes, so we only need to return
 	 one word if the argument is partially passed in registers.  */
-      if (type && AGGREGATE_TYPE_P (type))
+      if (arg.aggregate_type_p ())
 	{
-	  const int size = int_size_in_bytes (type);
+	  const int size = int_size_in_bytes (arg.type);
 
 	  if (size > UNITS_PER_WORD
 	      && (slotno == SPARC_INT_ARG_MAX - 1
 		  || slotno == SPARC_FP_ARG_MAX - 1))
 	    return UNITS_PER_WORD;
 	}
-      else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
-	       || ((GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
-		    || (type && VECTOR_TYPE_P (type)))
-		   && !(TARGET_FPU && named)))
+      else if (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_INT
+	       || ((GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT
+		    || (arg.type && VECTOR_TYPE_P (arg.type)))
+		   && !(TARGET_FPU && arg.named)))
 	{
-	  const int size = (type && VECTOR_FLOAT_TYPE_P (type))
-			   ? int_size_in_bytes (type)
-			   : GET_MODE_SIZE (mode);
+	  const int size = (arg.type && VECTOR_FLOAT_TYPE_P (arg.type))
+			   ? int_size_in_bytes (arg.type)
+			   : GET_MODE_SIZE (arg.mode);
 
 	  if (size > UNITS_PER_WORD && slotno == SPARC_INT_ARG_MAX - 1)
 	    return UNITS_PER_WORD;
 	}
-      else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
-	       || (type && VECTOR_TYPE_P (type)))
+      else if (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT
+	       || (arg.type && VECTOR_TYPE_P (arg.type)))
 	{
-	  const int size = (type && VECTOR_FLOAT_TYPE_P (type))
-			   ? int_size_in_bytes (type)
-			   : GET_MODE_SIZE (mode);
+	  const int size = (arg.type && VECTOR_FLOAT_TYPE_P (arg.type))
+			   ? int_size_in_bytes (arg.type)
+			   : GET_MODE_SIZE (arg.mode);
 
 	  if (size > UNITS_PER_WORD && slotno == SPARC_FP_ARG_MAX - 1)
 	    return UNITS_PER_WORD;
@@ -7597,19 +7590,19 @@ sparc_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
 }
 
 /* Handle the TARGET_FUNCTION_ARG_ADVANCE hook.
-   Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   TYPE is null for libcalls where that information may not be available.  */
+   Update the data in CUM to advance over argument ARG.  */
 
 static void
-sparc_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			    const_tree type, bool named)
+sparc_function_arg_advance (cumulative_args_t cum_v,
+			    const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+  tree type = arg.type;
+  machine_mode mode = arg.mode;
   int regno, padding;
 
   /* We pass false for incoming here, it doesn't matter.  */
-  function_arg_slotno (cum, mode, type, named, false, &regno, &padding);
+  function_arg_slotno (cum, mode, type, arg.named, false, &regno, &padding);
 
   /* If argument requires leading padding, add it.  */
   cum->words += padding;
@@ -7935,7 +7928,7 @@ sparc_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   bool indirect;
   tree ptrtype = build_pointer_type (type);
 
-  if (pass_by_reference (NULL, TYPE_MODE (type), type, false))
+  if (pass_va_arg_by_reference (type))
     {
       indirect = true;
       size = rsize = UNITS_PER_WORD;
@@ -11661,7 +11654,8 @@ sparc_expand_builtin (tree exp, rtx target,
 		      int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  enum sparc_builtins code = (enum sparc_builtins) DECL_FUNCTION_CODE (fndecl);
+  enum sparc_builtins code
+    = (enum sparc_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   enum insn_code icode = sparc_builtins_icode[code];
   bool nonvoid = TREE_TYPE (TREE_TYPE (fndecl)) != void_type_node;
   call_expr_arg_iterator iter;
@@ -11829,7 +11823,8 @@ static tree
 sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 		    tree *args, bool ignore)
 {
-  enum sparc_builtins code = (enum sparc_builtins) DECL_FUNCTION_CODE (fndecl);
+  enum sparc_builtins code
+    = (enum sparc_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   tree rtype = TREE_TYPE (TREE_TYPE (fndecl));
   tree arg0, arg1, arg2;
 

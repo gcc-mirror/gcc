@@ -664,7 +664,8 @@ bdver3 bdver4 znver1 znver2 btver1 btver2 k8 k8-sse3 opteron \
 opteron-sse3 nocona core2 corei7 corei7-avx core-avx-i core-avx2 atom \
 slm nehalem westmere sandybridge ivybridge haswell broadwell bonnell \
 silvermont knl knm skylake-avx512 cannonlake icelake-client icelake-server \
-skylake goldmont goldmont-plus tremont cascadelake x86-64 native"
+skylake goldmont goldmont-plus tremont cascadelake tigerlake cooperlake x86-64 \
+native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.
@@ -2519,7 +2520,8 @@ msp430*-*-*)
 	c_target_objs="msp430-c.o"
 	cxx_target_objs="msp430-c.o"
 	tmake_file="${tmake_file} msp430/t-msp430"
-	extra_gcc_objs="driver-msp430.o"
+	extra_objs="${extra_objs} msp430-devices.o"
+	extra_gcc_objs="driver-msp430.o msp430-devices.o"
 	# Enable .init_array unless it has been explicitly disabled.
 	# The MSP430 EABI mandates the use of .init_array, and the Newlib CRT
 	# code since mid-2019 expects it.

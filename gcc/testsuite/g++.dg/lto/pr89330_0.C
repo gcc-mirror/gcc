@@ -1,6 +1,7 @@
 // { dg-lto-do link }
 // { dg-lto-options { { -O3 -g -flto -shared -fPIC -Wno-odr } } }
 // { dg-require-effective-target fpic }
+// { dg-require-effective-target shared }
 
 namespace Inkscape {
 class Anchored {};

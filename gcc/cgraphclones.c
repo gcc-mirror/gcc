@@ -225,10 +225,7 @@ build_function_decl_skip_args (tree orig_decl, bitmap args_to_skip,
   if (fndecl_built_in_p (new_decl)
       && args_to_skip
       && !bitmap_empty_p (args_to_skip))
-    {
-      DECL_BUILT_IN_CLASS (new_decl) = NOT_BUILT_IN;
-      DECL_FUNCTION_CODE (new_decl) = (enum built_in_function) 0;
-    }
+    set_decl_built_in_function (new_decl, NOT_BUILT_IN, 0);
   /* The FE might have information and assumptions about the other
      arguments.  */
   DECL_LANG_SPECIFIC (new_decl) = NULL;
@@ -248,6 +245,8 @@ set_new_clone_decl_and_node_flags (cgraph_node *new_node)
   DECL_VIRTUAL_P (new_node->decl) = 0;
   DECL_STATIC_CONSTRUCTOR (new_node->decl) = 0;
   DECL_STATIC_DESTRUCTOR (new_node->decl) = 0;
+  DECL_SET_IS_OPERATOR_NEW (new_node->decl, 0);
+  DECL_SET_IS_OPERATOR_DELETE (new_node->decl, 0);
 
   new_node->externally_visible = 0;
   new_node->local.local = 1;
@@ -1065,6 +1064,8 @@ cgraph_node::create_version_clone_with_body
   /* When the old decl was a con-/destructor make sure the clone isn't.  */
   DECL_STATIC_CONSTRUCTOR (new_decl) = 0;
   DECL_STATIC_DESTRUCTOR (new_decl) = 0;
+  DECL_SET_IS_OPERATOR_NEW (new_decl, 0);
+  DECL_SET_IS_OPERATOR_DELETE (new_decl, 0);
 
   /* Create the new version's call-graph node.
      and update the edges of the new node. */

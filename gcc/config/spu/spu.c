@@ -3829,9 +3829,7 @@ spu_function_value (const_tree type, const_tree func ATTRIBUTE_UNUSED)
 }
 
 static rtx
-spu_function_arg (cumulative_args_t cum_v,
-		  machine_mode mode,
-		  const_tree type, bool named ATTRIBUTE_UNUSED)
+spu_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int byte_size;
@@ -3839,8 +3837,7 @@ spu_function_arg (cumulative_args_t cum_v,
   if (*cum >= MAX_REGISTER_ARGS)
     return 0;
 
-  byte_size = ((mode == BLKmode)
-	       ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
+  byte_size = arg.promoted_size_in_bytes ();
 
   /* The ABI does not allow parameters to be passed partially in
      reg and partially in stack. */
@@ -3848,7 +3845,7 @@ spu_function_arg (cumulative_args_t cum_v,
     return 0;
 
   /* Make sure small structs are left justified in a register. */
-  if ((mode == BLKmode || (type && AGGREGATE_TYPE_P (type)))
+  if ((arg.mode == BLKmode || arg.aggregate_type_p ())
       && byte_size < UNITS_PER_WORD && byte_size > 0)
     {
       machine_mode smode;
@@ -3859,25 +3856,25 @@ spu_function_arg (cumulative_args_t cum_v,
       gr_reg = gen_rtx_EXPR_LIST (VOIDmode,
 				  gen_rtx_REG (smode, FIRST_ARG_REGNUM + *cum),
 				  const0_rtx);
-      return gen_rtx_PARALLEL (mode, gen_rtvec (1, gr_reg));
+      return gen_rtx_PARALLEL (arg.mode, gen_rtvec (1, gr_reg));
     }
   else
-    return gen_rtx_REG (mode, FIRST_ARG_REGNUM + *cum);
+    return gen_rtx_REG (arg.mode, FIRST_ARG_REGNUM + *cum);
 }
 
 static void
-spu_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			  const_tree type, bool named ATTRIBUTE_UNUSED)
+spu_function_arg_advance (cumulative_args_t cum_v,
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  *cum += (type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
+  *cum += (arg.type && TREE_CODE (TYPE_SIZE (arg.type)) != INTEGER_CST
 	   ? 1
-	   : mode == BLKmode
-	   ? ((int_size_in_bytes (type) + 15) / 16)
-	   : mode == VOIDmode
+	   : arg.mode == BLKmode
+	   ? ((int_size_in_bytes (arg.type) + 15) / 16)
+	   : arg.mode == VOIDmode
 	   ? 1
-	   : spu_hard_regno_nregs (FIRST_ARG_REGNUM, mode));
+	   : spu_hard_regno_nregs (FIRST_ARG_REGNUM, arg.mode));
 }
 
 /* Implement TARGET_FUNCTION_ARG_OFFSET.  The SPU ABI wants 32/64-bit
@@ -3902,11 +3899,9 @@ spu_function_arg_padding (machine_mode, const_tree)
 
 /* Variable sized types are passed by reference.  */
 static bool
-spu_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-		       machine_mode mode ATTRIBUTE_UNUSED,
-		       const_tree type, bool named ATTRIBUTE_UNUSED)
+spu_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  return type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST;
+  return arg.type && TREE_CODE (TYPE_SIZE (arg.type)) != INTEGER_CST;
 }
 
 
@@ -4053,8 +4048,7 @@ spu_gimplify_va_arg_expr (tree valist, tree type, gimple_seq * pre_p,
 
   /* if an object is dynamically sized, a pointer to it is passed
      instead of the object itself. */
-  pass_by_reference_p = pass_by_reference (NULL, TYPE_MODE (type), type,
-					   false);
+  pass_by_reference_p = pass_va_arg_by_reference (type);
   if (pass_by_reference_p)
     type = build_pointer_type (type);
   size = int_size_in_bytes (type);
@@ -4092,8 +4086,9 @@ spu_gimplify_va_arg_expr (tree valist, tree type, gimple_seq * pre_p,
    in the stack then save no registers.  Set pretend_args_size to the
    amount of space needed to save the registers. */
 static void
-spu_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
-			    tree type, int *pretend_size, int no_rtl)
+spu_setup_incoming_varargs (cumulative_args_t cum,
+			    const function_arg_info &arg,
+			    int *pretend_size, int no_rtl)
 {
   if (!no_rtl)
     {
@@ -4104,7 +4099,7 @@ spu_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
 
       /* cum currently points to the last named argument, we want to
          start at the next argument. */
-      spu_function_arg_advance (pack_cumulative_args (&ncum), mode, type, true);
+      spu_function_arg_advance (pack_cumulative_args (&ncum), arg);
 
       offset = -STACK_POINTER_OFFSET;
       for (regno = ncum; regno < MAX_REGISTER_ARGS; regno++)
@@ -6591,7 +6586,7 @@ spu_expand_builtin (tree exp,
 		    int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   struct spu_builtin_description *d;
 
   if (fcode < NUM_SPU_BUILTINS)

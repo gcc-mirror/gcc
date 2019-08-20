@@ -1,7 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -ffast-math -ftree-vectorize -msse4.1" } */
 /* { dg-require-effective-target sse4 } */
-/* { dg-skip-if "no M_PI" { vxworks_kernel } } */
 
 #ifndef CHECK_H
 #define CHECK_H "sse4_1-check.h"
@@ -14,7 +13,7 @@
 #include CHECK_H
 
 #define __NO_MATH_INLINES
-#include <math.h>
+#include "math_m_pi.h"
 
 extern float truncf (float);
 

@@ -676,9 +676,15 @@ package body Sem_Ch4 is
 
                --  In GNATprove mode we need to preserve the link between
                --  the original subtype indication and the anonymous subtype,
-               --  to extend proofs to constrained acccess types.
+               --  to extend proofs to constrained acccess types. We only do
+               --  that outside of spec expressions, otherwise the declaration
+               --  cannot be inserted and analyzed. In such a case, GNATprove
+               --  later rejects the allocator as it is not used here in
+               --  a non-interfering context (SPARK 4.8(2) and 7.1.3(12)).
 
-               if Expander_Active or else GNATprove_Mode then
+               if Expander_Active
+                 or else (GNATprove_Mode and then not In_Spec_Expression)
+               then
                   Def_Id := Make_Temporary (Loc, 'S');
 
                   Insert_Action (E,
@@ -790,25 +796,47 @@ package body Sem_Ch4 is
                           ("\constraint with discriminant values required", N);
                      end if;
 
-                  --  Limited Ada 2005 and general nonlimited case
+                  --  Limited Ada 2005 and general nonlimited case.
+                  --  This is an error, except in the case of an
+                  --  uninitialized allocator that is generated
+                  --  for a build-in-place function return of a
+                  --  discriminated but compile-time-known-size
+                  --  type.
 
                   else
-                     Error_Msg_N
-                       ("uninitialized unconstrained allocation not "
-                        & "allowed", N);
+                     if Original_Node (N) /= N
+                       and then Nkind (Original_Node (N)) = N_Allocator
+                     then
+                        declare
+                           Qual : constant Node_Id :=
+                             Expression (Original_Node (N));
+                           pragma Assert
+                             (Nkind (Qual) = N_Qualified_Expression);
+                           Call : constant Node_Id := Expression (Qual);
+                           pragma Assert
+                             (Is_Expanded_Build_In_Place_Call (Call));
+                        begin
+                           null;
+                        end;
 
-                     if Is_Array_Type (Type_Id) then
+                     else
                         Error_Msg_N
-                          ("\qualified expression or constraint with "
-                           & "array bounds required", N);
+                          ("uninitialized unconstrained allocation not "
+                           & "allowed", N);
 
-                     elsif Has_Unknown_Discriminants (Type_Id) then
-                        Error_Msg_N ("\qualified expression required", N);
+                        if Is_Array_Type (Type_Id) then
+                           Error_Msg_N
+                             ("\qualified expression or constraint with "
+                              & "array bounds required", N);
 
-                     else pragma Assert (Has_Discriminants (Type_Id));
-                        Error_Msg_N
-                          ("\qualified expression or constraint with "
-                           & "discriminant values required", N);
+                        elsif Has_Unknown_Discriminants (Type_Id) then
+                           Error_Msg_N ("\qualified expression required", N);
+
+                        else pragma Assert (Has_Discriminants (Type_Id));
+                           Error_Msg_N
+                             ("\qualified expression or constraint with "
+                              & "discriminant values required", N);
+                        end if;
                      end if;
                   end if;
                end if;
@@ -3619,59 +3647,6 @@ package body Sem_Ch4 is
                   Next_Actual (Actual);
                   Next_Formal (Formal);
 
-               --  In a complex case where an enclosing generic and a nested
-               --  generic package, both declared with partially parameterized
-               --  formal subprograms with the same names, are instantiated
-               --  with the same type, the types of the actual parameter and
-               --  that of the formal may appear incompatible at first sight.
-
-               --   generic
-               --      type Outer_T is private;
-               --      with function Func (Formal : Outer_T)
-               --                         return ... is <>;
-
-               --   package Outer_Gen is
-               --      generic
-               --         type Inner_T is private;
-               --         with function Func (Formal : Inner_T)   --  (1)
-               --           return ... is <>;
-
-               --      package Inner_Gen is
-               --         function Inner_Func (Formal : Inner_T)  --  (2)
-               --           return ... is (Func (Formal));
-               --      end Inner_Gen;
-               --   end Outer_Generic;
-
-               --   package Outer_Inst is new Outer_Gen (Actual_T);
-               --   package Inner_Inst is new Outer_Inst.Inner_Gen (Actual_T);
-
-               --  In the example above, the type of parameter
-               --  Inner_Func.Formal at (2) is incompatible with the type of
-               --  Func.Formal at (1) in the context of instantiations
-               --  Outer_Inst and Inner_Inst. In reality both types are generic
-               --  actual subtypes renaming base type Actual_T as part of the
-               --  generic prologues for the instantiations.
-
-               --  Recognize this case and add a type conversion to allow this
-               --  kind of generic actual subtype conformance. Note that this
-               --  is done only when the call is non-overloaded because the
-               --  resolution mechanism already has the means to disambiguate
-               --  similar cases.
-
-               elsif not Is_Overloaded (Name (N))
-                 and then Is_Type (Etype (Actual))
-                 and then Is_Type (Etype (Formal))
-                 and then Is_Generic_Actual_Type (Etype (Actual))
-                 and then Is_Generic_Actual_Type (Etype (Formal))
-                 and then Base_Type (Etype (Actual)) =
-                          Base_Type (Etype (Formal))
-               then
-                  Rewrite (Actual,
-                    Convert_To (Etype (Formal), Relocate_Node (Actual)));
-                  Analyze_And_Resolve (Actual, Etype (Formal));
-                  Next_Actual (Actual);
-                  Next_Formal (Formal);
-
                --  Handle failed type check
 
                else
@@ -5041,7 +5016,15 @@ package body Sem_Ch4 is
                if Comp = First_Private_Entity (Type_To_Use) then
                   if Etype (Sel) /= Any_Type then
 
-                     --  We have a candiate
+                     --  If the first private entity's name matches, then treat
+                     --  it as a private op: needed for the error check for
+                     --  illegal selection of private entities further below.
+
+                     if Chars (Comp) = Chars (Sel) then
+                        Is_Private_Op := True;
+                     end if;
+
+                     --  We have a candidate, so exit the loop
 
                      exit;
 

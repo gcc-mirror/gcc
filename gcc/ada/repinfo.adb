@@ -479,6 +479,7 @@ package body Repinfo is
 
       if Present (Ent)
         and then Nkind (Declaration_Node (Ent)) not in N_Renaming_Declaration
+        and then not Is_Ignored_Ghost_Entity (Ent)
       then
          --  If entity is a subprogram and we are listing mechanisms,
          --  then we need to list mechanisms for this entity. We skip this
@@ -1680,6 +1681,15 @@ package body Repinfo is
          Write_Eol;
          Write_Line ("}");
       end if;
+
+      --  The type is relevant for a record subtype
+
+      if List_Representation_Info = 4
+        and then not Is_Base_Type (Ent)
+        and then Is_Itype (Etype (Ent))
+      then
+         Relevant_Entities.Set (Etype (Ent), True);
+      end if;
    end List_Record_Info;
 
    -------------------
@@ -1808,16 +1818,23 @@ package body Repinfo is
                    Has_Rep_Item (Ent, Name_Scalar_Storage_Order)
                      or else SSO_Set_Low_By_Default  (Ent)
                      or else SSO_Set_High_By_Default (Ent);
-      --  Scalar_Storage_Order is displayed if specified explicitly
-      --  or set by Default_Scalar_Storage_Order.
+      --  Scalar_Storage_Order is displayed if specified explicitly or set by
+      --  Default_Scalar_Storage_Order.
 
    --  Start of processing for List_Scalar_Storage_Order
 
    begin
       --  For record types, list Bit_Order if not default, or if SSO is shown
 
+      --  Also, when -gnatR4 is in effect always list bit order and scalar
+      --  storage order explicitly, so that you don't need to know the native
+      --  endianness of the target for which the output was produced in order
+      --  to interpret it.
+
       if Is_Record_Type (Ent)
-        and then (List_SSO or else Reverse_Bit_Order (Ent))
+        and then (List_SSO
+                   or else Reverse_Bit_Order (Ent)
+                   or else List_Representation_Info = 4)
       then
          List_Attr ("Bit_Order", Reverse_Bit_Order (Ent));
       end if;
@@ -1825,7 +1842,7 @@ package body Repinfo is
       --  List SSO if required. If not, then storage is supposed to be in
       --  native order.
 
-      if List_SSO then
+      if List_SSO or else List_Representation_Info = 4 then
          List_Attr ("Scalar_Storage_Order", Reverse_Storage_Order (Ent));
       else
          pragma Assert (not Reverse_Storage_Order (Ent));

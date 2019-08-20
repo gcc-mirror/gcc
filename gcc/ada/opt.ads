@@ -191,6 +191,11 @@ package Opt is
    --  GNAT, GNATBIND
    --  Set True if package System has the line "type Address is private;"
 
+   Aggregate_Individually_Assign : Boolean := False;
+   --  GNAT
+   --  Set True if record aggregates are to be always converted into assignment
+   --  statements. Set through the corresponding pragma.
+
    All_Errors_Mode : Boolean := False;
    --  GNAT
    --  Flag set to force display of multiple errors on a single line and
@@ -501,7 +506,7 @@ package Opt is
    type Distribution_Stub_Mode_Type is
    --  GNAT
      (No_Stubs,
-      --  Normal mode, no generation/compilation of distribution stubs
+      --  Normal mode, no generation of distribution stubs
 
       Generate_Receiver_Stub_Body,
       --  The unit being compiled is the RCI body, and the compiler will
@@ -513,8 +518,8 @@ package Opt is
 
    Distribution_Stub_Mode : Distribution_Stub_Mode_Type := No_Stubs;
    --  GNAT
-   --  This enumeration variable indicates the five states of distribution
-   --  annex stub generation/compilation.
+   --  This enumeration variable indicates the three states of distribution
+   --  annex stub generation.
 
    Do_Not_Execute : Boolean := False;
    --  GNATMAKE
@@ -1944,10 +1949,6 @@ package Opt is
    --  which requires pragma Warnings to be stored for the formal verification
    --  backend.
 
-   Warnings_As_Errors_Count : Natural;
-   --  GNAT
-   --  Number of entries stored in Warnings_As_Errors table
-
    Wide_Character_Encoding_Method : WC_Encoding_Method := WCEM_Brackets;
    --  GNAT, GNATBIND
    --  Method used for encoding wide characters in the source program. See
@@ -2158,10 +2159,6 @@ package Opt is
    --  is ignored for internal and predefined units (which are always compiled
    --  with the standard Size semantics).
 
-   Warnings_As_Errors_Count_Config : Natural;
-   --  GNAT
-   --  Count of pattern strings stored from Warning_As_Error pragmas
-
    type Config_Switches_Type is private;
    --  Type used to save values of the switches set from Config values
 
@@ -2268,16 +2265,24 @@ package Opt is
    ---------------------------
 
    --  The following array would more reasonably be located in Err_Vars or
-   --  Errour, but we put them here to deal with licensing issues (we need
+   --  Errout, but we put them here to deal with licensing issues (we need
    --  this to have the GPL exception licensing, since these variables and
    --  subprograms are accessed from units with this licensing).
 
    Warnings_As_Errors : array (1 .. 10_000) of String_Ptr;
-   --  Table for recording Warning_As_Error pragmas as they are processed.
-   --  It would be nicer to use Table, but there are circular elaboration
-   --  problems if we try to do this, and an attempt to find some other
-   --  appropriately licensed unit to declare this as a Table failed with
-   --  various elaboration circularities. Memory is getting cheap these days!
+   --  Table for recording Warning_As_Error pragmas as they are processed. It
+   --  would be nicer to use Table, but there are circular elaboration problems
+   --  if we try to do this, and an attempt to find some other appropriately
+   --  licensed unit to declare this as a Table failed with various elaboration
+   --  circularities.
+
+   Warnings_As_Errors_Count : Natural;
+   --  GNAT
+   --  Number of entries stored in Warnings_As_Errors table
+
+   Warnings_As_Errors_Count_Config : Natural;
+   --  GNAT
+   --  Count of pattern strings stored from Warning_As_Error pragmas
 
    ---------------
    -- GNAT_Mode --

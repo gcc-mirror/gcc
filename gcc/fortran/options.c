@@ -437,7 +437,7 @@ gfc_post_options (const char **pfilename)
 
   /* Set default.  */
   if (flag_max_stack_var_size == -2)
-    flag_max_stack_var_size = 32768;
+    flag_max_stack_var_size = 65536;
 
   /* Implement -fno-automatic as -fmax-stack-var-size=0.  */
   if (!flag_automatic)

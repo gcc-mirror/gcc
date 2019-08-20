@@ -346,7 +346,8 @@ prepare_call_address (tree fndecl_or_type, rtx funexp, rtx static_chain_value,
    It is zero if this call doesn't want a structure value.
 
    NEXT_ARG_REG is the rtx that results from executing
-     targetm.calls.function_arg (&args_so_far, VOIDmode, void_type_node, true)
+     targetm.calls.function_arg (&args_so_far,
+				 function_arg_info::end_marker ());
    just after all the args have had their registers assigned.
    This could be whatever you like, but normally it is the first
    arg-register beyond those used for args in this call,
@@ -897,13 +898,12 @@ call_expr_flags (const_tree t)
   return flags;
 }
 
-/* Return true if TYPE should be passed by invisible reference.  */
+/* Return true if ARG should be passed by invisible reference.  */
 
 bool
-pass_by_reference (CUMULATIVE_ARGS *ca, machine_mode mode,
-		   tree type, bool named_arg)
+pass_by_reference (CUMULATIVE_ARGS *ca, function_arg_info arg)
 {
-  if (type)
+  if (tree type = arg.type)
     {
       /* If this type contains non-trivial constructors, then it is
 	 forbidden for the middle-end to create any new copies.  */
@@ -918,26 +918,49 @@ pass_by_reference (CUMULATIVE_ARGS *ca, machine_mode mode,
 	 member, use the type and mode of that member.  */
       if (TREE_CODE (type) == RECORD_TYPE && TYPE_TRANSPARENT_AGGR (type))
 	{
-	  type = TREE_TYPE (first_field (type));
-	  mode = TYPE_MODE (type);
+	  arg.type = TREE_TYPE (first_field (type));
+	  arg.mode = TYPE_MODE (arg.type);
 	}
     }
 
-  return targetm.calls.pass_by_reference (pack_cumulative_args (ca), mode,
-					  type, named_arg);
+  return targetm.calls.pass_by_reference (pack_cumulative_args (ca), arg);
 }
 
-/* Return true if TYPE, which is passed by reference, should be callee
+/* Return true if TYPE should be passed by reference when passed to
+   the "..." arguments of a function.  */
+
+bool
+pass_va_arg_by_reference (tree type)
+{
+  return pass_by_reference (NULL, function_arg_info (type, /*named=*/false));
+}
+
+/* Decide whether ARG, which occurs in the state described by CA,
+   should be passed by reference.  Return true if so and update
+   ARG accordingly.  */
+
+bool
+apply_pass_by_reference_rules (CUMULATIVE_ARGS *ca, function_arg_info &arg)
+{
+  if (pass_by_reference (ca, arg))
+    {
+      arg.type = build_pointer_type (arg.type);
+      arg.mode = TYPE_MODE (arg.type);
+      arg.pass_by_reference = true;
+      return true;
+    }
+  return false;
+}
+
+/* Return true if ARG, which is passed by reference, should be callee
    copied instead of caller copied.  */
 
 bool
-reference_callee_copied (CUMULATIVE_ARGS *ca, machine_mode mode,
-			 tree type, bool named_arg)
+reference_callee_copied (CUMULATIVE_ARGS *ca, const function_arg_info &arg)
 {
-  if (type && TREE_ADDRESSABLE (type))
+  if (arg.type && TREE_ADDRESSABLE (arg.type))
     return false;
-  return targetm.calls.callee_copies (pack_cumulative_args (ca), mode, type,
-				      named_arg);
+  return targetm.calls.callee_copies (pack_cumulative_args (ca), arg);
 }
 
 
@@ -1350,7 +1373,6 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
   location_t loc = EXPR_LOCATION (exp);
 
   tree fntype = fn ? TREE_TYPE (fn) : TREE_TYPE (TREE_TYPE (exp));
-  built_in_function fncode = fn ? DECL_FUNCTION_CODE (fn) : BUILT_IN_NONE;
   bool warned = false;
 
   /* Validate each argument individually.  */
@@ -1376,11 +1398,10 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
 		 friends.
 		 Also avoid issuing the warning for calls to function named
 		 "alloca".  */
-	      if ((fncode == BUILT_IN_ALLOCA
-		   && IDENTIFIER_LENGTH (DECL_NAME (fn)) != 6)
-		  || (fncode != BUILT_IN_ALLOCA
-		      && !lookup_attribute ("returns_nonnull",
-					    TYPE_ATTRIBUTES (fntype))))
+	      if (fn && fndecl_built_in_p (fn, BUILT_IN_ALLOCA)
+		  ? IDENTIFIER_LENGTH (DECL_NAME (fn)) != 6
+		  : !lookup_attribute ("returns_nonnull",
+				       TYPE_ATTRIBUTES (fntype)))
 		warned = warning_at (loc, OPT_Walloc_zero,
 				     "%Kargument %i value is zero",
 				     exp, idx[i] + 1);
@@ -1962,7 +1983,6 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
     {
       tree type = TREE_TYPE (args[i].tree_value);
       int unsignedp;
-      machine_mode mode;
 
       /* Replace erroneous argument with constant zero.  */
       if (type == error_mark_node || !COMPLETE_TYPE_P (type))
@@ -1990,15 +2010,13 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	 with those made by function.c.  */
 
       /* See if this argument should be passed by invisible reference.  */
-      if (pass_by_reference (args_so_far_pnt, TYPE_MODE (type),
-			     type, argpos < n_named_args))
+      function_arg_info arg (type, argpos < n_named_args);
+      if (pass_by_reference (args_so_far_pnt, arg))
 	{
 	  bool callee_copies;
 	  tree base = NULL_TREE;
 
-	  callee_copies
-	    = reference_callee_copied (args_so_far_pnt, TYPE_MODE (type),
-				       type, argpos < n_named_args);
+	  callee_copies = reference_callee_copied (args_so_far_pnt, arg);
 
 	  /* If we're compiling a thunk, pass through invisible references
 	     instead of making a copy.  */
@@ -2108,19 +2126,21 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 					      "argument must be passed"
 					      " by copying");
 	    }
+	  arg.pass_by_reference = true;
 	}
 
       unsignedp = TYPE_UNSIGNED (type);
-      mode = promote_function_mode (type, TYPE_MODE (type), &unsignedp,
-				    fndecl ? TREE_TYPE (fndecl) : fntype, 0);
+      arg.type = type;
+      arg.mode
+	= promote_function_mode (type, TYPE_MODE (type), &unsignedp,
+				 fndecl ? TREE_TYPE (fndecl) : fntype, 0);
 
       args[i].unsignedp = unsignedp;
-      args[i].mode = mode;
+      args[i].mode = arg.mode;
 
       targetm.calls.warn_parameter_passing_abi (args_so_far, type);
 
-      args[i].reg = targetm.calls.function_arg (args_so_far, mode, type,
-						argpos < n_named_args);
+      args[i].reg = targetm.calls.function_arg (args_so_far, arg);
 
       if (args[i].reg && CONST_INT_P (args[i].reg))
 	args[i].reg = NULL;
@@ -2130,17 +2150,14 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	 arguments have to go into the incoming registers.  */
       if (targetm.calls.function_incoming_arg != targetm.calls.function_arg)
 	args[i].tail_call_reg
-	  = targetm.calls.function_incoming_arg (args_so_far, mode, type,
-						 argpos < n_named_args);
+	  = targetm.calls.function_incoming_arg (args_so_far, arg);
       else
 	args[i].tail_call_reg = args[i].reg;
 
       if (args[i].reg)
-	args[i].partial
-	  = targetm.calls.arg_partial_bytes (args_so_far, mode, type,
-					     argpos < n_named_args);
+	args[i].partial = targetm.calls.arg_partial_bytes (args_so_far, arg);
 
-      args[i].pass_on_stack = targetm.calls.must_pass_in_stack (mode, type);
+      args[i].pass_on_stack = targetm.calls.must_pass_in_stack (arg);
 
       /* If FUNCTION_ARG returned a (parallel [(expr_list (nil) ...) ...]),
 	 it means that we are to pass this arg in the register(s) designated
@@ -2162,7 +2179,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       if (args[i].reg == 0 || args[i].partial != 0
 	       || reg_parm_stack_space > 0
 	       || args[i].pass_on_stack)
-	locate_and_pad_parm (mode, type,
+	locate_and_pad_parm (arg.mode, type,
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
 			     1,
 #else
@@ -2176,7 +2193,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	/* The argument is passed entirely in registers.  See at which
 	   end it should be padded.  */
 	args[i].locate.where_pad =
-	  BLOCK_REG_PADDING (mode, type,
+	  BLOCK_REG_PADDING (arg.mode, type,
 			     int_size_in_bytes (type) <= UNITS_PER_WORD);
 #endif
 
@@ -2189,8 +2206,12 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       /* Increment ARGS_SO_FAR, which has info about which arg-registers
 	 have been used, etc.  */
 
-      targetm.calls.function_arg_advance (args_so_far, TYPE_MODE (type),
-					  type, argpos < n_named_args);
+      /* ??? Traditionally we've passed TYPE_MODE here, instead of the
+	 promoted_mode used for function_arg above.  However, the
+	 corresponding handling of incoming arguments in function.c
+	 does pass the promoted mode.  */
+      arg.mode = TYPE_MODE (type);
+      targetm.calls.function_arg_advance (args_so_far, arg);
 
       /* Store argument values for functions decorated with attribute
 	 alloc_size.  */
@@ -4240,14 +4261,11 @@ expand_call (tree exp, rtx target, int ignore)
       /* Set up next argument register.  For sibling calls on machines
 	 with register windows this should be the incoming register.  */
       if (pass == 0)
-	next_arg_reg = targetm.calls.function_incoming_arg (args_so_far,
-							    VOIDmode,
-							    void_type_node,
-							    true);
+	next_arg_reg = targetm.calls.function_incoming_arg
+	  (args_so_far, function_arg_info::end_marker ());
       else
-	next_arg_reg = targetm.calls.function_arg (args_so_far,
-						   VOIDmode, void_type_node,
-						   true);
+	next_arg_reg = targetm.calls.function_arg
+	  (args_so_far, function_arg_info::end_marker ());
 
       if (pass == 1 && (return_flags & ERF_RETURNS_ARG))
 	{
@@ -4864,10 +4882,9 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       argvec[count].mode = Pmode;
       argvec[count].partial = 0;
 
-      argvec[count].reg = targetm.calls.function_arg (args_so_far,
-						      Pmode, NULL_TREE, true);
-      gcc_assert (targetm.calls.arg_partial_bytes (args_so_far, Pmode,
-						   NULL_TREE, 1) == 0);
+      function_arg_info ptr_arg (Pmode, /*named=*/true);
+      argvec[count].reg = targetm.calls.function_arg (args_so_far, ptr_arg);
+      gcc_assert (targetm.calls.arg_partial_bytes (args_so_far, ptr_arg) == 0);
 
       locate_and_pad_parm (Pmode, NULL_TREE,
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
@@ -4882,7 +4899,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	  || reg_parm_stack_space > 0)
 	args_size.constant += argvec[count].locate.size.constant;
 
-      targetm.calls.function_arg_advance (args_so_far, Pmode, (tree) 0, true);
+      targetm.calls.function_arg_advance (args_so_far, ptr_arg);
 
       count++;
     }
@@ -4890,24 +4907,25 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   for (unsigned int i = 0; count < nargs; i++, count++)
     {
       rtx val = args[i].first;
-      machine_mode mode = args[i].second;
+      function_arg_info arg (args[i].second, /*named=*/true);
       int unsigned_p = 0;
 
       /* We cannot convert the arg value to the mode the library wants here;
 	 must do it earlier where we know the signedness of the arg.  */
-      gcc_assert (mode != BLKmode
-		  && (GET_MODE (val) == mode || GET_MODE (val) == VOIDmode));
+      gcc_assert (arg.mode != BLKmode
+		  && (GET_MODE (val) == arg.mode
+		      || GET_MODE (val) == VOIDmode));
 
       /* Make sure it is a reasonable operand for a move or push insn.  */
       if (!REG_P (val) && !MEM_P (val)
-	  && !(CONSTANT_P (val) && targetm.legitimate_constant_p (mode, val)))
+	  && !(CONSTANT_P (val)
+	       && targetm.legitimate_constant_p (arg.mode, val)))
 	val = force_operand (val, NULL_RTX);
 
-      if (pass_by_reference (&args_so_far_v, mode, NULL_TREE, 1))
+      if (pass_by_reference (&args_so_far_v, arg))
 	{
 	  rtx slot;
-	  int must_copy
-	    = !reference_callee_copied (&args_so_far_v, mode, NULL_TREE, 1);
+	  int must_copy = !reference_callee_copied (&args_so_far_v, arg);
 
 	  /* If this was a CONST function, it is now PURE since it now
 	     reads memory.  */
@@ -4926,7 +4944,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	    }
 	  else
 	    {
-	      slot = assign_temp (lang_hooks.types.type_for_mode (mode, 0),
+	      slot = assign_temp (lang_hooks.types.type_for_mode (arg.mode, 0),
 				  1, 1);
 	      emit_move_insn (slot, val);
 	    }
@@ -4940,24 +4958,26 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 							      slot),
 					     call_fusage);
 
-	  mode = Pmode;
+	  arg.mode = Pmode;
+	  arg.pass_by_reference = true;
 	  val = force_operand (XEXP (slot, 0), NULL_RTX);
 	}
 
-      mode = promote_function_mode (NULL_TREE, mode, &unsigned_p, NULL_TREE, 0);
-      argvec[count].mode = mode;
-      argvec[count].value = convert_modes (mode, GET_MODE (val), val, unsigned_p);
-      argvec[count].reg = targetm.calls.function_arg (args_so_far, mode,
-						      NULL_TREE, true);
+      arg.mode = promote_function_mode (NULL_TREE, arg.mode, &unsigned_p,
+					NULL_TREE, 0);
+      argvec[count].mode = arg.mode;
+      argvec[count].value = convert_modes (arg.mode, GET_MODE (val), val,
+					   unsigned_p);
+      argvec[count].reg = targetm.calls.function_arg (args_so_far, arg);
 
       argvec[count].partial
-	= targetm.calls.arg_partial_bytes (args_so_far, mode, NULL_TREE, 1);
+	= targetm.calls.arg_partial_bytes (args_so_far, arg);
 
       if (argvec[count].reg == 0
 	  || argvec[count].partial != 0
 	  || reg_parm_stack_space > 0)
 	{
-	  locate_and_pad_parm (mode, NULL_TREE,
+	  locate_and_pad_parm (arg.mode, NULL_TREE,
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
 			       1,
 #else
@@ -4973,11 +4993,12 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	/* The argument is passed entirely in registers.  See at which
 	   end it should be padded.  */
 	argvec[count].locate.where_pad =
-	  BLOCK_REG_PADDING (mode, NULL_TREE,
-			     known_le (GET_MODE_SIZE (mode), UNITS_PER_WORD));
+	  BLOCK_REG_PADDING (arg.mode, NULL_TREE,
+			     known_le (GET_MODE_SIZE (arg.mode),
+				       UNITS_PER_WORD));
 #endif
 
-      targetm.calls.function_arg_advance (args_so_far, mode, (tree) 0, true);
+      targetm.calls.function_arg_advance (args_so_far, arg);
     }
 
   for (int i = 0; i < nargs; i++)
@@ -5326,7 +5347,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	       original_args_size.constant, args_size.constant,
 	       struct_value_size,
 	       targetm.calls.function_arg (args_so_far,
-					   VOIDmode, void_type_node, true),
+					   function_arg_info::end_marker ()),
 	       valreg,
 	       old_inhibit_defer_pop + 1, call_fusage, flags, args_so_far);
 
@@ -5839,22 +5860,21 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
   return sibcall_failure;
 }
 
-/* Nonzero if we do not know how to pass TYPE solely in registers.  */
+/* Nonzero if we do not know how to pass ARG solely in registers.  */
 
 bool
-must_pass_in_stack_var_size (machine_mode mode ATTRIBUTE_UNUSED,
-			     const_tree type)
+must_pass_in_stack_var_size (const function_arg_info &arg)
 {
-  if (!type)
+  if (!arg.type)
     return false;
 
   /* If the type has variable size...  */
-  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+  if (TREE_CODE (TYPE_SIZE (arg.type)) != INTEGER_CST)
     return true;
 
   /* If the type is marked as addressable (it is required
      to be constructed into the stack)...  */
-  if (TREE_ADDRESSABLE (type))
+  if (TREE_ADDRESSABLE (arg.type))
     return true;
 
   return false;
@@ -5865,32 +5885,42 @@ must_pass_in_stack_var_size (machine_mode mode ATTRIBUTE_UNUSED,
 /* ??? Should be able to merge these two by examining BLOCK_REG_PADDING.  */
 
 bool
-must_pass_in_stack_var_size_or_pad (machine_mode mode, const_tree type)
+must_pass_in_stack_var_size_or_pad (const function_arg_info &arg)
 {
-  if (!type)
+  if (!arg.type)
     return false;
 
   /* If the type has variable size...  */
-  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+  if (TREE_CODE (TYPE_SIZE (arg.type)) != INTEGER_CST)
     return true;
 
   /* If the type is marked as addressable (it is required
      to be constructed into the stack)...  */
-  if (TREE_ADDRESSABLE (type))
+  if (TREE_ADDRESSABLE (arg.type))
     return true;
 
-  if (TYPE_EMPTY_P (type))
+  if (TYPE_EMPTY_P (arg.type))
     return false;
 
   /* If the padding and mode of the type is such that a copy into
      a register would put it into the wrong part of the register.  */
-  if (mode == BLKmode
-      && int_size_in_bytes (type) % (PARM_BOUNDARY / BITS_PER_UNIT)
-      && (targetm.calls.function_arg_padding (mode, type)
+  if (arg.mode == BLKmode
+      && int_size_in_bytes (arg.type) % (PARM_BOUNDARY / BITS_PER_UNIT)
+      && (targetm.calls.function_arg_padding (arg.mode, arg.type)
 	  == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
     return true;
 
   return false;
+}
+
+/* Return true if TYPE must be passed on the stack when passed to
+   the "..." arguments of a function.  */
+
+bool
+must_pass_va_arg_in_stack (tree type)
+{
+  function_arg_info arg (type, /*named=*/false);
+  return targetm.calls.must_pass_in_stack (arg);
 }
 
 /* Tell the garbage collector about GTY markers in this source file.  */

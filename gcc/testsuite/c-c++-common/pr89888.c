@@ -11,8 +11,8 @@ foo (unsigned char x)
     {
     case -1: y = -1; break;			/* { dg-message "previously used here" } */
 						/* { dg-warning "case label value is less than minimum value for type" "" { target *-*-* } .-1 } */
-    case 0xffffffff: y = 0xffffffff; break;	/* { dg-error "duplicate case value" } */
-    case ~0U: y = ~0U; break;			/* { dg-error "duplicate case value" } */
+    case 0xffffffff: y = 0xffffffff; break;	/* { dg-error "duplicate case value|narrowing" } */
+    case ~0U: y = ~0U; break;			/* { dg-error "duplicate case value|narrowing" } */
     }
 }
 

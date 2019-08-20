@@ -2200,22 +2200,16 @@ gcn_function_value_regno_p (const unsigned int n)
   return n == RETURN_VALUE_REG;
 }
 
-/* Calculate the number of registers required to hold a function argument
-   of MODE and TYPE.  */
+/* Calculate the number of registers required to hold function argument
+   ARG.  */
 
 static int
-num_arg_regs (machine_mode mode, const_tree type)
+num_arg_regs (const function_arg_info &arg)
 {
-  int size;
-
-  if (targetm.calls.must_pass_in_stack (mode, type))
+  if (targetm.calls.must_pass_in_stack (arg))
     return 0;
 
-  if (type && mode == BLKmode)
-    size = int_size_in_bytes (type);
-  else
-    size = GET_MODE_SIZE (mode);
-
+  int size = arg.promoted_size_in_bytes ();
   return (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 }
 
@@ -2255,49 +2249,48 @@ gcn_pretend_outgoing_varargs_named (cumulative_args_t cum_v)
    and if so, which register.  */
 
 static rtx
-gcn_function_arg (cumulative_args_t cum_v, machine_mode mode, const_tree type,
-		  bool named)
+gcn_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   if (cum->normal_function)
     {
-      if (!named || mode == VOIDmode)
+      if (!arg.named || arg.end_marker_p ())
 	return 0;
 
-      if (targetm.calls.must_pass_in_stack (mode, type))
+      if (targetm.calls.must_pass_in_stack (arg))
 	return 0;
 
       int reg_num = FIRST_PARM_REG + cum->num;
-      int num_regs = num_arg_regs (mode, type);
+      int num_regs = num_arg_regs (arg);
       if (num_regs > 0)
 	while (reg_num % num_regs != 0)
 	  reg_num++;
       if (reg_num + num_regs <= FIRST_PARM_REG + NUM_PARM_REGS)
-	return gen_rtx_REG (mode, reg_num);
+	return gen_rtx_REG (arg.mode, reg_num);
     }
   else
     {
       if (cum->num >= cum->args.nargs)
 	{
-	  cum->offset = (cum->offset + TYPE_ALIGN (type) / 8 - 1)
-	    & -(TYPE_ALIGN (type) / 8);
+	  cum->offset = (cum->offset + TYPE_ALIGN (arg.type) / 8 - 1)
+	    & -(TYPE_ALIGN (arg.type) / 8);
 	  cfun->machine->kernarg_segment_alignment
 	    = MAX ((unsigned) cfun->machine->kernarg_segment_alignment,
-		   TYPE_ALIGN (type) / 8);
+		   TYPE_ALIGN (arg.type) / 8);
 	  rtx addr = gen_rtx_REG (DImode,
 				  cum->args.reg[KERNARG_SEGMENT_PTR_ARG]);
 	  if (cum->offset)
 	    addr = gen_rtx_PLUS (DImode, addr,
 				 gen_int_mode (cum->offset, DImode));
-	  rtx mem = gen_rtx_MEM (mode, addr);
-	  set_mem_attributes (mem, const_cast<tree>(type), 1);
+	  rtx mem = gen_rtx_MEM (arg.mode, addr);
+	  set_mem_attributes (mem, arg.type, 1);
 	  set_mem_addr_space (mem, ADDR_SPACE_SCALAR_FLAT);
 	  MEM_READONLY_P (mem) = 1;
 	  return mem;
 	}
 
       int a = cum->args.order[cum->num];
-      if (mode != gcn_kernel_arg_types[a].mode)
+      if (arg.mode != gcn_kernel_arg_types[a].mode)
 	{
 	  error ("wrong type of argument %s", gcn_kernel_arg_types[a].name);
 	  return 0;
@@ -2314,17 +2307,17 @@ gcn_function_arg (cumulative_args_t cum_v, machine_mode mode, const_tree type,
    argument in the argument list.  */
 
 static void
-gcn_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			  const_tree type, bool named)
+gcn_function_arg_advance (cumulative_args_t cum_v,
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   if (cum->normal_function)
     {
-      if (!named)
+      if (!arg.named)
 	return;
 
-      int num_regs = num_arg_regs (mode, type);
+      int num_regs = num_arg_regs (arg);
       if (num_regs > 0)
 	while ((FIRST_PARM_REG + cum->num) % num_regs != 0)
 	  cum->num++;
@@ -2336,7 +2329,7 @@ gcn_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 	cum->num++;
       else
 	{
-	  cum->offset += tree_to_uhwi (TYPE_SIZE_UNIT (type));
+	  cum->offset += tree_to_uhwi (TYPE_SIZE_UNIT (arg.type));
 	  cfun->machine->kernarg_segment_byte_size = cum->offset;
 	}
     }
@@ -2349,22 +2342,21 @@ gcn_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
    in registers or that are entirely pushed on the stack.  */
 
 static int
-gcn_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode, tree type,
-		       bool named)
+gcn_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (!named)
+  if (!arg.named)
     return 0;
 
-  if (targetm.calls.must_pass_in_stack (mode, type))
+  if (targetm.calls.must_pass_in_stack (arg))
     return 0;
 
   if (cum->num >= NUM_PARM_REGS)
     return 0;
 
   /* If the argument fits entirely in registers, return 0.  */
-  if (cum->num + num_arg_regs (mode, type) <= NUM_PARM_REGS)
+  if (cum->num + num_arg_regs (arg) <= NUM_PARM_REGS)
     return 0;
 
   return (NUM_PARM_REGS - cum->num) * UNITS_PER_WORD;
@@ -2493,7 +2485,7 @@ gcn_gimplify_va_arg_expr (tree valist, tree type,
   tree t, u;
   bool indirect;
 
-  indirect = pass_by_reference (NULL, TYPE_MODE (type), type, 0);
+  indirect = pass_va_arg_by_reference (type);
   if (indirect)
     {
       type = ptr;
@@ -3546,7 +3538,7 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 		      struct gcn_builtin_description *)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  switch (DECL_FUNCTION_CODE (fndecl))
+  switch (DECL_MD_FUNCTION_CODE (fndecl))
     {
     case GCN_BUILTIN_FLAT_LOAD_INT32:
       {
@@ -3773,7 +3765,7 @@ gcn_expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 		    int ignore)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   struct gcn_builtin_description *d;
 
   gcc_assert (fcode < GCN_BUILTIN_MAX);

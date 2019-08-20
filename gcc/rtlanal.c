@@ -3272,6 +3272,23 @@ tablejump_p (const rtx_insn *insn, rtx_insn **labelp,
   return true;
 }
 
+/* For INSN known to satisfy tablejump_p, determine if it actually is a
+   CASESI.  Return the insn pattern if so, NULL_RTX otherwise.  */
+
+rtx
+tablejump_casesi_pattern (const rtx_insn *insn)
+{
+  rtx tmp;
+
+  if ((tmp = single_set (insn)) != NULL
+      && SET_DEST (tmp) == pc_rtx
+      && GET_CODE (SET_SRC (tmp)) == IF_THEN_ELSE
+      && GET_CODE (XEXP (SET_SRC (tmp), 2)) == LABEL_REF)
+    return tmp;
+
+  return NULL_RTX;
+}
+
 /* A subroutine of computed_jump_p, return 1 if X contains a REG or MEM or
    constant that is not in the constant pool and not in the condition
    of an IF_THEN_ELSE.  */

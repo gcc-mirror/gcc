@@ -375,8 +375,9 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
     inline _Tp
     make_obj_using_allocator(const _Alloc& __a, _Args&&... __args)
     {
-      return std::make_from_tuple<_Tp>(uses_allocator_construction_args<_Tp>(
-	    __a, std::forward<_Args>(__args)...));
+      return std::make_from_tuple<_Tp>(
+	  std::uses_allocator_construction_args<_Tp>(__a,
+	    std::forward<_Args>(__args)...));
     }
 
   template<typename _Tp, typename _Alloc, typename... _Args>

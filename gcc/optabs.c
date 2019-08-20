@@ -7212,7 +7212,7 @@ static bool
 maybe_legitimize_operand (enum insn_code icode, unsigned int opno,
 			  class expand_operand *op)
 {
-  machine_mode mode, imode;
+  machine_mode mode, imode, tmode;
 
   mode = op->mode;
   switch (op->type)
@@ -7259,9 +7259,17 @@ maybe_legitimize_operand (enum insn_code icode, unsigned int opno,
 	gcc_assert (mode != VOIDmode);
 
       imode = insn_data[(int) icode].operand[opno].mode;
+      tmode = (VECTOR_MODE_P (imode) && !VECTOR_MODE_P (mode)
+	       ? GET_MODE_INNER (imode) : imode);
+      if (tmode != VOIDmode && tmode != mode)
+	{
+	  op->value = convert_modes (tmode, mode, op->value, op->unsigned_p);
+	  mode = tmode;
+	}
       if (imode != VOIDmode && imode != mode)
 	{
-	  op->value = convert_modes (imode, mode, op->value, op->unsigned_p);
+	  gcc_assert (VECTOR_MODE_P (imode) && !VECTOR_MODE_P (mode));
+	  op->value = expand_vector_broadcast (imode, op->value);
 	  mode = imode;
 	}
       goto input;

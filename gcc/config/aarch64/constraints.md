@@ -36,6 +36,9 @@
 (define_register_constraint "x" "FP_LO_REGS"
   "Floating point and SIMD vector registers V0 - V15.")
 
+(define_register_constraint "y" "FP_LO8_REGS"
+  "Floating point and SIMD vector registers V0 - V7.")
+
 (define_constraint "I"
  "A constant that can be used with an ADD operation."
  (and (match_code "const_int")
@@ -45,6 +48,12 @@
   "@internal A constant that matches two uses of add instructions."
   (and (match_code "const_int")
        (match_test "aarch64_pluslong_strict_immedate (op, VOIDmode)")))
+
+(define_constraint "Uai"
+  "@internal
+   A constraint that matches a VG-based constant that can be added by
+   a single INC or DEC."
+  (match_operand 0 "aarch64_sve_scalar_inc_dec_immediate"))
 
 (define_constraint "Uav"
   "@internal
@@ -114,8 +123,8 @@
        (match_test "aarch64_float_const_zero_rtx_p (op)")))
 
 (define_constraint "Z"
-  "Integer constant zero."
-  (match_test "op == const0_rtx"))
+  "Integer or floating-point constant zero."
+  (match_test "op == CONST0_RTX (GET_MODE (op))"))
 
 (define_constraint "Ush"
   "A constraint that matches an absolute symbolic address high part."
@@ -269,6 +278,12 @@
        (match_test "aarch64_legitimate_address_p (V2DImode,
 						  XEXP (op, 0), 1)")))
 
+(define_memory_constraint "UtQ"
+  "@internal
+   An address valid for SVE LD1RQs."
+  (and (match_code "mem")
+       (match_test "aarch64_sve_ld1rq_operand_p (op)")))
+
 (define_memory_constraint "Uty"
   "@internal
    An address valid for SVE LD1Rs."
@@ -284,7 +299,7 @@
 (define_constraint "Ufc"
   "A floating point constant which can be used with an\
    FMOV immediate operation."
-  (and (match_code "const_double")
+  (and (match_code "const_double,const_vector")
        (match_test "aarch64_float_const_representable_p (op)")))
 
 (define_constraint "Uvi"
@@ -328,6 +343,13 @@
  (and (match_code "const_int")
       (match_test "aarch64_simd_scalar_immediate_valid_for_move (op,
 						 QImode)")))
+
+(define_constraint "Dt"
+  "@internal
+ A const_double which is the reciprocal of an exact power of two, can be
+ used in an scvtf with fract bits operation"
+ (and (match_code "const_double")
+      (match_test "aarch64_fpconst_pow2_recip (op) > 0")))
 
 (define_constraint "Dl"
   "@internal
@@ -379,11 +401,23 @@
    arithmetic instructions."
  (match_operand 0 "aarch64_sve_arith_immediate"))
 
+(define_constraint "vsb"
+  "@internal
+   A constraint that matches an immediate operand valid for SVE UMAX
+   and UMIN operations."
+ (match_operand 0 "aarch64_sve_vsb_immediate"))
+
 (define_constraint "vsc"
   "@internal
    A constraint that matches a signed immediate operand valid for SVE
    CMP instructions."
  (match_operand 0 "aarch64_sve_cmp_vsc_immediate"))
+
+(define_constraint "vss"
+  "@internal
+   A constraint that matches a signed immediate operand valid for SVE
+   DUP instructions."
+ (match_test "aarch64_sve_dup_immediate_p (op)"))
 
 (define_constraint "vsd"
   "@internal
@@ -395,7 +429,7 @@
   "@internal
    A constraint that matches a vector count operand valid for SVE INC and
    DEC instructions."
- (match_operand 0 "aarch64_sve_inc_dec_immediate"))
+ (match_operand 0 "aarch64_sve_vector_inc_dec_immediate"))
 
 (define_constraint "vsn"
   "@internal
@@ -411,9 +445,9 @@
 
 (define_constraint "vsm"
   "@internal
-   A constraint that matches an immediate operand valid for SVE MUL
-   operations."
- (match_operand 0 "aarch64_sve_mul_immediate"))
+   A constraint that matches an immediate operand valid for SVE MUL,
+   SMAX and SMIN operations."
+ (match_operand 0 "aarch64_sve_vsm_immediate"))
 
 (define_constraint "vsA"
   "@internal
@@ -421,13 +455,20 @@
    and FSUB operations."
  (match_operand 0 "aarch64_sve_float_arith_immediate"))
 
+;; "B" for "bound".
+(define_constraint "vsB"
+  "@internal
+   A constraint that matches an immediate operand valid for SVE FMAX
+   and FMIN operations."
+ (match_operand 0 "aarch64_sve_float_maxmin_immediate"))
+
 (define_constraint "vsM"
   "@internal
-   A constraint that matches an imediate operand valid for SVE FMUL
+   A constraint that matches an immediate operand valid for SVE FMUL
    operations."
  (match_operand 0 "aarch64_sve_float_mul_immediate"))
 
 (define_constraint "vsN"
   "@internal
    A constraint that matches the negative of vsA"
- (match_operand 0 "aarch64_sve_float_arith_with_sub_immediate"))
+ (match_operand 0 "aarch64_sve_float_negated_arith_immediate"))

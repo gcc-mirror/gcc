@@ -520,30 +520,29 @@ promote_return (machine_mode mode)
 /* Implement TARGET_FUNCTION_ARG.  */
 
 static rtx
-nvptx_function_arg (cumulative_args_t ARG_UNUSED (cum_v), machine_mode mode,
-		    const_tree, bool named)
+nvptx_function_arg (cumulative_args_t, const function_arg_info &arg)
 {
-  if (mode == VOIDmode || !named)
+  if (arg.end_marker_p () || !arg.named)
     return NULL_RTX;
 
-  return gen_reg_rtx (mode);
+  return gen_reg_rtx (arg.mode);
 }
 
 /* Implement TARGET_FUNCTION_INCOMING_ARG.  */
 
 static rtx
-nvptx_function_incoming_arg (cumulative_args_t cum_v, machine_mode mode,
-			     const_tree, bool named)
+nvptx_function_incoming_arg (cumulative_args_t cum_v,
+			     const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (mode == VOIDmode || !named)
+  if (arg.end_marker_p () || !arg.named)
     return NULL_RTX;
 
   /* No need to deal with split modes here, the only case that can
      happen is complex modes and those are dealt with by
      TARGET_SPLIT_COMPLEX_ARG.  */
-  return gen_rtx_UNSPEC (mode,
+  return gen_rtx_UNSPEC (arg.mode,
 			 gen_rtvec (1, GEN_INT (cum->count)),
 			 UNSPEC_ARG_REG);
 }
@@ -551,10 +550,7 @@ nvptx_function_incoming_arg (cumulative_args_t cum_v, machine_mode mode,
 /* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 
 static void
-nvptx_function_arg_advance (cumulative_args_t cum_v,
-			    machine_mode ARG_UNUSED (mode),
-			    const_tree ARG_UNUSED (type),
-			    bool ARG_UNUSED (named))
+nvptx_function_arg_advance (cumulative_args_t cum_v, const function_arg_info &)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
@@ -633,11 +629,9 @@ nvptx_function_value_regno_p (const unsigned int regno)
    reference in memory.  */
 
 static bool
-nvptx_pass_by_reference (cumulative_args_t ARG_UNUSED (cum),
-			 machine_mode mode, const_tree type,
-			 bool ARG_UNUSED (named))
+nvptx_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  return pass_in_memory (mode, type, false);
+  return pass_in_memory (arg.mode, arg.type, false);
 }
 
 /* Implement TARGET_RETURN_IN_MEMORY.  */
@@ -5452,7 +5446,7 @@ nvptx_expand_builtin (tree exp, rtx target, rtx ARG_UNUSED (subtarget),
 		      machine_mode mode, int ignore)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  switch (DECL_FUNCTION_CODE (fndecl))
+  switch (DECL_MD_FUNCTION_CODE (fndecl))
     {
     case NVPTX_BUILTIN_SHUFFLE:
     case NVPTX_BUILTIN_SHUFFLELL:

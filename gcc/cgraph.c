@@ -1767,8 +1767,6 @@ cgraph_node::release_body (bool keep_arguments)
 void
 cgraph_node::remove (void)
 {
-  cgraph_node *n;
-
   if (symtab->ipa_clones_dump_file && symtab->cloned_nodes.contains (this))
     fprintf (symtab->ipa_clones_dump_file,
 	     "Callgraph removal;%s;%d;%s;%d;%d\n", asm_name (), order,
@@ -1785,8 +1783,13 @@ cgraph_node::remove (void)
      */
   force_output = false;
   forced_by_abi = false;
-  for (n = nested; n; n = n->next_nested)
+  cgraph_node *next = nested;
+  for (cgraph_node *n = nested; n; n = next)
+  {
+    next = n->next_nested;
     n->origin = NULL;
+    n->next_nested = NULL;
+  }
   nested = NULL;
   if (origin)
     {
@@ -1840,7 +1843,7 @@ cgraph_node::remove (void)
      */
   if (symtab->state != LTO_STREAMING)
     {
-      n = cgraph_node::get (decl);
+      cgraph_node *n = cgraph_node::get (decl);
       if (!n
 	  || (!n->clones && !n->clone_of && !n->global.inlined_to
 	      && ((symtab->global_info_ready || in_lto_p)
@@ -2080,6 +2083,11 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " optimize_size");
   if (parallelized_function)
     fprintf (f, " parallelized_function");
+  if (DECL_IS_OPERATOR_NEW_P (decl))
+    fprintf (f, " operator_new");
+  if (DECL_IS_OPERATOR_DELETE_P (decl))
+    fprintf (f, " operator_delete");
+
 
   fprintf (f, "\n");
 
@@ -2759,7 +2767,7 @@ cgraph_edge::cannot_lead_to_return_p (void)
     return callee->cannot_return_p ();
 }
 
-/* Return true if the call can be hot.  */
+/* Return true if the edge may be considered hot.  */
 
 bool
 cgraph_edge::maybe_hot_p (void)
@@ -2785,8 +2793,7 @@ cgraph_edge::maybe_hot_p (void)
   if (caller->frequency == NODE_FREQUENCY_EXECUTED_ONCE
       && sreal_frequency () * 2 < 3)
     return false;
-  if (PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) == 0
-      || sreal_frequency () * PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) <= 1)
+  if (sreal_frequency () * PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) <= 1)
     return false;
   return true;
 }
@@ -3460,6 +3467,30 @@ cgraph_node::verify_node (void)
 	  e->aux = 0;
 	}
     }
+
+  if (nested != NULL)
+    {
+      for (cgraph_node *n = nested; n != NULL; n = n->next_nested)
+	{
+	  if (n->origin == NULL)
+	    {
+	      error ("missing origin for a node in a nested list");
+	      error_found = true;
+	    }
+	  else if (n->origin != this)
+	    {
+	      error ("origin points to a different parent");
+	      error_found = true;
+	      break;
+	    }
+	}
+    }
+  if (next_nested != NULL && origin == NULL)
+    {
+      error ("missing origin for a node in a nested list");
+      error_found = true;
+    }
+
   if (error_found)
     {
       dump (stderr);

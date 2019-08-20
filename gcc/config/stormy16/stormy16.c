@@ -1205,9 +1205,8 @@ xstormy16_function_profiler (void)
   sorry ("function_profiler support");
 }
 
-/* Update CUM to advance past an argument in the argument list.  The
-   values MODE, TYPE and NAMED describe that argument.  Once this is
-   done, the variable CUM is suitable for analyzing the *following*
+/* Update CUM to advance past argument ARG.  Once this is done,
+   the variable CUM is suitable for analyzing the *following*
    argument with `TARGET_FUNCTION_ARG', etc.
 
    This function need not do anything if the argument in question was
@@ -1217,8 +1216,8 @@ xstormy16_function_profiler (void)
    the word count.  */
 
 static void
-xstormy16_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-				const_tree type, bool named ATTRIBUTE_UNUSED)
+xstormy16_function_arg_advance (cumulative_args_t cum_v,
+				const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
@@ -1226,24 +1225,25 @@ xstormy16_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
      and partially on the stack, the whole of it is passed on the
      stack.  */
   if (*cum < NUM_ARGUMENT_REGISTERS
-      && *cum + XSTORMY16_WORD_SIZE (type, mode) > NUM_ARGUMENT_REGISTERS)
+      && (*cum + XSTORMY16_WORD_SIZE (arg.type, arg.mode)
+	  > NUM_ARGUMENT_REGISTERS))
     *cum = NUM_ARGUMENT_REGISTERS;
 
-  *cum += XSTORMY16_WORD_SIZE (type, mode);
+  *cum += XSTORMY16_WORD_SIZE (arg.type, arg.mode);
 }
 
 static rtx
-xstormy16_function_arg (cumulative_args_t cum_v, machine_mode mode,
-			const_tree type, bool named ATTRIBUTE_UNUSED)
+xstormy16_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     return const0_rtx;
-  if (targetm.calls.must_pass_in_stack (mode, type)
-      || *cum + XSTORMY16_WORD_SIZE (type, mode) > NUM_ARGUMENT_REGISTERS)
+  if (targetm.calls.must_pass_in_stack (arg)
+      || (*cum + XSTORMY16_WORD_SIZE (arg.type, arg.mode)
+	  > NUM_ARGUMENT_REGISTERS))
     return NULL_RTX;
-  return gen_rtx_REG (mode, *cum + FIRST_ARGUMENT_REGISTER);
+  return gen_rtx_REG (arg.mode, *cum + FIRST_ARGUMENT_REGISTER);
 }
 
 /* Build the va_list type.
@@ -1342,7 +1342,7 @@ xstormy16_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   count = build3 (COMPONENT_REF, TREE_TYPE (f_count), valist, f_count,
 		  NULL_TREE);
 
-  must_stack = targetm.calls.must_pass_in_stack (TYPE_MODE (type), type);
+  must_stack = must_pass_va_arg_in_stack (type);
   size_tree = round_up (size_in_bytes (type), UNITS_PER_WORD);
   gimplify_expr (&size_tree, pre_p, NULL, is_gimple_val, fb_rvalue);
 
@@ -2326,7 +2326,7 @@ xstormy16_expand_builtin (tree exp, rtx target,
 
   fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   argtree = TREE_OPERAND (exp, 1);
-  i = DECL_FUNCTION_CODE (fndecl);
+  i = DECL_MD_FUNCTION_CODE (fndecl);
   code = s16builtins[i].md_code;
 
   for (a = 0; a < 10 && argtree; a++)

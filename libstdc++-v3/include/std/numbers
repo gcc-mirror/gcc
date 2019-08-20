@@ -133,6 +133,72 @@ namespace numbers
   inline constexpr double egamma = egamma_v<double>;
   inline constexpr double phi = phi_v<double>;
 
+#if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_FLOAT128)
+  template<>
+    inline constexpr __float128 e_v<__float128>
+      = 2.718281828459045235360287471352662498Q;
+
+  /// log_2 e
+  template<>
+    inline constexpr __float128 log2e_v<__float128>
+      = 1.442695040888963407359924681001892137Q;
+
+  /// log_10 e
+  template<>
+    inline constexpr __float128 log10e_v<__float128>
+      = 0.434294481903251827651128918916605082Q;
+
+  /// pi
+  template<>
+    inline constexpr __float128 pi_v<__float128>
+      = 3.141592653589793238462643383279502884Q;
+
+  /// 1/pi
+  template<>
+    inline constexpr __float128 inv_pi_v<__float128>
+      = 0.318309886183790671537767526745028724Q;
+
+  /// 1/sqrt(pi)
+  template<>
+    inline constexpr __float128 inv_sqrtpi_v<__float128>
+      = 0.564189583547756286948079451560772586Q;
+
+  /// log_e 2
+  template<>
+    inline constexpr __float128 ln2_v<__float128>
+      = 0.693147180559945309417232121458176568Q;
+
+  /// log_e 10
+  template<>
+    inline constexpr __float128 ln10_v<__float128>
+      = 2.302585092994045684017991454684364208Q;
+
+  /// sqrt(2)
+  template<>
+    inline constexpr __float128 sqrt2_v<__float128>
+      = 1.414213562373095048801688724209698079Q;
+
+  /// sqrt(3)
+  template<>
+    inline constexpr __float128 sqrt3_v<__float128>
+      = 1.732050807568877293527446341505872367Q;
+
+  /// 1/sqrt(3)
+  template<>
+    inline constexpr __float128 inv_sqrt3_v<__float128>
+      = 0.577350269189625764509148780501957456Q;
+
+  /// The Euler-Mascheroni constant
+  template<>
+    inline constexpr __float128 egamma_v<__float128>
+      = 0.577215664901532860606512090082402431Q;
+
+  /// The golden ratio, (1+sqrt(5))/2
+  template<>
+    inline constexpr __float128 phi_v<__float128>
+      = 1.618033988749894848204586834365638118Q;
+#endif // USE_FLOAT128
+
 } // namespace numbers
 /// @}
 _GLIBCXX_END_NAMESPACE_VERSION

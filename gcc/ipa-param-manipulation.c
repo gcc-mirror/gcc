@@ -219,10 +219,7 @@ ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec adjustments)
 
   /* When signature changes, we need to clear builtin info.  */
   if (fndecl_built_in_p (fndecl))
-    {
-      DECL_BUILT_IN_CLASS (fndecl) = NOT_BUILT_IN;
-      DECL_FUNCTION_CODE (fndecl) = (enum built_in_function) 0;
-    }
+    set_decl_built_in_function (fndecl, NOT_BUILT_IN, 0);
 
   TREE_TYPE (fndecl) = new_type;
   DECL_VIRTUAL_P (fndecl) = 0;
@@ -452,14 +449,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
   gimple_call_set_chain (new_stmt, gimple_call_chain (stmt));
   gimple_call_copy_flags (new_stmt, stmt);
   if (gimple_in_ssa_p (cfun))
-    {
-      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-      if (gimple_vdef (stmt))
-	{
-	  gimple_set_vdef (new_stmt, gimple_vdef (stmt));
-	  SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
-	}
-    }
+    gimple_move_vops (new_stmt, stmt);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {

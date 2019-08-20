@@ -5428,7 +5428,7 @@ gfc_conv_intrinsic_findloc (gfc_se *se, gfc_expr *expr)
   tree type;
   tree tmp;
   tree found;
-  tree forward_branch;
+  tree forward_branch = NULL_TREE;
   tree back_branch;
   gfc_loopinfo loop;
   gfc_ss *arrayss;
@@ -9930,9 +9930,13 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_CONVERSION:
-    case GFC_ISYM_REAL:
-    case GFC_ISYM_LOGICAL:
     case GFC_ISYM_DBLE:
+    case GFC_ISYM_DFLOAT:
+    case GFC_ISYM_FLOAT:
+    case GFC_ISYM_LOGICAL:
+    case GFC_ISYM_REAL:
+    case GFC_ISYM_REALPART:
+    case GFC_ISYM_SNGL:
       gfc_conv_intrinsic_conversion (se, expr);
       break;
 

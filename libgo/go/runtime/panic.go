@@ -13,6 +13,7 @@ import (
 // themselves, so that the compiler will export them.
 //
 //go:linkname deferproc runtime.deferproc
+//go:linkname deferprocStack runtime.deferprocStack
 //go:linkname deferreturn runtime.deferreturn
 //go:linkname setdeferretaddr runtime.setdeferretaddr
 //go:linkname checkdefer runtime.checkdefer
@@ -124,6 +125,38 @@ func deferproc(frame *bool, pfn uintptr, arg unsafe.Pointer) {
 	d.makefunccanrecover = false
 }
 
+// deferprocStack queues a new deferred function with a defer record on the stack.
+// The defer record, d, does not need to be initialized.
+// Other arguments are the same as in deferproc.
+//go:nosplit
+func deferprocStack(d *_defer, frame *bool, pfn uintptr, arg unsafe.Pointer) {
+	gp := getg()
+	if gp.m.curg != gp {
+		// go code on the system stack can't defer
+		throw("defer on system stack")
+	}
+	d.pfn = pfn
+	d.retaddr = 0
+	d.makefunccanrecover = false
+	d.heap = false
+	// The lines below implement:
+	//   d.frame = frame
+	//   d.arg = arg
+	//   d._panic = nil
+	//   d.panicStack = gp._panic
+	//   d.link = gp._defer
+	// But without write barriers. They are writes to the stack so they
+	// don't need a write barrier, and furthermore are to uninitialized
+	// memory, so they must not use a write barrier.
+	*(*uintptr)(unsafe.Pointer(&d.frame)) = uintptr(unsafe.Pointer(frame))
+	*(*uintptr)(unsafe.Pointer(&d.arg)) = uintptr(unsafe.Pointer(arg))
+	*(*uintptr)(unsafe.Pointer(&d._panic)) = 0
+	*(*uintptr)(unsafe.Pointer(&d.panicStack)) = uintptr(unsafe.Pointer(gp._panic))
+	*(*uintptr)(unsafe.Pointer(&d.link)) = uintptr(unsafe.Pointer(gp._defer))
+
+	gp._defer = d
+}
+
 // Allocate a Defer, usually using per-P pool.
 // Each defer must be released with freedefer.
 func newdefer() *_defer {
@@ -155,11 +188,13 @@ func newdefer() *_defer {
 			// Duplicate the tail below so if there's a
 			// crash in checkPut we can tell if d was just
 			// allocated or came from the pool.
+			d.heap = true
 			d.link = gp._defer
 			gp._defer = d
 			return d
 		}
 	}
+	d.heap = true
 	d.link = gp._defer
 	gp._defer = d
 	return d
@@ -178,6 +213,9 @@ func freedefer(d *_defer) {
 	}
 	if d.pfn != 0 {
 		freedeferfn()
+	}
+	if !d.heap {
+		return
 	}
 	pp := getg().m.p.ptr()
 	if len(pp.deferpool) == cap(pp.deferpool) {

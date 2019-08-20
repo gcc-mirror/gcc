@@ -788,9 +788,10 @@ has_subst_attribute (class queue_elem *elem, class queue_elem *subst_elem)
 	  return false;
 
 	case SET_ATTR_ALTERNATIVE:
-	  error_at (elem->loc,
-		    "%s: `set_attr_alternative' is unsupported by "
-		    "`define_subst'", XSTR (elem->data, 0));
+	  if (strcmp (XSTR (cur_attr, 0), subst_name) == 0)
+	    error_at (elem->loc,
+		      "%s: `set_attr_alternative' is unsupported by "
+		      "`define_subst'", XSTR (elem->data, 0));
 	  return false;
 
 

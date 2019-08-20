@@ -91,8 +91,8 @@ along with GCC; see the file COPYING3.  If not see
 #define WCHAR_TYPE_SIZE 32
 
 /* Generate pic symbol indirection stubs if this is true.  */
-#undef TARGET_MACHO_PICSYM_STUBS
-#define TARGET_MACHO_PICSYM_STUBS (darwin_picsymbol_stubs)
+#undef TARGET_MACHO_SYMBOL_STUBS
+#define TARGET_MACHO_SYMBOL_STUBS (darwin_symbol_stubs)
 
 /* For compatibility with OSX system tools, use the new style of pic stub
    if this is set (default).  */
@@ -243,7 +243,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)				\
   do {									\
-    if (TARGET_MACHO_PICSYM_STUBS 					\
+    if (TARGET_MACHO_SYMBOL_STUBS 					\
 	&& MACHOPIC_INDIRECT && !TARGET_64BIT)				\
       {									\
 	const char *name = machopic_mcount_stub_name ();		\

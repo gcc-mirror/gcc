@@ -1,4 +1,4 @@
-/* { dg-do compile }
+/* { dg-do compile } */
 /* { dg-options "-msse2 -O2 -ftree-vectorize" } */
 
 #define N 1024

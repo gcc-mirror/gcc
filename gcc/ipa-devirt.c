@@ -3426,12 +3426,10 @@ possible_polymorphic_call_target_p (tree otr_type,
 {
   vec <cgraph_node *> targets;
   unsigned int i;
-  enum built_in_function fcode;
   bool final;
 
-  if (TREE_CODE (TREE_TYPE (n->decl)) == FUNCTION_TYPE
-      && ((fcode = DECL_FUNCTION_CODE (n->decl)) == BUILT_IN_UNREACHABLE
-          || fcode == BUILT_IN_TRAP))
+  if (fndecl_built_in_p (n->decl, BUILT_IN_UNREACHABLE)
+      || fndecl_built_in_p (n->decl, BUILT_IN_TRAP))
     return true;
 
   if (is_cxa_pure_virtual_p (n->decl))

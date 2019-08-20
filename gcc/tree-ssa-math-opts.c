@@ -1040,14 +1040,9 @@ pass_cse_reciprocals::execute (function *fun)
 		      else
 			stmt2 = gimple_build_call_internal_vec (ifn, args);
 		      gimple_call_set_lhs (stmt2, arg1);
-		      if (gimple_vdef (call))
-			{
-			  gimple_set_vdef (stmt2, gimple_vdef (call));
-			  SSA_NAME_DEF_STMT (gimple_vdef (stmt2)) = stmt2;
-			}
+		      gimple_move_vops (stmt2, call);
 		      gimple_call_set_nothrow (stmt2,
 					       gimple_call_nothrow_p (call));
-		      gimple_set_vuse (stmt2, gimple_vuse (call));
 		      gimple_stmt_iterator gsi2 = gsi_for_stmt (call);
 		      gsi_replace (&gsi2, stmt2, true);
 		    }

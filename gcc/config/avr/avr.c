@@ -3388,14 +3388,13 @@ avr_num_arg_regs (machine_mode mode, const_tree type)
    in a register, and which register.  */
 
 static rtx
-avr_function_arg (cumulative_args_t cum_v, machine_mode mode,
-                  const_tree type, bool named ATTRIBUTE_UNUSED)
+avr_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int bytes = avr_num_arg_regs (mode, type);
+  int bytes = avr_num_arg_regs (arg.mode, arg.type);
 
   if (cum->nregs && bytes <= cum->nregs)
-    return gen_rtx_REG (mode, cum->regno - bytes);
+    return gen_rtx_REG (arg.mode, cum->regno - bytes);
 
   return NULL_RTX;
 }
@@ -3406,11 +3405,11 @@ avr_function_arg (cumulative_args_t cum_v, machine_mode mode,
    in the argument list.  */
 
 static void
-avr_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-                          const_tree type, bool named ATTRIBUTE_UNUSED)
+avr_function_arg_advance (cumulative_args_t cum_v,
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int bytes = avr_num_arg_regs (mode, type);
+  int bytes = avr_num_arg_regs (arg.mode, arg.type);
 
   cum->nregs -= bytes;
   cum->regno -= bytes;
@@ -14243,7 +14242,7 @@ avr_expand_builtin (tree exp, rtx target,
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   const char *bname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
-  unsigned int id = DECL_FUNCTION_CODE (fndecl);
+  unsigned int id = DECL_MD_FUNCTION_CODE (fndecl);
   const struct avr_builtin_description *d = &avr_bdesc[id];
   tree arg0;
   rtx op0;
@@ -14395,7 +14394,7 @@ static tree
 avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
                   bool ignore ATTRIBUTE_UNUSED)
 {
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   tree val_type = TREE_TYPE (TREE_TYPE (fndecl));
 
   if (!optimize)

@@ -5160,6 +5160,10 @@ c_stddef_cpp_builtins(void)
     builtin_define_with_value ("__INTPTR_TYPE__", INTPTR_TYPE, 0);
   if (UINTPTR_TYPE)
     builtin_define_with_value ("__UINTPTR_TYPE__", UINTPTR_TYPE, 0);
+  /* GIMPLE FE testcases need access to the GCC internal 'sizetype'.
+     Expose it as __SIZETYPE__.  */
+  if (flag_gimple)
+    builtin_define_with_value ("__SIZETYPE__", SIZETYPE, 0);
 }
 
 static void
@@ -7344,8 +7348,6 @@ tree
 resolve_overloaded_builtin (location_t loc, tree function,
 			    vec<tree, va_gc> *params)
 {
-  enum built_in_function orig_code = DECL_FUNCTION_CODE (function);
-
   /* Is function one of the _FETCH_OP_ or _OP_FETCH_ built-ins?
      Those are not valid to call with a pointer to _Bool (or C++ bool)
      and so must be rejected.  */
@@ -7367,6 +7369,7 @@ resolve_overloaded_builtin (location_t loc, tree function,
     }
 
   /* Handle BUILT_IN_NORMAL here.  */
+  enum built_in_function orig_code = DECL_FUNCTION_CODE (function);
   switch (orig_code)
     {
     case BUILT_IN_SPECULATION_SAFE_VALUE_N:

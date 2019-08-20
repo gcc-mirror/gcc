@@ -280,8 +280,8 @@ static bool sh_function_value_regno_p (const unsigned int);
 static rtx sh_libcall_value (machine_mode, const_rtx);
 static bool sh_return_in_memory (const_tree, const_tree);
 static rtx sh_builtin_saveregs (void);
-static void sh_setup_incoming_varargs (cumulative_args_t, machine_mode,
-				       tree, int *, int);
+static void sh_setup_incoming_varargs (cumulative_args_t,
+				       const function_arg_info &, int *, int);
 static bool sh_strict_argument_naming (cumulative_args_t);
 static bool sh_pretend_outgoing_varargs_named (cumulative_args_t);
 static void sh_atomic_assign_expand_fenv (tree *, tree *, tree *);
@@ -294,16 +294,13 @@ static machine_mode sh_promote_function_mode (const_tree type,
 						   int *punsignedp,
 						   const_tree funtype,
 						   int for_return);
-static bool sh_pass_by_reference (cumulative_args_t, machine_mode,
-				  const_tree, bool);
-static bool sh_callee_copies (cumulative_args_t, machine_mode,
-			      const_tree, bool);
-static int sh_arg_partial_bytes (cumulative_args_t, machine_mode,
-			         tree, bool);
-static void sh_function_arg_advance (cumulative_args_t, machine_mode,
-				     const_tree, bool);
-static rtx sh_function_arg (cumulative_args_t, machine_mode,
-			    const_tree, bool);
+static bool sh_pass_by_reference (cumulative_args_t,
+				  const function_arg_info &);
+static bool sh_callee_copies (cumulative_args_t, const function_arg_info &);
+static int sh_arg_partial_bytes (cumulative_args_t, const function_arg_info &);
+static void sh_function_arg_advance (cumulative_args_t,
+				     const function_arg_info &);
+static rtx sh_function_arg (cumulative_args_t, const function_arg_info &);
 static int sh_dwarf_calling_convention (const_tree);
 static void sh_encode_section_info (tree, rtx, int);
 static bool sh2a_function_vector_p (tree);
@@ -7656,9 +7653,8 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   tree addr, lab_over = NULL, result = NULL;
   tree eff_type;
 
-  const bool pass_by_ref =
-    !VOID_TYPE_P (type)
-    && targetm.calls.must_pass_in_stack (TYPE_MODE (type), type);
+  const bool pass_by_ref
+    = !VOID_TYPE_P (type) && must_pass_va_arg_in_stack (type);
 
   if (pass_by_ref)
     type = build_pointer_type (type);
@@ -7901,12 +7897,11 @@ sh_promote_prototypes (const_tree type)
 }
 
 static bool
-sh_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
-		      const_tree type, bool named ATTRIBUTE_UNUSED)
+sh_pass_by_reference (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (targetm.calls.must_pass_in_stack (mode, type))
+  if (targetm.calls.must_pass_in_stack (arg))
     return true;
 
   /* ??? std_gimplify_va_arg_expr passes NULL for cum.  That function
@@ -7919,14 +7914,15 @@ sh_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
 }
 
 static bool
-sh_callee_copies (cumulative_args_t cum, machine_mode mode,
-		  const_tree type, bool named ATTRIBUTE_UNUSED)
+sh_callee_copies (cumulative_args_t cum, const function_arg_info &arg)
 {
   /* ??? How can it possibly be correct to return true only on the
      caller side of the equation?  Is there someplace else in the
      sh backend that's magically producing the copies?  */
   return (get_cumulative_args (cum)->outgoing
-	  && ((mode == BLKmode ? TYPE_ALIGN (type) : GET_MODE_ALIGNMENT (mode))
+	  && ((arg.mode == BLKmode
+	       ? TYPE_ALIGN (arg.type)
+	       : GET_MODE_ALIGNMENT (arg.mode))
 	      % SH_MIN_ALIGN_FOR_CALLEE_COPY == 0));
 }
 
@@ -7993,20 +7989,17 @@ sh_pass_in_reg_p (const CUMULATIVE_ARGS& cum, machine_mode mode,
 }
 
 static int
-sh_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
-		      tree type, bool named ATTRIBUTE_UNUSED)
+sh_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int words = 0;
 
-  if (sh_pass_in_reg_p (*cum, mode, type)
+  if (sh_pass_in_reg_p (*cum, arg.mode, arg.type)
       && !TARGET_FPU_DOUBLE
-      && (sh_round_reg (*cum, mode)
-	  + (mode != BLKmode
-	     ? CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD)
-	     : CEIL (int_size_in_bytes (type), UNITS_PER_WORD))
-	  > NPARM_REGS (mode)))
-    words = NPARM_REGS (mode) - sh_round_reg (*cum, mode);
+      && (sh_round_reg (*cum, arg.mode)
+	  + CEIL (arg.promoted_size_in_bytes (), UNITS_PER_WORD)
+	  > NPARM_REGS (arg.mode)))
+    words = NPARM_REGS (arg.mode) - sh_round_reg (*cum, arg.mode);
 
   return words * UNITS_PER_WORD;
 }
@@ -8016,30 +8009,25 @@ sh_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).
+   ARG is a description of the argument.
 
    On SH the first args are normally in registers
    and the rest are pushed.  Any arg that starts within the first
    NPARM_REGS words is at least partially passed in a register unless
    its data type forbids.  */
 static rtx
-sh_function_arg (cumulative_args_t ca_v, machine_mode mode,
-		 const_tree type, bool named)
+sh_function_arg (cumulative_args_t ca_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
+  machine_mode mode = arg.mode;
 
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     return ca->renesas_abi ? const1_rtx : const0_rtx;
 
-  if (sh_pass_in_reg_p (*ca, mode, type)
-      && (named || ! (TARGET_HITACHI || ca->renesas_abi)))
+  if (sh_pass_in_reg_p (*ca, mode, arg.type)
+      && (arg.named || ! (TARGET_HITACHI || ca->renesas_abi)))
     {
       int regno;
 
@@ -8078,13 +8066,10 @@ sh_function_arg (cumulative_args_t ca_v, machine_mode mode,
   return NULL_RTX;
 }
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be
-   available.)  */
+/* Update the data in CUM to advance over argument ARG.  */
 static void
-sh_function_arg_advance (cumulative_args_t ca_v, machine_mode mode,
-			 const_tree type, bool named ATTRIBUTE_UNUSED)
+sh_function_arg_advance (cumulative_args_t ca_v,
+			 const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
 
@@ -8094,7 +8079,7 @@ sh_function_arg_advance (cumulative_args_t ca_v, machine_mode mode,
   if ((TARGET_HITACHI || ca->renesas_abi) && TARGET_FPU_DOUBLE)
     {
       /* Note that we've used the skipped register.  */
-      if (mode == SFmode && ca->free_single_fp_reg)
+      if (arg.mode == SFmode && ca->free_single_fp_reg)
 	{
 	  ca->free_single_fp_reg = 0;
 	  return;
@@ -8103,21 +8088,19 @@ sh_function_arg_advance (cumulative_args_t ca_v, machine_mode mode,
 	 skipped in order to align the DF value.  We note this skipped
 	 register, because the next SF value will use it, and not the
 	 SF that follows the DF.  */
-      if (mode == DFmode
+      if (arg.mode == DFmode
 	  && sh_round_reg (*ca, DFmode) != sh_round_reg (*ca, SFmode))
 	{
 	  ca->free_single_fp_reg = (sh_round_reg (*ca, SFmode)
-				    + BASE_ARG_REG (mode));
+				    + BASE_ARG_REG (arg.mode));
 	}
     }
 
   if (! ((TARGET_SH4 || TARGET_SH2A) || ca->renesas_abi)
-      || sh_pass_in_reg_p (*ca, mode, type))
-    (ca->arg_count[(int) get_sh_arg_class (mode)]
-     = (sh_round_reg (*ca, mode)
-	+ (mode == BLKmode
-	   ? CEIL (int_size_in_bytes (type), UNITS_PER_WORD)
-	   : CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD))));
+      || sh_pass_in_reg_p (*ca, arg.mode, arg.type))
+    (ca->arg_count[(int) get_sh_arg_class (arg.mode)]
+     = (sh_round_reg (*ca, arg.mode)
+	+ CEIL (arg.promoted_size_in_bytes (), UNITS_PER_WORD)));
 }
 
 /* The Renesas calling convention doesn't quite fit into this scheme since
@@ -8190,8 +8173,7 @@ sh_return_in_memory (const_tree type, const_tree fndecl)
    function that tell if a function uses varargs or stdarg.  */
 static void
 sh_setup_incoming_varargs (cumulative_args_t ca,
-			   machine_mode mode,
-			   tree type,
+			   const function_arg_info &arg,
 			   int *pretend_arg_size,
 			   int second_time ATTRIBUTE_UNUSED)
 {
@@ -8200,10 +8182,9 @@ sh_setup_incoming_varargs (cumulative_args_t ca,
     {
       int named_parm_regs, anon_parm_regs;
 
-      named_parm_regs = (sh_round_reg (*get_cumulative_args (ca), mode)
-			 + (mode == BLKmode
-			    ? CEIL (int_size_in_bytes (type), UNITS_PER_WORD)
-			    : CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD)));
+      named_parm_regs = (sh_round_reg (*get_cumulative_args (ca), arg.mode)
+			 + CEIL (arg.promoted_size_in_bytes (),
+				 UNITS_PER_WORD));
       anon_parm_regs = NPARM_REGS (SImode) - named_parm_regs;
       if (anon_parm_regs > 0)
 	*pretend_arg_size = anon_parm_regs * 4;
@@ -10461,7 +10442,7 @@ sh_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 		   machine_mode mode ATTRIBUTE_UNUSED, int ignore)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   const struct builtin_description *d = &bdesc[fcode];
   enum insn_code icode = d->icode;
   int signature = d->signature;
@@ -10825,10 +10806,11 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     {
       tree ptype = build_pointer_type (TREE_TYPE (funtype));
 
-      sh_function_arg_advance (pack_cumulative_args (&cum), Pmode, ptype, true);
+      function_arg_info ptr_arg (ptype, Pmode, /*named=*/true);
+      sh_function_arg_advance (pack_cumulative_args (&cum), ptr_arg);
     }
-  this_rtx
-    = sh_function_arg (pack_cumulative_args (&cum), Pmode, ptr_type_node, true);
+  function_arg_info ptr_arg (ptr_type_node, Pmode, /*named=*/true);
+  this_rtx = sh_function_arg (pack_cumulative_args (&cum), ptr_arg);
 
   /* For SHcompact, we only have r0 for a scratch register: r1 is the
      static chain pointer (even if you can't have nested virtual functions

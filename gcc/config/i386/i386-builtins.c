@@ -1833,7 +1833,7 @@ tree
 ix86_builtin_reciprocal (tree fndecl)
 {
   enum ix86_builtins fn_code
-    = (enum ix86_builtins) DECL_FUNCTION_CODE (fndecl);
+    = (enum ix86_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   switch (fn_code)
     {
       /* Vectorized version of sqrt to rsqrt conversion.  */
@@ -1972,7 +1972,9 @@ enum processor_model
   M_INTEL_COREI7_ICELAKE_CLIENT,
   M_INTEL_COREI7_ICELAKE_SERVER,
   M_AMDFAM17H_ZNVER2,
-  M_INTEL_COREI7_CASCADELAKE
+  M_INTEL_COREI7_CASCADELAKE,
+  M_INTEL_COREI7_TIGERLAKE,
+  M_INTEL_COREI7_COOPERLAKE
 };
 
 struct _arch_names_table
@@ -2001,6 +2003,8 @@ static const _arch_names_table arch_names_table[] =
   {"icelake-client", M_INTEL_COREI7_ICELAKE_CLIENT},
   {"icelake-server", M_INTEL_COREI7_ICELAKE_SERVER},
   {"cascadelake", M_INTEL_COREI7_CASCADELAKE},
+  {"tigerlake", M_INTEL_COREI7_TIGERLAKE},
+  {"cooperlake", M_INTEL_COREI7_COOPERLAKE},
   {"bonnell", M_INTEL_BONNELL},
   {"silvermont", M_INTEL_SILVERMONT},
   {"goldmont", M_INTEL_GOLDMONT},
@@ -2192,6 +2196,14 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      break;
 	    case PROCESSOR_CASCADELAKE:
 	      arg_str = "cascadelake";
+	      priority = P_PROC_AVX512F;
+	      break;
+	    case PROCESSOR_TIGERLAKE:
+	      arg_str = "tigerlake";
+	      priority = P_PROC_AVX512F;
+	      break;
+	    case PROCESSOR_COOPERLAKE:
+	      arg_str = "cooperlake";
 	      priority = P_PROC_AVX512F;
 	      break;
 	    case PROCESSOR_BONNELL:
@@ -2407,8 +2419,8 @@ tree
 fold_builtin_cpu (tree fndecl, tree *args)
 {
   unsigned int i;
-  enum ix86_builtins fn_code = (enum ix86_builtins)
-				DECL_FUNCTION_CODE (fndecl);
+  enum ix86_builtins fn_code
+    = (enum ix86_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   tree param_string_cst = NULL;
 
   tree __processor_model_type = build_processor_model_struct ();
