@@ -1,5 +1,47 @@
 2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target.def (setup_incoming_varargs): Take a function_arg_info
+	instead of a mode and tree.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_setup_incoming_varargs): Take a
+	function_arg_info instead of a mode and tree.
+	* targhooks.c (default_setup_incoming_varargs): Likewise.
+	* config/aarch64/aarch64.c (aarch64_setup_incoming_varargs): Likewise.
+	* config/alpha/alpha.c (alpha_setup_incoming_varargs): Likewise.
+	* config/arc/arc.c (arc_setup_incoming_varargs): Likewise.
+	* config/arm/arm.c (arm_setup_incoming_varargs): Likewise.
+	* config/bfin/bfin.c (setup_incoming_varargs): Likewise.
+	* config/cris/cris.c (cris_setup_incoming_varargs): Likewise.
+	* config/csky/csky.c (csky_setup_incoming_varargs): Likewise.
+	* config/epiphany/epiphany.c (epiphany_setup_incoming_varargs):
+	Likewise.
+	* config/fr30/fr30.c (fr30_setup_incoming_varargs): Likewise.
+	* config/frv/frv.c (frv_setup_incoming_varargs): Likewise.
+	* config/ft32/ft32.c (ft32_setup_incoming_varargs): Likewise.
+	* config/i386/i386.c (ix86_setup_incoming_varargs): Likewise.
+	* config/ia64/ia64.c (ia64_setup_incoming_varargs): Likewise.
+	* config/iq2000/iq2000.c (iq2000_setup_incoming_varargs): Likewise.
+	* config/lm32/lm32.c (lm32_setup_incoming_varargs): Likewise.
+	* config/m32r/m32r.c (m32r_setup_incoming_varargs): Likewise.
+	* config/mcore/mcore.c (mcore_setup_incoming_varargs): Likewise.
+	* config/mips/mips.c (mips_setup_incoming_varargs): Likewise.
+	* config/mmix/mmix.c (mmix_setup_incoming_varargs): Likewise.
+	* config/moxie/moxie.c (moxie_setup_incoming_varargs): Likewise.
+	* config/nds32/nds32.c (nds32_setup_incoming_varargs): Likewise.
+	* config/nios2/nios2.c (nios2_setup_incoming_varargs): Likewise.
+	* config/riscv/riscv.c (riscv_setup_incoming_varargs): Likewise.
+	* config/rs6000/rs6000-internal.h (setup_incoming_varargs): Likewise.
+	* config/rs6000/rs6000-call.c (setup_incoming_varargs): Likewise.
+	* config/sh/sh.c (sh_setup_incoming_varargs): Likewise.
+	* config/spu/spu.c (spu_setup_incoming_varargs): Likewise.
+	* config/tilegx/tilegx.c (tilegx_setup_incoming_varargs): Likewise.
+	* config/tilepro/tilepro.c (tilepro_setup_incoming_varargs): Likewise.
+	* config/visium/visium.c (visium_setup_incoming_varargs): Likewise.
+	* function.c (assign_parms_setup_varargs): Update call to
+	targetm.calls.setup_incoming_varargs.
+
+2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target.def (pass_by_reference): Take a function_arg_info instead
 	of a mode, type and named flag.
 	* doc/tm.texi: Regenerate.

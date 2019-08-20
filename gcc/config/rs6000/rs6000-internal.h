@@ -152,9 +152,8 @@ extern bool rs6000_return_in_memory (const_tree type,
 extern bool rs6000_return_in_msb (const_tree valtype);
 extern bool rs6000_pass_by_reference (cumulative_args_t,
 				      const function_arg_info &);
-extern void setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
-				    tree type, int *pretend_size ATTRIBUTE_UNUSED,
-				    int no_rtl);
+extern void setup_incoming_varargs (cumulative_args_t,
+				    const function_arg_info &, int *, int);
 extern unsigned int rs6000_function_arg_boundary (machine_mode mode,
 						  const_tree type);
 extern bool rs6000_must_pass_in_stack (machine_mode mode, const_tree type);

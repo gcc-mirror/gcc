@@ -40,7 +40,9 @@ extern machine_mode default_cc_modes_compatible (machine_mode,
 extern bool default_return_in_memory (const_tree, const_tree);
 
 extern rtx default_expand_builtin_saveregs (void);
-extern void default_setup_incoming_varargs (cumulative_args_t, machine_mode, tree, int *, int);
+extern void default_setup_incoming_varargs (cumulative_args_t,
+					    const function_arg_info &,
+					    int *, int);
 extern rtx default_builtin_setjmp_frame_value (void);
 extern bool default_pretend_outgoing_varargs_named (cumulative_args_t);
 

@@ -711,24 +711,25 @@ epiphany_function_arg_boundary (machine_mode mode, const_tree type)
 /* Do any needed setup for a variadic function.  For the EPIPHANY, we
    actually emit the code in epiphany_expand_prologue.
 
-   CUM has not been updated for the last named argument which has type TYPE
-   and mode MODE, and we rely on this fact.  */
+   CUM has not been updated for the last named argument (which is given
+   by ARG), and we rely on this fact.  */
 
 
 static void
-epiphany_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
-				 tree type, int *pretend_size, int no_rtl)
+epiphany_setup_incoming_varargs (cumulative_args_t cum,
+				 const function_arg_info &arg,
+				 int *pretend_size, int no_rtl)
 {
   int first_anon_arg;
   CUMULATIVE_ARGS next_cum;
   machine_function_t *mf = MACHINE_FUNCTION (cfun);
 
   /* All BLKmode values are passed by reference.  */
-  gcc_assert (mode != BLKmode);
+  gcc_assert (arg.mode != BLKmode);
 
   next_cum = *get_cumulative_args (cum);
-  next_cum
-    = ROUND_ADVANCE_CUM (next_cum, mode, type) + ROUND_ADVANCE_ARG (mode, type);
+  next_cum = (ROUND_ADVANCE_CUM (next_cum, arg.mode, arg.type)
+	      + ROUND_ADVANCE_ARG (arg.mode, arg.type));
   first_anon_arg = next_cum;
 
   if (first_anon_arg < MAX_EPIPHANY_PARM_REGS && !no_rtl)

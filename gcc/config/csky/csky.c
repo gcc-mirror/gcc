@@ -1937,8 +1937,7 @@ csky_arg_partial_bytes (cumulative_args_t pcum_v, const function_arg_info &arg)
 
 static void
 csky_setup_incoming_varargs (cumulative_args_t pcum_v,
-			     machine_mode mode,
-			     tree type,
+			     const function_arg_info &arg,
 			     int *pretend_size,
 			     int second_time ATTRIBUTE_UNUSED)
 {
@@ -1949,7 +1948,7 @@ csky_setup_incoming_varargs (cumulative_args_t pcum_v,
 
   cfun->machine->uses_anonymous_args = 1;
   local_cum = *pcum;
-  csky_function_arg_advance (local_cum_v, mode, type, true);
+  csky_function_arg_advance (local_cum_v, arg.mode, arg.type, arg.named);
   regs_to_push = CSKY_NPARM_REGS - local_cum;
   if (regs_to_push)
     *pretend_size  = regs_to_push * UNITS_PER_WORD;

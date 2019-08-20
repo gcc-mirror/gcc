@@ -64,7 +64,7 @@ static void expand_save_restore (struct lm32_frame_info *info, int op);
 static void stack_adjust (HOST_WIDE_INT amount);
 static bool lm32_in_small_data_p (const_tree);
 static void lm32_setup_incoming_varargs (cumulative_args_t cum,
-					 machine_mode mode, tree type,
+					 const function_arg_info &,
 					 int *pretend_size, int no_rtl);
 static bool lm32_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno,
 			    int *total, bool speed);
@@ -684,8 +684,9 @@ lm32_compute_initial_elimination_offset (int from, int to)
 }
 
 static void
-lm32_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
-			     tree type, int *pretend_size, int no_rtl)
+lm32_setup_incoming_varargs (cumulative_args_t cum_v,
+			     const function_arg_info &arg,
+			     int *pretend_size, int no_rtl)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int first_anon_arg;
@@ -702,12 +703,7 @@ lm32_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
          registers, if any used in passing this named paramter in
          order to determine which is the first registers used to pass
          anonymous arguments.  */
-      int size;
-
-      if (mode == BLKmode)
-	size = int_size_in_bytes (type);
-      else
-	size = GET_MODE_SIZE (mode);
+      int size = arg.promoted_size_in_bytes ();
 
       first_anon_arg =
 	*cum + LM32_FIRST_ARG_REG +

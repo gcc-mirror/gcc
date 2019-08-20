@@ -2345,8 +2345,7 @@ nds32_warn_func_return (tree decl)
 
 static void
 nds32_setup_incoming_varargs (cumulative_args_t ca,
-			      machine_mode mode,
-			      tree type,
+			      const function_arg_info &arg,
 			      int *pretend_args_size,
 			      int second_time ATTRIBUTE_UNUSED)
 {
@@ -2370,14 +2369,14 @@ nds32_setup_incoming_varargs (cumulative_args_t ca,
 
   cum = get_cumulative_args (ca);
 
-  /* The MODE and TYPE describe the last argument.
+  /* ARG describes the last argument.
      We need those information to determine the remaining registers
      for varargs.  */
   total_args_regs
     = NDS32_MAX_GPR_REGS_FOR_ARGS + NDS32_GPR_ARG_FIRST_REGNUM;
   num_of_used_regs
-    = NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, mode, type)
-      + NDS32_NEED_N_REGS_FOR_ARG (mode, type);
+    = NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG (cum->gpr_offset, arg.mode, arg.type)
+      + NDS32_NEED_N_REGS_FOR_ARG (arg.mode, arg.type);
 
   remaining_reg_count = total_args_regs - num_of_used_regs;
   *pretend_args_size = remaining_reg_count * UNITS_PER_WORD;

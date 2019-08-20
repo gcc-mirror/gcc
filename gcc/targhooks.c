@@ -193,11 +193,8 @@ default_expand_builtin_saveregs (void)
 }
 
 void
-default_setup_incoming_varargs (cumulative_args_t ca ATTRIBUTE_UNUSED,
-				machine_mode mode ATTRIBUTE_UNUSED,
-				tree type ATTRIBUTE_UNUSED,
-				int *pretend_arg_size ATTRIBUTE_UNUSED,
-				int second_time ATTRIBUTE_UNUSED)
+default_setup_incoming_varargs (cumulative_args_t,
+				const function_arg_info &, int *, int)
 {
 }
 

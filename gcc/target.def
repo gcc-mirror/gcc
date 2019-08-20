@@ -4486,8 +4486,8 @@ pass all their arguments on the stack.\n\
 \n\
 The argument @var{args_so_far} points to the @code{CUMULATIVE_ARGS} data\n\
 structure, containing the values that are obtained after processing the\n\
-named arguments.  The arguments @var{mode} and @var{type} describe the\n\
-last named argument---its machine mode and its data type as a tree node.\n\
+named arguments.  The argument @var{arg} describes the last of these named\n\
+arguments.\n\
 \n\
 The target hook should do two things: first, push onto the stack all the\n\
 argument registers @emph{not} used for the named arguments, and second,\n\
@@ -4507,7 +4507,7 @@ arguments of the function are being analyzed for the second time.  This\n\
 happens for an inline function, which is not actually compiled until the\n\
 end of the source file.  The hook @code{TARGET_SETUP_INCOMING_VARARGS} should\n\
 not generate any instructions in this case.",
- void, (cumulative_args_t args_so_far, machine_mode mode, tree type,
+ void, (cumulative_args_t args_so_far, const function_arg_info &arg,
 	int *pretend_args_size, int second_time),
  default_setup_incoming_varargs)
 

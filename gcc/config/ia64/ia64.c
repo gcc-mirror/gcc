@@ -199,8 +199,9 @@ static rtx gen_fr_restore_x (rtx, rtx, rtx);
 static void ia64_option_override (void);
 static bool ia64_can_eliminate (const int, const int);
 static machine_mode hfa_element_mode (const_tree, bool);
-static void ia64_setup_incoming_varargs (cumulative_args_t, machine_mode,
-					 tree, int *, int);
+static void ia64_setup_incoming_varargs (cumulative_args_t,
+					 const function_arg_info &,
+					 int *, int);
 static int ia64_arg_partial_bytes (cumulative_args_t,
 				   const function_arg_info &);
 static rtx ia64_function_arg_1 (cumulative_args_t, machine_mode,
@@ -4585,19 +4586,21 @@ ia64_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
 }
 
 /* Do any needed setup for a variadic function.  CUM has not been updated
-   for the last named argument which has type TYPE and mode MODE.
+   for the last named argument, which is given by ARG.
 
    We generate the actual spill instructions during prologue generation.  */
 
 static void
-ia64_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
-			     tree type, int * pretend_size,
+ia64_setup_incoming_varargs (cumulative_args_t cum,
+			     const function_arg_info &arg,
+			     int *pretend_size,
 			     int second_time ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS next_cum = *get_cumulative_args (cum);
 
   /* Skip the current argument.  */
-  ia64_function_arg_advance (pack_cumulative_args (&next_cum), mode, type, 1);
+  ia64_function_arg_advance (pack_cumulative_args (&next_cum),
+			     arg.mode, arg.type, arg.named);
 
   if (next_cum.words < MAX_ARGUMENT_SLOTS)
     {

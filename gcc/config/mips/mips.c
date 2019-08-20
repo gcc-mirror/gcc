@@ -6544,9 +6544,9 @@ mips_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
 /* Implement TARGET_SETUP_INCOMING_VARARGS.  */
 
 static void
-mips_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
-			     tree type, int *pretend_size ATTRIBUTE_UNUSED,
-			     int no_rtl)
+mips_setup_incoming_varargs (cumulative_args_t cum,
+			     const function_arg_info &arg,
+			     int *pretend_size ATTRIBUTE_UNUSED, int no_rtl)
 {
   CUMULATIVE_ARGS local_cum;
   int gp_saved, fp_saved;
@@ -6555,8 +6555,8 @@ mips_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
   local_cum = *get_cumulative_args (cum);
-  mips_function_arg_advance (pack_cumulative_args (&local_cum), mode, type,
-			     true);
+  mips_function_arg_advance (pack_cumulative_args (&local_cum),
+			     arg.mode, arg.type, arg.named);
 
   /* Found out how many registers we need to save.  */
   gp_saved = MAX_ARGS_IN_REGISTERS - local_cum.num_gprs;

@@ -99,7 +99,9 @@ static int        calc_live_regs                (int *);
 static int        try_constant_tricks           (HOST_WIDE_INT, HOST_WIDE_INT *, HOST_WIDE_INT *);
 static const char *     output_inline_const     (machine_mode, rtx *);
 static void       layout_mcore_frame            (struct mcore_frame *);
-static void       mcore_setup_incoming_varargs	(cumulative_args_t, machine_mode, tree, int *, int);
+static void       mcore_setup_incoming_varargs	(cumulative_args_t,
+						 const function_arg_info &,
+						 int *, int);
 static cond_type  is_cond_candidate             (rtx);
 static rtx_insn  *emit_new_cond_insn            (rtx_insn *, int);
 static rtx_insn  *conditionalize_block          (rtx_insn *);
@@ -1942,7 +1944,7 @@ mcore_initial_elimination_offset (int from, int to)
 
 static void
 mcore_setup_incoming_varargs (cumulative_args_t args_so_far_v,
-			      machine_mode mode, tree type,
+			      const function_arg_info &arg,
 			      int * ptr_pretend_size ATTRIBUTE_UNUSED,
 			      int second_time ATTRIBUTE_UNUSED)
 {
@@ -1953,7 +1955,8 @@ mcore_setup_incoming_varargs (cumulative_args_t args_so_far_v,
   /* We need to know how many argument registers are used before
      the varargs start, so that we can push the remaining argument
      registers during the prologue.  */
-  number_of_regs_before_varargs = *args_so_far + mcore_num_arg_regs (mode, type);
+  number_of_regs_before_varargs
+    = *args_so_far + mcore_num_arg_regs (arg.mode, arg.type);
   
   /* There is a bug somewhere in the arg handling code.
      Until I can find it this workaround always pushes the

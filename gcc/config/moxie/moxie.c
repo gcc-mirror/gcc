@@ -385,8 +385,7 @@ moxie_initial_elimination_offset (int from, int to)
 
 static void
 moxie_setup_incoming_varargs (cumulative_args_t cum_v,
-			      machine_mode mode ATTRIBUTE_UNUSED,
-			      tree type ATTRIBUTE_UNUSED,
+			      const function_arg_info &,
 			      int *pretend_size, int no_rtl)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);

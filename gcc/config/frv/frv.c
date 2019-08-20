@@ -359,8 +359,8 @@ static bool frv_in_small_data_p			(const_tree);
 static void frv_asm_output_mi_thunk
   (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
 static void frv_setup_incoming_varargs		(cumulative_args_t,
-						 machine_mode,
-						 tree, int *, int);
+						 const function_arg_info &,
+						 int *, int);
 static rtx frv_expand_builtin_saveregs		(void);
 static void frv_expand_builtin_va_start		(tree, rtx);
 static bool frv_rtx_costs			(rtx, machine_mode, int, int,
@@ -2109,17 +2109,16 @@ frv_initial_elimination_offset (int from, int to)
 
 static void
 frv_setup_incoming_varargs (cumulative_args_t cum_v,
-                            machine_mode mode,
-                            tree type ATTRIBUTE_UNUSED,
-                            int *pretend_size,
-                            int second_time)
+			    const function_arg_info &arg,
+			    int *pretend_size,
+			    int second_time)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   if (TARGET_DEBUG_ARG)
     fprintf (stderr,
 	     "setup_vararg: words = %2d, mode = %4s, pretend_size = %d, second_time = %d\n",
-	     *cum, GET_MODE_NAME (mode), *pretend_size, second_time);
+	     *cum, GET_MODE_NAME (arg.mode), *pretend_size, second_time);
 }
 
 

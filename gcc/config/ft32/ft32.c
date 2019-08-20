@@ -630,13 +630,12 @@ ft32_initial_elimination_offset (int from, int to)
 
 static void
 ft32_setup_incoming_varargs (cumulative_args_t cum_v,
-			     machine_mode mode,
-			     tree type ATTRIBUTE_UNUSED,
+			     const function_arg_info &arg,
 			     int *pretend_size, int no_rtl ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int named_size =
-    GET_MODE_SIZE (SImode) * (*cum - FT32_R0) + GET_MODE_SIZE (mode);
+    GET_MODE_SIZE (SImode) * (*cum - FT32_R0) + GET_MODE_SIZE (arg.mode);
 
   if (named_size < 24)
     *pretend_size = 24 - named_size;

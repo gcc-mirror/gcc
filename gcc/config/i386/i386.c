@@ -4096,8 +4096,9 @@ setup_incoming_varargs_ms_64 (CUMULATIVE_ARGS *cum)
 }
 
 static void
-ix86_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
-			     tree type, int *, int no_rtl)
+ix86_setup_incoming_varargs (cumulative_args_t cum_v,
+			     const function_arg_info &arg,
+			     int *, int no_rtl)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   CUMULATIVE_ARGS next_cum;
@@ -4116,8 +4117,8 @@ ix86_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
      For stdargs, we do want to skip the last named argument.  */
   next_cum = *cum;
   if (stdarg_p (fntype))
-    ix86_function_arg_advance (pack_cumulative_args (&next_cum), mode, type,
-			       true);
+    ix86_function_arg_advance (pack_cumulative_args (&next_cum),
+			       arg.mode, arg.type, arg.named);
 
   if (cum->call_abi == MS_ABI)
     setup_incoming_varargs_ms_64 (&next_cum);

@@ -175,8 +175,8 @@ static rtx visium_function_value (const_tree, const_tree fn_decl_or_type,
 static rtx visium_libcall_value (machine_mode, const_rtx);
 
 static void visium_setup_incoming_varargs (cumulative_args_t,
-					   machine_mode,
-					   tree, int *, int);
+					   const function_arg_info &,
+					   int *, int);
 
 static void visium_va_start (tree valist, rtx nextarg);
 
@@ -1460,8 +1460,7 @@ visium_libcall_value (machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
 
 static void
 visium_setup_incoming_varargs (cumulative_args_t pcum_v,
-			       machine_mode mode,
-			       tree type,
+			       const function_arg_info &arg,
 			       int *pretend_size ATTRIBUTE_UNUSED,
 			       int no_rtl)
 {
@@ -1487,7 +1486,8 @@ visium_setup_incoming_varargs (cumulative_args_t pcum_v,
   /* The caller has advanced ARGS_SO_FAR up to, but not beyond, the last named
      argument.  Advance a local copy of ARGS_SO_FAR past the last "real" named
      argument, to find out how many registers are left over.  */
-  TARGET_FUNCTION_ARG_ADVANCE (local_args_so_far, mode, type, 1);
+  TARGET_FUNCTION_ARG_ADVANCE (local_args_so_far, arg.mode,
+			       arg.type, arg.named);
 
   /* Find how many registers we need to save.  */
   locargs = get_cumulative_args (local_args_so_far);
