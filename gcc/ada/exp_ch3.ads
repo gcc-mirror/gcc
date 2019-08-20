@@ -102,10 +102,10 @@ package Exp_Ch3 is
      (Typ  : Entity_Id;
       N    : Node_Id;
       Size : Uint := No_Uint) return Node_Id;
-   --  Build an expression which represents the required initial value of type
+   --  Build an expression that represents the required initial value of type
    --  Typ for which predicate Needs_Simple_Initialization is True. N is a node
-   --  whose source location used in the construction of the expression. Size
-   --  is utilized as follows:
+   --  whose source location is used in the construction of the expression.
+   --  Size is used as follows:
    --
    --    * If the size of the object to be initialized it is known, it should
    --      be passed to the routine.
@@ -115,7 +115,7 @@ package Exp_Ch3 is
    --
    --  The object size is needed to prepare a known invalid value for use by
    --  Normalize_Scalars. A call to this routine where Typ denotes a scalar
-   --  type is only valid when Normalize_Scalars or Initialize_Scalars is
+   --  type is valid only when Normalize_Scalars or Initialize_Scalars is
    --  active, or if N is the node for a 'Invalid_Value attribute node.
 
    procedure Init_Secondary_Tags

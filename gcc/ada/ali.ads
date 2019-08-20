@@ -727,9 +727,9 @@ package ALI is
       --  but before the entries from the run-time.
    end record;
 
-   --  The indexes of active entries in this table range from 1 to
-   --  the value of Linker_Options.Last. The zero'th element is for
-   --  convenience if the table needs to be sorted.
+   --  The indexes of active entries in this table range from 1 to the value of
+   --  Linker_Options.Last. The zeroth element is for convenience if the table
+   --  needs to be sorted.
 
    package Linker_Options is new Table.Table (
      Table_Component_Type => Linker_Option_Record,
@@ -765,9 +765,9 @@ package ALI is
       --  location to the last character on the line.
    end record;
 
-   --  The indexes of active entries in this table range from 1 to the
-   --  value of Notes.Last. The zero'th element is for convenience if
-   --  the table needs to be sorted.
+   --  The indexes of active entries in this table range from 1 to the value of
+   --  Notes.Last. The zeroth element is for convenience if the table needs to
+   --  be sorted.
 
    package Notes is new Table.Table (
      Table_Component_Type => Notes_Record,

@@ -1852,7 +1852,7 @@ package body Exp_Ch4 is
                     Statements => New_List (Loop_Stm)));
 
          --  If no separate indexes, return loop statement with explicit
-         --  iteration scheme on its own
+         --  iteration scheme on its own.
 
          else
             Loop_Stm :=
@@ -2757,7 +2757,7 @@ package body Exp_Ch4 is
       --  The J'th entry in an expression node that represents the total length
       --  of operands 1 through J. It is either an integer literal node, or a
       --  reference to a constant entity with the right value, so it is fine
-      --  to just do a Copy_Node to get an appropriate copy. The extra zero'th
+      --  to just do a Copy_Node to get an appropriate copy. The extra zeroth
       --  entry always is set to zero. The length is of type Artyp.
 
       Low_Bound : Node_Id;
@@ -4421,7 +4421,7 @@ package body Exp_Ch4 is
 
    begin
       --  Warn on the presence of an allocator of an anonymous access type when
-      --  enabled except when its an object declaration at library level.
+      --  enabled, except when it's an object declaration at library level.
 
       if Warn_On_Anonymous_Allocators
         and then Ekind (PtrT) = E_Anonymous_Access_Type
@@ -11310,7 +11310,7 @@ package body Exp_Ch4 is
          end if;
 
          --  Nothing to do if expression was rewritten into a float-to-float
-         --  conversion, since this kind of conversions is handled elsewhere.
+         --  conversion, since this kind of conversion is handled elsewhere.
 
          if Is_Floating_Point_Type (Etype (Expr))
            and then Is_Floating_Point_Type (Target_Type)

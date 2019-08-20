@@ -2327,7 +2327,8 @@ package Sinfo is
    --    Present in N_Extended_Return_Statement. Points to a list initially
    --    containing a single N_Object_Declaration representing the return
    --    object. We use a list (instead of just a pointer to the object decl)
-   --    because Analyze wants to insert extra actions on this list.
+   --    because Analyze wants to insert extra actions on this list, before the
+   --    N_Object_Declaration, which always remains last on the list.
 
    --  Rounded_Result (Flag18-Sem)
    --    Present in N_Type_Conversion, N_Op_Divide, and N_Op_Multiply nodes.

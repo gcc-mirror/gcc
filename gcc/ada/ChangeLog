@@ -1,3 +1,15 @@
+2019-08-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* ali.adb, ali.ads, aspects.adb, checks.ads, checks.adb,
+	doc/gnat_rm/implementation_defined_pragmas.rst,
+	doc/gnat_ugn/building_executable_programs_with_gnat.rst,
+	einfo.ads, exp_aggr.adb, exp_ch11.adb, exp_ch3.ads, exp_ch4.adb,
+	exp_disp.adb, inline.adb, libgnat/a-locale.ads,
+	libgnat/s-soflin.ads, par_sco.adb, repinfo.adb, sem_ch5.adb,
+	sem_disp.adb, sem_elab.adb, sem_eval.adb, sem_spark.adb,
+	sem_spark.ads, sinfo.ads: Minor reformattings, typo fixes and
+	and rewordings.
+
 2019-08-20  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* adaint.c (__gnat_to_gm_time): On _WIN32, don't round time up

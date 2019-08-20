@@ -1818,8 +1818,8 @@ package body Repinfo is
                    Has_Rep_Item (Ent, Name_Scalar_Storage_Order)
                      or else SSO_Set_Low_By_Default  (Ent)
                      or else SSO_Set_High_By_Default (Ent);
-      --  Scalar_Storage_Order is displayed if specified explicitly
-      --  or set by Default_Scalar_Storage_Order.
+      --  Scalar_Storage_Order is displayed if specified explicitly or set by
+      --  Default_Scalar_Storage_Order.
 
    --  Start of processing for List_Scalar_Storage_Order
 

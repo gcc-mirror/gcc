@@ -161,7 +161,7 @@ package Checks is
 
    procedure Activate_Range_Check (N : Node_Id);
    pragma Inline (Activate_Range_Check);
-   --  Sets Do_Range_Check flag in node N, and handles possible local raise
+   --  Sets Do_Range_Check flag in node N, and handles possible local raise.
    --  Always call this routine rather than calling Set_Do_Range_Check to
    --  set an explicit value of True, to ensure handling the local raise case.
 

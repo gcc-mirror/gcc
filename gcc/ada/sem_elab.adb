@@ -15234,8 +15234,8 @@ package body Sem_Elab is
          begin
             --  Nothing to do for predefined primitives because they are
             --  artifacts of tagged type expansion and cannot override source
-            --  primitives. Nothing to do as well for inherited primitives as
-            --  the check concerns overridding ones.
+            --  primitives. Nothing to do as well for inherited primitives, as
+            --  the check concerns overriding ones.
 
             if Is_Predefined_Dispatching_Operation (Prim)
               or else not Is_Overriding_Subprogram (Prim)

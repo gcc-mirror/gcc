@@ -1171,19 +1171,17 @@ package body Sem_SPARK is
 
          Expr_Root := Get_Root_Object (Expr);
 
-         --  SPARK RM 3.10(8): For an assignment statement where
-         --  the target is a stand-alone object of an anonymous
-         --  access-to-object type
+         --  SPARK RM 3.10(7): For an assignment statement where the target is
+         --  a stand-alone object of an anonymous access-to-object type.
 
          pragma Assert (Present (Target_Root));
 
-         --  If the type of the target is an anonymous
-         --  access-to-constant type (an observing access type), the
-         --  source shall be an owning access object denoted by a name
-         --  that is not in the Moved state, and whose root object
-         --  is not in the Moved state and is not declared at a
-         --  statically deeper accessibility level than that of
-         --  the target object.
+         --  If the type of the target is an anonymous access-to-constant type
+         --  (an observing access type), the source shall be an owning access
+         --  object denoted by a name that is not in the Moved state, and whose
+         --  root object is not in the Moved state and is not declared at a
+         --  statically deeper accessibility level than that of the target
+         --  object.
 
          if Is_Access_Constant (Target_Typ) then
             Perm := Get_Perm (Expr);
@@ -1206,11 +1204,10 @@ package body Sem_SPARK is
 
             --  ??? check accessibility level
 
-            --  If the type of the target is an anonymous
-            --  access-to-variable type (an owning access type), the
-            --  source shall be an owning access object denoted by a
-            --  name that is in the Unrestricted state, and whose root
-            --  object is the target object itself.
+            --  If the type of the target is an anonymous access-to-variable
+            --  type (an owning access type), the source shall be an owning
+            --  access object denoted by a name that is in the Unrestricted
+            --  state, and whose root object is the target object itself.
 
             Check_Expression (Expr, Observe);
             Handle_Observe (Target_Root, Expr, Is_Decl);
