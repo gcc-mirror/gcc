@@ -1,3 +1,8 @@
+2019-08-20  Lili Cui  <lilicui@intel.com>
+
+	* config/i386/cpuinfo.h: Add INTEL_COREI7_TIGERLAKE and
+	INTEL_COREI7_COOPERLAKE.
+
 2019-07-31  Matt Thomas  <matt@3am-software.com>
 	    Nick Hudson <nick@nthcliff.demon.co.uk>
 	    Matthew Green <mrg@eterna.com.au>
