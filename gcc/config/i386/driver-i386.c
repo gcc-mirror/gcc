@@ -863,36 +863,45 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  if (arch)
 	    {
 	      /* This is unknown family 0x6 CPU.  */
-	      /* Assume Ice Lake Server.  */
-	      if (has_wbnoinvd)
-		cpu = "icelake-server";
-	      /* Assume Ice Lake.  */
-	      else if (has_gfni)
-		cpu = "icelake-client";
-	      /* Assume Cannon Lake.  */
-	      else if (has_avx512vbmi)
-		cpu = "cannonlake";
-	      /* Assume Knights Mill.  */
-	      else if (has_avx5124vnniw)
-		cpu = "knm";
-	      /* Assume Knights Landing.  */
-	      else if (has_avx512er)
-		cpu = "knl";
-	      /* Assume Skylake with AVX-512.  */
-	      else if (has_avx512f)
-		cpu = "skylake-avx512";
-	      /* Assume Skylake.  */
-	      else if (has_clflushopt)
-		cpu = "skylake";
-	      /* Assume Broadwell.  */
-	      else if (has_adx)
-		cpu = "broadwell";
-	      else if (has_avx2)
+	      if (has_avx)
+	      {
+		/* Assume Tiger Lake */
+		if (has_avx512vp2intersect)
+		  cpu = "tigerlake";
+		/* Assume Cooper Lake */
+		else if (has_avx512bf16)
+		  cpu = "cooperlake";
+		/* Assume Ice Lake Server.  */
+		else if (has_wbnoinvd)
+		  cpu = "icelake-server";
+		/* Assume Ice Lake.  */
+		else if (has_avx512bitalg)
+		  cpu = "icelake-client";
+		/* Assume Cannon Lake.  */
+		else if (has_avx512vbmi)
+		  cpu = "cannonlake";
+		/* Assume Knights Mill.  */
+		else if (has_avx5124vnniw)
+		  cpu = "knm";
+		/* Assume Knights Landing.  */
+		else if (has_avx512er)
+		  cpu = "knl";
+		/* Assume Skylake with AVX-512.  */
+		else if (has_avx512f)
+		  cpu = "skylake-avx512";
+		/* Assume Skylake.  */
+		else if (has_clflushopt)
+		  cpu = "skylake";
+		/* Assume Broadwell.  */
+		else if (has_adx)
+		  cpu = "broadwell";
+		else if (has_avx2)
 		/* Assume Haswell.  */
-		cpu = "haswell";
-	      else if (has_avx)
+		  cpu = "haswell";
+		else
 		/* Assume Sandy Bridge.  */
-		cpu = "sandybridge";
+		  cpu = "sandybridge";	      
+	      }
 	      else if (has_sse4_2)
 		{
 		  if (has_gfni)

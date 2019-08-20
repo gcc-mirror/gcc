@@ -21489,6 +21489,12 @@ Intel Core i7 Ice Lake Server CPU.
 @item cascadelake
 Intel Core i7 Cascadelake CPU.
 
+@item tigerlake
+Intel Core i7 Tigerlake CPU.
+
+@item cooperlake
+Intel Core i7 Cooperlake CPU.
+
 @item bonnell
 Intel Atom Bonnell CPU.
 
