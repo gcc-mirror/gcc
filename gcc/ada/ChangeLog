@@ -1,3 +1,9 @@
+2019-08-20  Yannick Moy  <moy@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_N_Slice_Or_Indexed_Component):
+	Renaming of function to apply to slices as well.
+	(Expand_SPARK): Expand prefix of slices of access type.
+
 2019-08-20  Bob Duff  <duff@adacore.com>
 
 	* exp_aggr.adb (Expand_Array_Aggregate): Use build-in-place in
