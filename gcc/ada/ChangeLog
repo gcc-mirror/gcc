@@ -1,3 +1,8 @@
+2019-08-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* impunit.adb (Get_Kind_Of_Unit): Revert change for adapting
+	this routine for gnatprove.
+
 2019-08-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_pragmas.rst: Document
