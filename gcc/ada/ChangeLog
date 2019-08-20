@@ -1,5 +1,13 @@
 2019-08-20  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_attr.adb (Expand_Loop_Entry_Attribute): When expanding a
+	loop entry attribute for a while_loop we construct a function
+	that incorporates the expanded condition of the loop. The itypes
+	that may be generated in that expansion must carry the scope of
+	the constructed function for proper handling in gigi.
+
+2019-08-20  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_disp.adb (Build_Class_Wide_Check, Replace_Formals): When a
 	dispatching call tp a subprogram with a class-wide precondition
 	occurrs in the same declarative part as the ancestor subprogram

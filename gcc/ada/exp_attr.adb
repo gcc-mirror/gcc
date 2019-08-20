@@ -1436,6 +1436,25 @@ package body Exp_Attr is
                Insert_Action (Loop_Stmt, Func_Decl);
                Pop_Scope;
 
+               --  The analysis of the condition may have generated itypes
+               --  that are now used within the function: Adjust their
+               --  scopes accordingly so that their use appears in their
+               --  scope of definition.
+
+               declare
+                  Ityp : Entity_Id;
+
+               begin
+                  Ityp := First_Entity (Loop_Id);
+
+                  while Present (Ityp) loop
+                     if Is_Itype (Ityp) then
+                        Set_Scope (Ityp, Func_Id);
+                     end if;
+                     Next_Entity (Ityp);
+                  end loop;
+               end;
+
                --  Transform the original while loop into an infinite loop
                --  where the last statement checks the negated condition. This
                --  placement ensures that the condition will not be evaluated
