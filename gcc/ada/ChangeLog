@@ -1,5 +1,14 @@
 2019-08-20  Bob Duff  <duff@adacore.com>
 
+	* exp_aggr.adb (Expand_Array_Aggregate): Use build-in-place in
+	the nonlimited case in STEP 4. This improves the efficiency of
+	things like (1 .. 1000 => <>).  We still generate some code for
+	that, unfortunately, but it is much improved.
+	(Aggr_Assignment_OK_For_Backend): Return false if <> components
+	are present.
+
+2019-08-20  Bob Duff  <duff@adacore.com>
+
 	* exp_ch6.adb (Needs_BIP_Alloc_Form): Call
 	Requires_Transient_Scope rather than checking constrainedness
 	and so forth.  We have previously improved
