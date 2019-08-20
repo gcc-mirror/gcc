@@ -1,5 +1,9 @@
 2019-08-20  Bob Duff  <duff@adacore.com>
 
+	* gnat.dg/unchecked_convert14.adb: New testcase.
+
+2019-08-20  Bob Duff  <duff@adacore.com>
+
 	* gnat.dg/object_size1.adb: New testcase.
 
 2019-08-20  Eric Botcazou  <ebotcazou@adacore.com>
