@@ -589,6 +589,10 @@ namespace __gnu_test
     ItType<T>
     end()
     { return it(bounds.last); }
+
+    std::size_t
+    size() const
+    { return bounds.last - bounds.first; }
   };
 }
 #endif
