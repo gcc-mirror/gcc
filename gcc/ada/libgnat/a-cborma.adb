@@ -374,7 +374,9 @@ package body Ada.Containers.Bounded_Ordered_Maps is
 
    procedure Clear (Container : in out Map) is
    begin
-      Tree_Operations.Clear_Tree (Container);
+      while not Container.Is_Empty loop
+         Container.Delete_Last;
+      end loop;
    end Clear;
 
    -----------
