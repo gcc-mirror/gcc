@@ -1,5 +1,10 @@
 2019-08-20  Bob Duff  <duff@adacore.com>
 
+	* sem_eval.adb (Expr_Value): Implement the case of an unchecked
+	conversion of a static expression.
+
+2019-08-20  Bob Duff  <duff@adacore.com>
+
 	* sem_ch13.adb (Is_Null_Array): New function, used to detect the
 	null array case; used to warn about uncheckedly converting to a
 	zero-sized array.  It is unfortunate that we can't just check
