@@ -6243,7 +6243,7 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset,
 
   /* If the type could not be passed in registers, skip the block
      reserved for the registers.  */
-  if (targetm.calls.must_pass_in_stack (TYPE_MODE (type), type))
+  if (must_pass_va_arg_in_stack (type))
     {
       t = build_int_cst (TREE_TYPE (offset), 6*8);
       gimplify_assign (offset,

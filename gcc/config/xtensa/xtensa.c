@@ -3328,7 +3328,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   array = create_tmp_var (ptr_type_node);
 
   lab_over = NULL;
-  if (!targetm.calls.must_pass_in_stack (TYPE_MODE (type), type))
+  if (!must_pass_va_arg_in_stack (type))
     {
       lab_false = create_artificial_label (UNKNOWN_LOCATION);
       lab_over = create_artificial_label (UNKNOWN_LOCATION);

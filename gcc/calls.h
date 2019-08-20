@@ -28,6 +28,7 @@ extern bool gimple_alloca_call_p (const gimple *);
 extern bool alloca_call_p (const_tree);
 extern bool must_pass_in_stack_var_size (machine_mode, const_tree);
 extern bool must_pass_in_stack_var_size_or_pad (machine_mode, const_tree);
+extern bool must_pass_va_arg_in_stack (tree);
 extern rtx prepare_call_address (tree, rtx, rtx, rtx *, int, int);
 extern bool shift_return_value (machine_mode, bool, rtx);
 extern rtx expand_call (tree, rtx, int);

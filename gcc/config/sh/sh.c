@@ -7656,9 +7656,8 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   tree addr, lab_over = NULL, result = NULL;
   tree eff_type;
 
-  const bool pass_by_ref =
-    !VOID_TYPE_P (type)
-    && targetm.calls.must_pass_in_stack (TYPE_MODE (type), type);
+  const bool pass_by_ref
+    = !VOID_TYPE_P (type) && must_pass_va_arg_in_stack (type);
 
   if (pass_by_ref)
     type = build_pointer_type (type);

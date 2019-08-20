@@ -5900,5 +5900,14 @@ must_pass_in_stack_var_size_or_pad (machine_mode mode, const_tree type)
   return false;
 }
 
+/* Return true if TYPE must be passed on the stack when passed to
+   the "..." arguments of a function.  */
+
+bool
+must_pass_va_arg_in_stack (tree type)
+{
+  return targetm.calls.must_pass_in_stack (TYPE_MODE (type), type);
+}
+
 /* Tell the garbage collector about GTY markers in this source file.  */
 #include "gt-calls.h"
