@@ -1,3 +1,26 @@
+2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* calls.h (pass_va_arg_by_reference): Declare.
+	* calls.c (pass_va_arg_by_reference): New function.
+	* config/aarch64/aarch64.c (aarch64_gimplify_va_arg_expr): Use it.
+	* config/alpha/alpha.c (alpha_gimplify_va_arg): Likewise.
+	* config/gcn/gcn.c (gcn_gimplify_va_arg_expr): Likewise.
+	* config/i386/i386.c (ix86_gimplify_va_arg): Likewise.
+	* config/ia64/ia64.c (ia64_gimplify_va_arg): Likewise.
+	* config/mips/mips.c (mips_std_gimplify_va_arg_expr): Likewise.
+	(mips_gimplify_va_arg_expr): Likewise.
+	* config/msp430/msp430.c (msp430_gimplify_va_arg_expr): Likewise.
+	* config/pa/pa.c (hppa_gimplify_va_arg_expr): Likewise.
+	* config/rs6000/rs6000-call.c (rs6000_gimplify_va_arg): Likewise.
+	* config/s390/s390.c (s390_gimplify_va_arg): Likewise.
+	* config/sparc/sparc.c (sparc_gimplify_va_arg): Likewise.
+	* config/spu/spu.c (spu_gimplify_va_arg_expr): Likewise.
+	* config/tilegx/tilegx.c (tilegx_gimplify_va_arg_expr): Likewise.
+	* config/tilepro/tilepro.c (tilepro_gimplify_va_arg_expr): Likewise.
+	* config/visium/visium.c (visium_gimplify_va_arg): Likewise.
+	* config/xtensa/xtensa.c (xtensa_gimplify_va_arg_expr): Likewise.
+	* targhooks.c (std_gimplify_va_arg_expr): Likewise.
+
 2019-08-20  Richard Biener  <rguenther@suse.de>
 
 	PR target/91498

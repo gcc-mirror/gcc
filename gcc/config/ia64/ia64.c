@@ -5147,7 +5147,7 @@ ia64_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 		      gimple_seq *post_p)
 {
   /* Variable sized types are passed by reference.  */
-  if (pass_by_reference (NULL, TYPE_MODE (type), type, false))
+  if (pass_va_arg_by_reference (type))
     {
       tree ptrtype = build_pointer_type (type);
       tree addr = std_gimplify_va_arg_expr (valist, ptrtype, pre_p, post_p);

@@ -14271,7 +14271,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   HOST_WIDE_INT size, rsize, adjust, align;
   tree t, u, cond1, cond2;
 
-  indirect_p = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  indirect_p = pass_va_arg_by_reference (type);
   if (indirect_p)
     type = build_pointer_type (type);
 

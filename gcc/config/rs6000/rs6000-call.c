@@ -2690,7 +2690,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   int regalign = 0;
   gimple *stmt;
 
-  if (pass_by_reference (NULL, TYPE_MODE (type), type, false))
+  if (pass_va_arg_by_reference (type))
     {
       t = rs6000_gimplify_va_arg (valist, ptrtype, pre_p, post_p);
       return build_va_arg_indirect_ref (t);
