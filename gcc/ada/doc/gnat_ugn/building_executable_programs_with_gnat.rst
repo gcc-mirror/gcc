@@ -2760,7 +2760,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 :switch:`-gnatwa`
   *Activate most optional warnings.*
 
-  This switch activates most optional warning messages.  See the remaining list
+  This switch activates most optional warning messages. See the remaining list
   in this section for details on optional warning messages that can be
   individually controlled.  The warnings that are not turned on by this
   switch are:
@@ -2789,6 +2789,8 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   * :switch:`-gnatw.o` (values set by out parameters ignored)
 
   * :switch:`-gnatw.q` (questionable layout of record types)
+
+  * :switch:`-gnatw_r` (out-of-order record representation clauses)
 
   * :switch:`-gnatw.s` (overridden size clause)
 
@@ -3708,12 +3710,29 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   warnings are given.
 
 
-.. index:: -gnatwT  (gcc)
+.. index:: -gnatw.R  (gcc)
 
 :switch:`-gnatw.R`
   *Suppress warnings for object renaming function.*
 
   This switch suppresses warnings for object renaming function.
+
+
+.. index:: -gnatw_r  (gcc)
+
+:switch:`-gnatw_r`
+  *Activate warnings for out-of-order record representation clauses.*
+
+  This switch activates warnings for record representation clauses,
+  if the order of component declarations, component clauses,
+  and bit-level layout do not all agree.
+  The default is that these warnings are not given.
+
+
+.. index:: -gnatw_R  (gcc)
+
+:switch:`-gnatw_R`
+  *Suppress warnings for out-of-order record representation clauses.*
 
 
 .. index:: -gnatws  (gcc)

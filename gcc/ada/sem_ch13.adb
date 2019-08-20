@@ -10133,6 +10133,11 @@ package body Sem_Ch13 is
       --  recursively to compute After_Last for the parent type; in this case
       --  Warn is False and the warnings are suppressed.
 
+      procedure Component_Order_Check (Rectype : Entity_Id);
+      --  Check that the order of component clauses agrees with the order of
+      --  component declarations, and that the component clauses are given in
+      --  increasing order of bit offset.
+
       -----------------------------
       -- Check_Component_Overlap --
       -----------------------------
@@ -10174,6 +10179,53 @@ package body Sem_Ch13 is
             end;
          end if;
       end Check_Component_Overlap;
+
+      ---------------------------
+      -- Component_Order_Check --
+      ---------------------------
+
+      procedure Component_Order_Check (Rectype : Entity_Id) is
+         Comp : Entity_Id := First_Component (Rectype);
+         Clause : Node_Id := First (Component_Clauses (N));
+         Prev_Bit_Offset : Uint := Uint_0;
+         OOO : constant String :=
+           "?component clause out of order with respect to declaration";
+
+      begin
+         --  Step Comp through components and Clause through component clauses,
+         --  skipping pragmas. We ignore discriminants and variant parts,
+         --  because we get most of the benefit from the plain vanilla
+         --  component cases, without the extra complexity. If we find a Comp
+         --  and Clause that don't match, give a warning on both and quit. If
+         --  we find two subsequent clauses out of order by bit layout, give
+         --  warning and quit. On each iteration, Prev_Bit_Offset is the one
+         --  from the previous iteration (or 0 to start).
+
+         while Present (Comp) and then Present (Clause) loop
+            if Nkind (Clause) = N_Component_Clause
+              and then Ekind (Entity (Component_Name (Clause))) = E_Component
+            then
+               if Entity (Component_Name (Clause)) /= Comp then
+                  Error_Msg_N (OOO, Comp);
+                  Error_Msg_N (OOO, Clause);
+                  exit;
+               end if;
+
+               if not Reverse_Bit_Order (Rectype)
+                 and then not Reverse_Storage_Order (Rectype)
+                 and then Component_Bit_Offset (Comp) < Prev_Bit_Offset
+               then
+                  Error_Msg_N ("?memory layout out of order", Clause);
+                  exit;
+               end if;
+
+               Prev_Bit_Offset := Component_Bit_Offset (Comp);
+               Comp := Next_Component (Comp);
+            end if;
+
+            Next (Clause);
+         end loop;
+      end Component_Order_Check;
 
       --------------------
       -- Find_Component --
@@ -10821,16 +10873,25 @@ package body Sem_Ch13 is
          end Overlap_Check2;
       end if;
 
-      --  Check for record holes (gaps). We skip this check if overlap was
-      --  detected, since it makes sense for the programmer to fix this
-      --  error before worrying about warnings.
+      --  Skip the following warnings if overlap was detected; programmer
+      --  should fix the errors first.
 
-      if Warn_On_Record_Holes and not Overlap_Detected then
-         declare
-            Ignore : Uint;
-         begin
-            Record_Hole_Check (Rectype, After_Last => Ignore, Warn => True);
-         end;
+      if not Overlap_Detected then
+         --  Check for record holes (gaps)
+
+         if Warn_On_Record_Holes then
+            declare
+               Ignore : Uint;
+            begin
+               Record_Hole_Check (Rectype, After_Last => Ignore, Warn => True);
+            end;
+         end if;
+
+         --  Check for out-of-order component clauses
+
+         if Warn_On_Component_Order then
+            Component_Order_Check (Rectype);
+         end if;
       end if;
 
       --  For records that have component clauses for all components, and whose

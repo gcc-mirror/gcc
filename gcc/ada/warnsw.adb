@@ -79,6 +79,7 @@ package body Warnsw is
       Warn_On_Questionable_Layout          := Setting;
       Warn_On_Questionable_Missing_Parens  := Setting;
       Warn_On_Record_Holes                 := Setting;
+      Warn_On_Component_Order              := Setting;
       Warn_On_Redundant_Constructs         := Setting;
       Warn_On_Reverse_Bit_Order            := Setting;
       Warn_On_Size_Alignment               := Setting;
@@ -177,6 +178,8 @@ package body Warnsw is
         W.Warn_On_Questionable_Missing_Parens;
       Warn_On_Record_Holes                 :=
         W.Warn_On_Record_Holes;
+      Warn_On_Component_Order              :=
+        W.Warn_On_Component_Order;
       Warn_On_Redundant_Constructs         :=
         W.Warn_On_Redundant_Constructs;
       Warn_On_Reverse_Bit_Order            :=
@@ -287,6 +290,8 @@ package body Warnsw is
         Warn_On_Questionable_Missing_Parens;
       W.Warn_On_Record_Holes                 :=
         Warn_On_Record_Holes;
+      W.Warn_On_Component_Order              :=
+        Warn_On_Component_Order;
       W.Warn_On_Redundant_Constructs         :=
         Warn_On_Redundant_Constructs;
       W.Warn_On_Reverse_Bit_Order            :=
@@ -499,6 +504,12 @@ package body Warnsw is
 
          when 'C' =>
             Warn_On_Unknown_Compile_Time_Warning := False;
+
+         when 'r' =>
+            Warn_On_Component_Order := True;
+
+         when 'R' =>
+            Warn_On_Component_Order := False;
 
          when others =>
             if Ignore_Unrecognized_VWY_Switches then
