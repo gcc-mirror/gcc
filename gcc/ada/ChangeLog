@@ -1,3 +1,9 @@
+2019-08-20  Bob Duff  <duff@adacore.com>
+
+	* freeze.adb (Is_Atomic_VFA_Aggregate): Make the temp for
+	initialization of the atomic variable be constant. This is
+	cleaner, and might improve efficiency.
+
 2019-08-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.adb (List_Record_Info): In -gnatR4 mode, set the
