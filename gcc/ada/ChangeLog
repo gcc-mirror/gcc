@@ -1,3 +1,9 @@
+2019-08-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Build_DIC_Procedure_Declaration): Set the last
+	entity of the generated Default_Initial_Condition procedure in
+	order to construct a proper entity chain.
+
 2019-08-20  Yannick Moy  <moy@adacore.com>
 
 	* exp_spark.adb (Expand_SPARK_N_Slice_Or_Indexed_Component):
