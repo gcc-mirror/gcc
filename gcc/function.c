@@ -2697,8 +2697,23 @@ assign_parm_find_stack_rtl (tree parm, struct assign_parm_data_one *data)
      intentionally forcing upward padding.  Otherwise we have to come
      up with a guess at the alignment based on OFFSET_RTX.  */
   poly_int64 offset;
-  if (data->locate.where_pad != PAD_DOWNWARD || data->entry_parm)
+  if (data->locate.where_pad == PAD_NONE || data->entry_parm)
     align = boundary;
+  else if (data->locate.where_pad == PAD_UPWARD)
+    {
+      align = boundary;
+      /* If the argument offset is actually more aligned than the nominal
+	 stack slot boundary, take advantage of that excess alignment.
+	 Don't make any assumptions if STACK_POINTER_OFFSET is in use.  */
+      if (poly_int_rtx_p (offset_rtx, &offset)
+	  && STACK_POINTER_OFFSET == 0)
+	{
+	  unsigned int offset_align = known_alignment (offset) * BITS_PER_UNIT;
+	  if (offset_align == 0 || offset_align > STACK_BOUNDARY)
+	    offset_align = STACK_BOUNDARY;
+	  align = MAX (align, offset_align);
+	}
+    }
   else if (poly_int_rtx_p (offset_rtx, &offset))
     {
       align = least_bit_hwi (boundary);
