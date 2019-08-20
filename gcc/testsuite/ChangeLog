@@ -1,3 +1,9 @@
+2019-08-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/89544
+	* gcc.target/arm/unaligned-argument-1.c: New test.
+	* gcc.target/arm/unaligned-argument-2.c: New test.
+
 2019-08-19  Joel Hutton  <Joel.Hutton@arm.com>
 
 	* gcc.target/aarch64/fmul_scvtf_1.c: New test.
