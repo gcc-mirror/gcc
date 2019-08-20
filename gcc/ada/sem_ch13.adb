@@ -10438,6 +10438,8 @@ package body Sem_Ch13 is
             Sbit := Uint_0;
          end if;
 
+         After_Last := Uint_0;
+
          if Nkind (Decl) = N_Full_Type_Declaration then
             Record_Definition := Type_Definition (Decl);
 
