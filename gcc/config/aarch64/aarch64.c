@@ -4846,14 +4846,12 @@ aarch64_init_cumulative_args (CUMULATIVE_ARGS *pcum,
 
 static void
 aarch64_function_arg_advance (cumulative_args_t pcum_v,
-			      machine_mode mode,
-			      const_tree type,
-			      bool named)
+			      const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
   if (pcum->pcs_variant == ARM_PCS_AAPCS64)
     {
-      aarch64_layout_arg (pcum_v, mode, type, named);
+      aarch64_layout_arg (pcum_v, arg.mode, arg.type, arg.named);
       gcc_assert ((pcum->aapcs_reg != NULL_RTX)
 		  != (pcum->aapcs_stack_words != 0));
       pcum->aapcs_arg_processed = false;
@@ -14523,8 +14521,7 @@ aarch64_setup_incoming_varargs (cumulative_args_t cum_v,
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
   local_cum = *cum;
-  aarch64_function_arg_advance (pack_cumulative_args(&local_cum),
-				arg.mode, arg.type, arg.named);
+  aarch64_function_arg_advance (pack_cumulative_args(&local_cum), arg);
 
   /* Found out how many registers we need to save.
      Honor tree-stdvar analysis results.  */

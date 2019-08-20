@@ -2919,15 +2919,14 @@ function_arg_advance_ms_64 (CUMULATIVE_ARGS *cum, HOST_WIDE_INT bytes,
   return 0;
 }
 
-/* Update the data in CUM to advance over an argument of mode MODE and
-   data type TYPE.  (TYPE is null for libcalls where that information
-   may not be available.)  */
+/* Update the data in CUM to advance over argument ARG.  */
 
 static void
-ix86_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			   const_tree type, bool named)
+ix86_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+  machine_mode mode = arg.mode;
   HOST_WIDE_INT bytes, words;
   int nregs;
 
@@ -2936,14 +2935,11 @@ ix86_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
   if (!cum->caller && cfun->machine->func_type != TYPE_NORMAL)
     return;
 
-  if (mode == BLKmode)
-    bytes = int_size_in_bytes (type);
-  else
-    bytes = GET_MODE_SIZE (mode);
+  bytes = arg.promoted_size_in_bytes ();
   words = CEIL (bytes, UNITS_PER_WORD);
 
-  if (type)
-    mode = type_natural_mode (type, NULL, false);
+  if (arg.type)
+    mode = type_natural_mode (arg.type, NULL, false);
 
   if (TARGET_64BIT)
     {
@@ -2952,10 +2948,11 @@ ix86_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
       if (call_abi == MS_ABI)
 	nregs = function_arg_advance_ms_64 (cum, bytes, words);
       else
-	nregs = function_arg_advance_64 (cum, mode, type, words, named);
+	nregs = function_arg_advance_64 (cum, mode, arg.type, words,
+					 arg.named);
     }
   else
-    nregs = function_arg_advance_32 (cum, mode, type, bytes, words);
+    nregs = function_arg_advance_32 (cum, mode, arg.type, bytes, words);
 
   if (!nregs)
     {
@@ -4109,8 +4106,7 @@ ix86_setup_incoming_varargs (cumulative_args_t cum_v,
      For stdargs, we do want to skip the last named argument.  */
   next_cum = *cum;
   if (stdarg_p (fntype))
-    ix86_function_arg_advance (pack_cumulative_args (&next_cum),
-			       arg.mode, arg.type, arg.named);
+    ix86_function_arg_advance (pack_cumulative_args (&next_cum), arg);
 
   if (cum->call_abi == MS_ABI)
     setup_incoming_varargs_ms_64 (&next_cum);

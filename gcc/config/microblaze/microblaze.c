@@ -1543,29 +1543,28 @@ init_cumulative_args (CUMULATIVE_ARGS * cum, tree fntype,
 
 static void
 microblaze_function_arg_advance (cumulative_args_t cum_v,
-				 machine_mode mode,
-				 const_tree type, bool named ATTRIBUTE_UNUSED)
+				 const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   cum->arg_number++;
-  switch (mode)
+  switch (arg.mode)
     {
     case E_VOIDmode:
       break;
 
     default:
-      gcc_assert (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
-	  || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT);
+      gcc_assert (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_INT
+		  || GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT);
 
       cum->gp_reg_found = 1;
-      cum->arg_words += ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1)
+      cum->arg_words += ((GET_MODE_SIZE (arg.mode) + UNITS_PER_WORD - 1)
 			 / UNITS_PER_WORD);
       break;
 
     case E_BLKmode:
       cum->gp_reg_found = 1;
-      cum->arg_words += ((int_size_in_bytes (type) + UNITS_PER_WORD - 1)
+      cum->arg_words += ((int_size_in_bytes (arg.type) + UNITS_PER_WORD - 1)
 			 / UNITS_PER_WORD);
       break;
 
@@ -2935,8 +2934,7 @@ microblaze_expand_prologue (void)
 	  break;
 	}
 
-      targetm.calls.function_arg_advance (args_so_far, passed_mode,
-					  passed_type, true);
+      targetm.calls.function_arg_advance (args_so_far, arg);
 
       next_arg = TREE_CHAIN (cur_arg);
       if (next_arg == 0)

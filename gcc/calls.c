@@ -2192,8 +2192,13 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       /* Increment ARGS_SO_FAR, which has info about which arg-registers
 	 have been used, etc.  */
 
-      targetm.calls.function_arg_advance (args_so_far, TYPE_MODE (type),
-					  type, argpos < n_named_args);
+      /* ??? Traditionally we've passed TYPE_MODE here, instead of the
+	 promoted_mode used for function_arg above.  However, the
+	 corresponding handling of incoming arguments in function.c
+	 does pass the promoted mode.  */
+      function_arg_info arg_to_skip (type, TYPE_MODE (type),
+				     argpos < n_named_args);
+      targetm.calls.function_arg_advance (args_so_far, arg_to_skip);
 
       /* Store argument values for functions decorated with attribute
 	 alloc_size.  */
@@ -4881,7 +4886,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	  || reg_parm_stack_space > 0)
 	args_size.constant += argvec[count].locate.size.constant;
 
-      targetm.calls.function_arg_advance (args_so_far, Pmode, (tree) 0, true);
+      targetm.calls.function_arg_advance (args_so_far, ptr_arg);
 
       count++;
     }
@@ -4977,7 +4982,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 			     known_le (GET_MODE_SIZE (mode), UNITS_PER_WORD));
 #endif
 
-      targetm.calls.function_arg_advance (args_so_far, mode, (tree) 0, true);
+      targetm.calls.function_arg_advance (args_so_far, arg);
     }
 
   for (int i = 0; i < nargs; i++)

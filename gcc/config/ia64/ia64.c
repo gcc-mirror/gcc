@@ -207,8 +207,8 @@ static int ia64_arg_partial_bytes (cumulative_args_t,
 static rtx ia64_function_arg (cumulative_args_t, const function_arg_info &);
 static rtx ia64_function_incoming_arg (cumulative_args_t,
 				       const function_arg_info &);
-static void ia64_function_arg_advance (cumulative_args_t, machine_mode,
-				       const_tree, bool);
+static void ia64_function_arg_advance (cumulative_args_t,
+				       const function_arg_info &);
 static pad_direction ia64_function_arg_padding (machine_mode, const_tree);
 static unsigned int ia64_function_arg_boundary (machine_mode,
 						const_tree);
@@ -4596,8 +4596,7 @@ ia64_setup_incoming_varargs (cumulative_args_t cum,
   CUMULATIVE_ARGS next_cum = *get_cumulative_args (cum);
 
   /* Skip the current argument.  */
-  ia64_function_arg_advance (pack_cumulative_args (&next_cum),
-			     arg.mode, arg.type, arg.named);
+  ia64_function_arg_advance (pack_cumulative_args (&next_cum), arg);
 
   if (next_cum.words < MAX_ARGUMENT_SLOTS)
     {
@@ -4999,12 +4998,12 @@ ia64_arg_type (machine_mode mode)
    ia64_function_arg.  */
 
 static void
-ia64_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			   const_tree type, bool named)
+ia64_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int words = ia64_function_arg_words (type, mode);
-  int offset = ia64_function_arg_offset (cum, type, words);
+  int words = ia64_function_arg_words (arg.type, arg.mode);
+  int offset = ia64_function_arg_offset (cum, arg.type, words);
   machine_mode hfa_mode = VOIDmode;
 
   /* If all arg slots are already full, then there is nothing to do.  */
@@ -5014,7 +5013,7 @@ ia64_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
       return;
     }
 
-  cum->atypes[cum->words] = ia64_arg_type (mode);
+  cum->atypes[cum->words] = ia64_arg_type (arg.mode);
   cum->words += words + offset;
 
   /* On OpenVMS argument is either in Rn or Fn.  */
@@ -5026,12 +5025,12 @@ ia64_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
     }
 
   /* Check for and handle homogeneous FP aggregates.  */
-  if (type)
-    hfa_mode = hfa_element_mode (type, 0);
+  if (arg.type)
+    hfa_mode = hfa_element_mode (arg.type, 0);
 
   /* Unnamed prototyped hfas are passed as usual.  Named prototyped hfas
      and unprototyped hfas are passed specially.  */
-  if (hfa_mode != VOIDmode && (! cum->prototype || named))
+  if (hfa_mode != VOIDmode && (! cum->prototype || arg.named))
     {
       int fp_regs = cum->fp_regs;
       /* This is the original value of cum->words + offset.  */
@@ -5050,8 +5049,7 @@ ia64_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
       /* Fill the FP regs.  We do this always.  We stop if we reach the end
 	 of the argument, the last FP register, or the last argument slot.  */
 
-      byte_size = ((mode == BLKmode)
-		   ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
+      byte_size = arg.promoted_size_in_bytes ();
       args_byte_size = int_regs * UNITS_PER_WORD;
       offset = 0;
       for (; (offset < byte_size && fp_regs < MAX_ARGUMENT_SLOTS
@@ -5068,26 +5066,29 @@ ia64_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
   /* Integral and aggregates go in general registers.  So do TFmode FP values.
      If we have run out of FR registers, then other FP values must also go in
      general registers.  This can happen when we have a SFmode HFA.  */
-  else if (mode == TFmode || mode == TCmode
-           || (! FLOAT_MODE_P (mode) || cum->fp_regs == MAX_ARGUMENT_SLOTS))
+  else if (arg.mode == TFmode || arg.mode == TCmode
+           || !FLOAT_MODE_P (arg.mode)
+	   || cum->fp_regs == MAX_ARGUMENT_SLOTS)
     cum->int_regs = cum->words;
 
   /* If there is a prototype, then FP values go in a FR register when
      named, and in a GR register when unnamed.  */
   else if (cum->prototype)
     {
-      if (! named)
+      if (! arg.named)
 	cum->int_regs = cum->words;
       else
 	/* ??? Complex types should not reach here.  */
-	cum->fp_regs += (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT ? 2 : 1);
+	cum->fp_regs
+	  += (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT ? 2 : 1);
     }
   /* If there is no prototype, then FP values go in both FR and GR
      registers.  */
   else
     {
       /* ??? Complex types should not reach here.  */
-      cum->fp_regs += (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT ? 2 : 1);
+      cum->fp_regs
+	+= (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT ? 2 : 1);
       cum->int_regs = cum->words;
     }
 }

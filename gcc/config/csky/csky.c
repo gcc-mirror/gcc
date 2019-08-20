@@ -1819,11 +1819,11 @@ csky_num_arg_regs (machine_mode mode, const_tree type)
 /* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 
 static void
-csky_function_arg_advance (cumulative_args_t pcum_v, machine_mode mode,
-			   const_tree type, bool named ATTRIBUTE_UNUSED)
+csky_function_arg_advance (cumulative_args_t pcum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
-  int param_size = csky_num_arg_regs (mode, type);
+  int param_size = csky_num_arg_regs (arg.mode, arg.type);
 
   if (*pcum + param_size > CSKY_NPARM_REGS)
     *pcum = CSKY_NPARM_REGS;
@@ -1941,7 +1941,7 @@ csky_setup_incoming_varargs (cumulative_args_t pcum_v,
 
   cfun->machine->uses_anonymous_args = 1;
   local_cum = *pcum;
-  csky_function_arg_advance (local_cum_v, arg.mode, arg.type, arg.named);
+  csky_function_arg_advance (local_cum_v, arg);
   regs_to_push = CSKY_NPARM_REGS - local_cum;
   if (regs_to_push)
     *pretend_size  = regs_to_push * UNITS_PER_WORD;

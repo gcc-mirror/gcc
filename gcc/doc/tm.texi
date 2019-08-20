@@ -4159,10 +4159,9 @@ argument @var{libname} exists for symmetry with
 @c --mew 5feb93   i switched the order of the sentences.  --mew 10feb93
 @end defmac
 
-@deftypefn {Target Hook} void TARGET_FUNCTION_ARG_ADVANCE (cumulative_args_t @var{ca}, machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} void TARGET_FUNCTION_ARG_ADVANCE (cumulative_args_t @var{ca}, const function_arg_info @var{&arg})
 This hook updates the summarizer variable pointed to by @var{ca} to
-advance past an argument in the argument list.  The values @var{mode},
-@var{type} and @var{named} describe that argument.  Once this is done,
+advance past argument @var{arg} in the argument list.  Once this is done,
 the variable @var{cum} is suitable for analyzing the @emph{following}
 argument with @code{TARGET_FUNCTION_ARG}, etc.
 

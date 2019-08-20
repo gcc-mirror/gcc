@@ -2377,7 +2377,7 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
       if (tmp)
 	args[idx] = tmp;
 
-      targetm.calls.function_arg_advance (args_so_far, mode, NULL_TREE, true);
+      targetm.calls.function_arg_advance (args_so_far, arg);
     }
   if (arg != void_list_node || idx != nargs)
     return false;

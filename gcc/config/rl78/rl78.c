@@ -1750,14 +1750,13 @@ rl78_function_arg (cumulative_args_t, const function_arg_info &)
 #define TARGET_FUNCTION_ARG_ADVANCE     rl78_function_arg_advance
 
 static void
-rl78_function_arg_advance (cumulative_args_t cum_v, machine_mode mode, const_tree type,
-			   bool named ATTRIBUTE_UNUSED)
+rl78_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   int rounded_size;
   CUMULATIVE_ARGS * cum = get_cumulative_args (cum_v);
 
-  rounded_size = ((mode == BLKmode)
-		  ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
+  rounded_size = arg.promoted_size_in_bytes ();
   if (rounded_size & 1)
     rounded_size ++;
   (*cum) += rounded_size;

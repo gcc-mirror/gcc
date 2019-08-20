@@ -526,10 +526,7 @@ c6x_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 }
 
 static void
-c6x_function_arg_advance (cumulative_args_t cum_v,
-			  machine_mode mode ATTRIBUTE_UNUSED,
-			  const_tree type ATTRIBUTE_UNUSED,
-			  bool named ATTRIBUTE_UNUSED)
+c6x_function_arg_advance (cumulative_args_t cum_v, const function_arg_info &)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   cum->count++;
@@ -1136,7 +1133,7 @@ c6x_call_saved_register_used (tree call_expr)
        function_arg_info arg (type, mode, /*named=*/false);
        parm_rtx = c6x_function_arg (cum, arg);
 
-       c6x_function_arg_advance (cum, mode, type, 0);
+       c6x_function_arg_advance (cum, arg);
 
        if (!parm_rtx)
 	 continue;

@@ -1019,15 +1019,15 @@ or1k_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
    argument.  Note, this is not called for arguments passed on the stack.  */
 
 static void
-or1k_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			   const_tree /* type */, bool named)
+or1k_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int nreg = CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+  int nreg = CEIL (GET_MODE_SIZE (arg.mode), UNITS_PER_WORD);
 
   /* Note that all large arguments are passed by reference.  */
   gcc_assert (nreg <= 2);
-  if (named)
+  if (arg.named)
     *cum += nreg;
 }
 

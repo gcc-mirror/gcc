@@ -660,34 +660,34 @@ cr16_init_cumulative_args (CUMULATIVE_ARGS * cum, tree fntype,
 
 /* Implements the macro FUNCTION_ARG_ADVANCE defined in cr16.h.  */
 static void
-cr16_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			   const_tree type, bool named ATTRIBUTE_UNUSED)
+cr16_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS * cum = get_cumulative_args (cum_v);
 
   /* l holds the number of registers required.  */
-  int l = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
+  int l = GET_MODE_BITSIZE (arg.mode) / BITS_PER_WORD;
 
   /* If the parameter isn't passed on a register don't advance cum.  */
   if (!cum->last_parm_in_reg)
     return;
 
-  if (targetm.calls.must_pass_in_stack (mode, type) || (cum->ints < 0))
+  if (targetm.calls.must_pass_in_stack (arg.mode, arg.type) || (cum->ints < 0))
     return;
 
-  if ((mode == SImode) || (mode == HImode)
-      || (mode == QImode) || (mode == DImode))
+  if ((arg.mode == SImode) || (arg.mode == HImode)
+      || (arg.mode == QImode) || (arg.mode == DImode))
     {
       if (l <= 1)
 	cum->ints += 1;
       else
 	cum->ints += l;
     }
-  else if ((mode == SFmode) || (mode == DFmode))
+  else if ((arg.mode == SFmode) || (arg.mode == DFmode))
     cum->ints += l;
-  else if ((mode) == BLKmode)
+  else if (arg.mode == BLKmode)
     {
-      if ((l = enough_regs_for_param (cum, type, mode)) != 0)
+      if ((l = enough_regs_for_param (cum, arg.type, arg.mode)) != 0)
 	cum->ints += l;
     }
   return;

@@ -2008,12 +2008,14 @@ nds32_arg_partial_bytes (cumulative_args_t ca, const function_arg_info &arg)
 }
 
 static void
-nds32_function_arg_advance (cumulative_args_t ca, machine_mode mode,
-			    const_tree type, bool named)
+nds32_function_arg_advance (cumulative_args_t ca,
+			    const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (ca);
+  tree type = arg.type;
+  machine_mode mode = arg.mode;
 
-  if (named)
+  if (arg.named)
     {
       /* We need to further check TYPE and MODE so that we can determine
 	 which kind of register we shall advance.  */

@@ -135,8 +135,7 @@ static int        mcore_arg_partial_bytes       (cumulative_args_t,
 static rtx        mcore_function_arg            (cumulative_args_t,
 						 const function_arg_info &);
 static void       mcore_function_arg_advance    (cumulative_args_t,
-						 machine_mode,
-						 const_tree, bool);
+						 const function_arg_info &);
 static unsigned int mcore_function_arg_boundary (machine_mode,
 						 const_tree);
 static void       mcore_asm_trampoline_template (FILE *);
@@ -2817,13 +2816,13 @@ mcore_function_arg (cumulative_args_t cum, const function_arg_info &arg)
 }
 
 static void
-mcore_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			    const_tree type, bool named ATTRIBUTE_UNUSED)
+mcore_function_arg_advance (cumulative_args_t cum_v,
+			    const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  *cum = (ROUND_REG (*cum, mode)
-	  + (int)named * mcore_num_arg_regs (mode, type));
+  *cum = (ROUND_REG (*cum, arg.mode)
+	  + (int) arg.named * mcore_num_arg_regs (arg.mode, arg.type));
 }
 
 static unsigned int

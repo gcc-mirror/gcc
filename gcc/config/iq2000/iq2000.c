@@ -166,7 +166,7 @@ static int  iq2000_arg_partial_bytes  (cumulative_args_t,
 static rtx iq2000_function_arg	      (cumulative_args_t,
 				       const function_arg_info &);
 static void iq2000_function_arg_advance (cumulative_args_t,
-					 machine_mode, const_tree, bool);
+					 const function_arg_info &);
 static pad_direction iq2000_function_arg_padding (machine_mode, const_tree);
 static unsigned int iq2000_function_arg_boundary (machine_mode,
 						  const_tree);
@@ -1153,12 +1153,11 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
     }
 }
 
-/* Advance the argument of type TYPE and mode MODE to the next argument
-   position in CUM.  */
+/* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 
 static void
-iq2000_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			     const_tree type, bool named)
+iq2000_function_arg_advance (cumulative_args_t cum_v,
+			     const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
@@ -1167,29 +1166,29 @@ iq2000_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
       fprintf (stderr,
 	       "function_adv({gp reg found = %d, arg # = %2d, words = %2d}, %4s, ",
 	       cum->gp_reg_found, cum->arg_number, cum->arg_words,
-	       GET_MODE_NAME (mode));
-      fprintf (stderr, "%p", (const void *) type);
-      fprintf (stderr, ", %d )\n\n", named);
+	       GET_MODE_NAME (arg.mode));
+      fprintf (stderr, "%p", (const void *) arg.type);
+      fprintf (stderr, ", %d )\n\n", arg.named);
     }
 
   cum->arg_number++;
-  switch (mode)
+  switch (arg.mode)
     {
     case E_VOIDmode:
       break;
 
     default:
-      gcc_assert (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
-		  || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT);
+      gcc_assert (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_INT
+		  || GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT);
 
       cum->gp_reg_found = 1;
-      cum->arg_words += ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1)
+      cum->arg_words += ((GET_MODE_SIZE (arg.mode) + UNITS_PER_WORD - 1)
 			 / UNITS_PER_WORD);
       break;
 
     case E_BLKmode:
       cum->gp_reg_found = 1;
-      cum->arg_words += ((int_size_in_bytes (type) + UNITS_PER_WORD - 1)
+      cum->arg_words += ((int_size_in_bytes (arg.type) + UNITS_PER_WORD - 1)
 			 / UNITS_PER_WORD);
       break;
 
@@ -1971,8 +1970,7 @@ iq2000_expand_prologue (void)
       function_arg_info arg (passed_type, passed_mode, /*named=*/true);
       entry_parm = iq2000_function_arg (args_so_far, arg);
 
-      iq2000_function_arg_advance (args_so_far, passed_mode,
-				   passed_type, true);
+      iq2000_function_arg_advance (args_so_far, arg);
       next_arg = DECL_CHAIN (cur_arg);
 
       if (entry_parm && store_args_on_stack)

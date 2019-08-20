@@ -11982,35 +11982,31 @@ s390_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
   return false;
 }
 
-/* Update the data in CUM to advance over an argument of mode MODE and
-   data type TYPE.  (TYPE is null for libcalls where that information
-   may not be available.).  The boolean NAMED specifies whether the
-   argument is a named argument (as opposed to an unnamed argument
-   matching an ellipsis).  */
+/* Update the data in CUM to advance over argument ARG.  */
 
 static void
-s390_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			   const_tree type, bool named)
+s390_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (s390_function_arg_vector (mode, type))
+  if (s390_function_arg_vector (arg.mode, arg.type))
     {
       /* We are called for unnamed vector stdarg arguments which are
 	 passed on the stack.  In this case this hook does not have to
 	 do anything since stack arguments are tracked by common
 	 code.  */
-      if (!named)
+      if (!arg.named)
 	return;
       cum->vrs += 1;
     }
-  else if (s390_function_arg_float (mode, type))
+  else if (s390_function_arg_float (arg.mode, arg.type))
     {
       cum->fprs += 1;
     }
-  else if (s390_function_arg_integer (mode, type))
+  else if (s390_function_arg_integer (arg.mode, arg.type))
     {
-      int size = s390_function_arg_size (mode, type);
+      int size = s390_function_arg_size (arg.mode, arg.type);
       cum->gprs += ((size + UNITS_PER_LONG - 1) / UNITS_PER_LONG);
     }
   else
@@ -13349,7 +13345,7 @@ s390_call_saved_register_used (tree call_expr)
        function_arg_info arg (type, mode, /*named=*/true);
        parm_rtx = s390_function_arg (cum, arg);
 
-       s390_function_arg_advance (cum, mode, type, true);
+       s390_function_arg_advance (cum, arg);
 
        if (!parm_rtx)
 	 continue;

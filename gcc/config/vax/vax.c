@@ -55,8 +55,8 @@ static int vax_address_cost_1 (rtx);
 static int vax_address_cost (rtx, machine_mode, addr_space_t, bool);
 static bool vax_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static rtx vax_function_arg (cumulative_args_t, const function_arg_info &);
-static void vax_function_arg_advance (cumulative_args_t, machine_mode,
-				      const_tree, bool);
+static void vax_function_arg_advance (cumulative_args_t,
+				      const function_arg_info &);
 static rtx vax_struct_value_rtx (tree, int);
 static void vax_asm_trampoline_template (FILE *);
 static void vax_trampoline_init (rtx, tree, rtx);
@@ -2148,19 +2148,15 @@ vax_function_arg (cumulative_args_t, const function_arg_info &)
   return NULL_RTX;
 }
 
-/* Update the data in CUM to advance over an argument of mode MODE and
-   data type TYPE.  (TYPE is null for libcalls where that information
-   may not be available.)  */
+/* Update the data in CUM to advance over argument ARG.  */
 
 static void
-vax_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			  const_tree type, bool named ATTRIBUTE_UNUSED)
+vax_function_arg_advance (cumulative_args_t cum_v,
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  *cum += (mode != BLKmode
-	   ? (GET_MODE_SIZE (mode) + 3) & ~3
-	   : (int_size_in_bytes (type) + 3) & ~3);
+  *cum += (arg.promoted_size_in_bytes () + 3) & ~3;
 }
 
 static HOST_WIDE_INT

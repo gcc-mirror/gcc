@@ -385,8 +385,8 @@ static int frv_arg_partial_bytes (cumulative_args_t,
 static rtx frv_function_arg (cumulative_args_t, const function_arg_info &);
 static rtx frv_function_incoming_arg (cumulative_args_t,
 				      const function_arg_info &);
-static void frv_function_arg_advance (cumulative_args_t, machine_mode,
-				       const_tree, bool);
+static void frv_function_arg_advance (cumulative_args_t,
+				      const function_arg_info &);
 static unsigned int frv_function_arg_boundary	(machine_mode,
 						 const_tree);
 static void frv_output_dwarf_dtprel		(FILE *, int, rtx)
@@ -3149,24 +3149,15 @@ frv_function_incoming_arg (cumulative_args_t cum, const function_arg_info &arg)
 }
 
 
-/* A C statement (sans semicolon) to update the summarizer variable CUM to
-   advance past an argument in the argument list.  The values MODE, TYPE and
-   NAMED describe that argument.  Once this is done, the variable CUM is
-   suitable for analyzing the *following* argument with `FUNCTION_ARG', etc.
-
-   This macro need not do anything if the argument in question was passed on
-   the stack.  The compiler knows how to track the amount of stack space used
-   for arguments without any special help.  */
+/* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 
 static void
 frv_function_arg_advance (cumulative_args_t cum_v,
-                          machine_mode mode,
-                          const_tree type ATTRIBUTE_UNUSED,
-                          bool named)
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  machine_mode xmode = (mode == BLKmode) ? SImode : mode;
+  machine_mode xmode = (arg.mode == BLKmode) ? SImode : arg.mode;
   int bytes = GET_MODE_SIZE (xmode);
   int words = (bytes + UNITS_PER_WORD  - 1) / UNITS_PER_WORD;
   int arg_num = *cum;
@@ -3176,7 +3167,8 @@ frv_function_arg_advance (cumulative_args_t cum_v,
   if (TARGET_DEBUG_ARG)
     fprintf (stderr,
 	     "function_adv: words = %2d, mode = %4s, named = %d, size = %3d\n",
-	     arg_num, GET_MODE_NAME (mode), named, words * UNITS_PER_WORD);
+	     arg_num, GET_MODE_NAME (arg.mode), arg.named,
+	     words * UNITS_PER_WORD);
 }
 
 

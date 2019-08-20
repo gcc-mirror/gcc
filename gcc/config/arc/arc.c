@@ -642,8 +642,8 @@ static bool arc_can_follow_jump (const rtx_insn *follower,
 				 const rtx_insn *followee);
 
 static rtx frame_insn (rtx);
-static void arc_function_arg_advance (cumulative_args_t, machine_mode,
-				      const_tree, bool);
+static void arc_function_arg_advance (cumulative_args_t,
+				      const function_arg_info &);
 static rtx arc_legitimize_address_0 (rtx, rtx, machine_mode mode);
 
 /* initialize the GCC target structure.  */
@@ -2429,8 +2429,7 @@ arc_setup_incoming_varargs (cumulative_args_t args_so_far,
   /* We must treat `__builtin_va_alist' as an anonymous arg.  */
 
   next_cum = *get_cumulative_args (args_so_far);
-  arc_function_arg_advance (pack_cumulative_args (&next_cum),
-			    arg.mode, arg.type, arg.named);
+  arc_function_arg_advance (pack_cumulative_args (&next_cum), arg);
   first_anon_arg = next_cum;
 
   if (FUNCTION_ARG_REGNO_P (first_anon_arg))
@@ -6480,17 +6479,7 @@ arc_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
   return ret;
 }
 
-/* The function to update the summarizer variable *CUM to advance past
-   an argument in the argument list.  The values MODE, TYPE and NAMED
-   describe that argument.  Once this is done, the variable *CUM is
-   suitable for analyzing the *following* argument with
-   `FUNCTION_ARG', etc.
-
-   This function need not do anything if the argument in question was
-   passed on the stack.  The compiler knows how to track the amount of
-   stack space used for arguments without any special help.
-
-   The function is used to implement macro FUNCTION_ARG_ADVANCE.  */
+/* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 /* For the ARC: the cum set here is passed on to function_arg where we
    look at its value and say which reg to use. Strategy: advance the
    regnumber here till we run out of arg regs, then set *cum to last
@@ -6500,18 +6489,15 @@ arc_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 
 static void
 arc_function_arg_advance (cumulative_args_t cum_v,
-			  machine_mode mode,
-			  const_tree type,
-			  bool named ATTRIBUTE_UNUSED)
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int bytes = (mode == BLKmode
-	       ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode));
+  int bytes = arg.promoted_size_in_bytes ();
   int words = (bytes + UNITS_PER_WORD  - 1) / UNITS_PER_WORD;
   int i;
 
   if (words)
-    *cum = ROUND_ADVANCE_CUM (*cum, mode, type);
+    *cum = ROUND_ADVANCE_CUM (*cum, arg.mode, arg.type);
   for (i = 0; i < words; i++)
     *cum = ARC_NEXT_ARG_REG (*cum);
 

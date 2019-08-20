@@ -299,8 +299,8 @@ static bool sh_pass_by_reference (cumulative_args_t,
 static bool sh_callee_copies (cumulative_args_t, machine_mode,
 			      const_tree, bool);
 static int sh_arg_partial_bytes (cumulative_args_t, const function_arg_info &);
-static void sh_function_arg_advance (cumulative_args_t, machine_mode,
-				     const_tree, bool);
+static void sh_function_arg_advance (cumulative_args_t,
+				     const function_arg_info &);
 static rtx sh_function_arg (cumulative_args_t, const function_arg_info &);
 static int sh_dwarf_calling_convention (const_tree);
 static void sh_encode_section_info (tree, rtx, int);
@@ -8066,13 +8066,10 @@ sh_function_arg (cumulative_args_t ca_v, const function_arg_info &arg)
   return NULL_RTX;
 }
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be
-   available.)  */
+/* Update the data in CUM to advance over argument ARG.  */
 static void
-sh_function_arg_advance (cumulative_args_t ca_v, machine_mode mode,
-			 const_tree type, bool named ATTRIBUTE_UNUSED)
+sh_function_arg_advance (cumulative_args_t ca_v,
+			 const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
 
@@ -8082,7 +8079,7 @@ sh_function_arg_advance (cumulative_args_t ca_v, machine_mode mode,
   if ((TARGET_HITACHI || ca->renesas_abi) && TARGET_FPU_DOUBLE)
     {
       /* Note that we've used the skipped register.  */
-      if (mode == SFmode && ca->free_single_fp_reg)
+      if (arg.mode == SFmode && ca->free_single_fp_reg)
 	{
 	  ca->free_single_fp_reg = 0;
 	  return;
@@ -8091,21 +8088,19 @@ sh_function_arg_advance (cumulative_args_t ca_v, machine_mode mode,
 	 skipped in order to align the DF value.  We note this skipped
 	 register, because the next SF value will use it, and not the
 	 SF that follows the DF.  */
-      if (mode == DFmode
+      if (arg.mode == DFmode
 	  && sh_round_reg (*ca, DFmode) != sh_round_reg (*ca, SFmode))
 	{
 	  ca->free_single_fp_reg = (sh_round_reg (*ca, SFmode)
-				    + BASE_ARG_REG (mode));
+				    + BASE_ARG_REG (arg.mode));
 	}
     }
 
   if (! ((TARGET_SH4 || TARGET_SH2A) || ca->renesas_abi)
-      || sh_pass_in_reg_p (*ca, mode, type))
-    (ca->arg_count[(int) get_sh_arg_class (mode)]
-     = (sh_round_reg (*ca, mode)
-	+ (mode == BLKmode
-	   ? CEIL (int_size_in_bytes (type), UNITS_PER_WORD)
-	   : CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD))));
+      || sh_pass_in_reg_p (*ca, arg.mode, arg.type))
+    (ca->arg_count[(int) get_sh_arg_class (arg.mode)]
+     = (sh_round_reg (*ca, arg.mode)
+	+ CEIL (arg.promoted_size_in_bytes (), UNITS_PER_WORD)));
 }
 
 /* The Renesas calling convention doesn't quite fit into this scheme since
@@ -10811,7 +10806,8 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     {
       tree ptype = build_pointer_type (TREE_TYPE (funtype));
 
-      sh_function_arg_advance (pack_cumulative_args (&cum), Pmode, ptype, true);
+      function_arg_info ptr_arg (ptype, Pmode, /*named=*/true);
+      sh_function_arg_advance (pack_cumulative_args (&cum), ptr_arg);
     }
   function_arg_info ptr_arg (ptr_type_node, Pmode, /*named=*/true);
   this_rtx = sh_function_arg (pack_cumulative_args (&cum), ptr_arg);

@@ -6293,14 +6293,12 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 		  && targetm.calls.struct_value_rtx (type, 0) == 0)
 		{
 		  tree struct_addr = build_pointer_type (TREE_TYPE (type));
-		  machine_mode mode = TYPE_MODE (struct_addr);
 		  function_arg_info arg (struct_addr, /*named=*/true);
 		  rtx reg;
 		  INIT_CUMULATIVE_ARGS (args_so_far_v, type, NULL_RTX, fndecl,
 					nargs + 1);
 		  reg = targetm.calls.function_arg (args_so_far, arg);
-		  targetm.calls.function_arg_advance (args_so_far, mode,
-						      struct_addr, true);
+		  targetm.calls.function_arg_advance (args_so_far, arg);
 		  if (reg == NULL_RTX)
 		    {
 		      for (; link; link = XEXP (link, 1))
@@ -6489,8 +6487,7 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 			}
 		  }
 	      }
-	    targetm.calls.function_arg_advance (args_so_far, mode,
-						argtype, true);
+	    targetm.calls.function_arg_advance (args_so_far, arg);
 	    t = TREE_CHAIN (t);
 	  }
       }

@@ -6102,13 +6102,13 @@ mips_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 /* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 
 static void
-mips_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			   const_tree type, bool named)
+mips_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   struct mips_arg_info info;
 
-  mips_get_arg_info (&info, cum, mode, type, named);
+  mips_get_arg_info (&info, cum, arg.mode, arg.type, arg.named);
 
   if (!info.fpr_p)
     cum->gp_reg_found = true;
@@ -6118,7 +6118,7 @@ mips_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
      either the o32 or the o64 ABI, both of which pass at most 2 arguments
      in FPRs.  */
   if (cum->arg_number < 2 && info.fpr_p)
-    cum->fp_code += (mode == SFmode ? 1 : 2) << (cum->arg_number * 2);
+    cum->fp_code += (arg.mode == SFmode ? 1 : 2) << (cum->arg_number * 2);
 
   /* Advance the register count.  This has the effect of setting
      num_gprs to MAX_ARGS_IN_REGISTERS if a doubleword-aligned
@@ -6554,8 +6554,7 @@ mips_setup_incoming_varargs (cumulative_args_t cum,
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
   local_cum = *get_cumulative_args (cum);
-  mips_function_arg_advance (pack_cumulative_args (&local_cum),
-			     arg.mode, arg.type, arg.named);
+  mips_function_arg_advance (pack_cumulative_args (&local_cum), arg);
 
   /* Found out how many registers we need to save.  */
   gp_saved = MAX_ARGS_IN_REGISTERS - local_cum.num_gprs;
@@ -7305,7 +7304,8 @@ mips_output_args_xfer (int fp_code, char direction)
       else
 	mips_output_64bit_xfer (direction, gparg, fparg);
 
-      mips_function_arg_advance (pack_cumulative_args (&cum), mode, NULL, true);
+      function_arg_info arg (mode, /*named=*/true);
+      mips_function_arg_advance (pack_cumulative_args (&cum), arg);
     }
 }
 

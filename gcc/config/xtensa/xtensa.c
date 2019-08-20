@@ -141,8 +141,8 @@ static tree xtensa_build_builtin_va_list (void);
 static bool xtensa_return_in_memory (const_tree, const_tree);
 static tree xtensa_gimplify_va_arg_expr (tree, tree, gimple_seq *,
 					 gimple_seq *);
-static void xtensa_function_arg_advance (cumulative_args_t, machine_mode,
-					 const_tree, bool);
+static void xtensa_function_arg_advance (cumulative_args_t,
+					 const function_arg_info &);
 static rtx xtensa_function_arg (cumulative_args_t, const function_arg_info &);
 static rtx xtensa_function_incoming_arg (cumulative_args_t,
 					 const function_arg_info &);
@@ -2105,8 +2105,8 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, int incoming)
 /* Advance the argument to the next argument position.  */
 
 static void
-xtensa_function_arg_advance (cumulative_args_t cum, machine_mode mode,
-			     const_tree type, bool named ATTRIBUTE_UNUSED)
+xtensa_function_arg_advance (cumulative_args_t cum,
+			     const function_arg_info &arg)
 {
   int words, max;
   int *arg_words;
@@ -2114,12 +2114,11 @@ xtensa_function_arg_advance (cumulative_args_t cum, machine_mode mode,
   arg_words = &get_cumulative_args (cum)->arg_words;
   max = MAX_ARGS_IN_REGISTERS;
 
-  words = (((mode != BLKmode)
-	    ? (int) GET_MODE_SIZE (mode)
-	    : int_size_in_bytes (type)) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  words = ((arg.promoted_size_in_bytes () + UNITS_PER_WORD - 1)
+	   / UNITS_PER_WORD);
 
   if (*arg_words < max
-      && (targetm.calls.must_pass_in_stack (mode, type)
+      && (targetm.calls.must_pass_in_stack (arg.mode, arg.type)
 	  || *arg_words + words > max))
     *arg_words = max;
 

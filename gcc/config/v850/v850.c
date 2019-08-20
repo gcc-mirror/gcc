@@ -216,27 +216,22 @@ v850_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
   return 4 * UNITS_PER_WORD - cum->nbytes;
 }
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
+/* Update the data in CUM to advance over argument ARG.  */
 
 static void
-v850_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			   const_tree type, bool named ATTRIBUTE_UNUSED)
+v850_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   if (!TARGET_GCC_ABI)
-    cum->nbytes += (((mode != BLKmode
-		      ? GET_MODE_SIZE (mode)
-		      : int_size_in_bytes (type)) + UNITS_PER_WORD - 1)
+    cum->nbytes += ((arg.promoted_size_in_bytes () + UNITS_PER_WORD - 1)
 		    & -UNITS_PER_WORD);
   else
-    cum->nbytes += (((type && int_size_in_bytes (type) > 8
+    cum->nbytes += (((arg.type && int_size_in_bytes (arg.type) > 8
 		      ? GET_MODE_SIZE (Pmode)
-		      : (mode != BLKmode
-			 ? GET_MODE_SIZE (mode)
-			 : int_size_in_bytes (type))) + UNITS_PER_WORD - 1)
+		      : (HOST_WIDE_INT) arg.promoted_size_in_bytes ())
+		     + UNITS_PER_WORD - 1)
 		    & -UNITS_PER_WORD);
 }
 

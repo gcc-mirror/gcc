@@ -159,9 +159,8 @@ extern unsigned int rs6000_function_arg_boundary (machine_mode mode,
 extern bool rs6000_must_pass_in_stack (machine_mode mode, const_tree type);
 extern int rs6000_arg_partial_bytes (cumulative_args_t,
 				     const function_arg_info &);
-extern void rs6000_function_arg_advance (cumulative_args_t cum,
-					 machine_mode mode,
-					 const_tree type, bool named);
+extern void rs6000_function_arg_advance (cumulative_args_t,
+					 const function_arg_info &);
 extern pad_direction rs6000_function_arg_padding (machine_mode mode,
 						  const_tree type);
 extern rtx rs6000_function_arg (cumulative_args_t, const function_arg_info &);

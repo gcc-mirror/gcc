@@ -167,8 +167,8 @@ static rtx pa_struct_value_rtx (tree, int);
 static bool pa_pass_by_reference (cumulative_args_t,
 				  const function_arg_info &);
 static int pa_arg_partial_bytes (cumulative_args_t, const function_arg_info &);
-static void pa_function_arg_advance (cumulative_args_t, machine_mode,
-				     const_tree, bool);
+static void pa_function_arg_advance (cumulative_args_t,
+				     const function_arg_info &);
 static rtx pa_function_arg (cumulative_args_t, const function_arg_info &);
 static pad_direction pa_function_arg_padding (machine_mode, const_tree);
 static unsigned int pa_function_arg_boundary (machine_mode, const_tree);
@@ -9437,21 +9437,19 @@ pa_function_value_regno_p (const unsigned int regno)
   return false;
 }
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
+/* Update the data in CUM to advance over argument ARG.  */
 
 static void
-pa_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			 const_tree type, bool named ATTRIBUTE_UNUSED)
+pa_function_arg_advance (cumulative_args_t cum_v,
+			 const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int arg_size = pa_function_arg_size (mode, type);
+  int arg_size = pa_function_arg_size (arg.mode, arg.type);
 
   cum->nargs_prototype--;
   cum->words += (arg_size
 		 + ((cum->words & 01)
-		    && type != NULL_TREE
+		    && arg.type != NULL_TREE
 		    && arg_size > 1));
 }
 
