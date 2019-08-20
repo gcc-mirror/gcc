@@ -1,5 +1,19 @@
 2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* calls.h (function_arg_info): Add a pass_by_reference field,
+	defaulting to false.
+	* calls.c (apply_pass_by_reference_rules): Set pass_by_reference
+	when applying pass-by-reference semantics.
+	(initialize_argument_information): Likewise.
+	(emit_library_call_value_1): Likewise.
+	* function.c (assign_parm_data_one): Remove passed_pointer field.
+	(assign_parm_find_data_types): Don't set it.
+	(assign_parm_find_stack_rtl, assign_parm_adjust_stack_rtl)
+	(assign_parm_setup_reg, assign_parms, gimplify_parameters): Use
+	arg.pass_by_reference instead of passed_pointer.
+
+2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* calls.c (emit_library_call_value_1): Merge arg and orig_arg
 	into a single function_arg_info, updating its fields when we
 	apply pass-by-reference and promotion semantics.  Use the

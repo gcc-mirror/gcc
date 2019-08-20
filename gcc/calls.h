@@ -34,21 +34,25 @@ along with GCC; see the file COPYING3.  If not see
 class function_arg_info
 {
 public:
-  function_arg_info () : type (NULL_TREE), mode (VOIDmode), named (false) {}
+  function_arg_info ()
+    : type (NULL_TREE), mode (VOIDmode), named (false),
+      pass_by_reference (false)
+  {}
 
   /* Initialize an argument of mode MODE, either before or after promotion.  */
   function_arg_info (machine_mode mode, bool named)
-    : type (NULL_TREE), mode (mode), named (named)
+    : type (NULL_TREE), mode (mode), named (named), pass_by_reference (false)
   {}
 
   /* Initialize an unpromoted argument of type TYPE.  */
   function_arg_info (tree type, bool named)
-    : type (type), mode (TYPE_MODE (type)), named (named)
+    : type (type), mode (TYPE_MODE (type)), named (named),
+      pass_by_reference (false)
   {}
 
   /* Initialize an argument with explicit properties.  */
   function_arg_info (tree type, machine_mode mode, bool named)
-    : type (type), mode (mode), named (named)
+    : type (type), mode (mode), named (named), pass_by_reference (false)
   {}
 
   /* Return true if the gimple-level type is an aggregate.  */
@@ -100,6 +104,10 @@ public:
      treated as an unnamed variadic argument (i.e. one passed through
      "...").  See also TARGET_STRICT_ARGUMENT_NAMING.  */
   unsigned int named : 1;
+
+  /* True if we have decided to pass the argument by reference, in which case
+     the function_arg_info describes a pointer to the original argument.  */
+  unsigned int pass_by_reference : 1;
 };
 
 extern int flags_from_decl_or_type (const_tree);

@@ -946,6 +946,7 @@ apply_pass_by_reference_rules (CUMULATIVE_ARGS *ca, function_arg_info &arg)
     {
       arg.type = build_pointer_type (arg.type);
       arg.mode = TYPE_MODE (arg.type);
+      arg.pass_by_reference = true;
       return true;
     }
   return false;
@@ -2125,6 +2126,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 					      "argument must be passed"
 					      " by copying");
 	    }
+	  arg.pass_by_reference = true;
 	}
 
       unsignedp = TYPE_UNSIGNED (type);
@@ -4957,6 +4959,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 					     call_fusage);
 
 	  arg.mode = Pmode;
+	  arg.pass_by_reference = true;
 	  val = force_operand (XEXP (slot, 0), NULL_RTX);
 	}
 

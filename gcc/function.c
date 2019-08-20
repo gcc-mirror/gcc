@@ -2271,7 +2271,6 @@ struct assign_parm_data_one
   machine_mode passed_mode;
   struct locate_and_pad_arg_data locate;
   int partial;
-  BOOL_BITFIELD passed_pointer : 1;
 };
 
 /* A subroutine of assign_parms.  Initialize ALL.  */
@@ -2453,7 +2452,6 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
   if (apply_pass_by_reference_rules (&all->args_so_far_v, data->arg))
     {
       data->nominal_type = data->arg.type;
-      data->passed_pointer = true;
       data->passed_mode = data->nominal_mode = data->arg.mode;
     }
 
@@ -2653,7 +2651,7 @@ assign_parm_find_stack_rtl (tree parm, struct assign_parm_data_one *data)
     stack_parm = gen_rtx_PLUS (Pmode, stack_parm, offset_rtx);
   stack_parm = gen_rtx_MEM (data->arg.mode, stack_parm);
 
-  if (!data->passed_pointer)
+  if (!data->arg.pass_by_reference)
     {
       set_mem_attributes (stack_parm, parm, 1);
       /* set_mem_attributes could set MEM_SIZE to the passed mode's size,
@@ -2827,7 +2825,7 @@ assign_parm_adjust_stack_rtl (struct assign_parm_data_one *data)
      pointers in their passed stack slots.  */
   else if (crtl->stack_protect_guard
 	   && (flag_stack_protect == 2
-	       || data->passed_pointer
+	       || data->arg.pass_by_reference
 	       || POINTER_TYPE_P (data->nominal_type)))
     stack_parm = NULL;
 
@@ -3140,7 +3138,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 
   /* If this was an item that we received a pointer to,
      set rtl appropriately.  */
-  if (data->passed_pointer)
+  if (data->arg.pass_by_reference)
     {
       rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (data->arg.type)), parmreg);
       set_mem_attributes (rtl, parm, 1);
@@ -3310,7 +3308,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 
   /* If we were passed a pointer but the actual value can safely live
      in a register, retrieve it and use it directly.  */
-  if (data->passed_pointer && TYPE_MODE (TREE_TYPE (parm)) != BLKmode)
+  if (data->arg.pass_by_reference && TYPE_MODE (TREE_TYPE (parm)) != BLKmode)
     {
       /* We can't use nominal_mode, because it will have been set to
 	 Pmode above.  We must use the actual mode of the parm.  */
@@ -3630,7 +3628,7 @@ assign_parms (tree fndecl)
 	  assign_parm_adjust_entry_rtl (&data);
 	}
       /* Record permanently how this parm was passed.  */
-      if (data.passed_pointer)
+      if (data.arg.pass_by_reference)
 	{
 	  rtx incoming_rtl
 	    = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (data.arg.type)),
@@ -3644,7 +3642,7 @@ assign_parms (tree fndecl)
 
       if (assign_parm_setup_block_p (&data))
 	assign_parm_setup_block (&all, parm, &data);
-      else if (data.passed_pointer || use_register_for_decl (parm))
+      else if (data.arg.pass_by_reference || use_register_for_decl (parm))
 	assign_parm_setup_reg (&all, parm, &data);
       else
 	assign_parm_setup_stack (&all, parm, &data);
@@ -3855,7 +3853,7 @@ gimplify_parameters (gimple_seq *cleanup)
 	  gimplify_one_sizepos (&DECL_SIZE_UNIT (parm), &stmts);
 	}
 
-      if (data.passed_pointer)
+      if (data.arg.pass_by_reference)
 	{
 	  tree type = TREE_TYPE (data.arg.type);
 	  function_arg_info orig_arg (type, data.arg.named);
