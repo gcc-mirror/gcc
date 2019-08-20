@@ -1,5 +1,12 @@
 2019-08-20  Richard Biener  <rguenther@suse.de>
 
+	PR lto/91307
+	* ipa.c (cgraph_build_static_cdtor_1): Use names not recognizable
+	by collect2 when targetm.have_ctors_dtors which avoids dragging
+	in temporary filenames from LTO input objects.
+
+2019-08-20  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/37242
 	* tree-ssa-sccvn.c (visit_nary_op): Also CSE (T)(a + b)
 	to (T)a + (T)b if we know that a + b does not overflow.
