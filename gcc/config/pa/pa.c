@@ -197,8 +197,7 @@ static bool pa_cannot_force_const_mem (machine_mode, rtx);
 static bool pa_legitimate_constant_p (machine_mode, rtx);
 static unsigned int pa_section_type_flags (tree, const char *, int);
 static bool pa_legitimate_address_p (machine_mode, rtx, bool);
-static bool pa_callee_copies (cumulative_args_t, machine_mode,
-			      const_tree, bool);
+static bool pa_callee_copies (cumulative_args_t, const function_arg_info &);
 static unsigned int pa_hard_regno_nregs (unsigned int, machine_mode);
 static bool pa_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool pa_modes_tieable_p (machine_mode, machine_mode);
@@ -10764,10 +10763,7 @@ pa_maybe_emit_compare_and_swap_exchange_loop (rtx target, rtx mem, rtx val)
    in the 64-bit HP runtime.  */
 
 static bool
-pa_callee_copies (cumulative_args_t cum ATTRIBUTE_UNUSED,
-		  machine_mode mode ATTRIBUTE_UNUSED,
-		  const_tree type ATTRIBUTE_UNUSED,
-		  bool named ATTRIBUTE_UNUSED)
+pa_callee_copies (cumulative_args_t, const function_arg_info &)
 {
   return !TARGET_CALLER_COPIES;
 }

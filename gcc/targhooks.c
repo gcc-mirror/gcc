@@ -330,11 +330,9 @@ hook_pass_by_reference_must_pass_in_stack (cumulative_args_t,
    version of the hook is true for all named arguments.  */
 
 bool
-hook_callee_copies_named (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			  machine_mode mode ATTRIBUTE_UNUSED,
-			  const_tree type ATTRIBUTE_UNUSED, bool named)
+hook_callee_copies_named (cumulative_args_t, const function_arg_info &arg)
 {
-  return named;
+  return arg.named;
 }
 
 /* Emit to STREAM the assembler syntax for insn operand X.  */
@@ -746,28 +744,17 @@ default_builtin_reciprocal (tree)
 }
 
 bool
-hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false (
-	cumulative_args_t ca ATTRIBUTE_UNUSED,
-	machine_mode mode ATTRIBUTE_UNUSED,
-	const_tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
-{
-  return false;
-}
-
-bool
-hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true (
-	cumulative_args_t ca ATTRIBUTE_UNUSED,
-	machine_mode mode ATTRIBUTE_UNUSED,
-	const_tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
-{
-  return true;
-}
-
-bool
 hook_bool_CUMULATIVE_ARGS_arg_info_false (cumulative_args_t,
 					  const function_arg_info &)
 {
   return false;
+}
+
+bool
+hook_bool_CUMULATIVE_ARGS_arg_info_true (cumulative_args_t,
+					 const function_arg_info &)
+{
+  return true;
 }
 
 int

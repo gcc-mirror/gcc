@@ -263,7 +263,7 @@ static HOST_WIDE_INT mmix_starting_frame_offset (void);
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE mmix_pass_by_reference
 #undef TARGET_CALLEE_COPIES
-#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
+#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_arg_info_true
 
 #undef TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS mmix_preferred_reload_class

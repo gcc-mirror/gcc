@@ -6259,11 +6259,9 @@ mips_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 /* Implement TARGET_CALLEE_COPIES.  */
 
 static bool
-mips_callee_copies (cumulative_args_t cum ATTRIBUTE_UNUSED,
-		    machine_mode mode ATTRIBUTE_UNUSED,
-		    const_tree type ATTRIBUTE_UNUSED, bool named)
+mips_callee_copies (cumulative_args_t, const function_arg_info &arg)
 {
-  return mips_abi == ABI_EABI && named;
+  return mips_abi == ABI_EABI && arg.named;
 }
 
 /* See whether VALTYPE is a record whose fields should be returned in

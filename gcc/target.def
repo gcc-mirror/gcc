@@ -4653,8 +4653,8 @@ not be generated.\n\
 \n\
 The default version of this hook always returns false.",
  bool,
- (cumulative_args_t cum, machine_mode mode, const_tree type, bool named),
- hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false)
+ (cumulative_args_t cum, const function_arg_info &arg),
+ hook_bool_CUMULATIVE_ARGS_arg_info_false)
 
 /* Return zero for arguments passed entirely on the stack or entirely
    in registers.  If passed in both, return the number of bytes passed

@@ -3881,8 +3881,8 @@ gimplify_parameters (gimple_seq *cleanup)
       if (data.passed_pointer)
 	{
           tree type = TREE_TYPE (data.passed_type);
-	  if (reference_callee_copied (&all.args_so_far_v, TYPE_MODE (type),
-				       type, data.named_arg))
+	  function_arg_info orig_arg (type, data.named_arg);
+	  if (reference_callee_copied (&all.args_so_far_v, orig_arg))
 	    {
 	      tree local, t;
 
