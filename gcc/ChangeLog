@@ -1,3 +1,9 @@
+2019-08-20  Matthew Beliveau  <mbelivea@redhat.com>
+
+	* tree-ssa-dse.c (dse_optimize_redundant_stores): Improved check to
+	catch more redundant zero initialization cases.
+	(dse_dom_walker::dse_optimize_stmt): Likewise.
+
 2019-08-20  Richard Biener  <rguenther@suse.de>
 
 	PR lto/91307

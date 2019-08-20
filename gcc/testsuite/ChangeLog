@@ -1,3 +1,8 @@
+2019-08-20  Matthew Beliveau  <mbelivea@redhat.com>
+
+	* gcc.dg/tree-ssa/redundant-assign-zero-1.c: New test.
+	* gcc.dg/tree-ssa/redundant-assign-zero-2.c: New test.
+
 2019-08-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/37242
