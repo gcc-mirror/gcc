@@ -655,7 +655,7 @@ static rtx sparc_legitimize_address (rtx, rtx, machine_mode);
 static rtx sparc_delegitimize_address (rtx);
 static bool sparc_mode_dependent_address_p (const_rtx, addr_space_t);
 static bool sparc_pass_by_reference (cumulative_args_t,
-				     machine_mode, const_tree, bool);
+				     const function_arg_info &);
 static void sparc_function_arg_advance (cumulative_args_t,
 					machine_mode, const_tree, bool);
 static rtx sparc_function_arg_1 (cumulative_args_t,
@@ -6743,10 +6743,10 @@ sparc_strict_argument_naming (cumulative_args_t ca ATTRIBUTE_UNUSED)
    Specify whether to pass the argument by reference.  */
 
 static bool
-sparc_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-			 machine_mode mode, const_tree type,
-			 bool named ATTRIBUTE_UNUSED)
+sparc_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
+  tree type = arg.type;
+  machine_mode mode = arg.mode;
   if (TARGET_ARCH32)
     /* Original SPARC 32-bit ABI says that structures and unions,
        and quad-precision floats are passed by reference.

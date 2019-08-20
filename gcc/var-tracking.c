@@ -6431,13 +6431,11 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 	if (t && t != void_list_node)
 	  {
 	    tree argtype = TREE_VALUE (t);
-	    machine_mode mode = TYPE_MODE (argtype);
 	    rtx reg;
-	    if (pass_by_reference (&args_so_far_v, mode, argtype, true))
-	      {
-		argtype = build_pointer_type (argtype);
-		mode = TYPE_MODE (argtype);
-	      }
+	    function_arg_info orig_arg (argtype, /*named=*/true);
+	    if (pass_by_reference (&args_so_far_v, orig_arg))
+	      argtype = build_pointer_type (argtype);
+	    machine_mode mode = TYPE_MODE (argtype);
 	    reg = targetm.calls.function_arg (args_so_far, mode,
 					      argtype, true);
 	    if (TREE_CODE (argtype) == REFERENCE_TYPE

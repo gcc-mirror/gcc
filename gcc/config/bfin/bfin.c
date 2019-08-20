@@ -1741,11 +1741,9 @@ bfin_arg_partial_bytes (cumulative_args_t cum, const function_arg_info &arg)
 /* Variable sized types are passed by reference.  */
 
 static bool
-bfin_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-			machine_mode mode ATTRIBUTE_UNUSED,
-			const_tree type, bool named ATTRIBUTE_UNUSED)
+bfin_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  return type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST;
+  return arg.type && TREE_CODE (TYPE_SIZE (arg.type)) != INTEGER_CST;
 }
 
 /* Decide whether a type should be returned in memory (true)

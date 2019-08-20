@@ -158,8 +158,8 @@ static struct machine_function *visium_init_machine_status (void);
 
 /* Target hooks and TARGET_INITIALIZER  */
 
-static bool visium_pass_by_reference (cumulative_args_t, machine_mode,
-				      const_tree, bool);
+static bool visium_pass_by_reference (cumulative_args_t,
+				      const function_arg_info &);
 
 static rtx visium_function_arg (cumulative_args_t, machine_mode,
 				const_tree, bool);
@@ -1310,11 +1310,9 @@ visium_reorg (void)
 /* Return true if an argument must be passed by indirect reference.  */
 
 static bool
-visium_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			  machine_mode mode ATTRIBUTE_UNUSED,
-			  const_tree type,
-			  bool named ATTRIBUTE_UNUSED)
+visium_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
+  tree type = arg.type;
   return type && (AGGREGATE_TYPE_P (type) || TREE_CODE (type) == VECTOR_TYPE);
 }
 

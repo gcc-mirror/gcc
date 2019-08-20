@@ -78,8 +78,8 @@ static bool m32c_legitimate_address_p (machine_mode, rtx, bool);
 static bool m32c_addr_space_legitimate_address_p (machine_mode, rtx, bool, addr_space_t);
 static rtx m32c_function_arg (cumulative_args_t, machine_mode,
 			      const_tree, bool);
-static bool m32c_pass_by_reference (cumulative_args_t, machine_mode,
-				    const_tree, bool);
+static bool m32c_pass_by_reference (cumulative_args_t,
+				    const function_arg_info &);
 static void m32c_function_arg_advance (cumulative_args_t, machine_mode,
 				       const_tree, bool);
 static unsigned int m32c_function_arg_boundary (machine_mode, const_tree);
@@ -1373,10 +1373,7 @@ m32c_function_arg (cumulative_args_t ca_v,
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE m32c_pass_by_reference
 static bool
-m32c_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			machine_mode mode ATTRIBUTE_UNUSED,
-			const_tree type ATTRIBUTE_UNUSED,
-			bool named ATTRIBUTE_UNUSED)
+m32c_pass_by_reference (cumulative_args_t, const function_arg_info &)
 {
   return 0;
 }

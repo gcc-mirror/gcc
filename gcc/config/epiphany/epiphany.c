@@ -71,8 +71,8 @@ static int get_epiphany_condition_code (rtx);
 static tree epiphany_handle_interrupt_attribute (tree *, tree, tree, int, bool *);
 static tree epiphany_handle_forwarder_attribute (tree *, tree, tree, int,
 						 bool *);
-static bool epiphany_pass_by_reference (cumulative_args_t, machine_mode,
-					const_tree, bool);
+static bool epiphany_pass_by_reference (cumulative_args_t,
+					const function_arg_info &);
 static rtx_insn *frame_insn (rtx);
 
 /* defines for the initialization of the GCC target structure.  */
@@ -749,8 +749,7 @@ epiphany_arg_partial_bytes (cumulative_args_t cum,
 {
   int words = 0, rounded_cum;
 
-  gcc_assert (!epiphany_pass_by_reference (cum, arg.mode, arg.type,
-					   arg.named));
+  gcc_assert (!epiphany_pass_by_reference (cum, arg));
 
   rounded_cum = ROUND_ADVANCE_CUM (*get_cumulative_args (cum),
 				   arg.mode, arg.type);
@@ -1487,14 +1486,12 @@ epiphany_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
    passed by reference.  */
 
 static bool
-epiphany_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-		       machine_mode mode, const_tree type,
-		       bool named ATTRIBUTE_UNUSED)
+epiphany_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  if (type)
+  if (tree type = arg.type)
     {
       if (AGGREGATE_TYPE_P (type)
-	  && (mode == BLKmode || TYPE_NEEDS_CONSTRUCTING (type)))
+	  && (arg.mode == BLKmode || TYPE_NEEDS_CONSTRUCTING (type)))
 	return true;
     }
   return false;

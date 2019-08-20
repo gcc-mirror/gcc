@@ -215,7 +215,7 @@ static void arm_insert_attributes (tree, tree *);
 static void arm_setup_incoming_varargs (cumulative_args_t, machine_mode,
 					tree, int *, int);
 static bool arm_pass_by_reference (cumulative_args_t,
-				   machine_mode, const_tree, bool);
+				   const function_arg_info &);
 static bool arm_promote_prototypes (const_tree);
 static bool arm_default_short_enums (void);
 static bool arm_align_anon_bitfield (void);
@@ -6819,11 +6819,9 @@ arm_function_arg_advance (cumulative_args_t pcum_v, machine_mode mode,
    extension to the ARM ABI.  */
 
 static bool
-arm_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-		       machine_mode mode ATTRIBUTE_UNUSED,
-		       const_tree type, bool named ATTRIBUTE_UNUSED)
+arm_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  return type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST;
+  return arg.type && TREE_CODE (TYPE_SIZE (arg.type)) != INTEGER_CST;
 }
 
 /* Encode the current state of the #pragma [no_]long_calls.  */

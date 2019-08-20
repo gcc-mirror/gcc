@@ -11953,26 +11953,23 @@ s390_function_arg_integer (machine_mode mode, const_tree type)
   return false;
 }
 
-/* Return 1 if a function argument of type TYPE and mode MODE
-   is to be passed by reference.  The ABI specifies that only
-   structures of size 1, 2, 4, or 8 bytes are passed by value,
-   all other structures (and complex numbers) are passed by
-   reference.  */
+/* Return 1 if a function argument ARG is to be passed by reference.
+   The ABI specifies that only structures of size 1, 2, 4, or 8 bytes
+   are passed by value, all other structures (and complex numbers) are
+   passed by reference.  */
 
 static bool
-s390_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			machine_mode mode, const_tree type,
-			bool named ATTRIBUTE_UNUSED)
+s390_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  int size = s390_function_arg_size (mode, type);
+  int size = s390_function_arg_size (arg.mode, arg.type);
 
-  if (s390_function_arg_vector (mode, type))
+  if (s390_function_arg_vector (arg.mode, arg.type))
     return false;
 
   if (size > 8)
     return true;
 
-  if (type)
+  if (tree type = arg.type)
     {
       if (AGGREGATE_TYPE_P (type) && exact_log2 (size) < 0)
 	return true;
@@ -13349,7 +13346,7 @@ s390_call_saved_register_used (tree call_expr)
       /* We assume that in the target function all parameters are
 	 named.  This only has an impact on vector argument register
 	 usage none of which is call-saved.  */
-      if (pass_by_reference (&cum_v, mode, type, true))
+      if (pass_by_reference (&cum_v, function_arg_info (type, /*named=*/true)))
 	{
 	  mode = Pmode;
 	  type = build_pointer_type (type);

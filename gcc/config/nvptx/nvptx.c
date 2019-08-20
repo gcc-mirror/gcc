@@ -633,11 +633,9 @@ nvptx_function_value_regno_p (const unsigned int regno)
    reference in memory.  */
 
 static bool
-nvptx_pass_by_reference (cumulative_args_t ARG_UNUSED (cum),
-			 machine_mode mode, const_tree type,
-			 bool ARG_UNUSED (named))
+nvptx_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  return pass_in_memory (mode, type, false);
+  return pass_in_memory (arg.mode, arg.type, false);
 }
 
 /* Implement TARGET_RETURN_IN_MEMORY.  */

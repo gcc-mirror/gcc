@@ -2454,13 +2454,15 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
     passed_type = TREE_TYPE (first_field (passed_type));
 
   /* See if this arg was passed by invisible reference.  */
-  if (pass_by_reference (&all->args_so_far_v, passed_mode,
-			 passed_type, data->named_arg))
-    {
-      passed_type = nominal_type = build_pointer_type (passed_type);
-      data->passed_pointer = true;
-      passed_mode = nominal_mode = TYPE_MODE (nominal_type);
-    }
+  {
+    function_arg_info arg (passed_type, passed_mode, data->named_arg);
+    if (pass_by_reference (&all->args_so_far_v, arg))
+      {
+	passed_type = nominal_type = build_pointer_type (passed_type);
+	data->passed_pointer = true;
+	passed_mode = nominal_mode = TYPE_MODE (nominal_type);
+      }
+  }
 
   /* Find mode as it is passed by the ABI.  */
   unsignedp = TYPE_UNSIGNED (passed_type);

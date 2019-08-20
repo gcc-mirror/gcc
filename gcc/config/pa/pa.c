@@ -164,8 +164,8 @@ static void output_deferred_profile_counters (void) ATTRIBUTE_UNUSED;
 static void pa_file_end (void);
 static void pa_init_libfuncs (void);
 static rtx pa_struct_value_rtx (tree, int);
-static bool pa_pass_by_reference (cumulative_args_t, machine_mode,
-				  const_tree, bool);
+static bool pa_pass_by_reference (cumulative_args_t,
+				  const function_arg_info &);
 static int pa_arg_partial_bytes (cumulative_args_t, const function_arg_info &);
 static void pa_function_arg_advance (cumulative_args_t, machine_mode,
 				     const_tree, bool);
@@ -6222,17 +6222,9 @@ pa_eh_return_handler_rtx (void)
    or updates the ABI.  */
 
 static bool
-pa_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-		      machine_mode mode, const_tree type,
-		      bool named ATTRIBUTE_UNUSED)
+pa_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  HOST_WIDE_INT size;
-
-  if (type)
-    size = int_size_in_bytes (type);
-  else
-    size = GET_MODE_SIZE (mode);
-
+  HOST_WIDE_INT size = arg.type_size_in_bytes ();
   if (TARGET_64BIT)
     return size <= 0;
   else

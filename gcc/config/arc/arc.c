@@ -7566,14 +7566,11 @@ arc_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 }
 
 static bool
-arc_pass_by_reference (cumulative_args_t ca_v ATTRIBUTE_UNUSED,
-		       machine_mode mode ATTRIBUTE_UNUSED,
-		       const_tree type,
-		       bool named ATTRIBUTE_UNUSED)
+arc_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  return (type != 0
-	  && (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
-	      || TREE_ADDRESSABLE (type)));
+  return (arg.type != 0
+	  && (TREE_CODE (TYPE_SIZE (arg.type)) != INTEGER_CST
+	      || TREE_ADDRESSABLE (arg.type)));
 }
 
 /* Implement TARGET_CAN_USE_DOLOOP_P.  */
