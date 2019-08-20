@@ -1982,7 +1982,6 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
     {
       tree type = TREE_TYPE (args[i].tree_value);
       int unsignedp;
-      machine_mode mode;
 
       /* Replace erroneous argument with constant zero.  */
       if (type == error_mark_node || !COMPLETE_TYPE_P (type))
@@ -2010,13 +2009,13 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	 with those made by function.c.  */
 
       /* See if this argument should be passed by invisible reference.  */
-      function_arg_info orig_arg (type, argpos < n_named_args);
-      if (pass_by_reference (args_so_far_pnt, orig_arg))
+      function_arg_info arg (type, argpos < n_named_args);
+      if (pass_by_reference (args_so_far_pnt, arg))
 	{
 	  bool callee_copies;
 	  tree base = NULL_TREE;
 
-	  callee_copies = reference_callee_copied (args_so_far_pnt, orig_arg);
+	  callee_copies = reference_callee_copied (args_so_far_pnt, arg);
 
 	  /* If we're compiling a thunk, pass through invisible references
 	     instead of making a copy.  */
@@ -2129,15 +2128,16 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	}
 
       unsignedp = TYPE_UNSIGNED (type);
-      mode = promote_function_mode (type, TYPE_MODE (type), &unsignedp,
-				    fndecl ? TREE_TYPE (fndecl) : fntype, 0);
+      arg.type = type;
+      arg.mode
+	= promote_function_mode (type, TYPE_MODE (type), &unsignedp,
+				 fndecl ? TREE_TYPE (fndecl) : fntype, 0);
 
       args[i].unsignedp = unsignedp;
-      args[i].mode = mode;
+      args[i].mode = arg.mode;
 
       targetm.calls.warn_parameter_passing_abi (args_so_far, type);
 
-      function_arg_info arg (type, mode, argpos < n_named_args);
       args[i].reg = targetm.calls.function_arg (args_so_far, arg);
 
       if (args[i].reg && CONST_INT_P (args[i].reg))
@@ -2177,7 +2177,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       if (args[i].reg == 0 || args[i].partial != 0
 	       || reg_parm_stack_space > 0
 	       || args[i].pass_on_stack)
-	locate_and_pad_parm (mode, type,
+	locate_and_pad_parm (arg.mode, type,
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
 			     1,
 #else
@@ -2191,7 +2191,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	/* The argument is passed entirely in registers.  See at which
 	   end it should be padded.  */
 	args[i].locate.where_pad =
-	  BLOCK_REG_PADDING (mode, type,
+	  BLOCK_REG_PADDING (arg.mode, type,
 			     int_size_in_bytes (type) <= UNITS_PER_WORD);
 #endif
 
@@ -2208,9 +2208,8 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	 promoted_mode used for function_arg above.  However, the
 	 corresponding handling of incoming arguments in function.c
 	 does pass the promoted mode.  */
-      function_arg_info arg_to_skip (type, TYPE_MODE (type),
-				     argpos < n_named_args);
-      targetm.calls.function_arg_advance (args_so_far, arg_to_skip);
+      arg.mode = TYPE_MODE (type);
+      targetm.calls.function_arg_advance (args_so_far, arg);
 
       /* Store argument values for functions decorated with attribute
 	 alloc_size.  */
@@ -4906,24 +4905,25 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   for (unsigned int i = 0; count < nargs; i++, count++)
     {
       rtx val = args[i].first;
-      machine_mode mode = args[i].second;
+      function_arg_info arg (args[i].second, /*named=*/true);
       int unsigned_p = 0;
 
       /* We cannot convert the arg value to the mode the library wants here;
 	 must do it earlier where we know the signedness of the arg.  */
-      gcc_assert (mode != BLKmode
-		  && (GET_MODE (val) == mode || GET_MODE (val) == VOIDmode));
+      gcc_assert (arg.mode != BLKmode
+		  && (GET_MODE (val) == arg.mode
+		      || GET_MODE (val) == VOIDmode));
 
       /* Make sure it is a reasonable operand for a move or push insn.  */
       if (!REG_P (val) && !MEM_P (val)
-	  && !(CONSTANT_P (val) && targetm.legitimate_constant_p (mode, val)))
+	  && !(CONSTANT_P (val)
+	       && targetm.legitimate_constant_p (arg.mode, val)))
 	val = force_operand (val, NULL_RTX);
 
-      function_arg_info orig_arg (mode, /*named=*/true);
-      if (pass_by_reference (&args_so_far_v, orig_arg))
+      if (pass_by_reference (&args_so_far_v, arg))
 	{
 	  rtx slot;
-	  int must_copy = !reference_callee_copied (&args_so_far_v, orig_arg);
+	  int must_copy = !reference_callee_copied (&args_so_far_v, arg);
 
 	  /* If this was a CONST function, it is now PURE since it now
 	     reads memory.  */
@@ -4942,7 +4942,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	    }
 	  else
 	    {
-	      slot = assign_temp (lang_hooks.types.type_for_mode (mode, 0),
+	      slot = assign_temp (lang_hooks.types.type_for_mode (arg.mode, 0),
 				  1, 1);
 	      emit_move_insn (slot, val);
 	    }
@@ -4956,14 +4956,15 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 							      slot),
 					     call_fusage);
 
-	  mode = Pmode;
+	  arg.mode = Pmode;
 	  val = force_operand (XEXP (slot, 0), NULL_RTX);
 	}
 
-      mode = promote_function_mode (NULL_TREE, mode, &unsigned_p, NULL_TREE, 0);
-      function_arg_info arg (mode, /*named=*/true);
-      argvec[count].mode = mode;
-      argvec[count].value = convert_modes (mode, GET_MODE (val), val, unsigned_p);
+      arg.mode = promote_function_mode (NULL_TREE, arg.mode, &unsigned_p,
+					NULL_TREE, 0);
+      argvec[count].mode = arg.mode;
+      argvec[count].value = convert_modes (arg.mode, GET_MODE (val), val,
+					   unsigned_p);
       argvec[count].reg = targetm.calls.function_arg (args_so_far, arg);
 
       argvec[count].partial
@@ -4973,7 +4974,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	  || argvec[count].partial != 0
 	  || reg_parm_stack_space > 0)
 	{
-	  locate_and_pad_parm (mode, NULL_TREE,
+	  locate_and_pad_parm (arg.mode, NULL_TREE,
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
 			       1,
 #else
@@ -4989,8 +4990,9 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	/* The argument is passed entirely in registers.  See at which
 	   end it should be padded.  */
 	argvec[count].locate.where_pad =
-	  BLOCK_REG_PADDING (mode, NULL_TREE,
-			     known_le (GET_MODE_SIZE (mode), UNITS_PER_WORD));
+	  BLOCK_REG_PADDING (arg.mode, NULL_TREE,
+			     known_le (GET_MODE_SIZE (arg.mode),
+				       UNITS_PER_WORD));
 #endif
 
       targetm.calls.function_arg_advance (args_so_far, arg);

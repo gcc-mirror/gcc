@@ -1,5 +1,16 @@
 2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* calls.c (emit_library_call_value_1): Merge arg and orig_arg
+	into a single function_arg_info, updating its fields when we
+	apply pass-by-reference and promotion semantics.  Use the
+	function_arg_info to track the mode rather than keeping it in
+	a separate local variable.
+	(initialize_argument_information): Likewise.  Base the final
+	arg_to_skip on this new function_arg_info rather than creating
+	a new one from scratch.
+
+2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* function.c (assign_parm_data_one): Replace passed_type,
 	promoted_mode and named_arg with a function_arg_info field.
 	(assign_parm_find_data_types): Remove local variables and
