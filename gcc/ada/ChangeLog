@@ -1,3 +1,16 @@
+2019-08-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (OK_For_Limited_Init_In_05): In the case of type
+	conversions, apply the recursive call to the Original_Node of
+	the expression Exp rather than the Expression of the
+	Original_Node, in the case where Exp has been rewritten;
+	otherwise, when Original_Node is the same as Exp, apply the
+	recursive call to the Expression.
+	(Check_Initialization): Revise condition for special check on
+	type conversions of limited function calls to test Original_Node
+	(avoiding spurious errors on expanded unchecked conversions
+	applied to build-in-place dispatching calls).
+
 2019-08-20  Patrick Bernardi  <bernardi@adacore.com>
 
 	* exp_aggr.adb (Expand_Record_Aggregate): Always convert a
