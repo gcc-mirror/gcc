@@ -4796,7 +4796,7 @@ checks to be performed. The following checks are defined:
 
   The set of style check switches is set to match that used by the GNAT sources.
   This may be useful when developing code that is eventually intended to be
-  incorporated into GNAT. Currently this is equivalent to :switch:`-gnatwydISux`)
+  incorporated into GNAT. Currently this is equivalent to :switch:`-gnatyydISux`)
   but additional style switches may be added to this set in the future without
   advance notice.
 

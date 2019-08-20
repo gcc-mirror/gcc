@@ -380,9 +380,9 @@ Syntax:
 
   pragma Aggregate_Individually_Assign;
 
-Where possible GNAT will store the binary representation of a record aggregate
+Where possible, GNAT will store the binary representation of a record aggregate
 in memory for space and performance reasons. This configuration pragma changes
-this behaviour so that record aggregates are instead always converted into
+this behavior so that record aggregates are instead always converted into
 individual assignment statements.
 
 

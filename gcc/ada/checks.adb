@@ -2471,7 +2471,7 @@ package body Checks is
         (Formal     : Entity_Id;
          Prag_Nam   : Name_Id;
          For_Result : Boolean := False);
-      --  Add a single 'Valid[_Scalar] check which verifies the initialization
+      --  Add a single 'Valid[_Scalars] check which verifies the initialization
       --  of Formal. Prag_Nam denotes the pre or post condition pragma name.
       --  Set flag For_Result when to verify the result of a function.
 

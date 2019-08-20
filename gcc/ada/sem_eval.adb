@@ -562,9 +562,9 @@ package body Sem_Eval is
       elsif Is_Out_Of_Range (N, Base_Type (T), Assume_Valid => True) then
          Out_Of_Range (N);
 
-      --  Give a warning or error on the value outside the subtype. A
-      --  warning is omitted if the expression appears in a range that could
-      --  be null (warnings are handled elsewhere for this case).
+      --  Give a warning or error on the value outside the subtype. A warning
+      --  is omitted if the expression appears in a range that could be null
+      --  (warnings are handled elsewhere for this case).
 
       elsif T /= Base_Type (T) and then Nkind (Parent (N)) /= N_Range then
          if Is_In_Range (N, T, Assume_Valid => True) then
@@ -578,8 +578,8 @@ package body Sem_Eval is
             if CodePeer_Mode and then T = RTE (RE_Priority) then
                Set_Do_Range_Check (N, False);
 
-            --  Determine if the out of range violation constitutes a warning
-            --  or an error based on context according to RM 4.9 (34/3).
+            --  Determine if the out-of-range violation constitutes a warning
+            --  or an error based on context, according to RM 4.9 (34/3).
 
             elsif Nkind_In (Original_Node (N), N_Type_Conversion,
                                                N_Qualified_Expression)
@@ -5531,8 +5531,8 @@ package body Sem_Eval is
          --  CodePeer mode where the target runtime may have more priorities.
 
          elsif not CodePeer_Mode or else Etype (N) /= RTE (RE_Priority) then
-            --  Determine if the out of range violation constitutes a warning
-            --  or an error based on context according to RM 4.9 (34/3).
+            --  Determine if the out-of-range violation constitutes a warning
+            --  or an error based on context, according to RM 4.9 (34/3).
 
             if Nkind (Original_Node (N)) = N_Type_Conversion
               and then not Comes_From_Source (Original_Node (N))

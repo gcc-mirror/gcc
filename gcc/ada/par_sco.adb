@@ -92,8 +92,8 @@ package body Par_SCO is
    --  writing out the SCO information to the ALI file, we can fill in the
    --  proper dependency numbers and file names.
 
-   --  Note that the zero'th entry is here for convenience in sorting the
-   --  table, the real lower bound is 1.
+   --  Note that the zeroth entry is here for convenience in sorting the table;
+   --  the real lower bound is 1.
 
    package SCO_Unit_Number_Table is new Table.Table
      (Table_Component_Type => Unit_Number_Type,
