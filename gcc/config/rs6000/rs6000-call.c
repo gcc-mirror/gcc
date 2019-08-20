@@ -2111,29 +2111,27 @@ rs6000_arg_partial_bytes (cumulative_args_t cum_v,
    reference.  */
 
 bool
-rs6000_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-			  machine_mode mode, const_tree type,
-			  bool named ATTRIBUTE_UNUSED)
+rs6000_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  if (!type)
+  if (!arg.type)
     return 0;
 
   if (DEFAULT_ABI == ABI_V4 && TARGET_IEEEQUAD
-      && FLOAT128_IEEE_P (TYPE_MODE (type)))
+      && FLOAT128_IEEE_P (TYPE_MODE (arg.type)))
     {
       if (TARGET_DEBUG_ARG)
 	fprintf (stderr, "function_arg_pass_by_reference: V4 IEEE 128-bit\n");
       return 1;
     }
 
-  if (DEFAULT_ABI == ABI_V4 && AGGREGATE_TYPE_P (type))
+  if (DEFAULT_ABI == ABI_V4 && AGGREGATE_TYPE_P (arg.type))
     {
       if (TARGET_DEBUG_ARG)
 	fprintf (stderr, "function_arg_pass_by_reference: V4 aggregate\n");
       return 1;
     }
 
-  if (int_size_in_bytes (type) < 0)
+  if (int_size_in_bytes (arg.type) < 0)
     {
       if (TARGET_DEBUG_ARG)
 	fprintf (stderr, "function_arg_pass_by_reference: variable size\n");
@@ -2142,7 +2140,7 @@ rs6000_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 
   /* Allow -maltivec -mabi=no-altivec without warning.  Altivec vector
      modes only exist for GCC vector types if -maltivec.  */
-  if (TARGET_32BIT && !TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
+  if (TARGET_32BIT && !TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (arg.mode))
     {
       if (TARGET_DEBUG_ARG)
 	fprintf (stderr, "function_arg_pass_by_reference: AltiVec\n");
@@ -2150,8 +2148,8 @@ rs6000_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
     }
 
   /* Pass synthetic vectors in memory.  */
-  if (TREE_CODE (type) == VECTOR_TYPE
-      && int_size_in_bytes (type) > (TARGET_ALTIVEC_ABI ? 16 : 8))
+  if (TREE_CODE (arg.type) == VECTOR_TYPE
+      && int_size_in_bytes (arg.type) > (TARGET_ALTIVEC_ABI ? 16 : 8))
     {
       static bool warned_for_pass_big_vectors = false;
       if (TARGET_DEBUG_ARG)
@@ -2200,7 +2198,7 @@ rs6000_parm_needs_stack (cumulative_args_t args_so_far, tree type)
 
   /* See if this arg was passed by invisible reference.  */
   if (pass_by_reference (get_cumulative_args (args_so_far),
-			 TYPE_MODE (type), type, true))
+			 function_arg_info (type, /*named=*/true)))
     type = build_pointer_type (type);
 
   /* Find mode as it is passed by the ABI.  */

@@ -294,8 +294,8 @@ static machine_mode sh_promote_function_mode (const_tree type,
 						   int *punsignedp,
 						   const_tree funtype,
 						   int for_return);
-static bool sh_pass_by_reference (cumulative_args_t, machine_mode,
-				  const_tree, bool);
+static bool sh_pass_by_reference (cumulative_args_t,
+				  const function_arg_info &);
 static bool sh_callee_copies (cumulative_args_t, machine_mode,
 			      const_tree, bool);
 static int sh_arg_partial_bytes (cumulative_args_t, const function_arg_info &);
@@ -7899,12 +7899,11 @@ sh_promote_prototypes (const_tree type)
 }
 
 static bool
-sh_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
-		      const_tree type, bool named ATTRIBUTE_UNUSED)
+sh_pass_by_reference (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (targetm.calls.must_pass_in_stack (mode, type))
+  if (targetm.calls.must_pass_in_stack (arg.mode, arg.type))
     return true;
 
   /* ??? std_gimplify_va_arg_expr passes NULL for cum.  That function

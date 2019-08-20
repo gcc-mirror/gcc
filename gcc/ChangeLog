@@ -1,5 +1,77 @@
 2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target.def (pass_by_reference): Take a function_arg_info instead
+	of a mode, type and named flag.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (hook_pass_by_reference_must_pass_in_stack): Update
+	accordingly.
+	(hook_bool_CUMULATIVE_ARGS_arg_info_false): Declare.
+	* targhooks.c (hook_pass_by_reference_must_pass_in_stack): Take a
+	function_arg_info instead of a mode, type and named flag.
+	(hook_bool_CUMULATIVE_ARGS_arg_info_false): New function.
+	* calls.h (pass_by_reference): Take a function_arg_info instead of a
+	mode, type and named flag.
+	* calls.c (pass_by_reference): Likewise.
+	(pass_va_arg_by_reference): Update call accordingly.
+	(initialize_argument_information): Likewise.
+	(emit_library_call_value_1): Likewise.
+	* function.c (assign_parm_find_data_types): Likewise.
+	* var-tracking.c (prepare_call_arguments): Likewise.
+	* stor-layout.c: Include calls.h.
+	(compute_record_mode): Update call to targetm.calls.pass_by_reference.
+	* config/aarch64/aarch64.c (aarch64_pass_by_reference): Take a
+	function_arg_info instead of a mode, type and named flag.
+	* config/alpha/alpha.c (alpha_pass_by_reference): Likewise.
+	* config/arc/arc.c (arc_pass_by_reference): Likewise.
+	* config/arm/arm.c (arm_pass_by_reference): Likewise.
+	* config/bfin/bfin.c (bfin_pass_by_reference): Likewise.
+	* config/c6x/c6x.c (c6x_pass_by_reference): Likewise.
+	(c6x_call_saved_register_used): Update call to pass_by_reference.
+	* config/cris/cris.c (cris_pass_by_reference): Take a
+	function_arg_info instead of a mode, type and named flag.
+	* config/epiphany/epiphany.c (epiphany_pass_by_reference): Take a
+	function_arg_info instead of a mode, type and named flag.
+	(epiphany_arg_partial_bytes): Update call accordingly.
+	* config/ft32/ft32.c (ft32_pass_by_reference): Take a
+	function_arg_info instead of a mode, type and named flag.
+	(ft32_arg_partial_bytes): Update call accordingly.
+	* config/i386/i386.c (ix86_pass_by_reference): Take a
+	function_arg_info instead of a mode, type and named flag.
+	* config/iq2000/iq2000.c (iq2000_pass_by_reference): Likewise.
+	* config/m32c/m32c.c (m32c_pass_by_reference): Likewise.
+	* config/m32r/m32r.c (m32r_pass_by_reference): Likewise.
+	(m32r_return_in_memory): Update call accordingly.
+	* config/mips/mips.c (mips_pass_by_reference): Take a
+	function_arg_info instead of a mode, type and named flag.
+	* config/mmix/mmix.c (mmix_pass_by_reference): Likewise.
+	* config/mn10300/mn10300.c (mn10300_pass_by_reference): Likewise.
+	* config/moxie/moxie.c (moxie_pass_by_reference): Likewise.
+	(moxie_arg_partial_bytes): Update call accordingly.
+	* config/msp430/msp430.c (msp430_pass_by_reference): Take a
+	function_arg_info instead of a mode, type and named flag.
+	* config/nvptx/nvptx.c (nvptx_pass_by_reference): Likewise.
+	* config/or1k/or1k.c (or1k_pass_by_reference): Likewise.
+	* config/pa/pa.c (pa_pass_by_reference): Likewise.
+	* config/riscv/riscv.c (riscv_pass_by_reference): Likewise.
+	(riscv_return_in_memory): Update call accordingly.
+	* config/rs6000/rs6000-internal.h (rs6000_pass_by_reference): Take a
+	function_arg_info instead of a mode, type and named flag.
+	* config/rs6000/rs6000-call.c (rs6000_pass_by_reference): Likewise.
+	(rs6000_parm_needs_stack): Update call to pass_by_reference.
+	* config/s390/s390.c (s390_pass_by_reference): Take a
+	function_arg_info instead of a mode, type and named flag.
+	(s390_call_saved_register_used): Update call accordingly.
+	* config/sh/sh.c (sh_pass_by_reference): Take a function_arg_info
+	instead of a mode, type and named flag.
+	* config/sparc/sparc.c (sparc_pass_by_reference): Likewise.
+	* config/spu/spu.c (spu_pass_by_reference): Likewise.
+	* config/tilegx/tilegx.c (tilegx_pass_by_reference): Likewise.
+	* config/tilepro/tilepro.c (tilepro_pass_by_reference): Likewise.
+	* config/v850/v850.c (v850_pass_by_reference): Likewise.
+	* config/visium/visium.c (visium_pass_by_reference): Likewise.
+
+2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target.def (arg_partial_bytes): Take a function_arg_info instead
 	of a mode, type and named flag.
 	* doc/tm.texi: Regenerate.

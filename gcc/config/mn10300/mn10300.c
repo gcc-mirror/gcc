@@ -1526,17 +1526,9 @@ mn10300_va_start (tree valist, rtx nextarg)
 /* Return true when a parameter should be passed by reference.  */
 
 static bool
-mn10300_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-			   machine_mode mode, const_tree type,
-			   bool named ATTRIBUTE_UNUSED)
+mn10300_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  unsigned HOST_WIDE_INT size;
-
-  if (type)
-    size = int_size_in_bytes (type);
-  else
-    size = GET_MODE_SIZE (mode);
-
+  unsigned HOST_WIDE_INT size = arg.type_size_in_bytes ();
   return (size > 8 || size == 0);
 }
 

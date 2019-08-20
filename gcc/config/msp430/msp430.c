@@ -744,14 +744,11 @@ msp430_arg_partial_bytes (cumulative_args_t cap, const function_arg_info &arg)
 #define TARGET_PASS_BY_REFERENCE msp430_pass_by_reference
 
 static bool
-msp430_pass_by_reference (cumulative_args_t cap ATTRIBUTE_UNUSED,
-			  machine_mode mode,
-			  const_tree type,
-			  bool named ATTRIBUTE_UNUSED)
+msp430_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  return (mode == BLKmode
-	  || (type && TREE_CODE (type) == RECORD_TYPE)
-	  || (type && TREE_CODE (type) == UNION_TYPE));
+  return (arg.mode == BLKmode
+	  || (arg.type && TREE_CODE (arg.type) == RECORD_TYPE)
+	  || (arg.type && TREE_CODE (arg.type) == UNION_TYPE));
 }
 
 #undef  TARGET_CALLEE_COPIES

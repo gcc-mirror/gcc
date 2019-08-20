@@ -4450,18 +4450,18 @@ or 3-byte structure is returned at the most significant end of a\n\
    from __builtin_va_arg.  */
 DEFHOOK
 (pass_by_reference,
- "This target hook should return @code{true} if an argument at the\n\
+ "This target hook should return @code{true} if argument @var{arg} at the\n\
 position indicated by @var{cum} should be passed by reference.  This\n\
 predicate is queried after target independent reasons for being\n\
-passed by reference, such as @code{TREE_ADDRESSABLE (type)}.\n\
+passed by reference, such as @code{TREE_ADDRESSABLE (@var{arg}.type)}.\n\
 \n\
 If the hook returns true, a copy of that argument is made in memory and a\n\
 pointer to the argument is passed instead of the argument itself.\n\
 The pointer is passed in whatever way is appropriate for passing a pointer\n\
 to that type.",
  bool,
- (cumulative_args_t cum, machine_mode mode, const_tree type, bool named),
- hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false)
+ (cumulative_args_t cum, const function_arg_info &arg),
+ hook_bool_CUMULATIVE_ARGS_arg_info_false)
 
 DEFHOOK
 (expand_builtin_saveregs,

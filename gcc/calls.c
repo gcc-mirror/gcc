@@ -897,13 +897,12 @@ call_expr_flags (const_tree t)
   return flags;
 }
 
-/* Return true if TYPE should be passed by invisible reference.  */
+/* Return true if ARG should be passed by invisible reference.  */
 
 bool
-pass_by_reference (CUMULATIVE_ARGS *ca, machine_mode mode,
-		   tree type, bool named_arg)
+pass_by_reference (CUMULATIVE_ARGS *ca, function_arg_info arg)
 {
-  if (type)
+  if (tree type = arg.type)
     {
       /* If this type contains non-trivial constructors, then it is
 	 forbidden for the middle-end to create any new copies.  */
@@ -918,13 +917,12 @@ pass_by_reference (CUMULATIVE_ARGS *ca, machine_mode mode,
 	 member, use the type and mode of that member.  */
       if (TREE_CODE (type) == RECORD_TYPE && TYPE_TRANSPARENT_AGGR (type))
 	{
-	  type = TREE_TYPE (first_field (type));
-	  mode = TYPE_MODE (type);
+	  arg.type = TREE_TYPE (first_field (type));
+	  arg.mode = TYPE_MODE (arg.type);
 	}
     }
 
-  return targetm.calls.pass_by_reference (pack_cumulative_args (ca), mode,
-					  type, named_arg);
+  return targetm.calls.pass_by_reference (pack_cumulative_args (ca), arg);
 }
 
 /* Return true if TYPE should be passed by reference when passed to
@@ -933,7 +931,7 @@ pass_by_reference (CUMULATIVE_ARGS *ca, machine_mode mode,
 bool
 pass_va_arg_by_reference (tree type)
 {
-  return pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  return pass_by_reference (NULL, function_arg_info (type, /*named=*/false));
 }
 
 /* Return true if TYPE, which is passed by reference, should be callee
@@ -1997,8 +1995,8 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	 with those made by function.c.  */
 
       /* See if this argument should be passed by invisible reference.  */
-      if (pass_by_reference (args_so_far_pnt, TYPE_MODE (type),
-			     type, argpos < n_named_args))
+      function_arg_info orig_arg (type, argpos < n_named_args);
+      if (pass_by_reference (args_so_far_pnt, orig_arg))
 	{
 	  bool callee_copies;
 	  tree base = NULL_TREE;
@@ -4909,7 +4907,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	  && !(CONSTANT_P (val) && targetm.legitimate_constant_p (mode, val)))
 	val = force_operand (val, NULL_RTX);
 
-      if (pass_by_reference (&args_so_far_v, mode, NULL_TREE, 1))
+      function_arg_info orig_arg (mode, /*named=*/true);
+      if (pass_by_reference (&args_so_far_v, orig_arg))
 	{
 	  rtx slot;
 	  int must_copy

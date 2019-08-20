@@ -139,8 +139,8 @@ static int cris_register_move_cost (machine_mode, reg_class_t, reg_class_t);
 static int cris_memory_move_cost (machine_mode, reg_class_t, bool);
 static bool cris_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static int cris_address_cost (rtx, machine_mode, addr_space_t, bool);
-static bool cris_pass_by_reference (cumulative_args_t, machine_mode,
-				    const_tree, bool);
+static bool cris_pass_by_reference (cumulative_args_t,
+				    const function_arg_info &);
 static int cris_arg_partial_bytes (cumulative_args_t,
 				   const function_arg_info &);
 static rtx cris_function_arg (cumulative_args_t, machine_mode,
@@ -4041,16 +4041,14 @@ cris_setup_incoming_varargs (cumulative_args_t ca_v,
 	     ca->regs, *pretend_arg_size, second_time);
 }
 
-/* Return true if TYPE must be passed by invisible reference.
+/* Return true if ARG must be passed by invisible reference.
    For cris, we pass <= 8 bytes by value, others by reference.  */
 
 static bool
-cris_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			machine_mode mode, const_tree type,
-			bool named ATTRIBUTE_UNUSED)
+cris_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  return (targetm.calls.must_pass_in_stack (mode, type)
-	  || CRIS_FUNCTION_ARG_SIZE (mode, type) > 8);
+  return (targetm.calls.must_pass_in_stack (arg.mode, arg.type)
+	  || CRIS_FUNCTION_ARG_SIZE (arg.mode, arg.type) > 8);
 }
 
 /* A combination of defining TARGET_PROMOTE_FUNCTION_MODE, promoting arguments

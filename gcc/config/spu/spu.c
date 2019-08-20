@@ -3902,11 +3902,9 @@ spu_function_arg_padding (machine_mode, const_tree)
 
 /* Variable sized types are passed by reference.  */
 static bool
-spu_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-		       machine_mode mode ATTRIBUTE_UNUSED,
-		       const_tree type, bool named ATTRIBUTE_UNUSED)
+spu_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  return type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST;
+  return arg.type && TREE_CODE (TYPE_SIZE (arg.type)) != INTEGER_CST;
 }
 
 

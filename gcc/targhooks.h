@@ -63,7 +63,7 @@ extern tree default_cxx_guard_type (void);
 extern tree default_cxx_get_cookie_size (tree);
 
 extern bool hook_pass_by_reference_must_pass_in_stack
-  (cumulative_args_t, machine_mode mode, const_tree, bool);
+  (cumulative_args_t, const function_arg_info &);
 extern bool hook_callee_copies_named
   (cumulative_args_t ca, machine_mode, const_tree, bool);
 
@@ -137,6 +137,8 @@ extern bool hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false
   (cumulative_args_t, machine_mode, const_tree, bool);
 extern bool hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
   (cumulative_args_t, machine_mode, const_tree, bool);
+extern bool hook_bool_CUMULATIVE_ARGS_arg_info_false
+  (cumulative_args_t, const function_arg_info &);
 extern int hook_int_CUMULATIVE_ARGS_arg_info_0
   (cumulative_args_t, const function_arg_info &);
 extern void hook_void_CUMULATIVE_ARGS_tree

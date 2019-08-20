@@ -4409,35 +4409,30 @@ aarch64_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 /* Implement TARGET_PASS_BY_REFERENCE.  */
 
 static bool
-aarch64_pass_by_reference (cumulative_args_t pcum ATTRIBUTE_UNUSED,
-			   machine_mode mode,
-			   const_tree type,
-			   bool named ATTRIBUTE_UNUSED)
+aarch64_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
   HOST_WIDE_INT size;
   machine_mode dummymode;
   int nregs;
 
   /* GET_MODE_SIZE (BLKmode) is useless since it is 0.  */
-  if (mode == BLKmode && type)
-    size = int_size_in_bytes (type);
+  if (arg.mode == BLKmode && arg.type)
+    size = int_size_in_bytes (arg.type);
   else
     /* No frontends can create types with variable-sized modes, so we
        shouldn't be asked to pass or return them.  */
-    size = GET_MODE_SIZE (mode).to_constant ();
+    size = GET_MODE_SIZE (arg.mode).to_constant ();
 
   /* Aggregates are passed by reference based on their size.  */
-  if (type && AGGREGATE_TYPE_P (type))
-    {
-      size = int_size_in_bytes (type);
-    }
+  if (arg.aggregate_type_p ())
+    size = int_size_in_bytes (arg.type);
 
   /* Variable sized arguments are always returned by reference.  */
   if (size < 0)
     return true;
 
   /* Can this be a candidate to be passed in fp/simd register(s)?  */
-  if (aarch64_vfp_is_call_or_return_candidate (mode, type,
+  if (aarch64_vfp_is_call_or_return_candidate (arg.mode, arg.type,
 					       &dummymode, &nregs,
 					       NULL))
     return false;

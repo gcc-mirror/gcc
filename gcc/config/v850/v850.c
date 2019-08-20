@@ -110,20 +110,12 @@ v850_all_frame_related (rtx par)
    Specify whether to pass the argument by reference.  */
 
 static bool
-v850_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-			machine_mode mode, const_tree type,
-			bool named ATTRIBUTE_UNUSED)
+v850_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  unsigned HOST_WIDE_INT size;
-
   if (!TARGET_GCC_ABI)
     return 0;
 
-  if (type)
-    size = int_size_in_bytes (type);
-  else
-    size = GET_MODE_SIZE (mode);
-
+  unsigned HOST_WIDE_INT size = arg.type_size_in_bytes ();
   return size > 8;
 }
 

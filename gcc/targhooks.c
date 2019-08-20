@@ -323,11 +323,10 @@ default_cxx_get_cookie_size (tree type)
    of the TARGET_PASS_BY_REFERENCE hook uses just MUST_PASS_IN_STACK.  */
 
 bool
-hook_pass_by_reference_must_pass_in_stack (cumulative_args_t c ATTRIBUTE_UNUSED,
-	machine_mode mode ATTRIBUTE_UNUSED, const_tree type ATTRIBUTE_UNUSED,
-	bool named_arg ATTRIBUTE_UNUSED)
+hook_pass_by_reference_must_pass_in_stack (cumulative_args_t,
+					   const function_arg_info &arg)
 {
-  return targetm.calls.must_pass_in_stack (mode, type);
+  return targetm.calls.must_pass_in_stack (arg.mode, arg.type);
 }
 
 /* Return true if a parameter follows callee copies conventions.  This
@@ -765,6 +764,13 @@ hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true (
 	const_tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
 {
   return true;
+}
+
+bool
+hook_bool_CUMULATIVE_ARGS_arg_info_false (cumulative_args_t,
+					  const function_arg_info &)
+{
+  return false;
 }
 
 int

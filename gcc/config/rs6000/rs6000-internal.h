@@ -150,9 +150,8 @@ extern machine_mode rs6000_promote_function_mode (const_tree type ATTRIBUTE_UNUS
 extern bool rs6000_return_in_memory (const_tree type, 
 				     const_tree fntype ATTRIBUTE_UNUSED);
 extern bool rs6000_return_in_msb (const_tree valtype);
-extern bool rs6000_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-				      machine_mode mode, const_tree type,
-				      bool named ATTRIBUTE_UNUSED);
+extern bool rs6000_pass_by_reference (cumulative_args_t,
+				      const function_arg_info &);
 extern void setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
 				    tree type, int *pretend_size ATTRIBUTE_UNUSED,
 				    int no_rtl);

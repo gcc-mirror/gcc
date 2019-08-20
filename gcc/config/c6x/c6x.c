@@ -642,15 +642,13 @@ c6x_function_value_regno_p (const unsigned int regno)
    reference.  The callee must copy them; see c6x_callee_copies.  */
 
 static bool
-c6x_pass_by_reference (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
-		       machine_mode mode, const_tree type,
-		       bool named ATTRIBUTE_UNUSED)
+c6x_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
   int size = -1;
-  if (type)
-    size = int_size_in_bytes (type);
-  else if (mode != VOIDmode)
-    size = GET_MODE_SIZE (mode);
+  if (arg.type)
+    size = int_size_in_bytes (arg.type);
+  else if (arg.mode != VOIDmode)
+    size = GET_MODE_SIZE (arg.mode);
   return size > 2 * UNITS_PER_WORD || size == -1;
 }
 
@@ -1130,7 +1128,7 @@ c6x_call_saved_register_used (tree call_expr)
       mode = TYPE_MODE (type);
       gcc_assert (mode);
 
-      if (pass_by_reference (&cum_v, mode, type, true))
+      if (pass_by_reference (&cum_v, function_arg_info (type, /*named=*/true)))
  	{
  	  mode = Pmode;
  	  type = build_pointer_type (type);

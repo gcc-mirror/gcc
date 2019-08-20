@@ -4076,11 +4076,11 @@ register to be used by the caller for this argument; likewise
 @code{TARGET_FUNCTION_INCOMING_ARG}, for the called function.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_PASS_BY_REFERENCE (cumulative_args_t @var{cum}, machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
-This target hook should return @code{true} if an argument at the
+@deftypefn {Target Hook} bool TARGET_PASS_BY_REFERENCE (cumulative_args_t @var{cum}, const function_arg_info @var{&arg})
+This target hook should return @code{true} if argument @var{arg} at the
 position indicated by @var{cum} should be passed by reference.  This
 predicate is queried after target independent reasons for being
-passed by reference, such as @code{TREE_ADDRESSABLE (type)}.
+passed by reference, such as @code{TREE_ADDRESSABLE (@var{arg}.type)}.
 
 If the hook returns true, a copy of that argument is made in memory and a
 pointer to the argument is passed instead of the argument itself.

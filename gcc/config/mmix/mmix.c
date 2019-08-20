@@ -161,7 +161,7 @@ static rtx mmix_function_value (const_tree, const_tree, bool);
 static rtx mmix_libcall_value (machine_mode, const_rtx);
 static bool mmix_function_value_regno_p (const unsigned int);
 static bool mmix_pass_by_reference (cumulative_args_t,
-				    machine_mode, const_tree, bool);
+				    const function_arg_info &);
 static bool mmix_frame_pointer_required (void);
 static void mmix_asm_trampoline_template (FILE *);
 static void mmix_trampoline_init (rtx, tree, rtx);
@@ -690,17 +690,17 @@ mmix_function_incoming_arg (cumulative_args_t argsp,
    everything that goes by value.  */
 
 static bool
-mmix_pass_by_reference (cumulative_args_t argsp_v, machine_mode mode,
-			const_tree type, bool named ATTRIBUTE_UNUSED)
+mmix_pass_by_reference (cumulative_args_t argsp_v,
+			const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *argsp = get_cumulative_args (argsp_v);
 
   /* FIXME: Check: I'm not sure the must_pass_in_stack check is
      necessary.  */
-  if (targetm.calls.must_pass_in_stack (mode, type))
+  if (targetm.calls.must_pass_in_stack (arg.mode, arg.type))
     return true;
 
-  if (MMIX_FUNCTION_ARG_SIZE (mode, type) > 8
+  if (MMIX_FUNCTION_ARG_SIZE (arg.mode, arg.type) > 8
       && !TARGET_LIBFUNC
       && (!argsp || !argsp->lib))
     return true;

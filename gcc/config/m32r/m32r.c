@@ -91,8 +91,8 @@ static void m32r_setup_incoming_varargs (cumulative_args_t, machine_mode,
 static void init_idents (void);
 static bool m32r_rtx_costs (rtx, machine_mode, int, int, int *, bool speed);
 static int m32r_memory_move_cost (machine_mode, reg_class_t, bool);
-static bool m32r_pass_by_reference (cumulative_args_t, machine_mode,
-				    const_tree, bool);
+static bool m32r_pass_by_reference (cumulative_args_t,
+				    const function_arg_info &arg);
 static int m32r_arg_partial_bytes (cumulative_args_t,
 				   const function_arg_info &);
 static rtx m32r_function_arg (cumulative_args_t, machine_mode,
@@ -680,20 +680,12 @@ memreg_operand (rtx op, machine_mode mode ATTRIBUTE_UNUSED)
   return MEM_P (op) && REG_P (XEXP (op, 0));
 }
 
-/* Return nonzero if TYPE must be passed by indirect reference.  */
+/* Return nonzero if ARG must be passed by indirect reference.  */
 
 static bool
-m32r_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			machine_mode mode, const_tree type,
-			bool named ATTRIBUTE_UNUSED)
+m32r_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  int size;
-
-  if (type)
-    size = int_size_in_bytes (type);
-  else
-    size = GET_MODE_SIZE (mode);
-
+  int size = arg.type_size_in_bytes ();
   return (size < 0 || size > 8);
 }
 
@@ -1251,8 +1243,8 @@ static bool
 m32r_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   cumulative_args_t dummy = pack_cumulative_args (NULL);
-
-  return m32r_pass_by_reference (dummy, TYPE_MODE (type), type, false);
+  function_arg_info arg (const_cast<tree> (type), /*named=*/false);
+  return m32r_pass_by_reference (dummy, arg);
 }
 
 /* Worker function for TARGET_FUNCTION_VALUE.  */

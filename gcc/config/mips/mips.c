@@ -6235,27 +6235,25 @@ mips_pad_reg_upward (machine_mode mode, tree type)
 /* Return nonzero when an argument must be passed by reference.  */
 
 static bool
-mips_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-			machine_mode mode, const_tree type,
-			bool named ATTRIBUTE_UNUSED)
+mips_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
   if (mips_abi == ABI_EABI)
     {
       int size;
 
       /* ??? How should SCmode be handled?  */
-      if (mode == DImode || mode == DFmode
-	  || mode == DQmode || mode == UDQmode
-	  || mode == DAmode || mode == UDAmode)
+      if (arg.mode == DImode || arg.mode == DFmode
+	  || arg.mode == DQmode || arg.mode == UDQmode
+	  || arg.mode == DAmode || arg.mode == UDAmode)
 	return 0;
 
-      size = type ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
+      size = arg.type_size_in_bytes ();
       return size == -1 || size > UNITS_PER_WORD;
     }
   else
     {
       /* If we have a variable-sized parameter, we have no choice.  */
-      return targetm.calls.must_pass_in_stack (mode, type);
+      return targetm.calls.must_pass_in_stack (arg.mode, arg.type);
     }
 }
 

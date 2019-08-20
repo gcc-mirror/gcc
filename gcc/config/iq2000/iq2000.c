@@ -159,8 +159,8 @@ static int  iq2000_address_cost       (rtx, machine_mode, addr_space_t,
 				       bool);
 static section *iq2000_select_section (tree, int, unsigned HOST_WIDE_INT);
 static rtx  iq2000_legitimize_address (rtx, rtx, machine_mode);
-static bool iq2000_pass_by_reference  (cumulative_args_t, machine_mode,
-				       const_tree, bool);
+static bool iq2000_pass_by_reference  (cumulative_args_t,
+				       const function_arg_info &);
 static int  iq2000_arg_partial_bytes  (cumulative_args_t,
 				       const function_arg_info &arg);
 static rtx iq2000_function_arg	      (cumulative_args_t,
@@ -2292,8 +2292,8 @@ iq2000_function_value_regno_p (const unsigned int regno)
 /* Return true when an argument must be passed by reference.  */
 
 static bool
-iq2000_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
-			  const_tree type, bool named ATTRIBUTE_UNUSED)
+iq2000_pass_by_reference (cumulative_args_t cum_v,
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int size;
@@ -2301,7 +2301,7 @@ iq2000_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
   /* We must pass by reference if we would be both passing in registers
      and the stack.  This is because any subsequent partial arg would be
      handled incorrectly in this case.  */
-  if (cum && targetm.calls.must_pass_in_stack (mode, type))
+  if (cum && targetm.calls.must_pass_in_stack (arg.mode, arg.type))
      {
        /* Don't pass the actual CUM to FUNCTION_ARG, because we would
 	  get double copies of any offsets generated for small structs
@@ -2309,15 +2309,15 @@ iq2000_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
        CUMULATIVE_ARGS temp;
 
        temp = *cum;
-       if (iq2000_function_arg (pack_cumulative_args (&temp), mode, type, named)
-	   != 0)
+       if (iq2000_function_arg (pack_cumulative_args (&temp), arg.mode,
+				arg.type, arg.named) != 0)
 	 return 1;
      }
 
-  if (type == NULL_TREE || mode == DImode || mode == DFmode)
+  if (arg.type == NULL_TREE || arg.mode == DImode || arg.mode == DFmode)
     return 0;
 
-  size = int_size_in_bytes (type);
+  size = int_size_in_bytes (arg.type);
   return size == -1 || size > UNITS_PER_WORD;
 }
 

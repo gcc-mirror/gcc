@@ -684,25 +684,15 @@ ft32_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
           ? *cum + ((3 + FT32_FUNCTION_ARG_SIZE (mode, type)) / 4) : *cum);
 }
 
-/* Return non-zero if the function argument described by TYPE is to be
+/* Return non-zero if the function argument described by ARG is to be
    passed by reference.  */
 
 static bool
-ft32_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-                        machine_mode mode, const_tree type,
-                        bool named ATTRIBUTE_UNUSED)
+ft32_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  unsigned HOST_WIDE_INT size;
-
-  if (type)
-    {
-      if (AGGREGATE_TYPE_P (type))
-        return true;
-      size = int_size_in_bytes (type);
-    }
-  else
-    size = GET_MODE_SIZE (mode);
-
+  if (arg.aggregate_type_p ())
+    return true;
+  unsigned HOST_WIDE_INT size = arg.type_size_in_bytes ();
   return size > 4 * 6;
 }
 
@@ -719,7 +709,7 @@ ft32_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
   if (*cum >= 8)
     return 0;
 
-  if (ft32_pass_by_reference (cum_v, arg.mode, arg.type, arg.named))
+  if (ft32_pass_by_reference (cum_v, arg))
     size = 4;
   else if (arg.type)
     {

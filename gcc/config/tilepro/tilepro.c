@@ -134,12 +134,11 @@ tilepro_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 /* Implement TARGET_PASS_BY_REFERENCE.  Variable sized types are
    passed by reference.  */
 static bool
-tilepro_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-			   machine_mode mode ATTRIBUTE_UNUSED,
-			   const_tree type, bool named ATTRIBUTE_UNUSED)
+tilepro_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  return (type && TYPE_SIZE (type)
-	  && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST);
+  return (arg.type
+	  && TYPE_SIZE (arg.type)
+	  && TREE_CODE (TYPE_SIZE (arg.type)) != INTEGER_CST);
 }
 
 

@@ -5710,13 +5710,10 @@ alpha_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
   return size > UNITS_PER_WORD;
 }
 
-/* Return true if TYPE should be passed by invisible reference.  */
+/* Return true if ARG should be passed by invisible reference.  */
 
 static bool
-alpha_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			 machine_mode mode,
-			 const_tree type ATTRIBUTE_UNUSED,
-			 bool named)
+alpha_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
   /* Pass float and _Complex float variable arguments by reference.
      This avoids 64-bit store from a FP register to a pretend args save area
@@ -5736,10 +5733,10 @@ alpha_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
      to worry about, and passing unpromoted _Float32 and _Complex float
      as a variable argument will actually work in the future.  */
 
-  if (mode == SFmode || mode == SCmode)
-    return !named;
+  if (arg.mode == SFmode || arg.mode == SCmode)
+    return !arg.named;
 
-  return mode == TFmode || mode == TCmode;
+  return arg.mode == TFmode || arg.mode == TCmode;
 }
 
 /* Define how to find the value returned by a function.  VALTYPE is the

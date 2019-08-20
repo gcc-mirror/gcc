@@ -3286,8 +3286,7 @@ ix86_function_arg (cumulative_args_t cum_v, machine_mode omode,
    appropriate for passing a pointer to that type.  */
 
 static bool
-ix86_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
-			const_tree type, bool)
+ix86_pass_by_reference (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
@@ -3298,9 +3297,9 @@ ix86_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
       /* See Windows x64 Software Convention.  */
       if (call_abi == MS_ABI)
 	{
-	  HOST_WIDE_INT msize = GET_MODE_SIZE (mode);
+	  HOST_WIDE_INT msize = GET_MODE_SIZE (arg.mode);
 
-	  if (type)
+	  if (tree type = arg.type)
 	    {
 	      /* Arrays are passed by reference.  */
 	      if (TREE_CODE (type) == ARRAY_TYPE)
@@ -3317,7 +3316,7 @@ ix86_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
 	  /* __m128 is passed by reference.  */
 	  return msize != 1 && msize != 2 && msize != 4 && msize != 8;
 	}
-      else if (type && int_size_in_bytes (type) == -1)
+      else if (arg.type && int_size_in_bytes (arg.type) == -1)
 	return true;
     }
 
