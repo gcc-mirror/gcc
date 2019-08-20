@@ -2200,22 +2200,16 @@ gcn_function_value_regno_p (const unsigned int n)
   return n == RETURN_VALUE_REG;
 }
 
-/* Calculate the number of registers required to hold a function argument
-   of MODE and TYPE.  */
+/* Calculate the number of registers required to hold function argument
+   ARG.  */
 
 static int
-num_arg_regs (machine_mode mode, const_tree type)
+num_arg_regs (const function_arg_info &arg)
 {
-  int size;
-
-  if (targetm.calls.must_pass_in_stack (mode, type))
+  if (targetm.calls.must_pass_in_stack (arg))
     return 0;
 
-  if (type && mode == BLKmode)
-    size = int_size_in_bytes (type);
-  else
-    size = GET_MODE_SIZE (mode);
-
+  int size = arg.promoted_size_in_bytes ();
   return (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 }
 
@@ -2263,11 +2257,11 @@ gcn_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
       if (!arg.named || arg.end_marker_p ())
 	return 0;
 
-      if (targetm.calls.must_pass_in_stack (arg.mode, arg.type))
+      if (targetm.calls.must_pass_in_stack (arg))
 	return 0;
 
       int reg_num = FIRST_PARM_REG + cum->num;
-      int num_regs = num_arg_regs (arg.mode, arg.type);
+      int num_regs = num_arg_regs (arg);
       if (num_regs > 0)
 	while (reg_num % num_regs != 0)
 	  reg_num++;
@@ -2323,7 +2317,7 @@ gcn_function_arg_advance (cumulative_args_t cum_v,
       if (!arg.named)
 	return;
 
-      int num_regs = num_arg_regs (arg.mode, arg.type);
+      int num_regs = num_arg_regs (arg);
       if (num_regs > 0)
 	while ((FIRST_PARM_REG + cum->num) % num_regs != 0)
 	  cum->num++;
@@ -2355,14 +2349,14 @@ gcn_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
   if (!arg.named)
     return 0;
 
-  if (targetm.calls.must_pass_in_stack (arg.mode, arg.type))
+  if (targetm.calls.must_pass_in_stack (arg))
     return 0;
 
   if (cum->num >= NUM_PARM_REGS)
     return 0;
 
   /* If the argument fits entirely in registers, return 0.  */
-  if (cum->num + num_arg_regs (arg.mode, arg.type) <= NUM_PARM_REGS)
+  if (cum->num + num_arg_regs (arg) <= NUM_PARM_REGS)
     return 0;
 
   return (NUM_PARM_REGS - cum->num) * UNITS_PER_WORD;

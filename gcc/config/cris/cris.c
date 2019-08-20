@@ -4046,7 +4046,7 @@ cris_setup_incoming_varargs (cumulative_args_t ca_v,
 static bool
 cris_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  return (targetm.calls.must_pass_in_stack (arg.mode, arg.type)
+  return (targetm.calls.must_pass_in_stack (arg)
 	  || CRIS_FUNCTION_ARG_SIZE (arg.mode, arg.type) > 8);
 }
 
@@ -4111,7 +4111,7 @@ static int
 cris_arg_partial_bytes (cumulative_args_t ca, const function_arg_info &arg)
 {
   if (get_cumulative_args (ca)->regs == CRIS_MAX_ARGS_IN_REGS - 1
-      && !targetm.calls.must_pass_in_stack (arg.mode, arg.type)
+      && !targetm.calls.must_pass_in_stack (arg)
       && CRIS_FUNCTION_ARG_SIZE (arg.mode, arg.type) > 4
       && CRIS_FUNCTION_ARG_SIZE (arg.mode, arg.type) <= 8)
     return UNITS_PER_WORD;

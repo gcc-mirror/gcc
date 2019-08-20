@@ -816,12 +816,12 @@ rs6000_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 /* Return true if TYPE must be passed on the stack and not in registers.  */
 
 bool
-rs6000_must_pass_in_stack (machine_mode mode, const_tree type)
+rs6000_must_pass_in_stack (const function_arg_info &arg)
 {
   if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2 || TARGET_64BIT)
-    return must_pass_in_stack_var_size (mode, type);
+    return must_pass_in_stack_var_size (arg);
   else
-    return must_pass_in_stack_var_size_or_pad (mode, type);
+    return must_pass_in_stack_var_size_or_pad (arg);
 }
 
 static inline bool
@@ -2202,11 +2202,11 @@ rs6000_parm_needs_stack (cumulative_args_t args_so_far, tree type)
   mode = promote_mode (type, TYPE_MODE (type), &unsignedp);
 
   /* If we must pass in stack, we need a stack.  */
-  if (rs6000_must_pass_in_stack (mode, type))
+  function_arg_info arg (type, mode, /*named=*/true);
+  if (rs6000_must_pass_in_stack (arg))
     return true;
 
   /* If there is no incoming register, we need a stack.  */
-  function_arg_info arg (type, mode, /*named=*/true);
   entry_parm = rs6000_function_arg (args_so_far, arg);
   if (entry_parm == NULL)
     return true;
@@ -2457,7 +2457,7 @@ setup_incoming_varargs (cumulative_args_t cum,
       first_reg_offset = next_cum.words;
       save_area = crtl->args.internal_arg_pointer;
 
-      if (targetm.calls.must_pass_in_stack (arg.mode, arg.type))
+      if (targetm.calls.must_pass_in_stack (arg))
 	first_reg_offset += rs6000_arg_size (TYPE_MODE (arg.type), arg.type);
     }
 

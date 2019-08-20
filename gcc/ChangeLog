@@ -1,5 +1,60 @@
 2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target.def (must_pass_in_stack): Take a function_arg_info instead
+	of a mode and a type.
+	* doc/tm.texi: Regenerate.
+	* calls.h (must_pass_in_stack_var_size): Take a function_arg_info
+	instead of a mode and a type.
+	(must_pass_in_stack_var_size_or_pad): Likewise.
+	* calls.c (must_pass_in_stack_var_size): Likewise.
+	(must_pass_in_stack_var_size_or_pad): Likewise.
+	(initialize_argument_information): Update call to
+	targetm.calls.must_pass_in_stack.
+	(must_pass_va_arg_on_stack): Likewise.
+	* function.c (assign_parm_find_entry_rtl): Likewise.
+	* targhooks.c (hook_pass_by_reference_must_pass_in_stack): Likewise.
+	* config/alpha/alpha.c (alpha_function_arg): Likewise.
+	(alpha_function_arg_advance): Likewise.
+	* config/cr16/cr16.c (cr16_function_arg): Likewise.
+	(cr16_function_arg_advance): Likewise.
+	* config/cris/cris.c (cris_pass_by_reference): Likewise.
+	(cris_arg_partial_bytes): Likewise.
+	* config/iq2000/iq2000.c (iq2000_pass_by_reference): Likewise.
+	* config/lm32/lm32.c (lm32_function_arg): Likewise.
+	* config/mcore/mcore.c (mcore_num_arg_regs): Likewise.
+	(mcore_function_arg, mcore_arg_partial_bytes): Likewise.
+	* config/mips/mips.c (mips_pass_by_reference): Likewise.
+	* config/mmix/mmix.c (mmix_function_arg_advance): Likewise.
+	(mmix_function_arg_1, mmix_pass_by_reference): Likewise.
+	* config/sh/sh.c (sh_pass_by_reference): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_function_arg): Likewise.
+	* config/xtensa/xtensa.c (xtensa_function_arg_advance): Likewise.
+	* config/arm/arm.c (arm_must_pass_in_stack): Take a function_arg_info
+	instead of a mode and a type.
+	* config/fr30/fr30.c (fr30_must_pass_in_stack): Likewise.
+	(fr30_num_arg_regs): Likewise.
+	(fr30_setup_incoming_varargs): Update calls accordingly.
+	(fr30_arg_partial_bytes, fr30_function_arg): Likewise.
+	(fr30_function_arg_advance): Likewise.
+	* config/frv/frv.c (frv_must_pass_in_stack): Take a function_arg_info
+	instead of a mode and a type.
+	* config/gcn/gcn.c (num_arg_regs): Likewise.
+	(gcn_function_arg, gcn_function_arg_advance): Update calls to
+	num_arg_regs and targetm.calls.must_pass_in_stack.
+	(gcn_arg_partial_bytes): Likewise.
+	* config/i386/i386.c (ix86_must_pass_in_stack): Take a
+	function_arg_info instead of a mode and a type.
+	(classify_argument): Update call accordingly.
+	* config/nds32/nds32.c (nds32_must_pass_in_stack): Take a
+	function_arg_info instead of a mode and a type.
+	* config/rs6000/rs6000-internal.h (rs6000_must_pass_in_stack):
+	Likewise.
+	* config/rs6000/rs6000-call.c (rs6000_must_pass_in_stack): Likewise.
+	(rs6000_parm_needs_stack): Update call accordingly.
+	(setup_incoming_varargs): Likewise.
+
+2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target.def (callee_copies): Take a function_arg_info instead
 	of a mode, type and named flag.
 	* doc/tm.texi: Regenerate.

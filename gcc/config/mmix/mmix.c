@@ -621,7 +621,7 @@ mmix_function_arg_advance (cumulative_args_t argsp_v,
   CUMULATIVE_ARGS *argsp = get_cumulative_args (argsp_v);
   int arg_size = MMIX_FUNCTION_ARG_SIZE (arg.mode, arg.type);
 
-  argsp->regs = ((targetm.calls.must_pass_in_stack (arg.mode, arg.type)
+  argsp->regs = ((targetm.calls.must_pass_in_stack (arg)
 		  || (arg_size > 8
 		      && !TARGET_LIBFUNC
 		      && !argsp->lib))
@@ -647,7 +647,7 @@ mmix_function_arg_1 (const cumulative_args_t argsp_v,
       : NULL_RTX;
 
   return (argsp->regs < MMIX_MAX_ARGS_IN_REGS
-	  && !targetm.calls.must_pass_in_stack (arg.mode, arg.type)
+	  && !targetm.calls.must_pass_in_stack (arg)
 	  && (GET_MODE_BITSIZE (arg.mode) <= 64
 	      || argsp->lib
 	      || TARGET_LIBFUNC))
@@ -686,7 +686,7 @@ mmix_pass_by_reference (cumulative_args_t argsp_v,
 
   /* FIXME: Check: I'm not sure the must_pass_in_stack check is
      necessary.  */
-  if (targetm.calls.must_pass_in_stack (arg.mode, arg.type))
+  if (targetm.calls.must_pass_in_stack (arg))
     return true;
 
   if (MMIX_FUNCTION_ARG_SIZE (arg.mode, arg.type) > 8

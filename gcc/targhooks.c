@@ -323,7 +323,7 @@ bool
 hook_pass_by_reference_must_pass_in_stack (cumulative_args_t,
 					   const function_arg_info &arg)
 {
-  return targetm.calls.must_pass_in_stack (arg.mode, arg.type);
+  return targetm.calls.must_pass_in_stack (arg);
 }
 
 /* Return true if a parameter follows callee copies conventions.  This

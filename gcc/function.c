@@ -2552,8 +2552,7 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
 
   /* If this parameter was passed both in registers and in the stack, use
      the copy on the stack.  */
-  if (targetm.calls.must_pass_in_stack (data->promoted_mode,
-					data->passed_type))
+  if (targetm.calls.must_pass_in_stack (arg))
     entry_parm = 0;
 
   if (entry_parm)

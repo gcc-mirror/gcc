@@ -5585,7 +5585,7 @@ alpha_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 
       num_args = cum->num_args;
       if (num_args >= 6
-	  || targetm.calls.must_pass_in_stack (arg.mode, arg.type))
+	  || targetm.calls.must_pass_in_stack (arg))
 	return NULL_RTX;
     }
 #elif TARGET_ABI_OSF
@@ -5596,7 +5596,7 @@ alpha_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 
       if (arg.end_marker_p ())
 	basereg = 16;
-      else if (targetm.calls.must_pass_in_stack (arg.mode, arg.type))
+      else if (targetm.calls.must_pass_in_stack (arg))
 	return NULL_RTX;
     }
 #else
@@ -5613,7 +5613,7 @@ alpha_function_arg_advance (cumulative_args_t cum_v,
 			    const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  bool onstack = targetm.calls.must_pass_in_stack (arg.mode, arg.type);
+  bool onstack = targetm.calls.must_pass_in_stack (arg);
   int increment = onstack ? 6 : ALPHA_ARG_SIZE (arg.mode, arg.type);
 
 #if TARGET_ABI_OSF

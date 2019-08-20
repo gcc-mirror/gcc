@@ -2713,7 +2713,8 @@ mcore_num_arg_regs (machine_mode mode, const_tree type)
 {
   int size;
 
-  if (targetm.calls.must_pass_in_stack (mode, type))
+  function_arg_info arg (const_cast<tree> (type), mode, /*named=*/true);
+  if (targetm.calls.must_pass_in_stack (arg))
     return 0;
 
   if (type && mode == BLKmode)
@@ -2803,7 +2804,7 @@ mcore_function_arg (cumulative_args_t cum, const function_arg_info &arg)
   if (!arg.named || arg.end_marker_p ())
     return 0;
 
-  if (targetm.calls.must_pass_in_stack (arg.mode, arg.type))
+  if (targetm.calls.must_pass_in_stack (arg))
     return 0;
 
   arg_reg = ROUND_REG (*get_cumulative_args (cum), arg.mode);
@@ -2848,7 +2849,7 @@ mcore_arg_partial_bytes (cumulative_args_t cum, const function_arg_info &arg)
   if (!arg.named)
     return 0;
 
-  if (targetm.calls.must_pass_in_stack (arg.mode, arg.type))
+  if (targetm.calls.must_pass_in_stack (arg))
     return 0;
       
   /* REG is not the *hardware* register number of the register that holds

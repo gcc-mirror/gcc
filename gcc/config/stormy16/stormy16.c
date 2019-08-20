@@ -1239,7 +1239,7 @@ xstormy16_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 
   if (arg.end_marker_p ())
     return const0_rtx;
-  if (targetm.calls.must_pass_in_stack (arg.mode, arg.type)
+  if (targetm.calls.must_pass_in_stack (arg)
       || (*cum + XSTORMY16_WORD_SIZE (arg.type, arg.mode)
 	  > NUM_ARGUMENT_REGISTERS))
     return NULL_RTX;

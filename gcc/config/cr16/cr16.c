@@ -606,7 +606,7 @@ cr16_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
   if (arg.end_marker_p ())
     return NULL_RTX;
 
-  if (targetm.calls.must_pass_in_stack (arg.mode, arg.type) || (cum->ints < 0))
+  if (targetm.calls.must_pass_in_stack (arg) || (cum->ints < 0))
     return NULL_RTX;
 
   if (arg.mode == BLKmode)
@@ -672,7 +672,7 @@ cr16_function_arg_advance (cumulative_args_t cum_v,
   if (!cum->last_parm_in_reg)
     return;
 
-  if (targetm.calls.must_pass_in_stack (arg.mode, arg.type) || (cum->ints < 0))
+  if (targetm.calls.must_pass_in_stack (arg) || (cum->ints < 0))
     return;
 
   if ((arg.mode == SImode) || (arg.mode == HImode)
