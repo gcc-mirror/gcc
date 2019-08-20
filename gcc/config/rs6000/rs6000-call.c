@@ -2170,7 +2170,6 @@ rs6000_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 static bool
 rs6000_parm_needs_stack (cumulative_args_t args_so_far, tree type)
 {
-  machine_mode mode;
   int unsignedp;
   rtx entry_parm;
 
@@ -2193,16 +2192,14 @@ rs6000_parm_needs_stack (cumulative_args_t args_so_far, tree type)
     type = TREE_TYPE (first_field (type));
 
   /* See if this arg was passed by invisible reference.  */
-  if (pass_by_reference (get_cumulative_args (args_so_far),
-			 function_arg_info (type, /*named=*/true)))
-    type = build_pointer_type (type);
+  function_arg_info arg (type, /*named=*/true);
+  apply_pass_by_reference_rules (get_cumulative_args (args_so_far), arg);
 
   /* Find mode as it is passed by the ABI.  */
   unsignedp = TYPE_UNSIGNED (type);
-  mode = promote_mode (type, TYPE_MODE (type), &unsignedp);
+  arg.mode = promote_mode (arg.type, arg.mode, &unsignedp);
 
   /* If we must pass in stack, we need a stack.  */
-  function_arg_info arg (type, mode, /*named=*/true);
   if (rs6000_must_pass_in_stack (arg))
     return true;
 

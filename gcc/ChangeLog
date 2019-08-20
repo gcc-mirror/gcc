@@ -1,5 +1,15 @@
 2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* calls.h (apply_pass_by_reference_rules): Declare.
+	* calls.c (apply_pass_by_reference_rules): New function.
+	* config/c6x/c6x.c (c6x_call_saved_register_used): Use it.
+	* config/rs6000/rs6000-call.c (rs6000_parm_needs_stack): Likewise.
+	* config/s390/s390.c (s390_call_saved_register_used): Likewise.
+	* function.c (assign_parm_find_data_types): Likewise.
+	* var-tracking.c (prepare_call_arguments): Likewise.
+
+2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target.def (must_pass_in_stack): Take a function_arg_info instead
 	of a mode and a type.
 	* doc/tm.texi: Regenerate.

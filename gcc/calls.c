@@ -935,6 +935,22 @@ pass_va_arg_by_reference (tree type)
   return pass_by_reference (NULL, function_arg_info (type, /*named=*/false));
 }
 
+/* Decide whether ARG, which occurs in the state described by CA,
+   should be passed by reference.  Return true if so and update
+   ARG accordingly.  */
+
+bool
+apply_pass_by_reference_rules (CUMULATIVE_ARGS *ca, function_arg_info &arg)
+{
+  if (pass_by_reference (ca, arg))
+    {
+      arg.type = build_pointer_type (arg.type);
+      arg.mode = TYPE_MODE (arg.type);
+      return true;
+    }
+  return false;
+}
+
 /* Return true if ARG, which is passed by reference, should be callee
    copied instead of caller copied.  */
 
