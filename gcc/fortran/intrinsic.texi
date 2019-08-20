@@ -4876,11 +4876,13 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{INTEGER} or @code{REAL}
-@item @var{Y} @tab The type shall be the same type and kind as @var{X}.
+@item @var{Y} @tab The type shall be the same type and kind as @var{X}.  (As
+a GNU extension, arguments of different kinds are permitted.)
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER} or @code{REAL}.
+The return value is of type @code{INTEGER} or @code{REAL}.  (As a GNU
+extension, kind is the largest kind of the actual arguments.)
 
 @item @emph{Example}:
 @smallexample
@@ -10607,14 +10609,16 @@ Elemental function
 @multitable @columnfractions .15 .70
 @item @var{A} @tab Shall be a scalar of type @code{INTEGER} or @code{REAL}.
 @item @var{P} @tab Shall be a scalar of the same type and kind as @var{A} 
-and not equal to zero.
+and not equal to zero.  (As a GNU extension, arguments of different kinds are
+permitted.)
 @end multitable
 
 @item @emph{Return value}:
 The return value is the result of @code{A - (INT(A/P) * P)}. The type
 and kind of the return value is the same as that of the arguments. The
 returned value has the same sign as A and a magnitude less than the
-magnitude of P.
+magnitude of P.  (As a GNU extension, kind is the largest kind of the actual
+arguments.)
 
 @item @emph{Example}:
 @smallexample
@@ -10678,11 +10682,13 @@ Elemental function
 @multitable @columnfractions .15 .70
 @item @var{A} @tab Shall be a scalar of type @code{INTEGER} or @code{REAL}.
 @item @var{P} @tab Shall be a scalar of the same type and kind as @var{A}. 
-It shall not be zero.
+It shall not be zero.  (As a GNU extension, arguments of different kinds are
+permitted.)
 @end multitable
 
 @item @emph{Return value}:
-The type and kind of the result are those of the arguments.
+The type and kind of the result are those of the arguments.  (As a GNU
+extension, kind is the largest kind of the actual arguments.)
 @table @asis
 @item If @var{A} and @var{P} are of type @code{INTEGER}:
 @code{MODULO(A,P)} has the value @var{R} such that @code{A=Q*P+R}, where
@@ -12917,7 +12923,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{A} @tab Shall be of type @code{INTEGER} or @code{REAL}
-@item @var{B} @tab Shall be of the same type and kind as @var{A}
+@item @var{B} @tab Shall be of the same type and kind as @var{A}.
 @end multitable
 
 @item @emph{Return value}:
