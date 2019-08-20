@@ -21092,8 +21092,24 @@ package body Sem_Prag is
                Decl := Parent (Ent);
 
                if Present (Expression (Decl)) then
-                  Error_Pragma_Arg
-                    ("object for pragma% cannot have initialization", Arg1);
+                  --  Variables in Persistent_BSS cannot be initialized, so
+                  --  turn off any initialization that might be caused by
+                  --  pragmas Initialize_Scalars or Normalize_Scalars.
+
+                  if Kill_Range_Check (Expression (Decl)) then
+                     Prag :=
+                       Make_Pragma (Loc,
+                         Name_Suppress_Initialization,
+                         Pragma_Argument_Associations => New_List (
+                           Make_Pragma_Argument_Association (Loc,
+                             Expression => New_Occurrence_Of (Ent, Loc))));
+                     Insert_Before (N, Prag);
+                     Analyze (Prag);
+
+                  else
+                     Error_Pragma_Arg
+                       ("object for pragma% cannot have initialization", Arg1);
+                  end if;
                end if;
 
                if not Is_Potentially_Persistent_Type (Etype (Ent)) then
@@ -21104,7 +21120,7 @@ package body Sem_Prag is
 
                Prag :=
                  Make_Linker_Section_Pragma
-                   (Ent, Sloc (N), ".persistent.bss");
+                   (Ent, Loc, ".persistent.bss");
                Insert_After (N, Prag);
                Analyze (Prag);
 

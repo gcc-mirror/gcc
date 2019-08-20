@@ -1,3 +1,11 @@
+2019-08-20  Bob Duff  <duff@adacore.com>
+
+	* sem_prag.adb (Persistent_BSS): If an initialization is present
+	because of Initialize_Scalars or Normalize_Scalars, generate an
+	implicit pragma Suppress_Initialization to remove that, because
+	initialization is not allowed for these variables. Other
+	initializations remain illegal.
+
 2019-08-20  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch3.adb (OK_For_Limited_Init_In_05): In the case of type
