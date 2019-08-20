@@ -5812,6 +5812,9 @@ package body Sem_Ch13 is
                if ASIS_Mode then
                   null;
 
+               elsif Size <= 0 then
+                  Error_Msg_N ("Object_Size must be positive", Expr);
+
                elsif Is_Scalar_Type (U_Ent) then
                   if Size /= 8 and then Size /= 16 and then Size /= 32
                     and then UI_Mod (Size, 64) /= 0

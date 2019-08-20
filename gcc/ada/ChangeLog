@@ -1,5 +1,12 @@
 2019-08-20  Bob Duff  <duff@adacore.com>
 
+	* sem_ch13.adb (Object_Size): Give an error for zero. It really
+	rubs me the wrong way that we don't honor "for T'Object_Size use
+	0;", but it's not important enough to fix. In any case, if we're
+	not going to obey the clause, we should give an error.
+
+2019-08-20  Bob Duff  <duff@adacore.com>
+
 	* errout.adb (Error_Msg_Internal): Set Warn_Err in case of
 	Is_Style_Msg.
 	* erroutc.adb (Output_Msg_Text): Do Warnings_Treated_As_Errors
