@@ -1710,8 +1710,7 @@ block_move_libcall_safe_for_call_parm (void)
       {
 	machine_mode mode = TYPE_MODE (TREE_VALUE (arg));
 	function_arg_info arg_info (mode, /*named=*/true);
-	rtx tmp = targetm.calls.function_arg (args_so_far, mode,
-					      NULL_TREE, true);
+	rtx tmp = targetm.calls.function_arg (args_so_far, arg_info);
 	if (!tmp || !REG_P (tmp))
 	  return false;
 	if (targetm.calls.arg_partial_bytes (args_so_far, arg_info))

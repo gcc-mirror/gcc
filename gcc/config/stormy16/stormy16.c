@@ -1233,17 +1233,17 @@ xstormy16_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 }
 
 static rtx
-xstormy16_function_arg (cumulative_args_t cum_v, machine_mode mode,
-			const_tree type, bool named ATTRIBUTE_UNUSED)
+xstormy16_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     return const0_rtx;
-  if (targetm.calls.must_pass_in_stack (mode, type)
-      || *cum + XSTORMY16_WORD_SIZE (type, mode) > NUM_ARGUMENT_REGISTERS)
+  if (targetm.calls.must_pass_in_stack (arg.mode, arg.type)
+      || (*cum + XSTORMY16_WORD_SIZE (arg.type, arg.mode)
+	  > NUM_ARGUMENT_REGISTERS))
     return NULL_RTX;
-  return gen_rtx_REG (mode, *cum + FIRST_ARGUMENT_REGISTER);
+  return gen_rtx_REG (arg.mode, *cum + FIRST_ARGUMENT_REGISTER);
 }
 
 /* Build the va_list type.

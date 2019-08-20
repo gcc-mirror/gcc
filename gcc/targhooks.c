@@ -828,19 +828,13 @@ default_function_arg_padding (machine_mode mode, const_tree type)
 }
 
 rtx
-default_function_arg (cumulative_args_t ca ATTRIBUTE_UNUSED,
-		      machine_mode mode ATTRIBUTE_UNUSED,
-		      const_tree type ATTRIBUTE_UNUSED,
-		      bool named ATTRIBUTE_UNUSED)
+default_function_arg (cumulative_args_t, const function_arg_info &)
 {
   gcc_unreachable ();
 }
 
 rtx
-default_function_incoming_arg (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			       machine_mode mode ATTRIBUTE_UNUSED,
-			       const_tree type ATTRIBUTE_UNUSED,
-			       bool named ATTRIBUTE_UNUSED)
+default_function_incoming_arg (cumulative_args_t, const function_arg_info &)
 {
   gcc_unreachable ();
 }

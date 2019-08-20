@@ -162,8 +162,7 @@ static rtx pdp11_function_value (const_tree, const_tree, bool);
 static rtx pdp11_libcall_value (machine_mode, const_rtx);
 static bool pdp11_function_value_regno_p (const unsigned int);
 static void pdp11_trampoline_init (rtx, tree, rtx);
-static rtx pdp11_function_arg (cumulative_args_t, machine_mode,
-			       const_tree, bool);
+static rtx pdp11_function_arg (cumulative_args_t, const function_arg_info &);
 static void pdp11_function_arg_advance (cumulative_args_t,
 					machine_mode, const_tree, bool);
 static void pdp11_conditional_register_usage (void);
@@ -2180,26 +2179,10 @@ pdp11_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   emit_move_insn (mem, fnaddr);
 }
 
-/* Worker function for TARGET_FUNCTION_ARG.
-
-   Determine where to put an argument to a function.
-   Value is zero to push the argument on the stack,
-   or a hard register in which to store the argument.
-
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
-   CUM is a variable of type CUMULATIVE_ARGS which gives info about
-    the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
+/* Worker function for TARGET_FUNCTION_ARG.  */
 
 static rtx
-pdp11_function_arg (cumulative_args_t cum ATTRIBUTE_UNUSED,
-		    machine_mode mode ATTRIBUTE_UNUSED,
-		    const_tree type ATTRIBUTE_UNUSED,
-		    bool named ATTRIBUTE_UNUSED)
+pdp11_function_arg (cumulative_args_t, const function_arg_info &)
 {
   return NULL_RTX;
 }

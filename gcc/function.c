@@ -2517,11 +2517,9 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
   targetm.calls.warn_parameter_passing_abi (all->args_so_far,
 					    data->passed_type);
 
-  entry_parm = targetm.calls.function_incoming_arg (all->args_so_far,
-						    data->promoted_mode,
-						    data->passed_type,
-						    data->named_arg);
-
+  function_arg_info arg (data->passed_type, data->promoted_mode,
+			 data->named_arg);
+  entry_parm = targetm.calls.function_incoming_arg (all->args_so_far, arg);
   if (entry_parm == 0)
     data->promoted_mode = data->passed_mode;
 
@@ -2544,9 +2542,10 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
       if (targetm.calls.pretend_outgoing_varargs_named (all->args_so_far))
 	{
 	  rtx tem;
+	  function_arg_info named_arg (data->passed_type, data->promoted_mode,
+				       /*named=*/true);
 	  tem = targetm.calls.function_incoming_arg (all->args_so_far,
-						     data->promoted_mode,
-						     data->passed_type, true);
+						     named_arg);
 	  in_regs = tem != NULL;
 	}
     }

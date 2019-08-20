@@ -1729,15 +1729,10 @@ rs6000_finish_function_arg (machine_mode mode, rtx *rvec, int k)
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.  It is
     not modified in this routine.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).
+   ARG is a description of the argument.
 
    On RS/6000 the first eight words of non-FP are normally in registers
    and the rest are pushed.  Under AIX, the first 13 FP args are in registers.
@@ -1750,14 +1745,15 @@ rs6000_finish_function_arg (machine_mode mode, rtx *rvec, int k)
    doesn't support PARALLEL anyway.
 
    Note that for args passed by reference, function_arg will be called
-   with MODE and TYPE set to that of the pointer to the arg, not the arg
-   itself.  */
+   with ARG describing the pointer to the arg, not the arg itself.  */
 
 rtx
-rs6000_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		     const_tree type, bool named)
+rs6000_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+  tree type = arg.type;
+  machine_mode mode = arg.mode;
+  bool named = arg.named;
   enum rs6000_abi abi = DEFAULT_ABI;
   machine_mode elt_mode;
   int n_elts;
@@ -1766,7 +1762,7 @@ rs6000_function_arg (cumulative_args_t cum_v, machine_mode mode,
      bit that V.4 uses to say fp args were passed in registers.
      Assume that we don't need the marker for software floating point,
      or compiler generated library calls.  */
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     {
       if (abi == ABI_V4
 	  && (cum->call_cookie & CALL_LIBCALL) == 0
@@ -2210,7 +2206,8 @@ rs6000_parm_needs_stack (cumulative_args_t args_so_far, tree type)
     return true;
 
   /* If there is no incoming register, we need a stack.  */
-  entry_parm = rs6000_function_arg (args_so_far, mode, type, true);
+  function_arg_info arg (type, mode, /*named=*/true);
+  entry_parm = rs6000_function_arg (args_so_far, arg);
   if (entry_parm == NULL)
     return true;
 
@@ -2220,7 +2217,6 @@ rs6000_parm_needs_stack (cumulative_args_t args_so_far, tree type)
     return true;
 
   /* Also true if we're partially in registers and partially not.  */
-  function_arg_info arg (type, mode, /*named=*/true);
   if (rs6000_arg_partial_bytes (args_so_far, arg) != 0)
     return true;
 

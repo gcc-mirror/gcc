@@ -119,26 +119,20 @@ v850_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
   return size > 8;
 }
 
-/* Return an RTX to represent where an argument with mode MODE
-   and type TYPE will be passed to a function.  If the result
-   is NULL_RTX, the argument will be pushed.  */
+/* Return an RTX to represent where argument ARG will be passed to a function.
+   If the result is NULL_RTX, the argument will be pushed.  */
 
 static rtx
-v850_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		   const_tree type, bool named)
+v850_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   rtx result = NULL_RTX;
   int size, align;
 
-  if (!named)
+  if (!arg.named)
     return NULL_RTX;
 
-  if (mode == BLKmode)
-    size = int_size_in_bytes (type);
-  else
-    size = GET_MODE_SIZE (mode);
-
+  size = arg.promoted_size_in_bytes ();
   size = (size + UNITS_PER_WORD -1) & ~(UNITS_PER_WORD -1);
 
   if (size < 1)
@@ -150,8 +144,8 @@ v850_function_arg (cumulative_args_t cum_v, machine_mode mode,
 
   if (!TARGET_GCC_ABI)
     align = UNITS_PER_WORD;
-  else if (size <= UNITS_PER_WORD && type)
-    align = TYPE_ALIGN (type) / BITS_PER_UNIT;
+  else if (size <= UNITS_PER_WORD && arg.type)
+    align = TYPE_ALIGN (arg.type) / BITS_PER_UNIT;
   else
     align = size;
 
@@ -160,23 +154,23 @@ v850_function_arg (cumulative_args_t cum_v, machine_mode mode,
   if (cum->nbytes > 4 * UNITS_PER_WORD)
     return NULL_RTX;
 
-  if (type == NULL_TREE
+  if (arg.type == NULL_TREE
       && cum->nbytes + size > 4 * UNITS_PER_WORD)
     return NULL_RTX;
 
   switch (cum->nbytes / UNITS_PER_WORD)
     {
     case 0:
-      result = gen_rtx_REG (mode, 6);
+      result = gen_rtx_REG (arg.mode, 6);
       break;
     case 1:
-      result = gen_rtx_REG (mode, 7);
+      result = gen_rtx_REG (arg.mode, 7);
       break;
     case 2:
-      result = gen_rtx_REG (mode, 8);
+      result = gen_rtx_REG (arg.mode, 8);
       break;
     case 3:
-      result = gen_rtx_REG (mode, 9);
+      result = gen_rtx_REG (arg.mode, 9);
       break;
     default:
       result = NULL_RTX;

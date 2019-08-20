@@ -346,7 +346,8 @@ prepare_call_address (tree fndecl_or_type, rtx funexp, rtx static_chain_value,
    It is zero if this call doesn't want a structure value.
 
    NEXT_ARG_REG is the rtx that results from executing
-     targetm.calls.function_arg (&args_so_far, VOIDmode, void_type_node, true)
+     targetm.calls.function_arg (&args_so_far,
+				 function_arg_info::end_marker ());
    just after all the args have had their registers assigned.
    This could be whatever you like, but normally it is the first
    arg-register beyond those used for args in this call,
@@ -2124,8 +2125,8 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 
       targetm.calls.warn_parameter_passing_abi (args_so_far, type);
 
-      args[i].reg = targetm.calls.function_arg (args_so_far, mode, type,
-						argpos < n_named_args);
+      function_arg_info arg (type, mode, argpos < n_named_args);
+      args[i].reg = targetm.calls.function_arg (args_so_far, arg);
 
       if (args[i].reg && CONST_INT_P (args[i].reg))
 	args[i].reg = NULL;
@@ -2135,12 +2136,10 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	 arguments have to go into the incoming registers.  */
       if (targetm.calls.function_incoming_arg != targetm.calls.function_arg)
 	args[i].tail_call_reg
-	  = targetm.calls.function_incoming_arg (args_so_far, mode, type,
-						 argpos < n_named_args);
+	  = targetm.calls.function_incoming_arg (args_so_far, arg);
       else
 	args[i].tail_call_reg = args[i].reg;
 
-      function_arg_info arg (type, mode, argpos < n_named_args);
       if (args[i].reg)
 	args[i].partial = targetm.calls.arg_partial_bytes (args_so_far, arg);
 
@@ -4244,14 +4243,11 @@ expand_call (tree exp, rtx target, int ignore)
       /* Set up next argument register.  For sibling calls on machines
 	 with register windows this should be the incoming register.  */
       if (pass == 0)
-	next_arg_reg = targetm.calls.function_incoming_arg (args_so_far,
-							    VOIDmode,
-							    void_type_node,
-							    true);
+	next_arg_reg = targetm.calls.function_incoming_arg
+	  (args_so_far, function_arg_info::end_marker ());
       else
-	next_arg_reg = targetm.calls.function_arg (args_so_far,
-						   VOIDmode, void_type_node,
-						   true);
+	next_arg_reg = targetm.calls.function_arg
+	  (args_so_far, function_arg_info::end_marker ());
 
       if (pass == 1 && (return_flags & ERF_RETURNS_ARG))
 	{
@@ -4869,8 +4865,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       argvec[count].partial = 0;
 
       function_arg_info ptr_arg (Pmode, /*named=*/true);
-      argvec[count].reg = targetm.calls.function_arg (args_so_far,
-						      Pmode, NULL_TREE, true);
+      argvec[count].reg = targetm.calls.function_arg (args_so_far, ptr_arg);
       gcc_assert (targetm.calls.arg_partial_bytes (args_so_far, ptr_arg) == 0);
 
       locate_and_pad_parm (Pmode, NULL_TREE,
@@ -4953,8 +4948,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       function_arg_info arg (mode, /*named=*/true);
       argvec[count].mode = mode;
       argvec[count].value = convert_modes (mode, GET_MODE (val), val, unsigned_p);
-      argvec[count].reg = targetm.calls.function_arg (args_so_far, mode,
-						      NULL_TREE, true);
+      argvec[count].reg = targetm.calls.function_arg (args_so_far, arg);
 
       argvec[count].partial
 	= targetm.calls.arg_partial_bytes (args_so_far, arg);
@@ -5332,7 +5326,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	       original_args_size.constant, args_size.constant,
 	       struct_value_size,
 	       targetm.calls.function_arg (args_so_far,
-					   VOIDmode, void_type_node, true),
+					   function_arg_info::end_marker ()),
 	       valreg,
 	       old_inhibit_defer_pop + 1, call_fusage, flags, args_so_far);
 

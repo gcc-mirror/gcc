@@ -3829,9 +3829,7 @@ spu_function_value (const_tree type, const_tree func ATTRIBUTE_UNUSED)
 }
 
 static rtx
-spu_function_arg (cumulative_args_t cum_v,
-		  machine_mode mode,
-		  const_tree type, bool named ATTRIBUTE_UNUSED)
+spu_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int byte_size;
@@ -3839,8 +3837,7 @@ spu_function_arg (cumulative_args_t cum_v,
   if (*cum >= MAX_REGISTER_ARGS)
     return 0;
 
-  byte_size = ((mode == BLKmode)
-	       ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
+  byte_size = arg.promoted_size_in_bytes ();
 
   /* The ABI does not allow parameters to be passed partially in
      reg and partially in stack. */
@@ -3848,7 +3845,7 @@ spu_function_arg (cumulative_args_t cum_v,
     return 0;
 
   /* Make sure small structs are left justified in a register. */
-  if ((mode == BLKmode || (type && AGGREGATE_TYPE_P (type)))
+  if ((arg.mode == BLKmode || arg.aggregate_type_p ())
       && byte_size < UNITS_PER_WORD && byte_size > 0)
     {
       machine_mode smode;
@@ -3859,10 +3856,10 @@ spu_function_arg (cumulative_args_t cum_v,
       gr_reg = gen_rtx_EXPR_LIST (VOIDmode,
 				  gen_rtx_REG (smode, FIRST_ARG_REGNUM + *cum),
 				  const0_rtx);
-      return gen_rtx_PARALLEL (mode, gen_rtvec (1, gr_reg));
+      return gen_rtx_PARALLEL (arg.mode, gen_rtvec (1, gr_reg));
     }
   else
-    return gen_rtx_REG (mode, FIRST_ARG_REGNUM + *cum);
+    return gen_rtx_REG (arg.mode, FIRST_ARG_REGNUM + *cum);
 }
 
 static void

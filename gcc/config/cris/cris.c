@@ -144,10 +144,9 @@ static bool cris_pass_by_reference (cumulative_args_t,
 				    const function_arg_info &);
 static int cris_arg_partial_bytes (cumulative_args_t,
 				   const function_arg_info &);
-static rtx cris_function_arg (cumulative_args_t, machine_mode,
-			      const_tree, bool);
+static rtx cris_function_arg (cumulative_args_t, const function_arg_info &);
 static rtx cris_function_incoming_arg (cumulative_args_t,
-				       machine_mode, const_tree, bool);
+				       const function_arg_info &);
 static void cris_function_arg_advance (cumulative_args_t, machine_mode,
 				       const_tree, bool);
 static rtx_insn *cris_md_asm_adjust (vec<rtx> &, vec<rtx> &,
@@ -4121,15 +4120,13 @@ cris_arg_partial_bytes (cumulative_args_t ca, const function_arg_info &arg)
 }
 
 static rtx
-cris_function_arg_1 (cumulative_args_t ca_v,
-		     machine_mode mode ATTRIBUTE_UNUSED,
-		     const_tree type ATTRIBUTE_UNUSED,
-		     bool named, bool incoming)
+cris_function_arg_1 (cumulative_args_t ca_v, const function_arg_info &arg,
+		     bool incoming)
 {
   const CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
 
-  if ((!incoming || named) && ca->regs < CRIS_MAX_ARGS_IN_REGS)
-    return gen_rtx_REG (mode, CRIS_FIRST_ARG_REG + ca->regs);
+  if ((!incoming || arg.named) && ca->regs < CRIS_MAX_ARGS_IN_REGS)
+    return gen_rtx_REG (arg.mode, CRIS_FIRST_ARG_REG + ca->regs);
   else
     return NULL_RTX;
 }
@@ -4138,10 +4135,9 @@ cris_function_arg_1 (cumulative_args_t ca_v,
    The void_type_node is sent as a "closing" call.  */
 
 static rtx
-cris_function_arg (cumulative_args_t ca, machine_mode mode,
-		   const_tree type, bool named)
+cris_function_arg (cumulative_args_t ca, const function_arg_info &arg)
 {
-  return cris_function_arg_1 (ca, mode, type, named, false);
+  return cris_function_arg_1 (ca, arg, false);
 }
 
 /* Worker function for TARGET_FUNCTION_INCOMING_ARG.
@@ -4149,13 +4145,12 @@ cris_function_arg (cumulative_args_t ca, machine_mode mode,
    The differences between this and the previous, is that this one checks
    that an argument is named, since incoming stdarg/varargs arguments are
    pushed onto the stack, and we don't have to check against the "closing"
-   void_type_node TYPE parameter.  */
+   function_arg_info::end_marker parameter.  */
 
 static rtx
-cris_function_incoming_arg (cumulative_args_t ca, machine_mode mode,
-			    const_tree type, bool named)
+cris_function_incoming_arg (cumulative_args_t ca, const function_arg_info &arg)
 {
-  return cris_function_arg_1 (ca, mode, type, named, true);
+  return cris_function_arg_1 (ca, arg, true);
 }
 
 /* Worker function for TARGET_FUNCTION_ARG_ADVANCE.  */

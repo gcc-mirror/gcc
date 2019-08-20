@@ -183,8 +183,7 @@ static poly_int64 m68k_return_pops_args (tree, tree, poly_int64);
 static rtx m68k_delegitimize_address (rtx);
 static void m68k_function_arg_advance (cumulative_args_t, machine_mode,
 				       const_tree, bool);
-static rtx m68k_function_arg (cumulative_args_t, machine_mode,
-			      const_tree, bool);
+static rtx m68k_function_arg (cumulative_args_t, const function_arg_info &);
 static bool m68k_cannot_force_const_mem (machine_mode mode, rtx x);
 static bool m68k_output_addr_const_extra (FILE *, rtx);
 static void m68k_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
@@ -1464,10 +1463,7 @@ m68k_ok_for_sibcall_p (tree decl, tree exp)
 /* On the m68k all args are always pushed.  */
 
 static rtx
-m68k_function_arg (cumulative_args_t cum ATTRIBUTE_UNUSED,
-		   machine_mode mode ATTRIBUTE_UNUSED,
-		   const_tree type ATTRIBUTE_UNUSED,
-		   bool named ATTRIBUTE_UNUSED)
+m68k_function_arg (cumulative_args_t, const function_arg_info &)
 {
   return NULL_RTX;
 }

@@ -1784,23 +1784,16 @@ csky_initial_elimination_offset (int from, int to)
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
+   ARG is a description of the argument.  */
 static rtx
-csky_function_arg (cumulative_args_t pcum_v, machine_mode mode,
-		   const_tree type ATTRIBUTE_UNUSED,
-		   bool named ATTRIBUTE_UNUSED)
+csky_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
 
   if (*pcum < CSKY_NPARM_REGS)
-    return gen_rtx_REG (mode, CSKY_FIRST_PARM_REGNUM + *pcum);
+    return gen_rtx_REG (arg.mode, CSKY_FIRST_PARM_REGNUM + *pcum);
 
   return NULL_RTX;
 }

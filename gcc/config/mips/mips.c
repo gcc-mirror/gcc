@@ -5976,17 +5976,16 @@ mips_strict_argument_naming (cumulative_args_t ca ATTRIBUTE_UNUSED)
 /* Implement TARGET_FUNCTION_ARG.  */
 
 static rtx
-mips_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		   const_tree type, bool named)
+mips_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   struct mips_arg_info info;
 
-  /* We will be called with a mode of VOIDmode after the last argument
+  /* We will be called with an end marker after the last argument
      has been seen.  Whatever we return will be passed to the call expander.
      If we need a MIPS16 fp_code, return a REG with the code stored as
      the mode.  */
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     {
       if (TARGET_MIPS16 && cum->fp_code != 0)
 	return gen_rtx_REG ((machine_mode) cum->fp_code, 0);
@@ -5994,7 +5993,7 @@ mips_function_arg (cumulative_args_t cum_v, machine_mode mode,
 	return NULL;
     }
 
-  mips_get_arg_info (&info, cum, mode, type, named);
+  mips_get_arg_info (&info, cum, arg.mode, arg.type, arg.named);
 
   /* Return straight away if the whole argument is passed on the stack.  */
   if (info.reg_offset == MAX_ARGS_IN_REGISTERS)
@@ -6005,16 +6004,16 @@ mips_function_arg (cumulative_args_t cum_v, machine_mode mode,
      in a floating-point register.  */
   if (TARGET_NEWABI
       && TARGET_HARD_FLOAT
-      && named
-      && type != 0
-      && TREE_CODE (type) == RECORD_TYPE
-      && TYPE_SIZE_UNIT (type)
-      && tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
+      && arg.named
+      && arg.type != 0
+      && TREE_CODE (arg.type) == RECORD_TYPE
+      && TYPE_SIZE_UNIT (arg.type)
+      && tree_fits_uhwi_p (TYPE_SIZE_UNIT (arg.type)))
     {
       tree field;
 
       /* First check to see if there is any such field.  */
-      for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+      for (field = TYPE_FIELDS (arg.type); field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL
 	    && SCALAR_FLOAT_TYPE_P (TREE_TYPE (field))
 	    && TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD
@@ -6033,10 +6032,10 @@ mips_function_arg (cumulative_args_t cum_v, machine_mode mode,
 
 	  /* assign_parms checks the mode of ENTRY_PARM, so we must
 	     use the actual mode here.  */
-	  ret = gen_rtx_PARALLEL (mode, rtvec_alloc (info.reg_words));
+	  ret = gen_rtx_PARALLEL (arg.mode, rtvec_alloc (info.reg_words));
 
 	  bitpos = 0;
-	  field = TYPE_FIELDS (type);
+	  field = TYPE_FIELDS (arg.type);
 	  for (i = 0; i < info.reg_words; i++)
 	    {
 	      rtx reg;
@@ -6069,13 +6068,13 @@ mips_function_arg (cumulative_args_t cum_v, machine_mode mode,
      and the imaginary part goes in the upper register.  */
   if (TARGET_NEWABI
       && info.fpr_p
-      && GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
+      && GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT)
     {
       rtx real, imag;
       machine_mode inner;
       unsigned int regno;
 
-      inner = GET_MODE_INNER (mode);
+      inner = GET_MODE_INNER (arg.mode);
       regno = FP_ARG_FIRST + info.reg_offset;
       if (info.reg_words * UNITS_PER_WORD == GET_MODE_SIZE (inner))
 	{
@@ -6093,11 +6092,11 @@ mips_function_arg (cumulative_args_t cum_v, machine_mode mode,
 				    gen_rtx_REG (inner,
 						 regno + info.reg_words / 2),
 				    GEN_INT (GET_MODE_SIZE (inner)));
-	  return gen_rtx_PARALLEL (mode, gen_rtvec (2, real, imag));
+	  return gen_rtx_PARALLEL (arg.mode, gen_rtvec (2, real, imag));
 	}
     }
 
-  return gen_rtx_REG (mode, mips_arg_regno (&info, TARGET_HARD_FLOAT));
+  return gen_rtx_REG (arg.mode, mips_arg_regno (&info, TARGET_HARD_FLOAT));
 }
 
 /* Implement TARGET_FUNCTION_ARG_ADVANCE.  */

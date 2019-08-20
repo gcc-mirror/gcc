@@ -1682,24 +1682,17 @@ bfin_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
+   ARG is a description of the argument.  */
 
 static rtx
-bfin_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		   const_tree type, bool named ATTRIBUTE_UNUSED)
+bfin_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int bytes
-    = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
+  int bytes = arg.promoted_size_in_bytes ();
 
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     /* Compute operand 2 of the call insn.  */
     return GEN_INT (cum->call_cookie);
 
@@ -1707,7 +1700,7 @@ bfin_function_arg (cumulative_args_t cum_v, machine_mode mode,
     return NULL_RTX;
 
   if (cum->nregs)
-    return gen_rtx_REG (mode, *(cum->arg_regs));
+    return gen_rtx_REG (arg.mode, *(cum->arg_regs));
 
   return NULL_RTX;
 }

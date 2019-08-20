@@ -2743,16 +2743,15 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
 /* Implement TARGET_FUNCTION_ARG.  */
 
 static rtx
-riscv_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		    const_tree type, bool named)
+riscv_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   struct riscv_arg_info info;
 
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     return NULL;
 
-  return riscv_get_arg_info (&info, cum, mode, type, named, false);
+  return riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
 }
 
 /* Implement TARGET_FUNCTION_ARG_ADVANCE.  */

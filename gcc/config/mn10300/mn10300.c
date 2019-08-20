@@ -1532,12 +1532,11 @@ mn10300_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
   return (size > 8 || size == 0);
 }
 
-/* Return an RTX to represent where a value with mode MODE will be returned
-   from a function.  If the result is NULL_RTX, the argument is pushed.  */
+/* Return an RTX to represent where argument ARG will be passed to a function.
+   If the result is NULL_RTX, the argument is pushed.  */
 
 static rtx
-mn10300_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		      const_tree type, bool named ATTRIBUTE_UNUSED)
+mn10300_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   rtx result = NULL_RTX;
@@ -1547,11 +1546,7 @@ mn10300_function_arg (cumulative_args_t cum_v, machine_mode mode,
   int nregs = 2;
 
   /* Figure out the size of the object to be passed.  */
-  if (mode == BLKmode)
-    size = int_size_in_bytes (type);
-  else
-    size = GET_MODE_SIZE (mode);
-
+  size = arg.promoted_size_in_bytes ();
   cum->nbytes = (cum->nbytes + 3) & ~3;
 
   /* Don't pass this arg via a register if all the argument registers
@@ -1561,17 +1556,17 @@ mn10300_function_arg (cumulative_args_t cum_v, machine_mode mode,
 
   /* Don't pass this arg via a register if it would be split between
      registers and memory.  */
-  if (type == NULL_TREE
+  if (arg.type == NULL_TREE
       && cum->nbytes + size > nregs * UNITS_PER_WORD)
     return result;
 
   switch (cum->nbytes / UNITS_PER_WORD)
     {
     case 0:
-      result = gen_rtx_REG (mode, FIRST_ARGUMENT_REGNUM);
+      result = gen_rtx_REG (arg.mode, FIRST_ARGUMENT_REGNUM);
       break;
     case 1:
-      result = gen_rtx_REG (mode, FIRST_ARGUMENT_REGNUM + 1);
+      result = gen_rtx_REG (arg.mode, FIRST_ARGUMENT_REGNUM + 1);
       break;
     default:
       break;

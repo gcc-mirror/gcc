@@ -164,7 +164,7 @@ static bool iq2000_pass_by_reference  (cumulative_args_t,
 static int  iq2000_arg_partial_bytes  (cumulative_args_t,
 				       const function_arg_info &arg);
 static rtx iq2000_function_arg	      (cumulative_args_t,
-				       machine_mode, const_tree, bool);
+				       const function_arg_info &);
 static void iq2000_function_arg_advance (cumulative_args_t,
 					 machine_mode, const_tree, bool);
 static pad_direction iq2000_function_arg_padding (machine_mode, const_tree);
@@ -1224,14 +1224,15 @@ iq2000_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
     }
 }
 
-/* Return an RTL expression containing the register for the given mode MODE
-   and type TYPE in CUM, or 0 if the argument is to be passed on the stack.  */
+/* Return an RTL expression containing the register for argument ARG in CUM,
+   or 0 if the argument is to be passed on the stack.  */
 
 static rtx
-iq2000_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		     const_tree type, bool named)
+iq2000_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+  tree type = arg.type;
+  machine_mode mode = arg.mode;
   rtx ret;
   int regbase = -1;
   int bias = 0;
@@ -1248,7 +1249,7 @@ iq2000_function_arg (cumulative_args_t cum_v, machine_mode mode,
 	       cum->gp_reg_found, cum->arg_number, cum->arg_words,
 	       GET_MODE_NAME (mode));
       fprintf (stderr, "%p", (const void *) type);
-      fprintf (stderr, ", %d ) = ", named);
+      fprintf (stderr, ", %d ) = ", arg.named);
     }
 
 
@@ -1306,7 +1307,7 @@ iq2000_function_arg (cumulative_args_t cum_v, machine_mode mode,
       gcc_assert (regbase != -1);
 
       if (! type || TREE_CODE (type) != RECORD_TYPE
-	  || ! named  || ! TYPE_SIZE_UNIT (type)
+	  || ! arg.named || ! TYPE_SIZE_UNIT (type)
 	  || ! tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
 	ret = gen_rtx_REG (mode, regbase + *arg_words + bias);
       else
@@ -1378,11 +1379,11 @@ iq2000_function_arg (cumulative_args_t cum_v, machine_mode mode,
 		 struct_p ? ", [struct]" : "");
     }
 
-  /* We will be called with a mode of VOIDmode after the last argument
+  /* We will be called with an end marker after the last argument
      has been seen.  Whatever we return will be passed to the call
      insn.  If we need any shifts for small structures, return them in
      a PARALLEL.  */
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     {
       if (cum->num_adjusts > 0)
 	ret = gen_rtx_PARALLEL ((machine_mode) cum->fp_code,
@@ -1967,8 +1968,8 @@ iq2000_expand_prologue (void)
 	  passed_mode = Pmode;
 	}
 
-      entry_parm = iq2000_function_arg (args_so_far, passed_mode,
-					passed_type, true);
+      function_arg_info arg (passed_type, passed_mode, /*named=*/true);
+      entry_parm = iq2000_function_arg (args_so_far, arg);
 
       iq2000_function_arg_advance (args_so_far, passed_mode,
 				   passed_type, true);
@@ -2013,8 +2014,8 @@ iq2000_expand_prologue (void)
      iq2000_unction_arg has encoded a PARALLEL rtx, holding a vector of
      adjustments to be made as the next_arg_reg variable, so we split up
      the insns, and emit them separately.  */
-  next_arg_reg = iq2000_function_arg (args_so_far, VOIDmode,
-				      void_type_node, true);
+  next_arg_reg = iq2000_function_arg (args_so_far,
+				      function_arg_info::end_marker ());
   if (next_arg_reg != 0 && GET_CODE (next_arg_reg) == PARALLEL)
     {
       rtvec adjust = XVEC (next_arg_reg, 0);
@@ -2309,8 +2310,7 @@ iq2000_pass_by_reference (cumulative_args_t cum_v,
        CUMULATIVE_ARGS temp;
 
        temp = *cum;
-       if (iq2000_function_arg (pack_cumulative_args (&temp), arg.mode,
-				arg.type, arg.named) != 0)
+       if (iq2000_function_arg (pack_cumulative_args (&temp), arg) != 0)
 	 return 1;
      }
 

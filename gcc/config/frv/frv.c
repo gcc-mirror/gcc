@@ -382,10 +382,9 @@ static rtx frv_struct_value_rtx			(tree, int);
 static bool frv_must_pass_in_stack (machine_mode mode, const_tree type);
 static int frv_arg_partial_bytes (cumulative_args_t,
 				  const function_arg_info &);
-static rtx frv_function_arg (cumulative_args_t, machine_mode,
-			     const_tree, bool);
-static rtx frv_function_incoming_arg (cumulative_args_t, machine_mode,
-				      const_tree, bool);
+static rtx frv_function_arg (cumulative_args_t, const function_arg_info &);
+static rtx frv_function_incoming_arg (cumulative_args_t,
+				      const function_arg_info &);
 static void frv_function_arg_advance (cumulative_args_t, machine_mode,
 				       const_tree, bool);
 static unsigned int frv_function_arg_boundary	(machine_mode,
@@ -3099,13 +3098,12 @@ frv_function_arg_boundary (machine_mode mode ATTRIBUTE_UNUSED,
 }
 
 static rtx
-frv_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
-		    const_tree type ATTRIBUTE_UNUSED, bool named,
+frv_function_arg_1 (cumulative_args_t cum_v, const function_arg_info &arg,
 		    bool incoming ATTRIBUTE_UNUSED)
 {
   const CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  machine_mode xmode = (mode == BLKmode) ? SImode : mode;
+  machine_mode xmode = (arg.mode == BLKmode) ? SImode : arg.mode;
   int arg_num = *cum;
   rtx ret;
   const char *debstr;
@@ -3132,23 +3130,22 @@ frv_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
   if (TARGET_DEBUG_ARG)
     fprintf (stderr,
 	     "function_arg: words = %2d, mode = %4s, named = %d, size = %3d, arg = %s\n",
-	     arg_num, GET_MODE_NAME (mode), named, GET_MODE_SIZE (mode), debstr);
+	     arg_num, GET_MODE_NAME (arg.mode), arg.named,
+	     GET_MODE_SIZE (arg.mode), debstr);
 
   return ret;
 }
 
 static rtx
-frv_function_arg (cumulative_args_t cum, machine_mode mode,
-		  const_tree type, bool named)
+frv_function_arg (cumulative_args_t cum, const function_arg_info &arg)
 {
-  return frv_function_arg_1 (cum, mode, type, named, false);
+  return frv_function_arg_1 (cum, arg, false);
 }
 
 static rtx
-frv_function_incoming_arg (cumulative_args_t cum, machine_mode mode,
-			   const_tree type, bool named)
+frv_function_incoming_arg (cumulative_args_t cum, const function_arg_info &arg)
 {
-  return frv_function_arg_1 (cum, mode, type, named, true);
+  return frv_function_arg_1 (cum, arg, true);
 }
 
 

@@ -216,13 +216,10 @@ tilegx_function_arg_boundary (machine_mode mode, const_tree type)
 
 /* Implement TARGET_FUNCTION_ARG.  */
 static rtx
-tilegx_function_arg (cumulative_args_t cum_v,
-		     machine_mode mode,
-		     const_tree type, bool named ATTRIBUTE_UNUSED)
+tilegx_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS cum = *get_cumulative_args (cum_v);
-  int byte_size = ((mode == BLKmode)
-		   ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
+  int byte_size = arg.promoted_size_in_bytes ();
   bool doubleword_aligned_p;
 
   if (cum >= TILEGX_NUM_ARG_REGS)
@@ -230,7 +227,7 @@ tilegx_function_arg (cumulative_args_t cum_v,
 
   /* See whether the argument has doubleword alignment.  */
   doubleword_aligned_p =
-    tilegx_function_arg_boundary (mode, type) > BITS_PER_WORD;
+    tilegx_function_arg_boundary (arg.mode, arg.type) > BITS_PER_WORD;
 
   if (doubleword_aligned_p)
     cum += cum & 1;
@@ -241,7 +238,7 @@ tilegx_function_arg (cumulative_args_t cum_v,
       > TILEGX_NUM_ARG_REGS)
     return NULL_RTX;
 
-  return gen_rtx_REG (mode, cum);
+  return gen_rtx_REG (arg.mode, cum);
 }
 
 

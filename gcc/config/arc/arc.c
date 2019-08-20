@@ -6449,63 +6449,27 @@ arc_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
   return ret;
 }
 
-/* This function is used to control a function argument is passed in a
-   register, and which register.
-
-   The arguments are CUM, of type CUMULATIVE_ARGS, which summarizes
-   (in a way defined by INIT_CUMULATIVE_ARGS and FUNCTION_ARG_ADVANCE)
-   all of the previous arguments so far passed in registers; MODE, the
-   machine mode of the argument; TYPE, the data type of the argument
-   as a tree node or 0 if that is not known (which happens for C
-   support library functions); and NAMED, which is 1 for an ordinary
-   argument and 0 for nameless arguments that correspond to `...' in
-   the called function's prototype.
-
-   The returned value should either be a `reg' RTX for the hard
-   register in which to pass the argument, or zero to pass the
-   argument on the stack.
-
-   For machines like the Vax and 68000, where normally all arguments
-   are pushed, zero suffices as a definition.
-
-   The usual way to make the ANSI library `stdarg.h' work on a machine
-   where some arguments are usually passed in registers, is to cause
-   nameless arguments to be passed on the stack instead.  This is done
-   by making the function return 0 whenever NAMED is 0.
-
-   You may use the macro `MUST_PASS_IN_STACK (MODE, TYPE)' in the
-   definition of this function to determine if this argument is of a
-   type that must be passed in the stack.  If `REG_PARM_STACK_SPACE'
-   is not defined and the function returns non-zero for such an
-   argument, the compiler will abort.  If `REG_PARM_STACK_SPACE' is
-   defined, the argument will be computed in the stack and then loaded
-   into a register.
-
-   The function is used to implement macro FUNCTION_ARG.  */
-/* On the ARC the first MAX_ARC_PARM_REGS args are normally in registers
-   and the rest are pushed.  */
+/* Implement TARGET_FUNCTION_ARG.  On the ARC the first MAX_ARC_PARM_REGS
+   args are normally in registers and the rest are pushed.  */
 
 static rtx
-arc_function_arg (cumulative_args_t cum_v,
-		  machine_mode mode,
-		  const_tree type ATTRIBUTE_UNUSED,
-		  bool named ATTRIBUTE_UNUSED)
+arc_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int arg_num = *cum;
   rtx ret;
   const char *debstr ATTRIBUTE_UNUSED;
 
-  arg_num = ROUND_ADVANCE_CUM (arg_num, mode, type);
+  arg_num = ROUND_ADVANCE_CUM (arg_num, arg.mode, arg.type);
   /* Return a marker for use in the call instruction.  */
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     {
       ret = const0_rtx;
       debstr = "<0>";
     }
   else if (GPR_REST_ARG_REGS (arg_num) > 0)
     {
-      ret = gen_rtx_REG (mode, arg_num);
+      ret = gen_rtx_REG (arg.mode, arg_num);
       debstr = reg_names [arg_num];
     }
   else

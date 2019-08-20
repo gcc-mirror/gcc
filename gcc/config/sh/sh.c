@@ -301,8 +301,7 @@ static bool sh_callee_copies (cumulative_args_t, machine_mode,
 static int sh_arg_partial_bytes (cumulative_args_t, const function_arg_info &);
 static void sh_function_arg_advance (cumulative_args_t, machine_mode,
 				     const_tree, bool);
-static rtx sh_function_arg (cumulative_args_t, machine_mode,
-			    const_tree, bool);
+static rtx sh_function_arg (cumulative_args_t, const function_arg_info &);
 static int sh_dwarf_calling_convention (const_tree);
 static void sh_encode_section_info (tree, rtx, int);
 static bool sh2a_function_vector_p (tree);
@@ -8010,30 +8009,25 @@ sh_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).
+   ARG is a description of the argument.
 
    On SH the first args are normally in registers
    and the rest are pushed.  Any arg that starts within the first
    NPARM_REGS words is at least partially passed in a register unless
    its data type forbids.  */
 static rtx
-sh_function_arg (cumulative_args_t ca_v, machine_mode mode,
-		 const_tree type, bool named)
+sh_function_arg (cumulative_args_t ca_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
+  machine_mode mode = arg.mode;
 
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     return ca->renesas_abi ? const1_rtx : const0_rtx;
 
-  if (sh_pass_in_reg_p (*ca, mode, type)
-      && (named || ! (TARGET_HITACHI || ca->renesas_abi)))
+  if (sh_pass_in_reg_p (*ca, mode, arg.type)
+      && (arg.named || ! (TARGET_HITACHI || ca->renesas_abi)))
     {
       int regno;
 
@@ -10819,8 +10813,8 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
       sh_function_arg_advance (pack_cumulative_args (&cum), Pmode, ptype, true);
     }
-  this_rtx
-    = sh_function_arg (pack_cumulative_args (&cum), Pmode, ptr_type_node, true);
+  function_arg_info ptr_arg (ptr_type_node, Pmode, /*named=*/true);
+  this_rtx = sh_function_arg (pack_cumulative_args (&cum), ptr_arg);
 
   /* For SHcompact, we only have r0 for a scratch register: r1 is the
      static chain pointer (even if you can't have nested virtual functions

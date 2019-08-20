@@ -76,8 +76,7 @@ static struct machine_function *m32c_init_machine_status (void);
 static void m32c_insert_attributes (tree, tree *);
 static bool m32c_legitimate_address_p (machine_mode, rtx, bool);
 static bool m32c_addr_space_legitimate_address_p (machine_mode, rtx, bool, addr_space_t);
-static rtx m32c_function_arg (cumulative_args_t, machine_mode,
-			      const_tree, bool);
+static rtx m32c_function_arg (cumulative_args_t, const function_arg_info &);
 static bool m32c_pass_by_reference (cumulative_args_t,
 				    const function_arg_info &);
 static void m32c_function_arg_advance (cumulative_args_t, machine_mode,
@@ -1320,8 +1319,7 @@ m32c_push_rounding (poly_int64 n)
 #undef TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG m32c_function_arg
 static rtx
-m32c_function_arg (cumulative_args_t ca_v,
-		   machine_mode mode, const_tree type, bool named)
+m32c_function_arg (cumulative_args_t ca_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
 
@@ -1329,38 +1327,38 @@ m32c_function_arg (cumulative_args_t ca_v,
   rtx rv = NULL_RTX;
 #if DEBUG0
   fprintf (stderr, "func_arg %d (%s, %d)\n",
-	   ca->parm_num, mode_name[mode], named);
-  debug_tree ((tree)type);
+	   ca->parm_num, mode_name[arg.mode], arg.named);
+  debug_tree (arg.type);
 #endif
 
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     return GEN_INT (0);
 
-  if (ca->force_mem || !named)
+  if (ca->force_mem || !arg.named)
     {
 #if DEBUG0
       fprintf (stderr, "func arg: force %d named %d, mem\n", ca->force_mem,
-	       named);
+	       arg.named);
 #endif
       return NULL_RTX;
     }
 
-  if (type && INTEGRAL_TYPE_P (type) && POINTER_TYPE_P (type))
+  if (arg.type && INTEGRAL_TYPE_P (arg.type) && POINTER_TYPE_P (arg.type))
     return NULL_RTX;
 
-  if (type && AGGREGATE_TYPE_P (type))
+  if (arg.aggregate_type_p ())
     return NULL_RTX;
 
   switch (ca->parm_num)
     {
     case 1:
-      if (GET_MODE_SIZE (mode) == 1 || GET_MODE_SIZE (mode) == 2)
-	rv = gen_rtx_REG (mode, TARGET_A16 ? R1_REGNO : R0_REGNO);
+      if (GET_MODE_SIZE (arg.mode) == 1 || GET_MODE_SIZE (arg.mode) == 2)
+	rv = gen_rtx_REG (arg.mode, TARGET_A16 ? R1_REGNO : R0_REGNO);
       break;
 
     case 2:
-      if (TARGET_A16 && GET_MODE_SIZE (mode) == 2)
-	rv = gen_rtx_REG (mode, R2_REGNO);
+      if (TARGET_A16 && GET_MODE_SIZE (arg.mode) == 2)
+	rv = gen_rtx_REG (arg.mode, R2_REGNO);
       break;
     }
 

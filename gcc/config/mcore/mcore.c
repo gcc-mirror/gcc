@@ -133,8 +133,7 @@ static bool       mcore_return_in_memory	(const_tree, const_tree);
 static int        mcore_arg_partial_bytes       (cumulative_args_t,
 						 const function_arg_info &);
 static rtx        mcore_function_arg            (cumulative_args_t,
-						 machine_mode,
-						 const_tree, bool);
+						 const function_arg_info &);
 static void       mcore_function_arg_advance    (cumulative_args_t,
 						 machine_mode,
 						 const_tree, bool);
@@ -2788,14 +2787,9 @@ mcore_function_value (const_tree valtype, const_tree func)
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).
+   ARG is a description of the argument.
 
    On MCore the first args are normally in registers
    and the rest are pushed.  Any arg that starts within the first
@@ -2803,21 +2797,21 @@ mcore_function_value (const_tree valtype, const_tree func)
    its data type forbids.  */
 
 static rtx
-mcore_function_arg (cumulative_args_t cum, machine_mode mode,
-		    const_tree type, bool named)
+mcore_function_arg (cumulative_args_t cum, const function_arg_info &arg)
 {
   int arg_reg;
   
-  if (! named || mode == VOIDmode)
+  if (!arg.named || arg.end_marker_p ())
     return 0;
 
-  if (targetm.calls.must_pass_in_stack (mode, type))
+  if (targetm.calls.must_pass_in_stack (arg.mode, arg.type))
     return 0;
 
-  arg_reg = ROUND_REG (*get_cumulative_args (cum), mode);
+  arg_reg = ROUND_REG (*get_cumulative_args (cum), arg.mode);
   
   if (arg_reg < NPARM_REGS)
-    return handle_structs_in_regs (mode, type, FIRST_PARM_REG + arg_reg);
+    return handle_structs_in_regs (arg.mode, arg.type,
+				   FIRST_PARM_REG + arg_reg);
 
   return 0;
 }

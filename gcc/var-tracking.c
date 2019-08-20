@@ -6294,11 +6294,11 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 		{
 		  tree struct_addr = build_pointer_type (TREE_TYPE (type));
 		  machine_mode mode = TYPE_MODE (struct_addr);
+		  function_arg_info arg (struct_addr, /*named=*/true);
 		  rtx reg;
 		  INIT_CUMULATIVE_ARGS (args_so_far_v, type, NULL_RTX, fndecl,
 					nargs + 1);
-		  reg = targetm.calls.function_arg (args_so_far, mode,
-						    struct_addr, true);
+		  reg = targetm.calls.function_arg (args_so_far, arg);
 		  targetm.calls.function_arg_advance (args_so_far, mode,
 						      struct_addr, true);
 		  if (reg == NULL_RTX)
@@ -6318,11 +6318,9 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 				      nargs);
 	      if (obj_type_ref && TYPE_ARG_TYPES (type) != void_list_node)
 		{
-		  machine_mode mode;
 		  t = TYPE_ARG_TYPES (type);
-		  mode = TYPE_MODE (TREE_VALUE (t));
-		  this_arg = targetm.calls.function_arg (args_so_far, mode,
-							 TREE_VALUE (t), true);
+		  function_arg_info arg (TREE_VALUE (t), /*named=*/true);
+		  this_arg = targetm.calls.function_arg (args_so_far, arg);
 		  if (this_arg && !REG_P (this_arg))
 		    this_arg = NULL_RTX;
 		  else if (this_arg == NULL_RTX)
@@ -6436,8 +6434,8 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 	    if (pass_by_reference (&args_so_far_v, orig_arg))
 	      argtype = build_pointer_type (argtype);
 	    machine_mode mode = TYPE_MODE (argtype);
-	    reg = targetm.calls.function_arg (args_so_far, mode,
-					      argtype, true);
+	    function_arg_info arg (argtype, /*named=*/true);
+	    reg = targetm.calls.function_arg (args_so_far, arg);
 	    if (TREE_CODE (argtype) == REFERENCE_TYPE
 		&& INTEGRAL_TYPE_P (TREE_TYPE (argtype))
 		&& reg

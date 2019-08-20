@@ -499,16 +499,15 @@ c6x_init_cumulative_args (CUMULATIVE_ARGS *cum, const_tree fntype, rtx libname,
     }
 }
 
-/* Implements the macro FUNCTION_ARG defined in c6x.h.  */
+/* Implement TARGET_FUNCTION_ARG.  */
 
 static rtx
-c6x_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		  const_tree type, bool named ATTRIBUTE_UNUSED)
+c6x_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   if (cum->count >= cum->nregs)
     return NULL_RTX;
-  if (type)
+  if (tree type = arg.type)
     {
       HOST_WIDE_INT size = int_size_in_bytes (type);
       if (TARGET_BIG_ENDIAN && AGGREGATE_TYPE_P (type))
@@ -519,11 +518,11 @@ c6x_function_arg (cumulative_args_t cum_v, machine_mode mode,
 	      rtx reg2 = gen_rtx_REG (SImode, argument_registers[cum->count]);
 	      rtvec vec = gen_rtvec (2, gen_rtx_EXPR_LIST (VOIDmode, reg1, const0_rtx),
 				     gen_rtx_EXPR_LIST (VOIDmode, reg2, GEN_INT (4)));
-	      return gen_rtx_PARALLEL (mode, vec);
+	      return gen_rtx_PARALLEL (arg.mode, vec);
 	    }
 	}
     }
-  return gen_rtx_REG (mode, argument_registers[cum->count]);
+  return gen_rtx_REG (arg.mode, argument_registers[cum->count]);
 }
 
 static void
@@ -1134,7 +1133,8 @@ c6x_call_saved_register_used (tree call_expr)
  	  type = build_pointer_type (type);
  	}
 
-       parm_rtx = c6x_function_arg (cum, mode, type, 0);
+       function_arg_info arg (type, mode, /*named=*/false);
+       parm_rtx = c6x_function_arg (cum, arg);
 
        c6x_function_arg_advance (cum, mode, type, 0);
 

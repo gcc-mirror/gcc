@@ -3206,77 +3206,69 @@ function_arg_ms_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
 /* Return where to put the arguments to a function.
    Return zero to push the argument on the stack, or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.  TYPE is the data type of the
-   argument.  It is null for libcalls where that information may not be
-   available.  CUM gives information about the preceding args and about
-   the function being called.  NAMED is nonzero if this argument is a
-   named parameter (otherwise it is an extra parameter matching an
-   ellipsis).  */
+   ARG describes the argument while CUM gives information about the
+   preceding args and about the function being called.  */
 
 static rtx
-ix86_function_arg (cumulative_args_t cum_v, machine_mode omode,
-		   const_tree type, bool named)
+ix86_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  machine_mode mode = omode;
+  machine_mode mode = arg.mode;
   HOST_WIDE_INT bytes, words;
-  rtx arg;
+  rtx reg;
 
   if (!cum->caller && cfun->machine->func_type != TYPE_NORMAL)
     {
-      gcc_assert (type != NULL_TREE);
-      if (POINTER_TYPE_P (type))
+      gcc_assert (arg.type != NULL_TREE);
+      if (POINTER_TYPE_P (arg.type))
 	{
 	  /* This is the pointer argument.  */
-	  gcc_assert (TYPE_MODE (type) == Pmode);
+	  gcc_assert (TYPE_MODE (arg.type) == Pmode);
 	  /* It is at -WORD(AP) in the current frame in interrupt and
 	     exception handlers.  */
-	  arg = plus_constant (Pmode, arg_pointer_rtx, -UNITS_PER_WORD);
+	  reg = plus_constant (Pmode, arg_pointer_rtx, -UNITS_PER_WORD);
 	}
       else
 	{
 	  gcc_assert (cfun->machine->func_type == TYPE_EXCEPTION
-		      && TREE_CODE (type) == INTEGER_TYPE
-		      && TYPE_MODE (type) == word_mode);
+		      && TREE_CODE (arg.type) == INTEGER_TYPE
+		      && TYPE_MODE (arg.type) == word_mode);
 	  /* The error code is the word-mode integer argument at
 	     -2 * WORD(AP) in the current frame of the exception
 	     handler.  */
-	  arg = gen_rtx_MEM (word_mode,
+	  reg = gen_rtx_MEM (word_mode,
 			     plus_constant (Pmode,
 					    arg_pointer_rtx,
 					    -2 * UNITS_PER_WORD));
 	}
-      return arg;
+      return reg;
     }
 
-  if (mode == BLKmode)
-    bytes = int_size_in_bytes (type);
-  else
-    bytes = GET_MODE_SIZE (mode);
+  bytes = arg.promoted_size_in_bytes ();
   words = CEIL (bytes, UNITS_PER_WORD);
 
   /* To simplify the code below, represent vector types with a vector mode
      even if MMX/SSE are not active.  */
-  if (type && TREE_CODE (type) == VECTOR_TYPE)
-    mode = type_natural_mode (type, cum, false);
+  if (arg.type && TREE_CODE (arg.type) == VECTOR_TYPE)
+    mode = type_natural_mode (arg.type, cum, false);
 
   if (TARGET_64BIT)
     {
       enum calling_abi call_abi = cum ? cum->call_abi : ix86_abi;
 
       if (call_abi == MS_ABI)
-	arg = function_arg_ms_64 (cum, mode, omode, named, bytes);
+	reg = function_arg_ms_64 (cum, mode, arg.mode, arg.named, bytes);
       else
-	arg = function_arg_64 (cum, mode, omode, type, named);
+	reg = function_arg_64 (cum, mode, arg.mode, arg.type, arg.named);
     }
   else
-    arg = function_arg_32 (cum, mode, omode, type, bytes, words);
+    reg = function_arg_32 (cum, mode, arg.mode, arg.type, bytes, words);
 
   /* Track if there are outgoing arguments on stack.  */
-  if (arg == NULL_RTX && cum->caller)
+  if (reg == NULL_RTX && cum->caller)
     cfun->machine->outgoing_args_on_stack = true;
 
-  return arg;
+  return reg;
 }
 
 /* A C expression that indicates when an argument must be passed by

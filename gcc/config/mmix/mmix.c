@@ -151,12 +151,9 @@ static machine_mode mmix_promote_function_mode (const_tree,
 	                                             int *, const_tree, int);
 static void mmix_function_arg_advance (cumulative_args_t, machine_mode,
 				       const_tree, bool);
-static rtx mmix_function_arg_1 (const cumulative_args_t, machine_mode,
-				const_tree, bool, bool);
-static rtx mmix_function_incoming_arg (cumulative_args_t, machine_mode,
-				       const_tree, bool);
-static rtx mmix_function_arg (cumulative_args_t, machine_mode,
-			      const_tree, bool);
+static rtx mmix_function_incoming_arg (cumulative_args_t,
+				       const function_arg_info &);
+static rtx mmix_function_arg (cumulative_args_t, const function_arg_info &);
 static rtx mmix_function_value (const_tree, const_tree, bool);
 static rtx mmix_libcall_value (machine_mode, const_rtx);
 static bool mmix_function_value_regno_p (const unsigned int);
@@ -636,28 +633,25 @@ mmix_function_arg_advance (cumulative_args_t argsp_v, machine_mode mode,
 
 static rtx
 mmix_function_arg_1 (const cumulative_args_t argsp_v,
-		     machine_mode mode,
-		     const_tree type,
-		     bool named ATTRIBUTE_UNUSED,
-		     bool incoming)
+		     const function_arg_info &arg, bool incoming)
 {
   CUMULATIVE_ARGS *argsp = get_cumulative_args (argsp_v);
 
   /* Last-argument marker.  */
-  if (type == void_type_node)
+  if (arg.end_marker_p ())
     return (argsp->regs < MMIX_MAX_ARGS_IN_REGS)
-      ? gen_rtx_REG (mode,
+      ? gen_rtx_REG (arg.mode,
 		     (incoming
 		      ? MMIX_FIRST_INCOMING_ARG_REGNUM
 		      : MMIX_FIRST_ARG_REGNUM) + argsp->regs)
       : NULL_RTX;
 
   return (argsp->regs < MMIX_MAX_ARGS_IN_REGS
-	  && !targetm.calls.must_pass_in_stack (mode, type)
-	  && (GET_MODE_BITSIZE (mode) <= 64
+	  && !targetm.calls.must_pass_in_stack (arg.mode, arg.type)
+	  && (GET_MODE_BITSIZE (arg.mode) <= 64
 	      || argsp->lib
 	      || TARGET_LIBFUNC))
-    ? gen_rtx_REG (mode,
+    ? gen_rtx_REG (arg.mode,
 		   (incoming
 		    ? MMIX_FIRST_INCOMING_ARG_REGNUM
 		    : MMIX_FIRST_ARG_REGNUM)
@@ -669,21 +663,16 @@ mmix_function_arg_1 (const cumulative_args_t argsp_v,
    one that must go on stack.  */
 
 static rtx
-mmix_function_arg (cumulative_args_t argsp,
-		   machine_mode mode,
-		   const_tree type,
-		   bool named)
+mmix_function_arg (cumulative_args_t argsp, const function_arg_info &arg)
 {
-  return mmix_function_arg_1 (argsp, mode, type, named, false);
+  return mmix_function_arg_1 (argsp, arg, false);
 }
 
 static rtx
 mmix_function_incoming_arg (cumulative_args_t argsp,
-			    machine_mode mode,
-			    const_tree type,
-			    bool named)
+			    const function_arg_info &arg)
 {
-  return mmix_function_arg_1 (argsp, mode, type, named, true);
+  return mmix_function_arg_1 (argsp, arg, true);
 }
 
 /* Returns nonzero for everything that goes by reference, 0 for

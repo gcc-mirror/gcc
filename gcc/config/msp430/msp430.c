@@ -710,16 +710,14 @@ msp430_promote_prototypes (const_tree fntype ATTRIBUTE_UNUSED)
 
 rtx
 msp430_function_arg (cumulative_args_t cap,
-		     machine_mode mode,
-		     const_tree type,
-		     bool named)
+		     const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *ca = get_cumulative_args (cap);
 
-  msp430_evaluate_arg (cap, mode, type, named);
+  msp430_evaluate_arg (cap, arg.mode, arg.type, arg.named);
 
   if (ca->reg_count)
-    return gen_rtx_REG (mode, ca->start_reg);
+    return gen_rtx_REG (arg.mode, ca->start_reg);
 
   return 0;
 }

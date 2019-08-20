@@ -4801,16 +4801,15 @@ on_stack:
 /* Implement TARGET_FUNCTION_ARG.  */
 
 static rtx
-aarch64_function_arg (cumulative_args_t pcum_v, machine_mode mode,
-		      const_tree type, bool named)
+aarch64_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
   gcc_assert (pcum->pcs_variant == ARM_PCS_AAPCS64);
 
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     return NULL_RTX;
 
-  aarch64_layout_arg (pcum_v, mode, type, named);
+  aarch64_layout_arg (pcum_v, arg.mode, arg.type, arg.named);
   return pcum->aapcs_reg;
 }
 

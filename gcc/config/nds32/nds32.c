@@ -1868,19 +1868,20 @@ nds32_can_eliminate (const int from_reg, const int to_reg)
 /* -- Passing Arguments in Registers.  */
 
 static rtx
-nds32_function_arg (cumulative_args_t ca, machine_mode mode,
-		    const_tree type, bool named)
+nds32_function_arg (cumulative_args_t ca, const function_arg_info &arg)
 {
   unsigned int regno;
   CUMULATIVE_ARGS *cum = get_cumulative_args (ca);
+  tree type = arg.type;
+  machine_mode mode = arg.mode;
 
   /* The last time this hook is called,
-     it is called with MODE == VOIDmode.  */
-  if (mode == VOIDmode)
+     it is called with an end marker.  */
+  if (arg.end_marker_p ())
     return NULL_RTX;
 
   /* For nameless arguments, we need to take care it individually.  */
-  if (!named)
+  if (!arg.named)
     {
       /* If we are under hard float abi, we have arguments passed on the
 	 stack and all situation can be handled by GCC itself.  */

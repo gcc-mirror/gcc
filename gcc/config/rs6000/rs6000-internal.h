@@ -164,8 +164,7 @@ extern void rs6000_function_arg_advance (cumulative_args_t cum,
 					 const_tree type, bool named);
 extern pad_direction rs6000_function_arg_padding (machine_mode mode,
 						  const_tree type);
-extern rtx rs6000_function_arg (cumulative_args_t cum_v, machine_mode mode,
-				const_tree type, bool named);
+extern rtx rs6000_function_arg (cumulative_args_t, const function_arg_info &);
 extern rtx rs6000_darwin64_record_arg (CUMULATIVE_ARGS *, const_tree,
 				       bool, bool);
 extern rtx rs6000_internal_arg_pointer (void);

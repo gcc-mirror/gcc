@@ -2255,49 +2255,48 @@ gcn_pretend_outgoing_varargs_named (cumulative_args_t cum_v)
    and if so, which register.  */
 
 static rtx
-gcn_function_arg (cumulative_args_t cum_v, machine_mode mode, const_tree type,
-		  bool named)
+gcn_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   if (cum->normal_function)
     {
-      if (!named || mode == VOIDmode)
+      if (!arg.named || arg.end_marker_p ())
 	return 0;
 
-      if (targetm.calls.must_pass_in_stack (mode, type))
+      if (targetm.calls.must_pass_in_stack (arg.mode, arg.type))
 	return 0;
 
       int reg_num = FIRST_PARM_REG + cum->num;
-      int num_regs = num_arg_regs (mode, type);
+      int num_regs = num_arg_regs (arg.mode, arg.type);
       if (num_regs > 0)
 	while (reg_num % num_regs != 0)
 	  reg_num++;
       if (reg_num + num_regs <= FIRST_PARM_REG + NUM_PARM_REGS)
-	return gen_rtx_REG (mode, reg_num);
+	return gen_rtx_REG (arg.mode, reg_num);
     }
   else
     {
       if (cum->num >= cum->args.nargs)
 	{
-	  cum->offset = (cum->offset + TYPE_ALIGN (type) / 8 - 1)
-	    & -(TYPE_ALIGN (type) / 8);
+	  cum->offset = (cum->offset + TYPE_ALIGN (arg.type) / 8 - 1)
+	    & -(TYPE_ALIGN (arg.type) / 8);
 	  cfun->machine->kernarg_segment_alignment
 	    = MAX ((unsigned) cfun->machine->kernarg_segment_alignment,
-		   TYPE_ALIGN (type) / 8);
+		   TYPE_ALIGN (arg.type) / 8);
 	  rtx addr = gen_rtx_REG (DImode,
 				  cum->args.reg[KERNARG_SEGMENT_PTR_ARG]);
 	  if (cum->offset)
 	    addr = gen_rtx_PLUS (DImode, addr,
 				 gen_int_mode (cum->offset, DImode));
-	  rtx mem = gen_rtx_MEM (mode, addr);
-	  set_mem_attributes (mem, const_cast<tree>(type), 1);
+	  rtx mem = gen_rtx_MEM (arg.mode, addr);
+	  set_mem_attributes (mem, arg.type, 1);
 	  set_mem_addr_space (mem, ADDR_SPACE_SCALAR_FLAT);
 	  MEM_READONLY_P (mem) = 1;
 	  return mem;
 	}
 
       int a = cum->args.order[cum->num];
-      if (mode != gcn_kernel_arg_types[a].mode)
+      if (arg.mode != gcn_kernel_arg_types[a].mode)
 	{
 	  error ("wrong type of argument %s", gcn_kernel_arg_types[a].name);
 	  return 0;

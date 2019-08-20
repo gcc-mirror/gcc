@@ -5545,38 +5545,32 @@ alpha_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).
+   ARG is a description of the argument.
 
    On Alpha the first 6 words of args are normally in registers
    and the rest are pushed.  */
 
 static rtx
-alpha_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		    const_tree type, bool named ATTRIBUTE_UNUSED)
+alpha_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int basereg;
   int num_args;
 
   /* Don't get confused and pass small structures in FP registers.  */
-  if (type && AGGREGATE_TYPE_P (type))
+  if (arg.aggregate_type_p ())
     basereg = 16;
   else
     {
       /* With alpha_split_complex_arg, we shouldn't see any raw complex
 	 values here.  */
-      gcc_checking_assert (!COMPLEX_MODE_P (mode));
+      gcc_checking_assert (!COMPLEX_MODE_P (arg.mode));
 
       /* Set up defaults for FP operands passed in FP registers, and
 	 integral operands passed in integer registers.  */
-      if (TARGET_FPREGS && GET_MODE_CLASS (mode) == MODE_FLOAT)
+      if (TARGET_FPREGS && GET_MODE_CLASS (arg.mode) == MODE_FLOAT)
 	basereg = 32 + 16;
       else
 	basereg = 16;
@@ -5586,12 +5580,12 @@ alpha_function_arg (cumulative_args_t cum_v, machine_mode mode,
      the two platforms, so we can't avoid conditional compilation.  */
 #if TARGET_ABI_OPEN_VMS
     {
-      if (mode == VOIDmode)
+      if (arg.end_marker_p ())
 	return alpha_arg_info_reg_val (*cum);
 
       num_args = cum->num_args;
       if (num_args >= 6
-	  || targetm.calls.must_pass_in_stack (mode, type))
+	  || targetm.calls.must_pass_in_stack (arg.mode, arg.type))
 	return NULL_RTX;
     }
 #elif TARGET_ABI_OSF
@@ -5600,17 +5594,16 @@ alpha_function_arg (cumulative_args_t cum_v, machine_mode mode,
 	return NULL_RTX;
       num_args = *cum;
 
-      /* VOID is passed as a special flag for "last argument".  */
-      if (type == void_type_node)
+      if (arg.end_marker_p ())
 	basereg = 16;
-      else if (targetm.calls.must_pass_in_stack (mode, type))
+      else if (targetm.calls.must_pass_in_stack (arg.mode, arg.type))
 	return NULL_RTX;
     }
 #else
 #error Unhandled ABI
 #endif
 
-  return gen_rtx_REG (mode, num_args + basereg);
+  return gen_rtx_REG (arg.mode, num_args + basereg);
 }
 
 /* Update the data in CUM to advance over an argument
