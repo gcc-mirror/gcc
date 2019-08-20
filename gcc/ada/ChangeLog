@@ -1,3 +1,9 @@
+2019-08-20  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	PR ada/91492
+	* gcc-interface/lang.opt (-fdump-scos): Add missing dot at the
+	end of the documentation.
+
 2019-08-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc-interface/misc.c (default_pass_by_ref): Update call to
