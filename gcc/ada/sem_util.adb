@@ -9763,7 +9763,8 @@ package body Sem_Util is
          return Uint_0;
       end if;
 
-      Max := Intval (Expression (First (Pragma_Argument_Associations (Prag))));
+      Max := Expr_Value
+        (Expression (First (Pragma_Argument_Associations (Prag))));
 
       --  Since -1 and 0 are equivalent, return 0 for instances of -1 for
       --  uniformity.

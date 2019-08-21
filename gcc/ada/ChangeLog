@@ -1,3 +1,11 @@
+2019-08-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Max_Entry_Queue_Length): Do not substitute
+	expression of the pragma argument with its value during
+	analysis.
+	* sem_util.adb (Get_Max_Queue_Length): Compute value of the
+	pragma argument when needed.
+
 2019-08-21  Yannick Moy  <moy@adacore.com>
 
 	* checks.adb (Install_Null_Excluding_Check): Do not install
