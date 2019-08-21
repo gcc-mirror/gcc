@@ -72,6 +72,10 @@ version (CRuntime_Glibc)
         }
     }
 }
+else version (CRuntime_Bionic)
+{
+    // Bionic does not define aiocb.
+}
 else version (CRuntime_Musl)
 {
     // https://git.musl-libc.org/cgit/musl/tree/include/aio.h
@@ -446,6 +450,10 @@ version (CRuntime_Glibc)
         int lio_listio(int mode, const(aiocb*)* aiocb_list, int nitems, sigevent* sevp);
     }
 }
+else version (CRuntime_Bionic)
+{
+    // Bionic does not implement aio.h
+}
 else version (CRuntime_UClibc)
 {
     static if (__USE_LARGEFILE64)
@@ -517,7 +525,7 @@ version (CRuntime_Glibc)
         void aio_init(const(aioinit)* init);
     }
 }
-version (CRuntime_UClibc)
+else version (CRuntime_UClibc)
 {
     static if (__USE_GNU)
     {

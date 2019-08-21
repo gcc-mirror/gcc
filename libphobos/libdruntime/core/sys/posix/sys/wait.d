@@ -392,6 +392,19 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
+    enum WEXITED    = 4;
+    enum WSTOPPED   = 2;
+    enum WCONTINUED = 8;
+    enum WNOWAIT    = 0x01000000;
+
+    enum idtype_t
+    {
+        P_ALL,
+        P_PID,
+        P_PGID
+    }
+
+    int waitid(idtype_t, id_t, siginfo_t*, int);
 }
 else version (CRuntime_UClibc)
 {
