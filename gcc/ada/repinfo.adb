@@ -357,6 +357,14 @@ package body Repinfo is
          Write_Eol;
          Write_Line ("}");
       end if;
+
+      --  The component type is relevant for an array
+
+      if List_Representation_Info = 4
+        and then Is_Itype (Component_Type (Base_Type (Ent)))
+      then
+         Relevant_Entities.Set (Component_Type (Base_Type (Ent)), True);
+      end if;
    end List_Array_Info;
 
    ---------------------------
@@ -539,18 +547,15 @@ package body Repinfo is
                      List_Record_Info (E, Bytes_Big_Endian);
                   end if;
 
+                  --  Recurse into entities local to a record type
+
+                  if List_Representation_Info = 4 then
+                     List_Entities (E, Bytes_Big_Endian, False);
+                  end if;
+
                elsif Is_Array_Type (E) then
                   if List_Representation_Info >= 1 then
                      List_Array_Info (E, Bytes_Big_Endian);
-                  end if;
-
-                  --  The component type is relevant for an array
-
-                  if List_Representation_Info = 4
-                    and then Is_Itype (Component_Type (Base_Type (E)))
-                  then
-                     Relevant_Entities.Set
-                       (Component_Type (Base_Type (E)), True);
                   end if;
 
                elsif Is_Type (E) then
@@ -564,13 +569,6 @@ package body Repinfo is
                                   E_Loop_Parameter,
                                   E_Variable)
                then
-                  --  The type is relevant for an object
-
-                  if List_Representation_Info = 4 and then Is_Itype (Etype (E))
-                  then
-                     Relevant_Entities.Set (Etype (E), True);
-                  end if;
-
                   if List_Representation_Info >= 2 then
                      List_Object_Info (E);
                   end if;
@@ -975,6 +973,12 @@ package body Repinfo is
 
          List_Linker_Section (Ent);
       end if;
+
+      --  The type is relevant for an object
+
+      if List_Representation_Info = 4 and then Is_Itype (Etype (Ent)) then
+         Relevant_Entities.Set (Etype (Ent), True);
+      end if;
    end List_Object_Info;
 
    ----------------------
@@ -1282,6 +1286,12 @@ package body Repinfo is
             Write_Str ("    }");
          else
             Write_Line (";");
+         end if;
+
+         --  The type is relevant for a component
+
+         if List_Representation_Info = 4 and then Is_Itype (Etype (Ent)) then
+            Relevant_Entities.Set (Etype (Ent), True);
          end if;
       end List_Component_Layout;
 
