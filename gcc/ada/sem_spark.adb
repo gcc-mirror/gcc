@@ -3092,7 +3092,7 @@ package body Sem_SPARK is
 
          --  Postconditions are checked for correct use of 'Old, but starting
          --  from the corresponding declaration, in order to avoid dealing with
-         --  with contracts on generic subprograms, which are not handled in
+         --  with contracts on generic subprograms which are not handled in
          --  GNATprove.
 
          when Pragma_Precondition

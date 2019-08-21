@@ -8032,10 +8032,8 @@ package body Einfo is
    ------------------------
 
    function Is_Constant_Object (Id : E) return B is
-      K : constant Entity_Kind := Ekind (Id);
    begin
-      return
-        K = E_Constant or else K = E_In_Parameter or else K = E_Loop_Parameter;
+      return Ekind_In (Id, E_Constant, E_In_Parameter, E_Loop_Parameter);
    end Is_Constant_Object;
 
    -------------------
@@ -8053,8 +8051,8 @@ package body Einfo is
 
    function Is_Discriminal (Id : E) return B is
    begin
-      return (Ekind_In (Id, E_Constant, E_In_Parameter)
-                and then Present (Discriminal_Link (Id)));
+      return Ekind_In (Id, E_Constant, E_In_Parameter)
+               and then Present (Discriminal_Link (Id));
    end Is_Discriminal;
 
    ----------------------
@@ -8181,8 +8179,8 @@ package body Einfo is
 
    function Is_Prival (Id : E) return B is
    begin
-      return (Ekind_In (Id, E_Constant, E_Variable)
-                and then Present (Prival_Link (Id)));
+      return Ekind_In (Id, E_Constant, E_Variable)
+               and then Present (Prival_Link (Id));
    end Is_Prival;
 
    ----------------------------
