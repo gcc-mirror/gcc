@@ -1,5 +1,12 @@
 2019-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	PR d/88722
+	* modules.cc: Include diagnostic.h.
+	(register_moduleinfo): Use sorry instead of gcc_assert for targets
+	without named sections.
+
+2019-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	* d-target.cc: Include diagnostic.h.
 	(Target::_init): Set Tsize_t and Tptrdiff_t as D ushort and short if
 	the target pointer size is 2.  Add sorry if the pointer size is not
