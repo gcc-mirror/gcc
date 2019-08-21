@@ -17713,6 +17713,9 @@ finish_module_processing (cpp_reader *reader)
       const char *path = NULL;
       char *tmp_name = NULL;
 
+      unsigned n = dump.push (state);
+      state->announce ("creating");
+      // FIXME: A default for the -fmodule-header case?
       if (state->filename)
 	{
 	  size_t len = 0;
@@ -17735,11 +17738,8 @@ finish_module_processing (cpp_reader *reader)
 		  break;
 		create_dirs (tmp_name);
 	      }
+	  dump () && dump ("CMI is %s", path);
 	}
-
-      unsigned n = dump.push (state);
-      state->announce ("creating");
-      dump () && dump ("CMI is %s", path);
 
       if (errorcount)
 	warning_at (state->from_loc, 0,
