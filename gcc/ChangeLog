@@ -1,3 +1,10 @@
+2019-08-22  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/88839
+	* config/aarch64/aarch64.c (aarch64_evpc_sel): New function.
+	(aarch64_expand_vec_perm_const_1): Call aarch64_evpc_sel.
+
 2019-08-21  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR target/90724
