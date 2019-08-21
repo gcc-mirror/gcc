@@ -3254,9 +3254,16 @@ trees_in::assert_definition (tree decl ATTRIBUTE_UNUSED, int odr ATTRIBUTE_UNUSE
       gcc_assert (!existed);
     }
   else
-    /* If this is the mergeable entity, it should already be there.
-       Otherwise it should not be.  */
-    gcc_assert (note_defs->contains (decl) == is_existing_mergeable (decl));
+    /* If this is not the mergeable entity, it should not be in the
+       table.  If it is a non-global-module mergeable entity, it
+       should be in the table.  Global module entities could have been
+       defined textually in the current TU and so might or might not
+       be present.  */
+    gcc_assert (!is_existing_mergeable (decl)
+		? !note_defs->contains (decl)
+		: (MAYBE_DECL_MODULE_OWNER (decl) == MODULE_NONE
+		   || note_defs->contains (decl)));
+
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     gcc_assert (!note_defs->contains (DECL_TEMPLATE_RESULT (decl)));
 #endif

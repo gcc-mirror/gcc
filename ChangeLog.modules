@@ -1,6 +1,10 @@
 2019-08-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_in::assert_definition): Relax already-present
+	assert.
+
+	gcc/cp/
 	* module.cc (finish_module_processing): Protect against null
 	filename.
 
