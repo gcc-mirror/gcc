@@ -1,5 +1,13 @@
 2019-08-21  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/c-family/
+	* c.opt (Winclude-translate*): New family of options.
+	gcc/cp/
+	* module.cc (inform_includes): New var.
+	(module_translate_include): Inform of translations.
+	(init_module_processing): Canonicalize inform list.
+	(handle_module_option): Process inform options.
+
 	gcc/cp/
 	* module.cc (set_cmi_repo): NULL means default init.
 	(module_mapper::module_mapper): Default init repo.

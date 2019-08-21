@@ -1614,7 +1614,7 @@ Only emit Binary Module Interface.
 
 fmodule-mapper=
 C++ ObjC++ Joined RejectNegative MissingArgError(missing mapper)
-Mapper for module to BMI files.
+Mapper for module to CMI files.
 
 fmodule-lazy
 C++ ObjC++ Var(flag_module_lazy) Init(1)
@@ -1623,6 +1623,18 @@ Enable lazy module importing.
 Winvalid-imported-macros
 C++ ObjC++ Var(warn_imported_macros)
 Warn about macros that have conflicting header units definitions.
+
+Winclude-translate
+C++ Var(inform_include_translate)
+Warn about #include directives translated to import declarations.
+
+Winclude-translate=query
+C++ RejectNegative
+Warn about queries of #include directives translation.
+
+Winclude-translate=
+C++ Joined RejectNegative MissingArgError(missing header name)
+Warn about a #include translation of a specific header.
 
 fmax-include-depth=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger
