@@ -220,6 +220,7 @@ package Rtsfind is
       System_Atomic_Primitives,
       System_Aux_DEC,
       System_Bignums,
+      System_Bitfields,
       System_Bit_Ops,
       System_Boolean_Array_Operations,
       System_Byte_Swapping,
@@ -808,6 +809,8 @@ package Rtsfind is
      RE_Bignum_In_LLI_Range,             -- System.Bignums
      RE_To_Bignum,                       -- System.Bignums
      RE_From_Bignum,                     -- System.Bignums
+
+     RE_Copy_Bitfield,                   -- System.Bitfields
 
      RE_Bit_And,                         -- System.Bit_Ops
      RE_Bit_Eq,                          -- System.Bit_Ops
@@ -2050,6 +2053,8 @@ package Rtsfind is
      RE_Bignum_In_LLI_Range              => System_Bignums,
      RE_To_Bignum                        => System_Bignums,
      RE_From_Bignum                      => System_Bignums,
+
+     RE_Copy_Bitfield                    => System_Bitfields,
 
      RE_Bit_And                          => System_Bit_Ops,
      RE_Bit_Eq                           => System_Bit_Ops,
