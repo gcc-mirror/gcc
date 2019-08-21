@@ -13795,7 +13795,7 @@ Field_reference_expression::do_lower(Gogo* gogo, Named_object* function,
   if (nt != NULL)
     s.append(Gogo::unpack_hidden_name(nt->name()));
   s.push_back('.');
-  s.append(field->field_name());
+  s.append(Gogo::unpack_hidden_name(field->field_name()));
   s.push_back('"');
 
   // We can't use a string here, because internally a string holds a
