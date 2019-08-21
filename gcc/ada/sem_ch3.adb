@@ -5555,6 +5555,14 @@ package body Sem_Ch3 is
             =>
                Set_Ekind                (Id, E_Record_Subtype);
 
+               --  Subtype declarations introduced for formal type parameters
+               --  in generic instantiations should inherit the Size value of
+               --  the type they rename.
+
+               if Present (Generic_Parent_Type (N)) then
+                  Set_RM_Size           (Id, RM_Size (T));
+               end if;
+
                if Ekind (T) = E_Record_Subtype
                  and then Present (Cloned_Subtype (T))
                then
