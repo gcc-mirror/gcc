@@ -1543,6 +1543,11 @@ class Function
   set_is_inline_only()
   { this->is_inline_only_ = true; }
 
+  // Report whether the function is referenced by an inline body.
+  bool
+  is_referenced_by_inline() const
+  { return this->is_referenced_by_inline_; }
+
   // Mark the function as referenced by an inline body.
   void
   set_is_referenced_by_inline()
