@@ -1,3 +1,9 @@
+2019-08-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* bindo-graphs.ads (Iterate_Edges_To_Successors): Fix typo in
+	pragma Inline.
+	* bindo-graphs.adb (Delete_Edge): Fix layout in parameter list.
+
 2019-08-21  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch3.adb (Build_Master): Suppress call to
