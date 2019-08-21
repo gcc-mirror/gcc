@@ -63,7 +63,7 @@ else version (NetBSD)
 else version (OpenBSD)
 {
     /***
-     * Assert failure function in the NetBSD C library.
+     * Assert failure function in the OpenBSD C library.
      */
     void __assert(const(char)* file, int line, const(char)* exp);
     ///

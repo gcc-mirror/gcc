@@ -127,22 +127,10 @@ CLOCK_MONOTONIC
 version (linux)
 {
     enum CLOCK_MONOTONIC          = 1;
-    // To be removed in December 2015.
-    static import core.sys.linux.time;
-    deprecated("Please import it from core.sys.linux.time instead.")
-        alias CLOCK_MONOTONIC_RAW = core.sys.linux.time.CLOCK_MONOTONIC_RAW; // non-standard
-    deprecated("Please import it from core.sys.linux.time instead.")
-        alias CLOCK_MONOTONIC_COARSE = core.sys.linux.time.CLOCK_MONOTONIC_COARSE; // non-standard
 }
 else version (FreeBSD)
 {   // time.h
     enum CLOCK_MONOTONIC         = 4;
-    // To be removed in December 2015.
-    static import core.sys.freebsd.time;
-    deprecated("Please import it from core.sys.freebsd.time instead.")
-        alias CLOCK_MONOTONIC_PRECISE = core.sys.freebsd.time.CLOCK_MONOTONIC_PRECISE;
-    deprecated("Please import it from core.sys.freebsd.time instead.")
-        alias CLOCK_MONOTONIC_FAST = core.sys.freebsd.time.CLOCK_MONOTONIC_FAST;
 }
 else version (NetBSD)
 {
@@ -157,12 +145,6 @@ else version (OpenBSD)
 else version (DragonFlyBSD)
 {   // time.h
     enum CLOCK_MONOTONIC         = 4;
-    // To be removed in December 2015.
-    static import core.sys.dragonflybsd.time;
-    deprecated("Please import it from core.sys.dragonflybsd.time instead.")
-        alias CLOCK_MONOTONIC_PRECISE = core.sys.dragonflybsd.time.CLOCK_MONOTONIC_PRECISE;
-    deprecated("Please import it from core.sys.dragonflybsd.time instead.")
-        alias CLOCK_MONOTONIC_FAST = core.sys.dragonflybsd.time.CLOCK_MONOTONIC_FAST;
 }
 else version (Darwin)
 {
@@ -236,10 +218,6 @@ version (CRuntime_Glibc)
     }
 
     enum CLOCK_REALTIME         = 0;
-    // To be removed in December 2015.
-    static import core.sys.linux.time;
-    deprecated("Please import it from core.sys.linux.time instead.")
-        alias CLOCK_REALTIME_COARSE = core.sys.linux.time.CLOCK_REALTIME_COARSE; // non-standard
     enum TIMER_ABSTIME          = 0x01;
 
     alias int clockid_t;

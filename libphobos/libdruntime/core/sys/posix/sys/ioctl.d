@@ -15,6 +15,7 @@
 module core.sys.posix.sys.ioctl;
 
 import core.stdc.config;
+public import core.sys.posix.sys.ttycom;
 
 version (OSX)
     version = Darwin;
@@ -355,14 +356,6 @@ else version (FreeBSD)
     {
         int len;
         void* buf;
-    }
-
-    struct winsize
-    {
-        ushort ws_row;
-        ushort ws_col;
-        ushort ws_xpixel;
-        ushort ws_ypixel;
     }
 
     int ioctl(int, c_ulong, ...);

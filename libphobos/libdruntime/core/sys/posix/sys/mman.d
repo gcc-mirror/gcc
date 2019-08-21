@@ -137,6 +137,15 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
+    enum
+    {
+        POSIX_MADV_NORMAL = 0,
+        POSIX_MADV_RANDOM = 1,
+        POSIX_MADV_SEQUENTIAL = 2,
+        POSIX_MADV_WILLNEED = 3,
+        POSIX_MADV_DONTNEED = 4,
+    }
+    int posix_madvise(void *, size_t, int);
 }
 else version (CRuntime_UClibc)
 {
@@ -655,6 +664,14 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
+    enum
+    {
+        MCL_CURRENT = 1,
+        MCL_FUTURE = 2,
+    }
+
+    int mlockall(int);
+    int munlockall();
 }
 else version (CRuntime_UClibc)
 {
@@ -723,6 +740,8 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
+    int mlock(in void*, size_t);
+    int munlock(in void*, size_t);
 }
 else version (CRuntime_UClibc)
 {
@@ -834,6 +853,8 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
+    int shm_open(in char*, int, mode_t);
+    int shm_unlink(in char*);
 }
 else version (CRuntime_UClibc)
 {

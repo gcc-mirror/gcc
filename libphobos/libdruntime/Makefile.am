@@ -198,7 +198,7 @@ DRUNTIME_DSOURCES_GC = gc/bits.d gc/config.d gc/gcinterface.d \
 DRUNTIME_DSOURCES_GCSTUB = gcstub/gc.d
 
 DRUNTIME_DSOURCES_BIONIC = core/sys/bionic/fcntl.d \
-	core/sys/bionic/unistd.d
+	core/sys/bionic/string.d core/sys/bionic/unistd.d
 
 DRUNTIME_DSOURCES_DARWIN = core/sys/darwin/crt_externs.d \
 	core/sys/darwin/dlfcn.d core/sys/darwin/execinfo.d \
@@ -206,35 +206,39 @@ DRUNTIME_DSOURCES_DARWIN = core/sys/darwin/crt_externs.d \
 	core/sys/darwin/mach/kern_return.d core/sys/darwin/mach/loader.d \
 	core/sys/darwin/mach/port.d core/sys/darwin/mach/semaphore.d \
 	core/sys/darwin/mach/thread_act.d core/sys/darwin/netinet/in_.d \
-	core/sys/darwin/pthread.d core/sys/darwin/sys/cdefs.d \
-	core/sys/darwin/sys/event.d core/sys/darwin/sys/mman.d
+	core/sys/darwin/pthread.d core/sys/darwin/string.d \
+	core/sys/darwin/sys/cdefs.d core/sys/darwin/sys/event.d \
+	core/sys/darwin/sys/mman.d
 
 DRUNTIME_DSOURCES_DRAGONFLYBSD = core/sys/dragonflybsd/dlfcn.d \
 	core/sys/dragonflybsd/execinfo.d core/sys/dragonflybsd/netinet/in_.d \
-	core/sys/dragonflybsd/pthread_np.d core/sys/dragonflybsd/sys/_bitset.d \
+	core/sys/dragonflybsd/pthread_np.d core/sys/dragonflybsd/string.d \
+	core/sys/dragonflybsd/sys/_bitset.d \
 	core/sys/dragonflybsd/sys/_cpuset.d core/sys/dragonflybsd/sys/cdefs.d \
 	core/sys/dragonflybsd/sys/elf.d core/sys/dragonflybsd/sys/elf32.d \
 	core/sys/dragonflybsd/sys/elf64.d \
 	core/sys/dragonflybsd/sys/elf_common.d \
 	core/sys/dragonflybsd/sys/event.d core/sys/dragonflybsd/sys/link_elf.d \
-	core/sys/dragonflybsd/sys/mman.d core/sys/dragonflybsd/time.d
+	core/sys/dragonflybsd/sys/mman.d core/sys/dragonflybsd/sys/socket.d \
+	core/sys/dragonflybsd/time.d
 
 DRUNTIME_DSOURCES_FREEBSD = core/sys/freebsd/dlfcn.d \
 	core/sys/freebsd/execinfo.d core/sys/freebsd/netinet/in_.d \
-	core/sys/freebsd/pthread_np.d core/sys/freebsd/sys/_bitset.d \
-	core/sys/freebsd/sys/_cpuset.d core/sys/freebsd/sys/cdefs.d \
-	core/sys/freebsd/sys/elf.d core/sys/freebsd/sys/elf32.d \
-	core/sys/freebsd/sys/elf64.d core/sys/freebsd/sys/elf_common.d \
-	core/sys/freebsd/sys/event.d core/sys/freebsd/sys/link_elf.d \
-	core/sys/freebsd/sys/mman.d core/sys/freebsd/sys/mount.d \
-	core/sys/freebsd/time.d core/sys/freebsd/unistd.d
+	core/sys/freebsd/pthread_np.d core/sys/freebsd/string.d \
+	core/sys/freebsd/sys/_bitset.d core/sys/freebsd/sys/_cpuset.d \
+	core/sys/freebsd/sys/cdefs.d core/sys/freebsd/sys/elf.d \
+	core/sys/freebsd/sys/elf32.d core/sys/freebsd/sys/elf64.d \
+	core/sys/freebsd/sys/elf_common.d core/sys/freebsd/sys/event.d \
+	core/sys/freebsd/sys/link_elf.d core/sys/freebsd/sys/mman.d \
+	core/sys/freebsd/sys/mount.d core/sys/freebsd/time.d \
+	core/sys/freebsd/unistd.d
 
 DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/dlfcn.d core/sys/linux/elf.d core/sys/linux/epoll.d \
 	core/sys/linux/errno.d core/sys/linux/execinfo.d \
 	core/sys/linux/fcntl.d core/sys/linux/ifaddrs.d core/sys/linux/link.d \
 	core/sys/linux/netinet/in_.d core/sys/linux/netinet/tcp.d \
-	core/sys/linux/sched.d core/sys/linux/stdio.d \
+	core/sys/linux/sched.d core/sys/linux/stdio.d core/sys/linux/string.d \
 	core/sys/linux/sys/auxv.d core/sys/linux/sys/eventfd.d \
 	core/sys/linux/sys/file.d core/sys/linux/sys/inotify.d \
 	core/sys/linux/sys/mman.d core/sys/linux/sys/netinet/tcp.d \
@@ -245,17 +249,19 @@ DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/timerfd.d core/sys/linux/tipc.d core/sys/linux/unistd.d
 
 DRUNTIME_DSOURCES_NETBSD = core/sys/netbsd/dlfcn.d \
-	core/sys/netbsd/execinfo.d core/sys/netbsd/sys/elf.d \
-	core/sys/netbsd/sys/elf32.d core/sys/netbsd/sys/elf64.d \
-	core/sys/netbsd/sys/elf_common.d core/sys/netbsd/sys/event.d \
+	core/sys/netbsd/execinfo.d core/sys/netbsd/string.d \
+	core/sys/netbsd/sys/elf.d core/sys/netbsd/sys/elf32.d \
+	core/sys/netbsd/sys/elf64.d core/sys/netbsd/sys/elf_common.d \
+	core/sys/netbsd/sys/event.d core/sys/netbsd/sys/featuretest.d \
 	core/sys/netbsd/sys/link_elf.d core/sys/netbsd/sys/mman.d \
 	core/sys/netbsd/time.d
 
 DRUNTIME_DSOURCES_OPENBSD = core/sys/openbsd/dlfcn.d \
-	core/sys/openbsd/sys/cdefs.d core/sys/openbsd/sys/elf.d \
-	core/sys/openbsd/sys/elf32.d core/sys/openbsd/sys/elf64.d \
-	core/sys/openbsd/sys/elf_common.d core/sys/openbsd/sys/link_elf.d \
-	core/sys/openbsd/sys/mman.d core/sys/openbsd/time.d
+	core/sys/openbsd/string.d core/sys/openbsd/sys/cdefs.d \
+	core/sys/openbsd/sys/elf.d core/sys/openbsd/sys/elf32.d \
+	core/sys/openbsd/sys/elf64.d core/sys/openbsd/sys/elf_common.d \
+	core/sys/openbsd/sys/link_elf.d core/sys/openbsd/sys/mman.d \
+	core/sys/openbsd/time.d
 
 DRUNTIME_DSOURCES_POSIX = core/sys/posix/aio.d \
 	core/sys/posix/arpa/inet.d core/sys/posix/config.d \

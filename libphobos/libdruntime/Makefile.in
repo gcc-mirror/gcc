@@ -278,13 +278,14 @@ am__objects_9 = core/sys/darwin/crt_externs.lo \
 	core/sys/darwin/mach/semaphore.lo \
 	core/sys/darwin/mach/thread_act.lo \
 	core/sys/darwin/netinet/in_.lo core/sys/darwin/pthread.lo \
-	core/sys/darwin/sys/cdefs.lo core/sys/darwin/sys/event.lo \
-	core/sys/darwin/sys/mman.lo
+	core/sys/darwin/string.lo core/sys/darwin/sys/cdefs.lo \
+	core/sys/darwin/sys/event.lo core/sys/darwin/sys/mman.lo
 @DRUNTIME_OS_DARWIN_TRUE@am__objects_10 = $(am__objects_9)
 am__objects_11 = core/sys/dragonflybsd/dlfcn.lo \
 	core/sys/dragonflybsd/execinfo.lo \
 	core/sys/dragonflybsd/netinet/in_.lo \
 	core/sys/dragonflybsd/pthread_np.lo \
+	core/sys/dragonflybsd/string.lo \
 	core/sys/dragonflybsd/sys/_bitset.lo \
 	core/sys/dragonflybsd/sys/_cpuset.lo \
 	core/sys/dragonflybsd/sys/cdefs.lo \
@@ -295,13 +296,16 @@ am__objects_11 = core/sys/dragonflybsd/dlfcn.lo \
 	core/sys/dragonflybsd/sys/event.lo \
 	core/sys/dragonflybsd/sys/link_elf.lo \
 	core/sys/dragonflybsd/sys/mman.lo \
+	core/sys/dragonflybsd/sys/socket.lo \
 	core/sys/dragonflybsd/time.lo
 @DRUNTIME_OS_DRAGONFLYBSD_TRUE@am__objects_12 = $(am__objects_11)
-am__objects_13 = core/sys/bionic/fcntl.lo core/sys/bionic/unistd.lo
+am__objects_13 = core/sys/bionic/fcntl.lo core/sys/bionic/string.lo \
+	core/sys/bionic/unistd.lo
 @DRUNTIME_OS_ANDROID_TRUE@am__objects_14 = $(am__objects_13)
 am__objects_15 = core/sys/freebsd/dlfcn.lo \
 	core/sys/freebsd/execinfo.lo core/sys/freebsd/netinet/in_.lo \
-	core/sys/freebsd/pthread_np.lo core/sys/freebsd/sys/_bitset.lo \
+	core/sys/freebsd/pthread_np.lo core/sys/freebsd/string.lo \
+	core/sys/freebsd/sys/_bitset.lo \
 	core/sys/freebsd/sys/_cpuset.lo core/sys/freebsd/sys/cdefs.lo \
 	core/sys/freebsd/sys/elf.lo core/sys/freebsd/sys/elf32.lo \
 	core/sys/freebsd/sys/elf64.lo \
@@ -311,12 +315,14 @@ am__objects_15 = core/sys/freebsd/dlfcn.lo \
 	core/sys/freebsd/time.lo core/sys/freebsd/unistd.lo
 @DRUNTIME_OS_FREEBSD_TRUE@am__objects_16 = $(am__objects_15)
 am__objects_17 = core/sys/netbsd/dlfcn.lo core/sys/netbsd/execinfo.lo \
-	core/sys/netbsd/sys/elf.lo core/sys/netbsd/sys/elf32.lo \
-	core/sys/netbsd/sys/elf64.lo core/sys/netbsd/sys/elf_common.lo \
-	core/sys/netbsd/sys/event.lo core/sys/netbsd/sys/link_elf.lo \
-	core/sys/netbsd/sys/mman.lo core/sys/netbsd/time.lo
+	core/sys/netbsd/string.lo core/sys/netbsd/sys/elf.lo \
+	core/sys/netbsd/sys/elf32.lo core/sys/netbsd/sys/elf64.lo \
+	core/sys/netbsd/sys/elf_common.lo core/sys/netbsd/sys/event.lo \
+	core/sys/netbsd/sys/featuretest.lo \
+	core/sys/netbsd/sys/link_elf.lo core/sys/netbsd/sys/mman.lo \
+	core/sys/netbsd/time.lo
 @DRUNTIME_OS_NETBSD_TRUE@am__objects_18 = $(am__objects_17)
-am__objects_19 = core/sys/openbsd/dlfcn.lo \
+am__objects_19 = core/sys/openbsd/dlfcn.lo core/sys/openbsd/string.lo \
 	core/sys/openbsd/sys/cdefs.lo core/sys/openbsd/sys/elf.lo \
 	core/sys/openbsd/sys/elf32.lo core/sys/openbsd/sys/elf64.lo \
 	core/sys/openbsd/sys/elf_common.lo \
@@ -329,15 +335,16 @@ am__objects_21 = core/sys/linux/config.lo core/sys/linux/dlfcn.lo \
 	core/sys/linux/fcntl.lo core/sys/linux/ifaddrs.lo \
 	core/sys/linux/link.lo core/sys/linux/netinet/in_.lo \
 	core/sys/linux/netinet/tcp.lo core/sys/linux/sched.lo \
-	core/sys/linux/stdio.lo core/sys/linux/sys/auxv.lo \
-	core/sys/linux/sys/eventfd.lo core/sys/linux/sys/file.lo \
-	core/sys/linux/sys/inotify.lo core/sys/linux/sys/mman.lo \
-	core/sys/linux/sys/netinet/tcp.lo core/sys/linux/sys/prctl.lo \
-	core/sys/linux/sys/signalfd.lo core/sys/linux/sys/socket.lo \
-	core/sys/linux/sys/sysinfo.lo core/sys/linux/sys/time.lo \
-	core/sys/linux/sys/xattr.lo core/sys/linux/termios.lo \
-	core/sys/linux/time.lo core/sys/linux/timerfd.lo \
-	core/sys/linux/tipc.lo core/sys/linux/unistd.lo
+	core/sys/linux/stdio.lo core/sys/linux/string.lo \
+	core/sys/linux/sys/auxv.lo core/sys/linux/sys/eventfd.lo \
+	core/sys/linux/sys/file.lo core/sys/linux/sys/inotify.lo \
+	core/sys/linux/sys/mman.lo core/sys/linux/sys/netinet/tcp.lo \
+	core/sys/linux/sys/prctl.lo core/sys/linux/sys/signalfd.lo \
+	core/sys/linux/sys/socket.lo core/sys/linux/sys/sysinfo.lo \
+	core/sys/linux/sys/time.lo core/sys/linux/sys/xattr.lo \
+	core/sys/linux/termios.lo core/sys/linux/time.lo \
+	core/sys/linux/timerfd.lo core/sys/linux/tipc.lo \
+	core/sys/linux/unistd.lo
 @DRUNTIME_OS_LINUX_TRUE@am__objects_22 = $(am__objects_21)
 am__objects_23 = core/sys/windows/accctrl.lo \
 	core/sys/windows/aclapi.lo core/sys/windows/aclui.lo \
@@ -798,7 +805,7 @@ DRUNTIME_DSOURCES_GC = gc/bits.d gc/config.d gc/gcinterface.d \
 
 DRUNTIME_DSOURCES_GCSTUB = gcstub/gc.d
 DRUNTIME_DSOURCES_BIONIC = core/sys/bionic/fcntl.d \
-	core/sys/bionic/unistd.d
+	core/sys/bionic/string.d core/sys/bionic/unistd.d
 
 DRUNTIME_DSOURCES_DARWIN = core/sys/darwin/crt_externs.d \
 	core/sys/darwin/dlfcn.d core/sys/darwin/execinfo.d \
@@ -806,35 +813,39 @@ DRUNTIME_DSOURCES_DARWIN = core/sys/darwin/crt_externs.d \
 	core/sys/darwin/mach/kern_return.d core/sys/darwin/mach/loader.d \
 	core/sys/darwin/mach/port.d core/sys/darwin/mach/semaphore.d \
 	core/sys/darwin/mach/thread_act.d core/sys/darwin/netinet/in_.d \
-	core/sys/darwin/pthread.d core/sys/darwin/sys/cdefs.d \
-	core/sys/darwin/sys/event.d core/sys/darwin/sys/mman.d
+	core/sys/darwin/pthread.d core/sys/darwin/string.d \
+	core/sys/darwin/sys/cdefs.d core/sys/darwin/sys/event.d \
+	core/sys/darwin/sys/mman.d
 
 DRUNTIME_DSOURCES_DRAGONFLYBSD = core/sys/dragonflybsd/dlfcn.d \
 	core/sys/dragonflybsd/execinfo.d core/sys/dragonflybsd/netinet/in_.d \
-	core/sys/dragonflybsd/pthread_np.d core/sys/dragonflybsd/sys/_bitset.d \
+	core/sys/dragonflybsd/pthread_np.d core/sys/dragonflybsd/string.d \
+	core/sys/dragonflybsd/sys/_bitset.d \
 	core/sys/dragonflybsd/sys/_cpuset.d core/sys/dragonflybsd/sys/cdefs.d \
 	core/sys/dragonflybsd/sys/elf.d core/sys/dragonflybsd/sys/elf32.d \
 	core/sys/dragonflybsd/sys/elf64.d \
 	core/sys/dragonflybsd/sys/elf_common.d \
 	core/sys/dragonflybsd/sys/event.d core/sys/dragonflybsd/sys/link_elf.d \
-	core/sys/dragonflybsd/sys/mman.d core/sys/dragonflybsd/time.d
+	core/sys/dragonflybsd/sys/mman.d core/sys/dragonflybsd/sys/socket.d \
+	core/sys/dragonflybsd/time.d
 
 DRUNTIME_DSOURCES_FREEBSD = core/sys/freebsd/dlfcn.d \
 	core/sys/freebsd/execinfo.d core/sys/freebsd/netinet/in_.d \
-	core/sys/freebsd/pthread_np.d core/sys/freebsd/sys/_bitset.d \
-	core/sys/freebsd/sys/_cpuset.d core/sys/freebsd/sys/cdefs.d \
-	core/sys/freebsd/sys/elf.d core/sys/freebsd/sys/elf32.d \
-	core/sys/freebsd/sys/elf64.d core/sys/freebsd/sys/elf_common.d \
-	core/sys/freebsd/sys/event.d core/sys/freebsd/sys/link_elf.d \
-	core/sys/freebsd/sys/mman.d core/sys/freebsd/sys/mount.d \
-	core/sys/freebsd/time.d core/sys/freebsd/unistd.d
+	core/sys/freebsd/pthread_np.d core/sys/freebsd/string.d \
+	core/sys/freebsd/sys/_bitset.d core/sys/freebsd/sys/_cpuset.d \
+	core/sys/freebsd/sys/cdefs.d core/sys/freebsd/sys/elf.d \
+	core/sys/freebsd/sys/elf32.d core/sys/freebsd/sys/elf64.d \
+	core/sys/freebsd/sys/elf_common.d core/sys/freebsd/sys/event.d \
+	core/sys/freebsd/sys/link_elf.d core/sys/freebsd/sys/mman.d \
+	core/sys/freebsd/sys/mount.d core/sys/freebsd/time.d \
+	core/sys/freebsd/unistd.d
 
 DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/dlfcn.d core/sys/linux/elf.d core/sys/linux/epoll.d \
 	core/sys/linux/errno.d core/sys/linux/execinfo.d \
 	core/sys/linux/fcntl.d core/sys/linux/ifaddrs.d core/sys/linux/link.d \
 	core/sys/linux/netinet/in_.d core/sys/linux/netinet/tcp.d \
-	core/sys/linux/sched.d core/sys/linux/stdio.d \
+	core/sys/linux/sched.d core/sys/linux/stdio.d core/sys/linux/string.d \
 	core/sys/linux/sys/auxv.d core/sys/linux/sys/eventfd.d \
 	core/sys/linux/sys/file.d core/sys/linux/sys/inotify.d \
 	core/sys/linux/sys/mman.d core/sys/linux/sys/netinet/tcp.d \
@@ -845,17 +856,19 @@ DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/timerfd.d core/sys/linux/tipc.d core/sys/linux/unistd.d
 
 DRUNTIME_DSOURCES_NETBSD = core/sys/netbsd/dlfcn.d \
-	core/sys/netbsd/execinfo.d core/sys/netbsd/sys/elf.d \
-	core/sys/netbsd/sys/elf32.d core/sys/netbsd/sys/elf64.d \
-	core/sys/netbsd/sys/elf_common.d core/sys/netbsd/sys/event.d \
+	core/sys/netbsd/execinfo.d core/sys/netbsd/string.d \
+	core/sys/netbsd/sys/elf.d core/sys/netbsd/sys/elf32.d \
+	core/sys/netbsd/sys/elf64.d core/sys/netbsd/sys/elf_common.d \
+	core/sys/netbsd/sys/event.d core/sys/netbsd/sys/featuretest.d \
 	core/sys/netbsd/sys/link_elf.d core/sys/netbsd/sys/mman.d \
 	core/sys/netbsd/time.d
 
 DRUNTIME_DSOURCES_OPENBSD = core/sys/openbsd/dlfcn.d \
-	core/sys/openbsd/sys/cdefs.d core/sys/openbsd/sys/elf.d \
-	core/sys/openbsd/sys/elf32.d core/sys/openbsd/sys/elf64.d \
-	core/sys/openbsd/sys/elf_common.d core/sys/openbsd/sys/link_elf.d \
-	core/sys/openbsd/sys/mman.d core/sys/openbsd/time.d
+	core/sys/openbsd/string.d core/sys/openbsd/sys/cdefs.d \
+	core/sys/openbsd/sys/elf.d core/sys/openbsd/sys/elf32.d \
+	core/sys/openbsd/sys/elf64.d core/sys/openbsd/sys/elf_common.d \
+	core/sys/openbsd/sys/link_elf.d core/sys/openbsd/sys/mman.d \
+	core/sys/openbsd/time.d
 
 DRUNTIME_DSOURCES_POSIX = core/sys/posix/aio.d \
 	core/sys/posix/arpa/inet.d core/sys/posix/config.d \
@@ -1326,6 +1339,7 @@ core/sys/darwin/netinet/$(am__dirstamp):
 core/sys/darwin/netinet/in_.lo:  \
 	core/sys/darwin/netinet/$(am__dirstamp)
 core/sys/darwin/pthread.lo: core/sys/darwin/$(am__dirstamp)
+core/sys/darwin/string.lo: core/sys/darwin/$(am__dirstamp)
 core/sys/darwin/sys/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/darwin/sys
 	@: > core/sys/darwin/sys/$(am__dirstamp)
@@ -1344,6 +1358,8 @@ core/sys/dragonflybsd/netinet/$(am__dirstamp):
 core/sys/dragonflybsd/netinet/in_.lo:  \
 	core/sys/dragonflybsd/netinet/$(am__dirstamp)
 core/sys/dragonflybsd/pthread_np.lo:  \
+	core/sys/dragonflybsd/$(am__dirstamp)
+core/sys/dragonflybsd/string.lo:  \
 	core/sys/dragonflybsd/$(am__dirstamp)
 core/sys/dragonflybsd/sys/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/dragonflybsd/sys
@@ -1368,11 +1384,14 @@ core/sys/dragonflybsd/sys/link_elf.lo:  \
 	core/sys/dragonflybsd/sys/$(am__dirstamp)
 core/sys/dragonflybsd/sys/mman.lo:  \
 	core/sys/dragonflybsd/sys/$(am__dirstamp)
+core/sys/dragonflybsd/sys/socket.lo:  \
+	core/sys/dragonflybsd/sys/$(am__dirstamp)
 core/sys/dragonflybsd/time.lo: core/sys/dragonflybsd/$(am__dirstamp)
 core/sys/bionic/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/bionic
 	@: > core/sys/bionic/$(am__dirstamp)
 core/sys/bionic/fcntl.lo: core/sys/bionic/$(am__dirstamp)
+core/sys/bionic/string.lo: core/sys/bionic/$(am__dirstamp)
 core/sys/bionic/unistd.lo: core/sys/bionic/$(am__dirstamp)
 core/sys/freebsd/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/freebsd
@@ -1385,6 +1404,7 @@ core/sys/freebsd/netinet/$(am__dirstamp):
 core/sys/freebsd/netinet/in_.lo:  \
 	core/sys/freebsd/netinet/$(am__dirstamp)
 core/sys/freebsd/pthread_np.lo: core/sys/freebsd/$(am__dirstamp)
+core/sys/freebsd/string.lo: core/sys/freebsd/$(am__dirstamp)
 core/sys/freebsd/sys/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/freebsd/sys
 	@: > core/sys/freebsd/sys/$(am__dirstamp)
@@ -1408,6 +1428,7 @@ core/sys/netbsd/$(am__dirstamp):
 	@: > core/sys/netbsd/$(am__dirstamp)
 core/sys/netbsd/dlfcn.lo: core/sys/netbsd/$(am__dirstamp)
 core/sys/netbsd/execinfo.lo: core/sys/netbsd/$(am__dirstamp)
+core/sys/netbsd/string.lo: core/sys/netbsd/$(am__dirstamp)
 core/sys/netbsd/sys/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/netbsd/sys
 	@: > core/sys/netbsd/sys/$(am__dirstamp)
@@ -1417,6 +1438,8 @@ core/sys/netbsd/sys/elf64.lo: core/sys/netbsd/sys/$(am__dirstamp)
 core/sys/netbsd/sys/elf_common.lo:  \
 	core/sys/netbsd/sys/$(am__dirstamp)
 core/sys/netbsd/sys/event.lo: core/sys/netbsd/sys/$(am__dirstamp)
+core/sys/netbsd/sys/featuretest.lo:  \
+	core/sys/netbsd/sys/$(am__dirstamp)
 core/sys/netbsd/sys/link_elf.lo: core/sys/netbsd/sys/$(am__dirstamp)
 core/sys/netbsd/sys/mman.lo: core/sys/netbsd/sys/$(am__dirstamp)
 core/sys/netbsd/time.lo: core/sys/netbsd/$(am__dirstamp)
@@ -1424,6 +1447,7 @@ core/sys/openbsd/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/openbsd
 	@: > core/sys/openbsd/$(am__dirstamp)
 core/sys/openbsd/dlfcn.lo: core/sys/openbsd/$(am__dirstamp)
+core/sys/openbsd/string.lo: core/sys/openbsd/$(am__dirstamp)
 core/sys/openbsd/sys/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/openbsd/sys
 	@: > core/sys/openbsd/sys/$(am__dirstamp)
@@ -1456,6 +1480,7 @@ core/sys/linux/netinet/in_.lo: core/sys/linux/netinet/$(am__dirstamp)
 core/sys/linux/netinet/tcp.lo: core/sys/linux/netinet/$(am__dirstamp)
 core/sys/linux/sched.lo: core/sys/linux/$(am__dirstamp)
 core/sys/linux/stdio.lo: core/sys/linux/$(am__dirstamp)
+core/sys/linux/string.lo: core/sys/linux/$(am__dirstamp)
 core/sys/linux/sys/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/linux/sys
 	@: > core/sys/linux/sys/$(am__dirstamp)
