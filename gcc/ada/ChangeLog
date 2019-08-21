@@ -1,3 +1,9 @@
+2019-08-21  Joel Brobecker  <brobecker@adacore.com>
+
+	* doc/Makefile (mk_empty_dirs): New (PHONY) rule.
+	(%.html, %.pdf, %.txt, %.info, %.texinfo): Add dependencies on
+	mk_empty_dirs.
+
 2019-08-21  Justin Squirek  <squirek@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_pragmas.rst: Modify
