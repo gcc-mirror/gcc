@@ -1,3 +1,13 @@
+2019-08-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Array_Info): In -gnatR4 mode, set the
+	relevant flag on the component type here instead of...
+	(List_Object_Info): Likewise for the object type.
+	(List_Entities): ...here.  In -gnatR4 mode, recurse into
+	entities local to a record type.
+	(List_Component_Layout): In -gnatR4 mode, mark the type as
+	relevant.
+
 2019-08-21  Bob Duff  <duff@adacore.com>
 
 	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add s-bitutil.o and
