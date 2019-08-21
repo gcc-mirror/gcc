@@ -5110,6 +5110,7 @@ package body Sem_SPARK is
       --  in an object.
 
       if not Present (Root)
+        or else not Is_Object (Root)
         or else not Is_Deep (Etype (Root))
       then
          return;

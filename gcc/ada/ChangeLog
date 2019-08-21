@@ -1,3 +1,8 @@
+2019-08-21  Yannick Moy  <moy@adacore.com>
+
+	* sem_spark.adb (Process_Path): Do nothing on address of
+	subprogram.
+
 2019-08-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_util.adb (Finalize_Address): Deal consistently with
