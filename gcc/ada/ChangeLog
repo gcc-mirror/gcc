@@ -1,3 +1,7 @@
+2019-08-21  Yannick Moy  <moy@adacore.com>
+
+	* sem_spark.adb: Update references to the SPARK RM.
+
 2019-08-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.adb (List_Array_Info): In -gnatR4 mode, set the
