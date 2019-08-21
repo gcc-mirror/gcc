@@ -114,6 +114,28 @@ package body Exp_Ch5 is
    --  Auxiliary declarations are inserted before node N using the standard
    --  Insert_Actions mechanism.
 
+   function Expand_Assign_Array_Bitfield
+     (N      : Node_Id;
+      Larray : Entity_Id;
+      Rarray : Entity_Id;
+      L_Type : Entity_Id;
+      R_Type : Entity_Id;
+      Rev    : Boolean) return Node_Id;
+   --  Alternative to Expand_Assign_Array_Loop for packed bitfields. Generates
+   --  a call to the System.Bitfields.Copy_Bitfield, which is more efficient
+   --  than copying component-by-component.
+
+   function Expand_Assign_Array_Loop_Or_Bitfield
+     (N      : Node_Id;
+      Larray : Entity_Id;
+      Rarray : Entity_Id;
+      L_Type : Entity_Id;
+      R_Type : Entity_Id;
+      Ndim   : Pos;
+      Rev    : Boolean) return Node_Id;
+   --  Calls either Expand_Assign_Array_Loop or Expand_Assign_Array_Bitfield as
+   --  appropriate.
+
    procedure Expand_Assign_Record (N : Node_Id);
    --  N is an assignment of an untagged record value. This routine handles
    --  the case where the assignment must be made component by component,
@@ -313,6 +335,10 @@ package body Exp_Ch5 is
       R_Slice : constant Boolean := Nkind (Act_Rhs) = N_Slice;
 
       Crep : constant Boolean := Change_Of_Representation (N);
+
+      pragma Assert
+        (Crep
+          or else Is_Bit_Packed_Array (L_Type) = Is_Bit_Packed_Array (R_Type));
 
       Larray  : Node_Id;
       Rarray  : Node_Id;
@@ -939,7 +965,7 @@ package body Exp_Ch5 is
 
             else
                Rewrite (N,
-                 Expand_Assign_Array_Loop
+                 Expand_Assign_Array_Loop_Or_Bitfield
                    (N, Larray, Rarray, L_Type, R_Type, Ndim,
                     Rev => not Forwards_OK (N)));
             end if;
@@ -1092,12 +1118,12 @@ package body Exp_Ch5 is
                    Condition => Condition,
 
                    Then_Statements => New_List (
-                     Expand_Assign_Array_Loop
+                     Expand_Assign_Array_Loop_Or_Bitfield
                       (N, Larray, Rarray, L_Type, R_Type, Ndim,
                        Rev => False)),
 
                    Else_Statements => New_List (
-                     Expand_Assign_Array_Loop
+                     Expand_Assign_Array_Loop_Or_Bitfield
                       (N, Larray, Rarray, L_Type, R_Type, Ndim,
                        Rev => True))));
             end if;
@@ -1319,6 +1345,134 @@ package body Exp_Ch5 is
 
       return Assign;
    end Expand_Assign_Array_Loop;
+
+   ----------------------------------
+   -- Expand_Assign_Array_Bitfield --
+   ----------------------------------
+
+   function Expand_Assign_Array_Bitfield
+     (N      : Node_Id;
+      Larray : Entity_Id;
+      Rarray : Entity_Id;
+      L_Type : Entity_Id;
+      R_Type : Entity_Id;
+      Rev    : Boolean) return Node_Id
+   is
+      pragma Assert (not Rev);
+      --  Reverse copying is not yet supported by Copy_Bitfield.
+
+      pragma Assert (not Change_Of_Representation (N));
+      --  This won't work, for example, to copy a packed array to an unpacked
+      --  array.
+
+      Loc  : constant Source_Ptr := Sloc (N);
+
+      L_Index_Typ : constant Node_Id := Etype (First_Index (L_Type));
+      R_Index_Typ : constant Node_Id := Etype (First_Index (R_Type));
+      Left_Lo  : constant Node_Id := Type_Low_Bound  (L_Index_Typ);
+      Right_Lo : constant Node_Id := Type_Low_Bound  (R_Index_Typ);
+
+      L_Addr : constant Node_Id :=
+        Make_Attribute_Reference (Loc,
+          Prefix =>
+            Make_Indexed_Component (Loc,
+              Prefix =>
+                Duplicate_Subexpr (Larray, True),
+              Expressions => New_List (New_Copy_Tree (Left_Lo))),
+          Attribute_Name => Name_Address);
+
+      L_Bit : constant Node_Id :=
+        Make_Attribute_Reference (Loc,
+          Prefix =>
+            Make_Indexed_Component (Loc,
+              Prefix =>
+                Duplicate_Subexpr (Larray, True),
+              Expressions => New_List (New_Copy_Tree (Left_Lo))),
+          Attribute_Name => Name_Bit);
+
+      R_Addr : constant Node_Id :=
+        Make_Attribute_Reference (Loc,
+          Prefix =>
+            Make_Indexed_Component (Loc,
+              Prefix =>
+                Duplicate_Subexpr (Rarray, True),
+              Expressions => New_List (New_Copy_Tree (Right_Lo))),
+          Attribute_Name => Name_Address);
+
+      R_Bit : constant Node_Id :=
+        Make_Attribute_Reference (Loc,
+          Prefix =>
+            Make_Indexed_Component (Loc,
+              Prefix =>
+                Duplicate_Subexpr (Rarray, True),
+              Expressions => New_List (New_Copy_Tree (Right_Lo))),
+          Attribute_Name => Name_Bit);
+
+      --  Compute the Size of the bitfield. ???We can't use Size here, because
+      --  it doesn't work properly for slices of packed arrays, so we compute
+      --  the L'Size as L'Length*L'Component_Size.
+      --
+      --  Note that the length check has already been done, so we can use the
+      --  size of either L or R.
+
+      Size : constant Node_Id :=
+        Make_Op_Multiply (Loc,
+          Make_Attribute_Reference (Loc,
+            Prefix =>
+              Duplicate_Subexpr (Name (N), True),
+            Attribute_Name => Name_Length),
+          Make_Attribute_Reference (Loc,
+            Prefix =>
+              Duplicate_Subexpr (Name (N), True),
+            Attribute_Name => Name_Component_Size));
+
+   begin
+      return Make_Procedure_Call_Statement (Loc,
+        Name => New_Occurrence_Of (RTE (RE_Copy_Bitfield), Loc),
+        Parameter_Associations => New_List (
+          R_Addr, R_Bit, L_Addr, L_Bit, Size));
+   end Expand_Assign_Array_Bitfield;
+
+   ------------------------------------------
+   -- Expand_Assign_Array_Loop_Or_Bitfield --
+   ------------------------------------------
+
+   function Expand_Assign_Array_Loop_Or_Bitfield
+     (N      : Node_Id;
+      Larray : Entity_Id;
+      Rarray : Entity_Id;
+      L_Type : Entity_Id;
+      R_Type : Entity_Id;
+      Ndim   : Pos;
+      Rev    : Boolean) return Node_Id
+   is
+      Slices : constant Boolean :=
+        Nkind (Name (N)) = N_Slice or else Nkind (Expression (N)) = N_Slice;
+   begin
+      --  Determine whether Copy_Bitfield is appropriate (will work, and will
+      --  be more efficient than component-by-component copy). Copy_Bitfield
+      --  doesn't work for reversed storage orders. It is efficient only for
+      --  slices of bit-packed arrays.
+
+      --  Note that Expand_Assign_Array_Bitfield is disabled for now
+
+      if False -- ???
+        and then Is_Bit_Packed_Array (L_Type)
+        and then Is_Bit_Packed_Array (R_Type)
+        and then RTE_Available (RE_Copy_Bitfield)
+        and then not Reverse_Storage_Order (L_Type)
+        and then not Reverse_Storage_Order (R_Type)
+        and then Ndim = 1
+        and then not Rev
+        and then Slices
+      then
+         return Expand_Assign_Array_Bitfield
+           (N, Larray, Rarray, L_Type, R_Type, Rev);
+      else
+         return Expand_Assign_Array_Loop
+           (N, Larray, Rarray, L_Type, R_Type, Ndim, Rev);
+      end if;
+   end Expand_Assign_Array_Loop_Or_Bitfield;
 
    --------------------------
    -- Expand_Assign_Record --

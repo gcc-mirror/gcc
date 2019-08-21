@@ -1,3 +1,17 @@
+2019-08-21  Bob Duff  <duff@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add s-bitutil.o and
+	s-biutin.o.
+	* exp_ch5.adb (Expand_Assign_Array_Bitfield): New function to
+	generate a call to Copy_Bitfield. This is disabled for now.
+	(Expand_Assign_Array_Loop_Or_Bitfield): New function to decide
+	whether to call Expand_Assign_Array_Bitfield.
+	(Expand_Assign_Array): Call Expand_Assign_Array_Loop_Or_Bitfield
+	instead of Expand_Assign_Array_Loop.
+	* libgnat/s-bitfie.ads, libgnat/s-bituti.adb,
+	libgnat/s-bituti.ads: New units.
+	* rtsfind.ads: Add enum literals for accessing Copy_Bitfield.
+
 2019-08-21  Piotr Trojanek  <trojanek@adacore.com>
 
 	* bindo-graphs.ads (Iterate_Edges_To_Successors): Fix typo in
