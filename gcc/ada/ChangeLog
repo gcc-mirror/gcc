@@ -1,3 +1,9 @@
+2019-08-21  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (Update_Named_Associations): Update
+	First_Named_Actual when the subprogram call has a single named
+	actual.
+
 2019-08-21  Joel Brobecker  <brobecker@adacore.com>
 
 	* doc/Makefile (mk_empty_dirs): New (PHONY) rule.
