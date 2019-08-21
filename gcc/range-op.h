@@ -46,10 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 class range_operator
 {
 public:
-  // Perform this operation on 2 sub ranges, return the result as a range of TYPE.
-  virtual irange wi_fold (tree type, const wide_int &lh_lb, const wide_int &lh_ub,
-			  const wide_int &rh_lb, const wide_int &rh_ub) const;
-
   // Set a range based on this operation between 2 operands.
   // TYPE is the expected type of the range.
   virtual irange fold_range (tree type, const irange &lh,
@@ -66,7 +62,11 @@ public:
 			  const irange &op2) const;
   virtual bool op2_range (irange &r, tree type, const irange &lhs,
 			  const irange &op1) const;
-
+protected:
+  // Perform this operation on 2 sub ranges, return the result as a
+  // range of TYPE.
+  virtual irange wi_fold (tree type, const wide_int &lh_lb, const wide_int &lh_ub,
+			  const wide_int &rh_lb, const wide_int &rh_ub) const;
 };
 
 extern range_operator *range_op_handler(enum tree_code code, tree type);
