@@ -1,3 +1,15 @@
+2019-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91510
+	Backport from mainline
+	2017-09-26  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (compare_access_positions): Put integral types first,
+	stabilize sorting of integral types, remove conditions putting
+	non-full-precision integers last.
+	(sort_and_splice_var_accesses): Disable scalarization if a
+	non-integert would be represented by a non-full-precision integer.
+
 2019-08-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/91347
