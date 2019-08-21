@@ -387,7 +387,8 @@ ssa_ranger::range_on_edge (irange &r, edge e, tree name)
   gcc_checking_assert (valid_ssa_p (name));
 
   range_on_exit (r, e->src, name);
-  gcc_checking_assert  (r.undefined_p () || r.type() == TREE_TYPE (name));
+  gcc_checking_assert  (r.undefined_p ()
+			|| types_compatible_p (r.type(), TREE_TYPE (name)));
 
   // Check to see if NAME is defined on edge e.
   if (outgoing_edge_range_p (edge_range, e, name, &r))
@@ -509,7 +510,8 @@ ssa_ranger::range_on_exit (irange &r, basic_block bb, tree name)
     range_on_entry (r, bb, name);
   else
     gcc_assert (range_of_expr (r, name, s));
-  gcc_checking_assert (r.undefined_p () || r.type() == TREE_TYPE (name));
+  gcc_checking_assert (r.undefined_p ()
+		       || types_compatible_p (r.type(), TREE_TYPE (name)));
 }
 
 // Calculate a range for range_op statement S given RANGE1 and RANGE2 and 

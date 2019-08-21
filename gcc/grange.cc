@@ -297,7 +297,10 @@ grange_op::fold (irange &res, const irange &r1, const irange &r2) const
   if (grange_adjust_handler ())
     adj = grange_adjust_handler()->lhs_adjust (adj_range, this);
   if (handler ())
-    hand = handler()->fold_range (res, gimple_expr_type (this), r1, r2);
+    {
+      hand = true;
+      res = handler()->fold_range (gimple_expr_type (this), r1, r2);
+    }
 
   // Handle common case first where res was set by handler
   // This handles whatever handler() would ahve returned.

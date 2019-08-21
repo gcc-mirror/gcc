@@ -2385,7 +2385,7 @@ range_ops_fold_binary_expr (value_range_base *vr,
 			    const value_range_base *vr0_,
 			    const value_range_base *vr1_)
 {
-  /* Mimic any behavior users of extract_range_from_unary_expr may
+  /* Mimic any behavior users of extract_range_from_binary_expr may
      expect.  */
   range_operator *op = range_op_handler (code, expr_type);
   if (!op)
@@ -2419,16 +2419,7 @@ range_ops_fold_binary_expr (value_range_base *vr,
   /* Do the range-ops dance.  */
   value_range_base n0 = normalize_for_range_ops (vr0);
   value_range_base n1 = normalize_for_range_ops (vr1);
-#if USE_IRANGE
-  irange ir;
-  if (op->fold_range (ir, expr_type, n0, n1))
-    *vr = ir;
-  else
-    vr->set_varying (expr_type);
-#else
-  if (!op->fold_range (*vr, expr_type, n0, n1))
-    vr->set_varying (expr_type);
-#endif
+  *vr = op->fold_range (expr_type, n0, n1);
 }
 
 /* Fold a unary expression of a value_range with range-ops.  */
@@ -2486,16 +2477,7 @@ range_ops_fold_unary_expr (value_range_base *vr,
   /* Do the range-ops dance.  */
   value_range_base n0 = normalize_for_range_ops (*vr0);
   value_range_base n1 (expr_type);
-#if USE_IRANGE
-  irange ir;
-  if (op->fold_range (ir, expr_type, n0, n1))
-    *vr = ir;
-  else
-    vr->set_varying (expr_type);
-#else
-  if (!op->fold_range (*vr, expr_type, n0, n1))
-    vr->set_varying (expr_type);
-#endif
+  *vr = op->fold_range (expr_type, n0, n1);
 }
 
 /* Generic folding of a binary expression between two value_ranges.
@@ -2524,7 +2506,7 @@ range_fold_binary_expr (value_range_base *vr,
     {
       value_range_base old;
       extract_range_from_binary_expr (&old, code, expr_type, vr0, vr1);
-      if (flag_ranges_mode & RANGES_CHECKING)
+      if (flag_ranges_mode == RANGES_CHECKING)
 	assert_compare_value_ranges (&old, vr, code, vr0, vr1);
       else
 	*vr = old;
@@ -2554,7 +2536,7 @@ range_fold_unary_expr (value_range_base *vr,
     {
       value_range_base old;
       extract_range_from_unary_expr (&old, code, expr_type, vr0, vr0_type);
-      if (flag_ranges_mode & RANGES_CHECKING)
+      if (flag_ranges_mode == RANGES_CHECKING)
 	{
 	  value_range_base vr1 (expr_type);
 	  assert_compare_value_ranges (&old, vr, code, vr0, &vr1);

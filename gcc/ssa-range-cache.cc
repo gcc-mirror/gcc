@@ -304,7 +304,7 @@ block_range_cache::set_bb_varying (tree name, const basic_block bb)
   return get_block_ranges (name).set_bb_varying (bb);
 }
 
-// Return the range for NAME on entry to BB in R.  return true if here is one.
+// Return the range for NAME on entry to BB in R.  Return true if here is one.
 
 bool 
 block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
@@ -419,10 +419,10 @@ ssa_global_cache::get_global_range (irange &r, tree name) const
   return true;
 }
 
-// Set the range for NAME to R in the glonbal cache.
+// Set the range for NAME to R in the global cache.
 
 void
-ssa_global_cache::set_global_range (tree name, const irange& r)
+ssa_global_cache::set_global_range (tree name, const irange &r)
 {
   unsigned v = SSA_NAME_VERSION (name);
   if (v >= m_tab.length ())
@@ -513,9 +513,9 @@ gori_cache::dump_block (FILE *f, basic_block bb)
 }
 
 
-// Return a static range for NAMe on entry to basic block BB in R.
-// If calc is true, Fill any cache entries required between BB and the Def 
-// block for NAME.  Otherwise, return false if the cache is empty
+// Return a static range for NAME on entry to basic block BB in R.
+// If calc is true, Fill any cache entries required between BB and the def 
+// block for NAME.  Otherwise, return false if the cache is empty.
 
 bool
 gori_cache::block_range (irange &r, basic_block bb, tree name, bool calc)

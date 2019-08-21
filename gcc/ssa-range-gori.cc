@@ -471,7 +471,7 @@ gori_map::dump(FILE *f)
     }
 }
 
-// Set range from an SSA_NAME's available range.  If there is no
+// Return a range from an SSA_NAME's available range.  If there is no
 // available range, build a range for its entire domain.
 
 irange

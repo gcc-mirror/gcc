@@ -46,29 +46,27 @@ along with GCC; see the file COPYING3.  If not see
 class range_operator
 {
 public:
+  // Perform this operation on 2 sub ranges, return the result as a range of TYPE.
+  virtual irange wi_fold (tree type, const wide_int &lh_lb, const wide_int &lh_ub,
+			  const wide_int &rh_lb, const wide_int &rh_ub) const;
+
   // Set a range based on this operation between 2 operands.
   // TYPE is the expected type of the range.
-  // Return the TRUE if a valid range is created.
-  virtual bool fold_range (irange &r, tree type, const irange &op1,
-			   const irange &op2) const;
+  virtual irange fold_range (tree type, const irange &lh,
+			     const irange &rh) const;
 
   // Set the range for op? in the general case. LHS is the range for
   // the LHS of the expression, OP[12]is the range for the other
   // TYPE is the expected type of the range.
   // operand, and the result is returned in R.
-  // Return TRUE if the operation could be performed and the range is
-  // valid.
+  // Return TRUE if the operation is performed and a valid range is available.
   // ie   [LHS] = ??? + OP2
   // is re-formed as  R = [LHS] - OP2.
   virtual bool op1_range (irange &r, tree type, const irange &lhs,
-			   const irange &op2) const;
+			  const irange &op2) const;
   virtual bool op2_range (irange &r, tree type, const irange &lhs,
-			   const irange &op1) const;
+			  const irange &op1) const;
 
-  // Perform this operation on 2 sub ranges, accumulating the result into R.
-  virtual bool wi_fold (irange &r, tree type,
-			const wide_int &lh_lb, const wide_int &lh_ub,
-			const wide_int &rh_lb, const wide_int &rh_ub) const;
 };
 
 extern range_operator *range_op_handler(enum tree_code code, tree type);
