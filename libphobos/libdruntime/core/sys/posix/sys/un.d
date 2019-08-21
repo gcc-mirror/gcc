@@ -78,6 +78,15 @@ else version (NetBSD)
         byte[104]   sun_path;
     }
 }
+else version (OpenBSD)
+{
+    struct sockaddr_un
+    {
+        ubyte       sun_len;
+        sa_family_t sun_family;
+        byte[104]   sun_path;
+    }
+}
 else version (DragonFlyBSD)
 {
     struct sockaddr_un

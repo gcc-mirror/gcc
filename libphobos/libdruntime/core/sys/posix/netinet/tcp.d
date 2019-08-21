@@ -51,6 +51,10 @@ else version (NetBSD)
 {
     enum TCP_NODELAY = 1;
 }
+else version (OpenBSD)
+{
+    enum TCP_NODELAY = 1;
+}
 else version (DragonFlyBSD)
 {
     enum TCP_NODELAY = 1;
