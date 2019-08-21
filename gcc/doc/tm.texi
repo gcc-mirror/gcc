@@ -3961,18 +3961,10 @@ This section describes the macros which let you control how various
 types of arguments are passed in registers or how they are arranged in
 the stack.
 
-@deftypefn {Target Hook} rtx TARGET_FUNCTION_ARG (cumulative_args_t @var{ca}, machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
-Return an RTX indicating whether a function argument is passed in a
-register and if so, which register.
-
-The arguments are @var{ca}, which summarizes all the previous
-arguments; @var{mode}, the machine mode of the argument; @var{type},
-the data type of the argument as a tree node or 0 if that is not known
-(which happens for C support library functions); and @var{named},
-which is @code{true} for an ordinary argument and @code{false} for
-nameless arguments that correspond to @samp{@dots{}} in the called
-function's prototype.  @var{type} can be an incomplete type if a
-syntax error has previously occurred.
+@deftypefn {Target Hook} rtx TARGET_FUNCTION_ARG (cumulative_args_t @var{ca}, const function_arg_info @var{&arg})
+Return an RTX indicating whether function argument @var{arg} is passed
+in a register and if so, which register.  Argument @var{ca} summarizes all
+the previous arguments.
 
 The return value is usually either a @code{reg} RTX for the hard
 register in which to pass the argument, or zero to pass the argument
@@ -4020,14 +4012,14 @@ defined, the argument will be computed in the stack and then loaded into
 a register.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_MUST_PASS_IN_STACK (machine_mode @var{mode}, const_tree @var{type})
-This target hook should return @code{true} if we should not pass @var{type}
+@deftypefn {Target Hook} bool TARGET_MUST_PASS_IN_STACK (const function_arg_info @var{&arg})
+This target hook should return @code{true} if we should not pass @var{arg}
 solely in registers.  The file @file{expr.h} defines a
 definition that is usually appropriate, refer to @file{expr.h} for additional
 documentation.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_FUNCTION_INCOMING_ARG (cumulative_args_t @var{ca}, machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} rtx TARGET_FUNCTION_INCOMING_ARG (cumulative_args_t @var{ca}, const function_arg_info @var{&arg})
 Define this hook if the caller and callee on the target have different
 views of where arguments are passed.  Also define this hook if there are
 functions that are never directly called, but are invoked by the hardware
@@ -4057,7 +4049,7 @@ Perform a target dependent initialization of pic_offset_table_rtx.
 This hook is called at the start of register allocation.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_ARG_PARTIAL_BYTES (cumulative_args_t @var{cum}, machine_mode @var{mode}, tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} int TARGET_ARG_PARTIAL_BYTES (cumulative_args_t @var{cum}, const function_arg_info @var{&arg})
 This target hook returns the number of bytes at the beginning of an
 argument that must be put in registers.  The value must be zero for
 arguments that are passed entirely in registers or that are entirely
@@ -4076,11 +4068,11 @@ register to be used by the caller for this argument; likewise
 @code{TARGET_FUNCTION_INCOMING_ARG}, for the called function.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_PASS_BY_REFERENCE (cumulative_args_t @var{cum}, machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
-This target hook should return @code{true} if an argument at the
+@deftypefn {Target Hook} bool TARGET_PASS_BY_REFERENCE (cumulative_args_t @var{cum}, const function_arg_info @var{&arg})
+This target hook should return @code{true} if argument @var{arg} at the
 position indicated by @var{cum} should be passed by reference.  This
 predicate is queried after target independent reasons for being
-passed by reference, such as @code{TREE_ADDRESSABLE (type)}.
+passed by reference, such as @code{TREE_ADDRESSABLE (@var{arg}.type)}.
 
 If the hook returns true, a copy of that argument is made in memory and a
 pointer to the argument is passed instead of the argument itself.
@@ -4088,7 +4080,7 @@ The pointer is passed in whatever way is appropriate for passing a pointer
 to that type.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_CALLEE_COPIES (cumulative_args_t @var{cum}, machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} bool TARGET_CALLEE_COPIES (cumulative_args_t @var{cum}, const function_arg_info @var{&arg})
 The function argument described by the parameters to this hook is
 known to be passed by reference.  The hook should return true if the
 function argument should be copied by the callee instead of copied
@@ -4167,10 +4159,9 @@ argument @var{libname} exists for symmetry with
 @c --mew 5feb93   i switched the order of the sentences.  --mew 10feb93
 @end defmac
 
-@deftypefn {Target Hook} void TARGET_FUNCTION_ARG_ADVANCE (cumulative_args_t @var{ca}, machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} void TARGET_FUNCTION_ARG_ADVANCE (cumulative_args_t @var{ca}, const function_arg_info @var{&arg})
 This hook updates the summarizer variable pointed to by @var{ca} to
-advance past an argument in the argument list.  The values @var{mode},
-@var{type} and @var{named} describe that argument.  Once this is done,
+advance past argument @var{arg} in the argument list.  Once this is done,
 the variable @var{cum} is suitable for analyzing the @emph{following}
 argument with @code{TARGET_FUNCTION_ARG}, etc.
 
@@ -5202,7 +5193,7 @@ return value of this function should be an RTX that contains the value
 to use as the return of @code{__builtin_saveregs}.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SETUP_INCOMING_VARARGS (cumulative_args_t @var{args_so_far}, machine_mode @var{mode}, tree @var{type}, int *@var{pretend_args_size}, int @var{second_time})
+@deftypefn {Target Hook} void TARGET_SETUP_INCOMING_VARARGS (cumulative_args_t @var{args_so_far}, const function_arg_info @var{&arg}, int *@var{pretend_args_size}, int @var{second_time})
 This target hook offers an alternative to using
 @code{__builtin_saveregs} and defining the hook
 @code{TARGET_EXPAND_BUILTIN_SAVEREGS}.  Use it to store the anonymous
@@ -5213,8 +5204,8 @@ pass all their arguments on the stack.
 
 The argument @var{args_so_far} points to the @code{CUMULATIVE_ARGS} data
 structure, containing the values that are obtained after processing the
-named arguments.  The arguments @var{mode} and @var{type} describe the
-last named argument---its machine mode and its data type as a tree node.
+named arguments.  The argument @var{arg} describes the last of these named
+arguments.
 
 The target hook should do two things: first, push onto the stack all the
 argument registers @emph{not} used for the named arguments, and second,

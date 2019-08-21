@@ -836,13 +836,18 @@ cgraph_build_static_cdtor_1 (char which, tree body, int priority, bool final,
   /* The priority is encoded in the constructor or destructor name.
      collect2 will sort the names and arrange that they are called at
      program startup.  */
-  if (final)
-    sprintf (which_buf, "%c_%.5d_%d", which, priority, counter++);
+  if (!targetm.have_ctors_dtors && final)
+    {
+      sprintf (which_buf, "%c_%.5d_%d", which, priority, counter++);
+      name = get_file_function_name (which_buf);
+    }
   else
-  /* Proudce sane name but one not recognizable by collect2, just for the
-     case we fail to inline the function.  */
-    sprintf (which_buf, "sub_%c_%.5d_%d", which, priority, counter++);
-  name = get_file_function_name (which_buf);
+    {
+      /* Proudce sane name but one not recognizable by collect2, just for the
+	 case we fail to inline the function.  */
+      sprintf (which_buf, "_sub_%c_%.5d_%d", which, priority, counter++);
+      name = get_identifier (which_buf);
+    }
 
   decl = build_decl (input_location, FUNCTION_DECL, name,
 		     build_function_type_list (void_type_node, NULL_TREE));

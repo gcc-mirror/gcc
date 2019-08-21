@@ -728,23 +728,25 @@ package body Exp_Disp is
          --  corresponding actuals in the call, given that this check is
          --  performed outside of the body of the subprogram.
 
+         --  If the dispatching call appears in the same scope as the
+         --  declaration of the dispatching subprogram (for example in
+         --  the expression of a local expression function), the spec
+         --  has not been analyzed yet, in which case we use the Chars
+         --  field to recognize intended occurrences of the formals.
+
          ---------------------
          -- Replace_Formals --
          ---------------------
 
          function Replace_Formals (N : Node_Id) return Traverse_Result is
+            A : Node_Id;
+            F : Entity_Id;
          begin
-            if Is_Entity_Name (N)
-              and then Present (Entity (N))
-              and then Is_Formal (Entity (N))
-            then
-               declare
-                  A : Node_Id;
-                  F : Entity_Id;
+            if Is_Entity_Name (N) then
+               F := First_Formal (Subp);
+               A := First_Actual (Call_Node);
 
-               begin
-                  F := First_Formal (Subp);
-                  A := First_Actual (Call_Node);
+               if Present (Entity (N)) and then Is_Formal (Entity (N)) then
                   while Present (F) loop
                      if F = Entity (N) then
                         Rewrite (N, New_Copy_Tree (A));
@@ -776,7 +778,25 @@ package body Exp_Disp is
                      Next_Formal (F);
                      Next_Actual (A);
                   end loop;
-               end;
+
+               --  If the node is not analyzed, recognize occurrences of a
+               --  formal by name, as would be done when resolving the aspect
+               --  expression in the context of the subprogram.
+
+               elsif not Analyzed (N)
+                 and then Nkind (N) = N_Identifier
+                 and then No (Entity (N))
+               then
+                  while Present (F) loop
+                     if Chars (N) = Chars (F) then
+                        Rewrite (N, New_Copy_Tree (A));
+                        return Skip;
+                     end if;
+
+                     Next_Formal (F);
+                     Next_Actual (A);
+                  end loop;
+               end if;
             end if;
 
             return OK;

@@ -816,12 +816,12 @@ rs6000_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 /* Return true if TYPE must be passed on the stack and not in registers.  */
 
 bool
-rs6000_must_pass_in_stack (machine_mode mode, const_tree type)
+rs6000_must_pass_in_stack (const function_arg_info &arg)
 {
   if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2 || TARGET_64BIT)
-    return must_pass_in_stack_var_size (mode, type);
+    return must_pass_in_stack_var_size (arg);
   else
-    return must_pass_in_stack_var_size_or_pad (mode, type);
+    return must_pass_in_stack_var_size_or_pad (arg);
 }
 
 static inline bool
@@ -1400,11 +1400,11 @@ rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, machine_mode mode,
 }
 
 void
-rs6000_function_arg_advance (cumulative_args_t cum, machine_mode mode,
-			     const_tree type, bool named)
+rs6000_function_arg_advance (cumulative_args_t cum,
+			     const function_arg_info &arg)
 {
-  rs6000_function_arg_advance_1 (get_cumulative_args (cum), mode, type, named,
-				 0);
+  rs6000_function_arg_advance_1 (get_cumulative_args (cum),
+				 arg.mode, arg.type, arg.named, 0);
 }
 
 /* A subroutine of rs6000_darwin64_record_arg.  Assign the bits of the
@@ -1729,15 +1729,10 @@ rs6000_finish_function_arg (machine_mode mode, rtx *rvec, int k)
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.  It is
     not modified in this routine.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).
+   ARG is a description of the argument.
 
    On RS/6000 the first eight words of non-FP are normally in registers
    and the rest are pushed.  Under AIX, the first 13 FP args are in registers.
@@ -1750,14 +1745,15 @@ rs6000_finish_function_arg (machine_mode mode, rtx *rvec, int k)
    doesn't support PARALLEL anyway.
 
    Note that for args passed by reference, function_arg will be called
-   with MODE and TYPE set to that of the pointer to the arg, not the arg
-   itself.  */
+   with ARG describing the pointer to the arg, not the arg itself.  */
 
 rtx
-rs6000_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		     const_tree type, bool named)
+rs6000_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+  tree type = arg.type;
+  machine_mode mode = arg.mode;
+  bool named = arg.named;
   enum rs6000_abi abi = DEFAULT_ABI;
   machine_mode elt_mode;
   int n_elts;
@@ -1766,7 +1762,7 @@ rs6000_function_arg (cumulative_args_t cum_v, machine_mode mode,
      bit that V.4 uses to say fp args were passed in registers.
      Assume that we don't need the marker for software floating point,
      or compiler generated library calls.  */
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     {
       if (abi == ABI_V4
 	  && (cum->call_cookie & CALL_LIBCALL) == 0
@@ -2007,8 +2003,8 @@ rs6000_function_arg (cumulative_args_t cum_v, machine_mode mode,
    returns the number of bytes used by the first element of the PARALLEL.  */
 
 int
-rs6000_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
-			  tree type, bool named)
+rs6000_arg_partial_bytes (cumulative_args_t cum_v,
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   bool passed_in_gprs = true;
@@ -2017,12 +2013,13 @@ rs6000_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
   machine_mode elt_mode;
   int n_elts;
 
-  rs6000_discover_homogeneous_aggregate (mode, type, &elt_mode, &n_elts);
+  rs6000_discover_homogeneous_aggregate (arg.mode, arg.type,
+					 &elt_mode, &n_elts);
 
   if (DEFAULT_ABI == ABI_V4)
     return 0;
 
-  if (USE_ALTIVEC_FOR_ARG_P (cum, elt_mode, named))
+  if (USE_ALTIVEC_FOR_ARG_P (cum, elt_mode, arg.named))
     {
       /* If we are passing this arg in the fixed parameter save area (gprs or
          memory) as well as VRs, we do not use the partial bytes mechanism;
@@ -2041,14 +2038,13 @@ rs6000_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
     }
 
   /* In this complicated case we just disable the partial_nregs code.  */
-  if (TARGET_MACHO && rs6000_darwin64_struct_check_p (mode, type))
+  if (TARGET_MACHO && rs6000_darwin64_struct_check_p (arg.mode, arg.type))
     return 0;
 
-  align_words = rs6000_parm_start (mode, type, cum->words);
+  align_words = rs6000_parm_start (arg.mode, arg.type, cum->words);
 
   if (USE_FP_FOR_ARG_P (cum, elt_mode)
-      && !(TARGET_AIX && !TARGET_ELF
-	   && type != NULL && AGGREGATE_TYPE_P (type)))
+      && !(TARGET_AIX && !TARGET_ELF && arg.aggregate_type_p ()))
     {
       unsigned long n_fpreg = (GET_MODE_SIZE (elt_mode) + 7) >> 3;
 
@@ -2056,7 +2052,7 @@ rs6000_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
          (gprs or memory) as well as FPRs, we do not use the partial
 	 bytes mechanism; instead, rs6000_function_arg will return a
 	 PARALLEL including a memory element as necessary.  */
-      if (type
+      if (arg.type
 	  && (cum->nargs_prototype <= 0
 	      || ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
 		  && TARGET_XL_COMPAT
@@ -2087,7 +2083,7 @@ rs6000_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
 
   if (passed_in_gprs
       && align_words < GP_ARG_NUM_REG
-      && GP_ARG_NUM_REG < align_words + rs6000_arg_size (mode, type))
+      && GP_ARG_NUM_REG < align_words + rs6000_arg_size (arg.mode, arg.type))
     ret = (GP_ARG_NUM_REG - align_words) * (TARGET_32BIT ? 4 : 8);
 
   if (ret != 0 && TARGET_DEBUG_ARG)
@@ -2111,29 +2107,27 @@ rs6000_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
    reference.  */
 
 bool
-rs6000_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-			  machine_mode mode, const_tree type,
-			  bool named ATTRIBUTE_UNUSED)
+rs6000_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  if (!type)
+  if (!arg.type)
     return 0;
 
   if (DEFAULT_ABI == ABI_V4 && TARGET_IEEEQUAD
-      && FLOAT128_IEEE_P (TYPE_MODE (type)))
+      && FLOAT128_IEEE_P (TYPE_MODE (arg.type)))
     {
       if (TARGET_DEBUG_ARG)
 	fprintf (stderr, "function_arg_pass_by_reference: V4 IEEE 128-bit\n");
       return 1;
     }
 
-  if (DEFAULT_ABI == ABI_V4 && AGGREGATE_TYPE_P (type))
+  if (DEFAULT_ABI == ABI_V4 && AGGREGATE_TYPE_P (arg.type))
     {
       if (TARGET_DEBUG_ARG)
 	fprintf (stderr, "function_arg_pass_by_reference: V4 aggregate\n");
       return 1;
     }
 
-  if (int_size_in_bytes (type) < 0)
+  if (int_size_in_bytes (arg.type) < 0)
     {
       if (TARGET_DEBUG_ARG)
 	fprintf (stderr, "function_arg_pass_by_reference: variable size\n");
@@ -2142,7 +2136,7 @@ rs6000_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 
   /* Allow -maltivec -mabi=no-altivec without warning.  Altivec vector
      modes only exist for GCC vector types if -maltivec.  */
-  if (TARGET_32BIT && !TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
+  if (TARGET_32BIT && !TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (arg.mode))
     {
       if (TARGET_DEBUG_ARG)
 	fprintf (stderr, "function_arg_pass_by_reference: AltiVec\n");
@@ -2150,8 +2144,8 @@ rs6000_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
     }
 
   /* Pass synthetic vectors in memory.  */
-  if (TREE_CODE (type) == VECTOR_TYPE
-      && int_size_in_bytes (type) > (TARGET_ALTIVEC_ABI ? 16 : 8))
+  if (TREE_CODE (arg.type) == VECTOR_TYPE
+      && int_size_in_bytes (arg.type) > (TARGET_ALTIVEC_ABI ? 16 : 8))
     {
       static bool warned_for_pass_big_vectors = false;
       if (TARGET_DEBUG_ARG)
@@ -2176,7 +2170,6 @@ rs6000_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 static bool
 rs6000_parm_needs_stack (cumulative_args_t args_so_far, tree type)
 {
-  machine_mode mode;
   int unsignedp;
   rtx entry_parm;
 
@@ -2199,20 +2192,19 @@ rs6000_parm_needs_stack (cumulative_args_t args_so_far, tree type)
     type = TREE_TYPE (first_field (type));
 
   /* See if this arg was passed by invisible reference.  */
-  if (pass_by_reference (get_cumulative_args (args_so_far),
-			 TYPE_MODE (type), type, true))
-    type = build_pointer_type (type);
+  function_arg_info arg (type, /*named=*/true);
+  apply_pass_by_reference_rules (get_cumulative_args (args_so_far), arg);
 
   /* Find mode as it is passed by the ABI.  */
   unsignedp = TYPE_UNSIGNED (type);
-  mode = promote_mode (type, TYPE_MODE (type), &unsignedp);
+  arg.mode = promote_mode (arg.type, arg.mode, &unsignedp);
 
   /* If we must pass in stack, we need a stack.  */
-  if (rs6000_must_pass_in_stack (mode, type))
+  if (rs6000_must_pass_in_stack (arg))
     return true;
 
   /* If there is no incoming register, we need a stack.  */
-  entry_parm = rs6000_function_arg (args_so_far, mode, type, true);
+  entry_parm = rs6000_function_arg (args_so_far, arg);
   if (entry_parm == NULL)
     return true;
 
@@ -2222,11 +2214,11 @@ rs6000_parm_needs_stack (cumulative_args_t args_so_far, tree type)
     return true;
 
   /* Also true if we're partially in registers and partially not.  */
-  if (rs6000_arg_partial_bytes (args_so_far, mode, type, true) != 0)
+  if (rs6000_arg_partial_bytes (args_so_far, arg) != 0)
     return true;
 
   /* Update info on where next arg arrives in registers.  */
-  rs6000_function_arg_advance (args_so_far, mode, type, true);
+  rs6000_function_arg_advance (args_so_far, arg);
   return false;
 }
 
@@ -2366,7 +2358,7 @@ rs6000_move_block_from_reg (int regno, rtx x, int nregs)
 
    CUM is as above.
 
-   MODE and TYPE are the mode and type of the current parameter.
+   ARG is the last named argument.
 
    PRETEND_SIZE is a variable that should be set to the amount of stack
    that must be pushed by the prolog to pretend that our caller pushed
@@ -2376,9 +2368,9 @@ rs6000_move_block_from_reg (int regno, rtx x, int nregs)
    stack and set PRETEND_SIZE to the length of the registers pushed.  */
 
 void
-setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
-			tree type, int *pretend_size ATTRIBUTE_UNUSED,
-			int no_rtl)
+setup_incoming_varargs (cumulative_args_t cum,
+			const function_arg_info &arg,
+			int *pretend_size ATTRIBUTE_UNUSED, int no_rtl)
 {
   CUMULATIVE_ARGS next_cum;
   int reg_size = TARGET_32BIT ? 4 : 8;
@@ -2388,7 +2380,7 @@ setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
 
   /* Skip the last named argument.  */
   next_cum = *get_cumulative_args (cum);
-  rs6000_function_arg_advance_1 (&next_cum, mode, type, true, 0);
+  rs6000_function_arg_advance_1 (&next_cum, arg.mode, arg.type, arg.named, 0);
 
   if (DEFAULT_ABI == ABI_V4)
     {
@@ -2462,8 +2454,8 @@ setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
       first_reg_offset = next_cum.words;
       save_area = crtl->args.internal_arg_pointer;
 
-      if (targetm.calls.must_pass_in_stack (mode, type))
-	first_reg_offset += rs6000_arg_size (TYPE_MODE (type), type);
+      if (targetm.calls.must_pass_in_stack (arg))
+	first_reg_offset += rs6000_arg_size (TYPE_MODE (arg.type), arg.type);
     }
 
   set = get_varargs_alias_set ();
@@ -2690,7 +2682,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   int regalign = 0;
   gimple *stmt;
 
-  if (pass_by_reference (NULL, TYPE_MODE (type), type, false))
+  if (pass_va_arg_by_reference (type))
     {
       t = rs6000_gimplify_va_arg (valist, ptrtype, pre_p, post_p);
       return build_va_arg_indirect_ref (t);

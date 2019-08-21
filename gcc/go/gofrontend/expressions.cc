@@ -1560,10 +1560,14 @@ Func_descriptor_expression::do_get_backend(Translate_context* context)
 	      || no->name().find("equal") != std::string::npos))
 	is_exported_runtime = true;
 
+      bool is_referenced_by_inline =
+	no->is_function() && no->func_value()->is_referenced_by_inline();
+
       bool is_hidden = ((no->is_function()
 			 && no->func_value()->enclosing() != NULL)
 			|| (Gogo::is_hidden_name(no->name())
-			    && !is_exported_runtime)
+			    && !is_exported_runtime
+			    && !is_referenced_by_inline)
 			|| Gogo::is_thunk(no));
 
       bvar = context->backend()->immutable_struct(var_name, asm_name,
@@ -6734,11 +6738,10 @@ Binary_expression::do_check_types(Gogo*)
 	this->report_error(_("shift of non-integer operand"));
 
       if (right_type->is_string_type())
-        this->report_error(_("shift count not unsigned integer"));
+        this->report_error(_("shift count not integer"));
       else if (!right_type->is_abstract()
-	  && (right_type->integer_type() == NULL
-	      || !right_type->integer_type()->is_unsigned()))
-	this->report_error(_("shift count not unsigned integer"));
+	       && right_type->integer_type() == NULL)
+	this->report_error(_("shift count not integer"));
       else
 	{
 	  Numeric_constant nc;
@@ -6746,7 +6749,7 @@ Binary_expression::do_check_types(Gogo*)
 	    {
 	      mpz_t val;
 	      if (!nc.to_int(&val))
-		this->report_error(_("shift count not unsigned integer"));
+		this->report_error(_("shift count not integer"));
 	      else
 		{
 		  if (mpz_sgn(val) < 0)
@@ -6865,9 +6868,11 @@ Binary_expression::do_get_backend(Translate_context* context)
 
   // In Go, a shift larger than the size of the type is well-defined.
   // This is not true in C, so we need to insert a conditional.
+  // We also need to check for a negative shift count.
   if (is_shift_op)
     {
       go_assert(left_type->integer_type() != NULL);
+      go_assert(right_type->integer_type() != NULL);
 
       int bits = left_type->integer_type()->bits();
 
@@ -6908,6 +6913,23 @@ Binary_expression::do_get_backend(Translate_context* context)
 	  ret = gogo->backend()->conditional_expression(bfn, btype, compare,
 							ret, overflow, loc);
 	  mpz_clear(bitsval);
+	}
+
+      if (!right_type->integer_type()->is_unsigned()
+	  && (!this->right_->numeric_constant_value(&nc)
+	      || nc.to_unsigned_long(&ul) != Numeric_constant::NC_UL_VALID))
+	{
+	  Bexpression* zero_expr =
+	    gogo->backend()->integer_constant_expression(right_btype, zero);
+	  Bexpression* compare =
+	    gogo->backend()->binary_expression(OPERATOR_LT, right, zero_expr,
+					       loc);
+	  const int errcode = RUNTIME_ERROR_SHIFT_BY_NEGATIVE;
+	  Bexpression* crash =
+	    gogo->runtime_error(errcode, loc)->get_backend(context);
+	  Bfunction* bfn = context->function()->func_value()->get_decl();
+	  ret = gogo->backend()->conditional_expression(bfn, btype, compare,
+							crash, ret, loc);
 	}
     }
 
@@ -13773,7 +13795,7 @@ Field_reference_expression::do_lower(Gogo* gogo, Named_object* function,
   if (nt != NULL)
     s.append(Gogo::unpack_hidden_name(nt->name()));
   s.push_back('.');
-  s.append(field->field_name());
+  s.append(Gogo::unpack_hidden_name(field->field_name()));
   s.push_back('"');
 
   // We can't use a string here, because internally a string holds a

@@ -166,8 +166,7 @@ package Sem_SPARK is
    --  when there are violations of ownership rules.
 
    function Is_Deep (Typ : Entity_Id) return Boolean;
-   --  A function that can tell whether a type is deep. Returns True if the
-   --  type passed as argument is deep.
+   --  Returns True if the type passed as argument is deep
 
    function Is_Traversal_Function (E : Entity_Id) return Boolean;
 

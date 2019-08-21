@@ -39,6 +39,7 @@
 #include "output.h"
 #include "expr.h"
 #include "builtins.h"
+#include "calls.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -112,15 +113,15 @@ static struct fr30_frame_info 	current_frame_info;
 /* Zero structure to initialize current_frame_info.  */
 static struct fr30_frame_info 	zero_frame_info;
 
-static void fr30_setup_incoming_varargs (cumulative_args_t, machine_mode,
-					 tree, int *, int);
-static bool fr30_must_pass_in_stack (machine_mode, const_tree);
-static int fr30_arg_partial_bytes (cumulative_args_t, machine_mode,
-				   tree, bool);
-static rtx fr30_function_arg (cumulative_args_t, machine_mode,
-			      const_tree, bool);
-static void fr30_function_arg_advance (cumulative_args_t, machine_mode,
-				       const_tree, bool);
+static void fr30_setup_incoming_varargs (cumulative_args_t,
+					 const function_arg_info &,
+					 int *, int);
+static bool fr30_must_pass_in_stack (const function_arg_info &);
+static int fr30_arg_partial_bytes (cumulative_args_t,
+				   const function_arg_info &);
+static rtx fr30_function_arg (cumulative_args_t, const function_arg_info &);
+static void fr30_function_arg_advance (cumulative_args_t,
+				       const function_arg_info &);
 static bool fr30_frame_pointer_required (void);
 static rtx fr30_function_value (const_tree, const_tree, bool);
 static rtx fr30_libcall_value (machine_mode, const_rtx);
@@ -128,7 +129,7 @@ static bool fr30_function_value_regno_p (const unsigned int);
 static bool fr30_can_eliminate (const int, const int);
 static void fr30_asm_trampoline_template (FILE *);
 static void fr30_trampoline_init (rtx, tree, rtx);
-static int fr30_num_arg_regs (machine_mode, const_tree);
+static int fr30_num_arg_regs (const function_arg_info &);
 
 #define FRAME_POINTER_MASK 	(1 << (FRAME_POINTER_REGNUM))
 #define RETURN_POINTER_MASK 	(1 << (RETURN_POINTER_REGNUM))
@@ -458,12 +459,11 @@ fr30_expand_epilogue (void)
    named argument, from registers into memory.  * copying actually done in
    fr30_expand_prologue().
 
-   ARG_REGS_USED_SO_FAR has *not* been updated for the last named argument
-   which has type TYPE and mode MODE, and we rely on this fact.  */
+   CUM has not been updated for the last named argument which has type TYPE
+   and mode MODE, and we rely on this fact.  */
 void
 fr30_setup_incoming_varargs (cumulative_args_t arg_regs_used_so_far_v,
-			     machine_mode mode,
-			     tree type ATTRIBUTE_UNUSED,
+			     const function_arg_info &arg,
 			     int *pretend_size,
 			     int second_time ATTRIBUTE_UNUSED)
 {
@@ -472,7 +472,7 @@ fr30_setup_incoming_varargs (cumulative_args_t arg_regs_used_so_far_v,
   int size;
 
   /* All BLKmode values are passed by reference.  */
-  gcc_assert (mode != BLKmode);
+  gcc_assert (arg.mode != BLKmode);
 
   /* ??? This run-time test as well as the code inside the if
      statement is probably unnecessary.  */
@@ -480,7 +480,7 @@ fr30_setup_incoming_varargs (cumulative_args_t arg_regs_used_so_far_v,
     /* If TARGET_STRICT_ARGUMENT_NAMING returns true, then the last named
        arg must not be treated as an anonymous arg.  */
     /* ??? This is a pointer increment, which makes no sense.  */
-    arg_regs_used_so_far += fr30_num_arg_regs (mode, type);
+    arg_regs_used_so_far += fr30_num_arg_regs (arg);
 
   size = FR30_NUM_ARG_REGS - (* arg_regs_used_so_far);
 
@@ -743,50 +743,37 @@ fr30_function_value_regno_p (const unsigned int regno)
    in registers.  */
 
 static bool
-fr30_must_pass_in_stack (machine_mode mode, const_tree type)
+fr30_must_pass_in_stack (const function_arg_info &arg)
 {
-  if (mode == BLKmode)
-    return true;
-  if (type == NULL)
-    return false;
-  return AGGREGATE_TYPE_P (type);
+  return arg.mode == BLKmode || arg.aggregate_type_p ();
 }
 
-/* Compute the number of word sized registers needed to hold a
-   function argument of mode INT_MODE and tree type TYPE.  */
+/* Compute the number of word sized registers needed to hold function
+   argument ARG.  */
 static int
-fr30_num_arg_regs (machine_mode mode, const_tree type)
+fr30_num_arg_regs (const function_arg_info &arg)
 {
-  int size;
-
-  if (targetm.calls.must_pass_in_stack (mode, type))
+  if (targetm.calls.must_pass_in_stack (arg))
     return 0;
 
-  if (type && mode == BLKmode)
-    size = int_size_in_bytes (type);
-  else
-    size = GET_MODE_SIZE (mode);
-
+  int size = arg.promoted_size_in_bytes ();
   return (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 }
 
-/* Returns the number of bytes in which *part* of a parameter of machine
-   mode MODE and tree type TYPE (which may be NULL if the type is not known).
-   If the argument fits entirely in the argument registers, or entirely on
-   the stack, then 0 is returned.
-   CUM is the number of argument registers already used by earlier
-   parameters to the function.  */
+/* Returns the number of bytes of argument registers required to hold *part*
+   of argument ARG.  If the argument fits entirely in the argument registers,
+   or entirely on the stack, then 0 is returned.  CUM is the number of
+   argument registers already used by earlier parameters to the function.  */
 
 static int
-fr30_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
-			tree type, bool named)
+fr30_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   /* Unnamed arguments, i.e. those that are prototyped as ...
      are always passed on the stack.
      Also check here to see if all the argument registers are full.  */
-  if (named == 0 || *cum >= FR30_NUM_ARG_REGS)
+  if (!arg.named || *cum >= FR30_NUM_ARG_REGS)
     return 0;
 
   /* Work out how many argument registers would be needed if this
@@ -795,39 +782,32 @@ fr30_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
      are needed because the parameter must be passed on the stack)
      then return zero, as this parameter does not require partial
      register, partial stack stack space.  */
-  if (*cum + fr30_num_arg_regs (mode, type) <= FR30_NUM_ARG_REGS)
+  if (*cum + fr30_num_arg_regs (arg) <= FR30_NUM_ARG_REGS)
     return 0;
   
   return (FR30_NUM_ARG_REGS - *cum) * UNITS_PER_WORD;
 }
 
 static rtx
-fr30_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		   const_tree type, bool named)
+fr30_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (!named
-      || fr30_must_pass_in_stack (mode, type)
+  if (!arg.named
+      || fr30_must_pass_in_stack (arg)
       || *cum >= FR30_NUM_ARG_REGS)
     return NULL_RTX;
   else
-    return gen_rtx_REG (mode, *cum + FIRST_ARG_REGNUM);
+    return gen_rtx_REG (arg.mode, *cum + FIRST_ARG_REGNUM);
 }
 
-/* A C statement (sans semicolon) to update the summarizer variable CUM to
-   advance past an argument in the argument list.  The values MODE, TYPE and
-   NAMED describe that argument.  Once this is done, the variable CUM is
-   suitable for analyzing the *following* argument with `FUNCTION_ARG', etc.
-
-   This macro need not do anything if the argument in question was passed on
-   the stack.  The compiler knows how to track the amount of stack space used
-   for arguments without any special help.  */
+/* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 static void
-fr30_function_arg_advance (cumulative_args_t cum, machine_mode mode,
-			   const_tree type, bool named)
+fr30_function_arg_advance (cumulative_args_t cum,
+			   const function_arg_info &arg)
 {
-  *get_cumulative_args (cum) += named * fr30_num_arg_regs (mode, type);
+  if (arg.named)
+    *get_cumulative_args (cum) += fr30_num_arg_regs (arg);
 }
 
 /*}}}*/

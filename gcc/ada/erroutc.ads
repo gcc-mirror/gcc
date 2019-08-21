@@ -612,7 +612,7 @@ package Erroutc is
    function Warning_Treated_As_Error (Msg : String) return Boolean;
    --  Returns True if the warning message Msg matches any of the strings
    --  given by Warning_As_Error pragmas, as stored in the Warnings_As_Errors
-   --  table by Set_Warning_As_Error.
+   --  table.
 
    type Error_Msg_Proc is
      access procedure (Msg : String; Flag_Location : Source_Ptr);

@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "rtl-iter.h"
 #include "cfgcleanup.h"
+#include "calls.h"
 
 /* This file contains three techniques for performing Dead Store
    Elimination (dse).
@@ -2343,7 +2344,8 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
       if (!is_int_mode (TYPE_MODE (TREE_VALUE (arg)), &mode))
 	return false;
 
-      reg = targetm.calls.function_arg (args_so_far, mode, NULL_TREE, true);
+      function_arg_info arg (mode, /*named=*/true);
+      reg = targetm.calls.function_arg (args_so_far, arg);
       if (!reg || !REG_P (reg) || GET_MODE (reg) != mode)
 	return false;
 
@@ -2375,7 +2377,7 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
       if (tmp)
 	args[idx] = tmp;
 
-      targetm.calls.function_arg_advance (args_so_far, mode, NULL_TREE, true);
+      targetm.calls.function_arg_advance (args_so_far, arg);
     }
   if (arg != void_list_node || idx != nargs)
     return false;
@@ -2537,10 +2539,13 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn)
 		clear_rhs_from_active_local_stores ();
 	    }
 	}
-      else if (SIBLING_CALL_P (insn) && reload_completed)
+      else if (SIBLING_CALL_P (insn)
+	       && (reload_completed || HARD_FRAME_POINTER_IS_ARG_POINTER))
 	/* Arguments for a sibling call that are pushed to memory are passed
 	   using the incoming argument pointer of the current function.  After
-	   reload that might be (and likely is) frame pointer based.  */
+	   reload that might be (and likely is) frame pointer based.  And, if
+	   it is a frame pointer on the target, even before reload we need to
+	   kill frame pointer based stores.  */
 	add_wild_read (bb_info);
       else
 	/* Every other call, including pure functions, may read any memory

@@ -1406,7 +1406,7 @@ package Bindo.Graphs is
       function Iterate_Edges_To_Successors
         (G      : Library_Graph;
          Vertex : Library_Graph_Vertex_Id) return Edges_To_Successors_Iterator;
-      pragma Inline (Iterate_Components);
+      pragma Inline (Iterate_Edges_To_Successors);
       --  Obtain an iterator over all edges to successors with predecessor
       --  vertex Vertex of library graph G.
 

@@ -53,13 +53,17 @@ package body Exp_Unst is
    -- Local Subprograms --
    -----------------------
 
-   procedure Unnest_Subprogram (Subp : Entity_Id; Subp_Body : Node_Id);
+   procedure Unnest_Subprogram
+     (Subp : Entity_Id; Subp_Body : Node_Id; For_Inline : Boolean := False);
    --  Subp is a library-level subprogram which has nested subprograms, and
    --  Subp_Body is the corresponding N_Subprogram_Body node. This procedure
    --  declares the AREC types and objects, adds assignments to the AREC record
    --  as required, defines the xxxPTR types for uplevel referenced objects,
    --  adds the ARECP parameter to all nested subprograms which need it, and
-   --  modifies all uplevel references appropriately.
+   --  modifies all uplevel references appropriately. If For_Inline is True,
+   --  we're unnesting this subprogram because it's on the list of inlined
+   --  subprograms and should unnest it despite it not being part of the main
+   --  unit.
 
    -----------
    -- Calls --
@@ -297,7 +301,8 @@ package body Exp_Unst is
    -- Unnest_Subprogram --
    -----------------------
 
-   procedure Unnest_Subprogram (Subp : Entity_Id; Subp_Body : Node_Id) is
+   procedure Unnest_Subprogram
+     (Subp : Entity_Id; Subp_Body : Node_Id; For_Inline : Boolean := False) is
       function AREC_Name (J : Pos; S : String) return Name_Id;
       --  Returns name for string ARECjS, where j is the decimal value of j
 
@@ -402,15 +407,18 @@ package body Exp_Unst is
       --  to determine whether the main unit is generic (the scope stack is not
       --  present when this is called on the main unit).
 
-      if Ekind (Cunit_Entity (Main_Unit)) = E_Package_Body
+      if not For_Inline
+        and then Ekind (Cunit_Entity (Main_Unit)) = E_Package_Body
         and then Is_Generic_Unit (Spec_Entity (Cunit_Entity (Main_Unit)))
       then
          return;
-      end if;
 
-      --  Only unnest when generating code for the main source unit
+      --  Only unnest when generating code for the main source unit or if we're
+      --  unnesting for inline.
 
-      if not In_Extended_Main_Code_Unit (Subp_Body) then
+      elsif not For_Inline
+        and then not In_Extended_Main_Code_Unit (Subp_Body)
+      then
          return;
       end if;
 
@@ -2549,6 +2557,9 @@ package body Exp_Unst is
          return OK;
       end Search_Subprograms;
 
+      Subp      : Entity_Id;
+      Subp_Body : Node_Id;
+
    --  Start of processing for Unnest_Subprograms
 
    begin
@@ -2568,6 +2579,24 @@ package body Exp_Unst is
       end if;
 
       Do_Search (N);
+
+      --  Unnest any subprograms passed on the list of inlined subprograms
+
+      Subp := First_Inlined_Subprogram (N);
+
+      while Present (Subp) loop
+         Subp_Body := Parent (Declaration_Node (Subp));
+
+         if Nkind (Subp_Body) = N_Subprogram_Declaration
+           and then Present (Corresponding_Body (Subp_Body))
+         then
+            Subp_Body := Parent (Declaration_Node
+                                   (Corresponding_Body (Subp_Body)));
+            Unnest_Subprogram (Subp, Subp_Body, For_Inline => True);
+         end if;
+
+         Next_Inlined_Subprogram (Subp);
+      end loop;
    end Unnest_Subprograms;
 
 end Exp_Unst;

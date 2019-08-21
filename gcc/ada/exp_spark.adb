@@ -59,9 +59,6 @@ package body Exp_SPARK is
    procedure Expand_SPARK_N_Freeze_Type (E : Entity_Id);
    --  Build the DIC procedure of a type when needed, if not already done
 
-   procedure Expand_SPARK_N_Indexed_Component (N : Node_Id);
-   --  Insert explicit dereference if required
-
    procedure Expand_SPARK_N_Loop_Statement (N : Node_Id);
    --  Perform loop statement-specific expansion
 
@@ -75,6 +72,9 @@ package body Exp_SPARK is
    --  Rewrite operator /= based on operator = when defined explicitly
 
    procedure Expand_SPARK_N_Selected_Component (N : Node_Id);
+   --  Insert explicit dereference if required
+
+   procedure Expand_SPARK_N_Slice_Or_Indexed_Component (N : Node_Id);
    --  Insert explicit dereference if required
 
    ------------------
@@ -138,8 +138,10 @@ package body Exp_SPARK is
                Expand_SPARK_N_Freeze_Type (Entity (N));
             end if;
 
-         when N_Indexed_Component =>
-            Expand_SPARK_N_Indexed_Component (N);
+         when N_Indexed_Component
+            | N_Slice
+         =>
+            Expand_SPARK_N_Slice_Or_Indexed_Component (N);
 
          when N_Selected_Component =>
             Expand_SPARK_N_Selected_Component (N);
@@ -325,21 +327,6 @@ package body Exp_SPARK is
          Expand_Iterator_Loop_Over_Array (N);
       end if;
    end Expand_SPARK_N_Loop_Statement;
-
-   --------------------------------------
-   -- Expand_SPARK_N_Indexed_Component --
-   --------------------------------------
-
-   procedure Expand_SPARK_N_Indexed_Component (N : Node_Id) is
-      Pref : constant Node_Id    := Prefix (N);
-      Typ  : constant Entity_Id  := Etype (Pref);
-
-   begin
-      if Is_Access_Type (Typ) then
-         Insert_Explicit_Dereference (Pref);
-         Analyze_And_Resolve (Pref, Designated_Type (Typ));
-      end if;
-   end Expand_SPARK_N_Indexed_Component;
 
    ---------------------------------------
    -- Expand_SPARK_N_Object_Declaration --
@@ -551,5 +538,20 @@ package body Exp_SPARK is
          Analyze_And_Resolve (Pref, Designated_Type (Typ));
       end if;
    end Expand_SPARK_N_Selected_Component;
+
+   -----------------------------------------------
+   -- Expand_SPARK_N_Slice_Or_Indexed_Component --
+   -----------------------------------------------
+
+   procedure Expand_SPARK_N_Slice_Or_Indexed_Component (N : Node_Id) is
+      Pref : constant Node_Id   := Prefix (N);
+      Typ  : constant Entity_Id := Etype (Pref);
+
+   begin
+      if Is_Access_Type (Typ) then
+         Insert_Explicit_Dereference (Pref);
+         Analyze_And_Resolve (Pref, Designated_Type (Typ));
+      end if;
+   end Expand_SPARK_N_Slice_Or_Indexed_Component;
 
 end Exp_SPARK;

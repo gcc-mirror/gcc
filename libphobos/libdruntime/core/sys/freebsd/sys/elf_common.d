@@ -852,3 +852,105 @@ enum R_X86_64_DTPOFF32 =        21;
 enum R_X86_64_GOTTPOFF =        22;
 enum R_X86_64_TPOFF32 =         23;
 enum R_X86_64_IRELATIVE =       37;
+
+version (PPC64)
+{
+enum __ELF_WORD_SIZE = 64;
+enum ELF_ARCH = EM_PPC64;
+enum ELF_MACHINE_OK(x) = ((x) == EM_PPC64);
+}
+version (PPC)
+{
+enum __ELF_WORD_SIZE = 32;
+enum ELF_ARCH = EM_PPC;
+enum ELF_ARCH32 = EM_PPC;
+enum ELF_MACHINE_OK(x) = ((x) == EM_PPC);
+}
+
+/**
+ * Auxiliary vector entries for passing information to the interpreter.
+ *
+ * The PowerPC supplement to the SVR4 ABI specification names this "auxv_t",
+ * but POSIX lays claim to all symbols ending with "_t".
+ */
+
+struct Elf32_Auxinfo
+{
+    int a_type;
+    union a_un
+    {
+        long    a_val;
+        void    *a_ptr;
+        void function(void* a) a_fcn;
+    }
+}
+
+struct Elf64_Auxinfo
+{
+    long a_type;
+    union a_un
+    {
+        long    a_val;
+        void    *a_ptr;
+        void function(void* a) a_fcn;
+    }
+}
+
+// __ElfType(Auxinfo);
+
+/**
+ * Values for a_type.
+ */
+
+enum AT_NULL   = 0;
+enum AT_IGNORE = 1;
+enum AT_EXECFD = 2;
+enum AT_PHDR  = 3;
+enum AT_PHENT = 4;
+enum AT_PHNUM = 5;
+enum AT_PAGESZ = 6;
+enum AT_BASE  = 7;
+enum AT_FLAGS = 8;
+enum AT_ENTRY = 9;
+enum AT_DCACHEBSIZE = 10;
+enum AT_ICACHEBSIZE = 11;
+enum AT_UCACHEBSIZE = 12;
+enum AT_EXECPATH  = 13;
+enum AT_CANARY    = 14;
+enum AT_CANARYLEN = 15;
+enum AT_OSRELDATE = 16;
+enum AT_NCPUS = 17;
+enum AT_PAGESIZES = 18;
+enum AT_PAGESIZESLEN = 19;
+enum AT_STACKPROT = 21;
+enum AT_TIMEKEEP  = 22;
+enum AT_COUNT = 23;
+
+/**
+ * Relocation types.
+ */
+
+enum R_PPC_COUNT =  37;
+enum R_PPC_EMB_COUNT =  (R_PPC_EMB_RELSDA - R_PPC_EMB_NADDR32 + 1);
+
+/**
+ * Define "machine" characteristics
+ */
+
+version (PPC64)
+{
+enum ELF_TARG_CLASS =   ELFCLASS64;
+enum ELF_TARG_DATA =    ELFDATA2MSB;
+enum ELF_TARG_MACH =    EM_PPC64;
+enum ELF_TARG_VER =     1;
+}
+
+version (PPC)
+{
+enum ELF_TARG_CLASS =   ELFCLASS32;
+enum ELF_TARG_DATA =    ELFDATA2MSB;
+enum ELF_TARG_MACH =    EM_PPC;
+enum ELF_TARG_VER =     1;
+}
+
+enum ET_DYN_LOAD_ADDR = 0x01010000;

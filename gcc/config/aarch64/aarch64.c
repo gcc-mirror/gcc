@@ -4409,35 +4409,30 @@ aarch64_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 /* Implement TARGET_PASS_BY_REFERENCE.  */
 
 static bool
-aarch64_pass_by_reference (cumulative_args_t pcum ATTRIBUTE_UNUSED,
-			   machine_mode mode,
-			   const_tree type,
-			   bool named ATTRIBUTE_UNUSED)
+aarch64_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
   HOST_WIDE_INT size;
   machine_mode dummymode;
   int nregs;
 
   /* GET_MODE_SIZE (BLKmode) is useless since it is 0.  */
-  if (mode == BLKmode && type)
-    size = int_size_in_bytes (type);
+  if (arg.mode == BLKmode && arg.type)
+    size = int_size_in_bytes (arg.type);
   else
     /* No frontends can create types with variable-sized modes, so we
        shouldn't be asked to pass or return them.  */
-    size = GET_MODE_SIZE (mode).to_constant ();
+    size = GET_MODE_SIZE (arg.mode).to_constant ();
 
   /* Aggregates are passed by reference based on their size.  */
-  if (type && AGGREGATE_TYPE_P (type))
-    {
-      size = int_size_in_bytes (type);
-    }
+  if (arg.aggregate_type_p ())
+    size = int_size_in_bytes (arg.type);
 
   /* Variable sized arguments are always returned by reference.  */
   if (size < 0)
     return true;
 
   /* Can this be a candidate to be passed in fp/simd register(s)?  */
-  if (aarch64_vfp_is_call_or_return_candidate (mode, type,
+  if (aarch64_vfp_is_call_or_return_candidate (arg.mode, arg.type,
 					       &dummymode, &nregs,
 					       NULL))
     return false;
@@ -4806,16 +4801,15 @@ on_stack:
 /* Implement TARGET_FUNCTION_ARG.  */
 
 static rtx
-aarch64_function_arg (cumulative_args_t pcum_v, machine_mode mode,
-		      const_tree type, bool named)
+aarch64_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
   gcc_assert (pcum->pcs_variant == ARM_PCS_AAPCS64);
 
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     return NULL_RTX;
 
-  aarch64_layout_arg (pcum_v, mode, type, named);
+  aarch64_layout_arg (pcum_v, arg.mode, arg.type, arg.named);
   return pcum->aapcs_reg;
 }
 
@@ -4852,14 +4846,12 @@ aarch64_init_cumulative_args (CUMULATIVE_ARGS *pcum,
 
 static void
 aarch64_function_arg_advance (cumulative_args_t pcum_v,
-			      machine_mode mode,
-			      const_tree type,
-			      bool named)
+			      const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
   if (pcum->pcs_variant == ARM_PCS_AAPCS64)
     {
-      aarch64_layout_arg (pcum_v, mode, type, named);
+      aarch64_layout_arg (pcum_v, arg.mode, arg.type, arg.named);
       gcc_assert ((pcum->aapcs_reg != NULL_RTX)
 		  != (pcum->aapcs_stack_words != 0));
       pcum->aapcs_arg_processed = false;
@@ -14271,7 +14263,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   HOST_WIDE_INT size, rsize, adjust, align;
   tree t, u, cond1, cond2;
 
-  indirect_p = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  indirect_p = pass_va_arg_by_reference (type);
   if (indirect_p)
     type = build_pointer_type (type);
 
@@ -14516,9 +14508,9 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 /* Implement TARGET_SETUP_INCOMING_VARARGS.  */
 
 static void
-aarch64_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
-				tree type, int *pretend_size ATTRIBUTE_UNUSED,
-				int no_rtl)
+aarch64_setup_incoming_varargs (cumulative_args_t cum_v,
+				const function_arg_info &arg,
+				int *pretend_size ATTRIBUTE_UNUSED, int no_rtl)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   CUMULATIVE_ARGS local_cum;
@@ -14529,7 +14521,7 @@ aarch64_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
   local_cum = *cum;
-  aarch64_function_arg_advance (pack_cumulative_args(&local_cum), mode, type, true);
+  aarch64_function_arg_advance (pack_cumulative_args(&local_cum), arg);
 
   /* Found out how many registers we need to save.
      Honor tree-stdvar analysis results.  */
@@ -20354,7 +20346,7 @@ aarch64_run_selftests (void)
 #define TARGET_BUILD_BUILTIN_VA_LIST aarch64_build_builtin_va_list
 
 #undef TARGET_CALLEE_COPIES
-#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false
+#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_arg_info_false
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE aarch64_can_eliminate

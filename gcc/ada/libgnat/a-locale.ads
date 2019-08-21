@@ -20,9 +20,9 @@ package Ada.Locales is
    pragma Remote_Types (Locales);
 
    --  A locale identifies a geopolitical place or region and its associated
-   --  language, which can be used to determine other
-   --  internationalization-related characteristics. The active locale is the
-   --  locale associated with the partition of the current task.
+   --  language, which can be used to determine other internationalization-
+   --  related characteristics. The active locale is the locale associated with
+   --  the partition of the current task.
 
    type Language_Code is new String (1 .. 3)
       with Dynamic_Predicate =>

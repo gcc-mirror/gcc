@@ -163,56 +163,14 @@ string formatSocketError(int err) @trusted
         {
             cs = strerror_r(err, buf.ptr, buf.length);
         }
-        else version (OSX)
-        {
-            auto errs = strerror_r(err, buf.ptr, buf.length);
-            if (errs == 0)
-                cs = buf.ptr;
-            else
-                return "Socket error " ~ to!string(err);
-        }
-        else version (FreeBSD)
-        {
-            auto errs = strerror_r(err, buf.ptr, buf.length);
-            if (errs == 0)
-                cs = buf.ptr;
-            else
-                return "Socket error " ~ to!string(err);
-        }
-        else version (NetBSD)
-        {
-            auto errs = strerror_r(err, buf.ptr, buf.length);
-            if (errs == 0)
-                cs = buf.ptr;
-            else
-                return "Socket error " ~ to!string(err);
-        }
-        else version (DragonFlyBSD)
-        {
-            auto errs = strerror_r(err, buf.ptr, buf.length);
-            if (errs == 0)
-                cs = buf.ptr;
-            else
-                return "Socket error " ~ to!string(err);
-        }
-        else version (Solaris)
-        {
-            auto errs = strerror_r(err, buf.ptr, buf.length);
-            if (errs == 0)
-                cs = buf.ptr;
-            else
-                return "Socket error " ~ to!string(err);
-        }
-        else version (CRuntime_Bionic)
-        {
-            auto errs = strerror_r(err, buf.ptr, buf.length);
-            if (errs == 0)
-                cs = buf.ptr;
-            else
-                return "Socket error " ~ to!string(err);
-        }
         else
-            static assert(0);
+        {
+            auto errs = strerror_r(err, buf.ptr, buf.length);
+            if (errs == 0)
+                cs = buf.ptr;
+            else
+                return "Socket error " ~ to!string(err);
+        }
 
         auto len = strlen(cs);
 

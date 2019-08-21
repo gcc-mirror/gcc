@@ -223,10 +223,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct __failure_type
   { };
 
-  // Primary type categories.
-
   template<typename>
     struct remove_cv;
+
+  template<typename>
+    struct is_const;
+
+  // Primary type categories.
 
   template<typename>
     struct __is_void_helper
@@ -481,105 +484,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   /// is_function
-  template<typename>
+  template<typename _Tp>
     struct is_function
+    : public __bool_constant<!is_const<const _Tp>::value> { };
+
+  template<typename _Tp>
+    struct is_function<_Tp&>
     : public false_type { };
 
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes...) _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes...) & _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes...) && _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes......) _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes......) & _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes......) && _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes...) const _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes...) const & _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes...) const && _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes......) const _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes......) const & _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes......) const && _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes...) volatile _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes...) volatile & _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes...) volatile && _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes......) volatile _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes......) volatile & _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes......) volatile && _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes...) const volatile _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes...) const volatile & _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes...) const volatile && _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes......) const volatile _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes......) const volatile & _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
-    struct is_function<_Res(_ArgTypes......) const volatile && _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type { };
+  template<typename _Tp>
+    struct is_function<_Tp&&>
+    : public false_type { };
 
 #define __cpp_lib_is_null_pointer 201309
 
@@ -706,20 +621,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  >;
 
 
+  // __void_t (std::void_t for C++11)
+  template<typename...> using __void_t = void;
+
   // Utility to detect referenceable types ([defns.referenceable]).
 
-  template<typename _Tp>
+  template<typename _Tp, typename = void>
     struct __is_referenceable
-    : public __or_<is_object<_Tp>, is_reference<_Tp>>::type
+    : public false_type
     { };
 
-  template<typename _Res, typename... _Args _GLIBCXX_NOEXCEPT_PARM>
-    struct __is_referenceable<_Res(_Args...) _GLIBCXX_NOEXCEPT_QUAL>
-    : public true_type
-    { };
-
-  template<typename _Res, typename... _Args _GLIBCXX_NOEXCEPT_PARM>
-    struct __is_referenceable<_Res(_Args......) _GLIBCXX_NOEXCEPT_QUAL>
+  template<typename _Tp>
+    struct __is_referenceable<_Tp, __void_t<_Tp&>>
     : public true_type
     { };
 
@@ -2260,9 +2173,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Iftrue, typename _Iffalse>
     struct conditional<false, _Iftrue, _Iffalse>
     { typedef _Iffalse type; };
-
-  // __void_t (std::void_t for C++11)
-  template<typename...> using __void_t = void;
 
   /// common_type
   template<typename... _Tp>

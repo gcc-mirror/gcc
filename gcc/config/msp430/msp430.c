@@ -710,16 +710,14 @@ msp430_promote_prototypes (const_tree fntype ATTRIBUTE_UNUSED)
 
 rtx
 msp430_function_arg (cumulative_args_t cap,
-		     machine_mode mode,
-		     const_tree type,
-		     bool named)
+		     const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *ca = get_cumulative_args (cap);
 
-  msp430_evaluate_arg (cap, mode, type, named);
+  msp430_evaluate_arg (cap, arg.mode, arg.type, arg.named);
 
   if (ca->reg_count)
-    return gen_rtx_REG (mode, ca->start_reg);
+    return gen_rtx_REG (arg.mode, ca->start_reg);
 
   return 0;
 }
@@ -728,14 +726,11 @@ msp430_function_arg (cumulative_args_t cap,
 #define TARGET_ARG_PARTIAL_BYTES msp430_arg_partial_bytes
 
 int
-msp430_arg_partial_bytes (cumulative_args_t cap,
-			  machine_mode mode,
-			  tree type,
-			  bool named)
+msp430_arg_partial_bytes (cumulative_args_t cap, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *ca = get_cumulative_args (cap);
 
-  msp430_evaluate_arg (cap, mode, type, named);
+  msp430_evaluate_arg (cap, arg.mode, arg.type, arg.named);
 
   if (ca->reg_count && ca->mem_count)
     return ca->reg_count * UNITS_PER_WORD;
@@ -747,41 +742,27 @@ msp430_arg_partial_bytes (cumulative_args_t cap,
 #define TARGET_PASS_BY_REFERENCE msp430_pass_by_reference
 
 static bool
-msp430_pass_by_reference (cumulative_args_t cap ATTRIBUTE_UNUSED,
-			  machine_mode mode,
-			  const_tree type,
-			  bool named ATTRIBUTE_UNUSED)
+msp430_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  return (mode == BLKmode
-	  || (type && TREE_CODE (type) == RECORD_TYPE)
-	  || (type && TREE_CODE (type) == UNION_TYPE));
+  return (arg.mode == BLKmode
+	  || (arg.type && TREE_CODE (arg.type) == RECORD_TYPE)
+	  || (arg.type && TREE_CODE (arg.type) == UNION_TYPE));
 }
 
 #undef  TARGET_CALLEE_COPIES
-#define TARGET_CALLEE_COPIES msp430_callee_copies
-
-static bool
-msp430_callee_copies (cumulative_args_t cap ATTRIBUTE_UNUSED,
-		      machine_mode mode ATTRIBUTE_UNUSED,
-		      const_tree type ATTRIBUTE_UNUSED,
-		      bool named ATTRIBUTE_UNUSED)
-{
-  return true;
-}
+#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_arg_info_true
 
 #undef  TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE msp430_function_arg_advance
 
 void
 msp430_function_arg_advance (cumulative_args_t cap,
-			     machine_mode mode,
-			     const_tree type,
-			     bool named)
+			     const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *ca = get_cumulative_args (cap);
   int i;
 
-  msp430_evaluate_arg (cap, mode, type, named);
+  msp430_evaluate_arg (cap, arg.mode, arg.type, arg.named);
 
   if (ca->start_reg >= CA_FIRST_REG)
     for (i = 0; i < ca->reg_count; i ++)
@@ -856,7 +837,7 @@ msp430_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   unsigned HOST_WIDE_INT align, boundary;
   bool indirect;
 
-  indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  indirect = pass_va_arg_by_reference (type);
   if (indirect)
     type = build_pointer_type (type);
 

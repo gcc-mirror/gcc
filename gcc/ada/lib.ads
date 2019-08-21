@@ -37,6 +37,8 @@ with Namet; use Namet;
 with Table;
 with Types; use Types;
 
+with GNAT.HTable;
+
 package Lib is
 
    type Unit_Ref_Table is array (Pos range <>) of Unit_Number_Type;
@@ -823,21 +825,22 @@ private
    pragma Inline (Increment_Primary_Stack_Count);
    pragma Inline (Increment_Sec_Stack_Count);
    pragma Inline (Increment_Serial_Number);
+   pragma Inline (Is_Internal_Unit);
+   pragma Inline (Is_Loaded);
+   pragma Inline (Is_Predefined_Renaming);
+   pragma Inline (Is_Predefined_Unit);
    pragma Inline (Loading);
    pragma Inline (Main_CPU);
    pragma Inline (Main_Priority);
    pragma Inline (Munit_Index);
    pragma Inline (No_Elab_Code_All);
    pragma Inline (OA_Setting);
+   pragma Inline (Primary_Stack_Count);
    pragma Inline (Set_Cunit);
    pragma Inline (Set_Cunit_Entity);
    pragma Inline (Set_Fatal_Error);
    pragma Inline (Set_Generate_Code);
    pragma Inline (Set_Has_RACW);
-   pragma Inline (Is_Predefined_Renaming);
-   pragma Inline (Is_Internal_Unit);
-   pragma Inline (Is_Predefined_Unit);
-   pragma Inline (Primary_Stack_Count);
    pragma Inline (Sec_Stack_Count);
    pragma Inline (Set_Loading);
    pragma Inline (Set_Main_CPU);
@@ -929,6 +932,36 @@ private
      Table_Initial        => Alloc.Units_Initial,
      Table_Increment      => Alloc.Units_Increment,
      Table_Name           => "Units");
+
+   --  The following table records a mapping between a name and the entry in
+   --  the units table whose Unit_Name is this name. It is used to speed up
+   --  the Is_Loaded function, whose original implementation (linear search)
+   --  could account for 2% of the time spent in the front end. Note that, in
+   --  the case of source files containing multiple units, the units table may
+   --  temporarily contain two entries with the same Unit_Name during parsing,
+   --  which means that the mapping must be to the first entry in the table.
+
+   Unit_Name_Table_Size : constant := 257;
+   --  Number of headers in hash table
+
+   subtype Unit_Name_Header_Num is Integer range 0 .. Unit_Name_Table_Size - 1;
+   --  Range of headers in hash table
+
+   function Unit_Name_Hash (Id : Unit_Name_Type) return Unit_Name_Header_Num;
+   --  Simple hash function for Unit_Name_Types
+
+   package Unit_Names is new GNAT.Htable.Simple_HTable
+     (Header_Num => Unit_Name_Header_Num,
+      Element    => Unit_Number_Type,
+      No_Element => No_Unit,
+      Key        => Unit_Name_Type,
+      Hash       => Unit_Name_Hash,
+      Equal      => "=");
+
+   procedure Init_Unit_Name (U : Unit_Number_Type; N : Unit_Name_Type);
+   pragma Inline (Init_Unit_Name);
+   --  Both set the Unit_Name for the given units table entry and register a
+   --  mapping between this name and the entry.
 
    --  The following table stores strings from pragma Linker_Option lines
 

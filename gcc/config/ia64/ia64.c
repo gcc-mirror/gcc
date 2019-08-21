@@ -199,18 +199,16 @@ static rtx gen_fr_restore_x (rtx, rtx, rtx);
 static void ia64_option_override (void);
 static bool ia64_can_eliminate (const int, const int);
 static machine_mode hfa_element_mode (const_tree, bool);
-static void ia64_setup_incoming_varargs (cumulative_args_t, machine_mode,
-					 tree, int *, int);
-static int ia64_arg_partial_bytes (cumulative_args_t, machine_mode,
-				   tree, bool);
-static rtx ia64_function_arg_1 (cumulative_args_t, machine_mode,
-				const_tree, bool, bool);
-static rtx ia64_function_arg (cumulative_args_t, machine_mode,
-			      const_tree, bool);
+static void ia64_setup_incoming_varargs (cumulative_args_t,
+					 const function_arg_info &,
+					 int *, int);
+static int ia64_arg_partial_bytes (cumulative_args_t,
+				   const function_arg_info &);
+static rtx ia64_function_arg (cumulative_args_t, const function_arg_info &);
 static rtx ia64_function_incoming_arg (cumulative_args_t,
-				       machine_mode, const_tree, bool);
-static void ia64_function_arg_advance (cumulative_args_t, machine_mode,
-				       const_tree, bool);
+				       const function_arg_info &);
+static void ia64_function_arg_advance (cumulative_args_t,
+				       const function_arg_info &);
 static pad_direction ia64_function_arg_padding (machine_mode, const_tree);
 static unsigned int ia64_function_arg_boundary (machine_mode,
 						const_tree);
@@ -4585,19 +4583,20 @@ ia64_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
 }
 
 /* Do any needed setup for a variadic function.  CUM has not been updated
-   for the last named argument which has type TYPE and mode MODE.
+   for the last named argument, which is given by ARG.
 
    We generate the actual spill instructions during prologue generation.  */
 
 static void
-ia64_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
-			     tree type, int * pretend_size,
+ia64_setup_incoming_varargs (cumulative_args_t cum,
+			     const function_arg_info &arg,
+			     int *pretend_size,
 			     int second_time ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS next_cum = *get_cumulative_args (cum);
 
   /* Skip the current argument.  */
-  ia64_function_arg_advance (pack_cumulative_args (&next_cum), mode, type, 1);
+  ia64_function_arg_advance (pack_cumulative_args (&next_cum), arg);
 
   if (next_cum.words < MAX_ARGUMENT_SLOTS)
     {
@@ -4745,14 +4744,14 @@ ia64_function_arg_offset (const CUMULATIVE_ARGS *cum,
    registers.  */
 
 static rtx
-ia64_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
-		     const_tree type, bool named, bool incoming)
+ia64_function_arg_1 (cumulative_args_t cum_v, const function_arg_info &arg,
+		     bool incoming)
 {
   const CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   int basereg = (incoming ? GR_ARG_FIRST : AR_ARG_FIRST);
-  int words = ia64_function_arg_words (type, mode);
-  int offset = ia64_function_arg_offset (cum, type, words);
+  int words = ia64_function_arg_words (arg.type, arg.mode);
+  int offset = ia64_function_arg_offset (cum, arg.type, words);
   machine_mode hfa_mode = VOIDmode;
 
   /* For OPEN VMS, emit the instruction setting up the argument register here,
@@ -4760,8 +4759,7 @@ ia64_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
      insns.  This is not the conceptually best place to do this, but this is
      the easiest as we have convenient access to cumulative args info.  */
 
-  if (TARGET_ABI_OPEN_VMS && mode == VOIDmode && type == void_type_node
-      && named == 1)
+  if (TARGET_ABI_OPEN_VMS && arg.end_marker_p ())
     {
       unsigned HOST_WIDE_INT regval = cum->words;
       int i;
@@ -4780,19 +4778,19 @@ ia64_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
   /* On OpenVMS argument is either in Rn or Fn.  */
   if (TARGET_ABI_OPEN_VMS)
     {
-      if (FLOAT_MODE_P (mode))
-	return gen_rtx_REG (mode, FR_ARG_FIRST + cum->words);
+      if (FLOAT_MODE_P (arg.mode))
+	return gen_rtx_REG (arg.mode, FR_ARG_FIRST + cum->words);
       else
-	return gen_rtx_REG (mode, basereg + cum->words);
+	return gen_rtx_REG (arg.mode, basereg + cum->words);
     }
 
   /* Check for and handle homogeneous FP aggregates.  */
-  if (type)
-    hfa_mode = hfa_element_mode (type, 0);
+  if (arg.type)
+    hfa_mode = hfa_element_mode (arg.type, 0);
 
   /* Unnamed prototyped hfas are passed as usual.  Named prototyped hfas
      and unprototyped hfas are passed specially.  */
-  if (hfa_mode != VOIDmode && (! cum->prototype || named))
+  if (hfa_mode != VOIDmode && (! cum->prototype || arg.named))
     {
       rtx loc[16];
       int i = 0;
@@ -4812,8 +4810,7 @@ ia64_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
       /* Fill the FP regs.  We do this always.  We stop if we reach the end
 	 of the argument, the last FP register, or the last argument slot.  */
 
-      byte_size = ((mode == BLKmode)
-		   ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
+      byte_size = arg.promoted_size_in_bytes ();
       args_byte_size = int_regs * UNITS_PER_WORD;
       offset = 0;
       for (; (offset < byte_size && fp_regs < MAX_ARGUMENT_SLOTS
@@ -4869,31 +4866,31 @@ ia64_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
 	  else if (gr_size > UNITS_PER_WORD)
 	    int_regs += gr_size / UNITS_PER_WORD;
 	}
-      return gen_rtx_PARALLEL (mode, gen_rtvec_v (i, loc));
+      return gen_rtx_PARALLEL (arg.mode, gen_rtvec_v (i, loc));
     }
   
   /* Integral and aggregates go in general registers.  If we have run out of
      FR registers, then FP values must also go in general registers.  This can
      happen when we have a SFmode HFA.  */
-  else if (mode == TFmode || mode == TCmode
-	   || (! FLOAT_MODE_P (mode) || cum->fp_regs == MAX_ARGUMENT_SLOTS))
+  else if (arg.mode == TFmode || arg.mode == TCmode
+	   || !FLOAT_MODE_P (arg.mode)
+	   || cum->fp_regs == MAX_ARGUMENT_SLOTS)
     {
-      int byte_size = ((mode == BLKmode)
-                       ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
+      int byte_size = arg.promoted_size_in_bytes ();
       if (BYTES_BIG_ENDIAN
-	&& (mode == BLKmode || (type && AGGREGATE_TYPE_P (type)))
-	&& byte_size < UNITS_PER_WORD
-	&& byte_size > 0)
+	  && (arg.mode == BLKmode || arg.aggregate_type_p ())
+	  && byte_size < UNITS_PER_WORD
+	  && byte_size > 0)
 	{
 	  rtx gr_reg = gen_rtx_EXPR_LIST (VOIDmode,
 					  gen_rtx_REG (DImode,
 						       (basereg + cum->words
 							+ offset)),
 					  const0_rtx);
-	  return gen_rtx_PARALLEL (mode, gen_rtvec (1, gr_reg));
+	  return gen_rtx_PARALLEL (arg.mode, gen_rtvec (1, gr_reg));
 	}
       else
-	return gen_rtx_REG (mode, basereg + cum->words + offset);
+	return gen_rtx_REG (arg.mode, basereg + cum->words + offset);
 
     }
 
@@ -4901,19 +4898,19 @@ ia64_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
      named, and in a GR register when unnamed.  */
   else if (cum->prototype)
     {
-      if (named)
-	return gen_rtx_REG (mode, FR_ARG_FIRST + cum->fp_regs);
+      if (arg.named)
+	return gen_rtx_REG (arg.mode, FR_ARG_FIRST + cum->fp_regs);
       /* In big-endian mode, an anonymous SFmode value must be represented
          as (parallel:SF [(expr_list (reg:DI n) (const_int 0))]) to force
 	 the value into the high half of the general register.  */
-      else if (BYTES_BIG_ENDIAN && mode == SFmode)
-	return gen_rtx_PARALLEL (mode,
+      else if (BYTES_BIG_ENDIAN && arg.mode == SFmode)
+	return gen_rtx_PARALLEL (arg.mode,
 		 gen_rtvec (1,
                    gen_rtx_EXPR_LIST (VOIDmode,
 		     gen_rtx_REG (DImode, basereg + cum->words + offset),
 				      const0_rtx)));
       else
-	return gen_rtx_REG (mode, basereg + cum->words + offset);
+	return gen_rtx_REG (arg.mode, basereg + cum->words + offset);
     }
   /* If there is no prototype, then FP values go in both FR and GR
      registers.  */
@@ -4921,10 +4918,10 @@ ia64_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
     {
       /* See comment above.  */
       machine_mode inner_mode =
-	(BYTES_BIG_ENDIAN && mode == SFmode) ? DImode : mode;
+	(BYTES_BIG_ENDIAN && arg.mode == SFmode) ? DImode : arg.mode;
 
       rtx fp_reg = gen_rtx_EXPR_LIST (VOIDmode,
-				      gen_rtx_REG (mode, (FR_ARG_FIRST
+				      gen_rtx_REG (arg.mode, (FR_ARG_FIRST
 							  + cum->fp_regs)),
 				      const0_rtx);
       rtx gr_reg = gen_rtx_EXPR_LIST (VOIDmode,
@@ -4933,27 +4930,25 @@ ia64_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
 						    + offset)),
 				      const0_rtx);
 
-      return gen_rtx_PARALLEL (mode, gen_rtvec (2, fp_reg, gr_reg));
+      return gen_rtx_PARALLEL (arg.mode, gen_rtvec (2, fp_reg, gr_reg));
     }
 }
 
 /* Implement TARGET_FUNCION_ARG target hook.  */
 
 static rtx
-ia64_function_arg (cumulative_args_t cum, machine_mode mode,
-		   const_tree type, bool named)
+ia64_function_arg (cumulative_args_t cum, const function_arg_info &arg)
 {
-  return ia64_function_arg_1 (cum, mode, type, named, false);
+  return ia64_function_arg_1 (cum, arg, false);
 }
 
 /* Implement TARGET_FUNCION_INCOMING_ARG target hook.  */
 
 static rtx
 ia64_function_incoming_arg (cumulative_args_t cum,
-			    machine_mode mode,
-			    const_tree type, bool named)
+			    const function_arg_info &arg)
 {
-  return ia64_function_arg_1 (cum, mode, type, named, true);
+  return ia64_function_arg_1 (cum, arg, true);
 }
 
 /* Return number of bytes, at the beginning of the argument, that must be
@@ -4961,13 +4956,12 @@ ia64_function_incoming_arg (cumulative_args_t cum,
    in memory.  */
 
 static int
-ia64_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
-			tree type, bool named ATTRIBUTE_UNUSED)
+ia64_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  int words = ia64_function_arg_words (type, mode);
-  int offset = ia64_function_arg_offset (cum, type, words);
+  int words = ia64_function_arg_words (arg.type, arg.mode);
+  int offset = ia64_function_arg_offset (cum, arg.type, words);
 
   /* If all argument slots are used, then it must go on the stack.  */
   if (cum->words + offset >= MAX_ARGUMENT_SLOTS)
@@ -5004,12 +4998,12 @@ ia64_arg_type (machine_mode mode)
    ia64_function_arg.  */
 
 static void
-ia64_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			   const_tree type, bool named)
+ia64_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int words = ia64_function_arg_words (type, mode);
-  int offset = ia64_function_arg_offset (cum, type, words);
+  int words = ia64_function_arg_words (arg.type, arg.mode);
+  int offset = ia64_function_arg_offset (cum, arg.type, words);
   machine_mode hfa_mode = VOIDmode;
 
   /* If all arg slots are already full, then there is nothing to do.  */
@@ -5019,7 +5013,7 @@ ia64_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
       return;
     }
 
-  cum->atypes[cum->words] = ia64_arg_type (mode);
+  cum->atypes[cum->words] = ia64_arg_type (arg.mode);
   cum->words += words + offset;
 
   /* On OpenVMS argument is either in Rn or Fn.  */
@@ -5031,12 +5025,12 @@ ia64_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
     }
 
   /* Check for and handle homogeneous FP aggregates.  */
-  if (type)
-    hfa_mode = hfa_element_mode (type, 0);
+  if (arg.type)
+    hfa_mode = hfa_element_mode (arg.type, 0);
 
   /* Unnamed prototyped hfas are passed as usual.  Named prototyped hfas
      and unprototyped hfas are passed specially.  */
-  if (hfa_mode != VOIDmode && (! cum->prototype || named))
+  if (hfa_mode != VOIDmode && (! cum->prototype || arg.named))
     {
       int fp_regs = cum->fp_regs;
       /* This is the original value of cum->words + offset.  */
@@ -5055,8 +5049,7 @@ ia64_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
       /* Fill the FP regs.  We do this always.  We stop if we reach the end
 	 of the argument, the last FP register, or the last argument slot.  */
 
-      byte_size = ((mode == BLKmode)
-		   ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
+      byte_size = arg.promoted_size_in_bytes ();
       args_byte_size = int_regs * UNITS_PER_WORD;
       offset = 0;
       for (; (offset < byte_size && fp_regs < MAX_ARGUMENT_SLOTS
@@ -5073,26 +5066,29 @@ ia64_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
   /* Integral and aggregates go in general registers.  So do TFmode FP values.
      If we have run out of FR registers, then other FP values must also go in
      general registers.  This can happen when we have a SFmode HFA.  */
-  else if (mode == TFmode || mode == TCmode
-           || (! FLOAT_MODE_P (mode) || cum->fp_regs == MAX_ARGUMENT_SLOTS))
+  else if (arg.mode == TFmode || arg.mode == TCmode
+           || !FLOAT_MODE_P (arg.mode)
+	   || cum->fp_regs == MAX_ARGUMENT_SLOTS)
     cum->int_regs = cum->words;
 
   /* If there is a prototype, then FP values go in a FR register when
      named, and in a GR register when unnamed.  */
   else if (cum->prototype)
     {
-      if (! named)
+      if (! arg.named)
 	cum->int_regs = cum->words;
       else
 	/* ??? Complex types should not reach here.  */
-	cum->fp_regs += (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT ? 2 : 1);
+	cum->fp_regs
+	  += (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT ? 2 : 1);
     }
   /* If there is no prototype, then FP values go in both FR and GR
      registers.  */
   else
     {
       /* ??? Complex types should not reach here.  */
-      cum->fp_regs += (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT ? 2 : 1);
+      cum->fp_regs
+	+= (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT ? 2 : 1);
       cum->int_regs = cum->words;
     }
 }
@@ -5147,7 +5143,7 @@ ia64_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 		      gimple_seq *post_p)
 {
   /* Variable sized types are passed by reference.  */
-  if (pass_by_reference (NULL, TYPE_MODE (type), type, false))
+  if (pass_va_arg_by_reference (type))
     {
       tree ptrtype = build_pointer_type (type);
       tree addr = std_gimplify_va_arg_expr (valist, ptrtype, pre_p, post_p);

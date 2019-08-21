@@ -71,8 +71,8 @@ static int get_epiphany_condition_code (rtx);
 static tree epiphany_handle_interrupt_attribute (tree *, tree, tree, int, bool *);
 static tree epiphany_handle_forwarder_attribute (tree *, tree, tree, int,
 						 bool *);
-static bool epiphany_pass_by_reference (cumulative_args_t, machine_mode,
-					const_tree, bool);
+static bool epiphany_pass_by_reference (cumulative_args_t,
+					const function_arg_info &);
 static rtx_insn *frame_insn (rtx);
 
 /* defines for the initialization of the GCC target structure.  */
@@ -90,7 +90,7 @@ static rtx_insn *frame_insn (rtx);
 
 #define TARGET_RETURN_IN_MEMORY epiphany_return_in_memory
 #define TARGET_PASS_BY_REFERENCE epiphany_pass_by_reference
-#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
+#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_arg_info_true
 #define TARGET_FUNCTION_VALUE epiphany_function_value
 #define TARGET_LIBCALL_VALUE epiphany_libcall_value
 #define TARGET_FUNCTION_VALUE_REGNO_P epiphany_function_value_regno_p
@@ -711,24 +711,25 @@ epiphany_function_arg_boundary (machine_mode mode, const_tree type)
 /* Do any needed setup for a variadic function.  For the EPIPHANY, we
    actually emit the code in epiphany_expand_prologue.
 
-   CUM has not been updated for the last named argument which has type TYPE
-   and mode MODE, and we rely on this fact.  */
+   CUM has not been updated for the last named argument (which is given
+   by ARG), and we rely on this fact.  */
 
 
 static void
-epiphany_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
-				 tree type, int *pretend_size, int no_rtl)
+epiphany_setup_incoming_varargs (cumulative_args_t cum,
+				 const function_arg_info &arg,
+				 int *pretend_size, int no_rtl)
 {
   int first_anon_arg;
   CUMULATIVE_ARGS next_cum;
   machine_function_t *mf = MACHINE_FUNCTION (cfun);
 
   /* All BLKmode values are passed by reference.  */
-  gcc_assert (mode != BLKmode);
+  gcc_assert (arg.mode != BLKmode);
 
   next_cum = *get_cumulative_args (cum);
-  next_cum
-    = ROUND_ADVANCE_CUM (next_cum, mode, type) + ROUND_ADVANCE_ARG (mode, type);
+  next_cum = (ROUND_ADVANCE_CUM (next_cum, arg.mode, arg.type)
+	      + ROUND_ADVANCE_ARG (arg.mode, arg.type));
   first_anon_arg = next_cum;
 
   if (first_anon_arg < MAX_EPIPHANY_PARM_REGS && !no_rtl)
@@ -744,18 +745,19 @@ epiphany_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
 }
 
 static int
-epiphany_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
-			    tree type, bool named ATTRIBUTE_UNUSED)
+epiphany_arg_partial_bytes (cumulative_args_t cum,
+			    const function_arg_info &arg)
 {
   int words = 0, rounded_cum;
 
-  gcc_assert (!epiphany_pass_by_reference (cum, mode, type, /* named */ true));
+  gcc_assert (!epiphany_pass_by_reference (cum, arg));
 
-  rounded_cum = ROUND_ADVANCE_CUM (*get_cumulative_args (cum), mode, type);
+  rounded_cum = ROUND_ADVANCE_CUM (*get_cumulative_args (cum),
+				   arg.mode, arg.type);
   if (rounded_cum < MAX_EPIPHANY_PARM_REGS)
     {
       words = MAX_EPIPHANY_PARM_REGS - rounded_cum;
-      if (words >= ROUND_ADVANCE_ARG (mode, type))
+      if (words >= ROUND_ADVANCE_ARG (arg.mode, arg.type))
 	words = 0;
     }
   return words * UNITS_PER_WORD;
@@ -1485,14 +1487,12 @@ epiphany_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
    passed by reference.  */
 
 static bool
-epiphany_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-		       machine_mode mode, const_tree type,
-		       bool named ATTRIBUTE_UNUSED)
+epiphany_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  if (type)
+  if (tree type = arg.type)
     {
       if (AGGREGATE_TYPE_P (type)
-	  && (mode == BLKmode || TYPE_NEEDS_CONSTRUCTING (type)))
+	  && (arg.mode == BLKmode || TYPE_NEEDS_CONSTRUCTING (type)))
 	return true;
     }
   return false;
@@ -2254,37 +2254,30 @@ epiphany_conditional_register_usage (void)
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
+   ARG is a description of the argument.  */
 /* On the EPIPHANY the first MAX_EPIPHANY_PARM_REGS args are normally in
    registers and the rest are pushed.  */
 static rtx
-epiphany_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		       const_tree type, bool named ATTRIBUTE_UNUSED)
+epiphany_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS cum = *get_cumulative_args (cum_v);
 
-  if (PASS_IN_REG_P (cum, mode, type))
-    return gen_rtx_REG (mode, ROUND_ADVANCE_CUM (cum, mode, type));
+  if (PASS_IN_REG_P (cum, arg.mode, arg.type))
+    return gen_rtx_REG (arg.mode, ROUND_ADVANCE_CUM (cum, arg.mode, arg.type));
   return 0;
 }
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
+/* Update the data in CUM to advance over argument ARG.  */
 static void
-epiphany_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			       const_tree type, bool named ATTRIBUTE_UNUSED)
+epiphany_function_arg_advance (cumulative_args_t cum_v,
+			       const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  *cum = ROUND_ADVANCE_CUM (*cum, mode, type) + ROUND_ADVANCE_ARG (mode, type);
+  *cum = (ROUND_ADVANCE_CUM (*cum, arg.mode, arg.type)
+	  + ROUND_ADVANCE_ARG (arg.mode, arg.type));
 }
 
 /* Nested function support.

@@ -1081,17 +1081,16 @@ h8300_pr_saveall (struct cpp_reader *pfile ATTRIBUTE_UNUSED)
   pragma_saveall = 1;
 }
 
-/* If the next function argument with MODE and TYPE is to be passed in
-   a register, return a reg RTX for the hard register in which to pass
-   the argument.  CUM represents the state after the last argument.
-   If the argument is to be pushed, NULL_RTX is returned.
+/* If the next function argument ARG is to be passed in a register, return
+   a reg RTX for the hard register in which to pass the argument.  CUM
+   represents the state after the last argument.  If the argument is to
+   be pushed, NULL_RTX is returned.
 
    On the H8/300 all normal args are pushed, unless -mquickcall in which
    case the first 3 arguments are passed in registers.  */
 
 static rtx
-h8300_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		    const_tree type, bool named)
+h8300_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
@@ -1119,7 +1118,7 @@ h8300_function_arg (cumulative_args_t cum_v, machine_mode mode,
   int regpass = 0;
 
   /* Never pass unnamed arguments in registers.  */
-  if (!named)
+  if (!arg.named)
     return NULL_RTX;
 
   /* Pass 3 regs worth of data in regs when user asked on the command line.  */
@@ -1143,34 +1142,25 @@ h8300_function_arg (cumulative_args_t cum_v, machine_mode mode,
 
   if (regpass)
     {
-      int size;
-
-      if (mode == BLKmode)
-	size = int_size_in_bytes (type);
-      else
-	size = GET_MODE_SIZE (mode);
-
+      int size = arg.promoted_size_in_bytes ();
       if (size + cum->nbytes <= regpass * UNITS_PER_WORD
 	  && cum->nbytes / UNITS_PER_WORD <= 3)
-	result = gen_rtx_REG (mode, cum->nbytes / UNITS_PER_WORD);
+	result = gen_rtx_REG (arg.mode, cum->nbytes / UNITS_PER_WORD);
     }
 
   return result;
 }
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
+/* Update the data in CUM to advance over argument ARG.  */
 
 static void
-h8300_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			    const_tree type, bool named ATTRIBUTE_UNUSED)
+h8300_function_arg_advance (cumulative_args_t cum_v,
+			    const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  cum->nbytes += (mode != BLKmode
-		  ? (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) & -UNITS_PER_WORD
-		  : (int_size_in_bytes (type) + UNITS_PER_WORD - 1) & -UNITS_PER_WORD);
+  cum->nbytes += ((arg.promoted_size_in_bytes () + UNITS_PER_WORD - 1)
+		  & -UNITS_PER_WORD);
 }
 
 

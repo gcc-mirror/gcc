@@ -89,6 +89,21 @@ else version (NetBSD)
 
     int uname(utsname* __name);
 }
+else version (OpenBSD)
+{
+    private enum utsNameLength = 256;
+
+    struct utsname
+    {
+        char[utsNameLength] sysname = 0;
+        char[utsNameLength] nodename = 0;
+        char[utsNameLength] release = 0;
+        char[utsNameLength] version_ = 0;
+        char[utsNameLength] machine = 0;
+    }
+
+    int uname(utsname* __name);
+}
 else version (DragonFlyBSD)
 {
     private enum utsNameLength = 32;

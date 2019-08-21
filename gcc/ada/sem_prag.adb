@@ -3768,12 +3768,6 @@ package body Sem_Prag is
       function Acc_Next (N : Node_Id) return Node_Id;
       --  Helper function to iterate over arguments given to OpenAcc pragmas
 
-      procedure Acquire_Warning_Match_String (Arg : Node_Id);
-      --  Used by pragma Warnings (Off, string), and Warn_As_Error (string) to
-      --  get the given string argument, and place it in Name_Buffer, adding
-      --  leading and trailing asterisks if they are not already present. The
-      --  caller has already checked that Arg is a static string expression.
-
       procedure Ada_2005_Pragma;
       --  Called for pragmas defined in Ada 2005, that are not in Ada 95. In
       --  Ada 95 mode, these are implementation defined pragmas, so should be
@@ -4399,32 +4393,6 @@ package body Sem_Prag is
             return Empty;
          end if;
       end Acc_Next;
-
-      ----------------------------------
-      -- Acquire_Warning_Match_String --
-      ----------------------------------
-
-      procedure Acquire_Warning_Match_String (Arg : Node_Id) is
-      begin
-         String_To_Name_Buffer
-           (Strval (Expr_Value_S (Get_Pragma_Arg (Arg))));
-
-         --  Add asterisk at start if not already there
-
-         if Name_Len > 0 and then Name_Buffer (1) /= '*' then
-            Name_Buffer (2 .. Name_Len + 1) :=
-              Name_Buffer (1 .. Name_Len);
-            Name_Buffer (1) := '*';
-            Name_Len := Name_Len + 1;
-         end if;
-
-         --  Add asterisk at end if not already there
-
-         if Name_Buffer (Name_Len) /= '*' then
-            Name_Len := Name_Len + 1;
-            Name_Buffer (Name_Len) := '*';
-         end if;
-      end Acquire_Warning_Match_String;
 
       ---------------------
       -- Ada_2005_Pragma --
@@ -13011,6 +12979,18 @@ package body Sem_Prag is
             Ada_Version_Explicit := Ada_2020;
             Ada_Version_Pragma   := N;
 
+         -------------------------------------
+         -- Aggregate_Individually_Assign --
+         -------------------------------------
+
+         --  pragma Aggregate_Individually_Assign;
+
+         when Pragma_Aggregate_Individually_Assign =>
+            GNAT_Pragma;
+            Check_Arg_Count (0);
+            Check_Valid_Configuration_Pragma;
+            Aggregate_Individually_Assign := True;
+
          ----------------------
          -- All_Calls_Remote --
          ----------------------
@@ -19558,7 +19538,7 @@ package body Sem_Prag is
             | Pragma_Max_Entry_Queue_Depth
             | Pragma_Max_Queue_Length
          =>
-         Max_Queue_Length : declare
+         Max_Entry_Queue_Length : declare
             Arg        : Node_Id;
             Entry_Decl : Node_Id;
             Entry_Id   : Entity_Id;
@@ -19609,9 +19589,9 @@ package body Sem_Prag is
 
             Val := Expr_Value (Arg);
 
-            if Val <= 0 then
+            if Val < -1 then
                Error_Pragma_Arg
-                 ("argument for pragma% must be positive", Arg1);
+                 ("argument for pragma% cannot be less than -1", Arg1);
 
             elsif not UI_Is_In_Int_Range (Val) then
                Error_Pragma_Arg
@@ -19619,17 +19599,8 @@ package body Sem_Prag is
 
             end if;
 
-            --  Manually substitute the expression value of the pragma argument
-            --  if it's not an integer literal because this is not taken care
-            --  of automatically elsewhere.
-
-            if Nkind (Arg) /= N_Integer_Literal then
-               Rewrite (Arg, Make_Integer_Literal (Sloc (Arg), Val));
-               Set_Etype (Arg, Etype (Original_Node (Arg)));
-            end if;
-
             Record_Rep_Item (Entry_Id, N);
-         end Max_Queue_Length;
+         end Max_Entry_Queue_Length;
 
          -----------------
          -- Memory_Size --
@@ -21112,8 +21083,24 @@ package body Sem_Prag is
                Decl := Parent (Ent);
 
                if Present (Expression (Decl)) then
-                  Error_Pragma_Arg
-                    ("object for pragma% cannot have initialization", Arg1);
+                  --  Variables in Persistent_BSS cannot be initialized, so
+                  --  turn off any initialization that might be caused by
+                  --  pragmas Initialize_Scalars or Normalize_Scalars.
+
+                  if Kill_Range_Check (Expression (Decl)) then
+                     Prag :=
+                       Make_Pragma (Loc,
+                         Name_Suppress_Initialization,
+                         Pragma_Argument_Associations => New_List (
+                           Make_Pragma_Argument_Association (Loc,
+                             Expression => New_Occurrence_Of (Ent, Loc))));
+                     Insert_Before (N, Prag);
+                     Analyze (Prag);
+
+                  else
+                     Error_Pragma_Arg
+                       ("object for pragma% cannot have initialization", Arg1);
+                  end if;
                end if;
 
                if not Is_Potentially_Persistent_Type (Etype (Ent)) then
@@ -21124,7 +21111,7 @@ package body Sem_Prag is
 
                Prag :=
                  Make_Linker_Section_Pragma
-                   (Ent, Sloc (N), ".persistent.bss");
+                   (Ent, Loc, ".persistent.bss");
                Insert_After (N, Prag);
                Analyze (Prag);
 
@@ -25301,10 +25288,10 @@ package body Sem_Prag is
             --  OK static string expression
 
             else
-               Acquire_Warning_Match_String (Arg1);
                Warnings_As_Errors_Count := Warnings_As_Errors_Count + 1;
                Warnings_As_Errors (Warnings_As_Errors_Count) :=
-                 new String'(Name_Buffer (1 .. Name_Len));
+                 new String'(Acquire_Warning_Match_String
+                               (Expr_Value_S (Get_Pragma_Arg (Arg1))));
             end if;
 
          --------------
@@ -25609,8 +25596,6 @@ package body Sem_Prag is
                      --  Static string expression case
 
                      else
-                        Acquire_Warning_Match_String (Arg2);
-
                         --  Note on configuration pragma case: If this is a
                         --  configuration pragma, then for an OFF pragma, we
                         --  just set Config True in the call, which is all
@@ -25630,22 +25615,27 @@ package body Sem_Prag is
                         --  generic unit we are inside is public, but for now
                         --  we don't bother with that refinement.
 
-                        if Chars (Argx) = Name_Off then
-                           Set_Specific_Warning_Off
-                             (Loc, Name_Buffer (1 .. Name_Len), Reason,
-                              Config => Is_Configuration_Pragma,
-                              Used   => Inside_A_Generic or else In_Instance);
+                        declare
+                           Message : constant String :=
+                             Acquire_Warning_Match_String
+                               (Expr_Value_S (Get_Pragma_Arg (Arg2)));
+                        begin
+                           if Chars (Argx) = Name_Off then
+                              Set_Specific_Warning_Off
+                                (Loc, Message, Reason,
+                                 Config => Is_Configuration_Pragma,
+                                 Used => Inside_A_Generic or else In_Instance);
 
-                        elsif Chars (Argx) = Name_On then
-                           Set_Specific_Warning_On
-                             (Loc, Name_Buffer (1 .. Name_Len), Err);
+                           elsif Chars (Argx) = Name_On then
+                              Set_Specific_Warning_On (Loc, Message, Err);
 
-                           if Err then
-                              Error_Msg
-                                ("??pragma Warnings On with no matching "
-                                 & "Warnings Off", Loc);
+                              if Err then
+                                 Error_Msg
+                                   ("??pragma Warnings On with no matching "
+                                    & "Warnings Off", Loc);
+                              end if;
                            end if;
-                        end if;
+                        end;
                      end if;
                   end;
                end if;
@@ -30919,6 +30909,7 @@ package body Sem_Prag is
       Pragma_Ada_12                         => -1,
       Pragma_Ada_2012                       => -1,
       Pragma_Ada_2020                       => -1,
+      Pragma_Aggregate_Individually_Assign  => 0,
       Pragma_All_Calls_Remote               => -1,
       Pragma_Allow_Integer_Address          => -1,
       Pragma_Annotate                       => 93,

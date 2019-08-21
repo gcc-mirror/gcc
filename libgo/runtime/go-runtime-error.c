@@ -55,7 +55,10 @@ enum
   DIVISION_BY_ZERO = 11,
 
   /* Go statement with nil function.  */
-  GO_NIL = 12
+  GO_NIL = 12,
+
+  /* Shift by negative value.  */
+  SHIFT_BY_NEGATIVE = 13
 };
 
 extern void __go_runtime_error (int32) __attribute__ ((noreturn));
@@ -111,6 +114,9 @@ __go_runtime_error (int32 i)
 	 not dump full stacks.  */
       runtime_g()->m->throwing = -1;
       runtime_throw ("go of nil func value");
+
+    case SHIFT_BY_NEGATIVE:
+      runtime_panicstring ("negative shift amount");
 
     default:
       runtime_panicstring ("unknown runtime error");

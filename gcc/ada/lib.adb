@@ -277,8 +277,24 @@ package body Lib is
    end Set_OA_Setting;
 
    procedure Set_Unit_Name (U : Unit_Number_Type; N : Unit_Name_Type) is
+      Old_N : constant Unit_Name_Type := Units.Table (U).Unit_Name;
+
    begin
+      --  First unregister the old name, if any
+
+      if Old_N /= No_Unit_Name and then Unit_Names.Get (Old_N) = U then
+         Unit_Names.Set (Old_N, No_Unit);
+      end if;
+
+      --  Then set the new name
+
       Units.Table (U).Unit_Name := N;
+
+      --  Finally register the new name
+
+      if Unit_Names.Get (N) = No_Unit then
+         Unit_Names.Set (N, U);
+      end if;
    end Set_Unit_Name;
 
    ------------------------------
@@ -1068,6 +1084,16 @@ package body Lib is
       return TSN;
    end Increment_Serial_Number;
 
+   ----------------------
+   --  Init_Unit_Name  --
+   ----------------------
+
+   procedure Init_Unit_Name (U : Unit_Number_Type; N : Unit_Name_Type) is
+   begin
+      Units.Table (U).Unit_Name := N;
+      Unit_Names.Set (N, U);
+   end Init_Unit_Name;
+
    ----------------
    -- Initialize --
    ----------------
@@ -1087,13 +1113,7 @@ package body Lib is
 
    function Is_Loaded (Uname : Unit_Name_Type) return Boolean is
    begin
-      for Unum in Units.First .. Units.Last loop
-         if Uname = Unit_Name (Unum) then
-            return True;
-         end if;
-      end loop;
-
-      return False;
+      return Unit_Names.Get (Uname) /= No_Unit;
    end Is_Loaded;
 
    ---------------
@@ -1141,6 +1161,7 @@ package body Lib is
    procedure Remove_Unit (U : Unit_Number_Type) is
    begin
       if U = Units.Last then
+         Unit_Names.Set (Unit_Name (U), No_Unit);
          Units.Decrement_Last;
       end if;
    end Remove_Unit;
@@ -1276,6 +1297,15 @@ package body Lib is
          Tree_Write_Str (Compilation_Switches.Table (J));
       end loop;
    end Tree_Write;
+
+   --------------------
+   -- Unit_Name_Hash --
+   --------------------
+
+   function Unit_Name_Hash (Id : Unit_Name_Type) return Unit_Name_Header_Num is
+   begin
+      return Unit_Name_Header_Num (Id mod Unit_Name_Table_Size);
+   end Unit_Name_Hash;
 
    ------------
    -- Unlock --

@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "attribs.h"
 #include "debug.h"
+#include "calls.h"
 
 /* Data type for the expressions representing sizes of data types.
    It is the first integer type laid out.  */
@@ -1859,8 +1860,9 @@ compute_record_mode (tree type)
        || (TREE_CODE (type) == UNION_TYPE
 	   && (GET_MODE_CLASS (mode) == MODE_INT
 	       || (GET_MODE_CLASS (mode) == MODE_PARTIAL_INT
-		   && targetm.calls.pass_by_reference (pack_cumulative_args (0),
-						       mode, type, 0)))))
+		   && (targetm.calls.pass_by_reference
+		       (pack_cumulative_args (0),
+			function_arg_info (type, mode, /*named=*/false)))))))
       && mode != VOIDmode
       && poly_int_tree_p (TYPE_SIZE (type), &type_size)
       && known_eq (GET_MODE_BITSIZE (mode), type_size))

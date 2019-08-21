@@ -111,6 +111,59 @@ else version (CRuntime_Bionic)
 {
     enum __USE_GNU           = false;
 }
+else version (OpenBSD)
+{
+    version (Alpha)
+    {
+        enum _ALIGNBYTES = 7;
+        enum _STACKALIGNBYTES = 7;
+        enum _MAX_PAGE_SHIFT = 13;
+    }
+    else version (X86_64)
+    {
+        enum _ALIGNBYTES = c_long.sizeof - 1;
+        enum _STACKALIGNBYTES = 15;
+        enum _MAX_PAGE_SHIFT = 12;
+    }
+    else version (AArch64)
+    {
+        enum _ALIGNBYTES = c_long.sizeof - 1;
+        enum _STACKALIGNBYTES = 15;
+        enum _MAX_PAGE_SHIFT = 12;
+    }
+    else version (ARM)
+    {
+        enum _ALIGNBYTES = 7;
+        enum _STACKALIGNBYTES = 7;
+        enum _MAX_PAGE_SHIFT = 12;
+    }
+    else version (HPPA)
+    {
+        enum _ALIGNBYTES = 7;
+        enum _STACKALIGNBYTES = 7;
+        enum _MAX_PAGE_SHIFT = 12;
+    }
+    else version (X86)
+    {
+        enum _ALIGNBYTES = 3;
+        enum _STACKALIGNBYTES = 15;
+        enum _MAX_PAGE_SHIFT = 12;
+    }
+    else version (PPC)
+    {
+        enum _ALIGNBYTES = 7;
+        enum _STACKALIGNBYTES = 15;
+        enum _MAX_PAGE_SHIFT = 12;
+    }
+    else version (SPARC64)
+    {
+        enum _ALIGNBYTES = 15;
+        enum _STACKALIGNBYTES = 15;
+        enum _MAX_PAGE_SHIFT = 13;
+    }
+    else
+        static assert(false, "Architecture not supported.");
+}
 else version (Solaris)
 {
     enum _FILE_OFFSET_BITS = 64;

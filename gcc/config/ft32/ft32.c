@@ -630,13 +630,12 @@ ft32_initial_elimination_offset (int from, int to)
 
 static void
 ft32_setup_incoming_varargs (cumulative_args_t cum_v,
-			     machine_mode mode,
-			     tree type ATTRIBUTE_UNUSED,
+			     const function_arg_info &arg,
 			     int *pretend_size, int no_rtl ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int named_size =
-    GET_MODE_SIZE (SImode) * (*cum - FT32_R0) + GET_MODE_SIZE (mode);
+    GET_MODE_SIZE (SImode) * (*cum - FT32_R0) + GET_MODE_SIZE (arg.mode);
 
   if (named_size < 24)
     *pretend_size = 24 - named_size;
@@ -658,14 +657,12 @@ ft32_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
    NULL_RTX if there's no more space.  */
 
 static rtx
-ft32_function_arg (cumulative_args_t cum_v, machine_mode mode,
-                   const_tree type ATTRIBUTE_UNUSED,
-                   bool named ATTRIBUTE_UNUSED)
+ft32_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   if (*cum < 8)
-    return gen_rtx_REG (mode, *cum);
+    return gen_rtx_REG (arg.mode, *cum);
   else
     return NULL_RTX;
 }
@@ -675,34 +672,25 @@ ft32_function_arg (cumulative_args_t cum_v, machine_mode mode,
    : (unsigned) int_size_in_bytes (TYPE))
 
 static void
-ft32_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-                           const_tree type, bool named ATTRIBUTE_UNUSED)
+ft32_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
   *cum = (*cum < FT32_R6
-          ? *cum + ((3 + FT32_FUNCTION_ARG_SIZE (mode, type)) / 4) : *cum);
+	  ? *cum + ((3 + FT32_FUNCTION_ARG_SIZE (arg.mode, arg.type)) / 4)
+	  : *cum);
 }
 
-/* Return non-zero if the function argument described by TYPE is to be
+/* Return non-zero if the function argument described by ARG is to be
    passed by reference.  */
 
 static bool
-ft32_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-                        machine_mode mode, const_tree type,
-                        bool named ATTRIBUTE_UNUSED)
+ft32_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  unsigned HOST_WIDE_INT size;
-
-  if (type)
-    {
-      if (AGGREGATE_TYPE_P (type))
-        return true;
-      size = int_size_in_bytes (type);
-    }
-  else
-    size = GET_MODE_SIZE (mode);
-
+  if (arg.aggregate_type_p ())
+    return true;
+  unsigned HOST_WIDE_INT size = arg.type_size_in_bytes ();
   return size > 4 * 6;
 }
 
@@ -711,8 +699,7 @@ ft32_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
    that fit in argument passing registers.  */
 
 static int
-ft32_arg_partial_bytes (cumulative_args_t cum_v,
-                        machine_mode mode, tree type, bool named)
+ft32_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int bytes_left, size;
@@ -720,16 +707,16 @@ ft32_arg_partial_bytes (cumulative_args_t cum_v,
   if (*cum >= 8)
     return 0;
 
-  if (ft32_pass_by_reference (cum_v, mode, type, named))
+  if (ft32_pass_by_reference (cum_v, arg))
     size = 4;
-  else if (type)
+  else if (arg.type)
     {
-      if (AGGREGATE_TYPE_P (type))
+      if (AGGREGATE_TYPE_P (arg.type))
         return 0;
-      size = int_size_in_bytes (type);
+      size = int_size_in_bytes (arg.type);
     }
   else
-    size = GET_MODE_SIZE (mode);
+    size = GET_MODE_SIZE (arg.mode);
 
   bytes_left = (4 * 6) - ((*cum - 2) * 4);
 

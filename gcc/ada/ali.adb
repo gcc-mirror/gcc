@@ -649,7 +649,7 @@ package body ALI is
       Xref.Init;
       Xref_Section.Init;
 
-      --  Add dummy zero'th item in Linker_Options and Notes for sort calls
+      --  Add dummy zeroth item in Linker_Options and Notes for sort calls
 
       Linker_Options.Increment_Last;
       Notes.Increment_Last;

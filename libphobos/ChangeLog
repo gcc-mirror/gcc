@@ -1,3 +1,25 @@
+2019-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_BIONIC): Add
+	core/sys/bionic/string.d.
+	(DRUNTIME_DSOURCES_DARWIN): Add core/sys/darwin/string.d.
+	(DRUNTIME_DSOURCES_DRAGONFLYBSD): Add core/sys/dragonflybsd/string.d,
+	core/sys/dragonflybsd/sys/socket.d.
+	(DRUNTIME_DSOURCES_FREEBSD): Add core/sys/freebsd/string.d.
+	(DRUNTIME_DSOURCES_LINUX): Add core/sys/linux/string.d.
+	(DRUNTIME_DSOURCES_NETBSD): Add core/sys/netbsd/string.d,
+	core/sys/netbsd/sys/featuretest.d.
+	* libdruntime/Makefile.in: Regenerate.
+
+2019-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_OPENBSD): Add
+	core/sys/openbsd/sys/cdefs.d, core/sys/openbsd/sys/elf.d,
+	core/sys/openbsd/sys/elf32.d, core/sys/openbsd/sys/elf64.d,
+	core/sys/openbsd/sys/elf_common.d, core/sys/openbsd/sys/link_elf.d,
+	core/sys/openbsd/sys/mman.d, core/sys/openbsd/time.d.
+	* libdruntime/Makefile.in: Regenerate.
+
 2019-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* m4/druntime/os.m4 (DRUNTIME_OS_LINK_SPEC): Only use -z

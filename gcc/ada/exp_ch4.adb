@@ -1852,7 +1852,7 @@ package body Exp_Ch4 is
                     Statements => New_List (Loop_Stm)));
 
          --  If no separate indexes, return loop statement with explicit
-         --  iteration scheme on its own
+         --  iteration scheme on its own.
 
          else
             Loop_Stm :=
@@ -2014,7 +2014,7 @@ package body Exp_Ch4 is
 
          --  If the array type is distinct from the type of the arguments, it
          --  is the full view of a private type. Apply an unchecked conversion
-         --  to insure that analysis of the call succeeds.
+         --  to ensure that analysis of the call succeeds.
 
          declare
             L, R : Node_Id;
@@ -2757,7 +2757,7 @@ package body Exp_Ch4 is
       --  The J'th entry in an expression node that represents the total length
       --  of operands 1 through J. It is either an integer literal node, or a
       --  reference to a constant entity with the right value, so it is fine
-      --  to just do a Copy_Node to get an appropriate copy. The extra zero'th
+      --  to just do a Copy_Node to get an appropriate copy. The extra zeroth
       --  entry always is set to zero. The length is of type Artyp.
 
       Low_Bound : Node_Id;
@@ -4254,7 +4254,7 @@ package body Exp_Ch4 is
       --  'Last - First (instead of 'Length) because for large arrays computing
       --  'Last -'First + 1 causes overflow. This is done without using the
       --  attribute 'Size_In_Storage_Elements (which malfunctions for large
-      --  sizes ???)
+      --  sizes ???).
 
       -------------------------
       -- Rewrite_Coextension --
@@ -4333,7 +4333,7 @@ package body Exp_Ch4 is
                --  to compute 'Length since for large arrays 'Last -'First + 1
                --  causes overflow; therefore we compute 'Last - 'First (which
                --  is not the exact number of components but it is valid for
-               --  the purpose of this runtime check on 32-bit targets)
+               --  the purpose of this runtime check on 32-bit targets).
 
                else
                   declare
@@ -4371,7 +4371,7 @@ package body Exp_Ch4 is
                                  (Make_Integer_Literal (Loc, J)))));
 
                      --  Handle superflat arrays, i.e. arrays with such bounds
-                     --  as 4 .. 2, to insure that the result is correct.
+                     --  as 4 .. 2, to ensure that the result is correct.
 
                      --  Generate:
                      --    (if X'Last > X'First then X'Last - X'First else 0)
@@ -4421,7 +4421,7 @@ package body Exp_Ch4 is
 
    begin
       --  Warn on the presence of an allocator of an anonymous access type when
-      --  enabled except when its an object declaration at library level.
+      --  enabled, except when it's an object declaration at library level.
 
       if Warn_On_Anonymous_Allocators
         and then Ekind (PtrT) = E_Anonymous_Access_Type
@@ -4643,7 +4643,7 @@ package body Exp_Ch4 is
 
          --  The check on No_Initialization is used here to prevent generating
          --  this runtime check twice when the allocator is locally replaced by
-         --  the expander by another one.
+         --  the expander with another one.
 
          if Is_Array_Type (Etyp) and then not No_Initialization (N) then
             declare
@@ -4683,11 +4683,11 @@ package body Exp_Ch4 is
                if Is_Constrained (Siz_Typ)
                  and then Ekind (Siz_Typ) /= E_String_Literal_Subtype
                then
-                  --  For CCG targets the largest array may have up to 2**31-1
-                  --  components (i.e. 2 Gigabytes if each array component is
-                  --  1-byte). This insures that fat pointer fields do not
+                  --  For CCG targets, the largest array may have up to 2**31-1
+                  --  components (i.e. 2 gigabytes if each array component is
+                  --  one byte). This ensures that fat pointer fields do not
                   --  overflow, since they are 32-bit integer types, and also
-                  --  insures that 'Length can be computed at run time.
+                  --  ensures that 'Length can be computed at run time.
 
                   if Modify_Tree_For_C then
                      Cond :=
@@ -11310,7 +11310,7 @@ package body Exp_Ch4 is
          end if;
 
          --  Nothing to do if expression was rewritten into a float-to-float
-         --  conversion, since this kind of conversions is handled elsewhere.
+         --  conversion, since this kind of conversion is handled elsewhere.
 
          if Is_Floating_Point_Type (Etype (Expr))
            and then Is_Floating_Point_Type (Target_Type)

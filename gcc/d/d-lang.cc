@@ -1360,6 +1360,17 @@ d_type_for_mode (machine_mode mode, int unsignedp)
   if (mode == TYPE_MODE (build_pointer_type (d_int_type)))
     return build_pointer_type (d_int_type);
 
+  for (int i = 0; i < NUM_INT_N_ENTS; i ++)
+    {
+      if (int_n_enabled_p[i] && mode == int_n_data[i].m)
+	{
+	  if (unsignedp)
+	    return int_n_trees[i].unsigned_type;
+	  else
+	    return int_n_trees[i].signed_type;
+	}
+    }
+
   if (COMPLEX_MODE_P (mode))
     {
       machine_mode inner_mode;
@@ -1407,6 +1418,17 @@ d_type_for_size (unsigned bits, int unsignedp)
 
   if (bits <= TYPE_PRECISION (d_cent_type))
     return unsignedp ? d_ucent_type : d_cent_type;
+
+  for (int i = 0; i < NUM_INT_N_ENTS; i ++)
+    {
+      if (int_n_enabled_p[i] && bits == int_n_data[i].bitsize)
+	{
+	  if (unsignedp)
+	    return int_n_trees[i].unsigned_type;
+	  else
+	    return int_n_trees[i].signed_type;
+	}
+    }
 
   return 0;
 }

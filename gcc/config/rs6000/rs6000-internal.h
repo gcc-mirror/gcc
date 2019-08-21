@@ -150,25 +150,20 @@ extern machine_mode rs6000_promote_function_mode (const_tree type ATTRIBUTE_UNUS
 extern bool rs6000_return_in_memory (const_tree type, 
 				     const_tree fntype ATTRIBUTE_UNUSED);
 extern bool rs6000_return_in_msb (const_tree valtype);
-extern bool rs6000_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-				      machine_mode mode, const_tree type,
-				      bool named ATTRIBUTE_UNUSED);
-extern void setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
-				    tree type, int *pretend_size ATTRIBUTE_UNUSED,
-				    int no_rtl);
+extern bool rs6000_pass_by_reference (cumulative_args_t,
+				      const function_arg_info &);
+extern void setup_incoming_varargs (cumulative_args_t,
+				    const function_arg_info &, int *, int);
 extern unsigned int rs6000_function_arg_boundary (machine_mode mode,
 						  const_tree type);
-extern bool rs6000_must_pass_in_stack (machine_mode mode, const_tree type);
-extern int rs6000_arg_partial_bytes (cumulative_args_t cum_v,
-				     machine_mode mode, tree type,
-				     bool named);
-extern void rs6000_function_arg_advance (cumulative_args_t cum,
-					 machine_mode mode,
-					 const_tree type, bool named);
+extern bool rs6000_must_pass_in_stack (const function_arg_info &);
+extern int rs6000_arg_partial_bytes (cumulative_args_t,
+				     const function_arg_info &);
+extern void rs6000_function_arg_advance (cumulative_args_t,
+					 const function_arg_info &);
 extern pad_direction rs6000_function_arg_padding (machine_mode mode,
 						  const_tree type);
-extern rtx rs6000_function_arg (cumulative_args_t cum_v, machine_mode mode,
-				const_tree type, bool named);
+extern rtx rs6000_function_arg (cumulative_args_t, const function_arg_info &);
 extern rtx rs6000_darwin64_record_arg (CUMULATIVE_ARGS *, const_tree,
 				       bool, bool);
 extern rtx rs6000_internal_arg_pointer (void);

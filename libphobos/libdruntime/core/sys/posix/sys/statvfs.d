@@ -133,6 +133,29 @@ else version (NetBSD)
     int statvfs (const char * file, statvfs_t* buf);
     int fstatvfs (int fildes, statvfs_t *buf) @trusted;
 }
+else version (OpenBSD)
+{
+    struct statvfs_t
+    {
+        c_ulong    f_bsize;
+        c_ulong    f_frsize;
+        fsblkcnt_t f_blocks;
+        fsblkcnt_t f_bfree;
+        fsblkcnt_t f_bavail;
+        fsfilcnt_t f_files;
+        fsfilcnt_t f_ffree;
+        fsfilcnt_t f_favail;
+        c_ulong    f_fsid;
+        c_ulong    f_flag;
+        c_ulong    f_namemax;
+    }
+
+    enum uint ST_RDONLY = 1;
+    enum uint ST_NOSUID = 2;
+
+    int statvfs (const char* file, statvfs_t* buf);
+    int fstatvfs (int fildes, statvfs_t* buf) @trusted;
+}
 else version (FreeBSD)
 {
     import core.sys.freebsd.sys.mount;

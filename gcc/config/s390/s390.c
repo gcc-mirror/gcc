@@ -11953,26 +11953,23 @@ s390_function_arg_integer (machine_mode mode, const_tree type)
   return false;
 }
 
-/* Return 1 if a function argument of type TYPE and mode MODE
-   is to be passed by reference.  The ABI specifies that only
-   structures of size 1, 2, 4, or 8 bytes are passed by value,
-   all other structures (and complex numbers) are passed by
-   reference.  */
+/* Return 1 if a function argument ARG is to be passed by reference.
+   The ABI specifies that only structures of size 1, 2, 4, or 8 bytes
+   are passed by value, all other structures (and complex numbers) are
+   passed by reference.  */
 
 static bool
-s390_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			machine_mode mode, const_tree type,
-			bool named ATTRIBUTE_UNUSED)
+s390_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  int size = s390_function_arg_size (mode, type);
+  int size = s390_function_arg_size (arg.mode, arg.type);
 
-  if (s390_function_arg_vector (mode, type))
+  if (s390_function_arg_vector (arg.mode, arg.type))
     return false;
 
   if (size > 8)
     return true;
 
-  if (type)
+  if (tree type = arg.type)
     {
       if (AGGREGATE_TYPE_P (type) && exact_log2 (size) < 0)
 	return true;
@@ -11985,35 +11982,31 @@ s390_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
   return false;
 }
 
-/* Update the data in CUM to advance over an argument of mode MODE and
-   data type TYPE.  (TYPE is null for libcalls where that information
-   may not be available.).  The boolean NAMED specifies whether the
-   argument is a named argument (as opposed to an unnamed argument
-   matching an ellipsis).  */
+/* Update the data in CUM to advance over argument ARG.  */
 
 static void
-s390_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			   const_tree type, bool named)
+s390_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (s390_function_arg_vector (mode, type))
+  if (s390_function_arg_vector (arg.mode, arg.type))
     {
       /* We are called for unnamed vector stdarg arguments which are
 	 passed on the stack.  In this case this hook does not have to
 	 do anything since stack arguments are tracked by common
 	 code.  */
-      if (!named)
+      if (!arg.named)
 	return;
       cum->vrs += 1;
     }
-  else if (s390_function_arg_float (mode, type))
+  else if (s390_function_arg_float (arg.mode, arg.type))
     {
       cum->fprs += 1;
     }
-  else if (s390_function_arg_integer (mode, type))
+  else if (s390_function_arg_integer (arg.mode, arg.type))
     {
-      int size = s390_function_arg_size (mode, type);
+      int size = s390_function_arg_size (arg.mode, arg.type);
       cum->gprs += ((size + UNITS_PER_LONG - 1) / UNITS_PER_LONG);
     }
   else
@@ -12024,14 +12017,9 @@ s390_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).
+   ARG is a description of the argument.
 
    On S/390, we use general purpose registers 2 through 6 to
    pass integer, pointer, and certain structure arguments, and
@@ -12040,39 +12028,38 @@ s390_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
    are pushed to the stack.  */
 
 static rtx
-s390_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		   const_tree type, bool named)
+s390_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (!named)
-    s390_check_type_for_vector_abi (type, true, false);
+  if (!arg.named)
+    s390_check_type_for_vector_abi (arg.type, true, false);
 
-  if (s390_function_arg_vector (mode, type))
+  if (s390_function_arg_vector (arg.mode, arg.type))
     {
       /* Vector arguments being part of the ellipsis are passed on the
 	 stack.  */
-      if (!named || (cum->vrs + 1 > VEC_ARG_NUM_REG))
+      if (!arg.named || (cum->vrs + 1 > VEC_ARG_NUM_REG))
 	return NULL_RTX;
 
-      return gen_rtx_REG (mode, cum->vrs + FIRST_VEC_ARG_REGNO);
+      return gen_rtx_REG (arg.mode, cum->vrs + FIRST_VEC_ARG_REGNO);
     }
-  else if (s390_function_arg_float (mode, type))
+  else if (s390_function_arg_float (arg.mode, arg.type))
     {
       if (cum->fprs + 1 > FP_ARG_NUM_REG)
 	return NULL_RTX;
       else
-	return gen_rtx_REG (mode, cum->fprs + 16);
+	return gen_rtx_REG (arg.mode, cum->fprs + 16);
     }
-  else if (s390_function_arg_integer (mode, type))
+  else if (s390_function_arg_integer (arg.mode, arg.type))
     {
-      int size = s390_function_arg_size (mode, type);
+      int size = s390_function_arg_size (arg.mode, arg.type);
       int n_gprs = (size + UNITS_PER_LONG - 1) / UNITS_PER_LONG;
 
       if (cum->gprs + n_gprs > GP_ARG_NUM_REG)
 	return NULL_RTX;
       else if (n_gprs == 1 || UNITS_PER_WORD == UNITS_PER_LONG)
-	return gen_rtx_REG (mode, cum->gprs + 2);
+	return gen_rtx_REG (arg.mode, cum->gprs + 2);
       else if (n_gprs == 2)
 	{
 	  rtvec p = rtvec_alloc (2);
@@ -12084,16 +12071,16 @@ s390_function_arg (cumulative_args_t cum_v, machine_mode mode,
 	    = gen_rtx_EXPR_LIST (SImode, gen_rtx_REG (SImode, cum->gprs + 3),
 					 GEN_INT (4));
 
-	  return gen_rtx_PARALLEL (mode, p);
+	  return gen_rtx_PARALLEL (arg.mode, p);
 	}
     }
 
-  /* After the real arguments, expand_call calls us once again
-     with a void_type_node type.  Whatever we return here is
-     passed as operand 2 to the call expanders.
+  /* After the real arguments, expand_call calls us once again with an
+     end marker.  Whatever we return here is passed as operand 2 to the
+     call expanders.
 
      We don't need this feature ...  */
-  else if (type == void_type_node)
+  else if (arg.end_marker_p ())
     return const0_rtx;
 
   gcc_unreachable ();
@@ -12476,7 +12463,7 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 
   s390_check_type_for_vector_abi (type, true, false);
 
-  if (pass_by_reference (NULL, TYPE_MODE (type), type, false))
+  if (pass_va_arg_by_reference (type))
     {
       if (TARGET_DEBUG_ARG)
 	{
@@ -13322,8 +13309,6 @@ s390_call_saved_register_used (tree call_expr)
   CUMULATIVE_ARGS cum_v;
   cumulative_args_t cum;
   tree parameter;
-  machine_mode mode;
-  tree type;
   rtx parm_rtx;
   int reg, i;
 
@@ -13340,24 +13325,15 @@ s390_call_saved_register_used (tree call_expr)
       if (TREE_CODE (parameter) == ERROR_MARK)
 	return true;
 
-      type = TREE_TYPE (parameter);
-      gcc_assert (type);
-
-      mode = TYPE_MODE (type);
-      gcc_assert (mode);
-
       /* We assume that in the target function all parameters are
 	 named.  This only has an impact on vector argument register
 	 usage none of which is call-saved.  */
-      if (pass_by_reference (&cum_v, mode, type, true))
-	{
-	  mode = Pmode;
-	  type = build_pointer_type (type);
-	}
+      function_arg_info arg (TREE_TYPE (parameter), /*named=*/true);
+      apply_pass_by_reference_rules (&cum_v, arg);
 
-       parm_rtx = s390_function_arg (cum, mode, type, true);
+       parm_rtx = s390_function_arg (cum, arg);
 
-       s390_function_arg_advance (cum, mode, type, true);
+       s390_function_arg_advance (cum, arg);
 
        if (!parm_rtx)
 	 continue;

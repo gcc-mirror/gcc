@@ -189,6 +189,7 @@ package body Lib.Writ is
          Version                => 0,
          Error_Location         => No_Location,
          OA_Setting             => 'O');
+      Init_Unit_Name (Units.Last, System_Uname);
 
       --  Parse system.ads so that the checksum is set right. Style checks are
       --  not applied. The Ekind is set to ensure that this reference is always

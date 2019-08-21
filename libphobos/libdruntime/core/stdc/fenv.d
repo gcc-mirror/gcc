@@ -249,16 +249,16 @@ else version (NetBSD)
         {
             struct _x87
             {
-                    ushort control;       /* Control word register */
+                    ushort control;     /* Control word register */
                     ushort unused1;
-                    ushort status;        /* Status word register */
+                    ushort status;      /* Status word register */
                     ushort unused2;
-                    ushort tag;           /* Tag word register */
+                    ushort tag;         /* Tag word register */
                     ushort unused3;
                     uint[4] others;     /* EIP, Pointer Selector, etc */
             };
             _x87 x87;
-            uint32_t mxcsr;                 /* Control and status register */
+            uint mxcsr;                 /* Control and status register */
         };
 
     }
@@ -375,7 +375,42 @@ else version (Solaris)
 }
 else version (CRuntime_Musl)
 {
-    version (X86_64)
+    version (AArch64)
+    {
+        struct fenv_t
+        {
+            uint __fpcr;
+            uint __fpsr;
+        }
+        alias uint fexcept_t;
+    }
+    else version (ARM)
+    {
+        struct fenv_t
+        {
+            c_ulong __cw;
+        }
+        alias c_ulong fexcept_t;
+    }
+    else version (IBMZ_Any)
+    {
+        alias uint fenv_t;
+        alias uint fexcept_t;
+    }
+    else version (MIPS_Any)
+    {
+        struct fenv_t
+        {
+            uint __cw;
+        }
+        alias ushort fexcept_t;
+    }
+    else version (PPC_Any)
+    {
+        alias double fenv_t;
+        alias uint fexcept_t;
+    }
+    else version (X86_Any)
     {
         struct fenv_t
         {
@@ -391,7 +426,8 @@ else version (CRuntime_Musl)
             uint   __data_offset;
             ushort __data_selector;
             ushort __unused5;
-            uint   __mxcsr;
+            version (X86_64)
+                uint __mxcsr;
         }
         alias ushort fexcept_t;
     }

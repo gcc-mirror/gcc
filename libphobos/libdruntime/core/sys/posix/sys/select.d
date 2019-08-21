@@ -270,6 +270,53 @@ else version (NetBSD)
     int pselect(int, fd_set*, fd_set*, fd_set*, in timespec*, in sigset_t*);
     int select(int, fd_set*, fd_set*, fd_set*, timeval*);
 }
+else version (OpenBSD)
+{
+    private
+    {
+        alias uint __fd_mask;
+        enum _NFDBITS = __fd_mask.sizeof * 8;
+    }
+
+    enum uint FD_SETSIZE = 1024;
+
+    struct fd_set
+    {
+        __fd_mask[(FD_SETSIZE + (_NFDBITS - 1)) / _NFDBITS] __fds_bits;
+    }
+
+    extern (D) __fd_mask __fdset_mask(uint n) pure
+    {
+        return cast(__fd_mask) 1 << (n % _NFDBITS);
+    }
+
+    extern (D) void FD_CLR(int n, fd_set* p) pure
+    {
+        p.__fds_bits[n / _NFDBITS] &= ~__fdset_mask(n);
+    }
+
+    extern (D) bool FD_ISSET(int n, const(fd_set)* p) pure
+    {
+        return (p.__fds_bits[n / _NFDBITS] & __fdset_mask(n)) != 0;
+    }
+
+    extern (D) void FD_SET(int n, fd_set* p) pure
+    {
+        p.__fds_bits[n / _NFDBITS] |= __fdset_mask(n);
+    }
+
+    extern (D) void FD_ZERO(fd_set* p) pure
+    {
+        fd_set *_p = p;
+        size_t _n = (FD_SETSIZE + (_NFDBITS - 1)) / _NFDBITS;
+
+        while (_n > 0)
+            _p.__fds_bits[--_n] = 0;
+    }
+
+    int pselect(int, fd_set*, fd_set*, fd_set*, in timespec*, in sigset_t*);
+    int select(int, fd_set*, fd_set*, fd_set*, timeval*);
+}
 else version (DragonFlyBSD)
 {
     private

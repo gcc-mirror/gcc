@@ -220,9 +220,9 @@ package body Exp_Ch13 is
             --  task_typeZ := expression
 
             if Ekind (Ent) = E_Task_Type then
+
                declare
                   Assign : Node_Id;
-
                begin
                   Assign :=
                     Make_Assignment_Statement (Loc,
@@ -261,15 +261,35 @@ package body Exp_Ch13 is
                     Make_Defining_Identifier (Loc,
                       Chars => New_External_Name (Chars (Ent), 'V'));
 
-                  --  Insert the declaration of the object
+                  --  Insert the declaration of the object. If the expression
+                  --  is not static it may depend on some other type that is
+                  --  not frozen yet, so attach the declaration that captures
+                  --  the value of the expression to the actions of the freeze
+                  --  node of the current type.
 
-                  Insert_Action (N,
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => V,
-                      Object_Definition   =>
-                        New_Occurrence_Of (RTE (RE_Storage_Offset), Loc),
-                      Expression          =>
-                        Convert_To (RTE (RE_Storage_Offset), Expression (N))));
+                  declare
+                     Decl : constant Node_Id :=
+                       Make_Object_Declaration (Loc,
+                         Defining_Identifier => V,
+                         Object_Definition   =>
+                           New_Occurrence_Of (RTE (RE_Storage_Offset), Loc),
+                         Expression          =>
+                           Convert_To
+                             (RTE (RE_Storage_Offset), Expression (N)));
+                  begin
+                     if not Is_OK_Static_Expression (Expression (N))
+                       and then Present (Freeze_Node (Ent))
+                     then
+                        if No (Actions (Freeze_Node (Ent))) then
+                           Set_Actions (Freeze_Node (Ent), New_List (Decl));
+                        else
+                           Append (Decl, Actions (Freeze_Node (Ent)));
+                        end if;
+
+                     else
+                        Insert_Action (N, Decl);
+                     end if;
+                  end;
 
                   Set_Storage_Size_Variable (Ent, Entity_Id (V));
                end if;

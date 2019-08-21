@@ -1784,23 +1784,16 @@ csky_initial_elimination_offset (int from, int to)
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
+   ARG is a description of the argument.  */
 static rtx
-csky_function_arg (cumulative_args_t pcum_v, machine_mode mode,
-		   const_tree type ATTRIBUTE_UNUSED,
-		   bool named ATTRIBUTE_UNUSED)
+csky_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
 
   if (*pcum < CSKY_NPARM_REGS)
-    return gen_rtx_REG (mode, CSKY_FIRST_PARM_REGNUM + *pcum);
+    return gen_rtx_REG (arg.mode, CSKY_FIRST_PARM_REGNUM + *pcum);
 
   return NULL_RTX;
 }
@@ -1826,11 +1819,11 @@ csky_num_arg_regs (machine_mode mode, const_tree type)
 /* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 
 static void
-csky_function_arg_advance (cumulative_args_t pcum_v, machine_mode mode,
-			   const_tree type, bool named ATTRIBUTE_UNUSED)
+csky_function_arg_advance (cumulative_args_t pcum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
-  int param_size = csky_num_arg_regs (mode, type);
+  int param_size = csky_num_arg_regs (arg.mode, arg.type);
 
   if (*pcum + param_size > CSKY_NPARM_REGS)
     *pcum = CSKY_NPARM_REGS;
@@ -1917,11 +1910,10 @@ csky_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
    that are passed entirely in registers or
    that are entirely pushed on the stack.  */
 static int
-csky_arg_partial_bytes (cumulative_args_t pcum_v, machine_mode mode,
-			tree type, bool named ATTRIBUTE_UNUSED)
+csky_arg_partial_bytes (cumulative_args_t pcum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
-  int param_size = csky_num_arg_regs (mode, type);
+  int param_size = csky_num_arg_regs (arg.mode, arg.type);
 
   if (*pcum < CSKY_NPARM_REGS
       && *pcum + param_size > CSKY_NPARM_REGS)
@@ -1938,8 +1930,7 @@ csky_arg_partial_bytes (cumulative_args_t pcum_v, machine_mode mode,
 
 static void
 csky_setup_incoming_varargs (cumulative_args_t pcum_v,
-			     machine_mode mode,
-			     tree type,
+			     const function_arg_info &arg,
 			     int *pretend_size,
 			     int second_time ATTRIBUTE_UNUSED)
 {
@@ -1950,7 +1941,7 @@ csky_setup_incoming_varargs (cumulative_args_t pcum_v,
 
   cfun->machine->uses_anonymous_args = 1;
   local_cum = *pcum;
-  csky_function_arg_advance (local_cum_v, mode, type, true);
+  csky_function_arg_advance (local_cum_v, arg);
   regs_to_push = CSKY_NPARM_REGS - local_cum;
   if (regs_to_push)
     *pretend_size  = regs_to_push * UNITS_PER_WORD;

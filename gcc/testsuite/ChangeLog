@@ -1,3 +1,97 @@
+2019-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/91505
+	* g++.target/i386/crc32-4.C: New test.
+
+2019-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91482
+	* gcc.dg/tree-ssa/pr91482.c: New testcase.
+
+2019-08-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/dump-ada-spec-15.c: New test.
+
+2019-08-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/cmse/cmse-9.c: Add quotes to expected
+	warning messages.
+
+2019-08-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/prot9.adb, gnat.dg/prot9_gen.ads,
+	gnat.dg/prot9_pkg1.ads, gnat.dg/prot9_pkg2.ads: New testcase.
+
+2019-08-21  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/implicit_param.adb, gnat.dg/implicit_param_pkg.ads:
+	New testcase.
+
+2019-08-20  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/91458
+	* g++.dg/tree-ssa/ssa-dse-1.C: Use the same search pattern
+	unconditionally (correcting r272199, PR middle-end/90676).
+	* gcc.dg/tree-prof/stringop-2.c: Same.
+
+2019-08-20  Ian Lance Taylor  <iant@golang.org>
+
+	* go.test/test/fixedbugs/bug073.go: Update for language changes.
+
+2019-08-20  Matthew Beliveau  <mbelivea@redhat.com>
+
+	* gcc.dg/tree-ssa/redundant-assign-zero-1.c: New test.
+	* gcc.dg/tree-ssa/redundant-assign-zero-2.c: New test.
+
+2019-08-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/37242
+	* gcc.dg/tree-ssa/ssa-fre-80.c: New testcase.
+
+2019-08-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/storage_size1.adb: New testcase.
+
+2019-08-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/loop_entry2.adb: New testcase.
+
+2019-08-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/tagged5.adb, gnat.dg/tagged5.ads: New testcase.
+
+2019-08-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat.dg/type_conv2.adb, gnat.dg/type_conv2.ads: New testcase.
+
+2019-08-20  Bob Duff  <duff@adacore.com>
+
+	* gnat.dg/unchecked_convert14.adb: New testcase.
+
+2019-08-20  Bob Duff  <duff@adacore.com>
+
+	* gnat.dg/object_size1.adb: New testcase.
+
+2019-08-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20190820-1.c: New test.
+
+2019-08-20  Richard Biener  <rguenther@suse.de>
+
+	PR target/91498
+	* gcc.target/i386/minmax-7.c: New testcase.
+
+2019-08-20  Lili Cui  <lili.cui@intel.com>
+
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+	* g++.target/i386/mv16.C: Handle new march
+
+2019-08-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/89544
+	* gcc.target/arm/unaligned-argument-1.c: New test.
+	* gcc.target/arm/unaligned-argument-2.c: New test.
+
 2019-08-19  Joel Hutton  <Joel.Hutton@arm.com>
 
 	* gcc.target/aarch64/fmul_scvtf_1.c: New test.
