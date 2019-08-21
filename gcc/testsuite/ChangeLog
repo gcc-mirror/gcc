@@ -1,3 +1,8 @@
+2019-08-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/cmse/cmse-9.c: Add quotes to expected
+	warning messages.
+
 2019-08-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/prot9.adb, gnat.dg/prot9_gen.ads,
