@@ -203,6 +203,10 @@ else version (NetBSD)
 
     version = BSD_Posix;
 }
+else version (OpenBSD)
+{
+    // OpenBSD does not define aiocb.
+}
 else version (DragonFlyBSD)
 {
     struct aiocb
@@ -442,7 +446,7 @@ version (CRuntime_Glibc)
         int lio_listio(int mode, const(aiocb*)* aiocb_list, int nitems, sigevent* sevp);
     }
 }
-version (CRuntime_UClibc)
+else version (CRuntime_UClibc)
 {
     static if (__USE_LARGEFILE64)
     {
@@ -475,6 +479,10 @@ version (CRuntime_UClibc)
         int aio_cancel(int fd, aiocb* aiocbp);
         int lio_listio(int mode, const(aiocb*)* aiocb_list, int nitems, sigevent* sevp);
     }
+}
+else version (OpenBSD)
+{
+    // OpenBSD does not implement aio.h
 }
 else
 {

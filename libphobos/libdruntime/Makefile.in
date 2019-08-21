@@ -316,7 +316,12 @@ am__objects_17 = core/sys/netbsd/dlfcn.lo core/sys/netbsd/execinfo.lo \
 	core/sys/netbsd/sys/event.lo core/sys/netbsd/sys/link_elf.lo \
 	core/sys/netbsd/sys/mman.lo core/sys/netbsd/time.lo
 @DRUNTIME_OS_NETBSD_TRUE@am__objects_18 = $(am__objects_17)
-am__objects_19 = core/sys/openbsd/dlfcn.lo
+am__objects_19 = core/sys/openbsd/dlfcn.lo \
+	core/sys/openbsd/sys/cdefs.lo core/sys/openbsd/sys/elf.lo \
+	core/sys/openbsd/sys/elf32.lo core/sys/openbsd/sys/elf64.lo \
+	core/sys/openbsd/sys/elf_common.lo \
+	core/sys/openbsd/sys/link_elf.lo core/sys/openbsd/sys/mman.lo \
+	core/sys/openbsd/time.lo
 @DRUNTIME_OS_OPENBSD_TRUE@am__objects_20 = $(am__objects_19)
 am__objects_21 = core/sys/linux/config.lo core/sys/linux/dlfcn.lo \
 	core/sys/linux/elf.lo core/sys/linux/epoll.lo \
@@ -758,21 +763,21 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/sync/rwmutex.d core/sync/semaphore.d core/thread.d core/time.d \
 	core/vararg.d gcc/attribute.d gcc/backtrace.d gcc/builtins.d gcc/deh.d \
 	gcc/emutls.d gcc/gthread.d gcc/sections/android.d \
-	gcc/sections/elf_shared.d gcc/sections/osx.d \
-	gcc/sections/package.d gcc/sections/win32.d gcc/sections/win64.d \
-	gcc/unwind/arm.d gcc/unwind/arm_common.d gcc/unwind/c6x.d \
-	gcc/unwind/generic.d gcc/unwind/package.d gcc/unwind/pe.d object.d \
-	rt/aApply.d rt/aApplyR.d rt/aaA.d rt/adi.d rt/arrayassign.d \
-	rt/arraycast.d rt/arraycat.d rt/cast_.d rt/config.d rt/critical_.d \
-	rt/deh.d rt/dmain2.d rt/invariant.d rt/lifetime.d rt/memory.d \
-	rt/minfo.d rt/monitor_.d rt/obj.d rt/qsort.d rt/sections.d \
-	rt/switch_.d rt/tlsgc.d rt/typeinfo/ti_Acdouble.d \
-	rt/typeinfo/ti_Acfloat.d rt/typeinfo/ti_Acreal.d \
-	rt/typeinfo/ti_Adouble.d rt/typeinfo/ti_Afloat.d rt/typeinfo/ti_Ag.d \
-	rt/typeinfo/ti_Aint.d rt/typeinfo/ti_Along.d rt/typeinfo/ti_Areal.d \
-	rt/typeinfo/ti_Ashort.d rt/typeinfo/ti_C.d rt/typeinfo/ti_byte.d \
-	rt/typeinfo/ti_cdouble.d rt/typeinfo/ti_cent.d rt/typeinfo/ti_cfloat.d \
-	rt/typeinfo/ti_char.d rt/typeinfo/ti_creal.d rt/typeinfo/ti_dchar.d \
+	gcc/sections/elf_shared.d gcc/sections/osx.d gcc/sections/package.d \
+	gcc/sections/win32.d gcc/sections/win64.d gcc/unwind/arm.d \
+	gcc/unwind/arm_common.d gcc/unwind/c6x.d gcc/unwind/generic.d \
+	gcc/unwind/package.d gcc/unwind/pe.d object.d rt/aApply.d rt/aApplyR.d \
+	rt/aaA.d rt/adi.d rt/arrayassign.d rt/arraycast.d rt/arraycat.d \
+	rt/cast_.d rt/config.d rt/critical_.d rt/deh.d rt/dmain2.d \
+	rt/invariant.d rt/lifetime.d rt/memory.d rt/minfo.d rt/monitor_.d \
+	rt/obj.d rt/qsort.d rt/sections.d rt/switch_.d rt/tlsgc.d \
+	rt/typeinfo/ti_Acdouble.d rt/typeinfo/ti_Acfloat.d \
+	rt/typeinfo/ti_Acreal.d rt/typeinfo/ti_Adouble.d \
+	rt/typeinfo/ti_Afloat.d rt/typeinfo/ti_Ag.d rt/typeinfo/ti_Aint.d \
+	rt/typeinfo/ti_Along.d rt/typeinfo/ti_Areal.d rt/typeinfo/ti_Ashort.d \
+	rt/typeinfo/ti_C.d rt/typeinfo/ti_byte.d rt/typeinfo/ti_cdouble.d \
+	rt/typeinfo/ti_cent.d rt/typeinfo/ti_cfloat.d rt/typeinfo/ti_char.d \
+	rt/typeinfo/ti_creal.d rt/typeinfo/ti_dchar.d \
 	rt/typeinfo/ti_delegate.d rt/typeinfo/ti_double.d \
 	rt/typeinfo/ti_float.d rt/typeinfo/ti_idouble.d \
 	rt/typeinfo/ti_ifloat.d rt/typeinfo/ti_int.d rt/typeinfo/ti_ireal.d \
@@ -846,7 +851,12 @@ DRUNTIME_DSOURCES_NETBSD = core/sys/netbsd/dlfcn.d \
 	core/sys/netbsd/sys/link_elf.d core/sys/netbsd/sys/mman.d \
 	core/sys/netbsd/time.d
 
-DRUNTIME_DSOURCES_OPENBSD = core/sys/openbsd/dlfcn.d
+DRUNTIME_DSOURCES_OPENBSD = core/sys/openbsd/dlfcn.d \
+	core/sys/openbsd/sys/cdefs.d core/sys/openbsd/sys/elf.d \
+	core/sys/openbsd/sys/elf32.d core/sys/openbsd/sys/elf64.d \
+	core/sys/openbsd/sys/elf_common.d core/sys/openbsd/sys/link_elf.d \
+	core/sys/openbsd/sys/mman.d core/sys/openbsd/time.d
+
 DRUNTIME_DSOURCES_POSIX = core/sys/posix/aio.d \
 	core/sys/posix/arpa/inet.d core/sys/posix/config.d \
 	core/sys/posix/dirent.d core/sys/posix/dlfcn.d core/sys/posix/fcntl.d \
@@ -1414,6 +1424,19 @@ core/sys/openbsd/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/openbsd
 	@: > core/sys/openbsd/$(am__dirstamp)
 core/sys/openbsd/dlfcn.lo: core/sys/openbsd/$(am__dirstamp)
+core/sys/openbsd/sys/$(am__dirstamp):
+	@$(MKDIR_P) core/sys/openbsd/sys
+	@: > core/sys/openbsd/sys/$(am__dirstamp)
+core/sys/openbsd/sys/cdefs.lo: core/sys/openbsd/sys/$(am__dirstamp)
+core/sys/openbsd/sys/elf.lo: core/sys/openbsd/sys/$(am__dirstamp)
+core/sys/openbsd/sys/elf32.lo: core/sys/openbsd/sys/$(am__dirstamp)
+core/sys/openbsd/sys/elf64.lo: core/sys/openbsd/sys/$(am__dirstamp)
+core/sys/openbsd/sys/elf_common.lo:  \
+	core/sys/openbsd/sys/$(am__dirstamp)
+core/sys/openbsd/sys/link_elf.lo:  \
+	core/sys/openbsd/sys/$(am__dirstamp)
+core/sys/openbsd/sys/mman.lo: core/sys/openbsd/sys/$(am__dirstamp)
+core/sys/openbsd/time.lo: core/sys/openbsd/$(am__dirstamp)
 core/sys/linux/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/linux
 	@: > core/sys/linux/$(am__dirstamp)
@@ -1753,6 +1776,8 @@ mostlyclean-compile:
 	-rm -f core/sys/netbsd/sys/*.lo
 	-rm -f core/sys/openbsd/*.$(OBJEXT)
 	-rm -f core/sys/openbsd/*.lo
+	-rm -f core/sys/openbsd/sys/*.$(OBJEXT)
+	-rm -f core/sys/openbsd/sys/*.lo
 	-rm -f core/sys/posix/*.$(OBJEXT)
 	-rm -f core/sys/posix/*.lo
 	-rm -f core/sys/posix/arpa/*.$(OBJEXT)
@@ -1871,6 +1896,7 @@ clean-libtool:
 	-rm -rf core/sys/netbsd/.libs core/sys/netbsd/_libs
 	-rm -rf core/sys/netbsd/sys/.libs core/sys/netbsd/sys/_libs
 	-rm -rf core/sys/openbsd/.libs core/sys/openbsd/_libs
+	-rm -rf core/sys/openbsd/sys/.libs core/sys/openbsd/sys/_libs
 	-rm -rf core/sys/posix/.libs core/sys/posix/_libs
 	-rm -rf core/sys/posix/arpa/.libs core/sys/posix/arpa/_libs
 	-rm -rf core/sys/posix/net/.libs core/sys/posix/net/_libs
@@ -2025,6 +2051,7 @@ distclean-generic:
 	-rm -f core/sys/netbsd/$(am__dirstamp)
 	-rm -f core/sys/netbsd/sys/$(am__dirstamp)
 	-rm -f core/sys/openbsd/$(am__dirstamp)
+	-rm -f core/sys/openbsd/sys/$(am__dirstamp)
 	-rm -f core/sys/posix/$(am__dirstamp)
 	-rm -f core/sys/posix/arpa/$(am__dirstamp)
 	-rm -f core/sys/posix/net/$(am__dirstamp)

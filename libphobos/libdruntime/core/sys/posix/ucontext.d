@@ -968,6 +968,189 @@ else version (NetBSD)
 
     }
 }
+else version (OpenBSD)
+{
+    version (Alpha)
+    {
+        struct sigcontext
+        {
+            c_long      sc_cookie;
+            c_long      sc_mask;
+            c_long      sc_pc;
+            c_long      sc_ps;
+            c_ulong[32] sc_regs;
+            c_long      sc_ownedfp;
+            c_ulong[32] sc_fpregs;
+            c_ulong     sc_fpcr;
+            c_ulong     sc_fp_control;
+            c_long[2]   sc_reserved;
+            c_long[8]   sc_xxx;
+        }
+    }
+    else version (X86_64)
+    {
+        struct sigcontext
+        {
+            c_long  sc_rdi;
+            c_long  sc_rsi;
+            c_long  sc_rdx;
+            c_long  sc_rcx;
+            c_long  sc_r8;
+            c_long  sc_r9;
+            c_long  sc_r10;
+            c_long  sc_r11;
+            c_long  sc_r12;
+            c_long  sc_r13;
+            c_long  sc_r14;
+            c_long  sc_r15;
+            c_long  sc_rbp;
+            c_long  sc_rbx;
+            c_long  sc_rax;
+            c_long  sc_gs;
+            c_long  sc_fs;
+            c_long  sc_es;
+            c_long  sc_ds;
+            c_long  sc_trapno;
+            c_long  sc_err;
+            c_long  sc_rip;
+            c_long  sc_cs;
+            c_long  sc_rflags;
+            c_long  sc_rsp;
+            c_long  sc_ss;
+            void*   sc_fpstate;  // struct fxsave64*
+            int   __sc_unused;
+            int     sc_mask;
+            c_long  sc_cookie;
+        }
+    }
+    else version (AArch64)
+    {
+        struct sigcontext
+        {
+            int       __sc_unused;
+            int         sc_mask;
+            c_ulong     sc_sp;
+            c_ulong     sc_lr;
+            c_ulong     sc_elr;
+            c_ulong     sc_spsr;
+            c_ulong[30] sc_x;
+            c_long      sc_cookie;
+        }
+    }
+    else version (ARM)
+    {
+        struct sigcontext
+        {
+            c_long    sc_cookie;
+            int       sc_mask;
+            uint      sc_spsr;
+            uint      sc_r0;
+            uint      sc_r1;
+            uint      sc_r2;
+            uint      sc_r3;
+            uint      sc_r4;
+            uint      sc_r5;
+            uint      sc_r6;
+            uint      sc_r7;
+            uint      sc_r8;
+            uint      sc_r9;
+            uint      sc_r10;
+            uint      sc_r11;
+            uint      sc_r12;
+            uint      sc_usr_sp;
+            uint      sc_usr_lr;
+            uint      sc_svc_lr;
+            uint      sc_pc;
+            uint      sc_fpused;
+            uint      sc_fpscr;
+            ulong[32] sc_fpreg;
+        }
+    }
+    else version (HPPA)
+    {
+        struct sigcontext
+        {
+            c_ulong   __sc_unused;
+            c_long      sc_mask;
+            c_ulong     sc_ps;
+            c_ulong     sc_fp;
+            c_ulong     sc_pcoqh;
+            c_ulong     sc_pcoqt;
+            c_ulong[2]  sc_resv;
+            c_ulong[32] sc_regs;
+            c_ulong[64] sc_fpregs;
+            c_long      sc_cookie;
+        }
+    }
+    else version (X86)
+    {
+        struct sigcontext
+        {
+            int     sc_gs;
+            int     sc_fs;
+            int     sc_es;
+            int     sc_ds;
+            int     sc_edi;
+            int     sc_esi;
+            int     sc_ebp;
+            int     sc_ebx;
+            int     sc_edx;
+            int     sc_ecx;
+            int     sc_eax;
+            int     sc_eip;
+            int     sc_cs;
+            int     sc_eflags;
+            int     sc_esp;
+            int     sc_ss;
+            c_long  sc_cookie;
+            int     sc_mask;
+            int     sc_trapno;
+            int     sc_err;
+            void*   sc_fpstate; // union savefpu*
+        };
+    }
+    else version (PPC)
+    {
+        private struct trapframe
+        {
+            c_long[32] fixreg;
+            c_long lr;
+            c_long cr;
+            c_long xer;
+            c_long ctr;
+            int srr0;
+            int srr1;
+            int dar;
+            int dsisr;
+            c_long exc;
+        }
+
+        struct sigcontext
+        {
+            c_long    sc_cookie;
+            int       sc_mask;
+            trapframe sc_frame;
+        }
+    }
+    else version (SPARC64)
+    {
+        struct sigcontext
+        {
+            c_long sc_cookie;
+            c_long sc_sp;
+            c_long sc_pc;
+            c_long sc_npc;
+            c_long sc_tstate;
+            c_long sc_g1;
+            c_long sc_o0;
+            int    sc_mask;
+        }
+    }
+    else
+        static assert(false, "Architecture not supported.");
+
+    alias ucontext_t = sigcontext;
+}
 else version (DragonFlyBSD)
 {
     // <machine/ucontext.h>

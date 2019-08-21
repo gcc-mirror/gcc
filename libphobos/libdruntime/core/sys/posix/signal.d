@@ -3393,6 +3393,8 @@ else version (NetBSD)
 }
 else version (OpenBSD)
 {
+    // OpenBSD does not implement sigevent.
+    alias sigevent = void;
 }
 else version (DragonFlyBSD)
 {

@@ -425,12 +425,23 @@ else version (CRuntime_Glibc)
         void*   _markers;
         _IO_FILE* _chain;
         int     _fileno;
-        int     _blksize;
-        int     _old_offset;
+        int     _flags2;
+        ptrdiff_t _old_offset;
         ushort  _cur_column;
         byte    _vtable_offset;
         char[1] _shortbuf = 0;
         void*   _lock;
+
+        ptrdiff_t _offset;
+
+        /*_IO_codecvt*/ void* _codecvt;
+        /*_IO_wide_data*/ void* _wide_data;
+        _IO_FILE *_freeres_list;
+        void *_freeres_buf;
+        size_t __pad5;
+        int _mode;
+
+        char[15 * int.sizeof - 4 * (void*).sizeof - size_t.sizeof] _unused2;
     }
 
     ///
@@ -620,6 +631,8 @@ else version (OpenBSD)
         fpos_t          _offset;
     }
 
+    ///
+    alias __sFILE _iobuf;
     ///
     alias shared(__sFILE) FILE;
 }
@@ -994,14 +1007,16 @@ else version (OpenBSD)
         _IONBF = 2,
     }
 
-    private extern shared FILE[] __sF;
-
+    private extern __gshared FILE[3] __sF;
+    @property auto __stdin()() { return &__sF[0]; }
+    @property auto __stdout()() { return &__sF[1]; }
+    @property auto __stderr()() { return &__sF[2]; }
     ///
-    shared stdin  = &__sF[0];
+    alias __stdin stdin;
     ///
-    shared stdout = &__sF[1];
+    alias __stdout stdout;
     ///
-    shared stderr = &__sF[2];
+    alias __stderr stderr;
 }
 else version (DragonFlyBSD)
 {
@@ -1476,17 +1491,17 @@ else version (OpenBSD)
     @trusted private
     {
         ///
-        pure void clearerr(FILE*);
-        alias __clearerr = clearerr;
+        pragma(mangle, "clearerr")
+        pure void __clearerr(FILE*);
         ///
-        pure int  feof(FILE*);
-        alias __feof = feof;
+        pragma(mangle, "feof")
+        pure int __feof(FILE*);
         ///
-        pure int  ferror(FILE*);
-        alias __ferror = ferror;
+        pragma(mangle, "ferror")
+        pure int __ferror(FILE*);
         ///
-        int  fileno(FILE*);
-        alias __fileno = fileno;
+        pragma(mangle, "fileno")
+        int __fileno(FILE*);
     }
 
     enum __SLBF = 0x0001;
@@ -1506,9 +1521,9 @@ else version (OpenBSD)
     enum __SALC = 0x4000;
     enum __SIGN = 0x8000;
 
-    extern int __isthreaded;
+    extern immutable __gshared int __isthreaded;
 
-    extern (D)
+    extern (D) @trusted
     {
         void __sclearerr()(FILE* p)
         {
@@ -1530,17 +1545,17 @@ else version (OpenBSD)
             return p._file;
         }
 
-        int clearerr()(FILE* file)
+        pure void clearerr()(FILE* file)
         {
-            return !__isthreaded ? __sclearerr(file) : __clearerr(file);
+            !__isthreaded ? __sclearerr(file) : __clearerr(file);
         }
 
-        int feof()(FILE* file)
+        pure int feof()(FILE* file)
         {
             return !__isthreaded ? __sfeof(file) : __feof(file);
         }
 
-        int ferror()(FILE* file)
+        pure int ferror()(FILE* file)
         {
             return !__isthreaded ? __sferror(file) : __ferror(file);
         }
