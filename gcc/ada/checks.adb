@@ -7964,6 +7964,12 @@ package body Checks is
          return;
       end if;
 
+      --  In GNATprove mode, we do not apply the check
+
+      if GNATprove_Mode then
+         return;
+      end if;
+
       --  Otherwise install access check
 
       Insert_Action (N,
