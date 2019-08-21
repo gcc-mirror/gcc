@@ -70,7 +70,11 @@ is
    subtype Capacity_Range is Count_Type range 0 .. Last_Count;
 
    type Vector (Capacity : Capacity_Range) is private with
-     Default_Initial_Condition => Is_Empty (Vector);
+     Default_Initial_Condition => Is_Empty (Vector),
+     Iterable => (First       => Iter_First,
+                  Has_Element => Iter_Has_Element,
+                  Next        => Iter_Next,
+                  Element     => Element);
 
    function Length (Container : Vector) return Capacity_Range with
      Global => null,
@@ -173,6 +177,7 @@ is
         Ghost,
         Global => null,
         Post   => M.Length (Model'Result) = Length (Container);
+      pragma Annotate (GNATprove, Iterable_For_Proof, "Model", Model);
 
       function Element
         (S : M.Sequence;
@@ -859,6 +864,30 @@ is
                    Model (Target)'Old);
    end Generic_Sorting;
 
+   ---------------------------
+   --  Iteration Primitives --
+   ---------------------------
+
+   function Iter_First (Container : Vector) return Extended_Index with
+     Global => null;
+
+   function Iter_Has_Element
+     (Container : Vector;
+      Position  : Extended_Index) return Boolean
+   with
+     Global => null,
+     Post   =>
+       Iter_Has_Element'Result =
+         (Position in Index_Type'First .. Last_Index (Container));
+   pragma Annotate (GNATprove, Inline_For_Proof, Iter_Has_Element);
+
+   function Iter_Next
+     (Container : Vector;
+      Position  : Extended_Index) return Extended_Index
+   with
+     Global => null,
+     Pre    => Iter_Has_Element (Container, Position);
+
 private
    pragma SPARK_Mode (Off);
 
@@ -881,5 +910,23 @@ private
 
    function Empty_Vector return Vector is
      ((Capacity => 0, others => <>));
+
+   function Iter_First (Container : Vector) return Extended_Index is
+     (Index_Type'First);
+
+   function Iter_Next
+     (Container : Vector;
+      Position  : Extended_Index) return Extended_Index
+   is
+     (if Position = Extended_Index'Last then
+         Extended_Index'First
+      else
+         Extended_Index'Succ (Position));
+
+   function Iter_Has_Element
+     (Container : Vector;
+      Position  : Extended_Index) return Boolean
+   is
+     (Position in Index_Type'First .. Container.Last);
 
 end Ada.Containers.Formal_Vectors;
