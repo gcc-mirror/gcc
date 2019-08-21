@@ -1,3 +1,10 @@
+2019-08-20  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/91458
+	* g++.dg/tree-ssa/ssa-dse-1.C: Use the same search pattern
+	unconditionally (correcting r272199, PR middle-end/90676).
+	* gcc.dg/tree-prof/stringop-2.c: Same.
+
 2019-08-20  Ian Lance Taylor  <iant@golang.org>
 
 	* go.test/test/fixedbugs/bug073.go: Update for language changes.
