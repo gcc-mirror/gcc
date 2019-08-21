@@ -5347,6 +5347,7 @@ package body Exp_Util is
    ----------------------
 
    function Finalize_Address (Typ : Entity_Id) return Entity_Id is
+      Btyp : constant Entity_Id := Base_Type (Typ);
       Utyp : Entity_Id := Typ;
 
    begin
@@ -5386,12 +5387,12 @@ package body Exp_Util is
       --  records do not automatically inherit operations, but maybe they
       --  should???)
 
-      if Is_Untagged_Derivation (Typ) then
-         if Is_Protected_Type (Typ) then
-            Utyp := Corresponding_Record_Type (Root_Type (Base_Type (Typ)));
+      if Is_Untagged_Derivation (Btyp) then
+         if Is_Protected_Type (Btyp) then
+            Utyp := Corresponding_Record_Type (Root_Type (Btyp));
 
          else
-            Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
+            Utyp := Underlying_Type (Root_Type (Btyp));
 
             if Is_Protected_Type (Utyp) then
                Utyp := Corresponding_Record_Type (Utyp);
