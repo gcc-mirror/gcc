@@ -3888,8 +3888,10 @@ Syntax::
 
 This pragma is used to specify the maximum callers per entry queue for
 individual protected entries and entry families. It accepts a single
-positive integer as a parameter and must appear after the declaration
-of an entry.
+integer (-1 or more) as a parameter and must appear after the declaration of an
+entry.
+
+A value of -1 represents no additional restriction on queue length.
 
 Pragma No_Body
 ==============
