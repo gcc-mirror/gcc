@@ -4609,7 +4609,7 @@ package body Exp_Util is
    begin
       pragma Assert (Is_Concurrent_Type (Typ));
 
-      if Ekind (Typ) in Protected_Kind then
+      if Is_Protected_Type (Typ) then
          if Has_Entries (Typ)
 
             --  A protected type without entries that covers an interface and

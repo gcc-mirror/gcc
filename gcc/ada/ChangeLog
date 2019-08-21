@@ -1,3 +1,10 @@
+2019-08-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Corresponding_Runtime_Package): Use high-level
+	Is_Protected_Type.
+	* sem_ch8.adb (Analyze_Renamed_Entry): Likewise.
+	* sem_ch9.adb (Analyze_Requeue): Likewise.
+
 2019-08-21  Javier Miranda  <miranda@adacore.com>
 
 	* sem_util.adb (Update_Named_Associations): Update
