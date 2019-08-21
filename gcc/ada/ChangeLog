@@ -1,3 +1,14 @@
+2019-08-21  Justin Squirek  <squirek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Modify
+	documentation to reflect expected behavior.
+	* gnat_rm.texi: Regenerate.
+	* sem_prag.adb (Analyze_Pragma): Modify handling of pragma
+	Max_Entry_Queue_Length to not reject integer values of negative
+	one.
+	* sem_util.adb (Get_Max_Queue_Length): Add processing for values
+	of negative one to fit within the current scheme.
+
 2019-08-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_unst.adb (Unnest_Subprograms, Unnest_Subprogram): Take

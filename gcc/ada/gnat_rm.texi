@@ -1764,9 +1764,9 @@ Syntax:
 pragma Aggregate_Individually_Assign;
 @end example
 
-Where possible GNAT will store the binary representation of a record aggregate
+Where possible, GNAT will store the binary representation of a record aggregate
 in memory for space and performance reasons. This configuration pragma changes
-this behaviour so that record aggregates are instead always converted into
+this behavior so that record aggregates are instead always converted into
 individual assignment statements.
 
 @node Pragma Allow_Integer_Address,Pragma Annotate,Pragma Aggregate_Individually_Assign,Implementation Defined Pragmas
@@ -5394,8 +5394,10 @@ pragma Max_Entry_Queue (static_integer_EXPRESSION);
 
 This pragma is used to specify the maximum callers per entry queue for
 individual protected entries and entry families. It accepts a single
-positive integer as a parameter and must appear after the declaration
-of an entry.
+integer (-1 or more) as a parameter and must appear after the declaration of an
+entry.
+
+A value of -1 represents no additional restriction on queue length.
 
 @node Pragma No_Body,Pragma No_Caching,Pragma Max_Queue_Length,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-no-body}@anchor{a1}
