@@ -706,7 +706,7 @@ general_scalar_chain::make_vector_copies (unsigned regno)
 				gen_rtx_SUBREG (SImode, reg, 4));
 	      }
 	    else
-	      emit_move_insn (tmp, reg);
+	      emit_move_insn (copy_rtx (tmp), reg);
 	    emit_insn (gen_rtx_SET (gen_rtx_SUBREG (vmode, vreg, 0),
 				    gen_gpr_to_xmm_move_src (vmode, tmp)));
 	  }
@@ -810,7 +810,7 @@ general_scalar_chain::convert_reg (unsigned regno)
 				  adjust_address (tmp, SImode, 4));
 		}
 	      else
-		emit_move_insn (scopy, tmp);
+		emit_move_insn (scopy, copy_rtx (tmp));
 	    }
 	  else if (!TARGET_64BIT && smode == DImode)
 	    {
