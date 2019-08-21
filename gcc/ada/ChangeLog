@@ -1,3 +1,11 @@
+2019-08-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): In the case
+	of a built-in-place function that doesn't need a BIP_Alloc_Form
+	parameter but returns unconstrained, build the return
+	consistently using the function's result subtype.  Remove bypass
+	added in previous change.
+
 2019-08-21  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_prag.adb (Max_Entry_Queue_Length): Do not substitute

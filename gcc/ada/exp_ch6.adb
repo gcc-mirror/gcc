@@ -5199,7 +5199,7 @@ package body Exp_Ch6 is
                end if;
 
                --  When the function's subtype is unconstrained, a run-time
-               --  test is needed to determine the form of allocation to use
+               --  test may be needed to decide the form of allocation to use
                --  for the return object. The function has an implicit formal
                --  parameter indicating this. If the BIP_Alloc_Form formal has
                --  the value one, then the caller has passed access to an
@@ -5235,13 +5235,6 @@ package body Exp_Ch6 is
                      SS_Allocator   : Node_Id;
 
                   begin
-                     --  Reuse the itype created for the function's implicit
-                     --  access formal. This avoids the need to create a new
-                     --  access type here, plus it allows assigning the access
-                     --  formal directly without applying a conversion.
-
-                     --    Ref_Type := Etype (Object_Access);
-
                      --  Create an access type designating the function's
                      --  result subtype.
 
@@ -5572,6 +5565,64 @@ package body Exp_Ch6 is
 
                      Obj_Acc_Formal := Alloc_Obj_Id;
                   end;
+
+               --  When the function's subtype is unconstrained and a run-time
+               --  test is not needed, we nevertheless need to build the return
+               --  using the function's result subtype.
+
+               elsif not Is_Constrained (Underlying_Type (Etype (Func_Id)))
+               then
+                  declare
+                     Alloc_Obj_Id   : Entity_Id;
+                     Alloc_Obj_Decl : Node_Id;
+                     Ptr_Type_Decl  : Node_Id;
+                     Ref_Type       : Entity_Id;
+
+                  begin
+                     --  Create an access type designating the function's
+                     --  result subtype.
+
+                     Ref_Type := Make_Temporary (Loc, 'A');
+
+                     Ptr_Type_Decl :=
+                       Make_Full_Type_Declaration (Loc,
+                         Defining_Identifier => Ref_Type,
+                         Type_Definition     =>
+                           Make_Access_To_Object_Definition (Loc,
+                             All_Present        => True,
+                             Subtype_Indication =>
+                               New_Occurrence_Of (Ret_Obj_Typ, Loc)));
+
+                     Insert_Before (Ret_Obj_Decl, Ptr_Type_Decl);
+
+                     --  Create an access object initialized to the conversion
+                     --  of the implicit access value passed in by the caller.
+
+                     Alloc_Obj_Id := Make_Temporary (Loc, 'R');
+                     Set_Etype (Alloc_Obj_Id, Ref_Type);
+
+                     --  See the ??? comment a few lines above about the use of
+                     --  an unchecked conversion here.
+
+                     Alloc_Obj_Decl :=
+                       Make_Object_Declaration (Loc,
+                         Defining_Identifier => Alloc_Obj_Id,
+                         Object_Definition   =>
+                           New_Occurrence_Of (Ref_Type, Loc),
+                         Expression =>
+                           Make_Unchecked_Type_Conversion (Loc,
+                             Subtype_Mark =>
+                               New_Occurrence_Of (Ref_Type, Loc),
+                             Expression   =>
+                               New_Occurrence_Of (Obj_Acc_Formal, Loc)));
+
+                     Insert_Before (Ret_Obj_Decl, Alloc_Obj_Decl);
+
+                     --  Remember the local access object for use in the
+                     --  dereference of the renaming created below.
+
+                     Obj_Acc_Formal := Alloc_Obj_Id;
+                  end;
                end if;
 
                --  Replace the return object declaration with a renaming of a
@@ -5615,23 +5666,7 @@ package body Exp_Ch6 is
       Set_Comes_From_Extended_Return_Statement (Return_Stmt);
 
       Rewrite (N, Result);
-
-      declare
-         T : constant Entity_Id := Etype (Ret_Obj_Id);
-      begin
-         Analyze (N, Suppress => All_Checks);
-
-         --  In some cases, analysis of N can set the Etype of an N_Identifier
-         --  to a subtype of the Etype of the Entity of the N_Identifier, which
-         --  gigi doesn't like. Reset the Etypes correctly here.
-
-         if Nkind (Expression (Return_Stmt)) = N_Identifier
-           and then Entity (Expression (Return_Stmt)) = Ret_Obj_Id
-         then
-            Set_Etype (Ret_Obj_Id, T);
-            Set_Etype (Expression (Return_Stmt), T);
-         end if;
-      end;
+      Analyze (N, Suppress => All_Checks);
    end Expand_N_Extended_Return_Statement;
 
    ----------------------------
