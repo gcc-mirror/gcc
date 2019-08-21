@@ -1,3 +1,8 @@
+2019-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91482
+	* gcc.dg/tree-ssa/pr91482.c: New testcase.
+
 2019-08-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-c++-common/dump-ada-spec-15.c: New test.

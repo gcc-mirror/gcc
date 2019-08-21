@@ -1,5 +1,11 @@
 2019-08-21  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/91482
+	* tree-ssa-ccp.c (ccp_folder::fold_stmt): Remove useless
+	BUILT_IN_ASSUME_ALIGNED calls.
+
+2019-08-21  Richard Biener  <rguenther@suse.de>
+
 	PR target/91498
 	PR target/91503
 	* config/i386/i386-features.c
