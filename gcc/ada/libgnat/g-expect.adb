@@ -692,15 +692,21 @@ package body GNAT.Expect is
                            Buffer_Size := 4096;
                         end if;
 
-                        N := Read (Descriptors (D).Output_Fd, Buffer'Address,
-                                   Buffer_Size);
+                        --  Read may be interrupted on Linux by a signal and
+                        --  need to be repeated. We don't want to check for
+                        --  errno = EINTER, so just attempt to read a few
+                        --  times.
+
+                        for J in 1 .. 3 loop
+                           N := Read (Descriptors (D).Output_Fd,
+                                      Buffer'Address, Buffer_Size);
+
+                           exit when N > 0;
+                        end loop;
 
                         --  Error or End of file
 
                         if N <= 0 then
-                           --  ??? Note that ddd tries again up to three times
-                           --  in that case. See LiterateA.C:174
-
                            Close (Descriptors (D).Input_Fd);
                            Descriptors (D).Input_Fd := Invalid_FD;
                            Result := Expect_Process_Died;
