@@ -1,3 +1,14 @@
+2019-08-22  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/88839
+	* gcc.target/aarch64/sve/sel_1.c: New test.
+	* gcc.target/aarch64/sve/sel_2.c: Likewise.
+	* gcc.target/aarch64/sve/sel_3.c: Likewise.
+	* gcc.target/aarch64/sve/sel_4.c: Likewise.
+	* gcc.target/aarch64/sve/sel_5.c: Likewise.
+	* gcc.target/aarch64/sve/sel_6.c: Likewise.
+
 2019-08-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR c++/91505
