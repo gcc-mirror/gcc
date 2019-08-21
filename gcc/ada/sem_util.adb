@@ -20623,6 +20623,10 @@ package body Sem_Util is
          Old_Next : Node_Id;
 
       begin
+         if No (First_Named_Actual (Old_Call)) then
+            return;
+         end if;
+
          --  Recreate the First/Next_Named_Actual chain of a call by traversing
          --  the chains of both the old and new calls in parallel.
 
@@ -20630,15 +20634,16 @@ package body Sem_Util is
          Old_Act := First (Parameter_Associations (Old_Call));
          while Present (Old_Act) loop
             if Nkind (Old_Act) = N_Parameter_Association
+              and then Explicit_Actual_Parameter (Old_Act)
+                         = First_Named_Actual (Old_Call)
+            then
+               Set_First_Named_Actual (New_Call,
+                 Explicit_Actual_Parameter (New_Act));
+            end if;
+
+            if Nkind (Old_Act) = N_Parameter_Association
               and then Present (Next_Named_Actual (Old_Act))
             then
-               if First_Named_Actual (Old_Call) =
-                    Explicit_Actual_Parameter (Old_Act)
-               then
-                  Set_First_Named_Actual (New_Call,
-                    Explicit_Actual_Parameter (New_Act));
-               end if;
-
                --  Scan the actual parameter list to find the next suitable
                --  named actual. Note that the list may be out of order.
 
