@@ -1,5 +1,12 @@
 2019-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* d-target.cc: Include diagnostic.h.
+	(Target::_init): Set Tsize_t and Tptrdiff_t as D ushort and short if
+	the target pointer size is 2.  Add sorry if the pointer size is not
+	either 2, 4, or 8.
+
+2019-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	PR d/90446
 	* d-lang.cc (d_type_for_mode): Check for all internal __intN types.
 	(d_type_for_size): Likewise.
