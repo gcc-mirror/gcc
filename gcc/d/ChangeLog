@@ -1,3 +1,13 @@
+2019-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90444
+	* d-builtins.cc (build_frontend_type): Build anonymous RECORD_TYPE
+	nodes as well, push all fields to the struct members.
+	(d_build_builtins_module): Push anonymous va_list structs to the
+	builtins module, naming them __builtin_va_list.
+	(d_init_builtins): Use sorry instead of gcc_unreachable if va_list did
+	not succeed in being represented as a D type.
+
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/91421
