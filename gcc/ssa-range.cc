@@ -874,7 +874,7 @@ global_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 // Return the range of expr OP on edge E in R.  
 
 bool
-global_ranger::range_of_expr (irange&r, tree op, edge e)
+global_ranger::range_of_expr (irange &r, tree op, edge e)
 {
   return ssa_ranger::range_of_expr (r, op, e);
 }
@@ -883,7 +883,7 @@ global_ranger::range_of_expr (irange&r, tree op, edge e)
 // If OP is not defined in BB, find the range on entry to this block.
 
 bool
-global_ranger::range_of_expr (irange&r, tree op, gimple *s)
+global_ranger::range_of_expr (irange &r, tree op, gimple *s)
 {
   if (!irange::supports_p (op))
      return false;

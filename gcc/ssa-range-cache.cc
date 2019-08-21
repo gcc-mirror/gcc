@@ -272,7 +272,7 @@ block_range_cache::~block_range_cache ()
 // Return a reference to the m_block_cache for NAME. If it has not been
 // accessed yet, allocate it.
 
-ssa_block_ranges&
+ssa_block_ranges &
 block_range_cache::get_block_ranges (tree name)
 {
   unsigned v = SSA_NAME_VERSION (name);

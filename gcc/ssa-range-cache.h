@@ -76,7 +76,7 @@ public:
   void dump (FILE *f, basic_block bb, bool print_varying = true);
 private:
   vec<class ssa_block_ranges *> m_ssa_ranges;
-  ssa_block_ranges& get_block_ranges (tree name);
+  ssa_block_ranges &get_block_ranges (tree name);
 };
 
 class gori_cache : public gori_compute
