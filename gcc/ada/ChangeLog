@@ -1,5 +1,10 @@
 2019-08-21  Yannick Moy  <moy@adacore.com>
 
+	* checks.adb (Install_Null_Excluding_Check): Do not install
+	check in GNATprove mode.
+
+2019-08-21  Yannick Moy  <moy@adacore.com>
+
 	* sem_spark.adb (Process_Path): Do nothing on address of
 	subprogram.
 
