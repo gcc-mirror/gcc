@@ -1,3 +1,11 @@
+2019-08-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h (TARGET_OS_CPP_BUILTINS): Add asserts
+	for cpu and machine.  Factor 64/32b builtins.
+
 2019-08-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/91347
