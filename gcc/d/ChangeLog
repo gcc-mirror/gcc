@@ -1,5 +1,12 @@
 2019-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	PR d/90445
+	* d-builtins.cc (d_build_c_type_nodes): Test UINTMAX_TYPE for setting
+	uintmax_type_node.  Set signed_size_type_node as the signed_type_for
+	size_type_node.
+
+2019-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	PR d/90444
 	* d-builtins.cc (build_frontend_type): Build anonymous RECORD_TYPE
 	nodes as well, push all fields to the struct members.

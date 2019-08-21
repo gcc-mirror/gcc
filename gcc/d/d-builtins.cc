@@ -762,27 +762,25 @@ d_build_c_type_nodes (void)
     = build_pointer_type (build_qualified_type (char_type_node,
 						TYPE_QUAL_CONST));
 
-  if (strcmp (SIZE_TYPE, "unsigned int") == 0)
+  if (strcmp (UINTMAX_TYPE, "unsigned int") == 0)
     {
       intmax_type_node = integer_type_node;
       uintmax_type_node = unsigned_type_node;
-      signed_size_type_node = integer_type_node;
     }
-  else if (strcmp (SIZE_TYPE, "long unsigned int") == 0)
+  else if (strcmp (UINTMAX_TYPE, "long unsigned int") == 0)
     {
       intmax_type_node = long_integer_type_node;
       uintmax_type_node = long_unsigned_type_node;
-      signed_size_type_node = long_integer_type_node;
     }
-  else if (strcmp (SIZE_TYPE, "long long unsigned int") == 0)
+  else if (strcmp (UINTMAX_TYPE, "long long unsigned int") == 0)
     {
       intmax_type_node = long_long_integer_type_node;
       uintmax_type_node = long_long_unsigned_type_node;
-      signed_size_type_node = long_long_integer_type_node;
     }
   else
     gcc_unreachable ();
 
+  signed_size_type_node = signed_type_for (size_type_node);
   wint_type_node = unsigned_type_node;
   pid_type_node = integer_type_node;
 }
