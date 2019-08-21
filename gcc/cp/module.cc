@@ -1336,6 +1336,7 @@ public:
 #endif
       data::simple_memory.shrink (bytes.buffer);
     bytes.buffer = NULL;
+    bytes.size = 0;
   }
 
 public:
@@ -13050,7 +13051,7 @@ enum ct_bind_flags
   cbf_export = 0x1,	/* An exported decl.  */
   cbf_hidden = 0x2,	/* A hidden (friend) decl.  */
   cbf_using = 0x4,	/* A using decl.  */
-  cbf_wrapped = 0x4,  	/* ... that is wrapped.  */
+  cbf_wrapped = 0x8,  	/* ... that is wrapped.  */
 };
 
 /* The cluster must already have been sorted cia cluster_cmp.  */
@@ -13603,14 +13604,17 @@ module_state::read_cluster (unsigned snum)
 				     decls, type, visible))
 	      sec.set_overrun ();
 
-	    if (type && !sec.is_existing_mergeable (type))
+	    if (type
+		&& CP_DECL_CONTEXT (type) == ns
+		&& !sec.is_existing_mergeable (type))
 	      add_module_decl (ns, name, type);
 
 	    for (ovl_iterator iter (decls); iter; ++iter)
 	      if (!iter.using_p ())
 		{
 		  tree decl = *iter;
-		  if (!sec.is_existing_mergeable (decl))
+		  if (CP_DECL_CONTEXT (decl) == ns
+		      && !sec.is_existing_mergeable (decl))
 		    add_module_decl (ns, name, decl);
 		}
 	  }

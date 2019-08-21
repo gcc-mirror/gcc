@@ -1,5 +1,10 @@
 2019-08-21  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (elf_in::release): Reset size too.
+	(enum ct_bind_flags): Correct cbf_wrapped value.
+	(module_state::read_cluster): Usings may be unwrapped.
+
 	gcc/c-family/
 	* c.opt (Winclude-translate*): New family of options.
 	gcc/cp/
