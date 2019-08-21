@@ -1,3 +1,12 @@
+2019-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR target/91498
+	PR target/91503
+	* config/i386/i386-features.c
+	(general_scalar_chain::make_vector_copies): Copy stack temporary
+	rtx when using it multiple times.
+	(general_scalar_chain::convert_reg): Likewise.
+
 2019-08-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* function.c (assign_parm_find_stack_rtl): Use known_eq instead of ==.
