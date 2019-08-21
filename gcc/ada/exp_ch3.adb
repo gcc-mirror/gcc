@@ -5518,7 +5518,14 @@ package body Exp_Ch3 is
          --  Note: This code covers access-to-limited-interfaces because they
          --        can be used to reference tasks implementing them.
 
-         elsif Is_Limited_Class_Wide_Type (Desig_Typ)
+         --  Suppress the master creation for access types created for entry
+         --  formal parameters (parameter block component types). Seems like
+         --  suppression should be more general for compiler-generated types,
+         --  but testing Comes_From_Source, like the code above does, may be
+         --  too general in this case (affects some test output)???
+
+         elsif not Is_Param_Block_Component_Type (Ptr_Typ)
+           and then Is_Limited_Class_Wide_Type (Desig_Typ)
            and then Tasking_Allowed
          then
             Build_Class_Wide_Master (Ptr_Typ);
