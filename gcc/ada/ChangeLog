@@ -1,3 +1,11 @@
+2019-08-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.adb (Is_Discriminal): Remove extra parens.
+	(Is_Constant_Object): Simplify by reusing Ekind_In.
+	(Is_Prival): Remove extra parens.
+	* checks.adb, exp_ch4.adb, sem_ch3.adb, sem_spark.adb: Minor
+	reformattings.
+
 2019-08-21  Claire Dross  <dross@adacore.com>
 
 	* libgnat/a-cofove.ads (Vector): Add an Iterable aspect to allow

@@ -8818,7 +8818,7 @@ package body Sem_Ch3 is
 
       --  Indic can either be an N_Identifier if the subtype indication
       --  contains no constraint or an N_Subtype_Indication if the subtype
-      --  indecation has a constraint. In either case it can include an
+      --  indication has a constraint. In either case it can include an
       --  interface list.
 
       Indic := Subtype_Indication (Type_Def);
