@@ -3756,7 +3756,7 @@ public:
   {
     return get_response (state->from_loc) > 0 ? cmi_response (state) : NULL;
   }
-  bool translate_include (location_t, const char *);
+  bool translate_include (location_t, const char *path, size_t len);
 
 public:
   /* After a response that may be corked, eat blank lines until it is
@@ -4293,7 +4293,7 @@ noisy_p ()
   return true;
 }
 
-/* Set the bmi repo.  Strip trailing '/', '.' becomes NULL.  */
+/* Set the cmi repo.  Strip trailing '/', '.' becomes NULL.  */
 
 static void
 set_cmi_repo (char *r)
@@ -4304,18 +4304,19 @@ set_cmi_repo (char *r)
 
   cmi_repo = NULL;
   cmi_repo_length = 0;
-  if (r)
-    {
-      size_t len = strlen (r);
-      if (len > 1 && IS_DIR_SEPARATOR (r[len-1]))
-	r[--len] = 0;
-      if (0 != strcmp (r, "."))
-	{
-	  cmi_repo = XNEWVEC (char, len + 1);
-	  memcpy (cmi_repo, r, len + 1);
-	  cmi_repo_length = len;
-	}
-    }
+
+  if (!r)
+    return;
+
+  size_t len = strlen (r);
+  if (len > 1 && IS_DIR_SEPARATOR (r[len-1]))
+    r[--len] = 0;
+  if (0 == strcmp (r, "."))
+    return;
+
+  cmi_repo = XNEWVEC (char, len + 1);
+  memcpy (cmi_repo, r, len + 1);
+  cmi_repo_length = len;
 }
 
 /* TO is a repo-relative name.  Provide one that we may use from where
@@ -11683,6 +11684,9 @@ module_mapper::module_mapper (location_t loc, const char *option)
   timevar_start (TV_MODULE_MAPPER);
   dump () && dump ("Initializing mapper %s", option);
 
+  /* String never modified in this case.  */
+  set_cmi_repo (const_cast<char *> ("gcm.cache"));
+
   int err = 0;
   const char *errmsg = NULL;
 
@@ -12500,11 +12504,10 @@ module_mapper::export_done (const module_state *state)
 
 /* Include translation.  Query if PATH should be turned into a header
    import.  Return false if it should remain a #include, true
-   otherwise.  If READER is non-NULL, do the translation by pushing a
-   buffer containing the translation text (ending in two \n's).  */
+   otherwise.  */
 
 bool
-module_mapper::translate_include (location_t loc, const char *path)
+module_mapper::translate_include (location_t loc, const char *path, size_t len)
 {
   bool xlate = false;
 
@@ -12529,9 +12532,7 @@ module_mapper::translate_include (location_t loc, const char *path)
     }
   else if (mapper->is_live ())
     {
-      /* Sadly we intern ever include name.  Adjusting to not do this
-	 will pessimize modul lookup from the parser.  */
-      tree name = get_identifier (path);
+      tree name = build_string (len, path);
 
       xlate = get_module_slot (name, NULL, false, false) != NULL;
     }
@@ -17121,11 +17122,11 @@ module_cpp_deferred_macro (cpp_reader *reader, location_t loc,
   return module_state::deferred_macro (reader, loc, node);
 }
 
-/* NAME & LEN are a preprocessed header name, including the
+/* NAME & LEN are a preprocessed header name, possibly including the
    surrounding "" or <> characters.  Return the raw string name of the
    module to which it refers.  This will be an absolute path, or begin
-   with ., so it is immediately distinguishable from a (non-header
-   unit) module name.  If SEARCH is true, ask the preprocessor to
+   with ./, so it is immediately distinguishable from a (non-header
+   unit) module name.  If READER is non-null, ask the preprocessor to
    locate the header to which it refers using the appropriate include
    path.  Note that we do never do \ processing of the string, as that
    matches the preprocessor's behaviour.  */
@@ -17135,50 +17136,52 @@ canonicalize_header_name (cpp_reader *reader, location_t loc, bool unquoted,
 			  const char *str, size_t &len_r)
 {
   size_t len = len_r;
-  gcc_checking_assert (unquoted
-		       || (len >= 2
-			   && (reader || str[0] == '"')
-			   && ((str[0] == '<' && str[len-1] == '>')
-			       || (str[0] == '"' && str[len-1] == '"'))));
   static char *buf = 0;
   static size_t alloc = 0;
 
-  if (reader)
+  if (!unquoted)
     {
-      if (len >= alloc)
-	{
-	  alloc = len * 2;
-	  buf = XRESIZEVEC (char, buf, alloc);
-	}
-      len -= 2;
-      memcpy (buf, str + 1, len);
-      buf[len] = 0;
-      if (const char *hdr
-	  = cpp_find_header_unit (reader, buf, str[0] == '<', loc))
-	{
-	  len = strlen (hdr);
-	  str = hdr;
-	}
-    }
-  else if (!unquoted)
-    {
+      gcc_checking_assert (len >= 2
+			   && ((reader && str[0] == '<' && str[len-1] == '>')
+			       || (str[0] == '"' && str[len-1] == '"')));
       str += 1;
       len -= 2;
     }
 
-  /* Non-searched paths, should have already gone through this check,
-     but perhaps the user did something strange with preprocessed source?  */
-  if (!IS_ABSOLUTE_PATH (str)
-      && !(str[0] == '.' && IS_DIR_SEPARATOR (str[1])))
+  if (reader)
     {
+      gcc_assert (!unquoted);
+
       if (len >= alloc)
 	{
-	  alloc = len * 2;
+	  alloc = len + 1;
 	  buf = XRESIZEVEC (char, buf, alloc);
 	}
+      memcpy (buf, str, len);
+      buf[len] = 0;
+
+      if (const char *hdr
+	  = cpp_find_header_unit (reader, buf, str[-1] == '<', loc))
+	{
+	  len = strlen (hdr);
+	  str = hdr;
+	}
+      else
+	str = buf;
+    }
+
+  if (!(str[0] == '.' ? IS_DIR_SEPARATOR (str[1]) : IS_ABSOLUTE_PATH (str)))
+    {
+      /* Prepend './'  */
+      if (len + 3 > alloc)
+	{
+	  alloc = len + 3;
+	  buf = XRESIZEVEC (char, buf, alloc);
+	}
+
       buf[0] = '.';
       buf[1] = DIR_SEPARATOR;
-      memcpy (buf + 2, str, len);
+      memmove (buf + 2, str, len);
       len += 2;
       buf[len] = 0;
       str = buf;
@@ -17222,7 +17225,7 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
     {
       size_t len = strlen (path);
       path = canonicalize_header_name (NULL, loc, true, path, len);
-      res = mapper->translate_include (loc, path);
+      res = mapper->translate_include (loc, path, len);
     }
 
   dump (dumper::MAPPER) && dump (res ? "Translating include to import"

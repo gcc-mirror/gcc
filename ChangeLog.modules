@@ -1,3 +1,16 @@
+2019-08-21  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (set_cmi_repo): NULL means default init.
+	(module_mapper::module_mapper): Default init repo.
+	(module_mapper::translate_include): Add LEN parm, create STRING.
+	(canonicalize_header_name): Correctly prepend './'.
+	gcc/testsuite/
+	* g++.dg/modules/ben-1.map: Add $root.
+	* g++.dg/modules/gc-2.map: Add $root.
+	* g++.dg/modules/map-1.map: Add $root.
+	* g++.dg/modules/map-1_b.map: Add $root.
+
 2019-08-20  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
