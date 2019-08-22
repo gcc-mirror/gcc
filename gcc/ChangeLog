@@ -1,6 +1,13 @@
 2019-08-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
+	2018-12-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/darwin.h (TARGET_ASM_OUTPUT_IDENT): New.
+
+2019-08-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
 	2019-05-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/i386/darwin.h (ASM_OUTPUT_MAX_SKIP_ALIGN): New.
