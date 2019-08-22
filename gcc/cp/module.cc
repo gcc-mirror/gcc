@@ -2509,7 +2509,7 @@ public:
     void add_mergeable (depset *);
     void add_mergeable_horcrux (depset *);
     depset *add_dependency (tree decl, entity_kind, bool is_import = false);
-    depset *add_redirect (depset *target);
+    depset *add_partial_redirect (depset *partial);
     depset *add_clone (tree clone, tree target);
     bool add_binding (tree ns, tree value);
     bool add_writables (tree ns, bitmap partitions);
@@ -10336,199 +10336,200 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
     /* Only (potentially) unnameable imports need to be so marked.  */
     gcc_checking_assert (ek == EK_UNNAMED || ek == EK_SPECIALIZATION
 			 || ek == EK_MAYBE_SPEC);
+  if (ek == EK_UNNAMED)
+    /* Unnameable things are not namespace scope  */
+    gcc_checking_assert (TREE_CODE (CP_DECL_CONTEXT (decl)) != NAMESPACE_DECL);
 
-  depset *dep = NULL;
-  if (depset **slot = entity_slot (decl, !is_for_mergeable ()))
+  depset **slot = entity_slot (decl, !is_for_mergeable ());
+  if (!slot)
+    return NULL;
+  depset *dep = *slot;
+  bool binding_p = current && current->is_binding ();
+
+  if (!dep)
     {
-      bool binding_p = current && current->is_binding ();
-      dep = *slot;
-
-      if (is_for_mergeable ())
-	/* Bindings are never mergeable.  */
-	gcc_checking_assert (!binding_p);
-      if (ek == EK_UNNAMED)
-	/* Unnameable things are not namespace scope  */
-	gcc_checking_assert (TREE_CODE (CP_DECL_CONTEXT (decl))
-			     != NAMESPACE_DECL);
-      if (!dep)
+      bool has_def = (!is_for_mergeable ()
+		      && ek != EK_USING
+		      && has_definition (decl));
+      bool maybe_spec = ek == EK_MAYBE_SPEC;
+      if (maybe_spec)
 	{
-	  bool has_def = (!is_for_mergeable ()
-			  && ek != EK_USING
-			  && has_definition (decl));
-	  bool maybe_spec = ek == EK_MAYBE_SPEC;
-	  if (maybe_spec)
-	    {
-	      /* We were probing, and didn't find anything.  Therefore
-		 this is a regular-ish decl, but mark it as a pseudo
-		 spec so we know to write a definition.  */
-	      ek = EK_DECL;
-	      dump (dumper::DEPEND)
-		&& dump ("Pseudo specialization %N discovered", decl);
-	    }
-
-	  /* The only OVERLOADS we should see are USING decls from
-	     bindings.  */
-	  *slot = dep = make_entity (decl, ek, has_def);
-
-	  if (TREE_CODE (decl) == TEMPLATE_DECL)
-	    /* If we add a template, its result better not also be
-	       present.  */
-	    gcc_checking_assert
-	      (!entity_slot (DECL_TEMPLATE_RESULT (decl), false));
-
-	  if (binding_p)
-	    /* Dependency of a namespace binding.  */;
-	  else if (ek == EK_NAMESPACE)
-	    /* Dependency is a namespace.  */;
-	  else if (maybe_spec)
-	    {
-	      /* Remember this has some specialization properties.  */
-	      dep->set_flag_bit<DB_PSEUDO_SPEC_BIT> ();
-	      if (is_import)
-		dep->set_flag_bit<DB_IMPORTED_BIT> ();
-	    }
-	  else if (ek == EK_UNNAMED
-		   || ek == EK_SPECIALIZATION)
-	    {
-	      /* Dependency is unnameable.  We do not have to apply
-		 the below checks to this entity, because we can only
-		 refer to it by depending on its containing entity,
-		 and that entity will have the below checks applied to
-		 it.  */
-	      if (is_import)
-		/* Note this entity came from elsewhere.  */
-		dep->set_flag_bit<DB_IMPORTED_BIT> ();
-	    }
-	  else
-	    {
-	      tree ctx = CP_DECL_CONTEXT (decl);
-	      gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
-	      tree not_tmpl = STRIP_TEMPLATE (decl);
-
-	      if (!TREE_PUBLIC (ctx))
-		/* Member of internal namespace.  */
-		dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
-	      else if (TREE_CODE (not_tmpl) != TYPE_DECL
-		       && TREE_CODE (not_tmpl) != CONST_DECL
-		       && DECL_THIS_STATIC (not_tmpl))
-		{
-		  /* An internal decl.  In global module permit
-		     extern "C" static inline functions
-		     ... because.  */
-		  if (!(header_module_p ()
-			|| (TREE_CODE (not_tmpl) == FUNCTION_DECL
-			    && DECL_DECLARED_INLINE_P (not_tmpl)
-#if 0
-			    // FIXME: Disregard language linkage, because our
-			    // std lib is borked.  Templates cannot
-			    // have "C" linkage!
-			    && DECL_EXTERN_C_P (not_tmpl)
-#endif
-			    && true)))
-		    dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
-		}
-	      else if (DECL_IMPLICIT_TYPEDEF_P (decl)
-		       && IDENTIFIER_ANON_P (DECL_NAME (decl)))
-		/* No linkage or linkage from typedef name (which
-		   cannot be internal, because that's from the linkage
-		   of the context.  */;
-	      else
-		{
-		  // FIXME: We have to walk the non-emitted entities
-		  // in the module's purview too.  Discussing this in
-		  // CWG, it is weird.
-		  /* A reachable global module fragment entity.  Add
-		     it to its scope's binding depset.  */
-		  gcc_checking_assert (MAYBE_DECL_MODULE_OWNER (decl)
-				       == MODULE_NONE);
-		  depset **bslot = binding_slot (ctx, DECL_NAME (decl), true);
-		  depset *bdep = *bslot;
-		  if (!bdep)
-		    *bslot = bdep = make_binding (ctx, DECL_NAME (decl));
-		  bdep->deps.safe_push (dep);
-		  dep->deps.safe_push (bdep);
-		  dep->set_flag_bit<DB_GLOBAL_BIT> ();
-		  dump (dumper::DEPEND)
-		    && dump ("Reachable GMF %N added", decl);
-		}
-	    }
-
-	  if (ek == depset::EK_SPECIALIZATION
-	      || (ek == depset::EK_DECL
-		  && TREE_PUBLIC (CP_DECL_CONTEXT (decl))))
-	    /* Decl that could be declared in multiple CMIs (even
-	       module-owned declarations could be defined in a
-	       partition.  */
-	    dep->set_flag_bit<DB_MERGEABLE_BIT> ();
-
-	  if (!dep->is_import ())
-	    worklist.safe_push (dep);
-	}
-      else if (ek == EK_MAYBE_SPEC)
-	/* It's whatever we already found.  */
-	ek = dep->get_entity_kind ();
-      else if (ek == EK_DECL && dep->get_entity_kind () == EK_SPECIALIZATION)
-	{
-	  /* decl is a friend of a template instantiation.  These
-	     have some of the properties of regular decls.  */
+	  /* We were probing, and didn't find anything.  Therefore
+	     this is a regular-ish decl, but mark it as a pseudo
+	     spec so we know to write a definition.  */
+	  ek = EK_DECL;
 	  dump (dumper::DEPEND)
-	    && dump ("Template friend %N discovered", decl);
+	    && dump ("Pseudo specialization %N discovered", decl);
+	}
+
+      /* The only OVERLOADS we should see are USING decls from
+	 bindings.  */
+      *slot = dep = make_entity (decl, ek, has_def);
+
+      if (TREE_CODE (decl) == TEMPLATE_DECL)
+	/* If we add a template, its result better not also be
+	   present.  */
+	gcc_checking_assert
+	  (!entity_slot (DECL_TEMPLATE_RESULT (decl), false));
+
+      if (binding_p)
+	/* Dependency of a namespace binding.  */;
+      else if (ek == EK_NAMESPACE)
+	/* Dependency is a namespace.  */;
+      else if (maybe_spec)
+	{
+	  /* Remember this has some specialization properties.  */
+	  dep->set_flag_bit<DB_PSEUDO_SPEC_BIT> ();
+	  if (is_import)
+	    dep->set_flag_bit<DB_IMPORTED_BIT> ();
+	}
+      else if (ek == EK_UNNAMED
+	       || ek == EK_SPECIALIZATION)
+	{
+	  /* Dependency is unnameable.  We do not have to apply
+	     the below checks to this entity, because we can only
+	     refer to it by depending on its containing entity,
+	     and that entity will have the below checks applied to
+	     it.  */
+	  if (is_import)
+	    /* Note this entity came from elsewhere.  */
+	    dep->set_flag_bit<DB_IMPORTED_BIT> ();
 	}
       else
-	/* Make sure we have consistent categorization.  */
-	gcc_checking_assert (dep->get_entity_kind () == ek);
-
-      dump (dumper::DEPEND)
-	&& dump ("%s on %s %C:%N added", binding_p ? "Binding" : "Dependency",
-		 dep->entity_kind_name (), TREE_CODE (decl), decl);
-
-      if (current
-	  && dep->get_entity_kind () != EK_NAMESPACE
-	  && dep->get_entity_kind () != EK_REDIRECT)
 	{
-	  current->deps.safe_push (dep);
-	  if (current->is_binding ())
-	    /* Binding and contents are mutually dependent.  */
-	    dep->deps.safe_push (current);
+	  tree ctx = CP_DECL_CONTEXT (decl);
+	  gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
+	  tree not_tmpl = STRIP_TEMPLATE (decl);
+
+	  if (!TREE_PUBLIC (ctx))
+	    /* Member of internal namespace.  */
+	    dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
+	  else if (TREE_CODE (not_tmpl) != TYPE_DECL
+		   && TREE_CODE (not_tmpl) != CONST_DECL
+		   && DECL_THIS_STATIC (not_tmpl))
+	    {
+	      /* An internal decl.  In global module permit
+		 extern "C" static inline functions
+		 ... because.  */
+	      if (!(header_module_p ()
+		    || (TREE_CODE (not_tmpl) == FUNCTION_DECL
+			&& DECL_DECLARED_INLINE_P (not_tmpl)
+#if 0
+			// FIXME: Disregard language linkage, because our
+			// std lib is borked.  Templates cannot
+			// have "C" linkage!
+			&& DECL_EXTERN_C_P (not_tmpl)
+#endif
+			&& true)))
+		dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
+	    }
+	  else if (DECL_IMPLICIT_TYPEDEF_P (decl)
+		   && IDENTIFIER_ANON_P (DECL_NAME (decl)))
+	    /* No linkage or linkage from typedef name (which
+	       cannot be internal, because that's from the linkage
+	       of the context.  */;
 	  else
 	    {
-	      if (dep->get_entity_kind () == EK_UNNAMED
-		  || dep->get_entity_kind () == EK_SPECIALIZATION)
-		current->set_flag_bit<DB_REFS_UNNAMED_BIT> ();
-
-	      if (dep->is_internal ())
-		current->set_flag_bit<DB_REFS_INTERNAL_BIT> ();
-
-	      if (current->get_entity_kind () == EK_USING
-		  && !OVL_USING_P (current->get_entity ())
-		  && DECL_IMPLICIT_TYPEDEF_P (decl)
-		  && TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
-		{
-		  /* CURRENT is an unwrapped using-decl and DECL is an
-		     enum's implicit typedef.  Is CURRENT a member of
-		     the enum?  */
-		  tree c_decl = OVL_FUNCTION (current->get_entity ());
-
-		  if (TREE_CODE (c_decl) == CONST_DECL
-		      && DECL_CONTEXT (c_decl) == TREE_TYPE (decl)
-		      && !is_for_mergeable ())
-		    /* Make DECL depend on CURRENT.  */
-		    dep->deps.safe_push (current);
-		}
-	    }
-
-	  if (dep->is_unreached ())
-	    {
-	      /* The dependency is reachable now.  */
-	      reached_unreached = true;
+	      // FIXME: We have to walk the non-emitted entities
+	      // in the module's purview too.  Discussing this in
+	      // CWG, it is weird.
+	      /* A reachable global module fragment entity.  Add
+		 it to its scope's binding depset.  */
+	      gcc_checking_assert (MAYBE_DECL_MODULE_OWNER (decl)
+				   == MODULE_NONE);
+	      depset **bslot = binding_slot (ctx, DECL_NAME (decl), true);
+	      depset *bdep = *bslot;
+	      if (!bdep)
+		*bslot = bdep = make_binding (ctx, DECL_NAME (decl));
+	      bdep->deps.safe_push (dep);
+	      dep->deps.safe_push (bdep);
+	      dep->set_flag_bit<DB_GLOBAL_BIT> ();
 	      dump (dumper::DEPEND)
-		&& dump ("Reaching unreached %s %C:%N", dep->entity_kind_name (),
-			 TREE_CODE (dep->get_entity ()), dep->get_entity ());
-	      dep->clear_flag_bit<DB_UNREACHED_BIT> ();
+		&& dump ("Reachable GMF %N added", decl);
 	    }
 	}
+
+      if (ek == EK_SPECIALIZATION
+	  || (ek == EK_DECL
+	      && TREE_PUBLIC (CP_DECL_CONTEXT (decl))))
+	/* Decl that could be declared in multiple CMIs (even
+	   module-owned declarations could be defined in a
+	   partition.  */
+	dep->set_flag_bit<DB_MERGEABLE_BIT> ();
+
+      if (!dep->is_import ())
+	worklist.safe_push (dep);
     }
- 
+  else if (ek == EK_MAYBE_SPEC)
+    {
+      /* It's whatever we already found.  */
+      ek = dep->get_entity_kind ();
+      if (ek == EK_REDIRECT)
+	{
+	  dump (dumper::DEPEND)
+	    && dump ("Redirect for %C:%N found", TREE_CODE (decl), decl);
+	  return dep;
+	}
+    }
+  else if (ek == EK_DECL && dep->get_entity_kind () == EK_SPECIALIZATION)
+    {
+      /* decl is a friend of a template instantiation.  These
+	 have some of the properties of regular decls.  */
+      dump (dumper::DEPEND)
+	&& dump ("Template friend %N discovered", decl);
+    }
+  else
+    /* Make sure we have consistent categorization.  */
+    gcc_checking_assert (dep->get_entity_kind () == ek);
+
+  dump (dumper::DEPEND)
+    && dump ("%s on %s %C:%N added", binding_p ? "Binding" : "Dependency",
+	     dep->entity_kind_name (), TREE_CODE (decl), decl);
+
+  if (current && ek != EK_NAMESPACE)
+    {
+      current->deps.safe_push (dep);
+      if (current->is_binding ())
+	/* Binding and contents are mutually dependent.  */
+	dep->deps.safe_push (current);
+      else
+	{
+	  if (dep->get_entity_kind () == EK_UNNAMED
+	      || dep->get_entity_kind () == EK_SPECIALIZATION)
+	    current->set_flag_bit<DB_REFS_UNNAMED_BIT> ();
+
+	  if (dep->is_internal ())
+	    current->set_flag_bit<DB_REFS_INTERNAL_BIT> ();
+
+	  if (current->get_entity_kind () == EK_USING
+	      && !OVL_USING_P (current->get_entity ())
+	      && DECL_IMPLICIT_TYPEDEF_P (decl)
+	      && TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
+	    {
+	      /* CURRENT is an unwrapped using-decl and DECL is an
+		 enum's implicit typedef.  Is CURRENT a member of
+		 the enum?  */
+	      tree c_decl = OVL_FUNCTION (current->get_entity ());
+
+	      if (TREE_CODE (c_decl) == CONST_DECL
+		  && DECL_CONTEXT (c_decl) == TREE_TYPE (decl)
+		  && !is_for_mergeable ())
+		/* Make DECL depend on CURRENT.  */
+		dep->deps.safe_push (current);
+	    }
+	}
+
+      if (dep->is_unreached ())
+	{
+	  /* The dependency is reachable now.  */
+	  reached_unreached = true;
+	  dump (dumper::DEPEND)
+	    && dump ("Reaching unreached %s %C:%N", dep->entity_kind_name (),
+		     TREE_CODE (dep->get_entity ()), dep->get_entity ());
+	  dep->clear_flag_bit<DB_UNREACHED_BIT> ();
+	}
+    }
+
   return dep;
 }
 
@@ -10647,7 +10648,7 @@ writable_cmp (const void *a_, const void *b_)
 bool
 depset::hash::add_writables (tree ns, bitmap partitions)
 {
-  dump () && dump ("Finding writables in %N", ns);
+  dump () && dump ("Looking for writables in %N", ns);
   dump.indent ();
 
   unsigned count = 0;
@@ -10775,21 +10776,26 @@ specialization_cmp (const void *a_, const void *b_)
   return DECL_UID (a) < DECL_UID (b) ? -1 : +1;
 }
 
-/* Insert a redirect for the DECL_TEMPLATE_RESULT, as we're unable to
-   go from there to here (without repeating the above instantiation
-   search for *every* MAYBE_SPEC dependency add.  */
+/* Insert a redirect for the DECL_TEMPLATE_RESULT of a partial
+   specialization, as we're unable to go from there to here (without
+   repeating the DCL_TEMPLATE_SPECIALIZATIONS walk for *every*
+   MAYBE_SPEC dependency add.  */
 
 depset *
-depset::hash::add_redirect (depset *target)
+depset::hash::add_partial_redirect (depset *partial)
 {
-  target->set_flag_bit<DB_PARTIAL_BIT> ();
+  partial->set_flag_bit<DB_PARTIAL_BIT> ();
 
-  tree inner = DECL_TEMPLATE_RESULT (target->get_entity ());
+  tree inner = DECL_TEMPLATE_RESULT (partial->get_entity ());
   depset *redirect = make_entity (inner, EK_REDIRECT);
+
+  /* Redirects are never reached -- always snap to their target.  */
+  redirect->set_flag_bit<DB_UNREACHED_BIT> ();
+
   depset **slot = entity_slot (inner, true);
   gcc_checking_assert (!*slot);
   *slot = redirect;
-  redirect->deps.safe_push (target);
+  redirect->deps.safe_push (partial);
 
   return redirect;
 }
@@ -10928,7 +10934,6 @@ depset::hash::add_specializations (bool decl_p, bitmap partitions)
     have_spec:;
 #endif
 
-
       unsigned owner = MAYBE_DECL_MODULE_OWNER (spec);
       if (owner >= MODULE_IMPORT_BASE)
 	owner = (*modules)[owner]->remap;
@@ -10952,7 +10957,7 @@ depset::hash::add_specializations (bool decl_p, bitmap partitions)
 	  if (needs_reaching)
 	    dep->set_flag_bit<DB_UNREACHED_BIT> ();
 	  if (is_partial)
-	    add_redirect (dep);
+	    add_partial_redirect (dep);
 	}
     }
   data.second.release ();
@@ -11069,7 +11074,7 @@ depset::hash::add_mergeable (depset *mergeable)
   dep->deps.safe_push (mergeable);
 
   if (mergeable->is_partial ())
-    add_redirect (dep);
+    add_partial_redirect (dep);
 }
 
 void
@@ -11088,7 +11093,7 @@ depset::hash::add_mergeable_horcrux (depset *unnamed)
       dep = make_entity (decl, unnamed->get_entity_kind ());
       *slot = dep;
       if (unnamed->is_partial ())
-	add_redirect (dep);
+	add_partial_redirect (dep);
     }
 }
 

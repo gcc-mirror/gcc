@@ -1,6 +1,13 @@
 2019-08-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::hash::add_dependency): We should never find a
+	redirect.
+	(depset::hash::add_redirect): Rename to ...
+	(depset::hash::add_partial_redirect): ... here. Mark the redirect
+	as unreachable.
+
+	gcc/cp/
 	* module.cc (MOD_SNAME_PFX): Resurrect initial dot.
 	(elf_out::strtab_write): Elide global namespace.
 
