@@ -21,6 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RANGE_OP_H
 #define GCC_RANGE_OP_H
 
+#if USE_IRANGE
+#define value_range_base irange
+#define value_range_storage irange_storage
+#endif
+
 // This class is implemented for each kind of operator that is supported by
 // the range generator.  It serves dual purposes.
 //
@@ -48,8 +53,9 @@ class range_operator
 public:
   // Set a range based on this operation between 2 operands.
   // TYPE is the expected type of the range.
-  virtual irange fold_range (tree type, const irange &lh,
-			     const irange &rh) const;
+  virtual value_range_base fold_range (tree type,
+				       const value_range_base &lh,
+				       const value_range_base &rh) const;
 
   // Set the range for op? in the general case. LHS is the range for
   // the LHS of the expression, OP[12]is the range for the other
@@ -58,19 +64,29 @@ public:
   // Return TRUE if the operation is performed and a valid range is available.
   // ie   [LHS] = ??? + OP2
   // is re-formed as  R = [LHS] - OP2.
-  virtual bool op1_range (irange &r, tree type, const irange &lhs,
-			  const irange &op2) const;
-  virtual bool op2_range (irange &r, tree type, const irange &lhs,
-			  const irange &op1) const;
+  virtual bool op1_range (value_range_base &r, tree type,
+			  const value_range_base &lhs,
+			  const value_range_base &op2) const;
+  virtual bool op2_range (value_range_base &r, tree type,
+			  const value_range_base &lhs,
+			  const value_range_base &op1) const;
 protected:
   // Perform this operation on 2 sub ranges, return the result as a
   // range of TYPE.
-  virtual irange wi_fold (tree type, const wide_int &lh_lb, const wide_int &lh_ub,
-			  const wide_int &rh_lb, const wide_int &rh_ub) const;
+  virtual value_range_base wi_fold (tree type,
+				    const wide_int &lh_lb,
+				    const wide_int &lh_ub,
+				    const wide_int &rh_lb,
+				    const wide_int &rh_ub) const;
 };
 
 extern range_operator *range_op_handler(enum tree_code code, tree type);
 
-extern void range_cast (irange &, tree type);
+extern void range_cast (value_range_base &, tree type);
+
+#if USE_IRANGE
+#undef value_range_base
+#undef value_range_storage
+#endif
 
 #endif // GCC_RANGE_OP_H

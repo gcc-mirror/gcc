@@ -260,7 +260,7 @@ extern int num_passes;
 } /* end of namespace selftest.  */
 
 /* This is outside of the selftest namespace because it's a friend of
-   class irange.  */
+   value_range_base.  */
 extern void range_tests ();
 
 /* Macros for writing tests.  */
