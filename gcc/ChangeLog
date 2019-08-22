@@ -1,3 +1,39 @@
+2019-08-22  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm.md (split and/eor/ior): Remove Neon check.
+	(split not): Add DImode not splitter.
+	(anddi3): Remove pattern.
+	(anddi3_insn): Likewise.
+	(anddi_zesidi_di): Likewise.
+	(anddi_sesdi_di): Likewise.
+	(anddi_notdi_di): Likewise.
+	(anddi_notzesidi_di): Likewise.
+	(anddi_notsesidi_di): Likewise.
+	(iordi3): Likewise.
+	(iordi3_insn): Likewise.
+	(iordi_zesidi_di): Likewise.
+	(iordi_sesidi_di): Likewise.
+	(xordi3): Likewise.
+	(xordi3_insn): Likewise.
+	(xordi_sesidi_di): Likewise.
+	(xordi_zesidi_di): Likewise.
+	(one_cmpldi2): Likewise.
+	(one_cmpldi2_insn): Likewise.
+	* config/arm/constraints.md: Remove De, Df, Dg constraints.
+	* config/arm/iwmmxt.md (iwmmxt_iordi3): Remove general register
+	alternative.
+	(iwmmxt_xordi3): Likewise.
+	(iwmmxt_anddi3): Likewise.
+	* config/arm/neon.md (orndi3_neon): Remove pattern.
+	(anddi_notdi_di): Likewise.
+	* config/arm/predicates.md (arm_anddi_operand_neon): Remove.
+	(arm_iordi_operand_neon): Likewise.
+	(arm_xordi_operand_neon): Likewise.
+	* config/arm/thumb2.md(iordi_notdi_di): Remove pattern.
+	(iordi_notzesidi_di): Likewise.
+	(iordi_notdi_zesidi): Likewise.
+	(iordi_notsesidi_di): Likewise.
+
 2019-08-22  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/arm.md (iorsi3_compare0): Add alternative for 16-bit thumb
