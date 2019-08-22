@@ -527,32 +527,6 @@
     (const_string "neon_add<q>")))]
 )
 
-(define_insn "adddi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand" "=w,?&r,?&r,?w,?&r,?&r,?&r")
-        (plus:DI (match_operand:DI 1 "s_register_operand" "%w,0,0,w,r,0,r")
-                 (match_operand:DI 2 "arm_adddi_operand"     "w,r,0,w,r,Dd,Dd")))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_NEON"
-{
-  switch (which_alternative)
-    {
-    case 0: /* fall through */
-    case 3: return "vadd.i64\t%P0, %P1, %P2";
-    case 1: return "#";
-    case 2: return "#";
-    case 4: return "#";
-    case 5: return "#";
-    case 6: return "#";
-    default: gcc_unreachable ();
-    }
-}
-  [(set_attr "type" "neon_add,multiple,multiple,neon_add,\
-		     multiple,multiple,multiple")
-   (set_attr "conds" "*,clob,clob,*,clob,clob,clob")
-   (set_attr "length" "*,8,8,*,8,8,8")
-   (set_attr "arch" "neon_for_64bits,*,*,avoid_neon_for_64bits,*,*,*")]
-)
-
 (define_insn "*sub<mode>3_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
         (minus:VDQ (match_operand:VDQ 1 "s_register_operand" "w")
@@ -585,29 +559,6 @@
  "TARGET_NEON_FP16INST"
  "vsub.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
  [(set_attr "type" "neon_sub<q>")]
-)
-
-(define_insn "subdi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand" "=w,?&r,?&r,?&r,?w")
-        (minus:DI (match_operand:DI 1 "s_register_operand" "w,0,r,0,w")
-                  (match_operand:DI 2 "s_register_operand" "w,r,0,0,w")))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_NEON"
-{
-  switch (which_alternative)
-    {
-    case 0: /* fall through */
-    case 4: return "vsub.i64\t%P0, %P1, %P2";
-    case 1: /* fall through */ 
-    case 2: /* fall through */
-    case 3: return  "subs\\t%Q0, %Q1, %Q2\;sbc\\t%R0, %R1, %R2";
-    default: gcc_unreachable ();
-    }
-}
-  [(set_attr "type" "neon_sub,multiple,multiple,multiple,neon_sub")
-   (set_attr "conds" "*,clob,clob,clob,*")
-   (set_attr "length" "*,8,8,8,*")
-   (set_attr "arch" "neon_for_64bits,*,*,*,avoid_neon_for_64bits")]
 )
 
 (define_insn "*mul<mode>3_neon"
@@ -884,46 +835,6 @@
       (if_then_else (match_test "<Is_float_mode>")
                     (const_string "neon_fp_neg_s<q>")
                     (const_string "neon_neg<q>")))]
-)
-
-(define_insn "negdi2_neon"
-  [(set (match_operand:DI 0 "s_register_operand"	 "=&w, w,r,&r")
-	(neg:DI (match_operand:DI 1 "s_register_operand" "  w, w,0, r")))
-   (clobber (match_scratch:DI 2				 "= X,&w,X, X"))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_NEON"
-  "#"
-  [(set_attr "length" "8")
-   (set_attr "type" "multiple")]
-)
-
-; Split negdi2_neon for vfp registers
-(define_split
-  [(set (match_operand:DI 0 "s_register_operand" "")
-	(neg:DI (match_operand:DI 1 "s_register_operand" "")))
-   (clobber (match_scratch:DI 2 ""))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_NEON && reload_completed && IS_VFP_REGNUM (REGNO (operands[0]))"
-  [(set (match_dup 2) (const_int 0))
-   (parallel [(set (match_dup 0) (minus:DI (match_dup 2) (match_dup 1)))
-	      (clobber (reg:CC CC_REGNUM))])]
-  {
-    if (!REG_P (operands[2]))
-      operands[2] = operands[0];
-  }
-)
-
-; Split negdi2_neon for core registers
-(define_split
-  [(set (match_operand:DI 0 "s_register_operand" "")
-	(neg:DI (match_operand:DI 1 "s_register_operand" "")))
-   (clobber (match_scratch:DI 2 ""))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_32BIT && reload_completed
-   && arm_general_register_operand (operands[0], DImode)"
-  [(parallel [(set (match_dup 0) (neg:DI (match_dup 1)))
-	      (clobber (reg:CC CC_REGNUM))])]
-  ""
 )
 
 (define_insn "<absneg_str><mode>2"

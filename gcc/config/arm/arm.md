@@ -125,7 +125,7 @@
 ; arm_arch6.  "v6t2" for Thumb-2 with arm_arch6 and "v8mb" for ARMv8-M
 ; Baseline.  This attribute is used to compute attribute "enabled",
 ; use type "any" to enable an alternative in all cases.
-(define_attr "arch" "any,a,t,32,t1,t2,v6,nov6,v6t2,v8mb,neon_for_64bits,avoid_neon_for_64bits,iwmmxt,iwmmxt2,armv6_or_vfpv3,neon"
+(define_attr "arch" "any,a,t,32,t1,t2,v6,nov6,v6t2,v8mb,iwmmxt,iwmmxt2,armv6_or_vfpv3,neon"
   (const_string "any"))
 
 (define_attr "arch_enabled" "no,yes"
@@ -166,16 +166,6 @@
 
 	 (and (eq_attr "arch" "v8mb")
 	      (match_test "TARGET_THUMB1 && arm_arch8"))
-	 (const_string "yes")
-
-	 (and (eq_attr "arch" "avoid_neon_for_64bits")
-	      (match_test "TARGET_NEON")
-	      (not (match_test "TARGET_PREFER_NEON_64BITS")))
-	 (const_string "yes")
-
-	 (and (eq_attr "arch" "neon_for_64bits")
-	      (match_test "TARGET_NEON")
-	      (match_test "TARGET_PREFER_NEON_64BITS"))
 	 (const_string "yes")
 
 	 (and (eq_attr "arch" "iwmmxt2")
@@ -450,13 +440,8 @@
     (clobber (reg:CC CC_REGNUM))])]
   "TARGET_EITHER"
   "
-  if (TARGET_THUMB1)
-    {
-      if (!REG_P (operands[1]))
-        operands[1] = force_reg (DImode, operands[1]);
-      if (!REG_P (operands[2]))
-        operands[2] = force_reg (DImode, operands[2]);
-     }
+  if (TARGET_THUMB1 && !REG_P (operands[2]))
+    operands[2] = force_reg (DImode, operands[2]);
   "
 )
 
@@ -465,9 +450,9 @@
 	(plus:DI (match_operand:DI 1 "arm_general_register_operand" "%0, 0, r, 0, r")
 		 (match_operand:DI 2 "arm_general_adddi_operand"    "r,  0, r, Dd, Dd")))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_32BIT && !TARGET_NEON"
+  "TARGET_32BIT"
   "#"
-  "TARGET_32BIT && ((!TARGET_NEON && !TARGET_IWMMXT) || reload_completed)"
+  "TARGET_32BIT"
   [(parallel [(set (reg:CC_C CC_REGNUM)
 		   (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
 				 (match_dup 1)))
@@ -1304,24 +1289,16 @@
     (clobber (reg:CC CC_REGNUM))])]
   "TARGET_EITHER"
   "
-  if (TARGET_THUMB1)
-    {
-      if (!REG_P (operands[1]))
-        operands[1] = force_reg (DImode, operands[1]);
-      if (!REG_P (operands[2]))
-        operands[2] = force_reg (DImode, operands[2]);
-     }	
-  "
-)
+")
 
 (define_insn_and_split "*arm_subdi3"
   [(set (match_operand:DI           0 "arm_general_register_operand" "=&r,&r,&r")
 	(minus:DI (match_operand:DI 1 "arm_general_register_operand" "0,r,0")
 		  (match_operand:DI 2 "arm_general_register_operand" "r,0,0")))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_32BIT && !TARGET_NEON"
+  "TARGET_32BIT"
   "#"  ; "subs\\t%Q0, %Q1, %Q2\;sbc\\t%R0, %R1, %R2"
-  "&& (!TARGET_IWMMXT || reload_completed)"
+  "TARGET_32BIT"
   [(parallel [(set (reg:CC CC_REGNUM)
 		   (compare:CC (match_dup 1) (match_dup 2)))
 	      (set (match_dup 0) (minus:SI (match_dup 1) (match_dup 2)))])
@@ -4184,13 +4161,6 @@
 	 (neg:DI (match_operand:DI 1 "s_register_operand")))
     (clobber (reg:CC CC_REGNUM))])]
   "TARGET_EITHER"
-  {
-    if (TARGET_NEON)
-      {
-        emit_insn (gen_negdi2_neon (operands[0], operands[1]));
-	DONE;
-      }
-  }
 )
 
 ;; The constraints here are to prevent a *partial* overlap (where %Q0 == %R1).
@@ -4202,7 +4172,7 @@
   "TARGET_32BIT"
   "#"	; rsbs %Q0, %Q1, #0; rsc %R0, %R1, #0	       (ARM)
 	; negs %Q0, %Q1    ; sbc %R0, %R1, %R1, lsl #1 (Thumb-2)
-  "&& reload_completed"
+  "TARGET_32BIT"
   [(parallel [(set (reg:CC CC_REGNUM)
 		   (compare:CC (const_int 0) (match_dup 1)))
 	      (set (match_dup 0) (minus:SI (const_int 0) (match_dup 1)))])
@@ -4734,25 +4704,17 @@
 (define_split
   [(set (match_operand:DI 0 "s_register_operand" "")
         (zero_extend:DI (match_operand 1 "nonimmediate_operand" "")))]
-  "TARGET_32BIT && reload_completed && !IS_VFP_REGNUM (REGNO (operands[0]))"
+  "TARGET_32BIT"
   [(set (match_dup 0) (match_dup 1))]
 {
   rtx lo_part = gen_lowpart (SImode, operands[0]);
   machine_mode src_mode = GET_MODE (operands[1]);
 
-  if (REG_P (operands[0])
-      && !reg_overlap_mentioned_p (operands[0], operands[1]))
-    emit_clobber (operands[0]);
-  if (!REG_P (lo_part) || src_mode != SImode
-      || !rtx_equal_p (lo_part, operands[1]))
-    {
-      if (src_mode == SImode)
-        emit_move_insn (lo_part, operands[1]);
-      else
-        emit_insn (gen_rtx_SET (lo_part,
-				gen_rtx_ZERO_EXTEND (SImode, operands[1])));
-      operands[1] = lo_part;
-    }
+  if (src_mode == SImode)
+    emit_move_insn (lo_part, operands[1]);
+  else
+    emit_insn (gen_rtx_SET (lo_part,
+			    gen_rtx_ZERO_EXTEND (SImode, operands[1])));
   operands[0] = gen_highpart (SImode, operands[0]);
   operands[1] = const0_rtx;
 })
@@ -4760,26 +4722,18 @@
 (define_split
   [(set (match_operand:DI 0 "s_register_operand" "")
         (sign_extend:DI (match_operand 1 "nonimmediate_operand" "")))]
-  "TARGET_32BIT && reload_completed && !IS_VFP_REGNUM (REGNO (operands[0]))"
+  "TARGET_32BIT"
   [(set (match_dup 0) (ashiftrt:SI (match_dup 1) (const_int 31)))]
 {
   rtx lo_part = gen_lowpart (SImode, operands[0]);
   machine_mode src_mode = GET_MODE (operands[1]);
 
-  if (REG_P (operands[0])
-      && !reg_overlap_mentioned_p (operands[0], operands[1]))
-    emit_clobber (operands[0]);
-
-  if (!REG_P (lo_part) || src_mode != SImode
-      || !rtx_equal_p (lo_part, operands[1]))
-    {
-      if (src_mode == SImode)
-        emit_move_insn (lo_part, operands[1]);
-      else
-        emit_insn (gen_rtx_SET (lo_part,
-				gen_rtx_SIGN_EXTEND (SImode, operands[1])));
-      operands[1] = lo_part;
-    }
+  if (src_mode == SImode)
+    emit_move_insn (lo_part, operands[1]);
+  else
+    emit_insn (gen_rtx_SET (lo_part,
+			    gen_rtx_SIGN_EXTEND (SImode, operands[1])));
+  operands[1] = lo_part;
   operands[0] = gen_highpart (SImode, operands[0]);
 })
 
