@@ -1,3 +1,8 @@
+2019-08-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* intrinsic.c (add_subroutines): ERRMSG is INTENT(INOUT) in
+	co_broadcast, co_max, co_min, co_reduce, and  co_sum.
+
 2019-08-20  Mark Eggleston  <mark.eggleston@codethink.com>
 
 	PR fortran/89236
