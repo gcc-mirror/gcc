@@ -1,5 +1,15 @@
 2019-08-22  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/arm/arm.md (neon_for_64bits): Remove.
+	(avoid_neon_for_64bits): Remove.
+	(arm_adddi3): Always split early.
+	(arm_subdi3): Always split early.
+	(negdi2): Remove Neon expansion.
+	(split zero_extend): Split before reload.
+	(split sign_extend): Split before reload.
+
+2019-08-22  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/arm/iterators.md (qhs_extenddi_cstr): Update.
 	(qhs_extenddi_cstr): Likewise.
 	* config/arm/arm.md (ashldi3): Always expand early.
