@@ -1,3 +1,11 @@
+2019-08-22  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91490
+	* c-c++-common/Warray-bounds-7.c: New test.
+	* gcc.dg/Warray-bounds-39.c: Expect either -Warray-bounds or
+	-Wstringop-overflow.
+	* gcc.dg/strlenopt-78.c: New test.
+
 2019-08-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/minmax-4.c: Add -mno-stackrealign to dg-options.

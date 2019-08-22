@@ -759,11 +759,13 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
       dest_align = get_pointer_alignment (dest);
       if (tree_fits_uhwi_p (len)
 	  && compare_tree_int (len, MOVE_MAX) <= 0
-	  /* ???  Don't transform copies from strings with known length this
-	     confuses the tree-ssa-strlen.c.  This doesn't handle
-	     the case in gcc.dg/strlenopt-8.c which is XFAILed for that
-	     reason.  */
-	  && !c_strlen (src, 2)
+	  /* FIXME: Don't transform copies from strings with known length.
+	     Until GCC 9 this prevented a case in gcc.dg/strlenopt-8.c
+	     from being handled, and the case was XFAILed for that reason.
+	     Now that it is handled and the XFAIL removed, as soon as other
+	     strlenopt tests that rely on it for passing are adjusted, this
+	     hack can be removed.  */
+	  && !c_strlen (src, 1)
 	  && !((tmp_str = c_getstr (src, &tmp_len)) != NULL
 	       && memchr (tmp_str, 0, tmp_len) == NULL))
 	{
@@ -6969,12 +6971,15 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
 				      from_decl, suboff);
 	}
     }
-  /* Memory not explicitly mentioned in constructor is 0.  */
-  return type ? build_zero_cst (type) : NULL_TREE;
+
+  if (!type)
+    return NULL_TREE;
+
+  return build_zero_cst (type);
 }
 
 /* CTOR is value initializing memory.  Fold a reference of TYPE and
-   bit size POLY_SIZE to the memory at bit POLY_OFFSET.  When SIZE
+   bit size POLY_SIZE to the memory at bit POLY_OFFSET.  When POLY_SIZE
    is zero, attempt to fold a reference to the entire subobject
    which OFFSET refers to.  This is used when folding accesses to
    string members of aggregates.  When non-null, set *SUBOFF to

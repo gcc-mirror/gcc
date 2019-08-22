@@ -8747,9 +8747,12 @@ maybe_add_include_fixit (rich_location *richloc, const char *header,
    the converted string on success or the original ctor on failure.  */
 
 static tree
-braced_list_to_string (tree type, tree ctor)
+braced_list_to_string (tree type, tree ctor, bool member)
 {
-  if (!tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
+  /* Ignore non-members with unknown size like arrays with unspecified
+     bound.  */
+  tree typesize = TYPE_SIZE_UNIT (type);
+  if (!member && !tree_fits_uhwi_p (typesize))
     return ctor;
 
   /* If the array has an explicit bound, use it to constrain the size
@@ -8757,10 +8760,17 @@ braced_list_to_string (tree type, tree ctor)
      as long as implied by the index of the last zero specified via
      a designator, as in:
        const char a[] = { [7] = 0 };  */
-  unsigned HOST_WIDE_INT maxelts = tree_to_uhwi (TYPE_SIZE_UNIT (type));
-  maxelts /= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type)));
+  unsigned HOST_WIDE_INT maxelts;
+  if (typesize)
+    {
+      maxelts = tree_to_uhwi (typesize);
+      maxelts /= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type)));
+    }
+  else
+    maxelts = HOST_WIDE_INT_M1U;
 
-  /* Avoid converting initializers for zero-length arrays.  */
+  /* Avoid converting initializers for zero-length arrays (but do
+     create them for flexible array members).  */
   if (!maxelts)
     return ctor;
 
@@ -8818,7 +8828,7 @@ braced_list_to_string (tree type, tree ctor)
     }
 
   /* Append a nul string termination.  */
-  if (str.length () < maxelts)
+  if (maxelts != HOST_WIDE_INT_M1U && str.length () < maxelts)
     str.safe_push (0);
 
   /* Build a STRING_CST with the same type as the array.  */
@@ -8827,14 +8837,12 @@ braced_list_to_string (tree type, tree ctor)
   return res;
 }
 
-/* Attempt to convert a CTOR containing braced array initializer lists
-   for array TYPE into one containing STRING_CSTs, for convenience and
-   efficiency.  Recurse for arrays of arrays and member initializers.
-   Return the converted CTOR or STRING_CST on success or the original
-   CTOR otherwise.  */
+/* Implementation of the two-argument braced_lists_to_string withe
+   the same arguments plus MEMBER which is set for struct members
+   to allow initializers for flexible member arrays.  */
 
-tree
-braced_lists_to_strings (tree type, tree ctor)
+static tree
+braced_lists_to_strings (tree type, tree ctor, bool member)
 {
   if (TREE_CODE (ctor) != CONSTRUCTOR)
     return ctor;
@@ -8858,22 +8866,36 @@ braced_lists_to_strings (tree type, tree ctor)
 
   if ((TREE_CODE (ttp) == ARRAY_TYPE || TREE_CODE (ttp) == INTEGER_TYPE)
       && TYPE_STRING_FLAG (ttp))
-    return braced_list_to_string (type, ctor);
+    return braced_list_to_string (type, ctor, member);
 
   code = TREE_CODE (ttp);
-  if (code == ARRAY_TYPE || code == RECORD_TYPE)
+  if (code == ARRAY_TYPE || RECORD_OR_UNION_TYPE_P (ttp))
     {
+      bool rec = RECORD_OR_UNION_TYPE_P (ttp);
+
       /* Handle array of arrays or struct member initializers.  */
       tree val;
       unsigned HOST_WIDE_INT idx;
       FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), idx, val)
 	{
-	  val = braced_lists_to_strings (ttp, val);
+	  val = braced_lists_to_strings (ttp, val, rec);
 	  CONSTRUCTOR_ELT (ctor, idx)->value = val;
 	}
     }
 
   return ctor;
+}
+
+/* Attempt to convert a CTOR containing braced array initializer lists
+   for array TYPE into one containing STRING_CSTs, for convenience and
+   efficiency.  Recurse for arrays of arrays and member initializers.
+   Return the converted CTOR or STRING_CST on success or the original
+   CTOR otherwise.  */
+
+tree
+braced_lists_to_strings (tree type, tree ctor)
+{
+  return braced_lists_to_strings (type, ctor, false);
 }
 
 #include "gt-c-family-c-common.h"

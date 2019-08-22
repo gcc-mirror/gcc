@@ -1,3 +1,17 @@
+2019-08-22  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91490
+	* builtins.c (c_strlen): Rename argument and introduce new local.
+	Set no-warning bit on original argument.
+	* expr.c (string_constant): Pass argument type to fold_ctor_reference.
+	Fold empty and zero constructors into empty strings.
+	* gimple-fold.c (fold_nonarray_ctor_reference): Return a STRING_CST
+	for missing initializers.
+	* tree.c (build_string_literal): Handle optional argument.
+	* tree.h (build_string_literal): Add defaulted argument.
+	* gimple-ssa-warn-restrict.c (maybe_diag_access_bounds): Check
+	no-warning bit on original expression.
+
 2019-08-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/91481
