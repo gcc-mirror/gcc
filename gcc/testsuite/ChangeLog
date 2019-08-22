@@ -1,3 +1,11 @@
+2019-08-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/minmax-4.c: Add -mno-stackrealign to dg-options.
+	* gcc.target/i386/minmax-5.c: Likewise.
+	* gcc.target/i386/minmax-6.c: Likewise.
+	* gcc.target/i386/minmax-7.c: Likewise.
+	* gcc.target/i386/pr91154.c: Likewise.
+
 2019-08-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-c++-common/dump-ada-spec-15.c: Check that the parameters are named.
