@@ -1,4 +1,8 @@
 2019-08-22  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/aarch64/aarch64-sve.md (vcond_mask): Add "@".
+
+2019-08-22  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 	    Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/88839
