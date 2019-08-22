@@ -1,3 +1,7 @@
+2019-08-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/dump-ada-spec-15.c: Check that the parameters are named.
+
 2019-08-22  Kyrylo Tkachov <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/acle/crc_hf_1.c: New test.
