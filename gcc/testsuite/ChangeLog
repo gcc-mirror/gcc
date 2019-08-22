@@ -1,3 +1,8 @@
+2019-08-22  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x4.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x4.c: New test.
+
 2019-08-22  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 	    Richard Sandiford  <richard.sandiford@arm.com>
 
