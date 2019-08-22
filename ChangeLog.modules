@@ -1,3 +1,9 @@
+2019-08-22  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (MOD_SNAME_PFX): Resurrect initial dot.
+	(elf_out::strtab_write): Elide global namespace.
+
 2019-08-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

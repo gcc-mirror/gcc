@@ -282,8 +282,8 @@ int module_dump_id;
 /* We have a special module owner.  */
 #define MODULE_UNKNOWN (unsigned short)(~0U)    /* Not yet known.  */
 
-/* Prefix for section names.  (Not system-defined, so no leading dot.)  */
-#define MOD_SNAME_PFX "gnu.c++"
+/* Prefix for section names.  */
+#define MOD_SNAME_PFX ".gnu.c++"
 
 /* Format a version for user consumption.  */
 
@@ -1946,18 +1946,16 @@ elf_out::strtab_write (const char *s, unsigned l)
 void
 elf_out::strtab_write (tree decl, int inner)
 {
-  if (decl != global_namespace)
-    {
-      if (TYPE_P (decl))
-	decl = TYPE_NAME (decl);
+  tree ctx = CP_DECL_CONTEXT (decl);
+  if (TYPE_P (ctx))
+    ctx = TYPE_STUB_DECL (ctx);
+  if (ctx != global_namespace)
+    strtab_write (ctx, -1);
 
-      strtab_write (CP_DECL_CONTEXT (decl), -1);
-
-      tree name = DECL_NAME (decl);
-      if (!name)
-	name = DECL_ASSEMBLER_NAME_RAW (decl);
-      strtab_write (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
-    }
+  tree name = DECL_NAME (decl);
+  if (!name)
+    name = DECL_ASSEMBLER_NAME_RAW (decl);
+  strtab_write (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
 
   if (inner)
     strtab_write (&"::{}"[inner+1], 2);
