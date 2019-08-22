@@ -1,5 +1,22 @@
 2019-08-22  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/arm/iterators.md (qhs_extenddi_cstr): Update.
+	(qhs_extenddi_cstr): Likewise.
+	* config/arm/arm.md (ashldi3): Always expand early.
+	(ashlsi3): Likewise.
+	(ashrsi3): Likewise.
+	(zero_extend<mode>di2): Remove Neon variants.
+	(extend<mode>di2): Likewise.
+	* config/arm/neon.md (ashldi3_neon_noclobber): Remove.
+	(signed_shift_di3_neon): Likewise.
+	(unsigned_shift_di3_neon): Likewise.
+	(ashrdi3_neon_imm_noclobber): Likewise.
+	(lshrdi3_neon_imm_noclobber): Likewise.
+	(<shift>di3_neon): Likewise.
+	(split extend): Remove DI extend split patterns.
+
+2019-08-22  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/arm/arm.md (split and/eor/ior): Remove Neon check.
 	(split not): Add DImode not splitter.
 	(anddi3): Remove pattern.

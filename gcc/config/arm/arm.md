@@ -3621,44 +3621,14 @@
 (define_expand "ashldi3"
   [(set (match_operand:DI            0 "s_register_operand")
         (ashift:DI (match_operand:DI 1 "s_register_operand")
-                   (match_operand:SI 2 "general_operand")))]
+                   (match_operand:SI 2 "reg_or_int_operand")))]
   "TARGET_32BIT"
   "
-  if (TARGET_NEON)
-    {
-      /* Delay the decision whether to use NEON or core-regs until
-	 register allocation.  */
-      emit_insn (gen_ashldi3_neon (operands[0], operands[1], operands[2]));
-      DONE;
-    }
-  else
-    {
-      /* Only the NEON case can handle in-memory shift counts.  */
-      if (!reg_or_int_operand (operands[2], SImode))
-        operands[2] = force_reg (SImode, operands[2]);
-    }
-
-  if (!CONST_INT_P (operands[2]) && TARGET_REALLY_IWMMXT)
-    ; /* No special preparation statements; expand pattern as above.  */
-  else
-    {
-      rtx scratch1, scratch2;
-
-      /* Ideally we should use iwmmxt here if we could know that operands[1]
-         ends up already living in an iwmmxt register. Otherwise it's
-         cheaper to have the alternate code being generated than moving
-         values to iwmmxt regs and back.  */
-
-      /* Expand operation using core-registers.
-	 'FAIL' would achieve the same thing, but this is a bit smarter.  */
-      scratch1 = gen_reg_rtx (SImode);
-      scratch2 = gen_reg_rtx (SImode);
-      arm_emit_coreregs_64bit_shift (ASHIFT, operands[0], operands[1],
-				     operands[2], scratch1, scratch2);
-      DONE;
-    }
-  "
-)
+  arm_emit_coreregs_64bit_shift (ASHIFT, operands[0], operands[1],
+				 operands[2], gen_reg_rtx (SImode),
+				 gen_reg_rtx (SImode));
+  DONE;
+")
 
 (define_expand "ashlsi3"
   [(set (match_operand:SI            0 "s_register_operand")
@@ -3681,35 +3651,11 @@
                      (match_operand:SI 2 "reg_or_int_operand")))]
   "TARGET_32BIT"
   "
-  if (TARGET_NEON)
-    {
-      /* Delay the decision whether to use NEON or core-regs until
-	 register allocation.  */
-      emit_insn (gen_ashrdi3_neon (operands[0], operands[1], operands[2]));
-      DONE;
-    }
-
-  if (!CONST_INT_P (operands[2]) && TARGET_REALLY_IWMMXT)
-    ; /* No special preparation statements; expand pattern as above.  */
-  else
-    {
-      rtx scratch1, scratch2;
-
-      /* Ideally we should use iwmmxt here if we could know that operands[1]
-         ends up already living in an iwmmxt register. Otherwise it's
-         cheaper to have the alternate code being generated than moving
-         values to iwmmxt regs and back.  */
-
-      /* Expand operation using core-registers.
-	 'FAIL' would achieve the same thing, but this is a bit smarter.  */
-      scratch1 = gen_reg_rtx (SImode);
-      scratch2 = gen_reg_rtx (SImode);
-      arm_emit_coreregs_64bit_shift (ASHIFTRT, operands[0], operands[1],
-				     operands[2], scratch1, scratch2);
-      DONE;
-    }
-  "
-)
+  arm_emit_coreregs_64bit_shift (ASHIFTRT, operands[0], operands[1],
+				 operands[2], gen_reg_rtx (SImode),
+				 gen_reg_rtx (SImode));
+  DONE;
+")
 
 (define_expand "ashrsi3"
   [(set (match_operand:SI              0 "s_register_operand")
@@ -3729,35 +3675,11 @@
                      (match_operand:SI 2 "reg_or_int_operand")))]
   "TARGET_32BIT"
   "
-  if (TARGET_NEON)
-    {
-      /* Delay the decision whether to use NEON or core-regs until
-	 register allocation.  */
-      emit_insn (gen_lshrdi3_neon (operands[0], operands[1], operands[2]));
-      DONE;
-    }
-
-  if (!CONST_INT_P (operands[2]) && TARGET_REALLY_IWMMXT)
-    ; /* No special preparation statements; expand pattern as above.  */
-  else
-    {
-      rtx scratch1, scratch2;
-
-      /* Ideally we should use iwmmxt here if we could know that operands[1]
-         ends up already living in an iwmmxt register. Otherwise it's
-         cheaper to have the alternate code being generated than moving
-         values to iwmmxt regs and back.  */
-
-      /* Expand operation using core-registers.
-	 'FAIL' would achieve the same thing, but this is a bit smarter.  */
-      scratch1 = gen_reg_rtx (SImode);
-      scratch2 = gen_reg_rtx (SImode);
-      arm_emit_coreregs_64bit_shift (LSHIFTRT, operands[0], operands[1],
-				     operands[2], scratch1, scratch2);
-      DONE;
-    }
-  "
-)
+  arm_emit_coreregs_64bit_shift (LSHIFTRT, operands[0], operands[1],
+				 operands[2], gen_reg_rtx (SImode),
+				 gen_reg_rtx (SImode));
+  DONE;
+")
 
 (define_expand "lshrsi3"
   [(set (match_operand:SI              0 "s_register_operand")
@@ -4782,30 +4704,30 @@
 ;; Zero and sign extension instructions.
 
 (define_insn "zero_extend<mode>di2"
-  [(set (match_operand:DI 0 "s_register_operand" "=w,r,?r,w")
+  [(set (match_operand:DI 0 "s_register_operand" "=r,?r")
         (zero_extend:DI (match_operand:QHSI 1 "<qhs_zextenddi_op>"
 					    "<qhs_zextenddi_cstr>")))]
   "TARGET_32BIT <qhs_zextenddi_cond>"
   "#"
-  [(set_attr "length" "8,4,8,8")
-   (set_attr "arch" "neon_for_64bits,*,*,avoid_neon_for_64bits")
+  [(set_attr "length" "4,8")
+   (set_attr "arch" "*,*")
    (set_attr "ce_count" "2")
    (set_attr "predicable" "yes")
-   (set_attr "type" "multiple,mov_reg,multiple,multiple")]
+   (set_attr "type" "mov_reg,multiple")]
 )
 
 (define_insn "extend<mode>di2"
-  [(set (match_operand:DI 0 "s_register_operand" "=w,r,?r,?r,w")
+  [(set (match_operand:DI 0 "s_register_operand" "=r,?r,?r")
         (sign_extend:DI (match_operand:QHSI 1 "<qhs_extenddi_op>"
 					    "<qhs_extenddi_cstr>")))]
   "TARGET_32BIT <qhs_sextenddi_cond>"
   "#"
-  [(set_attr "length" "8,4,8,8,8")
+  [(set_attr "length" "4,8,8")
    (set_attr "ce_count" "2")
    (set_attr "shift" "1")
    (set_attr "predicable" "yes")
-   (set_attr "arch" "neon_for_64bits,*,a,t,avoid_neon_for_64bits")
-   (set_attr "type" "multiple,mov_reg,multiple,multiple,multiple")]
+   (set_attr "arch" "*,a,t")
+   (set_attr "type" "mov_reg,multiple,multiple")]
 )
 
 ;; Splits for all extensions to DImode
