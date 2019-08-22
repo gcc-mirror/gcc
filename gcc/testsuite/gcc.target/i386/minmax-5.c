@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mstv -mavx512vl" } */
+/* { dg-options "-O2 -mstv -mno-stackrealign -mavx512vl" } */
 
 #include "minmax-3.c"
 

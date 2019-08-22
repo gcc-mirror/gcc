@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=haswell" } */
+/* { dg-options "-O2 -march=haswell -mno-stackrealign" } */
 
 extern int numBins;
 extern int binOffst;
