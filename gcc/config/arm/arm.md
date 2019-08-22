@@ -3339,27 +3339,33 @@
 
 (define_insn "*iorsi3_compare0"
   [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV (ior:SI (match_operand:SI 1 "s_register_operand" "%r,r")
-				 (match_operand:SI 2 "arm_rhs_operand" "I,r"))
-			 (const_int 0)))
-   (set (match_operand:SI 0 "s_register_operand" "=r,r")
+	(compare:CC_NOOV
+	 (ior:SI (match_operand:SI 1 "s_register_operand" "%r,0,r")
+		 (match_operand:SI 2 "arm_rhs_operand" "I,l,r"))
+	 (const_int 0)))
+   (set (match_operand:SI 0 "s_register_operand" "=r,l,r")
 	(ior:SI (match_dup 1) (match_dup 2)))]
   "TARGET_32BIT"
   "orrs%?\\t%0, %1, %2"
   [(set_attr "conds" "set")
-   (set_attr "type" "logics_imm,logics_reg")]
+   (set_attr "arch" "*,t2,*")
+   (set_attr "length" "4,2,4")
+   (set_attr "type" "logics_imm,logics_reg,logics_reg")]
 )
 
 (define_insn "*iorsi3_compare0_scratch"
   [(set (reg:CC_NOOV CC_REGNUM)
-	(compare:CC_NOOV (ior:SI (match_operand:SI 1 "s_register_operand" "%r,r")
-				 (match_operand:SI 2 "arm_rhs_operand" "I,r"))
-			 (const_int 0)))
-   (clobber (match_scratch:SI 0 "=r,r"))]
+	(compare:CC_NOOV
+	 (ior:SI (match_operand:SI 1 "s_register_operand" "%r,0,r")
+		 (match_operand:SI 2 "arm_rhs_operand" "I,l,r"))
+	 (const_int 0)))
+   (clobber (match_scratch:SI 0 "=r,l,r"))]
   "TARGET_32BIT"
   "orrs%?\\t%0, %1, %2"
   [(set_attr "conds" "set")
-   (set_attr "type" "logics_imm,logics_reg")]
+   (set_attr "arch" "*,t2,*")
+   (set_attr "length" "4,2,4")
+   (set_attr "type" "logics_imm,logics_reg,logics_reg")]
 )
 
 (define_expand "xordi3"
