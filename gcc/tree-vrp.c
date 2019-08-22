@@ -6746,20 +6746,6 @@ value_range_base::upper_bound () const
   return upper_bound (pairs - 1);
 }
 
-void
-value_range_base::cast (tree typ)
-{
-  value_range_base tem;
-  enum ranges_mode save = flag_ranges_mode;
-  /* Avoid infinite recursion in the ranger vs vrp checking code.  */
-  flag_ranges_mode = RANGES_VRP;
-  /* At some point we should inline all of the CONVERT_EXPR code from
-     extract_range_from_unary_expr here.  */
-  extract_range_from_unary_expr (&tem, CONVERT_EXPR, typ, this, type ());
-  flag_ranges_mode = save;
-  *this = tem;
-}
-
 /* Return TRUE if range contains INTEGER_CST.  */
 
 bool

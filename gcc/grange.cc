@@ -198,7 +198,7 @@ imagpart::lhs_adjust (irange &r, const gimple *s) const
 	    case IFN_MUL_OVERFLOW:
 	    case IFN_ATOMIC_COMPARE_EXCHANGE:
 	      r.set_varying (boolean_type_node);
-	      r.cast (type);
+	      range_cast (r, type);
 	      return true;
 	    default:
 	      r.set_varying (type);

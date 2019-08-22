@@ -63,6 +63,20 @@ min_limit (const_tree type)
   return wi::min_value (TYPE_PRECISION (type) , TYPE_SIGN (type));
 }
 
+// If the range of either op1 or op2 is undefined, set the result to
+// undefined and return true.
+
+inline bool
+empty_range_check (irange &r, const irange &op1, const irange & op2)
+{
+  if (op1.undefined_p () || op2.undefined_p ())
+    {
+      r.set_undefined ();
+      return true;
+    }
+  else
+    return false;
+}
 
 // Default wide_int fold operation returns [min , max].
 irange
@@ -82,7 +96,7 @@ range_operator::fold_range (tree type, const irange &lh,
 			    const irange &rh) const
 {
   irange r;
-  if (lh.undefined_p () || rh.undefined_p ())
+  if (empty_range_check (r, lh, rh))
     return r;
 
   for (unsigned x = 0; x < lh.num_pairs (); ++x)
@@ -122,21 +136,6 @@ range_operator::op2_range (irange &r ATTRIBUTE_UNUSED,
 
 // -------------------------------------------------------------------------
 // -------------------------------------------------------------------------
-
-// If the range of either op1 or op2 is undefined, set the result to
-// undefined and return true.  
-
-inline bool
-empty_range_check (irange &r, const irange &op1, const irange & op2)
-{
-  if (op1.undefined_p () || op2.undefined_p ())
-    {
-      r.set_undefined ();
-      return true;
-    }
-  else
-    return false;
-}
 
 // Called when there is either an overflow OR an underflow... which means 
 // an anti range must be created to compensate.   This does not cover
@@ -1208,8 +1207,7 @@ public:
 } op_convert;
 
 
-/* Return the range of lh converted to the type of rh:
-   r = (type_of(rh)) lh.  */
+/* Return LH converted to the type of RH.  */
 
 irange
 operator_cast::fold_range (tree type ATTRIBUTE_UNUSED,
@@ -1219,17 +1217,27 @@ operator_cast::fold_range (tree type ATTRIBUTE_UNUSED,
   if (empty_range_check (r, lh, rh))
     return r;
 
-  if (lh.type () != rh.type ())
+  /* RH should only contain the type to convert to.  */
+  gcc_checking_assert (rh.varying_p ());
+
+  tree inner_type = lh.type ();
+  tree outer_type = rh.type ();
+  gcc_checking_assert (types_compatible_p (outer_type, type));
+  for (unsigned x = 0; x < lh.num_pairs (); ++x)
     {
-      /* Handle conversion so they become the same type.  */
-      r = lh;
-      r.cast (rh.type ());
-      r.intersect (rh);
+      wide_int lh_lb = lh.lower_bound (x);
+      wide_int lh_ub = lh.upper_bound (x);
+      wide_int min, max;
+      if (wide_int_range_convert (min, max,
+				  TYPE_SIGN (inner_type),
+				  TYPE_PRECISION (inner_type),
+				  TYPE_SIGN (outer_type),
+				  TYPE_PRECISION (outer_type),
+				  lh_lb, lh_ub))
+	accumulate_possibly_reversed_range (r, type, min, max);
+      else
+	return irange (type);
     }
-  else
-    /* If they are the same type, the result should be the intersection of
-       the two ranges.  */
-    r = range_intersect (lh, rh);
   return r;
 }
 
@@ -1248,14 +1256,14 @@ operator_cast::op1_range (irange &r, tree type,
       /* If we've been passed an actual value for the RHS rather than the type
 	 see if it fits the LHS, and if so, then we can allow it.  */
       r = op2;
-      r.cast (lhs_type);
-      r.cast (type);
+      r = fold_range (lhs_type, r, irange (lhs_type));
+      r = fold_range (type, r, irange (type));
       if (r == op2)
         {
 	  /* We know the value of the RHS fits in the LHS type, so convert the
 	     left hand side and remove any values that arent in OP2.  */
 	  r = lhs;
-	  r.cast (type);
+	  r = fold_range (type, r, irange (type));
 	  r.intersect (op2);
 	  return true;
 	}
@@ -1294,7 +1302,7 @@ operator_cast::op1_range (irange &r, tree type,
     {
       /* Cast the range of the RHS to the type of the LHS. */
       irange op_type (type);
-      op_type.cast (lhs_type);
+      op_type = fold_range (lhs_type, op_type, irange (lhs_type));
 
       /* Intersect this with the LHS range will produce the RHS range.  */
       r = range_intersect (lhs, op_type);
@@ -1303,7 +1311,7 @@ operator_cast::op1_range (irange &r, tree type,
     r = lhs;
 
   /* Cast the calculated range to the type of the RHS.  */
-  r.cast (type);
+  r = fold_range (type, r, irange (type));
   return true;
 }
 
@@ -2199,7 +2207,11 @@ range_op_handler (enum tree_code code, tree type)
   return integral_tree_table[code];
 }
 
+/* Cast the range in R to TYPE.  */
 
-
-
-
+void
+range_cast (irange &r, tree type)
+{
+  range_operator *op = range_op_handler (CONVERT_EXPR, type);
+  r = op->fold_range (type, r, irange (type));
+}

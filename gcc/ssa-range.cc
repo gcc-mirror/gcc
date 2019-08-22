@@ -189,11 +189,11 @@ switch_edge_manager::calc_switch_ranges (gswitch *sw)
 	high = low;
 
       irange def_case_range (VR_ANTI_RANGE, low, high);
-      def_case_range.cast (type);
+      range_cast (def_case_range, type);
       default_slot->intersect (def_case_range);
 
       irange case_range (low, high);
-      case_range.cast (type);
+      range_cast (case_range, type);
       irange *&slot = m_edge_table->get_or_insert (e, &existed);
       if (!existed)
         {
@@ -436,7 +436,7 @@ ssa_ranger::range_of_stmt (irange &r, gimple *s, tree name)
       if (r.undefined_p ())
 	return true;
       if (name && TREE_TYPE (name) != r.type ())
-        r.cast (TREE_TYPE (name));
+        range_cast (r, TREE_TYPE (name));
       return true;
     }
   return false;

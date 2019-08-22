@@ -71,4 +71,6 @@ protected:
 
 extern range_operator *range_op_handler(enum tree_code code, tree type);
 
+extern void range_cast (irange &, tree type);
+
 #endif // GCC_RANGE_OP_H

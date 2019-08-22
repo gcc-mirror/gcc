@@ -83,8 +83,6 @@ class irange
 
   tree type () const;
 
-  void cast (tree type);
-
   bool varying_p () const;
   bool undefined_p () const;
   bool zero_p () const;

@@ -82,7 +82,6 @@ public:
   static const unsigned int m_max_pairs = 2;
   static bool supports_ssa_p (tree ssa);
   static bool supports_p (tree expr);
-  void cast (tree);
   bool contains_p (tree) const;
   unsigned num_pairs () const;
   wide_int lower_bound (unsigned = 0) const;
