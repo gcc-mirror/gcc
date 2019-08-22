@@ -1,3 +1,11 @@
+2019-08-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-05-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_file_end): Use switch_to_section ()
+	instead of direct output of the asm.
+
 2019-08-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/91347
