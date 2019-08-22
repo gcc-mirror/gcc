@@ -2198,19 +2198,17 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "")
 
-;; Boolean and,ior,xor insns
 
-;; Split up double word logical operations
-
-;; Split up simple DImode logical operations.  Simply perform the logical
+;; Split DImode and, ior, xor operations.  Simply perform the logical
 ;; operation on the upper and lower halves of the registers.
+;; This is needed for atomic operations in arm_split_atomic_op.
+;; Avoid splitting IWMMXT instructions.
 (define_split
   [(set (match_operand:DI 0 "s_register_operand" "")
 	(match_operator:DI 6 "logical_binary_operator"
 	  [(match_operand:DI 1 "s_register_operand" "")
 	   (match_operand:DI 2 "s_register_operand" "")]))]
   "TARGET_32BIT && reload_completed
-   && ! (TARGET_NEON && IS_VFP_REGNUM (REGNO (operands[0])))
    && ! IS_IWMMXT_REGNUM (REGNO (operands[0]))"
   [(set (match_dup 0) (match_op_dup:SI 6 [(match_dup 1) (match_dup 2)]))
    (set (match_dup 3) (match_op_dup:SI 6 [(match_dup 4) (match_dup 5)]))]
@@ -2225,167 +2223,21 @@
   }"
 )
 
+;; Split DImode not (needed for atomic operations in arm_split_atomic_op).
+;; Unconditionally split since there is no SIMD DImode NOT pattern.
 (define_split
-  [(set (match_operand:DI 0 "s_register_operand" "")
-	(match_operator:DI 6 "logical_binary_operator"
-	  [(sign_extend:DI (match_operand:SI 2 "s_register_operand" ""))
-	   (match_operand:DI 1 "s_register_operand" "")]))]
-  "TARGET_32BIT && reload_completed"
-  [(set (match_dup 0) (match_op_dup:SI 6 [(match_dup 1) (match_dup 2)]))
-   (set (match_dup 3) (match_op_dup:SI 6
-			[(ashiftrt:SI (match_dup 2) (const_int 31))
-			 (match_dup 4)]))]
-  "
-  {
-    operands[3] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[4] = gen_highpart (SImode, operands[1]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-    operands[5] = gen_highpart (SImode, operands[2]);
-    operands[2] = gen_lowpart (SImode, operands[2]);
-  }"
-)
-
-;; The zero extend of operand 2 means we can just copy the high part of
-;; operand1 into operand0.
-(define_split
-  [(set (match_operand:DI 0 "s_register_operand" "")
-	(ior:DI
-	  (zero_extend:DI (match_operand:SI 2 "s_register_operand" ""))
-	  (match_operand:DI 1 "s_register_operand" "")))]
-  "TARGET_32BIT && operands[0] != operands[1] && reload_completed"
-  [(set (match_dup 0) (ior:SI (match_dup 1) (match_dup 2)))
-   (set (match_dup 3) (match_dup 4))]
-  "
-  {
-    operands[4] = gen_highpart (SImode, operands[1]);
-    operands[3] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-  }"
-)
-
-;; The zero extend of operand 2 means we can just copy the high part of
-;; operand1 into operand0.
-(define_split
-  [(set (match_operand:DI 0 "s_register_operand" "")
-	(xor:DI
-	  (zero_extend:DI (match_operand:SI 2 "s_register_operand" ""))
-	  (match_operand:DI 1 "s_register_operand" "")))]
-  "TARGET_32BIT && operands[0] != operands[1] && reload_completed"
-  [(set (match_dup 0) (xor:SI (match_dup 1) (match_dup 2)))
-   (set (match_dup 3) (match_dup 4))]
-  "
-  {
-    operands[4] = gen_highpart (SImode, operands[1]);
-    operands[3] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-  }"
-)
-
-(define_expand "anddi3"
-  [(set (match_operand:DI         0 "s_register_operand")
-	(and:DI (match_operand:DI 1 "s_register_operand")
-		(match_operand:DI 2 "neon_inv_logic_op2")))]
+  [(set (match_operand:DI 0 "s_register_operand")
+	(not:DI (match_operand:DI 1 "s_register_operand")))]
   "TARGET_32BIT"
-  "
-  if (!TARGET_NEON && !TARGET_IWMMXT)
-    {
-      rtx low  = simplify_gen_binary (AND, SImode,
-				      gen_lowpart (SImode, operands[1]),
-				      gen_lowpart (SImode, operands[2]));
-      rtx high = simplify_gen_binary (AND, SImode,
-				      gen_highpart (SImode, operands[1]),
-				      gen_highpart_mode (SImode, DImode,
-							 operands[2]));
-
-      emit_insn (gen_rtx_SET (gen_lowpart (SImode, operands[0]), low));
-      emit_insn (gen_rtx_SET (gen_highpart (SImode, operands[0]), high));
-
-      DONE;
-    }
-  /* Otherwise expand pattern as above.  */
-  "
-)
-
-(define_insn_and_split "*anddi3_insn"
-  [(set (match_operand:DI         0 "s_register_operand"     "=w,w ,&r,&r,&r,&r,?w,?w")
-        (and:DI (match_operand:DI 1 "s_register_operand"     "%w,0 ,0 ,r ,0 ,r ,w ,0")
-                (match_operand:DI 2 "arm_anddi_operand_neon" "w ,DL,r ,r ,De,De,w ,DL")))]
-  "TARGET_32BIT && !TARGET_IWMMXT"
-{
-  switch (which_alternative)
-    {
-    case 0: /* fall through */
-    case 6: return "vand\t%P0, %P1, %P2";
-    case 1: /* fall through */
-    case 7: return neon_output_logic_immediate ("vand", &operands[2],
-                    DImode, 1, VALID_NEON_QREG_MODE (DImode));
-    case 2:
-    case 3:
-    case 4:
-    case 5: /* fall through */
-      return "#";
-    default: gcc_unreachable ();
-    }
-}
-  "TARGET_32BIT && !TARGET_IWMMXT && reload_completed
-   && !(IS_VFP_REGNUM (REGNO (operands[0])))"
-  [(set (match_dup 3) (match_dup 4))
-   (set (match_dup 5) (match_dup 6))]
+  [(set (match_dup 0) (not:SI (match_dup 1)))
+   (set (match_dup 2) (not:SI (match_dup 3)))]
   "
   {
-    operands[3] = gen_lowpart (SImode, operands[0]);
-    operands[5] = gen_highpart (SImode, operands[0]);
-
-    operands[4] = simplify_gen_binary (AND, SImode,
-                                           gen_lowpart (SImode, operands[1]),
-                                           gen_lowpart (SImode, operands[2]));
-    operands[6] = simplify_gen_binary (AND, SImode,
-                                           gen_highpart (SImode, operands[1]),
-                                           gen_highpart_mode (SImode, DImode, operands[2]));
-
-  }"
-  [(set_attr "type" "neon_logic,neon_logic,multiple,multiple,\
-                     multiple,multiple,neon_logic,neon_logic")
-   (set_attr "arch" "neon_for_64bits,neon_for_64bits,*,*,*,*,
-                     avoid_neon_for_64bits,avoid_neon_for_64bits")
-   (set_attr "length" "*,*,8,8,8,8,*,*")
-  ]
-)
-
-(define_insn_and_split "*anddi_zesidi_di"
-  [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
-	(and:DI (zero_extend:DI
-		 (match_operand:SI 2 "s_register_operand" "r,r"))
-		(match_operand:DI 1 "s_register_operand" "0,r")))]
-  "TARGET_32BIT"
-  "#"
-  "TARGET_32BIT && reload_completed"
-  ; The zero extend of operand 2 clears the high word of the output
-  ; operand.
-  [(set (match_dup 0) (and:SI (match_dup 1) (match_dup 2)))
-   (set (match_dup 3) (const_int 0))]
-  "
-  {
-    operands[3] = gen_highpart (SImode, operands[0]);
+    operands[2] = gen_highpart (SImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[3] = gen_highpart (SImode, operands[1]);
     operands[1] = gen_lowpart (SImode, operands[1]);
   }"
-  [(set_attr "length" "8")
-   (set_attr "type" "multiple")]
-)
-
-(define_insn "*anddi_sesdi_di"
-  [(set (match_operand:DI          0 "s_register_operand" "=&r,&r")
-	(and:DI (sign_extend:DI
-		 (match_operand:SI 2 "s_register_operand" "r,r"))
-		(match_operand:DI  1 "s_register_operand" "0,r")))]
-  "TARGET_32BIT"
-  "#"
-  [(set_attr "length" "8")
-   (set_attr "type" "multiple")]
 )
 
 (define_expand "andsi3"
@@ -2967,105 +2819,6 @@
    (set_attr "type" "bfm")]
 )
 
-; constants for op 2 will never be given to these patterns.
-(define_insn_and_split "*anddi_notdi_di"
-  [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
-	(and:DI (not:DI (match_operand:DI 1 "s_register_operand" "0,r"))
-		(match_operand:DI 2 "s_register_operand" "r,0")))]
-  "TARGET_32BIT"
-  "#"
-  "TARGET_32BIT && reload_completed
-   && ! (TARGET_NEON && IS_VFP_REGNUM (REGNO (operands[0])))
-   && ! IS_IWMMXT_REGNUM (REGNO (operands[0]))"
-  [(set (match_dup 0) (and:SI (not:SI (match_dup 1)) (match_dup 2)))
-   (set (match_dup 3) (and:SI (not:SI (match_dup 4)) (match_dup 5)))]
-  "
-  {
-    operands[3] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[4] = gen_highpart (SImode, operands[1]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-    operands[5] = gen_highpart (SImode, operands[2]);
-    operands[2] = gen_lowpart (SImode, operands[2]);
-  }"
-  [(set_attr "length" "8")
-   (set_attr "predicable" "yes")
-   (set_attr "type" "multiple")]
-)
-
-(define_insn_and_split "*anddi_notzesidi_di"
-  [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
-	(and:DI (not:DI (zero_extend:DI
-			 (match_operand:SI 2 "s_register_operand" "r,r")))
-		(match_operand:DI 1 "s_register_operand" "0,?r")))]
-  "TARGET_32BIT"
-  "@
-   bic%?\\t%Q0, %Q1, %2
-   #"
-  ; (not (zero_extend ...)) allows us to just copy the high word from
-  ; operand1 to operand0.
-  "TARGET_32BIT
-   && reload_completed
-   && operands[0] != operands[1]"
-  [(set (match_dup 0) (and:SI (not:SI (match_dup 2)) (match_dup 1)))
-   (set (match_dup 3) (match_dup 4))]
-  "
-  {
-    operands[3] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[4] = gen_highpart (SImode, operands[1]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-  }"
-  [(set_attr "length" "4,8")
-   (set_attr "predicable" "yes")
-   (set_attr "type" "multiple")]
-)
-
-(define_insn_and_split "*anddi_notdi_zesidi"
-  [(set (match_operand:DI 0 "s_register_operand" "=r")
-        (and:DI (not:DI (match_operand:DI 2 "s_register_operand" "r"))
-                (zero_extend:DI
-                 (match_operand:SI 1 "s_register_operand" "r"))))]
-  "TARGET_32BIT"
-  "#"
-  "TARGET_32BIT && reload_completed"
-  [(set (match_dup 0) (and:SI (not:SI (match_dup 2)) (match_dup 1)))
-   (set (match_dup 3) (const_int 0))]
-  "
-  {
-    operands[3] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[2] = gen_lowpart (SImode, operands[2]);
-  }"
-  [(set_attr "length" "8")
-   (set_attr "predicable" "yes")
-   (set_attr "type" "multiple")]
-)
-
-(define_insn_and_split "*anddi_notsesidi_di"
-  [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
-	(and:DI (not:DI (sign_extend:DI
-			 (match_operand:SI 2 "s_register_operand" "r,r")))
-		(match_operand:DI 1 "s_register_operand" "0,r")))]
-  "TARGET_32BIT"
-  "#"
-  "TARGET_32BIT && reload_completed"
-  [(set (match_dup 0) (and:SI (not:SI (match_dup 2)) (match_dup 1)))
-   (set (match_dup 3) (and:SI (not:SI
-				(ashiftrt:SI (match_dup 2) (const_int 31)))
-			       (match_dup 4)))]
-  "
-  {
-    operands[3] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[4] = gen_highpart (SImode, operands[1]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-  }"
-  [(set_attr "length" "8")
-   (set_attr "predicable" "yes")
-   (set_attr "type" "multiple")]
-)
-
 (define_insn "andsi_notsi_si"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(and:SI (not:SI (match_operand:SI 2 "s_register_operand" "r"))
@@ -3163,101 +2916,6 @@
   "bics\\t%0, %1, %2"
   [(set_attr "conds" "set")
    (set_attr "type" "logics_shift_reg")]
-)
-
-(define_expand "iordi3"
-  [(set (match_operand:DI         0 "s_register_operand")
-	(ior:DI (match_operand:DI 1 "s_register_operand")
-		(match_operand:DI 2 "neon_logic_op2")))]
-  "TARGET_32BIT"
-  "
-  if (!TARGET_NEON && !TARGET_IWMMXT)
-    {
-      rtx low  = simplify_gen_binary (IOR, SImode,
-				      gen_lowpart (SImode, operands[1]),
-				      gen_lowpart (SImode, operands[2]));
-      rtx high = simplify_gen_binary (IOR, SImode,
-				      gen_highpart (SImode, operands[1]),
-				      gen_highpart_mode (SImode, DImode,
-							 operands[2]));
-
-      emit_insn (gen_rtx_SET (gen_lowpart (SImode, operands[0]), low));
-      emit_insn (gen_rtx_SET (gen_highpart (SImode, operands[0]), high));
-
-      DONE;
-    }
-  /* Otherwise expand pattern as above.  */
-  "
-)
-
-(define_insn_and_split "*iordi3_insn"
-  [(set (match_operand:DI         0 "s_register_operand"     "=w,w ,&r,&r,&r,&r,?w,?w")
-	(ior:DI (match_operand:DI 1 "s_register_operand"     "%w,0 ,0 ,r ,0 ,r ,w ,0")
-		(match_operand:DI 2 "arm_iordi_operand_neon" "w ,Dl,r ,r ,Df,Df,w ,Dl")))]
-  "TARGET_32BIT && !TARGET_IWMMXT"
-  {
-  switch (which_alternative)
-    {
-    case 0: /* fall through */
-    case 6: return "vorr\t%P0, %P1, %P2";
-    case 1: /* fall through */
-    case 7: return neon_output_logic_immediate ("vorr", &operands[2],
-		     DImode, 0, VALID_NEON_QREG_MODE (DImode));
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-      return "#";
-    default: gcc_unreachable ();
-    }
-  }
-  "TARGET_32BIT && !TARGET_IWMMXT && reload_completed
-   && !(IS_VFP_REGNUM (REGNO (operands[0])))"
-  [(set (match_dup 3) (match_dup 4))
-   (set (match_dup 5) (match_dup 6))]
-  "
-  {
-    operands[3] = gen_lowpart (SImode, operands[0]);
-    operands[5] = gen_highpart (SImode, operands[0]);
-
-    operands[4] = simplify_gen_binary (IOR, SImode,
-                                           gen_lowpart (SImode, operands[1]),
-                                           gen_lowpart (SImode, operands[2]));
-    operands[6] = simplify_gen_binary (IOR, SImode,
-                                           gen_highpart (SImode, operands[1]),
-                                           gen_highpart_mode (SImode, DImode, operands[2]));
-
-  }"
-  [(set_attr "type" "neon_logic,neon_logic,multiple,multiple,multiple,\
-                     multiple,neon_logic,neon_logic")
-   (set_attr "length" "*,*,8,8,8,8,*,*")
-   (set_attr "arch" "neon_for_64bits,neon_for_64bits,*,*,*,*,avoid_neon_for_64bits,avoid_neon_for_64bits")]
-)
-
-(define_insn "*iordi_zesidi_di"
-  [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
-	(ior:DI (zero_extend:DI
-		 (match_operand:SI 2 "s_register_operand" "r,r"))
-		(match_operand:DI 1 "s_register_operand" "0,?r")))]
-  "TARGET_32BIT"
-  "@
-   orr%?\\t%Q0, %Q1, %2
-   #"
-  [(set_attr "length" "4,8")
-   (set_attr "predicable" "yes")
-   (set_attr "type" "logic_reg,multiple")]
-)
-
-(define_insn "*iordi_sesidi_di"
-  [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
-	(ior:DI (sign_extend:DI
-		 (match_operand:SI 2 "s_register_operand" "r,r"))
-		(match_operand:DI 1 "s_register_operand" "0,r")))]
-  "TARGET_32BIT"
-  "#"
-  [(set_attr "length" "8")
-   (set_attr "predicable" "yes")
-   (set_attr "type" "multiple")]
 )
 
 (define_expand "iorsi3"
@@ -3366,103 +3024,6 @@
    (set_attr "arch" "*,t2,*")
    (set_attr "length" "4,2,4")
    (set_attr "type" "logics_imm,logics_reg,logics_reg")]
-)
-
-(define_expand "xordi3"
-  [(set (match_operand:DI         0 "s_register_operand")
-	(xor:DI (match_operand:DI 1 "s_register_operand")
-		(match_operand:DI 2 "arm_xordi_operand")))]
-  "TARGET_32BIT"
-  {
-    /* The iWMMXt pattern for xordi3 accepts only register operands but we want
-       to reuse this expander for all TARGET_32BIT targets so just force the
-       constants into a register.  Unlike for the anddi3 and iordi3 there are
-       no NEON instructions that take an immediate.  */
-    if (TARGET_IWMMXT && !REG_P (operands[2]))
-      operands[2] = force_reg (DImode, operands[2]);
-    if (!TARGET_NEON && !TARGET_IWMMXT)
-      {
-	rtx low  = simplify_gen_binary (XOR, SImode,
-					gen_lowpart (SImode, operands[1]),
-					gen_lowpart (SImode, operands[2]));
-	rtx high = simplify_gen_binary (XOR, SImode,
-					gen_highpart (SImode, operands[1]),
-					gen_highpart_mode (SImode, DImode,
-							   operands[2]));
-
-	emit_insn (gen_rtx_SET (gen_lowpart (SImode, operands[0]), low));
-	emit_insn (gen_rtx_SET (gen_highpart (SImode, operands[0]), high));
-
-	DONE;
-      }
-    /* Otherwise expand pattern as above.  */
-  }
-)
-
-(define_insn_and_split "*xordi3_insn"
-  [(set (match_operand:DI         0 "s_register_operand" "=w,&r,&r,&r,&r,?w")
-	(xor:DI (match_operand:DI 1 "s_register_operand" "%w ,0,r ,0 ,r ,w")
-		(match_operand:DI 2 "arm_xordi_operand"  "w ,r ,r ,Dg,Dg,w")))]
-  "TARGET_32BIT && !TARGET_IWMMXT"
-{
-  switch (which_alternative)
-    {
-    case 1:
-    case 2:
-    case 3:
-    case 4:  /* fall through */
-      return "#";
-    case 0: /* fall through */
-    case 5: return "veor\t%P0, %P1, %P2";
-    default: gcc_unreachable ();
-    }
-}
-  "TARGET_32BIT && !TARGET_IWMMXT && reload_completed
-   && !(IS_VFP_REGNUM (REGNO (operands[0])))"
-  [(set (match_dup 3) (match_dup 4))
-   (set (match_dup 5) (match_dup 6))]
-  "
-  {
-    operands[3] = gen_lowpart (SImode, operands[0]);
-    operands[5] = gen_highpart (SImode, operands[0]);
-
-    operands[4] = simplify_gen_binary (XOR, SImode,
-                                           gen_lowpart (SImode, operands[1]),
-                                           gen_lowpart (SImode, operands[2]));
-    operands[6] = simplify_gen_binary (XOR, SImode,
-                                           gen_highpart (SImode, operands[1]),
-                                           gen_highpart_mode (SImode, DImode, operands[2]));
-
-  }"
-  [(set_attr "length" "*,8,8,8,8,*")
-   (set_attr "type" "neon_logic,multiple,multiple,multiple,multiple,neon_logic")
-   (set_attr "arch" "neon_for_64bits,*,*,*,*,avoid_neon_for_64bits")]
-)
-
-(define_insn "*xordi_zesidi_di"
-  [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
-	(xor:DI (zero_extend:DI
-		 (match_operand:SI 2 "s_register_operand" "r,r"))
-		(match_operand:DI 1 "s_register_operand" "0,?r")))]
-  "TARGET_32BIT"
-  "@
-   eor%?\\t%Q0, %Q1, %2
-   #"
-  [(set_attr "length" "4,8")
-   (set_attr "predicable" "yes")
-   (set_attr "type" "logic_reg")]
-)
-
-(define_insn "*xordi_sesidi_di"
-  [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
-	(xor:DI (sign_extend:DI
-		 (match_operand:SI 2 "s_register_operand" "r,r"))
-		(match_operand:DI 1 "s_register_operand" "0,r")))]
-  "TARGET_32BIT"
-  "#"
-  [(set_attr "length" "8")
-   (set_attr "predicable" "yes")
-   (set_attr "type" "multiple")]
 )
 
 (define_expand "xorsi3"
@@ -5053,56 +4614,6 @@
 	(sqrt:DF (match_operand:DF 1 "s_register_operand")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "")
-
-(define_expand "one_cmpldi2"
-  [(set (match_operand:DI 0 "s_register_operand")
-	(not:DI (match_operand:DI 1 "s_register_operand")))]
-  "TARGET_32BIT"
-  "
-  if (!TARGET_NEON && !TARGET_IWMMXT)
-    {
-      rtx low  = simplify_gen_unary (NOT, SImode,
-				     gen_lowpart (SImode, operands[1]),
-				     SImode);
-      rtx high = simplify_gen_unary (NOT, SImode,
-				     gen_highpart_mode (SImode, DImode,
-							operands[1]),
-				     SImode);
-
-      emit_insn (gen_rtx_SET (gen_lowpart (SImode, operands[0]), low));
-      emit_insn (gen_rtx_SET (gen_highpart (SImode, operands[0]), high));
-
-      DONE;
-    }
-  /* Otherwise expand pattern as above.  */
-  "
-)
-
-(define_insn_and_split "*one_cmpldi2_insn"
-  [(set (match_operand:DI 0 "s_register_operand"	 "=w,&r,&r,?w")
-	(not:DI (match_operand:DI 1 "s_register_operand" " w, 0, r, w")))]
-  "TARGET_32BIT"
-  "@
-   vmvn\t%P0, %P1
-   #
-   #
-   vmvn\t%P0, %P1"
-  "TARGET_32BIT && reload_completed
-   && arm_general_register_operand (operands[0], DImode)"
-  [(set (match_dup 0) (not:SI (match_dup 1)))
-   (set (match_dup 2) (not:SI (match_dup 3)))]
-  "
-  {
-    operands[2] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[3] = gen_highpart (SImode, operands[1]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-  }"
-  [(set_attr "length" "*,8,8,*")
-   (set_attr "predicable" "no,yes,yes,no")
-   (set_attr "type" "neon_move,multiple,multiple,neon_move")
-   (set_attr "arch" "neon_for_64bits,*,*,avoid_neon_for_64bits")]
-)
 
 (define_expand "one_cmplsi2"
   [(set (match_operand:SI         0 "s_register_operand")
