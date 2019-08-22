@@ -1,3 +1,9 @@
+2019-08-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (iorsi3_compare0): Add alternative for 16-bit thumb
+	insn.
+	(iorsi3_compare0_scratch): Likewise.
+
 2019-08-22  Sylvia Taylor  <sylvia.taylor@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def:
