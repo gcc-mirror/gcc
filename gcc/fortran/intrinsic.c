@@ -3691,7 +3691,7 @@ add_subroutines (void)
 	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
 	      "source_image", BT_INTEGER, di, REQUIRED, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
-	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
+	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_INOUT);
 
   add_sym_4s ("co_max", GFC_ISYM_CO_MAX, CLASS_IMPURE,
 	      BT_UNKNOWN, 0, GFC_STD_F2018,
@@ -3699,7 +3699,7 @@ add_subroutines (void)
 	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
 	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
-	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
+	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_INOUT);
 
   add_sym_4s ("co_min", GFC_ISYM_CO_MIN, CLASS_IMPURE,
 	      BT_UNKNOWN, 0, GFC_STD_F2018,
@@ -3707,7 +3707,7 @@ add_subroutines (void)
 	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
 	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
-	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
+	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_INOUT);
 
   add_sym_4s ("co_sum", GFC_ISYM_CO_SUM, CLASS_IMPURE,
 	      BT_UNKNOWN, 0, GFC_STD_F2018,
@@ -3715,7 +3715,7 @@ add_subroutines (void)
 	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
 	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
-	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
+	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_INOUT);
 
   add_sym_5s ("co_reduce", GFC_ISYM_CO_REDUCE, CLASS_IMPURE,
 	      BT_UNKNOWN, 0, GFC_STD_F2018,
@@ -3724,7 +3724,7 @@ add_subroutines (void)
 	      "operator", BT_INTEGER, di, REQUIRED, INTENT_IN,
 	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
-	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
+	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_INOUT);
 
 
   /* The following subroutine is internally used for coarray libray functions.
