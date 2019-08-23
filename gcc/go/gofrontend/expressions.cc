@@ -9039,7 +9039,7 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
 	  // directly before the write barrier pass.
 	  Statement* assign;
 	  if (assign_lhs != NULL
-	      || !gogo->assign_needs_write_barrier(lhs))
+	      || !gogo->assign_needs_write_barrier(lhs, NULL))
 	    assign = Statement::make_assignment(lhs, elem, loc);
 	  else
 	    {

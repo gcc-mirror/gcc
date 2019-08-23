@@ -771,7 +771,14 @@ class Gogo
   // Return whether an assignment that sets LHS to RHS needs a write
   // barrier.
   bool
-  assign_needs_write_barrier(Expression* lhs);
+  assign_needs_write_barrier(Expression* lhs,
+                             Unordered_set(const Named_object*)*);
+
+  // Return whether EXPR is the address of a variable that can be set
+  // without a write barrier.  That is, if this returns true, then an
+  // assignment to *EXPR does not require a write barrier.
+  bool
+  is_nonwb_pointer(Expression* expr, Unordered_set(const Named_object*)*);
 
   // Return an assignment that sets LHS to RHS using a write barrier.
   // This returns an if statement that checks whether write barriers
