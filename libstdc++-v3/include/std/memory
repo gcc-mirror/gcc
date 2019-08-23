@@ -211,7 +211,24 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
     constexpr auto
     __uses_alloc_args(const _Alloc& __a, _Args&&... __args) noexcept
     {
-      if constexpr (uses_allocator_v<remove_cv_t<_Tp>, _Alloc>)
+	  if constexpr (__uses_domain_allocator<remove_cv_t<_Tp>, _Alloc>::value)
+	  {
+		  using _DomainTraits = std::__domain_allocator_traits<remove_cv_t<_Tp>,_Alloc>;
+		  using _DomainAlloc = decltype(_DomainTraits::convert(declval<const _Alloc&>()));
+		  if constexpr (is_constructible_v<_Tp, allocator_arg_t,
+				  _DomainAlloc, _Args...>)
+			{
+			  return tuple<allocator_arg_t, _DomainAlloc, _Args&&...>(
+			  		  allocator_arg,
+					  std::move(_DomainTraits::convert(__a))
+					  , std::forward<_Args>(__args)...);
+			}
+		  else return tuple<_Args&&...,  _DomainAlloc>(
+				  std::forward<_Args>(__args)...,
+				  std::move(_DomainTraits::convert(__a)));
+
+	   }
+	  else if constexpr (uses_allocator_v<remove_cv_t<_Tp>, _Alloc>)
 	{
 	  if constexpr (is_constructible_v<_Tp, allocator_arg_t,
 					   const _Alloc&, _Args...>)
@@ -219,8 +236,7 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
 	      return tuple<allocator_arg_t, const _Alloc&, _Args&&...>(
 		  allocator_arg, __a, std::forward<_Args>(__args)...);
 	    }
-	  else if constexpr (!__uses_domain_allocator<remove_cv_t<_Tp>, _Alloc>::value)
-	    {
+	  else {
 	      static_assert(is_constructible_v<_Tp, _Args..., const _Alloc&>,
 		  "construction with an allocator must be possible"
 		  " if uses_allocator is true");
@@ -228,12 +244,6 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
 	      return tuple<_Args&&..., const _Alloc&>(
 		  std::forward<_Args>(__args)..., __a);
 	    }
-	  else if constexpr (__uses_domain_allocator<remove_cv_t<_Tp>, _Alloc>::value)
-	  {
-		return tuple<_Args&&..., const _Alloc&>(
-				  std::forward<_Args>(__args)...,
-				  __domain_allocator_traits<_Tp, _Alloc>::rebind(__a._M_a));
-	   }
 	}
       else
 	{

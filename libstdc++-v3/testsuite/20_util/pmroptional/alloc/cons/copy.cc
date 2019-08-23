@@ -132,5 +132,11 @@ int main()
     VERIFY( result == caught );
   }
 
+  {
+      std::optional<tracker> o;
+      std::pmr::optional<tracker> copy = o;
+      VERIFY( !copy );
+      VERIFY( !o );
+  }
   VERIFY( tracker::count == 0 );
 }

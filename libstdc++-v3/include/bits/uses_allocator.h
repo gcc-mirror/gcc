@@ -112,13 +112,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __uses_alloc2 : __uses_alloc_base { const _Alloc* _M_a; };
 
   template<typename _Alloc>
-    struct __uses_alloc3 : __uses_alloc_base { const _Alloc* _M_a; };
+   struct __uses_domain_alloc1 : __uses_alloc_base { const _Alloc* _M_a; };
 
-  template<bool, bool, typename _Tp, typename _Alloc, typename... _Args>
+  template<typename _Alloc>
+    struct __uses_domain_alloc2 : __uses_alloc_base { const _Alloc* _M_a; };
+
+  template<bool, typename _Tp, typename _Alloc, typename... _Args>
     struct __uses_alloc;
 
   template<typename _Tp, typename _Alloc, typename... _Args>
-    struct __uses_alloc<true, false, _Tp, _Alloc, _Args...>
+    struct __uses_alloc<true, _Tp, _Alloc, _Args...>
     : conditional<
         is_constructible<_Tp, allocator_arg_t, const _Alloc&, _Args...>::value,
         __uses_alloc1<_Alloc>,
@@ -134,23 +137,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Tp, typename _Alloc, typename... _Args>
-   struct __uses_alloc<false, true, _Tp, _Alloc, _Args...>
-   : __uses_alloc3<_Alloc> { };
-
-  template<typename _Tp, typename _Alloc, typename... _Args>
-   struct __uses_alloc<true, true, _Tp, _Alloc, _Args...>
-   : __uses_alloc3<_Alloc> { };
-
-  template<typename _Tp, typename _Alloc, typename... _Args>
-    struct __uses_alloc<false, false,  _Tp, _Alloc, _Args...>
+    struct __uses_alloc<false,  _Tp, _Alloc, _Args...>
     : __uses_alloc0 { };
 
+  template<bool, typename _Tp, typename _Alloc, typename... _Args>
+    struct __uses_domain_alloc;
+
   template<typename _Tp, typename _Alloc, typename... _Args>
+  struct __uses_domain_alloc<true, _Tp, _Alloc, _Args...>
+    : conditional<
+         is_constructible<_Tp, allocator_arg_t,
+		               decltype(__domain_allocator_traits<_Tp,_Alloc>::convert(declval<_Alloc>())), _Args...>::value,
+             __uses_domain_alloc1<_Alloc>,
+        	 __uses_domain_alloc2<_Alloc>>::type
+   {  };
+
+  template<typename _Tp, typename _Alloc, typename... _Args>
+   struct __uses_domain_alloc<false, _Tp, _Alloc, _Args...> {};
+
+ template<typename _Tp, typename _Alloc, typename... _Args>
     using __uses_alloc_t =
-      __uses_alloc<__and_<uses_allocator<_Tp, _Alloc>,
-		      __not_<__uses_domain_allocator<_Tp, _Alloc>>>::value,
-		  __uses_domain_allocator<_Tp, _Alloc>::value,
-		  _Tp, _Alloc, _Args...>;
+    	typename conditional<
+	      __uses_domain_allocator<_Tp, _Alloc>::value,
+		  __uses_domain_alloc<__uses_domain_allocator<_Tp, _Alloc>::value,
+		  _Tp, _Alloc,_Args...>,
+		  __uses_alloc<uses_allocator<_Tp, _Alloc>::value,
+		  _Tp, _Alloc, _Args...>>::type;
 
   template<typename _Tp, typename _Alloc, typename... _Args>
     inline __uses_alloc_t<_Tp, _Alloc, _Args...>
@@ -222,11 +234,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					 _Args&&... __args)
     { ::new ((void*)__ptr) _Tp(std::forward<_Args>(__args)..., *__a._M_a); }
 
+
   template<typename _Tp, typename _Alloc, typename... _Args>
-      void __uses_allocator_construct_impl(__uses_alloc3<_Alloc> __a, _Tp* __ptr,
-  					 _Args&&... __args)
+    void __uses_allocator_construct_impl(__uses_domain_alloc1<_Alloc> __a, _Tp* __ptr,
+					 _Args&&... __args)
+    {
+      ::new ((void*)__ptr) _Tp(allocator_arg,
+    		  __domain_allocator_traits<_Tp, _Alloc>::convert(*__a._M_a),
+			       std::forward<_Args>(__args)...);
+    }
+
+  template<typename _Tp, typename _Alloc, typename... _Args>
+    void __uses_allocator_construct_impl(__uses_domain_alloc2<_Alloc> __a, _Tp* __ptr,
+					 _Args&&... __args)
     { ::new ((void*)__ptr) _Tp(std::forward<_Args>(__args)...,
-			       __domain_allocator_traits<_Tp, _Alloc>::convert(*__a._M_a)); }
+    		__domain_allocator_traits<_Tp, _Alloc>::convert(*__a._M_a)); }
+
 
   template<typename _Tp, typename _Alloc, typename... _Args>
     void __uses_allocator_construct(const _Alloc& __a, _Tp* __ptr,

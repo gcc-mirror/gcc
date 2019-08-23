@@ -67,13 +67,16 @@ namespace pmr {
   
   // This class template manages construction/destruction of
   // the contained value for a std::pmr::optional.
-  template <typename _Tp>
+  template <typename _Tp, bool = is_trivially_destructible_v<_Tp>>
     struct _Optional_payload
     {
       using _Stored_type = remove_const_t<_Tp>;
+      using __Allocator_type = std::pmr::polymorphic_allocator<void>;
 
       _Optional_payload() noexcept {};
       
+      _Optional_payload(allocator_arg_t, const __Allocator_type& __a) noexcept
+      : _M_pmr(__a.resource()){};
        
       _Optional_payload(const _Optional_payload& __other)
       : _M_pmr(__other._M_pmr)
@@ -84,6 +87,7 @@ namespace pmr {
 
 
       _Optional_payload(_Optional_payload&& __other)
+      noexcept(is_nothrow_move_constructible_v<_Stored_type>)
       : _M_pmr(__other._M_pmr)
  	  {
 	if (__other._M_engaged)
@@ -125,39 +129,21 @@ namespace pmr {
 
       struct _Empty_byte { };
 
-      template<typename _Up>
+	template<typename _Up>
 	union _Storage
 	{
-	  constexpr _Storage() noexcept : _M_empty() { }
-	  
-/*	    template<typename... _Args>
-		constexpr
-		_Storage(_Args&&... __args)
-		: _Storage(std::in_place, std::forward<_Args>( __args)...)
-		{ }
-	  
-	    template<typename... _Args>
-		constexpr
-		_Storage(in_place_t,_Args&&... __args)
-		: _M_value(std::forward<_Args>(__args)...)
-		{ }
-		
-		template<typename _Vp, typename... _Args>
-		constexpr
-		_Storage(std::initializer_list<_Vp> __il, _Args&&... __args)
-		: _M_value(__il, std::forward<_Args>(__args)...)
-		{ }
-	*/  
+	  _Storage() noexcept : _M_empty() { }
+	   
 	  // User-provided destructor is needed when _Up has non-trivial dtor.
 	  ~_Storage() { }
 	  _Empty_byte _M_empty;
           _Up _M_value;
 	};
-
+	
       _Storage<_Stored_type> _M_payload;
 
       bool _M_engaged = false;
-      memory_resource* _M_pmr = std::pmr::get_default_resource();
+      memory_resource* const _M_pmr = std::pmr::get_default_resource();
 
       template<typename... _Args>
         void
@@ -172,7 +158,7 @@ namespace pmr {
      
 
       
-      constexpr void
+      void
       _M_destroy() noexcept
       {
 	_M_engaged = false;
@@ -183,16 +169,16 @@ namespace pmr {
       // They exist to access the contained value with the appropriate
       // const-qualification, because _M_payload has had the const removed.
 
-      constexpr _Tp&
+      _Tp&
       _M_get() noexcept
       { return this->_M_payload._M_value; }
 
-      constexpr const _Tp&
+      const _Tp&
       _M_get() const noexcept
       { return this->_M_payload._M_value; }
 
       // _M_reset is a 'safe' operation with no precondition.
-      constexpr void
+      void
       _M_reset() noexcept
       {
 	if (this->_M_engaged)
@@ -203,7 +189,123 @@ namespace pmr {
       ~_Optional_payload() { this->_M_reset(); }
     };
 
+template <typename _Tp>
+    struct _Optional_payload<_Tp, true>
+    {
+      using _Stored_type = remove_const_t<_Tp>;
+      using __Allocator_type = std::pmr::polymorphic_allocator<void>;
 
+      _Optional_payload() noexcept {};
+      
+      _Optional_payload(allocator_arg_t, const __Allocator_type& __a) noexcept
+      : _M_pmr(__a.resource()){};
+       
+      _Optional_payload(const _Optional_payload& __other)
+      : _M_pmr(__other._M_pmr)
+      	{
+	if (__other._M_engaged)
+	  this->_M_construct(__other._M_get());
+      }
+
+
+      _Optional_payload(_Optional_payload&& __other)
+      noexcept(is_nothrow_move_constructible_v<_Stored_type>)
+      : _M_pmr(__other._M_pmr)
+ 	  {
+	if (__other._M_engaged)
+	  this->_M_construct(std::move(__other._M_get()));
+      }
+
+      _Optional_payload&
+      operator=(const _Optional_payload& __other)
+	  {
+		if (this->_M_engaged && __other._M_engaged)
+		  this->_M_get() = __other._M_get();
+		else
+	  {
+		if (__other._M_engaged)
+		  this->_M_construct(__other._M_get());
+		else
+		  this->_M_reset();
+	  }
+		return *this;
+	  }
+	      
+	      
+      _Optional_payload&
+      operator=(_Optional_payload&& __other)
+	  noexcept(__and_v<is_nothrow_move_constructible<_Tp>,
+				   is_nothrow_move_assignable<_Tp>>)
+	  {
+	if (this->_M_engaged && __other._M_engaged)
+	  this->_M_get() = std::move(__other._M_get());
+	else
+	  {
+		if (__other._M_engaged)
+		  this->_M_construct(std::move(__other._M_get()));
+		else
+		  this->_M_reset();
+	  }
+	return *this;
+	  }
+
+      struct _Empty_byte { };
+
+	template<typename _Up>
+	union _Storage
+	{
+	  _Storage() noexcept : _M_empty() { }
+
+	  _Empty_byte _M_empty;
+          _Up _M_value;
+	};
+	
+      _Storage<_Stored_type> _M_payload;
+
+      bool _M_engaged = false;
+      memory_resource* const _M_pmr = std::pmr::get_default_resource();
+
+      template<typename... _Args>
+        void
+        _M_construct(_Args&&... __args)
+      noexcept(is_nothrow_constructible_v<_Stored_type, _Args...>)
+	  {
+    	  __uses_allocator_construct(polymorphic_allocator<void>(_M_pmr),
+					 std::__addressof(this->_M_payload._M_value),
+					 std::forward<_Args>(__args)...);
+	      this->_M_engaged = true;
+        }
+     
+
+      
+      void
+      _M_destroy() noexcept
+      {
+	_M_engaged = false;
+	_M_payload._M_value.~_Stored_type();
+      }
+
+      // The _M_get() operations have _M_engaged as a precondition.
+      // They exist to access the contained value with the appropriate
+      // const-qualification, because _M_payload has had the const removed.
+
+      _Tp&
+      _M_get() noexcept
+      { return this->_M_payload._M_value; }
+
+      const _Tp&
+      _M_get() const noexcept
+      { return this->_M_payload._M_value; }
+
+      // _M_reset is a 'safe' operation with no precondition.
+      void
+      _M_reset() noexcept
+      {
+	if (this->_M_engaged)
+	  _M_destroy();
+      }
+      
+    };
   /**
 	  * @brief Class template that takes care of copy/move constructors
 	  of optional
@@ -216,15 +318,28 @@ namespace pmr {
 	  class _Optional_base
 	  {
 	  using _Stored_type = remove_const_t<_Tp>;
+	  using __Allocator_type = std::pmr::polymorphic_allocator<void>;
 	   
 	  public:
 		// Constructors for disengaged optionals.
-		constexpr _Optional_base() = default;
+		_Optional_base() = default;
+		
+		_Optional_base(allocator_arg_t, const __Allocator_type& __a) noexcept
+      : _M_payload(allocator_arg, __a){};
 	
 		// Constructors for engaged optionals.
 	  template<typename... _Args,
 		   enable_if_t<is_constructible_v<_Tp, _Args&&...>, bool> = false>
-		constexpr explicit _Optional_base(in_place_t, _Args&&... __args)
+		explicit _Optional_base(in_place_t, _Args&&... __args)
+		noexcept(is_nothrow_constructible_v<_Stored_type, _Args...>)
+	  {
+			_M_construct(std::forward<_Args>(__args)...);
+	  }
+	  template<typename... _Args,
+		   enable_if_t<is_constructible_v<_Tp, _Args&&...>, bool> = false>
+		explicit _Optional_base(allocator_arg_t, const __Allocator_type& __a, _Args&&... __args)
+		noexcept(is_nothrow_constructible_v<_Stored_type, _Args...>)
+	  : _M_payload(allocator_arg, __a)
 	  {
 			_M_construct(std::forward<_Args>(__args)...);
 	  }
@@ -233,30 +348,21 @@ namespace pmr {
 			   enable_if_t<is_constructible_v<_Tp,
 						  initializer_list<_Up>&,
 						  _Args&&...>, bool> = false>
-		constexpr explicit _Optional_base(in_place_t,
+		explicit _Optional_base(in_place_t,
 										  initializer_list<_Up> __il,
 										  _Args&&... __args)
 		{
 			_M_construct(__il,std::forward<_Args>(__args)...);
 	   }
 
-		
-		// Constructors for engaged optionals.
-		template<typename... _Args,
-		enable_if_t<__is_uses_allocator_constructible_v<_Tp, polymorphic_allocator<void>, _Args&&...>, bool> = false>
-		  constexpr explicit _Optional_base(memory_resource* __pmr, _Args&&... __args)
-		{
-			_M_payload._M_pmr = __pmr;
-			_M_construct(std::forward<_Args>(__args)...);
-		}
-	
+
 		// Copy and move constructors.
-		constexpr _Optional_base(const _Optional_base& __other)
+		_Optional_base(const _Optional_base& __other)
 	: _M_payload(__other._M_payload)
 		{ }
 
 	
-		constexpr _Optional_base(_Optional_base&& __other)
+		_Optional_base(_Optional_base&& __other)
 		noexcept(is_nothrow_move_constructible_v<_Tp>)
 	: _M_payload(std::move(__other._M_payload))
 		{ }
@@ -282,33 +388,28 @@ namespace pmr {
 	   {_M_payload._M_destroy(); }
 
 	   // _M_reset is a 'safe' operation with no precondition.
-	   constexpr void
+	   void
 	   _M_reset() noexcept
 	   { _M_payload._M_reset(); }
 		
-		constexpr bool _M_is_engaged() const noexcept
+		bool _M_is_engaged() const noexcept
 		{ return this->_M_payload._M_engaged; }
 	
 		// The _M_get operations have _M_engaged as a precondition.
-		constexpr _Tp&
+		_Tp&
 	_M_get() noexcept
 		{
 	__glibcxx_assert(this->_M_is_engaged());
 	return this->_M_payload._M_get();
 		}
 	
-		constexpr const _Tp&
+		const _Tp&
 	_M_get() const noexcept
 		{
 	__glibcxx_assert(this->_M_is_engaged());
 	return this->_M_payload._M_get();
 		}
 	
-
-	  void _M_set_allocator(memory_resource* __pmr) noexcept
-	  {
-		  _M_payload._M_pmr = __pmr;
-	 }
  
 	  memory_resource* _M_get_allocator() const noexcept
 	  {
@@ -382,7 +483,9 @@ namespace pmr {
       template<typename _Up>
 	using __not_self = __not_<is_same<__pmroptional, __remove_cvref_t<_Up>>>;
       template<typename _Up>
-	using __not_tag = __not_<is_same<in_place_t, __remove_cvref_t<_Up>>>;
+	using __not_inplace_tag = __not_<is_same<in_place_t, __remove_cvref_t<_Up>>>;
+	template<typename _Up>
+	using __not_alloc_tag = __not_<is_same<allocator_arg_t, __remove_cvref_t<_Up>>>;
       template<typename... _Cond>
 	using _Requires = enable_if_t<__and_v<_Cond...>, bool>;
 
@@ -391,10 +494,10 @@ namespace pmr {
       using value_type = _Tp;
       using __Allocator_type = std::pmr::polymorphic_allocator<void>;
       
-      constexpr __pmroptional() noexcept {
+      __pmroptional() noexcept {
       }
 
-      constexpr __pmroptional(nullopt_t) noexcept { }
+      __pmroptional(nullopt_t) noexcept { }
 
       __pmroptional(const __pmroptional&) = default;
       __pmroptional(__pmroptional&&) = default;
@@ -402,21 +505,19 @@ namespace pmr {
             
       // Converting constructors for engaged optionals.
            template<typename _Up = _Tp,
-     	       _Requires<__not_self<_Up>,  __not_tag<_Up>,
-     			 __not_<is_base_of<memory_resource, remove_pointer_t<__remove_cvref_t<_Up>>>>,
+     	       _Requires<__not_self<_Up>,  __not_inplace_tag<_Up>,
      			 is_constructible<_Tp, _Up&&>,
      			 is_convertible<_Up&&, _Tp>> = true>
-     	constexpr
+     	
      	__pmroptional(_Up&& __t)
      	{ emplace(std::forward<_Up>(__t));
      	};
 
            template<typename _Up = _Tp,
-     	       _Requires<__not_self<_Up>,  __not_tag<_Up>,
-     			 __not_<is_base_of<memory_resource, remove_pointer_t<__remove_cvref_t<_Up>>>>,
+     	       _Requires<__not_self<_Up>,  __not_inplace_tag<_Up>,
      			 is_constructible<_Tp, _Up&&>,
      			 __not_<is_convertible<_Up&&, _Tp>>> = false>
-     	explicit constexpr
+     	explicit
      	__pmroptional(_Up&& __t)
           { emplace(std::forward<_Up>(__t));
      	};
@@ -426,10 +527,10 @@ namespace pmr {
      			 is_constructible<_Tp, const _Up&>,
      			 is_convertible<const _Up&, _Tp>,
      			 __not_<__converts_from_optional<_Tp, _Up>>> = true>
-     	constexpr
+     	
      	__pmroptional(const __pmroptional<_Up>& __t)
+     	: _Base(std::allocator_arg, __t._M_get_allocator())
      	{
-     	this->_M_set_allocator(__t._M_get_allocator());
      	  if (__t)
      	    emplace(*__t);
      	}
@@ -439,10 +540,10 @@ namespace pmr {
      			 is_constructible<_Tp, const _Up&>,
      			 __not_<is_convertible<const _Up&, _Tp>>,
      			 __not_<__converts_from_optional<_Tp, _Up>>> = false>
-     	explicit constexpr
+     	explicit
      	__pmroptional(const __pmroptional<_Up>& __t)
+     	: _Base(std::allocator_arg, __t._M_get_allocator())
      	{
-     	this->_M_set_allocator(__t._M_get_allocator());
      	  if (__t)
      	    emplace(*__t);
      	}
@@ -452,10 +553,10 @@ namespace pmr {
      			  is_constructible<_Tp, _Up&&>,
      			  is_convertible<_Up&&, _Tp>,
      			  __not_<__converts_from_optional<_Tp, _Up>>> = true>
-     	constexpr
+     	
      	__pmroptional(__pmroptional<_Up>&& __t)
+     	: _Base(std::allocator_arg, __t._M_get_allocator())
      	{
-     	this->_M_set_allocator(__t._M_get_allocator());
      	  if (__t)
      	    emplace(std::move(*__t));
      	}
@@ -465,10 +566,10 @@ namespace pmr {
      			  is_constructible<_Tp, _Up&&>,
      			  __not_<is_convertible<_Up&&, _Tp>>,
      			  __not_<__converts_from_optional<_Tp, _Up>>> = false>
-     	explicit constexpr
+     	explicit
      	__pmroptional(__pmroptional<_Up>&& __t)
+     	: _Base(std::allocator_arg, __t._M_get_allocator())
      	{
-     	this->_M_set_allocator(__t._M_get_allocator());
      	  if (__t)
      	    emplace(std::move(*__t));
      	}
@@ -477,7 +578,7 @@ namespace pmr {
      	       _Requires< is_constructible<_Tp, const _Up&>,
      			 is_convertible<const _Up&, _Tp>,
     			 __not_<__converts_from_optional<_Tp, _Up>>> = true>
-     	constexpr
+     	
      	__pmroptional(const std::optional<_Up>& __t)
      	{
      	  if (__t)
@@ -488,7 +589,7 @@ namespace pmr {
      	       _Requires<is_constructible<_Tp, const _Up&>,
      			 __not_<is_convertible<const _Up&, _Tp>>,
     			 __not_<__converts_from_optional<_Tp, _Up>>> = false>
-     	explicit constexpr
+     	explicit
      	__pmroptional(const std::optional<_Up>& __t)
      	{
      	  if (__t)
@@ -499,7 +600,7 @@ namespace pmr {
      		_Requires< is_constructible<_Tp, _Up&&>,
      			  is_convertible<_Up&&, _Tp>,
 				  __not_<__converts_from_optional<_Tp, _Up>>>  = true>
-     	constexpr
+     	
      	__pmroptional(std::optional<_Up>&& __t)
      	{
      	  if (__t)
@@ -510,7 +611,7 @@ namespace pmr {
      		_Requires<is_constructible<_Tp, _Up&&>,
      			  __not_<is_convertible<_Up&&, _Tp>>,
 	    		  __not_<__converts_from_optional<_Tp, _Up>>> = false>
-     	explicit constexpr
+     	explicit
      	__pmroptional(std::optional<_Up>&& __t)
      	{
      	  if (__t)
@@ -518,7 +619,7 @@ namespace pmr {
      	}
       template<typename... _Args,
 	       _Requires<is_constructible<_Tp, _Args&&...>> = false>
-	explicit constexpr
+	explicit
 	__pmroptional(in_place_t, _Args&&... __args)
 	: _Base(std::in_place, std::forward<_Args>(__args)...) { }
 
@@ -526,48 +627,75 @@ namespace pmr {
 	       _Requires<is_constructible<_Tp,
 					  initializer_list<_Up>&,
 					  _Args&&...>> = false>
-	explicit constexpr
+	explicit
 	__pmroptional(in_place_t, initializer_list<_Up> __il, _Args&&... __args)
 	: _Base(std::in_place, __il, std::forward<_Args>(__args)...) { }
 
-      // Converting memory-resource-constructors for engaged optionals.
+      // allocator extended constructors
 
-         __pmroptional(allocator_arg_t, const __Allocator_type& __a)
-   	{
-   	    this->_M_set_allocator(__a.resource());
-   	}
+	__pmroptional(allocator_arg_t, const __Allocator_type& __a)
+         noexcept
+   	: _Base(std::allocator_arg, __a)
+     	{}
+     	
+     	
+         __pmroptional(allocator_arg_t, const __Allocator_type& __a, nullopt_t)
+         noexcept
+   	: _Base(std::allocator_arg, __a)
+     	{}
+     	
+     	
+     	
+
          template<typename _Up = _Tp,
    	       _Requires<__not_self<_Up>, 
    			 is_constructible<_Tp, _Up&&>,
    			 is_convertible<_Up&&, _Tp>> = true>
-   	constexpr
+   	
    	__pmroptional(allocator_arg_t, const __Allocator_type& __a,_Up&& __t)
-   	{
-   	    this->_M_set_allocator(__a.resource());
-   	  emplace(std::forward<_Up>(__t));
+   	: _Base(std::allocator_arg, __a)
+	{  emplace(std::forward<_Up>(__t));
    	}
 
          template<typename _Up = _Tp,
    	       _Requires<__not_self<_Up>, 
    			 is_constructible<_Tp, _Up&&>,
    			 __not_<is_convertible<_Up&&, _Tp>>> = false>
-   	explicit constexpr
+   	explicit
    	__pmroptional(allocator_arg_t, const __Allocator_type& __a, _Up&& __t)
-   	{
-   		this->_M_set_allocator(__a.resource());
-   	  emplace(std::forward<_Up>(__t));
+   	: _Base(std::allocator_arg, __a)
+	{
+	  emplace(std::forward<_Up>(__t));
    	}
+
+
+        
+         __pmroptional(allocator_arg_t, const __Allocator_type& __a, const __pmroptional& __t)
+    : _Base(std::allocator_arg,__a)
+	{
+	if (__t)
+   	  emplace(*__t);
+         }
+
+        
+         __pmroptional(allocator_arg_t, const __Allocator_type& __a, __pmroptional&& __t)
+     : _Base(std::allocator_arg,__a)
+	{
+	 if (__t)
+   	  emplace(std::move(*__t));
+         }
+
 
          template<typename _Up,
    	       _Requires<__not_<is_same<_Tp, _Up>>,
    			 is_constructible<_Tp, const _Up&>,
    			 is_convertible<const _Up&, _Tp>,
    			 __not_<__converts_from_optional<_Tp, _Up>>> = true>
-   	constexpr
+   	
    	__pmroptional(allocator_arg_t, const __Allocator_type& __a, const __pmroptional<_Up>& __t)
-   	{
-   	    this->_M_set_allocator(__a.resource());
-   	    if (__t)
+   	: _Base(std::allocator_arg, __a)
+	{
+		    if (__t)
    	    	  emplace(*__t);
    	}
 
@@ -576,11 +704,11 @@ namespace pmr {
    			 is_constructible<_Tp, const _Up&>,
    			 __not_<is_convertible<const _Up&, _Tp>>,
    			 __not_<__converts_from_optional<_Tp, _Up>>> = false>
-   	explicit constexpr
+   	explicit
    	__pmroptional(allocator_arg_t, const __Allocator_type& __a, const __pmroptional<_Up>& __t)
-   	{
-   	  this->_M_set_allocator(__a.resource());
-   	  if (__t)
+   	: _Base(std::allocator_arg,__a)
+	{
+	  if (__t)
    	  emplace(*__t);
    	}
 
@@ -589,11 +717,11 @@ namespace pmr {
    			  is_constructible<_Tp, _Up&&>,
    			  is_convertible<_Up&&, _Tp>,
    			  __not_<__converts_from_optional<_Tp, _Up>>> = true>
-   	constexpr
+   	
    	__pmroptional(allocator_arg_t, const __Allocator_type& __a, __pmroptional<_Up>&& __t)
-   	{
-   	  this->_M_set_allocator(__a.resource());
-   	  if (__t)
+   	: _Base(std::allocator_arg,__a)
+	{
+		  if (__t)
    	    emplace(std::move(*__t));
    	}
 
@@ -602,78 +730,83 @@ namespace pmr {
    			  is_constructible<_Tp, _Up&&>,
    			  __not_<is_convertible<_Up&&, _Tp>>,
    			  __not_<__converts_from_optional<_Tp, _Up>>> = false>
-   	explicit constexpr
+   	explicit
    	__pmroptional(allocator_arg_t, const __Allocator_type& __a, __pmroptional<_Up>&& __t)
-   	{
-   	  this->_M_set_allocator(__a.resource());
-   	  if (__t)
+   	: _Base(std::allocator_arg,__a)
+	{
+	  if (__t)
    	    emplace(std::move(*__t));
    	}
 
-         constexpr
-         __pmroptional(allocator_arg_t, const __Allocator_type& __a, const __pmroptional& __t)
-         {
-   	  this->_M_set_allocator(__a.resource());
-   	if (__t)
-   	  emplace(*__t);
-         }
+ 		template<typename _Up,
+     	       _Requires< is_constructible<_Tp, const _Up&>,
+     			 is_convertible<const _Up&, _Tp>,
+    			 __not_<__converts_from_optional<_Tp, _Up>>> = true>
+     	
+     	__pmroptional(allocator_arg_t, const __Allocator_type& __a,const std::optional<_Up>& __t)
+     	: _Base(std::allocator_arg,__a)
+		{  
+		if (__t)
+     	    emplace(*__t);
+     	}
 
-         constexpr
-         __pmroptional(allocator_arg_t, const __Allocator_type& __a, __pmroptional&& __t)
-         {
-   	  memory_resource* __actual_alloc = __a.resource();
-   	  if (__t)
-   	  emplace(std::move(*__t));
-         }
+           template<typename _Up,
+     	       _Requires<is_constructible<_Tp, const _Up&>,
+     			 __not_<is_convertible<const _Up&, _Tp>>,
+    			 __not_<__converts_from_optional<_Tp, _Up>>> = false>
+     	explicit
+     	__pmroptional(allocator_arg_t, const __Allocator_type& __a, const std::optional<_Up>& __t)
+     	: _Base(std::allocator_arg,__a)
+		{
+     	  if (__t)
+     	    emplace(*__t);
+     	}
 
-         template<typename _Up,
-   	       _Requires<is_constructible<_Tp, const _Up&>,
-   			 is_convertible<const _Up&, _Tp>,
-   			 __not_<__converts_from_optional<_Tp, _Up>>> = true>
-   	constexpr
-   	__pmroptional(allocator_arg_t, const __Allocator_type& __a, const __pmroptional<_Up>& __t)
-   	{
-   	  this->_M_set_allocator(__a.resource());
-   	  if (__t) 
-   	    emplace(*__t);
-   	}
+           template <typename _Up,
+     		_Requires< is_constructible<_Tp, _Up&&>,
+     			  is_convertible<_Up&&, _Tp>,
+				  __not_<__converts_from_optional<_Tp, _Up>>>  = true>
+     	__pmroptional(allocator_arg_t, const __Allocator_type& __a, std::optional<_Up>&& __t)
+     	: _Base(std::allocator_arg,__a)
+		{
+     	  if (__t)
+     	    emplace(std::move(*__t));
+     	}
 
-         template<typename _Up,
-   	       _Requires<is_constructible<_Tp, const _Up&>,
-   			 __not_<is_convertible<const _Up&, _Tp>>,
-   			 __not_<__converts_from_optional<_Tp, _Up>>> = false>
-   	explicit constexpr
-   	__pmroptional(allocator_arg_t, const __Allocator_type& __a, const __pmroptional<_Up>& __t)
-   	{
-   	  this->_M_set_allocator(__a.resource());
-   	  if (__t)
-   	    emplace(*__t);
-   	}
+           template <typename _Up,
+     		_Requires<is_constructible<_Tp, _Up&&>,
+     			  __not_<is_convertible<_Up&&, _Tp>>,
+	    		  __not_<__converts_from_optional<_Tp, _Up>>> = false>
+     	explicit
+     	__pmroptional(allocator_arg_t, const __Allocator_type& __a, std::optional<_Up>&& __t)
+     	: _Base(std::allocator_arg,__a)
+		{
+     	  if (__t)
+     	    emplace(std::move(*__t));
+     	}
+      template<typename... _Args,
+	       _Requires<is_constructible<_Tp, _Args&&...>> = false>
+	explicit
+	__pmroptional(in_place_t, allocator_arg_t, const __Allocator_type& __a, _Args&&... __args)
+	: _Base(allocator_arg,  __a) 
+	{ 
+	
+	 emplace( std::forward<_Args>(__args)...);
+	 }
 
-         template <typename _Up,
-   		_Requires<is_constructible<_Tp, _Up&&>,
-   			  is_convertible<_Up&&, _Tp>,
-   			  __not_<__converts_from_optional<_Tp, _Up>>> = true>
-   	constexpr
-   	__pmroptional(allocator_arg_t, const __Allocator_type& __a, __pmroptional<_Up>&& __t)
-   	{
-   	  this->_M_set_allocator(__a.resource());
-   	  if (__t)
-   	    emplace(std::move(*__t));
-   	}
-
-         template <typename _Up,
-   		_Requires<is_constructible<_Tp, _Up&&>,
-   			  __not_<is_convertible<_Up&&, _Tp>>,
-   			  __not_<__converts_from_optional<_Tp, _Up>>> = false>
-   	explicit constexpr
-   	__pmroptional(allocator_arg_t, const __Allocator_type& __a, __pmroptional<_Up>&& __t)
-   	{
-   	  this->_M_set_allocator(__a.resource());
-   	  if (__t)
-   	    emplace(std::move(*__t));
-   	}
-
+      template<typename _Up, typename... _Args,
+	       _Requires<is_constructible<_Tp,
+					  initializer_list<_Up>&,
+					  _Args&&...>> = false>
+	explicit
+	__pmroptional(in_place_t, allocator_arg_t, const __Allocator_type& __a, 
+					 initializer_list<_Up> __il, _Args&&... __args)
+	: _Base(allocator_arg,  __a) 
+	{ 
+	 emplace(__il, std::forward<_Args>(__args)...);
+	 }
+	
+	
       // Assignment operators.
       __pmroptional&
       operator=(nullopt_t) noexcept
@@ -841,37 +974,37 @@ namespace pmr {
       }
 
       // Observers.
-      constexpr const _Tp*
+      const _Tp*
       operator->() const
       { return std::__addressof(this->_M_get()); }
 
-      constexpr _Tp*
+      _Tp*
       operator->()
       { return std::__addressof(this->_M_get()); }
 
-      constexpr const _Tp&
+      const _Tp&
       operator*() const&
       { return this->_M_get(); }
 
-      constexpr _Tp&
+      _Tp&
       operator*()&
       { return this->_M_get(); }
 
-      constexpr _Tp&&
+      _Tp&&
       operator*()&&
       { return std::move(this->_M_get()); }
 
-      constexpr const _Tp&&
+      const _Tp&&
       operator*() const&&
       { return std::move(this->_M_get()); }
 
-      constexpr explicit operator bool() const noexcept
+      explicit operator bool() const noexcept
       { return this->_M_is_engaged(); }
 
-      constexpr bool has_value() const noexcept
+      bool has_value() const noexcept
       { return this->_M_is_engaged(); }
 
-      constexpr const _Tp&
+      const _Tp&
       value() const&
       {
 	return this->_M_is_engaged()
@@ -879,7 +1012,7 @@ namespace pmr {
 	  : (__throw_bad_optional_access(), this->_M_get());
       }
 
-      constexpr _Tp&
+      _Tp&
       value()&
       {
 	return this->_M_is_engaged()
@@ -887,7 +1020,7 @@ namespace pmr {
 	  : (__throw_bad_optional_access(), this->_M_get());
       }
 
-      constexpr _Tp&&
+      _Tp&&
       value()&&
       {
 	return this->_M_is_engaged()
@@ -895,7 +1028,7 @@ namespace pmr {
 	  : (__throw_bad_optional_access(), std::move(this->_M_get()));
       }
 
-      constexpr const _Tp&&
+      const _Tp&&
       value() const&&
       {
 	return this->_M_is_engaged()
@@ -904,7 +1037,7 @@ namespace pmr {
       }
 
       template<typename _Up>
-	constexpr _Tp
+	_Tp
 	value_or(_Up&& __u) const&
 	{
 	  static_assert(is_copy_constructible_v<_Tp>);
@@ -915,7 +1048,7 @@ namespace pmr {
 	}
 
       template<typename _Up>
-	constexpr _Tp
+	_Tp
 	value_or(_Up&& __u) &&
 	{
 	  static_assert(is_move_constructible_v<_Tp>);
@@ -935,7 +1068,7 @@ namespace pmr {
 
   // Comparisons between optional values.
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator==(const __pmroptional<_Tp>& __lhs, const __pmroptional<_Up>& __rhs)
     -> __optional_relop_t<decltype(declval<_Tp>() == declval<_Up>())>
     {
@@ -944,7 +1077,7 @@ namespace pmr {
     }
 
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator!=(const __pmroptional<_Tp>& __lhs, const __pmroptional<_Up>& __rhs)
     -> __optional_relop_t<decltype(declval<_Tp>() != declval<_Up>())>
     {
@@ -953,7 +1086,7 @@ namespace pmr {
     }
 
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator<(const __pmroptional<_Tp>& __lhs, const __pmroptional<_Up>& __rhs)
     -> __optional_relop_t<decltype(declval<_Tp>() < declval<_Up>())>
     {
@@ -961,7 +1094,7 @@ namespace pmr {
     }
 
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator>(const __pmroptional<_Tp>& __lhs, const __pmroptional<_Up>& __rhs)
     -> __optional_relop_t<decltype(declval<_Tp>() > declval<_Up>())>
     {
@@ -969,7 +1102,7 @@ namespace pmr {
     }
 
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator<=(const __pmroptional<_Tp>& __lhs, const __pmroptional<_Up>& __rhs)
     -> __optional_relop_t<decltype(declval<_Tp>() <= declval<_Up>())>
     {
@@ -977,7 +1110,7 @@ namespace pmr {
     }
 
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator>=(const __pmroptional<_Tp>& __lhs, const __pmroptional<_Up>& __rhs)
     -> __optional_relop_t<decltype(declval<_Tp>() >= declval<_Up>())>
     {
@@ -986,7 +1119,7 @@ namespace pmr {
 
   
   template<typename _Tp, typename _Up>
-      constexpr auto
+      auto
       operator==(const __pmroptional<_Tp>& __lhs, const std::optional<_Up>& __rhs)
       -> __optional_relop_t<decltype(declval<_Tp>() == declval<_Up>())>
       {
@@ -995,7 +1128,7 @@ namespace pmr {
       }
 
     template<typename _Tp, typename _Up>
-      constexpr auto
+      auto
       operator!=(const __pmroptional<_Tp>& __lhs, const std::optional<_Up>& __rhs)
       -> __optional_relop_t<decltype(declval<_Tp>() != declval<_Up>())>
       {
@@ -1004,7 +1137,7 @@ namespace pmr {
       }
 
     template<typename _Tp, typename _Up>
-      constexpr auto
+      auto
       operator<(const __pmroptional<_Tp>& __lhs, const std::optional<_Up>& __rhs)
       -> __optional_relop_t<decltype(declval<_Tp>() < declval<_Up>())>
       {
@@ -1012,7 +1145,7 @@ namespace pmr {
       }
 
     template<typename _Tp, typename _Up>
-      constexpr auto
+      auto
       operator>(const __pmroptional<_Tp>& __lhs, const std::optional<_Up>& __rhs)
       -> __optional_relop_t<decltype(declval<_Tp>() > declval<_Up>())>
       {
@@ -1020,7 +1153,7 @@ namespace pmr {
       }
 
     template<typename _Tp, typename _Up>
-      constexpr auto
+      auto
       operator<=(const __pmroptional<_Tp>& __lhs, const std::optional<_Up>& __rhs)
       -> __optional_relop_t<decltype(declval<_Tp>() <= declval<_Up>())>
       {
@@ -1028,7 +1161,7 @@ namespace pmr {
       }
 
     template<typename _Tp, typename _Up>
-      constexpr auto
+      auto
       operator>=(const __pmroptional<_Tp>& __lhs, const std::optional<_Up>& __rhs)
       -> __optional_relop_t<decltype(declval<_Tp>() >= declval<_Up>())>
       {
@@ -1037,7 +1170,7 @@ namespace pmr {
     
 	
   template<typename _Tp, typename _Up>
-	constexpr auto
+	auto
 	operator==(const std::optional<_Tp>& __lhs, const __pmroptional<_Up>& __rhs)
 	-> __optional_relop_t<decltype(declval<_Tp>() == declval<_Up>())>
 	{
@@ -1046,7 +1179,7 @@ namespace pmr {
 	}
 
   template<typename _Tp, typename _Up>
-	constexpr auto
+	auto
 	operator!=(const std::optional<_Tp>& __lhs, const __pmroptional<_Up>& __rhs)
 	-> __optional_relop_t<decltype(declval<_Tp>() != declval<_Up>())>
 	{
@@ -1055,7 +1188,7 @@ namespace pmr {
 	}
 
   template<typename _Tp, typename _Up>
-	constexpr auto
+	auto
 	operator<(const std::optional<_Tp>& __lhs, const __pmroptional<_Up>& __rhs)
 	-> __optional_relop_t<decltype(declval<_Tp>() < declval<_Up>())>
 	{
@@ -1063,7 +1196,7 @@ namespace pmr {
 	}
 
   template<typename _Tp, typename _Up>
-	constexpr auto
+	auto
 	operator>(const std::optional<_Tp>& __lhs, const __pmroptional<_Up>& __rhs)
 	-> __optional_relop_t<decltype(declval<_Tp>() > declval<_Up>())>
 	{
@@ -1071,7 +1204,7 @@ namespace pmr {
 	}
 
   template<typename _Tp, typename _Up>
-	constexpr auto
+	auto
 	operator<=(const std::optional<_Tp>& __lhs, const __pmroptional<_Up>& __rhs)
 	-> __optional_relop_t<decltype(declval<_Tp>() <= declval<_Up>())>
 	{
@@ -1079,7 +1212,7 @@ namespace pmr {
 	}
 
   template<typename _Tp, typename _Up>
-	constexpr auto
+	auto
 	operator>=(const std::optional<_Tp>& __lhs, const __pmroptional<_Up>& __rhs)
 	-> __optional_relop_t<decltype(declval<_Tp>() >= declval<_Up>())>
 	{
@@ -1087,134 +1220,134 @@ namespace pmr {
 	}
   // Comparisons with nullopt.
   template<typename _Tp>
-    constexpr bool
+    bool
     operator==(const __pmroptional<_Tp>& __lhs, nullopt_t) noexcept
     { return !__lhs; }
 
   template<typename _Tp>
-    constexpr bool
+    bool
     operator==(nullopt_t, const __pmroptional<_Tp>& __rhs) noexcept
     { return !__rhs; }
 
   template<typename _Tp>
-    constexpr bool
+    bool
     operator!=(const __pmroptional<_Tp>& __lhs, nullopt_t) noexcept
     { return static_cast<bool>(__lhs); }
 
   template<typename _Tp>
-    constexpr bool
+    bool
     operator!=(nullopt_t, const __pmroptional<_Tp>& __rhs) noexcept
     { return static_cast<bool>(__rhs); }
 
   template<typename _Tp>
-    constexpr bool
+    bool
     operator<(const __pmroptional<_Tp>& /* __lhs */, nullopt_t) noexcept
     { return false; }
 
   template<typename _Tp>
-    constexpr bool
+    bool
     operator<(nullopt_t, const __pmroptional<_Tp>& __rhs) noexcept
     { return static_cast<bool>(__rhs); }
 
   template<typename _Tp>
-    constexpr bool
+    bool
     operator>(const __pmroptional<_Tp>& __lhs, nullopt_t) noexcept
     { return static_cast<bool>(__lhs); }
 
   template<typename _Tp>
-    constexpr bool
+    bool
     operator>(nullopt_t, const __pmroptional<_Tp>& /* __rhs */) noexcept
     { return false; }
 
   template<typename _Tp>
-    constexpr bool
+    bool
     operator<=(const __pmroptional<_Tp>& __lhs, nullopt_t) noexcept
     { return !__lhs; }
 
   template<typename _Tp>
-    constexpr bool
+    bool
     operator<=(nullopt_t, const __pmroptional<_Tp>& /* __rhs */) noexcept
     { return true; }
 
   template<typename _Tp>
-    constexpr bool
+    bool
     operator>=(const __pmroptional<_Tp>& /* __lhs */, nullopt_t) noexcept
     { return true; }
 
   template<typename _Tp>
-    constexpr bool
+    bool
     operator>=(nullopt_t, const __pmroptional<_Tp>& __rhs) noexcept
     { return !__rhs; }
 
   // Comparisons with value type.
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator==(const __pmroptional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_relop_t<decltype(declval<_Tp>() == declval<_Up>())>
     { return __lhs && *__lhs == __rhs; }
 
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator==(const _Up& __lhs, const __pmroptional<_Tp>& __rhs)
     -> __optional_relop_t<decltype(declval<_Up>() == declval<_Tp>())>
     { return __rhs && __lhs == *__rhs; }
 
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator!=(const __pmroptional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_relop_t<decltype(declval<_Tp>() != declval<_Up>())>
     { return !__lhs || *__lhs != __rhs; }
 
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator!=(const _Up& __lhs, const __pmroptional<_Tp>& __rhs)
     -> __optional_relop_t<decltype(declval<_Up>() != declval<_Tp>())>
     { return !__rhs || __lhs != *__rhs; }
 
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator<(const __pmroptional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_relop_t<decltype(declval<_Tp>() < declval<_Up>())>
     { return !__lhs || *__lhs < __rhs; }
 
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator<(const _Up& __lhs, const __pmroptional<_Tp>& __rhs)
     -> __optional_relop_t<decltype(declval<_Up>() < declval<_Tp>())>
     { return __rhs && __lhs < *__rhs; }
 
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator>(const __pmroptional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_relop_t<decltype(declval<_Tp>() > declval<_Up>())>
     { return __lhs && *__lhs > __rhs; }
 
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator>(const _Up& __lhs, const __pmroptional<_Tp>& __rhs)
     -> __optional_relop_t<decltype(declval<_Up>() > declval<_Tp>())>
     { return !__rhs || __lhs > *__rhs; }
 
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator<=(const __pmroptional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_relop_t<decltype(declval<_Tp>() <= declval<_Up>())>
     { return !__lhs || *__lhs <= __rhs; }
 
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator<=(const _Up& __lhs, const __pmroptional<_Tp>& __rhs)
     -> __optional_relop_t<decltype(declval<_Up>() <= declval<_Tp>())>
     { return __rhs && __lhs <= *__rhs; }
 
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator>=(const __pmroptional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_relop_t<decltype(declval<_Tp>() >= declval<_Up>())>
     { return __lhs && *__lhs >= __rhs; }
 
   template<typename _Tp, typename _Up>
-    constexpr auto
+    auto
     operator>=(const _Up& __lhs, const __pmroptional<_Tp>& __rhs)
     -> __optional_relop_t<decltype(declval<_Up>() >= declval<_Tp>())>
     { return !__rhs || __lhs >= *__rhs; }
@@ -1238,20 +1371,41 @@ namespace pmr {
     swap(__pmroptional<_Tp>&, __pmroptional<_Tp>&) = delete;
 
   template<typename _Tp>
-    constexpr optional<decay_t<_Tp>>
+    optional<decay_t<_Tp>>
+    constexpr
     make_optional(_Tp&& __t)
     { return optional<decay_t<_Tp>> { std::forward<_Tp>(__t) }; }
 
   template<typename _Tp, typename ..._Args>
-    constexpr optional<_Tp>
+    optional<_Tp>
+    constexpr
     make_optional(_Args&&... __args)
     { return optional<_Tp> { in_place, std::forward<_Args>(__args)... }; }
 
   template<typename _Tp, typename _Up, typename ..._Args>
-    constexpr optional<_Tp>
+    constexpr
+    optional<_Tp>
     make_optional(initializer_list<_Up> __il, _Args&&... __args)
-    { return optional<_Tp> { in_place, __il, std::forward<_Args>(__args)... }; }
+    { return optional<_Tp> ( in_place, __il, std::forward<_Args>(__args)... ); }
 
+
+  template<typename _Tp>
+  enable_if_t<std::uses_allocator<_Tp, polymorphic_allocator<void>>::value,
+      		    optional<decay_t<_Tp>>>
+    alloc_optional(const polymorphic_allocator<void>& __a,_Tp&& __t)
+    { return optional<decay_t<_Tp>> (in_place, allocator_arg, __a, std::forward<_Tp>(__t) ); }
+
+  template<typename _Tp, typename ..._Args>
+  enable_if_t<std::uses_allocator<_Tp, polymorphic_allocator<void>>::value,
+      		    optional<_Tp>>
+    alloc_optional(const polymorphic_allocator<void>& __a,_Args&&... __args)
+    { return optional<_Tp> (in_place, allocator_arg, __a, std::forward<_Args>(__args)... );} 
+
+  template<typename _Tp,typename _Up, typename ..._Args>  
+  enable_if_t<std::uses_allocator<_Tp, polymorphic_allocator<void>>::value,
+      		    optional<_Tp>>
+    alloc_optional(const polymorphic_allocator<void>& __a, initializer_list<_Up> __il, _Args&&... __args)
+    { return optional<_Tp> {in_place, allocator_arg, __a,__il, std::forward<_Args>(__args)... }; }
   
 } // namespace pmr
 // Hash.
@@ -1267,7 +1421,7 @@ namespace pmr {
       {
         // We pick an arbitrary hash for disengaged optionals which hopefully
         // usual values of _Tp won't typically hash to.
-        constexpr size_t __magic_disengaged_hash = static_cast<size_t>(-3333);
+        size_t __magic_disengaged_hash = static_cast<size_t>(-3333);
         return __t ? hash<_Up>{}(*__t) : __magic_disengaged_hash;
       }
     };
