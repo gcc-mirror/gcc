@@ -4908,7 +4908,18 @@ trees_out::core_bools (tree t)
   WB (t->base.addressable_flag);
   WB (t->base.volatile_flag);
   WB (t->base.readonly_flag);
-  WB (t->base.asm_written_flag);
+
+  bool asm_written = t->base.asm_written_flag;
+  if (asm_written)
+    {
+      /* Some cases we do not want to propagate asm_written, as it is
+	 TU-local.  */
+      if (TYPE_P (t) || TREE_CODE (t) == TYPE_DECL)
+	/* It's telling us about debug info.  */
+	asm_written = false;
+    }
+  WB (asm_written);
+  
   WB (t->base.nowarning_flag);
   // visited is zero
   WB (t->base.used_flag); // FIXME: should we be dumping this?
@@ -5063,6 +5074,7 @@ trees_in::core_bools (tree t)
   RB (t->base.addressable_flag);
   RB (t->base.volatile_flag);
   RB (t->base.readonly_flag);
+  /* The writer will have written false when we don't need it.  */
   RB (t->base.asm_written_flag);
   RB (t->base.nowarning_flag);
   // visited is zero
@@ -5349,7 +5361,7 @@ trees_out::lang_type_bools (tree t)
   WB (lang->diamond_shaped);
   WB (lang->repeated_base);
   gcc_assert (!lang->being_defined);
-  WB (lang->debug_requested);
+  // lang->debug_requested
   WB (lang->fields_readonly);
   WB (lang->ptrmemfunc_flag);
   WB (lang->was_anonymous);
@@ -5415,7 +5427,7 @@ trees_in::lang_type_bools (tree t)
   RB (lang->diamond_shaped);
   RB (lang->repeated_base);
   gcc_assert (!lang->being_defined);
-  RB (lang->debug_requested);
+  gcc_assert (!lang->debug_requested);
   RB (lang->fields_readonly);
   RB (lang->ptrmemfunc_flag);
   RB (lang->was_anonymous);
@@ -10062,6 +10074,16 @@ trees_in::read_class_def (tree defn, tree maybe_template)
   if (!odr)
     fixup_type_variants (type);
 
+  /* IS_FAKE_BASE_TYPE is inaccurate at this point, because if this is
+      the fake base, we've not hooked it into the containing class's
+      data structure yet.  Fortunately it has a unique name.  */
+  if (DECL_NAME (defn) != as_base_identifier
+      && (!CLASSTYPE_TEMPLATE_INFO (type)
+	  || !uses_template_parms (TI_ARGS (CLASSTYPE_TEMPLATE_INFO (type)))))
+    /* Emit debug info.  It'd be nice to know if the interface TU
+       already emitted this.  */
+    rest_of_type_compilation (type, !LOCAL_CLASS_P (type));
+
   /* Now define all the members.  */
   while (tree member = tree_node ())
     {
@@ -10118,6 +10140,8 @@ trees_in::read_enum_def (tree defn, tree maybe_template)
   TYPE_VALUES (type) = values;
   TYPE_MIN_VALUE (type) = min;
   TYPE_MAX_VALUE (type) = max;
+
+  rest_of_type_compilation (type, DECL_NAMESPACE_SCOPE_P (defn));
 
   return true;
 }
@@ -16251,6 +16275,12 @@ module_state::read (int fd, int e, cpp_reader *reader)
   if (!read_config (config))
     return;
 
+  // FIXME: Macro expansions can refer to imported locations.  Split
+  // the location reading into macro & non-macro blocks, and read the
+  // former after we've read the imports.  We only need direct import
+  // locations before reading the imports, and those have already been
+  // de-macrofied to avoid exactly this problem.  But I forgot when
+  // writing the location tables themselves :(
   if (!read_locations ())
     return;
 
@@ -17707,7 +17737,7 @@ finish_module_processing (cpp_reader *reader)
       if (flag_module_only)
 	warning (0, "%<-fmodule-only%> used for non-interface");
     }
-  else
+  else if (!flag_syntax_only)
     {
       int fd = -1;
       int e = ENOENT;

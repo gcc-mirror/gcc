@@ -1,3 +1,14 @@
+2019-08-23  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_out::core_bools): Don't propagate asm_written
+	for types.
+	(trees_{in,out}::lang_type_bools): Don't stream debug_requested.
+	(trees_in::read_{enum,class}_def): Register for debug.
+	(finish_module_processing): Don't write module when syntax only.
+	gcc/testsuite/
+	* g++.dg/modules/debug-1_[ab].C: New.
+
 2019-08-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
