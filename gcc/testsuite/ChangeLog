@@ -1,3 +1,8 @@
+2019-08-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91304 - prefix attributes ignored in condition.
+	* g++.dg/cpp0x/gen-attrs-70.C: New test.
+
 2019-08-22  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/91490
