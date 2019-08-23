@@ -11402,6 +11402,15 @@ is_aligning_offset (const_tree offset, const_tree exp)
 tree
 string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 {
+  tree dummy = NULL_TREE;;
+  if (!mem_size)
+    mem_size = &dummy;
+
+  /* Store the type of the original expression before conversions
+     via NOP_EXPR or POINTER_PLUS_EXPR to other types have been
+     removed.  */
+  tree argtype = TREE_TYPE (arg);
+
   tree array;
   STRIP_NOPS (arg);
 
@@ -11464,7 +11473,7 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 	      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == ARRAY_TYPE
 	      && !(decl && !*decl)
 	      && !(decl && tree_fits_uhwi_p (DECL_SIZE_UNIT (*decl))
-		   && mem_size && tree_fits_uhwi_p (*mem_size)
+		   && tree_fits_uhwi_p (*mem_size)
 		   && tree_int_cst_equal (*mem_size, DECL_SIZE_UNIT (*decl))))
 	    return NULL_TREE;
 
@@ -11496,7 +11505,7 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 	      && TREE_CODE (TREE_TYPE (TREE_TYPE (rhs1))) == ARRAY_TYPE
 	      && !(decl && !*decl)
 	      && !(decl && tree_fits_uhwi_p (DECL_SIZE_UNIT (*decl))
-		   && mem_size && tree_fits_uhwi_p (*mem_size)
+		   && tree_fits_uhwi_p (*mem_size)
 		   && tree_int_cst_equal (*mem_size, DECL_SIZE_UNIT (*decl))))
 	    return NULL_TREE;
 
@@ -11530,8 +11539,7 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
   if (TREE_CODE (array) == STRING_CST)
     {
       *ptr_offset = fold_convert (sizetype, offset);
-      if (mem_size)
-	*mem_size = TYPE_SIZE_UNIT (TREE_TYPE (array));
+      *mem_size = TYPE_SIZE_UNIT (TREE_TYPE (array));
       if (decl)
 	*decl = NULL_TREE;
       gcc_checking_assert (tree_to_shwi (TYPE_SIZE_UNIT (TREE_TYPE (array)))
@@ -11561,7 +11569,7 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 
       base_off = wioff.to_uhwi ();
       unsigned HOST_WIDE_INT fieldoff = 0;
-      init = fold_ctor_reference (NULL_TREE, init, base_off, 0, array,
+      init = fold_ctor_reference (TREE_TYPE (arg), init, base_off, 0, array,
 				  &fieldoff);
       HOST_WIDE_INT cstoff;
       if (!base_off.is_constant (&cstoff))
@@ -11580,17 +11588,11 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 
   *ptr_offset = offset;
 
-  tree eltype = TREE_TYPE (init);
-  tree initsize = TYPE_SIZE_UNIT (eltype);
-  if (mem_size)
-    *mem_size = initsize;
-
-  if (decl)
-    *decl = array;
+  tree inittype = TREE_TYPE (init);
 
   if (TREE_CODE (init) == INTEGER_CST
       && (TREE_CODE (TREE_TYPE (array)) == INTEGER_TYPE
-	  || TYPE_MAIN_VARIANT (eltype) == char_type_node))
+	  || TYPE_MAIN_VARIANT (inittype) == char_type_node))
     {
       /* For a reference to (address of) a single constant character,
 	 store the native representation of the character in CHARBUF.
@@ -11602,16 +11604,48 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
       int len = native_encode_expr (init, charbuf, sizeof charbuf, 0);
       if (len > 0)
 	{
-	  /* Construct a string literal with elements of ELTYPE and
+	  /* Construct a string literal with elements of INITTYPE and
 	     the representation above.  Then strip
 	     the ADDR_EXPR (ARRAY_REF (...)) around the STRING_CST.  */
-	  init = build_string_literal (len, (char *)charbuf, eltype);
+	  init = build_string_literal (len, (char *)charbuf, inittype);
 	  init = TREE_OPERAND (TREE_OPERAND (init, 0), 0);
 	}
     }
 
+  tree initsize = TYPE_SIZE_UNIT (inittype);
+
+  if (TREE_CODE (init) == CONSTRUCTOR && initializer_zerop (init))
+    {
+      /* Fold an empty/zero constructor for an implicitly initialized
+	 object or subobject into the empty string.  */
+
+      /* Determine the character type from that of the original
+	 expression.  */
+      tree chartype = argtype;
+      if (POINTER_TYPE_P (chartype))
+	chartype = TREE_TYPE (chartype);
+      while (TREE_CODE (chartype) == ARRAY_TYPE)
+	chartype = TREE_TYPE (chartype);
+      /* Convert a char array to an empty STRING_CST having an array
+	 of the expected type.  */
+      if (!initsize)
+	  initsize = integer_zero_node;
+
+      unsigned HOST_WIDE_INT size = tree_to_uhwi (initsize);
+      init = build_string_literal (size ? 1 : 0, "", chartype, size);
+      init = TREE_OPERAND (init, 0);
+      init = TREE_OPERAND (init, 0);
+
+      *ptr_offset = integer_zero_node;
+    }
+
+  if (decl)
+    *decl = array;
+
   if (TREE_CODE (init) != STRING_CST)
     return NULL_TREE;
+
+  *mem_size = initsize;
 
   gcc_checking_assert (tree_to_shwi (initsize) >= TREE_STRING_LENGTH (init));
 

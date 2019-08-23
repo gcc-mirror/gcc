@@ -172,7 +172,8 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
-    struct passwd {
+    struct passwd
+    {
         char *pw_name;
         char *pw_passwd;
         uid_t pw_uid;
@@ -257,6 +258,8 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
+    int getpwnam_r(in char*, passwd*, char*, size_t, passwd**);
+    int getpwuid_r(uid_t, passwd*, char*, size_t, passwd**);
 }
 else version (CRuntime_UClibc)
 {
@@ -325,8 +328,9 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
-    int getpwnam_r(in char*, passwd*, char*, size_t, passwd**);
-    int getpwuid_r(uid_t, passwd*, char*, size_t, passwd**);
+    void    endpwent();
+    passwd* getpwent();
+    void    setpwent();
 }
 else version (CRuntime_UClibc)
 {

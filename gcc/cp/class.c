@@ -2805,31 +2805,34 @@ get_basefndecls (tree name, tree t, vec<tree> *base_fndecls)
     }
 }
 
-/* If this declaration supersedes the declaration of
-   a method declared virtual in the base class, then
-   mark this field as being virtual as well.  */
+/* If this method overrides a virtual method from a base, then mark
+   this member function as being virtual as well.  Do 'final' and
+   'override' checks too.  */
 
 void
 check_for_override (tree decl, tree ctype)
 {
-  bool overrides_found = false;
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     /* In [temp.mem] we have:
 
 	 A specialization of a member function template does not
 	 override a virtual function from a base class.  */
     return;
-  if ((DECL_DESTRUCTOR_P (decl)
-       || IDENTIFIER_VIRTUAL_P (DECL_NAME (decl))
-       || DECL_CONV_FN_P (decl))
+
+  /* IDENTIFIER_VIRTUAL_P indicates whether the name has ever been
+     used for a vfunc.  That avoids the expensive
+     look_for_overrides call that when we know there's nothing to
+     find.  */
+  if (IDENTIFIER_VIRTUAL_P (DECL_NAME (decl))
       && look_for_overrides (ctype, decl)
+      /* Check staticness after we've checked if we 'override'.  */
       && !DECL_STATIC_FUNCTION_P (decl))
-    /* Set DECL_VINDEX to a value that is neither an INTEGER_CST nor
-       the error_mark_node so that we know it is an overriding
-       function.  */
     {
+      /* Set DECL_VINDEX to a value that is neither an INTEGER_CST nor
+	 the error_mark_node so that we know it is an overriding
+	 function.  */
       DECL_VINDEX (decl) = decl;
-      overrides_found = true;
+
       if (warn_override
 	  && !DECL_OVERRIDE_P (decl)
 	  && !DECL_FINAL_P (decl)
@@ -2837,19 +2840,23 @@ check_for_override (tree decl, tree ctype)
 	warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wsuggest_override,
 		    "%qD can be marked override", decl);
     }
+  else if (DECL_OVERRIDE_P (decl))
+    error ("%q+#D marked %<override%>, but does not override", decl);
 
   if (DECL_VIRTUAL_P (decl))
     {
+      /* Remember this identifier is virtual name.  */
+      IDENTIFIER_VIRTUAL_P (DECL_NAME (decl)) = true;
+
       if (!DECL_VINDEX (decl))
+	/* It's a new vfunc.  */
 	DECL_VINDEX (decl) = error_mark_node;
-      IDENTIFIER_VIRTUAL_P (DECL_NAME (decl)) = 1;
+
       if (DECL_DESTRUCTOR_P (decl))
 	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (ctype) = true;
     }
   else if (DECL_FINAL_P (decl))
     error ("%q+#D marked %<final%>, but is not virtual", decl);
-  if (DECL_OVERRIDE_P (decl) && !overrides_found)
-    error ("%q+#D marked %<override%>, but does not override", decl);
 }
 
 /* Warn about hidden virtual functions that are not overridden in t.

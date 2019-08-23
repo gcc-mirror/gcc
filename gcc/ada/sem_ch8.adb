@@ -1696,7 +1696,7 @@ package body Sem_Ch8 is
       --  AI05-0225: If the renamed entity is a procedure or entry of a
       --  protected object, the target object must be a variable.
 
-      if Ekind (Scope (Old_S)) in Protected_Kind
+      if Is_Protected_Type (Scope (Old_S))
         and then Ekind (New_S) = E_Procedure
         and then not Is_Variable (Prefix (Nam))
       then

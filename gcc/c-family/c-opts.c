@@ -813,14 +813,13 @@ c_common_post_options (const char **pfilename)
      support.  */
   if (c_dialect_cxx ())
     {
-      if (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD)
+      if (flag_excess_precision == EXCESS_PRECISION_STANDARD)
 	sorry ("%<-fexcess-precision=standard%> for C++");
-      flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
+      flag_excess_precision = EXCESS_PRECISION_FAST;
     }
-  else if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT)
-    flag_excess_precision_cmdline = (flag_iso
-				     ? EXCESS_PRECISION_STANDARD
-				     : EXCESS_PRECISION_FAST);
+  else if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
+    flag_excess_precision = (flag_iso ? EXCESS_PRECISION_STANDARD
+				      : EXCESS_PRECISION_FAST);
 
   /* ISO C restricts floating-point expression contraction to within
      source-language expressions (-ffp-contract=on, currently an alias

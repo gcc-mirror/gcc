@@ -672,7 +672,7 @@ package body Sem_SPARK is
    --  Main traversal procedure to check safe pointer usage
 
    procedure Check_Old_Loop_Entry (N : Node_Id);
-   --  Check SPARK RM 3.10(14) regarding 'Old and 'Loop_Entry
+   --  Check SPARK RM 3.10(13) regarding 'Old and 'Loop_Entry
 
    procedure Check_Package_Body (Pack : Node_Id);
 
@@ -1085,7 +1085,7 @@ package body Sem_SPARK is
          Borrowed : constant Node_Id := Get_Observed_Or_Borrowed_Expr (Expr);
 
       begin
-         --  SPARK RM 3.10(8): If the type of the target is an anonymous
+         --  SPARK RM 3.10(7): If the type of the target is an anonymous
          --  access-to-variable type (an owning access type), the source shall
          --  be an owning access object [..] whose root object is the target
          --  object itself.
@@ -1100,7 +1100,7 @@ package body Sem_SPARK is
             if Emit_Messages then
                Error_Msg_NE
                  ("source of assignment must have & as root" &
-                    " (SPARK RM 3.10(8)))",
+                    " (SPARK RM 3.10(7)))",
                   Expr, Var);
             end if;
             return;
@@ -1132,7 +1132,7 @@ package body Sem_SPARK is
             if Emit_Messages then
                Error_Msg_NE
                  ("source of assignment must have & as root" &
-                    " (SPARK RM 3.10(8)))",
+                    " (SPARK RM 3.10(7)))",
                   Expr, Var);
             end if;
             return;
@@ -2855,7 +2855,7 @@ package body Sem_SPARK is
                         Error_Msg_Name_1 := Aname;
                         Error_Msg_N
                           ("prefix of % attribute must be a function call "
-                           & "(SPARK RM 3.10(14))", Pref);
+                           & "(SPARK RM 3.10(13))", Pref);
                      end if;
 
                   elsif Is_Traversal_Function_Call (Pref) then
@@ -2863,7 +2863,7 @@ package body Sem_SPARK is
                         Error_Msg_Name_1 := Aname;
                         Error_Msg_N
                           ("prefix of % attribute should not call a traversal "
-                           & "function (SPARK RM 3.10(14))", Pref);
+                           & "function (SPARK RM 3.10(13))", Pref);
                      end if;
                   end if;
                end if;
@@ -3092,7 +3092,7 @@ package body Sem_SPARK is
 
          --  Postconditions are checked for correct use of 'Old, but starting
          --  from the corresponding declaration, in order to avoid dealing with
-         --  with contracts on generic subprograms, which are not handled in
+         --  with contracts on generic subprograms which are not handled in
          --  GNATprove.
 
          when Pragma_Precondition
@@ -5110,6 +5110,7 @@ package body Sem_SPARK is
       --  in an object.
 
       if not Present (Root)
+        or else not Is_Object (Root)
         or else not Is_Deep (Etype (Root))
       then
          return;

@@ -1845,27 +1845,11 @@ backend_init (void)
   init_regs ();
 }
 
-/* Initialize excess precision settings.
-
-   We have no need to modify anything here, just keep track of what the
-   user requested.  We'll figure out any appropriate relaxations
-   later.  */
-
-static void
-init_excess_precision (void)
-{
-  gcc_assert (flag_excess_precision_cmdline != EXCESS_PRECISION_DEFAULT);
-  flag_excess_precision = flag_excess_precision_cmdline;
-}
-
 /* Initialize things that are both lang-dependent and target-dependent.
    This function can be called more than once if target parameters change.  */
 static void
 lang_dependent_init_target (void)
 {
-  /* This determines excess precision settings.  */
-  init_excess_precision ();
-
   /* This creates various _DECL nodes, so needs to be called after the
      front end is initialized.  It also depends on the HAVE_xxx macros
      generated from the target machine description.  */

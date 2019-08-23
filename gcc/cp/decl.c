@@ -2593,9 +2593,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		    set_builtin_decl_declared_p (fncode, true);
 		  break;
 		}
-	    }
 
-	  copy_attributes_to_builtin (newdecl);
+	      copy_attributes_to_builtin (newdecl);
+	    }
 	}
       if (new_defines_function)
 	/* If defining a function declared with other language

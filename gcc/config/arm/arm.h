@@ -313,9 +313,6 @@ emission of floating point pcs attributes.  */
 /* Nonzero if disallow volatile memory access in IT block.  */
 #define TARGET_NO_VOLATILE_CE		(arm_arch_no_volatile_ce)
 
-/* Should NEON be used for 64-bits bitops.  */
-#define TARGET_PREFER_NEON_64BITS (prefer_neon_for_64bits)
-
 /* Should constant I be slplit for OP.  */
 #define DONT_EARLY_SPLIT_CONSTANT(i, op) \
 				((optimize >= 2) \
@@ -508,10 +505,6 @@ extern int arm_arch_thumb_hwdiv;
 
 /* Nonzero if chip disallows volatile memory access in IT block.  */
 extern int arm_arch_no_volatile_ce;
-
-/* Nonzero if we should use Neon to handle 64-bits operations rather
-   than core registers.  */
-extern int prefer_neon_for_64bits;
 
 /* Nonzero if we shouldn't use literal pools.  */
 #ifndef USED_FOR_TARGET

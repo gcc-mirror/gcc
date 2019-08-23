@@ -94,6 +94,16 @@ else version (NetBSD)
 
     int utime(in char*, in utimbuf*);
 }
+else version (OpenBSD)
+{
+    struct utimbuf
+    {
+        time_t  actime;
+        time_t  modtime;
+    }
+
+    int utime(in char*, in utimbuf*);
+}
 else version (DragonFlyBSD)
 {
     struct utimbuf

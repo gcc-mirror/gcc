@@ -17703,10 +17703,12 @@ Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
 @samp{cortex-a9}, @samp{cortex-a12}, @samp{cortex-a15}, @samp{cortex-a17},
 @samp{cortex-a32}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a55},
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
-@samp{cortex-a76}, @samp{ares}, @samp{cortex-r4}, @samp{cortex-r4f},
+@samp{cortex-a76}, @samp{cortex-a76ae}, @samp{cortex-a77},
+@samp{ares}, @samp{cortex-r4}, @samp{cortex-r4f},
 @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52},
 @samp{cortex-m0}, @samp{cortex-m0plus}, @samp{cortex-m1}, @samp{cortex-m3},
 @samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m23}, @samp{cortex-m33},
+@samp{cortex-m35p},
 @samp{cortex-m1.small-multiply}, @samp{cortex-m0.small-multiply},
 @samp{cortex-m0plus.small-multiply}, @samp{exynos-m1}, @samp{marvell-pj4},
 @samp{neoverse-n1}, @samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2},
@@ -17770,14 +17772,14 @@ The following extension options are common to the listed CPUs:
 
 @table @samp
 @item +nodsp
-Disable the DSP instructions on @samp{cortex-m33}.
+Disable the DSP instructions on @samp{cortex-m33}, @samp{cortex-m35p}.
 
 @item  +nofp
 Disables the floating-point instructions on @samp{arm9e},
 @samp{arm946e-s}, @samp{arm966e-s}, @samp{arm968e-s}, @samp{arm10e},
 @samp{arm1020e}, @samp{arm1022e}, @samp{arm926ej-s},
 @samp{arm1026ej-s}, @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8},
-@samp{cortex-m4}, @samp{cortex-m7} and @samp{cortex-m33}.
+@samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m33} and @samp{cortex-m35p}.
 Disables the floating-point and SIMD instructions on
 @samp{generic-armv7-a}, @samp{cortex-a5}, @samp{cortex-a7},
 @samp{cortex-a8}, @samp{cortex-a9}, @samp{cortex-a12},
@@ -18056,9 +18058,7 @@ defined.
 
 @item -mneon-for-64bits
 @opindex mneon-for-64bits
-Enables using Neon to handle scalar 64-bits operations. This is
-disabled by default since the cost of moving data from core registers
-to Neon is high.
+This option is deprecated and has no effect.
 
 @item -mslow-flash-data
 @opindex mslow-flash-data

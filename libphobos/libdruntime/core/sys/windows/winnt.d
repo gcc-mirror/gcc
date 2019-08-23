@@ -49,6 +49,9 @@ alias void*  PVOID64;
 alias const(char)*  PCCH, LPCCH, PCSTR, LPCSTR;
 alias const(wchar)* LPCWCH, PCWCH, LPCWSTR, PCWSTR;
 
+alias PSTR* PZPSTR;
+alias PWSTR* PZPWSTR;
+
 version (Unicode) {
     alias WCHAR TCHAR, _TCHAR;
 } else {

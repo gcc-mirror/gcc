@@ -19538,7 +19538,7 @@ package body Sem_Prag is
             | Pragma_Max_Entry_Queue_Depth
             | Pragma_Max_Queue_Length
          =>
-         Max_Queue_Length : declare
+         Max_Entry_Queue_Length : declare
             Arg        : Node_Id;
             Entry_Decl : Node_Id;
             Entry_Id   : Entity_Id;
@@ -19589,9 +19589,9 @@ package body Sem_Prag is
 
             Val := Expr_Value (Arg);
 
-            if Val <= 0 then
+            if Val < -1 then
                Error_Pragma_Arg
-                 ("argument for pragma% must be positive", Arg1);
+                 ("argument for pragma% cannot be less than -1", Arg1);
 
             elsif not UI_Is_In_Int_Range (Val) then
                Error_Pragma_Arg
@@ -19599,17 +19599,8 @@ package body Sem_Prag is
 
             end if;
 
-            --  Manually substitute the expression value of the pragma argument
-            --  if it's not an integer literal because this is not taken care
-            --  of automatically elsewhere.
-
-            if Nkind (Arg) /= N_Integer_Literal then
-               Rewrite (Arg, Make_Integer_Literal (Sloc (Arg), Val));
-               Set_Etype (Arg, Etype (Original_Node (Arg)));
-            end if;
-
             Record_Rep_Item (Entry_Id, N);
-         end Max_Queue_Length;
+         end Max_Entry_Queue_Length;
 
          -----------------
          -- Memory_Size --

@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "memmodel.h"
 #include "fold-const.h"
+#include "diagnostic.h"
 #include "stor-layout.h"
 #include "tm.h"
 #include "tm_p.h"
@@ -145,17 +146,24 @@ Target::_init (void)
   Target::maxStaticDataSize = tree_to_shwi (TYPE_MAX_VALUE (integer_type_node));
 
   /* Define what type to use for size_t, ptrdiff_t.  */
-  if (POINTER_SIZE == 64)
+  if (Target::ptrsize == 8)
     {
       global.params.isLP64 = true;
       Tsize_t = Tuns64;
       Tptrdiff_t = Tint64;
     }
-  else
+  else if (Target::ptrsize == 4)
     {
       Tsize_t = Tuns32;
       Tptrdiff_t = Tint32;
     }
+  else if (Target::ptrsize == 2)
+    {
+      Tsize_t = Tuns16;
+      Tptrdiff_t = Tint16;
+    }
+  else
+    sorry ("D does not support pointers on this target.");
 
   Type::tsize_t = Type::basic[Tsize_t];
   Type::tptrdiff_t = Type::basic[Tptrdiff_t];

@@ -2687,7 +2687,7 @@ assign_parm_find_stack_rtl (tree parm, struct assign_parm_data_one *data)
 	 stack slot boundary, take advantage of that excess alignment.
 	 Don't make any assumptions if STACK_POINTER_OFFSET is in use.  */
       if (poly_int_rtx_p (offset_rtx, &offset)
-	  && STACK_POINTER_OFFSET == 0)
+	  && known_eq (STACK_POINTER_OFFSET, 0))
 	{
 	  unsigned int offset_align = known_alignment (offset) * BITS_PER_UNIT;
 	  if (offset_align == 0 || offset_align > STACK_BOUNDARY)

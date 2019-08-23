@@ -580,6 +580,12 @@ struct InSituRegion(size_t size, size_t minAlign = platformAlignment)
     assert(a.length == 2001);
 }
 
+version(CRuntime_Musl)
+{
+    // sbrk and brk are disabled in Musl:
+    // https://git.musl-libc.org/cgit/musl/commit/?id=7a995fe706e519a4f55399776ef0df9596101f93
+    // https://git.musl-libc.org/cgit/musl/commit/?id=863d628d93ea341b6a32661a1654320ce69f6a07
+} else:
 private extern(C) void* sbrk(long);
 private extern(C) int brk(shared void*);
 

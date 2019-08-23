@@ -6994,7 +6994,7 @@ package body Checks is
 
       --  Next test for the case where the target type is within the bounds
       --  of the base type of the source type, since in this case we can
-      --  simply convert the bounds of the target type to this base bype
+      --  simply convert the bounds of the target type to this base type
       --  to do the test.
 
       --    [constraint_error when N not in
@@ -7961,6 +7961,12 @@ package body Checks is
         and then Nkind (Prefix (Name (N))) = N_Identifier
         and then Is_RTE (Entity (Prefix (Name (N))), RE_Get_Current_Excep)
       then
+         return;
+      end if;
+
+      --  In GNATprove mode, we do not apply the check
+
+      if GNATprove_Mode then
          return;
       end if;
 

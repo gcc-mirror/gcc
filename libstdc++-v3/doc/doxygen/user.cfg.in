@@ -886,17 +886,6 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/debug/unordered_map \
                          include/debug/unordered_set \
                          include/debug/vector \
-                         include/profile \
-                         include/profile/impl \
-                         include/profile/bitset \
-                         include/profile/deque \
-                         include/profile/forward_list \
-                         include/profile/list \
-                         include/profile/map \
-                         include/profile/set \
-                         include/profile/unordered_map \
-                         include/profile/unordered_set \
-                         include/profile/vector \
                          include/ext/algorithm \
                          include/ext/cmath \
                          include/ext/functional \

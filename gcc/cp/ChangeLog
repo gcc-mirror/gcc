@@ -1,3 +1,26 @@
+2019-08-23  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (check_for_override): Checking IDENTIFIER_VIRTUAL_P is
+	sufficient, reorder DECL_OVERRIDE_P check.
+
+2019-08-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR pch/61250
+	* parser.c (cp_parser_initial_pragma): Call c_common_no_more_pch ()
+	after determining that the first token is not
+	PRAGMA_GCC_PCH_PREPROCESS.
+
+2019-08-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91304 - prefix attributes ignored in condition.
+	* parser.c (cp_parser_condition): Handle prefix attributes.
+
+2019-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/91505
+	* decl.c (duplicate_decls): Call copy_attributes_to_builtin inside
+	the BUILT_IN_NORMAL block rather than afterward.
+
 2019-08-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91264 - detect modifying const objects in constexpr.

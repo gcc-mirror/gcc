@@ -233,11 +233,11 @@ CTOR_LIST_BEGIN;
 static func_ptr force_to_data[1] __attribute__ ((__used__)) = { };
 asm (__LIBGCC_CTORS_SECTION_ASM_OP__);
 STATIC func_ptr __CTOR_LIST__[1]
-  __attribute__ ((__used__, aligned(sizeof(func_ptr))))
+  __attribute__ ((__used__, aligned(__alignof__(func_ptr))))
   = { (func_ptr) (-1) };
 #else
 STATIC func_ptr __CTOR_LIST__[1]
-  __attribute__ ((__used__, section(".ctors"), aligned(sizeof(func_ptr))))
+  __attribute__ ((__used__, section(".ctors"), aligned(__alignof__(func_ptr))))
   = { (func_ptr) (-1) };
 #endif /* __CTOR_LIST__ alternatives */
 
@@ -246,11 +246,11 @@ DTOR_LIST_BEGIN;
 #elif defined(__LIBGCC_DTORS_SECTION_ASM_OP__)
 asm (__LIBGCC_DTORS_SECTION_ASM_OP__);
 STATIC func_ptr __DTOR_LIST__[1]
-  __attribute__ ((aligned(sizeof(func_ptr))))
+  __attribute__ ((aligned(__alignof__(func_ptr))))
   = { (func_ptr) (-1) };
 #else
 STATIC func_ptr __DTOR_LIST__[1]
-  __attribute__((section(".dtors"), aligned(sizeof(func_ptr))))
+  __attribute__((section(".dtors"), aligned(__alignof__(func_ptr))))
   = { (func_ptr) (-1) };
 #endif /* __DTOR_LIST__ alternatives */
 #endif /* USE_INITFINI_ARRAY */
@@ -265,7 +265,7 @@ STATIC EH_FRAME_SECTION_CONST char __EH_FRAME_BEGIN__[]
 
 #if USE_TM_CLONE_REGISTRY
 STATIC func_ptr __TMC_LIST__[]
-  __attribute__((used, section(".tm_clone_table"), aligned(sizeof(void*))))
+  __attribute__((used, section(".tm_clone_table"), aligned(__alignof__(void*))))
   = { };
 # ifdef HAVE_GAS_HIDDEN
 extern func_ptr __TMC_END__[] __attribute__((__visibility__ ("hidden")));
@@ -430,8 +430,8 @@ __do_global_dtors_aux (void)
 CRT_CALL_STATIC_FUNCTION (FINI_SECTION_ASM_OP, __do_global_dtors_aux)
 #elif defined (FINI_ARRAY_SECTION_ASM_OP)
 static func_ptr __do_global_dtors_aux_fini_array_entry[]
-  __attribute__ ((__used__, section(".fini_array"), aligned(sizeof(func_ptr))))
-  = { __do_global_dtors_aux };
+  __attribute__ ((__used__, section(".fini_array"),
+		  aligned(__alignof__(func_ptr)))) = { __do_global_dtors_aux };
 #else /* !FINI_SECTION_ASM_OP && !FINI_ARRAY_SECTION_ASM_OP */
 static void __attribute__((used))
 __do_global_dtors_aux_1 (void)
@@ -474,8 +474,8 @@ frame_dummy (void)
 CRT_CALL_STATIC_FUNCTION (__LIBGCC_INIT_SECTION_ASM_OP__, frame_dummy)
 #else /* defined(__LIBGCC_INIT_SECTION_ASM_OP__) */
 static func_ptr __frame_dummy_init_array_entry[]
-  __attribute__ ((__used__, section(".init_array"), aligned(sizeof(func_ptr))))
-  = { frame_dummy };
+  __attribute__ ((__used__, section(".init_array"),
+		  aligned(__alignof__(func_ptr)))) = { frame_dummy };
 #endif /* !defined(__LIBGCC_INIT_SECTION_ASM_OP__) */
 #endif /* USE_EH_FRAME_REGISTRY || USE_TM_CLONE_REGISTRY */
 
@@ -588,11 +588,11 @@ CTOR_LIST_END;
 static func_ptr force_to_data[1] __attribute__ ((__used__)) = { };
 asm (__LIBGCC_CTORS_SECTION_ASM_OP__);
 STATIC func_ptr __CTOR_END__[1]
-  __attribute__((aligned(sizeof(func_ptr))))
+  __attribute__((aligned(__alignof__(func_ptr))))
   = { (func_ptr) 0 };
 #else
 STATIC func_ptr __CTOR_END__[1]
-  __attribute__((section(".ctors"), aligned(sizeof(func_ptr))))
+  __attribute__((section(".ctors"), aligned(__alignof__(func_ptr))))
   = { (func_ptr) 0 };
 #endif
 
@@ -607,16 +607,16 @@ func_ptr __DTOR_END__[1]
 #ifndef __LIBGCC_DTORS_SECTION_ASM_OP__
 		  section(".dtors"),
 #endif
-		  aligned(sizeof(func_ptr)), visibility ("hidden")))
+		  aligned(__alignof__(func_ptr)), visibility ("hidden")))
   = { (func_ptr) 0 };
 #elif defined(__LIBGCC_DTORS_SECTION_ASM_OP__)
 asm (__LIBGCC_DTORS_SECTION_ASM_OP__);
 STATIC func_ptr __DTOR_END__[1]
-  __attribute__ ((used, aligned(sizeof(func_ptr))))
+  __attribute__ ((used, aligned(__alignof__(func_ptr))))
   = { (func_ptr) 0 };
 #else
 STATIC func_ptr __DTOR_END__[1]
-  __attribute__((used, section(".dtors"), aligned(sizeof(func_ptr))))
+  __attribute__((used, section(".dtors"), aligned(__alignof__(func_ptr))))
   = { (func_ptr) 0 };
 #endif
 #endif /* USE_INITFINI_ARRAY */
@@ -635,7 +635,7 @@ typedef short int32;
 # endif
 STATIC EH_FRAME_SECTION_CONST int32 __FRAME_END__[]
      __attribute__ ((used, section(__LIBGCC_EH_FRAME_SECTION_NAME__),
-		     aligned(sizeof(int32))))
+		     aligned(__alignof__(int32))))
      = { 0 };
 #endif /* __LIBGCC_EH_FRAME_SECTION_NAME__ */
 
@@ -644,7 +644,8 @@ STATIC EH_FRAME_SECTION_CONST int32 __FRAME_END__[]
 static
 # endif
 func_ptr __TMC_END__[]
-  __attribute__((used, section(".tm_clone_table"), aligned(sizeof(void *))))
+  __attribute__((used, section(".tm_clone_table"),
+		 aligned(__alignof__(void *))))
 # ifdef HAVE_GAS_HIDDEN
   __attribute__((__visibility__ ("hidden"))) = { };
 # else

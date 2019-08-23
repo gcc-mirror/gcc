@@ -746,7 +746,7 @@ static bool
 c_cpp_flt_eval_method_iec_559 (void)
 {
   enum excess_precision_type front_end_ept
-    = (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD
+    = (flag_excess_precision == EXCESS_PRECISION_STANDARD
        ? EXCESS_PRECISION_TYPE_STANDARD
        : EXCESS_PRECISION_TYPE_FAST);
 

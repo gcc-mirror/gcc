@@ -1,3 +1,110 @@
+2019-08-23  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
+
+	* gcc.target/mips/get-fcsr-3.c: New test.
+
+2019-08-23  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Warray-bounds-36.c: Make functions static to avoid failures
+	with -fpic.
+	* gcc.dg/Warray-bounds-41.c: Same.
+	* gcc.dg/pr78973.c: Same.
+	* gcc.dg/pr78973-2.c: Same.
+
+2019-08-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91304 - prefix attributes ignored in condition.
+	* g++.dg/cpp0x/gen-attrs-70.C: New test.
+
+2019-08-22  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91490
+	* c-c++-common/Warray-bounds-7.c: New test.
+	* gcc.dg/Warray-bounds-39.c: Expect either -Warray-bounds or
+	-Wstringop-overflow.
+	* gcc.dg/strlenopt-78.c: New test.
+
+2019-08-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/minmax-4.c: Add -mno-stackrealign to dg-options.
+	* gcc.target/i386/minmax-5.c: Likewise.
+	* gcc.target/i386/minmax-6.c: Likewise.
+	* gcc.target/i386/minmax-7.c: Likewise.
+	* gcc.target/i386/pr91154.c: Likewise.
+
+2019-08-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/dump-ada-spec-15.c: Check that the parameters are named.
+
+2019-08-22  Kyrylo Tkachov <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/acle/crc_hf_1.c: New test.
+
+2019-08-22  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/arm/neon-extend-1.c: Remove test.
+	* gcc.target/arm/neon-extend-2.c: Remove test.
+
+2019-08-22  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x4.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x4.c: New test.
+
+2019-08-22  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/88839
+	* gcc.target/aarch64/sve/sel_1.c: New test.
+	* gcc.target/aarch64/sve/sel_2.c: Likewise.
+	* gcc.target/aarch64/sve/sel_3.c: Likewise.
+	* gcc.target/aarch64/sve/sel_4.c: Likewise.
+	* gcc.target/aarch64/sve/sel_5.c: Likewise.
+	* gcc.target/aarch64/sve/sel_6.c: Likewise.
+
+2019-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/91505
+	* g++.target/i386/crc32-4.C: New test.
+
+2019-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91482
+	* gcc.dg/tree-ssa/pr91482.c: New testcase.
+
+2019-08-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/dump-ada-spec-15.c: New test.
+
+2019-08-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/cmse/cmse-9.c: Add quotes to expected
+	warning messages.
+
+2019-08-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/prot9.adb, gnat.dg/prot9_gen.ads,
+	gnat.dg/prot9_pkg1.ads, gnat.dg/prot9_pkg2.ads: New testcase.
+
+2019-08-21  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/implicit_param.adb, gnat.dg/implicit_param_pkg.ads:
+	New testcase.
+
+2019-08-20  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/91458
+	* g++.dg/tree-ssa/ssa-dse-1.C: Use the same search pattern
+	unconditionally (correcting r272199, PR middle-end/90676).
+	* gcc.dg/tree-prof/stringop-2.c: Same.
+
+2019-08-20  Ian Lance Taylor  <iant@golang.org>
+
+	* go.test/test/fixedbugs/bug073.go: Update for language changes.
+
+2019-08-20  Matthew Beliveau  <mbelivea@redhat.com>
+
+	* gcc.dg/tree-ssa/redundant-assign-zero-1.c: New test.
+	* gcc.dg/tree-ssa/redundant-assign-zero-2.c: New test.
+
 2019-08-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/37242

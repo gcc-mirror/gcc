@@ -2070,6 +2070,9 @@ aarch64_gen_compare_reg_maybe_ze (RTX_CODE code, rtx x, rtx y,
 	}
     }
 
+  if (!aarch64_plus_operand (y, y_mode))
+    y = force_reg (y_mode, y);
+
   return aarch64_gen_compare_reg (code, x, y);
 }
 
@@ -17972,6 +17975,50 @@ aarch64_evpc_sve_tbl (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Try to implement D using SVE SEL instruction.  */
+
+static bool
+aarch64_evpc_sel (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  int unit_size = GET_MODE_UNIT_SIZE (vmode);
+
+  if (d->vec_flags != VEC_SVE_DATA
+      || unit_size > 8)
+    return false;
+
+  int n_patterns = d->perm.encoding ().npatterns ();
+  poly_int64 vec_len = d->perm.length ();
+
+  for (int i = 0; i < n_patterns; ++i)
+    if (!known_eq (d->perm[i], i)
+	&& !known_eq (d->perm[i], vec_len + i))
+      return false;
+
+  for (int i = n_patterns; i < n_patterns * 2; i++)
+    if (!d->perm.series_p (i, n_patterns, i, n_patterns)
+	&& !d->perm.series_p (i, n_patterns, vec_len + i, n_patterns))
+      return false;
+
+  if (d->testing_p)
+    return true;
+
+  machine_mode pred_mode = aarch64_sve_pred_mode (unit_size).require ();
+
+  rtx_vector_builder builder (pred_mode, n_patterns, 2);
+  for (int i = 0; i < n_patterns * 2; i++)
+    {
+      rtx elem = known_eq (d->perm[i], i) ? CONST1_RTX (BImode)
+					  : CONST0_RTX (BImode);
+      builder.quick_push (elem);
+    }
+
+  rtx const_vec = builder.build ();
+  rtx pred = force_reg (pred_mode, const_vec);
+  emit_insn (gen_vcond_mask (vmode, vmode, d->target, d->op1, d->op0, pred));
+  return true;
+}
+
 static bool
 aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 {
@@ -18003,6 +18050,8 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
       else if (aarch64_evpc_uzp (d))
 	return true;
       else if (aarch64_evpc_trn (d))
+	return true;
+      else if (aarch64_evpc_sel (d))
 	return true;
       if (d->vec_flags == VEC_SVE_DATA)
 	return aarch64_evpc_sve_tbl (d);

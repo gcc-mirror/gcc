@@ -12353,6 +12353,10 @@ cp_parser_condition (cp_parser* parser)
   /* Restore the saved message.  */
   parser->type_definition_forbidden_message = saved_message;
 
+  /* Gather the attributes that were provided with the
+     decl-specifiers.  */
+  tree prefix_attributes = type_specifiers.attributes;
+
   cp_parser_maybe_commit_to_declaration (parser,
 					 type_specifiers.any_specifiers_p);
 
@@ -12403,7 +12407,7 @@ cp_parser_condition (cp_parser* parser)
 	  /* Create the declaration.  */
 	  decl = start_decl (declarator, &type_specifiers,
 			     /*initialized_p=*/true,
-			     attributes, /*prefix_attributes=*/NULL_TREE,
+			     attributes, prefix_attributes,
 			     &pushed_scope);
 
 	  /* Parse the initializer.  */
@@ -41858,7 +41862,10 @@ cp_parser_initial_pragma (cp_token *first_token)
 {
   cp_lexer_get_preprocessor_token (0, first_token);
   if (cp_parser_pragma_kind (first_token) != PRAGMA_GCC_PCH_PREPROCESS)
-    return;
+    {
+      c_common_no_more_pch ();
+      return;
+    }
 
   cp_lexer_get_preprocessor_token (0, first_token);
 

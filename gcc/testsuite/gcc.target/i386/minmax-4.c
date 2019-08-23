@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mstv -msse4.1" } */
+/* { dg-options "-O2 -mstv -mno-stackrealign -msse4.1" } */
 
 #include "minmax-3.c"
 

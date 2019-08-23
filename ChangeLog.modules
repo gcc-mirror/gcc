@@ -1,5 +1,7 @@
 2019-08-23  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r274867.
+
 	gcc/cp/
 	* module.cc (trees_out::core_bools): Don't propagate asm_written
 	for types.

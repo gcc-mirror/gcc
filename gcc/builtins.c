@@ -620,7 +620,7 @@ unterminated_array (tree exp, tree *size /* = NULL */, bool *exact /* = NULL */)
    into the instruction stream and zero if it is going to be expanded.
    E.g. with i++ ? "foo" : "bar", if ONLY_VALUE is nonzero, constant 3
    is returned, otherwise NULL, since
-   len = c_strlen (src, 1); if (len) expand_expr (len, ...); would not
+   len = c_strlen (ARG, 1); if (len) expand_expr (len, ...); would not
    evaluate the side-effects.
 
    If ONLY_VALUE is two then we do not emit warnings about out-of-bound
@@ -628,7 +628,7 @@ unterminated_array (tree exp, tree *size /* = NULL */, bool *exact /* = NULL */)
    into the instruction stream.
 
    Additional information about the string accessed may be recorded
-   in DATA.  For example, if SRC references an unterminated string,
+   in DATA.  For example, if ARG references an unterminated string,
    then the declaration will be stored in the DECL field.   If the
    length of the unterminated string can be determined, it'll be
    stored in the LEN field.  Note this length could well be different
@@ -640,7 +640,7 @@ unterminated_array (tree exp, tree *size /* = NULL */, bool *exact /* = NULL */)
    The value returned is of type `ssizetype'.  */
 
 tree
-c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
+c_strlen (tree arg, int only_value, c_strlen_data *data, unsigned eltsize)
 {
   /* If we were not passed a DATA pointer, then get one to a local
      structure.  That avoids having to check DATA for NULL before
@@ -650,7 +650,8 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
     data = &local_strlen_data;
 
   gcc_checking_assert (eltsize == 1 || eltsize == 2 || eltsize == 4);
-  STRIP_NOPS (src);
+
+  tree src = STRIP_NOPS (arg);
   if (TREE_CODE (src) == COND_EXPR
       && (only_value || !TREE_SIDE_EFFECTS (TREE_OPERAND (src, 0))))
     {
@@ -762,11 +763,15 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
     {
       /* Suppress multiple warnings for propagated constant strings.  */
       if (only_value != 2
-	  && !TREE_NO_WARNING (src)
+	  && !TREE_NO_WARNING (arg)
 	  && warning_at (loc, OPT_Warray_bounds,
 			 "offset %qwi outside bounds of constant string",
 			 eltoff))
-	TREE_NO_WARNING (src) = 1;
+	{
+	  if (decl)
+	    inform (DECL_SOURCE_LOCATION (decl), "%qE declared here", decl);
+	  TREE_NO_WARNING (arg) = 1;
+	}
       return NULL_TREE;
     }
 
