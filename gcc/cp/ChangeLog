@@ -1,3 +1,12 @@
+2019-08-23  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2019-08-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91521 - wrong error with operator->.
+	* decl.c (grokdeclarator): Return error_mark_node for an invalid
+	trailing return type.
+
 2019-08-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90393 - ICE with throw in ?:
