@@ -1,3 +1,35 @@
+2019-08-23  Martin Liska  <mliska@suse.cz>
+
+	* profile.c (instrument_values): Do not set
+	0 as last argument.
+	* tree-profile.c (gimple_gen_interval_profiler): Remove
+	last argument.
+	(gimple_gen_pow2_profiler): Likewise.
+	(gimple_gen_topn_values_profiler): Likewise.
+	(gimple_gen_ic_profiler): Likewise.
+	(gimple_gen_time_profiler): Likewise.
+	(gimple_gen_average_profiler): Likewise.
+	(gimple_gen_ior_profiler): Likewise.
+	* value-prof.c (dump_histogram_value): Use default
+	in switch statement instead of HIST_TYPE_MAX.
+	(stream_in_histogram_value): Likewise.
+	(gimple_duplicate_stmt_histograms): Do not
+	use NULL for implicitly set arguments.
+	(gimple_divmod_values_to_profile): Do not use
+	reserve+quick_push.
+	(gimple_indirect_call_to_profile): Likewise.
+	(gimple_find_values_to_profile): Use implicit
+	function call arguments.
+	* value-prof.h (gimple_alloc_histogram_value):
+	Set default values.
+	(gimple_gen_interval_profiler): Remove last argument.
+	(gimple_gen_pow2_profiler): Likewise.
+	(gimple_gen_topn_values_profiler): Likewise.
+	(gimple_gen_ic_profiler): Likewise.
+	(gimple_gen_time_profiler): Likewise.
+	(gimple_gen_average_profiler): Likewise.
+	(gimple_gen_ior_profiler): Likewise.
+
 2019-08-22  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/91490
