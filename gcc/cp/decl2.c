@@ -5407,6 +5407,24 @@ cp_warn_deprecated_use (tree decl, tsubst_flags_t complain)
   return warned;
 }
 
+/* Like above, but takes into account outer scopes.  */
+
+void
+cp_warn_deprecated_use_scopes (tree scope)
+{
+  while (scope
+	 && scope != error_mark_node
+	 && scope != global_namespace)
+    {
+      if (cp_warn_deprecated_use (scope))
+	return;
+      if (TYPE_P (scope))
+	scope = CP_TYPE_CONTEXT (scope);
+      else
+	scope = CP_DECL_CONTEXT (scope);
+    }
+}
+
 /* Mark DECL (either a _DECL or a BASELINK) as "used" in the program.
    If DECL is a specialization or implicitly declared class member,
    generate the actual definition.  Return false if something goes

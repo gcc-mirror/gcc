@@ -19378,6 +19378,7 @@ cp_parser_namespace_alias_definition (cp_parser* parser)
   /* Look for the qualified-namespace-specifier.  */
   namespace_specifier
     = cp_parser_qualified_namespace_specifier (parser);
+  cp_warn_deprecated_use_scopes (namespace_specifier);
   /* Look for the `;' token.  */
   cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
 
@@ -19491,6 +19492,8 @@ cp_parser_using_declaration (cp_parser* parser,
   else if (UNSCOPED_ENUM_P (qscope)
 	   && !TYPE_FUNCTION_SCOPE_P (qscope))
     qscope = CP_TYPE_CONTEXT (qscope);
+
+  cp_warn_deprecated_use_scopes (qscope);
 
   if (access_declaration_p && cp_parser_error_occurred (parser))
     /* Something has already gone wrong; there's no need to parse
@@ -19752,6 +19755,7 @@ cp_parser_using_directive (cp_parser* parser)
 				       /*is_declaration=*/true);
   /* Get the namespace being used.  */
   namespace_decl = cp_parser_namespace_name (parser);
+  cp_warn_deprecated_use_scopes (namespace_decl);
   /* And any specified attributes.  */
   attribs = cp_parser_attributes_opt (parser);
 

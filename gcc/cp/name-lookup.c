@@ -4905,6 +4905,24 @@ handle_namespace_attrs (tree ns, tree attributes)
 	    DECL_ATTRIBUTES (ns) = tree_cons (name, args,
 					      DECL_ATTRIBUTES (ns));
 	}
+      else if (is_attribute_p ("deprecated", name))
+	{
+	  if (!DECL_NAME (ns))
+	    {
+	      warning (OPT_Wattributes, "ignoring %qD attribute on anonymous "
+		       "namespace", name);
+	      continue;
+	    }
+	  if (args && TREE_CODE (TREE_VALUE (args)) != STRING_CST)
+	    {
+	      error ("deprecated message is not a string");
+	      continue;
+	    }
+	  TREE_DEPRECATED (ns) = 1;
+	  if (args)
+	    DECL_ATTRIBUTES (ns) = tree_cons (name, args,
+					      DECL_ATTRIBUTES (ns));
+	}
       else
 	{
 	  warning (OPT_Wattributes, "%qD attribute directive ignored",

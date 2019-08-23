@@ -1,3 +1,17 @@
+2019-08-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/79817 - attribute deprecated on namespace.
+	* cp-tree.h (cp_warn_deprecated_use_scopes): Declare.
+	* decl.c (grokdeclarator): Call cp_warn_deprecated_use_scopes.
+	(type_is_deprecated): Likewise.
+	* decl2.c (cp_warn_deprecated_use_scopes): New function.
+	* name-lookup.c (handle_namespace_attrs): Handle attribute deprecated.
+	* parser.c (cp_parser_namespace_alias_definition): Call
+	cp_warn_deprecated_use_scopes.
+	(cp_parser_using_declaration): Likewise.
+	(cp_parser_using_directive): Likewise.
+	* semantics.c (finish_id_expression_1): Likewise.
+
 2019-08-23  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (check_for_override): Checking IDENTIFIER_VIRTUAL_P is
