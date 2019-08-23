@@ -300,7 +300,7 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
 	fprintf (dump_file, "Time profile time:%" PRId64 ".\n",
 		 (int64_t) hist->hvalue.counters[0]);
       break;
-    case HIST_TYPE_MAX:
+    default:
       gcc_unreachable ();
    }
 }
@@ -360,7 +360,7 @@ stream_in_histogram_value (class lto_input_block *ib, gimple *stmt)
       bp = streamer_read_bitpack (ib);
       type = bp_unpack_enum (&bp, hist_type, HIST_TYPE_MAX);
       next = bp_unpack_value (&bp, 1);
-      new_val = gimple_alloc_histogram_value (cfun, type, stmt, NULL);
+      new_val = gimple_alloc_histogram_value (cfun, type, stmt);
       switch (type)
 	{
 	case HIST_TYPE_INTERVAL:
@@ -384,7 +384,7 @@ stream_in_histogram_value (class lto_input_block *ib, gimple *stmt)
 	  ncounters = 1;
 	  break;
 
-	case HIST_TYPE_MAX:
+	default:
 	  gcc_unreachable ();
 	}
       new_val->hvalue.counters = XNEWVAR (gcov_type, sizeof (*new_val->hvalue.counters) * ncounters);
@@ -429,7 +429,7 @@ gimple_duplicate_stmt_histograms (struct function *fun, gimple *stmt,
   histogram_value val;
   for (val = gimple_histogram_value (ofun, ostmt); val != NULL; val = val->hvalue.next)
     {
-      histogram_value new_val = gimple_alloc_histogram_value (fun, val->type, NULL, NULL);
+      histogram_value new_val = gimple_alloc_histogram_value (fun, val->type);
       memcpy (new_val, val, sizeof (*val));
       new_val->hvalue.stmt = stmt;
       new_val->hvalue.counters = XNEWVAR (gcov_type, sizeof (*new_val->hvalue.counters) * new_val->n_counters);
@@ -1791,14 +1791,12 @@ gimple_divmod_values_to_profile (gimple *stmt, histogram_values *values)
       divisor = gimple_assign_rhs2 (stmt);
       op0 = gimple_assign_rhs1 (stmt);
 
-      values->reserve (3);
-
       if (TREE_CODE (divisor) == SSA_NAME)
 	/* Check for the case where the divisor is the same value most
 	   of the time.  */
-	values->quick_push (gimple_alloc_histogram_value (cfun,
-						      HIST_TYPE_TOPN_VALUES,
-						      stmt, divisor));
+	values->safe_push (gimple_alloc_histogram_value (cfun,
+							 HIST_TYPE_TOPN_VALUES,
+							 stmt, divisor));
 
       /* For mod, check whether it is not often a noop (or replaceable by
 	 a few subtractions).  */
@@ -1808,16 +1806,15 @@ gimple_divmod_values_to_profile (gimple *stmt, histogram_values *values)
 	{
           tree val;
           /* Check for a special case where the divisor is power of 2.  */
-	  values->quick_push (gimple_alloc_histogram_value (cfun,
-		                                            HIST_TYPE_POW2,
-							    stmt, divisor));
-
+	  values->safe_push (gimple_alloc_histogram_value (cfun,
+							   HIST_TYPE_POW2,
+							   stmt, divisor));
 	  val = build2 (TRUNC_DIV_EXPR, type, op0, divisor);
 	  hist = gimple_alloc_histogram_value (cfun, HIST_TYPE_INTERVAL,
 					       stmt, val);
 	  hist->hdata.intvl.int_start = 0;
 	  hist->hdata.intvl.steps = 2;
-	  values->quick_push (hist);
+	  values->safe_push (hist);
 	}
       return;
 
@@ -1840,11 +1837,9 @@ gimple_indirect_call_to_profile (gimple *stmt, histogram_values *values)
     return;
 
   callee = gimple_call_fn (stmt);
-
-  values->reserve (3);
-
-  values->quick_push (gimple_alloc_histogram_value (cfun, HIST_TYPE_INDIR_CALL,
-						    stmt, callee));
+  histogram_value v = gimple_alloc_histogram_value (cfun, HIST_TYPE_INDIR_CALL,
+						    stmt, callee);
+  values->safe_push (v);
 
   return;
 }
@@ -1911,7 +1906,8 @@ gimple_find_values_to_profile (histogram_values *values)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       gimple_values_to_profile (gsi_stmt (gsi), values);
 
-  values->safe_push (gimple_alloc_histogram_value (cfun, HIST_TYPE_TIME_PROFILE, 0, 0));
+  values->safe_push (gimple_alloc_histogram_value (cfun,
+						   HIST_TYPE_TIME_PROFILE));
 
   FOR_EACH_VEC_ELT (*values, i, hist)
     {

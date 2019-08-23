@@ -293,11 +293,11 @@ prepare_instrumented_value (gimple_stmt_iterator *gsi, histogram_value value)
    tag of the section for counters, BASE is offset of the counter position.  */
 
 void
-gimple_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
+gimple_gen_interval_profiler (histogram_value value, unsigned tag)
 {
   gimple *stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-  tree ref = tree_coverage_counter_ref (tag, base), ref_ptr;
+  tree ref = tree_coverage_counter_ref (tag, 0), ref_ptr;
   gcall *call;
   tree val;
   tree start = build_int_cst_type (integer_type_node,
@@ -316,14 +316,14 @@ gimple_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base
 
 /* Output instructions as GIMPLE trees to increment the power of two histogram
    counter.  VALUE is the expression whose value is profiled.  TAG is the tag
-   of the section for counters, BASE is offset of the counter position.  */
+   of the section for counters.  */
 
 void
-gimple_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
+gimple_gen_pow2_profiler (histogram_value value, unsigned tag)
 {
   gimple *stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-  tree ref_ptr = tree_coverage_counter_addr (tag, base);
+  tree ref_ptr = tree_coverage_counter_addr (tag, 0);
   gcall *call;
   tree val;
 
@@ -336,15 +336,14 @@ gimple_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
 
 /* Output instructions as GIMPLE trees for code to find the most N common
    values.  VALUE is the expression whose value is profiled.  TAG is the tag
-   of the section for counters, BASE is offset of the counter position.  */
+   of the section for counters.  */
 
 void
-gimple_gen_topn_values_profiler (histogram_value value, unsigned tag,
-				 unsigned base)
+gimple_gen_topn_values_profiler (histogram_value value, unsigned tag)
 {
   gimple *stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-  tree ref_ptr = tree_coverage_counter_addr (tag, base);
+  tree ref_ptr = tree_coverage_counter_addr (tag, 0);
   gcall *call;
   tree val;
 
@@ -359,17 +358,16 @@ gimple_gen_topn_values_profiler (histogram_value value, unsigned tag,
 /* Output instructions as GIMPLE trees for code to find the most
    common called function in indirect call.
    VALUE is the call expression whose indirect callee is profiled.
-   TAG is the tag of the section for counters, BASE is offset of the
-   counter position.  */
+   TAG is the tag of the section for counters.  */
 
 void
-gimple_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
+gimple_gen_ic_profiler (histogram_value value, unsigned tag)
 {
   tree tmp1;
   gassign *stmt1, *stmt2, *stmt3;
   gimple *stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-  tree ref_ptr = tree_coverage_counter_addr (tag, base);
+  tree ref_ptr = tree_coverage_counter_addr (tag, 0);
 
   ref_ptr = force_gimple_operand_gsi (&gsi, ref_ptr,
 				      true, NULL_TREE, true, GSI_SAME_STMT);
@@ -485,7 +483,7 @@ gimple_gen_ic_func_profiler (void)
    counter position and GSI is the iterator we place the counter.  */
 
 void
-gimple_gen_time_profiler (unsigned tag, unsigned base)
+gimple_gen_time_profiler (unsigned tag)
 {
   tree type = get_gcov_type ();
   basic_block entry = ENTRY_BLOCK_PTR_FOR_FN (cfun);
@@ -504,7 +502,7 @@ gimple_gen_time_profiler (unsigned tag, unsigned base)
   e->probability = true_edge->probability.invert ();
 
   gimple_stmt_iterator gsi = gsi_start_bb (cond_bb);
-  tree original_ref = tree_coverage_counter_ref (tag, base);
+  tree original_ref = tree_coverage_counter_ref (tag, 0);
   tree ref = force_gimple_operand_gsi (&gsi, original_ref, true, NULL_TREE,
 				       true, GSI_SAME_STMT);
   tree one = build_int_cst (type, 1);
@@ -564,11 +562,11 @@ gimple_gen_time_profiler (unsigned tag, unsigned base)
    tag of the section for counters, BASE is offset of the counter position.  */
 
 void
-gimple_gen_average_profiler (histogram_value value, unsigned tag, unsigned base)
+gimple_gen_average_profiler (histogram_value value, unsigned tag)
 {
   gimple *stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-  tree ref_ptr = tree_coverage_counter_addr (tag, base);
+  tree ref_ptr = tree_coverage_counter_addr (tag, 0);
   gcall *call;
   tree val;
 
@@ -585,11 +583,11 @@ gimple_gen_average_profiler (histogram_value value, unsigned tag, unsigned base)
    tag of the section for counters, BASE is offset of the counter position.  */
 
 void
-gimple_gen_ior_profiler (histogram_value value, unsigned tag, unsigned base)
+gimple_gen_ior_profiler (histogram_value value, unsigned tag)
 {
   gimple *stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-  tree ref_ptr = tree_coverage_counter_addr (tag, base);
+  tree ref_ptr = tree_coverage_counter_addr (tag, 0);
   gcall *call;
   tree val;
 
