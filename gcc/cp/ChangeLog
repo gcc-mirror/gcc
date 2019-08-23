@@ -1,5 +1,10 @@
 2019-08-22  Jason Merrill  <jason@redhat.com>
 
+	* decl2.c (decl_dependent_p): New.
+	(mark_used): Check it instead of just processing_template_decl.
+
+2019-08-22  Jason Merrill  <jason@redhat.com>
+
 	* parser.c (cp_parser_nested_name_specifier_opt): Avoid redundant
 	error.
 
