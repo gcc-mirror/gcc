@@ -3,6 +3,8 @@
 	* gcc.dg/Warray-bounds-36.c: Make functions static to avoid failures
 	with -fpic.
 	* gcc.dg/Warray-bounds-41.c: Same.
+	* gcc.dg/pr78973.c: Same.
+	* gcc.dg/pr78973-2.c: Same.
 
 2019-08-22  Marek Polacek  <polacek@redhat.com>
 
