@@ -1,3 +1,13 @@
+2019-08-23  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/arm/arm-cpus.in (cortex-m35p): New entry.
+	(cortex-a76ae): Likewise.
+	(cortex-a77): Likewise
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Likewise.
+	* doc/invoke.texi (ARM Options): Document cortex-m35p, cortx-a76ae,
+	cortex-a77 CPU options.
+
 2019-08-23  Martin Liska  <mliska@suse.cz>
 
 	* profile.c (instrument_values): Do not set

@@ -1331,6 +1331,28 @@ begin cpu cortex-a76
  part d0b
 end cpu cortex-a76
 
+begin cpu cortex-a76ae
+ cname cortexa76ae
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16+dotprod+simd
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a57
+ vendor 41
+ part d0e
+end cpu cortex-a76ae
+
+begin cpu cortex-a77
+ cname cortexa77
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16+dotprod+simd
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a57
+ vendor 41
+ part d0d
+end cpu cortex-a77
+
 begin cpu neoverse-n1
  cname neoversen1
  alias !ares
@@ -1378,6 +1400,15 @@ begin cpu cortex-m33
  option nodsp remove armv7em
  costs v7m
 end cpu cortex-m33
+
+begin cpu cortex-m35p
+ cname cortexm35p
+ tune flags LDSCHED
+ architecture armv8-m.main+dsp+fp
+ option nofp remove ALL_FP
+ option nodsp remove armv7em
+ costs v7m
+end cpu cortex-m35p
 
 # V8 R-profile implementations.
 begin cpu cortex-r52
