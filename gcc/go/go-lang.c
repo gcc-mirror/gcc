@@ -293,8 +293,8 @@ go_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
     go_add_search_path (dir);
   go_search_dirs.release ();
 
-  if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT)
-    flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD;
+  if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
+    flag_excess_precision = EXCESS_PRECISION_STANDARD;
 
   /* Tail call optimizations can confuse uses of runtime.Callers.  */
   if (!global_options_set.x_flag_optimize_sibling_calls)

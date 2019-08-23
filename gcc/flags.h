@@ -51,9 +51,6 @@ public:
   align_flags x_align_jumps;
   align_flags x_align_labels;
   align_flags x_align_functions;
-
-  /* The excess precision currently in effect.  */
-  enum excess_precision x_flag_excess_precision;
 };
 
 extern class target_flag_state default_target_flag_state;
@@ -67,12 +64,6 @@ extern class target_flag_state *this_target_flag_state;
 #define align_jumps	 (this_target_flag_state->x_align_jumps)
 #define align_labels	 (this_target_flag_state->x_align_labels)
 #define align_functions	 (this_target_flag_state->x_align_functions)
-
-/* String representaions of the above options are available in
-   const char *str_align_foo.  NULL if not set.  */
-
-#define flag_excess_precision \
-  (this_target_flag_state->x_flag_excess_precision)
 
 /* Returns TRUE if generated code should match ABI version N or
    greater is in use.  */

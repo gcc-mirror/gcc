@@ -1,3 +1,9 @@
+2019-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91283
+	* brig-lang.c (brig_langhook_post_options): Set flag_excess_precision
+	instead of flag_excess_precision_cmdline.
+
 2019-06-25  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* brig-lang.c (brig_build_c_type_nodes): Accept "__intN__"

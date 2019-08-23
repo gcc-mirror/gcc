@@ -1,3 +1,9 @@
+2019-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91283
+	* d-lang.cc (d_post_options): Set flag_excess_precision instead of
+	flag_excess_precision_cmdline.
+
 2019-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/88722

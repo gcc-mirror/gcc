@@ -772,8 +772,8 @@ d_post_options (const char ** fn)
   if (global_options_set.x_flag_max_errors)
     global.errorLimit = flag_max_errors;
 
-  if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT)
-    flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD;
+  if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
+    flag_excess_precision = EXCESS_PRECISION_STANDARD;
 
   if (global.params.useUnitTests)
     global.params.useAssert = true;
