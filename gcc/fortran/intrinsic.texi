@@ -529,9 +529,6 @@ program access_test
     print *, trim(file2),' is readable, writable and executable'
 end program access_test
 @end smallexample
-@item @emph{Specific names}:
-@item @emph{See also}:
-
 @end table
 
 
@@ -8065,7 +8062,7 @@ Inquiry function.
 @item @emph{Syntax}:
 @code{RESULT = IMAGE_INDEX(COARRAY, SUB)}
 
-@item @emph{Arguments}: None.
+@item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{COARRAY} @tab Coarray of any type.
 @item @var{SUB}     @tab default integer rank-1 array of a size equal to
@@ -8839,12 +8836,13 @@ end program test_itime
 
 @table @asis
 @item @emph{Description}:
-@item @emph{Standard}:
 Sends the signal specified by @var{SIG} to the process @var{PID}.
 See @code{kill(2)}.
 
 This intrinsic is provided in both subroutine and function forms;
 however, only one form can be used in any given program unit.
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
 Subroutine, function
@@ -10002,8 +10000,6 @@ equal to the last (or only) dimension of @var{MATRIX_A}.
 The matrix product of @var{MATRIX_A} and @var{MATRIX_B}.  The type and
 kind of the result follow the usual type and kind promotion rules, as
 for the @code{*} or @code{.AND.} operators.
-
-@item @emph{See also}:
 @end table
 
 
@@ -11407,9 +11403,6 @@ Elemental function
 The return value is of type @code{INTEGER} and of the default integer
 kind.
 
-@item @emph{See also}:
-@ref{POPPAR}, @ref{LEADZ}, @ref{TRAILZ}
-
 @item @emph{Example}:
 @smallexample
 program test_population
@@ -11418,6 +11411,9 @@ program test_population
   print *, popcnt(huge(0_8)), poppar(huge(0_8))
 end program test_population
 @end smallexample
+@item @emph{See also}:
+@ref{POPPAR}, @ref{LEADZ}, @ref{TRAILZ}
+
 @end table
 
 
@@ -11452,9 +11448,6 @@ Elemental function
 The return value is of type @code{INTEGER} and of the default integer
 kind.
 
-@item @emph{See also}:
-@ref{POPCNT}, @ref{LEADZ}, @ref{TRAILZ}
-
 @item @emph{Example}:
 @smallexample
 program test_population
@@ -11463,6 +11456,8 @@ program test_population
   print *, popcnt(huge(0_8)), poppar(huge(0_8))
 end program test_population
 @end smallexample
+@item @emph{See also}:
+@ref{POPCNT}, @ref{LEADZ}, @ref{TRAILZ}
 @end table
 
 
@@ -11495,9 +11490,6 @@ Inquiry function
 The return value is of type @code{INTEGER} and of the default integer
 kind.
 
-@item @emph{See also}:
-@ref{SELECTED_REAL_KIND}, @ref{RANGE}
-
 @item @emph{Example}:
 @smallexample
 program prec_and_range
@@ -11508,6 +11500,8 @@ program prec_and_range
   print *, precision(y), range(y)
 end program prec_and_range
 @end smallexample
+@item @emph{See also}:
+@ref{SELECTED_REAL_KIND}, @ref{RANGE}
 @end table
 
 
@@ -11643,9 +11637,6 @@ Inquiry function
 The return value is a scalar of type @code{INTEGER} and of the default
 integer kind.
 
-@item @emph{See also}:
-@ref{SELECTED_REAL_KIND}
-
 @item @emph{Example}:
 @smallexample
 program test_radix
@@ -11653,7 +11644,8 @@ program test_radix
   print *, "The radix for the default real kind is", radix(0.0)
 end program test_radix
 @end smallexample
-
+@item @emph{See also}:
+@ref{SELECTED_REAL_KIND}
 @end table
 
 
@@ -11936,11 +11928,10 @@ or @code{COMPLEX}.
 The return value is of type @code{INTEGER} and of the default integer
 kind.
 
-@item @emph{See also}:
-@ref{SELECTED_REAL_KIND}, @ref{PRECISION}
-
 @item @emph{Example}:
 See @code{PRECISION} for an example.
+@item @emph{See also}:
+@ref{SELECTED_REAL_KIND}, @ref{PRECISION}
 @end table
 
 
@@ -12665,9 +12656,6 @@ are fulfillable
 @item -5 if there is no real type with the given @code{RADIX}
 @end table
 
-@item @emph{See also}:
-@ref{PRECISION}, @ref{RANGE}, @ref{RADIX}
-
 @item @emph{Example}:
 @smallexample
 program real_kinds
@@ -12683,6 +12671,8 @@ program real_kinds
   print *, precision(z), range(z)
 end program real_kinds
 @end smallexample
+@item @emph{See also}:
+@ref{PRECISION}, @ref{RANGE}, @ref{RADIX}
 @end table
 
 
