@@ -8345,7 +8345,7 @@ c_ts18661_flt_eval_method (void)
     = targetm.c.excess_precision (EXCESS_PRECISION_TYPE_IMPLICIT);
 
   enum excess_precision_type flag_type
-    = (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD
+    = (flag_excess_precision == EXCESS_PRECISION_STANDARD
        ? EXCESS_PRECISION_TYPE_STANDARD
        : EXCESS_PRECISION_TYPE_FAST);
 

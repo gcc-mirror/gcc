@@ -166,8 +166,8 @@ brig_langhook_handle_option
 static bool
 brig_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 {
-  if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT)
-    flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD;
+  if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
+    flag_excess_precision = EXCESS_PRECISION_STANDARD;
 
   /* gccbrig casts pointers around like crazy, TBAA might produce broken
      code if not disabling it by default.  Some PRM conformance tests such

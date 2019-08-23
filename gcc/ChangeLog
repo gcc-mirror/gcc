@@ -1,3 +1,23 @@
+2019-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91283
+	* common.opt (fexcess-precision=): Add Optimization flag.  Use
+	flag_excess_precision variable instead of
+	flag_excess_precision_cmdline.
+	* flags.h (class target_flag_state): Remove x_flag_excess_precision
+	member.
+	(flag_excess_precision): Don't define.
+	* langhooks.c (lhd_post_options): Set flag_excess_precision instead of
+	flag_excess_precision_cmdline.  Remove comment.
+	* opts.c (set_fast_math_flags): Use frontend_set_flag_excess_precision
+	and x_flag_excess_precision instead of
+	frontend_set_flag_excess_precision_cmdline and
+	x_flag_excess_precision_cmdline.
+	(fast_math_flags_set_p): Use x_flag_excess_precision instead of
+	x_flag_excess_precision_cmdline.
+	* toplev.c (init_excess_precision): Remove.
+	(lang_dependent_init_target): Don't call it.
+
 2019-08-23  Martin Liska  <mliska@suse.cz>
 
 	* lto-wrapper.c (run_gcc): When setting jobserver

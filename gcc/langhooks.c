@@ -97,7 +97,7 @@ lhd_post_options (const char ** ARG_UNUSED (pfilename))
 {
   /* Excess precision other than "fast" requires front-end
      support.  */
-  flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
+  flag_excess_precision = EXCESS_PRECISION_FAST;
   return false;
 }
 

@@ -1399,7 +1399,7 @@ Common Report Var(flag_expensive_optimizations) Optimization
 Perform a number of minor, expensive optimizations.
 
 fexcess-precision=
-Common Joined RejectNegative Enum(excess_precision) Var(flag_excess_precision_cmdline) Init(EXCESS_PRECISION_DEFAULT) SetByCombined
+Common Joined RejectNegative Enum(excess_precision) Var(flag_excess_precision) Init(EXCESS_PRECISION_DEFAULT) Optimization SetByCombined
 -fexcess-precision=[fast|standard]	Specify handling of excess floating-point precision.
 
 Enum
