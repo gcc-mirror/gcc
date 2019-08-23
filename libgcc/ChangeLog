@@ -1,3 +1,17 @@
+2019-08-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	PR target/91306
+	* crtstuff.c (__CTOR_LIST__): Align to the "__alignof__" the array
+	element type, instead of "sizeof" the element type.
+	(__DTOR_LIST__): Likewise.
+	(__TMC_LIST__): Likewise.
+	(__do_global_dtors_aux_fini_array_entry): Likewise.
+	(__frame_dummy_init_array_entry): Likewise.
+	(__CTOR_END__): Likewise.
+	(__DTOR_END__): Likweise.
+	(__FRAME_END__): Likewise.
+	(__TMC_END__): Likewise.
+
 2019-08-20  Lili Cui  <lilicui@intel.com>
 
 	* config/i386/cpuinfo.h: Add INTEL_COREI7_TIGERLAKE and
