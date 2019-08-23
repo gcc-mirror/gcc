@@ -1,3 +1,7 @@
+2019-08-23  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
+
+	* gcc.target/mips/get-fcsr-3.c: New test.
+
 2019-08-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20190820-1.c: New test.
