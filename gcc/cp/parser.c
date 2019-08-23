@@ -6420,9 +6420,11 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 		  == CPP_SCOPE))
 	    {
 	      token = cp_lexer_consume_token (parser->lexer);
-	      error_at (token->location, "%<decltype%> evaluates to %qT, "
-			"which is not a class or enumeration type",
-			token->u.tree_check_value->value);
+	      tree dtype = token->u.tree_check_value->value;
+	      if (dtype != error_mark_node)
+		error_at (token->location, "%<decltype%> evaluates to %qT, "
+			  "which is not a class or enumeration type",
+			  dtype);
 	      parser->scope = error_mark_node;
 	      error_p = true;
 	      /* As below.  */
