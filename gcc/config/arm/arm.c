@@ -949,10 +949,6 @@ int arm_arch_thumb_hwdiv;
 /* Nonzero if chip disallows volatile memory access in IT block.  */
 int arm_arch_no_volatile_ce;
 
-/* Nonzero if we should use Neon to handle 64-bits operations rather
-   than core registers.  */
-int prefer_neon_for_64bits = 0;
-
 /* Nonzero if we shouldn't use literal pools.  */
 bool arm_disable_literal_pool = false;
 
@@ -1810,7 +1806,6 @@ const struct tune_params arm_slowmul_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_FALSE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -1833,7 +1828,6 @@ const struct tune_params arm_fastmul_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_FALSE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -1859,7 +1853,6 @@ const struct tune_params arm_strongarm_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_FALSE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -1882,7 +1875,6 @@ const struct tune_params arm_xscale_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_FALSE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -1905,7 +1897,6 @@ const struct tune_params arm_9e_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_FALSE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -1928,7 +1919,6 @@ const struct tune_params arm_marvell_pj4_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_FALSE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -1951,7 +1941,6 @@ const struct tune_params arm_v6t2_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_FALSE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -1976,7 +1965,6 @@ const struct tune_params arm_cortex_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_FALSE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -1999,7 +1987,6 @@ const struct tune_params arm_cortex_a8_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_TRUE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -2022,7 +2009,6 @@ const struct tune_params arm_cortex_a7_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_TRUE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -2045,7 +2031,6 @@ const struct tune_params arm_cortex_a15_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_ALL,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_TRUE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_FULL
@@ -2068,7 +2053,6 @@ const struct tune_params arm_cortex_a35_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_TRUE,
   FUSE_OPS (tune_params::FUSE_MOVW_MOVT),
   tune_params::SCHED_AUTOPREF_OFF
@@ -2091,7 +2075,6 @@ const struct tune_params arm_cortex_a53_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_TRUE,
   FUSE_OPS (tune_params::FUSE_MOVW_MOVT | tune_params::FUSE_AES_AESMC),
   tune_params::SCHED_AUTOPREF_OFF
@@ -2114,7 +2097,6 @@ const struct tune_params arm_cortex_a57_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_ALL,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_TRUE,
   FUSE_OPS (tune_params::FUSE_MOVW_MOVT | tune_params::FUSE_AES_AESMC),
   tune_params::SCHED_AUTOPREF_FULL
@@ -2137,7 +2119,6 @@ const struct tune_params arm_exynosm1_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_FALSE,	/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_FALSE,	/* ARM.  */
   tune_params::DISPARAGE_FLAGS_ALL,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_TRUE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -2160,7 +2141,6 @@ const struct tune_params arm_xgene1_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_ALL,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_FALSE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -2186,7 +2166,6 @@ const struct tune_params arm_cortex_a5_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_FALSE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_FALSE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_TRUE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -2209,7 +2188,6 @@ const struct tune_params arm_cortex_a9_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_FALSE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -2232,7 +2210,6 @@ const struct tune_params arm_cortex_a12_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_ALL,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_TRUE,
   FUSE_OPS (tune_params::FUSE_MOVW_MOVT),
   tune_params::SCHED_AUTOPREF_OFF
@@ -2255,7 +2232,6 @@ const struct tune_params arm_cortex_a73_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_ALL,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_TRUE,
   FUSE_OPS (tune_params::FUSE_AES_AESMC | tune_params::FUSE_MOVW_MOVT),
   tune_params::SCHED_AUTOPREF_FULL
@@ -2285,7 +2261,6 @@ const struct tune_params arm_v7m_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_FALSE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_FALSE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_FALSE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -2310,7 +2285,6 @@ const struct tune_params arm_cortex_m7_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_FALSE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -2336,7 +2310,6 @@ const struct tune_params arm_v6m_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_FALSE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_FALSE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_FALSE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -2359,7 +2332,6 @@ const struct tune_params arm_fa726te_tune =
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* Thumb.  */
   tune_params::LOG_OP_NON_SHORT_CIRCUIT_TRUE,		/* ARM.  */
   tune_params::DISPARAGE_FLAGS_NEITHER,
-  tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_FALSE,
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
@@ -3567,12 +3539,6 @@ arm_option_override (void)
 			   current_tune->prefetch.l1_cache_size,
 			   global_options.x_param_values,
 			   global_options_set.x_param_values);
-
-  /* Use Neon to perform 64-bits operations rather than core
-     registers.  */
-  prefer_neon_for_64bits = current_tune->prefer_neon_for_64bits;
-  if (use_neon_for_64bits == 1)
-     prefer_neon_for_64bits = true;
 
   /* Use the alternative scheduling-pressure algorithm by default.  */
   maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, SCHED_PRESSURE_MODEL,
@@ -26520,9 +26486,6 @@ arm_print_tune_info (void)
 	       "logical_op_non_short_circuit:\t[%d,%d]\n",
 	       (int) current_tune->logical_op_non_short_circuit_thumb,
 	       (int) current_tune->logical_op_non_short_circuit_arm);
-  asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START
-	       "prefer_neon_for_64bits:\t%d\n",
-	       (int) current_tune->prefer_neon_for_64bits);
   asm_fprintf (asm_out_file, "\t\t" ASM_COMMENT_START
 	       "disparage_flag_setting_t16_encodings:\t%d\n",
 	       (int) current_tune->disparage_flag_setting_t16_encodings);

@@ -1,3 +1,17 @@
+2019-08-23  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc/doc/invoke.texi (mneon-for-64bits): Deprecate option.
+	* gcc/config/arm/arm.opt (mneon-for-64bits): Deprecate option.
+	* gcc/config/arm/arm.h (TARGET_PREFER_NEON_64BITS): Remove.
+	(prefer_neon_for_64bits): Remove.
+	* gcc/config/arm/arm.c (prefer_neon_for_64bits): Remove.
+	(tune_params): Remove PREF_NEON_64_FALSE uses.
+	(arm_option_override): Remove prefer_neon selection code.
+	(arm_print_tune_info): Remove prefer_neon_for_64bits.
+	* gcc/config/arm/arm-protos.h (tune_params): Remove
+	prefer_neon_for_64bits.
+	(prefer_neon_for_64bits): Remove.
+
 2019-08-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR pch/61250

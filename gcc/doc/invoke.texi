@@ -18005,9 +18005,7 @@ defined.
 
 @item -mneon-for-64bits
 @opindex mneon-for-64bits
-Enables using Neon to handle scalar 64-bits operations. This is
-disabled by default since the cost of moving data from core registers
-to Neon is high.
+This option is deprecated and has no effect.
 
 @item -mslow-flash-data
 @opindex mslow-flash-data
