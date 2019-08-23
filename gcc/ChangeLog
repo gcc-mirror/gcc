@@ -1,3 +1,11 @@
+2019-08-23  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
+
+	Backport from mainline
+	2019-08-23  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
+
+	* config/mips/mips.md (mips_get_fcsr, *mips_get_fcsr): Use SI
+	machine mode for unspec_volatile operand.
+
 2019-08-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
