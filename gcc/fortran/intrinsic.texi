@@ -470,8 +470,8 @@ end program test_abs
 @item @code{IIABS(A)} @tab @code{INTEGER(2) A} @tab @code{INTEGER(2)} @tab GNU extension
 @item @code{JIABS(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
 @item @code{KIABS(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
-@item @code{ZABS(A)}  @tab @code{COMPLEX(8) A} @tab @code{COMPLEX(8)} @tab GNU extension
-@item @code{CDABS(A)} @tab @code{COMPLEX(8) A} @tab @code{COMPLEX(8)} @tab GNU extension
+@item @code{ZABS(A)}  @tab @code{COMPLEX(8) A} @tab @code{REAL(8)} @tab GNU extension
+@item @code{CDABS(A)} @tab @code{COMPLEX(8) A} @tab @code{REAL(8)} @tab GNU extension
 @end multitable
 @end table
 
