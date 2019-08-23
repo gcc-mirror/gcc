@@ -1,5 +1,9 @@
 2019-08-23  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/91521 - wrong error with operator->.
+	* decl.c (grokdeclarator): Return error_mark_node for an invalid
+	trailing return type.
+
 	PR c++/79817 - attribute deprecated on namespace.
 	* cp-tree.h (cp_warn_deprecated_use_scopes): Declare.
 	* decl.c (grokdeclarator): Call cp_warn_deprecated_use_scopes.

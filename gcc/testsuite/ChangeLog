@@ -1,3 +1,8 @@
+2019-08-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91521 - wrong error with operator->.
+	* g++.dg/parse/operator8.C: New test.
+
 2019-08-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/91481
