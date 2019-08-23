@@ -3811,6 +3811,8 @@ finish_id_expression_1 (tree id_expression,
 	  if (TREE_CODE (decl) == FUNCTION_DECL)
 	    mark_used (decl);
 
+	  cp_warn_deprecated_use_scopes (scope);
+
 	  if (TYPE_P (scope))
 	    decl = finish_qualified_id_expr (scope,
 					     decl,
