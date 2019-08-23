@@ -402,12 +402,19 @@ class Write_barriers : public Traverse
 {
  public:
   Write_barriers(Gogo* gogo)
-    : Traverse(traverse_functions | traverse_variables | traverse_statements),
-      gogo_(gogo), function_(NULL), statements_added_()
+    : Traverse(traverse_functions
+	       | traverse_blocks
+	       | traverse_variables
+	       | traverse_statements),
+      gogo_(gogo), function_(NULL), statements_added_(),
+      nonwb_pointers_()
   { }
 
   int
   function(Named_object*);
+
+  int
+  block(Block*);
 
   int
   variable(Named_object*);
@@ -422,6 +429,9 @@ class Write_barriers : public Traverse
   Function* function_;
   // Statements introduced.
   Statement_inserter::Statements statements_added_;
+  // Within a single block, pointer variables that point to values
+  // that do not need write barriers.
+  Unordered_set(const Named_object*) nonwb_pointers_;
 };
 
 // Traverse a function.  Just record it for later.
@@ -437,6 +447,16 @@ Write_barriers::function(Named_object* no)
   if (t == TRAVERSE_EXIT)
     return t;
   return TRAVERSE_SKIP_COMPONENTS;
+}
+
+// Traverse a block.  Clear anything we know about local pointer
+// variables.
+
+int
+Write_barriers::block(Block*)
+{
+  this->nonwb_pointers_.clear();
+  return TRAVERSE_CONTINUE;
 }
 
 // Insert write barriers for a global variable: ensure that variable
@@ -533,7 +553,16 @@ Write_barriers::statement(Block* block, size_t* pindex, Statement* s)
 	// local variables get declaration statements, and local
 	// variables on the stack do not require write barriers.
 	if (!var->is_in_heap())
-	  break;
+          {
+	    // If this is a pointer variable, and assigning through
+	    // the initializer does not require a write barrier,
+	    // record that fact.
+	    if (var->type()->points_to() != NULL
+		&& this->gogo_->is_nonwb_pointer(init, &this->nonwb_pointers_))
+	      this->nonwb_pointers_.insert(no);
+
+	    break;
+          }
 
 	// Nothing to do if the variable does not contain any pointers.
 	if (!var->type()->has_pointer())
@@ -578,15 +607,27 @@ Write_barriers::statement(Block* block, size_t* pindex, Statement* s)
       {
 	Assignment_statement* as = s->assignment_statement();
 
-	if (as->omit_write_barrier())
-	  break;
-
 	Expression* lhs = as->lhs();
 	Expression* rhs = as->rhs();
 
+	// Keep track of variables whose values do not escape.
+	Var_expression* lhsve = lhs->var_expression();
+	if (lhsve != NULL && lhsve->type()->points_to() != NULL)
+	  {
+	    Named_object* no = lhsve->named_object();
+	    if (this->gogo_->is_nonwb_pointer(rhs, &this->nonwb_pointers_))
+	      this->nonwb_pointers_.insert(no);
+	    else
+	      this->nonwb_pointers_.erase(no);
+	  }
+
+	if (as->omit_write_barrier())
+	  break;
+
 	// We may need to emit a write barrier for the assignment.
 
-	if (!this->gogo_->assign_needs_write_barrier(lhs))
+	if (!this->gogo_->assign_needs_write_barrier(lhs,
+						     &this->nonwb_pointers_))
 	  break;
 
 	// Change the assignment to use a write barrier.
@@ -667,9 +708,13 @@ Gogo::write_barrier_variable()
 }
 
 // Return whether an assignment that sets LHS needs a write barrier.
+// NONWB_POINTERS is a set of variables that point to values that do
+// not need write barriers.
 
 bool
-Gogo::assign_needs_write_barrier(Expression* lhs)
+Gogo::assign_needs_write_barrier(
+    Expression* lhs,
+    Unordered_set(const Named_object*)* nonwb_pointers)
 {
   // Nothing to do if the variable does not contain any pointers.
   if (!lhs->type()->has_pointer())
@@ -738,22 +783,10 @@ Gogo::assign_needs_write_barrier(Expression* lhs)
   // Nothing to do for an assignment to *(convert(&x)) where
   // x is local variable or a temporary variable.
   Unary_expression* ue = lhs->unary_expression();
-  if (ue != NULL && ue->op() == OPERATOR_MULT)
-    {
-      Expression* expr = ue->operand();
-      while (true)
-        {
-          if (expr->conversion_expression() != NULL)
-            expr = expr->conversion_expression()->expr();
-          else if (expr->unsafe_conversion_expression() != NULL)
-            expr = expr->unsafe_conversion_expression()->expr();
-          else
-            break;
-        }
-      ue = expr->unary_expression();
-      if (ue != NULL && ue->op() == OPERATOR_AND)
-        return this->assign_needs_write_barrier(ue->operand());
-    }
+  if (ue != NULL
+      && ue->op() == OPERATOR_MULT
+      && this->is_nonwb_pointer(ue->operand(), nonwb_pointers))
+    return false;
 
   // For a struct assignment, we don't need a write barrier if all the
   // pointer types can not be in the heap.
@@ -781,6 +814,40 @@ Gogo::assign_needs_write_barrier(Expression* lhs)
     }
 
   // Write barrier needed in other cases.
+  return true;
+}
+
+// Return whether EXPR is the address of a variable that can be set
+// without a write barrier.  That is, if this returns true, then an
+// assignment to *EXPR does not require a write barrier.
+// NONWB_POINTERS is a set of variables that point to values that do
+// not need write barriers.
+
+bool
+Gogo::is_nonwb_pointer(Expression* expr,
+		       Unordered_set(const Named_object*)* nonwb_pointers)
+{
+  while (true)
+    {
+      if (expr->conversion_expression() != NULL)
+	expr = expr->conversion_expression()->expr();
+      else if (expr->unsafe_conversion_expression() != NULL)
+	expr = expr->unsafe_conversion_expression()->expr();
+      else
+	break;
+    }
+
+  Var_expression* ve = expr->var_expression();
+  if (ve != NULL
+      && nonwb_pointers != NULL
+      && nonwb_pointers->find(ve->named_object()) != nonwb_pointers->end())
+    return true;
+
+  Unary_expression* ue = expr->unary_expression();
+  if (ue == NULL || ue->op() != OPERATOR_AND)
+    return false;
+  if (this->assign_needs_write_barrier(ue->operand(), nonwb_pointers))
+    return false;
   return true;
 }
 
