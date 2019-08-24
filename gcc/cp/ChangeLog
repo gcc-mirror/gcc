@@ -1,13 +1,18 @@
+2019-08-24  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (check_for_overrides): Conversion operators need
+	checking too.
+
 2019-08-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* semantics.c (finish_switch_cond): Improve error message location.
 
-2019-08-22  Jason Merrill  <jason@redhat.com>
+2019-08-23  Jason Merrill  <jason@redhat.com>
 
 	* decl2.c (decl_dependent_p): New.
 	(mark_used): Check it instead of just processing_template_decl.
 
-2019-08-22  Jason Merrill  <jason@redhat.com>
+2019-08-23  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_nested_name_specifier_opt): Avoid redundant
 	error.
