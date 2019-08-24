@@ -1,3 +1,7 @@
+2019-08-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/conversion/simd4.C: Test all the locations.
+
 2019-08-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91521 - wrong error with operator->.

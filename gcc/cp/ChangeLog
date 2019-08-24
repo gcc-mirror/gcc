@@ -1,3 +1,7 @@
+2019-08-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* semantics.c (finish_switch_cond): Improve error message location.
+
 2019-08-22  Jason Merrill  <jason@redhat.com>
 
 	* decl2.c (decl_dependent_p): New.
