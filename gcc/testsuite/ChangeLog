@@ -1,3 +1,22 @@
+2019-08-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91390
+	PR fortran/91519
+	* gfortran.dg/bessel_3.f90: Add type mismatch errors.
+	* gfortran.dg/coarray_7.f90: Rename subroutines to avoid
+	additional errors.
+	* gfortran.dg/g77/20010519-1.f: Add -std=legacy. Remove
+	warnings for ASSIGN. Add warnings for type mismatch.
+	* gfortran.dg/goacc/acc_on_device-1.f95: Add -std=legacy.
+	Add catch-all warning.
+	* gfortran.dg/internal_pack_9.f90: Rename subroutine to
+	avoid type error.
+	* gfortran.dg/internal_pack_9.f90: Add -std=legacy. Add
+	warnings for type mismatch.
+	* gfortran.dg/pr39937.f: Add -std=legacy and type warnings. Move
+	here from
+	* gfortran.fortran-torture/compile/pr39937.f: Move to gfortran.dg.
+
 2019-08-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/conversion/simd4.C: Test all the locations.
