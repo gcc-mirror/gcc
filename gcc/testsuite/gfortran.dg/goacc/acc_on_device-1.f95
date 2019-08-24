@@ -1,5 +1,5 @@
 ! Have to enable optimizations, as otherwise builtins won't be expanded.
-! { dg-additional-options "-O -fdump-rtl-expand" }
+! { dg-additional-options "-O -fdump-rtl-expand -std=legacy" }
 
 logical function f ()
   implicit none
@@ -9,7 +9,7 @@ logical function f ()
 
   f = .false.
   f = f .or. acc_on_device ()
-  f = f .or. acc_on_device (1, 2)
+  f = f .or. acc_on_device (1, 2) ! { dg-warning ".*" }
   f = f .or. acc_on_device (3.14)
   f = f .or. acc_on_device ("hello")
 
