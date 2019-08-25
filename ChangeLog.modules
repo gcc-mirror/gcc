@@ -1,6 +1,13 @@
 2019-08-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_in::finish): Don't clear PENDING_TEMPLATE here.
+	Set IDENTIFIER_VIRTUAL_P if t is a vfunc.
+	(trees_out::core_bools): Write PENDING_TEMPLATE as false.
+	gcc/testsuite/
+	* g++.dg/modules/virt-1_[ab].C: New.
+
+	gcc/cp/
 	* module.cc (trees_out::tree_decl): Vtables are distinguished by
 	DECL_VIRTUAL_P.
 

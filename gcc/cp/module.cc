@@ -4880,12 +4880,13 @@ trees_in::finish (tree t)
       return remap;
     }
 
-  if (TREE_CODE (t) == TEMPLATE_INFO)
-    /* We're not a pending template in this TU.  */
-    TI_PENDING_TEMPLATE_FLAG (t) = 0;
-
   if (TREE_CODE (t) == INTEGER_CST && !TREE_OVERFLOW (t))
     t = cache_integer_cst (t, true);
+
+  if (TREE_CODE (t) == FUNCTION_DECL && DECL_VIRTUAL_P (t))
+    /* Mark this identifier as naming a virtual function --
+       lookup_overrides relies on this optimization.  */
+    IDENTIFIER_VIRTUAL_P (DECL_NAME (t)) = true;
 
   return t;
 }
@@ -4946,7 +4947,11 @@ trees_out::core_bools (tree t)
 
     default:
       WB (t->base.u.bits.lang_flag_0);
-      WB (t->base.u.bits.lang_flag_1);
+      bool flag_1 = t->base.u.bits.lang_flag_1;
+      if (code == TEMPLATE_INFO)
+	/* This is TI_PENDING_TEMPLATE_FLAG, not relevant to reader.  */
+	flag_1 = false;
+      WB (flag_1);
       WB (t->base.u.bits.lang_flag_2);
       WB (t->base.u.bits.lang_flag_3);
       WB (t->base.u.bits.lang_flag_4);
