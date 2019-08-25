@@ -1,3 +1,18 @@
+2019-08-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-06-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-driver.c (darwin_driver_init): Fix off-by-one errors
+	in computing the number of options to be moved.
+
+	Backport from mainline
+	2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-driver.c (validate_macosx_version_min): New.
+	(darwin_default_min_version): Cleanup and validate supplied version.
+	(darwin_driver_init): Likewise and push cleaned version into opts.
+
 2019-08-25  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/91533
