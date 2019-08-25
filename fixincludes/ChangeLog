@@ -1,3 +1,15 @@
+2019-08-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-08-18  C.G. Dogan  <gcc+cgdogan.00@gmail.com>
+		    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/83531
+	* inclhack.def (darwin_api_availability): New; strip leading
+	underscores from API_XXXX defines.
+	* fixincl.x: Regenerate.
+	* tests/base/os/availability.h: New file.
+
 2019-08-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
