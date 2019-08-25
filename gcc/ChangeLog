@@ -1,3 +1,15 @@
+2019-08-25  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91533
+	Backport from mainline
+	2019-06-30  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (ssse3_abs<mode>2): Rename from abs<mode>2.
+	* config/i386/i386-builtin.def (__builtin_ia32_pabsb):
+	Use CODE_FOR_ssse3_absv8qi2.
+	(__builtin_ia32_pabsw): Use CODE_FOR_ssse3_absv4hi2.
+	(__builtin_ia32_pabsd): Use CODE_FOR_ssse3_absv2si2.
+
 2019-08-23  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
 
 	Backport from mainline
@@ -77,10 +89,10 @@
 	correct numbers for TFHAR, TFIAR, TEXASR.
 
 2019-07-23  Matthew Beliveau  <mbelivea@redhat.com>
-	
+
 	Backported from mainline
 	2019-07-16  Jeff Law  <law@redhat.com>
-	
+
 	PR rtl-optimization/91173
 	* tree-ssa-address.c (addr_for_mem_ref): If the base is an
 	SSA_NAME with a constant value, fold its value into the offset
@@ -309,7 +321,7 @@
 
 2019-05-23  Uroš Bizjak  <ubizjak@gmail.com>
 
-	Backported from mainline
+	Backport from mainline
 	2019-05-21  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/cpuid.h (__cpuid): For 32bit targets, zero
@@ -519,7 +531,7 @@
 	in cfglayout mode, use emit_barrier_after_bb.
 
 	2019-04-11  Jakub Jelinek  <jakub@redhat.com>
-	
+
 	PR rtl-optimization/89965
 	* dce.c (sp_based_mem_offset): New function.
 	(find_call_stack_args): Use sp_based_mem_offset.
