@@ -6991,28 +6991,27 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
       return false;
     }
 
-  if (TREE_CODE (decl) == VAR_DECL && DECL_ARTIFICIAL (decl))
+  if (TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl))
     {
+      // FIXME: what about VTT?
+      /* A vtable.  */
       tree ctx = CP_DECL_CONTEXT (decl);
-      if (TREE_CODE (ctx) == RECORD_TYPE && TYPE_LANG_SPECIFIC (ctx))
-	{
-	  /* Try a VTABLE.  */
-	  unsigned ix = 0;
-	  for (tree vtables = CLASSTYPE_VTABLES (ctx);
-	       vtables; ix++, vtables = DECL_CHAIN (vtables))
-	    if (vtables == decl)
+      tree vtable = CLASSTYPE_VTABLES (ctx);
+      for (unsigned ix = 0; ; vtable = DECL_CHAIN (vtable), ix++)
+	if (vtable == decl)
+	  {
+	    gcc_checking_assert (DECL_VIRTUAL_P (decl));
+	    if (streaming_p ())
 	      {
-		if (streaming_p ())
-		  {
-		    u (tt_vtable);
-		    u (ix);
-		    dump (dumper::TREE)
-		      && dump ("Writing vtable %N[%u]", ctx, ix);
-		  }
-		tree_node (ctx);
-		return false;
+		u (tt_vtable);
+		u (ix);
+		dump (dumper::TREE)
+		  && dump ("Writing vtable %N[%u]", ctx, ix);
 	      }
-	}
+	    tree_node (ctx);
+	    return false;
+	  }
+      gcc_unreachable ();
     }
 
   if (TREE_CODE (decl) == TYPE_DECL && DECL_TINFO_P (decl))
