@@ -112,5 +112,5 @@ void test_array_ref (void)
   T (&b[16], 0);  T (&b[17], 0);  T (&b[18], 0);  T (&b[19], 0);
 }
 
-/* { dg-final { scan-tree-dump-times "strlen" 0 "gimple" } }
+/* { dg-final { scan-tree-dump-times "strlen1" 0 "gimple" } }
    { dg-final { scan-tree-dump-times "call_in_true_branch_not_eliminated" 0 "ccp1" } } */

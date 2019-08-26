@@ -1,3 +1,58 @@
+2019-08-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/83431
+	* gimple-ssa-sprintf.c (pass_data_sprintf_length): Remove object.
+	(sprintf_dom_walker): Remove class.
+	(get_int_range): Make argument const.
+	(directive::fmtfunc, directive::set_precision): Same.
+	(format_none): Same.
+	(build_intmax_type_nodes): Same.
+	(adjust_range_for_overflow): Same.
+	(format_floating): Same.
+	(format_character): Same.
+	(format_string): Same.
+	(format_plain): Same.
+	(get_int_range): Cast away constness.
+	(format_integer): Same.
+	(get_string_length): Call get_range_strlen_dynamic.  Handle
+	null lendata.maxbound.
+	(should_warn_p): Adjust argument scope qualifier.
+	(maybe_warn): Same.
+	(format_directive): Same.
+	(parse_directive): Same.
+	(is_call_safe): Same.
+	(try_substitute_return_value): Same.
+	(sprintf_dom_walker::handle_printf_call): Rename...
+	(handle_printf_call): ...to this.  Initialize target to host charmap
+	here instead of in pass_sprintf_length::execute.
+	(struct call_info): Make global.
+	(sprintf_dom_walker::compute_format_length): Make global.
+	(sprintf_dom_walker::handle_gimple_call): Same.
+	* passes.def (pass_sprintf_length): Replace with pass_strlen.
+	* print-rtl.c (print_pattern): Reduce the number of spaces to
+	avoid -Wformat-truncation.
+	* tree-pass.h (make_pass_warn_printf): New function.
+	* tree-ssa-strlen.c (strlen_optimize): New variable.
+	(get_string_length): Add comments.
+	(get_range_strlen_dynamic): New function.
+	(check_and_optimize_call): New function.
+	(handle_integral_assign): New function.
+	(strlen_check_and_optimize_stmt): Factor code out into
+	strlen_check_and_optimize_call and handle_integral_assign.
+	(strlen_dom_walker::evrp): New member.
+	(strlen_dom_walker::before_dom_children): Use evrp member.
+	(strlen_dom_walker::after_dom_children): Use evrp member.
+	(printf_strlen_execute): New function.
+	(pass_strlen::gate): Update to handle printf calls.
+	(dump_strlen_info): New function.
+	(pass_data_warn_printf): New variable.
+	(pass_warn_printf): New class.
+	* tree-ssa-strlen.h (get_range_strlen_dynamic): Declare.
+	(handle_printf_call): Same.
+	* tree-vrp.c (value_range_base::type): Adjust assertion.
+	* vr-values.c (vr_values::update_value_range): Use type of the first
+	argument rather than the second.
+
 2019-08-26  Richard Biener  <rguenther@suse.de>
 
 	* config/i386/i386-features.c (general_remove_non_convertible_regs):

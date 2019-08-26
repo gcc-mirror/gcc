@@ -13,4 +13,4 @@ f1 (S * s)
   return result;
 }
 
-/* { dg-final { scan-tree-dump-times "cmp_eq \\(" 1 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "cmp_eq \\(" 1 "strlen1" } } */

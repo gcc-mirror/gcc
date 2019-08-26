@@ -284,5 +284,5 @@ void test_global_struct_struct_array (void)
   T (ssa[5].sa9[3].a6, 3);
 }
 
-/* { dg-final { scan-tree-dump-times "strlen" 0 "gimple" } }
+/* { dg-final { scan-tree-dump-times "strlen1" 0 "gimple" } }
    { dg-final { scan-tree-dump-times "call_in_true_branch_not_eliminated" 0 "ccp1" } } */

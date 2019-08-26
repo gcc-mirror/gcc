@@ -1,4 +1,4 @@
-/* This is a replacement of needed parts from stdlib.h and string.h
+/* This is a replacement of needed parts from <stdlib.h> and <string.h>
    for -foptimize-strlen testing, to ensure we are testing the builtins
    rather than whatever the OS has in its headers.  */
 
@@ -24,6 +24,9 @@ int strcmp (const char *, const char *);
 void *mempcpy (void *__restrict, const void *__restrict, size_t);
 char *stpcpy (char *__restrict, const char *__restrict);
 #endif
+
+int sprintf (char * __restrict, const char *__restrict, ...);
+int snprintf (char * __restrict, size_t, const char *__restrict, ...);
 
 #if defined(FORTIFY_SOURCE) && FORTIFY_SOURCE > 0 && __OPTIMIZE__
 # define bos(ptr) __builtin_object_size (ptr, FORTIFY_SOURCE > 0)

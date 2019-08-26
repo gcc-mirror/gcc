@@ -79,6 +79,76 @@
 
 2019-08-23  Martin Sebor  <msebor@redhat.com>
 
+	PR c++/83431
+	* gcc.dg/strlenopt-63.c: New test.
+	* gcc.dg/pr79538.c: Adjust text of expected warning.
+	* gcc.dg/pr81292-1.c: Adjust pass name.
+	* gcc.dg/pr81292-2.c: Same.
+	* gcc.dg/pr81703.c: Same.
+	* gcc.dg/strcmpopt_2.c: Same.
+	* gcc.dg/strcmpopt_3.c: Same.
+	* gcc.dg/strcmpopt_4.c: Same.
+	* gcc.dg/strlenopt-1.c: Same.
+	* gcc.dg/strlenopt-10.c: Same.
+	* gcc.dg/strlenopt-11.c: Same.
+	* gcc.dg/strlenopt-13.c: Same.
+	* gcc.dg/strlenopt-14g.c: Same.
+	* gcc.dg/strlenopt-14gf.c: Same.
+	* gcc.dg/strlenopt-15.c: Same.
+	* gcc.dg/strlenopt-16g.c: Same.
+	* gcc.dg/strlenopt-17g.c: Same.
+	* gcc.dg/strlenopt-18g.c: Same.
+	* gcc.dg/strlenopt-19.c: Same.
+	* gcc.dg/strlenopt-1f.c: Same.
+	* gcc.dg/strlenopt-2.c: Same.
+	* gcc.dg/strlenopt-20.c: Same.
+	* gcc.dg/strlenopt-21.c: Same.
+	* gcc.dg/strlenopt-22.c: Same.
+	* gcc.dg/strlenopt-22g.c: Same.
+	* gcc.dg/strlenopt-24.c: Same.
+	* gcc.dg/strlenopt-25.c: Same.
+	* gcc.dg/strlenopt-26.c: Same.
+	* gcc.dg/strlenopt-27.c: Same.
+	* gcc.dg/strlenopt-28.c: Same.
+	* gcc.dg/strlenopt-29.c: Same.
+	* gcc.dg/strlenopt-2f.c: Same.
+	* gcc.dg/strlenopt-3.c: Same.
+	* gcc.dg/strlenopt-30.c: Same.
+	* gcc.dg/strlenopt-31g.c: Same.
+	* gcc.dg/strlenopt-32.c: Same.
+	* gcc.dg/strlenopt-33.c: Same.
+	* gcc.dg/strlenopt-33g.c: Same.
+	* gcc.dg/strlenopt-34.c: Same.
+	* gcc.dg/strlenopt-35.c: Same.
+	* gcc.dg/strlenopt-4.c: Same.
+	* gcc.dg/strlenopt-48.c: Same.
+	* gcc.dg/strlenopt-49.c: Same.
+	* gcc.dg/strlenopt-4g.c: Same.
+	* gcc.dg/strlenopt-4gf.c: Same.
+	* gcc.dg/strlenopt-5.c: Same.
+	* gcc.dg/strlenopt-50.c: Same.
+	* gcc.dg/strlenopt-51.c: Same.
+	* gcc.dg/strlenopt-52.c: Same.
+	* gcc.dg/strlenopt-53.c: Same.
+	* gcc.dg/strlenopt-54.c: Same.
+	* gcc.dg/strlenopt-55.c: Same.
+	* gcc.dg/strlenopt-56.c: Same.
+	* gcc.dg/strlenopt-6.c: Same.
+	* gcc.dg/strlenopt-61.c: Same.
+	* gcc.dg/strlenopt-7.c: Same.
+	* gcc.dg/strlenopt-8.c: Same.
+	* gcc.dg/strlenopt-9.c: Same.
+	* gcc.dg/strlenopt.h (snprintf, snprintf): Declare.
+	* gcc.dg/tree-ssa/builtin-snprintf-6.c: New test.
+	* gcc.dg/tree-ssa/builtin-snprintf-7.c: New test.
+	* gcc.dg/tree-ssa/builtin-snprintf-8.c: New test.
+	* gcc.dg/tree-ssa/builtin-snprintf-9.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-21.c: New test.
+	* gcc.dg/tree-ssa/dump-4.c: New test.
+	* gcc.dg/tree-ssa/pr83501.c: Adjust pass name.
+
+2019-08-23  Martin Sebor  <msebor@redhat.com>
+
 	* gcc.dg/Warray-bounds-36.c: Make functions static to avoid failures
 	with -fpic.
 	* gcc.dg/Warray-bounds-41.c: Same.

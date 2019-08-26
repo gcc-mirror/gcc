@@ -369,7 +369,7 @@ value_range_base::singleton_p (tree *result) const
 tree
 value_range_base::type () const
 {
-  gcc_assert (m_min || undefined_p ());
+  gcc_assert (m_min);
   return TREE_TYPE (min ());
 }
 
