@@ -365,6 +365,10 @@ d
 Fortran Joined
 ; Documented in common.opt
 
+fallow-argument-mismatch
+Fortran Var(flag_allow_argument_mismatch) LangEnabledBy(Fortran,std=legacy)
+Accept argument mismatches in procedure calls.
+
 faggressive-function-elimination
 Fortran Var(flag_aggressive_function_elimination)
 Eliminate multiple function invocations also for impure functions.
