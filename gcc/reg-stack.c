@@ -1817,6 +1817,7 @@ subst_stack_regs_pat (rtx_insn *insn, stack_ptr regstack, rtx pat)
 	      case UNSPEC_FRNDINT:
 	      case UNSPEC_F2XM1:
 
+	      case UNSPEC_FRNDINT_ROUNDEVEN:
 	      case UNSPEC_FRNDINT_FLOOR:
 	      case UNSPEC_FRNDINT_CEIL:
 	      case UNSPEC_FRNDINT_TRUNC:
