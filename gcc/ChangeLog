@@ -1,3 +1,9 @@
+2019-08-26  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386-features.c (general_remove_non_convertible_regs):
+	Remove.
+	(convert_scalars_to_vector): Do not call it.
+
 2019-08-26  Tejas Joshi  <tejasjoshi9673@gmail.com>
             Uros Bizjak  <ubizjak@gmail.com>
 
