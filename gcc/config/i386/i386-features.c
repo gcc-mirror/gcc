@@ -1425,66 +1425,6 @@ timode_scalar_to_vector_candidate_p (rtx_insn *insn)
   return false;
 }
 
-/* For a given bitmap of insn UIDs scans all instruction and
-   remove insn from CANDIDATES in case it has both convertible
-   and not convertible definitions.
-
-   All insns in a bitmap are conversion candidates according to
-   scalar_to_vector_candidate_p.  Currently it implies all insns
-   are single_set.  */
-
-static void
-general_remove_non_convertible_regs (bitmap candidates)
-{
-  bitmap_iterator bi;
-  unsigned id;
-  bitmap regs = BITMAP_ALLOC (NULL);
-
-  EXECUTE_IF_SET_IN_BITMAP (candidates, 0, id, bi)
-    {
-      rtx def_set = single_set (DF_INSN_UID_GET (id)->insn);
-      rtx reg = SET_DEST (def_set);
-
-      if (!REG_P (reg)
-	  || bitmap_bit_p (regs, REGNO (reg))
-	  || HARD_REGISTER_P (reg))
-	continue;
-
-      for (df_ref def = DF_REG_DEF_CHAIN (REGNO (reg));
-	   def;
-	   def = DF_REF_NEXT_REG (def))
-	{
-	  if (!bitmap_bit_p (candidates, DF_REF_INSN_UID (def)))
-	    {
-	      if (dump_file)
-		fprintf (dump_file,
-			 "r%d has non convertible definition in insn %d\n",
-			 REGNO (reg), DF_REF_INSN_UID (def));
-
-	      bitmap_set_bit (regs, REGNO (reg));
-	      break;
-	    }
-	}
-    }
-
-  EXECUTE_IF_SET_IN_BITMAP (regs, 0, id, bi)
-    {
-      for (df_ref def = DF_REG_DEF_CHAIN (id);
-	   def;
-	   def = DF_REF_NEXT_REG (def))
-	if (bitmap_bit_p (candidates, DF_REF_INSN_UID (def)))
-	  {
-	    if (dump_file)
-	      fprintf (dump_file, "Removing insn %d from candidates list\n",
-		       DF_REF_INSN_UID (def));
-
-	    bitmap_clear_bit (candidates, DF_REF_INSN_UID (def));
-	  }
-    }
-
-  BITMAP_FREE (regs);
-}
-
 /* For a register REGNO, scan instructions for its defs and uses.
    Put REGNO in REGS if a def or use isn't in CANDIDATES.  */
 
@@ -1646,8 +1586,6 @@ convert_scalars_to_vector (bool timode_p)
 
   if (timode_p)
     timode_remove_non_convertible_regs (&candidates[2]);
-  for (unsigned i = 0; i <= 1; ++i)
-    general_remove_non_convertible_regs (&candidates[i]);
 
   for (unsigned i = 0; i <= 2; ++i)
     if (!bitmap_empty_p (&candidates[i]))
