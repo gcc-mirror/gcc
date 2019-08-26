@@ -1,4 +1,29 @@
 2019-08-26  Tejas Joshi  <tejasjoshi9673@gmail.com>
+            Uros Bizjak  <ubizjak@gmail.com>
+
+	* builtins.c (mathfn_built_in_2): Change CASE_MATHFN to
+	CASE_MATHFN_FLOATN for roundeven.
+	* config/i386/i386.c (ix86_i387_mode_needed): Add case
+	I387_ROUNDEVEN.
+	(ix86_mode_needed): Likewise.
+	(ix86_mode_after): Likewise.
+	(ix86_mode_entry): Likewise.
+	(ix86_mode_exit): Likewise.
+	(ix86_emit_mode_set): Likewise.
+	(emit_i387_cw_initialization): Add case I387_CW_ROUNDEVEN.
+	* config/i386/i386.h (ix86_stack_slot): Add SLOT_CW_ROUNDEVEN.
+	(ix86_entry): Add I387_ROUNDEVEN.
+	(avx_u128_state): Add I387_CW_ANY.
+	* config/i386/i386.md: Define UNSPEC_FRNDINT_ROUNDEVEN.
+	(define_int_iterator): Likewise.
+	(define_int_attr): Likewise for rounding_insn, rounding and ROUNDING.
+	(define_constant): Define ROUND_ROUNDEVEN mode.
+	(define_attr): Add roundeven mode for i387_cw.
+	(<rouding_insn><mode>2): Add condition for ROUND_ROUNDEVEN.
+	* internal-fn.def (ROUNDEVEN): New builtin function.
+	* optabs.def (roundeven_optab): New optab.
+
+2019-08-26  Tejas Joshi  <tejasjoshi9673@gmail.com>
 
         * builtins.c (mathfn_built_in_2): Added CASE_MATHFN_FLOATN
         for ROUNDEVEN.

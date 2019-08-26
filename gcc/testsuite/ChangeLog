@@ -1,5 +1,10 @@
 2019-08-26  Tejas Joshi  <tejasjoshi9673@gmail.com>
 
+	* gcc.target/i386/sse4_1-round-roundeven-1.c: New test.
+	* gcc.target/i386/sse4_1-round-roundeven-2.c: New test.
+
+2019-08-26  Tejas Joshi  <tejasjoshi9673@gmail.com>
+
         * gcc.dg/torture/builtin-round-roundeven.c: New test.
         * gcc.dg/torture/builtin-round-roundevenf128.c: Likewise.
 
