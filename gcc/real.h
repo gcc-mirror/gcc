@@ -41,11 +41,18 @@ struct GTY(()) real_value {
      sure they're packed together, otherwise REAL_VALUE_TYPE_SIZE will
      be miscomputed.  */
   unsigned int /* ENUM_BITFIELD (real_value_class) */ cl : 2;
+  /* 1 if number is decimal floating point.  */
   unsigned int decimal : 1;
+  /* 1 if number is negative.  */
   unsigned int sign : 1;
+  /* 1 if number is signalling.  */
   unsigned int signalling : 1;
+  /* 1 if number is canonical
+  All are generally used for handling cases in real.c.  */
   unsigned int canonical : 1;
+  /* unbiased exponent of the number.  */
   unsigned int uexp : EXP_BITS;
+  /* significand of the number.  */
   unsigned long sig[SIGSZ];
 };
 
@@ -500,6 +507,8 @@ extern void real_ceil (REAL_VALUE_TYPE *, format_helper,
 		       const REAL_VALUE_TYPE *);
 extern void real_round (REAL_VALUE_TYPE *, format_helper,
 			const REAL_VALUE_TYPE *);
+extern void real_roundeven (REAL_VALUE_TYPE *, format_helper,
+			    const REAL_VALUE_TYPE *);
 
 /* Set the sign of R to the sign of X.  */
 extern void real_copysign (REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);

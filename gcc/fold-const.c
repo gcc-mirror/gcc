@@ -329,6 +329,8 @@ negate_mathfn_p (combined_fn fn)
     CASE_CFN_LLROUND:
     CASE_CFN_LROUND:
     CASE_CFN_ROUND:
+    CASE_CFN_ROUNDEVEN:
+    CASE_CFN_ROUNDEVEN_FN:
     CASE_CFN_SIN:
     CASE_CFN_SINH:
     CASE_CFN_TAN:
@@ -13107,6 +13109,8 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
     CASE_CFN_RINT_FN:
     CASE_CFN_ROUND:
     CASE_CFN_ROUND_FN:
+    CASE_CFN_ROUNDEVEN:
+    CASE_CFN_ROUNDEVEN_FN:
     CASE_CFN_SCALB:
     CASE_CFN_SCALBLN:
     CASE_CFN_SCALBN:
@@ -13630,6 +13634,8 @@ integer_valued_real_call_p (combined_fn fn, tree arg0, tree arg1, int depth)
     CASE_CFN_RINT_FN:
     CASE_CFN_ROUND:
     CASE_CFN_ROUND_FN:
+    CASE_CFN_ROUNDEVEN:
+    CASE_CFN_ROUNDEVEN_FN:
     CASE_CFN_TRUNC:
     CASE_CFN_TRUNC_FN:
       return true;
