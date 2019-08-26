@@ -416,13 +416,9 @@ scalar_chain::add_insn (bitmap candidates, unsigned int insn_uid)
      iterates over all refs to look for dual-mode regs.  Instead this
      should be done separately for all regs mentioned in the chain once.  */
   df_ref ref;
-  df_ref def;
   for (ref = DF_INSN_UID_DEFS (insn_uid); ref; ref = DF_REF_NEXT_LOC (ref))
     if (!HARD_REGISTER_P (DF_REF_REG (ref)))
-      for (def = DF_REG_DEF_CHAIN (DF_REF_REGNO (ref));
-	   def;
-	   def = DF_REF_NEXT_REG (def))
-	analyze_register_chain (candidates, def);
+      analyze_register_chain (candidates, ref);
   for (ref = DF_INSN_UID_USES (insn_uid); ref; ref = DF_REF_NEXT_LOC (ref))
     if (!DF_REF_REG_MEM_P (ref))
       analyze_register_chain (candidates, ref);
@@ -605,42 +601,6 @@ general_scalar_chain::compute_convert_gain ()
   return gain;
 }
 
-/* Replace REG in X with a V2DI subreg of NEW_REG.  */
-
-rtx
-general_scalar_chain::replace_with_subreg (rtx x, rtx reg, rtx new_reg)
-{
-  if (x == reg)
-    return gen_rtx_SUBREG (vmode, new_reg, 0);
-
-  /* But not in memory addresses.  */
-  if (MEM_P (x))
-    return x;
-
-  const char *fmt = GET_RTX_FORMAT (GET_CODE (x));
-  int i, j;
-  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	XEXP (x, i) = replace_with_subreg (XEXP (x, i), reg, new_reg);
-      else if (fmt[i] == 'E')
-	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  XVECEXP (x, i, j) = replace_with_subreg (XVECEXP (x, i, j),
-						   reg, new_reg);
-    }
-
-  return x;
-}
-
-/* Replace REG in INSN with a V2DI subreg of NEW_REG.  */
-
-void
-general_scalar_chain::replace_with_subreg_in_insn (rtx_insn *insn,
-						  rtx reg, rtx new_reg)
-{
-  replace_with_subreg (single_set (insn), reg, new_reg);
-}
-
 /* Insert generated conversion instruction sequence INSNS
    after instruction AFTER.  New BB may be required in case
    instruction has EH region attached.  */
@@ -691,204 +651,147 @@ general_scalar_chain::make_vector_copies (unsigned regno)
   rtx vreg = gen_reg_rtx (smode);
   df_ref ref;
 
-  for (ref = DF_REG_DEF_CHAIN (regno); ref; ref = DF_REF_NEXT_REG (ref))
-    if (!bitmap_bit_p (insns, DF_REF_INSN_UID (ref)))
-      {
-	start_sequence ();
-	if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
-	  {
-	    rtx tmp = assign_386_stack_local (smode, SLOT_STV_TEMP);
-	    if (smode == DImode && !TARGET_64BIT)
-	      {
-		emit_move_insn (adjust_address (tmp, SImode, 0),
-				gen_rtx_SUBREG (SImode, reg, 0));
-		emit_move_insn (adjust_address (tmp, SImode, 4),
-				gen_rtx_SUBREG (SImode, reg, 4));
-	      }
-	    else
-	      emit_move_insn (copy_rtx (tmp), reg);
-	    emit_insn (gen_rtx_SET (gen_rtx_SUBREG (vmode, vreg, 0),
-				    gen_gpr_to_xmm_move_src (vmode, tmp)));
-	  }
-	else if (!TARGET_64BIT && smode == DImode)
-	  {
-	    if (TARGET_SSE4_1)
-	      {
-		emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, vreg, 0),
-					    CONST0_RTX (V4SImode),
-					    gen_rtx_SUBREG (SImode, reg, 0)));
-		emit_insn (gen_sse4_1_pinsrd (gen_rtx_SUBREG (V4SImode, vreg, 0),
-					      gen_rtx_SUBREG (V4SImode, vreg, 0),
-					      gen_rtx_SUBREG (SImode, reg, 4),
-					      GEN_INT (2)));
-	      }
-	    else
-	      {
-		rtx tmp = gen_reg_rtx (DImode);
-		emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, vreg, 0),
-					    CONST0_RTX (V4SImode),
-					    gen_rtx_SUBREG (SImode, reg, 0)));
-		emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, tmp, 0),
-					    CONST0_RTX (V4SImode),
-					    gen_rtx_SUBREG (SImode, reg, 4)));
-		emit_insn (gen_vec_interleave_lowv4si
-			   (gen_rtx_SUBREG (V4SImode, vreg, 0),
-			    gen_rtx_SUBREG (V4SImode, vreg, 0),
-			    gen_rtx_SUBREG (V4SImode, tmp, 0)));
-	      }
-	  }
-	else
-	  emit_insn (gen_rtx_SET (gen_rtx_SUBREG (vmode, vreg, 0),
-				  gen_gpr_to_xmm_move_src (vmode, reg)));
-	rtx_insn *seq = get_insns ();
-	end_sequence ();
-	rtx_insn *insn = DF_REF_INSN (ref);
-	emit_conversion_insns (seq, insn);
+  defs_map.put (reg, vreg);
 
-	if (dump_file)
-	  fprintf (dump_file,
-		   "  Copied r%d to a vector register r%d for insn %d\n",
-		   regno, REGNO (vreg), INSN_UID (insn));
-      }
-
-  for (ref = DF_REG_USE_CHAIN (regno); ref; ref = DF_REF_NEXT_REG (ref))
-    if (bitmap_bit_p (insns, DF_REF_INSN_UID (ref)))
-      {
-	rtx_insn *insn = DF_REF_INSN (ref);
-	replace_with_subreg_in_insn (insn, reg, vreg);
-
-	if (dump_file)
-	  fprintf (dump_file, "  Replaced r%d with r%d in insn %d\n",
-		   regno, REGNO (vreg), INSN_UID (insn));
-      }
-}
-
-/* Convert all definitions of register REGNO
-   and fix its uses.  Scalar copies may be created
-   in case register is used in not convertible insn.  */
-
-void
-general_scalar_chain::convert_reg (unsigned regno)
-{
-  bool scalar_copy = bitmap_bit_p (defs_conv, regno);
-  rtx reg = regno_reg_rtx[regno];
-  rtx scopy = NULL_RTX;
-  df_ref ref;
-  bitmap conv;
-
-  conv = BITMAP_ALLOC (NULL);
-  bitmap_copy (conv, insns);
-
-  if (scalar_copy)
-    scopy = gen_reg_rtx (smode);
-
+  /* For each insn defining REGNO, see if it is defined by an insn
+     not part of the chain but with uses in insns part of the chain
+     and insert a copy in that case.  */
   for (ref = DF_REG_DEF_CHAIN (regno); ref; ref = DF_REF_NEXT_REG (ref))
     {
-      rtx_insn *insn = DF_REF_INSN (ref);
-      rtx def_set = single_set (insn);
-      rtx src = SET_SRC (def_set);
-      rtx reg = DF_REF_REG (ref);
+      if (bitmap_bit_p (insns, DF_REF_INSN_UID (ref)))
+	continue;
+      df_link *use;
+      for (use = DF_REF_CHAIN (ref); use; use = use->next)
+	if (!DF_REF_REG_MEM_P (use->ref)
+	    && bitmap_bit_p (insns, DF_REF_INSN_UID (use->ref)))
+	  break;
+      if (!use)
+	continue;
 
-      if (!MEM_P (src))
+      start_sequence ();
+      if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
 	{
-	  replace_with_subreg_in_insn (insn, reg, reg);
-	  bitmap_clear_bit (conv, INSN_UID (insn));
-	}
-
-      if (scalar_copy)
-	{
-	  start_sequence ();
-	  if (!TARGET_INTER_UNIT_MOVES_FROM_VEC)
+	  rtx tmp = assign_386_stack_local (smode, SLOT_STV_TEMP);
+	  if (smode == DImode && !TARGET_64BIT)
 	    {
-	      rtx tmp = assign_386_stack_local (smode, SLOT_STV_TEMP);
-	      emit_move_insn (tmp, reg);
-	      if (!TARGET_64BIT && smode == DImode)
-		{
-		  emit_move_insn (gen_rtx_SUBREG (SImode, scopy, 0),
-				  adjust_address (tmp, SImode, 0));
-		  emit_move_insn (gen_rtx_SUBREG (SImode, scopy, 4),
-				  adjust_address (tmp, SImode, 4));
-		}
-	      else
-		emit_move_insn (scopy, copy_rtx (tmp));
-	    }
-	  else if (!TARGET_64BIT && smode == DImode)
-	    {
-	      if (TARGET_SSE4_1)
-		{
-		  rtx tmp = gen_rtx_PARALLEL (VOIDmode,
-					      gen_rtvec (1, const0_rtx));
-		  emit_insn
-		    (gen_rtx_SET
-		       (gen_rtx_SUBREG (SImode, scopy, 0),
-			gen_rtx_VEC_SELECT (SImode,
-					    gen_rtx_SUBREG (V4SImode, reg, 0),
-					    tmp)));
-
-		  tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, const1_rtx));
-		  emit_insn
-		    (gen_rtx_SET
-		       (gen_rtx_SUBREG (SImode, scopy, 4),
-			gen_rtx_VEC_SELECT (SImode,
-					    gen_rtx_SUBREG (V4SImode, reg, 0),
-					    tmp)));
-		}
-	      else
-		{
-		  rtx vcopy = gen_reg_rtx (V2DImode);
-		  emit_move_insn (vcopy, gen_rtx_SUBREG (V2DImode, reg, 0));
-		  emit_move_insn (gen_rtx_SUBREG (SImode, scopy, 0),
-				  gen_rtx_SUBREG (SImode, vcopy, 0));
-		  emit_move_insn (vcopy,
-				  gen_rtx_LSHIFTRT (V2DImode,
-						    vcopy, GEN_INT (32)));
-		  emit_move_insn (gen_rtx_SUBREG (SImode, scopy, 4),
-				  gen_rtx_SUBREG (SImode, vcopy, 0));
-		}
+	      emit_move_insn (adjust_address (tmp, SImode, 0),
+			      gen_rtx_SUBREG (SImode, reg, 0));
+	      emit_move_insn (adjust_address (tmp, SImode, 4),
+			      gen_rtx_SUBREG (SImode, reg, 4));
 	    }
 	  else
-	    emit_move_insn (scopy, reg);
+	    emit_move_insn (copy_rtx (tmp), reg);
+	  emit_insn (gen_rtx_SET (gen_rtx_SUBREG (vmode, vreg, 0),
+				  gen_gpr_to_xmm_move_src (vmode, tmp)));
+	}
+      else if (!TARGET_64BIT && smode == DImode)
+	{
+	  if (TARGET_SSE4_1)
+	    {
+	      emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, vreg, 0),
+					  CONST0_RTX (V4SImode),
+					  gen_rtx_SUBREG (SImode, reg, 0)));
+	      emit_insn (gen_sse4_1_pinsrd (gen_rtx_SUBREG (V4SImode, vreg, 0),
+					    gen_rtx_SUBREG (V4SImode, vreg, 0),
+					    gen_rtx_SUBREG (SImode, reg, 4),
+					    GEN_INT (2)));
+	    }
+	  else
+	    {
+	      rtx tmp = gen_reg_rtx (DImode);
+	      emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, vreg, 0),
+					  CONST0_RTX (V4SImode),
+					  gen_rtx_SUBREG (SImode, reg, 0)));
+	      emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, tmp, 0),
+					  CONST0_RTX (V4SImode),
+					  gen_rtx_SUBREG (SImode, reg, 4)));
+	      emit_insn (gen_vec_interleave_lowv4si
+			 (gen_rtx_SUBREG (V4SImode, vreg, 0),
+			  gen_rtx_SUBREG (V4SImode, vreg, 0),
+			  gen_rtx_SUBREG (V4SImode, tmp, 0)));
+	    }
+	}
+      else
+	emit_insn (gen_rtx_SET (gen_rtx_SUBREG (vmode, vreg, 0),
+				gen_gpr_to_xmm_move_src (vmode, reg)));
+      rtx_insn *seq = get_insns ();
+      end_sequence ();
+      rtx_insn *insn = DF_REF_INSN (ref);
+      emit_conversion_insns (seq, insn);
 
-	  rtx_insn *seq = get_insns ();
-	  end_sequence ();
-	  emit_conversion_insns (seq, insn);
+      if (dump_file)
+	fprintf (dump_file,
+		 "  Copied r%d to a vector register r%d for insn %d\n",
+		 regno, REGNO (vreg), INSN_UID (insn));
+    }
+}
 
-	  if (dump_file)
-	    fprintf (dump_file,
-		     "  Copied r%d to a scalar register r%d for insn %d\n",
-		     regno, REGNO (scopy), INSN_UID (insn));
+/* Copy the definition SRC of INSN inside the chain to DST for
+   scalar uses outside of the chain.  */
+
+void
+general_scalar_chain::convert_reg (rtx_insn *insn, rtx dst, rtx src)
+{
+  start_sequence ();
+  if (!TARGET_INTER_UNIT_MOVES_FROM_VEC)
+    {
+      rtx tmp = assign_386_stack_local (smode, SLOT_STV_TEMP);
+      emit_move_insn (tmp, src);
+      if (!TARGET_64BIT && smode == DImode)
+	{
+	  emit_move_insn (gen_rtx_SUBREG (SImode, dst, 0),
+			  adjust_address (tmp, SImode, 0));
+	  emit_move_insn (gen_rtx_SUBREG (SImode, dst, 4),
+			  adjust_address (tmp, SImode, 4));
+	}
+      else
+	emit_move_insn (dst, copy_rtx (tmp));
+    }
+  else if (!TARGET_64BIT && smode == DImode)
+    {
+      if (TARGET_SSE4_1)
+	{
+	  rtx tmp = gen_rtx_PARALLEL (VOIDmode,
+				      gen_rtvec (1, const0_rtx));
+	  emit_insn
+	      (gen_rtx_SET
+	       (gen_rtx_SUBREG (SImode, dst, 0),
+		gen_rtx_VEC_SELECT (SImode,
+				    gen_rtx_SUBREG (V4SImode, src, 0),
+				    tmp)));
+
+	  tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, const1_rtx));
+	  emit_insn
+	      (gen_rtx_SET
+	       (gen_rtx_SUBREG (SImode, dst, 4),
+		gen_rtx_VEC_SELECT (SImode,
+				    gen_rtx_SUBREG (V4SImode, src, 0),
+				    tmp)));
+	}
+      else
+	{
+	  rtx vcopy = gen_reg_rtx (V2DImode);
+	  emit_move_insn (vcopy, gen_rtx_SUBREG (V2DImode, src, 0));
+	  emit_move_insn (gen_rtx_SUBREG (SImode, dst, 0),
+			  gen_rtx_SUBREG (SImode, vcopy, 0));
+	  emit_move_insn (vcopy,
+			  gen_rtx_LSHIFTRT (V2DImode,
+					    vcopy, GEN_INT (32)));
+	  emit_move_insn (gen_rtx_SUBREG (SImode, dst, 4),
+			  gen_rtx_SUBREG (SImode, vcopy, 0));
 	}
     }
+  else
+    emit_move_insn (dst, src);
 
-  for (ref = DF_REG_USE_CHAIN (regno); ref; ref = DF_REF_NEXT_REG (ref))
-    if (bitmap_bit_p (insns, DF_REF_INSN_UID (ref)))
-      {
-	if (bitmap_bit_p (conv, DF_REF_INSN_UID (ref)))
-	  {
-	    rtx_insn *insn = DF_REF_INSN (ref);
+  rtx_insn *seq = get_insns ();
+  end_sequence ();
+  emit_conversion_insns (seq, insn);
 
-	    rtx def_set = single_set (insn);
-	    gcc_assert (def_set);
-
-	    rtx src = SET_SRC (def_set);
-	    rtx dst = SET_DEST (def_set);
-
-	    if (!MEM_P (dst) || !REG_P (src))
-	      replace_with_subreg_in_insn (insn, reg, reg);
-
-	    bitmap_clear_bit (conv, INSN_UID (insn));
-	  }
-      }
-    /* Skip debug insns and uninitialized uses.  */
-    else if (DF_REF_CHAIN (ref)
-	     && NONDEBUG_INSN_P (DF_REF_INSN (ref)))
-      {
-	gcc_assert (scopy);
-	replace_rtx (DF_REF_INSN (ref), reg, scopy);
-	df_insn_rescan (DF_REF_INSN (ref));
-      }
-
-  BITMAP_FREE (conv);
+  if (dump_file)
+    fprintf (dump_file,
+	     "  Copied r%d to a scalar register r%d for insn %d\n",
+	     REGNO (src), REGNO (dst), INSN_UID (insn));
 }
 
 /* Convert operand OP in INSN.  We should handle
@@ -921,16 +824,6 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
     }
   else if (REG_P (*op))
     {
-      /* We may have not converted register usage in case
-	 this register has no definition.  Otherwise it
-	 should be converted in convert_reg.  */
-      df_ref ref;
-      FOR_EACH_INSN_USE (ref, insn)
-	if (DF_REF_REGNO (ref) == REGNO (*op))
-	  {
-	    gcc_assert (!DF_REF_CHAIN (ref));
-	    break;
-	  }
       *op = gen_rtx_SUBREG (vmode, *op, 0);
     }
   else if (CONST_INT_P (*op))
@@ -975,6 +868,32 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 void
 general_scalar_chain::convert_insn (rtx_insn *insn)
 {
+  /* Generate copies for out-of-chain uses of defs.  */
+  for (df_ref ref = DF_INSN_DEFS (insn); ref; ref = DF_REF_NEXT_LOC (ref))
+    if (bitmap_bit_p (defs_conv, DF_REF_REGNO (ref)))
+      {
+	df_link *use;
+	for (use = DF_REF_CHAIN (ref); use; use = use->next)
+	  if (DF_REF_REG_MEM_P (use->ref)
+	      || !bitmap_bit_p (insns, DF_REF_INSN_UID (use->ref)))
+	    break;
+	if (use)
+	  convert_reg (insn, DF_REF_REG (ref),
+		       *defs_map.get (regno_reg_rtx [DF_REF_REGNO (ref)]));
+      }
+
+  /* Replace uses in this insn with the defs we use in the chain.  */
+  for (df_ref ref = DF_INSN_USES (insn); ref; ref = DF_REF_NEXT_LOC (ref))
+    if (!DF_REF_REG_MEM_P (ref))
+      if (rtx *vreg = defs_map.get (regno_reg_rtx[DF_REF_REGNO (ref)]))
+	{
+	  /* Also update a corresponding REG_DEAD note.  */
+	  rtx note = find_reg_note (insn, REG_DEAD, DF_REF_REG (ref));
+	  if (note)
+	    XEXP (note, 0) = *vreg;
+	  *DF_REF_REAL_LOC (ref) = *vreg;
+	}
+
   rtx def_set = single_set (insn);
   rtx src = SET_SRC (def_set);
   rtx dst = SET_DEST (def_set);
@@ -987,6 +906,20 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
       rtx tmp = gen_reg_rtx (smode);
       emit_conversion_insns (gen_move_insn (dst, tmp), insn);
       dst = gen_rtx_SUBREG (vmode, tmp, 0);
+    }
+  else if (REG_P (dst))
+    {
+      /* Replace the definition with a SUBREG to the definition we
+         use inside the chain.  */
+      rtx *vdef = defs_map.get (dst);
+      if (vdef)
+	dst = *vdef;
+      dst = gen_rtx_SUBREG (vmode, dst, 0);
+      /* IRA doesn't like to have REG_EQUAL/EQUIV notes when the SET_DEST
+         is a non-REG_P.  So kill those off.  */
+      rtx note = find_reg_equal_equiv_note (insn);
+      if (note)
+	remove_note (insn, note);
     }
 
   switch (GET_CODE (src))
@@ -1045,20 +978,15 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
     case COMPARE:
       src = SUBREG_REG (XEXP (XEXP (src, 0), 0));
 
-      gcc_assert ((REG_P (src) && GET_MODE (src) == DImode)
-		  || (SUBREG_P (src) && GET_MODE (src) == V2DImode));
-
-      if (REG_P (src))
-	subreg = gen_rtx_SUBREG (V2DImode, src, 0);
-      else
-	subreg = copy_rtx_if_shared (src);
+      gcc_assert (REG_P (src) && GET_MODE (src) == DImode);
+      subreg = gen_rtx_SUBREG (V2DImode, src, 0);
       emit_insn_before (gen_vec_interleave_lowv2di (copy_rtx_if_shared (subreg),
 						    copy_rtx_if_shared (subreg),
 						    copy_rtx_if_shared (subreg)),
 			insn);
       dst = gen_rtx_REG (CCmode, FLAGS_REG);
-      src = gen_rtx_UNSPEC (CCmode, gen_rtvec (2, copy_rtx_if_shared (src),
-					       copy_rtx_if_shared (src)),
+      src = gen_rtx_UNSPEC (CCmode, gen_rtvec (2, copy_rtx_if_shared (subreg),
+					       copy_rtx_if_shared (subreg)),
 			    UNSPEC_PTEST);
       break;
 
@@ -1217,16 +1145,15 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
   df_insn_rescan (insn);
 }
 
+/* Generate copies from defs used by the chain but not defined therein.
+   Also populates defs_map which is used later by convert_insn.  */
+
 void
 general_scalar_chain::convert_registers ()
 {
   bitmap_iterator bi;
   unsigned id;
-
-  EXECUTE_IF_SET_IN_BITMAP (defs, 0, id, bi)
-    convert_reg (id);
-
-  EXECUTE_IF_AND_COMPL_IN_BITMAP (defs_conv, defs, 0, id, bi)
+  EXECUTE_IF_SET_IN_BITMAP (defs_conv, 0, id, bi)
     make_vector_copies (id);
 }
 
