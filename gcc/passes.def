@@ -313,6 +313,8 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_split_paths);
       NEXT_PASS (pass_tracer);
       NEXT_PASS (pass_fre, false /* may_iterate */);
+      /* After late FRE we rewrite no longer addressed locals into SSA
+         form if possible.  */
       NEXT_PASS (pass_thread_jumps);
       NEXT_PASS (pass_dominator, false /* may_peel_loop_headers_p */);
       NEXT_PASS (pass_strlen);
