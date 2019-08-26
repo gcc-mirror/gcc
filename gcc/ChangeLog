@@ -1,3 +1,14 @@
+2019-08-26  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gimple-loop-versioning.cc (loop_versioning::record_address_fragment):
+	Add nop_convert case.
+	* tree-ssa-propagate.c (substitute_and_fold_dom_walker::before_dom_children):
+	Fold all statements if requested.
+	* tree-ssa-propagate.h (class substitute_and_fold_engine):
+	Allow to fold all statements.
+	* tree-vrp.c (class vrp_folder):
+	Let substitute_and_fold_engine fold all statements.
+
 2019-08-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91526

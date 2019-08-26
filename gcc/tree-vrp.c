@@ -6415,6 +6415,7 @@ vrp_prop::visit_phi (gphi *phi)
 class vrp_folder : public substitute_and_fold_engine
 {
  public:
+  vrp_folder () : substitute_and_fold_engine (/* Fold all stmts.  */ true) {  }
   tree get_value (tree) FINAL OVERRIDE;
   bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
   bool fold_predicate_in (gimple_stmt_iterator *);

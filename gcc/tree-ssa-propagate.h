@@ -100,6 +100,8 @@ class ssa_propagation_engine
 class substitute_and_fold_engine
 {
  public:
+  substitute_and_fold_engine (bool fold_all_stmts = false)
+    : fold_all_stmts (fold_all_stmts) { }
   virtual ~substitute_and_fold_engine (void) { }
   virtual bool fold_stmt (gimple_stmt_iterator *) { return false; }
   virtual tree get_value (tree) { return NULL_TREE; }
@@ -107,6 +109,10 @@ class substitute_and_fold_engine
   bool substitute_and_fold (basic_block = NULL);
   bool replace_uses_in (gimple *);
   bool replace_phi_args_in (gphi *);
+
+  /* Users like VRP can set this when they want to perform
+     folding for every propagation.  */
+  bool fold_all_stmts;
 };
 
 #endif /* _TREE_SSA_PROPAGATE_H  */
