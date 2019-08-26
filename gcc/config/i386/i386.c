@@ -13785,7 +13785,7 @@ emit_i387_cw_initialization (int mode)
     {
     case I387_CW_ROUNDEVEN:
       /* round to nearest */
-      emit_insn (gen_andhi3 (reg, reg, GEN_INT (0x0c00)));
+      emit_insn (gen_andhi3 (reg, reg, GEN_INT (~0x0c00)));
       slot = SLOT_CW_ROUNDEVEN;
       break;
 
