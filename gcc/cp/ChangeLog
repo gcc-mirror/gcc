@@ -1,3 +1,63 @@
+2019-08-24  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (check_for_overrides): Conversion operators need
+	checking too.
+
+2019-08-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* semantics.c (finish_switch_cond): Improve error message location.
+
+2019-08-23  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (decl_dependent_p): New.
+	(mark_used): Check it instead of just processing_template_decl.
+
+2019-08-23  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_nested_name_specifier_opt): Avoid redundant
+	error.
+
+2019-08-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91521 - wrong error with operator->.
+	* decl.c (grokdeclarator): Return error_mark_node for an invalid
+	trailing return type.
+
+	PR c++/79817 - attribute deprecated on namespace.
+	* cp-tree.h (cp_warn_deprecated_use_scopes): Declare.
+	* decl.c (grokdeclarator): Call cp_warn_deprecated_use_scopes.
+	(type_is_deprecated): Likewise.
+	* decl2.c (cp_warn_deprecated_use_scopes): New function.
+	* name-lookup.c (handle_namespace_attrs): Handle attribute deprecated.
+	* parser.c (cp_parser_namespace_alias_definition): Call
+	cp_warn_deprecated_use_scopes.
+	(cp_parser_using_declaration): Likewise.
+	(cp_parser_using_directive): Likewise.
+	* semantics.c (finish_id_expression_1): Likewise.
+
+2019-08-23  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (check_for_override): Checking IDENTIFIER_VIRTUAL_P is
+	sufficient, reorder DECL_OVERRIDE_P check.
+
+2019-08-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR pch/61250
+	* parser.c (cp_parser_initial_pragma): Call c_common_no_more_pch ()
+	after determining that the first token is not
+	PRAGMA_GCC_PCH_PREPROCESS.
+
+2019-08-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91304 - prefix attributes ignored in condition.
+	* parser.c (cp_parser_condition): Handle prefix attributes.
+
+2019-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/91505
+	* decl.c (duplicate_decls): Call copy_attributes_to_builtin inside
+	the BUILT_IN_NORMAL block rather than afterward.
+
 2019-08-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91264 - detect modifying const objects in constexpr.

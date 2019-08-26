@@ -327,7 +327,6 @@ struct tune_params
   /* Prefer 32-bit encoding instead of flag-setting 16-bit encoding.  */
   enum {DISPARAGE_FLAGS_NEITHER, DISPARAGE_FLAGS_PARTIAL, DISPARAGE_FLAGS_ALL}
     disparage_flag_setting_t16_encodings: 2;
-  enum {PREF_NEON_64_FALSE, PREF_NEON_64_TRUE} prefer_neon_for_64bits: 1;
   /* Prefer to inline string operations like memset by using Neon.  */
   enum {PREF_NEON_STRINGOPS_FALSE, PREF_NEON_STRINGOPS_TRUE}
     string_ops_prefer_neon: 1;
@@ -471,10 +470,6 @@ extern int arm_arch_thumb_hwdiv;
 
 /* Nonzero if chip disallows volatile memory access in IT block.  */
 extern int arm_arch_no_volatile_ce;
-
-/* Nonzero if we should use Neon to handle 64-bits operations rather
-   than core registers.  */
-extern int prefer_neon_for_64bits;
 
 /* Structure defining the current overall architectural target and tuning.  */
 struct arm_build_target

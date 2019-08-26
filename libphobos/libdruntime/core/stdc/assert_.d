@@ -60,6 +60,15 @@ else version (NetBSD)
      */
     void __assert(const(char)* file, int line, const(char)* exp);
 }
+else version (OpenBSD)
+{
+    /***
+     * Assert failure function in the OpenBSD C library.
+     */
+    void __assert(const(char)* file, int line, const(char)* exp);
+    ///
+    void __assert2(const(char)* file, int line, const(char)* func, const(char)* exp);
+}
 else version (DragonFlyBSD)
 {
     /***

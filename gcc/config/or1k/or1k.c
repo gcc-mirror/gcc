@@ -928,23 +928,16 @@ or1k_legitimate_constant_p (machine_mode, rtx x)
 #define TARGET_LEGITIMATE_CONSTANT_P or1k_legitimate_constant_p
 
 /* Worker for TARGET_PASS_BY_REFERENCE.
-   Returns true if an argument of TYPE in MODE should be passed by reference
-   as required by the OpenRISC ABI.  On OpenRISC structures, unions and
+   Returns true if an argument ARG should be passed by reference as
+   required by the OpenRISC ABI.  On OpenRISC structures, unions and
    arguments larger than 64-bits are passed by reference.  */
 
 static bool
-or1k_pass_by_reference (cumulative_args_t, machine_mode mode,
-			const_tree type, bool)
+or1k_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  HOST_WIDE_INT size;
-  if (type)
-    {
-      if (AGGREGATE_TYPE_P (type))
-	return true;
-      size = int_size_in_bytes (type);
-    }
-  else
-    size = GET_MODE_SIZE (mode);
+  if (arg.aggregate_type_p ())
+    return true;
+  HOST_WIDE_INT size = arg.type_size_in_bytes ();
   return size < 0 || size > 8;
 }
 
@@ -1004,20 +997,19 @@ or1k_strict_argument_naming (cumulative_args_t /* ca */)
    maybe be passed in registers r3 to r8.  */
 
 static rtx
-or1k_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		   const_tree /* type */, bool named)
+or1k_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
-  /* VOIDmode is passed as a special flag for "last argument".  */
-  if (mode == VOIDmode)
+  /* Handle the special marker for the end of the arguments.  */
+  if (arg.end_marker_p ())
     return NULL_RTX;
 
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int nreg = CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+  int nreg = CEIL (GET_MODE_SIZE (arg.mode), UNITS_PER_WORD);
 
   /* Note that all large arguments are passed by reference.  */
   gcc_assert (nreg <= 2);
-  if (named && *cum + nreg <= 6)
-    return gen_rtx_REG (mode, *cum + 3);
+  if (arg.named && *cum + nreg <= 6)
+    return gen_rtx_REG (arg.mode, *cum + 3);
   else
     return NULL_RTX;
 }
@@ -1027,15 +1019,15 @@ or1k_function_arg (cumulative_args_t cum_v, machine_mode mode,
    argument.  Note, this is not called for arguments passed on the stack.  */
 
 static void
-or1k_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			   const_tree /* type */, bool named)
+or1k_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int nreg = CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+  int nreg = CEIL (GET_MODE_SIZE (arg.mode), UNITS_PER_WORD);
 
   /* Note that all large arguments are passed by reference.  */
   gcc_assert (nreg <= 2);
-  if (named)
+  if (arg.named)
     *cum += nreg;
 }
 

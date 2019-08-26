@@ -771,7 +771,14 @@ class Gogo
   // Return whether an assignment that sets LHS to RHS needs a write
   // barrier.
   bool
-  assign_needs_write_barrier(Expression* lhs);
+  assign_needs_write_barrier(Expression* lhs,
+                             Unordered_set(const Named_object*)*);
+
+  // Return whether EXPR is the address of a variable that can be set
+  // without a write barrier.  That is, if this returns true, then an
+  // assignment to *EXPR does not require a write barrier.
+  bool
+  is_nonwb_pointer(Expression* expr, Unordered_set(const Named_object*)*);
 
   // Return an assignment that sets LHS to RHS using a write barrier.
   // This returns an if statement that checks whether write barriers
@@ -1542,6 +1549,11 @@ class Function
   void
   set_is_inline_only()
   { this->is_inline_only_ = true; }
+
+  // Report whether the function is referenced by an inline body.
+  bool
+  is_referenced_by_inline() const
+  { return this->is_referenced_by_inline_; }
 
   // Mark the function as referenced by an inline body.
   void
@@ -3744,6 +3756,9 @@ static const int RUNTIME_ERROR_DIVISION_BY_ZERO = 11;
 
 // Go statement with nil function.
 static const int RUNTIME_ERROR_GO_NIL = 12;
+
+// Shift by negative value.
+static const int RUNTIME_ERROR_SHIFT_BY_NEGATIVE = 13;
 
 // This is used by some of the langhooks.
 extern Gogo* go_get_gogo();

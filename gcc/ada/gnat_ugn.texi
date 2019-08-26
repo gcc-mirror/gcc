@@ -10925,7 +10925,7 @@ of the pragma in the @cite{GNAT_Reference_manual}).
 
 @emph{Activate most optional warnings.}
 
-This switch activates most optional warning messages.  See the remaining list
+This switch activates most optional warning messages. See the remaining list
 in this section for details on optional warning messages that can be
 individually controlled.  The warnings that are not turned on by this
 switch are:
@@ -10968,6 +10968,9 @@ switch are:
 
 @item 
 @code{-gnatw.q} (questionable layout of record types)
+
+@item 
+@code{-gnatw_r} (out-of-order record representation clauses)
 
 @item 
 @code{-gnatw.s} (overridden size clause)
@@ -12225,7 +12228,7 @@ opposed to renaming the function itself).  The default is that these
 warnings are given.
 @end table
 
-@geindex -gnatwT (gcc)
+@geindex -gnatw.R (gcc)
 
 
 @table @asis
@@ -12235,6 +12238,31 @@ warnings are given.
 @emph{Suppress warnings for object renaming function.}
 
 This switch suppresses warnings for object renaming function.
+@end table
+
+@geindex -gnatw_r (gcc)
+
+
+@table @asis
+
+@item @code{-gnatw_r}
+
+@emph{Activate warnings for out-of-order record representation clauses.}
+
+This switch activates warnings for record representation clauses,
+if the order of component declarations, component clauses,
+and bit-level layout do not all agree.
+The default is that these warnings are not given.
+@end table
+
+@geindex -gnatw_R (gcc)
+
+
+@table @asis
+
+@item @code{-gnatw_R}
+
+@emph{Suppress warnings for out-of-order record representation clauses.}
 @end table
 
 @geindex -gnatws (gcc)

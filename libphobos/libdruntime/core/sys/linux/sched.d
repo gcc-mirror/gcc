@@ -1,9 +1,11 @@
 /*******************************************************************************
 
-    D binding for Linux specific scheduler control methods.
+    D binding for Linux specific scheduler control and thread spawning
+    methods.
 
-    Defines functions sched_setaffinity and sched_getaffinity  and the data
-    types they operate on.
+    Defines functions sched_setaffinity and sched_getaffinity and the data
+    types they operate on, as well as clone and unshare and their related
+    constants.
 
     Copyright:  Copyright (c) 2016 Sociomantic Labs. All rights reserved.
     License:    $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -100,6 +102,24 @@ int CPU_COUNT(cpu_set_t* cpusetp) pure
     return __CPU_COUNT_S(cpu_set_t.sizeof, cpusetp);
 }
 
-/* Functions */
+/* Scheduler control functions */
 int sched_setaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask);
 int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask);
+
+/* Clone and related functions and constants */
+int clone(int function(void*), void* child_stack, int flags, void* arg, ...);
+int unshare(int flags) @trusted;
+
+enum CLONE_FILES = 0x400;
+enum CLONE_FS = 0x200;
+enum CLONE_NEWCGROUP = 0x2000000;
+enum CLONE_NEWIPC = 0x8000000;
+enum CLONE_NEWNET = 0x40000000;
+enum CLONE_NEWNS = 0x20000;
+enum CLONE_NEWPID = 0x20000000;
+enum CLONE_NEWUSER = 0x10000000;
+enum CLONE_NEWUTS = 0x4000000;
+enum CLONE_SIGHAND = 0x800;
+enum CLONE_SYSVSEM = 0x40000;
+enum CLONE_THREAD = 0x10000;
+enum CLONE_VM = 0x100;

@@ -42,6 +42,12 @@ package Sem_Util is
    --  including the cases where there can't be any because e.g. the type is
    --  not tagged.
 
+   function Acquire_Warning_Match_String (Str_Lit : Node_Id) return String;
+   --  Used by pragma Warnings (Off, string), and Warn_As_Error (string) to get
+   --  the given string argument, adding leading and trailing asterisks if they
+   --  are not already present.  Str_Lit is the static value of the pragma
+   --  argument.
+
    procedure Add_Access_Type_To_Process (E : Entity_Id; A : Entity_Id);
    --  Add A to the list of access types to process when expanding the
    --  freeze node of E.

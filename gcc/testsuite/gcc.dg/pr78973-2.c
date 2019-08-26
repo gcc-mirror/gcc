@@ -10,7 +10,7 @@
 
 void *p;
 
-void f (int n)
+static void f (int n)
 {
   if (n <= 4)
     p = __builtin_malloc (n);

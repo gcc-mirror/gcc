@@ -1088,6 +1088,21 @@ begin
       when Pragma_Suppress_All =>
          Set_Has_Pragma_Suppress_All (Cunit (Current_Source_Unit));
 
+      ----------------------
+      -- Warning_As_Error --
+      ----------------------
+
+      --  pragma Warning_As_Error (static_string_EXPRESSION);
+
+      --  Further processing is done in Sem_Prag
+
+      when Pragma_Warning_As_Error =>
+         Check_Arg_Count (1);
+         Check_Arg_Is_String_Literal (Arg1);
+         Warnings_As_Errors_Count := Warnings_As_Errors_Count + 1;
+         Warnings_As_Errors (Warnings_As_Errors_Count) :=
+           new String'(Acquire_Warning_Match_String (Get_Pragma_Arg (Arg1)));
+
       ---------------------
       -- Warnings (GNAT) --
       ---------------------
@@ -1304,6 +1319,7 @@ begin
          | Pragma_Acc_Kernels
          | Pragma_Acc_Loop
          | Pragma_Acc_Parallel
+         | Pragma_Aggregate_Individually_Assign
          | Pragma_Async_Readers
          | Pragma_Async_Writers
          | Pragma_Assertion_Policy
@@ -1519,7 +1535,6 @@ begin
          | Pragma_Volatile_Components
          | Pragma_Volatile_Full_Access
          | Pragma_Volatile_Function
-         | Pragma_Warning_As_Error
          | Pragma_Weak_External
          | Pragma_Validity_Checks
       =>

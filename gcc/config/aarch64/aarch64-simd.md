@@ -5284,6 +5284,28 @@
   [(set_attr "type" "neon_load1_3reg<q>")]
 )
 
+(define_expand "aarch64_ld1x4<VALLDIF:mode>"
+  [(match_operand:XI 0 "register_operand" "=w")
+   (match_operand:DI 1 "register_operand" "r")
+   (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+  "TARGET_SIMD"
+{
+  rtx mem = gen_rtx_MEM (XImode, operands[1]);
+  emit_insn (gen_aarch64_ld1_x4_<VALLDIF:mode> (operands[0], mem));
+  DONE;
+})
+
+(define_insn "aarch64_ld1_x4_<mode>"
+  [(set (match_operand:XI 0 "register_operand" "=w")
+	(unspec:XI
+	  [(match_operand:XI 1 "aarch64_simd_struct_operand" "Utv")
+	   (unspec:VALLDIF [(const_int 4)] UNSPEC_VSTRUCTDUMMY)]
+	UNSPEC_LD1))]
+  "TARGET_SIMD"
+  "ld1\\t{%S0.<Vtype> - %V0.<Vtype>}, %1"
+  [(set_attr "type" "neon_load1_4reg<q>")]
+)
+
 (define_expand "aarch64_st1x2<VALLDIF:mode>"
   [(match_operand:DI 0 "register_operand")
    (match_operand:OI 1 "register_operand")
@@ -5324,6 +5346,28 @@
   "TARGET_SIMD"
   "st1\\t{%S1.<Vtype> - %U1.<Vtype>}, %0"
   [(set_attr "type" "neon_store1_3reg<q>")]
+)
+
+(define_expand "aarch64_st1x4<VALLDIF:mode>"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:XI 1 "register_operand" "")
+   (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+  "TARGET_SIMD"
+{
+  rtx mem = gen_rtx_MEM (XImode, operands[0]);
+  emit_insn (gen_aarch64_st1_x4_<VALLDIF:mode> (mem, operands[1]));
+  DONE;
+})
+
+(define_insn "aarch64_st1_x4_<mode>"
+  [(set (match_operand:XI 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:XI
+	   [(match_operand:XI 1 "register_operand" "w")
+	   (unspec:VALLDIF [(const_int 4)] UNSPEC_VSTRUCTDUMMY)]
+	UNSPEC_ST1))]
+  "TARGET_SIMD"
+  "st1\\t{%S1.<Vtype> - %V1.<Vtype>}, %0"
+  [(set_attr "type" "neon_store1_4reg<q>")]
 )
 
 (define_insn "*aarch64_mov<mode>"

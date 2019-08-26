@@ -706,7 +706,7 @@ general_scalar_chain::make_vector_copies (unsigned regno)
 				gen_rtx_SUBREG (SImode, reg, 4));
 	      }
 	    else
-	      emit_move_insn (tmp, reg);
+	      emit_move_insn (copy_rtx (tmp), reg);
 	    emit_insn (gen_rtx_SET (gen_rtx_SUBREG (vmode, vreg, 0),
 				    gen_gpr_to_xmm_move_src (vmode, tmp)));
 	  }
@@ -810,7 +810,7 @@ general_scalar_chain::convert_reg (unsigned regno)
 				  adjust_address (tmp, SImode, 4));
 		}
 	      else
-		emit_move_insn (scopy, tmp);
+		emit_move_insn (scopy, copy_rtx (tmp));
 	    }
 	  else if (!TARGET_64BIT && smode == DImode)
 	    {
@@ -910,7 +910,9 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
     {
       rtx tmp = gen_reg_rtx (GET_MODE (*op));
 
-      emit_insn_before (gen_move_insn (tmp, *op), insn);
+      emit_insn_before (gen_rtx_SET (gen_rtx_SUBREG (vmode, tmp, 0),
+				     gen_gpr_to_xmm_move_src (vmode, *op)),
+			insn);
       *op = gen_rtx_SUBREG (vmode, tmp, 0);
 
       if (dump_file)
@@ -1664,7 +1666,7 @@ timode_remove_non_convertible_regs (bitmap candidates)
    instructions into vector mode when profitable.  */
 
 static unsigned int
-convert_scalars_to_vector ()
+convert_scalars_to_vector (bool timode_p)
 {
   basic_block bb;
   int converted_insns = 0;
@@ -1690,7 +1692,7 @@ convert_scalars_to_vector ()
     {
       rtx_insn *insn;
       FOR_BB_INSNS (bb, insn)
-	if (TARGET_64BIT
+	if (timode_p
 	    && timode_scalar_to_vector_candidate_p (insn))
 	  {
 	    if (dump_file)
@@ -1699,7 +1701,7 @@ convert_scalars_to_vector ()
 
 	    bitmap_set_bit (&candidates[2], INSN_UID (insn));
 	  }
-	else
+	else if (!timode_p)
 	  {
 	    /* Check {SI,DI}mode.  */
 	    for (unsigned i = 0; i <= 1; ++i)
@@ -1715,7 +1717,7 @@ convert_scalars_to_vector ()
 	  }
     }
 
-  if (TARGET_64BIT)
+  if (timode_p)
     timode_remove_non_convertible_regs (&candidates[2]);
   for (unsigned i = 0; i <= 1; ++i)
     general_remove_non_convertible_regs (&candidates[i]);
@@ -1875,13 +1877,13 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return (timode_p == !!TARGET_64BIT
+      return ((!timode_p || TARGET_64BIT)
 	      && TARGET_STV && TARGET_SSE2 && optimize > 1);
     }
 
   virtual unsigned int execute (function *)
     {
-      return convert_scalars_to_vector ();
+      return convert_scalars_to_vector (timode_p);
     }
 
   opt_pass *clone ()

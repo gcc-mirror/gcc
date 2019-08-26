@@ -635,8 +635,8 @@ package body Inline is
             --  declares the type, and that body is visible to the back end.
             --  Do not inline it either if it is in the main unit.
             --  Extend the -gnatn2 processing to -gnatn1 for Inline_Always
-            --  calls if the back-end takes care of inlining the call.
-            --  Note that Level is in Inline_Call | Inline_Packag here.
+            --  calls if the back end takes care of inlining the call.
+            --  Note that Level is in Inline_Call | Inline_Package here.
 
             elsif ((Level = Inline_Call
                       and then Has_Pragma_Inline_Always (E)

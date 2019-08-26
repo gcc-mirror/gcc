@@ -213,38 +213,54 @@ build_frontend_type (tree type)
       break;
 
     case RECORD_TYPE:
-      if (TYPE_NAME (type))
+    {
+      Identifier *ident = TYPE_IDENTIFIER (type) ?
+	Identifier::idPool (IDENTIFIER_POINTER (TYPE_IDENTIFIER (type))) : NULL;
+
+      /* Neither the `object' and `gcc.builtins' modules will not exist when
+	 this is called.  Use a stub 'object' module parent in the meantime.
+	 If `gcc.builtins' is later imported, the parent will be overridden
+	 with the correct module symbol.  */
+      static Identifier *object = Identifier::idPool ("object");
+      static Module *stubmod = Module::create ("object.d", object, 0, 0);
+
+      StructDeclaration *sdecl = StructDeclaration::create (Loc (), ident,
+							    false);
+      sdecl->parent = stubmod;
+      sdecl->structsize = int_size_in_bytes (type);
+      sdecl->alignsize = TYPE_ALIGN_UNIT (type);
+      sdecl->alignment = STRUCTALIGN_DEFAULT;
+      sdecl->sizeok = SIZEOKdone;
+      sdecl->type = (TypeStruct::create (sdecl))->addMod (mod);
+      sdecl->type->ctype = type;
+      sdecl->type->merge2 ();
+
+      sdecl->members = new Dsymbols;
+
+      for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	{
-	  tree structname = DECL_NAME (TYPE_NAME (type));
-	  Identifier *ident
-	    = Identifier::idPool (IDENTIFIER_POINTER (structname));
+	  Type *ftype = build_frontend_type (TREE_TYPE (field));
+	  if (!ftype)
+	    {
+	      delete sdecl->members;
+	      return NULL;
+	    }
 
-	  /* Neither the `object' and `gcc.builtins' modules will not exist when
-	     this is called.  Use a stub 'object' module parent in the meantime.
-	     If `gcc.builtins' is later imported, the parent will be overridden
-	     with the correct module symbol.  */
-	  static Identifier *object = Identifier::idPool ("object");
-	  static Module *stubmod = Module::create ("object.d", object, 0, 0);
-
-	  StructDeclaration *sdecl = StructDeclaration::create (Loc (), ident,
-								false);
-	  sdecl->parent = stubmod;
-	  sdecl->structsize = int_size_in_bytes (type);
-	  sdecl->alignsize = TYPE_ALIGN_UNIT (type);
-	  sdecl->alignment = STRUCTALIGN_DEFAULT;
-	  sdecl->sizeok = SIZEOKdone;
-	  sdecl->type = (TypeStruct::create (sdecl))->addMod (mod);
-	  sdecl->type->ctype = type;
-	  sdecl->type->merge2 ();
-
-	  /* Does not seem necessary to convert fields, but the members field
-	     must be non-null for the above size setting to stick.  */
-	  sdecl->members = new Dsymbols;
-	  dtype = sdecl->type;
-	  builtin_converted_decls.safe_push (builtin_data (dtype, type, sdecl));
-	  return dtype;
+	  Identifier *fident
+	    = Identifier::idPool (IDENTIFIER_POINTER (DECL_NAME (field)));
+	  VarDeclaration *vd = VarDeclaration::create (Loc (), ftype, fident,
+						       NULL);
+	  vd->offset = tree_to_uhwi (DECL_FIELD_OFFSET (field));
+	  vd->semanticRun = PASSsemanticdone;
+	  vd->csym = field;
+	  sdecl->members->push (vd);
+	  sdecl->fields.push (vd);
 	}
-      break;
+
+      dtype = sdecl->type;
+      builtin_converted_decls.safe_push (builtin_data (dtype, type, sdecl));
+      return dtype;
+    }
 
     case FUNCTION_TYPE:
       dtype = build_frontend_type (TREE_TYPE (type));
@@ -561,7 +577,7 @@ d_build_builtins_module (Module *m)
       /* Currently, there is no need to run semantic, but we do want to output
 	 initializers, typeinfo, and others on demand.  */
       Dsymbol *dsym = builtin_converted_decls[i].dsym;
-      if (dsym != NULL)
+      if (dsym != NULL && !dsym->isAnonymous ())
 	{
 	  dsym->parent = m;
 	  members->push (dsym);
@@ -569,7 +585,18 @@ d_build_builtins_module (Module *m)
     }
 
   /* va_list should already be built, so no need to convert to D type again.  */
-  members->push (build_alias_declaration ("__builtin_va_list", Type::tvalist));
+  StructDeclaration *sd = (Type::tvalist->ty == Tstruct)
+    ? ((TypeStruct *) Type::tvalist)->sym : NULL;
+  if (sd == NULL || !sd->isAnonymous ())
+    {
+      members->push (build_alias_declaration ("__builtin_va_list",
+					      Type::tvalist));
+    }
+  else
+    {
+      sd->ident = Identifier::idPool ("__builtin_va_list");
+      members->push (sd);
+    }
 
   /* Expose target-specific integer types to the builtins module.  */
   {
@@ -735,27 +762,25 @@ d_build_c_type_nodes (void)
     = build_pointer_type (build_qualified_type (char_type_node,
 						TYPE_QUAL_CONST));
 
-  if (strcmp (SIZE_TYPE, "unsigned int") == 0)
+  if (strcmp (UINTMAX_TYPE, "unsigned int") == 0)
     {
       intmax_type_node = integer_type_node;
       uintmax_type_node = unsigned_type_node;
-      signed_size_type_node = integer_type_node;
     }
-  else if (strcmp (SIZE_TYPE, "long unsigned int") == 0)
+  else if (strcmp (UINTMAX_TYPE, "long unsigned int") == 0)
     {
       intmax_type_node = long_integer_type_node;
       uintmax_type_node = long_unsigned_type_node;
-      signed_size_type_node = long_integer_type_node;
     }
-  else if (strcmp (SIZE_TYPE, "long long unsigned int") == 0)
+  else if (strcmp (UINTMAX_TYPE, "long long unsigned int") == 0)
     {
       intmax_type_node = long_long_integer_type_node;
       uintmax_type_node = long_long_unsigned_type_node;
-      signed_size_type_node = long_long_integer_type_node;
     }
   else
     gcc_unreachable ();
 
+  signed_size_type_node = signed_type_for (size_type_node);
   wint_type_node = unsigned_type_node;
   pid_type_node = integer_type_node;
 }
@@ -1116,10 +1141,7 @@ d_init_builtins (void)
   /* Build the "standard" abi va_list.  */
   Type::tvalist = build_frontend_type (va_list_type_node);
   if (!Type::tvalist)
-    {
-      error ("cannot represent built-in %<va_list%> type in D");
-      gcc_unreachable ();
-    }
+    sorry ("cannot represent built-in %<va_list%> type in D");
 
   /* Map the va_list type to the D frontend Type.  This is to prevent both
      errors in gimplification or an ICE in targetm.canonical_va_list_type.  */

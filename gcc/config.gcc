@@ -664,7 +664,8 @@ bdver3 bdver4 znver1 znver2 btver1 btver2 k8 k8-sse3 opteron \
 opteron-sse3 nocona core2 corei7 corei7-avx core-avx-i core-avx2 atom \
 slm nehalem westmere sandybridge ivybridge haswell broadwell bonnell \
 silvermont knl knm skylake-avx512 cannonlake icelake-client icelake-server \
-skylake goldmont goldmont-plus tremont cascadelake x86-64 native"
+skylake goldmont goldmont-plus tremont cascadelake tigerlake cooperlake x86-64 \
+native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.

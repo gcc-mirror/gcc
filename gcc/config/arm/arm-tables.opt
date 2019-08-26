@@ -235,6 +235,12 @@ EnumValue
 Enum(processor_type) String(cortex-a76) Value( TARGET_CPU_cortexa76)
 
 EnumValue
+Enum(processor_type) String(cortex-a76ae) Value( TARGET_CPU_cortexa76ae)
+
+EnumValue
+Enum(processor_type) String(cortex-a77) Value( TARGET_CPU_cortexa77)
+
+EnumValue
 Enum(processor_type) String(neoverse-n1) Value( TARGET_CPU_neoversen1)
 
 EnumValue
@@ -248,6 +254,9 @@ Enum(processor_type) String(cortex-m23) Value( TARGET_CPU_cortexm23)
 
 EnumValue
 Enum(processor_type) String(cortex-m33) Value( TARGET_CPU_cortexm33)
+
+EnumValue
+Enum(processor_type) String(cortex-m35p) Value( TARGET_CPU_cortexm35p)
 
 EnumValue
 Enum(processor_type) String(cortex-r52) Value( TARGET_CPU_cortexr52)

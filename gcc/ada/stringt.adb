@@ -350,6 +350,17 @@ package body Stringt is
    end Strings_Address;
 
    ---------------
+   -- To_String --
+   ---------------
+
+   function To_String (S : String_Id) return String is
+      Buf : Bounded_String;
+   begin
+      Append (Buf, S);
+      return To_String (Buf);
+   end To_String;
+
+   ---------------
    -- Tree_Read --
    ---------------
 

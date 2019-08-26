@@ -5369,54 +5369,16 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
    We do this by looping over the code (and expressions). The first call
    we happen to find is assumed to be canonical.  */
 
-/* Callback for external functions.  */
+
+/* Common tests for argument checking for both functions and subroutines.  */
 
 static int
-check_externals_expr (gfc_expr **ep, int *walk_subtrees ATTRIBUTE_UNUSED,
-		      void *data ATTRIBUTE_UNUSED)
+check_externals_procedure (gfc_symbol *sym, locus *loc, gfc_actual_arglist *actual)
 {
-  gfc_expr *e = *ep;
-  gfc_symbol *sym, *def_sym;
   gfc_gsymbol *gsym;
+  gfc_symbol *def_sym = NULL;
 
-  if (e->expr_type != EXPR_FUNCTION)
-    return 0;
-
-  sym = e->value.function.esym;
-
-  if (sym == NULL || sym->attr.is_bind_c)
-    return 0;
-
-  if (sym->attr.proc != PROC_EXTERNAL && sym->attr.proc != PROC_UNKNOWN)
-    return 0;
-
-  gsym = gfc_find_gsymbol (gfc_gsym_root, sym->name);
-  if (gsym == NULL)
-    return 0;
-
-  gfc_find_symbol (sym->name, gsym->ns, 0, &def_sym);
-
-  if (sym && def_sym)
-    gfc_procedure_use (def_sym, &e->value.function.actual, &e->where);
-
-  return 0;
-}
-
-/* Callback for external code.  */
-
-static int
-check_externals_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
-		      void *data ATTRIBUTE_UNUSED)
-{
-  gfc_code *co = *c;
-  gfc_symbol *sym, *def_sym;
-  gfc_gsymbol *gsym;
-
-  if (co->op != EXEC_CALL)
-    return 0;
-
-  sym = co->resolved_sym;
-  if (sym == NULL || sym->attr.is_bind_c)
+ if (sym == NULL || sym->attr.is_bind_c)
     return 0;
 
   if (sym->attr.proc != PROC_EXTERNAL && sym->attr.proc != PROC_UNKNOWN)
@@ -5429,12 +5391,82 @@ check_externals_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   if (gsym == NULL)
     return 0;
 
-  gfc_find_symbol (sym->name, gsym->ns, 0, &def_sym);
+  if (gsym->ns)
+    gfc_find_symbol (sym->name, gsym->ns, 0, &def_sym);
 
-  if (sym && def_sym)
-    gfc_procedure_use (def_sym, &co->ext.actual, &co->loc);
+  if (def_sym)
+    {
+      gfc_procedure_use (def_sym, &actual, loc);
+      return 0;
+    }
+
+  /* First time we have seen this procedure called. Let's create an
+     "interface" from the call and put it into a new namespace.  */
+  gfc_namespace *save_ns;
+  gfc_symbol *new_sym;
+
+  gsym->where = *loc;
+  save_ns = gfc_current_ns;
+  gsym->ns = gfc_get_namespace (gfc_current_ns, 0);
+  gsym->ns->proc_name = sym;
+
+  gfc_get_symbol (sym->name, gsym->ns, &new_sym);
+  gcc_assert (new_sym);
+  new_sym->attr = sym->attr;
+  new_sym->attr.if_source = IFSRC_DECL;
+  gfc_current_ns = gsym->ns;
+
+  gfc_get_formal_from_actual_arglist (new_sym, actual);
+  gfc_current_ns = save_ns;
 
   return 0;
+
+}
+
+/* Callback for calls of external routines.  */
+
+static int
+check_externals_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
+		      void *data ATTRIBUTE_UNUSED)
+{
+  gfc_code *co = *c;
+  gfc_symbol *sym;
+  locus *loc;
+  gfc_actual_arglist *actual;
+
+  if (co->op != EXEC_CALL)
+    return 0;
+
+  sym = co->resolved_sym;
+  loc = &co->loc;
+  actual = co->ext.actual;
+
+  return check_externals_procedure (sym, loc, actual);
+
+}
+
+/* Callback for external functions.  */
+
+static int
+check_externals_expr (gfc_expr **ep, int *walk_subtrees ATTRIBUTE_UNUSED,
+		      void *data ATTRIBUTE_UNUSED)
+{
+  gfc_expr *e = *ep;
+  gfc_symbol *sym;
+  locus *loc;
+  gfc_actual_arglist *actual;
+
+  if (e->expr_type != EXPR_FUNCTION)
+    return 0;
+
+  sym = e->value.function.esym;
+  if (sym == NULL)
+    return 0;
+
+  loc = &e->where;
+  actual = e->value.function.actual;
+
+  return check_externals_procedure (sym, loc, actual);
 }
 
 /* Called routine.  */

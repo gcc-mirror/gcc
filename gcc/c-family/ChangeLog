@@ -1,3 +1,28 @@
+2019-08-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR pch/61250
+	* c-lex.c (c_lex_with_flags):  Don't call
+	c_common_no_more_pch () from here.
+
+2019-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91283
+	* c-common.c (c_ts18661_flt_eval_method): Use flag_excess_precision
+	instead of flag_excess_precision_cmdline.
+	* c-cppbuiltin.c (c_cpp_flt_eval_method_iec_559): Likewise.
+	* c-opts.c (c_common_post_options): Likewise.
+
+2019-08-22  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91490
+	* c-common.c (braced_list_to_string): Add argument and overload.
+	Handle flexible length arrays and unions.
+
+2019-08-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_function_declaration): Be prepared for broken
+	function declarations where arguments are missing.  Rename variables.
+
 2019-08-15  Richard Biener  <rguenther@suse.de>
 
 	* c-common.c (c_stddef_cpp_builtins): When the GIMPLE FE is

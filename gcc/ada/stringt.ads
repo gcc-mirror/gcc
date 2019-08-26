@@ -127,6 +127,9 @@ package Stringt is
    --  out of Character range. Does not attempt to do any encoding of
    --  characters.
 
+   function To_String (S : String_Id) return String;
+   --  Return S as a String
+
    procedure String_To_Name_Buffer (S : String_Id);
    --  Place characters of given string in Name_Buffer, setting Name_Len.
    --  Error if any characters are out of Character range. Does not attempt

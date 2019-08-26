@@ -642,8 +642,8 @@ static bool arc_can_follow_jump (const rtx_insn *follower,
 				 const rtx_insn *followee);
 
 static rtx frame_insn (rtx);
-static void arc_function_arg_advance (cumulative_args_t, machine_mode,
-				      const_tree, bool);
+static void arc_function_arg_advance (cumulative_args_t,
+				      const function_arg_info &);
 static rtx arc_legitimize_address_0 (rtx, rtx, machine_mode mode);
 
 /* initialize the GCC target structure.  */
@@ -2415,12 +2415,12 @@ arc_double_limm_p (rtx value)
    create a register parameter block, and then copy any anonymous arguments
    in registers to memory.
 
-   CUM has not been updated for the last named argument which has type TYPE
-   and mode MODE, and we rely on this fact.  */
+   CUM has not been updated for the last named argument (which is given
+   by ARG), and we rely on this fact.  */
 
 static void
 arc_setup_incoming_varargs (cumulative_args_t args_so_far,
-			    machine_mode mode, tree type,
+			    const function_arg_info &arg,
 			    int *pretend_size, int no_rtl)
 {
   int first_anon_arg;
@@ -2429,8 +2429,7 @@ arc_setup_incoming_varargs (cumulative_args_t args_so_far,
   /* We must treat `__builtin_va_alist' as an anonymous arg.  */
 
   next_cum = *get_cumulative_args (args_so_far);
-  arc_function_arg_advance (pack_cumulative_args (&next_cum),
-			    mode, type, true);
+  arc_function_arg_advance (pack_cumulative_args (&next_cum), arg);
   first_anon_arg = next_cum;
 
   if (FUNCTION_ARG_REGNO_P (first_anon_arg))
@@ -6432,17 +6431,15 @@ arc_output_pic_addr_const (FILE * file, rtx x, int code)
 /* Implement TARGET_ARG_PARTIAL_BYTES.  */
 
 static int
-arc_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
-		       tree type, bool named ATTRIBUTE_UNUSED)
+arc_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int bytes = (mode == BLKmode
-	       ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode));
+  int bytes = arg.promoted_size_in_bytes ();
   int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   int arg_num = *cum;
   int ret;
 
-  arg_num = ROUND_ADVANCE_CUM (arg_num, mode, type);
+  arg_num = ROUND_ADVANCE_CUM (arg_num, arg.mode, arg.type);
   ret = GPR_REST_ARG_REGS (arg_num);
 
   /* ICEd at function.c:2361, and ret is copied to data->partial */
@@ -6451,63 +6448,27 @@ arc_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
   return ret;
 }
 
-/* This function is used to control a function argument is passed in a
-   register, and which register.
-
-   The arguments are CUM, of type CUMULATIVE_ARGS, which summarizes
-   (in a way defined by INIT_CUMULATIVE_ARGS and FUNCTION_ARG_ADVANCE)
-   all of the previous arguments so far passed in registers; MODE, the
-   machine mode of the argument; TYPE, the data type of the argument
-   as a tree node or 0 if that is not known (which happens for C
-   support library functions); and NAMED, which is 1 for an ordinary
-   argument and 0 for nameless arguments that correspond to `...' in
-   the called function's prototype.
-
-   The returned value should either be a `reg' RTX for the hard
-   register in which to pass the argument, or zero to pass the
-   argument on the stack.
-
-   For machines like the Vax and 68000, where normally all arguments
-   are pushed, zero suffices as a definition.
-
-   The usual way to make the ANSI library `stdarg.h' work on a machine
-   where some arguments are usually passed in registers, is to cause
-   nameless arguments to be passed on the stack instead.  This is done
-   by making the function return 0 whenever NAMED is 0.
-
-   You may use the macro `MUST_PASS_IN_STACK (MODE, TYPE)' in the
-   definition of this function to determine if this argument is of a
-   type that must be passed in the stack.  If `REG_PARM_STACK_SPACE'
-   is not defined and the function returns non-zero for such an
-   argument, the compiler will abort.  If `REG_PARM_STACK_SPACE' is
-   defined, the argument will be computed in the stack and then loaded
-   into a register.
-
-   The function is used to implement macro FUNCTION_ARG.  */
-/* On the ARC the first MAX_ARC_PARM_REGS args are normally in registers
-   and the rest are pushed.  */
+/* Implement TARGET_FUNCTION_ARG.  On the ARC the first MAX_ARC_PARM_REGS
+   args are normally in registers and the rest are pushed.  */
 
 static rtx
-arc_function_arg (cumulative_args_t cum_v,
-		  machine_mode mode,
-		  const_tree type ATTRIBUTE_UNUSED,
-		  bool named ATTRIBUTE_UNUSED)
+arc_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int arg_num = *cum;
   rtx ret;
   const char *debstr ATTRIBUTE_UNUSED;
 
-  arg_num = ROUND_ADVANCE_CUM (arg_num, mode, type);
+  arg_num = ROUND_ADVANCE_CUM (arg_num, arg.mode, arg.type);
   /* Return a marker for use in the call instruction.  */
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     {
       ret = const0_rtx;
       debstr = "<0>";
     }
   else if (GPR_REST_ARG_REGS (arg_num) > 0)
     {
-      ret = gen_rtx_REG (mode, arg_num);
+      ret = gen_rtx_REG (arg.mode, arg_num);
       debstr = reg_names [arg_num];
     }
   else
@@ -6518,17 +6479,7 @@ arc_function_arg (cumulative_args_t cum_v,
   return ret;
 }
 
-/* The function to update the summarizer variable *CUM to advance past
-   an argument in the argument list.  The values MODE, TYPE and NAMED
-   describe that argument.  Once this is done, the variable *CUM is
-   suitable for analyzing the *following* argument with
-   `FUNCTION_ARG', etc.
-
-   This function need not do anything if the argument in question was
-   passed on the stack.  The compiler knows how to track the amount of
-   stack space used for arguments without any special help.
-
-   The function is used to implement macro FUNCTION_ARG_ADVANCE.  */
+/* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 /* For the ARC: the cum set here is passed on to function_arg where we
    look at its value and say which reg to use. Strategy: advance the
    regnumber here till we run out of arg regs, then set *cum to last
@@ -6538,18 +6489,15 @@ arc_function_arg (cumulative_args_t cum_v,
 
 static void
 arc_function_arg_advance (cumulative_args_t cum_v,
-			  machine_mode mode,
-			  const_tree type,
-			  bool named ATTRIBUTE_UNUSED)
+			  const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int bytes = (mode == BLKmode
-	       ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode));
+  int bytes = arg.promoted_size_in_bytes ();
   int words = (bytes + UNITS_PER_WORD  - 1) / UNITS_PER_WORD;
   int i;
 
   if (words)
-    *cum = ROUND_ADVANCE_CUM (*cum, mode, type);
+    *cum = ROUND_ADVANCE_CUM (*cum, arg.mode, arg.type);
   for (i = 0; i < words; i++)
     *cum = ARC_NEXT_ARG_REG (*cum);
 
@@ -7568,14 +7516,11 @@ arc_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 }
 
 static bool
-arc_pass_by_reference (cumulative_args_t ca_v ATTRIBUTE_UNUSED,
-		       machine_mode mode ATTRIBUTE_UNUSED,
-		       const_tree type,
-		       bool named ATTRIBUTE_UNUSED)
+arc_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
-  return (type != 0
-	  && (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
-	      || TREE_ADDRESSABLE (type)));
+  return (arg.type != 0
+	  && (TREE_CODE (TYPE_SIZE (arg.type)) != INTEGER_CST
+	      || TREE_ADDRESSABLE (arg.type)));
 }
 
 /* Implement TARGET_CAN_USE_DOLOOP_P.  */

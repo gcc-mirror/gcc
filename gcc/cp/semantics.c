@@ -1185,10 +1185,12 @@ finish_switch_cond (tree cond, tree switch_stmt)
   if (!processing_template_decl)
     {
       /* Convert the condition to an integer or enumeration type.  */
+      tree orig_cond = cond;
       cond = build_expr_type_conversion (WANT_INT | WANT_ENUM, cond, true);
       if (cond == NULL_TREE)
 	{
-	  error ("switch quantity not an integer");
+	  error_at (cp_expr_loc_or_input_loc (orig_cond),
+		    "switch quantity not an integer");
 	  cond = error_mark_node;
 	}
       /* We want unlowered type here to handle enum bit-fields.  */
@@ -3810,6 +3812,8 @@ finish_id_expression_1 (tree id_expression,
 
 	  if (TREE_CODE (decl) == FUNCTION_DECL)
 	    mark_used (decl);
+
+	  cp_warn_deprecated_use_scopes (scope);
 
 	  if (TYPE_P (scope))
 	    decl = finish_qualified_id_expr (scope,

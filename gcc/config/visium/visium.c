@@ -158,14 +158,13 @@ static struct machine_function *visium_init_machine_status (void);
 
 /* Target hooks and TARGET_INITIALIZER  */
 
-static bool visium_pass_by_reference (cumulative_args_t, machine_mode,
-				      const_tree, bool);
+static bool visium_pass_by_reference (cumulative_args_t,
+				      const function_arg_info &);
 
-static rtx visium_function_arg (cumulative_args_t, machine_mode,
-				const_tree, bool);
+static rtx visium_function_arg (cumulative_args_t, const function_arg_info &);
 
-static void visium_function_arg_advance (cumulative_args_t, machine_mode,
-					 const_tree, bool);
+static void visium_function_arg_advance (cumulative_args_t,
+					 const function_arg_info &);
 
 static bool visium_return_in_memory (const_tree, const_tree fntype);
 
@@ -175,8 +174,8 @@ static rtx visium_function_value (const_tree, const_tree fn_decl_or_type,
 static rtx visium_libcall_value (machine_mode, const_rtx);
 
 static void visium_setup_incoming_varargs (cumulative_args_t,
-					   machine_mode,
-					   tree, int *, int);
+					   const function_arg_info &,
+					   int *, int);
 
 static void visium_va_start (tree valist, rtx nextarg);
 
@@ -1310,11 +1309,9 @@ visium_reorg (void)
 /* Return true if an argument must be passed by indirect reference.  */
 
 static bool
-visium_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			  machine_mode mode ATTRIBUTE_UNUSED,
-			  const_tree type,
-			  bool named ATTRIBUTE_UNUSED)
+visium_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
+  tree type = arg.type;
   return type && (AGGREGATE_TYPE_P (type) || TREE_CODE (type) == VECTOR_TYPE);
 }
 
@@ -1332,59 +1329,54 @@ visium_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
    in general registers.  */
 
 static rtx
-visium_function_arg (cumulative_args_t pcum_v, machine_mode mode,
-		     const_tree type ATTRIBUTE_UNUSED,
-		     bool named ATTRIBUTE_UNUSED)
+visium_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 {
   int size;
   CUMULATIVE_ARGS *ca = get_cumulative_args (pcum_v);
 
-  size = (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-  if (mode == VOIDmode)
+  size = (GET_MODE_SIZE (arg.mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  if (arg.end_marker_p ())
     return GEN_INT (0);
 
   /* Scalar or complex single precision floating point arguments are returned
      in floating registers.  */
   if (TARGET_FPU
-      && ((GET_MODE_CLASS (mode) == MODE_FLOAT
-	   && GET_MODE_SIZE (mode) <= UNITS_PER_HWFPVALUE)
-	  || (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
-	      && GET_MODE_SIZE (mode) <= UNITS_PER_HWFPVALUE * 2)))
+      && ((GET_MODE_CLASS (arg.mode) == MODE_FLOAT
+	   && GET_MODE_SIZE (arg.mode) <= UNITS_PER_HWFPVALUE)
+	  || (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT
+	      && GET_MODE_SIZE (arg.mode) <= UNITS_PER_HWFPVALUE * 2)))
     {
       if (ca->frcount + size <= MAX_ARGS_IN_FP_REGISTERS)
-	return gen_rtx_REG (mode, FP_ARG_FIRST + ca->frcount);
+	return gen_rtx_REG (arg.mode, FP_ARG_FIRST + ca->frcount);
       else
 	return NULL_RTX;
     }
 
   if (ca->grcount + size <= MAX_ARGS_IN_GP_REGISTERS)
-    return gen_rtx_REG (mode, ca->grcount + GP_ARG_FIRST);
+    return gen_rtx_REG (arg.mode, ca->grcount + GP_ARG_FIRST);
 
   return NULL_RTX;
 }
 
-/* Update the summarizer variable pointed to by PCUM_V to advance past an
-   argument in the argument list.  The values MODE, TYPE and NAMED describe
-   that argument.  Once this is done, the variable CUM is suitable for
+/* Update the summarizer variable pointed to by PCUM_V to advance past
+   argument ARG.  Once this is done, the variable CUM is suitable for
    analyzing the _following_ argument with visium_function_arg.  */
 
 static void
 visium_function_arg_advance (cumulative_args_t pcum_v,
-			     machine_mode mode,
-			     const_tree type ATTRIBUTE_UNUSED,
-			     bool named)
+			     const function_arg_info &arg)
 {
-  int size = (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  int size = (GET_MODE_SIZE (arg.mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   int stack_size = 0;
   CUMULATIVE_ARGS *ca = get_cumulative_args (pcum_v);
 
   /* Scalar or complex single precision floating point arguments are returned
      in floating registers.  */
   if (TARGET_FPU
-      && ((GET_MODE_CLASS (mode) == MODE_FLOAT
-	   && GET_MODE_SIZE (mode) <= UNITS_PER_HWFPVALUE)
-	  || (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
-	      && GET_MODE_SIZE (mode) <= UNITS_PER_HWFPVALUE * 2)))
+      && ((GET_MODE_CLASS (arg.mode) == MODE_FLOAT
+	   && GET_MODE_SIZE (arg.mode) <= UNITS_PER_HWFPVALUE)
+	  || (GET_MODE_CLASS (arg.mode) == MODE_COMPLEX_FLOAT
+	      && GET_MODE_SIZE (arg.mode) <= UNITS_PER_HWFPVALUE * 2)))
     {
       if (ca->frcount + size <= MAX_ARGS_IN_FP_REGISTERS)
 	ca->frcount += size;
@@ -1407,7 +1399,7 @@ visium_function_arg_advance (cumulative_args_t pcum_v,
 	}
     }
 
-  if (named)
+  if (arg.named)
     ca->stack_words += stack_size;
 }
 
@@ -1462,8 +1454,7 @@ visium_libcall_value (machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
 
 static void
 visium_setup_incoming_varargs (cumulative_args_t pcum_v,
-			       machine_mode mode,
-			       tree type,
+			       const function_arg_info &arg,
 			       int *pretend_size ATTRIBUTE_UNUSED,
 			       int no_rtl)
 {
@@ -1489,7 +1480,7 @@ visium_setup_incoming_varargs (cumulative_args_t pcum_v,
   /* The caller has advanced ARGS_SO_FAR up to, but not beyond, the last named
      argument.  Advance a local copy of ARGS_SO_FAR past the last "real" named
      argument, to find out how many registers are left over.  */
-  TARGET_FUNCTION_ARG_ADVANCE (local_args_so_far, mode, type, 1);
+  TARGET_FUNCTION_ARG_ADVANCE (local_args_so_far, arg);
 
   /* Find how many registers we need to save.  */
   locargs = get_cumulative_args (local_args_so_far);
@@ -1637,8 +1628,7 @@ visium_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   tree f_ovfl, f_gbase, f_fbase, f_gbytes, f_fbytes;
   tree ovfl, base, bytes;
   HOST_WIDE_INT size, rsize;
-  const bool by_reference_p
-    = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  const bool by_reference_p = pass_va_arg_by_reference (type);
   const bool float_reg_arg_p
     = (TARGET_FPU && !by_reference_p
        && ((GET_MODE_CLASS (TYPE_MODE (type)) == MODE_FLOAT

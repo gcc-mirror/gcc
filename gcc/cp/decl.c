@@ -2565,9 +2565,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		    set_builtin_decl_declared_p (fncode, true);
 		  break;
 		}
-	    }
 
-	  copy_attributes_to_builtin (newdecl);
+	      copy_attributes_to_builtin (newdecl);
+	    }
 	}
       if (new_defines_function)
 	/* If defining a function declared with other language
@@ -10791,6 +10791,7 @@ grokdeclarator (const cp_declarator *declarator,
   cp_warn_deprecated_use (type);
   if (type && TREE_CODE (type) == TYPE_DECL)
     {
+      cp_warn_deprecated_use_scopes (CP_DECL_CONTEXT (type));
       typedef_decl = type;
       type = TREE_TYPE (typedef_decl);
       if (DECL_ARTIFICIAL (typedef_decl))
@@ -11548,6 +11549,8 @@ grokdeclarator (const cp_declarator *declarator,
 		else if (late_return_type
 			 && sfk != sfk_conversion)
 		  {
+		    if (late_return_type == error_mark_node)
+		      return error_mark_node;
 		    if (cxx_dialect < cxx11)
 		      /* Not using maybe_warn_cpp0x because this should
 			 always be an error.  */
@@ -13230,7 +13233,10 @@ type_is_deprecated (tree type)
       if (TREE_DEPRECATED (TYPE_NAME (type)))
 	return type;
       else
-	return NULL_TREE;
+	{
+	  cp_warn_deprecated_use_scopes (CP_DECL_CONTEXT (TYPE_NAME (type)));
+	  return NULL_TREE;
+	}
     }
 
   /* Do warn about using typedefs to a deprecated class.  */

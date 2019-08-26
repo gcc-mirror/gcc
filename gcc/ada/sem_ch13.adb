@@ -5812,6 +5812,9 @@ package body Sem_Ch13 is
                if ASIS_Mode then
                   null;
 
+               elsif Size <= 0 then
+                  Error_Msg_N ("Object_Size must be positive", Expr);
+
                elsif Is_Scalar_Type (U_Ent) then
                   if Size /= 8 and then Size /= 16 and then Size /= 32
                     and then UI_Mod (Size, 64) /= 0
@@ -10130,6 +10133,11 @@ package body Sem_Ch13 is
       --  recursively to compute After_Last for the parent type; in this case
       --  Warn is False and the warnings are suppressed.
 
+      procedure Component_Order_Check (Rectype : Entity_Id);
+      --  Check that the order of component clauses agrees with the order of
+      --  component declarations, and that the component clauses are given in
+      --  increasing order of bit offset.
+
       -----------------------------
       -- Check_Component_Overlap --
       -----------------------------
@@ -10171,6 +10179,53 @@ package body Sem_Ch13 is
             end;
          end if;
       end Check_Component_Overlap;
+
+      ---------------------------
+      -- Component_Order_Check --
+      ---------------------------
+
+      procedure Component_Order_Check (Rectype : Entity_Id) is
+         Comp : Entity_Id := First_Component (Rectype);
+         Clause : Node_Id := First (Component_Clauses (N));
+         Prev_Bit_Offset : Uint := Uint_0;
+         OOO : constant String :=
+           "?component clause out of order with respect to declaration";
+
+      begin
+         --  Step Comp through components and Clause through component clauses,
+         --  skipping pragmas. We ignore discriminants and variant parts,
+         --  because we get most of the benefit from the plain vanilla
+         --  component cases, without the extra complexity. If we find a Comp
+         --  and Clause that don't match, give a warning on both and quit. If
+         --  we find two subsequent clauses out of order by bit layout, give
+         --  warning and quit. On each iteration, Prev_Bit_Offset is the one
+         --  from the previous iteration (or 0 to start).
+
+         while Present (Comp) and then Present (Clause) loop
+            if Nkind (Clause) = N_Component_Clause
+              and then Ekind (Entity (Component_Name (Clause))) = E_Component
+            then
+               if Entity (Component_Name (Clause)) /= Comp then
+                  Error_Msg_N (OOO, Comp);
+                  Error_Msg_N (OOO, Clause);
+                  exit;
+               end if;
+
+               if not Reverse_Bit_Order (Rectype)
+                 and then not Reverse_Storage_Order (Rectype)
+                 and then Component_Bit_Offset (Comp) < Prev_Bit_Offset
+               then
+                  Error_Msg_N ("?memory layout out of order", Clause);
+                  exit;
+               end if;
+
+               Prev_Bit_Offset := Component_Bit_Offset (Comp);
+               Comp := Next_Component (Comp);
+            end if;
+
+            Next (Clause);
+         end loop;
+      end Component_Order_Check;
 
       --------------------
       -- Find_Component --
@@ -10437,6 +10492,8 @@ package body Sem_Ch13 is
          else
             Sbit := Uint_0;
          end if;
+
+         After_Last := Uint_0;
 
          if Nkind (Decl) = N_Full_Type_Declaration then
             Record_Definition := Type_Definition (Decl);
@@ -10816,16 +10873,25 @@ package body Sem_Ch13 is
          end Overlap_Check2;
       end if;
 
-      --  Check for record holes (gaps). We skip this check if overlap was
-      --  detected, since it makes sense for the programmer to fix this
-      --  error before worrying about warnings.
+      --  Skip the following warnings if overlap was detected; programmer
+      --  should fix the errors first.
 
-      if Warn_On_Record_Holes and not Overlap_Detected then
-         declare
-            Ignore : Uint;
-         begin
-            Record_Hole_Check (Rectype, After_Last => Ignore, Warn => True);
-         end;
+      if not Overlap_Detected then
+         --  Check for record holes (gaps)
+
+         if Warn_On_Record_Holes then
+            declare
+               Ignore : Uint;
+            begin
+               Record_Hole_Check (Rectype, After_Last => Ignore, Warn => True);
+            end;
+         end if;
+
+         --  Check for out-of-order component clauses
+
+         if Warn_On_Component_Order then
+            Component_Order_Check (Rectype);
+         end if;
       end if;
 
       --  For records that have component clauses for all components, and whose
@@ -14559,6 +14625,39 @@ package body Sem_Ch13 is
    ------------------------------------
 
    procedure Validate_Unchecked_Conversions is
+      function Is_Null_Array (T : Entity_Id) return Boolean;
+      --  We want to warn in the case of converting to a wrong-sized array of
+      --  bytes, including the zero-size case. This returns True in that case,
+      --  which is necessary because a size of 0 is used to indicate both an
+      --  unknown size and a size of 0. It's OK for this to return True in
+      --  other zero-size cases, but we don't go out of our way; for example,
+      --  we don't bother with multidimensional arrays.
+
+      function Is_Null_Array (T : Entity_Id) return Boolean is
+      begin
+         if Is_Array_Type (T) and then Is_Constrained (T) then
+            declare
+               Index : constant Node_Id := First_Index (T);
+               R : Node_Id; -- N_Range
+            begin
+               case Nkind (Index) is
+                  when N_Range =>
+                     R := Index;
+                  when N_Subtype_Indication =>
+                     R := Range_Expression (Constraint (Index));
+                  when N_Identifier | N_Expanded_Name =>
+                     R := Scalar_Range (Entity (Index));
+                  when others =>
+                     raise Program_Error;
+               end case;
+
+               return Is_Null_Range (Low_Bound (R), High_Bound (R));
+            end;
+         end if;
+
+         return False;
+      end Is_Null_Array;
+
    begin
       for N in Unchecked_Conversions.First .. Unchecked_Conversions.Last loop
          declare
@@ -14575,28 +14674,28 @@ package body Sem_Ch13 is
          begin
             --  Skip if function marked as warnings off
 
-            if Warnings_Off (Act_Unit) then
+            if Warnings_Off (Act_Unit) or else Serious_Errors_Detected > 0 then
                goto Continue;
             end if;
 
-            --  This validation check, which warns if we have unequal sizes for
-            --  unchecked conversion, and thus potentially implementation
-            --  dependent semantics, is one of the few occasions on which we
-            --  use the official RM size instead of Esize. See description in
-            --  Einfo "Handling of Type'Size Values" for details.
+           --  Don't do the check if warnings off for either type, note the
+           --  deliberate use of OR here instead of OR ELSE to get the flag
+           --  Warnings_Off_Used set for both types if appropriate.
 
-            if Serious_Errors_Detected = 0
-              and then Known_Static_RM_Size (Source)
-              and then Known_Static_RM_Size (Target)
+            if Has_Warnings_Off (Source) or Has_Warnings_Off (Target) then
+               goto Continue;
+            end if;
 
-              --  Don't do the check if warnings off for either type, note the
-              --  deliberate use of OR here instead of OR ELSE to get the flag
-              --  Warnings_Off_Used set for both types if appropriate.
-
-              and then not (Has_Warnings_Off (Source)
-                              or
-                            Has_Warnings_Off (Target))
+            if (Known_Static_RM_Size (Source)
+                  and then Known_Static_RM_Size (Target))
+              or else Is_Null_Array (Target)
             then
+               --  This validation check, which warns if we have unequal sizes
+               --  for unchecked conversion, and thus implementation dependent
+               --  semantics, is one of the few occasions on which we use the
+               --  official RM size instead of Esize. See description in Einfo
+               --  "Handling of Type'Size Values" for details.
+
                Source_Siz := RM_Size (Source);
                Target_Siz := RM_Size (Target);
 

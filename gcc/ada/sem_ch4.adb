@@ -796,25 +796,47 @@ package body Sem_Ch4 is
                           ("\constraint with discriminant values required", N);
                      end if;
 
-                  --  Limited Ada 2005 and general nonlimited case
+                  --  Limited Ada 2005 and general nonlimited case.
+                  --  This is an error, except in the case of an
+                  --  uninitialized allocator that is generated
+                  --  for a build-in-place function return of a
+                  --  discriminated but compile-time-known-size
+                  --  type.
 
                   else
-                     Error_Msg_N
-                       ("uninitialized unconstrained allocation not "
-                        & "allowed", N);
+                     if Original_Node (N) /= N
+                       and then Nkind (Original_Node (N)) = N_Allocator
+                     then
+                        declare
+                           Qual : constant Node_Id :=
+                             Expression (Original_Node (N));
+                           pragma Assert
+                             (Nkind (Qual) = N_Qualified_Expression);
+                           Call : constant Node_Id := Expression (Qual);
+                           pragma Assert
+                             (Is_Expanded_Build_In_Place_Call (Call));
+                        begin
+                           null;
+                        end;
 
-                     if Is_Array_Type (Type_Id) then
+                     else
                         Error_Msg_N
-                          ("\qualified expression or constraint with "
-                           & "array bounds required", N);
+                          ("uninitialized unconstrained allocation not "
+                           & "allowed", N);
 
-                     elsif Has_Unknown_Discriminants (Type_Id) then
-                        Error_Msg_N ("\qualified expression required", N);
+                        if Is_Array_Type (Type_Id) then
+                           Error_Msg_N
+                             ("\qualified expression or constraint with "
+                              & "array bounds required", N);
 
-                     else pragma Assert (Has_Discriminants (Type_Id));
-                        Error_Msg_N
-                          ("\qualified expression or constraint with "
-                           & "discriminant values required", N);
+                        elsif Has_Unknown_Discriminants (Type_Id) then
+                           Error_Msg_N ("\qualified expression required", N);
+
+                        else pragma Assert (Has_Discriminants (Type_Id));
+                           Error_Msg_N
+                             ("\qualified expression or constraint with "
+                              & "discriminant values required", N);
+                        end if;
                      end if;
                   end if;
                end if;

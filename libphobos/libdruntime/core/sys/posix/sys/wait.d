@@ -144,6 +144,29 @@ else version (NetBSD)
     extern (D) int  WSTOPSIG( int status )     { return status >> 8;                     }
     extern (D) int  WTERMSIG( int status )     { return _WSTATUS( status );              }
 }
+else version (OpenBSD)
+{
+    enum WNOHANG        = 1;
+    enum WUNTRACED      = 2;
+
+    private
+    {
+        enum _WSTOPPED   = 0x7F;   // octal 0177
+        enum _WCONTINUED = 0xFFFF; // octal 0177777
+    }
+
+    extern (D) int _WSTATUS(int status)         { return (status & 0x7F);                     }
+    extern (D) int  WEXITSTATUS(int status)   { return (status >> 8) & 0xFF;                  }
+    extern (D) int  WIFCONTINUED(int status)  { return (status & _WCONTINUED) == _WCONTINUED; }
+    extern (D) bool WIFEXITED(int status)     { return _WSTATUS(status) == 0;                 }
+    extern (D) bool WIFSIGNALED(int status)
+    {
+        return _WSTATUS(status) != _WSTOPPED && _WSTATUS(status) != 0;
+    }
+    extern (D) bool WIFSTOPPED(int status)   { return (status & 0xFF) == _WSTOPPED; }
+    extern (D) int  WSTOPSIG(int status)     { return (status >> 8) & 0xFF;         }
+    extern (D) int  WTERMSIG(int status)     { return _WSTATUS(status);             }
+}
 else version (DragonFlyBSD)
 {
     enum WNOHANG        = 1;
@@ -312,6 +335,13 @@ else version (NetBSD)
     //enum WCONTINUED     = 4;
     enum WNOWAIT        = 0x00010000;
 }
+else version (OpenBSD)
+{
+    enum WCONTINUED     = 8;
+    // OpenBSD does not define the following:
+    //enum WSTOPPED
+    //enum WNOWAIT
+}
 else version (DragonFlyBSD)
 {
     enum WSTOPPED       = WUNTRACED;
@@ -362,6 +392,19 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
+    enum WEXITED    = 4;
+    enum WSTOPPED   = 2;
+    enum WCONTINUED = 8;
+    enum WNOWAIT    = 0x01000000;
+
+    enum idtype_t
+    {
+        P_ALL,
+        P_PID,
+        P_PGID
+    }
+
+    int waitid(idtype_t, id_t, siginfo_t*, int);
 }
 else version (CRuntime_UClibc)
 {

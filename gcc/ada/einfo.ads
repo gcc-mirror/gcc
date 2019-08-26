@@ -663,8 +663,8 @@ package Einfo is
 --       In that case, this field points to that subtype.
 --
 --       For E_Class_Wide_Subtype, the presence of Equivalent_Type overrides
---       this field. Note that this field ONLY appears in subtype entries, not
---       in type entries, it is not defined, and it is an error to reference
+--       this field. Note that this field ONLY appears in subtype entities, not
+--       in type entities, it is not defined, and it is an error to reference
 --       Cloned_Subtype in an E_Record_Type or E_Class_Wide_Type entity.
 
 --    Comes_From_Source
@@ -915,7 +915,7 @@ package Einfo is
 --       depends on a private type.
 
 --    Derived_Type_Link (Node31)
---       Defined in all type and subtype entries. Set in a base type if
+--       Defined in all type and subtype entities. Set in a base type if
 --       a derived type declaration is encountered which derives from
 --       this base type or one of its subtypes, and there are already
 --       primitive operations declared. In this case, it references the
@@ -1228,7 +1228,7 @@ package Einfo is
 --       initial value). See Exp_Util.Expand_Class_Wide_Subtype for further
 --       details. For E_Exception_Type, this points to the record containing
 --       the data necessary to represent exceptions (for further details, see
---       System.Standard_Library. For access_to_protected subprograms, it
+--       System.Standard_Library). For access to protected subprograms, it
 --       denotes a record that holds pointers to the operation and to the
 --       protected object. For remote Access_To_Subprogram types, it denotes
 --       the record that is the fat pointer representation of an RAST.
@@ -1616,7 +1616,7 @@ package Einfo is
 --       set, signalling that Freeze.Inherit_Delayed_Rep_Aspects must be called
 --       at the freeze point of the derived type.
 
---    Has_DIC (syntherized)
+--    Has_DIC (synthesized)
 --       Defined in all type entities. Set for a private type and its full view
 --       when the type is subject to pragma Default_Initial_Condition (DIC), or
 --       when the type inherits a DIC pragma from a parent type.
@@ -1952,7 +1952,7 @@ package Einfo is
 --       Unmodified and Unreferenced pragmas.
 
 --    Has_Pragma_Unused (Flag294)
---       Defined in all entries. Set if a valid pragma Unused applies to a
+--       Defined in all entities. Set if a valid pragma Unused applies to a
 --       variable or entity, indicating that warnings should not be given if
 --       it is never modified or referenced. Note: This pragma is exactly
 --       equivalent Unmodified and Unreference combined.
@@ -3327,7 +3327,7 @@ package Einfo is
 --       frozen. If set it indicates that the representation is known to be
 --       unsigned (i.e. that no negative values appear in the range). This is
 --       normally just a reflection of the lower bound of the subtype or base
---       type, but there is one case in which the setting is non-obvious,
+--       type, but there is one case in which the setting is not obvious,
 --       namely the case of an unsigned subtype of a signed type from which
 --       a further subtype is obtained using variable bounds. This further
 --       subtype is still unsigned, but this cannot be determined by looking

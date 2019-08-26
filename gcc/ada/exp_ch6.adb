@@ -5199,7 +5199,7 @@ package body Exp_Ch6 is
                end if;
 
                --  When the function's subtype is unconstrained, a run-time
-               --  test is needed to determine the form of allocation to use
+               --  test may be needed to decide the form of allocation to use
                --  for the return object. The function has an implicit formal
                --  parameter indicating this. If the BIP_Alloc_Form formal has
                --  the value one, then the caller has passed access to an
@@ -5235,13 +5235,6 @@ package body Exp_Ch6 is
                      SS_Allocator   : Node_Id;
 
                   begin
-                     --  Reuse the itype created for the function's implicit
-                     --  access formal. This avoids the need to create a new
-                     --  access type here, plus it allows assigning the access
-                     --  formal directly without applying a conversion.
-
-                     --    Ref_Type := Etype (Object_Access);
-
                      --  Create an access type designating the function's
                      --  result subtype.
 
@@ -5566,6 +5559,64 @@ package body Exp_Ch6 is
                      end if;
 
                      Insert_Before (Ret_Obj_Decl, Alloc_If_Stmt);
+
+                     --  Remember the local access object for use in the
+                     --  dereference of the renaming created below.
+
+                     Obj_Acc_Formal := Alloc_Obj_Id;
+                  end;
+
+               --  When the function's subtype is unconstrained and a run-time
+               --  test is not needed, we nevertheless need to build the return
+               --  using the function's result subtype.
+
+               elsif not Is_Constrained (Underlying_Type (Etype (Func_Id)))
+               then
+                  declare
+                     Alloc_Obj_Id   : Entity_Id;
+                     Alloc_Obj_Decl : Node_Id;
+                     Ptr_Type_Decl  : Node_Id;
+                     Ref_Type       : Entity_Id;
+
+                  begin
+                     --  Create an access type designating the function's
+                     --  result subtype.
+
+                     Ref_Type := Make_Temporary (Loc, 'A');
+
+                     Ptr_Type_Decl :=
+                       Make_Full_Type_Declaration (Loc,
+                         Defining_Identifier => Ref_Type,
+                         Type_Definition     =>
+                           Make_Access_To_Object_Definition (Loc,
+                             All_Present        => True,
+                             Subtype_Indication =>
+                               New_Occurrence_Of (Ret_Obj_Typ, Loc)));
+
+                     Insert_Before (Ret_Obj_Decl, Ptr_Type_Decl);
+
+                     --  Create an access object initialized to the conversion
+                     --  of the implicit access value passed in by the caller.
+
+                     Alloc_Obj_Id := Make_Temporary (Loc, 'R');
+                     Set_Etype (Alloc_Obj_Id, Ref_Type);
+
+                     --  See the ??? comment a few lines above about the use of
+                     --  an unchecked conversion here.
+
+                     Alloc_Obj_Decl :=
+                       Make_Object_Declaration (Loc,
+                         Defining_Identifier => Alloc_Obj_Id,
+                         Object_Definition   =>
+                           New_Occurrence_Of (Ref_Type, Loc),
+                         Expression =>
+                           Make_Unchecked_Type_Conversion (Loc,
+                             Subtype_Mark =>
+                               New_Occurrence_Of (Ref_Type, Loc),
+                             Expression   =>
+                               New_Occurrence_Of (Obj_Acc_Formal, Loc)));
+
+                     Insert_Before (Ret_Obj_Decl, Alloc_Obj_Decl);
 
                      --  Remember the local access object for use in the
                      --  dereference of the renaming created below.
@@ -8108,13 +8159,41 @@ package body Exp_Ch6 is
       --  since it is already attached on the related finalization master.
 
       --  Here and in related routines, we must examine the full view of the
-      --  type, because the view at the point of call may differ from that
-      --  that in the function body, and the expansion mechanism depends on
+      --  type, because the view at the point of call may differ from the
+      --  one in the function body, and the expansion mechanism depends on
       --  the characteristics of the full view.
 
-      if Is_Constrained (Underlying_Type (Result_Subt))
-        and then not Needs_Finalization (Underlying_Type (Result_Subt))
-      then
+      if Needs_BIP_Alloc_Form (Function_Id) then
+         Temp_Init := Empty;
+
+         --  Case of a user-defined storage pool. Pass an allocation parameter
+         --  indicating that the function should allocate its result in the
+         --  pool, and pass the pool. Use 'Unrestricted_Access because the
+         --  pool may not be aliased.
+
+         if Present (Associated_Storage_Pool (Acc_Type)) then
+            Alloc_Form := User_Storage_Pool;
+            Pool :=
+              Make_Attribute_Reference (Loc,
+                Prefix         =>
+                  New_Occurrence_Of
+                    (Associated_Storage_Pool (Acc_Type), Loc),
+                Attribute_Name => Name_Unrestricted_Access);
+
+         --  No user-defined pool; pass an allocation parameter indicating that
+         --  the function should allocate its result on the heap.
+
+         else
+            Alloc_Form := Global_Heap;
+            Pool := Make_Null (No_Location);
+         end if;
+
+         --  The caller does not provide the return object in this case, so we
+         --  have to pass null for the object access actual.
+
+         Return_Obj_Actual := Empty;
+
+      else
          --  Replace the initialized allocator of form "new T'(Func (...))"
          --  with an uninitialized allocator of form "new T", where T is the
          --  result subtype of the called function. The call to the function
@@ -8163,35 +8242,6 @@ package body Exp_Ch6 is
       --  perform the allocation of the return object, so we pass parameters
       --  indicating that.
 
-      else
-         Temp_Init := Empty;
-
-         --  Case of a user-defined storage pool. Pass an allocation parameter
-         --  indicating that the function should allocate its result in the
-         --  pool, and pass the pool. Use 'Unrestricted_Access because the
-         --  pool may not be aliased.
-
-         if Present (Associated_Storage_Pool (Acc_Type)) then
-            Alloc_Form := User_Storage_Pool;
-            Pool :=
-              Make_Attribute_Reference (Loc,
-                Prefix         =>
-                  New_Occurrence_Of
-                    (Associated_Storage_Pool (Acc_Type), Loc),
-                Attribute_Name => Name_Unrestricted_Access);
-
-         --  No user-defined pool; pass an allocation parameter indicating that
-         --  the function should allocate its result on the heap.
-
-         else
-            Alloc_Form := Global_Heap;
-            Pool := Make_Null (No_Location);
-         end if;
-
-         --  The caller does not provide the return object in this case, so we
-         --  have to pass null for the object access actual.
-
-         Return_Obj_Actual := Empty;
       end if;
 
       --  Declare the temp object
@@ -9279,30 +9329,8 @@ package body Exp_Ch6 is
    function Needs_BIP_Alloc_Form (Func_Id : Entity_Id) return Boolean is
       pragma Assert (Is_Build_In_Place_Function (Func_Id));
       Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
-
    begin
-      --  A build-in-place function needs to know which allocation form to
-      --  use when:
-      --
-      --  1) The result subtype is unconstrained. In this case, depending on
-      --     the context of the call, the object may need to be created in the
-      --     secondary stack, the heap, or a user-defined storage pool.
-      --
-      --  2) The result subtype is tagged. In this case the function call may
-      --     dispatch on result and thus needs to be treated in the same way as
-      --     calls to functions with class-wide results, because a callee that
-      --     can be dispatched to may have any of various result subtypes, so
-      --     if any of the possible callees would require an allocation form to
-      --     be passed then they all do.
-      --
-      --  3) The result subtype needs finalization actions. In this case, based
-      --     on the context of the call, the object may need to be created at
-      --     the caller site, in the heap, or in a user-defined storage pool.
-
-      return
-        not Is_Constrained (Func_Typ)
-          or else Is_Tagged_Type (Func_Typ)
-          or else Needs_Finalization (Func_Typ);
+      return Requires_Transient_Scope (Func_Typ);
    end Needs_BIP_Alloc_Form;
 
    --------------------------------------

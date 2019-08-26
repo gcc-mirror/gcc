@@ -288,7 +288,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @return  The final sum.
    *
    *  Reduce the values in the range `[first,last)` using addition.
-   *  Equivalent to calling std::reduce(first, last, init, std::plus<>())`.
+   *  Equivalent to calling `std::reduce(first, last, init, std::plus<>())`.
    */
   template<typename _InputIterator, typename _Tp>
     inline _Tp
@@ -304,7 +304,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  Reduce the values in the range `[first,last)` using addition, with
    *  an initial value of `T{}`, where `T` is the iterator's value type.
-   *  Equivalent to calling std::reduce(first, last, T{}, std::plus<>())`.
+   *  Equivalent to calling `std::reduce(first, last, T{}, std::plus<>())`.
    */
   template<typename _InputIterator>
     inline typename iterator_traits<_InputIterator>::value_type

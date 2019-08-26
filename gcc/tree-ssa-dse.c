@@ -628,11 +628,8 @@ dse_optimize_redundant_stores (gimple *stmt)
       tree fndecl;
       if ((is_gimple_assign (use_stmt)
 	   && gimple_vdef (use_stmt)
-	   && ((gimple_assign_rhs_code (use_stmt) == CONSTRUCTOR
-	        && CONSTRUCTOR_NELTS (gimple_assign_rhs1 (use_stmt)) == 0
-	        && !gimple_clobber_p (stmt))
-	       || (gimple_assign_rhs_code (use_stmt) == INTEGER_CST
-		   && integer_zerop (gimple_assign_rhs1 (use_stmt)))))
+	   && (gimple_assign_single_p (use_stmt)
+	       && initializer_zerop (gimple_assign_rhs1 (use_stmt))))
 	  || (gimple_call_builtin_p (use_stmt, BUILT_IN_NORMAL)
 	      && (fndecl = gimple_call_fndecl (use_stmt)) != NULL
 	      && (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMSET
@@ -1027,16 +1024,11 @@ dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
     {
       bool by_clobber_p = false;
 
-      /* First see if this store is a CONSTRUCTOR and if there
-	 are subsequent CONSTRUCTOR stores which are totally
-	 subsumed by this statement.  If so remove the subsequent
-	 CONSTRUCTOR store.
-
-	 This will tend to make fewer calls into memset with longer
-	 arguments.  */
-      if (gimple_assign_rhs_code (stmt) == CONSTRUCTOR
-	  && CONSTRUCTOR_NELTS (gimple_assign_rhs1 (stmt)) == 0
-	  && !gimple_clobber_p (stmt))
+      /* Check if this statement stores zero to a memory location,
+	 and if there is a subsequent store of zero to the same
+	 memory location.  If so, remove the subsequent store.  */
+      if (gimple_assign_single_p (stmt)
+	  && initializer_zerop (gimple_assign_rhs1 (stmt)))
 	dse_optimize_redundant_stores (stmt);
 
       /* Self-assignments are zombies.  */

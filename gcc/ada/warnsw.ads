@@ -67,6 +67,12 @@ package Warnsw is
    --  Warn when explicit record component clauses leave uncovered holes (gaps)
    --  in a record layout. Off by default, set by -gnatw.h (but not -gnatwa).
 
+   Warn_On_Component_Order : Boolean := False;
+   --  Warn when record component clauses are out of order with respect to the
+   --  component declarations, or if the memory layout is out of order with
+   --  respect to component declarations and clauses.  Off by default, set by
+   --  -gnatw_r (but not -gnatwa).
+
    Warn_On_Size_Alignment : Boolean := True;
    --  Warn when explicit Size and Alignment clauses are given for a type, and
    --  the size is not a multiple of the alignment. Off by default, modified
@@ -123,6 +129,7 @@ package Warnsw is
       Warn_On_Questionable_Layout          : Boolean;
       Warn_On_Questionable_Missing_Parens  : Boolean;
       Warn_On_Record_Holes                 : Boolean;
+      Warn_On_Component_Order              : Boolean;
       Warn_On_Redundant_Constructs         : Boolean;
       Warn_On_Reverse_Bit_Order            : Boolean;
       Warn_On_Size_Alignment               : Boolean;

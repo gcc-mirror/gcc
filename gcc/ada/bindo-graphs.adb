@@ -1144,7 +1144,7 @@ package body Bindo.Graphs is
       --  successor.
 
       procedure Delete_Edge
-        (G      : Library_Graph;
+        (G    : Library_Graph;
          Edge : Library_Graph_Edge_Id);
       pragma Inline (Delete_Edge);
       --  Delete edge Edge from library graph G

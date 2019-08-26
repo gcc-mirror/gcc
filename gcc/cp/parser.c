@@ -6428,9 +6428,11 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 		  == CPP_SCOPE))
 	    {
 	      token = cp_lexer_consume_token (parser->lexer);
-	      error_at (token->location, "%<decltype%> evaluates to %qT, "
-			"which is not a class or enumeration type",
-			token->u.tree_check_value->value);
+	      tree dtype = token->u.tree_check_value->value;
+	      if (dtype != error_mark_node)
+		error_at (token->location, "%<decltype%> evaluates to %qT, "
+			  "which is not a class or enumeration type",
+			  dtype);
 	      parser->scope = error_mark_node;
 	      error_p = true;
 	      /* As below.  */
@@ -12097,6 +12099,10 @@ cp_parser_condition (cp_parser* parser)
   /* Restore the saved message.  */
   parser->type_definition_forbidden_message = saved_message;
 
+  /* Gather the attributes that were provided with the
+     decl-specifiers.  */
+  tree prefix_attributes = type_specifiers.attributes;
+
   cp_parser_maybe_commit_to_declaration (parser,
 					 type_specifiers.any_specifiers_p);
 
@@ -12147,7 +12153,7 @@ cp_parser_condition (cp_parser* parser)
 	  /* Create the declaration.  */
 	  decl = start_decl (declarator, &type_specifiers,
 			     /*initialized_p=*/true,
-			     attributes, /*prefix_attributes=*/NULL_TREE,
+			     attributes, prefix_attributes,
 			     &pushed_scope);
 
 	  /* Parse the initializer.  */
@@ -19412,6 +19418,7 @@ cp_parser_namespace_alias_definition (cp_parser* parser)
   /* Look for the qualified-namespace-specifier.  */
   namespace_specifier
     = cp_parser_qualified_namespace_specifier (parser);
+  cp_warn_deprecated_use_scopes (namespace_specifier);
   /* Look for the `;' token.  */
   cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
 
@@ -19525,6 +19532,8 @@ cp_parser_using_declaration (cp_parser* parser,
   else if (UNSCOPED_ENUM_P (qscope)
 	   && !TYPE_FUNCTION_SCOPE_P (qscope))
     qscope = CP_TYPE_CONTEXT (qscope);
+
+  cp_warn_deprecated_use_scopes (qscope);
 
   if (access_declaration_p && cp_parser_error_occurred (parser))
     /* Something has already gone wrong; there's no need to parse
@@ -19786,6 +19795,7 @@ cp_parser_using_directive (cp_parser* parser)
 				       /*is_declaration=*/true);
   /* Get the namespace being used.  */
   namespace_decl = cp_parser_namespace_name (parser);
+  cp_warn_deprecated_use_scopes (namespace_decl);
   /* And any specified attributes.  */
   attribs = cp_parser_attributes_opt (parser);
 
@@ -41429,7 +41439,10 @@ cp_parser_initial_pragma (cp_token *first_token)
 
   cp_lexer_get_preprocessor_token (NULL, first_token);
   if (cp_parser_pragma_kind (first_token) != PRAGMA_GCC_PCH_PREPROCESS)
-    return;
+    {
+      c_common_no_more_pch ();
+      return;
+    }
 
   cp_lexer_get_preprocessor_token (NULL, first_token);
   if (first_token->type == CPP_STRING)

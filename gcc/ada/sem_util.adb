@@ -247,6 +247,39 @@ package body Sem_Util is
       return Interface_List (Nod);
    end Abstract_Interface_List;
 
+   ----------------------------------
+   -- Acquire_Warning_Match_String --
+   ----------------------------------
+
+   function Acquire_Warning_Match_String (Str_Lit : Node_Id) return String is
+      S : constant String := To_String (Strval (Str_Lit));
+   begin
+      if S = "" then
+         return "";
+      else
+         --  Put "*" before or after or both, if it's not already there
+
+         declare
+            F : constant Boolean := S (S'First) = '*';
+            L : constant Boolean := S (S'Last) = '*';
+         begin
+            if F then
+               if L then
+                  return S;
+               else
+                  return S & "*";
+               end if;
+            else
+               if L then
+                  return "*" & S;
+               else
+                  return "*" & S & "*";
+               end if;
+            end if;
+         end;
+      end if;
+   end Acquire_Warning_Match_String;
+
    --------------------------------
    -- Add_Access_Type_To_Process --
    --------------------------------
@@ -9719,16 +9752,28 @@ package body Sem_Util is
    function Get_Max_Queue_Length (Id : Entity_Id) return Uint is
       pragma Assert (Is_Entry (Id));
       Prag : constant Entity_Id := Get_Pragma (Id, Pragma_Max_Queue_Length);
+      Max  : Uint;
 
    begin
-      --  A value of 0 represents no maximum specified, and entries and entry
-      --  families with no Max_Queue_Length aspect or pragma default to it.
+      --  A value of 0 or -1 represents no maximum specified, and entries and
+      --  entry families with no Max_Queue_Length aspect or pragma default to
+      --  it.
 
       if not Present (Prag) then
          return Uint_0;
       end if;
 
-      return Intval (Expression (First (Pragma_Argument_Associations (Prag))));
+      Max := Expr_Value
+        (Expression (First (Pragma_Argument_Associations (Prag))));
+
+      --  Since -1 and 0 are equivalent, return 0 for instances of -1 for
+      --  uniformity.
+
+      if Max = -1 then
+         return Uint_0;
+      end if;
+
+      return Max;
    end Get_Max_Queue_Length;
 
    ------------------------
@@ -20579,6 +20624,10 @@ package body Sem_Util is
          Old_Next : Node_Id;
 
       begin
+         if No (First_Named_Actual (Old_Call)) then
+            return;
+         end if;
+
          --  Recreate the First/Next_Named_Actual chain of a call by traversing
          --  the chains of both the old and new calls in parallel.
 
@@ -20586,15 +20635,16 @@ package body Sem_Util is
          Old_Act := First (Parameter_Associations (Old_Call));
          while Present (Old_Act) loop
             if Nkind (Old_Act) = N_Parameter_Association
+              and then Explicit_Actual_Parameter (Old_Act)
+                         = First_Named_Actual (Old_Call)
+            then
+               Set_First_Named_Actual (New_Call,
+                 Explicit_Actual_Parameter (New_Act));
+            end if;
+
+            if Nkind (Old_Act) = N_Parameter_Association
               and then Present (Next_Named_Actual (Old_Act))
             then
-               if First_Named_Actual (Old_Call) =
-                    Explicit_Actual_Parameter (Old_Act)
-               then
-                  Set_First_Named_Actual (New_Call,
-                    Explicit_Actual_Parameter (New_Act));
-               end if;
-
                --  Scan the actual parameter list to find the next suitable
                --  named actual. Note that the list may be out of order.
 

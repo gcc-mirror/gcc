@@ -141,12 +141,11 @@ static tree xtensa_build_builtin_va_list (void);
 static bool xtensa_return_in_memory (const_tree, const_tree);
 static tree xtensa_gimplify_va_arg_expr (tree, tree, gimple_seq *,
 					 gimple_seq *);
-static void xtensa_function_arg_advance (cumulative_args_t, machine_mode,
-					 const_tree, bool);
-static rtx xtensa_function_arg (cumulative_args_t, machine_mode,
-				const_tree, bool);
+static void xtensa_function_arg_advance (cumulative_args_t,
+					 const function_arg_info &);
+static rtx xtensa_function_arg (cumulative_args_t, const function_arg_info &);
 static rtx xtensa_function_incoming_arg (cumulative_args_t,
-					 machine_mode, const_tree, bool);
+					 const function_arg_info &);
 static rtx xtensa_function_value (const_tree, const_tree, bool);
 static rtx xtensa_libcall_value (machine_mode, const_rtx);
 static bool xtensa_function_value_regno_p (const unsigned int);
@@ -2106,8 +2105,8 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, int incoming)
 /* Advance the argument to the next argument position.  */
 
 static void
-xtensa_function_arg_advance (cumulative_args_t cum, machine_mode mode,
-			     const_tree type, bool named ATTRIBUTE_UNUSED)
+xtensa_function_arg_advance (cumulative_args_t cum,
+			     const function_arg_info &arg)
 {
   int words, max;
   int *arg_words;
@@ -2115,12 +2114,11 @@ xtensa_function_arg_advance (cumulative_args_t cum, machine_mode mode,
   arg_words = &get_cumulative_args (cum)->arg_words;
   max = MAX_ARGS_IN_REGISTERS;
 
-  words = (((mode != BLKmode)
-	    ? (int) GET_MODE_SIZE (mode)
-	    : int_size_in_bytes (type)) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  words = ((arg.promoted_size_in_bytes () + UNITS_PER_WORD - 1)
+	   / UNITS_PER_WORD);
 
   if (*arg_words < max
-      && (targetm.calls.must_pass_in_stack (mode, type)
+      && (targetm.calls.must_pass_in_stack (arg)
 	  || *arg_words + words > max))
     *arg_words = max;
 
@@ -2128,13 +2126,13 @@ xtensa_function_arg_advance (cumulative_args_t cum, machine_mode mode,
 }
 
 
-/* Return an RTL expression containing the register for the given mode,
+/* Return an RTL expression containing the register for the given argument,
    or 0 if the argument is to be passed on the stack.  INCOMING_P is nonzero
    if this is an incoming argument to the current function.  */
 
 static rtx
-xtensa_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
-		       const_tree type, bool incoming_p)
+xtensa_function_arg_1 (cumulative_args_t cum_v, const function_arg_info &arg,
+		       bool incoming_p)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int regbase, words, max;
@@ -2145,13 +2143,12 @@ xtensa_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
   regbase = (incoming_p ? GP_ARG_FIRST : GP_OUTGOING_ARG_FIRST);
   max = MAX_ARGS_IN_REGISTERS;
 
-  words = (((mode != BLKmode)
-	    ? (int) GET_MODE_SIZE (mode)
-	    : int_size_in_bytes (type)) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  words = ((arg.promoted_size_in_bytes () + UNITS_PER_WORD - 1)
+	   / UNITS_PER_WORD);
 
-  if (type && (TYPE_ALIGN (type) > BITS_PER_WORD))
+  if (arg.type && (TYPE_ALIGN (arg.type) > BITS_PER_WORD))
     {
-      int align = MIN (TYPE_ALIGN (type), STACK_BOUNDARY) / BITS_PER_WORD;
+      int align = MIN (TYPE_ALIGN (arg.type), STACK_BOUNDARY) / BITS_PER_WORD;
       *arg_words = (*arg_words + align - 1) & -align;
     }
 
@@ -2163,25 +2160,24 @@ xtensa_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
   if (cum->incoming && regno <= A7_REG && regno + words > A7_REG)
     cfun->machine->need_a7_copy = TARGET_WINDOWED_ABI;
 
-  return gen_rtx_REG (mode, regno);
+  return gen_rtx_REG (arg.mode, regno);
 }
 
 /* Implement TARGET_FUNCTION_ARG.  */
 
 static rtx
-xtensa_function_arg (cumulative_args_t cum, machine_mode mode,
-		     const_tree type, bool named ATTRIBUTE_UNUSED)
+xtensa_function_arg (cumulative_args_t cum, const function_arg_info &arg)
 {
-  return xtensa_function_arg_1 (cum, mode, type, false);
+  return xtensa_function_arg_1 (cum, arg, false);
 }
 
 /* Implement TARGET_FUNCTION_INCOMING_ARG.  */
 
 static rtx
-xtensa_function_incoming_arg (cumulative_args_t cum, machine_mode mode,
-			      const_tree type, bool named ATTRIBUTE_UNUSED)
+xtensa_function_incoming_arg (cumulative_args_t cum,
+			      const function_arg_info &arg)
 {
-  return xtensa_function_arg_1 (cum, mode, type, true);
+  return xtensa_function_arg_1 (cum, arg, true);
 }
 
 static unsigned int
@@ -3252,7 +3248,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   tree lab_false, lab_over, lab_false2;
   bool indirect;
 
-  indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  indirect = pass_va_arg_by_reference (type);
   if (indirect)
     type = build_pointer_type (type);
 
@@ -3328,7 +3324,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   array = create_tmp_var (ptr_type_node);
 
   lab_over = NULL;
-  if (!targetm.calls.must_pass_in_stack (TYPE_MODE (type), type))
+  if (!must_pass_va_arg_in_stack (type))
     {
       lab_false = create_artificial_label (UNKNOWN_LOCATION);
       lab_over = create_artificial_label (UNKNOWN_LOCATION);

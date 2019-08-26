@@ -5545,38 +5545,32 @@ alpha_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).
+   ARG is a description of the argument.
 
    On Alpha the first 6 words of args are normally in registers
    and the rest are pushed.  */
 
 static rtx
-alpha_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		    const_tree type, bool named ATTRIBUTE_UNUSED)
+alpha_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int basereg;
   int num_args;
 
   /* Don't get confused and pass small structures in FP registers.  */
-  if (type && AGGREGATE_TYPE_P (type))
+  if (arg.aggregate_type_p ())
     basereg = 16;
   else
     {
       /* With alpha_split_complex_arg, we shouldn't see any raw complex
 	 values here.  */
-      gcc_checking_assert (!COMPLEX_MODE_P (mode));
+      gcc_checking_assert (!COMPLEX_MODE_P (arg.mode));
 
       /* Set up defaults for FP operands passed in FP registers, and
 	 integral operands passed in integer registers.  */
-      if (TARGET_FPREGS && GET_MODE_CLASS (mode) == MODE_FLOAT)
+      if (TARGET_FPREGS && GET_MODE_CLASS (arg.mode) == MODE_FLOAT)
 	basereg = 32 + 16;
       else
 	basereg = 16;
@@ -5586,12 +5580,12 @@ alpha_function_arg (cumulative_args_t cum_v, machine_mode mode,
      the two platforms, so we can't avoid conditional compilation.  */
 #if TARGET_ABI_OPEN_VMS
     {
-      if (mode == VOIDmode)
+      if (arg.end_marker_p ())
 	return alpha_arg_info_reg_val (*cum);
 
       num_args = cum->num_args;
       if (num_args >= 6
-	  || targetm.calls.must_pass_in_stack (mode, type))
+	  || targetm.calls.must_pass_in_stack (arg))
 	return NULL_RTX;
     }
 #elif TARGET_ABI_OSF
@@ -5600,55 +5594,49 @@ alpha_function_arg (cumulative_args_t cum_v, machine_mode mode,
 	return NULL_RTX;
       num_args = *cum;
 
-      /* VOID is passed as a special flag for "last argument".  */
-      if (type == void_type_node)
+      if (arg.end_marker_p ())
 	basereg = 16;
-      else if (targetm.calls.must_pass_in_stack (mode, type))
+      else if (targetm.calls.must_pass_in_stack (arg))
 	return NULL_RTX;
     }
 #else
 #error Unhandled ABI
 #endif
 
-  return gen_rtx_REG (mode, num_args + basereg);
+  return gen_rtx_REG (arg.mode, num_args + basereg);
 }
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
+/* Update the data in CUM to advance over argument ARG.  */
 
 static void
-alpha_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			    const_tree type, bool named ATTRIBUTE_UNUSED)
+alpha_function_arg_advance (cumulative_args_t cum_v,
+			    const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  bool onstack = targetm.calls.must_pass_in_stack (mode, type);
-  int increment = onstack ? 6 : ALPHA_ARG_SIZE (mode, type);
+  bool onstack = targetm.calls.must_pass_in_stack (arg);
+  int increment = onstack ? 6 : ALPHA_ARG_SIZE (arg.mode, arg.type);
 
 #if TARGET_ABI_OSF
   *cum += increment;
 #else
   if (!onstack && cum->num_args < 6)
-    cum->atypes[cum->num_args] = alpha_arg_type (mode);
+    cum->atypes[cum->num_args] = alpha_arg_type (arg.mode);
   cum->num_args += increment;
 #endif
 }
 
 static int
-alpha_arg_partial_bytes (cumulative_args_t cum_v,
-			 machine_mode mode ATTRIBUTE_UNUSED,
-			 tree type ATTRIBUTE_UNUSED,
-			 bool named ATTRIBUTE_UNUSED)
+alpha_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   int words = 0;
   CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED = get_cumulative_args (cum_v);
 
 #if TARGET_ABI_OPEN_VMS
   if (cum->num_args < 6
-      && 6 < cum->num_args + ALPHA_ARG_SIZE (mode, type))
+      && 6 < cum->num_args + ALPHA_ARG_SIZE (arg.mode, arg.type))
     words = 6 - cum->num_args;
 #elif TARGET_ABI_OSF
-  if (*cum < 6 && 6 < *cum + ALPHA_ARG_SIZE (mode, type))
+  if (*cum < 6 && 6 < *cum + ALPHA_ARG_SIZE (arg.mode, arg.type))
     words = 6 - *cum;
 #else
 #error Unhandled ABI
@@ -5713,13 +5701,10 @@ alpha_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
   return size > UNITS_PER_WORD;
 }
 
-/* Return true if TYPE should be passed by invisible reference.  */
+/* Return true if ARG should be passed by invisible reference.  */
 
 static bool
-alpha_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
-			 machine_mode mode,
-			 const_tree type ATTRIBUTE_UNUSED,
-			 bool named)
+alpha_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
   /* Pass float and _Complex float variable arguments by reference.
      This avoids 64-bit store from a FP register to a pretend args save area
@@ -5739,10 +5724,10 @@ alpha_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
      to worry about, and passing unpromoted _Float32 and _Complex float
      as a variable argument will actually work in the future.  */
 
-  if (mode == SFmode || mode == SCmode)
-    return !named;
+  if (arg.mode == SFmode || arg.mode == SCmode)
+    return !arg.named;
 
-  return mode == TFmode || mode == TCmode;
+  return arg.mode == TFmode || arg.mode == TCmode;
 }
 
 /* Define how to find the value returned by a function.  VALTYPE is the
@@ -6096,14 +6081,14 @@ escapes:
    variable number of arguments.  */
 
 static void
-alpha_setup_incoming_varargs (cumulative_args_t pcum, machine_mode mode,
-			      tree type, int *pretend_size, int no_rtl)
+alpha_setup_incoming_varargs (cumulative_args_t pcum,
+			      const function_arg_info &arg,
+			      int *pretend_size, int no_rtl)
 {
   CUMULATIVE_ARGS cum = *get_cumulative_args (pcum);
 
   /* Skip the current argument.  */
-  targetm.calls.function_arg_advance (pack_cumulative_args (&cum), mode, type,
-				      true);
+  targetm.calls.function_arg_advance (pack_cumulative_args (&cum), arg);
 
 #if TARGET_ABI_OPEN_VMS
   /* For VMS, we allocate space for all 6 arg registers plus a count.
@@ -6243,7 +6228,7 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset,
 
   /* If the type could not be passed in registers, skip the block
      reserved for the registers.  */
-  if (targetm.calls.must_pass_in_stack (TYPE_MODE (type), type))
+  if (must_pass_va_arg_in_stack (type))
     {
       t = build_int_cst (TREE_TYPE (offset), 6*8);
       gimplify_assign (offset,
@@ -6330,7 +6315,7 @@ alpha_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   t = fold_convert (build_nonstandard_integer_type (64, 0), offset_field);
   offset = get_initialized_tmp_var (t, pre_p, NULL);
 
-  indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  indirect = pass_va_arg_by_reference (type);
 
   if (indirect)
     {

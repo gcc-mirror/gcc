@@ -1455,19 +1455,19 @@ ix86_function_arg_regno_p (int regno)
   return false;
 }
 
-/* Return if we do not know how to pass TYPE solely in registers.  */
+/* Return if we do not know how to pass ARG solely in registers.  */
 
 static bool
-ix86_must_pass_in_stack (machine_mode mode, const_tree type)
+ix86_must_pass_in_stack (const function_arg_info &arg)
 {
-  if (must_pass_in_stack_var_size_or_pad (mode, type))
+  if (must_pass_in_stack_var_size_or_pad (arg))
     return true;
 
   /* For 32-bit, we want TImode aggregates to go on the stack.  But watch out!
      The layout_type routine is crafty and tries to trick us into passing
      currently unsupported vector types on the stack by using TImode.  */
-  return (!TARGET_64BIT && mode == TImode
-	  && type && TREE_CODE (type) != VECTOR_TYPE);
+  return (!TARGET_64BIT && arg.mode == TImode
+	  && arg.type && TREE_CODE (arg.type) != VECTOR_TYPE);
 }
 
 /* It returns the size, in bytes, of the area reserved for arguments passed
@@ -2062,9 +2062,13 @@ classify_argument (machine_mode mode, const_tree type,
   if (bytes < 0)
     return 0;
 
-  if (mode != VOIDmode
-      && targetm.calls.must_pass_in_stack (mode, type))
-    return 0;
+  if (mode != VOIDmode)
+    {
+      /* The value of "named" doesn't matter.  */
+      function_arg_info arg (const_cast<tree> (type), mode, /*named=*/true);
+      if (targetm.calls.must_pass_in_stack (arg))
+	return 0;
+    }
 
   if (type && AGGREGATE_TYPE_P (type))
     {
@@ -2919,15 +2923,14 @@ function_arg_advance_ms_64 (CUMULATIVE_ARGS *cum, HOST_WIDE_INT bytes,
   return 0;
 }
 
-/* Update the data in CUM to advance over an argument of mode MODE and
-   data type TYPE.  (TYPE is null for libcalls where that information
-   may not be available.)  */
+/* Update the data in CUM to advance over argument ARG.  */
 
 static void
-ix86_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			   const_tree type, bool named)
+ix86_function_arg_advance (cumulative_args_t cum_v,
+			   const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+  machine_mode mode = arg.mode;
   HOST_WIDE_INT bytes, words;
   int nregs;
 
@@ -2936,14 +2939,11 @@ ix86_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
   if (!cum->caller && cfun->machine->func_type != TYPE_NORMAL)
     return;
 
-  if (mode == BLKmode)
-    bytes = int_size_in_bytes (type);
-  else
-    bytes = GET_MODE_SIZE (mode);
+  bytes = arg.promoted_size_in_bytes ();
   words = CEIL (bytes, UNITS_PER_WORD);
 
-  if (type)
-    mode = type_natural_mode (type, NULL, false);
+  if (arg.type)
+    mode = type_natural_mode (arg.type, NULL, false);
 
   if (TARGET_64BIT)
     {
@@ -2952,10 +2952,11 @@ ix86_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
       if (call_abi == MS_ABI)
 	nregs = function_arg_advance_ms_64 (cum, bytes, words);
       else
-	nregs = function_arg_advance_64 (cum, mode, type, words, named);
+	nregs = function_arg_advance_64 (cum, mode, arg.type, words,
+					 arg.named);
     }
   else
-    nregs = function_arg_advance_32 (cum, mode, type, bytes, words);
+    nregs = function_arg_advance_32 (cum, mode, arg.type, bytes, words);
 
   if (!nregs)
     {
@@ -3206,77 +3207,69 @@ function_arg_ms_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
 /* Return where to put the arguments to a function.
    Return zero to push the argument on the stack, or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.  TYPE is the data type of the
-   argument.  It is null for libcalls where that information may not be
-   available.  CUM gives information about the preceding args and about
-   the function being called.  NAMED is nonzero if this argument is a
-   named parameter (otherwise it is an extra parameter matching an
-   ellipsis).  */
+   ARG describes the argument while CUM gives information about the
+   preceding args and about the function being called.  */
 
 static rtx
-ix86_function_arg (cumulative_args_t cum_v, machine_mode omode,
-		   const_tree type, bool named)
+ix86_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  machine_mode mode = omode;
+  machine_mode mode = arg.mode;
   HOST_WIDE_INT bytes, words;
-  rtx arg;
+  rtx reg;
 
   if (!cum->caller && cfun->machine->func_type != TYPE_NORMAL)
     {
-      gcc_assert (type != NULL_TREE);
-      if (POINTER_TYPE_P (type))
+      gcc_assert (arg.type != NULL_TREE);
+      if (POINTER_TYPE_P (arg.type))
 	{
 	  /* This is the pointer argument.  */
-	  gcc_assert (TYPE_MODE (type) == Pmode);
+	  gcc_assert (TYPE_MODE (arg.type) == Pmode);
 	  /* It is at -WORD(AP) in the current frame in interrupt and
 	     exception handlers.  */
-	  arg = plus_constant (Pmode, arg_pointer_rtx, -UNITS_PER_WORD);
+	  reg = plus_constant (Pmode, arg_pointer_rtx, -UNITS_PER_WORD);
 	}
       else
 	{
 	  gcc_assert (cfun->machine->func_type == TYPE_EXCEPTION
-		      && TREE_CODE (type) == INTEGER_TYPE
-		      && TYPE_MODE (type) == word_mode);
+		      && TREE_CODE (arg.type) == INTEGER_TYPE
+		      && TYPE_MODE (arg.type) == word_mode);
 	  /* The error code is the word-mode integer argument at
 	     -2 * WORD(AP) in the current frame of the exception
 	     handler.  */
-	  arg = gen_rtx_MEM (word_mode,
+	  reg = gen_rtx_MEM (word_mode,
 			     plus_constant (Pmode,
 					    arg_pointer_rtx,
 					    -2 * UNITS_PER_WORD));
 	}
-      return arg;
+      return reg;
     }
 
-  if (mode == BLKmode)
-    bytes = int_size_in_bytes (type);
-  else
-    bytes = GET_MODE_SIZE (mode);
+  bytes = arg.promoted_size_in_bytes ();
   words = CEIL (bytes, UNITS_PER_WORD);
 
   /* To simplify the code below, represent vector types with a vector mode
      even if MMX/SSE are not active.  */
-  if (type && TREE_CODE (type) == VECTOR_TYPE)
-    mode = type_natural_mode (type, cum, false);
+  if (arg.type && TREE_CODE (arg.type) == VECTOR_TYPE)
+    mode = type_natural_mode (arg.type, cum, false);
 
   if (TARGET_64BIT)
     {
       enum calling_abi call_abi = cum ? cum->call_abi : ix86_abi;
 
       if (call_abi == MS_ABI)
-	arg = function_arg_ms_64 (cum, mode, omode, named, bytes);
+	reg = function_arg_ms_64 (cum, mode, arg.mode, arg.named, bytes);
       else
-	arg = function_arg_64 (cum, mode, omode, type, named);
+	reg = function_arg_64 (cum, mode, arg.mode, arg.type, arg.named);
     }
   else
-    arg = function_arg_32 (cum, mode, omode, type, bytes, words);
+    reg = function_arg_32 (cum, mode, arg.mode, arg.type, bytes, words);
 
   /* Track if there are outgoing arguments on stack.  */
-  if (arg == NULL_RTX && cum->caller)
+  if (reg == NULL_RTX && cum->caller)
     cfun->machine->outgoing_args_on_stack = true;
 
-  return arg;
+  return reg;
 }
 
 /* A C expression that indicates when an argument must be passed by
@@ -3286,8 +3279,7 @@ ix86_function_arg (cumulative_args_t cum_v, machine_mode omode,
    appropriate for passing a pointer to that type.  */
 
 static bool
-ix86_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
-			const_tree type, bool)
+ix86_pass_by_reference (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
@@ -3298,9 +3290,9 @@ ix86_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
       /* See Windows x64 Software Convention.  */
       if (call_abi == MS_ABI)
 	{
-	  HOST_WIDE_INT msize = GET_MODE_SIZE (mode);
+	  HOST_WIDE_INT msize = GET_MODE_SIZE (arg.mode);
 
-	  if (type)
+	  if (tree type = arg.type)
 	    {
 	      /* Arrays are passed by reference.  */
 	      if (TREE_CODE (type) == ARRAY_TYPE)
@@ -3317,7 +3309,7 @@ ix86_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
 	  /* __m128 is passed by reference.  */
 	  return msize != 1 && msize != 2 && msize != 4 && msize != 8;
 	}
-      else if (type && int_size_in_bytes (type) == -1)
+      else if (arg.type && int_size_in_bytes (arg.type) == -1)
 	return true;
     }
 
@@ -4097,8 +4089,9 @@ setup_incoming_varargs_ms_64 (CUMULATIVE_ARGS *cum)
 }
 
 static void
-ix86_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
-			     tree type, int *, int no_rtl)
+ix86_setup_incoming_varargs (cumulative_args_t cum_v,
+			     const function_arg_info &arg,
+			     int *, int no_rtl)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   CUMULATIVE_ARGS next_cum;
@@ -4117,8 +4110,7 @@ ix86_setup_incoming_varargs (cumulative_args_t cum_v, machine_mode mode,
      For stdargs, we do want to skip the last named argument.  */
   next_cum = *cum;
   if (stdarg_p (fntype))
-    ix86_function_arg_advance (pack_cumulative_args (&next_cum), mode, type,
-			       true);
+    ix86_function_arg_advance (pack_cumulative_args (&next_cum), arg);
 
   if (cum->call_abi == MS_ABI)
     setup_incoming_varargs_ms_64 (&next_cum);
@@ -4307,7 +4299,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   ovf = build3 (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
   sav = build3 (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
 
-  indirect_p = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  indirect_p = pass_va_arg_by_reference (type);
   if (indirect_p)
     type = build_pointer_type (type);
   size = arg_int_size_in_bytes (type);

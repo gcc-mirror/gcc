@@ -2350,8 +2350,7 @@ package body Sem_Ch9 is
          for S in reverse 0 .. Scope_Stack.Last loop
             Req_Scope := Scope_Stack.Table (S).Entity;
 
-            exit when Ekind (Req_Scope) in Task_Kind
-              or else Ekind (Req_Scope) in Protected_Kind;
+            exit when Is_Concurrent_Type (Req_Scope);
 
             if Is_Entry (Req_Scope) then
                Outer_Ent := Req_Scope;

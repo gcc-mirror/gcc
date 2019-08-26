@@ -3472,11 +3472,6 @@ This section contains general configuration information for all
 Alpha-based platforms using ELF@.  In addition to reading this
 section, please read all other sections that match your target.
 
-We require binutils 2.11.2 or newer.
-Previous binutils releases had a number of problems with DWARF 2
-debugging information, not the least of which is incorrect linking of
-shared libraries.
-
 @html
 <hr />
 @end html

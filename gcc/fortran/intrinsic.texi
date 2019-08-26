@@ -403,8 +403,9 @@ end program test_abort
 @end smallexample
 
 @item @emph{See also}:
-@ref{EXIT}, @ref{KILL}, @ref{BACKTRACE}
-
+@ref{EXIT}, @gol
+@ref{KILL}, @gol
+@ref{BACKTRACE}
 @end table
 
 
@@ -470,8 +471,8 @@ end program test_abs
 @item @code{IIABS(A)} @tab @code{INTEGER(2) A} @tab @code{INTEGER(2)} @tab GNU extension
 @item @code{JIABS(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
 @item @code{KIABS(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
-@item @code{ZABS(A)}  @tab @code{COMPLEX(8) A} @tab @code{COMPLEX(8)} @tab GNU extension
-@item @code{CDABS(A)} @tab @code{COMPLEX(8) A} @tab @code{COMPLEX(8)} @tab GNU extension
+@item @code{ZABS(A)}  @tab @code{COMPLEX(8) A} @tab @code{REAL(8)} @tab GNU extension
+@item @code{CDABS(A)} @tab @code{COMPLEX(8) A} @tab @code{REAL(8)} @tab GNU extension
 @end multitable
 @end table
 
@@ -529,9 +530,6 @@ program access_test
     print *, trim(file2),' is readable, writable and executable'
 end program access_test
 @end smallexample
-@item @emph{Specific names}:
-@item @emph{See also}:
-
 @end table
 
 
@@ -581,8 +579,9 @@ See @ref{ICHAR} for a discussion of converting between numerical values
 and formatted string representations.
 
 @item @emph{See also}:
-@ref{CHAR}, @ref{IACHAR}, @ref{ICHAR}
-
+@ref{CHAR}, @gol
+@ref{IACHAR}, @gol
+@ref{ICHAR}
 @end table
 
 
@@ -634,9 +633,10 @@ end program test_acos
 @end multitable
 
 @item @emph{See also}:
-Inverse function: @ref{COS}
-Degrees function: @ref{ACOSD}
-
+Inverse function: @gol
+@ref{COS} @gol
+Degrees function: @gol
+@ref{ACOSD}
 @end table
 
 
@@ -692,9 +692,10 @@ end program test_acosd
 @end multitable
 
 @item @emph{See also}:
-Inverse function: @ref{COSD}
-Radians function: @ref{ACOS}
-
+Inverse function: @gol
+@ref{COSD} @gol
+Radians function: @gol
+@ref{ACOS} @gol
 @end table
 
 
@@ -746,7 +747,8 @@ END PROGRAM
 @end multitable
 
 @item @emph{See also}:
-Inverse function: @ref{COSH}
+Inverse function: @gol
+@ref{COSH}
 @end table
 
 
@@ -791,7 +793,8 @@ end program test_adjustl
 @end smallexample
 
 @item @emph{See also}:
-@ref{ADJUSTR}, @ref{TRIM}
+@ref{ADJUSTR}, @gol
+@ref{TRIM}
 @end table
 
 
@@ -836,7 +839,8 @@ end program test_adjustr
 @end smallexample
 
 @item @emph{See also}:
-@ref{ADJUSTL}, @ref{TRIM}
+@ref{ADJUSTL}, @gol
+@ref{TRIM}
 @end table
 
 
@@ -1173,7 +1177,8 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-Fortran 95 elemental function: @ref{IAND}
+Fortran 95 elemental function: @gol
+@ref{IAND}
 @end table
 
 
@@ -1348,9 +1353,10 @@ end program test_asin
 @end multitable
 
 @item @emph{See also}:
-Inverse function: @ref{SIN}
-Degrees function: @ref{ASIND}
-
+Inverse function: @gol
+@ref{SIN} @gol
+Degrees function: @gol
+@ref{ASIND}
 @end table
 
 
@@ -1406,9 +1412,10 @@ end program test_asind
 @end multitable
 
 @item @emph{See also}:
-Inverse function: @ref{SIND}
-Radians function: @ref{ASIN}
-
+Inverse function: @gol
+@ref{SIND} @gol
+Radians function: @gol
+@ref{ASIN}
 @end table
 
 
@@ -1460,7 +1467,8 @@ END PROGRAM
 @end multitable
 
 @item @emph{See also}:
-Inverse function: @ref{SINH}
+Inverse function: @gol
+@ref{SINH}
 @end table
 
 
@@ -1596,9 +1604,10 @@ end program test_atan
 @end multitable
 
 @item @emph{See also}:
-Inverse function: @ref{TAN}
-Degrees function: @ref{ATAND}
-
+Inverse function: @gol
+@ref{TAN} @gol
+Degrees function: @gol
+@ref{ATAND}
 @end table
 
 
@@ -1660,9 +1669,10 @@ end program test_atand
 @end multitable
 
 @item @emph{See also}:
-Inverse function: @ref{TAND}
-Radians function: @ref{ATAN}
-
+Inverse function: @gol
+@ref{TAND} @gol
+Radians function: @gol
+@ref{ATAN}
 @end table
 
 
@@ -1724,8 +1734,10 @@ end program test_atan2
 @end multitable
 
 @item @emph{See also}:
-Alias: @ref{ATAN}
-Degrees function: @ref{ATAN2D}
+Alias: @gol
+@ref{ATAN} @gol
+Degrees function: @gol
+@ref{ATAN2D}
 
 @end table
 
@@ -1791,9 +1803,10 @@ end program test_atan2d
 @end multitable
 
 @item @emph{See also}:
-Alias: @ref{ATAND}
-Radians function: @ref{ATAN2}
-
+Alias: @gol
+@ref{ATAND} @gol
+Radians function: @gol
+@ref{ATAN2}
 @end table
 
 
@@ -1845,7 +1858,8 @@ END PROGRAM
 @end multitable
 
 @item @emph{See also}:
-Inverse function: @ref{TANH}
+Inverse function: @gol
+@ref{TANH}
 @end table
 
 
@@ -1893,8 +1907,12 @@ end program atomic
 @end smallexample
 
 @item @emph{See also}:
-@ref{ATOMIC_DEFINE}, @ref{ATOMIC_FETCH_ADD}, @ref{ISO_FORTRAN_ENV},
-@ref{ATOMIC_AND}, @ref{ATOMIC_OR}, @ref{ATOMIC_XOR}
+@ref{ATOMIC_DEFINE}, @gol
+@ref{ATOMIC_FETCH_ADD}, @gol
+@ref{ISO_FORTRAN_ENV}, @gol
+@ref{ATOMIC_AND}, @gol
+@ref{ATOMIC_OR}, @gol
+@ref{ATOMIC_XOR}
 @end table
 
 
@@ -1943,8 +1961,12 @@ end program atomic
 @end smallexample
 
 @item @emph{See also}:
-@ref{ATOMIC_DEFINE}, @ref{ATOMIC_FETCH_AND}, @ref{ISO_FORTRAN_ENV},
-@ref{ATOMIC_ADD}, @ref{ATOMIC_OR}, @ref{ATOMIC_XOR}
+@ref{ATOMIC_DEFINE}, @gol
+@ref{ATOMIC_FETCH_AND}, @gol
+@ref{ISO_FORTRAN_ENV}, @gol
+@ref{ATOMIC_ADD}, @gol
+@ref{ATOMIC_OR}, @gol
+@ref{ATOMIC_XOR}
 @end table
 
 
@@ -1998,7 +2020,9 @@ end program atomic
 @end smallexample
 
 @item @emph{See also}:
-@ref{ATOMIC_DEFINE}, @ref{ATOMIC_REF}, @ref{ISO_FORTRAN_ENV}
+@ref{ATOMIC_DEFINE}, @gol
+@ref{ATOMIC_REF}, @gol
+@ref{ISO_FORTRAN_ENV}
 @end table
 
 
@@ -2048,8 +2072,13 @@ end program atomic
 @end smallexample
 
 @item @emph{See also}:
-@ref{ATOMIC_REF}, @ref{ATOMIC_CAS}, @ref{ISO_FORTRAN_ENV},
-@ref{ATOMIC_ADD}, @ref{ATOMIC_AND}, @ref{ATOMIC_OR}, @ref{ATOMIC_XOR}
+@ref{ATOMIC_REF}, @gol
+@ref{ATOMIC_CAS}, @gol
+@ref{ISO_FORTRAN_ENV}, @gol
+@ref{ATOMIC_ADD}, @gol
+@ref{ATOMIC_AND}, @gol
+@ref{ATOMIC_OR}, @gol
+@ref{ATOMIC_XOR}
 @end table
 
 
@@ -2101,8 +2130,12 @@ end program atomic
 @end smallexample
 
 @item @emph{See also}:
-@ref{ATOMIC_DEFINE}, @ref{ATOMIC_ADD}, @ref{ISO_FORTRAN_ENV},
-@ref{ATOMIC_FETCH_AND}, @ref{ATOMIC_FETCH_OR}, @ref{ATOMIC_FETCH_XOR}
+@ref{ATOMIC_DEFINE}, @gol
+@ref{ATOMIC_ADD}, @gol
+@ref{ISO_FORTRAN_ENV}, @gol
+@ref{ATOMIC_FETCH_AND}, @gol
+@ref{ATOMIC_FETCH_OR}, @gol
+@ref{ATOMIC_FETCH_XOR}
 @end table
 
 
@@ -2152,8 +2185,12 @@ end program atomic
 @end smallexample
 
 @item @emph{See also}:
-@ref{ATOMIC_DEFINE}, @ref{ATOMIC_AND}, @ref{ISO_FORTRAN_ENV},
-@ref{ATOMIC_FETCH_ADD}, @ref{ATOMIC_FETCH_OR}, @ref{ATOMIC_FETCH_XOR}
+@ref{ATOMIC_DEFINE}, @gol
+@ref{ATOMIC_AND}, @gol
+@ref{ISO_FORTRAN_ENV}, @gol
+@ref{ATOMIC_FETCH_ADD}, @gol
+@ref{ATOMIC_FETCH_OR}, @gol
+@ref{ATOMIC_FETCH_XOR}
 @end table
 
 
@@ -2203,8 +2240,12 @@ end program atomic
 @end smallexample
 
 @item @emph{See also}:
-@ref{ATOMIC_DEFINE}, @ref{ATOMIC_OR}, @ref{ISO_FORTRAN_ENV},
-@ref{ATOMIC_FETCH_ADD}, @ref{ATOMIC_FETCH_AND}, @ref{ATOMIC_FETCH_XOR}
+@ref{ATOMIC_DEFINE}, @gol
+@ref{ATOMIC_OR}, @gol
+@ref{ISO_FORTRAN_ENV}, @gol
+@ref{ATOMIC_FETCH_ADD}, @gol
+@ref{ATOMIC_FETCH_AND}, @gol
+@ref{ATOMIC_FETCH_XOR}
 @end table
 
 
@@ -2254,8 +2295,12 @@ end program atomic
 @end smallexample
 
 @item @emph{See also}:
-@ref{ATOMIC_DEFINE}, @ref{ATOMIC_XOR}, @ref{ISO_FORTRAN_ENV},
-@ref{ATOMIC_FETCH_ADD}, @ref{ATOMIC_FETCH_AND}, @ref{ATOMIC_FETCH_OR}
+@ref{ATOMIC_DEFINE}, @gol
+@ref{ATOMIC_XOR}, @gol
+@ref{ISO_FORTRAN_ENV}, @gol
+@ref{ATOMIC_FETCH_ADD}, @gol
+@ref{ATOMIC_FETCH_AND}, @gol
+@ref{ATOMIC_FETCH_OR}
 @end table
 
 
@@ -2303,8 +2348,12 @@ end program atomic
 @end smallexample
 
 @item @emph{See also}:
-@ref{ATOMIC_DEFINE}, @ref{ATOMIC_FETCH_OR}, @ref{ISO_FORTRAN_ENV},
-@ref{ATOMIC_ADD}, @ref{ATOMIC_OR}, @ref{ATOMIC_XOR}
+@ref{ATOMIC_DEFINE}, @gol
+@ref{ATOMIC_FETCH_OR}, @gol
+@ref{ISO_FORTRAN_ENV}, @gol
+@ref{ATOMIC_ADD}, @gol
+@ref{ATOMIC_OR}, @gol
+@ref{ATOMIC_XOR}
 @end table
 
 
@@ -2360,8 +2409,12 @@ end program atomic
 @end smallexample
 
 @item @emph{See also}:
-@ref{ATOMIC_DEFINE}, @ref{ATOMIC_CAS}, @ref{ISO_FORTRAN_ENV},
-@ref{ATOMIC_FETCH_ADD}, @ref{ATOMIC_FETCH_AND}, @ref{ATOMIC_FETCH_OR},
+@ref{ATOMIC_DEFINE}, @gol
+@ref{ATOMIC_CAS}, @gol
+@ref{ISO_FORTRAN_ENV}, @gol
+@ref{ATOMIC_FETCH_ADD}, @gol
+@ref{ATOMIC_FETCH_AND}, @gol
+@ref{ATOMIC_FETCH_OR}, @gol
 @ref{ATOMIC_FETCH_XOR}
 @end table
 
@@ -2409,8 +2462,12 @@ end program atomic
 @end smallexample
 
 @item @emph{See also}:
-@ref{ATOMIC_DEFINE}, @ref{ATOMIC_FETCH_XOR}, @ref{ISO_FORTRAN_ENV},
-@ref{ATOMIC_ADD}, @ref{ATOMIC_OR}, @ref{ATOMIC_XOR}
+@ref{ATOMIC_DEFINE}, @gol
+@ref{ATOMIC_FETCH_XOR}, @gol
+@ref{ISO_FORTRAN_ENV}, @gol
+@ref{ATOMIC_ADD}, @gol
+@ref{ATOMIC_OR}, @gol
+@ref{ATOMIC_XOR}
 @end table
 
 
@@ -2797,7 +2854,9 @@ as @var{I}.
 The return value is of type @code{LOGICAL} and of the default kind.
 
 @item @emph{See also}:
-@ref{BGT}, @ref{BLE}, @ref{BLT}
+@ref{BGT}, @gol
+@ref{BLE}, @gol
+@ref{BLT}
 @end table
 
 
@@ -2831,7 +2890,9 @@ as @var{I}.
 The return value is of type @code{LOGICAL} and of the default kind.
 
 @item @emph{See also}:
-@ref{BGE}, @ref{BLE}, @ref{BLT}
+@ref{BGE}, @gol
+@ref{BLE}, @gol
+@ref{BLT}
 @end table
 
 
@@ -2908,7 +2969,9 @@ as @var{I}.
 The return value is of type @code{LOGICAL} and of the default kind.
 
 @item @emph{See also}:
-@ref{BGT}, @ref{BGE}, @ref{BLT}
+@ref{BGT}, @gol
+@ref{BGE}, @gol
+@ref{BLT}
 @end table
 
 
@@ -2942,7 +3005,9 @@ as @var{I}.
 The return value is of type @code{LOGICAL} and of the default kind.
 
 @item @emph{See also}:
-@ref{BGE}, @ref{BGT}, @ref{BLE}
+@ref{BGE}, @gol
+@ref{BGT}, @gol
+@ref{BLE}
 @end table
 
 
@@ -3047,7 +3112,8 @@ end subroutine association_test
 @end smallexample
 
 @item @emph{See also}:
-@ref{C_LOC}, @ref{C_FUNLOC}
+@ref{C_LOC}, @gol
+@ref{C_FUNLOC}
 @end table
 
 
@@ -3101,7 +3167,8 @@ end program main
 @end smallexample
 
 @item @emph{See also}:
-@ref{C_LOC}, @ref{C_F_PROCPOINTER}
+@ref{C_LOC}, @gol
+@ref{C_F_PROCPOINTER}
 @end table
 
 
@@ -3158,7 +3225,8 @@ end program main
 @end smallexample
 
 @item @emph{See also}:
-@ref{C_LOC}, @ref{C_F_POINTER}
+@ref{C_LOC}, @gol
+@ref{C_F_POINTER}
 @end table
 
 
@@ -3215,7 +3283,10 @@ end program main
 @end smallexample
 
 @item @emph{See also}:
-@ref{C_ASSOCIATED}, @ref{C_LOC}, @ref{C_F_POINTER}, @ref{C_F_PROCPOINTER}
+@ref{C_ASSOCIATED}, @gol
+@ref{C_LOC}, @gol
+@ref{C_F_POINTER}, @gol
+@ref{C_F_PROCPOINTER}
 @end table
 
 
@@ -3260,7 +3331,10 @@ end subroutine association_test
 @end smallexample
 
 @item @emph{See also}:
-@ref{C_ASSOCIATED}, @ref{C_FUNLOC}, @ref{C_F_POINTER}, @ref{C_F_PROCPOINTER}
+@ref{C_ASSOCIATED}, @gol
+@ref{C_FUNLOC}, @gol
+@ref{C_F_POINTER}, @gol
+@ref{C_F_PROCPOINTER}
 @end table
 
 
@@ -3310,7 +3384,8 @@ The example will print @code{.TRUE.} unless you are using a platform
 where default @code{REAL} variables are unusually padded.
 
 @item @emph{See also}:
-@ref{SIZEOF}, @ref{STORAGE_SIZE}
+@ref{SIZEOF}, @gol
+@ref{STORAGE_SIZE}
 @end table
 
 
@@ -3355,8 +3430,8 @@ end program test_ceiling
 @end smallexample
 
 @item @emph{See also}:
-@ref{FLOOR}, @ref{NINT}
-
+@ref{FLOOR}, @gol
+@ref{NINT}
 @end table
 
 
@@ -3400,7 +3475,7 @@ end program test_char
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .25
+@multitable @columnfractions .18 .18 .24 .25
 @item Name           @tab Argument         @tab Return type             @tab Standard
 @item @code{CHAR(I)} @tab @code{INTEGER I} @tab @code{CHARACTER(LEN=1)} @tab F77 and later
 @end multitable
@@ -3410,7 +3485,9 @@ See @ref{ICHAR} for a discussion of converting between numerical values
 and formatted string representations.
 
 @item @emph{See also}:
-@ref{ACHAR}, @ref{IACHAR}, @ref{ICHAR}
+@ref{ACHAR}, @gol
+@ref{IACHAR}, @gol
+@ref{ICHAR}
 
 @end table
 
@@ -3615,7 +3692,7 @@ Collective subroutine
 @code{CALL CO_BROADCAST(A, SOURCE_IMAGE [, STAT, ERRMSG])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .70
+@multitable @columnfractions .20 .65
 @item @var{A}            @tab INTENT(INOUT) argument; shall have the same
 dynamic type and type paramters on all images of the current team. If it
 is an array, it shall have the same shape on all images.
@@ -3639,7 +3716,10 @@ end program test
 @end smallexample
 
 @item @emph{See also}:
-@ref{CO_MAX}, @ref{CO_MIN}, @ref{CO_SUM}, @ref{CO_REDUCE}
+@ref{CO_MAX}, @gol
+@ref{CO_MIN}, @gol
+@ref{CO_SUM}, @gol
+@ref{CO_REDUCE}
 @end table
 
 
@@ -3670,7 +3750,7 @@ Collective subroutine
 @code{CALL CO_MAX(A [, RESULT_IMAGE, STAT, ERRMSG])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .70
+@multitable @columnfractions .20 .65
 @item @var{A}            @tab shall be an integer, real or character variable,
 which has the same type and type parameters on all images of the team.
 @item @var{RESULT_IMAGE} @tab (optional) a scalar integer expression; if
@@ -3693,7 +3773,10 @@ end program test
 @end smallexample
 
 @item @emph{See also}:
-@ref{CO_MIN}, @ref{CO_SUM}, @ref{CO_REDUCE}, @ref{CO_BROADCAST}
+@ref{CO_MIN}, @gol
+@ref{CO_SUM}, @gol
+@ref{CO_REDUCE}, @gol
+@ref{CO_BROADCAST}
 @end table
 
 
@@ -3724,7 +3807,7 @@ Collective subroutine
 @code{CALL CO_MIN(A [, RESULT_IMAGE, STAT, ERRMSG])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .70
+@multitable @columnfractions .20 .65
 @item @var{A}            @tab shall be an integer, real or character variable,
 which has the same type and type parameters on all images of the team.
 @item @var{RESULT_IMAGE} @tab (optional) a scalar integer expression; if
@@ -3747,7 +3830,10 @@ end program test
 @end smallexample
 
 @item @emph{See also}:
-@ref{CO_MAX}, @ref{CO_SUM}, @ref{CO_REDUCE}, @ref{CO_BROADCAST}
+@ref{CO_MAX}, @gol
+@ref{CO_SUM}, @gol
+@ref{CO_REDUCE}, @gol
+@ref{CO_BROADCAST}
 @end table
 
 
@@ -3782,7 +3868,7 @@ Collective subroutine
 @code{CALL CO_REDUCE(A, OPERATOR, [, RESULT_IMAGE, STAT, ERRMSG])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .70
+@multitable @columnfractions .20 .65
 @item @var{A}            @tab is an @code{INTENT(INOUT)} argument and shall be
 nonpolymorphic. If it is allocatable, it shall be allocated; if it is a pointer,
 it shall be associated.  @var{A} shall have the same type and type parameters on
@@ -3827,7 +3913,10 @@ function, which takes two arguments of the same type and returning that
 type as result.
 
 @item @emph{See also}:
-@ref{CO_MIN}, @ref{CO_MAX}, @ref{CO_SUM}, @ref{CO_BROADCAST}
+@ref{CO_MIN}, @gol
+@ref{CO_MAX}, @gol
+@ref{CO_SUM}, @gol
+@ref{CO_BROADCAST}
 @end table
 
 
@@ -3858,7 +3947,7 @@ Collective subroutine
 @code{CALL CO_MIN(A [, RESULT_IMAGE, STAT, ERRMSG])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .70
+@multitable @columnfractions .20 .65
 @item @var{A}            @tab shall be an integer, real or complex variable,
 which has the same type and type parameters on all images of the team.
 @item @var{RESULT_IMAGE} @tab (optional) a scalar integer expression; if
@@ -3875,13 +3964,17 @@ program test
   val = this_image ()
   call co_sum (val, result_image=1)
   if (this_image() == 1) then
-    write(*,*) "The sum is ", val ! prints (n**2 + n)/2, with n = num_images()
+    write(*,*) "The sum is ", val ! prints (n**2 + n)/2,
+                                  ! with n = num_images()
   end if
 end program test
 @end smallexample
 
 @item @emph{See also}:
-@ref{CO_MAX}, @ref{CO_MIN}, @ref{CO_REDUCE}, @ref{CO_BROADCAST}
+@ref{CO_MAX}, @gol
+@ref{CO_MIN}, @gol
+@ref{CO_REDUCE}, @gol
+@ref{CO_BROADCAST}
 @end table
 
 
@@ -3925,7 +4018,8 @@ end program test_command_argument_count
 @end smallexample
 
 @item @emph{See also}:
-@ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT}
+@ref{GET_COMMAND}, @gol
+@ref{GET_COMMAND_ARGUMENT}
 @end table
 
 
@@ -3969,7 +4063,8 @@ the @code{COMPILER_OPTIONS} intrinsic.
 @end smallexample
 
 @item @emph{See also}:
-@ref{COMPILER_VERSION}, @ref{ISO_FORTRAN_ENV}
+@ref{COMPILER_VERSION}, @gol
+@ref{ISO_FORTRAN_ENV}
 @end table
 
 
@@ -4011,7 +4106,8 @@ It contains the name of the compiler and its version number.
 @end smallexample
 
 @item @emph{See also}:
-@ref{COMPILER_OPTIONS}, @ref{ISO_FORTRAN_ENV}
+@ref{COMPILER_OPTIONS}, @gol
+@ref{ISO_FORTRAN_ENV}
 @end table
 
 
@@ -4170,9 +4266,10 @@ end program test_cos
 @end multitable
 
 @item @emph{See also}:
-Inverse function: @ref{ACOS}
-Degrees function: @ref{COSD}
-
+Inverse function: @gol
+@ref{ACOS} @gol
+Degrees function: @gol
+@ref{COSD}
 @end table
 
 
@@ -4233,9 +4330,10 @@ end program test_cosd
 @end multitable
 
 @item @emph{See also}:
-Inverse function: @ref{ACOSD}
-Radians function: @ref{COS}
-
+Inverse function: @gol
+@ref{ACOSD} @gol
+Radians function: @gol
+@ref{COS}
 @end table
 
 
@@ -4288,8 +4386,8 @@ end program test_cosh
 @end multitable
 
 @item @emph{See also}:
-Inverse function: @ref{ACOSH}
-
+Inverse function: @gol
+@ref{ACOSH}
 @end table
 
 
@@ -4342,8 +4440,10 @@ end program test_cotan
 @end multitable
 
 @item @emph{See also}:
-Converse function: @ref{TAN}
-Degrees function: @ref{COTAND}
+Converse function: @gol
+@ref{TAN} @gol
+Degrees function: @gol
+@ref{COTAND}
 @end table
 
 
@@ -4396,9 +4496,10 @@ end program test_cotand
 @end multitable
 
 @item @emph{See also}:
-Converse function: @ref{TAND}
-Radians function: @ref{COTAN}
-
+Converse function: @gol
+@ref{TAND} @gol
+Radians function: @gol
+@ref{COTAN}
 @end table
 
 
@@ -4521,7 +4622,8 @@ end program test_cpu_time
 @end smallexample
 
 @item @emph{See also}:
-@ref{SYSTEM_CLOCK}, @ref{DATE_AND_TIME}
+@ref{SYSTEM_CLOCK}, @gol
+@ref{DATE_AND_TIME}
 @end table
 
 
@@ -4636,7 +4738,11 @@ end program test_ctime
 @end smallexample
 
 @item @emph{See Also}:
-@ref{DATE_AND_TIME}, @ref{GMTIME}, @ref{LTIME}, @ref{TIME}, @ref{TIME8}
+@ref{DATE_AND_TIME}, @gol
+@ref{GMTIME}, @gol
+@ref{LTIME}, @gol
+@ref{TIME}, @gol
+@ref{TIME8}
 @end table
 
 
@@ -4712,7 +4818,8 @@ end program test_time_and_date
 @end smallexample
 
 @item @emph{See also}:
-@ref{CPU_TIME}, @ref{SYSTEM_CLOCK}
+@ref{CPU_TIME}, @gol
+@ref{SYSTEM_CLOCK}
 @end table
 
 
@@ -4876,11 +4983,13 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{INTEGER} or @code{REAL}
-@item @var{Y} @tab The type shall be the same type and kind as @var{X}.
+@item @var{Y} @tab The type shall be the same type and kind as @var{X}.  (As
+a GNU extension, arguments of different kinds are permitted.)
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER} or @code{REAL}.
+The return value is of type @code{INTEGER} or @code{REAL}.  (As a GNU
+extension, kind is the largest kind of the actual arguments.)
 
 @item @emph{Example}:
 @smallexample
@@ -5708,7 +5817,8 @@ end program test_exit
 @end smallexample
 
 @item @emph{See also}:
-@ref{ABORT}, @ref{KILL}
+@ref{ABORT}, @gol
+@ref{KILL}
 @end table
 
 
@@ -5900,7 +6010,8 @@ end program test_fdate
 @end smallexample
 
 @item @emph{See also}:
-@ref{DATE_AND_TIME}, @ref{CTIME}
+@ref{DATE_AND_TIME}, @gol
+@ref{CTIME}
 @end table
 
 
@@ -5964,7 +6075,9 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{FGETC}, @ref{FPUT}, @ref{FPUTC}
+@ref{FGETC}, @gol
+@ref{FPUT}, @gol
+@ref{FPUTC}
 @end table
 
 
@@ -6029,7 +6142,9 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{FGET}, @ref{FPUT}, @ref{FPUTC}
+@ref{FGET}, @gol
+@ref{FPUT}, @gol
+@ref{FPUTC}
 @end table
 
 @node FINDLOC
@@ -6090,7 +6205,8 @@ is present, the result is an integer of kind @var{KIND}, otherwise it
 is of default kind.
 
 @item @emph{See also}:
-@ref{MAXLOC}, @ref{MINLOC}
+@ref{MAXLOC}, @gol
+@ref{MINLOC}
 
 @end table
 
@@ -6135,8 +6251,8 @@ end program test_floor
 @end smallexample
 
 @item @emph{See also}:
-@ref{CEILING}, @ref{NINT}
-
+@ref{CEILING}, @gol
+@ref{NINT}
 @end table
 
 
@@ -6306,7 +6422,9 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{FPUTC}, @ref{FGET}, @ref{FGETC}
+@ref{FPUTC}, @gol
+@ref{FGET}, @gol
+@ref{FGETC}
 @end table
 
 
@@ -6369,7 +6487,9 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{FPUT}, @ref{FGET}, @ref{FGETC}
+@ref{FPUT}, @gol
+@ref{FGET}, @gol
+@ref{FGETC}
 @end table
 
 
@@ -6577,7 +6697,10 @@ on success and a system specific error code otherwise.
 See @ref{STAT} for an example.
 
 @item @emph{See also}:
-To stat a link: @ref{LSTAT}, to stat a file: @ref{STAT}
+To stat a link: @gol
+@ref{LSTAT} @gol
+To stat a file: @gol
+@ref{STAT}
 @end table
 
 
@@ -6685,8 +6808,8 @@ end program test_gamma
 @end multitable
 
 @item @emph{See also}:
-Logarithm of the Gamma function: @ref{LOG_GAMMA}
-
+Logarithm of the Gamma function: @gol
+@ref{LOG_GAMMA}
 @end table
 
 
@@ -6725,7 +6848,8 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{IERRNO}, @ref{PERROR}
+@ref{IERRNO}, @gol
+@ref{PERROR}
 @end table
 
 
@@ -6786,10 +6910,12 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-GNU Fortran 77 compatibility function: @ref{IARGC}
-
-Fortran 2003 functions and subroutines: @ref{GET_COMMAND},
-@ref{GET_COMMAND_ARGUMENT}, @ref{COMMAND_ARGUMENT_COUNT}
+GNU Fortran 77 compatibility function: @gol
+@ref{IARGC} @gol
+Fortran 2003 functions and subroutines: @gol
+@ref{GET_COMMAND}, @gol
+@ref{GET_COMMAND_ARGUMENT}, @gol
+@ref{COMMAND_ARGUMENT_COUNT}
 @end table
 
 
@@ -6840,7 +6966,8 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{GET_COMMAND_ARGUMENT}, @ref{COMMAND_ARGUMENT_COUNT}
+@ref{GET_COMMAND_ARGUMENT}, @gol
+@ref{COMMAND_ARGUMENT_COUNT}
 @end table
 
 
@@ -6907,7 +7034,8 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{GET_COMMAND}, @ref{COMMAND_ARGUMENT_COUNT}
+@ref{GET_COMMAND}, @gol
+@ref{COMMAND_ARGUMENT_COUNT}
 @end table
 
 
@@ -7100,7 +7228,8 @@ kind.
 See @code{GETPID} for an example.
 
 @item @emph{See also}:
-@ref{GETPID}, @ref{GETUID}
+@ref{GETPID}, @gol
+@ref{GETUID}
 @end table
 
 
@@ -7184,7 +7313,8 @@ end program info
 @end smallexample
 
 @item @emph{See also}:
-@ref{GETGID}, @ref{GETUID}
+@ref{GETGID}, @gol
+@ref{GETUID}
 @end table
 
 
@@ -7217,7 +7347,8 @@ kind.
 See @code{GETPID} for an example.
 
 @item @emph{See also}:
-@ref{GETPID}, @ref{GETLOG}
+@ref{GETPID}, @gol
+@ref{GETLOG}
 @end table
 
 
@@ -7273,8 +7404,11 @@ effect, zero if not, and negative if the information is not available.
 @end enumerate
 
 @item @emph{See also}:
-@ref{DATE_AND_TIME}, @ref{CTIME}, @ref{LTIME}, @ref{TIME}, @ref{TIME8}
-
+@ref{DATE_AND_TIME}, @gol
+@ref{CTIME}, @gol
+@ref{LTIME}, @gol
+@ref{TIME}, @gol
+@ref{TIME8}
 @end table
 
 
@@ -7442,8 +7576,9 @@ See @ref{ICHAR} for a discussion of converting between numerical values
 and formatted string representations.
 
 @item @emph{See also}:
-@ref{ACHAR}, @ref{CHAR}, @ref{ICHAR}
-
+@ref{ACHAR}, @gol
+@ref{CHAR}, @gol
+@ref{ICHAR}
 @end table
 
 
@@ -7503,7 +7638,9 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{IANY}, @ref{IPARITY}, @ref{IAND}
+@ref{IANY}, @gol
+@ref{IPARITY}, @gol
+@ref{IAND}
 @end table
 
 
@@ -7565,8 +7702,12 @@ END PROGRAM
 @end multitable
 
 @item @emph{See also}:
-@ref{IOR}, @ref{IEOR}, @ref{IBITS}, @ref{IBSET}, @ref{IBCLR}, @ref{NOT}
-
+@ref{IOR}, @gol
+@ref{IEOR}, @gol
+@ref{IBITS}, @gol
+@ref{IBSET}, @gol
+@ref{IBCLR}, @gol
+@ref{NOT}
 @end table
 
 
@@ -7626,7 +7767,9 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{IPARITY}, @ref{IALL}, @ref{IOR}
+@ref{IPARITY}, @gol
+@ref{IALL}, @gol
+@ref{IOR}
 @end table
 
 
@@ -7667,10 +7810,12 @@ The number of command line arguments, type @code{INTEGER(4)}.
 See @ref{GETARG}
 
 @item @emph{See also}:
-GNU Fortran 77 compatibility subroutine: @ref{GETARG}
-
-Fortran 2003 functions and subroutines: @ref{GET_COMMAND},
-@ref{GET_COMMAND_ARGUMENT}, @ref{COMMAND_ARGUMENT_COUNT}
+GNU Fortran 77 compatibility subroutine: @gol
+@ref{GETARG} @gol
+Fortran 2003 functions and subroutines: @gol
+@ref{GET_COMMAND}, @gol
+@ref{GET_COMMAND_ARGUMENT}, @gol
+@ref{COMMAND_ARGUMENT_COUNT}
 @end table
 
 
@@ -7720,8 +7865,12 @@ The return value is of type @code{INTEGER} and of the same kind as
 @end multitable
 
 @item @emph{See also}:
-@ref{IBITS}, @ref{IBSET}, @ref{IAND}, @ref{IOR}, @ref{IEOR}, @ref{MVBITS}
-
+@ref{IBITS}, @gol
+@ref{IBSET}, @gol
+@ref{IAND}, @gol
+@ref{IOR}, @gol
+@ref{IEOR}, @gol
+@ref{MVBITS}
 @end table
 
 
@@ -7775,7 +7924,12 @@ The return value is of type @code{INTEGER} and of the same kind as
 @end multitable
 
 @item @emph{See also}:
-@ref{BIT_SIZE}, @ref{IBCLR}, @ref{IBSET}, @ref{IAND}, @ref{IOR}, @ref{IEOR}
+@ref{BIT_SIZE}, @gol
+@ref{IBCLR}, @gol
+@ref{IBSET}, @gol
+@ref{IAND}, @gol
+@ref{IOR}, @gol
+@ref{IEOR}
 @end table
 
 
@@ -7824,8 +7978,12 @@ The return value is of type @code{INTEGER} and of the same kind as
 @end multitable
 
 @item @emph{See also}:
-@ref{IBCLR}, @ref{IBITS}, @ref{IAND}, @ref{IOR}, @ref{IEOR}, @ref{MVBITS}
-
+@ref{IBCLR}, @gol
+@ref{IBITS}, @gol
+@ref{IAND}, @gol
+@ref{IOR}, @gol
+@ref{IEOR}, @gol
+@ref{MVBITS}
 @end table
 
 
@@ -7900,8 +8058,9 @@ end program read_val
 @end smallexample
 
 @item @emph{See also}:
-@ref{ACHAR}, @ref{CHAR}, @ref{IACHAR}
-
+@ref{ACHAR}, @gol
+@ref{CHAR}, @gol
+@ref{IACHAR}
 @end table
 
 
@@ -8007,7 +8166,12 @@ type parameter of the other argument as-if a call to @ref{INT} occurred.
 @end multitable
 
 @item @emph{See also}:
-@ref{IOR}, @ref{IAND}, @ref{IBITS}, @ref{IBSET}, @ref{IBCLR}, @ref{NOT}
+@ref{IOR}, @gol
+@ref{IAND}, @gol
+@ref{IBITS}, @gol
+@ref{IBSET}, @gol
+@ref{IBCLR}, @gol
+@ref{NOT}
 @end table
 
 
@@ -8063,7 +8227,7 @@ Inquiry function.
 @item @emph{Syntax}:
 @code{RESULT = IMAGE_INDEX(COARRAY, SUB)}
 
-@item @emph{Arguments}: None.
+@item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{COARRAY} @tab Coarray of any type.
 @item @var{SUB}     @tab default integer rank-1 array of a size equal to
@@ -8083,7 +8247,8 @@ WRITE (*,*) IMAGE_INDEX (array, [2,0,3,1])
 @end smallexample
 
 @item @emph{See also}:
-@ref{THIS_IMAGE}, @ref{NUM_IMAGES}
+@ref{THIS_IMAGE}, @gol
+@ref{NUM_IMAGES}
 @end table
 
 
@@ -8134,7 +8299,8 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 @end multitable
 
 @item @emph{See also}:
-@ref{SCAN}, @ref{VERIFY}
+@ref{SCAN}, @gol
+@ref{VERIFY}
 @end table
 
 
@@ -8237,7 +8403,9 @@ Elemental function
 The return value is a @code{INTEGER(2)} variable.
 
 @item @emph{See also}:
-@ref{INT}, @ref{INT8}, @ref{LONG}
+@ref{INT}, @gol
+@ref{INT8}, @gol
+@ref{LONG}
 @end table
 
 
@@ -8272,7 +8440,9 @@ Elemental function
 The return value is a @code{INTEGER(8)} variable.
 
 @item @emph{See also}:
-@ref{INT}, @ref{INT2}, @ref{LONG}
+@ref{INT}, @gol
+@ref{INT2}, @gol
+@ref{LONG}
 @end table
 
 
@@ -8326,7 +8496,12 @@ type parameter of the other argument as-if a call to @ref{INT} occurred.
 @end multitable
 
 @item @emph{See also}:
-@ref{IEOR}, @ref{IAND}, @ref{IBITS}, @ref{IBSET}, @ref{IBCLR}, @ref{NOT}
+@ref{IEOR}, @gol
+@ref{IAND}, @gol
+@ref{IBITS}, @gol
+@ref{IBSET}, @gol
+@ref{IBCLR}, @gol
+@ref{NOT}
 @end table
 
 
@@ -8387,7 +8562,10 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{IANY}, @ref{IALL}, @ref{IEOR}, @ref{PARITY}
+@ref{IANY}, @gol
+@ref{IALL}, @gol
+@ref{IEOR}, @gol
+@ref{PARITY}
 @end table
 
 
@@ -8837,12 +9015,13 @@ end program test_itime
 
 @table @asis
 @item @emph{Description}:
-@item @emph{Standard}:
 Sends the signal specified by @var{SIG} to the process @var{PID}.
 See @code{kill(2)}.
 
 This intrinsic is provided in both subroutine and function forms;
 however, only one form can be used in any given program unit.
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
 Subroutine, function
@@ -8866,7 +9045,8 @@ Returns 0 on success; otherwise a system-specific error code is returned.
 @end multitable
 
 @item @emph{See also}:
-@ref{ABORT}, @ref{EXIT}
+@ref{ABORT}, @gol
+@ref{EXIT}
 @end table
 
 
@@ -8950,7 +9130,8 @@ structure component, or if it has a zero extent along the relevant
 dimension, the lower bound is taken to be 1.
 
 @item @emph{See also}:
-@ref{UBOUND}, @ref{LCOBOUND}
+@ref{UBOUND}, @gol
+@ref{LCOBOUND}
 @end table
 
 
@@ -8989,7 +9170,8 @@ If @var{DIM} is absent, the result is an array of the lower cobounds of
 corresponding to the lower cobound of the array along that codimension.
 
 @item @emph{See also}:
-@ref{UCOBOUND}, @ref{LBOUND}
+@ref{UCOBOUND}, @gol
+@ref{LBOUND}
 @end table
 
 
@@ -9030,7 +9212,10 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{BIT_SIZE}, @ref{TRAILZ}, @ref{POPCNT}, @ref{POPPAR}
+@ref{BIT_SIZE}, @gol
+@ref{TRAILZ}, @gol
+@ref{POPCNT}, @gol
+@ref{POPPAR}
 @end table
 
 
@@ -9077,7 +9262,9 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 
 
 @item @emph{See also}:
-@ref{LEN_TRIM}, @ref{ADJUSTL}, @ref{ADJUSTR}
+@ref{LEN_TRIM}, @gol
+@ref{ADJUSTL}, @gol
+@ref{ADJUSTR}
 @end table
 
 
@@ -9113,7 +9300,9 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 @var{KIND} is absent, the return value is of default integer kind.
 
 @item @emph{See also}:
-@ref{LEN}, @ref{ADJUSTL}, @ref{ADJUSTR}
+@ref{LEN}, @gol
+@ref{ADJUSTL}, @gol
+@ref{ADJUSTR}
 @end table
 
 
@@ -9165,7 +9354,9 @@ otherwise, based on the ASCII ordering.
 @end multitable
 
 @item @emph{See also}:
-@ref{LGT}, @ref{LLE}, @ref{LLT}
+@ref{LGT}, @gol
+@ref{LLE}, @gol
+@ref{LLT}
 @end table
 
 
@@ -9217,7 +9408,9 @@ otherwise, based on the ASCII ordering.
 @end multitable
 
 @item @emph{See also}:
-@ref{LGE}, @ref{LLE}, @ref{LLT}
+@ref{LGE}, @gol
+@ref{LLE}, @gol
+@ref{LLT}
 @end table
 
 
@@ -9260,7 +9453,8 @@ Subroutine, function
 @end multitable
 
 @item @emph{See also}:
-@ref{SYMLNK}, @ref{UNLINK}
+@ref{SYMLNK}, @gol
+@ref{UNLINK}
 @end table
 
 
@@ -9312,7 +9506,9 @@ otherwise, based on the ASCII ordering.
 @end multitable
 
 @item @emph{See also}:
-@ref{LGE}, @ref{LGT}, @ref{LLT}
+@ref{LGE}, @gol
+@ref{LGT}, @gol
+@ref{LLT}
 @end table
 
 
@@ -9364,7 +9560,9 @@ otherwise, based on the ASCII ordering.
 @end multitable
 
 @item @emph{See also}:
-@ref{LGE}, @ref{LGT}, @ref{LLE}
+@ref{LGE}, @gol
+@ref{LGT}, @gol
+@ref{LLE}
 @end table
 
 
@@ -9399,7 +9597,8 @@ with @code{INTENT(IN)}
 The return value is of @code{INTEGER(kind=4)} type.
 
 @item @emph{See also}:
-@ref{INDEX intrinsic}, @ref{LEN_TRIM}
+@ref{INDEX intrinsic}, @gol
+@ref{LEN_TRIM}
 @end table
 
 
@@ -9603,8 +9802,8 @@ end program test_log_gamma
 @end multitable
 
 @item @emph{See also}:
-Gamma function: @ref{GAMMA}
-
+Gamma function: @gol
+@ref{GAMMA}
 @end table
 
 
@@ -9640,7 +9839,9 @@ kind corresponding to @var{KIND}, or of the default logical kind if
 @var{KIND} is not given.
 
 @item @emph{See also}:
-@ref{INT}, @ref{REAL}, @ref{CMPLX}
+@ref{INT}, @gol
+@ref{REAL}, @gol
+@ref{CMPLX}
 @end table
 
 
@@ -9676,7 +9877,9 @@ Elemental function
 The return value is a @code{INTEGER(4)} variable.
 
 @item @emph{See also}:
-@ref{INT}, @ref{INT2}, @ref{INT8}
+@ref{INT}, @gol
+@ref{INT2}, @gol
+@ref{INT8}
 @end table
 
 
@@ -9718,9 +9921,12 @@ The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
 
 @item @emph{See also}:
-@ref{ISHFT}, @ref{ISHFTC}, @ref{RSHIFT}, @ref{SHIFTA}, @ref{SHIFTL},
+@ref{ISHFT}, @gol
+@ref{ISHFTC}, @gol
+@ref{RSHIFT}, @gol
+@ref{SHIFTA}, @gol
+@ref{SHIFTL}, @gol
 @ref{SHIFTR}
-
 @end table
 
 
@@ -9766,7 +9972,10 @@ Returns 0 on success and a system specific error code otherwise.
 See @ref{STAT} for an example.
 
 @item @emph{See also}:
-To stat an open file: @ref{FSTAT}, to stat a file: @ref{STAT}
+To stat an open file: @gol
+@ref{FSTAT} @gol
+To stat a file: @gol
+@ref{STAT}
 @end table
 
 
@@ -9821,8 +10030,11 @@ effect, zero if not, and negative if the information is not available.
 @end enumerate
 
 @item @emph{See also}:
-@ref{DATE_AND_TIME}, @ref{CTIME}, @ref{GMTIME}, @ref{TIME}, @ref{TIME8}
-
+@ref{DATE_AND_TIME}, @gol
+@ref{CTIME}, @gol
+@ref{GMTIME}, @gol
+@ref{TIME}, @gol
+@ref{TIME8}
 @end table
 
 
@@ -10000,8 +10212,6 @@ equal to the last (or only) dimension of @var{MATRIX_A}.
 The matrix product of @var{MATRIX_A} and @var{MATRIX_B}.  The type and
 kind of the result follow the usual type and kind promotion rules, as
 for the @code{*} or @code{.AND.} operators.
-
-@item @emph{See also}:
 @end table
 
 
@@ -10053,8 +10263,9 @@ and has the same type and kind as the first argument.
 @end multitable
 
 @item @emph{See also}:
-@ref{MAXLOC} @ref{MAXVAL}, @ref{MIN}
-
+@ref{MAXLOC} @gol
+@ref{MAXVAL}, @gol
+@ref{MIN}
 @end table
 
 
@@ -10161,8 +10372,9 @@ is present, the result is an integer of kind @var{KIND}, otherwise it
 is of default kind.
 
 @item @emph{See also}:
-@ref{FINDLOC}, @ref{MAX}, @ref{MAXVAL}
-
+@ref{FINDLOC}, @gol
+@ref{MAX}, @gol
+@ref{MAXVAL}
 @end table
 
 
@@ -10215,7 +10427,8 @@ the size of @var{ARRAY} with the @var{DIM} dimension removed.  In all
 cases, the result is of the same type and kind as @var{ARRAY}.
 
 @item @emph{See also}:
-@ref{MAX}, @ref{MAXLOC}
+@ref{MAX}, @gol
+@ref{MAXLOC}
 @end table
 
 
@@ -10252,8 +10465,11 @@ number of clock ticks since the start of the process, or @code{-1} if
 the system does not support @code{clock(3)}.
 
 @item @emph{See also}:
-@ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{MCLOCK}, @ref{TIME}
-
+@ref{CTIME}, @gol
+@ref{GMTIME}, @gol
+@ref{LTIME}, @gol
+@ref{MCLOCK}, @gol
+@ref{TIME}
 @end table
 
 
@@ -10292,8 +10508,11 @@ number of clock ticks since the start of the process, or @code{-1} if
 the system does not support @code{clock(3)}.
 
 @item @emph{See also}:
-@ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{MCLOCK}, @ref{TIME8}
-
+@ref{CTIME}, @gol
+@ref{GMTIME}, @gol
+@ref{LTIME}, @gol
+@ref{MCLOCK}, @gol
+@ref{TIME8}
 @end table
 
 
@@ -10419,7 +10638,9 @@ and has the same type and kind as the first argument.
 @end multitable
 
 @item @emph{See also}:
-@ref{MAX}, @ref{MINLOC}, @ref{MINVAL}
+@ref{MAX}, @gol
+@ref{MINLOC}, @gol
+@ref{MINVAL}
 @end table
 
 
@@ -10518,8 +10739,9 @@ is present, the result is an integer of kind @var{KIND}, otherwise it
 is of default kind.
 
 @item @emph{See also}:
-@ref{FINDLOC}, @ref{MIN}, @ref{MINVAL}
-
+@ref{FINDLOC}, @gol
+@ref{MIN}, @gol
+@ref{MINVAL}
 @end table
 
 
@@ -10572,8 +10794,8 @@ the size of @var{ARRAY} with the @var{DIM} dimension removed.  In all
 cases, the result is of the same type and kind as @var{ARRAY}.
 
 @item @emph{See also}:
-@ref{MIN}, @ref{MINLOC}
-
+@ref{MIN}, @gol
+@ref{MINLOC}
 @end table
 
 
@@ -10607,14 +10829,16 @@ Elemental function
 @multitable @columnfractions .15 .70
 @item @var{A} @tab Shall be a scalar of type @code{INTEGER} or @code{REAL}.
 @item @var{P} @tab Shall be a scalar of the same type and kind as @var{A} 
-and not equal to zero.
+and not equal to zero.  (As a GNU extension, arguments of different kinds are
+permitted.)
 @end multitable
 
 @item @emph{Return value}:
 The return value is the result of @code{A - (INT(A/P) * P)}. The type
 and kind of the return value is the same as that of the arguments. The
 returned value has the same sign as A and a magnitude less than the
-magnitude of P.
+magnitude of P.  (As a GNU extension, kind is the largest kind of the actual
+arguments.)
 
 @item @emph{Example}:
 @smallexample
@@ -10678,11 +10902,13 @@ Elemental function
 @multitable @columnfractions .15 .70
 @item @var{A} @tab Shall be a scalar of type @code{INTEGER} or @code{REAL}.
 @item @var{P} @tab Shall be a scalar of the same type and kind as @var{A}. 
-It shall not be zero.
+It shall not be zero.  (As a GNU extension, arguments of different kinds are
+permitted.)
 @end multitable
 
 @item @emph{Return value}:
-The type and kind of the result are those of the arguments.
+The type and kind of the result are those of the arguments.  (As a GNU
+extension, kind is the largest kind of the actual arguments.)
 @table @asis
 @item If @var{A} and @var{P} are of type @code{INTEGER}:
 @code{MODULO(A,P)} has the value @var{R} such that @code{A=Q*P+R}, where
@@ -10810,7 +11036,12 @@ same kind as @var{FROM}.
 @end multitable
 
 @item @emph{See also}:
-@ref{IBCLR}, @ref{IBSET}, @ref{IBITS}, @ref{IAND}, @ref{IOR}, @ref{IEOR}
+@ref{IBCLR}, @gol
+@ref{IBSET}, @gol
+@ref{IBITS}, @gol
+@ref{IAND}, @gol
+@ref{IOR}, @gol
+@ref{IEOR}
 @end table
 
 
@@ -10952,8 +11183,8 @@ end program test_nint
 @end multitable
 
 @item @emph{See also}:
-@ref{CEILING}, @ref{FLOOR}
-
+@ref{CEILING}, @gol
+@ref{FLOOR}
 @end table
 
 
@@ -11053,8 +11284,12 @@ argument.
 @end multitable
 
 @item @emph{See also}:
-@ref{IAND}, @ref{IEOR}, @ref{IOR}, @ref{IBITS}, @ref{IBSET}, @ref{IBCLR}
-
+@ref{IAND}, @gol
+@ref{IEOR}, @gol
+@ref{IOR}, @gol
+@ref{IBITS}, @gol
+@ref{IBSET}, @gol
+@ref{IBCLR}
 @end table
 
 
@@ -11156,7 +11391,8 @@ END IF
 @end smallexample
 
 @item @emph{See also}:
-@ref{THIS_IMAGE}, @ref{IMAGE_INDEX}
+@ref{THIS_IMAGE}, @gol
+@ref{IMAGE_INDEX}
 @end table
 
 
@@ -11215,7 +11451,8 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-Fortran 95 elemental function: @ref{IOR}
+Fortran 95 elemental function: @gol
+@ref{IOR}
 @end table
 
 
@@ -11278,7 +11515,8 @@ Gathering nonzero elements from an array and appending elements from @var{VECTOR
 PROGRAM test_pack_2
   INTEGER :: m(4)
   m = (/ 1, 0, 0, 2 /)
-  WRITE(*, FMT="(4(I0, ' '))") pack(m, m /= 0, (/ 0, 0, 3, 4 /))  ! "1 2 3 4"
+  ! The following results in "1 2 3 4"
+  WRITE(*, FMT="(4(I0, ' '))") pack(m, m /= 0, (/ 0, 0, 3, 4 /))
 END PROGRAM
 @end smallexample
 
@@ -11401,9 +11639,6 @@ Elemental function
 The return value is of type @code{INTEGER} and of the default integer
 kind.
 
-@item @emph{See also}:
-@ref{POPPAR}, @ref{LEADZ}, @ref{TRAILZ}
-
 @item @emph{Example}:
 @smallexample
 program test_population
@@ -11412,6 +11647,10 @@ program test_population
   print *, popcnt(huge(0_8)), poppar(huge(0_8))
 end program test_population
 @end smallexample
+@item @emph{See also}:
+@ref{POPPAR}, @gol
+@ref{LEADZ}, @gol
+@ref{TRAILZ}
 @end table
 
 
@@ -11446,9 +11685,6 @@ Elemental function
 The return value is of type @code{INTEGER} and of the default integer
 kind.
 
-@item @emph{See also}:
-@ref{POPCNT}, @ref{LEADZ}, @ref{TRAILZ}
-
 @item @emph{Example}:
 @smallexample
 program test_population
@@ -11457,6 +11693,10 @@ program test_population
   print *, popcnt(huge(0_8)), poppar(huge(0_8))
 end program test_population
 @end smallexample
+@item @emph{See also}:
+@ref{POPCNT}, @gol
+@ref{LEADZ}, @gol
+@ref{TRAILZ}
 @end table
 
 
@@ -11489,9 +11729,6 @@ Inquiry function
 The return value is of type @code{INTEGER} and of the default integer
 kind.
 
-@item @emph{See also}:
-@ref{SELECTED_REAL_KIND}, @ref{RANGE}
-
 @item @emph{Example}:
 @smallexample
 program prec_and_range
@@ -11502,6 +11739,9 @@ program prec_and_range
   print *, precision(y), range(y)
 end program prec_and_range
 @end smallexample
+@item @emph{See also}:
+@ref{SELECTED_REAL_KIND}, @gol
+@ref{RANGE}
 @end table
 
 
@@ -11637,9 +11877,6 @@ Inquiry function
 The return value is a scalar of type @code{INTEGER} and of the default
 integer kind.
 
-@item @emph{See also}:
-@ref{SELECTED_REAL_KIND}
-
 @item @emph{Example}:
 @smallexample
 program test_radix
@@ -11647,7 +11884,8 @@ program test_radix
   print *, "The radix for the default real kind is", radix(0.0)
 end program test_radix
 @end smallexample
-
+@item @emph{See also}:
+@ref{SELECTED_REAL_KIND}
 @end table
 
 
@@ -11670,7 +11908,8 @@ GNU extension
 Function
 
 @item @emph{See also}:
-@ref{RAND}, @ref{RANDOM_NUMBER}
+@ref{RAND}, @gol
+@ref{RANDOM_NUMBER}
 @end table
 
 
@@ -11722,7 +11961,8 @@ end program test_rand
 @end smallexample
 
 @item @emph{See also}:
-@ref{SRAND}, @ref{RANDOM_NUMBER}
+@ref{SRAND}, @gol
+@ref{RANDOM_NUMBER}
 
 @end table
 
@@ -11747,7 +11987,7 @@ Subroutine
 @code{CALL RANDOM_INIT(REPEATABLE, IMAGE_DISTINCT)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .20 .75
+@multitable @columnfractions .25 .70
 @item @var{REPEATABLE} @tab Shall be a scalar with a @code{LOGICAL} type,
 and it is @code{INTENT(IN)}.  If it is @code{.true.}, the seed is set to
 a processor-dependent value that is the same each time @code{RANDOM_INIT}
@@ -11778,7 +12018,8 @@ end program test_random_seed
 @end smallexample
 
 @item @emph{See also}:
-@ref{RANDOM_NUMBER}, @ref{RANDOM_SEED}
+@ref{RANDOM_NUMBER}, @gol
+@ref{RANDOM_SEED}
 @end table
 
 
@@ -11826,7 +12067,8 @@ end program
 @end smallexample
 
 @item @emph{See also}:
-@ref{RANDOM_SEED}, @ref{RANDOM_INIT}
+@ref{RANDOM_SEED}, @gol
+@ref{RANDOM_INIT}
 @end table
 
 
@@ -11896,7 +12138,8 @@ end program test_random_seed
 @end smallexample
 
 @item @emph{See also}:
-@ref{RANDOM_NUMBER}, @ref{RANDOM_INIT}
+@ref{RANDOM_NUMBER}, @gol
+@ref{RANDOM_INIT}
 @end table
 
 
@@ -11930,11 +12173,11 @@ or @code{COMPLEX}.
 The return value is of type @code{INTEGER} and of the default integer
 kind.
 
-@item @emph{See also}:
-@ref{SELECTED_REAL_KIND}, @ref{PRECISION}
-
 @item @emph{Example}:
 See @code{PRECISION} for an example.
+@item @emph{See also}:
+@ref{SELECTED_REAL_KIND}, @gol
+@ref{PRECISION}
 @end table
 
 
@@ -12274,7 +12517,11 @@ The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
 
 @item @emph{See also}:
-@ref{ISHFT}, @ref{ISHFTC}, @ref{LSHIFT}, @ref{SHIFTA}, @ref{SHIFTR},
+@ref{ISHFT}, @gol
+@ref{ISHFTC}, @gol
+@ref{LSHIFT}, @gol
+@ref{SHIFTA}, @gol
+@ref{SHIFTR}, @gol
 @ref{SHIFTL}
 
 @end table
@@ -12407,7 +12654,8 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{INDEX intrinsic}, @ref{VERIFY}
+@ref{INDEX intrinsic}, @gol
+@ref{VERIFY}
 @end table
 
 
@@ -12659,9 +12907,6 @@ are fulfillable
 @item -5 if there is no real type with the given @code{RADIX}
 @end table
 
-@item @emph{See also}:
-@ref{PRECISION}, @ref{RANGE}, @ref{RADIX}
-
 @item @emph{Example}:
 @smallexample
 program real_kinds
@@ -12677,6 +12922,10 @@ program real_kinds
   print *, precision(z), range(z)
 end program real_kinds
 @end smallexample
+@item @emph{See also}:
+@ref{PRECISION}, @gol
+@ref{RANGE}, @gol
+@ref{RADIX}
 @end table
 
 
@@ -12770,7 +13019,8 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{RESHAPE}, @ref{SIZE}
+@ref{RESHAPE}, @gol
+@ref{SIZE}
 @end table
 
 
@@ -12811,7 +13061,8 @@ The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
 
 @item @emph{See also}:
-@ref{SHIFTL}, @ref{SHIFTR}
+@ref{SHIFTL}, @gol
+@ref{SHIFTR}
 @end table
 
 
@@ -12850,7 +13101,8 @@ The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
 
 @item @emph{See also}:
-@ref{SHIFTA}, @ref{SHIFTR}
+@ref{SHIFTA}, @gol
+@ref{SHIFTR}
 @end table
 
 
@@ -12889,7 +13141,8 @@ The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
 
 @item @emph{See also}:
-@ref{SHIFTA}, @ref{SHIFTL}
+@ref{SHIFTA}, @gol
+@ref{SHIFTL}
 @end table
 
 
@@ -12917,7 +13170,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{A} @tab Shall be of type @code{INTEGER} or @code{REAL}
-@item @var{B} @tab Shall be of the same type and kind as @var{A}
+@item @var{B} @tab Shall be of the same type and kind as @var{A}.
 @end multitable
 
 @item @emph{Return value}:
@@ -13058,8 +13311,10 @@ end program test_sin
 @end multitable
 
 @item @emph{See also}:
-Inverse function: @ref{ASIN}
-Degrees function: @ref{SIND}
+Inverse function: @gol
+@ref{ASIN} @gol
+Degrees function: @gol
+@ref{SIND}
 @end table
 
 
@@ -13118,9 +13373,10 @@ end program test_sind
 @end multitable
 
 @item @emph{See also}:
-Inverse function: @ref{ASIND}
-Radians function: @ref{SIN}
-
+Inverse function: @gol
+@ref{ASIND} @gol
+Radians function: @gol
+@ref{SIN} @gol
 @end table
 
 
@@ -13219,7 +13475,8 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{SHAPE}, @ref{RESHAPE}
+@ref{SHAPE}, @gol
+@ref{RESHAPE}
 @end table
 
 
@@ -13272,7 +13529,8 @@ The example will print @code{.TRUE.} unless you are using a platform
 where default @code{REAL} variables are unusually padded.
 
 @item @emph{See also}:
-@ref{C_SIZEOF}, @ref{STORAGE_SIZE}
+@ref{C_SIZEOF}, @gol
+@ref{STORAGE_SIZE}
 @end table
 
 
@@ -13503,8 +13761,9 @@ Please note that in GNU Fortran, these two sets of intrinsics (@code{RAND},
 pseudo-random number generators.
 
 @item @emph{See also}:
-@ref{RAND}, @ref{RANDOM_SEED}, @ref{RANDOM_NUMBER}
-
+@ref{RAND}, @gol
+@ref{RANDOM_SEED}, @gol
+@ref{RANDOM_NUMBER}
 @end table
 
 
@@ -13591,7 +13850,10 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-To stat an open file: @ref{FSTAT}, to stat a link: @ref{LSTAT}
+To stat an open file: @gol
+@ref{FSTAT} @gol
+To stat a link: @gol
+@ref{LSTAT}
 @end table
 
 
@@ -13624,7 +13886,8 @@ expressed in bits for an element of an array that has the dynamic type and type
 parameters of A.
 
 @item @emph{See also}:
-@ref{C_SIZEOF}, @ref{SIZEOF}
+@ref{C_SIZEOF}, @gol
+@ref{SIZEOF}
 @end table
 
 
@@ -13727,8 +13990,8 @@ Subroutine, function
 @end multitable
 
 @item @emph{See also}:
-@ref{LINK}, @ref{UNLINK}
-
+@ref{LINK}, @gol
+@ref{UNLINK}
 @end table
 
 
@@ -13831,7 +14094,7 @@ Subroutine
 @code{CALL SYSTEM_CLOCK([COUNT, COUNT_RATE, COUNT_MAX])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .70
+@multitable @columnfractions .20 .65
 @item @var{COUNT}      @tab (Optional) shall be a scalar of type 
 @code{INTEGER} with @code{INTENT(OUT)}.
 @item @var{COUNT_RATE} @tab (Optional) shall be a scalar of type 
@@ -13850,7 +14113,8 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{DATE_AND_TIME}, @ref{CPU_TIME}
+@ref{DATE_AND_TIME}, @gol
+@ref{CPU_TIME}
 @end table
 
 
@@ -13899,8 +14163,10 @@ end program test_tan
 @end multitable
 
 @item @emph{See also}:
-Inverse function: @ref{ATAN}
-Degrees function: @ref{TAND}
+Inverse function: @gol
+@ref{ATAN} @gol
+Degrees function: @gol
+@ref{TAND}
 @end table
 
 
@@ -13952,8 +14218,10 @@ end program test_tand
 @end multitable
 
 @item @emph{See also}:
-Inverse function: @ref{ATAND}
-Radians function: @ref{TAN}
+Inverse function: @gol
+@ref{ATAND} @gol
+Radians function: @gol
+@ref{TAN}
 @end table
 
 
@@ -14077,7 +14345,8 @@ IF (THIS_IMAGE(HUGE(1)) /= THIS_IMAGE())
 @end smallexample
 
 @item @emph{See also}:
-@ref{NUM_IMAGES}, @ref{IMAGE_INDEX}
+@ref{NUM_IMAGES}, @gol
+@ref{IMAGE_INDEX}
 @end table
 
 
@@ -14117,8 +14386,12 @@ Function
 The return value is a scalar of type @code{INTEGER(4)}.
 
 @item @emph{See also}:
-@ref{DATE_AND_TIME}, @ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{MCLOCK}, @ref{TIME8}
-
+@ref{DATE_AND_TIME}, @gol
+@ref{CTIME}, @gol
+@ref{GMTIME}, @gol
+@ref{LTIME}, @gol
+@ref{MCLOCK}, @gol
+@ref{TIME8}
 @end table
 
 
@@ -14156,8 +14429,12 @@ Function
 The return value is a scalar of type @code{INTEGER(8)}.
 
 @item @emph{See also}:
-@ref{DATE_AND_TIME}, @ref{CTIME}, @ref{GMTIME}, @ref{LTIME}, @ref{MCLOCK8}, @ref{TIME}
-
+@ref{DATE_AND_TIME}, @gol
+@ref{CTIME}, @gol
+@ref{GMTIME}, @gol
+@ref{LTIME}, @gol
+@ref{MCLOCK8}, @gol
+@ref{TIME}
 @end table
 
 
@@ -14231,7 +14508,10 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{BIT_SIZE}, @ref{LEADZ}, @ref{POPPAR}, @ref{POPCNT}
+@ref{BIT_SIZE}, @gol
+@ref{LEADZ}, @gol
+@ref{POPPAR}, @gol
+@ref{POPCNT}
 @end table
 
 
@@ -14368,7 +14648,8 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{ADJUSTL}, @ref{ADJUSTR}
+@ref{ADJUSTL}, @gol
+@ref{ADJUSTR}
 @end table
 
 
@@ -14458,7 +14739,8 @@ dimension, the upper bound is taken to be the number of elements along
 the relevant dimension.
 
 @item @emph{See also}:
-@ref{LBOUND}, @ref{LCOBOUND}
+@ref{LBOUND}, @gol
+@ref{LCOBOUND}
 @end table
 
 
@@ -14497,7 +14779,8 @@ If @var{DIM} is absent, the result is an array of the lower cobounds of
 corresponding to the lower cobound of the array along that codimension.
 
 @item @emph{See also}:
-@ref{LCOBOUND}, @ref{LBOUND}
+@ref{LCOBOUND}, @gol
+@ref{LBOUND}
 @end table
 
 
@@ -14571,7 +14854,8 @@ Subroutine, function
 @end multitable
 
 @item @emph{See also}:
-@ref{LINK}, @ref{SYMLNK}
+@ref{LINK}, @gol
+@ref{SYMLNK}
 @end table
 
 
@@ -14622,7 +14906,8 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{PACK}, @ref{SPREAD}
+@ref{PACK}, @gol
+@ref{SPREAD}
 @end table
 
 
@@ -14677,7 +14962,8 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{SCAN}, @ref{INDEX intrinsic}
+@ref{SCAN}, @gol
+@ref{INDEX intrinsic}
 @end table
 
 
@@ -14737,7 +15023,8 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-Fortran 95 elemental function: @ref{IEOR}
+Fortran 95 elemental function: @gol
+@ref{IEOR}
 @end table
 
 

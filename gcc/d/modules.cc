@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dmd/module.h"
 
 #include "tree.h"
+#include "diagnostic.h"
 #include "fold-const.h"
 #include "tm.h"
 #include "function.h"
@@ -404,7 +405,8 @@ build_dso_registry_var (const char * name, tree type)
 static void
 register_moduleinfo (Module *decl, tree minfo)
 {
-  gcc_assert (targetm_common.have_named_sections);
+  if (!targetm_common.have_named_sections)
+    sorry ("%<-fmoduleinfo%> is not supported on this target");
 
   /* Build the ModuleInfo reference, this is done once for every Module.  */
   tree ident = mangle_internal_decl (decl, "__moduleRef", "Z");

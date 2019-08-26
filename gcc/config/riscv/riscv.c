@@ -2743,28 +2743,27 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
 /* Implement TARGET_FUNCTION_ARG.  */
 
 static rtx
-riscv_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		    const_tree type, bool named)
+riscv_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   struct riscv_arg_info info;
 
-  if (mode == VOIDmode)
+  if (arg.end_marker_p ())
     return NULL;
 
-  return riscv_get_arg_info (&info, cum, mode, type, named, false);
+  return riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
 }
 
 /* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 
 static void
-riscv_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			    const_tree type, bool named)
+riscv_function_arg_advance (cumulative_args_t cum_v,
+			    const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   struct riscv_arg_info info;
 
-  riscv_get_arg_info (&info, cum, mode, type, named, false);
+  riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
 
   /* Advance the register count.  This has the effect of setting
      num_gprs to MAX_ARGS_IN_REGISTERS if a doubleword-aligned
@@ -2778,11 +2777,12 @@ riscv_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 
 static int
 riscv_arg_partial_bytes (cumulative_args_t cum,
-			 machine_mode mode, tree type, bool named)
+			 const function_arg_info &generic_arg)
 {
   struct riscv_arg_info arg;
 
-  riscv_get_arg_info (&arg, get_cumulative_args (cum), mode, type, named, false);
+  riscv_get_arg_info (&arg, get_cumulative_args (cum), generic_arg.mode,
+		      generic_arg.type, generic_arg.named, false);
   return arg.stack_p ? arg.num_gprs * UNITS_PER_WORD : 0;
 }
 
@@ -2814,10 +2814,9 @@ riscv_function_value (const_tree type, const_tree func, machine_mode mode)
 /* Implement TARGET_PASS_BY_REFERENCE. */
 
 static bool
-riscv_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
-			 const_tree type, bool named)
+riscv_pass_by_reference (cumulative_args_t cum_v, const function_arg_info &arg)
 {
-  HOST_WIDE_INT size = type ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
+  HOST_WIDE_INT size = arg.type_size_in_bytes ();
   struct riscv_arg_info info;
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
@@ -2827,7 +2826,7 @@ riscv_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
   if (cum != NULL)
     {
       /* Don't pass by reference if we can use a floating-point register.  */
-      riscv_get_arg_info (&info, cum, mode, type, named, false);
+      riscv_get_arg_info (&info, cum, arg.mode, arg.type, arg.named, false);
       if (info.num_fprs)
 	return false;
     }
@@ -2847,15 +2846,16 @@ riscv_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
   /* The rules for returning in memory are the same as for passing the
      first named argument by reference.  */
   memset (&args, 0, sizeof args);
-  return riscv_pass_by_reference (cum, TYPE_MODE (type), type, true);
+  function_arg_info arg (const_cast<tree> (type), /*named=*/true);
+  return riscv_pass_by_reference (cum, arg);
 }
 
 /* Implement TARGET_SETUP_INCOMING_VARARGS.  */
 
 static void
-riscv_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
-			     tree type, int *pretend_size ATTRIBUTE_UNUSED,
-			     int no_rtl)
+riscv_setup_incoming_varargs (cumulative_args_t cum,
+			      const function_arg_info &arg,
+			      int *pretend_size ATTRIBUTE_UNUSED, int no_rtl)
 {
   CUMULATIVE_ARGS local_cum;
   int gp_saved;
@@ -2864,7 +2864,7 @@ riscv_setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
   local_cum = *get_cumulative_args (cum);
-  riscv_function_arg_advance (pack_cumulative_args (&local_cum), mode, type, 1);
+  riscv_function_arg_advance (pack_cumulative_args (&local_cum), arg);
 
   /* Found out how many registers we need to save.  */
   gp_saved = MAX_ARGS_IN_REGISTERS - local_cum.num_gprs;

@@ -25,7 +25,9 @@
 #define _MM_MALLOC_H_INCLUDED
 
 #include <stdlib.h>
+#if __STDC_HOSTED__
 #include <errno.h>
+#endif
 
 static __inline__ void * 
 _mm_malloc (size_t __size, size_t __align)
@@ -36,7 +38,9 @@ _mm_malloc (size_t __size, size_t __align)
   /* Error if align is not a power of two.  */
   if (__align & (__align - 1))
     {
+#if __STDC_HOSTED__
       errno = EINVAL;
+#endif
       return ((void *) 0);
     }
 

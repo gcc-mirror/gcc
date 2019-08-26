@@ -256,9 +256,9 @@ static bool
 gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 {
   /* Excess precision other than "fast" requires front-end support.  */
-  if (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD)
+  if (flag_excess_precision == EXCESS_PRECISION_STANDARD)
     sorry ("%<-fexcess-precision=standard%> for Ada");
-  flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
+  flag_excess_precision = EXCESS_PRECISION_FAST;
 
   /* No psABI change warnings for Ada.  */
   warn_psabi = 0;
@@ -1136,7 +1136,7 @@ default_pass_by_ref (tree gnu_type)
 			       TYPE_ALIGN (gnu_type)) > 0))
     return true;
 
-  if (pass_by_reference (NULL, TYPE_MODE (gnu_type), gnu_type, true))
+  if (pass_by_reference (NULL, function_arg_info (gnu_type, /*named=*/true)))
     return true;
 
   if (targetm.calls.return_in_memory (gnu_type, NULL_TREE))
