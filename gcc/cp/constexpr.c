@@ -3849,7 +3849,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  {
 	    tree ob = TREE_OPERAND (probe, 0);
 	    tree elt = TREE_OPERAND (probe, 1);
-	    if (DECL_P (elt) && DECL_MUTABLE_P (elt))
+	    if (TREE_CODE (elt) == FIELD_DECL && DECL_MUTABLE_P (elt))
 	      mutable_p = true;
 	    if (evaluated
 		&& modifying_const_object_p (TREE_CODE (t), probe, mutable_p)

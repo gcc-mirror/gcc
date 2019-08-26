@@ -1,3 +1,9 @@
+2019-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91545 - ICE in constexpr store evaluation.
+	* constexpr.c (cxx_eval_store_expression): Check FIELD_DECL instead
+	of DECL_P.
+
 2019-08-24  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (check_for_overrides): Conversion operators need

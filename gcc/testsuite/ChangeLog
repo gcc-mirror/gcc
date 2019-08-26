@@ -1,3 +1,8 @@
+2019-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91545 - ICE in constexpr store evaluation.
+	* g++.dg/cpp0x/pr91545.C: New test.
+
 2019-08-26  Tejas Joshi  <tejasjoshi9673@gmail.com>
 
 	* gcc.target/i386/sse4_1-round-roundeven-1.c: New test.
@@ -5,8 +10,8 @@
 
 2019-08-26  Tejas Joshi  <tejasjoshi9673@gmail.com>
 
-        * gcc.dg/torture/builtin-round-roundeven.c: New test.
-        * gcc.dg/torture/builtin-round-roundevenf128.c: Likewise.
+	* gcc.dg/torture/builtin-round-roundeven.c: New test.
+	* gcc.dg/torture/builtin-round-roundevenf128.c: Likewise.
 
 2019-08-26  Robin Dapp  <rdapp@linux.ibm.com>
 
