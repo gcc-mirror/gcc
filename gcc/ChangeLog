@@ -1,3 +1,28 @@
+2019-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR target/91522
+	PR target/91527
+	* config/i386/i386-features.h (general_scalar_chain::defs_map):
+	New member.
+	(general_scalar_chain::replace_with_subreg): Remove.
+	(general_scalar_chain::replace_with_subreg_in_insn): Likewise.
+	(general_scalar_chain::convert_reg): Adjust signature.
+	* config/i386/i386-features.c (scalar_chain::add_insn): Do not
+	iterate over all defs of a reg.
+	(general_scalar_chain::replace_with_subreg): Remove.
+	(general_scalar_chain::replace_with_subreg_in_insn): Likewise.
+	(general_scalar_chain::make_vector_copies): Populate defs_map,
+	place copy only after defs that are used as vectors in the chain.
+	(general_scalar_chain::convert_reg): Emit a copy for a specific
+	def in a specific instruction.
+	(general_scalar_chain::convert_op): All reg uses are converted here.
+	(general_scalar_chain::convert_insn): Emit copies for scalar
+	uses of defs here.  Replace uses with the copies we created.
+	Replace and convert the def.  Adjust REG_DEAD notes, remove
+	REG_EQUIV/EQUAL notes.
+	(general_scalar_chain::convert_registers): Only handle copies
+	into the chain here.
+
 2019-08-26  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* match.pd: Add (T)(A) + CST -> (T)(A + CST).

@@ -171,12 +171,11 @@ class general_scalar_chain : public scalar_chain
     : scalar_chain (smode_, vmode_) {}
   int compute_convert_gain ();
  private:
+  hash_map<rtx, rtx> defs_map;
   void mark_dual_mode_def (df_ref def);
-  rtx replace_with_subreg (rtx x, rtx reg, rtx subreg);
-  void replace_with_subreg_in_insn (rtx_insn *insn, rtx reg, rtx subreg);
   void convert_insn (rtx_insn *insn);
   void convert_op (rtx *op, rtx_insn *insn);
-  void convert_reg (unsigned regno);
+  void convert_reg (rtx_insn *insn, rtx dst, rtx src);
   void make_vector_copies (unsigned regno);
   void convert_registers ();
   int vector_const_cost (rtx exp);
