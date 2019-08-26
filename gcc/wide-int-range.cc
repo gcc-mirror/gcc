@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
    Return false for division by zero, for which the result is
    indeterminate.  */
 
-static bool
+bool
 wide_int_binop_overflow (wide_int &res,
 			 enum tree_code code,
 			 const wide_int &w0, const wide_int &w1,

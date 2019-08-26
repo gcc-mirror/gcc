@@ -192,4 +192,10 @@ adjust_range_for_overflow (value_range_kind &,
 			   wi::overflow_type, wi::overflow_type,
 			   bool overflow_wraps);
 
+bool
+wide_int_binop_overflow (wide_int &res,
+			 enum tree_code code,
+			 const wide_int &w0, const wide_int &w1,
+			 signop sign, bool overflow_undefined);
+
 #endif /* GCC_WIDE_INT_RANGE_H */

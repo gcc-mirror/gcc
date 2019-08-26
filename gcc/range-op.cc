@@ -85,6 +85,32 @@ empty_range_check (value_range_base &r,
     return false;
 }
 
+/* Return TRUE if shifting by OP is undefined behavior, and set R to the
+   appropriate range.  */
+
+static inline bool
+undefined_shift_range_check (irange &r, tree type, value_range_base op)
+{
+  if (op.undefined_p ())
+    {
+      r = value_range_base ();
+      return true;
+    }
+
+  /* Shifting by any values outside [0..prec-1], gets undefined
+     behavior from the shift operation.  We cannot even trust
+     SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
+     shifts, and the operation at the tree level may be widened.  */
+  if (wi::lt_p (op.lower_bound (), 0, TYPE_SIGN (op.type ()))
+      || wi::ge_p (op.upper_bound (),
+		   TYPE_PRECISION (type), TYPE_SIGN (op.type ())))
+    {
+      r = value_range_base (type);
+      return true;
+    }
+  return false;
+}
+
 // Default wide_int fold operation returns [min , max].
 value_range_base
 range_operator::wi_fold (tree type,
@@ -897,12 +923,10 @@ operator_plus::wi_fold (tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const
 {
-  wide_int new_lb, new_ub, tmp;
   wi::overflow_type ov_lb, ov_ub;
   signop s = TYPE_SIGN (type);
-
-  new_lb = wi::add (lh_lb, rh_lb, s, &ov_lb);
-  new_ub = wi::add (lh_ub, rh_ub, s, &ov_ub);
+  wide_int new_lb = wi::add (lh_lb, rh_lb, s, &ov_lb);
+  wide_int new_ub = wi::add (lh_ub, rh_ub, s, &ov_ub);
   value_range_base r;
   accumulate_range (r, type, new_lb, new_ub, ov_lb, ov_ub);
   return r;
@@ -952,12 +976,10 @@ operator_minus::wi_fold (tree type,
 			 const wide_int &lh_lb, const wide_int &lh_ub,
 			 const wide_int &rh_lb, const wide_int &rh_ub) const
 {
-  wide_int new_lb, new_ub, tmp;
   wi::overflow_type ov_lb, ov_ub;
   signop s = TYPE_SIGN (type);
-
-  new_lb = wi::sub (lh_lb, rh_ub, s, &ov_lb);
-  new_ub = wi::sub (lh_ub, rh_lb, s, &ov_ub);
+  wide_int new_lb = wi::sub (lh_lb, rh_ub, s, &ov_lb);
+  wide_int new_ub = wi::sub (lh_ub, rh_lb, s, &ov_ub);
   value_range_base r;
   accumulate_range (r, type, new_lb, new_ub, ov_lb, ov_ub);
   return r;
@@ -1003,11 +1025,9 @@ operator_min::wi_fold (tree type,
 		       const wide_int &lh_lb, const wide_int &lh_ub,
 		       const wide_int &rh_lb, const wide_int &rh_ub) const
 {
-  wide_int new_lb, new_ub;
   signop s = TYPE_SIGN (type);
-
-  new_lb = wi::min (lh_lb, rh_lb, s);
-  new_ub = wi::min (lh_ub, rh_ub, s);
+  wide_int new_lb = wi::min (lh_lb, rh_lb, s);
+  wide_int new_ub = wi::min (lh_ub, rh_ub, s);
   value_range_base r;
   accumulate_range (r, type, new_lb, new_ub);
   return r;
@@ -1030,11 +1050,9 @@ operator_max::wi_fold (tree type,
 		       const wide_int &lh_lb, const wide_int &lh_ub,
 		       const wide_int &rh_lb, const wide_int &rh_ub) const
 {
-  wide_int new_lb, new_ub;
   signop s = TYPE_SIGN (type);
-
-  new_lb = wi::max (lh_lb, rh_lb, s);
-  new_ub = wi::max (lh_ub, rh_ub, s);
+  wide_int new_lb = wi::max (lh_lb, rh_lb, s);
+  wide_int new_ub = wi::max (lh_ub, rh_ub, s);
   value_range_base r;
   accumulate_range (r, type, new_lb, new_ub);
   return r;
@@ -1042,6 +1060,75 @@ operator_max::wi_fold (tree type,
 
 
 // ----------------------------------------------------------------------------
+
+/* Multiplications, divisions and shifts are a bit tricky to handle,
+   depending on the mix of signs we have in the two ranges, we need to
+   operate on different values to get the minimum and maximum values
+   for the new range.  One approach is to figure out all the
+   variations of range combinations and do the operations.
+
+   However, this involves several calls to compare_values and it is
+   pretty convoluted.  It's simpler to do the 4 operations (MIN0 OP
+   MIN1, MIN0 OP MAX1, MAX0 OP MIN1 and MAX0 OP MAX0 OP MAX1) and then
+   figure the smallest and largest values to form the new range.
+
+   This function calculate the cross product of two sets of ranges and
+   accumulate the result into RES.  CODE is the operation to perform.  */
+
+static void
+wi_cross_product (value_range_base &res,
+		  enum tree_code code, tree type,
+		  const wide_int &lh_lb, const wide_int &lh_ub,
+		  const wide_int &rh_lb, const wide_int &rh_ub)
+{
+  signop sign = TYPE_SIGN (type);
+  bool overflow_undefined = TYPE_OVERFLOW_UNDEFINED (type);
+  wide_int cp1, cp2, cp3, cp4;
+
+  /* Compute the 4 cross operations, bailing if we get an overflow we
+     can't handle.  */
+  if (!wide_int_binop_overflow (cp1, code, lh_lb, rh_lb, sign,
+				overflow_undefined))
+    {
+      res.set_varying (type);
+      return;
+    }
+  if (wi::eq_p (lh_lb, lh_ub))
+    cp3 = cp1;
+  else if (!wide_int_binop_overflow (cp3, code, lh_ub, rh_lb, sign,
+				     overflow_undefined))
+    {
+      res.set_varying (type);
+      return;
+    }
+  if (wi::eq_p (rh_lb, rh_ub))
+    cp2 = cp1;
+  else if (!wide_int_binop_overflow (cp2, code, lh_lb, rh_ub, sign,
+				     overflow_undefined))
+    {
+      res.set_varying (type);
+      return;
+    }
+  if (wi::eq_p (lh_lb, lh_ub))
+    cp4 = cp2;
+  else if (!wide_int_binop_overflow (cp4, code, lh_ub, rh_ub, sign,
+				     overflow_undefined))
+    {
+      res.set_varying (type);
+      return;
+    }
+
+  /* Order pairs.  */
+  if (wi::gt_p (cp1, cp2, sign))
+    std::swap (cp1, cp2);
+  if (wi::gt_p (cp3, cp4, sign))
+    std::swap (cp3, cp4);
+
+  /* Choose min and max from the ordered pairs.  */
+  wide_int res_lb = wi::min (cp1, cp3, sign);
+  wide_int res_ub = wi::max (cp2, cp4, sign);
+  accumulate_range (res, type, res_lb, res_ub);
+}
 
 class operator_mult : public range_operator
 {
@@ -1059,25 +1146,77 @@ operator_mult::wi_fold (tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const
 {
-  bool res;
-  wide_int new_lb, new_ub;
-  signop s = TYPE_SIGN (type);
-
+  value_range_base r;
   if (TYPE_OVERFLOW_UNDEFINED (type))
-    res = wide_int_range_cross_product (new_lb, new_ub,
-                                        MULT_EXPR, s,
-                                        lh_lb, lh_ub, rh_lb, rh_ub, true);
-  else
-    res = wide_int_range_mult_wrapping (new_lb, new_ub,
-                                         s, TYPE_PRECISION (type),
-                                         lh_lb, lh_ub, rh_lb, rh_ub);
-  if (res)
     {
-      value_range_base r;
-      accumulate_possibly_reversed_range (r, type, new_lb, new_ub);
+      wi_cross_product (r, MULT_EXPR, type, lh_lb, lh_ub, rh_lb, rh_ub);
       return r;
     }
-  return value_range_base (type);
+
+  /* Multiply the ranges when overflow wraps.  This is basically fancy
+     code so we don't drop to varying with an unsigned
+     [-3,-1]*[-3,-1].  */
+
+  /* This test requires 2*prec bits if both operands are signed and
+     2*prec + 2 bits if either is not.  Therefore, extend the values
+     using the sign of the result to PREC2.  From here on out,
+     everthing is just signed math no matter what the input types
+     were.  */
+  signop sign = TYPE_SIGN (type);
+  unsigned prec = TYPE_PRECISION (type);
+  widest2_int min0 = widest2_int::from (lh_lb, sign);
+  widest2_int max0 = widest2_int::from (lh_ub, sign);
+  widest2_int min1 = widest2_int::from (rh_lb, sign);
+  widest2_int max1 = widest2_int::from (rh_ub, sign);
+  widest2_int sizem1 = wi::mask <widest2_int> (prec, false);
+  widest2_int size = sizem1 + 1;
+
+  /* Canonicalize the intervals.  */
+  if (sign == UNSIGNED)
+    {
+      if (wi::ltu_p (size, min0 + max0))
+	{
+	  min0 -= size;
+	  max0 -= size;
+	}
+      if (wi::ltu_p (size, min1 + max1))
+	{
+	  min1 -= size;
+	  max1 -= size;
+	}
+    }
+
+  widest2_int prod0 = min0 * min1;
+  widest2_int prod1 = min0 * max1;
+  widest2_int prod2 = max0 * min1;
+  widest2_int prod3 = max0 * max1;
+
+  /* Sort the 4 products so that min is in prod0 and max is in
+     prod3.  */
+  /* min0min1 > max0max1 */
+  if (prod0 > prod3)
+    std::swap (prod0, prod3);
+
+  /* min0max1 > max0min1 */
+  if (prod1 > prod2)
+    std::swap (prod1, prod2);
+
+  if (prod0 > prod1)
+    std::swap (prod0, prod1);
+
+  if (prod2 > prod3)
+    std::swap (prod2, prod3);
+
+  /* diff = max - min.  */
+  prod2 = prod3 - prod0;
+  if (wi::geu_p (prod2, sizem1))
+    /* The range covers all values.  */
+    return value_range_base (type);
+
+  wide_int new_lb = wide_int::from (prod0, prec, sign);
+  wide_int new_ub = wide_int::from (prod3, prec, sign);
+  accumulate_possibly_reversed_range (r, type, new_lb, new_ub);
+  return r;
 }
 
 
@@ -1106,29 +1245,50 @@ operator_div::wi_fold (tree type,
 		       const wide_int &lh_lb, const wide_int &lh_ub,
 		       const wide_int &rh_lb, const wide_int &rh_ub) const
 {
-  wide_int new_lb, new_ub;
-  wide_int extra_min, extra_max;
-  bool extra_range_p;
-
   /* If we know we will divide by zero, return an empty range,
      which will be interpreted as undefined.  */
   if (rh_lb == 0 && rh_ub == 0)
     return value_range_base ();
 
-  if (wide_int_range_div (new_lb, new_ub, code, TYPE_SIGN (type),
-			  TYPE_PRECISION (type),
-			  lh_lb, lh_ub,
-			  rh_lb, rh_ub,
-			  TYPE_OVERFLOW_UNDEFINED (type),
-			  extra_range_p, extra_min, extra_max))
+  const wide_int dividend_min = lh_lb;
+  const wide_int dividend_max = lh_ub;
+  const wide_int divisor_min = rh_lb;
+  const wide_int divisor_max = rh_ub;
+  signop sign = TYPE_SIGN (type);
+  unsigned prec = TYPE_PRECISION (type);
+  wide_int extra_min, extra_max;
+
+  value_range_base r;
+
+  /* If we know we won't divide by zero, just do the division.  */
+  if (!wide_int_range_includes_zero_p (divisor_min, divisor_max, sign))
     {
-      value_range_base r;
-      accumulate_range (r, type, new_lb, new_ub);
-      if (extra_range_p)
-	accumulate_range (r, type, extra_min, extra_max);
+      wi_cross_product (r, code, type, dividend_min, dividend_max,
+			divisor_min, divisor_max);
       return r;
     }
-  return value_range_base (type);
+
+  /* If flag_non_call_exceptions, we must not eliminate a division
+     by zero.  */
+  if (cfun->can_throw_non_call_exceptions)
+    return value_range_base (type);
+
+  /* If we're definitely dividing by zero, there's nothing to do.  */
+  if (wide_int_range_zero_p (divisor_min, divisor_max, prec))
+    return value_range_base ();
+
+  /* Perform the division in 2 parts, [LB, -1] and [1, UB],
+     which will skip any division by zero.
+
+     First divide by the negative numbers, if any.  */
+  if (wi::neg_p (divisor_min, sign))
+    wi_cross_product (r, code, type, dividend_min, dividend_max,
+		      divisor_min, wi::minus_one (prec));
+  /* Then divide by the non-zero positive numbers, if any.  */
+  if (wi::gt_p (divisor_max, wi::zero (prec), sign))
+    wi_cross_product (r, code, type, dividend_min, dividend_max,
+		      wi::one (prec), divisor_max);
+  return r;
 }
 
 
@@ -1188,15 +1348,27 @@ operator_lshift::fold_range (tree type,
 			     const value_range_base &op1,
 			     const value_range_base &op2) const
 {
-  // Check to see if the shift amount is undefined, and return if so.
-  if (op2.undefined_p ())
-    return value_range_base ();
+  irange r;
+  if (undefined_shift_range_check (r, type, op2))
+    return r;
 
-  if (wide_int_range_shift_undefined_p (TYPE_SIGN (op2.type ()),
-					TYPE_PRECISION (type),
-					op2.lower_bound (),
-					op2.upper_bound ()))
-    return value_range_base (type);
+  /* Transform left shifts by constants into multiplies.  */
+  if (op2.singleton_p ())
+    {
+      unsigned shift = op2.lower_bound ().to_uhwi ();
+      wide_int tmp = wi::set_bit_in_zero (shift, TYPE_PRECISION (type));
+      value_range_base mult (type, tmp, tmp);
+
+      /* Force wrapping multiplication.  */
+      bool saved_flag_wrapv = flag_wrapv;
+      bool saved_flag_wrapv_pointer = flag_wrapv_pointer;
+      flag_wrapv = 1;
+      flag_wrapv_pointer = 1;
+      r = range_op_handler (MULT_EXPR, type)->fold_range (type, op1, mult);
+      flag_wrapv = saved_flag_wrapv;
+      flag_wrapv_pointer = saved_flag_wrapv_pointer;
+      return r;
+    }
 
   // Otherwise just invoke the normal fold routine.
   return range_operator::fold_range (type, op1, op2);
@@ -1207,18 +1379,61 @@ operator_lshift::wi_fold (tree type,
 			  const wide_int &lh_lb, const wide_int &lh_ub,
 			  const wide_int &rh_lb, const wide_int &rh_ub) const
 {
-  wide_int new_lb, new_ub;
-  signop s = TYPE_SIGN (type);
+  signop sign = TYPE_SIGN (type);
+  unsigned prec = TYPE_PRECISION (type);
+  int overflow_pos = sign == SIGNED ? prec - 1 : prec;
+  int bound_shift = overflow_pos - rh_ub.to_shwi ();
+  /* If bound_shift == HOST_BITS_PER_WIDE_INT, the llshift can
+     overflow.  However, for that to happen, rh.max needs to be zero,
+     which means rh is a singleton range of zero, which means it
+     should be handled by the lshift fold_range above.  */
+  wide_int bound = wi::set_bit_in_zero (bound_shift, prec);
+  wide_int complement = ~(bound - 1);
+  wide_int low_bound, high_bound;
+  bool in_bounds = false;
 
-  if (wide_int_range_lshift (new_lb, new_ub, s, TYPE_PRECISION (type),
-			     lh_lb, lh_ub, rh_lb, rh_ub,
-			     TYPE_OVERFLOW_UNDEFINED (type)))
+  if (sign == UNSIGNED)
     {
-      value_range_base r;
-      accumulate_possibly_reversed_range (r, type, new_lb, new_ub);
-      return r;
+      low_bound = bound;
+      high_bound = complement;
+      if (wi::ltu_p (lh_ub, low_bound))
+	{
+	  /* [5, 6] << [1, 2] == [10, 24].  */
+	  /* We're shifting out only zeroes, the value increases
+	     monotonically.  */
+	  in_bounds = true;
+	}
+      else if (wi::ltu_p (high_bound, lh_lb))
+	{
+	  /* [0xffffff00, 0xffffffff] << [1, 2]
+	     == [0xfffffc00, 0xfffffffe].  */
+	  /* We're shifting out only ones, the value decreases
+	     monotonically.  */
+	  in_bounds = true;
+	}
     }
-  return value_range_base (type);
+  else
+    {
+      /* [-1, 1] << [1, 2] == [-4, 4].  */
+      low_bound = complement;
+      high_bound = bound;
+      if (wi::lts_p (lh_ub, high_bound)
+	  && wi::lts_p (low_bound, lh_lb))
+	{
+	  /* For non-negative numbers, we're shifting out only
+	     zeroes, the value increases monotonically.
+	     For negative numbers, we're shifting out only ones, the
+	     value decreases monotomically.  */
+	  in_bounds = true;
+	}
+    }
+
+  value_range_base r;
+  if (in_bounds)
+    wi_cross_product (r, LSHIFT_EXPR, type, lh_lb, lh_ub, rh_lb, rh_ub);
+  else
+    r = value_range_base (type);
+  return r;
 }
 
 // ----------------------------------------------------------------------------
@@ -1240,15 +1455,9 @@ operator_rshift::fold_range (tree type,
 			     const value_range_base &op1,
 			     const value_range_base &op2) const
 {
-  // Check to see if the shift amount is undefined, and return if so.
-  if (op2.undefined_p ())
-    return value_range_base ();
-
-  if (wide_int_range_shift_undefined_p (TYPE_SIGN (op2.type ()),
-					TYPE_PRECISION (type),
-					op2.lower_bound (),
-					op2.upper_bound ()))
-    return value_range_base (type);
+  irange r;
+  if (undefined_shift_range_check (r, type, op2))
+    return r;
 
   // Otherwise just invoke the normal fold routine.
   return range_operator::fold_range (type, op1, op2);
@@ -1259,19 +1468,9 @@ operator_rshift::wi_fold (tree type,
 			  const wide_int &lh_lb, const wide_int &lh_ub,
 			  const wide_int &rh_lb, const wide_int &rh_ub) const
 {
-  wide_int new_lb, new_ub;
-  signop s = TYPE_SIGN (type);
-
-  if (wide_int_range_multiplicative_op (new_lb, new_ub,
-					RSHIFT_EXPR, s, TYPE_PRECISION (type),
-					lh_lb, lh_ub, rh_lb, rh_ub,
-					TYPE_OVERFLOW_UNDEFINED (type)))
-    {
-      value_range_base r;
-      accumulate_possibly_reversed_range (r, type, new_lb, new_ub);
-      return r;
-    }
-  return value_range_base (type);
+  value_range_base r;
+  wi_cross_product (r, RSHIFT_EXPR, type, lh_lb, lh_ub, rh_lb, rh_ub);
+  return r;
 }
 
 // ----------------------------------------------------------------------------
@@ -1301,26 +1500,40 @@ operator_cast::fold_range (tree type ATTRIBUTE_UNUSED,
   if (empty_range_check (r, lh, rh))
     return r;
 
-  /* RH should only contain the type to convert to.  */
+  tree inner = lh.type ();
+  tree outer = rh.type ();
   gcc_checking_assert (rh.varying_p ());
+  gcc_checking_assert (types_compatible_p (outer, type));
+  signop inner_sign = TYPE_SIGN (inner);
+  signop outer_sign = TYPE_SIGN (outer);
+  unsigned inner_prec = TYPE_PRECISION (inner);
+  unsigned outer_prec = TYPE_PRECISION (outer);
 
-  tree inner_type = lh.type ();
-  tree outer_type = rh.type ();
-  gcc_checking_assert (types_compatible_p (outer_type, type));
   for (unsigned x = 0; x < lh.num_pairs (); ++x)
     {
       wide_int lh_lb = lh.lower_bound (x);
       wide_int lh_ub = lh.upper_bound (x);
-      wide_int min, max;
-      if (wide_int_range_convert (min, max,
-				  TYPE_SIGN (inner_type),
-				  TYPE_PRECISION (inner_type),
-				  TYPE_SIGN (outer_type),
-				  TYPE_PRECISION (outer_type),
-				  lh_lb, lh_ub))
-	accumulate_possibly_reversed_range (r, type, min, max);
-      else
-	return value_range_base (type);
+
+        /* If the conversion is not truncating we can convert the min
+	   and max values and canonicalize the resulting range.
+	   Otherwise we can do the conversion if the size of the range
+	   is less than what the precision of the target type can
+	   represent.  */
+      if (outer_prec >= inner_prec
+	  || wi::rshift (wi::sub (lh_ub, lh_lb),
+			 wi::uhwi (outer_prec, inner_prec),
+			 inner_sign) == 0)
+	{
+	  wide_int min = wide_int::from (lh_lb, outer_prec, inner_sign);
+	  wide_int max = wide_int::from (lh_ub, outer_prec, inner_sign);
+	  if (!wi::eq_p (min, wi::min_value (outer_prec, outer_sign))
+	      || !wi::eq_p (max, wi::max_value (outer_prec, outer_sign)))
+	    {
+	      accumulate_possibly_reversed_range (r, type, min, max);
+	      continue;
+	    }
+	}
+      return value_range_base (type);
     }
   return r;
 }
@@ -1494,6 +1707,125 @@ public:
 } op_bitwise_and;
 
 
+/* Optimize BIT_AND_EXPR and BIT_IOR_EXPR in terms of a mask if
+   possible.  Basically, see if we can optimize:
+
+	[LB, UB] op Z
+   into:
+	[LB op Z, UB op Z]
+
+  If the optimization was successful, accumulate the range in R and
+  return TRUE.  */
+
+static bool
+wi_optimize_and_or (irange &r,
+		    enum tree_code code,
+		    tree type,
+		    const wide_int &lh_lb, const wide_int &lh_ub,
+		    const wide_int &rh_lb, const wide_int &rh_ub)
+{
+  /* Calculate the singleton mask among the ranges, if any.  */
+  wide_int lower_bound, upper_bound, mask;
+  if (wi::eq_p (rh_lb, rh_ub))
+    {
+      mask = rh_lb;
+      lower_bound = lh_lb;
+      upper_bound = lh_ub;
+    }
+  else if (wi::eq_p (lh_lb, lh_ub))
+    {
+      mask = lh_lb;
+      lower_bound = rh_lb;
+      upper_bound = rh_ub;
+    }
+  else
+    return false;
+
+  /* If Z is a constant which (for op | its bitwise not) has n
+     consecutive least significant bits cleared followed by m 1
+     consecutive bits set immediately above it and either
+     m + n == precision, or (x >> (m + n)) == (y >> (m + n)).
+
+     The least significant n bits of all the values in the range are
+     cleared or set, the m bits above it are preserved and any bits
+     above these are required to be the same for all values in the
+     range.  */
+  wide_int w = mask;
+  int m = 0, n = 0;
+  if (code == BIT_IOR_EXPR)
+    w = ~w;
+  if (wi::eq_p (w, 0))
+    n = w.get_precision ();
+  else
+    {
+      n = wi::ctz (w);
+      w = ~(w | wi::mask (n, false, w.get_precision ()));
+      if (wi::eq_p (w, 0))
+	m = w.get_precision () - n;
+      else
+	m = wi::ctz (w) - n;
+    }
+  wide_int new_mask = wi::mask (m + n, true, w.get_precision ());
+  if ((new_mask & lower_bound) != (new_mask & upper_bound))
+    return false;
+
+  wide_int res_lb, res_ub;
+  if (code == BIT_AND_EXPR)
+    {
+      res_lb = wi::bit_and (lower_bound, mask);
+      res_ub = wi::bit_and (upper_bound, mask);
+    }
+  else if (code == BIT_IOR_EXPR)
+    {
+      res_lb = wi::bit_or (lower_bound, mask);
+      res_ub = wi::bit_or (upper_bound, mask);
+    }
+  else
+    gcc_unreachable ();
+  accumulate_range (r, type, res_lb, res_ub);
+  return true;
+}
+
+/* For range [LB, UB] compute two wide_int bit masks.
+
+   In the MAYBE_NONZERO bit mask, if some bit is unset, it means that
+   for all numbers in the range the bit is 0, otherwise it might be 0
+   or 1.
+
+   In the MUSTBE_NONZERO bit mask, if some bit is set, it means that
+   for all numbers in the range the bit is 1, otherwise it might be 0
+   or 1.  */
+
+static void
+wi_set_zero_nonzero_bits (tree type,
+			  const wide_int &lb, const wide_int &ub,
+			  wide_int &maybe_nonzero,
+			  wide_int &mustbe_nonzero)
+{
+  signop sign = TYPE_SIGN (type);
+
+  if (wi::eq_p (lb, ub))
+    maybe_nonzero = mustbe_nonzero = lb;
+  else if (wi::ge_p (lb, 0, sign) || wi::lt_p (ub, 0, sign))
+    {
+      wide_int xor_mask = lb ^ ub;
+      maybe_nonzero = lb | ub;
+      mustbe_nonzero = lb & ub;
+      if (xor_mask != 0)
+	{
+	  wide_int mask = wi::mask (wi::floor_log2 (xor_mask), false,
+				    maybe_nonzero.get_precision ());
+	  maybe_nonzero = maybe_nonzero | mask;
+	  mustbe_nonzero = wi::bit_and_not (mustbe_nonzero, mask);
+	}
+    }
+  else
+    {
+      maybe_nonzero = wi::minus_one (lb.get_precision ());
+      mustbe_nonzero = wi::zero (lb.get_precision ());
+    }
+}
+
 value_range_base
 operator_bitwise_and::wi_fold (tree type,
 			       const wide_int &lh_lb,
@@ -1501,32 +1833,58 @@ operator_bitwise_and::wi_fold (tree type,
 			       const wide_int &rh_lb,
 			       const wide_int &rh_ub) const
 {
-  wide_int new_lb, new_ub, tmp;
-  signop s = TYPE_SIGN (type);
+  value_range_base r;
+  if (wi_optimize_and_or (r, BIT_AND_EXPR, type, lh_lb, lh_ub, rh_lb, rh_ub))
+    return r;
 
-  wide_int may_be_nonzero_lh, must_be_nonzero_lh;
-  wide_int may_be_nonzero_rh, must_be_nonzero_rh;
-  wide_int_range_set_zero_nonzero_bits (s, lh_lb, lh_ub,
-					may_be_nonzero_lh,
-					must_be_nonzero_lh);
-  wide_int_range_set_zero_nonzero_bits (s, rh_lb, rh_ub,
-					may_be_nonzero_rh,
-					must_be_nonzero_rh);
-  if (wide_int_range_bit_and (new_lb, new_ub, s, TYPE_PRECISION (type),
-			      lh_lb, lh_ub,
-			      rh_lb, rh_ub,
-			      must_be_nonzero_lh,
-			      may_be_nonzero_lh,
-			      must_be_nonzero_rh,
-			      may_be_nonzero_rh))
+  wide_int maybe_nonzero_lh, mustbe_nonzero_lh;
+  wide_int maybe_nonzero_rh, mustbe_nonzero_rh;
+  wi_set_zero_nonzero_bits (type, lh_lb, lh_ub, 
+			    maybe_nonzero_lh, mustbe_nonzero_lh);
+  wi_set_zero_nonzero_bits (type, rh_lb, rh_ub,
+			    maybe_nonzero_rh, mustbe_nonzero_rh);
+
+  wide_int new_lb = mustbe_nonzero_lh & mustbe_nonzero_rh;
+  wide_int new_ub = maybe_nonzero_lh & maybe_nonzero_rh;
+  signop sign = TYPE_SIGN (type);
+  unsigned prec = TYPE_PRECISION (type);
+  /* If both input ranges contain only negative values we can
+     truncate the result range maximum to the minimum of the
+     input range maxima.  */
+  if (wi::lt_p (lh_ub, 0, sign) && wi::lt_p (rh_ub, 0, sign))
     {
-      // For AND, calculate each subrange separately, and then union
-      // the results.
-      value_range_base tmp;
-      accumulate_range (tmp, type, new_lb, new_ub);
-      return tmp;
+      new_ub = wi::min (new_ub, lh_ub, sign);
+      new_ub = wi::min (new_ub, rh_ub, sign);
     }
-  return value_range_base (type);
+  /* If either input range contains only non-negative values
+     we can truncate the result range maximum to the respective
+     maximum of the input range.  */
+  if (wi::ge_p (lh_lb, 0, sign))
+    new_ub = wi::min (new_ub, lh_ub, sign);
+  if (wi::ge_p (rh_lb, 0, sign))
+    new_ub = wi::min (new_ub, rh_ub, sign);
+  /* PR68217: In case of signed & sign-bit-CST should
+     result in [-INF, 0] instead of [-INF, INF].  */
+  if (wi::gt_p (new_lb, new_ub, sign))
+    {
+      wide_int sign_bit = wi::set_bit_in_zero (prec - 1, prec);
+      if (sign == SIGNED
+	  && ((wi::eq_p (lh_lb, lh_ub)
+	       && !wi::cmps (lh_lb, sign_bit))
+	      || (wi::eq_p (rh_lb, rh_ub)
+		  && !wi::cmps (rh_lb, sign_bit))))
+	{
+	  new_lb = wi::min_value (prec, sign);
+	  new_ub = wi::zero (prec);
+	}
+    }
+  /* If the limits got swapped around, indicate error so we can adjust
+     the range to VARYING.  */
+  if (wi::gt_p (new_lb, new_ub,sign))
+    return value_range_base (type);
+
+  accumulate_range (r, type, new_lb, new_ub);
+  return r;
 }
 
 bool
@@ -1632,30 +1990,42 @@ operator_bitwise_or::wi_fold (tree type,
 			      const wide_int &rh_lb,
 			      const wide_int &rh_ub) const
 {
-  wide_int new_lb, new_ub, tmp;
-  signop s = TYPE_SIGN (type);
+  value_range_base r;
+  if (wi_optimize_and_or (r, BIT_IOR_EXPR, type, lh_lb, lh_ub, rh_lb, rh_ub))
+    return r;
 
-  wide_int may_be_nonzero_lh, must_be_nonzero_lh;
-  wide_int may_be_nonzero_rh, must_be_nonzero_rh;
-  wide_int_range_set_zero_nonzero_bits (s, lh_lb, lh_ub,
-					may_be_nonzero_lh,
-					must_be_nonzero_lh);
-  wide_int_range_set_zero_nonzero_bits (s, rh_lb, rh_ub,
-					may_be_nonzero_rh,
-					must_be_nonzero_rh);
-  if (wide_int_range_bit_ior (new_lb, new_ub, s,
-			      lh_lb, lh_ub,
-			      rh_lb, rh_ub,
-			      must_be_nonzero_lh,
-			      may_be_nonzero_lh,
-			      must_be_nonzero_rh,
-			      may_be_nonzero_rh))
+  wide_int maybe_nonzero_lh, mustbe_nonzero_lh;
+  wide_int maybe_nonzero_rh, mustbe_nonzero_rh;
+  wi_set_zero_nonzero_bits (type, lh_lb, lh_ub, 
+			    maybe_nonzero_lh, mustbe_nonzero_lh);
+  wi_set_zero_nonzero_bits (type, rh_lb, rh_ub,
+			    maybe_nonzero_rh, mustbe_nonzero_rh);
+  wide_int new_lb = mustbe_nonzero_lh | mustbe_nonzero_rh;
+  wide_int new_ub = maybe_nonzero_lh | maybe_nonzero_rh;
+  signop sign = TYPE_SIGN (type);
+  /* If the input ranges contain only positive values we can
+     truncate the minimum of the result range to the maximum
+     of the input range minima.  */
+  if (wi::ge_p (lh_lb, 0, sign)
+      && wi::ge_p (rh_lb, 0, sign))
     {
-      value_range_base r;
-      accumulate_range (r, type, new_lb, new_ub);
-      return r;
+      new_lb = wi::max (new_lb, lh_lb, sign);
+      new_lb = wi::max (new_lb, rh_lb, sign);
     }
-  return value_range_base (type);
+  /* If either input range contains only negative values
+     we can truncate the minimum of the result range to the
+     respective minimum range.  */
+  if (wi::lt_p (lh_ub, 0, sign))
+    new_lb = wi::max (new_lb, lh_lb, sign);
+  if (wi::lt_p (rh_ub, 0, sign))
+    new_lb = wi::max (new_lb, rh_lb, sign);
+  /* If the limits got swapped around, indicate error so we can adjust
+     the range to VARYING.  */
+  if (wi::gt_p (new_lb, new_ub,sign))
+    return value_range_base (type);
+
+  accumulate_range (r, type, new_lb, new_ub);
+  return r;
 }
 
 bool
@@ -1699,22 +2069,25 @@ operator_bitwise_xor::wi_fold (tree type,
 			       const wide_int &rh_lb,
 			       const wide_int &rh_ub) const
 {
-  wide_int new_lb, new_ub, tmp;
-  signop s = TYPE_SIGN (type);
+  signop sign = TYPE_SIGN (type);
+  wide_int maybe_nonzero_lh, mustbe_nonzero_lh;
+  wide_int maybe_nonzero_rh, mustbe_nonzero_rh;
+  wi_set_zero_nonzero_bits (type, lh_lb, lh_ub,
+			    maybe_nonzero_lh, mustbe_nonzero_lh);
+  wi_set_zero_nonzero_bits (type, rh_lb, rh_ub,
+			    maybe_nonzero_rh, mustbe_nonzero_rh);
 
-  wide_int may_be_nonzero_lh, must_be_nonzero_lh;
-  wide_int may_be_nonzero_rh, must_be_nonzero_rh;
-  wide_int_range_set_zero_nonzero_bits (s, lh_lb, lh_ub,
-					may_be_nonzero_lh,
-					must_be_nonzero_lh);
-  wide_int_range_set_zero_nonzero_bits (s, rh_lb, rh_ub,
-					may_be_nonzero_rh,
-					must_be_nonzero_rh);
-  if (wide_int_range_bit_xor (new_lb, new_ub, s, TYPE_PRECISION (type),
-			      must_be_nonzero_lh,
-			      may_be_nonzero_lh,
-			      must_be_nonzero_rh,
-			      may_be_nonzero_rh))
+  wide_int result_zero_bits = ((mustbe_nonzero_lh & mustbe_nonzero_rh)
+			       | ~(maybe_nonzero_lh | maybe_nonzero_rh));
+  wide_int result_one_bits
+    = (wi::bit_and_not (mustbe_nonzero_lh, maybe_nonzero_rh)
+       | wi::bit_and_not (mustbe_nonzero_rh, maybe_nonzero_lh));
+  wide_int new_ub = ~result_zero_bits;
+  wide_int new_lb = result_one_bits;
+
+  /* If the range has all positive or all negative values, the result
+     is better than VARYING.  */
+  if (wi::lt_p (new_lb, 0, sign) || wi::ge_p (new_ub, 0, sign))
     {
       value_range_base r;
       accumulate_range (r, type, new_lb, new_ub);
@@ -1743,14 +2116,37 @@ operator_trunc_mod::wi_fold (tree type,
 			     const wide_int &rh_ub) const
 {
   wide_int new_lb, new_ub, tmp;
-  signop s = TYPE_SIGN (type);
+  signop sign = TYPE_SIGN (type);
+  unsigned prec = TYPE_PRECISION (type);
 
   /* Mod 0 is undefined.  Return undefined.  */
-  if (wide_int_range_zero_p (rh_lb, rh_ub, TYPE_PRECISION (type)))
+  if (wide_int_range_zero_p (rh_lb, rh_ub, prec))
     return value_range_base ();
 
-  wide_int_range_trunc_mod (new_lb, new_ub, s, TYPE_PRECISION (type),
-			    lh_lb, lh_ub, rh_lb, rh_ub);
+  /* ABS (A % B) < ABS (B) and either
+     0 <= A % B <= A or A <= A % B <= 0.  */
+  new_ub = rh_ub - 1;
+  if (sign == SIGNED)
+    {
+      tmp = -1 - rh_lb;
+      new_ub = wi::smax (new_ub, tmp);
+    }
+
+  if (sign == UNSIGNED)
+    new_lb = wi::zero (prec);
+  else
+    {
+      new_lb = -new_ub;
+      tmp = lh_lb;
+      if (wi::gts_p (tmp, 0))
+	tmp = wi::zero (prec);
+      new_lb = wi::smax (new_lb, tmp);
+    }
+  tmp = lh_ub;
+  if (sign == SIGNED && wi::neg_p (tmp))
+    tmp = wi::zero (prec);
+  new_ub = wi::min (new_ub, tmp, sign);
+
   value_range_base r;
   accumulate_range (r, type, new_lb, new_ub);
   return r;
@@ -1926,15 +2322,56 @@ operator_abs::wi_fold (tree type,
 		       const wide_int &rh_lb ATTRIBUTE_UNUSED,
 		       const wide_int &rh_ub ATTRIBUTE_UNUSED) const
 {
-  wide_int new_lb, new_ub, tmp;
+  wide_int min, max;
+  signop sign = TYPE_SIGN (type);
+  unsigned prec = TYPE_PRECISION (type);
 
-  if (wide_int_range_abs (new_lb, new_ub,
-			  TYPE_SIGN (type),
-			  TYPE_PRECISION (type),
-			  lh_lb, lh_ub,
-			  TYPE_OVERFLOW_UNDEFINED (type)))
-    return value_range_base (type, new_lb, new_ub);
-  return value_range_base (type);
+  /* Pass through LH for the easy cases.  */
+  if (sign == UNSIGNED || wi::ge_p (lh_lb, 0, sign))
+    return value_range_base (type, lh_lb, lh_ub);
+
+  /* -TYPE_MIN_VALUE = TYPE_MIN_VALUE with flag_wrapv so we can't get a
+     useful range.  */
+  wide_int min_value = wi::min_value (prec, sign);
+  wide_int max_value = wi::max_value (prec, sign);
+  if (!TYPE_OVERFLOW_UNDEFINED (type) && wi::eq_p (lh_lb, min_value))
+    return value_range_base (type);
+
+  /* ABS_EXPR may flip the range around, if the original range
+     included negative values.  */
+  if (wi::eq_p (lh_lb, min_value))
+    min = max_value;
+  else
+    min = wi::abs (lh_lb);
+  if (wi::eq_p (lh_ub, min_value))
+    max = max_value;
+  else
+    max = wi::abs (lh_ub);
+
+  /* If the range contains zero then we know that the minimum value in the
+     range will be zero.  */
+  if (wi::le_p (lh_lb, 0, sign) && wi::ge_p (lh_ub, 0, sign))
+    {
+      if (wi::gt_p (min, max, sign))
+	max = min;
+      min = wi::zero (prec);
+    }
+  else
+    {
+      /* If the range was reversed, swap MIN and MAX.  */
+      if (wi::gt_p (min, max, sign))
+	std::swap (min, max);
+    }
+
+  /* If the new range has its limits swapped around (MIN > MAX), then
+     the operation caused one of them to wrap around.  The only thing
+     we know is that the result is positive.  */
+  if (wi::gt_p (min, max, sign))
+    {
+      min = wi::zero (prec);
+      max = max_value;
+    }
+  return value_range_base (type, min, max);
 }
 
 
@@ -2003,7 +2440,6 @@ operator_absu::wi_fold (tree type,
 	std::swap (new_lb, new_ub);
     }
 
-//  r.union_ (value_range_base (unsigned_type_for (type), new_lb, new_ub));
   gcc_checking_assert (TYPE_UNSIGNED (type));
   return value_range_base (type, new_lb, new_ub);
 }
@@ -2104,7 +2540,6 @@ pointer_plus_operator::wi_fold (tree type,
 				const wide_int &rh_lb,
 				const wide_int &rh_ub) const
 {
-  unsigned prec = lh_lb.get_precision ();
   signop sign = TYPE_SIGN (type);
   /* For pointer types, we are really only interested in asserting
      whether the expression evaluates to non-NULL.
@@ -2128,8 +2563,8 @@ pointer_plus_operator::wi_fold (tree type,
       && (flag_delete_null_pointer_checks
 	  || !wi::sign_mask (rh_ub)))
     return range_nonzero (type);
-  if (wide_int_range_zero_p (lh_lb, lh_ub, prec)
-      && wide_int_range_zero_p (rh_lb, rh_ub, prec))
+  if (lh_lb == lh_ub && lh_lb == 0
+      && rh_lb == rh_ub && rh_lb == 0)
     return range_zero (type);
   return value_range_base (type);
 }
@@ -2156,10 +2591,8 @@ pointer_min_max_operator::wi_fold (tree type,
    nullness, if both are non null, then the result is nonnull.
    If both are null, then the result is null. Otherwise they
    are varying.  */
-
   unsigned prec = lh_lb.get_precision ();
   signop sign = TYPE_SIGN (type);
-
   if (!wide_int_range_includes_zero_p (lh_lb, lh_ub, sign)
       && !wide_int_range_includes_zero_p (rh_lb, rh_ub, sign))
     return range_nonzero (type);
@@ -2187,12 +2620,10 @@ pointer_and_operator::wi_fold (tree type,
 			       const wide_int &rh_lb,
 			       const wide_int &rh_ub) const
 {
-  unsigned prec = lh_lb.get_precision ();
-  signop sign = TYPE_SIGN (type);
-
   /* For pointer types, we are really only interested in asserting
      whether the expression evaluates to non-NULL.  */
-
+  unsigned prec = lh_lb.get_precision ();
+  signop sign = TYPE_SIGN (type);
   if (!wide_int_range_includes_zero_p (lh_lb, lh_ub, sign)
       && !wide_int_range_includes_zero_p (rh_lb, rh_ub, sign))
     return range_nonzero (type);
@@ -2223,12 +2654,10 @@ pointer_or_operator::wi_fold (tree type,
 			      const wide_int &rh_lb,
 			      const wide_int &rh_ub) const
 {
-  unsigned prec = lh_lb.get_precision ();
-  signop sign = TYPE_SIGN (type);
-
   /* For pointer types, we are really only interested in asserting
      whether the expression evaluates to non-NULL.  */
-
+  unsigned prec = lh_lb.get_precision ();
+  signop sign = TYPE_SIGN (type);
   if (!wide_int_range_includes_zero_p (lh_lb, lh_ub, sign)
       && !wide_int_range_includes_zero_p (rh_lb, rh_ub, sign))
     return range_nonzero (type);
