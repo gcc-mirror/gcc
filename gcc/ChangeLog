@@ -18,8 +18,8 @@
 	(ix86_emit_mode_set): Likewise.
 	(emit_i387_cw_initialization): Add case I387_CW_ROUNDEVEN.
 	* config/i386/i386.h (ix86_stack_slot): Add SLOT_CW_ROUNDEVEN.
-	(ix86_entry): Add I387_ROUNDEVEN.
-	(avx_u128_state): Add I387_CW_ANY.
+	(ix86_entity): Add I387_ROUNDEVEN.
+	(NUM_MODES_FOR_MODE_SWITCHING): Add I387_CW_ANY.
 	* config/i386/i386.md: Define UNSPEC_FRNDINT_ROUNDEVEN.
 	(define_int_iterator): Likewise.
 	(define_int_attr): Likewise for rounding_insn, rounding and ROUNDING.
