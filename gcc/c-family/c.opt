@@ -1624,17 +1624,21 @@ Winvalid-imported-macros
 C++ ObjC++ Var(warn_imported_macros)
 Warn about macros that have conflicting header units definitions.
 
+finclude-translate
+C++ Var(note_include_translate)
+Note #include directives translated to import declarations.
+
 Winclude-translate
-C++ Var(inform_include_translate)
-Warn about #include directives translated to import declarations.
+C++ Alias(finclude-translate) Undocumented
+; undocumented, delete
 
-Winclude-translate=query
+finclude-translate=query
 C++ RejectNegative
-Warn about queries of #include directives translation.
+Note queries of #include directives translation.
 
-Winclude-translate=
+finclude-translate=
 C++ Joined RejectNegative MissingArgError(missing header name)
-Warn about a #include translation of a specific header.
+Note a #include translation of a specific header.
 
 fmax-include-depth=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger

@@ -303,8 +303,8 @@ version2string (unsigned version, verstr_t &out)
     sprintf (out, "%u.%u", major, minor);
 }
 
-/* Include files to warn about translation for.  */
-static vec<const char *, va_heap, vl_embed> *inform_includes;
+/* Include files to note translation for.  */
+static vec<const char *, va_heap, vl_embed> *note_includes;
 
 /* Traits to hash an arbitrary pointer.  Entries are not deletable,
    and removal is a noop (removal needed upon destruction).  */
@@ -17278,29 +17278,27 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
       path = canonicalize_header_name (NULL, loc, true, path, len);
       res = mapper->translate_include (loc, path, len);
 
-      bool inform = false;
+      bool note = false;
 
-      if (inform_include_translate < 0)
-	inform = true;
-      else if (inform_include_translate > 0 && res)
-	inform = true;
-      else if (inform_includes)
+      if (note_include_translate < 0)
+	note = true;
+      else if (note_include_translate > 0 && res)
+	note = true;
+      else if (note_includes)
 	{
-	  /* We do not expect the inform_includes vector to be large, so O(N)
+	  /* We do not expect the note_includes vector to be large, so O(N)
 	     iteration.  */
-	  for (unsigned ix = inform_includes->length (); !inform && ix--;)
+	  for (unsigned ix = note_includes->length (); !note && ix--;)
 	    {
-	      const char *hdr = (*inform_includes)[ix];
+	      const char *hdr = (*note_includes)[ix];
 	      if (!strcmp (hdr, path))
-		inform = true;
+		note = true;
 	    }
 	}
 
-      // FIXME: inform rather than warn?
-      if (inform)
-	warning_at (loc, 0,
-		    res ? G_("include file %qs translated to import")
-		    : G_("include file %qs textually included") , path);
+      if (note)
+	inform (loc, res ? G_("include file %qs translated to import")
+		: G_("include file %qs textually included") , path);
     }
 
   dump (dumper::MAPPER) && dump (res ? "Translating include to import"
@@ -17564,10 +17562,10 @@ init_module_processing (cpp_reader *reader)
 
   headers = BITMAP_GGC_ALLOC ();
 
-  if (inform_includes)
-    for (unsigned ix = 0; ix != inform_includes->length (); ix++)
+  if (note_includes)
+    for (unsigned ix = 0; ix != note_includes->length (); ix++)
       {
-	const char *hdr = (*inform_includes)[ix];
+	const char *hdr = (*note_includes)[ix];
 	size_t len = strlen (hdr);
 
 	bool system = hdr[0] == '<';
@@ -17580,7 +17578,7 @@ init_module_processing (cpp_reader *reader)
 	memcpy (path, hdr, len);
 	path[len+1] = 0;
 
-	(*inform_includes)[ix] = path;
+	(*note_includes)[ix] = path;
       }
 
   dump.push (NULL);
@@ -17903,12 +17901,12 @@ handle_module_option (unsigned code, const char *str, int)
       flag_modules = 1;
       return true;
 
-    case OPT_Winclude_translate_query:
-      inform_include_translate = -1;
+    case OPT_finclude_translate_query:
+      note_include_translate = -1;
       return true;
 
-    case OPT_Winclude_translate_:
-      vec_safe_push (inform_includes, str);
+    case OPT_finclude_translate_:
+      vec_safe_push (note_includes, str);
       return true;
 
     default:

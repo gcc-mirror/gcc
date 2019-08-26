@@ -1,3 +1,14 @@
+2019-08-26  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (note_includes): Renamed from inform_includes.
+	(module_translate_include): Emit note, not warning.
+	(init_module_processing, handle_module_option): Adjust.
+	gcc/c-family
+	* c.opt (finclude-translate): Renamed from -Winclude-translate.
+	gcc/
+	* doc/invoke.texi (finclude-translate): Document.
+
 2019-08-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
