@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-ch2-details --param logical-op-non-short-circuit=0" } */
+/* { dg-options "-O2 -fno-tree-vrp -fdump-tree-ch2-details --param logical-op-non-short-circuit=0" } */
 
 int is_sorted(int *a, int n, int m, int k)
 {

@@ -1,3 +1,11 @@
+2019-08-26  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/copy-headers-5.c: Do not run vrp pass.
+	* gcc.dg/tree-ssa/copy-headers-7.c: Do not run vrp pass.
+	* gcc.dg/tree-ssa/loop-15.c: Remove XFAIL.
+	* gcc.dg/tree-ssa/pr23744.c: Change search pattern.
+	* gcc.dg/wrapped-binop-simplify.c: New test.
+
 2019-08-26  Kito Cheng  <kito.cheng@sifive.com>
 
 	* gcc.target/riscv/li.c: New test.

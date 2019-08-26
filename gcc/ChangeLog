@@ -1,5 +1,9 @@
 2019-08-26  Robin Dapp  <rdapp@linux.ibm.com>
 
+	* match.pd: Add (T)(A) + CST -> (T)(A + CST).
+
+2019-08-26  Robin Dapp  <rdapp@linux.ibm.com>
+
 	* gimple-loop-versioning.cc (loop_versioning::record_address_fragment):
 	Add nop_convert case.
 	* tree-ssa-propagate.c (substitute_and_fold_dom_walker::before_dom_children):
