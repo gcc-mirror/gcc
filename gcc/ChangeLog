@@ -1,3 +1,25 @@
+2019-08-26  Tejas Joshi  <tejasjoshi9673@gmail.com>
+
+        * builtins.c (mathfn_built_in_2): Added CASE_MATHFN_FLOATN
+        for ROUNDEVEN.
+        * builtins.def: Added function definitions for roundeven function
+        variants.
+        * fold-const-call.c (fold_const_call_ss): Added case for roundeven
+        function call.  Adjust condition for floor, ceil, trunc and round.
+        * fold-const.c (negate_mathfn_p): Added case for roundeven function.
+        (tree_call_nonnegative_warnv_p): Added case for roundeven function.
+        (integer_valued_real_call_p): Added case for roundeven function.
+        * real.c (is_even): New function. Returns true if real number is even,
+        otherwise returns false.
+        (is_halfway_below): New function. Returns true if real number is
+        halfway between two integers, else return false.
+        (real_roundeven): New function. Round real number to nearest integer,
+        rounding halfway cases towards even.
+        * real.h (real_value): Added descriptive comments.  Added function
+        declaration for roundeven function.
+        * doc/extend.texi (Other Builtins): List roundeven variants among
+        functions which can be handled as builtins.
+
 2019-08-26  Richard Biener  <rguenther@suse.de>
 
 	PR target/91522
