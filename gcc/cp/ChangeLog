@@ -1,3 +1,7 @@
+2019-08-26  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (duplicate_decls): Always merge DECL_DECLARED_CONSTEXPR_P.
+
 2019-08-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91545 - ICE in constexpr store evaluation.

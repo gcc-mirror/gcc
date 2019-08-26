@@ -2204,9 +2204,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    SET_DECL_DEPENDENT_INIT_P (newdecl, true);
 	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (newdecl)
 	    |= DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (olddecl);
-          if (DECL_CLASS_SCOPE_P (olddecl))
-            DECL_DECLARED_CONSTEXPR_P (newdecl)
-	      |= DECL_DECLARED_CONSTEXPR_P (olddecl);
+	  DECL_DECLARED_CONSTEXPR_P (newdecl)
+	    |= DECL_DECLARED_CONSTEXPR_P (olddecl);
 
 	  /* Merge the threadprivate attribute from OLDDECL into NEWDECL.  */
 	  if (DECL_LANG_SPECIFIC (olddecl)
