@@ -1,4 +1,9 @@
-2019-08-23  Martin Sebor  <msebor@redhat.com>
+2019-08-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (emit_i387_cw_initialization)
+	<case I387_CW_ROUNDEVEN>: Fix masking operand value.
+
+2019-08-26  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/83431
 	* gimple-ssa-sprintf.c (pass_data_sprintf_length): Remove object.
