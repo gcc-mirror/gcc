@@ -60,4 +60,4 @@ _Bool f7(char *s)
   return (t1 == s);
 }
 
-/* { dg-final { scan-tree-dump-times "__builtin_strncmp" 5 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "__builtin_strncmp" 5 "strlen1" } } */

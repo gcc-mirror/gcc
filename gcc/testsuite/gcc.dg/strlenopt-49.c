@@ -45,7 +45,7 @@ int cmp88 (void)
   return cmp88;
 }
 
-/* { dg-final { scan-tree-dump-times "strlen" 0 "gimple" } }
+/* { dg-final { scan-tree-dump-times "strlen1" 0 "gimple" } }
    { dg-final { scan-tree-dump-times "len0 = 0;" 1 "gimple" } }
    { dg-final { scan-tree-dump-times "len = 18;" 1 "gimple" } }
    { dg-final { scan-tree-dump-times "lenx = 8;" 1 "gimple" } }

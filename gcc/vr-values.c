@@ -234,7 +234,7 @@ vr_values::update_value_range (const_tree var, value_range *new_vr)
 	 called, if we are anyway, keep it VARYING.  */
       if (old_vr->varying_p ())
 	{
-	  new_vr->set_varying (new_vr->type ());
+	  new_vr->set_varying (TREE_TYPE (var));
 	  is_new = false;
 	}
       else if (new_vr->undefined_p ())

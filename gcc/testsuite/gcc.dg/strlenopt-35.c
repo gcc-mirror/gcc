@@ -28,4 +28,4 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "strlen \\(" 1 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "strlen \\(" 1 "strlen1" } } */
