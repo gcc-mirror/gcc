@@ -992,7 +992,7 @@ c_cpp_builtins (cpp_reader *pfile)
       if (flag_concepts)
 	cpp_define (pfile, "__cpp_concepts=201507");
       if (flag_coroutines)
-	cpp_define (pfile, "__cpp_coroutines=201806"); /* n4775, 4.2 */
+	cpp_define (pfile, "__cpp_coroutines=201908"); /* n4830, C++20 WD */
       if (flag_tm)
 	/* Use a value smaller than the 201505 specified in
 	   the TS, since we don't yet support atomic_cancel.  */

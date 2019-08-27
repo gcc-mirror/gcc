@@ -1,3 +1,9 @@
+2019-08-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/c-family/
+	* c-cppbuiltin.c (c_cpp_builtins): Update builtin define to date
+	of post-Cologne c++20 working draft.
+
 2019-08-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Merge trunk r274922.
