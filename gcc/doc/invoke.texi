@@ -2683,10 +2683,10 @@ Compile as a header unit.
 @opindex fmodule-only
 Only emit the module CMI, inhibiting any object file.
 
-@item -finclude-translate
-@itemx -finclude-translate=@var{header}
-@itemx -finclude-translate=query
-@opindex finclude-translate
+@item -fnote-include-translate
+@itemx -fnote-include-translate=@var{header}
+@itemx -fnote-include-translate=query
+@opindex fnote-include-translate
 Note include translation events.
 
 @item -Winvalid-imported-macros
@@ -30277,7 +30277,7 @@ descriptors.  By default, the limit is a few less than the per-process
 file descriptor hard limit, if that is determinable.@footnote{Where
 applicable the soft limit is incremented as needed towards the hard limit.}
 
-The @option{-finclude-translate} options note whether include
+The @option{-fnote-include-translate} options note whether include
 translation occurs.  With no argument, all include translation is
 noted.  With a @var{query} argument, all queries about include
 translation is noted, together with the responses.  Otherwise, queries

@@ -17297,8 +17297,9 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 	}
 
       if (note)
-	inform (loc, res ? G_("include file %qs translated to import")
-		: G_("include file %qs textually included") , path);
+	inform (loc, res
+		? G_("include %qs translated to import")
+		: G_("include %qs processed textually") , path);
     }
 
   dump (dumper::MAPPER) && dump (res ? "Translating include to import"
@@ -17901,11 +17902,11 @@ handle_module_option (unsigned code, const char *str, int)
       flag_modules = 1;
       return true;
 
-    case OPT_finclude_translate_query:
+    case OPT_fnote_include_translate_query:
       note_include_translate = -1;
       return true;
 
-    case OPT_finclude_translate_:
+    case OPT_fnote_include_translate_:
       vec_safe_push (note_includes, str);
       return true;
 

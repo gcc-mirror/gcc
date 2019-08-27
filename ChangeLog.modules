@@ -1,3 +1,12 @@
+2019-08-27  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/c-family/
+	* c.opt (fnote-include-translate): Renamed from finclude-translate.
+	gcc/
+	* doc/invok.texi: Update.
+	gcc/cp/
+	* module.cc (module_translate_include): Tweak.
+
 2019-08-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
