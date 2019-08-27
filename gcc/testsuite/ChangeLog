@@ -1,3 +1,8 @@
+2019-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91415
+	* g++.dg/warn/sequence-pt-4.C: New test.
+
 2019-08-27  Robin Dapp  <rdapp@linux.ibm.com>
 
 	PR testsuite/91549
