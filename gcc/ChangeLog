@@ -1,3 +1,14 @@
+2019-08-27  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_node::remove): Remove dead assignment before
+	loop.
+	* config/i386/i386-features.c (scalar_chain::emit_conversion_insns):
+	Enclose in anonymous namespace.
+	* config/i386/x86-tune-costs.h (struct processor_costs): Wrap
+	hard_register initialization in braces.
+	* tree-vrp.h (value_range_base::supports_type_p): Return false
+	for function with boolean return type.
+
 2019-08-26  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (emit_i387_cw_initialization)
