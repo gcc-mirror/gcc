@@ -53,9 +53,23 @@
 #define TARGET_OS_CPP_BUILTINS()			\
   do							\
     {							\
-      if (!TARGET_64BIT) builtin_define ("__ppc__");	\
-      if (TARGET_64BIT) builtin_define ("__ppc64__");	\
       builtin_define ("__POWERPC__");			\
+      builtin_define ("__PPC__");			\
+      if (TARGET_64BIT)					\
+	{						\
+	  builtin_define ("__ppc64__");			\
+	  builtin_define ("__PPC64__");			\
+	  builtin_define ("__powerpc64__");		\
+	  builtin_assert ("cpu=powerpc64");		\
+	  builtin_assert ("machine=powerpc64");		\
+	}						\
+      else						\
+	{						\
+	  builtin_define ("__ppc__");			\
+	  builtin_define_std ("PPC");			\
+	  builtin_assert ("cpu=powerpc");		\
+	  builtin_assert ("machine=powerpc");		\
+	}						\
       builtin_define ("__NATURAL_ALIGNMENT__");		\
       darwin_cpp_builtins (pfile);			\
     }							\
