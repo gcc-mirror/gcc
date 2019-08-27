@@ -320,6 +320,20 @@ scalar_chain::add_to_queue (unsigned insn_uid)
   bitmap_set_bit (queue, insn_uid);
 }
 
+general_scalar_chain::general_scalar_chain (enum machine_mode smode_,
+					    enum machine_mode vmode_)
+     : scalar_chain (smode_, vmode_)
+{
+  insns_conv = BITMAP_ALLOC (NULL);
+  n_sse_to_integer = 0;
+  n_integer_to_sse = 0;
+}
+
+general_scalar_chain::~general_scalar_chain ()
+{
+  BITMAP_FREE (insns_conv);
+}
+
 /* For DImode conversion, mark register defined by DEF as requiring
    conversion.  */
 
@@ -328,15 +342,27 @@ general_scalar_chain::mark_dual_mode_def (df_ref def)
 {
   gcc_assert (DF_REF_REG_DEF_P (def));
 
-  if (bitmap_bit_p (defs_conv, DF_REF_REGNO (def)))
-    return;
-
+  /* Record the def/insn pair so we can later efficiently iterate over
+     the defs to convert on insns not in the chain.  */
+  bool reg_new = bitmap_set_bit (defs_conv, DF_REF_REGNO (def));
+  if (!bitmap_bit_p (insns, DF_REF_INSN_UID (def)))
+    {
+      if (!bitmap_set_bit (insns_conv, DF_REF_INSN_UID (def))
+	  && !reg_new)
+	return;
+      n_integer_to_sse++;
+    }
+  else
+    {
+      if (!reg_new)
+	return;
+      n_sse_to_integer++;
+    }
+ 
   if (dump_file)
     fprintf (dump_file,
 	     "  Mark r%d def in insn %d as requiring both modes in chain #%d\n",
 	     DF_REF_REGNO (def), DF_REF_INSN_UID (def), chain_id);
-
-  bitmap_set_bit (defs_conv, DF_REF_REGNO (def));
 }
 
 /* For TImode conversion, it is unused.  */
@@ -523,7 +549,7 @@ general_scalar_chain::compute_convert_gain ()
 	       || GET_CODE (src) == ASHIFTRT
 	       || GET_CODE (src) == LSHIFTRT)
 	{
-    	  if (CONST_INT_P (XEXP (src, 0)))
+	  if (CONST_INT_P (XEXP (src, 0)))
 	    igain -= vector_const_cost (XEXP (src, 0));
 	  igain += m * ix86_cost->shift_const - ix86_cost->sse_op;
 	  if (INTVAL (XEXP (src, 1)) >= 32)
@@ -588,9 +614,12 @@ general_scalar_chain::compute_convert_gain ()
   if (dump_file)
     fprintf (dump_file, "  Instruction conversion gain: %d\n", gain);
 
-  /* ???  What about integer to SSE?  */
-  EXECUTE_IF_SET_IN_BITMAP (defs_conv, 0, insn_uid, bi)
-    cost += DF_REG_DEF_COUNT (insn_uid) * ix86_cost->sse_to_integer;
+  /* Cost the integer to sse and sse to integer moves.  */
+  cost += n_sse_to_integer * ix86_cost->sse_to_integer;
+  /* ???  integer_to_sse but we only have that in the RA cost table.
+     Assume sse_to_integer/integer_to_sse are the same which they
+     are at the moment.  */
+  cost += n_integer_to_sse * ix86_cost->sse_to_integer;
 
   if (dump_file)
     fprintf (dump_file, "  Registers conversion cost: %d\n", cost);
@@ -649,85 +678,64 @@ gen_gpr_to_xmm_move_src (enum machine_mode vmode, rtx gpr)
    and replace its uses in a chain.  */
 
 void
-general_scalar_chain::make_vector_copies (unsigned regno)
+general_scalar_chain::make_vector_copies (rtx_insn *insn, rtx reg)
 {
-  rtx reg = regno_reg_rtx[regno];
-  rtx vreg = gen_reg_rtx (smode);
-  df_ref ref;
+  rtx vreg = *defs_map.get (reg);
 
-  defs_map.put (reg, vreg);
-
-  /* For each insn defining REGNO, see if it is defined by an insn
-     not part of the chain but with uses in insns part of the chain
-     and insert a copy in that case.  */
-  for (ref = DF_REG_DEF_CHAIN (regno); ref; ref = DF_REF_NEXT_REG (ref))
+  start_sequence ();
+  if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
     {
-      if (bitmap_bit_p (insns, DF_REF_INSN_UID (ref)))
-	continue;
-      df_link *use;
-      for (use = DF_REF_CHAIN (ref); use; use = use->next)
-	if (!DF_REF_REG_MEM_P (use->ref)
-	    && bitmap_bit_p (insns, DF_REF_INSN_UID (use->ref)))
-	  break;
-      if (!use)
-	continue;
-
-      start_sequence ();
-      if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
+      rtx tmp = assign_386_stack_local (smode, SLOT_STV_TEMP);
+      if (smode == DImode && !TARGET_64BIT)
 	{
-	  rtx tmp = assign_386_stack_local (smode, SLOT_STV_TEMP);
-	  if (smode == DImode && !TARGET_64BIT)
-	    {
-	      emit_move_insn (adjust_address (tmp, SImode, 0),
-			      gen_rtx_SUBREG (SImode, reg, 0));
-	      emit_move_insn (adjust_address (tmp, SImode, 4),
-			      gen_rtx_SUBREG (SImode, reg, 4));
-	    }
-	  else
-	    emit_move_insn (copy_rtx (tmp), reg);
-	  emit_insn (gen_rtx_SET (gen_rtx_SUBREG (vmode, vreg, 0),
-				  gen_gpr_to_xmm_move_src (vmode, tmp)));
-	}
-      else if (!TARGET_64BIT && smode == DImode)
-	{
-	  if (TARGET_SSE4_1)
-	    {
-	      emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, vreg, 0),
-					  CONST0_RTX (V4SImode),
-					  gen_rtx_SUBREG (SImode, reg, 0)));
-	      emit_insn (gen_sse4_1_pinsrd (gen_rtx_SUBREG (V4SImode, vreg, 0),
-					    gen_rtx_SUBREG (V4SImode, vreg, 0),
-					    gen_rtx_SUBREG (SImode, reg, 4),
-					    GEN_INT (2)));
-	    }
-	  else
-	    {
-	      rtx tmp = gen_reg_rtx (DImode);
-	      emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, vreg, 0),
-					  CONST0_RTX (V4SImode),
-					  gen_rtx_SUBREG (SImode, reg, 0)));
-	      emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, tmp, 0),
-					  CONST0_RTX (V4SImode),
-					  gen_rtx_SUBREG (SImode, reg, 4)));
-	      emit_insn (gen_vec_interleave_lowv4si
-			 (gen_rtx_SUBREG (V4SImode, vreg, 0),
-			  gen_rtx_SUBREG (V4SImode, vreg, 0),
-			  gen_rtx_SUBREG (V4SImode, tmp, 0)));
-	    }
+	  emit_move_insn (adjust_address (tmp, SImode, 0),
+			  gen_rtx_SUBREG (SImode, reg, 0));
+	  emit_move_insn (adjust_address (tmp, SImode, 4),
+			  gen_rtx_SUBREG (SImode, reg, 4));
 	}
       else
-	emit_insn (gen_rtx_SET (gen_rtx_SUBREG (vmode, vreg, 0),
-				gen_gpr_to_xmm_move_src (vmode, reg)));
-      rtx_insn *seq = get_insns ();
-      end_sequence ();
-      rtx_insn *insn = DF_REF_INSN (ref);
-      emit_conversion_insns (seq, insn);
-
-      if (dump_file)
-	fprintf (dump_file,
-		 "  Copied r%d to a vector register r%d for insn %d\n",
-		 regno, REGNO (vreg), INSN_UID (insn));
+	emit_move_insn (copy_rtx (tmp), reg);
+      emit_insn (gen_rtx_SET (gen_rtx_SUBREG (vmode, vreg, 0),
+			      gen_gpr_to_xmm_move_src (vmode, tmp)));
     }
+  else if (!TARGET_64BIT && smode == DImode)
+    {
+      if (TARGET_SSE4_1)
+	{
+	  emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, vreg, 0),
+				      CONST0_RTX (V4SImode),
+				      gen_rtx_SUBREG (SImode, reg, 0)));
+	  emit_insn (gen_sse4_1_pinsrd (gen_rtx_SUBREG (V4SImode, vreg, 0),
+					gen_rtx_SUBREG (V4SImode, vreg, 0),
+					gen_rtx_SUBREG (SImode, reg, 4),
+					GEN_INT (2)));
+	}
+      else
+	{
+	  rtx tmp = gen_reg_rtx (DImode);
+	  emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, vreg, 0),
+				      CONST0_RTX (V4SImode),
+				      gen_rtx_SUBREG (SImode, reg, 0)));
+	  emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, tmp, 0),
+				      CONST0_RTX (V4SImode),
+				      gen_rtx_SUBREG (SImode, reg, 4)));
+	  emit_insn (gen_vec_interleave_lowv4si
+		     (gen_rtx_SUBREG (V4SImode, vreg, 0),
+		      gen_rtx_SUBREG (V4SImode, vreg, 0),
+		      gen_rtx_SUBREG (V4SImode, tmp, 0)));
+	}
+    }
+  else
+    emit_insn (gen_rtx_SET (gen_rtx_SUBREG (vmode, vreg, 0),
+			    gen_gpr_to_xmm_move_src (vmode, reg)));
+  rtx_insn *seq = get_insns ();
+  end_sequence ();
+  emit_conversion_insns (seq, insn);
+
+  if (dump_file)
+    fprintf (dump_file,
+	     "  Copied r%d to a vector register r%d for insn %d\n",
+	     REGNO (reg), REGNO (vreg), INSN_UID (insn));
 }
 
 /* Copy the definition SRC of INSN inside the chain to DST for
@@ -1158,7 +1166,11 @@ general_scalar_chain::convert_registers ()
   bitmap_iterator bi;
   unsigned id;
   EXECUTE_IF_SET_IN_BITMAP (defs_conv, 0, id, bi)
-    make_vector_copies (id);
+    defs_map.put (regno_reg_rtx[id], gen_reg_rtx (smode));
+  EXECUTE_IF_SET_IN_BITMAP (insns_conv, 0, id, bi)
+    for (df_ref ref = DF_INSN_UID_DEFS (id); ref; ref = DF_REF_NEXT_LOC (ref))
+      if (bitmap_bit_p (defs_conv, DF_REF_REGNO (ref)))
+	make_vector_copies (DF_REF_INSN (ref), DF_REF_REAL_REG (ref));
 }
 
 /* Convert whole chain creating required register
