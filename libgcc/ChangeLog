@@ -1,3 +1,11 @@
+2019-08-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-06-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/t-darwin: Ensure that the unwinder is built with
+	altivec enabled.
+
 2019-08-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
