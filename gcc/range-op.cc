@@ -111,6 +111,24 @@ undefined_shift_range_check (irange &r, tree type, value_range_base op)
   return false;
 }
 
+/* Return TRUE if 0 is within [WMIN, WMAX].  */
+
+static inline bool
+wi_includes_zero_p (tree type, const wide_int &wmin, const wide_int &wmax)
+{
+  signop sign = TYPE_SIGN (type);
+  return wi::le_p (wmin, 0, sign) && wi::ge_p (wmax, 0, sign);
+}
+
+/* Return TRUE if [WMIN, WMAX] is the singleton 0.  */
+
+static inline bool
+wi_zero_p (tree type, const wide_int &wmin, const wide_int &wmax)
+{
+  unsigned prec = TYPE_PRECISION (type);
+  return wmin == wmax && wi::eq_p (wmin, wi::zero (prec));
+}
+
 // Default wide_int fold operation returns [min , max].
 value_range_base
 range_operator::wi_fold (tree type,
@@ -1261,7 +1279,7 @@ operator_div::wi_fold (tree type,
   value_range_base r;
 
   /* If we know we won't divide by zero, just do the division.  */
-  if (!wide_int_range_includes_zero_p (divisor_min, divisor_max, sign))
+  if (!wi_includes_zero_p (type, divisor_min, divisor_max))
     {
       wi_cross_product (r, code, type, dividend_min, dividend_max,
 			divisor_min, divisor_max);
@@ -1274,7 +1292,7 @@ operator_div::wi_fold (tree type,
     return value_range_base (type);
 
   /* If we're definitely dividing by zero, there's nothing to do.  */
-  if (wide_int_range_zero_p (divisor_min, divisor_max, prec))
+  if (wi_zero_p (type, divisor_min, divisor_max))
     return value_range_base ();
 
   /* Perform the division in 2 parts, [LB, -1] and [1, UB],
@@ -2120,7 +2138,7 @@ operator_trunc_mod::wi_fold (tree type,
   unsigned prec = TYPE_PRECISION (type);
 
   /* Mod 0 is undefined.  Return undefined.  */
-  if (wide_int_range_zero_p (rh_lb, rh_ub, prec))
+  if (wi_zero_p (type, rh_lb, rh_ub))
     return value_range_base ();
 
   /* ABS (A % B) < ABS (B) and either
@@ -2540,7 +2558,6 @@ pointer_plus_operator::wi_fold (tree type,
 				const wide_int &rh_lb,
 				const wide_int &rh_ub) const
 {
-  signop sign = TYPE_SIGN (type);
   /* For pointer types, we are really only interested in asserting
      whether the expression evaluates to non-NULL.
 
@@ -2557,8 +2574,8 @@ pointer_plus_operator::wi_fold (tree type,
      doesn't either.  As the second operand is sizetype (unsigned),
      consider all ranges where the MSB could be set as possible
      subtractions where the result might be NULL.  */
-  if ((!wide_int_range_includes_zero_p (lh_lb, lh_ub, sign)
-       || !wide_int_range_includes_zero_p (rh_lb, rh_ub, sign))
+  if ((!wi_includes_zero_p (type, lh_lb, lh_ub)
+       || !wi_includes_zero_p (type, rh_lb, rh_ub))
       && !TYPE_OVERFLOW_WRAPS (type)
       && (flag_delete_null_pointer_checks
 	  || !wi::sign_mask (rh_ub)))
@@ -2591,13 +2608,10 @@ pointer_min_max_operator::wi_fold (tree type,
    nullness, if both are non null, then the result is nonnull.
    If both are null, then the result is null. Otherwise they
    are varying.  */
-  unsigned prec = lh_lb.get_precision ();
-  signop sign = TYPE_SIGN (type);
-  if (!wide_int_range_includes_zero_p (lh_lb, lh_ub, sign)
-      && !wide_int_range_includes_zero_p (rh_lb, rh_ub, sign))
+  if (!wi_includes_zero_p (type, lh_lb, lh_ub)
+      && !wi_includes_zero_p (type, rh_lb, rh_ub))
     return range_nonzero (type);
-  if (wide_int_range_zero_p (lh_lb, lh_ub, prec)
-      && wide_int_range_zero_p (rh_lb, rh_ub, prec))
+  if (wi_zero_p (type, lh_lb, lh_ub) && wi_zero_p (type, rh_lb, rh_ub))
     return range_zero (type);
   return value_range_base (type);
 }
@@ -2622,13 +2636,10 @@ pointer_and_operator::wi_fold (tree type,
 {
   /* For pointer types, we are really only interested in asserting
      whether the expression evaluates to non-NULL.  */
-  unsigned prec = lh_lb.get_precision ();
-  signop sign = TYPE_SIGN (type);
-  if (!wide_int_range_includes_zero_p (lh_lb, lh_ub, sign)
-      && !wide_int_range_includes_zero_p (rh_lb, rh_ub, sign))
+  if (!wi_includes_zero_p (type, lh_lb, lh_ub)
+      && !wi_includes_zero_p (type, rh_lb, rh_ub))
     return range_nonzero (type);
-  if (wide_int_range_zero_p (lh_lb, lh_ub, prec)
-      || wide_int_range_zero_p (lh_lb, lh_ub, prec))
+  if (wi_zero_p (type, lh_lb, lh_ub) || wi_zero_p (type, lh_lb, lh_ub))
     return range_zero (type);
 
   return value_range_base (type);
@@ -2656,13 +2667,10 @@ pointer_or_operator::wi_fold (tree type,
 {
   /* For pointer types, we are really only interested in asserting
      whether the expression evaluates to non-NULL.  */
-  unsigned prec = lh_lb.get_precision ();
-  signop sign = TYPE_SIGN (type);
-  if (!wide_int_range_includes_zero_p (lh_lb, lh_ub, sign)
-      && !wide_int_range_includes_zero_p (rh_lb, rh_ub, sign))
+  if (!wi_includes_zero_p (type, lh_lb, lh_ub)
+      && !wi_includes_zero_p (type, rh_lb, rh_ub))
     return range_nonzero (type);
-  if (wide_int_range_zero_p (lh_lb, lh_ub, prec)
-      && wide_int_range_zero_p (rh_lb, rh_ub, prec))
+  if (wi_zero_p (type, lh_lb, lh_ub) && wi_zero_p (type, rh_lb, rh_ub))
     return range_zero (type);
   return value_range_base (type);
 }
