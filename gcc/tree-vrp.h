@@ -20,6 +20,21 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_VRP_H
 #define GCC_TREE_VRP_H
 
+/* Types of value ranges.  */
+enum value_range_kind
+{
+  /* Empty range.  */
+  VR_UNDEFINED,
+  /* Range spans the entire domain.  */
+  VR_VARYING,
+  /* Range is [MIN, MAX].  */
+  VR_RANGE,
+  /* Range is ~[MIN, MAX].  */
+  VR_ANTI_RANGE,
+  /* Range is a nice guy.  */
+  VR_LAST
+};
+
 class value_range_storage;
 
 /* Range of values that can be associated with an SSA_NAME after VRP
@@ -37,10 +52,6 @@ public:
   value_range_base (tree type, const wide_int &, const wide_int &);
   value_range_base (tree type, const value_range_storage *);
   value_range_base (tree type);
-#if USE_IRANGE
-  /* Only for branch.  */
-  value_range_base (const irange &ir) { *this = irange_to_value_range (ir); }
-#endif
 
   void set (value_range_kind, tree, tree);
   void set (tree);
@@ -78,7 +89,6 @@ public:
   static bool supports_type_p (tree);
   value_range_base normalize_symbolics () const;
 
-  /* Support machinery for irange.  */
   static const unsigned int m_max_pairs = 2;
   static bool supports_ssa_p (tree ssa);
   static bool supports_p (tree expr);

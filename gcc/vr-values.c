@@ -52,67 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "range-op.h"
 #include "wide-int-range.h"
 
-
-/* Cache VARYING value_ranges indexed by type.  */
-class type_range_cache
-{
-public:
-  type_range_cache ();
-  ~type_range_cache ();
-  value_range *varying_range (tree type);
-private:
-  value_range *new_varying (tree type);
-  hash_map<tree, value_range *> *m_type_table;
-  obstack m_range_obj;
-};
-
-/* Delete type cache.  */
-type_range_cache::~type_range_cache ()
-{
-  delete m_type_table;
-  obstack_free (&m_range_obj, NULL);
-}
-
-/* Create a new type cache.  */
-type_range_cache::type_range_cache ()
-{
-  /* Allocate a map and a local obstack.  */
-  m_type_table = new hash_map<tree, value_range *>;
-  gcc_obstack_init (&m_range_obj);
-}
-
-/* Allocate a new range from the obstack and set it to VARYING for TYPE.  */
-inline value_range *
-type_range_cache::new_varying (tree type)
-{
-  /* Allocate memory.  */
-  void *p = XOBNEW (&m_range_obj, value_range);
-  /* Invoke the constructors on the memory using placement new.  */
-  value_range *new_p = new (p) value_range ();
-  /* Initialize it to varying.  */
-  new_p->set_varying (type);
-  return new_p;
-}
-
-/* Return a varying object for TYPE.  If it already exists, return it.
-   Otherwise allocate a new one and register it in the table.  */
-value_range *
-type_range_cache::varying_range (tree type)
-{
-  bool existed;
-  value_range *&slot = m_type_table->get_or_insert (type, &existed);
-  if (!existed)
-    slot = new_varying (type);
-  else
-    {
-      /* Sanity check to ensure this varying hasn't been modified.  */
-      value_range v;
-      v.set_varying (type);
-      gcc_checking_assert (v.equal_p (*slot, true));
-    }
-  return slot;
-}
-
 /* Convert the value_range in this object to an irange.  This function
    will normalize non-constant ranges into constant ranges by
    degrading them to VARYING.  */
@@ -888,23 +827,6 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
 			   vrp_val_min (expr_type),
 			   vrp_val_max (expr_type));
     }
-
-  /* Temporary testing hack.  */
-  if (getenv("HACK"))
-  {
-    value_range_base v;
-    tree type = signed_char_type_node;
-    enum tree_code code = BIT_AND_EXPR;
-    tree small = TYPE_MIN_VALUE (type);
-    small = fold_build2 (PLUS_EXPR, type, small, build_one_cst (type));
-    value_range_base vr0 (VR_ANTI_RANGE,
-			  small,
-			  build_int_cst (type, 0));
-    value_range_base vr1 (VR_RANGE,
-			  build_int_cst (type, -1),
-			  build_int_cst (type, 0));
-    range_fold_binary_expr (&v, code, type, &vr0, &vr1);
-  }
 
   range_fold_binary_expr (vr, code, expr_type, &vr0, &vr1);
 
@@ -1918,8 +1840,10 @@ range_misc::adjust_range_with_loop (irange &ir, class loop *loop,
 	      /* Normalize the ranges for INIT and TEM to a constant
 		 range, and call the generic
 		 extract_range_from_binary_expr.  */
-	      value_range_base vr0 = get_irange (init, stmt);
-	      value_range_base vr1 = get_irange (tem, stmt);
+	      value_range_base vr0
+		= irange_to_value_range (get_irange (init, stmt));
+	      value_range_base vr1
+		= irange_to_value_range (get_irange (tem, stmt));
 	      value_range_base maxvr;
 	      range_fold_binary_expr (&maxvr, PLUS_EXPR,
 				      TREE_TYPE (init), &vr0, &vr1);
@@ -2030,7 +1954,7 @@ vr_values::adjust_range_with_scev (value_range_base *vr, struct loop *loop,
     return;
   irange ir = *vr;
   adjust_range_with_loop (ir, loop, stmt, var);
-  *vr = ir;
+  *vr = irange_to_value_range (ir);
 }
 
 /* Dump value ranges of all SSA_NAMEs to FILE.  */
@@ -2065,14 +1989,12 @@ vr_values::vr_values () : vrp_value_range_pool ("Tree VRP value ranges")
   bitmap_obstack_initialize (&vrp_equiv_obstack);
   to_remove_edges = vNULL;
   to_update_switch_stmts = vNULL;
-  type_cache = new type_range_cache;
 }
 
 /* Free VRP lattice.  */
 
 vr_values::~vr_values ()
 {
-  delete type_cache;
   /* Free allocated memory.  */
   free (vr_value);
   free (vr_phi_edge_counts);
@@ -3762,7 +3684,7 @@ vr_values::simplify_switch_using_ranges (gswitch *stmt)
   if (TREE_CODE (op) == SSA_NAME)
     {
       // FIXME: We should convert this entire function to iranges.
-      vr_obj = get_irange (op, stmt);
+      vr_obj = irange_to_value_range (get_irange (op, stmt));
       vr = &vr_obj;
 
       /* We can only handle integer ranges.  */

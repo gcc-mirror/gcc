@@ -3416,7 +3416,7 @@ range_tests ()
 #undef value_range_base
   {
     irange r0 = irange (VR_ANTI_RANGE, INT (10), INT (20));
-    value_range_base vr = r0;
+    value_range_base vr = irange_to_value_range (r0);
     ASSERT_TRUE (vr.kind () == VR_ANTI_RANGE);
     ASSERT_TRUE (wi::eq_p (10, wi::to_wide (vr.min ()))
 		 && wi::eq_p (20, wi::to_wide (vr.max ())));

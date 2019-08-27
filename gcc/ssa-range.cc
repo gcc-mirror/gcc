@@ -971,7 +971,7 @@ global_ranger::export_global_ranges ()
 	      if (!dbg_cnt (ranger_export_count))
 		return;
 
-	      value_range_base vr = r;
+	      value_range_base vr = irange_to_value_range (r);
 	      set_range_info (name, vr);
 	      if (dump_file)
 		{
@@ -1139,7 +1139,7 @@ loop_ranger::adjust_phi_with_loop_info (irange &r, gphi *phi)
   if (l && l->header == gimple_bb (phi))
     {
       tree phi_result = PHI_RESULT (phi);
-      value_range_base vr = r;
+      value_range_base vr = irange_to_value_range (r);
       m_vr_values->adjust_range_with_scev (&vr, l, phi, phi_result);
       if (vr.constant_p ())
 	{
