@@ -1753,7 +1753,6 @@ extract_range_from_plus_minus_expr (value_range_base *vr,
 	  return;
 	}
 
-      /* FIXME: Eventually this should call range-op's accumulate_range.  */
       /* Adjust the range for possible overflow.  */
       min = NULL_TREE;
       max = NULL_TREE;
@@ -1991,8 +1990,115 @@ extract_range_from_binary_expr (value_range_base *vr,
      range and see what we end up with.  */
   if (code == PLUS_EXPR || code == MINUS_EXPR)
     {
-      extract_range_from_plus_minus_expr (vr, code, expr_type, &vr0, &vr1);
-      return;
+      value_range_kind vr0_kind = vr0.kind (), vr1_kind = vr1.kind ();
+      tree vr0_min = vr0.min (), vr0_max = vr0.max ();
+      tree vr1_min = vr1.min (), vr1_max = vr1.max ();
+      /* This will normalize things such that calculating
+	 [0,0] - VR_VARYING is not dropped to varying, but is
+	 calculated as [MIN+1, MAX].  */
+      if (vr0.varying_p ())
+	{
+	  vr0_kind = VR_RANGE;
+	  vr0_min = vrp_val_min (expr_type);
+	  vr0_max = vrp_val_max (expr_type);
+	}
+      if (vr1.varying_p ())
+	{
+	  vr1_kind = VR_RANGE;
+	  vr1_min = vrp_val_min (expr_type);
+	  vr1_max = vrp_val_max (expr_type);
+	}
+
+      const bool minus_p = (code == MINUS_EXPR);
+      tree min_op0 = vr0_min;
+      tree min_op1 = minus_p ? vr1_max : vr1_min;
+      tree max_op0 = vr0_max;
+      tree max_op1 = minus_p ? vr1_min : vr1_max;
+      tree sym_min_op0 = NULL_TREE;
+      tree sym_min_op1 = NULL_TREE;
+      tree sym_max_op0 = NULL_TREE;
+      tree sym_max_op1 = NULL_TREE;
+      bool neg_min_op0, neg_min_op1, neg_max_op0, neg_max_op1;
+
+      neg_min_op0 = neg_min_op1 = neg_max_op0 = neg_max_op1 = false;
+
+      /* If we have a PLUS or MINUS with two VR_RANGEs, either constant or
+	 single-symbolic ranges, try to compute the precise resulting range,
+	 but only if we know that this resulting range will also be constant
+	 or single-symbolic.  */
+      if (vr0_kind == VR_RANGE && vr1_kind == VR_RANGE
+	  && (TREE_CODE (min_op0) == INTEGER_CST
+	      || (sym_min_op0
+		  = get_single_symbol (min_op0, &neg_min_op0, &min_op0)))
+	  && (TREE_CODE (min_op1) == INTEGER_CST
+	      || (sym_min_op1
+		  = get_single_symbol (min_op1, &neg_min_op1, &min_op1)))
+	  && (!(sym_min_op0 && sym_min_op1)
+	      || (sym_min_op0 == sym_min_op1
+		  && neg_min_op0 == (minus_p ? neg_min_op1 : !neg_min_op1)))
+	  && (TREE_CODE (max_op0) == INTEGER_CST
+	      || (sym_max_op0
+		  = get_single_symbol (max_op0, &neg_max_op0, &max_op0)))
+	  && (TREE_CODE (max_op1) == INTEGER_CST
+	      || (sym_max_op1
+		  = get_single_symbol (max_op1, &neg_max_op1, &max_op1)))
+	  && (!(sym_max_op0 && sym_max_op1)
+	      || (sym_max_op0 == sym_max_op1
+		  && neg_max_op0 == (minus_p ? neg_max_op1 : !neg_max_op1))))
+	{
+	  wide_int wmin, wmax;
+	  wi::overflow_type min_ovf = wi::OVF_NONE;
+	  wi::overflow_type max_ovf = wi::OVF_NONE;
+
+	  /* Build the bounds.  */
+	  combine_bound (code, wmin, min_ovf, expr_type, min_op0, min_op1);
+	  combine_bound (code, wmax, max_ovf, expr_type, max_op0, max_op1);
+
+	  /* If we have overflow for the constant part and the resulting
+	     range will be symbolic, drop to VR_VARYING.  */
+	  if (((bool)min_ovf && sym_min_op0 != sym_min_op1)
+	      || ((bool)max_ovf && sym_max_op0 != sym_max_op1))
+	    {
+	      vr->set_varying (expr_type);
+	      return;
+	    }
+
+	  /* Adjust the range for possible overflow.  */
+	  min = NULL_TREE;
+	  max = NULL_TREE;
+	  set_value_range_with_overflow (type, min, max, expr_type,
+					 wmin, wmax, min_ovf, max_ovf);
+	  if (type == VR_VARYING)
+	    {
+	      vr->set_varying (expr_type);
+	      return;
+	    }
+
+	  /* Build the symbolic bounds if needed.  */
+	  adjust_symbolic_bound (min, code, expr_type,
+				 sym_min_op0, sym_min_op1,
+				 neg_min_op0, neg_min_op1);
+	  adjust_symbolic_bound (max, code, expr_type,
+				 sym_max_op0, sym_max_op1,
+				 neg_max_op0, neg_max_op1);
+	}
+      else
+	{
+	  /* For other cases, for example if we have a PLUS_EXPR with two
+	     VR_ANTI_RANGEs, drop to VR_VARYING.  It would take more effort
+	     to compute a precise range for such a case.
+	     ???  General even mixed range kind operations can be expressed
+	     by for example transforming ~[3, 5] + [1, 2] to range-only
+	     operations and a union primitive:
+	       [-INF, 2] + [1, 2]  U  [5, +INF] + [1, 2]
+	           [-INF+1, 4]     U    [6, +INF(OVF)]
+	     though usually the union is not exactly representable with
+	     a single range or anti-range as the above is
+		 [-INF+1, +INF(OVF)] intersected with ~[5, 5]
+	     but one could use a scheme similar to equivalences for this. */
+	  vr->set_varying (expr_type);
+	  return;
+	}
     }
   else if (code == MIN_EXPR
 	   || code == MAX_EXPR)
