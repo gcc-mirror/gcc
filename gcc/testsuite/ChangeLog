@@ -1,3 +1,8 @@
+2019-08-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91528
+	* gcc.target/i386/pr91528.c: New test.
+
 2019-08-27  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/83431

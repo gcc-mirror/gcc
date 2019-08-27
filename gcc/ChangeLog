@@ -1,3 +1,12 @@
+2019-08-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91528
+	* config/i386/i386-features.c (convert_scalars_to_vector):
+	Update crtl->stack_realign_needed, crtl->stack_realign_tried and
+	crtl->stack_realign_processed.  Update crtl->drap_reg by calling
+	targetm.calls.get_drap_rtx.  If drap_rtx is non-null then
+	Update crtl->args.internal_arg_pointer and call fixup_tail_calls.
+
 2019-08-27  Richard Biener  <rguenther@suse.de>
 
 	* config/i386/i386-features.h

@@ -1651,6 +1651,32 @@ convert_scalars_to_vector (bool timode_p)
 	crtl->stack_alignment_needed = 128;
       if (crtl->stack_alignment_estimated < 128)
 	crtl->stack_alignment_estimated = 128;
+
+      crtl->stack_realign_needed
+	= INCOMING_STACK_BOUNDARY < crtl->stack_alignment_estimated;
+      crtl->stack_realign_tried = crtl->stack_realign_needed;
+
+      crtl->stack_realign_processed = true;
+
+      if (!crtl->drap_reg)
+	{
+	  rtx drap_rtx = targetm.calls.get_drap_rtx ();
+
+	  /* stack_realign_drap and drap_rtx must match.  */
+	  gcc_assert ((stack_realign_drap != 0) == (drap_rtx != NULL));
+
+	  /* Do nothing if NULL is returned,
+	     which means DRAP is not needed.  */
+	  if (drap_rtx != NULL)
+	    {
+	      crtl->args.internal_arg_pointer = drap_rtx;
+
+	      /* Call fixup_tail_calls to clean up
+		 REG_EQUIV note if DRAP is needed. */
+	      fixup_tail_calls ();
+	    }
+	}
+
       /* Fix up DECL_RTL/DECL_INCOMING_RTL of arguments.  */
       if (TARGET_64BIT)
 	for (tree parm = DECL_ARGUMENTS (current_function_decl);
