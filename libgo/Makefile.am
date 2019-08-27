@@ -612,7 +612,7 @@ s-zdefaultcc: Makefile
 # compiling runtime) to prune out certain types that should not be
 # exported back to C. See comments in mkruntimeinc.sh for more details.
 runtime.inc: s-runtime-inc; @true
-s-runtime-inc: runtime.lo Makefile
+s-runtime-inc: runtime.lo mkruntimeinc.sh Makefile
 	$(SHELL) $(srcdir)/mkruntimeinc.sh
 	$(SHELL) $(srcdir)/mvifdiff.sh tmp-runtime.inc runtime.inc
 	$(STAMP) $@
@@ -1205,7 +1205,8 @@ MOSTLYCLEANFILES = \
 	s-libcalls s-libcalls-list s-syscall_arch s-gen-sysinfo s-sysinfo \
 	s-errno s-epoll \
 	libgo.head libgo.sum.sep libgo.log.sep libgo.var \
-	libcalls-list runtime.inc runtime.inc.tmp2 runtime.inc.tmp3
+	libcalls-list \
+	runtime.inc runtime.inc.tmp2 runtime.inc.tmp3 runtime.inc.raw
 
 mostlyclean-local:
 	find . -name '*.lo' -print | xargs $(LIBTOOL) --mode=clean rm -f
