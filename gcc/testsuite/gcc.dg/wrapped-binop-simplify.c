@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { { i?86-*-* x86_64-*-* s390*-*-* } && lp64 } } } */
 /* { dg-options "-O2 -fdump-tree-vrp2-details" } */
 /* { dg-final { scan-tree-dump-times "gimple_simplified to" 4 "vrp2" } } */
 
