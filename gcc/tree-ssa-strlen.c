@@ -4850,13 +4850,6 @@ printf_strlen_execute (function *fun, bool warn_only)
 {
   strlen_optimize = !warn_only;
 
-  gcc_assert (!strlen_to_stridx);
-  if (warn_stringop_overflow || warn_stringop_truncation)
-    strlen_to_stridx = new hash_map<tree, stridx_strlenloc> ();
-
-  ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names);
-  max_stridx = 1;
-
   calculate_dominance_info (CDI_DOMINATORS);
 
   bool use_scev = optimize > 0 && flag_printf_return_value;
@@ -4865,6 +4858,15 @@ printf_strlen_execute (function *fun, bool warn_only)
       loop_optimizer_init (LOOPS_NORMAL);
       scev_initialize ();
     }
+
+  gcc_assert (!strlen_to_stridx);
+  if (warn_stringop_overflow || warn_stringop_truncation)
+    strlen_to_stridx = new hash_map<tree, stridx_strlenloc> ();
+
+  /* This has to happen after initializing the loop optimizer
+     and initializing SCEV as they create new SSA_NAMEs.  */
+  ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names);
+  max_stridx = 1;
 
   /* String length optimization is implemented as a walk of the dominator
      tree and a forward walk of statements within each block.  */
