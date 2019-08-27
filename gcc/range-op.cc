@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "wide-int.h"
 #include "range-op.h"
-#include "wide-int-range.h"
 
 #if USE_IRANGE
 #define value_range_base irange
@@ -127,6 +126,107 @@ wi_zero_p (tree type, const wide_int &wmin, const wide_int &wmax)
 {
   unsigned prec = TYPE_PRECISION (type);
   return wmin == wmax && wi::eq_p (wmin, wi::zero (prec));
+}
+
+/* Binary operation on two wide-ints while adjusting for overflow.
+
+   Return true if we can compute the result; i.e. if the operation
+   doesn't overflow or if the overflow is undefined.  In the latter
+   case (if the operation overflows and overflow is undefined), then
+   adjust the result to be -INF or +INF depending on CODE, VAL1 and
+   VAL2.  Return the value in *RES.
+
+   Return false for division by zero, for which the result is
+   indeterminate.  */
+
+static inline bool
+wi_binop_overflow (wide_int &res,
+		   enum tree_code code, tree type,
+		   const wide_int &w0, const wide_int &w1)
+{
+  wi::overflow_type overflow = wi::OVF_NONE;
+  wide_int tmp;
+  signop sign = TYPE_SIGN (type);
+  switch (code)
+    {
+    case MULT_EXPR:
+      res = wi::mul (w0, w1, sign, &overflow);
+      break;
+    case TRUNC_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+      if (w1 == 0)
+	return false;
+      res = wi::div_trunc (w0, w1, sign, &overflow);
+      break;
+    case FLOOR_DIV_EXPR:
+      if (w1 == 0)
+	return false;
+      res = wi::div_floor (w0, w1, sign, &overflow);
+      break;
+    case ROUND_DIV_EXPR:
+      if (w1 == 0)
+	return false;
+      res = wi::div_round (w0, w1, sign, &overflow);
+      break;
+    case CEIL_DIV_EXPR:
+      if (w1 == 0)
+	return false;
+      res = wi::div_ceil (w0, w1, sign, &overflow);
+      break;
+    case RSHIFT_EXPR:
+    case LSHIFT_EXPR:
+      if (wi::neg_p (w1))
+	{
+	  tmp = -w1;
+	  if (code == RSHIFT_EXPR)
+	    code = LSHIFT_EXPR;
+	  else
+	    code = RSHIFT_EXPR;
+	}
+      else
+        tmp = w1;
+
+      if (code == RSHIFT_EXPR)
+	/* It's unclear from the C standard whether shifts can overflow.
+	   The following code ignores overflow; perhaps a C standard
+	   interpretation ruling is needed.  */
+	res = wi::rshift (w0, tmp, sign);
+      else
+	res = wi::lshift (w0, tmp);
+      break;
+    default:
+      break;
+    }
+
+  /* If the operation overflowed return -INF or +INF depending on the
+     operation and the combination of signs of the operands.  */
+  if (overflow && TYPE_OVERFLOW_UNDEFINED (type))
+    {
+      switch (code)
+	{
+	case MULT_EXPR:
+	  /* For multiplication, the sign of the overflow is given
+	     by the comparison of the signs of the operands.  */
+	  if (sign == UNSIGNED || w0.sign_mask () == w1.sign_mask ())
+	    res = wi::max_value (w0.get_precision (), sign);
+	  else
+	    res = wi::min_value (w0.get_precision (), sign);
+	  return true;
+
+	case TRUNC_DIV_EXPR:
+	case FLOOR_DIV_EXPR:
+	case CEIL_DIV_EXPR:
+	case EXACT_DIV_EXPR:
+	case ROUND_DIV_EXPR:
+	  /* For division, the only case is -INF / -1 = +INF.  */
+	  res = wi::max_value (w0.get_precision (), sign);
+	  return true;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  return !overflow;
 }
 
 // Default wide_int fold operation returns [min , max].
@@ -1099,44 +1199,39 @@ wi_cross_product (value_range_base &res,
 		  const wide_int &lh_lb, const wide_int &lh_ub,
 		  const wide_int &rh_lb, const wide_int &rh_ub)
 {
-  signop sign = TYPE_SIGN (type);
-  bool overflow_undefined = TYPE_OVERFLOW_UNDEFINED (type);
   wide_int cp1, cp2, cp3, cp4;
 
   /* Compute the 4 cross operations, bailing if we get an overflow we
      can't handle.  */
-  if (!wide_int_binop_overflow (cp1, code, lh_lb, rh_lb, sign,
-				overflow_undefined))
+  if (!wi_binop_overflow (cp1, code, type, lh_lb, rh_lb))
     {
       res.set_varying (type);
       return;
     }
   if (wi::eq_p (lh_lb, lh_ub))
     cp3 = cp1;
-  else if (!wide_int_binop_overflow (cp3, code, lh_ub, rh_lb, sign,
-				     overflow_undefined))
+  else if (!wi_binop_overflow (cp3, code, type, lh_ub, rh_lb))
     {
       res.set_varying (type);
       return;
     }
   if (wi::eq_p (rh_lb, rh_ub))
     cp2 = cp1;
-  else if (!wide_int_binop_overflow (cp2, code, lh_lb, rh_ub, sign,
-				     overflow_undefined))
+  else if (!wi_binop_overflow (cp2, code, type, lh_lb, rh_ub))
     {
       res.set_varying (type);
       return;
     }
   if (wi::eq_p (lh_lb, lh_ub))
     cp4 = cp2;
-  else if (!wide_int_binop_overflow (cp4, code, lh_ub, rh_ub, sign,
-				     overflow_undefined))
+  else if (!wi_binop_overflow (cp4, code, type, lh_ub, rh_ub))
     {
       res.set_varying (type);
       return;
     }
 
   /* Order pairs.  */
+  signop sign = TYPE_SIGN (type);
   if (wi::gt_p (cp1, cp2, sign))
     std::swap (cp1, cp2);
   if (wi::gt_p (cp3, cp4, sign))
