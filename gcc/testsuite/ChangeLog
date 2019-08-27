@@ -1,3 +1,9 @@
+2019-08-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/83431
+	PR testsuite/91562
+	* gcc.dg/strlenopt-8.c: Adjust pass/dump name.
+
 2019-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91415
