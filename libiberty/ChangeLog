@@ -1,3 +1,10 @@
+2019-08-27  Martin Liska  <mliska@suse.cz>
+
+	PR lto/91478
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	First find a WEAK HIDDEN symbol in symbol table that will be
+	preserved.  Later, use the symbol name for all removed symbols.
+
 2019-08-12  Martin Liska  <mliska@suse.cz>
 
 	* Makefile.in: Add filedescriptor.c.
