@@ -1,3 +1,11 @@
+2019-08-27  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91567
+	* gimple-ssa-sprintf.c (get_string_length): Handle more forms of lengths
+	of unknown strings.
+	* vr-values.c (vr_values::extract_range_basic): Set strlen upper bound
+	to PTRDIFF_MAX - 2.
+
 2019-08-27  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-strlen.c (printf_strlen_execute): Initialize
