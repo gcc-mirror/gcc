@@ -1,3 +1,24 @@
+2019-08-27  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386-features.h
+	(general_scalar_chain::~general_scalar_chain): Add.
+	(general_scalar_chain::insns_conv): New bitmap.
+	(general_scalar_chain::n_sse_to_integer): New.
+	(general_scalar_chain::n_integer_to_sse): Likewise.
+	(general_scalar_chain::make_vector_copies): Adjust signature.
+	* config/i386/i386-features.c
+	(general_scalar_chain::general_scalar_chain): Outline,
+	initialize new members.
+	(general_scalar_chain::~general_scalar_chain): New.
+	(general_scalar_chain::mark_dual_mode_def): Record insns
+	we need to insert conversions at and count them.
+	(general_scalar_chain::compute_convert_gain): Account
+	for conversion instructions at chain boundary.
+	(general_scalar_chain::make_vector_copies): Generate a single
+	copy for a def by a specific insn.
+	(general_scalar_chain::convert_registers): First populate
+	defs_map, then make copies at out-of chain insns.
+
 2019-08-27  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/arm.md (stack_protect_set_insn): Add security-related
