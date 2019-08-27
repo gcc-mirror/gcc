@@ -1,3 +1,8 @@
+2019-08-27  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-strlen.c (printf_strlen_execute): Initialize
+	the loop optimizer and SCEV before sizing ssa_ver_to_stridx.
+
 2019-08-27  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/91528
