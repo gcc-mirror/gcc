@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target sse4 } */
-/* { dg-options "-O2 -msse4.1" } */
+/* { dg-options "-O2 -msse4.1 -mfpmath=sse" } */
 
 #include "sse4_1-check.h"
 #include "sse4_1-round-roundeven-1.c"
