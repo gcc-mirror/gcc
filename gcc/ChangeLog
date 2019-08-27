@@ -1,3 +1,9 @@
+2019-08-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (stack_protect_set_insn): Add security-related
+	comment.
+	* config/aarch64/aarch64.md (stack_protect_set_<mode>): Likewise.
+
 2019-08-27  Martin Liska  <mliska@suse.cz>
 
 	* cgraph.c (cgraph_node::remove): Remove dead assignment before

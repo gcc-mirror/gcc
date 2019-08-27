@@ -7016,13 +7016,15 @@
  }
  [(set_attr "type" "mrs")])
 
+;; DO NOT SPLIT THIS PATTERN.  It is important for security reasons that the
+;; canary value does not live beyond the life of this sequence.
 (define_insn "stack_protect_set_<mode>"
   [(set (match_operand:PTR 0 "memory_operand" "=m")
 	(unspec:PTR [(match_operand:PTR 1 "memory_operand" "m")]
 	 UNSPEC_SP_SET))
    (set (match_scratch:PTR 2 "=&r") (const_int 0))]
   ""
-  "ldr\\t%<w>2, %1\;str\\t%<w>2, %0\;mov\t%<w>2,0"
+  "ldr\\t%<w>2, %1\;str\\t%<w>2, %0\;mov\t%<w>2, 0"
   [(set_attr "length" "12")
    (set_attr "type" "multiple")])
 
