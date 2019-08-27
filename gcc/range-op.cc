@@ -289,9 +289,8 @@ range_operator::op2_range (value_range_base &r ATTRIBUTE_UNUSED,
 // an anti range must be created to compensate.   This does not cover
 // the case where there are 2 possible overflows, or none.
 
-static void
-adjust_overflow_bound (value_range_base &r, tree type, const wide_int &wmin,
-		       const wide_int &wmax)
+static value_range_base
+adjust_overflow_bound (tree type, const wide_int &wmin, const wide_int &wmax)
 {
   const signop sgn = TYPE_SIGN (type);
   const unsigned int prec = TYPE_PRECISION (type);
@@ -311,23 +310,19 @@ adjust_overflow_bound (value_range_base &r, tree type, const wide_int &wmin,
      Likewise if the anti-range bounds are outside of the
      types values.  */
   if (covers || wi::cmp (tmin, tmax, sgn) > 0)
-    r.set_varying (type);
+    return value_range_base (type);
   else
-    {
-      value_range_base tmp (VR_ANTI_RANGE, type, tmin, tmax);
-      r.union_ (tmp);
-    }
-  return;
+    return value_range_base (VR_ANTI_RANGE, type, tmin, tmax);
 }
 
 // Given newly calculated lbound and ubound, examine their respective
-// overflow bits to determine how to add [lbound, ubound] into range R.
+// overflow bits to determine how to create a range.  Return said range.
 
-static void
-accumulate_range (value_range_base &r, tree type, const wide_int &wmin,
-		  const wide_int &wmax,
-		  wi::overflow_type min_ovf = wi::OVF_NONE,
-		  wi::overflow_type max_ovf = wi::OVF_NONE)
+static value_range_base
+create_range_with_overflow (tree type,
+			    const wide_int &wmin, const wide_int &wmax,
+			    wi::overflow_type min_ovf = wi::OVF_NONE,
+			    wi::overflow_type max_ovf = wi::OVF_NONE)
 {
   const signop sgn = TYPE_SIGN (type);
   const unsigned int prec = TYPE_PRECISION (type);
@@ -335,10 +330,7 @@ accumulate_range (value_range_base &r, tree type, const wide_int &wmin,
 
   // For one bit precision if max != min, then the range covers all values.
   if (prec == 1 && wi::ne_p (wmax, wmin))
-    {
-      r.set_varying (type);
-      return;
-    }
+    return value_range_base (type);
 
   if (overflow_wraps)
     {
@@ -352,21 +344,18 @@ accumulate_range (value_range_base &r, tree type, const wide_int &wmin,
 	     the entire range.  We have a similar check at the end of
 	     extract_range_from_binary_expr.  */
 	  if (wi::gt_p (tmin, tmax, sgn))
-	    r.set_varying (type);
+	    return value_range_base (type);
 	  else
-	    {
-	      /* No overflow or both overflow or underflow.  The
-		 range kind stays normal.  */
-	      value_range_base tmp (type, tmin, tmax);
-	      r.union_ (tmp);
-	    }
+	    /* No overflow or both overflow or underflow.  The range
+	       kind stays normal.  */
+	    return value_range_base (type, tmin, tmax);
 	}
       else if ((min_ovf == wi::OVF_UNDERFLOW && max_ovf == wi::OVF_NONE)
 	       || (max_ovf == wi::OVF_OVERFLOW && min_ovf == wi::OVF_NONE))
-	adjust_overflow_bound (r, type, wmin, wmax);
+	return adjust_overflow_bound (type, wmin, wmax);
       else
 	// Other underflow and/or overflow, drop to VR_VARYING.
-	r.set_varying (type);
+	return value_range_base (type);
     }
   else
     {
@@ -386,30 +375,24 @@ accumulate_range (value_range_base &r, tree type, const wide_int &wmin,
 	new_ub = wi::max_value (prec, sgn);
       else
         new_ub = wmax;
-      value_range_base tmp (type, new_lb, new_ub);
-      r.union_ (tmp);
+      return value_range_base (type, new_lb, new_ub);
     }
 }
 
-/* Like accumulate_range, but canonicalize the case where the bounds
-   are swapped and overflow may wrap.  In which case we transform
-   [10,5] into [MIN,5][10,MAX].  */
+/* Like above, but canonicalize the case where the bounds are swapped
+   and overflow may wrap.  In which case we transform [10,5] into
+   [MIN,5][10,MAX].  */
 
-static inline void
-accumulate_possibly_reversed_range (value_range_base &r, tree type,
-				    const wide_int &new_lb,
-				    const wide_int &new_ub)
+static inline value_range_base
+create_possibly_reversed_range (tree type,
+				const wide_int &new_lb, const wide_int &new_ub)
 {
   signop s = TYPE_SIGN (type);
   // If the bounds are swapped, treat the result as if an overflow occured.
   if (wi::gt_p (new_lb, new_ub, s))
-    {
-      adjust_overflow_bound (r, type, new_lb, new_ub);
-      return;
-    }
+    return adjust_overflow_bound (type, new_lb, new_ub);
   // Otherwise its just a normal range.
-  value_range_base tmp (type, new_lb, new_ub);
-  r.union_ (tmp);
+  return value_range_base (type, new_lb, new_ub);
 }
 
 // Return a value_range_base instance that is a boolean TRUE.
@@ -1041,9 +1024,7 @@ operator_plus::wi_fold (tree type,
   signop s = TYPE_SIGN (type);
   wide_int new_lb = wi::add (lh_lb, rh_lb, s, &ov_lb);
   wide_int new_ub = wi::add (lh_ub, rh_ub, s, &ov_ub);
-  value_range_base r;
-  accumulate_range (r, type, new_lb, new_ub, ov_lb, ov_ub);
-  return r;
+  return create_range_with_overflow (type, new_lb, new_ub, ov_lb, ov_ub);
 }
 
 /* Adjust value_range_base to be in terms of op1.
@@ -1094,9 +1075,7 @@ operator_minus::wi_fold (tree type,
   signop s = TYPE_SIGN (type);
   wide_int new_lb = wi::sub (lh_lb, rh_ub, s, &ov_lb);
   wide_int new_ub = wi::sub (lh_ub, rh_lb, s, &ov_ub);
-  value_range_base r;
-  accumulate_range (r, type, new_lb, new_ub, ov_lb, ov_ub);
-  return r;
+  return create_range_with_overflow (type, new_lb, new_ub, ov_lb, ov_ub);
 }
 
 /* Adjust value_range_base to be in terms of op1.
@@ -1142,9 +1121,7 @@ operator_min::wi_fold (tree type,
   signop s = TYPE_SIGN (type);
   wide_int new_lb = wi::min (lh_lb, rh_lb, s);
   wide_int new_ub = wi::min (lh_ub, rh_ub, s);
-  value_range_base r;
-  accumulate_range (r, type, new_lb, new_ub);
-  return r;
+  return create_range_with_overflow (type, new_lb, new_ub);
 }
 
 // ----------------------------------------------------------------------------
@@ -1167,9 +1144,7 @@ operator_max::wi_fold (tree type,
   signop s = TYPE_SIGN (type);
   wide_int new_lb = wi::max (lh_lb, rh_lb, s);
   wide_int new_ub = wi::max (lh_ub, rh_ub, s);
-  value_range_base r;
-  accumulate_range (r, type, new_lb, new_ub);
-  return r;
+  return create_range_with_overflow (type, new_lb, new_ub);
 }
 
 
@@ -1189,9 +1164,8 @@ operator_max::wi_fold (tree type,
    This function calculate the cross product of two sets of ranges and
    accumulate the result into RES.  CODE is the operation to perform.  */
 
-static void
-wi_cross_product (value_range_base &res,
-		  enum tree_code code, tree type,
+static value_range_base
+wi_cross_product (enum tree_code code, tree type,
 		  const wide_int &lh_lb, const wide_int &lh_ub,
 		  const wide_int &rh_lb, const wide_int &rh_ub)
 {
@@ -1200,31 +1174,19 @@ wi_cross_product (value_range_base &res,
   /* Compute the 4 cross operations, bailing if we get an overflow we
      can't handle.  */
   if (!wi_binop_overflow (cp1, code, type, lh_lb, rh_lb))
-    {
-      res.set_varying (type);
-      return;
-    }
+    return value_range_base (type);
   if (wi::eq_p (lh_lb, lh_ub))
     cp3 = cp1;
   else if (!wi_binop_overflow (cp3, code, type, lh_ub, rh_lb))
-    {
-      res.set_varying (type);
-      return;
-    }
+    return value_range_base (type);
   if (wi::eq_p (rh_lb, rh_ub))
     cp2 = cp1;
   else if (!wi_binop_overflow (cp2, code, type, lh_lb, rh_ub))
-    {
-      res.set_varying (type);
-      return;
-    }
+    return value_range_base (type);
   if (wi::eq_p (lh_lb, lh_ub))
     cp4 = cp2;
   else if (!wi_binop_overflow (cp4, code, type, lh_ub, rh_ub))
-    {
-      res.set_varying (type);
-      return;
-    }
+    return value_range_base (type);
 
   /* Order pairs.  */
   signop sign = TYPE_SIGN (type);
@@ -1236,7 +1198,7 @@ wi_cross_product (value_range_base &res,
   /* Choose min and max from the ordered pairs.  */
   wide_int res_lb = wi::min (cp1, cp3, sign);
   wide_int res_ub = wi::max (cp2, cp4, sign);
-  accumulate_range (res, type, res_lb, res_ub);
+  return create_range_with_overflow (type, res_lb, res_ub);
 }
 
 class operator_mult : public range_operator
@@ -1255,12 +1217,8 @@ operator_mult::wi_fold (tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const
 {
-  value_range_base r;
   if (TYPE_OVERFLOW_UNDEFINED (type))
-    {
-      wi_cross_product (r, MULT_EXPR, type, lh_lb, lh_ub, rh_lb, rh_ub);
-      return r;
-    }
+    return wi_cross_product (MULT_EXPR, type, lh_lb, lh_ub, rh_lb, rh_ub);
 
   /* Multiply the ranges when overflow wraps.  This is basically fancy
      code so we don't drop to varying with an unsigned
@@ -1324,8 +1282,7 @@ operator_mult::wi_fold (tree type,
 
   wide_int new_lb = wide_int::from (prod0, prec, sign);
   wide_int new_ub = wide_int::from (prod3, prec, sign);
-  accumulate_possibly_reversed_range (r, type, new_lb, new_ub);
-  return r;
+  return create_possibly_reversed_range (type, new_lb, new_ub);
 }
 
 
@@ -1367,15 +1324,10 @@ operator_div::wi_fold (tree type,
   unsigned prec = TYPE_PRECISION (type);
   wide_int extra_min, extra_max;
 
-  value_range_base r;
-
   /* If we know we won't divide by zero, just do the division.  */
   if (!wi_includes_zero_p (type, divisor_min, divisor_max))
-    {
-      wi_cross_product (r, code, type, dividend_min, dividend_max,
-			divisor_min, divisor_max);
-      return r;
-    }
+    return wi_cross_product (code, type, dividend_min, dividend_max,
+			     divisor_min, divisor_max);
 
   /* If flag_non_call_exceptions, we must not eliminate a division
      by zero.  */
@@ -1390,13 +1342,18 @@ operator_div::wi_fold (tree type,
      which will skip any division by zero.
 
      First divide by the negative numbers, if any.  */
+  value_range_base r;
   if (wi::neg_p (divisor_min, sign))
-    wi_cross_product (r, code, type, dividend_min, dividend_max,
-		      divisor_min, wi::minus_one (prec));
+    r = wi_cross_product (code, type, dividend_min, dividend_max,
+			  divisor_min, wi::minus_one (prec));
   /* Then divide by the non-zero positive numbers, if any.  */
   if (wi::gt_p (divisor_max, wi::zero (prec), sign))
-    wi_cross_product (r, code, type, dividend_min, dividend_max,
-		      wi::one (prec), divisor_max);
+    {
+      value_range_base tmp;
+      tmp = wi_cross_product (code, type, dividend_min, dividend_max,
+			      wi::one (prec), divisor_max);
+      r.union_ (tmp);
+    }
   return r;
 }
 
@@ -1536,12 +1493,10 @@ operator_lshift::wi_fold (tree type,
 	}
     }
 
-  value_range_base r;
   if (in_bounds)
-    wi_cross_product (r, LSHIFT_EXPR, type, lh_lb, lh_ub, rh_lb, rh_ub);
-  else
-    r = value_range_base (type);
-  return r;
+    return wi_cross_product (LSHIFT_EXPR, type, lh_lb, lh_ub, rh_lb, rh_ub);
+
+  return value_range_base (type);
 }
 
 // ----------------------------------------------------------------------------
@@ -1576,9 +1531,7 @@ operator_rshift::wi_fold (tree type,
 			  const wide_int &lh_lb, const wide_int &lh_ub,
 			  const wide_int &rh_lb, const wide_int &rh_ub) const
 {
-  value_range_base r;
-  wi_cross_product (r, RSHIFT_EXPR, type, lh_lb, lh_ub, rh_lb, rh_ub);
-  return r;
+  return wi_cross_product (RSHIFT_EXPR, type, lh_lb, lh_ub, rh_lb, rh_ub);
 }
 
 // ----------------------------------------------------------------------------
@@ -1637,7 +1590,9 @@ operator_cast::fold_range (tree type ATTRIBUTE_UNUSED,
 	  if (!wi::eq_p (min, wi::min_value (outer_prec, outer_sign))
 	      || !wi::eq_p (max, wi::max_value (outer_prec, outer_sign)))
 	    {
-	      accumulate_possibly_reversed_range (r, type, min, max);
+	      value_range_base tmp;
+	      tmp = create_possibly_reversed_range (type, min, max);
+	      r.union_ (tmp);
 	      continue;
 	    }
 	}
@@ -1892,7 +1847,7 @@ wi_optimize_and_or (value_range_base &r,
     }
   else
     gcc_unreachable ();
-  accumulate_range (r, type, res_lb, res_ub);
+  r = create_range_with_overflow (type, res_lb, res_ub);
   return true;
 }
 
@@ -1993,8 +1948,7 @@ operator_bitwise_and::wi_fold (tree type,
   if (wi::gt_p (new_lb, new_ub,sign))
     return value_range_base (type);
 
-  accumulate_range (r, type, new_lb, new_ub);
-  return r;
+  return create_range_with_overflow (type, new_lb, new_ub);
 }
 
 bool
@@ -2134,8 +2088,7 @@ operator_bitwise_or::wi_fold (tree type,
   if (wi::gt_p (new_lb, new_ub,sign))
     return value_range_base (type);
 
-  accumulate_range (r, type, new_lb, new_ub);
-  return r;
+  return create_range_with_overflow (type, new_lb, new_ub);
 }
 
 bool
@@ -2198,11 +2151,7 @@ operator_bitwise_xor::wi_fold (tree type,
   /* If the range has all positive or all negative values, the result
      is better than VARYING.  */
   if (wi::lt_p (new_lb, 0, sign) || wi::ge_p (new_ub, 0, sign))
-    {
-      value_range_base r;
-      accumulate_range (r, type, new_lb, new_ub);
-      return r;
-    }
+    return create_range_with_overflow (type, new_lb, new_ub);
   return value_range_base (type);
 }
 
@@ -2257,9 +2206,7 @@ operator_trunc_mod::wi_fold (tree type,
     tmp = wi::zero (prec);
   new_ub = wi::min (new_ub, tmp, sign);
 
-  value_range_base r;
-  accumulate_range (r, type, new_lb, new_ub);
-  return r;
+  return create_range_with_overflow (type, new_lb, new_ub);
 }
 
 
