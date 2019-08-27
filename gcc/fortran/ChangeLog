@@ -1,3 +1,21 @@
+2019-08-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/91496
+	* gfortran.h: Extend struct gfc_iterator for loop annotations.
+	* array.c (gfc_copy_iterator): Copy loop annotations by IVDEP,
+	VECTOR, and NOVECTOR pragmas.
+	* decl.c (gfc_match_gcc_ivdep, gfc_match_gcc_vector)
+	(gfc_match_gcc_novector): New matcher functions handling IVDEP,
+	VECTOR, and NOVECTOR pragmas.
+	* match.h: Declare prototypes of matcher functions handling IVDEP,
+	VECTOR, and NOVECTOR pragmas.
+	* parse.c (decode_gcc_attribute, parse_do_block)
+	(parse_executable): Decode IVDEP, VECTOR, and NOVECTOR pragmas;
+	emit warning for unrecognized pragmas instead of error.
+	* trans-stmt.c (gfc_trans_simple_do, gfc_trans_do): Add code to
+	emit annotations for IVDEP, VECTOR, and NOVECTOR pragmas.
+	* gfortran.texi: Document IVDEP, VECTOR, and NOVECTOR pragmas.
+
 2019-08-27  Mark Eggleston  <mark.eggleston@codethink.com>
 
 	* invoke.texi: Ensure that the option lists fit within the
