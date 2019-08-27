@@ -1,3 +1,8 @@
+2019-08-27  Robin Dapp  <rdapp@linux.ibm.com>
+
+	PR testsuite/91549
+	* gcc.dg/wrapped-binop-simplify.c: Test only on x86, s390 with lp64.
+
 2019-08-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/91390
