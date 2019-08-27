@@ -1,3 +1,12 @@
+2019-08-27  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* invoke.texi: Ensure that the option lists fit within the
+	margins of a PDF page.  Re-worded description of 
+	'-ffrontend-loop-interchange' so that it fits with the margins
+	of a PDF page.  Add '-fdec-include', '-fdec-blank-format-item'
+	and '-fdec-format-defaults' to list of options that are enabled
+	by '-fdec'.
+
 2019-08-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/91390
