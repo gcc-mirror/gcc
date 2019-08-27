@@ -1773,6 +1773,26 @@ fipa-vrp
 Common Report Var(flag_ipa_vrp) Optimization
 Perform IPA Value Range Propagation.
 
+;; Perform VRP range folding with either range-ops or the traditional
+;; extract_range_from_{binary,unary}_expr functions.  This is meant to
+;; be a transitional testing construct to verify that both agree.
+
+franges=
+Common Joined RejectNegative Enum(ranges_mode) Var(flag_ranges_mode) Init(RANGES_CHECKING)
+-franges=[checking|vrp|range-ops]	Set the mode for calculating ranges.
+
+Enum
+Name(ranges_mode) Type(enum ranges_mode) UnknownError(unknown ranges mode %qs)
+
+EnumValue
+Enum(ranges_mode) String(checking) Value(RANGES_CHECKING)
+
+EnumValue
+Enum(ranges_mode) String(vrp) Value(RANGES_VRP)
+
+EnumValue
+Enum(ranges_mode) String(range-ops) Value(RANGES_RANGE_OPS)
+
 fira-algorithm=
 Common Joined RejectNegative Enum(ira_algorithm) Var(flag_ira_algorithm) Init(IRA_ALGORITHM_CB) Optimization
 -fira-algorithm=[CB|priority]	Set the used IRA algorithm.

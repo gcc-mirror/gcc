@@ -35,14 +35,19 @@ enum value_range_kind
   VR_LAST
 };
 
-
 /* Range of values that can be associated with an SSA_NAME after VRP
    has executed.  */
 class GTY((for_user)) value_range_base
 {
+  friend void range_tests ();
 public:
   value_range_base ();
   value_range_base (value_range_kind, tree, tree);
+  value_range_base (tree, tree);
+  value_range_base (value_range_kind,
+		    tree type, const wide_int &, const wide_int &);
+  value_range_base (tree type, const wide_int &, const wide_int &);
+  value_range_base (tree type);
 
   void set (value_range_kind, tree, tree);
   void set (tree);
@@ -64,7 +69,7 @@ public:
   void union_ (const value_range_base *);
   void intersect (const value_range_base *);
 
-  bool operator== (const value_range_base &) const /* = delete */;
+  bool operator== (const value_range_base &) const;
   bool operator!= (const value_range_base &) const /* = delete */;
   bool equal_p (const value_range_base &) const;
 
@@ -79,6 +84,16 @@ public:
 
   static bool supports_type_p (tree);
   value_range_base normalize_symbolics () const;
+
+  static const unsigned int m_max_pairs = 2;
+  bool contains_p (tree) const;
+  unsigned num_pairs () const;
+  wide_int lower_bound (unsigned = 0) const;
+  wide_int upper_bound (unsigned) const;
+  wide_int upper_bound () const;
+  void invert ();
+  void union_ (const value_range_base &);
+  void intersect (const value_range_base &);
 
 protected:
   void check ();
@@ -309,6 +324,11 @@ extern bool overflow_comparison_p (tree_code, tree, tree, bool, tree *);
 extern tree get_single_symbol (tree, bool *, tree *);
 extern void maybe_set_nonzero_bits (edge, tree);
 extern value_range_kind determine_value_range (tree, wide_int *, wide_int *);
+void range_fold_binary_expr (value_range_base *, enum tree_code, tree,
+			     const value_range_base *,
+			     const value_range_base *);
+void range_fold_unary_expr (value_range_base *, enum tree_code, tree,
+			    const value_range_base *, tree);
 
 /* Return TRUE if *VR includes the value zero.  */
 

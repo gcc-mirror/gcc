@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "builtins.h"
 #include "wide-int-range.h"
+#include "range-op.h"
 
 static bool
 ranges_from_anti_range (const value_range_base *ar,
@@ -129,6 +130,36 @@ value_range::value_range (const value_range_base &other)
 {
   m_equiv = NULL;
   set (other.kind (), other.min(), other.max (), NULL);
+}
+
+value_range_base::value_range_base (tree type)
+{
+  set_varying (type);
+}
+
+value_range_base::value_range_base (enum value_range_kind kind,
+				    tree type,
+				    const wide_int &wmin,
+				    const wide_int &wmax)
+{
+  tree min = wide_int_to_tree (type, wmin);
+  tree max = wide_int_to_tree (type, wmax);
+  gcc_assert (kind == VR_RANGE || kind == VR_ANTI_RANGE);
+  set (kind, min, max);
+}
+
+value_range_base::value_range_base (tree type,
+				    const wide_int &wmin,
+				    const wide_int &wmax)
+{
+  tree min = wide_int_to_tree (type, wmin);
+  tree max = wide_int_to_tree (type, wmax);
+  set (VR_RANGE, min, max);
+}
+
+value_range_base::value_range_base (tree min, tree max)
+{
+  set (VR_RANGE, min, max);
 }
 
 /* Like set, but keep the equivalences in place.  */
@@ -1256,6 +1287,11 @@ ranges_from_anti_range (const value_range_base *ar,
 			value_range_base *vr0, value_range_base *vr1,
 			bool handle_pointers)
 {
+  /* ?? This function is called multiple times from num_pairs,
+     lower_bound, and upper_bound.  We should probably memoize this, or
+     rewrite the callers in such a way that we're not re-calculating
+     this constantly.  */
+
   tree type = ar->type ();
 
   vr0->set_undefined ();
@@ -1554,6 +1590,49 @@ set_value_range_with_overflow (value_range_kind &kind, tree &min, tree &max,
     }
 }
 
+/* Fold two value range's of a POINTER_PLUS_EXPR into VR.  Return TRUE
+   if successful.  */
+
+static bool
+extract_range_from_pointer_plus_expr (value_range_base *vr,
+				      enum tree_code code,
+				      tree expr_type,
+				      const value_range_base *vr0,
+				      const value_range_base *vr1)
+{
+  if (POINTER_TYPE_P (expr_type) && code == POINTER_PLUS_EXPR)
+    {
+      /* For pointer types, we are really only interested in asserting
+	 whether the expression evaluates to non-NULL.
+	 With -fno-delete-null-pointer-checks we need to be more
+	 conservative.  As some object might reside at address 0,
+	 then some offset could be added to it and the same offset
+	 subtracted again and the result would be NULL.
+	 E.g.
+	 static int a[12]; where &a[0] is NULL and
+	 ptr = &a[6];
+	 ptr -= 6;
+	 ptr will be NULL here, even when there is POINTER_PLUS_EXPR
+	 where the first range doesn't include zero and the second one
+	 doesn't either.  As the second operand is sizetype (unsigned),
+	 consider all ranges where the MSB could be set as possible
+	 subtractions where the result might be NULL.  */
+      if ((!range_includes_zero_p (vr0)
+	   || !range_includes_zero_p (vr1))
+	  && !TYPE_OVERFLOW_WRAPS (expr_type)
+	  && (flag_delete_null_pointer_checks
+	      || (range_int_cst_p (vr1)
+		  && !tree_int_cst_sign_bit (vr1->max ()))))
+	vr->set_nonzero (expr_type);
+      else if (vr0->zero_p () && vr1->zero_p ())
+	vr->set_zero (expr_type);
+      else
+	vr->set_varying (expr_type);
+      return true;
+    }
+  return false;
+}
+
 /* Extract range information from a binary operation CODE based on
    the ranges of each of its operands *VR0 and *VR1 with resulting
    type EXPR_TYPE.  The resulting range is stored in *VR.  */
@@ -1709,34 +1788,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 	    vr->set_varying (expr_type);
 	}
       else if (code == POINTER_PLUS_EXPR)
-	{
-	  /* For pointer types, we are really only interested in asserting
-	     whether the expression evaluates to non-NULL.
-	     With -fno-delete-null-pointer-checks we need to be more
-	     conservative.  As some object might reside at address 0,
-	     then some offset could be added to it and the same offset
-	     subtracted again and the result would be NULL.
-	     E.g.
-	     static int a[12]; where &a[0] is NULL and
-	     ptr = &a[6];
-	     ptr -= 6;
-	     ptr will be NULL here, even when there is POINTER_PLUS_EXPR
-	     where the first range doesn't include zero and the second one
-	     doesn't either.  As the second operand is sizetype (unsigned),
-	     consider all ranges where the MSB could be set as possible
-	     subtractions where the result might be NULL.  */
-	  if ((!range_includes_zero_p (&vr0)
-	       || !range_includes_zero_p (&vr1))
-	      && !TYPE_OVERFLOW_WRAPS (expr_type)
-	      && (flag_delete_null_pointer_checks
-		  || (range_int_cst_p (&vr1)
-		      && !tree_int_cst_sign_bit (vr1.max ()))))
-	    vr->set_nonzero (expr_type);
-	  else if (vr0.zero_p () && vr1.zero_p ())
-	    vr->set_zero (expr_type);
-	  else
-	    vr->set_varying (expr_type);
-	}
+	extract_range_from_pointer_plus_expr (vr, code, expr_type, &vr0, &vr1);
       else if (code == BIT_AND_EXPR)
 	{
 	  /* For pointer types, we are really only interested in asserting
@@ -2255,6 +2307,344 @@ extract_range_from_unary_expr (value_range_base *vr,
   /* For unhandled operations fall back to varying.  */
   vr->set_varying (type);
   return;
+}
+
+/* Given two ranges (OLD_VR and NEW_VR) that are the result of
+   VR0 .OPCODE. VR1, abort if they are not equivalent.  */
+
+void
+assert_compare_value_ranges (const value_range_base *old_vr,
+			     const value_range_base *new_vr,
+			     tree_code code,
+			     const value_range_base *vr0,
+			     const value_range_base *vr1)
+{
+  if (old_vr->equal_p (*new_vr))
+    return;
+
+  /* Now account for any known differences between range-ops and
+     extract_range_from_*expr.  If we can't account for the difference
+     between the ranges, fail vewwy woughly.  */
+
+  /* Ideally, unsigned [1, MAX] should've been canonicalized as
+     ~[0, 0], but this causes issues with ranges_from_anti_range.
+     Special case this for now, and avoid batting the beehive.  */
+  if (TYPE_UNSIGNED (old_vr->type ())
+      && integer_onep (old_vr->min ())
+      && vrp_val_is_max (old_vr->max ())
+      && new_vr->nonzero_p ())
+    return;
+
+  /* extract_range_from_binary_expr special cases this scenario, and
+     gives up.  Since range-ops can do better, avoid a false
+     positive.  */
+  if (code == EXACT_DIV_EXPR && vr0->nonzero_p ())
+    return;
+
+  /* The ordering in which range-ops and
+     extract_range_from_binary_expr split up and handle sub-ranges
+     matters, and this can yield slightly worse results for VRP at
+     times.  This is because the union of intermediate ranges,
+     depending on which order they are done in, can yield
+     unrepresentable ranges that ultimately generate a VARYING.
+
+     This is imprecise at best, so avoid comparing pairs of
+     VR_ANTI_RANGES inputs, for which VRP produces VARYING and
+     range-ops does better.
+
+     For example, extract_range_from_binary_expr, with its recursive
+     ranges_from_anti_range approach, will handle ~[5,10] OP [20,30]
+     in this order:
+
+	[0,4][11,MAX] OP [0,19][31,MAX]
+
+		t1 = [0,4] OP [0,19]
+		t2 = [0,4] OP [31,MAX]
+		t3 = union(t1, t2)
+
+		t4 = [11,MAX] OP [0,19]
+		t5 = [11,MAX] OP [31,MAX]
+		t6 = union(t4, t5)
+
+		t = union(t3, t6)
+
+     Whereas, range-ops will do:
+
+		t = union([0,4] OP [0,19])
+		t = union(t, union([0,4] OP [31,MAX]))
+		t = union(t, union([11,MAX] OP [0,19]))
+		t = union(t, union([11,MAX] OP [31,MAX]))
+
+     Ugh.  In the amount of time it took to explain this, I could've
+     rewritten VRP to match range-ops, but let's avoid touching too
+     much of existing code.
+
+     Triggered by: gcc.target/i386/sse4_2-crc32b.c.  */
+  if (vr0->kind () == VR_ANTI_RANGE && vr1->kind () == VR_ANTI_RANGE
+      && old_vr->varying_p ())
+    return;
+
+  /* MAX/MIN of pointers in VRP dumbs everything down to
+     NULL/NON_NULL/VARYING.  When running range-ops with multiple
+     sub-ranges, we may get slightly better ranges.  In this case,
+     pretend we're varying and see if we matched VRP.  */
+  if ((code == MAX_EXPR || code == MIN_EXPR)
+      && POINTER_TYPE_P (new_vr->type ())
+      && !new_vr->zero_p ()
+      && !new_vr->nonzero_p ()
+      && old_vr->varying_p ())
+    return;
+
+  /* Sigh.  extract_range_from_binary_expr may refuse to work on
+     varying ranges for some codes, but range-ops can sometimes derive
+     useful information.  This is the same check we have in
+     extract_range_from_binary_expr.  */
+  if (code != BIT_AND_EXPR
+      && code != BIT_IOR_EXPR
+      && code != TRUNC_DIV_EXPR
+      && code != FLOOR_DIV_EXPR
+      && code != CEIL_DIV_EXPR
+      && code != EXACT_DIV_EXPR
+      && code != ROUND_DIV_EXPR
+      && code != TRUNC_MOD_EXPR
+      && code != MIN_EXPR
+      && code != MAX_EXPR
+      && code != PLUS_EXPR
+      && code != MINUS_EXPR
+      && code != RSHIFT_EXPR
+      && code != POINTER_PLUS_EXPR
+      && (vr0->varying_p ()
+	  || vr1->varying_p ()
+	  || vr0->symbolic_p ()
+	  || vr1->symbolic_p ()))
+    {
+      /* If VRP was varying, we know we did better.  */
+      if (old_vr->varying_p ())
+	return;
+    }
+
+  /* There's an unaccounted difference.  This may be a real bug.  */
+
+  tree expr_type = old_vr->type ();
+  fprintf (stderr, "------------\n");
+  fprintf (stderr, "Ranges from VRP and range-ops do not agree!\n");
+  fprintf (stderr, "CODE: %s\n", get_tree_code_name (code));
+  fprintf (stderr, "TYPE = ");
+  debug_generic_stmt (expr_type);
+  if (CONVERT_EXPR_CODE_P (code))
+    {
+      fprintf (stderr, "\tFROM TYPE = ");
+      debug_generic_stmt (vr0->type ());
+    }
+  fprintf (stderr, "vr0: ");
+  vr0->dump (stderr);
+  fputc ('\n', stderr);
+  if (TREE_CODE_CLASS (code) != tcc_unary)
+    {
+      fprintf (stderr, "vr1: ");
+      vr1->dump (stderr);
+      fputc ('\n', stderr);
+    }
+  fprintf (stderr, "VRP returned: ");
+  old_vr->dump (stderr);
+  fprintf (stderr, "\nrange-ops returned: ");
+  new_vr->dump (stderr);
+  fputc ('\n', stderr);
+  gcc_unreachable();
+}
+
+/* Normalize a value_range for use in range_ops and return it.
+   Eventually, range-ops should do this for us.  */
+
+static value_range_base
+normalize_for_range_ops (const value_range_base &vr)
+{
+  tree type = vr.type ();
+
+  /* This will return ~[0,0] for [&var, &var].  */
+  if (POINTER_TYPE_P (type) && !range_includes_zero_p (&vr))
+    {
+      value_range_base temp;
+      temp.set_nonzero (type);
+      return temp;
+    }
+  if (vr.symbolic_p ())
+    return normalize_for_range_ops (vr.normalize_symbolics ());
+  if (TREE_CODE (vr.min ()) == INTEGER_CST
+      && TREE_CODE (vr.max ()) == INTEGER_CST)
+    return vr;
+  /* Anything not strictly numeric at this point becomes varying.  */
+  return value_range_base (vr.type ());
+}
+
+/* Fold a binary expression of two value_range's with range-ops.  */
+
+static void
+range_ops_fold_binary_expr (value_range_base *vr,
+			    enum tree_code code,
+			    tree expr_type,
+			    const value_range_base *vr0_,
+			    const value_range_base *vr1_)
+{
+  /* Mimic any behavior users of extract_range_from_binary_expr may
+     expect.  */
+  range_operator *op = range_op_handler (code, expr_type);
+  if (!op)
+    {
+      vr->set_varying (expr_type);
+      return;
+    }
+  value_range_base vr0 = *vr0_, vr1 = *vr1_;
+  if (vr0.undefined_p () && vr1.undefined_p ())
+    {
+      vr->set_undefined ();
+      return;
+    }
+  if (vr0.undefined_p ())
+    vr0.set_varying (expr_type);
+  else if (vr1.undefined_p ())
+    vr1.set_varying (expr_type);
+
+  /* Handle symbolics.  Worth moving into range-ops?? */
+  if ((code == PLUS_EXPR || code == MINUS_EXPR)
+      && (vr0.symbolic_p () || vr1.symbolic_p ()))
+    {
+      /* Pass on down until we handle anti-ranges in
+	 extract_range_from_plus_expr.  */
+      extract_range_from_binary_expr (vr, code, expr_type, &vr0, &vr1);
+      return;
+    }
+  if (extract_range_from_pointer_plus_expr (vr, code, expr_type, &vr0, &vr1))
+    return;
+
+  /* Do the range-ops dance.  */
+  value_range_base n0 = normalize_for_range_ops (vr0);
+  value_range_base n1 = normalize_for_range_ops (vr1);
+  *vr = op->fold_range (expr_type, n0, n1);
+}
+
+/* Fold a unary expression of a value_range with range-ops.  */
+
+static void
+range_ops_fold_unary_expr (value_range_base *vr,
+			   enum tree_code code, tree expr_type,
+			   const value_range_base *vr0)
+{
+  /* Mimic any behavior users of extract_range_from_unary_expr may
+     expect.  */
+  range_operator *op = range_op_handler (code, expr_type);
+  if (!op)
+    {
+      vr->set_varying (expr_type);
+      return;
+    }
+  if (vr0->undefined_p ())
+    {
+      vr->set_undefined ();
+      return;
+    }
+
+  /* Handle symbolics.  Worth moving into range-ops?? */
+  if (code == NEGATE_EXPR && vr0->symbolic_p ())
+    {
+      /* -X is simply 0 - X.  */
+      value_range_base zero;
+      zero.set_zero (vr0->type ());
+      range_ops_fold_binary_expr (vr, MINUS_EXPR, expr_type, &zero, vr0);
+      return;
+    }
+  if (code == BIT_NOT_EXPR && vr0->symbolic_p ())
+    {
+      /* ~X is simply -1 - X.  */
+      value_range_base minusone;
+      minusone.set (build_int_cst (vr0->type (), -1));
+      range_ops_fold_binary_expr (vr, MINUS_EXPR, expr_type, &minusone, vr0);
+      return;
+    }
+  if (CONVERT_EXPR_CODE_P (code) && (POINTER_TYPE_P (expr_type)
+				     || POINTER_TYPE_P (vr0->type ())))
+    {
+      /* This handles symbolic conversions such such as [25, x_4].  */
+      if (!range_includes_zero_p (vr0))
+	vr->set_nonzero (expr_type);
+      else if (vr0->zero_p ())
+	vr->set_zero (expr_type);
+      else
+	vr->set_varying (expr_type);
+      return;
+    }
+
+
+  /* Do the range-ops dance.  */
+  value_range_base n0 = normalize_for_range_ops (*vr0);
+  value_range_base n1 (expr_type);
+  *vr = op->fold_range (expr_type, n0, n1);
+}
+
+/* Generic folding of a binary expression between two value_ranges.
+   Uses range-ops and extract_range_from_binary_expr, and verifies
+   that the results match.  */
+
+void
+range_fold_binary_expr (value_range_base *vr,
+			enum tree_code code,
+			tree expr_type,
+			const value_range_base *vr0,
+			const value_range_base *vr1)
+{
+  if (!value_range_base::supports_type_p (expr_type)
+      || (!vr0->undefined_p ()
+	  && !value_range_base::supports_type_p (vr0->type ()))
+      || (!vr1->undefined_p ()
+	  && !value_range_base::supports_type_p (vr1->type ())))
+    {
+      *vr = value_range (expr_type);
+      return;
+    }
+  if (flag_ranges_mode & RANGES_RANGE_OPS)
+    range_ops_fold_binary_expr (vr, code, expr_type, vr0, vr1);
+  if (flag_ranges_mode & RANGES_VRP)
+    {
+      value_range_base old;
+      extract_range_from_binary_expr (&old, code, expr_type, vr0, vr1);
+      if (flag_ranges_mode == RANGES_CHECKING)
+	assert_compare_value_ranges (&old, vr, code, vr0, vr1);
+      else
+	*vr = old;
+    }
+}
+
+/* Generic folding of a unary expression of a value_range.  Uses
+   range-ops and extract_range_from_unary_expr, and verifies that the
+   results match.  */
+
+void
+range_fold_unary_expr (value_range_base *vr,
+		       enum tree_code code,
+		       tree expr_type,
+		       const value_range_base *vr0,
+		       tree vr0_type)
+{
+  if (!value_range_base::supports_type_p (expr_type)
+      || !value_range_base::supports_type_p (vr0_type))
+    {
+      *vr = value_range (expr_type);
+      return;
+    }
+  if (flag_ranges_mode & RANGES_RANGE_OPS)
+    range_ops_fold_unary_expr (vr, code, expr_type, vr0);
+  if (flag_ranges_mode & RANGES_VRP)
+    {
+      value_range_base old;
+      extract_range_from_unary_expr (&old, code, expr_type, vr0, vr0_type);
+      if (flag_ranges_mode == RANGES_CHECKING)
+	{
+	  value_range_base vr1 (expr_type);
+	  assert_compare_value_ranges (&old, vr, code, vr0, &vr1);
+	}
+      else
+	*vr = old;
+    }
 }
 
 /* Given a COND_EXPR COND of the form 'V OP W', and an SSA name V,
@@ -6379,6 +6769,167 @@ value_range_base::normalize_symbolics () const
   value_range_base var;
   var.set_varying (ttype);
   return var;
+}
+
+unsigned
+value_range_base::num_pairs () const
+{
+  if (undefined_p ())
+    return 0;
+  if (varying_p ())
+    return 1;
+  if (symbolic_p ())
+    return normalize_symbolics ().num_pairs ();
+  if (m_kind == VR_ANTI_RANGE)
+    {
+      value_range_base vr0, vr1;
+      gcc_assert (ranges_from_anti_range (this, &vr0, &vr1, true));
+      if (vr1.undefined_p ())
+	return 1;
+      return 2;
+    }
+  return 1;
+}
+
+wide_int
+value_range_base::lower_bound (unsigned pair) const
+{
+  if (symbolic_p ())
+    return normalize_symbolics ().lower_bound (pair);
+
+  gcc_assert (!undefined_p ());
+  gcc_assert (pair + 1 <= num_pairs ());
+  tree t = NULL;
+  if (m_kind == VR_ANTI_RANGE)
+    {
+      value_range_base vr0, vr1;
+      gcc_assert (ranges_from_anti_range (this, &vr0, &vr1, true));
+      if (pair == 0)
+	t = vr0.min ();
+      else if (pair == 1)
+	t = vr1.min ();
+      else
+	gcc_unreachable ();
+    }
+  else
+    t = m_min;
+  return wi::to_wide (t);
+}
+
+wide_int
+value_range_base::upper_bound (unsigned pair) const
+{
+  if (symbolic_p ())
+    return normalize_symbolics ().upper_bound (pair);
+
+  gcc_assert (!undefined_p ());
+  gcc_assert (pair + 1 <= num_pairs ());
+  tree t = NULL;
+  if (m_kind == VR_ANTI_RANGE)
+    {
+      value_range_base vr0, vr1;
+      gcc_assert (ranges_from_anti_range (this, &vr0, &vr1, true));
+      if (pair == 0)
+	t = vr0.max ();
+      else if (pair == 1)
+	t = vr1.max ();
+      else
+	gcc_unreachable ();
+    }
+  else
+    t = m_max;
+  return wi::to_wide (t);
+}
+
+wide_int
+value_range_base::upper_bound () const
+{
+  unsigned pairs = num_pairs ();
+  gcc_assert (pairs > 0);
+  return upper_bound (pairs - 1);
+}
+
+/* Return TRUE if range contains INTEGER_CST.  */
+
+bool
+value_range_base::contains_p (tree cst) const
+{
+  gcc_assert (TREE_CODE (cst) == INTEGER_CST);
+  if (symbolic_p ())
+    return normalize_symbolics ().contains_p (cst);
+  return value_inside_range (cst) == 1;
+}
+
+void
+value_range_base::invert ()
+{
+  if (undefined_p ())
+    return;
+  if (varying_p ())
+    set_undefined ();
+  else if (m_kind == VR_RANGE)
+    m_kind = VR_ANTI_RANGE;
+  else if (m_kind == VR_ANTI_RANGE)
+    m_kind = VR_RANGE;
+  else
+    gcc_unreachable ();
+}
+
+void
+value_range_base::union_ (const value_range_base &r)
+{
+  /* Disable details for now, because it makes the ranger dump
+     unnecessarily verbose.  */
+  bool details = dump_flags & TDF_DETAILS;
+  if (details)
+    dump_flags &= ~TDF_DETAILS;
+  union_ (&r);
+  if (details)
+    dump_flags |= TDF_DETAILS;
+}
+
+void
+value_range_base::intersect (const value_range_base &r)
+{
+  /* Disable details for now, because it makes the ranger dump
+     unnecessarily verbose.  */
+  bool details = dump_flags & TDF_DETAILS;
+  if (details)
+    dump_flags &= ~TDF_DETAILS;
+  intersect (&r);
+  if (details)
+    dump_flags |= TDF_DETAILS;
+}
+
+// Return TRUE if two types are compatible for range operations.
+
+static bool
+range_compatible_p (tree t1, tree t2)
+{
+  if (POINTER_TYPE_P (t1) && POINTER_TYPE_P (t2))
+    return true;
+
+  return types_compatible_p (t1, t2);
+}
+
+bool
+value_range_base::operator== (const value_range_base &r) const
+{
+  // Special case this because a freshly initialized range may be
+  // typeless.
+  if (undefined_p ())
+    return r.undefined_p ();
+
+  if (num_pairs () != r.num_pairs ()
+      || !range_compatible_p (type (), r.type ()))
+    return false;
+
+  for (unsigned p = 0; p < num_pairs (); p++)
+    if (wi::ne_p (lower_bound (p), r.lower_bound (p))
+	|| wi::ne_p (upper_bound (p), r.upper_bound (p)))
+      return false;
+
+  return true;
 }
 
 /* Visit all arguments for PHI node PHI that flow through executable

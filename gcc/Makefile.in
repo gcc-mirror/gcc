@@ -1452,6 +1452,8 @@ OBJS = \
 	print-tree.o \
 	profile.o \
 	profile-count.o \
+	range.o \
+	range-op.o \
 	read-md.o \
 	read-rtl.o \
 	read-rtl-function.o \
@@ -2548,6 +2550,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/stringpool.c $(srcdir)/tree.c $(srcdir)/varasm.c \
   $(srcdir)/gimple.h \
   $(srcdir)/gimple-ssa.h \
+  $(srcdir)/range.h $(srcdir)/range.cc \
   $(srcdir)/tree-ssanames.c $(srcdir)/tree-eh.c $(srcdir)/tree-ssa-address.c \
   $(srcdir)/tree-cfg.c $(srcdir)/tree-ssa-loop-ivopts.c \
   $(srcdir)/tree-dfa.c \

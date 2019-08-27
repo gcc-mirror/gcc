@@ -46,8 +46,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "case-cfn-macros.h"
 #include "alloc-pool.h"
 #include "attribs.h"
+#include "range.h"
 #include "vr-values.h"
 #include "cfghooks.h"
+#include "range-op.h"
 
 /* Set value range VR to a non-negative range of type TYPE.  */
 
@@ -803,7 +805,7 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
 			   vrp_val_max (expr_type));
     }
 
-  ::extract_range_from_binary_expr (vr, code, expr_type, &vr0, &vr1);
+  range_fold_binary_expr (vr, code, expr_type, &vr0, &vr1);
 
   /* Set value_range for n in following sequence:
      def = __builtin_memchr (arg, 0, sz)
@@ -864,7 +866,7 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
       else
 	n_vr1.set (VR_RANGE, op1, op1);
 
-      ::extract_range_from_binary_expr (vr, code, expr_type, &vr0, &n_vr1);
+      range_fold_binary_expr (vr, code, expr_type, &vr0, &n_vr1);
     }
 
   if (vr->varying_p ()
@@ -888,7 +890,7 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
       else
 	n_vr0.set (op0);
 
-      ::extract_range_from_binary_expr (vr, code, expr_type, &n_vr0, &vr1);
+      range_fold_binary_expr (vr, code, expr_type, &n_vr0, &vr1);
     }
 
   /* If we didn't derive a range for MINUS_EXPR, and
@@ -929,7 +931,7 @@ vr_values::extract_range_from_unary_expr (value_range *vr, enum tree_code code,
   else
     vr0.set_varying (type);
 
-  ::extract_range_from_unary_expr (vr, code, type, &vr0, TREE_TYPE (op0));
+  range_fold_unary_expr (vr, code, type, &vr0, TREE_TYPE (op0));
 }
 
 
@@ -1429,8 +1431,7 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 						     type, op0);
 		      extract_range_from_unary_expr (&vr1, NOP_EXPR,
 						     type, op1);
-		      ::extract_range_from_binary_expr (vr, subcode, type,
-							&vr0, &vr1);
+		      range_fold_binary_expr (vr, subcode, type, &vr0, &vr1);
 		      flag_wrapv = saved_flag_wrapv;
 		    }
 		  return;
