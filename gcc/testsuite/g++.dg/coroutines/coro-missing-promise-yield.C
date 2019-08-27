@@ -1,7 +1,7 @@
 //  { dg-additional-options "-fsyntax-only -w" }
 #include "coro.h"
 
-namespace coro = std::experimental::coroutines_n4775;
+namespace coro = std::experimental::coroutines_n4830;
 
 struct MissingPromiseYield {
   coro::coroutine_handle<> handle;

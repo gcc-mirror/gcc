@@ -13,7 +13,7 @@
 namespace coro = std::experimental::coroutines_v1;
 #else
 # include "../coro.h"
-namespace coro = std::experimental::coroutines_n4775;
+namespace coro = std::experimental::coroutines_n4830;
 #endif
 
 // GRO differs from the eventual return type.
