@@ -265,7 +265,7 @@ value_range_base::supports_type_p (tree type)
 {
   if (type && (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type)))
     return type;
-  return NULL;
+  return false;
 }
 
 extern void register_edge_assert_for (tree, edge, enum tree_code,

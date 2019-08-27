@@ -274,6 +274,8 @@ xlogue_layout::get_stub_rtx (enum xlogue_stub stub)
 
 unsigned scalar_chain::max_id = 0;
 
+namespace {
+
 /* Initialize new chain.  */
 
 scalar_chain::scalar_chain (enum machine_mode smode_, enum machine_mode vmode_)
@@ -621,6 +623,8 @@ scalar_chain::emit_conversion_insns (rtx insns, rtx_insn *after)
   basic_block new_bb = split_edge (e);
   emit_insn_after (insns, BB_HEAD (new_bb));
 }
+
+} // anon namespace
 
 /* Generate the canonical SET_SRC to move GPR to a VMODE vector register,
    zeroing the upper parts.  */
