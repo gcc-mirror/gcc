@@ -18617,9 +18617,9 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
        where integer modes in SSE registers are not tieable
        because of missing QImode and HImode moves to, from or between
        MMX/SSE registers.  */
-    return MAX (8, SSE_CLASS_P (class1)
-		? ix86_cost->hard_register.sse_to_integer
-		: ix86_cost->hard_register.integer_to_sse);
+    return (SSE_CLASS_P (class1)
+	    ? ix86_cost->hard_register.sse_to_integer
+	    : ix86_cost->hard_register.integer_to_sse);
 
   if (MAYBE_FLOAT_CLASS_P (class1))
     return ix86_cost->hard_register.fp_move;
