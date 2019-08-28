@@ -12047,9 +12047,9 @@
 (define_expand "vec_shl_<mode>"
   [(set (match_dup 3)
 	(ashift:V1TI
-	 (match_operand:VI_128 1 "register_operand")
+	 (match_operand:V_128 1 "register_operand")
 	 (match_operand:SI 2 "const_0_to_255_mul_8_operand")))
-   (set (match_operand:VI_128 0 "register_operand") (match_dup 4))]
+   (set (match_operand:V_128 0 "register_operand") (match_dup 4))]
   "TARGET_SSE2"
 {
   operands[1] = gen_lowpart (V1TImode, operands[1]);
@@ -12060,9 +12060,9 @@
 (define_expand "vec_shr_<mode>"
   [(set (match_dup 3)
 	(lshiftrt:V1TI
-	 (match_operand:VI_128 1 "register_operand")
+	 (match_operand:V_128 1 "register_operand")
 	 (match_operand:SI 2 "const_0_to_255_mul_8_operand")))
-   (set (match_operand:VI_128 0 "register_operand") (match_dup 4))]
+   (set (match_operand:V_128 0 "register_operand") (match_dup 4))]
   "TARGET_SSE2"
 {
   operands[1] = gen_lowpart (V1TImode, operands[1]);
