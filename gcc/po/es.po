@@ -43,7 +43,7 @@ msgstr ""
 "Project-Id-Version: gcc 9.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2019-05-02 20:28+0000\n"
-"PO-Revision-Date: 2019-05-17 05:23+0200\n"
+"PO-Revision-Date: 2019-08-28 09:32+0200\n"
 "Last-Translator: Antonio Ceballos Roa <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -174,17 +174,11 @@ msgstr "compilación terminada.\n"
 
 #: diagnostic.c:618
 msgid "In file included from"
-msgstr ""
+msgstr "En el fichero incluido desde"
 
 #: diagnostic.c:619
-#, fuzzy
-#| msgid ""
-#| ",\n"
-#| "                 from %s:%u"
 msgid "                 from"
-msgstr ""
-",\n"
-"                 de %s:%u"
+msgstr "                 desde"
 
 #: diagnostic.c:991
 #, c-format
@@ -796,10 +790,9 @@ msgstr ""
 "%s.\n"
 
 #: gcov-tool.c:528
-#, fuzzy, c-format
-#| msgid "Copyright %s 2018 Free Software Foundation, Inc.\n"
+#, c-format
 msgid "Copyright %s 2019 Free Software Foundation, Inc.\n"
-msgstr "Copyright %s 2018 Free Software Foundation, Inc.\n"
+msgstr "Copyright %s 2019 Free Software Foundation, Inc.\n"
 
 #: gcov-tool.c:531 gcov.c:925
 #, c-format
@@ -867,10 +860,9 @@ msgid "  -h, --help                      Print this help, then exit\n"
 msgstr "  -h, --help                      Muestra esta información, y finaliza\n"
 
 #: gcov.c:894
-#, fuzzy, c-format
-#| msgid "  -n, --no-output                 Do not create an output file\n"
+#, c-format
 msgid "  -i, --json-format               Output JSON intermediate format into .gcov.json.gz file\n"
-msgstr "  -n, --no-output                 No crea un fichero de salida\n"
+msgstr "  -i, --json-format               Salida con formato JSON intermedia en el fichero .gcov.json.gz\n"
 
 #: gcov.c:895
 #, c-format
@@ -912,10 +904,9 @@ msgid "  -p, --preserve-paths            Preserve all pathname components\n"
 msgstr "  -p, --preserve-paths            Preserva todos los nombres de ruta de los componentes\n"
 
 #: gcov.c:903
-#, fuzzy, c-format
-#| msgid "  -k, --use-colors                Emit colored output\n"
+#, c-format
 msgid "  -q, --use-hotness-colors        Emit perf-like colored output for hot lines\n"
-msgstr "  -k, --use-colors                Emite salida con colores\n"
+msgstr "  -q, --use-hotness-colors        Emite salida con colores de tipo perf para las líneas calientes\n"
 
 #: gcov.c:904
 #, c-format
@@ -928,10 +919,9 @@ msgid "  -s, --source-prefix DIR         Source prefix to elide\n"
 msgstr "  -s, --source-prefix DIR         Prefijo de fuente a omitir\n"
 
 #: gcov.c:906
-#, fuzzy, c-format
-#| msgid "  -n, --no-output                 Do not create an output file\n"
+#, c-format
 msgid "  -t, --stdout                    Output to stdout instead of a file\n"
-msgstr "  -n, --no-output                 No crea un fichero de salida\n"
+msgstr "  -t, --stdout                    Salida en stdout en lugar de un fichero\n"
 
 #: gcov.c:907
 #, c-format
@@ -959,10 +949,9 @@ msgid "gcov %s%s\n"
 msgstr "gcov %s%s\n"
 
 #: gcov.c:1250
-#, fuzzy, c-format
-#| msgid "Treat the input file as already preprocessed."
+#, c-format
 msgid "'%s' file is already processed\n"
-msgstr "Trata al fichero de entrada como previamente preprocesado."
+msgstr "El fichero '%s' ya está procesado\n"
 
 #: gcov.c:1364
 #, c-format
@@ -990,16 +979,14 @@ msgid "\n"
 msgstr "\n"
 
 #: gcov.c:1489
-#, fuzzy, c-format
-#| msgid "%s: Cannot open output file: %s\n"
+#, c-format
 msgid "Cannot open JSON output file %s\n"
-msgstr "%s: No se puede abrir el fichero de salida: %s\n"
+msgstr "No se puede abrir el fichero de salida JSON %s\n"
 
 #: gcov.c:1497
-#, fuzzy, c-format
-#| msgid "Error writing output file '%s'\n"
+#, c-format
 msgid "Error writing JSON output file %s\n"
-msgstr "Error al escribir el fichero de salida '%s'\n"
+msgstr "Error al escribir el fichero de salida JSON %s\n"
 
 #: gcov.c:1664
 #, c-format
@@ -1266,10 +1253,8 @@ msgid "this is the insn:"
 msgstr "este es la insn:"
 
 #: lra-constraints.c:2971
-#, fuzzy
-#| msgid "unable to generate reloads for:"
 msgid "unable to generate reloads for impossible constraints:"
-msgstr "no se pueden generar recargas para:"
+msgstr "no se pueden generar recargas para restricciones imposibles:"
 
 #: lra-constraints.c:3962 reload.c:3814
 msgid "unable to generate reloads for:"
@@ -1327,12 +1312,13 @@ msgid " All options with the desired characteristics have already been displayed
 msgstr "Ya se mostraron todas las opciones con las características deseadas\n"
 
 #: opts.c:1581
-#, fuzzy, c-format
-#| msgid "invalid argument %qs to %qs"
+#, c-format
 msgid ""
 "  Known valid arguments for %s option:\n"
 "   "
-msgstr "argumento %qs no válido para %qs"
+msgstr ""
+"  Argumentos válidos conocidos para la opción %s:\n"
+"   "
 
 #: opts.c:1631
 msgid "The following options are target specific"
@@ -1430,16 +1416,12 @@ msgid "created and used with differing settings of '%s'"
 msgstr "creado y usado con diferentes opciones de '%s'"
 
 #: targhooks.c:2038
-#, fuzzy
-#| msgid "created and used with different settings of -fpic"
 msgid "created and used with different settings of %<-fpic%>"
-msgstr "creado y usado con diferentes opciones de -fpic"
+msgstr "creado y usado con diferentes opciones de %<-fpic%>"
 
 #: targhooks.c:2040
-#, fuzzy
-#| msgid "created and used with different settings of -fpie"
 msgid "created and used with different settings of %<-fpie%>"
-msgstr "creado y usado con diferentes opciones de -fpie"
+msgstr "creado y usado con diferentes opciones de %<-fpie%>"
 
 #: tlink.c:387
 #, c-format
@@ -1703,16 +1685,14 @@ msgid "The maximum number of instructions when inlining for size."
 msgstr "El número máximo de instrucciones cuando se hace inclusión en línea por tamaño."
 
 #: params.def:97
-#, fuzzy, no-c-format
-#| msgid "Use subroutines for function prologues and epilogues."
+#, no-c-format
 msgid "Instruction accounted for function prologue, epilogue and other overhead."
-msgstr "Usa subrutinas para los prólogos y epílogos de función."
+msgstr "Instrucción contabilizada para el prólogo y epílogo de la función y otras sobrecargas."
 
 #: params.def:103
-#, fuzzy, no-c-format
-#| msgid "Use subroutines for function prologues and epilogues."
+#, no-c-format
 msgid "Time accounted for function prologue, epilogue and other overhead."
-msgstr "Usa subrutinas para los prólogos y epílogos de función."
+msgstr "Tiempo contabilizado para el prólogo y epílogo de la función y otras sobrecargas."
 
 #: params.def:109
 #, no-c-format
@@ -1946,10 +1926,9 @@ msgstr "El número máximo de eliminación de opciones en un solo bucle."
 
 # 'desfactorizar' no me gusta. ¿Alguna sugerencia? - cfuga
 #: params.def:393
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns to duplicate when unfactoring computed gotos."
+#, no-c-format
 msgid "The maximum number of insns in loop header duplicated by the copy loop headers pass."
-msgstr "El número máximo de insns a duplicar al desfactorizar gotos calculados."
+msgstr "El número máximo de instrucciones en encabezamiento de bucle a duplicar en el paso de encabezamientos de bucles."
 
 #: params.def:400
 #, no-c-format
