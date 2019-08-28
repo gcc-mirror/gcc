@@ -1815,7 +1815,7 @@ print_pattern (pretty_printer *pp, const_rtx x, int verbose)
 	    gcc_assert (strlen (print_rtx_head) < sizeof (indented_print_rtx_head) - 4);
 	    snprintf (indented_print_rtx_head,
 		      sizeof (indented_print_rtx_head),
-		      "%s     ", print_rtx_head);
+		      "%s    ", print_rtx_head);
 	    print_rtx_head = indented_print_rtx_head;
 	    for (int i = 0; i < seq->len (); i++)
 	      print_insn_with_notes (pp, seq->insn (i));

@@ -1409,7 +1409,7 @@ class Type
   static Pointer_type_table pointer_types;
 
   // List of placeholder pointer types.
-  static std::vector<Pointer_type*> placeholder_pointers;
+  static std::vector<Type*> placeholder_pointers;
 
   // The type classification.
   Type_classification classification_;

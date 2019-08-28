@@ -201,6 +201,7 @@ HOST_EXPORTS = \
 	AR="$(AR)"; export AR; \
 	AS="$(AS)"; export AS; \
 	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	CXX_FOR_BUILD="$(CXX_FOR_BUILD)"; export CXX_FOR_BUILD; \
 	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
 	LD="$(LD)"; export LD; \
 	LDFLAGS="$(STAGE1_LDFLAGS) $(LDFLAGS)"; export LDFLAGS; \

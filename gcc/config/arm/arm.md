@@ -5231,6 +5231,8 @@
 	(match_operand:DI 1 "general_operand"))]
   "TARGET_EITHER"
   "
+  gcc_checking_assert (aligned_operand (operands[0], DImode));
+  gcc_checking_assert (aligned_operand (operands[1], DImode));
   if (can_create_pseudo_p ())
     {
       if (!REG_P (operands[0]))
@@ -5407,6 +5409,8 @@
   {
   rtx base, offset, tmp;
 
+  gcc_checking_assert (aligned_operand (operands[0], SImode));
+  gcc_checking_assert (aligned_operand (operands[1], SImode));
   if (TARGET_32BIT || TARGET_HAVE_MOVT)
     {
       /* Everything except mem = const or mem = mem can be done easily.  */
@@ -5896,6 +5900,8 @@
 	(match_operand:HI 1 "general_operand"))]
   "TARGET_EITHER"
   "
+  gcc_checking_assert (aligned_operand (operands[0], HImode));
+  gcc_checking_assert (aligned_operand (operands[1], HImode));
   if (TARGET_ARM)
     {
       if (can_create_pseudo_p ())
@@ -6305,6 +6311,8 @@
 	(match_operand:HF 1 "general_operand"))]
   "TARGET_EITHER"
   "
+  gcc_checking_assert (aligned_operand (operands[0], HFmode));
+  gcc_checking_assert (aligned_operand (operands[1], HFmode));
   if (TARGET_32BIT)
     {
       if (MEM_P (operands[0]))
@@ -6369,6 +6377,8 @@
 	(match_operand:SF 1 "general_operand"))]
   "TARGET_EITHER"
   "
+  gcc_checking_assert (aligned_operand (operands[0], SFmode));
+  gcc_checking_assert (aligned_operand (operands[1], SFmode));
   if (TARGET_32BIT)
     {
       if (MEM_P (operands[0]))
@@ -6464,6 +6474,8 @@
 	(match_operand:DF 1 "general_operand"))]
   "TARGET_EITHER"
   "
+  gcc_checking_assert (aligned_operand (operands[0], DFmode));
+  gcc_checking_assert (aligned_operand (operands[1], DFmode));
   if (TARGET_32BIT)
     {
       if (MEM_P (operands[0]))
@@ -8208,6 +8220,8 @@
   [(set_attr "arch" "t1,32")]
 )
 
+;; DO NOT SPLIT THIS INSN.  It's important for security reasons that the
+;; canary value does not live beyond the life of this sequence.
 (define_insn "*stack_protect_set_insn"
   [(set (match_operand:SI 0 "memory_operand" "=m,m")
 	(unspec:SI [(mem:SI (match_operand:SI 1 "register_operand" "+&l,&r"))]
@@ -8215,8 +8229,8 @@
    (clobber (match_dup 1))]
   ""
   "@
-   ldr\\t%1, [%1]\;str\\t%1, %0\;movs\t%1,#0
-   ldr\\t%1, [%1]\;str\\t%1, %0\;mov\t%1,#0"
+   ldr\\t%1, [%1]\;str\\t%1, %0\;movs\t%1, #0
+   ldr\\t%1, [%1]\;str\\t%1, %0\;mov\t%1, #0"
   [(set_attr "length" "8,12")
    (set_attr "conds" "clob,nocond")
    (set_attr "type" "multiple")

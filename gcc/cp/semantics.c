@@ -723,6 +723,28 @@ begin_if_stmt (void)
   return r;
 }
 
+/* Returns true if FN, a CALL_EXPR, is a call to
+   std::is_constant_evaluated or __builtin_is_constant_evaluated.  */
+
+static bool
+is_std_constant_evaluated_p (tree fn)
+{
+  /* std::is_constant_evaluated takes no arguments.  */
+  if (call_expr_nargs (fn) != 0)
+    return false;
+
+  tree fndecl = cp_get_callee_fndecl_nofold (fn);
+  if (fndecl_built_in_p (fndecl, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
+			 BUILT_IN_FRONTEND))
+    return true;
+
+  if (!decl_in_std_namespace_p (fndecl))
+    return false;
+
+  tree name = DECL_NAME (fndecl);
+  return name && id_equal (name, "is_constant_evaluated");
+}
+
 /* Process the COND of an if-statement, which may be given by
    IF_STMT.  */
 
@@ -738,6 +760,20 @@ finish_if_stmt_cond (tree cond, tree if_stmt)
 	 converted to bool.  */
       && TYPE_MAIN_VARIANT (TREE_TYPE (cond)) == boolean_type_node)
     {
+      /* if constexpr (std::is_constant_evaluated()) is always true,
+	 so give the user a clue.  */
+      if (warn_tautological_compare)
+	{
+	  tree t = cond;
+	  if (TREE_CODE (t) == CLEANUP_POINT_EXPR)
+	    t = TREE_OPERAND (t, 0);
+	  if (TREE_CODE (t) == CALL_EXPR
+	      && is_std_constant_evaluated_p (t))
+	    warning_at (EXPR_LOCATION (cond), OPT_Wtautological_compare,
+			"%qs always evaluates to true in %<if constexpr%>",
+			"std::is_constant_evaluated");
+	}
+
       cond = instantiate_non_dependent_expr (cond);
       cond = cxx_constant_value (cond, NULL_TREE);
     }
@@ -774,6 +810,18 @@ finish_else_clause (tree if_stmt)
   ELSE_CLAUSE (if_stmt) = pop_stmt_list (ELSE_CLAUSE (if_stmt));
 }
 
+/* Callback for cp_walk_tree to mark all {VAR,PARM}_DECLs in a tree as
+   read.  */
+
+static tree
+maybe_mark_exp_read_r (tree *tp, int *, void *)
+{
+  tree t = *tp;
+  if (VAR_P (t) || TREE_CODE (t) == PARM_DECL)
+    mark_exp_read (t);
+  return NULL_TREE;
+}
+
 /* Finish an if-statement.  */
 
 void
@@ -781,6 +829,16 @@ finish_if_stmt (tree if_stmt)
 {
   tree scope = IF_SCOPE (if_stmt);
   IF_SCOPE (if_stmt) = NULL;
+  if (IF_STMT_CONSTEXPR_P (if_stmt))
+    {
+      /* Prevent various -Wunused warnings.  We might not instantiate
+	 either of these branches, so we would not mark the variables
+	 used in that branch as read.  */
+      cp_walk_tree_without_duplicates (&THEN_CLAUSE (if_stmt),
+				       maybe_mark_exp_read_r, NULL);
+      cp_walk_tree_without_duplicates (&ELSE_CLAUSE (if_stmt),
+				       maybe_mark_exp_read_r, NULL);
+    }
   add_stmt (do_poplevel (scope));
 }
 
@@ -1185,10 +1243,12 @@ finish_switch_cond (tree cond, tree switch_stmt)
   if (!processing_template_decl)
     {
       /* Convert the condition to an integer or enumeration type.  */
+      tree orig_cond = cond;
       cond = build_expr_type_conversion (WANT_INT | WANT_ENUM, cond, true);
       if (cond == NULL_TREE)
 	{
-	  error ("switch quantity not an integer");
+	  error_at (cp_expr_loc_or_input_loc (orig_cond),
+		    "switch quantity not an integer");
 	  cond = error_mark_node;
 	}
       /* We want unlowered type here to handle enum bit-fields.  */
@@ -3810,6 +3870,8 @@ finish_id_expression_1 (tree id_expression,
 
 	  if (TREE_CODE (decl) == FUNCTION_DECL)
 	    mark_used (decl);
+
+	  cp_warn_deprecated_use_scopes (scope);
 
 	  if (TYPE_P (scope))
 	    decl = finish_qualified_id_expr (scope,

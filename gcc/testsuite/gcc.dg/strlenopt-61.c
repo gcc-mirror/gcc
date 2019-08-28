@@ -215,4 +215,4 @@ void test_ta2 (void)
 }
 
 /* { dg-final { scan-tree-dump-not "failure" "optimized" } }
-   { dg-final { scan-tree-dump-not "strlen" "gimple" } } */
+   { dg-final { scan-tree-dump-not "strlen1" "gimple" } } */

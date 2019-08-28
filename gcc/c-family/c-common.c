@@ -1901,6 +1901,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
     case COMPOUND_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
+    sequenced_binary:
       tmp_before = tmp_nosp = tmp_list2 = tmp_list3 = 0;
       verify_tree (TREE_OPERAND (x, 0), &tmp_before, &tmp_nosp, NULL_TREE);
       warn_for_collisions (tmp_nosp);
@@ -2043,8 +2044,18 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
 	  x = TREE_OPERAND (x, 0);
 	  goto restart;
 	}
-      gcc_fallthrough ();
+      goto do_default;
+
+    case LSHIFT_EXPR:
+    case RSHIFT_EXPR:
+    case COMPONENT_REF:
+    case ARRAY_REF:
+      if (cxx_dialect >= cxx17)
+	goto sequenced_binary;
+      goto do_default;
+
     default:
+    do_default:
       /* For other expressions, simply recurse on their operands.
 	 Manual tail recursion for unary expressions.
 	 Other non-expressions need not be processed.  */

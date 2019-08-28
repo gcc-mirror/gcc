@@ -2234,9 +2234,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    SET_DECL_DEPENDENT_INIT_P (newdecl, true);
 	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (newdecl)
 	    |= DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (olddecl);
-          if (DECL_CLASS_SCOPE_P (olddecl))
-            DECL_DECLARED_CONSTEXPR_P (newdecl)
-	      |= DECL_DECLARED_CONSTEXPR_P (olddecl);
+	  DECL_DECLARED_CONSTEXPR_P (newdecl)
+	    |= DECL_DECLARED_CONSTEXPR_P (olddecl);
 
 	  /* Merge the threadprivate attribute from OLDDECL into NEWDECL.  */
 	  if (DECL_LANG_SPECIFIC (olddecl)
@@ -10828,6 +10827,7 @@ grokdeclarator (const cp_declarator *declarator,
   cp_warn_deprecated_use (type);
   if (type && TREE_CODE (type) == TYPE_DECL)
     {
+      cp_warn_deprecated_use_scopes (CP_DECL_CONTEXT (type));
       typedef_decl = type;
       type = TREE_TYPE (typedef_decl);
       if (DECL_ARTIFICIAL (typedef_decl))
@@ -11585,6 +11585,8 @@ grokdeclarator (const cp_declarator *declarator,
 		else if (late_return_type
 			 && sfk != sfk_conversion)
 		  {
+		    if (late_return_type == error_mark_node)
+		      return error_mark_node;
 		    if (cxx_dialect < cxx11)
 		      /* Not using maybe_warn_cpp0x because this should
 			 always be an error.  */
@@ -13270,7 +13272,10 @@ type_is_deprecated (tree type)
       if (TREE_DEPRECATED (TYPE_NAME (type)))
 	return type;
       else
-	return NULL_TREE;
+	{
+	  cp_warn_deprecated_use_scopes (CP_DECL_CONTEXT (TYPE_NAME (type)));
+	  return NULL_TREE;
+	}
     }
 
   /* Do warn about using typedefs to a deprecated class.  */

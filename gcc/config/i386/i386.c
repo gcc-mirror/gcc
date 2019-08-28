@@ -13557,6 +13557,11 @@ ix86_i387_mode_needed (int entity, rtx_insn *insn)
 
   switch (entity)
     {
+    case I387_ROUNDEVEN:
+      if (mode == I387_CW_ROUNDEVEN)
+	return mode;
+      break;
+
     case I387_TRUNC:
       if (mode == I387_CW_TRUNC)
 	return mode;
@@ -13591,6 +13596,7 @@ ix86_mode_needed (int entity, rtx_insn *insn)
       return ix86_dirflag_mode_needed (insn);
     case AVX_U128:
       return ix86_avx_u128_mode_needed (insn);
+    case I387_ROUNDEVEN:
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
@@ -13651,6 +13657,7 @@ ix86_mode_after (int entity, int mode, rtx_insn *insn)
       return mode;
     case AVX_U128:
       return ix86_avx_u128_mode_after (mode, insn);
+    case I387_ROUNDEVEN:
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
@@ -13703,6 +13710,7 @@ ix86_mode_entry (int entity)
       return ix86_dirflag_mode_entry ();
     case AVX_U128:
       return ix86_avx_u128_mode_entry ();
+    case I387_ROUNDEVEN:
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
@@ -13740,6 +13748,7 @@ ix86_mode_exit (int entity)
       return X86_DIRFLAG_ANY;
     case AVX_U128:
       return ix86_avx_u128_mode_exit ();
+    case I387_ROUNDEVEN:
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
@@ -13774,6 +13783,12 @@ emit_i387_cw_initialization (int mode)
 
   switch (mode)
     {
+    case I387_CW_ROUNDEVEN:
+      /* round to nearest */
+      emit_insn (gen_andhi3 (reg, reg, GEN_INT (~0x0c00)));
+      slot = SLOT_CW_ROUNDEVEN;
+      break;
+
     case I387_CW_TRUNC:
       /* round toward zero (truncate) */
       emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0c00)));
@@ -13820,6 +13835,7 @@ ix86_emit_mode_set (int entity, int mode, int prev_mode ATTRIBUTE_UNUSED,
       if (mode == AVX_U128_CLEAN)
 	emit_insn (gen_avx_vzeroupper ());
       break;
+    case I387_ROUNDEVEN:
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:

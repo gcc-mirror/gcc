@@ -17,6 +17,6 @@ void f ()
 {
   char des[3];
   char src[] = "abcd";
-  __builtin_sprintf (des, "%s", src); /* { dg-warning "directive writing up to 4 bytes into a region of size 3" } */
+  __builtin_sprintf (des, "%s", src); /* { dg-warning "directive writing 4 bytes into a region of size 3" } */
   return;
 }

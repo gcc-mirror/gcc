@@ -10,9 +10,9 @@
 ! Case 1: Substring encompassing the whole string
 subroutine foo2
   implicit none
-  external foo
+  external foo_char
   character(len=20) :: str(2) = '1234567890'
-  call foo(str(:)(1:20)) ! This is still not fixed.
+  call foo_char (str(:)(1:20)) ! This is still not fixed.
 end
 
 ! Case 2: Contiguous array section

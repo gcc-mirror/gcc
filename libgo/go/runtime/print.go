@@ -35,6 +35,7 @@ import (
 // should use printhex instead of printuint (decimal).
 type hex uint64
 
+//go:nowritebarrier
 func bytes(s string) (ret []byte) {
 	rp := (*slice)(unsafe.Pointer(&ret))
 	sp := stringStructOf(&s)

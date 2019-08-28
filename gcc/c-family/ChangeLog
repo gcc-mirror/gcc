@@ -1,3 +1,10 @@
+2019-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91415
+	* c-common.c (verify_tree): For LSHIFT_EXPR, RSHIFT_EXPR,
+	COMPONENT_REF and ARRAY_REF in cxx_dialect >= cxx17 mode handle it
+	like COMPOUND_EXPR rather than normal expression.
+
 2019-08-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR pch/61250

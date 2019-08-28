@@ -1243,9 +1243,7 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
 	    break;
 	  }
 	case GIMPLE_UNARY_RHS:
-	  if (is_gimple_assign (stmt)
-	      && gimple_assign_rhs_class (stmt) == GIMPLE_UNARY_RHS
-	      && ! CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt)))
+	  if (!CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt)))
 	    ipa_set_jf_unary_pass_through (jfunc, index,
 					   gimple_assign_rhs_code (stmt));
 	default:;
@@ -2724,12 +2722,6 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	      dst->value.ancestor.formal_id = src->value.pass_through.formal_id;
 	      dst->value.ancestor.agg_preserved &=
 		src->value.pass_through.agg_preserved;
-	    }
-	  else if (src->type == IPA_JF_PASS_THROUGH
-		   && TREE_CODE_CLASS (src->value.pass_through.operation) == tcc_unary)
-	    {
-	      dst->value.ancestor.formal_id = src->value.pass_through.formal_id;
-	      dst->value.ancestor.agg_preserved = false;
 	    }
 	  else if (src->type == IPA_JF_ANCESTOR)
 	    {
@@ -4933,7 +4925,7 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
 	{
 	  /* V_C_E can do things like convert an array of integers to one
 	     bigger integer and similar things we do not handle below.  */
-	  if (TREE_CODE (rhs) == VIEW_CONVERT_EXPR)
+	  if (TREE_CODE (t) == VIEW_CONVERT_EXPR)
 	    {
 	      vce = true;
 	      break;

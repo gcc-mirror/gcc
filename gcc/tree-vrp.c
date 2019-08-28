@@ -369,7 +369,7 @@ value_range_base::singleton_p (tree *result) const
 tree
 value_range_base::type () const
 {
-  gcc_assert (m_min || undefined_p ());
+  gcc_assert (m_min);
   return TREE_TYPE (min ());
 }
 
@@ -6415,6 +6415,7 @@ vrp_prop::visit_phi (gphi *phi)
 class vrp_folder : public substitute_and_fold_engine
 {
  public:
+  vrp_folder () : substitute_and_fold_engine (/* Fold all stmts.  */ true) {  }
   tree get_value (tree) FINAL OVERRIDE;
   bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
   bool fold_predicate_in (gimple_stmt_iterator *);

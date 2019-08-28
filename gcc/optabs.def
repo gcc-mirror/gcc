@@ -271,6 +271,7 @@ OPTAB_D (fnms_optab, "fnms$a4")
 
 OPTAB_D (rint_optab, "rint$a2")
 OPTAB_D (round_optab, "round$a2")
+OPTAB_D (roundeven_optab, "roundeven$a2")
 OPTAB_D (floor_optab, "floor$a2")
 OPTAB_D (ceil_optab, "ceil$a2")
 OPTAB_D (btrunc_optab, "btrunc$a2")

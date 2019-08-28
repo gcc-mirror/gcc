@@ -5409,6 +5409,43 @@ cp_warn_deprecated_use (tree decl, tsubst_flags_t complain)
   return warned;
 }
 
+/* Like above, but takes into account outer scopes.  */
+
+void
+cp_warn_deprecated_use_scopes (tree scope)
+{
+  while (scope
+	 && scope != error_mark_node
+	 && scope != global_namespace)
+    {
+      if (cp_warn_deprecated_use (scope))
+	return;
+      if (TYPE_P (scope))
+	scope = CP_TYPE_CONTEXT (scope);
+      else
+	scope = CP_DECL_CONTEXT (scope);
+    }
+}
+
+/* True if DECL or its enclosing scope have unbound template parameters.  */
+
+bool
+decl_dependent_p (tree decl)
+{
+  if (DECL_FUNCTION_SCOPE_P (decl)
+      || TREE_CODE (decl) == CONST_DECL
+      || TREE_CODE (decl) == USING_DECL
+      || TREE_CODE (decl) == FIELD_DECL)
+    decl = CP_DECL_CONTEXT (decl);
+  if (tree tinfo = get_template_info (decl))
+    if (any_dependent_template_arguments_p (TI_ARGS (tinfo)))
+      return true;
+  if (LAMBDA_FUNCTION_P (decl)
+      && dependent_type_p (DECL_CONTEXT (decl)))
+    return true;
+  return false;
+}
+
 /* Mark DECL (either a _DECL or a BASELINK) as "used" in the program.
    If DECL is a specialization or implicitly declared class member,
    generate the actual definition.  Return false if something goes
@@ -5434,6 +5471,9 @@ mark_used (tree decl, tsubst_flags_t complain)
 	return true;
       decl = OVL_FIRST (decl);
     }
+
+  if (!DECL_P (decl))
+    return true;
 
   /* Set TREE_USED for the benefit of -Wunused.  */
   TREE_USED (decl) = true;
@@ -5483,7 +5523,7 @@ mark_used (tree decl, tsubst_flags_t complain)
       || DECL_LANG_SPECIFIC (decl) == NULL
       || DECL_THUNK_P (decl))
     {
-      if (!processing_template_decl
+      if (!decl_dependent_p (decl)
 	  && !require_deduced_type (decl, complain))
 	return false;
       return true;

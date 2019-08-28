@@ -99,6 +99,11 @@ bool gfc_matching_function;
 /* Set upon parsing a !GCC$ unroll n directive for use in the next loop.  */
 int directive_unroll = -1;
 
+/* Set upon parsing supported !GCC$ pragmas for use in the next loop.  */
+bool directive_ivdep = false;
+bool directive_vector = false;
+bool directive_novector = false;
+
 /* Map of middle-end built-ins that should be vectorized.  */
 hash_map<nofree_string_hash, int> *gfc_vectorized_builtins;
 
@@ -11527,4 +11532,54 @@ gfc_match_gcc_builtin (void)
     free (r);
 
   return MATCH_YES;
+}
+
+/* Match an !GCC$ IVDEP statement.
+   When we come here, we have already matched the !GCC$ IVDEP string.  */
+
+match
+gfc_match_gcc_ivdep (void)
+{
+  if (gfc_match_eos () == MATCH_YES)
+    {
+      directive_ivdep = true;
+      return MATCH_YES;
+    }
+
+  gfc_error ("Syntax error in !GCC$ IVDEP directive at %C");
+  return MATCH_ERROR;
+}
+
+/* Match an !GCC$ VECTOR statement.
+   When we come here, we have already matched the !GCC$ VECTOR string.  */
+
+match
+gfc_match_gcc_vector (void)
+{
+  if (gfc_match_eos () == MATCH_YES)
+    {
+      directive_vector = true;
+      directive_novector = false;
+      return MATCH_YES;
+    }
+
+  gfc_error ("Syntax error in !GCC$ VECTOR directive at %C");
+  return MATCH_ERROR;
+}
+
+/* Match an !GCC$ NOVECTOR statement.
+   When we come here, we have already matched the !GCC$ NOVECTOR string.  */
+
+match
+gfc_match_gcc_novector (void)
+{
+  if (gfc_match_eos () == MATCH_YES)
+    {
+      directive_novector = true;
+      directive_vector = false;
+      return MATCH_YES;
+    }
+
+  gfc_error ("Syntax error in !GCC$ NOVECTOR directive at %C");
+  return MATCH_ERROR;
 }

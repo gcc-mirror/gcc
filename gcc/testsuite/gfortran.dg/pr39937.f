@@ -1,3 +1,5 @@
+C { dg-do compile }
+C { dg-options "-std=legacy" }
       SUBROUTINE DTREVC( SIDE, HOWMNY, SELECT, N, T, LDT, VL, LDVL, VR,
      $                   LDVR, MM, M, WORK, INFO )
       DOUBLE PRECISION   T( LDT, * ), VL( LDVL, * ), VR( LDVR, * ),
@@ -18,7 +20,7 @@
           END IF
           CALL DLALN2( .FALSE., 2, 2, SMIN, ONE,
      $                            T( J-1, J-1 ), LDT, ONE, ONE,
-     $                            XNORM, IERR )
+     $                            XNORM, IERR ) ! { dg-warning "Type mismatch" }
           CALL DAXPY( J-2, -X( 1, 1 ), T( 1, J-1 ), 1,
      $                           WORK( 1+N ), 1 )
           CALL DAXPY( J-2, -X( 2, 2 ), T( 1, J ), 1,

@@ -2061,6 +2061,7 @@ mathfn_built_in_2 (tree type, combined_fn fn)
     CASE_MATHFN (REMQUO)
     CASE_MATHFN_FLOATN (RINT)
     CASE_MATHFN_FLOATN (ROUND)
+    CASE_MATHFN_FLOATN (ROUNDEVEN)
     CASE_MATHFN (SCALB)
     CASE_MATHFN (SCALBLN)
     CASE_MATHFN (SCALBN)
@@ -3474,11 +3475,6 @@ check_access (tree exp, tree, tree, tree dstwrite,
   if (maxread)
     {
       get_size_range (maxread, range);
-
-      /* Use the lower end for MAXREAD from now on.  */
-      if (range[0])
-	maxread = range[0];
-
       if (range[0] && dstsize && tree_fits_uhwi_p (dstsize))
 	{
 	  location_t loc = tree_nonartificial_location (exp);

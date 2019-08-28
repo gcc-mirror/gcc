@@ -6380,6 +6380,7 @@ extern bool is_list_ctor			(tree);
 extern void validate_conversion_obstack		(void);
 extern void mark_versions_used			(tree);
 extern bool cp_warn_deprecated_use		(tree, tsubst_flags_t = tf_warning_or_error);
+extern void cp_warn_deprecated_use_scopes	(tree);
 extern tree get_function_version_dispatcher	(tree);
 
 /* in class.c */
@@ -7692,6 +7693,7 @@ extern tree finish_left_unary_fold_expr      (tree, int);
 extern tree finish_right_unary_fold_expr     (tree, int);
 extern tree finish_binary_fold_expr          (tree, tree, int);
 extern bool treat_lvalue_as_rvalue_p	     (tree, bool);
+extern bool decl_in_std_namespace_p	     (tree);
 
 /* in typeck2.c */
 extern void require_complete_eh_spec_types	(tree, tree);

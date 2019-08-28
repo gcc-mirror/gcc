@@ -5010,6 +5010,101 @@ real_round (REAL_VALUE_TYPE *r, format_helper fmt,
     real_convert (r, fmt, r);
 }
 
+/* Return true including 0 if integer part of R is even, else return
+   false.  The function is not valid for rvc_inf and rvc_nan classes.  */
+
+bool
+is_even (REAL_VALUE_TYPE *r)
+{
+  gcc_assert (r->cl != rvc_inf);
+  gcc_assert (r->cl != rvc_nan);
+
+  if (r->cl == rvc_zero)
+    return true;
+
+  /* For (-1,1), number is even.  */
+  if (REAL_EXP (r) <= 0)
+    return true;
+
+  /* Check lowest bit, if not set, return true.  */
+  else if (REAL_EXP (r) <= SIGNIFICAND_BITS)
+    {
+      unsigned int n = SIGNIFICAND_BITS - REAL_EXP (r);
+      int w = n / HOST_BITS_PER_LONG;
+
+      unsigned long num = ((unsigned long)1 << (n % HOST_BITS_PER_LONG));
+
+      if ((r->sig[w] & num) == 0)
+	return true;
+    }
+  else
+    return true;
+
+  return false;
+}
+
+/* Return true if R is halfway between two integers, else return
+   false.  The function is not valid for rvc_inf and rvc_nan classes.  */
+
+bool
+is_halfway_below (const REAL_VALUE_TYPE *r)
+{
+  gcc_assert (r->cl != rvc_inf);
+  gcc_assert (r->cl != rvc_nan);
+  int i;
+
+  if (r->cl == rvc_zero)
+    return false;
+
+  /* For numbers (-0.5,0) and (0,0.5).  */
+  if (REAL_EXP (r) < 0)
+    return false;
+
+  else if (REAL_EXP (r) < SIGNIFICAND_BITS)
+    {
+      unsigned int n = SIGNIFICAND_BITS - REAL_EXP (r) - 1;
+      int w = n / HOST_BITS_PER_LONG;
+
+      for (i = 0; i < w; ++i)
+	if (r->sig[i] != 0)
+	  return false;
+
+      unsigned long num = ((unsigned long)1 << (n % HOST_BITS_PER_LONG));
+
+      if (((r->sig[w] & num) != 0) && ((r->sig[w] & (num-1)) == 0))
+	return true;
+    }
+  return false;
+}
+
+/* Round X to nearest integer, rounding halfway cases towards even.  */
+
+void
+real_roundeven (REAL_VALUE_TYPE *r, format_helper fmt,
+		const REAL_VALUE_TYPE *x)
+{
+  if (is_halfway_below (x))
+    {
+      /* Special case as -0.5 rounds to -0.0 and
+	 similarly +0.5 rounds to +0.0.  */
+      if (REAL_EXP (x) == 0)
+	{
+	  *r = *x;
+	  clear_significand_below (r, SIGNIFICAND_BITS);
+	}
+      else
+	{
+	  do_add (r, x, &dconsthalf, x->sign);
+	  if (!is_even (r))
+	    do_add (r, r, &dconstm1, x->sign);
+	}
+      if (fmt)
+	real_convert (r, fmt, r);
+    }
+  else
+    real_round (r, fmt, x);
+}
+
 /* Set the sign of R to the sign of X.  */
 
 void

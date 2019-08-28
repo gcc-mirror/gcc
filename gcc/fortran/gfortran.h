@@ -2418,6 +2418,9 @@ typedef struct
 {
   gfc_expr *var, *start, *end, *step;
   unsigned short unroll;
+  bool ivdep;
+  bool vector;
+  bool novector;
 }
 gfc_iterator;
 
@@ -2794,6 +2797,9 @@ gfc_finalizer;
 bool gfc_in_match_data (void);
 match gfc_match_char_spec (gfc_typespec *);
 extern int directive_unroll;
+extern bool directive_ivdep;
+extern bool directive_vector;
+extern bool directive_novector;
 
 /* SIMD clause enum.  */
 enum gfc_simd_clause
@@ -3421,6 +3427,9 @@ bool gfc_check_typebound_override (gfc_symtree*, gfc_symtree*);
 void gfc_check_dtio_interfaces (gfc_symbol*);
 gfc_symtree* gfc_find_typebound_dtio_proc (gfc_symbol *, bool, bool);
 gfc_symbol* gfc_find_specific_dtio_proc (gfc_symbol*, bool, bool);
+void gfc_get_formal_from_actual_arglist (gfc_symbol *, gfc_actual_arglist *);
+bool gfc_compare_actual_formal (gfc_actual_arglist **, gfc_formal_arglist *,
+				int, int, bool, locus *);
 
 
 /* io.c */

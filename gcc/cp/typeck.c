@@ -9328,7 +9328,7 @@ maybe_warn_about_returning_address_of_local (tree retval)
 
 /* Returns true if DECL is in the std namespace.  */
 
-static bool
+bool
 decl_in_std_namespace_p (tree decl)
 {
   return (decl != NULL_TREE

@@ -2022,6 +2022,37 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (cst && !TREE_OVERFLOW (cst))
      (plus { cst; } @0))))
 
+/* ((T)(A)) + CST -> (T)(A + CST)  */
+#if GIMPLE
+  (simplify
+   (plus (convert SSA_NAME@0) INTEGER_CST@1)
+    (if (TREE_CODE (TREE_TYPE (@0)) == INTEGER_TYPE
+         && TREE_CODE (type) == INTEGER_TYPE
+         && TYPE_PRECISION (type) > TYPE_PRECISION (TREE_TYPE (@0))
+         && int_fits_type_p (@1, TREE_TYPE (@0)))
+     /* Perform binary operation inside the cast if the constant fits
+        and (A + CST)'s range does not overflow.  */
+     (with
+      {
+	wi::overflow_type min_ovf = wi::OVF_OVERFLOW,
+			  max_ovf = wi::OVF_OVERFLOW;
+        tree inner_type = TREE_TYPE (@0);
+
+        wide_int w1 = wide_int::from (wi::to_wide (@1), TYPE_PRECISION (inner_type),
+	    TYPE_SIGN (inner_type));
+
+        wide_int wmin0, wmax0;
+        if (get_range_info (@0, &wmin0, &wmax0) == VR_RANGE)
+          {
+            wi::add (wmin0, w1, TYPE_SIGN (inner_type), &min_ovf);
+            wi::add (wmax0, w1, TYPE_SIGN (inner_type), &max_ovf);
+          }
+      }
+     (if (min_ovf == wi::OVF_NONE && max_ovf == wi::OVF_NONE)
+      (convert (plus @0 { wide_int_to_tree (TREE_TYPE (@0), w1); } )))
+     )))
+#endif
+
   /* ~A + A -> -1 */
   (simplify
    (plus:c (bit_not @0) @0)

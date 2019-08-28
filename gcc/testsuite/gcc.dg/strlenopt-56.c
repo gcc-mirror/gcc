@@ -45,6 +45,6 @@ void test_contents (void)
 }
 
 
-/* { dg-final { scan-tree-dump-times "strlen" 0 "gimple" } }
+/* { dg-final { scan-tree-dump-times "strlen1" 0 "gimple" } }
    { dg-final { scan-tree-dump-times "strcmp" 0 "gimple" } }
    { dg-final { scan-tree-dump-times "abort" 0 "optimized" } } */

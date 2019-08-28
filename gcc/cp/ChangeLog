@@ -1,3 +1,69 @@
+2019-08-28  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/90613
+	* name-lookup.c (cp_emit_debug_info): Check for builtins during
+	overload iteration.
+
+2019-08-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81676 - bogus -Wunused warnings in constexpr if.
+	* semantics.c (maybe_mark_exp_read_r): New function.
+	(finish_if_stmt): Call it on THEN_CLAUSE and ELSE_CLAUSE.
+
+	PR c++/91428 - warn about std::is_constant_evaluated in if constexpr.
+	* cp-tree.h (decl_in_std_namespace_p): Declare.
+	* semantics.c (is_std_constant_evaluated_p): New.
+	(finish_if_stmt_cond): Warn about "std::is_constant_evaluated ()" in
+	an if-constexpr.
+	* typeck.c (decl_in_std_namespace_p): No longer static.
+
+2019-08-26  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (duplicate_decls): Always merge DECL_DECLARED_CONSTEXPR_P.
+
+2019-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91545 - ICE in constexpr store evaluation.
+	* constexpr.c (cxx_eval_store_expression): Check FIELD_DECL instead
+	of DECL_P.
+
+2019-08-24  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (check_for_overrides): Conversion operators need
+	checking too.
+
+2019-08-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* semantics.c (finish_switch_cond): Improve error message location.
+
+2019-08-23  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (decl_dependent_p): New.
+	(mark_used): Check it instead of just processing_template_decl.
+
+2019-08-23  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_nested_name_specifier_opt): Avoid redundant
+	error.
+
+2019-08-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91521 - wrong error with operator->.
+	* decl.c (grokdeclarator): Return error_mark_node for an invalid
+	trailing return type.
+
+	PR c++/79817 - attribute deprecated on namespace.
+	* cp-tree.h (cp_warn_deprecated_use_scopes): Declare.
+	* decl.c (grokdeclarator): Call cp_warn_deprecated_use_scopes.
+	(type_is_deprecated): Likewise.
+	* decl2.c (cp_warn_deprecated_use_scopes): New function.
+	* name-lookup.c (handle_namespace_attrs): Handle attribute deprecated.
+	* parser.c (cp_parser_namespace_alias_definition): Call
+	cp_warn_deprecated_use_scopes.
+	(cp_parser_using_declaration): Likewise.
+	(cp_parser_using_directive): Likewise.
+	* semantics.c (finish_id_expression_1): Likewise.
+
 2019-08-23  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (check_for_override): Checking IDENTIFIER_VIRTUAL_P is

@@ -1,3 +1,64 @@
+2019-08-28  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* intrinsics.text: Corrected stated standard for intrinsics
+	and specific intrinsics where necessary.  Also in C_SIZEOF the
+	printed value is T not .TRUE.. In IPARITY example wrap BOZ
+	constants in calls to INT.
+
+2019-08-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/91496
+	* gfortran.h: Extend struct gfc_iterator for loop annotations.
+	* array.c (gfc_copy_iterator): Copy loop annotations by IVDEP,
+	VECTOR, and NOVECTOR pragmas.
+	* decl.c (gfc_match_gcc_ivdep, gfc_match_gcc_vector)
+	(gfc_match_gcc_novector): New matcher functions handling IVDEP,
+	VECTOR, and NOVECTOR pragmas.
+	* match.h: Declare prototypes of matcher functions handling IVDEP,
+	VECTOR, and NOVECTOR pragmas.
+	* parse.c (decode_gcc_attribute, parse_do_block)
+	(parse_executable): Decode IVDEP, VECTOR, and NOVECTOR pragmas;
+	emit warning for unrecognized pragmas instead of error.
+	* trans-stmt.c (gfc_trans_simple_do, gfc_trans_do): Add code to
+	emit annotations for IVDEP, VECTOR, and NOVECTOR pragmas.
+	* gfortran.texi: Document IVDEP, VECTOR, and NOVECTOR pragmas.
+
+2019-08-27  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* invoke.texi: Ensure that the option lists fit within the
+	margins of a PDF page.  Re-worded description of 
+	'-ffrontend-loop-interchange' so that it fits with the margins
+	of a PDF page.  Add '-fdec-include', '-fdec-blank-format-item'
+	and '-fdec-format-defaults' to list of options that are enabled
+	by '-fdec'.
+
+2019-08-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91390
+	PR fortran/91473
+	* frontend-passes.c (gfc_check_externals): Make
+	gfc_errors_to_warnings conditional on -fallow-argument-mismatch.
+	* invoke.texi: Document -fallow-argument-mismatch.
+	* lang.opt: Add -fallow-argument-mismatch.
+
+2019-08-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91390
+	PR fortran/91519
+	* frontend-passes.c (check_externals_procedure): New
+	function. If a procedure is not in the translation unit, create
+	an "interface" for it, including its formal arguments.
+	(check_externals_code): Use check_externals_procedure for common
+	code with check_externals_expr.
+	(check_externals_expr): Vice versa.
+	* gfortran.h (gfc_get_formal_from_actual-arglist): New prototype.
+	(gfc_compare_actual_formal): New prototype.
+	* interface.c (compare_actual_formal): Rename to
+	(gfc_compare_actual_formal): New function, make global.
+	(gfc_get_formal_from_actual_arglist): Make global, and move here from
+	* trans-types.c (get_formal_from_actual_arglist): Remove here.
+	(gfc_get_function_type): Use gfc_get_formal_from_actual_arglist.
+
 2019-08-23  Mark Eggleston  <mark.eggleston@codethink.com>
 
 	* intrinsics.text: References in 'See also:' are now on
@@ -14,7 +75,7 @@
 
 2019-08-23  Mark Eggleston  <mark.eggleston@codethink.com>
 
-	* intrinsics.text: Removed empty sections. The order of 
+	* intrinsics.text: Removed empty sections. The order of
 	sections for each intrinsic is now consistent throughout.
 	Stray words removed. Text in the wrong section moved.
 	Missing standard statement inserted.

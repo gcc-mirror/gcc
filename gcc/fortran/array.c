@@ -2185,6 +2185,9 @@ gfc_copy_iterator (gfc_iterator *src)
   dest->end = gfc_copy_expr (src->end);
   dest->step = gfc_copy_expr (src->step);
   dest->unroll = src->unroll;
+  dest->ivdep = src->ivdep;
+  dest->vector = src->vector;
+  dest->novector = src->novector;
 
   return dest;
 }

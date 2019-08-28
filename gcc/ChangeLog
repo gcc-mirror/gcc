@@ -1,3 +1,272 @@
+2019-08-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/91468
+	* ipa-cp.c (merge_agg_lats_step): Removed redundant test, made a
+	checking assert a normal assert to test it really is redundant.
+	* ipa-prop.c (compute_complex_assign_jump_func): Removed
+	redundant test.
+	(update_jump_functions_after_inlining): Removed combining unary
+	arithmetic operations with an ancestor jump function.
+	(ipcp_modif_dom_walker::before_dom_children): Fix wrong use of rhs
+	instead of t.
+
+2019-08-28  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386-features.c (convert_scalars_to_vector): Do not
+	add the MD problem.
+
+2019-09-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Richard Biener  <rguenther@suse.de>
+
+	* expr.c (expand_assignment): Handle misaligned DECLs.
+	(expand_expr_real_1): Handle FUNCTION_DECL as unaligned.
+	* function.c (assign_parm_adjust_stack_rtl): Check movmisalign optab
+	too.
+	(assign_parm_setup_stack): Allocate properly aligned stack slots.
+	* varasm.c (build_constant_desc): Align constants of misaligned types.
+	* config/arm/predicates.md (aligned_operand): New predicate.
+	* config/arm/arm.md (movdi, movsi, movhi, movhf, movsf, movdf): Use
+	aligned_operand to check restrictions on memory addresses.
+	* config/arm/neon.md (movti, mov<VSTRUCT>, mov<VH>): Likewise.
+	* config/arm/vec-common.md (mov<VALL>): Likewise.
+
+2019-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/91530
+	* config/i386/sse.md (vec_shl_<mode>, vec_shr_<mode>): Use
+	V_128 iterator instead of VI_128.
+
+2019-08-28  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/90970
+	* builtins.c (check_access): Remove assignment to maxread
+	as it hasn't been used since when it was introduced in r255755.
+
+2019-08-27  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91567
+	* gimple-ssa-sprintf.c (get_string_length): Handle more forms of lengths
+	of unknown strings.
+	* vr-values.c (vr_values::extract_range_basic): Set strlen upper bound
+	to PTRDIFF_MAX - 2.
+
+2019-08-27  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-strlen.c (printf_strlen_execute): Initialize
+	the loop optimizer and SCEV before sizing ssa_ver_to_stridx.
+
+2019-08-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91528
+	* config/i386/i386-features.c (convert_scalars_to_vector):
+	Update crtl->stack_realign_needed, crtl->stack_realign_tried and
+	crtl->stack_realign_processed.  Update crtl->drap_reg by calling
+	targetm.calls.get_drap_rtx.  If drap_rtx is non-null then
+	Update crtl->args.internal_arg_pointer and call fixup_tail_calls.
+
+2019-08-27  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386-features.h
+	(general_scalar_chain::~general_scalar_chain): Add.
+	(general_scalar_chain::insns_conv): New bitmap.
+	(general_scalar_chain::n_sse_to_integer): New.
+	(general_scalar_chain::n_integer_to_sse): Likewise.
+	(general_scalar_chain::make_vector_copies): Adjust signature.
+	* config/i386/i386-features.c
+	(general_scalar_chain::general_scalar_chain): Outline,
+	initialize new members.
+	(general_scalar_chain::~general_scalar_chain): New.
+	(general_scalar_chain::mark_dual_mode_def): Record insns
+	we need to insert conversions at and count them.
+	(general_scalar_chain::compute_convert_gain): Account
+	for conversion instructions at chain boundary.
+	(general_scalar_chain::make_vector_copies): Generate a single
+	copy for a def by a specific insn.
+	(general_scalar_chain::convert_registers): First populate
+	defs_map, then make copies at out-of chain insns.
+
+2019-08-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (stack_protect_set_insn): Add security-related
+	comment.
+	* config/aarch64/aarch64.md (stack_protect_set_<mode>): Likewise.
+
+2019-08-27  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_node::remove): Remove dead assignment before
+	loop.
+	* config/i386/i386-features.c (scalar_chain::emit_conversion_insns):
+	Enclose in anonymous namespace.
+	* config/i386/x86-tune-costs.h (struct processor_costs): Wrap
+	hard_register initialization in braces.
+	* tree-vrp.h (value_range_base::supports_type_p): Return false
+	for function with boolean return type.
+
+2019-08-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (emit_i387_cw_initialization)
+	<case I387_CW_ROUNDEVEN>: Fix masking operand value.
+
+2019-08-26  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/83431
+	* gimple-ssa-sprintf.c (pass_data_sprintf_length): Remove object.
+	(sprintf_dom_walker): Remove class.
+	(get_int_range): Make argument const.
+	(directive::fmtfunc, directive::set_precision): Same.
+	(format_none): Same.
+	(build_intmax_type_nodes): Same.
+	(adjust_range_for_overflow): Same.
+	(format_floating): Same.
+	(format_character): Same.
+	(format_string): Same.
+	(format_plain): Same.
+	(get_int_range): Cast away constness.
+	(format_integer): Same.
+	(get_string_length): Call get_range_strlen_dynamic.  Handle
+	null lendata.maxbound.
+	(should_warn_p): Adjust argument scope qualifier.
+	(maybe_warn): Same.
+	(format_directive): Same.
+	(parse_directive): Same.
+	(is_call_safe): Same.
+	(try_substitute_return_value): Same.
+	(sprintf_dom_walker::handle_printf_call): Rename...
+	(handle_printf_call): ...to this.  Initialize target to host charmap
+	here instead of in pass_sprintf_length::execute.
+	(struct call_info): Make global.
+	(sprintf_dom_walker::compute_format_length): Make global.
+	(sprintf_dom_walker::handle_gimple_call): Same.
+	* passes.def (pass_sprintf_length): Replace with pass_strlen.
+	* print-rtl.c (print_pattern): Reduce the number of spaces to
+	avoid -Wformat-truncation.
+	* tree-pass.h (make_pass_warn_printf): New function.
+	* tree-ssa-strlen.c (strlen_optimize): New variable.
+	(get_string_length): Add comments.
+	(get_range_strlen_dynamic): New function.
+	(check_and_optimize_call): New function.
+	(handle_integral_assign): New function.
+	(strlen_check_and_optimize_stmt): Factor code out into
+	strlen_check_and_optimize_call and handle_integral_assign.
+	(strlen_dom_walker::evrp): New member.
+	(strlen_dom_walker::before_dom_children): Use evrp member.
+	(strlen_dom_walker::after_dom_children): Use evrp member.
+	(printf_strlen_execute): New function.
+	(pass_strlen::gate): Update to handle printf calls.
+	(dump_strlen_info): New function.
+	(pass_data_warn_printf): New variable.
+	(pass_warn_printf): New class.
+	* tree-ssa-strlen.h (get_range_strlen_dynamic): Declare.
+	(handle_printf_call): Same.
+	* tree-vrp.c (value_range_base::type): Adjust assertion.
+	* vr-values.c (vr_values::update_value_range): Use type of the first
+	argument rather than the second.
+
+2019-08-26  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386-features.c (general_remove_non_convertible_regs):
+	Remove.
+	(convert_scalars_to_vector): Do not call it.
+
+2019-08-26  Tejas Joshi  <tejasjoshi9673@gmail.com>
+            Uros Bizjak  <ubizjak@gmail.com>
+
+	* builtins.c (mathfn_built_in_2): Change CASE_MATHFN to
+	CASE_MATHFN_FLOATN for roundeven.
+	* config/i386/i386.c (ix86_i387_mode_needed): Add case
+	I387_ROUNDEVEN.
+	(ix86_mode_needed): Likewise.
+	(ix86_mode_after): Likewise.
+	(ix86_mode_entry): Likewise.
+	(ix86_mode_exit): Likewise.
+	(ix86_emit_mode_set): Likewise.
+	(emit_i387_cw_initialization): Add case I387_CW_ROUNDEVEN.
+	* config/i386/i386.h (ix86_stack_slot): Add SLOT_CW_ROUNDEVEN.
+	(ix86_entity): Add I387_ROUNDEVEN.
+	(NUM_MODES_FOR_MODE_SWITCHING): Add I387_CW_ANY.
+	* config/i386/i386.md: Define UNSPEC_FRNDINT_ROUNDEVEN.
+	(define_int_iterator): Likewise.
+	(define_int_attr): Likewise for rounding_insn, rounding and ROUNDING.
+	(define_constant): Define ROUND_ROUNDEVEN mode.
+	(define_attr): Add roundeven mode for i387_cw.
+	(<rouding_insn><mode>2): Add condition for ROUND_ROUNDEVEN.
+	* internal-fn.def (ROUNDEVEN): New builtin function.
+	* optabs.def (roundeven_optab): New optab.
+
+2019-08-26  Tejas Joshi  <tejasjoshi9673@gmail.com>
+
+        * builtins.c (mathfn_built_in_2): Added CASE_MATHFN_FLOATN
+        for ROUNDEVEN.
+        * builtins.def: Added function definitions for roundeven function
+        variants.
+        * fold-const-call.c (fold_const_call_ss): Added case for roundeven
+        function call.  Adjust condition for floor, ceil, trunc and round.
+        * fold-const.c (negate_mathfn_p): Added case for roundeven function.
+        (tree_call_nonnegative_warnv_p): Added case for roundeven function.
+        (integer_valued_real_call_p): Added case for roundeven function.
+        * real.c (is_even): New function. Returns true if real number is even,
+        otherwise returns false.
+        (is_halfway_below): New function. Returns true if real number is
+        halfway between two integers, else return false.
+        (real_roundeven): New function. Round real number to nearest integer,
+        rounding halfway cases towards even.
+        * real.h (real_value): Added descriptive comments.  Added function
+        declaration for roundeven function.
+        * doc/extend.texi (Other Builtins): List roundeven variants among
+        functions which can be handled as builtins.
+
+2019-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR target/91522
+	PR target/91527
+	* config/i386/i386-features.h (general_scalar_chain::defs_map):
+	New member.
+	(general_scalar_chain::replace_with_subreg): Remove.
+	(general_scalar_chain::replace_with_subreg_in_insn): Likewise.
+	(general_scalar_chain::convert_reg): Adjust signature.
+	* config/i386/i386-features.c (scalar_chain::add_insn): Do not
+	iterate over all defs of a reg.
+	(general_scalar_chain::replace_with_subreg): Remove.
+	(general_scalar_chain::replace_with_subreg_in_insn): Likewise.
+	(general_scalar_chain::make_vector_copies): Populate defs_map,
+	place copy only after defs that are used as vectors in the chain.
+	(general_scalar_chain::convert_reg): Emit a copy for a specific
+	def in a specific instruction.
+	(general_scalar_chain::convert_op): All reg uses are converted here.
+	(general_scalar_chain::convert_insn): Emit copies for scalar
+	uses of defs here.  Replace uses with the copies we created.
+	Replace and convert the def.  Adjust REG_DEAD notes, remove
+	REG_EQUIV/EQUAL notes.
+	(general_scalar_chain::convert_registers): Only handle copies
+	into the chain here.
+
+2019-08-26  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* match.pd: Add (T)(A) + CST -> (T)(A + CST).
+
+2019-08-26  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gimple-loop-versioning.cc (loop_versioning::record_address_fragment):
+	Add nop_convert case.
+	* tree-ssa-propagate.c (substitute_and_fold_dom_walker::before_dom_children):
+	Fold all statements if requested.
+	* tree-ssa-propagate.h (class substitute_and_fold_engine):
+	Allow to fold all statements.
+	* tree-vrp.c (class vrp_folder):
+	Let substitute_and_fold_engine fold all statements.
+
+2019-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91526
+	* passes.def: Note that after late FRE we do TODO_update_address_taken.
+	* tree-ssa-sccvn.c (pass_fre::execute): In late mode schedule
+	TODO_update_address_taken.
+
+2019-08-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config/i386/gmm_malloc.h: Only use <errno.h> and errno if
+	__STDC_HOSTED__.
+
 2019-08-23  Mihailo Stojanovic  <mistojanovic@wavecomp.com>
 
 	* config/mips/mips.md (mips_get_fcsr, *mips_get_fcsr): Use SI

@@ -5001,9 +5001,10 @@ expand_assignment (tree to, tree from, bool nontemporal)
   /* Handle misaligned stores.  */
   mode = TYPE_MODE (TREE_TYPE (to));
   if ((TREE_CODE (to) == MEM_REF
-       || TREE_CODE (to) == TARGET_MEM_REF)
+       || TREE_CODE (to) == TARGET_MEM_REF
+       || DECL_P (to))
       && mode != BLKmode
-      && !mem_ref_refers_to_non_mem_p (to)
+      && (DECL_P (to) || !mem_ref_refers_to_non_mem_p (to))
       && ((align = get_object_alignment (to))
 	  < GET_MODE_ALIGNMENT (mode))
       && (((icode = optab_handler (movmisalign_optab, mode))
@@ -10793,6 +10794,14 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	      op0 = copy_rtx (op0);
 
 	    MEM_VOLATILE_P (op0) = 1;
+	  }
+
+	if (MEM_P (op0) && TREE_CODE (tem) == FUNCTION_DECL)
+	  {
+	    if (op0 == orig_op0)
+	      op0 = copy_rtx (op0);
+
+	    set_mem_align (op0, BITS_PER_UNIT);
 	  }
 
 	/* In cases where an aligned union has an unaligned object

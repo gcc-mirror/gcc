@@ -2820,10 +2820,12 @@ check_for_override (tree decl, tree ctype)
     return;
 
   /* IDENTIFIER_VIRTUAL_P indicates whether the name has ever been
-     used for a vfunc.  That avoids the expensive
-     look_for_overrides call that when we know there's nothing to
-     find.  */
-  if (IDENTIFIER_VIRTUAL_P (DECL_NAME (decl))
+     used for a vfunc.  That avoids the expensive look_for_overrides
+     call that when we know there's nothing to find.  As conversion
+     operators for the same type can have distinct identifiers, we
+     cannot optimize those in that way.  */
+  if ((IDENTIFIER_VIRTUAL_P (DECL_NAME (decl))
+       || DECL_CONV_FN_P (decl))
       && look_for_overrides (ctype, decl)
       /* Check staticness after we've checked if we 'override'.  */
       && !DECL_STATIC_FUNCTION_P (decl))
