@@ -1,5 +1,17 @@
 2019-08-28  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/91457
+	* builtins.c (component_size): New function.
+	(compute_objsize): Add argument. Handle ARRAY_REF and COMPONENT_REF.
+	* builtins.h (compute_objsize): Add argument.
+	* tree-ssa-strlen.c (handle_store): Handle no-warning bit.
+	* tree-vrp.c (vrp_prop::check_array_ref): Return warning result.
+	(vrp_prop::check_mem_ref): Same.
+	(vrp_prop::search_for_addr_array): Set no-warning bit.
+	(check_array_bounds): Same.
+
+2019-08-28  Martin Sebor  <msebor@redhat.com>
+
 	PR driver/80545
 	* opts-common.c (option_enabled): Correct checking for language
 	options.
