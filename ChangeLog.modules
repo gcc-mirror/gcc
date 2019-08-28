@@ -1,5 +1,16 @@
 2019-08-28  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (struct location_map_info): New.
+	(module_state::prepare_locations): Rename to ...
+	(module_state::prepare_maps): ... here.  Return a
+	location_map_info.
+	(module_state::{read,write}_locations): Split to ...
+	(module_state::{read,write}_{ordinary,macro}_maps): ... here. Adjust.
+	(module_state::{read,write}): Split location map streaming.
+	gcc/testsuite/
+	* g++.dg/modules/macro-7_[abc].C: New.
+
 	Merge trunk r274992.
 
 2019-08-27  Nathan Sidwell  <nathan@acm.org>
