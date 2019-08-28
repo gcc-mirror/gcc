@@ -1,6 +1,16 @@
 2019-08-28  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-05-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/58321
+	* gcc.target/i386/memcpy-strategy-3.c: Adjust count for Darwin and
+	add a comment as to the reason for the difference.
+	* gcc.target/i386/memset-strategy-1.c: Likewise.
+
+2019-08-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-05-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* objc.dg/instancetype-0.m: New.
