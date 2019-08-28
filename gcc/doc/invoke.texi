@@ -295,6 +295,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
 -Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat  @gol
+-Wc++20-compat  @gol
 -Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual  @gol
 -Wchar-subscripts  -Wcatch-value  -Wcatch-value=@var{n} @gol
 -Wclobbered  -Wcomment  -Wconditionally-supported @gol
@@ -6791,6 +6792,12 @@ and ISO C++ 2014.  This warning is enabled by @option{-Wall}.
 @opindex Wno-c++17-compat
 Warn about C++ constructs whose meaning differs between ISO C++ 2014
 and ISO C++ 2017.  This warning is enabled by @option{-Wall}.
+
+@item -Wc++20-compat @r{(C++ and Objective-C++ only)}
+@opindex Wc++20-compat
+@opindex Wno-c++20-compat
+Warn about C++ constructs whose meaning differs between ISO C++ 2017
+and ISO C++ 2020.  This warning is enabled by @option{-Wall}.
 
 @item -Wcast-qual
 @opindex Wcast-qual
