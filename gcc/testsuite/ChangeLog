@@ -1,3 +1,8 @@
+2019-08-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91428 - warn about std::is_constant_evaluated in if constexpr.
+	* g++.dg/cpp2a/is-constant-evaluated9.C: New test.
+
 2019-08-27  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/91567

@@ -723,6 +723,28 @@ begin_if_stmt (void)
   return r;
 }
 
+/* Returns true if FN, a CALL_EXPR, is a call to
+   std::is_constant_evaluated or __builtin_is_constant_evaluated.  */
+
+static bool
+is_std_constant_evaluated_p (tree fn)
+{
+  /* std::is_constant_evaluated takes no arguments.  */
+  if (call_expr_nargs (fn) != 0)
+    return false;
+
+  tree fndecl = cp_get_callee_fndecl_nofold (fn);
+  if (fndecl_built_in_p (fndecl, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
+			 BUILT_IN_FRONTEND))
+    return true;
+
+  if (!decl_in_std_namespace_p (fndecl))
+    return false;
+
+  tree name = DECL_NAME (fndecl);
+  return name && id_equal (name, "is_constant_evaluated");
+}
+
 /* Process the COND of an if-statement, which may be given by
    IF_STMT.  */
 
@@ -738,6 +760,20 @@ finish_if_stmt_cond (tree cond, tree if_stmt)
 	 converted to bool.  */
       && TYPE_MAIN_VARIANT (TREE_TYPE (cond)) == boolean_type_node)
     {
+      /* if constexpr (std::is_constant_evaluated()) is always true,
+	 so give the user a clue.  */
+      if (warn_tautological_compare)
+	{
+	  tree t = cond;
+	  if (TREE_CODE (t) == CLEANUP_POINT_EXPR)
+	    t = TREE_OPERAND (t, 0);
+	  if (TREE_CODE (t) == CALL_EXPR
+	      && is_std_constant_evaluated_p (t))
+	    warning_at (EXPR_LOCATION (cond), OPT_Wtautological_compare,
+			"%qs always evaluates to true in %<if constexpr%>",
+			"std::is_constant_evaluated");
+	}
+
       cond = instantiate_non_dependent_expr (cond);
       cond = cxx_constant_value (cond, NULL_TREE);
     }
