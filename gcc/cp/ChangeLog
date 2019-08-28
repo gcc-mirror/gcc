@@ -1,3 +1,9 @@
+2019-08-28  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/90613
+	* name-lookup.c (cp_emit_debug_info): Check for builtins during
+	overload iteration.
+
 2019-08-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/81676 - bogus -Wunused warnings in constexpr if.
