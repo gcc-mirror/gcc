@@ -1,3 +1,9 @@
+2019-08-28  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/90970
+	* builtins.c (check_access): Remove assignment to maxread
+	as it hasn't been used since when it was introduced in r255755.
+
 2019-08-27  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/91567

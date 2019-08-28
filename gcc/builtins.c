@@ -3475,11 +3475,6 @@ check_access (tree exp, tree, tree, tree dstwrite,
   if (maxread)
     {
       get_size_range (maxread, range);
-
-      /* Use the lower end for MAXREAD from now on.  */
-      if (range[0])
-	maxread = range[0];
-
       if (range[0] && dstsize && tree_fits_uhwi_p (dstsize))
 	{
 	  location_t loc = tree_nonartificial_location (exp);
