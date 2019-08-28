@@ -1,5 +1,9 @@
 2019-08-27  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/81676 - bogus -Wunused warnings in constexpr if.
+	* semantics.c (maybe_mark_exp_read_r): New function.
+	(finish_if_stmt): Call it on THEN_CLAUSE and ELSE_CLAUSE.
+
 	PR c++/91428 - warn about std::is_constant_evaluated in if constexpr.
 	* cp-tree.h (decl_in_std_namespace_p): Declare.
 	* semantics.c (is_std_constant_evaluated_p): New.
