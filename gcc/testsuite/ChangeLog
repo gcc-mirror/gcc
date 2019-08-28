@@ -1,3 +1,8 @@
+2019-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR c++/90613
+	* g++.dg/lookup/using61.C: New.
+
 2019-08-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR middle-end/89544
