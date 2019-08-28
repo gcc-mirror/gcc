@@ -17,6 +17,12 @@ func futex(addr unsafe.Pointer, op int32, val uint32, ts, addr2 unsafe.Pointer, 
 	return int32(syscall(_SYS_futex, uintptr(addr), uintptr(op), uintptr(val), uintptr(ts), uintptr(addr2), uintptr(val3)))
 }
 
+// For sched_getaffinity use the system call rather than the libc call,
+// because the system call returns the number of entries set by the kernel.
+func sched_getaffinity(pid _pid_t, cpusetsize uintptr, mask *byte) int32 {
+	return int32(syscall(_SYS_sched_getaffinity, uintptr(pid), cpusetsize, uintptr(unsafe.Pointer(mask)), 0, 0, 0))
+}
+
 // Linux futex.
 //
 //	futexsleep(uint32 *addr, uint32 val)
@@ -82,6 +88,33 @@ func futexwakeup(addr *uint32, cnt uint32) {
 	})
 
 	*(*int32)(unsafe.Pointer(uintptr(0x1006))) = 0x1006
+}
+
+func getproccount() int32 {
+	// This buffer is huge (8 kB) but we are on the system stack
+	// and there should be plenty of space (64 kB).
+	// Also this is a leaf, so we're not holding up the memory for long.
+	// See golang.org/issue/11823.
+	// The suggested behavior here is to keep trying with ever-larger
+	// buffers, but we don't have a dynamic memory allocator at the
+	// moment, so that's a bit tricky and seems like overkill.
+	const maxCPUs = 64 * 1024
+	var buf [maxCPUs / 8]byte
+	r := sched_getaffinity(0, unsafe.Sizeof(buf), &buf[0])
+	if r < 0 {
+		return 1
+	}
+	n := int32(0)
+	for _, v := range buf[:r] {
+		for v != 0 {
+			n += int32(v & 1)
+			v >>= 1
+		}
+	}
+	if n == 0 {
+		n = 1
+	}
+	return n
 }
 
 const (
@@ -177,4 +210,34 @@ func sysauxv(auxv []uintptr) int {
 		// vdsoauxv(tag, val)
 	}
 	return i / 2
+}
+
+var sysTHPSizePath = []byte("/sys/kernel/mm/transparent_hugepage/hpage_pmd_size\x00")
+
+func getHugePageSize() uintptr {
+	var numbuf [20]byte
+	fd := open(&sysTHPSizePath[0], 0 /* O_RDONLY */, 0)
+	if fd < 0 {
+		return 0
+	}
+	n := read(fd, noescape(unsafe.Pointer(&numbuf[0])), int32(len(numbuf)))
+	closefd(fd)
+	if n <= 0 {
+		return 0
+	}
+	l := n - 1 // remove trailing newline
+	v, ok := atoi(slicebytetostringtmp(numbuf[:l]))
+	if !ok || v < 0 {
+		v = 0
+	}
+	if v&(v-1) != 0 {
+		// v is not a power of 2
+		return 0
+	}
+	return uintptr(v)
+}
+
+func osinit() {
+	ncpu = getproccount()
+	physHugePageSize = getHugePageSize()
 }

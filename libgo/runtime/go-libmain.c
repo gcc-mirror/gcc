@@ -228,8 +228,7 @@ gostart (void *arg)
   runtime_ginit ();
   runtime_check ();
   runtime_args (a->argc, (byte **) a->argv);
-  setncpu (getproccount ());
-  setpagesize (getpagesize ());
+  runtime_osinit ();
   runtime_schedinit ();
   __go_go ((uintptr)(runtime_main), NULL);
   runtime_mstart (runtime_m ());

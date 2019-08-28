@@ -333,20 +333,6 @@ func rethrowException()
 // used by the stack unwinder.
 func unwindExceptionSize() uintptr
 
-// Called by C code to set the number of CPUs.
-//go:linkname setncpu runtime.setncpu
-func setncpu(n int32) {
-	ncpu = n
-}
-
-// Called by C code to set the page size.
-//go:linkname setpagesize runtime.setpagesize
-func setpagesize(s uintptr) {
-	if physPageSize == 0 {
-		physPageSize = s
-	}
-}
-
 const uintptrMask = 1<<(8*sys.PtrSize) - 1
 
 type bitvector struct {
