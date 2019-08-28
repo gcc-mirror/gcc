@@ -3301,6 +3301,22 @@ gfc_check_kill_sub (gfc_expr *pid, gfc_expr *sig, gfc_expr *status)
 
       if (!scalar_check (status, 2))
 	return false;
+
+      if (status->expr_type != EXPR_VARIABLE)
+	{
+	  gfc_error ("STATUS at %L shall be an INTENT(OUT) variable",
+		     &status->where);
+	  return false;
+	}
+
+      if (status->expr_type == EXPR_VARIABLE
+	  && status->symtree && status->symtree->n.sym
+	  && status->symtree->n.sym->attr.intent == INTENT_IN)
+	{
+	  gfc_error ("%qs at %L shall be an INTENT(OUT) variable",
+		     status->symtree->name, &status->where);
+	  return false;
+	}
     }
 
   return true;
