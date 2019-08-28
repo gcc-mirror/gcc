@@ -2944,16 +2944,24 @@ synth_module_prologue (void)
   objc_class_reference = xref_tag (RECORD_TYPE, objc_class_id);
 
   objc_object_type = build_pointer_type (objc_object_reference);
+  objc_instancetype_type = build_pointer_type (objc_object_reference);
   objc_class_type = build_pointer_type (objc_class_reference);
 
   objc_object_name = get_identifier (OBJECT_TYPEDEF_NAME);
+  objc_instancetype_name = get_identifier (INSTANCE_TYPEDEF_NAME);
   objc_class_name = get_identifier (CLASS_TYPEDEF_NAME);
 
-  /* Declare the 'id' and 'Class' typedefs.  */
+  /* Declare the 'id', 'instancetype' and 'Class' typedefs.  */
   type = lang_hooks.decls.pushdecl (build_decl (input_location,
 						TYPE_DECL,
 						objc_object_name,
 						objc_object_type));
+  TREE_NO_WARNING (type) = 1;
+
+  type = lang_hooks.decls.pushdecl (build_decl (input_location,
+						TYPE_DECL,
+						objc_instancetype_name,
+						objc_instancetype_type));
   TREE_NO_WARNING (type) = 1;
 
   type = lang_hooks.decls.pushdecl (build_decl (input_location,
