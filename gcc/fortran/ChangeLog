@@ -1,3 +1,10 @@
+2019-08-28  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* intrinsics.text: Corrected stated standard for intrinsics
+	and specific intrinsics where necessary.  Also in C_SIZEOF the
+	printed value is T not .TRUE.. In IPARITY example wrap BOZ
+	constants in calls to INT.
+
 2019-08-27  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/91496
