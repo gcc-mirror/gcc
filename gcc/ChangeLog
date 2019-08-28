@@ -1,3 +1,11 @@
+2019-08-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-features.c
+	(general_scalar_chain::compute_convert_gain):
+	Correct cost for double-word shifts.
+	(general_scalar_to_vector_candidate_p): Reject count operands
+	greater or equal to mode bitsize.
+
 2019-08-28  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/91468
