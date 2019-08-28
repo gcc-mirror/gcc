@@ -1,3 +1,9 @@
+2019-08-28  Martin Sebor  <msebor@redhat.com>
+
+	PR driver/80545
+	* opts-common.c (option_enabled): Correct checking for language
+	options.
+
 2019-08-28  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-features.c
