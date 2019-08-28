@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stmt.h"
 #include "expr.h"
 #include "expmed.h"
+#include "optabs.h"
 #include "output.h"
 #include "langhooks.h"
 #include "debug.h"
@@ -3386,7 +3387,15 @@ build_constant_desc (tree exp)
   if (TREE_CODE (exp) == STRING_CST)
     SET_DECL_ALIGN (decl, targetm.constant_alignment (exp, DECL_ALIGN (decl)));
   else
-    align_variable (decl, 0);
+    {
+      align_variable (decl, 0);
+      if (DECL_ALIGN (decl) < GET_MODE_ALIGNMENT (DECL_MODE (decl))
+	  && ((optab_handler (movmisalign_optab, DECL_MODE (decl))
+	       != CODE_FOR_nothing)
+	      || targetm.slow_unaligned_access (DECL_MODE (decl),
+						DECL_ALIGN (decl))))
+	SET_DECL_ALIGN (decl, GET_MODE_ALIGNMENT (DECL_MODE (decl)));
+    }
 
   /* Now construct the SYMBOL_REF and the MEM.  */
   if (use_object_blocks_p ())
