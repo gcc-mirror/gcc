@@ -1,3 +1,9 @@
+2019-08-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91564
+	* check.c (gfc_check_kill_sub): Additional checks on status dummy
+	argument.
+
 2019-08-28  Mark Eggleston  <mark.eggleston@codethink.com>
 
 	* intrinsics.text: Corrected stated standard for intrinsics
