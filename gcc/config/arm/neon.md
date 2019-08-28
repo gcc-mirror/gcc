@@ -127,6 +127,8 @@
 	(match_operand:TI 1 "general_operand"))]
   "TARGET_NEON"
 {
+  gcc_checking_assert (aligned_operand (operands[0], TImode));
+  gcc_checking_assert (aligned_operand (operands[1], TImode));
   if (can_create_pseudo_p ())
     {
       if (!REG_P (operands[0]))
@@ -139,6 +141,8 @@
 	(match_operand:VSTRUCT 1 "general_operand"))]
   "TARGET_NEON"
 {
+  gcc_checking_assert (aligned_operand (operands[0], <MODE>mode));
+  gcc_checking_assert (aligned_operand (operands[1], <MODE>mode));
   if (can_create_pseudo_p ())
     {
       if (!REG_P (operands[0]))
@@ -151,6 +155,8 @@
 	(match_operand:VH 1 "s_register_operand"))]
   "TARGET_NEON"
 {
+  gcc_checking_assert (aligned_operand (operands[0], <MODE>mode));
+  gcc_checking_assert (aligned_operand (operands[1], <MODE>mode));
   if (can_create_pseudo_p ())
     {
       if (!REG_P (operands[0]))

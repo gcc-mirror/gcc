@@ -5231,6 +5231,8 @@
 	(match_operand:DI 1 "general_operand"))]
   "TARGET_EITHER"
   "
+  gcc_checking_assert (aligned_operand (operands[0], DImode));
+  gcc_checking_assert (aligned_operand (operands[1], DImode));
   if (can_create_pseudo_p ())
     {
       if (!REG_P (operands[0]))
@@ -5407,6 +5409,8 @@
   {
   rtx base, offset, tmp;
 
+  gcc_checking_assert (aligned_operand (operands[0], SImode));
+  gcc_checking_assert (aligned_operand (operands[1], SImode));
   if (TARGET_32BIT || TARGET_HAVE_MOVT)
     {
       /* Everything except mem = const or mem = mem can be done easily.  */
@@ -5896,6 +5900,8 @@
 	(match_operand:HI 1 "general_operand"))]
   "TARGET_EITHER"
   "
+  gcc_checking_assert (aligned_operand (operands[0], HImode));
+  gcc_checking_assert (aligned_operand (operands[1], HImode));
   if (TARGET_ARM)
     {
       if (can_create_pseudo_p ())
@@ -6305,6 +6311,8 @@
 	(match_operand:HF 1 "general_operand"))]
   "TARGET_EITHER"
   "
+  gcc_checking_assert (aligned_operand (operands[0], HFmode));
+  gcc_checking_assert (aligned_operand (operands[1], HFmode));
   if (TARGET_32BIT)
     {
       if (MEM_P (operands[0]))
@@ -6369,6 +6377,8 @@
 	(match_operand:SF 1 "general_operand"))]
   "TARGET_EITHER"
   "
+  gcc_checking_assert (aligned_operand (operands[0], SFmode));
+  gcc_checking_assert (aligned_operand (operands[1], SFmode));
   if (TARGET_32BIT)
     {
       if (MEM_P (operands[0]))
@@ -6464,6 +6474,8 @@
 	(match_operand:DF 1 "general_operand"))]
   "TARGET_EITHER"
   "
+  gcc_checking_assert (aligned_operand (operands[0], DFmode));
+  gcc_checking_assert (aligned_operand (operands[1], DFmode));
   if (TARGET_32BIT)
     {
       if (MEM_P (operands[0]))

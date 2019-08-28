@@ -1,3 +1,18 @@
+2019-09-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Richard Biener  <rguenther@suse.de>
+
+	* expr.c (expand_assignment): Handle misaligned DECLs.
+	(expand_expr_real_1): Handle FUNCTION_DECL as unaligned.
+	* function.c (assign_parm_adjust_stack_rtl): Check movmisalign optab
+	too.
+	(assign_parm_setup_stack): Allocate properly aligned stack slots.
+	* varasm.c (build_constant_desc): Align constants of misaligned types.
+	* config/arm/predicates.md (aligned_operand): New predicate.
+	* config/arm/arm.md (movdi, movsi, movhi, movhf, movsf, movdf): Use
+	aligned_operand to check restrictions on memory addresses.
+	* config/arm/neon.md (movti, mov<VSTRUCT>, mov<VH>): Likewise.
+	* config/arm/vec-common.md (mov<VALL>): Likewise.
+
 2019-08-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/91530

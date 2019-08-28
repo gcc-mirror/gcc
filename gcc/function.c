@@ -2807,8 +2807,10 @@ assign_parm_adjust_stack_rtl (struct assign_parm_data_one *data)
      stack slot, if we need one.  */
   if (stack_parm
       && ((GET_MODE_ALIGNMENT (data->nominal_mode) > MEM_ALIGN (stack_parm)
-	   && targetm.slow_unaligned_access (data->nominal_mode,
-					     MEM_ALIGN (stack_parm)))
+	   && ((optab_handler (movmisalign_optab, data->nominal_mode)
+		!= CODE_FOR_nothing)
+	       || targetm.slow_unaligned_access (data->nominal_mode,
+						 MEM_ALIGN (stack_parm))))
 	  || (data->nominal_type
 	      && TYPE_ALIGN (data->nominal_type) > MEM_ALIGN (stack_parm)
 	      && MEM_ALIGN (stack_parm) < PREFERRED_STACK_BOUNDARY)))
@@ -3461,11 +3463,20 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
 	  int align = STACK_SLOT_ALIGNMENT (data->arg.type,
 					    GET_MODE (data->entry_parm),
 					    TYPE_ALIGN (data->arg.type));
+	  if (align < (int)GET_MODE_ALIGNMENT (GET_MODE (data->entry_parm))
+	      && ((optab_handler (movmisalign_optab,
+				  GET_MODE (data->entry_parm))
+		   != CODE_FOR_nothing)
+		  || targetm.slow_unaligned_access (GET_MODE (data->entry_parm),
+						    align)))
+	    align = GET_MODE_ALIGNMENT (GET_MODE (data->entry_parm));
 	  data->stack_parm
 	    = assign_stack_local (GET_MODE (data->entry_parm),
 				  GET_MODE_SIZE (GET_MODE (data->entry_parm)),
 				  align);
+	  align = MEM_ALIGN (data->stack_parm);
 	  set_mem_attributes (data->stack_parm, parm, 1);
+	  set_mem_align (data->stack_parm, align);
 	}
 
       dest = validize_mem (copy_rtx (data->stack_parm));
