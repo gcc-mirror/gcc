@@ -1,5 +1,10 @@
 2019-08-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/91565
+	* gfortran.dg/pr91565.f90: New test.
+
+2019-08-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/91564
 	* gfortran.dg/pr91564.f90: New test.
 

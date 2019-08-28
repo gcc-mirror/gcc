@@ -1,5 +1,11 @@
 2019-08-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/91565
+	* simplify.c (gfc_simplify_reshape): Add additional checks of the
+	ORDER dummy argument.
+
+2019-08-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/91564
 	* check.c (gfc_check_kill_sub): Additional checks on status dummy
 	argument.
