@@ -1,3 +1,8 @@
+2019-08-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/89544
+	* gcc.target/arm/unaligned-argument-3.c: New test.
+
 2019-08-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/81676 - bogus -Wunused warnings in constexpr if.
