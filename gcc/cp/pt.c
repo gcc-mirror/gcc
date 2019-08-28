@@ -13955,6 +13955,10 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 
 	    DECL_TEMPLATE_INFO (r) = build_template_info (tmpl, argvec);
 	    SET_DECL_IMPLICIT_INSTANTIATION (r);
+	    /* Remember whether we require constant initialization of
+	       a non-constant template variable.  */
+	    TINFO_VAR_DECLARED_CONSTINIT (DECL_TEMPLATE_INFO (r))
+	      = TINFO_VAR_DECLARED_CONSTINIT (DECL_TEMPLATE_INFO (t));
 	    if (!error_operand_p (r) || (complain & tf_error))
 	      register_specialization (r, gen_tmpl, argvec, false, hash);
 	  }
@@ -24744,7 +24748,9 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
         push_nested_class (DECL_CONTEXT (d));
 
       const_init = DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (code_pattern);
-      cp_finish_decl (d, init, const_init, NULL_TREE, 0);
+      int flags = (TINFO_VAR_DECLARED_CONSTINIT (DECL_TEMPLATE_INFO (d))
+		   ? LOOKUP_CONSTINIT : 0);
+      cp_finish_decl (d, init, const_init, NULL_TREE, flags);
 
       if (enter_context)
         pop_nested_class ();

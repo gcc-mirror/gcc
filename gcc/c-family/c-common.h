@@ -180,6 +180,9 @@ enum rid
   /* C++11 */
   RID_CONSTEXPR, RID_DECLTYPE, RID_NOEXCEPT, RID_NULLPTR, RID_STATIC_ASSERT,
 
+  /* C++20 */
+  RID_CONSTINIT,
+
   /* char8_t */
   RID_CHAR8,
 
@@ -250,6 +253,8 @@ enum rid
 
   RID_FIRST_CXX11 = RID_CONSTEXPR,
   RID_LAST_CXX11 = RID_STATIC_ASSERT,
+  RID_FIRST_CXX20 = RID_CONSTINIT,
+  RID_LAST_CXX20 = RID_CONSTINIT,
   RID_FIRST_AT = RID_AT_ENCODE,
   RID_LAST_AT = RID_AT_IMPLEMENTATION,
   RID_FIRST_PQ = RID_IN,
@@ -427,6 +432,7 @@ extern machine_mode c_default_pointer_mode;
 #define D_CXX_CONCEPTS  0x0400	/* In C++, only with concepts.  */
 #define D_TRANSMEM	0X0800	/* C++ transactional memory TS.  */
 #define D_CXX_CHAR8_T	0X1000	/* In C++, only with -fchar8_t.  */
+#define D_CXX20		0x2000  /* In C++, C++20 only.  */
 
 #define D_CXX_CONCEPTS_FLAGS D_CXXONLY | D_CXX_CONCEPTS
 #define D_CXX_CHAR8_T_FLAGS D_CXXONLY | D_CXX_CHAR8_T

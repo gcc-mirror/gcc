@@ -1,3 +1,8 @@
+2019-08-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91360 - Implement C++20 P1143R2: constinit.
+	* doc/invoke.texi: Document -Wc++20-compat.
+
 2019-08-28  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/91457

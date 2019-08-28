@@ -400,6 +400,13 @@ Wc++17-compat
 C++ ObjC++ Var(warn_cxx17_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about C++ constructs whose meaning differs between ISO C++ 2014 and ISO C++ 2017.
 
+Wc++2a-compat
+C++ ObjC++ Warning Alias(Wc++20-compat) Undocumented
+
+Wc++20-compat
+C++ ObjC++ Var(warn_cxx20_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
+Warn about C++ constructs whose meaning differs between ISO C++ 2017 and ISO C++ 2020.
+
 Wcast-function-type
 C ObjC C++ ObjC++ Var(warn_cast_function_type) Warning EnabledBy(Wextra)
 Warn about casts between incompatible function types.

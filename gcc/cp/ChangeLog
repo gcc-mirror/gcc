@@ -1,3 +1,32 @@
+2019-08-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91360 - Implement C++20 P1143R2: constinit.
+	* cp-tree.h (TINFO_VAR_DECLARED_CONSTINIT): Define.
+	(LOOKUP_CONSTINIT): Define.
+	(enum cp_decl_spec): Add ds_constinit.
+	* decl.c (check_tag_decl): Give an error for constinit in type
+	declarations.
+	(check_initializer): Also check LOOKUP_CONSTINIT.
+	(cp_finish_decl): Add checking for a constinit declaration.  Set
+	TINFO_VAR_DECLARED_CONSTINIT.
+	(grokdeclarator): Add checking for a declaration with the constinit
+	specifier.
+	* lex.c (init_reswords): Handle D_CXX20.
+	* parser.c (cp_lexer_get_preprocessor_token): Pass a better location
+	to warning_at.  Warn about C++20 keywords.
+	(cp_keyword_starts_decl_specifier_p): Handle RID_CONSTINIT.
+	(cp_parser_diagnose_invalid_type_name): Add an inform about constinit.
+	(cp_parser_decomposition_declaration): Maybe pass LOOKUP_CONSTINIT to
+	cp_finish_decl.
+	(cp_parser_decl_specifier_seq): Handle RID_CONSTINIT.
+	(cp_parser_init_declarator): Maybe pass LOOKUP_CONSTINIT to
+	cp_finish_decl.
+	(set_and_check_decl_spec_loc): Add "constinit".
+	* pt.c (tsubst_decl): Set TINFO_VAR_DECLARED_CONSTINIT.
+	(instantiate_decl): Maybe pass LOOKUP_CONSTINIT to cp_finish_decl.
+	* typeck2.c (store_init_value): If a constinit variable wasn't
+	initialized using a constant initializer, give an error.
+
 2019-08-28  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/90613

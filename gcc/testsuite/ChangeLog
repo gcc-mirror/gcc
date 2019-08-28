@@ -1,3 +1,19 @@
+2019-08-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91360 - Implement C++20 P1143R2: constinit.
+	* g++.dg/cpp2a/constinit1.C: New test.
+	* g++.dg/cpp2a/constinit2.C: New test.
+	* g++.dg/cpp2a/constinit3.C: New test.
+	* g++.dg/cpp2a/constinit4.C: New test.
+	* g++.dg/cpp2a/constinit5.C: New test.
+	* g++.dg/cpp2a/constinit6.C: New test.
+	* g++.dg/cpp2a/constinit7.C: New test.
+	* g++.dg/cpp2a/constinit8.C: New test.
+	* g++.dg/cpp2a/constinit9.C: New test.
+	* g++.dg/cpp2a/constinit10.C: New test.
+	* g++.dg/cpp2a/constinit11.C: New test.
+	* g++.dg/cpp2a/constinit12.C: New test.
+
 2019-08-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91565

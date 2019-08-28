@@ -4962,6 +4962,9 @@ check_tag_decl (cp_decl_specifier_seq *declspecs,
       else if (decl_spec_seq_has_spec_p (declspecs,  ds_constexpr))
         error_at (declspecs->locations[ds_constexpr],
 		  "%<constexpr%> cannot be used for type declarations");
+      else if (decl_spec_seq_has_spec_p (declspecs,  ds_constinit))
+	error_at (declspecs->locations[ds_constinit],
+		  "%<constinit%> cannot be used for type declarations");
     }
 
   if (declspecs->attributes && warn_attributes && declared_type)
@@ -6595,11 +6598,12 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 		 about aggregate initialization of non-aggregate classes.  */
 	      flags |= LOOKUP_ALREADY_DIGESTED;
 	    }
-	  else if (DECL_DECLARED_CONSTEXPR_P (decl))
+	  else if (DECL_DECLARED_CONSTEXPR_P (decl)
+		   || (flags & LOOKUP_CONSTINIT))
 	    {
-	      /* Declared constexpr, but no suitable initializer; massage
-		 init appropriately so we can pass it into store_init_value
-		 for the error.  */
+	      /* Declared constexpr or constinit, but no suitable initializer;
+		 massage init appropriately so we can pass it into
+		 store_init_value for the error.  */
 	      if (CLASS_TYPE_P (type)
 		  && (!init || TREE_CODE (init) == TREE_LIST))
 		{
@@ -7162,6 +7166,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  DECL_INITIAL (decl) = NULL_TREE;
 	}
 
+      /* Handle `constinit' on variable templates.  */
+      if (flags & LOOKUP_CONSTINIT)
+	TINFO_VAR_DECLARED_CONSTINIT (DECL_TEMPLATE_INFO (decl)) = true;
+
       /* Generally, initializers in templates are expanded when the
 	 template is instantiated.  But, if DECL is a variable constant
 	 then it can be used in future constant expressions, so its value
@@ -7253,6 +7261,18 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
   if (VAR_P (decl))
     {
+      duration_kind dk = decl_storage_duration (decl);
+      /* [dcl.constinit]/1 "The constinit specifier shall be applied
+	 only to a declaration of a variable with static or thread storage
+	 duration."  */
+      if ((flags & LOOKUP_CONSTINIT)
+	  && !(dk == dk_thread || dk == dk_static))
+	{
+	  error ("%<constinit%> can only be applied to a variable with static "
+		 "or thread storage duration");
+	  return;
+	}
+
       /* If this is a local variable that will need a mangled name,
 	 register it now.  We must do this before processing the
 	 initializer for the variable, since the initialization might
@@ -10477,6 +10497,7 @@ grokdeclarator (const cp_declarator *declarator,
   bool template_parm_flag = false;
   bool typedef_p = decl_spec_seq_has_spec_p (declspecs, ds_typedef);
   bool constexpr_p = decl_spec_seq_has_spec_p (declspecs, ds_constexpr);
+  bool constinit_p = decl_spec_seq_has_spec_p (declspecs, ds_constinit);
   bool late_return_type_p = false;
   bool array_parameter_p = false;
   location_t saved_loc = input_location;
@@ -10760,6 +10781,24 @@ grokdeclarator (const cp_declarator *declarator,
     {
       error_at (declspecs->locations[ds_constexpr],
 		"%<constexpr%> cannot appear in a typedef declaration");
+      return error_mark_node;
+    }
+
+  if (constinit_p && typedef_p)
+    {
+      error_at (declspecs->locations[ds_constinit],
+		"%<constinit%> cannot appear in a typedef declaration");
+      return error_mark_node;
+    }
+
+  /* [dcl.spec]/2 "At most one of the constexpr, consteval, and constinit
+     keywords shall appear in a decl-specifier-seq."  */
+  if (constinit_p && constexpr_p)
+    {
+      error_at (min_location (declspecs->locations[ds_constinit],
+			      declspecs->locations[ds_constexpr]),
+		"can use at most one of the %<constinit%> and %<constexpr%> "
+		"specifiers");
       return error_mark_node;
     }
 
@@ -11155,6 +11194,12 @@ grokdeclarator (const cp_declarator *declarator,
 		    "a parameter cannot be declared %<constexpr%>");
           constexpr_p = 0;
         }
+      else if (constinit_p)
+	{
+	  error_at (declspecs->locations[ds_constinit],
+		    "a parameter cannot be declared %<constinit%>");
+	  constexpr_p = 0;
+	}
     }
 
   /* Give error if `virtual' is used outside of class declaration.  */
@@ -11595,6 +11640,13 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
 		error_at (typespec_loc, "%qs declared as function returning "
 			  "an array", name);
+		return error_mark_node;
+	      }
+	    if (constinit_p)
+	      {
+		error_at (declspecs->locations[ds_constinit],
+			  "%<constinit%> on function return type is not "
+			  "allowed");
 		return error_mark_node;
 	      }
 
@@ -12794,9 +12846,16 @@ grokdeclarator (const cp_declarator *declarator,
                 else if (constexpr_p)
 		  {
 		    error_at (declspecs->locations[ds_constexpr],
-			      "non-static data member %qE declared %<constexpr%>",
-			      unqualified_id);
+			      "non-static data member %qE declared "
+			      "%<constexpr%>", unqualified_id);
 		    constexpr_p = false;
+		  }
+		else if (constinit_p)
+		  {
+		    error_at (declspecs->locations[ds_constinit],
+			      "non-static data member %qE declared "
+			      "%<constinit%>", unqualified_id);
+		    constinit_p = false;
 		  }
 		decl = build_decl (id_loc, FIELD_DECL, unqualified_id, type);
 		DECL_NONADDRESSABLE_P (decl) = bitfield;
