@@ -1,0 +1,7 @@
+include $(srcdir)/config/arc64/t-softfp32
+
+ARC_ARCH32:=$(findstring __ARC64_ARCH32__,$(shell $(gcc_compile_bare)  $(MULTILIB_CFLAGS) -dM -E - </dev/null))
+
+ifndef ARC_ARCH32
+softfp_int_modes += ti
+endif

@@ -17,7 +17,7 @@
 # GCC testsuite that uses the `dg.exp' driver.
 
 # Exit immediately if this isn't an arc target.
-if ![istarget arc*-*-*] then {
+if { ![istarget arc-*-*] && ![istarget arceb-*-*] } then {
   return
 }
 

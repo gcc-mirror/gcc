@@ -1,0 +1,27 @@
+# Copyright (C) 2021 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 3, or (at your option) any later
+# version.
+#
+# GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+MULTILIB_OPTIONS = mfpu=fpus/mfpu=fpud/m128/mcpu=hs5x/mcpu=hs58
+
+MULTILIB_DIRNAMES = fpus fpud m128 hs5x hs58
+
+# Using m128 will default to standard implementation of memcpy/memset
+MULTILIB_REUSE = mfpu.fpud=mfpu.fpud/m128
+MULTILIB_REUSE += mfpu.fpus=mfpu.fpus/m128
+
+MULTILIB_MATCHES = m128=mcpu?hs68

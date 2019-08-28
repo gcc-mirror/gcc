@@ -1,0 +1,132 @@
+; Machine description for ARC64 architecture.
+; Copyright (C) 2021 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it
+; under the terms of the GNU General Public License as published by
+; the Free Software Foundation; either version 3, or (at your option)
+; any later version.
+;
+; GCC is distributed in the hope that it will be useful, but
+; WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+; General Public License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+HeaderInclude
+config/arc64/arc64-opts.h
+
+TargetVariable
+bool arc64_target_64bit = ARC64_64BIT_DEFAULT
+
+Enum
+Name(cmodel) Type(enum arc64_code_model)
+The code model option names for -mcmodel:
+
+EnumValue
+Enum(cmodel) String(small) Value(ARC64_CMODEL_SMALL)
+
+EnumValue
+Enum(cmodel) String(medium) Value(ARC64_CMODEL_MEDIUM)
+
+EnumValue
+Enum(cmodel) String(large) Value(ARC64_CMODEL_LARGE)
+
+mcmodel=
+Target RejectNegative Joined Enum(cmodel) Var(arc64_cmodel_var) Init(ARC64_CMODEL_MEDIUM) Save
+Specify the code model.
+
+Enum
+Name(arc64_atomic) Type(int)
+
+EnumValue
+Enum(arc64_atomic) String(0) Value(0)
+
+EnumValue
+Enum(arc64_atomic) String(1) Value(1)
+
+EnumValue
+Enum(arc64_atomic) String(2) Value(2)
+
+EnumValue
+Enum(arc64_atomic) String(3) Value(3)
+
+matomic=
+Target RejectNegative Joined Enum(arc64_atomic) Var(arc64_atomic_option) Init(DEFAULT_ARC64_ATOMIC_OPTION)
+Enable atomic instructions: {0, 1, 2, 3}.
+
+Enum
+Name(fpmodel) Type(int)
+
+EnumValue
+Enum(fpmodel) String(none) Value(0)
+
+EnumValue
+Enum(fpmodel) String(fpus) Value(1)
+
+EnumValue
+Enum(fpmodel) String(fpud) Value(2)
+
+mfpu=
+Target RejectNegative Joined Enum(fpmodel) Var(arc64_fp_model) Init(0)
+Specify hardware FP model used.
+
+mdiv-rem
+Target Var(TARGET_ARC64_DIVREM) Init(TARGET_ARC64_DIVREM_DEFAULT)
+Enable DIV-REM instructions.
+
+mbitscan
+Target Mask(BITSCAN)
+Enable NORM, NORMH, FFS, FLS, NORML, FFSL, and FLSL bitscan instructions.
+
+mcpu=
+Target RejectNegative ToLower Joined Var(arcv3_cpu_string)
+-mcpu=CPU Generate code for specific ARCv3 CPU variant.
+
+munaligned-access
+Target Var(unaligned_access) Init(UNALIGNED_ACCESS_DEFAULT)
+Enable unaligned accesse for packed data.
+
+mvolatile-di
+Target Mask(VOLATILE_DI)
+Enable uncached access for volatile memories.
+
+mcode-density
+Target Mask(CODE_DENSITY)
+Enable code-density instructions.
+
+msimd
+Target Mask(SIMD)
+Enable integer SIMD instructions.
+
+mwide
+Target Mask(WIDE_SIMD)
+Enable wide floating point SIMD support.
+
+mll64
+Target Mask(LL64)
+Enable double load/store instructions for arc64:32.
+
+m128
+Target Mask(WIDE_LDST)
+Enable wide data transfer support.
+
+mfpmov
+Target Mask(FP_MOVE)
+Reduce pressure on GPRs by using FPRs for memory operations like memcpy.
+
+mbrcc
+Target Mask(BRCC)
+Generate BRcc instructions during combiner step.
+
+mbbit
+Target Mask(BBIT)
+Generate BBITx instructions during combiner step.
+
+mexperimental
+Target Mask(EXP)
+Experimental option, to be removed.

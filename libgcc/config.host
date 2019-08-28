@@ -95,8 +95,11 @@ amdgcn*-*-*)
 	cpu_type=gcn
 	tmake_file="${tmake_file} t-softfp-sfdf t-softfp"
 	;;
-arc*-*-*)
+arc-*-* | arceb-*-*)
 	cpu_type=arc
+	;;
+arc[6432]*-*-*)
+	cpu_type=arc64
 	;;
 arm*-*-*)
 	cpu_type=arm
@@ -445,16 +448,29 @@ amdgcn*-*-amdhsa)
 	tmake_file="$tmake_file gcn/t-amdgcn"
 	extra_parts="crt0.o"
 	;;
-arc*-*-elf*)
+arc-*-elf* | arceb-*-elf*)
 	tmake_file="arc/t-arc"
 	extra_parts="crti.o crtn.o crtend.o crtbegin.o crtendS.o crtbeginS.o"
 	extra_parts="$extra_parts crttls.o"
 	;;
-arc*-*-linux*)
+arc-*-linux* | arceb-*-linux*)
 	tmake_file="${tmake_file} t-slibgcc-libgcc t-slibgcc-nolc-override arc/t-arc-uClibc arc/t-arc"
 	extra_parts="$extra_parts crti.o crtn.o"
 	extra_parts="$extra_parts crttls.o"
 	md_unwind_header=arc/linux-unwind.h
+	;;
+arc32-*-elf | arc64-*-elf)
+	tmake_file="${tmake_file} arc64/t-arc64 arc64/t-softfp t-softfp t-softfp-sfdf"
+	;;
+arc32-*-linux*)
+	tmake_file="${tmake_file} arc64/t-softfp t-softfp t-softfp-sfdf"
+	tmake_file="${tmake_file} t-slibgcc-libgcc t-slibgcc-nolc-override"
+	md_unwind_header=arc64/linux-unwind.h
+	;;
+arc64-*-linux*)
+	tmake_file="${tmake_file} arc64/t-arc64 arc64/t-softfp t-softfp t-softfp-sfdf"
+	tmake_file="${tmake_file} t-slibgcc-libgcc t-slibgcc-nolc-override"
+	md_unwind_header=arc64/linux-unwind.h
 	;;
 arm-wrs-vxworks7*)
 	tmake_file="$tmake_file arm/t-arm arm/t-elf arm/t-bpabi arm/t-vxworks7"

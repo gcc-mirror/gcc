@@ -786,6 +786,11 @@ Objective-C and Objective-C++ Dialects}.
 -munalign-prob-threshold=@var{probability}  -mmpy-option=@var{multo} @gol
 -mdiv-rem  -mcode-density  -mll64  -mfpu=@var{fpu}  -mrf16  -mbranch-index}
 
+@emph{ARC64 Options}
+@gccoptlist{-mcmodel=@var{code-model} -matomic=@var{opt} -mfpu=@var{fpu} @gol
+-mdiv-rem -mbitscan -mcpu=@var{cpu} -munaligned-access -mvolatile-di @gol
+-mcode-density -msimd -mwide -m128 -mbrcc}
+
 @emph{ARM Options}
 @gccoptlist{-mapcs-frame  -mno-apcs-frame @gol
 -mabi=@var{name} @gol
@@ -18911,6 +18916,7 @@ platform.
 * Adapteva Epiphany Options::
 * AMD GCN Options::
 * ARC Options::
+* ARC64 Options::
 * ARM Options::
 * AVR Options::
 * Blackfin Options::
@@ -20461,6 +20467,82 @@ Values @samp{arc600}, @samp{arc601}, @samp{arc700} and
 @item -multcost=@var{num}
 @opindex multcost
 Replaced by @option{-mmultcost}.
+
+@end table
+
+@node ARC64 Options
+@subsection ARC64 Options
+@cindex ARC64 options
+
+These @samp{-m} options are defined for the ARC64 port:
+
+@table @gcctabopt
+@item -mcmodel=@var{code-model}
+@opindex mcmodel
+Select the desired code model to be generated. The possible values are
+@samp{small} for programs and its statically defined symbols which
+should be within 1MB of each other. @samp{medium} is the default model
+suited for programs and symbols within 4GB of each other. And
+@samp{large} which makes no assumptions about addresses and sizes of
+sections.
+
+@item -matomic=@var{opt}
+@opindex matomic
+Enable specific Atomic Memory Operations (AMO). The argument @var{opt}
+takes the value @samp{0}, @samp{1}, or @samp{2} to assign no, legacy
+@samp{ARCv2}, and new @samp{ARCv3} AMOs.
+
+@item -mfpu=@var{fpu}
+@opindex mfpu
+Enable support for ARCv3 floating point vector unit. Possible
+arguments are @samp{none}, @samp{fpus}, or @samp{fpud} to disable the
+unit (default), using only simple precision floating point unit, and
+use double precision floating point uint.
+
+@item -mdiv-rem
+@opindex mdiv-rem
+Enable 32bit or 64bit div/rem integer instructions.  This option is
+enabled by default.
+
+@item -mbitscan
+@opindex mbitscan
+Enable @code{NORM}, @code{NORMH}, @code{FFS}, @code{FLS},
+@code{NORML}, @code{FFSL}, and @code{FLSL} bitscan instructions.  This
+option is enabled by default.
+
+@item -mcpu=@var{cpu}
+@opindex mcpu
+Compile for specific ARCv3 CPU. Possible value is @samp{hs6x} which is
+also the default CPU.
+
+@item -munaligned-access
+@opindex munaligned-access
+Enable unaligned access for packed data.
+
+@item -mvolatile-di
+@opindex mvolatile-di
+Enable uncached access for volatile memories.
+
+@item -mcode-density
+@opindex mcode-density
+Enable code-density instructions.
+
+@item -msimd
+@opindex msimd
+Enable integer SIMD extension instructions.
+
+@item -mwide
+@opindex mwide
+Enable 128 bit wide floating point SIMD vector.
+
+@item -m128
+@opindex m128
+Enable 128bit load/store instructions.  This option is enabled by
+default.
+
+@item -mbrcc
+@opindex brcc
+Enable BRcc instructions in RTL combiner.
 
 @end table
 

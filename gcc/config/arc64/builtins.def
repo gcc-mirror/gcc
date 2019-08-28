@@ -1,0 +1,42 @@
+/* Copyright (C) 2020 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it under
+   the terms of the GNU General Public License as published by the Free
+   Software Foundation; either version 3, or (at your option) any later
+   version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+   WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* This file contains the definitions and documentation for the
+   builtins defined in the ARC part of the GNU compiler.  Before
+   including this file, define a macro
+
+   DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE, MASK)
+
+   NAME:    `__builtin_arc_name' will be the user-level name of the builtin.
+            `ARC64_BUILTIN_NAME' will be the internal builtin's id.
+   N_ARGS:  Number of input arguments.  If special treatment is needed,
+            set to -1 and handle it by hand, see arc.c:arc_expand_builtin().
+   TYPE:    A tree node describing the prototype of the built-in.
+   ICODE:   Name of attached insn or expander.  If special treatment in arc.c
+            is needed to expand the built-in, use `nothing'.
+   MASK:    CPU selector mask.  */
+
+DEF_BUILTIN (NOP,        0, void_ftype_void,        nothing,    1)
+DEF_BUILTIN (SR,         2, void_ftype_usint_usint, sr,         1)
+DEF_BUILTIN (LR,         1, usint_ftype_usint,      lr,         1)
+DEF_BUILTIN (BRK,        0, void_ftype_void,        brk,        1)
+DEF_BUILTIN (FLAG,       1, void_ftype_usint,       flag,       1)
+DEF_BUILTIN (SRL,        2, void_ftype_long_long,   srl,        1)
+DEF_BUILTIN (LRL,        1, long_ftype_long,        lrl,        1)
+
+DEF_BUILTIN (TRAP_S,     1, void_ftype_usint,       trap_s,      1)

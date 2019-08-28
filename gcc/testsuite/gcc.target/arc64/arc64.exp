@@ -1,0 +1,78 @@
+# Copyright (C) 2007-2019 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Exit immediately if this isn't an arc target.
+if ![istarget arc*-*-*] then {
+  return
+}
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# Return 1 if this is a compiler supporting ARCv3/32 as default processor
+proc check_effective_target_hs5x { } {
+    return [check_no_compiler_messages hs5x assembly {
+	#if !defined(__ARC64_ARCH32__)
+	#error No ARCv3/32
+	#endif
+    }]
+}
+
+# Return 1 if this is a compiler supporting ARCv3/64 as default processor
+proc check_effective_target_hs6x { } {
+    return [check_no_compiler_messages hs6x assembly {
+	#if !defined(__ARC64_ARCH64__)
+	#error No ARCv3/64
+	#endif
+    }]
+}
+
+# Return 1 if double loads/stores is enabled for the target
+proc check_effective_target_doubleaccess { } {
+    return [check_no_compiler_messages doubleaccess assembly {
+	#if !defined(__ARC64_LL64__) && !defined (__ARC64_M128__)
+	#error No double loads or stores detected
+	#endif
+    }]
+}
+
+
+# Return 1 if DP FP is enabled for the target
+proc check_effective_target_dpfp { } {
+    return [check_no_compiler_messages dpfp assembly {
+	#if !defined(__ARC_FPU_DP__)
+	#error No double loads or stores detected
+	#endif
+    }]
+}
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
+}
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.{\[cS\],cpp}]] \
+	"" $DEFAULT_CFLAGS
+
+# All done.
+dg-finish

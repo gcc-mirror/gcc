@@ -344,12 +344,17 @@ amdgcn*)
 am33_2.0-*-linux*)
 	cpu_type=mn10300
 	;;
-arc*-*-*)
+arc-*-* | arceb-*-*)
 	cpu_type=arc
 	c_target_objs="arc-c.o"
 	cxx_target_objs="arc-c.o"
 	extra_options="${extra_options} arc/arc-tables.opt g.opt"
 	extra_headers="arc-simd.h"
+	;;
+arc[6432]*-*-*)
+	cpu_type=arc64
+	c_target_objs="arc64-c.o"
+	cxx_target_objs="arc64-c.o"
 	;;
 arm*-*-*)
 	cpu_type=arm
@@ -1192,7 +1197,7 @@ alpha*-dec-*vms*)
 	tm_file="${tm_file} vms/vms.h alpha/vms.h"
 	tmake_file="${tmake_file} alpha/t-vms alpha/t-alpha"
 	;;
-arc*-*-elf*)
+arc-*-elf* | arceb-*-elf*)
 	tm_file="arc/arc-arch.h dbxelf.h elfos.h newlib-stdint.h arc/elf.h ${tm_file}"
 	tmake_file="arc/t-multilib arc/t-arc"
 	extra_gcc_objs="driver-arc.o"
@@ -1213,7 +1218,7 @@ arc*-*-elf*)
 	big*)	tm_file="arc/big.h ${tm_file}"
 	esac
 	;;
-arc*-*-linux*)
+arc-*-linux* | arceb-*-linux*)
 	tm_file="arc/arc-arch.h dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arc/linux.h ${tm_file}"
 	tmake_file="${tmake_file} arc/t-multilib-linux arc/t-arc"
 	extra_gcc_objs="driver-arc.o"
@@ -1233,6 +1238,28 @@ arc*-*-linux*)
 	case ${with_endian} in
 	big*)	tm_file="arc/big.h ${tm_file}"
 	esac
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+	;;
+arc32-*-elf*)
+	tm_file="dbxelf.h elfos.h newlib-stdint.h arc64/elf.h arc64/elf32.h ${tm_file}"
+	tmake_file="${tmake_file} arc64/t-multilib32 arc64/t-arc64"
+	;;
+arc64-*-elf*)
+	tm_file="dbxelf.h elfos.h newlib-stdint.h arc64/elf.h arc64/elf64.h ${tm_file}"
+	tmake_file="${tmake_file} arc64/t-multilib arc64/t-arc64"
+	;;
+arc32-*-linux*)
+	tm_file="dbxelf.h elfos.h gnu-user.h linux.h arc64/linux.h arc64/linux32.h linux-android.h glibc-stdint.h ${tm_file}"
+	tmake_file="${tmake_file} arc64/t-arc64"
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+	;;
+arc64-*-linux*)
+	tm_file="dbxelf.h elfos.h gnu-user.h linux.h arc64/linux.h arc64/linux64.h linux-android.h glibc-stdint.h ${tm_file}"
+	tmake_file="${tmake_file} arc64/t-arc64"
 	# Force .init_array support.  The configure script cannot always
 	# automatically detect that GAS supports it, yet we require it.
 	gcc_cv_initfini_array=yes
@@ -4311,7 +4338,7 @@ case "${target}" in
 		done
 		;;
 
-	arc*-*-*)
+	arc-*-* | arceb-*-*)
 		supported_defaults="cpu fpu"
 
 		new_cpu=hs38_linux
@@ -4358,6 +4385,29 @@ case "${target}" in
 			 "--with-fpu=$with_fpu for cpu $new_cpu" 1>&2
 			 exit 1
 		fi
+		;;
+
+	arc[6432]*-*-*)
+		supported_defaults="fpu cpu"
+		case "$with_fpu" in
+		"" | fpus | fpud)
+			# OK
+			;;
+		*)
+			echo "Unknown floating point type used in "\
+			     "--with-fpu=$with-fpu" 1>&2
+			exit 1
+			;;
+		esac
+
+		case "$with_cpu" in
+		"" | hs5* | hs6*)
+		   # OK
+		   ;;
+		*)
+		   echo "Unknown cpu used in --with-cpu=$with_cpu" 1>&2
+		   exit 1
+		esac
 		;;
 
 	avr-*-*)

@@ -1,0 +1,35 @@
+/* Copyright (C) 2021 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.
+*/
+
+ARC64_C_DEF ("__ARC64_ATOMIC_1__", arc64_atomic_option == 1)
+ARC64_C_DEF ("__ARC64_ATOMIC_2__", arc64_atomic_option == 2)
+ARC64_C_DEF ("__ARC64_ATOMIC_3__", arc64_atomic_option == 3)
+ARC64_C_DEF ("__ARC64_UNALIGNED__", unaligned_access)
+ARC64_C_DEF ("__ARC_FPU_SP__", ARC64_HAS_FPUS)
+ARC64_C_DEF ("__ARC_FPU_DP__", ARC64_HAS_FPUD)
+ARC64_C_DEF ("__ARC64_LL64__", TARGET_LL64)
+ARC64_C_DEF ("__ARC64_M128__", TARGET_WIDE_LDST)
+ARC64_C_DEF ("__ARC64_WIDE_VECTOR__", TARGET_WIDE_SIMD)
+ARC64_C_DEF ("__ARC64_ARCH64__",  TARGET_64BIT)
+ARC64_C_DEF ("__ARC64_ARCH32__", !TARGET_64BIT)
+
+
+/* Local Variables: */
+/* mode: c */
+/* End: */
