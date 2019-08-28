@@ -1,3 +1,9 @@
+2019-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/91530
+	* config/i386/sse.md (vec_shl_<mode>, vec_shr_<mode>): Use
+	V_128 iterator instead of VI_128.
+
 2019-08-28  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/90970

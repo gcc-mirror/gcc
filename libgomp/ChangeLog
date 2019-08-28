@@ -1,3 +1,9 @@
+2019-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/91530
+	* testsuite/libgomp.c/scan-21.c: New test.
+	* testsuite/libgomp.c/scan-22.c: New test.
+
 2019-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/91530
