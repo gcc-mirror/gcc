@@ -1,3 +1,15 @@
+2019-08-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/91468
+	* ipa-cp.c (merge_agg_lats_step): Removed redundant test, made a
+	checking assert a normal assert to test it really is redundant.
+	* ipa-prop.c (compute_complex_assign_jump_func): Removed
+	redundant test.
+	(update_jump_functions_after_inlining): Removed combining unary
+	arithmetic operations with an ancestor jump function.
+	(ipcp_modif_dom_walker::before_dom_children): Fix wrong use of rhs
+	instead of t.
+
 2019-08-28  Richard Biener  <rguenther@suse.de>
 
 	* config/i386/i386-features.c (convert_scalars_to_vector): Do not

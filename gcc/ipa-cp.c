@@ -2026,15 +2026,13 @@ merge_agg_lats_step (class ipcp_param_lattices *dest_plats,
 
   if (**aglat && (**aglat)->offset == offset)
     {
-      if ((**aglat)->size != val_size
-	  || ((**aglat)->next
-	      && (**aglat)->next->offset < offset + val_size))
+      if ((**aglat)->size != val_size)
 	{
 	  set_agg_lats_to_bottom (dest_plats);
 	  return false;
 	}
-      gcc_checking_assert (!(**aglat)->next
-			   || (**aglat)->next->offset >= offset + val_size);
+      gcc_assert (!(**aglat)->next
+		  || (**aglat)->next->offset >= offset + val_size);
       return true;
     }
   else
