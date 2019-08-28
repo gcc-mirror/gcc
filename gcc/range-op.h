@@ -53,13 +53,13 @@ public:
 				       const value_range_base &lh,
 				       const value_range_base &rh) const;
 
-  // Set the range for op? in the general case. LHS is the range for
+  // Set the range for op[12] in the general case.  LHS is the range for
   // the LHS of the expression, OP[12]is the range for the other
   // TYPE is the expected type of the range.
-  // operand, and the result is returned in R.
+  // The operand and the result is returned in R.
   // Return TRUE if the operation is performed and a valid range is available.
   // ie   [LHS] = ??? + OP2
-  // is re-formed as  R = [LHS] - OP2.
+  // is re-formed as R = [LHS] - OP2.
   virtual bool op1_range (value_range_base &r, tree type,
 			  const value_range_base &lhs,
 			  const value_range_base &op2) const;
@@ -67,7 +67,7 @@ public:
 			  const value_range_base &lhs,
 			  const value_range_base &op1) const;
 protected:
-  // Perform this operation on 2 sub ranges, return the result as a
+  // Perform operation on 2 sub-ranges, return the result as a
   // range of TYPE.
   virtual value_range_base wi_fold (tree type,
 				    const wide_int &lh_lb,

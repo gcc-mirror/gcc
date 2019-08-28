@@ -46,24 +46,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int.h"
 #include "range-op.h"
 
-// Auxiliary routine to return the upper limit for a type.
+// Return the upper limit for a type.
 
-inline wide_int
+static inline wide_int
 max_limit (const_tree type)
 {
   return wi::max_value (TYPE_PRECISION (type) , TYPE_SIGN (type));
 }
 
-// Auxiliary routine to return the lower limit for a type.
+// Return the lower limit for a type.
 
-inline wide_int
+static inline wide_int
 min_limit (const_tree type)
 {
   return wi::min_value (TYPE_PRECISION (type) , TYPE_SIGN (type));
 }
 
 // If the range of either op1 or op2 is undefined, set the result to
-// undefined and return true.
+// undefined and return TRUE.
 
 inline bool
 empty_range_check (value_range_base &r,
@@ -79,8 +79,8 @@ empty_range_check (value_range_base &r,
     return false;
 }
 
-/* Return TRUE if shifting by OP is undefined behavior, and set R to the
-   appropriate range.  */
+// Return TRUE if shifting by OP is undefined behavior, and set R to
+// the appropriate range.
 
 static inline bool
 undefined_shift_range_check (value_range_base &r, tree type,
@@ -92,10 +92,10 @@ undefined_shift_range_check (value_range_base &r, tree type,
       return true;
     }
 
-  /* Shifting by any values outside [0..prec-1], gets undefined
-     behavior from the shift operation.  We cannot even trust
-     SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
-     shifts, and the operation at the tree level may be widened.  */
+  // Shifting by any values outside [0..prec-1], gets undefined
+  // behavior from the shift operation.  We cannot even trust
+  // SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
+  // shifts, and the operation at the tree level may be widened.
   if (wi::lt_p (op.lower_bound (), 0, TYPE_SIGN (op.type ()))
       || wi::ge_p (op.upper_bound (),
 		   TYPE_PRECISION (type), TYPE_SIGN (op.type ())))
@@ -106,7 +106,7 @@ undefined_shift_range_check (value_range_base &r, tree type,
   return false;
 }
 
-/* Return TRUE if 0 is within [WMIN, WMAX].  */
+// Return TRUE if 0 is within [WMIN, WMAX].
 
 static inline bool
 wi_includes_zero_p (tree type, const wide_int &wmin, const wide_int &wmax)
@@ -115,7 +115,7 @@ wi_includes_zero_p (tree type, const wide_int &wmin, const wide_int &wmax)
   return wi::le_p (wmin, 0, sign) && wi::ge_p (wmax, 0, sign);
 }
 
-/* Return TRUE if [WMIN, WMAX] is the singleton 0.  */
+// Return TRUE if [WMIN, WMAX] is the singleton 0.
 
 static inline bool
 wi_zero_p (tree type, const wide_int &wmin, const wide_int &wmax)
@@ -124,16 +124,16 @@ wi_zero_p (tree type, const wide_int &wmin, const wide_int &wmax)
   return wmin == wmax && wi::eq_p (wmin, wi::zero (prec));
 }
 
-/* Binary operation on two wide-ints while adjusting for overflow.
-
-   Return true if we can compute the result; i.e. if the operation
-   doesn't overflow or if the overflow is undefined.  In the latter
-   case (if the operation overflows and overflow is undefined), then
-   adjust the result to be -INF or +INF depending on CODE, VAL1 and
-   VAL2.  Return the value in *RES.
-
-   Return false for division by zero, for which the result is
-   indeterminate.  */
+// Binary operation on two wide-ints while adjusting for overflow.
+//
+// Return TRUE if we can compute the result; i.e. if the operation
+// doesn't overflow or if the overflow is undefined.  In the latter
+// case (if the operation overflows and overflow is undefined), then
+// adjust the result to be -INF or +INF depending on CODE, VAL1 and
+// VAL2.  Return the value in *RES.
+//
+// Returns FALSE for division by zero, in which case the result is
+// indeterminate.
 
 static inline bool
 wi_binop_overflow (wide_int &res,
@@ -183,9 +183,9 @@ wi_binop_overflow (wide_int &res,
         tmp = w1;
 
       if (code == RSHIFT_EXPR)
-	/* It's unclear from the C standard whether shifts can overflow.
-	   The following code ignores overflow; perhaps a C standard
-	   interpretation ruling is needed.  */
+	// It's unclear from the C standard whether shifts can overflow.
+	// The following code ignores overflow; perhaps a C standard
+	// interpretation ruling is needed.
 	res = wi::rshift (w0, tmp, sign);
       else
 	res = wi::lshift (w0, tmp);
@@ -194,15 +194,15 @@ wi_binop_overflow (wide_int &res,
       break;
     }
 
-  /* If the operation overflowed return -INF or +INF depending on the
-     operation and the combination of signs of the operands.  */
+  // If the operation overflowed, return -INF or +INF depending on the
+  // operation and the combination of signs of the operands.
   if (overflow && TYPE_OVERFLOW_UNDEFINED (type))
     {
       switch (code)
 	{
 	case MULT_EXPR:
-	  /* For multiplication, the sign of the overflow is given
-	     by the comparison of the signs of the operands.  */
+	  // For multiplication, the sign of the overflow is given
+	  // by the comparison of the signs of the operands.
 	  if (sign == UNSIGNED || w0.sign_mask () == w1.sign_mask ())
 	    res = wi::max_value (w0.get_precision (), sign);
 	  else
@@ -214,7 +214,7 @@ wi_binop_overflow (wide_int &res,
 	case CEIL_DIV_EXPR:
 	case EXACT_DIV_EXPR:
 	case ROUND_DIV_EXPR:
-	  /* For division, the only case is -INF / -1 = +INF.  */
+	  // For division, the only case is -INF / -1 = +INF.
 	  res = wi::max_value (w0.get_precision (), sign);
 	  return true;
 
@@ -225,7 +225,8 @@ wi_binop_overflow (wide_int &res,
   return !overflow;
 }
 
-// Default wide_int fold operation returns [min , max].
+// Default wide_int fold operation returns [MIN, MAX].
+
 value_range_base
 range_operator::wi_fold (tree type,
 			 const wide_int &lh_lb ATTRIBUTE_UNUSED,
@@ -236,8 +237,9 @@ range_operator::wi_fold (tree type,
   return value_range_base (type);
 }
 
-// The default for fold is to break all ranges into subranges
-// and invoke the 'wi_fold' method on each subrange pair.
+// The default for fold is to break all ranges into sub-ranges and
+// invoke the wi_fold method on each sub-range pair.
+
 value_range_base
 range_operator::fold_range (tree type,
 			    const value_range_base &lh,
@@ -258,11 +260,11 @@ range_operator::fold_range (tree type,
 	if (r.varying_p ())
 	  return r;
       }
-
   return r;
 }
 
 // The default for op1_range is to return false.
+
 bool
 range_operator::op1_range (value_range_base &r ATTRIBUTE_UNUSED,
 			   tree type ATTRIBUTE_UNUSED,
@@ -273,6 +275,7 @@ range_operator::op1_range (value_range_base &r ATTRIBUTE_UNUSED,
 }
 
 // The default for op2_range is to return false.
+
 bool
 range_operator::op2_range (value_range_base &r ATTRIBUTE_UNUSED,
 			   tree type ATTRIBUTE_UNUSED,
@@ -282,12 +285,9 @@ range_operator::op2_range (value_range_base &r ATTRIBUTE_UNUSED,
   return false;
 }
 
-// -------------------------------------------------------------------------
-// -------------------------------------------------------------------------
-
-// Called when there is either an overflow OR an underflow... which means
-// an anti range must be created to compensate.   This does not cover
-// the case where there are 2 possible overflows, or none.
+// Called when there is either an overflow OR an underflow... which
+// means an anti range must be created to compensate.  This does not
+// cover the case where there are 2 possible overflows, or none.
 
 static value_range_base
 adjust_overflow_bound (tree type, const wide_int &wmin, const wide_int &wmax)
@@ -306,17 +306,19 @@ adjust_overflow_bound (tree type, const wide_int &wmin, const wide_int &wmax)
   tmax = tem - 1;
   if (wi::cmp (tmax, tem, sgn) > 0)
     covers = true;
-  /* If the anti-range would cover nothing, drop to varying.
-     Likewise if the anti-range bounds are outside of the
-     types values.  */
+
+  // If the anti-range would cover nothing, drop to varying.
+  // Likewise if the anti-range bounds are outside of the types
+  // values.
   if (covers || wi::cmp (tmin, tmax, sgn) > 0)
     return value_range_base (type);
-  else
-    return value_range_base (VR_ANTI_RANGE, type, tmin, tmax);
+
+  return value_range_base (VR_ANTI_RANGE, type, tmin, tmax);
 }
 
-// Given newly calculated lbound and ubound, examine their respective
-// overflow bits to determine how to create a range.  Return said range.
+// Given a newly calculated lbound and ubound, examine their
+// respective overflow bits to determine how to create a range.
+// Return said range.
 
 static value_range_base
 create_range_with_overflow (tree type,
@@ -328,39 +330,39 @@ create_range_with_overflow (tree type,
   const unsigned int prec = TYPE_PRECISION (type);
   const bool overflow_wraps = TYPE_OVERFLOW_WRAPS (type);
 
-  // For one bit precision if max != min, then the range covers all values.
+  // For one bit precision if max != min, then the range covers all
+  // values.
   if (prec == 1 && wi::ne_p (wmax, wmin))
     return value_range_base (type);
 
   if (overflow_wraps)
     {
-      /* If overflow wraps, truncate the values and adjust the
-	 range kind and bounds appropriately.  */
+      // If overflow wraps, truncate the values and adjust the range,
+      // kind, and bounds appropriately.
       if ((min_ovf != wi::OVF_NONE) == (max_ovf != wi::OVF_NONE))
 	{
 	  wide_int tmin = wide_int::from (wmin, prec, sgn);
 	  wide_int tmax = wide_int::from (wmax, prec, sgn);
-	  /* If the limits are swapped, we wrapped around and cover
-	     the entire range.  We have a similar check at the end of
-	     extract_range_from_binary_expr.  */
+	  // If the limits are swapped, we wrapped around and cover
+	  // the entire range.
 	  if (wi::gt_p (tmin, tmax, sgn))
 	    return value_range_base (type);
-	  else
-	    /* No overflow or both overflow or underflow.  The range
-	       kind stays normal.  */
-	    return value_range_base (type, tmin, tmax);
+
+	  // No overflow or both overflow or underflow.  The range
+	  // kind stays normal.
+	  return value_range_base (type, tmin, tmax);
 	}
-      else if ((min_ovf == wi::OVF_UNDERFLOW && max_ovf == wi::OVF_NONE)
-	       || (max_ovf == wi::OVF_OVERFLOW && min_ovf == wi::OVF_NONE))
+
+      if ((min_ovf == wi::OVF_UNDERFLOW && max_ovf == wi::OVF_NONE)
+	  || (max_ovf == wi::OVF_OVERFLOW && min_ovf == wi::OVF_NONE))
 	return adjust_overflow_bound (type, wmin, wmax);
-      else
-	// Other underflow and/or overflow, drop to VR_VARYING.
-	return value_range_base (type);
+
+      // Other underflow and/or overflow, drop to VR_VARYING.
+      return value_range_base (type);
     }
   else
     {
-      /* If overflow does not wrap, saturate to the types min/max
-	 value.  */
+      // If overflow does not wrap, saturate to [MIN, MAX].
       wide_int new_lb, new_ub;
       if (min_ovf == wi::OVF_UNDERFLOW)
 	new_lb = wi::min_value (prec, sgn);
@@ -375,13 +377,14 @@ create_range_with_overflow (tree type,
 	new_ub = wi::max_value (prec, sgn);
       else
         new_ub = wmax;
+
       return value_range_base (type, new_lb, new_ub);
     }
 }
 
-/* Like above, but canonicalize the case where the bounds are swapped
-   and overflow may wrap.  In which case we transform [10,5] into
-   [MIN,5][10,MAX].  */
+// Like above, but canonicalize the case where the bounds are swapped
+// and overflow may wrap.  In which case, we transform [10,5] into
+// [MIN,5][10,MAX].
 
 static inline value_range_base
 create_possibly_reversed_range (tree type,
@@ -391,13 +394,14 @@ create_possibly_reversed_range (tree type,
   // If the bounds are swapped, treat the result as if an overflow occured.
   if (wi::gt_p (new_lb, new_ub, s))
     return adjust_overflow_bound (type, new_lb, new_ub);
+
   // Otherwise its just a normal range.
   return value_range_base (type, new_lb, new_ub);
 }
 
 // Return a value_range_base instance that is a boolean TRUE.
 
-static value_range_base
+static inline value_range_base
 range_true (tree type)
 {
   unsigned prec = TYPE_PRECISION (type);
@@ -406,7 +410,7 @@ range_true (tree type)
 
 // Return a value_range_base instance that is a boolean FALSE.
 
-static value_range_base
+static inline value_range_base
 range_false (tree type)
 {
   unsigned prec = TYPE_PRECISION (type);
@@ -415,7 +419,7 @@ range_false (tree type)
 
 // Return a value_range_base instance that is a boolean FALSE.
 
-static value_range_base
+static inline value_range_base
 range_true_and_false (tree type)
 {
   unsigned prec = TYPE_PRECISION (type);
@@ -424,22 +428,23 @@ range_true_and_false (tree type)
 
 enum bool_range_state { BRS_FALSE, BRS_TRUE, BRS_EMPTY, BRS_FULL };
 
-/* Return the summary information about boolean range LHS.  Return an
-   "interesting" range in R.  for EMPTY or FULL, return the equivilent
-   range for TYPE, for BRS_TRUE and BRS false, return the negatiuon of
-   the bool range.  */
+// Return the summary information about boolean range LHS.  Return an
+// "interesting" range in R.  For EMPTY or FULL, return the equivilent
+// range for TYPE, for BRS_TRUE and BRS false, return the negation of
+// the bool range.
+
 static bool_range_state
 get_bool_state (value_range_base &r,
 		const value_range_base &lhs, tree val_type)
 {
-  /* If there is no result, then this is unexectuable, so no range. */
+  // If there is no result, then this is unexectuable.
   if (lhs.undefined_p ())
     {
       r.set_undefined ();
       return BRS_EMPTY;
     }
 
-  // If the bounds arent the same, then its not a constant.  */
+  // If the bounds aren't the same, then it's not a constant.
   if (!wi::eq_p (lhs.upper_bound (), lhs.lower_bound ()))
     {
       r.set_varying (val_type);
@@ -467,9 +472,6 @@ public:
 			  const value_range_base &val) const;
 } op_equal;
 
-
-
-/* Fold comparison of the 2 ranges.  */
 value_range_base
 operator_equal::fold_range (tree type,
 			    const value_range_base &op1,
@@ -479,8 +481,8 @@ operator_equal::fold_range (tree type,
   if (empty_range_check (r, op1, op2))
     return r;
 
-  /* We can be sure the values are always equal or not if both ranges
-     consist of a single value, and then compare them.  */
+  // We can be sure the values are always equal or not if both ranges
+  // consist of a single value, and then compare them.
   if (wi::eq_p (op1.lower_bound (), op1.upper_bound ())
       && wi::eq_p (op2.lower_bound (), op2.upper_bound ()))
     {
@@ -491,8 +493,8 @@ operator_equal::fold_range (tree type,
     }
   else
     {
-      /* If ranges do not intersect, we know the range is not equal,
-         otherwise we don't know anything for sure.  */
+      // If ranges do not intersect, we know the range is not equal,
+      // otherwise we don't know anything for sure.
       r = range_intersect (op1, op2);
       if (r.undefined_p ())
 	r = range_false (type);
@@ -511,8 +513,8 @@ operator_equal::op1_range (value_range_base &r, tree type,
   switch (get_bool_state (r, lhs, type))
     {
       case BRS_FALSE:
-        /* If the result is false, the only time we know anything is
-	   if OP2 is a constant.  */
+        // If the result is false, the only time we know anything is
+	// if OP2 is a constant.
 	if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
 	  r = range_invert (op2);
 	else
@@ -520,7 +522,7 @@ operator_equal::op1_range (value_range_base &r, tree type,
 	break;
 
       case BRS_TRUE:
-        /* If its true, the result is the same as OP2.  */
+        // If it's true, the result is the same as OP2.
         r = op2;
 	break;
 
@@ -530,7 +532,6 @@ operator_equal::op1_range (value_range_base &r, tree type,
   return true;
 }
 
-
 bool
 operator_equal::op2_range (value_range_base &r, tree type,
 			   const value_range_base &lhs,
@@ -539,8 +540,6 @@ operator_equal::op2_range (value_range_base &r, tree type,
   return operator_equal::op1_range (r, type, lhs, op1);
 }
 
-
-/* Range operator for def = op1 != op2. */
 
 class operator_not_equal : public range_operator
 {
@@ -556,7 +555,6 @@ public:
 			  const value_range_base &op1) const;
 } op_not_equal;
 
-/* Fold comparison of the 2 ranges.  */
 value_range_base
 operator_not_equal::fold_range (tree type,
 				const value_range_base &op1,
@@ -566,8 +564,8 @@ operator_not_equal::fold_range (tree type,
   if (empty_range_check (r, op1, op2))
     return r;
 
-  /* We can be sure the values are always equal or not if both ranges
-     consist of a single value, and then compare them.  */
+  // We can be sure the values are always equal or not if both ranges
+  // consist of a single value, and then compare them.
   if (wi::eq_p (op1.lower_bound (), op1.upper_bound ())
       && wi::eq_p (op2.lower_bound (), op2.upper_bound ()))
     {
@@ -578,8 +576,8 @@ operator_not_equal::fold_range (tree type,
     }
   else
     {
-      /* If ranges do not intersect, we know the range is not equal,
-         otherwise we don't know anything for sure.  */
+      // If ranges do not intersect, we know the range is not equal,
+      // otherwise we don't know anything for sure.
       r = range_intersect (op1, op2);
       if (r.undefined_p ())
 	r = range_true (type);
@@ -590,7 +588,6 @@ operator_not_equal::fold_range (tree type,
   return r;
 }
 
-/* Calculate the range of op1 being == to VAL based on LHS.  */
 bool
 operator_not_equal::op1_range (value_range_base &r, tree type,
 			       const value_range_base &lhs,
@@ -599,8 +596,8 @@ operator_not_equal::op1_range (value_range_base &r, tree type,
   switch (get_bool_state (r, lhs, type))
     {
       case BRS_TRUE:
-        /* If the result is true, the only time we know anything is if
-	   OP2 is a constant.  */
+        // If the result is true, the only time we know anything is if
+	// OP2 is a constant.
 	if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
 	  r = range_invert (op2);
 	else
@@ -608,7 +605,7 @@ operator_not_equal::op1_range (value_range_base &r, tree type,
 	break;
 
       case BRS_FALSE:
-        /* If its true, the result is the same as OP2.  */
+        // If its true, the result is the same as OP2.
         r = op2;
 	break;
 
@@ -627,48 +624,50 @@ operator_not_equal::op2_range (value_range_base &r, tree type,
   return operator_not_equal::op1_range (r, type, lhs, op1);
 }
 
+// (X < VAL) produces the range of [MIN, VAL - 1].
 
-/* (X < VAL) produces the a range of [MIN, VAL - 1]  */
 static void
 build_lt (value_range_base &r, tree type, const wide_int &val)
 {
   wi::overflow_type ov;
   wide_int lim = wi::sub (val, 1, TYPE_SIGN (type), &ov);
 
-  /* If val - 1 underflows, check is X < MIN, which is an empty range.  */
+  // If val - 1 underflows, check if X < MIN, which is an empty range.
   if (ov)
     r.set_undefined ();
   else
     r = value_range_base (type, min_limit (type), lim);
 }
 
-/* (X <= VAL) produces the a range of [MIN, VAL]  */
+// (X <= VAL) produces the range of [MIN, VAL].
+
 static void
 build_le (value_range_base &r, tree type, const wide_int &val)
 {
   r = value_range_base (type, min_limit (type), val);
 }
 
-/* (X > VAL) produces the a range of [VAL + 1, MAX]  */
+// (X > VAL) produces the range of [VAL + 1, MAX].
+
 static void
 build_gt (value_range_base &r, tree type, const wide_int &val)
 {
   wi::overflow_type ov;
   wide_int lim = wi::add (val, 1, TYPE_SIGN (type), &ov);
-  /* If val + 1 overflows, check is for X > MAX , which is an empty range.  */
+  // If val + 1 overflows, check is for X > MAX, which is an empty range.
   if (ov)
     r.set_undefined ();
   else
     r = value_range_base (type, lim, max_limit (type));
 }
 
-/* (X >= val) produces the a range of [VAL, MAX]  */
+// (X >= val) produces the range of [VAL, MAX].
+
 static void
 build_ge (value_range_base &r, tree type, const wide_int &val)
 {
   r = value_range_base (type, val, max_limit (type));
 }
-
 
 
 class operator_lt :  public range_operator
@@ -707,7 +706,6 @@ operator_lt::fold_range (tree type,
   return r;
 }
 
-
 bool
 operator_lt::op1_range (value_range_base &r, tree type,
 			const value_range_base &lhs,
@@ -729,7 +727,6 @@ operator_lt::op1_range (value_range_base &r, tree type,
   return true;
 }
 
-
 bool
 operator_lt::op2_range (value_range_base &r, tree type,
 			const value_range_base &lhs,
@@ -749,8 +746,8 @@ operator_lt::op2_range (value_range_base &r, tree type,
         break;
     }
   return true;
-
 }
+
 
 class operator_le :  public range_operator
 {
@@ -809,7 +806,6 @@ operator_le::op1_range (value_range_base &r, tree type,
   return true;
 }
 
-
 bool
 operator_le::op2_range (value_range_base &r, tree type,
 			const value_range_base &lhs,
@@ -829,7 +825,6 @@ operator_le::op2_range (value_range_base &r, tree type,
         break;
     }
   return true;
-
 }
 
 
@@ -866,7 +861,6 @@ operator_gt::fold_range (tree type,
       r = range_false (type);
     else
       r = range_true_and_false (type);
-
   return r;
 }
 
@@ -891,7 +885,6 @@ operator_gt::op1_range (value_range_base &r, tree type,
   return true;
 }
 
-
 bool
 operator_gt::op2_range (value_range_base &r, tree type,
 			const value_range_base &lhs,
@@ -911,7 +904,6 @@ operator_gt::op2_range (value_range_base &r, tree type,
         break;
     }
   return true;
-
 }
 
 
@@ -943,12 +935,10 @@ operator_ge::fold_range (tree type,
 
   if (wi::ge_p (op1.lower_bound (), op2.upper_bound (), sign))
     r = range_true (type);
+  else if (!wi::ge_p (op1.upper_bound (), op2.lower_bound (), sign))
+    r = range_false (type);
   else
-    if (!wi::ge_p (op1.upper_bound (), op2.lower_bound (), sign))
-      r = range_false (type);
-    else
-      r = range_true_and_false (type);
-
+    r = range_true_and_false (type);
   return r;
 }
 
@@ -973,7 +963,6 @@ operator_ge::op1_range (value_range_base &r, tree type,
   return true;
 }
 
-
 bool
 operator_ge::op2_range (value_range_base &r, tree type,
 			const value_range_base &lhs,
@@ -993,10 +982,8 @@ operator_ge::op2_range (value_range_base &r, tree type,
         break;
     }
   return true;
-
 }
 
-// ----------------------------------------------------------------------------
 
 class operator_plus : public range_operator
 {
@@ -1014,7 +1001,6 @@ public:
 				    const wide_int &rh_ub) const;
 } op_plus;
 
-
 value_range_base
 operator_plus::wi_fold (tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
@@ -1027,8 +1013,6 @@ operator_plus::wi_fold (tree type,
   return create_range_with_overflow (type, new_lb, new_ub, ov_lb, ov_ub);
 }
 
-/* Adjust value_range_base to be in terms of op1.
-   Given [range] = op1 + val,  op1 = [range] - val.  */
 bool
 operator_plus::op1_range (value_range_base &r, tree type,
 			  const value_range_base &lhs,
@@ -1047,7 +1031,6 @@ operator_plus::op2_range (value_range_base &r, tree type,
   return true;
 }
 
-// ----------------------------------------------------------------------------
 
 class operator_minus : public range_operator
 {
@@ -1065,7 +1048,6 @@ public:
 				    const wide_int &rh_ub) const;
 } op_minus;
 
-
 value_range_base
 operator_minus::wi_fold (tree type,
 			 const wide_int &lh_lb, const wide_int &lh_ub,
@@ -1078,8 +1060,6 @@ operator_minus::wi_fold (tree type,
   return create_range_with_overflow (type, new_lb, new_ub, ov_lb, ov_ub);
 }
 
-/* Adjust value_range_base to be in terms of op1.
-   Given lhs = op1 - op2,  op1 = lhs + op2.  */
 bool
 operator_minus::op1_range (value_range_base &r, tree type,
 			   const value_range_base &lhs,
@@ -1089,8 +1069,6 @@ operator_minus::op1_range (value_range_base &r, tree type,
   return true;
 }
 
-/* Adjust value_range_base to be in terms of op2.
-   Given lhs = op1 - op2,  -op2 = lhs - op1, therefore op2 = op1 - lhs.  */
 bool
 operator_minus::op2_range (value_range_base &r, tree type,
 			   const value_range_base &lhs,
@@ -1100,7 +1078,6 @@ operator_minus::op2_range (value_range_base &r, tree type,
   return true;
 }
 
-// ----------------------------------------------------------------------------
 
 class operator_min : public range_operator
 {
@@ -1111,7 +1088,6 @@ public:
 				    const wide_int &rh_lb,
 				    const wide_int &rh_ub) const;
 } op_min;
-
 
 value_range_base
 operator_min::wi_fold (tree type,
@@ -1124,7 +1100,6 @@ operator_min::wi_fold (tree type,
   return create_range_with_overflow (type, new_lb, new_ub);
 }
 
-// ----------------------------------------------------------------------------
 
 class operator_max : public range_operator
 {
@@ -1148,21 +1123,29 @@ operator_max::wi_fold (tree type,
 }
 
 
-// ----------------------------------------------------------------------------
+class operator_mult : public range_operator
+{
+public:
+  virtual value_range_base wi_fold (tree type,
+				    const wide_int &lh_lb,
+				    const wide_int &lh_ub,
+				    const wide_int &rh_lb,
+				    const wide_int &rh_ub) const;
+} op_mult;
 
-/* Multiplications, divisions and shifts are a bit tricky to handle,
-   depending on the mix of signs we have in the two ranges, we need to
-   operate on different values to get the minimum and maximum values
-   for the new range.  One approach is to figure out all the
-   variations of range combinations and do the operations.
-
-   However, this involves several calls to compare_values and it is
-   pretty convoluted.  It's simpler to do the 4 operations (MIN0 OP
-   MIN1, MIN0 OP MAX1, MAX0 OP MIN1 and MAX0 OP MAX0 OP MAX1) and then
-   figure the smallest and largest values to form the new range.
-
-   This function calculate the cross product of two sets of ranges and
-   accumulate the result into RES.  CODE is the operation to perform.  */
+// Multiplications, divisions and shifts are a bit tricky to handle,
+// depending on the mix of signs we have in the two ranges, we need to
+// operate on different values to get the minimum and maximum values
+// for the new range.  One approach is to figure out all the
+// variations of range combinations and do the operations.
+//
+// However, this involves several calls to compare_values and it is
+// pretty convoluted.  It's simpler to do the 4 operations (MIN0 OP
+// MIN1, MIN0 OP MAX1, MAX0 OP MIN1 and MAX0 OP MAX0 OP MAX1) and then
+// figure the smallest and largest values to form the new range.
+//
+// This function calculate the cross product of two sets of ranges and
+// accumulate the result into RES.  CODE is the operation to perform.
 
 static value_range_base
 wi_cross_product (enum tree_code code, tree type,
@@ -1171,8 +1154,8 @@ wi_cross_product (enum tree_code code, tree type,
 {
   wide_int cp1, cp2, cp3, cp4;
 
-  /* Compute the 4 cross operations, bailing if we get an overflow we
-     can't handle.  */
+  // Compute the 4 cross operations, bailing if we get an overflow we
+  // can't handle.
   if (!wi_binop_overflow (cp1, code, type, lh_lb, rh_lb))
     return value_range_base (type);
   if (wi::eq_p (lh_lb, lh_ub))
@@ -1188,29 +1171,18 @@ wi_cross_product (enum tree_code code, tree type,
   else if (!wi_binop_overflow (cp4, code, type, lh_ub, rh_ub))
     return value_range_base (type);
 
-  /* Order pairs.  */
+  // Order pairs.
   signop sign = TYPE_SIGN (type);
   if (wi::gt_p (cp1, cp2, sign))
     std::swap (cp1, cp2);
   if (wi::gt_p (cp3, cp4, sign))
     std::swap (cp3, cp4);
 
-  /* Choose min and max from the ordered pairs.  */
+  // Choose min and max from the ordered pairs.
   wide_int res_lb = wi::min (cp1, cp3, sign);
   wide_int res_ub = wi::max (cp2, cp4, sign);
   return create_range_with_overflow (type, res_lb, res_ub);
 }
-
-class operator_mult : public range_operator
-{
-public:
-  virtual value_range_base wi_fold (tree type,
-				    const wide_int &lh_lb,
-				    const wide_int &lh_ub,
-				    const wide_int &rh_lb,
-				    const wide_int &rh_ub) const;
-} op_mult;
-
 
 value_range_base
 operator_mult::wi_fold (tree type,
@@ -1220,15 +1192,16 @@ operator_mult::wi_fold (tree type,
   if (TYPE_OVERFLOW_UNDEFINED (type))
     return wi_cross_product (MULT_EXPR, type, lh_lb, lh_ub, rh_lb, rh_ub);
 
-  /* Multiply the ranges when overflow wraps.  This is basically fancy
-     code so we don't drop to varying with an unsigned
-     [-3,-1]*[-3,-1].  */
+  // Multiply the ranges when overflow wraps.  This is basically fancy
+  // code so we don't drop to varying with an unsigned
+  // [-3,-1]*[-3,-1].
+  //
+  // This test requires 2*prec bits if both operands are signed and
+  // 2*prec + 2 bits if either is not.  Therefore, extend the values
+  // using the sign of the result to PREC2.  From here on out,
+  // everthing is just signed math no matter what the input types
+  // were.
 
-  /* This test requires 2*prec bits if both operands are signed and
-     2*prec + 2 bits if either is not.  Therefore, extend the values
-     using the sign of the result to PREC2.  From here on out,
-     everthing is just signed math no matter what the input types
-     were.  */
   signop sign = TYPE_SIGN (type);
   unsigned prec = TYPE_PRECISION (type);
   widest2_int min0 = widest2_int::from (lh_lb, sign);
@@ -1238,7 +1211,7 @@ operator_mult::wi_fold (tree type,
   widest2_int sizem1 = wi::mask <widest2_int> (prec, false);
   widest2_int size = sizem1 + 1;
 
-  /* Canonicalize the intervals.  */
+  // Canonicalize the intervals.
   if (sign == UNSIGNED)
     {
       if (wi::ltu_p (size, min0 + max0))
@@ -1253,18 +1226,18 @@ operator_mult::wi_fold (tree type,
 	}
     }
 
+  // Sort the 4 products so that min is in prod0 and max is in
+  // prod3.
   widest2_int prod0 = min0 * min1;
   widest2_int prod1 = min0 * max1;
   widest2_int prod2 = max0 * min1;
   widest2_int prod3 = max0 * max1;
 
-  /* Sort the 4 products so that min is in prod0 and max is in
-     prod3.  */
-  /* min0min1 > max0max1 */
+  // min0min1 > max0max1
   if (prod0 > prod3)
     std::swap (prod0, prod3);
 
-  /* min0max1 > max0min1 */
+  // min0max1 > max0min1
   if (prod1 > prod2)
     std::swap (prod1, prod2);
 
@@ -1274,10 +1247,10 @@ operator_mult::wi_fold (tree type,
   if (prod2 > prod3)
     std::swap (prod2, prod3);
 
-  /* diff = max - min.  */
+  // diff = max - min
   prod2 = prod3 - prod0;
   if (wi::geu_p (prod2, sizem1))
-    /* The range covers all values.  */
+    // The range covers all values.
     return value_range_base (type);
 
   wide_int new_lb = wide_int::from (prod0, prec, sign);
@@ -1285,8 +1258,6 @@ operator_mult::wi_fold (tree type,
   return create_possibly_reversed_range (type, new_lb, new_ub);
 }
 
-
-// ----------------------------------------------------------------------------
 
 class operator_div : public range_operator
 {
@@ -1311,8 +1282,7 @@ operator_div::wi_fold (tree type,
 		       const wide_int &lh_lb, const wide_int &lh_ub,
 		       const wide_int &rh_lb, const wide_int &rh_ub) const
 {
-  /* If we know we will divide by zero, return an empty range,
-     which will be interpreted as undefined.  */
+  // If we know we will divide by zero, return undefined.
   if (rh_lb == 0 && rh_ub == 0)
     return value_range_base ();
 
@@ -1324,29 +1294,28 @@ operator_div::wi_fold (tree type,
   unsigned prec = TYPE_PRECISION (type);
   wide_int extra_min, extra_max;
 
-  /* If we know we won't divide by zero, just do the division.  */
+  // If we know we won't divide by zero, just do the division.
   if (!wi_includes_zero_p (type, divisor_min, divisor_max))
     return wi_cross_product (code, type, dividend_min, dividend_max,
 			     divisor_min, divisor_max);
 
-  /* If flag_non_call_exceptions, we must not eliminate a division
-     by zero.  */
+  // If flag_non_call_exceptions, we must not eliminate a division by zero.
   if (cfun->can_throw_non_call_exceptions)
     return value_range_base (type);
 
-  /* If we're definitely dividing by zero, there's nothing to do.  */
+  // If we're definitely dividing by zero, there's nothing to do.
   if (wi_zero_p (type, divisor_min, divisor_max))
     return value_range_base ();
 
-  /* Perform the division in 2 parts, [LB, -1] and [1, UB],
-     which will skip any division by zero.
+  // Perform the division in 2 parts, [LB, -1] and [1, UB], which will
+  // skip any division by zero.
 
-     First divide by the negative numbers, if any.  */
+  // First divide by the negative numbers, if any.
   value_range_base r;
   if (wi::neg_p (divisor_min, sign))
     r = wi_cross_product (code, type, dividend_min, dividend_max,
 			  divisor_min, wi::minus_one (prec));
-  /* Then divide by the non-zero positive numbers, if any.  */
+  // Then divide by the non-zero positive numbers, if any.
   if (wi::gt_p (divisor_max, wi::zero (prec), sign))
     {
       value_range_base tmp;
@@ -1358,8 +1327,6 @@ operator_div::wi_fold (tree type,
 }
 
 
-// ----------------------------------------------------------------------------
-
 class operator_exact_divide : public operator_div
 {
 public:
@@ -1370,8 +1337,6 @@ public:
 
 } op_exact_div;
 
-
-// Adjust value_range_base to be in terms of op1.
 bool
 operator_exact_divide::op1_range (value_range_base &r, tree type,
 				  const value_range_base &lhs,
@@ -1393,7 +1358,6 @@ operator_exact_divide::op1_range (value_range_base &r, tree type,
   return false;
 }
 
-// ----------------------------------------------------------------------------
 
 class operator_lshift : public range_operator
 {
@@ -1407,7 +1371,6 @@ public:
 			  const wide_int &rh_lb, const wide_int &rh_ub) const;
 } op_lshift;
 
-
 value_range_base
 operator_lshift::fold_range (tree type,
 			     const value_range_base &op1,
@@ -1417,14 +1380,14 @@ operator_lshift::fold_range (tree type,
   if (undefined_shift_range_check (r, type, op2))
     return r;
 
-  /* Transform left shifts by constants into multiplies.  */
+  // Transform left shifts by constants into multiplies.
   if (op2.singleton_p ())
     {
       unsigned shift = op2.lower_bound ().to_uhwi ();
       wide_int tmp = wi::set_bit_in_zero (shift, TYPE_PRECISION (type));
       value_range_base mult (type, tmp, tmp);
 
-      /* Force wrapping multiplication.  */
+      // Force wrapping multiplication.
       bool saved_flag_wrapv = flag_wrapv;
       bool saved_flag_wrapv_pointer = flag_wrapv_pointer;
       flag_wrapv = 1;
@@ -1435,7 +1398,7 @@ operator_lshift::fold_range (tree type,
       return r;
     }
 
-  // Otherwise just invoke the normal fold routine.
+  // Otherwise, invoke the generic fold routine.
   return range_operator::fold_range (type, op1, op2);
 }
 
@@ -1448,10 +1411,10 @@ operator_lshift::wi_fold (tree type,
   unsigned prec = TYPE_PRECISION (type);
   int overflow_pos = sign == SIGNED ? prec - 1 : prec;
   int bound_shift = overflow_pos - rh_ub.to_shwi ();
-  /* If bound_shift == HOST_BITS_PER_WIDE_INT, the llshift can
-     overflow.  However, for that to happen, rh.max needs to be zero,
-     which means rh is a singleton range of zero, which means it
-     should be handled by the lshift fold_range above.  */
+  // If bound_shift == HOST_BITS_PER_WIDE_INT, the llshift can
+  // overflow.  However, for that to happen, rh.max needs to be zero,
+  // which means rh is a singleton range of zero, which means it
+  // should be handled by the lshift fold_range above.
   wide_int bound = wi::set_bit_in_zero (bound_shift, prec);
   wide_int complement = ~(bound - 1);
   wide_int low_bound, high_bound;
@@ -1463,32 +1426,32 @@ operator_lshift::wi_fold (tree type,
       high_bound = complement;
       if (wi::ltu_p (lh_ub, low_bound))
 	{
-	  /* [5, 6] << [1, 2] == [10, 24].  */
-	  /* We're shifting out only zeroes, the value increases
-	     monotonically.  */
+	  // [5, 6] << [1, 2] == [10, 24].
+	  // We're shifting out only zeroes, the value increases
+	  // monotonically.
 	  in_bounds = true;
 	}
       else if (wi::ltu_p (high_bound, lh_lb))
 	{
-	  /* [0xffffff00, 0xffffffff] << [1, 2]
-	     == [0xfffffc00, 0xfffffffe].  */
-	  /* We're shifting out only ones, the value decreases
-	     monotonically.  */
+	  // [0xffffff00, 0xffffffff] << [1, 2]
+	  // == [0xfffffc00, 0xfffffffe].
+	  // We're shifting out only ones, the value decreases
+	  // monotonically.
 	  in_bounds = true;
 	}
     }
   else
     {
-      /* [-1, 1] << [1, 2] == [-4, 4].  */
+      // [-1, 1] << [1, 2] == [-4, 4]
       low_bound = complement;
       high_bound = bound;
       if (wi::lts_p (lh_ub, high_bound)
 	  && wi::lts_p (low_bound, lh_lb))
 	{
-	  /* For non-negative numbers, we're shifting out only
-	     zeroes, the value increases monotonically.
-	     For negative numbers, we're shifting out only ones, the
-	     value decreases monotomically.  */
+	  // For non-negative numbers, we're shifting out only zeroes,
+	  // the value increases monotonically.  For negative numbers,
+	  // we're shifting out only ones, the value decreases
+	  // monotomically.
 	  in_bounds = true;
 	}
     }
@@ -1499,8 +1462,7 @@ operator_lshift::wi_fold (tree type,
   return value_range_base (type);
 }
 
-// ----------------------------------------------------------------------------
-//
+
 class operator_rshift : public range_operator
 {
 public:
@@ -1512,7 +1474,6 @@ public:
 			  const wide_int &rh_lb, const wide_int &rh_ub) const;
 } op_rshift;
 
-
 value_range_base
 operator_rshift::fold_range (tree type,
 			     const value_range_base &op1,
@@ -1522,7 +1483,7 @@ operator_rshift::fold_range (tree type,
   if (undefined_shift_range_check (r, type, op2))
     return r;
 
-  // Otherwise just invoke the normal fold routine.
+  // Otherwise, invoke the generic fold routine.
   return range_operator::fold_range (type, op1, op2);
 }
 
@@ -1533,8 +1494,6 @@ operator_rshift::wi_fold (tree type,
 {
   return wi_cross_product (RSHIFT_EXPR, type, lh_lb, lh_ub, rh_lb, rh_ub);
 }
-
-// ----------------------------------------------------------------------------
 
 
 class operator_cast: public range_operator
@@ -1548,9 +1507,6 @@ public:
 			  const value_range_base &op2) const;
 
 } op_convert;
-
-
-/* Return LH converted to the type of RH.  */
 
 value_range_base
 operator_cast::fold_range (tree type ATTRIBUTE_UNUSED,
@@ -1575,11 +1531,11 @@ operator_cast::fold_range (tree type ATTRIBUTE_UNUSED,
       wide_int lh_lb = lh.lower_bound (x);
       wide_int lh_ub = lh.upper_bound (x);
 
-        /* If the conversion is not truncating we can convert the min
-	   and max values and canonicalize the resulting range.
-	   Otherwise we can do the conversion if the size of the range
-	   is less than what the precision of the target type can
-	   represent.  */
+      // If the conversion is not truncating we can convert the min
+      // and max values and canonicalize the resulting range.
+      // Otherwise, we can do the conversion if the size of the range
+      // is less than what the precision of the target type can
+      // represent.
       if (outer_prec >= inner_prec
 	  || wi::rshift (wi::sub (lh_ub, lh_lb),
 			 wi::uhwi (outer_prec, inner_prec),
@@ -1609,41 +1565,40 @@ operator_cast::op1_range (value_range_base &r, tree type,
   tree lhs_type = lhs.type ();
   gcc_checking_assert (types_compatible_p (op2.type(), type));
 
-  /* If the precision of the LHS is smaller than the precision of the
-     RHS, then there would be truncation of the value on the RHS, and
-     so we can tell nothing about it.  */
+  // If the precision of the LHS is smaller than the precision of the
+  // RHS, then there would be truncation of the value on the RHS, and
+  // so we can tell nothing about it.
   if (TYPE_PRECISION (lhs_type) < TYPE_PRECISION (type))
     {
-      /* If we've been passed an actual value for the RHS rather than
-	 the type see if it fits the LHS, and if so, then we can allow
-	 it.  */
+      // If we've been passed an actual value for the RHS rather than
+      // the type, see if it fits the LHS, and if so, then we can allow
+      // it.
       r = op2;
       r = fold_range (lhs_type, r, value_range_base (lhs_type));
       r = fold_range (type, r, value_range_base (type));
       if (r == op2)
         {
-	  /* We know the value of the RHS fits in the LHS type, so
-	     convert the left hand side and remove any values that
-	     arent in OP2.  */
+	  // We know the value of the RHS fits in the LHS type, so
+	  // convert the LHS and remove any values that arent in OP2.
 	  r = lhs;
 	  r = fold_range (type, r, value_range_base (type));
 	  r.intersect (op2);
 	  return true;
 	}
-      /* Special case if the LHS is a boolean.  A 0 means the RHS is zero,
-	 and a 1 means the RHS is non-zero.  */
+      // Special case if the LHS is a boolean.  A 0 means the RHS is
+      // zero, and a 1 means the RHS is non-zero.
       if (TREE_CODE (lhs_type) == BOOLEAN_TYPE)
 	{
-	  /* If the LHS is unknown, the result is whatever op2 already is.  */
+	  // If the LHS is unknown, the result is whatever op2 already is.
 	  if (!lhs.singleton_p ())
 	    {
 	      r = op2;
 	      return true;
 	    }
-	  /* Boolean casts are weird in GCC. It's actually an implied
-	      mask with 0x01, so all that is known is whether the
-	      rightmost bit is 0 or 1, which implies the only value
-	      *not* in the RHS is 0 or -1.  */
+	  // Boolean casts are weird in GCC. It's actually an implied
+	  // mask with 0x01, so all that is known is whether the
+	  // rightmost bit is 0 or 1, which implies the only value
+	  // *not* in the RHS is 0 or -1.
 	  unsigned prec = TYPE_PRECISION (type);
 	  if (lhs.zero_p ())
 	    r = value_range_base (VR_ANTI_RANGE, type,
@@ -1651,39 +1606,35 @@ operator_cast::op1_range (value_range_base &r, tree type,
 	  else
 	    r = value_range_base (VR_ANTI_RANGE, type,
 			wi::zero (prec), wi::zero (prec));
-	  /* And intersect it with what we know about op2.  */
+	  // And intersect it with what we know about op2.
 	  r.intersect (op2);
 	}
       else
-	/* Otherwise we'll have to assume it's whatever we know about op2.  */
+	// Otherwise we'll have to assume it's whatever we know about op2.
 	r = op2;
       return true;
     }
 
-  /* If the LHS precision is greater than the rhs precision, the LHS
-     range is resticted to the range of the RHS by this
-     assignment.  */
+  // If the LHS precision is greater than the rhs precision, the LHS
+  // range is resticted to the range of the RHS by this
+  // assignment.
   if (TYPE_PRECISION (lhs_type) > TYPE_PRECISION (type))
     {
-      /* Cast the range of the RHS to the type of the LHS. */
+      // Cast the range of the RHS to the type of the LHS.
       value_range_base op_type (type);
       op_type = fold_range (lhs_type, op_type, value_range_base (lhs_type));
 
-      /* Intersect this with the LHS range will produce the RHS
-	 range.  */
+      // Intersect this with the LHS range will produce the RHS range.
       r = range_intersect (lhs, op_type);
     }
   else
     r = lhs;
 
-  /* Cast the calculated range to the type of the RHS.  */
+  // Cast the calculated range to the type of the RHS.
   r = fold_range (type, r, value_range_base (type));
   return true;
 }
 
-/*  ----------------------------------------------------------------------  */
-
-// Bitwise and logical ops.
 
 class operator_logical_and : public range_operator
 {
@@ -1709,22 +1660,19 @@ operator_logical_and::fold_range (tree type,
   if (empty_range_check (r, lh, rh))
     return r;
 
-  // 0 && anything is 0
+  // 0 && anything is 0.
   if ((wi::eq_p (lh.lower_bound (), 0) && wi::eq_p (lh.upper_bound (), 0))
       || (wi::eq_p (lh.lower_bound (), 0) && wi::eq_p (rh.upper_bound (), 0)))
     return range_false (type);
 
   // To reach this point, there must be a logical 1 on each side, and
   // the only remaining question is whether there is a zero or not.
-
   if (lh.contains_p (build_zero_cst (lh.type ()))
       || rh.contains_p (build_zero_cst (rh.type ())))
     return range_true_and_false (type);
 
   return range_true (type);
 }
-
-
 
 bool
 operator_logical_and::op1_range (value_range_base &r, tree type,
@@ -1733,13 +1681,13 @@ operator_logical_and::op1_range (value_range_base &r, tree type,
 {
    switch (get_bool_state (r, lhs, type))
      {
-       /* A true result means both sides of the AND must be true.  */
+       // A true result means both sides of the AND must be true.
        case BRS_TRUE:
          r = range_true (type);
 	 break;
-       /* Any other result means only one side has to be false, the
-	  other side can be anything. SO we cant be sure of any result
-	  here.  */
+       // Any other result means only one side has to be false, the
+       // other side can be anything. So we cannott be sure of any
+       // result here.
       default:
 	r = range_true_and_false (type);
 	break;
@@ -1754,6 +1702,7 @@ operator_logical_and::op2_range (value_range_base &r, tree type,
 {
   return operator_logical_and::op1_range (r, type, lhs, op1);
 }
+
 
 class operator_bitwise_and : public range_operator
 {
@@ -1771,16 +1720,15 @@ public:
 				    const wide_int &rh_ub) const;
 } op_bitwise_and;
 
-
-/* Optimize BIT_AND_EXPR and BIT_IOR_EXPR in terms of a mask if
-   possible.  Basically, see if we can optimize:
-
-	[LB, UB] op Z
-   into:
-	[LB op Z, UB op Z]
-
-  If the optimization was successful, accumulate the range in R and
-  return TRUE.  */
+// Optimize BIT_AND_EXPR and BIT_IOR_EXPR in terms of a mask if
+// possible.  Basically, see if we can optimize:
+//
+//	[LB, UB] op Z
+//   into:
+//	[LB op Z, UB op Z]
+//
+// If the optimization was successful, accumulate the range in R and
+// return TRUE.
 
 static bool
 wi_optimize_and_or (value_range_base &r,
@@ -1789,7 +1737,7 @@ wi_optimize_and_or (value_range_base &r,
 		    const wide_int &lh_lb, const wide_int &lh_ub,
 		    const wide_int &rh_lb, const wide_int &rh_ub)
 {
-  /* Calculate the singleton mask among the ranges, if any.  */
+  // Calculate the singleton mask among the ranges, if any.
   wide_int lower_bound, upper_bound, mask;
   if (wi::eq_p (rh_lb, rh_ub))
     {
@@ -1806,15 +1754,15 @@ wi_optimize_and_or (value_range_base &r,
   else
     return false;
 
-  /* If Z is a constant which (for op | its bitwise not) has n
-     consecutive least significant bits cleared followed by m 1
-     consecutive bits set immediately above it and either
-     m + n == precision, or (x >> (m + n)) == (y >> (m + n)).
-
-     The least significant n bits of all the values in the range are
-     cleared or set, the m bits above it are preserved and any bits
-     above these are required to be the same for all values in the
-     range.  */
+  // If Z is a constant which (for op | its bitwise not) has n
+  // consecutive least significant bits cleared followed by m 1
+  // consecutive bits set immediately above it and either
+  // m + n == precision, or (x >> (m + n)) == (y >> (m + n)).
+  //
+  // The least significant n bits of all the values in the range are
+  // cleared or set, the m bits above it are preserved and any bits
+  // above these are required to be the same for all values in the
+  // range.
   wide_int w = mask;
   int m = 0, n = 0;
   if (code == BIT_IOR_EXPR)
@@ -1851,15 +1799,15 @@ wi_optimize_and_or (value_range_base &r,
   return true;
 }
 
-/* For range [LB, UB] compute two wide_int bit masks.
-
-   In the MAYBE_NONZERO bit mask, if some bit is unset, it means that
-   for all numbers in the range the bit is 0, otherwise it might be 0
-   or 1.
-
-   In the MUSTBE_NONZERO bit mask, if some bit is set, it means that
-   for all numbers in the range the bit is 1, otherwise it might be 0
-   or 1.  */
+// For range [LB, UB] compute two wide_int bit masks.
+//
+// In the MAYBE_NONZERO bit mask, if some bit is unset, it means that
+// for all numbers in the range the bit is 0, otherwise it might be 0
+// or 1.
+//
+// In the MUSTBE_NONZERO bit mask, if some bit is set, it means that
+// for all numbers in the range the bit is 1, otherwise it might be 0
+// or 1.
 
 static void
 wi_set_zero_nonzero_bits (tree type,
@@ -1913,23 +1861,23 @@ operator_bitwise_and::wi_fold (tree type,
   wide_int new_ub = maybe_nonzero_lh & maybe_nonzero_rh;
   signop sign = TYPE_SIGN (type);
   unsigned prec = TYPE_PRECISION (type);
-  /* If both input ranges contain only negative values we can
-     truncate the result range maximum to the minimum of the
-     input range maxima.  */
+  // If both input ranges contain only negative values, we can
+  // truncate the result range maximum to the minimum of the
+  // input range maxima.
   if (wi::lt_p (lh_ub, 0, sign) && wi::lt_p (rh_ub, 0, sign))
     {
       new_ub = wi::min (new_ub, lh_ub, sign);
       new_ub = wi::min (new_ub, rh_ub, sign);
     }
-  /* If either input range contains only non-negative values
-     we can truncate the result range maximum to the respective
-     maximum of the input range.  */
+  // If either input range contains only non-negative values
+  // we can truncate the result range maximum to the respective
+  // maximum of the input range.
   if (wi::ge_p (lh_lb, 0, sign))
     new_ub = wi::min (new_ub, lh_ub, sign);
   if (wi::ge_p (rh_lb, 0, sign))
     new_ub = wi::min (new_ub, rh_ub, sign);
-  /* PR68217: In case of signed & sign-bit-CST should
-     result in [-INF, 0] instead of [-INF, INF].  */
+  // PR68217: In case of signed & sign-bit-CST should
+  // result in [-INF, 0] instead of [-INF, INF].
   if (wi::gt_p (new_lb, new_ub, sign))
     {
       wide_int sign_bit = wi::set_bit_in_zero (prec - 1, prec);
@@ -1943,8 +1891,7 @@ operator_bitwise_and::wi_fold (tree type,
 	  new_ub = wi::zero (prec);
 	}
     }
-  /* If the limits got swapped around, indicate error so we can adjust
-     the range to VARYING.  */
+  // If the limits got swapped around, return varying.
   if (wi::gt_p (new_lb, new_ub,sign))
     return value_range_base (type);
 
@@ -1956,12 +1903,11 @@ operator_bitwise_and::op1_range (value_range_base &r, tree type,
 				 const value_range_base &lhs,
 				 const value_range_base &op2) const
 {
-  /* If this is really a logical wi_fold, call that.  */
+  // If this is really a logical wi_fold, call that.
   if (types_compatible_p (type, boolean_type_node))
     return op_logical_and.op1_range (r, type, lhs, op2);
 
-  /* For now do nothing with bitwise AND of value_range's, just return
-     the type. */
+  // For now do nothing with bitwise AND of value_range's.
   r.set_varying (type);
   return true;
 }
@@ -1989,7 +1935,6 @@ public:
 			  const value_range_base &op1) const;
 } op_logical_or;
 
-
 value_range_base
 operator_logical_or::fold_range (tree type ATTRIBUTE_UNUSED,
 				 const value_range_base &lh,
@@ -2003,18 +1948,19 @@ operator_logical_or::fold_range (tree type ATTRIBUTE_UNUSED,
 }
 
 bool
-operator_logical_or::op1_range (value_range_base &r, tree type, const value_range_base &lhs,
+operator_logical_or::op1_range (value_range_base &r, tree type,
+				const value_range_base &lhs,
 				const value_range_base &op2 ATTRIBUTE_UNUSED) const
 {
    switch (get_bool_state (r, lhs, type))
      {
-       /* A false result means both sides of the OR must be false.  */
+       // A false result means both sides of the OR must be false.
        case BRS_FALSE:
          r = range_false (type);
 	 break;
-       /* Any other result means only one side has to be true, the
-	  other side can be anything. SO we cant be sure of any result
-	  here.  */
+       // Any other result means only one side has to be true, the
+       // other side can be anything. so we can't be sure of any result
+       // here.
       default:
 	r = range_true_and_false (type);
 	break;
@@ -2029,6 +1975,7 @@ operator_logical_or::op2_range (value_range_base &r, tree type,
 {
   return operator_logical_or::op1_range (r, type, lhs, op1);
 }
+
 
 class operator_bitwise_or : public range_operator
 {
@@ -2045,7 +1992,6 @@ public:
 				    const wide_int &rh_lb,
 				    const wide_int &rh_ub) const;
 } op_bitwise_or;
-
 
 value_range_base
 operator_bitwise_or::wi_fold (tree type,
@@ -2067,24 +2013,23 @@ operator_bitwise_or::wi_fold (tree type,
   wide_int new_lb = mustbe_nonzero_lh | mustbe_nonzero_rh;
   wide_int new_ub = maybe_nonzero_lh | maybe_nonzero_rh;
   signop sign = TYPE_SIGN (type);
-  /* If the input ranges contain only positive values we can
-     truncate the minimum of the result range to the maximum
-     of the input range minima.  */
+  // If the input ranges contain only positive values we can
+  // truncate the minimum of the result range to the maximum
+  // of the input range minima.
   if (wi::ge_p (lh_lb, 0, sign)
       && wi::ge_p (rh_lb, 0, sign))
     {
       new_lb = wi::max (new_lb, lh_lb, sign);
       new_lb = wi::max (new_lb, rh_lb, sign);
     }
-  /* If either input range contains only negative values
-     we can truncate the minimum of the result range to the
-     respective minimum range.  */
+  // If either input range contains only negative values
+  // we can truncate the minimum of the result range to the
+  // respective minimum range.
   if (wi::lt_p (lh_ub, 0, sign))
     new_lb = wi::max (new_lb, lh_lb, sign);
   if (wi::lt_p (rh_ub, 0, sign))
     new_lb = wi::max (new_lb, rh_lb, sign);
-  /* If the limits got swapped around, indicate error so we can adjust
-     the range to VARYING.  */
+  // If the limits got swapped around, return varying.
   if (wi::gt_p (new_lb, new_ub,sign))
     return value_range_base (type);
 
@@ -2096,12 +2041,11 @@ operator_bitwise_or::op1_range (value_range_base &r, tree type,
 				const value_range_base &lhs,
 				const value_range_base &op2) const
 {
-  /* If this is really a logical wi_fold, call that.  */
+  // If this is really a logical wi_fold, call that.
   if (types_compatible_p (type, boolean_type_node))
     return op_logical_or.op1_range (r, type, lhs, op2);
 
-  /* For now do nothing with bitwise OR of value_range's, just
-     return the type. */
+  // For now do nothing with bitwise OR of value_range's.
   r.set_varying (type);
   return true;
 }
@@ -2114,6 +2058,7 @@ operator_bitwise_or::op2_range (value_range_base &r, tree type,
   return operator_bitwise_or::op1_range (r, type, lhs, op1);
 }
 
+
 class operator_bitwise_xor : public range_operator
 {
 public:
@@ -2123,7 +2068,6 @@ public:
 				    const wide_int &rh_lb,
 				    const wide_int &rh_ub) const;
 } op_bitwise_xor;
-
 
 value_range_base
 operator_bitwise_xor::wi_fold (tree type,
@@ -2148,10 +2092,11 @@ operator_bitwise_xor::wi_fold (tree type,
   wide_int new_ub = ~result_zero_bits;
   wide_int new_lb = result_one_bits;
 
-  /* If the range has all positive or all negative values, the result
-     is better than VARYING.  */
+  // If the range has all positive or all negative values, the result
+  // is better than VARYING.
   if (wi::lt_p (new_lb, 0, sign) || wi::ge_p (new_ub, 0, sign))
     return create_range_with_overflow (type, new_lb, new_ub);
+
   return value_range_base (type);
 }
 
@@ -2166,7 +2111,6 @@ public:
 				    const wide_int &rh_ub) const;
 } op_trunc_mod;
 
-
 value_range_base
 operator_trunc_mod::wi_fold (tree type,
 			     const wide_int &lh_lb,
@@ -2178,12 +2122,11 @@ operator_trunc_mod::wi_fold (tree type,
   signop sign = TYPE_SIGN (type);
   unsigned prec = TYPE_PRECISION (type);
 
-  /* Mod 0 is undefined.  Return undefined.  */
+  // Mod 0 is undefined.  Return undefined.
   if (wi_zero_p (type, rh_lb, rh_ub))
     return value_range_base ();
 
-  /* ABS (A % B) < ABS (B) and either
-     0 <= A % B <= A or A <= A % B <= 0.  */
+  // ABS (A % B) < ABS (B) and either 0 <= A % B <= A or A <= A % B <= 0.
   new_ub = rh_ub - 1;
   if (sign == SIGNED)
     {
@@ -2221,19 +2164,19 @@ public:
 			  const value_range_base &op2) const;
 } op_logical_not;
 
-
-/* Folding a logical NOT, oddly enough, involves doing nothing on the
-   forward pass thru.  During the initial walk backwards, the logical NOT
-   reversed the desired outcome on the way back, so on the way forward all
-   we do is pass the range forward.
-	b_2 = x_1 < 20
-	b_3 = !b_2
-	if (b_3)
-    to determine the TRUE branch, walking  backward
-         if (b_3)		if ([1,1])
-         b_3 = !b_2		[1,1] = ![0,0]
-	 b_2 = x_1 < 20		[0,0] = x_1 < 20,   false, so x_1 == [20, 255]
-     which is the result we are looking for.. so.. pass it thru.  */
+// Folding a logical NOT, oddly enough, involves doing nothing on the
+// forward pass through.  During the initial walk backwards, the
+// logical NOT reversed the desired outcome on the way back, so on the
+// way forward all we do is pass the range forward.
+//
+// 	b_2 = x_1 < 20
+// 	b_3 = !b_2
+// 	if (b_3)
+//  to determine the TRUE branch, walking  backward
+//       if (b_3)		if ([1,1])
+//       b_3 = !b_2		[1,1] = ![0,0]
+// 	 b_2 = x_1 < 20		[0,0] = x_1 < 20,   false, so x_1 == [20, 255]
+//   which is the result we are looking for.. so.. pass it through.
 
 value_range_base
 operator_logical_not::fold_range (tree type,
@@ -2305,9 +2248,6 @@ operator_bitwise_not::op1_range (value_range_base &r, tree type,
 }
 
 
-/*  ----------------------------------------------------------------------  */
-
-
 class operator_cst : public range_operator
 {
 public:
@@ -2316,7 +2256,6 @@ public:
 				       const value_range_base &op2) const;
 } op_integer_cst;
 
-
 value_range_base
 operator_cst::fold_range (tree type ATTRIBUTE_UNUSED,
 			  const value_range_base &lh,
@@ -2324,8 +2263,6 @@ operator_cst::fold_range (tree type ATTRIBUTE_UNUSED,
 {
   return lh;
 }
-
-/*  ----------------------------------------------------------------------  */
 
 
 class operator_identity : public range_operator
@@ -2357,8 +2294,6 @@ operator_identity::op1_range (value_range_base &r, tree type ATTRIBUTE_UNUSED,
 }
 
 
-/*  ----------------------------------------------------------------------  */
-
 class operator_abs : public range_operator
 {
  public:
@@ -2372,7 +2307,6 @@ class operator_abs : public range_operator
 			  const value_range_base &op2) const;
 } op_abs;
 
-
 value_range_base
 operator_abs::wi_fold (tree type,
 		       const wide_int &lh_lb, const wide_int &lh_ub,
@@ -2383,19 +2317,19 @@ operator_abs::wi_fold (tree type,
   signop sign = TYPE_SIGN (type);
   unsigned prec = TYPE_PRECISION (type);
 
-  /* Pass through LH for the easy cases.  */
+  // Pass through LH for the easy cases.
   if (sign == UNSIGNED || wi::ge_p (lh_lb, 0, sign))
     return value_range_base (type, lh_lb, lh_ub);
 
-  /* -TYPE_MIN_VALUE = TYPE_MIN_VALUE with flag_wrapv so we can't get a
-     useful range.  */
+  // -TYPE_MIN_VALUE = TYPE_MIN_VALUE with flag_wrapv so we can't get
+  // a useful range.
   wide_int min_value = wi::min_value (prec, sign);
   wide_int max_value = wi::max_value (prec, sign);
   if (!TYPE_OVERFLOW_UNDEFINED (type) && wi::eq_p (lh_lb, min_value))
     return value_range_base (type);
 
-  /* ABS_EXPR may flip the range around, if the original range
-     included negative values.  */
+  // ABS_EXPR may flip the range around, if the original range
+  // included negative values.
   if (wi::eq_p (lh_lb, min_value))
     min = max_value;
   else
@@ -2405,8 +2339,8 @@ operator_abs::wi_fold (tree type,
   else
     max = wi::abs (lh_ub);
 
-  /* If the range contains zero then we know that the minimum value in the
-     range will be zero.  */
+  // If the range contains zero then we know that the minimum value in the
+  // range will be zero.
   if (wi::le_p (lh_lb, 0, sign) && wi::ge_p (lh_ub, 0, sign))
     {
       if (wi::gt_p (min, max, sign))
@@ -2415,14 +2349,14 @@ operator_abs::wi_fold (tree type,
     }
   else
     {
-      /* If the range was reversed, swap MIN and MAX.  */
+      // If the range was reversed, swap MIN and MAX.
       if (wi::gt_p (min, max, sign))
 	std::swap (min, max);
     }
 
-  /* If the new range has its limits swapped around (MIN > MAX), then
-     the operation caused one of them to wrap around.  The only thing
-     we know is that the result is positive.  */
+  // If the new range has its limits swapped around (MIN > MAX), then
+  // the operation caused one of them to wrap around.  The only thing
+  // we know is that the result is positive.
   if (wi::gt_p (min, max, sign))
     {
       min = wi::zero (prec);
@@ -2430,7 +2364,6 @@ operator_abs::wi_fold (tree type,
     }
   return value_range_base (type, min, max);
 }
-
 
 bool
 operator_abs::op1_range (value_range_base &r, tree type,
@@ -2457,6 +2390,7 @@ operator_abs::op1_range (value_range_base &r, tree type,
   return true;
 }
 
+
 class operator_absu : public range_operator
 {
  public:
@@ -2473,7 +2407,7 @@ operator_absu::wi_fold (tree type,
 {
   wide_int new_lb, new_ub;
 
-  /* Pass through VR0 the easy cases.  */
+  // Pass through VR0 the easy cases.
   if (wi::ges_p (lh_lb, 0))
     {
       new_lb = lh_lb;
@@ -2484,8 +2418,8 @@ operator_absu::wi_fold (tree type,
       new_lb = wi::abs (lh_lb);
       new_ub = wi::abs (lh_ub);
 
-      /* If the range contains zero then we know that the minimum
-	 value in the range will be zero.  */
+      // If the range contains zero then we know that the minimum
+      // value in the range will be zero.
       if (wi::ges_p (lh_ub, 0))
 	{
 	  if (wi::gtu_p (new_lb, new_ub))
@@ -2493,13 +2427,13 @@ operator_absu::wi_fold (tree type,
 	  new_lb = wi::zero (TYPE_PRECISION (type));
 	}
       else
-	/* Otherwise, swap MIN and MAX.  */
 	std::swap (new_lb, new_ub);
     }
 
   gcc_checking_assert (TYPE_UNSIGNED (type));
   return value_range_base (type, new_lb, new_ub);
 }
+
 
 class operator_negate : public range_operator
 {
@@ -2511,8 +2445,6 @@ class operator_negate : public range_operator
 			  const value_range_base &lhs,
 			  const value_range_base &op2) const;
 } op_negate;
-
-/* Return the negated range of lh with the type of rh.  */
 
 value_range_base
 operator_negate::fold_range (tree type,
@@ -2538,6 +2470,7 @@ operator_negate::op1_range (value_range_base &r, tree type,
   return true;
 }
 
+
 class operator_addr_expr : public range_operator
 {
 public:
@@ -2558,7 +2491,7 @@ operator_addr_expr::fold_range (tree type,
   if (empty_range_check (r, lh, rh))
     return r;
 
-  // Return a non-null pointer of the LHS type (passed in op2)
+  // Return a non-null pointer of the LHS type (passed in op2).
   if (lh.zero_p ())
     return range_zero (type);
   if (!lh.contains_p (build_zero_cst (lh.type ())))
@@ -2566,8 +2499,6 @@ operator_addr_expr::fold_range (tree type,
   return value_range_base (type);
 }
 
-// The same functionality for fold() applies to op1_range...
-// effectively copying the non-nullness.
 bool
 operator_addr_expr::op1_range (value_range_base &r, tree type,
 			       const value_range_base &lhs,
@@ -2577,9 +2508,6 @@ operator_addr_expr::op1_range (value_range_base &r, tree type,
   return true;
 }
 
-// ----------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
 
 class pointer_plus_operator : public range_operator
 {
@@ -2589,7 +2517,6 @@ public:
                           const wide_int &rh_lb, const wide_int &rh_ub) const;
 } op_pointer_plus;
 
-
 value_range_base
 pointer_plus_operator::wi_fold (tree type,
 				const wide_int &lh_lb,
@@ -2597,22 +2524,22 @@ pointer_plus_operator::wi_fold (tree type,
 				const wide_int &rh_lb,
 				const wide_int &rh_ub) const
 {
-  /* For pointer types, we are really only interested in asserting
-     whether the expression evaluates to non-NULL.
-
-     With -fno-delete-null-pointer-checks we need to be more
-     conservative.  As some object might reside at address 0,
-     then some offset could be added to it and the same offset
-     subtracted again and the result would be NULL.
-     E.g.
-     static int a[12]; where &a[0] is NULL and
-     ptr = &a[6];
-     ptr -= 6;
-     ptr will be NULL here, even when there is POINTER_PLUS_EXPR
-     where the first range doesn't include zero and the second one
-     doesn't either.  As the second operand is sizetype (unsigned),
-     consider all ranges where the MSB could be set as possible
-     subtractions where the result might be NULL.  */
+  // For pointer types, we are really only interested in asserting
+  // whether the expression evaluates to non-NULL.
+  //
+  // With -fno-delete-null-pointer-checks we need to be more
+  // conservative.  As some object might reside at address 0,
+  // then some offset could be added to it and the same offset
+  // subtracted again and the result would be NULL.
+  // E.g.
+  // static int a[12]; where &a[0] is NULL and
+  // ptr = &a[6];
+  // ptr -= 6;
+  // ptr will be NULL here, even when there is POINTER_PLUS_EXPR
+  // where the first range doesn't include zero and the second one
+  // doesn't either.  As the second operand is sizetype (unsigned),
+  // consider all ranges where the MSB could be set as possible
+  // subtractions where the result might be NULL.
   if ((!wi_includes_zero_p (type, lh_lb, lh_ub)
        || !wi_includes_zero_p (type, rh_lb, rh_ub))
       && !TYPE_OVERFLOW_WRAPS (type)
@@ -2625,7 +2552,6 @@ pointer_plus_operator::wi_fold (tree type,
   return value_range_base (type);
 }
 
-// ---------------------------------------------------------------------------
 
 class pointer_min_max_operator : public range_operator
 {
@@ -2635,7 +2561,6 @@ public:
                           const wide_int &rh_lb, const wide_int &rh_ub) const;
 } op_ptr_min_max;
 
-
 value_range_base
 pointer_min_max_operator::wi_fold (tree type,
 				   const wide_int &lh_lb,
@@ -2643,10 +2568,10 @@ pointer_min_max_operator::wi_fold (tree type,
 				   const wide_int &rh_lb,
 				   const wide_int &rh_ub) const
 {
-  /* For MIN/MAX expressions with pointers, we only care about
-   nullness, if both are non null, then the result is nonnull.
-   If both are null, then the result is null. Otherwise they
-   are varying.  */
+  // For MIN/MAX expressions with pointers, we only care about
+  // nullness.  If both are non null, then the result is nonnull.
+  // If both are null, then the result is null.  Otherwise they
+  // are varying.
   if (!wi_includes_zero_p (type, lh_lb, lh_ub)
       && !wi_includes_zero_p (type, rh_lb, rh_ub))
     return range_nonzero (type);
@@ -2655,8 +2580,7 @@ pointer_min_max_operator::wi_fold (tree type,
   return value_range_base (type);
 }
 
-// ---------------------------------------------------------------------------
-//
+
 class pointer_and_operator : public range_operator
 {
 public:
@@ -2665,7 +2589,6 @@ public:
 			  const wide_int &rh_lb, const wide_int &rh_ub) const;
 } op_pointer_and;
 
-
 value_range_base
 pointer_and_operator::wi_fold (tree type,
 			       const wide_int &lh_lb,
@@ -2673,8 +2596,8 @@ pointer_and_operator::wi_fold (tree type,
 			       const wide_int &rh_lb,
 			       const wide_int &rh_ub) const
 {
-  /* For pointer types, we are really only interested in asserting
-     whether the expression evaluates to non-NULL.  */
+  // For pointer types, we are really only interested in asserting
+  // whether the expression evaluates to non-NULL.
   if (!wi_includes_zero_p (type, lh_lb, lh_ub)
       && !wi_includes_zero_p (type, rh_lb, rh_ub))
     return range_nonzero (type);
@@ -2685,9 +2608,6 @@ pointer_and_operator::wi_fold (tree type,
 }
 
 
-// -------------------------------------------------------------------------
-
-
 class pointer_or_operator : public range_operator
 {
 public:
@@ -2696,7 +2616,6 @@ public:
 			  const wide_int &rh_lb, const wide_int &rh_ub) const;
 } op_pointer_or;
 
-
 value_range_base
 pointer_or_operator::wi_fold (tree type,
 			      const wide_int &lh_lb,
@@ -2704,8 +2623,8 @@ pointer_or_operator::wi_fold (tree type,
 			      const wide_int &rh_lb,
 			      const wide_int &rh_ub) const
 {
-  /* For pointer types, we are really only interested in asserting
-     whether the expression evaluates to non-NULL.  */
+  // For pointer types, we are really only interested in asserting
+  // whether the expression evaluates to non-NULL.
   if (!wi_includes_zero_p (type, lh_lb, lh_ub)
       && !wi_includes_zero_p (type, rh_lb, rh_ub))
     return range_nonzero (type);
@@ -2713,10 +2632,7 @@ pointer_or_operator::wi_fold (tree type,
     return range_zero (type);
   return value_range_base (type);
 }
-
-
-// -------------------------------------------------------------------------
-
+
 // This implements the range operator tables as local objects in this file.
 
 class range_op_table
@@ -2729,7 +2645,7 @@ private:
   range_operator *m_range_tree[MAX_TREE_CODES];
 };
 
-// Return a pointer to the range_operator instance, if there is one,
+// Return a pointer to the range_operator instance, if there is one
 // associated with tree_code CODE.
 
 range_operator *
@@ -2749,6 +2665,7 @@ range_op_table::set (enum tree_code code, range_operator &op)
 }
 
 // Instantiate a range op table for integral operations.
+
 class integral_table : public range_op_table
 {
 public:
@@ -2795,8 +2712,8 @@ integral_table::integral_table ()
   set (ADDR_EXPR, op_addr);
 }
 
-
 // Instantiate a range op table for pointer operations.
+
 class pointer_table : public range_op_table
 {
 public:
@@ -2826,10 +2743,7 @@ pointer_table::pointer_table ()
   set (BIT_XOR_EXPR, op_bitwise_xor);
 }
 
-
-
-
-/* The tables are hidden and accessed via a simple extern function.  */
+// The tables are hidden and accessed via a simple extern function.
 
 range_operator *
 range_op_handler (enum tree_code code, tree type)
@@ -2840,7 +2754,7 @@ range_op_handler (enum tree_code code, tree type)
   return integral_tree_table[code];
 }
 
-/* Cast the range in R to TYPE.  */
+// Cast the range in R to TYPE.
 
 void
 range_cast (value_range_base &r, tree type)
@@ -3150,7 +3064,7 @@ range_tests ()
       ASSERT_TRUE (r0 == range_union (value_range_base (INT (6), INT (40)),
 				      value_range_base (INT (50), INT (60))));
 
-      // [10,20][30,40][50,60] U [6,60] => [6,60] */
+      // [10,20][30,40][50,60] U [6,60] => [6,60].
       r0 = RANGE3 (10, 20, 30, 40, 50, 60);
       r1 = value_range_base (INT (6), INT (60));
       r0.union_ (r1);
