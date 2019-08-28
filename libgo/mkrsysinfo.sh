@@ -31,6 +31,19 @@ grep -v '^// ' gen-sysinfo.go | \
       -e 's/\([^a-zA-Z0-9_]\)_timespec\([^a-zA-Z0-9_]\)/\1timespec\2/g' \
     >> ${OUT}
 
+# The C long type, needed because that is the type that ptrace returns.
+sizeof_long=`grep '^const ___SIZEOF_LONG__ = ' gen-sysinfo.go | sed -e 's/.*= //'`
+if test "$sizeof_long" = "4"; then
+  echo "type _C_long int32" >> ${OUT}
+  echo "type _C_ulong uint32" >> ${OUT}
+elif test "$sizeof_long" = "8"; then
+  echo "type _C_long int64" >> ${OUT}
+  echo "type _C_ulong uint64" >> ${OUT}
+else
+  echo 1>&2 "mkrsysinfo.sh: could not determine size of long (got $sizeof_long)"
+  exit 1
+fi
+
 # On AIX, the _arpcom struct, is filtered by the above grep sequence, as it as
 # a field of type _in6_addr, but other types depend on _arpcom, so we need to
 # put it back.
