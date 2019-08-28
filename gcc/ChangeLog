@@ -1,3 +1,8 @@
+2019-08-28  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386-features.c (convert_scalars_to_vector): Do not
+	add the MD problem.
+
 2019-09-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 	    Richard Biener  <rguenther@suse.de>
 
