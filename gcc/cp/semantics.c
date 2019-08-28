@@ -810,6 +810,18 @@ finish_else_clause (tree if_stmt)
   ELSE_CLAUSE (if_stmt) = pop_stmt_list (ELSE_CLAUSE (if_stmt));
 }
 
+/* Callback for cp_walk_tree to mark all {VAR,PARM}_DECLs in a tree as
+   read.  */
+
+static tree
+maybe_mark_exp_read_r (tree *tp, int *, void *)
+{
+  tree t = *tp;
+  if (VAR_P (t) || TREE_CODE (t) == PARM_DECL)
+    mark_exp_read (t);
+  return NULL_TREE;
+}
+
 /* Finish an if-statement.  */
 
 void
@@ -817,6 +829,16 @@ finish_if_stmt (tree if_stmt)
 {
   tree scope = IF_SCOPE (if_stmt);
   IF_SCOPE (if_stmt) = NULL;
+  if (IF_STMT_CONSTEXPR_P (if_stmt))
+    {
+      /* Prevent various -Wunused warnings.  We might not instantiate
+	 either of these branches, so we would not mark the variables
+	 used in that branch as read.  */
+      cp_walk_tree_without_duplicates (&THEN_CLAUSE (if_stmt),
+				       maybe_mark_exp_read_r, NULL);
+      cp_walk_tree_without_duplicates (&ELSE_CLAUSE (if_stmt),
+				       maybe_mark_exp_read_r, NULL);
+    }
   add_stmt (do_poplevel (scope));
 }
 
