@@ -1,3 +1,13 @@
+2019-08-28  Nathan Sidwell  <nathan@acm.org>
+
+	* directives-only.c (_cpp_preprocess_dir_only): Use false, not
+	zero for _cpp_handle_directive call.
+	* directives.c (_cpp_handle_directive): Indented is bool.
+	* files.c (struct _cpp_file): Make bools 1 bit bitfields.
+	* internal.h (enum include_type): Reformat and comment.
+	(struct cpp_buffer): Make flags 1 bit bitfields.
+	(_cpp_handle_directive): Indented is bool.
+
 2019-07-09  Martin Sebor  <msebor@redhat.com>
 
 	* include/line-map.h: Change class-key from class to struct and vice

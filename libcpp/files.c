@@ -98,19 +98,19 @@ struct _cpp_file
   unsigned short stack_count;
 
   /* If opened with #import or contains #pragma once.  */
-  bool once_only;
+  bool once_only : 1;
 
   /* If read() failed before.  */
-  bool dont_read;
+  bool dont_read : 1;
 
   /* If this file is the main file.  */
-  bool main_file;
+  bool main_file : 1;
 
   /* If BUFFER above contains the true contents of the file.  */
-  bool buffer_valid;
+  bool buffer_valid : 1;
 
   /* If this file is implicitly preincluded.  */
-  bool implicit_preinclude;
+  bool implicit_preinclude : 1;
 };
 
 /* A singly-linked list for all searches for a given file name, with

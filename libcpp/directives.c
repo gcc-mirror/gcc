@@ -406,13 +406,13 @@ directive_diagnostics (cpp_reader *pfile, const directive *dir, int indented)
     }
 }
 
-/* Check if we have a known directive.  INDENTED is nonzero if the
+/* Check if we have a known directive.  INDENTED is true if the
    '#' of the directive was indented.  This function is in this file
    to save unnecessarily exporting dtable etc. to lex.c.  Returns
    nonzero if the line of tokens has been handled, zero if we should
    continue processing the line.  */
 int
-_cpp_handle_directive (cpp_reader *pfile, int indented)
+_cpp_handle_directive (cpp_reader *pfile, bool indented)
 {
   const directive *dir = 0;
   const cpp_token *dname;
