@@ -651,7 +651,7 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
   if (_cpp_find_failed (pfile->main_file))
     return NULL;
 
-  _cpp_stack_file (pfile, pfile->main_file, false, loc);
+  _cpp_stack_file (pfile, pfile->main_file, IT_MAIN, 0);
 
   /* For foo.i, read the original filename foo.c now, for the benefit
      of the front ends.  */

@@ -1,3 +1,17 @@
+2019-08-29  Nathan Sidwell  <nathan@acm.org>
+
+	* internal.h (enum include_type): Add IT_MAIN, IT_DIRECTIVE_HWM,
+	IT_HEADER_HWM.
+	(_cpp_stack_file): Take include_type, not a bool.
+	* files.c (_cpp_find_file): Refactor to not hide an if inside a
+	for conditional.
+	(should_stack_file): Break apart to ...
+	(is_known_idempotent_file, has_unique_contents): ... these.
+	(_cpp_stack_file): Replace IMPORT boolean with include_type enum.
+	Refactor to use new predicates.  Do linemap compensation here ...
+	(_cpp_stack_include): ... not here.
+	* init.c (cpp_read_main_file): Pass IT_MAIN to _cpp_stack_file.
+
 2019-08-28  Nathan Sidwell  <nathan@acm.org>
 
 	* directives-only.c (_cpp_preprocess_dir_only): Use false, not

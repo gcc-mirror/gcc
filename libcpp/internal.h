@@ -123,6 +123,10 @@ enum include_type
    /* Non-directive including mechanisms.  */
    IT_CMDLINE,  /* -include */
    IT_DEFAULT,  /* forced header  */
+   IT_MAIN,     /* main  */
+
+   IT_DIRECTIVE_HWM = IT_IMPORT + 1,  /* Directives below this.  */
+   IT_HEADER_HWM = IT_DEFAULT + 1,    /* Header files below this.  */
   };
 
 union utoken
@@ -671,8 +675,7 @@ extern _cpp_file *_cpp_find_file (cpp_reader *, const char *, cpp_dir *,
 extern bool _cpp_find_failed (_cpp_file *);
 extern void _cpp_mark_file_once_only (cpp_reader *, struct _cpp_file *);
 extern void _cpp_fake_include (cpp_reader *, const char *);
-extern bool _cpp_stack_file (cpp_reader *, _cpp_file*, bool,
-			     location_t);
+extern bool _cpp_stack_file (cpp_reader *, _cpp_file*, include_type, location_t);
 extern bool _cpp_stack_include (cpp_reader *, const char *, int,
 				enum include_type, location_t);
 extern int _cpp_compare_file_date (cpp_reader *, const char *, int);
