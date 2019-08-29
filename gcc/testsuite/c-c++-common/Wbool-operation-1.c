@@ -1,6 +1,7 @@
 /* PR c/77490 */
 /* { dg-do compile } */
 /* { dg-options "-Wall -Wno-psabi" } */
+/* { dg-additional-options "-Wno-volatile" { target c++ } } */
 
 #ifndef __cplusplus
 # define bool _Bool

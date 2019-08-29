@@ -1,5 +1,11 @@
 2019-08-28  Marek Polacek  <polacek@redhat.com>
 
+	Implement P1152R4: Deprecating some uses of volatile.
+	PR c++/91361
+	* doc/invoke.texi: Document -Wvolatile.
+
+2019-08-28  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/91360 - Implement C++20 P1143R2: constinit.
 	* doc/invoke.texi: Document -Wc++20-compat.
 

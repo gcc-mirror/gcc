@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-additional-options "-Wno-volatile" { target c++ } } */
 
 /* Even on targets that don't need the optional failval parameter,
    side-effects on the operand should still be calculated.  */

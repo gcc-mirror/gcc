@@ -243,7 +243,7 @@ in the following sections.
 -Wno-non-template-friend  -Wold-style-cast @gol
 -Woverloaded-virtual  -Wno-pmf-conversions @gol
 -Wno-class-conversion  -Wno-terminate @gol
--Wsign-promo  -Wvirtual-inheritance}
+-Wsign-promo  -Wvirtual-inheritance  -Wvolatile}
 
 @item Objective-C and Objective-C++ Language Options
 @xref{Objective-C and Objective-C++ Dialect Options,,Options Controlling
@@ -3516,6 +3516,19 @@ result in a call to @code{terminate}.
 Disable the warning about the case when a conversion function converts an
 object to the same type, to a base class of that type, or to void; such
 a conversion function will never be called.
+
+@item -Wvolatile @r{(C++ and Objective-C++ only)}
+@opindex Wvolatile
+@opindex Wno-volatile
+Warn about deprecated uses of the volatile qualifier.  This includes postfix
+and prefix @code{++} and @code{--} expressions of volatile-qualified types,
+using simple assignments where the left operand is a volatile-qualified
+non-class type for their value, compound assignments where the left operand
+is a volatile-qualified non-class type, volatile-qualified function return
+type, volatile-qualified parameter type, and structured bindings of a
+volatile-qualified type.  This usage was deprecated in C++20.
+
+Enabled by default with @option{-std=c++2a}.
 @end table
 
 @node Objective-C and Objective-C++ Dialect Options

@@ -3,6 +3,7 @@
 /* { dg-options "-Wignored-qualifiers" } */
 
 volatile void bar(); /* { dg-warning "type qualifiers ignored" } */
+// { dg-warning ".volatile.-qualified return type is deprecated" "" { target c++2a } .-1 }
 
 struct A
 {
