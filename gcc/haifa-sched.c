@@ -5683,9 +5683,16 @@ autopref_rank_for_schedule (const rtx_insn *insn1, const rtx_insn *insn2)
       int irrel2 = data2->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT;
 
       if (!irrel1 && !irrel2)
+	/* Sort memory references from lowest offset to the largest.  */
 	r = data1->offset - data2->offset;
-      else
+      else if (write)
+	/* Schedule "irrelevant" insns before memory stores to resolve
+	   as many producer dependencies of stores as possible.  */
 	r = irrel2 - irrel1;
+      else
+	/* Schedule "irrelevant" insns after memory reads to avoid breaking
+	   memory read sequences.  */
+	r = irrel1 - irrel2;
     }
 
   return r;
