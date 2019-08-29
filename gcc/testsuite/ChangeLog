@@ -1,3 +1,8 @@
+2019-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91568
+	* gfortran.dg/pr91568.f: New testcase.
+
 2019-08-28  Marek Polacek  <polacek@redhat.com>
 
 	Implement P1152R4: Deprecating some uses of volatile.
