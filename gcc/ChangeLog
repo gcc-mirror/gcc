@@ -1,5 +1,13 @@
 2019-08-29  Uroš Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386-features.c
+	(general_scalar_chain::compute_convert_gain):
+	Correct cost for double-word shifts.
+	(general_scalar_to_vector_candidate_p): Reject count operands
+	greater or equal to mode bitsize.
+
+2019-08-29  Uroš Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.c (inline_secondary_memory_needed): Return true
 	for moves between SSE and non-general registers and between
 	mask and non-general registers.

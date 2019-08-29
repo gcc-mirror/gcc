@@ -549,11 +549,18 @@ general_scalar_chain::compute_convert_gain ()
 	       || GET_CODE (src) == ASHIFTRT
 	       || GET_CODE (src) == LSHIFTRT)
 	{
+	  if (m == 2)
+	    {
+	      if (INTVAL (XEXP (src, 1)) >= 32)
+		igain += ix86_cost->add;
+	      else
+		igain += ix86_cost->shift_const;
+	    }
+
+	  igain += ix86_cost->shift_const - ix86_cost->sse_op;
+
 	  if (CONST_INT_P (XEXP (src, 0)))
 	    igain -= vector_const_cost (XEXP (src, 0));
-	  igain += m * ix86_cost->shift_const - ix86_cost->sse_op;
-	  if (INTVAL (XEXP (src, 1)) >= 32)
-	    igain -= COSTS_N_INSNS (1);
 	}
       else if (GET_CODE (src) == PLUS
 	       || GET_CODE (src) == MINUS
@@ -1359,7 +1366,7 @@ general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
     case ASHIFT:
     case LSHIFTRT:
       if (!CONST_INT_P (XEXP (src, 1))
-	  || !IN_RANGE (INTVAL (XEXP (src, 1)), 0, 63))
+	  || !IN_RANGE (INTVAL (XEXP (src, 1)), 0, GET_MODE_BITSIZE (mode)-1))
 	return false;
       break;
 
