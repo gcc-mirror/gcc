@@ -1,5 +1,22 @@
 2019-08-28  Marek Polacek  <polacek@redhat.com>
 
+	Implement P1152R4: Deprecating some uses of volatile.
+	PR c++/91361
+	* cp-gimplify.c (cp_fold): Set TREE_THIS_VOLATILE.
+	* decl.c (grokdeclarator): Warn about a volatile-qualified structured
+	binding and return type.
+	(grokparms): Warn about a volatile-qualified function parameter.
+	* expr.c (mark_use) <case MODIFY_EXPR>: Emit a -Wvolatile warning.
+	* typeck.c (cp_build_unary_op): Emit a -Wvolatile warning for pre and
+	post ++/-- on a volatile operand.
+	(genericize_compound_lvalue): Use a better location.  Don't lose
+	TREE_THIS_VOLATILE.
+	(cp_build_modify_expr): Emit a -Wvolatile warning for a compound
+	assignment whose LHS is volatile-qualified.  Build the assignment with
+	a more precise location.
+
+2019-08-28  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/91360 - Implement C++20 P1143R2: constinit.
 	* cp-tree.h (TINFO_VAR_DECLARED_CONSTINIT): Define.
 	(LOOKUP_CONSTINIT): Define.

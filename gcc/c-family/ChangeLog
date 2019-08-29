@@ -1,5 +1,13 @@
 2019-08-28  Marek Polacek  <polacek@redhat.com>
 
+	Implement P1152R4: Deprecating some uses of volatile.
+	PR c++/91361
+	* c-opts.c (c_common_post_options): Enable -Wvolatile by
+	default for C++2a, unless -Wno-deprecated.
+	* c.opt (Wvolatile): New warning.
+
+2019-08-28  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/91360 - Implement C++20 P1143R2: constinit.
 	* c-common.c (c_common_reswords): Add constinit and __constinit.
 	(keyword_is_decl_specifier): Handle RID_CONSTINIT.

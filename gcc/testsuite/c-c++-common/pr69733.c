@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-W -fdiagnostics-show-caret" } */
+/* { dg-additional-options "-Wno-volatile" { target c++ } } */
 
 typedef const double cd;
 double val;
@@ -21,4 +22,3 @@ cd val2() {return val;} /* { dg-warning "qualifiers ignored" } */
  cd val2() {return val;}
  ^~
 { dg-end-multiline-output "" } */
-

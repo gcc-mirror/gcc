@@ -11233,6 +11233,10 @@ grokdeclarator (const cp_declarator *declarator,
       if (concept_p)
 	error_at (declspecs->locations[ds_concept],
 		  "structured binding declaration cannot be %qs", "concept");
+      /* [dcl.struct.bind] "A cv that includes volatile is deprecated."  */
+      if (type_quals & TYPE_QUAL_VOLATILE)
+	warning_at (declspecs->locations[ds_volatile], OPT_Wvolatile,
+		    "%<volatile%>-qualified structured binding is deprecated");
       switch (storage_class)
 	{
 	case sc_none:
@@ -11623,6 +11627,13 @@ grokdeclarator (const cp_declarator *declarator,
 		if (SCALAR_TYPE_P (type) || VOID_TYPE_P (type))
 		  warning_at (typespec_loc, OPT_Wignored_qualifiers, "type "
 			      "qualifiers ignored on function return type");
+		/* [dcl.fct] "A volatile-qualified return type is
+		   deprecated."  */
+		if (type_quals & TYPE_QUAL_VOLATILE)
+		  warning_at (typespec_loc, OPT_Wvolatile,
+			      "%<volatile%>-qualified return type is "
+			      "deprecated");
+
 		/* We now know that the TYPE_QUALS don't apply to the
 		   decl, but to its return type.  */
 		type_quals = TYPE_UNQUALIFIED;
@@ -13377,6 +13388,13 @@ grokparms (tree parmlist, tree *parms)
 	      if (deptype)
 		cp_warn_deprecated_use (deptype);
 	    }
+
+	  /* [dcl.fct] "A parameter with volatile-qualified type is
+	     deprecated."  */
+	  if (CP_TYPE_VOLATILE_P (type))
+	    warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wvolatile,
+			"%<volatile%>-qualified parameter is "
+			"deprecated");
 
 	  /* Top-level qualifiers on the parameters are
 	     ignored for function types.  */
