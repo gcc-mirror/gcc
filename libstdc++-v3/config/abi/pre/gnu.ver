@@ -2268,11 +2268,11 @@ GLIBCXX_3.4.26 {
 
 GLIBCXX_3.4.27 {
 
-    # __shared_ptr<_Dir>::__shared_ptr()
+    # __shared_ptr<_Dir>::__shared_ptr() (base object ctor)
     _ZNSt12__shared_ptrINSt10filesystem4_DirELN9__gnu_cxx12_Lock_policyE[012]EEC2Ev;
     _ZNSt12__shared_ptrINSt10filesystem7__cxx114_DirELN9__gnu_cxx12_Lock_policyE[012]EEC2Ev;
 
-    # __shared_ptr<recursive_directory_iterator::_Dir_stack>::__shared_ptr()
+    # __shared_ptr<recursive_directory_iterator::_Dir_stack>::__shared_ptr() (base object ctor)
     _ZNSt12__shared_ptrINSt10filesystem28recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE[012]EEC2Ev;
     _ZNSt12__shared_ptrINSt10filesystem7__cxx1128recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE[012]EEC2Ev;
 
@@ -2281,6 +2281,18 @@ GLIBCXX_3.4.27 {
     _ZNSt10filesystem7__cxx1128recursive_directory_iteratoraSERKS1_;
 
 } GLIBCXX_3.4.26;
+
+GLIBCXX_3.4.28 {
+
+    # __shared_ptr<_Dir>::__shared_ptr(__shared_ptr&&) (base object ctor)
+    _ZNSt12__shared_ptrINSt10filesystem4_DirELN9__gnu_cxx12_Lock_policyE[012]EEC2EOS4_;
+    _ZNSt12__shared_ptrINSt10filesystem7__cxx114_DirELN9__gnu_cxx12_Lock_policyE[012]EEC2EOS5_;
+
+    # __shared_ptr<recursive_directory_iterator::_Dir_stack>::__shared_ptr(__shared_ptr&&) (base object ctor)
+    _ZNSt12__shared_ptrINSt10filesystem28recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE[012]EEC2EOS5_;
+    _ZNSt12__shared_ptrINSt10filesystem7__cxx1128recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE[012]EEC2EOS6_;
+
+} GLIBCXX_3.4.27;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
