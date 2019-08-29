@@ -1,5 +1,10 @@
 2019-08-29  Richard Biener  <rguenther@suse.de>
 
+	* config/i386/i386-features.c (general_scalar_chain::convert_insn):
+	Guard debug work with MAY_HAVE_DEBUG_BIND_INSNS.
+
+2019-08-29  Richard Biener  <rguenther@suse.de>
+
 	PR bootstrap/91580
 	* config/i386/i386-features.c (general_scalar_chain::convert_insn):
 	Do not emit scalar copies for debug-insns, instead replace

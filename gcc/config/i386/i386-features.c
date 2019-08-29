@@ -893,7 +893,7 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
 	if (use)
 	  convert_reg (insn, DF_REF_REG (ref),
 		       *defs_map.get (regno_reg_rtx [DF_REF_REGNO (ref)]));
-	else
+	else if (MAY_HAVE_DEBUG_BIND_INSNS)
 	  {
 	    /* If we generated a scalar copy we can leave debug-insns
 	       as-is, if not, we have to adjust them.  */
