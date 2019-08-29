@@ -1,5 +1,21 @@
 2019-08-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/91560
+	* config/i386/i386-expand.c (expand_vec_perm_movs,
+	expand_vec_perm_blend, expand_vec_perm_vpermil,
+	expand_vec_perm_pshufb, expand_vec_perm_1,
+	expand_vec_perm_pshuflw_pshufhw, expand_vec_perm_palignr,
+	expand_vec_perm_interleave2, expand_vec_perm_vpermq_perm_1,
+	expand_vec_perm_vperm2f128, expand_vec_perm_interleave3,
+	expand_vec_perm_vperm2f128_vblend, expand_vec_perm_2vperm2f128_vshuf,
+	expand_vec_perm_even_odd, expand_vec_perm_broadcast): Adjust function
+	comments - replace ix86_expand_vec_perm_builtin_1 with
+	ix86_expand_vec_perm_const_1.
+	(expand_vec_perm2_vperm2f128_vblend): New function.
+	(ix86_expand_vec_perm_const_1): New forward declaration.  Call
+	expand_vec_perm2_vperm2f128_vblend as last resort.
+	(canonicalize_perm): Formatting fix.
+
 	PR tree-optimization/91351
 	* tree-cfg.c (generate_range_test): Use range_check_type instead of
 	unsigned_type_for.

@@ -1,5 +1,8 @@
 2019-08-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/91560
+	* gcc.dg/torture/vshuf-8.inc: Add two further permutations.
+
 	PR tree-optimization/91351
 	* g++.dg/opt/pr91351.C: New test.
 
