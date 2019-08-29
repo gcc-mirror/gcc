@@ -3155,9 +3155,11 @@ advance_state (state_t state)
 HAIFA_INLINE static void
 advance_one_cycle (void)
 {
+  int i;
+
   advance_state (curr_state);
-  if (sched_verbose >= 4)
-    fprintf (sched_dump, ";;\tAdvance the current state.\n");
+  for (i = 4; i <= sched_verbose; ++i)
+    fprintf (sched_dump, ";;\tAdvance the current state: %d.\n", clock_var);
 }
 
 /* Update register pressure after scheduling INSN.  */
