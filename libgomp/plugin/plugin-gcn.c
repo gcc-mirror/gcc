@@ -1219,24 +1219,55 @@ parse_target_attributes (void **input,
 
   if (gcn_dims_found)
     {
+      bool gfx900_workaround_p = false;
+
       if (agent->device_isa == EF_AMDGPU_MACH_AMDGCN_GFX900
 	  && gcn_threads == 0 && override_z_dim == 0)
 	{
-	  gcn_threads = 4;
+	  gfx900_workaround_p = true;
 	  GCN_WARNING ("VEGA BUG WORKAROUND: reducing default number of "
-		       "threads to 4 per team.\n");
+		       "threads to at most 4 per team.\n");
 	  GCN_WARNING (" - If this is not a Vega 10 device, please use "
 		       "GCN_NUM_THREADS=16\n");
 	}
 
+      /* Ideally, when a dimension isn't explicitly specified, we should
+	 tune it to run 40 (or 32?) threads per CU with no threads getting queued.
+	 In practice, we tune for peak performance on BabelStream, which
+	 for OpenACC is currently 32 threads per CU.  */
       def->ndim = 3;
-      /* Fiji has 64 CUs, but Vega20 has 60.  */
-      def->gdims[0] = (gcn_teams > 0) ? gcn_teams : get_cu_count (agent);
-      /* Each thread is 64 work items wide.  */
-      def->gdims[1] = 64;
-      /* A work group can have 16 wavefronts.  */
-      def->gdims[2] = (gcn_threads > 0) ? gcn_threads : 16;
-      def->wdims[0] = 1; /* Single team per work-group.  */
+      if (gcn_teams <= 0 && gcn_threads <= 0)
+	{
+	  /* Set up a reasonable number of teams and threads.  */
+	  gcn_threads = gfx900_workaround_p ? 4 : 16; // 8;
+	  def->gdims[0] = get_cu_count (agent); // * (40 / gcn_threads);
+	  def->gdims[2] = gcn_threads;
+	}
+      else if (gcn_teams <= 0 && gcn_threads > 0)
+	{
+	  /* Auto-scale the number of teams with the number of threads.  */
+	  def->gdims[0] = get_cu_count (agent); // * (40 / gcn_threads);
+	  def->gdims[2] = gcn_threads;
+	}
+      else if (gcn_teams > 0 && gcn_threads <= 0)
+	{
+	  int max_threads = gfx900_workaround_p ? 4 : 16;
+
+	  /* Auto-scale the number of threads with the number of teams.  */
+	  def->gdims[0] = gcn_teams;
+	  def->gdims[2] = 16; // get_cu_count (agent) * 40 / gcn_teams;
+	  if (def->gdims[2] == 0)
+	    def->gdims[2] = 1;
+	  else if (def->gdims[2] > max_threads)
+	    def->gdims[2] = max_threads;
+	}
+      else
+	{
+	  def->gdims[0] = gcn_teams;
+	  def->gdims[2] = gcn_threads;
+	}
+      def->gdims[1] = 64; /* Each thread is 64 work items wide.  */
+      def->wdims[0] = 1;  /* Single team per work-group.  */
       def->wdims[1] = 64;
       def->wdims[2] = 16;
       *result = def;
@@ -3031,13 +3062,34 @@ gcn_exec (struct kernel_info *kernel, size_t mapnum, void **hostaddrs,
   if (hsa_kernel_desc->oacc_dims[2] > 0)
     dims[2] = hsa_kernel_desc->oacc_dims[2];
 
-  /* If any of the OpenACC dimensions remain 0 then we get to pick a number.
-     There isn't really a correct answer for this without a clue about the
-     problem size, so let's do a reasonable number of single-worker gangs.
-     64 gangs matches a typical Fiji device.  */
+  /* Ideally, when a dimension isn't explicitly specified, we should
+     tune it to run 40 (or 32?) threads per CU with no threads getting queued.
+     In practice, we tune for peak performance on BabelStream, which
+     for OpenACC is currently 32 threads per CU.  */
+  if (dims[0] == 0 && dims[1] == 0)
+    {
+      /* If any of the OpenACC dimensions remain 0 then we get to pick a
+	 number.  There isn't really a correct answer for this without a clue
+	 about the problem size, so let's do a reasonable number of workers
+	 and gangs.  */
 
-  if (dims[0] == 0) dims[0] = get_cu_count (kernel->agent); /* Gangs.  */
-  if (dims[1] == 0) dims[1] = 16; /* Workers.  */
+      dims[0] = get_cu_count (kernel->agent) * 4; /* Gangs.  */
+      dims[1] = 8; /* Workers.  */
+    }
+  else if (dims[0] == 0 && dims[1] > 0)
+    {
+      /* Auto-scale the number of gangs with the requested number of workers.  */
+      dims[0] = get_cu_count (kernel->agent) * (32 / dims[1]);
+    }
+  else if (dims[0] > 0 && dims[1] == 0)
+    {
+      /* Auto-scale the number of workers with the requested number of gangs.  */
+      dims[1] = get_cu_count (kernel->agent) * 32 / dims[0];
+      if (dims[1] == 0)
+	dims[1] = 1;
+      if (dims[1] > 16)
+	dims[1] = 16;
+    }
 
   /* The incoming dimensions are expressed in terms of gangs, workers, and
      vectors.  The HSA dimensions are expressed in terms of "work-items",
