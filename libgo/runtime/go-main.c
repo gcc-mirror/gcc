@@ -52,8 +52,7 @@ main (int argc, char **argv)
   runtime_cpuinit ();
   runtime_check ();
   runtime_args (argc, (byte **) argv);
-  setncpu (getproccount ());
-  setpagesize (getpagesize ());
+  runtime_osinit ();
   runtime_schedinit ();
   __go_go ((uintptr)(runtime_main), NULL);
   runtime_mstart (runtime_m ());

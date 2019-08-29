@@ -1,3 +1,27 @@
+2019-08-29  Nathan Sidwell  <nathan@acm.org>
+
+	* internal.h (enum include_type): Add IT_MAIN, IT_DIRECTIVE_HWM,
+	IT_HEADER_HWM.
+	(_cpp_stack_file): Take include_type, not a bool.
+	* files.c (_cpp_find_file): Refactor to not hide an if inside a
+	for conditional.
+	(should_stack_file): Break apart to ...
+	(is_known_idempotent_file, has_unique_contents): ... these.
+	(_cpp_stack_file): Replace IMPORT boolean with include_type enum.
+	Refactor to use new predicates.  Do linemap compensation here ...
+	(_cpp_stack_include): ... not here.
+	* init.c (cpp_read_main_file): Pass IT_MAIN to _cpp_stack_file.
+
+2019-08-28  Nathan Sidwell  <nathan@acm.org>
+
+	* directives-only.c (_cpp_preprocess_dir_only): Use false, not
+	zero for _cpp_handle_directive call.
+	* directives.c (_cpp_handle_directive): Indented is bool.
+	* files.c (struct _cpp_file): Make bools 1 bit bitfields.
+	* internal.h (enum include_type): Reformat and comment.
+	(struct cpp_buffer): Make flags 1 bit bitfields.
+	(_cpp_handle_directive): Indented is bool.
+
 2019-07-09  Martin Sebor  <msebor@redhat.com>
 
 	* include/line-map.h: Change class-key from class to struct and vice

@@ -6300,6 +6300,7 @@ Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no)
 	    }
 
 	  if (this->asm_name_ == "runtime.gopanic"
+	      || this->asm_name_.compare(0, 15, "runtime.goPanic") == 0
 	      || this->asm_name_ == "__go_runtime_error"
               || this->asm_name_ == "runtime.panicdottype"
               || this->asm_name_ == "runtime.block")

@@ -798,14 +798,28 @@ cp_lexer_get_preprocessor_token (unsigned flags, cp_token *token)
             {
               /* Warn about the C++0x keyword (but still treat it as
                  an identifier).  */
-              warning (OPT_Wc__11_compat,
-                       "identifier %qE is a keyword in C++11",
-                       token->u.value);
+	      warning_at (token->location, OPT_Wc__11_compat,
+			  "identifier %qE is a keyword in C++11",
+			  token->u.value);
 
               /* Clear out the C_RID_CODE so we don't warn about this
                  particular identifier-turned-keyword again.  */
               C_SET_RID_CODE (token->u.value, RID_MAX);
             }
+	  if (warn_cxx20_compat
+	      && C_RID_CODE (token->u.value) >= RID_FIRST_CXX20
+	      && C_RID_CODE (token->u.value) <= RID_LAST_CXX20)
+	    {
+	      /* Warn about the C++20 keyword (but still treat it as
+		 an identifier).  */
+	      warning_at (token->location, OPT_Wc__20_compat,
+			  "identifier %qE is a keyword in C++20",
+			  token->u.value);
+
+	      /* Clear out the C_RID_CODE so we don't warn about this
+		 particular identifier-turned-keyword again.  */
+	      C_SET_RID_CODE (token->u.value, RID_MAX);
+	    }
 
 	  token->keyword = RID_MAX;
 	}
@@ -1142,6 +1156,7 @@ cp_keyword_starts_decl_specifier_p (enum rid keyword)
     case RID_DECLTYPE:
     case RID_UNDERLYING_TYPE:
     case RID_CONSTEXPR:
+    case RID_CONSTINIT:
       return true;
 
     default:
@@ -3500,7 +3515,10 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	       && id_equal (id, "thread_local"))
 	inform (location, "C++11 %<thread_local%> only available with "
 		"%<-std=c++11%> or %<-std=gnu++11%>");
-      else if (!flag_concepts && C_RID_CODE (id) == RID_CONCEPT)
+      else if (cxx_dialect < cxx2a && id == ridpointers[(int)RID_CONSTINIT])
+	inform (location, "C++20 %<constinit%> only available with "
+		"%<-std=c++2a%> or %<-std=gnu++2a%>");
+      else if (!flag_concepts && id == ridpointers[(int)RID_CONCEPT])
 	inform (location, "%<concept%> only available with %<-fconcepts%>");
       else if (C_RID_CODE (id) == RID_MODULE || C_RID_CODE (id) == RID_IMPORT)
 	{
@@ -14324,9 +14342,12 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 
       if (decl != error_mark_node)
 	{
+	  int flags = (decl_spec_seq_has_spec_p (decl_specifiers, ds_constinit)
+		       ? LOOKUP_CONSTINIT : 0);
 	  cp_maybe_mangle_decomp (decl, prev, v.length ());
 	  cp_finish_decl (decl, initializer, non_constant_p, NULL_TREE,
-			  is_direct_init ? LOOKUP_NORMAL : LOOKUP_IMPLICIT);
+			  (is_direct_init ? LOOKUP_NORMAL : LOOKUP_IMPLICIT)
+			  | flags);
 	  cp_finish_decomp (decl, prev, v.length ());
 	}
     }
@@ -14478,7 +14499,8 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	{
 	  /* decl-specifier:
 	       friend
-               constexpr */
+	       constexpr
+	       constinit */
 	case RID_FRIEND:
 	  if (!at_class_scope_p ())
 	    {
@@ -14499,6 +14521,11 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	  ds = ds_constexpr;
           cp_lexer_consume_token (parser->lexer);
           break;
+
+	case RID_CONSTINIT:
+	  ds = ds_constinit;
+	  cp_lexer_consume_token (parser->lexer);
+	  break;
 
         case RID_CONCEPT:
           ds = ds_concept;
@@ -21025,6 +21052,8 @@ cp_parser_init_declarator (cp_parser* parser,
      declarations.  */
   if (!member_p && decl && decl != error_mark_node && !range_for_decl_p)
     {
+      int cf = (decl_spec_seq_has_spec_p (decl_specifiers, ds_constinit)
+		? LOOKUP_CONSTINIT : 0);
       cp_finish_decl (decl,
 		      initializer, !is_non_constant_init,
 		      asm_specification,
@@ -21033,7 +21062,7 @@ cp_parser_init_declarator (cp_parser* parser,
 			 `explicit' constructor is OK.  Otherwise, an
 			 `explicit' constructor cannot be used.  */
 		      ((is_direct_init || !is_initialized)
-		       ? LOOKUP_NORMAL : LOOKUP_IMPLICIT));
+		       ? LOOKUP_NORMAL : LOOKUP_IMPLICIT) | cf);
     }
   else if ((cxx_dialect != cxx98) && friend_p
 	   && decl && TREE_CODE (decl) == FUNCTION_DECL)
@@ -29977,7 +30006,8 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 	    "typedef",
 	    "using",
             "constexpr",
-	    "__complex"
+	    "__complex",
+	    "constinit"
 	  };
 	  gcc_rich_location richloc (location);
 	  richloc.add_fixit_remove ();

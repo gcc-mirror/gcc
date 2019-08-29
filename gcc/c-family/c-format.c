@@ -2963,6 +2963,7 @@ static const token_t cxx_keywords[] =
    NAME ("catch", NULL),
    NAME ("constexpr if", NULL),
    NAME ("constexpr", NULL),
+   NAME ("constinit", NULL),
    NAME ("consteval", NULL),
    NAME ("decltype", NULL),
    NAME ("nullptr", NULL),

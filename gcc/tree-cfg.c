@@ -9221,7 +9221,7 @@ generate_range_test (basic_block bb, tree index, tree low, tree high,
 		     tree *lhs, tree *rhs)
 {
   tree type = TREE_TYPE (index);
-  tree utype = unsigned_type_for (type);
+  tree utype = range_check_type (type);
 
   low = fold_convert (utype, low);
   high = fold_convert (utype, high);

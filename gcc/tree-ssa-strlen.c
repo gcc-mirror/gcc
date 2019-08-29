@@ -4026,16 +4026,30 @@ handle_store (gimple_stmt_iterator *gsi)
       rhs_minlen = lenrange[0];
       storing_nonzero_p = lenrange[1] > 0;
 
-      if (tree dstsize = compute_objsize (lhs, 1))
-	if (compare_tree_int (dstsize, lenrange[2]) < 0)
-	  {
-	    location_t loc = gimple_nonartificial_location (stmt);
-	    warning_n (loc, OPT_Wstringop_overflow_,
-		       lenrange[2],
-		       "%Gwriting %u byte into a region of size %E",
-		       "%Gwriting %u bytes into a region of size %E",
-		       stmt, lenrange[2], dstsize);
-	  }
+      /* Avoid issuing multiple warnings for the same LHS or statement.
+	 For example, -Warray-bounds may have already been issued for
+	 an out-of-bounds subscript.  */
+      if (!TREE_NO_WARNING (lhs) && !gimple_no_warning_p (stmt))
+	{
+	  /* Set to the declaration referenced by LHS (if known).  */
+	  tree decl = NULL_TREE;
+	  if (tree dstsize = compute_objsize (lhs, 1, &decl))
+	    if (compare_tree_int (dstsize, lenrange[2]) < 0)
+	      {
+		location_t loc = gimple_nonartificial_location (stmt);
+		if (warning_n (loc, OPT_Wstringop_overflow_,
+			       lenrange[2],
+			       "%Gwriting %u byte into a region of size %E",
+			       "%Gwriting %u bytes into a region of size %E",
+			       stmt, lenrange[2], dstsize))
+		  {
+		    if (decl)
+		      inform (DECL_SOURCE_LOCATION (decl),
+			      "destination object declared here");
+		    gimple_set_no_warning (stmt, true);
+		  }
+	      }
+	}
     }
   else
     {

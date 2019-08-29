@@ -126,8 +126,8 @@ enum include_type
    IT_MAIN_REAL,  /* main, start line 1  */
    IT_MAIN_ZERO,  /* main, start line zero  */
 
-   IT_DIRECTIVE_HWM = IT_IMPORT + 1,
-   IT_HEADER_HWM = IT_DEFAULT + 1,
+   IT_DIRECTIVE_HWM = IT_IMPORT + 1,  /* Directives below this.  */
+   IT_HEADER_HWM = IT_DEFAULT + 1,    /* Header files below this.  */
   };
 
 union utoken
@@ -731,7 +731,7 @@ extern const char *cpp_named_operator2name (enum cpp_ttype type);
 
 /* In directives.c */
 extern int _cpp_test_assertion (cpp_reader *, unsigned int *);
-extern int _cpp_handle_directive (cpp_reader *, int);
+extern int _cpp_handle_directive (cpp_reader *, bool);
 extern void _cpp_define_builtin (cpp_reader *, const char *);
 extern char ** _cpp_save_pragma_names (cpp_reader *);
 extern void _cpp_restore_pragma_names (cpp_reader *, char **);

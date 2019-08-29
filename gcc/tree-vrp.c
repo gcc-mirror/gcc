@@ -4388,8 +4388,8 @@ class vrp_prop : public ssa_propagation_engine
   void vrp_initialize (void);
   void vrp_finalize (bool);
   void check_all_array_refs (void);
-  void check_array_ref (location_t, tree, bool);
-  void check_mem_ref (location_t, tree, bool);
+  bool check_array_ref (location_t, tree, bool);
+  bool check_mem_ref (location_t, tree, bool);
   void search_for_addr_array (tree, location_t);
 
   class vr_values vr_values;
@@ -4415,9 +4415,10 @@ class vrp_prop : public ssa_propagation_engine
    array subscript is a constant, check if it is outside valid
    range. If the array subscript is a RANGE, warn if it is
    non-overlapping with valid range.
-   IGNORE_OFF_BY_ONE is true if the ARRAY_REF is inside a ADDR_EXPR.  */
+   IGNORE_OFF_BY_ONE is true if the ARRAY_REF is inside a ADDR_EXPR.
+   Returns true if a warning has been issued.  */
 
-void
+bool
 vrp_prop::check_array_ref (location_t location, tree ref,
 			   bool ignore_off_by_one)
 {
@@ -4426,7 +4427,7 @@ vrp_prop::check_array_ref (location_t location, tree ref,
   tree low_bound, up_bound, up_bound_p1;
 
   if (TREE_NO_WARNING (ref))
-    return;
+    return false;
 
   low_sub = up_sub = TREE_OPERAND (ref, 1);
   up_bound = array_ref_up_bound (ref);
@@ -4541,12 +4542,16 @@ vrp_prop::check_array_ref (location_t location, tree ref,
   if (warned)
     {
       ref = TREE_OPERAND (ref, 0);
+      if (TREE_CODE (ref) == COMPONENT_REF)
+	ref = TREE_OPERAND (ref, 1);
 
       if (DECL_P (ref))
 	inform (DECL_SOURCE_LOCATION (ref), "while referencing %qD", ref);
 
       TREE_NO_WARNING (ref) = 1;
     }
+
+  return warned;
 }
 
 /* Checks one MEM_REF in REF, located at LOCATION, for out-of-bounds
@@ -4556,14 +4561,15 @@ vrp_prop::check_array_ref (location_t location, tree ref,
    with valid range.
    IGNORE_OFF_BY_ONE is true if the MEM_REF is inside an ADDR_EXPR
    (used to allow one-past-the-end indices for code that takes
-   the address of the just-past-the-end element of an array).  */
+   the address of the just-past-the-end element of an array).
+   Returns true if a warning has been issued.  */
 
-void
+bool
 vrp_prop::check_mem_ref (location_t location, tree ref,
 			 bool ignore_off_by_one)
 {
   if (TREE_NO_WARNING (ref))
-    return;
+    return false;
 
   tree arg = TREE_OPERAND (ref, 0);
   /* The constant and variable offset of the reference.  */
@@ -4615,7 +4621,7 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
 	  continue;
 	}
       else
-	return;
+	return false;
 
       /* VAROFF should always be a SSA_NAME here (and not even
 	 INTEGER_CST) but there's no point in taking chances.  */
@@ -4677,10 +4683,10 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
       arg = TREE_OPERAND (arg, 0);
       if (TREE_CODE (arg) != STRING_CST
 	  && TREE_CODE (arg) != VAR_DECL)
-	return;
+	return false;
     }
   else
-    return;
+    return false;
 
   /* The type of the object being referred to.  It can be an array,
      string literal, or a non-array type when the MEM_REF represents
@@ -4695,7 +4701,7 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
       || !COMPLETE_TYPE_P (reftype)
       || TREE_CODE (TYPE_SIZE_UNIT (reftype)) != INTEGER_CST
       || RECORD_OR_UNION_TYPE_P (reftype))
-    return;
+    return false;
 
   offset_int eltsize;
   if (TREE_CODE (reftype) == ARRAY_TYPE)
@@ -4797,11 +4803,11 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
 
       if (warned)
 	TREE_NO_WARNING (ref) = 1;
-      return;
+      return warned;
     }
 
   if (warn_array_bounds < 2)
-    return;
+    return false;
 
   /* At level 2 check also intermediate offsets.  */
   int i = 0;
@@ -4812,8 +4818,13 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
       if (warning_at (location, OPT_Warray_bounds,
 		      "intermediate array offset %wi is outside array bounds "
 		      "of %qT", tmpidx, reftype))
-	TREE_NO_WARNING (ref) = 1;
+	{
+	  TREE_NO_WARNING (ref) = 1;
+	  return true;
+	}
     }
+
+  return false;
 }
 
 /* Searches if the expr T, located at LOCATION computes
@@ -4825,10 +4836,14 @@ vrp_prop::search_for_addr_array (tree t, location_t location)
   /* Check each ARRAY_REF and MEM_REF in the reference chain. */
   do
     {
+      bool warned = false;
       if (TREE_CODE (t) == ARRAY_REF)
-	check_array_ref (location, t, true /*ignore_off_by_one*/);
+	warned = check_array_ref (location, t, true /*ignore_off_by_one*/);
       else if (TREE_CODE (t) == MEM_REF)
-	check_mem_ref (location, t, true /*ignore_off_by_one*/);
+	warned = check_mem_ref (location, t, true /*ignore_off_by_one*/);
+
+      if (warned)
+	TREE_NO_WARNING (t) = true;
 
       t = TREE_OPERAND (t, 0);
     }
@@ -4920,16 +4935,20 @@ check_array_bounds (tree *tp, int *walk_subtree, void *data)
 
   *walk_subtree = TRUE;
 
+  bool warned = false;
   vrp_prop *vrp_prop = (class vrp_prop *)wi->info;
   if (TREE_CODE (t) == ARRAY_REF)
-    vrp_prop->check_array_ref (location, t, false /*ignore_off_by_one*/);
+    warned = vrp_prop->check_array_ref (location, t, false/*ignore_off_by_one*/);
   else if (TREE_CODE (t) == MEM_REF)
-    vrp_prop->check_mem_ref (location, t, false /*ignore_off_by_one*/);
+    warned = vrp_prop->check_mem_ref (location, t, false /*ignore_off_by_one*/);
   else if (TREE_CODE (t) == ADDR_EXPR)
     {
       vrp_prop->search_for_addr_array (t, location);
       *walk_subtree = FALSE;
     }
+  /* Propagate the no-warning bit to the outer expression.  */
+  if (warned)
+    TREE_NO_WARNING (t) = true;
 
   return NULL_TREE;
 }

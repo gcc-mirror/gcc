@@ -880,18 +880,52 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 void
 general_scalar_chain::convert_insn (rtx_insn *insn)
 {
-  /* Generate copies for out-of-chain uses of defs.  */
+  /* Generate copies for out-of-chain uses of defs and adjust debug uses.  */
   for (df_ref ref = DF_INSN_DEFS (insn); ref; ref = DF_REF_NEXT_LOC (ref))
     if (bitmap_bit_p (defs_conv, DF_REF_REGNO (ref)))
       {
 	df_link *use;
 	for (use = DF_REF_CHAIN (ref); use; use = use->next)
-	  if (DF_REF_REG_MEM_P (use->ref)
-	      || !bitmap_bit_p (insns, DF_REF_INSN_UID (use->ref)))
+	  if (NONDEBUG_INSN_P (DF_REF_INSN (use->ref))
+	      && (DF_REF_REG_MEM_P (use->ref)
+		  || !bitmap_bit_p (insns, DF_REF_INSN_UID (use->ref))))
 	    break;
 	if (use)
 	  convert_reg (insn, DF_REF_REG (ref),
 		       *defs_map.get (regno_reg_rtx [DF_REF_REGNO (ref)]));
+	else if (MAY_HAVE_DEBUG_BIND_INSNS)
+	  {
+	    /* If we generated a scalar copy we can leave debug-insns
+	       as-is, if not, we have to adjust them.  */
+	    auto_vec<rtx_insn *, 5> to_reset_debug_insns;
+	    for (use = DF_REF_CHAIN (ref); use; use = use->next)
+	      if (DEBUG_INSN_P (DF_REF_INSN (use->ref)))
+		{
+		  rtx_insn *debug_insn = DF_REF_INSN (use->ref);
+		  /* If there's a reaching definition outside of the
+		     chain we have to reset.  */
+		  df_link *def;
+		  for (def = DF_REF_CHAIN (use->ref); def; def = def->next)
+		    if (!bitmap_bit_p (insns, DF_REF_INSN_UID (def->ref)))
+		      break;
+		  if (def)
+		    to_reset_debug_insns.safe_push (debug_insn);
+		  else
+		    {
+		      *DF_REF_REAL_LOC (use->ref)
+			= *defs_map.get (regno_reg_rtx [DF_REF_REGNO (ref)]);
+		      df_insn_rescan (debug_insn);
+		    }
+		}
+	    /* Have to do the reset outside of the DF_CHAIN walk to not
+	       disrupt it.  */
+	    while (!to_reset_debug_insns.is_empty ())
+	      {
+		rtx_insn *debug_insn = to_reset_debug_insns.pop ();
+		INSN_VAR_LOCATION_LOC (debug_insn) = gen_rtx_UNKNOWN_VAR_LOC ();
+		df_insn_rescan_debug_internal (debug_insn);
+	      }
+	  }
       }
 
   /* Replace uses in this insn with the defs we use in the chain.  */

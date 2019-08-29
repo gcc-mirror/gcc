@@ -20,6 +20,7 @@ func kevent(kq int32, ch *keventt, nch uintptr, ev *keventt, nev uintptr, ts *ti
 //extern __go_fcntl_uintptr
 func fcntlUintptr(fd, cmd, arg uintptr) (uintptr, uintptr)
 
+//go:nosplit
 func closeonexec(fd int32) {
 	fcntlUintptr(uintptr(fd), _F_SETFD, _FD_CLOEXEC)
 }

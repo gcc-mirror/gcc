@@ -1,3 +1,116 @@
+2019-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91560
+	* gcc.dg/torture/vshuf-8.inc: Add two further permutations.
+
+	PR tree-optimization/91351
+	* g++.dg/opt/pr91351.C: New test.
+
+2019-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/spellcheck-typenames.C: Adjust expected locations.
+	* g++.dg/cpp0x/pr84676.C: Check locations.
+	* g++.dg/other/pr88187.C: Likewise.
+	* g++.dg/parse/crash13.C: Likewise.
+	* g++.dg/parse/crash46.C: Likewise.
+	* g++.dg/parse/template28.C: Likewise.
+	* g++.dg/parse/typename4.C: Likewise.
+
+2019-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91568
+	* gfortran.dg/pr91568.f: New testcase.
+
+2019-08-28  Marek Polacek  <polacek@redhat.com>
+
+	Implement P1152R4: Deprecating some uses of volatile.
+	PR c++/91361
+	* c-c++-common/Wbool-operation-1.c: Use -Wno-volatile in C++.
+	* c-c++-common/gomp/atomic-1.c: Likewise.
+	* c-c++-common/gomp/atomic-9.c: Likewise.
+	* c-c++-common/gomp/depend-iterator-1.c: Likewise.
+	* c-c++-common/gomp/loop-1.c: Adjust warning location for C++.
+	* c-c++-common/gomp/order-3.c: Likewise.
+	* c-c++-common/pr69733.c: Use -Wno-volatile in C++.
+	* c-c++-common/spec-barrier-2.c: Likewise.
+	* c-c++-common/tm/pr54893.c: Likewise.
+	* g++.dg/cpp0x/pr65327.C: Add dg-warning.
+	* g++.dg/cpp0x/rv-conv2.C: Likewise.
+	* g++.dg/cpp0x/rv1n.C: Likewise.
+	* g++.dg/cpp0x/rv1p.C: Likewise.
+	* g++.dg/cpp0x/rv2n.C: Likewise.
+	* g++.dg/cpp0x/rv2p.C: Likewise.
+	* g++.dg/cpp0x/rv3n.C: Likewise.
+	* g++.dg/cpp0x/rv3p.C: Likewise.
+	* g++.dg/cpp0x/rv4n.C: Likewise.
+	* g++.dg/cpp0x/rv4p.C: Likewise.
+	* g++.dg/cpp0x/rv5n.C: Likewise.
+	* g++.dg/cpp0x/rv5p.C: Likewise.
+	* g++.dg/cpp0x/rv6n.C: Likewise.
+	* g++.dg/cpp0x/rv6p.C: Likewise.
+	* g++.dg/cpp0x/rv7n.C: Likewise.
+	* g++.dg/cpp0x/rv7p.C: Likewise.
+	* g++.dg/cpp0x/rv8p.C: Likewise.
+	* g++.dg/cpp0x/trailing14.C: Use -Wno-volatile.
+	* g++.dg/cpp1y/new1.C: Add dg-warning.
+	* g++.dg/cpp2a/volatile1.C: New test.
+	* g++.dg/cpp2a/volatile2.C: New test.
+	* g++.dg/cpp2a/volatile3.C: New test.
+	* g++.dg/cpp2a/volatile4.C: New test.
+	* g++.dg/expr/bool3.C: Add dg-warning.
+	* g++.dg/expr/bool4.C: Likewise.
+	* g++.dg/expr/cond9.C: Likewise.
+	* g++.dg/ext/vector25.C: Likewise.
+	* g++.dg/gomp/depend-iterator-1.C: Use -Wno-volatile.
+	* g++.dg/inherit/covariant21.C: Add dg-warning.
+	* g++.dg/init/ref18.C: Likewise.
+	* g++.dg/ipa/pr63838.C: Likewise.
+	* g++.dg/overload/rvalue2.C: Likewise.
+	* g++.dg/parse/semicolon4.C: Likewise.
+	* g++.dg/warn/Wreturn-type-4.C: Likewise.
+	* g++.dg/warn/pr36069.C: Likewise.
+	* g++.old-deja/g++.mike/p9506.C: Likewise.
+	* g++.old-deja/g++.other/volatile1.C: Likewise.
+
+2019-08-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91551
+	* gfortran.dg/allocated_3.f90
+
+2019-08-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91360 - Implement C++20 P1143R2: constinit.
+	* g++.dg/cpp2a/constinit1.C: New test.
+	* g++.dg/cpp2a/constinit2.C: New test.
+	* g++.dg/cpp2a/constinit3.C: New test.
+	* g++.dg/cpp2a/constinit4.C: New test.
+	* g++.dg/cpp2a/constinit5.C: New test.
+	* g++.dg/cpp2a/constinit6.C: New test.
+	* g++.dg/cpp2a/constinit7.C: New test.
+	* g++.dg/cpp2a/constinit8.C: New test.
+	* g++.dg/cpp2a/constinit9.C: New test.
+	* g++.dg/cpp2a/constinit10.C: New test.
+	* g++.dg/cpp2a/constinit11.C: New test.
+	* g++.dg/cpp2a/constinit12.C: New test.
+
+2019-08-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91565
+	* gfortran.dg/pr91565.f90: New test.
+
+2019-08-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91564
+	* gfortran.dg/pr91564.f90: New test.
+
+2019-08-28  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91457
+	* c-c++-common/Wstringop-overflow-2.c: New test.
+	* g++.dg/warn/Warray-bounds-8.C: New test.
+	* g++.dg/warn/Wstringop-overflow-3.C: New test.
+	* gcc.dg/Wstringop-overflow-15.c: New test.
+
 2019-08-16  Martin Liska  <mliska@suse.cz>
 
 	PR c++/90613

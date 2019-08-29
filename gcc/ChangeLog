@@ -1,3 +1,95 @@
+2019-08-29  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386-features.c (general_scalar_chain::convert_insn):
+	Guard debug work with MAY_HAVE_DEBUG_BIND_INSNS.
+
+2019-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/91580
+	* config/i386/i386-features.c (general_scalar_chain::convert_insn):
+	Do not emit scalar copies for debug-insns, instead replace
+	their uses with the reg copy used in the chain or reset them
+	if there is a reaching definition outside of the chain as well.
+
+2019-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91560
+	* config/i386/i386-expand.c (expand_vec_perm_movs,
+	expand_vec_perm_blend, expand_vec_perm_vpermil,
+	expand_vec_perm_pshufb, expand_vec_perm_1,
+	expand_vec_perm_pshuflw_pshufhw, expand_vec_perm_palignr,
+	expand_vec_perm_interleave2, expand_vec_perm_vpermq_perm_1,
+	expand_vec_perm_vperm2f128, expand_vec_perm_interleave3,
+	expand_vec_perm_vperm2f128_vblend, expand_vec_perm_2vperm2f128_vshuf,
+	expand_vec_perm_even_odd, expand_vec_perm_broadcast): Adjust function
+	comments - replace ix86_expand_vec_perm_builtin_1 with
+	ix86_expand_vec_perm_const_1.
+	(expand_vec_perm2_vperm2f128_vblend): New function.
+	(ix86_expand_vec_perm_const_1): New forward declaration.  Call
+	expand_vec_perm2_vperm2f128_vblend as last resort.
+	(canonicalize_perm): Formatting fix.
+
+	PR tree-optimization/91351
+	* tree-cfg.c (generate_range_test): Use range_check_type instead of
+	unsigned_type_for.
+	* tree-cfgcleanup.c (convert_single_case_switch): Punt if
+	range_check_type returns NULL.
+	* tree-switch-conversion.c (switch_conversion::build_one_array):
+	Use range_check_type instead of unsigned_type_for, don't perform
+	linear opt if it returns NULL.
+	(bit_test_cluster::find_bit_tests): Formatting fix.
+	(bit_test_cluster::emit): Use range_check_type instead of
+	unsigned_type_for.
+	(switch_decision_tree::try_switch_expansion): Punt if range_check_type
+	returns NULL.
+
+2019-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91568
+	* tree-vectorizer.h (_slp_tree::max_nunits): Add.
+	(vect_update_max_nunits): Add overload for poly_uint64.
+	* tree-vect-slp.c (vect_create_new_slp_node): Initialize it.
+	(vect_build_slp_tree): Record max_nunits into the subtree
+	and merge it upwards.
+	(vect_print_slp_tree): Print max_nunits.
+
+2019-08-28  Marek Polacek  <polacek@redhat.com>
+
+	Implement P1152R4: Deprecating some uses of volatile.
+	PR c++/91361
+	* doc/invoke.texi: Document -Wvolatile.
+
+2019-08-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91360 - Implement C++20 P1143R2: constinit.
+	* doc/invoke.texi: Document -Wc++20-compat.
+
+2019-08-28  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91457
+	* builtins.c (component_size): New function.
+	(compute_objsize): Add argument. Handle ARRAY_REF and COMPONENT_REF.
+	* builtins.h (compute_objsize): Add argument.
+	* tree-ssa-strlen.c (handle_store): Handle no-warning bit.
+	* tree-vrp.c (vrp_prop::check_array_ref): Return warning result.
+	(vrp_prop::check_mem_ref): Same.
+	(vrp_prop::search_for_addr_array): Set no-warning bit.
+	(check_array_bounds): Same.
+
+2019-08-28  Martin Sebor  <msebor@redhat.com>
+
+	PR driver/80545
+	* opts-common.c (option_enabled): Correct checking for language
+	options.
+
+2019-08-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-features.c
+	(general_scalar_chain::compute_convert_gain):
+	Correct cost for double-word shifts.
+	(general_scalar_to_vector_candidate_p): Reject count operands
+	greater or equal to mode bitsize.
+
 2019-08-28  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/91468

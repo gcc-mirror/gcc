@@ -1532,7 +1532,9 @@ option_enabled (int opt_idx, unsigned lang_mask, void *opts)
 
   /* A language-specific option can only be considered enabled when it's
      valid for the current language.  */
-  if (option->flags & CL_LANG_ALL && !(option->flags | lang_mask))
+  if (!(option->flags & CL_COMMON)
+      && (option->flags & CL_LANG_ALL)
+      && !(option->flags & lang_mask))
     return 0;
 
   struct gcc_options *optsg = (struct gcc_options *) opts;
