@@ -1,6 +1,15 @@
 2019-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/90197
+	* cp-gimplify.c (genericize_cp_loop): Emit a DEBUG_BEGIN_STMT
+	before the condition (or if missing or constant non-zero at the end
+	of the loop.  Emit a DEBUG_BEGIN_STMT before the increment expression
+	if any.  Don't call protected_set_expr_location on incr if it already
+	has a location.
+
 	2019-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR pch/90326
