@@ -112,11 +112,10 @@ extern int darwin_emit_branch_islands;
   %<faltivec %<fno-altivec " \
   DARWIN_CC1_SPEC
 
-#define DARWIN_ARCH_SPEC "%{m64:ppc64;:ppc}"
+/* Default to PPC for single arch builds.  */
+#define DARWIN_ARCH_SPEC "ppc"
 
 #define DARWIN_SUBARCH_SPEC "			\
- %{m64: ppc64}					\
- %{!m64:					\
  %{mcpu=601:ppc601;				\
    mcpu=603:ppc603;				\
    mcpu=603e:ppc603;				\
@@ -131,7 +130,7 @@ extern int darwin_emit_branch_islands;
    mcpu=970:ppc970;				\
    mcpu=power4:ppc970;				\
    mcpu=G5:ppc970;				\
-   :ppc}}"
+   :ppc}"
 
 /* crt2.o is at least partially required for 10.3.x and earlier.  */
 #define DARWIN_CRT2_SPEC \
