@@ -10,7 +10,7 @@ export template<typename T> T sum (T a)
 }
 
 export template<typename T, typename... R>
-T sum (T a, R... b)
+inline T sum (T a, R... b)
 {
   return a + static_cast<T> (sum (b...));
 }

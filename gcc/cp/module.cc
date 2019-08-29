@@ -5944,7 +5944,7 @@ trees_out::core_vals (tree t)
       break;
 
     case TS_CP_ARGUMENT_PACK_SELECT:
-      gcc_unreachable (); // FIXME:  Only reachable when we stream instantiations
+      gcc_unreachable (); /* Should never see.  */
       break;
 
     case TS_CP_TRAIT_EXPR:
@@ -6402,8 +6402,7 @@ trees_in::core_vals (tree t)
       break;
 
     case TS_CP_ARGUMENT_PACK_SELECT:
-      gcc_unreachable (); // FIXME
-      break;
+      return false; /* Should never see.  */
 
     case TS_CP_TRAIT_EXPR:
       RT (((lang_tree_node *)t)->trait_expression.type1);
