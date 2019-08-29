@@ -1,3 +1,10 @@
+2019-08-29  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (inline_secondary_memory_needed): Return true
+	for moves between SSE and non-general registers and between
+	mask and non-general registers.
+	(ix86_register_move_cost): Remove stalled comment.
+
 2019-08-29  Richard Biener  <rguenther@suse.de>
 
 	* config/i386/i386-features.c (general_scalar_chain::convert_insn):
