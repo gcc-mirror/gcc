@@ -7315,7 +7315,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  t = require_complete_type (t);
 	  if (t == error_mark_node)
 	    remove = true;
-	  else if (TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE
+	  else if (!processing_template_decl
+		   && TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE
 		   && !complete_type_or_else (TREE_TYPE (TREE_TYPE (t)), t))
 	    remove = true;
 	}
