@@ -1,3 +1,13 @@
+2019-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91568
+	* tree-vectorizer.h (_slp_tree::max_nunits): Add.
+	(vect_update_max_nunits): Add overload for poly_uint64.
+	* tree-vect-slp.c (vect_create_new_slp_node): Initialize it.
+	(vect_build_slp_tree): Record max_nunits into the subtree
+	and merge it upwards.
+	(vect_print_slp_tree): Print max_nunits.
+
 2019-08-28  Marek Polacek  <polacek@redhat.com>
 
 	Implement P1152R4: Deprecating some uses of volatile.

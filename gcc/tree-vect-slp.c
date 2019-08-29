@@ -129,6 +129,7 @@ vect_create_new_slp_node (vec<stmt_vec_info> scalar_stmts)
   SLP_TREE_TWO_OPERATORS (node) = false;
   SLP_TREE_DEF_TYPE (node) = vect_internal_def;
   node->refcnt = 1;
+  node->max_nunits = 1;
 
   unsigned i;
   FOR_EACH_VEC_ELT (scalar_stmts, i, stmt_info)
@@ -1067,14 +1068,22 @@ vect_build_slp_tree (vec_info *vinfo,
 	dump_printf_loc (MSG_NOTE, vect_location, "re-using %sSLP tree %p\n",
 			 *leader ? "" : "failed ", *leader);
       if (*leader)
-	(*leader)->refcnt++;
+	{
+	  (*leader)->refcnt++;
+	  vect_update_max_nunits (max_nunits, (*leader)->max_nunits);
+	}
       return *leader;
     }
+  poly_uint64 this_max_nunits = 1;
   slp_tree res = vect_build_slp_tree_2 (vinfo, stmts, group_size, max_nunits,
 					matches, npermutes, tree_size, bst_map);
-  /* Keep a reference for the bst_map use.  */
   if (res)
-    res->refcnt++;
+    {
+      res->max_nunits = this_max_nunits;
+      vect_update_max_nunits (max_nunits, this_max_nunits);
+      /* Keep a reference for the bst_map use.  */
+      res->refcnt++;
+    }
   bst_map->put (stmts.copy (), res);
   return res;
 }
@@ -1473,9 +1482,10 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 
   dump_metadata_t metadata (dump_kind, loc.get_impl_location ());
   dump_user_location_t user_loc = loc.get_user_location ();
-  dump_printf_loc (metadata, user_loc, "node%s %p\n",
+  dump_printf_loc (metadata, user_loc, "node%s %p (max_nunits=%u)\n",
 		   SLP_TREE_DEF_TYPE (node) != vect_internal_def
-		   ? " (external)" : "", node);
+		   ? " (external)" : "", node,
+		   estimated_poly_value (node->max_nunits));
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
     dump_printf_loc (metadata, user_loc, "\tstmt %d %G", i, stmt_info->stmt);
   if (SLP_TREE_CHILDREN (node).is_empty ())
