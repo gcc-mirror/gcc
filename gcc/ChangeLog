@@ -1,3 +1,19 @@
+2019-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91351
+	* tree-cfg.c (generate_range_test): Use range_check_type instead of
+	unsigned_type_for.
+	* tree-cfgcleanup.c (convert_single_case_switch): Punt if
+	range_check_type returns NULL.
+	* tree-switch-conversion.c (switch_conversion::build_one_array):
+	Use range_check_type instead of unsigned_type_for, don't perform
+	linear opt if it returns NULL.
+	(bit_test_cluster::find_bit_tests): Formatting fix.
+	(bit_test_cluster::emit): Use range_check_type instead of
+	unsigned_type_for.
+	(switch_decision_tree::try_switch_expansion): Punt if range_check_type
+	returns NULL.
+
 2019-08-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91568
