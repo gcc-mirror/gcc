@@ -1,3 +1,19 @@
+2019-08-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/67958
+	* gcc.target/i386/pr32219-1.c: Adjust scan-asms for Darwin, comment
+	the differences.
+	* gcc.target/i386/pr32219-2.c: Likewise.
+	* gcc.target/i386/pr32219-3.c: Likewise.
+	* gcc.target/i386/pr32219-4.c: Likewise.
+	* gcc.target/i386/pr32219-5.c: Likewise.
+	* gcc.target/i386/pr32219-6.c: Likewise.
+	* gcc.target/i386/pr32219-7.c: Likewise.
+	* gcc.target/i386/pr32219-8.c: Likewise.
+
 2019-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
