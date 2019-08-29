@@ -1,3 +1,14 @@
+2019-08-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91067
+	* acinclude.m4 (libtool_VERSION): Bump to 6:28:0.
+	* configure: Regenerate.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.28): Add new version. Export
+	missing symbols.
+	* testsuite/27_io/filesystem/iterators/91067.cc: Test move
+	constructors.
+	* testsuite/util/testsuite_abi.cc: Add new symbol version.
+
 2019-08-29  Jakub Jelinek  <jakub@redhat.com
 
 	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
