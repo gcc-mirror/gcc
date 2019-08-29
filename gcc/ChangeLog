@@ -1,3 +1,11 @@
+2019-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/91580
+	* config/i386/i386-features.c (general_scalar_chain::convert_insn):
+	Do not emit scalar copies for debug-insns, instead replace
+	their uses with the reg copy used in the chain or reset them
+	if there is a reaching definition outside of the chain as well.
+
 2019-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/91560
