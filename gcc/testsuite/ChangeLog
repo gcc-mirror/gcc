@@ -1,6 +1,11 @@
 2019-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/90756
+	* gcc.dg/pr90756.c: New test.
+
 	2019-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/90954

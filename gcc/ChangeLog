@@ -1,6 +1,12 @@
 2019-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/90756
+	* explow.c (promote_ssa_mode): Always use TYPE_MODE, don't bypass it
+	for VECTOR_TYPE_P.
+
 	2019-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/90760
