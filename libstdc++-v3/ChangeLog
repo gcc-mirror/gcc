@@ -1,3 +1,8 @@
+2019-08-29  Jakub Jelinek  <jakub@redhat.com
+
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Update.
+
 2019-08-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
