@@ -1,3 +1,12 @@
+2019-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/90139
+	* tree-outof-ssa.c (get_temp_reg): If reg_mode is BLKmode, return
+	assign_temp instead of gen_reg_rtx.
+
 2019-08-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
