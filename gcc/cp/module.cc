@@ -7006,10 +7006,9 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
       return false;
     }
 
-  if (TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl))
+  if (TREE_CODE (decl) == VAR_DECL && DECL_VTABLE_OR_VTT_P (decl))
     {
-      // FIXME: what about VTT?
-      /* A vtable.  */
+      /* VTT or VTABLE, they are all on the vtables list.  */
       tree ctx = CP_DECL_CONTEXT (decl);
       tree vtable = CLASSTYPE_VTABLES (ctx);
       for (unsigned ix = 0; ; vtable = DECL_CHAIN (vtable), ix++)

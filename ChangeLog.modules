@@ -1,6 +1,11 @@
 2019-08-29  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::tree_decl): VTTs are just vtables.
+	gcc/testsuite/
+	* g++.dg/modules/vtt-1_[abc].C: New.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::core_vals): We never see
 	TS_CP_ARGUMENT_PACK_SELECT nodes.
 
