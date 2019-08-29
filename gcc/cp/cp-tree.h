@@ -6478,7 +6478,7 @@ extern tree cxx_comdat_group			(tree);
 extern bool cp_missing_noreturn_ok_p		(tree);
 extern bool is_direct_enum_init			(tree, tree);
 extern void initialize_artificial_var		(tree, vec<constructor_elt, va_gc> *);
-extern tree check_var_type			(tree, tree);
+extern tree check_var_type			(tree, tree, location_t);
 extern tree reshape_init                        (tree, tree, tsubst_flags_t);
 extern tree next_initializable_field (tree);
 extern tree fndecl_declared_return_type		(tree);

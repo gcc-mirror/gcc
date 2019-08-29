@@ -1,3 +1,10 @@
+2019-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (check_var_type): Add location_t parameter and use it.
+	(grokdeclarator): Adjust call.
+	* pt.c (tsubst_decl): Likewise.
+	* cp-tree.h: Adjust declaration.
+
 2019-08-28  Marek Polacek  <polacek@redhat.com>
 
 	Implement P1152R4: Deprecating some uses of volatile.

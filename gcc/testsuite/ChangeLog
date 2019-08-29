@@ -1,3 +1,13 @@
+2019-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/spellcheck-typenames.C: Adjust expected locations.
+	* g++.dg/cpp0x/pr84676.C: Check locations.
+	* g++.dg/other/pr88187.C: Likewise.
+	* g++.dg/parse/crash13.C: Likewise.
+	* g++.dg/parse/crash46.C: Likewise.
+	* g++.dg/parse/template28.C: Likewise.
+	* g++.dg/parse/typename4.C: Likewise.
+
 2019-08-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91568
