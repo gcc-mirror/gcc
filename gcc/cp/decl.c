@@ -10298,19 +10298,20 @@ check_special_function_return_type (special_function_kind sfk,
    error-recovery purposes.  */
 
 tree
-check_var_type (tree identifier, tree type)
+check_var_type (tree identifier, tree type, location_t loc)
 {
   if (VOID_TYPE_P (type))
     {
       if (!identifier)
-	error ("unnamed variable or field declared void");
+	error_at (loc, "unnamed variable or field declared void");
       else if (identifier_p (identifier))
 	{
 	  gcc_assert (!IDENTIFIER_ANY_OP_P (identifier));
-	  error ("variable or field %qE declared void", identifier);
+	  error_at (loc, "variable or field %qE declared void",
+		    identifier);
 	}
       else
-	error ("variable or field declared void");
+	error_at (loc, "variable or field declared void");
       type = error_mark_node;
     }
 
@@ -12470,7 +12471,7 @@ grokdeclarator (const cp_declarator *declarator,
      error message later.  */
   if (decl_context != PARM)
     {
-      type = check_var_type (unqualified_id, type);
+      type = check_var_type (unqualified_id, type, id_loc);
       if (type == error_mark_node)
         return error_mark_node;
     }

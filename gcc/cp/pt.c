@@ -13894,8 +13894,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    /* Wait until cp_finish_decl to set this again, to handle
 	       circular dependency (template/instantiate6.C). */
 	    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (r) = 0;
-	    type = check_var_type (DECL_NAME (r), type);
-
+	    type = check_var_type (DECL_NAME (r), type,
+				   DECL_SOURCE_LOCATION (r));
 	    if (DECL_HAS_VALUE_EXPR_P (t))
 	      {
 		tree ve = DECL_VALUE_EXPR (t);
