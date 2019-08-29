@@ -2538,7 +2538,7 @@ model_set_excess_costs (rtx_insn **insns, int count)
 enum rfs_decision {
   RFS_LIVE_RANGE_SHRINK1, RFS_LIVE_RANGE_SHRINK2,
   RFS_SCHED_GROUP, RFS_PRESSURE_DELAY, RFS_PRESSURE_TICK,
-  RFS_FEEDS_BACKTRACK_INSN, RFS_PRIORITY, RFS_SPECULATION,
+  RFS_FEEDS_BACKTRACK_INSN, RFS_PRIORITY, RFS_AUTOPREF, RFS_SPECULATION,
   RFS_SCHED_RANK, RFS_LAST_INSN, RFS_PRESSURE_INDEX,
   RFS_DEP_COUNT, RFS_TIE, RFS_FUSION, RFS_COST, RFS_N };
 
@@ -2546,7 +2546,7 @@ enum rfs_decision {
 static const char *rfs_str[RFS_N] = {
   "RFS_LIVE_RANGE_SHRINK1", "RFS_LIVE_RANGE_SHRINK2",
   "RFS_SCHED_GROUP", "RFS_PRESSURE_DELAY", "RFS_PRESSURE_TICK",
-  "RFS_FEEDS_BACKTRACK_INSN", "RFS_PRIORITY", "RFS_SPECULATION",
+  "RFS_FEEDS_BACKTRACK_INSN", "RFS_PRIORITY", "RFS_AUTOPREF", "RFS_SPECULATION",
   "RFS_SCHED_RANK", "RFS_LAST_INSN", "RFS_PRESSURE_INDEX",
   "RFS_DEP_COUNT", "RFS_TIE", "RFS_FUSION", "RFS_COST" };
 
@@ -2715,7 +2715,7 @@ rank_for_schedule (const void *x, const void *y)
     {
       int autopref = autopref_rank_for_schedule (tmp, tmp2);
       if (autopref != 0)
-	return autopref;
+	return rfs_result (RFS_AUTOPREF, autopref, tmp, tmp2);
     }
 
   /* Prefer speculative insn with greater dependencies weakness.  */
