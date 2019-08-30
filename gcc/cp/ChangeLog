@@ -1,6 +1,11 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	Backported from mainline
+	2018-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87506
+	* constexpr.c (adjust_temp_type): Handle EMPTY_CLASS_EXPR.
+
 	2018-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88103
