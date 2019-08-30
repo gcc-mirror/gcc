@@ -4636,6 +4636,16 @@ riscv_option_override (void)
     error ("%<-mriscv-attribute%> RISC-V ELF attribute requires GNU as 2.32"
 	   " [%<-mriscv-attribute%>]");
 #endif
+
+  /* The save-restore routines use t0 which is clobbered by the plt header,
+     so we can't use them when building shared libraries.  */
+  if (TARGET_SAVE_RESTORE && flag_pic && TARGET_PLT)
+    {
+      target_flags &= ~MASK_SAVE_RESTORE;
+      if (target_flags_explicit & MASK_SAVE_RESTORE)
+	warning (0, "%<-msave-restore%> disabled; not supported with PLT "
+		 "based shared libraries");
+    }
 }
 
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
