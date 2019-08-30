@@ -1,5 +1,9 @@
 2019-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Size>: Add assertion.
+
+2019-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (gigi_checking_assert): New macro.
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Modular_Integer_Type>:
 	Remove redundant test and adjust comments.  Minor tweaks.
