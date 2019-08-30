@@ -5,7 +5,6 @@
    license that can be found in the LICENSE file.  */
 
 #include "runtime.h"
-#include "go-type.h"
 
 /* The compiler will track fields that have the tag go:"track".  Any
    function that refers to such a field will call this function with a
@@ -41,8 +40,7 @@ extern const char __edata[] __attribute__ ((weak));
 extern const char __bss_start[] __attribute__ ((weak));
 #endif
 
-extern void *mapassign (const struct __go_map_type *, void *hmap,
-			const void *key)
+extern void *mapassign (const struct maptype *, void *hmap, const void *key)
   __asm__ (GOSYM_PREFIX "runtime.mapassign");
 
 // The type descriptor for map[string] bool.  */

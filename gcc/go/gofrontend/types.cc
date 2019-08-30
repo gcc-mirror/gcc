@@ -6777,8 +6777,6 @@ Struct_type::can_write_to_c_header(
        p != fields->end();
        ++p)
     {
-      if (p->is_anonymous())
-	return false;
       if (!this->can_write_type_to_c_header(p->type(), requires, declare))
 	return false;
       if (Gogo::message_name(p->field_name()) == "_")
@@ -6847,6 +6845,9 @@ Struct_type::can_write_type_to_c_header(
 	  }
 	if (t->struct_type() != NULL)
 	  {
+	    // We will accept empty struct fields, but not print them.
+	    if (t->struct_type()->total_field_count() == 0)
+	      return true;
 	    requires->push_back(no);
 	    return t->struct_type()->can_write_to_c_header(requires, declare);
 	  }
@@ -6871,6 +6872,12 @@ Struct_type::write_to_c_header(std::ostream& os) const
        p != fields->end();
        ++p)
     {
+      // Skip fields that are empty struct types.  The C code can't
+      // refer to them anyhow.
+      if (p->type()->struct_type() != NULL
+	  && p->type()->struct_type()->total_field_count() == 0)
+	continue;
+
       os << '\t';
       this->write_field_to_c_header(os, p->field_name(), p->type());
       os << ';' << std::endl;
