@@ -1520,7 +1520,7 @@ symtab_node::set_section (symtab_node *n, void *s)
 void
 symtab_node::set_section (const char *section)
 {
-  gcc_assert (!this->alias);
+  gcc_assert (!this->alias || !this->analyzed);
   call_for_symbol_and_aliases
     (symtab_node::set_section, const_cast<char *>(section), true);
 }
