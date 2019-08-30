@@ -131,7 +131,7 @@ namespace __detail
 	    : 1u;
 	}
       else
-	return __to_chars_len(__value, 8);
+	return (__to_chars_len_2(__value) + 2) / 3;
     }
 
   // Generic implementation for arbitrary bases.
@@ -155,8 +155,12 @@ namespace __detail
 
       unsigned __pos = __len - 1;
 
-      static constexpr char __digits[]
-	= "0123456789abcdefghijklmnopqrstuvwxyz";
+      static constexpr char __digits[] = {
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+	'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+	'u', 'v', 'w', 'x', 'y', 'z'
+      };
 
       while (__val >= __base)
 	{
@@ -181,7 +185,7 @@ namespace __detail
 
       to_chars_result __res;
 
-      const unsigned __len = __to_chars_len(__val, 0x10);
+      const unsigned __len = (__to_chars_len_2(__val) + 3) / 4;
 
       if (__builtin_expect((__last - __first) < __len, 0))
 	{
@@ -190,32 +194,30 @@ namespace __detail
 	  return __res;
 	}
 
-      static constexpr char __digits[513] =
-	"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
-	"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f"
-	"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f"
-	"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f"
-	"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f"
-	"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf"
-	"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf"
-	"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff";
+      static constexpr char __digits[] = {
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	'a', 'b', 'c', 'd', 'e', 'f'
+      };
       unsigned __pos = __len - 1;
       while (__val >= 0x100)
 	{
-	  auto const __num = (__val % 0x100) * 2;
-	  __val /= 0x100;
-	  __first[__pos] = __digits[__num + 1];
+	  auto __num = __val & 0xF;
+	  __val >>= 4;
+	  __first[__pos] = __digits[__num];
+	  __num = __val & 0xF;
+	  __val >>= 4;
 	  __first[__pos - 1] = __digits[__num];
 	  __pos -= 2;
 	}
       if (__val >= 0x10)
 	{
-	  auto const __num = __val * 2;
-	  __first[__pos] = __digits[__num + 1];
-	  __first[__pos - 1] = __digits[__num];
+	  const auto __num = __val & 0xF;
+	  __val >>= 4;
+	  __first[1] = __digits[__num];
+	  __first[0] = __digits[__val];
 	}
       else
-	__first[__pos] = "0123456789abcdef"[__val];
+	__first[0] = __digits[__val];
       __res.ptr = __first + __len;
       __res.ec = {};
       return __res;
@@ -263,28 +265,26 @@ namespace __detail
 	  return __res;
 	}
 
-      static constexpr char __digits[129] =
-	"00010203040506071011121314151617"
-	"20212223242526273031323334353637"
-	"40414243444546475051525354555657"
-	"60616263646566677071727374757677";
       unsigned __pos = __len - 1;
       while (__val >= 0100)
 	{
-	  auto const __num = (__val % 0100) * 2;
-	  __val /= 0100;
-	  __first[__pos] = __digits[__num + 1];
-	  __first[__pos - 1] = __digits[__num];
+	  auto __num = __val & 7;
+	  __val >>= 3;
+	  __first[__pos] = '0' + __num;
+	  __num = __val & 7;
+	  __val >>= 3;
+	  __first[__pos - 1] = '0' + __num;
 	  __pos -= 2;
 	}
       if (__val >= 010)
 	{
-	  auto const __num = __val * 2;
-	  __first[__pos] = __digits[__num + 1];
-	  __first[__pos - 1] = __digits[__num];
+	  auto const __num = __val & 7;
+	  __val >>= 3;
+	  __first[1] = '0' + __num;
+	  __first[0] = '0' + __val;
 	}
       else
-	__first[__pos] = '0' + __val;
+	__first[0] = '0' + __val;
       __res.ptr = __first + __len;
       __res.ec = {};
       return __res;
@@ -315,7 +315,10 @@ namespace __detail
 	  __first[__pos--] = '0' + (__val & 1);
 	  __val >>= 1;
 	}
-      *__first = '0' + (__val & 1);
+      // First digit is always '1' because __to_chars_len_2 skips
+      // leading zero bits and std::to_chars handles zero values
+      // directly.
+      __first[0] = '1';
 
       __res.ptr = __first + __len;
       __res.ec = {};

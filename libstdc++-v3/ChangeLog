@@ -1,3 +1,15 @@
+2019-08-30  Antony Polukhin  <antoshkka@gmail.com>
+
+	* include/std/charconv (__detail::__to_chars_8)
+	__detail::__to_chars_16): Replace array of precomputed digits with
+	arithmetic operations to avoid CPU cache misses. Remove zero
+	termination from array of digits to allow symbol merge with generic
+	implementation of __detail::__to_chars. Replace final offsets with
+	constants. Use __detail::__to_chars_len_2 instead of a generic
+	__detail::__to_chars_len.
+	(__detail::__to_chars): Remove zero termination from array of digits.
+	(__detail::__to_chars_2): Leading digit is always '1'.
+
 2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/23_containers/vector/cons/89164_c++17.cc: Fix errors.
