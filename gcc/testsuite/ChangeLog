@@ -1,3 +1,9 @@
+	Backport from trunk
+	2019-08-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/91481
+	* gcc.target/powerpc/darn-3.c: New testcase.
+
 2019-08-30  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
