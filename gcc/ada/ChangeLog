@@ -1,5 +1,11 @@
 2019-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (lvalue_required_p) <N_Slice>: Adjust GNU_TYPE
+	in the recursive call.
+	<N_Selected_Component>: Likewise.
+
+2019-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (build_template): Deal with parameters
 	passed by pointer to component of multi-dimensional arrays.
 
