@@ -630,7 +630,7 @@ unroll_loop_constant_iterations (struct loop *loop)
   if (loop->any_likely_upper_bound)
     loop->nb_iterations_likely_upper_bound
       = wi::udiv_trunc (loop->nb_iterations_likely_upper_bound, max_unroll + 1);
-  desc->niter_expr = GEN_INT (desc->niter);
+  desc->niter_expr = gen_int_mode (desc->niter, desc->mode);
 
   /* Remove the edges.  */
   FOR_EACH_VEC_ELT (remove_edges, i, e)
@@ -996,7 +996,8 @@ unroll_loop_runtime_iterations (struct loop *loop)
       preheader->frequency += iter_freq;
       preheader->count += iter_count;
       single_succ_edge (preheader)->count = preheader->count;
-      branch_code = compare_and_jump_seq (copy_rtx (niter), GEN_INT (j), EQ,
+      branch_code = compare_and_jump_seq (copy_rtx (niter),
+					  gen_int_mode (j, desc->mode), EQ,
 					  block_label (preheader), p,
 					  NULL);
 
