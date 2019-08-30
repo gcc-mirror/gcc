@@ -119,6 +119,13 @@ struct copy_body_data
   /* > 0 if we are remapping a type currently.  */
   int remapping_type_depth;
 
+  /* Usually copy_decl callback always creates new decls, in that case
+     we want to remap all variably_modified_type_p types.  If this flag
+     is set, remap_type will do further checks to see if remap_decl
+     of any decls mentioned in the type will remap to anything but itself
+     and only in that case will actually remap the type.  */
+  bool dont_remap_vla_if_no_change;
+
   /* A function to be called when duplicating BLOCK nodes.  */
   void (*transform_lang_insert_block) (tree);
 
