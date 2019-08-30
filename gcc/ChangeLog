@@ -1,6 +1,12 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90811
+	* config/nvptx/nvptx.c (nvptx_output_softstack_switch): Use and.b%d
+	instead of and.u%d.
+
 	2019-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/90329
