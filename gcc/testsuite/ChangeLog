@@ -1,3 +1,8 @@
+2019-08-30  Martin Jambor  <mjambor@suse.cz>
+
+	tree-optimization/91579
+	* gcc.dg/tree-ssa/pr91579.c: New test.
+
 2019-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/91560

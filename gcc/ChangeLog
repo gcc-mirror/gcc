@@ -1,3 +1,14 @@
+2019-08-30  Martin Jambor  <mjambor@suse.cz>
+
+	tree-optimization/91579
+	* tree-tailcall.c (tailr_arg_needs_copy): New variable.
+	(find_tail_calls): Allocate tailr_arg_needs_copy and set its bits as
+	appropriate.
+	(arg_needs_copy_p): Removed.
+	(eliminate_tail_call): Test tailr_arg_needs_copy instead of calling
+	arg_needs_copy_p.
+	(tree_optimize_tail_calls_1): Likewise.  Free tailr_arg_needs_copy.
+
 2019-08-29  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-features.c
