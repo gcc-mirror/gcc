@@ -10010,6 +10010,11 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
       first = false;
     }
 
+  hash_set<tree> *ids = NULL;
+#if GCC_VERSION >= 7000
+  char ids_buf[sizeof (hash_set<tree>) + __alignof__ (hash_set<tree>) - 1];
+#endif
+  tree first_capture_id = NULL_TREE;
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_SQUARE))
     {
       cp_token* capture_token;
@@ -10044,11 +10049,14 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	    pedwarn (loc, 0, "explicit by-copy capture of %<this%> redundant "
 		     "with by-copy capture default");
 	  cp_lexer_consume_token (parser->lexer);
-	  add_capture (lambda_expr,
-		       /*id=*/this_identifier,
-		       /*initializer=*/finish_this_expr (),
-		       /*by_reference_p=*/true,
-		       explicit_init_p);
+	  if (LAMBDA_EXPR_THIS_CAPTURE (lambda_expr))
+	    pedwarn (input_location, 0,
+		     "already captured %qD in lambda expression",
+		     this_identifier);
+	  else
+	    add_capture (lambda_expr, /*id=*/this_identifier,
+			 /*initializer=*/finish_this_expr (),
+			 /*by_reference_p=*/true, explicit_init_p);
 	  continue;
 	}
 
@@ -10062,11 +10070,14 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 			     "-std=c++1z or -std=gnu++1z");
 	  cp_lexer_consume_token (parser->lexer);
 	  cp_lexer_consume_token (parser->lexer);
-	  add_capture (lambda_expr,
-		       /*id=*/this_identifier,
-		       /*initializer=*/finish_this_expr (),
-		       /*by_reference_p=*/false,
-		       explicit_init_p);
+	  if (LAMBDA_EXPR_THIS_CAPTURE (lambda_expr))
+	    pedwarn (input_location, 0,
+		     "already captured %qD in lambda expression",
+		     this_identifier);
+	  else
+	    add_capture (lambda_expr, /*id=*/this_identifier,
+			 /*initializer=*/finish_this_expr (),
+			 /*by_reference_p=*/false, explicit_init_p);
 	  continue;
 	}
 
@@ -10190,12 +10201,43 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 		     "default", capture_id);
 	}
 
-      add_capture (lambda_expr,
-		   capture_id,
-		   capture_init_expr,
-		   /*by_reference_p=*/capture_kind == BY_REFERENCE,
-		   explicit_init_p);
+      /* Check for duplicates.
+	 Optimize for the zero or one explicit captures cases and only create
+	 the hash_set after adding second capture.  */
+      bool found = false;
+      if (ids && ids->elements ())
+	found = ids->add (capture_id);
+      else if (first_capture_id == NULL_TREE)
+	first_capture_id = capture_id;
+      else if (capture_id == first_capture_id)
+	found = true;
+      else
+	{
+#if GCC_VERSION >= 7000
+	  ids = new (ids_buf
+		     + (-(uintptr_t) ids_buf
+			& (__alignof__ (hash_set <tree>) - 1))) hash_set <tree>;
+#else
+	  ids = new hash_set <tree>;
+#endif
+	  ids->add (first_capture_id);
+	  ids->add (capture_id);
+	}
+      if (found)
+	pedwarn (input_location, 0,
+		 "already captured %qD in lambda expression", capture_id);
+      else
+	add_capture (lambda_expr, capture_id, capture_init_expr,
+		     /*by_reference_p=*/capture_kind == BY_REFERENCE,
+		     explicit_init_p);
     }
+
+  if (ids)
+#if GCC_VERSION >= 7000
+    ids->~hash_set <tree> ();
+#else
+    delete ids;
+#endif
 
   cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
 }
