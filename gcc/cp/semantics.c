@@ -2067,6 +2067,14 @@ finish_qualified_id_expr (tree qualifying_class,
     }
   else if (BASELINK_P (expr))
     ;
+  else if (!template_p
+	   && TREE_CODE (expr) == TEMPLATE_DECL
+	   && !DECL_FUNCTION_TEMPLATE_P (expr))
+    {
+      if (complain & tf_error)
+	error ("%qE missing template arguments", expr);
+      return error_mark_node;
+    }
   else
     {
       /* In a template, return a SCOPE_REF for most qualified-ids
