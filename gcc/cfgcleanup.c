@@ -1620,10 +1620,13 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
   if (crtl->shrink_wrapped
       && single_succ_p (bb1)
       && single_succ (bb1) == EXIT_BLOCK_PTR_FOR_FN (cfun)
-      && !JUMP_P (BB_END (bb1))
+      && (!JUMP_P (BB_END (bb1))
+	  /* Punt if the only successor is a fake edge to exit, the jump
+	     must be some weird one.  */
+	  || (single_succ_edge (bb1)->flags & EDGE_FAKE) != 0)
       && !(CALL_P (BB_END (bb1)) && SIBLING_CALL_P (BB_END (bb1))))
     return false;
-  
+
   /* If BB1 has only one successor, we may be looking at either an
      unconditional jump, or a fake edge to exit.  */
   if (single_succ_p (bb1)
