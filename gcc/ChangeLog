@@ -1,6 +1,13 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/88870
+	* dce.c (deletable_insn_p): Never delete const/pure calls that can
+	throw if we can't alter the cfg or delete dead exceptions.
+	(mark_insn): Don't call find_call_stack_args for such calls.
+
 	2019-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/88568
