@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-alias "" } */
 /* { dg-options "-O2 -fcf-protection" } */
 /* { dg-final { scan-assembler-times {\mendbr} 2 } } */
 
