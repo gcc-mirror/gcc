@@ -3953,27 +3953,30 @@ build_template (tree template_type, tree array_type, tree expr)
 	  && TYPE_HAS_ACTUAL_BOUNDS_P (array_type)))
     bound_list = TYPE_ACTUAL_BOUNDS (array_type);
 
-  /* First make the list for a CONSTRUCTOR for the template.  Go down the
-     field list of the template instead of the type chain because this
-     array might be an Ada array of arrays and we can't tell where the
-     nested arrays stop being the underlying object.  */
-
-  for (field = TYPE_FIELDS (template_type); field;
-       (bound_list
-	? (bound_list = TREE_CHAIN (bound_list))
-	: (array_type = TREE_TYPE (array_type))),
+  /* First make the list for a CONSTRUCTOR for the template.  Go down
+     the field list of the template instead of the type chain because
+     this array might be an Ada array of array and we can't tell where
+     the nested array stop being the underlying object.  */
+  for (field = TYPE_FIELDS (template_type);
+       field;
        field = DECL_CHAIN (DECL_CHAIN (field)))
     {
       tree bounds, min, max;
 
       /* If we have a bound list, get the bounds from there.  Likewise
 	 for an ARRAY_TYPE.  Otherwise, if expr is a PARM_DECL with
-	 DECL_BY_COMPONENT_PTR_P, use the bounds of the field in the template.
-	 This will give us a maximum range.  */
+	 DECL_BY_COMPONENT_PTR_P, use the bounds of the field in the
+	 template, but this will only give us a maximum range.  */
       if (bound_list)
-	bounds = TREE_VALUE (bound_list);
+	{
+	  bounds = TREE_VALUE (bound_list);
+	  bound_list = TREE_CHAIN (bound_list);
+	}
       else if (TREE_CODE (array_type) == ARRAY_TYPE)
-	bounds = TYPE_INDEX_TYPE (TYPE_DOMAIN (array_type));
+	{
+	  bounds = TYPE_INDEX_TYPE (TYPE_DOMAIN (array_type));
+	  array_type = TREE_TYPE (array_type);
+	}
       else if (expr && TREE_CODE (expr) == PARM_DECL
 	       && DECL_BY_COMPONENT_PTR_P (expr))
 	bounds = TREE_TYPE (field);
