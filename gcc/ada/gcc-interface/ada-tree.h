@@ -482,6 +482,9 @@ do {						   \
    value of a function call or 'reference to a function call.  */
 #define DECL_RETURN_VALUE_P(NODE) DECL_LANG_FLAG_5 (VAR_DECL_CHECK (NODE))
 
+/* Nonzero in a PARM_DECL if its mechanism was forced to by-reference.  */
+#define DECL_FORCED_BY_REF_P(NODE) DECL_LANG_FLAG_5 (PARM_DECL_CHECK (NODE))
+
 /* In a FIELD_DECL corresponding to a discriminant, contains the
    discriminant number.  */
 #define DECL_DISCRIMINANT_NUMBER(NODE) DECL_INITIAL (FIELD_DECL_CHECK (NODE))

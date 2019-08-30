@@ -5208,6 +5208,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
   bool ro_param = in_param && !Address_Taken (gnat_param);
   bool by_return = false, by_component_ptr = false;
   bool by_ref = false;
+  bool forced_by_ref = false;
   bool restricted_aliasing_p = false;
   location_t saved_location = input_location;
   tree gnu_param;
@@ -5235,7 +5236,11 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
   /* Or else, see if a Mechanism was supplied that forced this parameter
      to be passed one way or another.  */
   else if (mech == Default || mech == By_Copy || mech == By_Reference)
-    ;
+    forced_by_ref
+      = (mech == By_Reference
+	 && !foreign
+	 && !TYPE_IS_BY_REFERENCE_P (gnu_param_type)
+	 && !Is_Aliased (gnat_param));
 
   /* Positive mechanism means by copy for sufficiently small parameters.  */
   else if (mech > 0)
@@ -5368,6 +5373,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
   gnu_param = create_param_decl (gnu_param_name, gnu_param_type);
   TREE_READONLY (gnu_param) = ro_param || by_ref || by_component_ptr;
   DECL_BY_REF_P (gnu_param) = by_ref;
+  DECL_FORCED_BY_REF_P (gnu_param) = forced_by_ref;
   DECL_BY_COMPONENT_PTR_P (gnu_param) = by_component_ptr;
   DECL_POINTS_TO_READONLY_P (gnu_param)
     = (ro_param && (by_ref || by_component_ptr));

@@ -5257,30 +5257,20 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 
 	  /* Do not issue warnings for CONSTRUCTORs since this is not a copy
 	     but sort of an instantiation for them.  */
-	  if (TREE_CODE (gnu_name) == CONSTRUCTOR)
+	  if (TREE_CODE (remove_conversions (gnu_name, true)) == CONSTRUCTOR)
 	    ;
 
-	  /* If the type is passed by reference, a copy is not allowed.  */
-	  else if (TYPE_IS_BY_REFERENCE_P (gnu_formal_type))
+	  /* If the formal is passed by reference, a copy is not allowed.  */
+	  else if (TYPE_IS_BY_REFERENCE_P (gnu_formal_type)
+		   || Is_Aliased (gnat_formal))
 	    post_error ("misaligned actual cannot be passed by reference",
 		        gnat_actual);
 
-	  /* For users of Starlet we issue a warning because the interface
-	     apparently assumes that by-ref parameters outlive the procedure
-	     invocation.  The code still will not work as intended, but we
-	     cannot do much better since low-level parts of the back-end
-	     would allocate temporaries at will because of the misalignment
-	     if we did not do so here.  */
-	  else if (Is_Valued_Procedure (Entity (Name (gnat_node))))
-	    {
-	      post_error
-		("?possible violation of implicit assumption", gnat_actual);
-	      post_error_ne
-		("?made by pragma Import_Valued_Procedure on &", gnat_actual,
-		 Entity (Name (gnat_node)));
-	      post_error_ne ("?because of misalignment of &", gnat_actual,
-			     gnat_formal);
-	    }
+	  /* If the mechanism was forced to by-ref, a copy is not allowed but
+	     we issue only a warning because this case is not strict Ada.  */
+	  else if (DECL_FORCED_BY_REF_P (gnu_formal))
+	    post_error ("misaligned actual cannot be passed by reference??",
+			gnat_actual);
 
 	  /* If the actual type of the object is already the nominal type,
 	     we have nothing to do, except if the size is self-referential
@@ -10394,6 +10384,7 @@ addressable_p (tree gnu_expr, tree gnu_type)
 
     case STRING_CST:
     case INTEGER_CST:
+    case REAL_CST:
       /* Taking the address yields a pointer to the constant pool.  */
       return true;
 
@@ -10403,6 +10394,7 @@ addressable_p (tree gnu_expr, tree gnu_type)
       return TREE_STATIC (gnu_expr) ? true : false;
 
     case NULL_EXPR:
+    case ADDR_EXPR:
     case SAVE_EXPR:
     case CALL_EXPR:
     case PLUS_EXPR:

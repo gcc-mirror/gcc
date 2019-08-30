@@ -1,5 +1,16 @@
 2019-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/ada-tree.h (DECL_FORCED_BY_REF_P): New macro.
+	* gcc-interface/decl.c (gnat_to_gnu_param): Set it on parameters
+	whose mechanism was forced to by-reference.
+	* gcc-interface/trans.c (Call_to_gnu): Do not issue a warning about a
+	misaligned actual parameter if it is based on a CONSTRUCTOR.  Remove
+ 	obsolete warning for users of Starlet.  Issue a warning if a temporary
+	is make around the call for a parameter with DECL_FORCED_BY_REF_P set.
+	(addressable_p): Return true for REAL_CST and ADDR_EXPR.
+
+2019-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu): Do not set the location on an
 	expression used for a tag.
 
