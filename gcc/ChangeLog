@@ -1,3 +1,13 @@
+2019-08-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* config/arm/arm.md (unaligned_loaddi,
+	unaligned_storedi): New unspec insn patterns.
+	* config/arm/neon.md (unaligned_storev8qi): Likewise.
+	* config/arm/arm.c (gen_cpymem_ldrd_strd): Use unaligned_loaddi
+	and unaligned_storedi for 4-byte aligned memory.
+	(arm_block_set_aligned_vect): Use unaligned_storev8qi for
+	4-byte aligned memory.
+
 2019-08-30  Martin Jambor  <mjambor@suse.cz>
 
 	tree-optimization/91579

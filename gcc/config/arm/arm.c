@@ -14578,8 +14578,10 @@ gen_cpymem_ldrd_strd (rtx *operands)
 	  low_reg = gen_lowpart (SImode, reg0);
 	  hi_reg = gen_highpart_mode (SImode, DImode, reg0);
 	}
-      if (src_aligned)
-        emit_move_insn (reg0, src);
+      if (MEM_ALIGN (src) >= 2 * BITS_PER_WORD)
+	emit_move_insn (reg0, src);
+      else if (src_aligned)
+	emit_insn (gen_unaligned_loaddi (reg0, src));
       else
 	{
 	  emit_insn (gen_unaligned_loadsi (low_reg, src));
@@ -14587,8 +14589,10 @@ gen_cpymem_ldrd_strd (rtx *operands)
 	  emit_insn (gen_unaligned_loadsi (hi_reg, src));
 	}
 
-      if (dst_aligned)
-        emit_move_insn (dst, reg0);
+      if (MEM_ALIGN (dst) >= 2 * BITS_PER_WORD)
+	emit_move_insn (dst, reg0);
+      else if (dst_aligned)
+	emit_insn (gen_unaligned_storedi (dst, reg0));
       else
 	{
 	  emit_insn (gen_unaligned_storesi (dst, low_reg));
@@ -30197,7 +30201,10 @@ arm_block_set_aligned_vect (rtx dstbase,
     {
       addr = plus_constant (Pmode, dst, i);
       mem = adjust_automodify_address (dstbase, mode, addr, offset + i);
-      emit_move_insn (mem, reg);
+      if (MEM_ALIGN (mem) >= 2 * BITS_PER_WORD)
+	emit_move_insn (mem, reg);
+      else
+	emit_insn (gen_unaligned_storev8qi (mem, reg));
     }
 
   /* Handle single word leftover by shifting 4 bytes back.  We can
@@ -30211,7 +30218,7 @@ arm_block_set_aligned_vect (rtx dstbase,
       if (align > UNITS_PER_WORD)
 	set_mem_align (mem, BITS_PER_UNIT * UNITS_PER_WORD);
 
-      emit_move_insn (mem, reg);
+      emit_insn (gen_unaligned_storev8qi (mem, reg));
     }
   /* Handle (0, 4), (4, 8) bytes leftover by shifting bytes back.
      We have to use unaligned access for this case.  */
