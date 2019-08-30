@@ -3520,13 +3520,14 @@ a conversion function will never be called.
 @item -Wvolatile @r{(C++ and Objective-C++ only)}
 @opindex Wvolatile
 @opindex Wno-volatile
-Warn about deprecated uses of the volatile qualifier.  This includes postfix
-and prefix @code{++} and @code{--} expressions of volatile-qualified types,
-using simple assignments where the left operand is a volatile-qualified
-non-class type for their value, compound assignments where the left operand
-is a volatile-qualified non-class type, volatile-qualified function return
-type, volatile-qualified parameter type, and structured bindings of a
-volatile-qualified type.  This usage was deprecated in C++20.
+Warn about deprecated uses of the @code{volatile} qualifier.  This includes
+postfix and prefix @code{++} and @code{--} expressions of
+@code{volatile}-qualified types, using simple assignments where the left
+operand is a @code{volatile}-qualified non-class type for their value,
+compound assignments where the left operand is a @code{volatile}-qualified
+non-class type, @code{volatile}-qualified function return type,
+@code{volatile}-qualified parameter type, and structured bindings of a
+@code{volatile}-qualified type.  This usage was deprecated in C++20.
 
 Enabled by default with @option{-std=c++2a}.
 @end table
