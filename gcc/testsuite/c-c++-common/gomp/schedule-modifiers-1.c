@@ -80,21 +80,21 @@ bar (void)
   #pragma omp for schedule (nonmonotonic : auto)	/* { dg-error ".nonmonotonic. modifier specified for .auto. schedule kind" } */
   for (i = 0; i < 64; i++)
     ;
-  #pragma omp for schedule (nonmonotonic, dynamic) ordered	/* { dg-error ".nonmonotonic. schedule modifier specified together with .ordered. clause" } */
+  #pragma omp for schedule (nonmonotonic : dynamic) ordered	/* { dg-error ".nonmonotonic. schedule modifier specified together with .ordered. clause" } */
   for (i = 0; i < 64; i++)
     #pragma omp ordered
       ;
-  #pragma omp for ordered schedule(nonmonotonic, dynamic, 5)	/* { dg-error ".nonmonotonic. schedule modifier specified together with .ordered. clause" } */
+  #pragma omp for ordered schedule(nonmonotonic : dynamic, 5)	/* { dg-error ".nonmonotonic. schedule modifier specified together with .ordered. clause" } */
   for (i = 0; i < 64; i++)
     #pragma omp ordered
       ;
-  #pragma omp for schedule (nonmonotonic, guided) ordered(1)	/* { dg-error ".nonmonotonic. schedule modifier specified together with .ordered. clause" } */
+  #pragma omp for schedule (nonmonotonic : guided) ordered(1)	/* { dg-error ".nonmonotonic. schedule modifier specified together with .ordered. clause" } */
   for (i = 0; i < 64; i++)
     {
       #pragma omp ordered depend(sink: i - 1)
       #pragma omp ordered depend(source)
     }
-  #pragma omp for ordered(1) schedule(nonmonotonic, guided, 2)	/* { dg-error ".nonmonotonic. schedule modifier specified together with .ordered. clause" } */
+  #pragma omp for ordered(1) schedule(nonmonotonic : guided, 2)	/* { dg-error ".nonmonotonic. schedule modifier specified together with .ordered. clause" } */
   for (i = 0; i < 64; i++)
     {
       #pragma omp ordered depend(source)
