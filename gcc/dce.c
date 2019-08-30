@@ -574,7 +574,12 @@ delete_unmarked_insns (void)
 	  rtx turn_into_use = NULL_RTX;
 
 	  /* Always delete no-op moves.  */
-	  if (noop_move_p (insn))
+	  if (noop_move_p (insn)
+	      /* Unless the no-op move can throw and we are not allowed
+		 to alter cfg.  */
+	      && (!cfun->can_throw_non_call_exceptions
+		  || (cfun->can_delete_dead_exceptions && can_alter_cfg)
+		  || insn_nothrow_p (insn)))
 	    {
 	      if (RTX_FRAME_RELATED_P (insn))
 		turn_into_use
@@ -617,12 +622,6 @@ delete_unmarked_insns (void)
 	     for the destination regs in order to avoid dangling notes.  */
 	  remove_reg_equal_equiv_notes_for_defs (insn);
 
-	  /* If a pure or const call is deleted, this may make the cfg
-	     have unreachable blocks.  We rememeber this and call
-	     delete_unreachable_blocks at the end.  */
-	  if (CALL_P (insn))
-	    must_clean = true;
-
 	  if (turn_into_use)
 	    {
 	      /* Don't remove frame related noop moves if they cary
@@ -635,7 +634,7 @@ delete_unmarked_insns (void)
 	    }
 	  else
 	    /* Now delete the insn.  */
-	    delete_insn_and_edges (insn);
+	    must_clean |= delete_insn_and_edges (insn);
 	}
 
   /* Deleted a pure or const call.  */
