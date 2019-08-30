@@ -1,6 +1,16 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88861
+	* g++.dg/opt/pr89188.C: Include ../torture/pr88861.C.
+
+	2019-01-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR target/88861
+	* g++.dg/torture/pr88861.C: New test.
+
 	2019-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/89234
