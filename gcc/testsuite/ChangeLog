@@ -1,6 +1,13 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	Backported from mainline
+	2018-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/87895
+	* gcc.dg/gomp/pr87895-1.c: New test.
+	* gcc.dg/gomp/pr87895-2.c: New test.
+	* gcc.dg/gomp/pr87895-3.c: New test.
+
 	2018-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60994
