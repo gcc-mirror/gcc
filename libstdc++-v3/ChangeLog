@@ -1,6 +1,14 @@
 2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-08-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ostream (basic_ostream::sentry::~sentry): Suppress
+	deprecation warnings for using uncaught_exception().
+
+2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2019-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91308
