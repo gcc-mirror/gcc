@@ -1728,6 +1728,8 @@ copy_reg_eh_region_note_forward (rtx note_or_insn, rtx_insn *first, rtx last)
       if (note == NULL)
 	return;
     }
+  else if (is_a <rtx_insn *> (note_or_insn))
+    return;
   note = XEXP (note, 0);
 
   for (insn = first; insn != last ; insn = NEXT_INSN (insn))
@@ -1750,6 +1752,8 @@ copy_reg_eh_region_note_backward (rtx note_or_insn, rtx_insn *last, rtx first)
       if (note == NULL)
 	return;
     }
+  else if (is_a <rtx_insn *> (note_or_insn))
+    return;
   note = XEXP (note, 0);
 
   for (insn = last; insn != first; insn = PREV_INSN (insn))

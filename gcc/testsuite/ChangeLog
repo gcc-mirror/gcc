@@ -1,6 +1,11 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/89234
+	* g++.dg/ubsan/pr89234.C: New test.
+
 	2019-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89187
