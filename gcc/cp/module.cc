@@ -4767,7 +4767,8 @@ trees_out::start (tree t)
       break;
 
     case OMP_CLAUSE:
-      gcc_unreachable (); // FIXME:
+      u (OMP_CLAUSE_CODE (t));
+      break;
     }
 }
 
@@ -4835,7 +4836,11 @@ trees_in::start (unsigned code)
       break;
 
     case OMP_CLAUSE:
-      gcc_unreachable (); // FIXME:
+      {
+	unsigned omp_code = u ();
+	t = build_omp_clause (UNKNOWN_LOCATION, omp_clause_code (omp_code));
+      }
+      break;
     }
 
   return t;
@@ -5869,7 +5874,18 @@ trees_out::core_vals (tree t)
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_OMP_CLAUSE))
-    gcc_unreachable (); // FIXME
+    {
+      /* The ompcode is serialized in start.  */
+      if (streaming_p ())
+	{
+	  WU (t->omp_clause.subcode.dimension);
+	  state->write_location (*this, t->omp_clause.locus);
+	}
+
+      unsigned len = omp_clause_num_ops[OMP_CLAUSE_CODE (t)];
+      for (unsigned ix = 0; ix != len; ix++)
+	WT (t->omp_clause.ops[ix]);
+    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
     gcc_unreachable (); // FIXME
@@ -6336,7 +6352,14 @@ trees_in::core_vals (tree t)
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_OMP_CLAUSE))
-    gcc_unreachable (); // FIXME
+    {
+      RU (t->omp_clause.subcode.dimension);
+      t->omp_clause.locus = state->read_location (*this);
+
+      unsigned len = omp_clause_num_ops[OMP_CLAUSE_CODE (t)];
+      for (unsigned ix = 0; ix != len; ix++)
+	RT (t->omp_clause.ops[ix]);
+    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
     gcc_unreachable (); // FIXME

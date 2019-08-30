@@ -1,6 +1,12 @@
 2019-08-30  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::start): Deal with OMP_CLAUSE.
+	(trees_{in,out}::core_vals): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/omp-1_[ab].C: New.
+
+	gcc/cp/
 	* module.cc (friend_from_decl_list): Reimplement.
 	(trees_out::tree_decl): When streaming a local template friend
 	reference, make sure we find one.
