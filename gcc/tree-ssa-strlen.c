@@ -4036,7 +4036,12 @@ handle_store (gimple_stmt_iterator *gsi)
 	  if (tree dstsize = compute_objsize (lhs, 1, &decl))
 	    if (compare_tree_int (dstsize, lenrange[2]) < 0)
 	      {
+		/* Fall back on the LHS location if the statement
+		   doesn't have one.  */
 		location_t loc = gimple_nonartificial_location (stmt);
+		if (loc == UNKNOWN_LOCATION)
+		  loc = tree_nonartificial_location (lhs);
+		loc = expansion_point_location_if_in_system_header (loc);
 		if (warning_n (loc, OPT_Wstringop_overflow_,
 			       lenrange[2],
 			       "%Gwriting %u byte into a region of size %E",

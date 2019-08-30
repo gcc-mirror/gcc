@@ -1,5 +1,10 @@
 2019-08-30  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/91599
+	* tree-ssa-strlen.c (handle_store): Use a fallback location if
+	the statement doesn't have one.
+	* gimple-pretty-print.c (percent_G_format): Same.
+
 	PR middle-end/91584
 	* tree-vrp.c (vrp_prop::check_mem_ref): Normalize type domain bounds
 	before using them to validate MEM_REF offset.
