@@ -2881,6 +2881,11 @@ decode_addr_const (tree exp, struct addr_const *value)
       x = output_constant_def (target, 1);
       break;
 
+    case COMPOUND_LITERAL_EXPR:
+      gcc_assert (COMPOUND_LITERAL_EXPR_DECL (target));
+      x = DECL_RTL (COMPOUND_LITERAL_EXPR_DECL (target));
+      break;
+
     default:
       gcc_unreachable ();
     }
