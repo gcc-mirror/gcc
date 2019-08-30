@@ -1,3 +1,7 @@
+2019-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pack24.adb: New test.
+
 2019-08-30  Jeff Law  <law@redhat.com>
 
 	* gcc.target/mips/r10k-cache-barrier-9.c: Suppress warnings.
