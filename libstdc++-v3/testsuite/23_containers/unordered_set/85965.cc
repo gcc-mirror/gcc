@@ -27,3 +27,12 @@ struct Foo
   // PR libstdc++/85965
   std::unordered_set<Derived*, std::equal_to<Base*>, std::hash<Base*>> u;
 };
+
+std::size_t
+test01(std::unordered_set<Derived*, std::equal_to<Base*>, std::hash<Base*>> s)
+{
+  // these operations should not require the comparison object
+  auto copy = s;
+  copy = s;
+  return s.size();
+}
