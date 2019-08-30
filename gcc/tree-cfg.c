@@ -2170,7 +2170,7 @@ remove_bb (basic_block bb)
 		}
 
 	      new_bb = bb->prev_bb;
-	      new_gsi = gsi_start_bb (new_bb);
+	      new_gsi = gsi_after_labels (new_bb);
 	      gsi_remove (&i, false);
 	      gsi_insert_before (&new_gsi, stmt, GSI_NEW_STMT);
 	    }
