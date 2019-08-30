@@ -3,6 +3,9 @@
 	Backported from mainline
 	2018-12-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/88377
+	* gfortran.dg/gomp/pr88377.f90: New test.
+
 	PR c++/87506
 	* g++.dg/cpp0x/constexpr-87506.C: New test.
 
