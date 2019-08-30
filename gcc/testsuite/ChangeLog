@@ -1,6 +1,11 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/90139
+	* gcc.c-torture/compile/pr90139.c: New test.
+
 	2019-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/90187
