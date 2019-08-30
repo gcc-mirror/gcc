@@ -1,6 +1,13 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/89342
+	* optc-save-gen.awk: Handle optimize_fast like optimize_size or
+	optimize_debug.
+	* opth-gen.awk: Likewise.
+
 	2019-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/89354
