@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
+#include "tree-eh.h"
 
 
 /* A Reduced Dependence Graph (RDG) vertex representing a statement.  */
@@ -815,6 +816,7 @@ generate_memset_builtin (struct loop *loop, partition *partition)
 
   nb_bytes = build_size_arg_loc (loc, partition->main_dr, partition->niter,
 				 partition->plus_one);
+  nb_bytes = rewrite_to_non_trapping_overflow (nb_bytes);
   nb_bytes = force_gimple_operand_gsi (&gsi, nb_bytes, true, NULL_TREE,
 				       false, GSI_CONTINUE_LINKING);
   mem = build_addr_arg_loc (loc, partition->main_dr, nb_bytes);
@@ -871,6 +873,7 @@ generate_memcpy_builtin (struct loop *loop, partition *partition)
 
   nb_bytes = build_size_arg_loc (loc, partition->main_dr, partition->niter,
 				 partition->plus_one);
+  nb_bytes = rewrite_to_non_trapping_overflow (nb_bytes);
   nb_bytes = force_gimple_operand_gsi (&gsi, nb_bytes, true, NULL_TREE,
 				       false, GSI_CONTINUE_LINKING);
   dest = build_addr_arg_loc (loc, partition->main_dr, nb_bytes);
