@@ -3,6 +3,9 @@
 	Backported from mainline
 	2019-02-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/89187
+	* g++.dg/opt/pr89187.C: New test.
+
 	PR rtl-optimization/11304
 	* gcc.target/i386/call-1.c (set_eax): Add "eax" clobber.
 	* gcc.target/i386/call-2.c: New test.
