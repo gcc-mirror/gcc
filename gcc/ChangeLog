@@ -1,6 +1,12 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90090
+	* tree-ssa-math-opts.c (is_division_by): Ignore divisions that can
+	throw internally.
+
 	2019-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/89998

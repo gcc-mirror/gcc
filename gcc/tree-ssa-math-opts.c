@@ -337,7 +337,8 @@ is_division_by (gimple *use_stmt, tree def)
 	 /* Do not recognize x / x as valid division, as we are getting
 	    confused later by replacing all immediate uses x in such
 	    a stmt.  */
-	 && gimple_assign_rhs1 (use_stmt) != def;
+	 && gimple_assign_rhs1 (use_stmt) != def
+	 && !stmt_can_throw_internal (use_stmt);
 }
 
 /* Walk the subset of the dominator tree rooted at OCC, setting the
