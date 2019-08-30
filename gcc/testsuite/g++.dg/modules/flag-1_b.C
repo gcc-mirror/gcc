@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts -std=c++2a" }
 
-// { dg-error "compilation options differ" "" { target *-*-* } 0 }
+// { dg-error "language dialect differs" "" { target *-*-* } 0 }
 
 import opt;
 

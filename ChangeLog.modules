@@ -1,6 +1,16 @@
 2019-08-30  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (enum streamed_extensions): New.
+	(module_state::extensions): New.
+	(module_state::write_readme): Adjust.
+	(trees_{in,out}::start): Note or check openmp extension.
+	(module_state::{read,write}_config): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/omp-1_c.C: New.
+	* g++.dg/modules/omp-2_[ab].C: New.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::start): Deal with OMP_CLAUSE.
 	(trees_{in,out}::core_vals): Likewise.
 	gcc/testsuite/

@@ -3281,6 +3281,13 @@ struct location_map_info {
   unsigned max_range;
 };
 
+/* Flage for extensions that end up being streamed.  */
+
+enum streamed_extensions {
+  SE_OPENMP = 1 << 0,
+  SE_BITS = 1
+};
+
 /********************************************************************/
 /* State of a particular module. */
 
@@ -3329,6 +3336,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool partition_p : 1; /* A partition.  */
   bool from_partition_p : 1; /* Direct import of a partition.  */
   bool cmi_noted_p : 1;
+
+  /* Record extensions emitted or permitted.  */
+  unsigned char extensions : SE_BITS;
 
  public:
   module_state (tree name, module_state *, bool);
@@ -3415,7 +3425,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   /* The README, for human consumption.  */
-  void write_readme (elf_out *to, const char *opts);
+  void write_readme (elf_out *to, const char *dialect, unsigned extensions);
   void write_env (elf_out *to);
 
  private:
@@ -3540,6 +3550,7 @@ module_state::module_state (tree name, module_state *parent, bool partition)
 {
   header_p = direct_p = primary_p = interface_p = exported_p
     = imported_p = from_partition_p = cmi_noted_p = false;
+  extensions = 0;
   if (name && TREE_CODE (name) == STRING_CST)
     {
       header_p = true;
@@ -4767,6 +4778,7 @@ trees_out::start (tree t)
       break;
 
     case OMP_CLAUSE:
+      state->extensions |= SE_OPENMP;
       u (OMP_CLAUSE_CODE (t));
       break;
     }
@@ -4837,6 +4849,9 @@ trees_in::start (unsigned code)
 
     case OMP_CLAUSE:
       {
+	if (!(state->extensions & SE_OPENMP))
+	  goto fail;
+
 	unsigned omp_code = u ();
 	t = build_omp_clause (UNKNOWN_LOCATION, omp_clause_code (omp_code));
       }
@@ -12705,7 +12720,8 @@ module_state::announce (const char *what) const
      readelf -pgnu.c++.README $(module).gcm */
 
 void
-module_state::write_readme (elf_out *to, const char *options)
+module_state::write_readme (elf_out *to, const char *dialect,
+			    unsigned extensions)
 {
   bytes_out readme (to);
 
@@ -12728,7 +12744,10 @@ module_state::write_readme (elf_out *to, const char *options)
   /* Module information.  */
   readme.printf ("module: %s", get_flatname ());
   readme.printf ("source: %s", main_input_filename);
-  readme.printf ("dialect: %s", options);
+  readme.printf ("dialect: %s", dialect);
+  if (extensions)
+    readme.printf ("extensions: %s",
+		   extensions & SE_OPENMP ? "-fopenmp" : "");
 
   /* The following fields could be expected to change between
      otherwise identical compilations.  Consider a distributed build
@@ -15781,7 +15800,7 @@ space_cmp (const void *a_, const void *b_)
 
 /* Data for config reading and writing.  */
 struct module_state_config {
-  const char *opt_str;
+  const char *dialect_str;
   range_t sec_range;
   unsigned num_unnamed;
   unsigned num_imports;
@@ -15792,38 +15811,40 @@ struct module_state_config {
 
 public:
   module_state_config ()
-    :opt_str (get_opts ()), sec_range (0,0), num_unnamed (0),
+    :dialect_str (get_dialect ()),
+     sec_range (0,0), num_unnamed (0),
      num_imports (0), num_partitions (0),
      num_bindings (0), num_macros (0), num_inits (0)
   {
   }
+
   static void release ()
   {
-    XDELETEVEC (opts);
-    opts = NULL;
+    XDELETEVEC (dialect);
+    dialect = NULL;
   }
 
 private:
-  static const char *get_opts ();
-  static char *opts;
+  static const char *get_dialect ();
+  static char *dialect;
 };
 
-char *module_state_config::opts;
+char *module_state_config::dialect;
 
 /* Generate a string of the significant compilation options.
    Generally assume the user knows what they're doing, in the same way
    that object files can be mixed.  */
 
 const char *
-module_state_config::get_opts ()
+module_state_config::get_dialect ()
 {
-  if (!opts)
-    opts = concat (get_cxx_dialect_name (cxx_dialect),
-		   flag_concepts ? "/concepts" : "",
-		   flag_coroutines ? "/coroutines" : "",
-		   NULL);
+  if (!dialect)
+    dialect = concat (get_cxx_dialect_name (cxx_dialect),
+		      flag_concepts ? "/concepts" : "",
+		      flag_coroutines ? "/coroutines" : "",
+		      NULL);
 
-  return opts;
+  return dialect;
 }
 
 void
@@ -15852,7 +15873,8 @@ module_state::write_config (elf_out *to, module_state_config &config,
   cfg.u (target);
   cfg.u (host);
 
-  cfg.str (config.opt_str);
+  cfg.str (config.dialect_str);
+  cfg.u (extensions);
 
   /* Global tree information.  We write the globals crc separately,
      rather than mix it directly into the overall crc, as it is used
@@ -16004,19 +16026,34 @@ module_state::read_config (module_state_config &config)
       }
   }
 
-  /* Check compilation options.  For the moment we requre exact
-     match.  */
+  /* Check compilation dialect.  This must match.  */
   {
-    const char *their_opts = cfg.str ();
-    if (strcmp (their_opts, config.opt_str))
+    const char *their_dialect = cfg.str ();
+    if (strcmp (their_dialect, config.dialect_str))
       {
-	error_at (loc, "compilation options differ %qs, expected %qs",
-		  their_opts, config.opt_str);
+	error_at (loc, "language dialect differs %qs, expected %qs",
+		  their_dialect, config.dialect_str);
 	cfg.set_overrun ();
 	goto done;
       }
   }
-  
+
+  /* Check for extensions.  If they set any, we must have them set
+     too.  */
+  {
+    unsigned ext = cfg.u ();
+    unsigned allowed = (flag_openmp ? SE_OPENMP : 0);
+
+    if (unsigned bad = ext & ~allowed)
+      {
+	if (bad & SE_OPENMP)
+	  error_at (loc, "module contains OpenMP, use %<-fopenmp%> to enable");
+	cfg.set_overrun ();
+	goto done;
+      }
+    extensions = ext;
+  }
+
   /* Check global trees.  */
   {
     unsigned their_fixed_length = cfg.u ();
@@ -16317,7 +16354,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   sccs.release ();
 
   /* Human-readable info.  */
-  write_readme (to, config.opt_str);
+  write_readme (to, config.dialect_str, extensions);
   // FIXME: Write ths info to the 'reproducer' file yet to be implemented
   // write_env (to);
 
