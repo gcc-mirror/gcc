@@ -3,6 +3,12 @@
 	Backported from mainline
 	2019-02-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/83246
+	PR fortran/89084
+	* gfortran.dg/pr89084.f90: New test.
+	* gfortran.dg/lto/pr89084_0.f90: New test.
+	* gfortran.dg/pr83246.f90: New test.
+
 	PR tree-optimization/88107
 	* gcc.dg/gomp/pr88107.c: New test.
 
