@@ -1,6 +1,21 @@
 2019-08-30  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2019-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90930
+	* tree-ssa-reassoc.c (rewrite_expr_tree_parallel): Set visited
+	flag on new stmts to avoid re-processing them.
+
+	2019-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90637
+	* tree-ssa-sink.c (statement_sink_location): Honor the
+	computed sink location for single-uses.
+
+2019-08-30  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2019-07-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91108
