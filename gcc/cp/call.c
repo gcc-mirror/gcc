@@ -10301,8 +10301,11 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
       var = pushdecl_top_level (var);
     }
   else
-    /* Create a new cleanup level if necessary.  */
-    maybe_push_cleanup_level (type);
+    {
+      /* Create a new cleanup level if necessary.  */
+      maybe_push_cleanup_level (type);
+      var = pushdecl (var);
+    }
 
   return var;
 }
