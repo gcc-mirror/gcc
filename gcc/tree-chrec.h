@@ -80,7 +80,7 @@ extern bool convert_affine_scev (struct loop *, tree, tree *, tree *, gimple *,
 /* Observers.  */
 extern bool eq_evolutions_p (const_tree, const_tree);
 extern bool is_multivariate_chrec (const_tree);
-extern bool chrec_contains_symbols (const_tree);
+extern bool chrec_contains_symbols (const_tree, struct loop * = NULL);
 extern bool chrec_contains_symbols_defined_in_loop (const_tree, unsigned);
 extern bool chrec_contains_undetermined (const_tree);
 extern bool tree_contains_chrecs (const_tree, int *);

@@ -1,6 +1,39 @@
 2019-08-30  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2019-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-data-refs.c (vect_get_smallest_scalar_type): Always
+	use gimple_expr_type for load and store calls.  Skip over the
+	condition argument in a conditional internal function.
+	Protect use of TREE_INT_CST_LOW.
+
+	2019-04-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90006
+	* tree-vect-data-refs.c (vect_get_smallest_scalar_type): Handle
+	calls like lrint.
+
+	2019-04-01  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/89725
+	* tree-chrec.c (chrec_contains_symbols): New parameter.  Handle outer
+	loop's chrec as invariant symbol.
+	* tree-chrec.h (chrec_contains_symbols): New parameter.
+	* tree-data-ref.c (analyze_miv_subscript): Pass new argument.
+	(build_classic_dist_vector_1, add_other_self_distances): Bypass access
+	function of loops not in DDR's loop_nest.
+
+	2019-03-26  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/81740
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence):
+	In case of outer loop vectorization, check for backward dependence
+	at the inner loop if outer loop dependence is reversed.
+
+2019-08-30  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2019-04-24  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/90213

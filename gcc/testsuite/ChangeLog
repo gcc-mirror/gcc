@@ -1,6 +1,25 @@
 2019-08-30  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2019-04-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90006
+	* gcc.dg/vect/bb-slp-pr90006.c: New testcase.
+
+	2019-04-01  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/89725
+	* gcc.dg/tree-ssa/pr89725.c: New test.
+
+	2019-03-26  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/81740
+	* gcc.dg/vect/pr81740-1.c: New testcase.
+	* gcc.dg/vect/pr81740-2.c: Likewise.
+
+2019-08-30  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2019-04-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90020
