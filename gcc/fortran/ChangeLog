@@ -1,4 +1,10 @@
-2019-08-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+2019-08-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91551
+	* intrinsic.c (sort_actual): ALLOCATED has one argument. Check for
+	no argument case.
+
+2019-08-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91485
 	module.c (gfc_match_use): User defined operator cannot conflict with
