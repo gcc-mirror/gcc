@@ -1,6 +1,11 @@
 2019-08-30  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (friend_from_decl_list): Reimplement.
+	(trees_out::tree_decl): When streaming a local template friend
+	reference, make sure we find one.
+
+	gcc/cp/
 	* module.cc (enum tree_tag): Drop tt_mergeable, tt_clone.
 	(trees_out::tree_value): Emit tt_node & kind separately.
 	(trees_in::tree_node): Read tt_node kind explicitly.

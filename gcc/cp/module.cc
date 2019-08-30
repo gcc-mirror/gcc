@@ -4406,25 +4406,30 @@ maybe_strip_cmi_prefix (char *to)
   return to;
 }
 
-/* Given a CLASSTYPE_DECL_LIST VALUE get the friend decl, if that's
-   what this is.  */
+/* Given a CLASSTYPE_DECL_LIST VALUE get the the template friend decl,
+   if that's what this is.  */
 
 static tree
 friend_from_decl_list (tree frnd)
 {
-  if (TYPE_P (frnd))
+  if (TREE_CODE (frnd) != TEMPLATE_DECL)
     {
-      if (!CLASSTYPE_TEMPLATE_INFO (frnd))
-	frnd = NULL_TREE; // reachable?
+      tree maybe_template = frnd;
+
+      if (TYPE_P (frnd))
+	{
+	  if (CLASSTYPE_TEMPLATE_INFO (frnd))
+	    maybe_template = CLASSTYPE_TI_TEMPLATE (frnd);
+	}
       else
-	frnd = CLASSTYPE_TI_TEMPLATE (frnd);
+	{
+	  if (DECL_TEMPLATE_INFO (frnd))
+	    maybe_template = DECL_TI_TEMPLATE (frnd);
+	}
+
+      if (TREE_CODE (maybe_template) == TEMPLATE_DECL)
+	frnd = maybe_template;
     }
-  else if (TREE_CODE (frnd) == TEMPLATE_DECL)
-    ;
-  else if (!DECL_TEMPLATE_INFO (frnd))
-    frnd = NULL; // FIXME: Is this ever reachable?
-  else if (TREE_CODE (DECL_TI_TEMPLATE (frnd)) == TEMPLATE_DECL)
-    frnd = DECL_TI_TEMPLATE (frnd);
 
   return frnd;
 }
@@ -7166,22 +7171,26 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 
       if (streaming_p ())
 	{
-	  unsigned ix = 0;
-	  for (tree decls = CLASSTYPE_DECL_LIST (klass);;
-	       decls = TREE_CHAIN (decls))
+	  tree decls = CLASSTYPE_DECL_LIST (klass);
+	  for (unsigned ix = 0;; decls = TREE_CHAIN (decls))
 	    if (!TREE_PURPOSE (decls))
 	      {
-		if (tree frnd = friend_from_decl_list (TREE_VALUE (decls)))
-		  if (frnd == decl)
+		tree frnd = friend_from_decl_list (TREE_VALUE (decls));
+		if (frnd == decl)
+		  {
+		    u (ix);
+		    dump (dumper::TREE)
+		      && dump ("Wrote friend %N[%u], %C:%N",
+			       klass, ix, TREE_CODE (decl), decl);
 		    break;
+		  }
 
 		/* Count every friend to make streaming in simpler.  */
 		ix++;
 	      }
-	  u (ix);
-	  dump (dumper::TREE)
-	    && dump ("Wrote friend %N[%u], %C:%N",
-		     klass, ix, TREE_CODE (decl), decl);
+
+	  /* We must have found it.  */
+	  gcc_checking_assert (decls);
 	}
 
       return false;
