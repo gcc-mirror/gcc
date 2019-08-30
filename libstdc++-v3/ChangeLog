@@ -1,6 +1,16 @@
 2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__gen_vtable_impl::__visit_invoke): Call __get
+	directly instead of get, as caller ensures correct index is used.
+	(holds_alternative, get, get_if): Remove redundant inline specifiers.
+	(_VARIANT_RELATION_FUNCTION_TEMPLATE): Likewise.
+
+2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2018-08-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/ostream (basic_ostream::sentry::~sentry): Suppress
