@@ -1175,8 +1175,9 @@ create_single_kernel_dispatch (struct kernel_info *kernel,
 static void
 release_kernel_dispatch (struct GOMP_hsa_kernel_dispatch *shadow)
 {
-  HSA_DEBUG ("Released kernel dispatch: %p has value: %lu (%p)\n", shadow,
-	     shadow->debug, (void *) shadow->debug);
+  HSA_DEBUG ("Released kernel dispatch: %p has value: %" PRIu64 " (%p)\n",
+	     shadow, shadow->debug,
+	     (void *) (uintptr_t) shadow->debug);
 
   hsa_fns.hsa_memory_free_fn (shadow->kernarg_address);
 
@@ -1297,9 +1298,9 @@ print_kernel_dispatch (struct GOMP_hsa_kernel_dispatch *dispatch, unsigned inden
   indent_stream (stderr, indent);
   fprintf (stderr, "kernarg_address: %p\n", dispatch->kernarg_address);
   indent_stream (stderr, indent);
-  fprintf (stderr, "object: %lu\n", dispatch->object);
+  fprintf (stderr, "object: %" PRIu64 "\n", dispatch->object);
   indent_stream (stderr, indent);
-  fprintf (stderr, "signal: %lu\n", dispatch->signal);
+  fprintf (stderr, "signal: %" PRIu64 "\n", dispatch->signal);
   indent_stream (stderr, indent);
   fprintf (stderr, "private_segment_size: %u\n",
 	   dispatch->private_segment_size);
@@ -1307,7 +1308,7 @@ print_kernel_dispatch (struct GOMP_hsa_kernel_dispatch *dispatch, unsigned inden
   fprintf (stderr, "group_segment_size: %u\n",
 	   dispatch->group_segment_size);
   indent_stream (stderr, indent);
-  fprintf (stderr, "children dispatches: %lu\n",
+  fprintf (stderr, "children dispatches: %" PRIu64 "\n",
 	   dispatch->kernel_dispatch_count);
   indent_stream (stderr, indent);
   fprintf (stderr, "omp_num_threads: %u\n",
@@ -1615,7 +1616,7 @@ run_kernel (struct kernel_info *kernel, void *vars,
 	hsa_signal_t child_s;
 	child_s.handle = shadow->children_dispatches[i]->signal;
 
-	HSA_DEBUG ("Waiting for children completion signal: %lu\n",
+	HSA_DEBUG ("Waiting for children completion signal: %" PRIu64 "\n",
 		   shadow->children_dispatches[i]->signal);
 	hsa_fns.hsa_signal_load_acquire_fn (child_s);
       }
