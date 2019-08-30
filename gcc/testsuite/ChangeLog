@@ -1,6 +1,15 @@
 2019-08-30  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2018-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88315
+	* gcc.dg/vect/slp-reduc-sad.c: Adjust to provide non-trivial
+	initial value.
+
+2019-08-30  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2019-06-18  Richard Biener  <rguenther@suse.de>
 
 	PR debug/90900
