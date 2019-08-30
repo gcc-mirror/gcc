@@ -3,6 +3,10 @@
 	Backported from mainline
 	2019-03-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/89703
+	* gcc.c-torture/compile/pr89703-1.c: New test.
+	* gcc.c-torture/compile/pr89703-2.c: New test.
+
 	PR c++/89512
 	* g++.dg/cpp1y/var-templ61.C: New test.
 
