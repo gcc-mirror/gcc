@@ -1,9 +1,17 @@
+2019-08-30  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91108
+	* gcc.dg/tree-ssa/pr91091-1.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-78.c: Likewise.
+
 2019-08-30  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from trunk
 	2019-08-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
-gcc/testsuite/
 	PR target/91481
 	* gcc.target/powerpc/darn-3.c: New testcase.
 
