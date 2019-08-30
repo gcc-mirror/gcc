@@ -1,6 +1,18 @@
 2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-07-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/51333
+	* libsupc++/cxxabi.h (__gnu_cxx::recursive_init_error): Do not define
+	constructor inline.
+	* libsupc++/guard_error.cc (__gnu_cxx::recursive_init_error): Define
+	constructor.
+	* testsuite/18_support/51333.cc: New test.
+
+2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Add feature test macro for
