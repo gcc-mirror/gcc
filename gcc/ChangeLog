@@ -1,6 +1,12 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/88644
+	* dwarf2out.c (modified_type_die): If type is equal to sizetype,
+	change it to qualified_type.
+
 	2018-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/85594

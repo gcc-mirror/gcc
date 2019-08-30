@@ -1,6 +1,17 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/88644
+	* gcc.dg/debug/dwarf2/pr88644.c: New test.
+
+	2019-01-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/pubtypes-2.c: Adjust expected pubtypes length.
+	* gcc.dg/pubtypes-3.c: Likewise.
+	* gcc.dg/pubtypes-4.c: Likewise.
+
 	2018-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/85594
