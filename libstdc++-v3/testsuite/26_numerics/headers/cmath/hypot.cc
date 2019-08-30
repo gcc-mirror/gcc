@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2018 Free Software Foundation, Inc.
+// Copyright (C) 2016-2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,7 +17,6 @@
 
 // { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
-// { dg-xfail-run-if "AIX long double" { powerpc-ibm-aix* } }
 
 #include <cmath>
 #include <type_traits>
@@ -128,7 +127,10 @@ test01()
 {
   test(data1, toler1);
   test(data2, toler2);
-  test(data3, toler3);
+  if (sizeof(long double) > sizeof(double))
+    test(data3, toler3);
+  else
+    test(data3, (long double)toler1);
 }
 
 int

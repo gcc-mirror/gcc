@@ -1,6 +1,15 @@
 2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78179
+	* testsuite/26_numerics/headers/cmath/hypot.cc: Use lower tolerance
+	when sizeof(long double) == sizeof(double).
+
+2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2019-03-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_algobase.h (__lg): Do arithmetic on type int to
