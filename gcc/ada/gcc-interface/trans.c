@@ -8790,7 +8790,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
        5. If this is a reference to an unconstrained array which is used as the
 	  prefix of an attribute reference that requires an lvalue, return the
-	  result unmodified because we want return the original bounds.
+	  result unmodified because we want to return the original bounds.
 
        6. Finally, if the type of the result is already correct.  */
 
