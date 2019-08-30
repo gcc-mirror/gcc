@@ -1,5 +1,51 @@
 2019-08-30  Richard Biener  <rguenther@suse.de>
 
+	Backport from mainline
+	2019-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR lto/91375
+	* tree.c (free_lang_data_in_type): Do not free TYPE_BINFO dependent on
+	flag_devirtualize.
+
+	2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91293
+	* tree-vect-slp.c (vect_build_slp_tree_2): Do not swap operands
+	of reduction stmts.
+
+	2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91280
+	* tree-ssa-structalias.c (get_constraint_for_component_ref):
+	Decompose MEM_REF manually for offset handling.
+
+	2019-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91200
+	* tree-ssa-phiopt.c (cond_store_replacement): Check we have
+	no PHI nodes in middle-bb.
+
+	2019-07-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/91162
+	* tree-cfg.c (move_block_to_fn): When releasing a virtual PHI
+	node make sure to replace all uses with something valid.
+
+	2019-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/91131
+	* gimplify.c (gimplify_compound_literal_expr): Force a temporary
+	when the object is volatile and we have not cleared it even though
+	there are no nonzero elements.
+
+	2019-07-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91126
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Adjust
+	native encoding offset for BYTES_BIG_ENDIAN.
+
+2019-08-30  Richard Biener  <rguenther@suse.de>
+
 	* lto-streamer.h (LTO_minor_version): Bump.
 
 	Backport from mainline
