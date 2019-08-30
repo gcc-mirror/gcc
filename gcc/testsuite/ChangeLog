@@ -3,6 +3,11 @@
 	Backported from mainline
 	2018-12-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/86669
+	* g++.dg/cpp0x/initlist105.C: New test.
+	* g++.dg/cpp0x/initlist106.C: New test.
+	* g++.dg/other/pr86669.C: New test.
+
 	PR fortran/88377
 	* gfortran.dg/gomp/pr88377.f90: New test.
 
