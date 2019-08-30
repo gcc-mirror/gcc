@@ -1,6 +1,11 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
-
+ 
 	Backported from mainline
+	2018-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60994
+	* g++.dg/lookup/pr60994.C: New test.
+ 
 	2018-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/87725
