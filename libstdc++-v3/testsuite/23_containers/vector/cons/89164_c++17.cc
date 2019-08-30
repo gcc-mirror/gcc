@@ -22,6 +22,12 @@
 
 // PR libstdc++/89164
 
+struct X
+{
+  X() = default;
+  X(const X&) = delete;
+};
+
 void test01()
 {
   X x[1];
