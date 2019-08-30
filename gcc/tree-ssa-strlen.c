@@ -936,10 +936,18 @@ valid_builtin_call (gimple *stmt)
     return false;
 
   tree callee = gimple_call_fndecl (stmt);
+  tree decl = builtin_decl_explicit (DECL_FUNCTION_CODE (callee));
+  if (decl
+      && decl != callee
+      && !gimple_builtin_call_types_compatible_p (stmt, decl))
+    return false;
+
   switch (DECL_FUNCTION_CODE (callee))
     {
     case BUILT_IN_MEMCMP:
     case BUILT_IN_MEMCMP_EQ:
+    case BUILT_IN_STRCMP:
+    case BUILT_IN_STRNCMP:
     case BUILT_IN_STRCHR:
     case BUILT_IN_STRCHR_CHKP:
     case BUILT_IN_STRLEN:
@@ -964,6 +972,8 @@ valid_builtin_call (gimple *stmt)
     case BUILT_IN_STPCPY_CHK:
     case BUILT_IN_STPCPY_CHKP:
     case BUILT_IN_STPCPY_CHK_CHKP:
+    case BUILT_IN_STPNCPY:
+    case BUILT_IN_STPNCPY_CHK:
     case BUILT_IN_STRCAT:
     case BUILT_IN_STRCAT_CHK:
     case BUILT_IN_STRCAT_CHKP:
@@ -972,6 +982,10 @@ valid_builtin_call (gimple *stmt)
     case BUILT_IN_STRCPY_CHK:
     case BUILT_IN_STRCPY_CHKP:
     case BUILT_IN_STRCPY_CHK_CHKP:
+    case BUILT_IN_STRNCAT:
+    case BUILT_IN_STRNCAT_CHK:
+    case BUILT_IN_STRNCPY:
+    case BUILT_IN_STRNCPY_CHK:
       /* The above functions should be neither const nor pure.  Punt if they
 	 aren't.  */
       if (gimple_vdef (stmt) == NULL_TREE || gimple_vuse (stmt) == NULL_TREE)
