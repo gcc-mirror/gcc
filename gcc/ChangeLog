@@ -1,6 +1,14 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/66676
+	PR ipa/89104
+	* omp-simd-clone.c (simd_clone_clauses_extract)
+	<case OMP_CLAUSE_ALIGNED>: Ignore clauses with NULL
+	OMP_CLAUSE_ALIGNED_ALIGNMENT.
+
 	2019-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/89002
