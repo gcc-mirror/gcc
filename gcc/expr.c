@@ -1607,18 +1607,8 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
   else if (may_use_call
 	   && ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (x))
 	   && ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (y)))
-    {
-      /* Since x and y are passed to a libcall, mark the corresponding
-	 tree EXPR as addressable.  */
-      tree y_expr = MEM_EXPR (y);
-      tree x_expr = MEM_EXPR (x);
-      if (y_expr)
-	mark_addressable (y_expr);
-      if (x_expr)
-	mark_addressable (x_expr);
-      retval = emit_block_copy_via_libcall (x, y, size,
-					    method == BLOCK_OP_TAILCALL);
-    }
+    retval = emit_block_copy_via_libcall (x, y, size,
+					  method == BLOCK_OP_TAILCALL);
 
   else
     emit_block_move_via_loop (x, y, size, align);
@@ -1858,6 +1848,15 @@ emit_block_op_via_libcall (enum built_in_function fncode, rtx dst, rtx src,
   rtx dst_addr, src_addr;
   tree call_expr, dst_tree, src_tree, size_tree;
   machine_mode size_mode;
+
+  /* Since dst and src are passed to a libcall, mark the corresponding
+     tree EXPR as addressable.  */
+  tree dst_expr = MEM_EXPR (dst);
+  tree src_expr = MEM_EXPR (src);
+  if (dst_expr)
+    mark_addressable (dst_expr);
+  if (src_expr)
+    mark_addressable (src_expr);
 
   dst_addr = copy_addr_to_reg (XEXP (dst, 0));
   dst_addr = convert_memory_address (ptr_mode, dst_addr);
