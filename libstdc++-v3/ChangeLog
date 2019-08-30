@@ -1,6 +1,14 @@
 2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (__lg): Do arithmetic on type int to
+	avoid -Wconversion warnings.
+
+2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2019-06-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90770
