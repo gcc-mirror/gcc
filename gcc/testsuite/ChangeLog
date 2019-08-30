@@ -3,6 +3,10 @@
 	Backported from mainline
 	2019-02-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/89521
+	* gcc.dg/pr89521-1.c: New test.
+	* gcc.dg/pr89521-2.c: New test.
+
 	PR c/89520
 	* gcc.dg/pr89520-1.c: New test.
 	* gcc.dg/pr89520-2.c: New test.
