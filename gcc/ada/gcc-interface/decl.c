@@ -447,13 +447,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
      If we are not defining it, it must be a type or an entity that is defined
      elsewhere or externally, otherwise we should have defined it already.  */
   gcc_assert (definition
-	      || type_annotate_only
 	      || is_type
 	      || kind == E_Discriminant
 	      || kind == E_Component
 	      || kind == E_Label
 	      || (kind == E_Constant && Present (Full_View (gnat_entity)))
-	      || Is_Public (gnat_entity));
+	      || Is_Public (gnat_entity)
+	      || type_annotate_only);
 
   /* Get the name of the entity and set up the line number and filename of
      the original definition for use in any decl we make.  Make sure we do
@@ -1758,34 +1758,29 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
     case E_Modular_Integer_Type:
       {
-	/* For modular types, make the unsigned type of the proper number
-	   of bits and then set up the modulus, if required.  */
-	tree gnu_modulus, gnu_high = NULL_TREE;
-
 	/* Packed Array Impl. Types are supposed to be subtypes only.  */
 	gcc_assert (!Is_Packed_Array_Impl_Type (gnat_entity));
 
+	/* For modular types, make the unsigned type of the proper number
+	   of bits and then set up the modulus, if required.  */
 	gnu_type = make_unsigned_type (esize);
 
-	/* Get the modulus in this type.  If it overflows, assume it is because
-	   it is equal to 2**Esize.  Note that there is no overflow checking
-	   done on unsigned type, so we detect the overflow by looking for
-	   a modulus of zero, which is otherwise invalid.  */
-	gnu_modulus = UI_To_gnu (Modulus (gnat_entity), gnu_type);
+	/* Get the modulus in this type.  If the modulus overflows, assume
+	   that this is because it was equal to 2**Esize.  Note that there
+	   is no overflow checking done on unsigned types, so we detect the
+	   overflow by looking for a modulus of zero, which is invalid.  */
+	tree gnu_modulus = UI_To_gnu (Modulus (gnat_entity), gnu_type);
 
+	/* If the modulus is not 2**Esize, then this also means that the upper
+	   bound of the type, i.e. modulus - 1, is not maximal, so we create an
+	   extra subtype to carry it and set the modulus on the base type.  */
 	if (!integer_zerop (gnu_modulus))
 	  {
+	    TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "UMT");
 	    TYPE_MODULAR_P (gnu_type) = 1;
 	    SET_TYPE_MODULUS (gnu_type, gnu_modulus);
-	    gnu_high = fold_build2 (MINUS_EXPR, gnu_type, gnu_modulus,
-				    build_int_cst (gnu_type, 1));
-	  }
-
-	/* If the upper bound is not maximal, make an extra subtype.  */
-	if (gnu_high
-	    && !tree_int_cst_equal (gnu_high, TYPE_MAX_VALUE (gnu_type)))
-	  {
-	    TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "UMT");
+	    tree gnu_high = fold_build2 (MINUS_EXPR, gnu_type, gnu_modulus,
+					 build_int_cst (gnu_type, 1));
 	    gnu_type
 	      = create_extra_subtype (gnu_type, TYPE_MIN_VALUE (gnu_type),
 				      gnu_high);
@@ -2987,8 +2982,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		|| Present (Record_Extension_Part (record_definition)))
 	      record_definition = Record_Extension_Part (record_definition);
 
-	    gcc_assert (type_annotate_only
-			|| Present (Parent_Subtype (gnat_entity)));
+	    gcc_assert (Present (Parent_Subtype (gnat_entity))
+		        || type_annotate_only);
 	  }
 
 	/* Make a node for the record.  If we are not defining the record,

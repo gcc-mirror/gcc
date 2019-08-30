@@ -1,3 +1,18 @@
+2019-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (gigi_checking_assert): New macro.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Modular_Integer_Type>:
+	Remove redundant test and adjust comments.  Minor tweaks.
+	* gcc-interface/trans.c (Call_to_gnu): Do not generate range checks,
+	instead assert that the Do_Range_Check flag is not set.  Adjust call
+	to convert_with_check.
+	(gnat_to_gnu): Likewise.
+	(assoc_to_constructor): Likewise.
+	(pos_to_constructor): Likewise.  Remove GNAT_COMPONENT_TYPE parameter.
+	(emit_range_check): Delete.
+	(convert_with_check): Remove RANGE_P parameter and adjust.  Do a single
+	overflow check for modular types.
+
 2019-08-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/91283
