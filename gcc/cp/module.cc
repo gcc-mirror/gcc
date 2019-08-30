@@ -2680,11 +2680,7 @@ enum tree_tag {
   tt_null,		/* NULL_TREE.  */
   tt_fixed,		/* Fixed vector index.  */
 
-  /* These three tags match walk_kind body, mergeable, clone.  */
   tt_node,		/* New node.  */
-  // FIXME: Think about these being a sub-field?
-  tt_mergeable,		/* Mergeable entity.  */
-  tt_clone,		/* A clone.  */
 
   tt_id,  		/* Identifier node.  */
   tt_conv_id,		/* Conversion operator name.  */
@@ -2720,7 +2716,6 @@ enum walk_kind {
   WK_none,	/* No walk to do (a back- or fixed-ref happened).  */
   WK_normal,	/* Normal walk (by-name if possible).  */
 
-  /* These three tags match tree_tag node, mergeable & clone.  */
   WK_body,	/* By-value walk.  */
   WK_mergeable, /* By-value mergeable entity walk.  */
   WK_clone,	/* By-value clone walk.  */
@@ -7704,7 +7699,8 @@ trees_out::tree_value (tree t, walk_kind walk)
 
       /* A new node -> tt_node, tt_mergeable or tt_clone.  */
       unique++;
-      i (walk - WK_body + tt_node);
+      i (tt_node);
+      u (walk);
       u (TREE_CODE (t));
       start (t);
 
@@ -8826,11 +8822,16 @@ trees_in::tree_node ()
        }
       break;
 
-    case tt_mergeable:
     case tt_node:
-    case tt_clone:
       /* A new node.  Stream it in.  */
-      res = tree_value (walk_kind (tag - tt_node + WK_body));
+      {
+	unsigned kind = u ();
+
+	if (kind < WK_body || kind > WK_clone)
+	  set_overrun ();
+	else
+	  res = tree_value (walk_kind (kind));
+      }
       break;
     }
 
