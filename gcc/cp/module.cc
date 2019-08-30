@@ -7576,11 +7576,14 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
       return false;
     }
 
+  // FIXME: put type_pte_mem_func here.  Flatten the switch, now we
+  // know no types should escape this function (tree_value never gets
+  // a bare type node).  ENUMERAL_TYPE and BOOLEAN_TYPE can be ranged.
+  // Remove ::finish_type and the type-related hackery in core_vals
   switch (TREE_CODE (type))
     {
     default:
       // FIXME: Hm, does this have NULL TREE_TYPE?
-      // FIXME: Hook other C++-specific types for reconstruction?
       break;
 
     case VECTOR_TYPE:
@@ -7596,6 +7599,7 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
     case DECLTYPE_TYPE:
     case TYPEOF_TYPE:
     case UNDERLYING_TYPE:
+    case INTEGER_TYPE:
       {
 	if (streaming_p ())
 	  {
@@ -7607,6 +7611,26 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 	  {
 	  default:
 	    gcc_unreachable ();
+
+	  case INTEGER_TYPE:
+	    if (TREE_TYPE (type))
+	      {
+		/* A range type.  */
+		tree_node (TYPE_MIN_VALUE (type));
+		tree_node (TYPE_MAX_VALUE (type));
+	      }
+	    else
+	      {
+		/* A new integral type.  */
+		if (streaming_p ())
+		  {
+		    unsigned prec = TYPE_PRECISION (type);
+		    bool unsigned_p = TYPE_UNSIGNED (type);
+
+		    u ((prec << 1) | unsigned_p);
+		  }
+	      }
+	    break;
 
 	  case TYPEOF_TYPE:
 	  case DECLTYPE_TYPE:
@@ -7696,12 +7720,10 @@ trees_out::tree_value (tree t, walk_kind walk)
 {
   /* We should never walk into a thunk by accident.  */
   gcc_assert (walk == WK_body || !DECL_THUNK_P (t));
-#if 0
-  // FIXME: Remove all the get-outs for this assert.
-  gcc_assert (!TYPE_P (t)
-	      /* Restricted range integer type.  */
-	      || TREE_CODE (t) == INTEGER_TYPE);
-#endif
+
+  /* We should never be writing a type by value.  tree_type should
+     have streamed it, or we're going via its TYPE_DECL.  */
+  gcc_assert (!TYPE_P (t));
 
   if (walk == WK_normal)
     walk = WK_body;
@@ -8369,6 +8391,23 @@ trees_in::tree_node ()
 	  {
 	  default:
 	    set_overrun ();
+	    break;
+
+	  case INTEGER_TYPE:
+	    if (res)
+	      {
+		/* A ranged type.  */
+		tree min = tree_node ();
+		tree max = tree_node ();
+
+		res = build_range_type (res, min, max);
+	      }
+	    else
+	      {
+		/* A new integral type.  */
+		unsigned enc = u ();
+		res = build_nonstandard_integer_type (enc >> 1, enc & 1);
+	      }
 	    break;
 
 	  case TYPEOF_TYPE:
