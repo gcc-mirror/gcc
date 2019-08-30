@@ -1,6 +1,11 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
-
+ 
 	Backported from mainline
+	2018-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88103
+	* g++.dg/cpp0x/rv-cond3.C: New test.
+
 	2018-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/71109
