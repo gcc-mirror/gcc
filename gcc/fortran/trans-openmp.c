@@ -460,7 +460,8 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
 
   if ((! GFC_DESCRIPTOR_TYPE_P (type)
        || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
-      && !GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause)))
+      && (!GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause))
+	  || !POINTER_TYPE_P (type)))
     {
       if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause)))
 	{
@@ -567,7 +568,8 @@ gfc_omp_clause_copy_ctor (tree clause, tree dest, tree src)
 
   if ((! GFC_DESCRIPTOR_TYPE_P (type)
        || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
-      && !GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause)))
+      && (!GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause))
+	  || !POINTER_TYPE_P (type)))
     {
       if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause)))
 	{
@@ -667,7 +669,8 @@ gfc_omp_clause_assign_op (tree clause, tree dest, tree src)
 
   if ((! GFC_DESCRIPTOR_TYPE_P (type)
        || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
-      && !GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause)))
+      && (!GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause))
+	  || !POINTER_TYPE_P (type)))
     {
       if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause)))
 	{
@@ -905,7 +908,8 @@ gfc_omp_clause_linear_ctor (tree clause, tree dest, tree src, tree add)
 
   if ((! GFC_DESCRIPTOR_TYPE_P (type)
        || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
-      && !GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause)))
+      && (!GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause))
+	  || !POINTER_TYPE_P (type)))
     {
       gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
       if (!TYPE_DOMAIN (type)
@@ -989,7 +993,8 @@ gfc_omp_clause_dtor (tree clause, tree decl)
 
   if ((! GFC_DESCRIPTOR_TYPE_P (type)
        || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
-      && !GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause)))
+      && (!GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause))
+	  || !POINTER_TYPE_P (type)))
     {
       if (gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause)))
 	return gfc_walk_alloc_comps (decl, NULL_TREE,
