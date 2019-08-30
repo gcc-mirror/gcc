@@ -3,6 +3,20 @@
 	Backport from trunk
 	2019-08-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	PR target/91481
+	* config/rs6000/rs6000.md (unspec): Delete UNSPEC_DARN, UNSPEC_DARN_32,
+	and UNSPEC_DARN_RAW.
+	(unspecv): New enumerator values UNSPECV_DARN, UNSPECV_DARN_32, and
+	UNSPECV_DARN_RAW.
+	(darn_32): Use an unspec_volatile, and UNSPECV_DARN_32.
+	(darn_raw): Use an unspec_volatile, and UNSPECV_DARN_RAW.
+	(darn): Use an unspec_volatile, and UNSPECV_DARN.
+
+2019-08-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
+	2019-08-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/altivec.md (unspec): Delete UNSPEC_DARN, UNSPEC_DARN_32,
 	UNSPEC_DARN_RAW, UNSPEC_CMPRB, UNSPEC_CMPRB2, UNSPEC_CMPEQB; move to...
 	* config/rs6000/rs6000.md (unspec): ... here.
