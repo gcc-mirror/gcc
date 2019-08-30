@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2019 Free Software Foundation, Inc.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,21 +17,22 @@
 
 // { dg-do compile { target c++11 } }
 
-#include <memory>
+#include <vector>
 
-struct T
+// PR libstdc++/89164
+
+struct X
 {
-  T() { }
-  T(const T&) = delete;
+  X() = default;
+  X(const X&) = delete;
 };
 
-static_assert(__is_trivially_assignable(T&, const T&) &&
-  !__is_trivial(T), "T is only trivially copy assignable");
-
-void
-test01(T* result)
+void test01()
 {
-  T t[1];
-  std::uninitialized_copy(t, t+1, result); // { dg-error "here" }
+  X x[1];
+  alignas(X) unsigned char buf[sizeof(X)];
+  X* p = (X*)buf;
+
+  std::uninitialized_copy(x, x+1, p); // { dg-error "here" }
 }
-// { dg-error "constructible from value" "" { target *-*-* } 0 }
+// { dg-error "must be constructible" "" { target *-*-* } 0 }
