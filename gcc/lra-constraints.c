@@ -2294,6 +2294,8 @@ process_alt_operands (int only_alternative)
 		  break;
 
 		reg:
+		  if (mode == BLKmode)
+		    break;
 		  this_alternative = reg_class_subunion[this_alternative][cl];
 		  IOR_HARD_REG_SET (this_alternative_set,
 				    reg_class_contents[cl]);
@@ -2304,8 +2306,6 @@ process_alt_operands (int only_alternative)
 		      IOR_HARD_REG_SET (this_costly_alternative_set,
 					reg_class_contents[cl]);
 		    }
-		  if (mode == BLKmode)
-		    break;
 		  winreg = true;
 		  if (REG_P (op))
 		    {
