@@ -1,3 +1,12 @@
+2019-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88181
+	* class.c (fixup_attribute_variants): Also propagate TYPE_PACKED
+	to variants.
+
 2019-04-10  Matthias Klose  <doko@ubuntu.com>
 
 	Backport from the gcc-8 branch
