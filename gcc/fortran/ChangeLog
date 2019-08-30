@@ -1,5 +1,11 @@
 2019-08-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/91564
+	* check.c (gfc_check_kill_sub): Additional checks on status dummy
+	argument.
+
+2019-08-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/91551
 	* intrinsic.c (sort_actual): ALLOCATED has one argument. Check for
 	no argument case.
