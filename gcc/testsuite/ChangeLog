@@ -1,6 +1,24 @@
 2019-08-30  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2019-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90900
+	* gcc.dg/gomp/pr90900.c: New testcase.
+
+	2019-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90278
+	* gcc.dg/torture/pr90278.c: New testcase.
+
+	2019-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90194
+	* g++.dg/torture/pr90194.C: New testcase.
+
+2019-08-30  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2019-07-31  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91293

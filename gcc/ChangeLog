@@ -1,6 +1,27 @@
 2019-08-30  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2019-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90900
+	* cfgexpand.c (expand_debug_expr): Treat NOTE_P DECL_RTL
+	as if optimized away.
+
+	2019-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90278
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Transfer/clean
+	EH on comparison simplification.
+
+	2019-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90194
+	* match.pd: Add pattern to simplify view-conversion of an
+	empty constructor.
+
+2019-08-30  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2019-08-12  Richard Biener  <rguenther@suse.de>
 
 	PR lto/91375
