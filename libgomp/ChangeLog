@@ -1,3 +1,11 @@
+2019-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/89002
+	* testsuite/libgomp.c/pr89002.c: New test.
+
 2018-12-06  Release Manager
 
 	* GCC 7.4.0 released.
