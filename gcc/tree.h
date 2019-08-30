@@ -912,6 +912,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (TREE_CHECK2 (NODE, VAR_DECL, \
 		RESULT_DECL)->decl_common.decl_nonshareable_flag)
 
+/* In a PARM_DECL, set for Fortran hidden string length arguments that some
+   buggy callers don't pass to the callee.  */
+#define DECL_HIDDEN_STRING_LENGTH(NODE) \
+  (TREE_CHECK (NODE, PARM_DECL)->decl_common.decl_nonshareable_flag)
+
 /* In a CALL_EXPR, means that the call is the jump from a thunk to the
    thunked-to function.  */
 #define CALL_FROM_THUNK_P(NODE) (CALL_EXPR_CHECK (NODE)->base.protected_flag)
