@@ -1,6 +1,12 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/88902
+	* trans-decl.c (gfc_get_symbol_decl): Don't add length to function
+	or parent function if it has been added there already.
+
 	2018-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/88377
