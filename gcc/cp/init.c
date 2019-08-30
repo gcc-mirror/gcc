@@ -409,6 +409,15 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 	      if (ftype == error_mark_node)
 		continue;
 
+	      /* Ignore flexible array members for value initialization.  */
+	      if (TREE_CODE (ftype) == ARRAY_TYPE
+		  && !COMPLETE_TYPE_P (ftype)
+		  && !TYPE_DOMAIN (ftype)
+		  && COMPLETE_TYPE_P (TREE_TYPE (ftype))
+		  && (next_initializable_field (DECL_CHAIN (field))
+		      == NULL_TREE))
+		continue;
+
 	      /* We could skip vfields and fields of types with
 		 user-defined constructors, but I think that won't improve
 		 performance at all; it should be simpler in general just
