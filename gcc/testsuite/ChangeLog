@@ -1,6 +1,11 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/85550
+	* g++.dg/debug/dwarf2/pr85550.C: New test.
+
 	2018-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88181
