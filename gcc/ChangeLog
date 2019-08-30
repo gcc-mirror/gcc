@@ -3,6 +3,10 @@
 	Backported from mainline
 	2019-03-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/89587
+	* config/rs6000/t-linux (MULTIARCH_DIRNAME): Set to non-empty only
+	if_multiarch.
+
 	PR middle-end/89590
 	* builtins.c (maybe_emit_free_warning): Punt if free doesn't have
 	exactly one argument.
