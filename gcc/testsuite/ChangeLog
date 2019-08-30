@@ -1,6 +1,15 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88976
+	* c-c++-common/gomp/cancel-2.c: New test.
+	* gcc.dg/gomp/cancel-1.c: New test.
+	* g++.dg/gomp/cancel-1.C: New test.
+	* g++.dg/gomp/cancel-2.C: New test.
+	* g++.dg/gomp/cancel-3.C: New test.
+
 	2019-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/49429
