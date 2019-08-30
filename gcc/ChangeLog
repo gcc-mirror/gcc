@@ -1,3 +1,18 @@
+2019-08-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
+	2019-08-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.md (unspec): Delete UNSPEC_DARN, UNSPEC_DARN_32,
+	UNSPEC_DARN_RAW, UNSPEC_CMPRB, UNSPEC_CMPRB2, UNSPEC_CMPEQB; move to...
+	* config/rs6000/rs6000.md (unspec): ... here.
+	* config/rs6000/altivec.md (darn_32, darn_raw, darn, cmprb,
+	*cmprb_internal, setb_signed, setb_unsigned, cmprb2, *cmprb2_internal,
+	cmpeqb, *cmpeqb_internal): Delete, move to...
+	* config/rs6000/rs6000.md (darn_32, darn_raw, darn, cmprb,
+	*cmprb_internal, setb_signed, setb_unsigned, cmprb2, *cmprb2_internal,
+	cmpeqb, *cmpeqb_internal): ... here.
+
 2019-08-30  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
