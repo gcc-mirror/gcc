@@ -3,6 +3,11 @@
 	Backported from mainline
 	2019-03-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/89726
+	* gcc.target/i386/fpprec-1.c (x): Add 6 new constants.
+	(expect_round, expect_rint, expect_floor, expect_ceil, expect_trunc):
+	Add expected results for them.
+
 	PR c/89734
 	* gcc.dg/pr89734.c: New test.
 
