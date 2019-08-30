@@ -3,6 +3,10 @@
 	Backported from mainline
 	2019-02-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/89354
+	* combine.c (make_extraction): Punt if extraction_mode is narrower
+	than len bits.
+
 	PR tree-optimization/89314
 	* fold-const.c (fold_binary_loc): Cast strlen argument to
 	const char * before dereferencing it.  Formatting fixes.
