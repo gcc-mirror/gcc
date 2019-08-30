@@ -7365,18 +7365,8 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
       && DECL_ORIGINAL_TYPE (name))
     /* A typedef type that is not the original type.  */;
   else if (TYPE_PTRMEMFUNC_P (type))
-    {
-      // FIXME: Qualified ptr to mem?  Move this portion after
-      // tt_variant_type emission.
-      tree fn_type = TYPE_PTRMEMFUNC_FN_TYPE (type);
-      if (streaming_p ())
-	i (tt_ptrmem_type);
-      tree_node (fn_type);
-      int tag = insert (type);
-      if (streaming_p ())
-	dump (dumper::TREE) && dump ("Writen:%d ptrmem type", tag);
-      return false;
-    }
+    /* We deal with ptrmemfuncs further down.  */
+    name = NULL_TREE;
   else
     {
       name = TYPE_STUB_DECL (type);
@@ -7493,9 +7483,21 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
       return false;
     }
 
-  // FIXME: put type_pte_mem_func here.  Flatten the switch, now we
-  // know no types should escape this function (tree_value never gets
-  // a bare type node).  ENUMERAL_TYPE and BOOLEAN_TYPE can be ranged.
+  if (TYPE_PTRMEMFUNC_P (type))
+    {
+      tree fn_type = TYPE_PTRMEMFUNC_FN_TYPE (type);
+      if (streaming_p ())
+	i (tt_ptrmem_type);
+      tree_node (fn_type);
+      int tag = insert (type);
+      if (streaming_p ())
+	dump (dumper::TREE) && dump ("Writen:%d ptrmem type", tag);
+      return false;
+    }
+
+  // FIXME: Flatten the switch, now we know no types should escape
+  // this function (tree_value never gets a bare type node).
+  // ENUMERAL_TYPE and BOOLEAN_TYPE can be ranged.
   switch (TREE_CODE (type))
     {
     default:
@@ -7625,6 +7627,7 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
       }
     }
 
+  gcc_unreachable ();
   return true;
 }
 
