@@ -8398,7 +8398,7 @@ annotate_value (tree gnu_size)
       /* In regular mode, inline back only if symbolic annotation is requested
 	 in order to avoid memory explosion on big discriminated record types.
 	 But not in ASIS mode, as symbolic annotation is required for DDA.  */
-      if (List_Representation_Info == 3 || type_annotate_only)
+      if (List_Representation_Info >= 3 || type_annotate_only)
 	{
 	  tree t = maybe_inline_call_in_expr (gnu_size);
 	  return t ? annotate_value (t) : No_Uint;

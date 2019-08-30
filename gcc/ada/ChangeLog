@@ -1,5 +1,10 @@
 2019-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (annotate_value) <CALL_EXPR>: Inline the call
+	also if List_Representation_Info is greater than 3.
+
+2019-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Size>: Add assertion.
 
 2019-08-30  Eric Botcazou  <ebotcazou@adacore.com>
