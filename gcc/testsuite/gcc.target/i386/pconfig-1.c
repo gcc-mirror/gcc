@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mpconfig" } */
-/* { dg-final { scan-assembler-times "pconfig" 5 } } */
+/* { dg-final { scan-assembler-times {\tpconfig} 2 } } */
 
 #include <x86intrin.h>
 
