@@ -359,7 +359,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // (2) If we're using random access iterators, then write the loop as
   // a for loop with an explicit count.
 
-  template<bool, bool, typename>
+  template<bool _IsMove, bool _IsSimple, typename _Category>
     struct __copy_move
     {
       template<typename _II, typename _OI>

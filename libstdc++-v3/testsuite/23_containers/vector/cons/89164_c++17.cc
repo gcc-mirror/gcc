@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2019 Free Software Foundation, Inc.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,23 +15,30 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile { target c++11 } }
+// { dg-options "-std=gnu++17" }
+// { dg-do compile { target c++17 } }
 
-#include <memory>
+#include <vector>
 
-struct T
+// PR libstdc++/89164
+
+void test01()
 {
-  T() { }
-  T(const T&) = delete;
-};
+  X x[1];
+  // Should not be able to create vector using uninitialized_copy:
+  std::vector<X> v1{x, x+1};	// { dg-error "here" }
 
-static_assert(__is_trivially_assignable(T&, const T&) &&
-  !__is_trivial(T), "T is only trivially copy assignable");
+  // Should not be able to create vector using uninitialized_fill_n:
+  std::vector<X> v2{2u, X{}};	// { dg-error "here" }
+}
 
-void
-test01(T* result)
+void test02()
 {
-  T t[1];
-  std::uninitialized_copy(t, t+1, result); // { dg-error "here" }
+#if __cplusplus >= 201703L
+  // Can create initializer_list<X> with C++17 guaranteed copy elision,
+  // but shouldn't be able to copy from it with uninitialized_copy:
+  std::vector<X> v3{X{}, X{}, X{}};   // { dg-error "here" }
+#endif
 }
 // { dg-error "constructible from value" "" { target *-*-* } 0 }
+// { dg-error "constructible from input" "" { target *-*-* } 0 }
