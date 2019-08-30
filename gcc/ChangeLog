@@ -1,3 +1,24 @@
+2019-08-30  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-04-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90213
+	* gimple-fold.c (fold_const_aggregate_ref_1): Do multiplication
+	by size and BITS_PER_UNIT on poly-wide-ints.
+
+	2019-04-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90020
+	* tree-ssa-sccvn.c (vn_reference_may_trap): New function.
+	* tree-ssa-sccvn.h (vn_reference_may_trap): Declare.
+	* tree-ssa-pre.c (compute_avail): Use it to not put
+	possibly trapping references after a call that might not
+	return into EXP_GEN.
+	* gcse.c (compute_hash_table_work): Do not elide
+	marking a block containing a call if the call might not
+	return.
+
 2019-08-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline

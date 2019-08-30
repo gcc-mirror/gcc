@@ -6720,14 +6720,10 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 		= wi::sext (wi::to_poly_offset (idx)
 			    - wi::to_poly_offset (low_bound),
 			    TYPE_PRECISION (TREE_TYPE (idx)));
-
+	      woffset *= tree_to_uhwi (unit_size);
+	      woffset *= BITS_PER_UNIT;
 	      if (woffset.to_shwi (&offset))
 		{
-		  /* TODO: This code seems wrong, multiply then check
-		     to see if it fits.  */
-		  offset *= tree_to_uhwi (unit_size);
-		  offset *= BITS_PER_UNIT;
-
 		  base = TREE_OPERAND (t, 0);
 		  ctor = get_base_constructor (base, &offset, valueize);
 		  /* Empty constructor.  Always fold to 0.  */
