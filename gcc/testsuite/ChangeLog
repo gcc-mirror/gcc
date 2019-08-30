@@ -3,6 +3,9 @@
 	Backported from mainline
 	2019-03-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/89869
+	* g++.dg/ubsan/vptr-14.C: New test.
+
 	PR c/89872
 	* gcc.dg/tree-ssa/pr89872.c: New test.
 
