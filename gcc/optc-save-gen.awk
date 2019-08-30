@@ -84,7 +84,7 @@ print "void";
 print "cl_optimization_save (struct cl_optimization *ptr, struct gcc_options *opts)";
 print "{";
 
-n_opt_char = 3;
+n_opt_char = 4;
 n_opt_short = 0;
 n_opt_int = 0;
 n_opt_enum = 0;
@@ -92,9 +92,11 @@ n_opt_other = 0;
 var_opt_char[0] = "optimize";
 var_opt_char[1] = "optimize_size";
 var_opt_char[2] = "optimize_debug";
+var_opt_char[3] = "optimize_fast";
 var_opt_range["optimize"] = "0, 255";
 var_opt_range["optimize_size"] = "0, 1";
 var_opt_range["optimize_debug"] = "0, 1";
+var_opt_range["optimize_fast"] = "0, 1";
 
 # Sort by size to mimic how the structure is laid out to be friendlier to the
 # cache.
@@ -735,13 +737,15 @@ for (i = 0; i < n_target_val; i++) {
 
 print "}";
 
-n_opt_val = 3;
+n_opt_val = 4;
 var_opt_val[0] = "x_optimize"
 var_opt_val_type[0] = "char "
 var_opt_val[1] = "x_optimize_size"
-var_opt_val[2] = "x_optimize_debug"
 var_opt_val_type[1] = "char "
+var_opt_val[2] = "x_optimize_debug"
 var_opt_val_type[2] = "char "
+var_opt_val[3] = "x_optimize_fast"
+var_opt_val_type[3] = "char "
 for (i = 0; i < n_opts; i++) {
 	if (flag_set_p("(Optimization|PerFunction)", flags[i])) {
 		name = var_name(flags[i])
