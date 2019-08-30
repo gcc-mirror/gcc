@@ -1,6 +1,19 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/88074
+	PR middle-end/89415
+	* toplev.c (do_compile): Double the emin/emax exponents to workaround
+	buggy mpc_norm.
+
+	2019-02-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/88074
+	* toplev.c (do_compile): Initialize mpfr's exponent range
+	based on available float modes.
+
 	2019-02-18  Jakub Jelinek  <jakub@redhat.com>
  
 	PR target/89361
@@ -402,7 +415,7 @@
 2019-05-01  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	Backport from mainline.
-        2019-04-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	2019-04-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 	PR target/86538
 	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins):
 	Define __ARM_FEATURE_ATOMICS
@@ -584,8 +597,8 @@
 
 2019-03-21  Bill Schmidt  <wschmidt@linux.ibm.com>
 
-        * config/rs6000/rs6000.c (rs6000_analyze_swaps): Rebuild
-        ud- and du-chains between phases.
+	* config/rs6000/rs6000.c (rs6000_analyze_swaps): Rebuild
+	ud- and du-chains between phases.
 
 2019-03-21  Matthias Klose  <doko@ubuntu.com>
 
