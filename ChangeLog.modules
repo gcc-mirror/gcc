@@ -1,6 +1,14 @@
 2019-08-30  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_in::finish{,_type}): Delete. Move into
+	trees_in::tree_value, removing type remapping etc,
+	(trees_out::start): Check not streaming an unexpected type.
+	(trees_{in,out}::core_vals): Pointers are not streamed.
+	(trees_in::tree_value): Move remnants of finish{,_type} here &
+	simplify handling.
+
+	gcc/cp/
 	* module.cc (trees_out::tree_type): Write non-standard integer
 	types here.
 	(trees_in::tree_node): Read them here.

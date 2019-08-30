@@ -2763,11 +2763,7 @@ public:
   int insert (tree);
 
 private:
-  tree finish_type (tree);
-
-private:
   tree start (unsigned);
-  tree finish (tree);
 
 public:
   /* Needed for binfo writing  */
@@ -4735,6 +4731,19 @@ trees_in::tree_pair_vec ()
 void
 trees_out::start (tree t)
 {
+  if (TYPE_P (t))
+    {
+      enum tree_code code = TREE_CODE (t);
+      gcc_checking_assert (TYPE_MAIN_VARIANT (t) == t);
+      /* All these types are TYPE_NON_COMMON.  */
+      gcc_checking_assert (code == RECORD_TYPE
+			   || code == UNION_TYPE
+			   || code == ENUMERAL_TYPE
+			   || code == TEMPLATE_TYPE_PARM
+			   || code == TEMPLATE_TEMPLATE_PARM
+			   || code == BOUND_TEMPLATE_TEMPLATE_PARM);
+    }
+
   switch (TREE_CODE (t))
     {
     default:
@@ -4863,67 +4872,6 @@ trees_in::start (unsigned code)
     case TARGET_MEM_REF:
       goto fail;
     }
-
-  return t;
-}
-
-/* Semantic processing.  Add to symbol table etc.  Return
-   possibly-remapped tree.  */
-
-tree
-trees_in::finish (tree t)
-{
-  if (TYPE_P (t))
-    {
-      bool on_pr_list = false;
-      if (POINTER_TYPE_P (t))
-	{
-	  on_pr_list = t->type_non_common.minval != NULL;
-
-	  t->type_non_common.minval = NULL;
-
-	  tree probe = TREE_TYPE (t);
-	  for (probe = (TREE_CODE (t) == POINTER_TYPE
-			? TYPE_POINTER_TO (probe)
-			: TYPE_REFERENCE_TO (probe));
-	       probe;
-	       probe = (TREE_CODE (t) == POINTER_TYPE
-			? TYPE_NEXT_PTR_TO (probe)
-			: TYPE_NEXT_REF_TO (probe)))
-	    if (TYPE_MODE_RAW (probe) == TYPE_MODE_RAW (t)
-		&& (TYPE_REF_CAN_ALIAS_ALL (probe)
-		    == TYPE_REF_CAN_ALIAS_ALL (t)))
-	      return probe;
-	}
-
-      tree remap = finish_type (t);
-      if (remap == t && on_pr_list)
-	{
-	  tree to_type = TREE_TYPE (remap);
-	  gcc_assert ((TREE_CODE (remap) == POINTER_TYPE
-		       ? TYPE_POINTER_TO (to_type)
-		       : TYPE_REFERENCE_TO (to_type)) != remap);
-	  if (TREE_CODE (remap) == POINTER_TYPE)
-	    {
-	      TYPE_NEXT_PTR_TO (remap) = TYPE_POINTER_TO (to_type);
-	      TYPE_POINTER_TO (to_type) = remap;
-	    }
-	  else
-	    {
-	      TYPE_NEXT_REF_TO (remap) = TYPE_REFERENCE_TO (to_type);
-	      TYPE_REFERENCE_TO (to_type) = remap;
-	    }
-	}
-      return remap;
-    }
-
-  if (TREE_CODE (t) == INTEGER_CST && !TREE_OVERFLOW (t))
-    t = cache_integer_cst (t, true);
-
-  if (TREE_CODE (t) == FUNCTION_DECL && DECL_VIRTUAL_P (t))
-    /* Mark this identifier as naming a virtual function --
-       lookup_overrides relies on this optimization.  */
-    IDENTIFIER_VIRTUAL_P (DECL_NAME (t)) = true;
 
   return t;
 }
@@ -5525,7 +5473,12 @@ trees_out::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
-      /* Likewise, stream the name first.  */
+      gcc_checking_assert (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON));
+
+      /* We only stream the main variant.  */
+      gcc_checking_assert (TYPE_MAIN_VARIANT (t) == t);
+
+      /* Stream the name & context first, for better log information  */
       WT (t->type_common.name);
       tree_ctx (t->type_common.context, true, TYPE_NAME (t));
 
@@ -5533,6 +5486,7 @@ trees_out::core_vals (tree t)
 	 and main variants already in the type table, so emit them
 	 now.  */
       WT (t->type_common.main_variant);
+
       tree canonical = t->type_common.canonical;
       if (code == TEMPLATE_TYPE_PARM
 	  || code == TEMPLATE_TEMPLATE_PARM)
@@ -5754,33 +5708,10 @@ trees_out::core_vals (tree t)
 	  /* Don't write the cached values vector.  */
 	  WT (TYPE_CACHED_VALUES_P (t) ? NULL_TREE : t->type_non_common.values);
 	  WT (t->type_non_common.maxval);
-
-	  /* POINTER and REFERENCE types hold NEXT_{PTR,REF}_TO */
-	  if (POINTER_TYPE_P (t))
-	    {
-	      /* We need to record whether we're on the
-		 TYPE_{POINTER,REFERENCE}_TO list of the type we refer
-		 to.  Do that by recording NULL or self reference
-		 here.  */
-	      tree probe = TREE_TYPE (t);
-	      for (probe = (TREE_CODE (t) == POINTER_TYPE
-			    ? TYPE_POINTER_TO (probe)
-			    : TYPE_REFERENCE_TO (probe));
-		   probe && probe != t;
-		   probe = (TREE_CODE (t) == POINTER_TYPE
-			    ? TYPE_NEXT_PTR_TO (probe)
-			    : TYPE_NEXT_REF_TO (probe)))
-		continue;
-	      WT (probe);
-	    }
-	  else
-	    WT (t->type_non_common.minval);
+	  WT (t->type_non_common.minval);
 	}
 
-      /* Pointers use lang slot for caching pointer to member fn
-	 record_type.  */
-      if (TREE_CODE (t) != POINTER_TYPE)
-	WT (t->type_non_common.lang_1);
+      WT (t->type_non_common.lang_1);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
@@ -6239,24 +6170,10 @@ trees_in::core_vals (tree t)
 	  gcc_checking_assert (!TYPE_CACHED_VALUES_P (t));
 	  RT (t->type_non_common.values);
 	  RT (t->type_non_common.maxval);
-
-	  /* POINTER and REFERENCE types hold NEXT_{PTR,REF}_TO.  We
-	     store a marker there to indicate whether we're on the
-	     referred to type's pointer/reference to list.  */
 	  RT (t->type_non_common.minval);
-	  if (POINTER_TYPE_P (t))
-	    {
-	      if (t->type_non_common.minval
-		  && t->type_non_common.minval != t)
-		{
-		  t->type_non_common.minval = NULL_TREE;
-		  set_overrun ();
-		}
-	    }
 	}
 
-      if (TREE_CODE (t) != POINTER_TYPE)
-	RT (t->type_non_common.lang_1);
+      RT (t->type_non_common.lang_1);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
@@ -7579,7 +7496,6 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
   // FIXME: put type_pte_mem_func here.  Flatten the switch, now we
   // know no types should escape this function (tree_value never gets
   // a bare type node).  ENUMERAL_TYPE and BOOLEAN_TYPE can be ranged.
-  // Remove ::finish_type and the type-related hackery in core_vals
   switch (TREE_CODE (type))
     {
     default:
@@ -8109,8 +8025,15 @@ trees_in::tree_value (walk_kind walk)
 
       if (back_refs[~type_tag] == type)
 	{
-	  type = finish (type);
-	  back_refs[~type_tag] = type;
+	  /* This is a new type.  */
+	  gcc_checking_assert (type == TYPE_MAIN_VARIANT (type));
+
+	  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
+	      || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
+	    {
+	      tree canon = canonical_type_parameter (type);
+	      TYPE_CANONICAL (type) = canon;
+	    }
 	}
     }
 
@@ -8129,21 +8052,18 @@ trees_in::tree_value (walk_kind walk)
   if (existing == res)
     {
       /* A newly discovered node.  */
-      tree found = finish (res);
+      if (TREE_CODE (res) == FUNCTION_DECL && DECL_VIRTUAL_P (res))
+	/* Mark this identifier as naming a virtual function --
+	   lookup_overrides relies on this optimization.  */
+	IDENTIFIER_VIRTUAL_P (DECL_NAME (res)) = true;
 
-      if (found != res)
+      if (TREE_CODE (res) == INTEGER_CST && !TREE_OVERFLOW (res))
 	{
-	  gcc_assert (res == inner && !type);
-
-	  /* Update the mapping.  */
-	  res = found;
+	  res = cache_integer_cst (res, true);
 	  back_refs[~tag] = res;
-
-	  dump (dumper::TREE)
-	    && dump ("Remapping:%d to %C:%N%S", tag,
-		     res ? TREE_CODE (res) : ERROR_MARK, res, res);
 	}
-      else if (is_typedef)
+
+      if (is_typedef)
 	{
 	  set_underlying_type (inner);
 
@@ -9355,105 +9275,6 @@ trees_in::key_mergeable (tree decl, tree inner, tree,
     }
 
   return get_overrun () ? MK_none : mk;
-}
-
-/* Rebuild a streamed in type.  */
-// FIXME: C++-specific types are not in the canonical type hash.
-// Perhaps that should be changed?
-
-tree
-trees_in::finish_type (tree type)
-{
-  tree main = TYPE_MAIN_VARIANT (type);
-
-  if (main != type)
-    {
-      // FIXME: Review given we now have tt_derived_type & tt_variant_type.
-      /* See if we have this type already on the variant
-	 list.  This could only happen if the originally read in main
-	 variant was remapped, but we don't have that knowledge.
-	 FIXME: Determine if this is a problem, and then maybe fix
-	 it?  That would avoid a fruitless search along the variant
-	 chain.  */
-      for (tree probe = main; probe; probe = TYPE_NEXT_VARIANT (probe))
-	{
-	  if (!check_base_type (probe, type))
-	    continue;
-
-	  if (!check_lang_type (probe, type))
-	    continue;
-
-	  if (TYPE_ALIGN (probe) != TYPE_ALIGN (type))
-	    continue;
-
-	  if (TYPE_QUALS (probe) != TYPE_QUALS (type))
-	    continue;
-
-	  if (FUNC_OR_METHOD_TYPE_P (type))
-	    {
-	      if (!comp_except_specs (TYPE_RAISES_EXCEPTIONS (type),
-				      TYPE_RAISES_EXCEPTIONS (probe),
-				      ce_exact))
-		continue;
-
-	      if (type_memfn_rqual (type) != type_memfn_rqual (probe))
-		continue;
-	    }
-	  
-	  dump (dumper::TREE)
-	    && dump ("Type %p already found as %p variant of %p",
-		     (void *)type, (void *)probe, (void *)main);
-	  free_node (type);
-	  type = probe;
-	  goto found_variant;
-	}
-
-      /* Splice it into the variant list.  */
-      dump (dumper::TREE) && dump ("Type %p added as variant of %p",
-				   (void *)type, (void *)main);
-      TYPE_NEXT_VARIANT (type) = TYPE_NEXT_VARIANT (main);
-      TYPE_NEXT_VARIANT (main) = type;
-
-      /* CANONICAL_TYPE is either already correctly remapped.  Or
-         correctly already us.  */
-      // FIXME: Are we sure about this?
-    found_variant:;
-    }
-  else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
-	   || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
-    {
-      tree canon = canonical_type_parameter (type);
-      TYPE_CANONICAL (type) = canon;
-      dump (dumper::TREE) && dump ("Adding template type %p with canonical %p",
-				   (void *)type, (void *)canon);
-    }
-  else if (!TYPE_STRUCTURAL_EQUALITY_P (type)
-	   && !RECORD_OR_UNION_CODE_P (TREE_CODE (type))
-	   && TREE_CODE (type) != ENUMERAL_TYPE
-	   && !TYPE_NAME (type)) // FIXME: why this check?
-    {
-      gcc_assert (TYPE_ALIGN (type));
-      hashval_t hash = type_hash_canon_hash (type);
-      /* type_hash_canon frees type, if we find it already.  */
-      type = type_hash_canon (hash, type);
-      // FIXME: This is where it'd be nice to determine if type
-      // was already found.  See above.
-      dump (dumper::TREE) && dump ("Adding type %p with canonical %p",
-				   (void *)main, (void *)type);
-    }
-
-  if (RECORD_OR_UNION_CODE_P (TREE_CODE (type))
-      // FIXME: enums?
-      && main != type)
-    {
-      /* The main variant might already have been defined, copy
-	 the bits of its definition that we need.  */
-      TYPE_BINFO (type) = TYPE_BINFO (main);
-      TYPE_VFIELD (type) = TYPE_VFIELD (main);
-      TYPE_FIELDS (type) = TYPE_FIELDS (main);
-    }
-
-  return type;
 }
 
 /* DECL is a just streamed mergeable decl that should match EXISTING.  Check
