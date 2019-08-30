@@ -1,6 +1,11 @@
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88949
+	* g++.dg/gomp/pr88949.C: New test.
+
 	2019-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/88902
