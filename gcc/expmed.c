@@ -3179,11 +3179,19 @@ expand_mult_const (machine_mode mode, rtx op0, HOST_WIDE_INT val,
 	      tem = gen_lowpart (nmode, op0);
 	    }
 
-          insn = get_last_insn ();
-          set_dst_reg_note (insn, REG_EQUAL,
-			    gen_rtx_MULT (nmode, tem,
-					  gen_int_mode (val_so_far, nmode)),
-			    accum_inner);
+	  /* Don't add a REG_EQUAL note if tem is a paradoxical SUBREG.
+	     In that case, only the low bits of accum would be guaranteed to
+	     be equal to the content of the REG_EQUAL note, the upper bits
+	     can be anything.  */
+	  if (!paradoxical_subreg_p (tem))
+	    {
+	      insn = get_last_insn ();
+	      set_dst_reg_note (insn, REG_EQUAL,
+				gen_rtx_MULT (nmode, tem,
+					      gen_int_mode (val_so_far,
+							    nmode)),
+				accum_inner);
+	    }
 	}
     }
 
