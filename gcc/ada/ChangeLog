@@ -1,5 +1,12 @@
 2019-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (maybe_saturate_size): New function.
+	(gnat_to_gnu_entity): Invoke it on the Esize of types before sending
+	it for back-annotations.
+	* gcc-interface/trans.c: Fix typo.
+
+2019-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (DECL_FORCED_BY_REF_P): New macro.
 	* gcc-interface/decl.c (gnat_to_gnu_param): Set it on parameters
 	whose mechanism was forced to by-reference.
