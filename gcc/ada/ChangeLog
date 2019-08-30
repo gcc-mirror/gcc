@@ -1,5 +1,21 @@
 2019-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (aggregate_type_contains_array_p): Declare.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: For an
+	extension, test Has_Record_Rep_Clause instead of Has_Specified_Layout.
+	(adjust_packed): Return 0 if the type of the field is an aggregate
+	type that contains (or is) a self-referential array.
+	(type_has_variable_size): Delete.
+	* gcc-interface/utils.c (inish_record_type): Constify a variable.
+	(aggregate_type_contains_array_p): Add parameter SELF_REFERENTIAL.
+	<RECORD_TYPE>: Pass it in the recursive call.
+	<ARRAY_TYPE>: If it is true, return true only if the array type is
+	self-referential.
+	(create_field_decl): Streamline the setting of the alignment on the
+	field.  Pass false to aggregate_type_contains_array_p.
+
+2019-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (lvalue_required_p) <N_Slice>: Adjust GNU_TYPE
 	in the recursive call.
 	<N_Selected_Component>: Likewise.
