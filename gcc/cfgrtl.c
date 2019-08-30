@@ -4233,7 +4233,7 @@ duplicate_insn_chain (rtx_insn *from, rtx_insn *to)
 /* Create a duplicate of the basic block BB.  */
 
 static basic_block
-cfg_layout_duplicate_bb (basic_block bb)
+cfg_layout_duplicate_bb (basic_block bb, copy_bb_data *)
 {
   rtx_insn *insn;
   basic_block new_bb;
@@ -5059,9 +5059,9 @@ rtl_can_remove_branch_p (const_edge e)
 }
 
 static basic_block
-rtl_duplicate_bb (basic_block bb)
+rtl_duplicate_bb (basic_block bb, copy_bb_data *id)
 {
-  bb = cfg_layout_duplicate_bb (bb);
+  bb = cfg_layout_duplicate_bb (bb, id);
   bb->aux = NULL;
   return bb;
 }

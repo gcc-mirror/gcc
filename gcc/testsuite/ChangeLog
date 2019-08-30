@@ -1,3 +1,16 @@
+2019-08-30  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90328
+	* gcc.dg/torture/pr90328.c: New testcase.
+
+	2019-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87609
+	* gcc.dg/torture/restrict-7.c: New testcase.
+
 2019-08-30  Bin Cheng  <bin.linux@linux.alibaba.com>
 
 	Backport from mainline

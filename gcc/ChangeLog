@@ -1,3 +1,59 @@
+2019-08-30  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer.h (LTO_minor_version): Bump.
+
+	Backport from mainline
+	2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90328
+	* tree-data-ref.h (dr_may_alias_p): Pass in the actual loop nest.
+	* tree-data-ref.c (dr_may_alias_p): Check whether the clique
+	is valid in the loop nest before using it.
+	(initialize_data_dependence_relation): Adjust.
+	* graphite-scop-detection.c (build_alias_set): Pass the SCOP enclosing
+	loop as loop-nest to dr_may_alias_p.
+
+	2019-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89578
+	* cfgloop.h (struct loop): Add owned_clique field.
+	* cfgloopmanip.c (copy_loop_info): Copy it.
+	* tree-cfg.c (gimple_duplicate_bb): Do not remap owned_clique
+	cliques.
+	* tree-inline.c (copy_loops): Remap owned_clique.
+	* lto-streamer-in.c (input_cfg): Stream owned_clique.
+	* lto-streamer-out.c (output_cfg): Likewise.
+
+	2019-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87609
+	* tree-cfg.c (gimple_duplicate_bb): Only remap inlined cliques.
+
+	2019-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87609
+	* cfghooks.h (dependence_hash): New typedef.
+	(struct copy_bb_data): New type.
+	(cfg_hooks::duplicate_block): Adjust to take a copy_bb_data argument.
+	(duplicate_block): Likewise.
+	* cfghooks.c (duplicate_block): Pass down copy_bb_data.
+	(copy_bbs): Create and pass down copy_bb_data.
+	* cfgrtl.c (cfg_layout_duplicate_bb): Adjust.
+	(rtl_duplicate_bb): Likewise.
+	* tree-cfg.c (gimple_duplicate_bb): If the copy_bb_data arg is not NULL
+	remap dependence info.
+
+	2019-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87609
+	* tree-core.h (tree_base): Document special clique values.
+	* tree-inline.c (remap_dependence_clique): Do not use the
+	special clique value of one.
+	(maybe_set_dependence_info): Use clique one.
+	(clear_dependence_clique): New callback.
+	(compute_dependence_clique): Clear clique one from all refs
+	before assigning it (again).
+
 2019-08-30  Bin Cheng  <bin.linux@linux.alibaba.com>
 
 	Backport from mainline
