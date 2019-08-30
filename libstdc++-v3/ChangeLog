@@ -1,3 +1,12 @@
+2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2018-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_vector.h (vector::_Temporary_value::_M_ptr):
+	Return raw pointer not allocator's pointer type.
+	(vector::_Temporary_value::_M_val): Use _M_ptr.
+
 2019-06-01   Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
