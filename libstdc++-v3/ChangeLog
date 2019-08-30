@@ -1,3 +1,7 @@
+2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/vector/cons/89164_c++17.cc: Fix errors.
+
 2019-08-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
