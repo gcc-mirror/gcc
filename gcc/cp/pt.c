@@ -19536,7 +19536,8 @@ tsubst_copy_and_build (tree t,
 	else if (type2)
 	  type2 = tsubst (type2, args, complain, in_decl);
 
-	RETURN (finish_trait_expr (TRAIT_EXPR_KIND (t), type1, type2));
+	RETURN (finish_trait_expr (TRAIT_EXPR_LOCATION (t),
+				   TRAIT_EXPR_KIND (t), type1, type2));
       }
 
     case STMT_EXPR:
