@@ -7948,7 +7948,9 @@ Bound_method_expression::do_flatten(Gogo* gogo, Named_object*,
   Node* n = Node::make_node(this);
   if ((n->encoding() & ESCAPE_MASK) == Node::ESCAPE_NONE)
     ret->heap_expression()->set_allocate_on_stack();
-  else if (gogo->compiling_runtime() && gogo->package_name() == "runtime")
+  else if (gogo->compiling_runtime()
+	   && gogo->package_name() == "runtime"
+	   && !saw_errors())
     go_error_at(loc, "%s escapes to heap, not allowed in runtime",
                 n->ast_format(gogo).c_str());
 
