@@ -7,4 +7,4 @@ void foo ()
   __builtin_ppc_speculation_barrier ();
 }
 
-/* { dg-final { scan-assembler "ori 31,31,0" } } */
+/* { dg-final { scan-assembler {ori\s+r?31,r?31,r?0} } } */
