@@ -1373,8 +1373,8 @@ built-in functions.
 
 @item ABSU_EXPR
 These nodes represent the absolute value of the single operand in
-equivalent unsigned type such that @code{ABSU_EXPR} of TYPE_MIN is
-well defined.
+equivalent unsigned type such that @code{ABSU_EXPR} of @code{TYPE_MIN}
+is well defined.
 
 @item BIT_NOT_EXPR
 These nodes represent bitwise complement, and will always have integral
