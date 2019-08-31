@@ -11,16 +11,15 @@ import (
 )
 
 // For gccgo, while we still have C runtime code, use go:linkname to
-// rename some functions to themselves, so that the compiler will
-// export them.
+// export some functions to themselves.
 //
-//go:linkname gotraceback runtime.gotraceback
-//go:linkname args runtime.args
-//go:linkname goargs runtime.goargs
-//go:linkname check runtime.check
-//go:linkname goenvs_unix runtime.goenvs_unix
-//go:linkname parsedebugvars runtime.parsedebugvars
-//go:linkname timediv runtime.timediv
+//go:linkname gotraceback
+//go:linkname args
+//go:linkname goargs
+//go:linkname check
+//go:linkname goenvs_unix
+//go:linkname parsedebugvars
+//go:linkname timediv
 
 // Keep a cached value to make gotraceback fast,
 // since we call it on every call to gentraceback.

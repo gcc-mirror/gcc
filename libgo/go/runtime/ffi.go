@@ -37,7 +37,7 @@ func ffi_type_void() *__ffi_type
 func ffi_prep_cif(*_ffi_cif, _ffi_abi, uint32, *__ffi_type, **__ffi_type) _ffi_status
 
 // ffiFuncToCIF is called from C code.
-//go:linkname ffiFuncToCIF runtime.ffiFuncToCIF
+//go:linkname ffiFuncToCIF
 
 // ffiFuncToCIF builds an _ffi_cif struct for function described by ft.
 func ffiFuncToCIF(ft *functype, isInterface bool, isMethod bool, cif *_ffi_cif) {

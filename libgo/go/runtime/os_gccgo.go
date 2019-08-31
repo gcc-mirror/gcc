@@ -9,7 +9,7 @@ import (
 )
 
 // For C code to call:
-//go:linkname minit runtime.minit
+//go:linkname minit
 
 func goenvs() {
 	goenvs_unix()

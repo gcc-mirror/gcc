@@ -930,7 +930,7 @@ type sigset _sigset_t
 
 // getMemstats returns a pointer to the internal memstats variable,
 // for C code.
-//go:linkname getMemstats runtime.getMemstats
+//go:linkname getMemstats
 func getMemstats() *mstats {
 	return &memstats
 }

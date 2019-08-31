@@ -12,8 +12,8 @@ import (
 )
 
 // For gccgo's C code to call:
-//go:linkname initsig runtime.initsig
-//go:linkname sigtrampgo runtime.sigtrampgo
+//go:linkname initsig
+//go:linkname sigtrampgo
 
 // sigTabT is the type of an entry in the global sigtable array.
 // sigtable is inherently system dependent, and appears in OS-specific files,

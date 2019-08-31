@@ -9,39 +9,38 @@ import (
 	"unsafe"
 )
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname deferproc runtime.deferproc
-//go:linkname deferprocStack runtime.deferprocStack
-//go:linkname deferreturn runtime.deferreturn
-//go:linkname setdeferretaddr runtime.setdeferretaddr
-//go:linkname checkdefer runtime.checkdefer
-//go:linkname gopanic runtime.gopanic
-//go:linkname canrecover runtime.canrecover
-//go:linkname makefuncfficanrecover runtime.makefuncfficanrecover
-//go:linkname makefuncreturning runtime.makefuncreturning
-//go:linkname gorecover runtime.gorecover
-//go:linkname deferredrecover runtime.deferredrecover
-//go:linkname goPanicIndex runtime.goPanicIndex
-//go:linkname goPanicIndexU runtime.goPanicIndexU
-//go:linkname goPanicSliceAlen runtime.goPanicSliceAlen
-//go:linkname goPanicSliceAlenU runtime.goPanicSliceAlenU
-//go:linkname goPanicSliceAcap runtime.goPanicSliceAcap
-//go:linkname goPanicSliceAcapU runtime.goPanicSliceAcapU
-//go:linkname goPanicSliceB runtime.goPanicSliceB
-//go:linkname goPanicSliceBU runtime.goPanicSliceBU
-//go:linkname goPanicSlice3Alen runtime.goPanicSlice3Alen
-//go:linkname goPanicSlice3AlenU runtime.goPanicSlice3AlenU
-//go:linkname goPanicSlice3Acap runtime.goPanicSlice3Acap
-//go:linkname goPanicSlice3AcapU runtime.goPanicSlice3AcapU
-//go:linkname goPanicSlice3B runtime.goPanicSlice3B
-//go:linkname goPanicSlice3BU runtime.goPanicSlice3BU
-//go:linkname goPanicSlice3C runtime.goPanicSlice3C
-//go:linkname goPanicSlice3CU runtime.goPanicSlice3CU
-//go:linkname panicmem runtime.panicmem
+//go:linkname deferproc
+//go:linkname deferprocStack
+//go:linkname deferreturn
+//go:linkname setdeferretaddr
+//go:linkname checkdefer
+//go:linkname gopanic
+//go:linkname canrecover
+//go:linkname makefuncfficanrecover
+//go:linkname makefuncreturning
+//go:linkname gorecover
+//go:linkname deferredrecover
+//go:linkname goPanicIndex
+//go:linkname goPanicIndexU
+//go:linkname goPanicSliceAlen
+//go:linkname goPanicSliceAlenU
+//go:linkname goPanicSliceAcap
+//go:linkname goPanicSliceAcapU
+//go:linkname goPanicSliceB
+//go:linkname goPanicSliceBU
+//go:linkname goPanicSlice3Alen
+//go:linkname goPanicSlice3AlenU
+//go:linkname goPanicSlice3Acap
+//go:linkname goPanicSlice3AcapU
+//go:linkname goPanicSlice3B
+//go:linkname goPanicSlice3BU
+//go:linkname goPanicSlice3C
+//go:linkname goPanicSlice3CU
+//go:linkname panicmem
 // Temporary for C code to call:
-//go:linkname throw runtime.throw
+//go:linkname throw
 
 // Check to make sure we can really generate a panic. If the panic
 // was generated from the runtime, or from inside malloc, then convert

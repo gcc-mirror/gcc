@@ -12,37 +12,37 @@ import (
 )
 
 // Functions called by C code.
-//go:linkname main runtime.main
-//go:linkname goparkunlock runtime.goparkunlock
-//go:linkname newextram runtime.newextram
-//go:linkname acquirep runtime.acquirep
-//go:linkname releasep runtime.releasep
-//go:linkname incidlelocked runtime.incidlelocked
-//go:linkname ginit runtime.ginit
-//go:linkname schedinit runtime.schedinit
-//go:linkname ready runtime.ready
-//go:linkname stopm runtime.stopm
-//go:linkname handoffp runtime.handoffp
-//go:linkname wakep runtime.wakep
-//go:linkname stoplockedm runtime.stoplockedm
-//go:linkname schedule runtime.schedule
-//go:linkname execute runtime.execute
-//go:linkname goexit1 runtime.goexit1
-//go:linkname reentersyscall runtime.reentersyscall
-//go:linkname reentersyscallblock runtime.reentersyscallblock
-//go:linkname exitsyscall runtime.exitsyscall
-//go:linkname gfget runtime.gfget
-//go:linkname kickoff runtime.kickoff
-//go:linkname mstart1 runtime.mstart1
-//go:linkname mexit runtime.mexit
-//go:linkname globrunqput runtime.globrunqput
-//go:linkname pidleget runtime.pidleget
+//go:linkname main
+//go:linkname goparkunlock
+//go:linkname newextram
+//go:linkname acquirep
+//go:linkname releasep
+//go:linkname incidlelocked
+//go:linkname ginit
+//go:linkname schedinit
+//go:linkname ready
+//go:linkname stopm
+//go:linkname handoffp
+//go:linkname wakep
+//go:linkname stoplockedm
+//go:linkname schedule
+//go:linkname execute
+//go:linkname goexit1
+//go:linkname reentersyscall
+//go:linkname reentersyscallblock
+//go:linkname exitsyscall
+//go:linkname gfget
+//go:linkname kickoff
+//go:linkname mstart1
+//go:linkname mexit
+//go:linkname globrunqput
+//go:linkname pidleget
 
 // Exported for test (see runtime/testdata/testprogcgo/dropm_stub.go).
-//go:linkname getm runtime.getm
+//go:linkname getm
 
 // Function called by misc/cgo/test.
-//go:linkname lockedOSThread runtime.lockedOSThread
+//go:linkname lockedOSThread
 
 // C functions for thread and context management.
 func newosproc(*m)

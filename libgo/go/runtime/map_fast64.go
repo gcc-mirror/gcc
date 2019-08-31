@@ -9,14 +9,13 @@ import (
 	"unsafe"
 )
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname mapaccess1_fast64 runtime.mapaccess1_fast64
-//go:linkname mapaccess2_fast64 runtime.mapaccess2_fast64
-//go:linkname mapassign_fast64 runtime.mapassign_fast64
-//go:linkname mapassign_fast64ptr runtime.mapassign_fast64ptr
-//go:linkname mapdelete_fast64 runtime.mapdelete_fast64
+//go:linkname mapaccess1_fast64
+//go:linkname mapaccess2_fast64
+//go:linkname mapassign_fast64
+//go:linkname mapassign_fast64ptr
+//go:linkname mapdelete_fast64
 
 func mapaccess1_fast64(t *maptype, h *hmap, key uint64) unsafe.Pointer {
 	if raceenabled && h != nil {
