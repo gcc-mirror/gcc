@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fno-store-merging" } */
+/* { dg-additional-options "-fno-common -mdynamic-no-pic" { target { ia32 && { x86_64-*-darwin* i?86-*-darwin* } } } } */
 
 struct B {
     B() {}
