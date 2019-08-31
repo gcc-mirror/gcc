@@ -1,3 +1,8 @@
+2019-08-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/generic.texi (Unary and Binary Expressions): Mark up
+	an instance of TYPE_MIN.
+
 2019-08-31  Stafford Horne  <shorne@gmail.com>
 
 	* config/or1k/constraints.md (t): New constraint.
