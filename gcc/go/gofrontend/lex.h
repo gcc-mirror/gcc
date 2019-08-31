@@ -380,7 +380,7 @@ class Lex
 
   struct Linkname
   {
-    std::string ext_name;	// External name.
+    std::string ext_name;	// External name; empty to just export.
     bool is_exported;		// Whether the internal name is exported.
     Location loc;		// Location of go:linkname directive.
 

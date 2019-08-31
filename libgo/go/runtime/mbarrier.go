@@ -18,12 +18,11 @@ import (
 	"unsafe"
 )
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname typedmemmove runtime.typedmemmove
-//go:linkname typedslicecopy runtime.typedslicecopy
-//go:linkname memclrHasPointers runtime.memclrHasPointers
+//go:linkname typedmemmove
+//go:linkname typedslicecopy
+//go:linkname memclrHasPointers
 
 // Go uses a hybrid barrier that combines a Yuasa-style deletion
 // barrier—which shades the object whose reference is being

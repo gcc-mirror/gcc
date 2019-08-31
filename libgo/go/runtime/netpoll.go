@@ -12,7 +12,7 @@ import (
 )
 
 // Export temporarily for gccgo's C code to call:
-//go:linkname netpoll runtime.netpoll
+//go:linkname netpoll
 
 // Integrated network poller (platform-independent part).
 // A particular implementation (epoll/kqueue) must define the following functions:

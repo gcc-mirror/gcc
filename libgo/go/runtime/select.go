@@ -10,11 +10,10 @@ import (
 	"unsafe"
 )
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname selectgo runtime.selectgo
-//go:linkname block runtime.block
+//go:linkname selectgo
+//go:linkname block
 
 const debugSelect = false
 

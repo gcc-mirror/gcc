@@ -23,18 +23,17 @@ import (
 	"unsafe"
 )
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname makechan runtime.makechan
-//go:linkname makechan64 runtime.makechan64
-//go:linkname chansend1 runtime.chansend1
-//go:linkname chanrecv1 runtime.chanrecv1
-//go:linkname chanrecv2 runtime.chanrecv2
-//go:linkname closechan runtime.closechan
-//go:linkname selectnbsend runtime.selectnbsend
-//go:linkname selectnbrecv runtime.selectnbrecv
-//go:linkname selectnbrecv2 runtime.selectnbrecv2
+//go:linkname makechan
+//go:linkname makechan64
+//go:linkname chansend1
+//go:linkname chanrecv1
+//go:linkname chanrecv2
+//go:linkname closechan
+//go:linkname selectnbsend
+//go:linkname selectnbrecv
+//go:linkname selectnbrecv2
 
 const (
 	maxAlign  = 8

@@ -12,8 +12,8 @@ import (
 )
 
 // Functions called by C code.
-//go:linkname sysAlloc runtime.sysAlloc
-//go:linkname sysFree runtime.sysFree
+//go:linkname sysAlloc
+//go:linkname sysFree
 
 //extern mmap
 func sysMmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uintptr) unsafe.Pointer

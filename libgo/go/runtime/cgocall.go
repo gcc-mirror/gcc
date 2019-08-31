@@ -12,8 +12,8 @@ import (
 )
 
 // Functions called by cgo-generated code.
-//go:linkname cgoCheckPointer runtime.cgoCheckPointer
-//go:linkname cgoCheckResult runtime.cgoCheckResult
+//go:linkname cgoCheckPointer
+//go:linkname cgoCheckResult
 
 // Pointer checking for cgo code.
 

@@ -1042,7 +1042,7 @@ func scanobject(b uintptr, gcw *gcWork) {
 	gcw.scanWork += int64(i)
 }
 
-//go:linkname scanstackblock runtime.scanstackblock
+//go:linkname scanstackblock
 
 // scanstackblock is called by the stack scanning code in C to
 // actually find and mark pointers in the stack block. This is like
@@ -1064,7 +1064,7 @@ func scanstackblock(b, n uintptr, gcw *gcWork) {
 
 // scanstackblockwithmap is like scanstackblock, but with an explicit
 // pointer bitmap. This is used only when precise stack scan is enabled.
-//go:linkname scanstackblockwithmap runtime.scanstackblockwithmap
+//go:linkname scanstackblockwithmap
 //go:nowritebarrier
 func scanstackblockwithmap(pc, b0, n0 uintptr, ptrmask *uint8, gcw *gcWork) {
 	// Use local copies of original parameters, so that a stack trace

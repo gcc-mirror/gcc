@@ -9,19 +9,18 @@ import (
 	"unsafe"
 )
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname concatstrings runtime.concatstrings
-//go:linkname slicebytetostring runtime.slicebytetostring
-//go:linkname slicebytetostringtmp runtime.slicebytetostringtmp
-//go:linkname stringtoslicebyte runtime.stringtoslicebyte
-//go:linkname stringtoslicerune runtime.stringtoslicerune
-//go:linkname slicerunetostring runtime.slicerunetostring
-//go:linkname intstring runtime.intstring
+//go:linkname concatstrings
+//go:linkname slicebytetostring
+//go:linkname slicebytetostringtmp
+//go:linkname stringtoslicebyte
+//go:linkname stringtoslicerune
+//go:linkname slicerunetostring
+//go:linkname intstring
 // Temporary for C code to call:
-//go:linkname gostringnocopy runtime.gostringnocopy
-//go:linkname findnull runtime.findnull
+//go:linkname gostringnocopy
+//go:linkname findnull
 
 // The constant is known to the compiler.
 // There is no fundamental theory behind this number.

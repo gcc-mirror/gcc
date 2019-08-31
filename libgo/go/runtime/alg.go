@@ -10,44 +10,43 @@ import (
 	"unsafe"
 )
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname memhash0 runtime.memhash0
-//go:linkname memhash8 runtime.memhash8
-//go:linkname memhash16 runtime.memhash16
-//go:linkname memhash32 runtime.memhash32
-//go:linkname memhash64 runtime.memhash64
-//go:linkname memhash128 runtime.memhash128
-//go:linkname strhash runtime.strhash
-//go:linkname f32hash runtime.f32hash
-//go:linkname f64hash runtime.f64hash
-//go:linkname c64hash runtime.c64hash
-//go:linkname c128hash runtime.c128hash
-//go:linkname interhash runtime.interhash
-//go:linkname nilinterhash runtime.nilinterhash
-//go:linkname memequal0 runtime.memequal0
-//go:linkname memequal8 runtime.memequal8
-//go:linkname memequal16 runtime.memequal16
-//go:linkname memequal32 runtime.memequal32
-//go:linkname memequal64 runtime.memequal64
-//go:linkname memequal128 runtime.memequal128
-//go:linkname strequal runtime.strequal
-//go:linkname f32equal runtime.f32equal
-//go:linkname f64equal runtime.f64equal
-//go:linkname c64equal runtime.c64equal
-//go:linkname c128equal runtime.c128equal
-//go:linkname interequal runtime.interequal
-//go:linkname nilinterequal runtime.nilinterequal
-//go:linkname efaceeq runtime.efaceeq
-//go:linkname ifaceeq runtime.ifaceeq
-//go:linkname ifacevaleq runtime.ifacevaleq
-//go:linkname ifaceefaceeq runtime.ifaceefaceeq
-//go:linkname efacevaleq runtime.efacevaleq
-//go:linkname cmpstring runtime.cmpstring
+//go:linkname memhash0
+//go:linkname memhash8
+//go:linkname memhash16
+//go:linkname memhash32
+//go:linkname memhash64
+//go:linkname memhash128
+//go:linkname strhash
+//go:linkname f32hash
+//go:linkname f64hash
+//go:linkname c64hash
+//go:linkname c128hash
+//go:linkname interhash
+//go:linkname nilinterhash
+//go:linkname memequal0
+//go:linkname memequal8
+//go:linkname memequal16
+//go:linkname memequal32
+//go:linkname memequal64
+//go:linkname memequal128
+//go:linkname strequal
+//go:linkname f32equal
+//go:linkname f64equal
+//go:linkname c64equal
+//go:linkname c128equal
+//go:linkname interequal
+//go:linkname nilinterequal
+//go:linkname efaceeq
+//go:linkname ifaceeq
+//go:linkname ifacevaleq
+//go:linkname ifaceefaceeq
+//go:linkname efacevaleq
+//go:linkname cmpstring
 //
 // Temporary to be called from C code.
-//go:linkname alginit runtime.alginit
+//go:linkname alginit
 
 const (
 	c0 = uintptr((8-sys.PtrSize)/4*2860486313 + (sys.PtrSize-4)/4*33054211828000289)
