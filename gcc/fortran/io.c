@@ -2845,7 +2845,7 @@ match_filepos (gfc_statement st, gfc_exec_op op)
 
   m = match_file_element (fp);
   if (m == MATCH_ERROR)
-    goto done;
+    goto syntax;
   if (m == MATCH_NO)
     {
       m = gfc_match_expr (&fp->unit);
