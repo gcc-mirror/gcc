@@ -1,3 +1,9 @@
+2019-08-31  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/constraints.md (t): New constraint.
+	* config/or1k/or1k.h (GOT_REGS): New register class.
+	* config/or1k/or1k.md (set_got_tmp, set_got): Use t contraint.
+
 2019-08-30  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv.c (riscv_option_override): If -msave-restore
