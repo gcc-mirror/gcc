@@ -1,5 +1,6 @@
 /* { dg-do run { target { powerpc*-*-* } } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
+/* { dg-require-effective-target vsx_hw } */
 /* { dg-options "-mcpu=power8 " } */
 
 #include <altivec.h>
