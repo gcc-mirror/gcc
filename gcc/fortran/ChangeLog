@@ -1,5 +1,10 @@
 2019-08-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/91587
+	* io.c (match_filepos): MATCH_ERROR should branch to a syntax error.
+
+2019-08-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/91565
 	* simplify.c (gfc_simplify_reshape): Add additional checks of the
 	ORDER dummy argument.
