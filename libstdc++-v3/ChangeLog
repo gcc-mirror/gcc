@@ -1,3 +1,8 @@
+2019-09-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml (COM: Component
+	Model Object Technologies): Adjust name and link.
+
 2019-08-30  Antony Polukhin  <antoshkka@gmail.com>
 
 	* include/std/charconv (__detail::__to_chars_8)
