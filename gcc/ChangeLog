@@ -1,5 +1,11 @@
 2019-09-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/91623
+	* optabs.c (expand_vec_cond_expr): If op0 is a VECTOR_CST and only
+	EQ_EXPR/NE_EXPR is supported, verify that op0 only contains
+	zeros or negative elements and use NE_EXPR instead of LT_EXPR against
+	zero vector.
+
 	PR lto/91572
 	* tree.c (find_decls_types_in_node): Also walk TREE_PURPOSE of
 	GIMPLE_ASM TREE_LIST operands.
