@@ -7,12 +7,12 @@
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
 #ifdef __NEXT_RUNTIME__
-#include <Foundation/NSObject.h>
-#define OBJECT NSObject
+# include "../objc-obj-c++-shared/F-NSObject.h"
+# define OBJECT NSObject
 #else
-#include <objc/Object.h>
-#include <objc/Protocol.h>
-#define OBJECT Object
+# include <objc/Object.h>
+# include <objc/Protocol.h>
+# define OBJECT Object
 #endif
 
 extern void abort(void);
