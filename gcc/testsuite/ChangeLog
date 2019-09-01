@@ -1,3 +1,12 @@
+2019-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/x86_64/abi/avx512f/abi-avx512f.exp: Darwin is
+	now tested.
+	* gcc.target/x86_64/abi/avx512f/asm-support-darwin.s: New.
+
 2019-09-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20190901-1.c: New test.
