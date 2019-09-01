@@ -1,3 +1,10 @@
+2019-09-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91129 - wrong error with binary op in template argument.
+	* typeck.c (warn_for_null_address): Use fold_for_warn instead of
+	fold_non_dependent_expr.
+	(cp_build_binary_op): Likewise.
+
 2019-08-30  Jason Merrill  <jason@redhat.com>
 
 	Add source location to TRAIT_EXPR.
