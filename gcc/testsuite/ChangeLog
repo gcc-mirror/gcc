@@ -1,3 +1,8 @@
+2019-09-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91129 - wrong error with binary op in template argument.
+	* g++.dg/cpp1y/nontype1.C: New test.
+
 2019-09-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.c-torture/compile/20190827-1.c: Add dg-requires-alias.
