@@ -171,7 +171,7 @@
 	* config/i386/i386-features.c (convert_scalars_to_vector): Do not
 	add the MD problem.
 
-2019-09-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+2019-08-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 	    Richard Biener  <rguenther@suse.de>
 
 	* expr.c (expand_assignment): Handle misaligned DECLs.
@@ -2861,12 +2861,12 @@
 	* config/i386/mmx.md (usadv8qi): Use register_operand instead of
 	vector_operand.
 
-2019-09-09  Vladimir Makarov  <vmakarov@redhat.com>
+2019-08-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* reload1.c (finish_spills): Do not check ira_conflicts_p when
 	handling spilled pseudos.
 
-2019-09-09  Richard Earnshaw  <rearnsha@arm.com>
+2019-08-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/91386
 	* config/aarch64/aarch64.c (aarch64_gen_adjusted_ldpstp): Use copy_rtx
