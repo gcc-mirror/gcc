@@ -167,7 +167,7 @@ namespace __gnu_test
     {
       if (getrusage(who, &rusage_begin) != 0 )
 	memset(&rusage_begin, 0, sizeof(rusage_begin));
-      malloc(0); // Needed for some implementations.
+      void* p __attribute__((unused)) = malloc(0); // Needed for some implementations.
       allocation_begin = mallinfo();
     }
 
