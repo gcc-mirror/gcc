@@ -8164,6 +8164,7 @@ gfc_match_end (gfc_statement *st)
 
     case COMP_SELECT:
     case COMP_SELECT_TYPE:
+    case COMP_SELECT_RANK:
       *st = ST_END_SELECT;
       target = " select";
       eos_ok = 0;

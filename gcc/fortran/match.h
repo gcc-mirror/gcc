@@ -121,6 +121,8 @@ match gfc_match_select (void);
 match gfc_match_select_type (void);
 match gfc_match_type_is (void);
 match gfc_match_class_is (void);
+match gfc_match_select_rank (void);
+match gfc_match_rank_is (void);
 match gfc_match_where (gfc_statement *);
 match gfc_match_elsewhere (void);
 match gfc_match_forall (gfc_statement *);

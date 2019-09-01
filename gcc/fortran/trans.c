@@ -1968,6 +1968,10 @@ trans_code (gfc_code * code, tree cond)
 	  res = gfc_trans_select_type (code);
 	  break;
 
+	case EXEC_SELECT_RANK:
+	  res = gfc_trans_select_rank (code);
+	  break;
+
 	case EXEC_FLUSH:
 	  res = gfc_trans_flush (code);
 	  break;
