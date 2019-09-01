@@ -1,3 +1,7 @@
+2019-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.c-torture/compile/20190827-1.c: Add dg-requires-alias.
+
 2019-09-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20190901-1.c: New test.
