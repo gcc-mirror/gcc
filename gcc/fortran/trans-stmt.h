@@ -53,6 +53,7 @@ tree gfc_trans_do_concurrent (gfc_code *);
 tree gfc_trans_do_while (gfc_code *);
 tree gfc_trans_select (gfc_code *);
 tree gfc_trans_select_type (gfc_code *);
+tree gfc_trans_select_rank (gfc_code *);
 tree gfc_trans_sync (gfc_code *, gfc_exec_op);
 tree gfc_trans_lock_unlock (gfc_code *, gfc_exec_op);
 tree gfc_trans_event_post_wait (gfc_code *, gfc_exec_op);

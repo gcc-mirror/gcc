@@ -6181,7 +6181,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 	}
     }
   /* Check variable definition context for associate-names.  */
-  if (!pointer && sym->assoc)
+  if (!pointer && sym->assoc && !sym->attr.select_rank_temporary)
     {
       const char* name;
       gfc_association_list* assoc;

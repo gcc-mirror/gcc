@@ -2213,7 +2213,11 @@ spec_dimen_size (gfc_array_spec *as, int dimen, mpz_t *result)
     gfc_internal_error ("spec_dimen_size(): Bad dimension");
 
   if (as->type != AS_EXPLICIT
-      || as->lower[dimen]->expr_type != EXPR_CONSTANT
+      || !as->lower[dimen]
+      || !as->upper[dimen])
+    return false;
+
+  if (as->lower[dimen]->expr_type != EXPR_CONSTANT
       || as->upper[dimen]->expr_type != EXPR_CONSTANT
       || as->lower[dimen]->ts.type != BT_INTEGER
       || as->upper[dimen]->ts.type != BT_INTEGER)

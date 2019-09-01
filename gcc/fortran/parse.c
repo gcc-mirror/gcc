@@ -426,6 +426,7 @@ decode_statement (void)
   match (NULL, gfc_match_critical, ST_CRITICAL);
   match (NULL, gfc_match_select, ST_SELECT_CASE);
   match (NULL, gfc_match_select_type, ST_SELECT_TYPE);
+  match (NULL, gfc_match_select_rank, ST_SELECT_RANK);
 
   /* General statement matching: Instead of testing every possible
      statement, we eliminate most possibilities by peeking at the
@@ -546,6 +547,7 @@ decode_statement (void)
       break;
 
     case 'r':
+      match ("rank", gfc_match_rank_is, ST_RANK);
       match ("read", gfc_match_read, ST_READ);
       match ("return", gfc_match_return, ST_RETURN);
       match ("rewind", gfc_match_rewind, ST_REWIND);
@@ -1537,7 +1539,7 @@ next_statement (void)
 #define case_exec_markers case ST_DO: case ST_FORALL_BLOCK: \
   case ST_IF_BLOCK: case ST_BLOCK: case ST_ASSOCIATE: \
   case ST_WHERE_BLOCK: case ST_SELECT_CASE: case ST_SELECT_TYPE: \
-  case ST_OMP_PARALLEL: \
+  case ST_SELECT_RANK: case ST_OMP_PARALLEL: \
   case ST_OMP_PARALLEL_SECTIONS: case ST_OMP_SECTIONS: case ST_OMP_ORDERED: \
   case ST_OMP_CRITICAL: case ST_OMP_MASTER: case ST_OMP_SINGLE: \
   case ST_OMP_DO: case ST_OMP_PARALLEL_DO: case ST_OMP_ATOMIC: \
@@ -2077,11 +2079,17 @@ gfc_ascii_statement (gfc_statement st)
     case ST_SELECT_TYPE:
       p = "SELECT TYPE";
       break;
+    case ST_SELECT_RANK:
+      p = "SELECT RANK";
+      break;
     case ST_TYPE_IS:
       p = "TYPE IS";
       break;
     case ST_CLASS_IS:
       p = "CLASS IS";
+      break;
+    case ST_RANK:
+      p = "RANK";
       break;
     case ST_SEQUENCE:
       p = "SEQUENCE";
@@ -4179,7 +4187,7 @@ parse_select_block (void)
       reject_statement ();
     }
 
-  /* At this point, we're got a nonempty select block.  */
+  /* At this point, we've got a nonempty select block.  */
   cp = new_level (cp);
   *cp = new_st;
 
@@ -4263,7 +4271,7 @@ parse_select_type_block (void)
       reject_statement ();
     }
 
-  /* At this point, we're got a nonempty select block.  */
+  /* At this point, we've got a nonempty select block.  */
   cp = new_level (cp);
   *cp = new_st;
 
@@ -4279,6 +4287,81 @@ parse_select_type_block (void)
 
 	case ST_TYPE_IS:
 	case ST_CLASS_IS:
+	  cp = new_level (gfc_state_stack->head);
+	  *cp = new_st;
+	  gfc_clear_new_st ();
+
+	  accept_statement (st);
+	  /* Fall through */
+
+	case ST_END_SELECT:
+	  break;
+
+	/* Can't have an executable statement because of
+	   parse_executable().  */
+	default:
+	  unexpected_statement (st);
+	  break;
+	}
+    }
+  while (st != ST_END_SELECT);
+
+done:
+  pop_state ();
+  accept_statement (st);
+  gfc_current_ns = gfc_current_ns->parent;
+  select_type_pop ();
+}
+
+
+/* Parse a SELECT RANK construct.  */
+
+static void
+parse_select_rank_block (void)
+{
+  gfc_statement st;
+  gfc_code *cp;
+  gfc_state_data s;
+
+  gfc_current_ns = new_st.ext.block.ns;
+  accept_statement (ST_SELECT_RANK);
+
+  cp = gfc_state_stack->tail;
+  push_state (&s, COMP_SELECT_RANK, gfc_new_block);
+
+  /* Make sure that the next statement is a RANK IS or RANK DEFAULT.  */
+  for (;;)
+    {
+      st = next_statement ();
+      if (st == ST_NONE)
+	unexpected_eof ();
+      if (st == ST_END_SELECT)
+	/* Empty SELECT CASE is OK.  */
+	goto done;
+      if (st == ST_RANK)
+	break;
+
+      gfc_error ("Expected RANK or RANK DEFAULT "
+		 "following SELECT RANK at %C");
+
+      reject_statement ();
+    }
+
+  /* At this point, we've got a nonempty select block.  */
+  cp = new_level (cp);
+  *cp = new_st;
+
+  accept_statement (st);
+
+  do
+    {
+      st = parse_executable (ST_NONE);
+      switch (st)
+	{
+	case ST_NONE:
+	  unexpected_eof ();
+
+	case ST_RANK:
 	  cp = new_level (gfc_state_stack->head);
 	  *cp = new_st;
 	  gfc_clear_new_st ();
@@ -5360,6 +5443,10 @@ parse_executable (gfc_statement st)
 	  parse_select_type_block ();
 	  break;
 
+	case ST_SELECT_RANK:
+	  parse_select_rank_block ();
+	  break;
+
 	case ST_DO:
 	  parse_do_block ();
 	  if (check_do_closure () == 1)
@@ -6410,7 +6497,7 @@ done:
 
   if (flag_dump_fortran_global)
     gfc_dump_global_symbols (stdout);
-  
+
   gfc_end_source_files ();
   return true;
 
