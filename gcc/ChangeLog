@@ -1,3 +1,10 @@
+2019-09-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/91472
+	* config/sparc/sparc.c (sparc_cannot_force_const_mem): Return true
+	during LRA/reload in PIC mode if the PIC register hasn't been used yet.
+	(sparc_pic_register_p): Test reload_in_progress for consistency's sake.
+
 2019-08-30  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

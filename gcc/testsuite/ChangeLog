@@ -1,3 +1,7 @@
+2019-09-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20190901-1.c: New test.
+
 2019-08-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
