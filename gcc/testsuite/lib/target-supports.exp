@@ -1052,11 +1052,10 @@ proc check_effective_target_swapcontext {} {
     }]
 }
 
-# Return 1 if compilation with -pthread is error-free for trivial
-# code, 0 otherwise.
-
+# Return 1 if the target supports POSIX threads, 0 otherwise.
 proc check_effective_target_pthread {} {
     return [check_no_compiler_messages pthread object {
+	#include <pthread.h>
 	void foo (void) { }
     } "-pthread"]
 }
