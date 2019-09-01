@@ -1,6 +1,14 @@
 2019-09-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-07-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/powerpc/stabs-attrib-vect-darwin.c: Require stabs
+	support.
+
+2019-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-06-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/powerpc/safe-indirect-jump-1.c: Skip for Darwin.
