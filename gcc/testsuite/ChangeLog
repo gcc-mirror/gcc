@@ -1,6 +1,14 @@
 2019-09-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-04-15  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR tree-optimization/90020
+	* gcc.dg/torture/pr90020.c: Add linker options for darwin.
+
+2019-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-05-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/x86_64/abi/avx512f/abi-avx512f.exp: Darwin is
