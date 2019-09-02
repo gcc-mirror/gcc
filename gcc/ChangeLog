@@ -1,3 +1,11 @@
+2019-09-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/91323
+	* doc/generic.texi (LTGT_EXPR): Merge with other comparison operators.
+	* rtl.def (LTGT): Likewise.  Add note about floating-point exceptions.
+	* tree.def (LTGT_EXPR): Likewise.
+	* config/sparc/sparc.c (select_cc_mode): Return CCFPEmode for LTGT.
+
 2019-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR go/91617
