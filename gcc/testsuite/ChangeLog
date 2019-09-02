@@ -1,3 +1,7 @@
+2019-09-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/tree-ssa/slsr-42.c: New test.
+
 2019-09-02  Martin Liska  <mliska@suse.cz>
 
 	PR c++/91155
