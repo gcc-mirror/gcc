@@ -1923,8 +1923,12 @@ coro_make_frame_entry (tree *field_list, const char *name,
 struct __susp_frame_data {
   tree *field_list;
   tree handle_type;
+  hash_set<tree> captured_temps;
+  vec<tree, va_gc> *to_replace;
+  vec<tree, va_gc> *block_stack;
   unsigned count;
   unsigned saw_awaits;
+  bool captures_temporary;
 };
 
 /* Helper to return the type of an awaiter's await_suspend() method.
@@ -1945,6 +1949,84 @@ get_await_suspend_return_type (tree aw_expr)
     return TREE_TYPE (susp_fn);
   debug_tree (susp_fn);
   return TREE_TYPE (susp_fn);
+}
+
+/* Walk the sub-tree looking for call expressions that both capture
+   references and have compiler-temporaries as parms.  */
+static tree
+captures_temporary (tree *stmt, int *do_subtree, void *d)
+{
+  /* Stop recursing if we see an await expression, the subtrees
+     of that will be handled when it it processed.  */
+  if (TREE_CODE (*stmt) == CO_AWAIT_EXPR
+      && TREE_CODE (*stmt) == CO_YIELD_EXPR)
+    {
+      *do_subtree = 0;
+      return NULL_TREE;
+    }
+
+  /* We're only interested in calls.  */
+  if (TREE_CODE (*stmt) != CALL_EXPR)
+    return NULL_TREE;
+
+  /* Does this call capture references?
+     Strip the ADDRESS_EXPR to get the fn decl and inspect it.  */
+  tree fn = TREE_OPERAND (CALL_EXPR_FN (*stmt), 0);
+  tree arg = TYPE_P (fn) ? TYPE_ARG_TYPES (fn)
+			 : FUNCTION_FIRST_USER_PARMTYPE (fn);
+  /* Account for 'this' when the fn is a method.  */
+  unsigned offset = TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE ? 4 : 3;
+  for (unsigned anum = 0; arg != NULL; arg = TREE_CHAIN (arg), anum++)
+   {
+      /* If it's not a reference, we don't care.  */
+      if (!TYPE_REF_P (TREE_VALUE (arg)))
+        continue;
+
+      /* Fetch the arg presented to the fn.  */
+      tree parm = TREE_OPERAND (*stmt, anum+offset);
+      while (TREE_CODE (parm) == NOP_EXPR)
+	parm = TREE_OPERAND (parm, 0);
+      gcc_assert (TREE_CODE (parm) == ADDR_EXPR);
+      parm = TREE_OPERAND (parm, 0);
+      if (TREE_CODE (parm) == VAR_DECL
+	  && !DECL_ARTIFICIAL (parm))
+	continue;
+      if (TREE_CODE (parm) == PARM_DECL)
+	continue;
+      else if (TREE_CODE (parm) == TARGET_EXPR)
+	{
+	  /* We're taking the address of a temporary and using it as a ref.  */
+	  tree tvar = TREE_OPERAND (parm, 0);
+	  if (DECL_ARTIFICIAL (tvar))
+	    {
+	      struct __susp_frame_data *data = (struct __susp_frame_data *) d;
+	      data->captures_temporary = true;
+	      /* Record this one so we don't duplicate, and on the first
+		 occurrence note the target expr to be replaced.  */
+	      if (!data->captured_temps.add (tvar))
+		vec_safe_push (data->to_replace, parm);
+	      /* Now see if the initialiser contains any more cases.  */
+	      hash_set<tree> visited;
+	      tree res = cp_walk_tree (&TREE_OPERAND (parm, 1),
+				       captures_temporary, d, &visited);
+	      if (res)
+	        return res;
+	    }
+	  else
+	    /* This wouldn't be broken, and we assume no need to replace it
+	       but (ISTM) unexpected.  */
+	    fprintf (stderr, "target expr init var real?\n");
+	}
+      else
+	{
+	  debug_tree (parm);
+	  gcc_unreachable ();
+	}
+   }
+  /* As far as it's necessary, we've walked the subtrees of the call
+     expr.  */
+  do_subtree = 0;
+  return NULL_TREE;
 }
 
 /* If this is an await, then register it and decide on what coro
@@ -2002,15 +2084,106 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
     handle_field_nam = NULL_TREE; /* no handle is needed.  */
   else
     {
-      snprintf (buf, bufsize, "__aw_h.%d", data->count);
+      snprintf (buf, bufsize, "__aw_h.%u", data->count);
       handle_field_nam = coro_make_frame_entry (data->field_list, buf,
 						susp_typ, aw_loc);
     }
   register_await_info (aw_expr, aw_field_type, aw_field_nam,
 		       susp_typ, handle_field_nam);
 
-  data->count++;
-  return NULL_TREE;
+  data->count++; /* Each await suspend context is unique.  */
+
+  /* We now need to know if to take special action on lifetime extension
+     of temporaries captured by reference.  This can only happen if such
+     a case appears in the initialiser for the awaitable.  The callback
+     records captured temporaries including subtrees of initialisers.  */
+
+  hash_set<tree> visited;
+  tree res = cp_walk_tree (&TREE_OPERAND (aw_expr, 2),
+			   captures_temporary, d, &visited);
+  return res;
+}
+
+/* The gimplifier correctly extends the lifetime of temporaries captured
+   by reference (per. [class.temporary] (6.9) "A temporary object bound
+   to a reference parameter in a function call persists until the completion
+   of the full-expression containing the call").  However, that is not
+   sufficient to work across a suspension - and we need to promote such
+   temporaries to be regular vars that will then get a coro frame slot.
+   We don't want to incur the effort of checking for this unless we have
+   an await expression in the current full expression.  */
+static tree
+maybe_promote_captured_temps (tree *stmt, void *d)
+{
+  struct __susp_frame_data *awpts = (struct __susp_frame_data *) d;
+  hash_set<tree> visited;
+  awpts->saw_awaits = 0;
+  /* When register_awaits sees an await, it walks the initialiser for
+     that await looking for temporaries captured by reference and notes
+     them in awpts->captured_temps.  We only need to take any action
+     here if the statement contained any awaits, and any of those had
+     temporaries captured by reference in the initialisers for their class.
+  */
+
+  tree res = cp_walk_tree (stmt, register_awaits, d, &visited);
+  if (!res && awpts->saw_awaits > 0 && !awpts->captured_temps.is_empty())
+    {
+      location_t sloc = EXPR_LOCATION (*stmt);
+      tree aw_bind = build3_loc (sloc, BIND_EXPR, void_type_node, NULL,
+				 NULL, NULL);
+      tree aw_statement_current;
+      if (TREE_CODE (*stmt) == CLEANUP_POINT_EXPR)
+	aw_statement_current = TREE_OPERAND (*stmt, 0);
+      else
+	aw_statement_current = *stmt;
+      /* Collected the scope vars we need move the temps to regular. */
+      tree aw_bind_body = push_stmt_list ();
+      tree varlist = NULL_TREE;
+      unsigned vnum = 0;
+      while (! awpts->to_replace->is_empty ())
+	{
+	  size_t bufsize = sizeof ("__aw_.tmp.") + 20;
+	  char *buf = (char *) alloca (bufsize);
+	  snprintf (buf, bufsize, "__aw_%d.tmp.%d", awpts->count, vnum);
+	  tree to_replace = awpts->to_replace->pop ();
+	  tree orig_temp = TREE_OPERAND (to_replace, 0);
+	  tree var_type = TREE_TYPE (orig_temp);
+	  gcc_assert (same_type_p (TREE_TYPE (to_replace), var_type));
+	  tree newvar = build_lang_decl (VAR_DECL, get_identifier (buf),
+					 var_type);
+	  DECL_CONTEXT (newvar) = DECL_CONTEXT (orig_temp);
+	  if (DECL_SOURCE_LOCATION (orig_temp))
+	    sloc = DECL_SOURCE_LOCATION (orig_temp);
+	  DECL_SOURCE_LOCATION (newvar) = sloc;
+	  DECL_CHAIN (newvar) = varlist;
+	  varlist = newvar;
+	  tree stmt = build2_loc (sloc, INIT_EXPR, var_type, newvar, to_replace);
+	  stmt = coro_build_cvt_void_expr_stmt (stmt, sloc);
+	  add_stmt (stmt);
+	  struct __proxy_replace pr = {to_replace, newvar};
+	  /* Replace all instances of that temp in the original expr.  */
+	  cp_walk_tree (&aw_statement_current, replace_proxy, &pr, NULL);
+	}
+	/* What's left should be the original statement with any temporaries
+	   broken out.  */
+	add_stmt (aw_statement_current);
+	BIND_EXPR_BODY (aw_bind) = pop_stmt_list (aw_bind_body);
+      awpts->captured_temps.empty ();
+
+      BIND_EXPR_VARS (aw_bind) = nreverse (varlist);
+      tree b_block = make_node (BLOCK);
+      tree s_block = awpts->block_stack->last ();
+      if (s_block)
+	{
+	  BLOCK_SUPERCONTEXT (b_block) = s_block;
+	  BLOCK_CHAIN (b_block) = BLOCK_SUBBLOCKS (s_block);
+	  BLOCK_SUBBLOCKS (s_block) = b_block;
+	}
+      BIND_EXPR_BLOCK (aw_bind) = b_block;
+
+      *stmt = aw_bind;
+    }
+  return res;
 }
 
 static tree
@@ -2018,42 +2191,46 @@ await_statement_walker (tree *stmt, int *do_subtree, void *d)
 {
   tree res = NULL_TREE;
   struct __susp_frame_data *awpts = (struct __susp_frame_data *) d;
-  if (TREE_CODE (*stmt) == STATEMENT_LIST)
+
+  /* We might need to insert a new bind expression, and want to link it
+     into the correct scope, so keep a note of the current block scope.  */
+  if (TREE_CODE (*stmt) == BIND_EXPR)
     {
-      tree_stmt_iterator i;
-      for (i = tsi_start (*stmt); ! tsi_end_p (i); tsi_next (&i))
+      tree *body = &BIND_EXPR_BODY (*stmt);
+      tree blk = BIND_EXPR_BLOCK (*stmt);
+      vec_safe_push (awpts->block_stack, blk);
+
+      if (TREE_CODE (*body) == STATEMENT_LIST)
 	{
-	  tree *new_stmt = tsi_stmt_ptr (i);
-	  if (STATEMENT_CLASS_P (*new_stmt)
-	      || !EXPR_P (*new_stmt)
-	      || TREE_CODE (*new_stmt) == BIND_EXPR)
-	    res = cp_walk_tree (new_stmt, await_statement_walker, d, NULL);
-	  else
-	    {
-	      hash_set<tree> visited;
-	      awpts->saw_awaits = 0;
-	      res = cp_walk_tree (new_stmt, register_awaits, d, &visited);
-	      if (awpts->saw_awaits > 0)
-		{
-		  /* do something here if the statement contained an await.  */
-		}
+	  tree_stmt_iterator i;
+	  for (i = tsi_start (*body); ! tsi_end_p (i); tsi_next (&i))
+	   {
+	      tree *new_stmt = tsi_stmt_ptr (i);
+	      if (STATEMENT_CLASS_P (*new_stmt)
+		  || !EXPR_P (*new_stmt)
+		  || TREE_CODE (*new_stmt) == BIND_EXPR)
+		res = cp_walk_tree (new_stmt, await_statement_walker, d, NULL);
+	      else
+		res = maybe_promote_captured_temps (new_stmt, d);
+	      if (res)
+		return res;
 	    }
-	  if (res)
-	    return res;
+	  *do_subtree = 0; /* Done subtrees.  */
 	}
-      *do_subtree = 0; /* Done subtrees.  */
+      else if (!STATEMENT_CLASS_P (*body)
+	       && EXPR_P (*body)
+	       && TREE_CODE (*body) != BIND_EXPR)
+	{
+	  res = maybe_promote_captured_temps (body, d);
+	  *do_subtree = 0; /* Done subtrees.  */
+	}
+      awpts->block_stack->pop();
     }
   else if (!STATEMENT_CLASS_P (*stmt)
 	   && EXPR_P (*stmt)
 	   && TREE_CODE (*stmt) != BIND_EXPR)
     {
-      hash_set<tree> visited;
-      awpts->saw_awaits = 0;
-      res = cp_walk_tree (stmt, register_awaits, d, &visited);
-      if (awpts->saw_awaits > 0)
-	{
-	  /* do something here if the statement contained an await.  */
-	}
+      res = maybe_promote_captured_temps (stmt, d);
       *do_subtree = 0; /* Done subtrees.  */
     }
   /* If it wasn't a statement list, or a single statement, continue.  */
@@ -2346,8 +2523,13 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   register_await_info (initial_await, initial_suspend_type,
 		       init_susp_name, ret_typ, init_hand_name);
 
-  /* Now insert the data for any body await points.  */
-  struct __susp_frame_data body_aw_points = { &field_list, handle_type, 0, 0};
+  /* Now insert the data for any body await points, at this time we also need
+     to promote any temporaries that are captured by reference (to regular
+     vars) they will get added to the coro frame along with other locals.  */
+  struct __susp_frame_data body_aw_points
+    = { &field_list, handle_type, hash_set<tree> (), NULL, NULL, 0, 0, false };
+  body_aw_points.to_replace = make_tree_vector ();
+  body_aw_points.block_stack = make_tree_vector ();
   cp_walk_tree (&fnbody, await_statement_walker, &body_aw_points, NULL);
 
   /* Final suspend is mandated.  */

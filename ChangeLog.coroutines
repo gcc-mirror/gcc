@@ -1,3 +1,16 @@
+2019-09-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/
+	* coroutines.cc (struct __susp_frame_data): Arrange to record
+	temporary vars caputered by reference.
+	(captures_temporary): New callback.
+	(register_awaits): Walk the initialier for captured temporaries.
+	(maybe_promote_captured_temps): New, if we see one or more temps
+	captured by reference promote them to regular vars.
+	(await_statement_walker): Walk bind expressions so that we can
+	record the scope into which new insertions would be made.
+	(morph_fn_to_coro): Initialise additional suspend point vars.  
+	Update comments.
 
 2019-08-27  Iain Sandoe  <iain@sandoe.co.uk>
 
