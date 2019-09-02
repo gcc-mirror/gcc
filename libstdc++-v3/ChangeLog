@@ -1,5 +1,10 @@
 2019-09-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR middle-end/89303
+	* testsuite/20_util/enable_shared_from_this/89303.cc: New test.
+
+2019-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
 	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Replace dg-error
 	with dg-prune-output for enable_if failure.
 	* testsuite/20_util/unique_ptr/cons/cv_qual_neg.cc: Add
