@@ -1,3 +1,9 @@
+2019-09-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91589
+	* primary.c (gfc_match_varspec): Return MATCH_NO on an apparent
+	component ref, when the primary type is intrinsic.
+
 2019-09-02  Steven G. Kargl  <kargl@gc.gnu.org>
 
 	PR fortran/91552
