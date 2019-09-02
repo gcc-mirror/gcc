@@ -1,3 +1,12 @@
+2019-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/91605
+	* expr.c (addr_expr_of_non_mem_decl_p_1): Refactor into...
+	(non_mem_decl_p): ...this.
+	(mem_ref_refers_to_non_mem_p): Handle DECL_P as well ase MEM_REF.
+	(expand_assignment): Call mem_ref_referes_to_non_mem_p
+	unconditionally as before.
+
 2019-09-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/91323

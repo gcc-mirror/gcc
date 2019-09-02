@@ -4942,37 +4942,46 @@ get_bit_range (poly_uint64_pod *bitstart, poly_uint64_pod *bitend, tree exp,
   *bitend = *bitstart + tree_to_poly_uint64 (DECL_SIZE (repr)) - 1;
 }
 
-/* Returns true if ADDR is an ADDR_EXPR of a DECL that does not reside
-   in memory and has non-BLKmode.  DECL_RTL must not be a MEM; if
-   DECL_RTL was not set yet, return NORTL.  */
+/* Returns true if BASE is a DECL that does not reside in memory and
+   has non-BLKmode.  DECL_RTL must not be a MEM; if
+   DECL_RTL was not set yet, return false.  */
 
 static inline bool
-addr_expr_of_non_mem_decl_p_1 (tree addr, bool nortl)
+non_mem_decl_p (tree base)
 {
-  if (TREE_CODE (addr) != ADDR_EXPR)
-    return false;
-
-  tree base = TREE_OPERAND (addr, 0);
-
   if (!DECL_P (base)
       || TREE_ADDRESSABLE (base)
       || DECL_MODE (base) == BLKmode)
     return false;
 
   if (!DECL_RTL_SET_P (base))
-    return nortl;
+    return false;
 
   return (!MEM_P (DECL_RTL (base)));
 }
 
-/* Returns true if the MEM_REF REF refers to an object that does not
+/* Returns true if REF refers to an object that does not
    reside in memory and has non-BLKmode.  */
 
 static inline bool
 mem_ref_refers_to_non_mem_p (tree ref)
 {
-  tree base = TREE_OPERAND (ref, 0);
-  return addr_expr_of_non_mem_decl_p_1 (base, false);
+  tree base;
+
+  if (TREE_CODE (ref) == MEM_REF
+      || TREE_CODE (ref) == TARGET_MEM_REF)
+    {
+      tree addr = TREE_OPERAND (ref, 0);
+
+      if (TREE_CODE (addr) != ADDR_EXPR)
+	return false;
+
+      base = TREE_OPERAND (addr, 0);
+    }
+  else
+    base = ref;
+
+  return non_mem_decl_p (base);
 }
 
 /* Expand an assignment that stores the value of FROM into TO.  If NONTEMPORAL
@@ -5004,7 +5013,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
        || TREE_CODE (to) == TARGET_MEM_REF
        || DECL_P (to))
       && mode != BLKmode
-      && (DECL_P (to) || !mem_ref_refers_to_non_mem_p (to))
+      && !mem_ref_refers_to_non_mem_p (to)
       && ((align = get_object_alignment (to))
 	  < GET_MODE_ALIGNMENT (mode))
       && (((icode = optab_handler (movmisalign_optab, mode))
