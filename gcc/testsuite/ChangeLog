@@ -1,6 +1,29 @@
 2019-09-02  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89710
+	* gcc.dg/torture/pr89710.c: New testcase.
+
+	2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89572
+	* gcc.dg/torture/pr89572.c: New testcase.
+
+	2019-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89296
+	* gcc.dg/uninit-pr89296.c: New testcase.
+
+	2019-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/89135
+	* gcc.dg/torture/pr89135.c: New testcase.
+
+2019-09-02  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2019-07-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91200

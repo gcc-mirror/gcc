@@ -1131,7 +1131,7 @@ canonicalize_loop_induction_variables (struct loop *loop,
   niter = number_of_latch_executions (loop);
   exit = single_exit (loop);
   if (TREE_CODE (niter) == INTEGER_CST)
-    locus = gimple_location (last_stmt (exit->src));
+    locus = gimple_location_safe (last_stmt (exit->src));
   else
     {
       /* If the loop has more than one exit, try checking all of them
@@ -1146,7 +1146,7 @@ canonicalize_loop_induction_variables (struct loop *loop,
 	niter = find_loop_niter_by_eval (loop, &exit);
 
       if (exit)
-        locus = gimple_location (last_stmt (exit->src));
+        locus = gimple_location_safe (last_stmt (exit->src));
 
       if (TREE_CODE (niter) != INTEGER_CST)
 	exit = NULL;
