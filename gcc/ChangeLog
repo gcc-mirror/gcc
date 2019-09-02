@@ -1,5 +1,15 @@
 2019-09-02  Martin Liska  <mliska@suse.cz>
 
+	* tree-switch-conversion.c (jump_table_cluster::find_jump_tables):
+	Bail out when we'll end up with the same number of clusters as
+	at the beginning.
+	(bit_test_cluster::find_bit_tests): Likewise for bit tests.
+	(jump_table_cluster::can_be_handled): Remove the guard
+	as it's already handled in ::is_enabled.  Allocate output
+	after early bail out.
+
+2019-09-02  Martin Liska  <mliska@suse.cz>
+
 	PR gcov-profile/91601
 	* gcov.c (path_contains_zero_cycle_arc): Rename to ...
 	(path_contains_zero_or_negative_cycle_arc): ... this and handle
