@@ -2427,6 +2427,8 @@ pass_forwprop::execute (function *fun)
 		  {
 		    int did_something;
 		    did_something = forward_propagate_into_comparison (&gsi);
+		    if (maybe_clean_or_replace_eh_stmt (stmt, gsi_stmt (gsi)))
+		      bitmap_set_bit (to_purge, bb->index);
 		    if (did_something == 2)
 		      cfg_changed = true;
 		    changed = did_something != 0;

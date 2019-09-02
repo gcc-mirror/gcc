@@ -3948,6 +3948,13 @@ compute_avail (void)
 			  continue;
 			}
 
+		      /* If the REFERENCE traps and there was a preceding
+		         point in the block that might not return avoid
+			 adding the reference to EXP_GEN.  */
+		      if (BB_MAY_NOTRETURN (block)
+			  && vn_reference_may_trap (ref))
+			continue;
+
 		      /* If the value of the reference is not invalidated in
 			 this block until it is computed, add the expression
 			 to EXP_GEN.  */

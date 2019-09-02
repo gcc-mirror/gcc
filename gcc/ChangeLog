@@ -1,3 +1,56 @@
+2019-09-02  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91200
+	* tree-ssa-phiopt.c (cond_store_replacement): Check we have
+	no PHI nodes in middle-bb.
+
+	2019-07-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/91162
+	* tree-cfg.c (move_block_to_fn): When releasing a virtual PHI
+	node make sure to replace all uses with something valid.
+
+	2019-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/91131
+	* gimplify.c (gimplify_compound_literal_expr): Force a temporary
+	when the object is volatile and we have not cleared it even though
+	there are no nonzero elements.
+
+	2019-07-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91126
+	* tree-ssa-sccvn.c (n_walk_cb_data::push_partial_def): Adjust
+	native encoding offset for BYTES_BIG_ENDIAN.
+	(vn_reference_lookup_3): Likewise.
+
+	2019-07-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91126
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Adjust
+	native encoding offset for BYTES_BIG_ENDIAN.
+
+	2019-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90278
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Transfer/clean
+	EH on comparison simplification.
+
+	2019-04-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90020
+	* tree-ssa-sccvn.c (vn_reference_may_trap): New function.
+	* tree-ssa-sccvn.h (vn_reference_may_trap): Declare.
+	* tree-ssa-pre.c (compute_avail): Use it to not put
+	possibly trapping references after a call that might not
+	return into EXP_GEN.
+	* gcse.c (compute_hash_table_work): Do not elide
+	marking a block containing a call if the call might not
+	return.
+
 2019-09-02  Bin Cheng  <bin.linux@linux.alibaba.com>
 
 	Backport from mainline
