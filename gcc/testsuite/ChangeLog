@@ -1,3 +1,8 @@
+2019-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/91605
+	* g++.target/i386/pr91605.C: New test.
+
 2019-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91632
