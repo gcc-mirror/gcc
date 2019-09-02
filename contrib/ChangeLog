@@ -1,3 +1,10 @@
+2019-09-02  Alexander Monakov  <amonakov@ispras.ru>
+
+	* vim-gcc-dev/syntax/gcc-match.vim: Do not override 'tabstop' here.
+	* vimrc: Set preferred values for 'tabstop', 'softtabstop',
+	'shiftwidth', 'noexpandtab', 'textwidth', 'formatoptions' for all
+	files, not just C-like files.
+
 2019-09-02  Martin Liska  <mliska@suse.cz>
 
 	* vim-gcc-dev/syntax/gcc-match.vim: Set tabstop=8.

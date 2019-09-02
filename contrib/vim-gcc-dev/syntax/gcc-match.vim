@@ -68,6 +68,4 @@ hi def link pdComment Comment
 hi def link pdTodo    Todo
 hi def link pdPreProc PreProc
 
-setlocal tabstop=8
-
 let b:current_syntax = "gcc-match"
