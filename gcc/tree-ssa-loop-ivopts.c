@@ -566,6 +566,9 @@ struct ivopts_data
   /* The common candidates.  */
   vec<iv_common_cand *> iv_common_cands;
 
+  /* Hash map recording base object information of tree exp.  */
+  hash_map<tree, tree> *base_object_map;
+
   /* The maximum invariant id.  */
   unsigned max_inv_id;
 
@@ -1066,59 +1069,68 @@ tree_ssa_iv_optimize_init (struct ivopts_data *data)
   data->inv_expr_tab = new hash_table<iv_inv_expr_hasher> (10);
   data->max_inv_expr_id = 0;
   data->name_expansion_cache = NULL;
+  data->base_object_map = NULL;
   data->iv_common_cand_tab = new hash_table<iv_common_cand_hasher> (10);
   data->iv_common_cands.create (20);
   decl_rtl_to_reset.create (20);
   gcc_obstack_init (&data->iv_obstack);
 }
 
-/* Returns a memory object to that EXPR points.  In case we are able to
-   determine that it does not point to any such object, NULL is returned.  */
+/* walk_tree callback for determine_base_object.  */
 
 static tree
-determine_base_object (tree expr)
+determine_base_object_1 (tree *tp, int *walk_subtrees, void *wdata)
 {
-  enum tree_code code = TREE_CODE (expr);
-  tree base, obj;
-
-  /* If this is a pointer casted to any type, we need to determine
-     the base object for the pointer; so handle conversions before
-     throwing away non-pointer expressions.  */
-  if (CONVERT_EXPR_P (expr))
-    return determine_base_object (TREE_OPERAND (expr, 0));
-
-  if (!POINTER_TYPE_P (TREE_TYPE (expr)))
-    return NULL_TREE;
-
-  switch (code)
+  tree_code code = TREE_CODE (*tp);
+  tree obj = NULL_TREE;
+  if (code == ADDR_EXPR)
     {
-    case INTEGER_CST:
-      return NULL_TREE;
-
-    case ADDR_EXPR:
-      obj = TREE_OPERAND (expr, 0);
-      base = get_base_address (obj);
-
+      tree base = get_base_address (TREE_OPERAND (*tp, 0));
       if (!base)
-	return expr;
-
-      if (TREE_CODE (base) == MEM_REF)
-	return determine_base_object (TREE_OPERAND (base, 0));
-
-      return fold_convert (ptr_type_node,
-			   build_fold_addr_expr (base));
-
-    case POINTER_PLUS_EXPR:
-      return determine_base_object (TREE_OPERAND (expr, 0));
-
-    case PLUS_EXPR:
-    case MINUS_EXPR:
-      /* Pointer addition is done solely using POINTER_PLUS_EXPR.  */
-      gcc_unreachable ();
-
-    default:
-      return fold_convert (ptr_type_node, expr);
+        obj = *tp;
+      else if (TREE_CODE (base) != MEM_REF)
+        obj = fold_convert (ptr_type_node, build_fold_addr_expr (base));
     }
+  else if (code == SSA_NAME && POINTER_TYPE_P (TREE_TYPE (*tp)))
+        obj = fold_convert (ptr_type_node, *tp);
+
+  if (!obj)
+    {
+      if (!EXPR_P (*tp))
+        *walk_subtrees = 0;
+
+      return NULL_TREE;
+    }
+  /* Record special node for multiple base objects and stop.  */
+  if (*static_cast<tree *> (wdata))
+    {
+      *static_cast<tree *> (wdata) = integer_zero_node;
+      return integer_zero_node;
+    }
+  /* Record the base object and continue looking.  */
+  *static_cast<tree *> (wdata) = obj;
+  return NULL_TREE;
+}
+
+/* Returns a memory object to that EXPR points with caching.  Return NULL if we
+   are able to determine that it does not point to any such object; specially
+   return integer_zero_node if EXPR contains multiple base objects.  */
+
+static tree
+determine_base_object (struct ivopts_data *data, tree expr)
+{
+  tree *slot, obj = NULL_TREE;
+  if (data->base_object_map)
+    {
+      if ((slot = data->base_object_map->get(expr)) != NULL)
+        return *slot;
+    }
+  else
+    data->base_object_map = new hash_map<tree, tree>;
+
+  (void) walk_tree_without_duplicates (&expr, determine_base_object_1, &obj);
+  data->base_object_map->put (expr, obj);
+  return obj;
 }
 
 /* Return true if address expression with non-DECL_P operand appears
@@ -1176,7 +1188,7 @@ alloc_iv (struct ivopts_data *data, tree base, tree step,
     }
 
   iv->base = base;
-  iv->base_object = determine_base_object (base);
+  iv->base_object = determine_base_object (data, base);
   iv->step = step;
   iv->biv_p = false;
   iv->nonlin_use = NULL;
@@ -7728,6 +7740,8 @@ tree_ssa_iv_optimize_finalize (struct ivopts_data *data)
   delete data->inv_expr_tab;
   data->inv_expr_tab = NULL;
   free_affine_expand_cache (&data->name_expansion_cache);
+  if (data->base_object_map)
+    delete data->base_object_map;
   delete data->iv_common_cand_tab;
   data->iv_common_cand_tab = NULL;
   data->iv_common_cands.release ();
