@@ -1,3 +1,14 @@
+2019-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR go/91617
+	* fold-const.c (range_check_type): For enumeral and boolean
+	type, pass 1 to type_for_size langhook instead of
+	TYPE_UNSIGNED (etype).  Return unsigned_type_for result whenever
+	etype isn't TYPE_UNSIGNED INTEGER_TYPE.
+	(build_range_check): Don't call unsigned_type_for for pointer types.
+	* match.pd (X / C1 op C2): Don't call unsigned_type_for on
+	range_check_type result.
+
 2019-09-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-ssa-strength-reduction.c (valid_mem_ref_cand_p): New function.

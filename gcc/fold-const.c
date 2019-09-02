@@ -4938,10 +4938,9 @@ range_check_type (tree etype)
   /* First make sure that arithmetics in this type is valid, then make sure
      that it wraps around.  */
   if (TREE_CODE (etype) == ENUMERAL_TYPE || TREE_CODE (etype) == BOOLEAN_TYPE)
-    etype = lang_hooks.types.type_for_size (TYPE_PRECISION (etype),
-					    TYPE_UNSIGNED (etype));
+    etype = lang_hooks.types.type_for_size (TYPE_PRECISION (etype), 1);
 
-  if (TREE_CODE (etype) == INTEGER_TYPE && !TYPE_OVERFLOW_WRAPS (etype))
+  if (TREE_CODE (etype) == INTEGER_TYPE && !TYPE_UNSIGNED (etype))
     {
       tree utype, minv, maxv;
 
@@ -4959,6 +4958,8 @@ range_check_type (tree etype)
       else
 	return NULL_TREE;
     }
+  else if (POINTER_TYPE_P (etype))
+    etype = unsigned_type_for (etype);
   return etype;
 }
 
@@ -5048,9 +5049,6 @@ build_range_check (location_t loc, tree type, tree exp, int in_p,
   etype = range_check_type (etype);
   if (etype == NULL_TREE)
     return NULL_TREE;
-
-  if (POINTER_TYPE_P (etype))
-    etype = unsigned_type_for (etype);
 
   high = fold_convert_loc (loc, etype, high);
   low = fold_convert_loc (loc, etype, low);

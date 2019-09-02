@@ -1569,8 +1569,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	tree etype = range_check_type (TREE_TYPE (@0));
 	if (etype)
 	  {
-	    if (! TYPE_UNSIGNED (etype))
-	      etype = unsigned_type_for (etype);
 	    hi = fold_convert (etype, hi);
 	    lo = fold_convert (etype, lo);
 	    hi = const_binop (MINUS_EXPR, etype, hi, lo);
