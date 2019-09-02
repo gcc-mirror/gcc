@@ -1,3 +1,7 @@
+2019-09-02  Martin Liska  <mliska@suse.cz>
+
+	* vim-gcc-dev/syntax/gcc-match.vim: Set tabstop=8.
+
 2019-08-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* test_summary: Do not escape "=".
