@@ -35,8 +35,9 @@
 
 #include <type_traits>
 #include <limits>
-#include <cctype>
-#include <bits/charconv.h> // for __to_chars_len, __to_chars_10_impl
+#include <bit>			// for __log2p1
+#include <cctype>		// for isdigit
+#include <bits/charconv.h>	// for __to_chars_len, __to_chars_10_impl
 #include <bits/error_constants.h> // for std::errc
 
 // Define when floating point is supported: #define __cpp_lib_to_chars 201611L
@@ -96,43 +97,7 @@ namespace __detail
   template<typename _Tp>
     constexpr unsigned
     __to_chars_len_2(_Tp __value) noexcept
-    {
-      static_assert(is_integral<_Tp>::value, "implementation bug");
-      static_assert(is_unsigned<_Tp>::value, "implementation bug");
-
-      constexpr size_t __nbits = __CHAR_BIT__ * sizeof(_Tp);
-
-      // N.B. __builtin_clzll is undefined if __value == 0, but std::to_chars
-      // handles zero values directly.
-
-      // For sizeof(_Tp) > 1 this is an order of magnitude faster than
-      // the generic __to_chars_len.
-      return __nbits
-	- (__builtin_clzll(__value)
-	    - ((__CHAR_BIT__ * sizeof(long long)) - __nbits));
-    }
-
-  template<typename _Tp>
-    constexpr unsigned
-    __to_chars_len_8(_Tp __value) noexcept
-    {
-      static_assert(is_integral<_Tp>::value, "implementation bug");
-      static_assert(is_unsigned<_Tp>::value, "implementation bug");
-
-      constexpr size_t __nbits = __CHAR_BIT__ * sizeof(_Tp);
-
-      if _GLIBCXX17_CONSTEXPR (__nbits <= 16)
-	{
-	  return __value > 077777u ? 6u
-	    : __value > 07777u ? 5u
-	    : __value > 0777u ? 4u
-	    : __value > 077u ? 3u
-	    : __value > 07u ? 2u
-	    : 1u;
-	}
-      else
-	return (__to_chars_len_2(__value) + 2) / 3;
-    }
+    { return std::__log2p1(__value); }
 
   // Generic implementation for arbitrary bases.
   template<typename _Tp>
@@ -255,8 +220,19 @@ namespace __detail
       static_assert(is_unsigned<_Tp>::value, "implementation bug");
 
       to_chars_result __res;
+      unsigned __len;
 
-      const unsigned __len = __to_chars_len_8(__val);
+      if _GLIBCXX17_CONSTEXPR (numeric_limits<_Tp>::digits <= 16)
+	{
+	  __len = __val > 077777u ? 6u
+	    : __val > 07777u ? 5u
+	    : __val > 0777u ? 4u
+	    : __val > 077u ? 3u
+	    : __val > 07u ? 2u
+	    : 1u;
+	}
+      else
+	__len = (__to_chars_len_2(__val) + 2) / 3;
 
       if (__builtin_expect((__last - __first) < __len, 0))
 	{
@@ -397,7 +373,7 @@ namespace __detail
 	  __i++;
 	}
       __first += __i;
-      return __i <= (sizeof(_Tp) * __CHAR_BIT__);
+      return __i <= numeric_limits<_Tp>::digits;
     }
 
   /// std::from_chars implementation for integers in bases 3 to 10.

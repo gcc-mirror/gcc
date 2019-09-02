@@ -1,3 +1,11 @@
+2019-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (__detail::__to_chars_2_len): Use std::log2p1.
+	(__detail::__to_chars_8_len): Remove.
+	(__detail::__to_chars_8): Inline length calculation here.
+	(__detail::__from_chars_binary): Use numeric_limits instead of
+	CHAR_BIT.
+
 2019-09-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/abi/post/i386-solaris/baseline_symbols.txt: Regenerate.
