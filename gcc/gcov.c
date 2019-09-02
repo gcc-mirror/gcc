@@ -725,10 +725,10 @@ unblock (const block_info *u, block_vector_t &blocked,
 /* Return true when PATH contains a zero cycle arc count.  */
 
 static bool
-path_contains_zero_cycle_arc (arc_vector_t &path)
+path_contains_zero_or_negative_cycle_arc (arc_vector_t &path)
 {
   for (unsigned i = 0; i < path.size (); i++)
-    if (path[i]->cs_count == 0)
+    if (path[i]->cs_count <= 0)
       return true;
   return false;
 }
@@ -754,7 +754,7 @@ circuit (block_info *v, arc_vector_t &path, block_info *start,
     {
       block_info *w = arc->dst;
       if (w < start
-	  || arc->cs_count == 0
+	  || arc->cs_count <= 0
 	  || !linfo.has_block (w))
 	continue;
 
@@ -765,7 +765,7 @@ circuit (block_info *v, arc_vector_t &path, block_info *start,
 	  handle_cycle (path, count);
 	  loop_found = true;
 	}
-      else if (!path_contains_zero_cycle_arc (path)
+      else if (!path_contains_zero_or_negative_cycle_arc (path)
 	       &&  find (blocked.begin (), blocked.end (), w) == blocked.end ())
 	loop_found |= circuit (w, path, start, blocked, block_lists, linfo,
 			       count);
@@ -780,7 +780,7 @@ circuit (block_info *v, arc_vector_t &path, block_info *start,
       {
 	block_info *w = arc->dst;
 	if (w < start
-	    || arc->cs_count == 0
+	    || arc->cs_count <= 0
 	    || !linfo.has_block (w))
 	  continue;
 
