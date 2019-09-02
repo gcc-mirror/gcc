@@ -1,5 +1,9 @@
 2019-09-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++17/memory_resource.cc: Use __constinit keyword.
+
+2019-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
 	* doc/xml/manual/abi.xml: Document 9.x library versions.
 	* doc/html/*: Regenerate.
 
