@@ -1,3 +1,12 @@
+2019-09-02  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-09-02  Martin Liska  <mliska@suse.cz>
+
+	PR c++/91155
+	* c-common.c (fname_as_string): Use cxx_printable_name for
+	__PRETTY_FUNCTION__ same as was used before r265711.
+
 2019-08-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
