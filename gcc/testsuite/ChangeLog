@@ -1,3 +1,11 @@
+2019-09-02  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-09-02  Martin Liska  <mliska@suse.cz>
+
+	PR c++/91155
+	* g++.dg/torture/pr91155.C: New test.
+
 2019-09-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20190901-1.c: New test.
