@@ -1,3 +1,11 @@
+2019-09-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/91603
+	PR middle-end/91612
+	PR middle-end/91613
+	* expr.c (expand_expr_real_1): Handle unaligned decl_rtl
+	and SSA_NAME referring to CONSTANT_P correctly.
+
 2019-09-03  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.h (vn_nary_op_lookup): Remove.
@@ -76,7 +84,7 @@
 	PR middle-end/91605
 	* expr.c (addr_expr_of_non_mem_decl_p_1): Refactor into...
 	(non_mem_decl_p): ...this.
-	(mem_ref_refers_to_non_mem_p): Handle DECL_P as well ase MEM_REF.
+	(mem_ref_refers_to_non_mem_p): Handle DECL_P as well as MEM_REF.
 	(expand_assignment): Call mem_ref_referes_to_non_mem_p
 	unconditionally as before.
 
