@@ -1783,7 +1783,7 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
       if (*code == EQ)
 	new_code = reversed_comparison_code_parts (GET_CODE (*op0),
 						   XEXP (*op0, 0),
-						   XEXP (*op1, 0), NULL);
+						   XEXP (*op0, 1), NULL);
       else
 	new_code = GET_CODE (*op0);
 

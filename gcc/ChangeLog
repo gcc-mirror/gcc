@@ -1,3 +1,8 @@
+2019-09-03  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_canonicalize_comparison): Use XEXP
+	(*op0, 1) instead of XEXP (*op1, 0).
+
 2019-09-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.md (UNSPEC_FJCVTZS): Define.
