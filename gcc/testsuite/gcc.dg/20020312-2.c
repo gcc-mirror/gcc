@@ -96,8 +96,6 @@ extern void abort (void);
 /* No pic register.  */
 #elif defined(__m32c__)
 /* No pic register.  */
-#elif defined(__SPU__)
-#  define PIC_REG  "126"
 #elif defined (__frv__)
 # ifdef __FRV_FDPIC__
 #  define PIC_REG "gr15"

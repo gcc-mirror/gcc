@@ -44,8 +44,6 @@ proc get-fortran-torture-options { } {
 	 && [check_vmx_hw_available] } {
 	lappend vectorizer_options "-maltivec"
 	set test_tree_vectorize 1
-    } elseif { [istarget spu-*-*] } {
-	set test_tree_vectorize 1
     } elseif { ( [istarget i?86-*-*] || [istarget x86_64-*-*] )
 	       && [check_effective_target_sse2]
 	       && [check_sse2_hw_available]

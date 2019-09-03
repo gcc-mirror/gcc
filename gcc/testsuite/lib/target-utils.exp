@@ -40,10 +40,6 @@ proc ${tool}_check_unsupported_p { output } {
 	return "memory full"
     }
 
-    if { [istarget spu-*-*] && \
-	     [string match "*exceeds local store*" $output] } {
-	return "memory full"
-    }
     if { [string match "*error: function pointers not supported*" $output]
 	  && ![check_effective_target_function_pointers] } {
 	return "function pointers not supported"

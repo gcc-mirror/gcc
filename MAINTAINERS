@@ -109,9 +109,6 @@ sh port			Alexandre Oliva		<aoliva@gcc.gnu.org>
 sh port			Oleg Endo		<olegendo@gcc.gnu.org>
 sparc port		David S. Miller		<davem@redhat.com>
 sparc port		Eric Botcazou		<ebotcazou@libertysurf.fr>
-spu port		Trevor Smigiel		<trevor_smigiel@playstation.sony.com>
-spu port		David Edelsohn		<dje.gcc@gmail.com>
-spu port		Ulrich Weigand		<uweigand@de.ibm.com>
 tilegx port		Walter Lee		<walt@tilera.com>
 tilepro port		Walter Lee		<walt@tilera.com>
 v850 port		Nick Clifton		<nickc@redhat.com>

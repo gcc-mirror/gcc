@@ -1,3 +1,8 @@
+2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* directives.c: Remove references to spu from comments.
+	* expr.c: Likewise.
+
 2019-08-29  Nathan Sidwell  <nathan@acm.org>
 
 	* internal.h (enum include_type): Add IT_MAIN, IT_DIRECTIVE_HWM,

@@ -12,20 +12,15 @@ int
 main ()
 {
   double nan = __builtin_nan ("");
-#ifndef __SPU__
-  /* The SPU single-precision floating point format does not support NANs.  */
   float nanf = __builtin_nanf ("");
-#endif
   long double nanl = __builtin_nanl ("");
 
   if (!__builtin_isnan (nan))
     link_error ();
-#ifndef __SPU__
   if (!__builtin_isnan (nanf))
     link_error ();
   if (!__builtin_isnanf (nanf))
     link_error ();
-#endif
   if (!__builtin_isnan (nanl))
     link_error ();
   if (!__builtin_isnanl (nanl))

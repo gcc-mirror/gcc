@@ -1,3 +1,16 @@
+2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config.gcc: Obsolete spu target.  Remove references to spu.
+	* configure.ac: Remove references to spu.
+	* configure: Regenerate.
+	* config/spu/: Remove directory.
+	* common/config/spu/: Remove directory.
+
+	* doc/extend.texi: Remove references to spu.
+	* doc/invoke.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* doc/sourcebuild.texi: Likewise.
+
 2019-09-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR middle-end/91603

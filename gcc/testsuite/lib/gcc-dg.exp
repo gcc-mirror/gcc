@@ -414,14 +414,6 @@ proc gcc-dg-prune { system text } {
 	return "::unsupported::memory full"
     }
 
-    # Likewise, if we see ".text exceeds local store range" or
-    # similar.
-    if {[string match "spu-*" $system] && \
-	    [string match "*exceeds local store*" $text]} {
-	# The format here is important.  See dg.exp.
-	return "::unsupported::memory full"
-    }
-
     if { [string match "*error: function pointers not supported*" $text]
 	  && ![check_effective_target_function_pointers] } {
 	# The format here is important.  See dg.exp.
