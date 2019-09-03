@@ -1927,6 +1927,9 @@ AArch64 target which generates instruction sequences for big endian.
 Binutils installed on test system supports relocation types required by -fpic
 for AArch64 small memory model.
 
+@item aarch64_fjcvtzs_hw
+AArch64 target that is able to generate and execute armv8.3-a FJCVTZS
+instruction.
 @end table
 
 @subsubsection MIPS-specific attributes
