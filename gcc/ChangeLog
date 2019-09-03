@@ -1,3 +1,11 @@
+2019-09-03  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91597
+	* tree-vrp.c (extract_range_from_binary_expr): Remove unsafe
+	BIT_AND_EXPR optimization for pointers, even if both operand
+	ranges don't include NULL, the result can be NULL.
+
 2019-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR middle-end/91605
