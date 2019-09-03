@@ -4386,6 +4386,27 @@ proc check_effective_target_arm_neonv2_hw { } {
     } [add_options_for_arm_neonv2 ""]]
 }
 
+# Return 1 if the target supports executing the armv8.3-a FJCVTZS
+# instruction.
+proc check_effective_target_aarch64_fjcvtzs_hw { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_runtime aarch64_fjcvtzs_hw_available {
+	int
+	main (void)
+	{
+	  double in = 25.1;
+	  int out;
+	  asm volatile ("fjcvtzs %w0, %d1"
+			: "=r" (out)
+			: "w" (in)
+			: /* No clobbers.  */);
+	  return out != 25;
+	}
+    } "-march=armv8.3-a" ]
+}
+
 # Return 1 if the target supports the ARMv8.1 Adv.SIMD extension, 0
 # otherwise.  The test is valid for AArch64 and ARM.  Record the command
 # line options needed.

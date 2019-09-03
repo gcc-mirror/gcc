@@ -105,6 +105,7 @@
     UNSPEC_CRC32X
     UNSPEC_FCVTZS
     UNSPEC_FCVTZU
+    UNSPEC_FJCVTZS
     UNSPEC_URECPE
     UNSPEC_FRECPE
     UNSPEC_FRECPS
@@ -5883,6 +5884,16 @@
   ""
   ""
   [(set_attr "length" "0")]
+)
+
+(define_insn "aarch64_fjcvtzs"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:DF 1 "register_operand" "w")]
+		   UNSPEC_FJCVTZS))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_JSCVT"
+  "fjcvtzs\\t%w0, %d1"
+  [(set_attr "type" "f_cvtf2i")]
 )
 
 ;; Pointer authentication patterns are always provided.  In architecture

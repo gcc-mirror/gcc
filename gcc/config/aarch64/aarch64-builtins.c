@@ -399,6 +399,8 @@ enum aarch64_builtins
   AARCH64_PAUTH_BUILTIN_AUTIA1716,
   AARCH64_PAUTH_BUILTIN_PACIA1716,
   AARCH64_PAUTH_BUILTIN_XPACLRI,
+  /* Builtin for Arm8.3-a Javascript conversion instruction.  */
+  AARCH64_JSCVT,
   AARCH64_BUILTIN_MAX
 };
 
@@ -1002,6 +1004,12 @@ aarch64_init_builtins (void)
   aarch64_init_crc32_builtins ();
   aarch64_init_builtin_rsqrt ();
 
+  tree ftype_jcvt
+    = build_function_type_list (intSI_type_node, double_type_node, NULL);
+  aarch64_builtin_decls[AARCH64_JSCVT]
+    = add_builtin_function ("__builtin_aarch64_jcvtzs", ftype_jcvt,
+			    AARCH64_JSCVT, BUILT_IN_MD, NULL, NULL_TREE);
+
   /* Initialize pointer authentication builtins which are backed by instructions
      in NOP encoding space.
 
@@ -1391,6 +1399,16 @@ aarch64_expand_builtin (tree exp,
 	}
 
       return target;
+
+    case AARCH64_JSCVT:
+      {
+	expand_operand ops[2];
+	create_output_operand (&ops[0], target, SImode);
+	op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
+	create_input_operand (&ops[1], op0, DFmode);
+	expand_insn (CODE_FOR_aarch64_fjcvtzs, 2, ops);
+	return ops[0].value;
+      }
     }
 
   if (fcode >= AARCH64_SIMD_BUILTIN_BASE && fcode <= AARCH64_SIMD_BUILTIN_MAX)
