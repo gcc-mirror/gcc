@@ -5,7 +5,7 @@
    { dg-additional-options "-fopt-info-optimized-omp" }
    { dg-additional-options "-fdump-tree-ompexp" }
    { dg-additional-options "-fdump-tree-parloops1-all" }
-   { dg-additional-options "-fdump-tree-oaccdevlow" } */
+   { dg-additional-options "-fdump-tree-oaccloops" } */
 
 #define N 1024
 
@@ -31,6 +31,6 @@ void KERNELS ()
 
 /* Check the offloaded function's classification and compute dimensions (will
    always be 1 x 1 x 1 for non-offloading compilation).
-   { dg-final { scan-tree-dump-times "(?n)Function is parallelized OpenACC kernels offload" 1 "oaccdevlow" } }
-   { dg-final { scan-tree-dump-times "(?n)Compute dimensions \\\[1, 1, 1\\\]" 1 "oaccdevlow" } }
-   { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc function \\(1, 1, 1\\), oacc kernels parallelized, oacc function \\(, , \\), oacc kernels, omp target entrypoint\\)\\)" 1 "oaccdevlow" } } */
+   { dg-final { scan-tree-dump-times "(?n)Function is parallelized OpenACC kernels offload" 1 "oaccloops" } }
+   { dg-final { scan-tree-dump-times "(?n)Compute dimensions \\\[1, 1, 1\\\]" 1 "oaccloops" } }
+   { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc function \\(1, 1, 1\\), oacc kernels parallelized, oacc function \\(, , \\), oacc kernels, omp target entrypoint\\)\\)" 1 "oaccloops" } } */
