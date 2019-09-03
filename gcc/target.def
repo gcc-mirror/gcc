@@ -2208,6 +2208,17 @@ needed.",
  void, (tree node, tree *attr_ptr),
  hook_void_tree_treeptr)
 
+/* Perform additional target-specific processing of generic attributes.  */
+DEFHOOK
+(handle_generic_attribute,
+ "Define this target hook if you want to be able to perform additional\n\
+target-specific processing of an attribute which is handled generically\n\
+by a front end.  The arguments are the same as those which are passed to\n\
+attribute handlers.  So far this only affects the @var{noinit} and\n\
+@var{section} attribute.",
+ tree, (tree *node, tree name, tree args, int flags, bool *no_add_attrs),
+ hook_tree_treeptr_tree_tree_int_boolptr_null)
+
 /* Return true if FNDECL (which has at least one machine attribute)
    can be inlined despite its machine attributes, false otherwise.  */
 DEFHOOK

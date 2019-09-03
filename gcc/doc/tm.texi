@@ -10391,6 +10391,14 @@ attributes, or a copy of the list may be made if further changes are
 needed.
 @end deftypefn
 
+@deftypefn {Target Hook} tree TARGET_HANDLE_GENERIC_ATTRIBUTE (tree *@var{node}, tree @var{name}, tree @var{args}, int @var{flags}, bool *@var{no_add_attrs})
+Define this target hook if you want to be able to perform additional
+target-specific processing of an attribute which is handled generically
+by a front end.  The arguments are the same as those which are passed to
+attribute handlers.  So far this only affects the @var{noinit} and
+@var{section} attribute.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P (const_tree @var{fndecl})
 @cindex inlining
 This target hook returns @code{true} if it is OK to inline @var{fndecl}

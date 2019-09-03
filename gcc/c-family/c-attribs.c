@@ -1875,6 +1875,7 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 			  int ARG_UNUSED (flags), bool *no_add_attrs)
 {
   tree decl = *node;
+  tree res = NULL_TREE;
 
   if (!targetm_common.have_named_sections)
     {
@@ -1922,12 +1923,20 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       goto fail;
     }
 
-  set_decl_section_name (decl, TREE_STRING_POINTER (TREE_VALUE (args)));
-  return NULL_TREE;
+  res = targetm.handle_generic_attribute (node, name, args, flags,
+					  no_add_attrs);
+
+  /* If the back end confirms the attribute can be added then continue onto
+     final processing.  */
+  if (!(*no_add_attrs))
+    {
+      set_decl_section_name (decl, TREE_STRING_POINTER (TREE_VALUE (args)));
+      return res;
+    }
 
 fail:
   *no_add_attrs = true;
-  return NULL_TREE;
+  return res;
 }
 
 /* If in c++-11, check if the c++-11 alignment constraint with respect
@@ -2249,6 +2258,7 @@ handle_noinit_attribute (tree * node,
 		  bool *no_add_attrs)
 {
   const char *message = NULL;
+  tree res = NULL_TREE;
 
   gcc_assert (DECL_P (*node));
   gcc_assert (args == NULL);
@@ -2271,14 +2281,23 @@ handle_noinit_attribute (tree * node,
       *no_add_attrs = true;
     }
   else
-    /* If this var is thought to be common, then change this.  Common
-       variables are assigned to sections before the backend has a
-       chance to process them.  Do this only if the attribute is
-       valid.  */
-    if (DECL_COMMON (*node))
-      DECL_COMMON (*node) = 0;
+    {
+      res = targetm.handle_generic_attribute (node, name, args, flags,
+					      no_add_attrs);
+      /* If the back end confirms the attribute can be added then continue onto
+	 final processing.  */
+      if (!(*no_add_attrs))
+	{
+	  /* If this var is thought to be common, then change this.  Common
+	     variables are assigned to sections before the backend has a
+	     chance to process them.  Do this only if the attribute is
+	     valid.  */
+	  if (DECL_COMMON (*node))
+	    DECL_COMMON (*node) = 0;
+	}
+    }
 
-  return NULL_TREE;
+  return res;
 }
 
 

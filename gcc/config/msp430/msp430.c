@@ -1518,6 +1518,46 @@ const struct attribute_spec msp430_attribute_table[] =
     { NULL,		0, 0, false, false, false, false, NULL,  NULL }
   };
 
+#undef TARGET_HANDLE_GENERIC_ATTRIBUTE
+#define TARGET_HANDLE_GENERIC_ATTRIBUTE msp430_handle_generic_attribute
+
+tree
+msp430_handle_generic_attribute (tree *node,
+				 tree   name,
+				 tree   args ATTRIBUTE_UNUSED,
+				 int    flags ATTRIBUTE_UNUSED,
+				 bool *no_add_attrs)
+
+{
+  const char *message = NULL;
+
+  if (!(TREE_NAME_EQ (name, ATTR_NOINIT) || TREE_NAME_EQ (name, "section")))
+    return NULL_TREE;
+
+  /* The front end has set up an exclusion between the "noinit" and "section"
+     attributes.  */
+  if (has_attr (ATTR_LOWER, *node))
+    message = G_("ignoring attribute %qE because it conflicts with "
+		 "attribute %<lower%>");
+  else if (has_attr (ATTR_UPPER, *node))
+    message = G_("ignoring attribute %qE because it conflicts with "
+		 "attribute %<upper%>");
+  else if (has_attr (ATTR_EITHER, *node))
+    message = G_("ignoring attribute %qE because it conflicts with "
+		 "attribute %<either%>");
+  else if (has_attr (ATTR_PERSIST, *node))
+    message = G_("ignoring attribute %qE because it conflicts with "
+		 "attribute %<persistent%>");
+
+  if (message)
+    {
+      warning (OPT_Wattributes, message, name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE	msp430_start_function
 
