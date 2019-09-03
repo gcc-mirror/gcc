@@ -22,27 +22,29 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RANGE_OP_H
 #define GCC_RANGE_OP_H
 
-// This class is implemented for each kind of operator that is supported by
-// the range generator.  It serves dual purposes.
+// This class is implemented for each kind of operator supported by
+// the range generator.  It serves various purposes.
 //
 // 1 - Generates range information for the specific operation between
-//     the 4 possible combinations of integers and ranges.
-//     This provides the ability to fold ranges for an expression.
+//     two ranges.  This provides the ability to fold ranges for an
+//     expression.
 //
 // 2 - Performs range algebra on the expression such that a range can be
 //     adjusted in terms of one of the operands:
+//
 //       def = op1 + op2
-//     Given a range for def, we can possibly adjust the range so its in
+//
+//     Given a range for def, we can adjust the range so that it is in
 //     terms of either operand.
-//     op1_adjust (def_range, op2) will adjust the range in place so its
-//     in terms of op1.  since op1 = def - op2, it will subtract op2 from
-//     each element of the range.
+//
+//     op1_range (def_range, op2) will adjust the range in place so it
+//     is in terms of op1.  Since op1 = def - op2, it will subtract
+//     op2 from each element of the range.
 //
 // 3 - Creates a range for an operand based on whether the result is 0 or
 //     non-zero.  This is mostly for logical true false, but can serve other
 //     purposes.
 //       ie   0 = op1 - op2 implies op2 has the same range as op1.
-
 
 class range_operator
 {
@@ -54,10 +56,14 @@ public:
 
   // Return the range for op[12] in the general case.  LHS is the range for
   // the LHS of the expression, OP[12]is the range for the other
-  // TYPE is the expected type of the range.
+  //
   // The operand and the result is returned in R.
+  //
+  // TYPE is the expected type of the range.
+  //
   // Return TRUE if the operation is performed and a valid range is available.
-  // ie   [LHS] = ??? + OP2
+  //
+  // i.e.  [LHS] = ??? + OP2
   // is re-formed as R = [LHS] - OP2.
   virtual bool op1_range (value_range_base &r, tree type,
 			  const value_range_base &lhs,
@@ -67,7 +73,7 @@ public:
 			  const value_range_base &op1) const;
 
 protected:
-  // Perform an operation on 2 sub-ranges and return it.
+  // Perform an operation between 2 sub-ranges and return it.
   virtual value_range_base wi_fold (tree type,
 				    const wide_int &lh_lb,
 				    const wide_int &lh_ub,
@@ -92,7 +98,7 @@ protected:
 				     const wide_int &rh_ub) const;
 };
 
-extern range_operator *range_op_handler(enum tree_code code, tree type);
+extern range_operator *range_op_handler (enum tree_code code, tree type);
 
 extern void range_cast (value_range_base &, tree type);
 
