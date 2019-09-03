@@ -4217,6 +4217,8 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_GOACC_EXPAND_ACCEL_VAR
 
+@hook TARGET_GOACC_ADJUST_GANGPRIVATE_DECL
+
 @hook TARGET_GOACC_EXPLODE_ARGS
 
 @node Anchored Addresses

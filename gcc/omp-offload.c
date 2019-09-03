@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "cfgloop.h"
+#include "convert.h"
 
 /* Describe the OpenACC looping structure of a function.  The entire
    function is held in a 'NULL' loop.  */
@@ -1591,6 +1592,78 @@ maybe_discard_oacc_function (tree decl)
   return false;
 }
 
+struct addr_expr_rewrite_info
+{
+  gimple *stmt;
+  hash_set<tree> *adjusted_vars;
+  bool avoid_pointer_conversion;
+  bool modified;
+};
+
+static tree
+rewrite_addr_expr (tree *tp, int *walk_subtrees, void *data)
+{
+  walk_stmt_info *wi = (walk_stmt_info *) data;
+  addr_expr_rewrite_info *info = (addr_expr_rewrite_info *) wi->info;
+
+  if (TREE_CODE (*tp) == ADDR_EXPR)
+    {
+      tree arg = TREE_OPERAND (*tp, 0);
+
+      if (info->adjusted_vars->contains (arg))
+	{
+	  if (info->avoid_pointer_conversion)
+	    {
+	      *tp = build_fold_addr_expr (arg);
+	      info->modified = true;
+	      *walk_subtrees = 0;
+	    }
+	  else
+	    {
+	      gimple_stmt_iterator gsi = gsi_for_stmt (info->stmt);
+	      tree repl = build_fold_addr_expr (arg);
+	      gimple *stmt1
+		= gimple_build_assign (make_ssa_name (TREE_TYPE (repl)), repl);
+	      tree conv = convert_to_pointer (TREE_TYPE (*tp),
+					      gimple_assign_lhs (stmt1));
+	      gimple *stmt2
+		= gimple_build_assign (make_ssa_name (TREE_TYPE (*tp)), conv);
+	      gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
+	      gsi_insert_before (&gsi, stmt2, GSI_SAME_STMT);
+	      *tp = gimple_assign_lhs (stmt2);
+	      info->modified = true;
+	      *walk_subtrees = 0;
+	    }
+	}
+    }
+
+  return NULL_TREE;
+}
+
+/* Return TRUE if CALL is a call to a builtin atomic/sync operation.  */
+
+static bool
+is_sync_builtin_call (gcall *call)
+{
+  tree callee = gimple_call_fndecl (call);
+
+  if (callee != NULL_TREE
+      && gimple_call_builtin_p (call, BUILT_IN_NORMAL))
+    switch (DECL_FUNCTION_CODE (callee))
+      {
+#undef DEF_SYNC_BUILTIN
+#define DEF_SYNC_BUILTIN(ENUM, NAME, TYPE, ATTRS) case ENUM:
+#include "sync-builtins.def"
+#undef DEF_SYNC_BUILTIN
+	return true;
+
+      default:
+	;
+      }
+
+  return false;
+}
+
 /* Main entry point for oacc transformations which run on the device
    compiler after LTO, so we know what the target device is at this
    point (including the host fallback).  */
@@ -1835,6 +1908,66 @@ execute_oacc_device_lower ()
 	  /* If not rescanning, advance over the call.  */
 	  gsi_next (&gsi);
       }
+
+  /* Make adjustments to gang-private local variables if required by the
+     target, e.g. forcing them into a particular address space.  Afterwards,
+     ADDR_EXPR nodes which have adjusted variables as their argument need to
+     be modified in one of two ways:
+
+       1. They can be recreated, making a pointer to the variable in the new
+	  address space, or
+
+       2. The address of the variable in the new address space can be taken,
+	  converted to the default (original) address space, and the result of
+	  that conversion subsituted in place of the original ADDR_EXPR node.
+
+     Which of these is done depends on the gimple statement being processed.
+     At present atomic operations and inline asms use (1), and everything else
+     uses (2).  At least on AMD GCN, there are atomic operations that work
+     directly in the LDS address space.  */
+
+  if (targetm.goacc.adjust_gangprivate_decl)
+    {
+      tree var;
+      unsigned i;
+      hash_set<tree> adjusted_vars;
+
+      FOR_EACH_LOCAL_DECL (cfun, i, var)
+	{
+	  if (!VAR_P (var)
+	      || !lookup_attribute ("oacc gangprivate", DECL_ATTRIBUTES (var)))
+	    continue;
+
+	  targetm.goacc.adjust_gangprivate_decl (var);
+	  adjusted_vars.add (var);
+	}
+
+      FOR_ALL_BB_FN (bb, cfun)
+	for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	     !gsi_end_p (gsi);
+	     gsi_next (&gsi))
+	  {
+	    gimple *stmt = gsi_stmt (gsi);
+	    walk_stmt_info wi;
+	    addr_expr_rewrite_info info;
+
+	    info.avoid_pointer_conversion
+	      = (is_gimple_call (stmt)
+		 && is_sync_builtin_call (as_a <gcall *> (stmt)))
+		|| gimple_code (stmt) == GIMPLE_ASM;
+	    info.stmt = stmt;
+	    info.modified = false;
+	    info.adjusted_vars = &adjusted_vars;
+
+	    memset (&wi, 0, sizeof (wi));
+	    wi.info = &info;
+
+	    walk_gimple_op (stmt, rewrite_addr_expr, &wi);
+
+	    if (info.modified)
+	      update_stmt (stmt);
+	  }
+    }
 
   free_oacc_loop (loops);
 
