@@ -291,6 +291,9 @@ extern unsigned aarch64_architecture_version;
 /* Armv8.3-a Complex number extension to AdvSIMD extensions.  */
 #define TARGET_COMPLEX (TARGET_SIMD && TARGET_ARMV8_3)
 
+/* Floating-point rounding instructions from Armv8.5-a.  */
+#define TARGET_FRINT (AARCH64_ISA_V8_5 && TARGET_FLOAT)
+
 /* TME instructions are enabled.  */
 #define TARGET_TME (AARCH64_ISA_TME)
 

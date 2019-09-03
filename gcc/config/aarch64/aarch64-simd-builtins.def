@@ -676,3 +676,9 @@
   /* Implemented by aarch64_fml<f16mac1>lq_laneq_highv4sf.  */
   VAR1 (QUADOP_LANE, fmlalq_laneq_high, 0, v4sf)
   VAR1 (QUADOP_LANE, fmlslq_laneq_high, 0, v4sf)
+
+  /* Implemented by aarch64_<frintnzs_op><mode>.  */
+  BUILTIN_VSFDF (UNOP, frint32z, 0)
+  BUILTIN_VSFDF (UNOP, frint32x, 0)
+  BUILTIN_VSFDF (UNOP, frint64z, 0)
+  BUILTIN_VSFDF (UNOP, frint64x, 0)
