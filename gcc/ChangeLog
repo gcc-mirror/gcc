@@ -1,5 +1,16 @@
 2019-09-03  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* config/msp430/msp430.c (msp430_init_sections): Remove handling of the
+	noinit section.
+	(msp430_select_section): Handle decls with the "noinit" attribute with
+	default_elf_select_section.
+	Handle SECCAT_RODATA_MERGE_* section types with
+	default_elf_select_section.
+	Add comments about handling of unsupported section types.
+	(msp430_section_type_flags): Remove handling of the noinit section.
+
+2019-09-03  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* config/msp430/msp430.c (msp430_attr): Remove warnings about
 	conflicting msp430-specific attributes.
 	(msp430_section_attr): Likewise.
