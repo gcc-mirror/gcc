@@ -47,13 +47,12 @@ along with GCC; see the file COPYING3.  If not see
 class range_operator
 {
 public:
-  // Set a range based on this operation between 2 operands.
-  // TYPE is the expected type of the range.
+  // Perform an operation between 2 ranges and return it.
   virtual value_range_base fold_range (tree type,
 				       const value_range_base &lh,
 				       const value_range_base &rh) const;
 
-  // Set the range for op[12] in the general case.  LHS is the range for
+  // Return the range for op[12] in the general case.  LHS is the range for
   // the LHS of the expression, OP[12]is the range for the other
   // TYPE is the expected type of the range.
   // The operand and the result is returned in R.
@@ -66,14 +65,31 @@ public:
   virtual bool op2_range (value_range_base &r, tree type,
 			  const value_range_base &lhs,
 			  const value_range_base &op1) const;
+
 protected:
-  // Perform operation on 2 sub-ranges, return the result as a
-  // range of TYPE.
+  // Perform an operation on 2 sub-ranges and return it.
   virtual value_range_base wi_fold (tree type,
 				    const wide_int &lh_lb,
 				    const wide_int &lh_ub,
 				    const wide_int &rh_lb,
 				    const wide_int &rh_ub) const;
+
+  // Perform an operation between two wide-ints and place the result
+  // in R.  Return true if the operation overflowed.
+  //
+  // This should only be defined for opcodes that use wi_cross_product.
+  virtual bool wi_op_overflows (wide_int &r,
+				tree type,
+				const wide_int &,
+				const wide_int &) const;
+
+  // Calculate the cross product of two sets of sub-ranges and return it.
+  // Define wi_op_overflows for any opcode that needs this function.
+  value_range_base wi_cross_product (tree type,
+				     const wide_int &lh_lb,
+				     const wide_int &lh_ub,
+				     const wide_int &rh_lb,
+				     const wide_int &rh_ub) const;
 };
 
 extern range_operator *range_op_handler(enum tree_code code, tree type);

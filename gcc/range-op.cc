@@ -124,107 +124,6 @@ wi_zero_p (tree type, const wide_int &wmin, const wide_int &wmax)
   return wmin == wmax && wi::eq_p (wmin, wi::zero (prec));
 }
 
-// Binary operation on two wide-ints while adjusting for overflow.
-//
-// Return TRUE if we can compute the result; i.e. if the operation
-// doesn't overflow or if the overflow is undefined.  In the latter
-// case (if the operation overflows and overflow is undefined), then
-// adjust the result to be -INF or +INF depending on CODE, VAL1 and
-// VAL2.  Return the value in *RES.
-//
-// Returns FALSE for division by zero, in which case the result is
-// indeterminate.
-
-static inline bool
-wi_binop_overflow (wide_int &res,
-		   enum tree_code code, tree type,
-		   const wide_int &w0, const wide_int &w1)
-{
-  wi::overflow_type overflow = wi::OVF_NONE;
-  wide_int tmp;
-  signop sign = TYPE_SIGN (type);
-  switch (code)
-    {
-    case MULT_EXPR:
-      res = wi::mul (w0, w1, sign, &overflow);
-      break;
-    case TRUNC_DIV_EXPR:
-    case EXACT_DIV_EXPR:
-      if (w1 == 0)
-	return false;
-      res = wi::div_trunc (w0, w1, sign, &overflow);
-      break;
-    case FLOOR_DIV_EXPR:
-      if (w1 == 0)
-	return false;
-      res = wi::div_floor (w0, w1, sign, &overflow);
-      break;
-    case ROUND_DIV_EXPR:
-      if (w1 == 0)
-	return false;
-      res = wi::div_round (w0, w1, sign, &overflow);
-      break;
-    case CEIL_DIV_EXPR:
-      if (w1 == 0)
-	return false;
-      res = wi::div_ceil (w0, w1, sign, &overflow);
-      break;
-    case RSHIFT_EXPR:
-    case LSHIFT_EXPR:
-      if (wi::neg_p (w1))
-	{
-	  tmp = -w1;
-	  if (code == RSHIFT_EXPR)
-	    code = LSHIFT_EXPR;
-	  else
-	    code = RSHIFT_EXPR;
-	}
-      else
-        tmp = w1;
-
-      if (code == RSHIFT_EXPR)
-	// It's unclear from the C standard whether shifts can overflow.
-	// The following code ignores overflow; perhaps a C standard
-	// interpretation ruling is needed.
-	res = wi::rshift (w0, tmp, sign);
-      else
-	res = wi::lshift (w0, tmp);
-      break;
-    default:
-      break;
-    }
-
-  // If the operation overflowed, return -INF or +INF depending on the
-  // operation and the combination of signs of the operands.
-  if (overflow && TYPE_OVERFLOW_UNDEFINED (type))
-    {
-      switch (code)
-	{
-	case MULT_EXPR:
-	  // For multiplication, the sign of the overflow is given
-	  // by the comparison of the signs of the operands.
-	  if (sign == UNSIGNED || w0.sign_mask () == w1.sign_mask ())
-	    res = wi::max_value (w0.get_precision (), sign);
-	  else
-	    res = wi::min_value (w0.get_precision (), sign);
-	  return true;
-
-	case TRUNC_DIV_EXPR:
-	case FLOOR_DIV_EXPR:
-	case CEIL_DIV_EXPR:
-	case EXACT_DIV_EXPR:
-	case ROUND_DIV_EXPR:
-	  // For division, the only case is -INF / -1 = +INF.
-	  res = wi::max_value (w0.get_precision (), sign);
-	  return true;
-
-	default:
-	  gcc_unreachable ();
-	}
-    }
-  return !overflow;
-}
-
 // Default wide_int fold operation returns [MIN, MAX].
 
 value_range_base
@@ -282,6 +181,19 @@ range_operator::op2_range (value_range_base &r ATTRIBUTE_UNUSED,
 			   const value_range_base &lhs ATTRIBUTE_UNUSED,
 			   const value_range_base &op1 ATTRIBUTE_UNUSED) const
 {
+  return false;
+}
+
+// This should never be triggered, as all wi_cross_product users
+// should define this.
+
+bool
+range_operator::wi_op_overflows (wide_int &res ATTRIBUTE_UNUSED,
+				 tree type ATTRIBUTE_UNUSED,
+				 const wide_int &w0 ATTRIBUTE_UNUSED,
+				 const wide_int &w1 ATTRIBUTE_UNUSED) const
+{
+  gcc_unreachable ();
   return false;
 }
 
@@ -1131,8 +1043,36 @@ public:
 				    const wide_int &lh_ub,
 				    const wide_int &rh_lb,
 				    const wide_int &rh_ub) const;
+  virtual bool wi_op_overflows (wide_int &res,
+				tree type,
+				const wide_int &w0,
+				const wide_int &w1) const;
 } op_mult;
 
+bool
+operator_mult::wi_op_overflows (wide_int &res,
+				tree type,
+				const wide_int &w0,
+				const wide_int &w1) const
+{
+  wi::overflow_type overflow = wi::OVF_NONE;
+  signop sign = TYPE_SIGN (type);
+  res = wi::mul (w0, w1, sign, &overflow);
+   if (overflow && TYPE_OVERFLOW_UNDEFINED (type))
+     {
+       // For multiplication, the sign of the overflow is given
+       // by the comparison of the signs of the operands.
+       if (sign == UNSIGNED || w0.sign_mask () == w1.sign_mask ())
+	 res = wi::max_value (w0.get_precision (), sign);
+       else
+	 res = wi::min_value (w0.get_precision (), sign);
+       return false;
+     }
+   return overflow;
+}
+
+// Calculate the cross product of two sets of ranges and return it.
+//
 // Multiplications, divisions and shifts are a bit tricky to handle,
 // depending on the mix of signs we have in the two ranges, we need to
 // operate on different values to get the minimum and maximum values
@@ -1143,32 +1083,31 @@ public:
 // pretty convoluted.  It's simpler to do the 4 operations (MIN0 OP
 // MIN1, MIN0 OP MAX1, MAX0 OP MIN1 and MAX0 OP MAX0 OP MAX1) and then
 // figure the smallest and largest values to form the new range.
-//
-// This function calculate the cross product of two sets of ranges and
-// accumulate the result into RES.  CODE is the operation to perform.
 
-static value_range_base
-wi_cross_product (enum tree_code code, tree type,
-		  const wide_int &lh_lb, const wide_int &lh_ub,
-		  const wide_int &rh_lb, const wide_int &rh_ub)
+value_range_base
+range_operator::wi_cross_product (tree type,
+				  const wide_int &lh_lb,
+				  const wide_int &lh_ub,
+				  const wide_int &rh_lb,
+				  const wide_int &rh_ub) const
 {
   wide_int cp1, cp2, cp3, cp4;
 
   // Compute the 4 cross operations, bailing if we get an overflow we
   // can't handle.
-  if (!wi_binop_overflow (cp1, code, type, lh_lb, rh_lb))
+  if (wi_op_overflows (cp1, type, lh_lb, rh_lb))
     return value_range_base (type);
   if (wi::eq_p (lh_lb, lh_ub))
     cp3 = cp1;
-  else if (!wi_binop_overflow (cp3, code, type, lh_ub, rh_lb))
+  else if (wi_op_overflows (cp3, type, lh_ub, rh_lb))
     return value_range_base (type);
   if (wi::eq_p (rh_lb, rh_ub))
     cp2 = cp1;
-  else if (!wi_binop_overflow (cp2, code, type, lh_lb, rh_ub))
+  else if (wi_op_overflows (cp2, type, lh_lb, rh_ub))
     return value_range_base (type);
   if (wi::eq_p (lh_lb, lh_ub))
     cp4 = cp2;
-  else if (!wi_binop_overflow (cp4, code, type, lh_ub, rh_ub))
+  else if (wi_op_overflows (cp4, type, lh_ub, rh_ub))
     return value_range_base (type);
 
   // Order pairs.
@@ -1190,7 +1129,7 @@ operator_mult::wi_fold (tree type,
 			const wide_int &rh_lb, const wide_int &rh_ub) const
 {
   if (TYPE_OVERFLOW_UNDEFINED (type))
-    return wi_cross_product (MULT_EXPR, type, lh_lb, lh_ub, rh_lb, rh_ub);
+    return wi_cross_product (type, lh_lb, lh_ub, rh_lb, rh_ub);
 
   // Multiply the ranges when overflow wraps.  This is basically fancy
   // code so we don't drop to varying with an unsigned
@@ -1268,9 +1207,57 @@ public:
 				    const wide_int &lh_ub,
 				    const wide_int &rh_lb,
 				    const wide_int &rh_ub) const;
+  virtual bool wi_op_overflows (wide_int &res,
+				tree type,
+				const wide_int &,
+				const wide_int &) const;
 private:
   enum tree_code code;
 };
+
+bool
+operator_div::wi_op_overflows (wide_int &res,
+			       tree type,
+			       const wide_int &w0,
+			       const wide_int &w1) const
+{
+  if (w1 == 0)
+    return true;
+
+  wi::overflow_type overflow = wi::OVF_NONE;
+  signop sign = TYPE_SIGN (type);
+
+  switch (code)
+    {
+    case EXACT_DIV_EXPR:
+      // EXACT_DIV_EXPR is implemented as TRUNC_DIV_EXPR in
+      // operator_exact_divide.  No need to handle it here.
+      gcc_unreachable ();
+      break;
+    case TRUNC_DIV_EXPR:
+      res = wi::div_trunc (w0, w1, sign, &overflow);
+      break;
+    case FLOOR_DIV_EXPR:
+      res = wi::div_floor (w0, w1, sign, &overflow);
+      break;
+    case ROUND_DIV_EXPR:
+      res = wi::div_round (w0, w1, sign, &overflow);
+      break;
+    case CEIL_DIV_EXPR:
+      res = wi::div_ceil (w0, w1, sign, &overflow);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (overflow && TYPE_OVERFLOW_UNDEFINED (type))
+    {
+      // For division, the only case is -INF / -1 = +INF.
+      res = wi::max_value (w0.get_precision (), sign);
+      return false;
+    }
+  return overflow;
+}
 
 operator_div op_trunc_div (TRUNC_DIV_EXPR);
 operator_div op_floor_div(FLOOR_DIV_EXPR);
@@ -1296,7 +1283,7 @@ operator_div::wi_fold (tree type,
 
   // If we know we won't divide by zero, just do the division.
   if (!wi_includes_zero_p (type, divisor_min, divisor_max))
-    return wi_cross_product (code, type, dividend_min, dividend_max,
+    return wi_cross_product (type, dividend_min, dividend_max,
 			     divisor_min, divisor_max);
 
   // If flag_non_call_exceptions, we must not eliminate a division by zero.
@@ -1313,13 +1300,13 @@ operator_div::wi_fold (tree type,
   // First divide by the negative numbers, if any.
   value_range_base r;
   if (wi::neg_p (divisor_min, sign))
-    r = wi_cross_product (code, type, dividend_min, dividend_max,
+    r = wi_cross_product (type, dividend_min, dividend_max,
 			  divisor_min, wi::minus_one (prec));
   // Then divide by the non-zero positive numbers, if any.
   if (wi::gt_p (divisor_max, wi::zero (prec), sign))
     {
       value_range_base tmp;
-      tmp = wi_cross_product (code, type, dividend_min, dividend_max,
+      tmp = wi_cross_product (type, dividend_min, dividend_max,
 			      wi::one (prec), divisor_max);
       r.union_ (tmp);
     }
@@ -1330,7 +1317,7 @@ operator_div::wi_fold (tree type,
 class operator_exact_divide : public operator_div
 {
 public:
-  operator_exact_divide () : operator_div (EXACT_DIV_EXPR) { }
+  operator_exact_divide () : operator_div (TRUNC_DIV_EXPR) { }
   virtual bool op1_range (value_range_base &r, tree type,
 			  const value_range_base &lhs,
 			  const value_range_base &op2) const;
@@ -1369,6 +1356,10 @@ public:
   virtual value_range_base wi_fold (tree type,
 			  const wide_int &lh_lb, const wide_int &lh_ub,
 			  const wide_int &rh_lb, const wide_int &rh_ub) const;
+  virtual bool wi_op_overflows (wide_int &res,
+				tree type,
+				const wide_int &,
+				const wide_int &) const;
 } op_lshift;
 
 value_range_base
@@ -1457,9 +1448,28 @@ operator_lshift::wi_fold (tree type,
     }
 
   if (in_bounds)
-    return wi_cross_product (LSHIFT_EXPR, type, lh_lb, lh_ub, rh_lb, rh_ub);
+    return wi_cross_product (type, lh_lb, lh_ub, rh_lb, rh_ub);
 
   return value_range_base (type);
+}
+
+bool
+operator_lshift::wi_op_overflows (wide_int &res,
+				  tree type,
+				  const wide_int &w0,
+				  const wide_int &w1) const
+{
+  signop sign = TYPE_SIGN (type);
+  if (wi::neg_p (w1))
+    {
+      // It's unclear from the C standard whether shifts can overflow.
+      // The following code ignores overflow; perhaps a C standard
+      // interpretation ruling is needed.
+      res = wi::rshift (w0, -w1, sign);
+    }
+  else
+    res = wi::lshift (w0, w1);
+  return false;
 }
 
 
@@ -1472,7 +1482,30 @@ public:
   virtual value_range_base wi_fold (tree type,
 			  const wide_int &lh_lb, const wide_int &lh_ub,
 			  const wide_int &rh_lb, const wide_int &rh_ub) const;
+  virtual bool wi_op_overflows (wide_int &res,
+				tree type,
+				const wide_int &w0,
+				const wide_int &w1) const;
 } op_rshift;
+
+bool
+operator_rshift::wi_op_overflows (wide_int &res,
+				  tree type,
+				  const wide_int &w0,
+				  const wide_int &w1) const
+{
+  signop sign = TYPE_SIGN (type);
+  if (wi::neg_p (w1))
+    res = wi::lshift (w0, -w1);
+  else
+    {
+      // It's unclear from the C standard whether shifts can overflow.
+      // The following code ignores overflow; perhaps a C standard
+      // interpretation ruling is needed.
+      res = wi::rshift (w0, w1, sign);
+    }
+  return false;
+}
 
 value_range_base
 operator_rshift::fold_range (tree type,
@@ -1492,7 +1525,7 @@ operator_rshift::wi_fold (tree type,
 			  const wide_int &lh_lb, const wide_int &lh_ub,
 			  const wide_int &rh_lb, const wide_int &rh_ub) const
 {
-  return wi_cross_product (RSHIFT_EXPR, type, lh_lb, lh_ub, rh_lb, rh_ub);
+  return wi_cross_product (type, lh_lb, lh_ub, rh_lb, rh_ub);
 }
 
 
