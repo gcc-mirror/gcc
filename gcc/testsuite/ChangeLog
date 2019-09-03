@@ -1,3 +1,8 @@
+2019-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91604
+	* gcc.target/i386/pr91604.c: New test.
+
 2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* lib/compat.exp: Remove references to spu.
