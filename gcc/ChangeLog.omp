@@ -1,3 +1,10 @@
+2019-09-05  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_goacc_validate_dims): Remove
+	no-flag_worker-partitioning assertion.
+	(TARGET_GOACC_WORKER_PARTITIONING): Define target hook to true.
+	* config/gcn/gcn.opt (flag_worker_partitioning): Change default to 1.
+
 2019-09-05  Cesar Philippidis  <cesar@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 
