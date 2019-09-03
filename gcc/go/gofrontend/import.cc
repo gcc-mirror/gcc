@@ -777,7 +777,7 @@ Import::import_var()
 			       this->location_);
   Named_object* no;
   no = vpkg->add_variable(name, var);
-  if (this->add_to_globals_)
+  if (this->add_to_globals_ && vpkg == this->package_)
     this->gogo_->add_dot_import_object(no);
 }
 
