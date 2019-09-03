@@ -1,6 +1,14 @@
 2019-09-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
+	2019-05-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_file_end): Use switch_to_section ()
+	instead of direct output of the asm.
+
+2019-09-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
 	2018-08-22 Iain Sandoe <iain@sandoe.co.uk>
 
 	* config/darwin.h (LINK_COMMAND_SPEC_A): Update lto options
