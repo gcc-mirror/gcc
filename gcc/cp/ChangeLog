@@ -1,3 +1,13 @@
+2019-09-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from mainline
+	2019-08-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR pch/61250
+	* parser.c (cp_parser_initial_pragma): Call c_common_no_more_pch ()
+	after determining that the first token is not
+	PRAGMA_GCC_PCH_PREPROCESS.
+
 2019-08-30  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

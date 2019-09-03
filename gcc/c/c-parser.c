@@ -18478,6 +18478,8 @@ c_parse_file (void)
 
   if (c_parser_peek_token (&tparser)->pragma_kind == PRAGMA_GCC_PCH_PREPROCESS)
     c_parser_pragma_pch_preprocess (&tparser);
+  else
+    c_common_no_more_pch ();
 
   the_parser = ggc_alloc<c_parser> ();
   *the_parser = tparser;

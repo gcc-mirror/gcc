@@ -1,3 +1,13 @@
+2019-09-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-08-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR pch/61250
+	* ggc-page.c (ggc_pch_read): Read the ggc_pch_ondisk structure
+	and issue any diagnostics needed before collecting the pre-PCH
+	state.
+
 2019-09-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/91472

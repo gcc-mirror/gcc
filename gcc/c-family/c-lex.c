@@ -392,7 +392,6 @@ enum cpp_ttype
 c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 		  int lex_flags)
 {
-  static bool no_more_pch;
   const cpp_token *tok;
   enum cpp_ttype type;
   unsigned char add_flags = 0;
@@ -625,12 +624,6 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 
   if (cpp_flags)
     *cpp_flags = tok->flags | add_flags;
-
-  if (!no_more_pch)
-    {
-      no_more_pch = true;
-      c_common_no_more_pch ();
-    }
 
   timevar_pop (TV_CPP);
 
