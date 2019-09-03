@@ -1,3 +1,11 @@
+2019-09-03  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): New entries
+	for Cortex-A77, Cortex-A76AE, Cortex-A65, Cortex-A65AE, and
+	Cortex-A34.
+	* config/aarch64/aarch64-tune.md: Regenerated.
+	* doc/invoke.texi: Document the new processors.
+
 2019-09-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-option-extensions.def (sb): Add feature
