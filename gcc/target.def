@@ -1736,6 +1736,12 @@ handle this VAR_DECL, and normal RTL expanding is resumed.",
 rtx, (tree var),
 NULL)
 
+DEFHOOK
+(adjust_gangprivate_decl,
+"Tweak variable declaration for a gang-private variable.",
+void, (tree var),
+NULL)
+
 HOOK_VECTOR_END (goacc)
 
 /* Functions relating to vectorization.  */
