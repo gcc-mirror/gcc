@@ -1,3 +1,14 @@
+2019-09-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/
+	* coroutine-passes.c (move_edge_and_update): New.
+	(execute_early_expand_coro_ifns): New.
+	(class pass_coroutine_early_expand_ifns): New.
+	(make_pass_coroutine_early_expand_ifns): New.
+	(pass_coroutine_expand_ifns::gate): Disable.
+	* passes.def: Add coroutine_early_expand_ifns pass.
+	* tree-pass.h (make_pass_coroutine_early_expand_ifns): New declaration.
+
 2019-09-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/

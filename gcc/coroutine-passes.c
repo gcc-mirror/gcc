@@ -256,6 +256,239 @@ make_pass_coroutine_lower_builtins (gcc::context *ctxt)
 
 /* Iterate the function exanding the IFNs.  */
 
+/* Early pipeline version - only needs cfg - no use of vdefs.  */
+
+static void
+move_edge_and_update (edge e, basic_block old_bb, basic_block new_bb)
+{
+  if (dump_file)
+    fprintf (dump_file, "redirecting edge from bb %u to bb %u\n",
+	     old_bb->index, new_bb->index);
+
+  e = redirect_edge_and_branch (e, new_bb);
+  if (!e && dump_file)
+      fprintf (dump_file, "failed to redirect edge ..  \n");
+
+  /* Die if we failed.  */
+  gcc_checking_assert (e);
+}
+
+static unsigned int
+execute_early_expand_coro_ifns (void)
+{
+  /* Don't rebuild stuff unless we have to. */
+  unsigned int todoflags = 0;
+
+  /* Some of the possible YIELD points will hopefully have been removed by
+     earlier optimisations, record the ones that are present.  */
+  hash_map <int_hash <HOST_WIDE_INT, -1, -2>, tree> destinations;
+  bool changed = false;
+
+  basic_block bb;
+
+  gimple_stmt_iterator gsi;
+  FOR_EACH_BB_FN (bb, cfun)
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+      {
+	gimple *stmt = gsi_stmt (gsi);
+	if (!is_gimple_call (stmt) || !gimple_call_internal_p (stmt))
+	  {
+	    gsi_next (&gsi);
+	    continue;
+	  }
+	switch (gimple_call_internal_fn (stmt))
+	  {
+	  case IFN_CO_ACTOR:
+	    changed = true;
+	    gsi_next (&gsi);
+	    break;
+	  case IFN_CO_YIELD:
+	    {
+	    /* .CO_YIELD (NUM, FINAL, RES_LAB, DEST_LAB, FRAME_PTR);
+	       NUM = await number.
+	       FINAL = 1 if this is the final_suspend() await.
+	       RES_LAB = resume point label.
+	       DEST_LAB = destroy point label.
+	       FRAME_PTR = is a null pointer with the type of the coro
+			   frame, so that we can resize, if needed.
+	    */
+	    if (dump_file)
+	      fprintf (dump_file, "saw CO_YIELD in BB %u\n", bb->index);
+	    tree num = gimple_call_arg (stmt, 0); /* yield point.  */
+	    HOST_WIDE_INT idx = TREE_INT_CST_LOW (num);
+	    bool existed;
+	    tree res_tgt = TREE_OPERAND (gimple_call_arg (stmt, 2), 0);
+	    tree &res_dest = destinations.get_or_insert (idx, &existed);
+	    if (existed && dump_file)
+	      {
+		fprintf (dump_file, "duplicate YIELD RESUME point ("
+				     HOST_WIDE_INT_PRINT_DEC ") ?\n", idx);
+		debug_gimple_stmt (stmt);
+	      }
+	    else
+	      res_dest = res_tgt;
+	    tree dst_tgt = TREE_OPERAND (gimple_call_arg (stmt, 3), 0);
+	    tree &dst_dest = destinations.get_or_insert (idx+1, &existed);
+	    if (existed && dump_file)
+	      {
+		fprintf (dump_file, "duplicate YIELD DESTROY point ("
+				     HOST_WIDE_INT_PRINT_DEC ") ?\n", idx+1);
+		debug_gimple_stmt (stmt);
+	      }
+	    else
+	      dst_dest = dst_tgt;
+	    /* lose the co_yield.  */
+	    gsi_remove (&gsi, true);
+	    stmt = gsi_stmt (gsi); /* next. */
+	    /* lose the copy present at O0.  */
+	    if (is_gimple_assign (stmt))
+	      {
+		gsi_remove (&gsi, true);
+		stmt = gsi_stmt (gsi);
+	       }
+	    /* Simplify the switch or if following.  */
+	    if (gswitch *gsw = dyn_cast <gswitch *> (stmt))
+	      {
+		gimple_switch_set_index (gsw, integer_zero_node);
+		fold_stmt (&gsi);
+	      }
+	    else if (gcond *gif = dyn_cast <gcond*> (stmt))
+	      {
+		if (gimple_cond_code (gif) == EQ_EXPR)
+		  gimple_cond_make_true (gif);
+		else
+		  gimple_cond_make_false (gif);
+		fold_stmt (&gsi);
+	      }
+	    else
+	      debug_gimple_stmt (stmt);
+	    changed = true;
+	    if (gsi_end_p (gsi))
+	      break;
+	    continue;
+	    }
+	  default:
+	    gsi_next (&gsi);
+	    break;
+	  }
+      }
+
+  if (!changed)
+    {
+      if (dump_file)
+	fprintf (dump_file, "coro: nothing to do\n");
+      return todoflags;
+    }
+
+  FOR_EACH_BB_FN (bb, cfun)
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+      {
+	gimple *stmt = gsi_stmt (gsi);
+	if (!is_gimple_call (stmt) || !gimple_call_internal_p (stmt))
+	  {
+	  gsi_next (&gsi);
+	  continue;
+	  }
+	if (gimple_call_internal_fn (stmt) != IFN_CO_ACTOR)
+	  gsi_next (&gsi);
+	else
+	  {
+	    if (dump_file)
+	      fprintf (dump_file, "saw CO_ACTOR in BB %u\n", bb->index);
+	    /* get yield point.  */
+	    HOST_WIDE_INT idx = TREE_INT_CST_LOW (gimple_call_arg (stmt, 0));
+	    tree *seen = destinations.get (idx);
+	    if (!seen)
+	      {
+		/* If we never saw this index, it means that the CO_YIELD
+		   associated was elided during earlier optimisations, so we
+		    don't need to fix up the switch targets.  */
+		if (dump_file)
+		  fprintf (dump_file, "yield point " HOST_WIDE_INT_PRINT_DEC
+			   " not used, removing it .. \n", idx);
+		gsi_remove (&gsi, true);
+		release_defs (stmt);
+	      }
+	    else
+	      {
+		/* So we need to switch the target of this switch case to
+		   the relevant BB.  */
+		basic_block new_bb = label_to_block (cfun, *seen);
+		/* We expect the block we're modifying to contain a single
+		   CO_ACTOR() followed by a goto <switch default bb>.  */
+		gcc_checking_assert (EDGE_COUNT (bb->succs) == 1);
+		edge e;
+		edge_iterator ei;
+		FOR_EACH_EDGE (e, ei, bb->succs)
+		  {
+		    basic_block old_bb = e->dest;
+		    move_edge_and_update (e, old_bb, new_bb);
+		  }
+		gsi_remove (&gsi, true);
+		changed = true;
+	      }
+	    /* The remove advances the iterator.  */
+	    if (gsi_end_p (gsi))
+	      break;
+	    continue;
+	  }
+      }
+
+  if (changed)
+    {
+      /* Sledgehammer fix up to DOM, however attempts to do it more cheaply
+         were not terribly successful.  */
+      free_dominance_info (CDI_DOMINATORS);
+      calculate_dominance_info (CDI_DOMINATORS);
+
+      /* Changed the CFG.  */
+      todoflags |= TODO_cleanup_cfg;
+    }
+  return todoflags;
+}
+
+namespace {
+
+const pass_data pass_data_coroutine_early_expand_ifns  =
+{
+  GIMPLE_PASS, /* type */
+  "coro-early-expand-ifns", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  (PROP_cfg), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0  /* todo_flags_finish, set this in the fn. */
+};
+
+class pass_coroutine_early_expand_ifns : public gimple_opt_pass
+{
+public:
+  pass_coroutine_early_expand_ifns  (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_coroutine_early_expand_ifns , ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *) { return flag_coroutines; };
+
+  virtual unsigned int execute (function *f ATTRIBUTE_UNUSED)
+    {
+      return execute_early_expand_coro_ifns ();
+    }
+
+}; // class pass_coroutine_expand_ifns
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_coroutine_early_expand_ifns (gcc::context *ctxt)
+{
+  return new pass_coroutine_early_expand_ifns (ctxt);
+}
+
+/* Post-LTO version, needs to adjust VDEFs.  */
+
 /* Helper that returns the first gimple statement that has a vuse in a
    BB. */
 static gimple *
@@ -544,7 +777,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_coroutines; };
+  virtual bool gate (function *) { return false /*flag_coroutines*/; };
 
   virtual unsigned int execute (function *f ATTRIBUTE_UNUSED)
     {
