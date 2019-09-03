@@ -1730,6 +1730,12 @@ rtx, (tree var),
 NULL)
 
 DEFHOOK
+(adjust_gangprivate_decl,
+"Tweak variable declaration for a gang-private variable.",
+void, (tree var),
+NULL)
+
+DEFHOOK
 (explode_args,
 "Define this hook to TRUE if arguments to offload regions should be\n\
 exploded, i.e. passed as true arguments rather than in an argument array.",

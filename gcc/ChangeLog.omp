@@ -1,3 +1,16 @@
+2019-09-05  Julian Brown  <julian@codesourcery.com>
+
+	* omp-offload.c (convert.h): Include.
+	(struct addr_expr_rewrite_info): Add struct.
+	(rewrite_addr_expr): New function.
+	(is_sync_builtin_call): New function.
+	(execute_oacc_device_lower): Support rewriting gang-private variables
+	using target hook, and fix up addr_expr nodes afterwards.
+	* target.def (adjust_gangprivate_decl): New target hook.
+	* doc/tm.texi.in (TARGET_GOACC_ADJUST_GANGPRIVATE_DECL): Document new
+	target hook.
+	* doc/tm.texi: Regenerate.
+
 2019-08-13  Julian Brown  <julian@codesourcery.com>
 
 	* omp-oacc-kernels.c (add_wait): New function, split out of...
