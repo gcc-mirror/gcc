@@ -1,3 +1,10 @@
+2019-09-03  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* c-attribs.c (handle_section_attribute): Call the
+	handle_generic_attribute target hook after performing target
+	independent processing.
+	(handle_noinit_attribute): Likewise.
+
 2019-09-03  Ian Lance Taylor  <iant@golang.org>
 
 	* c-cppbuiltin.c (builtin_define_with_hex_fp_value): Always expand

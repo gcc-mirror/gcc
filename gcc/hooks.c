@@ -442,6 +442,12 @@ hook_tree_tree_tree_tree_null (tree, tree, tree)
   return NULL;
 }
 
+tree
+hook_tree_treeptr_tree_tree_int_boolptr_null (tree *, tree, tree, int, bool *)
+{
+  return NULL;
+}
+
 /* Generic hook that takes an rtx_insn *and returns a NULL string.  */
 const char *
 hook_constcharptr_const_rtx_insn_null (const rtx_insn *)
