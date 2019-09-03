@@ -10062,6 +10062,42 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	{
 	  if (exp && MEM_P (temp) && REG_P (XEXP (temp, 0)))
 	    mark_reg_pointer (XEXP (temp, 0), DECL_ALIGN (exp));
+	}
+      else if (MEM_P (decl_rtl))
+	temp = decl_rtl;
+
+      if (temp != 0)
+	{
+	  if (MEM_P (temp)
+	      && modifier != EXPAND_WRITE
+	      && modifier != EXPAND_MEMORY
+	      && modifier != EXPAND_INITIALIZER
+	      && modifier != EXPAND_CONST_ADDRESS
+	      && modifier != EXPAND_SUM
+	      && !inner_reference_p
+	      && mode != BLKmode
+	      && MEM_ALIGN (temp) < GET_MODE_ALIGNMENT (mode))
+	    {
+	      enum insn_code icode;
+
+	      if ((icode = optab_handler (movmisalign_optab, mode))
+		  != CODE_FOR_nothing)
+		{
+		  class expand_operand ops[2];
+
+		  /* We've already validated the memory, and we're creating a
+		     new pseudo destination.  The predicates really can't fail,
+		     nor can the generator.  */
+		  create_output_operand (&ops[0], NULL_RTX, mode);
+		  create_fixed_operand (&ops[1], temp);
+		  expand_insn (icode, 2, ops);
+		  temp = ops[0].value;
+		}
+	      else if (targetm.slow_unaligned_access (mode, MEM_ALIGN (temp)))
+		temp = extract_bit_field (temp, GET_MODE_BITSIZE (mode),
+					  0, unsignedp, NULL_RTX,
+					  mode, mode, false, NULL);
+	    }
 
 	  return temp;
 	}
@@ -10974,9 +11010,10 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  op0 = copy_rtx (op0);
 
 	/* Don't set memory attributes if the base expression is
-	   SSA_NAME that got expanded as a MEM.  In that case, we should
-	   just honor its original memory attributes.  */
-	if (TREE_CODE (tem) != SSA_NAME || !MEM_P (orig_op0))
+	   SSA_NAME that got expanded as a MEM or a CONSTANT.  In that case,
+	   we should just honor its original memory attributes.  */
+	if (!(TREE_CODE (tem) == SSA_NAME
+	      && (MEM_P (orig_op0) || CONSTANT_P (orig_op0))))
 	  set_mem_attributes (op0, exp, 0);
 
 	if (REG_P (XEXP (op0, 0)))
