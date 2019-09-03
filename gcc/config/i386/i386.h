@@ -279,6 +279,13 @@ struct processor_costs {
 				   in SImode, DImode and TImode.  */
       const int sse_to_integer;	/* cost of moving SSE register to integer.  */
       const int integer_to_sse;	/* cost of moving integer register to SSE. */
+      const int mask_to_integer; /* cost of moving mask register to integer.  */
+      const int integer_to_mask; /* cost of moving integer register to mask.  */
+      const int mask_load[3]; /* cost of loading mask registers
+				 in QImode, HImode and SImode.  */
+      const int mask_store[3]; /* cost of storing mask register
+				  in QImode, HImode and SImode.  */
+      const int mask_move; /* cost of moving mask register.  */
     } hard_register;
 
   const int add;		/* cost of an add instruction */

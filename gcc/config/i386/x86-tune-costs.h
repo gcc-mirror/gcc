@@ -59,6 +59,12 @@ struct processor_costs ix86_size_cost = {/* costs for tuning for size */
   {3, 3, 3, 3, 3},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   3, 3,					/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {2, 2, 2},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {2, 2, 2},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -164,6 +170,12 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   {4, 8, 16, 32, 64},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   3, 3,					/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {2, 4, 2},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {2, 4, 2},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -266,6 +278,12 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   {4, 8, 16, 32, 64},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   3, 3,					/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {2, 4, 2},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {2, 4, 2},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -370,6 +388,12 @@ struct processor_costs pentium_cost = {
   {4, 8, 16, 32, 64},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   3, 3,					/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {2, 4, 2},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {2, 4, 2},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -465,6 +489,12 @@ struct processor_costs lakemont_cost = {
   {4, 8, 16, 32, 64},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   3, 3,					/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {2, 4, 2},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {2, 4, 2},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -575,6 +605,12 @@ struct processor_costs pentiumpro_cost = {
   {4, 8, 16, 32, 64},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   3, 3,					/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {4, 4, 4},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {2, 2, 2},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -676,6 +712,12 @@ struct processor_costs geode_cost = {
   {2, 2, 8, 16, 32},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   6, 6,					/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {2, 2, 2},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {2, 2, 2},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -777,6 +819,12 @@ struct processor_costs k6_cost = {
   {2, 2, 8, 16, 32},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   6, 6,					/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {4, 5, 4},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {2, 3, 2},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -884,6 +932,12 @@ struct processor_costs athlon_cost = {
   {4, 4, 10, 10, 20},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   5, 5,					/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {3, 4, 3},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {3, 4, 3},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -993,6 +1047,12 @@ struct processor_costs k8_cost = {
   {4, 4, 10, 10, 20},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   5, 5,					/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {3, 4, 3},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {3, 4, 3},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -1106,6 +1166,12 @@ struct processor_costs amdfam10_cost = {
   {4, 4, 5, 10, 20},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   3, 3,					/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {3, 4, 3},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {3, 4, 3},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
 
   					/* On K8:
   					    MOVD reg64, xmmreg Double FSTORE 4
@@ -1229,6 +1295,12 @@ const struct processor_costs bdver_cost = {
   {10, 10, 10, 40, 60},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   16, 20,				/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {8, 8, 8},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {8, 8, 8},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -1360,6 +1432,12 @@ struct processor_costs znver1_cost = {
   {8, 8, 8, 16, 32},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit.  */
   6, 6,					/* SSE->integer and integer->SSE moves.  */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {6, 6, 6},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {8, 8, 8},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -1509,6 +1587,12 @@ struct processor_costs znver2_cost = {
 					   in 32,64,128,256 and 512-bit.  */
   6, 6,					/* SSE->integer and integer->SSE
 					   moves.  */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {6, 6, 6},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {8, 8, 8},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -1643,6 +1727,12 @@ struct processor_costs skylake_cost = {
   {8, 8, 8, 12, 24},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   6, 6,					/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {4, 4, 4},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {6, 6, 6},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -1751,6 +1841,12 @@ const struct processor_costs btver1_cost = {
   {10, 10, 12, 48, 96},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   14, 14,				/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {6, 8, 6},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {6, 8, 6},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -1855,6 +1951,12 @@ const struct processor_costs btver2_cost = {
   {10, 10, 12, 48, 96},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   14, 14,				/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {8, 8, 6},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {8, 8, 6},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -1958,6 +2060,12 @@ struct processor_costs pentium4_cost = {
   {16, 16, 16, 32, 64},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   20, 12,				/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {4, 5, 4},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {2, 3, 2},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -2064,6 +2172,12 @@ struct processor_costs nocona_cost = {
   {12, 12, 12, 24, 48},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   20, 12,				/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {4, 4, 4},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {4, 4, 4},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -2168,6 +2282,12 @@ struct processor_costs atom_cost = {
   {8, 8, 8, 16, 32},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   8, 6,					/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {6, 6, 6},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {6, 6, 6},			/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -2272,6 +2392,12 @@ struct processor_costs slm_cost = {
   {8, 8, 8, 16, 32},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   8, 6,					/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {8, 8, 8},			/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {6, 6, 6},			/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -2376,6 +2502,12 @@ struct processor_costs intel_cost = {
   {6, 6, 6, 6, 6},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   4, 4,					/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {4, 4, 4},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {6, 6, 6},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -2484,6 +2616,12 @@ struct processor_costs generic_cost = {
   {6, 6, 6, 10, 15},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   6, 6,					/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {6, 6, 6},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {6, 6, 6},			/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -2597,6 +2735,12 @@ struct processor_costs core_cost = {
   {6, 6, 6, 6, 12},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   6, 6,					/* SSE->integer and integer->SSE moves */
+  2, 2,				/* mask->integer and integer->mask moves */
+  {4, 4, 4},				/* cost of loading mask register
+					   in QImode, HImode, SImode.  */
+  {6, 6, 6},				/* cost if storing mask register
+					   in QImode, HImode, SImode.  */
+  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
