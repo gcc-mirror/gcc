@@ -65,7 +65,7 @@ Target RejectNegative Var(flag_bypass_init_error)
 bool flag_worker_partitioning = false
 
 macc-experimental-workers
-Target Var(flag_worker_partitioning) Init(0)
+Target Var(flag_worker_partitioning) Init(1)
 
 int stack_size_opt = -1
 
