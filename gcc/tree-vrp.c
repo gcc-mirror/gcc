@@ -1702,9 +1702,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 	{
 	  /* For pointer types, we are really only interested in asserting
 	     whether the expression evaluates to non-NULL.  */
-	  if (!range_includes_zero_p (&vr0) && !range_includes_zero_p (&vr1))
-	    vr->set_nonnull (expr_type);
-	  else if (range_is_null (&vr0) || range_is_null (&vr1))
+	  if (range_is_null (&vr0) || range_is_null (&vr1))
 	    vr->set_null (expr_type);
 	  else
 	    vr->set_varying ();
