@@ -1,3 +1,29 @@
+2019-09-06  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (gimplify_omp_for): Use for_stmt in call to
+	localize_reductions.
+
+2019-09-06  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (gimplify_omp_workshare): Use OMP_CLAUSES, OMP_BODY
+	instead of OMP_TARGET_CLAUSES, OMP_TARGET_BODY.
+
+2019-09-05  Cesar Philippidis  <cesar@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (privatize_reduction): New struct.
+	(localize_reductions_r, localize_reductions): New functions.
+	(gimplify_omp_for): Call localize_reductions.
+	(gimplify_omp_workshare): Likewise.
+	* omp-low.cc (lower_oacc_reductions): Handle localized reductions.
+	Create fewer temp vars.
+	* tree-core.h (omp_clause_code): Add OMP_CLAUSE_REDUCTION_PRIVATE_DECL
+	documentation.
+	* tree.cc (omp_clause_num_ops): Bump number of ops for
+	OMP_CLAUSE_REDUCTION to 6.
+	(walk_tree_1): Adjust accordingly.
+	* tree.h (OMP_CLAUSE_REDUCTION_PRIVATE_DECL): Add macro.
+
 2018-09-05  Cesar Philippidis  <cesar@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 

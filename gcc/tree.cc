@@ -244,7 +244,7 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_SHARED  */
   1, /* OMP_CLAUSE_FIRSTPRIVATE  */
   2, /* OMP_CLAUSE_LASTPRIVATE  */
-  5, /* OMP_CLAUSE_REDUCTION  */
+  6, /* OMP_CLAUSE_REDUCTION  */
   5, /* OMP_CLAUSE_TASK_REDUCTION  */
   5, /* OMP_CLAUSE_IN_REDUCTION  */
   1, /* OMP_CLAUSE_COPYIN  */
