@@ -284,6 +284,9 @@ extern unsigned aarch64_architecture_version;
 /* Random number instructions from Armv8.5-a.  */
 #define TARGET_RNG (AARCH64_ISA_RNG)
 
+/* Floating-point rounding instructions from Armv8.5-a.  */
+#define TARGET_FRINT (AARCH64_ISA_V8_5 && TARGET_FLOAT)
+
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */
 #ifndef TARGET_FIX_ERR_A53_835769_DEFAULT

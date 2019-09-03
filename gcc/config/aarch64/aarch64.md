@@ -139,6 +139,10 @@
     UNSPEC_FCVTZS
     UNSPEC_FCVTZU
     UNSPEC_FJCVTZS
+    UNSPEC_FRINT32Z
+    UNSPEC_FRINT32X
+    UNSPEC_FRINT64Z
+    UNSPEC_FRINT64X
     UNSPEC_URECPE
     UNSPEC_FRECPE
     UNSPEC_FRECPS
@@ -7270,6 +7274,16 @@
   [(set_attr "type" "block")
    (set_attr "length" "12")
    (set_attr "speculation_barrier" "true")]
+)
+
+(define_insn "aarch64_<frintnzs_op><mode>"
+  [(set (match_operand:VSFDF 0 "register_operand" "=w")
+	(unspec:VSFDF [(match_operand:VSFDF 1 "register_operand" "w")]
+		      FRINTNZX))]
+  "TARGET_FRINT && TARGET_FLOAT
+   && !(VECTOR_MODE_P (<MODE>mode) && !TARGET_SIMD)"
+  "<frintnzs_op>\\t%<v>0<Vmtype>, %<v>1<Vmtype>"
+  [(set_attr "type" "f_rint<stype>")]
 )
 
 (define_insn "aarch64_rndr"
