@@ -283,7 +283,7 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_SHARED  */
   1, /* OMP_CLAUSE_FIRSTPRIVATE  */
   2, /* OMP_CLAUSE_LASTPRIVATE  */
-  5, /* OMP_CLAUSE_REDUCTION  */
+  6, /* OMP_CLAUSE_REDUCTION  */
   5, /* OMP_CLAUSE_TASK_REDUCTION  */
   5, /* OMP_CLAUSE_IN_REDUCTION  */
   1, /* OMP_CLAUSE_COPYIN  */
@@ -12361,11 +12361,16 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
 
 	case OMP_CLAUSE_REDUCTION:
+	  {
+	    for (int i = 0; i < 6; i++)
+	      WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, i));
+	    WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
+	  }
+
 	case OMP_CLAUSE_TASK_REDUCTION:
 	case OMP_CLAUSE_IN_REDUCTION:
 	  {
-	    int i;
-	    for (i = 0; i < 5; i++)
+	    for (int i = 0; i < 5; i++)
 	      WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, i));
 	    WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
 	  }
