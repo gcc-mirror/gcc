@@ -1,5 +1,9 @@
 2019-09-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* gcc.target/aarch64/acle/jcvt_1.c: New test.
+
+2019-09-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* gcc.target/aarch64/acle/rintnzx_1.c: New test.
 	* gcc.target/aarch64/simd/vrndnzx_1.c: Likewise.
 

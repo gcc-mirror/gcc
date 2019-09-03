@@ -1,5 +1,18 @@
 2019-09-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.md (UNSPEC_FJCVTZS): Define.
+	(aarch64_fjcvtzs): New define_insn.
+	* config/aarch64/aarch64.h (TARGET_JSCVT): Define.
+	* config/aarch64/aarch64-builtins.c (aarch64_builtins):
+	Add AARCH64_JSCVT.
+	(aarch64_init_builtins): Initialize __builtin_aarch64_jcvtzs.
+	(aarch64_expand_builtin): Handle AARCH64_JSCVT.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_JCVT where appropriate.
+	* config/aarch64/arm_acle.h (__jcvt): Define.
+
+2019-09-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.md ("unspec"): Add UNSPEC_FRINT32Z,
 	UNSPEC_FRINT32X, UNSPEC_FRINT64Z, UNSPEC_FRINT64X.
 	(aarch64_<frintnzs_op><mode>): New define_insn.

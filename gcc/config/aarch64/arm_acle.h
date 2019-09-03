@@ -34,6 +34,16 @@ extern "C" {
 #endif
 
 #pragma GCC push_options
+#pragma GCC target ("arch=armv8.3-a")
+__extension__ static __inline int32_t __attribute__ ((__always_inline__))
+__jcvt (double __a)
+{
+  return __builtin_aarch64_jcvtzs (__a);
+}
+
+#pragma GCC pop_options
+
+#pragma GCC push_options
 #pragma GCC target ("arch=armv8.5-a")
 __extension__ static __inline float __attribute__ ((__always_inline__))
 __rint32zf (float __a)
