@@ -1,3 +1,11 @@
+2019-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91604
+	* config/i386/i386-expand.c (split_double_mode): If there is more than
+	one MEM operand and they are rtx_equal_p, reuse lo_half/hi_half from
+	already split matching MEM operand instead of calling adjust_address
+	again.
+
 2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config.gcc: Obsolete spu target.  Remove references to spu.
