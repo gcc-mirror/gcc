@@ -1,3 +1,14 @@
+2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* crossconfig.m4: Remove references to spu.
+	* configure: Regenerate.
+	* doc/xml/manual/appendix_contributing.xml: Remove references
+	to __ea as "badword" for spu.
+	* doc/html/manual/source_code_style.html: Regenerate.
+	* include/tr1/ell_integral.tcc (__ellint_rd): Do not attempt
+	to avoid __ea (as "badword" for spu).
+	(__ellint_rj): Likewise.
+
 2019-09-03  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR other/79543

@@ -89,7 +89,7 @@ void test_copy_cond_unequal_length_i64 (void)
 
 /* The following tests assume GCC transforms the memcpy calls into
    int128_t assignments which it does only on targets that define
-   the MOVE_MAX macro to 16.  That's only spu, s390, and i386 with
+   the MOVE_MAX macro to 16.  That's only s390 and i386 with
    int128_t support.  */
 
 const char a8[32] = "01234567";

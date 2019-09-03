@@ -1,3 +1,7 @@
+2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* MAINTAINERS: Remove spu port maintainers.
+
 2019-08-28  Martin Liska  <mliska@suse.cz>
 
 	* .gitignore: Add .clangd and compile_commands.json

@@ -293,10 +293,8 @@ else
     # simply assume that if we have mman.h, we have mmap.
     have_mmap=yes
     case "${host}" in
-    spu-*-*|*-*-msdosdjgpp)
-        # The SPU does not have mmap, but it has a sys/mman.h header file
-        # containing "mmap_eaddr" and the mmap flags, confusing the test.
-        # DJGPP also has sys/man.h, but no mmap
+    *-*-msdosdjgpp)
+        # DJGPP has sys/man.h, but no mmap
 	have_mmap=no ;;
     esac
   else
@@ -364,7 +362,6 @@ fi
 if test -n "${with_target_subdir}"; then
    case "${host}" in
    *-*-mingw*) have_fcntl=no ;;
-   spu-*-*) have_fcntl=no ;;
    *) have_fcntl=yes ;;
    esac
 else

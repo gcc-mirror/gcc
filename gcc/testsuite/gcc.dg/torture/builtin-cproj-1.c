@@ -18,11 +18,7 @@ extern void link_error(int);
 #define CPROJ(X) __builtin_cproj(X)
 #define CPROJF(X) __builtin_cprojf(X)
 #define CPROJL(X) __builtin_cprojl(X)
-#ifndef __SPU__
 #define INF __builtin_inff()
-#else
-#define INF __builtin_inf()
-#endif
 #define I 1i
 #define CPSGN(X,Y) __builtin_copysignf((X),(Y))
 #define CIMAG(X) __builtin_cimagf(X)
@@ -36,7 +32,6 @@ extern void link_error(int);
 
 /* Test that (cproj(X) == ZERO+Inf) and that the signs of the
    imaginary parts match.  ZERO is +/- 0i.  */
-#ifndef __SPU__
 #define TEST_CST_INF(X,ZERO) do { \
   if (CPROJF(X) != ZERO+INF || CKSGN_I(CPROJF(X),ZERO+INF)) \
     link_error(__LINE__); \
@@ -45,14 +40,6 @@ extern void link_error(int);
   if (CPROJL(X) != ZERO+INF || CKSGN_I(CPROJL(X),ZERO+INF)) \
     link_error(__LINE__); \
 } while (0)
-#else
-#define TEST_CST_INF(X,ZERO) do { \
-  if (CPROJ(X) != ZERO+INF || CKSGN_I(CPROJ(X),ZERO+INF)) \
-    link_error(__LINE__); \
-  if (CPROJL(X) != ZERO+INF || CKSGN_I(CPROJL(X),ZERO+INF)) \
-    link_error(__LINE__); \
-} while (0)
-#endif
 
 /* Test that (cproj(X) == X) for all finite (X).  */
 #define TEST_CST(X) do { \
@@ -62,7 +49,6 @@ extern void link_error(int);
 
 /* Test that cproj(X + I*INF) -> (ZERO + INF), where ZERO is +-0i.
    NEG is either blank or a minus sign when ZERO is negative.  */
-#ifndef __SPU__
 #define TEST_IMAG_INF(NEG,ZERO) do { \
   if (CPROJF(f+I*NEG INF) != ZERO+INF \
       || CKSGN_I (CPROJF(f+I*NEG INF), ZERO+INF)) \
@@ -74,19 +60,8 @@ extern void link_error(int);
       || CKSGN_I (CPROJL(ld+I*NEG INF), ZERO+INF)) \
     link_error(__LINE__); \
 } while (0)
-#else
-#define TEST_IMAG_INF(NEG,ZERO) do { \
-  if (CPROJ(d+I*NEG INF) != ZERO+INF \
-      || CKSGN_I (CPROJ(d+I*NEG INF), ZERO+INF)) \
-    link_error(__LINE__); \
-  if (CPROJL(ld+I*NEG INF) != ZERO+INF \
-      || CKSGN_I (CPROJL(ld+I*NEG INF), ZERO+INF)) \
-    link_error(__LINE__); \
-} while (0)
-#endif
 
 /* Like TEST_IMAG_INF, but check that side effects are honored.  */
-#ifndef __SPU__
 #define TEST_IMAG_INF_SIDE_EFFECT(NEG,ZERO) do { \
   int side = 4; \
   if (CPROJF(++side+I*NEG INF) != ZERO+INF \
@@ -101,23 +76,9 @@ extern void link_error(int);
   if (side != 10) \
     link_error(__LINE__); \
 } while (0)
-#else
-#define TEST_IMAG_INF_SIDE_EFFECT(NEG,ZERO) do { \
-  int side = 4; \
-  if (CPROJ(++side+I*NEG INF) != ZERO+INF \
-      || CKSGN_I (CPROJ(++side+I*NEG INF), ZERO+INF)) \
-    link_error(__LINE__); \
-  if (CPROJL(++side+I*NEG INF) != ZERO+INF \
-      || CKSGN_I (CPROJL(++side+I*NEG INF), ZERO+INF)) \
-    link_error(__LINE__); \
-  if (side != 8) \
-    link_error(__LINE__); \
-} while (0)
-#endif
 
 /* Test that cproj(INF, POSITIVE) -> INF+0i.  NEG is either blank or a
    minus sign to test negative INF.  */
-#ifndef __SPU__
 #define TEST_REAL_INF(NEG) do { \
   __real cf = NEG INF; \
   __imag cf = (x ? 4 : 5); \
@@ -135,23 +96,8 @@ extern void link_error(int);
       || CKSGN_I (CPROJL(cld), INF)) \
     link_error(__LINE__); \
 } while (0)
-#else
-#define TEST_REAL_INF(NEG) do { \
-  __real cd = NEG INF; \
-  __imag cd = (x ? 4 : 5); \
-  if (CPROJ(cd) != INF \
-      || CKSGN_I (CPROJ(cd), INF)) \
-    link_error(__LINE__); \
-  __real cld = NEG INF; \
-  __imag cld = (x ? 4 : 5); \
-  if (CPROJL(cld) != INF \
-      || CKSGN_I (CPROJL(cld), INF)) \
-    link_error(__LINE__); \
-} while (0)
-#endif
 
 /* Like TEST_REAL_INF, but check that side effects are honored.  */
-#ifndef __SPU__
 #define TEST_REAL_INF_SIDE_EFFECT(NEG) do { \
   int side = -9; \
   __real cf = NEG INF; \
@@ -172,23 +118,6 @@ extern void link_error(int);
   if (side != -3) \
     link_error(__LINE__); \
 } while (0)
-#else
-#define TEST_REAL_INF_SIDE_EFFECT(NEG) do { \
-  int side = -9; \
-  __real cd = NEG INF; \
-  __imag cd = (x ? 4 : 5); \
-  if (CPROJ((++side,cd)) != INF \
-      || CKSGN_I (CPROJ((++side,cd)), INF)) \
-    link_error(__LINE__); \
-  __real cld = NEG INF; \
-  __imag cld = (x ? 4 : 5); \
-  if (CPROJL((++side,cld)) != INF \
-      || CKSGN_I (CPROJL((++side,cld)), INF)) \
-    link_error(__LINE__); \
-  if (side != -5) \
-    link_error(__LINE__); \
-} while (0)
-#endif
 
 void foo (_Complex long double cld, _Complex double cd, _Complex float cf,
 	  long double ld, double d, float f, int x)

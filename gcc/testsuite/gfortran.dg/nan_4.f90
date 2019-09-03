@@ -1,7 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-std=gnu -fallow-invalid-boz" } 
 ! { dg-add-options ieee }
-! { dg-skip-if "NaN not supported" { spu-*-* } }
 !
 ! PR fortran/34398.
 !

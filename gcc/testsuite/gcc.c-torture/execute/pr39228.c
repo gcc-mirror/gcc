@@ -1,5 +1,4 @@
 /* { dg-add-options ieee } */
-/* { dg-skip-if "No Inf/NaN support" { spu-*-* } } */
 
 extern void abort (void);
 

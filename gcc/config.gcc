@@ -247,8 +247,7 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
-  spu*-*-*				\
-  | tile*-*-*				\
+  tile*-*-*				\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -280,6 +279,7 @@ case ${target} in
  | powerpc*-*-linux*paired*		\
  | powerpc*-*-*spe*			\
  | sparc-hal-solaris2*			\
+ | spu*-*-*				\
  | thumb-*-*				\
  | *-*-freebsd[12] | *-*-freebsd[1234].* \
  | *-*-freebsd*aout*			\
@@ -534,9 +534,6 @@ sparc*-*-*)
 	cxx_target_objs="sparc-c.o"
 	d_target_objs="sparc-d.o"
 	extra_headers="visintrin.h"
-	;;
-spu*-*-*)
-	cpu_type=spu
 	;;
 s390*-*-*)
 	cpu_type=s390
@@ -3171,15 +3168,6 @@ sparc64-*-openbsd*)
 	with_cpu=ultrasparc
 	tmake_file="${tmake_file} sparc/t-sparc"
 	;;
-spu-*-elf*)
-	tm_file="dbxelf.h elfos.h spu/spu-elf.h spu/spu.h newlib-stdint.h"
-	tmake_file="spu/t-spu-elf"
-        native_system_header_dir=/include
-	extra_headers="spu_intrinsics.h spu_internals.h vmx2spu.h spu_mfcio.h vec_types.h spu_cache.h"
-	extra_modes=spu/spu-modes.def
-	c_target_objs="${c_target_objs} spu-c.o"
-	cxx_target_objs="${cxx_target_objs} spu-c.o"
-	;;
 tic6x-*-elf)
 	tm_file="elfos.h ${tm_file} c6x/elf-common.h c6x/elf.h"
 	tm_file="${tm_file} dbxelf.h tm-dwarf2.h newlib-stdint.h"
@@ -4888,23 +4876,6 @@ case "${target}" in
 			exit 1
 			;;
 		esac
-		;;
-
-	spu-*-*)
-		supported_defaults="arch tune"
-
-		for which in arch tune; do
-			eval "val=\$with_$which"
-			case ${val} in
-			"" | cell | celledp)
-				# OK
-				;;
-			*)
-				echo "Unknown cpu used in --with-$which=$val." 1>&2
-				exit 1
-				;;
-			esac
-		done
 		;;
 
 	tic6x-*-*)

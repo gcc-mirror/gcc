@@ -2011,9 +2011,6 @@ PowerPC target supports PowerPC 405.
 @item ppc_recip_hw
 PowerPC target supports executing reciprocal estimate instructions.
 
-@item spu_auto_overlay
-SPU target has toolchain that supports automatic overlay generation.
-
 @item vmx_hw
 PowerPC target supports executing AltiVec instructions.
 
@@ -2421,13 +2418,6 @@ Target supports compiling @code{vpclmul} instructions.
 
 @item xop
 Target supports compiling @code{xop} instructions.
-@end table
-
-@subsubsection Local to tests in @code{gcc.target/spu/ea}
-
-@table @code
-@item ealib
-Target @code{__ea} library functions are available.
 @end table
 
 @subsubsection Local to tests in @code{gcc.test-framework}

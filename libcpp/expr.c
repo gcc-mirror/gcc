@@ -1075,8 +1075,8 @@ parse_defined (cpp_reader *pfile)
   pfile->state.prevent_expansion--;
 
   /* Do not treat conditional macros as being defined.  This is due to the
-     powerpc and spu ports using conditional macros for 'vector', 'bool', and
-     'pixel' to act as conditional keywords.  This messes up tests like #ifndef
+     powerpc port using conditional macros for 'vector', 'bool', and 'pixel'
+     to act as conditional keywords.  This messes up tests like #ifndef
      bool.  */
   result.unsignedp = false;
   result.high = 0;
