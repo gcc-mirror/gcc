@@ -5,9 +5,9 @@
 /* { dg-final { scan-assembler ".section.*lower.data" } } */
 /* { dg-final { scan-assembler ".section.*either.data" } } */
 
-int __attribute__((upper)) upper_bss; /* { dg-warning "'upper' attribute ignored. large memory model .'-mlarge'. is required" } */
-int __attribute__((lower)) lower_bss; /* { dg-warning "'lower' attribute ignored. large memory model .'-mlarge'. is required" } */
-int __attribute__((either)) either_bss; /* { dg-warning "'either' attribute ignored. large memory model .'-mlarge'. is required" } */
+int __attribute__((upper)) upper_bss; /* { dg-warning "'upper' attribute ignored.  Large memory model .'-mlarge'. is required" } */
+int __attribute__((lower)) lower_bss; /* { dg-warning "'lower' attribute ignored.  Large memory model .'-mlarge'. is required" } */
+int __attribute__((either)) either_bss; /* { dg-warning "'either' attribute ignored.  Large memory model .'-mlarge'. is required" } */
 
 /* Verify that even without -mlarge, objects can still be placed in
    upper/lower/either regions manually.  */

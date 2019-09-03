@@ -1,5 +1,30 @@
 2019-09-03  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* config/msp430/msp430.c (msp430_attr): Remove warnings about
+	conflicting msp430-specific attributes.
+	(msp430_section_attr): Likewise.
+	Add warnings about conflicts with generic "noinit" and "section"
+	attributes.
+	Fix grammar in -mlarge error message.
+	(msp430_data_attr): Rename to msp430_persist_attr.
+	Add warnings about conflicts with generic "noinit" and "section"
+	attributes.
+	Add warning for when variable is not initialized.
+	Chain conditionals which prevent the attribute being added.
+	(ATTR_EXCL): New helper.
+	(attr_reent_exclusions): New exclusion table.
+	(attr_naked_exclusions): Likewise.
+	(attr_crit_exclusions): Likewise.
+	(attr_lower_exclusions): Likewise.
+	(attr_upper_exclusions): Likewise.
+	(attr_either_exclusions): Likewise.
+	(attr_persist_exclusions): Likewise.
+	(msp430_attribute_table): Update with exclusion rules.
+	(msp430_output_aligned_decl_common): Don't output common symbol if decl
+	has a section.
+
+2019-09-03  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* config/msp430/msp430.c (TARGET_HANDLE_GENERIC_ATTRIBUTE): Define.
 	(msp430_handle_generic_attribute): New function.
 	* doc/tm.texi: Regenerate.
