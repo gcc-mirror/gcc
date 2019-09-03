@@ -1785,7 +1785,6 @@ gen_prefix (tree decl)
   return NULL;
 }
 
-static section * noinit_section;
 static section * persist_section;
 
 #undef  TARGET_ASM_INIT_SECTIONS
@@ -1794,8 +1793,6 @@ static section * persist_section;
 static void
 msp430_init_sections (void)
 {
-  noinit_section = get_unnamed_section (0, output_section_asm_op,
-					".section .noinit,\"aw\"");
   persist_section = get_unnamed_section (0, output_section_asm_op,
 					 ".section .persistent,\"aw\"");
 }
@@ -1806,6 +1803,10 @@ msp430_init_sections (void)
 static section *
 msp430_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
 {
+  const char *prefix;
+  const char *sec_name;
+  const char *base_sec_name;
+
   gcc_assert (decl != NULL_TREE);
 
   if (TREE_CODE (decl) == STRING_CST
@@ -1821,51 +1822,71 @@ msp430_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
       && is_interrupt_func (decl))
     return get_section (".lowtext", SECTION_CODE | SECTION_WRITE , decl);
 
-  const char * prefix = gen_prefix (decl);
-  if (prefix == NULL)
-    {
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	return text_section;
-      /* FIXME: ATTR_NOINIT is handled generically in
-	 default_elf_select_section.  */
-      else if (has_attr (ATTR_NOINIT, decl))
-	return noinit_section;
-      else if (has_attr (ATTR_PERSIST, decl))
-	return persist_section;
-      else
-	return default_select_section (decl, reloc, align);
-    }
+  if (has_attr (ATTR_PERSIST, decl))
+    return persist_section;
 
-  const char * sec;
+  /* ATTR_NOINIT is handled generically.  */
+  if (has_attr (ATTR_NOINIT, decl))
+    return default_elf_select_section (decl, reloc, align);
+
+  prefix = gen_prefix (decl);
+
   switch (categorize_decl_for_section (decl, reloc))
     {
-    case SECCAT_TEXT:   sec = ".text";   break;
-    case SECCAT_DATA:   sec = ".data";   break;
-    case SECCAT_BSS:    sec = ".bss";    break;
-    case SECCAT_RODATA: sec = ".rodata"; break;
+    case SECCAT_TEXT:
+      if (!prefix)
+	return text_section;
+      base_sec_name = ".text";
+      break;
+    case SECCAT_DATA:
+      if (!prefix)
+	return data_section;
+      base_sec_name = ".data";
+      break;
+    case SECCAT_BSS:
+      if (!prefix)
+	return bss_section;
+      base_sec_name = ".bss";
+      break;
+    case SECCAT_RODATA:
+      if (!prefix)
+	return readonly_data_section;
+      base_sec_name = ".rodata";
+      break;
 
+    /* Enable merging of constant data by the GNU linker using
+       default_elf_select_section and therefore enabling creation of
+       sections with the SHF_MERGE flag.  */
     case SECCAT_RODATA_MERGE_STR:
     case SECCAT_RODATA_MERGE_STR_INIT:
     case SECCAT_RODATA_MERGE_CONST:
+      return default_elf_select_section (decl, reloc, align);
+
+    /* The sections listed below are are not supported for MSP430.
+       They should not be generated, but in case they are, we use
+       default_select_section so they get placed in sections
+       the msp430 assembler and linker understand.  */
+    /* "small data" sections are not supported.  */
     case SECCAT_SRODATA:
+    case SECCAT_SDATA:
+    case SECCAT_SBSS:
+    /* Thread-local storage (TLS) is not supported.  */
+    case SECCAT_TDATA:
+    case SECCAT_TBSS:
+    /* Sections used by a dynamic linker are not supported.  */
     case SECCAT_DATA_REL:
     case SECCAT_DATA_REL_LOCAL:
     case SECCAT_DATA_REL_RO:
     case SECCAT_DATA_REL_RO_LOCAL:
-    case SECCAT_SDATA:
-    case SECCAT_SBSS:
-    case SECCAT_TDATA:
-    case SECCAT_TBSS:
       return default_select_section (decl, reloc, align);
 
     default:
       gcc_unreachable ();
     }
 
-  const char * dec_name = DECL_SECTION_NAME (decl);
-  char * name = ACONCAT ((prefix, sec, dec_name, NULL));
+  sec_name = ACONCAT ((prefix, base_sec_name, DECL_SECTION_NAME (decl), NULL));
 
-  return get_named_section (decl, name, 0);
+  return get_named_section (decl, sec_name, 0);
 }
 
 #undef  TARGET_ASM_FUNCTION_SECTION
@@ -1901,8 +1922,6 @@ msp430_section_type_flags (tree decl, const char * name, int reloc)
     name += strlen (upper_prefix);
   else if (strncmp (name, either_prefix, strlen (either_prefix)) == 0)
     name += strlen (either_prefix);
-  else if (strcmp (name, ".noinit") == 0)
-    return SECTION_WRITE | SECTION_BSS | SECTION_NOTYPE;
   else if (strcmp (name, ".persistent") == 0)
     return SECTION_WRITE | SECTION_NOTYPE;
 
