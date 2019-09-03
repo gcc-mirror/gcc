@@ -1,3 +1,8 @@
+2019-09-05  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/lib-13.f90: End data region after
+	wait API calls.
+
 2019-08-13  Julian Brown  <julian@codesourcery.com>
 
 	* plugin/plugin-gcn.c (queue_push_callback): Wait on queue-full
