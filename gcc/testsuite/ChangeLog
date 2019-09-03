@@ -1,3 +1,8 @@
+2019-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91597
+	* gcc.c-torture/execute/pr91597.c: New test.
+
 2019-09-02  Steven G. Kargl  <kargl@gc.gnu.org>
 
 	PR fortran/91552
