@@ -1,3 +1,7 @@
+2019-09-03  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/sigfpe-eh.c: New test.
+
 2019-09-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/acle/jcvt_1.c: New test.
