@@ -7789,9 +7789,9 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 	gcc_checking_assert (!is_oacc_kernels_decomposed_part (ctx));
 
 	tree orig = OMP_CLAUSE_DECL (c);
-	tree var = maybe_lookup_decl (orig, ctx);
+	tree var;
 	tree ref_to_res = NULL_TREE;
-	tree incoming, outgoing, v1, v2, v3;
+	tree incoming, outgoing;
 	bool is_private = false;
 	bool is_fpp = false;
 
@@ -7804,6 +7804,9 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 	  rcode = BIT_IOR_EXPR;
 	tree op = build_int_cst (unsigned_type_node, rcode);
 
+	var = OMP_CLAUSE_REDUCTION_PRIVATE_DECL (c);
+	if (!var)
+	  var = maybe_lookup_decl (orig, ctx);
 	if (!var)
 	  var = orig;
 
@@ -7912,37 +7915,13 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 	if (!ref_to_res)
 	  ref_to_res = integer_zero_node;
 
-	if (omp_privatize_by_reference (orig))
+	if (omp_privatize_by_reference (outgoing))
 	  {
-	    tree type = TREE_TYPE (var);
-	    const char *id = IDENTIFIER_POINTER (DECL_NAME (var));
-
-	    if (!inner)
-	      {
-		tree x = create_tmp_var (TREE_TYPE (type), id);
-		gimplify_assign (var, build_fold_addr_expr (x), fork_seq);
-	      }
-
-	    v1 = create_tmp_var (type, id);
-	    v2 = create_tmp_var (type, id);
-	    v3 = create_tmp_var (type, id);
-
-	    gimplify_assign (v1, var, fork_seq);
-	    gimplify_assign (v2, var, fork_seq);
-	    gimplify_assign (v3, var, fork_seq);
-
-	    var = build_simple_mem_ref (var);
-	    v1 = build_simple_mem_ref (v1);
-	    v2 = build_simple_mem_ref (v2);
-	    v3 = build_simple_mem_ref (v3);
 	    outgoing = build_simple_mem_ref (outgoing);
 
 	    if (!TREE_CONSTANT (incoming))
 	      incoming = build_simple_mem_ref (incoming);
 	  }
-	else
-	  /* Note that 'var' might be a mem ref.  */
-	  v1 = v2 = v3 = var;
 
 	/* Determine position in reduction buffer, which may be used
 	   by target.  The parser has ensured that this is not a
@@ -7976,21 +7955,21 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 	  = build_call_expr_internal_loc (loc, IFN_GOACC_REDUCTION,
 					  TREE_TYPE (var), 6, init_code,
 					  unshare_expr (ref_to_res),
-					  unshare_expr (v1), level, op, off);
+					  unshare_expr (var), level, op, off);
 	tree fini_call
 	  = build_call_expr_internal_loc (loc, IFN_GOACC_REDUCTION,
 					  TREE_TYPE (var), 6, fini_code,
 					  unshare_expr (ref_to_res),
-					  unshare_expr (v2), level, op, off);
+					  unshare_expr (var), level, op, off);
 	tree teardown_call
 	  = build_call_expr_internal_loc (loc, IFN_GOACC_REDUCTION,
 					  TREE_TYPE (var), 6, teardown_code,
-					  ref_to_res, unshare_expr (v3),
+					  ref_to_res, unshare_expr (var),
 					  level, op, off);
 
-	gimplify_assign (unshare_expr (v1), setup_call, &before_fork);
-	gimplify_assign (unshare_expr (v2), init_call, &after_fork);
-	gimplify_assign (unshare_expr (v3), fini_call, &before_join);
+	gimplify_assign (unshare_expr (var), setup_call, &before_fork);
+	gimplify_assign (unshare_expr (var), init_call, &after_fork);
+	gimplify_assign (unshare_expr (var), fini_call, &before_join);
 	gimplify_assign (unshare_expr (outgoing), teardown_call, &after_join);
       }
 

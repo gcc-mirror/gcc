@@ -253,6 +253,11 @@ struct gimplify_omp_ctx
   hash_map<tree, oacc_array_mapping_info> *decl_data_clause;
 };
 
+struct privatize_reduction
+{
+  tree ref_var, local_var;
+};
+
 static struct gimplify_ctx *gimplify_ctxp;
 static struct gimplify_omp_ctx *gimplify_omp_ctxp;
 static bool in_omp_construct;
@@ -13781,6 +13786,80 @@ find_standalone_omp_ordered (tree *tp, int *walk_subtrees, void *)
   return NULL_TREE;
 }
 
+/* Helper function for localize_reductions.  Replace all uses of REF_VAR with
+   LOCAL_VAR.  */
+
+static tree
+localize_reductions_r (tree *tp, int *walk_subtrees, void *data)
+{
+  enum tree_code tc = TREE_CODE (*tp);
+  struct privatize_reduction *pr = (struct privatize_reduction *) data;
+
+  if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+
+  switch (tc)
+    {
+    case INDIRECT_REF:
+    case MEM_REF:
+      if (TREE_OPERAND (*tp, 0) == pr->ref_var)
+	*tp = pr->local_var;
+
+      *walk_subtrees = 0;
+      break;
+
+    case VAR_DECL:
+    case PARM_DECL:
+    case RESULT_DECL:
+      if (*tp == pr->ref_var)
+	*tp = pr->local_var;
+
+      *walk_subtrees = 0;
+      break;
+
+    default:
+      break;
+    }
+
+  return NULL_TREE;
+}
+
+/* OpenACC worker and vector loop state propagation requires reductions
+   to be inside local variables.  This function replaces all reference-type
+   reductions variables associated with the loop with a local copy.  It is
+   also used to create private copies of reduction variables for those
+   which are not associated with acc loops.  */
+
+static void
+localize_reductions (tree clauses, tree body)
+{
+  tree c, var, type, new_var;
+  struct privatize_reduction pr;
+
+  for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
+      {
+	var = OMP_CLAUSE_DECL (c);
+
+	if (!lang_hooks.decls.omp_privatize_by_reference (var))
+	  {
+	    OMP_CLAUSE_REDUCTION_PRIVATE_DECL (c) = NULL;
+	    continue;
+	  }
+
+	type = TREE_TYPE (TREE_TYPE (var));
+	new_var = create_tmp_var (type, IDENTIFIER_POINTER (DECL_NAME (var)));
+
+	pr.ref_var = var;
+	pr.local_var = new_var;
+
+	walk_tree (&body, localize_reductions_r, &pr, NULL);
+
+	OMP_CLAUSE_REDUCTION_PRIVATE_DECL (c) = new_var;
+      }
+}
+
+
 /* Gimplify the gross structure of an OMP_FOR statement.  */
 
 static enum gimplify_status
@@ -14018,6 +14097,23 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
       break;
     default:
       gcc_unreachable ();
+    }
+
+  if (ort == ORT_ACC)
+    {
+      gimplify_omp_ctx *outer = gimplify_omp_ctxp;
+
+      while (outer
+	     && outer->region_type != ORT_ACC_PARALLEL
+	     && outer->region_type != ORT_ACC_KERNELS)
+	outer = outer->outer_context;
+
+      /* FIXME: Reductions only work in parallel regions at present.  We avoid
+	 doing the reduction localization transformation in kernels regions
+	 here, because the code to remove reductions in kernels regions cannot
+	 handle that.  */
+      if (outer && outer->region_type == ORT_ACC_PARALLEL)
+	localize_reductions (OMP_FOR_CLAUSES (*expr_p), OMP_FOR_BODY (*expr_p));
     }
 
   /* Set OMP_CLAUSE_LINEAR_NO_COPYIN flag on explicit linear
@@ -15629,6 +15725,12 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
       || (ort & ORT_HOST_TEAMS) == ORT_HOST_TEAMS)
     {
       push_gimplify_context ();
+
+      /* FIXME: Reductions are not supported in kernels regions yet.  */
+      if (/*ort == ORT_ACC_KERNELS ||*/ ort == ORT_ACC_PARALLEL)
+        localize_reductions (OMP_TARGET_CLAUSES (*expr_p),
+			     OMP_TARGET_BODY (*expr_p));
+
       gimple *g = gimplify_and_return_first (OMP_BODY (expr), &body);
       if (gimple_code (g) == GIMPLE_BIND)
 	pop_gimplify_context (g);
