@@ -3325,20 +3325,6 @@ init_vn_nary_op_from_pieces (vn_nary_op_t vno, unsigned int length,
   memcpy (&vno->op[0], ops, sizeof (tree) * length);
 }
 
-/* Initialize VNO from OP.  */
-
-static void
-init_vn_nary_op_from_op (vn_nary_op_t vno, tree op)
-{
-  unsigned i;
-
-  vno->opcode = TREE_CODE (op);
-  vno->length = TREE_CODE_LENGTH (TREE_CODE (op));
-  vno->type = TREE_TYPE (op);
-  for (i = 0; i < vno->length; ++i)
-    vno->op[i] = TREE_OPERAND (op, i);
-}
-
 /* Return the number of operands for a vn_nary ops structure from STMT.  */
 
 static unsigned int
@@ -3437,22 +3423,6 @@ vn_nary_op_lookup_pieces (unsigned int length, enum tree_code code,
   vn_nary_op_t vno1 = XALLOCAVAR (struct vn_nary_op_s,
 				  sizeof_vn_nary_op (length));
   init_vn_nary_op_from_pieces (vno1, length, code, type, ops);
-  return vn_nary_op_lookup_1 (vno1, vnresult);
-}
-
-/* Lookup OP in the current hash table, and return the resulting value
-   number if it exists in the hash table.  Return NULL_TREE if it does
-   not exist in the hash table or if the result field of the operation
-   is NULL. VNRESULT will contain the vn_nary_op_t from the hashtable
-   if it exists.  */
-
-tree
-vn_nary_op_lookup (tree op, vn_nary_op_t *vnresult)
-{
-  vn_nary_op_t vno1
-    = XALLOCAVAR (struct vn_nary_op_s,
-		  sizeof_vn_nary_op (TREE_CODE_LENGTH (TREE_CODE (op))));
-  init_vn_nary_op_from_op (vno1, op);
   return vn_nary_op_lookup_1 (vno1, vnresult);
 }
 
@@ -3706,21 +3676,6 @@ vn_nary_op_get_predicated_value (vn_nary_op_t vno, basic_block bb)
 			    (cfun, val->valid_dominated_by_p[i])))
 	return val->result;
   return NULL_TREE;
-}
-
-/* Insert OP into the current hash table with a value number of
-   RESULT.  Return the vn_nary_op_t structure we created and put in
-   the hashtable.  */
-
-vn_nary_op_t
-vn_nary_op_insert (tree op, tree result)
-{
-  unsigned length = TREE_CODE_LENGTH (TREE_CODE (op));
-  vn_nary_op_t vno1;
-
-  vno1 = alloc_vn_nary_op (length, result, VN_INFO (result)->value_id);
-  init_vn_nary_op_from_op (vno1, op);
-  return vn_nary_op_insert_into (vno1, valid_info->nary, true);
 }
 
 /* Insert the rhs of STMT into the current hash table with a value number of

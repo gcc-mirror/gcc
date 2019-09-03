@@ -244,11 +244,9 @@ bool has_VN_INFO (tree);
 extern vn_ssa_aux_t VN_INFO (tree);
 tree vn_get_expr_for (tree);
 void scc_vn_restore_ssa_info (void);
-tree vn_nary_op_lookup (tree, vn_nary_op_t *);
 tree vn_nary_op_lookup_stmt (gimple *, vn_nary_op_t *);
 tree vn_nary_op_lookup_pieces (unsigned int, enum tree_code,
 			       tree, tree *, vn_nary_op_t *);
-vn_nary_op_t vn_nary_op_insert (tree, tree);
 vn_nary_op_t vn_nary_op_insert_pieces (unsigned int, enum tree_code,
 				       tree, tree *, tree, unsigned int);
 bool ao_ref_init_from_vn_reference (ao_ref *, alias_set_type, tree,

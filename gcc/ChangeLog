@@ -1,3 +1,11 @@
+2019-09-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.h (vn_nary_op_lookup): Remove.
+	(vn_nary_op_insert): Likewise.
+	* tree-ssa-sccvn.c (init_vn_nary_op_from_op): Remove.
+	(vn_nary_op_lookup): Likewise.
+	(vn_nary_op_insert): Likewise.
+
 2019-09-03  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* config/s390/s390.c (s390_canonicalize_comparison): Use XEXP
