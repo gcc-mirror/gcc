@@ -288,6 +288,9 @@ extern unsigned aarch64_architecture_version;
 /* ARMv8.3-A features.  */
 #define TARGET_ARMV8_3	(AARCH64_ISA_V8_3)
 
+/* Javascript conversion instruction from Armv8.3-a.  */
+#define TARGET_JSCVT	(TARGET_FLOAT && AARCH64_ISA_V8_3)
+
 /* Armv8.3-a Complex number extension to AdvSIMD extensions.  */
 #define TARGET_COMPLEX (TARGET_SIMD && TARGET_ARMV8_3)
 
