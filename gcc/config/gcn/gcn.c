@@ -4659,8 +4659,6 @@ gcn_goacc_validate_dims (tree decl, int dims[], int fn_level,
   /* FIXME: remove -facc-experimental-workers when they're ready.  */
   int max_workers = flag_worker_partitioning ? 16 : 1;
 
-  gcc_assert (!flag_worker_partitioning);
-
   /* The vector size must appear to be 64, to the user, unless this is a
      SEQ routine.  The real, internal value is always 1, which means use
      autovectorization, but the user should not see that.  */
@@ -6035,6 +6033,8 @@ print_operand (FILE *file, rtx x, int code)
 #define TARGET_GOACC_REDUCTION gcn_goacc_reduction
 #undef  TARGET_GOACC_VALIDATE_DIMS
 #define TARGET_GOACC_VALIDATE_DIMS gcn_goacc_validate_dims
+#undef  TARGET_GOACC_WORKER_PARTITIONING
+#define TARGET_GOACC_WORKER_PARTITIONING true
 #undef  TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK gcn_hard_regno_mode_ok
 #undef  TARGET_HARD_REGNO_NREGS
