@@ -1,3 +1,8 @@
+2019-09-03  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc.target/i386/20020616-1.c: Preserve full register across
+	main.
+
 2019-09-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/91589
