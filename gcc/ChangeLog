@@ -1,3 +1,14 @@
+2019-09-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (sb): Add feature
+	string.
+	(ssbs): Likewise.
+	(sve2): Likewise.
+	(sve2-sm4): Likewise.
+	(sveaes): Likewise.
+	(svesha3): Likewise.
+	(svebitperm): Likewise.
+
 2019-09-03  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Biener  <rguenther@suse.de>
 
