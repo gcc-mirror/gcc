@@ -1,6 +1,13 @@
+2019-09-03  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/data-attributes-2.c: New test.
+	* gcc.target/msp430/function-attributes-4.c: Update dg-warning
+	strings.
+	* gcc.target/msp430/region-attribute-misuse.c: Likewise.
+
 2019-09-03  Kamlesh Kumar  <kamleshbhalui@gmail.com>
 
-        PR tree-optimization/91504
+	PR tree-optimization/91504
 	gcc.dg/tree-ssa/pr91504.c: New test.
 
 2019-09-03  Jakub Jelinek  <jakub@redhat.com>
