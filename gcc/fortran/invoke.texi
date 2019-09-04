@@ -241,10 +241,10 @@ warning.  This option is implied by @option{-std=legacy}.
 
 @item -fallow-invalid-boz
 @opindex @code{allow-invalid-boz}
-A BOZ literal constant can occur in a limited number of context in
+A BOZ literal constant can occur in a limited number of contexts in
 standard conforming Fortran.  This option degrades an error condition
 to a warning, and allows a BOZ literal constant to appear where the
-Fortran standard would otherwise prohibits it.
+Fortran standard would otherwise prohibit its use.
 
 @item -fd-lines-as-code
 @itemx -fd-lines-as-comments

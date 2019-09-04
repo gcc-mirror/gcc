@@ -1,3 +1,8 @@
+2019-09-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.texi: Update documentation to catch up with BOZ changes.
+	* invoke.texi: Fix English from previous BOZ changes commit.
+
 2019-09-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/91589
