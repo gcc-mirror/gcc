@@ -1,3 +1,8 @@
+2019-09-04  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/initlist-deduce.C: Don't use -fdeduce-init-list.  Remove
+	dg-warning.  Add dg-error.
+
 2019-09-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR c/78736

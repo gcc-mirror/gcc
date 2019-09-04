@@ -22073,11 +22073,6 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       unsigned i;
       tree orig_parm = parm;
 
-      /* Replace T with std::initializer_list<T> for deduction.  */
-      if (TREE_CODE (parm) == TEMPLATE_TYPE_PARM
-	  && flag_deduce_init_list)
-	parm = listify (parm);
-
       if (!is_std_init_list (parm)
 	  && TREE_CODE (parm) != ARRAY_TYPE)
 	/* We can only deduce from an initializer list argument if the
