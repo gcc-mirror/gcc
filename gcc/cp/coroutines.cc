@@ -1430,8 +1430,13 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
     /* We will discard this, since it's connected to the original scope
        nest... ??? CHECKME, this might be overly cautious.  */
     tree block = BIND_EXPR_BLOCK (first);
+    gcc_assert (BLOCK_SUPERCONTEXT (block) == NULL_TREE);
+    gcc_assert (BLOCK_CHAIN (block) == NULL_TREE);
     tree replace_blk = make_node (BLOCK);
     BLOCK_VARS (replace_blk) = BLOCK_VARS (block);
+    BLOCK_SUBBLOCKS (replace_blk) = BLOCK_SUBBLOCKS (block);
+    for (tree b = BLOCK_SUBBLOCKS (replace_blk); b ; b = BLOCK_CHAIN (b))
+      BLOCK_SUPERCONTEXT (b) = replace_blk;
     /* .. and connect it here.  */
     BLOCK_SUPERCONTEXT (replace_blk) = top_block;
     BIND_EXPR_BLOCK (first) = replace_blk;
@@ -2621,18 +2626,12 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* Collected the scope vars we need ... only one for now. */
   BIND_EXPR_VARS (ramp_bind) = nreverse (varlist);
 
-  /* We're now going to create or reconnect the scope block from the original
+  /* We're now going to create a new top level scope block for the ramp
      function.  */
-  tree first = expr_first (fnbody);
-  tree top_block;
-  if (first && TREE_CODE (first) == BIND_EXPR)
-    top_block = BIND_EXPR_BLOCK (first);
-  else
-    top_block = make_node (BLOCK);
-
-  BLOCK_VARS (top_block) = BIND_EXPR_VARS (ramp_bind);
-  BLOCK_SUBBLOCKS (top_block) = NULL_TREE;
+  tree top_block = make_node (BLOCK);
   BIND_EXPR_BLOCK (ramp_bind) = top_block;
+  BLOCK_SUBBLOCKS (top_block) = NULL_TREE;
+  BLOCK_VARS (top_block) = BIND_EXPR_VARS (ramp_bind);
 
   /* FIXME: this is development marker, remove later.  */
   tree ramp_label = create_named_label_with_ctx (fn_start, "ramp.start",

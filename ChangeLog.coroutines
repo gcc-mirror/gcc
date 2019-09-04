@@ -1,3 +1,11 @@
+2019-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (build_actor_fn): Ensure that we stitch in subblocks
+	of the original function top block.
+	(morph_fn_to_coro):  Create a new top block for the ramp, rather than
+	reusing the one from the original function.
+
 2019-09-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/
