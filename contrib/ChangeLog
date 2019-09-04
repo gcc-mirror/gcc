@@ -1,5 +1,10 @@
 2019-09-04  Martin Liska  <mliska@suse.cz>
 
+	* mklog: Do not print changed functions for
+	testsuite files.
+
+2019-09-04  Martin Liska  <mliska@suse.cz>
+
 	* mklog: Parse PR references from newly added
 	test files.
 
