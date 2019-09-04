@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 extern gimple_stmt_iterator gsi_outgoing_range_stmt (basic_block bb);
 extern gimple *gimple_outgoing_range_stmt_p (basic_block bb);
 extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
-extern irange get_tree_range (tree expr);
 
 static inline tree
 valid_range_ssa_p (tree exp)
@@ -35,6 +34,22 @@ valid_range_ssa_p (tree exp)
   if (exp && TREE_CODE (exp) == SSA_NAME && irange::supports_ssa_p (exp))
     return exp;
   return NULL_TREE;
+}
+
+static inline irange
+ssa_name_range (tree name)
+{
+  gcc_checking_assert (irange::supports_ssa_p (name));
+  tree type = TREE_TYPE (name);
+  if (!POINTER_TYPE_P (type) && SSA_NAME_RANGE_INFO (name))
+    {
+      // Return a range from an SSA_NAME's available range.  
+      wide_int min, max;
+      enum value_range_kind kind = get_range_info (name, &min, &max);
+      return irange (kind, type, min, max);
+    }
+ // Otherwise return range for the type.
+ return irange (type);
 }
 
 // Gimple statement which supports range_op operations.

@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "grange.h"
 #include "ssa-range-gori.h"
 #include "fold-const.h"
+#include "ssa-range.h"
 
 // Construct a range_def_chain
 
@@ -478,10 +479,14 @@ gori_map::dump(FILE *f)
 static irange
 get_tree_range (tree expr, tree name, irange *range_of_name)
 {
+  static stmt_ranger sr;
   if (expr != name || !range_of_name)
-    return get_tree_range (expr);
+    {
+      irange r;
+      gcc_assert (sr.range_of_expr (r, expr));
+      return r;
+    }
 
-  gcc_checking_assert (range_of_name != NULL);
   return *range_of_name;
 }
 
@@ -1128,7 +1133,7 @@ gori_compute::range_from_import (irange &r, tree name, irange &import_range)
 	res = range_from_import (r1, op1, import_range);
     }
   else
-    r1 = get_tree_range (op1);
+    r1 = get_tree_range (op1, NULL_TREE, NULL);
 
   if (!res)
     return false;
@@ -1144,7 +1149,7 @@ gori_compute::range_from_import (irange &r, tree name, irange &import_range)
 	res = range_from_import (r2, op2, import_range);
     }
   else
-    r2 = get_tree_range (op2);
+    r2 = get_tree_range (op2, NULL_TREE, NULL);
 
   if (res)
     return s->fold (r, r1, r2);

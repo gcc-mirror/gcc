@@ -47,8 +47,9 @@ class stmt_ranger
   public:
   stmt_ranger ();
   ~stmt_ranger ();
-
-  virtual bool range_of_expr (irange &r, tree expr, gimple *s = NULL);
+  
+  bool range_of_expr (irange &r, tree expr, gimple *s = NULL);
+  virtual irange range_of_ssa_name (tree name, gimple *s = NULL);
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
   virtual bool range_of_stmt_with_range (irange &r, gimple *s, tree name,
 					 const irange &name_range);
@@ -126,7 +127,7 @@ public:
   global_ranger ();
   ~global_ranger ();
 
-  virtual bool range_of_expr (irange &r, tree op, gimple *s = NULL);
+  virtual irange range_of_ssa_name (tree name, gimple *s = NULL);
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
   virtual void range_on_entry (irange &r, basic_block bb, tree name);
 
@@ -167,7 +168,7 @@ class trace_ranger : public loop_ranger
 public:
   trace_ranger();
 
-  virtual bool range_of_expr (irange &r, tree expr, gimple *s = NULL);
+  virtual irange range_of_ssa_name (tree name, gimple *s = NULL);
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
   virtual void range_on_edge (irange &r, edge e, tree name);
   virtual void range_on_entry (irange &r, basic_block bb, tree name);

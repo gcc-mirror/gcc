@@ -65,14 +65,60 @@ stmt_ranger::~stmt_ranger ()
 {
 }
 
+irange
+stmt_ranger::range_of_ssa_name (tree name, gimple *s ATTRIBUTE_UNUSED)
+{
+  return ssa_name_range (name);
+}
+
 // This function returns a range for a tree node.  If optional statement S
 // is present, then the range would be if it were to appear as a use on S.
 // Return false if ranges are not supported.
 
 bool
-stmt_ranger::range_of_expr (irange &r, tree expr, gimple *s ATTRIBUTE_UNUSED)
+stmt_ranger::range_of_expr (irange &r, tree expr, gimple *s)
 {
-  r = get_tree_range (expr);
+  tree type;
+  if (TYPE_P (expr))
+    type = expr;
+  else
+    type = TREE_TYPE (expr);
+
+  if (!irange::supports_type_p (type))
+    return false;
+
+  switch (TREE_CODE (expr))
+    {
+      case INTEGER_CST:
+	// If we encounter an overflow, simply punt and drop to varying
+	// since we have no idea how it will be used.
+        if (!TREE_OVERFLOW_P (expr))
+	  {
+	    r = irange (expr, expr);
+	    return true;
+	  }
+	break;
+
+      case SSA_NAME:
+        r = range_of_ssa_name (expr, s);
+	return true;
+
+      case ADDR_EXPR:
+        {
+	  // handle &var which can show up in phi arguments
+	  bool ov;
+	  if (tree_single_nonzero_warnv_p (expr, &ov))
+	    {
+	      r = range_nonzero (type);
+	      return true;
+	    }
+	  break;
+	}
+
+      default:
+        break;
+    }
+  r = irange (type);
   return true;
 }
 
@@ -108,7 +154,7 @@ stmt_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 	  return true;
 	}
       // We don't understand the stmt, so return the global range.
-      r = get_tree_range (name);
+      r = ssa_name_range (name);
       return true;
     }
   if (res)
@@ -420,7 +466,7 @@ ssa_ranger::range_on_edge (irange &r, edge e, tree name)
   
   if (!valid_range_ssa_p (name))
     {
-      r = get_tree_range (name);
+      gcc_assert (range_of_expr (r, name));
       return;
     }
   range_on_exit (r, e->src, name);
@@ -638,7 +684,7 @@ global_ranger::range_of_stmt (irange &r, gimple *s, tree name)
     return true;
  
   // Avoid infinite recursion by initializing global cache
-  irange tmp = get_tree_range (name);
+  irange tmp = ssa_name_range (name);
   m_gori.m_globals.set_global_range (name, tmp);
 
   gcc_assert (ssa_ranger::range_of_stmt (r, s, name));
@@ -652,41 +698,37 @@ global_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 // Determine a range for OP on stmt S, returning the result in R.
 // If OP is not defined in BB, find the range on entry to this block.
 
-bool
-global_ranger::range_of_expr (irange &r, tree op, gimple *s)
+irange
+global_ranger::range_of_ssa_name (tree name, gimple *s)
 {
-  if (!irange::supports_p (op))
-     return false;
+  // If there is no statement, just get the global value.
+  if (!s)
+    return ssa_name_range (name);
 
-  // If there is a statement, and a valid ssa_name, try to find a range.
-  if (s && valid_range_ssa_p (op))
-    {
-      basic_block bb = gimple_bb (s);
-      gimple *def_stmt = SSA_NAME_DEF_STMT (op);
-        
-      // if name is defined in this block, try to get an range from S.
-      if (def_stmt && gimple_bb (def_stmt) == bb)
-	gcc_assert (range_of_stmt (r, def_stmt, op));
-      else
-	// Otherwise OP comes from outside this block, use range on entry.
-	range_on_entry (r, bb, op);
+  irange r;
+  basic_block bb = gimple_bb (s);
+  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+    
+  // if name is defined in this block, try to get an range from S.
+  if (def_stmt && gimple_bb (def_stmt) == bb)
+    gcc_assert (range_of_stmt (r, def_stmt, name));
+  else
+    // Otherwise OP comes from outside this block, use range on entry.
+    range_on_entry (r, bb, name);
 
-      // No range yet, see if there is a dereference in the block.
-      // We don't care if it's between the def and a use within a block
-      // because the entire block must be executed anyway.
-      // FIXME:?? For non-call exceptions we could have a statement throw
-      // which causes an early block exit. 
-      // in which case we may need to walk from S back to the def/top of block
-      // to make sure the deref happens between S and there before claiming 
-      // there is a deref.   Punt for now.
-      if (!cfun->can_throw_non_call_exceptions && r.varying_p () &&
-	  m_gori.non_null_deref_p (op, bb))
-	r = range_nonzero (TREE_TYPE (op));
-      return true;
-    }
+  // No range yet, see if there is a dereference in the block.
+  // We don't care if it's between the def and a use within a block
+  // because the entire block must be executed anyway.
+  // FIXME:?? For non-call exceptions we could have a statement throw
+  // which causes an early block exit. 
+  // in which case we may need to walk from S back to the def/top of block
+  // to make sure the deref happens between S and there before claiming 
+  // there is a deref.   Punt for now.
+  if (!cfun->can_throw_non_call_exceptions && r.varying_p () &&
+      m_gori.non_null_deref_p (name, bb))
+    r = range_nonzero (TREE_TYPE (name));
 
-  // Fall back to the default.
-  return ssa_ranger::range_of_expr (r, op);
+  return r;
 }
 
 // Calculate a range on edge E and return it in R.  Try to evaluate a range
@@ -731,7 +773,7 @@ global_ranger::export_global_ranges ()
 	{
 	  // Make sure the new range is a subset of the old range.
 	  irange old_range;
-	  old_range = get_tree_range (name);
+	  old_range = ssa_name_range (name);
 	  old_range.intersect (r);
 	  /* Disable this while we fix tree-ssa/pr61743-2.c.  */
 	  //gcc_checking_assert (old_range == r);
@@ -1008,15 +1050,15 @@ trace_ranger::trailer (unsigned counter, const char *caller, bool result,
 
 // Tracing version of range_of_expr.  Call it with printing wrappers.
 
-bool
-trace_ranger::range_of_expr (irange &r, tree expr, gimple *s)
+irange
+trace_ranger::range_of_ssa_name (tree name, gimple *s)
 {
-  bool res;
+  irange r;
   unsigned idx = ++trace_count;
   if (dumping (idx))
     {
-      fprintf (dump_file, "range_of_expr (");
-      print_generic_expr (dump_file, expr, TDF_SLIM);
+      fprintf (dump_file, "range_of_ssa_name (");
+      print_generic_expr (dump_file, name, TDF_SLIM);
       fprintf (dump_file, ") at stmt ");
       if (s)
 	print_gimple_stmt (dump_file, s , 0, TDF_SLIM);
@@ -1025,9 +1067,10 @@ trace_ranger::range_of_expr (irange &r, tree expr, gimple *s)
       indent += bump;
     }
 
-  res = super::range_of_expr (r, expr, s);
+  r = super::range_of_ssa_name (name, s);
 
-  return trailer (idx, "range_of_expr", res, expr, r);
+  trailer (idx, "range_of_ssa_name", true, name, r);
+  return r;
 }
 
 // Tracing version of range_on_edge.  Call it with printing wrappers.
