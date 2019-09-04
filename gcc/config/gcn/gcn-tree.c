@@ -667,12 +667,12 @@ gcn_goacc_reduction (gcall *call)
     }
 }
 
-/* Implement TARGET_GOACC_ADJUST_PROPAGATION_RECORD.
+/* Implement TARGET_GOACC_CREATE_PROPAGATION_RECORD.
  
-   Tweak (worker) propagation record, e.g. to put it in shared memory.  */
+   Create (worker) propagation record in shared memory.  */
 
 tree
-gcn_goacc_adjust_propagation_record (tree record_type, bool sender,
+gcn_goacc_create_propagation_record (tree record_type, bool sender,
 				     const char *name)
 {
   tree type = record_type;

@@ -37,7 +37,7 @@ extern rtx gcn_full_exec ();
 extern rtx gcn_full_exec_reg ();
 extern rtx gcn_gen_undef (machine_mode);
 extern bool gcn_global_address_p (rtx);
-extern tree gcn_goacc_adjust_propagation_record (tree record_type, bool sender,
+extern tree gcn_goacc_create_propagation_record (tree record_type, bool sender,
 						 const char *name);
 extern void gcn_goacc_adjust_gangprivate_decl (tree var);
 extern void gcn_goacc_reduction (gcall *call);
