@@ -40,6 +40,8 @@ from subprocess import Popen, PIPE
 
 me = os.path.basename(sys.argv[0])
 
+pr_regex = re.compile('\+(\/(\/|\*)|[Cc*!])\s+(PR [a-z+-]+\/[0-9]+)')
+
 def error(msg):
   sys.stderr.write("%s: error: %s\n" % (me, msg))
   sys.exit(1)
@@ -299,7 +301,7 @@ def parse_patch(contents):
         if l != r:
           break
         comps.append(l)
-    
+
       if not comps:
         error("failed to extract common name for %s and %s" % (left, right))
 
@@ -338,6 +340,14 @@ def parse_patch(contents):
 
   return diffs
 
+
+def get_pr_from_testcase(line):
+    r = pr_regex.search(line)
+    if r != None:
+        return r.group(3)
+    else:
+        return None
+
 def main():
   name, email = read_user_info()
 
@@ -372,6 +382,7 @@ otherwise writes to stdout.'
   # Generate template ChangeLog.
 
   logs = {}
+  prs = []
   for d in diffs:
     log_name = d.clname
 
@@ -387,6 +398,9 @@ otherwise writes to stdout.'
       if hunk0.is_file_addition():
         if re.search(r'testsuite.*(?<!\.exp)$', d.filename):
           change_msg = ': New test.\n'
+          pr = get_pr_from_testcase(hunk0.lines[0])
+          if pr and pr not in prs:
+              prs.append(pr)
         else:
           change_msg = ": New file.\n"
       elif hunk0.is_file_removal():
@@ -426,13 +440,17 @@ otherwise writes to stdout.'
 
   # Print log
   date = time.strftime('%Y-%m-%d')
+  bugmsg = ''
+  if len(prs):
+    bugmsg = '\n'.join(['\t' + pr for pr in prs]) + '\n'
+
   for log_name, msg in sorted(logs.items()):
     out.write("""\
 %s:
 
 %s  %s  <%s>
 
-%s\n""" % (log_name, date, name, email, msg))
+%s%s\n""" % (log_name, date, name, email, bugmsg, msg))
 
   if args.inline:
     # Append patch body
