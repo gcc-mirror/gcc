@@ -470,8 +470,19 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	     reversed (to make distance vector positive), and the actual
 	     distance is negative.  */
 	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+	    dump_printf_loc (MSG_NOTE, vect_location,
 	                     "dependence distance negative.\n");
+	  /* When doing outer loop vectorization, we need to check if there is
+	     a backward dependence at the inner loop level if the dependence
+	     at the outer loop is reversed.  See PR81740.  */
+	  if (nested_in_vect_loop_p (loop, DR_STMT (dra))
+	      || nested_in_vect_loop_p (loop, DR_STMT (drb)))
+	    {
+	      unsigned inner_depth = index_in_loop_nest (loop->inner->num,
+							 DDR_LOOP_NEST (ddr));
+	      if (dist_v[inner_depth] < 0)
+		return true;
+	    }
 	  /* Record a negative dependence distance to later limit the
 	     amount of stmt copying / unrolling we can perform.
 	     Only need to handle read-after-write dependence.  */

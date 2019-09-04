@@ -1,6 +1,16 @@
 2019-09-04  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2019-03-26  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/81740
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence):
+	In case of outer loop vectorization, check for backward dependence
+	at the inner loop if outer loop dependence is reversed.
+
+2019-09-04  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2018-11-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88149
