@@ -3468,8 +3468,6 @@ gcn_init_builtins (void)
       TREE_NOTHROW (gcn_builtin_decls[i]) = 1;
     }
 
-/* FIXME: remove the ifdef once OpenACC support is merged upstream.  */
-#ifdef BUILT_IN_GOACC_SINGLE_START
   /* These builtins need to take/return an LDS pointer: override the generic
      versions here.  */
 
@@ -3486,7 +3484,6 @@ gcn_init_builtins (void)
 
   set_builtin_decl (BUILT_IN_GOACC_BARRIER,
 		    gcn_builtin_decls[GCN_BUILTIN_ACC_BARRIER], false);
-#endif
 }
 
 /* Expand the CMP_SWAP GCN builtins.  We have our own versions that do
@@ -4765,8 +4762,6 @@ static bool
 gcn_fork_join (gcall *ARG_UNUSED (call), const int *ARG_UNUSED (dims),
 	       bool ARG_UNUSED (is_fork))
 {
-  /* GCN does not use the fork/join concept invented for NVPTX.
-     Instead we use standard autovectorization.  */
   return false;
 }
 
@@ -6029,9 +6024,9 @@ print_operand (FILE *file, rtx x, int code)
 #define TARGET_FUNCTION_VALUE_REGNO_P gcn_function_value_regno_p
 #undef  TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR gcn_gimplify_va_arg_expr
-#undef  TARGET_GOACC_ADJUST_PROPAGATION_RECORD
-#define TARGET_GOACC_ADJUST_PROPAGATION_RECORD \
-  gcn_goacc_adjust_propagation_record
+#undef  TARGET_GOACC_CREATE_PROPAGATION_RECORD
+#define TARGET_GOACC_CREATE_PROPAGATION_RECORD \
+  gcn_goacc_create_propagation_record
 #undef  TARGET_GOACC_ADJUST_GANGPRIVATE_DECL
 #define TARGET_GOACC_ADJUST_GANGPRIVATE_DECL gcn_goacc_adjust_gangprivate_decl
 #undef  TARGET_GOACC_FORK_JOIN
