@@ -1,3 +1,9 @@
+2019-09-04  Steven G. Kargl  <kargl@gcvc.gnu.org>
+
+	PR fortran/91650
+	* gfortran.dg/pr91650_1.f90: New test.
+	* gfortran.dg/pr91650_2.f90: Ditto.
+
 2019-09-04  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/cpp0x/initlist-deduce.C: Don't use -fdeduce-init-list.  Remove
