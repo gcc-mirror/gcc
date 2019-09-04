@@ -1,3 +1,11 @@
+2019-09-04  Mike Crowe  <mac@mcrowe.com>
+
+	* testsuite/30_threads/condition_variable/members/2.cc (test01):
+	Parameterise so that test can be run against an arbitrary clock.
+	(main): Test using std::chrono::steady_clock and a user-defined
+	clock in addition to the previous std::chrono::system_clock.
+	* testsuite/30_threads/condition_variable_any/members/2.cc: Likewise.
+
 2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* crossconfig.m4: Remove references to spu.
