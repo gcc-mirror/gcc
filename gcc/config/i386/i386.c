@@ -18328,6 +18328,7 @@ inline_secondary_memory_needed (machine_mode mode, reg_class_t class1,
 
       /* Between SSE and general, we have moves no larger than word size.  */
       if (!(INTEGER_CLASS_P (class1) || INTEGER_CLASS_P (class2))
+	  || GET_MODE_SIZE (mode) < GET_MODE_SIZE (SImode)
 	  || GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	return true;
 

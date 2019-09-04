@@ -1,3 +1,9 @@
+2019-09-04  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/32413
+	* config/i386/i386.c (inline_secondary_memory_needed): Return true
+	for QI and HImode moves between SSE and general registers.
+
 2019-09-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR c/78736
