@@ -2770,6 +2770,56 @@ static void (*const internal_fn_expanders[]) (internal_fn, gcall *) = {
   0
 };
 
+/* Return true if IFN is some form of load from memory.  */
+
+bool
+internal_load_fn_p (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_MASK_LOAD:
+    case IFN_LOAD_LANES:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+/* Return true if IFN is some form of store to memory.  */
+
+bool
+internal_store_fn_p (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_MASK_STORE:
+    case IFN_STORE_LANES:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+/* If FN takes a vector mask argument, return the index of that argument,
+   otherwise return -1.  */
+
+int
+internal_fn_mask_index (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_MASK_LOAD:
+    case IFN_MASK_STORE:
+      return 2;
+
+    default:
+      return -1;
+    }
+}
+
+
 /* Expand STMT as though it were a call to internal function FN.  */
 
 void

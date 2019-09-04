@@ -1,3 +1,58 @@
+2019-09-04  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-data-refs.c (vect_get_smallest_scalar_type): Always
+	use gimple_expr_type for load and store calls.  Skip over the
+	condition argument in a conditional internal function.
+	Protect use of TREE_INT_CST_LOW.
+
+	2019-04-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90006
+	* tree-vect-data-refs.c (vect_get_smallest_scalar_type): Handle
+	calls like lrint.
+
+	2019-03-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/89698
+	* fold-const.c (operand_equal_p): For INDIRECT_REF check
+	that the access types are similar.
+
+	2019-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88903
+	* tree-vect-stmts.c (vectorizable_shift): Verify we see all
+	scalar stmts a SLP shift amount is composed of when detecting
+	shifts by scalars.
+
+	2018-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/88448
+	PR middle-end/88415
+	* tree-complex.c (update_complex_assignment): Properly transfer
+	or clean EH info around gimple_assign_set_rhs_with_ops.
+
+	2018-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88030
+	* tree-complex.c (need_eh_cleanup): New global.
+	(update_complex_assignment): Mark blocks that need EH update.
+	(expand_complex_comparison): Likewise.
+	(tree_lower_complex): Allocate and deallocate need_eh_cleanup,
+	perform EH cleanup and schedule CFG cleanup if that did anything.
+
+	2018-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87929
+	* tree-complex.c (expand_complex_comparison): Clean EH.
+
+	2017-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple.c (gimple_assign_set_rhs_with_ops): Do not ask gsi_replace
+	to update EH info here.
+
 2019-09-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
