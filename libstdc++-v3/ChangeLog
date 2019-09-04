@@ -1,5 +1,25 @@
 2019-09-04  Mike Crowe  <mac@mcrowe.com>
 
+	PR libstdc++/41861
+	* acinclude.m4 (GLIBCXX_CHECK_PTHREAD_COND_CLOCKWAIT): Check for new
+	pthread_cond_clockwait function.
+	* configure.ac: Use GLIBCXX_CHECK_PTHREAD_COND_CLOCKWAIT.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* include/std/condition_variable: (condition_variable): Rename
+	__steady_clock_t typedef and add system_clock. Change __clock_t to be
+	a typedef for the preferred clock to convert arbitrary other clocks to.
+	[_GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT] (wait_until): Add a steady_clock
+	overload.
+	(wait_until): Change __clock_t overload to use system_clock.
+	[_GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT] (__wait_until_impl): Add
+	steady_clock overload that calls pthread_cond_clockwait.
+	(__wait_until_impl): Change __clock_t overload to use system_clock.
+	(condition_variable_any) [_GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT]: Use
+	steady_clock for __clock_t if pthread_cond_clockwait is available.
+
+2019-09-04  Mike Crowe  <mac@mcrowe.com>
+
 	* testsuite/30_threads/condition_variable/members/2.cc (test01):
 	Parameterise so that test can be run against an arbitrary clock.
 	(main): Test using std::chrono::steady_clock and a user-defined
