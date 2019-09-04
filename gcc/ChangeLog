@@ -1,3 +1,15 @@
+2019-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/36262
+	* postreload-gcse.c: Include intl.h and gcse.h.
+	(insert_expr_in_table): Insert at the head of cur_expr->avail_occr
+	to avoid linear list walk.
+	(record_last_mem_set_info): Gate off if not computing transparentness.
+	(get_bb_avail_insn): If transparentness isn't computed give up
+	early.
+	(gcse_after_reload_main): Skip compute_transp and extended PRE
+	if gcse_or_cprop_is_too_expensive says so.
+
 2019-09-03  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/msp430.c (msp430_init_sections): Remove handling of the
