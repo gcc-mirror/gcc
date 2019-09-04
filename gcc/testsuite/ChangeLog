@@ -1,3 +1,11 @@
+2019-09-04  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	Backport from mainline
+	2019-08-13  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/81800
+	* gcc.target/aarch64/no-inline-lrint_3.c: New test.
+
 2019-09-02  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/91619
