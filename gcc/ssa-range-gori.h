@@ -189,4 +189,12 @@ private:
 bool get_tree_range (irange &r, tree expr);
 irange range_from_ssa (tree ssa);
 
+static inline tree
+valid_range_ssa_p (tree exp)
+{
+  if (exp && TREE_CODE (exp) == SSA_NAME && irange::supports_ssa_p (exp))
+    return exp;
+  return NULL_TREE;
+}
+
 #endif // GCC_SSA_RANGE_GORI_H

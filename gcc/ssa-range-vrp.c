@@ -404,7 +404,7 @@ rvrp_engine::fold_and_simplify (gimple_stmt_iterator &gsi)
 
   // Only process statements which are a COND expr or have a valid LHS.
   if (gimple_code (stmt) != GIMPLE_COND &&
-      !m_ranger->valid_ssa_p (gimple_get_lhs (stmt)))
+      !valid_range_ssa_p (gimple_get_lhs (stmt)))
     return;
 
   // ?? This is only needed for propagate_mark_stmt_for_cleanup.
@@ -446,7 +446,7 @@ rvrp_engine::visit (basic_block bb)
     {
       gphi *phi = gpi.phi ();
       tree phi_def = gimple_phi_result (phi);
-      if (m_ranger->valid_ssa_p (phi_def))
+      if (valid_range_ssa_p (phi_def))
 	m_ranger->range_of_stmt (r, phi);
     }
 

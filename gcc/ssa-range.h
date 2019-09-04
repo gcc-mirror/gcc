@@ -25,10 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-range-gori.h"
 #include "ssa-range-cache.h"
 
-extern gimple_stmt_iterator gsi_outgoing_range_stmt (basic_block bb);
-extern gimple *gimple_outgoing_range_stmt_p (basic_block bb);
-extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
-
 // This is the basic range generator interface. 
 //
 // This base class provides all the API entry points, but only provides 
@@ -51,8 +47,6 @@ class ssa_ranger
   public:
   ssa_ranger ();
   ~ssa_ranger ();
-
-  static tree valid_ssa_p (tree exp);
 
   virtual bool range_of_expr (irange &r, tree expr, gimple *s = NULL);
   virtual bool range_of_expr (irange &r, tree expr, edge e);
@@ -208,17 +202,4 @@ on_demand_get_range_on_stmt (irange &r, tree ssa, gimple *stmt)
     return false;
   return ret;
 }
-
-// This function returns EXP if EXP is an ssa_name and is supported by ranges.
-// Otherwise it returns NULL_TREE
-
-inline tree
-ssa_ranger::valid_ssa_p (tree exp)
-{
-  if (exp && TREE_CODE (exp) == SSA_NAME && irange::supports_ssa_p (exp))
-    return exp;
-  return NULL_TREE;
-}
-
-
 #endif // GCC_SSA_RANGE_H

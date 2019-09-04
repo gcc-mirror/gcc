@@ -350,7 +350,7 @@ block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
   bool summarize_varying = false;
   for (x = 1; x < m_ssa_ranges.length (); ++x)
     {
-      if (!ssa_ranger::valid_ssa_p (ssa_name (x)))
+      if (!valid_range_ssa_p (ssa_name (x)))
         continue;
       if (m_ssa_ranges[x] && m_ssa_ranges[x]->get_bb_range (r, bb))
         {
@@ -371,7 +371,7 @@ block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
       fprintf (f, "VARYING_P on entry : ");
       for (x = 1; x < num_ssa_names; ++x)
 	{
-	  if (!ssa_ranger::valid_ssa_p (ssa_name (x)))
+	  if (!valid_range_ssa_p (ssa_name (x)))
 	    continue;
 	  if (m_ssa_ranges[x] && m_ssa_ranges[x]->get_bb_range (r, bb))
 	    {
@@ -467,7 +467,7 @@ ssa_global_cache::dump (FILE *f)
   fprintf (f, "Non-varying global ranges:\n");
   fprintf (f, "=========================:\n");
   for ( x = 1; x < num_ssa_names; x++)
-    if (ssa_ranger::valid_ssa_p (ssa_name (x)) &&
+    if (valid_range_ssa_p (ssa_name (x)) &&
 	get_global_range (r, ssa_name (x))  && !r.varying_p ())
       {
         print_generic_expr (f, ssa_name (x), TDF_NONE);
@@ -524,7 +524,7 @@ gori_cache::block_range (irange &r, basic_block bb, tree name, bool calc)
   gimple *def_stmt = SSA_NAME_DEF_STMT (name);
   basic_block def_bb = NULL;
 
-  gcc_checking_assert (ssa_ranger::valid_ssa_p (name));
+  gcc_checking_assert (valid_range_ssa_p (name));
 
   if (calc)
     {

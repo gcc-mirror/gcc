@@ -24,6 +24,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "range.h"
 #include "range-op.h"
 
+extern gimple_stmt_iterator gsi_outgoing_range_stmt (basic_block bb);
+extern gimple *gimple_outgoing_range_stmt_p (basic_block bb);
+extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
+
 // Gimple statement which supports range_op operations.
 // This can map to gimple assign or cond statements, so quick access to the
 // operands is provided so the user does not need to know which it is.

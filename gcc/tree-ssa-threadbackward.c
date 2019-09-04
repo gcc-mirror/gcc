@@ -123,7 +123,7 @@ thread_ranger::range_of_stmt_edge (irange &r, gimple *g, edge e)
   irange range1, range2;
 
   tree op = stmt->operand1 ();
-  if (!valid_ssa_p (op) || !ssa_name_same_bb_p (op, bb) ||
+  if (!valid_range_ssa_p (op) || !ssa_name_same_bb_p (op, bb) ||
       !range_of_stmt_edge (range1, SSA_NAME_DEF_STMT (op), e))
     if (!range_of_expr (range1, op))
       return false;
@@ -132,7 +132,7 @@ thread_ranger::range_of_stmt_edge (irange &r, gimple *g, edge e)
   if (!op)
     return stmt->fold (r, range1);
 
-  if (!valid_ssa_p (op) || !ssa_name_same_bb_p (op, bb) ||
+  if (!valid_range_ssa_p (op) || !ssa_name_same_bb_p (op, bb) ||
       !range_of_stmt_edge (range2, SSA_NAME_DEF_STMT (op), e))
     if (!range_of_expr (range2, op))
       return false;

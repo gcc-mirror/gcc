@@ -60,6 +60,116 @@ along with GCC; see the file COPYING3.  If not see
 // table where a class is implemented for a given tree code, and
 // auto-registered intot he table for use when it is encountered.
 
+
+static gimple *
+calc_single_range (irange &r, gswitch *sw, edge e)
+{
+  unsigned x, lim;
+  lim = gimple_switch_num_labels (sw);
+  tree type = TREE_TYPE (gimple_switch_index (sw));
+
+  // ADA currently has cases where the index is 64 bits and the case
+  // arguments are  32 bit, causing a trap when we create a case_range.
+  // Until this is resolved (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87798)
+  // punt on these switches.  
+  // cfamily fails during a bootstrap due to a signed index and unsigned cases.
+  // so changing to types_compatible_p for now.
+  tree case_type = TREE_TYPE (CASE_LOW (gimple_switch_label (sw, 1)));
+  if (lim > 1 && !types_compatible_p (type, case_type))
+    return NULL;
+
+
+  if (e != gimple_switch_default_edge (cfun, sw))
+    {
+      r.set_undefined ();
+      // Loop through all the switches edges, ignoring the default edge.
+      // unioning the ranges together.
+      for (x = 1; x < lim; x++)
+	{
+	  if (gimple_switch_edge (cfun, sw, x) != e)
+	    continue;
+	  tree low = CASE_LOW (gimple_switch_label (sw, x));
+	  tree high = CASE_HIGH (gimple_switch_label (sw, x));
+	  if (!high)
+	    high = low;
+	  irange case_range (low, high);
+	  r.union_ (case_range);
+	}
+    }
+  else
+    {
+      r.set_varying (type);
+      // Loop through all the switches edges, ignoring the default edge.
+      // intersecting the ranges not covered by the case.
+      for (x = 1; x < lim; x++)
+	{
+	  tree low = CASE_LOW (gimple_switch_label (sw, x));
+	  tree high = CASE_HIGH (gimple_switch_label (sw, x));
+	  if (!high)
+	    high = low;
+	  irange case_range (VR_ANTI_RANGE, low, high);
+	  r.intersect (case_range);
+	}
+    }
+  return sw;
+}
+
+
+// If there is a range control statment at the end of block BB, return it.
+
+gimple_stmt_iterator
+gsi_outgoing_range_stmt (basic_block bb)
+{
+  gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb);
+  if (!gsi_end_p (gsi))
+    {
+      gimple *s = gsi_stmt (gsi);
+      if (is_a<gcond *> (s) || is_a<gswitch *> (s))
+	return gsi;
+    }
+  return gsi_none ();
+}
+
+gimple *
+gimple_outgoing_range_stmt_p (basic_block bb)
+{
+  // This will return NULL if there is not a branch statement.
+  return gsi_stmt (gsi_outgoing_range_stmt (bb));
+}
+
+// Calculate the range forced on on edge E by control flow, if any,  and
+// return it in R.  Return the statment which defines the range, otherwise
+// return NULL;
+
+gimple *
+gimple_outgoing_edge_range_p (irange &r, edge e)
+{
+  // Determine if there is an outgoing edge.
+  gimple *s = gimple_outgoing_range_stmt_p (e->src);
+  if (!s)
+    return NULL;
+  if (is_a<gcond *> (s))
+    {
+      if (e->flags & EDGE_TRUE_VALUE)
+	r = irange (boolean_true_node, boolean_true_node);
+      else if (e->flags & EDGE_FALSE_VALUE)
+	r = irange (boolean_false_node, boolean_false_node);
+      else
+	gcc_unreachable ();
+      return s;
+    }
+
+  gcc_checking_assert (is_a<gswitch *> (s));
+  gswitch *sw = as_a<gswitch *> (s);
+  tree type = TREE_TYPE (gimple_switch_index (sw));
+
+  if (!irange::supports_type_p (type))
+    return NULL;
+
+  return calc_single_range (r, sw, e);
+}
+
+
 // ------------------------------------------------------------------------
 
 // This is the class which is used to implement range adjustments in GIMPLE.
@@ -266,7 +376,6 @@ grange_op::operand1 () const
 }
 
 
-
 // Fold this unary statement uusing R1 as operand1's range, returning the
 // result in RES.  Return false if the operation fails.
 
@@ -283,6 +392,7 @@ grange_op::fold (irange &res, const irange &orig_r1) const
 
   return fold (res, r1, r2);
 }
+
 
 // Fold this binary statement using R1 and R2 as the operands ranges,
 // returning the result in RES.  Return false if the operation fails.
@@ -316,6 +426,7 @@ grange_op::fold (irange &res, const irange &r1, const irange &r2) const
   return true;
 }
 
+
 // Calculate what we can determine of the range of this unary statement's
 // operand if the lhs of the expression has the range LHS_RANGE.  Return false
 // if nothing can be determined.
@@ -339,6 +450,7 @@ grange_op::calc_op1_irange (irange &r, const irange &lhs_range) const
   return handler ()->op1_range (r, type, lhs_range, type_range);
 }
 
+
 // Calculate what we can determine of the range of this statement's first 
 // operand if the lhs of the expression has the range LHS_RANGE and the second
 // operand has the range OP2_RANGE.  Return false if nothing can be determined.
@@ -361,6 +473,7 @@ grange_op::calc_op1_irange (irange &r, const irange &lhs_range,
   return handler ()->op1_range (r, type, lhs_range, op2_range);
 }
 
+
 // Calculate what we can determine of the range of this statement's second
 // operand if the lhs of the expression has the range LHS_RANGE and the first
 // operand has the range OP1_RANGE.  Return false if nothing can be determined.
@@ -378,5 +491,3 @@ grange_op::calc_op2_irange (irange &r, const irange &lhs_range,
     }
   return handler ()->op2_range (r, type, lhs_range, op1_range);
 }
-
-
