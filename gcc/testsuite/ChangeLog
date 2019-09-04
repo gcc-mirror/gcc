@@ -1,3 +1,8 @@
+2019-09-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR c/78736
+	* gcc.dg/Wenum-conversion.c: New test-case.
+
 2019-09-03  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc.target/msp430/data-attributes-2.c: New test.

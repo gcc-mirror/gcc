@@ -307,7 +307,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-discarded-qualifiers  -Wno-discarded-array-qualifiers @gol
 -Wno-div-by-zero  -Wdouble-promotion @gol
 -Wduplicated-branches  -Wduplicated-cond @gol
--Wempty-body  -Wenum-compare  -Wno-endif-labels  -Wexpansion-to-defined @gol
+-Wempty-body  -Wenum-compare  -Wenum-conversion @gol
+-Wno-endif-labels  -Wexpansion-to-defined @gol
 -Werror  -Werror=*  -Wextra-semi  -Wfatal-errors @gol
 -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-contains-nul  -Wno-format-extra-args  @gol
@@ -4434,6 +4435,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wcomment  @gol
 -Wduplicate-decl-specifier @r{(C and Objective-C only)} @gol
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
+-Wenum-conversion @r{in C/ObjC;} @gol
 -Wformat   @gol
 -Wint-in-bool-context  @gol
 -Wimplicit @r{(C and Objective-C only)} @gol
@@ -7011,6 +7013,12 @@ Warn about a comparison between values of different enumerated types.
 In C++ enumerated type mismatches in conditional expressions are also
 diagnosed and the warning is enabled by default.  In C this warning is 
 enabled by @option{-Wall}.
+
+@item -Wenum-conversion @r{(C, Objective-C only)}
+@opindex Wenum-conversion
+@opindex Wno-enum-conversion
+Warn when a value of enumerated type is implicitly converted to a 
+different enumerated type.  This warning is enabled by @option{-Wextra}.
 
 @item -Wextra-semi @r{(C++, Objective-C++ only)}
 @opindex Wextra-semi

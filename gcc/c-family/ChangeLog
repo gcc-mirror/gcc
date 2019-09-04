@@ -1,3 +1,8 @@
+2019-09-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR c/78736
+	* c.opt (Wenum-conversion): New option.
+
 2019-09-03  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* c-attribs.c (handle_section_attribute): Call the
