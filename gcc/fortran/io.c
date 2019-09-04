@@ -3675,6 +3675,15 @@ match_io_element (io_kind k, gfc_code **cpp)
       if (m == MATCH_NO)
 	gfc_error ("Expected expression in %s statement at %C",
 		   io_kind_name (k));
+
+      if (m == MATCH_YES && expr->ts.type == BT_BOZ)
+	{
+	  if (gfc_invalid_boz ("BOZ literal constant at %L cannot appear in "
+				"an output IO list", &gfc_current_locus))
+	    return MATCH_ERROR;
+	  if (!gfc_boz2int (expr, gfc_max_integer_kind))
+	    return MATCH_ERROR;
+	};
     }
 
   if (m == MATCH_YES && k == M_READ && gfc_check_do_variable (expr->symtree))
