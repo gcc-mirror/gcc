@@ -58,8 +58,56 @@ along with GCC; see the file COPYING3.  If not see
 // A table is indexed by tree-code which provides any neccessary code
 // for implementing the IL specific work. It is modelled after the range op
 // table where a class is implemented for a given tree code, and
-// auto-registered intot he table for use when it is encountered.
+// auto-registered into the table for use when it is encountered.
 
+// This function returns a range for tree node EXPR in R.  Return
+// false if ranges are not supported.
+
+irange
+get_tree_range (tree expr)
+{
+  tree type;
+  if (TYPE_P (expr))
+    type = expr;
+  else
+    type = TREE_TYPE (expr);
+
+  gcc_checking_assert (irange::supports_type_p (type));
+
+  switch (TREE_CODE (expr))
+    {
+      case INTEGER_CST:
+	// If we encounter an overflow, simply punt and drop to varying
+	// since we have no idea how it will be used.
+        if (!TREE_OVERFLOW_P (expr))
+	  return irange (expr, expr);
+	break;
+
+      case SSA_NAME:
+        if (irange::supports_ssa_p (expr) && SSA_NAME_RANGE_INFO (expr)
+	    && !POINTER_TYPE_P (type))
+	  {
+	    // Return a range from an SSA_NAME's available range.  
+	    wide_int min, max;
+	    enum value_range_kind kind = get_range_info (expr, &min, &max);
+	    return irange (kind, type, min, max);
+	  }
+	break;
+
+      case ADDR_EXPR:
+        {
+	  // handle &var which can show up in phi arguments
+	  bool ov;
+	  if (tree_single_nonzero_warnv_p (expr, &ov))
+	     return range_nonzero (type);
+	  break;
+	}
+
+      default:
+        break;
+    }
+  return irange (type);
+}
 
 static gimple *
 calc_single_range (irange &r, gswitch *sw, edge e)

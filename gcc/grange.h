@@ -27,6 +27,15 @@ along with GCC; see the file COPYING3.  If not see
 extern gimple_stmt_iterator gsi_outgoing_range_stmt (basic_block bb);
 extern gimple *gimple_outgoing_range_stmt_p (basic_block bb);
 extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
+extern irange get_tree_range (tree expr);
+
+static inline tree
+valid_range_ssa_p (tree exp)
+{
+  if (exp && TREE_CODE (exp) == SSA_NAME && irange::supports_ssa_p (exp))
+    return exp;
+  return NULL_TREE;
+}
 
 // Gimple statement which supports range_op operations.
 // This can map to gimple assign or cond statements, so quick access to the

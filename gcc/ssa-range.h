@@ -41,25 +41,17 @@ along with GCC; see the file COPYING3.  If not see
 // outgoing_edge_range_p will only return a range if the edge specified 
 // defines a range for the specified name.  Otherwise false is returned.
 //
-
-class ssa_ranger
+//
+class stmt_ranger
 {
   public:
-  ssa_ranger ();
-  ~ssa_ranger ();
+  stmt_ranger ();
+  ~stmt_ranger ();
 
   virtual bool range_of_expr (irange &r, tree expr, gimple *s = NULL);
-  virtual bool range_of_expr (irange &r, tree expr, edge e);
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
   virtual bool range_of_stmt_with_range (irange &r, gimple *s, tree name,
 					 const irange &name_range);
-  virtual void range_on_edge (irange &r, edge e, tree name);
-  virtual void range_on_entry (irange &r, basic_block bb, tree name);
-  virtual void range_on_exit (irange &r, basic_block bb, tree name);
-
-  virtual bool outgoing_edge_range_p (irange &r, edge e, tree name,
-				      irange *name_range = NULL);
-  
 protected:
   // Calculate a range for a kind of gimple statement .
   bool range_of_range_op_core (irange &r, grange_op *s, bool valid,
@@ -68,7 +60,6 @@ protected:
   bool range_of_range_op  (irange &r, grange_op *s, tree name,
 			   const irange &name_range);
   bool range_of_range_op  (irange &r, grange_op *s, gimple *eval_from);
-  bool range_of_range_op  (irange &r, grange_op *s, edge on_edge);
 
   virtual bool range_of_phi (irange &r, gphi *phi, tree name = NULL_TREE,
 			     const irange *name_range = NULL,
@@ -78,10 +69,29 @@ protected:
 		      const irange *name_range = NULL,
 		      gimple *eval_from = NULL, edge on_edge = NULL);
 
-  bool range_of_cond_expr (irange &r, gassign* call, edge on_edge);
   bool range_of_cond_expr (irange &r, gassign* call, tree name = NULL_TREE,
 			   const irange *name_range = NULL,
 			   gimple *eval_from = NULL);
+};
+
+class ssa_ranger : public stmt_ranger
+{
+  public:
+  ssa_ranger ();
+  ~ssa_ranger ();
+  virtual void range_on_edge (irange &r, edge e, tree name);
+  virtual void range_on_entry (irange &r, basic_block bb, tree name);
+  virtual void range_on_exit (irange &r, basic_block bb, tree name);
+
+  virtual bool outgoing_edge_range_p (irange &r, edge e, tree name,
+				      irange *name_range = NULL);
+  
+protected:
+  bool range_of_cond_expr (irange &r, gassign* call, edge on_edge);
+  bool range_of_range_op  (irange &r, grange_op *s, edge on_edge);
+  virtual bool range_of_phi (irange &r, gphi *phi, tree name = NULL_TREE,
+			     const irange *name_range = NULL,
+			     gimple *eval_from = NULL, edge on_edge = NULL);
 };
 
 // This class utilizes the gori summary to query the range
@@ -117,7 +127,6 @@ public:
   ~global_ranger ();
 
   virtual bool range_of_expr (irange &r, tree op, gimple *s = NULL);
-  virtual bool range_of_expr (irange &r, tree expr, edge e);
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
   virtual void range_on_entry (irange &r, basic_block bb, tree name);
 
@@ -159,7 +168,6 @@ public:
   trace_ranger();
 
   virtual bool range_of_expr (irange &r, tree expr, gimple *s = NULL);
-  virtual bool range_of_expr (irange &r, tree expr, edge e);
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
   virtual void range_on_edge (irange &r, edge e, tree name);
   virtual void range_on_entry (irange &r, basic_block bb, tree name);

@@ -472,90 +472,17 @@ gori_map::dump(FILE *f)
     }
 }
 
-// Return a range from an SSA_NAME's available range.  If there is no
-// available range, build a range for its entire domain.
-
-irange
-range_from_ssa (tree ssa)
-{
-  tree type = TREE_TYPE (ssa);
-  gcc_checking_assert (irange::supports_type_p (type));
-  if (!SSA_NAME_RANGE_INFO (ssa) || POINTER_TYPE_P (type))
-    return irange (type);
-  wide_int min, max;
-  enum value_range_kind kind = get_range_info (ssa, &min, &max);
-  return irange (kind, type, min, max);
-}
-
-// This function returns a range for tree node EXPR in R.  Return
-// false if ranges are not supported.
-
-bool
-get_tree_range (irange &r, tree expr)
-{
-  tree type;
-  switch (TREE_CODE (expr))
-    {
-      case INTEGER_CST:
-        if (!TREE_OVERFLOW_P (expr))
-	  r = irange (expr, expr);
-	else
-	  // If we encounter an overflow, simply punt and drop to varying
-	  // since we hvae no idea how it will be used.
-	  r.set_varying (TREE_TYPE (expr));
-	return true;
-
-      case SSA_NAME:
-        if (irange::supports_ssa_p (expr))
-	  {
-	    r = range_from_ssa (expr);
-	    return true;
-	  }
-	break;
-
-      case ADDR_EXPR:
-        {
-	  // handle &var which can show up in phi arguments
-	  bool ov;
-	  type = TREE_TYPE (expr);
-	  if (irange::supports_type_p (type))
-	    {
-	      if (tree_single_nonzero_warnv_p (expr, &ov))
-		r = range_nonzero (type);
-	      else
-		r.set_varying (type);
-	      return true;
-	    }
-	  break;
-	}
-
-      default:
-	if (TYPE_P (expr))
-	  type = expr;
-	else
-	  type = TREE_TYPE (expr);
-	if (irange::supports_type_p (type))
-	  {
-	    // Set to range for this type.
-	    r.set_varying (type);
-	    return true;
-	  }
-	break;
-    }
-  return false;
-}
-
 // Same but perform substitution of NAME with RANGE_OF_NAME if expr
 // happens to match it.
 
-static bool
-get_tree_range (irange &r, tree expr, tree name, irange *range_of_name)
+static irange
+get_tree_range (tree expr, tree name, irange *range_of_name)
 {
   if (expr != name || !range_of_name)
-    return get_tree_range (r, expr);
+    return get_tree_range (expr);
 
-  r = *range_of_name;
-  return true;
+  gcc_checking_assert (range_of_name != NULL);
+  return *range_of_name;
 }
 
 // Calculate the range for NAME if the lhs of statement S has the range LHS.
@@ -579,31 +506,32 @@ compute_operand_range_on_stmt (irange &r, grange_op *s, const irange &lhs,
 	  // The second parameter to a unary operation is the range for the type
 	  // of operand1, but if it can be reduced further, the results will
 	  // be better.  Start with what we know of the range of OP1.
-	  if (get_tree_range (op1_range, op1, name, name_range))
-	    return s->calc_op1_irange (r, lhs, op1_range);
-	  else
-	    return s->calc_op1_irange (r, lhs);
+	  op1_range = get_tree_range (op1, name, name_range);
+	  return s->calc_op1_irange (r, lhs, op1_range);
 	}
       // If we need the second operand, get a value and evaluate.
-      if (get_tree_range (op2_range, op2, name, name_range))
-	if (s->calc_op1_irange (r, lhs, op2_range))
-	  {
-	    // If op1 also has a range, intersect the 2 ranges.
-	    if (name_range)
-	      r.intersect (*name_range);
-	    return true;
-	  }
+      op2_range = get_tree_range (op2, name, name_range);
+      if (s->calc_op1_irange (r, lhs, op2_range))
+	{
+	  // If op1 also has a range, intersect the 2 ranges.
+	  if (name_range)
+	    r.intersect (*name_range);
+	  return true;
+	}
       return false;
     }
 
-  if (op2 == name && get_tree_range (op1_range, op1, name, name_range))
-    if (s->calc_op2_irange (r, lhs, op1_range))
-      {
-	// If op2 also has a range, intersect the 2 ranges.
-	if (name_range)
-	  r.intersect (*name_range);
-	return true;
-      }
+  if (op2 == name)
+    {
+      op1_range = get_tree_range (op1, name, name_range);
+      if (s->calc_op2_irange (r, lhs, op1_range))
+	{
+	  // If op2 also has a range, intersect the 2 ranges.
+	  if (name_range)
+	    r.intersect (*name_range);
+	  return true;
+	}
+    }
   return false;
 }
 
@@ -624,7 +552,7 @@ compute_operand_range_on_stmt (irange &r, gimple *s, const irange &lhs,
     {
       if (gimple_switch_index (as_a<gswitch *>(s)) == name)
         {
-	  gcc_assert (get_tree_range (r, name, name, name_range));
+	  r = get_tree_range (name, name, name_range);
 	  r.intersect (lhs);
 	  return true;
 	}
@@ -933,7 +861,7 @@ gori_compute::compute_logical_operands (irange &r, grange_op *s,
   else
     {
       // Otherwise just get the value for name in operand 1 position
-      gcc_assert (get_tree_range (op1_true, name, name, name_range));
+      op1_true = get_tree_range (name, name, name_range);
       op1_false = op1_true;
     }
 
@@ -950,7 +878,7 @@ gori_compute::compute_logical_operands (irange &r, grange_op *s,
       else
 	{
 	  // Otherwise just get the value for name in operand 2 position
-	  gcc_assert (get_tree_range (op2_true, name, name, name_range));
+	  op2_true = get_tree_range (name, name, name_range);
 	  op2_false = op2_true; 
 	}
     }
@@ -978,8 +906,7 @@ gori_compute::compute_operand1_range (irange &r, grange_op *s,
   tree op2 = s->operand2 ();
 
   // Determine a known range for operand1 ().
-  if (!get_tree_range (op1_range, op1, name, name_range))
-    return false;
+  op1_range = get_tree_range (op1, name, name_range);
 
   // Now calcuated the operand and put that result in r.
   if (!op2)
@@ -992,8 +919,7 @@ gori_compute::compute_operand1_range (irange &r, grange_op *s,
     }
   else
     {
-      if (!get_tree_range (op2_range, op2, name, name_range))
-	return false;
+      op2_range = get_tree_range (op2, name, name_range);
       if (!s->calc_op1_irange (r, lhs, op2_range))
 	return false;
     }
@@ -1022,16 +948,14 @@ gori_compute::compute_operand2_range (irange &r, grange_op *s,
   tree op2 = s->operand2 ();
 
   // Get a range for op1.
-  if (!get_tree_range (op1_range, op1, name, name_range))
-    return false;
+  op1_range = get_tree_range (op1, name, name_range);
 
   // calculate the range for op2 based on lhs and op1.
   if (!s->calc_op2_irange (op2_range, lhs, op1_range))
     return false;
 
   // Also pick up what is known about op2's range at this point
-  if (!get_tree_range (r, op2, name, name_range))
-    return false;
+  r = get_tree_range (op2, name, name_range);
 
   // And intersect it with the calculated result.
   op2_range.intersect (r);
@@ -1166,7 +1090,7 @@ bool
 gori_compute::range_from_import (irange &r, tree name, irange &import_range)
 {
   irange r1, r2;
-  bool res;
+  bool res = true;
   tree import = terminal_name (name);
 
   gcc_checking_assert
@@ -1199,15 +1123,12 @@ gori_compute::range_from_import (irange &r, tree name, irange &import_range)
   if (valid_range_ssa_p (op1))
     {
       if (op1 == import)
-        {
-	  res = true;
-	  r1 = import_range;
-	}
+	r1 = import_range;
       else
 	res = range_from_import (r1, op1, import_range);
     }
   else
-    res = get_tree_range (r1, op1);
+    r1 = get_tree_range (op1);
 
   if (!res)
     return false;
@@ -1218,15 +1139,12 @@ gori_compute::range_from_import (irange &r, tree name, irange &import_range)
   if (valid_range_ssa_p (op2))
     {
       if (op2 == import)
-        {
-	  res = true;
-	  r2 = import_range;
-	}
+	r2 = import_range;
       else
 	res = range_from_import (r2, op2, import_range);
     }
   else
-    res = get_tree_range (r2, op2);
+    r2 = get_tree_range (op2);
 
   if (res)
     return s->fold (r, r1, r2);

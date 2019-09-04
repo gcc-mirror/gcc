@@ -578,7 +578,7 @@ gori_cache::edge_range (irange &r, edge e, tree name)
 	{
 	  // Try to pick up any known value first. 
 	  if (!m_globals.get_global_range (r, name))
-	    r = range_from_ssa (name);
+	    r = get_tree_range (name);
 	}
     }
   else
