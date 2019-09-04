@@ -1,5 +1,10 @@
 2019-09-04  Martin Liska  <mliska@suse.cz>
 
+	* mklog: Parse PR references from newly added
+	test files.
+
+2019-09-04  Martin Liska  <mliska@suse.cz>
+
 	* mklog: Use argparse instead of getopt.
 
 2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
