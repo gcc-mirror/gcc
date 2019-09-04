@@ -2550,28 +2550,6 @@ of a loop too many expressions need to be evaluated, the resulting constexpr
 evaluation might take too long.
 The default is 33554432 (1<<25).
 
-@item -fdeduce-init-list
-@opindex fdeduce-init-list
-Enable deduction of a template type parameter as
-@code{std::initializer_list} from a brace-enclosed initializer list, i.e.@:
-
-@smallexample
-template <class T> auto forward(T t) -> decltype (realfn (t))
-@{
-  return realfn (t);
-@}
-
-void f()
-@{
-  forward(@{1,2@}); // call forward<std::initializer_list<int>>
-@}
-@end smallexample
-
-This deduction was implemented as a possible extension to the
-originally proposed semantics for the C++11 standard, but was not part
-of the final standard, so it is disabled by default.  This option is
-deprecated, and may be removed in a future version of G++.
-
 @item -fno-elide-constructors
 @opindex fno-elide-constructors
 @opindex felide-constructors
