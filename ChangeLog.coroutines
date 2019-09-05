@@ -1,3 +1,12 @@
+2019-09-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (build_actor_fn): Move the block link handling to
+	the morph function.
+	(morph_fn_to_coro): Reorganise block re-writing to handle the case
+	for exception wrapper.  Implement exception wrapper onto the users
+	function statements.
+
 2019-09-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/

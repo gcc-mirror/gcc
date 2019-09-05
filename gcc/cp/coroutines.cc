@@ -1420,6 +1420,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   current_stmt_tree ()->stmts_are_full_exprs_p = 1;
   tree stmt = begin_compound_stmt (BCS_FN_BODY);
 
+  /* ??? Can we dispense with the enclosing bind if the function body does
+     not start with a bind_expr? (i.e. there's no contained scopes).  */
   tree actor_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
   tree top_block = make_node (BLOCK);
   BIND_EXPR_BLOCK (actor_bind) = top_block;
@@ -1430,17 +1432,13 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
     /* We will discard this, since it's connected to the original scope
        nest... ??? CHECKME, this might be overly cautious.  */
     tree block = BIND_EXPR_BLOCK (first);
-    gcc_assert (BLOCK_SUPERCONTEXT (block) == NULL_TREE);
-    gcc_assert (BLOCK_CHAIN (block) == NULL_TREE);
-    tree replace_blk = make_node (BLOCK);
-    BLOCK_VARS (replace_blk) = BLOCK_VARS (block);
-    BLOCK_SUBBLOCKS (replace_blk) = BLOCK_SUBBLOCKS (block);
-    for (tree b = BLOCK_SUBBLOCKS (replace_blk); b ; b = BLOCK_CHAIN (b))
-      BLOCK_SUPERCONTEXT (b) = replace_blk;
-    /* .. and connect it here.  */
-    BLOCK_SUPERCONTEXT (replace_blk) = top_block;
-    BIND_EXPR_BLOCK (first) = replace_blk;
-    BLOCK_SUBBLOCKS (top_block) = replace_blk;
+    if (block) // For this to be missing is probably a bug.
+      {
+	gcc_assert (BLOCK_SUPERCONTEXT (block) == NULL_TREE);
+	gcc_assert (BLOCK_CHAIN (block) == NULL_TREE);
+	BLOCK_SUPERCONTEXT (block) = top_block;
+	BLOCK_SUBBLOCKS (top_block) = block;
+      }
   }
 
   add_stmt (actor_bind);
@@ -2620,7 +2618,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   tree coro_fp = build_lang_decl (VAR_DECL, get_identifier ("coro.frameptr"),
 				  coro_frame_ptr);
-  DECL_CONTEXT (coro_fp) = current_scope ();
   tree varlist = coro_fp;
 
   /* Collected the scope vars we need ... only one for now. */
@@ -2629,9 +2626,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* We're now going to create a new top level scope block for the ramp
      function.  */
   tree top_block = make_node (BLOCK);
+
   BIND_EXPR_BLOCK (ramp_bind) = top_block;
-  BLOCK_SUBBLOCKS (top_block) = NULL_TREE;
   BLOCK_VARS (top_block) = BIND_EXPR_VARS (ramp_bind);
+  BLOCK_SUBBLOCKS (top_block) = NULL_TREE;
 
   /* FIXME: this is development marker, remove later.  */
   tree ramp_label = create_named_label_with_ctx (fn_start, "ramp.start",
@@ -2959,10 +2957,87 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   BIND_EXPR_BODY (ramp_bind) = pop_stmt_list (ramp_body);
 
   /* We know the "real" promise and have a frame layout with a slot for each
-     suspend point.  */
+     suspend point, so we can build an actor function (which contains the
+     functionality for both 'resume' and 'destroy').
 
-  /* We do this to avoid these routines being seen as nested by the middle
-     end.  */
+     wrap the function body in a try {} catch (...) {} block, if exceptions
+     are enabled.  */
+
+  /* First make a new block for the body - that will be embedded in the
+     re-written function.  */
+  tree first = expr_first (fnbody);
+  bool orig_fn_has_outer_bind = false;
+  tree replace_blk = NULL_TREE;
+  if (first && TREE_CODE (first) == BIND_EXPR)
+    {
+      orig_fn_has_outer_bind = true;
+      tree block = BIND_EXPR_BLOCK (first);
+      replace_blk = make_node (BLOCK);
+      if (block)  // missing block is probably an error.
+	{
+	  gcc_assert (BLOCK_SUPERCONTEXT (block) == NULL_TREE);
+	  gcc_assert (BLOCK_CHAIN (block) == NULL_TREE);
+	  BLOCK_VARS (replace_blk) = BLOCK_VARS (block);
+	  BLOCK_SUBBLOCKS (replace_blk) = BLOCK_SUBBLOCKS (block);
+	  for (tree b = BLOCK_SUBBLOCKS (replace_blk); b ; b = BLOCK_CHAIN (b))
+	    BLOCK_SUPERCONTEXT (b) = replace_blk;
+	}
+      BIND_EXPR_BLOCK (first) = replace_blk;
+    }
+
+  const char *ueh_name = "unhandled_exception";
+  if (flag_exceptions)
+    {
+      tree ueh_meth = lookup_promise_member (orig, ueh_name, fn_start,
+					     true /*musthave*/);
+      /* Build promise.unhandled_exception();  */
+      tree ueh = build_new_method_call (p, ueh_meth, NULL, NULL_TREE,
+					LOOKUP_NORMAL, NULL,
+					tf_warning_or_error);
+
+      /* The try block is just the original function, there's no real
+	 need to call any function to do this.  */
+      tree tcb = build_stmt (fn_start, TRY_BLOCK, NULL_TREE, NULL_TREE);
+      TRY_STMTS (tcb) = fnbody;
+      TRY_HANDLERS (tcb) = push_stmt_list ();
+      /* Mimic what the parser does for the catch.  */
+      tree handler = begin_handler ();
+      finish_handler_parms (NULL_TREE, handler); /* catch (...) */
+      ueh = maybe_cleanup_point_expr_void (ueh);
+      add_stmt (ueh);
+      finish_handler (handler);
+      TRY_HANDLERS (tcb) = pop_stmt_list (TRY_HANDLERS (tcb));
+      /* If the function starts with a BIND_EXPR, then we need to create
+	 one here to contain the try-catch and to link up the scopes.  */
+      if (orig_fn_has_outer_bind)
+	{
+	  tree tcb_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+	  /* Make and connect the scope blocks.  */
+	  tree tcb_block = make_node (BLOCK);
+	  /* .. and connect it here.  */
+	  BLOCK_SUPERCONTEXT (replace_blk) = tcb_block;
+	  BLOCK_SUBBLOCKS (tcb_block) = replace_blk;
+	  BIND_EXPR_BLOCK (tcb_bind) = tcb_block;
+	  BIND_EXPR_BODY (tcb_bind) = tcb;
+	  fnbody = tcb_bind;
+	}
+      else
+	fnbody = tcb;
+    }
+  else if (pedantic)
+    {
+      /* We still try to look for the promise method and warn if it's not
+	 present.  */
+      tree ueh_meth = lookup_promise_member (orig, ueh_name,
+					     fn_start, false /*musthave*/);
+      if (!ueh_meth || ueh_meth == error_mark_node)
+	warning_at (fn_start, 0, "no member named %qs in %qT",
+		    ueh_name, DECL_COROUTINE_PROMISE_TYPE(orig));
+    } /* Else we don't check and don't care if the method is missing.  */
+
+  /* ==== start to build the final functions.
+     We push_deferring_access_checks to avoid these routines being seen as
+     nested by the middle end.  */
 
   push_deferring_access_checks (dk_no_check);
 
