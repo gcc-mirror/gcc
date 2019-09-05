@@ -25,23 +25,6 @@ test01()
 {
   int a[4];
   std::span<int, 4> s(a);
-  s.subspan<5, 0>(); // { dg-error "here" }
+  s.first<5>(); // { dg-error "here" }
 }
-
-void
-test02()
-{
-  int a[4];
-  std::span<int, 4> s(a);
-  s.subspan<3, 5>(); // { dg-error "here" }
-}
-
-void
-test03()
-{
-  int a[4];
-  std::span<int, 4> s(a);
-  s.subspan<3, 2>(); // { dg-error "here" }
-}
-
 // { dg-error "static assertion failed" "" { target *-*-* } 0 }
