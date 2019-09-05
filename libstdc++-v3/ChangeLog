@@ -1,3 +1,25 @@
+2019-09-05  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+
+	* include/Makefile.am: Add <span> header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/range_access.h (__adl_begin, __adl_end, __adl_cbegin)
+	(__adl_cend, __adl_rbegin, __adl_rend, __adl_crbegin, __adl_crend)
+	(__adl_data, __adl_cdata, __adl_size, __adl_empty, __adl_to_address):
+	New functions for performing argument-dependent lookup of range
+	customization points.
+	* include/bits/stl_iterator.h (__normal_iterator): Add
+	_GLIBCXX20_CONSTEXPR to all functions.
+	* include/std/span: New header.
+	* include/std/version (__cpp_lib_span): Define feature test macro.
+	* testsuite/23_containers/span/contiguous_range_neg.cc: New test.
+	* testsuite/23_containers/span/everything.cc: New test.
+	* testsuite/23_containers/span/get_neg.cc: New test.
+	* testsuite/23_containers/span/last_neg.cc: New test.
+	* testsuite/23_containers/span/subspan_neg.cc: New test.
+	* testsuite/23_containers/span/tuple_element_dynamic_neg.cc: New test.
+	* testsuite/23_containers/span/tuple_element_oob_neg.cc: New test.
+	* testsuite/23_containers/span/tuple_size_neg.cc: New test.
+
 2019-09-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/allocator.xml: Remove URL for bibliography entry.
