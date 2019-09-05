@@ -1,3 +1,12 @@
+2019-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91001
+	PR middle-end/91105
+	PR middle-end/91106
+	* calls.c (load_register_parameters): For TYPE_TRANSPARENT_AGGR
+	types, use type of their first field instead of type of
+	args[i].tree_value.
+
 2019-09-05  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/91656
