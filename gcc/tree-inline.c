@@ -3569,6 +3569,7 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
 	     taken by alias analysis.  */
 	  gcc_assert (TREE_CODE (return_slot) != SSA_NAME);
 	  var = return_slot_addr;
+	  mark_addressable (return_slot);
 	}
       else
 	{

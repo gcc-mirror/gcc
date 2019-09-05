@@ -1,3 +1,9 @@
+2019-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90501
+	* tree-inline.c (declare_return_variable): Mark the return
+	slot as addressable after building an address of it.
+
 2019-09-05  Arnaud Charlet  <charlet@adacore.com>
 
 	* doc/install.texi: Update and clarify requirements to build GNAT.
