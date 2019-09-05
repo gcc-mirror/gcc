@@ -7481,140 +7481,114 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
       return false;
     }
 
-  // FIXME: Flatten the switch, now we know no types should escape
-  // this function (tree_value never gets a bare type node).
-  // ENUMERAL_TYPE and BOOLEAN_TYPE can be ranged.
+  if (streaming_p ())
+    {
+      u (tt_derived_type);
+      u (TREE_CODE (type));
+    }
+
+  tree_node (TREE_TYPE (type));
   switch (TREE_CODE (type))
     {
     default:
-      // FIXME: Hm, does this have NULL TREE_TYPE?
+      /* We should never meet a type here that is indescribable in
+	 terms of other types.  */
+      gcc_unreachable ();
+
+    case INTEGER_TYPE:
+      if (TREE_TYPE (type))
+	{
+	  /* A range type.  */
+	  tree_node (TYPE_MIN_VALUE (type));
+	  tree_node (TYPE_MAX_VALUE (type));
+	}
+      else
+	{
+	  /* A new integral type.  */
+	  if (streaming_p ())
+	    {
+	      unsigned prec = TYPE_PRECISION (type);
+	      bool unsigned_p = TYPE_UNSIGNED (type);
+
+	      u ((prec << 1) | unsigned_p);
+	    }
+	}
+      break;
+
+    case TYPEOF_TYPE:
+    case DECLTYPE_TYPE:
+    case UNDERLYING_TYPE:
+      tree_node (TYPE_VALUES_RAW (type));
+      if (TREE_CODE (type) == DECLTYPE_TYPE)
+	/* We stash a whole bunch of things into decltype's
+	   flags.  */
+	if (streaming_p ())
+	  tree_node_bools (type);
+      break;
+
+    case TYPE_PACK_EXPANSION:
+      if (streaming_p ())
+	u (PACK_EXPANSION_LOCAL_P (type));
+      tree_node (PACK_EXPANSION_PARAMETER_PACKS (type));
+      break;
+
+    case TYPE_ARGUMENT_PACK:
+      /* No additional data.  */
       break;
 
     case VECTOR_TYPE:
-    case ARRAY_TYPE:
-    case OFFSET_TYPE:
-    case FUNCTION_TYPE:
-    case METHOD_TYPE:
-    case REFERENCE_TYPE:
-    case POINTER_TYPE:
+      if (streaming_p ())
+	{
+	  gcc_checking_assert(NUM_POLY_INT_COEFFS == 1);
+	  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (type);
+	  wu (static_cast<unsigned HOST_WIDE_INT> (nunits.to_constant ()));
+	}
+      break;
+
     case COMPLEX_TYPE:
-    case TYPE_ARGUMENT_PACK:
-    case TYPE_PACK_EXPANSION:
-    case DECLTYPE_TYPE:
-    case TYPEOF_TYPE:
-    case UNDERLYING_TYPE:
-    case INTEGER_TYPE:
-      {
-	if (streaming_p ())
-	  {
-	    u (tt_derived_type);
-	    u (TREE_CODE (type));
-	  }
-	tree_node (TREE_TYPE (type));
-	switch (TREE_CODE (type))
-	  {
-	  default:
-	    gcc_unreachable ();
+      /* No additional data.  */
+      break;
 
-	  case INTEGER_TYPE:
-	    if (TREE_TYPE (type))
-	      {
-		/* A range type.  */
-		tree_node (TYPE_MIN_VALUE (type));
-		tree_node (TYPE_MAX_VALUE (type));
-	      }
-	    else
-	      {
-		/* A new integral type.  */
-		if (streaming_p ())
-		  {
-		    unsigned prec = TYPE_PRECISION (type);
-		    bool unsigned_p = TYPE_UNSIGNED (type);
+    case ARRAY_TYPE:
+      tree_node (TYPE_DOMAIN (type));
+      break;
 
-		    u ((prec << 1) | unsigned_p);
-		  }
-	      }
-	    break;
+    case OFFSET_TYPE:
+      tree_node (TYPE_OFFSET_BASETYPE (type));
+      break;
 
-	  case TYPEOF_TYPE:
-	  case DECLTYPE_TYPE:
-	  case UNDERLYING_TYPE:
-	    tree_node (TYPE_VALUES_RAW (type));
-	    if (TREE_CODE (type) == DECLTYPE_TYPE)
-	      /* We stash a whole bunch of things into decltype's
-		 flags.  */
-	      if (streaming_p ())
-		tree_node_bools (type);
-	    break;
+    case FUNCTION_TYPE:
+      tree_node (TYPE_ARG_TYPES (type));
+      break;
 
-	  case TYPE_PACK_EXPANSION:
-	    if (streaming_p ())
-	      u (PACK_EXPANSION_LOCAL_P (type));
-	    tree_node (PACK_EXPANSION_PARAMETER_PACKS (type));
-	    break;
+    case METHOD_TYPE:
+      tree_node (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (type))));
+      tree_node (TREE_CHAIN (TYPE_ARG_TYPES (type)));
+      break;
 
-	  case TYPE_ARGUMENT_PACK:
-	    /* No additional data.  */
-	    break;
+    case REFERENCE_TYPE:
+      if (streaming_p ())
+	u (TYPE_REF_IS_RVALUE (type));
+      break;
 
-	  case VECTOR_TYPE:
-	    if (streaming_p ())
-	      {
-		gcc_checking_assert(NUM_POLY_INT_COEFFS == 1);
-		poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (type);
-		wu (static_cast<unsigned HOST_WIDE_INT> (nunits.to_constant ()));
-	      }
-	    break;
-
-	  case COMPLEX_TYPE:
-	    /* No additional data.  */
-	    break;
-
-	  case ARRAY_TYPE:
-	    tree_node (TYPE_DOMAIN (type));
-	    break;
-
-	  case OFFSET_TYPE:
-	    tree_node (TYPE_OFFSET_BASETYPE (type));
-	    break;
-
-	  case FUNCTION_TYPE:
-	    tree_node (TYPE_ARG_TYPES (type));
-	    break;
-
-	  case METHOD_TYPE:
-	    tree_node (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (type))));
-	    tree_node (TREE_CHAIN (TYPE_ARG_TYPES (type)));
-	    break;
-
-	  case REFERENCE_TYPE:
-	    if (streaming_p ())
-	      u (TYPE_REF_IS_RVALUE (type));
-	    break;
-
-	  case POINTER_TYPE:
-	    /* No additional data.  */
-	    break;
-	  }
-
-	/* We may have met the type during emitting the above.  */
-	if (ref_node (type) != WK_none)
-	  {
-	    int tag = insert (type);
-	    if (streaming_p ())
-	      {
-		i (0);
-		dump (dumper::TREE)
-		  && dump ("Wrote:%d derived type %C", tag, TREE_CODE (type));
-	      }
-	  }
-	  
-	return false;
-      }
+    case POINTER_TYPE:
+      /* No additional data.  */
+      break;
     }
 
-  gcc_unreachable ();
-  return true;
+  /* We may have met the type during emitting the above.  */
+  if (ref_node (type) != WK_none)
+    {
+      int tag = insert (type);
+      if (streaming_p ())
+	{
+	  i (0);
+	  dump (dumper::TREE)
+	    && dump ("Wrote:%d derived type %C", tag, TREE_CODE (type));
+	}
+    }
+
+  return false;
 }
 
 /* T is a node that must be written by value.  WALK indicates the kind
