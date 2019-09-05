@@ -1,6 +1,14 @@
 2019-09-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::core_vals): Stream constraint_info.
+	(trees_{in,out}::tree_value): Stream constrain node.
+	{trees_{in,out}::tpl_header): Stream parm(s) constraints.
+	* pt.c (set_constraints): Don't do spurious lookup.
+	gcc/testsuite/
+	* g++.dg/modules/concept-1_[ab].C: New.
+
+	gcc/cp/
 	* module.cc (module_state::write_location): Check streaming here.
 	Adjust many callers.
 

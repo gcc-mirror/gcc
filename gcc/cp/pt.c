@@ -28050,6 +28050,7 @@ convert_generic_types_to_packs (tree parm, int start_idx, int end_idx)
   return tsubst (parm, replacement, tf_none, NULL_TREE);
 }
 
+// FIXME: There's an extra indirection in this hash table.
 /* Entries in the decl_constraint hash table. */
 struct GTY((for_user)) constr_entry
 {
@@ -28113,11 +28114,14 @@ set_constraints (tree t, tree ci)
   gcc_assert (t && flag_concepts);
   if (TREE_CODE (t) == TEMPLATE_DECL)
     t = DECL_TEMPLATE_RESULT (t);
-  gcc_assert (!get_constraints (t));
+
   constr_entry elt = {t, ci};
-  constr_entry** slot = decl_constraints->find_slot (&elt, INSERT);
+  constr_entry **slot = decl_constraints->find_slot (&elt, INSERT);
+  gcc_assert (!*slot);
+
   constr_entry* entry = ggc_alloc<constr_entry> ();
   *entry = elt;
+
   *slot = entry;
 }
 

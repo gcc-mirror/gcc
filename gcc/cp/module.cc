@@ -5815,7 +5815,9 @@ trees_out::core_vals (tree t)
       break;
 
     case CONSTRAINT_INFO:
-      gcc_unreachable (); // FIXME
+      WT (((lang_tree_node *)t)->constraint_info.template_reqs);
+      WT (((lang_tree_node *)t)->constraint_info.declarator_reqs);
+      WT (((lang_tree_node *)t)->constraint_info.associated_constr);
       break;
 
     case DEFERRED_NOEXCEPT:
@@ -6202,7 +6204,9 @@ trees_in::core_vals (tree t)
       break;
 
     case CONSTRAINT_INFO:
-      gcc_unreachable (); // FIXME
+      RT (((lang_tree_node *)t)->constraint_info.template_reqs);
+      RT (((lang_tree_node *)t)->constraint_info.declarator_reqs);
+      RT (((lang_tree_node *)t)->constraint_info.associated_constr);
       break;
 
     case DEFERRED_NOEXCEPT:
@@ -7645,6 +7649,14 @@ trees_out::tree_value (tree t, walk_kind walk)
   if (type)
     tree_node_vals (type);
 
+  // FIXME: It'd be nice if there was a flag to tell us to go look for
+  // constraints.  Not a modules-specific problem though.
+  if (flag_concepts && DECL_P (t))
+    {
+      tree constraints = get_constraints (t);
+      tree_node (constraints);
+    }
+
   if (TREE_CODE (inner) == TYPE_DECL
       && DECL_ORIGINAL_TYPE (inner))
     {
@@ -7655,7 +7667,7 @@ trees_out::tree_value (tree t, walk_kind walk)
 	  && dump ("Cloned:%d typedef %C:%N", type_tag,
 		   TREE_CODE (TREE_TYPE (inner)), TREE_TYPE (inner));
     }
-    
+
   if (streaming_p ())
     dump (dumper::TREE) && dump ("Written:%d %C:%N", tag, TREE_CODE (t), t);
 }
@@ -7912,6 +7924,10 @@ trees_in::tree_value (walk_kind walk)
 	}
     }
 
+  tree constraints = NULL_TREE;
+  if (flag_concepts && DECL_P (res))
+    constraints  = tree_node ();
+
   dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, TREE_CODE (res), res);
 
   /* Regular typedefs will have a NULL TREE_TYPE at this point.  */
@@ -7931,6 +7947,9 @@ trees_in::tree_value (walk_kind walk)
 	/* Mark this identifier as naming a virtual function --
 	   lookup_overrides relies on this optimization.  */
 	IDENTIFIER_VIRTUAL_P (DECL_NAME (res)) = true;
+
+      if (constraints)
+	set_constraints (res, constraints);
 
       if (TREE_CODE (res) == INTEGER_CST && !TREE_OVERFLOW (res))
 	{
@@ -8741,27 +8760,33 @@ trees_in::is_skip_defn (tree defn)
 void
 trees_out::tpl_header (tree tpl)
 {
-  for (tree parms = DECL_TEMPLATE_PARMS (tpl); parms; parms = TREE_CHAIN (parms))
+  tree parms = DECL_TEMPLATE_PARMS (tpl);
+
+  for (tree level = parms; level; level = TREE_CHAIN (level))
     {
-      tree vec = TREE_VALUE (parms);
+      tree vec = TREE_VALUE (level);
       unsigned len = TREE_VEC_LENGTH (vec);
       if (streaming_p ())
 	u (len);
       for (unsigned ix = 0; ix != len; ix++)
 	{
-	  tree parm_decl = TREE_VALUE (TREE_VEC_ELT (vec, ix));
+	  tree parm = TREE_VEC_ELT (vec, ix);
+	  tree decl = TREE_VALUE (parm);
 
-	  if (TREE_CODE (parm_decl) == TEMPLATE_TYPE_PARM
-	      && TEMPLATE_TYPE_PARAMETER_PACK (parm_decl))
+	  if (TREE_CODE (decl) == TEMPLATE_TYPE_PARM
+	      && TEMPLATE_TYPE_PARAMETER_PACK (decl))
 	    gcc_unreachable (); // FIXME: Something
 
-	  tree_node (parm_decl);
+	  tree_node (decl);
+	  tree_node (TEMPLATE_PARM_CONSTRAINTS (parm));
 	}
     }
 
   /* Mark end.  */
   if (streaming_p ())
     u (0);
+
+  tree_node (TEMPLATE_PARM_CONSTRAINTS (parms));
 }
 
 bool
@@ -8773,15 +8798,23 @@ trees_in::tpl_header (tree tpl)
       tree vec = make_tree_vec (len);
       for (unsigned ix = 0; ix != len; ix++)
 	{
-	  tree parm_decl = tree_node ();
-	  if (!parm_decl)
+	  tree decl = tree_node ();
+	  if (!decl)
 	    return false;
-	  TREE_VEC_ELT (vec, ix) = tree_cons (NULL_TREE, parm_decl, NULL_TREE);
+
+	  tree parm = build_tree_list (NULL, decl);
+	  TEMPLATE_PARM_CONSTRAINTS (parm) = tree_node ();
+
+	  TREE_VEC_ELT (vec, ix) = parm;
 	}
       parms = tree_cons (NULL_TREE, vec, parms);
     }
 
-  DECL_TEMPLATE_PARMS (tpl) = nreverse (parms);
+  parms = nreverse (parms);
+  DECL_TEMPLATE_PARMS (tpl) = parms;
+
+  TEMPLATE_PARM_CONSTRAINTS (parms) = tree_node ();
+
   return true;
 }
 
