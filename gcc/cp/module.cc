@@ -5465,8 +5465,7 @@ trees_out::core_vals (tree t)
       else
 	tree_ctx (t->decl_minimal.context, true, t);
 
-      if (streaming_p ())
-	state->write_location (*this, t->decl_minimal.locus);
+      state->write_location (*this, t->decl_minimal.locus);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
@@ -5591,10 +5590,7 @@ trees_out::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_EXP))
     {
-      if (streaming_p ())
-	{
-	  state->write_location (*this, t->exp.locus);
-	}
+      state->write_location (*this, t->exp.locus);
 
       bool vl = TREE_CODE_CLASS (code) == tcc_vl_exp;
       for (unsigned ix = (vl ? VL_EXP_OPERAND_LENGTH (t)
@@ -5794,10 +5790,8 @@ trees_out::core_vals (tree t)
       {
 	/* The ompcode is serialized in start.  */
 	if (streaming_p ())
-	  {
-	    WU (t->omp_clause.subcode.dimension);
-	    state->write_location (*this, t->omp_clause.locus);
-	  }
+	  WU (t->omp_clause.subcode.dimension);
+	state->write_location (*this, t->omp_clause.locus);
 
 	unsigned len = omp_clause_num_ops[OMP_CLAUSE_CODE (t)];
 	for (unsigned ix = 0; ix != len; ix++)
@@ -5835,10 +5829,10 @@ trees_out::core_vals (tree t)
       WT (((lang_tree_node *)t)->lambda_expression.extra_scope);
       /* pending_proxies is a parse-time thing.  */
       gcc_assert (!((lang_tree_node *)t)->lambda_expression.pending_proxies);
+      state->write_location
+	(*this, ((lang_tree_node *)t)->lambda_expression.locus);
       if (streaming_p ())
 	{
-	  state->write_location
-	    (*this, ((lang_tree_node *)t)->lambda_expression.locus);
 	  WU (((lang_tree_node *)t)->lambda_expression.default_capture_mode);
 	  WU (((lang_tree_node *)t)->lambda_expression.discriminator);
 	}
@@ -5856,9 +5850,8 @@ trees_out::core_vals (tree t)
     case STATIC_ASSERT:
       WT (((lang_tree_node *)t)->static_assertion.condition);
       WT (((lang_tree_node *)t)->static_assertion.message);
-      if (streaming_p ())
-	state->write_location
-	  (*this, ((lang_tree_node *)t)->static_assertion.location);
+      state->write_location
+	(*this, ((lang_tree_node *)t)->static_assertion.location);
       break;
 
     case TEMPLATE_DECL:
@@ -13957,9 +13950,16 @@ module_for_macro_loc (location_t loc)
   return NULL;
 }
 
+/* If we're not streaming, record that we need location LOC.
+   Otherwise stream it.  */
+
 void
 module_state::write_location (bytes_out &sec, location_t loc)
 {
+  if (!sec.streaming_p ())
+    // FIXME: Implement optimization
+    return;
+
   if (IS_ADHOC_LOC (loc))
     {
       dump (dumper::LOCATION) && dump ("Adhoc location");
