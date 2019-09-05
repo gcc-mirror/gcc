@@ -5564,37 +5564,7 @@ trees_out::core_vals (tree t)
 	}
 
       WT (t->decl_common.attributes);
-      switch (code)
-	// FIXME: Perhaps this should be done with the later
-	// polymorphic check?
-	{
-	default:
-	  break;
-	case VAR_DECL:
-	  // FIXME: Perhaps always write DECL_INITIAL?
-	  // This is wrong, statically inited consts should have their
-	  // initializers emitted.
-	  if (DECL_CONTEXT (t)
-	      && TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
-	    break;
-	  /* FALLTHROUGH  */
-	case PARM_DECL:
-	  if (DECL_HAS_VALUE_EXPR_P (t))
-	    WT (DECL_VALUE_EXPR (t));
-	  /* FALLTHROUGH  */
-	case CONST_DECL:
-	  WT (t->decl_common.initial);
-	  break;
-	}
       WT (t->decl_common.abstract_origin);
-      /* decl_common.initial.  */
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
-    {
-      // FIXME: spurious behaviour with other nodes, probably wrong elsewhere
-      if (code == TYPE_DECL)
-	WT (t->decl_non_common.result);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
@@ -5624,8 +5594,6 @@ trees_out::core_vals (tree t)
       if (streaming_p ())
 	{
 	  state->write_location (*this, t->exp.locus);
-	  if (code == CALL_EXPR)
-	    WU (t->base.u.ifn);
 	}
 
       bool vl = TREE_CODE_CLASS (code) == tcc_vl_exp;
@@ -5707,20 +5675,29 @@ trees_out::core_vals (tree t)
       WT (TREE_IMAGPART (t));
       break;
 
-    case CONST_DECL:
-      /* No extra fields.  */
-      break;
-
-    case PARM_DECL:
-      // FIXME?
-      break;
-
-    case VAR_DECL:
-      // FIXME?
+    case  TYPE_DECL:
+      WT (t->decl_non_common.result);
       break;
 
     case RESULT_DECL:
       // FIXME?
+      break;
+
+    case VAR_DECL:
+      // FIXME: This is wrong, statically inited consts should have
+      // their initializers emitted.
+      if (DECL_CONTEXT (t)
+	  && TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
+	break;
+      /* FALLTHROUGH  */
+
+    case PARM_DECL:
+      if (DECL_HAS_VALUE_EXPR_P (t))
+	WT (DECL_VALUE_EXPR (t));
+      /* FALLTHROUGH  */
+
+    case CONST_DECL:
+      WT (t->decl_common.initial);
       break;
 
     case FIELD_DECL:
@@ -5755,6 +5732,11 @@ trees_out::core_vals (tree t)
       WT (t->function_decl.function_specific_target);
       WT (t->function_decl.function_specific_optimization);
       WT (t->function_decl.vindex);
+      break;
+
+    case CALL_EXPR:
+      if (streaming_p ())
+	WU (t->base.u.ifn);
       break;
 
     case BLOCK:
@@ -5990,36 +5972,7 @@ trees_in::core_vals (tree t)
 	}
 
       RT (t->decl_common.attributes);
-      switch (code)
-	// FIXME: Perhaps this should be done with the later
-	// polymorphic check?
-	{
-	default:
-	  break;
-	case VAR_DECL:
-	  if (DECL_CONTEXT (t)
-	      && TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
-	    break;
-	  /* FALLTHROUGH */
-	case PARM_DECL:
-	  if (DECL_HAS_VALUE_EXPR_P (t))
-	    {
-	      tree val = tree_node ();
-	      SET_DECL_VALUE_EXPR (t, val);
-	    }
-	  /* FALLTHROUGH  */
-	case CONST_DECL:
-	  RT (t->decl_common.initial);
-	  break;
-	}
       RT (t->decl_common.abstract_origin);
-      /* decl_common.initial.  */
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
-    {
-      if (code == TYPE_DECL)
-	RT (t->decl_non_common.result);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
@@ -6048,8 +6001,6 @@ trees_in::core_vals (tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_EXP))
     {
       t->exp.locus = state->read_location (*this);
-      if (code == CALL_EXPR)
-	RUC (internal_fn, t->base.u.ifn);
 
       bool vl = TREE_CODE_CLASS (code) == tcc_vl_exp;
       for (unsigned ix = (vl ? VL_EXP_OPERAND_LENGTH (t)
@@ -6119,20 +6070,30 @@ trees_in::core_vals (tree t)
       RT (TREE_IMAGPART (t));
       break;
 
-    case CONST_DECL:
-      /* No extra fields.  */
-      break;
-
-    case PARM_DECL:
-      // FIXME?
-      break;
-
-    case VAR_DECL:
-      // FIXME?
+    case TYPE_DECL:
+      RT (t->decl_non_common.result);
       break;
 
     case RESULT_DECL:
       // FIXME?
+      break;
+
+    case VAR_DECL:
+      if (DECL_CONTEXT (t)
+	  && TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
+	break;
+      /* FALLTHROUGH  */
+
+    case PARM_DECL:
+      if (DECL_HAS_VALUE_EXPR_P (t))
+	{
+	  tree val = tree_node ();
+	  SET_DECL_VALUE_EXPR (t, val);
+	}
+      /* FALLTHROUGH  */
+
+    case CONST_DECL:
+      RT (t->decl_common.initial);
       break;
 
     case FIELD_DECL:
@@ -6164,6 +6125,10 @@ trees_in::core_vals (tree t)
 	RT (t->function_decl.function_specific_optimization);
 	RT (t->function_decl.vindex);
       }
+      break;
+
+    case CALL_EXPR:
+      RUC (internal_fn, t->base.u.ifn);
       break;
 
     case BLOCK:

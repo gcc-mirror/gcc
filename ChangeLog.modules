@@ -1,6 +1,10 @@
 2019-09-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::core_vals): Move some node handling
+	into the new switch.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::core_vals): Reorder part 7.
 	* decl.c (cp_tree_node_structure): Alphabetize.
 	gcc/
