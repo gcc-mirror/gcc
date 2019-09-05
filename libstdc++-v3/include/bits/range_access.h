@@ -318,6 +318,78 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif // C++17
 
+#if __cplusplus > 201703L
+  // "why are these in namespace std:: and not __gnu_cxx:: ?"
+  // because if we don't put them here it's impossible to
+  // have implicit ADL with "using std::begin/end/size/data;".
+  template <typename _Container>
+    constexpr auto
+    __adl_begin(_Container& __cont) noexcept(noexcept(begin(__cont)))
+    { return begin(__cont); }
+
+  template <typename _Container>
+    constexpr auto
+    __adl_end(_Container& __cont) noexcept(noexcept(end(__cont)))
+    { return end(__cont); }
+
+  template <typename _Container>
+    constexpr auto
+    __adl_cbegin(_Container& __cont) noexcept(noexcept(cbegin(__cont)))
+    { return cbegin(__cont); }
+
+  template <typename _Container>
+    constexpr auto
+    __adl_cend(_Container& __cont) noexcept(noexcept(cend(__cont)))
+    { return cend(__cont); }
+
+  template <typename _Container>
+    constexpr auto
+    __adl_rbegin(_Container& __cont) noexcept(noexcept(rbegin(__cont)))
+    { return rbegin(__cont); }
+
+  template <typename _Container>
+    constexpr auto
+    __adl_rend(_Container& __cont) noexcept(noexcept(rend(__cont)))
+    { return rend(__cont); }
+
+  template <typename _Container>
+    constexpr auto
+    __adl_crbegin(_Container& __cont) noexcept(noexcept(crbegin(__cont)))
+    { return crbegin(__cont); }
+
+  template <typename _Container>
+    constexpr auto
+    __adl_crend(_Container& __cont) noexcept(noexcept(crend(__cont)))
+    { return crend(__cont); }
+
+  template <typename _Container>
+    constexpr auto
+    __adl_data(_Container& __cont) noexcept(noexcept(data(__cont)))
+    { return data(__cont); }
+
+  template <typename _Container>
+    constexpr auto
+    __adl_cdata(_Container& __cont) noexcept(noexcept(cdata(__cont)))
+    { return cdata(__cont); }
+
+  template <typename _Container>
+    constexpr auto
+    __adl_size(_Container& __cont) noexcept(noexcept(size(__cont)))
+    { return size(__cont); }
+
+  template <typename _Container>
+    constexpr auto
+    __adl_empty(_Container& __cont) noexcept(noexcept(empty(__cont)))
+    { return empty(__cont); }
+
+#if defined(_GLIBCXX_P1394) && _GLIBCXX_P1394
+  template <typename _Container>
+    constexpr auto
+    __adl_to_address(_Container& __cont) noexcept(noexcept(to_address(__cont)))
+    { return to_address(__cont); }
+#endif // P1394 and new contiguous_iterator requirements [iterator.concept.contiguous]
+#endif // C++20
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
