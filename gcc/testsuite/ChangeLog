@@ -1,3 +1,10 @@
+2019-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91001
+	PR middle-end/91105
+	PR middle-end/91106
+	* gcc.c-torture/compile/pr91001.c: New test.
+
 2019-09-05  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/91656
