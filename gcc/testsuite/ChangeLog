@@ -1,6 +1,14 @@
 2019-09-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-06-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/powerpc/safe-indirect-jump-1.c: Skip for Darwin.
+	* gcc.target/powerpc/safe-indirect-jump-7.c: Likewise.
+
+2019-09-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-06-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/powerpc/builtins-2.c: Require VSX hardware support.
