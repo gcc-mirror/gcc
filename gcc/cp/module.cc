@@ -5788,42 +5788,46 @@ trees_out::core_vals (tree t)
       WT (NULL_TREE);
       break;
 
-    }
+    case CONSTRUCTOR:
+      {
+	unsigned len = vec_safe_length (t->constructor.elts);
+	if (streaming_p ())
+	  WU (len);
+	if (len)
+	  for (unsigned ix = 0; ix != len; ix++)
+	    {
+	      const constructor_elt &elt = (*t->constructor.elts)[ix];
 
-  if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
-    {
-      unsigned len = vec_safe_length (t->constructor.elts);
-      if (streaming_p ())
-	WU (len);
-      if (len)
-	for (unsigned ix = 0; ix != len; ix++)
+	      WT (elt.index);
+	      WT (elt.value);
+	    }
+      }
+      break;
+
+    case OMP_CLAUSE:
+      {
+	/* The ompcode is serialized in start.  */
+	if (streaming_p ())
 	  {
-	    const constructor_elt &elt = (*t->constructor.elts)[ix];
-
-	    WT (elt.index);
-	    WT (elt.value);
+	    WU (t->omp_clause.subcode.dimension);
+	    state->write_location (*this, t->omp_clause.locus);
 	  }
+
+	unsigned len = omp_clause_num_ops[OMP_CLAUSE_CODE (t)];
+	for (unsigned ix = 0; ix != len; ix++)
+	  WT (t->omp_clause.ops[ix]);
+      }
+      break;
+
+    case OPTIMIZATION_NODE:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TARGET_OPTION_NODE:
+      gcc_unreachable (); // FIXME
+      break;
     }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_OMP_CLAUSE))
-    {
-      /* The ompcode is serialized in start.  */
-      if (streaming_p ())
-	{
-	  WU (t->omp_clause.subcode.dimension);
-	  state->write_location (*this, t->omp_clause.locus);
-	}
-
-      unsigned len = omp_clause_num_ops[OMP_CLAUSE_CODE (t)];
-      for (unsigned ix = 0; ix != len; ix++)
-	WT (t->omp_clause.ops[ix]);
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
-    gcc_unreachable (); // FIXME
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
-    gcc_unreachable (); // FIXME
+  
 
   /* Now the C++-specific nodes.  These are disjoint. While we could
      use CODE directly, going via cp_tree_node_structure makes it
@@ -6218,10 +6222,8 @@ trees_in::core_vals (tree t)
 	  tsi_link_after (&iter, stmt, TSI_CONTINUE_LINKING);
       }
       break;
-    }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
-    {
+    case CONSTRUCTOR:
       if (unsigned len = u ())
 	{
 	  vec_alloc (t->constructor.elts, len);
@@ -6234,23 +6236,27 @@ trees_in::core_vals (tree t)
 	      t->constructor.elts->quick_push (elt);
 	    }
 	}
+      break;
+
+    case OMP_CLAUSE:
+      {
+	RU (t->omp_clause.subcode.dimension);
+	t->omp_clause.locus = state->read_location (*this);
+
+	unsigned len = omp_clause_num_ops[OMP_CLAUSE_CODE (t)];
+	for (unsigned ix = 0; ix != len; ix++)
+	  RT (t->omp_clause.ops[ix]);
+      }
+      break;
+
+    case OPTIMIZATION_NODE:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TARGET_OPTION_NODE:
+      gcc_unreachable (); // FIXME
+      break;
     }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_OMP_CLAUSE))
-    {
-      RU (t->omp_clause.subcode.dimension);
-      t->omp_clause.locus = state->read_location (*this);
-
-      unsigned len = omp_clause_num_ops[OMP_CLAUSE_CODE (t)];
-      for (unsigned ix = 0; ix != len; ix++)
-	RT (t->omp_clause.ops[ix]);
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
-    gcc_unreachable (); // FIXME
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
-    gcc_unreachable (); // FIXME
 
   /* Now the C++-specific nodes.  These are disjoint. While we could
      use CODE directly, going via cp_tree_node_structure makes it
