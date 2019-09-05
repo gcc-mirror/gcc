@@ -5625,6 +5625,10 @@ trees_out::core_vals (tree t)
     default:
       break;
 
+    case IDENTIFIER_NODE:
+    case TRANSLATION_UNIT_DECL:
+      gcc_unreachable (); /* Should never meet.  */
+
     case INTEGER_CST:
       if (streaming_p ())
 	{
@@ -5656,41 +5660,40 @@ trees_out::core_vals (tree t)
       WT (TREE_REALPART (t));
       WT (TREE_IMAGPART (t));
       break;
-    }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
-    gcc_unreachable (); /* Should never meet.  */
+    case CONST_DECL:
+      /* No extra fields.  */
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_PARM_DECL))
-    {} // FIXME?
+    case PARM_DECL:
+      // FIXME?
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_VAR_DECL))
-    {} // FIXME?
+    case VAR_DECL:
+      // FIXME?
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))
-    {
+    case RESULT_DECL:
+      // FIXME?
+      break;
+
+    case FIELD_DECL:
       WT (t->field_decl.offset);
       WT (t->field_decl.bit_field_type);
       WT (t->field_decl.qualifier); /* bitfield unit.  */
       WT (t->field_decl.bit_offset);
       WT (t->field_decl.fcontext);
-    }
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_LABEL_DECL))
-    if (streaming_p ())
-      {
-	WU (t->label_decl.label_decl_uid);
-	WU (t->label_decl.eh_landing_pad_nr);
-      }
+    case LABEL_DECL:
+      if (streaming_p ())
+	{
+	  WU (t->label_decl.label_decl_uid);
+	  WU (t->label_decl.eh_landing_pad_nr);
+	}
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_RESULT_DECL))
-    {} // FIXME?
-
-  if (CODE_CONTAINS_STRUCT (code, TS_CONST_DECL))
-    { /* No extra fields.  */ }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
-    {
+    case FUNCTION_DECL:
       if (streaming_p ())
 	{
 	  /* Builtins can be streamed by value when a header declares
@@ -5706,10 +5709,9 @@ trees_out::core_vals (tree t)
       WT (t->function_decl.function_specific_target);
       WT (t->function_decl.function_specific_optimization);
       WT (t->function_decl.vindex);
-    }
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
-    gcc_unreachable (); /* Should never meet.  */
+    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
     {
@@ -6074,6 +6076,10 @@ trees_in::core_vals (tree t)
     default:
       break;
 
+    case IDENTIFIER_NODE:
+    case TRANSLATION_UNIT_DECL:
+      return false; /* Should never meet.  */
+
     case INTEGER_CST:
       {
 	unsigned num = TREE_INT_CST_EXT_NUNITS (t);
@@ -6107,57 +6113,54 @@ trees_in::core_vals (tree t)
       RT (TREE_REALPART (t));
       RT (TREE_IMAGPART (t));
       break;
-    }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
-    return false; /* Should never meet.  */
+    case CONST_DECL:
+      /* No extra fields.  */
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_PARM_DECL))
-    {} // FIXME?
+    case PARM_DECL:
+      // FIXME?
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_VAR_DECL))
-    {} // FIXME?
+    case VAR_DECL:
+      // FIXME?
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))
-    {
+    case RESULT_DECL:
+      // FIXME?
+      break;
+
+    case FIELD_DECL:
       RT (t->field_decl.offset);
       RT (t->field_decl.bit_field_type);
       RT (t->field_decl.qualifier);
       RT (t->field_decl.bit_offset);
       RT (t->field_decl.fcontext);
-    }
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_LABEL_DECL))
-    {
+    case LABEL_DECL:
       RU (t->label_decl.label_decl_uid);
       RU (t->label_decl.eh_landing_pad_nr);
+      break;
+  
+    case FUNCTION_DECL:
+      {
+	unsigned bltin = u ();
+	t->function_decl.built_in_class = built_in_class (bltin);
+	if (bltin != NOT_BUILT_IN)
+	  {
+	    bltin = u ();
+	    DECL_UNCHECKED_FUNCTION_CODE (t) = built_in_function (bltin);
+	  }
+
+	t->function_decl.arguments = chained_decls ();
+	RT (t->function_decl.personality);
+	RT (t->function_decl.function_specific_target);
+	RT (t->function_decl.function_specific_optimization);
+	RT (t->function_decl.vindex);
+      }
+      break;
     }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_RESULT_DECL))
-    {} // FIXME?
-
-  if (CODE_CONTAINS_STRUCT (code, TS_CONST_DECL))
-    { /* No extra fields.  */ }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
-    {
-      unsigned bltin = u ();
-      t->function_decl.built_in_class = built_in_class (bltin);
-      if (bltin != NOT_BUILT_IN)
-	{
-	  bltin = u ();
-	  DECL_UNCHECKED_FUNCTION_CODE (t) = built_in_function (bltin);
-	}
-
-      t->function_decl.arguments = chained_decls ();
-      RT (t->function_decl.personality);
-      RT (t->function_decl.function_specific_target);
-      RT (t->function_decl.function_specific_optimization);
-      RT (t->function_decl.vindex);
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
-    return false;
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
     {
