@@ -462,7 +462,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       OVL_LOOKUP_P (in OVERLOAD)
       LOOKUP_FOUND_P (in RECORD_TYPE, UNION_TYPE, NAMESPACE_DECL)
    5: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
-      DECL_VTABLE_OR_VTT_P (in VAR_DECL)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       CONSTRUCTOR_PLACEHOLDER_BOUNDARY (in CONSTRUCTOR)
@@ -3258,8 +3257,10 @@ struct GTY(()) lang_decl {
    both the primary typeinfo object and the associated NTBS name.  */
 #define DECL_TINFO_P(NODE) TREE_LANG_FLAG_4 (VAR_DECL_CHECK (NODE))
 
-/* 1 iff VAR_DECL node NODE is virtual table or VTT.  */
-#define DECL_VTABLE_OR_VTT_P(NODE) TREE_LANG_FLAG_5 (VAR_DECL_CHECK (NODE))
+/* 1 iff VAR_DECL node NODE is virtual table or VTT.  We forward to
+   DECL_VIRTUAL_P from the common code, as that has the semantics we
+   need.  But we want a more descriptive name.  */
+#define DECL_VTABLE_OR_VTT_P(NODE) DECL_VIRTUAL_P (VAR_DECL_CHECK (NODE))
 
 /* 1 iff FUNCTION_TYPE or METHOD_TYPE has a ref-qualifier (either & or &&). */
 #define FUNCTION_REF_QUALIFIED(NODE) \
