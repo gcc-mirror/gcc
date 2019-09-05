@@ -1,3 +1,7 @@
+2019-09-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/install.texi: Update and clarify requirements to build GNAT.
+
 2019-09-05  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/91577
