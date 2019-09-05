@@ -5595,7 +5595,7 @@ trees_out::core_vals (tree t)
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))
-    {} // FIXME?
+    { /* Reconstructed on stream in.  */}
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
     {
@@ -5609,6 +5609,21 @@ trees_out::core_vals (tree t)
       WT (t->decl_with_vis.assembler_name);
       if (streaming_p ())
 	WU (t->decl_with_vis.visibility);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
+    {
+      /* Records and unions hold FIELDS, VFIELD & BINFO on these
+	 things.  */
+      if (!RECORD_OR_UNION_CODE_P (code) && code != ENUMERAL_TYPE)
+	{
+	  /* Don't write the cached values vector.  */
+	  WT (TYPE_CACHED_VALUES_P (t) ? NULL_TREE : t->type_non_common.values);
+	  WT (t->type_non_common.maxval);
+	  WT (t->type_non_common.minval);
+	}
+
+      WT (t->type_non_common.lang_1);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
@@ -5692,24 +5707,6 @@ trees_out::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
     gcc_unreachable (); /* Should never meet.  */
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_WITH_LANG_SPECIFIC))
-    { /* Nothing to do.  */ }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
-    {
-      /* Records and unions hold FIELDS, VFIELD & BINFO on these
-	 things.  */
-      if (!RECORD_OR_UNION_CODE_P (code) && code != ENUMERAL_TYPE)
-	{
-	  /* Don't write the cached values vector.  */
-	  WT (TYPE_CACHED_VALUES_P (t) ? NULL_TREE : t->type_non_common.values);
-	  WT (t->type_non_common.maxval);
-	  WT (t->type_non_common.minval);
-	}
-
-      WT (t->type_non_common.lang_1);
-    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
     {
@@ -6045,7 +6042,7 @@ trees_in::core_vals (tree t)
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))
-    {} // FIXME?
+    { /* Reconstructed as necessary.  */  }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
     {
@@ -6057,6 +6054,23 @@ trees_in::core_vals (tree t)
     {
       RT (t->decl_with_vis.assembler_name);
       RUC (symbol_visibility, t->decl_with_vis.visibility);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
+    {
+      /* Records and unions hold FIELDS, VFIELD & BINFO on these
+	 things.  */
+      if (!RECORD_OR_UNION_CODE_P (code) && code != ENUMERAL_TYPE)
+	{
+	  /* This is not clobbering TYPE_CACHED_VALUES, because this
+	     is a new type being read in, so there aren't any.  */
+	  gcc_checking_assert (!TYPE_CACHED_VALUES_P (t));
+	  RT (t->type_non_common.values);
+	  RT (t->type_non_common.maxval);
+	  RT (t->type_non_common.minval);
+	}
+
+      RT (t->type_non_common.lang_1);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
@@ -6137,26 +6151,6 @@ trees_in::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
     return false;
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_WITH_LANG_SPECIFIC))
-    { /* Nothing to do.  */ }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
-    {
-      /* Records and unions hold FIELDS, VFIELD & BINFO on these
-	 things.  */
-      if (!RECORD_OR_UNION_CODE_P (code) && code != ENUMERAL_TYPE)
-	{
-	  /* This is not clobbering TYPE_CACHED_VALUES, because this
-	     is a new type being read in, so there aren't any.  */
-	  gcc_checking_assert (!TYPE_CACHED_VALUES_P (t));
-	  RT (t->type_non_common.values);
-	  RT (t->type_non_common.maxval);
-	  RT (t->type_non_common.minval);
-	}
-
-      RT (t->type_non_common.lang_1);
-    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
     {
