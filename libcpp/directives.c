@@ -818,6 +818,10 @@ do_include_common (cpp_reader *pfile, enum include_type type)
      callback can dump comments which follow #include.  */
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
 
+  /* Tell the lexer this is an include directive -- we want it to
+     increment the line number even if this is the last line of a file.  */
+  pfile->state.in_directive = 2;
+
   fname = parse_include (pfile, &angle_brackets, &buf, &location);
   if (!fname)
     goto done;
