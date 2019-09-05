@@ -1,3 +1,42 @@
+2019-09-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Update status for P0122R7 and
+	P1024R3. Remove entry for P0920R2.
+	* include/std/span  (__cpp_lib_span): Change value.
+	(__extent_storage, __extent_storage<dynamic_extent>): Remove default
+	constructor.
+	(span): Replace __extent_storage base class with data member.
+	(span::_S_subspan_extent): New function.
+	(span::empty()): Add nodiscard attribute.
+	(span::front, span::back, span::operator[]): Check preconditions.
+	(span::first, span::last, span::subspan): Add noexcept. Improve
+	precondition checks (LWG 3103).
+	(get): Remove redundant condition from static_assert.
+	(tuple_element<I, span<T, E>>): Fix static_assert message and simplify.
+	(as_writable_bytes): Add inline specifier.
+	* include/std/version (__cpp_lib_span): Change value.
+	* testsuite/23_containers/span/back_neg.cc: Remove stray semi-colon.
+	* testsuite/23_containers/span/front_neg.cc: Likewise.
+	* testsuite/23_containers/span/index_op_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_neg.cc: Improve test.
+	* testsuite/23_containers/span/subspan_neg.cc: Likewise.
+	* testsuite/23_containers/span/1.cc: New test.
+	* testsuite/23_containers/span/2.cc: New test.
+	* testsuite/23_containers/span/back_assert_neg.cc: New test.
+	* testsuite/23_containers/span/first_2_assert_neg.cc: New test.
+	* testsuite/23_containers/span/first_assert_neg.cc: New test.
+	* testsuite/23_containers/span/first_neg.cc: New test.
+	* testsuite/23_containers/span/front_assert_neg.cc: New test.
+	* testsuite/23_containers/span/index_op_assert_neg.cc: New test.
+	* testsuite/23_containers/span/last_2_assert_neg.cc: New test.
+	* testsuite/23_containers/span/last_assert_neg.cc: New test.
+	* testsuite/23_containers/span/subspan_2_assert_neg.cc: New test.
+	* testsuite/23_containers/span/subspan_3_assert_neg.cc: New test.
+	* testsuite/23_containers/span/subspan_4_assert_neg.cc: New test.
+	* testsuite/23_containers/span/subspan_5_assert_neg.cc: New test.
+	* testsuite/23_containers/span/subspan_6_assert_neg.cc: New test.
+	* testsuite/23_containers/span/subspan_assert_neg.cc: New test.
+
 2019-09-05  JeanHeyd Meneide  <phdofthehouse@gmail.com>
 
 	* include/Makefile.am: Add <span> header.

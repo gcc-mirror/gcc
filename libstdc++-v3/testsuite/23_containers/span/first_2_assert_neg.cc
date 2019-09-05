@@ -16,32 +16,14 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-do run { xfail c++2a } }
 
+#define _GLIBCXX_ASSERTIONS
 #include <span>
 
-void
-test01()
+int main()
 {
   int a[4];
-  std::span<int, 4> s(a);
-  s.subspan<5, 0>(); // { dg-error "here" }
+  std::span<int, std::dynamic_extent> s(a);
+  s.first(5);
 }
-
-void
-test02()
-{
-  int a[4];
-  std::span<int, 4> s(a);
-  s.subspan<3, 5>(); // { dg-error "here" }
-}
-
-void
-test03()
-{
-  int a[4];
-  std::span<int, 4> s(a);
-  s.subspan<3, 2>(); // { dg-error "here" }
-}
-
-// { dg-error "static assertion failed" "" { target *-*-* } 0 }
