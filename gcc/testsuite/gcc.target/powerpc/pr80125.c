@@ -16,7 +16,7 @@ foo ()
   vector int k = vec_mergel (i, j);
   vector int l = vec_sl (k, c);
   vector int m = vec_sl (l, d);
-  vector char o;
+  vector unsigned char o;
   vector int p = vec_perm (m, n, o);
   e = vec_sra (p, c);
   vec_st (e, 0, a);
