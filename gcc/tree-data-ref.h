@@ -338,7 +338,7 @@ extern tree find_data_references_in_bb (struct loop *, basic_block,
                                         vec<data_reference_p> *);
 
 extern bool dr_may_alias_p (const struct data_reference *,
-			    const struct data_reference *, bool);
+			    const struct data_reference *, struct loop *);
 extern bool dr_equal_offsets_p (struct data_reference *,
                                 struct data_reference *);
 
