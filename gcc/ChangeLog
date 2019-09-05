@@ -1,5 +1,11 @@
 2019-09-05  Richard Biener  <rguenther@suse.de>
 
+	PR rtl-optimization/91656
+	* postreload-gcse.c (record_last_mem_set_info): Revert addition
+	of early out.
+
+2019-09-05  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/90501
 	* tree-inline.c (declare_return_variable): Mark the return
 	slot as addressable after building an address of it.
