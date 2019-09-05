@@ -1650,6 +1650,7 @@ builtin_define_with_hex_fp_value (const char *macro,
   /* This is very expensive, so if possible expand them lazily.  */
   if (lazy_hex_fp_value_count < LAZY_HEX_FP_VALUES_CNT
       && flag_dump_macros == 0
+      && flag_dump_go_spec == NULL
       && !cpp_get_options (parse_in)->traditional)
     {
       if (lazy_hex_fp_value_count == 0)

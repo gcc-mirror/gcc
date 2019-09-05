@@ -179,7 +179,7 @@ var typelistLock mutex
 // type descriptors.
 // p points to a list of *typeDescriptorList, n is the length
 // of the list.
-//go:linkname registerTypeDescriptors runtime.registerTypeDescriptors
+//go:linkname registerTypeDescriptors
 func registerTypeDescriptors(n int, p unsafe.Pointer) {
 	*(*slice)(unsafe.Pointer(&typelist.lists)) = slice{p, n, n}
 }

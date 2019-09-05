@@ -1,3 +1,30 @@
+2019-09-04  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt (fdeduce-init-list): Ignored.
+
+2019-09-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR c/78736
+	* c.opt (Wenum-conversion): New option.
+
+2019-09-03  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* c-attribs.c (handle_section_attribute): Call the
+	handle_generic_attribute target hook after performing target
+	independent processing.
+	(handle_noinit_attribute): Likewise.
+
+2019-09-03  Ian Lance Taylor  <iant@golang.org>
+
+	* c-cppbuiltin.c (builtin_define_with_hex_fp_value): Always expand
+	when using -fgo-dump-spec.
+
+2019-09-02  Martin Liska  <mliska@suse.cz>
+
+	PR c++/91155
+	* c-common.c (fname_as_string): Use cxx_printable_name for
+	__PRETTY_FUNCTION__ same as was used before r265711.
+
 2019-08-28  Marek Polacek  <polacek@redhat.com>
 
 	Implement P1152R4: Deprecating some uses of volatile.

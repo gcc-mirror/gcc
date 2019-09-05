@@ -1,7 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fno-range-check" }
 ! { dg-add-options ieee }
-! { dg-skip-if "NaN not supported" { spu-*-* } }
 !
 ! PR fortran/34319
 !

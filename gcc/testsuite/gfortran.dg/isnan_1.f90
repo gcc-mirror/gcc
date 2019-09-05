@@ -2,7 +2,6 @@
 !
 ! { dg-do run }
 ! { dg-add-options ieee }
-! { dg-skip-if "NaN not supported" { spu-*-* } }
 !
   implicit none
   real :: x

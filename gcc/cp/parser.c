@@ -10683,7 +10683,7 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
     case CPTK_DIRECT_BASES:
       return cp_expr (finish_bases (type1, true), trait_loc);
     default:
-      return cp_expr (finish_trait_expr (kind, type1, type2), trait_loc);
+      return finish_trait_expr (trait_loc, kind, type1, type2);
     }
 }
 

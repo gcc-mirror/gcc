@@ -165,7 +165,6 @@ func breakpoint()
 
 func asminit() {}
 
-//go:linkname reflectcall runtime.reflectcall
 //go:noescape
 func reflectcall(fntype *functype, fn *funcval, isInterface, isMethod bool, params, results *unsafe.Pointer)
 
@@ -280,13 +279,13 @@ func osyield()
 func syscall(trap uintptr, a1, a2, a3, a4, a5, a6 uintptr) uintptr
 
 // For gccgo, to communicate from the C code to the Go code.
-//go:linkname setIsCgo runtime.setIsCgo
+//go:linkname setIsCgo
 func setIsCgo() {
 	iscgo = true
 }
 
 // For gccgo, to communicate from the C code to the Go code.
-//go:linkname setSupportAES runtime.setSupportAES
+//go:linkname setSupportAES
 func setSupportAES(v bool) {
 	support_aes = v
 }
@@ -320,7 +319,7 @@ func dumpregs(*_siginfo_t, unsafe.Pointer)
 func setRandomNumber(uint32)
 
 // Called by gccgo's proc.c.
-//go:linkname allocg runtime.allocg
+//go:linkname allocg
 func allocg() *g {
 	return new(g)
 }
@@ -368,17 +367,16 @@ func abort()
 var usestackmaps bool
 
 // probestackmaps detects whether there are stack maps.
-//go:linkname probestackmaps runtime.probestackmaps
 func probestackmaps() bool
 
 // For the math/bits packages for gccgo.
-//go:linkname getDivideError runtime.getDivideError
+//go:linkname getDivideError
 func getDivideError() error {
 	return divideError
 }
 
 // For the math/bits packages for gccgo.
-//go:linkname getOverflowError runtime.getOverflowError
+//go:linkname getOverflowError
 func getOverflowError() error {
 	return overflowError
 }

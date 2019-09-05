@@ -1,3 +1,152 @@
+2019-09-05  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+
+	* include/Makefile.am: Add <span> header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/range_access.h (__adl_begin, __adl_end, __adl_cbegin)
+	(__adl_cend, __adl_rbegin, __adl_rend, __adl_crbegin, __adl_crend)
+	(__adl_data, __adl_cdata, __adl_size, __adl_empty, __adl_to_address):
+	New functions for performing argument-dependent lookup of range
+	customization points.
+	* include/bits/stl_iterator.h (__normal_iterator): Add
+	_GLIBCXX20_CONSTEXPR to all functions.
+	* include/std/span: New header.
+	* include/std/version (__cpp_lib_span): Define feature test macro.
+	* testsuite/23_containers/span/contiguous_range_neg.cc: New test.
+	* testsuite/23_containers/span/everything.cc: New test.
+	* testsuite/23_containers/span/get_neg.cc: New test.
+	* testsuite/23_containers/span/last_neg.cc: New test.
+	* testsuite/23_containers/span/subspan_neg.cc: New test.
+	* testsuite/23_containers/span/tuple_element_dynamic_neg.cc: New test.
+	* testsuite/23_containers/span/tuple_element_oob_neg.cc: New test.
+	* testsuite/23_containers/span/tuple_size_neg.cc: New test.
+
+2019-09-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/allocator.xml: Remove URL for bibliography entry.
+	* doc/html/*: Regenerate.
+
+2019-09-04  Mike Crowe  <mac@mcrowe.com>
+
+	PR libstdc++/41861
+	* acinclude.m4 (GLIBCXX_CHECK_PTHREAD_COND_CLOCKWAIT): Check for new
+	pthread_cond_clockwait function.
+	* configure.ac: Use GLIBCXX_CHECK_PTHREAD_COND_CLOCKWAIT.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* include/std/condition_variable: (condition_variable): Rename
+	__steady_clock_t typedef and add system_clock. Change __clock_t to be
+	a typedef for the preferred clock to convert arbitrary other clocks to.
+	[_GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT] (wait_until): Add a steady_clock
+	overload.
+	(wait_until): Change __clock_t overload to use system_clock.
+	[_GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT] (__wait_until_impl): Add
+	steady_clock overload that calls pthread_cond_clockwait.
+	(__wait_until_impl): Change __clock_t overload to use system_clock.
+	(condition_variable_any) [_GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT]: Use
+	steady_clock for __clock_t if pthread_cond_clockwait is available.
+
+2019-09-04  Mike Crowe  <mac@mcrowe.com>
+
+	* testsuite/30_threads/condition_variable/members/2.cc (test01):
+	Parameterise so that test can be run against an arbitrary clock.
+	(main): Test using std::chrono::steady_clock and a user-defined
+	clock in addition to the previous std::chrono::system_clock.
+	* testsuite/30_threads/condition_variable_any/members/2.cc: Likewise.
+
+2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* crossconfig.m4: Remove references to spu.
+	* configure: Regenerate.
+	* doc/xml/manual/appendix_contributing.xml: Remove references
+	to __ea as "badword" for spu.
+	* doc/html/manual/source_code_style.html: Regenerate.
+	* include/tr1/ell_integral.tcc (__ellint_rd): Do not attempt
+	to avoid __ea (as "badword" for spu).
+	(__ellint_rj): Likewise.
+
+2019-09-03  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR other/79543
+	* acinclude.m4 (GLIBCXX_CHECK_LINKER_FEATURES): Fix GNU ld --version
+	scanning to conform to the GNU Coding Standards.
+	* configure: Regenerate.
+
+2019-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/memory_resource.cc: Use __constinit keyword.
+
+2019-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Document 9.x library versions.
+	* doc/html/*: Regenerate.
+
+2019-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (__detail::__to_chars_2_len): Use std::log2p1.
+	(__detail::__to_chars_8_len): Remove.
+	(__detail::__to_chars_8): Inline length calculation here.
+	(__detail::__from_chars_binary): Use numeric_limits instead of
+	CHAR_BIT.
+
+2019-09-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/i386-solaris/baseline_symbols.txt: Regenerate.
+	* config/abi/post/i386-solaris/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris/sparcv9/baseline_symbols.txt:
+	Likewise.
+
+2019-09-01  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite_files/util/testsuite_performance.h
+	(resource_counter::start): Ignore unused malloc(0) result.
+
+2019-09-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml (COM: Component
+	Model Object Technologies): Adjust name and link.
+
+2019-08-30  Antony Polukhin  <antoshkka@gmail.com>
+
+	* include/std/charconv (__detail::__to_chars_8)
+	__detail::__to_chars_16): Replace array of precomputed digits with
+	arithmetic operations to avoid CPU cache misses. Remove zero
+	termination from array of digits to allow symbol merge with generic
+	implementation of __detail::__to_chars. Replace final offsets with
+	constants. Use __detail::__to_chars_len_2 instead of a generic
+	__detail::__to_chars_len.
+	(__detail::__to_chars): Remove zero termination from array of digits.
+	(__detail::__to_chars_2): Leading digit is always '1'.
+
+2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/vector/cons/89164_c++17.cc: Fix errors.
+
+2019-08-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
+
+2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89164
+	* include/bits/stl_algobase.h (__copy_move): Give descriptive names
+	to template parameters.
+	* include/bits/stl_uninitialized.h (uninitialized_copy)
+	(uninitialized_fill, uninitialized_fill_n): Add static assertions to
+	diagnose invalid uses.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/1.cc:
+	Adjust expected error.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/89164.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy_n/
+	89164.cc: New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/89164.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/
+	89164.cc: New test.
+	* testsuite/23_containers/vector/cons/89164.cc: New test.
+	* testsuite/23_containers/vector/cons/89164_c++17.cc: New test.
+
 2019-08-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91067
@@ -9,7 +158,7 @@
 	constructors.
 	* testsuite/util/testsuite_abi.cc: Add new symbol version.
 
-2019-08-29  Jakub Jelinek  <jakub@redhat.com
+2019-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
 	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Update.

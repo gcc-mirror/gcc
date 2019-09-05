@@ -6726,6 +6726,21 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  }
     }
 
+  if (warn_enum_conversion)
+    {
+      tree checktype = origtype != NULL_TREE ? origtype : rhstype;
+      if (checktype != error_mark_node
+	  && TREE_CODE (checktype) == ENUMERAL_TYPE
+	  && TREE_CODE (type) == ENUMERAL_TYPE
+	  && TYPE_MAIN_VARIANT (checktype) != TYPE_MAIN_VARIANT (type))
+       {
+	  gcc_rich_location loc (location);
+	  warning_at (&loc, OPT_Wenum_conversion,
+		      "implicit conversion from %qT to %qT",
+		      checktype, type);
+       }
+    }
+
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (rhstype))
     {
       warn_for_address_or_pointer_of_packed_member (type, orig_rhs);

@@ -106,6 +106,8 @@ split_double_mode (machine_mode mode, rtx operands[],
 {
   machine_mode half_mode;
   unsigned int byte;
+  rtx mem_op = NULL_RTX;
+  int mem_num = 0;
 
   switch (mode)
     {
@@ -129,8 +131,18 @@ split_double_mode (machine_mode mode, rtx operands[],
          but we still have to handle it.  */
       if (MEM_P (op))
 	{
-	  lo_half[num] = adjust_address (op, half_mode, 0);
-	  hi_half[num] = adjust_address (op, half_mode, byte);
+	  if (mem_op && rtx_equal_p (op, mem_op))
+	    {
+	      lo_half[num] = lo_half[mem_num];
+	      hi_half[num] = hi_half[mem_num];
+	    }
+	  else
+	    {
+	      mem_op = op;
+	      mem_num = num;
+	      lo_half[num] = adjust_address (op, half_mode, 0);
+	      hi_half[num] = adjust_address (op, half_mode, byte);
+	    }
 	}
       else
 	{

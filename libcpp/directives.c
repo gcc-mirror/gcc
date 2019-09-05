@@ -819,6 +819,10 @@ do_include_common (cpp_reader *pfile, enum include_type type)
      callback can dump comments which follow #include.  */
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
 
+  /* Tell the lexer this is an include directive -- we want it to
+     increment the line number even if this is the last line of a file.  */
+  pfile->state.in_directive = 2;
+
   fname = parse_include (pfile, &angle_brackets, &buf, &location);
   if (!fname)
     goto done;
@@ -1957,9 +1961,9 @@ do_ifdef (cpp_reader *pfile)
       if (node)
 	{
 	  /* Do not treat conditional macros as being defined.  This is due to
-	     the powerpc and spu ports using conditional macros for 'vector',
-	     'bool', and 'pixel' to act as conditional keywords.  This messes
-	     up tests like #ifndef bool.  */
+	     the powerpc port using conditional macros for 'vector', 'bool',
+	     and 'pixel' to act as conditional keywords.  This messes up tests
+	     like #ifndef bool.  */
 	  skip = !cpp_macro_p (node) || (node->flags & NODE_CONDITIONAL);
 	  if (!_cpp_maybe_notify_macro_use (pfile, node, pfile->directive_line))
 	    /* It wasn't a macro after all.  */
@@ -1988,9 +1992,9 @@ do_ifndef (cpp_reader *pfile)
       if (node)
 	{
 	  /* Do not treat conditional macros as being defined.  This is due to
-	     the powerpc and spu ports using conditional macros for 'vector',
-	     'bool', and 'pixel' to act as conditional keywords.  This messes
-	     up tests like #ifndef bool.  */
+	     the powerpc port using conditional macros for 'vector', 'bool',
+	     and 'pixel' to act as conditional keywords.  This messes up tests
+	     like #ifndef bool.  */
 	  skip = (cpp_macro_p (node)
 		  && !(node->flags & NODE_CONDITIONAL));
 	  if (!_cpp_maybe_notify_macro_use (pfile, node, pfile->directive_line))

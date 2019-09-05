@@ -109,6 +109,7 @@ extern tree hook_tree_void_null (void);
 extern tree hook_tree_tree_tree_null (tree, tree);
 extern tree hook_tree_tree_tree_tree_null (tree, tree, tree);
 extern tree hook_tree_tree_int_treep_bool_null (tree, int, tree *, bool);
+extern tree hook_tree_treeptr_tree_tree_int_boolptr_null (tree *, tree, tree, int, bool *);
 
 extern unsigned hook_uint_void_0 (void);
 extern unsigned int hook_uint_mode_0 (machine_mode);

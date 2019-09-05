@@ -189,9 +189,6 @@ sparc64*-*-*)
 sparc*-*-*)
 	cpu_type=sparc
 	;;
-spu*-*-*)
-	cpu_type=spu
-	;;
 s390*-*-*)
 	cpu_type=s390
 	;;
@@ -1368,13 +1365,6 @@ sparc64-*-linux*)		# 64-bit SPARC's running GNU/Linux
 	md_unwind_header=sparc/linux-unwind.h
 	;;
 sparc64-*-netbsd*)
-	;;
-spu-*-elf*)
-	tmake_file="$tmake_file spu/t-elf t-libgcc-pic t-fdpbit"
-	extra_parts="$extra_parts \
-		libgcc_cachemgr.a libgcc_cachemgr_nonatomic.a \
-		libgcc_cache8k.a libgcc_cache16k.a libgcc_cache32k.a \
-		libgcc_cache64k.a libgcc_cache128k.a"
 	;;
 tic6x-*-uclinux)
 	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp \

@@ -973,31 +973,24 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
       pfile->mi_cmacro = 0;
     }
 
-  /* Compensate for the increment in linemap_add that occurs when in
-     do_file_change.   In the case of a normal #include, we're
-     currently at the start of the line *following* the #include.  A
-     separate location_t for this location makes no sense (until we do
-     the LC_LEAVE), and complicates LAST_SOURCE_LINE_LOCATION.  This
-     does not apply if we found a PCH file (in which case linemap_add
-     is not called) or we were included from the command-line.  In the
-     case that the #include is the last line in the file,
-     highest_location still points to the current line, not the start
-     of the next line, so we do not decrement in this case.  See
-     plugin/location-overflow-test-pr83173.h for an example.  */
-  bool decremented = false;
-  if (file->pchname == NULL && file->err_no == 0 && type < IT_DIRECTIVE_HWM)
-    {
-      decremented = (pfile->line_table->highest_line
-		     == pfile->line_table->highest_location);
-      if (decremented)
-	pfile->line_table->highest_location--;
-    }
+  /* In the case of a normal #include, we're now at the start of the
+     line *following* the #include.  A separate location_t for this
+     location makes no sense, until we do the LC_LEAVE.
+
+     This does not apply if we found a PCH file, we're not a regular
+     include, or we ran out of locations.  */
+  bool decrement = (file->pchname == NULL
+		    && type < IT_DIRECTIVE_HWM
+		    && (pfile->line_table->highest_location
+			!= LINE_MAP_MAX_LOCATION - 1));
+  if (decrement)
+    pfile->line_table->highest_location--;
 
   if (file->header_unit <= 0)
     /* Add line map and do callbacks.  */
     _cpp_do_file_change (pfile, LC_ENTER, file->path,
 			 type != IT_MAIN_ZERO ? 1 : 0, sysp);
-  else if (decremented)
+  else if (decrement)
     {
       /* Adjust the line back one so we appear on the #include line itself.  */
       const line_map_ordinary *map

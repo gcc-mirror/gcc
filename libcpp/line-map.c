@@ -827,7 +827,11 @@ linemap_line_start (line_maps *set, linenum_type to_line,
   /* Locations of ordinary tokens are always lower than locations of
      macro tokens.  */
   if (r >= LINE_MAP_MAX_LOCATION)
-    return 0;
+    {
+      /* Remember we overflowed.  */
+      set->highest_line = set->highest_location = LINE_MAP_MAX_LOCATION - 1;
+      return 0;
+    }
 
   set->highest_line = r;
   if (r > set->highest_location)

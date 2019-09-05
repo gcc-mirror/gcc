@@ -10,23 +10,22 @@ import (
 	"unsafe"
 )
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname requireitab runtime.requireitab
-//go:linkname assertitab runtime.assertitab
-//go:linkname panicdottype runtime.panicdottype
-//go:linkname ifaceE2E2 runtime.ifaceE2E2
-//go:linkname ifaceI2E2 runtime.ifaceI2E2
-//go:linkname ifaceE2I2 runtime.ifaceE2I2
-//go:linkname ifaceI2I2 runtime.ifaceI2I2
-//go:linkname ifaceE2T2P runtime.ifaceE2T2P
-//go:linkname ifaceI2T2P runtime.ifaceI2T2P
-//go:linkname ifaceE2T2 runtime.ifaceE2T2
-//go:linkname ifaceI2T2 runtime.ifaceI2T2
-//go:linkname ifaceT2Ip runtime.ifaceT2Ip
+//go:linkname requireitab
+//go:linkname assertitab
+//go:linkname panicdottype
+//go:linkname ifaceE2E2
+//go:linkname ifaceI2E2
+//go:linkname ifaceE2I2
+//go:linkname ifaceI2I2
+//go:linkname ifaceE2T2P
+//go:linkname ifaceI2T2P
+//go:linkname ifaceE2T2
+//go:linkname ifaceI2T2
+//go:linkname ifaceT2Ip
 // Temporary for C code to call:
-//go:linkname getitab runtime.getitab
+//go:linkname getitab
 
 // The gccgo itab structure is different than the gc one.
 //

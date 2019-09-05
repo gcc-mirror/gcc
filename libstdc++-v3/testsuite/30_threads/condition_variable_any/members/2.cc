@@ -51,6 +51,7 @@ struct Mutex
 };
 
 
+template <typename ClockType>
 void test01()
 {
   try 
@@ -60,10 +61,10 @@ void test01()
       Mutex m;
       m.lock();
 
-      auto then = std::chrono::steady_clock::now();
+      auto then = ClockType::now();
       std::cv_status result = c1.wait_until(m, then + ms);
       VERIFY( result == std::cv_status::timeout );
-      VERIFY( (std::chrono::steady_clock::now() - then) >= ms );
+      VERIFY( (ClockType::now() - then) >= ms );
       VERIFY( m.locked );
     }
   catch (const std::system_error& e)
@@ -76,8 +77,29 @@ void test01()
     }
 }
 
+/* User defined clock that ticks in two-thousandths of a second
+   forty-two minutes ahead of steady_clock. */
+struct user_defined_clock
+{
+  typedef std::chrono::steady_clock::rep rep;
+  typedef std::ratio<1, 2000> period;
+  typedef std::chrono::duration<rep, period> duration;
+  typedef std::chrono::time_point<user_defined_clock> time_point;
+
+  static constexpr bool is_steady = true;
+
+  static time_point now() noexcept
+  {
+    using namespace std::chrono;
+    const auto steady_since_epoch = steady_clock::now().time_since_epoch();
+    const auto user_since_epoch = duration_cast<duration>(steady_since_epoch);
+    return time_point(user_since_epoch + minutes(42));
+  }
+};
+
 int main()
 {
-  test01();
-  return 0;
+  test01<std::chrono::steady_clock>();
+  test01<std::chrono::system_clock>();
+  test01<user_defined_clock>();
 }

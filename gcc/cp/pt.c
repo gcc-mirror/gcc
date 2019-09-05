@@ -19577,7 +19577,8 @@ tsubst_copy_and_build (tree t,
 	else if (type2)
 	  type2 = tsubst (type2, args, complain, in_decl);
 
-	RETURN (finish_trait_expr (TRAIT_EXPR_KIND (t), type1, type2));
+	RETURN (finish_trait_expr (TRAIT_EXPR_LOCATION (t),
+				   TRAIT_EXPR_KIND (t), type1, type2));
       }
 
     case STMT_EXPR:
@@ -22127,11 +22128,6 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       tree elt, elttype;
       unsigned i;
       tree orig_parm = parm;
-
-      /* Replace T with std::initializer_list<T> for deduction.  */
-      if (TREE_CODE (parm) == TEMPLATE_TYPE_PARM
-	  && flag_deduce_init_list)
-	parm = listify (parm);
 
       if (!is_std_init_list (parm)
 	  && TREE_CODE (parm) != ARRAY_TYPE)

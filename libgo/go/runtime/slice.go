@@ -10,14 +10,13 @@ import (
 	"unsafe"
 )
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname makeslice runtime.makeslice
-//go:linkname makeslice64 runtime.makeslice64
-//go:linkname growslice runtime.growslice
-//go:linkname slicecopy runtime.slicecopy
-//go:linkname slicestringcopy runtime.slicestringcopy
+//go:linkname makeslice
+//go:linkname makeslice64
+//go:linkname growslice
+//go:linkname slicecopy
+//go:linkname slicestringcopy
 
 type slice struct {
 	array unsafe.Pointer

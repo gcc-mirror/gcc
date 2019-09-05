@@ -470,7 +470,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       OVL_LOOKUP_P (in OVERLOAD)
       LOOKUP_FOUND_P (in RECORD_TYPE, UNION_TYPE, ENUMERAL_TYPE, NAMESPACE_DECL)
    5: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
-      DECL_VTABLE_OR_VTT_P (in VAR_DECL)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       CONSTRUCTOR_PLACEHOLDER_BOUNDARY (in CONSTRUCTOR)
@@ -1368,10 +1367,14 @@ enum cp_trait_kind
 #define TRAIT_EXPR_KIND(NODE) \
   (((struct tree_trait_expr *)TRAIT_EXPR_CHECK (NODE))->kind)
 
+#define TRAIT_EXPR_LOCATION(NODE) \
+  (((struct tree_trait_expr *)TRAIT_EXPR_CHECK (NODE))->locus)
+
 struct GTY (()) tree_trait_expr {
   struct tree_common common;
   tree type1;
   tree type2;
+  location_t locus;
   enum cp_trait_kind kind;
 };
 
@@ -3362,8 +3365,10 @@ struct GTY(()) lang_decl {
 #define DECL_TINFO_P(NODE) \
   TREE_LANG_FLAG_4 (TREE_CHECK2 (NODE,VAR_DECL,TYPE_DECL))
 
-/* 1 iff VAR_DECL node NODE is virtual table or VTT.  */
-#define DECL_VTABLE_OR_VTT_P(NODE) TREE_LANG_FLAG_5 (VAR_DECL_CHECK (NODE))
+/* 1 iff VAR_DECL node NODE is virtual table or VTT.  We forward to
+   DECL_VIRTUAL_P from the common code, as that has the semantics we
+   need.  But we want a more descriptive name.  */
+#define DECL_VTABLE_OR_VTT_P(NODE) DECL_VIRTUAL_P (VAR_DECL_CHECK (NODE))
 
 /* 1 iff FUNCTION_TYPE or METHOD_TYPE has a ref-qualifier (either & or &&). */
 #define FUNCTION_REF_QUALIFIED(NODE) \
@@ -7370,7 +7375,7 @@ extern tree baselink_for_fns                    (tree);
 extern void finish_static_assert                (tree, tree, location_t,
                                                  bool);
 extern tree finish_decltype_type                (tree, bool, tsubst_flags_t);
-extern tree finish_trait_expr			(enum cp_trait_kind, tree, tree);
+extern tree finish_trait_expr			(location_t, enum cp_trait_kind, tree, tree);
 extern tree build_lambda_expr                   (void);
 extern tree build_lambda_object			(tree);
 extern tree begin_lambda_type                   (tree);

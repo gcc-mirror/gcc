@@ -1,3 +1,29 @@
+2019-09-05  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_VTABLE_OR_VTT_P): Forward to DECL_VIRTUAL_P.
+
+2019-09-04  Marek Polacek  <polacek@redhat.com>
+
+	* call.c (build_over_call): Remove -fdeduce-init-list implementation.
+	* pt.c (unify): Likewise.
+
+2019-09-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91129 - wrong error with binary op in template argument.
+	* typeck.c (warn_for_null_address): Use fold_for_warn instead of
+	fold_non_dependent_expr.
+	(cp_build_binary_op): Likewise.
+
+2019-08-30  Jason Merrill  <jason@redhat.com>
+
+	Add source location to TRAIT_EXPR.
+	* cp-tree.h (TRAIT_EXPR_LOCATION): New.
+	(struct tree_trait_expr): Add locus field.
+	* parser.c (cp_parser_trait_expr): Pass trait_loc down.
+	* pt.c (tsubst_copy_and_build) [TRAIT_EXPR]: Likewise.
+	* semantics.c (finish_trait_expr): Add location parm.
+	* tree.c (cp_expr_location): Handle TRAIT_EXPR.
+
 2019-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (check_var_type): Add location_t parameter and use it.

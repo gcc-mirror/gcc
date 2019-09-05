@@ -1214,14 +1214,14 @@ jump_table_cluster::find_jump_tables (vec<cluster *> &clusters)
     }
 
   /* No result.  */
-  if (min[l].m_count == INT_MAX)
+  if (min[l].m_count == l)
     return clusters.copy ();
 
   vec<cluster *> output;
   output.create (4);
 
   /* Find and build the clusters.  */
-  for (int end = l;;)
+  for (unsigned int end = l;;)
     {
       int start = min[end].m_start;
 
@@ -1258,11 +1258,9 @@ jump_table_cluster::can_be_handled (const vec<cluster *> &clusters,
      make a sequence of conditional branches instead of a dispatch.
 
      The definition of "much bigger" depends on whether we are
-     optimizing for size or for speed.  */
-  if (!flag_jump_tables)
-    return false;
+     optimizing for size or for speed.
 
-  /* For algorithm correctness, jump table for a single case must return
+     For algorithm correctness, jump table for a single case must return
      true.  We bail out in is_beneficial if it's called just for
      a single case.  */
   if (start == end)
@@ -1312,9 +1310,6 @@ jump_table_cluster::is_beneficial (const vec<cluster *> &,
 vec<cluster *>
 bit_test_cluster::find_bit_tests (vec<cluster *> &clusters)
 {
-  vec<cluster *> output;
-  output.create (4);
-
   unsigned l = clusters.length ();
   auto_vec<min_cluster_item> min;
   min.reserve (l + 1);
@@ -1337,8 +1332,11 @@ bit_test_cluster::find_bit_tests (vec<cluster *> &clusters)
     }
 
   /* No result.  */
-  if (min[l].m_count == INT_MAX)
+  if (min[l].m_count == l)
     return clusters.copy ();
+
+  vec<cluster *> output;
+  output.create (4);
 
   /* Find and build the clusters.  */
   for (unsigned end = l;;)

@@ -114,13 +114,12 @@ import (
 // C function to get the end of the program's memory.
 func getEnd() uintptr
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname newobject runtime.newobject
+//go:linkname newobject
 
 // Functions called by C code.
-//go:linkname mallocgc runtime.mallocgc
+//go:linkname mallocgc
 
 const (
 	debugMalloc = false

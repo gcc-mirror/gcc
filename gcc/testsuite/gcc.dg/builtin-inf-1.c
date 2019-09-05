@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 
 float fi = __builtin_inff();
-/* { dg-error "does not support infinity" "INF unsupported" { target pdp11*-*-* vax-*-* spu-*-* } .-1 } */
+/* { dg-error "does not support infinity" "INF unsupported" { target pdp11*-*-* vax-*-* } .-1 } */
 double di = __builtin_inf();
 /* { dg-error "does not support infinity" "INF unsupported" { target pdp11*-*-* vax-*-* } .-1 } */
 long double li = __builtin_infl();

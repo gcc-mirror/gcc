@@ -1,3 +1,33 @@
+2019-09-04  Martin Liska  <mliska@suse.cz>
+
+	* mklog: Do not print changed functions for
+	testsuite files.
+
+2019-09-04  Martin Liska  <mliska@suse.cz>
+
+	* mklog: Parse PR references from newly added
+	test files.
+
+2019-09-04  Martin Liska  <mliska@suse.cz>
+
+	* mklog: Use argparse instead of getopt.
+
+2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* compare-all-tests (all_targets): Remove references to spu.
+	* config-list.mk (LIST): Likewise.
+
+2019-09-02  Alexander Monakov  <amonakov@ispras.ru>
+
+	* vim-gcc-dev/syntax/gcc-match.vim: Do not override 'tabstop' here.
+	* vimrc: Set preferred values for 'tabstop', 'softtabstop',
+	'shiftwidth', 'noexpandtab', 'textwidth', 'formatoptions' for all
+	files, not just C-like files.
+
+2019-09-02  Martin Liska  <mliska@suse.cz>
+
+	* vim-gcc-dev/syntax/gcc-match.vim: Set tabstop=8.
+
 2019-08-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* test_summary: Do not escape "=".

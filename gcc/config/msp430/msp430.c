@@ -1345,34 +1345,18 @@ msp430_attr (tree * node,
 	}
       if (is_critical_func (* node))
 	{
+	  /* We always ignore the critical attribute when interrupt and
+	     critical are used together.  */
 	  warning (OPT_Wattributes,
 		   "critical attribute has no effect on interrupt functions");
 	  DECL_ATTRIBUTES (*node) = remove_attribute (ATTR_CRIT,
 						      DECL_ATTRIBUTES (* node));
 	}
     }
-  else if (TREE_NAME_EQ (name, ATTR_REENT))
-    {
-      if (is_naked_func (* node))
-	message = "naked functions cannot be reentrant";
-      else if (is_critical_func (* node))
-	message = "critical functions cannot be reentrant";
-    }
   else if (TREE_NAME_EQ (name, ATTR_CRIT))
     {
-      if (is_naked_func (* node))
-	message = "naked functions cannot be critical";
-      else if (is_reentrant_func (* node))
-	message = "reentrant functions cannot be critical";
-      else if (is_interrupt_func ( *node))
+      if (is_interrupt_func ( *node))
 	message = "critical attribute has no effect on interrupt functions";
-    }
-  else if (TREE_NAME_EQ (name, ATTR_NAKED))
-    {
-      if (is_critical_func (* node))
-	message = "critical functions cannot be naked";
-      else if (is_reentrant_func (* node))
-	message = "reentrant functions cannot be naked";
     }
 
   if (message)
@@ -1396,32 +1380,15 @@ msp430_section_attr (tree * node,
 
   const char * message = NULL;
 
-  if (TREE_NAME_EQ (name, ATTR_UPPER))
-    {
-      if (has_attr (ATTR_LOWER, * node))
-	message = "already marked with 'lower' attribute";
-      else if (has_attr (ATTR_EITHER, * node))
-	message = "already marked with 'either' attribute";
-      else if (! msp430x)
-	message = "upper attribute needs a 430X cpu";
-    }
-  else if (TREE_NAME_EQ (name, ATTR_LOWER))
-    {
-      if (has_attr (ATTR_UPPER, * node))
-	message = "already marked with 'upper' attribute";
-      else if (has_attr (ATTR_EITHER, * node))
-	message = "already marked with 'either' attribute";
-    }
-  else
-    {
-      gcc_assert (TREE_NAME_EQ (name, ATTR_EITHER));
-
-      if (has_attr (ATTR_LOWER, * node))
-	message = "already marked with 'lower' attribute";
-      else if (has_attr (ATTR_UPPER, * node))
-	message = "already marked with 'upper' attribute";
-    }
-
+  /* The "noinit" and "section" attributes are handled generically, so we
+     cannot set up additional target-specific attribute exclusions using the
+     existing mechanism.  */
+  if (has_attr (ATTR_NOINIT, *node))
+    message = G_("ignoring attribute %qE because it conflicts with "
+		 "attribute %<noinit%>");
+  else if (has_attr ("section", *node))
+    message = G_("ignoring attribute %qE because it conflicts with "
+		 "attribute %<section%>");
   /* It does not make sense to use upper/lower/either attributes without
      -mlarge.
      Without -mlarge, "lower" is the default and only region, so is redundant.
@@ -1429,9 +1396,9 @@ msp430_section_attr (tree * node,
      upper region, which for data could result in relocation overflows, and for
      code could result in stack mismanagement and incorrect call/return
      instructions.  */
-  if (!TARGET_LARGE)
-    message = G_("%qE attribute ignored. large memory model (%<-mlarge%>) "
-		 "is required");
+  else if (!TARGET_LARGE)
+    message = G_("%qE attribute ignored.  Large memory model (%<-mlarge%>) "
+		 "is required.");
 
   if (message)
     {
@@ -1443,7 +1410,7 @@ msp430_section_attr (tree * node,
 }
 
 static tree
-msp430_data_attr (tree * node,
+msp430_persist_attr (tree *node,
 		  tree   name,
 		  tree   args,
 		  int    flags ATTRIBUTE_UNUSED,
@@ -1453,33 +1420,35 @@ msp430_data_attr (tree * node,
 
   gcc_assert (DECL_P (* node));
   gcc_assert (args == NULL);
+  gcc_assert (TREE_NAME_EQ (name, ATTR_PERSIST));
 
-  if (TREE_CODE (* node) != VAR_DECL)
-    message = G_("%qE attribute only applies to variables");
-
+  /* Check for the section attribute separately from DECL_SECTION_NAME so
+     we can provide a clearer warning.  */
+  if (has_attr ("section", *node))
+    message = G_("ignoring attribute %qE because it conflicts with "
+		 "attribute %<section%>");
   /* Check that it's possible for the variable to have a section.  */
-  if ((TREE_STATIC (* node) || DECL_EXTERNAL (* node) || in_lto_p)
-      && DECL_SECTION_NAME (* node))
+  else if ((TREE_STATIC (*node) || DECL_EXTERNAL (*node) || in_lto_p)
+	   && (DECL_SECTION_NAME (*node)))
     message = G_("%qE attribute cannot be applied to variables with specific "
 		 "sections");
-
-  if (!message && TREE_NAME_EQ (name, ATTR_PERSIST) && !TREE_STATIC (* node)
-      && !TREE_PUBLIC (* node) && !DECL_EXTERNAL (* node))
+  else if (has_attr (ATTR_NOINIT, *node))
+    message = G_("ignoring attribute %qE because it conflicts with "
+		 "attribute %<noinit%>");
+  else if (TREE_CODE (*node) != VAR_DECL)
+    message = G_("%qE attribute only applies to variables");
+  else if (!TREE_STATIC (*node) && !TREE_PUBLIC (*node)
+	   && !DECL_EXTERNAL (*node))
     message = G_("%qE attribute has no effect on automatic variables");
-
-  /* It's not clear if there is anything that can be set here to prevent the
-     front end placing the variable before the back end can handle it, in a
-     similar way to how DECL_COMMON is used below.
-     So just place the variable in the .persistent section now.  */
-  if ((TREE_STATIC (* node) || DECL_EXTERNAL (* node) || in_lto_p)
-      && TREE_NAME_EQ (name, ATTR_PERSIST))
+  else if (DECL_COMMON (*node) || DECL_INITIAL (*node) == NULL)
+    message = G_("variables marked with %qE attribute must be initialized");
+  else
+    /* It's not clear if there is anything that can be set here to prevent the
+       front end placing the variable before the back end can handle it, in a
+       similar way to how DECL_COMMON is cleared for .noinit variables in
+       handle_noinit_attribute (gcc/c-family/c-attribs.c).
+       So just place the variable in the .persistent section now.  */
     set_decl_section_name (* node, ".persistent");
-
-  /* If this var is thought to be common, then change this.  Common variables
-     are assigned to sections before the backend has a chance to process
-     them.  */
-  if (DECL_COMMON (* node))
-    DECL_COMMON (* node) = 0;
 
   if (message)
     {
@@ -1490,6 +1459,67 @@ msp430_data_attr (tree * node,
   return NULL_TREE;
 }
 
+/* Helper to define attribute exclusions.  */
+#define ATTR_EXCL(name, function, type, variable)	\
+  { name, function, type, variable }
+
+/* "reentrant", "critical" and "naked" functions must conflict because
+   they all modify the prologue or epilogue of functions in mutually exclusive
+   ways.  */
+static const struct attribute_spec::exclusions attr_reent_exclusions[] =
+{
+  ATTR_EXCL (ATTR_NAKED, true, true, true),
+  ATTR_EXCL (ATTR_CRIT, true, true, true),
+  ATTR_EXCL (NULL, false, false, false)
+};
+
+static const struct attribute_spec::exclusions attr_naked_exclusions[] =
+{
+  ATTR_EXCL (ATTR_REENT, true, true, true),
+  ATTR_EXCL (ATTR_CRIT, true, true, true),
+  ATTR_EXCL (NULL, false, false, false)
+};
+
+static const struct attribute_spec::exclusions attr_crit_exclusions[] =
+{
+  ATTR_EXCL (ATTR_REENT, true, true, true),
+  ATTR_EXCL (ATTR_NAKED, true, true, true),
+  ATTR_EXCL (NULL, false, false, false)
+};
+
+/* Attributes which put the given object in a specific section must conflict
+   with one another.  */
+static const struct attribute_spec::exclusions attr_lower_exclusions[] =
+{
+  ATTR_EXCL (ATTR_UPPER, true, true, true),
+  ATTR_EXCL (ATTR_EITHER, true, true, true),
+  ATTR_EXCL (ATTR_PERSIST, true, true, true),
+  ATTR_EXCL (NULL, false, false, false)
+};
+
+static const struct attribute_spec::exclusions attr_upper_exclusions[] =
+{
+  ATTR_EXCL (ATTR_LOWER, true, true, true),
+  ATTR_EXCL (ATTR_EITHER, true, true, true),
+  ATTR_EXCL (ATTR_PERSIST, true, true, true),
+  ATTR_EXCL (NULL, false, false, false)
+};
+
+static const struct attribute_spec::exclusions attr_either_exclusions[] =
+{
+  ATTR_EXCL (ATTR_LOWER, true, true, true),
+  ATTR_EXCL (ATTR_UPPER, true, true, true),
+  ATTR_EXCL (ATTR_PERSIST, true, true, true),
+  ATTR_EXCL (NULL, false, false, false)
+};
+
+static const struct attribute_spec::exclusions attr_persist_exclusions[] =
+{
+  ATTR_EXCL (ATTR_LOWER, true, true, true),
+  ATTR_EXCL (ATTR_UPPER, true, true, true),
+  ATTR_EXCL (ATTR_EITHER, true, true, true),
+  ATTR_EXCL (NULL, false, false, false)
+};
 
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE		msp430_attribute_table
@@ -1500,23 +1530,66 @@ const struct attribute_spec msp430_attribute_table[] =
     /* { name, min_num_args, max_num_args, decl_req, type_req, fn_type_req,
 	 affects_type_identity, handler, exclude } */
     { ATTR_INTR,	0, 1, true,  false, false, false, msp430_attr, NULL },
-    { ATTR_NAKED,       0, 0, true,  false, false, false, msp430_attr, NULL },
-    { ATTR_REENT,       0, 0, true,  false, false, false, msp430_attr, NULL },
-    { ATTR_CRIT,	0, 0, true,  false, false, false, msp430_attr, NULL },
+    { ATTR_NAKED,       0, 0, true,  false, false, false, msp430_attr,
+      attr_naked_exclusions },
+    { ATTR_REENT,       0, 0, true,  false, false, false, msp430_attr,
+      attr_reent_exclusions },
+    { ATTR_CRIT,	0, 0, true,  false, false, false, msp430_attr,
+      attr_crit_exclusions },
     { ATTR_WAKEUP,      0, 0, true,  false, false, false, msp430_attr, NULL },
 
     { ATTR_LOWER,       0, 0, true,  false, false, false, msp430_section_attr,
-      NULL },
+      attr_lower_exclusions },
     { ATTR_UPPER,       0, 0, true,  false, false, false, msp430_section_attr,
-      NULL },
+      attr_upper_exclusions },
     { ATTR_EITHER,      0, 0, true,  false, false, false, msp430_section_attr,
-      NULL },
+      attr_either_exclusions },
 
-    { ATTR_PERSIST,     0, 0, true,  false, false, false, msp430_data_attr,
-      NULL },
+    { ATTR_PERSIST,     0, 0, true,  false, false, false, msp430_persist_attr,
+      attr_persist_exclusions },
 
     { NULL,		0, 0, false, false, false, false, NULL,  NULL }
   };
+
+#undef TARGET_HANDLE_GENERIC_ATTRIBUTE
+#define TARGET_HANDLE_GENERIC_ATTRIBUTE msp430_handle_generic_attribute
+
+tree
+msp430_handle_generic_attribute (tree *node,
+				 tree   name,
+				 tree   args ATTRIBUTE_UNUSED,
+				 int    flags ATTRIBUTE_UNUSED,
+				 bool *no_add_attrs)
+
+{
+  const char *message = NULL;
+
+  if (!(TREE_NAME_EQ (name, ATTR_NOINIT) || TREE_NAME_EQ (name, "section")))
+    return NULL_TREE;
+
+  /* The front end has set up an exclusion between the "noinit" and "section"
+     attributes.  */
+  if (has_attr (ATTR_LOWER, *node))
+    message = G_("ignoring attribute %qE because it conflicts with "
+		 "attribute %<lower%>");
+  else if (has_attr (ATTR_UPPER, *node))
+    message = G_("ignoring attribute %qE because it conflicts with "
+		 "attribute %<upper%>");
+  else if (has_attr (ATTR_EITHER, *node))
+    message = G_("ignoring attribute %qE because it conflicts with "
+		 "attribute %<either%>");
+  else if (has_attr (ATTR_PERSIST, *node))
+    message = G_("ignoring attribute %qE because it conflicts with "
+		 "attribute %<persistent%>");
+
+  if (message)
+    {
+      warning (OPT_Wattributes, message, name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
 
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE	msp430_start_function
@@ -1712,7 +1785,6 @@ gen_prefix (tree decl)
   return NULL;
 }
 
-static section * noinit_section;
 static section * persist_section;
 
 #undef  TARGET_ASM_INIT_SECTIONS
@@ -1721,8 +1793,6 @@ static section * persist_section;
 static void
 msp430_init_sections (void)
 {
-  noinit_section = get_unnamed_section (0, output_section_asm_op,
-					".section .noinit,\"aw\"");
   persist_section = get_unnamed_section (0, output_section_asm_op,
 					 ".section .persistent,\"aw\"");
 }
@@ -1733,6 +1803,10 @@ msp430_init_sections (void)
 static section *
 msp430_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
 {
+  const char *prefix;
+  const char *sec_name;
+  const char *base_sec_name;
+
   gcc_assert (decl != NULL_TREE);
 
   if (TREE_CODE (decl) == STRING_CST
@@ -1748,51 +1822,71 @@ msp430_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
       && is_interrupt_func (decl))
     return get_section (".lowtext", SECTION_CODE | SECTION_WRITE , decl);
 
-  const char * prefix = gen_prefix (decl);
-  if (prefix == NULL)
-    {
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	return text_section;
-      /* FIXME: ATTR_NOINIT is handled generically in
-	 default_elf_select_section.  */
-      else if (has_attr (ATTR_NOINIT, decl))
-	return noinit_section;
-      else if (has_attr (ATTR_PERSIST, decl))
-	return persist_section;
-      else
-	return default_select_section (decl, reloc, align);
-    }
+  if (has_attr (ATTR_PERSIST, decl))
+    return persist_section;
 
-  const char * sec;
+  /* ATTR_NOINIT is handled generically.  */
+  if (has_attr (ATTR_NOINIT, decl))
+    return default_elf_select_section (decl, reloc, align);
+
+  prefix = gen_prefix (decl);
+
   switch (categorize_decl_for_section (decl, reloc))
     {
-    case SECCAT_TEXT:   sec = ".text";   break;
-    case SECCAT_DATA:   sec = ".data";   break;
-    case SECCAT_BSS:    sec = ".bss";    break;
-    case SECCAT_RODATA: sec = ".rodata"; break;
+    case SECCAT_TEXT:
+      if (!prefix)
+	return text_section;
+      base_sec_name = ".text";
+      break;
+    case SECCAT_DATA:
+      if (!prefix)
+	return data_section;
+      base_sec_name = ".data";
+      break;
+    case SECCAT_BSS:
+      if (!prefix)
+	return bss_section;
+      base_sec_name = ".bss";
+      break;
+    case SECCAT_RODATA:
+      if (!prefix)
+	return readonly_data_section;
+      base_sec_name = ".rodata";
+      break;
 
+    /* Enable merging of constant data by the GNU linker using
+       default_elf_select_section and therefore enabling creation of
+       sections with the SHF_MERGE flag.  */
     case SECCAT_RODATA_MERGE_STR:
     case SECCAT_RODATA_MERGE_STR_INIT:
     case SECCAT_RODATA_MERGE_CONST:
+      return default_elf_select_section (decl, reloc, align);
+
+    /* The sections listed below are are not supported for MSP430.
+       They should not be generated, but in case they are, we use
+       default_select_section so they get placed in sections
+       the msp430 assembler and linker understand.  */
+    /* "small data" sections are not supported.  */
     case SECCAT_SRODATA:
+    case SECCAT_SDATA:
+    case SECCAT_SBSS:
+    /* Thread-local storage (TLS) is not supported.  */
+    case SECCAT_TDATA:
+    case SECCAT_TBSS:
+    /* Sections used by a dynamic linker are not supported.  */
     case SECCAT_DATA_REL:
     case SECCAT_DATA_REL_LOCAL:
     case SECCAT_DATA_REL_RO:
     case SECCAT_DATA_REL_RO_LOCAL:
-    case SECCAT_SDATA:
-    case SECCAT_SBSS:
-    case SECCAT_TDATA:
-    case SECCAT_TBSS:
       return default_select_section (decl, reloc, align);
 
     default:
       gcc_unreachable ();
     }
 
-  const char * dec_name = DECL_SECTION_NAME (decl);
-  char * name = ACONCAT ((prefix, sec, dec_name, NULL));
+  sec_name = ACONCAT ((prefix, base_sec_name, DECL_SECTION_NAME (decl), NULL));
 
-  return get_named_section (decl, name, 0);
+  return get_named_section (decl, sec_name, 0);
 }
 
 #undef  TARGET_ASM_FUNCTION_SECTION
@@ -1828,8 +1922,6 @@ msp430_section_type_flags (tree decl, const char * name, int reloc)
     name += strlen (upper_prefix);
   else if (strncmp (name, either_prefix, strlen (either_prefix)) == 0)
     name += strlen (either_prefix);
-  else if (strcmp (name, ".noinit") == 0)
-    return SECTION_WRITE | SECTION_BSS | SECTION_NOTYPE;
   else if (strcmp (name, ".persistent") == 0)
     return SECTION_WRITE | SECTION_NOTYPE;
 
@@ -1882,7 +1974,15 @@ msp430_output_aligned_decl_common (FILE *		  stream,
 				   unsigned HOST_WIDE_INT size,
 				   unsigned int		  align)
 {
-  if (msp430_data_region == MSP430_REGION_ANY)
+  /* Only emit a common symbol if the variable does not have a specific section
+     assigned.  */
+  if (msp430_data_region == MSP430_REGION_ANY
+      && !(decl != NULL_TREE && DECL_SECTION_NAME (decl))
+      && !has_attr (ATTR_EITHER, decl)
+      && !has_attr (ATTR_LOWER, decl)
+      && !has_attr (ATTR_UPPER, decl)
+      && !has_attr (ATTR_PERSIST, decl)
+      && !has_attr (ATTR_NOINIT, decl))
     {
       fprintf (stream, COMMON_ASM_OP);
       assemble_name (stream, name);

@@ -1,3 +1,84 @@
+2019-09-04  Steven G. Kargl  <kargl@gcvc.gnu.org>
+
+	PR fortran/91650
+	* io.c (match_io_element):  An output IO list item cannot be a BOZ.
+
+2019-09-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.texi: Update documentation to catch up with BOZ changes.
+	* invoke.texi: Fix English from previous BOZ changes commit.
+
+2019-09-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91589
+	* primary.c (gfc_match_varspec): Return MATCH_NO on an apparent
+	component ref, when the primary type is intrinsic.
+
+2019-09-02  Steven G. Kargl  <kargl@gc.gnu.org>
+
+	PR fortran/91552
+	* array.c (walk_array_constructor): New function.
+	(gfc_match_array_constructor): Use it.
+
+2019-09-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	* array.c (spec_dimen_size): Check for the presence of
+	expressions for the bounds.
+	* decl.c (gfc_match_end): Add case COMP_SELECT_RANK.
+	* dump-parse-tree.c(show_symbol): Show the arrayspec of class
+	entities.
+	(show_code_node): Show the code for SELECT_RANK.
+	* expr.c (gfc_check_vardef_context): Omit the context of
+	variable definition for select rank associate names since the
+	ASSUMED RANK throws.
+	* gfortran.h : Add ST_SELECT_RANK and ST_RANK to enum
+	gfc_statement. Add select_rank_temporary to symbol attribute
+	structure. Add EXEC_SELECT_RANK to enum gfc_exec_op.
+	* match.c (match_exit_cycle): Add COMP_SELECT_RANK.
+	(copy_ts_from_selector_to_associate): Add as special case for
+	assumed rank class variables.
+	(select_intrinsic_set_tmp): Clean up the code by using symbols
+	for references to the temporary and the selector.
+	(select_type_set_tmp): Ditto.
+	(select_rank_set_tmp): New function.
+	(gfc_match_select_rank): New function.
+	(gfc_match_rank_is): New function.
+	* match.h : Add prototypes for gfc_match_select_rank and
+	gfc_match_rank_is.
+	* parse.c (decode_statement): Attempt to match select_rank and
+	rank statements.
+	(next_statement, gfc_ascii_statement): Add ST_SELECT_RANK.
+	(parse_select_rank_block): New function.
+	(parse_executable): Parse select rank block for ST_SELECT_RANK.
+	* parse.h : Add COMP_SELECT_RANK to enum gfc_compile_state.
+	* resolve.c (resolve_variable): Exclude select_rank_temporaries
+	from the check on use of ASSUMED RANK.
+	(gfc_resolve_expr): Make sure that unlimited polymorphic select
+	rank temporaries expressions are not resolved again after being
+	successfully resolved.
+	(resolve_assoc_var): Do not do the rank check for select rank
+	temporaries.
+	(resolve_select_rank): New function.
+	(gfc_resolve_blocks): Deal with case EXEC_SELECT_RANK.
+	(resolve_symbol): Exclude select rank temporaries for check on
+	use of ASSUMED RANK.
+	* st.c (gfc_free_statement): Include EXEC_SELECT_RANK.
+	* trans-array.c (gfc_conv_array_ref): Select rank temporaries
+	may have dimen == 0.
+	(gfc_conv_expr_descriptor): Zero the offset of select rank
+	temporaries.
+	* trans-stmt.c (copy_descriptor): New function.
+	(trans_associate_var): Add code to associate select rank temps.
+	(gfc_trans_select_rank_cases): New function.
+	(gfc_trans_select_rank): New function.
+	* trans-stmt.h : Add prototype for gfc_trans_select_rank.
+	trans.c (trans_code): Add select rank case.
+
+2019-08-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91587
+	* io.c (match_filepos): MATCH_ERROR should branch to a syntax error.
+
 2019-08-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91551
@@ -44,7 +125,7 @@
 2019-08-27  Mark Eggleston  <mark.eggleston@codethink.com>
 
 	* invoke.texi: Ensure that the option lists fit within the
-	margins of a PDF page.  Re-worded description of 
+	margins of a PDF page.  Re-worded description of
 	'-ffrontend-loop-interchange' so that it fits with the margins
 	of a PDF page.  Add '-fdec-include', '-fdec-blank-format-item'
 	and '-fdec-format-defaults' to list of options that are enabled

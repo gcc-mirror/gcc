@@ -1,3 +1,9 @@
+2019-09-04  Ian Lance Taylor  <iant@golang.org>
+
+	PR tree-optimization/91663
+	* go-lang.c (go_langhook_post_options): Clear
+	flag_partial_inlining.
+
 2019-08-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/91283

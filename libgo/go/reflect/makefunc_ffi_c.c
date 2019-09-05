@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 #include "runtime.h"
-#include "go-type.h"
 
 #ifdef USE_LIBFFI
 

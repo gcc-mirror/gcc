@@ -29,6 +29,12 @@ do
   sed -e '/struct '${TYPE}' {/,/^}/s/^.*$//' runtime.inc.tmp2 > runtime.inc.tmp3;
   mv runtime.inc.tmp3 runtime.inc.tmp2
 done
-sed -e 's/sigset/sigset_go/' runtime.inc.tmp2 > ${OUT}
+sed -e 's/sigset/sigset_go/' runtime.inc.tmp2 > runtime.inc.tmp3
+mv runtime.inc.tmp3 runtime.inc.tmp2
+
+# Make all the fields of type structs const.
+sed -e '/struct .*type {/,/^}/ s/	\(.*;\)/	const \1/' < runtime.inc.tmp2 > runtime.inc.tmp3
+mv -f runtime.inc.tmp3 ${OUT}
+
 rm -f runtime.inc.tmp2 runtime.inc.tmp3
 exit 0

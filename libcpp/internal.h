@@ -235,7 +235,8 @@ struct cpp_context
 
 struct lexer_state
 {
-  /* Nonzero if first token on line is CPP_HASH.  */
+  /* 1 if we're handling a directive.  2 if it's an include-like
+     directive.  */
   unsigned char in_directive;
 
   /* Nonzero if in a directive that will handle padding tokens itself.

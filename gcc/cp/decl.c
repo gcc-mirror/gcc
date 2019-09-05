@@ -4543,13 +4543,27 @@ cp_fname_init (const char* name, tree *type_p)
 static tree
 cp_make_fname_decl (location_t loc, tree id, int type_dep)
 {
-  const char *const name = (type_dep && in_template_function ()
-			    ? NULL : fname_as_string (type_dep));
+  const char * name = NULL;
+  bool release_name = false;
+  if (!(type_dep && in_template_function ()))
+    {
+      if (current_function_decl == NULL_TREE)
+	name = "top level";
+      else if (type_dep == 1) /* __PRETTY_FUNCTION__ */
+	name = cxx_printable_name (current_function_decl, 2);
+      else if (type_dep == 0) /* __FUNCTION__ */
+	{
+	  name = fname_as_string (type_dep);
+	  release_name = true;
+	}
+      else
+	gcc_unreachable ();
+    }
   tree type;
   tree init = cp_fname_init (name, &type);
   tree decl = build_decl (loc, VAR_DECL, id, type);
 
-  if (name)
+  if (release_name)
     free (CONST_CAST (char *, name));
 
   /* As we're using pushdecl_with_scope, we must set the context.  */

@@ -2,31 +2,28 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build 386 amd64p32 arm mips mipsle m68k nios2 sh shbe
-
 package runtime
 
 import _ "unsafe" // for go:linkname
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname goPanicExtendIndex runtime.goPanicExtendIndex
-//go:linkname goPanicExtendIndexU runtime.goPanicExtendIndexU
-//go:linkname goPanicExtendSliceAlen runtime.goPanicExtendSliceAlen
-//go:linkname goPanicExtendSliceAlenU runtime.goPanicExtendSliceAlenU
-//go:linkname goPanicExtendSliceAcap runtime.goPanicExtendSliceAcap
-//go:linkname goPanicExtendSliceAcapU runtime.goPanicExtendSliceAcapU
-//go:linkname goPanicExtendSliceB runtime.goPanicExtendSliceB
-//go:linkname goPanicExtendSliceBU runtime.goPanicExtendSliceBU
-//go:linkname goPanicExtendSlice3Alen runtime.goPanicExtendSlice3Alen
-//go:linkname goPanicExtendSlice3AlenU runtime.goPanicExtendSlice3AlenU
-//go:linkname goPanicExtendSlice3Acap runtime.goPanicExtendSlice3Acap
-//go:linkname goPanicExtendSlice3AcapU runtime.goPanicExtendSlice3AcapU
-//go:linkname goPanicExtendSlice3B runtime.goPanicExtendSlice3B
-//go:linkname goPanicExtendSlice3BU runtime.goPanicExtendSlice3BU
-//go:linkname goPanicExtendSlice3C runtime.goPanicExtendSlice3C
-//go:linkname goPanicExtendSlice3CU runtime.goPanicExtendSlice3CU
+//go:linkname goPanicExtendIndex
+//go:linkname goPanicExtendIndexU
+//go:linkname goPanicExtendSliceAlen
+//go:linkname goPanicExtendSliceAlenU
+//go:linkname goPanicExtendSliceAcap
+//go:linkname goPanicExtendSliceAcapU
+//go:linkname goPanicExtendSliceB
+//go:linkname goPanicExtendSliceBU
+//go:linkname goPanicExtendSlice3Alen
+//go:linkname goPanicExtendSlice3AlenU
+//go:linkname goPanicExtendSlice3Acap
+//go:linkname goPanicExtendSlice3AcapU
+//go:linkname goPanicExtendSlice3B
+//go:linkname goPanicExtendSlice3BU
+//go:linkname goPanicExtendSlice3C
+//go:linkname goPanicExtendSlice3CU
 
 // Additional index/slice error paths for 32-bit platforms.
 // Used when the high word of a 64-bit index is not zero.

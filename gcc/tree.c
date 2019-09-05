@@ -6152,6 +6152,13 @@ find_decls_types_in_node (struct cgraph_node *n, class free_lang_data_d *fld)
 	    {
 	      tree arg = gimple_op (stmt, i);
 	      find_decls_types (arg, fld);
+	      /* find_decls_types doesn't walk TREE_PURPOSE of TREE_LISTs,
+		 which we need for asm stmts.  */
+	      if (arg
+		  && TREE_CODE (arg) == TREE_LIST
+		  && TREE_PURPOSE (arg)
+		  && gimple_code (stmt) == GIMPLE_ASM)
+		find_decls_types (TREE_PURPOSE (arg), fld);
 	    }
 	}
     }

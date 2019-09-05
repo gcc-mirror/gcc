@@ -9922,7 +9922,7 @@ check_trait_type (tree type)
 /* Process a trait expression.  */
 
 tree
-finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
+finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
 {
   if (type1 == error_mark_node
       || type2 == error_mark_node)
@@ -9935,6 +9935,7 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
       TRAIT_EXPR_TYPE1 (trait_expr) = type1;
       TRAIT_EXPR_TYPE2 (trait_expr) = type2;
       TRAIT_EXPR_KIND (trait_expr) = kind;
+      TRAIT_EXPR_LOCATION (trait_expr) = loc;
       return trait_expr;
     }
 
@@ -9992,8 +9993,9 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
       gcc_unreachable ();
     }
 
-  return (trait_expr_value (kind, type1, type2)
-	  ? boolean_true_node : boolean_false_node);
+tree val = (trait_expr_value (kind, type1, type2)
+	    ? boolean_true_node : boolean_false_node);
+ return maybe_wrap_with_location (val, loc);
 }
 
 /* Do-nothing variants of functions to handle pragma FLOAT_CONST_DECIMAL64,

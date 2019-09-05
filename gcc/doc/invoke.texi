@@ -308,7 +308,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-discarded-qualifiers  -Wno-discarded-array-qualifiers @gol
 -Wno-div-by-zero  -Wdouble-promotion @gol
 -Wduplicated-branches  -Wduplicated-cond @gol
--Wempty-body  -Wenum-compare  -Wno-endif-labels  -Wexpansion-to-defined @gol
+-Wempty-body  -Wenum-compare  -Wenum-conversion @gol
+-Wno-endif-labels  -Wexpansion-to-defined @gol
 -Werror  -Werror=*  -Wextra-semi  -Wfatal-errors @gol
 -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-contains-nul  -Wno-format-extra-args  @gol
@@ -1214,17 +1215,6 @@ See RS/6000 and PowerPC Options.
 -mpopc  -mno-popc  -msubxc  -mno-subxc @gol
 -mfix-at697f  -mfix-ut699  -mfix-ut700  -mfix-gr712rc @gol
 -mlra  -mno-lra}
-
-@emph{SPU Options}
-@gccoptlist{-mwarn-reloc  -merror-reloc @gol
--msafe-dma  -munsafe-dma @gol
--mbranch-hints @gol
--msmall-mem  -mlarge-mem  -mstdmain @gol
--mfixed-range=@var{register-range} @gol
--mea32  -mea64 @gol
--maddress-space-conversion  -mno-address-space-conversion @gol
--mcache-size=@var{cache-size} @gol
--matomic-updates  -mno-atomic-updates}
 
 @emph{System V Options}
 @gccoptlist{-Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}}
@@ -2561,28 +2551,6 @@ of a loop too many expressions need to be evaluated, the resulting constexpr
 evaluation might take too long.
 The default is 33554432 (1<<25).
 
-@item -fdeduce-init-list
-@opindex fdeduce-init-list
-Enable deduction of a template type parameter as
-@code{std::initializer_list} from a brace-enclosed initializer list, i.e.@:
-
-@smallexample
-template <class T> auto forward(T t) -> decltype (realfn (t))
-@{
-  return realfn (t);
-@}
-
-void f()
-@{
-  forward(@{1,2@}); // call forward<std::initializer_list<int>>
-@}
-@end smallexample
-
-This deduction was implemented as a possible extension to the
-originally proposed semantics for the C++11 standard, but was not part
-of the final standard, so it is disabled by default.  This option is
-deprecated, and may be removed in a future version of G++.
-
 @item -fno-elide-constructors
 @opindex fno-elide-constructors
 @opindex felide-constructors
@@ -3566,13 +3534,14 @@ a conversion function will never be called.
 @item -Wvolatile @r{(C++ and Objective-C++ only)}
 @opindex Wvolatile
 @opindex Wno-volatile
-Warn about deprecated uses of the volatile qualifier.  This includes postfix
-and prefix @code{++} and @code{--} expressions of volatile-qualified types,
-using simple assignments where the left operand is a volatile-qualified
-non-class type for their value, compound assignments where the left operand
-is a volatile-qualified non-class type, volatile-qualified function return
-type, volatile-qualified parameter type, and structured bindings of a
-volatile-qualified type.  This usage was deprecated in C++20.
+Warn about deprecated uses of the @code{volatile} qualifier.  This includes
+postfix and prefix @code{++} and @code{--} expressions of
+@code{volatile}-qualified types, using simple assignments where the left
+operand is a @code{volatile}-qualified non-class type for their value,
+compound assignments where the left operand is a @code{volatile}-qualified
+non-class type, @code{volatile}-qualified function return type,
+@code{volatile}-qualified parameter type, and structured bindings of a
+@code{volatile}-qualified type.  This usage was deprecated in C++20.
 
 Enabled by default with @option{-std=c++2a}.
 @end table
@@ -4490,6 +4459,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wcomment  @gol
 -Wduplicate-decl-specifier @r{(C and Objective-C only)} @gol
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
+-Wenum-conversion @r{in C/ObjC;} @gol
 -Wformat   @gol
 -Wint-in-bool-context  @gol
 -Wimplicit @r{(C and Objective-C only)} @gol
@@ -7067,6 +7037,12 @@ Warn about a comparison between values of different enumerated types.
 In C++ enumerated type mismatches in conditional expressions are also
 diagnosed and the warning is enabled by default.  In C this warning is 
 enabled by @option{-Wall}.
+
+@item -Wenum-conversion @r{(C, Objective-C only)}
+@opindex Wenum-conversion
+@opindex Wno-enum-conversion
+Warn when a value of enumerated type is implicitly converted to a 
+different enumerated type.  This warning is enabled by @option{-Wextra}.
 
 @item -Wextra-semi @r{(C++, Objective-C++ only)}
 @opindex Wextra-semi
@@ -15775,7 +15751,6 @@ platform.
 * SH Options::
 * Solaris 2 Options::
 * SPARC Options::
-* SPU Options::
 * System V Options::
 * TILE-Gx Options::
 * TILEPro Options::
@@ -16011,7 +15986,9 @@ Specify the name of the target processor for which GCC should tune the
 performance of the code.  Permissible values for this option are:
 @samp{generic}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a55},
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
-@samp{cortex-a76}, @samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
+@samp{cortex-a76}, @samp{cortex-a76ae}, @samp{cortex-a77},
+@samp{cortex-a65}, @samp{cortex-a65ae}, @samp{cortex-a34},
+@samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
 @samp{neoverse-e1},@samp{neoverse-n1},@samp{qdf24xx}, @samp{saphira},
 @samp{phecda}, @samp{xgene1}, @samp{vulcan}, @samp{octeontx},
 @samp{octeontx81},  @samp{octeontx83}, @samp{thunderx}, @samp{thunderxt88},
@@ -26826,141 +26803,6 @@ With @option{-mstack-bias}, GCC assumes that the stack pointer, and
 frame pointer if present, are offset by @minus{}2047 which must be added back
 when making stack frame references.  This is the default in 64-bit mode.
 Otherwise, assume no such offset is present.
-@end table
-
-@node SPU Options
-@subsection SPU Options
-@cindex SPU options
-
-These @samp{-m} options are supported on the SPU:
-
-@table @gcctabopt
-@item -mwarn-reloc
-@itemx -merror-reloc
-@opindex mwarn-reloc
-@opindex merror-reloc
-
-The loader for SPU does not handle dynamic relocations.  By default, GCC
-gives an error when it generates code that requires a dynamic
-relocation.  @option{-mno-error-reloc} disables the error,
-@option{-mwarn-reloc} generates a warning instead.
-
-@item -msafe-dma
-@itemx -munsafe-dma
-@opindex msafe-dma
-@opindex munsafe-dma
-
-Instructions that initiate or test completion of DMA must not be
-reordered with respect to loads and stores of the memory that is being
-accessed.
-With @option{-munsafe-dma} you must use the @code{volatile} keyword to protect
-memory accesses, but that can lead to inefficient code in places where the
-memory is known to not change.  Rather than mark the memory as volatile,
-you can use @option{-msafe-dma} to tell the compiler to treat
-the DMA instructions as potentially affecting all memory.  
-
-@item -mbranch-hints
-@opindex mbranch-hints
-
-By default, GCC generates a branch hint instruction to avoid
-pipeline stalls for always-taken or probably-taken branches.  A hint
-is not generated closer than 8 instructions away from its branch.
-There is little reason to disable them, except for debugging purposes,
-or to make an object a little bit smaller.
-
-@item -msmall-mem
-@itemx -mlarge-mem
-@opindex msmall-mem
-@opindex mlarge-mem
-
-By default, GCC generates code assuming that addresses are never larger
-than 18 bits.  With @option{-mlarge-mem} code is generated that assumes
-a full 32-bit address.
-
-@item -mstdmain
-@opindex mstdmain
-
-By default, GCC links against startup code that assumes the SPU-style
-main function interface (which has an unconventional parameter list).
-With @option{-mstdmain}, GCC links your program against startup
-code that assumes a C99-style interface to @code{main}, including a
-local copy of @code{argv} strings.
-
-@item -mfixed-range=@var{register-range}
-@opindex mfixed-range
-Generate code treating the given register range as fixed registers.
-A fixed register is one that the register allocator cannot use.  This is
-useful when compiling kernel code.  A register range is specified as
-two registers separated by a dash.  Multiple register ranges can be
-specified separated by a comma.
-
-@item -mea32
-@itemx -mea64
-@opindex mea32
-@opindex mea64
-Compile code assuming that pointers to the PPU address space accessed
-via the @code{__ea} named address space qualifier are either 32 or 64
-bits wide.  The default is 32 bits.  As this is an ABI-changing option,
-all object code in an executable must be compiled with the same setting.
-
-@item -maddress-space-conversion
-@itemx -mno-address-space-conversion
-@opindex maddress-space-conversion
-@opindex mno-address-space-conversion
-Allow/disallow treating the @code{__ea} address space as superset
-of the generic address space.  This enables explicit type casts
-between @code{__ea} and generic pointer as well as implicit
-conversions of generic pointers to @code{__ea} pointers.  The
-default is to allow address space pointer conversions.
-
-@item -mcache-size=@var{cache-size}
-@opindex mcache-size
-This option controls the version of libgcc that the compiler links to an
-executable and selects a software-managed cache for accessing variables
-in the @code{__ea} address space with a particular cache size.  Possible
-options for @var{cache-size} are @samp{8}, @samp{16}, @samp{32}, @samp{64}
-and @samp{128}.  The default cache size is 64KB.
-
-@item -matomic-updates
-@itemx -mno-atomic-updates
-@opindex matomic-updates
-@opindex mno-atomic-updates
-This option controls the version of libgcc that the compiler links to an
-executable and selects whether atomic updates to the software-managed
-cache of PPU-side variables are used.  If you use atomic updates, changes
-to a PPU variable from SPU code using the @code{__ea} named address space
-qualifier do not interfere with changes to other PPU variables residing
-in the same cache line from PPU code.  If you do not use atomic updates,
-such interference may occur; however, writing back cache lines is
-more efficient.  The default behavior is to use atomic updates.
-
-@item -mdual-nops
-@itemx -mdual-nops=@var{n}
-@opindex mdual-nops
-By default, GCC inserts NOPs to increase dual issue when it expects
-it to increase performance.  @var{n} can be a value from 0 to 10.  A
-smaller @var{n} inserts fewer NOPs.  10 is the default, 0 is the
-same as @option{-mno-dual-nops}.  Disabled with @option{-Os}.
-
-@item -mhint-max-nops=@var{n}
-@opindex mhint-max-nops
-Maximum number of NOPs to insert for a branch hint.  A branch hint must
-be at least 8 instructions away from the branch it is affecting.  GCC
-inserts up to @var{n} NOPs to enforce this, otherwise it does not
-generate the branch hint.
-
-@item -mhint-max-distance=@var{n}
-@opindex mhint-max-distance
-The encoding of the branch hint instruction limits the hint to be within
-256 instructions of the branch it is affecting.  By default, GCC makes
-sure it is within 125.
-
-@item -msafe-hints
-@opindex msafe-hints
-Work around a hardware bug that causes the SPU to stall indefinitely.
-By default, GCC inserts the @code{hbrp} instruction to make sure
-this stall won't happen.
-
 @end table
 
 @node System V Options

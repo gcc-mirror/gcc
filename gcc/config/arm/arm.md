@@ -3963,6 +3963,17 @@
 
 ; ARMv6+ unaligned load/store instructions (used for packed structure accesses).
 
+(define_insn "unaligned_loaddi"
+  [(set (match_operand:DI 0 "s_register_operand" "=r")
+	(unspec:DI [(match_operand:DI 1 "memory_operand" "m")]
+		   UNSPEC_UNALIGNED_LOAD))]
+  "TARGET_32BIT && TARGET_LDRD"
+  "*
+  return output_move_double (operands, true, NULL);
+  "
+  [(set_attr "length" "8")
+   (set_attr "type" "load_8")])
+
 (define_insn "unaligned_loadsi"
   [(set (match_operand:SI 0 "s_register_operand" "=l,l,r")
 	(unspec:SI [(match_operand:SI 1 "memory_operand" "m,Uw,m")]
@@ -4007,6 +4018,17 @@
    (set_attr "predicable" "no,yes,yes")
    (set_attr "predicable_short_it" "no,yes,no")
    (set_attr "type" "load_byte")])
+
+(define_insn "unaligned_storedi"
+  [(set (match_operand:DI 0 "memory_operand" "=m")
+	(unspec:DI [(match_operand:DI 1 "s_register_operand" "r")]
+		   UNSPEC_UNALIGNED_STORE))]
+  "TARGET_32BIT && TARGET_LDRD"
+  "*
+  return output_move_double (operands, true, NULL);
+  "
+  [(set_attr "length" "8")
+   (set_attr "type" "store_8")])
 
 (define_insn "unaligned_storesi"
   [(set (match_operand:SI 0 "memory_operand" "=m,Uw,m")

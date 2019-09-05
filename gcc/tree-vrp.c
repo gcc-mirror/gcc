@@ -1741,9 +1741,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 	{
 	  /* For pointer types, we are really only interested in asserting
 	     whether the expression evaluates to non-NULL.  */
-	  if (!range_includes_zero_p (&vr0) && !range_includes_zero_p (&vr1))
-	    vr->set_nonzero (expr_type);
-	  else if (vr0.zero_p () || vr1.zero_p ())
+	  if (vr0.zero_p () || vr1.zero_p ())
 	    vr->set_zero (expr_type);
 	  else
 	    vr->set_varying (expr_type);
@@ -4703,31 +4701,23 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
       || RECORD_OR_UNION_TYPE_P (reftype))
     return false;
 
+  arrbounds[0] = 0;
+
   offset_int eltsize;
   if (TREE_CODE (reftype) == ARRAY_TYPE)
     {
       eltsize = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (reftype)));
-
       if (tree dom = TYPE_DOMAIN (reftype))
 	{
 	  tree bnds[] = { TYPE_MIN_VALUE (dom), TYPE_MAX_VALUE (dom) };
-	  if (array_at_struct_end_p (arg)
-	      || !bnds[0] || !bnds[1])
-	    {
-	      arrbounds[0] = 0;
-	      arrbounds[1] = wi::lrshift (maxobjsize, wi::floor_log2 (eltsize));
-	    }
+	  if (array_at_struct_end_p (arg) || !bnds[0] || !bnds[1])
+	    arrbounds[1] = wi::lrshift (maxobjsize, wi::floor_log2 (eltsize));
 	  else
-	    {
-	      arrbounds[0] = wi::to_offset (bnds[0]) * eltsize;
-	      arrbounds[1] = (wi::to_offset (bnds[1]) + 1) * eltsize;
-	    }
+	    arrbounds[1] = (wi::to_offset (bnds[1]) - wi::to_offset (bnds[0])
+			    + 1) * eltsize;
 	}
       else
-	{
-	  arrbounds[0] = 0;
-	  arrbounds[1] = wi::lrshift (maxobjsize, wi::floor_log2 (eltsize));
-	}
+	arrbounds[1] = wi::lrshift (maxobjsize, wi::floor_log2 (eltsize));
 
       if (TREE_CODE (ref) == MEM_REF)
 	{
@@ -4742,7 +4732,6 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
   else
     {
       eltsize = 1;
-      arrbounds[0] = 0;
       arrbounds[1] = wi::to_offset (TYPE_SIZE_UNIT (reftype));
     }
 

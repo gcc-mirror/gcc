@@ -1,3 +1,19 @@
+2019-09-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/91639
+	* directives.c (do_include_common): Tell lexer we're a #include.
+	* files.c (_cpp_stack_file): Lexer will have always incremented.
+	* internal.h (struct cpp_context): Extend in_directive's
+	semantics.
+	* lex.c (_cpp_lex_direct): Increment line for final \n when lexing
+	for an ISO #include.
+	* line-map.c (linemap_line_start): Remember if we overflowed.
+
+2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* directives.c: Remove references to spu from comments.
+	* expr.c: Likewise.
+
 2019-08-29  Nathan Sidwell  <nathan@acm.org>
 
 	* internal.h (enum include_type): Add IT_MAIN, IT_DIRECTIVE_HWM,

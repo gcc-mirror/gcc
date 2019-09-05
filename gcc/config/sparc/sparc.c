@@ -3203,13 +3203,13 @@ select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	case UNGT:
 	case UNGE:
 	case UNEQ:
-	case LTGT:
 	  return CCFPmode;
 
 	case LT:
 	case LE:
 	case GT:
 	case GE:
+	case LTGT:
 	  return CCFPEmode;
 
 	default:
@@ -4201,6 +4201,13 @@ eligible_for_sibcall_delay (rtx_insn *trial)
 static bool
 sparc_cannot_force_const_mem (machine_mode mode, rtx x)
 {
+  /* After IRA has run in PIC mode, it is too late to put anything into the
+     constant pool if the PIC register hasn't already been initialized.  */
+  if ((lra_in_progress || reload_in_progress)
+      && flag_pic
+      && !crtl->uses_pic_offset_table)
+    return true;
+
   switch (GET_CODE (x))
     {
     case CONST_INT:
@@ -4450,7 +4457,7 @@ sparc_pic_register_p (rtx x)
     return true;
 
   if (!HARD_REGISTER_P (pic_offset_table_rtx)
-      && (HARD_REGISTER_P (x) || lra_in_progress)
+      && (HARD_REGISTER_P (x) || lra_in_progress || reload_in_progress)
       && ORIGINAL_REGNO (x) == REGNO (pic_offset_table_rtx))
     return true;
 

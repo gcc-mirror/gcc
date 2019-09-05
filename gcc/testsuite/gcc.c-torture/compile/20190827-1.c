@@ -1,3 +1,4 @@
+/* { dg-require-alias "" } */
 typedef unsigned char __u8;
 typedef __u8 u8;
 typedef u8 u_int8_t;

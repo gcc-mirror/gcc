@@ -1,7 +1,6 @@
 /* Test for hexadecimal float rounding: bug 21720.  */
 /* { dg-do link } */
 /* { dg-options "-O -std=gnu99" } */
-/* { dg-skip-if "SPU float rounds towards zero" { spu-*-* } } */
 
 #include <float.h>
 

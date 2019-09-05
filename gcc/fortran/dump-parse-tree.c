@@ -1000,11 +1000,17 @@ show_symbol (gfc_symbol *sym)
       show_expr (sym->value);
     }
 
-  if (sym->as)
+  if (sym->ts.type != BT_CLASS && sym->as)
     {
       show_indent ();
       fputs ("Array spec:", dumpfile);
       show_array_spec (sym->as);
+    }
+  else if (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->as)
+    {
+      show_indent ();
+      fputs ("Array spec:", dumpfile);
+      show_array_spec (CLASS_DATA (sym)->as);
     }
 
   if (sym->generic)
@@ -2168,18 +2174,22 @@ show_code_node (int level, gfc_code *c)
 
     case EXEC_SELECT:
     case EXEC_SELECT_TYPE:
+    case EXEC_SELECT_RANK:
       d = c->block;
-      if (c->op == EXEC_SELECT_TYPE)
+      fputc ('\n', dumpfile);
+      code_indent (level, 0);
+      if (c->op == EXEC_SELECT_RANK)
+	fputs ("SELECT RANK ", dumpfile);
+      else if (c->op == EXEC_SELECT_TYPE)
 	fputs ("SELECT TYPE ", dumpfile);
       else
 	fputs ("SELECT CASE ", dumpfile);
       show_expr (c->expr1);
-      fputc ('\n', dumpfile);
 
       for (; d; d = d->block)
 	{
+	  fputc ('\n', dumpfile);
 	  code_indent (level, 0);
-
 	  fputs ("CASE ", dumpfile);
 	  for (cp = d->ext.block.case_list; cp; cp = cp->next)
 	    {
@@ -2190,9 +2200,9 @@ show_code_node (int level, gfc_code *c)
 	      fputc (')', dumpfile);
 	      fputc (' ', dumpfile);
 	    }
-	  fputc ('\n', dumpfile);
 
 	  show_code (level + 1, d->next);
+	  fputc ('\n', dumpfile);
 	}
 
       code_indent (level, c->label1);

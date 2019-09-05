@@ -1,3 +1,8 @@
+2019-09-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR c/78736
+	* c-typeck.c (convert_for_assignment): Handle Wenum-conversion.
+
 2019-08-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR pch/61250
