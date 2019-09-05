@@ -5619,7 +5619,32 @@ trees_out::core_vals (tree t)
       WT (t->type_non_common.lang_1);
     }
 
-  /* Then remainder by CODE.  */
+  if (CODE_CONTAINS_STRUCT (code, TS_EXP))
+    {
+      if (streaming_p ())
+	{
+	  state->write_location (*this, t->exp.locus);
+	  if (code == CALL_EXPR)
+	    WU (t->base.u.ifn);
+	}
+
+      bool vl = TREE_CODE_CLASS (code) == tcc_vl_exp;
+      for (unsigned ix = (vl ? VL_EXP_OPERAND_LENGTH (t)
+			  : TREE_OPERAND_LENGTH (t)); ix-- != vl;)
+	WT (TREE_OPERAND (t, ix));
+    }
+  else
+    /* The CODE_CONTAINS tables were inaccurate when I started.  */
+    gcc_checking_assert (TREE_CODE_CLASS (code) != tcc_expression
+			 && TREE_CODE_CLASS (code) != tcc_binary
+			 && TREE_CODE_CLASS (code) != tcc_unary
+			 && TREE_CODE_CLASS (code) != tcc_reference
+			 && TREE_CODE_CLASS (code) != tcc_comparison
+			 && TREE_CODE_CLASS (code) != tcc_statement
+			 && TREE_CODE_CLASS (code) != tcc_vl_exp);
+
+  /* Then by CODE.  Special cases and/or 1:1 tree shape
+     correspondance. */
   switch (code)
     {
     default:
@@ -5627,7 +5652,24 @@ trees_out::core_vals (tree t)
 
     case IDENTIFIER_NODE:
     case TRANSLATION_UNIT_DECL:
+    case SSA_NAME:
       gcc_unreachable (); /* Should never meet.  */
+
+    case TREE_LIST:
+      WT (t->list.purpose);
+      WT (t->list.value);
+      WT (t->list.common.chain);
+      break;
+
+    case TREE_VEC:
+      for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
+	WT (TREE_VEC_ELT (t, ix));
+      /* We stash NON_DEFAULT_TEMPLATE_ARGS_COUNT on TREE_CHAIN!  */
+      gcc_checking_assert (!t->type_common.common.chain
+			   || (TREE_CODE (t->type_common.common.chain)
+			       == INTEGER_CST));
+      WT (t->type_common.common.chain);
+      break;
 
     case INTEGER_CST:
       if (streaming_p ())
@@ -5711,87 +5753,41 @@ trees_out::core_vals (tree t)
       WT (t->function_decl.vindex);
       break;
 
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_LIST))
-    {
-      WT (t->list.purpose);
-      WT (t->list.value);
-      WT (t->list.common.chain);
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_VEC))
-    {
-      for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
-	WT (TREE_VEC_ELT (t, ix));
-      /* We stash NON_DEFAULT_TEMPLATE_ARGS_COUNT on TREE_CHAIN!  */
-      gcc_checking_assert (!t->type_common.common.chain
-			   || (TREE_CODE (t->type_common.common.chain)
-			       == INTEGER_CST));
-      WT (t->type_common.common.chain);
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_EXP))
-    {
-      if (streaming_p ())
-	{
-	  state->write_location (*this, t->exp.locus);
-	  if (code == CALL_EXPR)
-	    WU (t->base.u.ifn);
-	}
-
-      bool vl = TREE_CODE_CLASS (code) == tcc_vl_exp;
-      for (unsigned ix = (vl ? VL_EXP_OPERAND_LENGTH (t)
-			  : TREE_OPERAND_LENGTH (t)); ix-- != vl;)
-	WT (TREE_OPERAND (t, ix));
-    }
-  else
-    /* The CODE_CONTAINS tables were inaccurate when I started.  */
-    gcc_checking_assert (TREE_CODE_CLASS (code) != tcc_expression
-			 && TREE_CODE_CLASS (code) != tcc_binary
-			 && TREE_CODE_CLASS (code) != tcc_unary
-			 && TREE_CODE_CLASS (code) != tcc_reference
-			 && TREE_CODE_CLASS (code) != tcc_comparison
-			 && TREE_CODE_CLASS (code) != tcc_statement
-			 && TREE_CODE_CLASS (code) != tcc_vl_exp);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_SSA_NAME))
-    gcc_unreachable (); /* Should not see.  */
-
-  if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
-    {
+    case BLOCK:
       WT (t->block.supercontext);
       chained_decls (t->block.vars);
       WT (t->block.abstract_origin);
       // FIXME: nonlocalized_vars, fragment_origin, fragment_chain
       WT (t->block.subblocks);
       WT (t->block.chain);
-    }
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
-    {
-      WT (t->binfo.common.chain);
-      WT (t->binfo.offset);
-      WT (t->binfo.inheritance);
-      WT (t->binfo.vtable);
-      WT (t->binfo.virtuals);
-      WT (t->binfo.vptr_field);
-      WT (t->binfo.vtt_subvtt);
-      WT (t->binfo.vtt_vptr);
+    case TREE_BINFO:
+      {
+	WT (t->binfo.common.chain);
+	WT (t->binfo.offset);
+	WT (t->binfo.inheritance);
+	WT (t->binfo.vtable);
+	WT (t->binfo.virtuals);
+	WT (t->binfo.vptr_field);
+	WT (t->binfo.vtt_subvtt);
+	WT (t->binfo.vtt_vptr);
 
-      tree_vec (BINFO_BASE_ACCESSES (t));
-      unsigned num = vec_safe_length (BINFO_BASE_ACCESSES (t));
-      for (unsigned ix = 0; ix != num; ix++)
-	WT (BINFO_BASE_BINFO (t, ix));
-    }
+	tree_vec (BINFO_BASE_ACCESSES (t));
+	unsigned num = vec_safe_length (BINFO_BASE_ACCESSES (t));
+	for (unsigned ix = 0; ix != num; ix++)
+	  WT (BINFO_BASE_BINFO (t, ix));
+      }
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_STATEMENT_LIST))
-    {
+    case STATEMENT_LIST:
       for (tree_stmt_iterator iter = tsi_start (t);
 	   !tsi_end_p (iter); tsi_next (&iter))
 	if (tree stmt = tsi_stmt (iter))
 	  WT (stmt);
       WT (NULL_TREE);
+      break;
+
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
@@ -6070,7 +6066,20 @@ trees_in::core_vals (tree t)
       RT (t->type_non_common.lang_1);
     }
 
-  /* Then by CODE.  */
+  if (CODE_CONTAINS_STRUCT (code, TS_EXP))
+    {
+      t->exp.locus = state->read_location (*this);
+      if (code == CALL_EXPR)
+	RUC (internal_fn, t->base.u.ifn);
+
+      bool vl = TREE_CODE_CLASS (code) == tcc_vl_exp;
+      for (unsigned ix = (vl ? VL_EXP_OPERAND_LENGTH (t)
+			  : TREE_OPERAND_LENGTH (t)); ix-- != vl;)
+	RT (TREE_OPERAND (t, ix));
+    }
+
+  /* Then by CODE.  Special cases and/or 1:1 tree shape
+     correspondance. */
   switch (code)
     {
     default:
@@ -6078,7 +6087,20 @@ trees_in::core_vals (tree t)
 
     case IDENTIFIER_NODE:
     case TRANSLATION_UNIT_DECL:
+    case SSA_NAME:
       return false; /* Should never meet.  */
+
+    case TREE_LIST:
+      RT (t->list.purpose);
+      RT (t->list.value);
+      RT (t->list.common.chain);
+      break;
+
+    case TREE_VEC:
+      for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
+	RT (TREE_VEC_ELT (t, ix));
+      RT (t->type_common.common.chain);
+      break;
 
     case INTEGER_CST:
       {
@@ -6160,49 +6182,17 @@ trees_in::core_vals (tree t)
 	RT (t->function_decl.vindex);
       }
       break;
-    }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_LIST))
-    {
-      RT (t->list.purpose);
-      RT (t->list.value);
-      RT (t->list.common.chain);
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_VEC))
-    {
-      for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
-	RT (TREE_VEC_ELT (t, ix));
-      RT (t->type_common.common.chain);
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_EXP))
-    {
-      t->exp.locus = state->read_location (*this);
-      if (code == CALL_EXPR)
-	RUC (internal_fn, t->base.u.ifn);
-
-      bool vl = TREE_CODE_CLASS (code) == tcc_vl_exp;
-      for (unsigned ix = (vl ? VL_EXP_OPERAND_LENGTH (t)
-			  : TREE_OPERAND_LENGTH (t)); ix-- != vl;)
-	RT (TREE_OPERAND (t, ix));
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_SSA_NAME))
-    return false;
-
-  if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
-    {
+    case BLOCK:
       RT (t->block.supercontext);
       t->block.vars = chained_decls ();
       RT (t->block.abstract_origin);
       // FIXME: nonlocalized_vars, fragment_origin, fragment_chain
       RT (t->block.subblocks);
       RT (t->block.chain);
-    }
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
-    {
+    case TREE_BINFO:
       RT (t->binfo.common.chain);
       RT (t->binfo.offset);
       RT (t->binfo.inheritance);
@@ -6219,13 +6209,15 @@ trees_in::core_vals (tree t)
 	  for (unsigned ix = 0; ix != num; ix++)
 	    BINFO_BASE_APPEND (t, tree_node ());
 	}
-    }
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_STATEMENT_LIST))
-    {
-      tree_stmt_iterator iter = tsi_start (t);
-      for (tree stmt; RT (stmt);)
-	tsi_link_after (&iter, stmt, TSI_CONTINUE_LINKING);
+    case STATEMENT_LIST:
+      {
+	tree_stmt_iterator iter = tsi_start (t);
+	for (tree stmt; RT (stmt);)
+	  tsi_link_after (&iter, stmt, TSI_CONTINUE_LINKING);
+      }
+      break;
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
