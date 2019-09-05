@@ -5651,8 +5651,12 @@ trees_out::core_vals (tree t)
       break;
 
     case IDENTIFIER_NODE:
-    case TRANSLATION_UNIT_DECL:
     case SSA_NAME:
+    case TRANSLATION_UNIT_DECL:
+    case ARGUMENT_PACK_SELECT:  /* Transient during instantiation.  */
+    case DEFERRED_PARSE:
+    case MODULE_VECTOR:
+    case USERDEF_LITERAL:  /* Expanded during parsing.  */
       gcc_unreachable (); /* Should never meet.  */
 
     case TREE_LIST:
@@ -5826,87 +5830,24 @@ trees_out::core_vals (tree t)
     case TARGET_OPTION_NODE:
       gcc_unreachable (); // FIXME
       break;
-    }
-  
 
-  /* Now the C++-specific nodes.  These are disjoint. While we could
-     use CODE directly, going via cp_tree_node_structure makes it
-     easy to see whether we're missing cases.  */
-  switch (cp_tree_node_structure (code))
-    {
-    case TS_CP_GENERIC:
-      break;
-
-    case TS_CP_TPI:
-      if (streaming_p ())
-	{
-	  WU (((lang_tree_node *)t)->tpi.index);
-	  WU (((lang_tree_node *)t)->tpi.level);
-	  WU (((lang_tree_node *)t)->tpi.orig_level);
-	}
-      WT (((lang_tree_node *)t)->tpi.decl);
-      break;
-      
-    case TS_CP_PTRMEM:
-      WT (((lang_tree_node *)t)->ptrmem.member);
-      break;
-
-    case TS_CP_OVERLOAD:
-      WT (((lang_tree_node *)t)->overload.function);
-      WT (t->common.chain);
-      break;
-      
-    case TS_CP_MODULE_VECTOR:
-      gcc_unreachable (); /* Should never see.  */
-      break;
-
-    case TS_CP_BASELINK:
+      /* C++-specific nodes ...  */
+    case BASELINK:
       WT (((lang_tree_node *)t)->baselink.binfo);
       WT (((lang_tree_node *)t)->baselink.functions);
       WT (((lang_tree_node *)t)->baselink.access_binfo);
       break;
 
-    case TS_CP_TEMPLATE_DECL:
-      /* Streamed with the template_decl node itself.  */
-      gcc_checking_assert
-	(TREE_VISITED (((lang_tree_node *)t)->template_decl.arguments));
-      gcc_checking_assert
-	(TREE_VISITED (((lang_tree_node *)t)->template_decl.result));
+    case CONSTRAINT_INFO:
+      gcc_unreachable (); // FIXME
       break;
 
-    case TS_CP_DEFERRED_PARSE:
-      gcc_unreachable (); /* Should never see.  */
-      break;
-
-    case TS_CP_DEFERRED_NOEXCEPT:
+    case DEFERRED_NOEXCEPT:
       WT (((lang_tree_node *)t)->deferred_noexcept.pattern);
       WT (((lang_tree_node *)t)->deferred_noexcept.args);
       break;
 
-    case TS_CP_IDENTIFIER:
-      gcc_unreachable (); /* Should never see.  */
-      break;
-
-    case TS_CP_STATIC_ASSERT:
-      WT (((lang_tree_node *)t)->static_assertion.condition);
-      WT (((lang_tree_node *)t)->static_assertion.message);
-      if (streaming_p ())
-	state->write_location
-	  (*this, ((lang_tree_node *)t)->static_assertion.location);
-      break;
-
-    case TS_CP_ARGUMENT_PACK_SELECT:
-      gcc_unreachable (); /* Should never see.  */
-      break;
-
-    case TS_CP_TRAIT_EXPR:
-      WT (((lang_tree_node *)t)->trait_expression.type1);
-      WT (((lang_tree_node *)t)->trait_expression.type2);
-      if (streaming_p ())
-	WU (((lang_tree_node *)t)->trait_expression.kind);
-      break;
-
-    case TS_CP_LAMBDA_EXPR:
+    case LAMBDA_EXPR:
       WT (((lang_tree_node *)t)->lambda_expression.capture_list);
       WT (((lang_tree_node *)t)->lambda_expression.this_capture);
       WT (((lang_tree_node *)t)->lambda_expression.extra_scope);
@@ -5921,18 +5862,52 @@ trees_out::core_vals (tree t)
 	}
       break;
 
-    case TS_CP_TEMPLATE_INFO:
+    case OVERLOAD:
+      WT (((lang_tree_node *)t)->overload.function);
+      WT (t->common.chain);
+      break;
+      
+    case PTRMEM_CST:
+      WT (((lang_tree_node *)t)->ptrmem.member);
+      break;
+
+    case STATIC_ASSERT:
+      WT (((lang_tree_node *)t)->static_assertion.condition);
+      WT (((lang_tree_node *)t)->static_assertion.message);
+      if (streaming_p ())
+	state->write_location
+	  (*this, ((lang_tree_node *)t)->static_assertion.location);
+      break;
+
+    case TEMPLATE_DECL:
+      /* Streamed with the template_decl node itself.  */
+      gcc_checking_assert
+	(TREE_VISITED (((lang_tree_node *)t)->template_decl.arguments));
+      gcc_checking_assert
+	(TREE_VISITED (((lang_tree_node *)t)->template_decl.result));
+      break;
+
+    case TEMPLATE_INFO:
       WT (((lang_tree_node *)t)->template_info.tmpl);
       WT (((lang_tree_node *)t)->template_info.args);
       // FIXME: typedefs_needing_access_checking
       break;
 
-    case TS_CP_CONSTRAINT_INFO:
-      gcc_unreachable (); // FIXME
+    case TEMPLATE_PARM_INDEX:
+      if (streaming_p ())
+	{
+	  WU (((lang_tree_node *)t)->tpi.index);
+	  WU (((lang_tree_node *)t)->tpi.level);
+	  WU (((lang_tree_node *)t)->tpi.orig_level);
+	}
+      WT (((lang_tree_node *)t)->tpi.decl);
       break;
-
-    case TS_CP_USERDEF_LITERAL:
-      gcc_unreachable (); /* Always expanded during parsing.  */
+      
+    case TRAIT_EXPR:
+      WT (((lang_tree_node *)t)->trait_expression.type1);
+      WT (((lang_tree_node *)t)->trait_expression.type2);
+      if (streaming_p ())
+	WU (((lang_tree_node *)t)->trait_expression.kind);
       break;
     }
 
@@ -6090,8 +6065,12 @@ trees_in::core_vals (tree t)
       break;
 
     case IDENTIFIER_NODE:
-    case TRANSLATION_UNIT_DECL:
     case SSA_NAME:
+    case TRANSLATION_UNIT_DECL:
+    case ARGUMENT_PACK_SELECT:
+    case DEFERRED_PARSE:
+    case MODULE_VECTOR:
+    case USERDEF_LITERAL:
       return false; /* Should never meet.  */
 
     case TREE_LIST:
@@ -6256,75 +6235,24 @@ trees_in::core_vals (tree t)
     case TARGET_OPTION_NODE:
       gcc_unreachable (); // FIXME
       break;
-    }
 
-  /* Now the C++-specific nodes.  These are disjoint. While we could
-     use CODE directly, going via cp_tree_node_structure makes it
-     easy to see whether we're missing cases.  */
-  switch (cp_tree_node_structure (code))
-    {
-    case TS_CP_GENERIC:
-      break;
-
-    case TS_CP_TPI:
-      RU (((lang_tree_node *)t)->tpi.index);
-      RU (((lang_tree_node *)t)->tpi.level);
-      RU (((lang_tree_node *)t)->tpi.orig_level);
-      RT (((lang_tree_node *)t)->tpi.decl);
-      break;
-
-    case TS_CP_PTRMEM:
-      RT (((lang_tree_node *)t)->ptrmem.member);
-      break;
-
-    case TS_CP_OVERLOAD:
-      RT (((lang_tree_node *)t)->overload.function);
-      RT (t->common.chain);
-      break;
-
-    case TS_CP_MODULE_VECTOR:
-      return false;
-
-    case TS_CP_BASELINK:
+      /* C++-specific nodes ...  */
+    case BASELINK:
       RT (((lang_tree_node *)t)->baselink.binfo);
       RT (((lang_tree_node *)t)->baselink.functions);
       RT (((lang_tree_node *)t)->baselink.access_binfo);
       break;
 
-    case TS_CP_TEMPLATE_DECL:
-      /* Streamed when reading the raw template decl itself.  */
-      gcc_assert (((lang_tree_node *)t)->template_decl.arguments);
-      gcc_assert (((lang_tree_node *)t)->template_decl.result);
+    case CONSTRAINT_INFO:
+      gcc_unreachable (); // FIXME
       break;
 
-    case TS_CP_DEFERRED_PARSE:
-      return false;
-
-    case TS_CP_DEFERRED_NOEXCEPT:
+    case DEFERRED_NOEXCEPT:
       RT (((lang_tree_node *)t)->deferred_noexcept.pattern);
       RT (((lang_tree_node *)t)->deferred_noexcept.args);
       break;
 
-    case TS_CP_IDENTIFIER:
-      return false; /* Should never see.  */
-
-    case TS_CP_STATIC_ASSERT:
-      RT (((lang_tree_node *)t)->static_assertion.condition);
-      RT (((lang_tree_node *)t)->static_assertion.message);
-      ((lang_tree_node *)t)->static_assertion.location
-	= state->read_location (*this);
-      break;
-
-    case TS_CP_ARGUMENT_PACK_SELECT:
-      return false; /* Should never see.  */
-
-    case TS_CP_TRAIT_EXPR:
-      RT (((lang_tree_node *)t)->trait_expression.type1);
-      RT (((lang_tree_node *)t)->trait_expression.type2);
-      RUC (cp_trait_kind, ((lang_tree_node *)t)->trait_expression.kind);
-      break;
-
-    case TS_CP_LAMBDA_EXPR:
+    case LAMBDA_EXPR:
       RT (((lang_tree_node *)t)->lambda_expression.capture_list);
       RT (((lang_tree_node *)t)->lambda_expression.this_capture);
       RT (((lang_tree_node *)t)->lambda_expression.extra_scope);
@@ -6336,18 +6264,46 @@ trees_in::core_vals (tree t)
       RU (((lang_tree_node *)t)->lambda_expression.discriminator);
       break;
 
-    case TS_CP_TEMPLATE_INFO:
+    case OVERLOAD:
+      RT (((lang_tree_node *)t)->overload.function);
+      RT (t->common.chain);
+      break;
+
+    case PTRMEM_CST:
+      RT (((lang_tree_node *)t)->ptrmem.member);
+      break;
+
+    case STATIC_ASSERT:
+      RT (((lang_tree_node *)t)->static_assertion.condition);
+      RT (((lang_tree_node *)t)->static_assertion.message);
+      ((lang_tree_node *)t)->static_assertion.location
+	= state->read_location (*this);
+      break;
+
+    case TEMPLATE_DECL:
+      /* Streamed when reading the raw template decl itself.  */
+      gcc_assert (((lang_tree_node *)t)->template_decl.arguments);
+      gcc_assert (((lang_tree_node *)t)->template_decl.result);
+      break;
+
+    case TEMPLATE_INFO:
       RT (((lang_tree_node *)t)->template_info.tmpl);
       RT (((lang_tree_node *)t)->template_info.args);
       // FIXME: typedefs_needing_access_checking
       break;
 
-    case TS_CP_CONSTRAINT_INFO:
-      gcc_unreachable (); // FIXME
+    case TEMPLATE_PARM_INDEX:
+      RU (((lang_tree_node *)t)->tpi.index);
+      RU (((lang_tree_node *)t)->tpi.level);
+      RU (((lang_tree_node *)t)->tpi.orig_level);
+      RT (((lang_tree_node *)t)->tpi.decl);
       break;
 
-    case TS_CP_USERDEF_LITERAL:
-      return false;  /* Should never see.  */
+    case TRAIT_EXPR:
+      RT (((lang_tree_node *)t)->trait_expression.type1);
+      RT (((lang_tree_node *)t)->trait_expression.type2);
+      RUC (cp_trait_kind, ((lang_tree_node *)t)->trait_expression.kind);
+      break;
     }
 
 #undef RT
