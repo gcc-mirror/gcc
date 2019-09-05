@@ -1,3 +1,16 @@
+2019-09-05  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/random.c (master_init): Replace with
+	master_state.init.
+	(njumps): Remove variable.
+	(master_state): Make instance of struct prng_state.
+	(init_rand_state): When jumping, update the master_state once
+	instead of keeping track of how many jumps need to be done.
+	(SZU64): Modify to handle new master_state.
+	(SZ): Likewise.
+	(random_seed_i4): Likewise.
+	(random_seed_i8): Likewise.
+
 2019-08-17  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/68401
