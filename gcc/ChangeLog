@@ -1,3 +1,12 @@
+2019-09-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91577
+	* cfgexpand.c (discover_nonconstant_array_refs): Force the source
+	of an IFN_LOAD_LANES call and the destination of an IFN_STORE_LANES
+	call to be in memory.
+	(pass_expand::execute): Call discover_nonconstant_array_refs before
+	setting currently_expanding_to_rtl.
+
 2019-09-04  Caroline Tice  <cmtice@google.com>
 
 	* opts.c (finish_options): Disallow -fvtable-verify and -flto to be
