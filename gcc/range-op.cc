@@ -2849,6 +2849,9 @@ integral_table::integral_table ()
   set (ABSU_EXPR, op_absu);
   set (NEGATE_EXPR, op_negate);
   set (ADDR_EXPR, op_addr);
+
+  // Add entries to the table so gimple enhacements can be triggered.
+  set (IMAGPART_EXPR, op_identity);
 }
 
 

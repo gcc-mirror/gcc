@@ -61,7 +61,7 @@ along with GCC; see the file COPYING3.  If not see
     imports as the dont really reside in the block, but rather are
     accumulators of values from incoming edges.
     
-    Def chains also only include statements which are valid grange_op's so
+    Def chains also only include statements which are valid grange's so
     a def chain will only span statements for which the range engine
     implements operations.  */
 
@@ -166,16 +166,16 @@ private:
 			      tree name, irange *name_range = NULL);
   bool compute_operand_range_switch (irange &r, gswitch *s, const irange &lhs,
 				     tree name, irange *name_range);
-  bool compute_operand_range_op (irange &r, grange_op *stmt, const irange &lhs,
+  bool compute_operand_range_op (irange &r, grange *stmt, const irange &lhs,
 				 tree name, irange *name_range);
-  bool compute_operand1_range (irange &r, grange_op *s, const irange &lhs,
+  bool compute_operand1_range (irange &r, grange *s, const irange &lhs,
 			       tree name, irange *name_range);
-  bool compute_operand2_range (irange &r, grange_op *s, const irange &lhs,
+  bool compute_operand2_range (irange &r, grange *s, const irange &lhs,
 			       tree name, irange *name_range);
-  bool compute_operand1_and_operand2_range (irange &r, grange_op *s, 
+  bool compute_operand1_and_operand2_range (irange &r, grange *s, 
 					    const irange &lhs, tree name,
 					    irange *name_range);
-  bool compute_logical_operands (irange &r, grange_op *s, const irange &lhs,
+  bool compute_logical_operands (irange &r, grange *s, const irange &lhs,
 				 tree name, irange *name_range);
   bool logical_combine (irange &r, enum tree_code code, const irange &lhs,
 		        const irange &op1_true, const irange &op1_false,

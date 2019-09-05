@@ -48,8 +48,54 @@ along with GCC; see the file COPYING3.  If not see
 #include "grange.h"
 #include "ssa-range.h"
 
+// This function looks for situations when walking the use/def chains
+// may provide additonal contextual range information not exposed on
+// this statement.  Like knowing the IMAGPART return value from a
+// builtin function is a boolean result.
+
+void
+gimple_range_adjustment (const grange *s, irange &res)
+{
+  switch (gimple_expr_code (s))
+    {
+    case IMAGPART_EXPR:
+      {
+	irange r;
+	tree name;
+	tree type = TREE_TYPE (gimple_assign_lhs (s));
+
+	name = TREE_OPERAND (gimple_assign_rhs1 (s), 0);
+	if (TREE_CODE (name) == SSA_NAME)
+	  {
+	    gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+	    if (def_stmt && is_gimple_call (def_stmt)
+		&& gimple_call_internal_p (def_stmt))
+	      {
+		switch (gimple_call_internal_fn (def_stmt))
+		  {
+		  case IFN_ADD_OVERFLOW:
+		  case IFN_SUB_OVERFLOW:
+		  case IFN_MUL_OVERFLOW:
+		  case IFN_ATOMIC_COMPARE_EXCHANGE:
+		    r.set_varying (boolean_type_node);
+		    range_cast (r, type);
+		    res.intersect (r);
+		  default:
+		    break;
+		  }
+	      }
+	  }
+	break;
+      }
+
+    default:
+      break;
+    }
+}
+
+
 // This file implements the gimple range statement and associated data.
-// the grange_op statement kind provides access to the range-op fold machinery
+// the grange statement kind provides access to the range-op fold machinery
 // as well as to a set of range adjustemnts which are gimple IL aware.
 //
 // This allows a statement to make adjustments to operands
@@ -171,188 +217,32 @@ gimple_outgoing_edge_range_p (irange &r, edge e)
 
 
 // ------------------------------------------------------------------------
-
-// This is the class which is used to implement range adjustments in GIMPLE.
-// It follows the same model as range_ops, where you can adjust the LHS, OP1,
-// or OP2, and self registers into the lookup table.
-
-class grange_adjust
-{
-public:
-  grange_adjust (enum tree_code c);
-  virtual bool lhs_adjust (irange &r, const gimple *s) const;
-  virtual bool op1_adjust (irange &r, const gimple *s) const;
-  virtual bool op2_adjust (irange &r, const gimple *s) const;
-protected:
-  enum tree_code code;
-};
-
-
-// This class implements a table of range adjustments that can be done for 
-// each tree code.  
-
-class gimple_range_table
-{
-public:
-  inline grange_adjust* operator[] (enum tree_code code);
-  void register_operator (enum tree_code code, grange_adjust *);
-private:
-  grange_adjust *m_range_tree[MAX_TREE_CODES];
-} grange_table;
-
-
-// Return the adjustment class pointer for tree_code CODE, or NULL if none.
-
-grange_adjust *
-gimple_range_table::operator[] (enum tree_code code)
-{
-  gcc_assert (code > 0 && code < MAX_TREE_CODES);
-  return m_range_tree[code];
-}
-
-// Called by the adjustment class constructor to register the operator
-// in the table.
-
-void
-gimple_range_table::register_operator (enum tree_code code, grange_adjust *op)
-{
-  gcc_checking_assert (m_range_tree[code] == NULL && op != NULL);
-  m_range_tree[code] = op;
-}
-
-// External entry point to return the handler for a given tree_code hiding 
-// the existance of the table.    This is required for the is_a helper
-// templates.
-
-grange_adjust *
-gimple_range_adjust_handler (enum tree_code c)
-{
-  return grange_table[c];
-}
-
-// --------------------------------------------------------------------------
-
-// Construct class grange_adjust, and register it in the table.
-
-grange_adjust::grange_adjust (enum tree_code c)
-{
-  code = c;
-  grange_table.register_operator (c, this);
-}
-
-// Return any adjustments to the range of the lhs
-
-bool
-grange_adjust::lhs_adjust (irange &r ATTRIBUTE_UNUSED,
-			   const gimple *s ATTRIBUTE_UNUSED) const
-{
-  return false;
-}
-
-// Return any adjustments to the range of op1 when querying it.
-
-bool
-grange_adjust::op1_adjust (irange &r ATTRIBUTE_UNUSED,
-			   const gimple *s ATTRIBUTE_UNUSED) const
-{
-  return false;
-}
-
-// Return any adjustments to the range of op2 when querying it.
-
-bool
-grange_adjust::op2_adjust (irange &r ATTRIBUTE_UNUSED,
-			   const gimple *s ATTRIBUTE_UNUSED) const
-{
-  return false;
-}
-
-
-// -------------------------------------------------------------------------
-
-// WHEN a certain class of builtin functions are called which return a 
-// COMPLEX_INT, the IMAGPART_EXPR is known to be either true or false.
-// ie
-//    a_5 = .ADD_OVERFLOW (blah)
-//    c_6 = IMAGPART_EXPR (a_5)
-// c_6 is actually a boolean indicating if an overflow happened.
-
-class imagpart : public grange_adjust
-{
-public:
-  imagpart () : grange_adjust (IMAGPART_EXPR) { }
-  virtual bool lhs_adjust (irange &r, const gimple *s) const;
-} imagpart_adjust;
-
-
-// If the operand of the IMAGPART_EXPR is a builtin function which is known
-// to return a boolean result, adjust the LHS ot be a 0 or 1.
-
-bool
-imagpart::lhs_adjust (irange &r, const gimple *s) const
-{
-  tree name;
-  tree type = TREE_TYPE (gimple_assign_lhs (s));
-
-  name = TREE_OPERAND (gimple_assign_rhs1 (s), 0);
-  if (TREE_CODE (name) == SSA_NAME)
-    {
-      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
-      if (def_stmt && is_gimple_call (def_stmt)
-	  && gimple_call_internal_p (def_stmt))
-	{
-	  switch (gimple_call_internal_fn (def_stmt))
-	    {
-	    case IFN_ADD_OVERFLOW:
-	    case IFN_SUB_OVERFLOW:
-	    case IFN_MUL_OVERFLOW:
-	    case IFN_ATOMIC_COMPARE_EXCHANGE:
-	      r.set_varying (boolean_type_node);
-	      range_cast (r, type);
-	      return true;
-	    default:
-	      r.set_varying (type);
-	      return true;
-	    }
-	}
-    }
-  return false;
-}
-
-
-// ------------------------------------------------------------------------
-// grange_op statement kind implementation. 
+// grange statement kind implementation. 
 
 // Return the grange_adjust pointer for this statement, if there is one..
-
-inline grange_adjust *
-grange_op::grange_adjust_handler () const
-{
-  return gimple_range_adjust_handler (gimple_expr_code (this));
-}
 
 // Return the range_operator pointer for this statement.
 
 inline range_operator *
-grange_op::handler () const
+gimple_range_handler (const grange *s)
 {
-  return range_op_handler (gimple_expr_code (this), gimple_expr_type (this));
+  return range_op_handler (gimple_expr_code (s), gimple_expr_type (s));
 }
 
 // Return the first operand of this statement if it is a valid operand 
 // supported by ranges, otherwise return NULL_TREE. 
 
 tree
-grange_op::operand1 () const
+gimple_range_operand1 (const grange *s)
 {
-  switch (gimple_code (this))
+  switch (gimple_code (s))
     {
       case GIMPLE_COND:
-        return gimple_cond_lhs (this);
+        return gimple_cond_lhs (s);
       case GIMPLE_ASSIGN:
         {
-	  tree expr = gimple_assign_rhs1 (this);
-	  if (gimple_assign_rhs_code (this) == ADDR_EXPR)
+	  tree expr = gimple_assign_rhs1 (s);
+	  if (gimple_assign_rhs_code (s) == ADDR_EXPR)
 	    {
 	      // If the base address is an SSA_NAME, we return it here.
 	      // This allows processing of the range of that name, while the
@@ -380,17 +270,18 @@ grange_op::operand1 () const
 // result in RES.  Return false if the operation fails.
 
 bool
-grange_op::fold (irange &res, const irange &orig_r1) const
+gimple_range_fold (const grange *s, irange &res, const irange &orig_r1)
 {
+  tree lhs = gimple_range_lhs (s);;
   irange r1, r2;
   r1 = orig_r1;
   // Single ssa operations require the LHS type as the second range.
-  if (lhs ())
-    r2.set_varying (TREE_TYPE (lhs ()));
+  if (lhs)
+    r2.set_varying (TREE_TYPE (lhs));
   else
     r2.set_undefined ();
 
-  return fold (res, r1, r2);
+  return gimple_range_fold (s, res, r1, r2);
 }
 
 
@@ -398,31 +289,15 @@ grange_op::fold (irange &res, const irange &orig_r1) const
 // returning the result in RES.  Return false if the operation fails.
 
 bool
-grange_op::fold (irange &res, const irange &r1, const irange &r2) const
+gimple_range_fold (const grange *s, irange &res, const irange &r1,
+		   const irange &r2)
 {
   irange adj_range;
-  bool adj = false;
-  bool hand = false;
 
-  if (grange_adjust_handler ())
-    adj = grange_adjust_handler()->lhs_adjust (adj_range, this);
-  if (handler ())
-    {
-      hand = true;
-      res = handler()->fold_range (gimple_expr_type (this), r1, r2);
-    }
+  res = gimple_range_handler (s)->fold_range (gimple_expr_type (s), r1, r2);
 
-  // Handle common case first where res was set by handler
-  // This handles whatever handler() would ahve returned.
-  if (!adj)
-    return hand;
-
-  // Now we know there was an adjustment, so make it.
-  if (!hand)
-    res =  adj_range;
-  else
-    res.intersect (adj_range);
-
+  // If there are any gimple lookups, do those now.
+  gimple_range_adjustment (s, res);
   return true;
 }
 
@@ -432,13 +307,13 @@ grange_op::fold (irange &res, const irange &r1, const irange &r2) const
 // if nothing can be determined.
 
 bool
-grange_op::calc_op1_irange (irange &r, const irange &lhs_range) const
+gimple_range_calc_op1 (const grange *s, irange &r, const irange &lhs_range)
 {  
   irange type_range;
-  gcc_checking_assert (gimple_num_ops (this) < 3);
+  gcc_checking_assert (gimple_num_ops (s) < 3);
   // An empty range is viral, so return an empty range.
   
-  tree type = TREE_TYPE (operand1 ());
+  tree type = TREE_TYPE (gimple_range_operand1 (s));
   if (lhs_range.undefined_p ())
     {
       r.set_undefined ();
@@ -447,7 +322,7 @@ grange_op::calc_op1_irange (irange &r, const irange &lhs_range) const
   // Unary operations require the type of the first operand in the second range
   // position.
   type_range.set_varying (type);
-  return handler ()->op1_range (r, type, lhs_range, type_range);
+  return gimple_range_handler (s)->op1_range (r, type, lhs_range, type_range);
 }
 
 
@@ -456,21 +331,21 @@ grange_op::calc_op1_irange (irange &r, const irange &lhs_range) const
 // operand has the range OP2_RANGE.  Return false if nothing can be determined.
 
 bool
-grange_op::calc_op1_irange (irange &r, const irange &lhs_range,
-			    const irange &op2_range) const
+gimple_range_calc_op1 (const grange *s, irange &r, const irange &lhs_range,
+		       const irange &op2_range)
 {  
   // Unary operation are allowed to pass a range in for second operand
   // as there are often additional restrictions beyond the type which can
   // be imposed.  See operator_cast::op1_irange.()
   
-  tree type = TREE_TYPE (operand1 ());
+  tree type = TREE_TYPE (gimple_range_operand1 (s));
   // An empty range is viral, so return an empty range.
   if (op2_range.undefined_p () || lhs_range.undefined_p ())
     {
       r.set_undefined ();
       return true;
     }
-  return handler ()->op1_range (r, type, lhs_range, op2_range);
+  return gimple_range_handler (s)->op1_range (r, type, lhs_range, op2_range);
 }
 
 
@@ -479,15 +354,15 @@ grange_op::calc_op1_irange (irange &r, const irange &lhs_range,
 // operand has the range OP1_RANGE.  Return false if nothing can be determined.
 
 bool
-grange_op::calc_op2_irange (irange &r, const irange &lhs_range,
-			    const irange &op1_range) const
+gimple_range_calc_op2 (const grange *s, irange &r, const irange &lhs_range,
+		       const irange &op1_range)
 {  
-  tree type = TREE_TYPE (operand2 ());
+  tree type = TREE_TYPE (gimple_range_operand2 (s));
   // An empty range is viral, so return an empty range.
   if (op1_range.undefined_p () || lhs_range.undefined_p ())
     {
       r.set_undefined ();
       return true;
     }
-  return handler ()->op2_range (r, type, lhs_range, op1_range);
+  return gimple_range_handler (s)->op2_range (r, type, lhs_range, op1_range);
 }

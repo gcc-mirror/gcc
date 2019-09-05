@@ -45,8 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 class stmt_ranger
 {
   public:
-  stmt_ranger ();
-  ~stmt_ranger ();
   
   bool range_of_expr (irange &r, tree expr, gimple *s = NULL);
   virtual irange range_of_ssa_name (tree name, gimple *s = NULL);
@@ -55,12 +53,12 @@ class stmt_ranger
 					 const irange &name_range);
 protected:
   // Calculate a range for a kind of gimple statement .
-  bool range_of_range_op_core (irange &r, grange_op *s, bool valid,
+  bool range_of_grange_core (irange &r, grange *s, bool valid,
 			       irange &range1, irange &range2);
-  bool range_of_range_op  (irange &r, grange_op *s);
-  bool range_of_range_op  (irange &r, grange_op *s, tree name,
+  bool range_of_grange  (irange &r, grange *s);
+  bool range_of_grange  (irange &r, grange *s, tree name,
 			   const irange &name_range);
-  bool range_of_range_op  (irange &r, grange_op *s, gimple *eval_from);
+  bool range_of_grange  (irange &r, grange *s, gimple *eval_from);
 
   virtual bool range_of_phi (irange &r, gphi *phi, tree name = NULL_TREE,
 			     const irange *name_range = NULL,
@@ -78,8 +76,6 @@ protected:
 class ssa_ranger : public stmt_ranger
 {
   public:
-  ssa_ranger ();
-  ~ssa_ranger ();
   virtual void range_on_edge (irange &r, edge e, tree name);
   virtual void range_on_entry (irange &r, basic_block bb, tree name);
   virtual void range_on_exit (irange &r, basic_block bb, tree name);
@@ -89,7 +85,7 @@ class ssa_ranger : public stmt_ranger
   
 protected:
   bool range_of_cond_expr (irange &r, gassign* call, edge on_edge);
-  bool range_of_range_op  (irange &r, grange_op *s, edge on_edge);
+  bool range_of_grange  (irange &r, grange *s, edge on_edge);
   virtual bool range_of_phi (irange &r, gphi *phi, tree name = NULL_TREE,
 			     const irange *name_range = NULL,
 			     gimple *eval_from = NULL, edge on_edge = NULL);

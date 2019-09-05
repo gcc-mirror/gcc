@@ -24,6 +24,103 @@ along with GCC; see the file COPYING3.  If not see
 #include "range.h"
 #include "range-op.h"
 
+// Gimple statement which supports range_op operations.
+// This can map to gimple assign or cond statements, so quick access to the
+// operands is provided so the user does not need to know which it is.
+// Also provides access to the range operator interface taking care of 
+// filling in unary operand requirements from the statement.
+//
+// usage is typical gimple statement style:
+// foo (gimple *s)
+// {
+//   grange gr = s;
+//   if (!gr)
+//     return false;  // NULL means this stmt cannot generate ranges.
+//   < ...decide on some ranges... >
+//   /* And call the range fold routine for this statement.  */
+//   return gimple_range_fold (gr, res_range, op1_range, op2_range);
+
+class GTY((tag("GCC_SSA_RANGE_OPERATOR")))
+  grange: public gimple
+{
+  // Adds no new fields, adds invariant 
+  // stmt->code == GIMPLE_ASSIGN || stmt->code == GIMPLE_COND
+  // and there is a range_operator handler for gimple_expr_code().
+};
+
+template <>
+template <>
+inline bool
+is_a_helper <const grange *>::test (const gimple *gs)
+{ 
+  // Supported statement kind and there is a handler for the expression code.
+  if (dyn_cast<const gassign *> (gs) || dyn_cast<const gcond *>(gs))
+    {
+      enum tree_code c = gimple_expr_code (gs);
+      tree expr_type = gimple_expr_type (gs);
+      return range_op_handler (c, expr_type);
+    }
+  return false;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <grange *>::test (gimple *gs)
+{ 
+  // Supported statement kind and there is a handler for the expression code.
+  // Supported statement kind and there is a handler for the expression code.
+  if (dyn_cast<gassign *> (gs) || dyn_cast<gcond *>(gs))
+    {
+      enum tree_code c = gimple_expr_code (gs);
+      tree expr_type = gimple_expr_type (gs);
+      return range_op_handler (c, expr_type);
+    }
+  return false;
+}
+
+// Return the LHS of this statement. If there isn't a LHS return NULL_TREE.
+
+static inline tree
+gimple_range_lhs (const grange *s)
+{
+  if (gimple_code (s) == GIMPLE_ASSIGN)
+    return gimple_assign_lhs (s);
+  return NULL_TREE;
+}
+
+
+// Return the second operand of this statement, otherwise return NULL_TREE.
+
+static inline tree
+gimple_range_operand2 (const grange *s)
+{
+  if (gimple_code (s) == GIMPLE_COND)
+    return gimple_cond_rhs (s);
+
+  // At this point it must be an assignemnt statement.
+  if (gimple_num_ops (s) >= 3)
+    return gimple_assign_rhs2 (s);
+  return NULL_TREE;
+}
+
+
+
+extern tree gimple_range_operand1 (const grange *s);
+extern bool gimple_range_fold (const grange *s, irange &res,
+			       const irange &r1);
+extern bool gimple_range_fold (const grange *s, irange &res,
+			       const irange &r1, const irange &r2);
+extern bool gimple_range_calc_op1 (const grange *s, irange &r,
+				   const irange &lhs_range);
+extern bool gimple_range_calc_op1 (const grange *s, irange &r,
+				   const irange &lhs_range,
+				   const irange &op2_range);
+extern bool gimple_range_calc_op2 (const grange *s, irange &r,
+				   const irange &lhs_range,
+				   const irange &op1_range);
+
+
 extern gimple_stmt_iterator gsi_outgoing_range_stmt (basic_block bb);
 extern gimple *gimple_outgoing_range_stmt_p (basic_block bb);
 extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
@@ -52,103 +149,5 @@ ssa_name_range (tree name)
  return irange (type);
 }
 
-// Gimple statement which supports range_op operations.
-// This can map to gimple assign or cond statements, so quick access to the
-// operands is provided so the user does not need to know which it is.
-// Also provides access to the range operator interface taking care of 
-// filling in unary operand requirements from the statement.
-//
-// usage is typical gimple statement style:
-// foo (gimple *s)
-// {
-//   grange_op gr = s;
-//   if (!gr)
-//     return false;  // NULL means this stmt cannot generate ranges.
-//   < ...decide on some ranges... >
-//   /* And call the range fold routine for this statement.  */
-//   return gr->fold (res_range, op1_range, op2_range);
-
-class GTY((tag("GCC_SSA_RANGE_OPERATOR")))
-  grange_op: public gimple
-{
-public:
-  // Adds no new fields, adds invariant 
-  // stmt->code == GIMPLE_ASSIGN || stmt->code == GIMPLE_COND
-  // and there is a range_operator handler for gimple_expr_code().
-  tree lhs () const;
-  tree operand1 () const;
-  tree operand2 () const;
-
-  bool fold (irange &res, const irange &r1) const;
-  bool calc_op1_irange (irange &r, const irange &lhs_range) const;
-
-  bool fold (irange &res, const irange &r1, const irange &r2) const;
-  bool calc_op1_irange (irange &r, const irange &lhs_range,
-		   const irange &op2_range) const;
-  bool calc_op2_irange (irange &r, const irange &lhs_range,
-		   const irange &op1_range) const;
-private:
-  // Range-op IL agnostic range calculations handler.
-  class range_operator *handler() const;
-  // IL contextual range information adjustments handler.
-  class grange_adjust *grange_adjust_handler () const;
-};
-
-// Return the LHS of this statement. If there isn't a LHS return NULL_TREE.
-
-inline tree
-grange_op::lhs () const
-{
-  if (gimple_code (this) == GIMPLE_ASSIGN)
-    return gimple_assign_lhs (this);
-  return NULL_TREE;
-}
-
-// Return the second operand of this statement, otherwise return NULL_TREE.
-
-inline tree
-grange_op::operand2 () const
-{
-  if (gimple_code (this) == GIMPLE_COND)
-    return gimple_cond_rhs (this);
-
-  // At this point it must be an assignemnt statement.
-  if (gimple_num_ops (this) >= 3)
-    return gimple_assign_rhs2 (this);
-  return NULL_TREE;
-}
-
-template <>
-template <>
-inline bool
-is_a_helper <const grange_op *>::test (const gimple *gs)
-{ 
-  extern grange_adjust *gimple_range_adjust_handler (enum tree_code c);
-  // Supported statement kind and there is a handler for the expression code.
-  if (dyn_cast<const gassign *> (gs) || dyn_cast<const gcond *>(gs))
-    {
-      enum tree_code c = gimple_expr_code (gs);
-      tree expr_type = gimple_expr_type (gs);
-      return range_op_handler (c, expr_type) || gimple_range_adjust_handler (c);
-    }
-  return false;
-}
-
-template <>
-template <>
-inline bool
-is_a_helper <grange_op *>::test (gimple *gs)
-{ 
-  extern grange_adjust *gimple_range_adjust_handler (enum tree_code c);
-  // Supported statement kind and there is a handler for the expression code.
-  // Supported statement kind and there is a handler for the expression code.
-  if (dyn_cast<gassign *> (gs) || dyn_cast<gcond *>(gs))
-    {
-      enum tree_code c = gimple_expr_code (gs);
-      tree expr_type = gimple_expr_type (gs);
-      return range_op_handler (c, expr_type) || gimple_range_adjust_handler (c);
-    }
-  return false;
-}
 
 #endif // GCC_GRANGE_H

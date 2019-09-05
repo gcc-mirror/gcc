@@ -117,26 +117,26 @@ thread_ranger::range_of_stmt_edge (irange &r, gimple *g, edge e)
       return true;
     }
 
-  grange_op *stmt = dyn_cast<grange_op *>(g);
+  grange *stmt = dyn_cast<grange *>(g);
   if (!stmt)
     return false; 
   irange range1, range2;
 
-  tree op = stmt->operand1 ();
+  tree op = gimple_range_operand1 (stmt);
   if (!valid_range_ssa_p (op) || !ssa_name_same_bb_p (op, bb) ||
       !range_of_stmt_edge (range1, SSA_NAME_DEF_STMT (op), e))
     if (!range_of_expr (range1, op))
       return false;
 
-  op = stmt->operand2 ();
+  op = gimple_range_operand2 (stmt);
   if (!op)
-    return stmt->fold (r, range1);
+    return gimple_range_fold (stmt, r, range1);
 
   if (!valid_range_ssa_p (op) || !ssa_name_same_bb_p (op, bb) ||
       !range_of_stmt_edge (range2, SSA_NAME_DEF_STMT (op), e))
     if (!range_of_expr (range2, op))
       return false;
-  return stmt->fold (r, range1, range2);
+  return gimple_range_fold (stmt, r, range1, range2);
 }
 
 // Calculate the known range for NAME on a path of basic blocks in
