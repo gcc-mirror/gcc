@@ -2553,6 +2553,9 @@ ggc_pch_read (FILE *f, void *addr)
 
   count_old_page_tables = G.by_depth_in_use;
 
+  if (fread (&d, sizeof (d), 1, f) != 1)
+    fatal_error (input_location, "cannot read PCH file: %m");
+
   /* We've just read in a PCH file.  So, every object that used to be
      allocated is now free.  */
   clear_marks ();
@@ -2581,8 +2584,6 @@ ggc_pch_read (FILE *f, void *addr)
 
   /* Allocate the appropriate page-table entries for the pages read from
      the PCH file.  */
-  if (fread (&d, sizeof (d), 1, f) != 1)
-    fatal_error (input_location, "can%'t read PCH file: %m");
 
   for (i = 0; i < NUM_ORDERS; i++)
     {
