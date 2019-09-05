@@ -285,6 +285,11 @@
 
 (define_attr "laneselect" "yes,no" (const_string "no"))
 
+; Identify instructions that require a "Manually Inserted Wait State" if
+; their inputs are overwritten by subsequent instructions.
+
+(define_attr "delayeduse" "yes,no" (const_string "no"))
+
 ;; }}}
 ;; {{{ Iterators useful across the wole machine description
 
@@ -475,15 +480,15 @@
     case 6:
       return "s_load_dword\t%0, %A1\;s_waitcnt\tlgkmcnt(0)";
     case 7:
-      return "s_store_dword\t%1, %A0\;s_waitcnt\texpcnt(0)";
+      return "s_store_dword\t%1, %A0";
     case 8:
       return "flat_load_dword\t%0, %A1%O1%g1\;s_waitcnt\t0";
     case 9:
-      return "flat_store_dword\t%A0, %1%O0%g0\;s_waitcnt\texpcnt(0)";
+      return "flat_store_dword\t%A0, %1%O0%g0";
     case 10:
       return "global_load_dword\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)";
     case 11:
-      return "global_store_dword\t%A0, %1%O0%g0\;s_waitcnt\texpcnt(0)";
+      return "global_store_dword\t%A0, %1%O0%g0";
     default:
       gcc_unreachable ();
     }
@@ -506,20 +511,20 @@
   s_movk_i32\t%0, %1
   s_mov_b32\t%0, %1
   s_buffer_load%s0\t%0, s[0:3], %1\;s_waitcnt\tlgkmcnt(0)
-  s_buffer_store%s1\t%1, s[0:3], %0\;s_waitcnt\texpcnt(0)
+  s_buffer_store%s1\t%1, s[0:3], %0
   s_load_dword\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
-  s_store_dword\t%1, %A0\;s_waitcnt\texpcnt(0)
+  s_store_dword\t%1, %A0
   v_mov_b32\t%0, %1
   v_readlane_b32\t%0, %1, 0
   v_writelane_b32\t%0, %1, 0
   flat_load_dword\t%0, %A1%O1%g1\;s_waitcnt\t0
-  flat_store_dword\t%A0, %1%O0%g0\;s_waitcnt\texpcnt(0)
+  flat_store_dword\t%A0, %1%O0%g0
   v_mov_b32\t%0, %1
-  ds_write_b32\t%A0, %1%O0\;s_waitcnt\texpcnt(0)
+  ds_write_b32\t%A0, %1%O0
   ds_read_b32\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
   s_mov_b32\t%0, %1
   global_load_dword\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
-  global_store_dword\t%A0, %1%O0%g0\;s_waitcnt\texpcnt(0)"
+  global_store_dword\t%A0, %1%O0%g0"
   [(set_attr "type" "sop1,sopk,sop1,smem,smem,smem,smem,vop1,vop3a,vop3a,flat,
 		     flat,vop1,ds,ds,sop1,flat,flat")
    (set_attr "exec" "*,*,*,*,*,*,*,*,none,none,*,*,*,*,*,*,*,*")
@@ -541,12 +546,12 @@
   v_readlane_b32\t%0, %1, 0
   v_writelane_b32\t%0, %1, 0
   flat_load%o1\t%0, %A1%O1%g1\;s_waitcnt\t0
-  flat_store%s0\t%A0, %1%O0%g0\;s_waitcnt\texpcnt(0)
+  flat_store%s0\t%A0, %1%O0%g0
   v_mov_b32\t%0, %1
-  ds_write%b0\t%A0, %1%O0\;s_waitcnt\texpcnt(0)
+  ds_write%b0\t%A0, %1%O0
   ds_read%u1\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
   global_load%o1\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
-  global_store%s0\t%A0, %1%O0%g0\;s_waitcnt\texpcnt(0)"
+  global_store%s0\t%A0, %1%O0%g0"
   [(set_attr "type"
 	     "sop1,sopk,sop1,vop1,vop3a,vop3a,flat,flat,vop1,ds,ds,flat,flat")
    (set_attr "exec" "*,*,*,*,none,none,*,*,*,*,*,*,*")
@@ -564,18 +569,18 @@
   s_mov_b64\t%0, %1
   s_mov_b64\t%0, %1
   #
-  s_store_dwordx2\t%1, %A0\;s_waitcnt\texpcnt(0)
+  s_store_dwordx2\t%1, %A0
   s_load_dwordx2\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
   #
   #
   #
   #
   flat_load_dwordx2\t%0, %A1%O1%g1\;s_waitcnt\t0
-  flat_store_dwordx2\t%A0, %1%O0%g0\;s_waitcnt\texpcnt(0)
-  ds_write_b64\t%A0, %1%O0\;s_waitcnt\texpcnt(0)
+  flat_store_dwordx2\t%A0, %1%O0%g0
+  ds_write_b64\t%A0, %1%O0
   ds_read_b64\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
   global_load_dwordx2\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
-  global_store_dwordx2\t%A0, %1%O0%g0\;s_waitcnt\texpcnt(0)"
+  global_store_dwordx2\t%A0, %1%O0%g0"
   "(reload_completed && !MEM_P (operands[0]) && !MEM_P (operands[1])
     && !gcn_sgpr_move_p (operands[0], operands[1]))
    || (GET_CODE (operands[1]) == CONST_INT && !gcn_constant64_p (operands[1]))"
@@ -617,16 +622,16 @@
   ""
   "@
   #
-  s_store_dwordx4\t%1, %A0\;s_waitcnt\texpcnt(0)
+  s_store_dwordx4\t%1, %A0
   s_load_dwordx4\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
-  flat_store_dwordx4\t%A0, %1%O0%g0\;s_waitcnt\texpcnt(0)
+  flat_store_dwordx4\t%A0, %1%O0%g0
   flat_load_dwordx4\t%0, %A1%O1%g1\;s_waitcnt\t0
   #
   #
   #
-  global_store_dwordx4\t%A0, %1%O0%g0\;s_waitcnt\texpcnt(0)
+  global_store_dwordx4\t%A0, %1%O0%g0
   global_load_dwordx4\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
-  ds_write_b128\t%A0, %1%O0\;s_waitcnt\texpcnt(0)
+  ds_write_b128\t%A0, %1%O0
   ds_read_b128\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)"
   "reload_completed
    && REG_P (operands[0])
@@ -647,6 +652,7 @@
   }
   [(set_attr "type" "mult,smem,smem,flat,flat,vmult,vmult,vmult,flat,flat,\
 		     ds,ds")
+   (set_attr "delayeduse" "*,*,yes,*,*,*,*,*,yes,*,*,*")
    (set_attr "length" "*,12,12,12,12,*,*,*,12,12,12,12")])
 
 ;; }}}
@@ -1594,7 +1600,8 @@
    global_atomic_cmpswap<X>\t%0, %A1, %2%O1 glc\;s_waitcnt\tvmcnt(0)"
   [(set_attr "type" "smem,flat,flat")
    (set_attr "length" "12")
-   (set_attr "gcn_version" "gcn5,*,gcn5")])
+   (set_attr "gcn_version" "gcn5,*,gcn5")
+   (set_attr "delayeduse" "*,yes,yes")])
 
 (define_insn "sync_compare_and_swap<mode>_lds_insn"
   [(set (match_operand:SIDI 0 "register_operand"    "= v")
@@ -1697,14 +1704,11 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_dcache_wb_vol\;s_store%o1\t%1, %A0 glc\;"
-		   "s_waitcnt\texpcnt(0)";
+	    return "s_dcache_wb_vol\;s_store%o1\t%1, %A0 glc";
 	  case 1:
-	    return "buffer_wbinvl1_vol\;flat_store%o1\t%A0, %1%O0 glc\;"
-		   "s_waitcnt\texpcnt(0)";
+	    return "buffer_wbinvl1_vol\;flat_store%o1\t%A0, %1%O0 glc";
 	  case 2:
-	    return "buffer_wbinvl1_vol\;global_store%o1\t%A0, %1%O0 glc\;"
-	           "s_waitcnt\texpcnt(0)";
+	    return "buffer_wbinvl1_vol\;global_store%o1\t%A0, %1%O0 glc";
 	  }
 	break;
       case MEMMODEL_ACQ_REL:
@@ -1714,13 +1718,13 @@
 	  {
 	  case 0:
 	    return "s_dcache_wb_vol\;s_store%o1\t%1, %A0 glc\;"
-		   "s_waitcnt\texpcnt(0)\;s_dcache_inv_vol";
+		   "s_waitcnt\tlgkmcnt(0)\;s_dcache_inv_vol";
 	  case 1:
 	    return "buffer_wbinvl1_vol\;flat_store%o1\t%A0, %1%O0 glc\;"
-		   "s_waitcnt\texpcnt(0)\;buffer_wbinvl1_vol";
+		   "s_waitcnt\t0\;buffer_wbinvl1_vol";
 	  case 2:
 	    return "buffer_wbinvl1_vol\;global_store%o1\t%A0, %1%O0 glc\;"
-		   "s_waitcnt\texpcnt(0)\;buffer_wbinvl1_vol";
+		   "s_waitcnt\tvmcnt(0)\;buffer_wbinvl1_vol";
 	  }
 	break;
       }

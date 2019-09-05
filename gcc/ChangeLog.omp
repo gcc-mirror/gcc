@@ -1,3 +1,29 @@
+2019-09-05  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+
+	2019-07-31  Andrew Stubbs  <ams@codesourcery.com>
+
+	gcc/
+	* config/gcn/gcn-valu.md
+	(scatter<mode>_insn_1offset<exec_scatter>): Remove s_waitcnt.
+	(scatter<mode>_insn_1offset_ds<exec_scatter>): Likewise.
+	(scatter<mode>_insn_2offsets<exec_scatter>): Likewise.
+	* config/gcn/gcn.c (gcn_md_reorg): Add delayeduse and reads to
+	struct ilist. Add nops for delayeduse insns.
+	* config/gcn/gcn.md (delayeduse): New attribute.
+	(*movbi): Remove s_waitcnt from stores.
+	(*mov<mode>_insn): Likewise.
+	(*movti_insn): Likewise. Add delayeduse attribute.
+	(sync_compare_and_swap<mode>_insn): Add delayeduse attribute.
+	(atomic_store<mode>): Remove or adjust s_waitcnt.
+
+	2019-09-05  Andrew Stubbs  <ams@codesourcery.com>
+
+	gcc/
+	* config/gcn/gcn.md (*movti_insn): Set delayeduse for global_store.
+	(sync_compare_and_swap<mode>_insn): Likewise.
+
 2019-09-05  Julian Brown  <julian@codesourcery.com>
 
 	* config/gcn/gcn.c (gcn_goacc_validate_dims): Remove
