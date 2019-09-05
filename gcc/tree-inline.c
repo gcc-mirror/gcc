@@ -948,7 +948,12 @@ remap_dependence_clique (copy_body_data *id, unsigned short clique)
   bool existed;
   unsigned short &newc = id->dependence_map->get_or_insert (clique, &existed);
   if (!existed)
-    newc = ++cfun->last_clique;
+    {
+      /* Clique 1 is reserved for local ones set by PTA.  */
+      if (cfun->last_clique == 0)
+	cfun->last_clique = 1;
+      newc = ++cfun->last_clique;
+    }
   return newc;
 }
 
@@ -2718,7 +2723,11 @@ copy_loops (copy_body_data *id,
 	      dest_loop->simduid = remap_decl (src_loop->simduid, id);
 	      cfun->has_simduid_loops = true;
 	    }
-
+	  if (id->src_cfun->last_clique != 0)
+	    dest_loop->owned_clique
+	      = remap_dependence_clique (id,
+					 src_loop->owned_clique
+					 ? src_loop->owned_clique : 1);
 	  /* Recurse.  */
 	  copy_loops (id, dest_loop, src_loop);
 	}

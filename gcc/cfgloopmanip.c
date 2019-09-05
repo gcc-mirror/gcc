@@ -1023,6 +1023,7 @@ copy_loop_info (struct loop *loop, struct loop *target)
   target->warned_aggressive_loop_optimizations
     |= loop->warned_aggressive_loop_optimizations;
   target->in_oacc_kernels_region = loop->in_oacc_kernels_region;
+  target->owned_clique = loop->owned_clique;
 }
 
 /* Copies copy of LOOP as subloop of TARGET loop, placing newly
