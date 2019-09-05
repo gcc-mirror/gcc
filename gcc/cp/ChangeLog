@@ -1,3 +1,7 @@
+2019-09-05  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_VTABLE_OR_VTT_P): Forward to DECL_VIRTUAL_P.
+
 2019-09-04  Marek Polacek  <polacek@redhat.com>
 
 	* call.c (build_over_call): Remove -fdeduce-init-list implementation.
