@@ -1,3 +1,8 @@
+2019-09-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91577
+	* gfortran.dg/pr91577.f90: New test, taken from temporary_1.f90.
+
 2019-09-04  Steven G. Kargl  <kargl@gcvc.gnu.org>
 
 	PR fortran/91650

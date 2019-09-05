@@ -6155,7 +6155,24 @@ discover_nonconstant_array_refs (void)
       {
 	gimple *stmt = gsi_stmt (gsi);
 	if (!is_gimple_debug (stmt))
-	  walk_gimple_op (stmt, discover_nonconstant_array_refs_r, NULL);
+	  {
+	    walk_gimple_op (stmt, discover_nonconstant_array_refs_r, NULL);
+	    gcall *call = dyn_cast <gcall *> (stmt);
+	    if (call && gimple_call_internal_p (call))
+	      switch (gimple_call_internal_fn (call))
+		{
+		case IFN_LOAD_LANES:
+		  /* The source must be a MEM.  */
+		  mark_addressable (gimple_call_arg (call, 0));
+		  break;
+		case IFN_STORE_LANES:
+		  /* The destination must be a MEM.  */
+		  mark_addressable (gimple_call_lhs (call));
+		  break;
+		default:
+		  break;
+		}
+	  }
       }
 }
 
@@ -6353,6 +6370,9 @@ pass_expand::execute (function *fun)
 	    avoid_deep_ter_for_debug (gsi_stmt (gsi), 0);
     }
 
+  /* Mark arrays indexed with non-constant indices with TREE_ADDRESSABLE.  */
+  discover_nonconstant_array_refs ();
+
   /* Make sure all values used by the optimization passes have sane
      defaults.  */
   reg_renumber = 0;
@@ -6386,9 +6406,6 @@ pass_expand::execute (function *fun)
      This makes sure the first insn will never be deleted.
      Also, final expects a note to appear there.  */
   emit_note (NOTE_INSN_DELETED);
-
-  /* Mark arrays indexed with non-constant indices with TREE_ADDRESSABLE.  */
-  discover_nonconstant_array_refs ();
 
   targetm.expand_to_rtl_hook ();
   crtl->init_stack_alignment ();
