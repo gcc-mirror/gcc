@@ -1,3 +1,8 @@
+2019-09-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/91496
+	* gfortran.dg/directive_unroll_5.f90: Adjust error message.
+
 2019-09-05  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91660
