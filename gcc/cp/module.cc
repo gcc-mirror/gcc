@@ -5506,8 +5506,7 @@ trees_out::core_vals (tree t)
 	  WU (t->type_common.align);
 	}
 
-      if (TREE_CODE (t) != RECORD_TYPE
-	  && TREE_CODE (t) != UNION_TYPE)
+      if (!RECORD_OR_UNION_CODE_P (code))
 	{
 	  WT (t->type_common.size);
 	  WT (t->type_common.size_unit);
@@ -5520,34 +5519,33 @@ trees_out::core_vals (tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
     {
       tree inner = code == TEMPLATE_DECL ? DECL_TEMPLATE_RESULT (t) : t;
-      if (TREE_CODE (inner) == TYPE_DECL && DECL_ORIGINAL_TYPE (inner))
-	/* This is a typedecl'd.  We set its type separately.  */
-	WT (NULL_TREE);
-      else if (code != ENUMERAL_TYPE || ENUM_IS_SCOPED (t))
-	WT (t->typed.type);
-      else if (streaming_p ())
-	{
-	  // FIXME: I wonder if we can make DECL_ORIGINAL_TYPE point at
-	  // the (unrestricted) underlying type?
-	  // Unscoped enums have an integral type, but with a
-	  // restricted precision.  The type's name matches one of the
-	  // known integer types.
+      tree type = t->typed.type;
+      unsigned prec = 0;
 
-	  tree type = t->typed.type;
-	  unsigned itk = itk_none;
-	  if (type)
-	    {
-	      tree name = DECL_NAME (TYPE_NAME (type));
-	      for (itk = itk_none; itk--;)
-		if (integer_types[itk]
-		    && DECL_NAME (TYPE_NAME (integer_types[itk])) == name)
-		  break;
-	      gcc_assert (itk != itk_none);
-	    }
-	  WU (itk);
-	  if (type)
-	    WU (TYPE_PRECISION (type));
+      if (TREE_CODE (inner) == TYPE_DECL && DECL_ORIGINAL_TYPE (inner))
+	/* This is a typedef.  We set its type separately.  */
+	type = NULL_TREE;
+      else if (type && code == ENUMERAL_TYPE
+	       && !ENUM_FIXED_UNDERLYING_TYPE_P (t))
+	{
+	  /* Type is a restricted range integer type derived from the
+	     integer_types.  Find the right one.  */
+	  prec = TYPE_PRECISION (type);
+	  tree name = DECL_NAME (TYPE_NAME (type));
+
+	  for (unsigned itk = itk_none; itk--;)
+	    if (integer_types[itk]
+		&& DECL_NAME (TYPE_NAME (integer_types[itk])) == name)
+	      {
+		type = integer_types[itk];
+		break;
+	      }
+	  gcc_assert (type != t->typed.type);
 	}
+
+      WT (type);
+      if (prec && streaming_p ())
+	WU (prec);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
@@ -5979,8 +5977,7 @@ trees_in::core_vals (tree t)
       RUC (machine_mode, t->type_common.mode);
       RU (t->type_common.align);
 
-      if (TREE_CODE (t) != RECORD_TYPE
-	  && TREE_CODE (t) != UNION_TYPE)
+      if (!RECORD_OR_UNION_CODE_P (code))
 	{
 	  RT (t->type_common.size);
 	  RT (t->type_common.size_unit);
@@ -5992,30 +5989,19 @@ trees_in::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
     {
-      if (code != ENUMERAL_TYPE || ENUM_IS_SCOPED (t))
-	RT (t->typed.type);
-      else
+      tree type = tree_node ();
+
+      if (type && code == ENUMERAL_TYPE && !ENUM_FIXED_UNDERLYING_TYPE_P (t))
 	{
-	  tree type = NULL;
-	  unsigned itk;
-	  RU (itk);
-	  if (itk < itk_none)
-	    {
-	      unsigned precision;
-	      RU (precision);
-	      type = integer_types[itk];
-	      if (!type || precision > TYPE_PRECISION (type))
-		set_overrun ();
-	      else if (precision != TYPE_PRECISION (type))
-		{
-		  type = build_distinct_type_copy (type);
-		  TYPE_PRECISION (type) = precision;
-		  set_min_and_max_values_for_integral_type (type, precision,
-							    TYPE_SIGN (type));
-		}
-	    }
-	  t->typed.type = type;
+	  unsigned precision = u ();
+
+	  type = build_distinct_type_copy (type);
+	  TYPE_PRECISION (type) = precision;
+	  set_min_and_max_values_for_integral_type (type, precision,
+						    TYPE_SIGN (type));
 	}
+
+      t->typed.type = type;
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_COMMON))

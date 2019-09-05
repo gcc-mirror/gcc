@@ -1,5 +1,9 @@
 2019-09-05  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_{in,out}::core_vals): Redo enum underlying type
+	streaming.
+
 	Merge trunk r275404.
 
 2019-08-30  Nathan Sidwell  <nathan@acm.org>
