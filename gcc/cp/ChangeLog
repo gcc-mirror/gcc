@@ -1,3 +1,10 @@
+2019-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91644 - ICE with constinit in function template.
+	* decl.c (start_decl): Call retrofit_lang_decl for constinit variables.
+	* pt.c (tsubst_expr): Pass LOOKUP_CONSTINIT down to cp_finish_decl for
+	constinit variables.
+
 2019-09-05  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (DECL_VTABLE_OR_VTT_P): Forward to DECL_VIRTUAL_P.

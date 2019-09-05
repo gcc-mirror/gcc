@@ -1,3 +1,8 @@
+2019-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91644 - ICE with constinit in function template.
+	* g++.dg/cpp2a/constinit13.C: New test.
+
 2019-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/91001
