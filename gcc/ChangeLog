@@ -1,3 +1,9 @@
+2019-09-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/91615
+	* expr.c (expand_expr_real_1): Handle misaligned TARGET_MEM_REF
+	without movmisalign optab.
+
 2019-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/91001

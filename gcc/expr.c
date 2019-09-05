@@ -10313,7 +10313,6 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
       {
 	addr_space_t as
 	  = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))));
-	enum insn_code icode;
 	unsigned int align;
 
 	op0 = addr_for_mem_ref (exp, as, true);
@@ -10325,21 +10324,27 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	if (modifier != EXPAND_WRITE
 	    && modifier != EXPAND_MEMORY
 	    && mode != BLKmode
-	    && align < GET_MODE_ALIGNMENT (mode)
-	    /* If the target does not have special handling for unaligned
-	       loads of mode then it can use regular moves for them.  */
-	    && ((icode = optab_handler (movmisalign_optab, mode))
-		!= CODE_FOR_nothing))
+	    && align < GET_MODE_ALIGNMENT (mode))
 	  {
-	    class expand_operand ops[2];
+	    enum insn_code icode;
 
-	    /* We've already validated the memory, and we're creating a
-	       new pseudo destination.  The predicates really can't fail,
-	       nor can the generator.  */
-	    create_output_operand (&ops[0], NULL_RTX, mode);
-	    create_fixed_operand (&ops[1], temp);
-	    expand_insn (icode, 2, ops);
-	    temp = ops[0].value;
+	    if ((icode = optab_handler (movmisalign_optab, mode))
+		!= CODE_FOR_nothing)
+	      {
+		class expand_operand ops[2];
+
+		/* We've already validated the memory, and we're creating a
+		   new pseudo destination.  The predicates really can't fail,
+		   nor can the generator.  */
+		create_output_operand (&ops[0], NULL_RTX, mode);
+		create_fixed_operand (&ops[1], temp);
+		expand_insn (icode, 2, ops);
+		temp = ops[0].value;
+	      }
+	    else if (targetm.slow_unaligned_access (mode, align))
+	      temp = extract_bit_field (temp, GET_MODE_BITSIZE (mode),
+					0, unsignedp, NULL_RTX,
+					mode, mode, false, NULL);
 	  }
 	return temp;
       }
