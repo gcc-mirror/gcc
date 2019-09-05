@@ -5453,11 +5453,7 @@ trees_out::core_vals (tree t)
 #define WT(X) (tree_node (X))
   tree_code code = TREE_CODE (t);
 
-  if (CODE_CONTAINS_STRUCT (code, TS_BASE))
-    { /* Nothing to do.  */ }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
-    { /* Whether TREE_CHAIN is dumped depends on who's containing it.  */ }
+  /* First by shape of the tree.  */
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
     {
@@ -5594,9 +5590,6 @@ trees_out::core_vals (tree t)
       /* decl_common.initial.  */
     }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))
-    { /* Reconstructed on stream in.  */}
-
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
     {
       // FIXME: spurious behaviour with other nodes, probably wrong elsewhere
@@ -5626,33 +5619,43 @@ trees_out::core_vals (tree t)
       WT (t->type_non_common.lang_1);
     }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
-    if (streaming_p ())
-      {
-	unsigned num = TREE_INT_CST_EXT_NUNITS (t);
-	for (unsigned ix = 0; ix != num; ix++)
-	  wu (TREE_INT_CST_ELT (t, ix));
-      }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
-    if (streaming_p ())
-      buf (TREE_REAL_CST_PTR (t), sizeof (real_value));
-
-  if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
-    gcc_unreachable (); /* Not supported in C++.  */
-
-  if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
-    for (unsigned ix = vector_cst_encoded_nelts (t); ix--;)
-      WT (VECTOR_CST_ENCODED_ELT (t, ix));
-
-  if (CODE_CONTAINS_STRUCT (code, TS_STRING))
-    /* Streamed during start.  */
-    gcc_checking_assert (code == STRING_CST);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
+  /* Then remainder by CODE.  */
+  switch (code)
     {
+    default:
+      break;
+
+    case INTEGER_CST:
+      if (streaming_p ())
+	{
+	  unsigned num = TREE_INT_CST_EXT_NUNITS (t);
+	  for (unsigned ix = 0; ix != num; ix++)
+	    wu (TREE_INT_CST_ELT (t, ix));
+	}
+      break;
+
+    case REAL_CST:
+      if (streaming_p ())
+	buf (TREE_REAL_CST_PTR (t), sizeof (real_value));
+      break;
+
+    case FIXED_CST:
+    case POLY_INT_CST:
+      gcc_unreachable (); /* Not supported in C++.  */
+
+    case VECTOR_CST:
+      for (unsigned ix = vector_cst_encoded_nelts (t); ix--;)
+	WT (VECTOR_CST_ENCODED_ELT (t, ix));
+      break;
+
+    case STRING_CST:
+      /* Streamed during start.  */
+      break;
+
+    case COMPLEX_CST:
       WT (TREE_REALPART (t));
       WT (TREE_IMAGPART (t));
+      break;
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
@@ -5943,12 +5946,7 @@ trees_in::core_vals (tree t)
 #define RT(X) ((X) = tree_node ())
   tree_code code = TREE_CODE (t);
 
-  if (CODE_CONTAINS_STRUCT (code, TS_BASE))
-    { /* Nothing to do.  */ }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
-    { /* Whether TREE_CHAIN is dumped depends on who's containing it.  */ }
-
+  /* First by tree shape.  */
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
     {
       RT (t->decl_minimal.name);
@@ -6041,9 +6039,6 @@ trees_in::core_vals (tree t)
       /* decl_common.initial.  */
     }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))
-    { /* Reconstructed as necessary.  */  }
-
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
     {
       if (code == TYPE_DECL)
@@ -6073,33 +6068,45 @@ trees_in::core_vals (tree t)
       RT (t->type_non_common.lang_1);
     }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
+  /* Then by CODE.  */
+  switch (code)
     {
-      unsigned num = TREE_INT_CST_EXT_NUNITS (t);
-      for (unsigned ix = 0; ix != num; ix++)
-	TREE_INT_CST_ELT (t, ix) = wu ();
-    }
+    default:
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
-    if (const void *bytes = buf (sizeof (real_value)))
-      TREE_REAL_CST_PTR (t)
-	= reinterpret_cast<real_value *> (memcpy (ggc_alloc<real_value> (),
-						  bytes, sizeof (real_value)));
+    case INTEGER_CST:
+      {
+	unsigned num = TREE_INT_CST_EXT_NUNITS (t);
+	for (unsigned ix = 0; ix != num; ix++)
+	  TREE_INT_CST_ELT (t, ix) = wu ();
+      }
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
-    gcc_unreachable (); /* Not suported in C++.  */
+    case REAL_CST:
+      if (const void *bytes = buf (sizeof (real_value)))
+	TREE_REAL_CST_PTR (t)
+	  = reinterpret_cast<real_value *> (memcpy (ggc_alloc<real_value> (),
+						    bytes, sizeof (real_value)));
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
-    for (unsigned ix = vector_cst_encoded_nelts (t); ix--;)
-      RT (VECTOR_CST_ENCODED_ELT (t, ix));
+    case FIXED_CST:
+    case POLY_INT_CST:
+      /* Not suported in C++.  */
+      return false;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_STRING))
-    gcc_checking_assert (code == STRING_CST);
+    case VECTOR_CST:
+      for (unsigned ix = vector_cst_encoded_nelts (t); ix--;)
+	RT (VECTOR_CST_ENCODED_ELT (t, ix));
+      break;
 
-  if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
-    {
+    case STRING_CST:
+      /* Streamed during start.  */
+      break;
+
+    case COMPLEX_CST:
       RT (TREE_REALPART (t));
       RT (TREE_IMAGPART (t));
+      break;
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
