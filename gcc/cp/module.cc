@@ -5453,9 +5453,11 @@ trees_out::core_vals (tree t)
 #define WT(X) (tree_node (X))
   tree_code code = TREE_CODE (t);
 
-  /* The ordering here is that in tree-core.h & cp-tree.h.  */
   if (CODE_CONTAINS_STRUCT (code, TS_BASE))
     { /* Nothing to do.  */ }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
+    { /* Whether TREE_CHAIN is dumped depends on who's containing it.  */ }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
     {
@@ -5548,9 +5550,65 @@ trees_out::core_vals (tree t)
 	WU (prec);
     }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
     {
-      /* Whether TREE_CHAIN is dumped depends on who's containing it.  */
+      if (streaming_p ())
+	{
+	  WU (t->decl_common.mode);
+	  WU (t->decl_common.off_align);
+	  WU (t->decl_common.align);
+	}
+
+      /* For templates these hold instantiation (partial and/or
+	 specialization) information.  */
+      if (code != TEMPLATE_DECL)
+	{
+	  WT (t->decl_common.size);
+	  WT (t->decl_common.size_unit);
+	}
+
+      WT (t->decl_common.attributes);
+      switch (code)
+	// FIXME: Perhaps this should be done with the later
+	// polymorphic check?
+	{
+	default:
+	  break;
+	case VAR_DECL:
+	  // FIXME: Perhaps always write DECL_INITIAL?
+	  // This is wrong, statically inited consts should have their
+	  // initializers emitted.
+	  if (DECL_CONTEXT (t)
+	      && TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
+	    break;
+	  /* FALLTHROUGH  */
+	case PARM_DECL:
+	  if (DECL_HAS_VALUE_EXPR_P (t))
+	    WT (DECL_VALUE_EXPR (t));
+	  /* FALLTHROUGH  */
+	case CONST_DECL:
+	  WT (t->decl_common.initial);
+	  break;
+	}
+      WT (t->decl_common.abstract_origin);
+      /* decl_common.initial.  */
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))
+    {} // FIXME?
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
+    {
+      // FIXME: spurious behaviour with other nodes, probably wrong elsewhere
+      if (code == TYPE_DECL)
+	WT (t->decl_non_common.result);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
+    {
+      WT (t->decl_with_vis.assembler_name);
+      if (streaming_p ())
+	WU (t->decl_with_vis.visibility);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
@@ -5585,67 +5643,8 @@ trees_out::core_vals (tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
     gcc_unreachable (); /* Should never meet.  */
 
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
-    {
-      if (streaming_p ())
-	{
-	  WU (t->decl_common.mode);
-	  WU (t->decl_common.off_align);
-	  WU (t->decl_common.align);
-	}
-
-      /* For templates these hold instantiation (partial and/or
-	 specialization) information.  */
-      if (code != TEMPLATE_DECL)
-	{
-	  WT (t->decl_common.size);
-	  WT (t->decl_common.size_unit);
-	}
-
-      WT (t->decl_common.attributes);
-      switch (code)
-	// FIXME: Perhaps this should be done with the later
-	// polymorphic check?
-	{
-	default:
-	  break;
-	case VAR_DECL:
-	  // FIXME: Perhaps always write DECL_INITIAL?
-	  if (DECL_CONTEXT (t)
-	      && TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
-	    break;
-	  /* FALLTHROUGH  */
-	case PARM_DECL:
-	  if (DECL_HAS_VALUE_EXPR_P (t))
-	    WT (DECL_VALUE_EXPR (t));
-	  /* FALLTHROUGH  */
-	case CONST_DECL:
-	  WT (t->decl_common.initial);
-	  break;
-	}
-      WT (t->decl_common.abstract_origin);
-      /* decl_common.initial.  */
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))
-    {} // FIXME?
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
-    {
-      // FIXME: spurious behaviour with other nodes, probably wrong elsewhere
-      if (code == TYPE_DECL)
-	WT (t->decl_non_common.result);
-    }
-
   if (CODE_CONTAINS_STRUCT (code, TS_PARM_DECL))
     {} // FIXME?
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
-    if (streaming_p ())
-      {
-	WT (t->decl_with_vis.assembler_name);
-	WU (t->decl_with_vis.visibility);
-      }
 
   if (CODE_CONTAINS_STRUCT (code, TS_VAR_DECL))
     {} // FIXME?
@@ -5947,9 +5946,11 @@ trees_in::core_vals (tree t)
 #define RT(X) ((X) = tree_node ())
   tree_code code = TREE_CODE (t);
 
-  /* The ordering here is that in tree-core.h & cp-tree.h.  */
   if (CODE_CONTAINS_STRUCT (code, TS_BASE))
     { /* Nothing to do.  */ }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
+    { /* Whether TREE_CHAIN is dumped depends on who's containing it.  */ }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
     {
@@ -6004,43 +6005,6 @@ trees_in::core_vals (tree t)
       t->typed.type = type;
     }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
-    {
-      /* Whether TREE_CHAIN is dumped depends on who's containing it.  */
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
-    {
-      unsigned num = TREE_INT_CST_EXT_NUNITS (t);
-      for (unsigned ix = 0; ix != num; ix++)
-	TREE_INT_CST_ELT (t, ix) = wu ();
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
-    if (const void *bytes = buf (sizeof (real_value)))
-      TREE_REAL_CST_PTR (t)
-	= reinterpret_cast<real_value *> (memcpy (ggc_alloc<real_value> (),
-						  bytes, sizeof (real_value)));
-
-  if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
-    gcc_unreachable (); /* Not suported in C++.  */
-
-  if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
-    for (unsigned ix = vector_cst_encoded_nelts (t); ix--;)
-      RT (VECTOR_CST_ENCODED_ELT (t, ix));
-
-  if (CODE_CONTAINS_STRUCT (code, TS_STRING))
-    gcc_checking_assert (code == STRING_CST);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
-    {
-      RT (TREE_REALPART (t));
-      RT (TREE_IMAGPART (t));
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
-    return false; /* Should never meet.  */
-
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
     {
       RUC (machine_mode, t->decl_common.mode);
@@ -6089,14 +6053,46 @@ trees_in::core_vals (tree t)
 	RT (t->decl_non_common.result);
     }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_PARM_DECL))
-    {} // FIXME?
-
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
     {
       RT (t->decl_with_vis.assembler_name);
       RUC (symbol_visibility, t->decl_with_vis.visibility);
     }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
+    {
+      unsigned num = TREE_INT_CST_EXT_NUNITS (t);
+      for (unsigned ix = 0; ix != num; ix++)
+	TREE_INT_CST_ELT (t, ix) = wu ();
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
+    if (const void *bytes = buf (sizeof (real_value)))
+      TREE_REAL_CST_PTR (t)
+	= reinterpret_cast<real_value *> (memcpy (ggc_alloc<real_value> (),
+						  bytes, sizeof (real_value)));
+
+  if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
+    gcc_unreachable (); /* Not suported in C++.  */
+
+  if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
+    for (unsigned ix = vector_cst_encoded_nelts (t); ix--;)
+      RT (VECTOR_CST_ENCODED_ELT (t, ix));
+
+  if (CODE_CONTAINS_STRUCT (code, TS_STRING))
+    gcc_checking_assert (code == STRING_CST);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
+    {
+      RT (TREE_REALPART (t));
+      RT (TREE_IMAGPART (t));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
+    return false; /* Should never meet.  */
+
+  if (CODE_CONTAINS_STRUCT (code, TS_PARM_DECL))
+    {} // FIXME?
 
   if (CODE_CONTAINS_STRUCT (code, TS_VAR_DECL))
     {} // FIXME?
