@@ -2171,6 +2171,19 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
 		build_int_cst (integer_type_node, annot_expr_unroll_kind),
 		build_int_cst (integer_type_node, code->ext.iterator->unroll));
 
+  if (code->ext.iterator->ivdep && cond != error_mark_node)
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node, annot_expr_ivdep_kind),
+		   integer_zero_node);
+  if (code->ext.iterator->vector && cond != error_mark_node)
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node, annot_expr_vector_kind),
+		   integer_zero_node);
+  if (code->ext.iterator->novector && cond != error_mark_node)
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node, annot_expr_no_vector_kind),
+		   integer_zero_node);
+
   /* The loop exit.  */
   tmp = fold_build1_loc (loc, GOTO_EXPR, void_type_node, exit_label);
   TREE_USED (exit_label) = 1;
@@ -2501,6 +2514,20 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
       = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		build_int_cst (integer_type_node, annot_expr_unroll_kind),
 		build_int_cst (integer_type_node, code->ext.iterator->unroll));
+
+  if (code->ext.iterator->ivdep && cond != error_mark_node)
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node, annot_expr_ivdep_kind),
+		   integer_zero_node);
+  if (code->ext.iterator->vector && cond != error_mark_node)
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node, annot_expr_vector_kind),
+		   integer_zero_node);
+  if (code->ext.iterator->novector && cond != error_mark_node)
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node, annot_expr_no_vector_kind),
+		   integer_zero_node);
+
   tmp = fold_build1_loc (loc, GOTO_EXPR, void_type_node, exit_label);
   tmp = fold_build3_loc (loc, COND_EXPR, void_type_node,
 			 cond, tmp, build_empty_stmt (loc));
