@@ -1,3 +1,8 @@
+2019-09-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/allocator.xml: Remove URL for bibliography entry.
+	* doc/html/*: Regenerate.
+
 2019-09-04  Mike Crowe  <mac@mcrowe.com>
 
 	PR libstdc++/41861
