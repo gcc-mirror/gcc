@@ -1975,26 +1975,38 @@ captures_temporary (tree *stmt, int *do_subtree, void *d)
   /* Does this call capture references?
      Strip the ADDRESS_EXPR to get the fn decl and inspect it.  */
   tree fn = TREE_OPERAND (CALL_EXPR_FN (*stmt), 0);
-  tree arg = TYPE_P (fn) ? TYPE_ARG_TYPES (fn)
-			 : FUNCTION_FIRST_USER_PARMTYPE (fn);
-  /* Account for 'this' when the fn is a method.  */
-  unsigned offset = TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE ? 4 : 3;
+  bool is_meth = TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE;
+  tree arg = TYPE_ARG_TYPES (TREE_TYPE (fn));
+  unsigned offset = 3;
   for (unsigned anum = 0; arg != NULL; arg = TREE_CHAIN (arg), anum++)
    {
-      /* If it's not a reference, we don't care.  */
-      if (!TYPE_REF_P (TREE_VALUE (arg)))
-        continue;
+      tree parm_type = TREE_VALUE (arg);
+      if (anum == 0 && is_meth && INDIRECT_TYPE_P (parm_type))
+	{
+	  /* Account for 'this' when the fn is a method.  Unless it
+	     belongs to a CTOR or DTOR.  */
+	  if (DECL_CONSTRUCTOR_P (fn) || DECL_DESTRUCTOR_P (fn))
+	    continue;
+	}
+      else if (!TYPE_REF_P (parm_type))
+	/* If it's not a reference, we don't care.  */
+	continue;
 
-      /* Fetch the arg presented to the fn.  */
+      /* Fetch the value presented to the fn.  */
       tree parm = TREE_OPERAND (*stmt, anum+offset);
       while (TREE_CODE (parm) == NOP_EXPR)
 	parm = TREE_OPERAND (parm, 0);
-      gcc_assert (TREE_CODE (parm) == ADDR_EXPR);
+
+      /* We only care if we're taking the addr of a temporary.  */
+      if (TREE_CODE (parm) != ADDR_EXPR)
+	continue;
       parm = TREE_OPERAND (parm, 0);
-      if (TREE_CODE (parm) == VAR_DECL
-	  && !DECL_ARTIFICIAL (parm))
+
+      if (TREE_CODE (parm) == VAR_DECL && !DECL_ARTIFICIAL (parm))
+	/* This isn't a temporary... */
 	continue;
       if (TREE_CODE (parm) == PARM_DECL)
+	/* .. nor is this... */
 	continue;
       else if (TREE_CODE (parm) == TARGET_EXPR)
 	{
@@ -2100,7 +2112,6 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
      of temporaries captured by reference.  This can only happen if such
      a case appears in the initialiser for the awaitable.  The callback
      records captured temporaries including subtrees of initialisers.  */
-
   hash_set<tree> visited;
   tree res = cp_walk_tree (&TREE_OPERAND (aw_expr, 2),
 			   captures_temporary, d, &visited);
