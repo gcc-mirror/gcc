@@ -465,8 +465,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       CONSTRUCTOR_PLACEHOLDER_BOUNDARY (in CONSTRUCTOR)
-   6: IDENTIFIER_REPO_CHOSEN (in IDENTIFIER_NODE)
-      TYPE_MARKED_P (in _TYPE)
+   6: TYPE_MARKED_P (in _TYPE)
       DECL_NON_TRIVIALLY_INITIALIZED_P (in VAR_DECL)
       RANGE_FOR_IVDEP (in RANGE_FOR_STMT)
       CALL_EXPR_OPERATOR_SYNTAX (in CALL_EXPR, AGGR_INIT_EXPR)
@@ -1111,12 +1110,6 @@ enum cp_identifier_kind {
    (optimizes searches).  */
 #define IDENTIFIER_VIRTUAL_P(NODE) \
   TREE_LANG_FLAG_5 (IDENTIFIER_NODE_CHECK (NODE))
-
-/* True iff NAME is the DECL_ASSEMBLER_NAME for an entity with vague
-   linkage which the prelinker has assigned to this translation
-   unit.  */
-#define IDENTIFIER_REPO_CHOSEN(NAME) \
-  (TREE_LANG_FLAG_6 (IDENTIFIER_NODE_CHECK (NAME)))
 
 /* True if this identifier is a reserved word.  C_RID_CODE (node) is
    then the RID_* value of the keyword.  Value 1.  */
@@ -2590,7 +2583,6 @@ struct GTY(()) lang_decl_base {
   unsigned use_template : 2;
   unsigned not_really_extern : 1;	   /* var or fn */
   unsigned initialized_in_class : 1;	   /* var or fn */
-  unsigned repo_available_p : 1;	   /* var or fn */
   unsigned threadprivate_or_deleted_p : 1; /* var or fn */
   unsigned anticipated_p : 1;		   /* fn, type or template */
   /* anticipated_p reused as DECL_OMP_PRIVATIZED_MEMBER in var */
@@ -2601,7 +2593,7 @@ struct GTY(()) lang_decl_base {
   unsigned concept_p : 1;                  /* applies to vars and functions */
   unsigned var_declared_inline_p : 1;	   /* var */
   unsigned dependent_init_p : 1;	   /* var */
-  /* 1 spare bit */
+  /* 2 spare bits */
 };
 
 /* True for DECL codes which have template info and access.  */
@@ -3161,11 +3153,6 @@ struct GTY(()) lang_decl {
 /* Nonzero if NODE is an `extern "C"' function.  */
 #define DECL_EXTERN_C_FUNCTION_P(NODE) \
   (DECL_NON_THUNK_FUNCTION_P (NODE) && DECL_EXTERN_C_P (NODE))
-
-/* True iff DECL is an entity with vague linkage whose definition is
-   available in this translation unit.  */
-#define DECL_REPO_AVAILABLE_P(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->u.base.repo_available_p)
 
 /* True if DECL is declared 'constexpr'.  */
 #define DECL_DECLARED_CONSTEXPR_P(DECL) \
