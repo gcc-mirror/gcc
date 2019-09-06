@@ -15728,8 +15728,7 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
 
       /* FIXME: Reductions are not supported in kernels regions yet.  */
       if (/*ort == ORT_ACC_KERNELS ||*/ ort == ORT_ACC_PARALLEL)
-        localize_reductions (OMP_TARGET_CLAUSES (*expr_p),
-			     OMP_TARGET_BODY (*expr_p));
+	localize_reductions (OMP_CLAUSES (expr), OMP_BODY (expr));
 
       gimple *g = gimplify_and_return_first (OMP_BODY (expr), &body);
       if (gimple_code (g) == GIMPLE_BIND)
