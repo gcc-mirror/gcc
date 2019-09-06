@@ -1,5 +1,9 @@
 2020-05-05  Dimitar Dimitrov  <dimitar@dinux.eu>
 
+	* config/pru/pru.h: Mark R3.w0 as caller saved.
+
+2020-05-05  Dimitar Dimitrov  <dimitar@dinux.eu>
+
 	* config/pru/pru.c (pru_emit_doloop): Use new gen_doloop_end_internal
 	and gen_doloop_begin_internal.
 	(pru_reorg_loop): Use gen_pruloop with mode.
