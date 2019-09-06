@@ -1059,6 +1059,12 @@ template <typename _Tp>
 	    : static_cast<_Tp>(std::forward<_Up>(__u));
 	}
 
+	pmr::polymorphic_allocator<void>
+	get_allocator() const noexcept;
+	{ 
+		return polymorphic_allocator<void>(_M_get_allocator());
+	}
+
       void reset() noexcept { this->_M_reset(); }
 };
 
@@ -1447,8 +1453,9 @@ template <typename _Tp>
   /// @}
  
 
-  template<typename _Tp, typename _Alloc>
-    struct uses_allocator<std::pmr::__pmroptional<_Tp>, _Alloc> : true_type {};
+  template<typename _Tp>
+    struct uses_allocator<std::pmr::__pmroptional<_Tp>, std::pmr::polymorphic_allocator<void>>
+    : public uses_allocator<_Tp, std::pmr::polymorphic_allocator<void>>::type { };
   _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
