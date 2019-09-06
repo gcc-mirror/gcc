@@ -1,3 +1,16 @@
+2019-09-06  Martin Liska  <mliska@suse.cz>
+
+	PR c++/91125
+	* Makefile.in: Remove tlink.o.
+	* collect2.c (do_link): New function isolated
+	from do_tlink.
+	(main): Use.
+	* collect2.h (do_tlink): Remove declaration of do_tlink.
+	* doc/extend.texi: Remove documentation of -frepo.
+	* doc/invoke.texi: Likewise.
+	* doc/sourcebuild.texi: Remove cleanup-repo-files.
+	* tlink.c: Remove.
+
 2019-09-05  Jakub Jelinek  <jakub@redhat.com>
 	    Jim Wilson  <jimw@sifive.com>
 

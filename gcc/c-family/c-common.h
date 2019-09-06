@@ -701,11 +701,6 @@ extern int warn_abi_version;
    != (warn_abi_version == 0			\
        || warn_abi_version >= (N)))
 
-/* Nonzero means generate separate instantiation control files and
-   juggle them at link time.  */
-
-extern int flag_use_repository;
-
 /* The supported C++ dialects.  */
 
 enum cxx_dialect {

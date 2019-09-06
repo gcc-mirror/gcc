@@ -6903,12 +6903,6 @@ extern bool copy_guide_p			(const_tree);
 extern bool template_guide_p			(const_tree);
 extern void store_explicit_specifier		(tree, tree);
 
-/* in repo.c */
-extern void init_repo				(void);
-extern int repo_emit_p				(tree);
-extern bool repo_export_class_p			(const_tree);
-extern void finish_repo				(void);
-
 /* in rtti.c */
 /* A vector of all tinfo decls that haven't been emitted yet.  */
 extern GTY(()) vec<tree, va_gc> *unemitted_tinfo_decls;

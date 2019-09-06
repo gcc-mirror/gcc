@@ -24424,31 +24424,6 @@ alternative and programs using this approach will work with most modern
 compilers.
 
 @item
-@opindex frepo
-Compile your template-using code with @option{-frepo}.  The compiler
-generates files with the extension @samp{.rpo} listing all of the
-template instantiations used in the corresponding object files that
-could be instantiated there; the link wrapper, @samp{collect2},
-then updates the @samp{.rpo} files to tell the compiler where to place
-those instantiations and rebuild any affected object files.  The
-link-time overhead is negligible after the first pass, as the compiler
-continues to place the instantiations in the same files.
-
-This can be a suitable option for application code written for the Borland
-model, as it usually just works.  Code written for the Cfront model 
-needs to be modified so that the template definitions are available at
-one or more points of instantiation; usually this is as simple as adding
-@code{#include <tmethods.cc>} to the end of each template header.
-
-For library code, if you want the library to provide all of the template
-instantiations it needs, just try to link all of its object files
-together; the link will fail, but cause the instantiations to be
-generated as a side effect.  Be warned, however, that this may cause
-conflicts if multiple libraries try to provide the same instantiations.
-For greater control, use explicit instantiation as described in the next
-option.
-
-@item
 @opindex fno-implicit-templates
 Compile your code with @option{-fno-implicit-templates} to disable the
 implicit generation of template instances, and explicitly instantiate

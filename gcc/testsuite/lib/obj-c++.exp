@@ -377,12 +377,6 @@ proc obj-c++_target_compile { source dest type options } {
 
     set options [concat "$ALWAYS_OBJCXXFLAGS" $options];
 
-    if { [regexp "(^| )-frepo( |$)" $options] && \
-	 [regexp "\.o(|bj)$" $dest] } then {
-	regsub "\.o(|bj)$" $dest ".rpo" rponame
-	exec rm -f $rponame
-    }
-
     set options [dg-additional-files-options $options $source]
 
     set result [target_compile $source $dest $type $options]
