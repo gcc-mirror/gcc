@@ -1,3 +1,8 @@
+2019-09-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_rtx_costs) <case UNSPEC>: Delete.
+	* config/rs6000/rs6000.md (unspec): Delete UNSPEC_FRSP.
+
 2019-09-06  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/91654

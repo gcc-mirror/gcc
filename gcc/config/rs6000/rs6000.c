@@ -20907,18 +20907,6 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	*total = rs6000_cost->fp;
       return false;
 
-    case UNSPEC:
-      switch (XINT (x, 1))
-	{
-	case UNSPEC_FRSP:
-	  *total = rs6000_cost->fp;
-	  return true;
-
-	default:
-	  break;
-	}
-      break;
-
     case CALL:
     case IF_THEN_ELSE:
       if (!speed)
