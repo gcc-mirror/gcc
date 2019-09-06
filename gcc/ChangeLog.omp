@@ -1,5 +1,10 @@
 2019-09-06  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.c (gimplify_omp_for): Use for_stmt in call to
+	localize_reductions.
+
+2019-09-06  Julian Brown  <julian@codesourcery.com>
+
 	* config/nvptx/nvptx.c (omp-sese.h): Include.
 	(bb_pair_t, bb_pair_vec_t, pseudo_node_t, bracket, bracket_vec_t,
 	bb_sese, bb_sese::~bb_sese, bb_sese::append, bb_sese::remove,
