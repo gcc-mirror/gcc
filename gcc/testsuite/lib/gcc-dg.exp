@@ -242,14 +242,6 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
 
     set options [list]
 
-    # Tests should be able to use "dg-do repo".  However, the dg test
-    # driver checks the argument to dg-do against a list of acceptable
-    # options, and "repo" is not among them.  Therefore, we resort to
-    # this ugly approach.
-    if [string match "*-frepo*" $extra_tool_flags] then {
-	set do_what "repo"
-    }
-
     switch $do_what {
 	"preprocess" {
 	    set compile_type "preprocess"
@@ -720,24 +712,6 @@ proc cleanup-coverage-files { } {
     if [info exists additional_sources_used] {
 	foreach srcfile $additional_sources_used {
 	    remove-build-file "[file rootname [file tail $srcfile]].gc??"
-	}
-    }
-}
-
-# Remove compiler-generated files from -repo for the current test.
-proc cleanup-repo-files { } {
-    global additional_sources_used
-    set testcase [testname-for-summary]
-    # The name might include a list of options; extract the file name.
-    set testcase [lindex $testcase 0]
-    remove-build-file "[file rootname [file tail $testcase]].o"
-    remove-build-file "[file rootname [file tail $testcase]].rpo"
-
-    # Clean up files for additional source files.
-    if [info exists additional_sources_used] {
-	foreach srcfile $additional_sources_used {
-	    remove-build-file "[file rootname [file tail $srcfile]].o"
-	    remove-build-file "[file rootname [file tail $srcfile]].rpo"
 	}
     }
 }

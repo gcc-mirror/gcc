@@ -1,3 +1,12 @@
+2019-09-06  Martin Liska  <mliska@suse.cz>
+
+	PR c++/91125
+	* c-common.c: Remove definition of flag_use_repository.
+	* c-common.h: Likewise.
+	* c-opts.c (c_common_handle_option):
+	Do not handle OPT_frepo option.
+	* c.opt: Mark the option with Deprecated.
+
 2019-09-04  Marek Polacek  <polacek@redhat.com>
 
 	* c.opt (fdeduce-init-list): Ignored.

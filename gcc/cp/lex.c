@@ -332,8 +332,6 @@ cxx_init (void)
 
   init_cp_pragma ();
 
-  init_repo ();
-
   input_location = saved_loc;
   return true;
 }
