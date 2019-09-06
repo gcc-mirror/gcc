@@ -1,3 +1,13 @@
+2019-09-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-06-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gnatlink.adb (Link_Step): Push -shared-libgcc explicitly, when it
+	is the target default (unless overidden by the static flag).
+	When the user has put an instance of shared/static-libgcc do not push
+	a duplicate of this.
+
 2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (mark_visited_r): Set TYPE_SIZES_GIMPLIFIED on
