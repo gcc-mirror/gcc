@@ -9,7 +9,6 @@ package cgocall
 import (
 	"fmt"
 	"go/ast"
-	"go/build"
 	"go/format"
 	"go/parser"
 	"go/token"
@@ -46,7 +45,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		return nil, nil // doesn't use cgo
 	}
 
-	cgofiles, info, err := typeCheckCgoSourceFiles(pass.Fset, pass.Pkg, pass.Files, pass.TypesInfo)
+	cgofiles, info, err := typeCheckCgoSourceFiles(pass.Fset, pass.Pkg, pass.Files, pass.TypesInfo, pass.TypesSizes)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +171,7 @@ func checkCgo(fset *token.FileSet, f *ast.File, info *types.Info, reportf func(t
 // limited ourselves here to preserving function bodies and initializer
 // expressions since that is all that the cgocall analyzer needs.
 //
-func typeCheckCgoSourceFiles(fset *token.FileSet, pkg *types.Package, files []*ast.File, info *types.Info) ([]*ast.File, *types.Info, error) {
+func typeCheckCgoSourceFiles(fset *token.FileSet, pkg *types.Package, files []*ast.File, info *types.Info, sizes types.Sizes) ([]*ast.File, *types.Info, error) {
 	const thispkg = "·this·"
 
 	// Which files are cgo files?
@@ -270,8 +269,7 @@ func typeCheckCgoSourceFiles(fset *token.FileSet, pkg *types.Package, files []*a
 		Importer: importerFunc(func(path string) (*types.Package, error) {
 			return importMap[path], nil
 		}),
-		// TODO(adonovan): Sizes should probably be provided by analysis.Pass.
-		Sizes: types.SizesFor("gccgo", build.Default.GOARCH),
+		Sizes: sizes,
 		Error: func(error) {}, // ignore errors (e.g. unused import)
 	}
 

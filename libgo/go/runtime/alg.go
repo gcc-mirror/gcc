@@ -235,6 +235,9 @@ func ifaceeq(x, y iface) bool {
 		panic(errorString("comparing uncomparable type " + t.string()))
 	}
 	if isDirectIface(t) {
+		// Direct interface types are ptr, chan, map, func, and single-element structs/arrays thereof.
+		// Maps and funcs are not comparable, so they can't reach here.
+		// Ptrs, chans, and single-element items can be compared directly using ==.
 		return x.data == y.data
 	}
 	return eq(x.data, y.data)
@@ -291,6 +294,7 @@ func efacevaleq(x eface, t *_type, p unsafe.Pointer) bool {
 		panic(errorString("comparing uncomparable type " + t.string()))
 	}
 	if isDirectIface(t) {
+		// See comment in efaceeq.
 		return x.data == p
 	}
 	return eq(x.data, p)
@@ -419,4 +423,22 @@ func initAlgAES() {
 	useAeshash = true
 	// Initialize with random data so hash collisions will be hard to engineer.
 	getRandomData(aeskeysched[:])
+}
+
+// Note: These routines perform the read with an native endianness.
+func readUnaligned32(p unsafe.Pointer) uint32 {
+	q := (*[4]byte)(p)
+	if sys.BigEndian {
+		return uint32(q[3]) | uint32(q[2])<<8 | uint32(q[1])<<16 | uint32(q[0])<<24
+	}
+	return uint32(q[0]) | uint32(q[1])<<8 | uint32(q[2])<<16 | uint32(q[3])<<24
+}
+
+func readUnaligned64(p unsafe.Pointer) uint64 {
+	q := (*[8]byte)(p)
+	if sys.BigEndian {
+		return uint64(q[7]) | uint64(q[6])<<8 | uint64(q[5])<<16 | uint64(q[4])<<24 |
+			uint64(q[3])<<32 | uint64(q[2])<<40 | uint64(q[1])<<48 | uint64(q[0])<<56
+	}
+	return uint64(q[0]) | uint64(q[1])<<8 | uint64(q[2])<<16 | uint64(q[3])<<24 | uint64(q[4])<<32 | uint64(q[5])<<40 | uint64(q[6])<<48 | uint64(q[7])<<56
 }

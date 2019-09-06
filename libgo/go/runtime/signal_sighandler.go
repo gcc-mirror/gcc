@@ -170,5 +170,7 @@ func sighandler(sig uint32, info *_siginfo_t, ctxt unsafe.Pointer, gp *g) {
 		crash()
 	}
 
+	printDebugLog()
+
 	exit(2)
 }

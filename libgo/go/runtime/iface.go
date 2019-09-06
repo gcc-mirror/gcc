@@ -504,6 +504,16 @@ func reflect_ifaceE2I(inter *interfacetype, e eface, dst *iface) {
 	dst.data = e.data
 }
 
+//go:linkname reflectlite_ifaceE2I internal..z2freflectlite.ifaceE2I
+func reflectlite_ifaceE2I(inter *interfacetype, e eface, dst *iface) {
+	t := e._type
+	if t == nil {
+		panic(TypeAssertionError{nil, nil, &inter.typ, ""})
+	}
+	dst.tab = requireitab((*_type)(unsafe.Pointer(inter)), t)
+	dst.data = e.data
+}
+
 // staticbytes is used to avoid convT2E for byte-sized values.
 var staticbytes = [...]byte{
 	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,

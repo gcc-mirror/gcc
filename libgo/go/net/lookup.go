@@ -177,7 +177,7 @@ func (r *Resolver) LookupHost(ctx context.Context, host string) (addrs []string,
 	// Make sure that no matter what we do later, host=="" is rejected.
 	// parseIP, for example, does accept empty strings.
 	if host == "" {
-		return nil, &DNSError{Err: errNoSuchHost.Error(), Name: host}
+		return nil, &DNSError{Err: errNoSuchHost.Error(), Name: host, IsNotFound: true}
 	}
 	if ip, _ := parseIPZone(host); ip != nil {
 		return []string{host}, nil
@@ -238,7 +238,7 @@ func (r *Resolver) lookupIPAddr(ctx context.Context, network, host string) ([]IP
 	// Make sure that no matter what we do later, host=="" is rejected.
 	// parseIP, for example, does accept empty strings.
 	if host == "" {
-		return nil, &DNSError{Err: errNoSuchHost.Error(), Name: host}
+		return nil, &DNSError{Err: errNoSuchHost.Error(), Name: host, IsNotFound: true}
 	}
 	if ip, zone := parseIPZone(host); ip != nil {
 		return []IPAddr{{IP: ip, Zone: zone}}, nil
@@ -255,7 +255,7 @@ func (r *Resolver) lookupIPAddr(ctx context.Context, network, host string) ([]IP
 		resolverFunc = alt
 	}
 
-	// We don't want a cancelation of ctx to affect the
+	// We don't want a cancellation of ctx to affect the
 	// lookupGroup operation. Otherwise if our context gets
 	// canceled it might cause an error to be returned to a lookup
 	// using a completely different context. However we need to preserve

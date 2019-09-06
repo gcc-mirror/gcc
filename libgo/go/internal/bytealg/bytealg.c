@@ -68,21 +68,6 @@ intgo Compare(struct __go_open_array a, struct __go_open_array b)
 	return 0;
 }
 
-_Bool Equal(struct __go_open_array, struct __go_open_array)
-  __asm__(GOSYM_PREFIX "internal..z2fbytealg.Equal")
-  __attribute__((no_split_stack));
-
-_Bool Equal(struct __go_open_array a, struct __go_open_array b)
-{
-	intgo l;
-
-	l = a.__count;
-	if (l != b.__count) {
-		return 0;
-	}
-	return __builtin_memcmp(a.__values, b.__values, l) == 0;
-}
-
 intgo IndexByte(struct __go_open_array, byte)
   __asm__(GOSYM_PREFIX "internal..z2fbytealg.IndexByte")
   __attribute__((no_split_stack));

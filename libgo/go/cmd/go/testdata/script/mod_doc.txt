@@ -1,8 +1,7 @@
 # go doc should find module documentation
 
-[gccgo] stop 'no go doc'
-
 env GO111MODULE=on
+[short] skip
 
 go doc y
 stdout 'Package y is.*alphabet'
