@@ -46,7 +46,7 @@ func TestDir(t *testing.T) {
 }
 -- a/foo/bar/c/testdata/1 --
 -- a/foo/bar/testdata/1 --
--- a/gcc/go/gofrontend.mod --
+-- a/go.mod --
 module a
 -- a/main.go --
 package a

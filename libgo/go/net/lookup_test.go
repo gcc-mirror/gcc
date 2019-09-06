@@ -877,6 +877,9 @@ func TestLookupNonLDH(t *testing.T) {
 	if !strings.HasSuffix(err.Error(), errNoSuchHost.Error()) {
 		t.Fatalf("lookup error = %v, want %v", err, errNoSuchHost)
 	}
+	if !err.(*DNSError).IsNotFound {
+		t.Fatalf("lookup error = %v, want true", err.(*DNSError).IsNotFound)
+	}
 }
 
 func TestLookupContextCancel(t *testing.T) {
@@ -1179,5 +1182,15 @@ func TestWithUnexpiredValuesPreserved(t *testing.T) {
 	// Lookup after expiry should return nil
 	if g := ctx.Value(key); g != nil {
 		t.Errorf("Lookup after expiry: Got %v want nil", g)
+	}
+}
+
+// Issue 31586: don't crash on null byte in name
+func TestLookupNullByte(t *testing.T) {
+	testenv.MustHaveExternalNetwork(t)
+	testenv.SkipFlakyNet(t)
+	_, err := LookupHost("foo\x00bar") // used to crash on Windows
+	if err == nil {
+		t.Errorf("unexpected success")
 	}
 }

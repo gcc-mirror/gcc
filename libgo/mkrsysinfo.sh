@@ -86,13 +86,11 @@ echo $timespec | \
       -e 's/tv_sec *[a-zA-Z0-9_]*/tv_sec timespec_sec_t/' \
       -e 's/tv_nsec *[a-zA-Z0-9_]*/tv_nsec timespec_nsec_t/' >> ${OUT}
 echo >> ${OUT}
-echo "func (ts *timespec) set_sec(x int64) {" >> ${OUT}
-echo "	ts.tv_sec = timespec_sec_t(x)" >> ${OUT}
+echo "func (ts *timespec) setNsec(ns int64) {" >> ${OUT}
+echo "	ts.tv_sec = timespec_sec_t(ns / 1e9)" >> ${OUT}
+echo "	ts.tv_nsec = timespec_nsec_t(ns % 1e9)" >> ${OUT}
 echo "}" >> ${OUT}
 echo >> ${OUT}
-echo "func (ts *timespec) set_nsec(x int32) {" >> ${OUT}
-echo "	ts.tv_nsec = timespec_nsec_t(x)" >> ${OUT}
-echo "}" >> ${OUT}
 
 # Define the epollevent struct.  This needs special attention because
 # the C definition uses a union and is sometimes packed.

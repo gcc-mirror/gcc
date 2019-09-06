@@ -248,7 +248,7 @@ check-runtime: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	$(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles="$${files}" $(GOTESTFLAGS) -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v >> runtime-testlog 2>&1 || echo "--- $${fl}: go test runtime (0.00s)" >> runtime-testlog
 	grep '^--- ' runtime-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
-# check-cgo-test runs `go test misc/cgo/test` in our environment.
+# check-cgo-test runs `go test` in misc/cgo/test.
 check-cgo-test: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	rm -rf cgo-test-dir cgo-testlog
 	$(MKDIR_P) cgo-test-dir/misc/cgo
@@ -261,18 +261,18 @@ check-cgo-test: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	(cd cgo-test-dir/misc/cgo/test && $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v) >> cgo-testlog 2>&1 || echo "--- $${fl}: go test misc/cgo/test (0.00s)" >> cgo-testlog
 	grep '^--- ' cgo-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
-# check-carchive-test runs `go test misc/cgo/testcarchive/carchive_test.go`
+# check-carchive-test runs `go test` in misc/cgo/testcarchive.
 # in our environment.
 check-carchive-test: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	rm -rf carchive-test-dir carchive-testlog
 	$(MKDIR_P) carchive-test-dir/misc/cgo
 	cp -r $(libgomiscdir)/cgo/testcarchive carchive-test-dir/misc/cgo/
 	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
-	echo "cd carchive-test-dir/misc/cgo/testcarchive && $(ECHO_ENV) LIBRARY_PATH=`echo $${abs_libgodir}/.libs` $(abs_builddir)/go$(EXEEXT) test -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v carchive_test.go" > carchive-testlog
+	echo "cd carchive-test-dir/misc/cgo/testcarchive && $(ECHO_ENV) LIBRARY_PATH=`echo $${abs_libgodir}/.libs` $(abs_builddir)/go$(EXEEXT) test -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > carchive-testlog
 	$(CHECK_ENV) \
 	LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; \
 	export LIBRARY_PATH; \
-	(cd carchive-test-dir/misc/cgo/testcarchive && $(abs_builddir)/go$(EXEEXT) test -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v carchive_test.go) >> carchive-testlog 2>&1 || echo "--- $${fl}: go test misc/cgo/testcarchive (0.00s)" >> carchive-testlog
+	(cd carchive-test-dir/misc/cgo/testcarchive && $(abs_builddir)/go$(EXEEXT) test -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v) >> carchive-testlog 2>&1 || echo "--- $${fl}: go test misc/cgo/testcarchive (0.00s)" >> carchive-testlog
 	grep '^--- ' carchive-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
 # check-vet runs `go test cmd/vet` in our environment.

@@ -20,10 +20,8 @@ var (
 )
 
 const (
-	darwin64Bit    = runtime.GOOS == "darwin" && sizeofPtr == 8
-	dragonfly64Bit = runtime.GOOS == "dragonfly" && sizeofPtr == 8
-	netbsd32Bit    = runtime.GOOS == "netbsd" && sizeofPtr == 4
-	solaris64Bit   = runtime.GOOS == "solaris" && sizeofPtr == 8
+	darwin64Bit = runtime.GOOS == "darwin" && sizeofPtr == 8
+	netbsd32Bit = runtime.GOOS == "netbsd" && sizeofPtr == 4
 )
 
 // clen returns the index of the first NULL byte in n or len(n) if n contains no NULL byte.

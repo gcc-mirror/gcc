@@ -1,3 +1,8 @@
+2019-09-06  Ian Lance Taylor  <iant@golang.org>
+
+	* go.test/test/fixedbugs/bug369.go: Update to match libgo update
+	to Go 1.13beta1.
+
 2019-09-06  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/torture/inf-compare-1.c: Skip AIX.

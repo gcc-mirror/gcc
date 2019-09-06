@@ -52,8 +52,7 @@ func semasleep(ns int64) int32 {
 	_m_ := getg().m
 	if ns >= 0 {
 		var ts timespec
-		ts.set_sec(ns / 1000000000)
-		ts.set_nsec(int32(ns % 1000000000))
+		ts.setNsec(ns)
 
 		if sem_reltimedwait_np((*semt)(unsafe.Pointer(_m_.mos.waitsema)), &ts) != 0 {
 			err := errno()

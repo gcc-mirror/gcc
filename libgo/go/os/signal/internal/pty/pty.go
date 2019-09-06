@@ -48,6 +48,8 @@ func (e *PtyError) Error() string {
 	return fmt.Sprintf("%s: %s", e.FuncName, e.ErrorString)
 }
 
+func (e *PtyError) Unwrap() error { return e.Errno }
+
 // Open returns a master pty and the name of the linked slave tty.
 func Open() (master *os.File, slave string, err error) {
 	m := posix_openpt(_O_RDWR)

@@ -502,3 +502,19 @@ void __go_makecontext(__go_context_t*, void (*)(), void*, size_t);
 #define __go_makecontext(c, fn, sp, size) \
 	((c)->uc_stack.ss_sp = sp, (c)->uc_stack.ss_size = size, makecontext(c, fn, 0))
 #endif
+
+// Symbols defined by the linker.
+extern const char _etext[] __attribute__ ((weak));
+extern const char _edata[] __attribute__ ((weak));
+#ifdef _AIX
+// Following symbols do not exist on AIX
+#define __etext nil
+#define __data_start nil
+#define __edata nil
+#define __bss_start nil
+#else
+extern const char __etext[] __attribute__ ((weak));
+extern const char __data_start[] __attribute__ ((weak));
+extern const char __edata[] __attribute__ ((weak));
+extern const char __bss_start[] __attribute__ ((weak));
+#endif

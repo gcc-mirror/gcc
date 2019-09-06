@@ -14,10 +14,16 @@ package net
 #include <netdb.h>
 #include <unistd.h>
 #include <string.h>
+
+// If nothing else defined EAI_OVERFLOW, make sure it has a value.
+#ifndef EAI_OVERFLOW
+#define EAI_OVERFLOW -12
+#endif
 */
 
 import (
 	"context"
+	"os"
 	"syscall"
 	"unsafe"
 )
@@ -50,6 +56,16 @@ type addrinfoErrno int
 func (eai addrinfoErrno) Error() string   { return bytePtrToString(libc_gai_strerror(int(eai))) }
 func (eai addrinfoErrno) Temporary() bool { return eai == syscall.EAI_AGAIN }
 func (eai addrinfoErrno) Timeout() bool   { return false }
+
+func (eai addrinfoErrno) Is(target error) bool {
+	switch target {
+	case os.ErrTemporary:
+		return eai.Temporary()
+	case os.ErrTimeout:
+		return eai.Timeout()
+	}
+	return false
+}
 
 type portLookupResult struct {
 	port int
@@ -125,6 +141,7 @@ func cgoLookupServicePort(hints *syscall.Addrinfo, network, service string) (por
 	gerrno := libc_getaddrinfo(nil, s, hints, &res)
 	syscall.Exitsyscall()
 	if gerrno != 0 {
+		isTemporary := false
 		switch gerrno {
 		case syscall.EAI_SYSTEM:
 			errno := syscall.GetErrno()
@@ -134,8 +151,9 @@ func cgoLookupServicePort(hints *syscall.Addrinfo, network, service string) (por
 			err = errno
 		default:
 			err = addrinfoErrno(gerrno)
+			isTemporary = addrinfoErrno(gerrno).Temporary()
 		}
-		return 0, &DNSError{Err: err.Error(), Name: network + "/" + service}
+		return 0, &DNSError{Err: err.Error(), Name: network + "/" + service, IsTemporary: isTemporary}
 	}
 	defer libc_freeaddrinfo(res)
 
@@ -180,6 +198,8 @@ func cgoLookupIPCNAME(network, name string) (addrs []IPAddr, cname string, err e
 	gerrno := libc_getaddrinfo(h, nil, &hints, &res)
 	syscall.Exitsyscall()
 	if gerrno != 0 {
+		isErrorNoSuchHost := false
+		isTemporary := false
 		switch gerrno {
 		case syscall.EAI_SYSTEM:
 			errno := syscall.GetErrno()
@@ -196,10 +216,13 @@ func cgoLookupIPCNAME(network, name string) (addrs []IPAddr, cname string, err e
 			err = errno
 		case syscall.EAI_NONAME:
 			err = errNoSuchHost
+			isErrorNoSuchHost = true
 		default:
 			err = addrinfoErrno(gerrno)
+			isTemporary = addrinfoErrno(gerrno).Temporary()
 		}
-		return nil, "", &DNSError{Err: err.Error(), Name: name}
+
+		return nil, "", &DNSError{Err: err.Error(), Name: name, IsNotFound: isErrorNoSuchHost, IsTemporary: isTemporary}
 	}
 	defer libc_freeaddrinfo(res)
 
@@ -320,6 +343,7 @@ func cgoLookupAddrPTR(addr string, sa *syscall.RawSockaddr, salen syscall.Sockle
 		}
 	}
 	if gerrno != 0 {
+		isTemporary := false
 		switch gerrno {
 		case syscall.EAI_SYSTEM:
 			if err == nil { // see golang.org/issue/6232
@@ -327,8 +351,9 @@ func cgoLookupAddrPTR(addr string, sa *syscall.RawSockaddr, salen syscall.Sockle
 			}
 		default:
 			err = addrinfoErrno(gerrno)
+			isTemporary = addrinfoErrno(gerrno).Temporary()
 		}
-		return nil, &DNSError{Err: err.Error(), Name: addr}
+		return nil, &DNSError{Err: err.Error(), Name: addr, IsTemporary: isTemporary}
 	}
 	for i := 0; i < len(b); i++ {
 		if b[i] == 0 {

@@ -168,6 +168,26 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 		}
 	}
 
+	// Detach fd 0 from tty
+	if sys.Noctty {
+		_, err1 = raw_ioctl(0, TIOCNOTTY, 0)
+		if err1 != 0 {
+			goto childerror
+		}
+	}
+
+	// Set the controlling TTY to Ctty
+	if sys.Setctty {
+		if TIOCSCTTY == 0 {
+			err1 = ENOSYS
+			goto childerror
+		}
+		_, err1 = raw_ioctl(sys.Ctty, TIOCSCTTY, 0)
+		if err1 != 0 {
+			goto childerror
+		}
+	}
+
 	// Pass 1: look for fd[i] < i and move those up above len(fd)
 	// so that pass 2 won't stomp on an fd it needs later.
 	if pipe < nextfd {
@@ -223,26 +243,6 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	// to set them close-on-exec.
 	for i = len(fd); i < 3; i++ {
 		raw_close(i)
-	}
-
-	// Detach fd 0 from tty
-	if sys.Noctty {
-		_, err1 = raw_ioctl(0, TIOCNOTTY, 0)
-		if err1 != 0 {
-			goto childerror
-		}
-	}
-
-	// Set the controlling TTY to Ctty
-	if sys.Setctty {
-		if TIOCSCTTY == 0 {
-			err1 = ENOSYS
-			goto childerror
-		}
-		_, err1 = raw_ioctl(sys.Ctty, TIOCSCTTY, 0)
-		if err1 != 0 {
-			goto childerror
-		}
 	}
 
 	// Time to exec.

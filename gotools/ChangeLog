@@ -1,3 +1,9 @@
+2019-09-06  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (check-carchive-test): Just run "go test", not "go
+	test carchive_test.go".
+	* Makefile.in: Regenerate.
+
 2019-05-27  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (check-go-tool): Only chmod check-go-dir if it
