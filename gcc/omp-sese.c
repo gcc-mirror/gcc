@@ -53,20 +53,21 @@
 #include "tree-cfg.h"
 #include "omp-offload.h"
 #include "attribs.h"
+#include "omp-sese.h"
 
 /* Loop structure of the function.  The entire function is described as
    a NULL loop.  */
 
-struct parallel
+struct parallel_g
 {
   /* Parent parallel.  */
-  parallel *parent;
+  parallel_g *parent;
 
   /* Next sibling parallel.  */
-  parallel *next;
+  parallel_g *next;
 
   /* First child parallel.  */
-  parallel *inner;
+  parallel_g *inner;
 
   /* Partitioning mask of the parallel.  */
   unsigned mask;
@@ -96,14 +97,14 @@ struct parallel
   tree receiver_decl;
 
 public:
-  parallel (parallel *parent, unsigned mode);
-  ~parallel ();
+  parallel_g (parallel_g *parent, unsigned mode);
+  ~parallel_g ();
 };
 
 /* Constructor links the new parallel into it's parent's chain of
    children.  */
 
-parallel::parallel (parallel *parent_, unsigned mask_)
+parallel_g::parallel_g (parallel_g *parent_, unsigned mask_)
   :parent (parent_), next (0), inner (0), mask (mask_), inner_mask (0)
 {
   forked_block = join_block = 0;
@@ -121,7 +122,7 @@ parallel::parallel (parallel *parent_, unsigned mask_)
     }
 }
 
-parallel::~parallel ()
+parallel_g::~parallel_g ()
 {
   delete inner;
   delete next;
@@ -206,7 +207,6 @@ omp_sese_split_blocks (bb_stmt_map_t *map)
 	    {
 	      enum ifn_unique_kind k = ((enum ifn_unique_kind)
 		TREE_INT_CST_LOW (gimple_call_arg (stmt, 0)));
-	      gcall *call = as_a <gcall *> (stmt);
 
 	      if (k == IFN_UNIQUE_OACC_JOIN)
 		worklist.safe_push (stmt);
@@ -344,7 +344,7 @@ mask_name (unsigned mask)
 /* Dump this parallel and all its inner parallels.  */
 
 static void
-omp_sese_dump_pars (parallel *par, unsigned depth)
+omp_sese_dump_pars (parallel_g *par, unsigned depth)
 {
   fprintf (dump_file, "%u: mask %d (%s) head=%d, tail=%d\n",
 	   depth, par->mask, mask_name (par->mask),
@@ -368,8 +368,8 @@ omp_sese_dump_pars (parallel *par, unsigned depth)
    terminate a loop structure.  Add this block to the current loop,
    and then walk successor blocks.   */
 
-static parallel *
-omp_sese_find_par (bb_stmt_map_t *map, parallel *par, basic_block block)
+static parallel_g *
+omp_sese_find_par (bb_stmt_map_t *map, parallel_g *par, basic_block block)
 {
   if (block->flags & BB_VISITED)
     return par;
@@ -388,7 +388,7 @@ omp_sese_find_par (bb_stmt_map_t *map, parallel *par, basic_block block)
 	{
 	  /* A single block that is forced to be at the maximum partition
 	     level.  Make a singleton par for it.  */
-	  par = new parallel (par, GOMP_DIM_MASK (GOMP_DIM_GANG)
+	  par = new parallel_g (par, GOMP_DIM_MASK (GOMP_DIM_GANG)
 				   | GOMP_DIM_MASK (GOMP_DIM_WORKER)
 				   | GOMP_DIM_MASK (GOMP_DIM_VECTOR));
 	  par->forked_block = block;
@@ -416,7 +416,7 @@ omp_sese_find_par (bb_stmt_map_t *map, parallel *par, basic_block block)
 		    = TREE_INT_CST_LOW (gimple_call_arg (call, 2));
 		  unsigned mask = (dim >= 0) ? GOMP_DIM_MASK (dim) : 0;
 
-		  par = new parallel (par, mask);
+		  par = new parallel_g (par, mask);
 		  par->forked_block = block;
 		  par->forked_stmt = final_stmt;
 		  par->fork_stmt = stmt;
@@ -454,7 +454,7 @@ omp_sese_find_par (bb_stmt_map_t *map, parallel *par, basic_block block)
     par->blocks.safe_push (block);
   else
     /* This must be the entry block.  Create a NULL parallel.  */
-    par = new parallel (0, 0);
+    par = new parallel_g (0, 0);
 
 walk_successors:
   /* Walk successor blocks.  */
@@ -473,7 +473,7 @@ walk_successors:
    speeds up the discovery.  We rely on the BB visited flag having
    been cleared when splitting blocks.  */
 
-static parallel *
+static parallel_g *
 omp_sese_discover_pars (bb_stmt_map_t *map)
 {
   basic_block block;
@@ -486,7 +486,7 @@ omp_sese_discover_pars (bb_stmt_map_t *map)
   block = ENTRY_BLOCK_PTR_FOR_FN (cfun);
   block->flags &= ~BB_VISITED;
 
-  parallel *par = omp_sese_find_par (map, 0, block);
+  parallel_g *par = omp_sese_find_par (map, 0, block);
 
   if (dump_file)
     {
@@ -499,7 +499,7 @@ omp_sese_discover_pars (bb_stmt_map_t *map)
 }
 
 static void
-populate_single_mode_bitmaps (parallel *par, bitmap worker_single,
+populate_single_mode_bitmaps (parallel_g *par, bitmap worker_single,
 			      bitmap vector_single, unsigned outer_mask,
 			      int depth)
 {
@@ -584,7 +584,7 @@ install_var_field (tree var, tree record_type)
 typedef hash_set<tree> propagation_set;
 
 static void
-find_ssa_names_to_propagate (parallel *par, unsigned outer_mask,
+find_ssa_names_to_propagate (parallel_g *par, unsigned outer_mask,
 			     bitmap worker_single, bitmap vector_single,
 			     vec<propagation_set *> *prop_set)
 {
@@ -686,7 +686,7 @@ find_partitioned_var_uses_1 (tree *node, int *, void *data)
 }
 
 static void
-find_partitioned_var_uses (parallel *par, unsigned outer_mask,
+find_partitioned_var_uses (parallel_g *par, unsigned outer_mask,
 			   hash_set<tree> *partitioned_var_uses)
 {
   unsigned mask = outer_mask | par->mask;
@@ -714,7 +714,7 @@ find_partitioned_var_uses (parallel *par, unsigned outer_mask,
 }
 
 static void
-find_local_vars_to_propagate (parallel *par, unsigned outer_mask,
+find_local_vars_to_propagate (parallel_g *par, unsigned outer_mask,
 			      hash_set<tree> *partitioned_var_uses,
 			      vec<propagation_set *> *prop_set)
 {
@@ -853,8 +853,8 @@ worker_single_simple (basic_block from, basic_block to,
 	  if (def_escapes_block->contains (var))
 	    {
 	      gphi *join_phi = create_phi_node (NULL_TREE, skip_block);
-	      tree res = create_new_def_for (var, join_phi,
-					     gimple_phi_result_ptr (join_phi));
+	      create_new_def_for (var, join_phi,
+				  gimple_phi_result_ptr (join_phi));
 	      add_phi_arg (join_phi, var, e, UNKNOWN_LOCATION);
 
 	      tree neutered_def = copy_ssa_name (var, NULL);
@@ -1167,8 +1167,9 @@ worker_single_copy (basic_block from, basic_block to,
 }
 
 static void
-neuter_worker_single (parallel *par, unsigned outer_mask, bitmap worker_single,
-		      bitmap vector_single, vec<propagation_set *> *prop_set,
+neuter_worker_single (parallel_g *par, unsigned outer_mask,
+		      bitmap worker_single, bitmap vector_single,
+		      vec<propagation_set *> *prop_set,
 		      hash_set<tree> *partitioned_var_uses)
 {
   unsigned mask = outer_mask | par->mask;
@@ -1333,7 +1334,7 @@ oacc_do_neutering (void)
 	}
     }
 
-  parallel *par = omp_sese_discover_pars (&bb_stmt_map);
+  parallel_g *par = omp_sese_discover_pars (&bb_stmt_map);
   populate_single_mode_bitmaps (par, worker_single, vector_single, mask, 0);
 
   basic_block bb;
@@ -1461,10 +1462,6 @@ oacc_do_neutering (void)
 
    This way we end up with coloring the inside of non-trivial SESE
    regions with the color of that region.  */
-
-/* A pair of BBs.  We use this to represent SESE regions.  */
-typedef std::pair<basic_block, basic_block> bb_pair_t;
-typedef auto_vec<bb_pair_t> bb_pair_vec_t;
 
 /* A node in the undirected CFG.  The discriminator SECOND indicates just
    above or just below the BB idicated by FIRST.  */
@@ -1828,7 +1825,7 @@ omp_sese_pseudo (basic_block me, bb_sese *sese, int depth, int dir,
 
 static void
 omp_sese_color (auto_vec<unsigned> &color_counts, bb_pair_vec_t &regions,
-		  basic_block block, int coloring)
+		basic_block block, int coloring)
 {
   bb_sese *sese = BB_GET_SESE (block);
 
@@ -1882,7 +1879,7 @@ omp_sese_color (auto_vec<unsigned> &color_counts, bb_pair_vec_t &regions,
 /* Find minimal set of SESE regions covering BLOCKS.  REGIONS might
    end up with NULL entries in it.  */
 
-static void
+void
 omp_find_sese (auto_vec<basic_block> &blocks, bb_pair_vec_t &regions)
 {
   basic_block block;
