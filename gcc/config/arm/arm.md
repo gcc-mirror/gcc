@@ -9143,15 +9143,15 @@
 	(compare
 	 (and:SI
 	  (match_operator 4 "arm_comparison_operator"
-	   [(match_operand:SI 0 "s_register_operand" 
-	        "l,l,l,r,r,r,r,r,r")
-	    (match_operand:SI 1 "arm_add_operand" 
-	        "lPy,lPy,lPy,rI,L,rI,L,rI,L")])
+	   [(match_operand:SI 0 "s_register_operand"
+	        "l,l,l,r,r,r,r,r,r,r")
+	    (match_operand:SI 1 "arm_add_operand"
+	        "lPy,lPy,lPy,rI,L,r,rI,L,rI,L")])
 	  (match_operator:SI 5 "arm_comparison_operator"
-	   [(match_operand:SI 2 "s_register_operand" 
-	        "l,r,r,l,l,r,r,r,r")
-	    (match_operand:SI 3 "arm_add_operand" 
-	        "lPy,rI,L,lPy,lPy,rI,rI,L,L")]))
+	   [(match_operand:SI 2 "s_register_operand"
+	        "l,r,r,l,l,r,r,r,r,r")
+	    (match_operand:SI 3 "arm_add_operand"
+	        "lPy,rI,L,lPy,lPy,r,rI,rI,L,L")]))
 	 (const_int 0)))]
   "TARGET_32BIT"
   "*
@@ -9183,9 +9183,10 @@
       \"it\\t%d5\",
       \"it\\t%d4\"
     };
-    static const int cmp_idx[9] = {CMP_CMP, CMP_CMP, CMP_CMN,
-                                   CMP_CMP, CMN_CMP, CMP_CMP,
-                                   CMN_CMP, CMP_CMN, CMN_CMN};
+    static const int cmp_idx[] = {CMP_CMP, CMP_CMP, CMP_CMN,
+                                  CMP_CMP, CMN_CMP, CMP_CMP,
+                                  CMP_CMP, CMN_CMP, CMP_CMN,
+				  CMN_CMN};
     int swap =
       comparison_dominates_p (GET_CODE (operands[5]), GET_CODE (operands[4]));
 
@@ -9198,14 +9199,15 @@
   }"
   [(set_attr "conds" "set")
    (set_attr "predicable" "no")
-   (set_attr "arch" "t2,t2,t2,t2,t2,any,any,any,any")
-   (set_attr "enabled_for_short_it" "yes,no,no,no,no,no,no,no,no")
+   (set_attr "arch" "t2,t2,t2,t2,t2,t2,any,any,any,any")
+   (set_attr "enabled_for_short_it" "yes,no,no,no,no,yes,no,no,no,no")
    (set_attr_alternative "length"
       [(const_int 6)
        (const_int 8)
        (const_int 8)
        (const_int 8)
        (const_int 8)
+       (const_int 6)
        (if_then_else (eq_attr "is_thumb" "no")
            (const_int 8)
            (const_int 10))
@@ -9227,14 +9229,14 @@
 	 (ior:SI
 	  (match_operator 4 "arm_comparison_operator"
 	   [(match_operand:SI 0 "s_register_operand"
-	        "l,l,l,r,r,r,r,r,r")
+	        "l,l,l,r,r,r,r,r,r,r")
 	    (match_operand:SI 1 "arm_add_operand"
-	        "lPy,lPy,lPy,rI,L,rI,L,rI,L")])
+	        "lPy,lPy,lPy,rI,L,r,rI,L,rI,L")])
 	  (match_operator:SI 5 "arm_comparison_operator"
 	   [(match_operand:SI 2 "s_register_operand"
-	        "l,r,r,l,l,r,r,r,r")
+	        "l,r,r,l,l,r,r,r,r,r")
 	    (match_operand:SI 3 "arm_add_operand"
-	        "lPy,rI,L,lPy,lPy,rI,rI,L,L")]))
+	        "lPy,rI,L,lPy,lPy,r,rI,rI,L,L")]))
 	 (const_int 0)))]
   "TARGET_32BIT"
   "*
@@ -9266,9 +9268,10 @@
       \"it\\t%D4\",
       \"it\\t%D5\"
     };
-    static const int cmp_idx[9] = {CMP_CMP, CMP_CMP, CMP_CMN,
-                                   CMP_CMP, CMN_CMP, CMP_CMP,
-                                   CMN_CMP, CMP_CMN, CMN_CMN};
+    static const int cmp_idx[] = {CMP_CMP, CMP_CMP, CMP_CMN,
+                                  CMP_CMP, CMN_CMP, CMP_CMP,
+				  CMP_CMP, CMN_CMP, CMP_CMN,
+				  CMN_CMN};
     int swap =
       comparison_dominates_p (GET_CODE (operands[5]), GET_CODE (operands[4]));
 
@@ -9281,14 +9284,15 @@
   }
   "
   [(set_attr "conds" "set")
-   (set_attr "arch" "t2,t2,t2,t2,t2,any,any,any,any")
-   (set_attr "enabled_for_short_it" "yes,no,no,no,no,no,no,no,no")
+   (set_attr "arch" "t2,t2,t2,t2,t2,t2,any,any,any,any")
+   (set_attr "enabled_for_short_it" "yes,no,no,no,no,yes,no,no,no,no")
    (set_attr_alternative "length"
       [(const_int 6)
        (const_int 8)
        (const_int 8)
        (const_int 8)
        (const_int 8)
+       (const_int 6)
        (if_then_else (eq_attr "is_thumb" "no")
            (const_int 8)
            (const_int 10))
