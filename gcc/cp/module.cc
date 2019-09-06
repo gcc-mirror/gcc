@@ -2270,8 +2270,9 @@ private:
     DB_UNREACHED_BIT,		/* A yet-to-be reached entity.  */
     DB_HIDDEN_BIT,		/* A hidden binding.  */
     DB_MERGEABLE_BIT,		/* An entity that needs merging.  */
-    DB_PSEUDO_SPEC_BIT		/* A non-specialization
+    DB_PSEUDO_SPEC_BIT,		/* A non-specialization
 				   specialization.  */
+    DB_REACHED_ONCE_BIT		/* Reached exactly once.  */
   };
 
 public:
@@ -2364,6 +2365,10 @@ public:
   {
     return get_flag_bit<DB_UNREACHED_BIT> ();
   }
+  bool is_reached_once () const
+  {
+    return get_flag_bit<DB_REACHED_ONCE_BIT> ();
+  }
   bool is_partial () const
   {
     return get_flag_bit<DB_PARTIAL_BIT> ();
@@ -2386,6 +2391,10 @@ public:
   void set_hidden_binding ()
   {
     set_flag_bit<DB_HIDDEN_BIT> ();
+  }
+  void clear_mergeable ()
+  {
+    clear_flag_bit<DB_MERGEABLE_BIT> ();
   }
 
 public:
@@ -10355,7 +10364,10 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	    && dump ("Reaching unreached %s %C:%N", dep->entity_kind_name (),
 		     TREE_CODE (dep->get_entity ()), dep->get_entity ());
 	  dep->clear_flag_bit<DB_UNREACHED_BIT> ();
+	  dep->set_flag_bit<DB_REACHED_ONCE_BIT> ();
 	}
+      else
+	dep->clear_flag_bit<DB_REACHED_ONCE_BIT> ();
     }
 
   return dep;
@@ -12896,7 +12908,9 @@ enum ct_bind_flags
   cbf_wrapped = 0x8,  	/* ... that is wrapped.  */
 };
 
-/* The cluster must already have been sorted cia cluster_cmp.  */
+/* Sort the mergeable entities in SCC such that those that depend on
+   one another are placed later.  The cluster must already have been
+   sorted via cluster_cmp, so the bindings and usings are last.  */
 
 static unsigned
 sort_mergeables (depset *scc[], unsigned size)
@@ -12955,25 +12969,84 @@ sort_mergeables (depset *scc[], unsigned size)
 
   vec<depset *> order = table.connect ();
 
-  unsigned cluster = 0;
+  /* Now rewrite entries [0,lwm), in the dependency order we
+     discovered.  */
   unsigned pos = 0;
   unsigned count = 0;
-  for (unsigned ix = 0; ix != order.length (); ix++)
-    if (order[ix]->is_special ())
-      {
-	gcc_checking_assert (pos != lwm);
-	depset *dep = order[ix]->deps[0];
-	scc[pos++] = dep;
+  for (unsigned size, ix = 0; ix != order.length (); ix += size)
+    {
+      unsigned cluster = order[ix]->cluster;
 
-	/* Each entity must be its own cluster.  */
-	gcc_assert (order[ix]->cluster != cluster);
-	cluster = order[ix]->cluster;
-	if (dep->is_mergeable ())
-	  {
-	    count++;
-	    dump (dumper::MERGE) && dump ("Mergeable %u is %N",
-					  ix, dep->get_entity ());
-	  }
+      for (size = 1; (ix + size != order.length ()
+		      && order[ix + size]->cluster == cluster); size++)
+	gcc_checking_assert (order[ix + size]->is_special ());
+
+      depset *entry_dep = NULL;
+      unsigned index = ix;
+
+      if (size > 1)
+	{
+	  /* Usually SIZE is 1 (each entity is in its own cluster)
+	     However, we can get multi-entity clusters, in which case
+	     all but one must be reached exactly once.  This happens
+	     for something like:
+
+	     template<typename T>
+	     auto Foo (const T &arg) -> TPL<decltype (arg)>;
+
+	     The instantiation of TPL will be in the specialization
+	     table, and refer to Foo via arg.  But we can only get to
+	     that specialization from Foo's declaration, so we only
+	     need to treat Foo as mergable (We'll do structural
+	     comparison of TPL<decltype (arg)>). */
+	  gcc_checking_assert (order[ix]->is_special () && pos + size <= lwm);
+
+	  for (unsigned jx = 0; !entry_dep && jx != size; jx++)
+	    {
+	      depset *dep = order[ix + jx]->deps[0];
+
+	      if (!dep->is_reached_once ())
+		{
+		  index += jx;
+		  entry_dep = dep;
+		}
+	    }
+
+	  /* We should have found an entry entity, place it first  */
+	  gcc_assert (entry_dep);
+	  scc[pos++] = entry_dep;
+
+	  for (unsigned jx = 0; jx != size; jx++)
+	    {
+	      depset *dep = order[ix + jx]->deps[0];
+
+	      if (dep == entry_dep)
+		continue;
+
+	      gcc_checking_assert (dep->is_reached_once ());
+	      /* This is reached internally, and not mergeable.  */
+	      dep->clear_mergeable ();
+	      scc[pos++] = dep;
+	      dump (dumper::MERGE) && dump ("Internally referenced %u is %N",
+					    ix + jx, dep->get_entity ());
+	    }
+	}
+      else if (order[ix]->is_special ())
+	{
+	  gcc_checking_assert (pos != lwm);
+	  entry_dep = order[ix]->deps[0];
+
+	  scc[pos++] = entry_dep;
+	}
+      else
+	continue;
+
+      if (entry_dep->is_mergeable ())
+	count++;
+      dump (dumper::MERGE) && dump ("%s %u is %N",
+				    entry_dep->is_mergeable ()
+				    ? "Mergeable" : "Unique",
+				    index, entry_dep->get_entity ());
       }
   gcc_checking_assert (pos == lwm);
 
@@ -13537,10 +13610,14 @@ module_state::read_cluster (unsigned snum)
 		    unsigned index = unnamed_lwm + unnamed;
 		    unnamed_entity *uent = &(*unnamed_ary)[index];
 		    uent->slot = decl;
+		    /* This will already be in the table if we deduped
+	  	       a mergeable decl.  It doesn't matter if we
+	  	       repoint to a different slot -- they are the
+	  	       same value.  */
 		    bool present = unnamed_map->put (DECL_UID (decl), index);
-		    gcc_checking_assert (!present);
-		    dump () && dump ("Voldemort decl:%u [%u] %N",
-				     unnamed, index, decl);
+		    dump () && dump ("Voldemort decl:%u [%u] %N%s",
+				     unnamed, index, decl,
+				     present ? " (merged)" : "");
 		  }
 		else
 		  sec.set_overrun ();

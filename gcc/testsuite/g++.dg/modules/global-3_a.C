@@ -1,11 +1,9 @@
-// Testcase disabled for maintainance.
-// { dg-module-do run { target noarch-*-noos } }
-// { dg-do assemble { target noarch-*-noos } }
+// { dg-module-do run }
 // { dg-additional-options "-fmodules-ts -fdump-lang-module-graph" }
 module;
 #include <iostream>
 export module logger;
-// { dg-module-cmi logger { xfail *-*-* } }
+// { dg-module-cmi logger }
 
 export void Log (char const *msg)
 {

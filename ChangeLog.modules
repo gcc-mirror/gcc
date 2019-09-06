@@ -1,6 +1,17 @@
-2019-09-05  Nathan Sidwell  <nathan@acm.org>
+2019-09-06  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (enum depset::disc_bits): Add DB_REACHED_ONCE_BIT.
+	(depset::is_reached_once, depset::clear_mergeable): New.
+	(depset::hash::add_dependency): Set and clear DB_REACHED_ONCE_BIT.
+	(sort_mergeables): Deal with internal entities.
+	(module_state::read_cluster): A voldemort might have been merged.
+	gcc/testsuite/
+	* g++.dg/modules/late-ret-2_[abc].[HC]: New.
 
 	Merge trunk r275458.
+
+2019-09-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/testsuite/
 	* g++.dg/modules/concept-2_[ab].C: New.
