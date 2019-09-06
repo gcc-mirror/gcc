@@ -14113,7 +14113,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	 here, because the code to remove reductions in kernels regions cannot
 	 handle that.  */
       if (outer && outer->region_type == ORT_ACC_PARALLEL)
-	localize_reductions (OMP_FOR_CLAUSES (*expr_p), OMP_FOR_BODY (*expr_p));
+	localize_reductions (OMP_FOR_CLAUSES (for_stmt),
+			     OMP_FOR_BODY (for_stmt));
     }
 
   /* Set OMP_CLAUSE_LINEAR_NO_COPYIN flag on explicit linear

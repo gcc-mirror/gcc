@@ -1,5 +1,10 @@
 2019-09-06  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.cc (gimplify_omp_for): Use for_stmt in call to
+	localize_reductions.
+
+2019-09-06  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.cc (gimplify_omp_workshare): Use OMP_CLAUSES, OMP_BODY
 	instead of OMP_TARGET_CLAUSES, OMP_TARGET_BODY.
 
