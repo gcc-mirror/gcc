@@ -1,3 +1,10 @@
+2019-09-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/warn/Warray-bounds-4.C: Skip AIX.
+	* g++.dg/warn/Warray-bounds-8.C: Skip AIX.
+	* g++.dg/opt/flifetime-dse2.C: XFAIL AIX.
+	* g++.dg/opt/flifetime-dse4.C: XFAIL AIX.
+
 2019-09-06  Caroline Tice  <cmtice@google.com>
 
 	PR testsuite/91670
