@@ -2175,12 +2175,15 @@ maybe_promote_captured_temps (tree *stmt, void *d)
 
       BIND_EXPR_VARS (aw_bind) = nreverse (varlist);
       tree b_block = make_node (BLOCK);
-      tree s_block = awpts->block_stack->last ();
-      if (s_block)
+      if (! awpts->block_stack->is_empty ())
 	{
-	  BLOCK_SUPERCONTEXT (b_block) = s_block;
-	  BLOCK_CHAIN (b_block) = BLOCK_SUBBLOCKS (s_block);
-	  BLOCK_SUBBLOCKS (s_block) = b_block;
+	  tree s_block = awpts->block_stack->last ();
+	  if (s_block)
+	    {
+	      BLOCK_SUPERCONTEXT (b_block) = s_block;
+	      BLOCK_CHAIN (b_block) = BLOCK_SUBBLOCKS (s_block);
+	      BLOCK_SUBBLOCKS (s_block) = b_block;
+	    }
 	}
       BIND_EXPR_BLOCK (aw_bind) = b_block;
 

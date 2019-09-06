@@ -1,5 +1,11 @@
 2019-09-06  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* coroutines.cc (maybe_promote_captured_temps): Check that there
+	are any blocks in the stack before using.
+
+2019-09-06  Iain Sandoe  <iain@sandoe.co.uk>
+
 	Merge trunk r275450.
 
 2019-09-05  Iain Sandoe  <iain@sandoe.co.uk>
