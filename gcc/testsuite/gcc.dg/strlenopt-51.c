@@ -84,4 +84,4 @@ void test_elim_a9_9 (unsigned i)
   T (0); T (1); T (2); T (3); T (4); T (5); T (6); T (7); T (8);
 }
 
-/* { dg-final { scan-tree-dump-times "strlen" 0 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "strlen1" 0 "gimple" } } */

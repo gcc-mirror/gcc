@@ -697,3 +697,7 @@
   (ior (and (match_code "symbol_ref")
 	    (match_test "!arm_is_long_call_p (SYMBOL_REF_DECL (op))"))
        (match_operand 0 "s_register_operand")))
+
+(define_special_predicate "aligned_operand"
+  (ior (not (match_code "mem"))
+       (match_test "MEM_ALIGN (op) >= GET_MODE_ALIGNMENT (mode)")))

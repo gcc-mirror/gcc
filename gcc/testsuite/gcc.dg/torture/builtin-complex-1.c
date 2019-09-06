@@ -19,13 +19,11 @@ extern void abort (void);
       abort ();								\
   } while (0)
 
-#ifndef __SPU__
 void
 comparef (float a, float b)
 {
   COMPARE_BODY (a, b, float, __builtin_copysignf);
 }
-#endif
 
 void
 compare (double a, double b)
@@ -39,14 +37,12 @@ comparel (long double a, long double b)
   COMPARE_BODY (a, b, long double, __builtin_copysignl);
 }
 
-#ifndef __SPU__
 void
 comparecf (_Complex float a, float r, float i)
 {
   comparef (__real__ a, r);
   comparef (__imag__ a, i);
 }
-#endif
 
 void
 comparec (_Complex double a, double r, double i)
@@ -95,10 +91,8 @@ comparecl (_Complex long double a, long double r, long double i)
 void
 check_float (void)
 {
-#ifndef __SPU__
   ALL_CHECKS (0.0f, -0.0f, __builtin_nanf(""), __builtin_inff(),
 	      float, comparecf);
-#endif
 }
 
 void

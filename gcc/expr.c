@@ -4942,37 +4942,46 @@ get_bit_range (poly_uint64_pod *bitstart, poly_uint64_pod *bitend, tree exp,
   *bitend = *bitstart + tree_to_poly_uint64 (DECL_SIZE (repr)) - 1;
 }
 
-/* Returns true if ADDR is an ADDR_EXPR of a DECL that does not reside
-   in memory and has non-BLKmode.  DECL_RTL must not be a MEM; if
-   DECL_RTL was not set yet, return NORTL.  */
+/* Returns true if BASE is a DECL that does not reside in memory and
+   has non-BLKmode.  DECL_RTL must not be a MEM; if
+   DECL_RTL was not set yet, return false.  */
 
 static inline bool
-addr_expr_of_non_mem_decl_p_1 (tree addr, bool nortl)
+non_mem_decl_p (tree base)
 {
-  if (TREE_CODE (addr) != ADDR_EXPR)
-    return false;
-
-  tree base = TREE_OPERAND (addr, 0);
-
   if (!DECL_P (base)
       || TREE_ADDRESSABLE (base)
       || DECL_MODE (base) == BLKmode)
     return false;
 
   if (!DECL_RTL_SET_P (base))
-    return nortl;
+    return false;
 
   return (!MEM_P (DECL_RTL (base)));
 }
 
-/* Returns true if the MEM_REF REF refers to an object that does not
+/* Returns true if REF refers to an object that does not
    reside in memory and has non-BLKmode.  */
 
 static inline bool
 mem_ref_refers_to_non_mem_p (tree ref)
 {
-  tree base = TREE_OPERAND (ref, 0);
-  return addr_expr_of_non_mem_decl_p_1 (base, false);
+  tree base;
+
+  if (TREE_CODE (ref) == MEM_REF
+      || TREE_CODE (ref) == TARGET_MEM_REF)
+    {
+      tree addr = TREE_OPERAND (ref, 0);
+
+      if (TREE_CODE (addr) != ADDR_EXPR)
+	return false;
+
+      base = TREE_OPERAND (addr, 0);
+    }
+  else
+    base = ref;
+
+  return non_mem_decl_p (base);
 }
 
 /* Expand an assignment that stores the value of FROM into TO.  If NONTEMPORAL
@@ -5001,7 +5010,8 @@ expand_assignment (tree to, tree from, bool nontemporal)
   /* Handle misaligned stores.  */
   mode = TYPE_MODE (TREE_TYPE (to));
   if ((TREE_CODE (to) == MEM_REF
-       || TREE_CODE (to) == TARGET_MEM_REF)
+       || TREE_CODE (to) == TARGET_MEM_REF
+       || DECL_P (to))
       && mode != BLKmode
       && !mem_ref_refers_to_non_mem_p (to)
       && ((align = get_object_alignment (to))
@@ -10052,6 +10062,42 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	{
 	  if (exp && MEM_P (temp) && REG_P (XEXP (temp, 0)))
 	    mark_reg_pointer (XEXP (temp, 0), DECL_ALIGN (exp));
+	}
+      else if (MEM_P (decl_rtl))
+	temp = decl_rtl;
+
+      if (temp != 0)
+	{
+	  if (MEM_P (temp)
+	      && modifier != EXPAND_WRITE
+	      && modifier != EXPAND_MEMORY
+	      && modifier != EXPAND_INITIALIZER
+	      && modifier != EXPAND_CONST_ADDRESS
+	      && modifier != EXPAND_SUM
+	      && !inner_reference_p
+	      && mode != BLKmode
+	      && MEM_ALIGN (temp) < GET_MODE_ALIGNMENT (mode))
+	    {
+	      enum insn_code icode;
+
+	      if ((icode = optab_handler (movmisalign_optab, mode))
+		  != CODE_FOR_nothing)
+		{
+		  class expand_operand ops[2];
+
+		  /* We've already validated the memory, and we're creating a
+		     new pseudo destination.  The predicates really can't fail,
+		     nor can the generator.  */
+		  create_output_operand (&ops[0], NULL_RTX, mode);
+		  create_fixed_operand (&ops[1], temp);
+		  expand_insn (icode, 2, ops);
+		  temp = ops[0].value;
+		}
+	      else if (targetm.slow_unaligned_access (mode, MEM_ALIGN (temp)))
+		temp = extract_bit_field (temp, GET_MODE_BITSIZE (mode),
+					  0, unsignedp, NULL_RTX,
+					  mode, mode, false, NULL);
+	    }
 
 	  return temp;
 	}
@@ -10267,7 +10313,6 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
       {
 	addr_space_t as
 	  = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))));
-	enum insn_code icode;
 	unsigned int align;
 
 	op0 = addr_for_mem_ref (exp, as, true);
@@ -10279,21 +10324,27 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	if (modifier != EXPAND_WRITE
 	    && modifier != EXPAND_MEMORY
 	    && mode != BLKmode
-	    && align < GET_MODE_ALIGNMENT (mode)
-	    /* If the target does not have special handling for unaligned
-	       loads of mode then it can use regular moves for them.  */
-	    && ((icode = optab_handler (movmisalign_optab, mode))
-		!= CODE_FOR_nothing))
+	    && align < GET_MODE_ALIGNMENT (mode))
 	  {
-	    class expand_operand ops[2];
+	    enum insn_code icode;
 
-	    /* We've already validated the memory, and we're creating a
-	       new pseudo destination.  The predicates really can't fail,
-	       nor can the generator.  */
-	    create_output_operand (&ops[0], NULL_RTX, mode);
-	    create_fixed_operand (&ops[1], temp);
-	    expand_insn (icode, 2, ops);
-	    temp = ops[0].value;
+	    if ((icode = optab_handler (movmisalign_optab, mode))
+		!= CODE_FOR_nothing)
+	      {
+		class expand_operand ops[2];
+
+		/* We've already validated the memory, and we're creating a
+		   new pseudo destination.  The predicates really can't fail,
+		   nor can the generator.  */
+		create_output_operand (&ops[0], NULL_RTX, mode);
+		create_fixed_operand (&ops[1], temp);
+		expand_insn (icode, 2, ops);
+		temp = ops[0].value;
+	      }
+	    else if (targetm.slow_unaligned_access (mode, align))
+	      temp = extract_bit_field (temp, GET_MODE_BITSIZE (mode),
+					0, unsignedp, NULL_RTX,
+					mode, mode, false, NULL);
 	  }
 	return temp;
       }
@@ -10795,6 +10846,14 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    MEM_VOLATILE_P (op0) = 1;
 	  }
 
+	if (MEM_P (op0) && TREE_CODE (tem) == FUNCTION_DECL)
+	  {
+	    if (op0 == orig_op0)
+	      op0 = copy_rtx (op0);
+
+	    set_mem_align (op0, BITS_PER_UNIT);
+	  }
+
 	/* In cases where an aligned union has an unaligned object
 	   as a field, we might be extracting a BLKmode value from
 	   an integer-mode (e.g., SImode) object.  Handle this case
@@ -10956,9 +11015,10 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  op0 = copy_rtx (op0);
 
 	/* Don't set memory attributes if the base expression is
-	   SSA_NAME that got expanded as a MEM.  In that case, we should
-	   just honor its original memory attributes.  */
-	if (TREE_CODE (tem) != SSA_NAME || !MEM_P (orig_op0))
+	   SSA_NAME that got expanded as a MEM or a CONSTANT.  In that case,
+	   we should just honor its original memory attributes.  */
+	if (!(TREE_CODE (tem) == SSA_NAME
+	      && (MEM_P (orig_op0) || CONSTANT_P (orig_op0))))
 	  set_mem_attributes (op0, exp, 0);
 
 	if (REG_P (XEXP (op0, 0)))

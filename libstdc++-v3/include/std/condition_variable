@@ -65,8 +65,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// condition_variable
   class condition_variable
   {
-    typedef chrono::system_clock	__clock_t;
-    typedef chrono::steady_clock	__steady_clock_t;
+    using steady_clock = chrono::steady_clock;
+    using system_clock = chrono::system_clock;
+#ifdef _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT
+    using __clock_t = steady_clock;
+#else
+    using __clock_t = system_clock;
+#endif
     typedef __gthread_cond_t		__native_type;
 
 #ifdef __GTHREAD_COND_INIT
@@ -101,10 +106,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  wait(__lock);
       }
 
+#ifdef _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT
     template<typename _Duration>
       cv_status
       wait_until(unique_lock<mutex>& __lock,
-		 const chrono::time_point<__clock_t, _Duration>& __atime)
+		 const chrono::time_point<steady_clock, _Duration>& __atime)
+      { return __wait_until_impl(__lock, __atime); }
+#endif
+
+    template<typename _Duration>
+      cv_status
+      wait_until(unique_lock<mutex>& __lock,
+		 const chrono::time_point<system_clock, _Duration>& __atime)
       { return __wait_until_impl(__lock, __atime); }
 
     template<typename _Clock, typename _Duration>
@@ -112,7 +125,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       wait_until(unique_lock<mutex>& __lock,
 		 const chrono::time_point<_Clock, _Duration>& __atime)
       {
-	// DR 887 - Sync unknown clock to known clock.
 	const typename _Clock::time_point __c_entry = _Clock::now();
 	const __clock_t::time_point __s_entry = __clock_t::now();
 	const auto __delta = __atime - __c_entry;
@@ -145,11 +157,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       wait_for(unique_lock<mutex>& __lock,
 	       const chrono::duration<_Rep, _Period>& __rtime)
       {
-	using __dur = typename __steady_clock_t::duration;
+	using __dur = typename steady_clock::duration;
 	auto __reltime = chrono::duration_cast<__dur>(__rtime);
 	if (__reltime < __rtime)
 	  ++__reltime;
-	return wait_until(__lock, __steady_clock_t::now() + __reltime);
+	return wait_until(__lock, steady_clock::now() + __reltime);
       }
 
     template<typename _Rep, typename _Period, typename _Predicate>
@@ -158,11 +170,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const chrono::duration<_Rep, _Period>& __rtime,
 	       _Predicate __p)
       {
-	using __dur = typename __steady_clock_t::duration;
+	using __dur = typename steady_clock::duration;
 	auto __reltime = chrono::duration_cast<__dur>(__rtime);
 	if (__reltime < __rtime)
 	  ++__reltime;
-	return wait_until(__lock, __steady_clock_t::now() + __reltime,
+	return wait_until(__lock, steady_clock::now() + __reltime,
 			  std::move(__p));
       }
 
@@ -171,10 +183,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return &_M_cond; }
 
   private:
+#ifdef _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT
     template<typename _Dur>
       cv_status
       __wait_until_impl(unique_lock<mutex>& __lock,
-			const chrono::time_point<__clock_t, _Dur>& __atime)
+			const chrono::time_point<steady_clock, _Dur>& __atime)
+      {
+	auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
+	auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
+
+	__gthread_time_t __ts =
+	  {
+	    static_cast<std::time_t>(__s.time_since_epoch().count()),
+	    static_cast<long>(__ns.count())
+	  };
+
+	pthread_cond_clockwait(&_M_cond, __lock.mutex()->native_handle(),
+					 CLOCK_MONOTONIC,
+					 &__ts);
+
+	return (steady_clock::now() < __atime
+		? cv_status::no_timeout : cv_status::timeout);
+      }
+#endif
+
+    template<typename _Dur>
+      cv_status
+      __wait_until_impl(unique_lock<mutex>& __lock,
+			const chrono::time_point<system_clock, _Dur>& __atime)
       {
 	auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
 	auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
@@ -188,7 +224,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__gthread_cond_timedwait(&_M_cond, __lock.mutex()->native_handle(),
 				 &__ts);
 
-	return (__clock_t::now() < __atime
+	return (system_clock::now() < __atime
 		? cv_status::no_timeout : cv_status::timeout);
       }
   };
@@ -208,7 +244,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Like above, but mutex is not required to have try_lock.
   class condition_variable_any
   {
-    typedef chrono::system_clock	__clock_t;
+#ifdef _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT
+    using __clock_t = chrono::steady_clock;
+#else
+    using __clock_t = chrono::system_clock;
+#endif
     condition_variable			_M_cond;
     shared_ptr<mutex>			_M_mutex;
 

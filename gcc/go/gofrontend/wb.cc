@@ -733,6 +733,31 @@ Gogo::assign_needs_write_barrier(
 	  && !lhs->type()->points_to()->in_heap())
 	return false;
 
+      // For a struct assignment, we don't need a write barrier if all
+      // the field types can not be in the heap.
+      Struct_type* st = lhs->type()->struct_type();
+      if (st != NULL)
+	{
+	  bool in_heap = false;
+	  const Struct_field_list* fields = st->fields();
+	  for (Struct_field_list::const_iterator p = fields->begin();
+	       p != fields->end();
+	       p++)
+	    {
+	      Type* ft = p->type();
+	      if (!ft->has_pointer())
+		continue;
+	      if (!ft->in_heap())
+		continue;
+	      if (ft->points_to() != NULL && !ft->points_to()->in_heap())
+		continue;
+	      in_heap = true;
+	      break;
+	    }
+	  if (!in_heap)
+	    return false;
+	}
+
       Field_reference_expression* fre = lhs->field_reference_expression();
       if (fre != NULL)
 	{
@@ -787,31 +812,6 @@ Gogo::assign_needs_write_barrier(
       && ue->op() == OPERATOR_MULT
       && this->is_nonwb_pointer(ue->operand(), nonwb_pointers))
     return false;
-
-  // For a struct assignment, we don't need a write barrier if all the
-  // pointer types can not be in the heap.
-  Struct_type* st = lhs->type()->struct_type();
-  if (st != NULL)
-    {
-      bool in_heap = false;
-      const Struct_field_list* fields = st->fields();
-      for (Struct_field_list::const_iterator p = fields->begin();
-	   p != fields->end();
-	   p++)
-	{
-	  Type* ft = p->type();
-	  if (!ft->has_pointer())
-	    continue;
-	  if (!ft->in_heap())
-	    continue;
-	  if (ft->points_to() != NULL && !ft->points_to()->in_heap())
-	    continue;
-	  in_heap = true;
-	  break;
-	}
-      if (!in_heap)
-	return false;
-    }
 
   // Write barrier needed in other cases.
   return true;

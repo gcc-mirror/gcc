@@ -3034,8 +3034,12 @@ percent_G_format (text_info *text)
 {
   gimple *stmt = va_arg (*text->args_ptr, gimple*);
 
+  /* Fall back on the rich location if the statement doesn't have one.  */
+  location_t loc = gimple_location (stmt);
+  if (loc == UNKNOWN_LOCATION)
+    loc = text->m_richloc->get_loc ();
   tree block = gimple_block (stmt);
-  percent_K_format (text, gimple_location (stmt), block);
+  percent_K_format (text, loc, block);
 }
 
 #if __GNUC__ >= 10

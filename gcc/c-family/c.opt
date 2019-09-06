@@ -400,6 +400,13 @@ Wc++17-compat
 C++ ObjC++ Var(warn_cxx17_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about C++ constructs whose meaning differs between ISO C++ 2014 and ISO C++ 2017.
 
+Wc++2a-compat
+C++ ObjC++ Warning Alias(Wc++20-compat) Undocumented
+
+Wc++20-compat
+C++ ObjC++ Var(warn_cxx20_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
+Warn about C++ constructs whose meaning differs between ISO C++ 2017 and ISO C++ 2020.
+
 Wcast-function-type
 C ObjC C++ ObjC++ Var(warn_cast_function_type) Warning EnabledBy(Wextra)
 Warn about casts between incompatible function types.
@@ -533,6 +540,10 @@ Warn about stray tokens after #else and #endif.
 Wenum-compare
 C ObjC C++ ObjC++ Var(warn_enum_compare) Init(-1) Warning LangEnabledBy(C ObjC,Wall || Wc++-compat)
 Warn about comparison of different enum types.
+
+Wenum-conversion
+C ObjC Var(warn_enum_conversion) Init(0) Warning LangEnabledBy(C ObjC,Wextra)
+Warn about implicit conversion of enum types.
 
 Werror
 C ObjC C++ ObjC++
@@ -1221,6 +1232,10 @@ Wno-vla-larger-than
 C ObjC C++ LTO ObjC++ Alias(Wvla-larger-than=,18446744073709551615EiB,none) Warning
 -Wno-vla-larger-than Disable Wvla-larger-than= warning.  Equivalent to Wvla-larger-than=<SIZE_MAX> or larger.
 
+Wvolatile
+C++ ObjC++ Var(warn_volatile) Warning
+Warn about deprecated uses of volatile qualifier.
+
 Wvolatile-register-var
 C ObjC C++ ObjC++ Var(warn_volatile_register_var) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when a register variable is declared volatile.
@@ -1452,8 +1467,8 @@ C ObjC C++ ObjC++
 Emit debug annotations during preprocessing.
 
 fdeduce-init-list
-C++ ObjC++ Var(flag_deduce_init_list) Init(0)
--fdeduce-init-list	enable deduction of std::initializer_list for a template type parameter from a brace-enclosed initializer-list.
+C++ ObjC++ Ignore
+Does nothing.  Preserved for backward compatibility.
 
 fdeclone-ctor-dtor
 C++ ObjC++ Var(flag_declone_ctor_dtor) Init(-1)
@@ -1767,8 +1782,8 @@ ObjC ObjC++ LTO Var(flag_replace_objc_classes)
 Used in Fix-and-Continue mode to indicate that object files may be swapped in at runtime.
 
 frepo
-C++ ObjC++
-Enable automatic template instantiation.
+C++ ObjC++ Deprecated
+Deprecated in GCC 10.  This switch has no effect.
 
 frtti
 C++ ObjC++ Optimization Var(flag_rtti) Init(1)

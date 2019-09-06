@@ -1366,30 +1366,17 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 	  return errmsg;
 	}
 
-      /* If we are processing .symtab purge __gnu_lto_slim symbol
-	 from it and any symbols in discarded sections.  */
+      /* If we are processing .symtab purge any symbols
+	 in discarded sections.  */
       if (sh_type == SHT_SYMTAB)
 	{
 	  unsigned entsize = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
 					      shdr, sh_entsize, Elf_Addr);
 	  unsigned strtab = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
 					     shdr, sh_link, Elf_Word);
-	  unsigned char *strshdr = shdrs + (strtab - 1) * shdr_size;
-	  off_t stroff = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
-					  strshdr, sh_offset, Elf_Addr);
-	  size_t strsz = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
-					  strshdr, sh_size, Elf_Addr);
-	  char *strings = XNEWVEC (char, strsz);
-	  char *gnu_lto = strings;
+	  size_t prevailing_name_idx = 0;
 	  unsigned char *ent;
 	  unsigned *shndx_table = NULL;
-	  simple_object_internal_read (sobj->descriptor,
-				       sobj->offset + stroff,
-				       (unsigned char *)strings,
-				       strsz, &errmsg, err);
-	  /* Find first '\0' in strings.  */
-	  gnu_lto = (char *) memchr (gnu_lto + 1, '\0',
-				     strings + strsz - gnu_lto);
 	  /* Read the section index table if present.  */
 	  if (symtab_indices_shndx[i - 1] != 0)
 	    {
@@ -1404,6 +1391,45 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 					   (unsigned char *)shndx_table,
 					   sidxsz, &errmsg, err);
 	    }
+
+	  /* Find a WEAK HIDDEN symbol which name we will use for removed
+	     symbols.  We know there's a prevailing weak hidden symbol
+	     at the start of the .debug_info section.  */
+	  for (ent = buf; ent < buf + length; ent += entsize)
+	    {
+	      unsigned st_shndx = ELF_FETCH_FIELD (type_functions, ei_class,
+						   Sym, ent,
+						   st_shndx, Elf_Half);
+	      unsigned char *st_info;
+	      unsigned char *st_other;
+	      if (ei_class == ELFCLASS32)
+		{
+		  st_info = &((Elf32_External_Sym *)ent)->st_info;
+		  st_other = &((Elf32_External_Sym *)ent)->st_other;
+		}
+	      else
+		{
+		  st_info = &((Elf64_External_Sym *)ent)->st_info;
+		  st_other = &((Elf64_External_Sym *)ent)->st_other;
+		}
+	      if (st_shndx == SHN_XINDEX)
+		st_shndx = type_functions->fetch_Elf_Word
+		    ((unsigned char *)(shndx_table + (ent - buf) / entsize));
+
+	      if (st_shndx != SHN_COMMON
+		  && !(st_shndx != SHN_UNDEF
+		       && st_shndx < shnum
+		       && pfnret[st_shndx - 1] == -1)
+		  && ELF_ST_BIND (*st_info) == STB_WEAK
+		  && *st_other == STV_HIDDEN)
+		{
+		  prevailing_name_idx = ELF_FETCH_FIELD (type_functions,
+							 ei_class, Sym, ent,
+							 st_name, Elf_Word);
+		  break;
+		}
+	    }
+
 	  for (ent = buf; ent < buf + length; ent += entsize)
 	    {
 	      unsigned st_shndx = ELF_FETCH_FIELD (type_functions, ei_class,
@@ -1426,9 +1452,10 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 	      if (st_shndx == SHN_XINDEX)
 		st_shndx = type_functions->fetch_Elf_Word
 		    ((unsigned char *)(shndx_table + (ent - buf) / entsize));
-	      /* Eliminate all COMMONs - this includes __gnu_lto_v1
-		 and __gnu_lto_slim which otherwise cause endless
-		 LTO plugin invocation.  */
+	      /* Eliminate all COMMONs - this includes __gnu_lto_slim
+		 which otherwise cause endless LTO plugin invocation.
+		 FIXME: remove the condition once we remove emission
+		 of __gnu_lto_slim symbol.  */
 	      if (st_shndx == SHN_COMMON)
 		discard = 1;
 	      /* We also need to remove symbols refering to sections
@@ -1460,12 +1487,13 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 		  else
 		    {
 		      /* Make discarded global symbols hidden weak
-			 undefined and sharing the gnu_lto_ name.  */
+			 undefined and sharing a name of a prevailing
+			 symbol.  */
 		      bind = STB_WEAK;
 		      other = STV_HIDDEN;
 		      ELF_SET_FIELD (type_functions, ei_class, Sym,
 				     ent, st_name, Elf_Word,
-				     gnu_lto - strings);
+				     prevailing_name_idx);
 		      ELF_SET_FIELD (type_functions, ei_class, Sym,
 				     ent, st_shndx, Elf_Half, SHN_UNDEF);
 		    }
@@ -1482,7 +1510,6 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 		ELF_SET_FIELD (type_functions, ei_class, Sym,
 			       ent, st_shndx, Elf_Half, sh_map[st_shndx]);
 	    }
-	  XDELETEVEC (strings);
 	  XDELETEVEC (shndx_table);
 	}
       else if (sh_type == SHT_GROUP)

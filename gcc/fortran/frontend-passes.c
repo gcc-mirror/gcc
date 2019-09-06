@@ -5477,9 +5477,9 @@ gfc_check_externals (gfc_namespace *ns)
 
   gfc_clear_error ();
 
-  /* Turn errors into warnings if -std=legacy is given by the user.  */
+  /* Turn errors into warnings if the user indicated this.  */
 
-  if (!pedantic && !(gfc_option.warn_std & GFC_STD_LEGACY))
+  if (!pedantic && flag_allow_argument_mismatch)
     gfc_errors_to_warnings (true);
 
   gfc_code_walker (&ns->code, check_externals_code, check_externals_expr, NULL);

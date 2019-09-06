@@ -438,6 +438,8 @@ enum aarch64_builtins
   /* Special cased Armv8.3-A Complex FMA by Lane quad Builtins.  */
   AARCH64_SIMD_FCMLA_LANEQ_BUILTIN_BASE,
   AARCH64_SIMD_FCMLA_LANEQ_BUILTINS
+  /* Builtin for Arm8.3-a Javascript conversion instruction.  */
+  AARCH64_JSCVT,
   /* TME builtins.  */
   AARCH64_TME_BUILTIN_TSTART,
   AARCH64_TME_BUILTIN_TCOMMIT,
@@ -1130,6 +1132,12 @@ aarch64_init_builtins (void)
   aarch64_init_crc32_builtins ();
   aarch64_init_builtin_rsqrt ();
 
+  tree ftype_jcvt
+    = build_function_type_list (intSI_type_node, double_type_node, NULL);
+  aarch64_builtin_decls[AARCH64_JSCVT]
+    = add_builtin_function ("__builtin_aarch64_jcvtzs", ftype_jcvt,
+			    AARCH64_JSCVT, BUILT_IN_MD, NULL, NULL_TREE);
+
   /* Initialize pointer authentication builtins which are backed by instructions
      in NOP encoding space.
 
@@ -1680,6 +1688,16 @@ aarch64_expand_builtin (tree exp,
 	  emit_move_insn (target, x17_reg);
 	}
 
+      return target;
+
+    case AARCH64_JSCVT:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op0 = force_reg (DFmode, expand_normal (arg0));
+      if (!target)
+	target = gen_reg_rtx (SImode);
+      else
+	target = force_reg (SImode, target);
+      emit_insn (GEN_FCN (CODE_FOR_aarch64_fjcvtzs) (target, op0));
       return target;
 
     case AARCH64_SIMD_BUILTIN_FCMLA_LANEQ0_V2SF:

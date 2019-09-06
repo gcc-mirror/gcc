@@ -652,7 +652,7 @@
   }
   [(set_attr "type" "mult,smem,smem,flat,flat,vmult,vmult,vmult,flat,flat,\
 		     ds,ds")
-   (set_attr "delayeduse" "*,*,yes,*,*,*,*,*,*,*,*,*")
+   (set_attr "delayeduse" "*,*,yes,*,*,*,*,*,yes,*,*,*")
    (set_attr "length" "*,12,12,12,12,*,*,*,12,12,12,12")])
 
 ;; }}}
@@ -1619,7 +1619,7 @@
   [(set_attr "type" "smem,flat,flat")
    (set_attr "length" "12")
    (set_attr "gcn_version" "gcn5,*,gcn5")
-   (set_attr "delayeduse" "*,yes,*")])
+   (set_attr "delayeduse" "*,yes,yes")])
 
 (define_insn "sync_compare_and_swap<mode>_lds_insn"
   [(set (match_operand:SIDI 0 "register_operand"    "= v")

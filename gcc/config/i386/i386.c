@@ -13557,6 +13557,11 @@ ix86_i387_mode_needed (int entity, rtx_insn *insn)
 
   switch (entity)
     {
+    case I387_ROUNDEVEN:
+      if (mode == I387_CW_ROUNDEVEN)
+	return mode;
+      break;
+
     case I387_TRUNC:
       if (mode == I387_CW_TRUNC)
 	return mode;
@@ -13591,6 +13596,7 @@ ix86_mode_needed (int entity, rtx_insn *insn)
       return ix86_dirflag_mode_needed (insn);
     case AVX_U128:
       return ix86_avx_u128_mode_needed (insn);
+    case I387_ROUNDEVEN:
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
@@ -13651,6 +13657,7 @@ ix86_mode_after (int entity, int mode, rtx_insn *insn)
       return mode;
     case AVX_U128:
       return ix86_avx_u128_mode_after (mode, insn);
+    case I387_ROUNDEVEN:
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
@@ -13703,6 +13710,7 @@ ix86_mode_entry (int entity)
       return ix86_dirflag_mode_entry ();
     case AVX_U128:
       return ix86_avx_u128_mode_entry ();
+    case I387_ROUNDEVEN:
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
@@ -13740,6 +13748,7 @@ ix86_mode_exit (int entity)
       return X86_DIRFLAG_ANY;
     case AVX_U128:
       return ix86_avx_u128_mode_exit ();
+    case I387_ROUNDEVEN:
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
@@ -13774,6 +13783,12 @@ emit_i387_cw_initialization (int mode)
 
   switch (mode)
     {
+    case I387_CW_ROUNDEVEN:
+      /* round to nearest */
+      emit_insn (gen_andhi3 (reg, reg, GEN_INT (~0x0c00)));
+      slot = SLOT_CW_ROUNDEVEN;
+      break;
+
     case I387_CW_TRUNC:
       /* round toward zero (truncate) */
       emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0c00)));
@@ -13820,6 +13835,7 @@ ix86_emit_mode_set (int entity, int mode, int prev_mode ATTRIBUTE_UNUSED,
       if (mode == AVX_U128_CLEAN)
 	emit_insn (gen_avx_vzeroupper ());
       break;
+    case I387_ROUNDEVEN:
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
@@ -18290,16 +18306,19 @@ inline_secondary_memory_needed (machine_mode mode, reg_class_t class1,
   if (FLOAT_CLASS_P (class1) != FLOAT_CLASS_P (class2))
     return true;
 
-  /* Between mask and general, we have moves no larger than word size.  */
-  if ((MASK_CLASS_P (class1) != MASK_CLASS_P (class2))
-      && (GET_MODE_SIZE (mode) > UNITS_PER_WORD))
-  return true;
-
   /* ??? This is a lie.  We do have moves between mmx/general, and for
      mmx/sse2.  But by saying we need secondary memory we discourage the
      register allocator from using the mmx registers unless needed.  */
   if (MMX_CLASS_P (class1) != MMX_CLASS_P (class2))
     return true;
+
+  /* Between mask and general, we have moves no larger than word size.  */
+  if (MASK_CLASS_P (class1) != MASK_CLASS_P (class2))
+    {
+      if (!(INTEGER_CLASS_P (class1) || INTEGER_CLASS_P (class2))
+	  || GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	return true;
+    }
 
   if (SSE_CLASS_P (class1) != SSE_CLASS_P (class2))
     {
@@ -18307,14 +18326,16 @@ inline_secondary_memory_needed (machine_mode mode, reg_class_t class1,
       if (!TARGET_SSE2)
 	return true;
 
+      /* Between SSE and general, we have moves no larger than word size.  */
+      if (!(INTEGER_CLASS_P (class1) || INTEGER_CLASS_P (class2))
+	  || GET_MODE_SIZE (mode) < GET_MODE_SIZE (SImode)
+	  || GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	return true;
+
       /* If the target says that inter-unit moves are more expensive
 	 than moving through memory, then don't generate them.  */
       if ((SSE_CLASS_P (class1) && !TARGET_INTER_UNIT_MOVES_FROM_VEC)
 	  || (SSE_CLASS_P (class2) && !TARGET_INTER_UNIT_MOVES_TO_VEC))
-	return true;
-
-      /* Between SSE and general, we have moves no larger than word size.  */
-      if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	return true;
     }
 
@@ -18592,18 +18613,10 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
   if (MMX_CLASS_P (class1) != MMX_CLASS_P (class2))
     gcc_unreachable ();
 
-  /* Moves between SSE and integer units are expensive.  */
   if (SSE_CLASS_P (class1) != SSE_CLASS_P (class2))
-
-    /* ??? By keeping returned value relatively high, we limit the number
-       of moves between integer and SSE registers for all targets.
-       Additionally, high value prevents problem with x86_modes_tieable_p(),
-       where integer modes in SSE registers are not tieable
-       because of missing QImode and HImode moves to, from or between
-       MMX/SSE registers.  */
-    return MAX (8, SSE_CLASS_P (class1)
-		? ix86_cost->hard_register.sse_to_integer
-		: ix86_cost->hard_register.integer_to_sse);
+    return (SSE_CLASS_P (class1)
+	    ? ix86_cost->hard_register.sse_to_integer
+	    : ix86_cost->hard_register.integer_to_sse);
 
   if (MAYBE_FLOAT_CLASS_P (class1))
     return ix86_cost->hard_register.fp_move;

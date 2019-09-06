@@ -413,40 +413,6 @@ else
 rtems_task_variable_add_file =
 endif
 
-if LIBGO_IS_LINUX
-runtime_getncpu_file = runtime/getncpu-linux.c
-else
-if LIBGO_IS_DARWIN
-runtime_getncpu_file = runtime/getncpu-bsd.c
-else
-if LIBGO_IS_IRIX
-runtime_getncpu_file = runtime/getncpu-irix.c
-else
-if LIBGO_IS_SOLARIS
-runtime_getncpu_file = runtime/getncpu-solaris.c
-else
-if LIBGO_IS_FREEBSD
-runtime_getncpu_file = runtime/getncpu-bsd.c
-else
-if LIBGO_IS_NETBSD
-runtime_getncpu_file = runtime/getncpu-bsd.c
-else
-if LIBGO_IS_AIX
-runtime_getncpu_file = runtime/getncpu-aix.c
-else
-if LIBGO_IS_HURD
-runtime_getncpu_file = runtime/getncpu-hurd.c
-else
-runtime_getncpu_file = runtime/getncpu-none.c
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-
 runtime_files = \
 	runtime/aeshash.c \
 	runtime/go-assert.c \
@@ -479,8 +445,7 @@ runtime_files = \
 	runtime/stack.c \
 	runtime/yield.c \
 	runtime/go-context.S \
-	$(rtems_task_variable_add_file) \
-	$(runtime_getncpu_file)
+	$(rtems_task_variable_add_file)
 
 version.go: s-version; @true
 s-version: Makefile
@@ -612,7 +577,7 @@ s-zdefaultcc: Makefile
 # compiling runtime) to prune out certain types that should not be
 # exported back to C. See comments in mkruntimeinc.sh for more details.
 runtime.inc: s-runtime-inc; @true
-s-runtime-inc: runtime.lo Makefile
+s-runtime-inc: runtime.lo mkruntimeinc.sh Makefile
 	$(SHELL) $(srcdir)/mkruntimeinc.sh
 	$(SHELL) $(srcdir)/mvifdiff.sh tmp-runtime.inc runtime.inc
 	$(STAMP) $@
@@ -1205,7 +1170,8 @@ MOSTLYCLEANFILES = \
 	s-libcalls s-libcalls-list s-syscall_arch s-gen-sysinfo s-sysinfo \
 	s-errno s-epoll \
 	libgo.head libgo.sum.sep libgo.log.sep libgo.var \
-	libcalls-list runtime.inc runtime.inc.tmp2 runtime.inc.tmp3
+	libcalls-list \
+	runtime.inc runtime.inc.tmp2 runtime.inc.tmp3 runtime.inc.raw
 
 mostlyclean-local:
 	find . -name '*.lo' -print | xargs $(LIBTOOL) --mode=clean rm -f

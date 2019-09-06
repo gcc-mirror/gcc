@@ -83,7 +83,7 @@ CXX_AND_OBJCXX_OBJS = \
 	cp/mangle.o cp/method.o \
 	cp/name-lookup.o cp/optimize.o \
 	cp/parser.o cp/pt.o cp/ptree.o \
-	cp/repo.o cp/rtti.o \
+	cp/rtti.o \
 	cp/search.o cp/semantics.o \
 	cp/tree.o cp/typeck.o cp/typeck2.o \
 	cp/vtable-class-hierarchy.o $(CXX_C_OBJS)

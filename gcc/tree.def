@@ -793,9 +793,12 @@ DEFTREECODE (TRUTH_XOR_EXPR, "truth_xor_expr", tcc_expression, 2)
 DEFTREECODE (TRUTH_NOT_EXPR, "truth_not_expr", tcc_expression, 1)
 
 /* Relational operators.
-   `EQ_EXPR' and `NE_EXPR' are allowed for any types.
-   The others are allowed only for integer (or pointer or enumeral)
-   or real types.
+   EQ_EXPR and NE_EXPR are allowed for any types.  The others, except for
+   LTGT_EXPR, are allowed only for integral, floating-point and vector types.
+   LTGT_EXPR is allowed only for floating-point types.
+   For floating-point operators, if either operand is a NaN, then NE_EXPR
+   returns true and the remaining operators return false.  The operators
+   other than EQ_EXPR and NE_EXPR may generate an exception on quiet NaNs.
    In all cases the operands will have the same type,
    and the value is either the type used by the language for booleans
    or an integer vector type of the same size and with the same number
@@ -805,10 +808,11 @@ DEFTREECODE (LT_EXPR, "lt_expr", tcc_comparison, 2)
 DEFTREECODE (LE_EXPR, "le_expr", tcc_comparison, 2)
 DEFTREECODE (GT_EXPR, "gt_expr", tcc_comparison, 2)
 DEFTREECODE (GE_EXPR, "ge_expr", tcc_comparison, 2)
+DEFTREECODE (LTGT_EXPR, "ltgt_expr", tcc_comparison, 2)
 DEFTREECODE (EQ_EXPR, "eq_expr", tcc_comparison, 2)
 DEFTREECODE (NE_EXPR, "ne_expr", tcc_comparison, 2)
 
-/* Additional relational operators for floating point unordered.  */
+/* Additional relational operators for floating-point unordered.  */
 DEFTREECODE (UNORDERED_EXPR, "unordered_expr", tcc_comparison, 2)
 DEFTREECODE (ORDERED_EXPR, "ordered_expr", tcc_comparison, 2)
 
@@ -818,9 +822,6 @@ DEFTREECODE (UNLE_EXPR, "unle_expr", tcc_comparison, 2)
 DEFTREECODE (UNGT_EXPR, "ungt_expr", tcc_comparison, 2)
 DEFTREECODE (UNGE_EXPR, "unge_expr", tcc_comparison, 2)
 DEFTREECODE (UNEQ_EXPR, "uneq_expr", tcc_comparison, 2)
-
-/* This is the reverse of uneq_expr.  */
-DEFTREECODE (LTGT_EXPR, "ltgt_expr", tcc_comparison, 2)
 
 DEFTREECODE (RANGE_EXPR, "range_expr", tcc_binary, 2)
 

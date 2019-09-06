@@ -85,8 +85,8 @@ namespace pmr
 	~constant_init() { /* do nothing, union member is not destroyed */ }
       };
 
-    constant_init<newdel_res_t> newdel_res{};
-    constant_init<null_res_t> null_res{};
+    __constinit constant_init<newdel_res_t> newdel_res{};
+    __constinit constant_init<null_res_t> null_res{};
 #if ATOMIC_POINTER_LOCK_FREE == 2
     using atomic_mem_res = atomic<memory_resource*>;
 # define _GLIBCXX_ATOMIC_MEM_RES_CAN_BE_CONSTANT_INITIALIZED
@@ -139,7 +139,7 @@ namespace pmr
 #endif // ATOMIC_POINTER_LOCK_FREE == 2
 
 #ifdef _GLIBCXX_ATOMIC_MEM_RES_CAN_BE_CONSTANT_INITIALIZED
-    constant_init<atomic_mem_res> default_res{&newdel_res.obj};
+    __constinit constant_init<atomic_mem_res> default_res{&newdel_res.obj};
 #else
 # include "default_resource.h"
 #endif

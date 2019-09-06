@@ -300,6 +300,11 @@ go_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   if (!global_options_set.x_flag_optimize_sibling_calls)
     global_options.x_flag_optimize_sibling_calls = 0;
 
+  /* Partial inlining can confuses uses of runtime.Callers.
+     See https://gcc.gnu.org/PR91663.  */
+  if (!global_options_set.x_flag_partial_inlining)
+    global_options.x_flag_partial_inlining = 0;
+
   /* If the debug info level is still 1, as set in init_options, make
      sure that some debugging type is selected.  */
   if (global_options.x_debug_info_level == DINFO_LEVEL_TERSE

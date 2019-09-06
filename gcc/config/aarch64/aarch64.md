@@ -141,6 +141,11 @@
     UNSPEC_CRC32X
     UNSPEC_FCVTZS
     UNSPEC_FCVTZU
+    UNSPEC_FJCVTZS
+    UNSPEC_FRINT32Z
+    UNSPEC_FRINT32X
+    UNSPEC_FRINT64Z
+    UNSPEC_FRINT64X
     UNSPEC_URECPE
     UNSPEC_FRECPE
     UNSPEC_FRECPS
@@ -6883,6 +6888,15 @@
   [(set_attr "length" "0")]
 )
 
+(define_insn "aarch64_fjcvtzs"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:DF 1 "register_operand" "w")]
+		   UNSPEC_FJCVTZS))]
+  "TARGET_JSCVT"
+  "fjcvtzs\\t%w0, %d1"
+  [(set_attr "type" "f_cvtf2i")]
+)
+
 ;; Pointer authentication patterns are always provided.  In architecture
 ;; revisions prior to ARMv8.3-A these HINT instructions operate as NOPs.
 ;; This lets the user write portable software which authenticates pointers
@@ -7016,13 +7030,15 @@
  }
  [(set_attr "type" "mrs")])
 
+;; DO NOT SPLIT THIS PATTERN.  It is important for security reasons that the
+;; canary value does not live beyond the life of this sequence.
 (define_insn "stack_protect_set_<mode>"
   [(set (match_operand:PTR 0 "memory_operand" "=m")
 	(unspec:PTR [(match_operand:PTR 1 "memory_operand" "m")]
 	 UNSPEC_SP_SET))
    (set (match_scratch:PTR 2 "=&r") (const_int 0))]
   ""
-  "ldr\\t%<w>2, %1\;str\\t%<w>2, %0\;mov\t%<w>2,0"
+  "ldr\\t%<w>2, %1\;str\\t%<w>2, %0\;mov\t%<w>2, 0"
   [(set_attr "length" "12")
    (set_attr "type" "multiple")])
 
@@ -7302,6 +7318,16 @@
   [(set_attr "type" "block")
    (set_attr "length" "12")
    (set_attr "speculation_barrier" "true")]
+)
+
+(define_insn "aarch64_<frintnzs_op><mode>"
+  [(set (match_operand:VSFDF 0 "register_operand" "=w")
+	(unspec:VSFDF [(match_operand:VSFDF 1 "register_operand" "w")]
+		      FRINTNZX))]
+  "TARGET_FRINT && TARGET_FLOAT
+   && !(VECTOR_MODE_P (<MODE>mode) && !TARGET_SIMD)"
+  "<frintnzs_op>\\t%<v>0<Vmtype>, %<v>1<Vmtype>"
+  [(set_attr "type" "f_rint<stype>")]
 )
 
 ;; Transactional Memory Extension (TME) instructions.

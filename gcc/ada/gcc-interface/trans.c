@@ -231,14 +231,13 @@ static enum gimplify_status gnat_gimplify_stmt (tree *);
 static void elaborate_all_entities (Node_Id);
 static void process_freeze_entity (Node_Id);
 static void process_decls (List_Id, List_Id, Node_Id, bool, bool);
-static tree emit_range_check (tree, Node_Id, Node_Id);
 static tree emit_check (tree, tree, int, Node_Id);
 static tree build_unary_op_trapv (enum tree_code, tree, tree, Node_Id);
 static tree build_binary_op_trapv (enum tree_code, tree, tree, tree, Node_Id);
-static tree convert_with_check (Entity_Id, tree, bool, bool, bool, Node_Id);
+static tree convert_with_check (Entity_Id, tree, bool, bool, Node_Id);
 static bool addressable_p (tree, tree);
 static tree assoc_to_constructor (Entity_Id, Node_Id, tree);
-static tree pos_to_constructor (Node_Id, tree, Entity_Id);
+static tree pos_to_constructor (Node_Id, tree);
 static void validate_unchecked_conversion (Node_Id);
 static Node_Id adjust_for_implicit_deref (Node_Id);
 static tree maybe_implicit_deref (tree);
@@ -874,12 +873,14 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
       if (Prefix (gnat_parent) != gnat_node)
 	return 0;
 
-      return lvalue_required_p (gnat_parent, gnu_type, constant,
-				address_of_constant);
+      return lvalue_required_p (gnat_parent,
+				get_unpadded_type (Etype (gnat_parent)),
+				constant, address_of_constant);
 
     case N_Selected_Component:
-      return lvalue_required_p (gnat_parent, gnu_type, constant,
-				address_of_constant);
+      return lvalue_required_p (gnat_parent,
+				get_unpadded_type (Etype (gnat_parent)),
+				constant, address_of_constant);
 
     case N_Object_Renaming_Declaration:
       /* We need to preserve addresses through a renaming.  */
@@ -2351,6 +2352,9 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	  if (attribute != Attr_Max_Size_In_Storage_Elements)
 	    gnu_type = TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (gnu_type)));
 	}
+
+      /* The type must be frozen at this point.  */
+      gcc_assert (COMPLETE_TYPE_P (gnu_type));
 
       /* If we're looking for the size of a field, return the field size.  */
       if (TREE_CODE (gnu_prefix) == COMPONENT_REF)
@@ -5253,30 +5257,20 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 
 	  /* Do not issue warnings for CONSTRUCTORs since this is not a copy
 	     but sort of an instantiation for them.  */
-	  if (TREE_CODE (gnu_name) == CONSTRUCTOR)
+	  if (TREE_CODE (remove_conversions (gnu_name, true)) == CONSTRUCTOR)
 	    ;
 
-	  /* If the type is passed by reference, a copy is not allowed.  */
-	  else if (TYPE_IS_BY_REFERENCE_P (gnu_formal_type))
+	  /* If the formal is passed by reference, a copy is not allowed.  */
+	  else if (TYPE_IS_BY_REFERENCE_P (gnu_formal_type)
+		   || Is_Aliased (gnat_formal))
 	    post_error ("misaligned actual cannot be passed by reference",
 		        gnat_actual);
 
-	  /* For users of Starlet we issue a warning because the interface
-	     apparently assumes that by-ref parameters outlive the procedure
-	     invocation.  The code still will not work as intended, but we
-	     cannot do much better since low-level parts of the back-end
-	     would allocate temporaries at will because of the misalignment
-	     if we did not do so here.  */
-	  else if (Is_Valued_Procedure (Entity (Name (gnat_node))))
-	    {
-	      post_error
-		("?possible violation of implicit assumption", gnat_actual);
-	      post_error_ne
-		("?made by pragma Import_Valued_Procedure on &", gnat_actual,
-		 Entity (Name (gnat_node)));
-	      post_error_ne ("?because of misalignment of &", gnat_actual,
-			     gnat_formal);
-	    }
+	  /* If the mechanism was forced to by-ref, a copy is not allowed but
+	     we issue only a warning because this case is not strict Ada.  */
+	  else if (DECL_FORCED_BY_REF_P (gnu_formal))
+	    post_error ("misaligned actual cannot be passed by reference??",
+			gnat_actual);
 
 	  /* If the actual type of the object is already the nominal type,
 	     we have nothing to do, except if the size is self-referential
@@ -5407,11 +5401,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       else
 	gnu_actual = convert (gnu_actual_type, gnu_actual);
 
-      /* Make sure that the actual is in range of the formal's type.  */
-      if (Ekind (gnat_formal) != E_Out_Parameter
-	  && Do_Range_Check (gnat_actual))
-	gnu_actual
-	  = emit_range_check (gnu_actual, gnat_formal_type, gnat_actual);
+      gigi_checking_assert (!Do_Range_Check (gnat_actual));
 
       /* First see if the parameter is passed by reference.  */
       if (is_true_formal_parm && DECL_BY_REF_P (gnu_formal))
@@ -5655,12 +5645,15 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	       conversion node and not from the inner Expression.  */
 	    if (Nkind (gnat_actual) == N_Type_Conversion)
 	      {
+		const Node_Id gnat_expr = Expression (gnat_actual);
+
+		gigi_checking_assert (!Do_Range_Check (gnat_expr));
+
 		gnu_result
-		  = convert_with_check
-		    (Etype (Expression (gnat_actual)), gnu_result,
-		     Do_Overflow_Check (gnat_actual),
-		     Do_Range_Check (Expression (gnat_actual)),
-		     Float_Truncate (gnat_actual), gnat_actual);
+		  = convert_with_check (Etype (gnat_expr), gnu_result,
+					Do_Overflow_Check (gnat_actual),
+					Float_Truncate (gnat_actual),
+					gnat_actual);
 
 		if (!Is_Composite_Type (Underlying_Type (Etype (gnat_formal))))
 		  gnu_actual = convert (TREE_TYPE (gnu_result), gnu_actual);
@@ -5676,10 +5669,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 					      No_Truncation (gnat_actual));
 	    else
 	      {
-		if (Do_Range_Check (gnat_actual))
-		  gnu_result
-		    = emit_range_check (gnu_result, Etype (gnat_actual),
-					gnat_actual);
+		gigi_checking_assert (!Do_Range_Check (gnat_actual));
 
 		if (!(!TREE_CONSTANT (TYPE_SIZE (TREE_TYPE (gnu_actual)))
 		      && TREE_CONSTANT (TYPE_SIZE (TREE_TYPE (gnu_result)))))
@@ -5736,11 +5726,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  Node_Id gnat_parent = Parent (gnat_node);
 	  enum tree_code op_code;
 
-	  /* If range check is needed, emit code to generate it.  */
-	  if (Do_Range_Check (gnat_node))
-	    gnu_call
-	      = emit_range_check (gnu_call, Etype (Name (gnat_parent)),
-				  gnat_parent);
+	  gigi_checking_assert (!Do_Range_Check (gnat_node));
 
 	  /* ??? If the return type has variable size, then force the return
 	     slot optimization as we would not be able to create a temporary.
@@ -7043,10 +7029,9 @@ gnat_to_gnu (Node_Id gnat_node)
 	  && (!type_annotate_only
 	      || Compile_Time_Known_Value (Expression (gnat_node))))
 	{
+	  gigi_checking_assert (!Do_Range_Check (Expression (gnat_node)));
+
 	  gnu_expr = gnat_to_gnu (Expression (gnat_node));
-	  if (Do_Range_Check (Expression (gnat_node)))
-	    gnu_expr
-	      = emit_range_check (gnu_expr, Etype (gnat_temp), gnat_node);
 
 	  if (type_annotate_only && TREE_CODE (gnu_expr) == ERROR_MARK)
 	    gnu_expr = NULL_TREE;
@@ -7396,8 +7381,7 @@ gnat_to_gnu (Node_Id gnat_node)
 				    gnu_aggr_type);
 	else if (TREE_CODE (gnu_aggr_type) == ARRAY_TYPE)
 	  gnu_result = pos_to_constructor (First (Expressions (gnat_node)),
-					   gnu_aggr_type,
-					   Component_Type (Etype (gnat_node)));
+					   gnu_aggr_type);
 	else if (TREE_CODE (gnu_aggr_type) == COMPLEX_TYPE)
 	  gnu_result
 	    = build_binary_op
@@ -7436,10 +7420,11 @@ gnat_to_gnu (Node_Id gnat_node)
       if (kind == N_Qualified_Expression && Is_Tagged_Type (Etype (gnat_node)))
 	used_types_insert (gnu_result_type);
 
+      gigi_checking_assert (!Do_Range_Check (Expression (gnat_node)));
+
       gnu_result
 	= convert_with_check (Etype (gnat_node), gnu_expr,
 			      Do_Overflow_Check (gnat_node),
-			      Do_Range_Check (Expression (gnat_node)),
 			      kind == N_Type_Conversion
 			      && Float_Truncate (gnat_node), gnat_node);
       break;
@@ -7749,10 +7734,9 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	gnat_temp = Expression (gnat_node);
 
-	/* The Expression operand can either be an N_Identifier or
-	   Expanded_Name, which must represent a type, or a
-	   N_Qualified_Expression, which contains both the object type and an
-	   initial value for the object.  */
+	/* The expression can be either an N_Identifier or an Expanded_Name,
+	   which must represent a type, or a N_Qualified_Expression, which
+	   contains both the type and an initial value for the object.  */
 	if (Nkind (gnat_temp) == N_Identifier
 	    || Nkind (gnat_temp) == N_Expanded_Name)
 	  gnu_type = gnat_to_gnu_type (Entity (gnat_temp));
@@ -7765,9 +7749,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	    gnu_init = gnat_to_gnu (Expression (gnat_temp));
 
 	    gnu_init = maybe_unconstrained_array (gnu_init);
-	    if (Do_Range_Check (Expression (gnat_temp)))
-	      gnu_init
-		= emit_range_check (gnu_init, gnat_desig_type, gnat_temp);
+
+	    gigi_checking_assert (!Do_Range_Check (Expression (gnat_temp)));
 
 	    if (Is_Elementary_Type (gnat_desig_type)
 		|| Is_Constrained (gnat_desig_type))
@@ -7873,10 +7856,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  else
 	    gnu_rhs = maybe_unconstrained_array (gnat_to_gnu (gnat_expr));
 
-	  /* If range check is needed, emit code to generate it.  */
-	  if (Do_Range_Check (gnat_expr))
-	    gnu_rhs = emit_range_check (gnu_rhs, Etype (Name (gnat_node)),
-					gnat_node);
+	  gigi_checking_assert (!Do_Range_Check (gnat_expr));
 
 	  /* If an outer atomic access is required on the LHS, build the load-
 	     modify-store sequence.  */
@@ -8737,10 +8717,16 @@ gnat_to_gnu (Node_Id gnat_node)
 	set_gnu_expr_location_from_node (gnu_result, gnat_node);
     }
 
-  /* Set the location information on the result if it's not a simple name.
+  /* Set the location information on the result if it's not a simple name
+     or something that contains a simple name, for example a tag, because
+     we don"t want all the references to get the location of the first use.
      Note that we may have no result if we tried to build a CALL_EXPR node
      to a procedure with no side-effects and optimization is enabled.  */
-  else if (kind != N_Identifier && gnu_result && EXPR_P (gnu_result))
+  else if (kind != N_Identifier
+	   && !(kind == N_Selected_Component
+		&& Chars (Selector_Name (gnat_node)) == Name_uTag)
+	   && gnu_result
+	   && EXPR_P (gnu_result))
     set_gnu_expr_location_from_node (gnu_result, gnat_node);
 
   /* If we're supposed to return something of void_type, it means we have
@@ -8804,7 +8790,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
        5. If this is a reference to an unconstrained array which is used as the
 	  prefix of an attribute reference that requires an lvalue, return the
-	  result unmodified because we want return the original bounds.
+	  result unmodified because we want to return the original bounds.
 
        6. Finally, if the type of the result is already correct.  */
 
@@ -10086,58 +10072,6 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
   return emit_check (check, gnu_expr, CE_Overflow_Check_Failed, gnat_node);
 }
 
-/* Emit code for a range check.  GNU_EXPR is the expression to be checked,
-   GNAT_RANGE_TYPE the gnat type or subtype containing the bounds against
-   which we have to check.  GNAT_NODE is the GNAT node conveying the source
-   location for which the error should be signaled.  */
-
-static tree
-emit_range_check (tree gnu_expr, Entity_Id gnat_range_type, Node_Id gnat_node)
-{
-  tree gnu_range_type = get_unpadded_type (gnat_range_type);
-  tree gnu_compare_type = get_base_type (TREE_TYPE (gnu_expr));
-
-  /* If GNU_EXPR has GNAT_RANGE_TYPE as its base type, no check is needed.
-     This can for example happen when translating 'Val or 'Value.  */
-  if (gnu_compare_type == gnu_range_type)
-    return gnu_expr;
-
-  /* Range checks can only be applied to types with ranges.  */
-  gcc_assert (INTEGRAL_TYPE_P (gnu_range_type)
-              || SCALAR_FLOAT_TYPE_P (gnu_range_type));
-
-  /* If GNU_EXPR has an integral type that is narrower than GNU_RANGE_TYPE,
-     we can't do anything since we might be truncating the bounds.  No
-     check is needed in this case.  */
-  if (INTEGRAL_TYPE_P (TREE_TYPE (gnu_expr))
-      && (TYPE_PRECISION (gnu_compare_type)
-	  < TYPE_PRECISION (get_base_type (gnu_range_type))))
-    return gnu_expr;
-
-  /* Checked expressions must be evaluated only once.  */
-  gnu_expr = gnat_protect_expr (gnu_expr);
-
-  /* Note that the form of the check is
-	(not (expr >= lo)) or (not (expr <= hi))
-     the reason for this slightly convoluted form is that NaNs
-     are not considered to be in range in the float case.  */
-  return emit_check
-    (build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node,
-		      invert_truthvalue
-		      (build_binary_op (GE_EXPR, boolean_type_node,
-				        convert (gnu_compare_type, gnu_expr),
-				        convert (gnu_compare_type,
-						 TYPE_MIN_VALUE
-						 (gnu_range_type)))),
-		      invert_truthvalue
-		      (build_binary_op (LE_EXPR, boolean_type_node,
-					convert (gnu_compare_type, gnu_expr),
-					convert (gnu_compare_type,
-						 TYPE_MAX_VALUE
-						 (gnu_range_type))))),
-     gnu_expr, CE_Range_Check_Failed, gnat_node);
-}
-
 /* GNU_COND contains the condition corresponding to an index, overflow or
    range check of value GNU_EXPR.  Build a COND_EXPR that returns GNU_EXPR
    if GNU_COND is false and raises a CONSTRAINT_ERROR if GNU_COND is true.
@@ -10169,14 +10103,13 @@ emit_check (tree gnu_cond, tree gnu_expr, int reason, Node_Id gnat_node)
 }
 
 /* Return an expression that converts GNU_EXPR to GNAT_TYPE, doing overflow
-   checks if OVERFLOW_P is true and range checks if RANGE_P is true.
-   If TRUNCATE_P true, do a float-to-integer conversion with truncation,
-   otherwise round.  GNAT_NODE is the GNAT node conveying the source location
-   for which the error should be signaled.  */
+   checks if OVERFLOW_P is true.  If TRUNCATE_P is true, do a fp-to-integer
+   conversion with truncation, otherwise round.  GNAT_NODE is the GNAT node
+   conveying the source location for which the error should be signaled.  */
 
 static tree
 convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflow_p,
-		    bool range_p, bool truncate_p, Node_Id gnat_node)
+		    bool truncate_p, Node_Id gnat_node)
 {
   tree gnu_type = get_unpadded_type (gnat_type);
   tree gnu_base_type = get_base_type (gnu_type);
@@ -10187,8 +10120,7 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflow_p,
   /* If we are not doing any checks, the output is an integral type and the
      input is not a floating-point type, just do the conversion.  This is
      required for packed array types and is simpler in all cases anyway.   */
-  if (!range_p
-      && !overflow_p
+  if (!overflow_p
       && INTEGRAL_TYPE_P (gnu_base_type)
       && !FLOAT_TYPE_P (gnu_in_base_type))
     return convert (gnu_type, gnu_expr);
@@ -10221,7 +10153,13 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflow_p,
       tree gnu_in_lb = TYPE_MIN_VALUE (gnu_in_base_type);
       tree gnu_in_ub = TYPE_MAX_VALUE (gnu_in_base_type);
       tree gnu_out_lb = TYPE_MIN_VALUE (gnu_base_type);
-      tree gnu_out_ub = TYPE_MAX_VALUE (gnu_base_type);
+      tree gnu_out_ub
+	= (TREE_CODE (gnu_base_type) == INTEGER_TYPE
+	   && TYPE_MODULAR_P (gnu_base_type))
+	  ? fold_build2 (MINUS_EXPR, gnu_base_type,
+			 TYPE_MODULUS (gnu_base_type),
+			 build_int_cst (gnu_base_type, 1))
+	  : TYPE_MAX_VALUE (gnu_base_type);
 
       /* Convert the lower bounds to signed types, so we're sure we're
 	 comparing them properly.  Likewise, convert the upper bounds
@@ -10346,14 +10284,6 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflow_p,
   else
     gnu_result = convert (gnu_base_type, gnu_result);
 
-  /* Finally, do the range check if requested.  Note that if the result type
-     is a modular type, the range check is actually an overflow check.  */
-  if (range_p
-      || (overflow_p
-	  && TREE_CODE (gnu_base_type) == INTEGER_TYPE
-	  && TYPE_MODULAR_P (gnu_base_type)))
-    gnu_result = emit_range_check (gnu_result, gnat_type, gnat_node);
-
   return convert (gnu_type, gnu_result);
 }
 
@@ -10454,6 +10384,7 @@ addressable_p (tree gnu_expr, tree gnu_type)
 
     case STRING_CST:
     case INTEGER_CST:
+    case REAL_CST:
       /* Taking the address yields a pointer to the constant pool.  */
       return true;
 
@@ -10463,6 +10394,7 @@ addressable_p (tree gnu_expr, tree gnu_type)
       return TREE_STATIC (gnu_expr) ? true : false;
 
     case NULL_EXPR:
+    case ADDR_EXPR:
     case SAVE_EXPR:
     case CALL_EXPR:
     case PLUS_EXPR:
@@ -10682,7 +10614,8 @@ assoc_to_constructor (Entity_Id gnat_entity, Node_Id gnat_assoc, tree gnu_type)
 
   for (; Present (gnat_assoc); gnat_assoc = Next (gnat_assoc))
     {
-      Node_Id gnat_field = First (Choices (gnat_assoc));
+      const Node_Id gnat_field = First (Choices (gnat_assoc));
+      const Node_Id gnat_expr = Expression (gnat_assoc);
       tree gnu_field = gnat_to_gnu_field_decl (Entity (gnat_field));
       tree gnu_expr = gnat_to_gnu (Expression (gnat_assoc));
 
@@ -10702,11 +10635,9 @@ assoc_to_constructor (Entity_Id gnat_entity, Node_Id gnat_assoc, tree gnu_type)
 	  && Is_Unchecked_Union (gnat_entity))
 	continue;
 
-      /* Before assigning a value in an aggregate make sure range checks
-	 are done if required.  Then convert to the type of the field.  */
-      if (Do_Range_Check (Expression (gnat_assoc)))
-	gnu_expr = emit_range_check (gnu_expr, Etype (gnat_field), Empty);
+      gigi_checking_assert (!Do_Range_Check (gnat_expr));
 
+      /* Convert to the type of the field.  */
       gnu_expr = convert (TREE_TYPE (gnu_field), gnu_expr);
 
       /* Add the field and expression to the list.  */
@@ -10727,13 +10658,10 @@ assoc_to_constructor (Entity_Id gnat_entity, Node_Id gnat_assoc, tree gnu_type)
 
 /* Build a possibly nested constructor for array aggregates.  GNAT_EXPR is
    the first element of an array aggregate.  It may itself be an aggregate.
-   GNU_ARRAY_TYPE is the GCC type corresponding to the array aggregate.
-   GNAT_COMPONENT_TYPE is the type of the array component; it is needed
-   for range checking.  */
+   GNU_ARRAY_TYPE is the GCC type corresponding to the array aggregate.  */
 
 static tree
-pos_to_constructor (Node_Id gnat_expr, tree gnu_array_type,
-		    Entity_Id gnat_component_type)
+pos_to_constructor (Node_Id gnat_expr, tree gnu_array_type)
 {
   tree gnu_index = TYPE_MIN_VALUE (TYPE_DOMAIN (gnu_array_type));
   vec<constructor_elt, va_gc> *gnu_expr_vec = NULL;
@@ -10749,8 +10677,7 @@ pos_to_constructor (Node_Id gnat_expr, tree gnu_array_type,
 	  && TREE_CODE (TREE_TYPE (gnu_array_type)) == ARRAY_TYPE
 	  && TYPE_MULTI_ARRAY_P (TREE_TYPE (gnu_array_type)))
 	gnu_expr = pos_to_constructor (First (Expressions (gnat_expr)),
-				       TREE_TYPE (gnu_array_type),
-				       gnat_component_type);
+				       TREE_TYPE (gnu_array_type));
       else
 	{
 	  /* If the expression is a conversion to an unconstrained array type,
@@ -10762,10 +10689,7 @@ pos_to_constructor (Node_Id gnat_expr, tree gnu_array_type,
 	  else
 	    gnu_expr = gnat_to_gnu (gnat_expr);
 
-	  /* Before assigning the element to the array, make sure it is
-	     in range.  */
-	  if (Do_Range_Check (gnat_expr))
-	    gnu_expr = emit_range_check (gnu_expr, gnat_component_type, Empty);
+	  gigi_checking_assert (!Do_Range_Check (gnat_expr));
 	}
 
       CONSTRUCTOR_APPEND_ELT (gnu_expr_vec, gnu_index,

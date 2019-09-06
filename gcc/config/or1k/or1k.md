@@ -706,7 +706,7 @@
 ;; set_got pattern below.  This works because the set_got_tmp insn is the
 ;; first insn in the stream and that it isn't moved during RA.
 (define_insn "set_got_tmp"
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "register_operand" "=t")
 	(unspec_volatile:SI [(const_int 0)] UNSPECV_SET_GOT))]
   ""
 {
@@ -715,7 +715,7 @@
 
 ;; The insn to initialize the GOT.
 (define_insn "set_got"
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "register_operand" "=t")
 	(unspec:SI [(const_int 0)] UNSPEC_SET_GOT))
    (clobber (reg:SI LR_REGNUM))]
   ""

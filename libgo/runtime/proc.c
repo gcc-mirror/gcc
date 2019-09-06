@@ -18,7 +18,6 @@
 #include "runtime.h"
 #include "arch.h"
 #include "defs.h"
-#include "go-type.h"
 
 #ifdef USING_SPLIT_STACK
 

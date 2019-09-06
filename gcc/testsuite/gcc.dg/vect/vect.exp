@@ -266,9 +266,6 @@ et-dg-runtest dg-runtest [lsort \
 # Don't allow IPA cloning, because it throws our counts out of whack.
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-O3" "-fno-ipa-cp-clone"
-if  [istarget "spu-*-*"] {
-  lappend DEFAULT_VECTCFLAGS "-funroll-loops"
-}
 
 et-dg-runtest dg-runtest [lsort \
 	[glob -nocomplain $srcdir/$subdir/O3-*.\[cS\]]] \

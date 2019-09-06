@@ -3609,7 +3609,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 
   if (ar->dimen == 0)
     {
-      gcc_assert (ar->codimen);
+      gcc_assert (ar->codimen || sym->attr.select_rank_temporary);
 
       if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se->expr)))
 	se->expr = build_fold_indirect_ref (gfc_conv_array_data (se->expr));
@@ -7757,6 +7757,12 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	{
 	  gfc_conv_descriptor_offset_set (&loop.pre, parm,
 					 gfc_conv_descriptor_offset_get (desc));
+	}
+      else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc))
+	       && !se->data_not_needed
+	       && gfc_expr_attr (expr).select_rank_temporary)
+	{
+	  gfc_conv_descriptor_offset_set (&loop.pre, parm, gfc_index_zero_node);
 	}
       else if (onebased && (!rank_remap || se->use_offset)
 	  && expr->symtree

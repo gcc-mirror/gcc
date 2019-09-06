@@ -34469,6 +34469,124 @@ vfmlslq_laneq_high_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
 
 #pragma GCC pop_options
 
+#pragma GCC push_options
+#pragma GCC target ("arch=armv8.5-a")
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vrnd32z_f32 (float32x2_t __a)
+{
+  return __builtin_aarch64_frint32zv2sf (__a);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vrnd32zq_f32 (float32x4_t __a)
+{
+  return __builtin_aarch64_frint32zv4sf (__a);
+}
+
+__extension__ extern __inline float64x1_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vrnd32z_f64 (float64x1_t __a)
+{
+  return (float64x1_t)
+	   {__builtin_aarch64_frint32zdf (vget_lane_f64 (__a, 0))};
+}
+
+__extension__ extern __inline float64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vrnd32zq_f64 (float64x2_t __a)
+{
+  return __builtin_aarch64_frint32zv2df (__a);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vrnd32x_f32 (float32x2_t __a)
+{
+  return __builtin_aarch64_frint32xv2sf (__a);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vrnd32xq_f32 (float32x4_t __a)
+{
+  return __builtin_aarch64_frint32xv4sf (__a);
+}
+
+__extension__ extern __inline float64x1_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vrnd32x_f64 (float64x1_t __a)
+{
+  return (float64x1_t) {__builtin_aarch64_frint32xdf (vget_lane_f64 (__a, 0))};
+}
+
+__extension__ extern __inline float64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vrnd32xq_f64 (float64x2_t __a)
+{
+  return __builtin_aarch64_frint32xv2df (__a);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vrnd64z_f32 (float32x2_t __a)
+{
+  return __builtin_aarch64_frint64zv2sf (__a);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vrnd64zq_f32 (float32x4_t __a)
+{
+  return __builtin_aarch64_frint64zv4sf (__a);
+}
+
+__extension__ extern __inline float64x1_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vrnd64z_f64 (float64x1_t __a)
+{
+  return (float64x1_t) {__builtin_aarch64_frint64zdf (vget_lane_f64 (__a, 0))};
+}
+
+__extension__ extern __inline float64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vrnd64zq_f64 (float64x2_t __a)
+{
+  return __builtin_aarch64_frint64zv2df (__a);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vrnd64x_f32 (float32x2_t __a)
+{
+  return __builtin_aarch64_frint64xv2sf (__a);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vrnd64xq_f32 (float32x4_t __a)
+{
+  return __builtin_aarch64_frint64xv4sf (__a);
+}
+
+__extension__ extern __inline float64x1_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vrnd64x_f64 (float64x1_t __a)
+{
+  return (float64x1_t) {__builtin_aarch64_frint64xdf (vget_lane_f64 (__a, 0))};
+}
+
+__extension__ extern __inline float64x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vrnd64xq_f64 (float64x2_t __a)
+{
+  return __builtin_aarch64_frint64xv2df (__a);
+}
+
+#pragma GCC pop_options
+
 #undef __aarch64_vget_lane_any
 
 #undef __aarch64_vdup_lane_any

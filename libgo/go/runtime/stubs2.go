@@ -6,7 +6,6 @@
 // +build !windows
 // +build !nacl
 // +build !js
-// +build !darwin
 
 package runtime
 
@@ -32,3 +31,6 @@ func exitThread(wait *uint32) {
 	// This is never used by gccgo.
 	throw("exitThread")
 }
+
+// So that the C initialization code can call osinit.
+//go:linkname osinit runtime.osinit

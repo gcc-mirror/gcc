@@ -114,13 +114,12 @@ import (
 // C function to get the end of the program's memory.
 func getEnd() uintptr
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname newobject runtime.newobject
+//go:linkname newobject
 
 // Functions called by C code.
-//go:linkname mallocgc runtime.mallocgc
+//go:linkname mallocgc
 
 const (
 	debugMalloc = false
@@ -334,6 +333,23 @@ const (
 // This must be set by the OS init code (typically in osinit) before
 // mallocinit.
 var physPageSize uintptr
+
+// physHugePageSize is the size in bytes of the OS's default physical huge
+// page size whose allocation is opaque to the application. It is assumed
+// and verified to be a power of two.
+//
+// If set, this must be set by the OS init code (typically in osinit) before
+// mallocinit. However, setting it at all is optional, and leaving the default
+// value is always safe (though potentially less efficient).
+//
+// Since physHugePageSize is always assumed to be a power of two,
+// physHugePageShift is defined as physHugePageSize == 1 << physHugePageShift.
+// The purpose of physHugePageShift is to avoid doing divisions in
+// performance critical functions.
+var (
+	physHugePageSize  uintptr
+	physHugePageShift uint
+)
 
 // OS-defined helpers:
 //

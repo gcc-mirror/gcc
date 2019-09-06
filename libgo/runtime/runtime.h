@@ -72,13 +72,8 @@ typedef struct	schedt		Sched;
 typedef	struct	__go_open_array		Slice;
 typedef	struct	iface			Iface;
 typedef	struct	eface			Eface;
-typedef	struct	__go_type_descriptor	Type;
 typedef	struct	_defer			Defer;
 typedef	struct	_panic			Panic;
-
-typedef struct	__go_ptr_type		PtrType;
-typedef struct	__go_func_type		FuncType;
-typedef struct	__go_map_type		MapType;
 
 typedef struct  tracebackg	Traceback;
 
@@ -95,6 +90,10 @@ struct FuncVal
 	uintptr_t fn;
 	// variable-size, fn-specific data here
 };
+
+// Type structs will be defined by runtime.inc.
+struct _type;
+struct functype;
 
 #include "array.h"
 
@@ -208,9 +207,10 @@ intgo	runtime_findnull(const byte*)
 
 void	runtime_gogo(G*)
   __asm__ (GOSYM_PREFIX "runtime.gogo");
-struct __go_func_type;
 void	runtime_args(int32, byte**)
   __asm__ (GOSYM_PREFIX "runtime.args");
+void	runtime_osinit(void)
+  __asm__ (GOSYM_PREFIX "runtime.osinit");
 void	runtime_alginit(void)
   __asm__ (GOSYM_PREFIX "runtime.alginit");
 void	runtime_goargs(void)
@@ -247,7 +247,7 @@ void	runtime_signalstack(byte*, uintptr)
   __asm__ (GOSYM_PREFIX "runtime.signalstack");
 void	runtime_mallocinit(void)
   __asm__ (GOSYM_PREFIX "runtime.mallocinit");
-void*	runtime_mallocgc(uintptr, const Type*, bool)
+void*	runtime_mallocgc(uintptr, const struct _type*, bool)
   __asm__ (GOSYM_PREFIX "runtime.mallocgc");
 void*	runtime_sysAlloc(uintptr, uint64*)
   __asm__ (GOSYM_PREFIX "runtime.sysAlloc");
@@ -364,7 +364,7 @@ void __wrap_rtems_task_variable_add(void **);
 /*
  * runtime go-called
  */
-void reflect_call(const struct __go_func_type *, FuncVal *, _Bool, _Bool,
+void reflect_call(const struct functype *, FuncVal *, _Bool, _Bool,
 		  void **, void **)
   __asm__ (GOSYM_PREFIX "runtime.reflectcall");
 void runtime_panic(Eface)
@@ -429,8 +429,6 @@ extern void __go_syminfo_fnname_callback(void*, uintptr_t, const char*,
 extern void runtime_main(void*)
   __asm__(GOSYM_PREFIX "runtime.main");
 
-int32 getproccount(void);
-
 #define PREFETCH(p) __builtin_prefetch(p)
 
 void	runtime_badsignal(int);
@@ -442,9 +440,7 @@ extern void _cgo_notify_runtime_init_done (void)
   __asm__ (GOSYM_PREFIX "runtime._cgo_notify_runtime_init_done");
 extern _Bool runtime_iscgo;
 extern uintptr __go_end __attribute__ ((weak));
-extern void *getitab(const struct __go_type_descriptor *,
-		     const struct __go_type_descriptor *,
-		     _Bool)
+extern void *getitab(const struct _type *, const struct _type *, _Bool)
   __asm__ (GOSYM_PREFIX "runtime.getitab");
 
 extern void runtime_cpuinit(void);
@@ -454,14 +450,10 @@ extern void setIsCgo(void)
   __asm__ (GOSYM_PREFIX "runtime.setIsCgo");
 extern void setSupportAES(bool)
   __asm__ (GOSYM_PREFIX "runtime.setSupportAES");
-extern void typedmemmove(const Type *, void *, const void *)
+extern void typedmemmove(const struct _type *, void *, const void *)
   __asm__ (GOSYM_PREFIX "runtime.typedmemmove");
-extern void setncpu(int32)
-  __asm__(GOSYM_PREFIX "runtime.setncpu");
 extern Sched* runtime_getsched(void)
   __asm__ (GOSYM_PREFIX "runtime.getsched");
-extern void setpagesize(uintptr_t)
-  __asm__(GOSYM_PREFIX "runtime.setpagesize");
 
 struct funcfileline_return
 {

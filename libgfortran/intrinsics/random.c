@@ -194,13 +194,10 @@ typedef struct
 prng_state;
 
 
-/* master_init, njumps, and master_state are the only variables
-   protected by random_lock.  */
-static bool master_init;
-static unsigned njumps; /* How many times we have jumped.  */
-static uint64_t master_state[] = {
-  0xad63fa1ed3b55f36ULL, 0xd94473e78978b497ULL, 0xbc60592a98172477ULL,
-  0xa3de7c6e81265301ULL
+/* master_state is the only variable protected by random_lock.  */
+static prng_state master_state = { .init = false, .s = {
+    0xad63fa1ed3b55f36ULL, 0xd94473e78978b497ULL, 0xbc60592a98172477ULL,
+    0xa3de7c6e81265301ULL }
 };
 
 
@@ -353,24 +350,21 @@ init_rand_state (prng_state* rs, const bool locked)
 {
   if (!locked)
     __gthread_mutex_lock (&random_lock);
-  if (!master_init)
+  if (!master_state.init)
     {
       uint64_t os_seed;
       getosrandom (&os_seed, sizeof (os_seed));
-      for (uint64_t i = 0; i < sizeof (master_state) / sizeof (uint64_t); i++)
+      for (uint64_t i = 0; i < sizeof (master_state.s) / sizeof (uint64_t); i++)
 	{
           os_seed = splitmix64 (os_seed);
-          master_state[i] = os_seed;
+          master_state.s[i] = os_seed;
         }
-      njumps = 0;
-      master_init = true;
+      master_state.init = true;
     }
-  memcpy (&rs->s, master_state, sizeof (master_state));
-  unsigned n = njumps++;
+  memcpy (&rs->s, master_state.s, sizeof (master_state.s));
+  jump (&master_state);
   if (!locked)
     __gthread_mutex_unlock (&random_lock);
-  for (unsigned i = 0; i < n; i++)
-    jump (rs);
   rs->init = true;
 }
 
@@ -727,7 +721,7 @@ arandom_r16 (gfc_array_r16 *x)
 
 
 /* Number of elements in master_state array.  */
-#define SZU64 (sizeof (master_state) / sizeof (uint64_t))
+#define SZU64 (sizeof (master_state.s) / sizeof (uint64_t))
 
 
 /* Keys for scrambling the seed in order to avoid poor seeds.  */
@@ -757,7 +751,7 @@ void
 random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 {
   uint64_t seed[SZU64];
-#define SZ (sizeof (master_state) / sizeof (GFC_INTEGER_4))
+#define SZ (sizeof (master_state.s) / sizeof (GFC_INTEGER_4))
 
   /* Check that we only have one argument present.  */
   if ((size ? 1 : 0) + (put ? 1 : 0) + (get ? 1 : 0) > 1)
@@ -800,7 +794,7 @@ random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
      a processor-dependent value to the seed."  */
   if (size == NULL && put == NULL && get == NULL)
     {
-      master_init = false;
+      master_state.init = false;
       init_rand_state (rs, true);
     }
 
@@ -822,9 +816,8 @@ random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 
       /* We put it after scrambling the bytes, to paper around users who
 	 provide seeds with quality only in the lower or upper part.  */
-      scramble_seed (master_state, seed);
-      njumps = 0;
-      master_init = true;
+      scramble_seed (master_state.s, seed);
+      master_state.init = true;
       init_rand_state (rs, true);
     }
 
@@ -844,7 +837,7 @@ random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
   if ((size ? 1 : 0) + (put ? 1 : 0) + (get ? 1 : 0) > 1)
     runtime_error ("RANDOM_SEED should have at most one argument present.");
 
-#define SZ (sizeof (master_state) / sizeof (GFC_INTEGER_8))
+#define SZ (sizeof (master_state.s) / sizeof (GFC_INTEGER_8))
   if (size != NULL)
     *size = SZ;
 
@@ -881,7 +874,7 @@ random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
      a processor-dependent value to the seed."  */
   if (size == NULL && put == NULL && get == NULL)
     {
-      master_init = false;
+      master_state.init = false;
       init_rand_state (rs, true);
     }
 
@@ -900,9 +893,8 @@ random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
 	memcpy (&seed[i], &(put->base_addr[i * GFC_DESCRIPTOR_STRIDE(put,0)]),
 		sizeof (GFC_UINTEGER_8));
 
-      scramble_seed (master_state, seed);
-      njumps = 0;
-      master_init = true;
+      scramble_seed (master_state.s, seed);
+      master_state.init = true;
       init_rand_state (rs, true);
      }
 

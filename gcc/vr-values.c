@@ -234,7 +234,7 @@ vr_values::update_value_range (const_tree var, value_range *new_vr)
 	 called, if we are anyway, keep it VARYING.  */
       if (old_vr->varying_p ())
 	{
-	  new_vr->set_varying (new_vr->type ());
+	  new_vr->set_varying (TREE_TYPE (var));
 	  is_new = false;
 	}
       else if (new_vr->undefined_p ())
@@ -1319,7 +1319,12 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 		tree max = vrp_val_max (ptrdiff_type_node);
 		wide_int wmax = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
 		tree range_min = build_zero_cst (type);
-		tree range_max = wide_int_to_tree (type, wmax - 1);
+		/* To account for the terminating NUL, the maximum length
+		   is one less than the maximum array size, which in turn
+		   is one  less than PTRDIFF_MAX (or SIZE_MAX where it's
+		   smaller than the former type).
+		   FIXME: Use max_object_size() - 1 here.  */
+		tree range_max = wide_int_to_tree (type, wmax - 2);
 		vr->set (VR_RANGE, range_min, range_max);
 		return;
 	      }

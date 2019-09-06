@@ -1999,6 +1999,23 @@ replace_ref (tree *expr, slsr_cand_t c)
   update_stmt (c->cand_stmt);
 }
 
+/* Return true if CAND_REF candidate C is a valid memory reference.  */
+
+static bool
+valid_mem_ref_cand_p (slsr_cand_t c)
+{
+  if (TREE_CODE (TREE_OPERAND (c->stride, 1)) != INTEGER_CST)
+    return false;
+
+  struct mem_address addr
+    = { NULL_TREE, c->base_expr, TREE_OPERAND (c->stride, 0),
+	TREE_OPERAND (c->stride, 1), wide_int_to_tree (sizetype, c->index) };
+
+  return
+    valid_mem_ref_p (TYPE_MODE (c->cand_type), TYPE_ADDR_SPACE (c->cand_type),
+		     &addr);
+}
+
 /* Replace CAND_REF candidate C, each sibling of candidate C, and each
    dependent of candidate C with an equivalent strength-reduced data
    reference.  */
@@ -2006,6 +2023,16 @@ replace_ref (tree *expr, slsr_cand_t c)
 static void
 replace_refs (slsr_cand_t c)
 {
+  /* Replacing a chain of only 2 candidates which are valid memory references
+     is generally counter-productive because you cannot recoup the additional
+     calculation added in front of them.  */
+  if (c->basis == 0
+      && c->dependent
+      && !lookup_cand (c->dependent)->dependent
+      && valid_mem_ref_cand_p (c)
+      && valid_mem_ref_cand_p (lookup_cand (c->dependent)))
+    return;
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fputs ("Replacing reference: ", dump_file);

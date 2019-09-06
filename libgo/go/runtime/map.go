@@ -60,21 +60,20 @@ import (
 	"unsafe"
 )
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname makemap runtime.makemap
-//go:linkname makemap64 runtime.makemap64
-//go:linkname makemap_small runtime.makemap_small
-//go:linkname mapaccess1 runtime.mapaccess1
-//go:linkname mapaccess2 runtime.mapaccess2
-//go:linkname mapaccess1_fat runtime.mapaccess1_fat
-//go:linkname mapaccess2_fat runtime.mapaccess2_fat
-//go:linkname mapassign runtime.mapassign
-//go:linkname mapdelete runtime.mapdelete
-//go:linkname mapclear runtime.mapclear
-//go:linkname mapiterinit runtime.mapiterinit
-//go:linkname mapiternext runtime.mapiternext
+//go:linkname makemap
+//go:linkname makemap64
+//go:linkname makemap_small
+//go:linkname mapaccess1
+//go:linkname mapaccess2
+//go:linkname mapaccess1_fat
+//go:linkname mapaccess2_fat
+//go:linkname mapassign
+//go:linkname mapdelete
+//go:linkname mapclear
+//go:linkname mapiterinit
+//go:linkname mapiternext
 
 const (
 	// Maximum number of key/value pairs a bucket can hold.

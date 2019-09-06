@@ -1706,6 +1706,15 @@ Escape_analysis_assign::expression(Expression** pexpr)
       }
       break;
 
+    case Expression::EXPRESSION_UNSAFE_CONVERSION:
+      {
+        Unsafe_type_conversion_expression* uce =
+          (*pexpr)->unsafe_conversion_expression();
+        Node* expr_node = Node::make_node(uce->expr());
+        this->assign(n, expr_node);
+      }
+      break;
+
     case Expression::EXPRESSION_FIXED_ARRAY_CONSTRUCTION:
     case Expression::EXPRESSION_SLICE_CONSTRUCTION:
       {

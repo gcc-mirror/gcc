@@ -329,6 +329,8 @@ negate_mathfn_p (combined_fn fn)
     CASE_CFN_LLROUND:
     CASE_CFN_LROUND:
     CASE_CFN_ROUND:
+    CASE_CFN_ROUNDEVEN:
+    CASE_CFN_ROUNDEVEN_FN:
     CASE_CFN_SIN:
     CASE_CFN_SINH:
     CASE_CFN_TAN:
@@ -4936,10 +4938,9 @@ range_check_type (tree etype)
   /* First make sure that arithmetics in this type is valid, then make sure
      that it wraps around.  */
   if (TREE_CODE (etype) == ENUMERAL_TYPE || TREE_CODE (etype) == BOOLEAN_TYPE)
-    etype = lang_hooks.types.type_for_size (TYPE_PRECISION (etype),
-					    TYPE_UNSIGNED (etype));
+    etype = lang_hooks.types.type_for_size (TYPE_PRECISION (etype), 1);
 
-  if (TREE_CODE (etype) == INTEGER_TYPE && !TYPE_OVERFLOW_WRAPS (etype))
+  if (TREE_CODE (etype) == INTEGER_TYPE && !TYPE_UNSIGNED (etype))
     {
       tree utype, minv, maxv;
 
@@ -4957,6 +4958,8 @@ range_check_type (tree etype)
       else
 	return NULL_TREE;
     }
+  else if (POINTER_TYPE_P (etype))
+    etype = unsigned_type_for (etype);
   return etype;
 }
 
@@ -5046,9 +5049,6 @@ build_range_check (location_t loc, tree type, tree exp, int in_p,
   etype = range_check_type (etype);
   if (etype == NULL_TREE)
     return NULL_TREE;
-
-  if (POINTER_TYPE_P (etype))
-    etype = unsigned_type_for (etype);
 
   high = fold_convert_loc (loc, etype, high);
   low = fold_convert_loc (loc, etype, low);
@@ -13107,6 +13107,8 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
     CASE_CFN_RINT_FN:
     CASE_CFN_ROUND:
     CASE_CFN_ROUND_FN:
+    CASE_CFN_ROUNDEVEN:
+    CASE_CFN_ROUNDEVEN_FN:
     CASE_CFN_SCALB:
     CASE_CFN_SCALBLN:
     CASE_CFN_SCALBN:
@@ -13630,6 +13632,8 @@ integer_valued_real_call_p (combined_fn fn, tree arg0, tree arg1, int depth)
     CASE_CFN_RINT_FN:
     CASE_CFN_ROUND:
     CASE_CFN_ROUND_FN:
+    CASE_CFN_ROUNDEVEN:
+    CASE_CFN_ROUNDEVEN_FN:
     CASE_CFN_TRUNC:
     CASE_CFN_TRUNC_FN:
       return true;

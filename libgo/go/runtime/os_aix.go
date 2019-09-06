@@ -6,7 +6,16 @@
 
 package runtime
 
-import "unsafe"
+import (
+	"internal/cpu"
+	"unsafe"
+)
+
+//extern sysconf
+func sysconf(int32) _C_long
+
+//extern getsystemcfg
+func getsystemcfg(int32) uint64
 
 type mOS struct {
 	waitsema uintptr // semaphore for parking on locks
@@ -106,7 +115,32 @@ func semawakeup(mp *m) {
 	}
 }
 
+func osinit() {
+	ncpu = int32(sysconf(__SC_NPROCESSORS_ONLN))
+	physPageSize = uintptr(sysconf(__SC_PAGE_SIZE))
+	setupSystemConf()
+}
+
 const (
 	_CLOCK_REALTIME  = 9
 	_CLOCK_MONOTONIC = 10
 )
+
+const (
+	// getsystemcfg constants
+	_SC_IMPL     = 2
+	_IMPL_POWER8 = 0x10000
+	_IMPL_POWER9 = 0x20000
+)
+
+// setupSystemConf retrieves information about the CPU and updates
+// cpu.HWCap variables.
+func setupSystemConf() {
+	impl := getsystemcfg(_SC_IMPL)
+	if impl&_IMPL_POWER8 != 0 {
+		cpu.HWCap2 |= cpu.PPC_FEATURE2_ARCH_2_07
+	}
+	if impl&_IMPL_POWER9 != 0 {
+		cpu.HWCap2 |= cpu.PPC_FEATURE2_ARCH_3_00
+	}
+}

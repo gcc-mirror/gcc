@@ -1,3 +1,741 @@
+2019-09-06  Martin Liska  <mliska@suse.cz>
+
+	PR c++/91125
+	* Makefile.in: Remove tlink.o.
+	* collect2.c (do_link): New function isolated
+	from do_tlink.
+	(main): Use.
+	* collect2.h (do_tlink): Remove declaration of do_tlink.
+	* doc/extend.texi: Remove documentation of -frepo.
+	* doc/invoke.texi: Likewise.
+	* doc/sourcebuild.texi: Remove cleanup-repo-files.
+	* tlink.c: Remove.
+
+2019-09-05  Jakub Jelinek  <jakub@redhat.com>
+	    Jim Wilson  <jimw@sifive.com>
+
+	PR target/91635
+	* config/riscv/riscv.md (zero_extendsidi2, zero_extendhi<GPR:mode>2,
+	extend<SHORT:mode><SUPERQI:mode>2): Don't split if
+	paradoxical_subreg_p (operands[0]).
+	(*lshrsi3_zero_extend_3+1, *lshrsi3_zero_extend_3+2): Add clobber and
+	use as intermediate value.
+
+2019-09-05  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.md (*movti_insn): Set delayeduse for global_store.
+	(sync_compare_and_swap<mode>_insn): Likewise.
+
+2019-09-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/91615
+	* expr.c (expand_expr_real_1): Handle misaligned TARGET_MEM_REF
+	without movmisalign optab.
+
+2019-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91001
+	PR middle-end/91105
+	PR middle-end/91106
+	* calls.c (load_register_parameters): For TYPE_TRANSPARENT_AGGR
+	types, use type of their first field instead of type of
+	args[i].tree_value.
+
+2019-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/91656
+	* postreload-gcse.c (record_last_mem_set_info): Revert addition
+	of early out.
+
+2019-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90501
+	* tree-inline.c (declare_return_variable): Mark the return
+	slot as addressable after building an address of it.
+
+2019-09-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/install.texi: Update and clarify requirements to build GNAT.
+
+2019-09-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91577
+	* cfgexpand.c (discover_nonconstant_array_refs): Force the source
+	of an IFN_LOAD_LANES call and the destination of an IFN_STORE_LANES
+	call to be in memory.
+	(pass_expand::execute): Call discover_nonconstant_array_refs before
+	setting currently_expanding_to_rtl.
+
+2019-09-04  Caroline Tice  <cmtice@google.com>
+
+	* opts.c (finish_options): Disallow -fvtable-verify and -flto to be
+	specified together.
+
+2019-09-04  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Remove -fdeduce-init-list documentation.
+
+2019-09-04  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/32413
+	* config/i386/i386.c (inline_secondary_memory_needed): Return true
+	for QI and HImode moves between SSE and general registers.
+
+2019-09-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR c/78736
+	* doc/invoke.texi: Document -Wenum-conversion.
+
+2019-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/36262
+	* postreload-gcse.c: Include intl.h and gcse.h.
+	(insert_expr_in_table): Insert at the head of cur_expr->avail_occr
+	to avoid linear list walk.
+	(record_last_mem_set_info): Gate off if not computing transparentness.
+	(get_bb_avail_insn): If transparentness isn't computed give up
+	early.
+	(gcse_after_reload_main): Skip compute_transp and extended PRE
+	if gcse_or_cprop_is_too_expensive says so.
+
+2019-09-03  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_init_sections): Remove handling of the
+	noinit section.
+	(msp430_select_section): Handle decls with the "noinit" attribute with
+	default_elf_select_section.
+	Handle SECCAT_RODATA_MERGE_* section types with
+	default_elf_select_section.
+	Add comments about handling of unsupported section types.
+	(msp430_section_type_flags): Remove handling of the noinit section.
+
+2019-09-03  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_attr): Remove warnings about
+	conflicting msp430-specific attributes.
+	(msp430_section_attr): Likewise.
+	Add warnings about conflicts with generic "noinit" and "section"
+	attributes.
+	Fix grammar in -mlarge error message.
+	(msp430_data_attr): Rename to msp430_persist_attr.
+	Add warnings about conflicts with generic "noinit" and "section"
+	attributes.
+	Add warning for when variable is not initialized.
+	Chain conditionals which prevent the attribute being added.
+	(ATTR_EXCL): New helper.
+	(attr_reent_exclusions): New exclusion table.
+	(attr_naked_exclusions): Likewise.
+	(attr_crit_exclusions): Likewise.
+	(attr_lower_exclusions): Likewise.
+	(attr_upper_exclusions): Likewise.
+	(attr_either_exclusions): Likewise.
+	(attr_persist_exclusions): Likewise.
+	(msp430_attribute_table): Update with exclusion rules.
+	(msp430_output_aligned_decl_common): Don't output common symbol if decl
+	has a section.
+
+2019-09-03  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (TARGET_HANDLE_GENERIC_ATTRIBUTE): Define.
+	(msp430_handle_generic_attribute): New function.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Add TARGET_HANDLE_GENERIC_ATTRIBUTE.
+	* hooks.c (hook_tree_treeptr_tree_tree_int_boolptr_null): New.
+	* hooks.h (hook_tree_treeptr_tree_tree_int_boolptr_null): New.
+	* target.def: Define new hook TARGET_HANDLE_GENERIC_ATTRIBUTE.
+
+2019-09-03  Kamlesh Kumar  <kamleshbhalui@gmail.com>
+
+	PR tree-optimization/91504
+	* match.pd: Add ((~a & b) ^a) --> (a | b).
+
+2019-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91604
+	* config/i386/i386-expand.c (split_double_mode): If there is more than
+	one MEM operand and they are rtx_equal_p, reuse lo_half/hi_half from
+	already split matching MEM operand instead of calling adjust_address
+	again.
+
+2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config.gcc: Obsolete spu target.  Remove references to spu.
+	* configure.ac: Remove references to spu.
+	* configure: Regenerate.
+	* config/spu/: Remove directory.
+	* common/config/spu/: Remove directory.
+
+	* doc/extend.texi: Remove references to spu.
+	* doc/invoke.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* doc/sourcebuild.texi: Likewise.
+
+2019-09-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/91603
+	PR middle-end/91612
+	PR middle-end/91613
+	* expr.c (expand_expr_real_1): Handle unaligned decl_rtl
+	and SSA_NAME referring to CONSTANT_P correctly.
+
+2019-09-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.h (vn_nary_op_lookup): Remove.
+	(vn_nary_op_insert): Likewise.
+	* tree-ssa-sccvn.c (init_vn_nary_op_from_op): Remove.
+	(vn_nary_op_lookup): Likewise.
+	(vn_nary_op_insert): Likewise.
+
+2019-09-03  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_canonicalize_comparison): Use XEXP
+	(*op0, 1) instead of XEXP (*op1, 0).
+
+2019-09-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (UNSPEC_FJCVTZS): Define.
+	(aarch64_fjcvtzs): New define_insn.
+	* config/aarch64/aarch64.h (TARGET_JSCVT): Define.
+	* config/aarch64/aarch64-builtins.c (aarch64_builtins):
+	Add AARCH64_JSCVT.
+	(aarch64_init_builtins): Initialize __builtin_aarch64_jcvtzs.
+	(aarch64_expand_builtin): Handle AARCH64_JSCVT.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_JCVT where appropriate.
+	* config/aarch64/arm_acle.h (__jcvt): Define.
+
+2019-09-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md ("unspec"): Add UNSPEC_FRINT32Z,
+	UNSPEC_FRINT32X, UNSPEC_FRINT64Z, UNSPEC_FRINT64X.
+	(aarch64_<frintnzs_op><mode>): New define_insn.
+	* config/aarch64/aarch64.h (TARGET_FRINT): Define.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_FRINT when appropriate.
+	* config/aarch64/aarch64-simd-builtins.def: Add builtins for frint32z,
+	frint32x, frint64z, frint64x.
+	* config/aarch64/arm_acle.h (__rint32zf, __rint32z, __rint64zf,
+	__rint64z, __rint32xf, __rint32x, __rint64xf, __rint64x): Define.
+	* config/aarch64/arm_neon.h (vrnd32z_f32, vrnd32zq_f32, vrnd32z_f64,
+	vrnd32zq_f64, vrnd32x_f32, vrnd32xq_f32, vrnd32x_f64, vrnd32xq_f64,
+	vrnd64z_f32, vrnd64zq_f32, vrnd64z_f64, vrnd64zq_f64, vrnd64x_f32,
+	vrnd64xq_f32, vrnd64x_f64, vrnd64xq_f64): Define.
+	* config/aarch64/iterators.md (VSFDF): Define.
+	(FRINTNZX): Likewise.
+	(frintnzs_op): Likewise.
+
+2019-09-03  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): New entries
+	for Cortex-A77, Cortex-A76AE, Cortex-A65, Cortex-A65AE, and
+	Cortex-A34.
+	* config/aarch64/aarch64-tune.md: Regenerated.
+	* doc/invoke.texi: Document the new processors.
+
+2019-09-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (sb): Add feature
+	string.
+	(ssbs): Likewise.
+	(sve2): Likewise.
+	(sve2-sm4): Likewise.
+	(sveaes): Likewise.
+	(svesha3): Likewise.
+	(svebitperm): Likewise.
+
+2019-09-03  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91597
+	* tree-vrp.c (extract_range_from_binary_expr): Remove unsafe
+	BIT_AND_EXPR optimization for pointers, even if both operand
+	ranges don't include NULL, the result can be NULL.
+
+2019-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/91605
+	* expr.c (addr_expr_of_non_mem_decl_p_1): Refactor into...
+	(non_mem_decl_p): ...this.
+	(mem_ref_refers_to_non_mem_p): Handle DECL_P as well as MEM_REF.
+	(expand_assignment): Call mem_ref_referes_to_non_mem_p
+	unconditionally as before.
+
+2019-09-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/91323
+	* doc/generic.texi (LTGT_EXPR): Merge with other comparison operators.
+	* rtl.def (LTGT): Likewise.  Add note about floating-point exceptions.
+	* tree.def (LTGT_EXPR): Likewise.
+	* config/sparc/sparc.c (select_cc_mode): Return CCFPEmode for LTGT.
+
+2019-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR go/91617
+	* fold-const.c (range_check_type): For enumeral and boolean
+	type, pass 1 to type_for_size langhook instead of
+	TYPE_UNSIGNED (etype).  Return unsigned_type_for result whenever
+	etype isn't TYPE_UNSIGNED INTEGER_TYPE.
+	(build_range_check): Don't call unsigned_type_for for pointer types.
+	* match.pd (X / C1 op C2): Don't call unsigned_type_for on
+	range_check_type result.
+
+2019-09-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-ssa-strength-reduction.c (valid_mem_ref_cand_p): New function.
+	(replace_ref): Do not replace a chain of only two candidates which are
+	valid memory references.
+
+2019-09-02  Martin Liska  <mliska@suse.cz>
+
+	* tree-switch-conversion.c (jump_table_cluster::find_jump_tables):
+	Bail out when we'll end up with the same number of clusters as
+	at the beginning.
+	(bit_test_cluster::find_bit_tests): Likewise for bit tests.
+	(jump_table_cluster::can_be_handled): Remove the guard
+	as it's already handled in ::is_enabled.  Allocate output
+	after early bail out.
+
+2019-09-02  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/91601
+	* gcov.c (path_contains_zero_cycle_arc): Rename to ...
+	(path_contains_zero_or_negative_cycle_arc): ... this and handle
+	also negative edges.
+	(circuit): Handle also negative edges as they can happen
+	in some situations.
+
+2019-09-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/91472
+	* config/sparc/sparc.c (sparc_cannot_force_const_mem): Return true
+	during LRA/reload in PIC mode if the PIC register hasn't been used yet.
+	(sparc_pic_register_p): Test reload_in_progress for consistency's sake.
+
+2019-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91623
+	* optabs.c (expand_vec_cond_expr): If op0 is a VECTOR_CST and only
+	EQ_EXPR/NE_EXPR is supported, verify that op0 only contains
+	zeros or negative elements and use NE_EXPR instead of LT_EXPR against
+	zero vector.
+
+	PR lto/91572
+	* tree.c (find_decls_types_in_node): Also walk TREE_PURPOSE of
+	GIMPLE_ASM TREE_LIST operands.
+
+2019-08-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/generic.texi (Unary and Binary Expressions): Mark up
+	an instance of TYPE_MIN.
+
+2019-08-31  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/constraints.md (t): New constraint.
+	* config/or1k/or1k.h (GOT_REGS): New register class.
+	* config/or1k/or1k.md (set_got_tmp, set_got): Use t contraint.
+
+2019-08-30  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.c (riscv_option_override): If -msave-restore
+	and -fpic and -mplt then disable -msave-restore and warn.
+
+2019-08-30  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91599
+	* tree-ssa-strlen.c (handle_store): Use a fallback location if
+	the statement doesn't have one.
+	* gimple-pretty-print.c (percent_G_format): Same.
+
+	PR middle-end/91584
+	* tree-vrp.c (vrp_prop::check_mem_ref): Normalize type domain bounds
+	before using them to validate MEM_REF offset.
+
+2019-08-30  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi (-Wvolatile): Use @code for volatile.
+
+2019-08-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* config/arm/arm.md (unaligned_loaddi,
+	unaligned_storedi): New unspec insn patterns.
+	* config/arm/neon.md (unaligned_storev8qi): Likewise.
+	* config/arm/arm.c (gen_cpymem_ldrd_strd): Use unaligned_loaddi
+	and unaligned_storedi for 4-byte aligned memory.
+	(arm_block_set_aligned_vect): Use unaligned_storev8qi for
+	4-byte aligned memory.
+
+2019-08-30  Martin Jambor  <mjambor@suse.cz>
+
+	tree-optimization/91579
+	* tree-tailcall.c (tailr_arg_needs_copy): New variable.
+	(find_tail_calls): Allocate tailr_arg_needs_copy and set its bits as
+	appropriate.
+	(arg_needs_copy_p): Removed.
+	(eliminate_tail_call): Test tailr_arg_needs_copy instead of calling
+	arg_needs_copy_p.
+	(tree_optimize_tail_calls_1): Likewise.  Free tailr_arg_needs_copy.
+
+2019-08-29  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-features.c
+	(general_scalar_chain::compute_convert_gain):
+	Correct cost for double-word shifts.
+	(general_scalar_to_vector_candidate_p): Reject count operands
+	greater or equal to mode bitsize.
+
+2019-08-29  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (inline_secondary_memory_needed): Return true
+	for moves between SSE and non-general registers and between
+	mask and non-general registers.
+	(ix86_register_move_cost): Remove stalled comment.
+
+2019-08-29  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386-features.c (general_scalar_chain::convert_insn):
+	Guard debug work with MAY_HAVE_DEBUG_BIND_INSNS.
+
+2019-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/91580
+	* config/i386/i386-features.c (general_scalar_chain::convert_insn):
+	Do not emit scalar copies for debug-insns, instead replace
+	their uses with the reg copy used in the chain or reset them
+	if there is a reaching definition outside of the chain as well.
+
+2019-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91560
+	* config/i386/i386-expand.c (expand_vec_perm_movs,
+	expand_vec_perm_blend, expand_vec_perm_vpermil,
+	expand_vec_perm_pshufb, expand_vec_perm_1,
+	expand_vec_perm_pshuflw_pshufhw, expand_vec_perm_palignr,
+	expand_vec_perm_interleave2, expand_vec_perm_vpermq_perm_1,
+	expand_vec_perm_vperm2f128, expand_vec_perm_interleave3,
+	expand_vec_perm_vperm2f128_vblend, expand_vec_perm_2vperm2f128_vshuf,
+	expand_vec_perm_even_odd, expand_vec_perm_broadcast): Adjust function
+	comments - replace ix86_expand_vec_perm_builtin_1 with
+	ix86_expand_vec_perm_const_1.
+	(expand_vec_perm2_vperm2f128_vblend): New function.
+	(ix86_expand_vec_perm_const_1): New forward declaration.  Call
+	expand_vec_perm2_vperm2f128_vblend as last resort.
+	(canonicalize_perm): Formatting fix.
+
+	PR tree-optimization/91351
+	* tree-cfg.c (generate_range_test): Use range_check_type instead of
+	unsigned_type_for.
+	* tree-cfgcleanup.c (convert_single_case_switch): Punt if
+	range_check_type returns NULL.
+	* tree-switch-conversion.c (switch_conversion::build_one_array):
+	Use range_check_type instead of unsigned_type_for, don't perform
+	linear opt if it returns NULL.
+	(bit_test_cluster::find_bit_tests): Formatting fix.
+	(bit_test_cluster::emit): Use range_check_type instead of
+	unsigned_type_for.
+	(switch_decision_tree::try_switch_expansion): Punt if range_check_type
+	returns NULL.
+
+2019-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91568
+	* tree-vectorizer.h (_slp_tree::max_nunits): Add.
+	(vect_update_max_nunits): Add overload for poly_uint64.
+	* tree-vect-slp.c (vect_create_new_slp_node): Initialize it.
+	(vect_build_slp_tree): Record max_nunits into the subtree
+	and merge it upwards.
+	(vect_print_slp_tree): Print max_nunits.
+
+2019-08-28  Marek Polacek  <polacek@redhat.com>
+
+	Implement P1152R4: Deprecating some uses of volatile.
+	PR c++/91361
+	* doc/invoke.texi: Document -Wvolatile.
+
+2019-08-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91360 - Implement C++20 P1143R2: constinit.
+	* doc/invoke.texi: Document -Wc++20-compat.
+
+2019-08-28  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91457
+	* builtins.c (component_size): New function.
+	(compute_objsize): Add argument. Handle ARRAY_REF and COMPONENT_REF.
+	* builtins.h (compute_objsize): Add argument.
+	* tree-ssa-strlen.c (handle_store): Handle no-warning bit.
+	* tree-vrp.c (vrp_prop::check_array_ref): Return warning result.
+	(vrp_prop::check_mem_ref): Same.
+	(vrp_prop::search_for_addr_array): Set no-warning bit.
+	(check_array_bounds): Same.
+
+2019-08-28  Martin Sebor  <msebor@redhat.com>
+
+	PR driver/80545
+	* opts-common.c (option_enabled): Correct checking for language
+	options.
+
+2019-08-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_register_move_cost): Do not
+	limit the cost of moves to/from XMM register to minimum 8.
+
+2019-08-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/91468
+	* ipa-cp.c (merge_agg_lats_step): Removed redundant test, made a
+	checking assert a normal assert to test it really is redundant.
+	* ipa-prop.c (compute_complex_assign_jump_func): Removed
+	redundant test.
+	(update_jump_functions_after_inlining): Removed combining unary
+	arithmetic operations with an ancestor jump function.
+	(ipcp_modif_dom_walker::before_dom_children): Fix wrong use of rhs
+	instead of t.
+
+2019-08-28  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386-features.c (convert_scalars_to_vector): Do not
+	add the MD problem.
+
+2019-08-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Richard Biener  <rguenther@suse.de>
+
+	* expr.c (expand_assignment): Handle misaligned DECLs.
+	(expand_expr_real_1): Handle FUNCTION_DECL as unaligned.
+	* function.c (assign_parm_adjust_stack_rtl): Check movmisalign optab
+	too.
+	(assign_parm_setup_stack): Allocate properly aligned stack slots.
+	* varasm.c (build_constant_desc): Align constants of misaligned types.
+	* config/arm/predicates.md (aligned_operand): New predicate.
+	* config/arm/arm.md (movdi, movsi, movhi, movhf, movsf, movdf): Use
+	aligned_operand to check restrictions on memory addresses.
+	* config/arm/neon.md (movti, mov<VSTRUCT>, mov<VH>): Likewise.
+	* config/arm/vec-common.md (mov<VALL>): Likewise.
+
+2019-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/91530
+	* config/i386/sse.md (vec_shl_<mode>, vec_shr_<mode>): Use
+	V_128 iterator instead of VI_128.
+
+2019-08-28  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/90970
+	* builtins.c (check_access): Remove assignment to maxread
+	as it hasn't been used since when it was introduced in r255755.
+
+2019-08-27  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91567
+	* gimple-ssa-sprintf.c (get_string_length): Handle more forms of lengths
+	of unknown strings.
+	* vr-values.c (vr_values::extract_range_basic): Set strlen upper bound
+	to PTRDIFF_MAX - 2.
+
+2019-08-27  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-strlen.c (printf_strlen_execute): Initialize
+	the loop optimizer and SCEV before sizing ssa_ver_to_stridx.
+
+2019-08-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91528
+	* config/i386/i386-features.c (convert_scalars_to_vector):
+	Update crtl->stack_realign_needed, crtl->stack_realign_tried and
+	crtl->stack_realign_processed.  Update crtl->drap_reg by calling
+	targetm.calls.get_drap_rtx.  If drap_rtx is non-null then
+	Update crtl->args.internal_arg_pointer and call fixup_tail_calls.
+
+2019-08-27  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386-features.h
+	(general_scalar_chain::~general_scalar_chain): Add.
+	(general_scalar_chain::insns_conv): New bitmap.
+	(general_scalar_chain::n_sse_to_integer): New.
+	(general_scalar_chain::n_integer_to_sse): Likewise.
+	(general_scalar_chain::make_vector_copies): Adjust signature.
+	* config/i386/i386-features.c
+	(general_scalar_chain::general_scalar_chain): Outline,
+	initialize new members.
+	(general_scalar_chain::~general_scalar_chain): New.
+	(general_scalar_chain::mark_dual_mode_def): Record insns
+	we need to insert conversions at and count them.
+	(general_scalar_chain::compute_convert_gain): Account
+	for conversion instructions at chain boundary.
+	(general_scalar_chain::make_vector_copies): Generate a single
+	copy for a def by a specific insn.
+	(general_scalar_chain::convert_registers): First populate
+	defs_map, then make copies at out-of chain insns.
+
+2019-08-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (stack_protect_set_insn): Add security-related
+	comment.
+	* config/aarch64/aarch64.md (stack_protect_set_<mode>): Likewise.
+
+2019-08-27  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_node::remove): Remove dead assignment before
+	loop.
+	* config/i386/i386-features.c (scalar_chain::emit_conversion_insns):
+	Enclose in anonymous namespace.
+	* config/i386/x86-tune-costs.h (struct processor_costs): Wrap
+	hard_register initialization in braces.
+	* tree-vrp.h (value_range_base::supports_type_p): Return false
+	for function with boolean return type.
+
+2019-08-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (emit_i387_cw_initialization)
+	<case I387_CW_ROUNDEVEN>: Fix masking operand value.
+
+2019-08-26  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/83431
+	* gimple-ssa-sprintf.c (pass_data_sprintf_length): Remove object.
+	(sprintf_dom_walker): Remove class.
+	(get_int_range): Make argument const.
+	(directive::fmtfunc, directive::set_precision): Same.
+	(format_none): Same.
+	(build_intmax_type_nodes): Same.
+	(adjust_range_for_overflow): Same.
+	(format_floating): Same.
+	(format_character): Same.
+	(format_string): Same.
+	(format_plain): Same.
+	(get_int_range): Cast away constness.
+	(format_integer): Same.
+	(get_string_length): Call get_range_strlen_dynamic.  Handle
+	null lendata.maxbound.
+	(should_warn_p): Adjust argument scope qualifier.
+	(maybe_warn): Same.
+	(format_directive): Same.
+	(parse_directive): Same.
+	(is_call_safe): Same.
+	(try_substitute_return_value): Same.
+	(sprintf_dom_walker::handle_printf_call): Rename...
+	(handle_printf_call): ...to this.  Initialize target to host charmap
+	here instead of in pass_sprintf_length::execute.
+	(struct call_info): Make global.
+	(sprintf_dom_walker::compute_format_length): Make global.
+	(sprintf_dom_walker::handle_gimple_call): Same.
+	* passes.def (pass_sprintf_length): Replace with pass_strlen.
+	* print-rtl.c (print_pattern): Reduce the number of spaces to
+	avoid -Wformat-truncation.
+	* tree-pass.h (make_pass_warn_printf): New function.
+	* tree-ssa-strlen.c (strlen_optimize): New variable.
+	(get_string_length): Add comments.
+	(get_range_strlen_dynamic): New function.
+	(check_and_optimize_call): New function.
+	(handle_integral_assign): New function.
+	(strlen_check_and_optimize_stmt): Factor code out into
+	strlen_check_and_optimize_call and handle_integral_assign.
+	(strlen_dom_walker::evrp): New member.
+	(strlen_dom_walker::before_dom_children): Use evrp member.
+	(strlen_dom_walker::after_dom_children): Use evrp member.
+	(printf_strlen_execute): New function.
+	(pass_strlen::gate): Update to handle printf calls.
+	(dump_strlen_info): New function.
+	(pass_data_warn_printf): New variable.
+	(pass_warn_printf): New class.
+	* tree-ssa-strlen.h (get_range_strlen_dynamic): Declare.
+	(handle_printf_call): Same.
+	* tree-vrp.c (value_range_base::type): Adjust assertion.
+	* vr-values.c (vr_values::update_value_range): Use type of the first
+	argument rather than the second.
+
+2019-08-26  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386-features.c (general_remove_non_convertible_regs):
+	Remove.
+	(convert_scalars_to_vector): Do not call it.
+
+2019-08-26  Tejas Joshi  <tejasjoshi9673@gmail.com>
+            Uros Bizjak  <ubizjak@gmail.com>
+
+	* builtins.c (mathfn_built_in_2): Change CASE_MATHFN to
+	CASE_MATHFN_FLOATN for roundeven.
+	* config/i386/i386.c (ix86_i387_mode_needed): Add case
+	I387_ROUNDEVEN.
+	(ix86_mode_needed): Likewise.
+	(ix86_mode_after): Likewise.
+	(ix86_mode_entry): Likewise.
+	(ix86_mode_exit): Likewise.
+	(ix86_emit_mode_set): Likewise.
+	(emit_i387_cw_initialization): Add case I387_CW_ROUNDEVEN.
+	* config/i386/i386.h (ix86_stack_slot): Add SLOT_CW_ROUNDEVEN.
+	(ix86_entity): Add I387_ROUNDEVEN.
+	(NUM_MODES_FOR_MODE_SWITCHING): Add I387_CW_ANY.
+	* config/i386/i386.md: Define UNSPEC_FRNDINT_ROUNDEVEN.
+	(define_int_iterator): Likewise.
+	(define_int_attr): Likewise for rounding_insn, rounding and ROUNDING.
+	(define_constant): Define ROUND_ROUNDEVEN mode.
+	(define_attr): Add roundeven mode for i387_cw.
+	(<rouding_insn><mode>2): Add condition for ROUND_ROUNDEVEN.
+	* internal-fn.def (ROUNDEVEN): New builtin function.
+	* optabs.def (roundeven_optab): New optab.
+
+2019-08-26  Tejas Joshi  <tejasjoshi9673@gmail.com>
+
+        * builtins.c (mathfn_built_in_2): Added CASE_MATHFN_FLOATN
+        for ROUNDEVEN.
+        * builtins.def: Added function definitions for roundeven function
+        variants.
+        * fold-const-call.c (fold_const_call_ss): Added case for roundeven
+        function call.  Adjust condition for floor, ceil, trunc and round.
+        * fold-const.c (negate_mathfn_p): Added case for roundeven function.
+        (tree_call_nonnegative_warnv_p): Added case for roundeven function.
+        (integer_valued_real_call_p): Added case for roundeven function.
+        * real.c (is_even): New function. Returns true if real number is even,
+        otherwise returns false.
+        (is_halfway_below): New function. Returns true if real number is
+        halfway between two integers, else return false.
+        (real_roundeven): New function. Round real number to nearest integer,
+        rounding halfway cases towards even.
+        * real.h (real_value): Added descriptive comments.  Added function
+        declaration for roundeven function.
+        * doc/extend.texi (Other Builtins): List roundeven variants among
+        functions which can be handled as builtins.
+
+2019-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR target/91522
+	PR target/91527
+	* config/i386/i386-features.h (general_scalar_chain::defs_map):
+	New member.
+	(general_scalar_chain::replace_with_subreg): Remove.
+	(general_scalar_chain::replace_with_subreg_in_insn): Likewise.
+	(general_scalar_chain::convert_reg): Adjust signature.
+	* config/i386/i386-features.c (scalar_chain::add_insn): Do not
+	iterate over all defs of a reg.
+	(general_scalar_chain::replace_with_subreg): Remove.
+	(general_scalar_chain::replace_with_subreg_in_insn): Likewise.
+	(general_scalar_chain::make_vector_copies): Populate defs_map,
+	place copy only after defs that are used as vectors in the chain.
+	(general_scalar_chain::convert_reg): Emit a copy for a specific
+	def in a specific instruction.
+	(general_scalar_chain::convert_op): All reg uses are converted here.
+	(general_scalar_chain::convert_insn): Emit copies for scalar
+	uses of defs here.  Replace uses with the copies we created.
+	Replace and convert the def.  Adjust REG_DEAD notes, remove
+	REG_EQUIV/EQUAL notes.
+	(general_scalar_chain::convert_registers): Only handle copies
+	into the chain here.
+
+2019-08-26  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* match.pd: Add (T)(A) + CST -> (T)(A + CST).
+
+2019-08-26  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gimple-loop-versioning.cc (loop_versioning::record_address_fragment):
+	Add nop_convert case.
+	* tree-ssa-propagate.c (substitute_and_fold_dom_walker::before_dom_children):
+	Fold all statements if requested.
+	* tree-ssa-propagate.h (class substitute_and_fold_engine):
+	Allow to fold all statements.
+	* tree-vrp.c (class vrp_folder):
+	Let substitute_and_fold_engine fold all statements.
+
 2019-08-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91526
@@ -2448,12 +3186,12 @@
 	* config/i386/mmx.md (usadv8qi): Use register_operand instead of
 	vector_operand.
 
-2019-09-09  Vladimir Makarov  <vmakarov@redhat.com>
+2019-08-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* reload1.c (finish_spills): Do not check ira_conflicts_p when
 	handling spilled pseudos.
 
-2019-09-09  Richard Earnshaw  <rearnsha@arm.com>
+2019-08-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/91386
 	* config/aarch64/aarch64.c (aarch64_gen_adjusted_ldpstp): Use copy_rtx

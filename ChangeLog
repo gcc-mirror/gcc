@@ -1,3 +1,12 @@
+2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* MAINTAINERS: Remove spu port maintainers.
+
+2019-08-28  Martin Liska  <mliska@suse.cz>
+
+	* .gitignore: Add .clangd and compile_commands.json
+	to .gitignore.
+
 2019-08-23  Michael Forney  <mforney@mforney.org>
 
 	* Makefile.tpl (HOST_EXPORTS): Add CXX_FOR_BUILD.

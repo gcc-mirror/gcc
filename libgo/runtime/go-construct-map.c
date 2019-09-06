@@ -9,20 +9,17 @@
 #include <stdlib.h>
 
 #include "runtime.h"
-#include "go-type.h"
 
-extern void *makemap (const struct __go_map_type *, intgo hint,
-		      void *)
+extern void *makemap (const struct maptype *, intgo hint, void *)
   __asm__ (GOSYM_PREFIX "runtime.makemap");
 
-extern void *mapassign (const struct __go_map_type *, void *hmap,
-			const void *key)
+extern void *mapassign (const struct maptype *, void *hmap, const void *key)
   __asm__ (GOSYM_PREFIX "runtime.mapassign");
 
 void *
-__go_construct_map (const struct __go_map_type *type,
-		    uintptr_t count, uintptr_t entry_size,
-		    uintptr_t val_offset, const void *ventries)
+__go_construct_map (const struct maptype *type, uintptr_t count,
+		    uintptr_t entry_size, uintptr_t val_offset,
+		    const void *ventries)
 {
   void *ret;
   const unsigned char *entries;
@@ -35,7 +32,7 @@ __go_construct_map (const struct __go_map_type *type,
   for (i = 0; i < count; ++i)
     {
       p = mapassign (type, ret, entries);
-      typedmemmove (type->__val_type, p, entries + val_offset);
+      typedmemmove (type->elem, p, entries + val_offset);
       entries += entry_size;
     }
 

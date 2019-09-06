@@ -6668,6 +6668,9 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
   mpz_init (index);
   rank = 0;
 
+  for (i = 0; i < GFC_MAX_DIMENSIONS; i++)
+    x[i] = 0;
+
   for (;;)
     {
       e = gfc_constructor_lookup_expr (shape_exp->value.constructor, rank);
@@ -6692,8 +6695,28 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
     }
   else
     {
-      for (i = 0; i < rank; i++)
-	x[i] = 0;
+      mpz_t size;
+      int order_size, shape_size;
+
+      if (order_exp->rank != shape_exp->rank)
+	{
+	  gfc_error ("Shapes of ORDER at %L and SHAPE at %L are different",
+		     &order_exp->where, &shape_exp->where);
+	  return &gfc_bad_expr;
+	}
+
+      gfc_array_size (shape_exp, &size);
+      shape_size = mpz_get_ui (size);
+      mpz_clear (size);
+      gfc_array_size (order_exp, &size);
+      order_size = mpz_get_ui (size);
+      mpz_clear (size);
+      if (order_size != shape_size)
+	{
+	  gfc_error ("Sizes of ORDER at %L and SHAPE at %L are different",
+		     &order_exp->where, &shape_exp->where);
+	  return &gfc_bad_expr;
+	}
 
       for (i = 0; i < rank; i++)
 	{
@@ -6704,7 +6727,12 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
 
 	  gcc_assert (order[i] >= 1 && order[i] <= rank);
 	  order[i]--;
-	  gcc_assert (x[order[i]] == 0);
+	  if (x[order[i]] != 0)
+	    {
+	      gfc_error ("ORDER at %L is not a permutation of the size of "
+			 "SHAPE at %L", &order_exp->where, &shape_exp->where);
+	      return &gfc_bad_expr;
+	    }
 	  x[order[i]] = 1;
 	}
     }

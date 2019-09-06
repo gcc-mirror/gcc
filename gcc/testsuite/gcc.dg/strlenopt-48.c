@@ -31,5 +31,5 @@ void h (void)
     abort();
 }
 
-/* { dg-final { scan-tree-dump-times "strlen" 0 "optimized" } }
+/* { dg-final { scan-tree-dump-times "strlen1" 0 "optimized" } }
    { dg-final { scan-tree-dump-times "abort" 0 "optimized" } } */

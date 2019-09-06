@@ -2511,6 +2511,7 @@ enum ix86_stack_slot
 {
   SLOT_TEMP = 0,
   SLOT_CW_STORED,
+  SLOT_CW_ROUNDEVEN,
   SLOT_CW_TRUNC,
   SLOT_CW_FLOOR,
   SLOT_CW_CEIL,
@@ -2522,6 +2523,7 @@ enum ix86_entity
 {
   X86_DIRFLAG = 0,
   AVX_U128,
+  I387_ROUNDEVEN,
   I387_TRUNC,
   I387_FLOOR,
   I387_CEIL,
@@ -2557,7 +2559,7 @@ enum avx_u128_state
 
 #define NUM_MODES_FOR_MODE_SWITCHING			\
   { X86_DIRFLAG_ANY, AVX_U128_ANY,			\
-    I387_CW_ANY, I387_CW_ANY, I387_CW_ANY }
+    I387_CW_ANY, I387_CW_ANY, I387_CW_ANY, I387_CW_ANY  }
 
 
 /* Avoid renaming of stack registers, as doing so in combination with
