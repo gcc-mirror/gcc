@@ -1,3 +1,10 @@
+2019-09-06  Caroline Tice  <cmtice@google.com>
+
+	PR testsuite/91670
+	* g++.dg/ubsan/pr59415.C: Disable LTO, since test uses
+	-fvtable-verify, and the two options are no longer allowed
+	together.
+
 2019-09-06  Nathan Sidwell  <nathan@acm.org>
 
 	* c-c++-common/cpp/line-1.c: New.
