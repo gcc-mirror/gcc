@@ -1,3 +1,10 @@
+2019-09-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (ssize): Define for C++20.
+	* testsuite/24_iterators/range_access_cpp20.cc: New test.
+	* doc/xml/manual/status_cxx2020.xml: Update P1227R2 status.
+	* doc/html/*: Regenerate.
+
 2019-09-06  Florian Weimer  <fweimer@redhat.com>
 
 	* configure: Regenerate.

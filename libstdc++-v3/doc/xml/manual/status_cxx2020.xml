@@ -1086,14 +1086,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Signed ssize() functions, unsigned size() functions </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1227r2.html">
         P1227R2
 	</link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 10.1 </entry>
       <entry />
     </row>
 
