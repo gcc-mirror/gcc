@@ -1,3 +1,10 @@
+2019-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* function.c (assign_parm_find_data_types): Use RECORD_OR_UNION_TYPE_P
+	before testing TYPE_TRANSPARENT_AGGR.
+	* calls.c (initialize_argument_information, load_register_parameters):
+	Likewise.
+
 2019-09-06  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/arm.md (cmp_and): Add short-it variant for thumb2 with
