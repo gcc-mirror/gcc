@@ -1,3 +1,8 @@
+2019-09-06  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (gimplify_omp_workshare): Use OMP_CLAUSES, OMP_BODY
+	instead of OMP_TARGET_CLAUSES, OMP_TARGET_BODY.
+
 2019-09-05  Cesar Philippidis  <cesar@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 
