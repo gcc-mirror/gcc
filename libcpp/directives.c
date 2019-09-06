@@ -1088,9 +1088,17 @@ do_linemarker (cpp_reader *pfile)
       map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
       const line_map_ordinary *from
 	= linemap_included_from_linemap (line_table, map);
-      if (MAIN_FILE_P (map)
-	  || (from
-	      && filename_cmp (ORDINARY_MAP_FILE_NAME (from), new_file) != 0))
+
+      if (!from)
+	/* Not nested.  */;
+      else if (!new_file[0])
+	/* Leaving to "" means fill in the popped-to name.  */
+	new_file = ORDINARY_MAP_FILE_NAME (from);
+      else if (filename_cmp (ORDINARY_MAP_FILE_NAME (from), new_file) != 0)
+	/* It's the wrong name, Grommit!  */
+	from = NULL;
+
+      if (!from)
 	{
 	  cpp_warning (pfile, CPP_W_NONE,
 		       "file \"%s\" linemarker ignored due to "
@@ -1098,6 +1106,7 @@ do_linemarker (cpp_reader *pfile)
 	  return;
 	}
     }
+
   /* Compensate for the increment in linemap_add that occurs in
      _cpp_do_file_change.  We're currently at the start of the line
      *following* the #line directive.  A separate location_t for this
