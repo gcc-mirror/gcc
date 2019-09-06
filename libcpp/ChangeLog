@@ -1,3 +1,10 @@
+2019-08-30  Nathan Sidwell  <nathan@acm.org>
+
+	New # semantics for popping to "" name.
+	libcpp/
+	* directives.c (do_linemarker): Popping to "" name means get the
+	name from the include stack..
+
 2019-09-05  Nathan Sidwell  <nathan@acm.org>
 
 	PR preprocessor/91639
