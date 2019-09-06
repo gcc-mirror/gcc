@@ -1,7 +1,11 @@
 2019-09-06  Nathan Sidwell  <nathan@acm.org>
 
-	Reserve TREE_LANG_FLAG_3 for modules.
-	gcc/cp/
+	PR c++/91125
+	* cp-tree.h (IDENTIFIER_REPO_CHOSEN, DECL_REPO_AVAILABLE_P): Delete.
+	(struct lang_decl_base): Remove repo_available_p.
+	* decl.c (duplicate_decls): Don't copy DECL_REPO_AVAILABLE_P.
+
+	(Reserve TREE_LANG_FLAG_3 for modules.
 	* cp-tree.h (DECL_CONSTRUCTION_VTABLE_P): Delete.
 	(DECL_NON_TRIVIALLY_INITIALIZED_P): Move to TREE_LANG_FLAG_6.
 	* class.c (build_ctor_vtbl_group): Don't set
