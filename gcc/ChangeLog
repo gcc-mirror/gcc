@@ -1,5 +1,9 @@
 2019-09-06  Martin Liska  <mliska@suse.cz>
 
+	* doc/match-and-simplify.texi: Separate tuples with ;.
+
+2019-09-06  Martin Liska  <mliska@suse.cz>
+
 	PR c++/91125
 	* Makefile.in: Remove tlink.o.
 	* collect2.c (do_link): New function isolated
