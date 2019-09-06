@@ -1,3 +1,8 @@
+2019-09-06  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.c (gimplify_omp_workshare): Use OMP_CLAUSES, OMP_BODY
+	instead of OMP_TARGET_CLAUSES, OMP_TARGET_BODY.
+
 2019-09-05  Julian Brown  <julian@codesourcery.com>
 
 	* config/gcn/gcn.c (gcn_goacc_validate_dims): Remove
