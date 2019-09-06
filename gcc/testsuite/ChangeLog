@@ -1,5 +1,13 @@
 2019-09-06  David Edelsohn  <dje.gcc@gmail.com>
 
+	* gcc.dg/torture/inf-compare-1.c: Skip AIX.
+	* gcc.dg/torture/inf-compare-2.c: Skip AIX.
+	* gcc.dg/torture/inf-compare-3.c: Skip AIX.
+	* gcc.dg/torture/inf-compare-4.c: Skip AIX.
+	* gcc.dg/torture/pr52451.c: Skip AIX.
+	* gcc.dg/torture/pr68264.c: Skip AIX
+	* gcc.dg/torture/pr91323.c: Skip AIX.
+
 	* g++.dg/warn/Warray-bounds-4.C: Skip AIX.
 	* g++.dg/warn/Warray-bounds-8.C: Skip AIX.
 	* g++.dg/opt/flifetime-dse2.C: XFAIL AIX.
