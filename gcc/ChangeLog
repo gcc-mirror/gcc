@@ -1,3 +1,10 @@
+2019-09-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91654
+	* config/i386/x86-tune-costs.h (skylake_cost): Raise the
+	cost of SSE->integer and integer->SSE moves from 2 to 6.
+	(core_cost): Ditto.
+
 2019-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* function.c (assign_parm_find_data_types): Use RECORD_OR_UNION_TYPE_P
