@@ -21,6 +21,12 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_OMP_SESE_H
 #define GCC_OMP_SESE_H
 
+/* A pair of BBs.  We use this to represent SESE regions.  */
+typedef std::pair<basic_block, basic_block> bb_pair_t;
+typedef auto_vec<bb_pair_t> bb_pair_vec_t;
+
+extern void omp_find_sese (auto_vec<basic_block> &blocks,
+			   bb_pair_vec_t &regions);
 extern void oacc_do_neutering (void);
 
 #endif

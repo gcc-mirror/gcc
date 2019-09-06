@@ -1,5 +1,27 @@
 2019-09-06  Julian Brown  <julian@codesourcery.com>
 
+	* config/nvptx/nvptx.c (omp-sese.h): Include.
+	(bb_pair_t, bb_pair_vec_t, pseudo_node_t, bracket, bracket_vec_t,
+	bb_sese, bb_sese::~bb_sese, bb_sese::append, bb_sese::remove,
+	BB_SET_SESE, BB_GET_SESE, nvptx_sese_number, nvptx_sese_pseudo,
+	nvptx_sese_color, nvptx_find_sese): Remove.
+	(nvptx_neuter_pars): Call omp_find_sese instead of nvptx_find_sese.
+	* omp-sese.c (omp-sese.h): Include.
+	(struct parallel): Rename to...
+	(struct parallel_g): This.
+	(parallel::parallel, parallel::~parallel): Rename to...
+	(parallel_g::parallel_g, parallel_g::~parallel_g): These.
+	(omp_sese_dump_pars, omp_sese_find_par, omp_sese_discover_pars,
+	populate_single_mode_bitmaps, find_ssa_names_to_propagate,
+	find_partitioned_var_uses, find_local_vars_to_propagate,
+	neuter_worker_single): Update for parallel_g name change.
+	(bb_pair_t, bb_pair_vec_t): Remove.
+	(omp_find_sese): Make global.
+	* omp-sese.h (bb_pair_t, bb_pair_vec_t): New.
+	(omp_find_sese): Add prototype.
+
+2019-09-06  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.c (gimplify_omp_workshare): Use OMP_CLAUSES, OMP_BODY
 	instead of OMP_TARGET_CLAUSES, OMP_TARGET_BODY.
 
