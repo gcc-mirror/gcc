@@ -696,9 +696,6 @@ record_last_reg_set_info_regno (rtx_insn *insn, int regno)
 static void
 record_last_mem_set_info (rtx_insn *insn)
 {
-  if (!transp)
-    return;
-
   struct modifies_mem *list_entry;
 
   list_entry = (struct modifies_mem *) obstack_alloc (&modifies_mem_obstack,

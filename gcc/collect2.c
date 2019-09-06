@@ -825,6 +825,30 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
   else
     post_ld_pass (false); /* No LTO objects were found, no temp file.  */
 }
+/* Entry point for linker invoation.  Called from main in collect2.c.
+   LD_ARGV is an array of arguments for the linker.  */
+
+static void
+do_link (char **ld_argv)
+{
+  struct pex_obj *pex;
+  const char *prog = "ld";
+  pex = collect_execute (prog, ld_argv, NULL, NULL,
+			 PEX_LAST | PEX_SEARCH,
+			 HAVE_GNU_LD && at_file_supplied);
+  int ret = collect_wait (prog, pex);
+  if (ret)
+    {
+      error ("ld returned %d exit status", ret);
+      exit (ret);
+    }
+  else
+    {
+      /* We have just successfully produced an output file, so assume that we
+	 may unlink it if need be for now on.  */
+      may_unlink_output_file = true;
+    }
+}
 
 /* Main program.  */
 
@@ -1704,7 +1728,7 @@ main (int argc, char **argv)
        functions from precise cross reference insertions by the compiler.  */
 
     if (early_exit || ld1_filter != SCAN_NOTHING)
-      do_tlink (ld1_argv, object_lst);
+      do_link (ld1_argv);
 
     if (early_exit)
       {
@@ -1762,10 +1786,10 @@ main (int argc, char **argv)
 #endif
       )
     {
-      /* Do tlink without additional code generation now if we didn't
+      /* Do link without additional code generation now if we didn't
 	 do it earlier for scanning purposes.  */
       if (ld1_filter == SCAN_NOTHING)
-	do_tlink (ld1_argv, object_lst);
+	do_link (ld1_argv);
 
       if (lto_mode)
         maybe_run_lto_and_relink (ld1_argv, object_lst, object, false);
@@ -1868,13 +1892,13 @@ main (int argc, char **argv)
 
   fork_execute ("gcc",  c_argv, at_file_supplied);
 #ifdef COLLECT_EXPORT_LIST
-  /* On AIX we must call tlink because of possible templates resolution.  */
-  do_tlink (ld2_argv, object_lst);
+  /* On AIX we must call link because of possible templates resolution.  */
+  do_link (ld2_argv);
 
   if (lto_mode)
     maybe_run_lto_and_relink (ld2_argv, object_lst, object, false);
 #else
-  /* Otherwise, simply call ld because tlink is already done.  */
+  /* Otherwise, simply call ld because link is already done.  */
   if (lto_mode)
     maybe_run_lto_and_relink (ld2_argv, object_lst, object, true);
   else

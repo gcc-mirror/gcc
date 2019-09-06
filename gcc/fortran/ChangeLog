@@ -1,3 +1,15 @@
+2019-09-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/91496
+	* parse.c (parse_executable): Improve error messages for
+	improperly placed pragmas not preceeding a loop.
+
+2019-09-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91660
+	* decl.c (gfc_match_decl_type_spec): Improve and restore error
+	message for malformed types-spec.
+
 2019-09-04  Steven G. Kargl  <kargl@gcvc.gnu.org>
 
 	PR fortran/91650

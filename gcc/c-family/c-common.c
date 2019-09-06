@@ -249,11 +249,6 @@ const char *constant_string_class_name;
 
 int warn_abi_version = -1;
 
-/* Nonzero means generate separate instantiation control files and
-   juggle them at link time.  */
-
-int flag_use_repository;
-
 /* The C++ dialect being used.  Default set in c_common_post_options.  */
 
 enum cxx_dialect cxx_dialect = cxx_unset;

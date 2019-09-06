@@ -1,3 +1,62 @@
+2019-09-06  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (cmp_and): Add short-it variant for thumb2 with
+	high regs.
+	(cmp_ior): Likewise.
+
+2019-09-06  Martin Liska  <mliska@suse.cz>
+
+	* doc/match-and-simplify.texi: Separate tuples with ;.
+
+2019-09-06  Martin Liska  <mliska@suse.cz>
+
+	PR c++/91125
+	* Makefile.in: Remove tlink.o.
+	* collect2.c (do_link): New function isolated
+	from do_tlink.
+	(main): Use.
+	* collect2.h (do_tlink): Remove declaration of do_tlink.
+	* doc/extend.texi: Remove documentation of -frepo.
+	* doc/invoke.texi: Likewise.
+	* doc/sourcebuild.texi: Remove cleanup-repo-files.
+	* tlink.c: Remove.
+
+2019-09-05  Jakub Jelinek  <jakub@redhat.com>
+	    Jim Wilson  <jimw@sifive.com>
+
+	PR target/91635
+	* config/riscv/riscv.md (zero_extendsidi2, zero_extendhi<GPR:mode>2,
+	extend<SHORT:mode><SUPERQI:mode>2): Don't split if
+	paradoxical_subreg_p (operands[0]).
+	(*lshrsi3_zero_extend_3+1, *lshrsi3_zero_extend_3+2): Add clobber and
+	use as intermediate value.
+
+2019-09-05  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.md (*movti_insn): Set delayeduse for global_store.
+	(sync_compare_and_swap<mode>_insn): Likewise.
+
+2019-09-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/91615
+	* expr.c (expand_expr_real_1): Handle misaligned TARGET_MEM_REF
+	without movmisalign optab.
+
+2019-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91001
+	PR middle-end/91105
+	PR middle-end/91106
+	* calls.c (load_register_parameters): For TYPE_TRANSPARENT_AGGR
+	types, use type of their first field instead of type of
+	args[i].tree_value.
+
+2019-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/91656
+	* postreload-gcse.c (record_last_mem_set_info): Revert addition
+	of early out.
+
 2019-09-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/90501

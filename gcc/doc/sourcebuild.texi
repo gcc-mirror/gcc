@@ -2864,9 +2864,6 @@ int main() @{ return 0; @}
 @item cleanup-profile-file
 Removes profiling files generated for this test.
 
-@item cleanup-repo-files
-Removes files generated for this test for @option{-frepo}.
-
 @end table
 
 @node Ada Tests

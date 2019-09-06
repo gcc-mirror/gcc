@@ -5541,16 +5541,17 @@ parse_executable (gfc_statement st)
 	}
 
       if (directive_unroll != -1)
-	gfc_error ("%<GCC unroll%> directive does not commence a loop at %C");
+	gfc_error ("%<GCC unroll%> directive not at the start of a loop at %C");
 
       if (directive_ivdep)
-	gfc_error ("%<GCC ivdep%> directive does not commence a loop at %C");
+	gfc_error ("%<GCC ivdep%> directive not at the start of a loop at %C");
 
       if (directive_vector)
-	gfc_error ("%<GCC vector%> directive does not commence a loop at %C");
+	gfc_error ("%<GCC vector%> directive not at the start of a loop at %C");
 
       if (directive_novector)
-	gfc_error ("%<GCC novector%> directive does not commence a loop at %C");
+	gfc_error ("%<GCC novector%> "
+		   "directive not at the start of a loop at %C");
 
       st = next_statement ();
     }

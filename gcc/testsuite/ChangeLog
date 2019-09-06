@@ -1,3 +1,72 @@
+2019-09-06  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/cpp/line-1.c: New.
+
+2019-09-06  Martin Liska  <mliska@suse.cz>
+
+	PR c++/91125
+	* g++.dg/parse/repo1.C: Remove.
+	* g++.dg/rtti/repo1.C: Remove.
+	* g++.dg/template/repo1.C: Remove.
+	* g++.dg/template/repo10.C: Remove.
+	* g++.dg/template/repo11.C: Remove.
+	* g++.dg/template/repo2.C: Remove.
+	* g++.dg/template/repo3.C: Remove.
+	* g++.dg/template/repo4.C: Remove.
+	* g++.dg/template/repo5.C: Remove.
+	* g++.dg/template/repo6.C: Remove.
+	* g++.dg/template/repo7.C: Remove.
+	* g++.dg/template/repo8.C: Remove.
+	* g++.dg/template/repo9.C: Remove.
+	* g++.old-deja/g++.pt/instantiate4.C: Remove.
+	* g++.old-deja/g++.pt/instantiate6.C: Remove.
+	* g++.old-deja/g++.pt/repo1.C: Remove.
+	* g++.old-deja/g++.pt/repo2.C: Remove.
+	* g++.old-deja/g++.pt/repo3.C: Remove.
+	* g++.old-deja/g++.pt/repo4.C: Remove.
+	* lib/g++.exp: Remove removal of repo files.
+	* lib/gcc-dg.exp: Likewise.
+	* lib/obj-c++.exp: Likewise.
+
+2019-09-05  Jakub Jelinek  <jakub@redhat.com>
+	    Jim Wilson  <jimw@sifive.com>
+
+	PR target/91635
+	* gcc.c-torture/execute/pr91635.c: New test.
+	* gcc.target/riscv/shift-shift-4.c: New test.
+	* gcc.target/riscv/shift-shift-5.c: New test.
+
+2019-09-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/91496
+	* gfortran.dg/directive_unroll_5.f90: Adjust error message.
+
+2019-09-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91660
+	* gfortran.dg/pdt_4.f03: Fix invalid code.
+        * gfortran.dg/pr91660_1.f90: New test.
+	* gfortran.dg/pr91660_2.f90: Ditto.
+
+2019-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91644 - ICE with constinit in function template.
+	* g++.dg/cpp2a/constinit13.C: New test.
+
+2019-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91001
+	PR middle-end/91105
+	PR middle-end/91106
+	* gcc.c-torture/compile/pr91001.c: New test.
+
+2019-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/91656
+	* gcc.dg/torture/pr91656-1.c: New testcase.
+	* gcc.dg/torture/pr91656-2.c: Likewise.
+	* gcc.dg/torture/pr91656-3.c: Likewise.
+
 2019-09-05  Nathan Sidwell  <nathan@acm.org>
 
 	PR preprocessor/91639

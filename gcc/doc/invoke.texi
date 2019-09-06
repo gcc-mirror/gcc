@@ -223,7 +223,7 @@ in the following sections.
 -fno-nonansi-builtins  -fnothrow-opt  -fno-operator-names @gol
 -fno-optional-diags  -fpermissive @gol
 -fno-pretty-templates @gol
--frepo  -fno-rtti  -fsized-deallocation @gol
+-fno-rtti  -fsized-deallocation @gol
 -ftemplate-backtrace-limit=@var{n} @gol
 -ftemplate-depth=@var{n} @gol
 -fno-threadsafe-statics  -fuse-cxa-atexit @gol
@@ -2747,12 +2747,6 @@ template, the compiler omits any template arguments that match
 the default template arguments for that template.  If either of these
 behaviors make it harder to understand the error message rather than
 easier, you can use @option{-fno-pretty-templates} to disable them.
-
-@item -frepo
-@opindex frepo
-Enable automatic template instantiation at link time.  This option also
-implies @option{-fno-implicit-templates}.  @xref{Template
-Instantiation}, for more information.
 
 @item -fno-rtti
 @opindex fno-rtti

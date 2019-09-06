@@ -1,5 +1,7 @@
 2019-09-05  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r275458.
+
 	gcc/testsuite/
 	* g++.dg/modules/concept-2_[ab].C: New.
 

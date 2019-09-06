@@ -514,12 +514,6 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 	cpp_opts->track_macro_expansion = 2;
       break;
 
-    case OPT_frepo:
-      flag_use_repository = value;
-      if (value)
-	flag_implicit_templates = 0;
-      break;
-
     case OPT_ftabstop_:
       /* It is documented that we silently ignore silly values.  */
       if (value >= 1 && value <= 100)

@@ -281,6 +281,8 @@ int module_dump_id;
 
 /* We have a special module owner.  */
 #define MODULE_UNKNOWN (unsigned short)(~0U)    /* Not yet known.  */
+#define MODULE_LIMIT (1 << MODULE_BITS < MODULE_UNKNOWN \
+		      ? 1 << MODULE_BITS : MODULE_UNKNOWN)
 
 /* Prefix for section names.  */
 #define MOD_SNAME_PFX ".gnu.c++"
@@ -5216,7 +5218,6 @@ trees_out::lang_decl_bools (tree t)
       && (TREE_CODE (t) != VAR_DECL
 	  || DECL_VTABLE_OR_VTT_P (t) || DECL_WEAK (t)));
   WB (lang->u.base.initialized_in_class);
-  WB (lang->u.base.repo_available_p);
   WB (lang->u.base.threadprivate_or_deleted_p);
   WB (lang->u.base.anticipated_p);
   WB (lang->u.base.friend_or_tls);
@@ -5273,7 +5274,6 @@ trees_in::lang_decl_bools (tree t)
   lang->u.base.use_template = v;
   RB (lang->u.base.not_really_extern);
   RB (lang->u.base.initialized_in_class);
-  RB (lang->u.base.repo_available_p);
   RB (lang->u.base.threadprivate_or_deleted_p);
   RB (lang->u.base.anticipated_p);
   RB (lang->u.base.friend_or_tls);
@@ -17369,9 +17369,6 @@ init_module_processing (cpp_reader *reader)
   if (pch_file)
     fatal_error (input_location,
 		 "C++ modules are incompatible with precompiled headers");
-  if (flag_use_repository)
-    fatal_error (input_location,
-		 "C++ modules are incompatible with a template repository");
 
   if (flag_preprocess_only)
     {

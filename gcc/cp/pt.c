@@ -5847,7 +5847,7 @@ push_template_decl_real (tree decl, bool is_friend)
       && TREE_PUBLIC (decl)
       && VAR_OR_FUNCTION_DECL_P (decl))
     /* Set DECL_COMDAT on template instantiations; if we force
-       them to be emitted by explicit instantiation or -frepo,
+       them to be emitted by explicit instantiation,
        mark_needed will tell cgraph to do the right thing.  */
     DECL_COMDAT (decl) = true;
 
@@ -17149,6 +17149,13 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	else
 	  {
 	    init = DECL_INITIAL (decl);
+	    /* The following tsubst call will clear the DECL_TEMPLATE_INFO
+	       for local variables, so save if DECL was declared constinit.  */
+	    const bool constinit_p
+	      = (VAR_P (decl)
+		 && DECL_LANG_SPECIFIC (decl)
+		 && DECL_TEMPLATE_INFO (decl)
+		 && TINFO_VAR_DECLARED_CONSTINIT (DECL_TEMPLATE_INFO (decl)));
 	    decl = tsubst (decl, args, complain, in_decl);
 	    if (decl != error_mark_node)
 	      {
@@ -17187,7 +17194,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		  }
 		else
 		  {
-		    int const_init = false;
+		    bool const_init = false;
 		    unsigned int cnt = 0;
 		    tree first = NULL_TREE, ndecl = error_mark_node;
 		    maybe_push_decl (decl);
@@ -17208,7 +17215,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		    if (ndecl != error_mark_node)
 		      cp_maybe_mangle_decomp (ndecl, first, cnt);
 
-		    cp_finish_decl (decl, init, const_init, NULL_TREE, 0);
+		    cp_finish_decl (decl, init, const_init, NULL_TREE,
+				    constinit_p ? LOOKUP_CONSTINIT : 0);
 
 		    if (ndecl != error_mark_node)
 		      cp_finish_decomp (ndecl, first, cnt);
@@ -24719,22 +24727,6 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
       if (!(external_p && VAR_P (d)))
 	add_pending_template (d);
       goto out;
-    }
-  /* Tell the repository that D is available in this translation unit
-     -- and see if it is supposed to be instantiated here.  */
-  if (TREE_PUBLIC (d) && !DECL_REALLY_EXTERN (d) && !repo_emit_p (d))
-    {
-      /* In a PCH file, despite the fact that the repository hasn't
-	 requested instantiation in the PCH it is still possible that
-	 an instantiation will be required in a file that includes the
-	 PCH.  */
-      if (pch_file)
-	add_pending_template (d);
-      /* Instantiate inline functions so that the inliner can do its
-	 job, even though we'll not be emitting a copy of this
-	 function.  */
-      if (!(TREE_CODE (d) == FUNCTION_DECL && possibly_inlined_p (d)))
-	goto out;
     }
 
   bool push_to_top, nested;

@@ -1,3 +1,46 @@
+2019-09-06  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/91125
+	* cp-tree.h (IDENTIFIER_REPO_CHOSEN, DECL_REPO_AVAILABLE_P): Delete.
+	(struct lang_decl_base): Remove repo_available_p.
+	* decl.c (duplicate_decls): Don't copy DECL_REPO_AVAILABLE_P.
+
+	(Reserve TREE_LANG_FLAG_3 for modules.
+	* cp-tree.h (DECL_CONSTRUCTION_VTABLE_P): Delete.
+	(DECL_NON_TRIVIALLY_INITIALIZED_P): Move to TREE_LANG_FLAG_6.
+	* class.c (build_ctor_vtbl_group): Don't set
+	DECL_CONSTRUCTION_VTABLE_P.
+	* decl2.c (determine_visibility_from_class): Don't check
+	DECL_CONSTRUCTION_VTABLE_P anymore.
+
+2019-09-06  Martin Liska  <mliska@suse.cz>
+
+	PR c++/91125
+	* Make-lang.in: Remove repo.o.
+	* config-lang.in: Likewise.
+	* cp-tree.h (init_repo): Remove declarations
+	of repo-related functions.
+	(repo_emit_p): Likewise.
+	(repo_export_class_p): Likewise.
+	(finish_repo): Likewise.
+	* decl2.c (import_export_class): Always
+	set -1 value/
+	(mark_needed): Remove -frepo from comment.
+	(import_export_decl): Similarly here.
+	(c_parse_final_cleanups): Remove call of finish_repo.
+	* lex.c (cxx_init): Remove call to init_repo.
+	* optimize.c (can_alias_cdtor): Remove dead condition.
+	* pt.c (push_template_decl_real): Update comment.
+	(instantiate_decl): Remove dead code used for -frepo.
+	* repo.c: Remove.
+
+2019-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91644 - ICE with constinit in function template.
+	* decl.c (start_decl): Call retrofit_lang_decl for constinit variables.
+	* pt.c (tsubst_expr): Pass LOOKUP_CONSTINIT down to cp_finish_decl for
+	constinit variables.
+
 2019-09-05  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (DECL_VTABLE_OR_VTT_P): Forward to DECL_VIRTUAL_P.
