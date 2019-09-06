@@ -1,3 +1,7 @@
+2019-09-06  Florian Weimer  <fweimer@redhat.com>
+
+	* configure: Regenerate.
+
 2019-09-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2020.xml: Update status for P0122R7 and

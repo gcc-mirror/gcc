@@ -22,6 +22,7 @@ case "$target" in
 	AC_LINK_IFELSE(
 	 [AC_LANG_PROGRAM(
 	  [#include <sys/syscall.h>
+	   #include <unistd.h>
 	   int lk;],
 	  [syscall (SYS_gettid); syscall (SYS_futex, &lk, 0, 0, 0);])],
 	  [save_LIBS="$LIBS"
@@ -48,6 +49,7 @@ If so, please configure with --disable-linux-futex])
 	AC_LINK_IFELSE(
 	 [AC_LANG_PROGRAM(
 	  [#include <sys/syscall.h>
+	   #include <unistd.h>
 	   int lk;],
 	  [syscall (SYS_gettid); syscall (SYS_futex, &lk, 0, 0, 0);])],[],
 	  [AC_MSG_ERROR([SYS_gettid and SYS_futex required for --enable-linux-futex])])
