@@ -72670,6 +72670,7 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <sys/syscall.h>
+	   #include <unistd.h>
 	   int lk;
 int
 main ()
@@ -72728,6 +72729,7 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <sys/syscall.h>
+	   #include <unistd.h>
 	   int lk;
 int
 main ()
