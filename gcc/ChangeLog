@@ -1,5 +1,6 @@
 2019-09-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	PR target/91684
 	* config/arm/arm.c (arm_block_set_aligned_non_vect): Use
 	gen_unaligned_storedi for 4-byte aligned addresses.
 
