@@ -1,3 +1,7 @@
+2019-09-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.target/arm/pr91684.c: Use effective-target arm_prefer_ldrd_strd.
+
 2019-09-07  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/cpp2a/decomp2.C: Add TLS options.

@@ -1,5 +1,5 @@
 /* { dg-do compile }  */
-/* { dg-require-effective-target arm_ldrd_strd_ok } */
+/* { dg-require-effective-target arm_prefer_ldrd_strd } */
 /* { dg-options "-O3" } */
 
 typedef struct { int a, b, c; } S;
