@@ -1,3 +1,9 @@
+2019-09-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/91589
+	* gfortran.dg/pr91589.f90 : New test.
+
 2019-09-05  Harald Anlauf  <anlauf@gmx.de>
 
 	Backport from mainline
@@ -653,7 +659,7 @@
 	Backport from mainline.
 	2019-05-15  Iain Sandoe  <iain@sandoe.co.uk>
 
-	* lib/target-supports.exp 
+	* lib/target-supports.exp
 	(check_effective_target_powerpc_p8vector_ok): No support for Darwin.
 	(check_effective_target_powerpc_p9vector_ok): Likewise.
 	(check_effective_target_powerpc_float128_sw_ok): Likewise.
