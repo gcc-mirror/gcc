@@ -1,3 +1,7 @@
+2019-09-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.target/arm/pr91684.c: New test.
+
 2019-09-06  Ian Lance Taylor  <iant@golang.org>
 
 	* go.test/test/fixedbugs/bug369.go: Update to match libgo update

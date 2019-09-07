@@ -30352,7 +30352,10 @@ arm_block_set_aligned_non_vect (rtx dstbase,
 	{
 	  addr = plus_constant (Pmode, dst, i);
 	  mem = adjust_automodify_address (dstbase, DImode, addr, i);
-	  emit_move_insn (mem, reg);
+	  if (MEM_ALIGN (mem) >= 2 * BITS_PER_WORD)
+	    emit_move_insn (mem, reg);
+	  else
+	    emit_insn (gen_unaligned_storedi (mem, reg));
 	}
     }
   else

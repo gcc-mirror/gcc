@@ -1,3 +1,8 @@
+2019-09-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* config/arm/arm.c (arm_block_set_aligned_non_vect): Use
+	gen_unaligned_storedi for 4-byte aligned addresses.
+
 2019-09-06  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv.c (riscv_option_override): Revert 2019-08-30
