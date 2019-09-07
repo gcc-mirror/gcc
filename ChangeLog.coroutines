@@ -1,3 +1,11 @@
+2019-09-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/testsuite/
+	* g++.dg/coroutines/coro-missing-ueh-1.C: New test.
+	* g++.dg/coroutines/coro-missing-ueh-2.C: New test.
+	* g++.dg/coroutines/coro-missing-ueh-3.C: New test.
+	* g++.dg/coroutines/coro-missing-ueh.h: New.
+
 2019-09-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
