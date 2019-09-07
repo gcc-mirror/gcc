@@ -1,3 +1,10 @@
+2019-09-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/91589
+	* primary.c (gfc_match_varspec): Return MATCH_NO on an apparent
+	component ref, when the primary type is intrinsic.
+
 2019-09-05  Harald Anlauf  <anlauf@gmx.de>
 
 	Backport from mainline
@@ -101,7 +108,7 @@
 	PR fortran/90563
 	* frontend-passes.c (insert_index): Suppress errors while
 	simplifying the resulting expression.
- 
+
 2019-08-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/88072

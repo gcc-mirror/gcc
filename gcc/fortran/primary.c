@@ -1990,6 +1990,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
   match m;
   bool unknown;
   bool inquiry;
+  bool intrinsic;
   locus old_loc;
   char sep;
 
@@ -2194,11 +2195,15 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       if (m != MATCH_YES)
 	return MATCH_ERROR;
 
+      intrinsic = false;
       if (primary->ts.type != BT_CLASS && primary->ts.type != BT_DERIVED)
 	{
 	  inquiry = is_inquiry_ref (name, &tmp);
 	  if (inquiry)
 	    sym = NULL;
+
+	  if (sep == '%' && primary->ts.type != BT_UNKNOWN)
+	    intrinsic = true;
 	}
       else
 	inquiry = false;
@@ -2258,12 +2263,16 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  break;
 	}
 
-      if (!inquiry)
+      if (!inquiry && !intrinsic)
 	component = gfc_find_component (sym, name, false, false, &tmp);
       else
 	component = NULL;
 
-      if (component == NULL && !inquiry)
+      /* In some cases, returning MATCH_NO gives a better error message. Most
+	 cases return "Unclassifiable statement at..."  */
+      if (intrinsic && !inquiry)
+	return MATCH_NO;
+      else if (component == NULL && !inquiry)
 	return MATCH_ERROR;
 
       /* Extend the reference chain determined by gfc_find_component or
