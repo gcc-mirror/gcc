@@ -1,3 +1,8 @@
+2019-09-06  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.c (riscv_option_override): Revert 2019-08-30
+	change.
+
 2019-09-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (unspec): Delete UNSPEC_MV_CR_OV.
