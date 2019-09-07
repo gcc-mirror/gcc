@@ -1,3 +1,8 @@
+2019-09-07  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/cpp2a/decomp2.C: Add TLS options.
+	* gcc.target/powerpc/pr88233.c: Limit to lp64.
+
 2019-09-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91665
