@@ -1,3 +1,8 @@
+2019-09-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* genemit.c (gen_split): Print the filename and line number where the
+	splitter (or peephole2) was defined, to the dump file.
+
 2019-09-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91665
