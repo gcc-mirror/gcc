@@ -1,6 +1,7 @@
 /* PR target/49866 */
-/* { dg-do assemble } */
-/* { dg-options "-O2 -mcmodel=large" { target lp64 } } */
+/* { dg-do assemble { target lp64 } } */
+/* { dg-xfail-if "PR90698" { *-*-darwin* } } */
+/* { dg-options "-O2 -mcmodel=large"  } */
 
 void fn (void *, int, int);
 int fn2 (void);
