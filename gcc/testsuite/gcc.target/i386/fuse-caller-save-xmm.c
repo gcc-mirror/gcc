@@ -15,13 +15,19 @@ foo (v2df y)
   return y + bar (y);
 }
 
-/* For !nonpic && ia32 xfails, see PR64895.  */
-
 /* Check presence of all insns on xmm registers.  These checks are expected to
    pass with both -fipa-ra and -fno-ipa-ra.  */
-/* { dg-final { scan-assembler-times "addpd\t\\.?LC0.*, %xmm0" 1 } } */
-/* { dg-final { scan-assembler-times "addpd\t%xmm1, %xmm0" 1 { xfail { { ! nonpic } && ia32 } } } } */
-/* { dg-final { scan-assembler-times "movapd\t%xmm0, %xmm1" 1 { xfail { { ! nonpic } && ia32 } } } } */
+
+/* Darwin local constant symbol is "lC0", ELF targets ".LC0" */
+/* { dg-final { scan-assembler-times {addpd\t\.?[Ll]C0.*, %xmm0} 1 { target { { ! ia32 } || nonpic } } } } */
+/* { dg-final { scan-assembler-times {movapd\t\.?[Ll]C0.*, %xmm1} 1 { target { ia32 && { ! nonpic } } } } } */
+
+/* We happen to get this for both cases, but in different positions.  */
+/* { dg-final { scan-assembler-times "addpd\t%xmm1, %xmm0" 1 } } */
+
+/* { dg-final { scan-assembler-times "movapd\t%xmm0, %xmm1" 1 { target { { ! ia32 } || nonpic } } } } */
+/* { dg-final { scan-assembler-times "movapd\t%xmm0, %xmm2" 1 { target { ia32 && { ! nonpic } } } } } */
+/* { dg-final { scan-assembler-times "addpd\t%xmm2, %xmm0" 1 { target { ia32 && { ! nonpic } } } } } */
 
 /* Check absence of save/restore of xmm1 register.  */
 /* { dg-final { scan-assembler-not "movaps\t%xmm1, \\(%\[re\]?sp\\)" } } */
