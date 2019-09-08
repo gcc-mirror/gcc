@@ -1,5 +1,26 @@
 2019-09-10  Julian Brown  <julian@codesourcery.com>
 
+	* plugin/plugin-gcn.c (struct placeholder, struct asyncwait_info,
+	enum entry_type): New.
+	(queue_entry): Use entry_type enum for tag.  Add asyncwait and
+	placeholder event type fields.
+	(wait_for_queue_nonfull): New function.
+	(queue_push_launch): Use above function instead of raising a fatal
+	error on queue-full condition.  Use KERNEL_LAUNCH instead of hardwired
+	0.
+	(queue_push_callback): Use wait_for_queue_nonfull instead of open-coded
+	wait sequence.  Use CALLBACK instead of hardwired 1.
+	(queue_push_asyncwait, queue_push_placeholder): New.
+	(execute_queue_entry): Implement ASYNC_WAIT and ASYNC_PLACEHOLDER event
+	types.
+	(GOMP_OFFLOAD_openacc_async_serialize): Use queue_push_placeholder and
+	queue_push_asyncwait instead of host-synchronized wait_queue calls.
+	* testsuite/libgomp.oacc-c-c++-common/data-2-lib.c (main): Add missing
+	asynchronous waits.
+	* testsuite/libgomp.oacc-c-c++-common/data-2.c (main): Likewise.
+
+2019-09-10  Julian Brown  <julian@codesourcery.com>
+
 	* plugin/plugin-gcn.c (GOMP_OFFLOAD_openacc_async_host2dev): Enqueue
 	copy from src_copy not src.
 

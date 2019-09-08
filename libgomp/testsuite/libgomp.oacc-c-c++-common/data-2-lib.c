@@ -155,11 +155,16 @@ main (int argc, char **argv)
   for (int ii = 0; ii < N; ii++)
     e[ii] = a[ii] + b[ii] + c[ii] + d[ii];
 
+  acc_wait_async (14, 10);
   acc_copyout_async (a, nbytes, 10);
+  acc_wait_async (14, 11);
   acc_copyout_async (b, nbytes, 11);
+  acc_wait_async (14, 12);
   acc_copyout_async (c, nbytes, 12);
+  acc_wait_async (14, 13);
   acc_copyout_async (d, nbytes, 13);
   acc_copyout_async (e, nbytes, 14);
+  acc_wait_async (14, 15);
   acc_delete_async (&N, sizeof (int), 15);
   acc_wait_all ();
 

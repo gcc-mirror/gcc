@@ -149,11 +149,16 @@ main (int argc, char **argv)
   for (int ii = 0; ii < N; ii++)
     e[ii] = a[ii] + b[ii] + c[ii] + d[ii];
 
+#pragma acc wait (14) async (10)
 #pragma acc exit data copyout (a[0:N]) async (10)
+#pragma acc wait (14) async (11)
 #pragma acc exit data copyout (b[0:N]) async (11)
+#pragma acc wait (14) async (12)
 #pragma acc exit data copyout (c[0:N]) async (12)
+#pragma acc wait (14) async (13)
 #pragma acc exit data copyout (d[0:N]) async (13)
 #pragma acc exit data copyout (e[0:N]) async (14)
+#pragma acc wait (14) async (15)
 #pragma acc exit data delete (N) async (15)
 #pragma acc wait
 
