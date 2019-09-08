@@ -332,10 +332,6 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
   /* Dump out function idents.  */
   fprintf (cfile, "static const struct hsa_kernel_description {\n"
 	   "  const char *name;\n"
-	   "  unsigned omp_data_size;\n"
-	   "  bool gridified_kernel_p;\n"
-	   "  unsigned kernel_dependencies_count;\n"
-	   "  const char **kernel_dependencies;\n"
 	   "  int oacc_dims[3];\n"
 	   "} gcn_kernels[] = {\n  ");
   dim.d[0] = dim.d[1] = dim.d[2] = 0;
@@ -351,7 +347,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	    break;
 	  }
 
-      fprintf (cfile, "%s{\"%s\", 0, 0, 0, NULL, {%d, %d, %d}}", comma,
+      fprintf (cfile, "%s{\"%s\", {%d, %d, %d}}", comma,
 	       fns[i], d[0], d[1], d[2]);
 
       free (fns[i]);

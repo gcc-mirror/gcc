@@ -1,5 +1,28 @@
 2019-09-10  Julian Brown  <julian@codesourcery.com>
 
+	* plugin/plugin-gcn.c (GOMP_hsa_kernel_dispatch): Remove
+	omp_data_memory, kernel_dispatch_count, debug, omp_level,
+	children_dispatches and omp_num_threads fields.
+	(hsa_kernel_description): Remove omp_data_size, gridified_kernel_p,
+	kernel_dependencies_count, kernel_dependencies fields to match
+	mkoffload output.
+	(kernel_info): Remove omp_data_size, dependencies, dependencies_count,
+	max_omp_data_size and gridified_kernel_p fields.
+	(init_basic_kernel_info): Don't copy newly-deleted fields.
+	(create_single_kernel_dispatch): Remove omp_data_size parameter.
+	Remove write-only initialization of deleted GOMP_hsa_kernel_dispatch
+	fields.
+	(release_kernel_dispatch): Update debug output.  Don't free deleted
+	omp_data_memory field.
+	(init_single_kernel): Remove max_omp_data_size parameter. Remove deleted
+	fields from debug output.
+	(print_kernel_dispatch): Don't print deleted fields.
+	(create_kernel_dispatch): Remove omp_data_size parameter.
+	(init_kernel): Update calls to init_single_kernel and
+	create_kernel_dispatch.
+
+2019-09-10  Julian Brown  <julian@codesourcery.com>
+
 	* plugin/plugin-gcn.c (struct placeholder, struct asyncwait_info,
 	enum entry_type): New.
 	(queue_entry): Use entry_type enum for tag.  Add asyncwait and

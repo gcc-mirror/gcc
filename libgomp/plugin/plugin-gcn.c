@@ -213,8 +213,6 @@ struct GOMP_hsa_kernel_dispatch
 {
   /* Pointer to a command queue associated with a kernel dispatch agent.  */
   void *queue;
-  /* Pointer to reserved memory for OMP data struct copying.  */
-  void *omp_data_memory;
   /* Pointer to a memory space used for kernel arguments passing.  */
   void *kernarg_address;
   /* Kernel object.  */
@@ -225,16 +223,6 @@ struct GOMP_hsa_kernel_dispatch
   uint32_t private_segment_size;
   /* Group segment size.  */
   uint32_t group_segment_size;
-  /* Number of children kernel dispatches.  */
-  uint64_t kernel_dispatch_count;
-  /* Debug purpose argument.  */
-  uint64_t debug;
-  /* Levels-var ICV.  */
-  uint64_t omp_level;
-  /* Kernel dispatch structures created for children kernel dispatches.  */
-  struct GOMP_hsa_kernel_dispatch **children_dispatches;
-  /* Number of threads.  */
-  uint32_t omp_num_threads;
 };
 
 /* Structure of the default kernargs segment, supporting gomp_print_*.
@@ -536,10 +524,6 @@ hsa_error (const char *str, hsa_status_t status)
 struct hsa_kernel_description
 {
   const char *name;
-  unsigned omp_data_size;
-  bool gridified_kernel_p;
-  unsigned kernel_dependencies_count;
-  const char **kernel_dependencies;
   int oacc_dims[3];  /* Only present for GCN kernels.  */
 };
 
@@ -576,8 +560,6 @@ struct kernel_info
   /* Name of the kernel, required to locate it within the GCN object-code
      module.  */
   const char *name;
-  /* Size of memory space for OMP data.  */
-  unsigned omp_data_size;
   /* The specific agent the kernel has been or will be finalized for and run
      on.  */
   struct agent_info *agent;
@@ -600,14 +582,6 @@ struct kernel_info
   uint32_t group_segment_size;
   /* Required size of private segment.  */
   uint32_t private_segment_size;
-  /* List of all kernel dependencies.  */
-  const char **dependencies;
-  /* Number of dependencies.  */
-  unsigned dependencies_count;
-  /* Maximum OMP data size necessary for kernel from kernel dispatches.  */
-  unsigned max_omp_data_size;
-  /* True if the kernel is gridified.  */
-  bool gridified_kernel_p;
 };
 
 /* Information about a particular GCN module, its image and kernels.  */
@@ -1866,10 +1840,6 @@ init_basic_kernel_info (struct kernel_info *kernel,
   kernel->agent = agent;
   kernel->module = module;
   kernel->name = d->name;
-  kernel->omp_data_size = d->omp_data_size;
-  kernel->gridified_kernel_p = d->gridified_kernel_p;
-  kernel->dependencies_count = d->kernel_dependencies_count;
-  kernel->dependencies = d->kernel_dependencies;
   if (pthread_mutex_init (&kernel->init_mutex, NULL))
     {
       GOMP_PLUGIN_error ("Failed to initialize a GCN kernel mutex");
@@ -2316,19 +2286,11 @@ fail:
 /* Create kernel dispatch data structure for given KERNEL.  */
 
 static struct GOMP_hsa_kernel_dispatch *
-create_single_kernel_dispatch (struct kernel_info *kernel,
-			       unsigned omp_data_size)
+create_single_kernel_dispatch (struct kernel_info *kernel)
 {
   struct agent_info *agent = kernel->agent;
   struct GOMP_hsa_kernel_dispatch *shadow
     = GOMP_PLUGIN_malloc_cleared (sizeof (struct GOMP_hsa_kernel_dispatch));
-
-  shadow->omp_data_memory
-    = omp_data_size > 0 ? GOMP_PLUGIN_malloc (omp_data_size) : NULL;
-  unsigned dispatch_count = kernel->dependencies_count;
-  if (dispatch_count != 0)
-    GOMP_PLUGIN_fatal ("kernel->dependencies_count != 0");
-  shadow->kernel_dispatch_count = 0;
 
   shadow->object = kernel->object;
 
@@ -2436,16 +2398,13 @@ gomp_print_output (struct kernel_info *kernel, struct kernargs *kernargs,
 static void
 release_kernel_dispatch (struct GOMP_hsa_kernel_dispatch *shadow)
 {
-  HSA_DEBUG ("Released kernel dispatch: %p has value: %lu (%p)\n", shadow,
-	     shadow->debug, (void *) shadow->debug);
+  HSA_DEBUG ("Released kernel dispatch: %p\n", shadow);
 
   hsa_fns.hsa_memory_free_fn (shadow->kernarg_address);
 
   hsa_signal_t s;
   s.handle = shadow->signal;
   hsa_fns.hsa_signal_destroy_fn (s);
-
-  free (shadow->omp_data_memory);
 
   free (shadow);
 }
@@ -2454,7 +2413,7 @@ release_kernel_dispatch (struct GOMP_hsa_kernel_dispatch *shadow)
    to calculate maximum necessary memory for OMP data allocation.  */
 
 static void
-init_single_kernel (struct kernel_info *kernel, unsigned *max_omp_data_size)
+init_single_kernel (struct kernel_info *kernel)
 {
   hsa_status_t status;
   struct agent_info *agent = kernel->agent;
@@ -2499,12 +2458,6 @@ init_single_kernel (struct kernel_info *kernel, unsigned *max_omp_data_size)
 	     (unsigned) kernel->private_segment_size);
   HSA_DEBUG ("  kernarg_segment_size: %u\n",
 	     (unsigned) kernel->kernarg_segment_size);
-  HSA_DEBUG ("  omp_data_size: %u\n", kernel->omp_data_size);
-  HSA_DEBUG ("  gridified_kernel_p: %u\n", kernel->gridified_kernel_p);
-
-  if (kernel->omp_data_size > *max_omp_data_size)
-    *max_omp_data_size = kernel->omp_data_size;
-
   return;
 
 failure:
@@ -2530,13 +2483,9 @@ print_kernel_dispatch (struct GOMP_hsa_kernel_dispatch *dispatch,
   indent_stream (stderr, indent);
   fprintf (stderr, "queue: %p\n", dispatch->queue);
   indent_stream (stderr, indent);
-  fprintf (stderr, "omp_data_memory: %p\n", dispatch->omp_data_memory);
-  indent_stream (stderr, indent);
   fprintf (stderr, "kernarg_address: %p\n", dispatch->kernarg_address);
   indent_stream (stderr, indent);
   fprintf (stderr, "object: %lu\n", dispatch->object);
-  indent_stream (stderr, indent);
-  fprintf (stderr, "signal: %lu\n", dispatch->signal);
   indent_stream (stderr, indent);
   fprintf (stderr, "private_segment_size: %u\n",
 	   dispatch->private_segment_size);
@@ -2544,11 +2493,6 @@ print_kernel_dispatch (struct GOMP_hsa_kernel_dispatch *dispatch,
   fprintf (stderr, "group_segment_size: %u\n",
 	   dispatch->group_segment_size);
   indent_stream (stderr, indent);
-  fprintf (stderr, "children dispatches: %lu\n",
-	   dispatch->kernel_dispatch_count);
-  indent_stream (stderr, indent);
-  fprintf (stderr, "omp_num_threads: %u\n",
-	   dispatch->omp_num_threads);
   fprintf (stderr, "\n");
 }
 
@@ -2556,13 +2500,10 @@ print_kernel_dispatch (struct GOMP_hsa_kernel_dispatch *dispatch,
    dependencies.  */
 
 static struct GOMP_hsa_kernel_dispatch *
-create_kernel_dispatch (struct kernel_info *kernel, unsigned omp_data_size)
+create_kernel_dispatch (struct kernel_info *kernel)
 {
   struct GOMP_hsa_kernel_dispatch *shadow
-    = create_single_kernel_dispatch (kernel, omp_data_size);
-  shadow->omp_num_threads = 64;
-  shadow->debug = 0;
-  shadow->omp_level = kernel->gridified_kernel_p ? 1 : 0;
+    = create_single_kernel_dispatch (kernel);
 
   return shadow;
 }
@@ -2587,7 +2528,7 @@ init_kernel (struct kernel_info *kernel)
 
   /* Precomputed maximum size of OMP data necessary for a kernel from kernel
      dispatch operation.  */
-  init_single_kernel (kernel, &kernel->max_omp_data_size);
+  init_single_kernel (kernel);
 
   if (!kernel->initialization_failed)
     {
@@ -2831,8 +2772,7 @@ run_kernel (struct kernel_info *kernel, void *vars,
   if (!kernel->initialized)
     GOMP_PLUGIN_fatal ("Called kernel must be initialized");
 
-  struct GOMP_hsa_kernel_dispatch *shadow
-    = create_kernel_dispatch (kernel, kernel->max_omp_data_size);
+  struct GOMP_hsa_kernel_dispatch *shadow = create_kernel_dispatch (kernel);
 
   hsa_queue_t *command_q = (aq ? aq->hsa_queue : kernel->agent->sync_queue);
   shadow->queue = command_q;

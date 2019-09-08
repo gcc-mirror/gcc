@@ -1,3 +1,9 @@
+2019-09-10  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/mkoffload.c (process_asm): Remove omp_data_size,
+	gridified_kernel_p, kernel_dependencies_count, kernel_dependencies
+	from emitted hsa_kernel_description struct array.
+
 2019-09-10  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn.c (gcn_hsa_declare_function_name): Calculate
