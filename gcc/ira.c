@@ -2370,8 +2370,8 @@ setup_reg_renumber (void)
 	  for (i = 0; i < nwords; i++)
 	    {
 	      obj = ALLOCNO_OBJECT (a, i);
-	      IOR_COMPL_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-				      reg_class_contents[pclass]);
+	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj)
+		|= ~reg_class_contents[pclass];
 	    }
 	  if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0
 	      && ira_hard_reg_set_intersection_p (hard_regno, ALLOCNO_MODE (a),

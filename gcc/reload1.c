@@ -1823,8 +1823,9 @@ find_reg (class insn_chain *chain, int order)
   static int regno_pseudo_regs[FIRST_PSEUDO_REGISTER];
   static int best_regno_pseudo_regs[FIRST_PSEUDO_REGISTER];
 
-  not_usable = bad_spill_regs | bad_spill_regs_global;
-  IOR_COMPL_HARD_REG_SET (not_usable, reg_class_contents[rl->rclass]);
+  not_usable = (bad_spill_regs
+		| bad_spill_regs_global
+		| ~reg_class_contents[rl->rclass]);
 
   CLEAR_HARD_REG_SET (used_by_other_reload);
   for (k = 0; k < order; k++)

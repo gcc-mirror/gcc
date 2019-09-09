@@ -267,7 +267,7 @@ rename_single_chain (du_head_p head, HARD_REG_SET *unavailable)
       if (DEBUG_INSN_P (tmp->insn))
 	continue;
       n_uses++;
-      IOR_COMPL_HARD_REG_SET (*unavailable, reg_class_contents[tmp->cl]);
+      *unavailable |= ~reg_class_contents[tmp->cl];
       super_class = reg_class_superunion[(int) super_class][(int) tmp->cl];
     }
 

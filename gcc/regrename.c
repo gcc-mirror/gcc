@@ -441,8 +441,7 @@ regrename_find_superclass (du_head_p head, int *pn_uses,
       if (DEBUG_INSN_P (tmp->insn))
 	continue;
       n_uses++;
-      IOR_COMPL_HARD_REG_SET (*punavailable,
-			      reg_class_contents[tmp->cl]);
+      *punavailable |= ~reg_class_contents[tmp->cl];
       super_class
 	= reg_class_superunion[(int) super_class][(int) tmp->cl];
     }

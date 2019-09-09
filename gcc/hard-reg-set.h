@@ -127,11 +127,6 @@ struct hard_reg_set_container
    These take just one argument.
 
    Also define:
-   IOR_COMPL_HARD_REG_SET
-   This takes two arguments TO and FROM; it reads from FROM
-   and combines its complement bitwise into TO.
-
-   Also define:
 
    hard_reg_set_subset_p (X, Y), which returns true if X is a subset of Y.
    hard_reg_set_equal_p (X, Y), which returns true if X and Y are equal.
@@ -151,8 +146,6 @@ struct hard_reg_set_container
 
 #define CLEAR_HARD_REG_SET(TO) ((TO) = HARD_CONST (0))
 #define SET_HARD_REG_SET(TO) ((TO) = ~ HARD_CONST (0))
-
-#define IOR_COMPL_HARD_REG_SET(TO, FROM) ((TO) |= ~ (FROM))
 
 static inline bool
 hard_reg_set_subset_p (const_hard_reg_set x, const_hard_reg_set y)
@@ -213,13 +206,6 @@ SET_HARD_REG_SET (HARD_REG_SET &set)
 {
   for (unsigned int i = 0; i < ARRAY_SIZE (set.elts); ++i)
     set.elts[i] = -1;
-}
-
-inline void
-IOR_COMPL_HARD_REG_SET (HARD_REG_SET &to, const_hard_reg_set from)
-{
-  for (unsigned int i = 0; i < ARRAY_SIZE (to.elts); ++i)
-    to.elts[i] |= ~from.elts[i];
 }
 
 static inline bool

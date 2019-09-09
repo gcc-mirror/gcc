@@ -611,7 +611,7 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
       }
   /* Make sure that all registers in a multi-word pseudo belong to the
      required class.  */
-  IOR_COMPL_HARD_REG_SET (conflict_set, reg_class_contents[rclass]);
+  conflict_set |= ~reg_class_contents[rclass];
   lra_assert (rclass != NO_REGS);
   rclass_size = ira_class_hard_regs_num[rclass];
   best_hard_regno = -1;
