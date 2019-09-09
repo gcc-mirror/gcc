@@ -218,7 +218,7 @@ inline bool
 allocno_hard_regs_hasher::equal (const allocno_hard_regs *hv1,
 				 const allocno_hard_regs *hv2)
 {
-  return hard_reg_set_equal_p (hv1->set, hv2->set);
+  return hv1->set == hv2->set;
 }
 
 /* Hash table of unique allocno hard registers.  */
@@ -371,7 +371,7 @@ add_allocno_hard_regs_to_forest (allocno_hard_regs_node_t *roots,
   start = hard_regs_node_vec.length ();
   for (node = *roots; node != NULL; node = node->next)
     {
-      if (hard_reg_set_equal_p (hv->set, node->hard_regs->set))
+      if (hv->set == node->hard_regs->set)
 	return;
       if (hard_reg_set_subset_p (hv->set, node->hard_regs->set))
 	{
@@ -2688,8 +2688,7 @@ setup_allocno_available_regs_num (ira_allocno_t a)
      reg_class_names[aclass], ira_class_hard_regs_num[aclass], n);
   print_hard_reg_set (ira_dump_file, data->profitable_hard_regs, false);
   fprintf (ira_dump_file, ", %snode: ",
-	   hard_reg_set_equal_p (data->profitable_hard_regs,
-				 data->hard_regs_node->hard_regs->set)
+	   data->profitable_hard_regs == data->hard_regs_node->hard_regs->set
 	   ? "" : "^");
   print_hard_reg_set (ira_dump_file,
 		      data->hard_regs_node->hard_regs->set, false);

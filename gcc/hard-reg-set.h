@@ -96,6 +96,21 @@ struct HARD_REG_SET
     return *this;
   }
 
+  bool
+  operator== (const HARD_REG_SET &other) const
+  {
+    HARD_REG_ELT_TYPE bad = 0;
+    for (unsigned int i = 0; i < ARRAY_SIZE (elts); ++i)
+      bad |= (elts[i] ^ other.elts[i]);
+    return bad == 0;
+  }
+
+  bool
+  operator!= (const HARD_REG_SET &other) const
+  {
+    return !operator== (other);
+  }
+
   HARD_REG_ELT_TYPE elts[HARD_REG_SET_LONGS];
 };
 typedef const HARD_REG_SET &const_hard_reg_set;
@@ -129,7 +144,6 @@ struct hard_reg_set_container
    Also define:
 
    hard_reg_set_subset_p (X, Y), which returns true if X is a subset of Y.
-   hard_reg_set_equal_p (X, Y), which returns true if X and Y are equal.
    hard_reg_set_intersect_p (X, Y), which returns true if X and Y intersect.
    hard_reg_set_empty_p (X), which returns true if X is empty.  */
 
@@ -151,12 +165,6 @@ static inline bool
 hard_reg_set_subset_p (const_hard_reg_set x, const_hard_reg_set y)
 {
   return (x & ~y) == HARD_CONST (0);
-}
-
-static inline bool
-hard_reg_set_equal_p (const_hard_reg_set x, const_hard_reg_set y)
-{
-  return x == y;
 }
 
 static inline bool
@@ -214,15 +222,6 @@ hard_reg_set_subset_p (const_hard_reg_set x, const_hard_reg_set y)
   HARD_REG_ELT_TYPE bad = 0;
   for (unsigned int i = 0; i < ARRAY_SIZE (x.elts); ++i)
     bad |= (x.elts[i] & ~y.elts[i]);
-  return bad == 0;
-}
-
-static inline bool
-hard_reg_set_equal_p (const_hard_reg_set x, const_hard_reg_set y)
-{
-  HARD_REG_ELT_TYPE bad = 0;
-  for (unsigned int i = 0; i < ARRAY_SIZE (x.elts); ++i)
-    bad |= (x.elts[i] ^ y.elts[i]);
   return bad == 0;
 }
 
