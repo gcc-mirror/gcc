@@ -1,3 +1,8 @@
+2019-09-09  Barnaby Wilks  <barnaby.wilks@arm.com>
+
+	* match.pd: Add flag_unsafe_math_optimizations check
+	before deciding on the widest type in a binary math operation.
+
 2019-09-09  Martin Liska  <mliska@suse.cz>
 
 	* config/i386/i386.opt: Update comment of removed

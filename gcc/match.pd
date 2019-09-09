@@ -5040,10 +5040,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	      && newtype == type
 	      && types_match (newtype, type))
 	    (op (convert:newtype @1) (convert:newtype @2))
-	    (with { if (TYPE_PRECISION (ty1) > TYPE_PRECISION (newtype))
+	    (with
+	      {
+		if (!flag_unsafe_math_optimizations)
+		  {
+		    if (TYPE_PRECISION (ty1) > TYPE_PRECISION (newtype))
 		      newtype = ty1;
+
 		    if (TYPE_PRECISION (ty2) > TYPE_PRECISION (newtype))
-		      newtype = ty2; }
+		      newtype = ty2;
+		  }
+	      }
+
 	       /* Sometimes this transformation is safe (cannot
 		  change results through affecting double rounding
 		  cases) and sometimes it is not.  If NEWTYPE is
