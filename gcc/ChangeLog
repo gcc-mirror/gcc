@@ -1,5 +1,17 @@
 2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hard-reg-set.h (HARD_REG_SET::operator~): New function.
+	(COMPL_HARD_REG_SET): Delete.
+	* config/c6x/c6x.c (c6x_call_saved_register_used): Use ~ instead
+	of COMPL_HARD_REG_SET.
+	(try_rename_operands): Likewise.
+	* config/sh/sh.c (push_regs): Likewise.
+	* lra-assigns.c (find_hard_regno_for_1): Likewise.
+	* lra-constraints.c (contains_reg_p): Likewise.
+	* reload1.c (finish_spills, choose_reload_regs_init): Likewise.
+
+2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hard-reg-set.h (COPY_HARD_REG_SET): Delete.
 	* caller-save.c (save_call_clobbered_regs): Use assignment instead
 	of COPY_HARD_REG_SET.

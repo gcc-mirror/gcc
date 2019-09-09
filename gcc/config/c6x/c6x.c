@@ -1094,7 +1094,7 @@ c6x_call_saved_register_used (tree call_expr)
   INIT_CUMULATIVE_ARGS (cum_v, NULL, NULL, 0, 0);
   cum = pack_cumulative_args (&cum_v);
 
-  COMPL_HARD_REG_SET (call_saved_regset, call_used_reg_set);
+  call_saved_regset = ~call_used_reg_set;
   for (i = 0; i < call_expr_nargs (call_expr); i++)
     {
       parameter = CALL_EXPR_ARG (call_expr, i);
@@ -3472,7 +3472,7 @@ try_rename_operands (rtx_insn *head, rtx_insn *tail, unit_req_table reqs,
     }
 
   /* If we get here, we can do the renaming.  */
-  COMPL_HARD_REG_SET (unavailable, reg_class_contents[(int) super_class]);
+  unavailable = ~reg_class_contents[super_class];
 
   old_reg = this_head->regno;
   best_reg =

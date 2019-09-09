@@ -4310,7 +4310,7 @@ finish_spills (int global)
 	     may be not included in the value calculated here because
 	     of possible removing caller-saves insns (see function
 	     delete_caller_save_insns.  */
-	  COMPL_HARD_REG_SET (chain->used_spill_regs, used_by_pseudos);
+	  chain->used_spill_regs = ~used_by_pseudos;
 	  AND_HARD_REG_SET (chain->used_spill_regs, used_spill_regs);
 	}
     }
@@ -6257,7 +6257,7 @@ choose_reload_regs_init (class insn_chain *chain, rtx *save_reload_reg_rtx)
       CLEAR_HARD_REG_SET (reload_reg_used_in_outaddr_addr[i]);
     }
 
-  COMPL_HARD_REG_SET (reload_reg_unavailable, chain->used_spill_regs);
+  reload_reg_unavailable = ~chain->used_spill_regs;
 
   CLEAR_HARD_REG_SET (reload_reg_used_for_inherit);
 

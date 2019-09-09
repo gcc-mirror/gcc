@@ -496,7 +496,7 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
     conflict_set = lra_no_alloc_regs;
   else
     {
-      COMPL_HARD_REG_SET (conflict_set, regno_set);
+      conflict_set = ~regno_set;
       IOR_HARD_REG_SET (conflict_set, lra_no_alloc_regs);
     }
   rclass = regno_allocno_class_array[regno];
