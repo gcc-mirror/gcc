@@ -1,3 +1,15 @@
+2019-09-09  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (enum depset::disc_bits): Delete DB_REACHED_ONCE_BIT.
+	(depset::is_reached_once, depset::clear_mergeable): Delete
+	(trees_in::tree_value): Set template typedef type.
+	(depset::hash::add_dependency): No reached once stuff.
+	(sort_mergeables): Just live with tight clusters.
+	gcc/testsuite/
+	* g++.dg/modules/late-ret-2_a.H: Adjust scans.
+	* g++.dg/modules/late-ret-3_[abc].[CH]: New.
+
 2019-09-06  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

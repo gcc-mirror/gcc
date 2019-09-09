@@ -2270,9 +2270,8 @@ private:
     DB_UNREACHED_BIT,		/* A yet-to-be reached entity.  */
     DB_HIDDEN_BIT,		/* A hidden binding.  */
     DB_MERGEABLE_BIT,		/* An entity that needs merging.  */
-    DB_PSEUDO_SPEC_BIT,		/* A non-specialization
+    DB_PSEUDO_SPEC_BIT		/* A non-specialization
 				   specialization.  */
-    DB_REACHED_ONCE_BIT		/* Reached exactly once.  */
   };
 
 public:
@@ -2365,10 +2364,6 @@ public:
   {
     return get_flag_bit<DB_UNREACHED_BIT> ();
   }
-  bool is_reached_once () const
-  {
-    return get_flag_bit<DB_REACHED_ONCE_BIT> ();
-  }
   bool is_partial () const
   {
     return get_flag_bit<DB_PARTIAL_BIT> ();
@@ -2391,10 +2386,6 @@ public:
   void set_hidden_binding ()
   {
     set_flag_bit<DB_HIDDEN_BIT> ();
-  }
-  void clear_mergeable ()
-  {
-    clear_flag_bit<DB_MERGEABLE_BIT> ();
   }
 
 public:
@@ -7944,7 +7935,7 @@ trees_in::tree_value (walk_kind walk)
   if (is_typedef)
     {
       /* Frob it to be ready for cloning.  */
-      TREE_TYPE (inner) = DECL_ORIGINAL_TYPE (inner);
+      TREE_TYPE (res) = TREE_TYPE (inner) = DECL_ORIGINAL_TYPE (inner);
       DECL_ORIGINAL_TYPE (inner) = NULL_TREE;
     }
 
@@ -7970,8 +7961,7 @@ trees_in::tree_value (walk_kind walk)
 	{
 	  set_underlying_type (inner);
 
-	  if (res != inner)
-	    TREE_TYPE (res) = TREE_TYPE (inner);
+	  TREE_TYPE (res) = TREE_TYPE (inner);
 	}
     }
   else
@@ -10364,10 +10354,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	    && dump ("Reaching unreached %s %C:%N", dep->entity_kind_name (),
 		     TREE_CODE (dep->get_entity ()), dep->get_entity ());
 	  dep->clear_flag_bit<DB_UNREACHED_BIT> ();
-	  dep->set_flag_bit<DB_REACHED_ONCE_BIT> ();
 	}
-      else
-	dep->clear_flag_bit<DB_REACHED_ONCE_BIT> ();
     }
 
   return dep;
@@ -12970,84 +12957,46 @@ sort_mergeables (depset *scc[], unsigned size)
   vec<depset *> order = table.connect ();
 
   /* Now rewrite entries [0,lwm), in the dependency order we
-     discovered.  */
+     discovered.  Usually each entity is in its own cluster.  Rarely,
+     we can get multi-entity clusters, in which case all but one must
+     only be reached from within the cluster.  This happens for
+     something like:
+
+     template<typename T>
+     auto Foo (const T &arg) -> TPL<decltype (arg)>;
+
+     The instantiation of TPL will be in the specialization table, and
+     refer to Foo via arg.  But we can only get to that specialization
+     from Foo's declaration, so we only need to treat Foo as mergable
+     (We'll do structural comparison of TPL<decltype (arg)>).
+
+     Finding the single cluster entry dep is very tricky and
+     expensive.  Let's just not do that.  It's harmless in this case
+     anyway. */
   unsigned pos = 0;
   unsigned count = 0;
-  for (unsigned size, ix = 0; ix != order.length (); ix += size)
+  unsigned cluster = ~0u;
+  for (unsigned ix = 0; ix != order.length (); ix++)
     {
-      unsigned cluster = order[ix]->cluster;
-
-      for (size = 1; (ix + size != order.length ()
-		      && order[ix + size]->cluster == cluster); size++)
-	gcc_checking_assert (order[ix + size]->is_special ());
-
-      depset *entry_dep = NULL;
-      unsigned index = ix;
-
-      if (size > 1)
+      if (order[ix]->is_special ())
 	{
-	  /* Usually SIZE is 1 (each entity is in its own cluster)
-	     However, we can get multi-entity clusters, in which case
-	     all but one must be reached exactly once.  This happens
-	     for something like:
+	  depset *dep = order[ix]->deps[0];
 
-	     template<typename T>
-	     auto Foo (const T &arg) -> TPL<decltype (arg)>;
-
-	     The instantiation of TPL will be in the specialization
-	     table, and refer to Foo via arg.  But we can only get to
-	     that specialization from Foo's declaration, so we only
-	     need to treat Foo as mergable (We'll do structural
-	     comparison of TPL<decltype (arg)>). */
-	  gcc_checking_assert (order[ix]->is_special () && pos + size <= lwm);
-
-	  for (unsigned jx = 0; !entry_dep && jx != size; jx++)
-	    {
-	      depset *dep = order[ix + jx]->deps[0];
-
-	      if (!dep->is_reached_once ())
-		{
-		  index += jx;
-		  entry_dep = dep;
-		}
-	    }
-
-	  /* We should have found an entry entity, place it first  */
-	  gcc_assert (entry_dep);
-	  scc[pos++] = entry_dep;
-
-	  for (unsigned jx = 0; jx != size; jx++)
-	    {
-	      depset *dep = order[ix + jx]->deps[0];
-
-	      if (dep == entry_dep)
-		continue;
-
-	      gcc_checking_assert (dep->is_reached_once ());
-	      /* This is reached internally, and not mergeable.  */
-	      dep->clear_mergeable ();
-	      scc[pos++] = dep;
-	      dump (dumper::MERGE) && dump ("Internally referenced %u is %N",
-					    ix + jx, dep->get_entity ());
-	    }
-	}
-      else if (order[ix]->is_special ())
-	{
 	  gcc_checking_assert (pos != lwm);
-	  entry_dep = order[ix]->deps[0];
+	  scc[pos++] = dep;
+	  if (dep->is_mergeable ())
+	    count++;
 
-	  scc[pos++] = entry_dep;
+	  dump (dumper::MERGE) && dump ("%s %u is %N%s", dep->is_mergeable ()
+					? "Mergeable" : "Unique",
+					ix, dep->get_entity (),
+					order[ix]->cluster == cluster
+					? " (tight)" : "");
 	}
-      else
-	continue;
 
-      if (entry_dep->is_mergeable ())
-	count++;
-      dump (dumper::MERGE) && dump ("%s %u is %N",
-				    entry_dep->is_mergeable ()
-				    ? "Mergeable" : "Unique",
-				    index, entry_dep->get_entity ());
-      }
+      cluster = order[ix]->cluster;
+    }
+
   gcc_checking_assert (pos == lwm);
 
   order.release ();

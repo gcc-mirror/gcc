@@ -11,4 +11,4 @@ template<typename T>
 auto Bar (T *arg)
   -> TPL<decltype (arg)> ;
 
-// { dg-final { scan-lang-dump {  Ordering 2 depsets\n  Internally referenced 2 is '::TPL@[^\n]*/late-ret-2_a.H:1<#null#>'\n  Mergeable 1 is '::Foo@[^\n]*/late-ret-2_a.H:1'\n  Ordered 1 mergeables} module } }
+// { dg-final { scan-lang-dump {  Ordering 2 depsets\n  Mergeable 1 is '::Foo@[^\n]*/late-ret-2_a.H:1'\n  Mergeable 2 is '::TPL@[^\n]*/late-ret-2_a.H:1<#null#>' \(tight\)\n  Ordered 2 mergeables} module } }
