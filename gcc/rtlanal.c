@@ -1478,7 +1478,7 @@ find_all_hard_reg_sets (const rtx_insn *insn, HARD_REG_SET *pset, bool implicit)
   CLEAR_HARD_REG_SET (*pset);
   note_stores (insn, record_hard_reg_sets, pset);
   if (CALL_P (insn) && implicit)
-    IOR_HARD_REG_SET (*pset, call_used_reg_set);
+    *pset |= call_used_reg_set;
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) == REG_INC)
       record_hard_reg_sets (XEXP (link, 0), NULL, pset);

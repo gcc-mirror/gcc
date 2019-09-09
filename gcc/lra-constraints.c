@@ -2373,14 +2373,12 @@ process_alt_operands (int only_alternative)
 		  if (mode == BLKmode)
 		    break;
 		  this_alternative = reg_class_subunion[this_alternative][cl];
-		  IOR_HARD_REG_SET (this_alternative_set,
-				    reg_class_contents[cl]);
+		  this_alternative_set |= reg_class_contents[cl];
 		  if (costly_p)
 		    {
 		      this_costly_alternative
 			= reg_class_subunion[this_costly_alternative][cl];
-		      IOR_HARD_REG_SET (this_costly_alternative_set,
-					reg_class_contents[cl]);
+		      this_costly_alternative_set |= reg_class_contents[cl];
 		    }
 		  winreg = true;
 		  if (REG_P (op))
@@ -6245,8 +6243,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
   bitmap_clear (&invalid_invariant_regs);
   last_processed_bb = NULL;
   CLEAR_HARD_REG_SET (potential_reload_hard_regs);
-  live_hard_regs = eliminable_regset;
-  IOR_HARD_REG_SET (live_hard_regs, lra_no_alloc_regs);
+  live_hard_regs = eliminable_regset | lra_no_alloc_regs;
   /* We don't process new insns generated in the loop.	*/
   for (curr_insn = tail; curr_insn != PREV_INSN (head); curr_insn = prev_insn)
     {
@@ -6316,8 +6313,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	  else
 	    setup_next_usage_insn (src_regno, curr_insn, reloads_num, false);
 	  if (hard_reg_set_subset_p (reg_class_contents[cl], live_hard_regs))
-	    IOR_HARD_REG_SET (potential_reload_hard_regs,
-			      reg_class_contents[cl]);
+	    potential_reload_hard_regs |= reg_class_contents[cl];
 	}
       else if (src_regno < 0
 	       && dst_regno >= lra_constraint_new_regno_start
@@ -6334,8 +6330,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	  if (process_invariant_for_inheritance (SET_DEST (curr_set), SET_SRC (curr_set)))
 	    change_p = true;
 	  if (hard_reg_set_subset_p (reg_class_contents[cl], live_hard_regs))
-	    IOR_HARD_REG_SET (potential_reload_hard_regs,
-			      reg_class_contents[cl]);
+	    potential_reload_hard_regs |= reg_class_contents[cl];
 	}
       else if (src_regno >= lra_constraint_new_regno_start
 	       && dst_regno < lra_constraint_new_regno_start
@@ -6357,8 +6352,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	  /* Invalidate.  */
 	  usage_insns[dst_regno].check = 0;
 	  if (hard_reg_set_subset_p (reg_class_contents[cl], live_hard_regs))
-	    IOR_HARD_REG_SET (potential_reload_hard_regs,
-			      reg_class_contents[cl]);
+	    potential_reload_hard_regs |= reg_class_contents[cl];
 	}
       else if (INSN_P (curr_insn))
 	{
@@ -6593,8 +6587,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	      if (ira_class_hard_regs_num[cl] <= max_small_class_regs_num)
 		reloads_num++;
 	      if (hard_reg_set_subset_p (reg_class_contents[cl], live_hard_regs))
-		IOR_HARD_REG_SET (potential_reload_hard_regs,
-	                          reg_class_contents[cl]);
+		potential_reload_hard_regs |= reg_class_contents[cl];
 	    }
 	}
       if (NONDEBUG_INSN_P (curr_insn))

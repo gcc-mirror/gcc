@@ -2901,7 +2901,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
     {
       HARD_REG_SET temp;
       get_implicit_reg_pending_clobbers (&temp, insn);
-      IOR_HARD_REG_SET (implicit_reg_pending_clobbers, temp);
+      implicit_reg_pending_clobbers |= temp;
     }
 
   can_start_lhs_rhs_p = (NONJUMP_INSN_P (insn)

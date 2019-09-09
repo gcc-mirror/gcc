@@ -298,8 +298,7 @@ init_reg_sets_1 (void)
 	  HARD_REG_SET c;
 	  int k;
 
-	  c = reg_class_contents[i];
-	  IOR_HARD_REG_SET (c, reg_class_contents[j]);
+	  c = reg_class_contents[i] | reg_class_contents[j];
 	  for (k = 0; k < N_REG_CLASSES; k++)
 	    if (hard_reg_set_subset_p (reg_class_contents[k], c)
 		&& !hard_reg_set_subset_p (reg_class_contents[k],
@@ -321,8 +320,7 @@ init_reg_sets_1 (void)
 	  HARD_REG_SET c;
 	  int k;
 
-	  c = reg_class_contents[i];
-	  IOR_HARD_REG_SET (c, reg_class_contents[j]);
+	  c = reg_class_contents[i] | reg_class_contents[j];
 	  for (k = 0; k < N_REG_CLASSES; k++)
 	    if (hard_reg_set_subset_p (c, reg_class_contents[k]))
 	      break;

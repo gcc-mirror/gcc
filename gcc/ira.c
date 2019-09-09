@@ -892,15 +892,15 @@ setup_pressure_classes (void)
 	    break;
 	if (m >= NUM_MACHINE_MODES)
 	  {
-	    IOR_HARD_REG_SET (ignore_hard_regs, reg_class_contents[cl]);
+	    ignore_hard_regs |= reg_class_contents[cl];
 	    continue;
 	  }
 	for (i = 0; i < n; i++)
 	  if ((int) pressure_classes[i] == cl)
 	    break;
-	IOR_HARD_REG_SET (temp_hard_regset2, reg_class_contents[cl]);
+	temp_hard_regset2 |= reg_class_contents[cl];
 	if (i < n)
-	  IOR_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
+	  temp_hard_regset |= reg_class_contents[cl];
       }
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
       /* Some targets (like SPARC with ICC reg) have allocatable regs
@@ -1264,8 +1264,7 @@ setup_reg_class_relations (void)
 	  intersection_set = (reg_class_contents[cl1]
 			      & reg_class_contents[cl2]);
 	  AND_COMPL_HARD_REG_SET (intersection_set, no_unit_alloc_regs);
-	  union_set = reg_class_contents[cl1];
-	  IOR_HARD_REG_SET (union_set, reg_class_contents[cl2]);
+	  union_set = reg_class_contents[cl1] | reg_class_contents[cl2];
 	  AND_COMPL_HARD_REG_SET (union_set, no_unit_alloc_regs);
 	  for (cl3 = 0; cl3 < N_REG_CLASSES; cl3++)
 	    {

@@ -762,21 +762,15 @@ ira_build_conflicts (void)
 		  && REG_USERVAR_P (allocno_reg)
 		  && ! reg_is_parm_p (allocno_reg)))
 	    {
-	      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-				call_used_reg_set);
-	      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-				call_used_reg_set);
+	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= call_used_reg_set;
+	      OBJECT_CONFLICT_HARD_REGS (obj) |= call_used_reg_set;
 	    }
 	  else if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
 	    {
-	      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-				no_caller_save_reg_set);
-	      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-				temp_hard_reg_set);
-	      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-				no_caller_save_reg_set);
-	      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-				temp_hard_reg_set);
+	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= no_caller_save_reg_set;
+	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= temp_hard_reg_set;
+	      OBJECT_CONFLICT_HARD_REGS (obj) |= no_caller_save_reg_set;
+	      OBJECT_CONFLICT_HARD_REGS (obj) |= temp_hard_reg_set;
 	    }
 
 	  /* Now we deal with paradoxical subreg cases where certain registers
