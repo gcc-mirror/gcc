@@ -3,6 +3,15 @@
 	Backport from mainline.
 	2019-05-24  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc.target/i386/pr66819-3.c: Specifically, check that there is no
+	call to "bar".
+	* gcc.target/i386/pr66819-4.c: Likewise.
+
+2019-09-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-24  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc.target/i386/pr67985-2.c: Adjust label checks for
 	Darwin.
 	* gcc.target/i386/pr77881.c: Likewise.
