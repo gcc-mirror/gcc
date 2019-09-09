@@ -101,15 +101,14 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Add constexpr modifiers to functions in <code>&lt;algorithm&gt;</code> and <code>&lt;utility&gt;</code> Headers </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0202r3.html">
 	P0202R3
 	</link>
       </entry>
-      <entry align="center"> </entry>
-      <entry />
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_constexpr_algorithms &gt;= 201703L</code> </entry>
     </row>
 
     <row>
@@ -307,15 +306,15 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Constexpr iterator requirements </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0858r0.html">
 	P0858R0
 	</link>
       </entry>
-      <entry align="center"> </entry>
-      <entry />
+      <entry align="center"> 9.1 </entry>
+      <entry> <code>__cpp_lib_string_view &gt;= 201803L</code>
+      and <code>__cpp_lib_array_constexpr &gt;= 201803L</code> </entry>
     </row>
 
     <row>
@@ -503,15 +502,14 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Constexpr for <code>swap</code> and swap related functions </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0879r0.html">
 	P0879R0
 	</link>
       </entry>
-      <entry align="center"> </entry>
-      <entry />
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_constexpr_algorithms &gt;= 201806L</code> </entry>
     </row>
 
     <row>
@@ -571,14 +569,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  <code>constexpr</code> comparison operators for <code>std::array</code> </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1023r0.pdf">
 	P1023R0
 	</link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 10.1 </entry>
       <entry />
     </row>
 
@@ -823,15 +820,14 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Should Span be Regular? </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1085r2.md">
 	P1085R2
 	</link>
       </entry>
-      <entry align="center"> </entry>
-      <entry />
+      <entry align="center"> 10.1 </entry>
+      <entry> <code>__cpp_lib_span &gt;= 201902L</code> </entry>
     </row>
 
     <row>
