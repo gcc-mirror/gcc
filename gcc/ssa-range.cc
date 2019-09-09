@@ -165,7 +165,7 @@ stmt_ranger::range_of_stmt_with_range (irange &r, gimple *s, tree name,
 				       const irange &name_range)
 {
   if (is_a<grange *> (s))
-    return range_of_grange (r, as_a<grange *> (s), name, name_range);
+    return range_of_grange (r, as_a<grange *> (s), name, &name_range);
   if (is_a<gphi *>(s))
     return range_of_phi (r, as_a<gphi *> (s), name, &name_range);
   if (is_a<gcall *>(s))
@@ -199,36 +199,13 @@ stmt_ranger::range_of_grange_core (irange &r, grange *s, bool valid,
   return true;
 }
 
-// Calculate a range for range_op statement S and return it in R.  If a range
-// cannot be calculated, return false.  
-
-bool
-stmt_ranger::range_of_grange (irange &r, grange *s)
-{
-  irange range1, range2;
-  bool res = true;
-  gcc_checking_assert (irange::supports_type_p (gimple_expr_type (s)));
-
-  tree op1 = gimple_range_operand1 (s);
-  tree op2 = gimple_range_operand2 (s);
-
-  // Calculate a range for operand 1.
-  res = range_of_expr (range1, op1, s);
-
-  // Calculate a result for op2 if it is needed.
-  if (res && op2)
-    res = range_of_expr (range2, op2, s);
-
-  return range_of_grange_core (r, s, res, range1, range2);
-}
-
 // Calculate a range for range_op statement S and return it in R.  If any
 // operand matches NAME, replace it with NAME_RANGE.  If a range
 // cannot be calculated, return false.  
 
 bool
 stmt_ranger::range_of_grange (irange &r, grange *s, tree name,
-			      const irange &name_range)
+			      const irange *name_range)
 {
   irange range1, range2;
   bool res = true;
@@ -239,7 +216,7 @@ stmt_ranger::range_of_grange (irange &r, grange *s, tree name,
 
   // Calculate a range for operand 1.
   if (op1 == name)
-    range1 = name_range;
+    range1 = *name_range;
   else
     res = range_of_expr (range1, op1, s);
 
@@ -247,34 +224,10 @@ stmt_ranger::range_of_grange (irange &r, grange *s, tree name,
   if (res && op2)
     {
       if (op2 == name)
-	range2 = name_range;
+	range2 = *name_range;
       else
 	res = range_of_expr (range2, op2, s);
     }
-
-  return range_of_grange_core (r, s, res, range1, range2);
-}
-
-// Calculate a range for range_op statement S and return it in R.  Evaluate
-// the statement as if it immediately preceeded stmt EVAL_FROM.  If a range
-// cannot be calculated, return false.  
-
-bool
-stmt_ranger::range_of_grange (irange &r, grange *s, gimple *eval_from)
-{
-  irange range1, range2;
-  bool res = true;
-  gcc_checking_assert (irange::supports_type_p (gimple_expr_type (s)));
-
-  tree op1 = gimple_range_operand1 (s);
-  tree op2 = gimple_range_operand2 (s);
-
-  // Calculate a range for operand 1.
-  res = range_of_expr (range1, op1, eval_from);
-
-  // Calculate a result for op2 if it is needed.
-  if (res && op2)
-    res = range_of_expr (range2, op2, eval_from);
 
   return range_of_grange_core (r, s, res, range1, range2);
 }
@@ -312,8 +265,8 @@ stmt_ranger::range_of_phi (irange &r, gphi *phi, tree name,
         continue;
       if (name == arg)
         arg_range = *name_range;
-      else if (valid_range_ssa_p (arg) && !eval_from)
-      gcc_assert (range_of_expr (arg_range, arg, eval_from));
+      else 
+	gcc_assert (range_of_expr (arg_range, arg, eval_from));
 
       r.union_ (arg_range);
       // Once the value reaches varying, stop looking.

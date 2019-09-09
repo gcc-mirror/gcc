@@ -55,10 +55,8 @@ protected:
   // Calculate a range for a kind of gimple statement .
   bool range_of_grange_core (irange &r, grange *s, bool valid,
 			       irange &range1, irange &range2);
-  bool range_of_grange  (irange &r, grange *s);
-  bool range_of_grange  (irange &r, grange *s, tree name,
-			   const irange &name_range);
-  bool range_of_grange  (irange &r, grange *s, gimple *eval_from);
+  bool range_of_grange  (irange &r, grange *s, tree name = NULL_TREE,
+			 const irange *name_range = NULL);
 
   virtual bool range_of_phi (irange &r, gphi *phi, tree name = NULL_TREE,
 			     const irange *name_range = NULL,
