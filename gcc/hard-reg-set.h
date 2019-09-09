@@ -42,14 +42,20 @@ typedef unsigned HOST_WIDEST_FAST_INT HARD_REG_ELT_TYPE;
 
 #if FIRST_PSEUDO_REGISTER <= HOST_BITS_PER_WIDEST_FAST_INT
 
-#define HARD_REG_SET HARD_REG_ELT_TYPE
+typedef HARD_REG_ELT_TYPE HARD_REG_SET;
+typedef const HARD_REG_SET const_hard_reg_set;
 
 #else
 
 #define HARD_REG_SET_LONGS \
  ((FIRST_PSEUDO_REGISTER + HOST_BITS_PER_WIDEST_FAST_INT - 1)	\
   / HOST_BITS_PER_WIDEST_FAST_INT)
-typedef HARD_REG_ELT_TYPE HARD_REG_SET[HARD_REG_SET_LONGS];
+
+struct HARD_REG_SET
+{
+  HARD_REG_ELT_TYPE elts[HARD_REG_SET_LONGS];
+};
+typedef const HARD_REG_SET &const_hard_reg_set;
 
 #endif
 
@@ -98,7 +104,7 @@ struct hard_reg_set_container
 
 #define UHOST_BITS_PER_WIDE_INT ((unsigned) HOST_BITS_PER_WIDEST_FAST_INT)
 
-#ifdef HARD_REG_SET
+#if FIRST_PSEUDO_REGISTER <= HOST_BITS_PER_WIDEST_FAST_INT
 
 #define SET_HARD_REG_BIT(SET, BIT)  \
  ((SET) |= HARD_CONST (1) << (BIT))
@@ -119,395 +125,142 @@ struct hard_reg_set_container
 #define AND_COMPL_HARD_REG_SET(TO, FROM) ((TO) &= ~ (FROM))
 
 static inline bool
-hard_reg_set_subset_p (const HARD_REG_SET x, const HARD_REG_SET y)
+hard_reg_set_subset_p (const_hard_reg_set x, const_hard_reg_set y)
 {
   return (x & ~y) == HARD_CONST (0);
 }
 
 static inline bool
-hard_reg_set_equal_p (const HARD_REG_SET x, const HARD_REG_SET y)
+hard_reg_set_equal_p (const_hard_reg_set x, const_hard_reg_set y)
 {
   return x == y;
 }
 
 static inline bool
-hard_reg_set_intersect_p (const HARD_REG_SET x, const HARD_REG_SET y)
+hard_reg_set_intersect_p (const_hard_reg_set x, const_hard_reg_set y)
 {
   return (x & y) != HARD_CONST (0);
 }
 
 static inline bool
-hard_reg_set_empty_p (const HARD_REG_SET x)
+hard_reg_set_empty_p (const_hard_reg_set x)
 {
   return x == HARD_CONST (0);
 }
 
 #else
 
-#define SET_HARD_REG_BIT(SET, BIT)		\
-  ((SET)[(BIT) / UHOST_BITS_PER_WIDE_INT]	\
-   |= HARD_CONST (1) << ((BIT) % UHOST_BITS_PER_WIDE_INT))
-
-#define CLEAR_HARD_REG_BIT(SET, BIT)		\
-  ((SET)[(BIT) / UHOST_BITS_PER_WIDE_INT]	\
-   &= ~(HARD_CONST (1) << ((BIT) % UHOST_BITS_PER_WIDE_INT)))
-
-#define TEST_HARD_REG_BIT(SET, BIT)		\
-  (!!((SET)[(BIT) / UHOST_BITS_PER_WIDE_INT]	\
-      & (HARD_CONST (1) << ((BIT) % UHOST_BITS_PER_WIDE_INT))))
-
-#if FIRST_PSEUDO_REGISTER <= 2*HOST_BITS_PER_WIDEST_FAST_INT
-#define CLEAR_HARD_REG_SET(TO)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     scan_tp_[0] = 0;						\
-     scan_tp_[1] = 0; } while (0)
-
-#define SET_HARD_REG_SET(TO)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     scan_tp_[0] = -1;						\
-     scan_tp_[1] = -1; } while (0)
-
-#define COPY_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] = scan_fp_[0];					\
-     scan_tp_[1] = scan_fp_[1]; } while (0)
-
-#define COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] = ~ scan_fp_[0];				\
-     scan_tp_[1] = ~ scan_fp_[1]; } while (0)
-
-#define AND_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] &= scan_fp_[0];				\
-     scan_tp_[1] &= scan_fp_[1]; } while (0)
-
-#define AND_COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] &= ~ scan_fp_[0];				\
-     scan_tp_[1] &= ~ scan_fp_[1]; } while (0)
-
-#define IOR_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] |= scan_fp_[0];				\
-     scan_tp_[1] |= scan_fp_[1]; } while (0)
-
-#define IOR_COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] |= ~ scan_fp_[0];				\
-     scan_tp_[1] |= ~ scan_fp_[1]; } while (0)
-
-static inline bool
-hard_reg_set_subset_p (const HARD_REG_SET x, const HARD_REG_SET y)
+inline void
+SET_HARD_REG_BIT (HARD_REG_SET &set, unsigned int bit)
 {
-  return (x[0] & ~y[0]) == 0 && (x[1] & ~y[1]) == 0;
+  set.elts[bit / UHOST_BITS_PER_WIDE_INT]
+    |= HARD_CONST (1) << (bit % UHOST_BITS_PER_WIDE_INT);
+}
+
+inline void
+CLEAR_HARD_REG_BIT (HARD_REG_SET &set, unsigned int bit)
+{
+  set.elts[bit / UHOST_BITS_PER_WIDE_INT]
+    &= ~(HARD_CONST (1) << (bit % UHOST_BITS_PER_WIDE_INT));
+}
+
+inline bool
+TEST_HARD_REG_BIT (const_hard_reg_set set, unsigned int bit)
+{
+  return (set.elts[bit / UHOST_BITS_PER_WIDE_INT]
+	  & (HARD_CONST (1) << (bit % UHOST_BITS_PER_WIDE_INT)));
+}
+
+inline void
+CLEAR_HARD_REG_SET (HARD_REG_SET &set)
+{
+  for (unsigned int i = 0; i < ARRAY_SIZE (set.elts); ++i)
+    set.elts[i] = 0;
+}
+
+inline void
+SET_HARD_REG_SET (HARD_REG_SET &set)
+{
+  for (unsigned int i = 0; i < ARRAY_SIZE (set.elts); ++i)
+    set.elts[i] = -1;
+}
+
+inline void
+COPY_HARD_REG_SET (HARD_REG_SET &to, const_hard_reg_set from)
+{
+  to = from;
+}
+
+inline void
+COMPL_HARD_REG_SET (HARD_REG_SET &to, const_hard_reg_set from)
+{
+  for (unsigned int i = 0; i < ARRAY_SIZE (to.elts); ++i)
+    to.elts[i] = ~from.elts[i];
+}
+
+inline void
+AND_HARD_REG_SET (HARD_REG_SET &to, const_hard_reg_set from)
+{
+  for (unsigned int i = 0; i < ARRAY_SIZE (to.elts); ++i)
+    to.elts[i] &= from.elts[i];
+}
+
+inline void
+AND_COMPL_HARD_REG_SET (HARD_REG_SET &to, const_hard_reg_set from)
+{
+  for (unsigned int i = 0; i < ARRAY_SIZE (to.elts); ++i)
+    to.elts[i] &= ~from.elts[i];
+}
+
+inline void
+IOR_HARD_REG_SET (HARD_REG_SET &to, const_hard_reg_set from)
+{
+  for (unsigned int i = 0; i < ARRAY_SIZE (to.elts); ++i)
+    to.elts[i] |= from.elts[i];
+}
+
+inline void
+IOR_COMPL_HARD_REG_SET (HARD_REG_SET &to, const_hard_reg_set from)
+{
+  for (unsigned int i = 0; i < ARRAY_SIZE (to.elts); ++i)
+    to.elts[i] |= ~from.elts[i];
 }
 
 static inline bool
-hard_reg_set_equal_p (const HARD_REG_SET x, const HARD_REG_SET y)
+hard_reg_set_subset_p (const_hard_reg_set x, const_hard_reg_set y)
 {
-  return x[0] == y[0] && x[1] == y[1];
+  HARD_REG_ELT_TYPE bad = 0;
+  for (unsigned int i = 0; i < ARRAY_SIZE (x.elts); ++i)
+    bad |= (x.elts[i] & ~y.elts[i]);
+  return bad == 0;
 }
 
 static inline bool
-hard_reg_set_intersect_p (const HARD_REG_SET x, const HARD_REG_SET y)
+hard_reg_set_equal_p (const_hard_reg_set x, const_hard_reg_set y)
 {
-  return (x[0] & y[0]) != 0 || (x[1] & y[1]) != 0;
+  HARD_REG_ELT_TYPE bad = 0;
+  for (unsigned int i = 0; i < ARRAY_SIZE (x.elts); ++i)
+    bad |= (x.elts[i] ^ y.elts[i]);
+  return bad == 0;
 }
 
 static inline bool
-hard_reg_set_empty_p (const HARD_REG_SET x)
+hard_reg_set_intersect_p (const_hard_reg_set x, const_hard_reg_set y)
 {
-  return x[0] == 0 && x[1] == 0;
-}
-
-#else
-#if FIRST_PSEUDO_REGISTER <= 3*HOST_BITS_PER_WIDEST_FAST_INT
-#define CLEAR_HARD_REG_SET(TO)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     scan_tp_[0] = 0;						\
-     scan_tp_[1] = 0;						\
-     scan_tp_[2] = 0; } while (0)
-
-#define SET_HARD_REG_SET(TO)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     scan_tp_[0] = -1;						\
-     scan_tp_[1] = -1;						\
-     scan_tp_[2] = -1; } while (0)
-
-#define COPY_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] = scan_fp_[0];					\
-     scan_tp_[1] = scan_fp_[1];					\
-     scan_tp_[2] = scan_fp_[2]; } while (0)
-
-#define COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] = ~ scan_fp_[0];				\
-     scan_tp_[1] = ~ scan_fp_[1];				\
-     scan_tp_[2] = ~ scan_fp_[2]; } while (0)
-
-#define AND_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] &= scan_fp_[0];				\
-     scan_tp_[1] &= scan_fp_[1];				\
-     scan_tp_[2] &= scan_fp_[2]; } while (0)
-
-#define AND_COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] &= ~ scan_fp_[0];				\
-     scan_tp_[1] &= ~ scan_fp_[1];				\
-     scan_tp_[2] &= ~ scan_fp_[2]; } while (0)
-
-#define IOR_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] |= scan_fp_[0];				\
-     scan_tp_[1] |= scan_fp_[1];				\
-     scan_tp_[2] |= scan_fp_[2]; } while (0)
-
-#define IOR_COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] |= ~ scan_fp_[0];				\
-     scan_tp_[1] |= ~ scan_fp_[1];				\
-     scan_tp_[2] |= ~ scan_fp_[2]; } while (0)
-
-static inline bool
-hard_reg_set_subset_p (const HARD_REG_SET x, const HARD_REG_SET y)
-{
-  return ((x[0] & ~y[0]) == 0
-	  && (x[1] & ~y[1]) == 0
-	  && (x[2] & ~y[2]) == 0);
+  HARD_REG_ELT_TYPE good = 0;
+  for (unsigned int i = 0; i < ARRAY_SIZE (x.elts); ++i)
+    good |= (x.elts[i] & y.elts[i]);
+  return good != 0;
 }
 
 static inline bool
-hard_reg_set_equal_p (const HARD_REG_SET x, const HARD_REG_SET y)
+hard_reg_set_empty_p (const_hard_reg_set x)
 {
-  return x[0] == y[0] && x[1] == y[1] && x[2] == y[2];
+  HARD_REG_ELT_TYPE bad = 0;
+  for (unsigned int i = 0; i < ARRAY_SIZE (x.elts); ++i)
+    bad |= x.elts[i];
+  return bad == 0;
 }
-
-static inline bool
-hard_reg_set_intersect_p (const HARD_REG_SET x, const HARD_REG_SET y)
-{
-  return ((x[0] & y[0]) != 0
-	  || (x[1] & y[1]) != 0
-	  || (x[2] & y[2]) != 0);
-}
-
-static inline bool
-hard_reg_set_empty_p (const HARD_REG_SET x)
-{
-  return x[0] == 0 && x[1] == 0 && x[2] == 0;
-}
-
-#else
-#if FIRST_PSEUDO_REGISTER <= 4*HOST_BITS_PER_WIDEST_FAST_INT
-#define CLEAR_HARD_REG_SET(TO)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     scan_tp_[0] = 0;						\
-     scan_tp_[1] = 0;						\
-     scan_tp_[2] = 0;						\
-     scan_tp_[3] = 0; } while (0)
-
-#define SET_HARD_REG_SET(TO)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     scan_tp_[0] = -1;						\
-     scan_tp_[1] = -1;						\
-     scan_tp_[2] = -1;						\
-     scan_tp_[3] = -1; } while (0)
-
-#define COPY_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] = scan_fp_[0];					\
-     scan_tp_[1] = scan_fp_[1];					\
-     scan_tp_[2] = scan_fp_[2];					\
-     scan_tp_[3] = scan_fp_[3]; } while (0)
-
-#define COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] = ~ scan_fp_[0];				\
-     scan_tp_[1] = ~ scan_fp_[1];				\
-     scan_tp_[2] = ~ scan_fp_[2];				\
-     scan_tp_[3] = ~ scan_fp_[3]; } while (0)
-
-#define AND_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] &= scan_fp_[0];				\
-     scan_tp_[1] &= scan_fp_[1];				\
-     scan_tp_[2] &= scan_fp_[2];				\
-     scan_tp_[3] &= scan_fp_[3]; } while (0)
-
-#define AND_COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] &= ~ scan_fp_[0];				\
-     scan_tp_[1] &= ~ scan_fp_[1];				\
-     scan_tp_[2] &= ~ scan_fp_[2];				\
-     scan_tp_[3] &= ~ scan_fp_[3]; } while (0)
-
-#define IOR_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] |= scan_fp_[0];				\
-     scan_tp_[1] |= scan_fp_[1];				\
-     scan_tp_[2] |= scan_fp_[2];				\
-     scan_tp_[3] |= scan_fp_[3]; } while (0)
-
-#define IOR_COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     scan_tp_[0] |= ~ scan_fp_[0];				\
-     scan_tp_[1] |= ~ scan_fp_[1];				\
-     scan_tp_[2] |= ~ scan_fp_[2];				\
-     scan_tp_[3] |= ~ scan_fp_[3]; } while (0)
-
-static inline bool
-hard_reg_set_subset_p (const HARD_REG_SET x, const HARD_REG_SET y)
-{
-  return ((x[0] & ~y[0]) == 0
-	  && (x[1] & ~y[1]) == 0
-	  && (x[2] & ~y[2]) == 0
-	  && (x[3] & ~y[3]) == 0);
-}
-
-static inline bool
-hard_reg_set_equal_p (const HARD_REG_SET x, const HARD_REG_SET y)
-{
-  return x[0] == y[0] && x[1] == y[1] && x[2] == y[2] && x[3] == y[3];
-}
-
-static inline bool
-hard_reg_set_intersect_p (const HARD_REG_SET x, const HARD_REG_SET y)
-{
-  return ((x[0] & y[0]) != 0
-	  || (x[1] & y[1]) != 0
-	  || (x[2] & y[2]) != 0
-	  || (x[3] & y[3]) != 0);
-}
-
-static inline bool
-hard_reg_set_empty_p (const HARD_REG_SET x)
-{
-  return x[0] == 0 && x[1] == 0 && x[2] == 0 && x[3] == 0;
-}
-
-#else /* FIRST_PSEUDO_REGISTER > 4*HOST_BITS_PER_WIDEST_FAST_INT */
-
-#define CLEAR_HARD_REG_SET(TO)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     int i;							\
-     for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
-       *scan_tp_++ = 0; } while (0)
-
-#define SET_HARD_REG_SET(TO)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     int i;							\
-     for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
-       *scan_tp_++ = -1; } while (0)
-
-#define COPY_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     int i;							\
-     for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
-       *scan_tp_++ = *scan_fp_++; } while (0)
-
-#define COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     int i;							\
-     for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
-       *scan_tp_++ = ~ *scan_fp_++; } while (0)
-
-#define AND_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     int i;							\
-     for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
-       *scan_tp_++ &= *scan_fp_++; } while (0)
-
-#define AND_COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     int i;							\
-     for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
-       *scan_tp_++ &= ~ *scan_fp_++; } while (0)
-
-#define IOR_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     int i;							\
-     for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
-       *scan_tp_++ |= *scan_fp_++; } while (0)
-
-#define IOR_COMPL_HARD_REG_SET(TO, FROM)  \
-do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
-     const HARD_REG_ELT_TYPE *scan_fp_ = (FROM);		\
-     int i;							\
-     for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
-       *scan_tp_++ |= ~ *scan_fp_++; } while (0)
-
-static inline bool
-hard_reg_set_subset_p (const HARD_REG_SET x, const HARD_REG_SET y)
-{
-  int i;
-
-  for (i = 0; i < HARD_REG_SET_LONGS; i++)
-    if ((x[i] & ~y[i]) != 0)
-      return false;
-  return true;
-}
-
-static inline bool
-hard_reg_set_equal_p (const HARD_REG_SET x, const HARD_REG_SET y)
-{
-  int i;
-
-  for (i = 0; i < HARD_REG_SET_LONGS; i++)
-    if (x[i] != y[i])
-      return false;
-  return true;
-}
-
-static inline bool
-hard_reg_set_intersect_p (const HARD_REG_SET x, const HARD_REG_SET y)
-{
-  int i;
-
-  for (i = 0; i < HARD_REG_SET_LONGS; i++)
-    if ((x[i] & y[i]) != 0)
-      return true;
-  return false;
-}
-
-static inline bool
-hard_reg_set_empty_p (const HARD_REG_SET x)
-{
-  int i;
-
-  for (i = 0; i < HARD_REG_SET_LONGS; i++)
-    if (x[i] != 0)
-      return false;
-  return true;
-}
-
-#endif
-#endif
-#endif
 #endif
 
 /* Iterator for hard register sets.  */
@@ -515,7 +268,7 @@ hard_reg_set_empty_p (const HARD_REG_SET x)
 struct hard_reg_set_iterator
 {
   /* Pointer to the current element.  */
-  HARD_REG_ELT_TYPE *pelt;
+  const HARD_REG_ELT_TYPE *pelt;
 
   /* The length of the set.  */
   unsigned short length;
@@ -534,11 +287,11 @@ struct hard_reg_set_iterator
 /* The implementation of the iterator functions is fully analogous to
    the bitmap iterators.  */
 static inline void
-hard_reg_set_iter_init (hard_reg_set_iterator *iter, HARD_REG_SET set,
+hard_reg_set_iter_init (hard_reg_set_iterator *iter, const_hard_reg_set set,
                         unsigned min, unsigned *regno)
 {
 #ifdef HARD_REG_SET_LONGS
-  iter->pelt = set;
+  iter->pelt = set.elts;
   iter->length = HARD_REG_SET_LONGS;
 #else
   iter->pelt = &set;

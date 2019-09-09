@@ -151,8 +151,8 @@ live_edge_for_reg (basic_block bb, int regno, int end_regno)
 
 static bool
 move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
-			   const HARD_REG_SET uses,
-			   const HARD_REG_SET defs,
+			   const_hard_reg_set uses,
+			   const_hard_reg_set defs,
 			   bool *split_p,
 			   struct dead_debug_local *debug)
 {

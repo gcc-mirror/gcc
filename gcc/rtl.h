@@ -3377,8 +3377,7 @@ extern bool val_signbit_known_clear_p (machine_mode,
 				       unsigned HOST_WIDE_INT);
 
 /* In reginfo.c  */
-extern machine_mode choose_hard_reg_mode (unsigned int, unsigned int,
-					       bool);
+extern machine_mode choose_hard_reg_mode (unsigned int, unsigned int, bool);
 extern const HARD_REG_SET &simplifiable_subregs (const subreg_shape &);
 
 /* In emit-rtl.c  */
