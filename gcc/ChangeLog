@@ -1,3 +1,8 @@
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* opt-functions.awk (integer_range_info): Make sure values are in
+	numeric context before operating with them.
+
 2019-09-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* genemit.c (gen_split): Print the filename and line number where the

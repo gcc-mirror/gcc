@@ -346,9 +346,10 @@ function search_var_name(name, opt_numbers, opts, flags, n_opts)
 function integer_range_info(range_option, init, option)
 {
     if (range_option != "") {
-	start = nth_arg(0, range_option);
-	end = nth_arg(1, range_option);
-	if (init != "" && init != "-1" && (init < start || init > end))
+	ival = init + 0;
+	start = nth_arg(0, range_option) + 0;
+	end = nth_arg(1, range_option) + 0;
+	if (init != "" && init != "-1" && (ival < start || ival > end))
 	  print "#error initial value " init " of '" option "' must be in range [" start "," end "]"
 	return start ", " end
     }
