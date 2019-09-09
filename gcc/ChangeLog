@@ -1,5 +1,18 @@
 2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hard-reg-set.h (IOR_COMPL_HARD_REG_SET): Delete.
+	* config/aarch64/cortex-a57-fma-steering.c (rename_single_chain):
+	Use "|~" instead of IOR_COMPL_HARD_REG_SET.
+	* config/aarch64/falkor-tag-collision-avoidance.c (init_unavailable):
+	Likewise.
+	* ira-build.c (ira_create_object, ira_set_allocno_class): Likewise.
+	* ira.c (setup_reg_renumber): Likewise.
+	* lra-assigns.c (find_hard_regno_for_1): Likewise.
+	* regrename.c (regrename_find_superclass): Likewise.
+	* reload1.c (find_reg): Likewise.
+
+2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hard-reg-set.h (AND_COMPL_HARD_REG_SET): Delete.
 	* caller-save.c (setup_save_areas): Use "&~" instead of
 	AND_COMPL_HARD_REG_SET.

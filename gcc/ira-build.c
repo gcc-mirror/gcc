@@ -458,10 +458,8 @@ ira_create_object (ira_allocno_t a, int subword)
   OBJECT_NUM_CONFLICTS (obj) = 0;
   OBJECT_CONFLICT_HARD_REGS (obj) = ira_no_alloc_regs;
   OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) = ira_no_alloc_regs;
-  IOR_COMPL_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-			  reg_class_contents[aclass]);
-  IOR_COMPL_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-			  reg_class_contents[aclass]);
+  OBJECT_CONFLICT_HARD_REGS (obj) |= ~reg_class_contents[aclass];
+  OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= ~reg_class_contents[aclass];
   OBJECT_MIN (obj) = INT_MAX;
   OBJECT_MAX (obj) = -1;
   OBJECT_LIVE_RANGES (obj) = NULL;
@@ -549,10 +547,8 @@ ira_set_allocno_class (ira_allocno_t a, enum reg_class aclass)
   ALLOCNO_CLASS (a) = aclass;
   FOR_EACH_ALLOCNO_OBJECT (a, obj, oi)
     {
-      IOR_COMPL_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-			      reg_class_contents[aclass]);
-      IOR_COMPL_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-			      reg_class_contents[aclass]);
+      OBJECT_CONFLICT_HARD_REGS (obj) |= ~reg_class_contents[aclass];
+      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= ~reg_class_contents[aclass];
     }
 }
 
