@@ -13635,7 +13635,7 @@ ix86_avx_u128_mode_after (int mode, rtx_insn *insn)
   if (CALL_P (insn))
     {
       bool avx_upper_reg_found = false;
-      note_stores (pat, ix86_check_avx_upper_stores, &avx_upper_reg_found);
+      note_stores (insn, ix86_check_avx_upper_stores, &avx_upper_reg_found);
 
       return avx_upper_reg_found ? AVX_U128_DIRTY : AVX_U128_CLEAN;
     }

@@ -1,5 +1,89 @@
 2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* rtl.h (CALL_INSN_FUNCTION_USAGE): Document what SETs mean.
+	(note_pattern_stores): Declare.
+	(note_stores): Take an rtx_insn *.
+	* rtlanal.c (set_of): Use note_pattern_stores instead of note_stores.
+	(find_all_hard_reg_sets): Pass the insn rather than its pattern to
+	note_stores.  Remove explicit handling of CALL_INSN_FUNCTION_USAGE.
+	(note_stores): Take an rtx_insn * as argument and process
+	CALL_INSN_FUNCTION_USAGE.  Rename old function to...
+	(note_pattern_stores): ...this.
+	(find_first_parameter_load): Pass the insn rather than
+	its pattern to note_stores.
+	* alias.c (memory_modified_in_insn_p, init_alias_analysis): Likewise.
+	* caller-save.c (setup_save_areas, save_call_clobbered_regs)
+	(insert_one_insn): Likewise.
+	* combine.c (combine_instructions): Likewise.
+	(likely_spilled_retval_p): Likewise.
+	(try_combine): Use note_pattern_stores instead of note_stores.
+	(record_dead_and_set_regs): Pass the insn rather than its pattern
+	to note_stores.
+	(reg_dead_at_p): Likewise.
+	* config/bfin/bfin.c (workaround_speculation): Likewise.
+	* config/c6x/c6x.c (maybe_clobber_cond): Likewise.  Take an rtx_insn *
+	rather than an rtx.
+	* config/frv/frv.c (frv_registers_update): Use note_pattern_stores
+	instead of note_stores.
+	(frv_optimize_membar_local): Pass the insn rather than its pattern
+	to note_stores.
+	* config/gcn/gcn.c (gcn_md_reorg): Likewise.
+	* config/i386/i386.c (ix86_avx_u128_mode_after): Likewise.
+	* config/mips/mips.c (vr4130_true_reg_dependence_p): Likewise.
+	(r10k_needs_protection_p, mips_sim_issue_insn): Likewise.
+	(mips_reorg_process_insns): Likewise.
+	* config/s390/s390.c (s390_regs_ever_clobbered): Likewise.
+	* config/sh/sh.c (flow_dependent_p): Likewise.  Take rtx_insn *s
+	rather than rtxes.
+	* cse.c (delete_trivially_dead_insns): Pass the insn rather than
+	its pattern to note_stores.
+	* cselib.c (cselib_record_sets): Use note_pattern_stores instead
+	of note_stores.
+	* dce.c (mark_nonreg_stores): Remove the "body" parameter and pass
+	the insn to note_stores.
+	(prescan_insns_for_dce): Update call accordingly.
+	* ddg.c (mem_write_insn_p): Pass the insn rather than its pattern
+	to note_stores.
+	* df-problems.c (can_move_insns_across): Likewise.
+	* dse.c (emit_inc_dec_insn_before, replace_read): Likewise.
+	* function.c (assign_parm_setup_reg): Likewise.
+	* gcse-common.c (record_last_mem_set_info_common): Likewise.
+	* gcse.c (load_killed_in_block_p, compute_hash_table_work): Likewise.
+	(single_set_gcse): Likewise.
+	* ira.c (validate_equiv_mem): Likewise.
+	(update_equiv_regs): Use note_pattern_stores rather than note_stores
+	for no_equiv.
+	* loop-doloop.c (doloop_optimize): Pass the insn rather than its
+	pattern to note_stores.
+	* loop-invariant.c (calculate_loop_reg_pressure): Likewise.
+	* loop-iv.c (simplify_using_initial_values): Likewise.
+	* mode-switching.c (optimize_mode_switching): Likewise.
+	* optabs.c (emit_libcall_block_1): Likewise.
+	(expand_atomic_compare_and_swap): Likewise.
+	* postreload-gcse.c (load_killed_in_block_p): Likewise.
+	(record_opr_changes): Likewise.  Remove explicit handling of
+	CALL_INSN_FUNCTION_USAGE.
+	* postreload.c (reload_combine, reload_cse_move2add): Likewise.
+	* regcprop.c (kill_clobbered_values): Likewise.
+	(copyprop_hardreg_forward_1): Pass the insn rather than its pattern
+	to note_stores.
+	* regrename.c (build_def_use): Likewise.
+	* reload1.c (reload):  Use note_pattern_stores instead of note_stores
+	for mark_not_eliminable.
+	(reload_as_needed): Pass the insn rather than its pattern
+	to note_stores.
+	(emit_output_reload_insns): Likewise.
+	* resource.c (mark_target_live_regs): Likewise.
+	* sched-deps.c (init_insn_reg_pressure_info): Likewise.
+	* sched-rgn.c (sets_likely_spilled): Use note_pattern_stores
+	instead of note_stores.
+	* shrink-wrap.c (try_shrink_wrapping): Pass the insn rather than
+	its pattern to note_stores.
+	* stack-ptr-mod.c (pass_stack_ptr_mod::execute): Likewise.
+	* var-tracking.c (adjust_insn, add_with_sets): Likewise.
+
+2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hard-reg-set.h (HARD_REG_SET): Define using a typedef rather
 	than a #define.  Use a structure rather than an array as the
 	fallback definition.  Remove special cases for low array sizes.

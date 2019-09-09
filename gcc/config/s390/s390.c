@@ -9474,7 +9474,7 @@ s390_regs_ever_clobbered (char regs_ever_clobbered[])
 		continue;
 	    }
 
-	  note_stores (pat,
+	  note_stores (cur_insn,
 		       s390_reg_clobbered_rtx,
 		       regs_ever_clobbered);
 	}

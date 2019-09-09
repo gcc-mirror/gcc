@@ -14889,8 +14889,7 @@ vr4130_true_reg_dependence_p_1 (rtx x, const_rtx pat ATTRIBUTE_UNUSED,
 static bool
 vr4130_true_reg_dependence_p (rtx insn)
 {
-  note_stores (PATTERN (vr4130_last_insn),
-	       vr4130_true_reg_dependence_p_1, &insn);
+  note_stores (vr4130_last_insn, vr4130_true_reg_dependence_p_1, &insn);
   return insn == 0;
 }
 
@@ -17787,7 +17786,7 @@ r10k_needs_protection_p (rtx_insn *insn)
 
   if (mips_r10k_cache_barrier == R10K_CACHE_BARRIER_STORE)
     {
-      note_stores (PATTERN (insn), r10k_needs_protection_p_store, &insn);
+      note_stores (insn, r10k_needs_protection_p_store, &insn);
       return insn == NULL_RTX;
     }
 
@@ -18296,7 +18295,7 @@ mips_sim_issue_insn (struct mips_sim *state, rtx_insn *insn)
 						    state->insns_left);
 
   mips_sim_insn = insn;
-  note_stores (PATTERN (insn), mips_sim_record_set, state);
+  note_stores (insn, mips_sim_record_set, state);
 }
 
 /* Simulate issuing a NOP in state STATE.  */
@@ -19026,7 +19025,7 @@ mips_reorg_process_insns (void)
 			     &uses);
 		  HARD_REG_SET delay_sets;
 		  CLEAR_HARD_REG_SET (delay_sets);
-		  note_stores (PATTERN (SEQ_END (insn)), record_hard_reg_sets,
+		  note_stores (SEQ_END (insn), record_hard_reg_sets,
 			       &delay_sets);
 
 		  rtx_insn *prev = prev_active_insn (insn);
@@ -19036,8 +19035,7 @@ mips_reorg_process_insns (void)
 		    {
 		      HARD_REG_SET sets;
 		      CLEAR_HARD_REG_SET (sets);
-		      note_stores (PATTERN (prev), record_hard_reg_sets,
-				   &sets);
+		      note_stores (prev, record_hard_reg_sets, &sets);
 
 		      /* Re-order if safe.  */
 		      if (!hard_reg_set_intersect_p (delay_sets, uses)

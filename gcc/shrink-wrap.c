@@ -689,7 +689,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 	note_uses (&PATTERN (insn), record_hard_reg_uses, &this_used);
 	AND_COMPL_HARD_REG_SET (this_used, prologue_clobbered);
 	IOR_HARD_REG_SET (prologue_used, this_used);
-	note_stores (PATTERN (insn), record_hard_reg_sets, &prologue_clobbered);
+	note_stores (insn, record_hard_reg_sets, &prologue_clobbered);
       }
   CLEAR_HARD_REG_BIT (prologue_clobbered, STACK_POINTER_REGNUM);
   if (frame_pointer_needed)

@@ -1970,7 +1970,7 @@ simplify_using_initial_values (class loop *loop, enum rtx_code op, rtx *expr)
 	    continue;
 
 	  CLEAR_REG_SET (this_altered);
-	  note_stores (PATTERN (insn), mark_altered, this_altered);
+	  note_stores (insn, mark_altered, this_altered);
 	  if (CALL_P (insn))
 	    {
 	      /* Kill all call clobbered registers.  */

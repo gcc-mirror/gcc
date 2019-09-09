@@ -843,7 +843,7 @@ reload (rtx_insn *first, int global)
      cannot be done.  */
   for (insn = first; insn && num_eliminable; insn = NEXT_INSN (insn))
     if (INSN_P (insn))
-      note_stores (PATTERN (insn), mark_not_eliminable, NULL);
+      note_pattern_stores (PATTERN (insn), mark_not_eliminable, NULL);
 
   maybe_fix_stack_asms ();
 
@@ -4494,7 +4494,7 @@ reload_as_needed (int live_known)
 	{
 	  regset_head regs_to_forget;
 	  INIT_REG_SET (&regs_to_forget);
-	  note_stores (PATTERN (insn), forget_old_reloads_1, &regs_to_forget);
+	  note_stores (insn, forget_old_reloads_1, &regs_to_forget);
 
 	  /* If this is a USE and CLOBBER of a MEM, ensure that any
 	     references to eliminable registers have been removed.  */
@@ -4621,7 +4621,7 @@ reload_as_needed (int live_known)
 	     between INSN and NEXT and use them to forget old reloads.  */
 	  for (rtx_insn *x = NEXT_INSN (insn); x != old_next; x = NEXT_INSN (x))
 	    if (NONJUMP_INSN_P (x) && GET_CODE (PATTERN (x)) == CLOBBER)
-	      note_stores (PATTERN (x), forget_old_reloads_1, NULL);
+	      note_stores (x, forget_old_reloads_1, NULL);
 
 #if AUTO_INC_DEC
 	  /* Likewise for regs altered by auto-increment in this insn.
@@ -7702,7 +7702,7 @@ emit_output_reload_insns (class insn_chain *chain, struct reload *rl,
 	   clear any memory of reloaded copies of the pseudo reg.
 	   If this output reload comes from a spill reg,
 	   reg_has_output_reload will make this do nothing.  */
-	note_stores (pat, forget_old_reloads_1, NULL);
+	note_stores (p, forget_old_reloads_1, NULL);
 
 	if (reg_mentioned_p (rl_reg_rtx, pat))
 	  {

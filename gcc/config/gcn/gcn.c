@@ -4345,7 +4345,7 @@ gcn_md_reorg (void)
 	  HARD_REG_SET defs, uses;
 	  CLEAR_HARD_REG_SET (defs);
 	  CLEAR_HARD_REG_SET (uses);
-	  note_stores (PATTERN (insn), record_hard_reg_sets, &defs);
+	  note_stores (insn, record_hard_reg_sets, &defs);
 	  note_uses (&PATTERN (insn), record_hard_reg_uses, &uses);
 
 	  bool exec_lo_def_p = TEST_HARD_REG_BIT (defs, EXEC_LO_REG);
@@ -4533,7 +4533,7 @@ gcn_md_reorg (void)
       HARD_REG_SET ireads, iwrites;
       CLEAR_HARD_REG_SET (ireads);
       CLEAR_HARD_REG_SET (iwrites);
-      note_stores (PATTERN (insn), record_hard_reg_sets, &iwrites);
+      note_stores (insn, record_hard_reg_sets, &iwrites);
       note_uses (&PATTERN (insn), record_hard_reg_uses, &ireads);
 
       /* Scan recent previous instructions for dependencies not handled in

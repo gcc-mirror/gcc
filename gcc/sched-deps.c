@@ -2203,9 +2203,9 @@ init_insn_reg_pressure_info (rtx_insn *insn)
       reg_pressure_info[cl].change = 0;
     }
 
-  note_stores (PATTERN (insn), mark_insn_reg_clobber, insn);
+  note_stores (insn, mark_insn_reg_clobber, insn);
 
-  note_stores (PATTERN (insn), mark_insn_reg_store, insn);
+  note_stores (insn, mark_insn_reg_store, insn);
 
   if (AUTO_INC_DEC)
     for (link = REG_NOTES (insn); link; link = XEXP (link, 1))

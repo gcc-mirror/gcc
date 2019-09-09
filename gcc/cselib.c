@@ -2659,7 +2659,7 @@ cselib_record_sets (rtx_insn *insn)
   /* Invalidate all locations written by this insn.  Note that the elts we
      looked up in the previous loop aren't affected, just some of their
      locations may go away.  */
-  note_stores (body, cselib_invalidate_rtx_note_stores, NULL);
+  note_pattern_stores (body, cselib_invalidate_rtx_note_stores, NULL);
 
   for (i = n_sets_before_autoinc; i < n_sets; i++)
     cselib_invalidate_rtx (sets[i].dest);

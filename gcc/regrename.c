@@ -1741,7 +1741,7 @@ build_def_use (basic_block bb)
 	     outside an operand, as live.  */
 	  hide_operands (n_ops, old_operands, old_dups, untracked_operands,
 			 false);
-	  note_stores (PATTERN (insn), note_sets_clobbers, &clobber_code);
+	  note_stores (insn, note_sets_clobbers, &clobber_code);
 	  restore_operands (insn, n_ops, old_operands, old_dups);
 
 	  /* Step 1b: Begin new chains for earlyclobbered writes inside
@@ -1857,7 +1857,7 @@ build_def_use (basic_block bb)
 	     outside an operand, as live.  */
 	  hide_operands (n_ops, old_operands, old_dups, untracked_operands,
 			 false);
-	  note_stores (PATTERN (insn), note_sets_clobbers, &set_code);
+	  note_stores (insn, note_sets_clobbers, &set_code);
 	  restore_operands (insn, n_ops, old_operands, old_dups);
 
 	  /* Step 6b: Begin new chains for writes inside operands.  */

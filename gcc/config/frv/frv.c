@@ -7136,7 +7136,7 @@ frv_registers_update (rtx x)
       flags |= frv_cond_flags (XEXP (x, 0));
       x = XEXP (x, 1);
     }
-  note_stores (x, frv_registers_update_1, &flags);
+  note_pattern_stores (x, frv_registers_update_1, &flags);
 }
 
 
@@ -7770,8 +7770,7 @@ frv_optimize_membar_local (basic_block bb, struct frv_io *next_io,
 	  /* Invalidate NEXT_IO's address if it depends on something that
 	     is clobbered by INSN.  */
 	  if (next_io->var_address)
-	    note_stores (PATTERN (insn), frv_io_check_address,
-			 &next_io->var_address);
+	    note_stores (insn, frv_io_check_address, &next_io->var_address);
 
 	  /* If the next membar is associated with a __builtin_read,
 	     see if INSN reads from that address.  If it does, and if
@@ -7814,7 +7813,7 @@ frv_optimize_membar_local (basic_block bb, struct frv_io *next_io,
 	  if (volatile_refs_p (PATTERN (insn)))
 	    CLEAR_HARD_REG_SET (used_regs);
 	  else
-	    note_stores (PATTERN (insn), frv_io_handle_set, &used_regs);
+	    note_stores (insn, frv_io_handle_set, &used_regs);
 
 	  note_uses (&PATTERN (insn), frv_io_handle_use, &used_regs);
 	  break;

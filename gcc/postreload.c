@@ -1325,7 +1325,7 @@ reload_combine (void)
 	  || reload_combine_recognize_pattern (insn))
 	continue;
 
-      note_stores (PATTERN (insn), reload_combine_note_store, NULL);
+      note_stores (insn, reload_combine_note_store, NULL);
 
       if (CALL_P (insn))
 	{
@@ -1346,22 +1346,12 @@ reload_combine (void)
 	    {
 	      rtx setuse = XEXP (link, 0);
 	      rtx usage_rtx = XEXP (setuse, 0);
-	      /* We could support CLOBBER_HIGH and treat it in the same way as
-		 HARD_REGNO_CALL_PART_CLOBBERED, but no port needs that yet.  */
-	      gcc_assert (GET_CODE (setuse) != CLOBBER_HIGH);
 
-	      if ((GET_CODE (setuse) == USE || GET_CODE (setuse) == CLOBBER)
-		  && REG_P (usage_rtx))
+	      if (GET_CODE (setuse) == USE && REG_P (usage_rtx))
 	        {
 		  unsigned int end_regno = END_REGNO (usage_rtx);
 		  for (unsigned int i = REGNO (usage_rtx); i < end_regno; ++i)
-		    if (GET_CODE (XEXP (link, 0)) == CLOBBER)
-		      {
-		        reg_state[i].use_index = RELOAD_COMBINE_MAX_USES;
-		        reg_state[i].store_ruid = reload_combine_ruid;
-		      }
-		    else
-		      reg_state[i].use_index = -1;
+		    reg_state[i].use_index = -1;
 	         }
 	     }
 	}
@@ -2104,7 +2094,7 @@ reload_cse_move2add (rtx_insn *first)
 		}
 	    }
 	}
-      note_stores (PATTERN (insn), move2add_note_store, insn);
+      note_stores (insn, move2add_note_store, insn);
 
       /* If INSN is a conditional branch, we try to extract an
 	 implicit set out of it.  */
@@ -2134,31 +2124,11 @@ reload_cse_move2add (rtx_insn *first)
 	 unknown values.  */
       if (CALL_P (insn))
 	{
-	  rtx link;
-
 	  for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; i--)
 	    {
 	      if (call_used_regs[i])
 		/* Reset the information about this register.  */
 		reg_mode[i] = VOIDmode;
-	    }
-
-	  for (link = CALL_INSN_FUNCTION_USAGE (insn); link;
-	       link = XEXP (link, 1))
-	    {
-	      rtx setuse = XEXP (link, 0);
-	      rtx usage_rtx = XEXP (setuse, 0);
-	      /* CALL_INSN_FUNCTION_USAGEs can only have full clobbers, not
-		 clobber_highs.  */
-	      gcc_assert (GET_CODE (setuse) != CLOBBER_HIGH);
-	      if (GET_CODE (setuse) == CLOBBER
-		  && REG_P (usage_rtx))
-	        {
-		  unsigned int end_regno = END_REGNO (usage_rtx);
-		  for (unsigned int r = REGNO (usage_rtx); r < end_regno; ++r)
-		    /* Reset the information about this register.  */
-		    reg_mode[r] = VOIDmode;
-		}
 	    }
 	}
     }
