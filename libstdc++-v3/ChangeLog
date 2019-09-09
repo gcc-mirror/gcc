@@ -1,3 +1,10 @@
+2019-09-09  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Update docs for recent <span> and constexpr lib changes.
+	* doc/xml/manual/status_cxx2020.xml: Update p0202r3, p0858r0, p0879r0,
+	p1023r0, p1085r2 status.
+	* doc/html/manual/status.html: Regenerate.
+
 2019-09-09  Antony Polukhin  <antoshkka@gmail.com>
 
 	* include/bits/charconv.h (__detail::__to_chars_10_impl): Replace
