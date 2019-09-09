@@ -1,3 +1,5 @@
+/* { dg-require-effective-target indirect_calls } */
+
 bar (foo, a)
      int (**foo) ();
 {

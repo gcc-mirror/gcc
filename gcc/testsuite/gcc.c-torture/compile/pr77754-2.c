@@ -1,4 +1,5 @@
 // { dg-require-effective-target alloca }
+// { dg-require-effective-target indirect_calls }
 /* PR c/77754 */
 
 int fn3();

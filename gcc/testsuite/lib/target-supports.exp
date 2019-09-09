@@ -9502,3 +9502,11 @@ proc check_effective_target_mfentry { } {
 	        void foo (void) { }
     } "-mfentry"]
 }
+
+# Return 1 if this target supports indirect calls
+proc check_effective_target_indirect_calls { } {
+  if { [istarget bpf-*-*] } {
+        return 0
+  }
+  return 1
+}

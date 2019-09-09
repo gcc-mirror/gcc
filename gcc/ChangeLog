@@ -1,5 +1,10 @@
 2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	indirect_calls.
+
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
 	* opt-functions.awk (integer_range_info): Make sure values are in
 	numeric context before operating with them.
 
