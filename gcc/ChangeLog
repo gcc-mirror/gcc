@@ -1,5 +1,21 @@
 2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* array-traits.h: New file.
+	* coretypes.h (array_traits, bitmap_view): New types.
+	* bitmap.h: Include "array-traits.h"
+	(bitmap_bit_p): Take a const_bitmap instead of a bitmap.
+	(base_bitmap_view, bitmap_view): New classes.
+	* bitmap.c (bitmap_bit_p): Take a const_bitmap instead of a bitmap.
+	* hard-reg-set.h: Include array-traits.h.
+	(array_traits<HARD_REG_SET>): New struct.
+	* regset.h (IOR_REG_SET_HRS): New macro.
+	* loop-iv.c (simplify_using_initial_values): Use IOR_REG_SET_HRS
+	rather than iterating over each hard register.
+	* sched-deps.c (sched_analyze_insn): Likewise.
+	* sel-sched-ir.c (setup_id_implicit_regs): Likewise.
+
+2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* ira-int.h (ior_hard_reg_conflicts): Take a const_hard_reg_set
 	instead of a HARD_REG_SET *.
 	* ira-build.c (ior_hard_reg_conflicts): Likewise.
