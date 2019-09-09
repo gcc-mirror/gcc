@@ -450,7 +450,7 @@ setup_save_areas (void)
 	 live during the call, but the subreg that is set
 	 isn't.  */
       CLEAR_HARD_REG_SET (this_insn_sets);
-      note_stores (PATTERN (insn), mark_set_regs, &this_insn_sets);
+      note_stores (insn, mark_set_regs, &this_insn_sets);
       /* Sibcalls are considered to set the return value.  */
       if (SIBLING_CALL_P (insn) && crtl->return_rtx)
 	mark_set_regs (crtl->return_rtx, NULL_RTX, &this_insn_sets);
@@ -534,7 +534,7 @@ setup_save_areas (void)
 	     live during the call, but the subreg that is set
 	     isn't.  */
 	  CLEAR_HARD_REG_SET (this_insn_sets);
-	  note_stores (PATTERN (insn), mark_set_regs, &this_insn_sets);
+	  note_stores (insn, mark_set_regs, &this_insn_sets);
 	  /* Sibcalls are considered to set the return value,
 	     compare df-scan.c:df_get_call_refs.  */
 	  if (SIBLING_CALL_P (insn) && crtl->return_rtx)
@@ -795,7 +795,7 @@ save_call_clobbered_regs (void)
 		 be live across the call, while the other is set
 		 afterwards.  */
 	      CLEAR_HARD_REG_SET (this_insn_sets);
-	      note_stores (PATTERN (insn), mark_set_regs, &this_insn_sets);
+	      note_stores (insn, mark_set_regs, &this_insn_sets);
 	      AND_COMPL_HARD_REG_SET (hard_regs_saved, this_insn_sets);
 	    }
 
@@ -849,7 +849,7 @@ save_call_clobbered_regs (void)
 		 multi-hard-reg pseudo; then the pseudo is considered live
 		 during the call, but the subreg that is set isn't.  */
 	      CLEAR_HARD_REG_SET (this_insn_sets);
-	      note_stores (PATTERN (insn), mark_set_regs, &this_insn_sets);
+	      note_stores (insn, mark_set_regs, &this_insn_sets);
 
 	      /* Compute which hard regs must be saved before this call.  */
 	      AND_COMPL_HARD_REG_SET (hard_regs_to_save, call_fixed_reg_set);
@@ -1414,8 +1414,7 @@ insert_one_insn (class insn_chain *chain, int before_p, int code, rtx pat)
       /* Registers that are set in CHAIN->INSN live in the new insn.
 	 (Unless there is a REG_UNUSED note for them, but we don't
 	  look for them here.) */
-      note_stores (PATTERN (chain->insn), add_stored_regs,
-		   &new_chain->live_throughout);
+      note_stores (chain->insn, add_stored_regs, &new_chain->live_throughout);
       CLEAR_REG_SET (&new_chain->dead_or_set);
       if (chain->insn == BB_END (BASIC_BLOCK_FOR_FN (cfun, chain->block)))
 	BB_END (BASIC_BLOCK_FOR_FN (cfun, chain->block)) = new_chain->insn;

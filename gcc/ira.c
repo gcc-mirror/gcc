@@ -3004,7 +3004,7 @@ validate_equiv_mem (rtx_insn *start, rtx reg, rtx memref)
 	    return valid_none;
 	}
 
-      note_stores (PATTERN (insn), validate_equiv_mem_from_store, &info);
+      note_stores (insn, validate_equiv_mem_from_store, &info);
       if (info.equiv_mem_modified)
 	return valid_none;
 
@@ -3447,7 +3447,7 @@ update_equiv_regs (void)
 	  if (set == NULL_RTX
 	      || side_effects_p (SET_SRC (set)))
 	    {
-	      note_stores (PATTERN (insn), no_equiv, NULL);
+	      note_pattern_stores (PATTERN (insn), no_equiv, NULL);
 	      continue;
 	    }
 	  else if (GET_CODE (PATTERN (insn)) == PARALLEL)
@@ -3458,7 +3458,7 @@ update_equiv_regs (void)
 		{
 		  rtx part = XVECEXP (PATTERN (insn), 0, i);
 		  if (part != set)
-		    note_stores (part, no_equiv, NULL);
+		    note_pattern_stores (part, no_equiv, NULL);
 		}
 	    }
 
@@ -3516,7 +3516,7 @@ update_equiv_regs (void)
 	    {
 	      /* This might be setting a SUBREG of a pseudo, a pseudo that is
 		 also set somewhere else to a constant.  */
-	      note_stores (set, no_equiv, NULL);
+	      note_pattern_stores (set, no_equiv, NULL);
 	      continue;
 	    }
 
@@ -3524,7 +3524,7 @@ update_equiv_regs (void)
 	     equivalent to a mem.  */
 	  if (MEM_P (src) && reg_equiv[regno].pdx_subregs)
 	    {
-	      note_stores (set, no_equiv, NULL);
+	      note_pattern_stores (set, no_equiv, NULL);
 	      continue;
 	    }
 

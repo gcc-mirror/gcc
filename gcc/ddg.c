@@ -84,7 +84,7 @@ static bool
 mem_write_insn_p (rtx_insn *insn)
 {
   mem_ref_p = false;
-  note_stores (PATTERN (insn), mark_mem_store, NULL);
+  note_stores (insn, mark_mem_store, NULL);
   return mem_ref_p;
 }
 

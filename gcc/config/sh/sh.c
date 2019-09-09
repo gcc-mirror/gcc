@@ -249,7 +249,7 @@ static void sh_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				HOST_WIDE_INT, tree);
 static void sh_file_start (void);
 static bool sh_assemble_integer (rtx, unsigned int, int);
-static bool flow_dependent_p (rtx, rtx);
+static bool flow_dependent_p (rtx_insn *, rtx_insn *);
 static void flow_dependent_p_1 (rtx, const_rtx, void *);
 static int shiftcosts (rtx);
 static int and_xor_ior_costs (rtx, int);
@@ -9633,11 +9633,11 @@ sh_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 /* Check if INSN is flow-dependent on DEP_INSN.  Can also be used to check
    if DEP_INSN is anti-flow dependent on INSN.  */
 static bool
-flow_dependent_p (rtx insn, rtx dep_insn)
+flow_dependent_p (rtx_insn *insn, rtx_insn *dep_insn)
 {
   rtx tmp = PATTERN (insn);
 
-  note_stores (PATTERN (dep_insn), flow_dependent_p_1, &tmp);
+  note_stores (dep_insn, flow_dependent_p_1, &tmp);
   return tmp == NULL_RTX;
 }
 

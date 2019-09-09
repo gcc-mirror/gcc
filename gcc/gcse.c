@@ -1049,7 +1049,7 @@ load_killed_in_block_p (const_basic_block bb, int uid_limit, const_rtx x,
 	 note_stores to examine each hunk of memory that is modified.  */
       mci.mem = x;
       mci.conflict = false;
-      note_stores (PATTERN (setter), mems_conflict_for_gcse_p, &mci);
+      note_stores (setter, mems_conflict_for_gcse_p, &mci);
       if (mci.conflict)
 	return 1;
     }
@@ -1537,7 +1537,7 @@ compute_hash_table_work (struct gcse_hash_table_d *table)
 		record_last_mem_set_info (insn);
 	    }
 
-	  note_stores (PATTERN (insn), record_last_set_info, insn);
+	  note_stores (insn, record_last_set_info, insn);
 	}
 
       /* The next pass builds the hash table.  */
@@ -2415,7 +2415,7 @@ single_set_gcse (rtx_insn *insn)
 
   s.insn = insn;
   s.nsets = 0;
-  note_stores (pattern, record_set_data, &s);
+  note_pattern_stores (pattern, record_set_data, &s);
 
   /* Considered invariant insns have exactly one set.  */
   gcc_assert (s.nsets == 1);

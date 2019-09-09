@@ -4308,7 +4308,7 @@ clobber_cond_1 (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data1)
    only those jumps which are still in flight.  */
 
 static void
-maybe_clobber_cond (rtx insn, int clock_var)
+maybe_clobber_cond (rtx_insn *insn, int clock_var)
 {
   int n, idx;
   idx = ss.jump_cycle_index;
@@ -4333,7 +4333,7 @@ maybe_clobber_cond (rtx insn, int clock_var)
 	  continue;
 	}
 
-      note_stores (PATTERN (insn), clobber_cond_1, ss.jump_cond + idx);
+      note_stores (insn, clobber_cond_1, ss.jump_cond + idx);
       for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 	if (REG_NOTE_KIND (link) == REG_INC)
 	  clobber_cond_1 (XEXP (link, 0), NULL_RTX, ss.jump_cond + idx);

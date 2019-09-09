@@ -1078,7 +1078,7 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 				      GET_MODE (XEXP (link, 0)),
 				      REGNO (XEXP (link, 0)));
 
-	      note_stores (PATTERN (real_insn), update_live_status, NULL);
+	      note_stores (real_insn, update_live_status, NULL);
 
 	      /* If any registers were unused after this insn, kill them.
 		 These notes will always be accurate.  */

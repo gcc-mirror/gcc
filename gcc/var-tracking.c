@@ -1239,7 +1239,7 @@ adjust_insn (basic_block bb, rtx_insn *insn)
   amd.stack_adjust = -VTI (bb)->out.stack_adjust;
 
   amd.store = true;
-  note_stores (PATTERN (insn), adjust_mem_stores, &amd);
+  note_stores (insn, adjust_mem_stores, &amd);
 
   amd.store = false;
   if (GET_CODE (PATTERN (insn)) == PARALLEL
@@ -6632,7 +6632,7 @@ add_with_sets (rtx_insn *insn, struct cselib_set *sets, int n_sets)
      insert notes before it without worrying about any
      notes that MO_USEs might emit after the insn.  */
   cui.store_p = true;
-  note_stores (PATTERN (insn), add_stores, &cui);
+  note_stores (insn, add_stores, &cui);
   n2 = VTI (bb)->mos.length () - 1;
   mos = VTI (bb)->mos.address ();
 

@@ -1440,7 +1440,7 @@ set_of (const_rtx pat, const_rtx insn)
   struct set_of_data data;
   data.found = NULL_RTX;
   data.pat = pat;
-  note_stores (INSN_P (insn) ? PATTERN (insn) : insn, set_of_1, &data);
+  note_pattern_stores (INSN_P (insn) ? PATTERN (insn) : insn, set_of_1, &data);
   return data.found;
 }
 
@@ -1476,15 +1476,9 @@ find_all_hard_reg_sets (const rtx_insn *insn, HARD_REG_SET *pset, bool implicit)
   rtx link;
 
   CLEAR_HARD_REG_SET (*pset);
-  note_stores (PATTERN (insn), record_hard_reg_sets, pset);
-  if (CALL_P (insn))
-    {
-      if (implicit)
-	IOR_HARD_REG_SET (*pset, call_used_reg_set);
-
-      for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
-	record_hard_reg_sets (XEXP (link, 0), NULL, pset);
-    }
+  note_stores (insn, record_hard_reg_sets, pset);
+  if (CALL_P (insn) && implicit)
+    IOR_HARD_REG_SET (*pset, call_used_reg_set);
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) == REG_INC)
       record_hard_reg_sets (XEXP (link, 0), NULL, pset);
@@ -1899,7 +1893,8 @@ reg_overlap_mentioned_p (const_rtx x, const_rtx in)
   the SUBREG will be passed.  */
 
 void
-note_stores (const_rtx x, void (*fun) (rtx, const_rtx, void *), void *data)
+note_pattern_stores (const_rtx x,
+		     void (*fun) (rtx, const_rtx, void *), void *data)
 {
   int i;
 
@@ -1933,7 +1928,22 @@ note_stores (const_rtx x, void (*fun) (rtx, const_rtx, void *), void *data)
 
   else if (GET_CODE (x) == PARALLEL)
     for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
-      note_stores (XVECEXP (x, 0, i), fun, data);
+      note_pattern_stores (XVECEXP (x, 0, i), fun, data);
+}
+
+/* Same, but for an instruction.  If the instruction is a call, include
+   any CLOBBERs in its CALL_INSN_FUNCTION_USAGE.  */
+
+void
+note_stores (const rtx_insn *insn,
+	     void (*fun) (rtx, const_rtx, void *), void *data)
+{
+  if (CALL_P (insn))
+    for (rtx link = CALL_INSN_FUNCTION_USAGE (insn);
+	 link; link = XEXP (link, 1))
+      if (GET_CODE (XEXP (link, 0)) == CLOBBER)
+	note_pattern_stores (XEXP (link, 0), fun, data);
+  note_pattern_stores (PATTERN (insn), fun, data);
 }
 
 /* Like notes_stores, but call FUN for each expression that is being
@@ -4140,7 +4150,7 @@ find_first_parameter_load (rtx_insn *call_insn, rtx_insn *boundary)
       if (INSN_P (before))
 	{
 	  int nregs_old = parm.nregs;
-	  note_stores (PATTERN (before), parms_set, &parm);
+	  note_stores (before, parms_set, &parm);
 	  /* If we found something that did not set a parameter reg,
 	     we're done.  Do not keep going, as that might result
 	     in hoisting an insn before the setting of a pseudo

@@ -4419,7 +4419,7 @@ workaround_speculation (void)
 	     we found earlier.  */
 	  if (recog_memoized (insn) != CODE_FOR_compare_eq)
 	    {
-	      note_stores (PATTERN (insn), note_np_check_stores, NULL);
+	      note_stores (insn, note_np_check_stores, NULL);
 	      if (np_check_regno != -1)
 		{
 		  if (find_regno_note (insn, REG_INC, np_check_regno))

@@ -1224,8 +1224,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
             subst_low_luid = DF_INSN_LUID (insn);
             subst_insn = insn;
 
-	    note_stores (PATTERN (insn), set_nonzero_bits_and_sign_copies,
-		         insn);
+	    note_stores (insn, set_nonzero_bits_and_sign_copies, insn);
 	    record_dead_and_set_regs (insn);
 
 	    if (AUTO_INC_DEC)
@@ -2439,7 +2438,7 @@ likely_spilled_retval_p (rtx_insn *insn)
   info.mask = mask;
   for (p = PREV_INSN (use); info.mask && p != insn; p = PREV_INSN (p))
     if (INSN_P (p))
-      note_stores (PATTERN (p), likely_spilled_retval_1, &info);
+      note_stores (p, likely_spilled_retval_1, &info);
   mask = info.mask;
 
   /* Check if any of the (probably) live return value registers is
@@ -4741,8 +4740,8 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
        been made to this insn.  The order is important, because newi2pat
        can affect nonzero_bits of newpat.  */
     if (newi2pat)
-      note_stores (newi2pat, set_nonzero_bits_and_sign_copies, NULL);
-    note_stores (newpat, set_nonzero_bits_and_sign_copies, NULL);
+      note_pattern_stores (newi2pat, set_nonzero_bits_and_sign_copies, NULL);
+    note_pattern_stores (newpat, set_nonzero_bits_and_sign_copies, NULL);
   }
 
   if (undobuf.other_insn != NULL_RTX)
@@ -13487,10 +13486,10 @@ record_dead_and_set_regs (rtx_insn *insn)
 	 the return value register is set at this LUID.  We could
 	 still replace a register with the return value from the
 	 wrong subroutine call!  */
-      note_stores (PATTERN (insn), record_dead_and_set_regs_1, NULL_RTX);
+      note_stores (insn, record_dead_and_set_regs_1, NULL_RTX);
     }
   else
-    note_stores (PATTERN (insn), record_dead_and_set_regs_1, insn);
+    note_stores (insn, record_dead_and_set_regs_1, insn);
 }
 
 /* If a SUBREG has the promoted bit set, it is in fact a property of the
@@ -13904,7 +13903,7 @@ reg_dead_at_p (rtx reg, rtx_insn *insn)
 	  if (find_regno_note (insn, REG_UNUSED, reg_dead_regno))
 	    return 1;
 
-	  note_stores (PATTERN (insn), reg_dead_at_p_1, NULL);
+	  note_stores (insn, reg_dead_at_p_1, NULL);
 	  if (reg_dead_flag)
 	    return reg_dead_flag == 1 ? 1 : 0;
 

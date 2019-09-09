@@ -4094,8 +4094,7 @@ can_move_insns_across (rtx_insn *from, rtx_insn *to,
 	  if (volatile_insn_p (PATTERN (insn)))
 	    return false;
 	  memrefs_in_across |= find_memory (insn);
-	  note_stores (PATTERN (insn), find_memory_stores,
-		       &mem_sets_in_across);
+	  note_stores (insn, find_memory_stores, &mem_sets_in_across);
 	  /* This is used just to find sets of the stack pointer.  */
 	  memrefs_in_across |= mem_sets_in_across;
 	  trapping_insns_in_across |= may_trap_p (PATTERN (insn));
@@ -4174,7 +4173,7 @@ can_move_insns_across (rtx_insn *from, rtx_insn *to,
 	    {
 	      int mem_ref_flags = 0;
 	      int mem_set_flags = 0;
-	      note_stores (PATTERN (insn), find_memory_stores, &mem_set_flags);
+	      note_stores (insn, find_memory_stores, &mem_set_flags);
 	      mem_ref_flags = find_memory (insn);
 	      /* Catch sets of the stack pointer.  */
 	      mem_ref_flags |= mem_set_flags;
