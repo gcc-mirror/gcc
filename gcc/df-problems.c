@@ -389,7 +389,6 @@ df_rd_local_compute (bitmap all_blocks)
 {
   unsigned int bb_index;
   bitmap_iterator bi;
-  unsigned int regno;
   class df_rd_problem_data *problem_data
     = (class df_rd_problem_data *) df_rd->problem_data;
   bitmap sparse_invalidated = &problem_data->sparse_invalidated_by_call;
@@ -406,10 +405,9 @@ df_rd_local_compute (bitmap all_blocks)
     }
 
   /* Set up the knockout bit vectors to be applied across EH_EDGES.  */
-  EXECUTE_IF_SET_IN_BITMAP (regs_invalidated_by_call_regset, 0, regno, bi)
-    {
-      if (! HARD_REGISTER_NUM_P (regno)
-	  || !(df->changeable_flags & DF_NO_HARD_REGS))
+  if (!(df->changeable_flags & DF_NO_HARD_REGS))
+    for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
+      if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
 	{
 	  if (DF_DEFS_COUNT (regno) > DF_SPARSE_THRESHOLD)
 	    bitmap_set_bit (sparse_invalidated, regno);
@@ -418,7 +416,6 @@ df_rd_local_compute (bitmap all_blocks)
 			      DF_DEFS_BEGIN (regno),
 			      DF_DEFS_COUNT (regno));
 	}
-    }
 
   bitmap_release (&seen_in_block);
   bitmap_release (&seen_in_insn);
@@ -983,7 +980,10 @@ df_lr_confluence_n (edge e)
   /* ??? Abnormal call edges ignored for the moment, as this gets
      confused by sibling call edges, which crashes reg-stack.  */
   if (e->flags & EDGE_EH)
-    changed = bitmap_ior_and_compl_into (op1, op2, regs_invalidated_by_call_regset);
+    {
+      bitmap_view<HARD_REG_SET> eh_kills (regs_invalidated_by_call);
+      changed = bitmap_ior_and_compl_into (op1, op2, eh_kills);
+    }
   else
     changed = bitmap_ior_into (op1, op2);
 
@@ -4635,8 +4635,10 @@ df_md_confluence_n (edge e)
     return false;
 
   if (e->flags & EDGE_EH)
-    return bitmap_ior_and_compl_into (op1, op2,
-				      regs_invalidated_by_call_regset);
+    {
+      bitmap_view<HARD_REG_SET> eh_kills (regs_invalidated_by_call);
+      return bitmap_ior_and_compl_into (op1, op2, eh_kills);
+    }
   else
     return bitmap_ior_into (op1, op2);
 }

@@ -2392,7 +2392,7 @@ copy_fixed_regs (const_bitmap in)
   bitmap ret;
 
   ret = ALLOC_REG_SET (NULL);
-  bitmap_and (ret, in, fixed_reg_set_regset);
+  bitmap_and (ret, in, bitmap_view<HARD_REG_SET> (fixed_reg_set));
   return ret;
 }
 

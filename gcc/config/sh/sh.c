@@ -11695,7 +11695,7 @@ sh_find_equiv_gbr_addr (rtx_insn* insn, rtx mem)
 	{
 	  if (CALL_P (DF_REF_INSN (d)))
 	    {
-	      if (REGNO_REG_SET_P (regs_invalidated_by_call_regset, GBR_REG))
+	      if (TEST_HARD_REG_BIT (regs_invalidated_by_call, GBR_REG))
 		return NULL_RTX;
 	      else
 		continue;
