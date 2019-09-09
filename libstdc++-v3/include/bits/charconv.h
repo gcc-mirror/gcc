@@ -92,11 +92,11 @@ namespace __detail
       if (__val >= 10)
 	{
 	  auto const __num = __val * 2;
-	  __first[__pos] = __digits[__num + 1];
-	  __first[__pos - 1] = __digits[__num];
+	  __first[1] = __digits[__num + 1];
+	  __first[0] = __digits[__num];
 	}
       else
-	__first[__pos] = '0' + __val;
+	__first[0] = '0' + __val;
     }
 
 } // namespace __detail
