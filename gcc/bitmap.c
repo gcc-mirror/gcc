@@ -979,17 +979,17 @@ bitmap_set_bit (bitmap head, int bit)
 /* Return whether a bit is set within a bitmap.  */
 
 int
-bitmap_bit_p (bitmap head, int bit)
+bitmap_bit_p (const_bitmap head, int bit)
 {
   unsigned int indx = bit / BITMAP_ELEMENT_ALL_BITS;
-  bitmap_element *ptr;
+  const bitmap_element *ptr;
   unsigned bit_num;
   unsigned word_num;
 
   if (!head->tree_form)
-    ptr = bitmap_list_find_element (head, indx);
+    ptr = bitmap_list_find_element (const_cast<bitmap> (head), indx);
   else
-    ptr = bitmap_tree_find_element (head, indx);
+    ptr = bitmap_tree_find_element (const_cast<bitmap> (head), indx);
   if (ptr == 0)
     return 0;
 

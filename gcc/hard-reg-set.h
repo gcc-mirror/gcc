@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_HARD_REG_SET_H
 #define GCC_HARD_REG_SET_H
 
+#include "array-traits.h"
+
 /* Define the type of a set of hard registers.  */
 
 /* HARD_REG_ELT_TYPE is a typedef of the unsigned integral type which
@@ -114,6 +116,16 @@ struct HARD_REG_SET
   HARD_REG_ELT_TYPE elts[HARD_REG_SET_LONGS];
 };
 typedef const HARD_REG_SET &const_hard_reg_set;
+
+template<>
+struct array_traits<HARD_REG_SET>
+{
+  typedef HARD_REG_ELT_TYPE element_type;
+  static const bool has_constant_size = true;
+  static const size_t constant_size = HARD_REG_SET_LONGS;
+  static const element_type *base (const HARD_REG_SET &x) { return x.elts; }
+  static size_t size (const HARD_REG_SET &) { return HARD_REG_SET_LONGS; }
+};
 
 #endif
 

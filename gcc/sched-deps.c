@@ -3332,10 +3332,9 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
       IOR_REG_SET (&deps->reg_last_in_use, reg_pending_uses);
       IOR_REG_SET (&deps->reg_last_in_use, reg_pending_clobbers);
       IOR_REG_SET (&deps->reg_last_in_use, reg_pending_sets);
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (TEST_HARD_REG_BIT (implicit_reg_pending_uses, i)
-	    || TEST_HARD_REG_BIT (implicit_reg_pending_clobbers, i))
-	  SET_REGNO_REG_SET (&deps->reg_last_in_use, i);
+      IOR_REG_SET_HRS (&deps->reg_last_in_use,
+		       implicit_reg_pending_uses
+		       | implicit_reg_pending_clobbers);
 
       /* Set up the pending barrier found.  */
       deps->last_reg_pending_barrier = reg_pending_barrier;

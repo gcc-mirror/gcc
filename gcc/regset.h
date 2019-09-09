@@ -64,6 +64,10 @@ typedef bitmap regset;
 /* Inclusive or a register set with a second register set.  */
 #define IOR_REG_SET(TO, FROM) bitmap_ior_into (TO, FROM)
 
+/* Same, but with FROM being a HARD_REG_SET.  */
+#define IOR_REG_SET_HRS(TO, FROM) \
+  bitmap_ior_into (TO, bitmap_view<HARD_REG_SET> (FROM))
+
 /* Exclusive or a register set with a second register set.  */
 #define XOR_REG_SET(TO, FROM) bitmap_xor_into (TO, FROM)
 
