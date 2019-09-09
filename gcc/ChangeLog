@@ -1,3 +1,26 @@
+2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* Makefile.in (OBJS): Remove bt-load.o.
+	* doc/invoke.texi (fbranch-target-load-optimize): Delete.
+	(fbranch-target-load-optimize2, fbtr-bb-exclusive): Likewise.
+	* common.opt (fbranch-target-load-optimize): Mark as Ignore and
+	document that the option no longer does anything.
+	(fbranch-target-load-optimize2, fbtr-bb-exclusive): Likewise.
+	* target.def (branch_target_register_class): Delete.
+	(branch_target_register_callee_saved): Likewise.
+	* doc/tm.texi.in (TARGET_BRANCH_TARGET_REGISTER_CLASS): Likewise.
+	(TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED): Likewise.
+	* doc/tm.texi: Regenerate.
+	* tree-pass.h (make_pass_branch_target_load_optimize1): Delete.
+	(make_pass_branch_target_load_optimize2): Likewise.
+	* passes.def (pass_branch_target_load_optimize1): Likewise.
+	(pass_branch_target_load_optimize2): Likewise.
+	* targhooks.h (default_branch_target_register_class): Likewise.
+	* targhooks.c (default_branch_target_register_class): Likewise.
+	* opt-suggestions.c (test_completion_valid_options): Remove
+	-fbtr-bb-exclusive from the list of test options.
+	* bt-load.c: Remove.
+
 2019-09-09  Barnaby Wilks  <barnaby.wilks@arm.com>
 
 	* match.pd: Add flag_unsafe_math_optimizations check
