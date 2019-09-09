@@ -1221,15 +1221,13 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
      The HARD_REGNO_RENAME_OK covers other cases in condition below.  */
   if (IN_RANGE (REGNO (orig_dest), FIRST_STACK_REG, LAST_STACK_REG)
       && REGNO_REG_SET_P (used_regs, FIRST_STACK_REG))
-    IOR_HARD_REG_SET (reg_rename_p->unavailable_hard_regs,
-                      sel_hrd.stack_regs);
+    reg_rename_p->unavailable_hard_regs |= sel_hrd.stack_regs;
 #endif
 
   /* If there's a call on this path, make regs from call_used_reg_set
      unavailable.  */
   if (def->crosses_call)
-    IOR_HARD_REG_SET (reg_rename_p->unavailable_hard_regs,
-                      call_used_reg_set);
+    reg_rename_p->unavailable_hard_regs |= call_used_reg_set;
 
   /* Stop here before reload: we need FRAME_REGS, STACK_REGS, and crosses_call,
      but not register classes.  */
@@ -1684,8 +1682,7 @@ find_best_reg_for_expr (expr_t expr, blist_t bnds, bool *is_orig_reg_p)
 
 	  /* Join hard registers unavailable due to register class
 	     restrictions and live range intersection.  */
-	  IOR_HARD_REG_SET (hard_regs_used,
-			    reg_rename_data.unavailable_hard_regs);
+	  hard_regs_used |= reg_rename_data.unavailable_hard_regs;
 
 	  best_reg = choose_best_reg (hard_regs_used, &reg_rename_data,
 				      original_insns, is_orig_reg_p);

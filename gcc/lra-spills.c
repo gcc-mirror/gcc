@@ -277,7 +277,7 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
       conflict_hard_regs = lra_reg_info[regno].conflict_hard_regs;
       for (r = lra_reg_info[regno].live_ranges; r != NULL; r = r->next)
 	for (p = r->start; p <= r->finish; p++)
-	  IOR_HARD_REG_SET (conflict_hard_regs, reserved_hard_regs[p]);
+	  conflict_hard_regs |= reserved_hard_regs[p];
       spill_class_size = ira_class_hard_regs_num[spill_class];
       mode = lra_reg_info[regno].biggest_mode;
       for (k = 0; k < spill_class_size; k++)

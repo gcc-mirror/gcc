@@ -2151,8 +2151,7 @@ m32c_register_move_cost (machine_mode mode, reg_class_t from,
   HARD_REG_SET cc;
 
 /* FIXME: pick real values, but not 2 for now.  */
-  cc = reg_class_contents[from];
-  IOR_HARD_REG_SET (cc, reg_class_contents[(int) to]);
+  cc = reg_class_contents[from] | reg_class_contents[(int) to];
 
   if (mode == QImode
       && hard_reg_set_intersect_p (cc, reg_class_contents[R23_REGS]))

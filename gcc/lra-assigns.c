@@ -495,16 +495,13 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
   if (hard_reg_set_empty_p (regno_set))
     conflict_set = lra_no_alloc_regs;
   else
-    {
-      conflict_set = ~regno_set;
-      IOR_HARD_REG_SET (conflict_set, lra_no_alloc_regs);
-    }
+    conflict_set = ~regno_set | lra_no_alloc_regs;
   rclass = regno_allocno_class_array[regno];
   rclass_intersect_p = ira_reg_classes_intersect_p[rclass];
   curr_hard_regno_costs_check++;
   sparseset_clear (conflict_reload_and_inheritance_pseudos);
   sparseset_clear (live_range_hard_reg_pseudos);
-  IOR_HARD_REG_SET (conflict_set, lra_reg_info[regno].conflict_hard_regs);
+  conflict_set |= lra_reg_info[regno].conflict_hard_regs;
   biggest_mode = lra_reg_info[regno].biggest_mode;
   for (r = lra_reg_info[regno].live_ranges; r != NULL; r = r->next)
     {
@@ -1218,7 +1215,7 @@ setup_live_pseudos_and_spill_after_risky_transforms (bitmap
 	    }
 	}
       conflict_set = lra_no_alloc_regs;
-      IOR_HARD_REG_SET (conflict_set, lra_reg_info[regno].conflict_hard_regs);
+      conflict_set |= lra_reg_info[regno].conflict_hard_regs;
       val = lra_reg_info[regno].val;
       offset = lra_reg_info[regno].offset;
       EXECUTE_IF_SET_IN_SPARSESET (live_range_hard_reg_pseudos, conflict_regno)

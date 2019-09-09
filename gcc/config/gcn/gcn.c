@@ -4627,7 +4627,7 @@ gcn_md_reorg (void)
 	     not publish the cycle times for instructions.  */
 	  prev_insn->age += 1 + nops_rqd;
 
-	  IOR_HARD_REG_SET (written, iwrites);
+	  written |= iwrites;
 	  AND_COMPL_HARD_REG_SET (prev_insn->writes, written);
 	}
 

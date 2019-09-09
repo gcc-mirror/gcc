@@ -602,10 +602,10 @@ merge_hard_reg_conflicts (ira_allocno_t from, ira_allocno_t to,
       ira_object_t to_obj = ALLOCNO_OBJECT (to, i);
 
       if (!total_only)
-	IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (to_obj),
-			  OBJECT_CONFLICT_HARD_REGS (from_obj));
-      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (to_obj),
-			OBJECT_TOTAL_CONFLICT_HARD_REGS (from_obj));
+	OBJECT_CONFLICT_HARD_REGS (to_obj)
+	  |= OBJECT_CONFLICT_HARD_REGS (from_obj);
+      OBJECT_TOTAL_CONFLICT_HARD_REGS (to_obj)
+	|= OBJECT_TOTAL_CONFLICT_HARD_REGS (from_obj);
     }
 #ifdef STACK_REGS
   if (!total_only && ALLOCNO_NO_STACK_REG_P (from))
@@ -625,8 +625,8 @@ ior_hard_reg_conflicts (ira_allocno_t a, HARD_REG_SET *set)
 
   FOR_EACH_ALLOCNO_OBJECT (a, obj, i)
     {
-      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj), *set);
-      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), *set);
+      OBJECT_CONFLICT_HARD_REGS (obj) |= *set;
+      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= *set;
     }
 }
 
@@ -907,8 +907,8 @@ create_cap_allocno (ira_allocno_t a)
 
   ALLOCNO_CALLS_CROSSED_NUM (cap) = ALLOCNO_CALLS_CROSSED_NUM (a);
   ALLOCNO_CHEAP_CALLS_CROSSED_NUM (cap) = ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a);
-  IOR_HARD_REG_SET (ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (cap),
-		    ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a));
+  ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (cap)
+    |= ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a);
   if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
     {
       fprintf (ira_dump_file, "    Creating cap ");
@@ -2036,8 +2036,8 @@ propagate_allocno_info (void)
 	    += ALLOCNO_CALLS_CROSSED_NUM (a);
 	  ALLOCNO_CHEAP_CALLS_CROSSED_NUM (parent_a)
 	    += ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a);
- 	  IOR_HARD_REG_SET (ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (parent_a),
- 			    ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a));
+	  ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (parent_a)
+	    |= ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a);
 	  ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (parent_a)
 	    += ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a);
 	  aclass = ALLOCNO_CLASS (a);
@@ -2419,8 +2419,8 @@ propagate_some_info_from_allocno (ira_allocno_t a, ira_allocno_t from_a)
   ALLOCNO_CALLS_CROSSED_NUM (a) += ALLOCNO_CALLS_CROSSED_NUM (from_a);
   ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a)
     += ALLOCNO_CHEAP_CALLS_CROSSED_NUM (from_a);
-  IOR_HARD_REG_SET (ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a),
- 		    ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (from_a));
+  ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a)
+    |= ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (from_a);
 
   ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a)
     += ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (from_a);
@@ -3060,8 +3060,8 @@ copy_info_to_removed_store_destinations (int regno)
 	+= ALLOCNO_CALLS_CROSSED_NUM (a);
       ALLOCNO_CHEAP_CALLS_CROSSED_NUM (parent_a)
 	+= ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a);
-      IOR_HARD_REG_SET (ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (parent_a),
- 			ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a));
+      ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (parent_a)
+	|= ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a);
       ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (parent_a)
 	+= ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a);
       merged_p = true;

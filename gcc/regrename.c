@@ -292,7 +292,7 @@ merge_overlapping_regs (HARD_REG_SET *pset, class du_head *head)
 {
   bitmap_iterator bi;
   unsigned i;
-  IOR_HARD_REG_SET (*pset, head->hard_conflicts);
+  *pset |= head->hard_conflicts;
   EXECUTE_IF_SET_IN_BITMAP (&head->conflicts, 0, i, bi)
     {
       du_head_p other = regrename_chain_from_id (i);
@@ -367,7 +367,7 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
      If the chain needs a call-saved register, mark the call-used
      registers as unavailable.  */
   if (this_head->need_caller_save_reg)
-    IOR_HARD_REG_SET (*unavailable, call_used_reg_set);
+    *unavailable |= call_used_reg_set;
 
   /* Mark registers that overlap this chain's lifetime as unavailable.  */
   merge_overlapping_regs (unavailable, this_head);
@@ -678,7 +678,7 @@ merge_chains (du_head_p c1, du_head_p c2)
   c2->first = c2->last = NULL;
   c2->id = c1->id;
 
-  IOR_HARD_REG_SET (c1->hard_conflicts, c2->hard_conflicts);
+  c1->hard_conflicts |= c2->hard_conflicts;
   bitmap_ior_into (&c1->conflicts, &c2->conflicts);
 
   c1->need_caller_save_reg |= c2->need_caller_save_reg;

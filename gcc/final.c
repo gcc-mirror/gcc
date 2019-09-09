@@ -5010,15 +5010,15 @@ collect_fn_hard_reg_usage (void)
 				       call_used_reg_set))
 	    return;
 
-	  IOR_HARD_REG_SET (function_used_regs, insn_used_regs);
+	  function_used_regs |= insn_used_regs;
 	}
 
       find_all_hard_reg_sets (insn, &insn_used_regs, false);
-      IOR_HARD_REG_SET (function_used_regs, insn_used_regs);
+      function_used_regs |= insn_used_regs;
     }
 
   /* Be conservative - mark fixed and global registers as used.  */
-  IOR_HARD_REG_SET (function_used_regs, fixed_reg_set);
+  function_used_regs |= fixed_reg_set;
 
 #ifdef STACK_REGS
   /* Handle STACK_REGS conservatively, since the df-framework does not
