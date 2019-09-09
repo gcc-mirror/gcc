@@ -406,8 +406,7 @@ Objective-C and Objective-C++ Dialects}.
 -falign-loops[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
 -fassociative-math  -fauto-profile  -fauto-profile[=@var{path}] @gol
 -fauto-inc-dec  -fbranch-probabilities @gol
--fbranch-target-load-optimize  -fbranch-target-load-optimize2 @gol
--fbtr-bb-exclusive  -fcaller-saves @gol
+-fcaller-saves @gol
 -fcombine-stack-adjustments  -fconserve-stack @gol
 -fcompare-elim  -fcprop-registers  -fcrossjumping @gol
 -fcse-follow-jumps  -fcse-skip-blocks  -fcx-fortran-rules @gol
@@ -11024,24 +11023,6 @@ They prevent optimizations by the compiler and assembler using relative
 locations inside a translation unit since the locations are unknown until
 link time.  An example of such an optimization is relaxing calls to short call
 instructions.
-
-@item -fbranch-target-load-optimize
-@opindex fbranch-target-load-optimize
-Perform branch target register load optimization before prologue / epilogue
-threading.
-The use of target registers can typically be exposed only during reload,
-thus hoisting loads out of loops and doing inter-block scheduling needs
-a separate optimization pass.
-
-@item -fbranch-target-load-optimize2
-@opindex fbranch-target-load-optimize2
-Perform branch target register load optimization after prologue / epilogue
-threading.
-
-@item -fbtr-bb-exclusive
-@opindex fbtr-bb-exclusive
-When performing branch target register load optimization, don't reuse
-branch target registers within any basic block.
 
 @item -fstdarg-opt
 @opindex fstdarg-opt

@@ -1076,16 +1076,16 @@ Common Report Var(flag_branch_probabilities) Optimization
 Use profiling information for branch probabilities.
 
 fbranch-target-load-optimize
-Common Report Var(flag_branch_target_load_optimize) Optimization
-Perform branch target load optimization before prologue / epilogue threading.
+Common Ignore
+Does nothing.  Preserved for backward compatibility.
 
 fbranch-target-load-optimize2
-Common Report Var(flag_branch_target_load_optimize2) Optimization
-Perform branch target load optimization after prologue / epilogue threading.
+Common Ignore
+Does nothing.  Preserved for backward compatibility.
 
 fbtr-bb-exclusive
-Common Report Var(flag_btr_bb_exclusive) Optimization
-Restrict target load migration not to re-use registers in any basic block.
+Common Ignore
+Does nothing.  Preserved for backward compatibility.
 
 fcall-saved-
 Common Joined RejectNegative Var(common_deferred_options) Defer
