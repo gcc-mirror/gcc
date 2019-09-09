@@ -127,8 +127,8 @@ struct hard_reg_set_container
    These take just one argument.
 
    Also define:
-   IOR_COMPL_HARD_REG_SET and AND_COMPL_HARD_REG_SET
-   These take two arguments TO and FROM; they read from FROM
+   IOR_COMPL_HARD_REG_SET
+   This takes two arguments TO and FROM; it reads from FROM
    and combines its complement bitwise into TO.
 
    Also define:
@@ -153,7 +153,6 @@ struct hard_reg_set_container
 #define SET_HARD_REG_SET(TO) ((TO) = ~ HARD_CONST (0))
 
 #define IOR_COMPL_HARD_REG_SET(TO, FROM) ((TO) |= ~ (FROM))
-#define AND_COMPL_HARD_REG_SET(TO, FROM) ((TO) &= ~ (FROM))
 
 static inline bool
 hard_reg_set_subset_p (const_hard_reg_set x, const_hard_reg_set y)
@@ -214,13 +213,6 @@ SET_HARD_REG_SET (HARD_REG_SET &set)
 {
   for (unsigned int i = 0; i < ARRAY_SIZE (set.elts); ++i)
     set.elts[i] = -1;
-}
-
-inline void
-AND_COMPL_HARD_REG_SET (HARD_REG_SET &to, const_hard_reg_set from)
-{
-  for (unsigned int i = 0; i < ARRAY_SIZE (to.elts); ++i)
-    to.elts[i] &= ~from.elts[i];
 }
 
 inline void

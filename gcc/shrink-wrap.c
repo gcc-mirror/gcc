@@ -76,7 +76,7 @@ requires_stack_frame_p (rtx_insn *insn, HARD_REG_SET prologue_used,
     }
   if (hard_reg_set_intersect_p (hardregs, prologue_used))
     return true;
-  AND_COMPL_HARD_REG_SET (hardregs, call_used_reg_set);
+  hardregs &= ~call_used_reg_set;
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (TEST_HARD_REG_BIT (hardregs, regno)
 	&& df_regs_ever_live_p (regno))
@@ -687,7 +687,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 	HARD_REG_SET this_used;
 	CLEAR_HARD_REG_SET (this_used);
 	note_uses (&PATTERN (insn), record_hard_reg_uses, &this_used);
-	AND_COMPL_HARD_REG_SET (this_used, prologue_clobbered);
+	this_used &= ~prologue_clobbered;
 	prologue_used |= this_used;
 	note_stores (insn, record_hard_reg_sets, &prologue_clobbered);
       }

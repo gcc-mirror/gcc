@@ -4628,7 +4628,7 @@ gcn_md_reorg (void)
 	  prev_insn->age += 1 + nops_rqd;
 
 	  written |= iwrites;
-	  AND_COMPL_HARD_REG_SET (prev_insn->writes, written);
+	  prev_insn->writes &= ~written;
 	}
 
       /* Track the current instruction as a previous instruction.  */

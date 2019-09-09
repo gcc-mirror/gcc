@@ -619,8 +619,7 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
   biggest_nregs = hard_regno_nregs (hard_regno, biggest_mode);
   nregs_diff = (biggest_nregs
 		- hard_regno_nregs (hard_regno, PSEUDO_REGNO_MODE (regno)));
-  available_regs = reg_class_contents[rclass];
-  AND_COMPL_HARD_REG_SET (available_regs, lra_no_alloc_regs);
+  available_regs = reg_class_contents[rclass] & ~lra_no_alloc_regs;
   for (i = 0; i < rclass_size; i++)
     {
       if (try_only_hard_regno >= 0)

@@ -1854,8 +1854,7 @@ prohibited_class_reg_set_mode_p (enum reg_class rclass,
   HARD_REG_SET temp;
   
   lra_assert (hard_reg_set_subset_p (reg_class_contents[rclass], set));
-  temp = set;
-  AND_COMPL_HARD_REG_SET (temp, lra_no_alloc_regs);
+  temp = set & ~lra_no_alloc_regs;
   return (hard_reg_set_subset_p
 	  (temp, ira_prohibited_class_mode_regs[rclass][mode]));
 }
@@ -2513,13 +2512,11 @@ process_alt_operands (int only_alternative)
 
 	      if (this_alternative != NO_REGS)
 		{
-		  HARD_REG_SET available_regs;
-		  
-		  available_regs = reg_class_contents[this_alternative];
-		  AND_COMPL_HARD_REG_SET
-		    (available_regs,
-		     ira_prohibited_class_mode_regs[this_alternative][mode]);
-		  AND_COMPL_HARD_REG_SET (available_regs, lra_no_alloc_regs);
+		  HARD_REG_SET available_regs
+		    = (reg_class_contents[this_alternative]
+		       & ~((ira_prohibited_class_mode_regs
+			    [this_alternative][mode])
+			   | lra_no_alloc_regs));
 		  if (hard_reg_set_empty_p (available_regs))
 		    {
 		      /* There are no hard regs holding a value of given
@@ -6407,8 +6404,8 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 		      else
 			add_to_hard_reg_set (&s, PSEUDO_REGNO_MODE (dst_regno),
 					     reg_renumber[dst_regno]);
-		      AND_COMPL_HARD_REG_SET (live_hard_regs, s);
-		      AND_COMPL_HARD_REG_SET (potential_reload_hard_regs, s);
+		      live_hard_regs &= ~s;
+		      potential_reload_hard_regs &= ~s;
 		    }
 		  /* We should invalidate potential inheritance or
 		     splitting for the current insn usages to the next

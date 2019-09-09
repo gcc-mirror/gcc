@@ -716,8 +716,7 @@ form_allocno_hard_regs_nodes_forest (void)
 	    (allocno_data->profitable_hard_regs,
 	     ALLOCNO_MEMORY_COST (a) - ALLOCNO_CLASS_COST (a)));
     }
-  SET_HARD_REG_SET (temp);
-  AND_COMPL_HARD_REG_SET (temp, ira_no_alloc_regs);
+  temp = ~ira_no_alloc_regs;
   add_allocno_hard_regs (temp, 0);
   qsort (allocno_hard_regs_vec.address () + start,
 	 allocno_hard_regs_vec.length () - start,
@@ -1047,8 +1046,8 @@ setup_profitable_hard_regs (void)
 	    {
 	      ira_object_t obj = ALLOCNO_OBJECT (a, k);
 	      
-	      AND_COMPL_HARD_REG_SET (data->profitable_hard_regs,
-				      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj));
+	      data->profitable_hard_regs
+		&= ~OBJECT_TOTAL_CONFLICT_HARD_REGS (obj);
 	    }
 	}
     }
@@ -1089,9 +1088,8 @@ setup_profitable_hard_regs (void)
 		       hard_regno + num);
 		}
 	      else
-		AND_COMPL_HARD_REG_SET
-		  (ALLOCNO_COLOR_DATA (conflict_a)->profitable_hard_regs,
-		   ira_reg_mode_hard_regset[hard_regno][mode]);
+		ALLOCNO_COLOR_DATA (conflict_a)->profitable_hard_regs
+		  &= ~ira_reg_mode_hard_regset[hard_regno][mode];
 	    }
 	}
     }
@@ -1590,12 +1588,10 @@ get_conflict_and_start_profitable_regs (ira_allocno_t a, bool retry_p,
       conflict_regs[i] = OBJECT_TOTAL_CONFLICT_HARD_REGS (obj);
     }
   if (retry_p)
-    {
-      *start_profitable_regs = reg_class_contents[ALLOCNO_CLASS (a)];
-      AND_COMPL_HARD_REG_SET (*start_profitable_regs,
-			      ira_prohibited_class_mode_regs
-			      [ALLOCNO_CLASS (a)][ALLOCNO_MODE (a)]);
-    }
+    *start_profitable_regs
+      = (reg_class_contents[ALLOCNO_CLASS (a)]
+	 &~ (ira_prohibited_class_mode_regs
+	     [ALLOCNO_CLASS (a)][ALLOCNO_MODE (a)]));
   else
     *start_profitable_regs = ALLOCNO_COLOR_DATA (a)->profitable_hard_regs;
 }

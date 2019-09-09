@@ -450,8 +450,8 @@ find_dead_or_set_registers (rtx_insn *target, struct resources *res,
 	case CODE_LABEL:
 	  /* After a label, any pending dead registers that weren't yet
 	     used can be made dead.  */
-	  AND_COMPL_HARD_REG_SET (pending_dead_regs, needed.regs);
-	  AND_COMPL_HARD_REG_SET (res->regs, pending_dead_regs);
+	  pending_dead_regs &= ~needed.regs;
+	  res->regs &= ~pending_dead_regs;
 	  CLEAR_HARD_REG_SET (pending_dead_regs);
 
 	  continue;
@@ -565,14 +565,12 @@ find_dead_or_set_registers (rtx_insn *target, struct resources *res,
 		    }
 
 		  target_res = *res;
-		  scratch = target_set.regs;
-		  AND_COMPL_HARD_REG_SET (scratch, needed.regs);
-		  AND_COMPL_HARD_REG_SET (target_res.regs, scratch);
+		  scratch = target_set.regs & ~needed.regs;
+		  target_res.regs &= ~scratch;
 
 		  fallthrough_res = *res;
-		  scratch = set.regs;
-		  AND_COMPL_HARD_REG_SET (scratch, needed.regs);
-		  AND_COMPL_HARD_REG_SET (fallthrough_res.regs, scratch);
+		  scratch = set.regs & ~needed.regs;
+		  fallthrough_res.regs &= ~scratch;
 
 		  if (!ANY_RETURN_P (this_jump_insn->jump_label ()))
 		    find_dead_or_set_registers
@@ -601,9 +599,8 @@ find_dead_or_set_registers (rtx_insn *target, struct resources *res,
       mark_referenced_resources (insn, &needed, true);
       mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
 
-      scratch = set.regs;
-      AND_COMPL_HARD_REG_SET (scratch, needed.regs);
-      AND_COMPL_HARD_REG_SET (res->regs, scratch);
+      scratch = set.regs & ~needed.regs;
+      res->regs &= ~scratch;
     }
 
   return jump_insn;
@@ -1048,8 +1045,7 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 		  /* CALL clobbers all call-used regs that aren't fixed except
 		     sp, ap, and fp.  Do this before setting the result of the
 		     call live.  */
-		  AND_COMPL_HARD_REG_SET (current_live_regs,
-					  regs_invalidated_by_this_call);
+		  current_live_regs &= ~regs_invalidated_by_this_call;
 		}
 
 	      /* A CALL_INSN sets any global register live, since it may
@@ -1097,7 +1093,7 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 
 	      /* A label clobbers the pending dead registers since neither
 		 reload nor jump will propagate a value across a label.  */
-	      AND_COMPL_HARD_REG_SET (current_live_regs, pending_dead_regs);
+	      current_live_regs &= ~pending_dead_regs;
 	      CLEAR_HARD_REG_SET (pending_dead_regs);
 
 	      /* We must conservatively assume that all registers that used
@@ -1160,8 +1156,7 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 	{
 	  mark_referenced_resources (insn, &needed, true);
 
-	  scratch = needed.regs;
-	  AND_COMPL_HARD_REG_SET (scratch, set.regs);
+	  scratch = needed.regs & ~set.regs;
 	  new_resources.regs |= scratch;
 
 	  mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);

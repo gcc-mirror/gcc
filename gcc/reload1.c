@@ -3929,7 +3929,7 @@ update_eliminables_and_spill (void)
   HARD_REG_SET to_spill;
   CLEAR_HARD_REG_SET (to_spill);
   update_eliminables (&to_spill);
-  AND_COMPL_HARD_REG_SET (used_spill_regs, to_spill);
+  used_spill_regs &= ~to_spill;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (TEST_HARD_REG_BIT (to_spill, i))
@@ -4783,8 +4783,8 @@ reload_as_needed (int live_known)
          be partially clobbered by the call.  */
       else if (CALL_P (insn))
 	{
-	  AND_COMPL_HARD_REG_SET (reg_reloaded_valid, call_used_reg_set);
-	  AND_COMPL_HARD_REG_SET (reg_reloaded_valid, reg_reloaded_call_part_clobbered);
+	  reg_reloaded_valid &= ~(call_used_reg_set
+				  | reg_reloaded_call_part_clobbered);
 
 	  /* If this is a call to a setjmp-type function, we must not
 	     reuse any reload reg contents across the call; that will

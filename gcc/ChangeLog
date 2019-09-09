@@ -1,5 +1,46 @@
 2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hard-reg-set.h (AND_COMPL_HARD_REG_SET): Delete.
+	* caller-save.c (setup_save_areas): Use "&~" instead of
+	AND_COMPL_HARD_REG_SET.
+	(save_call_clobbered_regs): Likewise.
+	* config/epiphany/epiphany.c (epiphany_conditional_register_usage):
+	Likewise.
+	* config/frv/frv.c (frv_ifcvt_modify_tests): Likewise.
+	* config/gcn/gcn.c (gcn_md_reorg): Likewise.
+	* config/i386/i386.c (ix86_conditional_register_usage): Likewise.
+	* config/mips/mips.c (mips_class_max_nregs): Likewise.
+	(mips_conditional_register_usage): Likewise.
+	* config/sh/sh.c (output_stack_adjust): Likewise.
+	* ira-color.c (form_allocno_hard_regs_nodes_forest): Likewise.
+	(setup_profitable_hard_regs): Likewise.
+	(get_conflict_and_start_profitable_regs): Likewise.
+	* ira-conflicts.c (print_allocno_conflicts): Likewise.
+	(ira_build_conflicts): Likewise.
+	* ira-costs.c (restrict_cost_classes): Likewise.
+	(setup_regno_cost_classes_by_aclass): Likewise.
+	* ira-lives.c (process_bb_node_lives): Likewise.
+	* ira.c (setup_class_hard_regs, setup_reg_subclasses): Likewise.
+	(setup_class_subset_and_memory_move_costs, setup_pressure_classes)
+	(setup_allocno_and_important_classes, setup_class_translate_array)
+	(setup_reg_class_relations, setup_prohibited_class_mode_regs):
+	Likewise.
+	* lra-assigns.c (find_hard_regno_for_1): Likewise.
+	* lra-constraints.c (prohibited_class_reg_set_mode_p): Likewise.
+	(process_alt_operands, inherit_in_ebb): Likewise.
+	* lra-eliminations.c (update_reg_eliminate): Likewise.
+	* lra-lives.c (process_bb_lives): Likewise.
+	* reload1.c (update_eliminables_and_spill, reload_as_needed): Likewise.
+	* resource.c (find_dead_or_set_registers): Likewise.
+	(mark_target_live_regs): Likewise.
+	* sched-deps.c (get_implicit_reg_pending_clobbers): Likewise.
+	* sel-sched.c (mark_unavailable_hard_regs): Likewise.
+	(implicit_clobber_conflict_p): Likewise.
+	* shrink-wrap.c (requires_stack_frame_p): Likewise.
+	(try_shrink_wrapping): Likewise.
+
+2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hard-reg-set.h (HARD_REG_SET::operator|): New function.
 	(HARD_REG_SET::operator|=): Likewise.
 	(IOR_HARD_REG_SET): Delete.
