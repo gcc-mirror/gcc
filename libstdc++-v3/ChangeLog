@@ -1,3 +1,8 @@
+2019-09-09  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Update docs for p858 - Constexpr iterator changes available since 9.1.
+	* doc/xml/manual/status_cxx2020.xml: Update p0858r0 status.
+
 2019-09-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/abi.xml: Document 9.x library versions.
