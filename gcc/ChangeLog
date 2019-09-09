@@ -1,5 +1,22 @@
 2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* regset.h (regs_invalidated_by_call_regset): Delete.
+	(fixed_reg_set_regset): Likewise.
+	* reginfo.c (regs_invalidated_by_call_regset): Likewise.
+	(fixed_reg_set_regset, persistent_obstack): Likewise.
+	(init_reg_sets_1, globalize_reg): Update accordingly.
+	* df.h (df_print_regset, df_print_word_regset): Take a const_bitmap
+	instead of a bitmap.
+	* df-core.c (df_print_regset, df_print_word_regset): Likewise.
+	* df-problems.c (df_rd_local_compute): Use regs_invalidated_by_call
+	instead of regs_invalidated_by_call_regset.
+	(df_lr_confluence_n, df_md_confluence_n): Likewise.
+	* df-scan.c (df_scan_start_dump): Likewise.
+	* dse.c (copy_fixed_regs): Likewise.
+	* config/sh/sh.c (sh_find_equiv_gbr_addr): Likewise.
+
+2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* array-traits.h: New file.
 	* coretypes.h (array_traits, bitmap_view): New types.
 	* bitmap.h: Include "array-traits.h"

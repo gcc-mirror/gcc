@@ -313,7 +313,7 @@ df_scan_start_dump (FILE *file ATTRIBUTE_UNUSED)
   rtx_insn *insn;
 
   fprintf (file, ";;  invalidated by call \t");
-  df_print_regset (file, regs_invalidated_by_call_regset);
+  df_print_regset (file, bitmap_view<HARD_REG_SET> (regs_invalidated_by_call));
   fprintf (file, ";;  hardware regs used \t");
   df_print_regset (file, &df->hardware_regs_used);
   fprintf (file, ";;  regular block artificial uses \t");

@@ -111,14 +111,6 @@ typedef bitmap_iterator reg_set_iterator;
 #define EXECUTE_IF_AND_IN_REG_SET(REGSET1, REGSET2, MIN, REGNUM, RSI) \
   EXECUTE_IF_AND_IN_BITMAP (REGSET1, REGSET2, MIN, REGNUM, RSI)	\
 
-/* Same information as REGS_INVALIDATED_BY_CALL but in regset form to be used
-   in dataflow more conveniently.  */
-
-extern regset regs_invalidated_by_call_regset;
-
-/* Same information as FIXED_REG_SET but in regset form.  */
-extern regset fixed_reg_set_regset;
-
 /* An obstack for regsets.  */
 extern bitmap_obstack reg_obstack;
 
