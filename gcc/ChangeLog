@@ -1,3 +1,14 @@
+2019-09-09  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* expmed.c (extract_bit_field): Update function comment
+	regarding alt_rtl.
+	* expr.c (expand_expr_real): Update function comment
+	regarding alt_rtl.
+	(expand_misaligned_mem_ref): New helper function.
+	(expand_expr_real_2): Use expand_misaligned_mem_ref.
+	Remove duplicate assignment to "base" at case MEM_REF.
+	Remove a shadowed variable "unsignedp" at case VCE. 
+
 2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* regset.h (regs_invalidated_by_call_regset): Delete.
