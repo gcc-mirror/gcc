@@ -360,6 +360,9 @@ avr-*-*)
 bfin*-*)
 	cpu_type=bfin
 	;;
+bpf-*-*)
+	cpu_type=bpf
+	;;
 crisv32-*)
 	cpu_type=cris
 	;;
@@ -1308,6 +1311,12 @@ bfin*-*)
 	use_collect2=no
 	use_gcc_stdint=wrap
 	;;
+bpf-*-*)
+        tmake_file="${tmake_file} bpf/t-bpf"
+        use_collect2=no
+        extra_headers="bpf-helpers.h"
+        use_gcc_stdint=provide
+        ;;
 cr16-*-elf)
         tm_file="elfos.h ${tm_file} newlib-stdint.h"
         tmake_file="${tmake_file} cr16/t-cr16 "

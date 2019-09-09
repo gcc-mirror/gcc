@@ -1,3 +1,7 @@
+2019-09-09  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* config-list.mk (LIST): Disable go in bpf-*-* targets.
+
 2019-09-04  Martin Liska  <mliska@suse.cz>
 
 	* mklog: Do not print changed functions for

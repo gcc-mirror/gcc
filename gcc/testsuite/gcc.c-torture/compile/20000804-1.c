@@ -5,6 +5,7 @@
 /* { dg-skip-if "No 64-bit registers" { m32c-*-* } } */
 /* { dg-skip-if "Not enough 64-bit registers" { pdp11-*-* } { "-O0" } { "" } } */
 /* { dg-xfail-if "Inconsistent constraint on asm" { csky-*-* } { "-O0" } { "" } } */
+/* { dg-xfail-if "Inconsistent constraint on asm" { bpf-*-* } { "-O0" } { "" } } */
 /* { dg-xfail-if "" { h8300-*-* } } */
 /* { dg-require-stack-size "99*4+16" } */
 
