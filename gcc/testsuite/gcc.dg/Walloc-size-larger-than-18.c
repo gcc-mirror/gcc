@@ -4,6 +4,7 @@
    with zero or excessive size trigger either -Walloc-zero or
    -Walloc-size-larger-than warnings.
    { dg-do compile }
+   { dg-require-effective-target indirect_calls }
    { dg-options "-O2 -Wall -Walloc-zero -ftrack-macro-expansion=0" } */
 
 #define ATTR(...) __attribute__ ((__VA_ARGS__))

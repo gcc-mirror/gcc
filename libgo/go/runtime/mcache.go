@@ -76,10 +76,13 @@ func (p gclinkptr) ptr() *gclink {
 var emptymspan mspan
 
 func allocmcache() *mcache {
-	lock(&mheap_.lock)
-	c := (*mcache)(mheap_.cachealloc.alloc())
-	c.flushGen = mheap_.sweepgen
-	unlock(&mheap_.lock)
+	var c *mcache
+	systemstack(func() {
+		lock(&mheap_.lock)
+		c = (*mcache)(mheap_.cachealloc.alloc())
+		c.flushGen = mheap_.sweepgen
+		unlock(&mheap_.lock)
+	})
 	for i := range c.alloc {
 		c.alloc[i] = &emptymspan
 	}

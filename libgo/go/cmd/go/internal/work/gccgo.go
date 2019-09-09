@@ -26,7 +26,7 @@ var GccgoName, GccgoBin string
 var gccgoErr error
 
 func init() {
-	GccgoName = os.Getenv("GCCGO")
+	GccgoName = cfg.Getenv("GCCGO")
 	if GccgoName == "" {
 		GccgoName = cfg.DefaultGCCGO(cfg.Goos, cfg.Goarch)
 	}
@@ -44,7 +44,7 @@ func (gccgoToolchain) linker() string {
 }
 
 func (gccgoToolchain) ar() string {
-	ar := os.Getenv("AR")
+	ar := cfg.Getenv("AR")
 	if ar == "" {
 		ar = "ar"
 	}
@@ -96,7 +96,7 @@ func (tools gccgoToolchain) gc(b *Builder, a *Action, archive string, importcfg 
 		args = append(args, mkAbs(p.Dir, f))
 	}
 
-	output, err = b.runOut(p.Dir, nil, args)
+	output, err = b.runOut(a, p.Dir, nil, args)
 	return ofile, output, err
 }
 
@@ -209,7 +209,7 @@ func (tools gccgoToolchain) pack(b *Builder, a *Action, afile string, ofiles []s
 	}
 	absAfile := mkAbs(objdir, afile)
 	// Try with D modifier first, then without if that fails.
-	output, err := b.runOut(p.Dir, nil, tools.ar(), arArgs, "rcD", absAfile, absOfiles)
+	output, err := b.runOut(a, p.Dir, nil, tools.ar(), arArgs, "rcD", absAfile, absOfiles)
 	if err != nil {
 		return b.run(a, p.Dir, p.ImportPath, nil, tools.ar(), arArgs, "rc", absAfile, absOfiles)
 	}
@@ -490,6 +490,7 @@ func (tools gccgoToolchain) link(b *Builder, root *Action, out, importcfg string
 		ldflags = append(ldflags, "-shared", "-nostdlib")
 		ldflags = append(ldflags, goLibBegin...)
 		ldflags = append(ldflags, "-lgo", "-lgcc_s", "-lgcc", "-lc", "-lgcc")
+
 	case "shared":
 		if cfg.Goos != "aix" {
 			ldflags = append(ldflags, "-zdefs")
@@ -512,7 +513,7 @@ func (tools gccgoToolchain) link(b *Builder, root *Action, out, importcfg string
 			ldflags = append(ldflags, "-lobjc")
 		}
 		if fortran {
-			fc := os.Getenv("FC")
+			fc := cfg.Getenv("FC")
 			if fc == "" {
 				fc = "gfortran"
 			}

@@ -1,3 +1,5 @@
+/* { dg-require-effective-target indirect_calls } */
+
 typedef struct JSObject JSObject;
 typedef struct JSObjectMap *(*JSNewObjectMapOp) (JSObject *obj);
 typedef JSObject *(*JSGetMethodOp) (JSObject *obj);

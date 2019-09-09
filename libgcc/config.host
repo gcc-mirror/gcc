@@ -107,6 +107,9 @@ avr-*-*)
 bfin*-*)
 	cpu_type=bfin
 	;;
+bpf-*-*)
+        cpu_type=bpf
+        ;;
 cr16-*-*)
 	;;
 crisv32-*-*)
@@ -523,6 +526,10 @@ bfin*-*)
 	tmake_file="$tmake_file bfin/t-bfin t-fdpbit"
 	extra_parts="crtbegin.o crtend.o crti.o crtn.o"
         ;;
+bpf-*-*)
+        tmake_file="$tmake_file ${cpu_type}/t-${cpu_type}"
+        extra_parts="crti.o crtn.o"
+	;;
 cr16-*-elf)
 	tmake_file="${tmake_file} cr16/t-cr16 cr16/t-crtlibid t-fdpbit"
 	extra_parts="$extra_parts crti.o crtn.o crtlibid.o"
@@ -1201,12 +1208,12 @@ pru-*-*)
 	tm_file="$tm_file pru/pru-abi.h"
 	;;
 riscv*-*-linux*)
-	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address}"
+	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
 	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
 	md_unwind_header=riscv/linux-unwind.h
 	;;
 riscv*-*-freebsd*)
-	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address}"
+	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
 	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
 	;;
 riscv*-*-*)

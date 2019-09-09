@@ -307,7 +307,6 @@ test_completion_valid_options (option_proposer &proposer)
     "-Wassign-intercept",
     "-Wno-format-security",
     "-fno-sched-stalled-insns",
-    "-fbtr-bb-exclusive",
     "-fno-tree-tail-merge",
     "-Wlong-long",
     "-Wno-unused-but-set-parameter",

@@ -1,0 +1,23 @@
+LIB2ADDEH = 
+
+crti.o: $(srcdir)/config/bpf/crti.S
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $<
+
+crtn.o: $(srcdir)/config/bpf/crtn.S
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $<
+
+# Some of the functions defined in libgcc2 exceed the eBPF stack
+# limit, or other restrictions imposed by this peculiar target.
+# Therefore we have to exclude them here.
+#
+# Patterns in bpf.md must guarantee that no calls to the excluded
+# functions are ever generated, and compiler tests should make sure
+# this holds.
+#
+# Note that the modes in the function names below are misleading: di
+# means TImode.
+LIB2FUNCS_EXCLUDE = _mulvdi3 _divdi3 _moddi3 _divmoddi4 _udivdi3 _umoddi3 \
+                    _udivmoddi4
+
+# Prevent building "advanced" stuff (for example, gcov support).
+INHIBIT_LIBC_CFLAGS = -Dinhibit_libc

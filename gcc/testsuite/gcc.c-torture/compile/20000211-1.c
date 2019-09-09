@@ -1,3 +1,5 @@
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+
 typedef __SIZE_TYPE__ size_t;
 typedef unsigned char Bufbyte;
 typedef int Bytecount;

@@ -1,3 +1,5 @@
+/* { dg-require-stack-size "1060*4+4" } */
+
 void joint_decode(float* mlt_buffer1, int t) {
     int i;
     float decode_buffer[1060];

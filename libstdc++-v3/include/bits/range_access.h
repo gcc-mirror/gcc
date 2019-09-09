@@ -396,13 +396,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr auto
     __adl_empty(_Container& __cont) noexcept(noexcept(empty(__cont)))
     { return empty(__cont); }
-
-#if defined(_GLIBCXX_P1394) && _GLIBCXX_P1394
-  template <typename _Container>
-    constexpr auto
-    __adl_to_address(_Container& __cont) noexcept(noexcept(to_address(__cont)))
-    { return to_address(__cont); }
-#endif // P1394 and new contiguous_iterator requirements [iterator.concept.contiguous]
 #endif // C++20
 
 _GLIBCXX_END_NAMESPACE_VERSION

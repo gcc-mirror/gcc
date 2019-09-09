@@ -526,7 +526,8 @@ proc check_effective_target_trampolines { } {
 	 || [istarget nvptx-*-*]
 	 || [istarget hppa2.0w-hp-hpux11.23]
 	 || [istarget hppa64-hp-hpux11.23]
-	 || [istarget pru-*-*] } {
+	 || [istarget pru-*-*]
+	 || [istarget bpf-*-*] } {
 	return 0;
     }
     return 1
@@ -781,7 +782,7 @@ proc add_options_for_tls { flags } {
 # Return 1 if indirect jumps are supported, 0 otherwise.
 
 proc check_effective_target_indirect_jumps {} {
-    if { [istarget nvptx-*-*] } {
+    if { [istarget nvptx-*-*] || [istarget bpf-*-*] } {
 	return 0
     }
     return 1
@@ -790,7 +791,7 @@ proc check_effective_target_indirect_jumps {} {
 # Return 1 if nonlocal goto is supported, 0 otherwise.
 
 proc check_effective_target_nonlocal_goto {} {
-    if { [istarget nvptx-*-*] } {
+    if { [istarget nvptx-*-*] || [istarget bpf-*-*] } {
 	return 0
     }
     return 1
@@ -799,10 +800,9 @@ proc check_effective_target_nonlocal_goto {} {
 # Return 1 if global constructors are supported, 0 otherwise.
 
 proc check_effective_target_global_constructor {} {
-    if { [istarget nvptx-*-*] } {
-	return 0
-    }
-    if { [istarget amdgcn-*-*] } {
+    if { [istarget nvptx-*-*]
+	 || [istarget amdgcn-*-*]
+	 || [istarget bpf-*-*] } {
 	return 0
     }
     return 1
@@ -823,6 +823,10 @@ proc check_effective_target_label_values {} {
 
 proc check_effective_target_return_address {} {
     if { [istarget nvptx-*-*] } {
+	return 0
+    }
+    # No notion of return address in eBPF.
+    if { [istarget bpf-*-*] } {
 	return 0
     }
     # It could be supported on amdgcn, but isn't yet.
@@ -9501,4 +9505,12 @@ proc check_effective_target_mfentry { } {
     return [check_no_compiler_messages mfentry object {
 	        void foo (void) { }
     } "-mfentry"]
+}
+
+# Return 1 if this target supports indirect calls
+proc check_effective_target_indirect_calls { } {
+  if { [istarget bpf-*-*] } {
+        return 0
+  }
+  return 1
 }

@@ -1,3 +1,5 @@
+/* { dg-require-effective-target indirect_calls } */
+
 typedef struct { short x[4]; } S;
 typedef struct { unsigned int a, b, c; S *d; } T;
 

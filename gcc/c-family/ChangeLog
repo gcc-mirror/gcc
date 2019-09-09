@@ -1,3 +1,9 @@
+2019-09-09  Martin Liska  <mliska@suse.cz>
+
+	* c.opt: Update comment of removed
+	options that are preserved only for backward
+	compatibility.
+
 2019-09-06  Martin Liska  <mliska@suse.cz>
 
 	PR c++/91125

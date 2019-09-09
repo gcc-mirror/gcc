@@ -1,7 +1,8 @@
 /* PR tree-optimization/84047 - missing -Warray-bounds on an out-of-bounds
    index into an array
    { dg-do compile }
-   { dg-options "-O2 -Warray-bounds=2 -ftrack-macro-expansion=0" } */
+   { dg-options "-O2 -Warray-bounds=2 -ftrack-macro-expansion=0" }
+   { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
 
 #include "range.h"
 

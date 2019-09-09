@@ -407,8 +407,7 @@ Objective-C and Objective-C++ Dialects}.
 -falign-loops[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
 -fassociative-math  -fauto-profile  -fauto-profile[=@var{path}] @gol
 -fauto-inc-dec  -fbranch-probabilities @gol
--fbranch-target-load-optimize  -fbranch-target-load-optimize2 @gol
--fbtr-bb-exclusive  -fcaller-saves @gol
+-fcaller-saves @gol
 -fcombine-stack-adjustments  -fconserve-stack @gol
 -fcompare-elim  -fcprop-registers  -fcrossjumping @gol
 -fcse-follow-jumps  -fcse-skip-blocks  -fcx-fortran-rules @gol
@@ -802,6 +801,10 @@ Objective-C and Objective-C++ Dialects}.
 -mexplicit-relocs  -msmall-data  -mlarge-data @gol
 -msmall-text  -mlarge-text @gol
 -mmemory-latency=@var{time}}
+
+@emph{eBPF Options}
+@gccoptlist{-mbig-endian -mlittle-endian -mkernel=@var{version}
+-mframe-limit=@var{bytes}}
 
 @emph{FR30 Options}
 @gccoptlist{-msmall-model  -mno-lsim}
@@ -11067,24 +11070,6 @@ locations inside a translation unit since the locations are unknown until
 link time.  An example of such an optimization is relaxing calls to short call
 instructions.
 
-@item -fbranch-target-load-optimize
-@opindex fbranch-target-load-optimize
-Perform branch target register load optimization before prologue / epilogue
-threading.
-The use of target registers can typically be exposed only during reload,
-thus hoisting loads out of loops and doing inter-block scheduling needs
-a separate optimization pass.
-
-@item -fbranch-target-load-optimize2
-@opindex fbranch-target-load-optimize2
-Perform branch target register load optimization after prologue / epilogue
-threading.
-
-@item -fbtr-bb-exclusive
-@opindex fbtr-bb-exclusive
-When performing branch target register load optimization, don't reuse
-branch target registers within any basic block.
-
 @item -fstdarg-opt
 @opindex fstdarg-opt
 Optimize the prologue of variadic argument functions with respect to usage of
@@ -15709,6 +15694,7 @@ platform.
 * C-SKY Options::
 * Darwin Options::
 * DEC Alpha Options::
+* eBPF Options::
 * FR30 Options::
 * FT32 Options::
 * FRV Options::
@@ -19828,6 +19814,38 @@ The compiler contains estimates of the number of clock cycles for
 Note that L3 is only valid for EV5.
 
 @end table
+@end table
+
+@node eBPF Options
+@subsection eBPF Options
+@cindex eBPF Options
+
+@table @gcctabopt
+@item -mframe-limit=@var{bytes}
+This specifies the hard limit for frame sizes, in bytes.  Currently,
+the value that can be specified should be less than or equal to
+@samp{32767}.  Defaults to whatever limit is imposed by the version of
+the Linux kernel targeted.
+
+@item -mkernel=@var{version}
+@opindex mkernel
+This specifies the minimum version of the kernel that will run the
+compiled program.  GCC uses this version to determine which
+instructions to use, what kernel helpers to allow, etc.  Currently,
+@var{version} can be one of @samp{4.0}, @samp{4.1}, @samp{4.2},
+@samp{4.3}, @samp{4.4}, @samp{4.5}, @samp{4.6}, @samp{4.7},
+@samp{4.8}, @samp{4.9}, @samp{4.10}, @samp{4.11}, @samp{4.12},
+@samp{4.13}, @samp{4.14}, @samp{4.15}, @samp{4.16}, @samp{4.17},
+@samp{4.18}, @samp{4.19}, @samp{4.20}, @samp{5.0}, @samp{5.1},
+@samp{5.2}, @samp{latest} and @samp{native}.
+
+@item -mbig-endian
+@opindex mbig-endian
+Generate code for a big-endian target.
+
+@item -mlittle-endian
+@opindex mlittle-endian
+Generate code for a little-endian target.  This is the default.
 @end table
 
 @node FR30 Options

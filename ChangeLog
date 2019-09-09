@@ -1,3 +1,18 @@
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* MAINTAINERS: Add myself as the maintainer of the eBPF port.
+	Remove myself from Write After Approval section.
+
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* configure.ac: Support for bpf-*-* targets.
+	* configure: Regenerate.
+
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config.sub: Import upstream version 2019-06-30.
+	* config.guess: Import upstream version 2019-07-24.
+
 2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* MAINTAINERS: Remove spu port maintainers.

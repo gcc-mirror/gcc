@@ -95,7 +95,7 @@ func buildModeInit() {
 				codegenArg = "-shared"
 			default:
 				switch cfg.Goos {
-				case "dragonfly", "freebsd", "linux", "netbsd", "openbsd", "solaris":
+				case "dragonfly", "freebsd", "illumos", "linux", "netbsd", "openbsd", "solaris":
 					if platform == "linux/ppc64" {
 						base.Fatalf("-buildmode=c-archive not supported on %s\n", platform)
 					}
@@ -164,6 +164,7 @@ func buildModeInit() {
 				codegenArg = "-shared"
 			case "darwin/amd64":
 				codegenArg = "-shared"
+			case "aix/ppc64":
 			default:
 				base.Fatalf("-buildmode=pie not supported on %s\n", platform)
 			}

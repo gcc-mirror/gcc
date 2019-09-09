@@ -1,3 +1,5 @@
+/* { dg-require-stack-size "4092+4" } */
+
 typedef struct
 {
   int Header;

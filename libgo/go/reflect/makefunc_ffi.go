@@ -44,11 +44,6 @@ func FFICallbackGo(results unsafe.Pointer, params unsafe.Pointer, impl *makeFunc
 	off := uintptr(0)
 	for i, typ := range ftyp.out {
 		v := out[i]
-		if v.typ != typ {
-			panic("reflect: function created by MakeFunc using " + funcName(impl.fn) +
-				" returned wrong type: have " +
-				out[i].typ.String() + " for " + typ.String())
-		}
 		if v.flag&flagRO != 0 {
 			panic("reflect: function created by MakeFunc using " + funcName(impl.fn) +
 				" returned value obtained from unexported field")
@@ -56,6 +51,12 @@ func FFICallbackGo(results unsafe.Pointer, params unsafe.Pointer, impl *makeFunc
 
 		off = align(off, uintptr(typ.fieldAlign))
 		addr := unsafe.Pointer(uintptr(results) + off)
+
+		// Convert v to type typ if v is assignable to a variable
+		// of type t in the language spec.
+		// See issue 28761.
+		v = v.assignTo("reflect.MakeFunc", typ, addr)
+
 		if v.flag&flagIndir == 0 && (v.kind() == Ptr || v.kind() == UnsafePointer) {
 			*(*unsafe.Pointer)(addr) = v.ptr
 		} else {

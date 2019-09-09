@@ -2542,7 +2542,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 ac_config_headers="$ac_config_headers config.h"
 
 
-libtool_VERSION=14:0:0
+libtool_VERSION=15:0:0
 
 
 # Default to --enable-multilib
@@ -13887,7 +13887,7 @@ go_include="-include"
 # All known GOOS values.  This is the union of all operating systems
 # supported by the gofrontend and all operating systems supported by
 # the gc toolchain.
-ALLGOOS="aix android darwin dragonfly freebsd hurd irix js linux netbsd openbsd plan9 rtems solaris windows"
+ALLGOOS="aix android darwin dragonfly freebsd hurd illumos irix js linux netbsd openbsd plan9 rtems solaris windows"
 
 is_darwin=no
 is_freebsd=no

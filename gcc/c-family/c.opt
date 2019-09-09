@@ -437,7 +437,7 @@ Warn about subscripts whose type is \"char\".
 
 Wchkp
 C ObjC C++ ObjC++ Warning Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 Wclobbered
 C ObjC C++ ObjC++ Var(warn_clobbered) Warning EnabledBy(Wextra)
@@ -1346,90 +1346,90 @@ and character literals.
 
 fcheck-pointer-bounds
 C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-check-incomplete-type
 C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-zero-input-bounds-for-main
 C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-first-field-has-own-bounds
 C ObjC C++ ObjC++ LTO Deprecated RejectNegative
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-narrow-bounds
 C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-narrow-to-innermost-array
 C ObjC C++ ObjC++ LTO Deprecated RejectNegative
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-flexible-struct-trailing-arrays
 C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-optimize
 C ObjC C++ ObjC++ LTO Deprecated
 
 fchkp-use-fast-string-functions
 C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-use-nochk-string-functions
 C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-use-static-bounds
 C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-use-static-const-bounds
 C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-treat-zero-dynamic-size-as-infinite
 C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-check-read
 C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-check-write
 C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-store-bounds
 C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-instrument-calls
 C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-instrument-marked-only
 C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-use-wrappers
 C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 static-libmpx
 Driver Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 static-libmpxwrappers
 Driver Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Removed in GCC 9.  This switch has no effect.
 
 fcilkplus
 C ObjC C++ ObjC++ LTO Undocumented Ignore
-Deprecated in GCC 8.  This switch has no effect.
+Removed in GCC 8.  This switch has no effect.
 
 fconcepts
 C++ ObjC++ Var(flag_concepts)
@@ -1825,7 +1825,7 @@ Used in Fix-and-Continue mode to indicate that object files may be swapped in at
 
 frepo
 C++ ObjC++ Deprecated
-Deprecated in GCC 10.  This switch has no effect.
+Removed in GCC 10.  This switch has no effect.
 
 frtti
 C++ ObjC++ Optimization Var(flag_rtti) Init(1)

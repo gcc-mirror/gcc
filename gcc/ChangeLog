@@ -1,3 +1,126 @@
+2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* Makefile.in (OBJS): Remove bt-load.o.
+	* doc/invoke.texi (fbranch-target-load-optimize): Delete.
+	(fbranch-target-load-optimize2, fbtr-bb-exclusive): Likewise.
+	* common.opt (fbranch-target-load-optimize): Mark as Ignore and
+	document that the option no longer does anything.
+	(fbranch-target-load-optimize2, fbtr-bb-exclusive): Likewise.
+	* target.def (branch_target_register_class): Delete.
+	(branch_target_register_callee_saved): Likewise.
+	* doc/tm.texi.in (TARGET_BRANCH_TARGET_REGISTER_CLASS): Likewise.
+	(TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED): Likewise.
+	* doc/tm.texi: Regenerate.
+	* tree-pass.h (make_pass_branch_target_load_optimize1): Delete.
+	(make_pass_branch_target_load_optimize2): Likewise.
+	* passes.def (pass_branch_target_load_optimize1): Likewise.
+	(pass_branch_target_load_optimize2): Likewise.
+	* targhooks.h (default_branch_target_register_class): Likewise.
+	* targhooks.c (default_branch_target_register_class): Likewise.
+	* opt-suggestions.c (test_completion_valid_options): Remove
+	-fbtr-bb-exclusive from the list of test options.
+	* bt-load.c: Remove.
+
+2019-09-09  Barnaby Wilks  <barnaby.wilks@arm.com>
+
+	* match.pd: Add flag_unsafe_math_optimizations check
+	before deciding on the widest type in a binary math operation.
+
+2019-09-09  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386.opt: Update comment of removed
+	options that are preserved only for backward
+	compatibility.
+
+2019-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87853
+	* config/i386/emmintrin.h (_mm_cmpeq_epi8): Use casts to __v16qi
+	instead of __v16qs.
+
+	PR target/91704
+	* config/i386/avxintrin.h (__v32qs): New typedef.
+	* config/i386/avx2intrin.h (_mm256_cmpgt_epi8): Use casts to __v32qs
+	instead of __v32qi.
+
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* doc/invoke.texi (Option Summary): Cover eBPF.
+	(eBPF Options): New section.
+	* doc/extend.texi (BPF Built-in Functions): Likewise.
+	(BPF Kernel Helpers): Likewise.
+
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config.gcc: Support for bpf-*-* targets.
+	* common/config/bpf/bpf-common.c: New file.
+	* config/bpf/t-bpf: Likewise.
+	* config/bpf/predicates.md: Likewise.
+	* config/bpf/constraints.md: Likewise.
+	* config/bpf/bpf.opt: Likewise.
+	* config/bpf/bpf.md: Likewise.
+	* config/bpf/bpf.h: Likewise.
+	* config/bpf/bpf.c: Likewise.
+	* config/bpf/bpf-protos.h: Likewise.
+	* config/bpf/bpf-opts.h: Likewise.
+	* config/bpf/bpf-helpers.h: Likewise.
+	* config/bpf/bpf-helpers.def: Likewise.
+
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	indirect_calls.
+
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* opt-functions.awk (integer_range_info): Make sure values are in
+	numeric context before operating with them.
+
+2019-09-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* genemit.c (gen_split): Print the filename and line number where the
+	splitter (or peephole2) was defined, to the dump file.
+
+2019-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91665
+	* tree-vect-loop.c (vectorizable_reduction): Punt if base has type
+	incompatible with the type of PHI result.
+
+2019-09-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/91684
+	* config/arm/arm.c (arm_block_set_aligned_non_vect): Use
+	gen_unaligned_storedi for 4-byte aligned addresses.
+
+2019-09-06  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.c (riscv_option_override): Revert 2019-08-30
+	change.
+
+2019-09-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (unspec): Delete UNSPEC_MV_CR_OV.
+
+2019-09-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_rtx_costs) <case UNSPEC>: Delete.
+	* config/rs6000/rs6000.md (unspec): Delete UNSPEC_FRSP.
+
+2019-09-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91654
+	* config/i386/x86-tune-costs.h (skylake_cost): Raise the
+	cost of SSE->integer and integer->SSE moves from 2 to 6.
+	(core_cost): Ditto.
+
+2019-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* function.c (assign_parm_find_data_types): Use RECORD_OR_UNION_TYPE_P
+	before testing TYPE_TRANSPARENT_AGGR.
+	* calls.c (initialize_argument_information, load_register_parameters):
+	Likewise.
+
 2019-09-06  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/arm.md (cmp_and): Add short-it variant for thumb2 with

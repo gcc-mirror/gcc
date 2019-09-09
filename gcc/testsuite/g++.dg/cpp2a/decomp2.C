@@ -2,6 +2,7 @@
 // { dg-do run { target c++11 } }
 // { dg-options "" }
 // { dg-require-effective-target tls }
+// { dg-add-options tls }
 
 namespace std {
   template<typename T> struct tuple_size;

@@ -1,3 +1,15 @@
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config.host: Set cpu_type for bpf-*-* targets.
+	* config/bpf/t-bpf: Likewise.
+	* config/bpf/crtn.S: Likewise.
+	* config/bpf/crti.S: New file.
+
+2019-09-06  Jim Wilson  <jimw@sifive.com>
+
+	* config.host (riscv*-*-linux*): Add t-slibgcc-libgcc to tmake_file.
+	(riscv*-*-freebsd*): Likewise.
+
 2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config.host: Remove references to spu.

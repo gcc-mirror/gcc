@@ -1,6 +1,7 @@
 /* Exercise -Wframe-larger-than= with a byte-size suffix.
    { dg-do compile }
-   { dg-options "-O -Wframe-larger-than=1KB" } */
+   { dg-options "-O -Wframe-larger-than=1KB" }
+   { dg-skip-if "exceeds eBPF stack limit" { bpf-*-* } } */
 
 extern void f (void*, ...);
 

@@ -1274,6 +1274,8 @@ func (p *Package) isVariable(x ast.Expr) bool {
 		return true
 	case *ast.SelectorExpr:
 		return p.isVariable(x.X)
+	case *ast.IndexExpr:
+		return true
 	}
 	return false
 }
@@ -1609,6 +1611,7 @@ func (p *Package) gccCmd() []string {
 	c = append(c, p.gccMachine()...)
 	if goos == "aix" {
 		c = append(c, "-maix64")
+		c = append(c, "-mcmodel=large")
 	}
 	c = append(c, "-") //read input from standard input
 	return c

@@ -57,6 +57,7 @@ arm port		Ramana Radhakrishnan	<ramana.radhakrishnan@arm.com>
 arm port		Kyrylo Tkachov		<kyrylo.tkachov@arm.com>
 avr port		Denis Chertykov		<chertykov@gmail.com>
 bfin port		Jie Zhang		<jzhang918@gmail.com>
+bpf port		Jose E. Marchesi	<jose.marchesi@oracle.com>
 c6x port		Bernd Schmidt		<bernds_cb1@t-online.de>
 cris port		Hans-Peter Nilsson	<hp@axis.com>
 c-sky port		Xianmiao Qu		<xianmiao_qu@c-sky.com>
@@ -494,7 +495,6 @@ Luis Machado					<luisgpm@br.ibm.com>
 Ziga Mahkovec					<ziga.mahkovec@klika.si>
 Matthew Malcomson				<matthew.malcomson@arm.com>
 Mikhail Maltsev					<maltsevm@gmail.com>
-Jose E. Marchesi				<jose.marchesi@oracle.com>
 Patrick Marlier					<patrick.marlier@gmail.com>
 Simon Martin					<simartin@users.sourceforge.net>
 Alejandro Martinez				<alejandro.martinezvicente@arm.com>

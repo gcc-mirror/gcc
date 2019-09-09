@@ -1,5 +1,7 @@
 2019-09-09  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r275518
+
 	gcc/cp/
 	* module.cc (enum depset::disc_bits): Delete DB_REACHED_ONCE_BIT.
 	(depset::is_reached_once, depset::clear_mergeable): Delete

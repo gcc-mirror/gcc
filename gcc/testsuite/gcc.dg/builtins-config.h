@@ -1,4 +1,4 @@
-/* Copyright (C) 2003, 2004, 2005, 2006, 2009, 2011, 2012
+/* Copyright (C) 2003, 2004, 2005, 2006, 2009, 2011, 2012, 2019
    Free Software Foundation.
 
    Define macros useful in tests for bulitin functions.  */
@@ -20,6 +20,8 @@
 /* FreeBSD up to version 8 lacks support for cexp and friends.  */
 #elif defined(__vxworks)
 /* VxWorks doesn't have a full C99 time.  (cabs is missing, for example.)  */
+#elif defined (__BPF__)
+/* No chance for eBPF to support C99 functions.  */
 #elif defined(_WIN32) && !defined(__CYGWIN__)
 /* Windows doesn't have the entire C99 runtime.  */
 #elif (defined(__APPLE__) && defined(__ppc__) \
