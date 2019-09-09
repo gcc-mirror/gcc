@@ -1,3 +1,8 @@
+2019-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91704
+	* gcc.target/i386/pr91704.c: New test.
+
 2019-09-05  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91660
