@@ -2242,7 +2242,7 @@ epiphany_conditional_register_usage (void)
     CLEAR_HARD_REG_SET (reg_class_contents[SHORT_INSN_REGS]);
   reg_class_contents[SIBCALL_REGS] = reg_class_contents[GENERAL_REGS];
   /* It would be simpler and quicker if we could just use
-     AND_COMPL_HARD_REG_SET, alas, call_used_reg_set is yet uninitialized;
+     &~, alas, call_used_reg_set is yet uninitialized;
      it is set up later by our caller.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (!call_used_regs[i])

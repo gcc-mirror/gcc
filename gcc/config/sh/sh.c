@@ -6707,9 +6707,7 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 	    temp = -1;
 	  if (temp < 0 && ! current_function_interrupt && epilogue_p >= 0)
 	    {
-	      HARD_REG_SET temps;
-	      temps = call_used_reg_set;
-	      AND_COMPL_HARD_REG_SET (temps, call_fixed_reg_set);
+	      HARD_REG_SET temps = call_used_reg_set & ~call_fixed_reg_set;
 	      if (epilogue_p > 0)
 		{
 		  int nreg = 0;

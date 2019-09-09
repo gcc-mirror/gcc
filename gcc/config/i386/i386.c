@@ -497,18 +497,15 @@ ix86_conditional_register_usage (void)
 
   /* If MMX is disabled, disable the registers.  */
   if (! TARGET_MMX)
-    AND_COMPL_HARD_REG_SET (accessible_reg_set,
-			    reg_class_contents[(int) MMX_REGS]);
+    accessible_reg_set &= ~reg_class_contents[MMX_REGS];
 
   /* If SSE is disabled, disable the registers.  */
   if (! TARGET_SSE)
-    AND_COMPL_HARD_REG_SET (accessible_reg_set,
-			    reg_class_contents[(int) ALL_SSE_REGS]);
+    accessible_reg_set &= ~reg_class_contents[ALL_SSE_REGS];
 
   /* If the FPU is disabled, disable the registers.  */
   if (! (TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387))
-    AND_COMPL_HARD_REG_SET (accessible_reg_set,
-			    reg_class_contents[(int) FLOAT_REGS]);
+    accessible_reg_set &= ~reg_class_contents[FLOAT_REGS];
 
   /* If AVX512F is disabled, disable the registers.  */
   if (! TARGET_AVX512F)
@@ -516,8 +513,7 @@ ix86_conditional_register_usage (void)
       for (i = FIRST_EXT_REX_SSE_REG; i <= LAST_EXT_REX_SSE_REG; i++)
 	CLEAR_HARD_REG_BIT (accessible_reg_set, i);
 
-      AND_COMPL_HARD_REG_SET (accessible_reg_set,
-			      reg_class_contents[(int) ALL_MASK_REGS]);
+      accessible_reg_set &= ~reg_class_contents[ALL_MASK_REGS];
     }
 }
 

@@ -2885,7 +2885,7 @@ get_implicit_reg_pending_clobbers (HARD_REG_SET *temp, rtx_insn *insn)
   preprocess_constraints (insn);
   alternative_mask preferred = get_preferred_alternatives (insn);
   ira_implicitly_set_insn_hard_regs (temp, preferred);
-  AND_COMPL_HARD_REG_SET (*temp, ira_no_alloc_regs);
+  *temp &= ~ira_no_alloc_regs;
 }
 
 /* Analyze an INSN with pattern X to find all dependencies.  */

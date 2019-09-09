@@ -1248,8 +1248,8 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
   /* Exclude registers that are partially call clobbered.  */
   if (def->crosses_call
       && !targetm.hard_regno_call_part_clobbered (NULL, regno, mode))
-    AND_COMPL_HARD_REG_SET (reg_rename_p->available_for_renaming,
-                            sel_hrd.regs_for_call_clobbered[mode]);
+    reg_rename_p->available_for_renaming
+      &= ~sel_hrd.regs_for_call_clobbered[mode];
 
   /* Leave only those that are ok to rename.  */
   EXECUTE_IF_SET_IN_HARD_REG_SET (reg_rename_p->available_for_renaming,
@@ -1270,8 +1270,7 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
                             cur_reg);
     }
 
-  AND_COMPL_HARD_REG_SET (reg_rename_p->available_for_renaming,
-                          reg_rename_p->unavailable_hard_regs);
+  reg_rename_p->available_for_renaming &= ~reg_rename_p->unavailable_hard_regs;
 
   /* Regno is always ok from the renaming part of view, but it really
      could be in *unavailable_hard_regs already, so set it here instead
@@ -2105,7 +2104,7 @@ implicit_clobber_conflict_p (insn_t through_insn, expr_t expr)
   preprocess_constraints (insn);
   alternative_mask prefrred = get_preferred_alternatives (insn);
   ira_implicitly_set_insn_hard_regs (&temp, prefrred);
-  AND_COMPL_HARD_REG_SET (temp, ira_no_alloc_regs);
+  temp &= ~ira_no_alloc_regs;
 
   /* If any implicit clobber registers intersect with regular ones in
      through_insn, we have a dependency and thus bail out.  */

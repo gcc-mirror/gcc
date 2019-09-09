@@ -1203,7 +1203,7 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
 	  }
       }
   lra_no_alloc_regs |= temp_hard_reg_set;
-  AND_COMPL_HARD_REG_SET (eliminable_regset, temp_hard_reg_set);
+  eliminable_regset &= ~temp_hard_reg_set;
   spill_pseudos (temp_hard_reg_set);
   return result;
 }

@@ -660,15 +660,15 @@ print_allocno_conflicts (FILE * file, bool reg_p, ira_allocno_t a)
 	      putc (')', file);
 	    }
 	}
-      conflicting_hard_regs = OBJECT_TOTAL_CONFLICT_HARD_REGS (obj);
-      AND_COMPL_HARD_REG_SET (conflicting_hard_regs, ira_no_alloc_regs);
-      conflicting_hard_regs &= reg_class_contents[ALLOCNO_CLASS (a)];
+      conflicting_hard_regs = (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj)
+			       & ~ira_no_alloc_regs
+			       & reg_class_contents[ALLOCNO_CLASS (a)]);
       print_hard_reg_set (file, "\n;;     total conflict hard regs:",
 			  conflicting_hard_regs);
 
-      conflicting_hard_regs = OBJECT_CONFLICT_HARD_REGS (obj);
-      AND_COMPL_HARD_REG_SET (conflicting_hard_regs, ira_no_alloc_regs);
-      conflicting_hard_regs &= reg_class_contents[ALLOCNO_CLASS (a)];
+      conflicting_hard_regs = (OBJECT_CONFLICT_HARD_REGS (obj)
+			       & ~ira_no_alloc_regs
+			       & reg_class_contents[ALLOCNO_CLASS (a)]);
       print_hard_reg_set (file, ";;     conflict hard regs:",
 			  conflicting_hard_regs);
       putc ('\n', file);
@@ -738,11 +738,9 @@ ira_build_conflicts (void)
   if (! targetm.class_likely_spilled_p (base))
     CLEAR_HARD_REG_SET (temp_hard_reg_set);
   else
-    {
-      temp_hard_reg_set = reg_class_contents[base];
-      AND_COMPL_HARD_REG_SET (temp_hard_reg_set, ira_no_alloc_regs);
-      temp_hard_reg_set &= call_used_reg_set;
-    }
+    temp_hard_reg_set = (reg_class_contents[base]
+			 & ~ira_no_alloc_regs
+			 & call_used_reg_set);
   FOR_EACH_ALLOCNO (a, ai)
     {
       int i, n = ALLOCNO_NUM_OBJECTS (a);

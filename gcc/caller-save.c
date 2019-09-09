@@ -455,8 +455,7 @@ setup_save_areas (void)
       if (SIBLING_CALL_P (insn) && crtl->return_rtx)
 	mark_set_regs (crtl->return_rtx, NULL_RTX, &this_insn_sets);
 
-      AND_COMPL_HARD_REG_SET (used_regs, call_fixed_reg_set);
-      AND_COMPL_HARD_REG_SET (used_regs, this_insn_sets);
+      used_regs &= ~(call_fixed_reg_set | this_insn_sets);
       hard_regs_to_save &= used_regs;
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	if (TEST_HARD_REG_BIT (hard_regs_to_save, regno))
@@ -540,8 +539,7 @@ setup_save_areas (void)
 	  if (SIBLING_CALL_P (insn) && crtl->return_rtx)
 	    mark_set_regs (crtl->return_rtx, NULL_RTX, &this_insn_sets);
 
-	  AND_COMPL_HARD_REG_SET (used_regs, call_fixed_reg_set);
-	  AND_COMPL_HARD_REG_SET (used_regs, this_insn_sets);
+	  used_regs &= ~(call_fixed_reg_set | this_insn_sets);
 	  hard_regs_to_save &= used_regs;
 	  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	    if (TEST_HARD_REG_BIT (hard_regs_to_save, regno))
@@ -796,7 +794,7 @@ save_call_clobbered_regs (void)
 		 afterwards.  */
 	      CLEAR_HARD_REG_SET (this_insn_sets);
 	      note_stores (insn, mark_set_regs, &this_insn_sets);
-	      AND_COMPL_HARD_REG_SET (hard_regs_saved, this_insn_sets);
+	      hard_regs_saved &= ~this_insn_sets;
 	    }
 
 	  if (code == CALL_INSN
@@ -852,9 +850,9 @@ save_call_clobbered_regs (void)
 	      note_stores (insn, mark_set_regs, &this_insn_sets);
 
 	      /* Compute which hard regs must be saved before this call.  */
-	      AND_COMPL_HARD_REG_SET (hard_regs_to_save, call_fixed_reg_set);
-	      AND_COMPL_HARD_REG_SET (hard_regs_to_save, this_insn_sets);
-	      AND_COMPL_HARD_REG_SET (hard_regs_to_save, hard_regs_saved);
+	      hard_regs_to_save &= ~(call_fixed_reg_set
+				     | this_insn_sets
+				     | hard_regs_saved);
 	      get_call_reg_set_usage (insn, &call_def_reg_set,
 				      call_used_reg_set);
 	      hard_regs_to_save &= call_def_reg_set;

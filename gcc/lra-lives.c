@@ -671,7 +671,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
   sparseset_clear (pseudos_live_through_setjumps);
   CLEAR_HARD_REG_SET (last_call_used_reg_set);
   REG_SET_TO_HARD_REG_SET (hard_regs_live, reg_live_out);
-  AND_COMPL_HARD_REG_SET (hard_regs_live, eliminable_regset);
+  hard_regs_live &= ~eliminable_regset;
   EXECUTE_IF_SET_IN_BITMAP (reg_live_out, FIRST_PSEUDO_REGISTER, j, bi)
     {
       update_pseudo_point (j, curr_point, USE_POINT);

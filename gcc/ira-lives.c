@@ -1129,8 +1129,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
       reg_live_out = df_get_live_out (bb);
       sparseset_clear (objects_live);
       REG_SET_TO_HARD_REG_SET (hard_regs_live, reg_live_out);
-      AND_COMPL_HARD_REG_SET (hard_regs_live, eliminable_regset);
-      AND_COMPL_HARD_REG_SET (hard_regs_live, ira_no_alloc_regs);
+      hard_regs_live &= ~(eliminable_regset | ira_no_alloc_regs);
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (TEST_HARD_REG_BIT (hard_regs_live, i))
 	  {
