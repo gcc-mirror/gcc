@@ -1,5 +1,13 @@
 2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* ira-int.h (ior_hard_reg_conflicts): Take a const_hard_reg_set
+	instead of a HARD_REG_SET *.
+	* ira-build.c (ior_hard_reg_conflicts): Likewise.
+	(ira_build): Update call accordingly.
+	* ira-emit.c (add_range_and_copies_from_move_list): Likewise.
+
+2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hard-reg-set.h (HARD_REG_SET::operator==): New function.
 	(HARD_REG_SET::operator!=): Likewise.
 	(hard_reg_set_equal_p): Delete.

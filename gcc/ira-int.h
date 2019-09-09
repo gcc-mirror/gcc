@@ -998,7 +998,7 @@ extern void ira_set_allocno_class (ira_allocno_t, enum reg_class);
 extern bool ira_conflict_vector_profitable_p (ira_object_t, int);
 extern void ira_allocate_conflict_vec (ira_object_t, int);
 extern void ira_allocate_object_conflicts (ira_object_t, int);
-extern void ior_hard_reg_conflicts (ira_allocno_t, HARD_REG_SET *);
+extern void ior_hard_reg_conflicts (ira_allocno_t, const_hard_reg_set);
 extern void ira_print_expanded_allocno (ira_allocno_t);
 extern void ira_add_live_range_to_object (ira_object_t, int, int);
 extern live_range_t ira_create_live_range (ira_object_t, int, int,
