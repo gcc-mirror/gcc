@@ -12975,7 +12975,7 @@ mips_class_max_nregs (enum reg_class rclass, machine_mode mode)
   HARD_REG_SET left;
 
   size = 0x8000;
-  COPY_HARD_REG_SET (left, reg_class_contents[(int) rclass]);
+  left = reg_class_contents[rclass];
   if (hard_reg_set_intersect_p (left, reg_class_contents[(int) ST_REGS]))
     {
       if (mips_hard_regno_mode_ok (ST_REG_FIRST, mode))

@@ -1732,7 +1732,7 @@ order_regs_for_reload (class insn_chain *chain)
   HARD_REG_SET used_by_pseudos2;
   reg_set_iterator rsi;
 
-  COPY_HARD_REG_SET (bad_spill_regs, fixed_reg_set);
+  bad_spill_regs = fixed_reg_set;
 
   memset (spill_cost, 0, sizeof spill_cost);
   memset (spill_add_cost, 0, sizeof spill_add_cost);
@@ -1823,7 +1823,7 @@ find_reg (class insn_chain *chain, int order)
   static int regno_pseudo_regs[FIRST_PSEUDO_REGISTER];
   static int best_regno_pseudo_regs[FIRST_PSEUDO_REGISTER];
 
-  COPY_HARD_REG_SET (not_usable, bad_spill_regs);
+  not_usable = bad_spill_regs;
   IOR_HARD_REG_SET (not_usable, bad_spill_regs_global);
   IOR_COMPL_HARD_REG_SET (not_usable, reg_class_contents[rl->rclass]);
 
@@ -2007,7 +2007,7 @@ find_reload_regs (class insn_chain *chain)
 	  }
     }
 
-  COPY_HARD_REG_SET (chain->used_spill_regs, used_spill_regs_local);
+  chain->used_spill_regs = used_spill_regs_local;
   IOR_HARD_REG_SET (used_spill_regs, used_spill_regs_local);
 
   memcpy (chain->rld, rld, n_reloads * sizeof (struct reload));

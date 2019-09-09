@@ -253,7 +253,7 @@ create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
       CLEAR_HARD_REG_BIT (live_hard_regs, head->regno + nregs);
     }
 
-  COPY_HARD_REG_SET (head->hard_conflicts, live_hard_regs);
+  head->hard_conflicts = live_hard_regs;
   bitmap_set_bit (&open_chains_set, head->id);
 
   open_chains = head;
@@ -486,7 +486,7 @@ rename_chains (void)
 	      && reg == FRAME_POINTER_REGNUM))
 	continue;
 
-      COPY_HARD_REG_SET (this_unavailable, unavailable);
+      this_unavailable = unavailable;
 
       reg_class super_class = regrename_find_superclass (this_head, &n_uses,
 							 &this_unavailable);

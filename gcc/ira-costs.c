@@ -255,7 +255,7 @@ restrict_cost_classes (cost_classes_t full, machine_mode mode,
       /* Calculate the set of registers in CL that belong to REGS and
 	 are valid for MODE.  */
       HARD_REG_SET valid_for_cl;
-      COPY_HARD_REG_SET (valid_for_cl, reg_class_contents[cl]);
+      valid_for_cl = reg_class_contents[cl];
       AND_HARD_REG_SET (valid_for_cl, regs);
       AND_COMPL_HARD_REG_SET (valid_for_cl,
 			      ira_prohibited_class_mode_regs[cl][mode]);
@@ -343,7 +343,7 @@ setup_regno_cost_classes_by_aclass (int regno, enum reg_class aclass)
 
   if ((classes_ptr = cost_classes_aclass_cache[aclass]) == NULL)
     {
-      COPY_HARD_REG_SET (temp, reg_class_contents[aclass]);
+      temp = reg_class_contents[aclass];
       AND_COMPL_HARD_REG_SET (temp, ira_no_alloc_regs);
       /* We exclude classes from consideration which are subsets of
 	 ACLASS only if ACLASS is an uniform class.  */
@@ -356,7 +356,7 @@ setup_regno_cost_classes_by_aclass (int regno, enum reg_class aclass)
 	    {
 	      /* Exclude non-uniform classes which are subsets of
 		 ACLASS.  */
-	      COPY_HARD_REG_SET (temp2, reg_class_contents[cl]);
+	      temp2 = reg_class_contents[cl];
 	      AND_COMPL_HARD_REG_SET (temp2, ira_no_alloc_regs);
 	      if (hard_reg_set_subset_p (temp2, temp) && cl != aclass)
 		continue;

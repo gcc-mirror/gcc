@@ -1854,7 +1854,7 @@ prohibited_class_reg_set_mode_p (enum reg_class rclass,
   HARD_REG_SET temp;
   
   lra_assert (hard_reg_set_subset_p (reg_class_contents[rclass], set));
-  COPY_HARD_REG_SET (temp, set);
+  temp = set;
   AND_COMPL_HARD_REG_SET (temp, lra_no_alloc_regs);
   return (hard_reg_set_subset_p
 	  (temp, ira_prohibited_class_mode_regs[rclass][mode]));
@@ -2288,7 +2288,7 @@ process_alt_operands (int only_alternative)
 		       reloads. */
 		    badop = false;
 		    this_alternative = curr_alt[m];
-		    COPY_HARD_REG_SET (this_alternative_set, curr_alt_set[m]);
+		    this_alternative_set = curr_alt_set[m];
 		    winreg = this_alternative != NO_REGS;
 		    break;
 		  }
@@ -2517,8 +2517,7 @@ process_alt_operands (int only_alternative)
 		{
 		  HARD_REG_SET available_regs;
 		  
-		  COPY_HARD_REG_SET (available_regs,
-				     reg_class_contents[this_alternative]);
+		  available_regs = reg_class_contents[this_alternative];
 		  AND_COMPL_HARD_REG_SET
 		    (available_regs,
 		     ira_prohibited_class_mode_regs[this_alternative][mode]);
@@ -2888,7 +2887,7 @@ process_alt_operands (int only_alternative)
 	      goto fail;
 	    }
 	  curr_alt[nop] = this_alternative;
-	  COPY_HARD_REG_SET (curr_alt_set[nop], this_alternative_set);
+	  curr_alt_set[nop] = this_alternative_set;
 	  curr_alt_win[nop] = this_alternative_win;
 	  curr_alt_match_win[nop] = this_alternative_match_win;
 	  curr_alt_offmemok[nop] = this_alternative_offmemok;
@@ -6246,7 +6245,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
   bitmap_clear (&invalid_invariant_regs);
   last_processed_bb = NULL;
   CLEAR_HARD_REG_SET (potential_reload_hard_regs);
-  COPY_HARD_REG_SET (live_hard_regs, eliminable_regset);
+  live_hard_regs = eliminable_regset;
   IOR_HARD_REG_SET (live_hard_regs, lra_no_alloc_regs);
   /* We don't process new insns generated in the loop.	*/
   for (curr_insn = tail; curr_insn != PREV_INSN (head); curr_insn = prev_insn)

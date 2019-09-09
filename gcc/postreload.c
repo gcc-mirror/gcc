@@ -1267,7 +1267,7 @@ reload_combine (void)
 
 	  REG_SET_TO_HARD_REG_SET (live, live_in);
 	  compute_use_by_pseudos (&live, live_in);
-	  COPY_HARD_REG_SET (LABEL_LIVE (insn), live);
+	  LABEL_LIVE (insn) = live;
 	  IOR_HARD_REG_SET (ever_live_at_start, live);
 	}
     }

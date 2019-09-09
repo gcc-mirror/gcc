@@ -2213,7 +2213,7 @@ pdp11_conditional_register_usage (void)
   HARD_REG_SET x;
   if (!TARGET_FPU)
     {
-      COPY_HARD_REG_SET (x, reg_class_contents[(int)FPU_REGS]);
+      x = reg_class_contents[FPU_REGS];
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ )
        if (TEST_HARD_REG_BIT (x, i))
 	fixed_regs[i] = call_used_regs[i] = 1;

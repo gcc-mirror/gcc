@@ -230,8 +230,8 @@ save_register_info (void)
   /* And similarly for reg_names.  */
   gcc_assert (sizeof reg_names == sizeof saved_reg_names);
   memcpy (saved_reg_names, reg_names, sizeof reg_names);
-  COPY_HARD_REG_SET (saved_accessible_reg_set, accessible_reg_set);
-  COPY_HARD_REG_SET (saved_operand_reg_set, operand_reg_set);
+  saved_accessible_reg_set = accessible_reg_set;
+  saved_operand_reg_set = operand_reg_set;
 }
 
 /* Restore the register information.  */
@@ -247,8 +247,8 @@ restore_register_info (void)
 #endif
 
   memcpy (reg_names, saved_reg_names, sizeof reg_names);
-  COPY_HARD_REG_SET (accessible_reg_set, saved_accessible_reg_set);
-  COPY_HARD_REG_SET (operand_reg_set, saved_operand_reg_set);
+  accessible_reg_set = saved_accessible_reg_set;
+  operand_reg_set = saved_operand_reg_set;
 }
 
 /* After switches have been processed, which perhaps alter
@@ -298,7 +298,7 @@ init_reg_sets_1 (void)
 	  HARD_REG_SET c;
 	  int k;
 
-	  COPY_HARD_REG_SET (c, reg_class_contents[i]);
+	  c = reg_class_contents[i];
 	  IOR_HARD_REG_SET (c, reg_class_contents[j]);
 	  for (k = 0; k < N_REG_CLASSES; k++)
 	    if (hard_reg_set_subset_p (reg_class_contents[k], c)
@@ -321,7 +321,7 @@ init_reg_sets_1 (void)
 	  HARD_REG_SET c;
 	  int k;
 
-	  COPY_HARD_REG_SET (c, reg_class_contents[i]);
+	  c = reg_class_contents[i];
 	  IOR_HARD_REG_SET (c, reg_class_contents[j]);
 	  for (k = 0; k < N_REG_CLASSES; k++)
 	    if (hard_reg_set_subset_p (c, reg_class_contents[k]))
@@ -450,8 +450,8 @@ init_reg_sets_1 (void)
         }
     }
 
-  COPY_HARD_REG_SET (call_fixed_reg_set, fixed_reg_set);
-  COPY_HARD_REG_SET (fixed_nonglobal_reg_set, fixed_reg_set);
+  call_fixed_reg_set = fixed_reg_set;
+  fixed_nonglobal_reg_set = fixed_reg_set;
 
   /* Preserve global registers if called more than once.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -1323,8 +1323,7 @@ record_subregs_of_mode (rtx subreg, bool partial_def)
     {
       valid_mode_changes[regno]
 	= XOBNEW (&valid_mode_changes_obstack, HARD_REG_SET);
-      COPY_HARD_REG_SET (*valid_mode_changes[regno],
-			 simplifiable_subregs (shape));
+      *valid_mode_changes[regno] = simplifiable_subregs (shape);
     }
 }
 

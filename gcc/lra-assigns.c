@@ -493,7 +493,7 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
   HARD_REG_SET impossible_start_hard_regs, available_regs;
 
   if (hard_reg_set_empty_p (regno_set))
-    COPY_HARD_REG_SET (conflict_set, lra_no_alloc_regs);
+    conflict_set = lra_no_alloc_regs;
   else
     {
       COMPL_HARD_REG_SET (conflict_set, regno_set);
@@ -622,7 +622,7 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
   biggest_nregs = hard_regno_nregs (hard_regno, biggest_mode);
   nregs_diff = (biggest_nregs
 		- hard_regno_nregs (hard_regno, PSEUDO_REGNO_MODE (regno)));
-  COPY_HARD_REG_SET (available_regs, reg_class_contents[rclass]);
+  available_regs = reg_class_contents[rclass];
   AND_COMPL_HARD_REG_SET (available_regs, lra_no_alloc_regs);
   for (i = 0; i < rclass_size; i++)
     {
@@ -1217,7 +1217,7 @@ setup_live_pseudos_and_spill_after_risky_transforms (bitmap
 		  sparseset_set_bit (live_range_hard_reg_pseudos, r2->regno);
 	    }
 	}
-      COPY_HARD_REG_SET (conflict_set, lra_no_alloc_regs);
+      conflict_set = lra_no_alloc_regs;
       IOR_HARD_REG_SET (conflict_set, lra_reg_info[regno].conflict_hard_regs);
       val = lra_reg_info[regno].val;
       offset = lra_reg_info[regno].offset;

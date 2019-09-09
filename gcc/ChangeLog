@@ -1,5 +1,58 @@
 2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hard-reg-set.h (COPY_HARD_REG_SET): Delete.
+	* caller-save.c (save_call_clobbered_regs): Use assignment instead
+	of COPY_HARD_REG_SET.
+	* config/epiphany/epiphany.c (epiphany_compute_frame_size): Likewise.
+	(epiphany_conditional_register_usage): Likewise.
+	* config/frv/frv.c (frv_ifcvt_modify_tests): Likewise.
+	* config/gcn/gcn.c (gcn_md_reorg): Likewise.
+	* config/ia64/ia64.c (ia64_compute_frame_size): Likewise.
+	* config/m32c/m32c.c (m32c_register_move_cost): Likewise.
+	* config/m68k/m68k.c (m68k_conditional_register_usage): Likewise.
+	* config/mips/mips.c (mips_class_max_nregs): Likewise.
+	* config/pdp11/pdp11.c (pdp11_conditional_register_usage): Likewise.
+	* config/rs6000/rs6000.c (rs6000_register_move_cost): Likewise.
+	* config/sh/sh.c (output_stack_adjust): Likewise.
+	* final.c (collect_fn_hard_reg_usage): Likewise.
+	(get_call_reg_set_usage): Likewise.
+	* ira-build.c (ira_create_object, remove_low_level_allocnos)
+	(ira_flattening): Likewise.
+	* ira-color.c (add_allocno_hard_regs, add_allocno_hard_regs_to_forest)
+	(setup_left_conflict_sizes_p, setup_profitable_hard_regs)
+	(get_conflict_and_start_profitable_regs, allocno_reload_assign)
+	(ira_reassign_pseudos): Likewise.
+	* ira-conflicts.c (print_allocno_conflicts): Likewise.
+	(ira_build_conflicts): Likewise.
+	* ira-costs.c (restrict_cost_classes): Likewise.
+	(setup_regno_cost_classes_by_aclass): Likewise.
+	* ira.c (setup_class_hard_regs, setup_alloc_regs): Likewise.
+	(setup_reg_subclasses, setup_class_subset_and_memory_move_costs)
+	(setup_stack_reg_pressure_class, setup_pressure_classes)
+	(setup_allocno_and_important_classes, setup_class_translate_array)
+	(setup_reg_class_relations, setup_prohibited_class_mode_regs)
+	(ira_setup_eliminable_regset): Likewise.
+	* lra-assigns.c (find_hard_regno_for_1): Likewise.
+	(setup_live_pseudos_and_spill_after_risky_transforms): Likewise.
+	* lra-constraints.c (prohibited_class_reg_set_mode_p): Likewise.
+	(process_alt_operands, inherit_in_ebb): Likewise.
+	* lra-lives.c (process_bb_lives): Likewise.
+	* lra-spills.c (assign_spill_hard_regs): Likewise.
+	* lra.c (lra): Likewise.
+	* mode-switching.c (new_seginfo): Likewise.
+	* postreload.c (reload_combine): Likewise.
+	* reg-stack.c (straighten_stack): Likewise.
+	* reginfo.c (save_register_info, restore_register_info): Likewise.
+	(init_reg_sets_1, record_subregs_of_mode): Likewise
+	* regrename.c (create_new_chain, rename_chains): Likewise.
+	* reload1.c (order_regs_for_reload, find_reg): Likewise.
+	(find_reload_regs): Likewise.
+	* resource.c (find_dead_or_set_registers): Likewise.
+	(mark_target_live_regs): Likewise.
+	* sel-sched.c (mark_unavailable_hard_regs): Likewise.
+
+2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* rtl.h (CALL_INSN_FUNCTION_USAGE): Document what SETs mean.
 	(note_pattern_stores): Declare.
 	(note_stores): Take an rtx_insn *.
