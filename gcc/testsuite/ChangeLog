@@ -1,5 +1,8 @@
 2019-09-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/87853
+	* gcc.target/i386/pr87853.c: New test.
+
 	PR target/91704
 	* gcc.target/i386/pr91704.c: New test.
 
