@@ -1,4 +1,6 @@
 /* { dg-require-effective-target untyped_assembly } */
+/* { dg-require-effective-target indirect_calls } */
+
 void
 foo (x, fn)
   void (*fn) ();

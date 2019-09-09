@@ -2374,6 +2374,10 @@ Target supports @code{wchar_t} that is compatible with @code{char32_t}.
 
 @item comdat_group
 Target uses comdat groups.
+
+@item indirect_calls
+Target supports indirect calls, i.e. calls where the target is not
+constant.
 @end table
 
 @subsubsection Local to tests in @code{gcc.target/i386}

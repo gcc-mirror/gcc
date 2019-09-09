@@ -1,5 +1,60 @@
 2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
+	* lib/target-supports.exp (check_effective_target_indirect_calls):
+	New proc.
+	* gcc.c-torture/compile/20010102-1.c: Annotate with
+	dg-require-effective-target indirect_calls.
+	* gcc.c-torture/compile/20010107-1.c: Likewise.
+	* gcc.c-torture/compile/20011109-1.c: Likewise.
+	* gcc.c-torture/compile/20011218-1.c: Likewise.
+	* gcc.c-torture/compile/20011229-1.c: Likewise.
+	* gcc.c-torture/compile/20020129-1.c: Likewise.
+	* gcc.c-torture/compile/20020320-1.c: Likewise.
+	* gcc.c-torture/compile/20020706-1.c: Likewise.
+	* gcc.c-torture/compile/20020706-2.c: Likewise.
+	* gcc.c-torture/compile/20021205-1.c: Likewise.
+	* gcc.c-torture/compile/20030921-1.c: Likewise.
+	* gcc.c-torture/compile/20031023-1.c: Likewise.
+	* gcc.c-torture/compile/20031023-2.c: Likewise.
+	* gcc.c-torture/compile/20031023-3.c: Likewise.
+	* gcc.c-torture/compile/20031023-4.c: Likewise.
+	* gcc.c-torture/compile/20040614-1.c: Likewise.
+	* gcc.c-torture/compile/20040909-1.c: Likewise.
+	* gcc.c-torture/compile/20050122-1.c: Likewise.
+	* gcc.c-torture/compile/20050202-1.c: Likewise.
+	* gcc.c-torture/compile/20060208-1.c: Likewise.
+	* gcc.c-torture/compile/20081108-1.c: Likewise.
+	* gcc.c-torture/compile/20150327.c: Likewise.
+	* gcc.c-torture/compile/920428-2.c: Likewise.
+	* gcc.c-torture/compile/920928-5.c: Likewise.
+	* gcc.c-torture/compile/930117-1.c: Likewise.
+	* gcc.c-torture/compile/930607-1.c: Likewise.
+	* gcc.c-torture/compile/991213-2.c: Likewise.
+	* gcc.c-torture/compile/callind.c: Likewise.
+	* gcc.c-torture/compile/calls-void.c: Likewise.
+	* gcc.c-torture/compile/calls.c: Likewise.
+	* gcc.c-torture/compile/pr21840.c: Likewise.
+	* gcc.c-torture/compile/pr32139.c: Likewise.
+	* gcc.c-torture/compile/pr35607.c: Likewise.
+	* gcc.c-torture/compile/pr37433-1.c: Likewise.
+	* gcc.c-torture/compile/pr37433.c: Likewise.
+	* gcc.c-torture/compile/pr39941.c: Likewise.
+	* gcc.c-torture/compile/pr40080.c: Likewise.
+	* gcc.c-torture/compile/pr43635.c: Likewise.
+	* gcc.c-torture/compile/pr43791.c: Likewise.
+	* gcc.c-torture/compile/pr43845.c: Likewise.
+	* gcc.c-torture/compile/pr44043.c: Likewise.
+	* gcc.c-torture/compile/pr51694.c: Likewise.
+	* gcc.c-torture/compile/pr77754-2.c: Likewise.
+	* gcc.c-torture/compile/pr77754-3.c: Likewise.
+	* gcc.c-torture/compile/pr77754-4.c: Likewise.
+	* gcc.c-torture/compile/pr89663-2.c: Likewise.
+	* gcc.c-torture/compile/pta-1.c: Likewise.
+	* gcc.c-torture/compile/stack-check-1.c: Likewise.
+	* gcc.dg/Walloc-size-larger-than-18.c: Likewise.
+
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
 	* gcc.c-torture/compile/20000609-1.c: Annotate with
 	dg-require-stack-size.
 	* gcc.c-torture/compile/20000804-1.c: Likewise.
