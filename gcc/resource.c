@@ -582,7 +582,7 @@ find_dead_or_set_registers (rtx_insn *target, struct resources *res,
 					      &fallthrough_res, 0, jump_count,
 					      set, needed);
 		  IOR_HARD_REG_SET (fallthrough_res.regs, target_res.regs);
-		  AND_HARD_REG_SET (res->regs, fallthrough_res.regs);
+		  res->regs &= fallthrough_res.regs;
 		  break;
 		}
 	      else

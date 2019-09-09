@@ -62,6 +62,23 @@ struct HARD_REG_SET
     return res;
   }
 
+  HARD_REG_SET
+  operator& (const HARD_REG_SET &other) const
+  {
+    HARD_REG_SET res;
+    for (unsigned int i = 0; i < ARRAY_SIZE (elts); ++i)
+      res.elts[i] = elts[i] & other.elts[i];
+    return res;
+  }
+
+  HARD_REG_SET &
+  operator&= (const HARD_REG_SET &other)
+  {
+    for (unsigned int i = 0; i < ARRAY_SIZE (elts); ++i)
+      elts[i] &= other.elts[i];
+    return *this;
+  }
+
   HARD_REG_ELT_TYPE elts[HARD_REG_SET_LONGS];
 };
 typedef const HARD_REG_SET &const_hard_reg_set;
@@ -92,10 +109,10 @@ struct hard_reg_set_container
    CLEAR_HARD_REG_SET and SET_HARD_REG_SET.
    These take just one argument.
 
-   Also define macros for combining hard reg sets:
-   IOR_HARD_REG_SET and AND_HARD_REG_SET.
-   These take two arguments TO and FROM; they read from FROM
-   and combine bitwise into TO.  Define also two variants
+   Also define a macro for combining hard reg sets:
+   IOR_HARD_REG_SET
+   This takes two arguments TO and FROM; it reads from FROM
+   and combines bitwise into TO.  Define also
    IOR_COMPL_HARD_REG_SET and AND_COMPL_HARD_REG_SET
    which use the complement of the set FROM.
 
@@ -122,7 +139,6 @@ struct hard_reg_set_container
 
 #define IOR_HARD_REG_SET(TO, FROM) ((TO) |= (FROM))
 #define IOR_COMPL_HARD_REG_SET(TO, FROM) ((TO) |= ~ (FROM))
-#define AND_HARD_REG_SET(TO, FROM) ((TO) &= (FROM))
 #define AND_COMPL_HARD_REG_SET(TO, FROM) ((TO) &= ~ (FROM))
 
 static inline bool
@@ -184,13 +200,6 @@ SET_HARD_REG_SET (HARD_REG_SET &set)
 {
   for (unsigned int i = 0; i < ARRAY_SIZE (set.elts); ++i)
     set.elts[i] = -1;
-}
-
-inline void
-AND_HARD_REG_SET (HARD_REG_SET &to, const_hard_reg_set from)
-{
-  for (unsigned int i = 0; i < ARRAY_SIZE (to.elts); ++i)
-    to.elts[i] &= from.elts[i];
 }
 
 inline void

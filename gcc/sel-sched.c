@@ -1245,8 +1245,7 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
   /* Leave only registers available for this mode.  */
   if (!sel_hrd.regs_for_mode_ok[mode])
     init_regs_for_mode (mode);
-  AND_HARD_REG_SET (reg_rename_p->available_for_renaming,
-                    sel_hrd.regs_for_mode[mode]);
+  reg_rename_p->available_for_renaming &= sel_hrd.regs_for_mode[mode];
 
   /* Exclude registers that are partially call clobbered.  */
   if (def->crosses_call

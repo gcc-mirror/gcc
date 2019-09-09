@@ -254,9 +254,7 @@ restrict_cost_classes (cost_classes_t full, machine_mode mode,
 
       /* Calculate the set of registers in CL that belong to REGS and
 	 are valid for MODE.  */
-      HARD_REG_SET valid_for_cl;
-      valid_for_cl = reg_class_contents[cl];
-      AND_HARD_REG_SET (valid_for_cl, regs);
+      HARD_REG_SET valid_for_cl = reg_class_contents[cl] & regs;
       AND_COMPL_HARD_REG_SET (valid_for_cl,
 			      ira_prohibited_class_mode_regs[cl][mode]);
       AND_COMPL_HARD_REG_SET (valid_for_cl, ira_no_alloc_regs);
