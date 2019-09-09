@@ -215,19 +215,20 @@ am_libgotool_a_OBJECTS =
 libgotool_a_OBJECTS = $(am_libgotool_a_OBJECTS)
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 @LIBGO_IS_LINUX_TRUE@am__DEPENDENCIES_1 = syscall/clone_linux.lo
-am__DEPENDENCIES_2 = $(addsuffix .lo,$(PACKAGES)) \
+@LIBGO_IS_X86_TRUE@am__DEPENDENCIES_2 = golang.org/x/sys/cpu_gccgo.lo
+am__DEPENDENCIES_3 = $(addsuffix .lo,$(PACKAGES)) \
 	internal/bytealg/bytealg.lo reflect/makefunc_ffi_c.lo \
 	$(am__DEPENDENCIES_1) syscall/errno.lo syscall/signame.lo \
 	syscall/wait.lo $(golangorg_x_net_lif_lo) \
 	$(golangorg_x_net_route_lo) log/syslog/syslog_c.lo \
 	runtime/internal/atomic_c.lo sync/atomic_c.lo \
-	internal/cpu/cpu_gccgo.lo golang.org/x/sys/cpu_gccgo.lo
-am__DEPENDENCIES_3 =
-am__DEPENDENCIES_4 = $(am__DEPENDENCIES_2) \
-	../libbacktrace/libbacktrace.la $(am__DEPENDENCIES_3) \
-	$(am__DEPENDENCIES_3) $(am__DEPENDENCIES_3) \
-	$(am__DEPENDENCIES_3) $(am__DEPENDENCIES_3)
-libgo_llgo_la_DEPENDENCIES = $(am__DEPENDENCIES_4)
+	internal/cpu/cpu_gccgo.lo $(am__DEPENDENCIES_2)
+am__DEPENDENCIES_4 =
+am__DEPENDENCIES_5 = $(am__DEPENDENCIES_3) \
+	../libbacktrace/libbacktrace.la $(am__DEPENDENCIES_4) \
+	$(am__DEPENDENCIES_4) $(am__DEPENDENCIES_4) \
+	$(am__DEPENDENCIES_4) $(am__DEPENDENCIES_4)
+libgo_llgo_la_DEPENDENCIES = $(am__DEPENDENCIES_5)
 @LIBGO_IS_RTEMS_TRUE@am__objects_1 =  \
 @LIBGO_IS_RTEMS_TRUE@	runtime/rtems-task-variable-add.lo
 am__objects_2 = runtime/aeshash.lo runtime/go-assert.lo \
@@ -254,7 +255,7 @@ libgo_llgo_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libgo_llgo_la_LDFLAGS) $(LDFLAGS) -o $@
 @GOC_IS_LLGO_TRUE@am_libgo_llgo_la_rpath = -rpath $(toolexeclibdir)
-libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_4)
+libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_5)
 am_libgo_la_OBJECTS = $(am__objects_2)
 libgo_la_OBJECTS = $(am_libgo_la_OBJECTS)
 libgo_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -906,6 +907,8 @@ SYSINFO_FLAGS = \
 
 @LIBGO_IS_LINUX_FALSE@syscall_lib_clone_lo = 
 @LIBGO_IS_LINUX_TRUE@syscall_lib_clone_lo = syscall/clone_linux.lo
+@LIBGO_IS_X86_FALSE@golangorg_x_sys_cpu_gccgo_lo = 
+@LIBGO_IS_X86_TRUE@golangorg_x_sys_cpu_gccgo_lo = golang.org/x/sys/cpu_gccgo.lo
 PACKAGES = $(shell cat $(srcdir)/libgo-packages.txt)
 libgo_go_objs = \
 	$(addsuffix .lo,$(PACKAGES)) \
@@ -922,7 +925,7 @@ libgo_go_objs = \
 	runtime/internal/atomic_c.lo \
 	sync/atomic_c.lo \
 	internal/cpu/cpu_gccgo.lo \
-	golang.org/x/sys/cpu_gccgo.lo
+	$(golangorg_x_sys_cpu_gccgo_lo)
 
 libgo_ldflags = \
 	-version-info $(libtool_VERSION) $(PTHREAD_CFLAGS) $(AM_LDFLAGS)

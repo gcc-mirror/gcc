@@ -662,6 +662,8 @@ GO_SYSCALL_OS_FILE
 GO_LIBCALL_OS_ARCH_FILE
 GO_LIBCALL_OS_FILE
 FUNCTION_DESCRIPTORS
+LIBGO_IS_X86_FALSE
+LIBGO_IS_X86_TRUE
 ALLGOARCHFAMILY
 ALLGOARCH
 GOARCH
@@ -11484,7 +11486,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11487 "configure"
+#line 11489 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11590,7 +11592,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11593 "configure"
+#line 11595 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14229,6 +14231,15 @@ esac
 
 
 
+ if test "$GOARCH" = "386" -o "$GOARCH" = "amd64" -o "$GOARCH" = "amd64p32"; then
+  LIBGO_IS_X86_TRUE=
+  LIBGO_IS_X86_FALSE='#'
+else
+  LIBGO_IS_X86_TRUE='#'
+  LIBGO_IS_X86_FALSE=
+fi
+
+
 FUNCTION_DESCRIPTORS=false
 case ${host} in
   rs6000*-*-* | powerpc*-*-*)
@@ -16036,6 +16047,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_BSD_TRUE}" && test -z "${LIBGO_IS_BSD_FALSE}"; then
   as_fn_error $? "conditional \"LIBGO_IS_BSD\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_X86_TRUE}" && test -z "${LIBGO_IS_X86_FALSE}"; then
+  as_fn_error $? "conditional \"LIBGO_IS_X86\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USING_SPLIT_STACK_TRUE}" && test -z "${USING_SPLIT_STACK_FALSE}"; then

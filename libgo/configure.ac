@@ -354,6 +354,8 @@ AC_SUBST(GOARCH)
 AC_SUBST(ALLGOARCH)
 AC_SUBST(ALLGOARCHFAMILY)
 
+AM_CONDITIONAL(LIBGO_IS_X86, test "$GOARCH" = "386" -o "$GOARCH" = "amd64" -o "$GOARCH" = "amd64p32")
+
 FUNCTION_DESCRIPTORS=false
 case ${host} in
   rs6000*-*-* | powerpc*-*-*)

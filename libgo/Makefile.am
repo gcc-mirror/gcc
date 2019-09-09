@@ -683,6 +683,12 @@ else
 syscall_lib_clone_lo =
 endif
 
+if LIBGO_IS_X86
+golangorg_x_sys_cpu_gccgo_lo = golang.org/x/sys/cpu_gccgo.lo
+else
+golangorg_x_sys_cpu_gccgo_lo =
+endif
+
 PACKAGES = $(shell cat $(srcdir)/libgo-packages.txt)
 
 libgo_go_objs = \
@@ -700,7 +706,7 @@ libgo_go_objs = \
 	runtime/internal/atomic_c.lo \
 	sync/atomic_c.lo \
 	internal/cpu/cpu_gccgo.lo \
-	golang.org/x/sys/cpu_gccgo.lo
+	$(golangorg_x_sys_cpu_gccgo_lo)
 
 libgo_ldflags = \
 	-version-info $(libtool_VERSION) $(PTHREAD_CFLAGS) $(AM_LDFLAGS)
