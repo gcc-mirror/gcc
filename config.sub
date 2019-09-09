@@ -2,7 +2,7 @@
 # Configuration validation subroutine script.
 #   Copyright 1992-2019 Free Software Foundation, Inc.
 
-timestamp='2019-01-01'
+timestamp='2019-06-30'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -337,16 +337,13 @@ case $1 in
 				basic_machine=m88k-harris
 				os=sysv3
 				;;
-			hp300)
+			hp300 | hp300hpux)
 				basic_machine=m68k-hp
+				os=hpux
 				;;
 			hp300bsd)
 				basic_machine=m68k-hp
 				os=bsd
-				;;
-			hp300hpux)
-				basic_machine=m68k-hp
-				os=hpux
 				;;
 			hppaosf)
 				basic_machine=hppa1.1-hp
@@ -359,10 +356,6 @@ case $1 in
 			i386mach)
 				basic_machine=i386-mach
 				os=mach
-				;;
-			vsta)
-				basic_machine=i386-pc
-				os=vsta
 				;;
 			isi68 | isi)
 				basic_machine=m68k-isi
@@ -612,6 +605,10 @@ case $1 in
 				basic_machine=vax-dec
 				os=vms
 				;;
+			vsta)
+				basic_machine=i386-pc
+				os=vsta
+				;;
 			vxworks960)
 				basic_machine=i960-wrs
 				os=vxworks
@@ -822,7 +819,9 @@ case $basic_machine in
 		cpu=m68k
 		vendor=next
 		case $os in
-		    nextstep* )
+		    openstep*)
+		        ;;
+		    nextstep*)
 			;;
 		    ns2*)
 		      os=nextstep2
@@ -919,7 +918,7 @@ case $basic_machine in
 		;;
 
 	*-*)
-	    	# shellcheck disable=SC2162
+		# shellcheck disable=SC2162
 		IFS="-" read cpu vendor <<EOF
 $basic_machine
 EOF
@@ -1170,7 +1169,7 @@ case $cpu-$vendor in
 			| asmjs \
 			| ba \
 			| be32 | be64 \
-			| bfin | bs2000 \
+			| bfin | bpf | bs2000 \
 			| c[123]* | c30 | [cjt]90 | c4x \
 			| c8051 | clipper | craynv | csky | cydra \
 			| d10v | d30v | dlx | dsp16xx \
@@ -1185,13 +1184,13 @@ case $cpu-$vendor in
 			| le32 | le64 \
 			| lm32 \
 			| m32c | m32r | m32rle \
-			| m5200 | m68000 | m680[012346]0 | m68360 | m683?2 | m68k | v70 | w65 \
-			| m6811 | m68hc11 | m6812 | m68hc12 | m68hcs12x | nvptx | picochip \
+			| m5200 | m68000 | m680[012346]0 | m68360 | m683?2 | m68k \
+			| m6811 | m68hc11 | m6812 | m68hc12 | m68hcs12x \
 			| m88110 | m88k | maxq | mb | mcore | mep | metag \
 			| microblaze | microblazeel \
 			| mips | mipsbe | mipseb | mipsel | mipsle \
 			| mips16 \
-			| mips64 | mips64el \
+			| mips64 | mips64eb | mips64el \
 			| mips64octeon | mips64octeonel \
 			| mips64orion | mips64orionel \
 			| mips64r5900 | mips64r5900el \
@@ -1218,11 +1217,12 @@ case $cpu-$vendor in
 			| nds32 | nds32le | nds32be \
 			| nfp \
 			| nios | nios2 | nios2eb | nios2el \
-			| none | np1 | ns16k | ns32k \
+			| none | np1 | ns16k | ns32k | nvptx \
 			| open8 \
 			| or1k* \
 			| or32 \
 			| orion \
+			| picochip \
 			| pdp10 | pdp11 | pj | pjl | pn | power \
 			| powerpc | powerpc64 | powerpc64le | powerpcle | powerpcspe \
 			| pru \
@@ -1230,7 +1230,8 @@ case $cpu-$vendor in
 			| riscv | riscv32 | riscv64 \
 			| rl78 | romp | rs6000 | rx \
 			| score \
-			| sh | sh[1234] | sh[24]a | sh[24]ae[lb] | sh[23]e | she[lb] | sh[lb]e \
+			| sh | shl \
+			| sh[1234] | sh[24]a | sh[24]ae[lb] | sh[23]e | she[lb] | sh[lb]e \
 			| sh[1234]e[lb] |  sh[12345][lb]e | sh[23]ele | sh64 | sh64le \
 			| sparc | sparc64 | sparc64b | sparc64v | sparc86x | sparclet \
 			| sparclite \
@@ -1240,10 +1241,11 @@ case $cpu-$vendor in
 			| tic30 | tic4x | tic54x | tic55x | tic6x | tic80 \
 			| tron \
 			| ubicom32 \
-			| v850 | v850e | v850e1 | v850es | v850e2 | v850e2v3 \
+			| v70 | v850 | v850e | v850e1 | v850es | v850e2 | v850e2v3 \
 			| vax \
 			| visium \
-			| wasm32 \
+			| w65 \
+			| wasm32 | wasm64 \
 			| we32k \
 			| x86 | x86_64 | xc16x | xgate | xps100 \
 			| xstormy16 | xtensa* \
@@ -1345,7 +1347,7 @@ case $os in
 	     | nindy* | vxsim* | vxworks* | ebmon* | hms* | mvs* \
 	     | clix* | riscos* | uniplus* | iris* | isc* | rtu* | xenix* \
 	     | knetbsd* | mirbsd* | netbsd* \
-	     | bitrig* | openbsd* | solidbsd* | libertybsd* \
+	     | bitrig* | openbsd* | solidbsd* | libertybsd* | os108* \
 	     | ekkobsd* | kfreebsd* | freebsd* | riscix* | lynxos* \
 	     | bosx* | nextstep* | cxux* | aout* | elf* | oabi* \
 	     | ptx* | coff* | ecoff* | winnt* | domain* | vsta* \
@@ -1363,7 +1365,8 @@ case $os in
 	     | powermax* | dnix* | nx6 | nx7 | sei* | dragonfly* \
 	     | skyos* | haiku* | rdos* | toppers* | drops* | es* \
 	     | onefs* | tirtos* | phoenix* | fuchsia* | redox* | bme* \
-	     | midnightbsd* | amdhsa* | unleashed* | emscripten*)
+	     | midnightbsd* | amdhsa* | unleashed* | emscripten* | wasi* \
+	     | nsk* | powerunix)
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	qnx*)
@@ -1446,9 +1449,6 @@ case $os in
 		;;
 	ns2)
 		os=nextstep2
-		;;
-	nsk*)
-		os=nsk
 		;;
 	# Preserve the version number of sinix5.
 	sinix5.*)
