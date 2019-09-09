@@ -4559,7 +4559,7 @@ contains_reg_p (rtx x, bool hard_reg_p, bool spilled_p)
 	    regno = lra_get_regno_hard_regno (regno);
 	  if (regno < 0)
 	    return false;
-	  COMPL_HARD_REG_SET (alloc_regs, lra_no_alloc_regs);
+	  alloc_regs = ~lra_no_alloc_regs;
 	  return overlaps_hard_reg_set_p (alloc_regs, GET_MODE (x), regno);
 	}
       else

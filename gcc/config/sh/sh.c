@@ -6908,11 +6908,8 @@ push_regs (HARD_REG_SET *mask, bool interrupt_handler)
       if (i == FIRST_FP_REG && interrupt_handler && TARGET_FMOVD
 	  && hard_reg_set_intersect_p (*mask, reg_class_contents[DF_REGS]))
 	{
-	  HARD_REG_SET unsaved;
-
 	  push (FPSCR_REG);
-	  COMPL_HARD_REG_SET (unsaved, *mask);
-	  fpscr_set_from_mem (NORMAL_MODE (FP_MODE), unsaved);
+	  fpscr_set_from_mem (NORMAL_MODE (FP_MODE), ~*mask);
 	  skip_fpscr = true;
 	}
       if (i != PR_REG
