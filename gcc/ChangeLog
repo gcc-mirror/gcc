@@ -1,5 +1,21 @@
 2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hard-reg-set.h (HARD_REG_SET::operator==): New function.
+	(HARD_REG_SET::operator!=): Likewise.
+	(hard_reg_set_equal_p): Delete.
+	* cfgcleanup.c (old_insns_match_p): Use == instead of
+	hard_reg_set_equal_p and != instead of !hard_reg_set_equal_p.
+	* ira-color.c (allocno_hard_regs_hasher::equal): Likewise.
+	(add_allocno_hard_regs_to_forest): Likewise.
+	(setup_allocno_available_regs_num): Likewise.
+	* ira.c (setup_pressure_classes): Likewise.
+	(setup_allocno_and_important_classes): Likewise.
+	(setup_reg_class_relations): Likewise.
+	* lra-lives.c (process_bb_lives): Likewise.
+	* reg-stack.c (change_stack, convert_regs_1): Likewise.
+
+2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hard-reg-set.h (IOR_COMPL_HARD_REG_SET): Delete.
 	* config/aarch64/cortex-a57-fma-steering.c (rename_single_chain):
 	Use "|~" instead of IOR_COMPL_HARD_REG_SET.

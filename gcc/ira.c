@@ -841,8 +841,7 @@ setup_pressure_classes (void)
 	      temp_hard_regset2 = (reg_class_contents[cl2]
 				   & ~no_unit_alloc_regs);
 	      if (hard_reg_set_subset_p (temp_hard_regset, temp_hard_regset2)
-		  && (! hard_reg_set_equal_p (temp_hard_regset,
-					      temp_hard_regset2)
+		  && (temp_hard_regset != temp_hard_regset2
 		      || cl2 == (int) GENERAL_REGS))
 		{
 		  pressure_classes[curr++] = (enum reg_class) cl2;
@@ -850,11 +849,10 @@ setup_pressure_classes (void)
 		  continue;
 		}
 	      if (hard_reg_set_subset_p (temp_hard_regset2, temp_hard_regset)
-		  && (! hard_reg_set_equal_p (temp_hard_regset2,
-					      temp_hard_regset)
+		  && (temp_hard_regset2 != temp_hard_regset
 		      || cl == (int) GENERAL_REGS))
 		continue;
-	      if (hard_reg_set_equal_p (temp_hard_regset2, temp_hard_regset))
+	      if (temp_hard_regset2 == temp_hard_regset)
 		insert_p = false;
 	      pressure_classes[curr++] = (enum reg_class) cl2;
 	    }
@@ -999,8 +997,7 @@ setup_allocno_and_important_classes (void)
 	{
 	  cl = classes[j];
 	  temp_hard_regset2 = reg_class_contents[cl] & ~no_unit_alloc_regs;
-	  if (hard_reg_set_equal_p (temp_hard_regset,
-				    temp_hard_regset2))
+	  if (temp_hard_regset == temp_hard_regset2)
 	    break;
 	}
       if (j >= n || targetm.additional_allocno_class_p (i))
@@ -1273,7 +1270,7 @@ setup_reg_class_relations (void)
 			     the same, prefer GENERAL_REGS or the
 			     smallest class for debugging
 			     purposes.  */
-			  || (hard_reg_set_equal_p (temp_hard_regset, temp_set2)
+			  || (temp_hard_regset == temp_set2
 			      && (cl3 == GENERAL_REGS
 				  || ((ira_reg_class_intersect[cl1][cl2]
 				       != GENERAL_REGS)
@@ -1290,7 +1287,7 @@ setup_reg_class_relations (void)
 		  if (! hard_reg_set_subset_p (temp_hard_regset, temp_set2)
 		      /* Ignore unavailable hard registers and prefer
 			 smallest class for debugging purposes.  */
-		      || (hard_reg_set_equal_p (temp_hard_regset, temp_set2)
+		      || (temp_hard_regset == temp_set2
 			  && hard_reg_set_subset_p
 			     (reg_class_contents[cl3],
 			      reg_class_contents
@@ -1309,8 +1306,7 @@ setup_reg_class_relations (void)
 	 	  if (ira_reg_class_subunion[cl1][cl2] == NO_REGS
 		      || (hard_reg_set_subset_p (temp_set2, temp_hard_regset)
 			  
-			  && (! hard_reg_set_equal_p (temp_set2,
-						      temp_hard_regset)
+			  && (temp_set2 != temp_hard_regset
 			      || cl3 == GENERAL_REGS
 			      /* If the allocatable hard register sets are the
 				 same, prefer GENERAL_REGS or the smallest
@@ -1333,8 +1329,7 @@ setup_reg_class_relations (void)
 	 	  if (ira_reg_class_superunion[cl1][cl2] == NO_REGS
 		      || (hard_reg_set_subset_p (temp_hard_regset, temp_set2)
 
-			  && (! hard_reg_set_equal_p (temp_set2,
-						      temp_hard_regset)
+			  && (temp_set2 != temp_hard_regset
 			      || cl3 == GENERAL_REGS
 			      /* If the allocatable hard register sets are the
 				 same, prefer GENERAL_REGS or the smallest

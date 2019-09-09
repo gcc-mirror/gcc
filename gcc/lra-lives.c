@@ -936,8 +936,8 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 				      call_used_reg_set);
 
 	      bool flush = (! hard_reg_set_empty_p (last_call_used_reg_set)
-			    && ( ! hard_reg_set_equal_p (last_call_used_reg_set,
-						       this_call_used_reg_set)))
+			    && (last_call_used_reg_set
+				!= this_call_used_reg_set))
 			   || (last_call_insn && ! calls_have_same_clobbers_p
 						     (call_insn,
 						      last_call_insn));
