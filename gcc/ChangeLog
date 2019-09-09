@@ -1,5 +1,9 @@
 2019-09-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/87853
+	* config/i386/emmintrin.h (_mm_cmpeq_epi8): Use casts to __v16qi
+	instead of __v16qs.
+
 	PR target/91704
 	* config/i386/avxintrin.h (__v32qs): New typedef.
 	* config/i386/avx2intrin.h (_mm256_cmpgt_epi8): Use casts to __v32qs
