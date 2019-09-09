@@ -1,3 +1,37 @@
+2019-09-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (__adl_to_address): Remove.
+	* include/std/span (__is_base_derived_safe_convertible_v): Replace
+	with span::__is_compatible.
+	(__is_std_array_v): Replace with __is_std_array class template and
+	partial specializations.
+	(__is_std_array, __is_std_span): New class templates and partial
+	specializations.
+	(span::__is_compatible): New alias template for SFINAE constraints.
+	(span::span(element_type (&)[N])): Remove redundant constraints. Do
+	not use __adl_data to obtain a pointer.
+	(span::span(array<value_type, N>&)): Likewise.
+	(span::span(const array<value_type, N>&)): Likewise.
+	[_GLIBCXX_P1394] (span::iter_reference_t, span::iterator_t)
+	(span::iter_value_t, span::derived_from): New alias templates for
+	SFINAE constraints, until the equivalents are supported in <concepts>
+	and <iterator>.
+	[_GLIBCXX_P1394] (span::__is_compatible_iterator): New alias template
+	for SFINAE constraints.
+	[_GLIBCXX_P1394] (span::is_compatible_range): New class template for
+	SFINAE constraints.
+	[_GLIBCXX_P1394] (span::span(Range&&)): Improve constraints.
+	[_GLIBCXX_P1394] (span::span(ContiguousIterator, Sentinel)): Likewise.
+	Use std::to_address instead of __adl_to_address.
+	[_GLIBCXX_P1394] (span::span(ContiguousIterator, size_type)): Likewise.
+	[!_GLIBCXX_P1394] (span::__is_compatible_container): New alias
+	template for SFINAE constraints.
+	[!_GLIBCXX_P1394] (span::span(Container&))
+	(span::span(const Container&)): Improve constraints.
+	[!_GLIBCXX_P1394] (span::span(pointer, size_type))
+	(span::span(pointer, pointer)): Remove redundant cast of pointer.
+	(span(const span<OType, OExtent>&)): New constructor.
+
 2019-09-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/range_access.h (ssize): Define for C++20.

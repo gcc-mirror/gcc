@@ -53,24 +53,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   inline constexpr size_t dynamic_extent = static_cast<size_t>(-1);
 
+  template<typename _Type, size_t _Extent>
+    class span;
+
   namespace __detail
   {
-    template<typename _Element, typename _ToElement>
-      static constexpr inline bool __is_base_derived_safe_convertible_v
-	= is_convertible_v<_Element (*)[], _ToElement (*)[]>;
-
     template<typename _Tp>
-      inline constexpr bool __is_std_array_v = false;
+      struct __is_std_span : false_type { };
 
     template<typename _Tp, size_t _Num>
-      inline constexpr bool
-      __is_std_array_v<_GLIBCXX_STD_C::array<_Tp, _Num>> = true;
+      struct __is_std_span<span<_Tp, _Num>> : true_type { };
+
+    template<typename _Tp>
+      struct __is_std_array : false_type { };
+
+    template<typename _Tp, size_t _Num>
+      struct __is_std_array<_GLIBCXX_STD_C::array<_Tp, _Num>> : true_type { };
 
 #ifdef _GLIBCXX_DEBUG
     template<typename _Tp, size_t _Num>
-      inline constexpr bool
-      __is_std_array_v<std::__debug::array<_Tp, _Num>> = true;
-#endif // debug/array
+      struct __is_std_array<__debug::array<_Tp, _Num>> : true_type { };
+#endif
 
     template<size_t _Extent>
       class __extent_storage
@@ -119,6 +122,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return dynamic_extent;
 	}
 
+      template<typename _Tp>
+	using __is_compatible = is_convertible<_Tp(*)[], _Type(*)[]>;
+
     public:
       // member types
       using value_type             = remove_cv_t<_Type>;
@@ -154,41 +160,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       span(const span&) noexcept = default;
 
       template<size_t _ArrayExtent,
-	enable_if_t<
-	  (_Extent == dynamic_extent || _ArrayExtent == _Extent)
-	  && __detail::__is_base_derived_safe_convertible_v<
-	    remove_pointer_t<decltype(::std::__adl_data(
-	      ::std::declval<element_type (&)[_ArrayExtent]>()))>,
-	    element_type>>* = nullptr>
-	constexpr span(element_type (&__arr)[_ArrayExtent])
-	noexcept(noexcept(::std::__adl_data(__arr)))
-	: span(::std::__adl_data(__arr), _ArrayExtent)
+	enable_if_t<_Extent == dynamic_extent || _ArrayExtent == _Extent>*
+	  = nullptr>
+	constexpr
+	span(element_type (&__arr)[_ArrayExtent]) noexcept
+	: span(static_cast<pointer>(__arr), _ArrayExtent)
 	{ }
 
       template<size_t _ArrayExtent,
-	enable_if_t<
-	  (_Extent == dynamic_extent || _ArrayExtent == _Extent)
-	  && __detail::__is_base_derived_safe_convertible_v<
-	    remove_pointer_t<decltype(::std::__adl_data(
-	      ::std::declval<const array<value_type, _ArrayExtent>&>()))>,
-	    element_type>>* = nullptr>
+	enable_if_t<_Extent == dynamic_extent || _ArrayExtent == _Extent>*
+	  = nullptr>
 	constexpr
-	span(array<value_type, _ArrayExtent>& __arr)
-	noexcept(noexcept(::std::__adl_data(__arr)))
-	: span(::std::__adl_data(__arr), _ArrayExtent)
+	span(array<value_type, _ArrayExtent>& __arr) noexcept
+	: span(__arr.data(), _ArrayExtent)
 	{ }
 
       template<size_t _ArrayExtent,
-	enable_if_t<
-	  (_Extent == dynamic_extent || _ArrayExtent == _Extent)
-	  && __detail::__is_base_derived_safe_convertible_v<
-	    remove_pointer_t<decltype(::std::__adl_data(
-	      ::std::declval<const array<value_type, _ArrayExtent>&>()))>,
-	    element_type>>* = nullptr>
+	enable_if_t<_Extent == dynamic_extent || _ArrayExtent == _Extent>*
+	  = nullptr>
 	constexpr
-	span(const array<value_type, _ArrayExtent>& __arr)
-	noexcept(noexcept(::std::__adl_data(__arr)))
-	: span(::std::__adl_data(__arr), _ArrayExtent)
+	span(const array<value_type, _ArrayExtent>& __arr) noexcept
+	: span(__arr.data(), _ArrayExtent)
 	{ }
 
       // NOTE: when the time comes, and P1394 -
@@ -199,18 +191,49 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // and keep the crappy #else block
       // and then cry that NB comments failed C++20...
       // but maybe for C++23?
-#if defined(_GLIBCXX_P1394) && _GLIBCXX_P1394
-      template<typename _Range,
-	enable_if_t<
-	  (_Extent == dynamic_extent)
-	  && !is_same_v<remove_cvref_t<_Range>, span>
-	  && !__detail::__is_std_array_v<remove_cvref_t<_Range>>
-	  && !is_array_v<remove_cvref_t<_Range>>
-	  && __detail::__is_base_derived_safe_convertible_v<
-	    remove_pointer_t<decltype(
-	      ::std::__adl_data(::std::declval<_Range&>())
-	      + ::std::__adl_size(::std::declval<_Range&>()))>,
-	    element_type>>* = nullptr>
+#ifdef _GLIBCXX_P1394
+    private:
+      // FIXME: use std::iter_reference_t
+      template<typename _Iterator>
+	using iter_reference_t = decltype(*std::declval<_Iterator&>());
+      // FIXME: use std::ranges::iterator_t
+      // N.B. constraint is needed to prevent a cycle when __adl_begin finds
+      // begin(span) which does overload resolution on span(Range&&).
+      template<typename _Rng,
+	       typename _Rng2 = remove_cvref_t<_Rng>,
+	       typename = enable_if_t<!__detail::__is_std_span<_Rng2>::value>>
+	using iterator_t = decltype(std::__adl_begin(std::declval<_Rng&>()));
+      // FIXME: use std::iter_value_t
+      template<typename _Iter>
+	using iter_value_t = typename iterator_traits<_Iter>::value_type;
+      // FIXME: use std::derived_from concept
+      template<typename _Derived, typename _Base>
+	using derived_from
+	  = __and_<is_base_of<_Base, _Derived>,
+	      is_convertible<const volatile _Derived*, const volatile _Base*>>;
+      // FIXME: require contiguous_iterator<_Iterator>
+      template<typename _Iter,
+	       typename _Ref = iter_reference_t<_Iter>,
+	       typename _Traits = iterator_traits<_Iter>,
+	       typename _Tag = typename _Traits::iterator_category>
+	using __is_compatible_iterator
+	  = __and_<derived_from<_Tag, random_access_iterator_tag>,
+		   is_lvalue_reference<_Ref>,
+		   is_same<iter_value_t<_Iter>, remove_cvref_t<_Ref>>,
+		   __is_compatible<remove_reference_t<_Ref>>>;
+
+      template<typename _Range>
+	using __is_compatible_range
+	  = __is_compatible_iterator<iterator_t<_Range>>;
+
+    public:
+      template<typename _Range, typename = _Require<
+	  bool_constant<_Extent == dynamic_extent>,
+	  __not_<__detail::__is_std_span<remove_cvref_t<_Range>>>,
+	  __not_<__detail::__is_std_array<remove_cvref_t<_Range>>>,
+	  __not_<is_array<remove_reference_t<_Range>>>,
+	  __is_compatible_range<_Range>>,
+	  typename = decltype(std::__adl_data(std::declval<_Range&>()))>
 	constexpr
 	span(_Range&& __range)
 	noexcept(noexcept(::std::__adl_data(__range))
@@ -218,71 +241,76 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: span(::std::__adl_data(__range), ::std::__adl_size(__range))
 	{ }
 
-      template<typename _ContiguousIterator, typename _Sentinel,
-	enable_if_t<!is_convertible_v<_Sentinel, index_type>
-	  && __detail::__is_base_derived_safe_convertible_v<
-	    remove_reference_t<typename
-	      iterator_traits<_ContiguousIterator>::reference>,
-	  element_type>>* = nullptr>
+      template<typename _ContiguousIterator, typename _Sentinel, typename
+		= _Require<__not_<is_convertible<_Sentinel, index_type>>,
+			   __is_compatible_iterator<_ContiguousIterator>>>
 	constexpr
 	span(_ContiguousIterator __first, _Sentinel __last)
-	: span(::std::move(__first), static_cast<index_type>(__last - __first))
-	{ }
+	: _M_extent(static_cast<index_type>(__last - __first)),
+	  _M_ptr(std::to_address(__first))
+	{
+	  if (_Extent != dynamic_extent)
+	    __glibcxx_assert((__last - __first) == _Extent);
+	}
 
-      template<typename _ContiguousIterator>
+      template<typename _ContiguousIterator, typename
+		= _Require<__is_compatible_iterator<_ContiguousIterator>>>
 	constexpr
 	span(_ContiguousIterator __first, index_type __count)
-	noexcept(noexcept(::std::__adl_to_address(__first)))
-	: _M_extent(__count), _M_ptr(::std::__adl_to_address(__first))
+	noexcept(noexcept(std::to_address(__first)))
+	: _M_extent(__count), _M_ptr(std::to_address(__first))
 	{ __glibcxx_assert(_Extent == dynamic_extent || __count == _Extent); }
-
 #else
-
+    private:
       template<typename _Container,
-	enable_if_t<
-	  (_Extent == dynamic_extent)
-	  && !is_same_v<remove_cvref_t<_Container>, span>
-	  && !__detail::__is_std_array_v<remove_cvref_t<_Container>>
-	  && !is_array_v<remove_cvref_t<_Container>>
-	  && __detail::__is_base_derived_safe_convertible_v<
-	    remove_pointer_t<decltype(
-	      ::std::__adl_data(::std::declval<_Container&>())
-	      + ::std::__adl_size(::std::declval<_Container&>()))>,
-	    element_type>>* = nullptr>
+	  typename _DataT = decltype(std::data(std::declval<_Container&>())),
+	  typename _SizeT = decltype(std::size(std::declval<_Container&>()))>
+	using __is_compatible_container
+	  = __is_compatible<remove_pointer_t<_DataT>>;
+
+    public:
+      template<typename _Container, typename = _Require<
+		bool_constant<_Extent == dynamic_extent>,
+		__not_<__detail::__is_std_span<_Container>>,
+		__not_<__detail::__is_std_array<_Container>>,
+		__not_<is_array<_Container>>,
+		__is_compatible_container<_Container>>>
 	constexpr
-	span(_Container& __range)
-	noexcept(noexcept(::std::__adl_data(__range))
-		  && noexcept(::std::__adl_size(__range)))
-	: span(::std::__adl_data(__range), ::std::__adl_size(__range))
+	span(_Container& __cont)
+	noexcept(noexcept(std::data(__cont)) && noexcept(std::size(__cont)))
+	: _M_extent(std::size(__cont)), _M_ptr(std::data(__cont))
 	{ }
 
-      template<typename _Container,
-	enable_if_t<
-	  (_Extent == dynamic_extent)
-	  && !is_same_v<remove_cvref_t<_Container>, span>
-	  && !__detail::__is_std_array_v<remove_cvref_t<_Container>>
-	  && !is_array_v<remove_cvref_t<_Container>>
-	  && __detail::__is_base_derived_safe_convertible_v<
-	    remove_pointer_t<decltype(
-	      ::std::__adl_data(::std::declval<_Container&>())
-	      + ::std::__adl_size(::std::declval<_Container&>()))>,
-	    element_type>>* = nullptr>
-	constexpr span(const _Container& __range)
-	noexcept(noexcept(::std::__adl_data(__range))
-		  && noexcept(::std::__adl_size(__range)))
-	: span(::std::__adl_data(__range), ::std::__adl_size(__range))
+      template<typename _Container, typename = _Require<
+		bool_constant<_Extent == dynamic_extent>,
+		__not_<__detail::__is_std_span<_Container>>,
+		__not_<__detail::__is_std_array<_Container>>,
+		__not_<is_array<_Container>>,
+		__is_compatible_container<const _Container>>>
+	constexpr
+	span(const _Container& __cont)
+	noexcept(noexcept(std::data(__cont)) && noexcept(std::size(__cont)))
+	: _M_extent(std::size(__cont)), _M_ptr(std::data(__cont))
 	{ }
 
       constexpr
       span(pointer __first, index_type __count) noexcept
-      : _M_extent(__count), _M_ptr(static_cast<pointer>(__first))
+      : _M_extent(__count), _M_ptr(__first)
       { __glibcxx_assert(_Extent == dynamic_extent || __count == _Extent); }
 
       constexpr
       span(pointer __first, pointer __last) noexcept
-      : span(::std::move(__first), static_cast<index_type>(__last - __first))
+      : span(__first, static_cast<index_type>(__last - __first))
       { }
 #endif // P1394
+
+      template<typename _OType, size_t _OExtent, typename = _Require<
+	  __bool_constant<_Extent == dynamic_extent || _Extent == _OExtent>,
+	  is_convertible<_OType(*)[], _Type(*)[]>>>
+	constexpr
+	span(const span<_OType, _OExtent>& __s) noexcept
+	: _M_extent(__s.size()), _M_ptr(__s.data())
+	{ }
 
       // assignment
 
@@ -474,7 +502,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     span(const array<_Type, _ArrayExtent>&)
       -> span<const _Type, _ArrayExtent>;
 
-#if defined(_GLIBCXX_P1394) && _GLIBCXX_P1394
+#ifdef _GLIBCXX_P1394
 
   template<typename _ContiguousIterator, typename _Sentinel>
     span(_ContiguousIterator, _Sentinel)
