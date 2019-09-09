@@ -378,7 +378,7 @@ init_reg_sets_1 (void)
   else
     CLEAR_REG_SET (fixed_reg_set_regset);
 
-  AND_HARD_REG_SET (operand_reg_set, accessible_reg_set);
+  operand_reg_set &= accessible_reg_set;
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       /* As a special exception, registers whose class is NO_REGS are
@@ -1317,8 +1317,7 @@ record_subregs_of_mode (rtx subreg, bool partial_def)
     }
 
   if (valid_mode_changes[regno])
-    AND_HARD_REG_SET (*valid_mode_changes[regno],
-		      simplifiable_subregs (shape));
+    *valid_mode_changes[regno] &= simplifiable_subregs (shape);
   else
     {
       valid_mode_changes[regno]

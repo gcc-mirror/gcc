@@ -5090,8 +5090,7 @@ get_call_reg_set_usage (rtx_insn *insn, HARD_REG_SET *reg_set,
       if (node != NULL
 	  && node->function_used_regs_valid)
 	{
-	  *reg_set = node->function_used_regs;
-	  AND_HARD_REG_SET (*reg_set, default_set);
+	  *reg_set = node->function_used_regs & default_set;
 	  return true;
 	}
     }

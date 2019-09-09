@@ -757,8 +757,7 @@ setup_stack_reg_pressure_class (void)
     for (i = 0; i < ira_pressure_classes_num; i++)
       {
 	cl = ira_pressure_classes[i];
-	temp_hard_regset2 = temp_hard_regset;
-	AND_HARD_REG_SET (temp_hard_regset2, reg_class_contents[cl]);
+	temp_hard_regset2 = temp_hard_regset & reg_class_contents[cl];
 	size = hard_reg_set_size (temp_hard_regset2);
 	if (best < size)
 	  {
@@ -1117,8 +1116,8 @@ setup_class_translate_array (enum reg_class *class_translate,
       for (i = 0; i < classes_num; i++)
 	{
 	  aclass = classes[i];
-	  temp_hard_regset = reg_class_contents[aclass];
-	  AND_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
+	  temp_hard_regset = (reg_class_contents[aclass]
+			      & reg_class_contents[cl]);
 	  AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
 	  if (! hard_reg_set_empty_p (temp_hard_regset))
 	    {
@@ -1262,8 +1261,8 @@ setup_reg_class_relations (void)
 	    }
 	  ira_reg_class_subunion[cl1][cl2] = NO_REGS;
 	  ira_reg_class_superunion[cl1][cl2] = NO_REGS;
-	  intersection_set = reg_class_contents[cl1];
-	  AND_HARD_REG_SET (intersection_set, reg_class_contents[cl2]);
+	  intersection_set = (reg_class_contents[cl1]
+			      & reg_class_contents[cl2]);
 	  AND_COMPL_HARD_REG_SET (intersection_set, no_unit_alloc_regs);
 	  union_set = reg_class_contents[cl1];
 	  IOR_HARD_REG_SET (union_set, reg_class_contents[cl2]);

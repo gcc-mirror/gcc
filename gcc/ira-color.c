@@ -382,8 +382,7 @@ add_allocno_hard_regs_to_forest (allocno_hard_regs_node_t *roots,
 	hard_regs_node_vec.safe_push (node);
       else if (hard_reg_set_intersect_p (hv->set, node->hard_regs->set))
 	{
-	  temp_set = hv->set;
-	  AND_HARD_REG_SET (temp_set, node->hard_regs->set);
+	  temp_set = hv->set & node->hard_regs->set;
 	  hv2 = add_allocno_hard_regs (temp_set, hv->cost);
 	  add_allocno_hard_regs_to_forest (&node->first, hv2);
 	}
@@ -897,8 +896,7 @@ setup_left_conflict_sizes_p (ira_allocno_t a)
 	  int j, n, hard_regno;
 	  enum reg_class aclass;
 	  
-	  temp_set = temp_node->hard_regs->set;
-	  AND_HARD_REG_SET (temp_set, profitable_hard_regs);
+	  temp_set = temp_node->hard_regs->set & profitable_hard_regs;
 	  aclass = ALLOCNO_CLASS (a);
 	  for (n = 0, j = ira_class_hard_regs_num[aclass] - 1; j >= 0; j--)
 	    {

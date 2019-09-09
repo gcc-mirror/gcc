@@ -341,8 +341,7 @@ reduce_class (reg_class_t original_class, reg_class_t limiting_class,
   if (original_class == limiting_class)
     return original_class;
 
-  cc = reg_class_contents[original_class];
-  AND_HARD_REG_SET (cc, reg_class_contents[limiting_class]);
+  cc = reg_class_contents[original_class] & reg_class_contents[limiting_class];
 
   for (i = 0; i < LIM_REG_CLASSES; i++)
     {

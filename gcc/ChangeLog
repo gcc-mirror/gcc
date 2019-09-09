@@ -1,5 +1,29 @@
 2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hard-reg-set.h (HARD_REG_SET::operator&): New function.
+	(HARD_REG_SET::operator&): Likewise.
+	(AND_HARD_REG_SET): Delete.
+	* caller-save.c (setup_save_areas): Use "&" instead of
+	AND_HARD_REG_SET.
+	(save_call_clobbered_regs): Likewise.
+	* config/gcn/gcn.c (gcn_md_reorg): Likewise.
+	* config/m32c/m32c.c (reduce_class): Likewise.
+	* config/rs6000/rs6000.c (rs6000_register_move_cost): Likewise.
+	* final.c (get_call_reg_set_usage): Likewise.
+	* ira-color.c (add_allocno_hard_regs_to_forest): Likewise.
+	(setup_left_conflict_sizes_p): Likewise.
+	* ira-conflicts.c (print_allocno_conflicts): Likewise.
+	(ira_build_conflicts): Likewise.
+	* ira-costs.c (restrict_cost_classes): Likewise.
+	* ira.c (setup_stack_reg_pressure_class, setup_class_translate_array)
+	(setup_reg_class_relations): Likewise.
+	* reginfo.c (init_reg_sets_1, record_subregs_of_mode): Likewise.
+	* reload1.c (maybe_fix_stack_asms, finish_spills): Likewise.
+	* resource.c (find_dead_or_set_registers): Likewise.
+	* sel-sched.c (mark_unavailable_hard_regs): Likewise.
+
+2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hard-reg-set.h (HARD_REG_SET::operator~): New function.
 	(COMPL_HARD_REG_SET): Delete.
 	* config/c6x/c6x.c (c6x_call_saved_register_used): Use ~ instead

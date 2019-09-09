@@ -4552,9 +4552,7 @@ gcn_md_reorg (void)
 	      && prev_insn->unit == UNIT_VECTOR
 	      && gcn_vmem_insn_p (itype))
 	    {
-	      HARD_REG_SET regs;
-	      regs = prev_insn->writes;
-	      AND_HARD_REG_SET (regs, ireads);
+	      HARD_REG_SET regs = prev_insn->writes & ireads;
 	      if (hard_reg_set_intersect_p
 		  (regs, reg_class_contents[(int) SGPR_REGS]))
 		nops_rqd = 5 - prev_insn->age;
@@ -4582,9 +4580,7 @@ gcn_md_reorg (void)
 	      && prev_insn->unit == UNIT_VECTOR
 	      && get_attr_laneselect (insn) == LANESELECT_YES)
 	    {
-	      HARD_REG_SET regs;
-	      regs = prev_insn->writes;
-	      AND_HARD_REG_SET (regs, ireads);
+	      HARD_REG_SET regs = prev_insn->writes & ireads;
 	      if (hard_reg_set_intersect_p
 		  (regs, reg_class_contents[(int) SGPR_REGS])
 		  || hard_reg_set_intersect_p
@@ -4598,9 +4594,7 @@ gcn_md_reorg (void)
 	      && prev_insn->unit == UNIT_VECTOR
 	      && itype == TYPE_VOP_DPP)
 	    {
-	      HARD_REG_SET regs;
-	      regs = prev_insn->writes;
-	      AND_HARD_REG_SET (regs, ireads);
+	      HARD_REG_SET regs = prev_insn->writes & ireads;
 	      if (hard_reg_set_intersect_p
 		  (regs, reg_class_contents[(int) VGPR_REGS]))
 		nops_rqd = 2 - prev_insn->age;

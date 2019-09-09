@@ -1399,7 +1399,7 @@ maybe_fix_stack_asms (void)
       /* Those of the registers which are clobbered, but allowed by the
 	 constraints, must be usable as reload registers.  So clear them
 	 out of the life information.  */
-      AND_HARD_REG_SET (allowed, clobbered);
+      allowed &= clobbered;
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (TEST_HARD_REG_BIT (allowed, i))
 	  {
@@ -4310,8 +4310,7 @@ finish_spills (int global)
 	     may be not included in the value calculated here because
 	     of possible removing caller-saves insns (see function
 	     delete_caller_save_insns.  */
-	  chain->used_spill_regs = ~used_by_pseudos;
-	  AND_HARD_REG_SET (chain->used_spill_regs, used_spill_regs);
+	  chain->used_spill_regs = ~used_by_pseudos & used_spill_regs;
 	}
     }
 
