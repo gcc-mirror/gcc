@@ -614,15 +614,15 @@ merge_hard_reg_conflicts (ira_allocno_t from, ira_allocno_t to,
 /* Update hard register conflict information for all objects associated with
    A to include the regs in SET.  */
 void
-ior_hard_reg_conflicts (ira_allocno_t a, HARD_REG_SET *set)
+ior_hard_reg_conflicts (ira_allocno_t a, const_hard_reg_set set)
 {
   ira_allocno_object_iterator i;
   ira_object_t obj;
 
   FOR_EACH_ALLOCNO_OBJECT (a, obj, i)
     {
-      OBJECT_CONFLICT_HARD_REGS (obj) |= *set;
-      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= *set;
+      OBJECT_CONFLICT_HARD_REGS (obj) |= set;
+      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= set;
     }
 }
 
@@ -3462,7 +3462,7 @@ ira_build (void)
 	 allocno crossing calls.  */
       FOR_EACH_ALLOCNO (a, ai)
 	if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
-	  ior_hard_reg_conflicts (a, &call_used_reg_set);
+	  ior_hard_reg_conflicts (a, call_used_reg_set);
     }
   if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
     print_copies (ira_dump_file);
