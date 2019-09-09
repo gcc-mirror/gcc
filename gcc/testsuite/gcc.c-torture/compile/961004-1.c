@@ -1,3 +1,5 @@
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+
 void
 f1 (o1, o2, o3, i, j, k)
      long long *o1, *o2, *o3;

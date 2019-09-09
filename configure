@@ -3357,6 +3357,9 @@ case "${target}" in
     # No hosted I/O support.
     noconfigdirs="$noconfigdirs target-libssp"
     ;;
+  bpf-*-*)
+    noconfigdirs="$noconfigdirs target-libssp"
+    ;;
   powerpc-*-aix* | rs6000-*-aix*)
     noconfigdirs="$noconfigdirs target-libssp"
     ;;
@@ -3391,11 +3394,42 @@ if test "${ENABLE_LIBSTDCXX}" = "default" ; then
     avr-*-*)
       noconfigdirs="$noconfigdirs target-libstdc++-v3"
       ;;
+    bpf-*-*)
+      noconfigdirs="$noconfigdirs target-libstdc++-v3"
+      ;;
     ft32-*-*)
       noconfigdirs="$noconfigdirs target-libstdc++-v3"
       ;;
   esac
 fi
+
+# Disable C++ on systems where it is known to not work.
+# For testing, you can override this with --enable-languages=c++.
+case ,${enable_languages}, in
+  *,c++,*)
+    ;;
+  *)
+      case "${target}" in
+        bpf-*-*)
+          unsupported_languages="$unsupported_languages c++"
+          ;;
+      esac
+      ;;
+esac
+
+# Disable Objc on systems where it is known to not work.
+# For testing, you can override this with --enable-languages=objc.
+case ,${enable_languages}, in
+  *,objc,*)
+    ;;
+  *)
+      case "${target}" in
+        bpf-*-*)
+          unsupported_languages="$unsupported_languages objc"
+          ;;
+      esac
+      ;;
+esac
 
 # Disable D on systems where it is known to not work.
 # For testing, you can override this with --enable-languages=d.
@@ -3405,6 +3439,9 @@ case ,${enable_languages}, in
   *)
     case "${target}" in
       *-*-darwin*)
+	unsupported_languages="$unsupported_languages d"
+        ;;
+      bpf-*-*)
 	unsupported_languages="$unsupported_languages d"
 	;;
     esac
@@ -3435,6 +3472,9 @@ fi
 case "${target}" in
   mmix-*-*)
     # See <http://gcc.gnu.org/ml/gcc-patches/2004-11/msg00572.html>.
+    unsupported_languages="$unsupported_languages fortran"
+    ;;
+  bpf-*-*)
     unsupported_languages="$unsupported_languages fortran"
     ;;
 esac
@@ -3483,6 +3523,9 @@ case "${target}" in
   arm*-*-symbianelf*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
+  bpf-*-*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
   cris-*-* | crisv32-*-*)
     case "${target}" in
       *-*-linux*)
@@ -3529,7 +3572,7 @@ esac
 # Disable the go frontend on systems where it is known to not work. Please keep
 # this in sync with contrib/config-list.mk.
 case "${target}" in
-*-*-darwin* | *-*-cygwin* | *-*-mingw*)
+*-*-darwin* | *-*-cygwin* | *-*-mingw* | bpf-* )
     unsupported_languages="$unsupported_languages go"
     ;;
 esac
@@ -3545,6 +3588,9 @@ if test x$enable_libgo = x; then
     *-*-cygwin* | *-*-mingw*)
 	noconfigdirs="$noconfigdirs target-libgo"
 	;;
+    bpf-*-*)
+        noconfigdirs="$noconfigdirs target-libgo"
+        ;;
     esac
 fi
 
@@ -3614,6 +3660,9 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
   sparc-*-sunos4*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  bpf-*-*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
   *-*-aix*)
@@ -3728,6 +3777,9 @@ case "${target}" in
   alpha*-*-*)
     # newlib is not 64 bit ready
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  bpf-*-*)
+    noconfigdirs="$noconfigdirs target-libobjc target-libbacktrace"
     ;;
   sh*-*-pe|mips*-*-pe|*arm-wince-pe)
     noconfigdirs="$noconfigdirs tcl tk itcl libgui sim"

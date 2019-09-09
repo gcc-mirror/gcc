@@ -1,4 +1,5 @@
 /* PR c/54428 */
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
 
 typedef double _Complex C;
 

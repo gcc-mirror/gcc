@@ -1,5 +1,28 @@
 2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
+	* doc/invoke.texi (Option Summary): Cover eBPF.
+	(eBPF Options): New section.
+	* doc/extend.texi (BPF Built-in Functions): Likewise.
+	(BPF Kernel Helpers): Likewise.
+
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config.gcc: Support for bpf-*-* targets.
+	* common/config/bpf/bpf-common.c: New file.
+	* config/bpf/t-bpf: Likewise.
+	* config/bpf/predicates.md: Likewise.
+	* config/bpf/constraints.md: Likewise.
+	* config/bpf/bpf.opt: Likewise.
+	* config/bpf/bpf.md: Likewise.
+	* config/bpf/bpf.h: Likewise.
+	* config/bpf/bpf.c: Likewise.
+	* config/bpf/bpf-protos.h: Likewise.
+	* config/bpf/bpf-opts.h: Likewise.
+	* config/bpf/bpf-helpers.h: Likewise.
+	* config/bpf/bpf-helpers.def: Likewise.
+
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
 	* doc/sourcebuild.texi (Effective-Target Keywords): Document
 	indirect_calls.
 

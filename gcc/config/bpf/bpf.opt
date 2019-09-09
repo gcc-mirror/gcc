@@ -1,0 +1,123 @@
+; Options for the eBPF compiler port.
+
+; Copyright (C) 2019 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+HeaderInclude
+config/bpf/bpf-opts.h
+
+; Selecting the kind of kernel the eBPF will be running on.
+
+mkernel=
+Target RejectNegative Joined Var(bpf_kernel) Enum(bpf_kernel) Init(LINUX_LATEST)
+Generate eBPF for the given Linux kernel version.
+
+Enum
+Name(bpf_kernel) Type(enum bpf_kernel_version)
+
+EnumValue
+Enum(bpf_kernel) String(native) Value(LINUX_NATIVE) DriverOnly
+
+EnumValue
+Enum(bpf_kernel) String(latest) Value(LINUX_LATEST) DriverOnly
+
+EnumValue
+Enum(bpf_kernel) String(4.0) Value(LINUX_V4_0)
+
+EnumValue
+Enum(bpf_kernel) String(4.1) Value(LINUX_V4_1)
+
+EnumValue
+Enum(bpf_kernel) String(4.2) Value(LINUX_V4_2)
+
+EnumValue
+Enum(bpf_kernel) String(4.3) Value(LINUX_V4_3)
+
+EnumValue
+Enum(bpf_kernel) String(4.4) Value(LINUX_V4_4)
+
+EnumValue
+Enum(bpf_kernel) String(4.5) Value(LINUX_V4_5)
+
+EnumValue
+Enum(bpf_kernel) String(4.6) Value(LINUX_V4_6)
+
+EnumValue
+Enum(bpf_kernel) String(4.7) Value(LINUX_V4_7)
+
+EnumValue
+Enum(bpf_kernel) String(4.8) Value(LINUX_V4_8)
+
+EnumValue
+Enum(bpf_kernel) String(4.9) Value(LINUX_V4_9)
+
+EnumValue
+Enum(bpf_kernel) String(4.10) Value(LINUX_V4_10)
+
+EnumValue
+Enum(bpf_kernel) String(4.11) Value(LINUX_V4_11)
+
+EnumValue
+Enum(bpf_kernel) String(4.12) Value(LINUX_V4_12)
+
+EnumValue
+Enum(bpf_kernel) String(4.13) Value(LINUX_V4_13)
+
+EnumValue
+Enum(bpf_kernel) String(4.14) Value(LINUX_V4_14)
+
+EnumValue
+Enum(bpf_kernel) String(4.15) Value(LINUX_V4_15)
+
+EnumValue
+Enum(bpf_kernel) String(4.16) Value(LINUX_V4_16)
+
+EnumValue
+Enum(bpf_kernel) String(4.17) Value(LINUX_V4_17)
+
+EnumValue
+Enum(bpf_kernel) String(4.18) Value(LINUX_V4_18)
+
+EnumValue
+Enum(bpf_kernel) String(4.19) Value(LINUX_V4_19)
+
+EnumValue
+Enum(bpf_kernel) String(4.20) Value(LINUX_V4_20)
+
+EnumValue
+Enum(bpf_kernel) String(5.0) Value(LINUX_V5_0)
+
+EnumValue
+Enum(bpf_kernel) String(5.1) Value(LINUX_V5_1)
+
+EnumValue
+Enum(bpf_kernel) String(5.2) Value(LINUX_V5_2)
+
+; Selecting big endian or little endian targets.
+
+mbig-endian
+Target RejectNegative Report Mask(BIG_ENDIAN)
+Generate big-endian eBPF.
+
+mlittle-endian
+Target RejectNegative Report InverseMask(BIG_ENDIAN)
+Generate little-endian eBPF.
+
+mframe-limit=
+Target Joined RejectNegative UInteger IntegerRange(0, 32767) Var(bpf_frame_limit) Init(512)
+Set a hard limit for the size of each stack frame, in bytes.
