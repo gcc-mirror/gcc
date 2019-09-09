@@ -1,3 +1,5 @@
+/* { dg-require-stack-size "10000+3*8" } */
+
 extern long long foo ();
 
 long long

@@ -1,3 +1,38 @@
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.c-torture/compile/20000609-1.c: Annotate with
+	dg-require-stack-size.
+	* gcc.c-torture/compile/20000804-1.c: Likewise.
+	* gcc.c-torture/compile/20020304-1.c: Likewise.
+	* gcc.c-torture/compile/20020604-1.c: Likewise.
+	* gcc.c-torture/compile/20021015-1.c: Likewise.
+	* gcc.c-torture/compile/20050303-1.c: Likewise.
+	* gcc.c-torture/compile/20060421-1.c: Likewise.
+	* gcc.c-torture/compile/20071207-1.c: Likewise.
+	* gcc.c-torture/compile/20080903-1.c: Likewise.
+	* gcc.c-torture/compile/20121027-1.c: Likewise.
+	* gcc.c-torture/compile/20151204.c: Likewise.
+	* gcc.c-torture/compile/920501-12.c: Likewise.
+	* gcc.c-torture/compile/920501-4.c: Likewise.
+	* gcc.c-torture/compile/920723-1.c: Likewise.
+	* gcc.c-torture/compile/921202-1.c: Likewise.
+	* gcc.c-torture/compile/931003-1.c: Likewise.
+	* gcc.c-torture/compile/931004-1.c: Likewise.
+	* gcc.c-torture/compile/950719-1.c: Likewise.
+	* gcc.c-torture/compile/951222-1.c: Likewise.
+	* gcc.c-torture/compile/990517-1.c: Likewise.
+	* gcc.c-torture/compile/bcopy.c: Likewise.
+	* gcc.c-torture/compile/pr23929.c: Likewise.
+	* gcc.c-torture/compile/pr25310.c: Likewise.
+	* gcc.c-torture/compile/pr34458.c: Likewise.
+	* gcc.c-torture/compile/pr39937.c: Likewise.
+	* gcc.c-torture/compile/pr41181.c: Likewise.
+	* gcc.c-torture/compile/pr41634.c: Likewise.
+	* gcc.c-torture/compile/pr43415.c: Likewise.
+	* gcc.c-torture/compile/pr43417.c: Likewise.
+	* gcc.c-torture/compile/pr44788.c: Likewise.
+	* gcc.c-torture/compile/sound.c: Likewise.
+
 2019-09-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* gcc.target/arm/pr91684.c: Use effective-target arm_prefer_ldrd_strd.
