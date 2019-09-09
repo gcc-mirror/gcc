@@ -298,7 +298,7 @@ remove_from_hard_reg_set (HARD_REG_SET *regs, machine_mode mode,
 /* Return true if REGS contains the whole of (reg:MODE REGNO).  */
 
 static inline bool
-in_hard_reg_set_p (const HARD_REG_SET regs, machine_mode mode,
+in_hard_reg_set_p (const_hard_reg_set regs, machine_mode mode,
 		   unsigned int regno)
 {
   unsigned int end_regno;
@@ -323,7 +323,7 @@ in_hard_reg_set_p (const HARD_REG_SET regs, machine_mode mode,
 /* Return true if (reg:MODE REGNO) includes an element of REGS.  */
 
 static inline bool
-overlaps_hard_reg_set_p (const HARD_REG_SET regs, machine_mode mode,
+overlaps_hard_reg_set_p (const_hard_reg_set regs, machine_mode mode,
 			 unsigned int regno)
 {
   unsigned int end_regno;
@@ -363,7 +363,7 @@ remove_range_from_hard_reg_set (HARD_REG_SET *regs, unsigned int regno,
 /* Like overlaps_hard_reg_set_p, but use a REGNO/NREGS range instead of
    REGNO and MODE.  */
 static inline bool
-range_overlaps_hard_reg_set_p (const HARD_REG_SET set, unsigned regno,
+range_overlaps_hard_reg_set_p (const_hard_reg_set set, unsigned regno,
 			       int nregs)
 {
   while (nregs-- > 0)
@@ -375,7 +375,7 @@ range_overlaps_hard_reg_set_p (const HARD_REG_SET set, unsigned regno,
 /* Like in_hard_reg_set_p, but use a REGNO/NREGS range instead of
    REGNO and MODE.  */
 static inline bool
-range_in_hard_reg_set_p (const HARD_REG_SET set, unsigned regno, int nregs)
+range_in_hard_reg_set_p (const_hard_reg_set set, unsigned regno, int nregs)
 {
   while (nregs-- > 0)
     if (!TEST_HARD_REG_BIT (set, regno + nregs))

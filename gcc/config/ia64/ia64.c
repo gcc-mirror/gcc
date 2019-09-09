@@ -6230,20 +6230,25 @@ struct reg_write_state
 struct reg_write_state rws_sum[NUM_REGS];
 #if CHECKING_P
 /* Bitmap whether a register has been written in the current insn.  */
-HARD_REG_ELT_TYPE rws_insn[(NUM_REGS + HOST_BITS_PER_WIDEST_FAST_INT - 1)
-			   / HOST_BITS_PER_WIDEST_FAST_INT];
+unsigned HOST_WIDEST_FAST_INT rws_insn
+  [(NUM_REGS + HOST_BITS_PER_WIDEST_FAST_INT - 1)
+   / HOST_BITS_PER_WIDEST_FAST_INT];
 
 static inline void
-rws_insn_set (int regno)
+rws_insn_set (unsigned int regno)
 {
-  gcc_assert (!TEST_HARD_REG_BIT (rws_insn, regno));
-  SET_HARD_REG_BIT (rws_insn, regno);
+  unsigned int elt = regno / HOST_BITS_PER_WIDEST_FAST_INT;
+  unsigned int bit = regno % HOST_BITS_PER_WIDEST_FAST_INT;
+  gcc_assert (!((rws_insn[elt] >> bit) & 1));
+  rws_insn[elt] |= (unsigned HOST_WIDEST_FAST_INT) 1 << bit;
 }
 
 static inline int
-rws_insn_test (int regno)
+rws_insn_test (unsigned int regno)
 {
-  return TEST_HARD_REG_BIT (rws_insn, regno);
+  unsigned int elt = regno / HOST_BITS_PER_WIDEST_FAST_INT;
+  unsigned int bit = regno % HOST_BITS_PER_WIDEST_FAST_INT;
+  return (rws_insn[elt] >> bit) & 1;
 }
 #else
 /* When not checking, track just REG_AR_CFM and REG_VOLATILE.  */

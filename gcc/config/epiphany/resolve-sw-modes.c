@@ -167,7 +167,8 @@ pass_resolve_sw_modes::execute (function *fun)
 	    }
 	  start_sequence ();
 	  emit_set_fp_mode (EPIPHANY_MSW_ENTITY_ROUND_UNKNOWN,
-			    jilted_mode, FP_MODE_NONE, NULL);
+			    jilted_mode, FP_MODE_NONE,
+			    reg_class_contents[NO_REGS]);
 	  seq = get_insns ();
 	  end_sequence ();
 	  need_commit = true;

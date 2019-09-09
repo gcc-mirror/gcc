@@ -237,7 +237,7 @@ setup_cost_classes (cost_classes_t from)
    allocated.  */
 static cost_classes_t
 restrict_cost_classes (cost_classes_t full, machine_mode mode,
-		       const HARD_REG_SET &regs)
+		       const_hard_reg_set regs)
 {
   static struct cost_classes narrow;
   int map[N_REG_CLASSES];

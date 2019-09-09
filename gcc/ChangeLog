@@ -1,5 +1,40 @@
 2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hard-reg-set.h (HARD_REG_SET): Define using a typedef rather
+	than a #define.  Use a structure rather than an array as the
+	fallback definition.  Remove special cases for low array sizes.
+	(const_hard_reg_set): New typedef.
+	(hard_reg_set_subset_p): Use it instead of "const HARD_REG_SET".
+	(hard_reg_set_equal_p, hard_reg_set_intersect_p): Likewise.
+	(hard_reg_set_empty_p): Likewise.
+	(SET_HARD_REG_BIT): Use a function rather than a macro to
+	handle the case in which HARD_REG_SET is a structure.
+	(CLEAR_HARD_REG_BIT, TEST_HARD_REG_BIT, CLEAR_HARD_REG_SET)
+	(SET_HARD_REG_SET, COPY_HARD_REG_SET, COMPL_HARD_REG_SET)
+	(AND_HARD_REG_SET, AND_COMPL_HARD_REG_SET, IOR_HARD_REG_SET)
+	(IOR_COMPL_HARD_REG_SET): Likewise.
+	(hard_reg_set_iterator::pset): Constify the pointer target.
+	(hard_reg_set_iter_init): Take a const_hard_reg_set instead
+	of a "const HARD_REG_SET".  Update the handling of non-integer
+	HARD_REG_SETs.
+	* recog.h: Test HARD_CONST instead of CLEAR_HARD_REG_SET.
+	* reload.h: Likewise.
+	* rtl.h (choose_hard_reg_mode): Remove unnecessary line break.
+	* regs.h (in_hard_reg_set_p): Take a const_hard_reg_set instead
+	of a "const HARD_REG_SET".
+	(overlaps_hard_reg_set_p, range_overlaps_hard_reg_set_p): Likewise.
+	(range_in_hard_reg_set_p): Likewise.
+	* ira-costs.c (restrict_cost_classes): Likewise.
+	* shrink-wrap.c (move_insn_for_shrink_wrap): Likewise.
+	* config/epiphany/resolve-sw-modes.c (pass_resolve_sw_modes::execute):
+	Pass a NO_REGS HARD_REG_SET rather than NULL to emit_set_fp_mode.
+	* config/ia64/ia64.c (rws_insn): In the CHECKING_P version,
+	use unsigned HOST_WIDEST_FAST_INT rather than HARD_REG_ELT_TYPE.
+	(rws_insn_set, rws_insn_test): In the CHECKING_P version,
+	take an unsigned int and open-code the HARD_REG_SET operations.
+
+2019-09-09  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* Makefile.in (OBJS): Remove bt-load.o.
 	* doc/invoke.texi (fbranch-target-load-optimize): Delete.
 	(fbranch-target-load-optimize2, fbtr-bb-exclusive): Likewise.
