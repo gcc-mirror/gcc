@@ -775,7 +775,7 @@ save_call_clobbered_regs (void)
 
 	      if (code == JUMP_INSN)
 		/* Restore all registers if this is a JUMP_INSN.  */
-		COPY_HARD_REG_SET (referenced_regs, hard_regs_saved);
+		referenced_regs = hard_regs_saved;
 	      else
 		{
 		  CLEAR_HARD_REG_SET (referenced_regs);

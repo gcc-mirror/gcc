@@ -456,8 +456,8 @@ ira_create_object (ira_allocno_t a, int subword)
   OBJECT_CONFLICT_VEC_P (obj) = false;
   OBJECT_CONFLICT_ARRAY (obj) = NULL;
   OBJECT_NUM_CONFLICTS (obj) = 0;
-  COPY_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj), ira_no_alloc_regs);
-  COPY_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), ira_no_alloc_regs);
+  OBJECT_CONFLICT_HARD_REGS (obj) = ira_no_alloc_regs;
+  OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) = ira_no_alloc_regs;
   IOR_COMPL_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
 			  reg_class_contents[aclass]);
   IOR_COMPL_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
@@ -2569,8 +2569,8 @@ remove_low_level_allocnos (void)
 	  ALLOCNO_NEXT_REGNO_ALLOCNO (a) = NULL;
 	  ALLOCNO_CAP_MEMBER (a) = NULL;
 	  FOR_EACH_ALLOCNO_OBJECT (a, obj, oi)
-	    COPY_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-			       OBJECT_TOTAL_CONFLICT_HARD_REGS (obj));
+	    OBJECT_CONFLICT_HARD_REGS (obj)
+	      = OBJECT_TOTAL_CONFLICT_HARD_REGS (obj);
 #ifdef STACK_REGS
 	  if (ALLOCNO_TOTAL_NO_STACK_REG_P (a))
 	    ALLOCNO_NO_STACK_REG_P (a) = true;
@@ -3108,8 +3108,8 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 	   flattening.  */
 	continue;
       FOR_EACH_ALLOCNO_OBJECT (a, obj, oi)
-	COPY_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-			   OBJECT_CONFLICT_HARD_REGS (obj));
+	OBJECT_TOTAL_CONFLICT_HARD_REGS (obj)
+	  = OBJECT_CONFLICT_HARD_REGS (obj);
 #ifdef STACK_REGS
       ALLOCNO_TOTAL_NO_STACK_REG_P (a) = ALLOCNO_NO_STACK_REG_P (a);
 #endif

@@ -565,12 +565,12 @@ find_dead_or_set_registers (rtx_insn *target, struct resources *res,
 		    }
 
 		  target_res = *res;
-		  COPY_HARD_REG_SET (scratch, target_set.regs);
+		  scratch = target_set.regs;
 		  AND_COMPL_HARD_REG_SET (scratch, needed.regs);
 		  AND_COMPL_HARD_REG_SET (target_res.regs, scratch);
 
 		  fallthrough_res = *res;
-		  COPY_HARD_REG_SET (scratch, set.regs);
+		  scratch = set.regs;
 		  AND_COMPL_HARD_REG_SET (scratch, needed.regs);
 		  AND_COMPL_HARD_REG_SET (fallthrough_res.regs, scratch);
 
@@ -601,7 +601,7 @@ find_dead_or_set_registers (rtx_insn *target, struct resources *res,
       mark_referenced_resources (insn, &needed, true);
       mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
 
-      COPY_HARD_REG_SET (scratch, set.regs);
+      scratch = set.regs;
       AND_COMPL_HARD_REG_SET (scratch, needed.regs);
       AND_COMPL_HARD_REG_SET (res->regs, scratch);
     }
@@ -960,7 +960,7 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 	     update it below.  */
 	  if (b == tinfo->block && b != -1 && tinfo->bb_tick == bb_ticks[b])
 	    {
-	      COPY_HARD_REG_SET (res->regs, tinfo->live_regs);
+	      res->regs = tinfo->live_regs;
 	      return;
 	    }
 	}
@@ -1121,7 +1121,7 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 	    IOR_HARD_REG_SET (current_live_regs, start_of_epilogue_needs.regs);
 	}
 
-      COPY_HARD_REG_SET (res->regs, current_live_regs);
+      res->regs = current_live_regs;
       if (tinfo != NULL)
 	{
 	  tinfo->block = b;
@@ -1160,7 +1160,7 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 	{
 	  mark_referenced_resources (insn, &needed, true);
 
-	  COPY_HARD_REG_SET (scratch, needed.regs);
+	  scratch = needed.regs;
 	  AND_COMPL_HARD_REG_SET (scratch, set.regs);
 	  IOR_HARD_REG_SET (new_resources.regs, scratch);
 
@@ -1171,9 +1171,7 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
     }
 
   if (tinfo != NULL)
-    {
-      COPY_HARD_REG_SET (tinfo->live_regs, res->regs);
-    }
+    tinfo->live_regs = res->regs;
 }
 
 /* Initialize the resources required by mark_target_live_regs ().

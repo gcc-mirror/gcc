@@ -1238,8 +1238,7 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
 
   /* Leave regs as 'available' only from the current
      register class.  */
-  COPY_HARD_REG_SET (reg_rename_p->available_for_renaming,
-                     reg_class_contents[cl]);
+  reg_rename_p->available_for_renaming = reg_class_contents[cl];
 
   mode = GET_MODE (orig_dest);
 

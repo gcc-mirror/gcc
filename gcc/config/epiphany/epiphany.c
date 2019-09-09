@@ -1248,7 +1248,7 @@ epiphany_compute_frame_size (int size /* # of var. bytes allocated.  */)
   current_frame_info.var_size     = var_size;
   current_frame_info.args_size    = args_size;
   current_frame_info.reg_size	  = reg_size;
-  COPY_HARD_REG_SET (current_frame_info.gmask, gmask);
+  current_frame_info.gmask	  = gmask;
   current_frame_info.first_slot		= first_slot;
   current_frame_info.last_slot		= last_slot;
   current_frame_info.first_slot_offset	= first_slot_offset;
@@ -2240,8 +2240,7 @@ epiphany_conditional_register_usage (void)
     }
   if (!TARGET_PREFER_SHORT_INSN_REGS)
     CLEAR_HARD_REG_SET (reg_class_contents[SHORT_INSN_REGS]);
-  COPY_HARD_REG_SET (reg_class_contents[SIBCALL_REGS],
-		     reg_class_contents[GENERAL_REGS]);
+  reg_class_contents[SIBCALL_REGS] = reg_class_contents[GENERAL_REGS];
   /* It would be simpler and quicker if we could just use
      AND_COMPL_HARD_REG_SET, alas, call_used_reg_set is yet uninitialized;
      it is set up later by our caller.  */

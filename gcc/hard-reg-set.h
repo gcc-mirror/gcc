@@ -83,10 +83,10 @@ struct hard_reg_set_container
    CLEAR_HARD_REG_SET and SET_HARD_REG_SET.
    These take just one argument.
 
-   Also define macros for copying hard reg sets:
-   COPY_HARD_REG_SET and COMPL_HARD_REG_SET.
-   These take two arguments TO and FROM; they read from FROM
-   and store into TO.  COMPL_HARD_REG_SET complements each bit.
+   Also define macros for copying the complement of a hard reg set:
+   COMPL_HARD_REG_SET.
+   This takes two arguments TO and FROM; it reads from FROM
+   and stores into TO.
 
    Also define macros for combining hard reg sets:
    IOR_HARD_REG_SET and AND_HARD_REG_SET.
@@ -116,7 +116,6 @@ struct hard_reg_set_container
 #define CLEAR_HARD_REG_SET(TO) ((TO) = HARD_CONST (0))
 #define SET_HARD_REG_SET(TO) ((TO) = ~ HARD_CONST (0))
 
-#define COPY_HARD_REG_SET(TO, FROM) ((TO) = (FROM))
 #define COMPL_HARD_REG_SET(TO, FROM) ((TO) = ~(FROM))
 
 #define IOR_HARD_REG_SET(TO, FROM) ((TO) |= (FROM))
@@ -183,12 +182,6 @@ SET_HARD_REG_SET (HARD_REG_SET &set)
 {
   for (unsigned int i = 0; i < ARRAY_SIZE (set.elts); ++i)
     set.elts[i] = -1;
-}
-
-inline void
-COPY_HARD_REG_SET (HARD_REG_SET &to, const_hard_reg_set from)
-{
-  to = from;
 }
 
 inline void

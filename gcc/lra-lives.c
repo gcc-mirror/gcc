@@ -929,7 +929,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	{
 	  call_insn = curr_insn;
 	  if (! flag_ipa_ra && ! targetm.return_call_with_max_clobbers)
-	    COPY_HARD_REG_SET(last_call_used_reg_set, call_used_reg_set);
+	    last_call_used_reg_set = call_used_reg_set;
 	  else
 	    {
 	      HARD_REG_SET this_call_used_reg_set;
@@ -953,7 +953,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 						      last_call_used_reg_set,
 						      last_call_insn);
 		}
-	      COPY_HARD_REG_SET(last_call_used_reg_set, this_call_used_reg_set);
+	      last_call_used_reg_set = this_call_used_reg_set;
 	      last_call_insn = call_insn;
 	    }
 

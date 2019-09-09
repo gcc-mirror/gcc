@@ -5036,7 +5036,7 @@ collect_fn_hard_reg_usage (void)
   node = cgraph_node::rtl_info (current_function_decl);
   gcc_assert (node != NULL);
 
-  COPY_HARD_REG_SET (node->function_used_regs, function_used_regs);
+  node->function_used_regs = function_used_regs;
   node->function_used_regs_valid = 1;
 }
 
@@ -5090,12 +5090,12 @@ get_call_reg_set_usage (rtx_insn *insn, HARD_REG_SET *reg_set,
       if (node != NULL
 	  && node->function_used_regs_valid)
 	{
-	  COPY_HARD_REG_SET (*reg_set, node->function_used_regs);
+	  *reg_set = node->function_used_regs;
 	  AND_HARD_REG_SET (*reg_set, default_set);
 	  return true;
 	}
     }
-  COPY_HARD_REG_SET (*reg_set, default_set);
+  *reg_set = default_set;
   targetm.remove_extra_call_preserved_regs (insn, reg_set);
   return false;
 }

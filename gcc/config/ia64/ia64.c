@@ -2965,7 +2965,7 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
   current_frame_info.spill_cfa_off = pretend_args_size - 16;
   current_frame_info.spill_size = spill_size;
   current_frame_info.extra_spill_size = extra_spill_size;
-  COPY_HARD_REG_SET (current_frame_info.mask, mask);
+  current_frame_info.mask = mask;
   current_frame_info.n_spilled = n_spilled;
   current_frame_info.initialized = reload_completed;
 }

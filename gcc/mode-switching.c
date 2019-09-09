@@ -165,7 +165,7 @@ new_seginfo (int mode, rtx_insn *insn, int bb, HARD_REG_SET regs_live)
   ptr->insn_ptr = insn;
   ptr->bbnum = bb;
   ptr->next = NULL;
-  COPY_HARD_REG_SET (ptr->regs_live, regs_live);
+  ptr->regs_live = regs_live;
   return ptr;
 }
 

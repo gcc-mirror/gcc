@@ -4553,7 +4553,7 @@ gcn_md_reorg (void)
 	      && gcn_vmem_insn_p (itype))
 	    {
 	      HARD_REG_SET regs;
-	      COPY_HARD_REG_SET (regs, prev_insn->writes);
+	      regs = prev_insn->writes;
 	      AND_HARD_REG_SET (regs, ireads);
 	      if (hard_reg_set_intersect_p
 		  (regs, reg_class_contents[(int) SGPR_REGS]))
@@ -4583,7 +4583,7 @@ gcn_md_reorg (void)
 	      && get_attr_laneselect (insn) == LANESELECT_YES)
 	    {
 	      HARD_REG_SET regs;
-	      COPY_HARD_REG_SET (regs, prev_insn->writes);
+	      regs = prev_insn->writes;
 	      AND_HARD_REG_SET (regs, ireads);
 	      if (hard_reg_set_intersect_p
 		  (regs, reg_class_contents[(int) SGPR_REGS])
@@ -4599,7 +4599,7 @@ gcn_md_reorg (void)
 	      && itype == TYPE_VOP_DPP)
 	    {
 	      HARD_REG_SET regs;
-	      COPY_HARD_REG_SET (regs, prev_insn->writes);
+	      regs = prev_insn->writes;
 	      AND_HARD_REG_SET (regs, ireads);
 	      if (hard_reg_set_intersect_p
 		  (regs, reg_class_contents[(int) VGPR_REGS]))
@@ -4641,8 +4641,8 @@ gcn_md_reorg (void)
       back[oldest].insn = insn;
       back[oldest].unit = iunit;
       back[oldest].delayeduse = idelayeduse;
-      COPY_HARD_REG_SET (back[oldest].writes, iwrites);
-      COPY_HARD_REG_SET (back[oldest].reads, ireads);
+      back[oldest].writes = iwrites;
+      back[oldest].reads = ireads;
       back[oldest].age = 0;
       oldest = (oldest + 1) % max_waits;
 

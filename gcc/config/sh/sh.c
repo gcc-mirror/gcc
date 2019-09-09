@@ -6708,7 +6708,7 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 	  if (temp < 0 && ! current_function_interrupt && epilogue_p >= 0)
 	    {
 	      HARD_REG_SET temps;
-	      COPY_HARD_REG_SET (temps, call_used_reg_set);
+	      temps = call_used_reg_set;
 	      AND_COMPL_HARD_REG_SET (temps, call_fixed_reg_set);
 	      if (epilogue_p > 0)
 		{
@@ -6743,7 +6743,7 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 	    {
 	      HARD_REG_SET temps;
 
-	      COPY_HARD_REG_SET (temps, *live_regs_mask);
+	      temps = *live_regs_mask;
 	      CLEAR_HARD_REG_BIT (temps, REGNO (reg));
 	      temp = scavenge_reg (&temps);
 	    }

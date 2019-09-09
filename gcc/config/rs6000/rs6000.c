@@ -21107,9 +21107,9 @@ rs6000_register_move_cost (machine_mode mode,
      Do this first so we give best-case answers for union classes
      containing both gprs and vsx regs.  */
   HARD_REG_SET to_vsx, from_vsx;
-  COPY_HARD_REG_SET (to_vsx, reg_class_contents[to]);
+  to_vsx = reg_class_contents[to];
   AND_HARD_REG_SET (to_vsx, reg_class_contents[VSX_REGS]);
-  COPY_HARD_REG_SET (from_vsx, reg_class_contents[from]);
+  from_vsx = reg_class_contents[from];
   AND_HARD_REG_SET (from_vsx, reg_class_contents[VSX_REGS]);
   if (!hard_reg_set_empty_p (to_vsx)
       && !hard_reg_set_empty_p (from_vsx)

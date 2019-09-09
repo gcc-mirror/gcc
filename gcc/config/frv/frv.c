@@ -5201,7 +5201,7 @@ frv_ifcvt_modify_tests (ce_if_block *ce_info, rtx *p_true, rtx *p_false)
      not fixed.  However, allow the ICC/ICR temporary registers to be allocated
      if we did not need to use them in reloading other registers.  */
   memset (&tmp_reg->regs, 0, sizeof (tmp_reg->regs));
-  COPY_HARD_REG_SET (tmp_reg->regs, call_used_reg_set);
+  tmp_reg->regs = call_used_reg_set;
   AND_COMPL_HARD_REG_SET (tmp_reg->regs, fixed_reg_set);
   SET_HARD_REG_BIT (tmp_reg->regs, ICC_TEMP);
   SET_HARD_REG_BIT (tmp_reg->regs, ICR_TEMP);
