@@ -1,5 +1,12 @@
 2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/frv/frv.c (frv_ifcvt_modify_tests): Use
+	regs_invalidated_by_call & ~fixed_reg_set instead of
+	call_used_or_fixed_regs & ~fixed_reg_set.
+	* config/sh/sh.c (output_stack_adjust): Likewise.
+
+2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hard-reg-set.h (target_hard_regs::x_call_used_reg_set): Delete.
 	(call_used_reg_set): Delete.
 	(call_used_or_fixed_regs): New macro.
