@@ -1,6 +1,14 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 	Mickaël Guêné <mickael.guene@st.com>
 
+	* config/arm/arm.c (arm_fdpic_local_funcdesc_p): New function.
+	(legitimize_pic_address): Enforce binding rules on function
+	pointers in FDPIC mode.
+	(arm_assemble_integer): Likewise.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
+
 	* config/arm/arm.h (PIC_REGISTER_MAY_NEED_SAVING): New helper.
 	* config/arm/arm.c (arm_compute_save_reg0_reg12_mask): Handle
 	FDPIC.
