@@ -8270,8 +8270,15 @@
 {
   if (flag_pic)
     {
+      rtx pic_reg;
+
+      if (TARGET_FDPIC)
+	  pic_reg = gen_rtx_REG (Pmode, FDPIC_REGNUM);
+      else
+	  pic_reg = operands[3];
+
       /* Forces recomputing of GOT base now.  */
-      legitimize_pic_address (operands[1], SImode, operands[2], operands[3],
+      legitimize_pic_address (operands[1], SImode, operands[2], pic_reg,
 			      true /*compute_now*/);
     }
   else
@@ -8346,8 +8353,15 @@
 
   if (flag_pic)
     {
+      rtx pic_reg;
+
+      if (TARGET_FDPIC)
+	  pic_reg = gen_rtx_REG (Pmode, FDPIC_REGNUM);
+      else
+	  pic_reg = operands[4];
+
       /* Forces recomputing of GOT base now.  */
-      legitimize_pic_address (operands[1], SImode, operands[3], operands[4],
+      legitimize_pic_address (operands[1], SImode, operands[3], pic_reg,
 			      true /*compute_now*/);
     }
   else
