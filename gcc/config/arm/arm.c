@@ -3939,14 +3939,52 @@ arm_warn_func_return (tree decl)
 	   ldr		pc, [pc]
 	   .word	static chain value
 	   .word	function's address
-   XXX FIXME: When the trampoline returns, r8 will be clobbered.  */
+   XXX FIXME: When the trampoline returns, r8 will be clobbered.
+
+   In FDPIC mode, the trampoline looks like:
+	   .word	trampoline address
+	   .word	trampoline GOT address
+	   ldr 		r12, [pc, #8] ; #4 for Arm mode
+	   ldr 		r9,  [pc, #8] ; #4 for Arm mode
+	   ldr		pc,  [pc, #8] ; #4 for Arm mode
+	   .word	static chain value
+	   .word	GOT address
+	   .word	function's address
+*/
 
 static void
 arm_asm_trampoline_template (FILE *f)
 {
   fprintf (f, "\t.syntax unified\n");
 
-  if (TARGET_ARM)
+  if (TARGET_FDPIC)
+    {
+      /* The first two words are a function descriptor pointing to the
+	 trampoline code just below.  */
+      if (TARGET_ARM)
+	fprintf (f, "\t.arm\n");
+      else if (TARGET_THUMB2)
+	fprintf (f, "\t.thumb\n");
+      else
+	/* Only ARM and Thumb-2 are supported.  */
+	gcc_unreachable ();
+
+      assemble_aligned_integer (UNITS_PER_WORD, const0_rtx);
+      assemble_aligned_integer (UNITS_PER_WORD, const0_rtx);
+      /* Trampoline code which sets the static chain register but also
+	 PIC register before jumping into real code.  */
+      asm_fprintf (f, "\tldr\t%r, [%r, #%d]\n",
+		   STATIC_CHAIN_REGNUM, PC_REGNUM,
+		   TARGET_THUMB2 ? 8 : 4);
+      asm_fprintf (f, "\tldr\t%r, [%r, #%d]\n",
+		   PIC_OFFSET_TABLE_REGNUM, PC_REGNUM,
+		   TARGET_THUMB2 ? 8 : 4);
+      asm_fprintf (f, "\tldr\t%r, [%r, #%d]\n",
+		   PC_REGNUM, PC_REGNUM,
+		   TARGET_THUMB2 ? 8 : 4);
+      assemble_aligned_integer (UNITS_PER_WORD, const0_rtx);
+    }
+  else if (TARGET_ARM)
     {
       fprintf (f, "\t.arm\n");
       asm_fprintf (f, "\tldr\t%r, [%r, #0]\n", STATIC_CHAIN_REGNUM, PC_REGNUM);
@@ -3987,12 +4025,40 @@ arm_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   emit_block_move (m_tramp, assemble_trampoline_template (),
 		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
 
-  mem = adjust_address (m_tramp, SImode, TARGET_32BIT ? 8 : 12);
-  emit_move_insn (mem, chain_value);
+  if (TARGET_FDPIC)
+    {
+      rtx funcdesc = XEXP (DECL_RTL (fndecl), 0);
+      rtx fnaddr = gen_rtx_MEM (Pmode, funcdesc);
+      rtx gotaddr = gen_rtx_MEM (Pmode, plus_constant (Pmode, funcdesc, 4));
+      /* The function start address is at offset 8, but in Thumb mode
+	 we want bit 0 set to 1 to indicate Thumb-ness, hence 9
+	 below.  */
+      rtx trampoline_code_start
+	= plus_constant (Pmode, XEXP (m_tramp, 0), TARGET_THUMB2 ? 9 : 8);
 
-  mem = adjust_address (m_tramp, SImode, TARGET_32BIT ? 12 : 16);
-  fnaddr = XEXP (DECL_RTL (fndecl), 0);
-  emit_move_insn (mem, fnaddr);
+      /* Write initial funcdesc which points to the trampoline.  */
+      mem = adjust_address (m_tramp, SImode, 0);
+      emit_move_insn (mem, trampoline_code_start);
+      mem = adjust_address (m_tramp, SImode, 4);
+      emit_move_insn (mem, gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM));
+      /* Setup static chain.  */
+      mem = adjust_address (m_tramp, SImode, 20);
+      emit_move_insn (mem, chain_value);
+      /* GOT + real function entry point.  */
+      mem = adjust_address (m_tramp, SImode, 24);
+      emit_move_insn (mem, gotaddr);
+      mem = adjust_address (m_tramp, SImode, 28);
+      emit_move_insn (mem, fnaddr);
+    }
+  else
+    {
+      mem = adjust_address (m_tramp, SImode, TARGET_32BIT ? 8 : 12);
+      emit_move_insn (mem, chain_value);
+
+      mem = adjust_address (m_tramp, SImode, TARGET_32BIT ? 12 : 16);
+      fnaddr = XEXP (DECL_RTL (fndecl), 0);
+      emit_move_insn (mem, fnaddr);
+    }
 
   a_tramp = XEXP (m_tramp, 0);
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),
@@ -4006,7 +4072,9 @@ arm_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 static rtx
 arm_trampoline_adjust_address (rtx addr)
 {
-  if (TARGET_THUMB)
+  /* For FDPIC don't fix trampoline address since it's a function
+     descriptor and not a function address.  */
+  if (TARGET_THUMB && !TARGET_FDPIC)
     addr = expand_simple_binop (Pmode, IOR, addr, const1_rtx,
 				NULL, 0, OPTAB_LIB_WIDEN);
   return addr;

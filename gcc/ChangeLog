@@ -1,6 +1,16 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 	Mickaël Guêné <mickael.guene@st.com>
 
+	gcc/
+	* config/arm/arm.c (arm_asm_trampoline_template): Add FDPIC
+	support.
+	(arm_trampoline_init): Likewise.
+	(arm_trampoline_adjust_address): Likewise.
+	* config/arm/arm.h (TRAMPOLINE_SIZE): Likewise.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
+
 	* config/arm/arm.c (arm_fdpic_local_funcdesc_p): New function.
 	(legitimize_pic_address): Enforce binding rules on function
 	pointers in FDPIC mode.
