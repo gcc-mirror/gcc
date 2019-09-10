@@ -1,5 +1,29 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 
+	* g++.dg/cpp0x/noexcept03.C: Add pie_enabled.
+	* g++.dg/ipa/devirt-c-7.C: Likewise.
+	* g++.dg/ipa/ivinline-1.C: Likewise.
+	* g++.dg/ipa/ivinline-2.C: Likewise.
+	* g++.dg/ipa/ivinline-3.C: Likewise.
+	* g++.dg/ipa/ivinline-4.C: Likewise.
+	* g++.dg/ipa/ivinline-5.C: Likewise.
+	* g++.dg/ipa/ivinline-7.C: Likewise.
+	* g++.dg/ipa/ivinline-8.C: Likewise.
+	* g++.dg/ipa/ivinline-9.C: Likewise.
+	* g++.dg/tls/pr79288.C: Likewise.
+	* gcc.dg/addr_equal-1.c: Likewise.
+	* gcc.dg/const-1.c: Likewise.
+	* gcc.dg/ipa/pure-const-1.c: Likewise.
+	* gcc.dg/noreturn-8.c: Likewise.
+	* gcc.dg/pr33826.c: Likewise.
+	* gcc.dg/torture/ipa-pta-1.c: Likewise.
+	* gcc.dg/tree-ssa/alias-2.c: Likewise.
+	* gcc.dg/tree-ssa/ipa-split-5.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre6.c: Likewise.
+	* gcc.dg/uninit-19.c: Likewise.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
 	* g++.dg/abi/forced.C: Add *-*-uclinux*.
 	* g++.dg/abi/guard2.C: Likewise.
 	* g++.dg/ext/cleanup-10.C: Likewise.
