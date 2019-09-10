@@ -2350,9 +2350,12 @@ char arm_arch_name[] = "__ARM_ARCH_PROFILE__";
 
 enum tls_reloc {
   TLS_GD32,
+  TLS_GD32_FDPIC,
   TLS_LDM32,
+  TLS_LDM32_FDPIC,
   TLS_LDO32,
   TLS_IE32,
+  TLS_IE32_FDPIC,
   TLS_LE32,
   TLS_DESCSEQ	/* GNU scheme */
 };
@@ -8708,22 +8711,33 @@ load_tls_operand (rtx x, rtx reg)
 static rtx_insn *
 arm_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 {
-  rtx label, labelno, sum;
+  rtx label, labelno = NULL_RTX, sum;
 
   gcc_assert (reloc != TLS_DESCSEQ);
   start_sequence ();
 
-  labelno = GEN_INT (pic_labelno++);
-  label = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, labelno), UNSPEC_PIC_LABEL);
-  label = gen_rtx_CONST (VOIDmode, label);
+  if (TARGET_FDPIC)
+    {
+      sum = gen_rtx_UNSPEC (Pmode,
+			    gen_rtvec (2, x, GEN_INT (reloc)),
+			    UNSPEC_TLS);
+    }
+  else
+    {
+      labelno = GEN_INT (pic_labelno++);
+      label = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, labelno), UNSPEC_PIC_LABEL);
+      label = gen_rtx_CONST (VOIDmode, label);
 
-  sum = gen_rtx_UNSPEC (Pmode,
-			gen_rtvec (4, x, GEN_INT (reloc), label,
-				   GEN_INT (TARGET_ARM ? 8 : 4)),
-			UNSPEC_TLS);
+      sum = gen_rtx_UNSPEC (Pmode,
+			    gen_rtvec (4, x, GEN_INT (reloc), label,
+				       GEN_INT (TARGET_ARM ? 8 : 4)),
+			    UNSPEC_TLS);
+    }
   reg = load_tls_operand (sum, reg);
 
-  if (TARGET_ARM)
+  if (TARGET_FDPIC)
+      emit_insn (gen_addsi3 (reg, reg, gen_rtx_REG (Pmode, FDPIC_REGNUM)));
+  else if (TARGET_ARM)
     emit_insn (gen_pic_add_dot_plus_eight (reg, reg, labelno));
   else
     emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
@@ -8761,6 +8775,7 @@ arm_tls_descseq_addr (rtx x, rtx reg)
   return reg;
 }
 
+
 rtx
 legitimize_tls_address (rtx x, rtx reg)
 {
@@ -8773,6 +8788,8 @@ legitimize_tls_address (rtx x, rtx reg)
     case TLS_MODEL_GLOBAL_DYNAMIC:
       if (TARGET_GNU2_TLS)
 	{
+	  gcc_assert (!TARGET_FDPIC);
+
 	  reg = arm_tls_descseq_addr (x, reg);
 
 	  tp = arm_load_tp (NULL_RTX);
@@ -8782,7 +8799,10 @@ legitimize_tls_address (rtx x, rtx reg)
       else
 	{
 	  /* Original scheme */
-	  insns = arm_call_tls_get_addr (x, reg, &ret, TLS_GD32);
+	  if (TARGET_FDPIC)
+	    insns = arm_call_tls_get_addr (x, reg, &ret, TLS_GD32_FDPIC);
+	  else
+	    insns = arm_call_tls_get_addr (x, reg, &ret, TLS_GD32);
 	  dest = gen_reg_rtx (Pmode);
 	  emit_libcall_block (insns, dest, ret, x);
 	}
@@ -8791,6 +8811,8 @@ legitimize_tls_address (rtx x, rtx reg)
     case TLS_MODEL_LOCAL_DYNAMIC:
       if (TARGET_GNU2_TLS)
 	{
+	  gcc_assert (!TARGET_FDPIC);
+
 	  reg = arm_tls_descseq_addr (x, reg);
 
 	  tp = arm_load_tp (NULL_RTX);
@@ -8799,7 +8821,10 @@ legitimize_tls_address (rtx x, rtx reg)
 	}
       else
 	{
-	  insns = arm_call_tls_get_addr (x, reg, &ret, TLS_LDM32);
+	  if (TARGET_FDPIC)
+	    insns = arm_call_tls_get_addr (x, reg, &ret, TLS_LDM32_FDPIC);
+	  else
+	    insns = arm_call_tls_get_addr (x, reg, &ret, TLS_LDM32);
 
 	  /* Attach a unique REG_EQUIV, to allow the RTL optimizers to
 	     share the LDM result with other LD model accesses.  */
@@ -8818,23 +8843,35 @@ legitimize_tls_address (rtx x, rtx reg)
       return dest;
 
     case TLS_MODEL_INITIAL_EXEC:
-      labelno = GEN_INT (pic_labelno++);
-      label = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, labelno), UNSPEC_PIC_LABEL);
-      label = gen_rtx_CONST (VOIDmode, label);
-      sum = gen_rtx_UNSPEC (Pmode,
-			    gen_rtvec (4, x, GEN_INT (TLS_IE32), label,
-				       GEN_INT (TARGET_ARM ? 8 : 4)),
-			    UNSPEC_TLS);
-      reg = load_tls_operand (sum, reg);
-
-      if (TARGET_ARM)
-	emit_insn (gen_tls_load_dot_plus_eight (reg, reg, labelno));
-      else if (TARGET_THUMB2)
-	emit_insn (gen_tls_load_dot_plus_four (reg, NULL, reg, labelno));
+      if (TARGET_FDPIC)
+	{
+	  sum = gen_rtx_UNSPEC (Pmode,
+				gen_rtvec (2, x, GEN_INT (TLS_IE32_FDPIC)),
+				UNSPEC_TLS);
+	  reg = load_tls_operand (sum, reg);
+	  emit_insn (gen_addsi3 (reg, reg, gen_rtx_REG (Pmode, FDPIC_REGNUM)));
+	  emit_move_insn (reg, gen_rtx_MEM (Pmode, reg));
+	}
       else
 	{
-	  emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
-	  emit_move_insn (reg, gen_const_mem (SImode, reg));
+	  labelno = GEN_INT (pic_labelno++);
+	  label = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, labelno), UNSPEC_PIC_LABEL);
+	  label = gen_rtx_CONST (VOIDmode, label);
+	  sum = gen_rtx_UNSPEC (Pmode,
+				gen_rtvec (4, x, GEN_INT (TLS_IE32), label,
+					   GEN_INT (TARGET_ARM ? 8 : 4)),
+				UNSPEC_TLS);
+	  reg = load_tls_operand (sum, reg);
+
+	  if (TARGET_ARM)
+	    emit_insn (gen_tls_load_dot_plus_eight (reg, reg, labelno));
+	  else if (TARGET_THUMB2)
+	    emit_insn (gen_tls_load_dot_plus_four (reg, NULL, reg, labelno));
+	  else
+	    {
+	      emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
+	      emit_move_insn (reg, gen_const_mem (SImode, reg));
+	    }
 	}
 
       tp = arm_load_tp (NULL_RTX);
@@ -28158,14 +28195,23 @@ arm_emit_tls_decoration (FILE *fp, rtx x)
     case TLS_GD32:
       fputs ("(tlsgd)", fp);
       break;
+    case TLS_GD32_FDPIC:
+      fputs ("(tlsgd_fdpic)", fp);
+      break;
     case TLS_LDM32:
       fputs ("(tlsldm)", fp);
+      break;
+    case TLS_LDM32_FDPIC:
+      fputs ("(tlsldm_fdpic)", fp);
       break;
     case TLS_LDO32:
       fputs ("(tlsldo)", fp);
       break;
     case TLS_IE32:
       fputs ("(gottpoff)", fp);
+      break;
+    case TLS_IE32_FDPIC:
+      fputs ("(gottpoff_fdpic)", fp);
       break;
     case TLS_LE32:
       fputs ("(tpoff)", fp);

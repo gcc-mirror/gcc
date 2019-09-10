@@ -2,6 +2,16 @@
 	Mickaël Guêné <mickael.guene@st.com>
 
 	gcc/
+	* config/arm/arm.c (tls_reloc): Add TLS_GD32_FDPIC,
+	TLS_LDM32_FDPIC and TLS_IE32_FDPIC.
+	(arm_call_tls_get_addr): Add FDPIC support.
+	(legitimize_tls_address): Likewise.
+	(arm_emit_tls_decoration): Likewise.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
+
+	gcc/
 	* config/arm/arm.c (arm_asm_trampoline_template): Add FDPIC
 	support.
 	(arm_trampoline_init): Likewise.
