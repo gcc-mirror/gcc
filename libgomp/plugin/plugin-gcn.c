@@ -3613,7 +3613,7 @@ GOMP_OFFLOAD_openacc_async_host2dev (int device, void *dst, const void *src,
      But, that is probably correct.  */
   void *src_copy = GOMP_PLUGIN_malloc (n);
   memcpy (src_copy, src, n);
-  queue_push_copy (aq, dst, src, n, true);
+  queue_push_copy (aq, dst, src_copy, n, true);
   return true;
 }
 

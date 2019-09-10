@@ -1,3 +1,8 @@
+2019-09-10  Julian Brown  <julian@codesourcery.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_openacc_async_host2dev): Enqueue
+	copy from src_copy not src.
+
 2019-09-10  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* config/gcn/team.c (gomp_gcn_exit_kernel): Free GCN thread list.
