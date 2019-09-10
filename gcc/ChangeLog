@@ -1,3 +1,7 @@
+2019-09-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/install.texi: Fix syntax for html generation.
+
 2019-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/91680

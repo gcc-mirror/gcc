@@ -2727,7 +2727,12 @@ and network filesystems.
 
 @section Building the Ada compiler
 
-See @ref{GNAT-prerequisite}.
+@ifnothtml
+@ref{GNAT-prerequisite}.
+@end ifnothtml
+@ifhtml
+@uref{GNAT-prerequisite}.
+@end ifhtml
 
 @section Building with profile feedback
 
