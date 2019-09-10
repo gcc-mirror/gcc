@@ -31,6 +31,7 @@
   [(R0_REGNUM         0)	; First CORE register
    (R1_REGNUM	      1)	; Second CORE register
    (R4_REGNUM	      4)	; Fifth CORE register
+   (FDPIC_REGNUM      9)	; FDPIC register
    (IP_REGNUM	     12)	; Scratch register
    (SP_REGNUM	     13)	; Stack pointer
    (LR_REGNUM        14)	; Return address register
@@ -11165,12 +11166,25 @@
 )
 
 ;; Doesn't clobber R1-R3.  Must use r0 for the first operand.
+(define_insn "load_tp_soft_fdpic"
+  [(set (reg:SI 0) (unspec:SI [(const_int 0)] UNSPEC_TLS))
+   (clobber (reg:SI FDPIC_REGNUM))
+   (clobber (reg:SI LR_REGNUM))
+   (clobber (reg:SI IP_REGNUM))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_SOFT_TP && TARGET_FDPIC"
+  "bl\\t__aeabi_read_tp\\t@ load_tp_soft"
+  [(set_attr "conds" "clob")
+   (set_attr "type" "branch")]
+)
+
+;; Doesn't clobber R1-R3.  Must use r0 for the first operand.
 (define_insn "load_tp_soft"
   [(set (reg:SI 0) (unspec:SI [(const_int 0)] UNSPEC_TLS))
    (clobber (reg:SI LR_REGNUM))
    (clobber (reg:SI IP_REGNUM))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_SOFT_TP"
+  "TARGET_SOFT_TP && !TARGET_FDPIC"
   "bl\\t__aeabi_read_tp\\t@ load_tp_soft"
   [(set_attr "conds" "clob")
    (set_attr "type" "branch")]

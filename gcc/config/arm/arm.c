@@ -8685,7 +8685,18 @@ arm_load_tp (rtx target)
 
       rtx tmp;
 
-      emit_insn (gen_load_tp_soft ());
+      if (TARGET_FDPIC)
+	{
+	  rtx fdpic_reg = gen_rtx_REG (Pmode, FDPIC_REGNUM);
+	  rtx initial_fdpic_reg = get_hard_reg_initial_val (Pmode, FDPIC_REGNUM);
+
+	  emit_insn (gen_load_tp_soft_fdpic ());
+
+	  /* Restore r9.  */
+	  emit_insn (gen_restore_pic_register_after_call(fdpic_reg, initial_fdpic_reg));
+	}
+      else
+	emit_insn (gen_load_tp_soft ());
 
       tmp = gen_rtx_REG (SImode, R0_REGNUM);
       emit_move_insn (target, tmp);

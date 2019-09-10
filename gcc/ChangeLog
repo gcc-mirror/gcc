@@ -1,7 +1,14 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 	Mickaël Guêné <mickael.guene@st.com>
 
-	gcc/
+	* config/arm/arm.c (arm_load_tp): Add FDPIC support.
+	* config/arm/arm.md (FDPIC_REGNUM): New constant.
+	(load_tp_soft_fdpic): New pattern.
+	(load_tp_soft): Disable in FDPIC mode.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
+
 	* config/arm/arm.c (tls_reloc): Add TLS_GD32_FDPIC,
 	TLS_LDM32_FDPIC and TLS_IE32_FDPIC.
 	(arm_call_tls_get_addr): Add FDPIC support.
@@ -11,7 +18,6 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 	Mickaël Guêné <mickael.guene@st.com>
 
-	gcc/
 	* config/arm/arm.c (arm_asm_trampoline_template): Add FDPIC
 	support.
 	(arm_trampoline_init): Likewise.
