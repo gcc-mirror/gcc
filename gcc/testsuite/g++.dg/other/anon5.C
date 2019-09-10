@@ -1,5 +1,6 @@
 // PR c++/34094
 // { dg-do link { target { ! { *-*-darwin* *-*-hpux* *-*-solaris2.* } } } }
+// { dg-require-effective-target nonpic }
 // { dg-options "-gdwarf-2" }
 // Ignore additional message on powerpc-ibm-aix
 // { dg-prune-output "obtain more information" } */

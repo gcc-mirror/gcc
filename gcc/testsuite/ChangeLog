@@ -1,4 +1,9 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
+	* gcc.target/arm/eliminate.c: Accept only nonpic targets.
+	* g++.dg/other/anon5.C: Likewise.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 	Mickaël Guêné <mickael.guene@st.com>
 
 	* gcc.target/arm/interrupt-1.c: Add scan-assembler pattern for
