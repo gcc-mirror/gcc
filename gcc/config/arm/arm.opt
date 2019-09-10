@@ -306,3 +306,7 @@ Cost to assume for a branch insn.
 mgeneral-regs-only
 Target Report RejectNegative Mask(GENERAL_REGS_ONLY) Save
 Generate code which uses the core registers only (r0-r14).
+
+mfdpic
+Target Report Mask(FDPIC)
+Enable Function Descriptor PIC mode.
