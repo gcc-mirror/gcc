@@ -72,6 +72,7 @@ stmt_ranger::range_of_expr (irange &r, tree expr, gimple *s)
   else
     type = TREE_TYPE (expr);
 
+  // Return false if the type isn't suported.
   if (!irange::supports_type_p (type))
     return false;
 
@@ -176,28 +177,6 @@ stmt_ranger::range_of_stmt_with_range (irange &r, gimple *s, tree name,
   return false;
 }
 
-// Calculate a range for range_op statement S given RANGE1 and RANGE2 and 
-// return it in R.  If a range cannot be calculated, return false.  
-// If valid is false, then one or more of the ranges are invalid, and
-// return false.
-
-inline bool
-stmt_ranger::range_of_grange_core (irange &r, grange *s, bool valid,
-				     irange &range1, irange &range2)
-{
-  if (valid)
-    {
-      if (gimple_range_operand2 (s))
-	valid = gimple_range_fold (s, r, range1, range2);
-      else
-	valid = gimple_range_fold (s, r, range1);
-    }
-
-  // If range_of_expr or fold() fails, return varying.
-  if (!valid)
-    r.set_varying (gimple_expr_type (s));
-  return true;
-}
 
 // Calculate a range for range_op statement S and return it in R.  If any
 // operand matches NAME, replace it with NAME_RANGE.  If a range
@@ -209,7 +188,8 @@ stmt_ranger::range_of_grange (irange &r, grange *s, tree name,
 {
   irange range1, range2;
   bool res = true;
-  gcc_checking_assert (irange::supports_type_p (gimple_expr_type (s)));
+  tree type = gimple_expr_type (s);
+  gcc_checking_assert (irange::supports_type_p (type));
 
   tree op1 = gimple_range_operand1 (s);
   tree op2 = gimple_range_operand2 (s);
@@ -220,16 +200,20 @@ stmt_ranger::range_of_grange (irange &r, grange *s, tree name,
   else
     res = range_of_expr (range1, op1, s);
 
-  // Calculate a result for op2 if it is needed.
-  if (res && op2)
+  if (res)
     {
+      if (!op2)
+	return gimple_range_fold (s, r, range1);
+
       if (op2 == name)
 	range2 = *name_range;
       else
 	res = range_of_expr (range2, op2, s);
+      if (res) 
+	return gimple_range_fold (s, r, range1, range2);
     }
-
-  return range_of_grange_core (r, s, res, range1, range2);
+  r.set_varying (type);
+  return true;
 }
 
 
@@ -243,8 +227,7 @@ stmt_ranger::range_of_grange (irange &r, grange *s, tree name,
 
 bool
 stmt_ranger::range_of_phi (irange &r, gphi *phi, tree name,
-			   const irange *name_range, gimple *eval_from,
-			   edge on_edge)
+			   const irange *name_range)
 {
   tree phi_def = gimple_phi_result (phi);
   tree type = TREE_TYPE (phi_def);
@@ -260,13 +243,10 @@ stmt_ranger::range_of_phi (irange &r, gphi *phi, tree name,
     {
       irange arg_range;
       tree arg = gimple_phi_arg_def (phi, x);
-      edge e = gimple_phi_arg_edge (phi, x);
-      if (on_edge && e != on_edge)
-        continue;
       if (name == arg)
         arg_range = *name_range;
       else 
-	gcc_assert (range_of_expr (arg_range, arg, eval_from));
+	gcc_assert (range_of_expr (arg_range, arg, phi));
 
       r.union_ (arg_range);
       // Once the value reaches varying, stop looking.
@@ -459,34 +439,9 @@ ssa_ranger::range_on_exit (irange &r, basic_block bb, tree name)
 		       || types_compatible_p (r.type(), TREE_TYPE (name)));
 }
 
-// Calculate a range for range_op statement S and return it in R.  Evaluate
-// the statement as if it were on edge EVAL_ON.  If a range cannot be
-// calculated, return false.  
-
-bool
-ssa_ranger::range_of_grange (irange &r, grange *s, edge eval_on)
-{
-  irange range1, range2;
-  bool res = true;
-  gcc_checking_assert (irange::supports_type_p (gimple_expr_type (s)));
-
-  tree op1 = gimple_range_operand1 (s);
-  tree op2 = gimple_range_operand2 (s);
-
-  // Calculate a range for operand 1.
-  range_on_edge (range1, eval_on, op1);
-
-  // Calculate a result for op2 if it is needed.
-  if (op2)
-    range_on_edge (range2, eval_on, op2);
-
-  return range_of_grange_core (r, s, res, range1, range2);
-}
-
 bool
 ssa_ranger::range_of_phi (irange &r, gphi *phi, tree name,
-			   const irange *name_range, gimple *eval_from,
-			   edge on_edge)
+			  const irange *name_range)
 {
   tree phi_def = gimple_phi_result (phi);
   tree type = TREE_TYPE (phi_def);
@@ -503,15 +458,10 @@ ssa_ranger::range_of_phi (irange &r, gphi *phi, tree name,
       irange arg_range;
       tree arg = gimple_phi_arg_def (phi, x);
       edge e = gimple_phi_arg_edge (phi, x);
-      if (on_edge && e != on_edge)
-        continue;
       if (name == arg)
         arg_range = *name_range;
-      else if (valid_range_ssa_p (arg) && !eval_from)
-      // Try to find a range from the edge.  If that fails, return varying.
+      else 
 	range_on_edge (arg_range, e, arg);
-      else
-	gcc_assert (range_of_expr (arg_range, arg, eval_from));
 
       r.union_ (arg_range);
       // Once the value reaches varying, stop looking.
@@ -519,41 +469,6 @@ ssa_ranger::range_of_phi (irange &r, gphi *phi, tree name,
 	break;
     }
 
-  return true;
-}
-
-// Calculate a range for COND_EXPR statement S and return it in R.  Evaluate 
-// the stateemnt as if it occured on edge ON_EDGE.
-// If a range cannot be calculated, return false. 
-
-bool
-ssa_ranger::range_of_cond_expr  (irange &r, gassign *s, edge on_edge)
-{
-  irange cond_range, range1, range2;
-  tree cond = gimple_assign_rhs1 (s);
-  tree op1 = gimple_assign_rhs2 (s);
-  tree op2 = gimple_assign_rhs3 (s);
-
-  gcc_checking_assert (gimple_assign_rhs_code (s) == COND_EXPR);
-  gcc_checking_assert (useless_type_conversion_p  (TREE_TYPE (op1),
-						   TREE_TYPE (op2)));
-  if (!irange::supports_type_p (TREE_TYPE (op1)))
-    return false;
-
-  range_on_edge (cond_range, on_edge, cond);
-  range_on_edge (range1, on_edge, op1);
-  range_on_edge (range2, on_edge, op2);
-
-  if (cond_range.singleton_p ())
-    {
-      // False, pick second operand
-      if (cond_range.zero_p ())
-        r = range2;
-      else
-        r = range1;
-    }
-  else
-    r = range_union (range1, range2);
   return true;
 }
 
@@ -907,11 +822,9 @@ loop_ranger::adjust_phi_with_loop_info (irange &r, gphi *phi)
 
 bool
 loop_ranger::range_of_phi (irange &r, gphi *phi, tree name,
-			   const irange *name_range, gimple *eval_from,
-			   edge on_edge)
+			   const irange *name_range)
 {
-  bool result = global_ranger::range_of_phi (r, phi, name, name_range,
-					     eval_from, on_edge);
+  bool result = global_ranger::range_of_phi (r, phi, name, name_range);
   if (result && scev_initialized_p ())
     adjust_phi_with_loop_info (r, phi);
   return result;

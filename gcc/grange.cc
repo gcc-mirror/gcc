@@ -270,16 +270,11 @@ gimple_range_operand1 (const grange *s)
 // result in RES.  Return false if the operation fails.
 
 bool
-gimple_range_fold (const grange *s, irange &res, const irange &orig_r1)
+gimple_range_fold (const grange *s, irange &res, const irange &r1)
 {
-  tree lhs = gimple_range_lhs (s);;
-  irange r1, r2;
-  r1 = orig_r1;
+  tree type = gimple_expr_type (s);;
+  irange r2 (type);
   // Single ssa operations require the LHS type as the second range.
-  if (lhs)
-    r2.set_varying (TREE_TYPE (lhs));
-  else
-    r2.set_undefined ();
 
   return gimple_range_fold (s, res, r1, r2);
 }

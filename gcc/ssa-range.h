@@ -52,15 +52,11 @@ class stmt_ranger
   virtual bool range_of_stmt_with_range (irange &r, gimple *s, tree name,
 					 const irange &name_range);
 protected:
-  // Calculate a range for a kind of gimple statement .
-  bool range_of_grange_core (irange &r, grange *s, bool valid,
-			       irange &range1, irange &range2);
   bool range_of_grange  (irange &r, grange *s, tree name = NULL_TREE,
 			 const irange *name_range = NULL);
 
   virtual bool range_of_phi (irange &r, gphi *phi, tree name = NULL_TREE,
-			     const irange *name_range = NULL,
-			     gimple *eval_from = NULL, edge on_edge = NULL);
+			     const irange *name_range = NULL);
 
   bool range_of_call (irange &r, gcall *call, tree name = NULL_TREE,
 		      const irange *name_range = NULL,
@@ -82,11 +78,8 @@ class ssa_ranger : public stmt_ranger
 				      irange *name_range = NULL);
   
 protected:
-  bool range_of_cond_expr (irange &r, gassign* call, edge on_edge);
-  bool range_of_grange  (irange &r, grange *s, edge on_edge);
   virtual bool range_of_phi (irange &r, gphi *phi, tree name = NULL_TREE,
-			     const irange *name_range = NULL,
-			     gimple *eval_from = NULL, edge on_edge = NULL);
+			     const irange *name_range = NULL);
 };
 
 // This class utilizes the gori summary to query the range
@@ -151,8 +144,7 @@ public:
 private:
   void adjust_phi_with_loop_info (irange &r, gphi *phi);
   virtual bool range_of_phi (irange &r, gphi *phi, tree name,
-			     const irange *name_range, gimple *eval_from,
-			     edge on_edge);
+			     const irange *name_range);
 
   vr_values *m_vr_values;
 };

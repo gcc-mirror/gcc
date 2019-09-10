@@ -1051,7 +1051,7 @@ gori_compute::reevaluate_definition (irange &r, tree name, edge e,
 	  // Invoke basic range calculator for the statement so we dont
 	  // get any dynamic calls to range_of_expr which could cause another
 	  // iterative evaluation to fill a cache.
-	  ssa_ranger eval;
+	  stmt_ranger eval;
 	  gcc_assert (eval.range_of_stmt_with_range (r, def_stmt, use,
 						     use_range));
 	  // If this is the root def and it has a range, combine them.
