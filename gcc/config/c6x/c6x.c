@@ -6677,6 +6677,28 @@ c6x_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 	      && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD));
 }
 
+/* Implement REGNO_REG_CLASS.  */
+
+enum reg_class
+c6x_regno_reg_class (int reg)
+{
+  if (reg >= REG_A1 && reg <= REG_A2)
+    return PREDICATE_A_REGS;
+
+  if (reg == REG_A0 && TARGET_INSNS_64)
+    return PREDICATE_A_REGS;
+
+  if (reg >= REG_B0 && reg <= REG_B2)
+    return PREDICATE_B_REGS;
+
+  if (A_REGNO_P (reg))
+    return NONPREDICATE_A_REGS;
+
+  if (call_used_regs[reg])
+    return CALL_USED_B_REGS;
+
+  return B_REGS;
+}
 
 /* Target Structure.  */
 
