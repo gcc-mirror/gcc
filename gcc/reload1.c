@@ -4784,7 +4784,7 @@ reload_as_needed (int live_known)
          be partially clobbered by the call.  */
       else if (CALL_P (insn))
 	{
-	  reg_reloaded_valid &= ~(call_used_reg_set
+	  reg_reloaded_valid &= ~(call_used_or_fixed_regs
 				  | reg_reloaded_call_part_clobbered);
 
 	  /* If this is a call to a setjmp-type function, we must not

@@ -740,7 +740,7 @@ ira_build_conflicts (void)
   else
     temp_hard_reg_set = (reg_class_contents[base]
 			 & ~ira_no_alloc_regs
-			 & call_used_reg_set);
+			 & call_used_or_fixed_regs);
   FOR_EACH_ALLOCNO (a, ai)
     {
       int i, n = ALLOCNO_NUM_OBJECTS (a);
@@ -760,13 +760,13 @@ ira_build_conflicts (void)
 		  && REG_USERVAR_P (allocno_reg)
 		  && ! reg_is_parm_p (allocno_reg)))
 	    {
-	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= call_used_reg_set;
-	      OBJECT_CONFLICT_HARD_REGS (obj) |= call_used_reg_set;
+	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= call_used_or_fixed_regs;
+	      OBJECT_CONFLICT_HARD_REGS (obj) |= call_used_or_fixed_regs;
 	    }
 	  else if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
 	    {
 	      HARD_REG_SET no_caller_save_reg_set
-		= (call_used_reg_set & ~savable_regs);
+		= (call_used_or_fixed_regs & ~savable_regs);
 	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= no_caller_save_reg_set;
 	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= temp_hard_reg_set;
 	      OBJECT_CONFLICT_HARD_REGS (obj) |= no_caller_save_reg_set;
@@ -805,7 +805,7 @@ ira_build_conflicts (void)
 	      /* Allocnos bigger than the saved part of call saved
 		 regs must conflict with them.  */
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		if (!TEST_HARD_REG_BIT (call_used_reg_set, regno)
+		if (!TEST_HARD_REG_BIT (call_used_or_fixed_regs, regno)
 		    && targetm.hard_regno_call_part_clobbered (NULL, regno,
 							       obj_mode))
 		  {

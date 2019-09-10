@@ -928,12 +928,12 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	{
 	  call_insn = curr_insn;
 	  if (! flag_ipa_ra && ! targetm.return_call_with_max_clobbers)
-	    last_call_used_reg_set = call_used_reg_set;
+	    last_call_used_reg_set = call_used_or_fixed_regs;
 	  else
 	    {
 	      HARD_REG_SET this_call_used_reg_set;
 	      get_call_reg_set_usage (curr_insn, &this_call_used_reg_set,
-				      call_used_reg_set);
+				      call_used_or_fixed_regs);
 
 	      bool flush = (! hard_reg_set_empty_p (last_call_used_reg_set)
 			    && (last_call_used_reg_set

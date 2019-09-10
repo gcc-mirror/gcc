@@ -350,7 +350,6 @@ init_reg_sets_1 (void)
   /* Initialize "constant" tables.  */
 
   CLEAR_HARD_REG_SET (fixed_reg_set);
-  CLEAR_HARD_REG_SET (call_used_reg_set);
   CLEAR_HARD_REG_SET (regs_invalidated_by_call);
 
   operand_reg_set &= accessible_reg_set;
@@ -383,9 +382,6 @@ init_reg_sets_1 (void)
 
       if (fixed_regs[i])
 	SET_HARD_REG_BIT (fixed_reg_set, i);
-
-      if (call_used_regs[i])
-	SET_HARD_REG_BIT (call_used_reg_set, i);
 
       /* There are a couple of fixed registers that we know are safe to
 	 exclude from being clobbered by calls:
@@ -426,7 +422,6 @@ init_reg_sets_1 (void)
 	{
 	  fixed_regs[i] = call_used_regs[i] = 1;
 	  SET_HARD_REG_BIT (fixed_reg_set, i);
-	  SET_HARD_REG_BIT (call_used_reg_set, i);
 	}
     }
 
@@ -779,7 +774,6 @@ globalize_reg (tree decl, int i)
 #endif
 
   SET_HARD_REG_BIT (fixed_reg_set, i);
-  SET_HARD_REG_BIT (call_used_reg_set, i);
 
   reinit_regs ();
 }

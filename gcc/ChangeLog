@@ -1,5 +1,41 @@
 2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hard-reg-set.h (target_hard_regs::x_call_used_reg_set): Delete.
+	(call_used_reg_set): Delete.
+	(call_used_or_fixed_regs): New macro.
+	* reginfo.c (init_reg_sets_1, globalize_reg): Remove initialization
+	of call_used_reg_set.
+	* caller-save.c (setup_save_areas): Use call_used_or_fixed_regs
+	instead of call_used_regs.
+	(save_call_clobbered_regs): Likewise.
+	* cfgcleanup.c (old_insns_match_p): Likewise.
+	* config/c6x/c6x.c (c6x_call_saved_register_used): Likewise.
+	* config/epiphany/epiphany.c (epiphany_conditional_register_usage):
+	Likewise.
+	* config/frv/frv.c (frv_ifcvt_modify_tests): Likewise.
+	* config/sh/sh.c (output_stack_adjust): Likewise.
+	* final.c (collect_fn_hard_reg_usage): Likewise.
+	* ira-build.c (ira_build): Likewise.
+	* ira-color.c (calculate_saved_nregs): Likewise.
+	(allocno_reload_assign, calculate_spill_cost): Likewise.
+	* ira-conflicts.c (ira_build_conflicts): Likewise.
+	* ira-costs.c (ira_tune_allocno_costs): Likewise.
+	* ira-lives.c (process_bb_node_lives): Likewise.
+	* ira.c (setup_reg_renumber): Likewise.
+	* lra-assigns.c (find_hard_regno_for_1, lra_assign): Likewise.
+	* lra-constraints.c (need_for_call_save_p): Likewise.
+	(need_for_split_p, inherit_in_ebb): Likewise.
+	* lra-lives.c (process_bb_lives): Likewise.
+	* lra-remat.c (call_used_input_regno_present_p): Likewise.
+	* postreload.c (reload_combine): Likewise.
+	* regrename.c (find_rename_reg): Likewise.
+	* reload1.c (reload_as_needed): Likewise.
+	* rtlanal.c (find_all_hard_reg_sets): Likewise.
+	* sel-sched.c (mark_unavailable_hard_regs): Likewise.
+	* shrink-wrap.c (requires_stack_frame_p): Likewise.
+
+2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hard-reg-set.h (target_hard_regs::x_no_caller_save_reg_set): Delete.
 	(no_caller_save_reg_set): Delete.
 	* caller-save.c (init_caller_save): Don't initialize it.

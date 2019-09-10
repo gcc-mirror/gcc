@@ -397,9 +397,6 @@ struct target_hard_regs {
 
   char x_call_really_used_regs[FIRST_PSEUDO_REGISTER];
 
-  /* The same info as a HARD_REG_SET.  */
-  HARD_REG_SET x_call_used_reg_set;
-
   /* For targets that use reload rather than LRA, this is the set
      of registers that we are able to save and restore around calls
      (i.e. those for which we know a suitable mode and set of
@@ -480,12 +477,12 @@ extern struct target_hard_regs *this_target_hard_regs;
   (this_target_hard_regs->x_call_used_regs)
 #define call_really_used_regs \
   (this_target_hard_regs->x_call_really_used_regs)
-#define call_used_reg_set \
-  (this_target_hard_regs->x_call_used_reg_set)
 #define savable_regs \
   (this_target_hard_regs->x_savable_regs)
 #define regs_invalidated_by_call \
   (this_target_hard_regs->x_regs_invalidated_by_call)
+#define call_used_or_fixed_regs \
+  (regs_invalidated_by_call | fixed_reg_set)
 #define reg_alloc_order \
   (this_target_hard_regs->x_reg_alloc_order)
 #define inv_reg_alloc_order \

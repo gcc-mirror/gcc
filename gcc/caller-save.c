@@ -426,7 +426,7 @@ setup_save_areas (void)
       freq = REG_FREQ_FROM_BB (BLOCK_FOR_INSN (insn));
       REG_SET_TO_HARD_REG_SET (hard_regs_to_save,
 			       &chain->live_throughout);
-      get_call_reg_set_usage (insn, &used_regs, call_used_reg_set);
+      get_call_reg_set_usage (insn, &used_regs, call_used_or_fixed_regs);
 
       /* Record all registers set in this call insn.  These don't
 	 need to be saved.  N.B. the call insn might set a subreg
@@ -509,7 +509,7 @@ setup_save_areas (void)
 
 	  REG_SET_TO_HARD_REG_SET (hard_regs_to_save,
 				   &chain->live_throughout);
-	  get_call_reg_set_usage (insn, &used_regs, call_used_reg_set);
+	  get_call_reg_set_usage (insn, &used_regs, call_used_or_fixed_regs);
 
 	  /* Record all registers set in this call insn.  These don't
 	     need to be saved.  N.B. the call insn might set a subreg
@@ -839,7 +839,7 @@ save_call_clobbered_regs (void)
 				     | hard_regs_saved);
 	      hard_regs_to_save &= savable_regs;
 	      get_call_reg_set_usage (insn, &call_def_reg_set,
-				      call_used_reg_set);
+				      call_used_or_fixed_regs);
 	      hard_regs_to_save &= call_def_reg_set;
 
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
@@ -855,7 +855,8 @@ save_call_clobbered_regs (void)
 	      
 	      if (cheap
 		  && HARD_REGISTER_P (cheap)
-		  && TEST_HARD_REG_BIT (call_used_reg_set, REGNO (cheap)))
+		  && TEST_HARD_REG_BIT (call_used_or_fixed_regs,
+					REGNO (cheap)))
 		{
 		  rtx dest, newpat;
 		  rtx pat = PATTERN (insn);

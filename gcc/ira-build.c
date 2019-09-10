@@ -3462,7 +3462,7 @@ ira_build (void)
 	 allocno crossing calls.  */
       FOR_EACH_ALLOCNO (a, ai)
 	if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
-	  ior_hard_reg_conflicts (a, call_used_reg_set);
+	  ior_hard_reg_conflicts (a, call_used_or_fixed_regs);
     }
   if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
     print_copies (ira_dump_file);

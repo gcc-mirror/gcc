@@ -1650,7 +1650,7 @@ calculate_saved_nregs (int hard_regno, machine_mode mode)
   ira_assert (hard_regno >= 0);
   for (i = hard_regno_nregs (hard_regno, mode) - 1; i >= 0; i--)
     if (!allocated_hardreg_p[hard_regno + i]
-	&& !TEST_HARD_REG_BIT (call_used_reg_set, hard_regno + i)
+	&& !TEST_HARD_REG_BIT (call_used_or_fixed_regs, hard_regno + i)
 	&& !LOCAL_REGNO (hard_regno + i))
       nregs++;
   return nregs;
@@ -4379,7 +4379,7 @@ allocno_reload_assign (ira_allocno_t a, HARD_REG_SET forbidden_regs)
       saved[i] = OBJECT_TOTAL_CONFLICT_HARD_REGS (obj);
       OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= forbidden_regs;
       if (! flag_caller_saves && ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
-	OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= call_used_reg_set;
+	OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= call_used_or_fixed_regs;
     }
   ALLOCNO_ASSIGNED_P (a) = false;
   aclass = ALLOCNO_CLASS (a);
@@ -4400,7 +4400,7 @@ allocno_reload_assign (ira_allocno_t a, HARD_REG_SET forbidden_regs)
 					    [aclass][hard_regno]]));
       if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0
 	  && ira_hard_reg_set_intersection_p (hard_regno, ALLOCNO_MODE (a),
-					      call_used_reg_set))
+					      call_used_or_fixed_regs))
 	{
 	  ira_assert (flag_caller_saves);
 	  caller_save_needed = 1;
@@ -4715,7 +4715,7 @@ calculate_spill_cost (int *regnos, rtx in, rtx out, rtx_insn *insn,
       cost += ALLOCNO_MEMORY_COST (a) - ALLOCNO_CLASS_COST (a);
       nregs = hard_regno_nregs (hard_regno, ALLOCNO_MODE (a));
       for (j = 0; j < nregs; j++)
-	if (! TEST_HARD_REG_BIT (call_used_reg_set, hard_regno + j))
+	if (! TEST_HARD_REG_BIT (call_used_or_fixed_regs, hard_regno + j))
 	  break;
       if (j == nregs)
 	count++;

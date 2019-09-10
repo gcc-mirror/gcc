@@ -1257,7 +1257,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		  HARD_REG_SET this_call_used_reg_set;
 
 		  get_call_reg_set_usage (insn, &this_call_used_reg_set,
-					  call_used_reg_set);
+					  call_used_or_fixed_regs);
 
 		  /* Don't allocate allocnos that cross setjmps or any
 		     call, if this function receives a nonlocal

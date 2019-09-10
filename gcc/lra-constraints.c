@@ -5439,7 +5439,7 @@ need_for_call_save_p (int regno)
 	      ((flag_ipa_ra &&
 		! hard_reg_set_empty_p (lra_reg_info[regno].actual_call_used_reg_set))
 	       ? lra_reg_info[regno].actual_call_used_reg_set
-	       : call_used_reg_set,
+	       : call_used_or_fixed_regs,
 	       PSEUDO_REGNO_MODE (regno), reg_renumber[regno])
 	      || (targetm.hard_regno_call_part_clobbered
 		  (lra_reg_info[regno].call_insn,
@@ -5483,7 +5483,7 @@ need_for_split_p (HARD_REG_SET potential_reload_hard_regs, int regno)
 	      true) the assign pass assumes that all pseudos living
 	      through calls are assigned to call saved hard regs.  */
 	   && (regno >= FIRST_PSEUDO_REGISTER
-	       || ! TEST_HARD_REG_BIT (call_used_reg_set, regno)
+	       || ! TEST_HARD_REG_BIT (call_used_or_fixed_regs, regno)
 	       || usage_insns[regno].calls_num == calls_num)
 	   /* We need at least 2 reloads to make pseudo splitting
 	      profitable.  We should provide hard regno splitting in
@@ -6458,7 +6458,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 		  /* If there are pending saves/restores, the
 		     optimization is not worth.	 */
 		  && usage_insns[regno].calls_num == calls_num - 1
-		  && TEST_HARD_REG_BIT (call_used_reg_set, hard_regno))
+		  && TEST_HARD_REG_BIT (call_used_or_fixed_regs, hard_regno))
 		{
 		  /* Restore the pseudo from the call result as
 		     REG_RETURNED note says that the pseudo value is

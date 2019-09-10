@@ -2370,7 +2370,7 @@ setup_reg_renumber (void)
 	    }
 	  if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0
 	      && ira_hard_reg_set_intersection_p (hard_regno, ALLOCNO_MODE (a),
-						  call_used_reg_set))
+						  call_used_or_fixed_regs))
 	    {
 	      ira_assert (!optimize || flag_caller_saves
 			  || (ALLOCNO_CALLS_CROSSED_NUM (a)
