@@ -5666,7 +5666,6 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return, bool ignore_outlined)
 
   return (df_regs_ever_live_p (regno)
 	  && !call_used_or_fixed_reg_p (regno)
-	  && !fixed_regs[regno]
 	  && (regno != HARD_FRAME_POINTER_REGNUM || !frame_pointer_needed));
 }
 

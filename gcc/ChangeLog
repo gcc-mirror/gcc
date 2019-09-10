@@ -1,5 +1,21 @@
 2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/alpha/alpha.c (alpha_compute_frame_layout): Remove redundant
+	fixed_regs test.
+	* config/bpf/bpf.c (bpf_compute_frame_layout, bpf_expand_prologue)
+	(bpf_expand_epilogue): Likewise.
+	* config/c6x/c6x.c (c6x_save_reg): Likewise.
+	* config/ft32/ft32.c (ft32_expand_prologue): Likewise.
+	(ft32_expand_epilogue): Likewise.
+	* config/i386/i386.c (ix86_save_reg): Likewise.
+	* config/moxie/moxie.c (moxie_expand_prologue): Likewise.
+	(moxie_expand_epilogue): Likewise.
+	* config/tilegx/tilegx.c (need_to_save_reg): Likewise.
+	* config/tilepro/tilepro.c (need_to_save_reg): Likewise.
+	* config/xtensa/xtensa.c (xtensa_call_save_reg): Likewise.
+
+2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hard-reg-set.h (call_used_or_fixed_reg_p): New macro.
 	* cfgloopanal.c (init_set_costs): Use call_used_or_fixed_reg_p
 	instead of testing call_used_regs directly.

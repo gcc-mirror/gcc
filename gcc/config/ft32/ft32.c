@@ -475,7 +475,7 @@ ft32_expand_prologue (void)
     {
       for (regno = FIRST_PSEUDO_REGISTER; regno-- > 0;)
 	{
-	  if (!fixed_regs[regno] && !call_used_or_fixed_reg_p (regno)
+	  if (!call_used_or_fixed_reg_p (regno)
 	      && df_regs_ever_live_p (regno))
 	    {
 	      rtx preg = gen_rtx_REG (Pmode, regno);
@@ -488,7 +488,7 @@ ft32_expand_prologue (void)
     {
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	{
-	  if (!fixed_regs[regno] && df_regs_ever_live_p (regno)
+	  if (df_regs_ever_live_p (regno)
 	      && !call_used_or_fixed_reg_p (regno))
 	    {
 	      insn = emit_insn (gen_movsi_push (gen_rtx_REG (Pmode, regno)));
@@ -554,7 +554,7 @@ ft32_expand_epilogue (void)
     {
       for (regno = FIRST_PSEUDO_REGISTER; regno-- > 0;)
         {
-          if (!fixed_regs[regno] && !call_used_or_fixed_reg_p (regno)
+          if (!call_used_or_fixed_reg_p (regno)
               && df_regs_ever_live_p (regno))
             {
               rtx preg = gen_rtx_REG (Pmode, regno);
