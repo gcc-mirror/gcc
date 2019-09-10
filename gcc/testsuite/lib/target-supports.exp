@@ -1087,6 +1087,9 @@ proc check_effective_target_pe_aligned_commons {} {
 
 # Return 1 if the target supports -static
 proc check_effective_target_static {} {
+    if { [istarget arm*-*-uclinuxfdpiceabi] } {
+	return 0;
+    }
     return [check_no_compiler_messages static executable {
 	int main (void) { return 0; }
     } "-static"]

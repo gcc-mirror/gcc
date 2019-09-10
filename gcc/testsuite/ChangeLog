@@ -1,5 +1,10 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 
+	* lib/target-supports.exp (check_effective_target_static): Disable
+	for ARM FDPIC target.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
 	* gcc.target/arm/pr43698.c (bswap_32): Rename as my_bswap_32.
 
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
