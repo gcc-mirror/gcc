@@ -1541,7 +1541,7 @@ print_filtered_help (unsigned int include_flags,
 	  if (print_state)
 	    {
 	      if (option->alias_target < N_OPTS
-		  && option->alias_target != OPT_SPECIAL_deprecated
+		  && option->alias_target != OPT_SPECIAL_warn_removed
 		  && option->alias_target != OPT_SPECIAL_ignore
 		  && option->alias_target != OPT_SPECIAL_input_file
 		  && option->alias_target != OPT_SPECIAL_program_name

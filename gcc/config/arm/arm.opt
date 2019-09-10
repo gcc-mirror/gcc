@@ -276,7 +276,7 @@ Target Report Var(unaligned_access) Init(2) Save
 Enable unaligned word and halfword accesses to packed data.
 
 mneon-for-64bits
-Target Deprecated
+Target WarnRemoved
 This option is deprecated and has no effect.
 
 mslow-flash-data

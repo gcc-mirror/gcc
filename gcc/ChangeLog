@@ -1,3 +1,25 @@
+2019-09-10  Martin Liska  <mliska@suse.cz>
+
+	* common.opt: Use newly added WarnRemoved.
+	* config/aarch64/aarch64.opt: Likewise.
+	* config/arm/arm.opt: Likewise.
+	* config/i386/i386.opt: Likewise.
+	* config/ia64/ia64.opt: Likewise.
+	* config/rs6000/rs6000.opt: Likewise.
+	* doc/options.texi: Document WarnRemoved properly.
+	* dwarf2out.c (gen_producer_string): Handle renamed
+	OPT_SPECIAL_warn_removed.
+	* lto-opts.c (lto_write_options): Likewise.
+	* lto-wrapper.c (merge_and_complain): Likewise.
+	* opts-common.c (decode_cmdline_option): Likewise.
+	(prune_options): Likewise.
+	(read_cmdline_option): Likewise.
+	(control_warning_option): Likewise.
+	* opts.c (print_filtered_help): Likewise.
+	* optc-gen.awk: Parse for WarnRemoved and make usage
+	of Deprecated an error.
+	* opth-gen.awk: Generate new OPT_SPECIAL_warn_removed.
+
 2019-09-10  Arnaud Charlet  <charlet@adacore.com>
 
 	* doc/install.texi: Fix syntax for html generation.
