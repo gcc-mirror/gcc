@@ -7601,6 +7601,11 @@
 	: !REG_P (callee))
       XEXP (operands[0], 0) = force_reg (Pmode, callee);
 
+    if (TARGET_FDPIC && !SYMBOL_REF_P (XEXP (operands[0], 0)))
+	/* Indirect call: set r9 with FDPIC value of callee.  */
+	XEXP (operands[0], 0)
+	  = arm_load_function_descriptor (XEXP (operands[0], 0));
+
     if (detect_cmse_nonsecure_call (addr))
       {
 	pat = gen_nonsecure_call_internal (operands[0], operands[1],
@@ -7612,8 +7617,31 @@
 	pat = gen_call_internal (operands[0], operands[1], operands[2]);
 	arm_emit_call_insn (pat, XEXP (operands[0], 0), false);
       }
+
+    /* Restore FDPIC register (r9) after call.  */
+    if (TARGET_FDPIC)
+      {
+	rtx fdpic_reg = gen_rtx_REG (Pmode, FDPIC_REGNUM);
+	rtx initial_fdpic_reg
+	    = get_hard_reg_initial_val (Pmode, FDPIC_REGNUM);
+
+	emit_insn (gen_restore_pic_register_after_call (fdpic_reg,
+							initial_fdpic_reg));
+      }
+
     DONE;
   }"
+)
+
+(define_insn "restore_pic_register_after_call"
+  [(set (match_operand:SI 0 "s_register_operand" "+r,r")
+        (unspec:SI [(match_dup 0)
+                    (match_operand:SI 1 "nonimmediate_operand" "r,m")]
+                   UNSPEC_PIC_RESTORE))]
+  ""
+  "@
+  mov\t%0, %1
+  ldr\t%0, %1"
 )
 
 (define_expand "call_internal"
@@ -7689,6 +7717,11 @@
 	: !REG_P (callee))
       XEXP (operands[1], 0) = force_reg (Pmode, callee);
 
+    if (TARGET_FDPIC && !SYMBOL_REF_P (XEXP (operands[1], 0)))
+	/* Indirect call: set r9 with FDPIC value of callee.  */
+	XEXP (operands[1], 0)
+	  = arm_load_function_descriptor (XEXP (operands[1], 0));
+
     if (detect_cmse_nonsecure_call (addr))
       {
 	pat = gen_nonsecure_call_value_internal (operands[0], operands[1],
@@ -7701,6 +7734,18 @@
 				       operands[2], operands[3]);
 	arm_emit_call_insn (pat, XEXP (operands[1], 0), false);
       }
+
+    /* Restore FDPIC register (r9) after call.  */
+    if (TARGET_FDPIC)
+      {
+	rtx fdpic_reg = gen_rtx_REG (Pmode, FDPIC_REGNUM);
+	rtx initial_fdpic_reg
+	    = get_hard_reg_initial_val (Pmode, FDPIC_REGNUM);
+
+	emit_insn (gen_restore_pic_register_after_call (fdpic_reg,
+							initial_fdpic_reg));
+      }
+
     DONE;
   }"
 )
@@ -8043,7 +8088,7 @@
 		    (const_int 0))
 	      (match_operand 1 "" "")
 	      (match_operand 2 "" "")])]
-  "TARGET_EITHER"
+  "TARGET_EITHER && !TARGET_FDPIC"
   "
   {
     int i;
@@ -8110,7 +8155,7 @@
 (define_expand "untyped_return"
   [(match_operand:BLK 0 "memory_operand")
    (match_operand 1 "" "")]
-  "TARGET_EITHER"
+  "TARGET_EITHER && !TARGET_FDPIC"
   "
   {
     int i;

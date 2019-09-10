@@ -1,6 +1,34 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 	Mickaël Guêné <mickael.guene@st.com>
 
+	* config/arm/arm-c.c (__FDPIC__): Define new pre-processor macro
+	in FDPIC mode.
+	* config/arm/arm-protos.h (arm_load_function_descriptor): Declare
+	new function.
+	* config/arm/arm.c (arm_option_override): Define pic register to
+	FDPIC_REGNUM.
+	(arm_function_ok_for_sibcall): Disable sibcall optimization if we
+	have no decl or go through PLT.
+	(calculate_pic_address_constant): New function.
+	(legitimize_pic_address): Call calculate_pic_address_constant.
+	(arm_load_pic_register): Handle TARGET_FDPIC.
+	(arm_is_segment_info_known): New function.
+	(arm_pic_static_addr): Add support for FDPIC.
+	(arm_load_function_descriptor): New function.
+	(arm_emit_call_insn): Add support for FDPIC.
+	(arm_assemble_integer): Add support for FDPIC.
+	* config/arm/arm.h (PIC_OFFSET_TABLE_REG_CALL_CLOBBERED):
+	Define. (FDPIC_REGNUM): New define.
+	* config/arm/arm.md (call): Add support for FDPIC.
+	(call_value): Likewise.
+	(restore_pic_register_after_call): New pattern.
+	(untyped_call): Disable if FDPIC.
+	(untyped_return): Likewise.
+	* config/arm/unspecs.md (UNSPEC_PIC_RESTORE): New.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
+
 	* config.gcc: Handle arm*-*-uclinuxfdpiceabi.
 	* config/arm/bpabi.h (TARGET_FDPIC_ASM_SPEC): New.
 	(SUBTARGET_EXTRA_ASM_SPEC): Use TARGET_FDPIC_ASM_SPEC.

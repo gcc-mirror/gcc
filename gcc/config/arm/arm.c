@@ -3456,6 +3456,14 @@ arm_option_override (void)
   if (flag_pic && TARGET_VXWORKS_RTP)
     arm_pic_register = 9;
 
+  /* If in FDPIC mode then force arm_pic_register to be r9.  */
+  if (TARGET_FDPIC)
+    {
+      arm_pic_register = FDPIC_REGNUM;
+      if (TARGET_THUMB1)
+	sorry ("FDPIC mode is not supported in Thumb-1 mode");
+    }
+
   if (arm_pic_register_string != NULL)
     {
       int pic_register = decode_reg_name (arm_pic_register_string);
@@ -7251,6 +7259,15 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
   if (cfun->machine->sibcall_blocked)
     return false;
 
+  if (TARGET_FDPIC)
+    {
+      /* In FDPIC, never tailcall something for which we have no decl:
+	 the target function could be in a different module, requiring
+	 a different FDPIC register value.  */
+      if (decl == NULL)
+	return false;
+    }
+
   /* Never tailcall something if we are generating code for Thumb-1.  */
   if (TARGET_THUMB1)
     return false;
@@ -7461,6 +7478,24 @@ require_pic_register (rtx pic_reg, bool compute_now)
     }
 }
 
+/* Generate insns to calculate the address of ORIG in pic mode.  */
+static rtx_insn *
+calculate_pic_address_constant (rtx reg, rtx pic_reg, rtx orig)
+{
+  rtx pat;
+  rtx mem;
+
+  pat = gen_calculate_pic_address (reg, pic_reg, orig);
+
+  /* Make the MEM as close to a constant as possible.  */
+  mem = SET_SRC (pat);
+  gcc_assert (MEM_P (mem) && !MEM_VOLATILE_P (mem));
+  MEM_READONLY_P (mem) = 1;
+  MEM_NOTRAP_P (mem) = 1;
+
+  return emit_insn (pat);
+}
+
 /* Legitimize PIC load to ORIG into REG.  If REG is NULL, a new pseudo is
    created to hold the result of the load.  If not NULL, PIC_REG indicates
    which register to use as PIC register, otherwise it is decided by register
@@ -7505,24 +7540,13 @@ legitimize_pic_address (rtx orig, machine_mode mode, rtx reg, rtx pic_reg,
 	insn = arm_pic_static_addr (orig, reg);
       else
 	{
-	  rtx pat;
-	  rtx mem;
-
 	  /* If this function doesn't have a pic register, create one now.  */
 	  require_pic_register (pic_reg, compute_now);
 
 	  if (pic_reg == NULL_RTX)
 	    pic_reg = cfun->machine->pic_reg;
 
-	  pat = gen_calculate_pic_address (reg, pic_reg, orig);
-
-	  /* Make the MEM as close to a constant as possible.  */
-	  mem = SET_SRC (pat);
-	  gcc_assert (MEM_P (mem) && !MEM_VOLATILE_P (mem));
-	  MEM_READONLY_P (mem) = 1;
-	  MEM_NOTRAP_P (mem) = 1;
-
-	  insn = emit_insn (pat);
+	  insn = calculate_pic_address_constant (reg, pic_reg, orig);
 	}
 
       /* Put a REG_EQUAL note on this insn, so that it can be optimized
@@ -7677,7 +7701,9 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED, rtx pic_reg)
 {
   rtx l1, labelno, pic_tmp, pic_rtx;
 
-  if (crtl->uses_pic_offset_table == 0 || TARGET_SINGLE_PIC_BASE)
+  if (crtl->uses_pic_offset_table == 0
+      || TARGET_SINGLE_PIC_BASE
+      || TARGET_FDPIC)
     return;
 
   gcc_assert (flag_pic);
@@ -7746,28 +7772,128 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED, rtx pic_reg)
   emit_use (pic_reg);
 }
 
+/* Try to determine whether an object, referenced via ORIG, will be
+   placed in the text or data segment.  This is used in FDPIC mode, to
+   decide which relocations to use when accessing ORIG.  *IS_READONLY
+   is set to true if ORIG is a read-only location, false otherwise.
+   Return true if we could determine the location of ORIG, false
+   otherwise.  *IS_READONLY is valid only when we return true.  */
+static bool
+arm_is_segment_info_known (rtx orig, bool *is_readonly)
+{
+  *is_readonly = false;
+
+  if (GET_CODE (orig) == LABEL_REF)
+    {
+      *is_readonly = true;
+      return true;
+    }
+
+  if (SYMBOL_REF_P (orig))
+    {
+      if (CONSTANT_POOL_ADDRESS_P (orig))
+	{
+	  *is_readonly = true;
+	  return true;
+	}
+      if (SYMBOL_REF_LOCAL_P (orig)
+	  && !SYMBOL_REF_EXTERNAL_P (orig)
+	  && SYMBOL_REF_DECL (orig)
+	  && (!DECL_P (SYMBOL_REF_DECL (orig))
+	      || !DECL_COMMON (SYMBOL_REF_DECL (orig))))
+	{
+	  tree decl = SYMBOL_REF_DECL (orig);
+	  tree init = (TREE_CODE (decl) == VAR_DECL)
+	    ? DECL_INITIAL (decl) : (TREE_CODE (decl) == CONSTRUCTOR)
+	    ? decl : 0;
+	  int reloc = 0;
+	  bool named_section, readonly;
+
+	  if (init && init != error_mark_node)
+	    reloc = compute_reloc_for_constant (init);
+
+	  named_section = TREE_CODE (decl) == VAR_DECL
+	    && lookup_attribute ("section", DECL_ATTRIBUTES (decl));
+	  readonly = decl_readonly_section (decl, reloc);
+
+	  /* We don't know where the link script will put a named
+	     section, so return false in such a case.  */
+	  if (named_section)
+	    return false;
+
+	  *is_readonly = readonly;
+	  return true;
+	}
+
+      /* We don't know.  */
+      return false;
+    }
+
+  gcc_unreachable ();
+}
+
 /* Generate code to load the address of a static var when flag_pic is set.  */
 static rtx_insn *
 arm_pic_static_addr (rtx orig, rtx reg)
 {
   rtx l1, labelno, offset_rtx;
+  rtx_insn *insn;
 
   gcc_assert (flag_pic);
 
-  /* We use an UNSPEC rather than a LABEL_REF because this label
-     never appears in the code stream.  */
-  labelno = GEN_INT (pic_labelno++);
-  l1 = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, labelno), UNSPEC_PIC_LABEL);
-  l1 = gen_rtx_CONST (VOIDmode, l1);
+  bool is_readonly = false;
+  bool info_known = false;
 
-  /* On the ARM the PC register contains 'dot + 8' at the time of the
-     addition, on the Thumb it is 'dot + 4'.  */
-  offset_rtx = plus_constant (Pmode, l1, TARGET_ARM ? 8 : 4);
-  offset_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, orig, offset_rtx),
-                               UNSPEC_SYMBOL_OFFSET);
-  offset_rtx = gen_rtx_CONST (Pmode, offset_rtx);
+  if (TARGET_FDPIC
+      && SYMBOL_REF_P (orig)
+      && !SYMBOL_REF_FUNCTION_P (orig))
+    info_known = arm_is_segment_info_known (orig, &is_readonly);
 
-  return emit_insn (gen_pic_load_addr_unified (reg, offset_rtx, labelno));
+  if (TARGET_FDPIC
+      && SYMBOL_REF_P (orig)
+      && !SYMBOL_REF_FUNCTION_P (orig)
+      && !info_known)
+    {
+      /* We don't know where orig is stored, so we have be
+	 pessimistic and use a GOT relocation.  */
+      rtx pic_reg = gen_rtx_REG (Pmode, FDPIC_REGNUM);
+
+      insn = calculate_pic_address_constant (reg, pic_reg, orig);
+    }
+  else if (TARGET_FDPIC
+	   && SYMBOL_REF_P (orig)
+	   && (SYMBOL_REF_FUNCTION_P (orig)
+	       || !is_readonly))
+    {
+      /* We use the GOTOFF relocation.  */
+      rtx pic_reg = gen_rtx_REG (Pmode, FDPIC_REGNUM);
+
+      rtx l1 = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, orig), UNSPEC_PIC_SYM);
+      emit_insn (gen_movsi (reg, l1));
+      insn = emit_insn (gen_addsi3 (reg, reg, pic_reg));
+    }
+  else
+    {
+      /* Not FDPIC, not SYMBOL_REF_P or readonly: we can use
+	 PC-relative access.  */
+      /* We use an UNSPEC rather than a LABEL_REF because this label
+	 never appears in the code stream.  */
+      labelno = GEN_INT (pic_labelno++);
+      l1 = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, labelno), UNSPEC_PIC_LABEL);
+      l1 = gen_rtx_CONST (VOIDmode, l1);
+
+      /* On the ARM the PC register contains 'dot + 8' at the time of the
+	 addition, on the Thumb it is 'dot + 4'.  */
+      offset_rtx = plus_constant (Pmode, l1, TARGET_ARM ? 8 : 4);
+      offset_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, orig, offset_rtx),
+				   UNSPEC_SYMBOL_OFFSET);
+      offset_rtx = gen_rtx_CONST (Pmode, offset_rtx);
+
+      insn = emit_insn (gen_pic_load_addr_unified (reg, offset_rtx,
+						   labelno));
+    }
+
+  return insn;
 }
 
 /* Return nonzero if X is valid as an ARM state addressing register.  */
@@ -16051,9 +16177,32 @@ get_jump_table_size (rtx_jump_table_data *insn)
   return 0;
 }
 
+/* Emit insns to load the function address from FUNCDESC (an FDPIC
+   function descriptor) into a register and the GOT address into the
+   FDPIC register, returning an rtx for the register holding the
+   function address.  */
+
+rtx
+arm_load_function_descriptor (rtx funcdesc)
+{
+  rtx fnaddr_reg = gen_reg_rtx (Pmode);
+  rtx pic_reg = gen_rtx_REG (Pmode, FDPIC_REGNUM);
+  rtx fnaddr = gen_rtx_MEM (Pmode, funcdesc);
+  rtx gotaddr = gen_rtx_MEM (Pmode, plus_constant (Pmode, funcdesc, 4));
+
+  emit_move_insn (fnaddr_reg, fnaddr);
+
+  /* The ABI requires the entry point address to be loaded first, but
+     since we cannot support lazy binding for lack of atomic load of
+     two 32-bits values, we do not need to bother to prevent the
+     previous load from being moved after that of the GOT address.  */
+  emit_insn (gen_restore_pic_register_after_call (pic_reg, gotaddr));
+
+  return fnaddr_reg;
+}
+
 /* Return the maximum amount of padding that will be inserted before
    label LABEL.  */
-
 static HOST_WIDE_INT
 get_label_padding (rtx label)
 {
@@ -18186,6 +18335,12 @@ arm_emit_call_insn (rtx pat, rtx addr, bool sibcall)
     {
       require_pic_register (NULL_RTX, false /*compute_now*/);
       use_reg (&CALL_INSN_FUNCTION_USAGE (insn), cfun->machine->pic_reg);
+    }
+
+  if (TARGET_FDPIC)
+    {
+      rtx fdpic_reg = gen_rtx_REG (Pmode, FDPIC_REGNUM);
+      use_reg (&CALL_INSN_FUNCTION_USAGE (insn), fdpic_reg);
     }
 
   if (TARGET_AAPCS_BASED)
@@ -23010,10 +23165,36 @@ arm_assemble_integer (rtx x, unsigned int size, int aligned_p)
 		  && (!SYMBOL_REF_LOCAL_P (x)
 		      || (SYMBOL_REF_DECL (x)
 			  ? DECL_WEAK (SYMBOL_REF_DECL (x)) : 0))))
-	    fputs ("(GOT)", asm_out_file);
+	    {
+	      if (TARGET_FDPIC && SYMBOL_REF_FUNCTION_P (x))
+		fputs ("(GOTFUNCDESC)", asm_out_file);
+	      else
+		fputs ("(GOT)", asm_out_file);
+	    }
 	  else
-	    fputs ("(GOTOFF)", asm_out_file);
+	    {
+	      if (TARGET_FDPIC && SYMBOL_REF_FUNCTION_P (x))
+		fputs ("(GOTOFFFUNCDESC)", asm_out_file);
+	      else
+		{
+		  bool is_readonly;
+
+		  if (!TARGET_FDPIC
+		      || arm_is_segment_info_known (x, &is_readonly))
+		    fputs ("(GOTOFF)", asm_out_file);
+		  else
+		    fputs ("(GOT)", asm_out_file);
+		}
+	    }
 	}
+
+      /* For FDPIC we also have to mark symbol for .data section.  */
+      if (TARGET_FDPIC
+	  && !making_const_table
+	  && SYMBOL_REF_P (x)
+	  && SYMBOL_REF_FUNCTION_P (x))
+	fputs ("(FUNCDESC)", asm_out_file);
+
       fputc ('\n', asm_out_file);
       return true;
     }
