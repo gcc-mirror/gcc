@@ -1655,7 +1655,7 @@ get_csky_live_regs (int *count)
 	break;
 
       /* Caller-saved registers marked as used.  */
-      if (df_regs_ever_live_p (reg) && !call_really_used_regs[reg])
+      if (df_regs_ever_live_p (reg) && !call_used_regs[reg])
 	save = true;
 
       /* Frame pointer marked used.  */
@@ -2074,7 +2074,6 @@ csky_conditional_register_usage (void)
 	{
 	  fixed_regs[i] = 1;
 	  call_used_regs[i] = 1;
-	  call_really_used_regs[i] = 1;
 	}
     }
   /* For some targets, the high registers are not supported.
@@ -2090,7 +2089,6 @@ csky_conditional_register_usage (void)
 	{
 	  fixed_regs[i] = 1;
 	  call_used_regs[i] = 1;
-	  call_really_used_regs[i] = 1;
 	}
    }
 
@@ -2103,8 +2101,7 @@ csky_conditional_register_usage (void)
   if (CSKY_TARGET_ARCH (CK801) || CSKY_TARGET_ARCH (CK802))
     {
       fixed_regs[CSKY_LR_REGNUM] = 1;
-      call_used_regs[CSKY_LR_REGNUM] = 1;
-      call_really_used_regs[CSKY_LR_REGNUM] = 0;
+      call_used_regs[CSKY_LR_REGNUM] = 0;
     }
 
   /* The hi/lo registers are only supported in dsp mode.  */
@@ -2112,11 +2109,9 @@ csky_conditional_register_usage (void)
     {
       fixed_regs[CSKY_HI_REGNUM] = 1;
       call_used_regs[CSKY_HI_REGNUM] = 1;
-      call_really_used_regs[CSKY_HI_REGNUM] = 1;
 
       fixed_regs[CSKY_LO_REGNUM] = 1;
       call_used_regs[CSKY_LO_REGNUM] = 1;
-      call_really_used_regs[CSKY_LO_REGNUM] = 1;
     }
 
   /* The V_REGS are only supported in hard float mode.  */
@@ -2129,18 +2124,16 @@ csky_conditional_register_usage (void)
 	{
 	  fixed_regs[regno] = 1;
 	  call_used_regs[regno] = 1;
-	  call_really_used_regs[regno] = 1;
 	}
     }
 
   /* In pic mode, the gb register is not available for register
      allocation.  Since gb is not clobbered by function
-     calls, set its call_really_used_regs to 0.  */
+     calls, set its call_used_regs to 0.  */
   if (flag_pic)
     {
       fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
-      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
-      call_really_used_regs[PIC_OFFSET_TABLE_REGNUM] = 0;
+      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 0;
     }
 }
 

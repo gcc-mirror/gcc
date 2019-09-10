@@ -13008,10 +13008,7 @@ static void
 sparc_conditional_register_usage (void)
 {
   if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
-    {
-      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
-      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
-    }
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
   /* If the user has passed -f{fixed,call-{used,saved}}-g5 */
   /* then honor it.  */
   if (TARGET_ARCH32 && fixed_regs[5])

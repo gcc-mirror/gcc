@@ -6703,7 +6703,7 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 	     to handle this case, so just die when we see it.  */
 	  if (epilogue_p < 0
 	      || current_function_interrupt
-	      || ! call_really_used_regs[temp] || fixed_regs[temp])
+	      || ! call_used_regs[temp] || fixed_regs[temp])
 	    temp = -1;
 	  if (temp < 0 && ! current_function_interrupt && epilogue_p >= 0)
 	    {
@@ -7009,7 +7009,7 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
   else if (TARGET_FPU_DOUBLE && TARGET_FMOVD && TARGET_FPU_SINGLE)
     for (int count = 0, reg = FIRST_FP_REG; reg <= LAST_FP_REG; reg += 2)
       if (df_regs_ever_live_p (reg) && df_regs_ever_live_p (reg+1)
-	  && (! call_really_used_regs[reg]
+	  && (! call_used_regs[reg]
 	      || interrupt_handler)
 	  && ++count > 2)
 	{
@@ -7040,7 +7040,7 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 	  : interrupt_handler
 	  ? (/* Need to save all the regs ever live.  */
 	     (df_regs_ever_live_p (reg)
-	      || (call_really_used_regs[reg]
+	      || (call_used_regs[reg]
 		  && (! fixed_regs[reg] || reg == MACH_REG || reg == MACL_REG
 		      || reg == PIC_OFFSET_TABLE_REGNUM)
 		  && has_call))
@@ -7053,7 +7053,7 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 	  : (/* Only push those regs which are used and need to be saved.  */
 	     (false)
 	     || (df_regs_ever_live_p (reg)
-		 && ((!call_really_used_regs[reg]
+		 && ((!call_used_regs[reg]
 		      && !(reg != PIC_OFFSET_TABLE_REGNUM
 			   && fixed_regs[reg]
 			   && call_used_or_fixed_reg_p (reg)))
@@ -8289,7 +8289,7 @@ sh_fix_range (const char *const_str)
 	}
 
       for (int i = first; i <= last; ++i)
-	fixed_regs[i] = call_used_regs[i] = 1;
+	fixed_regs[i] = 1;
 
       if (!comma)
 	break;
@@ -8809,7 +8809,7 @@ reg_unused_after (rtx reg, rtx_insn *insn)
       if (set == NULL && reg_overlap_mentioned_p (reg, PATTERN (insn)))
 	return false;
 
-      if (code == CALL_INSN && call_really_used_regs[REGNO (reg)])
+      if (code == CALL_INSN && call_used_regs[REGNO (reg)])
 	return true;
     }
   return true;
@@ -11447,32 +11447,28 @@ sh_conditional_register_usage (void)
 {
   for (int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno ++)
     if (! VALID_REGISTER_P (regno))
-      fixed_regs[regno] = call_used_regs[regno] = 1;
+      fixed_regs[regno] = 1;
   /* R8 and R9 are call-clobbered on SH5, but not on earlier SH ABIs.  */
   if (flag_pic)
-    {
-      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
-      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
-    }
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
   if (TARGET_FDPIC)
     {
       fixed_regs[PIC_REG] = 1;
       call_used_regs[PIC_REG] = 1;
-      call_really_used_regs[PIC_REG] = 1;
     }
   /* Renesas saves and restores mac registers on call.  */
   if (TARGET_HITACHI && ! TARGET_NOMACSAVE)
     {
-      call_really_used_regs[MACH_REG] = 0;
-      call_really_used_regs[MACL_REG] = 0;
+      call_used_regs[MACH_REG] = 0;
+      call_used_regs[MACL_REG] = 0;
     }
 
   for (int regno = FIRST_GENERAL_REG; regno <= LAST_GENERAL_REG; regno++)
-    if (! fixed_regs[regno] && call_really_used_regs[regno])
+    if (! fixed_regs[regno] && call_used_regs[regno])
       SET_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], regno);
 
-  call_really_used_regs[FPSCR_MODES_REG] = 0;
-  call_really_used_regs[FPSCR_STAT_REG] = 0;
+  call_used_regs[FPSCR_MODES_REG] = 0;
+  call_used_regs[FPSCR_STAT_REG] = 0;
 }
 
 /* Implement TARGET_LEGITIMATE_CONSTANT_P

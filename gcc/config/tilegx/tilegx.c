@@ -4341,20 +4341,11 @@ static void
 tilegx_conditional_register_usage (void)
 {
   global_regs[TILEGX_NETORDER_REGNUM] = 1;
-  /* TILEGX_PIC_TEXT_LABEL_REGNUM is conditionally used.  It is a
-     member of fixed_regs, and therefore must be member of
-     call_used_regs, but it is not a member of call_really_used_regs[]
-     because it is not clobbered by a call.  */
+  /* TILEGX_PIC_TEXT_LABEL_REGNUM is conditionally used.  */
   if (TILEGX_PIC_TEXT_LABEL_REGNUM != INVALID_REGNUM)
-    {
-      fixed_regs[TILEGX_PIC_TEXT_LABEL_REGNUM] = 1;
-      call_used_regs[TILEGX_PIC_TEXT_LABEL_REGNUM] = 1;
-    }
+    fixed_regs[TILEGX_PIC_TEXT_LABEL_REGNUM] = 1;
   if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
-    {
-      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
-      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
-    }
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
 }
 
 

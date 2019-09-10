@@ -488,27 +488,6 @@
    0, 0, 0, 0, 0, 0, 0, 0, /* f8 .. f15 */     \
    1, 1, 1 }               /* flags, arg, frame */
 
-/* `CALL_USED_REGISTERS'
-
-   Like `FIXED_REGISTERS' but has 1 for each register that is
-   clobbered (in general) by function calls as well as for fixed
-   registers.  This macro therefore identifies the registers that are
-   not available for general allocation of values that must live
-   across function calls.
-
-   If a register has 0 in `CALL_USED_REGISTERS', the compiler
-   automatically saves it on function entry and restores it on
-   function exit, if the register is used within the function.  */
-#define CALL_USED_REGISTERS \
- { 1, 1, 1, 1, 1, 1, 1, 1, /* r0 .. r7 */      \
-   1, 1, 1, 0, 0, 0, 0, 0, /* r8 .. r15 */     \
-   0, 0, 0, 0, 1, 1, 0, 1, /* r16 .. r23 */    \
-   1, 1, 1, 1, 1, 1, 1, 1, /* r24 .. r31 */    \
-   1, 1,                   /* mdb, mdc */      \
-   1, 1, 1, 1, 1, 1, 1, 1, /* f0 .. f7 */      \
-   1, 0, 0, 0, 0, 0, 0, 0, /* f8 .. f15 */     \
-   1, 1, 1 }               /* flags, arg, frame */
-
 /* Like `CALL_USED_REGISTERS' except this macro doesn't require that
    the entire set of `FIXED_REGISTERS' be included.
    (`CALL_USED_REGISTERS' must be a superset of `FIXED_REGISTERS').

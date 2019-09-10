@@ -1,5 +1,91 @@
 2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* doc/tm.texi.in: Document that exactly one of CALL_USED_REGISTERS
+	and CALL_REALLY_USED_REGISTERS must be defined, and that
+	CALL_REALLY_USED_REGISTERS is preferred.
+	* doc/tm.texi: Regenerate.
+	* hard-reg-set.h (target_hard_regs::x_call_really_used_regs): Delete.
+	(call_really_used_regs): Likewise.
+	* reginfo.c: Raise an #error if both CALL_USED_REGISTERS and
+	CALL_REALLY_USED_REGISTERS are defined.
+	(initial_call_used_regs): Use CALL_REALLY_USED_REGISTERS as the
+	initial value if defined.
+	(initial_call_really_used_regs): Delete.
+	(saved_call_really_used_regs): Likewise.
+	(CALL_REALLY_USED_REGNO_P): Likewise.
+	(init_reg_sets): Remove handling of call_really_used_regs.
+	(save_register_info, restore_register_info, globalize_reg): Likewise.
+	(init_reg_sets_1): Likewise.  Use call_used_regs instead of
+	CALL_REALLY_USED_REGNO_P.  Don't set call_used_regs for registers
+	outside operand_reg_set.
+	(fix_register): Don't change call_used_regs if
+	CALL_REALLY_USED_REGISTERS is defined.
+	* config/csky/csky.h (CALL_USED_REGISTERS): Delete.
+	* config/csky/csky.c (get_csky_live_regs): Use call_used_regs
+	instead of call_really_used_regs.
+	(csky_conditional_register_usage): Remove the old handling of
+	call_used_regs and change the handling of call_really_used_regs
+	to use call_used_regs instead.
+	* config/ia64/ia64.h (CALL_USED_REGISTERS): Delete.
+	* config/ia64/ia64.c (fix_range): Don't set call_used_regs when
+	making a register fixed.
+	* config/m32r/m32r.h (CALL_USED_REGISTERS): Delete.
+	* config/m32r/m32r.c (MUST_SAVE_REGISTER): Use call_used_regs
+	instead of call_really_used_regs.
+	(m32r_conditional_register_usage): Don't set call_used_regs when
+	making a register fixed.
+	* config/mips/mips.h (CALL_USED_REGISTERS): Delete.
+	* config/mips/mips.c (mips_global_pointer): Use call_used_regs
+	instead of call_really_used_regs.
+	(mips_interrupt_extra_call_saved_reg_p): Likewise.
+	(mips_cfun_call_saved_reg_p): Likewise.
+	(mips_swap_registers): Remove the old handling of call_used_regs
+	and change the handling of call_really_used_regs to use call_used_regs
+	instead.
+	(mips_conditional_register_usage): Likewise.
+	* config/mn10300/mn10300.h (CALL_USED_REGISTERS): Delete.
+	* config/mn10300/mn10300.c (fp_regs_to_save): Use call_used_regs
+	instead of call_really_used_regs.
+	(mn10300_get_live_callee_saved_regs): Likewise.
+	(mn10300_expand_prologue, mn10300_expand_epilogue): Likewise.
+	(mn10300_conditional_register_usage): Don't set call_used_regs when
+	making a register fixed.
+	* config/rs6000/rs6000.h (CALL_USED_REGISTERS): Delete.
+	* config/rs6000/rs6000.c (rs6000_conditional_register_usage):
+	Remove the old handling of call_used_regs and change the handling
+	of call_really_used_regs to use call_used_regs instead.
+	* config/s390/s390.h (CALL_USED_REGISTERS): Delete.
+	* config/s390/s390.c (s390_regs_ever_clobbered): Use call_used_regs
+	instead of call_really_used_regs.
+	(s390_register_info_gprtofpr, s390_register_info): Likewise.
+	(s390_hard_regno_rename_ok, s390_hard_regno_scratch_ok): Likewise.
+	(s390_emit_prologue, s300_set_up_by_prologue): Likewise.
+	(s390_can_use_return_insn, s390_optimize_prologue): Likewise.
+	(s390_conditional_register_usage): Remove the old handling of
+	call_used_regs and change the handling of call_really_used_regs
+	to use call_used_regs instead.
+	* config/sh/sh.h (CALL_USED_REGISTERS): Delete.
+	* config/sh/sh.c (output_stack_adjust, calc_live_regs): Likewise.
+	(sh_fix_range, reg_unused_after): Likewise.
+	(sh_conditional_register_usage): Remove the old handling of
+	call_used_regs and change the handling of call_really_used_regs
+	to use call_used_regs instead.
+	* config/sparc/sparc.h (CALL_USED_REGISTERS): Delete.
+	* config/sparc/sparc.c (sparc_conditional_register_usage): Don't set
+	call_used_regs when making a register fixed.
+	* config/tilegx/tilegx.h (CALL_USED_REGISTERS): Delete.
+	* config/tilegx/tilegx.c (tilegx_conditional_register_usage): Don't set
+	call_used_regs when making a register fixed.
+	* config/tilepro/tilepro.h (CALL_USED_REGISTERS): Delete.
+	* config/tilepro/tilepro.c (tilepro_conditional_register_usage): Don't
+	set call_used_regs when making a register fixed.
+	* config/visium/visium.h (CALL_USED_REGISTERS): Delete.
+	* config/visium/visium.c (visium_conditional_register_usage): Remove
+	the old handling of call_used_regs and change the handling of
+	call_really_used_regs to use call_used_regs instead.
+
+2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hard-reg-set.h (call_used_regs): Only define if IN_TARGET_CODE.
 	(call_used_or_fixed_reg_p): Expand definition of call_used_regs.
 	* reginfo.c (call_used_regs): New macro.
