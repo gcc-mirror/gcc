@@ -1,4 +1,10 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
+	* config/arm/arm.md (stack_protect_combined_set_insn): Handle
+	FDPIC mode.
+	(stack_protect_combined_test_insn): Likewise.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 	Mickaël Guêné <mickael.guene@st.com>
 
 	* config/arm/arm.c (arm_load_tp): Add FDPIC support.
