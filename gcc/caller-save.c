@@ -192,7 +192,6 @@ init_caller_save (void)
 
   caller_save_initialized_p = true;
 
-  CLEAR_HARD_REG_SET (no_caller_save_reg_set);
   /* First find all the registers that we need to deal with and all
      the modes that they can have.  If we can't find a mode to use,
      we can't have the register live over calls.  */
@@ -264,11 +263,7 @@ init_caller_save (void)
 	{
 	  regno_save_mode[i][j] = VOIDmode;
 	  if (j == 1)
-	    {
-	      CLEAR_HARD_REG_BIT (savable_regs, i);
-	      if (call_used_regs[i])
-		SET_HARD_REG_BIT (no_caller_save_reg_set, i);
-	    }
+	    CLEAR_HARD_REG_BIT (savable_regs, i);
 	}
 }
 
