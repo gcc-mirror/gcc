@@ -5665,7 +5665,7 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return, bool ignore_outlined)
     return true;
 
   return (df_regs_ever_live_p (regno)
-	  && !call_used_regs[regno]
+	  && !call_used_or_fixed_reg_p (regno)
 	  && !fixed_regs[regno]
 	  && (regno != HARD_FRAME_POINTER_REGNUM || !frame_pointer_needed));
 }
@@ -7837,7 +7837,7 @@ ix86_expand_prologue (void)
 	       "around by avoiding functions with aggregate return.");
 
       /* Only need to push parameter pointer reg if it is caller saved.  */
-      if (!call_used_regs[REGNO (crtl->drap_reg)])
+      if (!call_used_or_fixed_reg_p (REGNO (crtl->drap_reg)))
 	{
 	  /* Push arg pointer reg */
 	  insn = emit_insn (gen_push (crtl->drap_reg));
@@ -8012,7 +8012,7 @@ ix86_expand_prologue (void)
 	  if (ix86_static_chain_on_stack)
 	    stack_size += UNITS_PER_WORD;
 
-	  if (!call_used_regs[REGNO (crtl->drap_reg)])
+	  if (!call_used_or_fixed_reg_p (REGNO (crtl->drap_reg)))
 	    stack_size += UNITS_PER_WORD;
 
 	  /* This over-estimates by 1 minimal-stack-alignment-unit but
@@ -8903,7 +8903,7 @@ ix86_expand_epilogue (int style)
 
       if (ix86_static_chain_on_stack)
 	param_ptr_offset += UNITS_PER_WORD;
-      if (!call_used_regs[REGNO (crtl->drap_reg)])
+      if (!call_used_or_fixed_reg_p (REGNO (crtl->drap_reg)))
 	param_ptr_offset += UNITS_PER_WORD;
 
       insn = emit_insn (gen_rtx_SET
@@ -8921,7 +8921,7 @@ ix86_expand_epilogue (int style)
 				  GEN_INT (param_ptr_offset)));
       RTX_FRAME_RELATED_P (insn) = 1;
 
-      if (!call_used_regs[REGNO (crtl->drap_reg)])
+      if (!call_used_or_fixed_reg_p (REGNO (crtl->drap_reg)))
 	ix86_emit_restore_reg_using_pop (crtl->drap_reg);
     }
 
@@ -19643,12 +19643,12 @@ x86_order_regs_for_local_alloc (void)
 
    /* First allocate the local general purpose registers.  */
    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-     if (GENERAL_REGNO_P (i) && call_used_regs[i])
+     if (GENERAL_REGNO_P (i) && call_used_or_fixed_reg_p (i))
 	reg_alloc_order [pos++] = i;
 
    /* Global general purpose registers.  */
    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-     if (GENERAL_REGNO_P (i) && !call_used_regs[i])
+     if (GENERAL_REGNO_P (i) && !call_used_or_fixed_reg_p (i))
 	reg_alloc_order [pos++] = i;
 
    /* x87 registers come first in case we are doing FP math

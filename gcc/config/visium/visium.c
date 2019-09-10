@@ -3589,7 +3589,7 @@ visium_save_reg_p (int interrupt, int regno)
 	  if (df_regs_ever_live_p (regno))
 	    return 1;
 	}
-      else if (call_used_regs[regno])
+      else if (call_used_or_fixed_reg_p (regno))
 	return 1;
 
       /* To save mdb requires two temporary registers.  To save mdc or
@@ -3616,7 +3616,7 @@ visium_save_reg_p (int interrupt, int regno)
 	}
     }
 
-  return df_regs_ever_live_p (regno) && !call_used_regs[regno];
+  return df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno);
 }
 
 /* Compute the frame size required by the function.  This function is called

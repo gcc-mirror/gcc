@@ -1114,7 +1114,7 @@ need_to_save (int regno)
 	  ))
     return 1;
   if (df_regs_ever_live_p (regno)
-      && (!call_used_regs[regno] || cfun->machine->is_interrupt))
+      && (!call_used_or_fixed_reg_p (regno) || cfun->machine->is_interrupt))
     return 1;
   return 0;
 }

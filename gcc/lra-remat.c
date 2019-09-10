@@ -1309,7 +1309,7 @@ lra_remat (void)
   all_cands.create (8000);
   call_used_regs_arr_len = 0;
   for (int i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (call_used_regs[i])
+    if (call_used_or_fixed_reg_p (i))
       call_used_regs_arr[call_used_regs_arr_len++] = i;
   initiate_cand_table ();
   create_remat_bb_data ();

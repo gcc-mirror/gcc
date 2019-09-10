@@ -3076,7 +3076,7 @@ ix86_set_current_function (tree fndecl)
      Avoid expensive re-initialization of init_regs each time we switch
      function context.  */
   if (TARGET_64BIT
-      && (call_used_regs[SI_REG]
+      && (call_used_or_fixed_reg_p (SI_REG)
 	  == (cfun->machine->call_abi == MS_ABI)))
     reinit_regs ();
   /* Need to re-initialize init_regs if caller-saved registers are

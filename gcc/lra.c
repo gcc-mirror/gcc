@@ -2420,7 +2420,7 @@ lra (FILE *f)
 
   if (crtl->saves_all_registers)
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (! call_used_regs[i] && ! fixed_regs[i] && ! LOCAL_REGNO (i))
+      if (!call_used_or_fixed_reg_p (i) && !fixed_regs[i] && !LOCAL_REGNO (i))
 	df_set_regs_ever_live (i, true);
 
   /* We don't DF from now and avoid its using because it is to

@@ -2523,11 +2523,12 @@ emit_safe_across_calls (void)
   out_state = 0;
   while (1)
     {
-      while (rs < 64 && call_used_regs[PR_REG (rs)])
+      while (rs < 64 && call_used_or_fixed_reg_p (PR_REG (rs)))
 	rs++;
       if (rs >= 64)
 	break;
-      for (re = rs + 1; re < 64 && ! call_used_regs[PR_REG (re)]; re++)
+      for (re = rs + 1;
+	   re < 64 && ! call_used_or_fixed_reg_p (PR_REG (re)); re++)
 	continue;
       if (out_state == 0)
 	{
@@ -2593,7 +2594,7 @@ find_gr_spill (enum ia64_frame_regs r, int try_locals)
     {
       for (regno = GR_REG (1); regno <= GR_REG (31); regno++)
 	if (! df_regs_ever_live_p (regno)
-	    && call_used_regs[regno]
+	    && call_used_or_fixed_reg_p (regno)
 	    && ! fixed_regs[regno]
 	    && ! global_regs[regno]
 	    && ((current_frame_info.gr_used_mask >> regno) & 1) == 0
@@ -2641,7 +2642,7 @@ next_scratch_gr_reg (void)
   for (i = 0; i < 32; ++i)
     {
       regno = (last_scratch_gr_reg + i + 1) & 31;
-      if (call_used_regs[regno]
+      if (call_used_or_fixed_reg_p (regno)
 	  && ! fixed_regs[regno]
 	  && ! global_regs[regno]
 	  && ((current_frame_info.gr_used_mask >> regno) & 1) == 0)
@@ -2762,7 +2763,7 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
      which will always wind up on the stack.  */
 
   for (regno = FR_REG (2); regno <= FR_REG (127); regno++)
-    if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])
+    if (df_regs_ever_live_p (regno) && ! call_used_or_fixed_reg_p (regno))
       {
 	SET_HARD_REG_BIT (mask, regno);
 	spill_size += 16;
@@ -2771,7 +2772,7 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
       }
 
   for (regno = GR_REG (1); regno <= GR_REG (31); regno++)
-    if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])
+    if (df_regs_ever_live_p (regno) && ! call_used_or_fixed_reg_p (regno))
       {
 	SET_HARD_REG_BIT (mask, regno);
 	spill_size += 8;
@@ -2780,7 +2781,7 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
       }
 
   for (regno = BR_REG (1); regno <= BR_REG (7); regno++)
-    if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])
+    if (df_regs_ever_live_p (regno) && ! call_used_or_fixed_reg_p (regno))
       {
 	SET_HARD_REG_BIT (mask, regno);
 	spill_size += 8;
@@ -2840,7 +2841,8 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
     }
   else
     {
-      if (df_regs_ever_live_p (BR_REG (0)) && ! call_used_regs[BR_REG (0)])
+      if (df_regs_ever_live_p (BR_REG (0))
+	  && ! call_used_or_fixed_reg_p (BR_REG (0)))
 	{
 	  SET_HARD_REG_BIT (mask, BR_REG (0));
 	  extra_spill_size += 8;
@@ -2894,7 +2896,7 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
 
   /* See if we need to store the predicate register block.  */
   for (regno = PR_REG (0); regno <= PR_REG (63); regno++)
-    if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])
+    if (df_regs_ever_live_p (regno) && ! call_used_or_fixed_reg_p (regno))
       break;
   if (regno <= PR_REG (63))
     {

@@ -117,7 +117,7 @@ save_reg_p (int reg)
 	return true;
     }
 
-  return !call_used_regs[reg] && df_regs_ever_live_p (reg);
+  return !call_used_or_fixed_reg_p (reg) && df_regs_ever_live_p (reg);
 }
 
 /* Return the first fixed-point register that is required to be
@@ -875,7 +875,7 @@ rs6000_stack_info (void)
 
   using_static_chain_p = (cfun->static_chain_decl != NULL_TREE
 			  && df_regs_ever_live_p (STATIC_CHAIN_REGNUM)
-			  && call_used_regs[STATIC_CHAIN_REGNUM]);
+			  && call_used_or_fixed_reg_p (STATIC_CHAIN_REGNUM));
   info->savres_strategy = rs6000_savres_strategy (info, using_static_chain_p);
 
   if (!(info->savres_strategy & SAVE_INLINE_GPRS)
@@ -2082,7 +2082,7 @@ generate_set_vrsave (rtx reg, rs6000_stack_t *info, int epiloguep)
   for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)
     if (info->vrsave_mask & ALTIVEC_REG_BIT (i))
       {
-	if (!epiloguep || call_used_regs [i])
+	if (!epiloguep || call_used_or_fixed_reg_p (i))
 	  clobs[nclobs++] = gen_hard_reg_clobber (V4SImode, i);
 	else
 	  {
@@ -2971,9 +2971,10 @@ rs6000_emit_prologue (void)
   rtx cr_save_rtx = NULL_RTX;
   rtx_insn *insn;
   int strategy;
-  int using_static_chain_p = (cfun->static_chain_decl != NULL_TREE
-			      && df_regs_ever_live_p (STATIC_CHAIN_REGNUM)
-			      && call_used_regs[STATIC_CHAIN_REGNUM]);
+  int using_static_chain_p
+    = (cfun->static_chain_decl != NULL_TREE
+       && df_regs_ever_live_p (STATIC_CHAIN_REGNUM)
+       && call_used_or_fixed_reg_p (STATIC_CHAIN_REGNUM));
   int using_split_stack = (flag_split_stack
                            && (lookup_attribute ("no_split_stack",
                                                  DECL_ATTRIBUTES (cfun->decl))
@@ -3571,7 +3572,7 @@ rs6000_emit_prologue (void)
       emit_insn (gen_prologue_movesi_from_cr (crsave));
 
       for (i = 0; i < 8; i++)
-	if (!call_used_regs[CR0_REGNO + i])
+	if (!call_used_or_fixed_reg_p (CR0_REGNO + i))
 	  {
 	    rtvec p = rtvec_alloc (2);
 	    RTVEC_ELT (p, 0)
@@ -4704,7 +4705,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
       int i, cr_off = info->ehcr_offset;
 
       for (i = 0; i < 8; i++)
-	if (!call_used_regs[CR0_REGNO + i])
+	if (!call_used_or_fixed_reg_p (CR0_REGNO + i))
 	  {
 	    rtx reg = gen_rtx_REG (SImode, 0);
 	    emit_insn (gen_frame_load (reg, frame_reg_rtx,

@@ -1380,7 +1380,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  if (!cfun->has_nonlocal_label
 	      && has_abnormal_call_or_eh_pred_edge_p (bb))
 	    for (px = 0; px < FIRST_PSEUDO_REGISTER; px++)
-	      if (call_used_regs[px]
+	      if (call_used_or_fixed_reg_p (px)
 #ifdef REAL_PIC_OFFSET_TABLE_REGNUM
 		  /* We should create a conflict of PIC pseudo with
 		     PIC hard reg as PIC hard reg can have a wrong

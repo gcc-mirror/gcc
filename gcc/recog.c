@@ -3227,7 +3227,8 @@ peep2_find_free_register (int from, int to, const char *class_str,
 	      break;
 	    }
 	  /* And that we don't create an extra save/restore.  */
-	  if (! call_used_regs[regno + j] && ! df_regs_ever_live_p (regno + j))
+	  if (! call_used_or_fixed_reg_p (regno + j)
+	      && ! df_regs_ever_live_p (regno + j))
 	    {
 	      success = 0;
 	      break;

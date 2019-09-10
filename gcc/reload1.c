@@ -795,7 +795,9 @@ reload (rtx_insn *first, int global)
 
   if (crtl->saves_all_registers)
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (! call_used_regs[i] && ! fixed_regs[i] && ! LOCAL_REGNO (i))
+      if (! call_used_or_fixed_reg_p (i)
+	  && ! fixed_regs[i]
+	  && ! LOCAL_REGNO (i))
 	df_set_regs_ever_live (i, true);
 
   /* Find all the pseudo registers that didn't get hard regs
@@ -1906,8 +1908,8 @@ find_reg (class insn_chain *chain, int order)
 		  && (inv_reg_alloc_order[regno]
 		      < inv_reg_alloc_order[best_reg])
 #else
-		  && call_used_regs[regno]
-		  && ! call_used_regs[best_reg]
+		  && call_used_or_fixed_reg_p (regno)
+		  && ! call_used_or_fixed_reg_p (best_reg)
 #endif
 		  ))
 	    {

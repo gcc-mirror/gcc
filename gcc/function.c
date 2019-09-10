@@ -2122,7 +2122,7 @@ aggregate_value_p (const_tree exp, const_tree fntype)
   regno = REGNO (reg);
   nregs = hard_regno_nregs (regno, TYPE_MODE (type));
   for (i = 0; i < nregs; i++)
-    if (! call_used_regs[regno + i])
+    if (! call_used_or_fixed_reg_p (regno + i))
       return 1;
 
   return 0;

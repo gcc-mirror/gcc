@@ -511,4 +511,13 @@ extern const char * reg_class_names[];
 #define REG_CAN_CHANGE_MODE_P(REGN, FROM, TO)                          \
   (targetm.can_change_mode_class (FROM, TO, REGNO_REG_CLASS (REGN)))
 
+/* Return true if register REGNO is either fixed or call-used
+   (aka call-clobbered).  */
+
+inline bool
+call_used_or_fixed_reg_p (unsigned int regno)
+{
+  return fixed_regs[regno] || call_used_regs[regno];
+}
+
 #endif /* ! GCC_HARD_REG_SET_H */

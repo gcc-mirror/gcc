@@ -3500,7 +3500,7 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
       /* Defs for the callee saved registers are inserted so that the
 	 pushes have some defining location.  */
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if ((call_used_regs[i] == 0) && (df_regs_ever_live_p (i)))
+	if ((call_used_or_fixed_reg_p (i) == 0) && (df_regs_ever_live_p (i)))
 	  bitmap_set_bit (entry_block_defs, i);
     }
 

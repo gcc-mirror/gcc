@@ -1080,7 +1080,7 @@ prologue_saved_reg_p (unsigned regno)
 {
   gcc_assert (GP_REG_P (regno));
   
-  if (df_regs_ever_live_p (regno) && !call_used_regs[regno])
+  if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
     return true;
 
   if (regno == HARD_FRAME_POINTER_REGNUM && frame_pointer_needed)

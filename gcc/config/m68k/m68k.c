@@ -944,7 +944,7 @@ m68k_save_reg (unsigned int regno, bool interrupt_handler)
       if (df_regs_ever_live_p (regno))
 	return true;
 
-      if (!crtl->is_leaf && call_used_regs[regno])
+      if (!crtl->is_leaf && call_used_or_fixed_reg_p (regno))
 	return true;
     }
 
@@ -953,7 +953,7 @@ m68k_save_reg (unsigned int regno, bool interrupt_handler)
     return false;
 
   /* Otherwise save everything that isn't call-clobbered.  */
-  return !call_used_regs[regno];
+  return !call_used_or_fixed_reg_p (regno);
 }
 
 /* Emit RTL for a MOVEM or FMOVEM instruction.  BASE + OFFSET represents
