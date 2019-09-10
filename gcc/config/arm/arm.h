@@ -1960,6 +1960,13 @@ extern unsigned arm_pic_register;
 		   || label_mentioned_p (get_pool_constant (X)))))	\
 	 || tls_mentioned_p (X))
 
+/* We may want to save the PIC register if it is a dedicated one.  */
+#define PIC_REGISTER_MAY_NEED_SAVING			\
+  (flag_pic						\
+   && !TARGET_SINGLE_PIC_BASE				\
+   && !TARGET_FDPIC					\
+   && arm_pic_register != INVALID_REGNUM)
+
 /* We need to know when we are making a constant pool; this determines
    whether data needs to be in the GOT or can be referenced via a GOT
    offset.  */
