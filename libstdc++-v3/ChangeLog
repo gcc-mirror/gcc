@@ -1,4 +1,10 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
+	* acinclude.m4: Handle uclinux*.
+	* configure: Regenerate.
+	* configure.host: Handle uclinux*
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 	Mickaël Guêné <mickael.guene@st.com>
 
 	* libsupc++/eh_personality.cc (get_ttype_entry): Add FDPIC
