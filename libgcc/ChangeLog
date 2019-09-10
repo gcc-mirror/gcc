@@ -1,6 +1,26 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 	Mickaël Guêné <mickael.guene@st.com>
 
+	* config/arm/linux-atomic.c (__kernel_cmpxchg): Add FDPIC support.
+	(__kernel_dmb): Likewise.
+	(__fdpic_cmpxchg): New function.
+	(__fdpic_dmb): New function.
+	* config/arm/unwind-arm.h (FDPIC_REGNUM): New define.
+	(gnu_Unwind_Find_got): New function.
+	(_Unwind_decode_typeinfo_ptr): Add FDPIC support.
+	* unwind-arm-common.inc (UCB_PR_GOT): New.
+	(funcdesc_t): New struct.
+	(get_eit_entry): Add FDPIC support.
+	(unwind_phase2): Likewise.
+	(unwind_phase2_forced): Likewise.
+	(__gnu_Unwind_RaiseException): Likewise.
+	(__gnu_Unwind_Resume): Likewise.
+	(__gnu_Unwind_Backtrace): Likewise.
+	* unwind-pe.h (read_encoded_value_with_base): Likewise.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
+
 	* libgcc/crtstuff.c: Add support for FDPIC.
 
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>

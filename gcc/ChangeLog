@@ -1,6 +1,12 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 	Mickaël Guêné <mickael.guene@st.com>
 
+	* ginclude/unwind-arm-common.h (unwinder_cache): Add reserved5
+	field.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
+
 	* config/arm/arm-c.c (__FDPIC__): Define new pre-processor macro
 	in FDPIC mode.
 	* config/arm/arm-protos.h (arm_load_function_descriptor): Declare
