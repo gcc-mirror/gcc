@@ -1,3 +1,12 @@
+2019-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (has_designator_problem): Use cp_expr_loc_or_input_loc
+	in error_at.
+	(build_enumerator): Likewise.
+	(cp_finish_decl): Use DECL_SOURCE_LOCATION.
+	(grokdeclarator): Use id_loc in two error_at; change errror
+	message about constinit together constexpr to use two ranges.
+
 2019-09-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84374 - diagnose invalid uses of decltype(auto).

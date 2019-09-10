@@ -6114,8 +6114,9 @@ has_designator_problem (reshape_iter *d, tsubst_flags_t complain)
   if (d->cur->index)
     {
       if (complain & tf_error)
-	error ("C99 designator %qE outside aggregate initializer",
-	       d->cur->index);
+	error_at (cp_expr_loc_or_input_loc (d->cur->index),
+		  "C99 designator %qE outside aggregate initializer",
+		  d->cur->index);
       else
 	return true;
     }
@@ -7288,8 +7289,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       if ((flags & LOOKUP_CONSTINIT)
 	  && !(dk == dk_thread || dk == dk_static))
 	{
-	  error ("%<constinit%> can only be applied to a variable with static "
-		 "or thread storage duration");
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "%<constinit%> can only be applied to a variable with "
+		    "static or thread storage duration");
 	  return;
 	}
 
@@ -10628,8 +10630,9 @@ grokdeclarator (const cp_declarator *declarator,
 			     && !uniquely_derived_from_p (ctype,
 							  current_class_type))
 		      {
-			error ("invalid use of qualified-name %<%T::%D%>",
-			       qualifying_scope, decl);
+			error_at (id_declarator->id_loc,
+				  "invalid use of qualified-name %<%T::%D%>",
+				  qualifying_scope, decl);
 			return error_mark_node;
 		      }
 		  }
@@ -10816,8 +10819,9 @@ grokdeclarator (const cp_declarator *declarator,
      keywords shall appear in a decl-specifier-seq."  */
   if (constinit_p && constexpr_p)
     {
-      error_at (min_location (declspecs->locations[ds_constinit],
-			      declspecs->locations[ds_constexpr]),
+      gcc_rich_location richloc (declspecs->locations[ds_constinit]);
+      richloc.add_range (declspecs->locations[ds_constexpr]);
+      error_at (&richloc,
 		"can use at most one of the %<constinit%> and %<constexpr%> "
 		"specifiers");
       return error_mark_node;
@@ -11831,7 +11835,8 @@ grokdeclarator (const cp_declarator *declarator,
 		&& inner_declarator->u.id.sfk == sfk_destructor
 		&& arg_types != void_list_node)
 	      {
-		error ("destructors may not have parameters");
+		error_at (declarator->id_loc,
+			  "destructors may not have parameters");
 		arg_types = void_list_node;
 		parms = NULL_TREE;
 	      }
@@ -15171,8 +15176,9 @@ build_enumerator (tree name, tree value, tree enumtype, tree attributes,
 	      if (! INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P
 		  (TREE_TYPE (value)))
 		{
-		  error ("enumerator value for %qD must have integral or "
-			 "unscoped enumeration type", name);
+		  error_at (cp_expr_loc_or_input_loc (value),
+			    "enumerator value for %qD must have integral or "
+			    "unscoped enumeration type", name);
 		  value = NULL_TREE;
 		}
 	      else
