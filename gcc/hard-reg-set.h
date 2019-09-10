@@ -473,8 +473,10 @@ extern struct target_hard_regs *this_target_hard_regs;
   (this_target_hard_regs->x_fixed_reg_set)
 #define fixed_nonglobal_reg_set \
   (this_target_hard_regs->x_fixed_nonglobal_reg_set)
+#ifdef IN_TARGET_CODE
 #define call_used_regs \
   (this_target_hard_regs->x_call_used_regs)
+#endif
 #define call_really_used_regs \
   (this_target_hard_regs->x_call_really_used_regs)
 #define savable_regs \
@@ -517,7 +519,7 @@ extern const char * reg_class_names[];
 inline bool
 call_used_or_fixed_reg_p (unsigned int regno)
 {
-  return fixed_regs[regno] || call_used_regs[regno];
+  return fixed_regs[regno] || this_target_hard_regs->x_call_used_regs[regno];
 }
 
 #endif /* ! GCC_HARD_REG_SET_H */
