@@ -1,6 +1,19 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 	Mickaël Guêné <mickael.guene@st.com>
 
+	libgcc/
+	* unwind-arm-common.inc (ARM_SET_R7_RT_SIGRETURN)
+	(THUMB2_SET_R7_RT_SIGRETURN, FDPIC_LDR_R12_WITH_FUNCDESC)
+	(FDPIC_LDR_R9_WITH_GOT, FDPIC_LDR_PC_WITH_RESTORER)
+	(FDPIC_FUNCDESC_OFFSET, ARM_NEW_RT_SIGFRAME_UCONTEXT)
+	(ARM_UCONTEXT_SIGCONTEXT, ARM_SIGCONTEXT_R0, FDPIC_T2_LDR_R12_WITH_FUNCDESC)
+	(FDPIC_T2_LDR_R9_WITH_GOT, FDPIC_T2_LDR_PC_WITH_RESTORER): New.
+	(__gnu_personality_sigframe_fdpic): New.
+	(get_eit_entry): Add FDPIC signal frame support.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
+
 	* config/arm/linux-atomic.c (__kernel_cmpxchg): Add FDPIC support.
 	(__kernel_dmb): Likewise.
 	(__fdpic_cmpxchg): New function.
