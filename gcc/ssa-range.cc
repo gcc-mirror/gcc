@@ -267,9 +267,7 @@ stmt_ranger::range_of_phi (irange &r, gphi *phi, tree name,
 
 bool
 stmt_ranger::range_of_call (irange &r, gcall *call, tree name ATTRIBUTE_UNUSED,
-			    const irange *name_range ATTRIBUTE_UNUSED,
-			    gimple *eval_from ATTRIBUTE_UNUSED,
-			    edge on_edge ATTRIBUTE_UNUSED)
+			    const irange *name_range ATTRIBUTE_UNUSED)
 {
   tree type = gimple_call_return_type (call);
   if (!irange::supports_type_p (type))
@@ -295,7 +293,7 @@ stmt_ranger::range_of_call (irange &r, gcall *call, tree name ATTRIBUTE_UNUSED,
 
 bool
 stmt_ranger::range_of_cond_expr  (irange &r, gassign *s, tree name,
-				  const irange *name_range, gimple *eval_from)
+				  const irange *name_range)
 {
   irange cond_range, range1, range2;
   tree cond = gimple_assign_rhs1 (s);
@@ -308,23 +306,20 @@ stmt_ranger::range_of_cond_expr  (irange &r, gassign *s, tree name,
   if (!irange::supports_type_p (TREE_TYPE (op1)))
     return false;
 
-  if (!eval_from)
-    eval_from = s;
-
   if (name == cond)
     cond_range = *name_range;
   else
-    gcc_assert (range_of_expr (cond_range, cond, eval_from));
+    gcc_assert (range_of_expr (cond_range, cond, s));
 
   if (name == op1)
     range1 = *name_range;
   else
-    gcc_assert (range_of_expr (range1, op1, eval_from));
+    gcc_assert (range_of_expr (range1, op1, s));
 
   if (name == op2)
     range2 = *name_range;
   else
-    gcc_assert (range_of_expr (range2, op2, eval_from));
+    gcc_assert (range_of_expr (range2, op2, s));
 
   if (cond_range.singleton_p ())
     {

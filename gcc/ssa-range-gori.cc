@@ -480,14 +480,12 @@ static irange
 get_tree_range (tree expr, tree name, irange *range_of_name)
 {
   static stmt_ranger sr;
-  if (expr != name || !range_of_name)
-    {
-      irange r;
-      gcc_assert (sr.range_of_expr (r, expr));
-      return r;
-    }
+  if (expr == name && range_of_name)
+    return *range_of_name;
 
-  return *range_of_name;
+  irange r;
+  gcc_assert (sr.range_of_expr (r, expr));
+  return r;
 }
 
 // Calculate the range for NAME if the lhs of statement S has the range LHS.

@@ -59,12 +59,10 @@ protected:
 			     const irange *name_range = NULL);
 
   bool range_of_call (irange &r, gcall *call, tree name = NULL_TREE,
-		      const irange *name_range = NULL,
-		      gimple *eval_from = NULL, edge on_edge = NULL);
+		      const irange *name_range = NULL);
 
   bool range_of_cond_expr (irange &r, gassign* call, tree name = NULL_TREE,
-			   const irange *name_range = NULL,
-			   gimple *eval_from = NULL);
+			   const irange *name_range = NULL);
 };
 
 class ssa_ranger : public stmt_ranger
