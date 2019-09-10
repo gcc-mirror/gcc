@@ -1,5 +1,11 @@
 2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/c6x/c6x-protos.h (c6x_set_return_address): Declare.
+	* config/c6x/c6x.h (REGNO_REG_CLASS): Move implementation to
+	* config/c6x/c6x.c (c6x_regno_reg_class): ...this new function.
+
+2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* rtl.h (get_call_rtx_from): Take a const rtx_insn * instead of an rtx.
 	* rtlanal.c (get_call_rtx_from): Likewise.
 	* dwarf2out.c (dwarf2out_var_location): Pass the insn rather
