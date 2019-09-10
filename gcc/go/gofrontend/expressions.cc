@@ -3283,6 +3283,10 @@ class Const_expression : public Expression
   Bexpression*
   do_get_backend(Translate_context* context);
 
+  int
+  do_inlining_cost() const
+  { return 1; }
+
   // When exporting a reference to a const as part of a const
   // expression, we export the value.  We ignore the fact that it has
   // a name.
