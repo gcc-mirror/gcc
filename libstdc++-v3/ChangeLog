@@ -1,3 +1,12 @@
+2019-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (to_chars): Rename to __to_chars_i. Define
+	non-template overloads for each signed and unsigned integer type and
+	char. Define deleted overload for bool (LWG 3266).
+	* testsuite/20_util/to_chars/1_neg.cc: Remove.
+	* testsuite/20_util/to_chars/3.cc: New test.
+	* testsuite/20_util/to_chars/lwg3266.cc: New test.
+
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 
 	* acinclude.m4: Handle uclinux*.
