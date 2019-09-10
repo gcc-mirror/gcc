@@ -62,6 +62,7 @@ __gnu_Unwind_Find_exidx (_Unwind_Ptr, int *);
 #define UCB_PR_ADDR(ucbp) ((ucbp)->unwinder_cache.reserved2)
 #define UCB_SAVED_CALLSITE_ADDR(ucbp) ((ucbp)->unwinder_cache.reserved3)
 #define UCB_FORCED_STOP_ARG(ucbp) ((ucbp)->unwinder_cache.reserved4)
+#define UCB_PR_GOT(ucbp) ((ucbp)->unwinder_cache.reserved5)
 
 /* Unwind descriptors.  */
 
@@ -84,6 +85,16 @@ typedef struct __EIT_entry
   _uw fnoffset;
   _uw content;
 } __EIT_entry;
+
+#ifdef __FDPIC__
+
+/* Only used in FDPIC case.  */
+struct funcdesc_t
+{
+  unsigned int ptr;
+  unsigned int got;
+};
+#endif
 
 /* Assembly helper functions.  */
 
@@ -259,7 +270,21 @@ get_eit_entry (_Unwind_Control_Block *ucbp, _uw return_address)
     {
       /* One of the predefined standard routines.  */
       _uw idx = (*(_uw *) ucbp->pr_cache.ehtp >> 24) & 0xf;
+#if __FDPIC__
+      {
+	struct funcdesc_t *funcdesc
+	  = (struct funcdesc_t *) __gnu_unwind_get_pr_addr (idx);
+	if (funcdesc)
+	  {
+	    UCB_PR_ADDR (ucbp) = funcdesc->ptr;
+	    UCB_PR_GOT (ucbp) = funcdesc->got;
+	  }
+	else
+	  UCB_PR_ADDR (ucbp) = 0;
+      }
+#else
       UCB_PR_ADDR (ucbp) = __gnu_unwind_get_pr_addr (idx);
+#endif
       if (UCB_PR_ADDR (ucbp) == 0)
 	{
 	  /* Failed */
@@ -270,6 +295,10 @@ get_eit_entry (_Unwind_Control_Block *ucbp, _uw return_address)
     {
       /* Execute region offset to PR */
       UCB_PR_ADDR (ucbp) = selfrel_offset31 (ucbp->pr_cache.ehtp);
+#if __FDPIC__
+      UCB_PR_GOT (ucbp)
+	= (unsigned int) gnu_Unwind_Find_got ((_Unwind_Ptr) UCB_PR_ADDR (ucbp));
+#endif
     }
   return _URC_OK;
 }
@@ -291,13 +320,28 @@ unwind_phase2 (_Unwind_Control_Block * ucbp, phase2_vrs * vrs)
       UCB_SAVED_CALLSITE_ADDR (ucbp) = VRS_PC(vrs);
 
       /* Call the pr to decide what to do.  */
+#if __FDPIC__
+      {
+	volatile struct funcdesc_t funcdesc;
+	funcdesc.ptr = UCB_PR_ADDR (ucbp);
+	funcdesc.got = UCB_PR_GOT (ucbp);
+	pr_result = ((personality_routine) &funcdesc)
+	  (_US_UNWIND_FRAME_STARTING, ucbp, (_Unwind_Context *) vrs);
+      }
+#else
       pr_result = ((personality_routine) UCB_PR_ADDR (ucbp))
 	(_US_UNWIND_FRAME_STARTING, ucbp, (_Unwind_Context *) vrs);
+#endif
     }
   while (pr_result == _URC_CONTINUE_UNWIND);
   
   if (pr_result != _URC_INSTALL_CONTEXT)
     abort();
+
+#if __FDPIC__
+  /* r9 could have been lost due to PLT jump.  Restore correct value.  */
+  vrs->core.r[FDPIC_REGNUM] = gnu_Unwind_Find_got (VRS_PC (vrs));
+#endif
 
   uw_restore_core_regs (vrs, &vrs->core);
 }
@@ -346,8 +390,18 @@ unwind_phase2_forced (_Unwind_Control_Block *ucbp, phase2_vrs *entry_vrs,
 	  next_vrs = saved_vrs;
 
 	  /* Call the pr to decide what to do.  */
+#if __FDPIC__
+	  {
+	    volatile struct funcdesc_t funcdesc;
+	    funcdesc.ptr = UCB_PR_ADDR (ucbp);
+	    funcdesc.got = UCB_PR_GOT (ucbp);
+	    pr_result = ((personality_routine) &funcdesc)
+	      (action, ucbp, (void *) &next_vrs);
+	  }
+#else
 	  pr_result = ((personality_routine) UCB_PR_ADDR (ucbp))
 	    (action, ucbp, (void *) &next_vrs);
+#endif
 
 	  saved_vrs.prev_sp = VRS_SP (&next_vrs);
 	}
@@ -383,6 +437,11 @@ unwind_phase2_forced (_Unwind_Control_Block *ucbp, phase2_vrs *entry_vrs,
 	 pr returned _URC_FAILURE.  */
       return _URC_FAILURE;
     }
+
+#if __FDPIC__
+  /* r9 could have been lost due to PLT jump.  Restore correct value.  */
+  saved_vrs.core.r[FDPIC_REGNUM] = gnu_Unwind_Find_got (VRS_PC (&saved_vrs));
+#endif
 
   uw_restore_core_regs (&saved_vrs, &saved_vrs.core);
 }
@@ -429,8 +488,18 @@ __gnu_Unwind_RaiseException (_Unwind_Control_Block * ucbp,
 	return _URC_FAILURE;
 
       /* Call the pr to decide what to do.  */
+#if __FDPIC__
+      {
+	volatile struct funcdesc_t funcdesc;
+	funcdesc.ptr = UCB_PR_ADDR (ucbp);
+	funcdesc.got = UCB_PR_GOT (ucbp);
+	pr_result = ((personality_routine) &funcdesc)
+	  (_US_VIRTUAL_UNWIND_FRAME, ucbp, (void *) &saved_vrs);
+      }
+#else
       pr_result = ((personality_routine) UCB_PR_ADDR (ucbp))
 	(_US_VIRTUAL_UNWIND_FRAME, ucbp, (void *) &saved_vrs);
+#endif
     }
   while (pr_result == _URC_CONTINUE_UNWIND);
 
@@ -488,13 +557,27 @@ __gnu_Unwind_Resume (_Unwind_Control_Block * ucbp, phase2_vrs * entry_vrs)
     }
 
   /* Call the cached PR.  */
+#if __FDPIC__
+  {
+    volatile struct funcdesc_t funcdesc;
+    funcdesc.ptr = UCB_PR_ADDR (ucbp);
+    funcdesc.got = UCB_PR_GOT (ucbp);
+    pr_result = ((personality_routine) &funcdesc)
+      (_US_UNWIND_FRAME_RESUME, ucbp, (_Unwind_Context *) entry_vrs);
+  }
+#else
   pr_result = ((personality_routine) UCB_PR_ADDR (ucbp))
 	(_US_UNWIND_FRAME_RESUME, ucbp, (_Unwind_Context *) entry_vrs);
+#endif
 
   switch (pr_result)
     {
     case _URC_INSTALL_CONTEXT:
       /* Upload the registers to enter the landing pad.  */
+#if __FDPIC__
+      /* r9 could have been lost due to PLT jump.  Restore correct value.  */
+      entry_vrs->core.r[FDPIC_REGNUM] = gnu_Unwind_Find_got (VRS_PC (entry_vrs));
+#endif
       uw_restore_core_regs (entry_vrs, &entry_vrs->core);
 
     case _URC_CONTINUE_UNWIND:
@@ -586,9 +669,20 @@ __gnu_Unwind_Backtrace(_Unwind_Trace_Fn trace, void * trace_argument,
 	}
 
       /* Call the pr to decide what to do.  */
+#if __FDPIC__
+      {
+	volatile struct funcdesc_t funcdesc;
+	funcdesc.ptr = UCB_PR_ADDR (ucbp);
+	funcdesc.got = UCB_PR_GOT (ucbp);
+	code = ((personality_routine) &funcdesc)
+	  (_US_VIRTUAL_UNWIND_FRAME | _US_FORCE_UNWIND,
+	   ucbp, (void *) &saved_vrs);
+      }
+#else
       code = ((personality_routine) UCB_PR_ADDR (ucbp))
 	(_US_VIRTUAL_UNWIND_FRAME | _US_FORCE_UNWIND, 
 	 ucbp, (void *) &saved_vrs);
+#endif
     }
   while (code != _URC_END_OF_STACK
 	 && code != _URC_FAILURE);
