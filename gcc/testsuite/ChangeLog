@@ -1,5 +1,9 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 
+	* gcc.target/arm/pr43698.c (bswap_32): Rename as my_bswap_32.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
 	* g++.dg/cpp0x/noexcept03.C: Add pie_enabled.
 	* g++.dg/ipa/devirt-c-7.C: Likewise.
 	* g++.dg/ipa/ivinline-1.C: Likewise.
