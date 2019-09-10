@@ -9,7 +9,7 @@ AC_DEFUN([GCC_LINUX_FUTEX],[dnl
 GCC_ENABLE(linux-futex,default, ,[use the Linux futex system call],
 	   permit yes|no|default)
 case "$target" in
-  *-linux*)
+  *-linux* | *-uclinux*)
     case "$enable_linux_futex" in
       default)
 	# If headers don't have gettid/futex syscalls definition, then

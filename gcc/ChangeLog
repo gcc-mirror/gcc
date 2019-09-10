@@ -1,4 +1,8 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
+        * config.gcc: Handle *-*-uclinuxfdpiceabi.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 	Mickaël Guêné  <mickael.guene@st.com>
 
 	* config/arm/arm.opt: Add -mfdpic option.
