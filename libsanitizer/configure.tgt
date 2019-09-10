@@ -42,6 +42,9 @@ case "${target}" in
 	;;
   sparc*-*-solaris2.11*)
 	;;
+  arm*-*-*fdpiceabi)
+	UNSUPPORTED=1
+	;;
   arm*-*-linux*)
 	;;
   mips*64*-*-linux*)

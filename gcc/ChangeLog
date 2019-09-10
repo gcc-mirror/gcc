@@ -1,6 +1,17 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
 
-        * config.gcc: Handle *-*-uclinuxfdpiceabi.
+	* config.gcc: Handle arm*-*-uclinuxfdpiceabi.
+	* config/arm/bpabi.h (TARGET_FDPIC_ASM_SPEC): New.
+	(SUBTARGET_EXTRA_ASM_SPEC): Use TARGET_FDPIC_ASM_SPEC.
+	* config/arm/linux-eabi.h (FDPIC_CC1_SPEC): New.
+	(CC1_SPEC): Use FDPIC_CC1_SPEC.
+	(MUSL_DYNAMIC_LINKER): Add -fdpic suffix when needed.
+	* config/arm/uclinuxfdpiceabi.h: New file.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
+	* config.gcc: Handle *-*-uclinuxfdpiceabi.
 
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 	Mickaël Guêné  <mickael.guene@st.com>
