@@ -2532,8 +2532,7 @@ static int
 c6x_save_reg (unsigned int regno)
 {
   return ((df_regs_ever_live_p (regno)
-	   && !call_used_or_fixed_reg_p (regno)
-	   && !fixed_regs[regno])
+	   && !call_used_or_fixed_reg_p (regno))
 	  || (regno == RETURN_ADDR_REGNO
 	      && (df_regs_ever_live_p (regno)
 		  || !crtl->is_leaf))

@@ -7225,7 +7225,7 @@ alpha_compute_frame_layout (void)
 
       /* One for every register we have to save.  */
       for (unsigned i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (! fixed_regs[i] && ! call_used_or_fixed_reg_p (i)
+	if (! call_used_or_fixed_reg_p (i)
 	    && df_regs_ever_live_p (i) && i != REG_RA)
 	  sa_mask |= HOST_WIDE_INT_1U << i;
 
