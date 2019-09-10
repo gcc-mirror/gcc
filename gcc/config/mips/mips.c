@@ -10636,7 +10636,7 @@ mips_global_pointer (void)
   if (TARGET_CALL_SAVED_GP && crtl->is_leaf)
     for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
       if (!df_regs_ever_live_p (regno)
-	  && call_really_used_regs[regno]
+	  && call_used_regs[regno]
 	  && !fixed_regs[regno]
 	  && regno != PIC_FUNCTION_ADDR_REGNUM)
 	return regno;
@@ -10789,7 +10789,7 @@ mips_interrupt_extra_call_saved_reg_p (unsigned int regno)
 
       /* Otherwise, return true for registers that aren't ordinarily
 	 call-clobbered.  */
-      return call_really_used_regs[regno];
+      return call_used_regs[regno];
     }
 
   return false;
@@ -10812,12 +10812,12 @@ mips_cfun_call_saved_reg_p (unsigned int regno)
     return true;
 
   /* call_insns preserve $28 unless they explicitly say otherwise,
-     so call_really_used_regs[] treats $28 as call-saved.  However,
+     so call_used_regs[] treats $28 as call-saved.  However,
      we want the ABI property rather than the default call_insn
      property here.  */
   return (regno == GLOBAL_POINTER_REGNUM
 	  ? TARGET_CALL_SAVED_GP
-	  : !call_really_used_regs[regno]);
+	  : !call_used_regs[regno]);
 }
 
 /* Return true if the function body might clobber register REGNO.
@@ -20411,7 +20411,6 @@ mips_swap_registers (unsigned int i)
 
   SWAP_INT (fixed_regs[i], fixed_regs[i + 1]);
   SWAP_INT (call_used_regs[i], call_used_regs[i + 1]);
-  SWAP_INT (call_really_used_regs[i], call_really_used_regs[i + 1]);
   SWAP_STRING (reg_names[i], reg_names[i + 1]);
 
 #undef SWAP_STRING
@@ -20447,7 +20446,7 @@ mips_conditional_register_usage (void)
       accessible_reg_set &= ~reg_class_contents[ST_REGS];
       if (!ISA_HAS_CCF)
 	SET_HARD_REG_BIT (accessible_reg_set, FPSW_REGNUM);
-      fixed_regs[FPSW_REGNUM] = call_used_regs[FPSW_REGNUM] = 1;
+      fixed_regs[FPSW_REGNUM] = 1;
     }
   if (TARGET_MIPS16)
     {
@@ -20462,25 +20461,25 @@ mips_conditional_register_usage (void)
 	 and $25 (t9) because it is used as the function call address in
 	 SVR4 PIC code.  */
 
-      fixed_regs[18] = call_used_regs[18] = 1;
-      fixed_regs[19] = call_used_regs[19] = 1;
-      fixed_regs[20] = call_used_regs[20] = 1;
-      fixed_regs[21] = call_used_regs[21] = 1;
-      fixed_regs[22] = call_used_regs[22] = 1;
-      fixed_regs[23] = call_used_regs[23] = 1;
-      fixed_regs[26] = call_used_regs[26] = 1;
-      fixed_regs[27] = call_used_regs[27] = 1;
-      fixed_regs[30] = call_used_regs[30] = 1;
+      fixed_regs[18] = 1;
+      fixed_regs[19] = 1;
+      fixed_regs[20] = 1;
+      fixed_regs[21] = 1;
+      fixed_regs[22] = 1;
+      fixed_regs[23] = 1;
+      fixed_regs[26] = 1;
+      fixed_regs[27] = 1;
+      fixed_regs[30] = 1;
       if (optimize_size)
 	{
-	  fixed_regs[8] = call_used_regs[8] = 1;
-	  fixed_regs[9] = call_used_regs[9] = 1;
-	  fixed_regs[10] = call_used_regs[10] = 1;
-	  fixed_regs[11] = call_used_regs[11] = 1;
-	  fixed_regs[12] = call_used_regs[12] = 1;
-	  fixed_regs[13] = call_used_regs[13] = 1;
-	  fixed_regs[14] = call_used_regs[14] = 1;
-	  fixed_regs[15] = call_used_regs[15] = 1;
+	  fixed_regs[8] = 1;
+	  fixed_regs[9] = 1;
+	  fixed_regs[10] = 1;
+	  fixed_regs[11] = 1;
+	  fixed_regs[12] = 1;
+	  fixed_regs[13] = 1;
+	  fixed_regs[14] = 1;
+	  fixed_regs[15] = 1;
 	}
 
       /* Do not allow HI and LO to be treated as register operands.
@@ -20493,7 +20492,7 @@ mips_conditional_register_usage (void)
     {
       int regno;
       for (regno = FP_REG_FIRST + 20; regno < FP_REG_FIRST + 24; regno++)
-	call_really_used_regs[regno] = call_used_regs[regno] = 1;
+	call_used_regs[regno] = 1;
     }
   /* Odd registers in the range $f21-$f31 (inclusive) are call-clobbered
      for n32 and o32 FP64.  */
@@ -20503,7 +20502,7 @@ mips_conditional_register_usage (void)
     {
       int regno;
       for (regno = FP_REG_FIRST + 21; regno <= FP_REG_FIRST + 31; regno+=2)
-	call_really_used_regs[regno] = call_used_regs[regno] = 1;
+	call_used_regs[regno] = 1;
     }
   /* Make sure that double-register accumulator values are correctly
      ordered for the current endianness.  */

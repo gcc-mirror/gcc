@@ -395,8 +395,6 @@ struct target_hard_regs {
      a pseudo reg whose life crosses calls.  */
   char x_call_used_regs[FIRST_PSEUDO_REGISTER];
 
-  char x_call_really_used_regs[FIRST_PSEUDO_REGISTER];
-
   /* For targets that use reload rather than LRA, this is the set
      of registers that we are able to save and restore around calls
      (i.e. those for which we know a suitable mode and set of
@@ -477,8 +475,6 @@ extern struct target_hard_regs *this_target_hard_regs;
 #define call_used_regs \
   (this_target_hard_regs->x_call_used_regs)
 #endif
-#define call_really_used_regs \
-  (this_target_hard_regs->x_call_really_used_regs)
 #define savable_regs \
   (this_target_hard_regs->x_savable_regs)
 #define regs_invalidated_by_call \

@@ -6054,7 +6054,7 @@ fix_range (const char *const_str)
 	}
 
       for (i = first; i <= last; ++i)
-	fixed_regs[i] = call_used_regs[i] = 1;
+	fixed_regs[i] = 1;
 
       if (!comma)
 	break;

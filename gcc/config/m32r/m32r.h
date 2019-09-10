@@ -348,15 +348,13 @@
 #define SUBTARGET_CALL_USED_REGISTERS
 #endif
 
-#define CALL_USED_REGISTERS	\
+#define CALL_REALLY_USED_REGISTERS \
 {				\
   1, 1, 1, 1, 1, 1, 1, 1,	\
   0, 0, 0, 0, 0, 0, 1, 1,	\
   1, 1, 1			\
   SUBTARGET_CALL_USED_REGISTERS	\
 }
-
-#define CALL_REALLY_USED_REGISTERS CALL_USED_REGISTERS
 
 /* If defined, an initializer for a vector of integers, containing the
    numbers of hard registers in the order in which GCC should

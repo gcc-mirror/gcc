@@ -73,17 +73,13 @@ struct target_regs *this_target_regs = &default_target_regs;
 static const char initial_fixed_regs[] = FIXED_REGISTERS;
 
 /* Data for initializing call_used_regs.  */
-static const char initial_call_used_regs[] = CALL_USED_REGISTERS;
-
 #ifdef CALL_REALLY_USED_REGISTERS
-/* Data for initializing call_really_used_regs.  */
-static const char initial_call_really_used_regs[] = CALL_REALLY_USED_REGISTERS;
+#ifdef CALL_USED_REGISTERS
+#error CALL_USED_REGISTERS and CALL_REALLY_USED_REGISTERS are both defined
 #endif
-
-#ifdef CALL_REALLY_USED_REGISTERS
-#define CALL_REALLY_USED_REGNO_P(X)  call_really_used_regs[X]
+static const char initial_call_used_regs[] = CALL_REALLY_USED_REGISTERS;
 #else
-#define CALL_REALLY_USED_REGNO_P(X)  call_used_regs[X]
+static const char initial_call_used_regs[] = CALL_USED_REGISTERS;
 #endif
 
 /* Indexed by hard register number, contains 1 for registers
@@ -164,10 +160,6 @@ init_reg_sets (void)
      CALL_USED_REGISTERS had the right number of initializers.  */
   gcc_assert (sizeof fixed_regs == sizeof initial_fixed_regs);
   gcc_assert (sizeof call_used_regs == sizeof initial_call_used_regs);
-#ifdef CALL_REALLY_USED_REGISTERS
-  gcc_assert (sizeof call_really_used_regs
-	      == sizeof initial_call_really_used_regs);
-#endif
 #ifdef REG_ALLOC_ORDER
   gcc_assert (sizeof reg_alloc_order == sizeof initial_reg_alloc_order);
 #endif
@@ -175,10 +167,6 @@ init_reg_sets (void)
 
   memcpy (fixed_regs, initial_fixed_regs, sizeof fixed_regs);
   memcpy (call_used_regs, initial_call_used_regs, sizeof call_used_regs);
-#ifdef CALL_REALLY_USED_REGISTERS
-  memcpy (call_really_used_regs, initial_call_really_used_regs,
-	  sizeof call_really_used_regs);
-#endif
 #ifdef REG_ALLOC_ORDER
   memcpy (reg_alloc_order, initial_reg_alloc_order, sizeof reg_alloc_order);
 #endif
@@ -193,9 +181,6 @@ init_reg_sets (void)
    subsequent back-end reinitialization.  */
 static char saved_fixed_regs[FIRST_PSEUDO_REGISTER];
 static char saved_call_used_regs[FIRST_PSEUDO_REGISTER];
-#ifdef CALL_REALLY_USED_REGISTERS
-static char saved_call_really_used_regs[FIRST_PSEUDO_REGISTER];
-#endif
 static const char *saved_reg_names[FIRST_PSEUDO_REGISTER];
 static HARD_REG_SET saved_accessible_reg_set;
 static HARD_REG_SET saved_operand_reg_set;
@@ -211,14 +196,6 @@ save_register_info (void)
   memcpy (saved_fixed_regs, fixed_regs, sizeof fixed_regs);
   memcpy (saved_call_used_regs, call_used_regs, sizeof call_used_regs);
 
-  /* Likewise for call_really_used_regs.  */
-#ifdef CALL_REALLY_USED_REGISTERS
-  gcc_assert (sizeof call_really_used_regs
-	      == sizeof saved_call_really_used_regs);
-  memcpy (saved_call_really_used_regs, call_really_used_regs,
-	  sizeof call_really_used_regs);
-#endif
-
   /* And similarly for reg_names.  */
   gcc_assert (sizeof reg_names == sizeof saved_reg_names);
   memcpy (saved_reg_names, reg_names, sizeof reg_names);
@@ -232,11 +209,6 @@ restore_register_info (void)
 {
   memcpy (fixed_regs, saved_fixed_regs, sizeof fixed_regs);
   memcpy (call_used_regs, saved_call_used_regs, sizeof call_used_regs);
-
-#ifdef CALL_REALLY_USED_REGISTERS
-  memcpy (call_really_used_regs, saved_call_really_used_regs,
-	  sizeof call_really_used_regs);
-#endif
 
   memcpy (reg_names, saved_reg_names, sizeof reg_names);
   accessible_reg_set = saved_accessible_reg_set;
@@ -371,17 +343,7 @@ init_reg_sets_1 (void)
       /* If a register is too limited to be treated as a register operand,
 	 then it should never be allocated to a pseudo.  */
       if (!TEST_HARD_REG_BIT (operand_reg_set, i))
-	{
-	  fixed_regs[i] = 1;
-	  call_used_regs[i] = 1;
-	}
-
-      /* call_used_regs must include fixed_regs.  */
-      gcc_assert (!fixed_regs[i] || call_used_regs[i]);
-#ifdef CALL_REALLY_USED_REGISTERS
-      /* call_used_regs must include call_really_used_regs.  */
-      gcc_assert (!call_really_used_regs[i] || call_used_regs[i]);
-#endif
+	fixed_regs[i] = 1;
 
       if (fixed_regs[i])
 	SET_HARD_REG_BIT (fixed_reg_set, i);
@@ -411,7 +373,7 @@ init_reg_sets_1 (void)
       else if (!PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
 	       && i == (unsigned) PIC_OFFSET_TABLE_REGNUM && fixed_regs[i])
 	;
-      else if (CALL_REALLY_USED_REGNO_P (i))
+      else if (call_used_regs[i])
 	SET_HARD_REG_BIT (regs_invalidated_by_call, i);
     }
 
@@ -713,10 +675,11 @@ fix_register (const char *name, int fixed, int call_used)
 	  else
 	    {
 	      fixed_regs[i] = fixed;
-	      call_used_regs[i] = call_used;
 #ifdef CALL_REALLY_USED_REGISTERS
 	      if (fixed == 0)
-		call_really_used_regs[i] = call_used;
+		call_used_regs[i] = call_used;
+#else
+	      call_used_regs[i] = call_used;
 #endif
 	    }
 	}
@@ -772,9 +735,6 @@ globalize_reg (tree decl, int i)
     return;
 
   fixed_regs[i] = call_used_regs[i] = 1;
-#ifdef CALL_REALLY_USED_REGISTERS
-  call_really_used_regs[i] = 1;
-#endif
 
   SET_HARD_REG_BIT (fixed_reg_set, i);
 
