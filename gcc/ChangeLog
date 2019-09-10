@@ -1,3 +1,13 @@
+2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl.h (get_call_rtx_from): Take a const rtx_insn * instead of an rtx.
+	* rtlanal.c (get_call_rtx_from): Likewise.
+	* dwarf2out.c (dwarf2out_var_location): Pass the insn rather
+	than the pattern to get_call_rtx_from.
+	* config/i386/i386-expand.h (ix86_notrack_prefixed_insn_p): Take
+	an rtx_insn * instead of an rtx.
+	* config/i386/i386-expand.c (ix86_notrack_prefixed_insn_p): Likewise.
+
 2019-09-10  Martin Liska  <mliska@suse.cz>
 
 	* common.opt: Use newly added WarnRemoved.

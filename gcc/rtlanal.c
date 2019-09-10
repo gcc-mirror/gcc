@@ -811,10 +811,9 @@ rtx_addr_varies_p (const_rtx x, bool for_alias)
 /* Return the CALL in X if there is one.  */
 
 rtx
-get_call_rtx_from (rtx x)
+get_call_rtx_from (const rtx_insn *insn)
 {
-  if (INSN_P (x))
-    x = PATTERN (x);
+  rtx x = PATTERN (insn);
   if (GET_CODE (x) == PARALLEL)
     x = XVECEXP (x, 0, 0);
   if (GET_CODE (x) == SET)
