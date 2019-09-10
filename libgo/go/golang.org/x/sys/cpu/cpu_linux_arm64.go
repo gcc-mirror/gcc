@@ -4,8 +4,6 @@
 
 package cpu
 
-const cacheLineSize = 64
-
 // HWCAP/HWCAP2 bits. These are exposed by Linux.
 const (
 	hwcap_FP       = 1 << 0

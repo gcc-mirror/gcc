@@ -6,8 +6,6 @@
 
 package cpu
 
-const cacheLineSize = 128
-
 const (
 	// getsystemcfg constants
 	_SC_IMPL     = 2
