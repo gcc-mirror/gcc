@@ -1595,7 +1595,7 @@ typedef struct
 #define INIT_EXPANDERS  arm_init_expanders ()
 
 /* Length in units of the trampoline for entering a nested function.  */
-#define TRAMPOLINE_SIZE  (TARGET_32BIT ? 16 : 20)
+#define TRAMPOLINE_SIZE  (TARGET_FDPIC ? 32 : (TARGET_32BIT ? 16 : 20))
 
 /* Alignment required for a trampoline in bits.  */
 #define TRAMPOLINE_ALIGNMENT  32
