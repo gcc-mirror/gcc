@@ -3754,6 +3754,42 @@ arm_options_perform_arch_sanity_checks (void)
     }
 }
 
+/* Test whether a local function descriptor is canonical, i.e.,
+   whether we can use GOTOFFFUNCDESC to compute the address of the
+   function.  */
+static bool
+arm_fdpic_local_funcdesc_p (rtx fnx)
+{
+  tree fn;
+  enum symbol_visibility vis;
+  bool ret;
+
+  if (!TARGET_FDPIC)
+    return true;
+
+  if (! SYMBOL_REF_LOCAL_P (fnx))
+    return false;
+
+  fn = SYMBOL_REF_DECL (fnx);
+
+  if (! fn)
+    return false;
+
+  vis = DECL_VISIBILITY (fn);
+
+  if (vis == VISIBILITY_PROTECTED)
+    /* Private function descriptors for protected functions are not
+       canonical.  Temporarily change the visibility to global so that
+       we can ensure uniqueness of funcdesc pointers.  */
+    DECL_VISIBILITY (fn) = VISIBILITY_DEFAULT;
+
+  ret = default_binds_local_p_1 (fn, flag_pic);
+
+  DECL_VISIBILITY (fn) = vis;
+
+  return ret;
+}
+
 static void
 arm_add_gc_roots (void)
 {
@@ -7534,7 +7570,9 @@ legitimize_pic_address (rtx orig, machine_mode mode, rtx reg, rtx pic_reg,
 	   || (GET_CODE (orig) == SYMBOL_REF
 	       && SYMBOL_REF_LOCAL_P (orig)
 	       && (SYMBOL_REF_DECL (orig)
-		   ? !DECL_WEAK (SYMBOL_REF_DECL (orig)) : 1)))
+		   ? !DECL_WEAK (SYMBOL_REF_DECL (orig)) : 1)
+	       && (!SYMBOL_REF_FUNCTION_P (orig)
+		   || arm_fdpic_local_funcdesc_p (orig))))
 	  && NEED_GOT_RELOC
 	  && arm_pic_data_is_text_relative)
 	insn = arm_pic_static_addr (orig, reg);
@@ -23160,7 +23198,9 @@ arm_assemble_integer (rtx x, unsigned int size, int aligned_p)
 	      || (GET_CODE (x) == SYMBOL_REF
 		  && (!SYMBOL_REF_LOCAL_P (x)
 		      || (SYMBOL_REF_DECL (x)
-			  ? DECL_WEAK (SYMBOL_REF_DECL (x)) : 0))))
+			  ? DECL_WEAK (SYMBOL_REF_DECL (x)) : 0)
+		      || (SYMBOL_REF_FUNCTION_P (x)
+			  && !arm_fdpic_local_funcdesc_p (x)))))
 	    {
 	      if (TARGET_FDPIC && SYMBOL_REF_FUNCTION_P (x))
 		fputs ("(GOTFUNCDESC)", asm_out_file);
