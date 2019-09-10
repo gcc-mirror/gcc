@@ -1,3 +1,9 @@
+2019-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91680
+	* match.pd ((A / (1 << B)) -> (A >> B)): Allow widening cast from
+	the shift type to type.
+
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 
 	* config/arm/arm.md (stack_protect_combined_set_insn): Handle
@@ -5,7 +11,7 @@
 	(stack_protect_combined_test_insn): Likewise.
 
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
-	Mickaël Guêné <mickael.guene@st.com>
+	    Mickaël Guêné <mickael.guene@st.com>
 
 	* config/arm/arm.c (arm_load_tp): Add FDPIC support.
 	* config/arm/arm.md (FDPIC_REGNUM): New constant.
@@ -13,7 +19,7 @@
 	(load_tp_soft): Disable in FDPIC mode.
 
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
-	Mickaël Guêné <mickael.guene@st.com>
+	    Mickaël Guêné <mickael.guene@st.com>
 
 	* config/arm/arm.c (tls_reloc): Add TLS_GD32_FDPIC,
 	TLS_LDM32_FDPIC and TLS_IE32_FDPIC.
@@ -22,7 +28,7 @@
 	(arm_emit_tls_decoration): Likewise.
 
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
-	Mickaël Guêné <mickael.guene@st.com>
+	    Mickaël Guêné <mickael.guene@st.com>
 
 	* config/arm/arm.c (arm_asm_trampoline_template): Add FDPIC
 	support.
@@ -31,7 +37,7 @@
 	* config/arm/arm.h (TRAMPOLINE_SIZE): Likewise.
 
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
-	Mickaël Guêné <mickael.guene@st.com>
+	    Mickaël Guêné <mickael.guene@st.com>
 
 	* config/arm/arm.c (arm_fdpic_local_funcdesc_p): New function.
 	(legitimize_pic_address): Enforce binding rules on function
@@ -39,20 +45,20 @@
 	(arm_assemble_integer): Likewise.
 
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
-	Mickaël Guêné <mickael.guene@st.com>
+	    Mickaël Guêné <mickael.guene@st.com>
 
 	* config/arm/arm.h (PIC_REGISTER_MAY_NEED_SAVING): New helper.
 	* config/arm/arm.c (arm_compute_save_reg0_reg12_mask): Handle
 	FDPIC.
 
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
-	Mickaël Guêné <mickael.guene@st.com>
+	    Mickaël Guêné <mickael.guene@st.com>
 
 	* ginclude/unwind-arm-common.h (unwinder_cache): Add reserved5
 	field.
 
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
-	Mickaël Guêné <mickael.guene@st.com>
+	    Mickaël Guêné <mickael.guene@st.com>
 
 	* config/arm/arm-c.c (__FDPIC__): Define new pre-processor macro
 	in FDPIC mode.
@@ -80,7 +86,7 @@
 	* config/arm/unspecs.md (UNSPEC_PIC_RESTORE): New.
 
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
-	Mickaël Guêné <mickael.guene@st.com>
+	    Mickaël Guêné <mickael.guene@st.com>
 
 	* config.gcc: Handle arm*-*-uclinuxfdpiceabi.
 	* config/arm/bpabi.h (TARGET_FDPIC_ASM_SPEC): New.
@@ -95,7 +101,7 @@
 	* config.gcc: Handle *-*-uclinuxfdpiceabi.
 
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
-	Mickaël Guêné  <mickael.guene@st.com>
+	    Mickaël Guêné  <mickael.guene@st.com>
 
 	* config/arm/arm.opt: Add -mfdpic option.
 	* doc/invoke.texi: Add documentation for -mfdpic.
