@@ -89,7 +89,7 @@
 #define MUSL_DYNAMIC_LINKER_E "%{mbig-endian:eb}"
 #endif
 #define MUSL_DYNAMIC_LINKER \
-  "/lib/ld-musl-arm" MUSL_DYNAMIC_LINKER_E "%{mfloat-abi=hard:hf}.so.1"
+  "/lib/ld-musl-arm" MUSL_DYNAMIC_LINKER_E "%{mfloat-abi=hard:hf}%{mfdpic:-fdpic}.so.1"
 
 /* At this point, bpabi.h will have clobbered LINK_SPEC.  We want to
    use the GNU/Linux version, not the generic BPABI version.  */
@@ -101,9 +101,12 @@
 #undef  ASAN_CC1_SPEC
 #define ASAN_CC1_SPEC "%{%:sanitize(address):-funwind-tables}"
 
+#define FDPIC_CC1_SPEC ""
+
 #undef  CC1_SPEC
 #define CC1_SPEC							\
-  LINUX_OR_ANDROID_CC (GNU_USER_TARGET_CC1_SPEC " " ASAN_CC1_SPEC,	\
+  LINUX_OR_ANDROID_CC (GNU_USER_TARGET_CC1_SPEC " " ASAN_CC1_SPEC " "	\
+		       FDPIC_CC1_SPEC,					\
 		       GNU_USER_TARGET_CC1_SPEC " " ASAN_CC1_SPEC " "	\
 		       ANDROID_CC1_SPEC)
 

@@ -1211,6 +1211,11 @@ arm*-*-linux-* | arm*-*-uclinuxfdpiceabi)
 	esac
 	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi"
 	tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h arm/aout.h arm/arm.h"
+	case $target in
+	arm*-*-uclinuxfdpiceabi)
+	    tm_file="$tm_file arm/uclinuxfdpiceabi.h"
+	    ;;
+	esac
 	# Generation of floating-point instructions requires at least ARMv5te.
 	if [ "$with_float" = "hard" -o "$with_float" = "softfp" ] ; then
 	    target_cpu_cname="arm10e"
