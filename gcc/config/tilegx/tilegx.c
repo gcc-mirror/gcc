@@ -3660,7 +3660,7 @@ tilegx_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
 static bool
 need_to_save_reg (unsigned int regno)
 {
-  if (!fixed_regs[regno] && !call_used_regs[regno]
+  if (!fixed_regs[regno] && !call_used_or_fixed_reg_p (regno)
       && df_regs_ever_live_p (regno))
     return true;
 

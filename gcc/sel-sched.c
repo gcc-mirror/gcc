@@ -1123,7 +1123,7 @@ init_hard_regs_data (void)
 
   CLEAR_HARD_REG_SET (sel_hrd.regs_ever_used);
   for (cur_reg = 0; cur_reg < FIRST_PSEUDO_REGISTER; cur_reg++)
-    if (df_regs_ever_live_p (cur_reg) || call_used_regs[cur_reg])
+    if (df_regs_ever_live_p (cur_reg) || call_used_or_fixed_reg_p (cur_reg))
       SET_HARD_REG_BIT (sel_hrd.regs_ever_used, cur_reg);
 
   /* Initialize registers that are valid based on mode when this is

@@ -1,5 +1,109 @@
 2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hard-reg-set.h (call_used_or_fixed_reg_p): New macro.
+	* cfgloopanal.c (init_set_costs): Use call_used_or_fixed_reg_p
+	instead of testing call_used_regs directly.
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Likewise.
+	(aarch64_components_for_bb): Likewise.
+	* config/alpha/alpha.c (alpha_compute_frame_layout): Likewise.
+	* config/arc/arc.c (arc_must_save_register): Likewise.
+	(arc_epilogue_uses): Likewise.
+	* config/arm/arm.c (arm_option_override, use_return_insn): Likewise.
+	(legitimize_pic_address, callee_saved_reg_p): Likewise.
+	(arm_compute_save_reg0_reg12_mask): Likewise.
+	(arm_compute_save_core_reg_mask): Likewise.
+	(arm_get_vfp_saved_size, arm_compute_frame_layout): Likewise.
+	(arm_save_coproc_regs, thumb1_extra_regs_pushed): Likewise.
+	(cmse_nonsecure_entry_clear_before_return): Likewise.
+	(thumb1_expand_epilogue, arm_expand_epilogue_apcs_frame): Likewise.
+	(arm_expand_epilogue): Likewise.
+	* config/avr/avr.c (avr_regs_to_save, sequent_regs_live): Likewise.
+	(avr_function_arg_advance, avr_find_unused_d_reg): Likewise.
+	(_reg_unused_after): Likewise.
+	* config/bfin/bfin.c (must_save_p, expand_prologue_reg_save): Likewise.
+	(expand_epilogue_reg_restore, n_regs_saved_by_prologue): Likewise.
+	(add_to_reg, hwloop_optimize): Likewise.
+	* config/bpf/bpf.c (bpf_compute_frame_layout, bpf_expand_prologue)
+	(bpf_expand_epilogue): Likewise.
+	* config/c6x/c6x.c (c6x_save_reg, c6x_regno_reg_class): Likewise.
+	* config/cr16/cr16.c (cr16_compute_save_regs): Likewise.
+	* config/cris/cris.c (cris_reg_saved_in_regsave_area): Likewise.
+	* config/epiphany/epiphany.c (epiphany_init_reg_tables): Likewise.
+	(epiphany_compute_function_type, MUST_SAVE_REGISTER): Likewise.
+	(epiphany_output_mi_thunk, epiphany_start_function): Likewise.
+	* config/fr30/fr30.c (fr30_num_arg_regs): Likewise.
+	* config/frv/frv.c (frv_stack_info): Likewise.
+	* config/ft32/ft32.c (ft32_compute_frame): Likewise.
+	(ft32_expand_prologue, ft32_expand_epilogue): Likewise.
+	* config/gcn/gcn.c (gcn_compute_frame_offsets): Likewise.
+	(move_callee_saved_registers): Likewise.
+	* config/h8300/h8300.c (byte_reg): Likewise.
+	* config/i386/i386-options.c (ix86_set_current_function): Likewise.
+	* config/i386/i386.c (ix86_save_reg, ix86_expand_prologue): Likewise.
+	(ix86_expand_epilogue, x86_order_regs_for_local_alloc): Likewise.
+	* config/i386/predicates.md (sibcall_memory_operand): Likewise.
+	* config/ia64/ia64.c (emit_safe_across_calls, find_gr_spill): Likewise.
+	(next_scratch_gr_reg, ia64_compute_frame_size): Likewise.
+	* config/iq2000/iq2000.h (MUST_SAVE_REGISTER): Likewise.
+	* config/lm32/lm32.c (lm32_compute_frame_size): Likewise.
+	* config/m32c/m32c.c (need_to_save): Likewise.
+	* config/m68k/m68k.c (m68k_save_reg): Likewise.
+	* config/mcore/mcore.c (calc_live_regs): Likewise.
+	* config/microblaze/microblaze.c (microblaze_must_save_register):
+	Likewise.
+	* config/mmix/mmix.c (mmix_local_regno): Likewise.
+	(mmix_initial_elimination_offset, mmix_reorg): Likewise.
+	(mmix_use_simple_return, mmix_expand_prologue): Likewise.
+	(mmix_expand_epilogue): Likewise.
+	* config/moxie/moxie.c (moxie_compute_frame): Likewise.
+	(moxie_expand_prologue, moxie_expand_epilogue): Likewise.
+	* config/msp430/msp430.c (msp430_preserve_reg_p): Likewise.
+	* config/nds32/nds32.h (nds32_16bit_address_type): Likewise.
+	(NDS32_REQUIRED_CALLEE_SAVED_P): Likewise.
+	* config/nios2/nios2.c (prologue_saved_reg_p): Likewise.
+	* config/or1k/or1k.c (callee_saved_regno_p): Likewise.
+	* config/pa/pa.c (pa_expand_prologue, pa_expand_epilogue): Likewise.
+	* config/pdp11/pdp11.c (pdp11_saved_regno): Likewise.
+	* config/pru/pru.c (prologue_saved_reg_p): Likewise.
+	* config/riscv/riscv.c (riscv_save_reg_p): Likewise.
+	(riscv_epilogue_uses, riscv_hard_regno_mode_ok): Likewise.
+	* config/rl78/rl78.c (need_to_save): Likewise.
+	* config/rs6000/rs6000-logue.c (save_reg_p): Likewise.
+	(rs6000_stack_info, generate_set_vrsave): Likewise.
+	(rs6000_emit_prologue, rs6000_emit_epilogue): Likewise.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_print): Likewise.
+	* config/rx/rx.c (rx_get_stack_layout): Likewise.
+	* config/s390/s390.c (s390_call_saved_register_used): Likewise.
+	* config/sh/sh.c (calc_live_regs, sh_output_mi_thunk): Likewise.
+	* config/sparc/sparc.c (save_global_or_fp_reg_p): Likewise.
+	(save_local_or_in_reg_p): Likewise.
+	* config/stormy16/stormy16.c (REG_NEEDS_SAVE): Likewise.
+	(xstormy16_epilogue_uses): Likewise.
+	* config/tilegx/tilegx.c (need_to_save_reg): Likewise.
+	* config/tilepro/tilepro.c (need_to_save_reg): Likewise.
+	* config/v850/v850.c (compute_register_save_size): Likewise.
+	* config/vax/vax.c (vax_expand_prologue): Likewise.
+	* config/visium/visium.c (visium_save_reg_p): Likewise.
+	* config/xtensa/xtensa.c (xtensa_call_save_reg): Likewise.
+	* cselib.c (cselib_process_insn): Likewise.
+	* df-scan.c (df_get_entry_block_def_set): Likewise.
+	* function.c (aggregate_value_p): Likewise.
+	* haifa-sched.c (alloc_global_sched_pressure_data): Likewise.
+	* ira-lives.c (process_bb_node_lives): Likewise.
+	* ira.c (do_reload): Likewise.
+	* lra-lives.c (process_bb_lives): Likewise.
+	* lra-remat.c (lra_remat): Likewise.
+	* lra.c (lra): Likewise.
+	* postreload.c (reload_combine_recognize_pattern): Likewise.
+	(reload_cse_move2add): Likewise.
+	* recog.c (peep2_find_free_register): Likewise.
+	* regrename.c (check_new_reg_p): Likewise.
+	* reload.c (find_equiv_reg): Likewise.
+	* reload1.c (reload, find_reg): Likewise.
+	* sel-sched.c (init_hard_regs_data): Likewise.
+
+2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/frv/frv.c (frv_ifcvt_modify_tests): Use
 	regs_invalidated_by_call & ~fixed_reg_set instead of
 	call_used_or_fixed_regs & ~fixed_reg_set.

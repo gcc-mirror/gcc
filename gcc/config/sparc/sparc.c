@@ -5446,7 +5446,7 @@ static inline bool
 save_global_or_fp_reg_p (unsigned int regno,
 			 int leaf_function ATTRIBUTE_UNUSED)
 {
-  return !call_used_regs[regno] && df_regs_ever_live_p (regno);
+  return !call_used_or_fixed_reg_p (regno) && df_regs_ever_live_p (regno);
 }
 
 /* Return whether the return address register (%i7) is needed.  */
@@ -5474,7 +5474,7 @@ static bool
 save_local_or_in_reg_p (unsigned int regno, int leaf_function)
 {
   /* General case: call-saved registers live at some point.  */
-  if (!call_used_regs[regno] && df_regs_ever_live_p (regno))
+  if (!call_used_or_fixed_reg_p (regno) && df_regs_ever_live_p (regno))
     return true;
 
   /* Frame pointer register (%fp) if needed.  */

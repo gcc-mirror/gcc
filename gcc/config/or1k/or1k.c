@@ -100,7 +100,7 @@ static bool
 callee_saved_regno_p (int regno)
 {
   /* Check call-saved registers.  */
-  if (!call_used_regs[regno] && df_regs_ever_live_p (regno))
+  if (!call_used_or_fixed_reg_p (regno) && df_regs_ever_live_p (regno))
     return true;
 
   switch (regno)

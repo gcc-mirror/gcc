@@ -7055,7 +7055,8 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 	     || (df_regs_ever_live_p (reg)
 		 && ((!call_really_used_regs[reg]
 		      && !(reg != PIC_OFFSET_TABLE_REGNUM
-			   && fixed_regs[reg] && call_used_regs[reg]))
+			   && fixed_regs[reg]
+			   && call_used_or_fixed_reg_p (reg)))
 		     || (trapa_handler && reg == FPSCR_REG && TARGET_FPU_ANY)))
 	     || (crtl->calls_eh_return
 		 && (reg == EH_RETURN_DATA_REGNO (0)
@@ -10815,16 +10816,16 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
      registers are used for argument passing, are callee-saved, or reserved.  */
   /* We need to check call_used_regs / fixed_regs in case -fcall_saved-reg /
      -ffixed-reg has been used.  */
-  if (! call_used_regs[0] || fixed_regs[0])
+  if (! call_used_or_fixed_reg_p (0) || fixed_regs[0])
     error ("r0 needs to be available as a call-clobbered register");
   scratch0 = scratch1 = scratch2 = gen_rtx_REG (Pmode, 0);
 
     {
-      if (call_used_regs[1] && ! fixed_regs[1])
+      if (call_used_or_fixed_reg_p (1) && ! fixed_regs[1])
 	scratch1 = gen_rtx_REG (ptr_mode, 1);
       /* N.B., if not TARGET_HITACHI, register 2 is used to pass the pointer
 	 pointing where to return struct values.  */
-      if (call_used_regs[3] && ! fixed_regs[3])
+      if (call_used_or_fixed_reg_p (3) && ! fixed_regs[3])
 	scratch2 = gen_rtx_REG (Pmode, 3);
     }
 

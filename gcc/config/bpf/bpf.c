@@ -273,7 +273,7 @@ bpf_compute_frame_layout (void)
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if ((!fixed_regs[regno]
 	 && df_regs_ever_live_p (regno)
-	 && !call_used_regs[regno])
+	 && !call_used_or_fixed_reg_p (regno))
 	|| (cfun->calls_alloca
 	    && regno == STACK_POINTER_REGNUM))
       cfun->machine->callee_saved_reg_size += 8;
@@ -314,7 +314,7 @@ bpf_expand_prologue (void)
     {
       if ((!fixed_regs[regno]
 	   && df_regs_ever_live_p (regno)
-	   && !call_used_regs[regno])
+	   && !call_used_or_fixed_reg_p (regno))
 	  || (cfun->calls_alloca
 	      && regno == STACK_POINTER_REGNUM))
 	{
@@ -374,7 +374,7 @@ bpf_expand_epilogue (void)
     {
       if ((!fixed_regs[regno]
 	   && df_regs_ever_live_p (regno)
-	   && !call_used_regs[regno])
+	   && !call_used_or_fixed_reg_p (regno))
 	  || (cfun->calls_alloca
 	      && regno == STACK_POINTER_REGNUM))
 	{

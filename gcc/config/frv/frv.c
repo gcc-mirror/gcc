@@ -1101,7 +1101,8 @@ frv_stack_info (void)
 	default:
 	  for (regno = first; regno <= last; regno++)
 	    {
-	      if ((df_regs_ever_live_p (regno) && !call_used_regs[regno])
+	      if ((df_regs_ever_live_p (regno)
+		   && !call_used_or_fixed_reg_p (regno))
 		  || (crtl->calls_eh_return
 		      && (regno >= FIRST_EH_REGNUM && regno <= LAST_EH_REGNUM))
 		  || (!TARGET_FDPIC && flag_pic

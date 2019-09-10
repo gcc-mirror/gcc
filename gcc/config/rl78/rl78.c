@@ -723,7 +723,7 @@ need_to_save (unsigned int regno)
 	 any call_used registers, so we have to preserve them.
          We do not have to worry about the frame pointer register
 	 though, as that is handled below.  */
-      if (!crtl->is_leaf && call_used_regs[regno] && regno < 22)
+      if (!crtl->is_leaf && call_used_or_fixed_reg_p (regno) && regno < 22)
 	return true;
 
       /* Otherwise we only have to save a register, call_used
@@ -739,7 +739,7 @@ need_to_save (unsigned int regno)
   if (crtl->calls_eh_return)
     return true;
   if (df_regs_ever_live_p (regno)
-      && !call_used_regs[regno])
+      && !call_used_or_fixed_reg_p (regno))
     return true;
   return false;
 }

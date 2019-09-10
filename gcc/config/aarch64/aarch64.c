@@ -5336,12 +5336,12 @@ aarch64_layout_frame (void)
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
     if (df_regs_ever_live_p (regno)
 	&& (regno == R30_REGNUM
-	    || !call_used_regs[regno]))
+	    || !call_used_or_fixed_reg_p (regno)))
       cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
     if (df_regs_ever_live_p (regno)
-	&& (!call_used_regs[regno]
+	&& (!call_used_or_fixed_reg_p (regno)
 	    || (simd_function && FP_SIMD_SAVED_REGNUM_P (regno))))
       {
 	cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
@@ -5938,7 +5938,7 @@ aarch64_components_for_bb (basic_block bb)
 
   /* GPRs are used in a bb if they are in the IN, GEN, or KILL sets.  */
   for (unsigned regno = 0; regno <= LAST_SAVED_REGNUM; regno++)
-    if ((!call_used_regs[regno]
+    if ((!call_used_or_fixed_reg_p (regno)
 	|| (simd_function && FP_SIMD_SAVED_REGNUM_P (regno)))
        && (bitmap_bit_p (in, regno)
 	   || bitmap_bit_p (gen, regno)

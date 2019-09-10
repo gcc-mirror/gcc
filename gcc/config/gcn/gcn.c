@@ -2540,7 +2540,7 @@ gcn_compute_frame_offsets (void)
   offsets->callee_saves = offsets->lr_needs_saving ? 8 : 0;
 
   for (int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if ((df_regs_ever_live_p (regno) && !call_used_regs[regno])
+    if ((df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
 	|| ((regno & ~1) == HARD_FRAME_POINTER_REGNUM
 	    && frame_pointer_needed))
       offsets->callee_saves += (VGPR_REGNO_P (regno) ? 256 : 4);
@@ -2572,7 +2572,7 @@ move_callee_saved_registers (rtx sp, machine_function *offsets,
 
   /* Move scalars into two vector registers.  */
   for (regno = 0, saved_scalars = 0; regno < FIRST_VGPR_REG; regno++)
-    if ((df_regs_ever_live_p (regno) && !call_used_regs[regno])
+    if ((df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
 	|| ((regno & ~1) == LINK_REGNUM && offsets->lr_needs_saving)
 	|| ((regno & ~1) == HARD_FRAME_POINTER_REGNUM
 	    && offsets->need_frame_pointer))
@@ -2618,7 +2618,7 @@ move_callee_saved_registers (rtx sp, machine_function *offsets,
   /* Move vectors.  */
   for (regno = FIRST_VGPR_REG, offset = offsets->pretend_size;
        regno < FIRST_PSEUDO_REGISTER; regno++)
-    if ((df_regs_ever_live_p (regno) && !call_used_regs[regno])
+    if ((df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
 	|| (regno == VGPR_REGNO (6) && saved_scalars > 0)
 	|| (regno == VGPR_REGNO (7) && saved_scalars > 63))
       {

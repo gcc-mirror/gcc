@@ -313,7 +313,7 @@ static bool pdp11_scalar_mode_supported_p (scalar_mode);
 static inline bool
 pdp11_saved_regno (unsigned regno)
 {
-  return !call_used_regs[regno] && df_regs_ever_live_p (regno);
+  return !call_used_or_fixed_reg_p (regno) && df_regs_ever_live_p (regno);
 }
 
 /* Expand the function prologue.  */

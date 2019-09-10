@@ -926,8 +926,8 @@ struct xstormy16_stack_layout
 
 /* Does REGNO need to be saved?  */
 #define REG_NEEDS_SAVE(REGNUM, IFUN)					\
-  ((df_regs_ever_live_p (REGNUM) && ! call_used_regs[REGNUM])		\
-   || (IFUN && ! fixed_regs[REGNUM] && call_used_regs[REGNUM]		\
+  ((df_regs_ever_live_p (REGNUM) && !call_used_or_fixed_reg_p (REGNUM))	\
+   || (IFUN && !fixed_regs[REGNUM] && call_used_or_fixed_reg_p (REGNUM)	\
        && (REGNUM != CARRY_REGNUM)					\
        && (df_regs_ever_live_p (REGNUM) || ! crtl->is_leaf)))
 
@@ -1191,7 +1191,7 @@ xstormy16_expand_epilogue (void)
 int
 xstormy16_epilogue_uses (int regno)
 {
-  if (reload_completed && call_used_regs[regno])
+  if (reload_completed && call_used_or_fixed_reg_p (regno))
     {
       const int ifun = xstormy16_interrupt_function_p ();
       return REG_NEEDS_SAVE (regno, ifun);

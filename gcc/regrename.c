@@ -322,7 +322,7 @@ check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
 	|| global_regs[new_reg + i]
 	/* Can't use regs which aren't saved by the prologue.  */
 	|| (! df_regs_ever_live_p (new_reg + i)
-	    && ! call_used_regs[new_reg + i])
+	    && ! call_used_or_fixed_reg_p (new_reg + i))
 #ifdef LEAF_REGISTERS
 	/* We can't use a non-leaf register if we're in a
 	   leaf function.  */

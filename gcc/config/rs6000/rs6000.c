@@ -1990,7 +1990,7 @@ rs6000_debug_reg_print (int first_regno, int last_regno, const char *reg_name)
 	    comma = ", ";
 	  }
 
-      if (call_used_regs[r])
+      if (call_used_or_fixed_reg_p (r))
 	{
 	  if (len > 70)
 	    {
