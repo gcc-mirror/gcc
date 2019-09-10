@@ -1,5 +1,11 @@
 2019-09-10  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/91673 - ICE with noexcept in alias-declaration.
+	* g++.dg/cpp1z/using7.C: New test.
+	* g++.dg/cpp1z/using8.C: New test.
+
+2019-09-10  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/91705 - constexpr evaluation rejects ++/-- on floats.
 	* g++.dg/cpp1y/constexpr-incr2.C: New test.
 
