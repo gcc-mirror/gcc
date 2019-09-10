@@ -885,6 +885,9 @@ extern int arm_arch_cmse;
    Pascal), so the following is not true.  */
 #define STATIC_CHAIN_REGNUM	12
 
+/* r9 is the FDPIC register (base register for GOT and FUNCDESC accesses).  */
+#define FDPIC_REGNUM		9
+
 /* Define this to be where the real frame pointer is if it is not possible to
    work out the offset between the frame pointer and the automatic variables
    until after register allocation has taken place.  FRAME_POINTER_REGNUM
@@ -1940,6 +1943,10 @@ extern unsigned arm_pic_register;
 /* The register number of the register used to address a table of static
    data addresses in memory.  */
 #define PIC_OFFSET_TABLE_REGNUM arm_pic_register
+
+/* For FDPIC, the FDPIC register is call-clobbered (otherwise PLT
+   entries would need to handle saving and restoring it).  */
+#define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED TARGET_FDPIC
 
 /* We can't directly access anything that contains a symbol,
    nor can we indirect via the constant pool.  One exception is

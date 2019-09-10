@@ -203,6 +203,8 @@ arm_cpu_builtins (struct cpp_reader* pfile)
       builtin_define ("__ARM_EABI__");
     }
 
+  def_or_undef_macro (pfile, "__FDPIC__", TARGET_FDPIC);
+
   def_or_undef_macro (pfile, "__ARM_ARCH_EXT_IDIV__", TARGET_IDIV);
   def_or_undef_macro (pfile, "__ARM_FEATURE_IDIV", TARGET_IDIV);
 
