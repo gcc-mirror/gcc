@@ -2992,19 +2992,19 @@ Common Driver Var(dwarf2out_as_locview_support) Init(2)
 Assume assembler support for view in (DWARF2+) .loc directives.
 
 gcoff
-Common Driver Deprecated
+Common Driver WarnRemoved
 Does nothing.  Preserved for backward compatibility.
 
 gcoff1
-Common Driver Deprecated
+Common Driver WarnRemoved
 Does nothing.  Preserved for backward compatibility.
 
 gcoff2
-Common Driver Deprecated
+Common Driver WarnRemoved
 Does nothing.  Preserved for backward compatibility.
 
 gcoff3
-Common Driver Deprecated
+Common Driver WarnRemoved
 Does nothing.  Preserved for backward compatibility.
 
 gcolumn-info
