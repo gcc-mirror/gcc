@@ -2189,6 +2189,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct conditional<false, _Iftrue, _Iffalse>
     { typedef _Iffalse type; };
 
+  // __remove_cvref_t (std::remove_cvref_t for C++11).
+  template<typename _Tp>
+    using __remove_cvref_t
+     = typename remove_cv<typename remove_reference<_Tp>::type>::type;
+
   /// common_type
   template<typename... _Tp>
     struct common_type;
@@ -2201,12 +2206,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __cond_t
 	= decltype(true ? std::declval<_Tp>() : std::declval<_Up>());
 
+    // if decay_t<decltype(false ? declval<D1>() : declval<D2>())>
+    // denotes a valid type, let C denote that type.
     template<typename _Tp, typename _Up>
-      static __success_type<typename decay<__cond_t<_Tp, _Up>>::type>
+      static __success_type<__decay_t<__cond_t<_Tp, _Up>>>
       _S_test(int);
+
+#if __cplusplus > 201703L
+    // Otherwise, if COND-RES(CREF(D1), CREF(D2)) denotes a type,
+    // let C denote the type decay_t<COND-RES(CREF(D1), CREF(D2))>.
+    template<typename _Tp, typename _Up>
+      static __success_type<__remove_cvref_t<__cond_t<const _Tp&, const _Up&>>>
+      _S_test_2(int);
+#endif
 
     template<typename, typename>
       static __failure_type
+      _S_test_2(...);
+
+    template<typename _Tp, typename _Up>
+      static decltype(_S_test_2<_Tp, _Up>(0))
       _S_test(...);
   };
 
@@ -2303,11 +2322,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "declval() must not be used!");
       return __declval<_Tp>(0);
     }
-
-  // __remove_cvref_t (std::remove_cvref_t for C++11).
-  template<typename _Tp>
-    using __remove_cvref_t
-     = typename remove_cv<typename remove_reference<_Tp>::type>::type;
 
   /// result_of
   template<typename _Signature>
@@ -3247,6 +3261,164 @@ template <typename _From, typename _To>
   is_constant_evaluated() noexcept
   { return __builtin_is_constant_evaluated(); }
 #endif
+
+  template<typename _From, typename _To>
+    using __copy_cv = typename __match_cv_qualifiers<_From, _To>::__type;
+
+  template<typename _Xp, typename _Yp>
+    using __cond_res
+      = decltype(false ? declval<_Xp(&)()>()() : declval<_Yp(&)()>()());
+
+  template<typename _Ap, typename _Bp, typename = void>
+    struct __common_ref_impl
+    { };
+
+  // [meta.trans.other], COMMON-REF(A, B)
+  template<typename _Ap, typename _Bp>
+    using __common_ref = typename __common_ref_impl<_Ap, _Bp>::type;
+
+  // If A and B are both lvalue reference types, ...
+  template<typename _Xp, typename _Yp>
+    struct __common_ref_impl<_Xp&, _Yp&,
+      __void_t<__cond_res<__copy_cv<_Xp, _Yp>&, __copy_cv<_Yp, _Xp>&>>>
+    { using type = __cond_res<__copy_cv<_Xp, _Yp>&, __copy_cv<_Yp, _Xp>&>; };
+
+  // let C be remove_reference_t<COMMON-REF(X&, Y&)>&&
+  template<typename _Xp, typename _Yp>
+    using __common_ref_C = remove_reference_t<__common_ref<_Xp&, _Yp&>>&&;
+
+  // If A and B are both rvalue reference types, ...
+  template<typename _Xp, typename _Yp>
+    struct __common_ref_impl<_Xp&&, _Yp&&,
+      _Require<is_convertible<_Xp&&, __common_ref_C<_Xp, _Yp>>,
+	       is_convertible<_Yp&&, __common_ref_C<_Xp, _Yp>>>>
+    { using type = __common_ref_C<_Xp, _Yp>; };
+
+  // let D be COMMON-REF(const X&, Y&)
+  template<typename _Xp, typename _Yp>
+    using __common_ref_D = __common_ref<const _Xp&, _Yp&>;
+
+  // If A is an rvalue reference and B is an lvalue reference, ...
+  template<typename _Xp, typename _Yp>
+    struct __common_ref_impl<_Xp&&, _Yp&,
+      _Require<is_convertible<_Xp&&, __common_ref_D<_Xp, _Yp>>>>
+    { using type = __common_ref_D<_Xp, _Yp>; };
+
+  // If A is an lvalue reference and B is an rvalue reference, ...
+  template<typename _Xp, typename _Yp>
+    struct __common_ref_impl<_Xp&, _Yp&&>
+    : __common_ref_impl<_Yp&&, _Xp&>
+    { };
+
+  template<typename _Tp, typename _Up,
+	   template<typename> class _TQual, template<typename> class _UQual>
+    struct basic_common_reference
+    { };
+
+  template<typename _Tp>
+    struct __xref
+    { template<typename _Up> using __type = __copy_cv<_Tp, _Up>; };
+
+  template<typename _Tp>
+    struct __xref<_Tp&>
+    { template<typename _Up> using __type = __copy_cv<_Tp, _Up>&; };
+
+  template<typename _Tp>
+    struct __xref<_Tp&&>
+    { template<typename _Up> using __type = __copy_cv<_Tp, _Up>&&; };
+
+  template<typename _Tp1, typename _Tp2>
+    using __basic_common_ref
+      = typename basic_common_reference<remove_cvref_t<_Tp1>,
+					remove_cvref_t<_Tp2>,
+					__xref<_Tp1>::template __type,
+					__xref<_Tp2>::template __type>::type;
+
+  template<typename... _Tp>
+    struct common_reference;
+
+  template<typename... _Tp>
+    using common_reference_t = typename common_reference<_Tp...>::type;
+
+  // If sizeof...(T) is zero, there shall be no member type.
+  template<>
+    struct common_reference<>
+    { };
+
+  // If sizeof...(T) is one ...
+  template<typename _Tp0>
+    struct common_reference<_Tp0>
+    { using type = _Tp0; };
+
+  template<typename _Tp1, typename _Tp2, int _Bullet = 1, typename = void>
+    struct __common_reference_impl
+    : __common_reference_impl<_Tp1, _Tp2, _Bullet + 1>
+    { };
+
+  // If sizeof...(T) is two ...
+  template<typename _Tp1, typename _Tp2>
+    struct common_reference<_Tp1, _Tp2>
+    : __common_reference_impl<_Tp1, _Tp2>
+    { };
+
+  // If T1 and T2 are reference types and COMMON-REF(T1, T2) is well-formed, ...
+  template<typename _Tp1, typename _Tp2>
+    struct __common_reference_impl<_Tp1&, _Tp2&, 1,
+				   void_t<__common_ref<_Tp1&, _Tp2&>>>
+    { using type = __common_ref<_Tp1&, _Tp2&>; };
+
+  template<typename _Tp1, typename _Tp2>
+    struct __common_reference_impl<_Tp1&&, _Tp2&&, 1,
+				   void_t<__common_ref<_Tp1&&, _Tp2&&>>>
+    { using type = __common_ref<_Tp1&&, _Tp2&&>; };
+
+  template<typename _Tp1, typename _Tp2>
+    struct __common_reference_impl<_Tp1&, _Tp2&&, 1,
+				   void_t<__common_ref<_Tp1&, _Tp2&&>>>
+    { using type = __common_ref<_Tp1&, _Tp2&&>; };
+
+  template<typename _Tp1, typename _Tp2>
+    struct __common_reference_impl<_Tp1&&, _Tp2&, 1,
+				   void_t<__common_ref<_Tp1&&, _Tp2&>>>
+    { using type = __common_ref<_Tp1&&, _Tp2&>; };
+
+  // Otherwise, if basic_common_reference<...>::type is well-formed, ...
+  template<typename _Tp1, typename _Tp2>
+    struct __common_reference_impl<_Tp1, _Tp2, 2,
+				   void_t<__basic_common_ref<_Tp1, _Tp2>>>
+    { using type = __basic_common_ref<_Tp1, _Tp2>; };
+
+  // Otherwise, if COND-RES(T1, T2) is well-formed, ...
+  template<typename _Tp1, typename _Tp2>
+    struct __common_reference_impl<_Tp1, _Tp2, 3,
+				   void_t<__cond_res<_Tp1, _Tp2>>>
+    { using type = __cond_res<_Tp1, _Tp2>; };
+
+  // Otherwise, if common_type_t<T1, T2> is well-formed, ...
+  template<typename _Tp1, typename _Tp2>
+    struct __common_reference_impl<_Tp1, _Tp2, 4,
+				   void_t<common_type_t<_Tp1, _Tp2>>>
+    { using type = common_type_t<_Tp1, _Tp2>; };
+
+  // Otherwise, there shall be no member type.
+  template<typename _Tp1, typename _Tp2>
+    struct __common_reference_impl<_Tp1, _Tp2, 5, void>
+    { };
+
+  // Otherwise, if sizeof...(T) is greater than two, ...
+  template<typename _Tp1, typename _Tp2, typename... _Rest>
+    struct common_reference<_Tp1, _Tp2, _Rest...>
+    : __common_type_fold<common_reference<_Tp1, _Tp2>,
+			 __common_type_pack<_Rest...>>
+    { };
+
+  // Reuse __common_type_fold for common_reference<T1, T2, Rest...>
+  template<typename _Tp1, typename _Tp2, typename... _Rest>
+    struct __common_type_fold<common_reference<_Tp1, _Tp2>,
+			      __common_type_pack<_Rest...>,
+			      void_t<common_reference_t<_Tp1, _Tp2>>>
+    : public common_reference<common_reference_t<_Tp1, _Tp2>, _Rest...>
+    { };
 
 #endif // C++2a
 
