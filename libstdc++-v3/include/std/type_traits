@@ -226,6 +226,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename>
     struct remove_cv;
 
+  // __remove_cv_t (std::remove_cv_t for C++11).
+  template<typename _Tp>
+    using __remove_cv_t = typename remove_cv<_Tp>::type;
+
   template<typename>
     struct is_const;
 
@@ -242,7 +246,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_void
   template<typename _Tp>
     struct is_void
-    : public __is_void_helper<typename remove_cv<_Tp>::type>::type
+    : public __is_void_helper<__remove_cv_t<_Tp>>::type
     { };
 
   template<typename>
@@ -359,7 +363,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_integral
   template<typename _Tp>
     struct is_integral
-    : public __is_integral_helper<typename remove_cv<_Tp>::type>::type
+    : public __is_integral_helper<__remove_cv_t<_Tp>>::type
     { };
 
   template<typename>
@@ -387,7 +391,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_floating_point
   template<typename _Tp>
     struct is_floating_point
-    : public __is_floating_point_helper<typename remove_cv<_Tp>::type>::type
+    : public __is_floating_point_helper<__remove_cv_t<_Tp>>::type
     { };
 
   /// is_array
@@ -414,7 +418,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_pointer
   template<typename _Tp>
     struct is_pointer
-    : public __is_pointer_helper<typename remove_cv<_Tp>::type>::type
+    : public __is_pointer_helper<__remove_cv_t<_Tp>>::type
     { };
 
   /// is_lvalue_reference
@@ -446,8 +450,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_member_object_pointer
   template<typename _Tp>
     struct is_member_object_pointer
-    : public __is_member_object_pointer_helper<
-				typename remove_cv<_Tp>::type>::type
+    : public __is_member_object_pointer_helper<__remove_cv_t<_Tp>>::type
     { };
 
   template<typename>
@@ -461,8 +464,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_member_function_pointer
   template<typename _Tp>
     struct is_member_function_pointer
-    : public __is_member_function_pointer_helper<
-				typename remove_cv<_Tp>::type>::type
+    : public __is_member_function_pointer_helper<__remove_cv_t<_Tp>>::type
     { };
 
   /// is_enum
@@ -509,7 +511,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_null_pointer (LWG 2247).
   template<typename _Tp>
     struct is_null_pointer
-    : public __is_null_pointer_helper<typename remove_cv<_Tp>::type>::type
+    : public __is_null_pointer_helper<__remove_cv_t<_Tp>>::type
     { };
 
   /// __is_nullptr_t (deprecated extension).
@@ -573,7 +575,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_member_pointer
   template<typename _Tp>
     struct is_member_pointer
-    : public __is_member_pointer_helper<typename remove_cv<_Tp>::type>::type
+    : public __is_member_pointer_helper<__remove_cv_t<_Tp>>::type
     { };
 
   template<typename, typename>
@@ -584,7 +586,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Check if a type is one of the signed integer types.
   template<typename _Tp>
-    using __is_signed_integer = __is_one_of<typename remove_cv<_Tp>::type,
+    using __is_signed_integer = __is_one_of<__remove_cv_t<_Tp>,
 	  signed char, signed short, signed int, signed long,
 	  signed long long
 #if defined(__GLIBCXX_TYPE_INT_N_0)
@@ -603,7 +605,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Check if a type is one of the unsigned integer types.
   template<typename _Tp>
-    using __is_unsigned_integer = __is_one_of<typename remove_cv<_Tp>::type,
+    using __is_unsigned_integer = __is_one_of<__remove_cv_t<_Tp>,
 	  unsigned char, unsigned short, unsigned int, unsigned long,
 	  unsigned long long
 #if defined(__GLIBCXX_TYPE_INT_N_0)
@@ -1507,10 +1509,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// remove_cv
   template<typename _Tp>
     struct remove_cv
-    {
-      typedef typename
-      remove_const<typename remove_volatile<_Tp>::type>::type     type;
-    };
+    { using type = _Tp; };
+
+  template<typename _Tp>
+    struct remove_cv<const _Tp>
+    { using type = _Tp; };
+
+  template<typename _Tp>
+    struct remove_cv<volatile _Tp>
+    { using type = _Tp; };
+
+  template<typename _Tp>
+    struct remove_cv<const volatile _Tp>
+    { using type = _Tp; };
 
   /// add_const
   template<typename _Tp>
@@ -1709,7 +1720,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class __make_unsigned_selector<_Tp, true, false>
     {
       using __unsigned_type
-	= typename __make_unsigned<typename remove_cv<_Tp>::type>::__type;
+	= typename __make_unsigned<__remove_cv_t<_Tp>>::__type;
 
     public:
       using __type
@@ -1863,7 +1874,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class __make_signed_selector<_Tp, true, false>
     {
       using __signed_type
-	= typename __make_signed<typename remove_cv<_Tp>::type>::__type;
+	= typename __make_signed<__remove_cv_t<_Tp>>::__type;
 
     public:
       using __type
@@ -1989,7 +2000,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// remove_pointer
   template<typename _Tp>
     struct remove_pointer
-    : public __remove_pointer_helper<_Tp, typename remove_cv<_Tp>::type>
+    : public __remove_pointer_helper<_Tp, __remove_cv_t<_Tp>>
     { };
 
   /// add_pointer
@@ -2105,7 +2116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // NB: DR 705.
   template<typename _Up>
     struct __decay_selector<_Up, false, false>
-    { typedef typename remove_cv<_Up>::type __type; };
+    { typedef __remove_cv_t<_Up> __type; };
 
   template<typename _Up>
     struct __decay_selector<_Up, true, false>
@@ -2125,6 +2136,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename __decay_selector<__remove_type>::__type type;
     };
 
+  // __decay_t (std::decay_t for C++11).
+  template<typename _Tp>
+    using __decay_t = typename decay<_Tp>::type;
+
   template<typename _Tp>
     class reference_wrapper;
 
@@ -2142,11 +2157,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Tp>
-    struct __decay_and_strip
-    {
-      typedef typename __strip_reference_wrapper<
-	typename decay<_Tp>::type>::__type __type;
-    };
+    using __decay_and_strip = __strip_reference_wrapper<__decay_t<_Tp>>;
 
 
   // Primary template.
@@ -2160,8 +2171,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct enable_if<true, _Tp>
     { typedef _Tp type; };
 
+  // __enable_if_t (std::enable_if_t for C++11)
+  template<bool _Cond, typename _Tp = void>
+    using __enable_if_t = typename enable_if<_Cond, _Tp>::type;
+
   template<typename... _Cond>
-    using _Require = typename enable_if<__and_<_Cond...>::value>::type;
+    using _Require = __enable_if_t<__and_<_Cond...>::value>;
 
   // Primary template.
   /// Define a member typedef @c type to one of two argument types.
@@ -2208,8 +2223,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // If sizeof...(T) is two, ...
   template<typename _Tp1, typename _Tp2,
-	   typename _Dp1 = typename decay<_Tp1>::type,
-	   typename _Dp2 = typename decay<_Tp2>::type>
+	   typename _Dp1 = __decay_t<_Tp1>, typename _Dp2 = __decay_t<_Tp2>>
     struct __common_type_impl
     {
       // If is_same_v<T1, D1> is false or is_same_v<T2, D2> is false,
@@ -2444,13 +2458,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _MemPtr, typename _Arg>
     struct __result_of_impl<true, false, _MemPtr, _Arg>
-    : public __result_of_memobj<typename decay<_MemPtr>::type,
+    : public __result_of_memobj<__decay_t<_MemPtr>,
 				typename __inv_unwrap<_Arg>::type>
     { };
 
   template<typename _MemPtr, typename _Arg, typename... _Args>
     struct __result_of_impl<false, true, _MemPtr, _Arg, _Args...>
-    : public __result_of_memfun<typename decay<_MemPtr>::type,
+    : public __result_of_memfun<__decay_t<_MemPtr>,
 				typename __inv_unwrap<_Arg>::type, _Args...>
     { };
 
@@ -2525,10 +2539,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     using result_of_t = typename result_of<_Tp>::type;
 #endif // C++14
-
-  // __enable_if_t (std::enable_if_t for C++11)
-  template<bool _Cond, typename _Tp = void>
-    using __enable_if_t = typename enable_if<_Cond, _Tp>::type;
 
 #if __cplusplus >= 201703L || !defined(__STRICT_ANSI__) // c++17 or gnu++11
 #define __cpp_lib_void_t 201411
@@ -2607,9 +2617,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     _GLIBCXX20_CONSTEXPR
     inline
-    typename enable_if<__and_<__not_<__is_tuple_like<_Tp>>,
-			      is_move_constructible<_Tp>,
-			      is_move_assignable<_Tp>>::value>::type
+    _Require<__not_<__is_tuple_like<_Tp>>,
+	     is_move_constructible<_Tp>,
+	     is_move_assignable<_Tp>>
     swap(_Tp&, _Tp&)
     noexcept(__and_<is_nothrow_move_constructible<_Tp>,
 	            is_nothrow_move_assignable<_Tp>>::value);
@@ -2617,7 +2627,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, size_t _Nm>
     _GLIBCXX20_CONSTEXPR
     inline
-    typename enable_if<__is_swappable<_Tp>::value>::type
+    __enable_if_t<__is_swappable<_Tp>::value>
     swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
     noexcept(__is_nothrow_swappable<_Tp>::value);
 
