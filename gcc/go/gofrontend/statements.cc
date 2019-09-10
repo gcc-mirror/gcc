@@ -158,6 +158,10 @@ Statement::import_statement(Import_function_body* ifb, Location loc)
     return Goto_statement::do_import(ifb, loc);
 
   Expression* lhs = Expression::import_expression(ifb, loc);
+
+  if (ifb->match_c_string(" //"))
+    return Statement::make_statement(lhs, true);
+
   ifb->require_c_string(" = ");
   Expression* rhs = Expression::import_expression(ifb, loc);
   return Statement::make_assignment(lhs, rhs, loc);
@@ -2087,6 +2091,14 @@ Expression_statement::do_may_fall_through() const
 	}
     }
   return true;
+}
+
+// Export an expression statement.
+
+void
+Expression_statement::do_export_statement(Export_function_body* efb)
+{
+  this->expr_->export_expression(efb);
 }
 
 // Convert to backend representation.
