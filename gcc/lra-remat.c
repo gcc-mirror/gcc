@@ -69,9 +69,9 @@ along with GCC; see the file COPYING3.	If not see
 /* Number of candidates for rematerialization.  */
 static unsigned int cands_num;
 
-/* The following is used for representation of call_used_reg_set in
+/* The following is used for representation of call_used_or_fixed_regs in
    form array whose elements are hard register numbers with nonzero bit
-   in CALL_USED_REG_SET. */
+   in CALL_USED_OR_FIXED_REGS. */
 static int call_used_regs_arr_len;
 static int call_used_regs_arr[FIRST_PSEUDO_REGISTER];
 
@@ -710,7 +710,7 @@ call_used_input_regno_present_p (rtx_insn *insn)
 	 reg != NULL;
 	 reg = reg->next)
       if (reg->type == OP_IN && reg->regno < FIRST_PSEUDO_REGISTER
-	  && TEST_HARD_REG_BIT (call_used_reg_set, reg->regno))
+	  && TEST_HARD_REG_BIT (call_used_or_fixed_regs, reg->regno))
 	return true;
   return false;
 }

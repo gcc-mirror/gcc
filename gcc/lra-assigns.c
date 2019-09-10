@@ -654,7 +654,7 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
 	  for (j = 0;
 	       j < hard_regno_nregs (hard_regno, PSEUDO_REGNO_MODE (regno));
 	       j++)
-	    if (! TEST_HARD_REG_BIT (call_used_reg_set, hard_regno + j)
+	    if (! TEST_HARD_REG_BIT (call_used_or_fixed_regs, hard_regno + j)
 		&& ! df_regs_ever_live_p (hard_regno + j))
 	      /* It needs save restore.	 */
 	      hard_regno_costs[hard_regno]
@@ -1641,7 +1641,7 @@ lra_assign (bool &fails_p)
     for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
       if (lra_reg_info[i].nrefs != 0 && reg_renumber[i] >= 0
 	  && lra_reg_info[i].call_insn
-	  && overlaps_hard_reg_set_p (call_used_reg_set,
+	  && overlaps_hard_reg_set_p (call_used_or_fixed_regs,
 				      PSEUDO_REGNO_MODE (i), reg_renumber[i]))
 	gcc_unreachable ();
   /* Setup insns to process on the next constraint pass.  */

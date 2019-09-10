@@ -5007,7 +5007,7 @@ collect_fn_hard_reg_usage (void)
 	  && !self_recursive_call_p (insn))
 	{
 	  if (!get_call_reg_set_usage (insn, &insn_used_regs,
-				       call_used_reg_set))
+				       call_used_or_fixed_regs))
 	    return;
 
 	  function_used_regs |= insn_used_regs;
@@ -5030,7 +5030,7 @@ collect_fn_hard_reg_usage (void)
 
   /* The information we have gathered is only interesting if it exposes a
      register from the call_used_regs that is not used in this function.  */
-  if (hard_reg_set_subset_p (call_used_reg_set, function_used_regs))
+  if (hard_reg_set_subset_p (call_used_or_fixed_regs, function_used_regs))
     return;
 
   node = cgraph_node::rtl_info (current_function_decl);

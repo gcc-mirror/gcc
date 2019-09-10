@@ -76,7 +76,7 @@ requires_stack_frame_p (rtx_insn *insn, HARD_REG_SET prologue_used,
     }
   if (hard_reg_set_intersect_p (hardregs, prologue_used))
     return true;
-  hardregs &= ~call_used_reg_set;
+  hardregs &= ~call_used_or_fixed_regs;
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (TEST_HARD_REG_BIT (hardregs, regno)
 	&& df_regs_ever_live_p (regno))

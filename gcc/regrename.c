@@ -367,7 +367,7 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
      If the chain needs a call-saved register, mark the call-used
      registers as unavailable.  */
   if (this_head->need_caller_save_reg)
-    *unavailable |= call_used_reg_set;
+    *unavailable |= call_used_or_fixed_regs;
 
   /* Mark registers that overlap this chain's lifetime as unavailable.  */
   merge_overlapping_regs (unavailable, this_head);

@@ -1332,7 +1332,7 @@ reload_combine (void)
 	  rtx link;
 	  HARD_REG_SET used_regs;
 
-	  get_call_reg_set_usage (insn, &used_regs, call_used_reg_set);
+	  get_call_reg_set_usage (insn, &used_regs, call_used_or_fixed_regs);
 
 	  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
 	    if (TEST_HARD_REG_BIT (used_regs, r))

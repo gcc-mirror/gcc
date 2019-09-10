@@ -1094,7 +1094,7 @@ c6x_call_saved_register_used (tree call_expr)
   INIT_CUMULATIVE_ARGS (cum_v, NULL, NULL, 0, 0);
   cum = pack_cumulative_args (&cum_v);
 
-  call_saved_regset = ~call_used_reg_set;
+  call_saved_regset = ~call_used_or_fixed_regs;
   for (i = 0; i < call_expr_nargs (call_expr); i++)
     {
       parameter = CALL_EXPR_ARG (call_expr, i);
