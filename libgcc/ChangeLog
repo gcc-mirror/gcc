@@ -1,6 +1,11 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
 
-        * config.host: Handle *-*-uclinuxfdpiceabi.
+	* libgcc/crtstuff.c: Add support for FDPIC.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
+	* config.host: Handle *-*-uclinuxfdpiceabi.
 
 2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
 

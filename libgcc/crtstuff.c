@@ -429,9 +429,17 @@ __do_global_dtors_aux (void)
 #ifdef FINI_SECTION_ASM_OP
 CRT_CALL_STATIC_FUNCTION (FINI_SECTION_ASM_OP, __do_global_dtors_aux)
 #elif defined (FINI_ARRAY_SECTION_ASM_OP)
+#if defined(__FDPIC__)
+__asm__("\t.equ\t__do_global_dtors_aux_alias, __do_global_dtors_aux\n");
+extern char __do_global_dtors_aux_alias;
+static void *__do_global_dtors_aux_fini_array_entry[]
+__attribute__ ((__used__, section(".fini_array"), aligned(sizeof(void *))))
+     = { &__do_global_dtors_aux_alias };
+#else /* defined(__FDPIC__) */
 static func_ptr __do_global_dtors_aux_fini_array_entry[]
   __attribute__ ((__used__, section(".fini_array"),
 		  aligned(__alignof__(func_ptr)))) = { __do_global_dtors_aux };
+#endif /* defined(__FDPIC__) */
 #else /* !FINI_SECTION_ASM_OP && !FINI_ARRAY_SECTION_ASM_OP */
 static void __attribute__((used))
 __do_global_dtors_aux_1 (void)
@@ -473,9 +481,17 @@ frame_dummy (void)
 #ifdef __LIBGCC_INIT_SECTION_ASM_OP__
 CRT_CALL_STATIC_FUNCTION (__LIBGCC_INIT_SECTION_ASM_OP__, frame_dummy)
 #else /* defined(__LIBGCC_INIT_SECTION_ASM_OP__) */
+#if defined(__FDPIC__)
+__asm__("\t.equ\t__frame_dummy_alias, frame_dummy\n");
+extern char __frame_dummy_alias;
+static void *__frame_dummy_init_array_entry[]
+__attribute__ ((__used__, section(".init_array"), aligned(sizeof(void *))))
+     = { &__frame_dummy_alias };
+#else /* defined(__FDPIC__) */
 static func_ptr __frame_dummy_init_array_entry[]
   __attribute__ ((__used__, section(".init_array"),
 		  aligned(__alignof__(func_ptr)))) = { frame_dummy };
+#endif /* defined(__FDPIC__) */
 #endif /* !defined(__LIBGCC_INIT_SECTION_ASM_OP__) */
 #endif /* USE_EH_FRAME_REGISTRY || USE_TM_CLONE_REGISTRY */
 
