@@ -351,7 +351,6 @@ init_reg_sets_1 (void)
 
   CLEAR_HARD_REG_SET (fixed_reg_set);
   CLEAR_HARD_REG_SET (call_used_reg_set);
-  CLEAR_HARD_REG_SET (call_fixed_reg_set);
   CLEAR_HARD_REG_SET (regs_invalidated_by_call);
 
   operand_reg_set &= accessible_reg_set;
@@ -417,7 +416,7 @@ init_reg_sets_1 (void)
 	SET_HARD_REG_BIT (regs_invalidated_by_call, i);
     }
 
-  call_fixed_reg_set = fixed_reg_set;
+  SET_HARD_REG_SET (savable_regs);
   fixed_nonglobal_reg_set = fixed_reg_set;
 
   /* Preserve global registers if called more than once.  */
@@ -428,7 +427,6 @@ init_reg_sets_1 (void)
 	  fixed_regs[i] = call_used_regs[i] = 1;
 	  SET_HARD_REG_BIT (fixed_reg_set, i);
 	  SET_HARD_REG_BIT (call_used_reg_set, i);
-	  SET_HARD_REG_BIT (call_fixed_reg_set, i);
 	}
     }
 
@@ -782,7 +780,6 @@ globalize_reg (tree decl, int i)
 
   SET_HARD_REG_BIT (fixed_reg_set, i);
   SET_HARD_REG_BIT (call_used_reg_set, i);
-  SET_HARD_REG_BIT (call_fixed_reg_set, i);
 
   reinit_regs ();
 }

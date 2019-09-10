@@ -1,5 +1,19 @@
 2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hard-reg-set.h (target_hard_regs::x_call_fixed_reg_set): Delete.
+	(target_hard_regs::x_savable_regs): New field.
+	(call_fixed_reg_set): Delete.
+	(savable_regs): New macro,
+	* reginfo.c (globalize_reg): Don't set call_fixed_reg_set.
+	(init_reg_sets_1): Likewise.  Initialize savable_regs.
+	* caller-save.c (init_caller_save): Invoke HARD_REGNO_CALLER_SAVE_MODE
+	for all registers.  Set savable_regs instead of call_fixed_reg_set.
+	(setup_save_areas, save_call_clobbered_regs): Replace uses of
+	~call_fixed_reg_set with ~fixed_reg_set & savable_regs.
+	* config/sh/sh.c (output_stack_adjust): Likewise.
+
+2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/c6x/c6x-protos.h (c6x_set_return_address): Declare.
 	* config/c6x/c6x.h (REGNO_REG_CLASS): Move implementation to
 	* config/c6x/c6x.c (c6x_regno_reg_class): ...this new function.
