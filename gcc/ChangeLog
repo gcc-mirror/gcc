@@ -1,6 +1,13 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 	Mickaël Guêné <mickael.guene@st.com>
 
+	* config/arm/arm.h (PIC_REGISTER_MAY_NEED_SAVING): New helper.
+	* config/arm/arm.c (arm_compute_save_reg0_reg12_mask): Handle
+	FDPIC.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
+
 	* ginclude/unwind-arm-common.h (unwinder_cache): Add reserved5
 	field.
 

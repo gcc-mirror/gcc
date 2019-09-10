@@ -19571,9 +19571,7 @@ arm_compute_save_reg0_reg12_mask (void)
 	  save_reg_mask |= (1 << reg);
 
       /* Also save the pic base register if necessary.  */
-      if (flag_pic
-	  && !TARGET_SINGLE_PIC_BASE
-	  && arm_pic_register != INVALID_REGNUM
+      if (PIC_REGISTER_MAY_NEED_SAVING
 	  && crtl->uses_pic_offset_table)
 	save_reg_mask |= 1 << PIC_OFFSET_TABLE_REGNUM;
     }
@@ -19605,9 +19603,7 @@ arm_compute_save_reg0_reg12_mask (void)
 
       /* If we aren't loading the PIC register,
 	 don't stack it even though it may be live.  */
-      if (flag_pic
-	  && !TARGET_SINGLE_PIC_BASE
-	  && arm_pic_register != INVALID_REGNUM
+      if (PIC_REGISTER_MAY_NEED_SAVING
 	  && (df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM)
 	      || crtl->uses_pic_offset_table))
 	save_reg_mask |= 1 << PIC_OFFSET_TABLE_REGNUM;
