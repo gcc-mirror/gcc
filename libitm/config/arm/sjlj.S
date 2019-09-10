@@ -49,7 +49,16 @@
 	.arch	armv7-m
 #endif
 
-#if defined(HAVE_MOVT) && defined(PIC)
+#if defined(__FDPIC__)
+.macro ldaddr reg, addr
+	ldr \reg, 99f
+	add \reg, \reg, r9
+.subsection 1
+	.align	2
+99:	.word	\addr(GOTOFF)
+.subsection 0
+.endm
+#elif defined(HAVE_MOVT) && defined(PIC)
 .macro ldaddr reg, addr
 	movw	\reg, #:lower16:(\addr - (98f + PC_OFS))
 	movt	\reg, #:upper16:(\addr - (98f + PC_OFS))
