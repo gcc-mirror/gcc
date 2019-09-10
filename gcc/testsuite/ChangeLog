@@ -1,5 +1,56 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 
+	* g++.dg/abi/forced.C: Add *-*-uclinux*.
+	* g++.dg/abi/guard2.C: Likewise.
+	* g++.dg/ext/cleanup-10.C: Likewise.
+	* g++.dg/ext/cleanup-11.C: Likewise.
+	* g++.dg/ext/cleanup-8.C: Likewise.
+	* g++.dg/ext/cleanup-9.C: Likewise.
+	* g++.dg/ext/sync-4.C: Likewise.
+	* g++.dg/ipa/comdat.C: Likewise.
+	* gcc.dg/20041106-1.c: Likewise.
+	* gcc.dg/cleanup-10.c: Likewise.
+	* gcc.dg/cleanup-11.c: Likewise.
+	* gcc.dg/cleanup-8.c: Likewise.
+	* gcc.dg/cleanup-9.c: Likewise.
+	* gcc.dg/fdata-sections-1.c: Likewise.
+	* gcc.dg/fdata-sections-2.c: Likewise.
+	* gcc.dg/pr39323-1.c: Likewise.
+	* gcc.dg/pr39323-2.c: Likewise.
+	* gcc.dg/pr39323-3.c: Likewise.
+	* gcc.dg/pr65780-1.c: Likewise.
+	* gcc.dg/pr65780-2.c: Likewise.
+	* gcc.dg/pr67338.c: Likewise.
+	* gcc.dg/pr78185.c: Likewise.
+	* gcc.dg/pr83100-1.c: Likewise.
+	* gcc.dg/pr83100-4.c: Likewise.
+	* gcc.dg/strlenopt-12g.c: Likewise.
+	* gcc.dg/strlenopt-14g.c: Likewise.
+	* gcc.dg/strlenopt-14gf.c: Likewise.
+	* gcc.dg/strlenopt-16g.c: Likewise.
+	* gcc.dg/strlenopt-17g.c: Likewise.
+	* gcc.dg/strlenopt-18g.c: Likewise.
+	* gcc.dg/strlenopt-1f.c: Likewise.
+	* gcc.dg/strlenopt-22g.c: Likewise.
+	* gcc.dg/strlenopt-2f.c: Likewise.
+	* gcc.dg/strlenopt-31g.c: Likewise.
+	* gcc.dg/strlenopt-33g.c: Likewise.
+	* gcc.dg/strlenopt-4g.c: Likewise.
+	* gcc.dg/strlenopt-4gf.c: Likewise.
+	* gcc.dg/strncmp-2.c: Likewise.
+	* gcc.dg/struct-ret-3.c: Likewise.
+	* gcc.dg/torture/pr69760.c: Likewise.
+	* gcc.target/arm/div64-unwinding.c: Likewise.
+	* gcc.target/arm/stack-checking.c: Likewise.
+	* gcc.target/arm/synchronize.c: Likewise.
+	* gcc.target/arm/pr66912.c: Add arm*-*-uclinuxfdpiceabi.
+	* lib/target-supports.exp (check_effective_target_pie): Likewise.
+	(check_effective_target_sync_long_long_runtime): Likewise.
+	(check_effective_target_sync_int_long): Likewise.
+	(check_effective_target_sync_char_short): Likewise.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
 	* gcc.target/arm/eliminate.c: Accept only nonpic targets.
 	* g++.dg/other/anon5.C: Likewise.
 
