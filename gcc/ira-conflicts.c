@@ -765,6 +765,8 @@ ira_build_conflicts (void)
 	    }
 	  else if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
 	    {
+	      HARD_REG_SET no_caller_save_reg_set
+		= (call_used_reg_set & ~savable_regs);
 	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= no_caller_save_reg_set;
 	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= temp_hard_reg_set;
 	      OBJECT_CONFLICT_HARD_REGS (obj) |= no_caller_save_reg_set;

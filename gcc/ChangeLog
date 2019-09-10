@@ -1,5 +1,13 @@
 2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hard-reg-set.h (target_hard_regs::x_no_caller_save_reg_set): Delete.
+	(no_caller_save_reg_set): Delete.
+	* caller-save.c (init_caller_save): Don't initialize it.
+	* ira-conflicts.c (ira_build_conflicts): Calculate
+	no_caller_save_reg_set locally from call_used_reg_set and savable_regs.
+
+2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hard-reg-set.h (target_hard_regs::x_call_fixed_reg_set): Delete.
 	(target_hard_regs::x_savable_regs): New field.
 	(call_fixed_reg_set): Delete.
