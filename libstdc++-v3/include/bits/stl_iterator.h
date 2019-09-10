@@ -70,7 +70,7 @@
 #endif
 
 #if __cplusplus > 201402L
-# define __cpp_lib_array_constexpr 201603
+# define __cpp_lib_array_constexpr 201803
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)

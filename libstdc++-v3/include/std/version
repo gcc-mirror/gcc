@@ -90,7 +90,7 @@
 #define __cpp_lib_addressof_constexpr 201603
 #define __cpp_lib_any 201606L
 #define __cpp_lib_apply 201603
-#define __cpp_lib_array_constexpr 201603
+#define __cpp_lib_array_constexpr 201803
 #define __cpp_lib_as_const 201510
 #define __cpp_lib_atomic_is_always_lock_free 201603
 #define __cpp_lib_bool_constant 201505
@@ -138,7 +138,7 @@
 # define __cpp_lib_shared_mutex 201505
 #endif
 #define __cpp_lib_shared_ptr_weak_type 201606
-#define __cpp_lib_string_view 201603
+#define __cpp_lib_string_view 201803
 // #define __cpp_lib_to_chars 201611L
 #define __cpp_lib_type_trait_variable_templates 201510L
 #define __cpp_lib_uncaught_exceptions 201411L
@@ -153,8 +153,8 @@
 #define __cpp_lib_atomic_ref 201806L
 #define __cpp_lib_bind_front 201907L
 #define __cpp_lib_bounded_array_traits 201902L
-#define __cpp_lib_constexpr_algorithms 201711L
-#define __cpp_lib_constexpr_swap_algorithms 201806L
+#define __cpp_lib_constexpr 201711L
+#define __cpp_lib_constexpr_algorithms 201806L
 #if __cpp_impl_destroying_delete
 # define __cpp_lib_destroying_delete 201806L
 #endif
