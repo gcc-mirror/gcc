@@ -79,23 +79,6 @@ protected:
 				    const wide_int &lh_ub,
 				    const wide_int &rh_lb,
 				    const wide_int &rh_ub) const;
-
-  // Perform an operation between two wide-ints and place the result
-  // in R.  Return true if the operation overflowed.
-  //
-  // This should only be defined for opcodes that use wi_cross_product.
-  virtual bool wi_op_overflows (wide_int &r,
-				tree type,
-				const wide_int &,
-				const wide_int &) const;
-
-  // Calculate the cross product of two sets of sub-ranges and return it.
-  // Define wi_op_overflows for any opcode that needs this function.
-  value_range_base wi_cross_product (tree type,
-				     const wide_int &lh_lb,
-				     const wide_int &lh_ub,
-				     const wide_int &rh_lb,
-				     const wide_int &rh_ub) const;
 };
 
 extern range_operator *range_op_handler (enum tree_code code, tree type);

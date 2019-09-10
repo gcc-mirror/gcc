@@ -184,18 +184,6 @@ range_operator::op2_range (value_range_base &r ATTRIBUTE_UNUSED,
   return false;
 }
 
-// This should never be triggered, as all wi_cross_product users
-// should define this.
-
-bool
-range_operator::wi_op_overflows (wide_int &res ATTRIBUTE_UNUSED,
-				 tree type ATTRIBUTE_UNUSED,
-				 const wide_int &w0 ATTRIBUTE_UNUSED,
-				 const wide_int &w1 ATTRIBUTE_UNUSED) const
-{
-  gcc_unreachable ();
-  return false;
-}
 
 // Called when there is either an overflow OR an underflow... which
 // means an anti range must be created to compensate.  This does not
@@ -1035,7 +1023,78 @@ operator_max::wi_fold (tree type,
 }
 
 
-class operator_mult : public range_operator
+class cross_product_operator : public range_operator
+{
+public:
+  // Perform an operation between two wide-ints and place the result
+  // in R.  Return true if the operation overflowed.
+  virtual bool wi_op_overflows (wide_int &r,
+				tree type,
+				const wide_int &,
+				const wide_int &) const = 0;
+
+  // Calculate the cross product of two sets of sub-ranges and return it.
+  value_range_base wi_cross_product (tree type,
+				     const wide_int &lh_lb,
+				     const wide_int &lh_ub,
+				     const wide_int &rh_lb,
+				     const wide_int &rh_ub) const;
+};
+
+// Calculate the cross product of two sets of ranges and return it.
+//
+// Multiplications, divisions and shifts are a bit tricky to handle,
+// depending on the mix of signs we have in the two ranges, we need to
+// operate on different values to get the minimum and maximum values
+// for the new range.  One approach is to figure out all the
+// variations of range combinations and do the operations.
+//
+// However, this involves several calls to compare_values and it is
+// pretty convoluted.  It's simpler to do the 4 operations (MIN0 OP
+// MIN1, MIN0 OP MAX1, MAX0 OP MIN1 and MAX0 OP MAX0 OP MAX1) and then
+// figure the smallest and largest values to form the new range.
+
+value_range_base
+cross_product_operator::wi_cross_product (tree type,
+					  const wide_int &lh_lb,
+					  const wide_int &lh_ub,
+					  const wide_int &rh_lb,
+					  const wide_int &rh_ub) const
+{
+  wide_int cp1, cp2, cp3, cp4;
+
+  // Compute the 4 cross operations, bailing if we get an overflow we
+  // can't handle.
+  if (wi_op_overflows (cp1, type, lh_lb, rh_lb))
+    return value_range_base (type);
+  if (wi::eq_p (lh_lb, lh_ub))
+    cp3 = cp1;
+  else if (wi_op_overflows (cp3, type, lh_ub, rh_lb))
+    return value_range_base (type);
+  if (wi::eq_p (rh_lb, rh_ub))
+    cp2 = cp1;
+  else if (wi_op_overflows (cp2, type, lh_lb, rh_ub))
+    return value_range_base (type);
+  if (wi::eq_p (lh_lb, lh_ub))
+    cp4 = cp2;
+  else if (wi_op_overflows (cp4, type, lh_ub, rh_ub))
+    return value_range_base (type);
+
+  // Order pairs.
+  signop sign = TYPE_SIGN (type);
+  if (wi::gt_p (cp1, cp2, sign))
+    std::swap (cp1, cp2);
+  if (wi::gt_p (cp3, cp4, sign))
+    std::swap (cp3, cp4);
+
+  // Choose min and max from the ordered pairs.
+  wide_int res_lb = wi::min (cp1, cp3, sign);
+  wide_int res_ub = wi::max (cp2, cp4, sign);
+  return create_range_with_overflow (type, res_lb, res_ub);
+}
+
+
+class operator_mult : public cross_product_operator
 {
 public:
   virtual value_range_base wi_fold (tree type,
@@ -1069,58 +1128,6 @@ operator_mult::wi_op_overflows (wide_int &res,
        return false;
      }
    return overflow;
-}
-
-// Calculate the cross product of two sets of ranges and return it.
-//
-// Multiplications, divisions and shifts are a bit tricky to handle,
-// depending on the mix of signs we have in the two ranges, we need to
-// operate on different values to get the minimum and maximum values
-// for the new range.  One approach is to figure out all the
-// variations of range combinations and do the operations.
-//
-// However, this involves several calls to compare_values and it is
-// pretty convoluted.  It's simpler to do the 4 operations (MIN0 OP
-// MIN1, MIN0 OP MAX1, MAX0 OP MIN1 and MAX0 OP MAX0 OP MAX1) and then
-// figure the smallest and largest values to form the new range.
-
-value_range_base
-range_operator::wi_cross_product (tree type,
-				  const wide_int &lh_lb,
-				  const wide_int &lh_ub,
-				  const wide_int &rh_lb,
-				  const wide_int &rh_ub) const
-{
-  wide_int cp1, cp2, cp3, cp4;
-
-  // Compute the 4 cross operations, bailing if we get an overflow we
-  // can't handle.
-  if (wi_op_overflows (cp1, type, lh_lb, rh_lb))
-    return value_range_base (type);
-  if (wi::eq_p (lh_lb, lh_ub))
-    cp3 = cp1;
-  else if (wi_op_overflows (cp3, type, lh_ub, rh_lb))
-    return value_range_base (type);
-  if (wi::eq_p (rh_lb, rh_ub))
-    cp2 = cp1;
-  else if (wi_op_overflows (cp2, type, lh_lb, rh_ub))
-    return value_range_base (type);
-  if (wi::eq_p (lh_lb, lh_ub))
-    cp4 = cp2;
-  else if (wi_op_overflows (cp4, type, lh_ub, rh_ub))
-    return value_range_base (type);
-
-  // Order pairs.
-  signop sign = TYPE_SIGN (type);
-  if (wi::gt_p (cp1, cp2, sign))
-    std::swap (cp1, cp2);
-  if (wi::gt_p (cp3, cp4, sign))
-    std::swap (cp3, cp4);
-
-  // Choose min and max from the ordered pairs.
-  wide_int res_lb = wi::min (cp1, cp3, sign);
-  wide_int res_ub = wi::max (cp2, cp4, sign);
-  return create_range_with_overflow (type, res_lb, res_ub);
 }
 
 value_range_base
@@ -1198,7 +1205,7 @@ operator_mult::wi_fold (tree type,
 }
 
 
-class operator_div : public range_operator
+class operator_div : public cross_product_operator
 {
 public:
   operator_div (enum tree_code c)  { code = c; }
@@ -1259,11 +1266,6 @@ operator_div::wi_op_overflows (wide_int &res,
   return overflow;
 }
 
-operator_div op_trunc_div (TRUNC_DIV_EXPR);
-operator_div op_floor_div(FLOOR_DIV_EXPR);
-operator_div op_round_div (ROUND_DIV_EXPR);
-operator_div op_ceil_div (CEIL_DIV_EXPR);
-
 value_range_base
 operator_div::wi_fold (tree type,
 		       const wide_int &lh_lb, const wide_int &lh_ub,
@@ -1313,6 +1315,11 @@ operator_div::wi_fold (tree type,
   return r;
 }
 
+operator_div op_trunc_div (TRUNC_DIV_EXPR);
+operator_div op_floor_div(FLOOR_DIV_EXPR);
+operator_div op_round_div (ROUND_DIV_EXPR);
+operator_div op_ceil_div (CEIL_DIV_EXPR);
+
 
 class operator_exact_divide : public operator_div
 {
@@ -1346,7 +1353,7 @@ operator_exact_divide::op1_range (value_range_base &r, tree type,
 }
 
 
-class operator_lshift : public range_operator
+class operator_lshift : public cross_product_operator
 {
 public:
   virtual value_range_base fold_range (tree type,
@@ -1473,7 +1480,7 @@ operator_lshift::wi_op_overflows (wide_int &res,
 }
 
 
-class operator_rshift : public range_operator
+class operator_rshift : public cross_product_operator
 {
 public:
   virtual value_range_base fold_range (tree type,
