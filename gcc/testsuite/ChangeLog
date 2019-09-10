@@ -1,3 +1,8 @@
+2019-09-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84374 - diagnose invalid uses of decltype(auto).
+	* g++.dg/cpp1y/auto-fn57.C: New test.
+
 2019-09-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/rlwinm-0.c: Adjust expected instruction counts.

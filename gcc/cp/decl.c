@@ -11681,6 +11681,16 @@ grokdeclarator (const cp_declarator *declarator,
 			  "allowed");
 		return error_mark_node;
 	      }
+	    /* Only plain decltype(auto) is allowed.  */
+	    if (tree a = type_uses_auto (type))
+	      {
+		if (AUTO_IS_DECLTYPE (a) && a != type)
+		  {
+		    error_at (typespec_loc, "%qT as type rather than "
+			      "plain %<decltype(auto)%>", type);
+		    return error_mark_node;
+		  }
+	      }
 
 	    if (ctype == NULL_TREE
 		&& decl_context == FIELD

@@ -1,3 +1,9 @@
+2019-09-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84374 - diagnose invalid uses of decltype(auto).
+	* decl.c (grokdeclarator): Diagnose wrong usage of decltype(auto) in
+	a function declaration.
+
 2019-09-06  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/91125
