@@ -1,4 +1,4 @@
-! { dg-do run { xfail powerpc-ibm-aix* } }
+! { dg-do run }
 ! Test XFAILed on Darwin because the system's printf() lacks
 ! proper support for denormals.
 !

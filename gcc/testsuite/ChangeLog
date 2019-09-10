@@ -1,3 +1,8 @@
+2019-09-10  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/default_format_1.f90: Remove XFAIL AIX.
+	* gfortran.dg/default_format_denormal_1.f90: Same.
+
 2019-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/91680
