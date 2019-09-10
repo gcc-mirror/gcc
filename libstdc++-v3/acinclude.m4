@@ -1441,6 +1441,9 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
         ac_has_nanosleep=yes
         ac_has_sched_yield=yes
         ;;
+      uclinux*)
+        ac_has_nanosleep=yes
+        ac_has_sched_yield=yes
     esac
 
   elif test x"$enable_libstdcxx_time" != x"no"; then
@@ -1526,7 +1529,7 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
 
   if test x"$ac_has_clock_monotonic" != x"yes"; then
     case ${target_os} in
-      linux*)
+      linux* | uclinux*)
 	AC_MSG_CHECKING([for clock_gettime syscall])
 	AC_TRY_COMPILE(
 	  [#include <unistd.h>
@@ -4424,7 +4427,7 @@ AC_DEFUN([GLIBCXX_ENABLE_FILESYSTEM_TS], [
       freebsd*|netbsd*|openbsd*|dragonfly*|darwin*)
         enable_libstdcxx_filesystem_ts=yes
         ;;
-      gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
+      gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu | uclinux*)
         enable_libstdcxx_filesystem_ts=yes
         ;;
       rtems*)
@@ -4606,7 +4609,7 @@ dnl
     AC_MSG_CHECKING([for sendfile that can copy files])
     AC_CACHE_VAL(glibcxx_cv_sendfile, [dnl
       case "${target_os}" in
-        gnu* | linux* | solaris*)
+        gnu* | linux* | solaris* | uclinux*)
           GCC_TRY_COMPILE_OR_LINK(
             [#include <sys/sendfile.h>],
             [sendfile(1, 2, (off_t*)0, sizeof 1);],
