@@ -400,11 +400,15 @@ struct target_hard_regs {
   /* The same info as a HARD_REG_SET.  */
   HARD_REG_SET x_call_used_reg_set;
 
-  /* Contains registers that are fixed use -- i.e. in fixed_reg_set -- or
-     a function value return register or TARGET_STRUCT_VALUE_RTX or
-     STATIC_CHAIN_REGNUM.  These are the registers that cannot hold quantities
-     across calls even if we are willing to save and restore them.  */
-  HARD_REG_SET x_call_fixed_reg_set;
+  /* For targets that use reload rather than LRA, this is the set
+     of registers that we are able to save and restore around calls
+     (i.e. those for which we know a suitable mode and set of
+     load/store instructions exist).  For LRA targets it contains
+     all registers.
+
+     This is legacy information and should be removed if all targets
+     switch to LRA.  */
+  HARD_REG_SET x_savable_regs;
 
   /* Contains registers that are fixed use -- i.e. in fixed_reg_set -- but
      only if they are not merely part of that set because they are global
@@ -482,8 +486,8 @@ extern struct target_hard_regs *this_target_hard_regs;
   (this_target_hard_regs->x_call_really_used_regs)
 #define call_used_reg_set \
   (this_target_hard_regs->x_call_used_reg_set)
-#define call_fixed_reg_set \
-  (this_target_hard_regs->x_call_fixed_reg_set)
+#define savable_regs \
+  (this_target_hard_regs->x_savable_regs)
 #define regs_invalidated_by_call \
   (this_target_hard_regs->x_regs_invalidated_by_call)
 #define no_caller_save_reg_set \
