@@ -30106,13 +30106,13 @@ command-line options are not stable.}
 
 Modular compilation is @emph{not} enabled with the @option{-std=c++2a}
 option.  You must explicitly enable it with the @option{-fmodules-ts}
-option to enable.
+option to enable.  It is independent of the language version selected.
 
 Compiling a module interface unit produces an additional output (to
 the assembly or object file), called a Compiled Module Interface
-(CMI).  This encods the exported declarations of the module.  Importing a
-module reads in the CMI.  The dependency graph of imports is a
-Directed Acyclic Graph (DAG).
+(CMI).  This encodes the exported declarations of the module.
+Importing a module reads in the CMI.  The dependency graph of imports
+is a Directed Acyclic Graph (DAG).
 
 Header files may themselves be compiled to header units, which are a
 transitional ability aiming at faster compilation.  The
@@ -30124,13 +30124,13 @@ pathname, the CMI location is still relative to a CMI root directory.
 
 When creating an output CMI any missing directory components are
 created in a manner that is safe for concurrent builds creating
-multiple, different, CMIs within a common subdirectory graph.
+multiple, different, CMIs within a common subdirectory tree.
 
 CMI contents are written to a temporary file, which is then atomically
 renamed.  Observers will either see old contents (if there is an
 existing file), or complete new contents.  They will not observe the
-CMI during its creation.  This is unlike object file creation, which
-may be observed externally.
+CMI during its creation.  This is unlike object file writing, which
+may be observed by an external process.
 
 CMIs are read in lazily.  Generally blocks are read when name lookup
 or template instantiation occurs.  To inhibit this, the
