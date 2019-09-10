@@ -1,3 +1,8 @@
+2019-09-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91705 - constexpr evaluation rejects ++/-- on floats.
+	* g++.dg/cpp1y/constexpr-incr2.C: New test.
+
 2019-09-10  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gfortran.dg/default_format_1.f90: Remove XFAIL AIX.
