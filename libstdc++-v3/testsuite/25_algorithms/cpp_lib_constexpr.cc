@@ -19,16 +19,9 @@
 // { dg-do compile { target c++2a } }
 
 #include <algorithm>
-#include <array>
 
-constexpr bool
-test()
-{
-  std::array<int, 12> ar0{{0, 1, 2, 3, 4, 5, 6, 6, 8, 9, 9, 11}};
-
-  std::replace_if(ar0.begin(), ar0.end(), [](int i){ return i % 2 == 1; }, 42);
-
-  return true;
-}
-
-static_assert(test());
+#ifndef __cpp_lib_constexpr_algorithms
+# error "Feature-test macro for constexpr algorithms missing"
+#elif __cpp_lib_constexpr_algorithms < 201806L
+# error "Feature-test macro for constexpr algorithms has wrong value"
+#endif

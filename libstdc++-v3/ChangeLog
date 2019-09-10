@@ -1,5 +1,74 @@
 2019-09-09  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
+	Implement C++20 p1424 - 'constexpr' feature macro concerns,
+	Issue 3256 - Feature testing macro for constexpr algorithms,
+	and Issue 3257 - Missing feature testing macro update from P0858.
+	* include/std/version (__cpp_lib_constexpr_algorithms): Bump value.
+	* include/bits/algorithmfwd.h: Ditto.
+	* include/std/utility: Ditto.
+	* testsuite/25_algorithms/constexpr_macro.cc: Ditto.
+	* testsuite/25_algorithms/cpp_lib_constexpr.cc: New check for
+	__cpp_lib_constexpr macro in <algorith>.
+	* testsuite/20_util/exchange/constexpr.cc: Add check for
+	__cpp_lib_constexpr macro in <utility>.
+	* testsuite/25_algorithms/adjacent_find/constexpr.cc: Remove check for
+	__cpp_lib_constexpr_algorithms.
+	* testsuite/25_algorithms/all_of/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/any_of/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/binary_search/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/copy/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/copy_backward/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/copy_if/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/copy_n/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/count/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/count_if/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/equal/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/equal_range/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/fill/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/fill_n/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/find/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/find_end/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/find_first_of/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/find_if/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/find_if_not/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/for_each/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/generate/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/generate_n/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/is_heap/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/is_heap_until/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/is_partitioned/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/is_permutation/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/is_sorted/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/is_sorted_until/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/lexicographical_compare/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/lower_bound/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/merge/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/mismatch/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/none_of/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/partition_copy/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/partition_point/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/remove/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/remove_copy/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/remove_copy_if/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/remove_if/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/replace_copy/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/replace_copy_if/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/replace_if/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/reverse_copy/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/rotate_copy/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/search/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/search_n/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/set_difference/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/set_intersection/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/set_symmetric_difference/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/set_union/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/transform/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/unique/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/unique_copy/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/upper_bound/constexpr.cc: Ditto.
+
+2019-09-09  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
 	Update docs for recent <span> and constexpr lib changes.
 	* doc/xml/manual/status_cxx2020.xml: Update p0202r3, p0858r0, p0879r0,
 	p1023r0, p1085r2 status.

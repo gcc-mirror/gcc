@@ -22,6 +22,6 @@
 
 #ifndef __cpp_lib_constexpr_algorithms
 # error "Feature-test macro for constexpr algorithms missing in <version>"
-#elif __cpp_lib_constexpr_algorithms != 201711L
+#elif __cpp_lib_constexpr_algorithms < 201806L
 # error "Feature-test macro for constexpr algorithms has wrong value in <version>"
 #endif
