@@ -1,3 +1,7 @@
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
+        * libtool.m4: Handle uclinuxfdpiceabi.
+
 2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* MAINTAINERS: Add myself as the maintainer of the eBPF port.

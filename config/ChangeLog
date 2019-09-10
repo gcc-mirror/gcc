@@ -1,3 +1,8 @@
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
+	* futex.m4: Handle *-uclinux*.
+	* tls.m4 (GCC_CHECK_TLS): Likewise.
+
 2019-09-06  Florian Weimer  <fweimer@redhat.com>
 
 	* futex.m4 (GCC_LINUX_FUTEX): Include <unistd.h> for the syscall
