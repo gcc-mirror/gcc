@@ -2,6 +2,7 @@
 
 /* { dg-do assemble } */
 /* { dg-options "-O2 -fPIC -mtls-dialect=gnu2" } */
+/* { dg-skip-if "FDPIC does not support gnu2 TLS dialect" { arm*-*-uclinuxfdpiceabi } "*" "" } */
 
 typedef struct _IO_FILE FILE;
 

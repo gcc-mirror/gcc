@@ -3,6 +3,7 @@
    the call would need an output reload.  */
 /* { dg-do run } */
 /* { dg-options "-O2 -fno-omit-frame-pointer" } */
+/* { dg-skip-if "r9 is reserved in FDPIC" { arm*-*-uclinuxfdpiceabi } "*" "" } */
 extern void abort (void);
 typedef void (*callback) (void);
 

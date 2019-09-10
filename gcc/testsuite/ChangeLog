@@ -1,6 +1,35 @@
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 	Mickaël Guêné <mickael.guene@st.com>
 
+	* gcc.dg/20020312-2.c: Skip on arm*-*-uclinuxfdpiceabi.
+	* gcc.target/arm/20051215-1.c: Likewise.
+	* gcc.target/arm/mmx-1.c: Likewise.
+	* gcc.target/arm/pr19599.c: Likewise.
+	* gcc.target/arm/pr40887.c: Likewise.
+	* gcc.target/arm/pr61948.c: Likewise.
+	* gcc.target/arm/pr77933-1.c: Likewise.
+	* gcc.target/arm/pr77933-2.c: Likewise.
+	* gcc.target/arm/sibcall-1.c: Likewise.
+	* gcc.target/arm/data-rel-2.c: Likewise.
+	* gcc.target/arm/data-rel-3.c: Likewise.
+	* gcc.target/arm/tail-long-call: Likewise.
+	* gcc.target/arm/tlscall.c: Likewise.
+	* gcc.target/arm/vfp-longcall-apcs: Likewise.
+	* gcc.target/arm/ivopts-2.c: Skip object-size test on
+	arm*-*-uclinuxfdpiceabi.
+	* gcc.target/arm/ivopts-3.c: Likewise.
+	* gcc.target/arm/ivopts-4.c: Likewise.
+	* gcc.target/arm/ivopts-5.c: Likewise.
+	* gcc.target/arm/pr43597.c: Likewise.
+	* gcc.target/arm/pr43920-2.c: Likewise.
+	* gcc.target/arm/pr45701-1.c: Skip scan-assembler on
+	arm*-*-uclinuxfdpiceabi.
+	* gcc.target/arm/pr45701-2.c: Likewise.
+	* gcc.target/arm/stack-red-zone.c: Likewise.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
+
 	* gcc.target/arm/fp16-aapcs-2.c: Adjust scan-assembler-times.
 	* gcc.target/arm/fp16-aapcs-4.c: Likewise.
 
