@@ -851,8 +851,7 @@
 ;; Return 1 if OP is a constant but not a valid add_operand.
 (define_predicate "non_add_cint_operand"
   (and (match_code "const_int")
-       (match_test "!satisfies_constraint_I (op)
-		    && !satisfies_constraint_L (op)")))
+       (not (match_operand 0 "add_operand"))))
 
 ;; Return 1 if the operand is a constant that can be used as the operand
 ;; of an AND, OR or XOR.
