@@ -1,5 +1,10 @@
 2019-09-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/91723
+	* tree-vect-stmts.c (vectorizable_call): Use types_compatible_p check
+	instead of pointer equality when checking if argument vectypes are
+	the same.
+
 	PR middle-end/91725
 	* match.pd ((A / (1 << B)) -> (A >> B)): Call tree_nonzero_bits instead
 	of get_nonzero_bits, only call it for integral types.
