@@ -728,7 +728,7 @@ class SharedPtrUseCountWorker(gdb.xmethod.XMethodWorker):
         return gdb.lookup_type('long')
 
     def __call__(self, obj):
-        refcounts = ['_M_refcount']['_M_pi']
+        refcounts = obj['_M_refcount']['_M_pi']
         return refcounts['_M_use_count'] if refcounts else 0
 
 class SharedPtrUniqueWorker(SharedPtrUseCountWorker):
