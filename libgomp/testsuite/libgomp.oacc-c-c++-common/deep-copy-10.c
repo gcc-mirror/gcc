@@ -1,6 +1,8 @@
 #include <stdlib.h>
 
-/* Test asyncronous attach and detach operation.  */
+#define ITERATIONS 1023
+
+/* Test asynchronous attach and detach operation.  */
 
 typedef struct {
   int *a;
@@ -25,13 +27,13 @@ main (int argc, char* argv[])
 
 #pragma acc enter data copyin(m)
 
-  for (int i = 0; i < 99; i++)
+  for (int i = 0; i < ITERATIONS; i++)
     {
       int j;
-#pragma acc parallel loop copy(m.a[0:N]) async(i % 2)
+#pragma acc parallel loop copy(m.a[0:N]) async(0)
       for (j = 0; j < N; j++)
 	m.a[j]++;
-#pragma acc parallel loop copy(m.b[0:N]) async((i + 1) % 2)
+#pragma acc parallel loop copy(m.b[0:N]) async(1)
       for (j = 0; j < N; j++)
 	m.b[j]++;
     }
@@ -40,9 +42,9 @@ main (int argc, char* argv[])
 
   for (i = 0; i < N; i++)
     {
-      if (m.a[i] != 99)
+      if (m.a[i] != ITERATIONS)
 	abort ();
-      if (m.b[i] != 99)
+      if (m.b[i] != ITERATIONS)
 	abort ();
     }
 

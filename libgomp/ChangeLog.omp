@@ -1,3 +1,9 @@
+2019-09-17  Julian Brown  <julian@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-10.c (main): Fix
+	async-safety issue. Increase number of iterations.
+
 2021-04-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* oacc-mem.c (goacc_enter_data_internal): Unlock mutex before calling
