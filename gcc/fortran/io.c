@@ -4641,6 +4641,17 @@ gfc_match_inquire (void)
       if (m == MATCH_NO)
 	goto syntax;
 
+      for (gfc_code *c = code; c; c = c->next)
+	if (c->expr1 && c->expr1->expr_type == EXPR_FUNCTION
+	    && c->expr1->symtree && c->expr1->symtree->n.sym->attr.function
+	    && !c->expr1->symtree->n.sym->attr.external
+	    && strcmp (c->expr1->symtree->name, "null") == 0)
+	  {
+	    gfc_error ("NULL() near %L cannot appear in INQUIRE statement",
+		       &c->expr1->where);
+	    goto cleanup;
+	  }
+
       new_st.op = EXEC_IOLENGTH;
       new_st.expr1 = inquire->iolength;
       new_st.ext.inquire = inquire;
