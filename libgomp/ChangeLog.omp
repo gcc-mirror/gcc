@@ -1,3 +1,8 @@
+2019-09-17  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c (check): Skip
+	vector dimension test for AMD GCN.
+
 2019-09-05  Julian Brown  <julian@codesourcery.com>
 
 	* plugin/plugin-gcn.c (gcn_exec): Change default number of workers to
