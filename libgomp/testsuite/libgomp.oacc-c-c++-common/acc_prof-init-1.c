@@ -159,7 +159,10 @@ static void cb_compute_construct_start (acc_prof_info *prof_info, acc_event_info
   assert (prof_info->device_type == acc_device_type);
   assert (prof_info->device_number == acc_device_num);
   assert (prof_info->thread_id == -1);
-  assert (prof_info->async == /* TODO acc_async */ acc_async_sync);
+  if (acc_device_type == acc_device_host)
+    assert (prof_info->async == acc_async_sync);
+  else
+    assert (prof_info->async == acc_async);
   assert (prof_info->async_queue == prof_info->async);
   assert (prof_info->src_file == NULL);
   assert (prof_info->func_name == NULL);

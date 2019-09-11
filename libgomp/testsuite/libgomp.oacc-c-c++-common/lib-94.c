@@ -22,9 +22,9 @@ main (int argc, char **argv)
 
   acc_copyin_async (h, N, async);
 
-  memset (h, 0, N);
-
   acc_wait (async);
+
+  memset (h, 0, N);
 
   acc_copyout_async (h, N, async + 1);
 
