@@ -1,3 +1,33 @@
+2019-09-17  Julian Brown  <julian@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* libgomp-plugin.h (GOMP_OFFLOAD_openacc_async_host2dev): Update
+	prototype.
+	* libgomp.h (gomp_copy_host2dev): Update prototype.
+	* oacc-host.c (host_openacc_async_host2dev): Add ephemeral parameter.
+	* oacc-mem.c (memcpy_tofrom_device): Update call to gomp_copy_host2dev.
+	(update_dev_host): Likewise.
+	* oacc-parallel.c (GOACC_enter_exit_data): Call async versions of
+	acc_attach/acc_detach/acc_detach_finalize functions.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_openacc_async_host2dev): Add
+	ephemeral parameter.  Copy source data to temporary space immediately
+	if true, and pass to queue_push_copy.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_openacc_async_host2dev):
+	Add EPHEMERAL parameter, and FIXME function comment.
+	* target.c (goacc_device_copy_async): Remove.
+	(gomp_copy_host2dev): Add ephemeral parameter. Update function comment.
+	Call async host2dev plugin hook directly.
+	(gomp_copy_dev2host): Call async dev2host plugin hook directly.
+	(gomp_map_vars_existing, gomp_map_pointer, gomp_attach_pointer,
+	gomp_detach_pointer): Update calls to gomp_copy_host2dev.
+	(gomp_map_vars_internal): Don't use coalescing buffer for asynchronous
+	copies. Update calls to gomp_copy_host2dev.
+	(gomp_update): Update calls to gomp_copy_host2dev.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-10.c (main): Fix
+	async-safety issue. Increase number of iterations.
+	* testsuite/libgomp.oacc-fortran/lib-16.f90: Fix async-safety issue.
+	* testsuite/libgomp.oacc-fortran/lib-16-2.f90: Likewise.
+
 2019-05-20  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c: Expect

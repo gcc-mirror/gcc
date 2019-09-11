@@ -152,7 +152,8 @@ extern void GOMP_OFFLOAD_openacc_async_exec (void (*) (void *), size_t, void **,
 					     struct goacc_asyncqueue *);
 extern bool GOMP_OFFLOAD_openacc_async_dev2host (int, void *, const void *, size_t,
 						 struct goacc_asyncqueue *);
-extern bool GOMP_OFFLOAD_openacc_async_host2dev (int, void *, const void *, size_t,
+extern bool GOMP_OFFLOAD_openacc_async_host2dev (int, void *, const void *,
+						 size_t, bool,
 						 struct goacc_asyncqueue *);
 extern void *GOMP_OFFLOAD_openacc_cuda_get_current_device (void);
 extern void *GOMP_OFFLOAD_openacc_cuda_get_current_context (void);
