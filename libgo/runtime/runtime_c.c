@@ -186,6 +186,38 @@ getEnd()
   return end;
 }
 
+// Return an address that is before the read-only data section.
+// Unfortunately there is no standard symbol for this so we use a text
+// address.
+
+uintptr getText(void)
+  __asm__ (GOSYM_PREFIX "runtime.getText");
+
+uintptr
+getText(void)
+{
+  return (uintptr)(const void *)(getText);
+}
+
+// Return the end of the text segment, assumed to come after the
+// read-only data section.
+
+uintptr getEtext(void)
+  __asm__ (GOSYM_PREFIX "runtime.getEtext");
+
+uintptr
+getEtext(void)
+{
+  const void *p;
+
+  p = __data_start;
+  if (p == nil)
+    p = __etext;
+  if (p == nil)
+    p = _etext;
+  return (uintptr)(p);
+}
+
 // CPU-specific initialization.
 // Fetch CPUID info on x86.
 

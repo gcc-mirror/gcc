@@ -9,6 +9,7 @@
 package syscall
 
 import (
+	"internal/bytealg"
 	"runtime"
 	"sync"
 	"unsafe"
@@ -50,7 +51,10 @@ import (
 //sysnb	raw_execve(argv0 *byte, argv **byte, envv **byte) (err Errno)
 //execve(argv0 *byte, argv **byte, envv **byte) _C_int
 
-//sysnb	raw_write(fd int, buf *byte, count int) (err Errno)
+//sysnb raw_read(fd int, buf *byte, count int) (c int, err Errno)
+//read(fd _C_int, buf *byte, count Size_t) Ssize_t
+
+//sysnb	raw_write(fd int, buf *byte, count int) (c int, err Errno)
 //write(fd _C_int, buf *byte, count Size_t) Ssize_t
 
 //sysnb	raw_exit(status int)
@@ -132,15 +136,21 @@ func StringSlicePtr(ss []string) []*byte {
 // pointers to NUL-terminated byte arrays. If any string contains
 // a NUL byte, it returns (nil, EINVAL).
 func SlicePtrFromStrings(ss []string) ([]*byte, error) {
-	var err error
-	bb := make([]*byte, len(ss)+1)
-	for i := 0; i < len(ss); i++ {
-		bb[i], err = BytePtrFromString(ss[i])
-		if err != nil {
-			return nil, err
+	n := 0
+	for _, s := range ss {
+		if bytealg.IndexByteString(s, 0) != -1 {
+			return nil, EINVAL
 		}
+		n += len(s) + 1 // +1 for NUL
 	}
-	bb[len(ss)] = nil
+	bb := make([]*byte, len(ss)+1)
+	b := make([]byte, n)
+	n = 0
+	for i, s := range ss {
+		bb[i] = &b[n]
+		copy(b[n:], s)
+		n += len(s) + 1
+	}
 	return bb, nil
 }
 
@@ -318,7 +328,7 @@ func Exec(argv0 string, argv []string, envv []string) (err error) {
 	runtime_BeforeExec()
 
 	var err1 error
-	if runtime.GOOS == "solaris" || runtime.GOOS == "aix" || runtime.GOOS == "hurd" {
+	if runtime.GOOS == "solaris" || runtime.GOOS == "illumos" || runtime.GOOS == "aix" || runtime.GOOS == "hurd" {
 		// RawSyscall should never be used on Solaris or AIX.
 		err1 = raw_execve(argv0p, &argvp[0], &envvp[0])
 	} else if runtime.GOOS == "darwin" {

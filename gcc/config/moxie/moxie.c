@@ -264,7 +264,7 @@ moxie_compute_frame (void)
 
   /* Save callee-saved registers.  */
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (df_regs_ever_live_p (regno) && (! call_used_regs[regno]))
+    if (df_regs_ever_live_p (regno) && (! call_used_or_fixed_reg_p (regno)))
       cfun->machine->callee_saved_reg_size += 4;
 
   cfun->machine->size_for_adjusting_sp = 
@@ -288,7 +288,8 @@ moxie_expand_prologue (void)
   /* Save callee-saved registers.  */
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     {
-      if (!fixed_regs[regno] && df_regs_ever_live_p (regno) && !call_used_regs[regno])
+      if (df_regs_ever_live_p (regno)
+	  && !call_used_or_fixed_reg_p (regno))
 	{
 	  insn = emit_insn (gen_movsi_push (gen_rtx_REG (Pmode, regno)));
 	  RTX_FRAME_RELATED_P (insn) = 1;
@@ -349,7 +350,7 @@ moxie_expand_epilogue (void)
 	  emit_insn (gen_addsi3 (reg, reg, hard_frame_pointer_rtx));
 	}
       for (regno = FIRST_PSEUDO_REGISTER; regno-- > 0; )
-	if (!fixed_regs[regno] && !call_used_regs[regno]
+	if (!call_used_or_fixed_reg_p (regno)
 	    && df_regs_ever_live_p (regno))
 	  {
 	    rtx preg = gen_rtx_REG (Pmode, regno);

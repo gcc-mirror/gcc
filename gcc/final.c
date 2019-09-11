@@ -5007,18 +5007,18 @@ collect_fn_hard_reg_usage (void)
 	  && !self_recursive_call_p (insn))
 	{
 	  if (!get_call_reg_set_usage (insn, &insn_used_regs,
-				       call_used_reg_set))
+				       call_used_or_fixed_regs))
 	    return;
 
-	  IOR_HARD_REG_SET (function_used_regs, insn_used_regs);
+	  function_used_regs |= insn_used_regs;
 	}
 
       find_all_hard_reg_sets (insn, &insn_used_regs, false);
-      IOR_HARD_REG_SET (function_used_regs, insn_used_regs);
+      function_used_regs |= insn_used_regs;
     }
 
   /* Be conservative - mark fixed and global registers as used.  */
-  IOR_HARD_REG_SET (function_used_regs, fixed_reg_set);
+  function_used_regs |= fixed_reg_set;
 
 #ifdef STACK_REGS
   /* Handle STACK_REGS conservatively, since the df-framework does not
@@ -5030,13 +5030,13 @@ collect_fn_hard_reg_usage (void)
 
   /* The information we have gathered is only interesting if it exposes a
      register from the call_used_regs that is not used in this function.  */
-  if (hard_reg_set_subset_p (call_used_reg_set, function_used_regs))
+  if (hard_reg_set_subset_p (call_used_or_fixed_regs, function_used_regs))
     return;
 
   node = cgraph_node::rtl_info (current_function_decl);
   gcc_assert (node != NULL);
 
-  COPY_HARD_REG_SET (node->function_used_regs, function_used_regs);
+  node->function_used_regs = function_used_regs;
   node->function_used_regs_valid = 1;
 }
 
@@ -5090,12 +5090,11 @@ get_call_reg_set_usage (rtx_insn *insn, HARD_REG_SET *reg_set,
       if (node != NULL
 	  && node->function_used_regs_valid)
 	{
-	  COPY_HARD_REG_SET (*reg_set, node->function_used_regs);
-	  AND_HARD_REG_SET (*reg_set, default_set);
+	  *reg_set = node->function_used_regs & default_set;
 	  return true;
 	}
     }
-  COPY_HARD_REG_SET (*reg_set, default_set);
+  *reg_set = default_set;
   targetm.remove_extra_call_preserved_regs (insn, reg_set);
   return false;
 }

@@ -2661,12 +2661,9 @@ setup_id_implicit_regs (idata_t id, insn_t insn)
     return;
 
   HARD_REG_SET temp;
-  unsigned regno;
-  hard_reg_set_iterator hrsi;
 
   get_implicit_reg_pending_clobbers (&temp, insn);
-  EXECUTE_IF_SET_IN_HARD_REG_SET (temp, 0, regno, hrsi)
-    SET_REGNO_REG_SET (IDATA_REG_SETS (id), regno);
+  IOR_REG_SET_HRS (IDATA_REG_SETS (id), temp);
 }
 
 /* Setup register sets describing INSN in ID.  */

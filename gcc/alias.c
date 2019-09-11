@@ -3268,7 +3268,8 @@ memory_modified_in_insn_p (const_rtx mem, const_rtx insn)
   if (CALL_P (insn))
     return true;
   memory_modified = false;
-  note_stores (PATTERN (insn), memory_modified_1, CONST_CAST_RTX(mem));
+  note_stores (as_a<const rtx_insn *> (insn), memory_modified_1,
+	       CONST_CAST_RTX(mem));
   return memory_modified;
 }
 
@@ -3396,7 +3397,7 @@ init_alias_analysis (void)
 		      && find_reg_note (insn, REG_NOALIAS, NULL_RTX))
 		    record_set (SET_DEST (PATTERN (insn)), NULL_RTX, NULL);
 		  else
-		    note_stores (PATTERN (insn), record_set, NULL);
+		    note_stores (insn, record_set, NULL);
 
 		  set = single_set (insn);
 

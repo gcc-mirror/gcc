@@ -10636,7 +10636,7 @@ mips_global_pointer (void)
   if (TARGET_CALL_SAVED_GP && crtl->is_leaf)
     for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
       if (!df_regs_ever_live_p (regno)
-	  && call_really_used_regs[regno]
+	  && call_used_regs[regno]
 	  && !fixed_regs[regno]
 	  && regno != PIC_FUNCTION_ADDR_REGNUM)
 	return regno;
@@ -10789,7 +10789,7 @@ mips_interrupt_extra_call_saved_reg_p (unsigned int regno)
 
       /* Otherwise, return true for registers that aren't ordinarily
 	 call-clobbered.  */
-      return call_really_used_regs[regno];
+      return call_used_regs[regno];
     }
 
   return false;
@@ -10812,12 +10812,12 @@ mips_cfun_call_saved_reg_p (unsigned int regno)
     return true;
 
   /* call_insns preserve $28 unless they explicitly say otherwise,
-     so call_really_used_regs[] treats $28 as call-saved.  However,
+     so call_used_regs[] treats $28 as call-saved.  However,
      we want the ABI property rather than the default call_insn
      property here.  */
   return (regno == GLOBAL_POINTER_REGNUM
 	  ? TARGET_CALL_SAVED_GP
-	  : !call_really_used_regs[regno]);
+	  : !call_used_regs[regno]);
 }
 
 /* Return true if the function body might clobber register REGNO.
@@ -12975,13 +12975,13 @@ mips_class_max_nregs (enum reg_class rclass, machine_mode mode)
   HARD_REG_SET left;
 
   size = 0x8000;
-  COPY_HARD_REG_SET (left, reg_class_contents[(int) rclass]);
+  left = reg_class_contents[rclass];
   if (hard_reg_set_intersect_p (left, reg_class_contents[(int) ST_REGS]))
     {
       if (mips_hard_regno_mode_ok (ST_REG_FIRST, mode))
 	size = MIN (size, 4);
 
-      AND_COMPL_HARD_REG_SET (left, reg_class_contents[(int) ST_REGS]);
+      left &= ~reg_class_contents[ST_REGS];
     }
   if (hard_reg_set_intersect_p (left, reg_class_contents[(int) FP_REGS]))
     {
@@ -12993,7 +12993,7 @@ mips_class_max_nregs (enum reg_class rclass, machine_mode mode)
 	    size = MIN (size, UNITS_PER_FPREG);
 	}
 
-      AND_COMPL_HARD_REG_SET (left, reg_class_contents[(int) FP_REGS]);
+      left &= ~reg_class_contents[FP_REGS];
     }
   if (!hard_reg_set_empty_p (left))
     size = MIN (size, UNITS_PER_WORD);
@@ -14889,8 +14889,7 @@ vr4130_true_reg_dependence_p_1 (rtx x, const_rtx pat ATTRIBUTE_UNUSED,
 static bool
 vr4130_true_reg_dependence_p (rtx insn)
 {
-  note_stores (PATTERN (vr4130_last_insn),
-	       vr4130_true_reg_dependence_p_1, &insn);
+  note_stores (vr4130_last_insn, vr4130_true_reg_dependence_p_1, &insn);
   return insn == 0;
 }
 
@@ -17787,7 +17786,7 @@ r10k_needs_protection_p (rtx_insn *insn)
 
   if (mips_r10k_cache_barrier == R10K_CACHE_BARRIER_STORE)
     {
-      note_stores (PATTERN (insn), r10k_needs_protection_p_store, &insn);
+      note_stores (insn, r10k_needs_protection_p_store, &insn);
       return insn == NULL_RTX;
     }
 
@@ -18296,7 +18295,7 @@ mips_sim_issue_insn (struct mips_sim *state, rtx_insn *insn)
 						    state->insns_left);
 
   mips_sim_insn = insn;
-  note_stores (PATTERN (insn), mips_sim_record_set, state);
+  note_stores (insn, mips_sim_record_set, state);
 }
 
 /* Simulate issuing a NOP in state STATE.  */
@@ -19026,7 +19025,7 @@ mips_reorg_process_insns (void)
 			     &uses);
 		  HARD_REG_SET delay_sets;
 		  CLEAR_HARD_REG_SET (delay_sets);
-		  note_stores (PATTERN (SEQ_END (insn)), record_hard_reg_sets,
+		  note_stores (SEQ_END (insn), record_hard_reg_sets,
 			       &delay_sets);
 
 		  rtx_insn *prev = prev_active_insn (insn);
@@ -19036,8 +19035,7 @@ mips_reorg_process_insns (void)
 		    {
 		      HARD_REG_SET sets;
 		      CLEAR_HARD_REG_SET (sets);
-		      note_stores (PATTERN (prev), record_hard_reg_sets,
-				   &sets);
+		      note_stores (prev, record_hard_reg_sets, &sets);
 
 		      /* Re-order if safe.  */
 		      if (!hard_reg_set_intersect_p (delay_sets, uses)
@@ -20413,7 +20411,6 @@ mips_swap_registers (unsigned int i)
 
   SWAP_INT (fixed_regs[i], fixed_regs[i + 1]);
   SWAP_INT (call_used_regs[i], call_used_regs[i + 1]);
-  SWAP_INT (call_really_used_regs[i], call_really_used_regs[i + 1]);
   SWAP_STRING (reg_names[i], reg_names[i + 1]);
 
 #undef SWAP_STRING
@@ -20433,30 +20430,23 @@ mips_conditional_register_usage (void)
       global_regs[CCDSP_SC_REGNUM] = 1;
     }
   else
-    AND_COMPL_HARD_REG_SET (accessible_reg_set,
-			    reg_class_contents[(int) DSP_ACC_REGS]);
+    accessible_reg_set &= ~reg_class_contents[DSP_ACC_REGS];
 
   if (!ISA_HAS_HILO)
-    AND_COMPL_HARD_REG_SET (accessible_reg_set,
-			    reg_class_contents[(int) MD_REGS]);
+    accessible_reg_set &= ~reg_class_contents[MD_REGS];
 
   if (!TARGET_HARD_FLOAT)
-    {
-      AND_COMPL_HARD_REG_SET (accessible_reg_set,
-			      reg_class_contents[(int) FP_REGS]);
-      AND_COMPL_HARD_REG_SET (accessible_reg_set,
-			      reg_class_contents[(int) ST_REGS]);
-    }
+    accessible_reg_set &= ~(reg_class_contents[FP_REGS]
+			    | reg_class_contents[ST_REGS]);
   else if (!ISA_HAS_8CC)
     {
       /* We only have a single condition-code register.  We implement
 	 this by fixing all the condition-code registers and generating
 	 RTL that refers directly to ST_REG_FIRST.  */
-      AND_COMPL_HARD_REG_SET (accessible_reg_set,
-			      reg_class_contents[(int) ST_REGS]);
+      accessible_reg_set &= ~reg_class_contents[ST_REGS];
       if (!ISA_HAS_CCF)
 	SET_HARD_REG_BIT (accessible_reg_set, FPSW_REGNUM);
-      fixed_regs[FPSW_REGNUM] = call_used_regs[FPSW_REGNUM] = 1;
+      fixed_regs[FPSW_REGNUM] = 1;
     }
   if (TARGET_MIPS16)
     {
@@ -20471,39 +20461,38 @@ mips_conditional_register_usage (void)
 	 and $25 (t9) because it is used as the function call address in
 	 SVR4 PIC code.  */
 
-      fixed_regs[18] = call_used_regs[18] = 1;
-      fixed_regs[19] = call_used_regs[19] = 1;
-      fixed_regs[20] = call_used_regs[20] = 1;
-      fixed_regs[21] = call_used_regs[21] = 1;
-      fixed_regs[22] = call_used_regs[22] = 1;
-      fixed_regs[23] = call_used_regs[23] = 1;
-      fixed_regs[26] = call_used_regs[26] = 1;
-      fixed_regs[27] = call_used_regs[27] = 1;
-      fixed_regs[30] = call_used_regs[30] = 1;
+      fixed_regs[18] = 1;
+      fixed_regs[19] = 1;
+      fixed_regs[20] = 1;
+      fixed_regs[21] = 1;
+      fixed_regs[22] = 1;
+      fixed_regs[23] = 1;
+      fixed_regs[26] = 1;
+      fixed_regs[27] = 1;
+      fixed_regs[30] = 1;
       if (optimize_size)
 	{
-	  fixed_regs[8] = call_used_regs[8] = 1;
-	  fixed_regs[9] = call_used_regs[9] = 1;
-	  fixed_regs[10] = call_used_regs[10] = 1;
-	  fixed_regs[11] = call_used_regs[11] = 1;
-	  fixed_regs[12] = call_used_regs[12] = 1;
-	  fixed_regs[13] = call_used_regs[13] = 1;
-	  fixed_regs[14] = call_used_regs[14] = 1;
-	  fixed_regs[15] = call_used_regs[15] = 1;
+	  fixed_regs[8] = 1;
+	  fixed_regs[9] = 1;
+	  fixed_regs[10] = 1;
+	  fixed_regs[11] = 1;
+	  fixed_regs[12] = 1;
+	  fixed_regs[13] = 1;
+	  fixed_regs[14] = 1;
+	  fixed_regs[15] = 1;
 	}
 
       /* Do not allow HI and LO to be treated as register operands.
 	 There are no MTHI or MTLO instructions (or any real need
 	 for them) and one-way registers cannot easily be reloaded.  */
-      AND_COMPL_HARD_REG_SET (operand_reg_set,
-			      reg_class_contents[(int) MD_REGS]);
+      operand_reg_set &= ~reg_class_contents[MD_REGS];
     }
   /* $f20-$f23 are call-clobbered for n64.  */
   if (mips_abi == ABI_64)
     {
       int regno;
       for (regno = FP_REG_FIRST + 20; regno < FP_REG_FIRST + 24; regno++)
-	call_really_used_regs[regno] = call_used_regs[regno] = 1;
+	call_used_regs[regno] = 1;
     }
   /* Odd registers in the range $f21-$f31 (inclusive) are call-clobbered
      for n32 and o32 FP64.  */
@@ -20513,7 +20502,7 @@ mips_conditional_register_usage (void)
     {
       int regno;
       for (regno = FP_REG_FIRST + 21; regno <= FP_REG_FIRST + 31; regno+=2)
-	call_really_used_regs[regno] = call_used_regs[regno] = 1;
+	call_used_regs[regno] = 1;
     }
   /* Make sure that double-register accumulator values are correctly
      ordered for the current endianness.  */

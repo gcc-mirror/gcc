@@ -14,9 +14,6 @@
 # - defaultphyspagesize: the default physical page size in bytes
 #	(not currently used, but maybe some day)
 # - family: the processor family, from ALLGOARCHFAMILY in configure.ac
-# - hugepagesize: size of a huge page in bytes
-#	(used only to decide when to use madvise with MADV_[NO]HUGEPAGE)
-#	(set to 0 if there are no huge pages)
 # - int64align: alignment of int64 type in bytes
 # - maxalign: maximum alignment of values of Go types in bytes
 # - minframesize: size of smallest possible function frame in bytes
@@ -37,7 +34,6 @@ bigendian=false
 cachelinesize=64
 defaultphyspagesize=4096
 family=unknown
-hugepagesize=0
 int64align=8
 maxalign=8
 minframesize=0
@@ -47,7 +43,6 @@ ptrsize=8
 case $goarch in
     386)
 	family=I386
-	hugepagesize="1 << 21"
 	int64align=4
 	maxalign=4
 	ptrsize=4
@@ -59,11 +54,9 @@ case $goarch in
 	;;
     amd64)
 	family=AMD64
-	hugepagesize="1 << 21"
 	;;
     amd64p32)
 	family=AMD64
-	hugepagesize="1 << 21"
 	ptrsize=4
 	;;
     arm | armbe)
@@ -235,9 +228,6 @@ case $keyword in
 	;;
     family)
 	echo $family
-	;;
-    hugepagesize)
-	echo $hugepagesize
 	;;
     int64align)
 	echo $int64align

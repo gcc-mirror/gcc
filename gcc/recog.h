@@ -142,7 +142,7 @@ extern void preprocess_constraints (rtx_insn *);
 extern rtx_insn *peep2_next_insn (int);
 extern int peep2_regno_dead_p (int, int);
 extern int peep2_reg_dead_p (int, rtx);
-#ifdef CLEAR_HARD_REG_SET
+#ifdef HARD_CONST
 extern rtx peep2_find_free_register (int, int, const char *,
 				     machine_mode, HARD_REG_SET *);
 #endif

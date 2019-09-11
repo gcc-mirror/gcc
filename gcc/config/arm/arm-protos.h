@@ -139,6 +139,7 @@ extern int arm_max_const_double_inline_cost (void);
 extern int arm_const_double_inline_cost (rtx);
 extern bool arm_const_double_by_parts (rtx);
 extern bool arm_const_double_by_immediates (rtx);
+extern rtx arm_load_function_descriptor (rtx funcdesc);
 extern void arm_emit_call_insn (rtx, rtx, bool);
 bool detect_cmse_nonsecure_call (tree);
 extern const char *output_call (rtx *);

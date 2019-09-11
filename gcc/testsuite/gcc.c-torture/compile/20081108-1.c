@@ -1,3 +1,5 @@
+/* { dg-require-effective-target indirect_calls } */
+
 /* Test function call with function designator involving VLA
    side-effects does not lead to an ICE.  */
 

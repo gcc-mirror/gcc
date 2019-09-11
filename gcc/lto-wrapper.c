@@ -247,7 +247,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	{
 	case OPT_SPECIAL_unknown:
 	case OPT_SPECIAL_ignore:
-	case OPT_SPECIAL_deprecated:
+	case OPT_SPECIAL_warn_removed:
 	case OPT_SPECIAL_program_name:
 	case OPT_SPECIAL_input_file:
 	  break;

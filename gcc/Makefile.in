@@ -1241,7 +1241,6 @@ OBJS = \
 	auto-profile.o \
 	bb-reorder.o \
 	bitmap.o \
-	bt-load.o \
 	builtins.o \
 	caller-save.o \
 	calls.o \

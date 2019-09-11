@@ -69,7 +69,7 @@ func runVet(cmd *base.Command, args []string) {
 
 	root := &work.Action{Mode: "go vet"}
 	for _, p := range pkgs {
-		_, ptest, pxtest, err := load.GetTestPackagesFor(p, nil)
+		_, ptest, pxtest, err := load.TestPackagesFor(p, nil)
 		if err != nil {
 			base.Errorf("%v", err)
 			continue

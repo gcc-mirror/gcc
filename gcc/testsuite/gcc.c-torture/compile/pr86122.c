@@ -1,4 +1,5 @@
 /* PR middle-end/86122 */
+/* { dg-skip-if "exceeds eBPF stack limit" { bpf-*-* } } */
 
 _Complex int
 foo (_Complex int x)

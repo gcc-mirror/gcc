@@ -2713,13 +2713,8 @@ determine_visibility_from_class (tree decl, tree class_type)
   /* Give the target a chance to override the visibility associated
      with DECL.  */
   if (VAR_P (decl)
-      && (DECL_TINFO_P (decl)
-	  || (DECL_VTABLE_OR_VTT_P (decl)
-	      /* Construction virtual tables are not exported because
-		 they cannot be referred to from other object files;
-		 their name is not standardized by the ABI.  */
-	      && !DECL_CONSTRUCTION_VTABLE_P (decl)))
       && TREE_PUBLIC (decl)
+      && (DECL_TINFO_P (decl) || DECL_VTABLE_OR_VTT_P (decl))
       && !DECL_REALLY_EXTERN (decl)
       && !CLASSTYPE_VISIBILITY_SPECIFIED (class_type))
     targetm.cxx.determine_class_data_visibility (decl);

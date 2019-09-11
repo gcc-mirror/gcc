@@ -1610,7 +1610,7 @@ struct processor_costs skylake_cost = {
 					   in 32,64,128,256 and 512-bit */
   {8, 8, 8, 12, 24},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
-  2, 2,					/* SSE->integer and integer->SSE moves */
+  6, 6,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
   },
 
@@ -2555,7 +2555,7 @@ struct processor_costs core_cost = {
 					   in 32,64,128,256 and 512-bit */
   {6, 6, 6, 6, 12},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
-  2, 2,					/* SSE->integer and integer->SSE moves */
+  6, 6,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
   },
 

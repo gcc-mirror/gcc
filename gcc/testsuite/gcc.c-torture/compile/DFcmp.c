@@ -1,4 +1,6 @@
 /* { dg-require-effective-target int32plus } */
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+
 #define type double
 
 type glob0, glob1;

@@ -2416,7 +2416,7 @@ static bool
 sets_likely_spilled (rtx pat)
 {
   bool ret = false;
-  note_stores (pat, sets_likely_spilled_1, &ret);
+  note_pattern_stores (pat, sets_likely_spilled_1, &ret);
   return ret;
 }
 

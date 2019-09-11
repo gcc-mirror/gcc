@@ -1970,16 +1970,10 @@ simplify_using_initial_values (class loop *loop, enum rtx_code op, rtx *expr)
 	    continue;
 
 	  CLEAR_REG_SET (this_altered);
-	  note_stores (PATTERN (insn), mark_altered, this_altered);
+	  note_stores (insn, mark_altered, this_altered);
 	  if (CALL_P (insn))
-	    {
-	      /* Kill all call clobbered registers.  */
-	      unsigned int i;
-	      hard_reg_set_iterator hrsi;
-	      EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call,
-					      0, i, hrsi)
-		SET_REGNO_REG_SET (this_altered, i);
-	    }
+	    /* Kill all call clobbered registers.  */
+	    IOR_REG_SET_HRS (this_altered, regs_invalidated_by_call);
 
 	  if (suitable_set_for_replacement (insn, &dest, &src))
 	    {

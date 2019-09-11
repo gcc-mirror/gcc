@@ -1670,6 +1670,9 @@ class String_expression : public Expression
   do_import(Import_expression*, Location);
 
  protected:
+  int
+  do_traverse(Traverse*);
+
   bool
   do_is_constant() const
   { return true; }

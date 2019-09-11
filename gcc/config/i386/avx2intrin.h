@@ -258,7 +258,7 @@ extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_cmpgt_epi8 (__m256i __A, __m256i __B)
 {
-  return (__m256i) ((__v32qi)__A > (__v32qi)__B);
+  return (__m256i) ((__v32qs)__A > (__v32qs)__B);
 }
 
 extern __inline __m256i

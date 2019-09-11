@@ -316,7 +316,7 @@ calc_live_regs (int * count)
 
   for (reg = 0; reg < FIRST_PSEUDO_REGISTER; reg++)
     {
-      if (df_regs_ever_live_p (reg) && !call_used_regs[reg])
+      if (df_regs_ever_live_p (reg) && !call_used_or_fixed_reg_p (reg))
 	{
 	  (*count)++;
 	  live_regs_mask |= (1 << reg);

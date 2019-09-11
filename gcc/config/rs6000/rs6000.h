@@ -882,31 +882,6 @@ enum data_align { align_abi, align_opt, align_both };
    1, 1, 1					   \
 }
 
-/* 1 for registers not available across function calls.
-   These must include the FIXED_REGISTERS and also any
-   registers that can be used without being saved.
-   The latter must include the registers where values are returned
-   and the register where structure-value addresses are passed.
-   Aside from that, you can include as many other registers as you like.  */
-
-#define CALL_USED_REGISTERS  \
-  {/* GPRs */					   \
-   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, FIXED_R13, 0, 0, \
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-   /* FPRs */					   \
-   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, \
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-   /* VRs */					   \
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-   /* lr ctr ca ap */				   \
-   1, 1, 1, 1,					   \
-   /* cr0..cr7 */				   \
-   1, 1, 0, 0, 0, 1, 1, 1,			   \
-   /* vrsave vscr sfp */			   \
-   1, 1, 1					   \
-}
-
 /* Like `CALL_USED_REGISTERS' except this macro doesn't require that
    the entire set of `FIXED_REGISTERS' be included.
    (`CALL_USED_REGISTERS' must be a superset of `FIXED_REGISTERS').

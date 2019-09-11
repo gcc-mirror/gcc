@@ -16,23 +16,34 @@ runtime_throw(const char *s)
 void
 runtime_panicstring(const char *s)
 {
-	M* mp;
+	G *gp;
 	Eface err;
 
-	mp = runtime_m();
-	if (mp != nil) {
-		if(mp->mallocing) {
-			runtime_printf("panic: %s\n", s);
-			runtime_throw("panic during malloc");
-		}
-		if(mp->gcing) {
-			runtime_printf("panic: %s\n", s);
-			runtime_throw("panic during gc");
-		}
-		if(mp->locks) {
-			runtime_printf("panic: %s\n", s);
-			runtime_throw("panic holding locks");
-		}
+	gp = runtime_g();
+	if (gp == nil) {
+		runtime_printf("panic: %s\n", s);
+		runtime_throw("panic with no g");
+	}
+	if (gp->m == nil) {
+		runtime_printf("panic: %s\n", s);
+		runtime_throw("panic with no m");
+	}
+	if (gp->m->curg != gp) {
+		runtime_printf("panic: %s\n", s);
+		runtime_throw("panic on system stack");
+	}
+	if (gp->m->mallocing != 0) {
+		runtime_printf("panic: %s\n", s);
+		runtime_throw("panic during malloc");
+	}
+	if (gp->m->preemptoff.len != 0) {
+		runtime_printf("panic: %s\n", s);
+		runtime_printf("preempt off reason: %S\n", gp->m->preemptoff);
+		runtime_throw("panic during preemptoff");
+	}
+	if (gp->m->locks != 0) {
+		runtime_printf("panic: %s\n", s);
+		runtime_throw("panic holding locks");
 	}
 	runtime_newErrorCString((uintptr) s, &err);
 	runtime_panic(err);

@@ -25,11 +25,62 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Kernel helper for compare-and-exchange.  */
 typedef int (__kernel_cmpxchg_t) (int oldval, int newval, int *ptr);
-#define __kernel_cmpxchg (*(__kernel_cmpxchg_t *) 0xffff0fc0)
+
+#define STR(X) #X
+#define XSTR(X) STR(X)
+
+#define KERNEL_CMPXCHG 0xffff0fc0
+
+#if __FDPIC__
+/* Non-FDPIC ABIs call __kernel_cmpxchg directly by dereferencing its
+   address, but under FDPIC we would generate a broken call
+   sequence. That's why we have to implement __kernel_cmpxchg and
+   __kernel_dmb here: this way, the FDPIC call sequence works.  */
+#define __kernel_cmpxchg __fdpic_cmpxchg
+#else
+#define __kernel_cmpxchg (*(__kernel_cmpxchg_t *) KERNEL_CMPXCHG)
+#endif
 
 /* Kernel helper for memory barrier.  */
 typedef void (__kernel_dmb_t) (void);
-#define __kernel_dmb (*(__kernel_dmb_t *) 0xffff0fa0)
+
+#define KERNEL_DMB 0xffff0fa0
+
+#if __FDPIC__
+#define __kernel_dmb __fdpic_dmb
+#else
+#define __kernel_dmb (*(__kernel_dmb_t *) KERNEL_DMB)
+#endif
+
+#if __FDPIC__
+static int __fdpic_cmpxchg (int oldval, int newval, int *ptr)
+{
+  int result;
+
+  asm volatile (
+		"ldr    ip, 1f\n\t"
+		"bx     ip\n\t"
+		"1:\n\t"
+		".word " XSTR(KERNEL_CMPXCHG) "\n\t"
+		: "=r" (result)
+		: "r" (oldval) , "r" (newval), "r" (ptr)
+		: "r3", "memory");
+  /* The result is actually returned by the kernel helper, we need
+     this to avoid a warning.  */
+  return result;
+}
+
+static void __fdpic_dmb (void)
+{
+  asm volatile (
+		"ldr    ip, 1f\n\t"
+		"bx     ip\n\t"
+		"1:\n\t"
+		".word " XSTR(KERNEL_DMB) "\n\t"
+		);
+}
+
+#endif
 
 /* Note: we implement byte, short and int versions of atomic operations using
    the above kernel helpers; see linux-atomic-64bit.c for "long long" (64-bit)

@@ -1812,6 +1812,9 @@ class Boolean_expression : public Expression
   do_import(Import_expression*, Location);
 
  protected:
+  int
+  do_traverse(Traverse*);
+
   bool
   do_is_constant() const
   { return true; }
@@ -1864,6 +1867,17 @@ class Boolean_expression : public Expression
   Type* type_;
 };
 
+// Traverse a boolean expression.  We just need to traverse the type
+// if there is one.
+
+int
+Boolean_expression::do_traverse(Traverse* traverse)
+{
+  if (this->type_ != NULL)
+    return Type::traverse(this->type_, traverse);
+  return TRAVERSE_CONTINUE;
+}
+
 // Get the type.
 
 Type*
@@ -1915,6 +1929,17 @@ Expression::make_boolean(bool val, Location location)
 }
 
 // Class String_expression.
+
+// Traverse a string expression.  We just need to traverse the type
+// if there is one.
+
+int
+String_expression::do_traverse(Traverse* traverse)
+{
+  if (this->type_ != NULL)
+    return Type::traverse(this->type_, traverse);
+  return TRAVERSE_CONTINUE;
+}
 
 // Get the type.
 
@@ -2290,6 +2315,9 @@ class Integer_expression : public Expression
   dump_integer(Ast_dump_context* ast_dump_context, const mpz_t val);
 
  protected:
+  int
+  do_traverse(Traverse*);
+
   bool
   do_is_constant() const
   { return true; }
@@ -2352,6 +2380,17 @@ class Integer_expression : public Expression
   // Whether this is a character constant.
   bool is_character_constant_;
 };
+
+// Traverse an integer expression.  We just need to traverse the type
+// if there is one.
+
+int
+Integer_expression::do_traverse(Traverse* traverse)
+{
+  if (this->type_ != NULL)
+    return Type::traverse(this->type_, traverse);
+  return TRAVERSE_CONTINUE;
+}
 
 // Return a numeric constant for this expression.  We have to mark
 // this as a character when appropriate.
@@ -2714,6 +2753,9 @@ class Float_expression : public Expression
   dump_float(Ast_dump_context* ast_dump_context, const mpfr_t val);
 
  protected:
+  int
+  do_traverse(Traverse*);
+
   bool
   do_is_constant() const
   { return true; }
@@ -2772,6 +2814,17 @@ class Float_expression : public Expression
   // The type so far.
   Type* type_;
 };
+
+// Traverse a float expression.  We just need to traverse the type if
+// there is one.
+
+int
+Float_expression::do_traverse(Traverse* traverse)
+{
+  if (this->type_ != NULL)
+    return Type::traverse(this->type_, traverse);
+  return TRAVERSE_CONTINUE;
+}
 
 // Return the current type.  If we haven't set the type yet, we return
 // an abstract float type.
@@ -2932,6 +2985,9 @@ class Complex_expression : public Expression
   dump_complex(Ast_dump_context* ast_dump_context, const mpc_t val);
 
  protected:
+  int
+  do_traverse(Traverse*);
+
   bool
   do_is_constant() const
   { return true; }
@@ -2994,6 +3050,17 @@ class Complex_expression : public Expression
   // The type if known.
   Type* type_;
 };
+
+// Traverse a complex expression.  We just need to traverse the type
+// if there is one.
+
+int
+Complex_expression::do_traverse(Traverse* traverse)
+{
+  if (this->type_ != NULL)
+    return Type::traverse(this->type_, traverse);
+  return TRAVERSE_CONTINUE;
+}
 
 // Return the current type.  If we haven't set the type yet, we return
 // an abstract complex type.
@@ -3215,6 +3282,10 @@ class Const_expression : public Expression
 
   Bexpression*
   do_get_backend(Translate_context* context);
+
+  int
+  do_inlining_cost() const
+  { return 1; }
 
   // When exporting a reference to a const as part of a const
   // expression, we export the value.  We ignore the fact that it has

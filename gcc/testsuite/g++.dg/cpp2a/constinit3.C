@@ -31,8 +31,8 @@ int
 fn1 ()
 {
   // Not static storage
-  constinit int a1 = 42; // { dg-error ".constinit. can only be applied to a variable with static or thread storage" }
-  constinit int a2 = 42; // { dg-error ".constinit. can only be applied to a variable with static or thread storage" }
+  constinit int a1 = 42; // { dg-error "17:.constinit. can only be applied to a variable with static or thread storage" }
+  constinit int a2 = 42; // { dg-error "17:.constinit. can only be applied to a variable with static or thread storage" }
   extern constinit int e1;
 
   return 0;
@@ -46,7 +46,7 @@ fn3 ()
 void
 fn2 (int i, constinit int p) // { dg-error "a parameter cannot be declared .constinit." }
 {
-  constinit auto l = [i](){ return i; }; // { dg-error ".constinit. can only be applied to a variable with static or thread storage" }
+  constinit auto l = [i](){ return i; }; // { dg-error "18:.constinit. can only be applied to a variable with static or thread storage" }
 }
 
 struct B { int d; };

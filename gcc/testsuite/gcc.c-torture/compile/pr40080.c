@@ -1,3 +1,5 @@
+/* { dg-require-effective-target indirect_calls } */
+
 extern void *ff(void*,int);
 
 struct lpgl { struct lpgl *next; };

@@ -2597,38 +2597,6 @@ DEFHOOK
  bool, (const rtx_insn *follower, const rtx_insn *followee),
  hook_bool_const_rtx_insn_const_rtx_insn_true)
 
-/* Return a register class for which branch target register
-   optimizations should be applied.  */
-DEFHOOK
-(branch_target_register_class,
- "This target hook returns a register class for which branch target register\n\
-optimizations should be applied.  All registers in this class should be\n\
-usable interchangeably.  After reload, registers in this class will be\n\
-re-allocated and loads will be hoisted out of loops and be subjected\n\
-to inter-block scheduling.",
- reg_class_t, (void),
- default_branch_target_register_class)
-
-/* Return true if branch target register optimizations should include
-   callee-saved registers that are not already live during the current
-   function.  AFTER_PE_GEN is true if prologues and epilogues have
-   already been generated.  */
-DEFHOOK
-(branch_target_register_callee_saved,
- "Branch target register optimization will by default exclude callee-saved\n\
-registers\n\
-that are not already live during the current function; if this target hook\n\
-returns true, they will be included.  The target code must than make sure\n\
-that all target registers in the class returned by\n\
-@samp{TARGET_BRANCH_TARGET_REGISTER_CLASS} that might need saving are\n\
-saved.  @var{after_prologue_epilogue_gen} indicates if prologues and\n\
-epilogues have already been generated.  Note, even if you only return\n\
-true when @var{after_prologue_epilogue_gen} is false, you still are likely\n\
-to have to make special provisions in @code{INITIAL_ELIMINATION_OFFSET}\n\
-to reserve space for caller-saved target registers.",
- bool, (bool after_prologue_epilogue_gen),
- hook_bool_bool_false)
-
 /* Return true if the target supports conditional execution.  */
 DEFHOOK
 (have_conditional_execution,

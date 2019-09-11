@@ -1089,7 +1089,7 @@ spill_pseudos (HARD_REG_SET set)
 	reg_renumber[i] = -1;
 	bitmap_ior_into (&to_process, &lra_reg_info[i].insn_bitmap);
       }
-  IOR_HARD_REG_SET (lra_no_alloc_regs, set);
+  lra_no_alloc_regs |= set;
   for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
     if (bitmap_bit_p (&to_process, INSN_UID (insn)))
       {
@@ -1202,8 +1202,8 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
 	    result = true;
 	  }
       }
-  IOR_HARD_REG_SET (lra_no_alloc_regs, temp_hard_reg_set);
-  AND_COMPL_HARD_REG_SET (eliminable_regset, temp_hard_reg_set);
+  lra_no_alloc_regs |= temp_hard_reg_set;
+  eliminable_regset &= ~temp_hard_reg_set;
   spill_pseudos (temp_hard_reg_set);
   return result;
 }

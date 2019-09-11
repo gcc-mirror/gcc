@@ -7207,7 +7207,7 @@ alloc_global_sched_pressure_data (void)
 	  fixed_regs_num[cl] = 0;
 
 	  for (int i = 0; i < ira_class_hard_regs_num[cl]; ++i)
-	    if (!call_used_regs[ira_class_hard_regs[cl][i]])
+	    if (!call_used_or_fixed_reg_p (ira_class_hard_regs[cl][i]))
 	      ++call_saved_regs_num[cl];
 	    else if (fixed_regs[ira_class_hard_regs[cl][i]])
 	      ++fixed_regs_num[cl];

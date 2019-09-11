@@ -2203,9 +2203,9 @@ init_insn_reg_pressure_info (rtx_insn *insn)
       reg_pressure_info[cl].change = 0;
     }
 
-  note_stores (PATTERN (insn), mark_insn_reg_clobber, insn);
+  note_stores (insn, mark_insn_reg_clobber, insn);
 
-  note_stores (PATTERN (insn), mark_insn_reg_store, insn);
+  note_stores (insn, mark_insn_reg_store, insn);
 
   if (AUTO_INC_DEC)
     for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
@@ -2885,7 +2885,7 @@ get_implicit_reg_pending_clobbers (HARD_REG_SET *temp, rtx_insn *insn)
   preprocess_constraints (insn);
   alternative_mask preferred = get_preferred_alternatives (insn);
   ira_implicitly_set_insn_hard_regs (temp, preferred);
-  AND_COMPL_HARD_REG_SET (*temp, ira_no_alloc_regs);
+  *temp &= ~ira_no_alloc_regs;
 }
 
 /* Analyze an INSN with pattern X to find all dependencies.  */
@@ -2901,7 +2901,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
     {
       HARD_REG_SET temp;
       get_implicit_reg_pending_clobbers (&temp, insn);
-      IOR_HARD_REG_SET (implicit_reg_pending_clobbers, temp);
+      implicit_reg_pending_clobbers |= temp;
     }
 
   can_start_lhs_rhs_p = (NONJUMP_INSN_P (insn)
@@ -3332,10 +3332,9 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
       IOR_REG_SET (&deps->reg_last_in_use, reg_pending_uses);
       IOR_REG_SET (&deps->reg_last_in_use, reg_pending_clobbers);
       IOR_REG_SET (&deps->reg_last_in_use, reg_pending_sets);
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (TEST_HARD_REG_BIT (implicit_reg_pending_uses, i)
-	    || TEST_HARD_REG_BIT (implicit_reg_pending_clobbers, i))
-	  SET_REGNO_REG_SET (&deps->reg_last_in_use, i);
+      IOR_REG_SET_HRS (&deps->reg_last_in_use,
+		       implicit_reg_pending_uses
+		       | implicit_reg_pending_clobbers);
 
       /* Set up the pending barrier found.  */
       deps->last_reg_pending_barrier = reg_pending_barrier;

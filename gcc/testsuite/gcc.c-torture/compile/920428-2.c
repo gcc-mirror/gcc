@@ -1,3 +1,5 @@
+/* { dg-require-effective-target indirect_calls } */
+
 double sin(double x);
 double cos(double x);
 double tan(double x);

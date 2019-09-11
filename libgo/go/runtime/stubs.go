@@ -240,28 +240,6 @@ func asmcgocall(fn, arg unsafe.Pointer) int32 {
 	return 0
 }
 
-// argp used in Defer structs when there is no argp.
-const _NoArgs = ^uintptr(0)
-
-//extern __builtin_prefetch
-func prefetch(addr unsafe.Pointer, rw int32, locality int32)
-
-func prefetcht0(addr uintptr) {
-	prefetch(unsafe.Pointer(addr), 0, 3)
-}
-
-func prefetcht1(addr uintptr) {
-	prefetch(unsafe.Pointer(addr), 0, 2)
-}
-
-func prefetcht2(addr uintptr) {
-	prefetch(unsafe.Pointer(addr), 0, 1)
-}
-
-func prefetchnta(addr uintptr) {
-	prefetch(unsafe.Pointer(addr), 0, 0)
-}
-
 // round n up to a multiple of a.  a must be a power of 2.
 func round(n, a uintptr) uintptr {
 	return (n + a - 1) &^ (a - 1)

@@ -1,4 +1,4 @@
-/* { dg-do compile { target nonpic } } */
+/* { dg-do compile { target { nonpic || pie_enabled } } } */
 /* { dg-options "-O2 -Wsuggest-attribute=const -fno-finite-loops" } */
 
 extern int extern_const(int a) __attribute__ ((const));

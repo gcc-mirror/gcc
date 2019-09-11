@@ -127,7 +127,7 @@ config_path="$ARCH posix generic"
 
 # Other system configury
 case "${target}" in
-  *-*-linux*)
+  *-*-linux* | *-*-uclinux*)
 	if test "$enable_linux_futex" = yes; then
 	  config_path="linux/$ARCH linux $config_path"
 	fi

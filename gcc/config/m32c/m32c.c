@@ -341,8 +341,7 @@ reduce_class (reg_class_t original_class, reg_class_t limiting_class,
   if (original_class == limiting_class)
     return original_class;
 
-  cc = reg_class_contents[original_class];
-  AND_HARD_REG_SET (cc, reg_class_contents[limiting_class]);
+  cc = reg_class_contents[original_class] & reg_class_contents[limiting_class];
 
   for (i = 0; i < LIM_REG_CLASSES; i++)
     {
@@ -1115,7 +1114,7 @@ need_to_save (int regno)
 	  ))
     return 1;
   if (df_regs_ever_live_p (regno)
-      && (!call_used_regs[regno] || cfun->machine->is_interrupt))
+      && (!call_used_or_fixed_reg_p (regno) || cfun->machine->is_interrupt))
     return 1;
   return 0;
 }
@@ -2152,8 +2151,7 @@ m32c_register_move_cost (machine_mode mode, reg_class_t from,
   HARD_REG_SET cc;
 
 /* FIXME: pick real values, but not 2 for now.  */
-  COPY_HARD_REG_SET (cc, reg_class_contents[(int) from]);
-  IOR_HARD_REG_SET (cc, reg_class_contents[(int) to]);
+  cc = reg_class_contents[from] | reg_class_contents[(int) to];
 
   if (mode == QImode
       && hard_reg_set_intersect_p (cc, reg_class_contents[R23_REGS]))

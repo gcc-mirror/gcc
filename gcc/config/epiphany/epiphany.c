@@ -434,7 +434,7 @@ epiphany_init_reg_tables (void)
 	epiphany_regno_reg_class[i] = LR_REGS;
       else if (i <= 7 && TARGET_PREFER_SHORT_INSN_REGS)
 	epiphany_regno_reg_class[i] = SHORT_INSN_REGS;
-      else if (call_used_regs[i]
+      else if (call_used_or_fixed_reg_p (i)
 	       && TEST_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], i))
 	epiphany_regno_reg_class[i] = SIBCALL_REGS;
       else if (i >= CORE_CONTROL_FIRST && i <= CORE_CONTROL_LAST)
@@ -1066,8 +1066,8 @@ epiphany_compute_function_type (tree decl)
 #define MUST_SAVE_REGISTER(regno, interrupt_p) \
   ((df_regs_ever_live_p (regno) \
     || (interrupt_p && !crtl->is_leaf \
-	&& call_used_regs[regno] && !fixed_regs[regno])) \
-   && (!call_used_regs[regno] || regno == GPR_LR \
+	&& call_used_or_fixed_reg_p (regno) && !fixed_regs[regno])) \
+   && (!call_used_or_fixed_reg_p (regno) || regno == GPR_LR \
        || (interrupt_p && regno != GPR_SP)))
 
 #define MUST_SAVE_RETURN_ADDR 0
@@ -1248,7 +1248,7 @@ epiphany_compute_frame_size (int size /* # of var. bytes allocated.  */)
   current_frame_info.var_size     = var_size;
   current_frame_info.args_size    = args_size;
   current_frame_info.reg_size	  = reg_size;
-  COPY_HARD_REG_SET (current_frame_info.gmask, gmask);
+  current_frame_info.gmask	  = gmask;
   current_frame_info.first_slot		= first_slot;
   current_frame_info.last_slot		= last_slot;
   current_frame_info.first_slot_offset	= first_slot_offset;
@@ -2240,10 +2240,9 @@ epiphany_conditional_register_usage (void)
     }
   if (!TARGET_PREFER_SHORT_INSN_REGS)
     CLEAR_HARD_REG_SET (reg_class_contents[SHORT_INSN_REGS]);
-  COPY_HARD_REG_SET (reg_class_contents[SIBCALL_REGS],
-		     reg_class_contents[GENERAL_REGS]);
+  reg_class_contents[SIBCALL_REGS] = reg_class_contents[GENERAL_REGS];
   /* It would be simpler and quicker if we could just use
-     AND_COMPL_HARD_REG_SET, alas, call_used_reg_set is yet uninitialized;
+     &~, alas, call_used_or_fixed_regs is yet uninitialized;
      it is set up later by our caller.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (!call_used_regs[i])
@@ -2893,8 +2892,8 @@ epiphany_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 
   assemble_start_function (thunk, fnname);
   /* We use IP and R16 as a scratch registers.  */
-  gcc_assert (call_used_regs [GPR_IP]);
-  gcc_assert (call_used_regs [GPR_16]);
+  gcc_assert (call_used_or_fixed_reg_p (GPR_IP));
+  gcc_assert (call_used_or_fixed_reg_p (GPR_16));
 
   /* Add DELTA.  When possible use a plain add, otherwise load it into
      a register first. */
@@ -3000,7 +2999,7 @@ epiphany_start_function (FILE *file, const char *name, tree decl)
 	    fputs ("\tstrd r0,[sp,-1]\n", file);
 	  else
 	    tmp = GPR_16;
-	  gcc_assert (call_used_regs[tmp]);
+	  gcc_assert (call_used_or_fixed_reg_p (tmp));
 	  fprintf (file, "\tmov r%d,%%low(", tmp);
 	  assemble_name (file, dst_name);
 	  fprintf (file, ")\n"

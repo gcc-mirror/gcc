@@ -24,7 +24,7 @@
 int
 main()
 {
-  std::span<int, std::dynamic_extent> myspan((int*)nullptr, 0ul);
+  std::span<int, std::dynamic_extent> myspan((int*)nullptr, (std::size_t)0);
   std::get<0>(myspan); // { dg-error "here" }
 }
 // { dg-error "static assertion failed" "" { target *-*-* } 0 }

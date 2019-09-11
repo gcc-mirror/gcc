@@ -31,6 +31,7 @@
   [(R0_REGNUM         0)	; First CORE register
    (R1_REGNUM	      1)	; Second CORE register
    (R4_REGNUM	      4)	; Fifth CORE register
+   (FDPIC_REGNUM      9)	; FDPIC register
    (IP_REGNUM	     12)	; Scratch register
    (SP_REGNUM	     13)	; Stack pointer
    (LR_REGNUM        14)	; Return address register
@@ -7601,6 +7602,11 @@
 	: !REG_P (callee))
       XEXP (operands[0], 0) = force_reg (Pmode, callee);
 
+    if (TARGET_FDPIC && !SYMBOL_REF_P (XEXP (operands[0], 0)))
+	/* Indirect call: set r9 with FDPIC value of callee.  */
+	XEXP (operands[0], 0)
+	  = arm_load_function_descriptor (XEXP (operands[0], 0));
+
     if (detect_cmse_nonsecure_call (addr))
       {
 	pat = gen_nonsecure_call_internal (operands[0], operands[1],
@@ -7612,8 +7618,31 @@
 	pat = gen_call_internal (operands[0], operands[1], operands[2]);
 	arm_emit_call_insn (pat, XEXP (operands[0], 0), false);
       }
+
+    /* Restore FDPIC register (r9) after call.  */
+    if (TARGET_FDPIC)
+      {
+	rtx fdpic_reg = gen_rtx_REG (Pmode, FDPIC_REGNUM);
+	rtx initial_fdpic_reg
+	    = get_hard_reg_initial_val (Pmode, FDPIC_REGNUM);
+
+	emit_insn (gen_restore_pic_register_after_call (fdpic_reg,
+							initial_fdpic_reg));
+      }
+
     DONE;
   }"
+)
+
+(define_insn "restore_pic_register_after_call"
+  [(set (match_operand:SI 0 "s_register_operand" "+r,r")
+        (unspec:SI [(match_dup 0)
+                    (match_operand:SI 1 "nonimmediate_operand" "r,m")]
+                   UNSPEC_PIC_RESTORE))]
+  ""
+  "@
+  mov\t%0, %1
+  ldr\t%0, %1"
 )
 
 (define_expand "call_internal"
@@ -7689,6 +7718,11 @@
 	: !REG_P (callee))
       XEXP (operands[1], 0) = force_reg (Pmode, callee);
 
+    if (TARGET_FDPIC && !SYMBOL_REF_P (XEXP (operands[1], 0)))
+	/* Indirect call: set r9 with FDPIC value of callee.  */
+	XEXP (operands[1], 0)
+	  = arm_load_function_descriptor (XEXP (operands[1], 0));
+
     if (detect_cmse_nonsecure_call (addr))
       {
 	pat = gen_nonsecure_call_value_internal (operands[0], operands[1],
@@ -7701,6 +7735,18 @@
 				       operands[2], operands[3]);
 	arm_emit_call_insn (pat, XEXP (operands[1], 0), false);
       }
+
+    /* Restore FDPIC register (r9) after call.  */
+    if (TARGET_FDPIC)
+      {
+	rtx fdpic_reg = gen_rtx_REG (Pmode, FDPIC_REGNUM);
+	rtx initial_fdpic_reg
+	    = get_hard_reg_initial_val (Pmode, FDPIC_REGNUM);
+
+	emit_insn (gen_restore_pic_register_after_call (fdpic_reg,
+							initial_fdpic_reg));
+      }
+
     DONE;
   }"
 )
@@ -8043,7 +8089,7 @@
 		    (const_int 0))
 	      (match_operand 1 "" "")
 	      (match_operand 2 "" "")])]
-  "TARGET_EITHER"
+  "TARGET_EITHER && !TARGET_FDPIC"
   "
   {
     int i;
@@ -8110,7 +8156,7 @@
 (define_expand "untyped_return"
   [(match_operand:BLK 0 "memory_operand")
    (match_operand 1 "" "")]
-  "TARGET_EITHER"
+  "TARGET_EITHER && !TARGET_FDPIC"
   "
   {
     int i;
@@ -8224,8 +8270,15 @@
 {
   if (flag_pic)
     {
+      rtx pic_reg;
+
+      if (TARGET_FDPIC)
+	  pic_reg = gen_rtx_REG (Pmode, FDPIC_REGNUM);
+      else
+	  pic_reg = operands[3];
+
       /* Forces recomputing of GOT base now.  */
-      legitimize_pic_address (operands[1], SImode, operands[2], operands[3],
+      legitimize_pic_address (operands[1], SImode, operands[2], pic_reg,
 			      true /*compute_now*/);
     }
   else
@@ -8300,8 +8353,15 @@
 
   if (flag_pic)
     {
+      rtx pic_reg;
+
+      if (TARGET_FDPIC)
+	  pic_reg = gen_rtx_REG (Pmode, FDPIC_REGNUM);
+      else
+	  pic_reg = operands[4];
+
       /* Forces recomputing of GOT base now.  */
-      legitimize_pic_address (operands[1], SImode, operands[3], operands[4],
+      legitimize_pic_address (operands[1], SImode, operands[3], pic_reg,
 			      true /*compute_now*/);
     }
   else
@@ -9143,15 +9203,15 @@
 	(compare
 	 (and:SI
 	  (match_operator 4 "arm_comparison_operator"
-	   [(match_operand:SI 0 "s_register_operand" 
-	        "l,l,l,r,r,r,r,r,r")
-	    (match_operand:SI 1 "arm_add_operand" 
-	        "lPy,lPy,lPy,rI,L,rI,L,rI,L")])
+	   [(match_operand:SI 0 "s_register_operand"
+	        "l,l,l,r,r,r,r,r,r,r")
+	    (match_operand:SI 1 "arm_add_operand"
+	        "lPy,lPy,lPy,rI,L,r,rI,L,rI,L")])
 	  (match_operator:SI 5 "arm_comparison_operator"
-	   [(match_operand:SI 2 "s_register_operand" 
-	        "l,r,r,l,l,r,r,r,r")
-	    (match_operand:SI 3 "arm_add_operand" 
-	        "lPy,rI,L,lPy,lPy,rI,rI,L,L")]))
+	   [(match_operand:SI 2 "s_register_operand"
+	        "l,r,r,l,l,r,r,r,r,r")
+	    (match_operand:SI 3 "arm_add_operand"
+	        "lPy,rI,L,lPy,lPy,r,rI,rI,L,L")]))
 	 (const_int 0)))]
   "TARGET_32BIT"
   "*
@@ -9183,9 +9243,10 @@
       \"it\\t%d5\",
       \"it\\t%d4\"
     };
-    static const int cmp_idx[9] = {CMP_CMP, CMP_CMP, CMP_CMN,
-                                   CMP_CMP, CMN_CMP, CMP_CMP,
-                                   CMN_CMP, CMP_CMN, CMN_CMN};
+    static const int cmp_idx[] = {CMP_CMP, CMP_CMP, CMP_CMN,
+                                  CMP_CMP, CMN_CMP, CMP_CMP,
+                                  CMP_CMP, CMN_CMP, CMP_CMN,
+				  CMN_CMN};
     int swap =
       comparison_dominates_p (GET_CODE (operands[5]), GET_CODE (operands[4]));
 
@@ -9198,14 +9259,15 @@
   }"
   [(set_attr "conds" "set")
    (set_attr "predicable" "no")
-   (set_attr "arch" "t2,t2,t2,t2,t2,any,any,any,any")
-   (set_attr "enabled_for_short_it" "yes,no,no,no,no,no,no,no,no")
+   (set_attr "arch" "t2,t2,t2,t2,t2,t2,any,any,any,any")
+   (set_attr "enabled_for_short_it" "yes,no,no,no,no,yes,no,no,no,no")
    (set_attr_alternative "length"
       [(const_int 6)
        (const_int 8)
        (const_int 8)
        (const_int 8)
        (const_int 8)
+       (const_int 6)
        (if_then_else (eq_attr "is_thumb" "no")
            (const_int 8)
            (const_int 10))
@@ -9227,14 +9289,14 @@
 	 (ior:SI
 	  (match_operator 4 "arm_comparison_operator"
 	   [(match_operand:SI 0 "s_register_operand"
-	        "l,l,l,r,r,r,r,r,r")
+	        "l,l,l,r,r,r,r,r,r,r")
 	    (match_operand:SI 1 "arm_add_operand"
-	        "lPy,lPy,lPy,rI,L,rI,L,rI,L")])
+	        "lPy,lPy,lPy,rI,L,r,rI,L,rI,L")])
 	  (match_operator:SI 5 "arm_comparison_operator"
 	   [(match_operand:SI 2 "s_register_operand"
-	        "l,r,r,l,l,r,r,r,r")
+	        "l,r,r,l,l,r,r,r,r,r")
 	    (match_operand:SI 3 "arm_add_operand"
-	        "lPy,rI,L,lPy,lPy,rI,rI,L,L")]))
+	        "lPy,rI,L,lPy,lPy,r,rI,rI,L,L")]))
 	 (const_int 0)))]
   "TARGET_32BIT"
   "*
@@ -9266,9 +9328,10 @@
       \"it\\t%D4\",
       \"it\\t%D5\"
     };
-    static const int cmp_idx[9] = {CMP_CMP, CMP_CMP, CMP_CMN,
-                                   CMP_CMP, CMN_CMP, CMP_CMP,
-                                   CMN_CMP, CMP_CMN, CMN_CMN};
+    static const int cmp_idx[] = {CMP_CMP, CMP_CMP, CMP_CMN,
+                                  CMP_CMP, CMN_CMP, CMP_CMP,
+				  CMP_CMP, CMN_CMP, CMP_CMN,
+				  CMN_CMN};
     int swap =
       comparison_dominates_p (GET_CODE (operands[5]), GET_CODE (operands[4]));
 
@@ -9281,14 +9344,15 @@
   }
   "
   [(set_attr "conds" "set")
-   (set_attr "arch" "t2,t2,t2,t2,t2,any,any,any,any")
-   (set_attr "enabled_for_short_it" "yes,no,no,no,no,no,no,no,no")
+   (set_attr "arch" "t2,t2,t2,t2,t2,t2,any,any,any,any")
+   (set_attr "enabled_for_short_it" "yes,no,no,no,no,yes,no,no,no,no")
    (set_attr_alternative "length"
       [(const_int 6)
        (const_int 8)
        (const_int 8)
        (const_int 8)
        (const_int 8)
+       (const_int 6)
        (if_then_else (eq_attr "is_thumb" "no")
            (const_int 8)
            (const_int 10))
@@ -11116,12 +11180,25 @@
 )
 
 ;; Doesn't clobber R1-R3.  Must use r0 for the first operand.
+(define_insn "load_tp_soft_fdpic"
+  [(set (reg:SI 0) (unspec:SI [(const_int 0)] UNSPEC_TLS))
+   (clobber (reg:SI FDPIC_REGNUM))
+   (clobber (reg:SI LR_REGNUM))
+   (clobber (reg:SI IP_REGNUM))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_SOFT_TP && TARGET_FDPIC"
+  "bl\\t__aeabi_read_tp\\t@ load_tp_soft"
+  [(set_attr "conds" "clob")
+   (set_attr "type" "branch")]
+)
+
+;; Doesn't clobber R1-R3.  Must use r0 for the first operand.
 (define_insn "load_tp_soft"
   [(set (reg:SI 0) (unspec:SI [(const_int 0)] UNSPEC_TLS))
    (clobber (reg:SI LR_REGNUM))
    (clobber (reg:SI IP_REGNUM))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_SOFT_TP"
+  "TARGET_SOFT_TP && !TARGET_FDPIC"
   "bl\\t__aeabi_read_tp\\t@ load_tp_soft"
   [(set_attr "conds" "clob")
    (set_attr "type" "branch")]

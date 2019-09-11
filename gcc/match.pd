@@ -305,13 +305,29 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* (A / (1 << B)) -> (A >> B).
    Only for unsigned A.  For signed A, this would not preserve rounding
    toward zero.
-   For example: (-1 / ( 1 << B)) !=  -1 >> B.  */
+   For example: (-1 / ( 1 << B)) !=  -1 >> B.
+   Also also widening conversions, like:
+   (A / (unsigned long long) (1U << B)) -> (A >> B)
+   or
+   (A / (unsigned long long) (1 << B)) -> (A >> B).
+   If the left shift is signed, it can be done only if the upper bits
+   of A starting from shift's type sign bit are zero, as
+   (unsigned long long) (1 << 31) is -2147483648ULL, not 2147483648ULL,
+   so it is valid only if A >> 31 is zero.  */
 (simplify
- (trunc_div @0 (lshift integer_onep@1 @2))
+ (trunc_div @0 (convert? (lshift integer_onep@1 @2)))
  (if ((TYPE_UNSIGNED (type) || tree_expr_nonnegative_p (@0))
       && (!VECTOR_TYPE_P (type)
 	  || target_supports_op_p (type, RSHIFT_EXPR, optab_vector)
-	  || target_supports_op_p (type, RSHIFT_EXPR, optab_scalar)))
+	  || target_supports_op_p (type, RSHIFT_EXPR, optab_scalar))
+      && (useless_type_conversion_p (type, TREE_TYPE (@1))
+	  || (element_precision (type) >= element_precision (TREE_TYPE (@1))
+	      && (TYPE_UNSIGNED (TREE_TYPE (@1))
+		  || (element_precision (type)
+		      == element_precision (TREE_TYPE (@1)))
+		  || (get_nonzero_bits (@0)
+		      & wi::mask (element_precision (TREE_TYPE (@1)) - 1, true,
+				  element_precision (type))) == 0))))
   (rshift @0 @2)))
 
 /* Preserve explicit divisions by 0: the C++ front-end wants to detect
@@ -5040,10 +5056,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	      && newtype == type
 	      && types_match (newtype, type))
 	    (op (convert:newtype @1) (convert:newtype @2))
-	    (with { if (TYPE_PRECISION (ty1) > TYPE_PRECISION (newtype))
+	    (with
+	      {
+		if (!flag_unsafe_math_optimizations)
+		  {
+		    if (TYPE_PRECISION (ty1) > TYPE_PRECISION (newtype))
 		      newtype = ty1;
+
 		    if (TYPE_PRECISION (ty2) > TYPE_PRECISION (newtype))
-		      newtype = ty2; }
+		      newtype = ty2;
+		  }
+	      }
+
 	       /* Sometimes this transformation is safe (cannot
 		  change results through affecting double rounding
 		  cases) and sometimes it is not.  If NEWTYPE is

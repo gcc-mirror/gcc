@@ -19969,7 +19969,7 @@ ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
    should be encoded with notrack prefix.  */
 
 bool
-ix86_notrack_prefixed_insn_p (rtx insn)
+ix86_notrack_prefixed_insn_p (rtx_insn *insn)
 {
   if (!insn || !((flag_cf_protection & CF_BRANCH)))
     return false;

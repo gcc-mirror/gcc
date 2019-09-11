@@ -124,7 +124,7 @@ case "${target}" in
 	config_path="${config_path} linux/aarch64 posix"
 	;;
 
-  arm*-*-linux*)
+  arm*-*-linux* | arm*-*-uclinux*)
 	# OS support for atomic primitives.
 	config_path="${config_path} linux/arm posix"
 	;;

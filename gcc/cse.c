@@ -7158,7 +7158,7 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
 	else if (INSN_P (insn))
 	  {
 	    count_reg_usage (insn, counts, NULL_RTX, 1);
-	    note_stores (PATTERN (insn), count_stores, counts + nreg * 2);
+	    note_stores (insn, count_stores, counts + nreg * 2);
 	  }
       /* If there can be debug insns, COUNTS are 3 consecutive arrays.
 	 First one counts how many times each pseudo is used outside

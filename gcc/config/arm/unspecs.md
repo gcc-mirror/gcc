@@ -89,6 +89,7 @@
   UNSPEC_SP_SET		; Represent the setting of stack protector's canary
   UNSPEC_SP_TEST	; Represent the testing of stack protector's canary
 			; against the guard.
+  UNSPEC_PIC_RESTORE	; Use to restore fdpic register
 ])
 
 (define_c_enum "unspec" [

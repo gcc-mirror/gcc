@@ -66,21 +66,20 @@ struct target_hard_regs *this_target_hard_regs = &default_target_hard_regs;
 struct target_regs *this_target_regs = &default_target_regs;
 #endif
 
+#define call_used_regs \
+  (this_target_hard_regs->x_call_used_regs)
+
 /* Data for initializing fixed_regs.  */
 static const char initial_fixed_regs[] = FIXED_REGISTERS;
 
 /* Data for initializing call_used_regs.  */
-static const char initial_call_used_regs[] = CALL_USED_REGISTERS;
-
 #ifdef CALL_REALLY_USED_REGISTERS
-/* Data for initializing call_really_used_regs.  */
-static const char initial_call_really_used_regs[] = CALL_REALLY_USED_REGISTERS;
+#ifdef CALL_USED_REGISTERS
+#error CALL_USED_REGISTERS and CALL_REALLY_USED_REGISTERS are both defined
 #endif
-
-#ifdef CALL_REALLY_USED_REGISTERS
-#define CALL_REALLY_USED_REGNO_P(X)  call_really_used_regs[X]
+static const char initial_call_used_regs[] = CALL_REALLY_USED_REGISTERS;
 #else
-#define CALL_REALLY_USED_REGNO_P(X)  call_used_regs[X]
+static const char initial_call_used_regs[] = CALL_USED_REGISTERS;
 #endif
 
 /* Indexed by hard register number, contains 1 for registers
@@ -91,17 +90,6 @@ char global_regs[FIRST_PSEUDO_REGISTER];
 
 /* Declaration for the global register. */
 tree global_regs_decl[FIRST_PSEUDO_REGISTER];
-
-/* Same information as REGS_INVALIDATED_BY_CALL but in regset form to be used
-   in dataflow more conveniently.  */
-regset regs_invalidated_by_call_regset;
-
-/* Same information as FIXED_REG_SET but in regset form.  */
-regset fixed_reg_set_regset;
-
-/* The bitmap_obstack is used to hold some static variables that
-   should not be reset after each function is compiled.  */
-static bitmap_obstack persistent_obstack;
 
 /* Used to initialize reg_alloc_order.  */
 #ifdef REG_ALLOC_ORDER
@@ -172,10 +160,6 @@ init_reg_sets (void)
      CALL_USED_REGISTERS had the right number of initializers.  */
   gcc_assert (sizeof fixed_regs == sizeof initial_fixed_regs);
   gcc_assert (sizeof call_used_regs == sizeof initial_call_used_regs);
-#ifdef CALL_REALLY_USED_REGISTERS
-  gcc_assert (sizeof call_really_used_regs
-	      == sizeof initial_call_really_used_regs);
-#endif
 #ifdef REG_ALLOC_ORDER
   gcc_assert (sizeof reg_alloc_order == sizeof initial_reg_alloc_order);
 #endif
@@ -183,10 +167,6 @@ init_reg_sets (void)
 
   memcpy (fixed_regs, initial_fixed_regs, sizeof fixed_regs);
   memcpy (call_used_regs, initial_call_used_regs, sizeof call_used_regs);
-#ifdef CALL_REALLY_USED_REGISTERS
-  memcpy (call_really_used_regs, initial_call_really_used_regs,
-	  sizeof call_really_used_regs);
-#endif
 #ifdef REG_ALLOC_ORDER
   memcpy (reg_alloc_order, initial_reg_alloc_order, sizeof reg_alloc_order);
 #endif
@@ -201,9 +181,6 @@ init_reg_sets (void)
    subsequent back-end reinitialization.  */
 static char saved_fixed_regs[FIRST_PSEUDO_REGISTER];
 static char saved_call_used_regs[FIRST_PSEUDO_REGISTER];
-#ifdef CALL_REALLY_USED_REGISTERS
-static char saved_call_really_used_regs[FIRST_PSEUDO_REGISTER];
-#endif
 static const char *saved_reg_names[FIRST_PSEUDO_REGISTER];
 static HARD_REG_SET saved_accessible_reg_set;
 static HARD_REG_SET saved_operand_reg_set;
@@ -219,19 +196,11 @@ save_register_info (void)
   memcpy (saved_fixed_regs, fixed_regs, sizeof fixed_regs);
   memcpy (saved_call_used_regs, call_used_regs, sizeof call_used_regs);
 
-  /* Likewise for call_really_used_regs.  */
-#ifdef CALL_REALLY_USED_REGISTERS
-  gcc_assert (sizeof call_really_used_regs
-	      == sizeof saved_call_really_used_regs);
-  memcpy (saved_call_really_used_regs, call_really_used_regs,
-	  sizeof call_really_used_regs);
-#endif
-
   /* And similarly for reg_names.  */
   gcc_assert (sizeof reg_names == sizeof saved_reg_names);
   memcpy (saved_reg_names, reg_names, sizeof reg_names);
-  COPY_HARD_REG_SET (saved_accessible_reg_set, accessible_reg_set);
-  COPY_HARD_REG_SET (saved_operand_reg_set, operand_reg_set);
+  saved_accessible_reg_set = accessible_reg_set;
+  saved_operand_reg_set = operand_reg_set;
 }
 
 /* Restore the register information.  */
@@ -241,14 +210,9 @@ restore_register_info (void)
   memcpy (fixed_regs, saved_fixed_regs, sizeof fixed_regs);
   memcpy (call_used_regs, saved_call_used_regs, sizeof call_used_regs);
 
-#ifdef CALL_REALLY_USED_REGISTERS
-  memcpy (call_really_used_regs, saved_call_really_used_regs,
-	  sizeof call_really_used_regs);
-#endif
-
   memcpy (reg_names, saved_reg_names, sizeof reg_names);
-  COPY_HARD_REG_SET (accessible_reg_set, saved_accessible_reg_set);
-  COPY_HARD_REG_SET (operand_reg_set, saved_operand_reg_set);
+  accessible_reg_set = saved_accessible_reg_set;
+  operand_reg_set = saved_operand_reg_set;
 }
 
 /* After switches have been processed, which perhaps alter
@@ -298,8 +262,7 @@ init_reg_sets_1 (void)
 	  HARD_REG_SET c;
 	  int k;
 
-	  COPY_HARD_REG_SET (c, reg_class_contents[i]);
-	  IOR_HARD_REG_SET (c, reg_class_contents[j]);
+	  c = reg_class_contents[i] | reg_class_contents[j];
 	  for (k = 0; k < N_REG_CLASSES; k++)
 	    if (hard_reg_set_subset_p (reg_class_contents[k], c)
 		&& !hard_reg_set_subset_p (reg_class_contents[k],
@@ -321,8 +284,7 @@ init_reg_sets_1 (void)
 	  HARD_REG_SET c;
 	  int k;
 
-	  COPY_HARD_REG_SET (c, reg_class_contents[i]);
-	  IOR_HARD_REG_SET (c, reg_class_contents[j]);
+	  c = reg_class_contents[i] | reg_class_contents[j];
 	  for (k = 0; k < N_REG_CLASSES; k++)
 	    if (hard_reg_set_subset_p (c, reg_class_contents[k]))
 	      break;
@@ -363,22 +325,9 @@ init_reg_sets_1 (void)
   /* Initialize "constant" tables.  */
 
   CLEAR_HARD_REG_SET (fixed_reg_set);
-  CLEAR_HARD_REG_SET (call_used_reg_set);
-  CLEAR_HARD_REG_SET (call_fixed_reg_set);
   CLEAR_HARD_REG_SET (regs_invalidated_by_call);
-  if (!regs_invalidated_by_call_regset)
-    {
-      bitmap_obstack_initialize (&persistent_obstack);
-      regs_invalidated_by_call_regset = ALLOC_REG_SET (&persistent_obstack);
-    }
-  else
-    CLEAR_REG_SET (regs_invalidated_by_call_regset);
-  if (!fixed_reg_set_regset)
-    fixed_reg_set_regset = ALLOC_REG_SET (&persistent_obstack);
-  else
-    CLEAR_REG_SET (fixed_reg_set_regset);
 
-  AND_HARD_REG_SET (operand_reg_set, accessible_reg_set);
+  operand_reg_set &= accessible_reg_set;
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       /* As a special exception, registers whose class is NO_REGS are
@@ -394,26 +343,10 @@ init_reg_sets_1 (void)
       /* If a register is too limited to be treated as a register operand,
 	 then it should never be allocated to a pseudo.  */
       if (!TEST_HARD_REG_BIT (operand_reg_set, i))
-	{
-	  fixed_regs[i] = 1;
-	  call_used_regs[i] = 1;
-	}
-
-      /* call_used_regs must include fixed_regs.  */
-      gcc_assert (!fixed_regs[i] || call_used_regs[i]);
-#ifdef CALL_REALLY_USED_REGISTERS
-      /* call_used_regs must include call_really_used_regs.  */
-      gcc_assert (!call_really_used_regs[i] || call_used_regs[i]);
-#endif
+	fixed_regs[i] = 1;
 
       if (fixed_regs[i])
-	{
-	  SET_HARD_REG_BIT (fixed_reg_set, i);
-	  SET_REGNO_REG_SET (fixed_reg_set_regset, i);
-	}
-
-      if (call_used_regs[i])
-	SET_HARD_REG_BIT (call_used_reg_set, i);
+	SET_HARD_REG_BIT (fixed_reg_set, i);
 
       /* There are a couple of fixed registers that we know are safe to
 	 exclude from being clobbered by calls:
@@ -428,10 +361,7 @@ init_reg_sets_1 (void)
       if (i == STACK_POINTER_REGNUM)
 	;
       else if (global_regs[i])
-        {
-	  SET_HARD_REG_BIT (regs_invalidated_by_call, i);
-	  SET_REGNO_REG_SET (regs_invalidated_by_call_regset, i);
-	}
+	SET_HARD_REG_BIT (regs_invalidated_by_call, i);
       else if (i == FRAME_POINTER_REGNUM)
 	;
       else if (!HARD_FRAME_POINTER_IS_FRAME_POINTER
@@ -443,15 +373,12 @@ init_reg_sets_1 (void)
       else if (!PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
 	       && i == (unsigned) PIC_OFFSET_TABLE_REGNUM && fixed_regs[i])
 	;
-      else if (CALL_REALLY_USED_REGNO_P (i))
-        {
-	  SET_HARD_REG_BIT (regs_invalidated_by_call, i);
-	  SET_REGNO_REG_SET (regs_invalidated_by_call_regset, i);
-        }
+      else if (call_used_regs[i])
+	SET_HARD_REG_BIT (regs_invalidated_by_call, i);
     }
 
-  COPY_HARD_REG_SET (call_fixed_reg_set, fixed_reg_set);
-  COPY_HARD_REG_SET (fixed_nonglobal_reg_set, fixed_reg_set);
+  SET_HARD_REG_SET (savable_regs);
+  fixed_nonglobal_reg_set = fixed_reg_set;
 
   /* Preserve global registers if called more than once.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -460,8 +387,6 @@ init_reg_sets_1 (void)
 	{
 	  fixed_regs[i] = call_used_regs[i] = 1;
 	  SET_HARD_REG_BIT (fixed_reg_set, i);
-	  SET_HARD_REG_BIT (call_used_reg_set, i);
-	  SET_HARD_REG_BIT (call_fixed_reg_set, i);
 	}
     }
 
@@ -750,10 +675,11 @@ fix_register (const char *name, int fixed, int call_used)
 	  else
 	    {
 	      fixed_regs[i] = fixed;
-	      call_used_regs[i] = call_used;
 #ifdef CALL_REALLY_USED_REGISTERS
 	      if (fixed == 0)
-		call_really_used_regs[i] = call_used;
+		call_used_regs[i] = call_used;
+#else
+	      call_used_regs[i] = call_used;
 #endif
 	    }
 	}
@@ -802,23 +728,15 @@ globalize_reg (tree decl, int i)
      appropriate regs_invalidated_by_call bit, even if it's already
      set in fixed_regs.  */
   if (i != STACK_POINTER_REGNUM)
-    {
-      SET_HARD_REG_BIT (regs_invalidated_by_call, i);
-      SET_REGNO_REG_SET (regs_invalidated_by_call_regset, i);
-    }
+    SET_HARD_REG_BIT (regs_invalidated_by_call, i);
 
   /* If already fixed, nothing else to do.  */
   if (fixed_regs[i])
     return;
 
   fixed_regs[i] = call_used_regs[i] = 1;
-#ifdef CALL_REALLY_USED_REGISTERS
-  call_really_used_regs[i] = 1;
-#endif
 
   SET_HARD_REG_BIT (fixed_reg_set, i);
-  SET_HARD_REG_BIT (call_used_reg_set, i);
-  SET_HARD_REG_BIT (call_fixed_reg_set, i);
 
   reinit_regs ();
 }
@@ -1317,14 +1235,12 @@ record_subregs_of_mode (rtx subreg, bool partial_def)
     }
 
   if (valid_mode_changes[regno])
-    AND_HARD_REG_SET (*valid_mode_changes[regno],
-		      simplifiable_subregs (shape));
+    *valid_mode_changes[regno] &= simplifiable_subregs (shape);
   else
     {
       valid_mode_changes[regno]
 	= XOBNEW (&valid_mode_changes_obstack, HARD_REG_SET);
-      COPY_HARD_REG_SET (*valid_mode_changes[regno],
-			 simplifiable_subregs (shape));
+      *valid_mode_changes[regno] = simplifiable_subregs (shape);
     }
 }
 

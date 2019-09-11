@@ -3202,7 +3202,7 @@ tilepro_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
 static bool
 need_to_save_reg (unsigned int regno)
 {
-  if (!fixed_regs[regno] && !call_used_regs[regno]
+  if (!call_used_or_fixed_reg_p (regno)
       && df_regs_ever_live_p (regno))
     return true;
 
@@ -3864,20 +3864,11 @@ static void
 tilepro_conditional_register_usage (void)
 {
   global_regs[TILEPRO_NETORDER_REGNUM] = 1;
-  /* TILEPRO_PIC_TEXT_LABEL_REGNUM is conditionally used.  It is a
-     member of fixed_regs, and therefore must be member of
-     call_used_regs, but it is not a member of call_really_used_regs[]
-     because it is not clobbered by a call.  */
+  /* TILEPRO_PIC_TEXT_LABEL_REGNUM is conditionally used.  */
   if (TILEPRO_PIC_TEXT_LABEL_REGNUM != INVALID_REGNUM)
-    {
-      fixed_regs[TILEPRO_PIC_TEXT_LABEL_REGNUM] = 1;
-      call_used_regs[TILEPRO_PIC_TEXT_LABEL_REGNUM] = 1;
-    }
+    fixed_regs[TILEPRO_PIC_TEXT_LABEL_REGNUM] = 1;
   if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
-    {
-      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
-      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
-    }
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
 }
 
 

@@ -1,3 +1,5 @@
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+
 #define type unsigned int
 
 type glob0, glob1;

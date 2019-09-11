@@ -1,6 +1,6 @@
-# go list with path to directory should work
+[short] skip
 
-[gccgo] stop
+# go list with path to directory should work
 
 env GO111MODULE=off
 go list -f '{{.ImportPath}}' $GOROOT/src/math

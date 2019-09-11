@@ -30,6 +30,26 @@
 #include <sys/sdt.h>
 #endif
 
+#if __FDPIC__
+/* Load r7 with rt_sigreturn value.  */
+#define ARM_SET_R7_RT_SIGRETURN		0xe3a070ad	/* mov   r7, #0xad */
+#define THUMB2_SET_R7_RT_SIGRETURN	0x07adf04f	/* mov.w r7, #0xad */
+
+/* FDPIC jump to restorer sequence.  */
+#define FDPIC_LDR_R12_WITH_FUNCDESC	0xe59fc004	/* ldr   r12, [pc, #4] */
+#define FDPIC_LDR_R9_WITH_GOT		0xe59c9004	/* ldr   r9, [r12, #4] */
+#define FDPIC_LDR_PC_WITH_RESTORER	0xe59cf000	/* ldr   pc, [r12] */
+#define FDPIC_T2_LDR_R12_WITH_FUNCDESC  0xc008f8df	/* ldr.w r12, [pc, #8] */
+#define FDPIC_T2_LDR_R9_WITH_GOT	0x9004f8dc	/* ldr.w r9, [r12, #4] */
+#define FDPIC_T2_LDR_PC_WITH_RESTORER   0xf000f8dc	/* ldr.w pc, [r12] */
+#define FDPIC_FUNCDESC_OFFSET		12
+
+/* Signal frame offsets.  */
+#define ARM_NEW_RT_SIGFRAME_UCONTEXT	0x80
+#define ARM_UCONTEXT_SIGCONTEXT		0x14
+#define ARM_SIGCONTEXT_R0		0xc
+#endif
+
 /* We add a prototype for abort here to avoid creating a dependency on
    target headers.  */
 extern void abort (void);
@@ -62,6 +82,7 @@ __gnu_Unwind_Find_exidx (_Unwind_Ptr, int *);
 #define UCB_PR_ADDR(ucbp) ((ucbp)->unwinder_cache.reserved2)
 #define UCB_SAVED_CALLSITE_ADDR(ucbp) ((ucbp)->unwinder_cache.reserved3)
 #define UCB_FORCED_STOP_ARG(ucbp) ((ucbp)->unwinder_cache.reserved4)
+#define UCB_PR_GOT(ucbp) ((ucbp)->unwinder_cache.reserved5)
 
 /* Unwind descriptors.  */
 
@@ -84,6 +105,16 @@ typedef struct __EIT_entry
   _uw fnoffset;
   _uw content;
 } __EIT_entry;
+
+#ifdef __FDPIC__
+
+/* Only used in FDPIC case.  */
+struct funcdesc_t
+{
+  unsigned int ptr;
+  unsigned int got;
+};
+#endif
 
 /* Assembly helper functions.  */
 
@@ -188,6 +219,45 @@ search_EIT_table (const __EIT_entry * table, int nrec, _uw return_address)
     }
 }
 
+#if __FDPIC__
+/* VFP is not restored, but this is sufficient to allow unwinding.  */
+static _Unwind_Reason_Code
+__gnu_personality_sigframe_fdpic (_Unwind_State state,
+				  _Unwind_Control_Block *ucbp,
+				  _Unwind_Context *context)
+{
+    unsigned int sp;
+    unsigned int pc;
+    unsigned int funcdesc;
+    unsigned int handler;
+    unsigned int first_handler_instruction;
+    int i;
+
+    _Unwind_VRS_Get (context, _UVRSC_CORE, R_SP, _UVRSD_UINT32, &sp);
+    _Unwind_VRS_Get (context, _UVRSC_CORE, R_PC, _UVRSD_UINT32, &pc);
+
+    funcdesc = *(unsigned int *)((pc & ~1) + FDPIC_FUNCDESC_OFFSET);
+    handler = *(unsigned int *)(funcdesc);
+    first_handler_instruction = *(unsigned int *)(handler & ~1);
+
+    /* Adjust SP to point to the start of registers according to
+       signal type.  */
+    if (first_handler_instruction == ARM_SET_R7_RT_SIGRETURN
+	|| first_handler_instruction == THUMB2_SET_R7_RT_SIGRETURN)
+	sp += ARM_NEW_RT_SIGFRAME_UCONTEXT
+	  + ARM_UCONTEXT_SIGCONTEXT
+	  + ARM_SIGCONTEXT_R0;
+    else
+	sp += ARM_UCONTEXT_SIGCONTEXT
+	  + ARM_SIGCONTEXT_R0;
+    /* Restore regs saved on stack by the kernel.  */
+    for (i = 0; i < 16; i++)
+	_Unwind_VRS_Set (context, _UVRSC_CORE, i, _UVRSD_UINT32, sp + 4 * i);
+
+    return _URC_CONTINUE_UNWIND;
+}
+#endif
+
 /* Find the exception index table eintry for the given address.
    Fill in the relevant fields of the UCB.
    Returns _URC_FAILURE if an error occurred, _URC_OK on success.  */
@@ -211,6 +281,27 @@ get_eit_entry (_Unwind_Control_Block *ucbp, _uw return_address)
 							    &nrec);
       if (!eitp)
 	{
+#if __FDPIC__
+	  /* If we are unwinding a signal handler then perhaps we have
+	     reached a trampoline.  Try to detect jump to restorer
+	     sequence.  */
+	  _uw *pc = (_uw *)((return_address+2) & ~1);
+	  if ((pc[0] == FDPIC_LDR_R12_WITH_FUNCDESC
+	       && pc[1] == FDPIC_LDR_R9_WITH_GOT
+	       && pc[2] == FDPIC_LDR_PC_WITH_RESTORER)
+	      || (pc[0] == FDPIC_T2_LDR_R12_WITH_FUNCDESC
+		  && pc[1] == FDPIC_T2_LDR_R9_WITH_GOT
+		  && pc[2] == FDPIC_T2_LDR_PC_WITH_RESTORER))
+	    {
+	      struct funcdesc_t *funcdesc
+		= (struct funcdesc_t *) &__gnu_personality_sigframe_fdpic;
+
+	      UCB_PR_ADDR (ucbp) = funcdesc->ptr;
+	      UCB_PR_GOT (ucbp) = funcdesc->got;
+
+	      return _URC_OK;
+	    }
+#endif
 	  UCB_PR_ADDR (ucbp) = 0;
 	  return _URC_FAILURE;
 	}
@@ -225,6 +316,27 @@ get_eit_entry (_Unwind_Control_Block *ucbp, _uw return_address)
 
   if (!eitp)
     {
+#if __FDPIC__
+      /* If we are unwinding a signal handler then perhaps we have
+	 reached a trampoline.  Try to detect jump to restorer
+	 sequence.  */
+      _uw *pc = (_uw *)((return_address+2) & ~1);
+      if ((pc[0] == FDPIC_LDR_R12_WITH_FUNCDESC
+	   && pc[1] == FDPIC_LDR_R9_WITH_GOT
+	   && pc[2] == FDPIC_LDR_PC_WITH_RESTORER)
+	  || (pc[0] == FDPIC_T2_LDR_R12_WITH_FUNCDESC
+	      && pc[1] == FDPIC_T2_LDR_R9_WITH_GOT
+	      && pc[2] == FDPIC_T2_LDR_PC_WITH_RESTORER))
+	{
+	  struct funcdesc_t *funcdesc
+	    = (struct funcdesc_t *) &__gnu_personality_sigframe_fdpic;
+
+	  UCB_PR_ADDR (ucbp) = funcdesc->ptr;
+	  UCB_PR_GOT (ucbp) = funcdesc->got;
+
+	  return _URC_OK;
+	}
+#endif
       UCB_PR_ADDR (ucbp) = 0;
       return _URC_FAILURE;
     }
@@ -233,6 +345,27 @@ get_eit_entry (_Unwind_Control_Block *ucbp, _uw return_address)
   /* Can this frame be unwound at all?  */
   if (eitp->content == EXIDX_CANTUNWIND)
     {
+#if __FDPIC__
+      /* If we are unwinding a signal handler then perhaps we have
+	 reached a trampoline.  Try to detect jump to restorer
+	 sequence.  */
+      _uw *pc = (_uw *)((return_address+2) & ~1);
+      if ((pc[0] == FDPIC_LDR_R12_WITH_FUNCDESC
+	   && pc[1] == FDPIC_LDR_R9_WITH_GOT
+	   && pc[2] == FDPIC_LDR_PC_WITH_RESTORER)
+	  || (pc[0] == FDPIC_T2_LDR_R12_WITH_FUNCDESC
+	      && pc[1] == FDPIC_T2_LDR_R9_WITH_GOT
+	      && pc[2] == FDPIC_T2_LDR_PC_WITH_RESTORER))
+	{
+	  struct funcdesc_t *funcdesc
+	    = (struct funcdesc_t *) &__gnu_personality_sigframe_fdpic;
+
+	  UCB_PR_ADDR (ucbp) = funcdesc->ptr;
+	  UCB_PR_GOT (ucbp) = funcdesc->got;
+
+	  return _URC_OK;
+	}
+#endif
       UCB_PR_ADDR (ucbp) = 0;
       return _URC_END_OF_STACK;
     }
@@ -259,7 +392,21 @@ get_eit_entry (_Unwind_Control_Block *ucbp, _uw return_address)
     {
       /* One of the predefined standard routines.  */
       _uw idx = (*(_uw *) ucbp->pr_cache.ehtp >> 24) & 0xf;
+#if __FDPIC__
+      {
+	struct funcdesc_t *funcdesc
+	  = (struct funcdesc_t *) __gnu_unwind_get_pr_addr (idx);
+	if (funcdesc)
+	  {
+	    UCB_PR_ADDR (ucbp) = funcdesc->ptr;
+	    UCB_PR_GOT (ucbp) = funcdesc->got;
+	  }
+	else
+	  UCB_PR_ADDR (ucbp) = 0;
+      }
+#else
       UCB_PR_ADDR (ucbp) = __gnu_unwind_get_pr_addr (idx);
+#endif
       if (UCB_PR_ADDR (ucbp) == 0)
 	{
 	  /* Failed */
@@ -270,6 +417,10 @@ get_eit_entry (_Unwind_Control_Block *ucbp, _uw return_address)
     {
       /* Execute region offset to PR */
       UCB_PR_ADDR (ucbp) = selfrel_offset31 (ucbp->pr_cache.ehtp);
+#if __FDPIC__
+      UCB_PR_GOT (ucbp)
+	= (unsigned int) gnu_Unwind_Find_got ((_Unwind_Ptr) UCB_PR_ADDR (ucbp));
+#endif
     }
   return _URC_OK;
 }
@@ -291,13 +442,28 @@ unwind_phase2 (_Unwind_Control_Block * ucbp, phase2_vrs * vrs)
       UCB_SAVED_CALLSITE_ADDR (ucbp) = VRS_PC(vrs);
 
       /* Call the pr to decide what to do.  */
+#if __FDPIC__
+      {
+	volatile struct funcdesc_t funcdesc;
+	funcdesc.ptr = UCB_PR_ADDR (ucbp);
+	funcdesc.got = UCB_PR_GOT (ucbp);
+	pr_result = ((personality_routine) &funcdesc)
+	  (_US_UNWIND_FRAME_STARTING, ucbp, (_Unwind_Context *) vrs);
+      }
+#else
       pr_result = ((personality_routine) UCB_PR_ADDR (ucbp))
 	(_US_UNWIND_FRAME_STARTING, ucbp, (_Unwind_Context *) vrs);
+#endif
     }
   while (pr_result == _URC_CONTINUE_UNWIND);
   
   if (pr_result != _URC_INSTALL_CONTEXT)
     abort();
+
+#if __FDPIC__
+  /* r9 could have been lost due to PLT jump.  Restore correct value.  */
+  vrs->core.r[FDPIC_REGNUM] = gnu_Unwind_Find_got (VRS_PC (vrs));
+#endif
 
   uw_restore_core_regs (vrs, &vrs->core);
 }
@@ -346,8 +512,18 @@ unwind_phase2_forced (_Unwind_Control_Block *ucbp, phase2_vrs *entry_vrs,
 	  next_vrs = saved_vrs;
 
 	  /* Call the pr to decide what to do.  */
+#if __FDPIC__
+	  {
+	    volatile struct funcdesc_t funcdesc;
+	    funcdesc.ptr = UCB_PR_ADDR (ucbp);
+	    funcdesc.got = UCB_PR_GOT (ucbp);
+	    pr_result = ((personality_routine) &funcdesc)
+	      (action, ucbp, (void *) &next_vrs);
+	  }
+#else
 	  pr_result = ((personality_routine) UCB_PR_ADDR (ucbp))
 	    (action, ucbp, (void *) &next_vrs);
+#endif
 
 	  saved_vrs.prev_sp = VRS_SP (&next_vrs);
 	}
@@ -383,6 +559,11 @@ unwind_phase2_forced (_Unwind_Control_Block *ucbp, phase2_vrs *entry_vrs,
 	 pr returned _URC_FAILURE.  */
       return _URC_FAILURE;
     }
+
+#if __FDPIC__
+  /* r9 could have been lost due to PLT jump.  Restore correct value.  */
+  saved_vrs.core.r[FDPIC_REGNUM] = gnu_Unwind_Find_got (VRS_PC (&saved_vrs));
+#endif
 
   uw_restore_core_regs (&saved_vrs, &saved_vrs.core);
 }
@@ -429,8 +610,18 @@ __gnu_Unwind_RaiseException (_Unwind_Control_Block * ucbp,
 	return _URC_FAILURE;
 
       /* Call the pr to decide what to do.  */
+#if __FDPIC__
+      {
+	volatile struct funcdesc_t funcdesc;
+	funcdesc.ptr = UCB_PR_ADDR (ucbp);
+	funcdesc.got = UCB_PR_GOT (ucbp);
+	pr_result = ((personality_routine) &funcdesc)
+	  (_US_VIRTUAL_UNWIND_FRAME, ucbp, (void *) &saved_vrs);
+      }
+#else
       pr_result = ((personality_routine) UCB_PR_ADDR (ucbp))
 	(_US_VIRTUAL_UNWIND_FRAME, ucbp, (void *) &saved_vrs);
+#endif
     }
   while (pr_result == _URC_CONTINUE_UNWIND);
 
@@ -488,13 +679,27 @@ __gnu_Unwind_Resume (_Unwind_Control_Block * ucbp, phase2_vrs * entry_vrs)
     }
 
   /* Call the cached PR.  */
+#if __FDPIC__
+  {
+    volatile struct funcdesc_t funcdesc;
+    funcdesc.ptr = UCB_PR_ADDR (ucbp);
+    funcdesc.got = UCB_PR_GOT (ucbp);
+    pr_result = ((personality_routine) &funcdesc)
+      (_US_UNWIND_FRAME_RESUME, ucbp, (_Unwind_Context *) entry_vrs);
+  }
+#else
   pr_result = ((personality_routine) UCB_PR_ADDR (ucbp))
 	(_US_UNWIND_FRAME_RESUME, ucbp, (_Unwind_Context *) entry_vrs);
+#endif
 
   switch (pr_result)
     {
     case _URC_INSTALL_CONTEXT:
       /* Upload the registers to enter the landing pad.  */
+#if __FDPIC__
+      /* r9 could have been lost due to PLT jump.  Restore correct value.  */
+      entry_vrs->core.r[FDPIC_REGNUM] = gnu_Unwind_Find_got (VRS_PC (entry_vrs));
+#endif
       uw_restore_core_regs (entry_vrs, &entry_vrs->core);
 
     case _URC_CONTINUE_UNWIND:
@@ -586,9 +791,20 @@ __gnu_Unwind_Backtrace(_Unwind_Trace_Fn trace, void * trace_argument,
 	}
 
       /* Call the pr to decide what to do.  */
+#if __FDPIC__
+      {
+	volatile struct funcdesc_t funcdesc;
+	funcdesc.ptr = UCB_PR_ADDR (ucbp);
+	funcdesc.got = UCB_PR_GOT (ucbp);
+	code = ((personality_routine) &funcdesc)
+	  (_US_VIRTUAL_UNWIND_FRAME | _US_FORCE_UNWIND,
+	   ucbp, (void *) &saved_vrs);
+      }
+#else
       code = ((personality_routine) UCB_PR_ADDR (ucbp))
 	(_US_VIRTUAL_UNWIND_FRAME | _US_FORCE_UNWIND, 
 	 ucbp, (void *) &saved_vrs);
+#endif
     }
   while (code != _URC_END_OF_STACK
 	 && code != _URC_FAILURE);

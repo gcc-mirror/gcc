@@ -1,3 +1,5 @@
+/* { dg-require-stack-size "4*4*2*80" } */
+
 #define A "This is a long test that tests the structure initialization"
 #define B A,A
 #define C B,B,B,B

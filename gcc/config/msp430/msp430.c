@@ -1152,7 +1152,7 @@ msp430_preserve_reg_p (int regno)
 	return true;
     }
 
-  if (!call_used_regs[regno]
+  if (!call_used_or_fixed_reg_p (regno)
       && df_regs_ever_live_p (regno))
     return true;
 

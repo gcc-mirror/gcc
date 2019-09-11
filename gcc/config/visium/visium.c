@@ -754,20 +754,20 @@ visium_conditional_register_usage (void)
     {
       if (visium_cpu_and_features == PROCESSOR_GR5)
 	{
-	  fixed_regs[24] = call_used_regs[24] = 1;
-	  fixed_regs[25] = call_used_regs[25] = 1;
-	  fixed_regs[26] = call_used_regs[26] = 1;
-	  fixed_regs[27] = call_used_regs[27] = 1;
-	  fixed_regs[28] = call_used_regs[28] = 1;
-	  call_really_used_regs[24] = 0;
-	  call_really_used_regs[25] = 0;
-	  call_really_used_regs[26] = 0;
-	  call_really_used_regs[27] = 0;
-	  call_really_used_regs[28] = 0;
+	  fixed_regs[24] = 1;
+	  fixed_regs[25] = 1;
+	  fixed_regs[26] = 1;
+	  fixed_regs[27] = 1;
+	  fixed_regs[28] = 1;
+	  call_used_regs[24] = 0;
+	  call_used_regs[25] = 0;
+	  call_used_regs[26] = 0;
+	  call_used_regs[27] = 0;
+	  call_used_regs[28] = 0;
 	}
 
-      fixed_regs[31] = call_used_regs[31] = 1;
-      call_really_used_regs[31] = 0;
+      fixed_regs[31] = 1;
+      call_used_regs[31] = 0;
 
       /* We also need to change the long-branch register.  */
       if (visium_cpu_and_features == PROCESSOR_GR5)
@@ -781,8 +781,8 @@ visium_conditional_register_usage (void)
     {
       for (int i = FP_FIRST_REGNUM; i <= FP_LAST_REGNUM; i++)
 	{
-	  fixed_regs[i] = call_used_regs[i] = 1;
-	  call_really_used_regs[i] = 0;
+	  fixed_regs[i] = 1;
+	  call_used_regs[i] = 0;
 	}
     }
 }
@@ -3589,7 +3589,7 @@ visium_save_reg_p (int interrupt, int regno)
 	  if (df_regs_ever_live_p (regno))
 	    return 1;
 	}
-      else if (call_used_regs[regno])
+      else if (call_used_or_fixed_reg_p (regno))
 	return 1;
 
       /* To save mdb requires two temporary registers.  To save mdc or
@@ -3616,7 +3616,7 @@ visium_save_reg_p (int interrupt, int regno)
 	}
     }
 
-  return df_regs_ever_live_p (regno) && !call_used_regs[regno];
+  return df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno);
 }
 
 /* Compute the frame size required by the function.  This function is called

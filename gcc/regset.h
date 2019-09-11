@@ -64,6 +64,10 @@ typedef bitmap regset;
 /* Inclusive or a register set with a second register set.  */
 #define IOR_REG_SET(TO, FROM) bitmap_ior_into (TO, FROM)
 
+/* Same, but with FROM being a HARD_REG_SET.  */
+#define IOR_REG_SET_HRS(TO, FROM) \
+  bitmap_ior_into (TO, bitmap_view<HARD_REG_SET> (FROM))
+
 /* Exclusive or a register set with a second register set.  */
 #define XOR_REG_SET(TO, FROM) bitmap_xor_into (TO, FROM)
 
@@ -106,14 +110,6 @@ typedef bitmap_iterator reg_set_iterator;
    set in both regsets.  */
 #define EXECUTE_IF_AND_IN_REG_SET(REGSET1, REGSET2, MIN, REGNUM, RSI) \
   EXECUTE_IF_AND_IN_BITMAP (REGSET1, REGSET2, MIN, REGNUM, RSI)	\
-
-/* Same information as REGS_INVALIDATED_BY_CALL but in regset form to be used
-   in dataflow more conveniently.  */
-
-extern regset regs_invalidated_by_call_regset;
-
-/* Same information as FIXED_REG_SET but in regset form.  */
-extern regset fixed_reg_set_regset;
 
 /* An obstack for regsets.  */
 extern bitmap_obstack reg_obstack;
