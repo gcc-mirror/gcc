@@ -1,3 +1,9 @@
+2019-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/89795
+	* rtlanal.c (nonzero_bits1) <SUBREG>: Do not propagate results from
+	inner REGs to paradoxical SUBREGs if WORD_REGISTER_OPERATIONS is set.
+
 2019-09-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/87853

@@ -4636,7 +4636,7 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	       || ((extend_op = load_extend_op (inner_mode)) == SIGN_EXTEND
 		   ? val_signbit_known_set_p (inner_mode, nonzero)
 		   : extend_op != ZERO_EXTEND)
-	       || (!MEM_P (SUBREG_REG (x)) && !REG_P (SUBREG_REG (x))))
+	       || !MEM_P (SUBREG_REG (x)))
 	      && GET_MODE_PRECISION (GET_MODE (x))
 		  > GET_MODE_PRECISION (inner_mode))
 	    nonzero
