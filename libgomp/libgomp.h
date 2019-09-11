@@ -1120,7 +1120,7 @@ extern void gomp_acc_declare_allocate (bool, size_t, void **, size_t *,
 struct gomp_coalesce_buf;
 extern void gomp_copy_host2dev (struct gomp_device_descr *,
 				struct goacc_asyncqueue *, void *, const void *,
-				size_t, struct gomp_coalesce_buf *);
+				size_t, bool, struct gomp_coalesce_buf *);
 extern void gomp_copy_dev2host (struct gomp_device_descr *,
 				struct goacc_asyncqueue *, void *, const void *,
 				size_t);

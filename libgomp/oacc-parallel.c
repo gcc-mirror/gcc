@@ -1022,7 +1022,7 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 	  if (!pointer)
 	    {
 	      if (kind == GOMP_MAP_ATTACH)
-		acc_attach (hostaddrs[i]);
+		acc_attach_async (hostaddrs[i], async);
 	      else if (kind == GOMP_MAP_STRUCT)
 	        i += sizes[i];
 	    }
@@ -1042,9 +1042,9 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 	  if (!pointer)
 	    {
 	      if (kind == GOMP_MAP_DETACH)
-		acc_detach (hostaddrs[i]);
+		acc_detach_async (hostaddrs[i], async);
 	      else if (kind == GOMP_MAP_FORCE_DETACH)
-		acc_detach_finalize (hostaddrs[i]);
+		acc_detach_finalize_async (hostaddrs[i], async);
 	      else if (kind == GOMP_MAP_STRUCT)
 	        i += sizes[i];
 	    }
@@ -1053,9 +1053,9 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 	      unsigned char kind2 = kinds[i + pointer - 1] & 0xff;
 
 	      if (kind2 == GOMP_MAP_DETACH)
-		acc_detach (hostaddrs[i + pointer - 1]);
+		acc_detach_async (hostaddrs[i + pointer - 1], async);
 	      else if (kind2 == GOMP_MAP_FORCE_DETACH)
-	        acc_detach_finalize (hostaddrs[i + pointer - 1]);
+	        acc_detach_finalize_async (hostaddrs[i + pointer - 1], async);
 
 	      i += pointer - 1;
 	    }

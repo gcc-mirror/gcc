@@ -203,7 +203,7 @@ memcpy_tofrom_device (bool from, void *d, void *h, size_t s, int async,
   if (from)
     gomp_copy_dev2host (thr->dev, aq, h, d, s);
   else
-    gomp_copy_host2dev (thr->dev, aq, d, h, s, /* TODO: cbuf? */ NULL);
+    gomp_copy_host2dev (thr->dev, aq, d, h, s, false, /* TODO: cbuf? */ NULL);
 
   if (profiling_p)
     {
@@ -819,7 +819,7 @@ update_dev_host (int is_dev, void *h, size_t s, int async)
   goacc_aq aq = get_goacc_asyncqueue (async);
 
   if (is_dev)
-    gomp_copy_host2dev (acc_dev, aq, d, h, s, /* TODO: cbuf? */ NULL);
+    gomp_copy_host2dev (acc_dev, aq, d, h, s, false, /* TODO: cbuf? */ NULL);
   else
     gomp_copy_dev2host (acc_dev, aq, h, d, s);
 
