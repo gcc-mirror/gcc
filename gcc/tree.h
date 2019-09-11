@@ -94,6 +94,10 @@ as_internal_fn (combined_fn code)
   (MARK_TS_TYPE_COMMON (C),				\
    tree_contains_struct[C][TS_TYPE_WITH_LANG_SPECIFIC] = true)
 
+#define MARK_TS_TYPE_NON_COMMON(C)			\
+  (MARK_TS_TYPE_WITH_LANG_SPECIFIC (C),			\
+   tree_contains_struct[C][TS_TYPE_NON_COMMON] = true)	\
+
 #define MARK_TS_DECL_MINIMAL(C)				\
   (MARK_TS_COMMON (C),					\
    tree_contains_struct[C][TS_DECL_MINIMAL] = true)

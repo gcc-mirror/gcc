@@ -1,3 +1,9 @@
+2019-09-11  Nathan Sidwell  <nathan@acm.org>
+
+	* c-objcp-common.c (cp-objcp-common.c): Alphababetize and
+	correctly mark all C++ nodes.
+	* decl.c (cp_tree_node_structure): Alphabetize.
+
 2019-09-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91673 - ICE with noexcept in alias-declaration.

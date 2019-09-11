@@ -1,3 +1,8 @@
+2019-09-11  Nathan Sidwell  <nathan@acm.org>
+
+	* tree.h (MARK_TS_TYPE_NON_COMMON): New.
+	* tree.c (tree_node_structure_for_code): Reformat and alphabetize.
+
 2019-09-11  Richard Biener  <rguenther@suse.de>
 
 	* lto-opts.c (lto_write_options): Stream -g when debug is enabled.
