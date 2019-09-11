@@ -1,3 +1,7 @@
+2019-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/20161111-1.c: XFAIL redundant zero-extension test.
+
 2019-09-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/87853
