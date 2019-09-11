@@ -3308,7 +3308,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (!vectype_in)
 	vectype_in = vectypes[i];
       else if (vectypes[i]
-	       && vectypes[i] != vectype_in)
+	       && !types_compatible_p (vectypes[i], vectype_in))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

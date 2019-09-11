@@ -1,5 +1,8 @@
 2019-09-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/91723
+	* gcc.dg/vect/vect-fma-3.c: New test.
+
 	PR middle-end/91725
 	* gcc.c-torture/compile/pr91725.c: New test.
 
