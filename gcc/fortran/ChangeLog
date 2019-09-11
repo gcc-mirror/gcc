@@ -1,5 +1,11 @@
 2019-09-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/91553
+	* simplify.c (gfc_convert_constant):  During conversion check if the
+	constant is enclosed in parenthesis, and simplify expression.
+
+2019-09-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/91642
 	* io.c (gfc_match_inquire): null() cannot be in an iolength inquire
 	list.
