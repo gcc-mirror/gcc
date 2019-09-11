@@ -1,3 +1,9 @@
+2019-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90387
+	* vr-values.c (vr_values::extract_range_basic): After inlining
+	simplify non-constant __builtin_constant_p to false.
+
 2019-09-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/89795
