@@ -284,9 +284,9 @@ static void cb_exit_data_start (acc_prof_info *prof_info, acc_event_info *event_
 {
   DEBUG_printf ("%s\n", __FUNCTION__);
 
-  assert (state == 7
+  assert (state == 5
 #if ASYNC_EXIT_DATA
-	  || state == 107
+	  || state == 105
 #endif
 	  );
   STATE_OP (state, ++);
@@ -340,9 +340,9 @@ static void cb_exit_data_end (acc_prof_info *prof_info, acc_event_info *event_in
 {
   DEBUG_printf ("%s\n", __FUNCTION__);
 
-  assert (state == 8
+  assert (state == 6
 #if ASYNC_EXIT_DATA
-	  || state == 108
+	  || state == 106
 #endif
 	  );
   STATE_OP (state, ++);
@@ -426,7 +426,10 @@ static void cb_compute_construct_start (acc_prof_info *prof_info, acc_event_info
   assert (prof_info->device_type == acc_device_type);
   assert (prof_info->device_number == acc_device_num);
   assert (prof_info->thread_id == -1);
-  assert (prof_info->async == /* TODO acc_async */ acc_async_sync);
+  if (acc_device_type == acc_device_host)
+    assert (prof_info->async == acc_async_sync);
+  else
+    assert (prof_info->async == acc_async);
   assert (prof_info->async_queue == prof_info->async);
   assert (prof_info->src_file == NULL);
   assert (prof_info->func_name == NULL);
@@ -467,9 +470,6 @@ static void cb_compute_construct_end (acc_prof_info *prof_info, acc_event_info *
     {
       /* Compensate for the missing 'acc_ev_enter_data_end'.  */
       state += 1;
-      /* Compensate for the missing 'acc_ev_enqueue_launch_start' and
-	 'acc_ev_enqueue_launch_end'.  */
-      state += 2;
       /* Compensate for the missing 'acc_ev_exit_data_start' and
 	 'acc_ev_exit_data_end'.  */
       state += 2;
@@ -482,8 +482,8 @@ static void cb_compute_construct_end (acc_prof_info *prof_info, acc_event_info *
       state += 2;
     }
 #endif
-  assert (state == 9
-	  || state == 109);
+  assert (state == 7
+	  || state == 107);
   STATE_OP (state, ++);
 
   assert (tool_info != NULL);
@@ -537,17 +537,6 @@ static void cb_enqueue_launch_start (acc_prof_info *prof_info, acc_event_info *e
 
   assert (acc_device_type != acc_device_host);
 
-  assert (state == 5
-	  || state == 105);
-  STATE_OP (state, ++);
-
-  assert (tool_info != NULL);
-  assert (tool_info->event_info.other_event.event_type == acc_ev_compute_construct_start);
-  assert (tool_info->nested == NULL);
-  tool_info->nested = (struct tool_info *) malloc(sizeof *tool_info);
-  assert (tool_info->nested != NULL);
-  tool_info->nested->nested = NULL;
-
   assert (prof_info->event_type == acc_ev_enqueue_launch_start);
   assert (prof_info->valid_bytes == _ACC_PROF_INFO_VALID_BYTES);
   assert (prof_info->version == _ACC_PROF_INFO_VERSION);
@@ -591,13 +580,6 @@ static void cb_enqueue_launch_start (acc_prof_info *prof_info, acc_event_info *e
   assert (api_info->device_handle == NULL);
   assert (api_info->context_handle == NULL);
   assert (api_info->async_handle == NULL);
-
-  tool_info->nested->event_info.launch_event.event_type = event_info->launch_event.event_type;
-  tool_info->nested->event_info.launch_event.kernel_name = strdup (event_info->launch_event.kernel_name);
-  tool_info->nested->event_info.launch_event.num_gangs = event_info->launch_event.num_gangs;
-  tool_info->nested->event_info.launch_event.num_workers = event_info->launch_event.num_workers;
-  tool_info->nested->event_info.launch_event.vector_length = event_info->launch_event.vector_length;
-  event_info->other_event.tool_info = tool_info->nested;
 }
 
 static void cb_enqueue_launch_end (acc_prof_info *prof_info, acc_event_info *event_info, acc_api_info *api_info)
@@ -605,19 +587,6 @@ static void cb_enqueue_launch_end (acc_prof_info *prof_info, acc_event_info *eve
   DEBUG_printf ("%s\n", __FUNCTION__);
 
   assert (acc_device_type != acc_device_host);
-
-  assert (state == 6
-	  || state == 106);
-  STATE_OP (state, ++);
-
-  assert (tool_info != NULL);
-  assert (tool_info->event_info.other_event.event_type == acc_ev_compute_construct_start);
-  assert (tool_info->nested != NULL);
-  assert (tool_info->nested->event_info.launch_event.event_type == acc_ev_enqueue_launch_start);
-  assert (tool_info->nested->event_info.launch_event.kernel_name != NULL);
-  assert (tool_info->nested->event_info.launch_event.num_gangs >= 1);
-  assert (tool_info->nested->event_info.launch_event.num_workers >= 1);
-  assert (tool_info->nested->event_info.launch_event.vector_length >= 1);
 
   assert (prof_info->event_type == acc_ev_enqueue_launch_end);
   assert (prof_info->valid_bytes == _ACC_PROF_INFO_VALID_BYTES);
@@ -638,12 +607,7 @@ static void cb_enqueue_launch_end (acc_prof_info *prof_info, acc_event_info *eve
   assert (event_info->launch_event.valid_bytes == _ACC_LAUNCH_EVENT_INFO_VALID_BYTES);
   assert (event_info->launch_event.parent_construct == acc_construct_parallel);
   assert (event_info->launch_event.implicit == 1);
-  assert (event_info->launch_event.tool_info == tool_info->nested);
   assert (event_info->launch_event.kernel_name != NULL);
-  assert (strcmp (event_info->launch_event.kernel_name, tool_info->nested->event_info.launch_event.kernel_name) == 0);
-  assert (event_info->launch_event.num_gangs == tool_info->nested->event_info.launch_event.num_gangs);
-  assert (event_info->launch_event.num_workers == tool_info->nested->event_info.launch_event.num_workers);
-  assert (event_info->launch_event.vector_length == tool_info->nested->event_info.launch_event.vector_length);
 
   if (acc_device_type == acc_device_host)
     assert (api_info->device_api == acc_device_api_none);
@@ -657,10 +621,6 @@ static void cb_enqueue_launch_end (acc_prof_info *prof_info, acc_event_info *eve
   assert (api_info->device_handle == NULL);
   assert (api_info->context_handle == NULL);
   assert (api_info->async_handle == NULL);
-
-  free ((void *) tool_info->nested->event_info.launch_event.kernel_name);
-  free (tool_info->nested);
-  tool_info->nested = NULL;
 }
 
 
@@ -707,7 +667,7 @@ int main()
     }
     assert (state_init == 4);
   }
-  assert (state == 10);
+  assert (state == 8);
 
   STATE_OP (state, = 100);
 
@@ -723,7 +683,7 @@ int main()
 #pragma acc wait
     assert (state_init == 104);
   }
-  assert (state == 110);
+  assert (state == 108);
 
   return 0;
 }

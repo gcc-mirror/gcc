@@ -291,6 +291,62 @@ goacc_call_host_fn (void (*fn) (void *), size_t mapnum, void **hostaddrs,
   fn (hostaddrs);
 }
 
+struct async_prof_callback_info {
+  acc_prof_info prof_info;
+  acc_event_info event_info;
+  acc_api_info api_info;
+  struct async_prof_callback_info *start_info;
+};
+
+static void
+async_prof_dispatch (void *ptr)
+{
+  struct async_prof_callback_info *info
+    = (struct async_prof_callback_info *) ptr;
+
+  if (info->start_info)
+    {
+      /* The TOOL_INFO must be preserved from a start event to the
+	 corresponding end event.  Copy that here.  */
+      void *tool_info = info->start_info->event_info.other_event.tool_info;
+      info->event_info.other_event.tool_info = tool_info;
+    }
+
+  goacc_profiling_dispatch (&info->prof_info, &info->event_info,
+			    &info->api_info);
+
+  /* The async_prof_dispatch function is (so far) always used for start/end
+     profiling event pairs: the start and end parts are queued, then each is
+     dispatched (or the dispatches might be interleaved before the end part is
+     queued).
+     In any case, it's not safe to delete either info structure before the
+     whole bracketed event is complete.  */
+
+  if (info->start_info)
+    {
+      free (info->start_info);
+      free (info);
+    }
+}
+
+struct async_prof_callback_info *
+queue_async_prof_dispatch (struct gomp_device_descr *devicep, goacc_aq aq,
+			   acc_prof_info *prof_info, acc_event_info *event_info,
+			   acc_api_info *api_info,
+			   struct async_prof_callback_info *prev_info)
+{
+  struct async_prof_callback_info *info = malloc (sizeof (*info));
+
+  info->prof_info = *prof_info;
+  info->event_info = *event_info;
+  info->api_info = *api_info;
+  info->start_info = prev_info;
+
+  devicep->openacc.async.queue_callback_func (aq, async_prof_dispatch,
+					      (void *) info);
+  return info;
+}
+
 /* Launch a possibly offloaded function with FLAGS.  FN is the host fn
    address.  MAPNUM, HOSTADDRS, SIZES & KINDS  describe the memory
    blocks to be copied to/from the device.  Varadic arguments are
@@ -317,6 +373,8 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *), size_t mapnum,
   unsigned tag;
   struct goacc_ncarray_info *nca_info = NULL;
   bool args_exploded = false;
+  struct async_prof_callback_info *comp_start_info = NULL,
+				  *data_start_info = NULL;
 
 #ifdef HAVE_INTTYPES_H
   gomp_debug (0, "%s: mapnum=%"PRIu64", hostaddrs=%p, size=%p, kinds=%p\n",
@@ -378,10 +436,6 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *), size_t mapnum,
       api_info.async_handle = NULL;
     }
 
-  if (profiling_p)
-    goacc_profiling_dispatch (&prof_info, &compute_construct_event_info,
-			      &api_info);
-
   handle_ftn_pointers (mapnum, hostaddrs, sizes, kinds);
 
   /* Default: let the runtime choose.  */
@@ -417,11 +471,12 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *), size_t mapnum,
 	    if (async == GOMP_LAUNCH_OP_MAX)
 	      async = va_arg (ap, unsigned);
 
-	    if (profiling_p)
-	      {
-		prof_info.async = async;
-		prof_info.async_queue = prof_info.async;
-	      }
+	    /* Set async number in profiling data, unless the device is the
+	       host or we're doing host fallback.  */
+	    if (profiling_p
+	        && !(flags & GOACC_FLAG_HOST_FALLBACK)
+		&& acc_device_type (acc_dev->type) != acc_device_host)
+	      prof_info.async = prof_info.async_queue = async;
 
 	    break;
 	  }
@@ -452,6 +507,20 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *), size_t mapnum,
     nca_info = goacc_process_noncontiguous_arrays (mapnum, hostaddrs, kinds, &ap);
 
   va_end (ap);
+
+  goacc_aq aq = get_goacc_asyncqueue (async);
+
+  if (profiling_p)
+    {
+      if (aq)
+	comp_start_info
+	  = queue_async_prof_dispatch (acc_dev, aq, &prof_info,
+				       &compute_construct_event_info,
+				       &api_info, NULL);
+      else
+	goacc_profiling_dispatch (&prof_info, &compute_construct_event_info,
+				  &api_info);
+    }
 
   /* Host fallback if "if" clause is false or if the current device is set to
      the host.  */
@@ -500,11 +569,15 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *), size_t mapnum,
 	= compute_construct_event_info.other_event.parent_construct;
       enter_exit_data_event_info.other_event.implicit = 1;
       enter_exit_data_event_info.other_event.tool_info = NULL;
-      goacc_profiling_dispatch (&prof_info, &enter_exit_data_event_info,
-				&api_info);
+      if (aq)
+	data_start_info
+	  = queue_async_prof_dispatch (acc_dev, aq, &prof_info,
+				       &enter_exit_data_event_info, &api_info,
+				       NULL);
+      else
+	goacc_profiling_dispatch (&prof_info, &enter_exit_data_event_info,
+				  &api_info);
     }
-
-  goacc_aq aq = get_goacc_asyncqueue (async);
 
   tgt = gomp_map_vars_openacc (acc_dev, aq, mapnum, hostaddrs, sizes, kinds,
 			       nca_info);
@@ -524,8 +597,13 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *), size_t mapnum,
       prof_info.event_type = acc_ev_enter_data_end;
       enter_exit_data_event_info.other_event.event_type
 	= prof_info.event_type;
-      goacc_profiling_dispatch (&prof_info, &enter_exit_data_event_info,
-				&api_info);
+      if (aq)
+	queue_async_prof_dispatch (acc_dev, aq, &prof_info,
+				   &enter_exit_data_event_info, &api_info,
+				   data_start_info);
+      else
+	goacc_profiling_dispatch (&prof_info, &enter_exit_data_event_info,
+				  &api_info);
     }
   
   devaddrs = gomp_alloca (sizeof (void *) * mapnum);
@@ -556,8 +634,14 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *), size_t mapnum,
       prof_info.event_type = acc_ev_exit_data_start;
       enter_exit_data_event_info.other_event.event_type = prof_info.event_type;
       enter_exit_data_event_info.other_event.tool_info = NULL;
-      goacc_profiling_dispatch (&prof_info, &enter_exit_data_event_info,
-				&api_info);
+      if (aq)
+	data_start_info
+	  = queue_async_prof_dispatch (acc_dev, aq, &prof_info,
+				       &enter_exit_data_event_info, &api_info,
+				       NULL);
+      else
+	goacc_profiling_dispatch (&prof_info, &enter_exit_data_event_info,
+				  &api_info);
     }
 
   /* If running synchronously, unmap immediately.  */
@@ -570,8 +654,13 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *), size_t mapnum,
     {
       prof_info.event_type = acc_ev_exit_data_end;
       enter_exit_data_event_info.other_event.event_type = prof_info.event_type;
-      goacc_profiling_dispatch (&prof_info, &enter_exit_data_event_info,
-				&api_info);
+      if (aq)
+	queue_async_prof_dispatch (acc_dev, aq, &prof_info,
+				   &enter_exit_data_event_info, &api_info,
+				   data_start_info);
+      else
+	goacc_profiling_dispatch (&prof_info, &enter_exit_data_event_info,
+				  &api_info);
     }
 
  out_prof:
@@ -580,8 +669,13 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *), size_t mapnum,
       prof_info.event_type = acc_ev_compute_construct_end;
       compute_construct_event_info.other_event.event_type
 	= prof_info.event_type;
-      goacc_profiling_dispatch (&prof_info, &compute_construct_event_info,
-				&api_info);
+      if (aq)
+	queue_async_prof_dispatch (acc_dev, aq, &prof_info,
+				   &compute_construct_event_info, &api_info,
+				   comp_start_info);
+      else
+	goacc_profiling_dispatch (&prof_info, &compute_construct_event_info,
+				  &api_info);
 
       thr->prof_info = NULL;
       thr->api_info = NULL;
@@ -837,6 +931,8 @@ GOACC_update (int flags_m, size_t mapnum,
 
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = thr->dev;
+  goacc_aq aq = NULL;
+  struct async_prof_callback_info *update_start_info = NULL;
 
   bool profiling_p = GOACC_PROFILING_DISPATCH_P (true);
 
@@ -886,7 +982,15 @@ GOACC_update (int flags_m, size_t mapnum,
     }
 
   if (profiling_p)
-    goacc_profiling_dispatch (&prof_info, &update_event_info, &api_info);
+    {
+      aq = get_goacc_asyncqueue (async);
+      if (aq)
+	update_start_info
+	  = queue_async_prof_dispatch (acc_dev, aq, &prof_info,
+				       &update_event_info, &api_info, NULL);
+      else
+	goacc_profiling_dispatch (&prof_info, &update_event_info, &api_info);
+    }
 
   if ((acc_dev->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
       || (flags & GOACC_FLAG_HOST_FALLBACK))
@@ -973,7 +1077,11 @@ GOACC_update (int flags_m, size_t mapnum,
     {
       prof_info.event_type = acc_ev_update_end;
       update_event_info.other_event.event_type = prof_info.event_type;
-      goacc_profiling_dispatch (&prof_info, &update_event_info, &api_info);
+      if (aq)
+	queue_async_prof_dispatch (acc_dev, aq, &prof_info, &update_event_info,
+				   &api_info, update_start_info);
+      else
+	goacc_profiling_dispatch (&prof_info, &update_event_info, &api_info);
 
       thr->prof_info = NULL;
       thr->api_info = NULL;
