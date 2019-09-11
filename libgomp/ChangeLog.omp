@@ -1,5 +1,31 @@
 2019-09-17  Julian Brown  <julian@codesourcery.com>
 
+	* oacc-host.c (host_openacc_async_queue_callback): Invoke callback
+	function immediately.
+	* oacc-parallel.c (struct async_prof_callback_info, async_prof_dispatch,
+	queue_async_prof_dispatch): New.
+	(GOACC_parallel_keyed): Call queue_async_prof_dispatch for asynchronous
+	profile-event dispatches.
+	(GOACC_enter_exit_data): Likewise.
+	(GOACC_update): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-init-1.c
+	(cb_compute_construct_start): Remove/fix TODO.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-parallel-1.c
+	(cb_exit_data_start): Tweak expected state values.
+	(cb_exit_data_end): Likewise.
+	(cb_compute_construct_start): Remove/fix TODO.
+	(cb_compute_construct_end): Don't do adjustments for
+	acc_ev_enqueue_launch_start/acc_ev_enqueue_launch_end callbacks.
+	(cb_compute_construct_end): Tweak expected state values.
+	(cb_enqueue_launch_start, cb_enqueue_launch_end): Don't expect
+	launch-enqueue operations to happen synchronously with respect to
+	profiling events on async streams.
+	(main): Tweak expected state values.
+	* testsuite/libgomp.oacc-c-c++-common/lib-94.c (main): Reorder
+	operations for async-safety.
+
+2019-09-17  Julian Brown  <julian@codesourcery.com>
+
 	* target.c (gomp_map_vars_internal): Remove read of uninitialised
 	data.
 

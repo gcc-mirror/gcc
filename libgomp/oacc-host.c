@@ -250,10 +250,9 @@ host_openacc_async_dev2host (int ord __attribute__ ((unused)),
 static void
 host_openacc_async_queue_callback (struct goacc_asyncqueue *aq
 				   __attribute__ ((unused)),
-				   void (*callback_fn)(void *)
-				   __attribute__ ((unused)),
-				   void *userptr __attribute__ ((unused)))
+				   void (*callback_fn)(void *), void *userptr)
 {
+  callback_fn (userptr);
 }
 
 static struct goacc_asyncqueue *
