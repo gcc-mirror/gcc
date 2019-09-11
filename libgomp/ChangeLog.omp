@@ -1,3 +1,14 @@
+2019-09-17  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/async_queue-1.c: Only run
+	NVidia-specific test on NVidia hardware.
+	* testsuite/libgomp.oacc-c-c++-common/asyncwait-nop-1.c (main):
+	Initialise for acc_device_gcn if testing on AMD GCN.
+	* testsuite/libgomp.oacc-c-c++-common/function-not-offloaded.c: Support
+	AMD GCN.
+	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c (check): Skip
+	vector dimension test for AMD GCN.
+
 2019-09-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	* plugin/plugin-gcn.c (hsa_warn, hsa_fatal, hsa_error): Ensure

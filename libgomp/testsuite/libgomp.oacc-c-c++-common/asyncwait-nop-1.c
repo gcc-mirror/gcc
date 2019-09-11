@@ -26,6 +26,8 @@ main ()
   acc_device_t d;
 #if defined ACC_DEVICE_TYPE_nvidia
   d = acc_device_nvidia;
+#elif defined ACC_DEVICE_TYPE_gcn
+  d = acc_device_gcn;
 #elif defined ACC_DEVICE_TYPE_host
   d = acc_device_host;
 #else
