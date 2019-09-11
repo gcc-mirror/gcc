@@ -1,3 +1,9 @@
+2019-09-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91642
+	* io.c (gfc_match_inquire): null() cannot be in an iolength inquire
+	list.
+
 2019-09-05  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/91496
