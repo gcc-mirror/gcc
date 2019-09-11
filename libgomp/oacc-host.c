@@ -208,6 +208,7 @@ host_openacc_async_host2dev (int ord __attribute__ ((unused)),
 			     void *dst __attribute__ ((unused)),
 			     const void *src __attribute__ ((unused)),
 			     size_t n __attribute__ ((unused)),
+			     bool eph __attribute__ ((unused)),
 			     struct goacc_asyncqueue *aq
 			     __attribute__ ((unused)))
 {

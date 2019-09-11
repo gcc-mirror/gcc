@@ -202,7 +202,7 @@ memcpy_tofrom_device (bool from, void *d, void *h, size_t s, int async,
   if (from)
     gomp_copy_dev2host (thr->dev, aq, h, d, s);
   else
-    gomp_copy_host2dev (thr->dev, aq, d, h, s, /* TODO: cbuf? */ NULL);
+    gomp_copy_host2dev (thr->dev, aq, d, h, s, false, /* TODO: cbuf? */ NULL);
 
   if (profiling_p)
     {
@@ -830,7 +830,7 @@ update_dev_host (int is_dev, void *h, size_t s, int async)
   goacc_aq aq = get_goacc_asyncqueue (async);
 
   if (is_dev)
-    gomp_copy_host2dev (acc_dev, aq, d, h, s, /* TODO: cbuf? */ NULL);
+    gomp_copy_host2dev (acc_dev, aq, d, h, s, false, /* TODO: cbuf? */ NULL);
   else
     gomp_copy_dev2host (acc_dev, aq, h, d, s);
 
@@ -1291,7 +1291,8 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
 	  || kind == GOMP_MAP_ATTACH
 	  || kind == GOMP_MAP_FORCE_TO
 	  || kind == GOMP_MAP_TO
-	  || kind == GOMP_MAP_ALLOC)
+	  || kind == GOMP_MAP_ALLOC
+	  || kind == GOMP_MAP_DECLARE_ALLOCATE)
 	{
 	  data_enter = true;
 	  break;
@@ -1302,7 +1303,8 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
 	  || kind == GOMP_MAP_DETACH
 	  || kind == GOMP_MAP_FORCE_DETACH
 	  || kind == GOMP_MAP_FROM
-	  || kind == GOMP_MAP_FORCE_FROM)
+	  || kind == GOMP_MAP_FORCE_FROM
+	  || kind == GOMP_MAP_DECLARE_DEALLOCATE)
 	break;
 
       gomp_fatal (">>>> GOACC_enter_exit_data UNHANDLED kind 0x%.2x",

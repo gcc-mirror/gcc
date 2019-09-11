@@ -4149,19 +4149,22 @@ GOMP_OFFLOAD_openacc_async_queue_callback (struct goacc_asyncqueue *aq,
 
 bool
 GOMP_OFFLOAD_openacc_async_host2dev (int device, void *dst, const void *src,
-				     size_t n, struct goacc_asyncqueue *aq)
+				     size_t n, bool ephemeral,
+				     struct goacc_asyncqueue *aq)
 {
   struct agent_info *agent = get_agent_info (device);
   assert (agent == aq->agent);
-  /* The source data does not necessarily remain live until the deferred
-     copy happens.  Taking a snapshot of the data here avoids reading
-     uninitialised data later, but means that (a) data is copied twice and
-     (b) modifications to the copied data between the "spawning" point of
-     the asynchronous kernel and when it is executed will not be seen.
-     But, that is probably correct.  */
-  void *src_copy = GOMP_PLUGIN_malloc (n);
-  memcpy (src_copy, src, n);
-  queue_push_copy (aq, dst, src_copy, n, true);
+
+  if (ephemeral)
+    {
+      /* The source data is on the stack or otherwise may be deallocated
+	 before the asynchronous copy takes place.  Take a copy of the source
+	 data.  */
+      void *src_copy = GOMP_PLUGIN_malloc (n);
+      memcpy (src_copy, src, n);
+      src = src_copy;
+    }
+  queue_push_copy (aq, dst, src, n, ephemeral);
   return true;
 }
 

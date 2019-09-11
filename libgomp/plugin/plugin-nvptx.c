@@ -1795,9 +1795,20 @@ GOMP_OFFLOAD_dev2dev (int ord, void *dst, const void *src, size_t n)
   return true;
 }
 
+/* FIXME: It is unknown whether the cuMemcpyHtoDAsync API call caches source
+   data before the asynchronous copy takes place.  Either way there is a data
+   race associated with ignoring the EPHEMERAL parameter here -- either if it
+   is TRUE (because we are copying uncached data that may disappear before the
+   async copy takes place) or if it is FALSE (because the source data may be
+   cached/snapshotted here before it is modified by an earlier async operation,
+   so stale data gets copied to the target).
+   Neither problem has been observed in practice, so far.  */
+
 bool
 GOMP_OFFLOAD_openacc_async_host2dev (int ord, void *dst, const void *src,
-				     size_t n, struct goacc_asyncqueue *aq)
+				     size_t n,
+				     bool ephemeral __attribute__((unused)),
+				     struct goacc_asyncqueue *aq)
 {
   if (!nvptx_attach_host_thread_to_device (ord)
       || !cuda_memcpy_sanity_check (src, dst, n))
