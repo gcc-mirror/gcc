@@ -1,3 +1,8 @@
+2019-09-11  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/predicates.md (non_add_cint_operand): Simplify the
+	code.
+
 2019-09-11  Nathan Sidwell  <nathan@acm.org>
 
 	* tree.h (MARK_TS_TYPE_NON_COMMON): New.
