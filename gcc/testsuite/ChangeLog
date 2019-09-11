@@ -1,3 +1,8 @@
+2019-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90387
+	* gcc.dg/Warray-bounds-44.c: New testcase.
+
 2019-09-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/20161111-1.c: XFAIL redundant zero-extension test.

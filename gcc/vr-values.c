@@ -1124,15 +1124,8 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
       switch (cfn)
 	{
 	case CFN_BUILT_IN_CONSTANT_P:
-	  /* If the call is __builtin_constant_p and the argument is a
-	     function parameter resolve it to false.  This avoids bogus
-	     array bound warnings.
-	     ???  We could do this as early as inlining is finished.  */
-	  arg = gimple_call_arg (stmt, 0);
-	  if (TREE_CODE (arg) == SSA_NAME
-	      && SSA_NAME_IS_DEFAULT_DEF (arg)
-	      && TREE_CODE (SSA_NAME_VAR (arg)) == PARM_DECL
-	      && cfun->after_inlining)
+	  /* Resolve calls to __builtin_constant_p after inlining.  */
+	  if (cfun->after_inlining)
 	    {
 	      vr->set_zero (type);
 	      vr->equiv_clear ();
