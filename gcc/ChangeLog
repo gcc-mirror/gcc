@@ -1,3 +1,11 @@
+2019-09-11  Richard Biener  <rguenther@suse.de>
+
+	Revert
+	2019-09-09  Barnaby Wilks  <barnaby.wilks@arm.com>
+
+	* match.pd: Add flag_unsafe_math_optimizations check
+	before deciding on the widest type in a binary math operation.
+
 2019-09-10  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* doc/tm.texi.in: Document that exactly one of CALL_USED_REGISTERS
