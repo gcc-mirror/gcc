@@ -55,13 +55,6 @@ namespace pmr {
 
 #define __cpp_lib_pmroptional 201810
 
-  template<typename _Tp>
-  class __pmroptional;
-  
-
-  template<typename _Tp>
-  using optional = conditional_t<uses_allocator<_Tp, polymorphic_allocator<void>>::value,
-		  __pmroptional<_Tp> , std::optional<_Tp>>;
 
 
   
@@ -80,9 +73,13 @@ namespace pmr {
        
       _Optional_payload(const _Optional_payload& __other)
       : _M_pmr(__other._M_pmr)
-      	{
-	if (__other._M_engaged)
-	  this->_M_construct(__other._M_get());
+      {
+		if (__other._M_engaged)
+		{
+	  		::new ((void*)std::__addressof(this->_M_payload._M_value)) 
+	  				_Stored_type(__other._M_get());
+	  		this->_M_engaged = true;
+	  	}
       }
 
 
@@ -90,8 +87,12 @@ namespace pmr {
       noexcept(is_nothrow_move_constructible_v<_Stored_type>)
       : _M_pmr(__other._M_pmr)
  	  {
-	if (__other._M_engaged)
-	  this->_M_construct(std::move(__other._M_get()));
+		if (__other._M_engaged)
+		{
+	  		::new ((void*)std::__addressof(this->_M_payload._M_value)) 
+	  			_Stored_type(std::move(__other._M_get()));
+	  		this->_M_engaged = true;
+	  	}
       }
 
       _Optional_payload&
@@ -423,14 +424,14 @@ template <typename _Tp>
 
   template<typename _Tp, typename _Up>
     using __converts_from_optional =
-      __or_<is_constructible<_Tp, const __pmroptional<_Up>&>,
-	    is_constructible<_Tp, __pmroptional<_Up>&>,
-	    is_constructible<_Tp, const __pmroptional<_Up>&&>,
-	    is_constructible<_Tp, __pmroptional<_Up>&&>,
-	    is_convertible<const __pmroptional<_Up>&, _Tp>,
-	    is_convertible<__pmroptional<_Up>&, _Tp>,
-	    is_convertible<const __pmroptional<_Up>&&, _Tp>,
-	    is_convertible<__pmroptional<_Up>&&, _Tp>,
+      __or_<is_constructible<_Tp, const  pmr::optional<_Up>&>,
+	    is_constructible<_Tp,  pmr::optional<_Up>&>,
+	    is_constructible<_Tp, const  pmr::optional<_Up>&&>,
+	    is_constructible<_Tp,  pmr::optional<_Up>&&>,
+	    is_convertible<const  pmr::optional<_Up>&, _Tp>,
+	    is_convertible<pmr::optional<_Up>&, _Tp>,
+	    is_convertible<const pmr::optional<_Up>&&, _Tp>,
+	    is_convertible<pmr::optional<_Up>&&, _Tp>,
 	    is_constructible<_Tp, const std::optional<_Up>&>,
 	    is_constructible<_Tp, std::optional<_Up>&>,
 	    is_constructible<_Tp, const std::optional<_Up>&&>,
@@ -442,10 +443,10 @@ template <typename _Tp>
 
   template<typename _Tp, typename _Up>
     using __assigns_from_optional =
-      __or_<is_assignable<_Tp&, const __pmroptional<_Up>&>,
-	    is_assignable<_Tp&, __pmroptional<_Up>&>,
-	    is_assignable<_Tp&, const __pmroptional<_Up>&&>,
-	    is_assignable<_Tp&, __pmroptional<_Up>&&>,
+      __or_<is_assignable<_Tp&, const pmr::optional<_Up>&>,
+	    is_assignable<_Tp&, pmr::optional<_Up>&>,
+	    is_assignable<_Tp&, const pmr::optional<_Up>&&>,
+	    is_assignable<_Tp&, pmr::optional<_Up>&&>,
 	    is_assignable<_Tp&, const std::optional<_Up>&>,
 	    is_assignable<_Tp&, std::optional<_Up>&>,
 	    is_assignable<_Tp&, const std::optional<_Up>&&>,
@@ -473,6 +474,9 @@ template <typename _Tp>
       static_assert(!is_same_v<remove_cv_t<_Tp>, nullopt_t>);
       static_assert(!is_same_v<remove_cv_t<_Tp>, allocator_arg_t>);
       static_assert(!is_reference_v<_Tp>);
+      static_assert(uses_allocator<_Tp, pmr::polymorphic_allocator<void>>::value,
+	  "__pmroptional can not be instantiated with a class that does not use polymorphic allocator");
+	   
 
       template<typename _Up> friend class __pmroptional;
       
@@ -492,7 +496,7 @@ template <typename _Tp>
        
     public:
       using value_type = _Tp;
-      using __Allocator_type = std::pmr::polymorphic_allocator<void>;
+      using allocator_type = std::pmr::polymorphic_allocator<void>;
       
       __pmroptional() noexcept {
       }
@@ -633,13 +637,13 @@ template <typename _Tp>
 
       // allocator extended constructors
 
-	__pmroptional(allocator_arg_t, const __Allocator_type& __a)
+	__pmroptional(allocator_arg_t, const allocator_type& __a)
          noexcept
    	: _Base(std::allocator_arg, __a)
      	{}
      	
      	
-         __pmroptional(allocator_arg_t, const __Allocator_type& __a, nullopt_t)
+         __pmroptional(allocator_arg_t, const allocator_type& __a, nullopt_t)
          noexcept
    	: _Base(std::allocator_arg, __a)
      	{}
@@ -652,7 +656,7 @@ template <typename _Tp>
    			 is_constructible<_Tp, _Up&&>,
    			 is_convertible<_Up&&, _Tp>> = true>
    	
-   	__pmroptional(allocator_arg_t, const __Allocator_type& __a,_Up&& __t)
+   	__pmroptional(allocator_arg_t, const allocator_type& __a,_Up&& __t)
    	: _Base(std::allocator_arg, __a)
 	{  emplace(std::forward<_Up>(__t));
    	}
@@ -662,7 +666,7 @@ template <typename _Tp>
    			 is_constructible<_Tp, _Up&&>,
    			 __not_<is_convertible<_Up&&, _Tp>>> = false>
    	explicit
-   	__pmroptional(allocator_arg_t, const __Allocator_type& __a, _Up&& __t)
+   	__pmroptional(allocator_arg_t, const allocator_type& __a, _Up&& __t)
    	: _Base(std::allocator_arg, __a)
 	{
 	  emplace(std::forward<_Up>(__t));
@@ -670,7 +674,7 @@ template <typename _Tp>
 
 
         
-         __pmroptional(allocator_arg_t, const __Allocator_type& __a, const __pmroptional& __t)
+         __pmroptional(allocator_arg_t, const allocator_type& __a, const __pmroptional& __t)
     : _Base(std::allocator_arg,__a)
 	{
 	if (__t)
@@ -678,7 +682,7 @@ template <typename _Tp>
          }
 
         
-         __pmroptional(allocator_arg_t, const __Allocator_type& __a, __pmroptional&& __t)
+         __pmroptional(allocator_arg_t, const allocator_type& __a, __pmroptional&& __t)
      : _Base(std::allocator_arg,__a)
 	{
 	 if (__t)
@@ -692,7 +696,7 @@ template <typename _Tp>
    			 is_convertible<const _Up&, _Tp>,
    			 __not_<__converts_from_optional<_Tp, _Up>>> = true>
    	
-   	__pmroptional(allocator_arg_t, const __Allocator_type& __a, const __pmroptional<_Up>& __t)
+   	__pmroptional(allocator_arg_t, const allocator_type& __a, const __pmroptional<_Up>& __t)
    	: _Base(std::allocator_arg, __a)
 	{
 		    if (__t)
@@ -705,7 +709,7 @@ template <typename _Tp>
    			 __not_<is_convertible<const _Up&, _Tp>>,
    			 __not_<__converts_from_optional<_Tp, _Up>>> = false>
    	explicit
-   	__pmroptional(allocator_arg_t, const __Allocator_type& __a, const __pmroptional<_Up>& __t)
+   	__pmroptional(allocator_arg_t, const allocator_type& __a, const __pmroptional<_Up>& __t)
    	: _Base(std::allocator_arg,__a)
 	{
 	  if (__t)
@@ -718,7 +722,7 @@ template <typename _Tp>
    			  is_convertible<_Up&&, _Tp>,
    			  __not_<__converts_from_optional<_Tp, _Up>>> = true>
    	
-   	__pmroptional(allocator_arg_t, const __Allocator_type& __a, __pmroptional<_Up>&& __t)
+   	__pmroptional(allocator_arg_t, const allocator_type& __a, __pmroptional<_Up>&& __t)
    	: _Base(std::allocator_arg,__a)
 	{
 		  if (__t)
@@ -731,7 +735,7 @@ template <typename _Tp>
    			  __not_<is_convertible<_Up&&, _Tp>>,
    			  __not_<__converts_from_optional<_Tp, _Up>>> = false>
    	explicit
-   	__pmroptional(allocator_arg_t, const __Allocator_type& __a, __pmroptional<_Up>&& __t)
+   	__pmroptional(allocator_arg_t, const allocator_type& __a, __pmroptional<_Up>&& __t)
    	: _Base(std::allocator_arg,__a)
 	{
 	  if (__t)
@@ -743,7 +747,7 @@ template <typename _Tp>
      			 is_convertible<const _Up&, _Tp>,
     			 __not_<__converts_from_optional<_Tp, _Up>>> = true>
      	
-     	__pmroptional(allocator_arg_t, const __Allocator_type& __a,const std::optional<_Up>& __t)
+     	__pmroptional(allocator_arg_t, const allocator_type& __a,const std::optional<_Up>& __t)
      	: _Base(std::allocator_arg,__a)
 		{  
 		if (__t)
@@ -755,7 +759,7 @@ template <typename _Tp>
      			 __not_<is_convertible<const _Up&, _Tp>>,
     			 __not_<__converts_from_optional<_Tp, _Up>>> = false>
      	explicit
-     	__pmroptional(allocator_arg_t, const __Allocator_type& __a, const std::optional<_Up>& __t)
+     	__pmroptional(allocator_arg_t, const allocator_type& __a, const std::optional<_Up>& __t)
      	: _Base(std::allocator_arg,__a)
 		{
      	  if (__t)
@@ -766,7 +770,7 @@ template <typename _Tp>
      		_Requires< is_constructible<_Tp, _Up&&>,
      			  is_convertible<_Up&&, _Tp>,
 				  __not_<__converts_from_optional<_Tp, _Up>>>  = true>
-     	__pmroptional(allocator_arg_t, const __Allocator_type& __a, std::optional<_Up>&& __t)
+     	__pmroptional(allocator_arg_t, const allocator_type& __a, std::optional<_Up>&& __t)
      	: _Base(std::allocator_arg,__a)
 		{
      	  if (__t)
@@ -778,7 +782,7 @@ template <typename _Tp>
      			  __not_<is_convertible<_Up&&, _Tp>>,
 	    		  __not_<__converts_from_optional<_Tp, _Up>>> = false>
      	explicit
-     	__pmroptional(allocator_arg_t, const __Allocator_type& __a, std::optional<_Up>&& __t)
+     	__pmroptional(allocator_arg_t, const allocator_type& __a, std::optional<_Up>&& __t)
      	: _Base(std::allocator_arg,__a)
 		{
      	  if (__t)
@@ -787,7 +791,7 @@ template <typename _Tp>
       template<typename... _Args,
 	       _Requires<is_constructible<_Tp, _Args&&...>> = false>
 	explicit
-	__pmroptional(in_place_t, allocator_arg_t, const __Allocator_type& __a, _Args&&... __args)
+	__pmroptional(in_place_t, allocator_arg_t, const allocator_type& __a, _Args&&... __args)
 	: _Base(allocator_arg,  __a) 
 	{ 
 	
@@ -799,7 +803,7 @@ template <typename _Tp>
 					  initializer_list<_Up>&,
 					  _Args&&...>> = false>
 	explicit
-	__pmroptional(in_place_t, allocator_arg_t, const __Allocator_type& __a, 
+	__pmroptional(in_place_t, allocator_arg_t, const allocator_type& __a, 
 					 initializer_list<_Up> __il, _Args&&... __args)
 	: _Base(allocator_arg,  __a) 
 	{ 
@@ -1060,9 +1064,9 @@ template <typename _Tp>
 	}
 
 	pmr::polymorphic_allocator<void>
-	get_allocator() const noexcept;
+	get_allocator() const noexcept
 	{ 
-		return polymorphic_allocator<void>(_M_get_allocator());
+		return polymorphic_allocator<void>(this->_M_get_allocator());
 	}
 
       void reset() noexcept { this->_M_reset(); }
@@ -1452,10 +1456,11 @@ template <typename _Tp>
 
   /// @}
  
-
+/* todo:remove
   template<typename _Tp>
     struct uses_allocator<std::pmr::__pmroptional<_Tp>, std::pmr::polymorphic_allocator<void>>
     : public uses_allocator<_Tp, std::pmr::polymorphic_allocator<void>>::type { };
+*/
   _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

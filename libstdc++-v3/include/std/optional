@@ -57,8 +57,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class optional;
 
 namespace pmr {
-  template<typename _Tp>
-    class __pmroptional;
+	template<typename _Tp>
+	class __pmroptional;
+
+
+	template<typename _Tp>
+	using optional = conditional_t<uses_allocator<_Tp, polymorphic_allocator<void>>::value,
+		  __pmroptional<_Tp> , std::optional<_Tp>>;
 }
 
   /// Tag type to disengage optional objects.
@@ -638,14 +643,14 @@ namespace pmr {
 
   template<typename _Tp, typename _Up>
       using __converts_from_optional =
-        __or_<is_constructible<_Tp, const pmr::__pmroptional<_Up>&>,
-  	    is_constructible<_Tp, pmr::__pmroptional<_Up>&>,
-  	    is_constructible<_Tp, const pmr::__pmroptional<_Up>&&>,
-  	    is_constructible<_Tp, pmr::__pmroptional<_Up>&&>,
-  	    is_convertible<const pmr::__pmroptional<_Up>&, _Tp>,
-  	    is_convertible<pmr::__pmroptional<_Up>&, _Tp>,
-  	    is_convertible<const pmr::__pmroptional<_Up>&&, _Tp>,
-  	    is_convertible<pmr::__pmroptional<_Up>&&, _Tp>,
+        __or_<is_constructible<_Tp, const pmr::optional<_Up>&>,
+  	    is_constructible<_Tp, pmr::optional<_Up>&>,
+  	    is_constructible<_Tp, const pmr::optional<_Up>&&>,
+  	    is_constructible<_Tp, pmr::optional<_Up>&&>,
+  	    is_convertible<const pmr::optional<_Up>&, _Tp>,
+  	    is_convertible<pmr::optional<_Up>&, _Tp>,
+  	    is_convertible<const pmr::optional<_Up>&&, _Tp>,
+  	    is_convertible<pmr::optional<_Up>&&, _Tp>,
   	    is_constructible<_Tp, const std::optional<_Up>&>,
   	    is_constructible<_Tp, std::optional<_Up>&>,
   	    is_constructible<_Tp, const std::optional<_Up>&&>,
@@ -657,10 +662,10 @@ namespace pmr {
 
     template<typename _Tp, typename _Up>
       using __assigns_from_optional =
-        __or_<is_assignable<_Tp&, const pmr::__pmroptional<_Up>&>,
-  	    is_assignable<_Tp&, pmr::__pmroptional<_Up>&>,
-  	    is_assignable<_Tp&, const pmr::__pmroptional<_Up>&&>,
-  	    is_assignable<_Tp&, pmr::__pmroptional<_Up>&&>,
+        __or_<is_assignable<_Tp&, const pmr::optional<_Up>&>,
+  	    is_assignable<_Tp&, pmr::optional<_Up>&>,
+  	    is_assignable<_Tp&, const pmr::optional<_Up>&&>,
+  	    is_assignable<_Tp&, pmr::optional<_Up>&&>,
   	    is_assignable<_Tp&, const std::optional<_Up>&>,
   	    is_assignable<_Tp&, std::optional<_Up>&>,
   	    is_assignable<_Tp&, const std::optional<_Up>&&>,
