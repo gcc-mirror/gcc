@@ -325,9 +325,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	      && (TYPE_UNSIGNED (TREE_TYPE (@1))
 		  || (element_precision (type)
 		      == element_precision (TREE_TYPE (@1)))
-		  || (get_nonzero_bits (@0)
-		      & wi::mask (element_precision (TREE_TYPE (@1)) - 1, true,
-				  element_precision (type))) == 0))))
+		  || (INTEGRAL_TYPE_P (type)
+		      && (tree_nonzero_bits (@0)
+			  & wi::mask (element_precision (TREE_TYPE (@1)) - 1,
+				      true,
+				      element_precision (type))) == 0)))))
   (rshift @0 @2)))
 
 /* Preserve explicit divisions by 0: the C++ front-end wants to detect
