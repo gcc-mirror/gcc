@@ -229,7 +229,7 @@ init_unavailable (tag_insn_info *insn_info, tag_map_t &tag_map, du_head_p head,
       if (DEBUG_INSN_P (tmp->insn))
 	continue;
 
-      IOR_COMPL_HARD_REG_SET (*unavailable, reg_class_contents[tmp->cl]);
+      *unavailable |= ~reg_class_contents[tmp->cl];
       super_class = reg_class_superunion[(int) super_class][(int) tmp->cl];
     }
 

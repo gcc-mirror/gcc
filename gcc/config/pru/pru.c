@@ -443,7 +443,7 @@ prologue_saved_reg_p (int regno)
 {
   gcc_assert (GP_REG_P (regno));
 
-  if (df_regs_ever_live_p (regno) && !call_used_regs[regno])
+  if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
     return true;
 
   /* 32-bit FP.  */

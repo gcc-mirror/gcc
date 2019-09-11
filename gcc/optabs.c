@@ -3738,7 +3738,7 @@ emit_libcall_block_1 (rtx_insn *insns, rtx target, rtx result, rtx equiv,
 	  data.first = insns;
 	  data.insn = insn;
 	  data.must_stay = 0;
-	  note_stores (PATTERN (insn), no_conflict_move_test, &data);
+	  note_stores (insn, no_conflict_move_test, &data);
 	  if (! data.must_stay)
 	    {
 	      if (PREV_INSN (insn))
@@ -6478,7 +6478,7 @@ expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
       /* Otherwise, work out if the compare-and-swap succeeded.  */
       cc_reg = NULL_RTX;
       if (have_insn_for (COMPARE, CCmode))
-	note_stores (PATTERN (get_last_insn ()), find_cc_set, &cc_reg);
+	note_stores (get_last_insn (), find_cc_set, &cc_reg);
       if (cc_reg)
 	{
 	  target_bool = emit_store_flag_force (target_bool, EQ, cc_reg,

@@ -253,7 +253,7 @@ create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
       CLEAR_HARD_REG_BIT (live_hard_regs, head->regno + nregs);
     }
 
-  COPY_HARD_REG_SET (head->hard_conflicts, live_hard_regs);
+  head->hard_conflicts = live_hard_regs;
   bitmap_set_bit (&open_chains_set, head->id);
 
   open_chains = head;
@@ -292,7 +292,7 @@ merge_overlapping_regs (HARD_REG_SET *pset, class du_head *head)
 {
   bitmap_iterator bi;
   unsigned i;
-  IOR_HARD_REG_SET (*pset, head->hard_conflicts);
+  *pset |= head->hard_conflicts;
   EXECUTE_IF_SET_IN_BITMAP (&head->conflicts, 0, i, bi)
     {
       du_head_p other = regrename_chain_from_id (i);
@@ -322,7 +322,7 @@ check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
 	|| global_regs[new_reg + i]
 	/* Can't use regs which aren't saved by the prologue.  */
 	|| (! df_regs_ever_live_p (new_reg + i)
-	    && ! call_used_regs[new_reg + i])
+	    && ! call_used_or_fixed_reg_p (new_reg + i))
 #ifdef LEAF_REGISTERS
 	/* We can't use a non-leaf register if we're in a
 	   leaf function.  */
@@ -367,7 +367,7 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
      If the chain needs a call-saved register, mark the call-used
      registers as unavailable.  */
   if (this_head->need_caller_save_reg)
-    IOR_HARD_REG_SET (*unavailable, call_used_reg_set);
+    *unavailable |= call_used_or_fixed_regs;
 
   /* Mark registers that overlap this chain's lifetime as unavailable.  */
   merge_overlapping_regs (unavailable, this_head);
@@ -441,8 +441,7 @@ regrename_find_superclass (du_head_p head, int *pn_uses,
       if (DEBUG_INSN_P (tmp->insn))
 	continue;
       n_uses++;
-      IOR_COMPL_HARD_REG_SET (*punavailable,
-			      reg_class_contents[tmp->cl]);
+      *punavailable |= ~reg_class_contents[tmp->cl];
       super_class
 	= reg_class_superunion[(int) super_class][(int) tmp->cl];
     }
@@ -486,7 +485,7 @@ rename_chains (void)
 	      && reg == FRAME_POINTER_REGNUM))
 	continue;
 
-      COPY_HARD_REG_SET (this_unavailable, unavailable);
+      this_unavailable = unavailable;
 
       reg_class super_class = regrename_find_superclass (this_head, &n_uses,
 							 &this_unavailable);
@@ -678,7 +677,7 @@ merge_chains (du_head_p c1, du_head_p c2)
   c2->first = c2->last = NULL;
   c2->id = c1->id;
 
-  IOR_HARD_REG_SET (c1->hard_conflicts, c2->hard_conflicts);
+  c1->hard_conflicts |= c2->hard_conflicts;
   bitmap_ior_into (&c1->conflicts, &c2->conflicts);
 
   c1->need_caller_save_reg |= c2->need_caller_save_reg;
@@ -1741,7 +1740,7 @@ build_def_use (basic_block bb)
 	     outside an operand, as live.  */
 	  hide_operands (n_ops, old_operands, old_dups, untracked_operands,
 			 false);
-	  note_stores (PATTERN (insn), note_sets_clobbers, &clobber_code);
+	  note_stores (insn, note_sets_clobbers, &clobber_code);
 	  restore_operands (insn, n_ops, old_operands, old_dups);
 
 	  /* Step 1b: Begin new chains for earlyclobbered writes inside
@@ -1857,7 +1856,7 @@ build_def_use (basic_block bb)
 	     outside an operand, as live.  */
 	  hide_operands (n_ops, old_operands, old_dups, untracked_operands,
 			 false);
-	  note_stores (PATTERN (insn), note_sets_clobbers, &set_code);
+	  note_stores (insn, note_sets_clobbers, &set_code);
 	  restore_operands (insn, n_ops, old_operands, old_dups);
 
 	  /* Step 6b: Begin new chains for writes inside operands.  */

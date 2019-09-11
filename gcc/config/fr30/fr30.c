@@ -141,7 +141,7 @@ static int fr30_num_arg_regs (const function_arg_info &);
   (   (regno) != RETURN_POINTER_REGNUM \
    && (regno) != FRAME_POINTER_REGNUM  \
    && df_regs_ever_live_p (regno)      \
-   && ! call_used_regs [regno]         )
+   && ! call_used_or_fixed_reg_p (regno))
 
 #define MUST_SAVE_FRAME_POINTER	 (df_regs_ever_live_p (FRAME_POINTER_REGNUM)  || frame_pointer_needed)
 #define MUST_SAVE_RETURN_POINTER (df_regs_ever_live_p (RETURN_POINTER_REGNUM) || crtl->profile)

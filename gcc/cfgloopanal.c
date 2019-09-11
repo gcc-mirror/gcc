@@ -353,7 +353,7 @@ init_set_costs (void)
 	&& !fixed_regs[i])
       {
 	target_avail_regs++;
-	if (call_used_regs[i])
+	if (call_used_or_fixed_reg_p (i))
 	  target_clobbered_regs++;
       }
 

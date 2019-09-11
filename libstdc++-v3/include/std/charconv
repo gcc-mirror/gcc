@@ -305,7 +305,7 @@ namespace __detail
 
   template<typename _Tp>
     __detail::__integer_to_chars_result_type<_Tp>
-    to_chars(char* __first, char* __last, _Tp __value, int __base = 10)
+    __to_chars_i(char* __first, char* __last, _Tp __value, int __base = 10)
     {
       __glibcxx_assert(2 <= __base && __base <= 36);
 
@@ -340,6 +340,43 @@ namespace __detail
 	return __detail::__to_chars(__first, __last, __unsigned_val, __base);
       }
     }
+
+#define _GLIBCXX_TO_CHARS(T) \
+  inline to_chars_result \
+  to_chars(char* __first, char* __last, T __value, int __base = 10) \
+  { return std::__to_chars_i<T>(__first, __last, __value, __base); }
+_GLIBCXX_TO_CHARS(char)
+_GLIBCXX_TO_CHARS(signed char)
+_GLIBCXX_TO_CHARS(unsigned char)
+_GLIBCXX_TO_CHARS(signed short)
+_GLIBCXX_TO_CHARS(unsigned short)
+_GLIBCXX_TO_CHARS(signed int)
+_GLIBCXX_TO_CHARS(unsigned int)
+_GLIBCXX_TO_CHARS(signed long)
+_GLIBCXX_TO_CHARS(unsigned long)
+_GLIBCXX_TO_CHARS(signed long long)
+_GLIBCXX_TO_CHARS(unsigned long long)
+#if defined(__GLIBCXX_TYPE_INT_N_0)
+_GLIBCXX_TO_CHARS(signed __GLIBCXX_TYPE_INT_N_0)
+_GLIBCXX_TO_CHARS(unsigned __GLIBCXX_TYPE_INT_N_0)
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_1)
+_GLIBCXX_TO_CHARS(signed __GLIBCXX_TYPE_INT_N_1)
+_GLIBCXX_TO_CHARS(unsigned __GLIBCXX_TYPE_INT_N_1)
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_2)
+_GLIBCXX_TO_CHARS(signed __GLIBCXX_TYPE_INT_N_2)
+_GLIBCXX_TO_CHARS(unsigned __GLIBCXX_TYPE_INT_N_2)
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_3)
+_GLIBCXX_TO_CHARS(signed __GLIBCXX_TYPE_INT_N_3)
+_GLIBCXX_TO_CHARS(unsigned __GLIBCXX_TYPE_INT_N_3)
+#endif
+#undef _GLIBCXX_TO_CHARS
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3266. to_chars(bool) should be deleted
+  to_chars_result to_chars(char*, char*, bool, int = 10) = delete;
 
 namespace __detail
 {

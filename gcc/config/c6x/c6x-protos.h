@@ -53,6 +53,8 @@ extern void c6x_expand_epilogue (bool);
 extern rtx c6x_return_addr_rtx (int);
 
 extern void c6x_set_return_address (rtx, rtx);
+
+enum reg_class c6x_regno_reg_class (int);
 #endif
 
 extern void c6x_override_options (void);

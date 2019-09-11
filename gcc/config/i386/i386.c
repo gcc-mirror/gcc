@@ -497,18 +497,15 @@ ix86_conditional_register_usage (void)
 
   /* If MMX is disabled, disable the registers.  */
   if (! TARGET_MMX)
-    AND_COMPL_HARD_REG_SET (accessible_reg_set,
-			    reg_class_contents[(int) MMX_REGS]);
+    accessible_reg_set &= ~reg_class_contents[MMX_REGS];
 
   /* If SSE is disabled, disable the registers.  */
   if (! TARGET_SSE)
-    AND_COMPL_HARD_REG_SET (accessible_reg_set,
-			    reg_class_contents[(int) ALL_SSE_REGS]);
+    accessible_reg_set &= ~reg_class_contents[ALL_SSE_REGS];
 
   /* If the FPU is disabled, disable the registers.  */
   if (! (TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387))
-    AND_COMPL_HARD_REG_SET (accessible_reg_set,
-			    reg_class_contents[(int) FLOAT_REGS]);
+    accessible_reg_set &= ~reg_class_contents[FLOAT_REGS];
 
   /* If AVX512F is disabled, disable the registers.  */
   if (! TARGET_AVX512F)
@@ -516,8 +513,7 @@ ix86_conditional_register_usage (void)
       for (i = FIRST_EXT_REX_SSE_REG; i <= LAST_EXT_REX_SSE_REG; i++)
 	CLEAR_HARD_REG_BIT (accessible_reg_set, i);
 
-      AND_COMPL_HARD_REG_SET (accessible_reg_set,
-			      reg_class_contents[(int) ALL_MASK_REGS]);
+      accessible_reg_set &= ~reg_class_contents[ALL_MASK_REGS];
     }
 }
 
@@ -5669,8 +5665,7 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return, bool ignore_outlined)
     return true;
 
   return (df_regs_ever_live_p (regno)
-	  && !call_used_regs[regno]
-	  && !fixed_regs[regno]
+	  && !call_used_or_fixed_reg_p (regno)
 	  && (regno != HARD_FRAME_POINTER_REGNUM || !frame_pointer_needed));
 }
 
@@ -7841,7 +7836,7 @@ ix86_expand_prologue (void)
 	       "around by avoiding functions with aggregate return.");
 
       /* Only need to push parameter pointer reg if it is caller saved.  */
-      if (!call_used_regs[REGNO (crtl->drap_reg)])
+      if (!call_used_or_fixed_reg_p (REGNO (crtl->drap_reg)))
 	{
 	  /* Push arg pointer reg */
 	  insn = emit_insn (gen_push (crtl->drap_reg));
@@ -8016,7 +8011,7 @@ ix86_expand_prologue (void)
 	  if (ix86_static_chain_on_stack)
 	    stack_size += UNITS_PER_WORD;
 
-	  if (!call_used_regs[REGNO (crtl->drap_reg)])
+	  if (!call_used_or_fixed_reg_p (REGNO (crtl->drap_reg)))
 	    stack_size += UNITS_PER_WORD;
 
 	  /* This over-estimates by 1 minimal-stack-alignment-unit but
@@ -8907,7 +8902,7 @@ ix86_expand_epilogue (int style)
 
       if (ix86_static_chain_on_stack)
 	param_ptr_offset += UNITS_PER_WORD;
-      if (!call_used_regs[REGNO (crtl->drap_reg)])
+      if (!call_used_or_fixed_reg_p (REGNO (crtl->drap_reg)))
 	param_ptr_offset += UNITS_PER_WORD;
 
       insn = emit_insn (gen_rtx_SET
@@ -8925,7 +8920,7 @@ ix86_expand_epilogue (int style)
 				  GEN_INT (param_ptr_offset)));
       RTX_FRAME_RELATED_P (insn) = 1;
 
-      if (!call_used_regs[REGNO (crtl->drap_reg)])
+      if (!call_used_or_fixed_reg_p (REGNO (crtl->drap_reg)))
 	ix86_emit_restore_reg_using_pop (crtl->drap_reg);
     }
 
@@ -13635,7 +13630,7 @@ ix86_avx_u128_mode_after (int mode, rtx_insn *insn)
   if (CALL_P (insn))
     {
       bool avx_upper_reg_found = false;
-      note_stores (pat, ix86_check_avx_upper_stores, &avx_upper_reg_found);
+      note_stores (insn, ix86_check_avx_upper_stores, &avx_upper_reg_found);
 
       return avx_upper_reg_found ? AVX_U128_DIRTY : AVX_U128_CLEAN;
     }
@@ -19647,12 +19642,12 @@ x86_order_regs_for_local_alloc (void)
 
    /* First allocate the local general purpose registers.  */
    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-     if (GENERAL_REGNO_P (i) && call_used_regs[i])
+     if (GENERAL_REGNO_P (i) && call_used_or_fixed_reg_p (i))
 	reg_alloc_order [pos++] = i;
 
    /* Global general purpose registers.  */
    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-     if (GENERAL_REGNO_P (i) && !call_used_regs[i])
+     if (GENERAL_REGNO_P (i) && !call_used_or_fixed_reg_p (i))
 	reg_alloc_order [pos++] = i;
 
    /* x87 registers come first in case we are doing FP math

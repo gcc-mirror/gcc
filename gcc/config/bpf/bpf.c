@@ -271,9 +271,8 @@ bpf_compute_frame_layout (void)
      the current function.  There is no need to round up, since the
      registers are all 8 bytes wide.  */
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if ((!fixed_regs[regno]
-	 && df_regs_ever_live_p (regno)
-	 && !call_used_regs[regno])
+    if ((df_regs_ever_live_p (regno)
+	 && !call_used_or_fixed_reg_p (regno))
 	|| (cfun->calls_alloca
 	    && regno == STACK_POINTER_REGNUM))
       cfun->machine->callee_saved_reg_size += 8;
@@ -312,9 +311,8 @@ bpf_expand_prologue (void)
      right after the local variables.  */
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     {
-      if ((!fixed_regs[regno]
-	   && df_regs_ever_live_p (regno)
-	   && !call_used_regs[regno])
+      if ((df_regs_ever_live_p (regno)
+	   && !call_used_or_fixed_reg_p (regno))
 	  || (cfun->calls_alloca
 	      && regno == STACK_POINTER_REGNUM))
 	{
@@ -372,9 +370,8 @@ bpf_expand_epilogue (void)
   /* Restore callee-saved hard registes from the stack.  */
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     {
-      if ((!fixed_regs[regno]
-	   && df_regs_ever_live_p (regno)
-	   && !call_used_regs[regno])
+      if ((df_regs_ever_live_p (regno)
+	   && !call_used_or_fixed_reg_p (regno))
 	  || (cfun->calls_alloca
 	      && regno == STACK_POINTER_REGNUM))
 	{

@@ -690,7 +690,7 @@
   if (GET_CODE (op) == PLUS && REG_P (XEXP (op, 0)))
     {
       int regno = REGNO (XEXP (op, 0));
-      if (!HARD_REGISTER_NUM_P (regno) || call_used_regs[regno])
+      if (!HARD_REGISTER_NUM_P (regno) || call_used_or_fixed_reg_p (regno))
 	{
 	  op = XEXP (op, 1);
 	  if (GOT32_symbol_operand (op, VOIDmode))

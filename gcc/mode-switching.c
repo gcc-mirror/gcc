@@ -165,7 +165,7 @@ new_seginfo (int mode, rtx_insn *insn, int bb, HARD_REG_SET regs_live)
   ptr->insn_ptr = insn;
   ptr->bbnum = bb;
   ptr->next = NULL;
-  COPY_HARD_REG_SET (ptr->regs_live, regs_live);
+  ptr->regs_live = regs_live;
   return ptr;
 }
 
@@ -637,7 +637,7 @@ optimize_mode_switching (void)
 		    if (REG_NOTE_KIND (link) == REG_DEAD)
 		      reg_dies (XEXP (link, 0), &live_now);
 
-		  note_stores (PATTERN (insn), reg_becomes_live, &live_now);
+		  note_stores (insn, reg_becomes_live, &live_now);
 		  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 		    if (REG_NOTE_KIND (link) == REG_UNUSED)
 		      reg_dies (XEXP (link, 0), &live_now);

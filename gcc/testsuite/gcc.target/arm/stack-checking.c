@@ -1,4 +1,4 @@
-/* { dg-do run { target { *-*-linux* } } } */
+/* { dg-do run { target { *-*-linux* *-*-uclinux* } } } */
 /* { dg-require-stack-check "" } */
 /* { dg-options "-fstack-check" } */
 

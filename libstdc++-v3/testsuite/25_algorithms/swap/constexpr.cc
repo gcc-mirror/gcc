@@ -20,12 +20,6 @@
 
 #include <algorithm>
 
-#ifndef __cpp_lib_constexpr_swap_algorithms
-# error "Feature-test macro for constexpr swap algorithms missing"
-#elif __cpp_lib_constexpr_swap_algorithms < 201806L
-# error "Feature-test macro for constexpr swap algorithms has wrong value"
-#endif
-
 constexpr bool
 test()
 {

@@ -259,12 +259,7 @@ enum reg_class
 #define CROSS_OPERANDS(X0,X1) \
   (A_REG_P (X0) == A_REG_P (X1) ? CROSS_N : CROSS_Y)
 
-#define REGNO_REG_CLASS(reg) \
-    ((reg) >= REG_A1 && (reg) <= REG_A2 ? PREDICATE_A_REGS	\
-     : (reg) == REG_A0 && TARGET_INSNS_64 ? PREDICATE_A_REGS	\
-     : (reg) >= REG_B0 && (reg) <= REG_B2 ? PREDICATE_B_REGS	\
-     : A_REGNO_P (reg) ? NONPREDICATE_A_REGS			\
-     : call_used_regs[reg] ? CALL_USED_B_REGS : B_REGS)
+#define REGNO_REG_CLASS(reg) c6x_regno_reg_class (reg)
 
 #define BASE_REG_CLASS ALL_REGS
 #define INDEX_REG_CLASS ALL_REGS

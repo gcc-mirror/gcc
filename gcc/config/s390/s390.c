@@ -9416,7 +9416,7 @@ s390_regs_ever_clobbered (char regs_ever_clobbered[])
   if (!crtl->is_leaf)
     {
       for (i = 0; i < 32; i++)
-	regs_ever_clobbered[i] = call_really_used_regs[i];
+	regs_ever_clobbered[i] = call_used_regs[i];
     }
 
   /* Make the "magic" eh_return registers live if necessary.  For regs_ever_live
@@ -9438,7 +9438,7 @@ s390_regs_ever_clobbered (char regs_ever_clobbered[])
      reload.  */
   if (crtl->saves_all_registers)
     for (i = 0; i < 32; i++)
-      if (!call_really_used_regs[i])
+      if (!call_used_regs[i])
 	regs_ever_clobbered[i] = 1;
 
   FOR_EACH_BB_FN (cur_bb, cfun)
@@ -9474,7 +9474,7 @@ s390_regs_ever_clobbered (char regs_ever_clobbered[])
 		continue;
 	    }
 
-	  note_stores (pat,
+	  note_stores (cur_insn,
 		       s390_reg_clobbered_rtx,
 		       regs_ever_clobbered);
 	}
@@ -9552,7 +9552,7 @@ s390_register_info_gprtofpr ()
 
       /* Advance to the next FP register which can be used as a
 	 GPR save slot.  */
-      while ((!call_really_used_regs[save_reg_slot]
+      while ((!call_used_regs[save_reg_slot]
 	      || df_regs_ever_live_p (save_reg_slot)
 	      || cfun_fpr_save_p (save_reg_slot))
 	     && FP_REGNO_P (save_reg_slot))
@@ -9711,7 +9711,7 @@ s390_register_info ()
   cfun_frame_layout.fpr_bitmap = 0;
   cfun_frame_layout.high_fprs = 0;
   for (i = FPR0_REGNUM; i <= FPR15_REGNUM; i++)
-    if (clobbered_regs[i] && !call_really_used_regs[i])
+    if (clobbered_regs[i] && !call_used_regs[i])
       {
 	cfun_set_fpr_save (i);
 	if (i >= FPR8_REGNUM)
@@ -10269,7 +10269,7 @@ s390_hard_regno_rename_ok (unsigned int old_reg, unsigned int new_reg)
      df_regs_ever_live.  Since we have our own routine we have to tell
      regrename manually about it.  */
   if (GENERAL_REGNO_P (new_reg)
-      && !call_really_used_regs[new_reg]
+      && !call_used_regs[new_reg]
       && cfun_gpr_save_slot (new_reg) == SAVE_SLOT_NONE)
     return false;
 
@@ -10284,7 +10284,7 @@ s390_hard_regno_scratch_ok (unsigned int regno)
 {
   /* See s390_hard_regno_rename_ok.  */
   if (GENERAL_REGNO_P (regno)
-      && !call_really_used_regs[regno]
+      && !call_used_regs[regno]
       && cfun_gpr_save_slot (regno) == SAVE_SLOT_NONE)
     return false;
 
@@ -11129,10 +11129,10 @@ s390_emit_prologue (void)
 
 	  /* If f4 and f6 are call clobbered they are saved due to
 	     stdargs and therefore are not frame related.  */
-	  if (!call_really_used_regs[i])
+	  if (!call_used_regs[i])
 	    RTX_FRAME_RELATED_P (insn) = 1;
 	}
-      else if (!TARGET_PACKED_STACK || call_really_used_regs[i])
+      else if (!TARGET_PACKED_STACK || call_used_regs[i])
 	offset += 8;
     }
 
@@ -11585,7 +11585,7 @@ static void
 s300_set_up_by_prologue (hard_reg_set_container *regs)
 {
   if (cfun->machine->base_reg
-      && !call_really_used_regs[REGNO (cfun->machine->base_reg)])
+      && !call_used_regs[REGNO (cfun->machine->base_reg)])
     SET_HARD_REG_BIT (regs->set, REGNO (cfun->machine->base_reg));
 }
 
@@ -11786,7 +11786,7 @@ s390_can_use_return_insn (void)
     return false;
 
   if (cfun->machine->base_reg
-      && !call_really_used_regs[REGNO (cfun->machine->base_reg)])
+      && !call_used_regs[REGNO (cfun->machine->base_reg)])
     return false;
 
   return cfun_frame_layout.frame_size == 0;
@@ -13341,7 +13341,7 @@ s390_call_saved_register_used (tree call_expr)
        if (REG_P (parm_rtx))
 	 {
 	   for (reg = 0; reg < REG_NREGS (parm_rtx); reg++)
-	     if (!call_used_regs[reg + REGNO (parm_rtx)])
+	     if (!call_used_or_fixed_reg_p (reg + REGNO (parm_rtx)))
 	       return true;
 	 }
 
@@ -13356,7 +13356,7 @@ s390_call_saved_register_used (tree call_expr)
 	       gcc_assert (REG_P (r));
 
 	       for (reg = 0; reg < REG_NREGS (r); reg++)
-		 if (!call_used_regs[reg + REGNO (r)])
+		 if (!call_used_or_fixed_reg_p (reg + REGNO (r)))
 		   return true;
 	     }
 	 }
@@ -13543,36 +13543,31 @@ s390_conditional_register_usage (void)
   int i;
 
   if (flag_pic)
-    {
-      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
-      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
-    }
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
   fixed_regs[BASE_REGNUM] = 0;
-  call_used_regs[BASE_REGNUM] = 0;
   fixed_regs[RETURN_REGNUM] = 0;
-  call_used_regs[RETURN_REGNUM] = 0;
   if (TARGET_64BIT)
     {
       for (i = FPR8_REGNUM; i <= FPR15_REGNUM; i++)
-	call_used_regs[i] = call_really_used_regs[i] = 0;
+	call_used_regs[i] = 0;
     }
   else
     {
-      call_used_regs[FPR4_REGNUM] = call_really_used_regs[FPR4_REGNUM] = 0;
-      call_used_regs[FPR6_REGNUM] = call_really_used_regs[FPR6_REGNUM] = 0;
+      call_used_regs[FPR4_REGNUM] = 0;
+      call_used_regs[FPR6_REGNUM] = 0;
     }
 
   if (TARGET_SOFT_FLOAT)
     {
       for (i = FPR0_REGNUM; i <= FPR15_REGNUM; i++)
-	call_used_regs[i] = fixed_regs[i] = 1;
+	fixed_regs[i] = 1;
     }
 
   /* Disable v16 - v31 for non-vector target.  */
   if (!TARGET_VX)
     {
       for (i = VR16_REGNUM; i <= VR31_REGNUM; i++)
-	fixed_regs[i] = call_used_regs[i] = call_really_used_regs[i] = 1;
+	fixed_regs[i] = call_used_regs[i] = 1;
     }
 }
 
@@ -13662,8 +13657,8 @@ s390_optimize_prologue (void)
 	      fpr_regno = FP_REGNO_P (src_regno) ? src_regno : dest_regno;
 
 	      /* GPR must be call-saved, FPR must be call-clobbered.  */
-	      if (!call_really_used_regs[fpr_regno]
-		  || call_really_used_regs[gpr_regno])
+	      if (!call_used_regs[fpr_regno]
+		  || call_used_regs[gpr_regno])
 		continue;
 
 	      /* It must not happen that what we once saved in an FPR now
@@ -14073,7 +14068,7 @@ s390_adjust_loop_scan_osc (struct loop* loop)
 	return false;
 
       find_all_hard_reg_sets (insn, &newregs, true);
-      IOR_HARD_REG_SET (modregs, newregs);
+      modregs |= newregs;
 
       set = single_set (insn);
       if (!set)
@@ -14104,7 +14099,7 @@ s390_adjust_loop_scan_osc (struct loop* loop)
 	return false;
 
       find_all_hard_reg_sets (insn, &newregs, true);
-      IOR_HARD_REG_SET (modregs, newregs);
+      modregs |= newregs;
 
       set = single_set (insn);
       if (!set)

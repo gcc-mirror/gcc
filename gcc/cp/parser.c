@@ -240,8 +240,6 @@ static void cp_lexer_stop_debugging
 
 static cp_token_cache *cp_token_cache_new
   (cp_token *, cp_token *);
-static tree cp_parser_noexcept_specification_opt
-  (cp_parser *, bool, bool *, bool, bool);
 static tree cp_parser_late_noexcept_specifier
   (cp_parser *, tree);
 static void noexcept_override_late_checks
@@ -1963,7 +1961,9 @@ enum
   /* When parsing a decl-specifier-seq, only allow mutable or constexpr.  */
   CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR = 0x10,
   /* When parsing a decl-specifier-seq, allow missing typename.  */
-  CP_PARSER_FLAGS_TYPENAME_OPTIONAL = 0x20
+  CP_PARSER_FLAGS_TYPENAME_OPTIONAL = 0x20,
+  /* When parsing of the noexcept-specifier should be delayed.  */
+  CP_PARSER_FLAGS_DELAY_NOEXCEPT = 0x40
 };
 
 /* This type is used for parameters and variables which hold
@@ -2527,7 +2527,7 @@ static void cp_parser_explicit_instantiation
 static void cp_parser_explicit_specialization
   (cp_parser *);
 
-/* Exception handling [gram.exception] */
+/* Exception handling [gram.except] */
 
 static tree cp_parser_try_block
   (cp_parser *);
@@ -2542,9 +2542,11 @@ static tree cp_parser_exception_declaration
 static tree cp_parser_throw_expression
   (cp_parser *);
 static tree cp_parser_exception_specification_opt
-  (cp_parser *, bool = false);
+  (cp_parser *, cp_parser_flags);
 static tree cp_parser_type_id_list
   (cp_parser *);
+static tree cp_parser_noexcept_specification_opt
+  (cp_parser *, cp_parser_flags, bool, bool *, bool);
 
 /* GNU Extensions */
 
@@ -11225,7 +11227,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       tx_qual = cp_parser_tx_qualifier_opt (parser);
 
       /* Parse optional exception specification.  */
-      exception_spec = cp_parser_exception_specification_opt (parser);
+      exception_spec
+	= cp_parser_exception_specification_opt (parser, CP_PARSER_FLAGS_NONE);
 
       std_attrs = cp_parser_std_attribute_spec_seq (parser);
 
@@ -21370,7 +21373,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  tree tx_qual = cp_parser_tx_qualifier_opt (parser);
 		  /* And the exception-specification.  */
 		  exception_specification
-		    = cp_parser_exception_specification_opt (parser, friend_p);
+		    = cp_parser_exception_specification_opt (parser, flags);
 
 		  attrs = cp_parser_std_attribute_spec_seq (parser);
 
@@ -25292,11 +25295,15 @@ cp_parser_member_declaration (cp_parser* parser)
 	      tree asm_specification;
 	      int ctor_dtor_or_conv_p;
 	      bool static_p = (decl_specifiers.storage_class == sc_static);
+	      cp_parser_flags flags = CP_PARSER_FLAGS_TYPENAME_OPTIONAL;
+	      if (!friend_p
+		  && !decl_spec_seq_has_spec_p (&decl_specifiers, ds_typedef))
+		flags |= CP_PARSER_FLAGS_DELAY_NOEXCEPT;
 
 	      /* Parse the declarator.  */
 	      declarator
 		= cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
-					CP_PARSER_FLAGS_TYPENAME_OPTIONAL,
+					flags,
 					&ctor_dtor_or_conv_p,
 					/*parenthesized_p=*/NULL,
 					/*member_p=*/true,
@@ -25871,10 +25878,10 @@ cp_parser_late_noexcept_specifier (cp_parser *parser, tree default_arg)
   /* Parse the cached noexcept-specifier.  */
   tree parsed_arg
     = cp_parser_noexcept_specification_opt (parser,
+					    CP_PARSER_FLAGS_NONE,
 					    /*require_constexpr=*/true,
 					    /*consumed_expr=*/NULL,
-					    /*return_cond=*/false,
-					    /*friend_p=*/false);
+					    /*return_cond=*/false);
 
   /* Revert to the main lexer.  */
   cp_parser_pop_lexer (parser);
@@ -25923,15 +25930,15 @@ noexcept_override_late_checks (tree type, tree fndecl)
    expression if parentheses follow noexcept, or return BOOLEAN_TRUE_NODE if
    there are no parentheses.  CONSUMED_EXPR will be set accordingly.
    Otherwise, returns a noexcept specification unless RETURN_COND is true,
-   in which case a boolean condition is returned instead.  If FRIEND_P is true,
-   the function with this noexcept-specification had the `friend' specifier.  */
+   in which case a boolean condition is returned instead.  The parser flags
+   FLAGS is used to control parsing.  */
 
 static tree
 cp_parser_noexcept_specification_opt (cp_parser* parser,
+				      cp_parser_flags flags,
 				      bool require_constexpr,
 				      bool* consumed_expr,
-				      bool return_cond,
-				      bool friend_p)
+				      bool return_cond)
 {
   cp_token *token;
   const char *saved_message;
@@ -25958,8 +25965,10 @@ cp_parser_noexcept_specification_opt (cp_parser* parser,
 	  /* No need to delay parsing for a number literal or true/false.  */
 	  && !literal_p
 	  && at_class_scope_p ()
-	  /* Don't delay parsing for friend member functions.  */
-	  && !friend_p
+	  /* We don't delay parsing for friend member functions,
+	     alias-declarations, and typedefs, even though the standard seems
+	     to require it.  */
+	  && (flags & CP_PARSER_FLAGS_DELAY_NOEXCEPT)
 	  && TYPE_BEING_DEFINED (current_class_type)
 	  && !LAMBDA_TYPE_P (current_class_type))
 	return cp_parser_save_noexcept (parser);
@@ -26034,11 +26043,11 @@ cp_parser_noexcept_specification_opt (cp_parser* parser,
      throw ( type-id-list [opt] )
 
    Returns a TREE_LIST representing the exception-specification.  The
-   TREE_VALUE of each node is a type.  If FRIEND_P is true, the function
-   with this noexcept-specification had the `friend' specifier.  */
+   TREE_VALUE of each node is a type.  The parser flags FLAGS is used to
+   control parsing.  */
 
 static tree
-cp_parser_exception_specification_opt (cp_parser* parser, bool friend_p)
+cp_parser_exception_specification_opt (cp_parser* parser, cp_parser_flags flags)
 {
   cp_token *token;
   tree type_id_list;
@@ -26049,11 +26058,10 @@ cp_parser_exception_specification_opt (cp_parser* parser, bool friend_p)
 
   /* Is it a noexcept-specification?  */
   type_id_list
-    = cp_parser_noexcept_specification_opt (parser,
+    = cp_parser_noexcept_specification_opt (parser, flags,
 					    /*require_constexpr=*/true,
 					    /*consumed_expr=*/NULL,
-					    /*return_cond=*/false,
-					    friend_p);
+					    /*return_cond=*/false);
   if (type_id_list != NULL_TREE)
     return type_id_list;
 
@@ -41669,10 +41677,10 @@ cp_parser_transaction (cp_parser *parser, cp_token *token)
     }
   else
     noex = cp_parser_noexcept_specification_opt (parser,
+						 CP_PARSER_FLAGS_NONE,
 						 /*require_constexpr=*/true,
 						 /*consumed_expr=*/NULL,
-						 /*return_cond=*/true,
-						 /*friend_p=*/false);
+						 /*return_cond=*/true);
 
   /* Keep track if we're in the lexical scope of an outer transaction.  */
   new_in = this_in | (old_in & TM_STMT_ATTR_OUTER);
@@ -41733,10 +41741,10 @@ cp_parser_transaction_expression (cp_parser *parser, enum rid keyword)
 
   /* Parse a noexcept specification.  */
   noex = cp_parser_noexcept_specification_opt (parser,
+					       CP_PARSER_FLAGS_NONE,
 					       /*require_constexpr=*/false,
 					       &noex_expr,
-					       /*return_cond=*/true,
-					       /*friend_p=*/false);
+					       /*return_cond=*/true);
 
   if (!noex || !noex_expr
       || cp_lexer_peek_token (parser->lexer)->type == CPP_OPEN_PAREN)

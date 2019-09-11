@@ -822,7 +822,7 @@ emit_inc_dec_insn_before (rtx mem ATTRIBUTE_UNUSED,
   for (cur = new_insn; cur; cur = NEXT_INSN (cur))
     {
       info.current = cur;
-      note_stores (PATTERN (cur), note_add_store, &info);
+      note_stores (cur, note_add_store, &info);
     }
 
   /* If a failure was flagged above, return 1 so that for_each_inc_dec will
@@ -1979,7 +1979,7 @@ replace_read (store_info *store_info, insn_info_t store_insn,
       bitmap regs_set = BITMAP_ALLOC (&reg_obstack);
 
       for (this_insn = insns; this_insn != NULL_RTX; this_insn = NEXT_INSN (this_insn))
-	note_stores (PATTERN (this_insn), look_for_hardregs, regs_set);
+	note_stores (this_insn, look_for_hardregs, regs_set);
 
       bitmap_and_into (regs_set, regs_live);
       if (!bitmap_empty_p (regs_set))
@@ -2392,7 +2392,7 @@ copy_fixed_regs (const_bitmap in)
   bitmap ret;
 
   ret = ALLOC_REG_SET (NULL);
-  bitmap_and (ret, in, fixed_reg_set_regset);
+  bitmap_and (ret, in, bitmap_view<HARD_REG_SET> (fixed_reg_set));
   return ret;
 }
 

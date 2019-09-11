@@ -774,7 +774,7 @@ case ${target} in
 *-*-fuchsia*)
   native_system_header_dir=/include
   ;;
-*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu)
+*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
   extra_options="$extra_options gnu-user.opt"
   gas=yes
   gnu_ld=yes
@@ -803,7 +803,7 @@ case ${target} in
     *-*-*android*)
       tm_defines="$tm_defines DEFAULT_LIBC=LIBC_BIONIC"
       ;;
-    *-*-*uclibc*)
+    *-*-*uclibc* | *-*-uclinuxfdpiceabi)
       tm_defines="$tm_defines DEFAULT_LIBC=LIBC_UCLIBC"
       ;;
     *-*-*musl*)
@@ -1201,7 +1201,7 @@ arm*-*-netbsdelf*)
 	armv7*) target_cpu_cname="generic-armv7-a";;
 	esac
 	;;
-arm*-*-linux-*)			# ARM GNU/Linux with ELF
+arm*-*-linux-* | arm*-*-uclinuxfdpiceabi)
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
 	extra_options="${extra_options} linux-android.opt"
 	case $target in
@@ -1211,6 +1211,11 @@ arm*-*-linux-*)			# ARM GNU/Linux with ELF
 	esac
 	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi"
 	tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h arm/aout.h arm/arm.h"
+	case $target in
+	arm*-*-uclinuxfdpiceabi)
+	    tm_file="$tm_file arm/uclinuxfdpiceabi.h"
+	    ;;
+	esac
 	# Generation of floating-point instructions requires at least ARMv5te.
 	if [ "$with_float" = "hard" -o "$with_float" = "softfp" ] ; then
 	    target_cpu_cname="arm10e"

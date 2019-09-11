@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2019 Free Software Foundation, Inc.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,15 +23,8 @@
 void
 test01(char* first, char* last)
 {
-#if _GLIBCXX_USE_WCHAR_T
-  std::to_chars(first, last, L'\x1'); // { dg-error "no matching" }
-  std::to_chars(first, last, L'\x1', 10); // { dg-error "no matching" }
-#endif
-
-  std::to_chars(first, last, u'\x1'); // { dg-error "no matching" }
-  std::to_chars(first, last, u'\x1', 10); // { dg-error "no matching" }
-  std::to_chars(first, last, U'\x1'); // { dg-error "no matching" }
-  std::to_chars(first, last, U'\x1', 10); // { dg-error "no matching" }
+  // LWG 3266. to_chars(bool) should be deleted
+  char buf;
+  std::to_chars(&buf, &buf + 1, true);	    // { dg-error "deleted function" }
+  std::to_chars(&buf, &buf + 1, false, 10); // { dg-error "deleted function" }
 }
-
-// { dg-prune-output "enable_if" }

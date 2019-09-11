@@ -12,6 +12,6 @@ A<0> a;
 void foo ()
 {
   __label__ P;
-  enum { O = && P };	// { dg-error "cannot appear in|integral" }
+  enum { O = && P };	// { dg-error "14:enumerator value for .O. must have integral|cannot appear in" }
   P:;
 }

@@ -215,19 +215,20 @@ am_libgotool_a_OBJECTS =
 libgotool_a_OBJECTS = $(am_libgotool_a_OBJECTS)
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 @LIBGO_IS_LINUX_TRUE@am__DEPENDENCIES_1 = syscall/clone_linux.lo
-am__DEPENDENCIES_2 = $(addsuffix .lo,$(PACKAGES)) \
+@LIBGO_IS_X86_TRUE@am__DEPENDENCIES_2 = golang.org/x/sys/cpu_gccgo.lo
+am__DEPENDENCIES_3 = $(addsuffix .lo,$(PACKAGES)) \
 	internal/bytealg/bytealg.lo reflect/makefunc_ffi_c.lo \
 	$(am__DEPENDENCIES_1) syscall/errno.lo syscall/signame.lo \
 	syscall/wait.lo $(golangorg_x_net_lif_lo) \
 	$(golangorg_x_net_route_lo) log/syslog/syslog_c.lo \
 	runtime/internal/atomic_c.lo sync/atomic_c.lo \
-	internal/cpu/cpu_gccgo.lo golang.org/x/sys/cpu_gccgo.lo
-am__DEPENDENCIES_3 =
-am__DEPENDENCIES_4 = $(am__DEPENDENCIES_2) \
-	../libbacktrace/libbacktrace.la $(am__DEPENDENCIES_3) \
-	$(am__DEPENDENCIES_3) $(am__DEPENDENCIES_3) \
-	$(am__DEPENDENCIES_3) $(am__DEPENDENCIES_3)
-libgo_llgo_la_DEPENDENCIES = $(am__DEPENDENCIES_4)
+	internal/cpu/cpu_gccgo.lo $(am__DEPENDENCIES_2)
+am__DEPENDENCIES_4 =
+am__DEPENDENCIES_5 = $(am__DEPENDENCIES_3) \
+	../libbacktrace/libbacktrace.la $(am__DEPENDENCIES_4) \
+	$(am__DEPENDENCIES_4) $(am__DEPENDENCIES_4) \
+	$(am__DEPENDENCIES_4) $(am__DEPENDENCIES_4)
+libgo_llgo_la_DEPENDENCIES = $(am__DEPENDENCIES_5)
 @LIBGO_IS_RTEMS_TRUE@am__objects_1 =  \
 @LIBGO_IS_RTEMS_TRUE@	runtime/rtems-task-variable-add.lo
 am__objects_2 = runtime/aeshash.lo runtime/go-assert.lo \
@@ -254,7 +255,7 @@ libgo_llgo_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libgo_llgo_la_LDFLAGS) $(LDFLAGS) -o $@
 @GOC_IS_LLGO_TRUE@am_libgo_llgo_la_rpath = -rpath $(toolexeclibdir)
-libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_4)
+libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_5)
 am_libgo_la_OBJECTS = $(am__objects_2)
 libgo_la_OBJECTS = $(am_libgo_la_OBJECTS)
 libgo_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -906,6 +907,8 @@ SYSINFO_FLAGS = \
 
 @LIBGO_IS_LINUX_FALSE@syscall_lib_clone_lo = 
 @LIBGO_IS_LINUX_TRUE@syscall_lib_clone_lo = syscall/clone_linux.lo
+@LIBGO_IS_X86_FALSE@golangorg_x_sys_cpu_gccgo_lo = 
+@LIBGO_IS_X86_TRUE@golangorg_x_sys_cpu_gccgo_lo = golang.org/x/sys/cpu_gccgo.lo
 PACKAGES = $(shell cat $(srcdir)/libgo-packages.txt)
 libgo_go_objs = \
 	$(addsuffix .lo,$(PACKAGES)) \
@@ -922,7 +925,7 @@ libgo_go_objs = \
 	runtime/internal/atomic_c.lo \
 	sync/atomic_c.lo \
 	internal/cpu/cpu_gccgo.lo \
-	golang.org/x/sys/cpu_gccgo.lo
+	$(golangorg_x_sys_cpu_gccgo_lo)
 
 libgo_ldflags = \
 	-version-info $(libtool_VERSION) $(PTHREAD_CFLAGS) $(AM_LDFLAGS)
@@ -970,7 +973,7 @@ GOLINK = $(LIBTOOL) --tag GO --mode-link $(GOC) \
 BUILDDEPS = \
 	$(MKDIR_P) $(@D); \
 	dir=`echo $@ | sed -e 's/.lo.dep$$//'`; \
-	files=`$(SHELL) $(srcdir)/match.sh --goarch=$(GOARCH) --goos=$(GOOS) --srcdir=$(srcdir)/go/$$dir --extrafiles="$(extra_go_files_$(subst /,_,$(subst .lo.dep,,$@)))" $(matchargs_$(subst /,_,$(subst .lo.dep,,$@)))`; \
+	files=`$(SHELL) $(srcdir)/match.sh --goarch=$(GOARCH) --goos=$(GOOS) --srcdir=$(srcdir)/go/$$dir --extrafiles="$(extra_go_files_$(subst .,_,$(subst /,_,$(subst .lo.dep,,$@))))" $(matchargs_$(subst /,_,$(subst .lo.dep,,$@)))`; \
 	$(SHELL) $(srcdir)/godeps.sh `echo $@ | sed -e 's/.dep$$//'` $$files > $@.tmp; \
 	if ! cmp $@.tmp $@ >/dev/null 2>/dev/null; then \
 	  rm -f `echo $@ | sed -e 's/\.dep$$//'`; \
@@ -1003,7 +1006,7 @@ GOBENCH =
 CHECK = \
 	GC="$(GOC) $(GOCFLAGS) $($(subst /,_,$@)_GOCFLAGS) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs"; \
 	export GC; \
-	GOLIBS="$(extra_check_libs_$(subst /,_,$(@D))) $(MATH_LIBS) $(NET_LIBS) $(LIBS)"; \
+	GOLIBS="$(extra_check_libs_$(subst .,_,$(subst /,_,$(@D)))) $(MATH_LIBS) $(NET_LIBS) $(LIBS)"; \
 	export GOLIBS; \
 	RUNTESTFLAGS="$(RUNTESTFLAGS)"; \
 	export RUNTESTFLAGS; \
@@ -1017,7 +1020,7 @@ CHECK = \
 	export LD_LIBRARY_PATH; \
 	$(MKDIR_P) $(@D); \
 	rm -f $@-testsum $@-testlog; \
-	files=`$(SHELL) $(srcdir)/match.sh --goarch=$(GOARCH) --goos=$(GOOS) --srcdir=$(srcdir)/go/$(@D) --extrafiles="$(extra_go_files_$(subst /,_,$(@D)))" $(matchargs_$(subst /,_,$(@D)))`; \
+	files=`$(SHELL) $(srcdir)/match.sh --goarch=$(GOARCH) --goos=$(GOOS) --srcdir=$(srcdir)/go/$(@D) --extrafiles="$(extra_go_files_$(subst .,_,$(subst /,_,$(@D))))" $(matchargs_$(subst /,_,$(@D)))`; \
 	if test "$(USE_DEJAGNU)" = "yes"; then \
 	  $(SHELL) $(srcdir)/testsuite/gotest --goarch=$(GOARCH) --goos=$(GOOS) --dejagnu=yes --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$$files" --testname="$(@D)" $(GOTESTFLAGS); \
 	elif test "$(GOBENCH)" != ""; then \
@@ -1088,6 +1091,7 @@ runtime_internal_sys_lo_check_GOCFLAGS = -fgo-compiling-runtime
 runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
 extra_go_files_runtime_internal_sys = version.go
 extra_go_files_internal_cpu = cpugen.go
+extra_go_files_golang_org_x_sys_cpu = gcpugen.go
 extra_go_files_internal_goroot = zstdpkglist.go
 extra_go_files_go_types = gccgosizes.go
 extra_go_files_cmd_internal_objabi = objabi.go
@@ -1118,20 +1122,10 @@ extra_check_libs_cmd_vet_internal_cfg = $(abs_builddir)/libgotool.a
 @LIBGO_IS_BSD_TRUE@golangorg_x_net_route_lo = \
 @LIBGO_IS_BSD_TRUE@	golang.org/net/route.lo
 
-@LIBGO_IS_BSD_TRUE@golangorg_x_net_route_check = \
-@LIBGO_IS_BSD_TRUE@	golang.org/x/net/route/check
-
 @LIBGO_IS_SOLARIS_TRUE@golangorg_x_net_lif_lo = \
 @LIBGO_IS_SOLARIS_TRUE@	golang.org/x/net/lif.lo
 
-@LIBGO_IS_SOLARIS_TRUE@golangorg_x_net_lif_check = \
-@LIBGO_IS_SOLARIS_TRUE@	golang.org/x/net/lif/check
-
-TPACKAGES = $(shell cat $(srcdir)/check-packages.txt)
-TEST_PACKAGES = $(addsuffix /check,$(TPACKAGES)) \
-	$(golangorg_x_net_lif_check) \
-	$(golangorg_x_net_route_check)
-
+TEST_PACKAGES = $(addsuffix /check,$(shell cat $(srcdir)/check-packages.txt))
 MOSTLYCLEANFILES = \
 	s-runtime_sysinfo s-sigtab s-runtime-inc s-zstdpkglist \
 	s-libcalls s-libcalls-list s-syscall_arch s-gen-sysinfo s-sysinfo \
@@ -2626,6 +2620,14 @@ s-cpu: Makefile
 	$(SHELL) $(srcdir)/mvifdiff.sh cpugen.go.tmp cpugen.go
 	$(STAMP) $@
 
+gcpugen.go: s-gcpu; @true
+s-gcpu: Makefile
+	rm -f gcpugen.go.tmp
+	echo "package cpu" > gcpugen.go.tmp
+	echo "const cacheLineSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) cachelinesize`" >> gcpugen.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh gcpugen.go.tmp gcpugen.go
+	$(STAMP) $@
+
 objabi.go: s-objabi; @true
 s-objabi: Makefile
 	rm -f objabi.go.tmp
@@ -2827,6 +2829,7 @@ runtime.lo.dep: $(extra_go_files_runtime)
 syscall.lo.dep: $(extra_go_files_syscall)
 runtime/internal/sys.lo.dep: $(extra_go_files_runtime_internal_sys)
 internal/cpu.lo.dep: $(extra_go_files_internal_cpu)
+golang.org/x/sys/cpu.lo.dep: $(extra_go_files_golang_org_x_sys_cpu)
 internal/goroot.lo.dep: $(extra_go_files_internal_goroot)
 go/types.lo.dep: $(extra_go_files_go_types)
 cmd/internal/objabi.lo.dep: $(extra_go_files_cmd_internal_objabi)
@@ -2883,13 +2886,13 @@ golang.org/x/sys/cpu_gccgo.lo: go/golang.org/x/sys/cpu/cpu_gccgo.c runtime.inc
 	@$(MKDIR_P) golang.org/x/sys
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/golang.org/x/sys/cpu/cpu_gccgo.c
 
-# Build internal/x/net/route only on BSD systems.
+# Build golang.org/x/net/route only on BSD systems.
 
-@LIBGO_IS_BSD_TRUE@$(eval $(call PACKAGE_template,internal/x/net/route))
+@LIBGO_IS_BSD_TRUE@$(eval $(call PACKAGE_template,golang.org/x/net/route))
 
-# Build internal/x/net/lif only on Solaris systems.
+# Build golang.org/x/net/lif only on Solaris systems.
 
-@LIBGO_IS_SOLARIS_TRUE@$(eval $(call PACKAGE_template,internal/x/net/lif))
+@LIBGO_IS_SOLARIS_TRUE@$(eval $(call PACKAGE_template,golang.org/x/net/lif))
 
 check: check-tail
 check-recursive: check-head

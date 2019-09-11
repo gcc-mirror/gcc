@@ -1123,7 +1123,7 @@ init_hard_regs_data (void)
 
   CLEAR_HARD_REG_SET (sel_hrd.regs_ever_used);
   for (cur_reg = 0; cur_reg < FIRST_PSEUDO_REGISTER; cur_reg++)
-    if (df_regs_ever_live_p (cur_reg) || call_used_regs[cur_reg])
+    if (df_regs_ever_live_p (cur_reg) || call_used_or_fixed_reg_p (cur_reg))
       SET_HARD_REG_BIT (sel_hrd.regs_ever_used, cur_reg);
 
   /* Initialize registers that are valid based on mode when this is
@@ -1221,15 +1221,13 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
      The HARD_REGNO_RENAME_OK covers other cases in condition below.  */
   if (IN_RANGE (REGNO (orig_dest), FIRST_STACK_REG, LAST_STACK_REG)
       && REGNO_REG_SET_P (used_regs, FIRST_STACK_REG))
-    IOR_HARD_REG_SET (reg_rename_p->unavailable_hard_regs,
-                      sel_hrd.stack_regs);
+    reg_rename_p->unavailable_hard_regs |= sel_hrd.stack_regs;
 #endif
 
-  /* If there's a call on this path, make regs from call_used_reg_set
+  /* If there's a call on this path, make regs from call_used_or_fixed_regs
      unavailable.  */
   if (def->crosses_call)
-    IOR_HARD_REG_SET (reg_rename_p->unavailable_hard_regs,
-                      call_used_reg_set);
+    reg_rename_p->unavailable_hard_regs |= call_used_or_fixed_regs;
 
   /* Stop here before reload: we need FRAME_REGS, STACK_REGS, and crosses_call,
      but not register classes.  */
@@ -1238,22 +1236,20 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
 
   /* Leave regs as 'available' only from the current
      register class.  */
-  COPY_HARD_REG_SET (reg_rename_p->available_for_renaming,
-                     reg_class_contents[cl]);
+  reg_rename_p->available_for_renaming = reg_class_contents[cl];
 
   mode = GET_MODE (orig_dest);
 
   /* Leave only registers available for this mode.  */
   if (!sel_hrd.regs_for_mode_ok[mode])
     init_regs_for_mode (mode);
-  AND_HARD_REG_SET (reg_rename_p->available_for_renaming,
-                    sel_hrd.regs_for_mode[mode]);
+  reg_rename_p->available_for_renaming &= sel_hrd.regs_for_mode[mode];
 
   /* Exclude registers that are partially call clobbered.  */
   if (def->crosses_call
       && !targetm.hard_regno_call_part_clobbered (NULL, regno, mode))
-    AND_COMPL_HARD_REG_SET (reg_rename_p->available_for_renaming,
-                            sel_hrd.regs_for_call_clobbered[mode]);
+    reg_rename_p->available_for_renaming
+      &= ~sel_hrd.regs_for_call_clobbered[mode];
 
   /* Leave only those that are ok to rename.  */
   EXECUTE_IF_SET_IN_HARD_REG_SET (reg_rename_p->available_for_renaming,
@@ -1274,8 +1270,7 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
                             cur_reg);
     }
 
-  AND_COMPL_HARD_REG_SET (reg_rename_p->available_for_renaming,
-                          reg_rename_p->unavailable_hard_regs);
+  reg_rename_p->available_for_renaming &= ~reg_rename_p->unavailable_hard_regs;
 
   /* Regno is always ok from the renaming part of view, but it really
      could be in *unavailable_hard_regs already, so set it here instead
@@ -1686,8 +1681,7 @@ find_best_reg_for_expr (expr_t expr, blist_t bnds, bool *is_orig_reg_p)
 
 	  /* Join hard registers unavailable due to register class
 	     restrictions and live range intersection.  */
-	  IOR_HARD_REG_SET (hard_regs_used,
-			    reg_rename_data.unavailable_hard_regs);
+	  hard_regs_used |= reg_rename_data.unavailable_hard_regs;
 
 	  best_reg = choose_best_reg (hard_regs_used, &reg_rename_data,
 				      original_insns, is_orig_reg_p);
@@ -2110,7 +2104,7 @@ implicit_clobber_conflict_p (insn_t through_insn, expr_t expr)
   preprocess_constraints (insn);
   alternative_mask prefrred = get_preferred_alternatives (insn);
   ira_implicitly_set_insn_hard_regs (&temp, prefrred);
-  AND_COMPL_HARD_REG_SET (temp, ira_no_alloc_regs);
+  temp &= ~ira_no_alloc_regs;
 
   /* If any implicit clobber registers intersect with regular ones in
      through_insn, we have a dependency and thus bail out.  */

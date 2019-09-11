@@ -14,4 +14,4 @@ tr4 (short array[], int n)
 
 /* { dg-final { scan-tree-dump-times "PHI <ivtmp" 1 "ivopts"} } */
 /* { dg-final { scan-tree-dump-times "PHI <" 1 "ivopts"} } */
-/* { dg-final { object-size text <= 26 { target arm_thumb2 } } } */
+/* { dg-final { object-size text <= 26 { target { arm_thumb2 && { ! arm*-*-uclinuxfdpiceabi } } } } } */

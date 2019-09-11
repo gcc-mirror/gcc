@@ -91,7 +91,7 @@ extern "C" {
 	  _uw reserved2;  /* Personality routine address */
 	  _uw reserved3;  /* Saved callsite address */
 	  _uw reserved4;  /* Forced unwind stop arg */
-	  _uw reserved5;
+	  _uw reserved5;  /* Personality routine GOT value in FDPIC mode.  */
 	}
       unwinder_cache;
       /* Propagation barrier cache (valid after phase 1): */

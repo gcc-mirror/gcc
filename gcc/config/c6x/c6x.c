@@ -1094,7 +1094,7 @@ c6x_call_saved_register_used (tree call_expr)
   INIT_CUMULATIVE_ARGS (cum_v, NULL, NULL, 0, 0);
   cum = pack_cumulative_args (&cum_v);
 
-  COMPL_HARD_REG_SET (call_saved_regset, call_used_reg_set);
+  call_saved_regset = ~call_used_or_fixed_regs;
   for (i = 0; i < call_expr_nargs (call_expr); i++)
     {
       parameter = CALL_EXPR_ARG (call_expr, i);
@@ -2532,8 +2532,7 @@ static int
 c6x_save_reg (unsigned int regno)
 {
   return ((df_regs_ever_live_p (regno)
-	   && !call_used_regs[regno]
-	   && !fixed_regs[regno])
+	   && !call_used_or_fixed_reg_p (regno))
 	  || (regno == RETURN_ADDR_REGNO
 	      && (df_regs_ever_live_p (regno)
 		  || !crtl->is_leaf))
@@ -3472,7 +3471,7 @@ try_rename_operands (rtx_insn *head, rtx_insn *tail, unit_req_table reqs,
     }
 
   /* If we get here, we can do the renaming.  */
-  COMPL_HARD_REG_SET (unavailable, reg_class_contents[(int) super_class]);
+  unavailable = ~reg_class_contents[super_class];
 
   old_reg = this_head->regno;
   best_reg =
@@ -4308,7 +4307,7 @@ clobber_cond_1 (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data1)
    only those jumps which are still in flight.  */
 
 static void
-maybe_clobber_cond (rtx insn, int clock_var)
+maybe_clobber_cond (rtx_insn *insn, int clock_var)
 {
   int n, idx;
   idx = ss.jump_cycle_index;
@@ -4333,7 +4332,7 @@ maybe_clobber_cond (rtx insn, int clock_var)
 	  continue;
 	}
 
-      note_stores (PATTERN (insn), clobber_cond_1, ss.jump_cond + idx);
+      note_stores (insn, clobber_cond_1, ss.jump_cond + idx);
       for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 	if (REG_NOTE_KIND (link) == REG_INC)
 	  clobber_cond_1 (XEXP (link, 0), NULL_RTX, ss.jump_cond + idx);
@@ -6677,6 +6676,28 @@ c6x_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 	      && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD));
 }
 
+/* Implement REGNO_REG_CLASS.  */
+
+enum reg_class
+c6x_regno_reg_class (int reg)
+{
+  if (reg >= REG_A1 && reg <= REG_A2)
+    return PREDICATE_A_REGS;
+
+  if (reg == REG_A0 && TARGET_INSNS_64)
+    return PREDICATE_A_REGS;
+
+  if (reg >= REG_B0 && reg <= REG_B2)
+    return PREDICATE_B_REGS;
+
+  if (A_REGNO_P (reg))
+    return NONPREDICATE_A_REGS;
+
+  if (call_used_or_fixed_reg_p (reg))
+    return CALL_USED_B_REGS;
+
+  return B_REGS;
+}
 
 /* Target Structure.  */
 

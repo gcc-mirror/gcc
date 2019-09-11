@@ -274,7 +274,7 @@ extern int reload_first_uid;
 
 extern int num_not_at_initial_offset;
 
-#if defined SET_HARD_REG_BIT && defined CLEAR_REG_SET
+#if defined HARD_CONST && defined CLEAR_REG_SET
 /* This structure describes instructions which are relevant for reload.
    Apart from all regular insns, this also includes CODE_LABELs, since they
    must be examined for register elimination.  */
@@ -326,7 +326,7 @@ extern class insn_chain *reload_insn_chain;
 extern class insn_chain *new_insn_chain (void);
 #endif
 
-#if defined SET_HARD_REG_BIT
+#if defined HARD_CONST
 extern void compute_use_by_pseudos (HARD_REG_SET *, bitmap);
 #endif
 

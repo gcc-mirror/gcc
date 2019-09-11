@@ -76,7 +76,7 @@ requires_stack_frame_p (rtx_insn *insn, HARD_REG_SET prologue_used,
     }
   if (hard_reg_set_intersect_p (hardregs, prologue_used))
     return true;
-  AND_COMPL_HARD_REG_SET (hardregs, call_used_reg_set);
+  hardregs &= ~call_used_or_fixed_regs;
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (TEST_HARD_REG_BIT (hardregs, regno)
 	&& df_regs_ever_live_p (regno))
@@ -151,8 +151,8 @@ live_edge_for_reg (basic_block bb, int regno, int end_regno)
 
 static bool
 move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
-			   const HARD_REG_SET uses,
-			   const HARD_REG_SET defs,
+			   const_hard_reg_set uses,
+			   const_hard_reg_set defs,
 			   bool *split_p,
 			   struct dead_debug_local *debug)
 {
@@ -687,9 +687,9 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 	HARD_REG_SET this_used;
 	CLEAR_HARD_REG_SET (this_used);
 	note_uses (&PATTERN (insn), record_hard_reg_uses, &this_used);
-	AND_COMPL_HARD_REG_SET (this_used, prologue_clobbered);
-	IOR_HARD_REG_SET (prologue_used, this_used);
-	note_stores (PATTERN (insn), record_hard_reg_sets, &prologue_clobbered);
+	this_used &= ~prologue_clobbered;
+	prologue_used |= this_used;
+	note_stores (insn, record_hard_reg_sets, &prologue_clobbered);
       }
   CLEAR_HARD_REG_BIT (prologue_clobbered, STACK_POINTER_REGNUM);
   if (frame_pointer_needed)

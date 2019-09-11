@@ -6652,7 +6652,7 @@ irix5* | irix6* | nonstopux*)
   ;;
 
 # This must be Linux ELF.
-linux* | k*bsd*-gnu | kopensolaris*-gnu)
+linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
   lt_cv_deplibs_check_method=pass_all
   ;;
 
@@ -9598,7 +9598,7 @@ _LT_EOF
       archive_expsym_cmds='sed "s,^,_," $export_symbols >$output_objdir/$soname.expsym~$CC -shared $pic_flag $libobjs $deplibs $compiler_flags ${wl}-h,$soname ${wl}--retain-symbols-file,$output_objdir/$soname.expsym ${wl}--image-base,`expr ${RANDOM-$$} % 4096 / 2 \* 262144 + 1342177280` -o $lib'
       ;;
 
-    gnu* | linux* | tpf* | k*bsd*-gnu | kopensolaris*-gnu)
+    gnu* | linux* | tpf* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
       tmp_diet=no
       if test "$host_os" = linux-dietlibc; then
 	case $cc_basename in
@@ -11138,7 +11138,12 @@ linux*oldld* | linux*aout* | linux*coff*)
   ;;
 
 # This must be Linux ELF.
-linux* | k*bsd*-gnu | kopensolaris*-gnu)
+
+# uclinux* changes (here and below) have been submitted to the libtool
+# project, but have not yet been accepted: they are GCC-local changes
+# for the time being.  (See
+# https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
   version_type=linux
   need_lib_prefix=no
   need_version=no
@@ -14822,7 +14827,12 @@ linux*oldld* | linux*aout* | linux*coff*)
   ;;
 
 # This must be Linux ELF.
-linux* | k*bsd*-gnu | kopensolaris*-gnu)
+
+# uclinux* changes (here and below) have been submitted to the libtool
+# project, but have not yet been accepted: they are GCC-local changes
+# for the time being.  (See
+# https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
   version_type=linux
   need_lib_prefix=no
   need_version=no
@@ -20899,6 +20909,9 @@ $as_echo "$glibcxx_glibc217" >&6; }
         ac_has_nanosleep=yes
         ac_has_sched_yield=yes
         ;;
+      uclinux*)
+        ac_has_nanosleep=yes
+        ac_has_sched_yield=yes
     esac
 
   elif test x"$enable_libstdcxx_time" != x"no"; then
@@ -21347,7 +21360,7 @@ $as_echo "$ac_has_nanosleep" >&6; }
 
   if test x"$ac_has_clock_monotonic" != x"yes"; then
     case ${target_os} in
-      linux*)
+      linux* | uclinux*)
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for clock_gettime syscall" >&5
 $as_echo_n "checking for clock_gettime syscall... " >&6; }
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -28316,7 +28329,7 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   chktls_save_LDFLAGS="$LDFLAGS"
 	  	  	  case $host in
-	    *-*-linux*)
+	    *-*-linux* | -*-uclinuxfdpic*)
 	      LDFLAGS="-shared -Wl,--no-undefined $LDFLAGS"
 	      ;;
 	  esac
@@ -47824,7 +47837,7 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   chktls_save_LDFLAGS="$LDFLAGS"
 	  	  	  case $host in
-	    *-*-linux*)
+	    *-*-linux* | -*-uclinuxfdpic*)
 	      LDFLAGS="-shared -Wl,--no-undefined $LDFLAGS"
 	      ;;
 	  esac
@@ -54011,7 +54024,7 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   chktls_save_LDFLAGS="$LDFLAGS"
 	  	  	  case $host in
-	    *-*-linux*)
+	    *-*-linux* | -*-uclinuxfdpic*)
 	      LDFLAGS="-shared -Wl,--no-undefined $LDFLAGS"
 	      ;;
 	  esac
@@ -72654,7 +72667,7 @@ fi
 
 
 case "$target" in
-  *-linux*)
+  *-linux* | *-uclinux*)
     case "$enable_linux_futex" in
       default)
 	# If headers don't have gettid/futex syscalls definition, then
@@ -74326,7 +74339,7 @@ $as_echo_n "checking whether to build Filesystem TS support... " >&6; }
       freebsd*|netbsd*|openbsd*|dragonfly*|darwin*)
         enable_libstdcxx_filesystem_ts=yes
         ;;
-      gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
+      gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu | uclinux*)
         enable_libstdcxx_filesystem_ts=yes
         ;;
       rtems*)
@@ -74878,7 +74891,7 @@ $as_echo_n "checking for sendfile that can copy files... " >&6; }
   $as_echo_n "(cached) " >&6
 else
         case "${target_os}" in
-        gnu* | linux* | solaris*)
+        gnu* | linux* | solaris* | uclinux*)
           if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */

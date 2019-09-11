@@ -658,7 +658,7 @@ load_killed_in_block_p (int uid_limit, rtx x, bool after_insn)
 	 It will set mems_conflict_p to nonzero if there may be a
 	 conflict between X and SETTER.  */
       mems_conflict_p = 0;
-      note_stores (PATTERN (setter), find_mem_conflicts, x);
+      note_stores (setter, find_mem_conflicts, x);
       if (mems_conflict_p)
 	return 1;
 
@@ -760,7 +760,7 @@ record_opr_changes (rtx_insn *insn)
   rtx note;
 
   /* Find all stores and record them.  */
-  note_stores (PATTERN (insn), record_last_set_info, insn);
+  note_stores (insn, record_last_set_info, insn);
 
   /* Also record autoincremented REGs for this insn as changed.  */
   for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
@@ -771,24 +771,9 @@ record_opr_changes (rtx_insn *insn)
   if (CALL_P (insn))
     {
       unsigned int regno;
-      rtx link, x;
       hard_reg_set_iterator hrsi;
       EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call, 0, regno, hrsi)
 	record_last_reg_set_info_regno (insn, regno);
-
-      for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
-	{
-	  gcc_assert (GET_CODE (XEXP (link, 0)) != CLOBBER_HIGH);
-	  if (GET_CODE (XEXP (link, 0)) == CLOBBER)
-	    {
-	      x = XEXP (XEXP (link, 0), 0);
-	      if (REG_P (x))
-		{
-		  gcc_assert (HARD_REGISTER_P (x));
-		  record_last_reg_set_info (insn, x);
-		}
-	    }
-	}
 
       if (! RTL_CONST_OR_PURE_CALL_P (insn))
 	record_last_mem_set_info (insn);

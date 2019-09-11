@@ -716,13 +716,13 @@ cris_reg_saved_in_regsave_area (unsigned int regno, bool got_really_used)
 {
   return
     (((df_regs_ever_live_p (regno)
-       && !call_used_regs[regno])
+       && !call_used_or_fixed_reg_p (regno))
       || (regno == PIC_OFFSET_TABLE_REGNUM
 	  && (got_really_used
 	      /* It is saved anyway, if there would be a gap.  */
 	      || (flag_pic
 		  && df_regs_ever_live_p (regno + 1)
-		  && !call_used_regs[regno + 1]))))
+		  && !call_used_or_fixed_reg_p (regno + 1)))))
      && (regno != FRAME_POINTER_REGNUM || !frame_pointer_needed)
      && regno != CRIS_SRP_REGNUM)
     || (crtl->calls_eh_return

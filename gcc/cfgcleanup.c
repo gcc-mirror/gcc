@@ -1228,10 +1228,10 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx_insn *i1, rtx_insn *i2)
 
       HARD_REG_SET i1_used, i2_used;
 
-      get_call_reg_set_usage (i1, &i1_used, call_used_reg_set);
-      get_call_reg_set_usage (i2, &i2_used, call_used_reg_set);
+      get_call_reg_set_usage (i1, &i1_used, call_used_or_fixed_regs);
+      get_call_reg_set_usage (i2, &i2_used, call_used_or_fixed_regs);
 
-      if (!hard_reg_set_equal_p (i1_used, i2_used))
+      if (i1_used != i2_used)
         return dir_none;
     }
 
@@ -1265,7 +1265,7 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx_insn *i1, rtx_insn *i2)
 	if (REG_NOTE_KIND (note) == REG_DEAD && STACK_REG_P (XEXP (note, 0)))
 	  SET_HARD_REG_BIT (i2_regset, REGNO (XEXP (note, 0)));
 
-      if (!hard_reg_set_equal_p (i1_regset, i2_regset))
+      if (i1_regset != i2_regset)
 	return dir_none;
     }
 #endif

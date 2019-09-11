@@ -457,27 +457,27 @@ tree_node_structure_for_code (enum tree_code code)
     case tcc_declaration:
       switch (code)
 	{
-	case FIELD_DECL:	return TS_FIELD_DECL;
-	case PARM_DECL:		return TS_PARM_DECL;
-	case VAR_DECL:		return TS_VAR_DECL;
-	case LABEL_DECL:	return TS_LABEL_DECL;
-	case RESULT_DECL:	return TS_RESULT_DECL;
-	case DEBUG_EXPR_DECL:	return TS_DECL_WRTL;
 	case CONST_DECL:	return TS_CONST_DECL;
-	case TYPE_DECL:		return TS_TYPE_DECL;
+	case DEBUG_EXPR_DECL:	return TS_DECL_WRTL;
+	case FIELD_DECL:	return TS_FIELD_DECL;
 	case FUNCTION_DECL:	return TS_FUNCTION_DECL;
+	case LABEL_DECL:	return TS_LABEL_DECL;
+	case PARM_DECL:		return TS_PARM_DECL;
+	case RESULT_DECL:	return TS_RESULT_DECL;
 	case TRANSLATION_UNIT_DECL: return TS_TRANSLATION_UNIT_DECL;
+	case TYPE_DECL:		return TS_TYPE_DECL;
+	case VAR_DECL:		return TS_VAR_DECL;
 	default: 		return TS_DECL_NON_COMMON;
 	}
 
     case tcc_type:		return TS_TYPE_NON_COMMON;
 
-    case tcc_reference:
-    case tcc_comparison:
-    case tcc_unary:
     case tcc_binary:
+    case tcc_comparison:
     case tcc_expression:
+    case tcc_reference:
     case tcc_statement:
+    case tcc_unary:
     case tcc_vl_exp:		return TS_EXP;
 
     default:  /* tcc_constant and tcc_exceptional */
@@ -501,11 +501,11 @@ tree_node_structure_for_code (enum tree_code code)
     case CONSTRUCTOR:		return TS_CONSTRUCTOR;
     case ERROR_MARK:		return TS_COMMON;
     case IDENTIFIER_NODE:	return TS_IDENTIFIER;
-    case PLACEHOLDER_EXPR:	return TS_COMMON;
     case OMP_CLAUSE:		return TS_OMP_CLAUSE;
     case OPTIMIZATION_NODE:	return TS_OPTIMIZATION;
-    case STATEMENT_LIST:	return TS_STATEMENT_LIST;
+    case PLACEHOLDER_EXPR:	return TS_COMMON;
     case SSA_NAME:		return TS_SSA_NAME;
+    case STATEMENT_LIST:	return TS_STATEMENT_LIST;
     case TARGET_OPTION_NODE:	return TS_TARGET_OPTION;
     case TREE_BINFO:		return TS_BINFO;
     case TREE_LIST:		return TS_LIST;

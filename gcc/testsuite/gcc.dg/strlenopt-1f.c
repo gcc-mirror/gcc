@@ -1,5 +1,5 @@
 /* This test needs runtime that provides __*_chk functions.  */
-/* { dg-do run { target *-*-linux* *-*-gnu* } } */
+/* { dg-do run { target *-*-linux* *-*-gnu* *-*-uclinu* } } */
 /* { dg-options "-O2 -fdump-tree-strlen" } */
 
 #define FORTIFY_SOURCE 2

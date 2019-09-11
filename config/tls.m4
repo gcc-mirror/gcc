@@ -76,7 +76,7 @@ AC_DEFUN([GCC_CHECK_TLS], [
 	  dnl Shared library options may depend on the host; this check
 	  dnl is only known to be needed for GNU/Linux.
 	  case $host in
-	    *-*-linux*)
+	    *-*-linux* | -*-uclinuxfdpic*)
 	      LDFLAGS="-shared -Wl,--no-undefined $LDFLAGS"
 	      ;;
 	  esac

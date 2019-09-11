@@ -4163,6 +4163,10 @@ cxx_eval_increment_expression (const constexpr_ctx *ctx, tree t,
   tree offset = TREE_OPERAND (t, 1);
   gcc_assert (TREE_CONSTANT (offset));
 
+  /* OFFSET is constant, but perhaps not constant enough.  We need to
+     e.g. bash FLOAT_EXPRs to REAL_CSTs.  */
+  offset = fold_simple (offset);
+
   /* The operand as an lvalue.  */
   op = cxx_eval_constant_expression (ctx, op, true,
 				     non_constant_p, overflow_p);

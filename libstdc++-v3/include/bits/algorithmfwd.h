@@ -192,8 +192,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // adjacent_find
 
 #if __cplusplus > 201703L
-#  define __cpp_lib_constexpr_algorithms 201711L
-#  define __cpp_lib_constexpr_swap_algorithms 201806L
+#  define __cpp_lib_constexpr_algorithms 201806L
 #endif
 
 #if __cplusplus >= 201103L

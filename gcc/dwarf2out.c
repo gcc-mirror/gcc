@@ -24432,7 +24432,7 @@ gen_producer_string (void)
       case OPT_U:
       case OPT_SPECIAL_unknown:
       case OPT_SPECIAL_ignore:
-      case OPT_SPECIAL_deprecated:
+      case OPT_SPECIAL_warn_removed:
       case OPT_SPECIAL_program_name:
       case OPT_SPECIAL_input_file:
       case OPT_grecord_gcc_switches:
@@ -27505,7 +27505,7 @@ create_label:
       ca_loc->tail_call_p = SIBLING_CALL_P (prev);
 
       /* Look for a SYMBOL_REF in the "prev" instruction.  */
-      rtx x = get_call_rtx_from (PATTERN (prev));
+      rtx x = get_call_rtx_from (prev);
       if (x)
 	{
 	  /* Try to get the call symbol, if any.  */

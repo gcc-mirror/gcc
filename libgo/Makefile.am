@@ -510,6 +510,14 @@ s-cpu: Makefile
 	$(SHELL) $(srcdir)/mvifdiff.sh cpugen.go.tmp cpugen.go
 	$(STAMP) $@
 
+gcpugen.go: s-gcpu; @true
+s-gcpu: Makefile
+	rm -f gcpugen.go.tmp
+	echo "package cpu" > gcpugen.go.tmp
+	echo "const cacheLineSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) cachelinesize`" >> gcpugen.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh gcpugen.go.tmp gcpugen.go
+	$(STAMP) $@
+
 objabi.go: s-objabi; @true
 s-objabi: Makefile
 	rm -f objabi.go.tmp
@@ -683,6 +691,12 @@ else
 syscall_lib_clone_lo =
 endif
 
+if LIBGO_IS_X86
+golangorg_x_sys_cpu_gccgo_lo = golang.org/x/sys/cpu_gccgo.lo
+else
+golangorg_x_sys_cpu_gccgo_lo =
+endif
+
 PACKAGES = $(shell cat $(srcdir)/libgo-packages.txt)
 
 libgo_go_objs = \
@@ -700,7 +714,7 @@ libgo_go_objs = \
 	runtime/internal/atomic_c.lo \
 	sync/atomic_c.lo \
 	internal/cpu/cpu_gccgo.lo \
-	golang.org/x/sys/cpu_gccgo.lo
+	$(golangorg_x_sys_cpu_gccgo_lo)
 
 libgo_ldflags = \
 	-version-info $(libtool_VERSION) $(PTHREAD_CFLAGS) $(AM_LDFLAGS)
@@ -767,7 +781,7 @@ GOLINK = $(LIBTOOL) --tag GO --mode-link $(GOC) \
 BUILDDEPS = \
 	$(MKDIR_P) $(@D); \
 	dir=`echo $@ | sed -e 's/.lo.dep$$//'`; \
-	files=`$(SHELL) $(srcdir)/match.sh --goarch=$(GOARCH) --goos=$(GOOS) --srcdir=$(srcdir)/go/$$dir --extrafiles="$(extra_go_files_$(subst /,_,$(subst .lo.dep,,$@)))" $(matchargs_$(subst /,_,$(subst .lo.dep,,$@)))`; \
+	files=`$(SHELL) $(srcdir)/match.sh --goarch=$(GOARCH) --goos=$(GOOS) --srcdir=$(srcdir)/go/$$dir --extrafiles="$(extra_go_files_$(subst .,_,$(subst /,_,$(subst .lo.dep,,$@))))" $(matchargs_$(subst /,_,$(subst .lo.dep,,$@)))`; \
 	$(SHELL) $(srcdir)/godeps.sh `echo $@ | sed -e 's/.dep$$//'` $$files > $@.tmp; \
 	if ! cmp $@.tmp $@ >/dev/null 2>/dev/null; then \
 	  rm -f `echo $@ | sed -e 's/\.dep$$//'`; \
@@ -798,7 +812,7 @@ GOBENCH =
 CHECK = \
 	GC="$(GOC) $(GOCFLAGS) $($(subst /,_,$@)_GOCFLAGS) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs"; \
 	export GC; \
-	GOLIBS="$(extra_check_libs_$(subst /,_,$(@D))) $(MATH_LIBS) $(NET_LIBS) $(LIBS)"; \
+	GOLIBS="$(extra_check_libs_$(subst .,_,$(subst /,_,$(@D)))) $(MATH_LIBS) $(NET_LIBS) $(LIBS)"; \
 	export GOLIBS; \
 	RUNTESTFLAGS="$(RUNTESTFLAGS)"; \
 	export RUNTESTFLAGS; \
@@ -812,7 +826,7 @@ CHECK = \
 	export LD_LIBRARY_PATH; \
 	$(MKDIR_P) $(@D); \
 	rm -f $@-testsum $@-testlog; \
-	files=`$(SHELL) $(srcdir)/match.sh --goarch=$(GOARCH) --goos=$(GOOS) --srcdir=$(srcdir)/go/$(@D) --extrafiles="$(extra_go_files_$(subst /,_,$(@D)))" $(matchargs_$(subst /,_,$(@D)))`; \
+	files=`$(SHELL) $(srcdir)/match.sh --goarch=$(GOARCH) --goos=$(GOOS) --srcdir=$(srcdir)/go/$(@D) --extrafiles="$(extra_go_files_$(subst .,_,$(subst /,_,$(@D))))" $(matchargs_$(subst /,_,$(@D)))`; \
 	if test "$(USE_DEJAGNU)" = "yes"; then \
 	  $(SHELL) $(srcdir)/testsuite/gotest --goarch=$(GOARCH) --goos=$(GOOS) --dejagnu=yes --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$$files" --testname="$(@D)" $(GOTESTFLAGS); \
 	elif test "$(GOBENCH)" != ""; then \
@@ -945,6 +959,9 @@ runtime/internal/sys.lo.dep: $(extra_go_files_runtime_internal_sys)
 extra_go_files_internal_cpu = cpugen.go
 internal/cpu.lo.dep: $(extra_go_files_internal_cpu)
 
+extra_go_files_golang_org_x_sys_cpu = gcpugen.go
+golang.org/x/sys/cpu.lo.dep: $(extra_go_files_golang_org_x_sys_cpu)
+
 extra_go_files_internal_goroot = zstdpkglist.go
 internal/goroot.lo.dep: $(extra_go_files_internal_goroot)
 
@@ -1041,34 +1058,27 @@ endif
 
 if LIBGO_IS_BSD
 
-# Build internal/x/net/route only on BSD systems.
+# Build golang.org/x/net/route only on BSD systems.
 
-$(eval $(call PACKAGE_template,internal/x/net/route))
+$(eval $(call PACKAGE_template,golang.org/x/net/route))
 
 golangorg_x_net_route_lo = \
 	golang.org/net/route.lo
-golangorg_x_net_route_check = \
-	golang.org/x/net/route/check
 
 endif
 
 if LIBGO_IS_SOLARIS
 
-# Build internal/x/net/lif only on Solaris systems.
+# Build golang.org/x/net/lif only on Solaris systems.
 
-$(eval $(call PACKAGE_template,internal/x/net/lif))
+$(eval $(call PACKAGE_template,golang.org/x/net/lif))
 
 golangorg_x_net_lif_lo = \
 	golang.org/x/net/lif.lo
-golangorg_x_net_lif_check = \
-	golang.org/x/net/lif/check
 
 endif
 
-TPACKAGES = $(shell cat $(srcdir)/check-packages.txt)
-TEST_PACKAGES = $(addsuffix /check,$(TPACKAGES)) \
-	$(golangorg_x_net_lif_check) \
-	$(golangorg_x_net_route_check)
+TEST_PACKAGES = $(addsuffix /check,$(shell cat $(srcdir)/check-packages.txt))
 
 check: check-tail
 check-recursive: check-head

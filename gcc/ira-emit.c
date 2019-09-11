@@ -1122,8 +1122,8 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
 	      ira_allocate_object_conflicts (to_obj, n);
 	    }
 	}
-      ior_hard_reg_conflicts (from, &hard_regs_live);
-      ior_hard_reg_conflicts (to, &hard_regs_live);
+      ior_hard_reg_conflicts (from, hard_regs_live);
+      ior_hard_reg_conflicts (to, hard_regs_live);
 
       update_costs (from, true, freq);
       update_costs (to, false, freq);

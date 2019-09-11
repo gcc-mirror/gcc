@@ -89,7 +89,7 @@ record_last_mem_set_info_common (rtx_insn *insn,
       struct gcse_note_stores_info data;
       data.insn = insn;
       data.canon_mem_list = canon_modify_mem_list;
-      note_stores (PATTERN (insn), canon_list_insert, (void*) &data);
+      note_stores (insn, canon_list_insert, (void*) &data);
     }
 }
 

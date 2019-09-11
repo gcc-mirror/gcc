@@ -1,3 +1,50 @@
+2019-09-11  Nathan Sidwell  <nathan@acm.org>
+
+	* c-objcp-common.c (cp-objcp-common.c): Alphababetize and
+	correctly mark all C++ nodes.
+	* decl.c (cp_tree_node_structure): Alphabetize.
+
+2019-09-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91673 - ICE with noexcept in alias-declaration.
+	* parser.c (CP_PARSER_FLAGS_DELAY_NOEXCEPT): New parser flag.
+	(cp_parser_lambda_declarator_opt): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_exception_specification_opt.
+	(cp_parser_direct_declarator): Adjust a call to
+	cp_parser_exception_specification_opt.
+	(cp_parser_member_declaration): Pass CP_PARSER_FLAGS_DELAY_NOEXCEPT
+	to cp_parser_declarator if not processing a friend or typedef
+	declaration.
+	(cp_parser_late_noexcept_specifier): Adjust a call to
+	cp_parser_noexcept_specification_opt.
+	(cp_parser_noexcept_specification_opt): New parameter for parser flags,
+	drop the FRIEND_P parameter.  Use the new parameter.
+	(cp_parser_exception_specification_opt): Likewise.
+	(cp_parser_transaction): Adjust a call to
+	cp_parser_noexcept_specification_opt.
+	(cp_parser_transaction_expression): Likewise.
+
+2019-09-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91705 - constexpr evaluation rejects ++/-- on floats.
+	* constexpr.c (cxx_eval_increment_expression): Call fold_simple on
+	the offset.
+
+2019-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (has_designator_problem): Use cp_expr_loc_or_input_loc
+	in error_at.
+	(build_enumerator): Likewise.
+	(cp_finish_decl): Use DECL_SOURCE_LOCATION.
+	(grokdeclarator): Use id_loc in two error_at; change errror
+	message about constinit together constexpr to use two ranges.
+
+2019-09-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84374 - diagnose invalid uses of decltype(auto).
+	* decl.c (grokdeclarator): Diagnose wrong usage of decltype(auto) in
+	a function declaration.
+
 2019-09-06  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/91125

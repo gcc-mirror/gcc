@@ -924,6 +924,13 @@ class Expression_statement : public Statement
   bool
   do_may_fall_through() const;
 
+  int
+  do_inlining_cost()
+  { return 0; }
+
+  void
+  do_export_statement(Export_function_body*);
+
   Bstatement*
   do_get_backend(Translate_context* context);
 

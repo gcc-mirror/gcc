@@ -2122,7 +2122,7 @@ aggregate_value_p (const_tree exp, const_tree fntype)
   regno = REGNO (reg);
   nregs = hard_regno_nregs (regno, TYPE_MODE (type));
   for (i = 0; i < nregs; i++)
-    if (! call_used_regs[regno + i])
+    if (! call_used_or_fixed_reg_p (regno + i))
       return 1;
 
   return 0;
@@ -3227,8 +3227,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	  for (insn = insns; insn && moved; insn = NEXT_INSN (insn))
 	    {
 	      if (INSN_P (insn))
-		note_stores (PATTERN (insn), record_hard_reg_sets,
-			     &hardregs);
+		note_stores (insn, record_hard_reg_sets, &hardregs);
 	      if (!hard_reg_set_empty_p (hardregs))
 		moved = false;
 	    }

@@ -2523,11 +2523,12 @@ emit_safe_across_calls (void)
   out_state = 0;
   while (1)
     {
-      while (rs < 64 && call_used_regs[PR_REG (rs)])
+      while (rs < 64 && call_used_or_fixed_reg_p (PR_REG (rs)))
 	rs++;
       if (rs >= 64)
 	break;
-      for (re = rs + 1; re < 64 && ! call_used_regs[PR_REG (re)]; re++)
+      for (re = rs + 1;
+	   re < 64 && ! call_used_or_fixed_reg_p (PR_REG (re)); re++)
 	continue;
       if (out_state == 0)
 	{
@@ -2593,7 +2594,7 @@ find_gr_spill (enum ia64_frame_regs r, int try_locals)
     {
       for (regno = GR_REG (1); regno <= GR_REG (31); regno++)
 	if (! df_regs_ever_live_p (regno)
-	    && call_used_regs[regno]
+	    && call_used_or_fixed_reg_p (regno)
 	    && ! fixed_regs[regno]
 	    && ! global_regs[regno]
 	    && ((current_frame_info.gr_used_mask >> regno) & 1) == 0
@@ -2641,7 +2642,7 @@ next_scratch_gr_reg (void)
   for (i = 0; i < 32; ++i)
     {
       regno = (last_scratch_gr_reg + i + 1) & 31;
-      if (call_used_regs[regno]
+      if (call_used_or_fixed_reg_p (regno)
 	  && ! fixed_regs[regno]
 	  && ! global_regs[regno]
 	  && ((current_frame_info.gr_used_mask >> regno) & 1) == 0)
@@ -2762,7 +2763,7 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
      which will always wind up on the stack.  */
 
   for (regno = FR_REG (2); regno <= FR_REG (127); regno++)
-    if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])
+    if (df_regs_ever_live_p (regno) && ! call_used_or_fixed_reg_p (regno))
       {
 	SET_HARD_REG_BIT (mask, regno);
 	spill_size += 16;
@@ -2771,7 +2772,7 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
       }
 
   for (regno = GR_REG (1); regno <= GR_REG (31); regno++)
-    if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])
+    if (df_regs_ever_live_p (regno) && ! call_used_or_fixed_reg_p (regno))
       {
 	SET_HARD_REG_BIT (mask, regno);
 	spill_size += 8;
@@ -2780,7 +2781,7 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
       }
 
   for (regno = BR_REG (1); regno <= BR_REG (7); regno++)
-    if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])
+    if (df_regs_ever_live_p (regno) && ! call_used_or_fixed_reg_p (regno))
       {
 	SET_HARD_REG_BIT (mask, regno);
 	spill_size += 8;
@@ -2840,7 +2841,8 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
     }
   else
     {
-      if (df_regs_ever_live_p (BR_REG (0)) && ! call_used_regs[BR_REG (0)])
+      if (df_regs_ever_live_p (BR_REG (0))
+	  && ! call_used_or_fixed_reg_p (BR_REG (0)))
 	{
 	  SET_HARD_REG_BIT (mask, BR_REG (0));
 	  extra_spill_size += 8;
@@ -2894,7 +2896,7 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
 
   /* See if we need to store the predicate register block.  */
   for (regno = PR_REG (0); regno <= PR_REG (63); regno++)
-    if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])
+    if (df_regs_ever_live_p (regno) && ! call_used_or_fixed_reg_p (regno))
       break;
   if (regno <= PR_REG (63))
     {
@@ -2965,7 +2967,7 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
   current_frame_info.spill_cfa_off = pretend_args_size - 16;
   current_frame_info.spill_size = spill_size;
   current_frame_info.extra_spill_size = extra_spill_size;
-  COPY_HARD_REG_SET (current_frame_info.mask, mask);
+  current_frame_info.mask = mask;
   current_frame_info.n_spilled = n_spilled;
   current_frame_info.initialized = reload_completed;
 }
@@ -6052,7 +6054,7 @@ fix_range (const char *const_str)
 	}
 
       for (i = first; i <= last; ++i)
-	fixed_regs[i] = call_used_regs[i] = 1;
+	fixed_regs[i] = 1;
 
       if (!comma)
 	break;
@@ -6230,20 +6232,25 @@ struct reg_write_state
 struct reg_write_state rws_sum[NUM_REGS];
 #if CHECKING_P
 /* Bitmap whether a register has been written in the current insn.  */
-HARD_REG_ELT_TYPE rws_insn[(NUM_REGS + HOST_BITS_PER_WIDEST_FAST_INT - 1)
-			   / HOST_BITS_PER_WIDEST_FAST_INT];
+unsigned HOST_WIDEST_FAST_INT rws_insn
+  [(NUM_REGS + HOST_BITS_PER_WIDEST_FAST_INT - 1)
+   / HOST_BITS_PER_WIDEST_FAST_INT];
 
 static inline void
-rws_insn_set (int regno)
+rws_insn_set (unsigned int regno)
 {
-  gcc_assert (!TEST_HARD_REG_BIT (rws_insn, regno));
-  SET_HARD_REG_BIT (rws_insn, regno);
+  unsigned int elt = regno / HOST_BITS_PER_WIDEST_FAST_INT;
+  unsigned int bit = regno % HOST_BITS_PER_WIDEST_FAST_INT;
+  gcc_assert (!((rws_insn[elt] >> bit) & 1));
+  rws_insn[elt] |= (unsigned HOST_WIDEST_FAST_INT) 1 << bit;
 }
 
 static inline int
-rws_insn_test (int regno)
+rws_insn_test (unsigned int regno)
 {
-  return TEST_HARD_REG_BIT (rws_insn, regno);
+  unsigned int elt = regno / HOST_BITS_PER_WIDEST_FAST_INT;
+  unsigned int bit = regno % HOST_BITS_PER_WIDEST_FAST_INT;
+  return (rws_insn[elt] >> bit) & 1;
 }
 #else
 /* When not checking, track just REG_AR_CFM and REG_VOLATILE.  */

@@ -1,3 +1,12 @@
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
+	* config/arm/sjlj.S (ldaddr): Add FDPIC support.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
+	* configure.tgt: Handle *-*-uclinux*.
+	* configure: Regenerate.
+
 2019-09-06  Florian Weimer  <fweimer@redhat.com>
 
 	* configure: Regenerate.
