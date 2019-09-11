@@ -1,3 +1,9 @@
+2019-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91725
+	* match.pd ((A / (1 << B)) -> (A >> B)): Call tree_nonzero_bits instead
+	of get_nonzero_bits, only call it for integral types.
+
 2019-09-11  Richard Biener  <rguenther@suse.de>
 
 	Revert
