@@ -1,3 +1,9 @@
+2019-09-17  Julian Brown  <julian@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-10.c (main): Fix
+	async-safety issue. Increase number of iterations.
+
 2018-10-04  Cesar Philippidis  <cesar@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 
