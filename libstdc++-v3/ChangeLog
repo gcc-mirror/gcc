@@ -1,5 +1,8 @@
 2019-09-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	* python/libstdcxx/v6/xmethods.py (SharedPtrUseCountWorker.__call__):
+	Fix syntax error.
+
 	* testsuite/20_util/result_of/sfinae_friendly_1.cc: Add -Wno-volatile
 	for C++2a and up. Define HAS_52748_FIXED and fix incorrect tests.
 	* testsuite/tr1/3_function_objects/result_of.cc: Add -Wno-volatile
