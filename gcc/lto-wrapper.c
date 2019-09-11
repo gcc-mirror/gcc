@@ -265,6 +265,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	case OPT_fshow_column:
 	case OPT_fcommon:
 	case OPT_fgnu_tm:
+	case OPT_g:
 	  /* Do what the old LTO code did - collect exactly one option
 	     setting per OPT code, we pick the first we encounter.
 	     ???  This doesn't make too much sense, but when it doesn't
@@ -617,6 +618,7 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	case OPT_fopenacc:
 	case OPT_fopenacc_dim_:
 	case OPT_foffload_abi_:
+	case OPT_g:
 	case OPT_O:
 	case OPT_Ofast:
 	case OPT_Og:
@@ -1399,6 +1401,10 @@ run_gcc (unsigned argc, char *argv[])
 	  linker_output_rel = !strcmp (option->arg, "rel");
 	  break;
 
+	case OPT_g:
+	  /* Recognize -g0.  */
+	  skip_debug = option->arg && !strcmp (option->arg, "0");
+	  break;
 
 	default:
 	  break;

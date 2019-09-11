@@ -1,5 +1,13 @@
 2019-09-11  Richard Biener  <rguenther@suse.de>
 
+	* lto-opts.c (lto_write_options): Stream -g when debug is enabled.
+	* lto-wrapper.c (merge_and_complain): Pick up -g.
+	(append_compiler_options): Likewise.
+	(run_gcc): Re-instantiate handling -g0 at link-time.
+	* doc/invoke.texi (flto): Document debug info generation.
+
+2019-09-11  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/90387
 	* vr-values.c (vr_values::extract_range_basic): After inlining
 	simplify non-constant __builtin_constant_p to false.
