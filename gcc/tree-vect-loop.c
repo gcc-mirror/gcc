@@ -7605,6 +7605,7 @@ vectorizable_induction (stmt_vec_info stmt_info,
 
   step_expr = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info);
   gcc_assert (step_expr != NULL_TREE);
+  tree step_vectype = get_same_sized_vectype (TREE_TYPE (step_expr), vectype);
 
   pe = loop_preheader_edge (iv_loop);
   init_expr = PHI_ARG_DEF_FROM_EDGE (phi,
@@ -7613,8 +7614,8 @@ vectorizable_induction (stmt_vec_info stmt_info,
   stmts = NULL;
   if (!nested_in_vect_loop)
     {
-      /* Convert the initial value to the desired type.  */
-      tree new_type = TREE_TYPE (vectype);
+      /* Convert the initial value to the IV update type.  */
+      tree new_type = TREE_TYPE (step_expr);
       init_expr = gimple_convert (&stmts, new_type, init_expr);
 
       /* If we are using the loop mask to "peel" for alignment then we need
@@ -7633,9 +7634,6 @@ vectorizable_induction (stmt_vec_info stmt_info,
 				    init_expr, skip_step);
 	}
     }
-
-  /* Convert the step to the desired type.  */
-  step_expr = gimple_convert (&stmts, TREE_TYPE (vectype), step_expr);
 
   if (stmts)
     {
@@ -7669,8 +7667,8 @@ vectorizable_induction (stmt_vec_info stmt_info,
       if (! CONSTANT_CLASS_P (new_name))
 	new_name = vect_init_vector (stmt_info, new_name,
 				     TREE_TYPE (step_expr), NULL);
-      new_vec = build_vector_from_val (vectype, new_name);
-      vec_step = vect_init_vector (stmt_info, new_vec, vectype, NULL);
+      new_vec = build_vector_from_val (step_vectype, new_name);
+      vec_step = vect_init_vector (stmt_info, new_vec, step_vectype, NULL);
 
       /* Now generate the IVs.  */
       unsigned group_size = SLP_TREE_SCALAR_STMTS (slp_node).length ();
@@ -7683,7 +7681,7 @@ vectorizable_induction (stmt_vec_info stmt_info,
       unsigned ivn;
       for (ivn = 0; ivn < nivs; ++ivn)
 	{
-	  tree_vector_builder elts (vectype, const_nunits, 1);
+	  tree_vector_builder elts (step_vectype, const_nunits, 1);
 	  stmts = NULL;
 	  for (unsigned eltn = 0; eltn < const_nunits; ++eltn)
 	    {
@@ -7694,6 +7692,7 @@ vectorizable_induction (stmt_vec_info stmt_info,
 	      elts.quick_push (elt);
 	    }
 	  vec_init = gimple_build_vector (&stmts, &elts);
+	  vec_init = gimple_convert (&stmts, vectype, vec_init);
 	  if (stmts)
 	    {
 	      new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
@@ -7708,10 +7707,13 @@ vectorizable_induction (stmt_vec_info stmt_info,
 	  induc_def = PHI_RESULT (induction_phi);
 
 	  /* Create the iv update inside the loop  */
-	  vec_def = make_ssa_name (vec_dest);
-	  new_stmt = gimple_build_assign (vec_def, PLUS_EXPR, induc_def, vec_step);
-	  gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
-	  loop_vinfo->add_stmt (new_stmt);
+	  gimple_seq stmts = NULL;
+	  vec_def = gimple_convert (&stmts, step_vectype, induc_def);
+	  vec_def = gimple_build (&stmts,
+				  PLUS_EXPR, step_vectype, vec_def, vec_step);
+	  vec_def = gimple_convert (&stmts, vectype, vec_def);
+	  loop_vinfo->add_stmt (SSA_NAME_DEF_STMT (vec_def));
+	  gsi_insert_seq_before (&si, stmts, GSI_SAME_STMT);
 
 	  /* Set the arguments of the phi node:  */
 	  add_phi_arg (induction_phi, vec_init, pe, UNKNOWN_LOCATION);
@@ -7739,8 +7741,8 @@ vectorizable_induction (stmt_vec_info stmt_info,
 	  if (! CONSTANT_CLASS_P (new_name))
 	    new_name = vect_init_vector (stmt_info, new_name,
 					 TREE_TYPE (step_expr), NULL);
-	  new_vec = build_vector_from_val (vectype, new_name);
-	  vec_step = vect_init_vector (stmt_info, new_vec, vectype, NULL);
+	  new_vec = build_vector_from_val (step_vectype, new_name);
+	  vec_step = vect_init_vector (stmt_info, new_vec, step_vectype, NULL);
 	  for (; ivn < nvects; ++ivn)
 	    {
 	      gimple *iv = SLP_TREE_VEC_STMTS (slp_node)[ivn - nivs]->stmt;
@@ -7749,18 +7751,20 @@ vectorizable_induction (stmt_vec_info stmt_info,
 		def = gimple_phi_result (iv);
 	      else
 		def = gimple_assign_lhs (iv);
-	      new_stmt = gimple_build_assign (make_ssa_name (vectype),
-					      PLUS_EXPR,
-					      def, vec_step);
+	      gimple_seq stmts = NULL;
+	      def = gimple_convert (&stmts, step_vectype, def);
+	      def = gimple_build (&stmts,
+				  PLUS_EXPR, step_vectype, def, vec_step);
+	      def = gimple_convert (&stmts, vectype, def);
 	      if (gimple_code (iv) == GIMPLE_PHI)
-		gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
+		gsi_insert_seq_before (&si, stmts, GSI_SAME_STMT);
 	      else
 		{
 		  gimple_stmt_iterator tgsi = gsi_for_stmt (iv);
-		  gsi_insert_after (&tgsi, new_stmt, GSI_CONTINUE_LINKING);
+		  gsi_insert_seq_after (&tgsi, stmts, GSI_CONTINUE_LINKING);
 		}
 	      SLP_TREE_VEC_STMTS (slp_node).quick_push
-		(loop_vinfo->add_stmt (new_stmt));
+		(loop_vinfo->add_stmt (SSA_NAME_DEF_STMT (def)));
 	    }
 	}
 
@@ -7796,12 +7800,12 @@ vectorizable_induction (stmt_vec_info stmt_info,
       /* iv_loop is the loop to be vectorized. Create:
 	 vec_init = [X, X+S, X+2*S, X+3*S] (S = step_expr, X = init_expr)  */
       stmts = NULL;
-      new_name = gimple_convert (&stmts, TREE_TYPE (vectype), init_expr);
+      new_name = gimple_convert (&stmts, TREE_TYPE (step_expr), init_expr);
 
       unsigned HOST_WIDE_INT const_nunits;
       if (nunits.is_constant (&const_nunits))
 	{
-	  tree_vector_builder elts (vectype, const_nunits, 1);
+	  tree_vector_builder elts (step_vectype, const_nunits, 1);
 	  elts.quick_push (new_name);
 	  for (i = 1; i < const_nunits; i++)
 	    {
@@ -7816,7 +7820,7 @@ vectorizable_induction (stmt_vec_info stmt_info,
 	}
       else if (INTEGRAL_TYPE_P (TREE_TYPE (step_expr)))
 	/* Build the initial value directly from a VEC_SERIES_EXPR.  */
-	vec_init = gimple_build (&stmts, VEC_SERIES_EXPR, vectype,
+	vec_init = gimple_build (&stmts, VEC_SERIES_EXPR, step_vectype,
 				 new_name, step_expr);
       else
 	{
@@ -7825,17 +7829,18 @@ vectorizable_induction (stmt_vec_info stmt_info,
 		+ (vectype) [0, 1, 2, ...] * [step, step, step, ...].  */
 	  gcc_assert (SCALAR_FLOAT_TYPE_P (TREE_TYPE (step_expr)));
 	  gcc_assert (flag_associative_math);
-	  tree index = build_index_vector (vectype, 0, 1);
-	  tree base_vec = gimple_build_vector_from_val (&stmts, vectype,
+	  tree index = build_index_vector (step_vectype, 0, 1);
+	  tree base_vec = gimple_build_vector_from_val (&stmts, step_vectype,
 							new_name);
-	  tree step_vec = gimple_build_vector_from_val (&stmts, vectype,
+	  tree step_vec = gimple_build_vector_from_val (&stmts, step_vectype,
 							step_expr);
-	  vec_init = gimple_build (&stmts, FLOAT_EXPR, vectype, index);
-	  vec_init = gimple_build (&stmts, MULT_EXPR, vectype,
+	  vec_init = gimple_build (&stmts, FLOAT_EXPR, step_vectype, index);
+	  vec_init = gimple_build (&stmts, MULT_EXPR, step_vectype,
 				   vec_init, step_vec);
-	  vec_init = gimple_build (&stmts, PLUS_EXPR, vectype,
+	  vec_init = gimple_build (&stmts, PLUS_EXPR, step_vectype,
 				   vec_init, base_vec);
 	}
+      vec_init = gimple_convert (&stmts, vectype, vec_init);
 
       if (stmts)
 	{
@@ -7874,8 +7879,8 @@ vectorizable_induction (stmt_vec_info stmt_info,
   t = unshare_expr (new_name);
   gcc_assert (CONSTANT_CLASS_P (new_name)
 	      || TREE_CODE (new_name) == SSA_NAME);
-  new_vec = build_vector_from_val (vectype, t);
-  vec_step = vect_init_vector (stmt_info, new_vec, vectype, NULL);
+  new_vec = build_vector_from_val (step_vectype, t);
+  vec_step = vect_init_vector (stmt_info, new_vec, step_vectype, NULL);
 
 
   /* Create the following def-use cycle:
@@ -7896,9 +7901,12 @@ vectorizable_induction (stmt_vec_info stmt_info,
   induc_def = PHI_RESULT (induction_phi);
 
   /* Create the iv update inside the loop  */
-  vec_def = make_ssa_name (vec_dest);
-  new_stmt = gimple_build_assign (vec_def, PLUS_EXPR, induc_def, vec_step);
-  gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
+  stmts = NULL;
+  vec_def = gimple_convert (&stmts, step_vectype, induc_def);
+  vec_def = gimple_build (&stmts, PLUS_EXPR, step_vectype, vec_def, vec_step);
+  vec_def = gimple_convert (&stmts, vectype, vec_def);
+  gsi_insert_seq_before (&si, stmts, GSI_SAME_STMT);
+  new_stmt = SSA_NAME_DEF_STMT (vec_def);
   stmt_vec_info new_stmt_info = loop_vinfo->add_stmt (new_stmt);
 
   /* Set the arguments of the phi node:  */
@@ -7940,20 +7948,22 @@ vectorizable_induction (stmt_vec_info stmt_info,
       t = unshare_expr (new_name);
       gcc_assert (CONSTANT_CLASS_P (new_name)
 		  || TREE_CODE (new_name) == SSA_NAME);
-      new_vec = build_vector_from_val (vectype, t);
-      vec_step = vect_init_vector (stmt_info, new_vec, vectype, NULL);
+      new_vec = build_vector_from_val (step_vectype, t);
+      vec_step = vect_init_vector (stmt_info, new_vec, step_vectype, NULL);
 
       vec_def = induc_def;
       prev_stmt_vinfo = induction_phi_info;
       for (i = 1; i < ncopies; i++)
 	{
 	  /* vec_i = vec_prev + vec_step  */
-	  new_stmt = gimple_build_assign (vec_dest, PLUS_EXPR,
-					  vec_def, vec_step);
-	  vec_def = make_ssa_name (vec_dest, new_stmt);
-	  gimple_assign_set_lhs (new_stmt, vec_def);
+	  gimple_seq stmts = NULL;
+	  vec_def = gimple_convert (&stmts, step_vectype, vec_def);
+	  vec_def = gimple_build (&stmts,
+				  PLUS_EXPR, step_vectype, vec_def, vec_step);
+	  vec_def = gimple_convert (&stmts, vectype, vec_def);
  
-	  gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
+	  gsi_insert_seq_before (&si, stmts, GSI_SAME_STMT);
+	  new_stmt = SSA_NAME_DEF_STMT (vec_def);
 	  new_stmt_info = loop_vinfo->add_stmt (new_stmt);
 	  STMT_VINFO_RELATED_STMT (prev_stmt_vinfo) = new_stmt_info;
 	  prev_stmt_vinfo = new_stmt_info;
