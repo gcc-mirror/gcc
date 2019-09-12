@@ -1,3 +1,11 @@
+2019-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91748
+	* include/bits/stl_algo.h (for_each_n): Fix random access iterator
+	case.
+	* testsuite/25_algorithms/for_each/for_each_n.cc: Test with random
+	access iterators.
+
 2019-09-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* python/libstdcxx/v6/xmethods.py (SharedPtrUseCountWorker.__call__):
