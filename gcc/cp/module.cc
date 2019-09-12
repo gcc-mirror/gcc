@@ -1260,10 +1260,10 @@ elf::get_error (const char *name) const
       gcc_unreachable ();
     case E_BAD_DATA:
       return "Bad file data";
-    case E_BAD_LAZY:
-      return "Bad lazy ordering";
     case E_BAD_IMPORT:
       return "Bad import dependency";
+    case E_BAD_LAZY:
+      return "Bad lazy ordering";
     default:
       return xstrerror (err);
     }
@@ -2709,8 +2709,8 @@ enum tree_tag {
 
   tt_named, 	 	/* Named decl. */
   tt_anon,		/* Anonymous decl.  */
-  tt_template,		/* The TEMPLATE_RESULT of a template.  */
   tt_implicit_template, /* An immplicit member template.  */
+  tt_template,		/* The TEMPLATE_RESULT of a template.  */
   tt_friend_template    /* A friend of a template class.  */
 };
 
@@ -4062,22 +4062,22 @@ dumper::impl::nested_name (tree t)
   if (t)
     switch (TREE_CODE (t))
       {
-      case IDENTIFIER_NODE:
-	fwrite (IDENTIFIER_POINTER (t), 1, IDENTIFIER_LENGTH (t), stream);
+      default:
+	fputs ("#unnamed#", stream);
 	break;
 
-      case STRING_CST:
-	/* If TREE_TYPE is NULL, this is a raw string.  */
-	fwrite (TREE_STRING_POINTER (t), 1,
-		TREE_STRING_LENGTH (t) - (TREE_TYPE (t) != NULL_TREE), stream);
+      case IDENTIFIER_NODE:
+	fwrite (IDENTIFIER_POINTER (t), 1, IDENTIFIER_LENGTH (t), stream);
 	break;
 
       case INTEGER_CST:
 	print_hex (wi::to_wide (t), stream);
 	break;
 
-      default:
-	fputs ("#unnamed#", stream);
+      case STRING_CST:
+	/* If TREE_TYPE is NULL, this is a raw string.  */
+	fwrite (TREE_STRING_POINTER (t), 1,
+		TREE_STRING_LENGTH (t) - (TREE_TYPE (t) != NULL_TREE), stream);
 	break;
       }
   else
@@ -4167,18 +4167,27 @@ dumper::operator () (const char *format, ...)
       format = ++esc;
       switch (*format++)
 	{
+	default:
+	  gcc_unreachable ();
+
+	case '%':
+	  fputc ('%', dumps->stream);
+	  break;
+
 	case 'C': /* Code */
 	  {
 	    tree_code code = (tree_code)va_arg (args, unsigned);
 	    fputs (get_tree_code_name (code), dumps->stream);
 	  }
 	  break;
+
 	case 'I': /* Identifier.  */
 	  {
 	    tree t = va_arg (args, tree);
 	    dumps->nested_name (t);
 	  }
 	  break;
+
 	case 'M': /* Module. */
 	  {
 	    const char *str = "(none)";
@@ -4192,6 +4201,7 @@ dumper::operator () (const char *format, ...)
 	    fputs (str, dumps->stream);
 	  }
 	  break;
+
 	case 'N': /* Name.  */
 	  {
 	    tree t = va_arg (args, tree);
@@ -4202,6 +4212,7 @@ dumper::operator () (const char *format, ...)
 	    fputc ('\'', dumps->stream);
 	  }
 	  break;
+
 	case 'P': /* Pair.  */
 	  {
 	    tree ctx = va_arg (args, tree);
@@ -4214,6 +4225,7 @@ dumper::operator () (const char *format, ...)
 	    fputc ('\'', dumps->stream);
 	  }
 	  break;
+
 	case 'R': /* Ratio */
 	  {
 	    unsigned a = va_arg (args, unsigned);
@@ -4221,6 +4233,7 @@ dumper::operator () (const char *format, ...)
 	    fprintf (dumps->stream, "%.1f", (float) a / (b + !b));
 	  }
 	  break;
+
 	case 'S': /* Symbol name */
 	  {
 	    tree t = va_arg (args, tree);
@@ -4236,12 +4249,14 @@ dumper::operator () (const char *format, ...)
 	      }
 	  }
 	  break;
+
 	case 'U': /* long unsigned.  */
 	  {
 	    unsigned long u = va_arg (args, unsigned long);
 	    fprintf (dumps->stream, "%lu", u);
 	  }
 	  break;
+
 	case 'V': /* Verson.  */
 	  {
 	    unsigned v = va_arg (args, unsigned);
@@ -4251,24 +4266,28 @@ dumper::operator () (const char *format, ...)
 	    fputs (string, dumps->stream);
 	  }
 	  break;
+
 	case 'c': /* Character.  */
 	  {
 	    int c = va_arg (args, int);
 	    fputc (c, dumps->stream);
 	  }
 	  break;
+
 	case 'd': /* Decimal Int.  */
 	  {
 	    int d = va_arg (args, int);
 	    fprintf (dumps->stream, "%d", d);
 	  }
 	  break;
+
 	case 'p': /* Pointer. */
 	  {
 	    void *p = va_arg (args, void *);
 	    fprintf (dumps->stream, "%p", p);
 	  }
 	  break;
+
 	case 's': /* String. */
 	  {
 	    const char *s = va_arg (args, char *);
@@ -4276,23 +4295,20 @@ dumper::operator () (const char *format, ...)
 	    fputs (s, dumps->stream);
 	  }
 	  break;
+
 	case 'u': /* Unsigned.  */
 	  {
 	    unsigned u = va_arg (args, unsigned);
 	    fprintf (dumps->stream, "%u", u);
 	  }
 	  break;
+
 	case 'x': /* Hex. */
 	  {
 	    unsigned x = va_arg (args, unsigned);
 	    fprintf (dumps->stream, "%x", x);
 	  }
 	  break;
-	case '%':
-	  fputc ('%', dumps->stream);
-	  break;
-	default:
-	  gcc_unreachable ();
 	}
     }
   fputs (format, dumps->stream);
@@ -4753,18 +4769,15 @@ trees_out::start (tree t)
 	u (VL_EXP_OPERAND_LENGTH (t));
       break;
 
-    case TREE_BINFO:
-      u (BINFO_N_BASE_BINFOS (t));
-      break;
-
-    case TREE_VEC:
-      u (TREE_VEC_LENGTH (t));
-      break;
-
     case INTEGER_CST:
       u (TREE_INT_CST_NUNITS (t));
       u (TREE_INT_CST_EXT_NUNITS (t));
       u (TREE_INT_CST_OFFSET_NUNITS (t));
+      break;
+
+    case OMP_CLAUSE:
+      state->extensions |= SE_OPENMP;
+      u (OMP_CLAUSE_CODE (t));
       break;
 
     case STRING_CST:
@@ -4776,21 +4789,24 @@ trees_out::start (tree t)
       u (VECTOR_CST_NELTS_PER_PATTERN (t));
       break;
 
-    case OMP_CLAUSE:
-      state->extensions |= SE_OPENMP;
-      u (OMP_CLAUSE_CODE (t));
+    case TREE_BINFO:
+      u (BINFO_N_BASE_BINFOS (t));
       break;
 
-    case POLY_INT_CST:
+    case TREE_VEC:
+      u (TREE_VEC_LENGTH (t));
+      break;
+
     case FIXED_CST:
+    case POLY_INT_CST:
       gcc_unreachable (); /* Not supported in C++.  */
       break;
 
     case IDENTIFIER_NODE:
-    case TRANSLATION_UNIT_DECL:
-    case SSA_NAME:
     case MEM_REF:
+    case SSA_NAME:
     case TARGET_MEM_REF:
+    case TRANSLATION_UNIT_DECL:
       /* We shouldn't meet these.  */
       gcc_unreachable ();
       break;
@@ -4822,28 +4838,12 @@ trees_in::start (unsigned code)
 	t = make_node (tree_code (code));
       break;
 
-    case TREE_BINFO:
-      t = make_tree_binfo (u ());
-      break;
-
-    case TREE_VEC:
-      t = make_tree_vec (u ());
-      break;
-
     case INTEGER_CST:
       {
 	unsigned n = u ();
 	unsigned e = u ();
 	t = make_int_cst (n, e);
 	TREE_INT_CST_OFFSET_NUNITS(t) = u ();
-      }
-      break;
-
-    case STRING_CST:
-      {
-	size_t l;
-	const char *chars = str (&l);
-	t = build_string (l, chars);
       }
       break;
 
@@ -4857,6 +4857,14 @@ trees_in::start (unsigned code)
       }
       break;
 
+    case STRING_CST:
+      {
+	size_t l;
+	const char *chars = str (&l);
+	t = build_string (l, chars);
+      }
+      break;
+
     case VECTOR_CST:
       {
 	unsigned log2_npats = u ();
@@ -4865,13 +4873,21 @@ trees_in::start (unsigned code)
       }
       break;
 
-    case POLY_INT_CST:
+    case TREE_BINFO:
+      t = make_tree_binfo (u ());
+      break;
+
+    case TREE_VEC:
+      t = make_tree_vec (u ());
+      break;
+
     case FIXED_CST:
     case IDENTIFIER_NODE:
-    case TRANSLATION_UNIT_DECL:
-    case SSA_NAME:
     case MEM_REF:
+    case POLY_INT_CST:
+    case SSA_NAME:
     case TARGET_MEM_REF:
+    case TRANSLATION_UNIT_DECL:
       goto fail;
     }
 
@@ -4923,12 +4939,12 @@ trees_out::core_bools (tree t)
 
   switch (code)
     {
-    case TREE_VEC:
-    case INTEGER_CST:
     case CALL_EXPR:
-    case SSA_NAME:
+    case INTEGER_CST:
     case MEM_REF:
+    case SSA_NAME:
     case TARGET_MEM_REF:
+    case TREE_VEC:
       /* These use different base.u fields.  */
       break;
 
@@ -5082,12 +5098,12 @@ trees_in::core_bools (tree t)
 
   switch (code)
     {
-    case TREE_VEC:
-    case INTEGER_CST:
     case CALL_EXPR:
-    case SSA_NAME:
+    case INTEGER_CST:
     case MEM_REF:
+    case SSA_NAME:
     case TARGET_MEM_REF:
+    case TREE_VEC:
       /* These use different base.u fields.  */
       break;
 
@@ -5230,6 +5246,9 @@ trees_out::lang_decl_bools (tree t)
   WB (lang->u.base.module_owner != 0);
   switch (lang->u.base.selector)
     {
+    default:
+      gcc_unreachable ();
+
     case lds_fn:  /* lang_decl_fn.  */
       WB (lang->u.fn.global_ctor_p);
       WB (lang->u.fn.global_dtor_p);
@@ -5246,17 +5265,18 @@ trees_out::lang_decl_bools (tree t)
       WB (lang->u.fn.hidden_friend_p);
       WB (lang->u.fn.omp_declare_reduction_p);
       /* FALLTHROUGH.  */
+
     case lds_min:  /* lang_decl_min.  */
       /* No bools.  */
       break;
+
     case lds_ns:  /* lang_decl_ns.  */
       /* No bools.  */
       break;
+
     case lds_parm:  /* lang_decl_parm.  */
       /* No bools.  */
       break;
-    default:
-      gcc_unreachable ();
     }
 #undef WB
 }
@@ -5284,6 +5304,9 @@ trees_in::lang_decl_bools (tree t)
   lang->u.base.module_owner = b () ? state->mod : MODULE_NONE;
   switch (lang->u.base.selector)
     {
+    default:
+      gcc_unreachable ();
+
     case lds_fn:  /* lang_decl_fn.  */
       RB (lang->u.fn.global_ctor_p);
       RB (lang->u.fn.global_dtor_p);
@@ -5298,17 +5321,18 @@ trees_in::lang_decl_bools (tree t)
       RB (lang->u.fn.hidden_friend_p);
       RB (lang->u.fn.omp_declare_reduction_p);
       /* FALLTHROUGH.  */
+
     case lds_min:  /* lang_decl_min.  */
       /* No bools.  */
       break;
+
     case lds_ns:  /* lang_decl_ns.  */
       /* No bools.  */
       break;
+
     case lds_parm:  /* lang_decl_parm.  */
       /* No bools.  */
       break;
-    default:
-      gcc_unreachable ();
     }
 #undef RB
   return !get_overrun ();
@@ -5614,30 +5638,23 @@ trees_out::core_vals (tree t)
     default:
       break;
 
-    case IDENTIFIER_NODE:
-    case SSA_NAME:
-    case TRANSLATION_UNIT_DECL:
     case ARGUMENT_PACK_SELECT:  /* Transient during instantiation.  */
     case DEFERRED_PARSE:
+    case IDENTIFIER_NODE:
     case MODULE_VECTOR:
+    case SSA_NAME:
+    case TRANSLATION_UNIT_DECL:
     case USERDEF_LITERAL:  /* Expanded during parsing.  */
       gcc_unreachable (); /* Should never meet.  */
 
-    case TREE_LIST:
-      WT (t->list.purpose);
-      WT (t->list.value);
-      WT (t->list.common.chain);
+      /* Constants.  */
+    case COMPLEX_CST:
+      WT (TREE_REALPART (t));
+      WT (TREE_IMAGPART (t));
       break;
 
-    case TREE_VEC:
-      for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
-	WT (TREE_VEC_ELT (t, ix));
-      /* We stash NON_DEFAULT_TEMPLATE_ARGS_COUNT on TREE_CHAIN!  */
-      gcc_checking_assert (!t->type_common.common.chain
-			   || (TREE_CODE (t->type_common.common.chain)
-			       == INTEGER_CST));
-      WT (t->type_common.common.chain);
-      break;
+    case FIXED_CST:
+      gcc_unreachable (); /* Not supported in C++.  */
 
     case INTEGER_CST:
       if (streaming_p ())
@@ -5648,33 +5665,24 @@ trees_out::core_vals (tree t)
 	}
       break;
 
-    case REAL_CST:
-      if (streaming_p ())
-	buf (TREE_REAL_CST_PTR (t), sizeof (real_value));
-      break;
-
-    case FIXED_CST:
     case POLY_INT_CST:
       gcc_unreachable (); /* Not supported in C++.  */
 
-    case VECTOR_CST:
-      for (unsigned ix = vector_cst_encoded_nelts (t); ix--;)
-	WT (VECTOR_CST_ENCODED_ELT (t, ix));
+    case REAL_CST:
+      if (streaming_p ())
+	buf (TREE_REAL_CST_PTR (t), sizeof (real_value));
       break;
 
     case STRING_CST:
       /* Streamed during start.  */
       break;
 
-    case COMPLEX_CST:
-      WT (TREE_REALPART (t));
-      WT (TREE_IMAGPART (t));
+    case VECTOR_CST:
+      for (unsigned ix = vector_cst_encoded_nelts (t); ix--;)
+	WT (VECTOR_CST_ENCODED_ELT (t, ix));
       break;
 
-    case  TYPE_DECL:
-      WT (t->decl_non_common.result);
-      break;
-
+      /* Decls.  */
     case RESULT_DECL:
       // FIXME?
       break;
@@ -5730,11 +5738,11 @@ trees_out::core_vals (tree t)
       WT (t->function_decl.vindex);
       break;
 
-    case CALL_EXPR:
-      if (streaming_p ())
-	WU (t->base.u.ifn);
+    case TYPE_DECL:
+      WT (t->decl_non_common.result);
       break;
 
+      /* Miscelaneous common nodes.  */
     case BLOCK:
       WT (t->block.supercontext);
       chained_decls (t->block.vars);
@@ -5744,30 +5752,9 @@ trees_out::core_vals (tree t)
       WT (t->block.chain);
       break;
 
-    case TREE_BINFO:
-      {
-	WT (t->binfo.common.chain);
-	WT (t->binfo.offset);
-	WT (t->binfo.inheritance);
-	WT (t->binfo.vtable);
-	WT (t->binfo.virtuals);
-	WT (t->binfo.vptr_field);
-	WT (t->binfo.vtt_subvtt);
-	WT (t->binfo.vtt_vptr);
-
-	tree_vec (BINFO_BASE_ACCESSES (t));
-	unsigned num = vec_safe_length (BINFO_BASE_ACCESSES (t));
-	for (unsigned ix = 0; ix != num; ix++)
-	  WT (BINFO_BASE_BINFO (t, ix));
-      }
-      break;
-
-    case STATEMENT_LIST:
-      for (tree_stmt_iterator iter = tsi_start (t);
-	   !tsi_end_p (iter); tsi_next (&iter))
-	if (tree stmt = tsi_stmt (iter))
-	  WT (stmt);
-      WT (NULL_TREE);
+    case CALL_EXPR:
+      if (streaming_p ())
+	WU (t->base.u.ifn);
       break;
 
     case CONSTRUCTOR:
@@ -5803,8 +5790,50 @@ trees_out::core_vals (tree t)
       gcc_unreachable (); // FIXME
       break;
 
+    case STATEMENT_LIST:
+      for (tree_stmt_iterator iter = tsi_start (t);
+	   !tsi_end_p (iter); tsi_next (&iter))
+	if (tree stmt = tsi_stmt (iter))
+	  WT (stmt);
+      WT (NULL_TREE);
+      break;
+
     case TARGET_OPTION_NODE:
       gcc_unreachable (); // FIXME
+      break;
+
+    case TREE_BINFO:
+      {
+	WT (t->binfo.common.chain);
+	WT (t->binfo.offset);
+	WT (t->binfo.inheritance);
+	WT (t->binfo.vtable);
+	WT (t->binfo.virtuals);
+	WT (t->binfo.vptr_field);
+	WT (t->binfo.vtt_subvtt);
+	WT (t->binfo.vtt_vptr);
+
+	tree_vec (BINFO_BASE_ACCESSES (t));
+	unsigned num = vec_safe_length (BINFO_BASE_ACCESSES (t));
+	for (unsigned ix = 0; ix != num; ix++)
+	  WT (BINFO_BASE_BINFO (t, ix));
+      }
+      break;
+
+    case TREE_LIST:
+      WT (t->list.purpose);
+      WT (t->list.value);
+      WT (t->list.common.chain);
+      break;
+
+    case TREE_VEC:
+      for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
+	WT (TREE_VEC_ELT (t, ix));
+      /* We stash NON_DEFAULT_TEMPLATE_ARGS_COUNT on TREE_CHAIN!  */
+      gcc_checking_assert (!t->type_common.common.chain
+			   || (TREE_CODE (t->type_common.common.chain)
+			       == INTEGER_CST));
+      WT (t->type_common.common.chain);
       break;
 
       /* C++-specific nodes ...  */
@@ -6010,26 +6039,24 @@ trees_in::core_vals (tree t)
     default:
       break;
 
-    case IDENTIFIER_NODE:
-    case SSA_NAME:
-    case TRANSLATION_UNIT_DECL:
     case ARGUMENT_PACK_SELECT:
     case DEFERRED_PARSE:
+    case IDENTIFIER_NODE:
     case MODULE_VECTOR:
+    case SSA_NAME:
+    case TRANSLATION_UNIT_DECL:
     case USERDEF_LITERAL:
       return false; /* Should never meet.  */
 
-    case TREE_LIST:
-      RT (t->list.purpose);
-      RT (t->list.value);
-      RT (t->list.common.chain);
+      /* Constants.  */
+    case COMPLEX_CST:
+      RT (TREE_REALPART (t));
+      RT (TREE_IMAGPART (t));
       break;
 
-    case TREE_VEC:
-      for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
-	RT (TREE_VEC_ELT (t, ix));
-      RT (t->type_common.common.chain);
-      break;
+    case FIXED_CST:
+      /* Not suported in C++.  */
+      return false;
 
     case INTEGER_CST:
       {
@@ -6039,6 +6066,10 @@ trees_in::core_vals (tree t)
       }
       break;
 
+    case POLY_INT_CST:
+      /* Not suported in C++.  */
+      return false;
+
     case REAL_CST:
       if (const void *bytes = buf (sizeof (real_value)))
 	TREE_REAL_CST_PTR (t)
@@ -6046,29 +6077,16 @@ trees_in::core_vals (tree t)
 						    bytes, sizeof (real_value)));
       break;
 
-    case FIXED_CST:
-    case POLY_INT_CST:
-      /* Not suported in C++.  */
-      return false;
+    case STRING_CST:
+      /* Streamed during start.  */
+      break;
 
     case VECTOR_CST:
       for (unsigned ix = vector_cst_encoded_nelts (t); ix--;)
 	RT (VECTOR_CST_ENCODED_ELT (t, ix));
       break;
 
-    case STRING_CST:
-      /* Streamed during start.  */
-      break;
-
-    case COMPLEX_CST:
-      RT (TREE_REALPART (t));
-      RT (TREE_IMAGPART (t));
-      break;
-
-    case TYPE_DECL:
-      RT (t->decl_non_common.result);
-      break;
-
+      /* Decls.  */
     case RESULT_DECL:
       // FIXME?
       break;
@@ -6122,10 +6140,11 @@ trees_in::core_vals (tree t)
       }
       break;
 
-    case CALL_EXPR:
-      RUC (internal_fn, t->base.u.ifn);
+    case TYPE_DECL:
+      RT (t->decl_non_common.result);
       break;
 
+      /* Miscelaneous common nodes.  */
     case BLOCK:
       RT (t->block.supercontext);
       t->block.vars = chained_decls ();
@@ -6135,31 +6154,8 @@ trees_in::core_vals (tree t)
       RT (t->block.chain);
       break;
 
-    case TREE_BINFO:
-      RT (t->binfo.common.chain);
-      RT (t->binfo.offset);
-      RT (t->binfo.inheritance);
-      RT (t->binfo.vtable);
-      RT (t->binfo.virtuals);
-      RT (t->binfo.vptr_field);
-      RT (t->binfo.vtt_subvtt);
-      RT (t->binfo.vtt_vptr);
-
-      BINFO_BASE_ACCESSES (t) = tree_vec ();
-      if (!get_overrun ())
-	{
-	  unsigned num = vec_safe_length (BINFO_BASE_ACCESSES (t));
-	  for (unsigned ix = 0; ix != num; ix++)
-	    BINFO_BASE_APPEND (t, tree_node ());
-	}
-      break;
-
-    case STATEMENT_LIST:
-      {
-	tree_stmt_iterator iter = tsi_start (t);
-	for (tree stmt; RT (stmt);)
-	  tsi_link_after (&iter, stmt, TSI_CONTINUE_LINKING);
-      }
+    case CALL_EXPR:
+      RUC (internal_fn, t->base.u.ifn);
       break;
 
     case CONSTRUCTOR:
@@ -6192,8 +6188,47 @@ trees_in::core_vals (tree t)
       gcc_unreachable (); // FIXME
       break;
 
+    case STATEMENT_LIST:
+      {
+	tree_stmt_iterator iter = tsi_start (t);
+	for (tree stmt; RT (stmt);)
+	  tsi_link_after (&iter, stmt, TSI_CONTINUE_LINKING);
+      }
+      break;
+
     case TARGET_OPTION_NODE:
       gcc_unreachable (); // FIXME
+      break;
+
+    case TREE_BINFO:
+      RT (t->binfo.common.chain);
+      RT (t->binfo.offset);
+      RT (t->binfo.inheritance);
+      RT (t->binfo.vtable);
+      RT (t->binfo.virtuals);
+      RT (t->binfo.vptr_field);
+      RT (t->binfo.vtt_subvtt);
+      RT (t->binfo.vtt_vptr);
+
+      BINFO_BASE_ACCESSES (t) = tree_vec ();
+      if (!get_overrun ())
+	{
+	  unsigned num = vec_safe_length (BINFO_BASE_ACCESSES (t));
+	  for (unsigned ix = 0; ix != num; ix++)
+	    BINFO_BASE_APPEND (t, tree_node ());
+	}
+      break;
+
+    case TREE_LIST:
+      RT (t->list.purpose);
+      RT (t->list.value);
+      RT (t->list.common.chain);
+      break;
+
+    case TREE_VEC:
+      for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
+	RT (TREE_VEC_ELT (t, ix));
+      RT (t->type_common.common.chain);
       break;
 
       /* C++-specific nodes ...  */
@@ -7387,6 +7422,7 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 
   if (TYPE_PTRMEMFUNC_P (type))
     {
+      /* This is a distinct type node, masquerading as a structure. */ 
       tree fn_type = TYPE_PTRMEMFUNC_FN_TYPE (type);
       if (streaming_p ())
 	i (tt_ptrmem_type);
@@ -7411,16 +7447,39 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 	 terms of other types.  */
       gcc_unreachable ();
 
+    case ARRAY_TYPE:
+      tree_node (TYPE_DOMAIN (type));
+      break;
+
+    case COMPLEX_TYPE:
+      /* No additional data.  */
+      break;
+
+    case DECLTYPE_TYPE:
+    case TYPEOF_TYPE:
+    case UNDERLYING_TYPE:
+      tree_node (TYPE_VALUES_RAW (type));
+      if (TREE_CODE (type) == DECLTYPE_TYPE)
+	/* We stash a whole bunch of things into decltype's
+	   flags.  */
+	if (streaming_p ())
+	  tree_node_bools (type);
+      break;
+
+    case FUNCTION_TYPE:
+      tree_node (TYPE_ARG_TYPES (type));
+      break;
+
     case INTEGER_TYPE:
       if (TREE_TYPE (type))
 	{
-	  /* A range type.  */
+	  /* A range type (representing an array domain).  */
 	  tree_node (TYPE_MIN_VALUE (type));
 	  tree_node (TYPE_MAX_VALUE (type));
 	}
       else
 	{
-	  /* A new integral type.  */
+	  /* A new integral type (representing a bitfield).  */
 	  if (streaming_p ())
 	    {
 	      unsigned prec = TYPE_PRECISION (type);
@@ -7431,25 +7490,32 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 	}
       break;
 
-    case TYPEOF_TYPE:
-    case DECLTYPE_TYPE:
-    case UNDERLYING_TYPE:
-      tree_node (TYPE_VALUES_RAW (type));
-      if (TREE_CODE (type) == DECLTYPE_TYPE)
-	/* We stash a whole bunch of things into decltype's
-	   flags.  */
-	if (streaming_p ())
-	  tree_node_bools (type);
+    case METHOD_TYPE:
+      tree_node (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (type))));
+      tree_node (TREE_CHAIN (TYPE_ARG_TYPES (type)));
+      break;
+
+    case OFFSET_TYPE:
+      tree_node (TYPE_OFFSET_BASETYPE (type));
+      break;
+
+    case POINTER_TYPE:
+      /* No additional data.  */
+      break;
+
+    case REFERENCE_TYPE:
+      if (streaming_p ())
+	u (TYPE_REF_IS_RVALUE (type));
+      break;
+
+    case TYPE_ARGUMENT_PACK:
+      /* No additional data.  */
       break;
 
     case TYPE_PACK_EXPANSION:
       if (streaming_p ())
 	u (PACK_EXPANSION_LOCAL_P (type));
       tree_node (PACK_EXPANSION_PARAMETER_PACKS (type));
-      break;
-
-    case TYPE_ARGUMENT_PACK:
-      /* No additional data.  */
       break;
 
     case VECTOR_TYPE:
@@ -7461,35 +7527,6 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 	}
       break;
 
-    case COMPLEX_TYPE:
-      /* No additional data.  */
-      break;
-
-    case ARRAY_TYPE:
-      tree_node (TYPE_DOMAIN (type));
-      break;
-
-    case OFFSET_TYPE:
-      tree_node (TYPE_OFFSET_BASETYPE (type));
-      break;
-
-    case FUNCTION_TYPE:
-      tree_node (TYPE_ARG_TYPES (type));
-      break;
-
-    case METHOD_TYPE:
-      tree_node (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (type))));
-      tree_node (TREE_CHAIN (TYPE_ARG_TYPES (type)));
-      break;
-
-    case REFERENCE_TYPE:
-      if (streaming_p ())
-	u (TYPE_REF_IS_RVALUE (type));
-      break;
-
-    case POINTER_TYPE:
-      /* No additional data.  */
-      break;
     }
 
   /* We may have met the type during emitting the above.  */
@@ -8117,10 +8154,6 @@ trees_in::tree_node ()
   tree res = NULL_TREE;
   switch (tag)
     {
-    case tt_null:
-      /* NULL_TREE.  */
-      break;
-
     default:
       /* backref, pull it out of the map.  */
       if (tag < 0 && unsigned (~tag) < back_refs.length ())
@@ -8132,9 +8165,13 @@ trees_in::tree_node ()
 				     TREE_CODE (res), res, res);
       break;
 
+    case tt_null:
+      /* NULL_TREE.  */
+      break;
+
     case tt_fixed:
+      /* A fixed ref, find it in the fixed_ref array.   */
       {
-	/* A fixed ref, find it in the fixed_ref array.   */
 	unsigned fix = u ();
 	if (fix < (*fixed_trees).length ())
 	  {
@@ -8145,6 +8182,59 @@ trees_in::tree_node ()
 
 	if (!res)
 	  set_overrun ();
+      }
+      break;
+
+    case tt_node:
+      /* A new node.  Stream it in.  */
+      {
+	unsigned kind = u ();
+
+	if (kind < WK_body || kind > WK_clone)
+	  set_overrun ();
+	else
+	  res = tree_value (walk_kind (kind));
+      }
+      break;
+
+    case tt_id:
+      /* An identifier node.  */
+      {
+	size_t l;
+	const char *chars = str (&l);
+	res = get_identifier_with_length (chars, l);
+	int tag = insert (res);
+	dump (dumper::TREE)
+	  && dump ("Read identifier:%d %N", tag, res);
+      }
+      break;
+
+    case tt_conv_id:
+      /* A conversion operator.  Get the type and recreate the
+	 identifier.  */
+      {
+	tree type = tree_node ();
+	if (!get_overrun ())
+	  {
+	    res = make_conv_op_name (type);
+	    int tag = insert (res);
+	    dump (dumper::TREE)
+	      && dump ("Created conv_op:%d %S for %N", tag, res, type);
+	  }
+      }
+      break;
+
+    case tt_anon_id:
+    case tt_lambda_id:
+      /* An anonymous or lambda id.  */
+      {
+	res = make_anon_name ();
+	if (tag == tt_lambda_id)
+	  IDENTIFIER_LAMBDA_P (res) = true;
+	int tag = insert (res);
+	dump (dumper::TREE)
+	  && dump ("Read %s identifier:%d %N",
+		   IDENTIFIER_LAMBDA_P (res) ? "lambda" : "anon", tag, res);
       }
       break;
 
@@ -8178,22 +8268,6 @@ trees_in::tree_node ()
       }
       break;
 
-    case tt_ptrmem_type:
-      /* A pointer to member function.  */
-      {
-	tree type = tree_node ();
-	if (type && TREE_CODE (type) == POINTER_TYPE
-	    && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE)
-	  {
-	    res = build_ptrmemfunc_type (type);
-	    int tag = insert (res);
-	    dump (dumper::TREE) && dump ("Created:%d ptrmem type", tag);
-	  }
-	else
-	  set_overrun ();
-      }
-      break;
-
     case tt_derived_type:
       /* A type derived from some other type.  */
       {
@@ -8206,10 +8280,21 @@ trees_in::tree_node ()
 	    set_overrun ();
 	    break;
 
+	  case ARRAY_TYPE:
+	    {
+	      tree domain = tree_node ();
+	      res = build_cplus_array_type (res, domain);
+	    }
+	    break;
+
+	  case COMPLEX_TYPE:
+	    res = build_complex_type (res);
+	    break;
+
 	  case INTEGER_TYPE:
 	    if (res)
 	      {
-		/* A ranged type.  */
+		/* A range type (representing an array domain).  */
 		tree min = tree_node ();
 		tree max = tree_node ();
 
@@ -8217,14 +8302,14 @@ trees_in::tree_node ()
 	      }
 	    else
 	      {
-		/* A new integral type.  */
+		/* A new integral type (representing a bitfield).  */
 		unsigned enc = u ();
 		res = build_nonstandard_integer_type (enc >> 1, enc & 1);
 	      }
 	    break;
 
-	  case TYPEOF_TYPE:
 	  case DECLTYPE_TYPE:
+	  case TYPEOF_TYPE:
 	  case UNDERLYING_TYPE:
 	    {
 	      tree expr = tree_node ();
@@ -8234,53 +8319,6 @@ trees_in::tree_node ()
 		tree_node_bools (res);
 	      SET_TYPE_STRUCTURAL_EQUALITY (res);
 	      
-	    }
-	    break;
-
-	  case TYPE_PACK_EXPANSION:
-	    {
-	      bool local = u ();
-	      tree param_packs = tree_node ();
-	      tree expn = cxx_make_type (TYPE_PACK_EXPANSION);
-	      SET_TYPE_STRUCTURAL_EQUALITY (expn);
-	      SET_PACK_EXPANSION_PATTERN (expn, res);
-	      PACK_EXPANSION_PARAMETER_PACKS (expn) = param_packs;
-	      PACK_EXPANSION_LOCAL_P (expn) = local;
-	      res = expn;
-	    }
-	    break;
-
-	  case TYPE_ARGUMENT_PACK:
-	    {
-	      tree pack = cxx_make_type (TYPE_ARGUMENT_PACK);
-	      SET_TYPE_STRUCTURAL_EQUALITY (pack);
-	      SET_ARGUMENT_PACK_ARGS (pack, res);
-	      res = pack;
-	    }
-	    break;
-
-	  case VECTOR_TYPE:
-	    {
-	      unsigned HOST_WIDE_INT nunits = wu ();
-	      res = build_vector_type (res, static_cast<poly_int64> (nunits));
-	    }
-	    break;
-
-	  case COMPLEX_TYPE:
-	    res = build_complex_type (res);
-	    break;
-
-	  case ARRAY_TYPE:
-	    {
-	      tree domain = tree_node ();
-	      res = build_cplus_array_type (res, domain);
-	    }
-	    break;
-
-	  case OFFSET_TYPE:
-	    {
-	      tree base = tree_node ();
-	      res = build_offset_type (base, res);
 	    }
 	    break;
 
@@ -8300,6 +8338,17 @@ trees_in::tree_node ()
 	    }
 	    break;
 	    
+	  case OFFSET_TYPE:
+	    {
+	      tree base = tree_node ();
+	      res = build_offset_type (base, res);
+	    }
+	    break;
+
+	  case POINTER_TYPE:
+	    res = build_pointer_type (res);
+	    break;
+
 	  case REFERENCE_TYPE:
 	    {
 	      bool rval = bool (u ());
@@ -8307,8 +8356,33 @@ trees_in::tree_node ()
 	    }
 	    break;
 
-	  case POINTER_TYPE:
-	    res = build_pointer_type (res);
+	  case TYPE_ARGUMENT_PACK:
+	    {
+	      tree pack = cxx_make_type (TYPE_ARGUMENT_PACK);
+	      SET_TYPE_STRUCTURAL_EQUALITY (pack);
+	      SET_ARGUMENT_PACK_ARGS (pack, res);
+	      res = pack;
+	    }
+	    break;
+
+	  case TYPE_PACK_EXPANSION:
+	    {
+	      bool local = u ();
+	      tree param_packs = tree_node ();
+	      tree expn = cxx_make_type (TYPE_PACK_EXPANSION);
+	      SET_TYPE_STRUCTURAL_EQUALITY (expn);
+	      SET_PACK_EXPANSION_PATTERN (expn, res);
+	      PACK_EXPANSION_PARAMETER_PACKS (expn) = param_packs;
+	      PACK_EXPANSION_LOCAL_P (expn) = local;
+	      res = expn;
+	    }
+	    break;
+
+	  case VECTOR_TYPE:
+	    {
+	      unsigned HOST_WIDE_INT nunits = wu ();
+	      res = build_vector_type (res, static_cast<poly_int64> (nunits));
+	    }
 	    break;
 	  }
 
@@ -8390,23 +8464,8 @@ trees_in::tree_node ()
       }
       break;
 
-    case tt_enum_int:
-      /* An enum const value.  */
-      {
-	if (tree decl = tree_node ())
-	  {
-	    dump (dumper::TREE) && dump ("Read enum value %N", decl);
-	    res = DECL_INITIAL (decl);
-	  }
-
-	if (!res)
-	  set_overrun ();
-      }
-      break;
-
     case tt_tinfo_var:
-      /* A typeinfo var or conversion operator.  Get the type and
-	 recreate the var decl or identifier.  */
+      /* A typeinfo var.  */
       {
 	unsigned ix = u ();
 	tree type = tree_node ();
@@ -8422,24 +8481,9 @@ trees_in::tree_node ()
       }
       break;
 
-    case tt_conv_id:
-      /* A conversion operator.  Get the type and recreate the
-	 identifier.  */
-      {
-	tree type = tree_node ();
-	if (!get_overrun ())
-	  {
-	    res = make_conv_op_name (type);
-	    int tag = insert (res);
-	    dump (dumper::TREE)
-	      && dump ("Created conv_op:%d %S for %N", tag, res, type);
-	  }
-      }
-      break;
-
     case tt_tinfo_typedef:
+      /* A pseudo typeinfo typedef.  */
       {
-	/* A pseudo typeinfo typedef.  Get the index and recreate the pseudo.  */
 	unsigned ix = u ();
 
 	res = TYPE_NAME (get_pseudo_tinfo_type (ix));
@@ -8452,145 +8496,39 @@ trees_in::tree_node ()
       }
       break;
 
-    case tt_anon_id:
-    case tt_lambda_id:
+    case tt_ptrmem_type:
+      /* A pointer to member function.  */
       {
-	/* An anonymous or lambda id.  */
-	res = make_anon_name ();
-	if (tag == tt_lambda_id)
-	  IDENTIFIER_LAMBDA_P (res) = true;
-	int tag = insert (res);
-	dump (dumper::TREE)
-	  && dump ("Read %s identifier:%d %N",
-		   IDENTIFIER_LAMBDA_P (res) ? "lambda" : "anon", tag, res);
-      }
-      break;
-
-    case tt_id:
-      {
-	/* An identifier node.  */
-	size_t l;
-	const char *chars = str (&l);
-	res = get_identifier_with_length (chars, l);
-	int tag = insert (res);
-	dump (dumper::TREE)
-	  && dump ("Read identifier:%d %N", tag, res);
-      }
-      break;
-
-    case tt_template:
-      /* A template.  */
-      if (tree tpl = tree_node ())
-	{
-	  res = DECL_TEMPLATE_RESULT (tpl);
-	  dump (dumper::TREE)
-	    && dump ("Read template %C:%N", TREE_CODE (res), res);
-	}
-      break;
-
-    case tt_friend_template:
-      /* A (local template) friend of a template class.  */
-      if (tree klass = tree_node ())
-	{
-	  unsigned ix = u ();
-	  unsigned u = ix;
-	  for (tree decls = CLASSTYPE_DECL_LIST (klass);
-	       decls; decls = TREE_CHAIN (decls))
-	    if (!TREE_PURPOSE (decls) && !u--)
-	      {
-		res = TREE_VALUE (decls);
-		break;
-	      }
-
-	  if (res)
-	    {
-	      if (TREE_CODE (res) != TEMPLATE_DECL)
-		res = DECL_TI_TEMPLATE (res);
-	      dump (dumper::TREE)
-		&& dump ("Read friend %N[%d] %C:%N",
-			 klass, ix, TREE_CODE (res), res);
-	    }
-	}
-      break;
-
-    case tt_named:
-    case tt_implicit_template:
-    case tt_anon:
-      {
-	/* A named decl.  */
-	unsigned owner;
-	tree ctx = tree_node ();
-	tree name = tree_node ();
-
-	// FIXME: I think owner is only needed for namespace-scope CTX?
-	owner = u ();
-	owner = state->slurp->remap_module (owner);
-	int ident = i ();
-	if ((owner != MODULE_NONE
-	     || TREE_CODE (ctx) != NAMESPACE_DECL)
-	    && !get_overrun ())
+	tree type = tree_node ();
+	if (type && TREE_CODE (type) == POINTER_TYPE
+	    && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE)
 	  {
-	    res = lookup_by_ident (ctx, name, owner, ident);
-	    if (!res)
-	      ;
-	    else if (tag == tt_anon)
-	      res = TYPE_STUB_DECL (TREE_TYPE (res));
-	    else if (tag == tt_implicit_template)
-	      {
-		int use_tpl = -1;
-		tree ti = node_template_info (res, use_tpl);
-		res = TI_TEMPLATE (ti);
-	      }
+	    res = build_ptrmemfunc_type (type);
+	    int tag = insert (res);
+	    dump (dumper::TREE) && dump ("Created:%d ptrmem type", tag);
+	  }
+	else
+	  set_overrun ();
+      }
+      break;
+
+    case tt_enum_int:
+      /* An enum const value.  */
+      {
+	if (tree decl = tree_node ())
+	  {
+	    dump (dumper::TREE) && dump ("Read enum value %N", decl);
+	    res = DECL_INITIAL (decl);
 	  }
 
 	if (!res)
-	  {
-	    error_at (state->loc, "failed to find %<%E%s%E%s%s%>",
-		      ctx, &"::"[2 * (ctx == global_namespace)],
-		      name ? name : get_identifier ("<anonymous>"),
-		      owner ? "@" : "",
-		      owner ? (*modules)[owner]->get_flatname () : "");
-	    set_overrun ();
-	  }
-	else if (TREE_CODE (res) != TYPE_DECL
-		 && owner != state->mod)
-	  mark_used (res, tf_none);
-
-	const char *kind = (owner != state->mod ? "Imported" : "Named");
-	int tag = insert (res);
-	if (res)
-	  {
-	    dump (dumper::TREE)
-	      && dump ("%s:%d %C:%N@%M", kind, tag, TREE_CODE (res),
-		       res, (*modules)[owner]);
-
-	    tree proxy = res;
-	    if (TREE_CODE (proxy) == TEMPLATE_DECL)
-	      {
-		proxy = DECL_TEMPLATE_RESULT (res);
-		tag = insert (proxy);
-		dump (dumper::TREE)
-		  && dump ("Read templates's result:%d %C:%N", tag,
-			   TREE_CODE (proxy), proxy);
-	      }
-
-	    if (TREE_CODE (proxy) == TYPE_DECL
-		&& (DECL_ORIGINAL_TYPE (proxy)
-		    || TYPE_STUB_DECL (TREE_TYPE (proxy)) == proxy))
-	      {
-		tree proxy_type = TREE_TYPE (proxy);
-		tag = insert (proxy_type);
-		dump (dumper::TREE)
-		  && dump ("Read decl's type:%d %C:%N", tag,
-			   TREE_CODE (proxy_type), proxy_type);
-	      }
-	  }
+	  set_overrun ();
       }
       break;
 
     case tt_namespace:
+      /* Namespace reference.  */
       {
-	/* Namespace reference.  */
 	unsigned owner = u ();
 	tree ctx = tree_node ();
 	tree name = tree_node ();
@@ -8618,8 +8556,8 @@ trees_in::tree_node ()
       break;
 
     case tt_binfo:
+      /* A BINFO.  Walk the tree of the dominating type.  */
       {
-	/* A BINFO.  Walk the tree of the dominating type.  */
 	res = tree_binfo ();
 	if (get_overrun ())
 	  break;
@@ -8696,16 +8634,114 @@ trees_in::tree_node ()
        }
       break;
 
-    case tt_node:
-      /* A new node.  Stream it in.  */
+    case tt_named:
+    case tt_anon:
+    case tt_implicit_template:
+      /* A named, anonymois or implicit decl.  */
       {
-	unsigned kind = u ();
+	unsigned owner;
+	tree ctx = tree_node ();
+	tree name = tree_node ();
 
-	if (kind < WK_body || kind > WK_clone)
-	  set_overrun ();
-	else
-	  res = tree_value (walk_kind (kind));
+	// FIXME: I think owner is only needed for namespace-scope CTX?
+	owner = u ();
+	owner = state->slurp->remap_module (owner);
+	int ident = i ();
+	if ((owner != MODULE_NONE
+	     || TREE_CODE (ctx) != NAMESPACE_DECL)
+	    && !get_overrun ())
+	  {
+	    res = lookup_by_ident (ctx, name, owner, ident);
+	    if (!res)
+	      ;
+	    else if (tag == tt_anon)
+	      res = TYPE_STUB_DECL (TREE_TYPE (res));
+	    else if (tag == tt_implicit_template)
+	      {
+		int use_tpl = -1;
+		tree ti = node_template_info (res, use_tpl);
+		res = TI_TEMPLATE (ti);
+	      }
+	  }
+
+	if (!res)
+	  {
+	    error_at (state->loc, "failed to find %<%E%s%E%s%s%>",
+		      ctx, &"::"[2 * (ctx == global_namespace)],
+		      name ? name : get_identifier ("<anonymous>"),
+		      owner ? "@" : "",
+		      owner ? (*modules)[owner]->get_flatname () : "");
+	    set_overrun ();
+	  }
+	else if (TREE_CODE (res) != TYPE_DECL
+		 && owner != state->mod)
+	  mark_used (res, tf_none);
+
+	const char *kind = (owner != state->mod ? "Imported" : "Named");
+	int tag = insert (res);
+	if (res)
+	  {
+	    dump (dumper::TREE)
+	      && dump ("%s:%d %C:%N@%M", kind, tag, TREE_CODE (res),
+		       res, (*modules)[owner]);
+
+	    tree proxy = res;
+	    if (TREE_CODE (proxy) == TEMPLATE_DECL)
+	      {
+		proxy = DECL_TEMPLATE_RESULT (res);
+		tag = insert (proxy);
+		dump (dumper::TREE)
+		  && dump ("Read templates's result:%d %C:%N", tag,
+			   TREE_CODE (proxy), proxy);
+	      }
+
+	    if (TREE_CODE (proxy) == TYPE_DECL
+		&& (DECL_ORIGINAL_TYPE (proxy)
+		    || TYPE_STUB_DECL (TREE_TYPE (proxy)) == proxy))
+	      {
+		tree proxy_type = TREE_TYPE (proxy);
+		tag = insert (proxy_type);
+		dump (dumper::TREE)
+		  && dump ("Read decl's type:%d %C:%N", tag,
+			   TREE_CODE (proxy_type), proxy_type);
+	      }
+	  }
       }
+      break;
+
+    case tt_template:
+      /* A template.  */
+      if (tree tpl = tree_node ())
+	{
+	  res = DECL_TEMPLATE_RESULT (tpl);
+	  dump (dumper::TREE)
+	    && dump ("Read template %C:%N", TREE_CODE (res), res);
+	}
+      break;
+
+    case tt_friend_template:
+      /* A (local template) friend of a template class.  */
+      if (tree klass = tree_node ())
+	{
+	  unsigned ix = u ();
+	  unsigned u = ix;
+	  for (tree decls = CLASSTYPE_DECL_LIST (klass);
+	       decls; decls = TREE_CHAIN (decls))
+	    if (!TREE_PURPOSE (decls) && !u--)
+	      {
+		res = TREE_VALUE (decls);
+		break;
+	      }
+
+	  if (res)
+	    {
+	      if (TREE_CODE (res) != TEMPLATE_DECL)
+		res = DECL_TI_TEMPLATE (res);
+	      dump (dumper::TREE)
+		&& dump ("Read friend %N[%d] %C:%N",
+			 klass, ix, TREE_CODE (res), res);
+	    }
+	}
       break;
     }
 
@@ -9023,14 +9059,6 @@ trees_out::key_mergeable (depset *dep)
   merge_kind mk = MK_named;
   switch (dep->get_entity_kind ())
     {
-    case depset::EK_SPECIALIZATION:
-      mk = MK_spec;
-      break;
-
-    case depset::EK_CLONE:
-      mk = MK_clone;
-      break;
-
     default:
       if (DECL_IMPLICIT_TYPEDEF_P (decl) && TYPE_ANON_P (TREE_TYPE (decl)))
 	{
@@ -9038,6 +9066,14 @@ trees_out::key_mergeable (depset *dep)
 	  gcc_checking_assert (TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE);
 	  mk = MK_enum;
 	}
+      break;
+
+    case depset::EK_CLONE:
+      mk = MK_clone;
+      break;
+
+    case depset::EK_SPECIALIZATION:
+      mk = MK_spec;
       break;
     }
 
@@ -9235,17 +9271,6 @@ has_definition (tree decl)
 	}
       break;
 
-    case VAR_DECL:
-      /* Variables should be written inline.  */
-      if (!DECL_INITIAL (decl))
-	/* Nothing to define.  */
-	break;
-
-      if (TREE_CONSTANT (decl))
-	return true;
-
-      break;
-
     case TYPE_DECL:
       {
 	if (!DECL_IMPLICIT_TYPEDEF_P (decl))
@@ -9256,6 +9281,17 @@ has_definition (tree decl)
 	    ? TYPE_VALUES (type) : TYPE_FIELDS (type))
 	  return true;
       }
+      break;
+
+    case VAR_DECL:
+      /* Variables should be written inline.  */
+      if (!DECL_INITIAL (decl))
+	/* Nothing to define.  */
+	break;
+
+      if (TREE_CONSTANT (decl))
+	return true;
+
       break;
     }
 
@@ -9978,10 +10014,6 @@ trees_out::write_definition (tree decl)
       write_function_def (decl);
       break;
 
-    case VAR_DECL:
-      write_var_def (decl);
-      break;
-
     case TYPE_DECL:
       {
 	tree type = TREE_TYPE (decl);
@@ -9992,6 +10024,10 @@ trees_out::write_definition (tree decl)
 	else
 	  write_class_def (decl);
       }
+      break;
+
+    case VAR_DECL:
+      write_var_def (decl);
       break;
     }
 }
@@ -10032,10 +10068,6 @@ trees_out::mark_declaration (tree decl, bool do_defn)
       mark_function_def (decl);
       break;
 
-    case VAR_DECL:
-      mark_var_def (decl);
-      break;
-
     case TYPE_DECL:
       {
 	tree type = TREE_TYPE (decl);
@@ -10046,6 +10078,10 @@ trees_out::mark_declaration (tree decl, bool do_defn)
 	else
 	  mark_class_def (decl);
       }
+      break;
+
+    case VAR_DECL:
+      mark_var_def (decl);
       break;
     }
 }
@@ -10072,9 +10108,6 @@ trees_in::read_definition (tree decl)
     case FUNCTION_DECL:
       return read_function_def (decl, maybe_template);
 
-    case VAR_DECL:
-      return read_var_def (decl, maybe_template);
-
     case TYPE_DECL:
       {
 	tree type = TREE_TYPE (decl);
@@ -10086,6 +10119,9 @@ trees_in::read_definition (tree decl)
 	  return read_class_def (decl, maybe_template);
       }
       break;
+
+    case VAR_DECL:
+      return read_var_def (decl, maybe_template);
     }
 
   return false;
@@ -12363,9 +12399,11 @@ module_mapper::translate_include (location_t loc, const char *path, size_t len)
 	{
 	default:
 	  break;
+
 	case 0:  /* Divert to import.  */
 	  xlate = true;
 	  break;
+
 	case 1:  /* Treat as include.  */
 	  break;
 	}
@@ -13187,6 +13225,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
       unsigned flags = 0;
       switch (b->get_entity_kind ())
 	{
+	default:
+	  break;
+
 	case depset::EK_SPECIALIZATION:
 	  flags |= cdf_is_specialization;
 	  if (b->is_partial ())
@@ -13215,8 +13256,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    if (!namer)
 	      namer = b;
 	  break;
-
-	default:;
 	}
     }
 
@@ -13229,6 +13268,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
       tree decl = b->get_entity ();
       switch (b->get_entity_kind ())
 	{
+	default:
+	  break;
+
 	case depset::EK_BINDING:
 	  {
 	    gcc_assert (TREE_CODE (decl) == NAMESPACE_DECL);
@@ -13294,8 +13336,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		  namer = b;
 	    }
 	  break;
-
-	default:;
 	}
     }
 
@@ -14095,7 +14135,11 @@ module_state::read_location (bytes_in &sec) const
   unsigned kind = sec.u ();
   switch (kind)
      {
-    case LK_ADHOC:
+    default:
+      sec.set_overrun ();
+      break;
+
+     case LK_ADHOC:
       {
 	dump (dumper::LOCATION) && dump ("Adhoc location");
 	locus = read_location (sec);
@@ -14173,10 +14217,6 @@ module_state::read_location (bytes_in &sec) const
 	   }
        }
        break;
-
-    default:
-      sec.set_overrun ();
-      break;
     }
 
   return locus;
@@ -14737,6 +14777,15 @@ module_state::write_define (bytes_out &sec, const cpp_macro *macro, bool located
       sec.u (token->flags);
       switch (cpp_token_val_index (token))
 	{
+	default:
+	  gcc_unreachable ();
+
+	case CPP_TOKEN_FLD_ARG_NO:
+	  /* An argument reference.  */
+	  sec.u (token->val.macro_arg.arg_no);
+	  sec.cpp_node (token->val.macro_arg.spelling);
+	  break;
+
 	case CPP_TOKEN_FLD_NODE:
 	  /* An identifier.  */
 	  sec.cpp_node (token->val.node.node);
@@ -14748,6 +14797,9 @@ module_state::write_define (bytes_out &sec, const cpp_macro *macro, bool located
 	    sec.cpp_node (token->val.node.spelling);
 	  break;
 
+	case CPP_TOKEN_FLD_NONE:
+	  break;
+
 	case CPP_TOKEN_FLD_STR:
 	  /* A string, number or comment.  Not always NUL terminated,
 	     we stream out in a single contatenation with embedded
@@ -14756,20 +14808,10 @@ module_state::write_define (bytes_out &sec, const cpp_macro *macro, bool located
 	  sec.u (token->val.str.len);
 	  break;
 
-	case CPP_TOKEN_FLD_ARG_NO:
-	  /* An argument reference.  */
-	  sec.u (token->val.macro_arg.arg_no);
-	  sec.cpp_node (token->val.macro_arg.spelling);
-	  break;
-
-	case CPP_TOKEN_FLD_NONE:
-	  break;
-
-	  /* I don't think the following occur inside a macro itself.  */
 	case CPP_TOKEN_FLD_SOURCE:
 	case CPP_TOKEN_FLD_TOKEN_NO:
 	case CPP_TOKEN_FLD_PRAGMA:
-	default:
+	  /* These do not occur inside a macro itself.  */
 	  gcc_unreachable ();
 	}
     }
@@ -14837,18 +14879,8 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader, bool located) cons
       token->flags = sec.u ();
       switch (cpp_token_val_index (token))
 	{
-	case CPP_TOKEN_FLD_NODE:
-	  /* An identifier.  */
-	  token->val.node.node = sec.cpp_node ();
-	  token->val.node.spelling = sec.cpp_node ();
-	  if (!token->val.node.spelling)
-	    token->val.node.spelling = token->val.node.node;
-	  break;
-
-	case CPP_TOKEN_FLD_STR:
-	  /* A string, number or comment.  */
-	  token->val.str.len = sec.u ();
-	  len += token->val.str.len + 1;
+	default:
+	  sec.set_overrun ();
 	  break;
 
 	case CPP_TOKEN_FLD_ARG_NO:
@@ -14862,11 +14894,21 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader, bool located) cons
 	  }
 	  break;
 
+	case CPP_TOKEN_FLD_NODE:
+	  /* An identifier.  */
+	  token->val.node.node = sec.cpp_node ();
+	  token->val.node.spelling = sec.cpp_node ();
+	  if (!token->val.node.spelling)
+	    token->val.node.spelling = token->val.node.node;
+	  break;
+
 	case CPP_TOKEN_FLD_NONE:
 	  break;
 
-	default:
-	  sec.set_overrun ();
+	case CPP_TOKEN_FLD_STR:
+	  /* A string, number or comment.  */
+	  token->val.str.len = sec.u ();
+	  len += token->val.str.len + 1;
 	  break;
 	}
     }

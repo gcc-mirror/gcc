@@ -1,3 +1,8 @@
+2019-09-12  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc: Sort many switch stmts.
+
 2019-09-11  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r275641.
