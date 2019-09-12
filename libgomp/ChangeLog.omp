@@ -1,3 +1,8 @@
+2019-09-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* plugin/plugin-gcn.c (hsa_warn, hsa_fatal, hsa_error): Ensure
+	string is initialized.
+
 2019-09-10  Julian Brown  <julian@codesourcery.com>
 
 	* plugin/plugin-gcn.c (GOMP_hsa_kernel_dispatch): Remove

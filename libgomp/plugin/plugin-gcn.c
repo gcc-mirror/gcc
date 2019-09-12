@@ -489,7 +489,7 @@ hsa_warn (const char *str, hsa_status_t status)
   if (!debug)
     return;
 
-  const char *hsa_error_msg;
+  const char *hsa_error_msg = "[unknown]";
   hsa_fns.hsa_status_string_fn (status, &hsa_error_msg);
 
   fprintf (stderr, "GCN warning: %s\nRuntime message: %s\n", str,
@@ -502,7 +502,7 @@ hsa_warn (const char *str, hsa_status_t status)
 static void
 hsa_fatal (const char *str, hsa_status_t status)
 {
-  const char *hsa_error_msg;
+  const char *hsa_error_msg = "[unknown]";
   hsa_fns.hsa_status_string_fn (status, &hsa_error_msg);
   GOMP_PLUGIN_fatal ("GCN fatal error: %s\nRuntime message: %s\n", str,
 		     hsa_error_msg);
@@ -514,7 +514,7 @@ hsa_fatal (const char *str, hsa_status_t status)
 static bool
 hsa_error (const char *str, hsa_status_t status)
 {
-  const char *hsa_error_msg;
+  const char *hsa_error_msg = "[unknown]";
   hsa_fns.hsa_status_string_fn (status, &hsa_error_msg);
   GOMP_PLUGIN_error ("GCN fatal error: %s\nRuntime message: %s\n", str,
 		     hsa_error_msg);
