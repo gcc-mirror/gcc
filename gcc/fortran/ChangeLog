@@ -1,3 +1,10 @@
+2019-09-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91686
+	Backport from mainline
+	* trans-expr.c (gfc_trans_assignment_1): Copy and paste section
+	handling the rse.pre block from mainline.
+
 2019-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
