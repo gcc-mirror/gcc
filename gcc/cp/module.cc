@@ -7532,6 +7532,15 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
       tree_node (PACK_EXPANSION_PARAMETER_PACKS (type));
       break;
 
+    case UNBOUND_CLASS_TEMPLATE:
+      {
+	tree decl = TYPE_NAME (type);
+	tree_node (DECL_CONTEXT (decl));
+	tree_node (DECL_NAME (decl));
+	tree_node (DECL_TEMPLATE_PARMS (decl));
+      }
+      break;
+
     case VECTOR_TYPE:
       if (streaming_p ())
 	{
@@ -8395,6 +8404,16 @@ trees_in::tree_node ()
 	      PACK_EXPANSION_PARAMETER_PACKS (expn) = param_packs;
 	      PACK_EXPANSION_LOCAL_P (expn) = local;
 	      res = expn;
+	    }
+	    break;
+
+	  case UNBOUND_CLASS_TEMPLATE:
+	    {
+	      tree ctx = tree_node ();
+	      tree name = tree_node ();
+	      tree parms = tree_node ();
+
+	      res = make_unbound_class_template_raw (ctx, name, parms);
 	    }
 	    break;
 

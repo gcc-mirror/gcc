@@ -194,7 +194,9 @@ DEFTREECODE (BOUND_TEMPLATE_TEMPLATE_PARM, "bound_template_template_parm",
 
 /* For template template argument of the form `T::template C'.
    TYPE_CONTEXT is `T', the template parameter dependent object.
-   TYPE_NAME is an IDENTIFIER_NODE for `C', the member class template.  */
+   TYPE_NAME is a TEMPLATE_DECL, whose DECL_TEMPLATE_PARMS are any
+   template parms of the instantiation.  That decl's DECL_NAME is the
+   IDENTIFIER_NODE for `C', the member class template.  */
 DEFTREECODE (UNBOUND_CLASS_TEMPLATE, "unbound_class_template", tcc_type, 0)
 
 /* A using declaration.  USING_DECL_SCOPE contains the specified

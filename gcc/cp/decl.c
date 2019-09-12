@@ -3988,9 +3988,6 @@ tree
 make_unbound_class_template (tree context, tree name, tree parm_list,
 			     tsubst_flags_t complain)
 {
-  tree t;
-  tree d;
-
   if (TYPE_P (name))
     name = TYPE_IDENTIFIER (name);
   else if (DECL_P (name))
@@ -4034,17 +4031,23 @@ make_unbound_class_template (tree context, tree name, tree parm_list,
       return tmpl;
     }
 
+  return make_unbound_class_template_raw (context, name, parm_list);
+}
+
+tree
+make_unbound_class_template_raw (tree context, tree name, tree parm_list)
+{
   /* Build the UNBOUND_CLASS_TEMPLATE.  */
-  t = cxx_make_type (UNBOUND_CLASS_TEMPLATE);
+  tree t = cxx_make_type (UNBOUND_CLASS_TEMPLATE);
   TYPE_CONTEXT (t) = FROB_CONTEXT (context);
   TREE_TYPE (t) = NULL_TREE;
   SET_TYPE_STRUCTURAL_EQUALITY (t);
 
   /* Build the corresponding TEMPLATE_DECL.  */
-  d = build_decl (input_location, TEMPLATE_DECL, name, t);
-  TYPE_NAME (TREE_TYPE (d)) = d;
-  TYPE_STUB_DECL (TREE_TYPE (d)) = d;
-  DECL_CONTEXT (d) = FROB_CONTEXT (context);
+  tree d = build_decl (input_location, TEMPLATE_DECL, name, t);
+  TYPE_NAME (t) = d;
+  TYPE_STUB_DECL (t) = d;
+  DECL_CONTEXT (d) = TYPE_CONTEXT (t);
   DECL_ARTIFICIAL (d) = 1;
   DECL_TEMPLATE_PARMS (d) = parm_list;
 
