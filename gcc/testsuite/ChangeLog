@@ -1,7 +1,26 @@
+2019-09-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/89386
+	* gcc.target/i386/pr89386.c: New test.
+	* gcc.target/i386/pr89386-1.c: Ditto.
+
 2019-09-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91750
 	* gcc.dg/vect/pr91750.c: New testcase.
+
+2019-09-12  Yuliang Wang  <yuliang.wang@arm.com>
+
+	PR tree-optimization/89386
+	* testsuite/gcc.target/aarch64/sve2/mulhrs_1.c: New test.
+	* testsuite/gcc.dg/vect/vect-mulhrs-1.c: As above.
+	* testsuite/gcc.dg/vect/vect-mulhrs-2.c: As above.
+	* testsuite/gcc.dg/vect/vect-mulhrs-3.c: As above.
+	* testsuite/gcc.dg/vect/vect-mulhrs-4.c: As above.
+	* doc/sourcebuild.texi (vect_mulhrs_hi): Document new target selector.
+	* testsuite/lib/target-supports.exp
+	(check_effective_target_vect_mulhrs_hi): Return true for AArch64
+	with SVE2.
 
 2019-09-11  Sandra Loosemore  <sandra@codesourcery.com>
 

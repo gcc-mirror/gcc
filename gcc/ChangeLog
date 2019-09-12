@@ -1,3 +1,9 @@
+2019-09-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/89386
+	* config/i386/sse.md (smulhrs<mode>3): New expander.
+	(smulhrsv4hi3): Ditto.
+
 2019-09-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91750
@@ -27,15 +33,6 @@
 	* tree-vect-patterns.c (vect_recog_mulhs_pattern): New pattern
 	function.
 	(vect_vect_recog_func_ptrs): Add it.
-	* testsuite/gcc.target/aarch64/sve2/mulhrs_1.c: New test.
-	* testsuite/gcc.dg/vect/vect-mulhrs-1.c: As above.
-	* testsuite/gcc.dg/vect/vect-mulhrs-2.c: As above.
-	* testsuite/gcc.dg/vect/vect-mulhrs-3.c: As above.
-	* testsuite/gcc.dg/vect/vect-mulhrs-4.c: As above.
-	* doc/sourcebuild.texi (vect_mulhrs_hi): Document new target selector.
-	* testsuite/lib/target-supports.exp
-	(check_effective_target_vect_mulhrs_hi): Return true for AArch64
-	with SVE2.
 
 2019-09-11  Michael Meissner  <meissner@linux.ibm.com>
 
