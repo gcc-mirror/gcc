@@ -63,3 +63,63 @@
    movprfx\t%0, %2\;<sur>h<addsub>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
   [(set_attr "movprfx" "*,yes")]
 )
+
+;; Multiply long top / bottom.
+(define_insn "<su>mull<bt><Vwide>"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+	(unspec:<VWIDE> [(match_operand:SVE_BHSI 1 "register_operand" "w")
+			 (match_operand:SVE_BHSI 2 "register_operand" "w")]
+			MULLBT))]
+  "TARGET_SVE2"
+  "<su>mull<bt>\t%0.<Vewtype>, %1.<Vetype>, %2.<Vetype>"
+)
+
+;; (Rounding) Right shift narrow bottom.
+(define_insn "<r>shrnb<mode>"
+  [(set (match_operand:SVE_BHSI 0 "register_operand" "=w")
+        (unspec:SVE_BHSI
+	  [(match_operand:<VWIDE> 1 "register_operand" "w")
+	   (match_operand 2 "aarch64_simd_shift_imm_offset_<Vel>" "")]
+	  SHRNB))]
+  "TARGET_SVE2"
+  "<r>shrnb\t%0.<Vetype>, %1.<Vewtype>, #%2"
+)
+
+;; (Rounding) Right shift narrow top.
+(define_insn "<r>shrnt<mode>"
+  [(set (match_operand:SVE_BHSI 0 "register_operand" "=w")
+	(unspec:SVE_BHSI
+	  [(match_operand:SVE_BHSI 1 "register_operand" "0")
+	   (match_operand:<VWIDE> 2 "register_operand" "w")
+	   (match_operand 3 "aarch64_simd_shift_imm_offset_<Vel>" "i")]
+	  SHRNT))]
+  "TARGET_SVE2"
+  "<r>shrnt\t%0.<Vetype>, %2.<Vewtype>, #%3"
+)
+
+;; Unpredicated integer multiply-high-with-(round-and-)scale.
+(define_expand "<su>mulh<r>s<mode>3"
+  [(set (match_operand:SVE_BHSI 0 "register_operand")
+	(unspec:SVE_BHSI
+	  [(match_dup 3)
+	   (unspec:SVE_BHSI [(match_operand:SVE_BHSI 1 "register_operand")
+			     (match_operand:SVE_BHSI 2 "register_operand")]
+			    MULHRS)]
+	  UNSPEC_PRED_X))]
+  "TARGET_SVE2"
+  {
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
+
+    rtx prod_b = gen_reg_rtx (<VWIDE>mode);
+    rtx prod_t = gen_reg_rtx (<VWIDE>mode);
+    emit_insn (gen_<su>mullb<Vwide> (prod_b, operands[1], operands[2]));
+    emit_insn (gen_<su>mullt<Vwide> (prod_t, operands[1], operands[2]));
+
+    rtx shift = GEN_INT (GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1);
+    emit_insn (gen_<r>shrnb<mode> (operands[0], prod_b, shift));
+    emit_insn (gen_<r>shrnt<mode> (operands[0], operands[0], prod_t, shift));
+
+    DONE;
+  }
+)
+

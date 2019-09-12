@@ -5387,6 +5387,33 @@ operand 1. Add operand 1 to operand 2 and place the widened result in
 operand 0. (This is used express accumulation of elements into an accumulator
 of a wider mode.)
 
+@cindex @code{smulhs@var{m3}} instruction pattern
+@item @samp{smulhs@var{m3}}
+@cindex @code{umulhs@var{m3}} instruction pattern
+@itemx @samp{umulhs@var{m3}}
+Signed/unsigned multiply high with scale. This is equivalent to the C code:
+@smallexample
+narrow op0, op1, op2;
+@dots{}
+op0 = (narrow) (((wide) op1 * (wide) op2) >> (N / 2 - 1));
+@end smallexample
+where the sign of @samp{narrow} determines whether this is a signed
+or unsigned operation, and @var{N} is the size of @samp{wide} in bits.
+
+@cindex @code{smulhrs@var{m3}} instruction pattern
+@item @samp{smulhrs@var{m3}}
+@cindex @code{umulhrs@var{m3}} instruction pattern
+@itemx @samp{umulhrs@var{m3}}
+Signed/unsigned multiply high with round and scale. This is
+equivalent to the C code:
+@smallexample
+narrow op0, op1, op2;
+@dots{}
+op0 = (narrow) (((((wide) op1 * (wide) op2) >> (N / 2 - 2)) + 1) >> 1);
+@end smallexample
+where the sign of @samp{narrow} determines whether this is a signed
+or unsigned operation, and @var{N} is the size of @samp{wide} in bits.
+
 @cindex @code{vec_shl_insert_@var{m}} instruction pattern
 @item @samp{vec_shl_insert_@var{m}}
 Shift the elements in vector input operand 1 left one element (i.e.@:
