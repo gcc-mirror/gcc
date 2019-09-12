@@ -5539,29 +5539,43 @@ trees_out::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
     {
-      tree inner = code == TEMPLATE_DECL ? DECL_TEMPLATE_RESULT (t) : t;
       tree type = t->typed.type;
       unsigned prec = 0;
 
-      if (TREE_CODE (inner) == TYPE_DECL && DECL_ORIGINAL_TYPE (inner))
-	/* This is a typedef.  We set its type separately.  */
-	type = NULL_TREE;
-      else if (type && code == ENUMERAL_TYPE
-	       && !ENUM_FIXED_UNDERLYING_TYPE_P (t))
+      switch (TREE_CODE (t))
 	{
-	  /* Type is a restricted range integer type derived from the
-	     integer_types.  Find the right one.  */
-	  prec = TYPE_PRECISION (type);
-	  tree name = DECL_NAME (TYPE_NAME (type));
+	default:
+	  break;
 
-	  for (unsigned itk = itk_none; itk--;)
-	    if (integer_types[itk]
-		&& DECL_NAME (TYPE_NAME (integer_types[itk])) == name)
-	      {
-		type = integer_types[itk];
-		break;
-	      }
-	  gcc_assert (type != t->typed.type);
+	case TEMPLATE_DECL:
+	  /* We fill in the template's type separately.  */
+	  type = NULL_TREE;
+	  break;
+
+	case TYPE_DECL:
+	  if (DECL_ORIGINAL_TYPE (t))
+	    /* This is a typedef.  We set its type separately.  */
+	    type = NULL_TREE;
+	  break;
+
+	case ENUMERAL_TYPE:
+	  if (type && !ENUM_FIXED_UNDERLYING_TYPE_P (t))
+	    {
+	      /* Type is a restricted range integer type derived from the
+		 integer_types.  Find the right one.  */
+	      prec = TYPE_PRECISION (type);
+	      tree name = DECL_NAME (TYPE_NAME (type));
+
+	      for (unsigned itk = itk_none; itk--;)
+		if (integer_types[itk]
+		    && DECL_NAME (TYPE_NAME (integer_types[itk])) == name)
+		  {
+		    type = integer_types[itk];
+		    break;
+		  }
+	      gcc_assert (type != t->typed.type);
+	    }
+	  break;
 	}
 
       WT (type);
@@ -7763,7 +7777,7 @@ trees_in::tree_value (walk_kind walk)
 	  type = start (type_code);
 	  if (type)
 	    {
-	      TREE_TYPE (res) = TREE_TYPE (inner) = type;
+	      TREE_TYPE (inner) = type;
 	      TYPE_NAME (type) = inner;
 
 	      if (!tree_node_bools (type))
@@ -7972,7 +7986,7 @@ trees_in::tree_value (walk_kind walk)
   if (is_typedef)
     {
       /* Frob it to be ready for cloning.  */
-      TREE_TYPE (res) = TREE_TYPE (inner) = DECL_ORIGINAL_TYPE (inner);
+      TREE_TYPE (inner) = DECL_ORIGINAL_TYPE (inner);
       DECL_ORIGINAL_TYPE (inner) = NULL_TREE;
     }
 
@@ -7995,11 +8009,11 @@ trees_in::tree_value (walk_kind walk)
 	}
 
       if (is_typedef)
-	{
-	  set_underlying_type (inner);
+	set_underlying_type (inner);
 
-	  TREE_TYPE (res) = TREE_TYPE (inner);
-	}
+      if (inner_tag)
+	/* Set the TEMPLATE_DECL's type.  */
+	TREE_TYPE (res) = TREE_TYPE (inner);
     }
   else
     {
@@ -8015,11 +8029,17 @@ trees_in::tree_value (walk_kind walk)
 
       if (inner_tag != 0)
 	DECL_TEMPLATE_RESULT (res) = inner;
+
       if (type)
 	{
+	  /* Point at the to-be-discarded type & decl.  */
 	  TYPE_NAME (type) = inner;
 	  TREE_TYPE (inner) = type;
 	}
+
+      if (inner_tag)
+	/* Set the TEMPLATE_DECL's type.  */
+	TREE_TYPE (res) = TREE_TYPE (inner);
 
       bool matched = is_matching_decl (existing, res);
       /* Record EXISTING as the skip defn, because that's what we'll

@@ -1,6 +1,11 @@
 2019-09-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::core_vals): Never write template_decl's
+	type ...
+	(trees_in::tree_value): .. resurrect it here instead.
+
+	gcc/cp/
 	* module.cc: Sort many switch stmts.
 
 2019-09-11  Nathan Sidwell  <nathan@acm.org>
