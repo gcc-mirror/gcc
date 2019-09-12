@@ -1442,6 +1442,10 @@ vector alignment.
 Target supports both signed and unsigned averaging operations on vectors
 of bytes.
 
+@item vect_mulhrs_hi
+Target supports both signed and unsigned multiply-high-with-round-and-scale
+operations on vectors of half-words.
+
 @item vect_condition
 Target supports vector conditional operations.
 
