@@ -108,6 +108,7 @@ image/jpeg
 image/png
 index/suffixarray
 internal/bytealg
+internal/cfg
 internal/cpu
 internal/fmtsort
 internal/goroot
