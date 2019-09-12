@@ -1,3 +1,9 @@
+2019-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91750
+	* tree-vect-loop.c (vectorizable_induction): Compute IV increments
+	in the type of the evolution.
+
 2019-09-12  Yuliang Wang  <yuliang.wang@arm.com>
 
 	PR tree-optimization/89386

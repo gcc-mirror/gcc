@@ -1,3 +1,8 @@
+2019-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91750
+	* gcc.dg/vect/pr91750.c: New testcase.
+
 2019-09-11  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR testsuite/83889
