@@ -1,3 +1,9 @@
+2019-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR fortran/91716
+	* trans-array.c (gfc_conv_array_initializer): Always assign the
+	array type of the field to the string constant.
+
 2019-09-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/91717
