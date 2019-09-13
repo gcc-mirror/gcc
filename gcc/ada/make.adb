@@ -4516,7 +4516,9 @@ package body Make is
                end;
             end if;
 
-         elsif Argv'Length >= 8 and then Argv (1 .. 8) = "--param=" then
+         elsif (Argv'Length >= 8 and then Argv (1 .. 8) = "--param=")
+           or else (Argv'Length >= 10 and then Argv (1 .. 10) = "--sysroot=")
+         then
             Add_Switch (Argv, Compiler);
             Add_Switch (Argv, Linker);
 

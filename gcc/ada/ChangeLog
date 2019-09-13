@@ -1,3 +1,8 @@
+2019-09-13  Maciej W. Rozycki  <macro@wdc.com>
+
+	* make.adb (Scan_Make_Arg): Also accept `--sysroot=' for the 
+	compiler and the linker.
+ 
 2019-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (maybe_saturate_size): New function.
