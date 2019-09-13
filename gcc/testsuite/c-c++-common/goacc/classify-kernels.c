@@ -16,7 +16,7 @@ extern unsigned int *__restrict c;
 void KERNELS ()
 {
 #pragma acc kernels copyin (a[0:N], b[0:N]) copyout (c[0:N]) /* { dg-message "optimized: assigned OpenACC gang loop parallelism" } */
-  for (unsigned int i = 0; i < N; i++)
+  for (unsigned int i = 0; i < N; i++) /* { dg-message "optimized: beginning .parloops. region in OpenACC .kernels. construct" } */
     c[i] = a[i] + b[i];
 }
 

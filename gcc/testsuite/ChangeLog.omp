@@ -1,3 +1,16 @@
+2019-09-17  Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Update expected
+	message/warning/error output.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose.c: Likewise.
+	* c-c++-common/goacc/note-parallelism-1-kernels-loop-auto.c: Likewise.
+	* c-c++-common/goacc/note-parallelism-combined-kernels-loop-auto.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-kernels-loop-auto.c: Likewise.
+	* c-c++-common/goacc/routine-1.c: Likewise.
+	* c-c++-common/goacc/routine-4-extern.c: Likewise.
+
 2019-09-05  Julian Brown  <julian@codesourcery.com>
 
 	* c-c++-common/goacc/classify-kernels-unparallelized.c,
