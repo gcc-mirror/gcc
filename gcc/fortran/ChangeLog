@@ -1,3 +1,9 @@
+2019-09-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91717
+	* dependency.c (gfc_dep_resolver): Flag identical components
+	and exit with return value 1 if set and no array refs.
+
 2019-09-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91553

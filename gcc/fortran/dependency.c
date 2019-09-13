@@ -2096,6 +2096,7 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse,
   int m;
   gfc_dependency fin_dep;
   gfc_dependency this_dep;
+  bool same_component = false;
 
   this_dep = GFC_DEP_ERROR;
   fin_dep = GFC_DEP_ERROR;
@@ -2115,6 +2116,8 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse,
 	     components.  */
 	  if (lref->u.c.component != rref->u.c.component)
 	    return 0;
+
+	  same_component = true;
 	  break;
 
 	case REF_SUBSTRING:
@@ -2278,6 +2281,10 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse,
 
   /* Assume the worst if we nest to different depths.  */
   if (lref || rref)
+    return 1;
+
+  /* This can result from concatenation of assumed length string components.  */
+  if (same_component && fin_dep == GFC_DEP_ERROR)
     return 1;
 
   /* If we haven't seen any array refs then something went wrong.  */
