@@ -6108,17 +6108,20 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 		  tree atype = type;
 		  while (TREE_CODE (TREE_TYPE (atype)) == ARRAY_TYPE)
 		    atype = TREE_TYPE (atype);
-		  if (TREE_CODE (TREE_TYPE (atype)) == INTEGER_TYPE
-		      && tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (se.expr)))
-			 > tree_to_uhwi (TYPE_SIZE_UNIT (atype)))
+		  gcc_checking_assert (TREE_CODE (TREE_TYPE (atype))
+				       == INTEGER_TYPE);
+		  gcc_checking_assert (TREE_TYPE (TREE_TYPE (se.expr))
+				       == TREE_TYPE (atype));
+		  if (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (se.expr)))
+		      > tree_to_uhwi (TYPE_SIZE_UNIT (atype)))
 		    {
 		      unsigned HOST_WIDE_INT size
 			= tree_to_uhwi (TYPE_SIZE_UNIT (atype));
 		      const char *p = TREE_STRING_POINTER (se.expr);
 
 		      se.expr = build_string (size, p);
-		      TREE_TYPE (se.expr) = atype;
 		    }
+		  TREE_TYPE (se.expr) = atype;
 		}
 	      break;
 
