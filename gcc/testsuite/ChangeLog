@@ -1,3 +1,8 @@
+2019-09-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91717
+	* gfortran.dg/dependency_55.f90 : New test.
+
 2019-09-12  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/89386
