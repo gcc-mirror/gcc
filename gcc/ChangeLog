@@ -1,3 +1,9 @@
+2019-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/91708
+	* cse.c (cse_insn): Do not replace anything with a
+	MEM.
+
 2019-09-13  Ian Lance Taylor  <iant@golang.org>
 
 	* doc/invoke.texi (Optimize Options): Fix typo.
