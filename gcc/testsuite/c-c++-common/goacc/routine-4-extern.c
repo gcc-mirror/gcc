@@ -32,7 +32,7 @@ void seq (void)
   for (int i = 0; i < 10; i++)
     red ++;
 
-#pragma acc loop gang reduction (+:red) // { dg-error "disallowed by containing routine" }
+#pragma acc loop gang reduction (+:red) // { dg-error "gang reduction on an orphan loop" }
   for (int i = 0; i < 10; i++)
     red ++;
 
@@ -58,7 +58,7 @@ void vector (void)
   for (int i = 0; i < 10; i++)
     red ++;
 
-#pragma acc loop gang reduction (+:red) // { dg-error "disallowed by containing routine" }
+#pragma acc loop gang reduction (+:red) // { dg-error "gang reduction on an orphan loop" }
   for (int i = 0; i < 10; i++)
     red ++;
 
@@ -84,7 +84,7 @@ void worker (void)
   for (int i = 0; i < 10; i++)
     red ++;
 
-#pragma acc loop gang reduction (+:red) // { dg-error "disallowed by containing routine" }
+#pragma acc loop gang reduction (+:red) // { dg-error "gang reduction on an orphan loop" }
   for (int i = 0; i < 10; i++)
     red ++;
 
@@ -110,7 +110,7 @@ void gang (void)
   for (int i = 0; i < 10; i++)
     red ++;
 
-#pragma acc loop gang reduction (+:red)
+#pragma acc loop gang reduction (+:red) /* { dg-error "gang reduction on an orphan loop" } */
   for (int i = 0; i < 10; i++)
     red ++;
 

@@ -19,7 +19,7 @@ extern unsigned int f (unsigned int);
 void KERNELS ()
 {
 #pragma acc kernels copyin (a[0:N], b[0:N]) copyout (c[0:N]) /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
-  for (unsigned int i = 0; i < N; i++)
+  for (unsigned int i = 0; i < N; i++) /* { dg-message "optimized: beginning .parloops. region in OpenACC .kernels. construct" } */
     /* An "extern"al mapping of loop iterations/array indices makes the loop
        unparallelizable.  */
     c[i] = a[f (i)] + b[f (i)];
