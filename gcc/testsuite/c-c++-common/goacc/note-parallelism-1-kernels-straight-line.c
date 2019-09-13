@@ -27,7 +27,7 @@ main ()
 {
   int x, y, z;
 
-#pragma acc kernels /* { dg-warning "region contains gang partitoned code but is not gang partitioned" } */
+#pragma acc kernels /* { dg-warning "region contains gang partitioned code but is not gang partitioned" } */
   {
     x = 0; /* { dg-message "optimized: beginning .gang-single. region in OpenACC .kernels. construct" } */
     y = x < 10;

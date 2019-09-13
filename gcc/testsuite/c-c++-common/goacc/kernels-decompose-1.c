@@ -36,30 +36,30 @@ main ()
     ;
   }
 
-#pragma acc kernels
+#pragma acc kernels /* { dg-message "optimized: assigned OpenACC gang loop parallelism" } */
   for (int i = 0; i < N; i++) /* { dg-message "optimized: beginning .parloops. region in OpenACC .kernels. construct" } */
     a[i] = 0;
 
-#pragma acc kernels loop
+#pragma acc kernels loop /* { dg-message "optimized: assigned OpenACC gang loop parallelism" } */
   /* { dg-message "optimized: forwarded loop nest in OpenACC .kernels. construct to .parloops. for analysis" "" { target *-*-* } .-1 } */
   for (int i = 0; i < N; i++)
     b[i] = a[N - i - 1];
 
 #pragma acc kernels
   {
-#pragma acc loop
+#pragma acc loop /* { dg-message "optimized: assigned OpenACC gang loop parallelism" } */
     /* { dg-message "optimized: forwarded loop nest in OpenACC .kernels. construct to .parloops. for analysis" "" { target *-*-* } .-1 } */
     for (int i = 0; i < N; i++)
       b[i] = a[N - i - 1];
 
-#pragma acc loop
+#pragma acc loop /* { dg-message "optimized: assigned OpenACC gang loop parallelism" } */
     /* { dg-message "optimized: forwarded loop nest in OpenACC .kernels. construct to .parloops. for analysis" "" { target *-*-* } .-1 } */
     for (int i = 0; i < N; i++)
       c[i] = a[i] * b[i];
 
     a[z] = 0; /* { dg-message "optimized: beginning .gang-single. region in OpenACC .kernels. construct" } */
 
-#pragma acc loop
+#pragma acc loop /* { dg-message "optimized: assigned OpenACC gang loop parallelism" } */
     /* { dg-message "optimized: forwarded loop nest in OpenACC .kernels. construct to .parloops. for analysis" "" { target *-*-* } .-1 } */
     for (int i = 0; i < N; i++)
       c[i] += a[i];
@@ -70,7 +70,7 @@ main ()
       c[i] += c[i - 1];
   }
 
-#pragma acc kernels
+#pragma acc kernels /* { dg-message "optimized: assigned OpenACC worker vector loop parallelism" } */
   {
 #pragma acc loop independent /* { dg-message "optimized: assigned OpenACC gang loop parallelism" } */
     /* { dg-message "optimized: parallelized loop nest in OpenACC .kernels. construct" "" { target *-*-* } .-1 } */

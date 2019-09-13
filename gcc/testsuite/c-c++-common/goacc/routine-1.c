@@ -27,7 +27,7 @@ void nohost (void)
 
 int main ()
 {
-#pragma acc kernels num_gangs (32) num_workers (32) vector_length (32) /* { dg-warning "region contains gang partitoned code but is not gang partitioned" } */
+#pragma acc kernels num_gangs (32) num_workers (32) vector_length (32) /* { dg-warning "region contains gang partitioned code but is not gang partitioned" } */
   {
     gang ();
     worker ();
