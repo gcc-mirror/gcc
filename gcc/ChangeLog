@@ -1,3 +1,7 @@
+2019-09-13  Ian Lance Taylor  <iant@golang.org>
+
+	* doc/invoke.texi (Optimize Options): Fix typo.
+
 2019-09-12  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/89386
