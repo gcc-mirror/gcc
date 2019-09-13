@@ -1,3 +1,14 @@
+2019-09-17  Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/goacc/note-parallelism-1-kernels-loop-auto.c: Update
+	expected message/warning/error output.
+	* c-c++-common/goacc/note-parallelism-1-kernels-straight-line.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-combined-kernels-loop-auto.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-kernels-loop-auto.c: Likewise.
+	* c-c++-common/goacc/routine-1.c: Likewise.
+
 2019-05-31  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-c++-common/goacc/kernels-decompose-1.c: Change 'note:' to
