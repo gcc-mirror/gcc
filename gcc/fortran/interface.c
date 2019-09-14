@@ -1807,9 +1807,9 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 	    if (!compare_rank (f2->sym, f1->sym))
 	      {
 		if (errmsg != NULL)
-		  snprintf (errmsg, err_len, "Rank mismatch in argument '%s' "
-			    "(%i/%i)", f1->sym->name, symbol_rank (f1->sym),
-			    symbol_rank (f2->sym));
+		  snprintf (errmsg, err_len, "Rank mismatch in argument "
+			    "'%s' (%i/%i)", f1->sym->name,
+			    symbol_rank (f1->sym), symbol_rank (f2->sym));
 		return false;
 	      }
 	    if ((gfc_option.allow_std & GFC_STD_F2008)
@@ -2189,22 +2189,42 @@ compare_pointer (gfc_symbol *formal, gfc_expr *actual)
 
 static void
 argument_rank_mismatch (const char *name, locus *where,
-			int rank1, int rank2)
+			int rank1, int rank2, locus *where_formal)
 {
 
   /* TS 29113, C407b.  */
-  if (rank2 == -1)
-    gfc_error ("The assumed-rank array at %L requires that the dummy argument"
-	       " %qs has assumed-rank", where, name);
-  else if (rank1 == 0)
-    gfc_error_opt (OPT_Wargument_mismatch, "Rank mismatch in argument %qs "
-		   "at %L (scalar and rank-%d)", name, where, rank2);
-  else if (rank2 == 0)
-    gfc_error_opt (OPT_Wargument_mismatch, "Rank mismatch in argument %qs "
-		   "at %L (rank-%d and scalar)", name, where, rank1);
+  if (where_formal == NULL)
+    {
+      if (rank2 == -1)
+	gfc_error ("The assumed-rank array at %L requires that the dummy "
+		   "argument %qs has assumed-rank", where, name);
+      else if (rank1 == 0)
+	gfc_error_opt (0, "Rank mismatch in argument %qs "
+		       "at %L (scalar and rank-%d)", name, where, rank2);
+      else if (rank2 == 0)
+	gfc_error_opt (0, "Rank mismatch in argument %qs "
+		       "at %L (rank-%d and scalar)", name, where, rank1);
+      else
+	gfc_error_opt (0, "Rank mismatch in argument %qs "
+		       "at %L (rank-%d and rank-%d)", name, where, rank1,
+		       rank2);
+    }
   else
-    gfc_error_opt (OPT_Wargument_mismatch, "Rank mismatch in argument %qs "
-		   "at %L (rank-%d and rank-%d)", name, where, rank1, rank2);
+    {
+      gcc_assert (rank2 != -1);
+      if (rank1 == 0)
+	gfc_error_opt (0, "Rank mismatch between actual argument at %L "
+		       "and actual argument at %L (scalar and rank-%d)",
+		       where, where_formal, rank2);
+      else if (rank2 == 0)
+	gfc_error_opt (0, "Rank mismatch between actual argument at %L "
+		       "and actual argument at %L (rank-%d and scalar)",
+		       where, where_formal, rank1);
+      else
+	gfc_error_opt (0, "Rank mismatch between actual argument at %L "
+		       "and actual argument at %L (rank-%d and rank-%d", where,
+		       where_formal, rank1, rank2);
+    }
 }
 
 
@@ -2253,8 +2273,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 				   sizeof(err), NULL, NULL))
 	{
 	  if (where)
-	    gfc_error_opt (OPT_Wargument_mismatch,
-			   "Interface mismatch in dummy procedure %qs at %L:"
+	    gfc_error_opt (0, "Interface mismatch in dummy procedure %qs at %L:"
 			   " %s", formal->name, &actual->where, err);
 	  return false;
 	}
@@ -2281,8 +2300,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 				   err, sizeof(err), NULL, NULL))
 	{
 	  if (where)
-	    gfc_error_opt (OPT_Wargument_mismatch,
-			   "Interface mismatch in dummy procedure %qs at %L:"
+	    gfc_error_opt (0, "Interface mismatch in dummy procedure %qs at %L:"
 			   " %s", formal->name, &actual->where, err);
 	  return false;
 	}
@@ -2312,10 +2330,24 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 					 CLASS_DATA (actual)->ts.u.derived)))
     {
       if (where)
-	gfc_error_opt (OPT_Wargument_mismatch,
-		       "Type mismatch in argument %qs at %L; passed %s to %s",
-		       formal->name, where, gfc_typename (&actual->ts),
-		       gfc_typename (&formal->ts));
+	{
+	  if (formal->attr.artificial)
+	    {
+	      if (!flag_allow_argument_mismatch || !formal->error)
+		gfc_error_opt (0, "Type mismatch between actual argument at %L "
+			       "and actual argument at %L (%s/%s).",
+			       &actual->where,
+			       &formal->declared_at,
+			       gfc_typename (&actual->ts),
+			       gfc_typename (&formal->ts));
+
+	      formal->error = 1;
+	    }
+	  else
+	    gfc_error_opt (0, "Type mismatch in argument %qs at %L; passed %s "
+			   "to %s", formal->name, where, gfc_typename (&actual->ts),
+			   gfc_typename (&formal->ts));
+	}
       return false;
     }
 
@@ -2512,8 +2544,17 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	  && gfc_is_coindexed (actual)))
     {
       if (where)
-	argument_rank_mismatch (formal->name, &actual->where,
-				symbol_rank (formal), actual->rank);
+	{
+	  locus *where_formal;
+	  if (formal->attr.artificial)
+	    where_formal = &formal->declared_at;
+	  else
+	    where_formal = NULL;
+
+	  argument_rank_mismatch (formal->name, &actual->where,
+				  symbol_rank (formal), actual->rank,
+				  where_formal);
+	}
       return false;
     }
   else if (actual->rank != 0 && (is_elemental || formal->attr.dimension))
@@ -2584,8 +2625,17 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   if (ref == NULL && actual->expr_type != EXPR_NULL)
     {
       if (where)
-	argument_rank_mismatch (formal->name, &actual->where,
-				symbol_rank (formal), actual->rank);
+	{
+	  locus *where_formal;
+	  if (formal->attr.artificial)
+	    where_formal = &formal->declared_at;
+	  else
+	    where_formal = NULL;
+
+	  argument_rank_mismatch (formal->name, &actual->where,
+				  symbol_rank (formal), actual->rank,
+				  where_formal);
+	}
       return false;
     }
 
@@ -3062,16 +3112,14 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		       f->sym->ts.u.cl->length->value.integer) != 0))
 	{
 	  if (where && (f->sym->attr.pointer || f->sym->attr.allocatable))
-	    gfc_warning (OPT_Wargument_mismatch,
-			 "Character length mismatch (%ld/%ld) between actual "
+	    gfc_warning (0, "Character length mismatch (%ld/%ld) between actual "
 			 "argument and pointer or allocatable dummy argument "
 			 "%qs at %L",
 			 mpz_get_si (a->expr->ts.u.cl->length->value.integer),
 			 mpz_get_si (f->sym->ts.u.cl->length->value.integer),
 			 f->sym->name, &a->expr->where);
 	  else if (where)
-	    gfc_warning (OPT_Wargument_mismatch,
-			 "Character length mismatch (%ld/%ld) between actual "
+	    gfc_warning (0, "Character length mismatch (%ld/%ld) between actual "
 			 "argument and assumed-shape dummy argument %qs "
 			 "at %L",
 			 mpz_get_si (a->expr->ts.u.cl->length->value.integer),
@@ -3102,8 +3150,7 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  && f->sym->attr.flavor != FL_PROCEDURE)
 	{
 	  if (a->expr->ts.type == BT_CHARACTER && !f->sym->as && where)
-	    gfc_warning (OPT_Wargument_mismatch,
-			 "Character length of actual argument shorter "
+	    gfc_warning (0, "Character length of actual argument shorter "
 			 "than of dummy argument %qs (%lu/%lu) at %L",
 			 f->sym->name, actual_size, formal_size,
 			 &a->expr->where);
@@ -3111,8 +3158,7 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	    {
 	      /* Emit a warning for -std=legacy and an error otherwise. */
 	      if (gfc_option.warn_std == 0)
-	        gfc_warning (OPT_Wargument_mismatch,
-			     "Actual argument contains too few "
+	        gfc_warning (0, "Actual argument contains too few "
 			     "elements for dummy argument %qs (%lu/%lu) "
 			     "at %L", f->sym->name, actual_size,
 			     formal_size, &a->expr->where);
@@ -4706,8 +4752,7 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
       if (!gfc_check_dummy_characteristics (proc_formal->sym, old_formal->sym,
 					check_type, err, sizeof(err)))
 	{
-	  gfc_error_opt (OPT_Wargument_mismatch,
-			 "Argument mismatch for the overriding procedure "
+	  gfc_error_opt (0, "Argument mismatch for the overriding procedure "
 			 "%qs at %L: %s", proc->name, &where, err);
 	  return false;
 	}
@@ -5184,6 +5229,7 @@ gfc_get_formal_from_actual_arglist (gfc_symbol *sym,
 		}
 	    }
 	  s->attr.dummy = 1;
+	  s->declared_at = a->expr->where;
 	  s->attr.intent = INTENT_UNKNOWN;
 	  (*f)->sym = s;
 	}

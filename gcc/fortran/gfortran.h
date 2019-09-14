@@ -1610,6 +1610,9 @@ typedef struct gfc_symbol
   /* Set if this is a module function or subroutine with the
      abreviated declaration in a submodule.  */
   unsigned abr_modproc_decl:1;
+  /* Set if a previous error or warning has occurred and no other
+     should be reported.  */
+  unsigned error:1;
 
   int refs;
   struct gfc_namespace *ns;	/* namespace containing this symbol */
