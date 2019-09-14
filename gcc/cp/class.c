@@ -4605,7 +4605,7 @@ build_clone (tree fn, tree name)
     }
   else
     {
-      // Clone constraints.
+      /* Clone constraints.  */
       if (flag_concepts)
         if (tree ci = get_constraints (fn))
           set_constraints (clone, copy_node (ci));

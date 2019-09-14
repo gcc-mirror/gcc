@@ -1470,7 +1470,7 @@ check_nonnull (T* p)
   return p;
 }
 
-// Returns true iff T is non-null and represents constraint info.
+/* Returns true iff T is non-null and represents constraint info.  */
 inline tree_constraint_info *
 check_constraint_info (tree t)
 {
@@ -1479,35 +1479,35 @@ check_constraint_info (tree t)
   return NULL;
 }
 
-// Access the expression describing the template constraints. This may be
-// null if no constraints were introduced in the template parameter list,
-// a requirements clause after the template parameter list, or constraints
-// through a constrained-type-specifier.
+/* Access the expression describing the template constraints. This may be
+   null if no constraints were introduced in the template parameter list,
+   a requirements clause after the template parameter list, or constraints
+   through a constrained-type-specifier.  */
 #define CI_TEMPLATE_REQS(NODE) \
-  check_constraint_info (check_nonnull(NODE))->template_reqs
+  check_constraint_info (check_nonnull (NODE))->template_reqs
 
-// Access the expression describing the trailing constraints. This is non-null
-// for any implicit instantiation of a constrained declaration. For a
-// templated declaration it is non-null only when a trailing requires-clause
-// was specified.
+/* Access the expression describing the trailing constraints. This is non-null
+   for any implicit instantiation of a constrained declaration. For a
+   templated declaration it is non-null only when a trailing requires-clause
+   was specified.  */
 #define CI_DECLARATOR_REQS(NODE) \
-  check_constraint_info (check_nonnull(NODE))->declarator_reqs
+  check_constraint_info (check_nonnull (NODE))->declarator_reqs
 
-// The computed associated constraint expression for a declaration.
+/* The computed associated constraint expression for a declaration.  */
 #define CI_ASSOCIATED_CONSTRAINTS(NODE) \
-  check_constraint_info (check_nonnull(NODE))->associated_constr
+  check_constraint_info (check_nonnull (NODE))->associated_constr
 
-// Access the logical constraints on the template parameters introduced
-// at a given template parameter list level indicated by NODE.
+/* Access the constraint-expression introduced by the requires-clause
+   associate the template parameter list NODE.  */
 #define TEMPLATE_PARMS_CONSTRAINTS(NODE) \
   TREE_TYPE (TREE_LIST_CHECK (NODE))
 
-// Access the logical constraints on the template parameter declaration
-// indicated by NODE.
+/* Access the logical constraints on the template parameter declaration
+   indicated by NODE.  */
 #define TEMPLATE_PARM_CONSTRAINTS(NODE) \
   TREE_TYPE (TREE_LIST_CHECK (NODE))
 
-/* Non-zero if the noexcept is present in a compound requirement. */
+/* Non-zero if the noexcept is present in a compound requirement.  */
 #define COMPOUND_REQ_NOEXCEPT_P(NODE) \
   TREE_LANG_FLAG_0 (TREE_CHECK (NODE, COMPOUND_REQ))
 
