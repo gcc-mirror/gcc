@@ -5373,7 +5373,8 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 /* Common tests for argument checking for both functions and subroutines.  */
 
 static int
-check_externals_procedure (gfc_symbol *sym, locus *loc, gfc_actual_arglist *actual)
+check_externals_procedure (gfc_symbol *sym, locus *loc,
+			   gfc_actual_arglist *actual)
 {
   gfc_gsymbol *gsym;
   gfc_symbol *def_sym = NULL;
@@ -5396,7 +5397,7 @@ check_externals_procedure (gfc_symbol *sym, locus *loc, gfc_actual_arglist *actu
 
   if (def_sym)
     {
-      gfc_procedure_use (def_sym, &actual, loc);
+      gfc_compare_actual_formal (&actual, def_sym->formal, 0, 0, 0, loc);
       return 0;
     }
 

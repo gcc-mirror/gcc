@@ -1,3 +1,18 @@
+2019-09-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91557
+	PR fortran/91556
+	* gfortran.dg/argument_checking_20.f90: New test.
+	* gfortran.dg/argument_checking_21.f90: New test.
+	* gfortran.dg/argument_checking_22.f90: New test.
+	* gfortran.dg/argument_checking_23.f90: New test.
+	* gfortran.dg/warn_unused_dummy_argument_5.f90: New test.
+	* gfortran.dg/bessel_3.f90: Add pattern for type mismatch.
+	* gfortran.dg/g77/20010519-1.f: Adjust dg-warning messages to new
+	handling.
+	* gfortran.dg/pr24823.f: Likewise.
+	* gfortran.dg/pr39937.f: Likewise.
+
 2019-09-14  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR testsuite/83889

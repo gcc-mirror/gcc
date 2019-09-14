@@ -145,7 +145,7 @@ by type.  Explanations are in the following sections.
 @item Error and Warning Options
 @xref{Error and Warning Options,,Options to request or suppress errors
 and warnings}.
-@gccoptlist{-Waliasing -Wall -Wampersand -Wargument-mismatch -Warray-bounds @gol
+@gccoptlist{-Waliasing -Wall -Wampersand -Warray-bounds @gol
 -Wc-binding-type -Wcharacter-truncation -Wconversion @gol
 -Wdo-subscript -Wfunction-elimination -Wimplicit-interface @gol
 -Wimplicit-procedure -Wintrinsic-shadow -Wuse-without-only @gol
@@ -236,8 +236,15 @@ intrinsic will be called except when it is explicitly declared @code{EXTERNAL}.
 Some code contains calls to external procedures whith mismatches
 between the calls and the procedure definition, or with mismatches
 between different calls. Such code is non-conforming, and will usually
-be flagged with an error.  This options degrades the error to a
-warning.  This option is implied by @option{-std=legacy}.
+be flagged wi1th an error.  This options degrades the error to a
+warning, which can only be disabled by disabling all warnings vial
+@option{-w}.  Only a single occurrence per argument is flagged by this
+warning.  @option{-fallow-argument-mismatch} is implied by
+@option{-std=legacy}.
+
+Using this option is @emph{strongly} discouraged.  It is possible to
+provide standard-conforming code which allows different types of
+arguments by using an explicit interface and @code{TYPE(*)}.
 
 @item -fallow-invalid-boz
 @opindex @code{allow-invalid-boz}
@@ -906,15 +913,6 @@ warning is given with @option{-Wampersand}, @option{-pedantic},
 character constant, GNU Fortran assumes continuation at the first
 non-comment, non-whitespace character after the ampersand that
 initiated the continuation.
-
-@item -Wargument-mismatch
-@opindex @code{Wargument-mismatch}
-@cindex warnings, argument mismatch
-@cindex warnings, parameter mismatch
-@cindex warnings, interface mismatch
-Warn about type, rank, and other mismatches between formal parameters and actual
-arguments to functions and subroutines.  These warnings are recommended and
-thus enabled by default.
 
 @item -Warray-temporaries
 @opindex @code{Warray-temporaries}
