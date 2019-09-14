@@ -1,5 +1,11 @@
 2019-09-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/91566
+	* simplify.c (gfc_simplify_merge): Need to simplify expression
+	after insertation of parenthesis.
+
+2019-09-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/91642
 	* io.c (gfc_match_inquire): null() cannot be in an iolength inquire
 	list.
