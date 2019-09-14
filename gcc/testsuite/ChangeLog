@@ -1,3 +1,10 @@
+2019-09-14  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR middle-end/80791
+	* gcc.dg/tree-ssa/ivopts-3.c: Adjust for doloop change.
+	* gcc.dg/tree-ssa/ivopts-lt.c: Likewise.
+	* gcc.dg/tree-ssa/pr32044.c: Likewise.
+
 2019-09-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91566

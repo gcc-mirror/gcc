@@ -1,3 +1,41 @@
+2019-09-14  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR middle-end/80791
+	* config/rs6000/rs6000.c (TARGET_HAVE_COUNT_REG_DECR_P): New macro.
+	(TARGET_DOLOOP_COST_FOR_GENERIC): Likewise.
+	(TARGET_DOLOOP_COST_FOR_ADDRESS): Likewise.
+	* target.def (have_count_reg_decr_p): New hook.
+	(doloop_cost_for_generic): Likewise.
+	(doloop_cost_for_address): Likewise.
+	* doc/tm.texi.in (TARGET_HAVE_COUNT_REG_DECR_P): Likewise.
+	(TARGET_DOLOOP_COST_FOR_GENERIC): Likewise.
+	(TARGET_DOLOOP_COST_FOR_ADDRESS): Likewise.
+	* doc/tm.texi: Regenerate.
+	* tree-ssa-loop-ivopts.c (comp_cost::operator+=): Consider infinite cost
+	addend.
+	(record_group): Init doloop_p.
+	(add_candidate_1): Add optional argument doloop, change the handlings
+	accordingly.
+	(add_candidate): Likewise.
+	(generic_predict_doloop_p): Update attribute.
+	(force_expr_to_var_cost): Add costing for expressions COND_EXPR/LT_EXPR/
+	LE_EXPR/GT_EXPR/GE_EXPR/EQ_EXPR/NE_EXPR/UNORDERED_EXPR/ORDERED_EXPR/
+	UNLT_EXPR/UNLE_EXPR/UNGT_EXPR/UNGE_EXPR/UNEQ_EXPR/LTGT_EXPR/MAX_EXPR/
+	MIN_EXPR.
+	(get_computation_cost): Update for doloop IV cand extra cost.
+	(determine_group_iv_cost_cond): Update for doloop IV cand.
+	(determine_iv_cost): Likewise.
+	(ivopts_estimate_reg_pressure): Likewise.
+	(may_eliminate_iv): Update handlings for doloop IV cand.
+	(add_iv_candidate_for_doloop): New function.
+	(find_iv_candidates): Call function add_iv_candidate_for_doloop.
+	(iv_ca_set_no_cp): Update for doloop IV cand.
+	(iv_ca_set_cp): Likewise.
+	(iv_ca_dump): Dump register cost.
+	(find_doloop_use): New function.
+	(analyze_and_mark_doloop_use): Likewise.
+	(tree_ssa_iv_optimize_loop): Call function analyze_and_mark_doloop_use.
+
 2019-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR middle-end/91708

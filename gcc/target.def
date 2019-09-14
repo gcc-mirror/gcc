@@ -4225,6 +4225,39 @@ The default version of this hook returns false.",
  bool, (class loop *loop),
  default_predict_doloop_p)
 
+DEFHOOKPOD
+(have_count_reg_decr_p,
+ "Return true if the target supports hardware count register for decrement\n\
+and branch.\n\
+The default value is false.",
+ bool, false)
+
+DEFHOOKPOD
+(doloop_cost_for_generic,
+ "One IV candidate dedicated for doloop is introduced in IVOPTs, we can\n\
+calculate the computation cost of adopting it to any generic IV use by\n\
+function get_computation_cost as before.  But for targets which have\n\
+hardware count register support for decrement and branch, it may have to\n\
+move IV value from hardware count register to general purpose register\n\
+while doloop IV candidate is used for generic IV uses.  It probably takes\n\
+expensive penalty.  This hook allows target owners to define the cost for\n\
+this especially for generic IV uses.\n\
+The default value is zero.",
+ int64_t, 0)
+
+DEFHOOKPOD
+(doloop_cost_for_address,
+ "One IV candidate dedicated for doloop is introduced in IVOPTs, we can\n\
+calculate the computation cost of adopting it to any address IV use by\n\
+function get_computation_cost as before.  But for targets which have\n\
+hardware count register support for decrement and branch, it may have to\n\
+move IV value from hardware count register to general purpose register\n\
+while doloop IV candidate is used for address IV uses.  It probably takes\n\
+expensive penalty.  This hook allows target owners to define the cost for\n\
+this escpecially for address IV uses.\n\
+The default value is zero.",
+ int64_t, 0)
+
 DEFHOOK
 (can_use_doloop_p,
  "Return true if it is possible to use low-overhead loops (@code{doloop_end}\n\

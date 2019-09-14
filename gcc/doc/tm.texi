@@ -11615,6 +11615,36 @@ loops, and will help ivopts to make some decisions.
 The default version of this hook returns false.
 @end deftypefn
 
+@deftypevr {Target Hook} bool TARGET_HAVE_COUNT_REG_DECR_P
+Return true if the target supports hardware count register for decrement
+and branch.
+The default value is false.
+@end deftypevr
+
+@deftypevr {Target Hook} int64_t TARGET_DOLOOP_COST_FOR_GENERIC
+One IV candidate dedicated for doloop is introduced in IVOPTs, we can
+calculate the computation cost of adopting it to any generic IV use by
+function get_computation_cost as before.  But for targets which have
+hardware count register support for decrement and branch, it may have to
+move IV value from hardware count register to general purpose register
+while doloop IV candidate is used for generic IV uses.  It probably takes
+expensive penalty.  This hook allows target owners to define the cost for
+this especially for generic IV uses.
+The default value is zero.
+@end deftypevr
+
+@deftypevr {Target Hook} int64_t TARGET_DOLOOP_COST_FOR_ADDRESS
+One IV candidate dedicated for doloop is introduced in IVOPTs, we can
+calculate the computation cost of adopting it to any address IV use by
+function get_computation_cost as before.  But for targets which have
+hardware count register support for decrement and branch, it may have to
+move IV value from hardware count register to general purpose register
+while doloop IV candidate is used for address IV uses.  It probably takes
+expensive penalty.  This hook allows target owners to define the cost for
+this escpecially for address IV uses.
+The default value is zero.
+@end deftypevr
+
 @deftypefn {Target Hook} bool TARGET_CAN_USE_DOLOOP_P (const widest_int @var{&iterations}, const widest_int @var{&iterations_max}, unsigned int @var{loop_depth}, bool @var{entered_at_top})
 Return true if it is possible to use low-overhead loops (@code{doloop_end}
 and @code{doloop_begin}) for a particular loop.  @var{iterations} gives the
