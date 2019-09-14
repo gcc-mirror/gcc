@@ -1,0 +1,163 @@
+
+#include <vector>
+#include <string>
+
+#if __clang__
+# include <experimental/coroutine>
+# include <utility>
+namespace coro = std::experimental::coroutines_v1;
+#else
+# include "../coro.h"
+namespace coro = std::experimental::coroutines_n4830;
+#endif
+
+/* just to avoid cluttering dump files. */
+extern "C" int puts (const char *);
+extern "C" int printf (const char *, ...);
+extern "C" void abort (void) __attribute__((__noreturn__));
+
+#ifndef OUTPUT
+#  define PRINT(X)
+#  define PRINTF (void)
+#else
+#  define PRINT(X) puts(X)
+#  define PRINTF printf
+#endif
+
+template <typename T> 
+struct looper {
+
+  struct promise_type {
+  T value;
+  promise_type() {  PRINT ("Created Promise"); }
+  ~promise_type() { PRINT ("Destroyed Promise"); }
+
+  auto get_return_object () {
+    PRINT ("get_return_object: handle from promise");
+    return handle_type::from_promise (*this);
+  }
+
+  auto initial_suspend () {
+    PRINT ("get initial_suspend (always)");
+    return suspend_always_prt{};
+  }
+
+  auto final_suspend () {
+    PRINT ("get final_suspend (always)");
+    return suspend_always_prt{};
+  }
+
+  void return_value (T v) {
+    PRINTF ("return_value () %s\n",  v.c_str());
+    value = v;
+  }
+
+  auto yield_value (T v) {
+    PRINTF ("yield_value () %s and suspend always\n", v.c_str());
+    value = v;
+    return suspend_always_prt{};
+  }
+  
+  T get_value (void) { return value; }
+
+  // Placeholder to satisfy parser, not doing exceptions yet.
+  void unhandled_exception() {  /*exit(1);*/ }
+  };
+  
+  using handle_type = coro::coroutine_handle<looper::promise_type>;
+  handle_type handle;
+
+  looper () : handle(0) {}
+  looper (handle_type _handle)
+    : handle(_handle) {
+        PRINT("Created coro1 object from handle");
+  }
+  looper (const looper &) = delete; // no copying
+  looper (looper &&s) : handle(s.handle) {
+    s.handle = nullptr;
+    PRINT("looper mv ctor ");
+  }
+  looper &operator = (looper &&s) {
+    handle = s.handle;
+    s.handle = nullptr;
+    PRINT("looper op=  ");
+    return *this;
+  }
+  ~looper() {
+    PRINT("Destroyed coro1");
+    if ( handle )
+      handle.destroy();
+  }
+
+  struct suspend_never_prt {
+    bool await_ready() const noexcept { return true; }
+    void await_suspend(handle_type) const noexcept { PRINT ("susp-never-susp"); }
+    void await_resume() const noexcept { PRINT ("susp-never-resume");}
+  };
+
+  /* NOTE: this has a DTOR to test that pathway.  */
+  struct  suspend_always_prt {
+    bool await_ready() const noexcept { return false; }
+    void await_suspend(handle_type) const noexcept { PRINT ("susp-always-susp"); }
+    void await_resume() const noexcept { PRINT ("susp-always-resume"); }
+    ~suspend_always_prt() { PRINT ("susp-always-DTOR"); }
+  };
+
+};
+
+int gX ;
+
+template <typename T> 
+looper<T> with_ctorable_state (std::vector<T> d) noexcept
+{
+  std::vector<T> loc;
+  for (unsigned  i = 0; i < d.size()-1 ; ++i)
+    {
+      loc.push_back(d[i]);
+      PRINTF ("f: about to yield value %d \n", i);
+      co_yield loc[i];
+     }
+
+  PRINT ("f: done");
+  co_return loc[d.size()-1];
+}
+
+int main ()
+{
+  PRINT ("main: create looper");
+  std::vector<std::string> input = {"first", "the", "quick", "reddish", "fox", "done" };
+  auto f_coro = with_ctorable_state<std::string> (input);
+
+  PRINT ("main: got looper - resuming (1)");
+  if (f_coro.handle.done())
+    abort();
+
+  f_coro.handle.resume();
+  std::string s = f_coro.handle.promise().get_value();
+  if ( s != "first" )
+    abort ();
+
+  PRINTF ("main: got : %s\n", s.c_str());
+  unsigned check = 1;
+  do {
+    f_coro.handle.resume();
+    s = f_coro.handle.promise().get_value();
+    if (s != input[check++])
+      abort ();  
+    PRINTF ("main: got : %s\n", s.c_str());
+  } while (!f_coro.handle.done());
+
+  if ( s != "done" )
+    abort ();
+
+  PRINT ("main: should be done");
+  if (!f_coro.handle.done())
+    {
+      PRINT ("main: apparently not done...");
+      abort ();
+      //x.handle.resume();
+    }
+
+  PRINT ("main: returning");
+  return 0;
+}
