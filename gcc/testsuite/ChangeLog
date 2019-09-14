@@ -1,3 +1,8 @@
+2019-09-14  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR testsuite/83889
+	* g++.dg/vect/pr87914.cc: Remove explicit dg-do run.
+
 2019-09-14  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR middle-end/80791
