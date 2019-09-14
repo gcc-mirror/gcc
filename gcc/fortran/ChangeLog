@@ -1,5 +1,11 @@
 2019-09-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/91553
+	* simplify.c (gfc_convert_constant):  During conversion check if the
+	constant is enclosed in parenthesis, and simplify expression.
+
+2019-09-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/91566
 	* simplify.c (gfc_simplify_merge): Need to simplify expression
 	after insertation of parenthesis.
