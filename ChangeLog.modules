@@ -1,6 +1,12 @@
 2019-09-13  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.c (get_namespace_binding): Fish out global binding,
+	if it's a vector.
+	gcc/testsuite/
+	* g++.dg/modules/binding-2.H: New.
+
+	gcc/cp/
 	* cp-tree.h (MODULE_VECTOR_LAZY_SPEC_P): Use TREE_THIS_VOLATILE.
 	gcc/testsuite/
 	* g++.dg/modules/binding-1_[abc].[HC]: New.

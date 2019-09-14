@@ -5982,6 +5982,14 @@ get_namespace_binding (tree ns, tree name)
     ns = global_namespace;
   gcc_checking_assert (!DECL_NAMESPACE_ALIAS (ns));
   tree ret = find_namespace_value (ns, name);
+
+  if (ret && TREE_CODE (ret) == MODULE_VECTOR)
+    {
+      unsigned ix = MODULE_SLOT_GLOBAL / MODULE_VECTOR_SLOTS_PER_CLUSTER;
+      unsigned off = MODULE_SLOT_GLOBAL % MODULE_VECTOR_SLOTS_PER_CLUSTER;
+      ret = MODULE_VECTOR_CLUSTER (ret, ix).slots[off];
+    }
+
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
