@@ -1,4 +1,3 @@
-// { dg-do run }
 // { dg-additional-options "-fopenmp-simd" }
 // { dg-additional-options "-mavx2" { target { avx2_runtime } } }
 
