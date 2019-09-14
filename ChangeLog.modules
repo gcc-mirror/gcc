@@ -1,3 +1,10 @@
+2019-09-13  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (MODULE_VECTOR_LAZY_SPEC_P): Use TREE_THIS_VOLATILE.
+	gcc/testsuite/
+	* g++.dg/modules/binding-1_[abc].[HC]: New.
+
 2019-09-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

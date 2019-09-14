@@ -417,7 +417,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       REINTERPRET_CAST_P (in NOP_EXPR)
       ALIGNOF_EXPR_STD_P (in ALIGNOF_EXPR)
       OVL_DEDUP_P (in OVERLOAD)
-      MODULE_VECTOR_LAZY_SPEC_P (in MODULE_VEC)
    1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -920,6 +919,7 @@ struct GTY(()) module_cluster
   mc_slot slots[MODULE_VECTOR_SLOTS_PER_CLUSTER];
 };
 
+/* These two fields overlay lang flags.  So don't use those.  */
 #define MODULE_VECTOR_ALLOC_CLUSTERS(NODE) \
   (MODULE_VECTOR_CHECK (NODE)->base.u.dependence_info.clique)
 #define MODULE_VECTOR_NUM_CLUSTERS(NODE) \
@@ -942,7 +942,7 @@ struct GTY(()) tree_module_vec {
   (((tree_module_vec *)MODULE_VECTOR_CHECK (NODE))->name)
 
 #define MODULE_VECTOR_LAZY_SPEC_P(NODE) \
-  TREE_LANG_FLAG_0 (MODULE_VECTOR_CHECK (NODE))
+  TREE_THIS_VOLATILE (MODULE_VECTOR_CHECK (NODE))
 
 /* Simplified unique_ptr clone to release a tree vec on exit.  */
 
