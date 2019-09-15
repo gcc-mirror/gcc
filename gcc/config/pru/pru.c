@@ -556,37 +556,6 @@ pru_hard_regno_scratch_ok (unsigned int regno)
 }
 
 
-/* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  */
-
-static bool
-pru_hard_regno_call_part_clobbered (unsigned, unsigned regno,
-				    machine_mode mode)
-{
-  HARD_REG_SET caller_saved_set;
-  HARD_REG_SET callee_saved_set;
-
-  CLEAR_HARD_REG_SET (caller_saved_set);
-  CLEAR_HARD_REG_SET (callee_saved_set);
-
-  /* r0 and r1 are caller saved.  */
-  add_range_to_hard_reg_set (&caller_saved_set, 0, 2 * 4);
-
-  add_range_to_hard_reg_set (&caller_saved_set, FIRST_ARG_REGNUM,
-			     LAST_ARG_REGNUM + 1 - FIRST_ARG_REGNUM);
-
-  /* Treat SP as callee saved.  */
-  add_range_to_hard_reg_set (&callee_saved_set, STACK_POINTER_REGNUM, 4);
-
-  /* r3 to r13 are callee saved.  */
-  add_range_to_hard_reg_set (&callee_saved_set, FIRST_CALLEE_SAVED_REGNUM,
-			     LAST_CALEE_SAVED_REGNUM + 1
-			     - FIRST_CALLEE_SAVED_REGNUM);
-
-  return overlaps_hard_reg_set_p (caller_saved_set, mode, regno)
-	 && overlaps_hard_reg_set_p (callee_saved_set, mode, regno);
-}
-
-
 /* Worker function for `HARD_REGNO_RENAME_OK'.
    Return nonzero if register OLD_REG can be renamed to register NEW_REG.  */
 
@@ -2935,9 +2904,6 @@ pru_unwind_word_mode (void)
 
 #undef  TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK pru_hard_regno_scratch_ok
-#undef  TARGET_HARD_REGNO_CALL_PART_CLOBBERED
-#define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
-  pru_hard_regno_call_part_clobbered
 
 #undef TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG pru_function_arg

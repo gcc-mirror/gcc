@@ -1,5 +1,10 @@
 2020-05-05  Dimitar Dimitrov  <dimitar@dinux.eu>
 
+	* config/pru/pru.c (pru_hard_regno_call_part_clobbered): Remove.
+	(TARGET_HARD_REGNO_CALL_PART_CLOBBERED): Remove.
+
+2020-05-05  Dimitar Dimitrov  <dimitar@dinux.eu>
+
 	* config/pru/pru.h: Mark R3.w0 as caller saved.
 
 2020-05-05  Dimitar Dimitrov  <dimitar@dinux.eu>
