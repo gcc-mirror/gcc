@@ -2948,6 +2948,7 @@ get_formal_from_actual_arglist (gfc_symbol *sym, gfc_actual_arglist *actual_args
 		}
 	    }
 	  s->attr.dummy = 1;
+	  s->attr.artificial = 1;
 	  s->attr.intent = INTENT_UNKNOWN;
 	  (*f)->sym = s;
 	}
