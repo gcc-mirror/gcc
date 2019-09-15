@@ -1,3 +1,7 @@
+2020-05-05  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.c (pru_print_operand): Fix fall through comment.
+
 2020-05-05  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (fixuns_trunc<mode>si2): Use

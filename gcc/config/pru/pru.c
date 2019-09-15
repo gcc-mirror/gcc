@@ -1650,7 +1650,7 @@ pru_print_operand (FILE *file, rtx op, int letter)
 	  return;
 	case 'Q':
 	  cond = swap_condition (cond);
-	  /* Fall through to reverse.  */
+	  /* Fall through.  */
 	case 'R':
 	  fprintf (file, "%s", pru_comparison_str (reverse_condition (cond)));
 	  return;
