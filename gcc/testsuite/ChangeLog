@@ -1,3 +1,9 @@
+2019-09-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/91557
+	* gfortran.dg/warn_unused_dummy_argument_5.f90: New test.
+
 2019-09-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/20161111-1.c: XFAIL redundant zero-extension test.

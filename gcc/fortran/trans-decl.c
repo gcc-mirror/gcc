@@ -5724,9 +5724,11 @@ generate_local_decl (gfc_symbol * sym)
 	    }
 	  else if (warn_unused_dummy_argument)
 	    {
-	      gfc_warning (OPT_Wunused_dummy_argument,
-			   "Unused dummy argument %qs at %L", sym->name,
-			   &sym->declared_at);
+	      if (!sym->attr.artificial)
+		gfc_warning (OPT_Wunused_dummy_argument,
+			     "Unused dummy argument %qs at %L", sym->name,
+			     &sym->declared_at);
+
 	      if (sym->backend_decl != NULL_TREE)
 		TREE_NO_WARNING(sym->backend_decl) = 1;
 	    }
