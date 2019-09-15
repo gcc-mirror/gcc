@@ -1,5 +1,9 @@
 2019-09-15  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* obj-c++.dg/syntax-error-1.mm: Adjust line number in dg-error.
+
+2019-09-15  Iain Sandoe  <iain@sandoe.co.uk>
+
 	Backport from mainline.
 	2019-06-15  Iain Sandoe  <iain@sandoe.co.uk>
 
