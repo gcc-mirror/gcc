@@ -2874,13 +2874,17 @@ struct GTY(()) lang_decl {
   (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (NODE)            \
    || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (NODE))
 
-/* Nonzero if NODE (a FUNCTION_DECL) is a cloned constructor or
+/* Nonzero if NODE (a _DECL) is a cloned constructor or
    destructor.  */
-#define DECL_CLONED_FUNCTION_P(NODE) (!!decl_cloned_function_p (NODE, true))
+#define DECL_CLONED_FUNCTION_P(NODE)		\
+  (DECL_NAME (NODE)				\
+   && IDENTIFIER_CDTOR_P (DECL_NAME (NODE))	\
+   && !DECL_MAYBE_IN_CHARGE_CDTOR_P (NODE))
 
 /* If DECL_CLONED_FUNCTION_P holds, this is the function that was
    cloned.  */
-#define DECL_CLONED_FUNCTION(NODE) (*decl_cloned_function_p (NODE, false))
+#define DECL_CLONED_FUNCTION(NODE)		\
+  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))->u.fn.u5.cloned_function)
 
 /* Perform an action for each clone of FN, if FN is a function with
    clones.  This macro should be used like:
@@ -6333,7 +6337,6 @@ extern void check_abi_tags			(tree);
 extern tree missing_abi_tags			(tree);
 extern void fixup_type_variants			(tree);
 extern void fixup_attribute_variants		(tree);
-extern tree* decl_cloned_function_p		(const_tree, bool);
 extern void clone_function_decl			(tree, bool);
 extern void adjust_clone_args			(tree);
 extern void deduce_noexcept_on_destructor       (tree);

@@ -1,3 +1,12 @@
+2019-09-15  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_CLONED_FUNCTION_P): Reimplement using
+	IDENTIFIER_CDTOR_P, correct documentation.
+	(DECL_CLONED_FUNCTION): Directly access field.
+	(decl_cloned_function_p): Delete.
+	* class.c (decl_cloned_function_p): Delete.
+	* pt.c (instantiate_template_1): Check DECL_CHAIN is a decl.
+
 2019-09-11  Nathan Sidwell  <nathan@acm.org>
 
 	* c-objcp-common.c (cp-objcp-common.c): Alphababetize and
