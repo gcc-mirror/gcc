@@ -1,3 +1,8 @@
+2019-09-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91740 - ICE with constexpr call and ?: in ARRAY_REF.
+	* g++.dg/cpp1y/var-templ63.C: New test.
+
 2019-09-15  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* lib/target-supports.exp
