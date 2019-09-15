@@ -31,4 +31,4 @@ extern void NXLog(const char *, ...);
 } /* { dg-error "stray .\}. between Objective\\-C\\+\\+ methods" } */
 @end
 
-/* { dg-error "expected constructor, destructor, or type conversion before" "" { target *-*-* } 28 } */
+/* { dg-error "expected constructor, destructor, or type conversion before" "" { target *-*-* } 30 } */
