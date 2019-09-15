@@ -1,5 +1,7 @@
 /* Ensure there are no bizarre difficulties with accessing the 'isa' field of objects.  */
 /* { dg-do compile } */
+/* The use of isa is deprecated, but we still want to test that is works. */
+/* { dg-additional-options "-Wno-deprecated-declarations" } */
 
 #include "../objc-obj-c++-shared/TestsuiteObject.h"
 #include "../objc-obj-c++-shared/runtime.h"
