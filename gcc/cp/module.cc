@@ -2796,7 +2796,7 @@ public:
   bool tpl_header (tree);
   tree fn_arg_types ();
   int fn_parms_init (tree);
-  tree fn_parms_fini (int, tree, tree);
+  tree fn_parms_fini (int tag, tree fn, tree existing);
 
 public:
   /* Serialize various definitions. */
@@ -4663,11 +4663,10 @@ trees_in::chained_decls ()
 	  {
 	    if (*chain)
 	      {
-		if (DECL_CLONED_FUNCTION_P (decl))
-		  gcc_checking_assert (*chain == decl);
-		else
-		  gcc_checking_assert (TREE_CODE (decl) == PARM_DECL
-				       && TREE_CODE (*chain) == PARM_DECL);
+		// FIXME: suspicious, perhaps chain only when we know
+		// not the definition?
+		gcc_checking_assert (TREE_CODE (decl) == PARM_DECL
+				     && TREE_CODE (*chain) == PARM_DECL);
 	      }
 	    *chain = decl;
 	    chain = &DECL_CHAIN (decl);
@@ -7898,6 +7897,7 @@ trees_in::tree_value (walk_kind walk)
 	  else
 	    {
 	      /* Chain us in.  */
+	      gcc_checking_assert (!DECL_CHAIN (key));
 	      DECL_CHAIN (key) = res;
 	      if (inner != res)
 		DECL_CHAIN (DECL_TEMPLATE_RESULT (key)) = inner;
@@ -9049,7 +9049,6 @@ tree
 trees_in::fn_parms_fini (int tag, tree fn, tree existing)
 {
   bool is_defn = u ();
-
   tree existing_parm = existing ? DECL_ARGUMENTS (existing) : NULL_TREE;
   tree parms = DECL_ARGUMENTS (fn);
   unsigned ix = 0;
@@ -9553,9 +9552,13 @@ trees_out::write_class_def (tree defn)
   tree type = TREE_TYPE (defn);
   tree_node (TYPE_SIZE (type));
   tree_node (TYPE_SIZE_UNIT (type));
-  chained_decls (TYPE_FIELDS (type));
   tree_node (TYPE_VFIELD (type));
   tree_node (TYPE_BINFO (type));
+
+  /* Write the fields.  */
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    tree_node (field);
+  tree_node (NULL_TREE);
 
   if (TYPE_LANG_SPECIFIC (type))
     {
@@ -9653,6 +9656,7 @@ trees_out::write_class_def (tree defn)
 		&& DECL_VIRTUAL_P (decls))
 	      {
 		tree_node (decls);
+		// FIXME: perhaps not chained here?
 		chained_decls (DECL_THUNKS (decls));
 	      }
 	  tree_node (NULL_TREE);
@@ -9771,7 +9775,6 @@ trees_in::read_class_def (tree defn, tree maybe_template)
   tree type = TREE_TYPE (defn);
   tree size = tree_node ();
   tree size_unit = tree_node ();
-  tree fields = chained_decls ();
   tree vfield = tree_node ();
   tree binfo = tree_node ();
   vec<tree, va_gc> *vbase_vec = NULL;
@@ -9780,6 +9783,12 @@ trees_in::read_class_def (tree defn, tree maybe_template)
   vec<tree_pair_s, va_gc> *vcall_indices = NULL;
   tree key_method = NULL_TREE;
   tree lambda = NULL_TREE;
+
+  /* Read the fields.  */
+  vec<tree> fields;
+  fields.create (50);
+  while (tree field = tree_node ())
+    fields.safe_push (field);
 
   if (TYPE_LANG_SPECIFIC (type))
     {
@@ -9814,7 +9823,19 @@ trees_in::read_class_def (tree defn, tree maybe_template)
       TYPE_SIZE (type) = size;
       TYPE_SIZE_UNIT (type) = size_unit;
 
-      TYPE_FIELDS (type) = fields;
+      tree *chain = &TYPE_FIELDS (type);
+      for (unsigned ix = 0; ix != fields.length (); ix++)
+	{
+	  tree field = fields[ix];
+
+	  gcc_checking_assert (DECL_CHAIN (field)
+			       == (ix + 1 < fields.length ()
+				   && DECL_CLONED_FUNCTION_P (fields[ix+1])
+				   ? fields[ix+1] : NULL_TREE));
+	  *chain = field;
+	  chain = &DECL_CHAIN (field);
+	}
+
       TYPE_VFIELD (type) = vfield;
       TYPE_BINFO (type) = binfo;
 
@@ -9970,6 +9991,8 @@ trees_in::read_class_def (tree defn, tree maybe_template)
       if (!read_definition (member))
 	break;
     }
+
+  fields.release ();
 
   return !get_overrun ();
 }

@@ -1,5 +1,10 @@
 2019-09-15  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_in::chained_decls): No need to deal with clones here.
+	(trees_{in::read,out::write}_class_def): Don't chain
+	fields until we know we're the definition.
+
 	Merge trunk r275727.
 
 2019-09-13  Nathan Sidwell  <nathan@acm.org>
