@@ -1,3 +1,10 @@
+2019-09-15  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_neon_fp16_hw)
+	(check_effective_target_arm_fp16_hw): Use check_runtime
+	instead of check_runtime_nocache.
+
 2019-09-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91727
