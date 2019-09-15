@@ -1,3 +1,12 @@
+2019-09-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/91557
+	* trans-decl.c (generate_local_decl): Do not warn if the symbol
+	is artificial.
+	* trans-types.c (get_formal_from_actual_arglist): Set artificial
+	attribute on dummy arguments.
+
 2019-09-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91553
