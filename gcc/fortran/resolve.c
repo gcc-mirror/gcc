@@ -7485,7 +7485,7 @@ conformable_arrays (gfc_expr *e1, gfc_expr *e2)
   for (tail = e2->ref; tail && tail->next; tail = tail->next);
 
   /* First compare rank.  */
-  if ((tail && e1->rank != tail->u.ar.as->rank)
+  if ((tail && (!tail->u.ar.as || e1->rank != tail->u.ar.as->rank))
       || (!tail && e1->rank != e2->rank))
     {
       gfc_error ("Source-expr at %L must be scalar or have the "
