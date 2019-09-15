@@ -178,27 +178,27 @@ build_variable_check (tree id)
                     Resolution of qualified concept names
 ---------------------------------------------------------------------------*/
 
-/* This facility is used to resolve constraint checks from
-   requirement expressions. A constraint check is a call to
-   a function template declared with the keyword 'concept'.
+/* This facility is used to resolve constraint checks from requirement
+   expressions. A constraint check is a call to a function template declared
+   with the keyword 'concept'.
 
-   The result of resolution is a pair (a TREE_LIST) whose value
-   is the matched declaration, and whose purpose contains the
-   coerced template arguments that can be substituted into the
-   call.  */
+   The result of resolution is a pair (a TREE_LIST) whose value is the
+   matched declaration, and whose purpose contains the coerced template
+   arguments that can be substituted into the call.  */
 
-// Given an overload set OVL, try to find a unique definition that can be
-// instantiated by the template arguments ARGS.
-//
-// This function is not called for arbitrary call expressions. In particular,
-// the call expression must be written with explicit template arguments
-// and no function arguments. For example:
-//
-//      f<T, U>()
-//
-// If a single match is found, this returns a TREE_LIST whose VALUE
-// is the constraint function (not the template), and its PURPOSE is
-// the complete set of arguments substituted into the parameter list.
+/* Given an overload set OVL, try to find a unique definition that can be
+   instantiated by the template arguments ARGS.
+
+   This function is not called for arbitrary call expressions. In particular,
+   the call expression must be written with explicit template arguments
+   and no function arguments. For example:
+
+        f<T, U>()
+
+   If a single match is found, this returns a TREE_LIST whose VALUE
+   is the constraint function (not the template), and its PURPOSE is
+   the complete set of arguments substituted into the parameter list.  */
+
 static tree
 resolve_constraint_check (tree ovl, tree args)
 {
@@ -211,20 +211,20 @@ resolve_constraint_check (tree ovl, tree args)
       if (TREE_CODE (tmpl) != TEMPLATE_DECL)
         continue;
 
-      // Don't try to deduce checks for non-concepts. We often
-      // end up trying to resolve constraints in functional casts
-      // as part of a postfix-expression. We can save time and
-      // headaches by not instantiating those declarations.
-      //
-      // NOTE: This masks a potential error, caused by instantiating
-      // non-deduced contexts using placeholder arguments.
+      /* Don't try to deduce checks for non-concepts. We often end up trying
+         to resolve constraints in functional casts as part of a
+         postfix-expression. We can save time and headaches by not
+         instantiating those declarations.
+
+         NOTE: This masks a potential error, caused by instantiating
+         non-deduced contexts using placeholder arguments. */
       tree fn = DECL_TEMPLATE_RESULT (tmpl);
       if (DECL_ARGUMENTS (fn))
         continue;
       if (!DECL_DECLARED_CONCEPT_P (fn))
         continue;
 
-      // Remember the candidate if we can deduce a substitution.
+      /* Remember the candidate if we can deduce a substitution.  */
       ++processing_template_decl;
       tree parms = TREE_VALUE (DECL_TEMPLATE_PARMS (tmpl));
       if (tree subst = coerce_template_parms (parms, args, tmpl))
@@ -247,29 +247,30 @@ resolve_constraint_check (tree ovl, tree args)
   return cands;
 }
 
-// Determine if the the call expression CALL is a constraint check, and
-// return the concept declaration and arguments being checked. If CALL
-// does not denote a constraint check, return NULL.
+/* Determine if the the call expression CALL is a constraint check, and
+   return the concept declaration and arguments being checked. If CALL
+   does not denote a constraint check, return NULL.  */
+
 tree
 resolve_constraint_check (tree call)
 {
   gcc_assert (TREE_CODE (call) == CALL_EXPR);
 
-  // A constraint check must be only a template-id expression. If
-  // it's a call to a base-link, its function(s) should be a
-  // template-id expression. If this is not a template-id, then it
-  // cannot be a concept-check.
+  /* A constraint check must be only a template-id expression.
+     If it's a call to a base-link, its function(s) should be a
+     template-id expression. If this is not a template-id, then
+     it cannot be a concept-check.  */
   tree target = CALL_EXPR_FN (call);
   if (BASELINK_P (target))
     target = BASELINK_FUNCTIONS (target);
   if (TREE_CODE (target) != TEMPLATE_ID_EXPR)
     return NULL_TREE;
 
-  // Get the overload set and template arguments and try to
-  // resolve the target.
+  /* Get the overload set and template arguments and try to
+     resolve the target.  */
   tree ovl = TREE_OPERAND (target, 0);
 
-  /* This is a function call of a variable concept... ill-formed. */
+  /* This is a function call of a variable concept... ill-formed.  */
   if (TREE_CODE (ovl) == TEMPLATE_DECL)
     {
       error_at (location_of (call),
@@ -311,14 +312,11 @@ resolve_variable_concept_check (tree id)
     return error_mark_node;
 }
 
-
-/* Given a call expression or template-id expression to
-  a concept EXPR possibly including a wildcard, deduce
-  the concept being checked and the prototype parameter.
-  Returns true if the constraint and prototype can be
-  deduced and false otherwise.  Note that the CHECK and
-  PROTO arguments are set to NULL_TREE if this returns
-  false.  */
+/* Given a call expression or template-id expression to a concept EXPR
+   possibly including a wildcard, deduce the concept being checked and
+   the prototype parameter. Returns true if the constraint and prototype
+   can be deduced and false otherwise.  Note that the CHECK and PROTO
+   arguments are set to NULL_TREE if this returns false.  */
 
 bool
 deduce_constrained_parameter (tree expr, tree& check, tree& proto)
@@ -344,9 +342,9 @@ deduce_constrained_parameter (tree expr, tree& check, tree& proto)
   return false;
 }
 
-// Given a call expression or template-id expression to a concept, EXPR,
-// deduce the concept being checked and return the template arguments.
-// Returns NULL_TREE if deduction fails.
+/* Given a call expression or template-id expression to a concept, EXPR,
+   deduce the concept being checked and return the template arguments.
+   Returns NULL_TREE if deduction fails.  */
 static tree
 deduce_concept_introduction (tree expr)
 {
@@ -1099,17 +1097,17 @@ current_template_constraints (void)
   return build_constraints (tmpl_constr, NULL_TREE);
 }
 
-// If the recently parsed TYPE declares or defines a template or template
-// specialization, get its corresponding constraints from the current
-// template parameters and bind them to TYPE's declaration.
+/* If the recently parsed TYPE declares or defines a template or
+   template specialization, get its corresponding constraints from the
+   current template parameters and bind them to TYPE's declaration.  */
+
 tree
 associate_classtype_constraints (tree type)
 {
   if (!type || type == error_mark_node || TREE_CODE (type) != RECORD_TYPE)
     return type;
 
-  // An explicit class template specialization has no template
-  // parameters.
+  /* An explicit class template specialization has no template parameters.  */
   if (!current_template_parms)
     return type;
 
@@ -1118,10 +1116,10 @@ associate_classtype_constraints (tree type)
       tree decl = TYPE_STUB_DECL (type);
       tree ci = current_template_constraints ();
 
-      // An implicitly instantiated member template declaration already
-      // has associated constraints. If it is defined outside of its
-      // class, then we need match these constraints against those of
-      // original declaration.
+      /* An implicitly instantiated member template declaration already
+	 has associated constraints. If it is defined outside of its
+	 class, then we need match these constraints against those of
+	 original declaration.  */
       if (tree orig_ci = get_constraints (decl))
         {
           if (!equivalent_constraints (ci, orig_ci))
@@ -2431,7 +2429,7 @@ constraint_expression_satisfied_p (tree expr, tree args)
 ---------------------------------------------------------------------------*/
 
 /* Finish a requires expression for the given PARMS (possibly
-   null) and the non-empty sequence of requirements. */
+   null) and the non-empty sequence of requirements.  */
 tree
 finish_requires_expr (tree parms, tree reqs)
 {
@@ -2485,21 +2483,20 @@ finish_nested_requirement (tree expr)
   return build_nt (NESTED_REQ, expr);
 }
 
-// Check that FN satisfies the structural requirements of a
-// function concept definition.
+/* Check that FN satisfies the structural requirements of a
+   function concept definition.  */
 tree
 check_function_concept (tree fn)
 {
-  // Check that the function is comprised of only a single
-  // return statement.
+  /* Check that the function is comprised of only a return statement.  */
   tree body = DECL_SAVED_TREE (fn);
   if (TREE_CODE (body) == BIND_EXPR)
     body = BIND_EXPR_BODY (body);
 
-  // Sometimes a function call results in the creation of clean up
-  // points. Allow these to be preserved in the body of the
-  // constraint, as we might actually need them for some constexpr
-  // evaluations.
+  /* Sometimes a function call results in the creation of clean up
+     points. Allow these to be preserved in the body of the
+     constraint, as we might actually need them for some constexpr
+     evaluations.  */
   if (TREE_CODE (body) == CLEANUP_POINT_EXPR)
     body = TREE_OPERAND (body, 0);
 
