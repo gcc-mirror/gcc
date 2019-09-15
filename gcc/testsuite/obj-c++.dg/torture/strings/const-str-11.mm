@@ -7,7 +7,7 @@
 /* { dg-options "-fconstant-string-class=XStr" } */
 /* { dg-options "-mno-constant-cfstrings -fconstant-string-class=XStr" { target *-*-darwin* } } */
 
-#include <Foundation/NSObject.h>
+#include "../../../objc-obj-c++-shared/F-NSObject.h"
 #include "../../../objc-obj-c++-shared/runtime.h" /* For NEXT_OBJC_USE_NEW_INTERFACE.  */
 
 @interface XString: NSObject {

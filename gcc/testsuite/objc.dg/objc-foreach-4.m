@@ -5,9 +5,9 @@
 /* { dg-skip-if "No NeXT fast enum. pre-Darwin9" { *-*-darwin[5-8]* } { "-fnext-runtime" } { "" } } */
 /* { dg-additional-options "-framework Foundation" { target { *-*-darwin* } } } */
 
-#include <Foundation/NSString.h>
-#include <Foundation/NSAutoreleasePool.h>
-#include <Foundation/NSArray.h>
+#include "../objc-obj-c++-shared/F-NSString.h"
+#include "../objc-obj-c++-shared/F-NSAutoreleasePool.h"
+#include "../objc-obj-c++-shared/F-NSArray.h"
 
 // gcc -o foo foo.m -framework Foundation
 
