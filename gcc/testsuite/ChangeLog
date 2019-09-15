@@ -1,5 +1,10 @@
 2019-09-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/91550
+	* gfortran.dg/do_subscript_6.f90: New test.
+
+2019-09-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/91556
 	* gfortran.dg/warn_argument_mismatch_1.f90: Remove.
 
