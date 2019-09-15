@@ -1,3 +1,10 @@
+2019-09-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91727
+	* resolve.c (conformable_arrays):  If array-spec is NULL, then
+	allocate-object is a scalar.  a conformability check only occurs
+	for an array source-expr.
+
 2019-09-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/91550
