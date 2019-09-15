@@ -106,7 +106,6 @@ image/png
 index/suffixarray
 internal/cpu
 internal/fmtsort
-internal/oserror
 internal/poll
 internal/reflectlite
 internal/singleflight

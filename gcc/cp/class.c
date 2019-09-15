@@ -4628,7 +4628,7 @@ build_clone (tree fn, tree name)
       return clone;
     }
 
-  // Clone constraints.
+  /* Clone constraints.  */
   if (flag_concepts)
     if (tree ci = get_constraints (fn))
       set_constraints (clone, copy_node (ci));
@@ -4719,43 +4719,6 @@ build_clone (tree fn, tree name)
   rest_of_decl_compilation (clone, /*top_level=*/1, at_eof);
 
   return clone;
-}
-
-/* Implementation of DECL_CLONED_FUNCTION and DECL_CLONED_FUNCTION_P, do
-   not invoke this function directly.
-
-   For a non-thunk function, returns the address of the slot for storing
-   the function it is a clone of.  Otherwise returns NULL_TREE.
-
-   If JUST_TESTING, looks through TEMPLATE_DECL and returns NULL if
-   cloned_function is unset.  This is to support the separate
-   DECL_CLONED_FUNCTION and DECL_CLONED_FUNCTION_P modes; using the latter
-   on a template makes sense, but not the former.  */
-
-tree *
-decl_cloned_function_p (const_tree decl, bool just_testing)
-{
-  tree *ptr;
-  if (just_testing)
-    decl = STRIP_TEMPLATE (decl);
-
-  if (TREE_CODE (decl) != FUNCTION_DECL
-      || !DECL_LANG_SPECIFIC (decl)
-      || DECL_LANG_SPECIFIC (decl)->u.fn.thunk_p)
-    {
-#if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
-      if (!just_testing)
-	lang_check_failed (__FILE__, __LINE__, __FUNCTION__);
-      else
-#endif
-	return NULL;
-    }
-
-  ptr = &DECL_LANG_SPECIFIC (decl)->u.fn.u5.cloned_function;
-  if (just_testing && *ptr == NULL_TREE)
-    return NULL;
-  else
-    return ptr;
 }
 
 /* Produce declarations for all appropriate clones of FN.  If

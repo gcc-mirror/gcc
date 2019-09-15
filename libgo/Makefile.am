@@ -401,6 +401,7 @@ toolexeclibgounicode_DATA = \
 # Force them to be built.
 noinst_DATA = \
 	golang.org/x/net/nettest.gox \
+	internal/cfg.gox \
 	internal/testenv.gox \
 	internal/trace.gox \
 	net/internal/socktest.gox \

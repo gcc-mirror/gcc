@@ -856,10 +856,10 @@ toolexeclibgounicode_DATA = \
 # Some packages are only needed for tests, so unlike the other
 # internal packages nothing will explicitly depend on them.
 # Force them to be built.
-noinst_DATA = golang.org/x/net/nettest.gox internal/testenv.gox \
-	internal/trace.gox net/internal/socktest.gox \
-	os/signal/internal/pty.gox runtime/pprof/internal/profile.gox \
-	zdefaultcc.go
+noinst_DATA = golang.org/x/net/nettest.gox internal/cfg.gox \
+	internal/testenv.gox internal/trace.gox \
+	net/internal/socktest.gox os/signal/internal/pty.gox \
+	runtime/pprof/internal/profile.gox zdefaultcc.go
 @LIBGO_IS_RTEMS_FALSE@rtems_task_variable_add_file = 
 @LIBGO_IS_RTEMS_TRUE@rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
 runtime_files = \

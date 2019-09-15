@@ -1,3 +1,109 @@
+2019-09-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91556
+	* gfortran.dg/warn_argument_mismatch_1.f90: Remove.
+
+2019-09-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91557
+	PR fortran/91556
+	* gfortran.dg/argument_checking_20.f90: New test.
+	* gfortran.dg/argument_checking_21.f90: New test.
+	* gfortran.dg/argument_checking_22.f90: New test.
+	* gfortran.dg/argument_checking_23.f90: New test.
+	* gfortran.dg/warn_unused_dummy_argument_5.f90: New test.
+	* gfortran.dg/bessel_3.f90: Add pattern for type mismatch.
+	* gfortran.dg/g77/20010519-1.f: Adjust dg-warning messages to new
+	handling.
+	* gfortran.dg/pr24823.f: Likewise.
+	* gfortran.dg/pr39937.f: Likewise.
+
+2019-09-14  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR testsuite/83889
+	* g++.dg/vect/pr87914.cc: Remove explicit dg-do run.
+
+2019-09-14  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR middle-end/80791
+	* gcc.dg/tree-ssa/ivopts-3.c: Adjust for doloop change.
+	* gcc.dg/tree-ssa/ivopts-lt.c: Likewise.
+	* gcc.dg/tree-ssa/pr32044.c: Likewise.
+
+2019-09-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91566
+	* gfortran.dg/pr91566.f90:
+
+2019-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR fortran/91716
+	* gfortran.dg/pr91716.f90: New test.
+
+2019-09-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91717
+	* gfortran.dg/dependency_55.f90 : New test.
+
+2019-09-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/89386
+	* gcc.target/i386/pr89386.c: New test.
+	* gcc.target/i386/pr89386-1.c: Ditto.
+
+2019-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91750
+	* gcc.dg/vect/pr91750.c: New testcase.
+
+2019-09-12  Yuliang Wang  <yuliang.wang@arm.com>
+
+	PR tree-optimization/89386
+	* testsuite/gcc.target/aarch64/sve2/mulhrs_1.c: New test.
+	* testsuite/gcc.dg/vect/vect-mulhrs-1.c: As above.
+	* testsuite/gcc.dg/vect/vect-mulhrs-2.c: As above.
+	* testsuite/gcc.dg/vect/vect-mulhrs-3.c: As above.
+	* testsuite/gcc.dg/vect/vect-mulhrs-4.c: As above.
+	* doc/sourcebuild.texi (vect_mulhrs_hi): Document new target selector.
+	* testsuite/lib/target-supports.exp
+	(check_effective_target_vect_mulhrs_hi): Return true for AArch64
+	with SVE2.
+
+2019-09-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR testsuite/83889
+	* gcc.dg/vect/pr81740-2.c: Remove explicit dg-do run.
+	* gcc.dg/vect/pr88598-1.c: Likewise.
+	* gcc.dg/vect/pr88598-2.c: Likewise.
+	* gcc.dg/vect/pr88598-3.c: Likewise.
+	* gcc.dg/vect/pr88598-4.c: Likewise.
+	* gcc.dg/vect/pr88598-5.c: Likewise.
+	* gcc.dg/vect/pr88598-6.c: Likewise.
+	* gcc.dg/vect/pr89440.c: Likewise.
+	* gcc.dg/vect/pr90018.c: Likewise.
+	* gcc.dg/vect/pr91293-1.c: Likewise.
+	* gcc.dg/vect/pr91293-2.c: Likewise.
+	* gcc.dg/vect/pr91293-3.c: Likewise.
+
+2019-09-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91553
+	* gfortran.dg/pr91553.f90: New test.
+
+2019-09-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91642
+	* gfortran.dg/pr91642.f90: New test.
+
+2019-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/89435
+	PR rtl-optimization/89795
+	PR rtl-optimization/91720
+	* gcc.dg/pr89435.c: New test.
+	* gcc.dg/pr89795.c: New test.
+	* gcc.dg/pr91720.c: New test.
+
 2019-09-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90387

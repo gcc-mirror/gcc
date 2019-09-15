@@ -5238,23 +5238,6 @@ cse_insn (rtx_insn *insn)
 	      src_elt_cost = MAX_COST;
 	    }
 
-	  /* Avoid creation of overlapping memory moves.  */
-	  if (MEM_P (trial) && MEM_P (dest) && !rtx_equal_p (trial, dest))
-	    {
-	      rtx src, dest;
-
-	      /* BLKmode moves are not handled by cse anyway.  */
-	      if (GET_MODE (trial) == BLKmode)
-		break;
-
-	      src = canon_rtx (trial);
-	      dest = canon_rtx (SET_DEST (sets[i].rtl));
-
-	      if (!MEM_P (src) || !MEM_P (dest)
-		  || !nonoverlapping_memrefs_p (src, dest, false))
-		break;
-	    }
-
 	  /* Try to optimize
 	     (set (reg:M N) (const_int A))
 	     (set (reg:M2 O) (const_int B))
@@ -5382,6 +5365,12 @@ cse_insn (rtx_insn *insn)
 		       || (GET_CODE (XEXP (trial, 0)) == MINUS
 			   && GET_CODE (XEXP (XEXP (trial, 0), 0)) == LABEL_REF
 			   && GET_CODE (XEXP (XEXP (trial, 0), 1)) == LABEL_REF)))
+	    /* Do nothing for this case.  */
+	    ;
+
+	  /* Do not replace anything with a MEM, except the replacement
+	     is a no-op.  This allows this loop to terminate.  */
+	  else if (MEM_P (trial) && !rtx_equal_p (trial, SET_SRC(sets[i].rtl)))
 	    /* Do nothing for this case.  */
 	    ;
 

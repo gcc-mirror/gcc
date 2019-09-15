@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-additional-options "-msse4.1" { target { sse4_runtime } } } */
 
 long long a;

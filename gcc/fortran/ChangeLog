@@ -1,3 +1,60 @@
+2019-09-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91557
+	PR fortran/91556
+	* frontend-passes.c (check_externals_procedure): Reformat argument
+	list. Use gfc_compare_actual_formal instead of gfc_procedure_use.
+	* gfortran.h (gfc_symbol): Add flag error.
+	* interface.c (gfc_compare_interfaces): Reformat.
+	(argument_rank_mismatch): Add where_formal argument. If it is
+	present, note that the error is between different calls.
+	(compare_parameter): Change warnings that previously dependended
+	on -Wargument-mismatch to unconditional.  Issue an error / warning
+	on type mismatch only once.  Pass where_formal to
+	argument_rank_mismatch for artificial variables.
+	(compare_actual_formal): Change warnings that previously
+	dependeded on -Wargument-mismatch to unconditional.
+	(gfc_check_typebound_override): Likewise.
+	(gfc_get_formal_from_actual_arglist): Set declared_at for
+	artificial symbol.
+	* invoke.texi: Extend description of -fallow-argument-mismatch.
+	Delete -Wargument-mismatch.
+	* lang.opt: Change -Wargument-mismatch to do-nothing option.
+	* resolve.c (resolve_structure_cons): Change warnings that
+	previously depended on -Wargument-mismatch to unconditional.
+	* trans-decl.c (generate_local_decl): Do not warn if the symbol is
+	artificial.
+
+2019-09-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91566
+	* simplify.c (gfc_simplify_merge): Need to simplify expression
+	after insertation of parenthesis.
+
+2019-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR fortran/91716
+	* trans-array.c (gfc_conv_array_initializer): Always assign the
+	array type of the field to the string constant.
+
+2019-09-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91717
+	* dependency.c (gfc_dep_resolver): Flag identical components
+	and exit with return value 1 if set and no array refs.
+
+2019-09-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91553
+	* simplify.c (gfc_convert_constant):  During conversion check if the
+	constant is enclosed in parenthesis, and simplify expression.
+
+2019-09-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91642
+	* io.c (gfc_match_inquire): null() cannot be in an iolength inquire
+	list.
+
 2019-09-05  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/91496

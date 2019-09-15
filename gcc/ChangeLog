@@ -1,3 +1,92 @@
+2019-09-14  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR middle-end/80791
+	* config/rs6000/rs6000.c (TARGET_HAVE_COUNT_REG_DECR_P): New macro.
+	(TARGET_DOLOOP_COST_FOR_GENERIC): Likewise.
+	(TARGET_DOLOOP_COST_FOR_ADDRESS): Likewise.
+	* target.def (have_count_reg_decr_p): New hook.
+	(doloop_cost_for_generic): Likewise.
+	(doloop_cost_for_address): Likewise.
+	* doc/tm.texi.in (TARGET_HAVE_COUNT_REG_DECR_P): Likewise.
+	(TARGET_DOLOOP_COST_FOR_GENERIC): Likewise.
+	(TARGET_DOLOOP_COST_FOR_ADDRESS): Likewise.
+	* doc/tm.texi: Regenerate.
+	* tree-ssa-loop-ivopts.c (comp_cost::operator+=): Consider infinite cost
+	addend.
+	(record_group): Init doloop_p.
+	(add_candidate_1): Add optional argument doloop, change the handlings
+	accordingly.
+	(add_candidate): Likewise.
+	(generic_predict_doloop_p): Update attribute.
+	(force_expr_to_var_cost): Add costing for expressions COND_EXPR/LT_EXPR/
+	LE_EXPR/GT_EXPR/GE_EXPR/EQ_EXPR/NE_EXPR/UNORDERED_EXPR/ORDERED_EXPR/
+	UNLT_EXPR/UNLE_EXPR/UNGT_EXPR/UNGE_EXPR/UNEQ_EXPR/LTGT_EXPR/MAX_EXPR/
+	MIN_EXPR.
+	(get_computation_cost): Update for doloop IV cand extra cost.
+	(determine_group_iv_cost_cond): Update for doloop IV cand.
+	(determine_iv_cost): Likewise.
+	(ivopts_estimate_reg_pressure): Likewise.
+	(may_eliminate_iv): Update handlings for doloop IV cand.
+	(add_iv_candidate_for_doloop): New function.
+	(find_iv_candidates): Call function add_iv_candidate_for_doloop.
+	(iv_ca_set_no_cp): Update for doloop IV cand.
+	(iv_ca_set_cp): Likewise.
+	(iv_ca_dump): Dump register cost.
+	(find_doloop_use): New function.
+	(analyze_and_mark_doloop_use): Likewise.
+	(tree_ssa_iv_optimize_loop): Call function analyze_and_mark_doloop_use.
+
+2019-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/91708
+	* cse.c (cse_insn): Do not replace anything with a
+	MEM.
+
+2019-09-13  Ian Lance Taylor  <iant@golang.org>
+
+	* doc/invoke.texi (Optimize Options): Fix typo.
+
+2019-09-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/89386
+	* config/i386/sse.md (smulhrs<mode>3): New expander.
+	(smulhrsv4hi3): Ditto.
+
+2019-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91750
+	* tree-vect-loop.c (vectorizable_induction): Compute IV increments
+	in the type of the evolution.
+
+2019-09-12  Yuliang Wang  <yuliang.wang@arm.com>
+
+	PR tree-optimization/89386
+	* config/aarch64/aarch64-sve2.md (<su>mull<bt><Vwide>)
+	(<r>shrnb<mode>, <r>shrnt<mode>): New SVE2 patterns.
+	(<su>mulh<r>s<mode>3): New pattern for MULHRS.
+	* config/aarch64/iterators.md (UNSPEC_SMULLB, UNSPEC_SMULLT)
+	(UNSPEC_UMULLB, UNSPEC_UMULLT, UNSPEC_SHRNB, UNSPEC_SHRNT)
+	(UNSPEC_RSHRNB, UNSPEC_RSHRNT, UNSPEC_SMULHS, UNSPEC_SMULHRS)
+	UNSPEC_UMULHS, UNSPEC_UMULHRS): New unspecs.
+	(MULLBT, SHRNB, SHRNT, MULHRS): New int iterators.
+	(su, r): Handle the unspecs above.
+	(bt): New int attribute.
+	* internal-fn.def (IFN_MULHS, IFN_MULHRS): New internal functions.
+	* internal-fn.c (first_commutative_argument): Commutativity info for
+	above.
+	* optabs.def (smulhs_optab, smulhrs_optab, umulhs_optab)
+	(umulhrs_optab): New optabs.
+	* doc/md.texi (smulhs$var{m3}, umulhs$var{m3})
+	(smulhrs$var{m3}, umulhrs$var{m3}): Documentation for the above.
+	* tree-vect-patterns.c (vect_recog_mulhs_pattern): New pattern
+	function.
+	(vect_vect_recog_func_ptrs): Add it.
+
+2019-09-11  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/predicates.md (non_add_cint_operand): Simplify the
+	code.
+
 2019-09-11  Nathan Sidwell  <nathan@acm.org>
 
 	* tree.h (MARK_TS_TYPE_NON_COMMON): New.

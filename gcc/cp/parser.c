@@ -20227,7 +20227,7 @@ cp_parser_alias_declaration (cp_parser* parser)
   if (decl == error_mark_node)
     return decl;
 
-  // Attach constraints to the alias declaration.
+  /* Attach constraints to the alias declaration.  */
   if (flag_concepts && current_template_parms)
     {
       tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
@@ -23044,12 +23044,14 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	  && !TYPE_LAMBDA_P (current_class_type))
 	default_argument = cp_parser_cache_defarg (parser, /*nsdmi=*/false);
 
-      // A constrained-type-specifier may declare a type template-parameter.
+      /* A constrained-type-specifier may declare a type
+	 template-parameter.  */
       else if (declares_constrained_type_template_parameter (type))
         default_argument
           = cp_parser_default_type_template_argument (parser);
 
-      // A constrained-type-specifier may declare a template-template-parameter.
+      /* A constrained-type-specifier may declare a
+	 template-template-parameter.  */
       else if (declares_constrained_template_template_parameter (type))
         default_argument
           = cp_parser_default_template_template_argument (parser);
@@ -28982,9 +28984,9 @@ cp_parser_single_declaration (cp_parser* parser,
       if (cp_parser_declares_only_class_p (parser)
 	  || (declares_class_or_enum & 2))
 	{
-	  // If this is a declaration, but not a definition, associate
-	  // any constraints with the type declaration. Constraints
-	  // are associated with definitions in cp_parser_class_specifier.
+	  /* If this is a declaration, but not a definition, associate
+	     any constraints with the type declaration. Constraints
+	     are associated with definitions in cp_parser_class_specifier.  */
 	  if (declares_class_or_enum == 1)
 	    associate_classtype_constraints (decl_specifiers.type);
 

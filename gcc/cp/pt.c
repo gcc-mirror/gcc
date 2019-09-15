@@ -19955,8 +19955,9 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
      instantiate all the alternate entry points as well.  We do this
      by cloning the instantiation of the main entry point, not by
      instantiating the template clones.  */
-  if (DECL_CHAIN (gen_tmpl) && DECL_CLONED_FUNCTION_P (DECL_CHAIN (gen_tmpl)))
-    clone_function_decl (fndecl, /*update_methods=*/false);
+  if (tree chain = DECL_CHAIN (gen_tmpl))
+    if (DECL_P (chain) && DECL_CLONED_FUNCTION_P (chain))
+      clone_function_decl (fndecl, /*update_methods=*/false);
 
   if (!access_ok)
     {
