@@ -1,3 +1,17 @@
+2019-09-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91756
+	PR tree-optimization/87132
+	* tree-ssa-alias.h (enum translate_flags): New.
+	(get_continuation_for_phi): Use it instead of simple bool flag.
+	(walk_non_aliased_vuses): Likewise.
+	* tree-ssa-alias.c (maybe_skip_until): Adjust.
+	(get_continuation_for_phi): When looking across backedges only
+	disallow valueization.
+	(walk_non_aliased_vuses): Adjust.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Avoid valueization
+	if requested.
+
 2019-09-14  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR middle-end/80791
