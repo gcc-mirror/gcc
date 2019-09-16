@@ -21,11 +21,11 @@ export inline void user ()
 }
 
 // { dg-final { scan-lang-dump {\[0\]=specialization definition '::foo@foo:1<int>'} module } }
-// { dg-final { scan-lang-dump {Writing key for mergeable decl function_decl:'::baz@foo:1'} module } }
+// { dg-final { scan-lang-dump {Writing named key for mergeable decl function_decl:'::baz@foo:1'} module } }
 // { dg-final { scan-lang-dump {Unnamed 0 '::foo@foo:1<int>'} module } }
 // { dg-final { scan-lang-dump-times {Ordered 1 mergeables} 4 module } }
-// { dg-final { scan-lang-dump {Writing key for mergeable specialization function_decl:'::foo@foo:1<int>'} module } }
+// { dg-final { scan-lang-dump {Writing specialization key for mergeable specialization function_decl:'::foo@foo:1<int>'} module } }
 // { dg-final { scan-lang-dump {Voldemort:0 '::foo@foo:1<int>'} module } }
 // { dg-final { scan-lang-dump {Inserted:-1 horcrux:0@0 for '::foo@foo:1<int>'} module } }
 
-// { dg-final { scan-lang-dump {Writing key for mergeable specialization function_decl:'::foo@foo:1<int>'} module } }
+// { dg-final { scan-lang-dump {Writing specialization key for mergeable specialization function_decl:'::foo@foo:1<int>'} module } }
