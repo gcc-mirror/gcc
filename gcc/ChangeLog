@@ -1,4 +1,21 @@
 2019-09-16  Li Jia He  <helijia@linux.ibm.com>
+	    Qi Feng  <ffengqi@linux.ibm.com>
+
+	PR middle-end/88784
+	* match.pd (x >  y  &&  x != XXX_MIN): Optimize into 'x > y'.
+	(x >  y  &&  x == XXX_MIN): Optimize into 'false'.
+	(x <= y  &&  x == XXX_MIN): Optimize into 'x == XXX_MIN'.
+	(x <  y  &&  x != XXX_MAX): Optimize into 'x < y'.
+	(x <  y  &&  x == XXX_MAX): Optimize into 'false'.
+	(x >= y  &&  x == XXX_MAX): Optimize into 'x == XXX_MAX'.
+	(x >  y  ||  x != XXX_MIN): Optimize into 'x != XXX_MIN'.
+	(x <= y  ||  x != XXX_MIN): Optimize into 'true'.
+	(x <= y  ||  x == XXX_MIN): Optimize into 'x <= y'.
+	(x <  y  ||  x != XXX_MAX): Optimize into 'x != XXX_MAX'.
+	(x >= y  ||  x != XXX_MAX): Optimize into 'true'.
+	(x >= y  ||  x == XXX_MAX): Optimize into 'x >= y'.
+
+2019-09-16  Li Jia He  <helijia@linux.ibm.com>
 	    Martin Liska  <mliska@suse.cz>
 
 	* gimple-fold.c (and_comparisons_1): Add type as first

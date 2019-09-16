@@ -1883,6 +1883,80 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     { wide_int_to_tree (type, (wi::to_wide (@1)
 			       & (bitpos / BITS_PER_UNIT))); }))))
 
+(match min_value
+ INTEGER_CST
+ (if (INTEGRAL_TYPE_P (type)
+      && wi::eq_p (wi::to_wide (t), wi::min_value (type)))))
+
+(match max_value
+ INTEGER_CST
+ (if (INTEGRAL_TYPE_P (type)
+      && wi::eq_p (wi::to_wide (t), wi::max_value (type)))))
+
+/* x >  y  &&  x != XXX_MIN  -->  x > y
+   x >  y  &&  x == XXX_MIN  -->  false . */
+(for eqne (eq ne)
+ (simplify
+  (bit_and:c (gt:c@2 @0 @1) (eqne @0 min_value))
+   (switch
+    (if (eqne == EQ_EXPR)
+     { constant_boolean_node (false, type); })
+    (if (eqne == NE_EXPR)
+     @2)
+    )))
+
+/* x <  y  &&  x != XXX_MAX  -->  x < y
+   x <  y  &&  x == XXX_MAX  -->  false.  */
+(for eqne (eq ne)
+ (simplify
+  (bit_and:c (lt:c@2 @0 @1) (eqne @0 max_value))
+   (switch
+    (if (eqne == EQ_EXPR)
+     { constant_boolean_node (false, type); })
+    (if (eqne == NE_EXPR)
+     @2)
+    )))
+
+/* x <=  y  &&  x == XXX_MIN  -->  x == XXX_MIN.  */
+(simplify
+ (bit_and:c (le:c @0 @1) (eq@2 @0 min_value))
+  @2)
+
+/* x >=  y  &&  x == XXX_MAX  -->  x == XXX_MAX.  */
+(simplify
+ (bit_and:c (ge:c @0 @1) (eq@2 @0 max_value))
+  @2)
+
+/* x >  y  ||  x != XXX_MIN   -->  x != XXX_MIN.  */
+(simplify
+ (bit_ior:c (gt:c @0 @1) (ne@2 @0 min_value))
+  @2)
+
+/* x <=  y  ||  x != XXX_MIN   -->  true.  */
+(simplify
+ (bit_ior:c (le:c @0 @1) (ne @0 min_value))
+  { constant_boolean_node (true, type); })
+
+/* x <=  y  ||  x == XXX_MIN   -->  x <= y.  */
+(simplify
+ (bit_ior:c (le:c@2 @0 @1) (eq @0 min_value))
+  @2)
+
+/* x <  y  ||  x != XXX_MAX   -->  x != XXX_MAX.  */
+(simplify
+ (bit_ior:c (lt:c @0 @1) (ne@2 @0 max_value))
+  @2)
+
+/* x >=  y  ||  x != XXX_MAX   -->  true
+   x >=  y  ||  x == XXX_MAX   -->  x >= y.  */
+(for eqne (eq ne)
+ (simplify
+  (bit_ior:c (ge:c@2 @0 @1) (eqne @0 max_value))
+   (switch
+    (if (eqne == EQ_EXPR)
+     @2)
+    (if (eqne == NE_EXPR)
+     { constant_boolean_node (true, type); }))))
 
 /* We can't reassociate at all for saturating types.  */
 (if (!TYPE_SATURATING (type))
@@ -5425,10 +5499,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    on c, so could drop potentially-trapping arithmetic, but that's a valid
    simplification if the result of the operation isn't needed.
 
-   Avoid speculatively generating a stand-alone vector comparison                                                                                
-   on targets that might not support them.  Any target implementing                                                                              
-   conditional internal functions must support the same comparisons                                                                              
-   inside and outside a VEC_COND_EXPR.  */                                                                                                       
+   Avoid speculatively generating a stand-alone vector comparison
+   on targets that might not support them.  Any target implementing
+   conditional internal functions must support the same comparisons
+   inside and outside a VEC_COND_EXPR.  */
 
 #if GIMPLE
 (for uncond_op (UNCOND_BINARY)
