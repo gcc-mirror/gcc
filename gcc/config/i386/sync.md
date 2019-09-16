@@ -306,8 +306,8 @@
     {
       operands[1] = force_reg (<MODE>mode, operands[1]);
 
-      /* For seq-cst stores, use XCHG
-	 when we lack MFENCE or when target prefers XCHG.  */
+      /* For seq-cst stores, use XCHG when we lack MFENCE
+      	 or when target prefers XCHG.  */
       if (is_mm_seq_cst (model)
 	  && (!(TARGET_64BIT || TARGET_SSE2)
 	      || TARGET_USE_XCHG_FOR_ATOMIC_STORE))
