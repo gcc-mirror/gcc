@@ -2051,6 +2051,44 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (code1 == NE_EXPR && val) { constant_boolean_node (true, type); })
       (if (code1 == NE_EXPR && !val) @3))))))
 
+/* Convert (X OP1 CST1) || (X OP2 CST2).  */
+
+(for code1 (lt le gt ge)
+ (for code2 (lt le gt ge)
+  (simplify
+  (bit_ior (code1@3 @0 INTEGER_CST@1) (code2@4 @0 INTEGER_CST@2))
+   (with
+    {
+     int cmp = tree_int_cst_compare (@1, @2);
+    }
+    (switch
+     /* Choose the more restrictive of two < or <= comparisons.  */
+     (if ((code1 == LT_EXPR || code1 == LE_EXPR)
+	  && (code2 == LT_EXPR || code2 == LE_EXPR))
+      (if ((cmp < 0) || (cmp == 0 && code1 == LT_EXPR))
+       @4
+       @3))
+     /* Likewise chose the more restrictive of two > or >= comparisons.  */
+     (if ((code1 == GT_EXPR || code1 == GE_EXPR)
+	  && (code2 == GT_EXPR || code2 == GE_EXPR))
+      (if ((cmp > 0) || (cmp == 0 && code1 == GT_EXPR))
+       @4
+       @3))
+     /* Check for singleton ranges.  */
+     (if (cmp == 0
+	  && ((code1 == LT_EXPR && code2 == GT_EXPR)
+	      || (code1 == GT_EXPR && code2 == LT_EXPR)))
+      (ne @0 @2))
+     /* Check for disjoint ranges.  */
+     (if (cmp >= 0
+	  && (code1 == LT_EXPR || code1 == LE_EXPR)
+	  && (code2 == GT_EXPR || code2 == GE_EXPR))
+      { constant_boolean_node (true, type); })
+     (if (cmp <= 0
+	  && (code1 == GT_EXPR || code1 == GE_EXPR)
+	  && (code2 == LT_EXPR || code2 == LE_EXPR))
+      { constant_boolean_node (true, type); })
+     )))))
 
 /* We can't reassociate at all for saturating types.  */
 (if (!TYPE_SATURATING (type))
