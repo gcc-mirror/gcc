@@ -991,7 +991,12 @@ dwarf2out_do_cfi_startproc (bool second)
 	 in the assembler.  Further, the assembler can't handle any
 	 of the weirder relocation types.  */
       if (enc & DW_EH_PE_indirect)
-	ref = dw2_force_const_mem (ref, true);
+	{
+	  if (targetm.asm_out.make_eh_symbol_indirect != NULL)
+	    ref = targetm.asm_out.make_eh_symbol_indirect (ref, true);
+	  else
+	    ref = dw2_force_const_mem (ref, true);
+	}
 
       fprintf (asm_out_file, "\t.cfi_personality %#x,", enc);
       output_addr_const (asm_out_file, ref);
@@ -1009,7 +1014,12 @@ dwarf2out_do_cfi_startproc (bool second)
       SYMBOL_REF_FLAGS (ref) = SYMBOL_FLAG_LOCAL;
 
       if (enc & DW_EH_PE_indirect)
-	ref = dw2_force_const_mem (ref, true);
+	{
+	  if (targetm.asm_out.make_eh_symbol_indirect != NULL)
+	    ref = targetm.asm_out.make_eh_symbol_indirect (ref, true);
+	  else
+	    ref = dw2_force_const_mem (ref, true);
+	}
 
       fprintf (asm_out_file, "\t.cfi_lsda %#x,", enc);
       output_addr_const (asm_out_file, ref);

@@ -9560,6 +9560,10 @@ given instruction.  This is only used when @code{TARGET_EXCEPT_UNWIND_INFO}
 returns @code{UI_TARGET}.
 @end deftypefn
 
+@deftypefn {Target Hook} rtx TARGET_ASM_MAKE_EH_SYMBOL_INDIRECT (rtx @var{origsymbol}, bool @var{pubvis})
+If necessary, modify personality and LSDA references to handle indirection.  The original symbol is in @code{origsymbol} and if @code{pubvis} is true  the symbol is visible outside the TU.
+@end deftypefn
+
 @deftypevr {Target Hook} bool TARGET_ASM_UNWIND_EMIT_BEFORE_INSN
 True if the @code{TARGET_ASM_UNWIND_EMIT} hook should be called before the assembly for @var{insn} has been emitted, false if the hook should be called afterward.
 @end deftypevr
