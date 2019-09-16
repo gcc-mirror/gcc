@@ -298,7 +298,8 @@ finish_member_template_decl (tree decl)
       return NULL_TREE;
     }
   else if (TREE_CODE (decl) == FIELD_DECL)
-    error ("data member %qD cannot be a member template", decl);
+    error_at (DECL_SOURCE_LOCATION (decl),
+	      "data member %qD cannot be a member template", decl);
   else if (DECL_TEMPLATE_INFO (decl))
     {
       if (!DECL_TEMPLATE_SPECIALIZATION (decl))
@@ -310,7 +311,8 @@ finish_member_template_decl (tree decl)
 	return decl;
     }
   else
-    error ("invalid member template declaration %qD", decl);
+    error_at (DECL_SOURCE_LOCATION (decl),
+	      "invalid member template declaration %qD", decl);
 
   return error_mark_node;
 }
@@ -5515,7 +5517,8 @@ push_template_decl_real (tree decl, bool is_friend)
 	      /* [temp.mem]
 
 		 A destructor shall not be a member template.  */
-	      error ("destructor %qD declared as member template", decl);
+	      error_at (DECL_SOURCE_LOCATION (decl),
+			"destructor %qD declared as member template", decl);
 	      return error_mark_node;
 	    }
 	  if (IDENTIFIER_NEWDEL_OP_P (DECL_NAME (decl))

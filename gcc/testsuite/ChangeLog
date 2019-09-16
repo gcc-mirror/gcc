@@ -1,3 +1,15 @@
+2019-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/ext/int128-6.C: New.
+	* c-c++-common/pr68107.c: Test location(s).
+	* g++.dg/other/large-size-array.C: Likewise.
+	* g++.dg/template/dtor2.C: Likewise.
+	* g++.dg/template/error9.C: Likewise.
+	* g++.dg/tls/diag-2.C: Likewise.
+	* g++.dg/tls/diag-4.C: Likewise.
+	* g++.dg/tls/diag-5.C: Likewise.
+	* g++.old-deja/g++.pt/memtemp71.C: Likewise.
+
 2019-09-16  Li Jia He  <helijia@linux.ibm.com>
 	    Qi Feng  <ffengqi@linux.ibm.com>
 

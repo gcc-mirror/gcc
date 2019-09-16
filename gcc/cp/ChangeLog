@@ -1,3 +1,10 @@
+2019-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use declspecs->locations and
+	declarator->id_loc in a few error messages.
+	* pt.c (finish_member_template_decl): Use DECL_SOURCE_LOCATION.
+	(push_template_decl_real): Likewise.
+
 2019-09-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/30277 - int-width bit-field promotion.
