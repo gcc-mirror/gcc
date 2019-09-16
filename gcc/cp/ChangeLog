@@ -1,5 +1,11 @@
 2019-09-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/30277 - int-width bit-field promotion.
+	PR c++/33819 - long bit-field promotion.
+	* typeck.c (cp_perform_integral_promotions): Handle large bit-fields
+	properly.  Handle 32-bit non-int bit-fields properly.
+	(is_bitfield_expr_with_lowered_type): Don't look through NOP_EXPR.
+
 	PR c++/82165 - enum bitfields and operator overloading.
 	* call.c (build_new_op_1): Use unlowered_expr_type.
 
