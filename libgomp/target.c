@@ -1556,8 +1556,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 				      kind & typemask, cbufp);
 	    else
 	      {
-		if (k->virtual_refcount == VREFCOUNT_LINK_KEY)
-		  k->u.link_key = NULL;
+		k->u.link_key = NULL;
 		if (n && n->refcount == REFCOUNT_LINK)
 		  {
 		    /* Replace target address of the pointer with target address

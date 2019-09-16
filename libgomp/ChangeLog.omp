@@ -1,5 +1,10 @@
 2019-09-17  Julian Brown  <julian@codesourcery.com>
 
+	* target.c (gomp_map_vars_internal): Remove read of uninitialised
+	data.
+
+2019-09-17  Julian Brown  <julian@codesourcery.com>
+
 	* testsuite/libgomp.oacc-c-c++-common/async_queue-1.c: Only run
 	NVidia-specific test on NVidia hardware.
 	* testsuite/libgomp.oacc-c-c++-common/asyncwait-nop-1.c (main):
