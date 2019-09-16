@@ -5620,136 +5620,6 @@ and_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
 	return t;
     }
 
-  /* If both comparisons are of the same value against constants, we might
-     be able to merge them.  */
-  if (operand_equal_p (op1a, op2a, 0)
-      && TREE_CODE (op1b) == INTEGER_CST
-      && TREE_CODE (op2b) == INTEGER_CST)
-    {
-      int cmp = tree_int_cst_compare (op1b, op2b);
-
-      /* If we have (op1a == op1b), we should either be able to
-	 return that or FALSE, depending on whether the constant op1b
-	 also satisfies the other comparison against op2b.  */
-      if (code1 == EQ_EXPR)
-	{
-	  bool done = true;
-	  bool val;
-	  switch (code2)
-	    {
-	    case EQ_EXPR: val = (cmp == 0); break;
-	    case NE_EXPR: val = (cmp != 0); break;
-	    case LT_EXPR: val = (cmp < 0); break;
-	    case GT_EXPR: val = (cmp > 0); break;
-	    case LE_EXPR: val = (cmp <= 0); break;
-	    case GE_EXPR: val = (cmp >= 0); break;
-	    default: done = false;
-	    }
-	  if (done)
-	    {
-	      if (val)
-		return fold_build2 (code1, boolean_type_node, op1a, op1b);
-	      else
-		return boolean_false_node;
-	    }
-	}
-      /* Likewise if the second comparison is an == comparison.  */
-      else if (code2 == EQ_EXPR)
-	{
-	  bool done = true;
-	  bool val;
-	  switch (code1)
-	    {
-	    case EQ_EXPR: val = (cmp == 0); break;
-	    case NE_EXPR: val = (cmp != 0); break;
-	    case LT_EXPR: val = (cmp > 0); break;
-	    case GT_EXPR: val = (cmp < 0); break;
-	    case LE_EXPR: val = (cmp >= 0); break;
-	    case GE_EXPR: val = (cmp <= 0); break;
-	    default: done = false;
-	    }
-	  if (done)
-	    {
-	      if (val)
-		return fold_build2 (code2, boolean_type_node, op2a, op2b);
-	      else
-		return boolean_false_node;
-	    }
-	}
-
-      /* Same business with inequality tests.  */
-      else if (code1 == NE_EXPR)
-	{
-	  bool val;
-	  switch (code2)
-	    {
-	    case EQ_EXPR: val = (cmp != 0); break;
-	    case NE_EXPR: val = (cmp == 0); break;
-	    case LT_EXPR: val = (cmp >= 0); break;
-	    case GT_EXPR: val = (cmp <= 0); break;
-	    case LE_EXPR: val = (cmp > 0); break;
-	    case GE_EXPR: val = (cmp < 0); break;
-	    default:
-	      val = false;
-	    }
-	  if (val)
-	    return fold_build2 (code2, boolean_type_node, op2a, op2b);
-	}
-      else if (code2 == NE_EXPR)
-	{
-	  bool val;
-	  switch (code1)
-	    {
-	    case EQ_EXPR: val = (cmp == 0); break;
-	    case NE_EXPR: val = (cmp != 0); break;
-	    case LT_EXPR: val = (cmp <= 0); break;
-	    case GT_EXPR: val = (cmp >= 0); break;
-	    case LE_EXPR: val = (cmp < 0); break;
-	    case GE_EXPR: val = (cmp > 0); break;
-	    default:
-	      val = false;
-	    }
-	  if (val)
-	    return fold_build2 (code1, boolean_type_node, op1a, op1b);
-	}
-
-      /* Chose the more restrictive of two < or <= comparisons.  */
-      else if ((code1 == LT_EXPR || code1 == LE_EXPR)
-	       && (code2 == LT_EXPR || code2 == LE_EXPR))
-	{
-	  if ((cmp < 0) || (cmp == 0 && code1 == LT_EXPR))
-	    return fold_build2 (code1, boolean_type_node, op1a, op1b);
-	  else
-	    return fold_build2 (code2, boolean_type_node, op2a, op2b);
-	}
-
-      /* Likewise chose the more restrictive of two > or >= comparisons.  */
-      else if ((code1 == GT_EXPR || code1 == GE_EXPR)
-	       && (code2 == GT_EXPR || code2 == GE_EXPR))
-	{
-	  if ((cmp > 0) || (cmp == 0 && code1 == GT_EXPR))
-	    return fold_build2 (code1, boolean_type_node, op1a, op1b);
-	  else
-	    return fold_build2 (code2, boolean_type_node, op2a, op2b);
-	}
-
-      /* Check for singleton ranges.  */
-      else if (cmp == 0
-	       && ((code1 == LE_EXPR && code2 == GE_EXPR)
-		   || (code1 == GE_EXPR && code2 == LE_EXPR)))
-	return fold_build2 (EQ_EXPR, boolean_type_node, op1a, op2b);
-
-      /* Check for disjoint ranges. */
-      else if (cmp <= 0
-	       && (code1 == LT_EXPR || code1 == LE_EXPR)
-	       && (code2 == GT_EXPR || code2 == GE_EXPR))
-	return boolean_false_node;
-      else if (cmp >= 0
-	       && (code1 == GT_EXPR || code1 == GE_EXPR)
-	       && (code2 == LT_EXPR || code2 == LE_EXPR))
-	return boolean_false_node;
-    }
-
   /* Perhaps the first comparison is (NAME != 0) or (NAME == 1) where
      NAME's definition is a truth value.  See if there are any simplifications
      that can be done against the NAME's definition.  */
@@ -5898,6 +5768,16 @@ maybe_fold_comparisons_from_match_pd (tree type, enum tree_code code,
 	    return build2 (code2, type, op2a, op2b);
 	  else
 	    return res;
+	}
+      else if (op.code.is_tree_code ()
+	       && TREE_CODE_CLASS ((tree_code)op.code) == tcc_comparison)
+	{
+	  tree op0 = op.ops[0];
+	  tree op1 = op.ops[1];
+	  if (op0 == lhs1 || op0 == lhs2 || op1 == lhs1 || op1 == lhs2)
+	    return NULL_TREE;  /* not simple */
+
+	  return build2 ((enum tree_code)op.code, op.type, op0, op1);
 	}
     }
 
