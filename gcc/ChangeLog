@@ -1,3 +1,11 @@
+2019-09-16  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91719
+	* config/i386/i386.h (TARGET_USE_XCHG_FOR_ATOMIC_STORE): New macro.
+	* config/i386/x86-tune.def (X86_TUNE_USE_XCHG_FOR_ATOMIC_STORE): New.
+	* config/i386/sync.md (atomic_store<mode>): emit XCHG for
+	TARGET_USE_XCHG_FOR_ATOMIC_STORE.
+
 2019-09-16  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in (build/genmatch.o): Depend on $(CPPLIB_H).
