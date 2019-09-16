@@ -1,3 +1,7 @@
+2019-09-16  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in (build/genmatch.o): Depend on $(CPPLIB_H).
+
 2019-09-16  Martin Liska  <mliska@suse.cz>
 
 	* gimple-fold.c (or_comparisons_1): Remove rules moved
