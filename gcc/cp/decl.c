@@ -10948,14 +10948,15 @@ grokdeclarator (const cp_declarator *declarator,
     {
       if (! int_n_enabled_p[declspecs->int_n_idx])
 	{
-	  error ("%<__int%d%> is not supported by this target",
-		 int_n_data[declspecs->int_n_idx].bitsize);
+	  error_at (declspecs->locations[ds_type_spec],
+		    "%<__int%d%> is not supported by this target",
+		    int_n_data[declspecs->int_n_idx].bitsize);
 	  explicit_intN = false;
 	}
       /* Don't pedwarn if the alternate "__intN__" form has been used instead
 	 of "__intN".  */
       else if (!int_n_alt && pedantic && ! in_system_header_at (input_location))
-	pedwarn (input_location, OPT_Wpedantic,
+	pedwarn (declspecs->locations[ds_type_spec], OPT_Wpedantic,
 		 "ISO C++ does not support %<__int%d%> for %qs",
 		 int_n_data[declspecs->int_n_idx].bitsize, name);
     }
@@ -11330,7 +11331,10 @@ grokdeclarator (const cp_declarator *declarator,
 	   && storage_class != sc_static)
 	  || typedef_p))
     {
-      error ("multiple storage classes in declaration of %qs", name);
+      location_t loc
+	= min_location (declspecs->locations[ds_thread],
+			declspecs->locations[ds_storage_class]);
+      error_at (loc, "multiple storage classes in declaration of %qs", name);
       thread_p = false;
     }
   if (decl_context != NORMAL
@@ -11489,7 +11493,9 @@ grokdeclarator (const cp_declarator *declarator,
 	  type = create_array_type_for_decl (dname, type,
 					     declarator->u.array.bounds,
 					     declarator->id_loc);
-	  if (!valid_array_size_p (input_location, type, dname))
+	  if (!valid_array_size_p (dname
+				   ? declarator->id_loc : input_location,
+				   type, dname))
 	    type = error_mark_node;
 
 	  if (declarator->std_attributes)
