@@ -6042,51 +6042,6 @@ or_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
 	return t;
     }
 
-  /* If both comparisons are of the same value against constants, we might
-     be able to merge them.  */
-  if (operand_equal_p (op1a, op2a, 0)
-      && TREE_CODE (op1b) == INTEGER_CST
-      && TREE_CODE (op2b) == INTEGER_CST)
-    {
-      int cmp = tree_int_cst_compare (op1b, op2b);
-
-      /* Chose the less restrictive of two < or <= comparisons.  */
-      if ((code1 == LT_EXPR || code1 == LE_EXPR)
-	       && (code2 == LT_EXPR || code2 == LE_EXPR))
-	{
-	  if ((cmp < 0) || (cmp == 0 && code1 == LT_EXPR))
-	    return fold_build2 (code2, boolean_type_node, op2a, op2b);
-	  else
-	    return fold_build2 (code1, boolean_type_node, op1a, op1b);
-	}
-
-      /* Likewise chose the less restrictive of two > or >= comparisons.  */
-      else if ((code1 == GT_EXPR || code1 == GE_EXPR)
-	       && (code2 == GT_EXPR || code2 == GE_EXPR))
-	{
-	  if ((cmp > 0) || (cmp == 0 && code1 == GT_EXPR))
-	    return fold_build2 (code2, boolean_type_node, op2a, op2b);
-	  else
-	    return fold_build2 (code1, boolean_type_node, op1a, op1b);
-	}
-
-      /* Check for singleton ranges.  */
-      else if (cmp == 0
-	       && ((code1 == LT_EXPR && code2 == GT_EXPR)
-		   || (code1 == GT_EXPR && code2 == LT_EXPR)))
-	return fold_build2 (NE_EXPR, boolean_type_node, op1a, op2b);
-
-      /* Check for less/greater pairs that don't restrict the range at all.  */
-      else if (cmp >= 0
-	       && (code1 == LT_EXPR || code1 == LE_EXPR)
-	       && (code2 == GT_EXPR || code2 == GE_EXPR))
-	return boolean_true_node;
-      else if (cmp <= 0
-	       && (code1 == GT_EXPR || code1 == GE_EXPR)
-	       && (code2 == LT_EXPR || code2 == LE_EXPR))
-	return boolean_true_node;
-    }
-
   /* Perhaps the first comparison is (NAME != 0) or (NAME == 1) where
      NAME's definition is a truth value.  See if there are any simplifications
      that can be done against the NAME's definition.  */

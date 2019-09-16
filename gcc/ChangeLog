@@ -1,5 +1,11 @@
 2019-09-16  Martin Liska  <mliska@suse.cz>
 
+	* gimple-fold.c (or_comparisons_1): Remove rules moved
+	to ...
+	* match.pd: ... here.
+
+2019-09-16  Martin Liska  <mliska@suse.cz>
+
 	* gimple-fold.c (or_comparisons_1): Remove rules
 	moved to ...
 	* match.pd: ... here.
