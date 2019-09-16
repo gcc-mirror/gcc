@@ -1,3 +1,32 @@
+2019-09-16  Li Jia He  <helijia@linux.ibm.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	* gimple-fold.c (and_comparisons_1): Add type as first
+	argument.
+	(and_var_with_comparison): Likewise.
+	(and_var_with_comparison_1): Likewise.
+	(or_comparisons_1): Likewise.
+	(or_var_with_comparison): Likewise.
+	(or_var_with_comparison_1): Likewise.
+	(maybe_fold_and_comparisons): Call maybe_fold_comparisons_from_match_pd.
+	(maybe_fold_or_comparisons): Likewise.
+	(maybe_fold_comparisons_from_match_pd): New.
+	* gimple-fold.h (maybe_fold_and_comparisons): Add type argument.
+	(maybe_fold_or_comparisons): Likewise.
+	* gimple.c (gimple_size): Make it public and add num_ops argument.
+	(gimple_init): New function.
+	(gimple_alloc): Call gimple_init.
+	* gimple.h (gimple_size): New.
+	(gimple_init): Likewise.
+	* tree-if-conv.c (fold_or_predicates): Pass type.
+	* tree-ssa-ifcombine.c (ifcombine_ifandif): Likewise.
+	* tree-ssa-reassoc.c (eliminate_redundant_comparison): Likewise.
+	(optimize_vec_cond_expr): Likewise.
+	(ovce_extract_ops): Return type of conditional expression.
+	* tree-ssanames.c (init_ssa_name_imm_use): New.
+	(make_ssa_name_fn): Use init_ssa_name_imm_use.
+	* tree-ssanames.h (init_ssa_name_imm_use): New.
+
 2019-09-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91756
