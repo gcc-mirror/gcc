@@ -1,3 +1,20 @@
+2019-09-16  Li Jia He  <helijia@linux.ibm.com>
+	    Qi Feng  <ffengqi@linux.ibm.com>
+
+	PR middle-end/88784
+	* gcc.dg/pr88784-1.c: New testcase.
+	* gcc.dg/pr88784-2.c: New testcase.
+	* gcc.dg/pr88784-3.c: New testcase.
+	* gcc.dg/pr88784-4.c: New testcase.
+	* gcc.dg/pr88784-5.c: New testcase.
+	* gcc.dg/pr88784-6.c: New testcase.
+	* gcc.dg/pr88784-7.c: New testcase.
+	* gcc.dg/pr88784-8.c: New testcase.
+	* gcc.dg/pr88784-9.c: New testcase.
+	* gcc.dg/pr88784-10.c: New testcase.
+	* gcc.dg/pr88784-11.c: New testcase.
+	* gcc.dg/pr88784-12.c: New testcase.
+
 2019-09-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91756
