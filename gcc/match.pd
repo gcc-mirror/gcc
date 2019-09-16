@@ -2024,6 +2024,34 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       { constant_boolean_node (false, type); })
      )))))
 
+/* Convert (X == CST1) || (X OP2 CST2) to a known value
+   based on CST1 OP2 CST2.  Similarly for (X != CST1).  */
+
+(for code1 (eq ne)
+ (for code2 (eq ne lt gt le ge)
+  (simplify
+   (bit_ior:c (code1@3 @0 INTEGER_CST@1) (code2@4 @0 INTEGER_CST@2))
+    (with
+     {
+      int cmp = tree_int_cst_compare (@1, @2);
+      bool val;
+      switch (code2)
+	{
+	case EQ_EXPR: val = (cmp == 0); break;
+	case NE_EXPR: val = (cmp != 0); break;
+	case LT_EXPR: val = (cmp < 0); break;
+	case GT_EXPR: val = (cmp > 0); break;
+	case LE_EXPR: val = (cmp <= 0); break;
+	case GE_EXPR: val = (cmp >= 0); break;
+	default: gcc_unreachable ();
+	}
+     }
+     (switch
+      (if (code1 == EQ_EXPR && val) @4)
+      (if (code1 == NE_EXPR && val) { constant_boolean_node (true, type); })
+      (if (code1 == NE_EXPR && !val) @3))))))
+
+
 /* We can't reassociate at all for saturating types.  */
 (if (!TYPE_SATURATING (type))
 
