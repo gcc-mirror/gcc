@@ -5,7 +5,7 @@
 
 short a[N], b[N], c[N];
 
-int foo (void)
+void foo (void)
 {
   int i;
 
