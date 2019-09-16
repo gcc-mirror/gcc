@@ -5815,6 +5815,9 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
     }
   tree fnname = ovl_op_identifier (ismodop, ismodop ? code2 : code);
 
+  tree arg1_type = unlowered_expr_type (arg1);
+  tree arg2_type = arg2 ? unlowered_expr_type (arg2) : NULL_TREE;
+
   arg1 = prep_operand (arg1);
 
   bool memonly = false;
@@ -5846,8 +5849,8 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
     case EQ_EXPR:
     case NE_EXPR:
       /* These are saved for the sake of maybe_warn_bool_compare.  */
-      code_orig_arg1 = TREE_CODE (TREE_TYPE (arg1));
-      code_orig_arg2 = TREE_CODE (TREE_TYPE (arg2));
+      code_orig_arg1 = TREE_CODE (arg1_type);
+      code_orig_arg2 = TREE_CODE (arg2_type);
       break;
 
       /* =, ->, [], () must be non-static member functions.  */
@@ -5870,8 +5873,8 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
   if (code == COND_EXPR)
     /* Use build_conditional_expr instead.  */
     gcc_unreachable ();
-  else if (! OVERLOAD_TYPE_P (TREE_TYPE (arg1))
-	   && (! arg2 || ! OVERLOAD_TYPE_P (TREE_TYPE (arg2))))
+  else if (! OVERLOAD_TYPE_P (arg1_type)
+	   && (! arg2 || ! OVERLOAD_TYPE_P (arg2_type)))
     goto builtin;
 
   if (code == POSTINCREMENT_EXPR || code == POSTDECREMENT_EXPR)
@@ -5903,11 +5906,11 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
   args[2] = NULL_TREE;
 
   /* Add class-member operators to the candidate set.  */
-  if (CLASS_TYPE_P (TREE_TYPE (arg1)))
+  if (CLASS_TYPE_P (arg1_type))
     {
       tree fns;
 
-      fns = lookup_fnfields (TREE_TYPE (arg1), fnname, 1);
+      fns = lookup_fnfields (arg1_type, fnname, 1);
       if (fns == error_mark_node)
 	{
 	  result = error_mark_node;
@@ -5927,7 +5930,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
      has an enumeration type, or T2 or reference to cv-qualified-opt
      T2 for the second argument, if the second argument has an
      enumeration type.  Filter out those that don't match.  */
-  else if (! arg2 || ! CLASS_TYPE_P (TREE_TYPE (arg2)))
+  else if (! arg2 || ! CLASS_TYPE_P (arg2_type))
     {
       struct z_candidate **candp, **next;
 
@@ -5947,9 +5950,9 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 
 	      if (TYPE_REF_P (parmtype))
 		parmtype = TREE_TYPE (parmtype);
-	      if (TREE_CODE (TREE_TYPE (args[i])) == ENUMERAL_TYPE
+	      if (TREE_CODE (unlowered_expr_type (args[i])) == ENUMERAL_TYPE
 		  && (same_type_ignoring_top_level_qualifiers_p
-		      (TREE_TYPE (args[i]), parmtype)))
+		      (unlowered_expr_type (args[i]), parmtype)))
 		break;
 
 	      parmlist = TREE_CHAIN (parmlist);
@@ -6124,15 +6127,15 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	    case LE_EXPR:
 	    case EQ_EXPR:
 	    case NE_EXPR:
-	      if (TREE_CODE (TREE_TYPE (arg1)) == ENUMERAL_TYPE
-		  && TREE_CODE (TREE_TYPE (arg2)) == ENUMERAL_TYPE
-		  && (TYPE_MAIN_VARIANT (TREE_TYPE (arg1))
-		      != TYPE_MAIN_VARIANT (TREE_TYPE (arg2)))
+	      if (TREE_CODE (arg1_type) == ENUMERAL_TYPE
+		  && TREE_CODE (arg2_type) == ENUMERAL_TYPE
+		  && (TYPE_MAIN_VARIANT (arg1_type)
+		      != TYPE_MAIN_VARIANT (arg2_type))
 		  && (complain & tf_warning))
 		{
 		  warning (OPT_Wenum_compare,
 			   "comparison between %q#T and %q#T",
-			   TREE_TYPE (arg1), TREE_TYPE (arg2));
+			   arg1_type, arg2_type);
 		}
 	      break;
 	    default:
