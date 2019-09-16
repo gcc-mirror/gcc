@@ -1,3 +1,13 @@
+2019-09-16  Martin Liska  <mliska@suse.cz>
+
+	* genmatch.c (dt_node::append_simplify): Do not print
+	warning when we have duplicate patterns belonging
+	to a same simplify rule.
+	* gimple-fold.c (and_comparisons_1): Remove matching moved to match.pd.
+	(maybe_fold_comparisons_from_match_pd): Handle
+	tcc_comparison as a results.
+	* match.pd: Handle (X == CST1) && (X OP2 CST2) conditions.
+
 2019-09-16  Li Jia He  <helijia@linux.ibm.com>
 	    Qi Feng  <ffengqi@linux.ibm.com>
 
