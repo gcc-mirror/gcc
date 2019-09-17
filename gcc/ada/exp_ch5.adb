@@ -1440,6 +1440,20 @@ package body Exp_Ch5 is
    is
       Slices : constant Boolean :=
         Nkind (Name (N)) = N_Slice or else Nkind (Expression (N)) = N_Slice;
+      L_Prefix_Comp : constant Boolean :=
+        --  True if the left-hand side is a slice of a component or slice
+        Nkind (Name (N)) = N_Slice
+        and then Nkind_In (Prefix (Name (N)),
+                           N_Selected_Component,
+                           N_Indexed_Component,
+                           N_Slice);
+      R_Prefix_Comp : constant Boolean :=
+        --  Likewise for the right-hand side
+        Nkind (Expression (N)) = N_Slice
+        and then Nkind_In (Prefix (Expression (N)),
+                           N_Selected_Component,
+                           N_Indexed_Component,
+                           N_Slice);
    begin
       --  Determine whether Copy_Bitfield is appropriate (will work, and will
       --  be more efficient than component-by-component copy). Copy_Bitfield
@@ -1447,11 +1461,10 @@ package body Exp_Ch5 is
       --  of bit-packed arrays. Copy_Bitfield can read and write bits that are
       --  not part of the objects being copied, so we don't want to use it if
       --  there are volatile or independent components. If the Prefix of the
-      --  slice is a selected component (etc, see below), then it might be a
-      --  component of an object with some other volatile or independent
-      --  components, so we disable the optimization in that case as well.
-      --  We could complicate this code by actually looking for such volatile
-      --  and independent components.
+      --  slice is a component or slice, then it might be a part of an object
+      --  with some other volatile or independent components, so we disable the
+      --  optimization in that case as well.  We could complicate this code by
+      --  actually looking for such volatile and independent components.
 
       --  Note that Expand_Assign_Array_Bitfield is disabled for now.
 
@@ -1468,10 +1481,8 @@ package body Exp_Ch5 is
         and then not Has_Volatile_Component (R_Type)
         and then not Has_Independent_Components (L_Type)
         and then not Has_Independent_Components (R_Type)
-        and then not Nkind_In (Prefix (Name (N)),
-                               N_Selected_Component,
-                               N_Indexed_Component,
-                               N_Slice)
+        and then not L_Prefix_Comp
+        and then not R_Prefix_Comp
       then
          return Expand_Assign_Array_Bitfield
            (N, Larray, Rarray, L_Type, R_Type, Rev);
