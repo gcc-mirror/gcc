@@ -1,3 +1,9 @@
+2019-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91790
+	* tree-vect-stmts.c (vectorizable_load): For BB vectorization
+	use the correct DR for setting up realignment.
+
 2019-09-16  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/91719
