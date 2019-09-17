@@ -1,5 +1,10 @@
 2019-09-17  Yannick Moy  <moy@adacore.com>
 
+	* libgnat/s-arit64.adb (Scaled_Divide): Add protection against
+	undesirable wrap-around.
+
+2019-09-17  Yannick Moy  <moy@adacore.com>
+
 	* libgnat/s-arit64.adb (Double_Divide): Fix two possible
 	overflows.
 
