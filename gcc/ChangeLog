@@ -1,5 +1,34 @@
 2019-09-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/arm/types.md (no_reservation): New reservation.
+	* config/aarch64/falkor.md (falkor_other_0_nothing): Don't handle
+	no_insn here.
+	* config/aarch64/saphira.md (saphira_other_0_nothing): Likewise.
+	* config/aarch64/thunderx2t99.md (thunderx2t99_nothing): Likewise.
+	* config/aarch64/tsv110.md (tsv110_alu): Likewise.
+	* config/arm/arm1020e.md (1020alu_op): Likewise.
+	* config/arm/arm1026ejs.md (alu_op): Likewise.
+	* config/arm/arm1136jfs.md (11_alu_op): Likewise.
+	* config/arm/arm926ejs.md (9_alu_op): Likewise.
+	* config/arm/cortex-a15.md (cortex_a15_alu): Likewise.
+	* config/arm/cortex-a17.md (cortex_a17_alu): Likewise.
+	* config/arm/cortex-a5.md (cortex_a5_alu): Likewise.
+	* config/arm/cortex-a53.md (cortex_a53_alu): Likewise.
+	* config/arm/cortex-a57.md (cortex_a57_alu): Likewise.
+	* config/arm/cortex-a7.md (cortex_a7_alu_shift): Likewise.
+	* config/arm/cortex-a8.md (cortex_a8_alu): Likewise.
+	* config/arm/cortex-a9.md (cortex_a9_dp): Likewise.
+	* config/arm/cortex-m4.md (cortex_m4_alu): Likewise.
+	* config/arm/cortex-m7.md (cortex_m7_alu_simple): Likewise.
+	* config/arm/cortex-r4.md (cortex_r4_alu_shift_reg): Likewise.
+	* config/arm/fa526.md (526_alu_op): Likewise.
+	* config/arm/fa606te.md (606te_alu_op): Likewise.
+	* config/arm/fa626te.md (626te_alu_op): Likewise.
+	* config/arm/fa726te.md (726te_alu_op): Likewise.
+	* config/arm/xgene1.md (xgene1_nop): Likewise.
+
+2019-09-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/arm/thumb1.md (*thumb1_tablejump): Change type from
 	"no_insn" to "branch".
 

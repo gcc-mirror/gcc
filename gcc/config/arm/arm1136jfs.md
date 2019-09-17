@@ -81,7 +81,7 @@
                        adr,bfm,rev,\
                        shift_imm,shift_reg,\
                        mov_imm,mov_reg,mvn_imm,mvn_reg,\
-                       multiple,no_insn"))
+                       multiple"))
  "e_1,e_2,e_3,e_wb")
 
 ;; ALU operations with a shift-by-constant operand

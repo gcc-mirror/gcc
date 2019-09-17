@@ -520,7 +520,7 @@
 
 (define_insn_reservation "saphira_other_0_nothing" 0
   (and (eq_attr "tune" "saphira")
-       (eq_attr "type" "no_insn,trap,block"))
+       (eq_attr "type" "trap,block"))
   "nothing")
 
 (define_insn_reservation "saphira_other_2_ld" 2
