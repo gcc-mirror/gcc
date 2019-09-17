@@ -75,11 +75,13 @@ package GNAT.Sockets.Thin_Common is
 
    Families : constant array (Family_Type) of C.int :=
                 (Family_Unspec => SOSC.AF_UNSPEC,
+                 Family_Unix   => SOSC.AF_UNIX,
                  Family_Inet   => SOSC.AF_INET,
                  Family_Inet6  => SOSC.AF_INET6);
 
    Lengths  : constant array (Family_Type) of C.unsigned_char :=
                 (Family_Unspec => 0,
+                 Family_Unix   => SOSC.SIZEOF_sockaddr_un,
                  Family_Inet   => SOSC.SIZEOF_sockaddr_in,
                  Family_Inet6  => SOSC.SIZEOF_sockaddr_in6);
 
@@ -106,9 +108,7 @@ package GNAT.Sockets.Thin_Common is
          when False =>
             Short_Family : C.unsigned_short;
       end case;
-   end record;
-   pragma Unchecked_Union (Sockaddr_Length_And_Family);
-   pragma Convention (C, Sockaddr_Length_And_Family);
+   end record with Unchecked_Union, Convention => C;
 
    procedure Set_Family
      (Length_And_Family : out Sockaddr_Length_And_Family;
@@ -122,9 +122,7 @@ package GNAT.Sockets.Thin_Common is
 
    type In_Addr is record
       S_B1, S_B2, S_B3, S_B4 : C.unsigned_char;
-   end record;
-   for In_Addr'Alignment use C.int'Alignment;
-   pragma Convention (C, In_Addr);
+   end record with Convention => C, Alignment => C.int'Alignment;
    --  IPv4 address, represented as a network-order C.int. Note that the
    --  underlying operating system may assume that values of this type have
    --  C.int alignment, so we need to provide a suitable alignment clause here.
@@ -138,9 +136,10 @@ package GNAT.Sockets.Thin_Common is
       Result : out Inet_Addr_Type);
    --  Conversion functions
 
-   type In6_Addr is array (1 .. 16) of C.unsigned_char;
-   for In6_Addr'Alignment use C.int'Alignment;
-   pragma Convention (C, In6_Addr);
+   type In6_Addr is array (1 .. 16) of C.unsigned_char with Convention => C;
+
+   Unix_Name_Length : constant := 108;
+   --  Maximum length for local unix socket name
 
    function To_In6_Addr (Addr : Inet_Addr_Type) return In6_Addr;
    procedure To_Inet_Addr
@@ -149,14 +148,14 @@ package GNAT.Sockets.Thin_Common is
    --  Conversion functions
 
    type Sockaddr (Family : Family_Type := Family_Inet) is record
-      Sin_Family : Sockaddr_Length_And_Family;
-      --  Address family (and address length on some platforms)
-
-      Sin_Port : C.unsigned_short;
-      --  Port in network byte order
-
       case Family is
       when Family_Inet =>
+         Sin_Family : Sockaddr_Length_And_Family;
+         --  Address family (and address length on some platforms)
+
+         Sin_Port : C.unsigned_short;
+         --  Port in network byte order
+
          Sin_Addr : In_Addr := (others => 0);
          --  IPv4 address
 
@@ -165,16 +164,28 @@ package GNAT.Sockets.Thin_Common is
          --
          --  Note that some platforms require that all unused (reserved) bytes
          --  in addresses be initialized to 0 (e.g. VxWorks).
+
       when Family_Inet6 =>
+         Sin6_Family : Sockaddr_Length_And_Family;
+         --  Address family (and address length on some platforms)
+
+         Sin6_Port : C.unsigned_short;
+         --  Port in network byte order
+
          Sin6_FlowInfo : Interfaces.Unsigned_32 := 0;
          Sin6_Addr     : In6_Addr := (others => 0);
          Sin6_Scope_Id : Interfaces.Unsigned_32 := 0;
+
+      when Family_Unix =>
+         Sun_Family : Sockaddr_Length_And_Family;
+         --  Address family (and address length on some platforms)
+
+         Sun_Path : C.char_array (1 .. Unix_Name_Length);
+
       when Family_Unspec =>
          null;
       end case;
-   end record;
-   pragma Unchecked_Union (Sockaddr);
-   pragma Convention (C, Sockaddr);
+   end record with Convention => C, Unchecked_Union;
    --  Internet socket address
 
    type Sockaddr_Access is access all Sockaddr;
@@ -183,13 +194,15 @@ package GNAT.Sockets.Thin_Common is
 
    procedure Set_Address
      (Sin     : Sockaddr_Access;
-      Address : Sock_Addr_Type);
+      Address : Sock_Addr_Type;
+      Length  : out C.int);
    --  Initialise all necessary fields in Sin from Address.
    --  Set appropriate Family, Port, and either Sin.Sin_Addr or Sin.Sin6_Addr
    --  depend on family.
+   --  Set the Length out parameter to the valuable Sockaddr data length.
 
-   function Get_Address (Sin : Sockaddr) return Sock_Addr_Type;
-   --  Get Sock_Addr_Type from Sockaddr
+   function Get_Address (Sin : Sockaddr; Length : C.int) return Sock_Addr_Type;
+   --  Get Sock_Addr_Type from Sockaddr and its valuable data Length
 
    ------------------
    -- Host entries --

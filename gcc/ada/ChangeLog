@@ -1,3 +1,34 @@
+2019-09-17  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* gsocket.h: Include sys/un.h.
+	* s-oscons-tmplt.c (AF_UNIX): New constant generation.
+	(SIZEOF_sockaddr_un): Idem.
+	* libgnat/g-socket.ads (Family_Type): New value Family_Unix
+	added.
+	(Family_Inet_4_6): New subtype only for network families.
+	(Sock_Addr_Type): Add Unbounded_String field for Family_Unix
+	variant.
+	(Unix_Socket_Address): Create Sock_Addr_Type from socket
+	pathname.
+	(Network_Socket_Address): Create Sock_Addr_Type from
+	Inet_Addr_Type and Port_Type parameters.
+	* libgnat/g-socket.adb: Support local unix address in socket
+	routines.
+	(Get_Address_Info): Disable warning about Result may be
+	referenced before it has a value. Remove duplicated code to exit
+	from Look_For_Supported.
+	* libgnat/g-sothco.ads (Unix_Name_Length): New constant defining
+	maximum number of characters in local socket address path.
+	(Sockaddr): Add variant for Family_Unix address family. Move
+	Sin_Port and Sin_Family to Family_Inet section. Add Sin6_Port
+	and Sin6_Family to Family_Inet6 section.
+	(Set_Address): Add out parameter Length to return valuable
+	Sockaddr data length.
+	(Get_Address): Add input parameter Length to set valuable
+	Sockaddr data length.
+	* libgnat/g-sothco.adb: Support local unix address in socket
+	routines.
+
 2019-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_attr.adb (Expand_Size_Attribute): Chain the special cases
