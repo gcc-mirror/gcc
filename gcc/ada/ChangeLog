@@ -1,3 +1,14 @@
+2019-09-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* ali.ads: Fix casing in comment.
+	* ali-util.ads, ali-util.adb (Read_Withed_ALIs): Remove
+	Ignore_Errors parameter; it was only set to non-default value of
+	True when running in GNATprove_Mode and wrongly reset to False
+	when calling this routine recursively. Now in GNATprove mode we
+	want it to be always True, so in fact it is equivalent to
+	GNATProve_Mode flag itself (which was already used in this
+	routine).
+
 2019-09-17  Arnaud Charlet  <charlet@adacore.com>
 
 	* adaint.c (_REENTRANT, _THREAD_SAFE): Only define if needed.
