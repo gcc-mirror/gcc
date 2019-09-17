@@ -1,3 +1,7 @@
+2019-09-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* array-traits.h (array_traits<T[N]>::size): Remove parameter name.
+
 2019-09-17  Richard Biener  <rguenther@suse.de>
 
 	PR debug/91772
