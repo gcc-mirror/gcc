@@ -26689,7 +26689,7 @@ package body Sem_Util is
          return;
 
       --  In  an instance, there is an ongoing problem with completion of
-      --  type derived from private types. Their structure is what Gigi
+      --  types derived from private types. Their structure is what Gigi
       --  expects, but the  Etype is the parent type rather than the
       --  derived private type itself. Do not flag error in this case. The
       --  private completion is an entity without a parent, like an Itype.
@@ -26700,7 +26700,17 @@ package body Sem_Util is
       --  same reason: inserted body may be outside of the original package
       --  and only partial views are visible at the point of insertion.
 
-      elsif In_Instance or else In_Inlined_Body then
+      --  If In_Generic_Actual (Expr) is True then we cannot assume that
+      --  the successful semantic analysis of the generic guarantees anything
+      --  useful about type checking of this instance, so we ignore
+      --  In_Instance in that case. There may be cases where this is not
+      --  right (the symptom would probably be rejecting something
+      --  that ought to be accepted) but we don't currently have any
+      --  concrete examples of this.
+
+      elsif (In_Instance and then not In_Generic_Actual (Expr))
+        or else In_Inlined_Body
+      then
          if Etype (Etype (Expr)) = Etype (Expected_Type)
            and then
              (Has_Private_Declaration (Expected_Type)
