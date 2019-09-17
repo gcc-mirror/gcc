@@ -1,3 +1,11 @@
+2019-09-17  Steve Baird  <baird@adacore.com>
+
+	* sem_util.adb (Wrong_Type): In deciding to suppress a message,
+	it is not enough for In_Instance to be True; in addition,
+	In_Generic_Actual (Expr) must be False.
+	* sem_type.adb (In_Generic_Actual): Fix bug where traversal of
+	parents skips every other node.
+
 2019-09-17  Claire Dross  <dross@adacore.com>
 
 	* sem_spark.adb (Get_Observed_Or_Borrowed_Expr): If the
