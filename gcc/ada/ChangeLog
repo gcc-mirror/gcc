@@ -1,5 +1,13 @@
 2019-09-17  Vadim Godunko  <godunko@adacore.com>
 
+	* libgnat/g-exptty.ads (Close_Input): New subprogram.
+	* libgnat/g-exptty.adb (Close_Input): New subprogram.
+	(Close): Move close of TTY to Close_Input.
+	* terminals.c (__gnat_close_tty): Set file descriptors to
+	invalid value after close.
+
+2019-09-17  Vadim Godunko  <godunko@adacore.com>
+
 	* libgnat/g-expect.adb (Expect_Internal): Try to call 'poll' few
 	times.
 
