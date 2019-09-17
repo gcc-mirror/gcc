@@ -31179,7 +31179,11 @@ arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
     {
       argstr = NULL;
       if (!strcmp (q, "thumb"))
-	opts->x_target_flags |= MASK_THUMB;
+	{
+	  opts->x_target_flags |= MASK_THUMB;
+	  if (TARGET_FDPIC && !arm_arch_thumb2)
+	    sorry ("FDPIC mode is not supported in Thumb-1 mode");
+	}
 
       else if (!strcmp (q, "arm"))
 	opts->x_target_flags &= ~MASK_THUMB;
