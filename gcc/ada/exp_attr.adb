@@ -7600,18 +7600,36 @@ package body Exp_Attr is
                   New_Occurrence_Of (Get_Actual_Subtype (Pref), Loc),
                 Attribute_Name => Name_Size));
             Analyze_And_Resolve (N, Typ);
-         end if;
 
-         --  If Size applies to a dereference of an access to unconstrained
+         --  If Size is applied to a dereference of an access to unconstrained
          --  packed array, the back end needs to see its unconstrained nominal
          --  type, but also a hint to the actual constrained type.
 
-         if Nkind (Pref) = N_Explicit_Dereference
+         elsif Nkind (Pref) = N_Explicit_Dereference
            and then Is_Array_Type (Ptyp)
            and then not Is_Constrained (Ptyp)
            and then Is_Packed (Ptyp)
          then
             Set_Actual_Designated_Subtype (Pref, Get_Actual_Subtype (Pref));
+
+         --  If Size was applied to a slice of a bit-packed array, we rewrite
+         --  it into the product of Length and Component_Size. We need to do so
+         --  because bit-packed arrays are represented internally as arrays of
+         --  System.Unsigned_Types.Packed_Byte for code generation purposes so
+         --  the size is always rounded up in the back end.
+
+         elsif Nkind (Original_Node (Pref)) = N_Slice
+           and then Is_Bit_Packed_Array (Ptyp)
+         then
+            Rewrite (N,
+              Make_Op_Multiply (Loc,
+                Make_Attribute_Reference (Loc,
+                  Prefix         => Duplicate_Subexpr (Pref, True),
+                  Attribute_Name => Name_Length),
+                Make_Attribute_Reference (Loc,
+                  Prefix         => Duplicate_Subexpr (Pref, True),
+                  Attribute_Name => Name_Component_Size)));
+            Analyze_And_Resolve (N, Typ);
          end if;
 
          return;
