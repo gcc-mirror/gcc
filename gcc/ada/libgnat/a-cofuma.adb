@@ -243,6 +243,18 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
       return Length (Container.Elements);
    end Length;
 
+   ------------
+   -- Remove --
+   ------------
+
+   function Remove (Container : Map; Key : Key_Type) return Map is
+      I : constant Extended_Index := Find (Container.Keys, Key);
+   begin
+      return
+        (Keys     => Remove (Container.Keys, I),
+         Elements => Remove (Container.Elements, I));
+   end Remove;
+
    ---------------
    -- Same_Keys --
    ---------------

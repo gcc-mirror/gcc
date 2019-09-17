@@ -1,3 +1,9 @@
+2019-09-17  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-cofuma.ads, libgnat/a-cofuma.adb (Remove): New
+	function which returns a copy of the input container without a
+	given mapping.
+
 2019-09-17  Yannick Moy  <moy@adacore.com>
 
 	* libgnat/s-arit64.adb (Double_Divide): Correctly handle the
