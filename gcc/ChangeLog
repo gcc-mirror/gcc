@@ -1,3 +1,9 @@
+2019-09-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/91749
+	* config/arm/arm.c (arm_valid_target_attribute_rec): Make sure the
+	mode attributed is supported by FDPIC.
+
 2019-09-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91790
