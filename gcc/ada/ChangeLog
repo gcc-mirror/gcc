@@ -1,3 +1,16 @@
+2019-09-17  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Build_Record_Init_Proc): Do not generate code to
+	adjust the tag component when the record is initialized with a
+	raise expression.
+	* sem_aggr.adb (Valid_Limited_Ancestor): Return True for
+	N_Raise_Expression nodes.
+	(Valid_Ancestor_Type): Return True for raise expressions.
+	* sem_ch3.adb (Analyze_Component_Declaration): Do not report an
+	error when a component is initialized with a raise expression.
+	* sem_ch4.adb (Analyze_Qualified_Expression): Do not report an
+	error when the aggregate has a raise expression.
+
 2019-09-17  Piotr Trojanek  <trojanek@adacore.com>
 
 	* ali.ads: Fix casing in comment.
