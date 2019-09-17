@@ -1,6 +1,15 @@
 2019-09-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (check_mergeable_specialization): Declare.
+	(match_mergeable_specialization): Add DECL_P parm, drop INSERT_P parm.
+	* module.cc (trees_in::tree_value): Adjust
+	match_mergeable_spcialization calls.
+	(specialization_add): Use check_mergeable_specializatio.
+	* pt.c (check_mergeable_specialization): New.
+	(match_mergeable_specialization): Always insert, reorder parms.
+
+	gcc/cp/
 	* module.cc (enum merge_kind): Add MK_linkage.
 	(merge_kind_name): ... and here.
 	(trees_in::tree_value): Add it.

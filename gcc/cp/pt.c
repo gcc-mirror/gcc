@@ -28404,33 +28404,36 @@ walk_specializations (bool decls_p,
     fn (decls_p, *iter, data);
 }
 
+tree
+check_mergeable_specialization (bool decl_p, tree tmpl, tree args)
+{
+  spec_entry elt = {tmpl, args, NULL_TREE};
+  hash_table<spec_hasher> *specializations
+    = decl_p ? decl_specializations : type_specializations;
+
+  spec_entry **slot = specializations->find_slot (&elt, NO_INSERT);
+  return slot ? (*slot)->spec : NULL_TREE;
+}
+
 // FIXME: do we need to register the specialization on
 // DECL_TEMPLATE_SPECIALIZATIONS & DECL_TEMPLATE_INSTANTIATIONS?
 // Yes.  Yes we do.
 
 tree
-match_mergeable_specialization (tree spec, tree tmpl, tree args, bool insert)
+match_mergeable_specialization (bool decl_p, tree tmpl, tree args, tree spec)
 {
   spec_entry elt = {tmpl, args, NULL_TREE};
-  hash_table<spec_hasher> *specializations;
-
-  if (TYPE_P (spec))
-    specializations = type_specializations;
-  else
-    specializations = decl_specializations;
-  spec_entry **slot = specializations->find_slot (&elt,
-						  insert ? INSERT : NO_INSERT);
+  hash_table<spec_hasher> *specializations
+    = decl_p ? decl_specializations : type_specializations;
+  spec_entry **slot = specializations->find_slot (&elt, INSERT);
   spec_entry *entry = slot ? *slot: NULL;
   if (entry)
     return entry->spec;
 
-  if (insert)
-    {
-      entry = ggc_alloc<spec_entry> ();
-      *entry = elt;
-      entry->spec = spec;
-      *slot = entry;
-    }
+  entry = ggc_alloc<spec_entry> ();
+  *entry = elt;
+  entry->spec = spec;
+  *slot = entry;
 
   return NULL_TREE;
 }

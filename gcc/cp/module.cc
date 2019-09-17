@@ -7903,7 +7903,8 @@ trees_in::tree_value (walk_kind walk)
 	case MK_spec:
 	  if (type)
 	    {
-	      existing = match_mergeable_specialization (type, container, key);
+	      existing
+		= match_mergeable_specialization (false, container, key, type);
 
 	      if (existing)
 		{
@@ -7926,7 +7927,8 @@ trees_in::tree_value (walk_kind walk)
 		}
 	    }
 	  else
-	    existing = match_mergeable_specialization (res, container, key);
+	    existing
+	      = match_mergeable_specialization (true, container, key, res);
 	  break;
 	}
 
@@ -10701,8 +10703,8 @@ specialization_add (bool decl_p, spec_entry *entry, void *data_)
       /* If it's a (non-template-alias) type, we don't expect to find
 	 its TYPE_STUB_DECL.  */
       gcc_checking_assert (DECL_CLASS_TEMPLATE_P (entry->tmpl));
-      tree existing = match_mergeable_specialization
-	(TYPE_STUB_DECL (spec), entry->tmpl, entry->args, false);
+      tree existing = check_mergeable_specialization
+	(true, entry->tmpl, entry->args);
       gcc_checking_assert (!existing);
     }
 #endif

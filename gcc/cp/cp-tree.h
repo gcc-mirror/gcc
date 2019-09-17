@@ -7084,7 +7084,8 @@ extern void walk_specializations		(bool,
 						 void (*)(bool, spec_entry *,
 							  void *),
 						 void *);
-extern tree match_mergeable_specialization	(tree, tree, tree, bool = true);
+extern tree check_mergeable_specialization	(bool, tree, tree);
+extern tree match_mergeable_specialization	(bool, tree, tree, tree);
 
 /* in rtti.c */
 /* A vector of all tinfo decls that haven't been emitted yet.  */
