@@ -511,6 +511,14 @@ package body System.Arith_64 is
       --  Deal with rounding case
 
       if Round and then Ru > (Zu - Uns64'(1)) / Uns64'(2) then
+
+         --  Protect against wrapping around when rounding, by signaling
+         --  an overflow when the quotient is too large.
+
+         if Qu = Uns64'Last then
+            Raise_Error;
+         end if;
+
          Qu := Qu + Uns64 (1);
       end if;
 
