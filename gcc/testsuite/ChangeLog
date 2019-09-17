@@ -1,3 +1,7 @@
+2019-09-17  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/limited4.adb: New testcase.
+
 2019-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/pack25.adb: New testcase.
