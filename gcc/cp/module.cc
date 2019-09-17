@@ -2515,7 +2515,7 @@ public:
     depset *add_clone (tree clone, tree target);
     bool add_binding (tree ns, tree value);
     bool add_writables (tree ns, bitmap partitions);
-    void add_specializations (bool, bitmap partitions);
+    void add_specializations (bool decl_p);
     void find_dependencies ();
     bool finalize_dependencies ();
     vec<depset *> connect ();
@@ -10675,15 +10675,13 @@ depset::hash::add_writables (tree ns, bitmap partitions)
   return count != 0;
 }
 
-typedef std::pair<bitmap, vec<spec_entry *> > spec_tuple;
-
 /* We add the partial & explicit specializations, and the explicit
    instntiations.  */
 
 static void
 specialization_add (bool decl_p, spec_entry *entry, void *data_)
 {
-  spec_tuple *data = reinterpret_cast <spec_tuple *> (data_);
+  vec<spec_entry *> *data = reinterpret_cast <vec<spec_entry *> *> (data_);
   tree spec = entry->spec;
 
 #if CHECKING_P
@@ -10725,7 +10723,7 @@ specialization_add (bool decl_p, spec_entry *entry, void *data_)
       spec = TYPE_STUB_DECL (spec);
     }
 
-  data->second.safe_push (entry);
+  data->safe_push (entry);
 }
 
 /* Arbitrary stable comparison.  */
@@ -10830,15 +10828,15 @@ depset::hash::add_clone (tree clone, tree target)
    touch an internal entity?).  */
 
 void
-depset::hash::add_specializations (bool decl_p, bitmap partitions)
+depset::hash::add_specializations (bool decl_p)
 {
-  spec_tuple data (partitions, vec<spec_entry *>());
-  data.second.create (100);
+  vec<spec_entry *> data;
+  data.create (100);
   walk_specializations (decl_p, specialization_add, &data);
-  data.second.qsort (specialization_cmp);
-  while (data.second.length ())
+  data.qsort (specialization_cmp);
+  while (data.length ())
     {
-      spec_entry *entry = data.second.pop ();
+      spec_entry *entry = data.pop ();
       tree spec = entry->spec;
       bool is_partial = false;
       int use_tpl = 0;
@@ -10939,7 +10937,7 @@ depset::hash::add_specializations (bool decl_p, bitmap partitions)
 	    add_partial_redirect (dep);
 	}
     }
-  data.second.release ();
+  data.release ();
 }
 
 /* Iteratively find dependencies.  During the walk we may find more
@@ -16100,8 +16098,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
   depset::hash table (DECL_NAMESPACE_BINDINGS (global_namespace)->size () * 8);
   /* Add the specializations before the writables, so that we can
      detect injected friend specializations.  */
-  table.add_specializations (true, partitions);
-  table.add_specializations (false, partitions);
+  table.add_specializations (true);
+  table.add_specializations (false);
   table.add_writables (global_namespace, partitions);
   table.find_dependencies ();
   // FIXME: Find reachable GMF entities from non-emitted pieces.  It'd

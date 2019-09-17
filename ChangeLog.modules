@@ -1,6 +1,12 @@
 2019-09-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (spec_tuple): Delete type.
+	(specialization_add): Adjust data type.
+	(depset::hash::add_specializations): Drop PARTITIONS parm. Adjust.
+	(module_state::write): Adjust.
+
+	gcc/cp/
 	* cp-tree.h (check_mergeable_specialization): Declare.
 	(match_mergeable_specialization): Add DECL_P parm, drop INSERT_P parm.
 	* module.cc (trees_in::tree_value): Adjust
