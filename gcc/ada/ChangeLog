@@ -1,3 +1,10 @@
+2019-09-17  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* make_util.ads (On_Windows): Move...
+	* osint.ads (On_Windows): There.
+	* osint.adb (OS_Time_To_GNAT_Time): If odd incremented on
+	Windows before conversion to Time_Stamp_Type.
+
 2019-09-17  Yannick Moy  <moy@adacore.com>
 
 	* sem_spark.adb (Check_Declaration): Do not check the assignment
