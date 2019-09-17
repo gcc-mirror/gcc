@@ -1,3 +1,11 @@
+2019-09-17  Bob Duff  <duff@adacore.com>
+
+	* exp_ch5.adb (Expand_Assign_Array_Loop_Or_Bitfield): Add tests
+	for potential volatile or independent components.
+	* libgnat/s-bituti.adb (Copy_Small_Bitfield,
+	Copy_Large_Bitfield): Move declarations to more appropriate
+	place.
+
 2019-09-13  Maciej W. Rozycki  <macro@wdc.com>
 
 	* make.adb (Scan_Make_Arg): Also accept `--sysroot=' for the 

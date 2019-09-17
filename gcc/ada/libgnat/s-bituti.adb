@@ -71,6 +71,29 @@ package body System.Bitfield_Utils is
       --  set to Src_Value. Src_Value must have high order bits (Size and
       --  above) zero. The result is returned as the function result.
 
+      procedure Copy_Small_Bitfield
+        (Src_Address  : Address;
+         Src_Offset   : Bit_Offset;
+         Dest_Address : Address;
+         Dest_Offset  : Bit_Offset;
+         Size         : Small_Size);
+      --  Copy_Bitfield in the case where Size <= Val'Size.
+      --  The Address values must be aligned as for Val and Val_2.
+      --  This works for overlapping bit fields.
+
+      procedure Copy_Large_Bitfield
+        (Src_Address  : Address;
+         Src_Offset   : Bit_Offset;
+         Dest_Address : Address;
+         Dest_Offset  : Bit_Offset;
+         Size         : Bit_Size);
+      --  Copy_Bitfield in the case where Size > Val'Size.
+      --  The Address values must be aligned as for Val and Val_2.
+      --  This works for overlapping bit fields only if the source
+      --  bit address is greater than or equal to the destination
+      --  bit address, because it copies forward (from lower to higher
+      --  bit addresses).
+
       function Get_Bitfield
         (Src : Val_2; Src_Offset : Bit_Offset; Size : Small_Size)
          return Val
@@ -114,29 +137,6 @@ package body System.Bitfield_Utils is
       begin
          return Result;
       end Set_Bitfield;
-
-      procedure Copy_Small_Bitfield
-        (Src_Address  : Address;
-         Src_Offset   : Bit_Offset;
-         Dest_Address : Address;
-         Dest_Offset  : Bit_Offset;
-         Size         : Small_Size);
-      --  Copy_Bitfield in the case where Size <= Val'Size.
-      --  The Address values must be aligned as for Val and Val_2.
-      --  This works for overlapping bit fields.
-
-      procedure Copy_Large_Bitfield
-        (Src_Address  : Address;
-         Src_Offset   : Bit_Offset;
-         Dest_Address : Address;
-         Dest_Offset  : Bit_Offset;
-         Size         : Bit_Size);
-      --  Copy_Bitfield in the case where Size > Val'Size.
-      --  The Address values must be aligned as for Val and Val_2.
-      --  This works for overlapping bit fields only if the source
-      --  bit address is greater than or equal to the destination
-      --  bit address, because it copies forward (from lower to higher
-      --  bit addresses).
 
       procedure Copy_Small_Bitfield
         (Src_Address  : Address;
