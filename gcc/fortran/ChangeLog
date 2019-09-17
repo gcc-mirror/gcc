@@ -1,3 +1,13 @@
+2019-09-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91588
+	* expr.c (check_inquiry): Remove extended component refs by
+	using symbol pointers. If a function argument is an associate
+	variable with a constant target, copy the target expression in
+	place of the argument expression. Check that the charlen is not
+	NULL before using the string length.
+	(gfc_check_assign): Remove extraneous space.
+
 2019-09-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91727
