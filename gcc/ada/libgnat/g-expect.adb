@@ -222,15 +222,17 @@ package body GNAT.Expect is
       Next_Filter    : Filter_List;
 
    begin
-      if Descriptor.Input_Fd /= Invalid_FD then
-         Close (Descriptor.Input_Fd);
-      end if;
+      Close_Input (Descriptor);
 
-      if Descriptor.Error_Fd /= Descriptor.Output_Fd then
+      if Descriptor.Error_Fd /= Descriptor.Output_Fd
+        and then Descriptor.Error_Fd /= Invalid_FD
+      then
          Close (Descriptor.Error_Fd);
       end if;
 
-      Close (Descriptor.Output_Fd);
+      if Descriptor.Output_Fd /= Invalid_FD then
+         Close (Descriptor.Output_Fd);
+      end if;
 
       --  ??? Should have timeouts for different signals
 
@@ -266,6 +268,27 @@ package body GNAT.Expect is
    begin
       Close (Descriptor, Status);
    end Close;
+
+   -----------------
+   -- Close_Input --
+   -----------------
+
+   procedure Close_Input (Pid : in out Process_Descriptor) is
+   begin
+      if Pid.Input_Fd /= Invalid_FD then
+         Close (Pid.Input_Fd);
+      end if;
+
+      if Pid.Output_Fd = Pid.Input_Fd then
+         Pid.Output_Fd := Invalid_FD;
+      end if;
+
+      if Pid.Error_Fd = Pid.Input_Fd then
+         Pid.Error_Fd := Invalid_FD;
+      end if;
+
+      Pid.Input_Fd := Invalid_FD;
+   end Close_Input;
 
    ------------
    -- Expect --
@@ -667,8 +690,7 @@ package body GNAT.Expect is
                   Result := Expect_Internal_Error;
 
                   if D /= 0 then
-                     Close (Descriptors (D).Input_Fd);
-                     Descriptors (D).Input_Fd := Invalid_FD;
+                     Close_Input (Descriptors (D).all);
                   end if;
 
                   return;
@@ -707,9 +729,9 @@ package body GNAT.Expect is
                         --  Error or End of file
 
                         if N <= 0 then
-                           Close (Descriptors (D).Input_Fd);
-                           Descriptors (D).Input_Fd := Invalid_FD;
+                           Close_Input (Descriptors (D).all);
                            Result := Expect_Process_Died;
+
                            return;
 
                         else
@@ -931,8 +953,7 @@ package body GNAT.Expect is
          Send (Process, Input);
       end if;
 
-      Close (Process.Input_Fd);
-      Process.Input_Fd := Invalid_FD;
+      Close_Input (Process);
 
       declare
          Result : Expect_Match;

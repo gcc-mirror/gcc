@@ -1,3 +1,7 @@
+2019-09-17  Vadim Godunko  <godunko@adacore.com>
+
+	* gnat.dg/expect3.adb: New testcase.
+
 2019-09-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/predicate13.adb, gnat.dg/predicate13.ads: New

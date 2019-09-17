@@ -93,9 +93,7 @@ package body GNAT.Expect.TTY is
          --  signal, so this needs to be done while the file descriptors are
          --  still open (it used to be after the closes and that was wrong).
 
-         if Descriptor.Input_Fd /= Invalid_FD then
-            Close (Descriptor.Input_Fd);
-         end if;
+         Close_Input (Descriptor);
 
          if Descriptor.Error_Fd /= Descriptor.Output_Fd
            and then Descriptor.Error_Fd /= Invalid_FD
