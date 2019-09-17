@@ -1408,23 +1408,15 @@ package body Exp_Ch5 is
               Expressions => New_List (New_Copy_Tree (Right_Lo))),
           Attribute_Name => Name_Bit);
 
-      --  Compute the Size of the bitfield. ???We can't use Size here, because
-      --  it doesn't work properly for slices of packed arrays, so we compute
-      --  the L'Size as L'Length*L'Component_Size.
-      --
+      --  Compute the Size of the bitfield
+
       --  Note that the length check has already been done, so we can use the
       --  size of either L or R.
 
       Size : constant Node_Id :=
-        Make_Op_Multiply (Loc,
-          Make_Attribute_Reference (Loc,
-            Prefix =>
-              Duplicate_Subexpr (Name (N), True),
-            Attribute_Name => Name_Length),
-          Make_Attribute_Reference (Loc,
-            Prefix =>
-              Duplicate_Subexpr (Name (N), True),
-            Attribute_Name => Name_Component_Size));
+        Make_Attribute_Reference (Loc,
+          Prefix         => Duplicate_Subexpr (Name (N), True),
+          Attribute_Name => Name_Size);
 
    begin
       return Make_Procedure_Call_Statement (Loc,

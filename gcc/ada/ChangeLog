@@ -1,3 +1,12 @@
+2019-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Expand_Size_Attribute): Chain the special cases
+	on the back-end path and rewrite the attribute appled to slices
+	of bit-packed arrays into the product of the Length and the
+	Compoent_Size attributes of the slices.
+	* exp_ch5.adb (Expand_Assign_Array_Bitfield): Use Size attribute
+	directly to compute the bitfield's size.
+
 2019-09-17  Bob Duff  <duff@adacore.com>
 
 	* exp_ch5.adb (Expand_Assign_Array_Loop_Or_Bitfield): Add tests
