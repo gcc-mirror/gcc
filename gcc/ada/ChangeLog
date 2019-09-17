@@ -1,3 +1,12 @@
+2019-09-17  Bob Duff  <duff@adacore.com>
+
+	* libgnat/s-bituti.adb (Get_Val_2, Set_Val_2): Use new routines
+	for getting and setting a Val_2, avoiding touching the second
+	half when that half might not exist.
+	* exp_ch5.adb (Expand_Assign_Array_Loop_Or_Bitfield): Correct
+	tests for potential volatile or independent components. In
+	particular, do not call Prefix unless we know it's a slice.
+
 2019-09-17  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* gsocket.h: Include sys/un.h.
