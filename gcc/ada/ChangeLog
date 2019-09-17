@@ -1,3 +1,8 @@
+2019-09-17  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Complete_Private_Subtype): Propagate attributes
+	Has_Attributes and Predicate_Function to the cloned subtype.
+
 2019-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem.adb (Do_Analyze): Save Style_Check_Max_Line_Length on
