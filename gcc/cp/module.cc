@@ -2734,14 +2734,15 @@ enum merge_kind
   MK_named,  /* Found by CTX, NAME + maybe_arg types.  */
   MK_spec,   /* Found by PRIMARY, SPECS.  */
   MK_clone,  /* Found by CLONED, PREV.  */
-  MK_enum,   /* Found by CTX, 1stMemberNAME.  */
+  MK_linkage, /* Found by tdef name.  */
+  MK_enum,   /* Found by CTX, & 1stMemberNAME.  */
   // FIXME: It's possible there are other merge key kinds --
   // namespace-scope anonymous unions keyed to the injected reference?
   // (maybe those must be static?)
   MK_none
 };
 static char const *const merge_kind_name[] =
-  {"named", "specialization", "clone", "enum"};
+  {"named", "specialization", "clone", "linkage", "enum"};
 
 /* Tree stream reader.  Note that reading a stream doesn't mark the
    read trees with TREE_VISITED.  Thus it's quite safe to have
@@ -7829,23 +7830,30 @@ trees_in::tree_value (walk_kind walk)
 				     &container, &key, &fn_args, &r_type,
 				     &parm_tag);
 
-      if (mk == MK_none)
-	goto bail;
-
-      if (mk == MK_spec)
+      switch (mk)
 	{
+	default:
+	  goto bail;
+
+	case MK_clone:
+	  DECL_CONTEXT (res) = FROB_CONTEXT (container);
+	  break;
+
+	case MK_named:
+	  /* A named decl.  */
+	  DECL_NAME (res) = key;
+	  /* FALLTHROUGH.  */
+
+	case MK_enum:
+	case MK_linkage:
+	  DECL_CONTEXT (res) = FROB_CONTEXT (container);
+	  break;
+
+	case MK_spec:
 	  /* A specialization of some kind.  */
 	  DECL_NAME (res) = DECL_NAME (container);
 	  DECL_CONTEXT (res) = DECL_CONTEXT (container);
-	}
-      else if (mk == MK_clone)
-	DECL_CONTEXT (res) = FROB_CONTEXT (container);
-      else
-	{
-	  /* A named decl.  */
-	  if (mk == MK_named)
-	    DECL_NAME (res) = key;
-	  DECL_CONTEXT (res) = FROB_CONTEXT (container);
+	  break;
 	}
 
       if (inner_tag != 0)
@@ -7857,8 +7865,42 @@ trees_in::tree_value (walk_kind walk)
       const char *kind = "new";
       tree existing = NULL_TREE;
 
-      if (mk == MK_spec)
+      switch (mk)
 	{
+	default:
+	  if (is_mod && !(state->is_primary () || state->is_partition ()))
+	    /* This is a module-purview entity, and we're not loading part
+	       of the current module, so it must be unique.  */
+	    kind = "unique";
+	  else
+	    existing = match_mergeable_decl (res, container, key, is_mod,
+					     r_type, fn_args);
+	  break;
+
+	case MK_linkage:
+	  /* KEY will be the typedef.  We're its TREE_TYPE's TYPE_STUB_DECL.  */
+	  if (tree tdef_type = TREE_TYPE (key))
+	    existing = TYPE_STUB_DECL (tdef_type);
+	  break;
+
+	case MK_clone:
+	  kind = "clone";
+	  /* Our merging is the same as that of the thing we cloned.  */
+	  // FIXME: do we need to check skip_defns too?
+	  if (is_existing_mergeable (container))
+	    /* The existing clone will be the one following KEY.  */
+	    existing = DECL_CHAIN (key);
+	  else
+	    {
+	      /* Chain us in.  */
+	      gcc_checking_assert (!DECL_CHAIN (key));
+	      DECL_CHAIN (key) = res;
+	      if (inner != res)
+		DECL_CHAIN (DECL_TEMPLATE_RESULT (key)) = inner;
+	    }
+	  break;
+
+	case MK_spec:
 	  if (type)
 	    {
 	      existing = match_mergeable_specialization (type, container, key);
@@ -7885,31 +7927,8 @@ trees_in::tree_value (walk_kind walk)
 	    }
 	  else
 	    existing = match_mergeable_specialization (res, container, key);
+	  break;
 	}
-      else if (mk == MK_clone)
-	{
-	  kind = "clone";
-	  /* Our merging is the same as that of the thing we cloned.  */
-	  // FIXME: do we need to check skip_decls too?
-	  if (is_existing_mergeable (container))
-	    /* The existing clone will be the one following KEY.  */
-	    existing = DECL_CHAIN (key);
-	  else
-	    {
-	      /* Chain us in.  */
-	      gcc_checking_assert (!DECL_CHAIN (key));
-	      DECL_CHAIN (key) = res;
-	      if (inner != res)
-		DECL_CHAIN (DECL_TEMPLATE_RESULT (key)) = inner;
-	    }
-	}
-      else if (is_mod && !(state->is_primary () || state->is_partition ()))
-	/* This is a module-purview entity, and we're not loading part
-	   of the current module, so it must be unique.  */
-	kind = "unique";
-      else
-	existing = match_mergeable_decl (res, container, key, is_mod,
-					 r_type, fn_args);
 
       if (!register_mergeable (res, existing))
 	goto bail;
@@ -9098,11 +9117,15 @@ trees_out::key_mergeable (depset *dep)
   switch (dep->get_entity_kind ())
     {
     default:
-      if (DECL_IMPLICIT_TYPEDEF_P (decl) && TYPE_ANON_P (TREE_TYPE (decl)))
+      if (TREE_CODE (decl) == TYPE_DECL && IDENTIFIER_ANON_P (DECL_NAME (decl)))
 	{
-	  // FIXME: namespace-scope anon classes?
-	  gcc_checking_assert (TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE);
-	  mk = MK_enum;
+	  tree type = TREE_TYPE (decl);
+
+	  if (TYPE_NAME (type) != decl)
+	    /* Got a type name for linkage purposes.  */
+	    mk = MK_linkage;
+	  else if (TYPE_ANON_P (type))
+	    mk = MK_enum;
 	}
       break;
 
@@ -9118,13 +9141,13 @@ trees_out::key_mergeable (depset *dep)
   if (streaming_p ())
     {
       dump (dumper::MERGE)
-	&& dump ("Writing key for mergeable %s %C:%N",
+	&& dump ("Writing %s key for mergeable %s %C:%N", merge_kind_name[mk],
 		 dep->entity_kind_name (), TREE_CODE (decl), decl);
       u (mk);
     }
 
-  /* Always stream the context, even though it's only used to locate
-     named decls -- other decls will still refer to it, and we want it
+  /* Stream the context, even though it's only used to locate named
+     decls -- other decls will still refer to it, and we want it
      correctly canonicalized before we start emitting keys for this
      decl.  */
   tree_ctx (CP_DECL_CONTEXT (decl), true, decl);
@@ -9140,70 +9163,96 @@ trees_out::key_mergeable (depset *dep)
     fn_parms_init (inner);
 
   /* Now write the locating information. */
-  if (mk == MK_spec)
+  switch (mk)
     {
-      /* Specializations are located via their originating template,
-         and the set of template args they specialize.  */
-      depset *spec = dep;
-      if (!streaming_p ())
-	{
-	  /* When /determining/ mergeable ordering, there's an indirection.  */
-	  gcc_assert (spec->is_special ());
-	  spec = dep->deps[0];
-	}
+    default:
+      gcc_unreachable ();
 
-      tree tmpl, args;
-      gcc_assert (spec->is_special ());
-      spec_entry *entry = reinterpret_cast <spec_entry *> (spec->deps[0]);
-      tmpl = entry->tmpl;
-      args = entry->args;
+    case MK_clone:
+      {
+	/* Clones are located by the thing they clone.  We also use their
+	   predecessor entity, to force their ordering.  */
+	tree target = get_clone_target (decl);
+	tree predecessor = target;
+	tree clone = NULL_TREE;
+	FOR_EVERY_CLONE (clone, target)
+	  {
+	    if (clone == decl)
+	      break;
+	    predecessor = clone;
+	  }
 
-      tree_ctx (tmpl, false, NULL_TREE);
-      tree_node (args);
-    }
-  else if (mk == MK_clone)
-    {
-      /* Clones are located by the thing they clone.  We also use their
-	 predecessor entity, to force their ordering.  */
-      tree target = get_clone_target (decl);
-      tree predecessor = target;
-      tree clone = NULL_TREE;
-      FOR_EVERY_CLONE (clone, target)
-	{
-	  if (clone == decl)
-	    break;
-	  predecessor = clone;
-	}
+	gcc_assert (clone);
+	tree_ctx (target, false, NULL_TREE);
+	tree_node (predecessor);
+      }
+      break;
 
-      gcc_assert (clone);
-      tree_ctx (target, false, NULL_TREE);
-      tree_node (predecessor);
-    }
-  else if (mk == MK_enum)
-    {
-      tree name = NULL_TREE;
-      if (tree values = TYPE_VALUES (TREE_TYPE (decl)))
-	name = DECL_NAME (TREE_VALUE (values));
-      tree_node (name);
-    }
-  else
-    {
-      /* Regular decls are located by their context, name, and
-	 additional disambiguating data.  */
-      tree_node (DECL_NAME (decl));
+    case MK_enum:
+      /* Anonymous enums are located by their first identifier.  */
+      {
+	gcc_checking_assert (UNSCOPED_ENUM_P (TREE_TYPE (decl)));
+	tree name = NULL_TREE;
+	if (tree values = TYPE_VALUES (TREE_TYPE (decl)))
+	  name = DECL_NAME (TREE_VALUE (values));
+	tree_node (name);
+      }
+      break;
 
-      if (TREE_CODE (inner) == FUNCTION_DECL)
-	{
-	  /* Functions are distinguished by parameter types.  */
-	  tree fn_type = TREE_TYPE (inner);
-	  fn_arg_types (TYPE_ARG_TYPES (fn_type));
+    case MK_linkage:
+      {
+	/* Anonymous types with a typedef name for linkage purposes
+	   are located by that typedef.  */
+	tree namer = TYPE_NAME (TREE_TYPE (decl));
 
-	  if (decl != inner)
-	    /* And a function template needs the return type.  */
-	    // FIXME: What if the return type is a voldemort?  We
-	    // should be using the declared return type.
-	    tree_node (TREE_TYPE (fn_type));
-	}
+	gcc_checking_assert (!IDENTIFIER_ANON_P (DECL_NAME (namer)));
+	tree_node (namer);
+      }
+      break;
+
+    case MK_named:
+      {
+	/* Regular decls are located by their context, name, and
+	   additional disambiguating data.  */
+	tree_node (DECL_NAME (decl));
+
+	if (TREE_CODE (inner) == FUNCTION_DECL)
+	  {
+	    /* Functions are distinguished by parameter types.  */
+	    tree fn_type = TREE_TYPE (inner);
+	    fn_arg_types (TYPE_ARG_TYPES (fn_type));
+
+	    if (decl != inner)
+	      /* And a function template needs the return type.  */
+	      // FIXME: What if the return type is a voldemort?  We
+	      // should be using the declared return type.
+	      tree_node (TREE_TYPE (fn_type));
+	  }
+      }
+      break;
+
+    case MK_spec:
+      {
+	/* Specializations are located via their originating template,
+	   and the set of template args they specialize.  */
+	depset *spec = dep;
+	if (!streaming_p ())
+	  {
+	    /* When /determining/ mergeable ordering, there's an indirection.  */
+	    gcc_assert (spec->is_special ());
+	    spec = dep->deps[0];
+	  }
+
+	tree tmpl, args;
+	gcc_assert (spec->is_special ());
+	spec_entry *entry = reinterpret_cast <spec_entry *> (spec->deps[0]);
+	tmpl = entry->tmpl;
+	args = entry->args;
+
+	tree_ctx (tmpl, false, NULL_TREE);
+	tree_node (args);
+      }
+      break;
     }
 
   return mk;
@@ -9237,8 +9286,9 @@ trees_in::key_mergeable (tree decl, tree inner, tree,
     *parm_tag = fn_parms_init (inner);
 
   /* Now read the locating information. */
-  if (mk == MK_named || mk == MK_enum)
+  switch (mk)
     {
+    default:
       *container = ctx;
       *key = tree_node ();
 
@@ -9248,11 +9298,13 @@ trees_in::key_mergeable (tree decl, tree inner, tree,
 	  if (decl != inner)
 	    *r_type = tree_node ();
 	}
-    }
-  else
-    {
+      break;
+
+    case MK_clone:
+    case MK_spec:
       *container = tree_node ();
       *key = tree_node ();
+      break;
     }
 
   return get_overrun () ? MK_none : mk;

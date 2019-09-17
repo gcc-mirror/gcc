@@ -3924,9 +3924,8 @@ match_mergeable_decl (tree decl, tree ctx, tree name, bool partition,
   if (tree match = check_mergeable_decl (decl, *gslot, ret, args))
     return match;
 
-  /* If DECL is an unnamed enum, we'll be pushing it into the slot for
-     its first member.  Remember to fix that up!  */
-  add_mergeable_decl (gslot, decl);
+  if (DECL_NAME (decl))
+    add_mergeable_decl (gslot, decl);
 
   return NULL_TREE;
 }

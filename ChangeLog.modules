@@ -1,3 +1,17 @@
+2019-09-16  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (enum merge_kind): Add MK_linkage.
+	(merge_kind_name): ... and here.
+	(trees_in::tree_value): Add it.
+	(trees_{in,out}::key_mergeable): Use it.
+	* name-lookup.c (match_mergeable_decl): Don't add anon-enum.
+	gcc/testsuite/
+	* g++.dg/modules/builtin-1_a.C: Adjust scan.
+	* g++.dg/modules/indirect-[234]_b.C: Likewise.
+	* g++.dg/modules/inst-[23]_a.C: Likewise.
+	* g++.dg/modules/tdef-6_[ab].[HC]: New.
+
 2019-09-15  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
