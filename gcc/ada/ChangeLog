@@ -1,3 +1,7 @@
+2019-09-17  Tom Tromey  <tromey@adacore.com>
+
+	* exp_dbug.ads: Update character type comment.
+
 2019-09-17  Yannick Moy  <moy@adacore.com>
 
 	* libgnat/s-arit64.adb (Double_Divide): Simplify needlessly
