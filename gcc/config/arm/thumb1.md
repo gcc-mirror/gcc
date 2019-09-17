@@ -1944,7 +1944,7 @@
   "TARGET_THUMB1"
   "mov\\t%|pc, %0"
   [(set_attr "length" "2")
-   (set_attr "type" "no_insn")]
+   (set_attr "type" "branch")]
 )
 
 (define_insn_and_split "thumb_eh_return"
