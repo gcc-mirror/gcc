@@ -3396,8 +3396,11 @@ adding a switch to ``gnatbind``, as:
 
       $ gnatbind -u0 file
 
-With this option, at each task termination, its stack usage is  output on
+With this option, at each task termination, its stack usage is output on
 :file:`stderr`.
+Note that this switch is not compatible with tools like
+Valgrind and DrMemory; they will report errors.
+
 It is not always convenient to output the stack usage when the program
 is still running. Hence, it is possible to delay this output until program
 termination. for a given number of tasks specified as the argument of the
