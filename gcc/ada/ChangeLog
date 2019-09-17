@@ -1,3 +1,21 @@
+2019-09-17  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.ads (Needs_BIP_Task_Actuals): New subprogram.
+	* exp_ch6.adb (Add_Task_Actuals_To_Build_In_Place_Call): Code
+	cleanup.
+	(Check_Number_Of_Actuals): New subprogram.
+	(Make_Build_In_Place_Call_In_Allocator): Adding assertion.
+	(Make_Build_In_Place_Call_In_Anonymous_Context): Adding
+	assertion.
+	(Make_Build_In_Place_Call_In_Assignment): Adding assertion.
+	(Make_Build_In_Place_Call_In_Object_Declaration): Code cleanup
+	plus assertion addition.
+	(Needs_BIP_Task_Actuals): New subprogram.
+	* sem_ch6.adb (Create_Extra_Formals): Rely on
+	Needs_BIP_Task_Actuals() to check if the master of the tasks to
+	be created, and the caller's activation chain formals are
+	needed.
+
 2019-09-17  Bob Duff  <duff@adacore.com>
 
 	* libgnat/s-bituti.adb (Get_Val_2, Set_Val_2): Use new routines
