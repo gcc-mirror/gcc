@@ -1,3 +1,10 @@
+2019-09-17  Claire Dross  <dross@adacore.com>
+
+	* sem_spark.adb (Get_Observed_Or_Borrowed_Expr): If the
+	definition of a local borrower contains calls to traversal
+	functions, the borrowed expression is the first parameter of the
+	first traversal function call in the definition.
+
 2019-09-17  Ed Falis  <falis@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_pragmas.rst: Remove
