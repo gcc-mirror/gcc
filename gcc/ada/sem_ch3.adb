@@ -13750,6 +13750,7 @@ package body Sem_Ch3 is
    begin
       Set_Etype             (T_Sub, Corr_Rec);
       Set_Has_Discriminants (T_Sub, Has_Discriminants (Prot_Subt));
+      Set_Is_Tagged_Type    (T_Sub, Is_Tagged_Type (Corr_Rec));
       Set_Is_Constrained    (T_Sub, True);
       Set_First_Entity      (T_Sub, First_Entity (Corr_Rec));
       Set_Last_Entity       (T_Sub, Last_Entity  (Corr_Rec));
