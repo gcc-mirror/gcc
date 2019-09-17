@@ -12509,6 +12509,18 @@ package body Sem_Ch3 is
          --  Show Full is simply a renaming of Full_Base
 
          Set_Cloned_Subtype (Full, Full_Base);
+
+         --  Propagate predicates
+
+         if Has_Predicates (Full_Base) then
+            Set_Has_Predicates (Full);
+
+            if Present (Predicate_Function (Full_Base))
+              and then No (Predicate_Function (Full))
+            then
+               Set_Predicate_Function (Full, Predicate_Function (Full_Base));
+            end if;
+         end if;
       end if;
 
       --  It is unsafe to share the bounds of a scalar type, because the Itype
