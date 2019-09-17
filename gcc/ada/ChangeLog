@@ -1,5 +1,9 @@
 2019-09-17  Arnaud Charlet  <charlet@adacore.com>
 
+	* adaint.c (_REENTRANT, _THREAD_SAFE): Only define if needed.
+
+2019-09-17  Arnaud Charlet  <charlet@adacore.com>
+
 	* libgnat/s-bitfie.ads (Val_Bits, Val_Bytes): Define from
 	Long_Long_Integer'Size.
 
