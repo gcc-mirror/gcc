@@ -2270,8 +2270,9 @@ private:
     DB_UNREACHED_BIT,		/* A yet-to-be reached entity.  */
     DB_HIDDEN_BIT,		/* A hidden binding.  */
     DB_MERGEABLE_BIT,		/* An entity that needs merging.  */
-    DB_PSEUDO_SPEC_BIT		/* A non-specialization
+    DB_PSEUDO_SPEC_BIT,		/* A non-specialization
 				   specialization.  */
+    DB_TYPE_SPEC_BIT,		/* Specialization from the type hash.  */
   };
 
 public:
@@ -2379,6 +2380,10 @@ public:
   bool is_pseudo_spec () const
   {
     return get_flag_bit<DB_PSEUDO_SPEC_BIT> ();
+  }
+  bool is_type_spec () const
+  {
+    return get_flag_bit<DB_TYPE_SPEC_BIT> ();
   }
 
 public:
@@ -2732,7 +2737,8 @@ static char const *const walk_kind_name[] =
 enum merge_kind
 {
   MK_named,  /* Found by CTX, NAME + maybe_arg types.  */
-  MK_spec,   /* Found by PRIMARY, SPECS.  */
+  MK_decl_spec,   /* Found by PRIMARY, SPECS.  */
+  MK_type_spec,   /* Found by PRIMARY, SPECS.  */
   MK_clone,  /* Found by CLONED, PREV.  */
   MK_linkage, /* Found by tdef name.  */
   MK_enum,   /* Found by CTX, & 1stMemberNAME.  */
@@ -2742,7 +2748,8 @@ enum merge_kind
   MK_none
 };
 static char const *const merge_kind_name[] =
-  {"named", "specialization", "clone", "linkage", "enum"};
+  {"named", "decl specialization", "type specialization",
+   "clone", "linkage", "enum"};
 
 /* Tree stream reader.  Note that reading a stream doesn't mark the
    read trees with TREE_VISITED.  Thus it's quite safe to have
@@ -7849,7 +7856,8 @@ trees_in::tree_value (walk_kind walk)
 	  DECL_CONTEXT (res) = FROB_CONTEXT (container);
 	  break;
 
-	case MK_spec:
+	case MK_decl_spec:
+	case MK_type_spec:
 	  /* A specialization of some kind.  */
 	  DECL_NAME (res) = DECL_NAME (container);
 	  DECL_CONTEXT (res) = DECL_CONTEXT (container);
@@ -7900,35 +7908,33 @@ trees_in::tree_value (walk_kind walk)
 	    }
 	  break;
 
-	case MK_spec:
-	  if (type)
-	    {
-	      existing
-		= match_mergeable_specialization (false, container, key, type);
+	case MK_type_spec:
+	  existing
+	    = match_mergeable_specialization (false, container, key, type);
 
-	      if (existing)
+	  if (existing)
+	    {
+	      if (inner_tag != 0)
 		{
-		  if (inner_tag != 0)
-		    {
-		      /* This is a partial specialization, we need to get
-			 back to its TEMPLATE_DECL.  */
-		      for (tree partial
-			     = DECL_TEMPLATE_SPECIALIZATIONS (container);
-			   partial; partial = TREE_CHAIN (partial))
-			if (TREE_TYPE (partial) == existing)
-			  {
-			    existing = TREE_VALUE (partial);
-			    break;
-			  }
-		      gcc_assert (TREE_CODE (existing) == TEMPLATE_DECL);
-		    }
-		  else
-		    existing = TYPE_NAME (existing);
+		  /* This is a partial specialization, we need to get
+		     back to its TEMPLATE_DECL.  */
+		  for (tree partial
+			 = DECL_TEMPLATE_SPECIALIZATIONS (container);
+		       partial; partial = TREE_CHAIN (partial))
+		    if (TREE_TYPE (partial) == existing)
+		      {
+			existing = TREE_VALUE (partial);
+			break;
+		      }
+		  gcc_assert (TREE_CODE (existing) == TEMPLATE_DECL);
 		}
+	      else
+		existing = TYPE_NAME (existing);
 	    }
-	  else
-	    existing
-	      = match_mergeable_specialization (true, container, key, res);
+	  break;
+	  
+	case MK_decl_spec:
+	  existing = match_mergeable_specialization (true, container, key, res);
 	  break;
 	}
 
@@ -9136,7 +9142,7 @@ trees_out::key_mergeable (depset *dep)
       break;
 
     case depset::EK_SPECIALIZATION:
-      mk = MK_spec;
+      mk = dep->is_type_spec () ? MK_type_spec : MK_decl_spec;
       break;
     }
 
@@ -9233,7 +9239,8 @@ trees_out::key_mergeable (depset *dep)
       }
       break;
 
-    case MK_spec:
+    case MK_decl_spec:
+    case MK_type_spec:
       {
 	/* Specializations are located via their originating template,
 	   and the set of template args they specialize.  */
@@ -9245,14 +9252,11 @@ trees_out::key_mergeable (depset *dep)
 	    spec = dep->deps[0];
 	  }
 
-	tree tmpl, args;
 	gcc_assert (spec->is_special ());
 	spec_entry *entry = reinterpret_cast <spec_entry *> (spec->deps[0]);
-	tmpl = entry->tmpl;
-	args = entry->args;
 
-	tree_ctx (tmpl, false, NULL_TREE);
-	tree_node (args);
+	tree_ctx (entry->tmpl, false, NULL_TREE);
+	tree_node (entry->args);
       }
       break;
     }
@@ -9303,7 +9307,8 @@ trees_in::key_mergeable (tree decl, tree inner, tree,
       break;
 
     case MK_clone:
-    case MK_spec:
+    case MK_decl_spec:
+    case MK_type_spec:
       *container = tree_node ();
       *key = tree_node ();
       break;
@@ -10935,6 +10940,8 @@ depset::hash::add_specializations (bool decl_p)
 	    dep->set_flag_bit<DB_UNREACHED_BIT> ();
 	  if (is_partial)
 	    add_partial_redirect (dep);
+	  if (!decl_p)
+	    dep->set_flag_bit<DB_TYPE_SPEC_BIT> ();
 	}
     }
   data.release ();

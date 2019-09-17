@@ -17,6 +17,6 @@ namespace bar
 
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo::TPL@bar:1<0x1>'\n(  \[.\]=clone (declaration|definition) '::hidey[^\n]* '\n)*  \[.*\]=specialization declaration '::foo::TPL@bar:1<0x1>::frob<#unnamed#>'\n  \[.*\]=specialization declaration '::foo::TPL@bar:1<0x1>::TPL<0x1>'} module } }
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo::TPL@bar:1<0x1>::frob@bar:1<0x2>'} module } }
-// { dg-final { scan-lang-dump {Writing specialization key for mergeable specialization type_decl:'::foo::TPL@bar:1<0x1>'} module } }
+// { dg-final { scan-lang-dump {Writing type specialization key for mergeable specialization type_decl:'::foo::TPL@bar:1<0x1>'} module } }
 // { dg-final { scan-lang-dump {Inserted:-1 horcrux:0@0 for '::foo::TPL@bar:1<0x1>'} module } }
-// { dg-final { scan-lang-dump {Writing specialization key for mergeable specialization function_decl:'::foo::TPL@bar:1<0x1>::frob@bar:1<0x2>'} module } }
+// { dg-final { scan-lang-dump {Writing decl specialization key for mergeable specialization function_decl:'::foo::TPL@bar:1<0x1>::frob@bar:1<0x2>'} module } }

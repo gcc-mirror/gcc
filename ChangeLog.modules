@@ -1,6 +1,18 @@
 2019-09-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::DB_TYPE_SPEC_BIT): New.
+	(depset::is_type_spec): New.
+	(enum merge_kind): Replace MK_spec with MK_decl_spec, MK_type_spec.
+	(merge_kind_name): Update.
+	(trees_in::tree_value): Partition MK_spec handling.
+	(trees_{in,out}::key_mergeable): Likewise.
+	(depset::hash::add_specialization): Set DB_TYPE_SPEC_BIT.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-[234]_b.C: Update lang dump scans.
+	* g++.dg/modules/inst-[234]_[ab].C: Update lang dump scans.
+
+	gcc/cp/
 	* module.cc (spec_tuple): Delete type.
 	(specialization_add): Adjust data type.
 	(depset::hash::add_specializations): Drop PARTITIONS parm. Adjust.
