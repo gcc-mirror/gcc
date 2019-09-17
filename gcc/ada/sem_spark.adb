@@ -1419,12 +1419,12 @@ package body Sem_SPARK is
       Target     : constant Entity_Id := Defining_Identifier (Decl);
       Target_Typ : constant Node_Id := Etype (Target);
       Expr       : Node_Id;
-      Dummy      : Boolean := True;
+      Legal      : Boolean := True;
 
    begin
       --  Start with legality rules not related to permissions
 
-      Check_Declaration_Legality (Decl, Force => True, Legal => Dummy);
+      Check_Declaration_Legality (Decl, Force => True, Legal => Legal);
 
       --  Now check permission-related legality rules
 
@@ -1432,7 +1432,7 @@ package body Sem_SPARK is
          when N_Full_Type_Declaration =>
             null;
 
-            --  ??? What about component declarations with defaults.
+         --  ??? What about component declarations with defaults.
 
          when N_Subtype_Declaration =>
             Check_Expression (Subtype_Indication (Decl), Read);
@@ -1440,10 +1440,14 @@ package body Sem_SPARK is
          when N_Object_Declaration =>
             Expr := Expression (Decl);
 
-            if Present (Expr) then
+            if Legal and then Present (Expr) then
                Check_Assignment (Target => Target,
                                  Expr   => Expr);
             end if;
+
+            --  Always add variable to the current permission environment,
+            --  even in the illegal case, as the rest of the analysis expects
+            --  to find it.
 
             if Is_Deep (Target_Typ) then
                declare

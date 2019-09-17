@@ -1,3 +1,8 @@
+2019-09-17  Yannick Moy  <moy@adacore.com>
+
+	* sem_spark.adb (Check_Declaration): Do not check the assignment
+	from an illegal declaration.
+
 2019-09-17  Bob Duff  <duff@adacore.com>
 
 	* doc/gnat_ugn/gnat_and_program_execution.rst: Clarify
