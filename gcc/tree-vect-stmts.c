@@ -9169,7 +9169,9 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
        || alignment_support_scheme == dr_explicit_realign)
       && !compute_in_loop)
     {
-      msq = vect_setup_realignment (first_stmt_info, gsi, &realignment_token,
+      msq = vect_setup_realignment (first_stmt_info_for_drptr
+				    ? first_stmt_info_for_drptr
+				    : first_stmt_info, gsi, &realignment_token,
 				    alignment_support_scheme, NULL_TREE,
 				    &at_loop);
       if (alignment_support_scheme == dr_explicit_realign_optimized)
