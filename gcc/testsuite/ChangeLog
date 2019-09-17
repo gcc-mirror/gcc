@@ -1,5 +1,9 @@
 2019-09-17  Yannick Moy  <moy@adacore.com>
 
+	* gnat.dg/fixedpnt7.adb: New testcase.
+
+2019-09-17  Yannick Moy  <moy@adacore.com>
+
 	* gnat.dg/multfixed.adb: New testcase.
 
 2019-09-17  Vadim Godunko  <godunko@adacore.com>

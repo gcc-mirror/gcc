@@ -147,13 +147,31 @@ package body System.Arith_64 is
          Raise_Error;
       end if;
 
+      --  Set final signs (RM 4.5.5(27-30))
+
+      Den_Pos := (Y < 0) = (Z < 0);
+
       --  Compute Y * Z. Note that if the result overflows 64 bits unsigned,
-      --  then the rounded result is clearly zero (since the dividend is at
-      --  most 2**63 - 1, the extra bit of precision is nice here).
+      --  then the rounded result is zero, except for the very special case
+      --  where X = -2**63 and abs(Y*Z) = 2**64, when Round is True.
 
       if Yhi /= 0 then
          if Zhi /= 0 then
-            Q := 0;
+
+            --  Handle the special case when Round is True
+
+            if Yhi = 1
+              and then Zhi = 1
+              and then Ylo = 0
+              and then Zlo = 0
+              and then X = Int64'First
+              and then Round
+            then
+               Q := (if Den_Pos then -1 else 1);
+            else
+               Q := 0;
+            end if;
+
             R := X;
             return;
          else
@@ -168,16 +186,25 @@ package body System.Arith_64 is
       T2 := T2 + Hi (T1);
 
       if Hi (T2) /= 0 then
-         Q := 0;
+
+         --  Handle the special case when Round is True
+
+         if Hi (T2) = 1
+           and then Lo (T2) = 0
+           and then Lo (T1) = 0
+           and then X = Int64'First
+           and then Round
+         then
+            Q := (if Den_Pos then -1 else 1);
+         else
+            Q := 0;
+         end if;
+
          R := X;
          return;
       end if;
 
       Du := Lo (T2) & Lo (T1);
-
-      --  Set final signs (RM 4.5.5(27-30))
-
-      Den_Pos := (Y < 0) = (Z < 0);
 
       --  Check overflow case of largest negative number divided by -1
 
