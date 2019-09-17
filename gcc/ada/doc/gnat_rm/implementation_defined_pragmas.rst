@@ -4049,22 +4049,6 @@ Note that in Ada 2005 mode, this pragma is part of the language. It is
 available in all earlier versions of Ada as an implementation-defined
 pragma.
 
-Pragma No_Run_Time
-==================
-
-Syntax:
-
-
-.. code-block:: ada
-
-  pragma No_Run_Time;
-
-
-This is an obsolete configuration pragma that historically was used to
-set up a runtime library with no object code. It is now used only for
-internal testing. The pragma has been superseded by the reconfigurable
-runtime capability of GNAT.
-
 Pragma No_Strict_Aliasing
 =========================
 
