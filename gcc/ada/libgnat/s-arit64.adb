@@ -204,9 +204,13 @@ package body System.Arith_64 is
 
       --  Case of dividend (X) sign negative
 
+      --  We perform the unary minus operation on the unsigned value
+      --  before conversion to signed, to avoid a possible overflow for
+      --  value -2**63, both for computing R and Q.
+
       else
-         R := -To_Int (Ru);
-         Q := (if Den_Pos then -To_Int (Qu) else To_Int (Qu));
+         R := To_Int (-Ru);
+         Q := (if Den_Pos then To_Int (-Qu) else To_Int (Qu));
       end if;
    end Double_Divide;
 
