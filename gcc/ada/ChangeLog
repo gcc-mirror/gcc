@@ -1,3 +1,10 @@
+2019-09-17  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Clarify
+	documentation.
+	* gnat_ugn.texi: Regenerate.
+	* libgnat/s-stausa.ads: Clarify comments.
+
 2019-09-17  Steve Baird  <baird@adacore.com>
 
 	* sem_util.adb (Wrong_Type): In deciding to suppress a message,
