@@ -11804,6 +11804,23 @@ aarch64_sched_issue_rate (void)
   return aarch64_tune_params.issue_rate;
 }
 
+/* Implement TARGET_SCHED_VARIABLE_ISSUE.  */
+static int
+aarch64_sched_variable_issue (FILE *, int, rtx_insn *insn, int more)
+{
+  if (DEBUG_INSN_P (insn))
+    return more;
+
+  rtx_code code = GET_CODE (PATTERN (insn));
+  if (code == USE || code == CLOBBER)
+    return more;
+
+  if (get_attr_type (insn) == TYPE_NO_INSN)
+    return more;
+
+  return more - 1;
+}
+
 static int
 aarch64_sched_first_cycle_multipass_dfa_lookahead (void)
 {
@@ -20583,6 +20600,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE aarch64_sched_issue_rate
+
+#undef TARGET_SCHED_VARIABLE_ISSUE
+#define TARGET_SCHED_VARIABLE_ISSUE aarch64_sched_variable_issue
 
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \

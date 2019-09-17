@@ -1,5 +1,13 @@
 2019-09-17  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_sched_variable_issue): New
+	function.
+	(TARGET_SCHED_VARIABLE_ISSUE): New macro.
+	* config/arm/arm.c (arm_sched_variable_issue): New function.
+	(TARGET_SCHED_VARIABLE_ISSUE): New macro.
+
+2019-09-17  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/arm/types.md (no_reservation): New reservation.
 	* config/aarch64/falkor.md (falkor_other_0_nothing): Don't handle
 	no_insn here.
