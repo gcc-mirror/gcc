@@ -1123,6 +1123,12 @@ DEFPARAM (PARAM_IPA_MAX_AA_STEPS,
 	  "parameter analysis based on alias analysis in any given function.",
 	  25000, 0, 0)
 
+DEFPARAM (PARAM_IPA_MAX_SWITCH_PREDICATE_BOUNDS,
+	  "ipa-max-switch-predicate-bounds",
+	  "Maximal number of boundary endpoints of case ranges of switch "
+	  "statement used during IPA functoin summary generation.",
+	  5, 0, 0)
+
 /* WHOPR partitioning configuration.  */
 
 DEFPARAM (PARAM_LTO_PARTITIONS,

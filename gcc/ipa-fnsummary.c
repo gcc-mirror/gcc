@@ -1269,13 +1269,21 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   if (!unmodified_parm_or_parm_agg_item (fbi, last, op, &index, &size, &aggpos))
     return;
 
+  auto_vec<std::pair<tree, tree> > ranges;
+  tree type = TREE_TYPE (op);
+  int bound_limit = PARAM_VALUE (PARAM_IPA_MAX_SWITCH_PREDICATE_BOUNDS);
+  int bound_count = 0;
+  wide_int vr_wmin, vr_wmax;
+  value_range_kind vr_type = get_range_info (op, &vr_wmin, &vr_wmax);
+
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
       e->aux = edge_predicate_pool.allocate ();
       *(predicate *) e->aux = false;
     }
+
   n = gimple_switch_num_labels (last);
-  for (case_idx = 0; case_idx < n; ++case_idx)
+  for (case_idx = 1; case_idx < n; ++case_idx)
     {
       tree cl = gimple_switch_label (last, case_idx);
       tree min, max;
@@ -1285,12 +1293,7 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
       min = CASE_LOW (cl);
       max = CASE_HIGH (cl);
 
-      /* For default we might want to construct predicate that none
-         of cases is met, but it is bit hard to do not having negations
-         of conditionals handy.  */
-      if (!min && !max)
-	p = true;
-      else if (!max)
+      if (!max)
 	p = add_condition (summary, index, size, &aggpos, EQ_EXPR,
 			   unshare_expr_without_location (min));
       else
@@ -1304,7 +1307,113 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 	}
       *(class predicate *) e->aux
 	= p.or_with (summary->conds, *(class predicate *) e->aux);
+
+      /* If there are too many disjoint case ranges, predicate for default
+	 case might become too complicated.  So add a limit here.  */
+      if (bound_count > bound_limit)
+	continue;
+
+      bool new_range = true;
+
+      if (!ranges.is_empty ())
+	{
+	  wide_int curr_wmin = wi::to_wide (min);
+	  wide_int last_wmax = wi::to_wide (ranges.last ().second);
+
+	  /* Merge case ranges if they are continuous.  */
+	  if (curr_wmin == last_wmax + 1)
+	    new_range = false;
+	  else if (vr_type == VR_ANTI_RANGE)
+	    {
+	      /* If two disjoint case ranges can be connected by anti-range
+		 of switch index, combine them to one range.  */
+	      if (wi::lt_p (vr_wmax, curr_wmin - 1, TYPE_SIGN (type)))
+		vr_type = VR_UNDEFINED;
+	      else if (wi::le_p (vr_wmin, last_wmax + 1, TYPE_SIGN (type)))
+		new_range = false;
+	    }
+	}
+
+      if (!max)
+	max = min;
+
+      /* Create/extend a case range.  And we count endpoints of range set,
+	 this number nearly equals to number of conditions that we will create
+	 for predicate of default case.  */
+      if (new_range)
+	{
+	  bound_count += (min == max) ? 1 : 2;
+	  ranges.safe_push (std::make_pair (min, max));
+	}
+      else
+	{
+	  bound_count += (ranges.last ().first == ranges.last ().second);
+	  ranges.last ().second = max;
+	}
     }
+
+  e = gimple_switch_edge (cfun, last, 0);
+  if (bound_count > bound_limit)
+    {
+      *(class predicate *) e->aux = true;
+      return;
+    }
+
+  predicate p_seg = true;
+  predicate p_all = false;
+
+  if (vr_type != VR_RANGE)
+    {
+      vr_wmin = wi::to_wide (TYPE_MIN_VALUE (type));
+      vr_wmax = wi::to_wide (TYPE_MAX_VALUE (type));
+    }
+
+  /* Construct predicate to represent default range set that is negation of
+     all case ranges.  Case range is classified as containing single/non-single
+     values.  Suppose a piece of case ranges in the following.
+
+                [D1...D2]  [S1] ... [Sn]  [D3...D4]
+
+     To represent default case's range sets between two non-single value
+     case ranges (From D2 to D3), we construct predicate as:
+
+              D2 < x < D3 && x != S1 && ... && x != Sn
+   */
+  for (size_t i = 0; i < ranges.length (); i++)
+    {
+      tree min = ranges[i].first;
+      tree max = ranges[i].second;
+
+      if (min == max)
+	p_seg &= add_condition (summary, index, size, &aggpos, NE_EXPR,
+				unshare_expr_without_location (min));
+      else
+	{
+	  /* Do not create sub-predicate for range that is beyond low bound
+	     of switch index.  */
+	  if (wi::lt_p (vr_wmin, wi::to_wide (min), TYPE_SIGN (type)))
+	    {
+	      p_seg &= add_condition (summary, index, size, &aggpos, LT_EXPR,
+				      unshare_expr_without_location (min));
+	      p_all = p_all.or_with (summary->conds, p_seg);
+	    }
+
+	  /* Do not create sub-predicate for range that is beyond up bound
+	     of switch index.  */
+	  if (wi::le_p (vr_wmax, wi::to_wide (max), TYPE_SIGN (type)))
+	    {
+	      p_seg = false;
+	      break;
+	    }
+
+	  p_seg = add_condition (summary, index, size, &aggpos, GT_EXPR,
+				 unshare_expr_without_location (max));
+	}
+    }
+
+  p_all = p_all.or_with (summary->conds, p_seg);
+  *(class predicate *) e->aux
+    = p_all.or_with (summary->conds, *(class predicate *) e->aux);
 }
 
 
