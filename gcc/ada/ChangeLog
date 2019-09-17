@@ -1,3 +1,8 @@
+2019-09-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-bitfie.ads (Val_Bits, Val_Bytes): Define from
+	Long_Long_Integer'Size.
+
 2019-09-17  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch6.ads (Needs_BIP_Task_Actuals): New subprogram.
