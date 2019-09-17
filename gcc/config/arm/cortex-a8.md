@@ -90,7 +90,7 @@
                         adc_imm,adcs_imm,adc_reg,adcs_reg,\
                         adr,bfm,clz,rbit,rev,alu_dsp_reg,\
                         shift_imm,shift_reg,\
-                        multiple,no_insn"))
+                        multiple"))
   "cortex_a8_default")
 
 (define_insn_reservation "cortex_a8_alu_shift" 2
