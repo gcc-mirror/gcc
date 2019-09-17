@@ -1681,6 +1681,12 @@ package body Inline is
       elsif not In_Extended_Main_Code_Unit (Id) then
          return False;
 
+      --  Do not inline dispatching operations, as only their static calls
+      --  can be analyzed in context, and not their dispatching calls.
+
+      elsif Is_Dispatching_Operation (Id) then
+         return False;
+
       --  Do not inline subprograms marked No_Return, possibly used for
       --  signaling errors, which GNATprove handles specially.
 
