@@ -1,3 +1,12 @@
+2019-09-17  Vadim Godunko  <godunko@adacore.com>
+
+	* libgnat/g-expect.ads, libgnat/g-expect.adb (Close_Input): New
+	subprogram.
+	(Get_Command_Output): Call Close_Input to close input stream.
+	(Expect_Internal): Likewise.
+	(Close): Likewise.
+	* libgnat/g-exptty.adb (Close): Likewise.
+
 2019-09-17  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_util.ads, sem_util.adb (Is_Attribute_Old): New utility
