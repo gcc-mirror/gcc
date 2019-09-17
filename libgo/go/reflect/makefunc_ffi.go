@@ -15,19 +15,20 @@ func makeFuncFFI(cif unsafe.Pointer, impl unsafe.Pointer)
 // The makeCIF function, implemented in the runtime package, allocates a CIF.
 func makeCIF(ft *funcType) unsafe.Pointer
 
-// FFICallbackGo implements the Go side of the libffi callback.
-// It is exported so that C code can call it.
+// Export ffiCallbackGo so that C code in makefunc_ffi_c.c can call it.
+//go:linkname ffiCallbackGo
+
+// ffiCallbackGo implements the Go side of the libffi callback.
 //
 // The call chain arriving here looks like
 //   some_go_caller
 //   ->some_ffi_internals
 //     ->ffi_callback (in C)
-//       ->FFICallbackGo
+//       ->ffiCallbackGo
 //
 // The ffi_callback handles __go_makefunc_can_recover, and
 // then passes off the data as received from ffi here.
-
-func FFICallbackGo(results unsafe.Pointer, params unsafe.Pointer, impl *makeFuncImpl) {
+func ffiCallbackGo(results unsafe.Pointer, params unsafe.Pointer, impl *makeFuncImpl) {
 	ftyp := impl.typ
 	in := make([]Value, 0, len(ftyp.in))
 	ap := params
