@@ -11937,6 +11937,12 @@ not spend too much time analyzing huge functions, it gives up and
 consider all memory clobbered after examining
 @option{ipa-max-aa-steps} statements modifying memory.
 
+@item ipa-max-switch-predicate-bounds
+Maximal number of boundary endpoints of case ranges of switch statement.
+For switch exceeding this limit, IPA-CP will not construct cloning cost
+predicate, which is used to estimate cloning benefit, for default case
+of the switch statement.
+
 @item lto-partitions
 Specify desired number of partitions produced during WHOPR compilation.
 The number of partitions should exceed the number of CPUs used for compilation.

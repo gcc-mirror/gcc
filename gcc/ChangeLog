@@ -1,3 +1,12 @@
+2019-09-17  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/91089
+	* doc/invoke.texi (ipa-max-switch-predicate-bounds): Document new
+	option.
+	* params.def (PARAM_IPA_MAX_SWITCH_PREDICATE_BOUNDS): New.
+	* ipa-fnsummary.c (set_switch_stmt_execution_predicate): Add predicate
+	for switch default case using range analysis information.
+
 2019-09-17  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR target/91749
