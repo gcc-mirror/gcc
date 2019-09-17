@@ -56,6 +56,9 @@ package Osint is
    --  File descriptor for current library info, list, tree, C, H, or binder
    --  output. Only one of these is open at a time, so we need only one FD.
 
+   On_Windows : constant Boolean := Directory_Separator = '\';
+   --  True when on Windows
+
    procedure Initialize;
    --  Initialize internal tables
 

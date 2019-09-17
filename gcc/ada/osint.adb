@@ -88,6 +88,10 @@ package body Osint is
    function OS_Time_To_GNAT_Time (T : OS_Time) return Time_Stamp_Type;
    --  Convert OS format time to GNAT format time stamp. If T is Invalid_Time,
    --  then returns Empty_Time_Stamp.
+   --  Round to even seconds on Windows before conversion.
+   --  Windows ALI files had timestamps rounded to even seconds historically.
+   --  The rounding was originally done in GM_Split. Now that GM_Split no
+   --  longer does it, we are rounding it here only for ALI files.
 
    function Executable_Prefix return String_Ptr;
    --  Returns the name of the root directory where the executable is stored.
@@ -2179,6 +2183,7 @@ package body Osint is
    function OS_Time_To_GNAT_Time (T : OS_Time) return Time_Stamp_Type is
       GNAT_Time : Time_Stamp_Type;
 
+      TI : Long_Integer := To_C (T);
       Y  : Year_Type;
       Mo : Month_Type;
       D  : Day_Type;
@@ -2191,7 +2196,17 @@ package body Osint is
          return Empty_Time_Stamp;
       end if;
 
-      GM_Split (T, Y, Mo, D, H, Mn, S);
+      if On_Windows and then TI mod 2 > 0 then
+         --  Windows ALI files had timestamps rounded to even seconds
+         --  historically. The rounding was originally done in GM_Split.
+         --  Now that GM_Split no longer does it, we are rounding it here
+         --  only for ALI files.
+
+         TI := TI + 1;
+      end if;
+
+      GM_Split (To_Ada (TI), Y, Mo, D, H, Mn, S);
+
       Make_Time_Stamp
         (Year    => Nat (Y),
          Month   => Nat (Mo),
