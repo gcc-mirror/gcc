@@ -1,3 +1,8 @@
+2019-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem.adb (Do_Analyze): Save Style_Check_Max_Line_Length on
+	entry and restore it on exit instead of recomputing it.
+
 2019-09-17  Tom Tromey  <tromey@adacore.com>
 
 	* exp_dbug.ads: Update character type comment.
