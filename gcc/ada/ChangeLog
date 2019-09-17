@@ -1,5 +1,10 @@
 2019-09-17  Vadim Godunko  <godunko@adacore.com>
 
+	* libgnat/g-expect.adb (Expect_Internal): Try to call 'poll' few
+	times.
+
+2019-09-17  Vadim Godunko  <godunko@adacore.com>
+
 	* libgnat/g-expect.ads, libgnat/g-expect.adb (Close_Input): New
 	subprogram.
 	(Get_Command_Output): Call Close_Input to close input stream.

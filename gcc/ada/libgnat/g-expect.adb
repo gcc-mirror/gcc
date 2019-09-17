@@ -679,8 +679,17 @@ package body GNAT.Expect is
          --  Loop until we match or we have a timeout
 
          loop
-            Num_Descriptors :=
-              Poll (Fds'Address, Fds_Count, Timeout, D'Access, Is_Set'Address);
+            --  Poll may be interrupted on Linux by a signal and need to be
+            --  repeated. We don't want to check for errno = EINTER, so just
+            --  attempt to call Poll a few times.
+
+            for J in 1 .. 3 loop
+               Num_Descriptors :=
+                 Poll
+                   (Fds'Address, Fds_Count, Timeout, D'Access, Is_Set'Address);
+
+               exit when Num_Descriptors /= -1;
+            end loop;
 
             case Num_Descriptors is
 
