@@ -1,5 +1,10 @@
 2019-09-17  Javier Miranda  <miranda@adacore.com>
 
+	* sem_ch3.adb (Constrain_Corresponding_Record): Propagate
+	attribute Is_Tagged_Type.
+
+2019-09-17  Javier Miranda  <miranda@adacore.com>
+
 	* exp_ch3.adb (Build_Record_Init_Proc): Do not generate code to
 	adjust the tag component when the record is initialized with a
 	raise expression.
