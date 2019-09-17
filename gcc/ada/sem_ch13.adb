@@ -9383,7 +9383,7 @@ package body Sem_Ch13 is
               or else A_Id = Aspect_Priority
             then
                Push_Type (Ent);
-               Preanalyze (Freeze_Expr);
+               Preanalyze_Spec_Expression (Freeze_Expr, T);
                Pop_Type (Ent);
             else
                Preanalyze (Freeze_Expr);

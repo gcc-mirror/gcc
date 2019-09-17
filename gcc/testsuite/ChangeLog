@@ -1,3 +1,8 @@
+2019-09-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/predicate13.adb, gnat.dg/predicate13.ads: New
+	testcase.
+
 2019-09-17  Javier Miranda  <miranda@adacore.com>
 
 	* gnat.dg/limited4.adb: New testcase.
