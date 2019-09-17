@@ -1,5 +1,12 @@
 2019-09-17  Yannick Moy  <moy@adacore.com>
 
+	* libgnat/s-arit64.adb (Double_Divide): Simplify needlessly
+	complex computation. Fix comments.
+	(Scaled_Divide): Fix comments. Explain why implementation does
+	not suffer from bugs in Algorithm D from 2nd Edition of TAOCP.
+
+2019-09-17  Yannick Moy  <moy@adacore.com>
+
 	* libgnat/s-arit64.adb (Scaled_Divide): Add protection against
 	undesirable wrap-around.
 

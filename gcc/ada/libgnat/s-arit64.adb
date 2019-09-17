@@ -161,7 +161,7 @@ package body System.Arith_64 is
          end if;
 
       else
-         T2 := (if Zhi /= 0 then Ylo * Zhi else 0);
+         T2 := Ylo * Zhi;
       end if;
 
       T1 := Ylo * Zlo;
@@ -179,7 +179,7 @@ package body System.Arith_64 is
 
       Den_Pos := (Y < 0) = (Z < 0);
 
-      --  Check overflow case of largest negative number divided by 1
+      --  Check overflow case of largest negative number divided by -1
 
       if X = Int64'First and then Du = 1 and then not Den_Pos then
          Raise_Error;
@@ -404,15 +404,16 @@ package body System.Arith_64 is
             Ru := T2 rem Zlo;
          end if;
 
-      --  If divisor is double digit and too large, raise error
+      --  If divisor is double digit and dividend is too large, raise error
 
       elsif (D (1) & D (2)) >= Zu then
          Raise_Error;
 
       --  This is the complex case where we definitely have a double digit
       --  divisor and a dividend of at least three digits. We use the classical
-      --  multiple division algorithm (see section (4.3.1) of Knuth's "The Art
-      --  of Computer Programming", Vol. 2 for a description (algorithm D).
+      --  multiple-precision division algorithm (see section (4.3.1) of Knuth's
+      --  "The Art of Computer Programming", Vol. 2 for a description
+      --  (algorithm D).
 
       else
          --  First normalize the divisor so that it has the leading bit on.
@@ -450,7 +451,7 @@ package body System.Arith_64 is
 
          --  Note that when we scale up the dividend, it still fits in four
          --  digits, since we already tested for overflow, and scaling does
-         --  not change the invariant that (D (1) & D (2)) >= Zu.
+         --  not change the invariant that (D (1) & D (2)) < Zu.
 
          T1 := Shift_Left (D (1) & D (2), Scale);
          D (1) := Hi (T1);
@@ -484,6 +485,19 @@ package body System.Arith_64 is
             S1 := Hi (T1) + Hi (T2);
 
             --  Adjust quotient digit if it was too high
+
+            --  We use the version of the algorithm in the 2nd Edition of
+            --  "The Art of Computer Programming". This had a bug not
+            --  discovered till 1995, see Vol 2 errata:
+            --     http://www-cs-faculty.stanford.edu/~uno/err2-2e.ps.gz.
+            --  Under rare circumstances the expression in the test could
+            --  overflow. This version was further corrected in 2005, see
+            --  Vol 2 errata:
+            --     http://www-cs-faculty.stanford.edu/~uno/all2-pre.ps.gz.
+            --  This implementation is not impacted by these bugs, due to the
+            --  use of a word-size comparison done in function Le3 instead of
+            --  a comparison on two-word integer quantities in the original
+            --  algorithm.
 
             loop
                exit when Le3 (S1, S2, S3, D (J + 1), D (J + 2), D (J + 3));
