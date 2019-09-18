@@ -1,3 +1,16 @@
+2019-09-18  Yannick Moy  <moy@adacore.com>
+
+	* exp_dbug.adb (Append_Homonym_Number): Use new function
+	Get_Homonym_Number.
+	(Get_Homonym_Number): New function to return the homonym number.
+	(Qualify_Entity_Name): Remove special case for GNATprove.
+	* exp_dbug.ads (Get_Homonym_Number): Make the new function
+	public for use in GNATprove.
+	* frontend.adb (Frontend): Do not qualify names in GNATprove
+	mode.
+	* sem_util.adb (Unique_Name): Append homonym suffix where needed
+	for entities which have local homonyms in the same scope.
+
 2019-09-18  Nicolas Roche  <roche@adacore.com>
 
 	* libgnat/s-valrea.adb (Scan_Integral_Digits): New procedure.

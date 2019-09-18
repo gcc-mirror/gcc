@@ -492,7 +492,9 @@ begin
 
    --  Qualify all entity names in inner packages, package bodies, etc
 
-   Exp_Dbug.Qualify_All_Entity_Names;
+   if not GNATprove_Mode then
+      Exp_Dbug.Qualify_All_Entity_Names;
+   end if;
 
    --  SCIL backend requirement. Check that SCIL nodes associated with
    --  dispatching calls reference subprogram calls.

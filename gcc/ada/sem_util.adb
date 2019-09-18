@@ -33,6 +33,7 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Erroutc;  use Erroutc;
 with Exp_Ch11; use Exp_Ch11;
+with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
@@ -26154,14 +26155,45 @@ package body Sem_Util is
 
    function Unique_Name (E : Entity_Id) return String is
 
-      --  Names in E_Subprogram_Body or E_Package_Body entities are not
-      --  reliable, as they may not include the overloading suffix. Instead,
-      --  when looking for the name of E or one of its enclosing scope, we get
-      --  the name of the corresponding Unique_Entity.
+      --  Local subprograms
 
-      U : constant Entity_Id := Unique_Entity (E);
+      function Add_Homonym_Suffix (E : Entity_Id) return String;
 
       function This_Name return String;
+
+      ------------------------
+      -- Add_Homonym_Suffix --
+      ------------------------
+
+      function Add_Homonym_Suffix (E : Entity_Id) return String is
+
+         --  Names in E_Subprogram_Body or E_Package_Body entities are not
+         --  reliable, as they may not include the overloading suffix.
+         --  Instead, when looking for the name of E or one of its enclosing
+         --  scope, we get the name of the corresponding Unique_Entity.
+
+         U   : constant Entity_Id := Unique_Entity (E);
+         Nam : constant String := Get_Name_String (Chars (U));
+
+      begin
+         --  If E has homonyms but is not fully qualified, as done in
+         --  GNATprove mode, append the homonym number on the fly. Strip the
+         --  leading space character in the image of natural numbers. Also do
+         --  not print the homonym value of 1.
+
+         if Has_Homonym (U) then
+            declare
+               N : constant Nat := Get_Homonym_Number (U);
+               S : constant String := N'Img;
+            begin
+               if N > 1 then
+                  return Nam & "__" & S (2 .. S'Last);
+               end if;
+            end;
+         end if;
+
+         return Nam;
+      end Add_Homonym_Suffix;
 
       ---------------
       -- This_Name --
@@ -26169,8 +26201,12 @@ package body Sem_Util is
 
       function This_Name return String is
       begin
-         return Get_Name_String (Chars (U));
+         return Add_Homonym_Suffix (E);
       end This_Name;
+
+      --  Local variables
+
+      U : constant Entity_Id := Unique_Entity (E);
 
    --  Start of processing for Unique_Name
 
@@ -26201,16 +26237,17 @@ package body Sem_Util is
                end if;
 
             --  For intances of generic subprograms use the name of the related
-            --  instace and skip the scope of its wrapper package.
+            --  instance and skip the scope of its wrapper package.
 
             elsif Is_Wrapper_Package (S) then
                pragma Assert (Scope (S) = Scope (Related_Instance (S)));
                --  Wrapper package and the instantiation are in the same scope
 
                declare
+                  Related_Name : constant String :=
+                    Add_Homonym_Suffix (Related_Instance (S));
                   Enclosing_Name : constant String :=
-                    Unique_Name (Scope (S)) & "__" &
-                      Get_Name_String (Chars (Related_Instance (S)));
+                    Unique_Name (Scope (S)) & "__" & Related_Name;
 
                begin
                   if Is_Subprogram (U)
