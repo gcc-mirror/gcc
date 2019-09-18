@@ -1,3 +1,15 @@
+2019-09-18  Claire Dross  <dross@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Call routine from
+	Exp_Util to know the value of the Constrained attribute in the
+	static case.
+	* exp_spark.adb (Expand_SPARK_N_Attribute_Reference): Make
+	implicit dereferences inside the Constrained attribute explicit.
+	* exp_util.ads, exp_util.adb
+	(Attribute_Constrained_Static_Value): New routine to compute the
+	value of a statically known reference to the Constrained
+	attribute.
+
 2019-09-18  Vadim Godunko  <godunko@adacore.com>
 
 	* libgnat/g-expect.adb (Expect_Internal): Don't include invalid
