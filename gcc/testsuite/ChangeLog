@@ -1,3 +1,7 @@
+2019-09-18  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/system_info1.adb: New testcase.
+
 2019-09-18  Bob Duff  <duff@adacore.com>
 
 	* gnat.dg/containers1.adb, gnat.dg/containers1.ads: New

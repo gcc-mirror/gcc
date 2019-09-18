@@ -57,15 +57,16 @@ package System.Win32 is
    INVALID_HANDLE_VALUE : constant HANDLE := -1;
    INVALID_FILE_SIZE    : constant := 16#FFFFFFFF#;
 
-   type ULONG  is new Interfaces.C.unsigned_long;
-   type DWORD  is new Interfaces.C.unsigned_long;
-   type WORD   is new Interfaces.C.unsigned_short;
-   type BYTE   is new Interfaces.C.unsigned_char;
-   type LONG   is new Interfaces.C.long;
-   type CHAR   is new Interfaces.C.char;
-   type SIZE_T is new Interfaces.C.size_t;
+   type ULONG     is new Interfaces.C.unsigned_long;
+   type DWORD     is new Interfaces.C.unsigned_long;
+   type WORD      is new Interfaces.C.unsigned_short;
+   type BYTE      is new Interfaces.C.unsigned_char;
+   type LONG      is new Interfaces.C.long;
+   type CHAR      is new Interfaces.C.char;
+   type SIZE_T    is new Interfaces.C.size_t;
+   type DWORD_PTR is mod 2 ** Standard'Address_Size;
 
-   type BOOL   is new Interfaces.C.int;
+   type BOOL      is new Interfaces.C.int;
    for BOOL'Size use Interfaces.C.int'Size;
 
    type Bits1  is range 0 .. 2 ** 1 - 1;
@@ -265,7 +266,7 @@ package System.Win32 is
       dwPageSize                  : DWORD;
       lpMinimumApplicationAddress : PVOID;
       lpMaximumApplicationAddress : PVOID;
-      dwActiveProcessorMask       : DWORD;
+      dwActiveProcessorMask       : DWORD_PTR;
       dwNumberOfProcessors        : DWORD;
       dwProcessorType             : DWORD;
       dwAllocationGranularity     : DWORD;

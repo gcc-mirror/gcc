@@ -1,3 +1,9 @@
+2019-09-18  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/s-win32.ads (DWORD_PTR): New type, pointer size
+	unsigned int.
+	(SYSTEM_INFO): Use it for dwActiveProcessorMask.
+
 2019-09-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_pragmas.rst: Improve doc on
