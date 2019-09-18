@@ -1,3 +1,11 @@
+2019-09-18  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-cbhama.adb, libgnat/a-cbhase.adb,
+	libgnat/a-cbmutr.adb, libgnat/a-cborma.adb,
+	libgnat/a-cborse.adb, libgnat/a-cobove.adb (Copy): Avoid reading
+	the uninitialized variable C in the Checks = False case. Change
+	variable to be a constant.
+
 2019-09-18  Claire Dross  <dross@adacore.com>
 
 	* libgnat/a-cofuma.adb (Remove, Elements_Equal_Except,
