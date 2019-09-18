@@ -4278,7 +4278,8 @@ package body Sem_Eval is
       --  The NULL access value
 
       elsif Kind = N_Null then
-         pragma Assert (Is_Access_Type (Underlying_Type (Etype (N))));
+         pragma Assert (Is_Access_Type (Underlying_Type (Etype (N)))
+           or else Error_Posted (N));
          Val := Uint_0;
 
       --  Character literal
