@@ -1,3 +1,7 @@
+2019-09-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* varasm.c (assemble_real): Generate canonical const_ints.
+
 2019-09-18  Richard Biener  <rguenther@suse.de>
 
 	PR lto/91763
