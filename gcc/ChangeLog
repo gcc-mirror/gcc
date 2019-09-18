@@ -8,6 +8,16 @@
 
 2019-09-18  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/arm/arm.md (smulsi3_highpart): Use <US> and <SE> iterators.
+	(smulsi3_highpart_nov6): Remove pattern.
+	(smulsi3_highpart_v6): Likewise.
+	(umulsi3_highpart): Likewise.
+	(umulsi3_highpart_nov6): Likewise.
+	(umulsi3_highpart_v6): Likewise.
+	(<US>mull_high): Add new combined multiply pattern.
+
+2019-09-18  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/arm/arm.md (arm_mulsi3): Remove pattern.
 	(arm_mulsi3_v6): Likewise.
 	(mulsi3addsi_v6): Likewise.
