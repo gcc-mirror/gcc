@@ -1,5 +1,10 @@
 2019-09-18  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-ssa-ccp.c (get_value_for_expr): Check whether CONSTANTs
+	are INTEGER_CSTs.
+
+2019-09-18  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gimplify.c (gimplify_decl_expr): Use poly_int_tree_p instead
 	of checking specifically for INTEGER_CST.
 
