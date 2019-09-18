@@ -8221,6 +8221,32 @@ package body Exp_Ch4 is
             Insert_Actions      (N, Bodies,           Suppress => All_Checks);
             Analyze_And_Resolve (N, Standard_Boolean, Suppress => All_Checks);
          end if;
+
+      --  If unnesting, handle elementary types whose Equivalent_Types are
+      --  records because there may be padding or undefined fields.
+
+      elsif Unnest_Subprogram_Mode
+        and then Ekind_In (Typl, E_Class_Wide_Type,
+                                 E_Class_Wide_Subtype,
+                                 E_Access_Subprogram_Type,
+                                 E_Access_Protected_Subprogram_Type,
+                                 E_Anonymous_Access_Protected_Subprogram_Type,
+                                 E_Access_Subprogram_Type,
+                                 E_Exception_Type)
+        and then Present (Equivalent_Type (Typl))
+        and then Is_Record_Type (Equivalent_Type (Typl))
+      then
+         Typl := Equivalent_Type (Typl);
+         Remove_Side_Effects (Lhs);
+         Remove_Side_Effects (Rhs);
+         Rewrite (N,
+           Expand_Record_Equality (N, Typl,
+             Unchecked_Convert_To (Typl, Lhs),
+             Unchecked_Convert_To (Typl, Rhs),
+             Bodies));
+
+         Insert_Actions      (N, Bodies,           Suppress => All_Checks);
+         Analyze_And_Resolve (N, Standard_Boolean, Suppress => All_Checks);
       end if;
 
       --  Test if result is known at compile time
@@ -9497,10 +9523,21 @@ package body Exp_Ch4 is
       Typ : constant Entity_Id := Etype (Left_Opnd (N));
 
    begin
-      --  Case of elementary type with standard operator
+      --  Case of elementary type with standard operator.  But if
+      --  unnesting, handle elementary types whose Equivalent_Types are
+      --  records because there may be padding or undefined fields.
 
       if Is_Elementary_Type (Typ)
         and then Sloc (Entity (N)) = Standard_Location
+        and then not (Ekind_In (Typ, E_Class_Wide_Type,
+                                E_Class_Wide_Subtype,
+                                E_Access_Subprogram_Type,
+                                E_Access_Protected_Subprogram_Type,
+                                E_Anonymous_Access_Protected_Subprogram_Type,
+                                E_Access_Subprogram_Type,
+                                E_Exception_Type)
+                        and then Present (Equivalent_Type (Typ))
+                        and then Is_Record_Type (Equivalent_Type (Typ)))
       then
          Binary_Op_Validity_Checks (N);
 

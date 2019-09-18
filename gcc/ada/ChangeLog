@@ -1,3 +1,26 @@
+2019-09-18  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq): The frontend assumes that we can
+	do a bit-for-bit comparison of two access to protected
+	subprogram pointers. However, there are two reasons why we may
+	not be able to do that: (1) there may be padding bits for
+	alignment before the access to subprogram, and (2) the access to
+	subprogram itself may not be compared bit-for- bit because the
+	activation record part is undefined: two pointers are equal iff
+	the subprogram addresses are equal. This patch fixes it by
+	forcing a field-by-field comparison.
+	* bindgen.adb (Gen_Adainit): The type No_Param_Proc is defined
+	in the library as having Favor_Top_Level, but when we create an
+	object of that type in the binder file we don't have that
+	pragma, so the types are different. This patch fixes this issue.
+	* libgnarl/s-interr.adb, libgnarl/s-interr__hwint.adb,
+	libgnarl/s-interr__sigaction.adb, libgnarl/s-interr__vxworks.adb
+	(Is_Registered): This routine erroneously assumes that the
+	access to protected subprogram is two addresses. We need to
+	create the same record that the compiler makes to ensure that
+	any padding is the same. Then we have to look at just the first
+	word of the access to subprogram. This patch fixes this issue.
+
 2019-09-18  Bob Duff  <duff@adacore.com>
 
 	* exp_ch5.adb (Expand_Assign_Array_Loop_Or_Bitfield): The call
