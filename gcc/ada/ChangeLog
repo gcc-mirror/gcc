@@ -1,3 +1,22 @@
+2019-09-18  Steve Baird  <baird@adacore.com>
+
+	* sem_util.ads (Interval_Lists): A new visible package. This
+	package is visible because it is also intended for eventual use
+	in Sem_Eval.Subtypes_Statically_Compatible when that function is
+	someday upgraded to handle static predicates correctly.  This
+	new package doesn't really need to be visible for now, but it
+	still seems like a good idea.
+	* sem_util.adb (Gather_Components): Implement AI12-0086 via the
+	following strategy. The existing code knows how to take a static
+	discriminant value and identify the corresponding variant; in
+	the newly-permitted case of a non-static value of a static
+	subtype, we arbitrarily select a value of the subtype and find
+	the corresponding variant using the existing code. Subsequently,
+	we check that every other value of the discriminant's subtype
+	corresponds to the same variant; this is done using the newly
+	introduced Interval_Lists package.
+	(Interval_Lists): Provide a body for the new package.
+
 2019-09-18  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Op_Eq): The frontend assumes that we can
