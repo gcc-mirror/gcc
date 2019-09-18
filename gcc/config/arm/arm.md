@@ -1895,92 +1895,34 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_expand "smulsi3_highpart"
+(define_expand "<US>mulsi3_highpart"
   [(parallel
     [(set (match_operand:SI 0 "s_register_operand")
 	  (truncate:SI
 	   (lshiftrt:DI
 	    (mult:DI
-	     (sign_extend:DI (match_operand:SI 1 "s_register_operand"))
-	     (sign_extend:DI (match_operand:SI 2 "s_register_operand")))
+	     (SE:DI (match_operand:SI 1 "s_register_operand"))
+	     (SE:DI (match_operand:SI 2 "s_register_operand")))
 	    (const_int 32))))
      (clobber (match_scratch:SI 3 ""))])]
   "TARGET_32BIT"
   ""
 )
 
-(define_insn "*smulsi3_highpart_nov6"
-  [(set (match_operand:SI 0 "s_register_operand" "=&r,&r")
+(define_insn "*<US>mull_high"
+  [(set (match_operand:SI 0 "s_register_operand" "=r,&r,&r")
 	(truncate:SI
 	 (lshiftrt:DI
 	  (mult:DI
-	   (sign_extend:DI (match_operand:SI 1 "s_register_operand" "%0,r"))
-	   (sign_extend:DI (match_operand:SI 2 "s_register_operand" "r,r")))
+	   (SE:DI (match_operand:SI 1 "s_register_operand" "%r,0,r"))
+	   (SE:DI (match_operand:SI 2 "s_register_operand" "r,r,r")))
 	  (const_int 32))))
-   (clobber (match_scratch:SI 3 "=&r,&r"))]
-  "TARGET_32BIT && !arm_arch6"
-  "smull%?\\t%3, %0, %2, %1"
-  [(set_attr "type" "smull")
-   (set_attr "predicable" "yes")]
-)
-
-(define_insn "*smulsi3_highpart_v6"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(truncate:SI
-	 (lshiftrt:DI
-	  (mult:DI
-	   (sign_extend:DI (match_operand:SI 1 "s_register_operand" "r"))
-	   (sign_extend:DI (match_operand:SI 2 "s_register_operand" "r")))
-	  (const_int 32))))
-   (clobber (match_scratch:SI 3 "=r"))]
-  "TARGET_32BIT && arm_arch6"
-  "smull%?\\t%3, %0, %2, %1"
-  [(set_attr "type" "smull")
-   (set_attr "predicable" "yes")]
-)
-
-(define_expand "umulsi3_highpart"
-  [(parallel
-    [(set (match_operand:SI 0 "s_register_operand")
-	  (truncate:SI
-	   (lshiftrt:DI
-	    (mult:DI
-	     (zero_extend:DI (match_operand:SI 1 "s_register_operand"))
-	      (zero_extend:DI (match_operand:SI 2 "s_register_operand")))
-	    (const_int 32))))
-     (clobber (match_scratch:SI 3 ""))])]
+   (clobber (match_scratch:SI 3 "=r,&r,&r"))]
   "TARGET_32BIT"
-  ""
-)
-
-(define_insn "*umulsi3_highpart_nov6"
-  [(set (match_operand:SI 0 "s_register_operand" "=&r,&r")
-	(truncate:SI
-	 (lshiftrt:DI
-	  (mult:DI
-	   (zero_extend:DI (match_operand:SI 1 "s_register_operand" "%0,r"))
-	   (zero_extend:DI (match_operand:SI 2 "s_register_operand" "r,r")))
-	  (const_int 32))))
-   (clobber (match_scratch:SI 3 "=&r,&r"))]
-  "TARGET_32BIT && !arm_arch6"
-  "umull%?\\t%3, %0, %2, %1"
+  "<US>mull%?\\t%3, %0, %2, %1"
   [(set_attr "type" "umull")
-   (set_attr "predicable" "yes")]
-)
-
-(define_insn "*umulsi3_highpart_v6"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(truncate:SI
-	 (lshiftrt:DI
-	  (mult:DI
-	   (zero_extend:DI (match_operand:SI 1 "s_register_operand" "r"))
-	   (zero_extend:DI (match_operand:SI 2 "s_register_operand" "r")))
-	  (const_int 32))))
-   (clobber (match_scratch:SI 3 "=r"))]
-  "TARGET_32BIT && arm_arch6"
-  "umull%?\\t%3, %0, %2, %1"
-  [(set_attr "type" "umull")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "arch" "v6,nov6,nov6")]
 )
 
 (define_insn "mulhisi3"
