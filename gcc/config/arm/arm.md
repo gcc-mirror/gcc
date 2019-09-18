@@ -1755,144 +1755,80 @@
    (set_attr "type" "mlas")]
 )
 
-(define_expand "maddsidi4"
-  [(set (match_operand:DI 0 "s_register_operand")
-	(plus:DI
-	 (mult:DI
-	  (sign_extend:DI (match_operand:SI 1 "s_register_operand"))
-	  (sign_extend:DI (match_operand:SI 2 "s_register_operand")))
-	 (match_operand:DI 3 "s_register_operand")))]
-  "TARGET_32BIT"
-  "")
-
-(define_insn "*mulsidi3adddi"
-  [(set (match_operand:DI 0 "s_register_operand" "=&r")
-	(plus:DI
-	 (mult:DI
-	  (sign_extend:DI (match_operand:SI 2 "s_register_operand" "%r"))
-	  (sign_extend:DI (match_operand:SI 3 "s_register_operand" "r")))
-	 (match_operand:DI 1 "s_register_operand" "0")))]
-  "TARGET_32BIT && !arm_arch6"
-  "smlal%?\\t%Q0, %R0, %3, %2"
-  [(set_attr "type" "smlal")
-   (set_attr "predicable" "yes")]
-)
-
-(define_insn "*mulsidi3adddi_v6"
-  [(set (match_operand:DI 0 "s_register_operand" "=r")
-	(plus:DI
-	 (mult:DI
-	  (sign_extend:DI (match_operand:SI 2 "s_register_operand" "r"))
-	  (sign_extend:DI (match_operand:SI 3 "s_register_operand" "r")))
-	 (match_operand:DI 1 "s_register_operand" "0")))]
-  "TARGET_32BIT && arm_arch6"
-  "smlal%?\\t%Q0, %R0, %3, %2"
-  [(set_attr "type" "smlal")
-   (set_attr "predicable" "yes")]
-)
-
 ;; 32x32->64 widening multiply.
-;; As with mulsi3, the only difference between the v3-5 and v6+
-;; versions of these patterns is the requirement that the output not
-;; overlap the inputs, but that still means we have to have a named
-;; expander and two different starred insns.
+;; The only difference between the v3-5 and v6+ versions is the requirement
+;; that the output does not overlap with either input.
 
-(define_expand "mulsidi3"
+(define_expand "<Us>mulsidi3"
   [(set (match_operand:DI 0 "s_register_operand")
 	(mult:DI
-	 (sign_extend:DI (match_operand:SI 1 "s_register_operand"))
-	 (sign_extend:DI (match_operand:SI 2 "s_register_operand"))))]
+	 (SE:DI (match_operand:SI 1 "s_register_operand"))
+	 (SE:DI (match_operand:SI 2 "s_register_operand"))))]
   "TARGET_32BIT"
-  ""
+  {
+      emit_insn (gen_<US>mull (gen_lowpart (SImode, operands[0]),
+			       gen_highpart (SImode, operands[0]),
+			       operands[1], operands[2]));
+      DONE;
+  }
 )
 
-(define_insn "*mulsidi3_nov6"
-  [(set (match_operand:DI 0 "s_register_operand" "=&r")
-	(mult:DI
-	 (sign_extend:DI (match_operand:SI 1 "s_register_operand" "%r"))
-	 (sign_extend:DI (match_operand:SI 2 "s_register_operand" "r"))))]
-  "TARGET_32BIT && !arm_arch6"
-  "smull%?\\t%Q0, %R0, %1, %2"
-  [(set_attr "type" "smull")
-   (set_attr "predicable" "yes")]
-)
-
-(define_insn "*mulsidi3_v6"
-  [(set (match_operand:DI 0 "s_register_operand" "=r")
-	(mult:DI
-	 (sign_extend:DI (match_operand:SI 1 "s_register_operand" "r"))
-	 (sign_extend:DI (match_operand:SI 2 "s_register_operand" "r"))))]
-  "TARGET_32BIT && arm_arch6"
-  "smull%?\\t%Q0, %R0, %1, %2"
-  [(set_attr "type" "smull")
-   (set_attr "predicable" "yes")]
-)
-
-(define_expand "umulsidi3"
-  [(set (match_operand:DI 0 "s_register_operand")
-	(mult:DI
-	 (zero_extend:DI (match_operand:SI 1 "s_register_operand"))
-	 (zero_extend:DI (match_operand:SI 2 "s_register_operand"))))]
+(define_insn "<US>mull"
+  [(set (match_operand:SI 0 "s_register_operand" "=r,&r")
+	(mult:SI
+	 (match_operand:SI 2 "s_register_operand" "%r,r")
+	 (match_operand:SI 3 "s_register_operand" "r,r")))
+   (set (match_operand:SI 1 "s_register_operand" "=r,&r")
+	(truncate:SI
+	 (lshiftrt:DI
+	  (mult:DI (SE:DI (match_dup 2)) (SE:DI (match_dup 3)))
+	  (const_int 32))))]
   "TARGET_32BIT"
-  ""
-)
-
-(define_insn "*umulsidi3_nov6"
-  [(set (match_operand:DI 0 "s_register_operand" "=&r")
-	(mult:DI
-	 (zero_extend:DI (match_operand:SI 1 "s_register_operand" "%r"))
-	 (zero_extend:DI (match_operand:SI 2 "s_register_operand" "r"))))]
-  "TARGET_32BIT && !arm_arch6"
-  "umull%?\\t%Q0, %R0, %1, %2"
+  "<US>mull%?\\t%0, %1, %2, %3"
   [(set_attr "type" "umull")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "arch" "v6,nov6")]
 )
 
-(define_insn "*umulsidi3_v6"
-  [(set (match_operand:DI 0 "s_register_operand" "=r")
-	(mult:DI
-	 (zero_extend:DI (match_operand:SI 1 "s_register_operand" "r"))
-	 (zero_extend:DI (match_operand:SI 2 "s_register_operand" "r"))))]
-  "TARGET_32BIT && arm_arch6"
-  "umull%?\\t%Q0, %R0, %1, %2"
-  [(set_attr "type" "umull")
-   (set_attr "predicable" "yes")]
-)
-
-(define_expand "umaddsidi4"
+(define_expand "<Us>maddsidi4"
   [(set (match_operand:DI 0 "s_register_operand")
 	(plus:DI
 	 (mult:DI
-	  (zero_extend:DI (match_operand:SI 1 "s_register_operand"))
-	  (zero_extend:DI (match_operand:SI 2 "s_register_operand")))
+	  (SE:DI (match_operand:SI 1 "s_register_operand"))
+	  (SE:DI (match_operand:SI 2 "s_register_operand")))
 	 (match_operand:DI 3 "s_register_operand")))]
   "TARGET_32BIT"
-  "")
-
-(define_insn "*umulsidi3adddi"
-  [(set (match_operand:DI 0 "s_register_operand" "=&r")
-	(plus:DI
-	 (mult:DI
-	  (zero_extend:DI (match_operand:SI 2 "s_register_operand" "%r"))
-	  (zero_extend:DI (match_operand:SI 3 "s_register_operand" "r")))
-	 (match_operand:DI 1 "s_register_operand" "0")))]
-  "TARGET_32BIT && !arm_arch6"
-  "umlal%?\\t%Q0, %R0, %3, %2"
-  [(set_attr "type" "umlal")
-   (set_attr "predicable" "yes")]
+  {
+      emit_insn (gen_<US>mlal (gen_lowpart (SImode, operands[0]),
+			       gen_lowpart (SImode, operands[3]),
+			       gen_highpart (SImode, operands[0]),
+			       gen_highpart (SImode, operands[3]),
+			       operands[1], operands[2]));
+      DONE;
+  }
 )
 
-(define_insn "*umulsidi3adddi_v6"
-  [(set (match_operand:DI 0 "s_register_operand" "=r")
-	(plus:DI
-	 (mult:DI
-	  (zero_extend:DI (match_operand:SI 2 "s_register_operand" "r"))
-	  (zero_extend:DI (match_operand:SI 3 "s_register_operand" "r")))
-	 (match_operand:DI 1 "s_register_operand" "0")))]
-  "TARGET_32BIT && arm_arch6"
-  "umlal%?\\t%Q0, %R0, %3, %2"
+(define_insn "<US>mlal"
+  [(set (match_operand:SI 0 "s_register_operand" "=r,&r")
+	(plus:SI
+	 (mult:SI
+	  (SE:DI (match_operand:SI 4 "s_register_operand" "%r,r"))
+	  (SE:DI (match_operand:SI 5 "s_register_operand" "r,r")))
+	 (match_operand:SI 1 "s_register_operand" "0,0")))
+   (set (match_operand:SI 2 "s_register_operand" "=r,&r")
+	(plus:SI
+	 (truncate:SI
+	  (lshiftrt:DI
+	   (plus:DI
+	    (mult:DI (SE:DI (match_dup 4)) (SE:DI (match_dup 5)))
+	    (zero_extend:DI (match_dup 1)))
+	   (const_int 32)))
+	 (match_operand:SI 3 "s_register_operand" "2,2")))]
+  "TARGET_32BIT"
+  "<US>mlal%?\\t%0, %2, %4, %5"
   [(set_attr "type" "umlal")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "arch" "v6,nov6")]
 )
 
 (define_expand "<US>mulsi3_highpart"
