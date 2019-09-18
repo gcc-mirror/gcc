@@ -13,6 +13,20 @@
 
 2019-09-18  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	PR target/91738
+	* config/arm/arm.md (<logical_op>di3): Expand explicitly.
+	(one_cmpldi2): Likewise.
+	* config/arm/arm.c (const_ok_for_dimode_op): Return true if one
+	of the constant parts is simple.
+	* config/arm/iterators.md (LOGICAL): Add new code iterator.
+	(logical_op): Add new code attribute.
+	(logical_OP): Likewise.
+	* config/arm/predicates.md (arm_anddi_operand): Add predicate.
+	(arm_iordi_operand): Add predicate.
+	(arm_xordi_operand): Add predicate.
+
+2019-09-18  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/arm/arm.md (maddsidi4): Remove expander.
 	(mulsidi3adddi): Remove pattern.
 	(mulsidi3adddi_v6): Likewise.

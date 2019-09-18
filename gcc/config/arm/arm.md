@@ -2035,6 +2035,49 @@
   "")
 
 
+; Expand logical operations.  The mid-end expander does not split off memory
+; operands or complex immediates, which leads to fewer LDRD/STRD instructions.
+; So an explicit expander is needed to generate better code.
+
+(define_expand "<logical_op>di3"
+  [(set (match_operand:DI	  0 "s_register_operand")
+	(LOGICAL:DI (match_operand:DI 1 "s_register_operand")
+		    (match_operand:DI 2 "arm_<logical_op>di_operand")))]
+  "TARGET_32BIT"
+  {
+      rtx low  = simplify_gen_binary (<logical_OP>, SImode,
+				      gen_lowpart (SImode, operands[1]),
+				      gen_lowpart (SImode, operands[2]));
+      rtx high = simplify_gen_binary (<logical_OP>, SImode,
+				      gen_highpart (SImode, operands[1]),
+				      gen_highpart_mode (SImode, DImode,
+							 operands[2]));
+
+      emit_insn (gen_rtx_SET (gen_lowpart (SImode, operands[0]), low));
+      emit_insn (gen_rtx_SET (gen_highpart (SImode, operands[0]), high));
+      DONE;
+  }
+)
+
+(define_expand "one_cmpldi2"
+  [(set (match_operand:DI 0 "s_register_operand")
+	(not:DI (match_operand:DI 1 "s_register_operand")))]
+  "TARGET_32BIT"
+  {
+      rtx low  = simplify_gen_unary (NOT, SImode,
+				     gen_lowpart (SImode, operands[1]),
+				     SImode);
+      rtx high = simplify_gen_unary (NOT, SImode,
+				     gen_highpart_mode (SImode, DImode,
+							operands[1]),
+				     SImode);
+
+      emit_insn (gen_rtx_SET (gen_lowpart (SImode, operands[0]), low));
+      emit_insn (gen_rtx_SET (gen_highpart (SImode, operands[0]), high));
+      DONE;
+  }
+)
+
 ;; Split DImode and, ior, xor operations.  Simply perform the logical
 ;; operation on the upper and lower halves of the registers.
 ;; This is needed for atomic operations in arm_split_atomic_op.
