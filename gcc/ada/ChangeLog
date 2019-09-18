@@ -1,5 +1,13 @@
 2019-09-18  Arnaud Charlet  <charlet@adacore.com>
 
+	* doc/gnat_rm/implementation_defined_characteristics.rst,
+	doc/gnat_rm/implementation_defined_pragmas.rst,
+	doc/gnat_rm/implementation_of_specific_ada_features.rst: Remove
+	remaining references to VMS support
+	* gnat_rm.texi: Regenerate.
+
+2019-09-18  Arnaud Charlet  <charlet@adacore.com>
+
 	* libgnat/s-stausa.adb: Fix a typo
 
 2019-09-18  Bob Duff  <duff@adacore.com>

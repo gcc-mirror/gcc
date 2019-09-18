@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Sep 13, 2019
+GNAT Reference Manual , Sep 14, 2019
 
 AdaCore
 
@@ -4714,7 +4714,7 @@ Ada exceptions, or used to implement run-time functions such as the
 Pragma @code{Interrupt_State} provides a general mechanism for overriding
 such uses of interrupts.  It subsumes the functionality of pragma
 @code{Unreserve_All_Interrupts}.  Pragma @code{Interrupt_State} is not
-available on Windows or VMS.  On all other platforms than VxWorks,
+available on Windows.  On all other platforms than VxWorks,
 it applies to signals; on VxWorks, it applies to vectored hardware interrupts
 and may be used to mark interrupts required by the board support package
 as reserved.
@@ -9187,7 +9187,7 @@ asterisks is similar in effect to specifying @code{pragma Warnings (Off)} except
 @code{pragma Warnings (On, "***")} will be required. This can be
 helpful in avoiding forgetting to turn warnings back on.
 
-Note: the debug flag @code{-gnatd.i} (@code{/NOWARNINGS_PRAGMAS} in VMS) can be
+Note: the debug flag @code{-gnatd.i} can be
 used to cause the compiler to entirely ignore all WARNINGS pragmas. This can
 be useful in checking whether obsolete pragmas in existing programs are hiding
 real problems.
@@ -17249,9 +17249,8 @@ pragma @code{Import} specifies convention @code{stubbed} then no body need
 be present at all.  This convention is useful during development for the
 inclusion of subprograms whose body has not yet been written.
 In addition, all otherwise unrecognized convention names are also
-treated as being synonymous with convention C.  In all implementations
-except for VMS, use of such other names results in a warning.  In VMS
-implementations, these names are accepted silently.
+treated as being synonymous with convention C.  In all implementations,
+use of such other names results in a warning.
 
 @end multitable
 
@@ -26292,9 +26291,6 @@ is created in the shared memory directory.
 
 This is used to provide the required locking
 semantics for proper protected object synchronization.
-
-GNAT supports shared passive packages on all platforms
-except for OpenVMS.
 
 @node Code Generation for Array Aggregates,The Size of Discriminated Records with Default Discriminants,GNAT Implementation of Shared Passive Packages,Implementation of Specific Ada Features
 @anchor{gnat_rm/implementation_of_specific_ada_features code-generation-for-array-aggregates}@anchor{422}@anchor{gnat_rm/implementation_of_specific_ada_features id7}@anchor{423}
