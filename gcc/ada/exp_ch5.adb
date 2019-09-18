@@ -1411,12 +1411,21 @@ package body Exp_Ch5 is
       --  Compute the Size of the bitfield
 
       --  Note that the length check has already been done, so we can use the
-      --  size of either L or R.
+      --  size of either L or R; they are equal. We can't use 'Size here,
+      --  because sometimes bit fields get copied into a temp, and the 'Size
+      --  ends up being the size of the temp (e.g. an 8-bit temp containing
+      --  a 4-bit bit field).
 
       Size : constant Node_Id :=
-        Make_Attribute_Reference (Loc,
-          Prefix         => Duplicate_Subexpr (Name (N), True),
-          Attribute_Name => Name_Size);
+        Make_Op_Multiply (Loc,
+          Make_Attribute_Reference (Loc,
+            Prefix =>
+              Duplicate_Subexpr (Name (N), True),
+            Attribute_Name => Name_Length),
+          Make_Attribute_Reference (Loc,
+            Prefix =>
+              Duplicate_Subexpr (Name (N), True),
+            Attribute_Name => Name_Component_Size));
 
    begin
       return Make_Procedure_Call_Statement (Loc,
@@ -1466,10 +1475,7 @@ package body Exp_Ch5 is
       --  optimization in that case as well.  We could complicate this code by
       --  actually looking for such volatile and independent components.
 
-      --  Note that Expand_Assign_Array_Bitfield is disabled for now.
-
-      if False and then -- ???
-        RTE_Available (RE_Copy_Bitfield)
+      if RTE_Available (RE_Copy_Bitfield)
         and then Is_Bit_Packed_Array (L_Type)
         and then Is_Bit_Packed_Array (R_Type)
         and then not Reverse_Storage_Order (L_Type)
