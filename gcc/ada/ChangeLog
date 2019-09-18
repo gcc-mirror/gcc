@@ -1,3 +1,9 @@
+2019-09-18  Steve Baird  <baird@adacore.com>
+
+	* sem_eval.adb (Expr_Value): Do not fail "the type of a null
+	literal must be an access type" assertion if errors have already
+	been posted on the given node.
+
 2019-09-18  Piotr Trojanek  <trojanek@adacore.com>
 
 	* exp_dbug.ads, exp_dbug.adb (Get_Homonym_Number): Refine type
