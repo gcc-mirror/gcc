@@ -2,7 +2,6 @@
    Test that they are NOT pedantic warnings.  */
 /* { dg-do compile } */
 /* { dg-options "-pedantic-errors -std=c99" } */
-/* { dg-skip-if "No Inf support" { spu-*-* } } */
 #include <math.h>
 
 #ifndef INFINITY

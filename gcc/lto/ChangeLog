@@ -1,3 +1,15 @@
+2019-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR lto/91763
+	* lto.c (lto_materialize_function): Initialize EH by looking
+	at the function personality and flag_exceptions setting.
+
+2019-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91283
+	* lto-lang.c (lto_post_options): Set flag_excess_precision instead of
+	flag_excess_precision_cmdline.  Remove comment.
+
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/91421

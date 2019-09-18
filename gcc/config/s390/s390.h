@@ -453,22 +453,6 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
   0, 0, 0, 0,					\
   0, 0, 0, 0 }
 
-#define CALL_USED_REGISTERS			\
-{ 1, 1, 1, 1,					\
-  1, 1, 0, 0,					\
-  0, 0, 0, 0,					\
-  0, 1, 1, 1,					\
-  1, 1, 1, 1,					\
-  1, 1, 1, 1,					\
-  1, 1, 1, 1,					\
-  1, 1, 1, 1,					\
-  1, 1, 1, 1,					\
-  1, 1,						\
-  1, 1, 1, 1,					\
-  1, 1, 1, 1,					\
-  1, 1, 1, 1,					\
-  1, 1, 1, 1 }
-
 #define CALL_REALLY_USED_REGISTERS		\
 { 1, 1, 1, 1,	/* r0 - r15 */			\
   1, 1, 0, 0,					\

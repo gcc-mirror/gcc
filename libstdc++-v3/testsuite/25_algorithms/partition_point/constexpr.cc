@@ -21,12 +21,6 @@
 #include <algorithm>
 #include <array>
 
-#ifndef __cpp_lib_constexpr_algorithms
-# error "Feature-test macro for constexpr algorithms missing"
-#elif __cpp_lib_constexpr_algorithms < 201711L
-# error "Feature-test macro for constexpr algorithms has wrong value"
-#endif
-
 constexpr std::array<int, 12> caeo{{0, 2, 4, 6, 8, 10, 1, 3, 5, 7, 9, 11}};
 
 constexpr bool

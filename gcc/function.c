@@ -2122,7 +2122,7 @@ aggregate_value_p (const_tree exp, const_tree fntype)
   regno = REGNO (reg);
   nregs = hard_regno_nregs (regno, TYPE_MODE (type));
   for (i = 0; i < nregs; i++)
-    if (! call_used_regs[regno + i])
+    if (! call_used_or_fixed_reg_p (regno + i))
       return 1;
 
   return 0;
@@ -2443,8 +2443,7 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
   /* If the parm is to be passed as a transparent union or record, use the
      type of the first field for the tests below.  We have already verified
      that the modes are the same.  */
-  if ((TREE_CODE (data->arg.type) == UNION_TYPE
-       || TREE_CODE (data->arg.type) == RECORD_TYPE)
+  if (RECORD_OR_UNION_TYPE_P (data->arg.type)
       && TYPE_TRANSPARENT_AGGR (data->arg.type))
     data->arg.type = TREE_TYPE (first_field (data->arg.type));
 
@@ -2807,8 +2806,10 @@ assign_parm_adjust_stack_rtl (struct assign_parm_data_one *data)
      stack slot, if we need one.  */
   if (stack_parm
       && ((GET_MODE_ALIGNMENT (data->nominal_mode) > MEM_ALIGN (stack_parm)
-	   && targetm.slow_unaligned_access (data->nominal_mode,
-					     MEM_ALIGN (stack_parm)))
+	   && ((optab_handler (movmisalign_optab, data->nominal_mode)
+		!= CODE_FOR_nothing)
+	       || targetm.slow_unaligned_access (data->nominal_mode,
+						 MEM_ALIGN (stack_parm))))
 	  || (data->nominal_type
 	      && TYPE_ALIGN (data->nominal_type) > MEM_ALIGN (stack_parm)
 	      && MEM_ALIGN (stack_parm) < PREFERRED_STACK_BOUNDARY)))
@@ -3226,8 +3227,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	  for (insn = insns; insn && moved; insn = NEXT_INSN (insn))
 	    {
 	      if (INSN_P (insn))
-		note_stores (PATTERN (insn), record_hard_reg_sets,
-			     &hardregs);
+		note_stores (insn, record_hard_reg_sets, &hardregs);
 	      if (!hard_reg_set_empty_p (hardregs))
 		moved = false;
 	    }
@@ -3461,11 +3461,20 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
 	  int align = STACK_SLOT_ALIGNMENT (data->arg.type,
 					    GET_MODE (data->entry_parm),
 					    TYPE_ALIGN (data->arg.type));
+	  if (align < (int)GET_MODE_ALIGNMENT (GET_MODE (data->entry_parm))
+	      && ((optab_handler (movmisalign_optab,
+				  GET_MODE (data->entry_parm))
+		   != CODE_FOR_nothing)
+		  || targetm.slow_unaligned_access (GET_MODE (data->entry_parm),
+						    align)))
+	    align = GET_MODE_ALIGNMENT (GET_MODE (data->entry_parm));
 	  data->stack_parm
 	    = assign_stack_local (GET_MODE (data->entry_parm),
 				  GET_MODE_SIZE (GET_MODE (data->entry_parm)),
 				  align);
+	  align = MEM_ALIGN (data->stack_parm);
 	  set_mem_attributes (data->stack_parm, parm, 1);
+	  set_mem_align (data->stack_parm, align);
 	}
 
       dest = validize_mem (copy_rtx (data->stack_parm));

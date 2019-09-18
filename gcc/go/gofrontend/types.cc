@@ -1138,6 +1138,7 @@ Type::get_backend_placeholder(Gogo* gogo)
 	// A Go function type is a pointer to a struct type.
 	Location loc = this->function_type()->location();
 	bt = gogo->backend()->placeholder_pointer_type("", loc, false);
+	Type::placeholder_pointers.push_back(this);
       }
       break;
 
@@ -1145,8 +1146,7 @@ Type::get_backend_placeholder(Gogo* gogo)
       {
 	Location loc = Linemap::unknown_location();
 	bt = gogo->backend()->placeholder_pointer_type("", loc, false);
-	Pointer_type* pt = this->convert<Pointer_type, TYPE_POINTER>();
-	Type::placeholder_pointers.push_back(pt);
+	Type::placeholder_pointers.push_back(this);
       }
       break;
 
@@ -5474,10 +5474,11 @@ Pointer_type::do_import(Import* imp)
 
 Type::Pointer_type_table Type::pointer_types;
 
-// A list of placeholder pointer types.  We keep this so we can ensure
-// they are finalized.
+// A list of placeholder pointer types; items on this list will be either be
+// Pointer_type or Function_type. We keep this so we can ensure they are
+// finalized.
 
-std::vector<Pointer_type*> Type::placeholder_pointers;
+std::vector<Type*> Type::placeholder_pointers;
 
 // Make a pointer type.
 
@@ -5513,11 +5514,11 @@ Type::finish_pointer_types(Gogo* gogo)
   // placeholder pointer types as we finalized existing ones.
   for (size_t i = 0; i < Type::placeholder_pointers.size(); i++)
     {
-      Pointer_type* pt = Type::placeholder_pointers[i];
-      Type_btypes::iterator tbti = Type::type_btypes.find(pt);
+      Type* typ = Type::placeholder_pointers[i];
+      Type_btypes::iterator tbti = Type::type_btypes.find(typ);
       if (tbti != Type::type_btypes.end() && tbti->second.is_placeholder)
         {
-          pt->finish_backend(gogo, tbti->second.btype);
+          typ->finish_backend(gogo, tbti->second.btype);
           tbti->second.is_placeholder = false;
         }
     }
@@ -6776,8 +6777,6 @@ Struct_type::can_write_to_c_header(
        p != fields->end();
        ++p)
     {
-      if (p->is_anonymous())
-	return false;
       if (!this->can_write_type_to_c_header(p->type(), requires, declare))
 	return false;
       if (Gogo::message_name(p->field_name()) == "_")
@@ -6846,6 +6845,9 @@ Struct_type::can_write_type_to_c_header(
 	  }
 	if (t->struct_type() != NULL)
 	  {
+	    // We will accept empty struct fields, but not print them.
+	    if (t->struct_type()->total_field_count() == 0)
+	      return true;
 	    requires->push_back(no);
 	    return t->struct_type()->can_write_to_c_header(requires, declare);
 	  }
@@ -6870,6 +6872,12 @@ Struct_type::write_to_c_header(std::ostream& os) const
        p != fields->end();
        ++p)
     {
+      // Skip fields that are empty struct types.  The C code can't
+      // refer to them anyhow.
+      if (p->type()->struct_type() != NULL
+	  && p->type()->struct_type()->total_field_count() == 0)
+	continue;
+
       os << '\t';
       this->write_field_to_c_header(os, p->field_name(), p->type());
       os << ';' << std::endl;

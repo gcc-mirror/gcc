@@ -836,7 +836,7 @@ fold_const_call_ss (real_value *result, combined_fn fn,
 
     CASE_CFN_FLOOR:
     CASE_CFN_FLOOR_FN:
-      if (!REAL_VALUE_ISNAN (*arg) || !flag_errno_math)
+      if (!REAL_VALUE_ISSIGNALING_NAN (*arg))
 	{
 	  real_floor (result, format, arg);
 	  return true;
@@ -845,7 +845,7 @@ fold_const_call_ss (real_value *result, combined_fn fn,
 
     CASE_CFN_CEIL:
     CASE_CFN_CEIL_FN:
-      if (!REAL_VALUE_ISNAN (*arg) || !flag_errno_math)
+      if (!REAL_VALUE_ISSIGNALING_NAN (*arg))
 	{
 	  real_ceil (result, format, arg);
 	  return true;
@@ -854,14 +854,27 @@ fold_const_call_ss (real_value *result, combined_fn fn,
 
     CASE_CFN_TRUNC:
     CASE_CFN_TRUNC_FN:
-      real_trunc (result, format, arg);
-      return true;
+      if (!REAL_VALUE_ISSIGNALING_NAN (*arg))
+	{
+	  real_trunc (result, format, arg);
+	  return true;
+	}
+      return false;
 
     CASE_CFN_ROUND:
     CASE_CFN_ROUND_FN:
-      if (!REAL_VALUE_ISNAN (*arg) || !flag_errno_math)
+      if (!REAL_VALUE_ISSIGNALING_NAN (*arg))
 	{
 	  real_round (result, format, arg);
+	  return true;
+	}
+      return false;
+
+    CASE_CFN_ROUNDEVEN:
+    CASE_CFN_ROUNDEVEN_FN:
+      if (!REAL_VALUE_ISSIGNALING_NAN (*arg))
+	{
+	  real_roundeven (result, format, arg);
 	  return true;
 	}
       return false;

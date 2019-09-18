@@ -1689,6 +1689,9 @@ function calls.
 If a register has 0 in @code{CALL_USED_REGISTERS}, the compiler
 automatically saves it on function entry and restores it on function
 exit, if the register is used within the function.
+
+Exactly one of @code{CALL_USED_REGISTERS} and @code{CALL_REALLY_USED_REGISTERS}
+must be defined.  Modern ports should define @code{CALL_REALLY_USED_REGISTERS}.
 @end defmac
 
 @defmac CALL_REALLY_USED_REGISTERS
@@ -1698,8 +1701,9 @@ exit, if the register is used within the function.
 Like @code{CALL_USED_REGISTERS} except this macro doesn't require
 that the entire set of @code{FIXED_REGISTERS} be included.
 (@code{CALL_USED_REGISTERS} must be a superset of @code{FIXED_REGISTERS}).
-This macro is optional.  If not specified, it defaults to the value
-of @code{CALL_USED_REGISTERS}.
+
+Exactly one of @code{CALL_USED_REGISTERS} and @code{CALL_REALLY_USED_REGISTERS}
+must be defined.  Modern ports should define @code{CALL_REALLY_USED_REGISTERS}.
 @end defmac
 
 @cindex call-used register
@@ -7200,6 +7204,8 @@ on this implementation detail.
 
 @hook TARGET_INSERT_ATTRIBUTES
 
+@hook TARGET_HANDLE_GENERIC_ATTRIBUTE
+
 @hook TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P
 
 @hook TARGET_OPTION_VALID_ATTRIBUTE_P
@@ -7944,6 +7950,12 @@ to by @var{ce_info}.
 
 @hook TARGET_PREDICT_DOLOOP_P
 
+@hook TARGET_HAVE_COUNT_REG_DECR_P
+
+@hook TARGET_DOLOOP_COST_FOR_GENERIC
+
+@hook TARGET_DOLOOP_COST_FOR_ADDRESS
+
 @hook TARGET_CAN_USE_DOLOOP_P
 
 @hook TARGET_INVALID_WITHIN_DOLOOP
@@ -7998,10 +8010,6 @@ build_type_attribute_variant (@var{mdecl},
 @end defmac
 
 @hook TARGET_CANNOT_MODIFY_JUMPS_P
-
-@hook TARGET_BRANCH_TARGET_REGISTER_CLASS
-
-@hook TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED
 
 @hook TARGET_HAVE_CONDITIONAL_EXECUTION
 

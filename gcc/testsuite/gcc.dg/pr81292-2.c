@@ -32,4 +32,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "strlen \\(" 6 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "strlen \\(" 6 "strlen1" } } */

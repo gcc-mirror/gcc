@@ -1878,6 +1878,9 @@ function calls.
 If a register has 0 in @code{CALL_USED_REGISTERS}, the compiler
 automatically saves it on function entry and restores it on function
 exit, if the register is used within the function.
+
+Exactly one of @code{CALL_USED_REGISTERS} and @code{CALL_REALLY_USED_REGISTERS}
+must be defined.  Modern ports should define @code{CALL_REALLY_USED_REGISTERS}.
 @end defmac
 
 @defmac CALL_REALLY_USED_REGISTERS
@@ -1887,8 +1890,9 @@ exit, if the register is used within the function.
 Like @code{CALL_USED_REGISTERS} except this macro doesn't require
 that the entire set of @code{FIXED_REGISTERS} be included.
 (@code{CALL_USED_REGISTERS} must be a superset of @code{FIXED_REGISTERS}).
-This macro is optional.  If not specified, it defaults to the value
-of @code{CALL_USED_REGISTERS}.
+
+Exactly one of @code{CALL_USED_REGISTERS} and @code{CALL_REALLY_USED_REGISTERS}
+must be defined.  Modern ports should define @code{CALL_REALLY_USED_REGISTERS}.
 @end defmac
 
 @cindex call-used register
@@ -10391,6 +10395,14 @@ attributes, or a copy of the list may be made if further changes are
 needed.
 @end deftypefn
 
+@deftypefn {Target Hook} tree TARGET_HANDLE_GENERIC_ATTRIBUTE (tree *@var{node}, tree @var{name}, tree @var{args}, int @var{flags}, bool *@var{no_add_attrs})
+Define this target hook if you want to be able to perform additional
+target-specific processing of an attribute which is handled generically
+by a front end.  The arguments are the same as those which are passed to
+attribute handlers.  So far this only affects the @var{noinit} and
+@var{section} attribute.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P (const_tree @var{fndecl})
 @cindex inlining
 This target hook returns @code{true} if it is OK to inline @var{fndecl}
@@ -11603,6 +11615,36 @@ loops, and will help ivopts to make some decisions.
 The default version of this hook returns false.
 @end deftypefn
 
+@deftypevr {Target Hook} bool TARGET_HAVE_COUNT_REG_DECR_P
+Return true if the target supports hardware count register for decrement
+and branch.
+The default value is false.
+@end deftypevr
+
+@deftypevr {Target Hook} int64_t TARGET_DOLOOP_COST_FOR_GENERIC
+One IV candidate dedicated for doloop is introduced in IVOPTs, we can
+calculate the computation cost of adopting it to any generic IV use by
+function get_computation_cost as before.  But for targets which have
+hardware count register support for decrement and branch, it may have to
+move IV value from hardware count register to general purpose register
+while doloop IV candidate is used for generic IV uses.  It probably takes
+expensive penalty.  This hook allows target owners to define the cost for
+this especially for generic IV uses.
+The default value is zero.
+@end deftypevr
+
+@deftypevr {Target Hook} int64_t TARGET_DOLOOP_COST_FOR_ADDRESS
+One IV candidate dedicated for doloop is introduced in IVOPTs, we can
+calculate the computation cost of adopting it to any address IV use by
+function get_computation_cost as before.  But for targets which have
+hardware count register support for decrement and branch, it may have to
+move IV value from hardware count register to general purpose register
+while doloop IV candidate is used for address IV uses.  It probably takes
+expensive penalty.  This hook allows target owners to define the cost for
+this escpecially for address IV uses.
+The default value is zero.
+@end deftypevr
+
 @deftypefn {Target Hook} bool TARGET_CAN_USE_DOLOOP_P (const widest_int @var{&iterations}, const widest_int @var{&iterations_max}, unsigned int @var{loop_depth}, bool @var{entered_at_top})
 Return true if it is possible to use low-overhead loops (@code{doloop_end}
 and @code{doloop_begin}) for a particular loop.  @var{iterations} gives the
@@ -11745,28 +11787,6 @@ cannot_modify_jumps_past_reload_p ()
   return (reload_completed || reload_in_progress);
 @}
 @end smallexample
-@end deftypefn
-
-@deftypefn {Target Hook} reg_class_t TARGET_BRANCH_TARGET_REGISTER_CLASS (void)
-This target hook returns a register class for which branch target register
-optimizations should be applied.  All registers in this class should be
-usable interchangeably.  After reload, registers in this class will be
-re-allocated and loads will be hoisted out of loops and be subjected
-to inter-block scheduling.
-@end deftypefn
-
-@deftypefn {Target Hook} bool TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED (bool @var{after_prologue_epilogue_gen})
-Branch target register optimization will by default exclude callee-saved
-registers
-that are not already live during the current function; if this target hook
-returns true, they will be included.  The target code must than make sure
-that all target registers in the class returned by
-@samp{TARGET_BRANCH_TARGET_REGISTER_CLASS} that might need saving are
-saved.  @var{after_prologue_epilogue_gen} indicates if prologues and
-epilogues have already been generated.  Note, even if you only return
-true when @var{after_prologue_epilogue_gen} is false, you still are likely
-to have to make special provisions in @code{INITIAL_ELIMINATION_OFFSET}
-to reserve space for caller-saved target registers.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_HAVE_CONDITIONAL_EXECUTION (void)

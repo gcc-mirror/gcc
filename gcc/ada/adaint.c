@@ -35,8 +35,14 @@
    library calls directly. This file contains all other routines.  */
 
 /* Ensure access to errno is thread safe.  */
+
+#ifndef _REENTRANT
 #define _REENTRANT
+#endif
+
+#ifndef _THREAD_SAFE
 #define _THREAD_SAFE
+#endif
 
 /* Use 64 bit Large File API */
 #if defined (__QNX__)
@@ -68,6 +74,12 @@
    (such as chmod) are only available on VxWorks 6.  */
 #include "version.h"
 
+/* vwModNum.h and dosFsLib.h are needed for the VxWorks 6 rename workaround.
+   See below.  */
+#if (_WRS_VXWORKS_MAJOR == 6)
+#include <vwModNum.h>
+#include <dosFsLib.h>
+#endif /* 6.x */
 #endif /* VxWorks */
 
 #if defined (__APPLE__)
@@ -747,6 +759,20 @@ __gnat_rename (char *from, char *to)
     S2WSC (wfrom, from, GNAT_MAX_PATH_LEN);
     S2WSC (wto, to, GNAT_MAX_PATH_LEN);
     return _trename (wfrom, wto);
+  }
+#elif defined (__vxworks) && (_WRS_VXWORKS_MAJOR == 6)
+  {
+    /* When used on a dos filesystem under VxWorks 6.9 rename will trigger a
+       S_dosFsLib_FILE_NOT_FOUND errno when the file is not found.  Let's map
+       that to ENOENT so Ada.Directory.Rename can detect that and raise the
+       Name_Error exception.  */
+    int ret = rename (from, to);
+
+    if (ret && (errno == S_dosFsLib_FILE_NOT_FOUND))
+      {
+        errno = ENOENT;
+      }
+    return ret;
   }
 #else
   return rename (from, to);

@@ -1,3 +1,20 @@
+2019-09-03  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
+
+	* rust-demangle.c (unescape): Remove.
+	(parse_lower_hex_nibble): New function.
+	(parse_legacy_escape): New function.
+	(is_prefixed_hash): Use parse_lower_hex_nibble.
+	(looks_like_rust): Use parse_legacy_escape.
+	(rust_demangle_sym): Use parse_legacy_escape.
+	* testsuite/rust-demangle-expected: Add 'llv$u6d$' test.
+
+2019-08-27  Martin Liska  <mliska@suse.cz>
+
+	PR lto/91478
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	First find a WEAK HIDDEN symbol in symbol table that will be
+	preserved.  Later, use the symbol name for all removed symbols.
+
 2019-08-12  Martin Liska  <mliska@suse.cz>
 
 	* Makefile.in: Add filedescriptor.c.

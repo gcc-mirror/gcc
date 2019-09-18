@@ -2047,10 +2047,23 @@ package body Sem_Ch3 is
          end if;
       end if;
 
+      --  Avoid reporting spurious errors if the component is initialized with
+      --  a raise expression (which is legal in any expression context)
+
+      if Present (E)
+        and then
+          (Nkind (E) = N_Raise_Expression
+             or else (Nkind (E) = N_Qualified_Expression
+                        and then Nkind (Expression (E)) = N_Raise_Expression))
+      then
+         null;
+
       --  The parent type may be a private view with unknown discriminants,
       --  and thus unconstrained. Regular components must be constrained.
 
-      if not Is_Definite_Subtype (T) and then Chars (Id) /= Name_uParent then
+      elsif not Is_Definite_Subtype (T)
+        and then Chars (Id) /= Name_uParent
+      then
          if Is_Class_Wide_Type (T) then
             Error_Msg_N
                ("class-wide subtype with unknown discriminants" &
@@ -12496,6 +12509,18 @@ package body Sem_Ch3 is
          --  Show Full is simply a renaming of Full_Base
 
          Set_Cloned_Subtype (Full, Full_Base);
+
+         --  Propagate predicates
+
+         if Has_Predicates (Full_Base) then
+            Set_Has_Predicates (Full);
+
+            if Present (Predicate_Function (Full_Base))
+              and then No (Predicate_Function (Full))
+            then
+               Set_Predicate_Function (Full, Predicate_Function (Full_Base));
+            end if;
+         end if;
       end if;
 
       --  It is unsafe to share the bounds of a scalar type, because the Itype
@@ -13233,7 +13258,9 @@ package body Sem_Ch3 is
 
       function Build_Constrained_Discriminated_Type
         (Old_Type : Entity_Id) return Entity_Id;
-      --  Ditto for record components
+      --  Ditto for record components. Handle the case where the constraint
+      --  is a conversion of the discriminant value, introduced during
+      --  expansion.
 
       function Build_Constrained_Access_Type
         (Old_Type : Entity_Id) return Entity_Id;
@@ -13418,6 +13445,17 @@ package body Sem_Ch3 is
 
             if Is_Discriminant (Expr) then
                Need_To_Create_Itype := True;
+
+            --  After expansion of discriminated task types, the value
+            --  of the discriminant may be converted to a run-time type
+            --  for restricted run-times. Propagate the value of the
+            --  discriminant ss well, so that e.g. the secondary stack
+            --  component has a static constraint. Necessry for LLVM.
+
+            elsif Nkind (Expr) = N_Type_Conversion
+              and then Is_Discriminant (Expression (Expr))
+            then
+               Need_To_Create_Itype := True;
             end if;
 
             Next_Elmt (Old_Constraint);
@@ -13432,6 +13470,12 @@ package body Sem_Ch3 is
 
                if Is_Discriminant (Expr) then
                   Expr := Get_Discr_Value (Expr);
+
+               elsif Nkind (Expr) = N_Type_Conversion
+                 and then Is_Discriminant (Expression (Expr))
+               then
+                  Expr := New_Copy_Tree (Expr);
+                  Set_Expression (Expr, Get_Discr_Value (Expression (Expr)));
                end if;
 
                Append (New_Copy_Tree (Expr), To => Constr_List);
@@ -13737,6 +13781,7 @@ package body Sem_Ch3 is
    begin
       Set_Etype             (T_Sub, Corr_Rec);
       Set_Has_Discriminants (T_Sub, Has_Discriminants (Prot_Subt));
+      Set_Is_Tagged_Type    (T_Sub, Is_Tagged_Type (Corr_Rec));
       Set_Is_Constrained    (T_Sub, True);
       Set_First_Entity      (T_Sub, First_Entity (Corr_Rec));
       Set_Last_Entity       (T_Sub, Last_Entity  (Corr_Rec));

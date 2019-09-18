@@ -3,6 +3,7 @@
 /* { dg-skip-if "Test is specific to Xscale" { arm*-*-* } { "-march=*" } { "-march=xscale" } } */
 /* { dg-skip-if "Test is specific to Xscale" { arm*-*-* } { "-mcpu=*" } { "-mcpu=xscale" } } */
 /* { dg-skip-if "do not override -mfloat-abi" { *-*-* } { "-mfloat-abi=*" } { "-mfloat-abi=softfp" } } */
+/* { dg-require-effective-target arm_arch_v5te_ok } */
 /* { dg-options "-mcpu=xscale -O -mfloat-abi=softfp" } */
 
 unsigned load1(void) __attribute__ ((naked));

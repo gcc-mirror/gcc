@@ -2075,7 +2075,6 @@ package body Exp_Aggr is
             Choice := First (Choice_List (Assoc));
             while Present (Choice) loop
                if Nkind (Choice) = N_Others_Choice then
-                  Set_Loop_Actions (Assoc, New_List);
                   Others_Assoc := Assoc;
                   exit;
                end if;
@@ -2122,7 +2121,8 @@ package body Exp_Aggr is
 
          if Present (Others_Assoc) then
             declare
-               First : Boolean := True;
+               First    : Boolean := True;
+               Dup_Expr : Node_Id;
 
             begin
                for J in 0 .. Nb_Choices loop
@@ -2160,9 +2160,19 @@ package body Exp_Aggr is
                     or else not Empty_Range (Low, High)
                   then
                      First := False;
+
+                     --  Duplicate the expression in case we will be generating
+                     --  several loops. As a result the expression is no longer
+                     --  shared between the loops and is reevaluated for each
+                     --  such loop.
+
+                     Expr := Get_Assoc_Expr (Others_Assoc);
+                     Dup_Expr := New_Copy_Tree (Expr);
+                     Set_Parent (Dup_Expr, Parent (Expr));
+
+                     Set_Loop_Actions (Others_Assoc, New_List);
                      Append_List
-                       (Gen_Loop (Low, High,
-                          Get_Assoc_Expr (Others_Assoc)), To => New_Code);
+                       (Gen_Loop (Low, High, Dup_Expr), To => New_Code);
                   end if;
                end loop;
             end;
@@ -3093,6 +3103,13 @@ package body Exp_Aggr is
               Make_Selected_Component (Loc,
                 Prefix        => New_Copy_Tree (Lhs),
                 Selector_Name => Make_Identifier (Loc, Chars (Expr))));
+
+            --  The generated code will be reanalyzed, but if the reference
+            --  to the discriminant appears within an already analyzed
+            --  expression (e.g. a conditional) we must set its proper entity
+            --  now. Context is an initialization procedure.
+
+            Analyze (Expr);
          end if;
 
          return OK;

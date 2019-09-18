@@ -1,5 +1,5 @@
 /* PR target/83100 */
-/* { dg-do compile { target *-*-linux* *-*-gnu* } } */
+/* { dg-do compile { target *-*-linux* *-*-gnu* *-*-uclinux* } } */
 /* { dg-options "-O2 -fno-common -fdata-sections" } */
 
 const int a;

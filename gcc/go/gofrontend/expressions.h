@@ -1059,10 +1059,11 @@ class Expression
   static Expression*
   import_expression(Import_expression*, Location);
 
-  // Return an expression which checks that VAL, of arbitrary integer type,
-  // is non-negative and is not more than the maximum integer value.
-  static Expression*
-  check_bounds(Expression* val, Location);
+  // Insert bounds checks for an index expression.
+  static void
+  check_bounds(Expression* val, Operator, Expression* bound, Runtime::Function,
+	       Runtime::Function, Runtime::Function, Runtime::Function,
+	       Statement_inserter*, Location);
 
   // Return an expression for constructing a direct interface type from a
   // pointer.
@@ -1669,6 +1670,9 @@ class String_expression : public Expression
   do_import(Import_expression*, Location);
 
  protected:
+  int
+  do_traverse(Traverse*);
+
   bool
   do_is_constant() const
   { return true; }
@@ -2998,7 +3002,7 @@ class Array_index_expression : public Expression
 			 Expression* end, Expression* cap, Location location)
     : Expression(EXPRESSION_ARRAY_INDEX, location),
       array_(array), start_(start), end_(end), cap_(cap), type_(NULL),
-      is_lvalue_(false), needs_bounds_check_(true)
+      is_lvalue_(false), needs_bounds_check_(true), is_flattened_(false)
   { }
 
   // Return the array.
@@ -3121,6 +3125,8 @@ class Array_index_expression : public Expression
   bool is_lvalue_;
   // Whether bounds check is needed.
   bool needs_bounds_check_;
+  // Whether this has already been flattened.
+  bool is_flattened_;
 };
 
 // A string index.  This is used for both indexing and slicing.
@@ -3131,7 +3137,7 @@ class String_index_expression : public Expression
   String_index_expression(Expression* string, Expression* start,
 			  Expression* end, Location location)
     : Expression(EXPRESSION_STRING_INDEX, location),
-      string_(string), start_(start), end_(end)
+      string_(string), start_(start), end_(end), is_flattened_(false)
   { }
 
   // Return the string being indexed.
@@ -3203,6 +3209,8 @@ class String_index_expression : public Expression
   // The end index of a slice.  This may be NULL for a single index,
   // or it may be a nil expression for the length of the string.
   Expression* end_;
+  // Whether this has already been flattened.
+  bool is_flattened_;
 };
 
 // An index into a map.

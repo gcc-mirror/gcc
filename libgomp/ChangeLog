@@ -1,3 +1,49 @@
+2019-09-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* plugin/plugin-hsa.c (hsa_warn, hsa_fatal, hsa_error): Ensure
+	string is initialized.
+
+2019-09-06  Florian Weimer  <fweimer@redhat.com>
+
+	* configure: Regenerate.
+
+2019-09-03  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR other/79543
+	* acinclude.m4 (LIBGOMP_CHECK_LINKER_FEATURES): Fix GNU ld --version
+	scanning to conform to the GNU Coding Standards.
+	* configure: Regenerate.
+
+2019-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/91530
+	* testsuite/libgomp.c/scan-21.c: New test.
+	* testsuite/libgomp.c/scan-22.c: New test.
+
+2019-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/91530
+	* testsuite/libgomp.c/scan-11.c: Add -msse2 option for sse2_runtime
+	targets.
+	* testsuite/libgomp.c/scan-12.c: Likewise.
+	* testsuite/libgomp.c/scan-13.c: Likewise.
+	* testsuite/libgomp.c/scan-14.c: Likewise.
+	* testsuite/libgomp.c/scan-15.c: Likewise.
+	* testsuite/libgomp.c/scan-16.c: Likewise.
+	* testsuite/libgomp.c/scan-17.c: Likewise.
+	* testsuite/libgomp.c/scan-18.c: Likewise.
+	* testsuite/libgomp.c/scan-19.c: Likewise.
+	* testsuite/libgomp.c/scan-20.c: Likewise.
+	* testsuite/libgomp.c++/scan-9.C: Likewise.
+	* testsuite/libgomp.c++/scan-10.C: Likewise.
+	* testsuite/libgomp.c++/scan-11.C: Likewise.
+	* testsuite/libgomp.c++/scan-12.C: Likewise.
+	* testsuite/libgomp.c++/scan-14.C: Likewise.
+	* testsuite/libgomp.c++/scan-15.C: Likewise.
+	* testsuite/libgomp.c++/scan-13.C: Likewise.  Use sse2_runtime
+	instead of i?86-*-* x86_64-*-* as target for scan-tree-dump-times.
+	* testsuite/libgomp.c++/scan-16.C: Likewise.
+
 2019-08-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/91473

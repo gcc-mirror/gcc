@@ -2070,6 +2070,9 @@ aarch64_gen_compare_reg_maybe_ze (RTX_CODE code, rtx x, rtx y,
 	}
     }
 
+  if (!aarch64_plus_operand (y, y_mode))
+    y = force_reg (y_mode, y);
+
   return aarch64_gen_compare_reg (code, x, y);
 }
 
@@ -5333,12 +5336,12 @@ aarch64_layout_frame (void)
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
     if (df_regs_ever_live_p (regno)
 	&& (regno == R30_REGNUM
-	    || !call_used_regs[regno]))
+	    || !call_used_or_fixed_reg_p (regno)))
       cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
     if (df_regs_ever_live_p (regno)
-	&& (!call_used_regs[regno]
+	&& (!call_used_or_fixed_reg_p (regno)
 	    || (simd_function && FP_SIMD_SAVED_REGNUM_P (regno))))
       {
 	cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
@@ -5935,7 +5938,7 @@ aarch64_components_for_bb (basic_block bb)
 
   /* GPRs are used in a bb if they are in the IN, GEN, or KILL sets.  */
   for (unsigned regno = 0; regno <= LAST_SAVED_REGNUM; regno++)
-    if ((!call_used_regs[regno]
+    if ((!call_used_or_fixed_reg_p (regno)
 	|| (simd_function && FP_SIMD_SAVED_REGNUM_P (regno)))
        && (bitmap_bit_p (in, regno)
 	   || bitmap_bit_p (gen, regno)
@@ -11799,6 +11802,23 @@ static int
 aarch64_sched_issue_rate (void)
 {
   return aarch64_tune_params.issue_rate;
+}
+
+/* Implement TARGET_SCHED_VARIABLE_ISSUE.  */
+static int
+aarch64_sched_variable_issue (FILE *, int, rtx_insn *insn, int more)
+{
+  if (DEBUG_INSN_P (insn))
+    return more;
+
+  rtx_code code = GET_CODE (PATTERN (insn));
+  if (code == USE || code == CLOBBER)
+    return more;
+
+  if (get_attr_type (insn) == TYPE_NO_INSN)
+    return more;
+
+  return more - 1;
 }
 
 static int
@@ -17972,6 +17992,50 @@ aarch64_evpc_sve_tbl (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Try to implement D using SVE SEL instruction.  */
+
+static bool
+aarch64_evpc_sel (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  int unit_size = GET_MODE_UNIT_SIZE (vmode);
+
+  if (d->vec_flags != VEC_SVE_DATA
+      || unit_size > 8)
+    return false;
+
+  int n_patterns = d->perm.encoding ().npatterns ();
+  poly_int64 vec_len = d->perm.length ();
+
+  for (int i = 0; i < n_patterns; ++i)
+    if (!known_eq (d->perm[i], i)
+	&& !known_eq (d->perm[i], vec_len + i))
+      return false;
+
+  for (int i = n_patterns; i < n_patterns * 2; i++)
+    if (!d->perm.series_p (i, n_patterns, i, n_patterns)
+	&& !d->perm.series_p (i, n_patterns, vec_len + i, n_patterns))
+      return false;
+
+  if (d->testing_p)
+    return true;
+
+  machine_mode pred_mode = aarch64_sve_pred_mode (unit_size).require ();
+
+  rtx_vector_builder builder (pred_mode, n_patterns, 2);
+  for (int i = 0; i < n_patterns * 2; i++)
+    {
+      rtx elem = known_eq (d->perm[i], i) ? CONST1_RTX (BImode)
+					  : CONST0_RTX (BImode);
+      builder.quick_push (elem);
+    }
+
+  rtx const_vec = builder.build ();
+  rtx pred = force_reg (pred_mode, const_vec);
+  emit_insn (gen_vcond_mask (vmode, vmode, d->target, d->op1, d->op0, pred));
+  return true;
+}
+
 static bool
 aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 {
@@ -18003,6 +18067,8 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
       else if (aarch64_evpc_uzp (d))
 	return true;
       else if (aarch64_evpc_trn (d))
+	return true;
+      else if (aarch64_evpc_sel (d))
 	return true;
       if (d->vec_flags == VEC_SVE_DATA)
 	return aarch64_evpc_sve_tbl (d);
@@ -20534,6 +20600,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE aarch64_sched_issue_rate
+
+#undef TARGET_SCHED_VARIABLE_ISSUE
+#define TARGET_SCHED_VARIABLE_ISSUE aarch64_sched_variable_issue
 
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \

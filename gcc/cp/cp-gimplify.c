@@ -2507,6 +2507,9 @@ cp_fold (tree x)
 	  else
 	    x = org_x;
 	}
+      if (code == MODIFY_EXPR && TREE_CODE (x) == MODIFY_EXPR)
+	TREE_THIS_VOLATILE (x) = TREE_THIS_VOLATILE (org_x);
+
       break;
 
     case VEC_COND_EXPR:

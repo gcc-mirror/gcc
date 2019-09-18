@@ -2384,7 +2384,7 @@ lra (FILE *f)
      need it.  */
   emit_note (NOTE_INSN_DELETED);
 
-  COPY_HARD_REG_SET (lra_no_alloc_regs, ira_no_alloc_regs);
+  lra_no_alloc_regs = ira_no_alloc_regs;
 
   init_reg_info ();
   expand_reg_info ();
@@ -2420,7 +2420,7 @@ lra (FILE *f)
 
   if (crtl->saves_all_registers)
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (! call_used_regs[i] && ! fixed_regs[i] && ! LOCAL_REGNO (i))
+      if (!call_used_or_fixed_reg_p (i) && !fixed_regs[i] && !LOCAL_REGNO (i))
 	df_set_regs_ever_live (i, true);
 
   /* We don't DF from now and avoid its using because it is to

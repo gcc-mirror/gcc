@@ -1630,11 +1630,17 @@ extern const char * const reg_note_name[];
 #define GET_REG_NOTE_NAME(MODE) (reg_note_name[(int) (MODE)])
 
 /* This field is only present on CALL_INSNs.  It holds a chain of EXPR_LIST of
-   USE and CLOBBER expressions.
+   USE, CLOBBER and SET expressions.
      USE expressions list the registers filled with arguments that
    are passed to the function.
      CLOBBER expressions document the registers explicitly clobbered
    by this CALL_INSN.
+     SET expressions say that the return value of the call (the SET_DEST)
+   is equivalent to a value available before the call (the SET_SRC).
+   This kind of SET is used when the return value is predictable in
+   advance.  It is purely an optimisation hint; unlike USEs and CLOBBERs,
+   it does not affect register liveness.
+
      Pseudo registers cannot be mentioned in this list.  */
 #define CALL_INSN_FUNCTION_USAGE(INSN)	XEXP(INSN, 7)
 
@@ -3377,8 +3383,7 @@ extern bool val_signbit_known_clear_p (machine_mode,
 				       unsigned HOST_WIDE_INT);
 
 /* In reginfo.c  */
-extern machine_mode choose_hard_reg_mode (unsigned int, unsigned int,
-					       bool);
+extern machine_mode choose_hard_reg_mode (unsigned int, unsigned int, bool);
 extern const HARD_REG_SET &simplifiable_subregs (const subreg_shape &);
 
 /* In emit-rtl.c  */
@@ -3414,7 +3419,7 @@ extern bool nonzero_address_p (const_rtx);
 extern int rtx_unstable_p (const_rtx);
 extern bool rtx_varies_p (const_rtx, bool);
 extern bool rtx_addr_varies_p (const_rtx, bool);
-extern rtx get_call_rtx_from (rtx);
+extern rtx get_call_rtx_from (const rtx_insn *);
 extern HOST_WIDE_INT get_integer_term (const_rtx);
 extern rtx get_related_value (const_rtx);
 extern bool offset_within_block_p (const_rtx, HOST_WIDE_INT);
@@ -3443,7 +3448,10 @@ extern void record_hard_reg_sets (rtx, const_rtx, void *);
 extern void record_hard_reg_uses (rtx *, void *);
 extern void find_all_hard_regs (const_rtx, HARD_REG_SET *);
 extern void find_all_hard_reg_sets (const rtx_insn *, HARD_REG_SET *, bool);
-extern void note_stores (const_rtx, void (*) (rtx, const_rtx, void *), void *);
+extern void note_pattern_stores (const_rtx,
+				 void (*) (rtx, const_rtx, void *), void *);
+extern void note_stores (const rtx_insn *,
+			 void (*) (rtx, const_rtx, void *), void *);
 extern void note_uses (rtx *, void (*) (rtx *, void *), void *);
 extern int dead_or_set_p (const rtx_insn *, const_rtx);
 extern int dead_or_set_regno_p (const rtx_insn *, unsigned int);

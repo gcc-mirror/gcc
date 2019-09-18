@@ -30,6 +30,8 @@ enum Runtime_function_type
   RFT_BOOLPTR,
   // Go type int, C type intgo.
   RFT_INT,
+  // Go type uint, C type uintgo.
+  RFT_UINT,
   // Go type uint8, C type uint8_t.
   RFT_UINT8,
   // Go type uint16, C type uint16_t.
@@ -111,6 +113,10 @@ runtime_function_type(Runtime_function_type bft)
 
 	case RFT_INT:
 	  t = Type::lookup_integer_type("int");
+	  break;
+
+	case RFT_UINT:
+	  t = Type::lookup_integer_type("uint");
 	  break;
 
 	case RFT_UINT8:
@@ -262,6 +268,7 @@ convert_to_runtime_function_type(Runtime_function_type bft, Expression* e,
     case RFT_BOOL:
     case RFT_BOOLPTR:
     case RFT_INT:
+    case RFT_UINT:
     case RFT_UINT8:
     case RFT_UINT16:
     case RFT_INT32:

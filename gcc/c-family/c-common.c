@@ -249,11 +249,6 @@ const char *constant_string_class_name;
 
 int warn_abi_version = -1;
 
-/* Nonzero means generate separate instantiation control files and
-   juggle them at link time.  */
-
-int flag_use_repository;
-
 /* The C++ dialect being used.  Default set in c_common_post_options.  */
 
 enum cxx_dialect cxx_dialect = cxx_unset;
@@ -326,8 +321,9 @@ static bool nonnull_check_p (tree, unsigned HOST_WIDE_INT);
    C --std=c89: D_C99 | D_CXXONLY | D_OBJC | D_CXX_OBJC
    C --std=c99: D_CXXONLY | D_OBJC
    ObjC is like C except that D_OBJC and D_CXX_OBJC are not set
-   C++ --std=c++98: D_CONLY | D_CXX11 | D_OBJC
-   C++ --std=c++11: D_CONLY | D_OBJC
+   C++ --std=c++98: D_CONLY | D_CXX11 | D_CXX20 | D_OBJC
+   C++ --std=c++11: D_CONLY | D_CXX20 | D_OBJC
+   C++ --std=c++2a: D_CONLY | D_OBJC
    ObjC++ is like C++ except that D_OBJC is not set
 
    If -fno-asm is used, D_ASM is added to the mask.  If
@@ -392,6 +388,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__complex__",	RID_COMPLEX,	0 },
   { "__const",		RID_CONST,	0 },
   { "__const__",	RID_CONST,	0 },
+  { "__constinit",	RID_CONSTINIT,	D_CXXONLY },
   { "__decltype",       RID_DECLTYPE,   D_CXXONLY },
   { "__direct_bases",   RID_DIRECT_BASES, D_CXXONLY },
   { "__extension__",	RID_EXTENSION,	0 },
@@ -462,6 +459,7 @@ const struct c_common_resword c_common_reswords[] =
   { "class",		RID_CLASS,	D_CXX_OBJC | D_CXXWARN },
   { "const",		RID_CONST,	0 },
   { "constexpr",	RID_CONSTEXPR,	D_CXXONLY | D_CXX11 | D_CXXWARN },
+  { "constinit",	RID_CONSTINIT,	D_CXXONLY | D_CXX20 | D_CXXWARN },
   { "const_cast",	RID_CONSTCAST,	D_CXXONLY | D_CXXWARN },
   { "continue",		RID_CONTINUE,	0 },
   { "decltype",         RID_DECLTYPE,   D_CXXONLY | D_CXX11 | D_CXXWARN },
@@ -1889,6 +1887,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
     case COMPOUND_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
+    sequenced_binary:
       tmp_before = tmp_nosp = tmp_list2 = tmp_list3 = 0;
       verify_tree (TREE_OPERAND (x, 0), &tmp_before, &tmp_nosp, NULL_TREE);
       warn_for_collisions (tmp_nosp);
@@ -2031,8 +2030,18 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
 	  x = TREE_OPERAND (x, 0);
 	  goto restart;
 	}
-      gcc_fallthrough ();
+      goto do_default;
+
+    case LSHIFT_EXPR:
+    case RSHIFT_EXPR:
+    case COMPONENT_REF:
+    case ARRAY_REF:
+      if (cxx_dialect >= cxx17)
+	goto sequenced_binary;
+      goto do_default;
+
     default:
+    do_default:
       /* For other expressions, simply recurse on their operands.
 	 Manual tail recursion for unary expressions.
 	 Other non-expressions need not be processed.  */
@@ -7916,6 +7925,7 @@ keyword_is_decl_specifier (enum rid keyword)
     case RID_TYPEDEF:
     case RID_FRIEND:
     case RID_CONSTEXPR:
+    case RID_CONSTINIT:
       return true;
     default:
       return false;
@@ -8345,7 +8355,7 @@ c_ts18661_flt_eval_method (void)
     = targetm.c.excess_precision (EXCESS_PRECISION_TYPE_IMPLICIT);
 
   enum excess_precision_type flag_type
-    = (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD
+    = (flag_excess_precision == EXCESS_PRECISION_STANDARD
        ? EXCESS_PRECISION_TYPE_STANDARD
        : EXCESS_PRECISION_TYPE_FAST);
 
@@ -8747,9 +8757,12 @@ maybe_add_include_fixit (rich_location *richloc, const char *header,
    the converted string on success or the original ctor on failure.  */
 
 static tree
-braced_list_to_string (tree type, tree ctor)
+braced_list_to_string (tree type, tree ctor, bool member)
 {
-  if (!tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
+  /* Ignore non-members with unknown size like arrays with unspecified
+     bound.  */
+  tree typesize = TYPE_SIZE_UNIT (type);
+  if (!member && !tree_fits_uhwi_p (typesize))
     return ctor;
 
   /* If the array has an explicit bound, use it to constrain the size
@@ -8757,10 +8770,17 @@ braced_list_to_string (tree type, tree ctor)
      as long as implied by the index of the last zero specified via
      a designator, as in:
        const char a[] = { [7] = 0 };  */
-  unsigned HOST_WIDE_INT maxelts = tree_to_uhwi (TYPE_SIZE_UNIT (type));
-  maxelts /= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type)));
+  unsigned HOST_WIDE_INT maxelts;
+  if (typesize)
+    {
+      maxelts = tree_to_uhwi (typesize);
+      maxelts /= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type)));
+    }
+  else
+    maxelts = HOST_WIDE_INT_M1U;
 
-  /* Avoid converting initializers for zero-length arrays.  */
+  /* Avoid converting initializers for zero-length arrays (but do
+     create them for flexible array members).  */
   if (!maxelts)
     return ctor;
 
@@ -8818,7 +8838,7 @@ braced_list_to_string (tree type, tree ctor)
     }
 
   /* Append a nul string termination.  */
-  if (str.length () < maxelts)
+  if (maxelts != HOST_WIDE_INT_M1U && str.length () < maxelts)
     str.safe_push (0);
 
   /* Build a STRING_CST with the same type as the array.  */
@@ -8827,14 +8847,12 @@ braced_list_to_string (tree type, tree ctor)
   return res;
 }
 
-/* Attempt to convert a CTOR containing braced array initializer lists
-   for array TYPE into one containing STRING_CSTs, for convenience and
-   efficiency.  Recurse for arrays of arrays and member initializers.
-   Return the converted CTOR or STRING_CST on success or the original
-   CTOR otherwise.  */
+/* Implementation of the two-argument braced_lists_to_string withe
+   the same arguments plus MEMBER which is set for struct members
+   to allow initializers for flexible member arrays.  */
 
-tree
-braced_lists_to_strings (tree type, tree ctor)
+static tree
+braced_lists_to_strings (tree type, tree ctor, bool member)
 {
   if (TREE_CODE (ctor) != CONSTRUCTOR)
     return ctor;
@@ -8858,22 +8876,36 @@ braced_lists_to_strings (tree type, tree ctor)
 
   if ((TREE_CODE (ttp) == ARRAY_TYPE || TREE_CODE (ttp) == INTEGER_TYPE)
       && TYPE_STRING_FLAG (ttp))
-    return braced_list_to_string (type, ctor);
+    return braced_list_to_string (type, ctor, member);
 
   code = TREE_CODE (ttp);
-  if (code == ARRAY_TYPE || code == RECORD_TYPE)
+  if (code == ARRAY_TYPE || RECORD_OR_UNION_TYPE_P (ttp))
     {
+      bool rec = RECORD_OR_UNION_TYPE_P (ttp);
+
       /* Handle array of arrays or struct member initializers.  */
       tree val;
       unsigned HOST_WIDE_INT idx;
       FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), idx, val)
 	{
-	  val = braced_lists_to_strings (ttp, val);
+	  val = braced_lists_to_strings (ttp, val, rec);
 	  CONSTRUCTOR_ELT (ctor, idx)->value = val;
 	}
     }
 
   return ctor;
+}
+
+/* Attempt to convert a CTOR containing braced array initializer lists
+   for array TYPE into one containing STRING_CSTs, for convenience and
+   efficiency.  Recurse for arrays of arrays and member initializers.
+   Return the converted CTOR or STRING_CST on success or the original
+   CTOR otherwise.  */
+
+tree
+braced_lists_to_strings (tree type, tree ctor)
+{
+  return braced_lists_to_strings (type, ctor, false);
 }
 
 #include "gt-c-family-c-common.h"

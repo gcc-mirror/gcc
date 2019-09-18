@@ -3308,7 +3308,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (!vectype_in)
 	vectype_in = vectypes[i];
       else if (vectypes[i]
-	       && vectypes[i] != vectype_in)
+	       && !types_compatible_p (vectypes[i], vectype_in))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -9169,7 +9169,9 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
        || alignment_support_scheme == dr_explicit_realign)
       && !compute_in_loop)
     {
-      msq = vect_setup_realignment (first_stmt_info, gsi, &realignment_token,
+      msq = vect_setup_realignment (first_stmt_info_for_drptr
+				    ? first_stmt_info_for_drptr
+				    : first_stmt_info, gsi, &realignment_token,
 				    alignment_support_scheme, NULL_TREE,
 				    &at_loop);
       if (alignment_support_scheme == dr_explicit_realign_optimized)

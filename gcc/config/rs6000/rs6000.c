@@ -1651,6 +1651,16 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_PREDICT_DOLOOP_P
 #define TARGET_PREDICT_DOLOOP_P rs6000_predict_doloop_p
 
+#undef TARGET_HAVE_COUNT_REG_DECR_P
+#define TARGET_HAVE_COUNT_REG_DECR_P true
+
+/* 1000000000 is infinite cost in IVOPTs.  */
+#undef TARGET_DOLOOP_COST_FOR_GENERIC
+#define TARGET_DOLOOP_COST_FOR_GENERIC 1000000000
+
+#undef TARGET_DOLOOP_COST_FOR_ADDRESS
+#define TARGET_DOLOOP_COST_FOR_ADDRESS 1000000000
+
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV rs6000_atomic_assign_expand_fenv
 
@@ -1990,7 +2000,7 @@ rs6000_debug_reg_print (int first_regno, int last_regno, const char *reg_name)
 	    comma = ", ";
 	  }
 
-      if (call_used_regs[r])
+      if (call_used_or_fixed_reg_p (r))
 	{
 	  if (len > 70)
 	    {
@@ -8904,42 +8914,37 @@ rs6000_conditional_register_usage (void)
 
   /* 64-bit AIX and Linux reserve GPR13 for thread-private data.  */
   if (TARGET_64BIT)
-    fixed_regs[13] = call_used_regs[13]
-      = call_really_used_regs[13] = 1;
+    fixed_regs[13] = call_used_regs[13] = 1;
 
   /* Conditionally disable FPRs.  */
   if (TARGET_SOFT_FLOAT)
     for (i = 32; i < 64; i++)
-      fixed_regs[i] = call_used_regs[i]
-	= call_really_used_regs[i] = 1;
+      fixed_regs[i] = call_used_regs[i] = 1;
 
   /* The TOC register is not killed across calls in a way that is
      visible to the compiler.  */
   if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
-    call_really_used_regs[2] = 0;
+    call_used_regs[2] = 0;
 
   if (DEFAULT_ABI == ABI_V4 && flag_pic == 2)
     fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;
 
   if (DEFAULT_ABI == ABI_V4 && flag_pic == 1)
     fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]
-      = call_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]
-      = call_really_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;
+      = call_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;
 
   if (DEFAULT_ABI == ABI_DARWIN && flag_pic)
     fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]
-      = call_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]
-      = call_really_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;
+      = call_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;
 
   if (TARGET_TOC && TARGET_MINIMAL_TOC)
-    fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]
-      = call_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;
+    fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;
 
   if (!TARGET_ALTIVEC && !TARGET_VSX)
     {
       for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)
-	fixed_regs[i] = call_used_regs[i] = call_really_used_regs[i] = 1;
-      call_really_used_regs[VRSAVE_REGNO] = 1;
+	fixed_regs[i] = call_used_regs[i] = 1;
+      call_used_regs[VRSAVE_REGNO] = 1;
     }
 
   if (TARGET_ALTIVEC || TARGET_VSX)
@@ -8948,12 +8953,12 @@ rs6000_conditional_register_usage (void)
   if (TARGET_ALTIVEC_ABI)
     {
       for (i = FIRST_ALTIVEC_REGNO; i < FIRST_ALTIVEC_REGNO + 20; ++i)
-	call_used_regs[i] = call_really_used_regs[i] = 1;
+	call_used_regs[i] = 1;
 
       /* AIX reserves VR20:31 in non-extended ABI mode.  */
       if (TARGET_XCOFF)
 	for (i = FIRST_ALTIVEC_REGNO + 20; i < FIRST_ALTIVEC_REGNO + 32; ++i)
-	  fixed_regs[i] = call_used_regs[i] = call_really_used_regs[i] = 1;
+	  fixed_regs[i] = call_used_regs[i] = 1;
     }
 }
 
@@ -20907,18 +20912,6 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	*total = rs6000_cost->fp;
       return false;
 
-    case UNSPEC:
-      switch (XINT (x, 1))
-	{
-	case UNSPEC_FRSP:
-	  *total = rs6000_cost->fp;
-	  return true;
-
-	default:
-	  break;
-	}
-      break;
-
     case CALL:
     case IF_THEN_ELSE:
       if (!speed)
@@ -21119,10 +21112,8 @@ rs6000_register_move_cost (machine_mode mode,
      Do this first so we give best-case answers for union classes
      containing both gprs and vsx regs.  */
   HARD_REG_SET to_vsx, from_vsx;
-  COPY_HARD_REG_SET (to_vsx, reg_class_contents[to]);
-  AND_HARD_REG_SET (to_vsx, reg_class_contents[VSX_REGS]);
-  COPY_HARD_REG_SET (from_vsx, reg_class_contents[from]);
-  AND_HARD_REG_SET (from_vsx, reg_class_contents[VSX_REGS]);
+  to_vsx = reg_class_contents[to] & reg_class_contents[VSX_REGS];
+  from_vsx = reg_class_contents[from] & reg_class_contents[VSX_REGS];
   if (!hard_reg_set_empty_p (to_vsx)
       && !hard_reg_set_empty_p (from_vsx)
       && (TARGET_VSX

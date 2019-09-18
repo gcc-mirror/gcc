@@ -252,6 +252,19 @@ flush_ssaname_freelist (void)
   vec_safe_truncate (FREE_SSANAMES_QUEUE (cfun), 0);
 }
 
+/* Initialize SSA_NAME_IMM_USE_NODE of a SSA NAME.  */
+
+void
+init_ssa_name_imm_use (tree name)
+{
+  use_operand_p imm;
+  imm = &(SSA_NAME_IMM_USE_NODE (name));
+  imm->use = NULL;
+  imm->prev = imm;
+  imm->next = imm;
+  imm->loc.ssa_name = name;
+}
+
 /* Return an SSA_NAME node for variable VAR defined in statement STMT
    in function FN.  STMT may be an empty statement for artificial
    references (e.g., default definitions created when a variable is
@@ -263,8 +276,6 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt,
 		  unsigned int version)
 {
   tree t;
-  use_operand_p imm;
-
   gcc_assert (VAR_P (var)
 	      || TREE_CODE (var) == PARM_DECL
 	      || TREE_CODE (var) == RESULT_DECL
@@ -318,11 +329,7 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt,
 
   SSA_NAME_IN_FREE_LIST (t) = 0;
   SSA_NAME_IS_DEFAULT_DEF (t) = 0;
-  imm = &(SSA_NAME_IMM_USE_NODE (t));
-  imm->use = NULL;
-  imm->prev = imm;
-  imm->next = imm;
-  imm->loc.ssa_name = t;
+  init_ssa_name_imm_use (t);
 
   return t;
 }

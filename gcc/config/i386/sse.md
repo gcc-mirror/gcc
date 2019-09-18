@@ -12047,9 +12047,9 @@
 (define_expand "vec_shl_<mode>"
   [(set (match_dup 3)
 	(ashift:V1TI
-	 (match_operand:VI_128 1 "register_operand")
+	 (match_operand:V_128 1 "register_operand")
 	 (match_operand:SI 2 "const_0_to_255_mul_8_operand")))
-   (set (match_operand:VI_128 0 "register_operand") (match_dup 4))]
+   (set (match_operand:V_128 0 "register_operand") (match_dup 4))]
   "TARGET_SSE2"
 {
   operands[1] = gen_lowpart (V1TImode, operands[1]);
@@ -12060,9 +12060,9 @@
 (define_expand "vec_shr_<mode>"
   [(set (match_dup 3)
 	(lshiftrt:V1TI
-	 (match_operand:VI_128 1 "register_operand")
+	 (match_operand:V_128 1 "register_operand")
 	 (match_operand:SI 2 "const_0_to_255_mul_8_operand")))
-   (set (match_operand:VI_128 0 "register_operand") (match_dup 4))]
+   (set (match_operand:V_128 0 "register_operand") (match_dup 4))]
   "TARGET_SSE2"
 {
   operands[1] = gen_lowpart (V1TImode, operands[1]);
@@ -16475,6 +16475,26 @@
   ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);
 })
 
+(define_expand "smulhrs<mode>3"
+  [(set (match_operand:VI2_AVX2 0 "register_operand")
+	(truncate:VI2_AVX2
+	  (lshiftrt:<ssedoublemode>
+	    (plus:<ssedoublemode>
+	      (lshiftrt:<ssedoublemode>
+		(mult:<ssedoublemode>
+		  (sign_extend:<ssedoublemode>
+		    (match_operand:VI2_AVX2 1 "nonimmediate_operand"))
+		  (sign_extend:<ssedoublemode>
+		    (match_operand:VI2_AVX2 2 "nonimmediate_operand")))
+		(const_int 14))
+	      (match_dup 3))
+	    (const_int 1))))]
+  "TARGET_SSSE3"
+{
+  operands[3] = CONST1_RTX(<MODE>mode);
+  ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);
+})
+
 (define_insn "*<ssse3_avx2>_pmulhrsw<mode>3<mask_name>"
   [(set (match_operand:VI2_AVX2 0 "register_operand" "=x,x,v")
 	(truncate:VI2_AVX2
@@ -16501,6 +16521,26 @@
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,maybe_evex,evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_expand "smulhrsv4hi3"
+  [(set (match_operand:V4HI 0 "register_operand")
+	(truncate:V4HI
+	  (lshiftrt:V4SI
+	    (plus:V4SI
+	      (lshiftrt:V4SI
+		(mult:V4SI
+		  (sign_extend:V4SI
+		    (match_operand:V4HI 1 "register_operand"))
+		  (sign_extend:V4SI
+		    (match_operand:V4HI 2 "register_operand")))
+		(const_int 14))
+	      (match_dup 3))
+	    (const_int 1))))]
+  "TARGET_MMX_WITH_SSE && TARGET_SSSE3"
+{
+  operands[3] = CONST1_RTX(V4HImode);
+  ix86_fixup_binary_operands_no_copy (MULT, V4HImode, operands);
+})
 
 (define_expand "ssse3_pmulhrswv4hi3"
   [(set (match_operand:V4HI 0 "register_operand")

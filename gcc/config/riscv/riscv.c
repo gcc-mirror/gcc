@@ -3442,7 +3442,7 @@ riscv_frame_set (rtx mem, rtx reg)
 static bool
 riscv_save_reg_p (unsigned int regno)
 {
-  bool call_saved = !global_regs[regno] && !call_used_regs[regno];
+  bool call_saved = !global_regs[regno] && !call_used_or_fixed_reg_p (regno);
   bool might_clobber = crtl->saves_all_registers
 		       || df_regs_ever_live_p (regno);
 
@@ -3473,7 +3473,7 @@ riscv_save_reg_p (unsigned int regno)
       /* We must save every register used in this function.  If this is not a
 	 leaf function, then we must save all temporary registers.  */
       if (df_regs_ever_live_p (regno)
-	  || (!crtl->is_leaf && call_used_regs[regno]))
+	  || (!crtl->is_leaf && call_used_or_fixed_reg_p (regno)))
 	return true;
     }
 
@@ -4198,7 +4198,7 @@ riscv_epilogue_uses (unsigned int regno)
       /* An interrupt function restores temp regs, so we must indicate that
 	 they are live at function end.  */
       if (df_regs_ever_live_p (regno)
-	    || (!crtl->is_leaf && call_used_regs[regno]))
+	    || (!crtl->is_leaf && call_used_or_fixed_reg_p (regno)))
 	return true;
     }
 
@@ -4361,7 +4361,7 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       /* Only use callee-saved registers if a potential callee is guaranteed
 	 to spill the requisite width.  */
       if (GET_MODE_UNIT_SIZE (mode) > UNITS_PER_FP_REG
-	  || (!call_used_regs[regno]
+	  || (!call_used_or_fixed_reg_p (regno)
 	      && GET_MODE_UNIT_SIZE (mode) > UNITS_PER_FP_ARG))
 	return false;
     }
@@ -4370,7 +4370,8 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
   /* Require same callee-savedness for all registers.  */
   for (unsigned i = 1; i < nregs; i++)
-    if (call_used_regs[regno] != call_used_regs[regno + i])
+    if (call_used_or_fixed_reg_p (regno)
+	!= call_used_or_fixed_reg_p (regno + i))
       return false;
 
   return true;

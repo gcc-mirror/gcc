@@ -613,6 +613,10 @@ private
    --  spawns the child process (based on Cmd). On systems that support fork,
    --  this procedure is executed inside the newly created process.
 
+   procedure Close_Input (Pid : in out Process_Descriptor);
+   --  Closes input file descriptor. Set Input_Fd to Invalid_Fd as well as
+   --  Output_Fd and Error_Fd when they share same file descriptor.
+
    type Process_Descriptor is tagged record
       Pid              : aliased Process_Id := Invalid_Pid;
       Input_Fd         : GNAT.OS_Lib.File_Descriptor := GNAT.OS_Lib.Invalid_FD;

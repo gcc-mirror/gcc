@@ -615,9 +615,17 @@ get_value_for_expr (tree expr, bool for_bits_p)
 	  val.mask = -1;
 	}
       if (for_bits_p
-	  && val.lattice_val == CONSTANT
-	  && TREE_CODE (val.value) == ADDR_EXPR)
-	val = get_value_from_alignment (val.value);
+	  && val.lattice_val == CONSTANT)
+	{
+	  if (TREE_CODE (val.value) == ADDR_EXPR)
+	    val = get_value_from_alignment (val.value);
+	  else if (TREE_CODE (val.value) != INTEGER_CST)
+	    {
+	      val.lattice_val = VARYING;
+	      val.value = NULL_TREE;
+	      val.mask = -1;
+	    }
+	}
       /* Fall back to a copy value.  */
       if (!for_bits_p
 	  && val.lattice_val == VARYING

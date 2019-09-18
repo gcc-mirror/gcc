@@ -197,7 +197,7 @@ extern enum processor_type mn10300_tune_cpu;
    Aside from that, you can include as many other registers as you
    like.  */
 
-#define CALL_USED_REGISTERS \
+#define CALL_REALLY_USED_REGISTERS \
   { 1, 1, 0, 0,				/* data regs */		\
     1, 1, 0, 0,				/* addr regs */		\
     1,					/* arg reg */		\
@@ -210,13 +210,6 @@ extern enum processor_type mn10300_tune_cpu;
     1,					/* mdr reg */		\
     1					/* cc reg */		\
   }
-
-/* Note: The definition of CALL_REALLY_USED_REGISTERS is not
-   redundant.  It is needed when compiling in PIC mode because
-   the a2 register becomes fixed (and hence must be marked as
-   call_used) but in order to preserve the ABI it is not marked
-   as call_really_used.  */
-#define CALL_REALLY_USED_REGISTERS CALL_USED_REGISTERS
 
 #define REG_ALLOC_ORDER \
   { 0, 1, 4, 5, 2, 3, 6, 7, 10, 11, 12, 13, 14, 15, 16, 17, 8, 9 \

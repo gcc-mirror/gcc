@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Aug 01, 2019
+GNAT User's Guide for Native Platforms , Sep 14, 2019
 
 AdaCore
 
@@ -13661,7 +13661,7 @@ in the source text.
 
 The set of style check switches is set to match that used by the GNAT sources.
 This may be useful when developing code that is eventually intended to be
-incorporated into GNAT. Currently this is equivalent to @code{-gnatwydISux})
+incorporated into GNAT. Currently this is equivalent to @code{-gnatyydISux})
 but additional style switches may be added to this set in the future without
 advance notice.
 @end table
@@ -23321,8 +23321,11 @@ $ gnatbind -u0 file
 @end example
 @end quotation
 
-With this option, at each task termination, its stack usage is  output on
+With this option, at each task termination, its stack usage is output on
 @code{stderr}.
+Note that this switch is not compatible with tools like
+Valgrind and DrMemory; they will report errors.
+
 It is not always convenient to output the stack usage when the program
 is still running. Hence, it is possible to delay this output until program
 termination. for a given number of tasks specified as the argument of the

@@ -144,7 +144,7 @@ FPTEST2ARG2_REENT (gamma, int *) /* gamma_r */
 FPTEST0     (huge_val)
 FPTEST2     (hypot)
 FPTEST1     (ilogb)
-FPTEST0     (inf)  /* { dg-warning "target format does not support infinity" "inf" {target pdp11*-*-* spu-*-*} } */
+FPTEST0     (inf)  /* { dg-warning "target format does not support infinity" "inf" {target pdp11*-*-* } } */
 FPTEST1     (j0)
 FPTEST1     (j1)
 FPTEST2ARG1 (jn, int)

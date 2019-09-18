@@ -25,6 +25,7 @@
 ; We use:
 ;  c - sibcall registers
 ;  d - double pair base registers (excludes r0, r30 and r31 which overflow)
+;  t - got address registers (excludes LR (r9) which is clobbered by set_got)
 ;  I - constant signed 16-bit
 ;  K - constant unsigned 16-bit
 ;  M - constant signed 16-bit shifted left 16-bits (l.movhi)
@@ -35,6 +36,9 @@
 
 (define_register_constraint "d" "DOUBLE_REGS"
   "Registers which can be used for double reg pairs.")
+
+(define_register_constraint "t" "GOT_REGS"
+  "Registers which can be used to store the Global Offset Table (GOT) address.")
 
 ;; Immediates
 (define_constraint "I"

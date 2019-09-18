@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse4.1 -mstv" } */
+/* { dg-options "-O2 -msse4.1 -mstv -mno-stackrealign" } */
 
 void foo (int *dc, int *mc, int *tpdd, int *tpmd, int M)
 {

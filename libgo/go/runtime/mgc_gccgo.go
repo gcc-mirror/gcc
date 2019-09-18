@@ -11,10 +11,9 @@ import (
 	"unsafe"
 )
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname gcWriteBarrier runtime.gcWriteBarrier
+//go:linkname gcWriteBarrier
 
 // gcRoot is a single GC root: a variable plus a ptrmask.
 //go:notinheap
@@ -130,7 +129,7 @@ func createGcRootsIndex() {
 }
 
 // registerGCRoots is called by compiler-generated code.
-//go:linkname registerGCRoots runtime.registerGCRoots
+//go:linkname registerGCRoots
 
 // registerGCRoots is called by init functions to register the GC
 // roots for a package.  The init functions are run sequentially at

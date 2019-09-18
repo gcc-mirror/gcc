@@ -991,6 +991,9 @@
 /* Define if pthreads_num_processors_np is available in <pthread.h>. */
 #undef _GLIBCXX_USE_PTHREADS_NUM_PROCESSORS_NP
 
+/* Define if pthread_cond_clockwait is available in <pthread.h>. */
+#undef _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT
+
 /* Define if POSIX read/write locks are available in <gthr.h>. */
 #undef _GLIBCXX_USE_PTHREAD_RWLOCK_T
 

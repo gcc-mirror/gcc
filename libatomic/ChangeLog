@@ -1,3 +1,15 @@
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
+        * configure.tgt: Handle arm*-*-uclinux*.
+        * configure: Regenerate.
+
+2019-09-03  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR other/79543
+	* acinclude.m4 (LIBAT_CHECK_LINKER_FEATURES): Fix GNU ld --version
+	scanning to conform to the GNU Coding Standards.
+	* configure: Regenerate.
+
 2019-06-14  Matt Thomas  <matt@3am-software.com>
 	    Matthew Green  <mrg@eterna.com.au>
 	    Nick Hudson  <skrll@netbsd.org>

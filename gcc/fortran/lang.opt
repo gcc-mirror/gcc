@@ -210,8 +210,8 @@ Fortran Warning Var(warn_array_temporaries)
 Warn about creation of array temporaries.
 
 Wargument-mismatch
-Fortran Warning Var(warn_argument_mismatch) Init(1)
-Warn about type and rank mismatches between arguments and parameters.
+Fortran WarnRemoved
+Does nothing. Preserved for backward compatibility.
 
 Wc-binding-type
 Fortran Var(warn_c_binding_type) Warning LangEnabledBy(Fortran,Wall)
@@ -364,6 +364,10 @@ Disable preprocessing.
 d
 Fortran Joined
 ; Documented in common.opt
+
+fallow-argument-mismatch
+Fortran Var(flag_allow_argument_mismatch) LangEnabledBy(Fortran,std=legacy)
+Accept argument mismatches in procedure calls.
 
 faggressive-function-elimination
 Fortran Var(flag_aggressive_function_elimination)

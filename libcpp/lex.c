@@ -2771,7 +2771,13 @@ _cpp_lex_direct (cpp_reader *pfile)
       goto skipped_white;
 
     case '\n':
-      if (buffer->cur < buffer->rlimit)
+      /* Increment the line, unless this is the last line ...  */
+      if (buffer->cur < buffer->rlimit
+	  /* ... or this is a #include, (where _cpp_stack_file needs to
+	     unwind by one line) ...  */
+	  || (pfile->state.in_directive > 1
+	      /* ... except traditional-cpp increments this elsewhere.  */
+	      && !CPP_OPTION (pfile, traditional)))
 	CPP_INCREMENT_LINE (pfile, 0);
       buffer->need_line = true;
       goto fresh_line;

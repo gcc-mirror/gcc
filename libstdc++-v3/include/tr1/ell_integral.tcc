@@ -370,18 +370,17 @@ namespace tr1
               __zn = __c0 * (__zn + __lambda);
             }
 
-	  // Note: __ea is an SPU badname.
-          _Tp __eaa = __xndev * __yndev;
+          _Tp __ea = __xndev * __yndev;
           _Tp __eb = __zndev * __zndev;
-          _Tp __ec = __eaa - __eb;
-          _Tp __ed = __eaa - _Tp(6) * __eb;
+          _Tp __ec = __ea - __eb;
+          _Tp __ed = __ea - _Tp(6) * __eb;
           _Tp __ef = __ed + __ec + __ec;
           _Tp __s1 = __ed * (-__c1 + __c3 * __ed
                                    / _Tp(3) - _Tp(3) * __c4 * __zndev * __ef
                                    / _Tp(2));
           _Tp __s2 = __zndev
                    * (__c2 * __ef
-                    + __zndev * (-__c3 * __ec - __zndev * __c4 - __eaa));
+                    + __zndev * (-__c3 * __ec - __zndev * __c4 - __ea));
 
           return _Tp(3) * __sigma + __power4 * (_Tp(1) + __s1 + __s2)
                                         / (__mu * std::sqrt(__mu));
@@ -634,17 +633,16 @@ namespace tr1
               __pn = __c0 * (__pn + __lambda);
             }
 
-	  // Note: __ea is an SPU badname.
-          _Tp __eaa = __xndev * (__yndev + __zndev) + __yndev * __zndev;
+          _Tp __ea = __xndev * (__yndev + __zndev) + __yndev * __zndev;
           _Tp __eb = __xndev * __yndev * __zndev;
           _Tp __ec = __pndev * __pndev;
-          _Tp __e2 = __eaa - _Tp(3) * __ec;
-          _Tp __e3 = __eb + _Tp(2) * __pndev * (__eaa - __ec);
+          _Tp __e2 = __ea - _Tp(3) * __ec;
+          _Tp __e3 = __eb + _Tp(2) * __pndev * (__ea - __ec);
           _Tp __s1 = _Tp(1) + __e2 * (-__c1 + _Tp(3) * __c3 * __e2 / _Tp(4)
                             - _Tp(3) * __c4 * __e3 / _Tp(2));
           _Tp __s2 = __eb * (__c2 / _Tp(2)
                    + __pndev * (-__c3 - __c3 + __pndev * __c4));
-          _Tp __s3 = __pndev * __eaa * (__c2 - __pndev * __c3)
+          _Tp __s3 = __pndev * __ea * (__c2 - __pndev * __c3)
                    - __c2 * __pndev * __ec;
 
           return _Tp(3) * __sigma + __power4 * (__s1 + __s2 + __s3)

@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_build_cfg);
   NEXT_PASS (pass_warn_function_return);
   NEXT_PASS (pass_expand_omp);
-  NEXT_PASS (pass_sprintf_length, false);
+  NEXT_PASS (pass_warn_printf);
   NEXT_PASS (pass_walloca, /*strict_mode_p=*/true);
   NEXT_PASS (pass_build_cgraph_edges);
   TERMINATE_PASS_LIST (all_lowering_passes)
@@ -307,12 +307,13 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_lower_vector_ssa);
       NEXT_PASS (pass_lower_switch);
       NEXT_PASS (pass_cse_reciprocals);
-      NEXT_PASS (pass_sprintf_length, true);
       NEXT_PASS (pass_reassoc, false /* insert_powi_p */);
       NEXT_PASS (pass_strength_reduction);
       NEXT_PASS (pass_split_paths);
       NEXT_PASS (pass_tracer);
       NEXT_PASS (pass_fre, false /* may_iterate */);
+      /* After late FRE we rewrite no longer addressed locals into SSA
+         form if possible.  */
       NEXT_PASS (pass_thread_jumps);
       NEXT_PASS (pass_dominator, false /* may_peel_loop_headers_p */);
       NEXT_PASS (pass_strlen);
@@ -356,7 +357,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_object_sizes);
       /* Fold remaining builtins.  */
       NEXT_PASS (pass_fold_builtins);
-      NEXT_PASS (pass_sprintf_length, true);
+      NEXT_PASS (pass_strlen);
       /* Copy propagation also copy-propagates constants, this is necessary
          to forward object-size and builtin folding results properly.  */
       NEXT_PASS (pass_copy_prop);
@@ -460,7 +461,6 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_split_after_reload);
 	  NEXT_PASS (pass_ree);
 	  NEXT_PASS (pass_compare_elim_after_reload);
-	  NEXT_PASS (pass_branch_target_load_optimize1);
 	  NEXT_PASS (pass_thread_prologue_and_epilogue);
 	  NEXT_PASS (pass_rtl_dse2);
 	  NEXT_PASS (pass_stack_adjustments);
@@ -473,7 +473,6 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_cprop_hardreg);
 	  NEXT_PASS (pass_fast_rtl_dce);
 	  NEXT_PASS (pass_reorder_blocks);
-	  NEXT_PASS (pass_branch_target_load_optimize2);
 	  NEXT_PASS (pass_leaf_regs);
 	  NEXT_PASS (pass_split_before_sched2);
 	  NEXT_PASS (pass_sched2);

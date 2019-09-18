@@ -8,11 +8,11 @@ IMPLICIT NONE
 print *, SIN (1.0)
 print *, BESSEL_J0(1.0) ! { dg-error "has no IMPLICIT type" })
 print *, BESSEL_J1(1.0) ! { dg-error "has no IMPLICIT type" }
-print *, BESSEL_JN(1,1.0) ! { dg-error "has no IMPLICIT type" }
-print *, BESSEL_JN(1,2,1.0) ! { dg-error "has no IMPLICIT type" }
+print *, BESSEL_JN(1,1.0) ! { dg-error "has no IMPLICIT type|Type mismatch" }
+print *, BESSEL_JN(1,2,1.0) ! { dg-error "has no IMPLICIT type|Type mismatch" }
 
 print *, BESSEL_Y0(1.0) ! { dg-error "has no IMPLICIT type" }
 print *, BESSEL_Y1(1.0) ! { dg-error "has no IMPLICIT type" }
-print *, BESSEL_YN(1,1.0) ! { dg-error "has no IMPLICIT type" }
-print *, BESSEL_YN(1,2,1.0) ! { dg-error "has no IMPLICIT type" }
+print *, BESSEL_YN(1,1.0) ! { dg-error "has no IMPLICIT type|Type mismatch" }
+print *, BESSEL_YN(1,2,1.0) ! { dg-error "has no IMPLICIT type|Type mismatch" }
 end

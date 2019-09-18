@@ -36,6 +36,7 @@ static stringop_algs ix86_size_memset[2] = {
 
 const
 struct processor_costs ix86_size_cost = {/* costs for tuning for size */
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   2,				     /* cost for loading QImode using movzbl */
   {2, 2, 2},				/* cost of loading integer registers
@@ -59,6 +60,7 @@ struct processor_costs ix86_size_cost = {/* costs for tuning for size */
 					   in 32,64,128,256 and 512-bit */
   3, 3,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_BYTES (2),			/* cost of an add instruction */
   COSTS_N_BYTES (3),			/* cost of a lea instruction */
@@ -138,6 +140,7 @@ static stringop_algs i386_memset[2] = {
 
 static const
 struct processor_costs i386_cost = {	/* 386 specific costs */
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   4,				     /* cost for loading QImode using movzbl */
   {2, 4, 2},				/* cost of loading integer registers
@@ -161,6 +164,7 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
 					   in 32,64,128,256 and 512-bit */
   3, 3,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (1),			/* cost of a lea instruction */
@@ -237,6 +241,7 @@ static stringop_algs i486_memset[2] = {
 
 static const
 struct processor_costs i486_cost = {	/* 486 specific costs */
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   4,				     /* cost for loading QImode using movzbl */
   {2, 4, 2},				/* cost of loading integer registers
@@ -260,6 +265,7 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
 					   in 32,64,128,256 and 512-bit */
   3, 3,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (1),			/* cost of a lea instruction */
@@ -338,6 +344,7 @@ static stringop_algs pentium_memset[2] = {
 
 static const
 struct processor_costs pentium_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   6,				     /* cost for loading QImode using movzbl */
   {2, 4, 2},				/* cost of loading integer registers
@@ -361,6 +368,7 @@ struct processor_costs pentium_cost = {
 					   in 32,64,128,256 and 512-bit */
   3, 3,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (1),			/* cost of a lea instruction */
@@ -430,6 +438,7 @@ struct processor_costs pentium_cost = {
 
 static const
 struct processor_costs lakemont_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   6,				     /* cost for loading QImode using movzbl */
   {2, 4, 2},				/* cost of loading integer registers
@@ -453,6 +462,7 @@ struct processor_costs lakemont_cost = {
 					   in 32,64,128,256 and 512-bit */
   3, 3,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
@@ -537,6 +547,7 @@ static stringop_algs pentiumpro_memset[2] = {
   DUMMY_STRINGOP_ALGS};
 static const
 struct processor_costs pentiumpro_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   2,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
@@ -560,6 +571,7 @@ struct processor_costs pentiumpro_cost = {
 					   in 32,64,128,256 and 512-bit */
   3, 3,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (1),			/* cost of a lea instruction */
@@ -635,6 +647,7 @@ static stringop_algs geode_memset[2] = {
   DUMMY_STRINGOP_ALGS};
 static const
 struct processor_costs geode_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   2,				     /* cost for loading QImode using movzbl */
   {2, 2, 2},				/* cost of loading integer registers
@@ -658,6 +671,7 @@ struct processor_costs geode_cost = {
 					   in 32,64,128,256 and 512-bit */
   6, 6,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (1),			/* cost of a lea instruction */
@@ -733,6 +747,7 @@ static stringop_algs k6_memset[2] = {
   DUMMY_STRINGOP_ALGS};
 static const
 struct processor_costs k6_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   3,				     /* cost for loading QImode using movzbl */
   {4, 5, 4},				/* cost of loading integer registers
@@ -756,6 +771,7 @@ struct processor_costs k6_cost = {
 					   in 32,64,128,256 and 512-bit */
   6, 6,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (2),			/* cost of a lea instruction */
@@ -837,6 +853,7 @@ static stringop_algs athlon_memset[2] = {
   DUMMY_STRINGOP_ALGS};
 static const
 struct processor_costs athlon_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   4,				     /* cost for loading QImode using movzbl */
   {3, 4, 3},				/* cost of loading integer registers
@@ -860,6 +877,7 @@ struct processor_costs athlon_cost = {
 					   in 32,64,128,256 and 512-bit */
   5, 5,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (2),			/* cost of a lea instruction */
@@ -943,6 +961,7 @@ static stringop_algs k8_memset[2] = {
              {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}};
 static const
 struct processor_costs k8_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   4,				     /* cost for loading QImode using movzbl */
   {3, 4, 3},				/* cost of loading integer registers
@@ -966,6 +985,7 @@ struct processor_costs k8_cost = {
 					   in 32,64,128,256 and 512-bit */
   5, 5,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (2),			/* cost of a lea instruction */
@@ -1053,6 +1073,7 @@ static stringop_algs amdfam10_memset[2] = {
   {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
              {-1, libcall, false}}}};
 struct processor_costs amdfam10_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   4,				     /* cost for loading QImode using movzbl */
   {3, 4, 3},				/* cost of loading integer registers
@@ -1085,6 +1106,7 @@ struct processor_costs amdfam10_cost = {
 					    MOVD reg32, xmmreg Double FADD 3
 							       1/1  1/1 */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (2),			/* cost of a lea instruction */
@@ -1173,6 +1195,7 @@ static stringop_algs bdver_memset[2] = {
              {-1, libcall, false}}}};
 
 const struct processor_costs bdver_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   8,				     /* cost for loading QImode using movzbl */
   {8, 8, 8},				/* cost of loading integer registers
@@ -1196,6 +1219,7 @@ const struct processor_costs bdver_cost = {
 					   in 32,64,128,256 and 512-bit */
   16, 20,				/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (1),			/* cost of a lea instruction */
@@ -1285,6 +1309,7 @@ static stringop_algs znver1_memset[2] = {
   {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
 	     {-1, libcall, false}}}};
 struct processor_costs znver1_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
 
   /* reg-reg moves are done by renaming and thus they are even cheaper than
@@ -1315,6 +1340,7 @@ struct processor_costs znver1_cost = {
 					   in 32,64,128,256 and 512-bit.  */
   6, 6,					/* SSE->integer and integer->SSE moves.  */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction.  */
   COSTS_N_INSNS (1),			/* cost of a lea instruction.  */
@@ -1420,6 +1446,7 @@ static stringop_algs znver2_memset[2] = {
 	     {-1, libcall, false}}}};
 
 struct processor_costs znver2_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
 
   /* reg-reg moves are done by renaming and thus they are even cheaper than
@@ -1452,6 +1479,7 @@ struct processor_costs znver2_cost = {
   6, 6,					/* SSE->integer and integer->SSE
 					   moves.  */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction.  */
   COSTS_N_INSNS (1),			/* cost of a lea instruction.  */
@@ -1560,6 +1588,7 @@ static stringop_algs skylake_memset[2] = {
 
 static const
 struct processor_costs skylake_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   6,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
@@ -1581,8 +1610,9 @@ struct processor_costs skylake_cost = {
 					   in 32,64,128,256 and 512-bit */
   {8, 8, 8, 12, 24},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
-  2, 2,					/* SSE->integer and integer->SSE moves */
+  6, 6,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (1)+1,		/* cost of a lea instruction */
@@ -1665,6 +1695,7 @@ static stringop_algs btver1_memset[2] = {
   {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
              {-1, libcall, false}}}};
 const struct processor_costs btver1_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   8,				     /* cost for loading QImode using movzbl */
   {6, 8, 6},				/* cost of loading integer registers
@@ -1688,6 +1719,7 @@ const struct processor_costs btver1_cost = {
 					   in 32,64,128,256 and 512-bit */
   14, 14,				/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (2),			/* cost of a lea instruction */
@@ -1766,6 +1798,7 @@ static stringop_algs btver2_memset[2] = {
   {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
              {-1, libcall, false}}}};
 const struct processor_costs btver2_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   8,				     /* cost for loading QImode using movzbl */
   {8, 8, 6},				/* cost of loading integer registers
@@ -1789,6 +1822,7 @@ const struct processor_costs btver2_cost = {
 					   in 32,64,128,256 and 512-bit */
   14, 14,				/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (2),			/* cost of a lea instruction */
@@ -1866,6 +1900,7 @@ static stringop_algs pentium4_memset[2] = {
 
 static const
 struct processor_costs pentium4_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   5,				     /* cost for loading QImode using movzbl */
   {4, 5, 4},				/* cost of loading integer registers
@@ -1889,6 +1924,7 @@ struct processor_costs pentium4_cost = {
 					   in 32,64,128,256 and 512-bit */
   20, 12,				/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (3),			/* cost of a lea instruction */
@@ -1969,6 +2005,7 @@ static stringop_algs nocona_memset[2] = {
 
 static const
 struct processor_costs nocona_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   4,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
@@ -1992,6 +2029,7 @@ struct processor_costs nocona_cost = {
 					   in 32,64,128,256 and 512-bit */
   20, 12,				/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (1),			/* cost of a lea instruction */
@@ -2070,6 +2108,7 @@ static stringop_algs atom_memset[2] = {
              {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}};
 static const
 struct processor_costs atom_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   6,					/* cost for loading QImode using movzbl */
   {6, 6, 6},				/* cost of loading integer registers
@@ -2093,6 +2132,7 @@ struct processor_costs atom_cost = {
 					   in 32,64,128,256 and 512-bit */
   8, 6,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
@@ -2171,6 +2211,7 @@ static stringop_algs slm_memset[2] = {
              {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}};
 static const
 struct processor_costs slm_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   8,					/* cost for loading QImode using movzbl */
   {8, 8, 8},				/* cost of loading integer registers
@@ -2194,6 +2235,7 @@ struct processor_costs slm_cost = {
 					   in 32,64,128,256 and 512-bit */
   8, 6,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
@@ -2272,6 +2314,7 @@ static stringop_algs intel_memset[2] = {
              {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}};
 static const
 struct processor_costs intel_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   6,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
@@ -2295,6 +2338,7 @@ struct processor_costs intel_cost = {
 					   in 32,64,128,256 and 512-bit */
   4, 4,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
@@ -2377,6 +2421,7 @@ static stringop_algs generic_memset[2] = {
              {-1, libcall, false}}}};
 static const
 struct processor_costs generic_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   6,				     /* cost for loading QImode using movzbl */
   {6, 6, 6},				/* cost of loading integer registers
@@ -2400,6 +2445,7 @@ struct processor_costs generic_cost = {
 					   in 32,64,128,256 and 512-bit */
   6, 6,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   /* Setting cost to 2 makes our current implementation of synth_mult result in
@@ -2487,6 +2533,7 @@ static stringop_algs core_memset[2] = {
 
 static const
 struct processor_costs core_cost = {
+  {
   /* Start of register allocator costs.  integer->integer move cost is 2. */
   6,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
@@ -2508,8 +2555,9 @@ struct processor_costs core_cost = {
 					   in 32,64,128,256 and 512-bit */
   {6, 6, 6, 6, 12},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
-  2, 2,					/* SSE->integer and integer->SSE moves */
+  6, 6,					/* SSE->integer and integer->SSE moves */
   /* End of register allocator costs.  */
+  },
 
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   /* On all chips taken into consideration lea is 2 cycles and more.  With

@@ -1,3 +1,5 @@
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+
 struct B { int b1; long long b2, b3; int b4; };
 struct C { char c1[40], c2, c3[96]; long long c4[5], c5; char c6[596]; };
 void fn1 (long long), fn2 (char *, int), fn4 (void);

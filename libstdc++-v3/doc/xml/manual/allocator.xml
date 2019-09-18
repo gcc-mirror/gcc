@@ -482,12 +482,9 @@
   </biblioentry>
 
   <biblioentry>
-      <title>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.drdobbs.com/the-standard-librarian-what-are-allocato/184403759">
+    <title>
       The Standard Librarian: What Are Allocators Good For?
-	</link>
-      </title>
+    </title>
 
     <author><personname><firstname>Matt</firstname><surname>Austern</surname></personname></author>
     <publisher>
@@ -495,6 +492,7 @@
 	C/C++ Users Journal
       </publishername>
     </publisher>
+    <pubdate>2000-12</pubdate>
   </biblioentry>
 
   <biblioentry>

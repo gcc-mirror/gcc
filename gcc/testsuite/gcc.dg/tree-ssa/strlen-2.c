@@ -12,4 +12,4 @@ void f3 (void)
   f (__builtin_strlen (s));
 }
 
-/* { dg-final { scan-tree-dump-times "strlen" 0 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "strlen" 0 "strlen1" } } */

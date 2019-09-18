@@ -594,67 +594,110 @@ Expression::backend_numeric_constant_expression(Translate_context* context,
   return ret;
 }
 
-// Return an expression which evaluates to true if VAL, of arbitrary integer
-// type, is negative or is more than the maximum value of the Go type "int".
+// Insert bounds checks for an index expression.  Check that that VAL
+// >= 0 and that it fits in an int.  Then check that VAL OP BOUND is
+// true.  If any condition is false, call one of the CODE runtime
+// functions, which will panic.
 
-Expression*
-Expression::check_bounds(Expression* val, Location loc)
+void
+Expression::check_bounds(Expression* val, Operator op, Expression* bound,
+			 Runtime::Function code,
+			 Runtime::Function code_u,
+			 Runtime::Function code_extend,
+			 Runtime::Function code_extend_u,
+			 Statement_inserter* inserter,
+			 Location loc)
 {
+  go_assert(val->is_variable() || val->is_constant());
+  go_assert(bound->is_variable() || bound->is_constant());
+
+  Type* int_type = Type::lookup_integer_type("int");
+  int int_type_size = int_type->integer_type()->bits();
+
   Type* val_type = val->type();
-  Type* bound_type = Type::lookup_integer_type("int");
-
-  int val_type_size;
-  bool val_is_unsigned = false;
-  if (val_type->integer_type() != NULL)
+  if (val_type->integer_type() == NULL)
     {
-      val_type_size = val_type->integer_type()->bits();
-      val_is_unsigned = val_type->integer_type()->is_unsigned();
+      go_assert(saw_errors());
+      return;
     }
-  else
-    {
-      if (!val_type->is_numeric_type()
-          || !Type::are_convertible(bound_type, val_type, NULL))
-        {
-          go_assert(saw_errors());
-          return Expression::make_boolean(true, loc);
-        }
+  int val_type_size = val_type->integer_type()->bits();
+  bool val_is_unsigned = val_type->integer_type()->is_unsigned();
 
-      if (val_type->complex_type() != NULL)
-        val_type_size = val_type->complex_type()->bits();
-      else
-        val_type_size = val_type->float_type()->bits();
-    }
-
-  Expression* negative_index = Expression::make_boolean(false, loc);
-  Expression* index_overflows = Expression::make_boolean(false, loc);
+  // Check that VAL >= 0.
+  Expression* check = NULL;
   if (!val_is_unsigned)
     {
       Expression* zero = Expression::make_integer_ul(0, val_type, loc);
-      negative_index = Expression::make_binary(OPERATOR_LT, val, zero, loc);
+      check = Expression::make_binary(OPERATOR_GE, val->copy(), zero, loc);
     }
 
-  int bound_type_size = bound_type->integer_type()->bits();
-  if (val_type_size > bound_type_size
-      || (val_type_size == bound_type_size
+  // If VAL's type is larger than int, check that VAL fits in an int.
+  if (val_type_size > int_type_size
+      || (val_type_size == int_type_size
 	  && val_is_unsigned))
     {
       mpz_t one;
       mpz_init_set_ui(one, 1UL);
 
-      // maxval = 2^(bound_type_size - 1) - 1
+      // maxval = 2^(int_type_size - 1) - 1
       mpz_t maxval;
       mpz_init(maxval);
-      mpz_mul_2exp(maxval, one, bound_type_size - 1);
+      mpz_mul_2exp(maxval, one, int_type_size - 1);
       mpz_sub_ui(maxval, maxval, 1);
       Expression* max = Expression::make_integer_z(&maxval, val_type, loc);
       mpz_clear(one);
       mpz_clear(maxval);
 
-      index_overflows = Expression::make_binary(OPERATOR_GT, val, max, loc);
+      Expression* cmp = Expression::make_binary(OPERATOR_LE, val->copy(),
+						max, loc);
+      if (check == NULL)
+	check = cmp;
+      else
+	check = Expression::make_binary(OPERATOR_ANDAND, check, cmp, loc);
     }
 
-  return Expression::make_binary(OPERATOR_OROR, negative_index, index_overflows,
-                                 loc);
+  // For the final check we can assume that VAL fits in an int.
+  Expression* ival;
+  if (val_type == int_type)
+    ival = val->copy();
+  else
+    ival = Expression::make_cast(int_type, val->copy(), loc);
+
+  // BOUND is assumed to fit in an int.  Either it comes from len or
+  // cap, or it was checked by an earlier call.
+  Expression* ibound;
+  if (bound->type() == int_type)
+    ibound = bound->copy();
+  else
+    ibound = Expression::make_cast(int_type, bound->copy(), loc);
+
+  Expression* cmp = Expression::make_binary(op, ival, ibound, loc);
+  if (check == NULL)
+    check = cmp;
+  else
+    check = Expression::make_binary(OPERATOR_ANDAND, check, cmp, loc);
+
+  Runtime::Function c;
+  if (val_type_size > int_type_size)
+    {
+      if (val_is_unsigned)
+	c = code_extend_u;
+      else
+	c = code_extend;
+    }
+  else
+    {
+      if (val_is_unsigned)
+	c = code_u;
+      else
+	c = code;
+    }
+
+  Expression* ignore = Expression::make_boolean(true, loc);
+  Expression* crash = Runtime::make_call(c, loc, 2,
+					 val->copy(), bound->copy());
+  Expression* cond = Expression::make_conditional(check, ignore, crash, loc);
+  inserter->insert(Statement::make_statement(cond, true));
 }
 
 void
@@ -1769,6 +1812,9 @@ class Boolean_expression : public Expression
   do_import(Import_expression*, Location);
 
  protected:
+  int
+  do_traverse(Traverse*);
+
   bool
   do_is_constant() const
   { return true; }
@@ -1821,6 +1867,17 @@ class Boolean_expression : public Expression
   Type* type_;
 };
 
+// Traverse a boolean expression.  We just need to traverse the type
+// if there is one.
+
+int
+Boolean_expression::do_traverse(Traverse* traverse)
+{
+  if (this->type_ != NULL)
+    return Type::traverse(this->type_, traverse);
+  return TRAVERSE_CONTINUE;
+}
+
 // Get the type.
 
 Type*
@@ -1872,6 +1929,17 @@ Expression::make_boolean(bool val, Location location)
 }
 
 // Class String_expression.
+
+// Traverse a string expression.  We just need to traverse the type
+// if there is one.
+
+int
+String_expression::do_traverse(Traverse* traverse)
+{
+  if (this->type_ != NULL)
+    return Type::traverse(this->type_, traverse);
+  return TRAVERSE_CONTINUE;
+}
 
 // Get the type.
 
@@ -2247,6 +2315,9 @@ class Integer_expression : public Expression
   dump_integer(Ast_dump_context* ast_dump_context, const mpz_t val);
 
  protected:
+  int
+  do_traverse(Traverse*);
+
   bool
   do_is_constant() const
   { return true; }
@@ -2309,6 +2380,17 @@ class Integer_expression : public Expression
   // Whether this is a character constant.
   bool is_character_constant_;
 };
+
+// Traverse an integer expression.  We just need to traverse the type
+// if there is one.
+
+int
+Integer_expression::do_traverse(Traverse* traverse)
+{
+  if (this->type_ != NULL)
+    return Type::traverse(this->type_, traverse);
+  return TRAVERSE_CONTINUE;
+}
 
 // Return a numeric constant for this expression.  We have to mark
 // this as a character when appropriate.
@@ -2671,6 +2753,9 @@ class Float_expression : public Expression
   dump_float(Ast_dump_context* ast_dump_context, const mpfr_t val);
 
  protected:
+  int
+  do_traverse(Traverse*);
+
   bool
   do_is_constant() const
   { return true; }
@@ -2729,6 +2814,17 @@ class Float_expression : public Expression
   // The type so far.
   Type* type_;
 };
+
+// Traverse a float expression.  We just need to traverse the type if
+// there is one.
+
+int
+Float_expression::do_traverse(Traverse* traverse)
+{
+  if (this->type_ != NULL)
+    return Type::traverse(this->type_, traverse);
+  return TRAVERSE_CONTINUE;
+}
 
 // Return the current type.  If we haven't set the type yet, we return
 // an abstract float type.
@@ -2889,6 +2985,9 @@ class Complex_expression : public Expression
   dump_complex(Ast_dump_context* ast_dump_context, const mpc_t val);
 
  protected:
+  int
+  do_traverse(Traverse*);
+
   bool
   do_is_constant() const
   { return true; }
@@ -2951,6 +3050,17 @@ class Complex_expression : public Expression
   // The type if known.
   Type* type_;
 };
+
+// Traverse a complex expression.  We just need to traverse the type
+// if there is one.
+
+int
+Complex_expression::do_traverse(Traverse* traverse)
+{
+  if (this->type_ != NULL)
+    return Type::traverse(this->type_, traverse);
+  return TRAVERSE_CONTINUE;
+}
 
 // Return the current type.  If we haven't set the type yet, we return
 // an abstract complex type.
@@ -3172,6 +3282,10 @@ class Const_expression : public Expression
 
   Bexpression*
   do_get_backend(Translate_context* context);
+
+  int
+  do_inlining_cost() const
+  { return 1; }
 
   // When exporting a reference to a const as part of a const
   // expression, we export the value.  We ignore the fact that it has
@@ -7905,7 +8019,9 @@ Bound_method_expression::do_flatten(Gogo* gogo, Named_object*,
   Node* n = Node::make_node(this);
   if ((n->encoding() & ESCAPE_MASK) == Node::ESCAPE_NONE)
     ret->heap_expression()->set_allocate_on_stack();
-  else if (gogo->compiling_runtime() && gogo->package_name() == "runtime")
+  else if (gogo->compiling_runtime()
+	   && gogo->package_name() == "runtime"
+	   && !saw_errors())
     go_error_at(loc, "%s escapes to heap, not allowed in runtime",
                 n->ast_format(gogo).c_str());
 
@@ -9039,7 +9155,7 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
 	  // directly before the write barrier pass.
 	  Statement* assign;
 	  if (assign_lhs != NULL
-	      || !gogo->assign_needs_write_barrier(lhs))
+	      || !gogo->assign_needs_write_barrier(lhs, NULL))
 	    assign = Statement::make_assignment(lhs, elem, loc);
 	  else
 	    {
@@ -12666,7 +12782,8 @@ Array_index_expression::do_check_types(Gogo*)
   unsigned long v;
   if (this->start_->type()->integer_type() == NULL
       && !this->start_->type()->is_error()
-      && (!this->start_->numeric_constant_value(&nc)
+      && (!this->start_->type()->is_abstract()
+	  || !this->start_->numeric_constant_value(&nc)
 	  || nc.to_unsigned_long(&v) == Numeric_constant::NC_UL_NOTINT))
     this->report_error(_("index must be integer"));
   if (this->end_ != NULL
@@ -12674,7 +12791,8 @@ Array_index_expression::do_check_types(Gogo*)
       && !this->end_->type()->is_error()
       && !this->end_->is_nil_expression()
       && !this->end_->is_error_expression()
-      && (!this->end_->numeric_constant_value(&nc)
+      && (!this->end_->type()->is_abstract()
+	  || !this->end_->numeric_constant_value(&nc)
 	  || nc.to_unsigned_long(&v) == Numeric_constant::NC_UL_NOTINT))
     this->report_error(_("slice end must be integer"));
   if (this->cap_ != NULL
@@ -12682,7 +12800,8 @@ Array_index_expression::do_check_types(Gogo*)
       && !this->cap_->type()->is_error()
       && !this->cap_->is_nil_expression()
       && !this->cap_->is_error_expression()
-      && (!this->cap_->numeric_constant_value(&nc)
+      && (!this->cap_->type()->is_abstract()
+	  || !this->cap_->numeric_constant_value(&nc)
 	  || nc.to_unsigned_long(&v) == Numeric_constant::NC_UL_NOTINT))
     this->report_error(_("slice capacity must be integer"));
 
@@ -12799,13 +12918,21 @@ Array_index_expression::do_must_eval_subexpressions_in_order(
   return true;
 }
 
-// Flatten array indexing by using temporary variables for slices and indexes.
+// Flatten array indexing: add temporary variables and bounds checks.
 
 Expression*
-Array_index_expression::do_flatten(Gogo*, Named_object*,
+Array_index_expression::do_flatten(Gogo* gogo, Named_object*,
                                    Statement_inserter* inserter)
 {
+  if (this->is_flattened_)
+    return this;
+  this->is_flattened_ = true;
+
   Location loc = this->location();
+
+  if (this->is_error_expression())
+    return Expression::make_error(loc);
+
   Expression* array = this->array_;
   Expression* start = this->start_;
   Expression* end = this->end_;
@@ -12823,33 +12950,156 @@ Array_index_expression::do_flatten(Gogo*, Named_object*,
       return Expression::make_error(loc);
     }
 
+  Array_type* array_type = this->array_->type()->array_type();
+  if (array_type == NULL)
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(loc);
+    }
+
   Temporary_statement* temp;
-  if (array->type()->is_slice_type() && !array->is_variable())
+  if (array_type->is_slice_type() && !array->is_variable())
     {
       temp = Statement::make_temporary(NULL, array, loc);
       inserter->insert(temp);
       this->array_ = Expression::make_temporary_reference(temp, loc);
+      array = this->array_;
     }
-  if (!start->is_variable())
+  if (!start->is_variable() && !start->is_constant())
     {
       temp = Statement::make_temporary(NULL, start, loc);
       inserter->insert(temp);
       this->start_ = Expression::make_temporary_reference(temp, loc);
+      start = this->start_;
     }
   if (end != NULL
       && !end->is_nil_expression()
-      && !end->is_variable())
+      && !end->is_variable()
+      && !end->is_constant())
     {
       temp = Statement::make_temporary(NULL, end, loc);
       inserter->insert(temp);
       this->end_ = Expression::make_temporary_reference(temp, loc);
+      end = this->end_;
     }
-  if (cap != NULL && !cap->is_variable())
+  if (cap != NULL && !cap->is_variable() && !cap->is_constant())
     {
       temp = Statement::make_temporary(NULL, cap, loc);
       inserter->insert(temp);
       this->cap_ = Expression::make_temporary_reference(temp, loc);
+      cap = this->cap_;
     }
+
+  if (!this->needs_bounds_check_)
+    return this;
+
+  Expression* len;
+  if (!array_type->is_slice_type())
+    {
+      len = array_type->get_length(gogo, this->array_);
+      go_assert(len->is_constant());
+    }
+  else
+    {
+      len = array_type->get_length(gogo, this->array_->copy());
+      temp = Statement::make_temporary(NULL, len, loc);
+      inserter->insert(temp);
+      len = Expression::make_temporary_reference(temp, loc);
+    }
+
+  Expression* scap = NULL;
+  if (array_type->is_slice_type())
+    {
+      scap = array_type->get_capacity(gogo, this->array_->copy());
+      temp = Statement::make_temporary(NULL, scap, loc);
+      inserter->insert(temp);
+      scap = Expression::make_temporary_reference(temp, loc);
+    }
+
+  // The order of bounds checks here matches the order used by the gc
+  // compiler, as tested by issue30116[u].go.
+
+  if (cap != NULL)
+    {
+      if (array_type->is_slice_type())
+	Expression::check_bounds(cap, OPERATOR_LE, scap,
+				 Runtime::PANIC_SLICE3_ACAP,
+				 Runtime::PANIC_SLICE3_ACAP_U,
+				 Runtime::PANIC_EXTEND_SLICE3_ACAP,
+				 Runtime::PANIC_EXTEND_SLICE3_ACAP_U,
+				 inserter, loc);
+      else
+	Expression::check_bounds(cap, OPERATOR_LE, len,
+				 Runtime::PANIC_SLICE3_ALEN,
+				 Runtime::PANIC_SLICE3_ALEN_U,
+				 Runtime::PANIC_EXTEND_SLICE3_ALEN,
+				 Runtime::PANIC_EXTEND_SLICE3_ALEN_U,
+				 inserter, loc);
+
+      Expression* start_bound = cap;
+      if (end != NULL && !end->is_nil_expression())
+	{
+	  Expression::check_bounds(end, OPERATOR_LE, cap,
+				   Runtime::PANIC_SLICE3_B,
+				   Runtime::PANIC_SLICE3_B_U,
+				   Runtime::PANIC_EXTEND_SLICE3_B,
+				   Runtime::PANIC_EXTEND_SLICE3_B_U,
+				   inserter, loc);
+	  start_bound = end;
+	}
+
+      Expression::check_bounds(start, OPERATOR_LE, start_bound,
+			       Runtime::PANIC_SLICE3_C,
+			       Runtime::PANIC_SLICE3_C_U,
+			       Runtime::PANIC_EXTEND_SLICE3_C,
+			       Runtime::PANIC_EXTEND_SLICE3_C_U,
+			       inserter, loc);
+    }
+  else if (end != NULL && !end->is_nil_expression())
+    {
+      if (array_type->is_slice_type())
+	Expression::check_bounds(end, OPERATOR_LE, scap,
+				 Runtime::PANIC_SLICE_ACAP,
+				 Runtime::PANIC_SLICE_ACAP_U,
+				 Runtime::PANIC_EXTEND_SLICE_ACAP,
+				 Runtime::PANIC_EXTEND_SLICE_ACAP_U,
+				 inserter, loc);
+      else
+	Expression::check_bounds(end, OPERATOR_LE, len,
+				 Runtime::PANIC_SLICE_ALEN,
+				 Runtime::PANIC_SLICE_ALEN_U,
+				 Runtime::PANIC_EXTEND_SLICE_ALEN,
+				 Runtime::PANIC_EXTEND_SLICE_ALEN_U,
+				 inserter, loc);
+
+      Expression::check_bounds(start, OPERATOR_LE, end,
+			       Runtime::PANIC_SLICE_B,
+			       Runtime::PANIC_SLICE_B_U,
+			       Runtime::PANIC_EXTEND_SLICE_B,
+			       Runtime::PANIC_EXTEND_SLICE_B_U,
+			       inserter, loc);
+    }
+  else if (end != NULL)
+    {
+      Expression* start_bound;
+      if (array_type->is_slice_type())
+	start_bound = scap;
+      else
+	start_bound = len;
+      Expression::check_bounds(start, OPERATOR_LE, start_bound,
+			       Runtime::PANIC_SLICE_B,
+			       Runtime::PANIC_SLICE_B_U,
+			       Runtime::PANIC_EXTEND_SLICE_B,
+			       Runtime::PANIC_EXTEND_SLICE_B_U,
+			       inserter, loc);
+    }
+  else
+    Expression::check_bounds(start, OPERATOR_LT, len,
+			     Runtime::PANIC_INDEX,
+			     Runtime::PANIC_INDEX_U,
+			     Runtime::PANIC_EXTEND_INDEX,
+			     Runtime::PANIC_EXTEND_INDEX_U,
+			     inserter, loc);
 
   return this;
 }
@@ -12899,10 +13149,8 @@ Array_index_expression::do_get_backend(Translate_context* context)
   Type* int_type = Type::lookup_integer_type("int");
   Btype* int_btype = int_type->get_backend(gogo);
 
-  // We need to convert the length and capacity to the Go "int" type here
-  // because the length of a fixed-length array could be of type "uintptr"
-  // and gimple disallows binary operations between "uintptr" and other
-  // integer types. FIXME.
+  // Convert the length and capacity to "int".  FIXME: Do we need to
+  // do this?
   Bexpression* length = NULL;
   if (this->end_ == NULL || this->end_->is_nil_expression())
     {
@@ -12939,53 +13187,18 @@ Array_index_expression::do_get_backend(Translate_context* context)
   Bexpression* start = this->start_->get_backend(context);
   start = gogo->backend()->convert_expression(int_btype, start, loc);
 
-  Bexpression* crash = NULL;
-  Bexpression* bad_index = NULL;
-  if (this->needs_bounds_check_)
-    {
-      int code = (array_type->length() != NULL
-                  ? (this->end_ == NULL
-                     ? RUNTIME_ERROR_ARRAY_INDEX_OUT_OF_BOUNDS
-                     : RUNTIME_ERROR_ARRAY_SLICE_OUT_OF_BOUNDS)
-                  : (this->end_ == NULL
-                     ? RUNTIME_ERROR_SLICE_INDEX_OUT_OF_BOUNDS
-                     : RUNTIME_ERROR_SLICE_SLICE_OUT_OF_BOUNDS));
-      crash = gogo->runtime_error(code, loc)->get_backend(context);
-      bad_index = Expression::check_bounds(this->start_, loc)->get_backend(context);
-      Bexpression* start_too_large =
-        gogo->backend()->binary_expression((this->end_ == NULL
-                                            ? OPERATOR_GE
-                                            : OPERATOR_GT),
-                                           start,
-                                           (this->end_ == NULL
-                                            ? length
-                                            : capacity),
-                                           loc);
-      bad_index = gogo->backend()->binary_expression(OPERATOR_OROR,
-                                                     start_too_large,
-                                                     bad_index, loc);
-    }
-
-
   Bfunction* bfn = context->function()->func_value()->get_decl();
   if (this->end_ == NULL)
     {
-      // Simple array indexing.  This has to return an l-value, so
-      // wrap the index check into START.
-      if (this->needs_bounds_check_)
-        start =
-          gogo->backend()->conditional_expression(bfn, int_btype, bad_index,
-                                                  crash, start, loc);
-
+      // Simple array indexing.
       Bexpression* ret;
-      if (array_type->length() != NULL)
+      if (!array_type->is_slice_type())
 	{
 	  Bexpression* array = this->array_->get_backend(context);
 	  ret = gogo->backend()->array_index_expression(array, start, loc);
 	}
       else
 	{
-	  // Slice.
 	  Expression* valptr =
               array_type->get_value_pointer(gogo, this->array_,
                                             this->is_lvalue_);
@@ -12999,31 +13212,7 @@ Array_index_expression::do_get_backend(Translate_context* context)
       return ret;
     }
 
-  // Array slice.
-
-  if (this->cap_ != NULL)
-    {
-      cap_arg = gogo->backend()->convert_expression(int_btype, cap_arg, loc);
-
-      if (this->needs_bounds_check_)
-        {
-          Bexpression* bounds_bcheck =
-            Expression::check_bounds(this->cap_, loc)->get_backend(context);
-          bad_index =
-            gogo->backend()->binary_expression(OPERATOR_OROR, bounds_bcheck,
-                                               bad_index, loc);
-
-          Bexpression* cap_too_small =
-            gogo->backend()->binary_expression(OPERATOR_LT, cap_arg, start, loc);
-          Bexpression* cap_too_large =
-            gogo->backend()->binary_expression(OPERATOR_GT, cap_arg, capacity, loc);
-          Bexpression* bad_cap =
-            gogo->backend()->binary_expression(OPERATOR_OROR, cap_too_small,
-                                               cap_too_large, loc);
-          bad_index = gogo->backend()->binary_expression(OPERATOR_OROR, bad_cap,
-                                                         bad_index, loc);
-        }
-    }
+  // Slice expression.
 
   Bexpression* end;
   if (this->end_->is_nil_expression())
@@ -13032,24 +13221,6 @@ Array_index_expression::do_get_backend(Translate_context* context)
     {
       end = this->end_->get_backend(context);
       end = gogo->backend()->convert_expression(int_btype, end, loc);
-      if (this->needs_bounds_check_)
-        {
-          Bexpression* bounds_bcheck =
-            Expression::check_bounds(this->end_, loc)->get_backend(context);
-          bad_index =
-            gogo->backend()->binary_expression(OPERATOR_OROR, bounds_bcheck,
-                                               bad_index, loc);
-
-          Bexpression* end_too_small =
-            gogo->backend()->binary_expression(OPERATOR_LT, end, start, loc);
-          Bexpression* end_too_large =
-            gogo->backend()->binary_expression(OPERATOR_GT, end, cap_arg, loc);
-          Bexpression* bad_end =
-            gogo->backend()->binary_expression(OPERATOR_OROR, end_too_small,
-                                               end_too_large, loc);
-          bad_index = gogo->backend()->binary_expression(OPERATOR_OROR, bad_end,
-                                                         bad_index, loc);
-        }
     }
 
   Bexpression* result_length =
@@ -13081,12 +13252,7 @@ Array_index_expression::do_get_backend(Translate_context* context)
   init.push_back(result_length);
   init.push_back(result_capacity);
 
-  Bexpression* ret =
-    gogo->backend()->constructor_expression(struct_btype, init, loc);
-  if (this->needs_bounds_check_)
-    ret = gogo->backend()->conditional_expression(bfn, struct_btype, bad_index,
-                                                  crash, ret, loc);
-  return ret;
+  return gogo->backend()->constructor_expression(struct_btype, init, loc);
 }
 
 // Export an array index expression.
@@ -13164,7 +13330,15 @@ Expression*
 String_index_expression::do_flatten(Gogo*, Named_object*,
                                     Statement_inserter* inserter)
 {
+  if (this->is_flattened_)
+    return this;
+  this->is_flattened_ = true;
+
   Location loc = this->location();
+
+  if (this->is_error_expression())
+    return Expression::make_error(loc);
+
   Expression* string = this->string_;
   Expression* start = this->start_;
   Expression* end = this->end_;
@@ -13180,26 +13354,68 @@ String_index_expression::do_flatten(Gogo*, Named_object*,
     }
 
   Temporary_statement* temp;
-  if (!this->string_->is_variable())
+  if (!string->is_variable())
     {
-      temp = Statement::make_temporary(NULL, this->string_, loc);
+      temp = Statement::make_temporary(NULL, string, loc);
       inserter->insert(temp);
       this->string_ = Expression::make_temporary_reference(temp, loc);
+      string = this->string_;
     }
-  if (!this->start_->is_variable())
+  if (!start->is_variable())
     {
-      temp = Statement::make_temporary(NULL, this->start_, loc);
+      temp = Statement::make_temporary(NULL, start, loc);
       inserter->insert(temp);
       this->start_ = Expression::make_temporary_reference(temp, loc);
+      start = this->start_;
     }
-  if (this->end_ != NULL
-      && !this->end_->is_nil_expression()
-      && !this->end_->is_variable())
+  if (end != NULL
+      && !end->is_nil_expression()
+      && !end->is_variable())
     {
-      temp = Statement::make_temporary(NULL, this->end_, loc);
+      temp = Statement::make_temporary(NULL, end, loc);
       inserter->insert(temp);
       this->end_ = Expression::make_temporary_reference(temp, loc);
+      end = this->end_;
     }
+
+  Expression* len = Expression::make_string_info(string->copy(),
+						 STRING_INFO_LENGTH, loc);
+  temp = Statement::make_temporary(NULL, len, loc);
+  inserter->insert(temp);
+  len = Expression::make_temporary_reference(temp, loc);
+
+  // The order of bounds checks here matches the order used by the gc
+  // compiler, as tested by issue30116[u].go.
+
+  if (end != NULL && !end->is_nil_expression())
+    {
+      Expression::check_bounds(end, OPERATOR_LE, len,
+			       Runtime::PANIC_SLICE_ALEN,
+			       Runtime::PANIC_SLICE_ALEN_U,
+			       Runtime::PANIC_EXTEND_SLICE_ALEN,
+			       Runtime::PANIC_EXTEND_SLICE_ALEN_U,
+			       inserter, loc);
+      Expression::check_bounds(start, OPERATOR_LE, end,
+			       Runtime::PANIC_SLICE_B,
+			       Runtime::PANIC_SLICE_B_U,
+			       Runtime::PANIC_EXTEND_SLICE_B,
+			       Runtime::PANIC_EXTEND_SLICE_B_U,
+			       inserter, loc);
+    }
+  else if (end != NULL)
+    Expression::check_bounds(start, OPERATOR_LE, len,
+			     Runtime::PANIC_SLICE_B,
+			     Runtime::PANIC_SLICE_B_U,
+			     Runtime::PANIC_EXTEND_SLICE_B,
+			     Runtime::PANIC_EXTEND_SLICE_B_U,
+			     inserter, loc);
+  else
+    Expression::check_bounds(start, OPERATOR_LT, len,
+			     Runtime::PANIC_INDEX,
+			     Runtime::PANIC_INDEX_U,
+			     Runtime::PANIC_EXTEND_INDEX,
+			     Runtime::PANIC_EXTEND_INDEX_U,
+			     inserter, loc);
 
   return this;
 }
@@ -13245,7 +13461,8 @@ String_index_expression::do_check_types(Gogo*)
   unsigned long v;
   if (this->start_->type()->integer_type() == NULL
       && !this->start_->type()->is_error()
-      && (!this->start_->numeric_constant_value(&nc)
+      && (!this->start_->type()->is_abstract()
+	  || !this->start_->numeric_constant_value(&nc)
 	  || nc.to_unsigned_long(&v) == Numeric_constant::NC_UL_NOTINT))
     this->report_error(_("index must be integer"));
   if (this->end_ != NULL
@@ -13253,7 +13470,8 @@ String_index_expression::do_check_types(Gogo*)
       && !this->end_->type()->is_error()
       && !this->end_->is_nil_expression()
       && !this->end_->is_error_expression()
-      && (!this->end_->numeric_constant_value(&nc)
+      && (!this->end_->type()->is_abstract()
+	  || !this->end_->numeric_constant_value(&nc)
 	  || nc.to_unsigned_long(&v) == Numeric_constant::NC_UL_NOTINT))
     this->report_error(_("slice end must be integer"));
 
@@ -13303,14 +13521,7 @@ Bexpression*
 String_index_expression::do_get_backend(Translate_context* context)
 {
   Location loc = this->location();
-  Expression* bad_index = Expression::check_bounds(this->start_, loc);
-
-  int code = (this->end_ == NULL
-	      ? RUNTIME_ERROR_STRING_INDEX_OUT_OF_BOUNDS
-	      : RUNTIME_ERROR_STRING_SLICE_OUT_OF_BOUNDS);
-
   Gogo* gogo = context->gogo();
-  Bexpression* crash = gogo->runtime_error(code, loc)->get_backend(context);
 
   Type* int_type = Type::lookup_integer_type("int");
 
@@ -13342,21 +13553,9 @@ String_index_expression::do_get_backend(Translate_context* context)
 
   if (this->end_ == NULL)
     {
-      Expression* start_too_large =
-          Expression::make_binary(OPERATOR_GE, start, length, loc);
-      bad_index = Expression::make_binary(OPERATOR_OROR, start_too_large,
-                                          bad_index, loc);
-
       ptr = gogo->backend()->pointer_offset_expression(ptr, bstart, loc);
       Btype* ubtype = Type::lookup_integer_type("uint8")->get_backend(gogo);
-      Bexpression* index =
-	gogo->backend()->indirect_expression(ubtype, ptr, true, loc);
-
-      Btype* byte_btype = bytes->type()->points_to()->get_backend(gogo);
-      Bexpression* index_error = bad_index->get_backend(context);
-      return gogo->backend()->conditional_expression(bfn, byte_btype,
-                                                     index_error, crash,
-                                                     index, loc);
+      return gogo->backend()->indirect_expression(ubtype, ptr, true, loc);
     }
 
   Expression* end = NULL;
@@ -13365,20 +13564,8 @@ String_index_expression::do_get_backend(Translate_context* context)
   else
     {
       go_assert(this->end_->is_variable());
-      Expression* bounds_check = Expression::check_bounds(this->end_, loc);
-      bad_index =
-          Expression::make_binary(OPERATOR_OROR, bounds_check, bad_index, loc);
       end = Expression::make_cast(int_type, this->end_, loc);
-
-      Expression* end_too_large =
-        Expression::make_binary(OPERATOR_GT, end, length, loc);
-      bad_index = Expression::make_binary(OPERATOR_OROR, end_too_large,
-                                          bad_index, loc);
     }
-  Expression* start_too_large =
-    Expression::make_binary(OPERATOR_GT, start->copy(), end->copy(), loc);
-  bad_index = Expression::make_binary(OPERATOR_OROR, start_too_large,
-                                      bad_index, loc);
 
   end = end->copy();
   Bexpression* bend = end->get_backend(context);
@@ -13405,12 +13592,7 @@ String_index_expression::do_get_backend(Translate_context* context)
   std::vector<Bexpression*> init;
   init.push_back(ptr);
   init.push_back(new_length);
-  Bexpression* bstrslice =
-    gogo->backend()->constructor_expression(str_btype, init, loc);
-
-  Bexpression* index_error = bad_index->get_backend(context);
-  return gogo->backend()->conditional_expression(bfn, str_btype, index_error,
-						 crash, bstrslice, loc);
+  return gogo->backend()->constructor_expression(str_btype, init, loc);
 }
 
 // Export a string index expression.

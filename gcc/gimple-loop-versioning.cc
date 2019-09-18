@@ -1266,6 +1266,12 @@ loop_versioning::record_address_fragment (gimple *stmt,
 		  continue;
 		}
 	    }
+	  if (CONVERT_EXPR_CODE_P (code))
+	    {
+	      tree op1 = gimple_assign_rhs1 (assign);
+	      address->terms[i].expr = strip_casts (op1);
+	      continue;
+	    }
 	}
       i += 1;
     }

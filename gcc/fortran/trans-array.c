@@ -3609,7 +3609,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 
   if (ar->dimen == 0)
     {
-      gcc_assert (ar->codimen);
+      gcc_assert (ar->codimen || sym->attr.select_rank_temporary);
 
       if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se->expr)))
 	se->expr = build_fold_indirect_ref (gfc_conv_array_data (se->expr));
@@ -6108,17 +6108,20 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 		  tree atype = type;
 		  while (TREE_CODE (TREE_TYPE (atype)) == ARRAY_TYPE)
 		    atype = TREE_TYPE (atype);
-		  if (TREE_CODE (TREE_TYPE (atype)) == INTEGER_TYPE
-		      && tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (se.expr)))
-			 > tree_to_uhwi (TYPE_SIZE_UNIT (atype)))
+		  gcc_checking_assert (TREE_CODE (TREE_TYPE (atype))
+				       == INTEGER_TYPE);
+		  gcc_checking_assert (TREE_TYPE (TREE_TYPE (se.expr))
+				       == TREE_TYPE (atype));
+		  if (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (se.expr)))
+		      > tree_to_uhwi (TYPE_SIZE_UNIT (atype)))
 		    {
 		      unsigned HOST_WIDE_INT size
 			= tree_to_uhwi (TYPE_SIZE_UNIT (atype));
 		      const char *p = TREE_STRING_POINTER (se.expr);
 
 		      se.expr = build_string (size, p);
-		      TREE_TYPE (se.expr) = atype;
 		    }
+		  TREE_TYPE (se.expr) = atype;
 		}
 	      break;
 
@@ -7757,6 +7760,12 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	{
 	  gfc_conv_descriptor_offset_set (&loop.pre, parm,
 					 gfc_conv_descriptor_offset_get (desc));
+	}
+      else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc))
+	       && !se->data_not_needed
+	       && gfc_expr_attr (expr).select_rank_temporary)
+	{
+	  gfc_conv_descriptor_offset_set (&loop.pre, parm, gfc_index_zero_node);
 	}
       else if (onebased && (!rank_remap || se->use_offset)
 	  && expr->symtree

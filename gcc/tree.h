@@ -94,6 +94,10 @@ as_internal_fn (combined_fn code)
   (MARK_TS_TYPE_COMMON (C),				\
    tree_contains_struct[C][TS_TYPE_WITH_LANG_SPECIFIC] = true)
 
+#define MARK_TS_TYPE_NON_COMMON(C)			\
+  (MARK_TS_TYPE_WITH_LANG_SPECIFIC (C),			\
+   tree_contains_struct[C][TS_TYPE_NON_COMMON] = true)	\
+
 #define MARK_TS_DECL_MINIMAL(C)				\
   (MARK_TS_COMMON (C),					\
    tree_contains_struct[C][TS_DECL_MINIMAL] = true)
@@ -4418,7 +4422,8 @@ extern tree build_call_expr_internal_loc_array (location_t, enum internal_fn,
 extern tree maybe_build_call_expr_loc (location_t, combined_fn, tree,
 				       int, ...);
 extern tree build_alloca_call_expr (tree, unsigned int, HOST_WIDE_INT);
-extern tree build_string_literal (int, const char *, tree = char_type_node);
+extern tree build_string_literal (int, const char *, tree = char_type_node,
+				  unsigned HOST_WIDE_INT = HOST_WIDE_INT_M1U);
 
 /* Construct various nodes representing data types.  */
 

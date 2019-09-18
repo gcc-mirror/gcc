@@ -732,45 +732,6 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
   1,      1,      1,      1,						\
 }
 
-/* 1 for registers not available across function calls.
-   These must include the FIXED_REGISTERS and also any
-   registers that can be used without being saved.
-   The latter must include the registers where values are returned
-   and the register where structure-value addresses are passed.
-   Aside from that, you can include as many other registers as you like.  */
-#define CALL_USED_REGISTERS						\
-{									\
-/* Regular registers.  */						\
-  1,      1,      1,      1,      1,      1,      1,      1,		\
-  /* R8 and R9 are call-clobbered on SH5, but not on earlier SH ABIs.	\
-     Only the lower 32bits of R10-R14 are guaranteed to be preserved	\
-     across SH5 function calls.  */					\
-  0,      0,      0,      0,      0,      0,      0,      1,		\
-  1,      1,      1,      1,      1,      1,      1,      1,		\
-  1,      1,      1,      1,      0,      0,      0,      0,		\
-  0,      0,      0,      0,      1,      1,      1,      1,		\
-  1,      1,      1,      1,      0,      0,      0,      0,		\
-  0,      0,      0,      0,      0,      0,      0,      0,		\
-  0,      0,      0,      0,      1,      1,      1,      1,		\
-/* FP registers.  */							\
-  1,      1,      1,      1,      1,      1,      1,      1,		\
-  1,      1,      1,      1,      0,      0,      0,      0,		\
-  1,      1,      1,      1,      1,      1,      1,      1,		\
-  1,      1,      1,      1,      1,      1,      1,      1,		\
-  1,      1,      1,      1,      0,      0,      0,      0,		\
-  0,      0,      0,      0,      0,      0,      0,      0,		\
-  0,      0,      0,      0,      0,      0,      0,      0,		\
-  0,      0,      0,      0,      0,      0,      0,      0,		\
-/* Branch target registers.  */						\
-  1,      1,      1,      1,      1,      0,      0,      0,		\
-/* XD registers.  */							\
-  1,      1,      1,      1,      1,      1,      0,      0,		\
-/*"gbr",  "ap",	  "pr",   "t",    "mach", "macl", "fpul", "fpscr", */	\
-  1,      1,      1,      1,      1,      1,      1,      1,		\
-/*"rap",  "sfp","fpscr0","fpscr1"  */					\
-  1,      1,      1,      1,						\
-}
-
 /* CALL_REALLY_USED_REGISTERS is used as a default setting, which is then
    overridden by -fcall-saved-* and -fcall-used-* options and then by
    TARGET_CONDITIONAL_REGISTER_USAGE.  There we might want to make a

@@ -23,18 +23,17 @@ import (
 	"unsafe"
 )
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname makechan runtime.makechan
-//go:linkname makechan64 runtime.makechan64
-//go:linkname chansend1 runtime.chansend1
-//go:linkname chanrecv1 runtime.chanrecv1
-//go:linkname chanrecv2 runtime.chanrecv2
-//go:linkname closechan runtime.closechan
-//go:linkname selectnbsend runtime.selectnbsend
-//go:linkname selectnbrecv runtime.selectnbrecv
-//go:linkname selectnbrecv2 runtime.selectnbrecv2
+//go:linkname makechan
+//go:linkname makechan64
+//go:linkname chansend1
+//go:linkname chanrecv1
+//go:linkname chanrecv2
+//go:linkname closechan
+//go:linkname selectnbsend
+//go:linkname selectnbrecv
+//go:linkname selectnbrecv2
 
 const (
 	maxAlign  = 8
@@ -108,7 +107,7 @@ func makechan(t *chantype, size int) *hchan {
 		c = (*hchan)(mallocgc(hchanSize, nil, true))
 		// Race detector uses this location for synchronization.
 		c.buf = c.raceaddr()
-	case elem.kind&kindNoPointers != 0:
+	case elem.ptrdata == 0:
 		// Elements do not contain pointers.
 		// Allocate hchan and buf in one call.
 		c = (*hchan)(mallocgc(hchanSize+mem, nil, true))
@@ -701,6 +700,14 @@ func reflect_chanlen(c *hchan) int {
 	return int(c.qcount)
 }
 
+//go:linkname reflectlite_chanlen internal..z2freflectlite.chanlen
+func reflectlite_chanlen(c *hchan) int {
+	if c == nil {
+		return 0
+	}
+	return int(c.qcount)
+}
+
 //go:linkname reflect_chancap reflect.chancap
 func reflect_chancap(c *hchan) int {
 	if c == nil {
@@ -752,10 +759,8 @@ func (q *waitq) dequeue() *sudog {
 		// We use a flag in the G struct to tell us when someone
 		// else has won the race to signal this goroutine but the goroutine
 		// hasn't removed itself from the queue yet.
-		if sgp.isSelect {
-			if !atomic.Cas(&sgp.g.selectDone, 0, 1) {
-				continue
-			}
+		if sgp.isSelect && !atomic.Cas(&sgp.g.selectDone, 0, 1) {
+			continue
 		}
 
 		return sgp

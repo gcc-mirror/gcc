@@ -17,6 +17,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-additional-options "-Wno-volatile" { target c++2a } }
+
 // 3.4 function return types
 #include <tr1/functional>
 #include <tr1/type_traits>

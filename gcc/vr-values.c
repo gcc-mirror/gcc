@@ -234,7 +234,7 @@ vr_values::update_value_range (const_tree var, value_range *new_vr)
 	 called, if we are anyway, keep it VARYING.  */
       if (old_vr->varying_p ())
 	{
-	  new_vr->set_varying (new_vr->type ());
+	  new_vr->set_varying (TREE_TYPE (var));
 	  is_new = false;
 	}
       else if (new_vr->undefined_p ())
@@ -1124,15 +1124,8 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
       switch (cfn)
 	{
 	case CFN_BUILT_IN_CONSTANT_P:
-	  /* If the call is __builtin_constant_p and the argument is a
-	     function parameter resolve it to false.  This avoids bogus
-	     array bound warnings.
-	     ???  We could do this as early as inlining is finished.  */
-	  arg = gimple_call_arg (stmt, 0);
-	  if (TREE_CODE (arg) == SSA_NAME
-	      && SSA_NAME_IS_DEFAULT_DEF (arg)
-	      && TREE_CODE (SSA_NAME_VAR (arg)) == PARM_DECL
-	      && cfun->after_inlining)
+	  /* Resolve calls to __builtin_constant_p after inlining.  */
+	  if (cfun->after_inlining)
 	    {
 	      vr->set_zero (type);
 	      vr->equiv_clear ();
@@ -1319,7 +1312,12 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 		tree max = vrp_val_max (ptrdiff_type_node);
 		wide_int wmax = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
 		tree range_min = build_zero_cst (type);
-		tree range_max = wide_int_to_tree (type, wmax - 1);
+		/* To account for the terminating NUL, the maximum length
+		   is one less than the maximum array size, which in turn
+		   is one  less than PTRDIFF_MAX (or SIZE_MAX where it's
+		   smaller than the former type).
+		   FIXME: Use max_object_size() - 1 here.  */
+		tree range_max = wide_int_to_tree (type, wmax - 2);
 		vr->set (VR_RANGE, range_min, range_max);
 		return;
 	      }

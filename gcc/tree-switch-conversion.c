@@ -605,7 +605,9 @@ switch_conversion::build_one_array (int num, tree arr_index_type,
   vec<constructor_elt, va_gc> *constructor = m_constructors[num];
   wide_int coeff_a, coeff_b;
   bool linear_p = contains_linear_function_p (constructor, &coeff_a, &coeff_b);
-  if (linear_p)
+  tree type;
+  if (linear_p
+      && (type = range_check_type (TREE_TYPE ((*constructor)[0].value))))
     {
       if (dump_file && coeff_a.to_uhwi () > 0)
 	fprintf (dump_file, "Linear transformation with A = %" PRId64
@@ -613,13 +615,12 @@ switch_conversion::build_one_array (int num, tree arr_index_type,
 		 coeff_b.to_shwi ());
 
       /* We must use type of constructor values.  */
-      tree t = unsigned_type_for (TREE_TYPE ((*constructor)[0].value));
       gimple_seq seq = NULL;
-      tree tmp = gimple_convert (&seq, t, m_index_expr);
-      tree tmp2 = gimple_build (&seq, MULT_EXPR, t,
-				wide_int_to_tree (t, coeff_a), tmp);
-      tree tmp3 = gimple_build (&seq, PLUS_EXPR, t, tmp2,
-				wide_int_to_tree (t, coeff_b));
+      tree tmp = gimple_convert (&seq, type, m_index_expr);
+      tree tmp2 = gimple_build (&seq, MULT_EXPR, type,
+				wide_int_to_tree (type, coeff_a), tmp);
+      tree tmp3 = gimple_build (&seq, PLUS_EXPR, type, tmp2,
+				wide_int_to_tree (type, coeff_b));
       tree tmp4 = gimple_convert (&seq, TREE_TYPE (name), tmp3);
       gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
       load = gimple_build_assign (name, tmp4);
@@ -1213,14 +1214,14 @@ jump_table_cluster::find_jump_tables (vec<cluster *> &clusters)
     }
 
   /* No result.  */
-  if (min[l].m_count == INT_MAX)
+  if (min[l].m_count == l)
     return clusters.copy ();
 
   vec<cluster *> output;
   output.create (4);
 
   /* Find and build the clusters.  */
-  for (int end = l;;)
+  for (unsigned int end = l;;)
     {
       int start = min[end].m_start;
 
@@ -1257,11 +1258,9 @@ jump_table_cluster::can_be_handled (const vec<cluster *> &clusters,
      make a sequence of conditional branches instead of a dispatch.
 
      The definition of "much bigger" depends on whether we are
-     optimizing for size or for speed.  */
-  if (!flag_jump_tables)
-    return false;
+     optimizing for size or for speed.
 
-  /* For algorithm correctness, jump table for a single case must return
+     For algorithm correctness, jump table for a single case must return
      true.  We bail out in is_beneficial if it's called just for
      a single case.  */
   if (start == end)
@@ -1311,9 +1310,6 @@ jump_table_cluster::is_beneficial (const vec<cluster *> &,
 vec<cluster *>
 bit_test_cluster::find_bit_tests (vec<cluster *> &clusters)
 {
-  vec<cluster *> output;
-  output.create (4);
-
   unsigned l = clusters.length ();
   auto_vec<min_cluster_item> min;
   min.reserve (l + 1);
@@ -1336,8 +1332,11 @@ bit_test_cluster::find_bit_tests (vec<cluster *> &clusters)
     }
 
   /* No result.  */
-  if (min[l].m_count == INT_MAX)
+  if (min[l].m_count == l)
     return clusters.copy ();
+
+  vec<cluster *> output;
+  output.create (4);
 
   /* Find and build the clusters.  */
   for (unsigned end = l;;)
@@ -1351,7 +1350,7 @@ bit_test_cluster::find_bit_tests (vec<cluster *> &clusters)
 						  entire));
 	}
       else
-	for (int i = end - 1; i >=  start; i--)
+	for (int i = end - 1; i >= start; i--)
 	  output.safe_push (clusters[i]);
 
       end = start;
@@ -1484,7 +1483,7 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
   unsigned int i, j, k;
   unsigned int count;
 
-  tree unsigned_index_type = unsigned_type_for (index_type);
+  tree unsigned_index_type = range_check_type (index_type);
 
   gimple_stmt_iterator gsi;
   gassign *shift_stmt;
@@ -1794,7 +1793,8 @@ switch_decision_tree::try_switch_expansion (vec<cluster *> &clusters)
   tree index_type = TREE_TYPE (index_expr);
   basic_block bb = gimple_bb (m_switch);
 
-  if (gimple_switch_num_labels (m_switch) == 1)
+  if (gimple_switch_num_labels (m_switch) == 1
+      || range_check_type (index_type) == NULL_TREE)
     return false;
 
   /* Find the default case target label.  */

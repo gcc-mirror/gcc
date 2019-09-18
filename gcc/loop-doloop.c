@@ -731,7 +731,7 @@ doloop_optimize (class loop *loop)
     bitmap modified = BITMAP_ALLOC (NULL);
 
     for (rtx_insn *i = doloop_seq; i != NULL; i = NEXT_INSN (i))
-      note_stores (PATTERN (i), record_reg_sets, modified);
+      note_stores (i, record_reg_sets, modified);
 
     basic_block loop_end = desc->out_edge->src;
     bool fail = bitmap_intersect_p (df_get_live_out (loop_end), modified);

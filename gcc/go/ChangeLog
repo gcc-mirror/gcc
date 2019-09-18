@@ -1,3 +1,15 @@
+2019-09-04  Ian Lance Taylor  <iant@golang.org>
+
+	PR tree-optimization/91663
+	* go-lang.c (go_langhook_post_options): Clear
+	flag_partial_inlining.
+
+2019-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91283
+	* go-lang.c (go_langhook_post_options): Set flag_excess_precision
+	instead of flag_excess_precision_cmdline.
+
 2019-07-02  Cherry Zhang  <cherryyz@google.com>
 
 	* go-gcc.cc (Gcc_backend::Gcc_backend): Define __builtin_memset.

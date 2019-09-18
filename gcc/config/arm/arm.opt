@@ -276,8 +276,8 @@ Target Report Var(unaligned_access) Init(2) Save
 Enable unaligned word and halfword accesses to packed data.
 
 mneon-for-64bits
-Target Report RejectNegative Var(use_neon_for_64bits) Init(0)
-Use Neon to perform 64-bits operations rather than core registers.
+Target WarnRemoved
+This option is deprecated and has no effect.
 
 mslow-flash-data
 Target Report Var(target_slow_flash_data) Init(0)
@@ -306,3 +306,7 @@ Cost to assume for a branch insn.
 mgeneral-regs-only
 Target Report RejectNegative Mask(GENERAL_REGS_ONLY) Save
 Generate code which uses the core registers only (r0-r14).
+
+mfdpic
+Target Report Mask(FDPIC)
+Enable Function Descriptor PIC mode.

@@ -219,26 +219,12 @@ package body Exp_Dbug is
 
    begin
       if Has_Homonym (E) then
-         declare
-            H  : Entity_Id := Homonym (E);
-            Nr : Nat := 1;
+         if Homonym_Len > 0 then
+            Homonym_Len := Homonym_Len + 1;
+            Homonym_Numbers (Homonym_Len) := '_';
+         end if;
 
-         begin
-            while Present (H) loop
-               if Scope (H) = Scope (E) then
-                  Nr := Nr + 1;
-               end if;
-
-               H := Homonym (H);
-            end loop;
-
-            if Homonym_Len > 0 then
-               Homonym_Len := Homonym_Len + 1;
-               Homonym_Numbers (Homonym_Len) := '_';
-            end if;
-
-            Add_Nat_To_H (Nr);
-         end;
+         Add_Nat_To_H (Get_Homonym_Number (E));
       end if;
    end Append_Homonym_Number;
 
@@ -1068,6 +1054,26 @@ package body Exp_Dbug is
       end loop;
    end Build_Subprogram_Instance_Renamings;
 
+   ------------------------
+   -- Get_Homonym_Number --
+   ------------------------
+
+   function Get_Homonym_Number (E : Entity_Id) return Pos is
+      H  : Entity_Id := Homonym (E);
+      Nr : Pos := 1;
+
+   begin
+      while Present (H) loop
+         if Scope (H) = Scope (E) then
+            Nr := Nr + 1;
+         end if;
+
+         H := Homonym (H);
+      end loop;
+
+      return Nr;
+   end Get_Homonym_Number;
+
    ------------------------------------
    -- Get_Secondary_DT_External_Name --
    ------------------------------------
@@ -1449,25 +1455,6 @@ package body Exp_Dbug is
 
    begin
       if Has_Qualified_Name (Ent) then
-         return;
-
-      --  In formal verification mode, simply append a suffix for homonyms.
-      --  We used to qualify entity names as full expansion does, but this was
-      --  removed as this prevents the verification back-end from using a short
-      --  name for debugging and user interaction. The verification back-end
-      --  already takes care of qualifying names when needed. Still mark the
-      --  name as being qualified, as Qualify_Entity_Name may be called more
-      --  than once on the same entity.
-
-      elsif GNATprove_Mode then
-         if Has_Homonym (Ent) then
-            Get_Name_String (Chars (Ent));
-            Append_Homonym_Number (Ent);
-            Output_Homonym_Numbers_Suffix;
-            Set_Chars (Ent, Name_Enter);
-         end if;
-
-         Set_Has_Qualified_Name (Ent);
          return;
 
       --  If the entity is a variable encoding the debug name for an object

@@ -101,6 +101,8 @@ convert_single_case_switch (gswitch *swtch, gimple_stmt_iterator &gsi)
   if (high)
     {
       tree lhs, rhs;
+      if (range_check_type (TREE_TYPE (index)) == NULL_TREE)
+	return false;
       generate_range_test (bb, index, low, high, &lhs, &rhs);
       cond = gimple_build_cond (LE_EXPR, lhs, rhs, NULL_TREE, NULL_TREE);
     }

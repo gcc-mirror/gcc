@@ -1,3 +1,5 @@
+/* { dg-require-stack-size "256*8+4" } */
+
 int main()                                                                      
 {                                                                               
   unsigned long long table[256];                                          

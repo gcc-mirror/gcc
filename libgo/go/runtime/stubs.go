@@ -165,7 +165,6 @@ func breakpoint()
 
 func asminit() {}
 
-//go:linkname reflectcall runtime.reflectcall
 //go:noescape
 func reflectcall(fntype *functype, fn *funcval, isInterface, isMethod bool, params, results *unsafe.Pointer)
 
@@ -241,28 +240,6 @@ func asmcgocall(fn, arg unsafe.Pointer) int32 {
 	return 0
 }
 
-// argp used in Defer structs when there is no argp.
-const _NoArgs = ^uintptr(0)
-
-//extern __builtin_prefetch
-func prefetch(addr unsafe.Pointer, rw int32, locality int32)
-
-func prefetcht0(addr uintptr) {
-	prefetch(unsafe.Pointer(addr), 0, 3)
-}
-
-func prefetcht1(addr uintptr) {
-	prefetch(unsafe.Pointer(addr), 0, 2)
-}
-
-func prefetcht2(addr uintptr) {
-	prefetch(unsafe.Pointer(addr), 0, 1)
-}
-
-func prefetchnta(addr uintptr) {
-	prefetch(unsafe.Pointer(addr), 0, 0)
-}
-
 // round n up to a multiple of a.  a must be a power of 2.
 func round(n, a uintptr) uintptr {
 	return (n + a - 1) &^ (a - 1)
@@ -280,13 +257,13 @@ func osyield()
 func syscall(trap uintptr, a1, a2, a3, a4, a5, a6 uintptr) uintptr
 
 // For gccgo, to communicate from the C code to the Go code.
-//go:linkname setIsCgo runtime.setIsCgo
+//go:linkname setIsCgo
 func setIsCgo() {
 	iscgo = true
 }
 
 // For gccgo, to communicate from the C code to the Go code.
-//go:linkname setSupportAES runtime.setSupportAES
+//go:linkname setSupportAES
 func setSupportAES(v bool) {
 	support_aes = v
 }
@@ -320,7 +297,7 @@ func dumpregs(*_siginfo_t, unsafe.Pointer)
 func setRandomNumber(uint32)
 
 // Called by gccgo's proc.c.
-//go:linkname allocg runtime.allocg
+//go:linkname allocg
 func allocg() *g {
 	return new(g)
 }
@@ -332,20 +309,6 @@ func rethrowException()
 // Fetch the size and required alignment of the _Unwind_Exception type
 // used by the stack unwinder.
 func unwindExceptionSize() uintptr
-
-// Called by C code to set the number of CPUs.
-//go:linkname setncpu runtime.setncpu
-func setncpu(n int32) {
-	ncpu = n
-}
-
-// Called by C code to set the page size.
-//go:linkname setpagesize runtime.setpagesize
-func setpagesize(s uintptr) {
-	if physPageSize == 0 {
-		physPageSize = s
-	}
-}
 
 const uintptrMask = 1<<(8*sys.PtrSize) - 1
 
@@ -382,17 +345,16 @@ func abort()
 var usestackmaps bool
 
 // probestackmaps detects whether there are stack maps.
-//go:linkname probestackmaps runtime.probestackmaps
 func probestackmaps() bool
 
 // For the math/bits packages for gccgo.
-//go:linkname getDivideError runtime.getDivideError
+//go:linkname getDivideError
 func getDivideError() error {
 	return divideError
 }
 
 // For the math/bits packages for gccgo.
-//go:linkname getOverflowError runtime.getOverflowError
+//go:linkname getOverflowError
 func getOverflowError() error {
 	return overflowError
 }

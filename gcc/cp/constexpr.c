@@ -3849,7 +3849,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  {
 	    tree ob = TREE_OPERAND (probe, 0);
 	    tree elt = TREE_OPERAND (probe, 1);
-	    if (DECL_P (elt) && DECL_MUTABLE_P (elt))
+	    if (TREE_CODE (elt) == FIELD_DECL && DECL_MUTABLE_P (elt))
 	      mutable_p = true;
 	    if (evaluated
 		&& modifying_const_object_p (TREE_CODE (t), probe, mutable_p)
@@ -4163,6 +4163,10 @@ cxx_eval_increment_expression (const constexpr_ctx *ctx, tree t,
   tree op = TREE_OPERAND (t, 0);
   tree offset = TREE_OPERAND (t, 1);
   gcc_assert (TREE_CONSTANT (offset));
+
+  /* OFFSET is constant, but perhaps not constant enough.  We need to
+     e.g. bash FLOAT_EXPRs to REAL_CSTs.  */
+  offset = fold_simple (offset);
 
   /* The operand as an lvalue.  */
   op = cxx_eval_constant_expression (ctx, op, true,

@@ -927,7 +927,8 @@ lto_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 
   /* Excess precision other than "fast" requires front-end
      support.  */
-  flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
+  if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
+    flag_excess_precision = EXCESS_PRECISION_FAST;
 
   /* When partitioning, we can tear appart STRING_CSTs uses from the same
      TU into multiple partitions.  Without constant merging the constants

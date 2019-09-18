@@ -79,15 +79,12 @@
   0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, \
   1, 1, 1}
 
-#define CALL_USED_REGISTERS \
+#define CALL_REALLY_USED_REGISTERS \
  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
   1, 1, 1}
-
-#define CALL_REALLY_USED_REGISTERS \
- CALL_USED_REGISTERS
 
 #define REG_ALLOC_ORDER {				\
       10, 11, 12, 13, 14, /* call used */		\

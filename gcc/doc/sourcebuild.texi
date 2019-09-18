@@ -1442,6 +1442,10 @@ vector alignment.
 Target supports both signed and unsigned averaging operations on vectors
 of bytes.
 
+@item vect_mulhrs_hi
+Target supports both signed and unsigned multiply-high-with-round-and-scale
+operations on vectors of half-words.
+
 @item vect_condition
 Target supports vector conditional operations.
 
@@ -2011,9 +2015,6 @@ PowerPC target supports PowerPC 405.
 @item ppc_recip_hw
 PowerPC target supports executing reciprocal estimate instructions.
 
-@item spu_auto_overlay
-SPU target has toolchain that supports automatic overlay generation.
-
 @item vmx_hw
 PowerPC target supports executing AltiVec instructions.
 
@@ -2377,6 +2378,10 @@ Target supports @code{wchar_t} that is compatible with @code{char32_t}.
 
 @item comdat_group
 Target uses comdat groups.
+
+@item indirect_calls
+Target supports indirect calls, i.e. calls where the target is not
+constant.
 @end table
 
 @subsubsection Local to tests in @code{gcc.target/i386}
@@ -2421,13 +2426,6 @@ Target supports compiling @code{vpclmul} instructions.
 
 @item xop
 Target supports compiling @code{xop} instructions.
-@end table
-
-@subsubsection Local to tests in @code{gcc.target/spu/ea}
-
-@table @code
-@item ealib
-Target @code{__ea} library functions are available.
 @end table
 
 @subsubsection Local to tests in @code{gcc.test-framework}
@@ -2873,9 +2871,6 @@ int main() @{ return 0; @}
 
 @item cleanup-profile-file
 Removes profiling files generated for this test.
-
-@item cleanup-repo-files
-Removes files generated for this test for @option{-frepo}.
 
 @end table
 

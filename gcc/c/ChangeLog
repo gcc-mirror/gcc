@@ -1,3 +1,20 @@
+2019-09-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR c/78736
+	* c-typeck.c (convert_for_assignment): Handle Wenum-conversion.
+
+2019-08-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR pch/61250
+	* c-parser.c (c_parse_file): Call c_common_no_more_pch ()
+	after determining that the first token is not
+	PRAGMA_GCC_PCH_PREPROCESS.
+
+2019-08-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-parser.c (c_parser_declaration_or_fndef): Set DECL_ARGUMENTS of a
+	FUNCTION_DECL to the right value in the presence of nested declarators.
+
 2019-08-13  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/91421

@@ -102,7 +102,10 @@ package test passes, go test prints only the final 'ok' summary
 line. If a package test fails, go test prints the full test output.
 If invoked with the -bench or -v flag, go test prints the full
 output even for passing package tests, in order to display the
-requested benchmark results or verbose logging.
+requested benchmark results or verbose logging. After the package
+tests for all of the listed packages finish, and their output is
+printed, go test prints a final 'FAIL' status if any package test
+has failed.
 
 In package list mode only, go test caches successful package test
 results to avoid unnecessary repeated running of tests. When the
@@ -484,9 +487,13 @@ var (
 	pkgArgs          []string
 	pkgs             []*load.Package
 
-	testKillTimeout = 10 * time.Minute
-	testCacheExpire time.Time // ignore cached test results before this time
+	testActualTimeout = 10 * time.Minute                  // actual timeout which is passed to tests
+	testKillTimeout   = testActualTimeout + 1*time.Minute // backup alarm
+	testCacheExpire   time.Time                           // ignore cached test results before this time
 )
+
+// testVetExplicit records whether testVetFlags were set by an explicit -vet.
+var testVetExplicit = false
 
 // testVetFlags is the list of flags to pass to vet when invoked automatically during go test.
 var testVetFlags = []string{
@@ -500,6 +507,7 @@ var testVetFlags = []string{
 	// "-cgocall",
 	// "-composites",
 	// "-copylocks",
+	"-errorsas",
 	// "-httpresponse",
 	// "-lostcancel",
 	// "-methods",
@@ -514,15 +522,22 @@ var testVetFlags = []string{
 	// "-unusedresult",
 }
 
+func testCmdUsage() {
+	fmt.Fprintf(os.Stderr, "usage: %s\n", CmdTest.UsageLine)
+	fmt.Fprintf(os.Stderr, "Run 'go help %s' and 'go help %s' for details.\n", CmdTest.LongName(), HelpTestflag.LongName())
+	os.Exit(2)
+}
+
 func runTest(cmd *base.Command, args []string) {
 	modload.LoadTests = true
 
-	pkgArgs, testArgs = testFlags(cmd.Usage, args)
+	pkgArgs, testArgs = testFlags(testCmdUsage, args)
 
 	work.FindExecCmd() // initialize cached result
 
 	work.BuildInit()
 	work.VetFlags = testVetFlags
+	work.VetExplicit = testVetExplicit
 
 	pkgs = load.PackagesForBuild(pkgArgs)
 	if len(pkgs) == 0 {
@@ -546,11 +561,19 @@ func runTest(cmd *base.Command, args []string) {
 	// the test wedges with a goroutine spinning and its background
 	// timer does not get a chance to fire.
 	if dt, err := time.ParseDuration(testTimeout); err == nil && dt > 0 {
-		testKillTimeout = dt + 1*time.Minute
+		testActualTimeout = dt
+		testKillTimeout = testActualTimeout + 1*time.Minute
 	} else if err == nil && dt == 0 {
 		// An explicit zero disables the test timeout.
+		// No timeout is passed to tests.
 		// Let it have one century (almost) before we kill it.
+		testActualTimeout = -1
 		testKillTimeout = 100 * 365 * 24 * time.Hour
+	}
+
+	// Pass timeout to tests if it exists.
+	if testActualTimeout > 0 {
+		testArgs = append(testArgs, "-test.timeout="+testActualTimeout.String())
 	}
 
 	// show passing test output (after buffering) with -v flag.
@@ -640,7 +663,7 @@ func runTest(cmd *base.Command, args []string) {
 		}
 
 		// Select for coverage all dependencies matching the testCoverPaths patterns.
-		for _, p := range load.GetTestPackageList(pkgs) {
+		for _, p := range load.TestPackageList(pkgs) {
 			haveMatch := false
 			for i := range testCoverPaths {
 				if match[i](p) {
@@ -720,7 +743,7 @@ func runTest(cmd *base.Command, args []string) {
 	}
 
 	// Ultimately the goal is to print the output.
-	root := &work.Action{Mode: "go test", Deps: prints}
+	root := &work.Action{Mode: "go test", Func: printExitStatus, Deps: prints}
 
 	// Force the printing of results to happen in order,
 	// one at a time.
@@ -754,7 +777,7 @@ func ensureImport(p *load.Package, pkg string) {
 		}
 	}
 
-	p1 := load.LoadPackage(pkg, &load.ImportStack{})
+	p1 := load.LoadImportWithFlags(pkg, p.Dir, p, &load.ImportStack{}, nil, 0)
 	if p1.Error != nil {
 		base.Fatalf("load %s: %v", pkg, p1.Error)
 	}
@@ -792,7 +815,7 @@ func builderTest(b *work.Builder, p *load.Package) (buildAction, runAction, prin
 			DeclVars: declareCoverVars,
 		}
 	}
-	pmain, ptest, pxtest, err := load.GetTestPackagesFor(p, cover)
+	pmain, ptest, pxtest, err := load.TestPackagesFor(p, cover)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -1227,6 +1250,15 @@ func (c *runCache) tryCacheWithID(b *work.Builder, a *work.Action, id string) bo
 		return false
 	}
 
+	if a.Package.Root == "" {
+		// Caching does not apply to tests outside of any module, GOPATH, or GOROOT.
+		if cache.DebugTest {
+			fmt.Fprintf(os.Stderr, "testcache: caching disabled for package outside of module root, GOPATH, or GOROOT: %s\n", a.Package.ImportPath)
+		}
+		c.disableCache = true
+		return false
+	}
+
 	var cacheArgs []string
 	for _, arg := range testArgs {
 		i := strings.Index(arg, "=")
@@ -1414,8 +1446,8 @@ func computeTestInputsID(a *work.Action, testlog []byte) (cache.ActionID, error)
 			if !filepath.IsAbs(name) {
 				name = filepath.Join(pwd, name)
 			}
-			if !inDir(name, a.Package.Root) {
-				// Do not recheck files outside the GOPATH or GOROOT root.
+			if a.Package.Root == "" || !inDir(name, a.Package.Root) {
+				// Do not recheck files outside the module, GOPATH, or GOROOT root.
 				break
 			}
 			fmt.Fprintf(h, "stat %s %x\n", name, hashStat(name))
@@ -1423,8 +1455,8 @@ func computeTestInputsID(a *work.Action, testlog []byte) (cache.ActionID, error)
 			if !filepath.IsAbs(name) {
 				name = filepath.Join(pwd, name)
 			}
-			if !inDir(name, a.Package.Root) {
-				// Do not recheck files outside the GOPATH or GOROOT root.
+			if a.Package.Root == "" || !inDir(name, a.Package.Root) {
+				// Do not recheck files outside the module, GOPATH, or GOROOT root.
 				break
 			}
 			fh, err := hashOpen(name)
@@ -1615,5 +1647,16 @@ func builderNoTest(b *work.Builder, a *work.Action) error {
 		stdout = json
 	}
 	fmt.Fprintf(stdout, "?   \t%s\t[no test files]\n", a.Package.ImportPath)
+	return nil
+}
+
+// printExitStatus is the action for printing the exit status
+func printExitStatus(b *work.Builder, a *work.Action) error {
+	if !testJSON && len(pkgArgs) != 0 {
+		if base.GetExitStatus() != 0 {
+			fmt.Println("FAIL")
+			return nil
+		}
+	}
 	return nil
 }

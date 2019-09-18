@@ -11,7 +11,7 @@ foo ()
   static constexpr volatile int k = 5;
 }
 
-constexpr volatile int
+constexpr volatile int // { dg-warning "deprecated" "" { target c++2a } }
 bar ()
 {
   return i;

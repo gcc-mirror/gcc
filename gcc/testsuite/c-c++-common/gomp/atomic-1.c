@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-volatile" { target c++ } } */
 
 int x;
 volatile int y;

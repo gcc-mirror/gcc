@@ -2161,10 +2161,41 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 					    all_prefix_attrs));
 	      if (d
 		  && TREE_CODE (d) == FUNCTION_DECL
-		  && declarator->kind == cdk_function
 		  && DECL_ARGUMENTS (d) == NULL_TREE
 		  && DECL_INITIAL (d) == NULL_TREE)
-		DECL_ARGUMENTS (d) = declarator->u.arg_info->parms;
+		{
+		  /* Find the innermost declarator that is neither cdk_id
+		     nor cdk_attrs.  */
+		  const struct c_declarator *decl = declarator;
+		  const struct c_declarator *last_non_id_attrs = NULL;
+
+		  while (decl)
+		    switch (decl->kind)
+		      {
+		      case cdk_array:
+		      case cdk_function:
+		      case cdk_pointer:
+			last_non_id_attrs = decl;
+			decl = decl->declarator;
+			break;
+
+		      case cdk_attrs:
+			decl = decl->declarator;
+			break;
+
+		      case cdk_id:
+			decl = 0;
+			break;
+
+		      default:
+			gcc_unreachable ();
+		      }
+
+		  /* If it exists and is cdk_function, use its parameters.  */
+		  if (last_non_id_attrs
+		      && last_non_id_attrs->kind == cdk_function)
+		    DECL_ARGUMENTS (d) = last_non_id_attrs->u.arg_info->parms;
+		}
 	      if (omp_declare_simd_clauses.exists ())
 		{
 		  tree parms = NULL_TREE;
@@ -20232,6 +20263,8 @@ c_parse_file (void)
 
   if (c_parser_peek_token (&tparser)->pragma_kind == PRAGMA_GCC_PCH_PREPROCESS)
     c_parser_pragma_pch_preprocess (&tparser);
+  else
+    c_common_no_more_pch ();
 
   the_parser = ggc_alloc<c_parser> ();
   *the_parser = tparser;

@@ -1678,7 +1678,8 @@ maybe_diag_access_bounds (location_t loc, gimple *call, tree func, int strict,
   if (!warn_array_bounds)
     return false;
 
-  if (ref.ref && TREE_NO_WARNING (ref.ref))
+  if (TREE_NO_WARNING (ref.ptr)
+      || (ref.ref && TREE_NO_WARNING (ref.ref)))
     return false;
 
   if (EXPR_HAS_LOCATION (ref.ptr))

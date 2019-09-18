@@ -464,17 +464,12 @@ package body Ada.Containers.Bounded_Ordered_Maps is
    ----------
 
    function Copy (Source : Map; Capacity : Count_Type := 0) return Map is
-      C : Count_Type;
-
+      C : constant Count_Type :=
+        (if Capacity = 0 then Source.Length
+         else Capacity);
    begin
-      if Capacity = 0 then
-         C := Source.Length;
-
-      elsif Capacity >= Source.Length then
-         C := Capacity;
-
-      elsif Checks then
-         raise Capacity_Error with "Capacity value too small";
+      if Checks and then C < Source.Length then
+         raise Capacity_Error with "Capacity too small";
       end if;
 
       return Target : Map (Capacity => C) do

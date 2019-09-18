@@ -116,17 +116,18 @@ by type.  Explanations are in the following sections.
 @table @emph
 @item Fortran Language Options
 @xref{Fortran Dialect Options,,Options controlling Fortran dialect}.
-@gccoptlist{-fall-intrinsics -fallow-invalid-boz -fbackslash -fcray-pointer @gol
--fd-lines-as-code -fd-lines-as-comments -fdec -fdec-structure @gol
--fdec-intrinsic-ints -fdec-static -fdec-math -fdec-include @gol
+@gccoptlist{-fall-intrinsics -fallow-argument-mismatch -fallow-invalid-boz @gol
+-fbackslash -fcray-pointer -fd-lines-as-code -fd-lines-as-comments -fdec @gol
+-fdec-structure-fdec-intrinsic-ints -fdec-static -fdec-math -fdec-include @gol
 -fdec-format-defaults -fdec-blank-format-item -fdefault-double-8 @gol
--fdefault-integer-8 -fdefault-real-8 -fdefault-real-10 -fdefault-real-16 @gol
--fdollar-ok @gol -ffixed-line-length-@var{n} -ffixed-line-length-none @gol
--fpad-source -ffree-form -ffree-line-length-@var{n} -ffree-line-length-none @gol
--fimplicit-none -finteger-4-integer-8 -fmax-identifier-length @gol
--fmodule-private -ffixed-form -fno-range-check -fopenacc -fopenmp @gol
--freal-4-real-10 -freal-4-real-16 -freal-4-real-8 -freal-8-real-10 @gol
--freal-8-real-16 -freal-8-real-4 -std=@var{std} -ftest-forall-temp
+-fdefault-integer-8 -fdefault-real-8 -fdefault-real-10 @gol
+-fdefault-real-16 -fdollar-ok -ffixed-line-length-@var{n} @gol
+-ffixed-line-length-none -fpad-source -ffree-form @gol
+-ffree-line-length-@var{n} -ffree-line-length-none -fimplicit-none @gol
+-finteger-4-integer-8 -fmax-identifier-length -fmodule-private @gol
+-ffixed-form -fno-range-check -fopenacc -fopenmp -freal-4-real-10 @gol
+-freal-4-real-16 -freal-4-real-8 -freal-8-real-10 -freal-8-real-16 @gol
+-freal-8-real-4 -std=@var{std} -ftest-forall-temp
 }
 
 @item Preprocessing Options
@@ -144,14 +145,15 @@ by type.  Explanations are in the following sections.
 @item Error and Warning Options
 @xref{Error and Warning Options,,Options to request or suppress errors
 and warnings}.
-@gccoptlist{-Waliasing -Wall -Wampersand -Wargument-mismatch -Warray-bounds
+@gccoptlist{-Waliasing -Wall -Wampersand -Warray-bounds @gol
 -Wc-binding-type -Wcharacter-truncation -Wconversion @gol
 -Wdo-subscript -Wfunction-elimination -Wimplicit-interface @gol
--Wimplicit-procedure -Wintrinsic-shadow -Wuse-without-only -Wintrinsics-std @gol
--Wline-truncation -Wno-align-commons -Wno-tabs -Wreal-q-constant @gol
--Wsurprising -Wunderflow -Wunused-parameter -Wrealloc-lhs @gol
--Wrealloc-lhs-all -Wfrontend-loop-interchange -Wtarget-lifetime @gol
--fmax-errors=@var{n} -fsyntax-only -pedantic -pedantic-errors @gol
+-Wimplicit-procedure -Wintrinsic-shadow -Wuse-without-only @gol
+-Wintrinsics-std -Wline-truncation -Wno-align-commons -Wno-tabs @gol
+-Wreal-q-constant -Wsurprising -Wunderflow -Wunused-parameter @gol
+-Wrealloc-lhs -Wrealloc-lhs-all -Wfrontend-loop-interchange @gol
+-Wtarget-lifetime -fmax-errors=@var{n} -fsyntax-only -pedantic @gol
+-pedantic-errors @gol
 }
 
 @item Debugging Options
@@ -185,19 +187,16 @@ and warnings}.
 -fbounds-check -ftail-call-workaround -ftail-call-workaround=@var{n} @gol
 -fcheck-array-temporaries @gol
 -fcheck=@var{<all|array-temps|bits|bounds|do|mem|pointer|recursion>} @gol
--fcoarray=@var{<none|single|lib>} -fexternal-blas -ff2c
--ffrontend-loop-interchange @gol
--ffrontend-optimize @gol
+-fcoarray=@var{<none|single|lib>} -fexternal-blas -ff2c @gol
+-ffrontend-loop-interchange -ffrontend-optimize @gol
 -finit-character=@var{n} -finit-integer=@var{n} -finit-local-zero @gol
--finit-derived @gol
--finit-logical=@var{<true|false>}
+-finit-derived -finit-logical=@var{<true|false>} @gol
 -finit-real=@var{<zero|inf|-inf|nan|snan>} @gol
--finline-matmul-limit=@var{n} @gol
--fmax-array-constructor=@var{n} -fmax-stack-var-size=@var{n}
--fno-align-commons @gol
--fno-automatic -fno-protect-parens -fno-underscoring @gol
--fsecond-underscore -fpack-derived -frealloc-lhs -frecursive @gol
--frepack-arrays -fshort-enums -fstack-arrays
+-finline-matmul-limit=@var{n} -fmax-array-constructor=@var{n} @gol
+-fmax-stack-var-size=@var{n} -fno-align-commons -fno-automatic @gol
+-fno-protect-parens -fno-underscoring -fsecond-underscore @gol
+-fpack-derived -frealloc-lhs -frecursive -frepack-arrays @gol
+-fshort-enums -fstack-arrays
 }
 @end table
 
@@ -232,12 +231,27 @@ available with @command{gfortran}.  As a consequence, @option{-Wintrinsics-std}
 will be ignored and no user-defined procedure with the same name as any
 intrinsic will be called except when it is explicitly declared @code{EXTERNAL}.
 
+@item -fallow-argument-mismatch
+@opindex @code{fallow-argument-mismatch}
+Some code contains calls to external procedures whith mismatches
+between the calls and the procedure definition, or with mismatches
+between different calls. Such code is non-conforming, and will usually
+be flagged wi1th an error.  This options degrades the error to a
+warning, which can only be disabled by disabling all warnings vial
+@option{-w}.  Only a single occurrence per argument is flagged by this
+warning.  @option{-fallow-argument-mismatch} is implied by
+@option{-std=legacy}.
+
+Using this option is @emph{strongly} discouraged.  It is possible to
+provide standard-conforming code which allows different types of
+arguments by using an explicit interface and @code{TYPE(*)}.
+
 @item -fallow-invalid-boz
 @opindex @code{allow-invalid-boz}
-A BOZ literal constant can occur in a limited number of context in
+A BOZ literal constant can occur in a limited number of contexts in
 standard conforming Fortran.  This option degrades an error condition
 to a warning, and allows a BOZ literal constant to appear where the
-Fortran standard would otherwise prohibits it.
+Fortran standard would otherwise prohibit its use.
 
 @item -fd-lines-as-code
 @itemx -fd-lines-as-comments
@@ -260,6 +274,8 @@ full documentation.
 Other flags enabled by this switch are:
 @option{-fdollar-ok} @option{-fcray-pointer} @option{-fdec-structure}
 @option{-fdec-intrinsic-ints} @option{-fdec-static} @option{-fdec-math}
+@option{-fdec-include} @option{-fdec-blank-format-item}
+@option{-fdec-format-defaults}
 
 If @option{-fd-lines-as-code}/@option{-fd-lines-as-comments} are unset, then
 @option{-fdec} also sets @option{-fd-lines-as-comments}.
@@ -898,15 +914,6 @@ character constant, GNU Fortran assumes continuation at the first
 non-comment, non-whitespace character after the ampersand that
 initiated the continuation.
 
-@item -Wargument-mismatch
-@opindex @code{Wargument-mismatch}
-@cindex warnings, argument mismatch
-@cindex warnings, parameter mismatch
-@cindex warnings, interface mismatch
-Warn about type, rank, and other mismatches between formal parameters and actual
-arguments to functions and subroutines.  These warnings are recommended and
-thus enabled by default.
-
 @item -Warray-temporaries
 @opindex @code{Warray-temporaries}
 @cindex warnings, array temporaries
@@ -962,8 +969,8 @@ may be problematic. This currently includes @option{-Wcompare-reals},
 @opindex @code{Wfrontend-loop-interchange}
 @cindex warnings, loop interchange
 @cindex loop interchange, warning
-Enable warning for loop interchanges performed by the
-@option{-ffrontend-loop-interchange} option.
+Warn when using @option{-ffrontend-loop-interchange} for performing loop
+interchanges.
 
 @item -Wimplicit-interface
 @opindex @code{Wimplicit-interface}

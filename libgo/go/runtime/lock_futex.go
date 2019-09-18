@@ -12,16 +12,15 @@ import (
 )
 
 // For gccgo, while we still have C runtime code, use go:linkname to
-// rename some functions to themselves, so that the compiler will
-// export them.
+// export some functions.
 //
-//go:linkname lock runtime.lock
-//go:linkname unlock runtime.unlock
-//go:linkname noteclear runtime.noteclear
-//go:linkname notewakeup runtime.notewakeup
-//go:linkname notesleep runtime.notesleep
-//go:linkname notetsleep runtime.notetsleep
-//go:linkname notetsleepg runtime.notetsleepg
+//go:linkname lock
+//go:linkname unlock
+//go:linkname noteclear
+//go:linkname notewakeup
+//go:linkname notesleep
+//go:linkname notetsleep
+//go:linkname notetsleepg
 
 // This implementation depends on OS-specific implementations of
 //

@@ -20,5 +20,5 @@ main (void)
   return fn1 (p, q);
 }
 
-/* { dg-final { scan-tree-dump-times "strlen \\(" 2 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "strchr \\(" 0 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "strlen \\(" 2 "strlen1" } } */
+/* { dg-final { scan-tree-dump-times "strchr \\(" 0 "strlen1" } } */

@@ -728,19 +728,7 @@ cprop_find_used_regs (rtx *loc, void *data)
 static void
 kill_clobbered_values (rtx_insn *insn, struct value_data *vd)
 {
-  note_stores (PATTERN (insn), kill_clobbered_value, vd);
-
-  if (CALL_P (insn))
-    {
-      rtx exp;
-
-      for (exp = CALL_INSN_FUNCTION_USAGE (insn); exp; exp = XEXP (exp, 1))
-	{
-	  rtx x = XEXP (exp, 0);
-	  if (GET_CODE (x) == CLOBBER)
-	    kill_value (SET_DEST (x), vd);
-	}
-    }
+  note_stores (insn, kill_clobbered_value, vd);
 }
 
 /* Perform the forward copy propagation on basic block BB.  */
@@ -1109,7 +1097,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       if (!noop_p)
 	{
 	  /* Notice stores.  */
-	  note_stores (PATTERN (insn), kill_set_value, &ksvd);
+	  note_stores (insn, kill_set_value, &ksvd);
 
 	  /* Notice copies.  */
 	  if (copy_p)

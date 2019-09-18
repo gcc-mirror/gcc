@@ -134,6 +134,8 @@ private
       Cmd   : String;
       Args  : System.Address);
 
+   procedure Close_Input (Descriptor : in out TTY_Process_Descriptor);
+
    Still_Active : constant Integer := -1;
 
    type TTY_Process_Descriptor is new Process_Descriptor with record

@@ -26,6 +26,8 @@
   "TARGET_NEON
    || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
 {
+  gcc_checking_assert (aligned_operand (operands[0], <MODE>mode));
+  gcc_checking_assert (aligned_operand (operands[1], <MODE>mode));
   if (can_create_pseudo_p ())
     {
       if (!REG_P (operands[0]))

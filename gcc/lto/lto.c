@@ -107,6 +107,12 @@ lto_materialize_function (struct cgraph_node *node)
 	return;
       if (DECL_FUNCTION_PERSONALITY (decl) && !first_personality_decl)
 	first_personality_decl = DECL_FUNCTION_PERSONALITY (decl);
+      /* If the file contains a function with a language specific EH
+	 personality set or with EH enabled initialize the backend EH
+	 machinery.  */
+      if (DECL_FUNCTION_PERSONALITY (decl)
+	  || opt_for_fn (decl, flag_exceptions))
+	lto_init_eh ();
     }
 
   /* Let the middle end know about the function.  */

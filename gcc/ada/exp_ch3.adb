@@ -1922,9 +1922,15 @@ package body Exp_Ch3 is
 
          --  Adjust the tag if tagged (because of possible view conversions).
          --  Suppress the tag adjustment when not Tagged_Type_Expansion because
-         --  tags are represented implicitly in objects.
+         --  tags are represented implicitly in objects, and when the record is
+         --  initialized with a raise expression.
 
-         if Is_Tagged_Type (Typ) and then Tagged_Type_Expansion then
+         if Is_Tagged_Type (Typ)
+           and then Tagged_Type_Expansion
+           and then Nkind (Exp) /= N_Raise_Expression
+           and then (Nkind (Exp) /= N_Qualified_Expression
+                       or else Nkind (Expression (Exp)) /= N_Raise_Expression)
+         then
             Append_To (Res,
               Make_Assignment_Statement (Default_Loc,
                 Name       =>

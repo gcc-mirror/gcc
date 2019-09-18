@@ -4780,8 +4780,13 @@ gfc_simplify_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
   gfc_constructor *tsource_ctor, *fsource_ctor, *mask_ctor;
 
   if (mask->expr_type == EXPR_CONSTANT)
-    return gfc_get_parentheses (gfc_copy_expr (mask->value.logical
-					       ? tsource : fsource));
+    {
+      result = gfc_copy_expr (mask->value.logical ? tsource : fsource);
+      /* Parenthesis is needed to get lower bounds of 1.  */
+      result = gfc_get_parentheses (result);
+      gfc_simplify_expr (result, 1);
+      return result;
+    }
 
   if (!mask->rank || !is_constant_array_expr (mask)
       || !is_constant_array_expr (tsource) || !is_constant_array_expr (fsource))
@@ -6668,6 +6673,9 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
   mpz_init (index);
   rank = 0;
 
+  for (i = 0; i < GFC_MAX_DIMENSIONS; i++)
+    x[i] = 0;
+
   for (;;)
     {
       e = gfc_constructor_lookup_expr (shape_exp->value.constructor, rank);
@@ -6692,8 +6700,28 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
     }
   else
     {
-      for (i = 0; i < rank; i++)
-	x[i] = 0;
+      mpz_t size;
+      int order_size, shape_size;
+
+      if (order_exp->rank != shape_exp->rank)
+	{
+	  gfc_error ("Shapes of ORDER at %L and SHAPE at %L are different",
+		     &order_exp->where, &shape_exp->where);
+	  return &gfc_bad_expr;
+	}
+
+      gfc_array_size (shape_exp, &size);
+      shape_size = mpz_get_ui (size);
+      mpz_clear (size);
+      gfc_array_size (order_exp, &size);
+      order_size = mpz_get_ui (size);
+      mpz_clear (size);
+      if (order_size != shape_size)
+	{
+	  gfc_error ("Sizes of ORDER at %L and SHAPE at %L are different",
+		     &order_exp->where, &shape_exp->where);
+	  return &gfc_bad_expr;
+	}
 
       for (i = 0; i < rank; i++)
 	{
@@ -6704,7 +6732,12 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
 
 	  gcc_assert (order[i] >= 1 && order[i] <= rank);
 	  order[i]--;
-	  gcc_assert (x[order[i]] == 0);
+	  if (x[order[i]] != 0)
+	    {
+	      gfc_error ("ORDER at %L is not a permutation of the size of "
+			 "SHAPE at %L", &order_exp->where, &shape_exp->where);
+	      return &gfc_bad_expr;
+	    }
 	  x[order[i]] = 1;
 	}
     }
@@ -8475,6 +8508,12 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	    {
 	      if (c->expr->expr_type == EXPR_ARRAY)
 		tmp = gfc_convert_constant (c->expr, type, kind);
+	      else if (c->expr->expr_type == EXPR_OP
+		       && c->expr->value.op.op == INTRINSIC_PARENTHESES)
+		{
+		  gfc_simplify_expr (c->expr, 1);
+		  tmp = f (c->expr, kind);
+		}
 	      else
 		tmp = f (c->expr, kind);
 	    }

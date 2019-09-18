@@ -1461,7 +1461,7 @@ compute_register_save_size (long * p_reg_saved)
     {
       /* Find the first register that needs to be saved.  */
       for (i = 0; i <= 31; i++)
-	if (df_regs_ever_live_p (i) && ((! call_used_regs[i])
+	if (df_regs_ever_live_p (i) && ((! call_used_or_fixed_reg_p (i))
 				  || i == LINK_POINTER_REGNUM))
 	  break;
 
@@ -1502,7 +1502,7 @@ compute_register_save_size (long * p_reg_saved)
       else
 	{
 	  for (; i <= 31; i++)
-	    if (df_regs_ever_live_p (i) && ((! call_used_regs[i])
+	    if (df_regs_ever_live_p (i) && ((! call_used_or_fixed_reg_p (i))
 				      || i == LINK_POINTER_REGNUM))
 	      {
 		size += 4;

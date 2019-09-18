@@ -590,6 +590,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_AVOID_FALSE_DEP_FOR_BMI]
 #define TARGET_ONE_IF_CONV_INSN \
 	ix86_tune_features[X86_TUNE_ONE_IF_CONV_INSN]
+#define TARGET_USE_XCHG_FOR_ATOMIC_STORE \
+	ix86_tune_features[X86_TUNE_USE_XCHG_FOR_ATOMIC_STORE]
 #define TARGET_EMIT_VZEROUPPER \
 	ix86_tune_features[X86_TUNE_EMIT_VZEROUPPER]
 
@@ -2511,6 +2513,7 @@ enum ix86_stack_slot
 {
   SLOT_TEMP = 0,
   SLOT_CW_STORED,
+  SLOT_CW_ROUNDEVEN,
   SLOT_CW_TRUNC,
   SLOT_CW_FLOOR,
   SLOT_CW_CEIL,
@@ -2522,6 +2525,7 @@ enum ix86_entity
 {
   X86_DIRFLAG = 0,
   AVX_U128,
+  I387_ROUNDEVEN,
   I387_TRUNC,
   I387_FLOOR,
   I387_CEIL,
@@ -2557,7 +2561,7 @@ enum avx_u128_state
 
 #define NUM_MODES_FOR_MODE_SWITCHING			\
   { X86_DIRFLAG_ANY, AVX_U128_ANY,			\
-    I387_CW_ANY, I387_CW_ANY, I387_CW_ANY }
+    I387_CW_ANY, I387_CW_ANY, I387_CW_ANY, I387_CW_ANY  }
 
 
 /* Avoid renaming of stack registers, as doing so in combination with

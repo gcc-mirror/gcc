@@ -94,6 +94,10 @@ lto_write_options (void)
 				      : "-fno-pie");
     }
 
+  /* If debug info is enabled append -g.  */
+  if (debug_info_level > DINFO_LEVEL_NONE)
+    append_to_collect_gcc_options (&temporary_obstack, &first_p, "-g");
+
   /* Append options from target hook and store them to offload_lto section.  */
   if (lto_stream_offload_p)
     {
@@ -122,7 +126,7 @@ lto_write_options (void)
 	case OPT_dumpbase:
 	case OPT_SPECIAL_unknown:
 	case OPT_SPECIAL_ignore:
-	case OPT_SPECIAL_deprecated:
+	case OPT_SPECIAL_warn_removed:
 	case OPT_SPECIAL_program_name:
 	case OPT_SPECIAL_input_file:
 	case OPT_dumpdir:

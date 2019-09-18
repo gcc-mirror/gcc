@@ -128,6 +128,9 @@
 				  (HF "TARGET_SIMD_F16INST")
 				  SF DF])
 
+;; Scalar and vetor modes for SF, DF.
+(define_mode_iterator VSFDF [V2SF V4SF V2DF DF SF])
+
 ;; Advanced SIMD single Float modes.
 (define_mode_iterator VDQSF [V2SF V4SF])
 
@@ -375,6 +378,10 @@
     UNSPEC_RSUBHN2	; Used in aarch64-simd.md.
     UNSPEC_SQDMULH	; Used in aarch64-simd.md.
     UNSPEC_SQRDMULH	; Used in aarch64-simd.md.
+    UNSPEC_SMULLB	; Used in aarch64-sve2.md.
+    UNSPEC_SMULLT	; Used in aarch64-sve2.md.
+    UNSPEC_UMULLB	; Used in aarch64-sve2.md.
+    UNSPEC_UMULLT	; Used in aarch64-sve2.md.
     UNSPEC_PMUL		; Used in aarch64-simd.md.
     UNSPEC_FMULX	; Used in aarch64-simd.md.
     UNSPEC_USQADD	; Used in aarch64-simd.md.
@@ -397,6 +404,10 @@
     UNSPEC_UQSHRN	; Used in aarch64-simd.md.
     UNSPEC_SQRSHRN	; Used in aarch64-simd.md.
     UNSPEC_UQRSHRN	; Used in aarch64-simd.md.
+    UNSPEC_SHRNB	; Used in aarch64-sve2.md.
+    UNSPEC_SHRNT	; Used in aarch64-sve2.md.
+    UNSPEC_RSHRNB	; Used in aarch64-sve2.md.
+    UNSPEC_RSHRNT	; Used in aarch64-sve2.md.
     UNSPEC_SSHL		; Used in aarch64-simd.md.
     UNSPEC_USHL		; Used in aarch64-simd.md.
     UNSPEC_SRSHL	; Used in aarch64-simd.md.
@@ -520,6 +531,10 @@
     UNSPEC_FCMLA90	; Used in aarch64-simd.md.
     UNSPEC_FCMLA180	; Used in aarch64-simd.md.
     UNSPEC_FCMLA270	; Used in aarch64-simd.md.
+    UNSPEC_SMULHS	; Used in aarch64-sve2.md.
+    UNSPEC_SMULHRS	; Used in aarch64-sve2.md.
+    UNSPEC_UMULHS	; Used in aarch64-sve2.md.
+    UNSPEC_UMULHRS	; Used in aarch64-sve2.md.
 ])
 
 ;; ------------------------------------------------------------------
@@ -1585,6 +1600,13 @@
 
 (define_int_iterator RHADD [UNSPEC_SRHADD UNSPEC_URHADD])
 
+(define_int_iterator MULLBT [UNSPEC_SMULLB UNSPEC_UMULLB
+                             UNSPEC_SMULLT UNSPEC_UMULLT])
+
+(define_int_iterator SHRNB [UNSPEC_SHRNB UNSPEC_RSHRNB])
+
+(define_int_iterator SHRNT [UNSPEC_SHRNT UNSPEC_RSHRNT])
+
 (define_int_iterator DOTPROD [UNSPEC_SDOT UNSPEC_UDOT])
 
 (define_int_iterator ADDSUBHN [UNSPEC_ADDHN UNSPEC_RADDHN
@@ -1603,6 +1625,9 @@
 				  UNSPEC_PACIB1716 UNSPEC_AUTIB1716])
 
 (define_int_iterator VQDMULH [UNSPEC_SQDMULH UNSPEC_SQRDMULH])
+
+(define_int_iterator MULHRS [UNSPEC_SMULHS UNSPEC_UMULHS
+                             UNSPEC_SMULHRS UNSPEC_UMULHRS])
 
 (define_int_iterator USSUQADD [UNSPEC_SUQADD UNSPEC_USQADD])
 
@@ -1758,6 +1783,9 @@
 			    UNSPEC_FCMLA180
 			    UNSPEC_FCMLA270])
 
+(define_int_iterator FRINTNZX [UNSPEC_FRINT32Z UNSPEC_FRINT32X
+			       UNSPEC_FRINT64Z UNSPEC_FRINT64X])
+
 ;; Iterators for atomic operations.
 
 (define_int_iterator ATOMIC_LDOP
@@ -1866,7 +1894,11 @@
 		     (UNSPEC_COND_FCVTZS "s")
 		     (UNSPEC_COND_FCVTZU "u")
 		     (UNSPEC_COND_SCVTF "s")
-		     (UNSPEC_COND_UCVTF "u")])
+		     (UNSPEC_COND_UCVTF "u")
+		     (UNSPEC_SMULLB "s") (UNSPEC_UMULLB "u")
+		     (UNSPEC_SMULLT "s") (UNSPEC_UMULLT "u")
+		     (UNSPEC_SMULHS "s") (UNSPEC_UMULHS "u")
+		     (UNSPEC_SMULHRS "s") (UNSPEC_UMULHRS "u")])
 
 (define_int_attr sur [(UNSPEC_SHADD "s") (UNSPEC_UHADD "u")
 		      (UNSPEC_SRHADD "sr") (UNSPEC_URHADD "ur")
@@ -1904,6 +1936,10 @@
                     (UNSPEC_SQRSHRN "r") (UNSPEC_UQRSHRN "r")
                     (UNSPEC_SQSHL   "")  (UNSPEC_UQSHL  "")
                     (UNSPEC_SQRSHL   "r")(UNSPEC_UQRSHL  "r")
+		    (UNSPEC_SHRNB "") (UNSPEC_SHRNT "")
+		    (UNSPEC_RSHRNB "r") (UNSPEC_RSHRNT "r")
+		    (UNSPEC_SMULHS "") (UNSPEC_UMULHS "")
+		    (UNSPEC_SMULHRS "r") (UNSPEC_UMULHRS "r")
 ])
 
 (define_int_attr lr [(UNSPEC_SSLI  "l") (UNSPEC_USLI  "l")
@@ -1915,6 +1951,9 @@
 		    (UNSPEC_SQRSHRN "") (UNSPEC_UQRSHRN "")
 		    (UNSPEC_SHADD "") (UNSPEC_UHADD "u")
 		    (UNSPEC_SRHADD "") (UNSPEC_URHADD "u")])
+
+(define_int_attr bt [(UNSPEC_SMULLB "b") (UNSPEC_UMULLB "b")
+		     (UNSPEC_SMULLT "t") (UNSPEC_UMULLT "t")])
 
 (define_int_attr addsub [(UNSPEC_SHADD "add")
 			 (UNSPEC_UHADD "add")
@@ -2040,6 +2079,9 @@
 
 (define_int_attr f16mac1 [(UNSPEC_FMLAL "a") (UNSPEC_FMLSL "s")
 			  (UNSPEC_FMLAL2 "a") (UNSPEC_FMLSL2 "s")])
+
+(define_int_attr frintnzs_op [(UNSPEC_FRINT32Z "frint32z") (UNSPEC_FRINT32X "frint32x")
+			      (UNSPEC_FRINT64Z "frint64z") (UNSPEC_FRINT64X "frint64x")])
 
 ;; The condition associated with an UNSPEC_COND_<xx>.
 (define_int_attr cmp_op [(UNSPEC_COND_FCMEQ "eq")

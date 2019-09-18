@@ -1783,7 +1783,7 @@ cgraph_node::remove (void)
      */
   force_output = false;
   forced_by_abi = false;
-  cgraph_node *next = nested;
+  cgraph_node *next;
   for (cgraph_node *n = nested; n; n = next)
   {
     next = n->next_nested;

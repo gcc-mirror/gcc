@@ -235,13 +235,13 @@ must_save_p (bool is_inthandler, unsigned regno)
       return (is_eh_return_reg
 	      || (df_regs_ever_live_p (regno)
 		  && !fixed_regs[regno]
-		  && (is_inthandler || !call_used_regs[regno])));
+		  && (is_inthandler || !call_used_or_fixed_reg_p (regno))));
     }
   else if (P_REGNO_P (regno))
     {
       return ((df_regs_ever_live_p (regno)
 	       && !fixed_regs[regno]
-	       && (is_inthandler || !call_used_regs[regno]))
+	       && (is_inthandler || !call_used_or_fixed_reg_p (regno)))
 	      || (is_inthandler
 		  && (ENABLE_WA_05000283 || ENABLE_WA_05000315)
 		  && regno == REG_P5)
@@ -251,9 +251,9 @@ must_save_p (bool is_inthandler, unsigned regno)
 		      || (TARGET_ID_SHARED_LIBRARY && !crtl->is_leaf))));
     }
   else
-    return ((is_inthandler || !call_used_regs[regno])
+    return ((is_inthandler || !call_used_or_fixed_reg_p (regno))
 	    && (df_regs_ever_live_p (regno)
-		|| (!leaf_function_p () && call_used_regs[regno])));
+		|| (!leaf_function_p () && call_used_or_fixed_reg_p (regno))));
 
 }
 
@@ -419,7 +419,7 @@ expand_prologue_reg_save (rtx spreg, int saveall, bool is_inthandler)
     if (saveall 
 	|| (is_inthandler
 	    && (df_regs_ever_live_p (i)
-		|| (!leaf_function_p () && call_used_regs[i]))))
+		|| (!leaf_function_p () && call_used_or_fixed_reg_p (i)))))
       {
 	rtx_insn *insn;
 	if (i == REG_A0 || i == REG_A1)
@@ -458,7 +458,7 @@ expand_epilogue_reg_restore (rtx spreg, bool saveall, bool is_inthandler)
     if (saveall
 	|| (is_inthandler
 	    && (df_regs_ever_live_p (i)
-		|| (!leaf_function_p () && call_used_regs[i]))))
+		|| (!leaf_function_p () && call_used_or_fixed_reg_p (i)))))
       {
 	if (i == REG_A0 || i == REG_A1)
 	  {
@@ -652,7 +652,7 @@ n_regs_saved_by_prologue (void)
     if (all
 	|| (fkind != SUBROUTINE
 	    && (df_regs_ever_live_p (i)
-		|| (!leaf_function_p () && call_used_regs[i]))))
+		|| (!leaf_function_p () && call_used_or_fixed_reg_p (i)))))
       n += i == REG_A0 || i == REG_A1 ? 2 : 1;
 
   return n;
@@ -753,7 +753,7 @@ add_to_reg (rtx reg, HOST_WIDE_INT value, int frame, int epilogue_p)
 	{
 	  int i;
 	  for (i = REG_P0; i <= REG_P5; i++)
-	    if ((df_regs_ever_live_p (i) && ! call_used_regs[i])
+	    if ((df_regs_ever_live_p (i) && ! call_used_or_fixed_reg_p (i))
 		|| (!TARGET_FDPIC
 		    && i == PIC_OFFSET_TABLE_REGNUM
 		    && (crtl->uses_pic_offset_table
@@ -3482,7 +3482,7 @@ hwloop_optimize (hwloop_info loop)
       for (i = REG_P0; i <= REG_P5; i++)
 	if ((df_regs_ever_live_p (i)
 	     || (funkind (TREE_TYPE (current_function_decl)) == SUBROUTINE
-		 && call_used_regs[i]))
+		 && call_used_or_fixed_reg_p (i)))
 	    && !REGNO_REG_SET_P (df_get_live_out (bb_in), i))
 	  {
 	    scratchreg = gen_rtx_REG (SImode, i);
@@ -4419,7 +4419,7 @@ workaround_speculation (void)
 	     we found earlier.  */
 	  if (recog_memoized (insn) != CODE_FOR_compare_eq)
 	    {
-	      note_stores (PATTERN (insn), note_np_check_stores, NULL);
+	      note_stores (insn, note_np_check_stores, NULL);
 	      if (np_check_regno != -1)
 		{
 		  if (find_regno_note (insn, REG_INC, np_check_regno))

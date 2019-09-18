@@ -113,7 +113,21 @@ extern unsigned char *_cpp_unaligned_alloc (cpp_reader *, size_t);
 #define BUFF_LIMIT(BUFF) ((BUFF)->limit)
 
 /* #include types.  */
-enum include_type {IT_INCLUDE, IT_INCLUDE_NEXT, IT_IMPORT, IT_CMDLINE, IT_DEFAULT};
+enum include_type
+  {
+   /* Directive-based including mechanisms.  */
+   IT_INCLUDE,  /* #include */
+   IT_INCLUDE_NEXT,  /* #include_next */
+   IT_IMPORT,   /* #import  */
+
+   /* Non-directive including mechanisms.  */
+   IT_CMDLINE,  /* -include */
+   IT_DEFAULT,  /* forced header  */
+   IT_MAIN,     /* main  */
+
+   IT_DIRECTIVE_HWM = IT_IMPORT + 1,  /* Directives below this.  */
+   IT_HEADER_HWM = IT_DEFAULT + 1,    /* Header files below this.  */
+  };
 
 union utoken
 {
@@ -220,7 +234,8 @@ struct cpp_context
 
 struct lexer_state
 {
-  /* Nonzero if first token on line is CPP_HASH.  */
+  /* 1 if we're handling a directive.  2 if it's an include-like
+     directive.  */
   unsigned char in_directive;
 
   /* Nonzero if in a directive that will handle padding tokens itself.
@@ -327,23 +342,23 @@ struct cpp_buffer
   struct if_stack *if_stack;
 
   /* True if we need to get the next clean line.  */
-  bool need_line;
+  bool need_line : 1;
 
   /* True if we have already warned about C++ comments in this file.
      The warning happens only for C89 extended mode with -pedantic on,
      or for -Wtraditional, and only once per file (otherwise it would
      be far too noisy).  */
-  unsigned int warned_cplusplus_comments : 1;
+  bool warned_cplusplus_comments : 1;
 
   /* True if we don't process trigraphs and escaped newlines.  True
      for preprocessed input, command line directives, and _Pragma
      buffers.  */
-  unsigned int from_stage3 : 1;
+  bool from_stage3 : 1;
 
   /* At EOF, a buffer is automatically popped.  If RETURN_AT_EOF is
      true, a CPP_EOF token is then returned.  Otherwise, the next
      token from the enclosing buffer is returned.  */
-  unsigned int return_at_eof : 1;
+  bool return_at_eof : 1;
 
   /* One for a system header, two for a C system header file that therefore
      needs to be extern "C" protected in C++, and zero otherwise.  */
@@ -419,13 +434,13 @@ struct cpp_reader
 
   /* This is the node representing the macro being expanded at
      top-level.  The value of this data member is valid iff
-     in_macro_expansion_p() returns TRUE.  */
+     cpp_in_macro_expansion_p() returns TRUE.  */
   cpp_hashnode *top_most_macro_node;
 
   /* Nonzero if we are about to expand a macro.  Note that if we are
      really expanding a macro, the function macro_of_context returns
      the macro being expanded and this flag is set to false.  Client
-     code should use the function in_macro_expansion_p to know if we
+     code should use the function cpp_in_macro_expansion_p to know if we
      are either about to expand a macro, or are actually expanding
      one.  */
   bool about_to_expand_macro_p;
@@ -661,8 +676,7 @@ extern _cpp_file *_cpp_find_file (cpp_reader *, const char *, cpp_dir *,
 extern bool _cpp_find_failed (_cpp_file *);
 extern void _cpp_mark_file_once_only (cpp_reader *, struct _cpp_file *);
 extern void _cpp_fake_include (cpp_reader *, const char *);
-extern bool _cpp_stack_file (cpp_reader *, _cpp_file*, bool,
-			     location_t);
+extern bool _cpp_stack_file (cpp_reader *, _cpp_file*, include_type, location_t);
 extern bool _cpp_stack_include (cpp_reader *, const char *, int,
 				enum include_type, location_t);
 extern int _cpp_compare_file_date (cpp_reader *, const char *, int);
@@ -711,7 +725,7 @@ extern const char *cpp_named_operator2name (enum cpp_ttype type);
 
 /* In directives.c */
 extern int _cpp_test_assertion (cpp_reader *, unsigned int *);
-extern int _cpp_handle_directive (cpp_reader *, int);
+extern int _cpp_handle_directive (cpp_reader *, bool);
 extern void _cpp_define_builtin (cpp_reader *, const char *);
 extern char ** _cpp_save_pragma_names (cpp_reader *);
 extern void _cpp_restore_pragma_names (cpp_reader *, char **);

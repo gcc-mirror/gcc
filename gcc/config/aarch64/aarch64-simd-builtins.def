@@ -465,11 +465,17 @@
   /* Implemented by aarch64_ld1x3<VALLDIF:mode>.  */
   BUILTIN_VALLDIF (LOADSTRUCT, ld1x3, 0)
 
+  /* Implemented by aarch64_ld1x4<VALLDIF:mode>.  */
+  BUILTIN_VALLDIF (LOADSTRUCT, ld1x4, 0)
+
   /* Implemented by aarch64_st1x2<VALLDIF:mode>.  */
   BUILTIN_VALLDIF (STORESTRUCT, st1x2, 0)
 
   /* Implemented by aarch64_st1x3<VALLDIF:mode>.  */
   BUILTIN_VALLDIF (STORESTRUCT, st1x3, 0)
+
+  /* Implemented by aarch64_st1x4<VALLDIF:mode>.  */
+  BUILTIN_VALLDIF (STORESTRUCT, st1x4, 0)
 
   /* Implemented by fma<mode>4.  */
   BUILTIN_VHSDF (TERNOP, fma, 4)
@@ -670,3 +676,9 @@
   /* Implemented by aarch64_fml<f16mac1>lq_laneq_highv4sf.  */
   VAR1 (QUADOP_LANE, fmlalq_laneq_high, 0, v4sf)
   VAR1 (QUADOP_LANE, fmlslq_laneq_high, 0, v4sf)
+
+  /* Implemented by aarch64_<frintnzs_op><mode>.  */
+  BUILTIN_VSFDF (UNOP, frint32z, 0)
+  BUILTIN_VSFDF (UNOP, frint32x, 0)
+  BUILTIN_VSFDF (UNOP, frint64z, 0)
+  BUILTIN_VSFDF (UNOP, frint64x, 0)

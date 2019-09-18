@@ -400,6 +400,13 @@ Wc++17-compat
 C++ ObjC++ Var(warn_cxx17_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about C++ constructs whose meaning differs between ISO C++ 2014 and ISO C++ 2017.
 
+Wc++2a-compat
+C++ ObjC++ Warning Alias(Wc++20-compat) Undocumented
+
+Wc++20-compat
+C++ ObjC++ Var(warn_cxx20_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
+Warn about C++ constructs whose meaning differs between ISO C++ 2017 and ISO C++ 2020.
+
 Wcast-function-type
 C ObjC C++ ObjC++ Var(warn_cast_function_type) Warning EnabledBy(Wextra)
 Warn about casts between incompatible function types.
@@ -421,8 +428,8 @@ C ObjC C++ ObjC++ Var(warn_char_subscripts) Warning LangEnabledBy(C ObjC C++ Obj
 Warn about subscripts whose type is \"char\".
 
 Wchkp
-C ObjC C++ ObjC++ Warning Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ Warning WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 Wclobbered
 C ObjC C++ ObjC++ Var(warn_clobbered) Warning EnabledBy(Wextra)
@@ -533,6 +540,10 @@ Warn about stray tokens after #else and #endif.
 Wenum-compare
 C ObjC C++ ObjC++ Var(warn_enum_compare) Init(-1) Warning LangEnabledBy(C ObjC,Wall || Wc++-compat)
 Warn about comparison of different enum types.
+
+Wenum-conversion
+C ObjC Var(warn_enum_conversion) Init(0) Warning LangEnabledBy(C ObjC,Wextra)
+Warn about implicit conversion of enum types.
 
 Werror
 C ObjC C++ ObjC++
@@ -853,7 +864,7 @@ C ObjC Var(warn_missing_prototypes) Warning
 Warn about global functions without prototypes.
 
 Wmudflap
-C ObjC C++ ObjC++ Deprecated
+C ObjC C++ ObjC++ WarnRemoved
 
 Wmultichar
 C ObjC C++ ObjC++ CPP(warn_multichar) CppReason(CPP_W_MULTICHAR) Var(cpp_warn_multichar) Init(0) Warning
@@ -1221,6 +1232,10 @@ Wno-vla-larger-than
 C ObjC C++ LTO ObjC++ Alias(Wvla-larger-than=,18446744073709551615EiB,none) Warning
 -Wno-vla-larger-than Disable Wvla-larger-than= warning.  Equivalent to Wvla-larger-than=<SIZE_MAX> or larger.
 
+Wvolatile
+C++ ObjC++ Var(warn_volatile) Warning
+Warn about deprecated uses of volatile qualifier.
+
 Wvolatile-register-var
 C ObjC C++ ObjC++ Var(warn_volatile_register_var) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when a register variable is declared volatile.
@@ -1287,14 +1302,14 @@ C++ ObjC++ Joined RejectNegative Var(aligned_new_threshold) UInteger Init(-1)
 -faligned-new=<N> Use C++17 over-aligned type allocation for alignments greater than N.
 
 fall-virtual
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved
 
 fallow-parameterless-variadic-functions
 C ObjC Var(flag_allow_parameterless_variadic_functions)
 Allow variadic functions without named parameter.
 
 falt-external-templates
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved
 No longer supported.
 
 fasm
@@ -1322,91 +1337,91 @@ Enable the char8_t fundamental type and use it as the type for UTF-8 string
 and character literals.
 
 fcheck-pointer-bounds
-C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-check-incomplete-type
-C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-zero-input-bounds-for-main
-C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-first-field-has-own-bounds
-C ObjC C++ ObjC++ LTO Deprecated RejectNegative
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved RejectNegative
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-narrow-bounds
-C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-narrow-to-innermost-array
-C ObjC C++ ObjC++ LTO Deprecated RejectNegative
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved RejectNegative
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-flexible-struct-trailing-arrays
-C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-optimize
-C ObjC C++ ObjC++ LTO Deprecated
+C ObjC C++ ObjC++ LTO WarnRemoved
 
 fchkp-use-fast-string-functions
-C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-use-nochk-string-functions
-C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-use-static-bounds
-C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-use-static-const-bounds
-C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-treat-zero-dynamic-size-as-infinite
-C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-check-read
-C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-check-write
-C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-store-bounds
-C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-instrument-calls
-C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-instrument-marked-only
-C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 fchkp-use-wrappers
-C ObjC C++ ObjC++ LTO Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+C ObjC C++ ObjC++ LTO WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 static-libmpx
-Driver Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Driver WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 static-libmpxwrappers
-Driver Deprecated
-Deprecated in GCC 9.  This switch has no effect.
+Driver WarnRemoved
+Removed in GCC 9.  This switch has no effect.
 
 fcilkplus
 C ObjC C++ ObjC++ LTO Undocumented Ignore
-Deprecated in GCC 8.  This switch has no effect.
+Removed in GCC 8.  This switch has no effect.
 
 fconcepts
 C++ ObjC++ Var(flag_concepts)
@@ -1445,8 +1460,8 @@ C ObjC C++ ObjC++
 Emit debug annotations during preprocessing.
 
 fdeduce-init-list
-C++ ObjC++ Var(flag_deduce_init_list) Init(0)
--fdeduce-init-list	enable deduction of std::initializer_list for a template type parameter from a brace-enclosed initializer-list.
+C++ ObjC++ Ignore
+Does nothing.  Preserved for backward compatibility.
 
 fdeclone-ctor-dtor
 C++ ObjC++ Var(flag_declone_ctor_dtor) Init(-1)
@@ -1492,7 +1507,7 @@ C++ ObjC++ Var(flag_enforce_eh_specs) Init(1)
 Generate code to check exception specifications.
 
 fenum-int-equiv
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved
 
 fexec-charset=
 C ObjC C++ ObjC++ Joined RejectNegative
@@ -1511,10 +1526,10 @@ C++ ObjC++ Var(flag_extern_tls_init) Init(-1)
 Support dynamic initialization of thread-local variables in a different translation unit.
 
 fexternal-templates
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved
 
 ffor-scope
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved
 
 ffreestanding
 C ObjC C++ ObjC++
@@ -1533,20 +1548,20 @@ C ObjC Var(flag_gnu89_inline) Init(-1)
 Use traditional GNU semantics for inline functions.
 
 fguiding-decls
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved
 
 fhandle-exceptions
 C++ ObjC++ Optimization Alias(fexceptions) Warn({%<-fhandle-exceptions%> has been renamed %<-fexceptions%> (and is now on by default)})
 
 fhonor-std
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved
 
 fhosted
 C ObjC
 Assume normal C execution environment.
 
 fhuge-objects
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved
 No longer supported.
 
 fimplement-inlines
@@ -1566,14 +1581,14 @@ C++ ObjC++ Var(flag_new_inheriting_ctors) Init(1)
 Implement C++17 inheriting constructor semantics.
 
 ffriend-injection
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved
 
 fkeep-inline-dllexport
 C C++ ObjC ObjC++ Var(flag_keep_inline_dllexport) Init(1) Report Condition(TARGET_DLLIMPORT_DECL_ATTRIBUTES)
 Don't emit dllexported inline functions unless needed.
 
 flabels-ok
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved
 
 flax-vector-conversions
 C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
@@ -1588,19 +1603,19 @@ C ObjC C++ ObjC++ Var(flag_ms_extensions)
 Don't warn about uses of Microsoft extensions.
 
 fmudflap
-C ObjC C++ ObjC++ Deprecated
+C ObjC C++ ObjC++ WarnRemoved
 
 fmudflapth
-C ObjC C++ ObjC++ Deprecated
+C ObjC C++ ObjC++ WarnRemoved
 
 fmudflapir
-C ObjC C++ ObjC++ Deprecated
+C ObjC C++ ObjC++ WarnRemoved
 
 fname-mangling-version-
-C++ ObjC++ Joined Deprecated
+C++ ObjC++ Joined WarnRemoved
 
 fnew-abi
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved
 
 fnew-ttp-matching
 C++ ObjC++ Var(flag_new_ttp)
@@ -1641,7 +1656,7 @@ fnonansi-builtins
 C++ ObjC++ Var(flag_no_nonansi_builtin, 0)
 
 fnonnull-objects
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved
 
 fnothrow-opt
 C++ ObjC++ Optimization Var(flag_nothrow_opt)
@@ -1748,8 +1763,8 @@ ObjC ObjC++ LTO Var(flag_replace_objc_classes)
 Used in Fix-and-Continue mode to indicate that object files may be swapped in at runtime.
 
 frepo
-C++ ObjC++
-Enable automatic template instantiation.
+C++ ObjC++ WarnRemoved
+Removed in GCC 10.  This switch has no effect.
 
 frtti
 C++ ObjC++ Optimization Var(flag_rtti) Init(1)
@@ -1776,7 +1791,7 @@ C++ ObjC++ Var(flag_sized_deallocation) Init(-1)
 Enable C++14 sized deallocation support.
 
 fsquangle
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved
 
 fsso-struct=
 C ObjC Joined RejectNegative Enum(sso_struct) Var(default_sso) Init(SSO_NATIVE)
@@ -1803,7 +1818,7 @@ C++ ObjC++ Optimization Var(flag_strict_enums)
 Assume that values of enumeration type are always within the minimum range of that type.
 
 fstrict-prototype
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved
 
 fstrong-eval-order
 C++ ObjC++ Common Alias(fstrong-eval-order=, all, none)
@@ -1843,7 +1858,7 @@ C++ ObjC++ Joined RejectNegative UInteger
 -ftemplate-depth=<number>	Specify maximum template instantiation depth.
 
 fthis-is-variable
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved
 
 fthreadsafe-statics
 C++ ObjC++ Optimization Var(flag_threadsafe_statics) Init(1)
@@ -1874,11 +1889,11 @@ C++ ObjC++ Var(flag_visibility_ms_compat)
 Changes visibility to match Microsoft Visual Studio by default.
 
 fvtable-gc
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved
 No longer supported.
 
 fvtable-thunks
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved 
 No longer supported.
 
 fweak
@@ -1894,7 +1909,7 @@ C ObjC C++ ObjC++ Var(flag_working_directory) Init(-1)
 Generate a #line directive pointing at the current working directory.
 
 fxref
-C++ ObjC++ Deprecated
+C++ ObjC++ WarnRemoved
 No longer supported.
 
 fzero-link

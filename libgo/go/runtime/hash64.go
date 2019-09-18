@@ -12,10 +12,9 @@ package runtime
 
 import "unsafe"
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname memhash runtime.memhash
+//go:linkname memhash
 
 const (
 	// Constants for multiplication: four random odd 64-bit numbers.

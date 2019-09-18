@@ -1241,7 +1241,6 @@ OBJS = \
 	auto-profile.o \
 	bb-reorder.o \
 	bitmap.o \
-	bt-load.o \
 	builtins.o \
 	caller-save.o \
 	calls.o \
@@ -2118,7 +2117,7 @@ gcc-ranlib.c: gcc-ar.c
 gcc-nm.c: gcc-ar.c
 	cp $^ $@
 
-COLLECT2_OBJS = collect2.o collect2-aix.o tlink.o vec.o ggc-none.o \
+COLLECT2_OBJS = collect2.o collect2-aix.o vec.o ggc-none.o \
   collect-utils.o file-find.o hash-table.o selftest.o
 COLLECT2_LIBS = @COLLECT2_LIBS@
 collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
@@ -2784,7 +2783,7 @@ build/genmddump.o : genmddump.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)
 build/genmatch.o : genmatch.c $(BCONFIG_H) $(SYSTEM_H) \
   $(CORETYPES_H) errors.h $(HASH_TABLE_H) hash-map.h $(GGC_H) is-a.h \
-  tree.def builtins.def internal-fn.def case-cfn-macros.h
+  tree.def builtins.def internal-fn.def case-cfn-macros.h $(CPPLIB_H)
 build/gencfn-macros.o : gencfn-macros.c $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) errors.h $(HASH_TABLE_H) hash-set.h builtins.def	\
   internal-fn.def

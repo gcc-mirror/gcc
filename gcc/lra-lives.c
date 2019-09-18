@@ -327,7 +327,7 @@ static void
 mark_pseudo_dead (int regno)
 {
   lra_assert (!HARD_REGISTER_NUM_P (regno));
-  IOR_HARD_REG_SET (lra_reg_info[regno].conflict_hard_regs, hard_regs_live);
+  lra_reg_info[regno].conflict_hard_regs |= hard_regs_live;
   if (!sparseset_bit_p (pseudos_live, regno))
     return;
 
@@ -602,8 +602,7 @@ check_pseudos_live_through_calls (int regno,
     lra_reg_info[regno].call_insn = call_insn;
 
   sparseset_clear_bit (pseudos_live_through_calls, regno);
-  IOR_HARD_REG_SET (lra_reg_info[regno].conflict_hard_regs,
-		    last_call_used_reg_set);
+  lra_reg_info[regno].conflict_hard_regs |= last_call_used_reg_set;
 
   for (hr = 0; HARD_REGISTER_NUM_P (hr); hr++)
     if (targetm.hard_regno_call_part_clobbered (call_insn, hr,
@@ -672,7 +671,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
   sparseset_clear (pseudos_live_through_setjumps);
   CLEAR_HARD_REG_SET (last_call_used_reg_set);
   REG_SET_TO_HARD_REG_SET (hard_regs_live, reg_live_out);
-  AND_COMPL_HARD_REG_SET (hard_regs_live, eliminable_regset);
+  hard_regs_live &= ~eliminable_regset;
   EXECUTE_IF_SET_IN_BITMAP (reg_live_out, FIRST_PSEUDO_REGISTER, j, bi)
     {
       update_pseudo_point (j, curr_point, USE_POINT);
@@ -929,31 +928,31 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	{
 	  call_insn = curr_insn;
 	  if (! flag_ipa_ra && ! targetm.return_call_with_max_clobbers)
-	    COPY_HARD_REG_SET(last_call_used_reg_set, call_used_reg_set);
+	    last_call_used_reg_set = call_used_or_fixed_regs;
 	  else
 	    {
 	      HARD_REG_SET this_call_used_reg_set;
 	      get_call_reg_set_usage (curr_insn, &this_call_used_reg_set,
-				      call_used_reg_set);
+				      call_used_or_fixed_regs);
 
 	      bool flush = (! hard_reg_set_empty_p (last_call_used_reg_set)
-			    && ( ! hard_reg_set_equal_p (last_call_used_reg_set,
-						       this_call_used_reg_set)))
+			    && (last_call_used_reg_set
+				!= this_call_used_reg_set))
 			   || (last_call_insn && ! calls_have_same_clobbers_p
 						     (call_insn,
 						      last_call_insn));
 
 	      EXECUTE_IF_SET_IN_SPARSESET (pseudos_live, j)
 		{
-		  IOR_HARD_REG_SET (lra_reg_info[j].actual_call_used_reg_set,
-				    this_call_used_reg_set);
+		  lra_reg_info[j].actual_call_used_reg_set
+		    |= this_call_used_reg_set;
 
 		  if (flush)
 		    check_pseudos_live_through_calls (j,
 						      last_call_used_reg_set,
 						      last_call_insn);
 		}
-	      COPY_HARD_REG_SET(last_call_used_reg_set, this_call_used_reg_set);
+	      last_call_used_reg_set = this_call_used_reg_set;
 	      last_call_insn = call_insn;
 	    }
 
@@ -1107,7 +1106,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       if (!cfun->has_nonlocal_label
 	  && has_abnormal_call_or_eh_pred_edge_p (bb))
 	for (px = 0; HARD_REGISTER_NUM_P (px); px++)
-	  if (call_used_regs[px]
+	  if (call_used_or_fixed_reg_p (px)
 #ifdef REAL_PIC_OFFSET_TABLE_REGNUM
 	      /* We should create a conflict of PIC pseudo with PIC
 		 hard reg as PIC hard reg can have a wrong value after

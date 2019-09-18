@@ -153,6 +153,14 @@ struct cl_option_handlers;
 struct diagnostic_context;
 class pretty_printer;
 
+template<typename T> struct array_traits;
+
+/* Provides a read-only bitmap view of a single integer bitmask or an
+   array of integer bitmasks, or of a wrapper around such bitmasks.  */
+template<typename T, typename Traits = array_traits<T>,
+	 bool has_constant_size = Traits::has_constant_size>
+class bitmap_view;
+
 /* Address space number for named address space support.  */
 typedef unsigned char addr_space_t;
 

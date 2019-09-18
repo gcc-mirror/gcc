@@ -35,8 +35,9 @@
 
 #include <type_traits>
 #include <limits>
-#include <cctype>
-#include <bits/charconv.h> // for __to_chars_len, __to_chars_10_impl
+#include <bit>			// for __log2p1
+#include <cctype>		// for isdigit
+#include <bits/charconv.h>	// for __to_chars_len, __to_chars_10_impl
 #include <bits/error_constants.h> // for std::errc
 
 // Define when floating point is supported: #define __cpp_lib_to_chars 201611L
@@ -96,43 +97,7 @@ namespace __detail
   template<typename _Tp>
     constexpr unsigned
     __to_chars_len_2(_Tp __value) noexcept
-    {
-      static_assert(is_integral<_Tp>::value, "implementation bug");
-      static_assert(is_unsigned<_Tp>::value, "implementation bug");
-
-      constexpr size_t __nbits = __CHAR_BIT__ * sizeof(_Tp);
-
-      // N.B. __builtin_clzll is undefined if __value == 0, but std::to_chars
-      // handles zero values directly.
-
-      // For sizeof(_Tp) > 1 this is an order of magnitude faster than
-      // the generic __to_chars_len.
-      return __nbits
-	- (__builtin_clzll(__value)
-	    - ((__CHAR_BIT__ * sizeof(long long)) - __nbits));
-    }
-
-  template<typename _Tp>
-    constexpr unsigned
-    __to_chars_len_8(_Tp __value) noexcept
-    {
-      static_assert(is_integral<_Tp>::value, "implementation bug");
-      static_assert(is_unsigned<_Tp>::value, "implementation bug");
-
-      constexpr size_t __nbits = __CHAR_BIT__ * sizeof(_Tp);
-
-      if _GLIBCXX17_CONSTEXPR (__nbits <= 16)
-	{
-	  return __value > 077777u ? 6u
-	    : __value > 07777u ? 5u
-	    : __value > 0777u ? 4u
-	    : __value > 077u ? 3u
-	    : __value > 07u ? 2u
-	    : 1u;
-	}
-      else
-	return __to_chars_len(__value, 8);
-    }
+    { return std::__log2p1(__value); }
 
   // Generic implementation for arbitrary bases.
   template<typename _Tp>
@@ -155,8 +120,12 @@ namespace __detail
 
       unsigned __pos = __len - 1;
 
-      static constexpr char __digits[]
-	= "0123456789abcdefghijklmnopqrstuvwxyz";
+      static constexpr char __digits[] = {
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+	'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+	'u', 'v', 'w', 'x', 'y', 'z'
+      };
 
       while (__val >= __base)
 	{
@@ -181,7 +150,7 @@ namespace __detail
 
       to_chars_result __res;
 
-      const unsigned __len = __to_chars_len(__val, 0x10);
+      const unsigned __len = (__to_chars_len_2(__val) + 3) / 4;
 
       if (__builtin_expect((__last - __first) < __len, 0))
 	{
@@ -190,32 +159,30 @@ namespace __detail
 	  return __res;
 	}
 
-      static constexpr char __digits[513] =
-	"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
-	"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f"
-	"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f"
-	"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f"
-	"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f"
-	"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf"
-	"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf"
-	"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff";
+      static constexpr char __digits[] = {
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	'a', 'b', 'c', 'd', 'e', 'f'
+      };
       unsigned __pos = __len - 1;
       while (__val >= 0x100)
 	{
-	  auto const __num = (__val % 0x100) * 2;
-	  __val /= 0x100;
-	  __first[__pos] = __digits[__num + 1];
+	  auto __num = __val & 0xF;
+	  __val >>= 4;
+	  __first[__pos] = __digits[__num];
+	  __num = __val & 0xF;
+	  __val >>= 4;
 	  __first[__pos - 1] = __digits[__num];
 	  __pos -= 2;
 	}
       if (__val >= 0x10)
 	{
-	  auto const __num = __val * 2;
-	  __first[__pos] = __digits[__num + 1];
-	  __first[__pos - 1] = __digits[__num];
+	  const auto __num = __val & 0xF;
+	  __val >>= 4;
+	  __first[1] = __digits[__num];
+	  __first[0] = __digits[__val];
 	}
       else
-	__first[__pos] = "0123456789abcdef"[__val];
+	__first[0] = __digits[__val];
       __res.ptr = __first + __len;
       __res.ec = {};
       return __res;
@@ -253,8 +220,19 @@ namespace __detail
       static_assert(is_unsigned<_Tp>::value, "implementation bug");
 
       to_chars_result __res;
+      unsigned __len;
 
-      const unsigned __len = __to_chars_len_8(__val);
+      if _GLIBCXX17_CONSTEXPR (numeric_limits<_Tp>::digits <= 16)
+	{
+	  __len = __val > 077777u ? 6u
+	    : __val > 07777u ? 5u
+	    : __val > 0777u ? 4u
+	    : __val > 077u ? 3u
+	    : __val > 07u ? 2u
+	    : 1u;
+	}
+      else
+	__len = (__to_chars_len_2(__val) + 2) / 3;
 
       if (__builtin_expect((__last - __first) < __len, 0))
 	{
@@ -263,28 +241,26 @@ namespace __detail
 	  return __res;
 	}
 
-      static constexpr char __digits[129] =
-	"00010203040506071011121314151617"
-	"20212223242526273031323334353637"
-	"40414243444546475051525354555657"
-	"60616263646566677071727374757677";
       unsigned __pos = __len - 1;
       while (__val >= 0100)
 	{
-	  auto const __num = (__val % 0100) * 2;
-	  __val /= 0100;
-	  __first[__pos] = __digits[__num + 1];
-	  __first[__pos - 1] = __digits[__num];
+	  auto __num = __val & 7;
+	  __val >>= 3;
+	  __first[__pos] = '0' + __num;
+	  __num = __val & 7;
+	  __val >>= 3;
+	  __first[__pos - 1] = '0' + __num;
 	  __pos -= 2;
 	}
       if (__val >= 010)
 	{
-	  auto const __num = __val * 2;
-	  __first[__pos] = __digits[__num + 1];
-	  __first[__pos - 1] = __digits[__num];
+	  auto const __num = __val & 7;
+	  __val >>= 3;
+	  __first[1] = '0' + __num;
+	  __first[0] = '0' + __val;
 	}
       else
-	__first[__pos] = '0' + __val;
+	__first[0] = '0' + __val;
       __res.ptr = __first + __len;
       __res.ec = {};
       return __res;
@@ -315,7 +291,10 @@ namespace __detail
 	  __first[__pos--] = '0' + (__val & 1);
 	  __val >>= 1;
 	}
-      *__first = '0' + (__val & 1);
+      // First digit is always '1' because __to_chars_len_2 skips
+      // leading zero bits and std::to_chars handles zero values
+      // directly.
+      __first[0] = '1';
 
       __res.ptr = __first + __len;
       __res.ec = {};
@@ -326,7 +305,7 @@ namespace __detail
 
   template<typename _Tp>
     __detail::__integer_to_chars_result_type<_Tp>
-    to_chars(char* __first, char* __last, _Tp __value, int __base = 10)
+    __to_chars_i(char* __first, char* __last, _Tp __value, int __base = 10)
     {
       __glibcxx_assert(2 <= __base && __base <= 36);
 
@@ -362,6 +341,43 @@ namespace __detail
       }
     }
 
+#define _GLIBCXX_TO_CHARS(T) \
+  inline to_chars_result \
+  to_chars(char* __first, char* __last, T __value, int __base = 10) \
+  { return std::__to_chars_i<T>(__first, __last, __value, __base); }
+_GLIBCXX_TO_CHARS(char)
+_GLIBCXX_TO_CHARS(signed char)
+_GLIBCXX_TO_CHARS(unsigned char)
+_GLIBCXX_TO_CHARS(signed short)
+_GLIBCXX_TO_CHARS(unsigned short)
+_GLIBCXX_TO_CHARS(signed int)
+_GLIBCXX_TO_CHARS(unsigned int)
+_GLIBCXX_TO_CHARS(signed long)
+_GLIBCXX_TO_CHARS(unsigned long)
+_GLIBCXX_TO_CHARS(signed long long)
+_GLIBCXX_TO_CHARS(unsigned long long)
+#if defined(__GLIBCXX_TYPE_INT_N_0)
+_GLIBCXX_TO_CHARS(signed __GLIBCXX_TYPE_INT_N_0)
+_GLIBCXX_TO_CHARS(unsigned __GLIBCXX_TYPE_INT_N_0)
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_1)
+_GLIBCXX_TO_CHARS(signed __GLIBCXX_TYPE_INT_N_1)
+_GLIBCXX_TO_CHARS(unsigned __GLIBCXX_TYPE_INT_N_1)
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_2)
+_GLIBCXX_TO_CHARS(signed __GLIBCXX_TYPE_INT_N_2)
+_GLIBCXX_TO_CHARS(unsigned __GLIBCXX_TYPE_INT_N_2)
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_3)
+_GLIBCXX_TO_CHARS(signed __GLIBCXX_TYPE_INT_N_3)
+_GLIBCXX_TO_CHARS(unsigned __GLIBCXX_TYPE_INT_N_3)
+#endif
+#undef _GLIBCXX_TO_CHARS
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3266. to_chars(bool) should be deleted
+  to_chars_result to_chars(char*, char*, bool, int = 10) = delete;
+
 namespace __detail
 {
   template<typename _Tp>
@@ -394,7 +410,7 @@ namespace __detail
 	  __i++;
 	}
       __first += __i;
-      return __i <= (sizeof(_Tp) * __CHAR_BIT__);
+      return __i <= numeric_limits<_Tp>::digits;
     }
 
   /// std::from_chars implementation for integers in bases 3 to 10.

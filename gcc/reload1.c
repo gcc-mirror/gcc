@@ -795,7 +795,9 @@ reload (rtx_insn *first, int global)
 
   if (crtl->saves_all_registers)
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (! call_used_regs[i] && ! fixed_regs[i] && ! LOCAL_REGNO (i))
+      if (! call_used_or_fixed_reg_p (i)
+	  && ! fixed_regs[i]
+	  && ! LOCAL_REGNO (i))
 	df_set_regs_ever_live (i, true);
 
   /* Find all the pseudo registers that didn't get hard regs
@@ -843,7 +845,7 @@ reload (rtx_insn *first, int global)
      cannot be done.  */
   for (insn = first; insn && num_eliminable; insn = NEXT_INSN (insn))
     if (INSN_P (insn))
-      note_stores (PATTERN (insn), mark_not_eliminable, NULL);
+      note_pattern_stores (PATTERN (insn), mark_not_eliminable, NULL);
 
   maybe_fix_stack_asms ();
 
@@ -1364,7 +1366,7 @@ maybe_fix_stack_asms (void)
 		{
 		  /* End of one alternative - mark the regs in the current
 		     class, and reset the class.  */
-		  IOR_HARD_REG_SET (allowed, reg_class_contents[cls]);
+		  allowed |= reg_class_contents[cls];
 		  cls = NO_REGS;
 		  p++;
 		  if (c == '#')
@@ -1399,7 +1401,7 @@ maybe_fix_stack_asms (void)
       /* Those of the registers which are clobbered, but allowed by the
 	 constraints, must be usable as reload registers.  So clear them
 	 out of the life information.  */
-      AND_HARD_REG_SET (allowed, clobbered);
+      allowed &= clobbered;
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (TEST_HARD_REG_BIT (allowed, i))
 	  {
@@ -1732,7 +1734,7 @@ order_regs_for_reload (class insn_chain *chain)
   HARD_REG_SET used_by_pseudos2;
   reg_set_iterator rsi;
 
-  COPY_HARD_REG_SET (bad_spill_regs, fixed_reg_set);
+  bad_spill_regs = fixed_reg_set;
 
   memset (spill_cost, 0, sizeof spill_cost);
   memset (spill_add_cost, 0, sizeof spill_add_cost);
@@ -1745,8 +1747,8 @@ order_regs_for_reload (class insn_chain *chain)
 
   REG_SET_TO_HARD_REG_SET (used_by_pseudos, &chain->live_throughout);
   REG_SET_TO_HARD_REG_SET (used_by_pseudos2, &chain->dead_or_set);
-  IOR_HARD_REG_SET (bad_spill_regs, used_by_pseudos);
-  IOR_HARD_REG_SET (bad_spill_regs, used_by_pseudos2);
+  bad_spill_regs |= used_by_pseudos;
+  bad_spill_regs |= used_by_pseudos2;
 
   /* Now find out which pseudos are allocated to it, and update
      hard_reg_n_uses.  */
@@ -1823,9 +1825,9 @@ find_reg (class insn_chain *chain, int order)
   static int regno_pseudo_regs[FIRST_PSEUDO_REGISTER];
   static int best_regno_pseudo_regs[FIRST_PSEUDO_REGISTER];
 
-  COPY_HARD_REG_SET (not_usable, bad_spill_regs);
-  IOR_HARD_REG_SET (not_usable, bad_spill_regs_global);
-  IOR_COMPL_HARD_REG_SET (not_usable, reg_class_contents[rl->rclass]);
+  not_usable = (bad_spill_regs
+		| bad_spill_regs_global
+		| ~reg_class_contents[rl->rclass]);
 
   CLEAR_HARD_REG_SET (used_by_other_reload);
   for (k = 0; k < order; k++)
@@ -1906,8 +1908,8 @@ find_reg (class insn_chain *chain, int order)
 		  && (inv_reg_alloc_order[regno]
 		      < inv_reg_alloc_order[best_reg])
 #else
-		  && call_used_regs[regno]
-		  && ! call_used_regs[best_reg]
+		  && call_used_or_fixed_reg_p (regno)
+		  && ! call_used_or_fixed_reg_p (best_reg)
 #endif
 		  ))
 	    {
@@ -2007,8 +2009,8 @@ find_reload_regs (class insn_chain *chain)
 	  }
     }
 
-  COPY_HARD_REG_SET (chain->used_spill_regs, used_spill_regs_local);
-  IOR_HARD_REG_SET (used_spill_regs, used_spill_regs_local);
+  chain->used_spill_regs = used_spill_regs_local;
+  used_spill_regs |= used_spill_regs_local;
 
   memcpy (chain->rld, rld, n_reloads * sizeof (struct reload));
 }
@@ -3930,7 +3932,7 @@ update_eliminables_and_spill (void)
   HARD_REG_SET to_spill;
   CLEAR_HARD_REG_SET (to_spill);
   update_eliminables (&to_spill);
-  AND_COMPL_HARD_REG_SET (used_spill_regs, to_spill);
+  used_spill_regs &= ~to_spill;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (TEST_HARD_REG_BIT (to_spill, i))
@@ -4251,14 +4253,12 @@ finish_spills (int global)
 	  EXECUTE_IF_SET_IN_REG_SET
 	    (&chain->live_throughout, FIRST_PSEUDO_REGISTER, i, rsi)
 	    {
-	      IOR_HARD_REG_SET (pseudo_forbidden_regs[i],
-				chain->used_spill_regs);
+	      pseudo_forbidden_regs[i] |= chain->used_spill_regs;
 	    }
 	  EXECUTE_IF_SET_IN_REG_SET
 	    (&chain->dead_or_set, FIRST_PSEUDO_REGISTER, i, rsi)
 	    {
-	      IOR_HARD_REG_SET (pseudo_forbidden_regs[i],
-				chain->used_spill_regs);
+	      pseudo_forbidden_regs[i] |= chain->used_spill_regs;
 	    }
 	}
 
@@ -4302,7 +4302,7 @@ finish_spills (int global)
 	{
 	  REG_SET_TO_HARD_REG_SET (used_by_pseudos, &chain->live_throughout);
 	  REG_SET_TO_HARD_REG_SET (used_by_pseudos2, &chain->dead_or_set);
-	  IOR_HARD_REG_SET (used_by_pseudos, used_by_pseudos2);
+	  used_by_pseudos |= used_by_pseudos2;
 
 	  compute_use_by_pseudos (&used_by_pseudos, &chain->live_throughout);
 	  compute_use_by_pseudos (&used_by_pseudos, &chain->dead_or_set);
@@ -4310,8 +4310,7 @@ finish_spills (int global)
 	     may be not included in the value calculated here because
 	     of possible removing caller-saves insns (see function
 	     delete_caller_save_insns.  */
-	  COMPL_HARD_REG_SET (chain->used_spill_regs, used_by_pseudos);
-	  AND_HARD_REG_SET (chain->used_spill_regs, used_spill_regs);
+	  chain->used_spill_regs = ~used_by_pseudos & used_spill_regs;
 	}
     }
 
@@ -4494,7 +4493,7 @@ reload_as_needed (int live_known)
 	{
 	  regset_head regs_to_forget;
 	  INIT_REG_SET (&regs_to_forget);
-	  note_stores (PATTERN (insn), forget_old_reloads_1, &regs_to_forget);
+	  note_stores (insn, forget_old_reloads_1, &regs_to_forget);
 
 	  /* If this is a USE and CLOBBER of a MEM, ensure that any
 	     references to eliminable registers have been removed.  */
@@ -4621,7 +4620,7 @@ reload_as_needed (int live_known)
 	     between INSN and NEXT and use them to forget old reloads.  */
 	  for (rtx_insn *x = NEXT_INSN (insn); x != old_next; x = NEXT_INSN (x))
 	    if (NONJUMP_INSN_P (x) && GET_CODE (PATTERN (x)) == CLOBBER)
-	      note_stores (PATTERN (x), forget_old_reloads_1, NULL);
+	      note_stores (x, forget_old_reloads_1, NULL);
 
 #if AUTO_INC_DEC
 	  /* Likewise for regs altered by auto-increment in this insn.
@@ -4787,8 +4786,8 @@ reload_as_needed (int live_known)
          be partially clobbered by the call.  */
       else if (CALL_P (insn))
 	{
-	  AND_COMPL_HARD_REG_SET (reg_reloaded_valid, call_used_reg_set);
-	  AND_COMPL_HARD_REG_SET (reg_reloaded_valid, reg_reloaded_call_part_clobbered);
+	  reg_reloaded_valid &= ~(call_used_or_fixed_regs
+				  | reg_reloaded_call_part_clobbered);
 
 	  /* If this is a call to a setjmp-type function, we must not
 	     reuse any reload reg contents across the call; that will
@@ -6240,9 +6239,9 @@ choose_reload_regs_init (class insn_chain *chain, rtx *save_reload_reg_rtx)
   {
     HARD_REG_SET tmp;
     REG_SET_TO_HARD_REG_SET (tmp, &chain->live_throughout);
-    IOR_HARD_REG_SET (reg_used_in_insn, tmp);
+    reg_used_in_insn |= tmp;
     REG_SET_TO_HARD_REG_SET (tmp, &chain->dead_or_set);
-    IOR_HARD_REG_SET (reg_used_in_insn, tmp);
+    reg_used_in_insn |= tmp;
     compute_use_by_pseudos (&reg_used_in_insn, &chain->live_throughout);
     compute_use_by_pseudos (&reg_used_in_insn, &chain->dead_or_set);
   }
@@ -6257,7 +6256,7 @@ choose_reload_regs_init (class insn_chain *chain, rtx *save_reload_reg_rtx)
       CLEAR_HARD_REG_SET (reload_reg_used_in_outaddr_addr[i]);
     }
 
-  COMPL_HARD_REG_SET (reload_reg_unavailable, chain->used_spill_regs);
+  reload_reg_unavailable = ~chain->used_spill_regs;
 
   CLEAR_HARD_REG_SET (reload_reg_used_for_inherit);
 
@@ -7702,7 +7701,7 @@ emit_output_reload_insns (class insn_chain *chain, struct reload *rl,
 	   clear any memory of reloaded copies of the pseudo reg.
 	   If this output reload comes from a spill reg,
 	   reg_has_output_reload will make this do nothing.  */
-	note_stores (pat, forget_old_reloads_1, NULL);
+	note_stores (p, forget_old_reloads_1, NULL);
 
 	if (reg_mentioned_p (rl_reg_rtx, pat))
 	  {
@@ -8421,7 +8420,7 @@ emit_reload_insns (class insn_chain *chain)
 	    }
 	}
     }
-  IOR_HARD_REG_SET (reg_reloaded_dead, reg_reloaded_died);
+  reg_reloaded_dead |= reg_reloaded_died;
 }
 
 /* Go through the motions to emit INSN and test if it is strictly valid.

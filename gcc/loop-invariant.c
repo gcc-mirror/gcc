@@ -2171,7 +2171,7 @@ calculate_loop_reg_pressure (void)
 
 	  mark_ref_regs (PATTERN (insn));
 	  n_regs_set = 0;
-	  note_stores (PATTERN (insn), mark_reg_clobber, NULL);
+	  note_stores (insn, mark_reg_clobber, NULL);
 
 	  /* Mark any registers dead after INSN as dead now.  */
 
@@ -2184,7 +2184,7 @@ calculate_loop_reg_pressure (void)
 	     Clobbers are processed again, so they conflict with
 	     the registers that are set.  */
 
-	  note_stores (PATTERN (insn), mark_reg_store, NULL);
+	  note_stores (insn, mark_reg_store, NULL);
 
 	  if (AUTO_INC_DEC)
 	    for (link = REG_NOTES (insn); link; link = XEXP (link, 1))

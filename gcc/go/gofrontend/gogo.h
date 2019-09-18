@@ -547,7 +547,9 @@ class Gogo
   { this->file_block_names_[name] = location; }
 
   // Add a linkname, from the go:linkname compiler directive.  This
-  // changes the externally visible name of go_name to be ext_name.
+  // changes the externally visible name of GO_NAME to be EXT_NAME.
+  // If EXT_NAME is the empty string, GO_NAME is unchanged, but the
+  // symbol is made publicly visible.
   void
   add_linkname(const std::string& go_name, bool is_exported,
 	       const std::string& ext_name, Location location);
@@ -771,7 +773,14 @@ class Gogo
   // Return whether an assignment that sets LHS to RHS needs a write
   // barrier.
   bool
-  assign_needs_write_barrier(Expression* lhs);
+  assign_needs_write_barrier(Expression* lhs,
+                             Unordered_set(const Named_object*)*);
+
+  // Return whether EXPR is the address of a variable that can be set
+  // without a write barrier.  That is, if this returns true, then an
+  // assignment to *EXPR does not require a write barrier.
+  bool
+  is_nonwb_pointer(Expression* expr, Unordered_set(const Named_object*)*);
 
   // Return an assignment that sets LHS to RHS using a write barrier.
   // This returns an if statement that checks whether write barriers
@@ -1352,6 +1361,11 @@ class Function
   set_asm_name(const std::string& asm_name)
   { this->asm_name_ = asm_name; }
 
+  // Mark this symbol as exported by a linkname directive.
+  void
+  set_is_exported_by_linkname()
+  { this->is_exported_by_linkname_ = true; }
+
   // Return the pragmas for this function.
   unsigned int
   pragmas() const
@@ -1699,6 +1713,9 @@ class Function
   // True if this function is referenced from an inlined body that
   // will be put into the export data.
   bool is_referenced_by_inline_ : 1;
+  // True if we should make this function visible to other packages
+  // because of a go:linkname directive.
+  bool is_exported_by_linkname_ : 1;
 };
 
 // A snapshot of the current binding state.

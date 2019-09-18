@@ -36,9 +36,13 @@ package System.Bitfields is
    --  Instances of the generic package in System.Bitfield_Utils. So far
    --  we have just one, which defaults to the natural endianness of the
    --  machine. We might someday want to support Scalar_Storage_Order.
+   --  Note: we use Long_Long_Integer'Size / 2 instead of 32 to support
+   --  specifying a target configuration file where the largest integer is
+   --  32 bits instead of 64.
 
-   Val_Bytes : constant := 4;
-   Val_Bits : constant := Val_Bytes * System.Storage_Unit;
+   Val_Bits  : constant := Long_Long_Integer'Size / 2;
+   Val_Bytes : constant := Val_Bits / System.Storage_Unit;
+
    type Val_2 is mod 2**(Val_Bits * 2) with Alignment => Val_Bytes;
    pragma Provide_Shift_Operators (Val_2);
    type Val is mod 2**Val_Bits with Alignment => Val_Bytes;

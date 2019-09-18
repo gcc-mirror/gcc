@@ -455,71 +455,61 @@ tree_node_structure_for_code (enum tree_code code)
   switch (TREE_CODE_CLASS (code))
     {
     case tcc_declaration:
-      {
-	switch (code)
-	  {
-	  case FIELD_DECL:
-	    return TS_FIELD_DECL;
-	  case PARM_DECL:
-	    return TS_PARM_DECL;
-	  case VAR_DECL:
-	    return TS_VAR_DECL;
-	  case LABEL_DECL:
-	    return TS_LABEL_DECL;
-	  case RESULT_DECL:
-	    return TS_RESULT_DECL;
-	  case DEBUG_EXPR_DECL:
-	    return TS_DECL_WRTL;
-	  case CONST_DECL:
-	    return TS_CONST_DECL;
-	  case TYPE_DECL:
-	    return TS_TYPE_DECL;
-	  case FUNCTION_DECL:
-	    return TS_FUNCTION_DECL;
-	  case TRANSLATION_UNIT_DECL:
-	    return TS_TRANSLATION_UNIT_DECL;
-	  default:
-	    return TS_DECL_NON_COMMON;
-	  }
-      }
-    case tcc_type:
-      return TS_TYPE_NON_COMMON;
-    case tcc_reference:
-    case tcc_comparison:
-    case tcc_unary:
+      switch (code)
+	{
+	case CONST_DECL:	return TS_CONST_DECL;
+	case DEBUG_EXPR_DECL:	return TS_DECL_WRTL;
+	case FIELD_DECL:	return TS_FIELD_DECL;
+	case FUNCTION_DECL:	return TS_FUNCTION_DECL;
+	case LABEL_DECL:	return TS_LABEL_DECL;
+	case PARM_DECL:		return TS_PARM_DECL;
+	case RESULT_DECL:	return TS_RESULT_DECL;
+	case TRANSLATION_UNIT_DECL: return TS_TRANSLATION_UNIT_DECL;
+	case TYPE_DECL:		return TS_TYPE_DECL;
+	case VAR_DECL:		return TS_VAR_DECL;
+	default: 		return TS_DECL_NON_COMMON;
+	}
+
+    case tcc_type:		return TS_TYPE_NON_COMMON;
+
     case tcc_binary:
+    case tcc_comparison:
     case tcc_expression:
+    case tcc_reference:
     case tcc_statement:
-    case tcc_vl_exp:
-      return TS_EXP;
+    case tcc_unary:
+    case tcc_vl_exp:		return TS_EXP;
+
     default:  /* tcc_constant and tcc_exceptional */
       break;
     }
+
   switch (code)
     {
       /* tcc_constant cases.  */
-    case VOID_CST:		return TS_TYPED;
+    case COMPLEX_CST:		return TS_COMPLEX;
+    case FIXED_CST:		return TS_FIXED_CST;
     case INTEGER_CST:		return TS_INT_CST;
     case POLY_INT_CST:		return TS_POLY_INT_CST;
     case REAL_CST:		return TS_REAL_CST;
-    case FIXED_CST:		return TS_FIXED_CST;
-    case COMPLEX_CST:		return TS_COMPLEX;
-    case VECTOR_CST:		return TS_VECTOR;
     case STRING_CST:		return TS_STRING;
+    case VECTOR_CST:		return TS_VECTOR;
+    case VOID_CST:		return TS_TYPED;
+
       /* tcc_exceptional cases.  */
-    case ERROR_MARK:		return TS_COMMON;
-    case IDENTIFIER_NODE:	return TS_IDENTIFIER;
-    case TREE_LIST:		return TS_LIST;
-    case TREE_VEC:		return TS_VEC;
-    case SSA_NAME:		return TS_SSA_NAME;
-    case PLACEHOLDER_EXPR:	return TS_COMMON;
-    case STATEMENT_LIST:	return TS_STATEMENT_LIST;
     case BLOCK:			return TS_BLOCK;
     case CONSTRUCTOR:		return TS_CONSTRUCTOR;
-    case TREE_BINFO:		return TS_BINFO;
+    case ERROR_MARK:		return TS_COMMON;
+    case IDENTIFIER_NODE:	return TS_IDENTIFIER;
     case OMP_CLAUSE:		return TS_OMP_CLAUSE;
     case OPTIMIZATION_NODE:	return TS_OPTIMIZATION;
+    case PLACEHOLDER_EXPR:	return TS_COMMON;
+    case SSA_NAME:		return TS_SSA_NAME;
+    case STATEMENT_LIST:	return TS_STATEMENT_LIST;
     case TARGET_OPTION_NODE:	return TS_TARGET_OPTION;
+    case TREE_BINFO:		return TS_BINFO;
+    case TREE_LIST:		return TS_LIST;
+    case TREE_VEC:		return TS_VEC;
 
     default:
       gcc_unreachable ();
@@ -6142,6 +6132,13 @@ find_decls_types_in_node (struct cgraph_node *n, class free_lang_data_d *fld)
 	    {
 	      tree arg = gimple_op (stmt, i);
 	      find_decls_types (arg, fld);
+	      /* find_decls_types doesn't walk TREE_PURPOSE of TREE_LISTs,
+		 which we need for asm stmts.  */
+	      if (arg
+		  && TREE_CODE (arg) == TREE_LIST
+		  && TREE_PURPOSE (arg)
+		  && gimple_code (stmt) == GIMPLE_ASM)
+		find_decls_types (TREE_PURPOSE (arg), fld);
 	    }
 	}
     }
@@ -11872,18 +11869,23 @@ build_alloca_call_expr (tree size, unsigned int align, HOST_WIDE_INT max_size)
     }
 }
 
-/* Create a new constant string literal consisting of elements of type
-   ELTYPE and return a tree node representing char* pointer to it as
-   an ADDR_EXPR (ARRAY_REF (ELTYPE, ...)).  The STRING_CST value is
-   the LEN bytes at STR (the representation of the string, which may
+/* Create a new constant string literal of type ELTYPE[SIZE] (or LEN
+   if SIZE == -1) and return a tree node representing char* pointer to
+   it as an ADDR_EXPR (ARRAY_REF (ELTYPE, ...)).  The STRING_CST value
+   is the LEN bytes at STR (the representation of the string, which may
    be wide).  */
 
 tree
 build_string_literal (int len, const char *str,
-		      tree eltype /* = char_type_node */)
+		      tree eltype /* = char_type_node */,
+		      unsigned HOST_WIDE_INT size /* = -1 */)
 {
   tree t = build_string (len, str);
-  tree index = build_index_type (size_int (len - 1));
+  /* Set the maximum valid index based on the string length or SIZE.  */
+  unsigned HOST_WIDE_INT maxidx
+    = (size == HOST_WIDE_INT_M1U ? len : size) - 1;
+
+  tree index = build_index_type (size_int (maxidx));
   eltype = build_type_variant (eltype, 1, 0);
   tree type = build_array_type (eltype, index);
   TREE_TYPE (t) = type;

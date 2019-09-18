@@ -4942,37 +4942,46 @@ get_bit_range (poly_uint64_pod *bitstart, poly_uint64_pod *bitend, tree exp,
   *bitend = *bitstart + tree_to_poly_uint64 (DECL_SIZE (repr)) - 1;
 }
 
-/* Returns true if ADDR is an ADDR_EXPR of a DECL that does not reside
-   in memory and has non-BLKmode.  DECL_RTL must not be a MEM; if
-   DECL_RTL was not set yet, return NORTL.  */
+/* Returns true if BASE is a DECL that does not reside in memory and
+   has non-BLKmode.  DECL_RTL must not be a MEM; if
+   DECL_RTL was not set yet, return false.  */
 
 static inline bool
-addr_expr_of_non_mem_decl_p_1 (tree addr, bool nortl)
+non_mem_decl_p (tree base)
 {
-  if (TREE_CODE (addr) != ADDR_EXPR)
-    return false;
-
-  tree base = TREE_OPERAND (addr, 0);
-
   if (!DECL_P (base)
       || TREE_ADDRESSABLE (base)
       || DECL_MODE (base) == BLKmode)
     return false;
 
   if (!DECL_RTL_SET_P (base))
-    return nortl;
+    return false;
 
   return (!MEM_P (DECL_RTL (base)));
 }
 
-/* Returns true if the MEM_REF REF refers to an object that does not
+/* Returns true if REF refers to an object that does not
    reside in memory and has non-BLKmode.  */
 
 static inline bool
 mem_ref_refers_to_non_mem_p (tree ref)
 {
-  tree base = TREE_OPERAND (ref, 0);
-  return addr_expr_of_non_mem_decl_p_1 (base, false);
+  tree base;
+
+  if (TREE_CODE (ref) == MEM_REF
+      || TREE_CODE (ref) == TARGET_MEM_REF)
+    {
+      tree addr = TREE_OPERAND (ref, 0);
+
+      if (TREE_CODE (addr) != ADDR_EXPR)
+	return false;
+
+      base = TREE_OPERAND (addr, 0);
+    }
+  else
+    base = ref;
+
+  return non_mem_decl_p (base);
 }
 
 /* Expand an assignment that stores the value of FROM into TO.  If NONTEMPORAL
@@ -5001,7 +5010,8 @@ expand_assignment (tree to, tree from, bool nontemporal)
   /* Handle misaligned stores.  */
   mode = TYPE_MODE (TREE_TYPE (to));
   if ((TREE_CODE (to) == MEM_REF
-       || TREE_CODE (to) == TARGET_MEM_REF)
+       || TREE_CODE (to) == TARGET_MEM_REF
+       || DECL_P (to))
       && mode != BLKmode
       && !mem_ref_refers_to_non_mem_p (to)
       && ((align = get_object_alignment (to))
@@ -8251,6 +8261,8 @@ expand_constructor (tree exp, rtx target, enum expand_modifier modifier,
    DECL_RTL of the VAR_DECL.  *ALT_RTL is also set if EXP is a
    COMPOUND_EXPR whose second argument is such a VAR_DECL, and so on
    recursively.
+   If the result can be stored at TARGET, and ALT_RTL is non-NULL,
+   then *ALT_RTL is set to TARGET (before legitimziation).
 
    If INNER_REFERENCE_P is true, we are expanding an inner reference.
    In this case, we don't adjust a returned MEM rtx that wouldn't be
@@ -8386,6 +8398,40 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
      branches.  */
   end_sequence ();
   return NULL_RTX;
+}
+
+/* A helper function for expand_expr_real_2 to be used with a
+   misaligned mem_ref TEMP.  Assume an unsigned type if UNSIGNEDP
+   is nonzero, with alignment ALIGN in bits.
+   Store the value at TARGET if possible (if TARGET is nonzero).
+   Regardless of TARGET, we return the rtx for where the value is placed.
+   If the result can be stored at TARGET, and ALT_RTL is non-NULL,
+   then *ALT_RTL is set to TARGET (before legitimziation).  */
+
+static rtx
+expand_misaligned_mem_ref (rtx temp, machine_mode mode, int unsignedp,
+			   unsigned int align, rtx target, rtx *alt_rtl)
+{
+  enum insn_code icode;
+
+  if ((icode = optab_handler (movmisalign_optab, mode))
+      != CODE_FOR_nothing)
+    {
+      class expand_operand ops[2];
+
+      /* We've already validated the memory, and we're creating a
+	 new pseudo destination.  The predicates really can't fail,
+	 nor can the generator.  */
+      create_output_operand (&ops[0], NULL_RTX, mode);
+      create_fixed_operand (&ops[1], temp);
+      expand_insn (icode, 2, ops);
+      temp = ops[0].value;
+    }
+  else if (targetm.slow_unaligned_access (mode, align))
+    temp = extract_bit_field (temp, GET_MODE_BITSIZE (mode),
+			      0, unsignedp, target,
+			      mode, mode, false, alt_rtl);
+  return temp;
 }
 
 rtx
@@ -10052,6 +10098,23 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	{
 	  if (exp && MEM_P (temp) && REG_P (XEXP (temp, 0)))
 	    mark_reg_pointer (XEXP (temp, 0), DECL_ALIGN (exp));
+	}
+      else if (MEM_P (decl_rtl))
+	temp = decl_rtl;
+
+      if (temp != 0)
+	{
+	  if (MEM_P (temp)
+	      && modifier != EXPAND_WRITE
+	      && modifier != EXPAND_MEMORY
+	      && modifier != EXPAND_INITIALIZER
+	      && modifier != EXPAND_CONST_ADDRESS
+	      && modifier != EXPAND_SUM
+	      && !inner_reference_p
+	      && mode != BLKmode
+	      && MEM_ALIGN (temp) < GET_MODE_ALIGNMENT (mode))
+	    temp = expand_misaligned_mem_ref (temp, mode, unsignedp,
+					      MEM_ALIGN (temp), NULL_RTX, NULL);
 
 	  return temp;
 	}
@@ -10267,7 +10330,6 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
       {
 	addr_space_t as
 	  = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))));
-	enum insn_code icode;
 	unsigned int align;
 
 	op0 = addr_for_mem_ref (exp, as, true);
@@ -10279,22 +10341,9 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	if (modifier != EXPAND_WRITE
 	    && modifier != EXPAND_MEMORY
 	    && mode != BLKmode
-	    && align < GET_MODE_ALIGNMENT (mode)
-	    /* If the target does not have special handling for unaligned
-	       loads of mode then it can use regular moves for them.  */
-	    && ((icode = optab_handler (movmisalign_optab, mode))
-		!= CODE_FOR_nothing))
-	  {
-	    class expand_operand ops[2];
-
-	    /* We've already validated the memory, and we're creating a
-	       new pseudo destination.  The predicates really can't fail,
-	       nor can the generator.  */
-	    create_output_operand (&ops[0], NULL_RTX, mode);
-	    create_fixed_operand (&ops[1], temp);
-	    expand_insn (icode, 2, ops);
-	    temp = ops[0].value;
-	  }
+	    && align < GET_MODE_ALIGNMENT (mode))
+	  temp = expand_misaligned_mem_ref (temp, mode, unsignedp,
+					    align, NULL_RTX, NULL);
 	return temp;
       }
 
@@ -10306,7 +10355,6 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	machine_mode address_mode;
 	tree base = TREE_OPERAND (exp, 0);
 	gimple *def_stmt;
-	enum insn_code icode;
 	unsigned align;
 	/* Handle expansion of non-aliased memory with non-BLKmode.  That
 	   might end up in a register.  */
@@ -10336,7 +10384,6 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    return expand_expr (exp, target, tmode, modifier);
 	  }
 	address_mode = targetm.addr_space.address_mode (as);
-	base = TREE_OPERAND (exp, 0);
 	if ((def_stmt = get_def_for_expr (base, BIT_AND_EXPR)))
 	  {
 	    tree mask = gimple_assign_rhs2 (def_stmt);
@@ -10363,27 +10410,9 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    && !inner_reference_p
 	    && mode != BLKmode
 	    && align < GET_MODE_ALIGNMENT (mode))
-	  {
-	    if ((icode = optab_handler (movmisalign_optab, mode))
-		!= CODE_FOR_nothing)
-	      {
-		class expand_operand ops[2];
-
-		/* We've already validated the memory, and we're creating a
-		   new pseudo destination.  The predicates really can't fail,
-		   nor can the generator.  */
-		create_output_operand (&ops[0], NULL_RTX, mode);
-		create_fixed_operand (&ops[1], temp);
-		expand_insn (icode, 2, ops);
-		temp = ops[0].value;
-	      }
-	    else if (targetm.slow_unaligned_access (mode, align))
-	      temp = extract_bit_field (temp, GET_MODE_BITSIZE (mode),
-					0, TYPE_UNSIGNED (TREE_TYPE (exp)),
-					(modifier == EXPAND_STACK_PARM
-					 ? NULL_RTX : target),
-					mode, mode, false, alt_rtl);
-	  }
+	  temp = expand_misaligned_mem_ref (temp, mode, unsignedp, align,
+					    modifier == EXPAND_STACK_PARM
+					    ? NULL_RTX : target, alt_rtl);
 	if (reverse
 	    && modifier != EXPAND_MEMORY
 	    && modifier != EXPAND_WRITE)
@@ -10795,6 +10824,14 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    MEM_VOLATILE_P (op0) = 1;
 	  }
 
+	if (MEM_P (op0) && TREE_CODE (tem) == FUNCTION_DECL)
+	  {
+	    if (op0 == orig_op0)
+	      op0 = copy_rtx (op0);
+
+	    set_mem_align (op0, BITS_PER_UNIT);
+	  }
+
 	/* In cases where an aligned union has an unaligned object
 	   as a field, we might be extracting a BLKmode value from
 	   an integer-mode (e.g., SImode) object.  Handle this case
@@ -10956,9 +10993,10 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  op0 = copy_rtx (op0);
 
 	/* Don't set memory attributes if the base expression is
-	   SSA_NAME that got expanded as a MEM.  In that case, we should
-	   just honor its original memory attributes.  */
-	if (TREE_CODE (tem) != SSA_NAME || !MEM_P (orig_op0))
+	   SSA_NAME that got expanded as a MEM or a CONSTANT.  In that case,
+	   we should just honor its original memory attributes.  */
+	if (!(TREE_CODE (tem) == SSA_NAME
+	      && (MEM_P (orig_op0) || CONSTANT_P (orig_op0))))
 	  set_mem_attributes (op0, exp, 0);
 
 	if (REG_P (XEXP (op0, 0)))
@@ -11049,11 +11087,10 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	machine_mode mode1;
 	poly_int64 bitsize, bitpos, bytepos;
 	tree offset;
-	int unsignedp, reversep, volatilep = 0;
+	int reversep, volatilep = 0;
 	tree tem
 	  = get_inner_reference (treeop0, &bitsize, &bitpos, &offset, &mode1,
 				 &unsignedp, &reversep, &volatilep);
-	rtx orig_op0;
 
 	/* ??? We should work harder and deal with non-zero offsets.  */
 	if (!offset
@@ -11063,7 +11100,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    && known_eq (wi::to_poly_offset (TYPE_SIZE (type)), bitsize))
 	  {
 	    /* See the normal_inner_ref case for the rationale.  */
-	    orig_op0
+	    rtx orig_op0
 	      = expand_expr_real (tem,
 				  (TREE_CODE (TREE_TYPE (tem)) == UNION_TYPE
 				   && (TREE_CODE (TYPE_SIZE (TREE_TYPE (tem)))
@@ -11402,6 +11439,15 @@ is_aligning_offset (const_tree offset, const_tree exp)
 tree
 string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 {
+  tree dummy = NULL_TREE;;
+  if (!mem_size)
+    mem_size = &dummy;
+
+  /* Store the type of the original expression before conversions
+     via NOP_EXPR or POINTER_PLUS_EXPR to other types have been
+     removed.  */
+  tree argtype = TREE_TYPE (arg);
+
   tree array;
   STRIP_NOPS (arg);
 
@@ -11464,7 +11510,7 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 	      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == ARRAY_TYPE
 	      && !(decl && !*decl)
 	      && !(decl && tree_fits_uhwi_p (DECL_SIZE_UNIT (*decl))
-		   && mem_size && tree_fits_uhwi_p (*mem_size)
+		   && tree_fits_uhwi_p (*mem_size)
 		   && tree_int_cst_equal (*mem_size, DECL_SIZE_UNIT (*decl))))
 	    return NULL_TREE;
 
@@ -11496,7 +11542,7 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 	      && TREE_CODE (TREE_TYPE (TREE_TYPE (rhs1))) == ARRAY_TYPE
 	      && !(decl && !*decl)
 	      && !(decl && tree_fits_uhwi_p (DECL_SIZE_UNIT (*decl))
-		   && mem_size && tree_fits_uhwi_p (*mem_size)
+		   && tree_fits_uhwi_p (*mem_size)
 		   && tree_int_cst_equal (*mem_size, DECL_SIZE_UNIT (*decl))))
 	    return NULL_TREE;
 
@@ -11530,8 +11576,7 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
   if (TREE_CODE (array) == STRING_CST)
     {
       *ptr_offset = fold_convert (sizetype, offset);
-      if (mem_size)
-	*mem_size = TYPE_SIZE_UNIT (TREE_TYPE (array));
+      *mem_size = TYPE_SIZE_UNIT (TREE_TYPE (array));
       if (decl)
 	*decl = NULL_TREE;
       gcc_checking_assert (tree_to_shwi (TYPE_SIZE_UNIT (TREE_TYPE (array)))
@@ -11561,7 +11606,7 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 
       base_off = wioff.to_uhwi ();
       unsigned HOST_WIDE_INT fieldoff = 0;
-      init = fold_ctor_reference (NULL_TREE, init, base_off, 0, array,
+      init = fold_ctor_reference (TREE_TYPE (arg), init, base_off, 0, array,
 				  &fieldoff);
       HOST_WIDE_INT cstoff;
       if (!base_off.is_constant (&cstoff))
@@ -11580,17 +11625,11 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 
   *ptr_offset = offset;
 
-  tree eltype = TREE_TYPE (init);
-  tree initsize = TYPE_SIZE_UNIT (eltype);
-  if (mem_size)
-    *mem_size = initsize;
-
-  if (decl)
-    *decl = array;
+  tree inittype = TREE_TYPE (init);
 
   if (TREE_CODE (init) == INTEGER_CST
       && (TREE_CODE (TREE_TYPE (array)) == INTEGER_TYPE
-	  || TYPE_MAIN_VARIANT (eltype) == char_type_node))
+	  || TYPE_MAIN_VARIANT (inittype) == char_type_node))
     {
       /* For a reference to (address of) a single constant character,
 	 store the native representation of the character in CHARBUF.
@@ -11602,16 +11641,48 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
       int len = native_encode_expr (init, charbuf, sizeof charbuf, 0);
       if (len > 0)
 	{
-	  /* Construct a string literal with elements of ELTYPE and
+	  /* Construct a string literal with elements of INITTYPE and
 	     the representation above.  Then strip
 	     the ADDR_EXPR (ARRAY_REF (...)) around the STRING_CST.  */
-	  init = build_string_literal (len, (char *)charbuf, eltype);
+	  init = build_string_literal (len, (char *)charbuf, inittype);
 	  init = TREE_OPERAND (TREE_OPERAND (init, 0), 0);
 	}
     }
 
+  tree initsize = TYPE_SIZE_UNIT (inittype);
+
+  if (TREE_CODE (init) == CONSTRUCTOR && initializer_zerop (init))
+    {
+      /* Fold an empty/zero constructor for an implicitly initialized
+	 object or subobject into the empty string.  */
+
+      /* Determine the character type from that of the original
+	 expression.  */
+      tree chartype = argtype;
+      if (POINTER_TYPE_P (chartype))
+	chartype = TREE_TYPE (chartype);
+      while (TREE_CODE (chartype) == ARRAY_TYPE)
+	chartype = TREE_TYPE (chartype);
+      /* Convert a char array to an empty STRING_CST having an array
+	 of the expected type.  */
+      if (!initsize)
+	  initsize = integer_zero_node;
+
+      unsigned HOST_WIDE_INT size = tree_to_uhwi (initsize);
+      init = build_string_literal (size ? 1 : 0, "", chartype, size);
+      init = TREE_OPERAND (init, 0);
+      init = TREE_OPERAND (init, 0);
+
+      *ptr_offset = integer_zero_node;
+    }
+
+  if (decl)
+    *decl = array;
+
   if (TREE_CODE (init) != STRING_CST)
     return NULL_TREE;
+
+  *mem_size = initsize;
 
   gcc_checking_assert (tree_to_shwi (initsize) >= TREE_STRING_LENGTH (init));
 

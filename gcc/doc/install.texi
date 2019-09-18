@@ -270,12 +270,34 @@ name of the package depends on your distro) or you must build GCC as a
 @option{--disable-multilib}.  Otherwise, you may encounter an error such as
 @samp{fatal error: gnu/stubs-32.h: No such file}
 
-@item GNAT
+@item @anchor{GNAT-prerequisite}GNAT
 
-In order to build the Ada compiler (GNAT) you must already have GNAT
-installed because portions of the Ada frontend are written in Ada (with
-GNAT extensions.)  Refer to the Ada installation instructions for more
-specific information.
+In order to build GNAT, the Ada compiler, you need a working GNAT
+compiler (GCC version 4.7 or later).
+
+This includes GNAT tools such as @command{gnatmake} and
+@command{gnatlink}, since the Ada front end is written in Ada and
+uses some GNAT-specific extensions.
+
+In order to build a cross compiler, it is strongly recommended to install
+the new compiler as native first, and then use it to build the cross
+compiler. Other native compiler versions may work but this is not guaranteed and
+will typically fail with hard to understand compilation errors during the
+build.
+
+Similarly, it is strongly recommended to use an older version of GNAT to build
+GNAT. More recent versions of GNAT than the version built are not guaranteed
+to work and will often fail during the build with compilation errors.
+
+Note that @command{configure} does not test whether the GNAT installation works
+and has a sufficiently recent version; if too old a GNAT version is
+installed and @option{--enable-languages=ada} is used, the build will fail.
+
+@env{ADA_INCLUDE_PATH} and @env{ADA_OBJECT_PATH} environment variables
+must not be set when building the Ada compiler, the Ada tools, or the
+Ada runtime libraries. You can check that your build environment is clean
+by verifying that @samp{gnatls -v} lists only one explicit path in each
+section.
 
 @item A ``working'' POSIX compatible shell, or GNU bash
 
@@ -2705,26 +2727,12 @@ and network filesystems.
 
 @section Building the Ada compiler
 
-In order to build GNAT, the Ada compiler, you need a working GNAT
-compiler (GCC version 4.0 or later).
-This includes GNAT tools such as @command{gnatmake} and
-@command{gnatlink}, since the Ada front end is written in Ada and
-uses some GNAT-specific extensions.
-
-In order to build a cross compiler, it is suggested to install
-the new compiler as native first, and then use it to build the cross
-compiler.
-
-@command{configure} does not test whether the GNAT installation works
-and has a sufficiently recent version; if too old a GNAT version is
-installed, the build will fail unless @option{--enable-languages} is
-used to disable building the Ada front end.
-
-@env{ADA_INCLUDE_PATH} and @env{ADA_OBJECT_PATH} environment variables
-must not be set when building the Ada compiler, the Ada tools, or the
-Ada runtime libraries. You can check that your build environment is clean
-by verifying that @samp{gnatls -v} lists only one explicit path in each
-section.
+@ifnothtml
+@ref{GNAT-prerequisite}.
+@end ifnothtml
+@ifhtml
+@uref{GNAT-prerequisite}.
+@end ifhtml
 
 @section Building with profile feedback
 

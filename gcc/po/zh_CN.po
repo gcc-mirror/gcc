@@ -4,6 +4,7 @@
 # Meng Jie <zuxy.meng@gmail.com>, 2005-2014.
 # Jeff Bai <jeffbai@aosc.xyz>, 2015.
 # Mingye Wang (Arthur2e5) <arthur200126@gmail.com>, 2015, 2016.
+# Boyuan Yang <073plan@gmail.com>, 2019.
 #
 # Fellow translatiors:
 # Many of the fuzzy strings are caused by an addition of a period (".")
@@ -30,20 +31,19 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 6.1.0\n"
+"Project-Id-Version: gcc 9.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2019-05-02 20:28+0000\n"
-"PO-Revision-Date: 2016-04-30 17:13-0400\n"
-"Last-Translator: Mingye Wang (Arthur2e5) <arthur200126@gmail.com>\n"
+"PO-Revision-Date: 2019-08-19 15:13-0400\n"
+"Last-Translator: Boyuan Yang <073plan@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Poedit-Basepath: C:/MSYS/source/gcc-4.6.0/gcc\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 1.8.7\n"
+"X-Generator: Poedit 2.2.3\n"
 
 #: cfgrtl.c:2705
 msgid "flow control insn inside a basic block"
@@ -478,12 +478,10 @@ msgid "  -o <file>                Place the output into <file>.\n"
 msgstr "  -o <文件>                输出到 <文件>。\n"
 
 #: gcc.c:3597
-#, fuzzy
-#| msgid "  -pie                     Create a position independent executable.\n"
 msgid ""
 "  -pie                     Create a dynamically linked position independent\n"
 "                           executable.\n"
-msgstr "  -pie                     生成位置无关可执行文件。\n"
+msgstr "  -pie                     生成动态链接的位置无关可执行文件。\n"
 
 #: gcc.c:3599
 msgid "  -shared                  Create a shared library.\n"
@@ -668,10 +666,9 @@ msgid "  rewrite [options] <dir>               Rewrite coverage file contents\n"
 msgstr "  rewrite [选项] <目录>                  覆写测试覆盖率文件内容\n"
 
 #: gcov-tool.c:270
-#, fuzzy, c-format
-#| msgid "    -n, --normalize <long long>         Normalize the profile\n"
+#, c-format
 msgid "    -n, --normalize <int64_t>           Normalize the profile\n"
-msgstr "    -n, --normalize <long long>         归一化配置\n"
+msgstr "    -n, --normalize <int64_t>           归一化配置\n"
 
 #: gcov-tool.c:272
 #, c-format
@@ -774,10 +771,9 @@ msgstr ""
 "%s。\n"
 
 #: gcov-tool.c:528
-#, fuzzy, c-format
-#| msgid "Copyright %s 2014-2016 Free Software Foundation, Inc.\n"
+#, c-format
 msgid "Copyright %s 2019 Free Software Foundation, Inc.\n"
-msgstr "版权所有 %s 2014-2015 自由软件基金会。\n"
+msgstr "版权所有 %s 2019 自由软件基金会。\n"
 
 #: gcov-tool.c:531 gcov.c:925
 #, c-format
@@ -791,15 +787,12 @@ msgstr ""
 "包括没有适销性和某一专用目的下的适用性担保。\n"
 
 #: gcov.c:885
-#, fuzzy, c-format
-#| msgid ""
-#| "Usage: gcov [OPTION]... SOURCE|OBJ...\n"
-#| "\n"
+#, c-format
 msgid ""
 "Usage: gcov [OPTION...] SOURCE|OBJ...\n"
 "\n"
 msgstr ""
-"用法：gconv [选项]... 源文件|对象文件...\n"
+"用法：gconv [选项...] 源文件|对象文件...\n"
 "\n"
 
 #: gcov.c:886
@@ -844,22 +837,19 @@ msgid "  -h, --help                      Print this help, then exit\n"
 msgstr "  -h, --help                      打印此帮助并退出\n"
 
 #: gcov.c:894
-#, fuzzy, c-format
-#| msgid "  -n, --no-output                 Do not create an output file\n"
+#, c-format
 msgid "  -i, --json-format               Output JSON intermediate format into .gcov.json.gz file\n"
-msgstr "  -n, --no-output                 不创建输出文件\n"
+msgstr "  -i, --json-format               以 JSON 中间格式输出至 .gcov.json.gz 文件\n"
 
 #: gcov.c:895
-#, fuzzy, c-format
-#| msgid "  -m, --demangled-names           Output demangled function names\n"
+#, c-format
 msgid "  -j, --human-readable            Output human readable numbers\n"
-msgstr "  -m, --demangled-names           输出解码后的函数名\n"
+msgstr "  -j, --human-readable            输出人类可读的数字\n"
 
 #: gcov.c:896
-#, fuzzy, c-format
-#| msgid "  -n, --no-output                 Do not create an output file\n"
+#, c-format
 msgid "  -k, --use-colors                Emit colored output\n"
-msgstr "  -n, --no-output                 不创建输出文件\n"
+msgstr "  -k, --use-colors                使用带颜色的输出\n"
 
 #: gcov.c:897
 #, c-format
@@ -904,10 +894,9 @@ msgid "  -s, --source-prefix DIR         Source prefix to elide\n"
 msgstr "  -s, --source-prefix 目录        要略去的来源前缀\n"
 
 #: gcov.c:906
-#, fuzzy, c-format
-#| msgid "  -n, --no-output                 Do not create an output file\n"
+#, c-format
 msgid "  -t, --stdout                    Output to stdout instead of a file\n"
-msgstr "  -n, --no-output                 不创建输出文件\n"
+msgstr "  -t, --stdout                    输出至标准输出而非文件\n"
 
 #: gcov.c:907
 #, c-format
@@ -920,10 +909,9 @@ msgid "  -v, --version                   Print version number, then exit\n"
 msgstr "  -v, --version                    打印版本号并退出\n"
 
 #: gcov.c:909
-#, fuzzy, c-format
-#| msgid "    -v, --verbose                       Verbose mode\n"
+#, c-format
 msgid "  -w, --verbose                   Print verbose informations\n"
-msgstr "    -v, --verbo      se                 输出更多信息\n"
+msgstr "  -w, --verbose                   输出详细信息\n"
 
 #: gcov.c:910
 #, fuzzy, c-format
@@ -937,10 +925,9 @@ msgid "gcov %s%s\n"
 msgstr "gcov %s%s\n"
 
 #: gcov.c:1250
-#, fuzzy, c-format
-#| msgid "Treat the input file as already preprocessed"
+#, c-format
 msgid "'%s' file is already processed\n"
-msgstr "将输入文件当作已经预处理过的"
+msgstr ""
 
 #: gcov.c:1364
 #, c-format
@@ -968,16 +955,14 @@ msgid "\n"
 msgstr "\n"
 
 #: gcov.c:1489
-#, fuzzy, c-format
-#| msgid "%s: Cannot open output file: %s\n"
+#, c-format
 msgid "Cannot open JSON output file %s\n"
-msgstr "%s：无法打开输出文件：%s\n"
+msgstr "无法打开 JSON 输出文件 %s\n"
 
 #: gcov.c:1497
-#, fuzzy, c-format
-#| msgid "Error writing output file '%s'\n"
+#, c-format
 msgid "Error writing JSON output file %s\n"
-msgstr "写入到输出文件 '%s' 时出错\n"
+msgstr "写入到 JSON 输出文件 %s 时出错\n"
 
 #: gcov.c:1664
 #, c-format
@@ -3473,8 +3458,9 @@ msgid "unknown move insn:"
 msgstr "无效的 move 指令："
 
 #: config/avr/avr.c:6279
+#, fuzzy
 msgid "bad shift insn:"
-msgstr "错误的 shift 指令"
+msgstr "错误的 shift 指令:"
 
 #: config/avr/avr.c:6387 config/avr/avr.c:6868 config/avr/avr.c:7283
 msgid "internal compiler error.  Incorrect shift:"
@@ -4204,10 +4190,9 @@ msgid "invalid %%q value"
 msgstr "无效 %%q 值"
 
 #: config/rs6000/rs6000.c:21141
-#, fuzzy, c-format
-#| msgid "invalid %%J value"
+#, c-format
 msgid "invalid %%t value"
-msgstr "无效 %%J 值"
+msgstr "无效 %%t 值"
 
 #: config/rs6000/rs6000.c:21158
 #, c-format
@@ -4225,21 +4210,19 @@ msgid "invalid %%v value"
 msgstr "无效 %%v 值"
 
 #: config/rs6000/rs6000.c:21234
-#, fuzzy, c-format
-#| msgid "invalid %%J value"
+#, c-format
 msgid "invalid %%V value"
-msgstr "无效 %%J 值"
+msgstr "无效 %%V 值"
 
 #: config/rs6000/rs6000.c:21251 config/xtensa/xtensa.c:2439
 #, c-format
 msgid "invalid %%x value"
-msgstr "无效的 %%x 值"
+msgstr "无效 %%x 值"
 
 #: config/rs6000/rs6000.c:21308
-#, fuzzy, c-format
-#| msgid "invalid %%J value"
+#, c-format
 msgid "invalid %%z value"
-msgstr "无效 %%J 值"
+msgstr "无效 %%z 值"
 
 #: config/rs6000/rs6000.c:21377
 #, c-format
@@ -4626,7 +4609,7 @@ msgstr "或称"
 
 #: c/c-objc-common.c:213
 msgid "({anonymous})"
-msgstr "{{匿名}}"
+msgstr "({匿名})"
 
 #. If we have
 #. declaration-specifiers declarator decl-specs
@@ -4884,7 +4867,7 @@ msgstr "vtable for "
 
 #: cp/error.c:1186
 msgid "<return value> "
-msgstr "<返回值>"
+msgstr "<返回值> "
 
 #: cp/error.c:1201
 msgid "{anonymous}"
@@ -5196,9 +5179,8 @@ msgid "arguments '%s' and '%s' for intrinsic '%s'"
 msgstr "‘%s’和‘%s’用作内建函数‘%s’的参数"
 
 #: fortran/error.c:853
-#, fuzzy
 msgid "Fortran 2018 deleted feature:"
-msgstr "遵循 ISO Fortran 2008 标准"
+msgstr "Fortran 2018 删除的特性："
 
 #: fortran/error.c:855
 #, fuzzy
@@ -5207,7 +5189,7 @@ msgstr "遵循 ISO Fortran 2008 标准"
 
 #: fortran/error.c:857
 msgid "Fortran 2018:"
-msgstr ""
+msgstr "Fortran 2018："
 
 #: fortran/error.c:859
 #, fuzzy
@@ -5215,9 +5197,8 @@ msgid "Fortran 2008 obsolescent feature:"
 msgstr "遵循 ISO Fortran 2008 标准"
 
 #: fortran/error.c:865
-#, fuzzy
 msgid "GNU Extension:"
-msgstr "使用 PE 格式的 GNU 扩展来对齐 common 数据"
+msgstr "GNU 扩展："
 
 #: fortran/error.c:867
 #, fuzzy
@@ -5230,9 +5211,8 @@ msgid "Obsolescent feature:"
 msgstr "对声明中的过时用法给出警告"
 
 #: fortran/error.c:871
-#, fuzzy
 msgid "Deleted feature:"
-msgstr "%L处的 H 格式限定符已在 Fortran 95 中被删除"
+msgstr "删除的特性："
 
 #: fortran/expr.c:3632
 msgid "array assignment"
@@ -5919,10 +5899,8 @@ msgid "gsplit-dwarf is not supported on this platform"
 msgstr "%qE属性在此平台上不受支持"
 
 #: config/darwin.h:170
-#, fuzzy
-#| msgid "-fpic is not supported"
 msgid "rdynamic is not supported"
-msgstr "不支持 -fpic"
+msgstr "不支持 rdynamic"
 
 #: config/darwin.h:258
 msgid "-current_version only allowed with -dynamiclib"
@@ -6307,16 +6285,12 @@ msgid "Warn about zero-trip DO loops."
 msgstr "对长度为 0 的格式字符串给出警告"
 
 #: fortran/lang.opt:354
-#, fuzzy
-#| msgid "Enable preprocessing"
 msgid "Enable preprocessing."
-msgstr "启用预处理"
+msgstr "启用预处理。"
 
 #: fortran/lang.opt:362
-#, fuzzy
-#| msgid "Disable preprocessing"
 msgid "Disable preprocessing."
-msgstr "禁用预处理"
+msgstr "禁用预处理。"
 
 #: fortran/lang.opt:370
 #, fuzzy
@@ -6922,10 +6896,8 @@ msgid "Do not generate #line directives."
 msgstr "不生成 #line 指令"
 
 #: c-family/c.opt:257
-#, fuzzy
-#| msgid "-U<macro>\tUndefine <macro>"
 msgid "-U<macro>\tUndefine <macro>."
-msgstr "-U<宏>\t取消定义宏"
+msgstr "-U<宏>\t取消定义<宏>。"
 
 #: c-family/c.opt:261
 #, fuzzy
@@ -7116,10 +7088,8 @@ msgid "Warn about possibly nested block comments, and C++ comments spanning more
 msgstr "对可能嵌套的注释和长度超过一个物理行长的 C++ 注释给出警告"
 
 #: c-family/c.opt:437
-#, fuzzy
-#| msgid "Synonym for -Wcomment"
 msgid "Synonym for -Wcomment."
-msgstr "-Wcomment 的同义词"
+msgstr "-Wcomment 的同义词。"
 
 #: c-family/c.opt:441
 #, fuzzy
@@ -8054,16 +8024,12 @@ msgstr "可变参数函数必须使用基础的 AAPCS 变种"
 
 #: c-family/c.opt:1282 c-family/c.opt:1530 c-family/c.opt:1854
 #: c-family/c.opt:1858 c-family/c.opt:1874
-#, fuzzy
-#| msgid "No longer supported"
 msgid "No longer supported."
-msgstr "不再受支持"
+msgstr "不再支持。"
 
 #: c-family/c.opt:1286
-#, fuzzy
-#| msgid "Recognize the \"asm\" keyword"
 msgid "Recognize the \"asm\" keyword."
-msgstr "识别“asm”关键字"
+msgstr "识别“asm”关键字。"
 
 #: c-family/c.opt:1294
 #, fuzzy
@@ -8197,10 +8163,8 @@ msgid "Do not assume that standard C libraries and \"main\" exist."
 msgstr "不假定标准 C 库和“main”存在"
 
 #: c-family/c.opt:1505
-#, fuzzy
-#| msgid "Recognize GNU-defined keywords"
 msgid "Recognize GNU-defined keywords."
-msgstr "识别 GNU 定义的关键字"
+msgstr "识别 GNU 定义的关键字。"
 
 #: c-family/c.opt:1509
 #, fuzzy
@@ -8495,10 +8459,8 @@ msgid "When \"signed\" or \"unsigned\" is not given make the bitfield unsigned."
 msgstr "未指定“signed”或“unsigned”时默认位段为无符号的"
 
 #: c-family/c.opt:1834 ada/gcc-interface/lang.opt:85
-#, fuzzy
-#| msgid "Make \"char\" unsigned by default"
 msgid "Make \"char\" unsigned by default."
-msgstr "使“char”类型默认为无符号"
+msgstr "使“char”类型默认为无符号。"
 
 #: c-family/c.opt:1838
 #, fuzzy
@@ -8759,14 +8721,12 @@ msgid "Conform to the ISO 2011 C++ standard with GNU extensions."
 msgstr "遵循 ISO 1990 C 标准，也支持 GNU 扩展"
 
 #: c-family/c.opt:2059
-#, fuzzy
 msgid "Deprecated in favor of -std=gnu++11."
-msgstr "已弃用，请改用 -std=gnu99"
+msgstr "已弃用，请改用 -std=gnu++11。"
 
 #: c-family/c.opt:2063
-#, fuzzy
 msgid "Deprecated in favor of -std=gnu++14."
-msgstr "已弃用，请改用 -std=gnu99"
+msgstr "已弃用，请改用 -std=gnu++14。"
 
 #: c-family/c.opt:2067
 #, fuzzy
@@ -8775,9 +8735,8 @@ msgid "Conform to the ISO 2014 C++ standard with GNU extensions."
 msgstr "遵循 ISO 1990 C 标准，也支持 GNU 扩展"
 
 #: c-family/c.opt:2071
-#, fuzzy
 msgid "Deprecated in favor of -std=gnu++17."
-msgstr "已弃用，请改用 -std=gnu99"
+msgstr "已弃用，请改用 -std=gnu+17。"
 
 #: c-family/c.opt:2075
 #, fuzzy
@@ -8798,9 +8757,8 @@ msgid "Conform to the ISO 2011 C standard with GNU extensions."
 msgstr "遵循 ISO 1990 C 标准，也支持 GNU 扩展"
 
 #: c-family/c.opt:2087
-#, fuzzy
 msgid "Deprecated in favor of -std=gnu11."
-msgstr "已弃用，请改用 -std=gnu99"
+msgstr "已弃用，请改用 -std=gnu11。"
 
 #: c-family/c.opt:2091 c-family/c.opt:2095
 #, fuzzy
@@ -8845,16 +8803,12 @@ msgid "Deprecated in favor of -std=iso9899:1999."
 msgstr "已弃用，为 -std=iso9899:1999 所取代"
 
 #: c-family/c.opt:2150
-#, fuzzy
-#| msgid "Enable traditional preprocessing"
 msgid "Enable traditional preprocessing."
-msgstr "启用传统预处理"
+msgstr "启用传统预处理。"
 
 #: c-family/c.opt:2154
-#, fuzzy
-#| msgid "-trigraphs\tSupport ISO C trigraphs"
 msgid "-trigraphs\tSupport ISO C trigraphs."
-msgstr "-trigraphs\t支持 ISO C 三元符"
+msgstr "-trigraphs\t支持 ISO C 三元符。"
 
 #: c-family/c.opt:2158
 #, fuzzy
@@ -9004,7 +8958,7 @@ msgstr "解析后显示代码树"
 
 #: d/lang.opt:242
 msgid "Ignore unsupported pragmas."
-msgstr ""
+msgstr "忽略不支持的 pragma。"
 
 #: d/lang.opt:246
 #, fuzzy
@@ -9272,7 +9226,7 @@ msgstr "总认为位段长与 int 相同"
 
 #: config/linux-android.opt:23
 msgid "Generate code for the Android platform."
-msgstr "为 Android 操作系统生成代码。"
+msgstr "为 Android 平台生成代码。"
 
 #: config/mmix/mmix.opt:24
 #, fuzzy
@@ -9700,10 +9654,8 @@ msgid "Generate code for a ColdFire v4e."
 msgstr "为 ColdFire v4e 生成代码"
 
 #: config/m68k/m68k.opt:123
-#, fuzzy
-#| msgid "Specify the target CPU"
 msgid "Specify the target CPU."
-msgstr "选择目标 CPU"
+msgstr "指定目标 CPU。"
 
 #: config/m68k/m68k.opt:127
 #, fuzzy
@@ -11831,10 +11783,8 @@ msgid "Set the max size of data eligible for the TDA area."
 msgstr "为 TDA 区域合格的数据设置最大尺寸"
 
 #: config/v850/v850.opt:82
-#, fuzzy
-#| msgid "Do not enforce strict alignment"
 msgid "Do not enforce strict alignment."
-msgstr "不强制严格对齐"
+msgstr "不强制严格对齐。"
 
 #: config/v850/v850.opt:86
 #, fuzzy
@@ -11842,22 +11792,16 @@ msgid "Put jump tables for switch statements into the .data section rather than 
 msgstr "置放跳跃式表格用于开关叙述进入.data 区段而非.code 区段"
 
 #: config/v850/v850.opt:93
-#, fuzzy
-#| msgid "Compile for the v850 processor"
 msgid "Compile for the v850 processor."
-msgstr "为 v850 处理器编译"
+msgstr "为 v850 处理器编译。"
 
 #: config/v850/v850.opt:97
-#, fuzzy
-#| msgid "Compile for the v850e processor"
 msgid "Compile for the v850e processor."
-msgstr "为 v850e 处理器编译"
+msgstr "为 v850e 处理器编译。"
 
 #: config/v850/v850.opt:101
-#, fuzzy
-#| msgid "Compile for the v850e1 processor"
 msgid "Compile for the v850e1 processor."
-msgstr "为 v850e1 处理器编译"
+msgstr "为 v850e1 处理器编译。"
 
 #: config/v850/v850.opt:105
 #, fuzzy
@@ -11866,21 +11810,16 @@ msgid "Compile for the v850es variant of the v850e1."
 msgstr "为 v850e1 的 v850es 变种编译"
 
 #: config/v850/v850.opt:109
-#, fuzzy
-#| msgid "Compile for the v850e2 processor"
 msgid "Compile for the v850e2 processor."
-msgstr "为 v850e2 处理器编译"
+msgstr "为 v850e2 处理器编译。"
 
 #: config/v850/v850.opt:113
-#, fuzzy
-#| msgid "Compile for the v850e2v3 processor"
 msgid "Compile for the v850e2v3 processor."
-msgstr "为 v850e2v3 处理器编译"
+msgstr "为 v850e2v3 处理器编译。"
 
 #: config/v850/v850.opt:117
-#, fuzzy
 msgid "Compile for the v850e3v5 processor."
-msgstr "为 v850e2v3 处理器编译"
+msgstr "为 v850e2v3 处理器编译。"
 
 #: config/v850/v850.opt:124
 #, fuzzy
@@ -11919,9 +11858,8 @@ msgid "Enable support for the RH850 ABI.  This is the default."
 msgstr "启用使用 RX FPU 指令。这是默认值。"
 
 #: config/v850/v850.opt:155
-#, fuzzy
 msgid "Enable support for the old GCC ABI."
-msgstr "启用对巨型对象的支持"
+msgstr "启用对旧有 GCC ABI 的支持。"
 
 #: config/v850/v850.opt:159
 msgid "Support alignments of up to 64-bits."
@@ -11940,26 +11878,20 @@ msgid "Support legacy multi-threading."
 msgstr "支持传统多线程"
 
 #: config/lynx.opt:27
-#, fuzzy
-#| msgid "Use shared libraries"
 msgid "Use shared libraries."
-msgstr "使用共享库"
+msgstr "使用共享库。"
 
 #: config/lynx.opt:31
-#, fuzzy
-#| msgid "Support multi-threading"
 msgid "Support multi-threading."
-msgstr "支持多线程"
+msgstr "支持多线程。"
 
 #: config/nvptx/nvptx.opt:22 config/gcn/gcn.opt:47
-#, fuzzy
 msgid "Generate code for a 32-bit ABI."
-msgstr "生成 32 位 SHmedia 代码"
+msgstr "为 32 位 ABI 生成代码。"
 
 #: config/nvptx/nvptx.opt:26 config/gcn/gcn.opt:51
-#, fuzzy
 msgid "Generate code for a 64-bit ABI."
-msgstr "生成 64 位代码"
+msgstr "为 64 位 ABI 生成代码。"
 
 #: config/nvptx/nvptx.opt:30
 #, fuzzy
@@ -12034,9 +11966,8 @@ msgid "Treat data references as near, far or medium. medium is default."
 msgstr "对待数据参考作为接近，far 或中。中是缺省"
 
 #: config/cr16/cr16.opt:42
-#, fuzzy
 msgid "Generate code for CR16C architecture."
-msgstr "为 Android 操作系统生成代码。"
+msgstr "为 CR16C 架构生成代码。"
 
 #: config/cr16/cr16.opt:46
 #, fuzzy
@@ -12157,22 +12088,16 @@ msgid "Do not link against the device-specific library lib<MCU>.a."
 msgstr ""
 
 #: config/m32r/m32r.opt:34
-#, fuzzy
-#| msgid "Compile for the m32rx"
 msgid "Compile for the m32rx."
-msgstr "为 m32rx 编译"
+msgstr "为 m32rx 编译。"
 
 #: config/m32r/m32r.opt:38
-#, fuzzy
-#| msgid "Compile for the m32r2"
 msgid "Compile for the m32r2."
-msgstr "为 m32r2 编译"
+msgstr "为 m32r2 编译。"
 
 #: config/m32r/m32r.opt:42
-#, fuzzy
-#| msgid "Compile for the m32r"
 msgid "Compile for the m32r."
-msgstr "为 m32r 编译"
+msgstr "为 m32r 编译。"
 
 #: config/m32r/m32r.opt:46
 #, fuzzy
@@ -12259,16 +12184,12 @@ msgid "Specify main object for TPF-OS."
 msgstr "指定 TPF-OS 的主对象"
 
 #: config/s390/s390.opt:48
-#, fuzzy
-#| msgid "31 bit ABI"
 msgid "31 bit ABI."
-msgstr "31 位 ABI"
+msgstr "31 位 ABI。"
 
 #: config/s390/s390.opt:52
-#, fuzzy
-#| msgid "64 bit ABI"
 msgid "64 bit ABI."
-msgstr "64 位 ABI"
+msgstr "64 位 ABI。"
 
 #: config/s390/s390.opt:120
 #, fuzzy
@@ -12284,9 +12205,8 @@ msgstr "附加的调试输出"
 
 #: config/s390/s390.opt:128
 #, fuzzy
-#| msgid "ESA/390 architecture"
 msgid "ESA/390 architecture."
-msgstr "ESA/390 结构"
+msgstr "ESA/390 结构。"
 
 #: config/s390/s390.opt:132
 #, fuzzy
@@ -12739,9 +12659,8 @@ msgstr "生成使用硬件浮点指令的代码"
 #: config/sparc/sparc.opt:30 config/sparc/sparc.opt:34
 #: config/visium/visium.opt:37
 #, fuzzy
-#| msgid "Use hardware FP"
 msgid "Use hardware FP."
-msgstr "使用硬件浮点单元"
+msgstr "使用硬件浮点单元。"
 
 #: config/sparc/sparc.opt:38 config/visium/visium.opt:41
 #, fuzzy
@@ -12785,10 +12704,8 @@ msgid "Enable Local Register Allocation."
 msgstr "启用 clip 指令"
 
 #: config/sparc/sparc.opt:66
-#, fuzzy
-#| msgid "Compile for V8+ ABI"
 msgid "Compile for V8+ ABI."
-msgstr "为 V8+ ABI 编译"
+msgstr "为 V8+ ABI 编译。"
 
 #: config/sparc/sparc.opt:70
 #, fuzzy
@@ -12851,16 +12768,12 @@ msgid "Pointers are 32-bit."
 msgstr "指针是 32 位"
 
 #: config/sparc/sparc.opt:118
-#, fuzzy
-#| msgid "Use 64-bit ABI"
 msgid "Use 64-bit ABI."
-msgstr "使用 64 位 ABI"
+msgstr "使用 64 位 ABI。"
 
 #: config/sparc/sparc.opt:122
-#, fuzzy
-#| msgid "Use 32-bit ABI"
 msgid "Use 32-bit ABI."
-msgstr "使用 32 位 ABI"
+msgstr "使用 32 位 ABI。"
 
 #: config/sparc/sparc.opt:126
 #, fuzzy
@@ -12967,10 +12880,8 @@ msgid "Compile for 32-bit pointers."
 msgstr "为 32 位指针编译"
 
 #: config/rs6000/aix64.opt:32 config/rs6000/linux64.opt:28
-#, fuzzy
-#| msgid "Select code model"
 msgid "Select code model."
-msgstr "选择代码模型"
+msgstr "选择代码模型。"
 
 #: config/rs6000/aix64.opt:49
 #, fuzzy
@@ -13033,10 +12944,8 @@ msgid "Use extended PowerPC V2.05 move floating point to/from GPR instructions."
 msgstr "使用扩展 PowerPC V2.05 通用寄存器浮点转移指令"
 
 #: config/rs6000/rs6000.opt:153
-#, fuzzy
-#| msgid "Use AltiVec instructions"
 msgid "Use AltiVec instructions."
-msgstr "使用 AltiVec 指令"
+msgstr "使用 AltiVec 指令。"
 
 #: config/rs6000/rs6000.opt:157
 #, fuzzy
@@ -13242,16 +13151,12 @@ msgid "Do not use the AltiVec ABI extensions."
 msgstr "不使用位段指令"
 
 #: config/rs6000/rs6000.opt:358
-#, fuzzy
-#| msgid "Use the ELFv1 ABI"
 msgid "Use the ELFv1 ABI."
-msgstr "使用 ELFv1 ABI"
+msgstr "使用 ELFv1 ABI。"
 
 #: config/rs6000/rs6000.opt:362
-#, fuzzy
-#| msgid "Use the ELFv2 ABI"
 msgid "Use the ELFv2 ABI."
-msgstr "使用 ELFv2 ABI"
+msgstr "使用 ELFv2 ABI。"
 
 #: config/rs6000/rs6000.opt:382
 #, fuzzy
@@ -13477,10 +13382,8 @@ msgid "Assume all variable arg functions are prototyped."
 msgstr "假设所有可变参数函数都有原型"
 
 #: config/rs6000/sysv4.opt:103
-#, fuzzy
-#| msgid "Use EABI"
 msgid "Use EABI."
-msgstr "使用 EABI"
+msgstr "使用 EABI。"
 
 #: config/rs6000/sysv4.opt:107
 #, fuzzy
@@ -13776,10 +13679,8 @@ msgid "Use divide emulation."
 msgstr "使用除法指令"
 
 #: config/or1k/or1k.opt:67
-#, fuzzy
-#| msgid "Use the soft multiply emulation (default)"
 msgid "Use multiply emulation."
-msgstr "使用软件模拟乘法(默认)"
+msgstr "使用乘法模拟。"
 
 #: config/nios2/elf.opt:26
 #, fuzzy
@@ -66815,14 +66716,14 @@ msgid "Include directory %qs: %s"
 msgstr "不包含子目录注释"
 
 #: fortran/scanner.c:336
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Nonexistent include directory %qs"
-msgstr "忽略不存在的目录“%s”\n"
+msgstr "不存在的 include 目录 %qs"
 
 #: fortran/scanner.c:341
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs is not a directory"
-msgstr "不是目录"
+msgstr "%qs 不是目录"
 
 #: fortran/scanner.c:744
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -66893,9 +66794,9 @@ msgid "Illegal preprocessor directive"
 msgstr "%s:%d：无效的预处理指令"
 
 #: fortran/scanner.c:2471
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Cannot open file %qs"
-msgstr "无法打开文件 %s\n"
+msgstr "无法打开文件 %qs"
 
 #: fortran/simplify.c:92
 #, gcc-internal-format, gfc-internal-format
@@ -69343,9 +69244,9 @@ msgid "%<-mfused-madd%> is deprecated; use %<-ffp-contract=%> instead"
 msgstr "已弃用%<-mfused-madd%>；请改用%<-ffp-contract=%>"
 
 #: config/microblaze/microblaze.opt:87
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs is deprecated; use -fstack-check"
-msgstr "已弃用%qE：%s"
+msgstr "%qs 已弃用；请换用 -fstack-check"
 
 #: config/microblaze/microblaze.opt:95
 #, gcc-internal-format
@@ -69356,9 +69257,9 @@ msgstr "%qs 已弃用；请换用 -fno-zero-initialized-in-bss"
 #: config/arc/arc.opt:349 config/arc/arc.opt:353 config/arc/arc.opt:357
 #: config/arc/arc.opt:361 config/arc/arc.opt:364 config/arc/arc.opt:367
 #: config/arc/arc.opt:384
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs is deprecated"
-msgstr "已弃用%qE"
+msgstr "%qs 已弃用"
 
 #: lto/lang.opt:28
 #, fuzzy, gcc-internal-format
@@ -69392,9 +69293,9 @@ msgid "unknown Control-Flow Protection Level %qs"
 msgstr "未知的栈重用级别%qs"
 
 #: common.opt:1777
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unknown IRA algorithm %qs"
-msgstr "未知的 TLS 模型%qs"
+msgstr "未知的 IRA 算法 %qs"
 
 #: common.opt:1790
 #, fuzzy, gcc-internal-format
@@ -69435,7 +69336,7 @@ msgstr "未知的 TLS 模型%qs"
 #: common.opt:2530
 #, gcc-internal-format
 msgid "unknown TLS model %qs"
-msgstr "未知的 TLS 模型%qs"
+msgstr "未知的 TLS 模型 %qs"
 
 #: common.opt:2862
 #, fuzzy, gcc-internal-format

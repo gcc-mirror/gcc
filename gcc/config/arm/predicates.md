@@ -201,23 +201,6 @@
   (ior (match_operand 0 "arm_rhs_operand")
        (match_operand 0 "arm_neg_immediate_operand")))
 
-(define_predicate "arm_anddi_operand_neon"
-  (ior (match_operand 0 "s_register_operand")
-       (and (match_code "const_int")
-	    (match_test "const_ok_for_dimode_op (INTVAL (op), AND)"))
-       (match_operand 0 "neon_inv_logic_op2")))
-
-(define_predicate "arm_iordi_operand_neon"
-  (ior (match_operand 0 "s_register_operand")
-       (and (match_code "const_int")
-	    (match_test "const_ok_for_dimode_op (INTVAL (op), IOR)"))
-       (match_operand 0 "neon_logic_op2")))
-
-(define_predicate "arm_xordi_operand"
-  (ior (match_operand 0 "s_register_operand")
-       (and (match_code "const_int")
-	    (match_test "const_ok_for_dimode_op (INTVAL (op), XOR)"))))
-
 (define_predicate "arm_adddi_operand"
   (ior (match_operand 0 "s_register_operand")
        (and (match_code "const_int")
@@ -714,3 +697,7 @@
   (ior (and (match_code "symbol_ref")
 	    (match_test "!arm_is_long_call_p (SYMBOL_REF_DECL (op))"))
        (match_operand 0 "s_register_operand")))
+
+(define_special_predicate "aligned_operand"
+  (ior (not (match_code "mem"))
+       (match_test "MEM_ALIGN (op) >= GET_MODE_ALIGNMENT (mode)")))

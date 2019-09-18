@@ -5815,6 +5815,9 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
     }
   tree fnname = ovl_op_identifier (ismodop, ismodop ? code2 : code);
 
+  tree arg1_type = unlowered_expr_type (arg1);
+  tree arg2_type = arg2 ? unlowered_expr_type (arg2) : NULL_TREE;
+
   arg1 = prep_operand (arg1);
 
   bool memonly = false;
@@ -5846,8 +5849,8 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
     case EQ_EXPR:
     case NE_EXPR:
       /* These are saved for the sake of maybe_warn_bool_compare.  */
-      code_orig_arg1 = TREE_CODE (TREE_TYPE (arg1));
-      code_orig_arg2 = TREE_CODE (TREE_TYPE (arg2));
+      code_orig_arg1 = TREE_CODE (arg1_type);
+      code_orig_arg2 = TREE_CODE (arg2_type);
       break;
 
       /* =, ->, [], () must be non-static member functions.  */
@@ -5870,8 +5873,8 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
   if (code == COND_EXPR)
     /* Use build_conditional_expr instead.  */
     gcc_unreachable ();
-  else if (! OVERLOAD_TYPE_P (TREE_TYPE (arg1))
-	   && (! arg2 || ! OVERLOAD_TYPE_P (TREE_TYPE (arg2))))
+  else if (! OVERLOAD_TYPE_P (arg1_type)
+	   && (! arg2 || ! OVERLOAD_TYPE_P (arg2_type)))
     goto builtin;
 
   if (code == POSTINCREMENT_EXPR || code == POSTDECREMENT_EXPR)
@@ -5903,11 +5906,11 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
   args[2] = NULL_TREE;
 
   /* Add class-member operators to the candidate set.  */
-  if (CLASS_TYPE_P (TREE_TYPE (arg1)))
+  if (CLASS_TYPE_P (arg1_type))
     {
       tree fns;
 
-      fns = lookup_fnfields (TREE_TYPE (arg1), fnname, 1);
+      fns = lookup_fnfields (arg1_type, fnname, 1);
       if (fns == error_mark_node)
 	{
 	  result = error_mark_node;
@@ -5927,7 +5930,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
      has an enumeration type, or T2 or reference to cv-qualified-opt
      T2 for the second argument, if the second argument has an
      enumeration type.  Filter out those that don't match.  */
-  else if (! arg2 || ! CLASS_TYPE_P (TREE_TYPE (arg2)))
+  else if (! arg2 || ! CLASS_TYPE_P (arg2_type))
     {
       struct z_candidate **candp, **next;
 
@@ -5947,9 +5950,9 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 
 	      if (TYPE_REF_P (parmtype))
 		parmtype = TREE_TYPE (parmtype);
-	      if (TREE_CODE (TREE_TYPE (args[i])) == ENUMERAL_TYPE
+	      if (TREE_CODE (unlowered_expr_type (args[i])) == ENUMERAL_TYPE
 		  && (same_type_ignoring_top_level_qualifiers_p
-		      (TREE_TYPE (args[i]), parmtype)))
+		      (unlowered_expr_type (args[i]), parmtype)))
 		break;
 
 	      parmlist = TREE_CHAIN (parmlist);
@@ -6124,56 +6127,55 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	    case LE_EXPR:
 	    case EQ_EXPR:
 	    case NE_EXPR:
-	      if (TREE_CODE (TREE_TYPE (arg1)) == ENUMERAL_TYPE
-		  && TREE_CODE (TREE_TYPE (arg2)) == ENUMERAL_TYPE
-		  && (TYPE_MAIN_VARIANT (TREE_TYPE (arg1))
-		      != TYPE_MAIN_VARIANT (TREE_TYPE (arg2)))
+	      if (TREE_CODE (arg1_type) == ENUMERAL_TYPE
+		  && TREE_CODE (arg2_type) == ENUMERAL_TYPE
+		  && (TYPE_MAIN_VARIANT (arg1_type)
+		      != TYPE_MAIN_VARIANT (arg2_type))
 		  && (complain & tf_warning))
 		{
 		  warning (OPT_Wenum_compare,
 			   "comparison between %q#T and %q#T",
-			   TREE_TYPE (arg1), TREE_TYPE (arg2));
+			   arg1_type, arg2_type);
 		}
 	      break;
 	    default:
 	      break;
 	    }
 
-	  /* We need to strip any leading REF_BIND so that bitfields
-	     don't cause errors.  This should not remove any important
-	     conversions, because builtins don't apply to class
-	     objects directly.  */
+	  /* "If a built-in candidate is selected by overload resolution, the
+	     operands of class type are converted to the types of the
+	     corresponding parameters of the selected operation function,
+	     except that the second standard conversion sequence of a
+	     user-defined conversion sequence (12.3.3.1.2) is not applied."  */
 	  conv = cand->convs[0];
-	  if (conv->kind == ck_ref_bind)
-	    conv = next_conversion (conv);
-	  arg1 = convert_like (conv, arg1, complain);
+	  if (conv->user_conv_p)
+	    {
+	      while (conv->kind != ck_user)
+		conv = next_conversion (conv);
+	      arg1 = convert_like (conv, arg1, complain);
+	    }
 
 	  if (arg2)
 	    {
 	      conv = cand->convs[1];
-	      if (conv->kind == ck_ref_bind)
-		conv = next_conversion (conv);
-	      else
-		arg2 = decay_conversion (arg2, complain);
-
-	      /* We need to call warn_logical_operator before
-		 converting arg2 to a boolean_type, but after
-		 decaying an enumerator to its value.  */
-	      if (complain & tf_warning)
-		warn_logical_operator (loc, code, boolean_type_node,
-				       code_orig_arg1, arg1,
-				       code_orig_arg2, arg2);
-
-	      arg2 = convert_like (conv, arg2, complain);
+	      if (conv->user_conv_p)
+		{
+		  while (conv->kind != ck_user)
+		    conv = next_conversion (conv);
+		  arg2 = convert_like (conv, arg2, complain);
+		}
 	    }
+
 	  if (arg3)
 	    {
 	      conv = cand->convs[2];
-	      if (conv->kind == ck_ref_bind)
-		conv = next_conversion (conv);
-	      convert_like (conv, arg3, complain);
+	      if (conv->user_conv_p)
+		{
+		  while (conv->kind != ck_user)
+		    conv = next_conversion (conv);
+		  arg3 = convert_like (conv, arg3, complain);
+		}
 	    }
-
 	}
     }
 
@@ -6241,7 +6243,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
     case REALPART_EXPR:
     case IMAGPART_EXPR:
     case ABS_EXPR:
-      return cp_build_unary_op (code, arg1, candidates != 0, complain);
+      return cp_build_unary_op (code, arg1, false, complain);
 
     case ARRAY_REF:
       return cp_build_array_ref (input_location, arg1, arg2, complain);
@@ -8336,38 +8338,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
           && cand->template_decl
           && !(flags & LOOKUP_EXPLICIT_TMPL_ARGS))
         conversion_warning = false;
-
-      /* Warn about initializer_list deduction that isn't currently in the
-	 working draft.  */
-      if (cxx_dialect > cxx98
-	  && flag_deduce_init_list
-	  && cand->template_decl
-	  && is_std_init_list (non_reference (type))
-	  && BRACE_ENCLOSED_INITIALIZER_P (arg))
-	{
-	  tree tmpl = TI_TEMPLATE (cand->template_decl);
-	  tree realparm = chain_index (j, DECL_ARGUMENTS (cand->fn));
-	  tree patparm = get_pattern_parm (realparm, tmpl);
-	  tree pattype = TREE_TYPE (patparm);
-	  if (PACK_EXPANSION_P (pattype))
-	    pattype = PACK_EXPANSION_PATTERN (pattype);
-	  pattype = non_reference (pattype);
-
-	  if (TREE_CODE (pattype) == TEMPLATE_TYPE_PARM
-	      && (cand->explicit_targs == NULL_TREE
-		  || (TREE_VEC_LENGTH (cand->explicit_targs)
-		      <= TEMPLATE_TYPE_IDX (pattype))))
-	    {
-	      pedwarn (input_location, 0, "deducing %qT as %qT",
-		       non_reference (TREE_TYPE (patparm)),
-		       non_reference (type));
-	      pedwarn (DECL_SOURCE_LOCATION (cand->fn), 0,
-		       "  in call to %qD", cand->fn);
-	      pedwarn (input_location, 0,
-		       "  (you can disable this with "
-		       "%<-fno-deduce-init-list%>)");
-	    }
-	}
 
       /* Set user_conv_p on the argument conversions, so rvalue/base handling
 	 knows not to allow any more UDCs.  This needs to happen after we

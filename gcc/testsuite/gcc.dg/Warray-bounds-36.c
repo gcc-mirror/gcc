@@ -3,15 +3,15 @@
    { dg-do compile }
    { dg-options "-O2 -Wall" } */
 
-int deref (const int *p, int i)
+static int deref (const int *p, int i)
 {
-  return p[i];                // { dg-warning "array subscript \\\[3, \[0-9\]+] is outside array bounds of .int\\\[2\\\]." "ilp33" { xfail ilp32 } }
+  return p[i];                // { dg-warning "array subscript \\\[3, \[0-9\]+] is outside array bounds of .int\\\[2\\\]." "ilp32" { xfail ilp32 } }
 
   // There should also be an inlining context here.  PR 86650 tracks
   // its absence.
 }
 
-int deref_3_plus (const int *p, int i)
+static int deref_3_plus (const int *p, int i)
 {
   if (i < 3)
     i = 3;

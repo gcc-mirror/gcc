@@ -8,6 +8,12 @@ package runtime
 
 import "unsafe"
 
+//extern sysconf
+func sysconf(int32) _C_long
+
+//extern getpagesize
+func getPageSize() int32
+
 type mOS struct {
 	waitsema uintptr // semaphore for parking on locks
 }
@@ -54,8 +60,7 @@ func semasleep(ns int64) int32 {
 	_m_ := getg().m
 	if ns >= 0 {
 		var ts timespec
-		ts.set_sec(ns / 1000000000)
-		ts.set_nsec(int32(ns % 1000000000))
+		ts.setNsec(ns)
 
 		if sem_timedwait((*_sem_t)(unsafe.Pointer(_m_.mos.waitsema)), &ts) != 0 {
 			err := errno()
@@ -83,5 +88,20 @@ func semasleep(ns int64) int32 {
 func semawakeup(mp *m) {
 	if sem_post((*_sem_t)(unsafe.Pointer(mp.mos.waitsema))) != 0 {
 		throw("sem_post")
+	}
+}
+
+func getncpu() int32 {
+	n := int32(sysconf(_SC_NPROCESSORS_ONLN))
+	if n < 1 {
+		return 1
+	}
+	return n
+}
+
+func osinit() {
+	ncpu = getncpu()
+	if physPageSize == 0 {
+		physPageSize = uintptr(getPageSize())
 	}
 }

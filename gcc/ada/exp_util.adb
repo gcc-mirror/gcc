@@ -32,6 +32,7 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
+with Exp_Ch2;  use Exp_Ch2;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch11; use Exp_Ch11;
@@ -471,6 +472,169 @@ package body Exp_Util is
          Append_List (L, Actions (Fnode));
       end if;
    end Append_Freeze_Actions;
+
+   --------------------------------------
+   -- Attr_Constrained_Statically_True --
+   --------------------------------------
+
+   function Attribute_Constrained_Static_Value (Pref : Node_Id) return Boolean
+   is
+      Ptyp       : constant Entity_Id := Etype (Pref);
+      Formal_Ent : constant Entity_Id := Param_Entity (Pref);
+
+      function Is_Constrained_Aliased_View (Obj : Node_Id) return Boolean;
+      --  Ada 2005 (AI-363): Returns True if the object name Obj denotes a
+      --  view of an aliased object whose subtype is constrained.
+
+      ---------------------------------
+      -- Is_Constrained_Aliased_View --
+      ---------------------------------
+
+      function Is_Constrained_Aliased_View (Obj : Node_Id) return Boolean is
+         E : Entity_Id;
+
+      begin
+         if Is_Entity_Name (Obj) then
+            E := Entity (Obj);
+
+            if Present (Renamed_Object (E)) then
+               return Is_Constrained_Aliased_View (Renamed_Object (E));
+            else
+               return Is_Aliased (E) and then Is_Constrained (Etype (E));
+            end if;
+
+         else
+            return Is_Aliased_View (Obj)
+              and then
+                (Is_Constrained (Etype (Obj))
+                 or else
+                   (Nkind (Obj) = N_Explicit_Dereference
+                    and then
+                      not Object_Type_Has_Constrained_Partial_View
+                        (Typ  => Base_Type (Etype (Obj)),
+                         Scop => Current_Scope)));
+         end if;
+      end Is_Constrained_Aliased_View;
+
+   --  Start of processing for Attribute_Constrained_Static_Value
+
+   begin
+      --  We are in a case where the attribute is known statically, and
+      --  implicit dereferences have been rewritten.
+
+      pragma Assert
+        (not (Present (Formal_Ent)
+              and then Ekind (Formal_Ent) /= E_Constant
+              and then Present (Extra_Constrained (Formal_Ent)))
+         and then
+           not (Is_Access_Type (Etype (Pref))
+                and then (not Is_Entity_Name (Pref)
+                          or else Is_Object (Entity (Pref))))
+         and then
+           not (Nkind (Pref) = N_Identifier
+                and then Ekind (Entity (Pref)) = E_Variable
+                and then Present (Extra_Constrained (Entity (Pref)))));
+
+      if Is_Entity_Name (Pref) then
+         declare
+            Ent : constant Entity_Id   := Entity (Pref);
+            Res : Boolean;
+
+         begin
+            --  (RM J.4) obsolescent cases
+
+            if Is_Type (Ent) then
+
+               --  Private type
+
+               if Is_Private_Type (Ent) then
+                  Res := not Has_Discriminants (Ent)
+                    or else Is_Constrained (Ent);
+
+               --  It not a private type, must be a generic actual type
+               --  that corresponded to a private type. We know that this
+               --  correspondence holds, since otherwise the reference
+               --  within the generic template would have been illegal.
+
+               else
+                  if Is_Composite_Type (Underlying_Type (Ent)) then
+                     Res := Is_Constrained (Ent);
+                  else
+                     Res := True;
+                  end if;
+               end if;
+
+            else
+
+               --  If the prefix is not a variable or is aliased, then
+               --  definitely true; if it's a formal parameter without an
+               --  associated extra formal, then treat it as constrained.
+
+               --  Ada 2005 (AI-363): An aliased prefix must be known to be
+               --  constrained in order to set the attribute to True.
+
+               if not Is_Variable (Pref)
+                 or else Present (Formal_Ent)
+                 or else (Ada_Version < Ada_2005
+                          and then Is_Aliased_View (Pref))
+                 or else (Ada_Version >= Ada_2005
+                          and then Is_Constrained_Aliased_View (Pref))
+               then
+                  Res := True;
+
+               --  Variable case, look at type to see if it is constrained.
+               --  Note that the one case where this is not accurate (the
+               --  procedure formal case), has been handled above.
+
+               --  We use the Underlying_Type here (and below) in case the
+               --  type is private without discriminants, but the full type
+               --  has discriminants. This case is illegal, but we generate
+               --  it internally for passing to the Extra_Constrained
+               --  parameter.
+
+               else
+                  --  In Ada 2012, test for case of a limited tagged type,
+                  --  in which case the attribute is always required to
+                  --  return True. The underlying type is tested, to make
+                  --  sure we also return True for cases where there is an
+                  --  unconstrained object with an untagged limited partial
+                  --  view which has defaulted discriminants (such objects
+                  --  always produce a False in earlier versions of
+                  --  Ada). (Ada 2012: AI05-0214)
+
+                  Res :=
+                    Is_Constrained (Underlying_Type (Etype (Ent)))
+                    or else
+                      (Ada_Version >= Ada_2012
+                       and then Is_Tagged_Type (Underlying_Type (Ptyp))
+                       and then Is_Limited_Type (Ptyp));
+               end if;
+            end if;
+
+            return Res;
+         end;
+
+      --  Prefix is not an entity name. These are also cases where we can
+      --  always tell at compile time by looking at the form and type of the
+      --  prefix. If an explicit dereference of an object with constrained
+      --  partial view, this is unconstrained (Ada 2005: AI95-0363). If the
+      --  underlying type is a limited tagged type, then Constrained is
+      --  required to always return True (Ada 2012: AI05-0214).
+
+      else
+         return not Is_Variable (Pref)
+           or else
+             (Nkind (Pref) = N_Explicit_Dereference
+              and then
+                not Object_Type_Has_Constrained_Partial_View
+                  (Typ  => Base_Type (Ptyp),
+                   Scop => Current_Scope))
+           or else Is_Constrained (Underlying_Type (Ptyp))
+           or else (Ada_Version >= Ada_2012
+                    and then Is_Tagged_Type (Underlying_Type (Ptyp))
+                    and then Is_Limited_Type (Ptyp));
+      end if;
+   end Attribute_Constrained_Static_Value;
 
    ------------------------------------
    -- Build_Allocate_Deallocate_Proc --

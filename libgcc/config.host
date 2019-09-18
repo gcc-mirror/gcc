@@ -107,6 +107,9 @@ avr-*-*)
 bfin*-*)
 	cpu_type=bfin
 	;;
+bpf-*-*)
+        cpu_type=bpf
+        ;;
 cr16-*-*)
 	;;
 crisv32-*-*)
@@ -189,9 +192,6 @@ sparc64*-*-*)
 sparc*-*-*)
 	cpu_type=sparc
 	;;
-spu*-*-*)
-	cpu_type=spu
-	;;
 s390*-*-*)
 	cpu_type=s390
 	;;
@@ -248,7 +248,7 @@ case ${host} in
   tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-fuchsia"
   extra_parts="crtbegin.o crtend.o"
   ;;
-*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu)
+*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu | *-*-uclinuxfdpiceabi)
   tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-linux"
   extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
   if test x$enable_vtable_verify = xyes; then
@@ -453,7 +453,7 @@ arm*-*-netbsdelf*)
 	    ;;
 	esac
 	;;
-arm*-*-linux*)			# ARM GNU/Linux with ELF
+arm*-*-linux* | arm*-*-uclinuxfdpiceabi)
 	tmake_file="${tmake_file} arm/t-arm t-fixedpoint-gnu-prefix t-crtfm"
 	tmake_file="${tmake_file} arm/t-elf arm/t-bpabi arm/t-linux-eabi t-slibgcc-libgcc"
 	tm_file="$tm_file arm/bpabi-lib.h"
@@ -526,6 +526,10 @@ bfin*-*)
 	tmake_file="$tmake_file bfin/t-bfin t-fdpbit"
 	extra_parts="crtbegin.o crtend.o crti.o crtn.o"
         ;;
+bpf-*-*)
+        tmake_file="$tmake_file ${cpu_type}/t-${cpu_type}"
+        extra_parts="crti.o crtn.o"
+	;;
 cr16-*-elf)
 	tmake_file="${tmake_file} cr16/t-cr16 cr16/t-crtlibid t-fdpbit"
 	extra_parts="$extra_parts crti.o crtn.o crtlibid.o"
@@ -1204,12 +1208,12 @@ pru-*-*)
 	tm_file="$tm_file pru/pru-abi.h"
 	;;
 riscv*-*-linux*)
-	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address}"
+	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
 	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
 	md_unwind_header=riscv/linux-unwind.h
 	;;
 riscv*-*-freebsd*)
-	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address}"
+	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address} t-slibgcc-libgcc"
 	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
 	;;
 riscv*-*-*)
@@ -1368,13 +1372,6 @@ sparc64-*-linux*)		# 64-bit SPARC's running GNU/Linux
 	md_unwind_header=sparc/linux-unwind.h
 	;;
 sparc64-*-netbsd*)
-	;;
-spu-*-elf*)
-	tmake_file="$tmake_file spu/t-elf t-libgcc-pic t-fdpbit"
-	extra_parts="$extra_parts \
-		libgcc_cachemgr.a libgcc_cachemgr_nonatomic.a \
-		libgcc_cache8k.a libgcc_cache16k.a libgcc_cache32k.a \
-		libgcc_cache64k.a libgcc_cache128k.a"
 	;;
 tic6x-*-uclinux)
 	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp \

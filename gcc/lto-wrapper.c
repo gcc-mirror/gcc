@@ -247,7 +247,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	{
 	case OPT_SPECIAL_unknown:
 	case OPT_SPECIAL_ignore:
-	case OPT_SPECIAL_deprecated:
+	case OPT_SPECIAL_warn_removed:
 	case OPT_SPECIAL_program_name:
 	case OPT_SPECIAL_input_file:
 	  break;
@@ -265,6 +265,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	case OPT_fshow_column:
 	case OPT_fcommon:
 	case OPT_fgnu_tm:
+	case OPT_g:
 	  /* Do what the old LTO code did - collect exactly one option
 	     setting per OPT code, we pick the first we encounter.
 	     ???  This doesn't make too much sense, but when it doesn't
@@ -617,6 +618,7 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	case OPT_fopenacc:
 	case OPT_fopenacc_dim_:
 	case OPT_foffload_abi_:
+	case OPT_g:
 	case OPT_O:
 	case OPT_Ofast:
 	case OPT_Og:
@@ -1374,7 +1376,10 @@ run_gcc (unsigned argc, char *argv[])
 
 	case OPT_flto_:
 	  if (strcmp (option->arg, "jobserver") == 0)
-	    jobserver = 1;
+	    {
+	      parallel = 1;
+	      jobserver = 1;
+	    }
 	  else if (strcmp (option->arg, "auto") == 0)
 	    {
 	      parallel = 1;
@@ -1396,6 +1401,10 @@ run_gcc (unsigned argc, char *argv[])
 	  linker_output_rel = !strcmp (option->arg, "rel");
 	  break;
 
+	case OPT_g:
+	  /* Recognize -g0.  */
+	  skip_debug = option->arg && !strcmp (option->arg, "0");
+	  break;
 
 	default:
 	  break;
@@ -1423,8 +1432,11 @@ run_gcc (unsigned argc, char *argv[])
       auto_parallel = 0;
       parallel = 0;
     }
-  else if (!jobserver)
-    jobserver = jobserver_active_p ();
+  else if (!jobserver && jobserver_active_p ())
+    {
+      parallel = 1;
+      jobserver = 1;
+    }
 
   if (linker_output)
     {

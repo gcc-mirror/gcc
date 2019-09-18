@@ -152,13 +152,20 @@ func TestLldbPython(t *testing.T) {
 	src := filepath.Join(dir, "main.go")
 	err = ioutil.WriteFile(src, []byte(lldbHelloSource), 0644)
 	if err != nil {
-		t.Fatalf("failed to create file: %v", err)
+		t.Fatalf("failed to create src file: %v", err)
+	}
+
+	mod := filepath.Join(dir, "go.mod")
+	err = ioutil.WriteFile(mod, []byte("module lldbtest"), 0644)
+	if err != nil {
+		t.Fatalf("failed to create mod file: %v", err)
 	}
 
 	// As of 2018-07-17, lldb doesn't support compressed DWARF, so
 	// disable it for this test.
 	cmd := exec.Command(testenv.GoToolPath(t), "build", "-gcflags=all=-N -l", "-ldflags=-compressdwarf=false", "-o", "a.exe")
 	cmd.Dir = dir
+	cmd.Env = append(os.Environ(), "GOPATH=") // issue 31100
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		t.Fatalf("building source %v\n%s", err, out)

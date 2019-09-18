@@ -25,7 +25,7 @@ struct E1
 } const;			// { dg-error "'const' can only be specified for objects and functions" }
 
 void foo (
-struct E2
+struct E2			// { dg-warning "deprecated" "" { target c++2a } }
 {				// { dg-error "types may not be defined in parameter types" }
   int i;
 } volatile);

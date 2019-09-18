@@ -814,7 +814,6 @@ ssa_propagation_engine::ssa_propagate (void)
   ssa_prop_fini ();
 }
 
-
 /* Return true if STMT is of the form 'mem_ref = RHS', where 'mem_ref'
    is a non-volatile pointer dereference, a structure reference or a
    reference to a single _DECL.  Ignore volatile memory references
@@ -1068,6 +1067,14 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
       if (did_replace)
 	{
 	  fold_stmt (&i, follow_single_use_edges);
+	  stmt = gsi_stmt (i);
+	  gimple_set_modified (stmt, true);
+	}
+      /* Also fold if we want to fold all statements.  */
+      else if (substitute_and_fold_engine->fold_all_stmts
+	  && fold_stmt (&i, follow_single_use_edges))
+	{
+	  did_replace = true;
 	  stmt = gsi_stmt (i);
 	  gimple_set_modified (stmt, true);
 	}

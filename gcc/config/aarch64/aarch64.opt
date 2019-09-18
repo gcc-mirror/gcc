@@ -157,7 +157,7 @@ Target RejectNegative Joined Var(aarch64_branch_protection_string) Save
 Use branch-protection features.
 
 msign-return-address=
-Target Deprecated RejectNegative Joined Enum(aarch64_ra_sign_scope_t) Var(aarch64_ra_sign_scope) Init(AARCH64_FUNCTION_NONE) Save
+Target WarnRemoved RejectNegative Joined Enum(aarch64_ra_sign_scope_t) Var(aarch64_ra_sign_scope) Init(AARCH64_FUNCTION_NONE) Save
 Select return address signing scope.
 
 Enum

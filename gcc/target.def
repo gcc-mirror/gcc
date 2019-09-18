@@ -2208,6 +2208,17 @@ needed.",
  void, (tree node, tree *attr_ptr),
  hook_void_tree_treeptr)
 
+/* Perform additional target-specific processing of generic attributes.  */
+DEFHOOK
+(handle_generic_attribute,
+ "Define this target hook if you want to be able to perform additional\n\
+target-specific processing of an attribute which is handled generically\n\
+by a front end.  The arguments are the same as those which are passed to\n\
+attribute handlers.  So far this only affects the @var{noinit} and\n\
+@var{section} attribute.",
+ tree, (tree *node, tree name, tree args, int flags, bool *no_add_attrs),
+ hook_tree_treeptr_tree_tree_int_boolptr_null)
+
 /* Return true if FNDECL (which has at least one machine attribute)
    can be inlined despite its machine attributes, false otherwise.  */
 DEFHOOK
@@ -2585,38 +2596,6 @@ DEFHOOK
   follow through a hot/cold partitioning.",
  bool, (const rtx_insn *follower, const rtx_insn *followee),
  hook_bool_const_rtx_insn_const_rtx_insn_true)
-
-/* Return a register class for which branch target register
-   optimizations should be applied.  */
-DEFHOOK
-(branch_target_register_class,
- "This target hook returns a register class for which branch target register\n\
-optimizations should be applied.  All registers in this class should be\n\
-usable interchangeably.  After reload, registers in this class will be\n\
-re-allocated and loads will be hoisted out of loops and be subjected\n\
-to inter-block scheduling.",
- reg_class_t, (void),
- default_branch_target_register_class)
-
-/* Return true if branch target register optimizations should include
-   callee-saved registers that are not already live during the current
-   function.  AFTER_PE_GEN is true if prologues and epilogues have
-   already been generated.  */
-DEFHOOK
-(branch_target_register_callee_saved,
- "Branch target register optimization will by default exclude callee-saved\n\
-registers\n\
-that are not already live during the current function; if this target hook\n\
-returns true, they will be included.  The target code must than make sure\n\
-that all target registers in the class returned by\n\
-@samp{TARGET_BRANCH_TARGET_REGISTER_CLASS} that might need saving are\n\
-saved.  @var{after_prologue_epilogue_gen} indicates if prologues and\n\
-epilogues have already been generated.  Note, even if you only return\n\
-true when @var{after_prologue_epilogue_gen} is false, you still are likely\n\
-to have to make special provisions in @code{INITIAL_ELIMINATION_OFFSET}\n\
-to reserve space for caller-saved target registers.",
- bool, (bool after_prologue_epilogue_gen),
- hook_bool_bool_false)
 
 /* Return true if the target supports conditional execution.  */
 DEFHOOK
@@ -4245,6 +4224,39 @@ loops, and will help ivopts to make some decisions.\n\
 The default version of this hook returns false.",
  bool, (class loop *loop),
  default_predict_doloop_p)
+
+DEFHOOKPOD
+(have_count_reg_decr_p,
+ "Return true if the target supports hardware count register for decrement\n\
+and branch.\n\
+The default value is false.",
+ bool, false)
+
+DEFHOOKPOD
+(doloop_cost_for_generic,
+ "One IV candidate dedicated for doloop is introduced in IVOPTs, we can\n\
+calculate the computation cost of adopting it to any generic IV use by\n\
+function get_computation_cost as before.  But for targets which have\n\
+hardware count register support for decrement and branch, it may have to\n\
+move IV value from hardware count register to general purpose register\n\
+while doloop IV candidate is used for generic IV uses.  It probably takes\n\
+expensive penalty.  This hook allows target owners to define the cost for\n\
+this especially for generic IV uses.\n\
+The default value is zero.",
+ int64_t, 0)
+
+DEFHOOKPOD
+(doloop_cost_for_address,
+ "One IV candidate dedicated for doloop is introduced in IVOPTs, we can\n\
+calculate the computation cost of adopting it to any address IV use by\n\
+function get_computation_cost as before.  But for targets which have\n\
+hardware count register support for decrement and branch, it may have to\n\
+move IV value from hardware count register to general purpose register\n\
+while doloop IV candidate is used for address IV uses.  It probably takes\n\
+expensive penalty.  This hook allows target owners to define the cost for\n\
+this escpecially for address IV uses.\n\
+The default value is zero.",
+ int64_t, 0)
 
 DEFHOOK
 (can_use_doloop_p,

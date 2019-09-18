@@ -708,8 +708,8 @@ package body Sem_SPARK is
    function Get_Observed_Or_Borrowed_Expr (Expr : Node_Id) return Node_Id;
    pragma Precondition (Is_Path_Expression (Expr));
    --  Return the expression being borrowed/observed when borrowing or
-   --  observing Expr. If Expr is a call to a traversal function, this is
-   --  the first actual, otherwise it is Expr.
+   --  observing Expr. If Expr contains a call to traversal function, this is
+   --  the first actual of the first such call, otherwise it is Expr.
 
    function Get_Perm (N : Node_Or_Entity_Id) return Perm_Kind;
    --  The function that takes a name as input and returns a permission
@@ -1419,12 +1419,12 @@ package body Sem_SPARK is
       Target     : constant Entity_Id := Defining_Identifier (Decl);
       Target_Typ : constant Node_Id := Etype (Target);
       Expr       : Node_Id;
-      Dummy      : Boolean := True;
+      Legal      : Boolean := True;
 
    begin
       --  Start with legality rules not related to permissions
 
-      Check_Declaration_Legality (Decl, Force => True, Legal => Dummy);
+      Check_Declaration_Legality (Decl, Force => True, Legal => Legal);
 
       --  Now check permission-related legality rules
 
@@ -1432,7 +1432,7 @@ package body Sem_SPARK is
          when N_Full_Type_Declaration =>
             null;
 
-            --  ??? What about component declarations with defaults.
+         --  ??? What about component declarations with defaults.
 
          when N_Subtype_Declaration =>
             Check_Expression (Subtype_Indication (Decl), Read);
@@ -1440,10 +1440,14 @@ package body Sem_SPARK is
          when N_Object_Declaration =>
             Expr := Expression (Decl);
 
-            if Present (Expr) then
+            if Legal and then Present (Expr) then
                Check_Assignment (Target => Target,
                                  Expr   => Expr);
             end if;
+
+            --  Always add variable to the current permission environment,
+            --  even in the illegal case, as the rest of the analysis expects
+            --  to find it.
 
             if Is_Deep (Target_Typ) then
                declare
@@ -3772,12 +3776,61 @@ package body Sem_SPARK is
    -----------------------------------
 
    function Get_Observed_Or_Borrowed_Expr (Expr : Node_Id) return Node_Id is
+
+      function Find_Func_Call (Expr : Node_Id) return Node_Id;
+      --  Search for function calls in the prefixes of Expr
+
+      --------------------
+      -- Find_Func_Call --
+      --------------------
+
+      function Find_Func_Call (Expr : Node_Id) return Node_Id is
+      begin
+         case Nkind (Expr) is
+            when N_Expanded_Name
+               | N_Identifier
+            =>
+               return Empty;
+
+            when N_Explicit_Dereference
+               | N_Indexed_Component
+               | N_Selected_Component
+               | N_Slice
+            =>
+               return Find_Func_Call (Prefix (Expr));
+
+            when N_Qualified_Expression
+               | N_Type_Conversion
+               | N_Unchecked_Type_Conversion
+            =>
+               return Find_Func_Call (Expression (Expr));
+
+            when N_Function_Call =>
+               return Expr;
+
+            when others =>
+               raise Program_Error;
+         end case;
+      end Find_Func_Call;
+
+      B_Expr : Node_Id := Expr;
+
    begin
-      if Is_Traversal_Function_Call (Expr) then
-         return First_Actual (Expr);
-      else
-         return Expr;
-      end if;
+      --  Search for the first call to a traversal function in Expr. If there
+      --  is one, its first parameter is the borrowed expression. Otherwise,
+      --  it is Expr.
+
+      loop
+         declare
+            Call : constant Node_Id := Find_Func_Call (B_Expr);
+         begin
+            exit when No (Call);
+            pragma Assert (Is_Traversal_Function_Call (Call));
+            B_Expr := First_Actual (Call);
+         end;
+      end loop;
+
+      return B_Expr;
    end Get_Observed_Or_Borrowed_Expr;
 
    --------------

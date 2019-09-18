@@ -1,3 +1,101 @@
+2019-09-15  Jason Merrill  <jason@redhat.com>
+
+	* c-warn.c (warn_logical_operator): Strip location wrappers.  Don't
+	fold_for_warn in "|| mask" warning.
+
+2019-09-10  Martin Liska  <mliska@suse.cz>
+
+	* c.opt: Use newly added WarnRemoved.
+
+2019-09-09  Martin Liska  <mliska@suse.cz>
+
+	* c.opt: Update comment of removed
+	options that are preserved only for backward
+	compatibility.
+
+2019-09-06  Martin Liska  <mliska@suse.cz>
+
+	PR c++/91125
+	* c-common.c: Remove definition of flag_use_repository.
+	* c-common.h: Likewise.
+	* c-opts.c (c_common_handle_option):
+	Do not handle OPT_frepo option.
+	* c.opt: Mark the option with Deprecated.
+
+2019-09-04  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt (fdeduce-init-list): Ignored.
+
+2019-09-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR c/78736
+	* c.opt (Wenum-conversion): New option.
+
+2019-09-03  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* c-attribs.c (handle_section_attribute): Call the
+	handle_generic_attribute target hook after performing target
+	independent processing.
+	(handle_noinit_attribute): Likewise.
+
+2019-09-03  Ian Lance Taylor  <iant@golang.org>
+
+	* c-cppbuiltin.c (builtin_define_with_hex_fp_value): Always expand
+	when using -fgo-dump-spec.
+
+2019-09-02  Martin Liska  <mliska@suse.cz>
+
+	PR c++/91155
+	* c-common.c (fname_as_string): Use cxx_printable_name for
+	__PRETTY_FUNCTION__ same as was used before r265711.
+
+2019-08-28  Marek Polacek  <polacek@redhat.com>
+
+	Implement P1152R4: Deprecating some uses of volatile.
+	PR c++/91361
+	* c-opts.c (c_common_post_options): Enable -Wvolatile by
+	default for C++2a, unless -Wno-deprecated.
+	* c.opt (Wvolatile): New warning.
+
+2019-08-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91360 - Implement C++20 P1143R2: constinit.
+	* c-common.c (c_common_reswords): Add constinit and __constinit.
+	(keyword_is_decl_specifier): Handle RID_CONSTINIT.
+	* c-common.h (enum rid): Add RID_CONSTINIT, RID_FIRST_CXX20, and
+	RID_LAST_CXX20.
+	(D_CXX20): Define.
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_constinit.
+	* c-format.c (cxx_keywords): Add "constinit".
+	* c.opt (Wc++2a-compat, Wc++20-compat): New options.
+
+2019-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91415
+	* c-common.c (verify_tree): For LSHIFT_EXPR, RSHIFT_EXPR,
+	COMPONENT_REF and ARRAY_REF in cxx_dialect >= cxx17 mode handle it
+	like COMPOUND_EXPR rather than normal expression.
+
+2019-08-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR pch/61250
+	* c-lex.c (c_lex_with_flags):  Don't call
+	c_common_no_more_pch () from here.
+
+2019-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91283
+	* c-common.c (c_ts18661_flt_eval_method): Use flag_excess_precision
+	instead of flag_excess_precision_cmdline.
+	* c-cppbuiltin.c (c_cpp_flt_eval_method_iec_559): Likewise.
+	* c-opts.c (c_common_post_options): Likewise.
+
+2019-08-22  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91490
+	* c-common.c (braced_list_to_string): Add argument and overload.
+	Handle flexible length arrays and unions.
+
 2019-08-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (dump_ada_function_declaration): Be prepared for broken

@@ -28,4 +28,4 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "strcmp" 0 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "strcmp" 0 "strlen1" } } */

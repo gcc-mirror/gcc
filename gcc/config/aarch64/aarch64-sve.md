@@ -3927,7 +3927,7 @@
 ;; vcond_mask operand order: true, false, mask
 ;; UNSPEC_SEL operand order: mask, true, false (as for VEC_COND_EXPR)
 ;; SEL operand order:        mask, true, false
-(define_expand "vcond_mask_<mode><vpred>"
+(define_expand "@vcond_mask_<mode><vpred>"
   [(set (match_operand:SVE_ALL 0 "register_operand")
 	(unspec:SVE_ALL
 	  [(match_operand:<VPRED> 3 "register_operand")

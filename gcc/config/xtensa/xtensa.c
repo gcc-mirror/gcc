@@ -2686,8 +2686,7 @@ xtensa_call_save_reg(int regno)
   if (crtl->calls_eh_return && regno >= 2 && regno < 4)
     return true;
 
-  return !fixed_regs[regno] && !call_used_regs[regno] &&
-    df_regs_ever_live_p (regno);
+  return !call_used_or_fixed_reg_p (regno) && df_regs_ever_live_p (regno);
 }
 
 /* Return the bytes needed to compute the frame pointer from the current

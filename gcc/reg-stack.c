@@ -368,7 +368,7 @@ straighten_stack (rtx_insn *insn, stack_ptr regstack)
   if (regstack->top <= 0)
     return;
 
-  COPY_HARD_REG_SET (temp_stack.reg_set, regstack->reg_set);
+  temp_stack.reg_set = regstack->reg_set;
 
   for (top = temp_stack.top = regstack->top; top >= 0; top--)
     temp_stack.reg[top] = FIRST_STACK_REG + temp_stack.top - top;
@@ -1817,6 +1817,7 @@ subst_stack_regs_pat (rtx_insn *insn, stack_ptr regstack, rtx pat)
 	      case UNSPEC_FRNDINT:
 	      case UNSPEC_F2XM1:
 
+	      case UNSPEC_FRNDINT_ROUNDEVEN:
 	      case UNSPEC_FRNDINT_FLOOR:
 	      case UNSPEC_FRNDINT_CEIL:
 	      case UNSPEC_FRNDINT_TRUNC:
@@ -2642,7 +2643,7 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
       /* By now, the only difference should be the order of the stack,
 	 not their depth or liveliness.  */
 
-      gcc_assert (hard_reg_set_equal_p (old->reg_set, new_stack->reg_set));
+      gcc_assert (old->reg_set == new_stack->reg_set);
       gcc_assert (old->top == new_stack->top);
 
       /* If the stack is not empty (new_stack->top != -1), loop here emitting
@@ -3157,8 +3158,7 @@ convert_regs_1 (basic_block block)
      asms, we zapped the instruction itself, but that didn't produce the
      same pattern of register kills as before.  */
 
-  gcc_assert (hard_reg_set_equal_p (regstack.reg_set, bi->out_reg_set)
-	      || any_malformed_asm);
+  gcc_assert (regstack.reg_set == bi->out_reg_set || any_malformed_asm);
   bi->stack_out = regstack;
   bi->done = true;
 

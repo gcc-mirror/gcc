@@ -105,5 +105,5 @@ void elim_after_init_memcpy (void)
   T ("AB\000CD", 0, "ab\000c", 4, 2);
 }
 
-/* { dg-final { scan-tree-dump-times "strlen" 0 "optimized" } }
+/* { dg-final { scan-tree-dump-times "strlen1" 0 "optimized" } }
    { dg-final { scan-tree-dump-times "call_in_true_branch_not_eliminated" 0 "optimized" } } */

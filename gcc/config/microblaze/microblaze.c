@@ -2012,7 +2012,7 @@ microblaze_must_save_register (int regno)
       (regno == MB_ABI_PIC_ADDR_REGNUM) && df_regs_ever_live_p (regno))
     return 1;
 
-  if (df_regs_ever_live_p (regno) && !call_used_regs[regno])
+  if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
     return 1;
 
   if (frame_pointer_needed && (regno == HARD_FRAME_POINTER_REGNUM))
