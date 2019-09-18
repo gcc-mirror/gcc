@@ -1,3 +1,7 @@
+2019-09-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-stausa.adb: Fix a typo
+
 2019-09-18  Bob Duff  <duff@adacore.com>
 
 	* libgnat/a-cbhama.adb, libgnat/a-cbhase.adb,
