@@ -1611,11 +1611,8 @@ extern tree vect_create_addr_base_for_vector_ref (stmt_vec_info, gimple_seq *,
 						  tree, tree = NULL_TREE);
 
 /* In tree-vect-loop.c.  */
-/* FORNOW: Used in tree-parloops.c.  */
-extern stmt_vec_info vect_force_simple_reduction (loop_vec_info, stmt_vec_info,
-						  bool *, bool);
 extern widest_int vect_iv_limit_for_full_masking (loop_vec_info loop_vinfo);
-/* Used in gimple-loop-interchange.c.  */
+/* Used in gimple-loop-interchange.c and tree-parloops.c.  */
 extern bool check_reduction_path (dump_user_location_t, loop_p, gphi *, tree,
 				  enum tree_code);
 /* Drive for loop analysis stage.  */

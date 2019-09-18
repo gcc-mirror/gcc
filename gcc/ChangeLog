@@ -1,5 +1,21 @@
 2019-09-18  Richard Biener  <rguenther@suse.de>
 
+	* tree-parloops.c (report_ploop_op): Copy from report_vect_op.
+	(parloops_valid_reduction_input_p): Copy from
+	valid_reduction_input_p.
+	(parloops_is_slp_reduction): Copy from vect_is_slp_reduction.
+	(parloops_needs_fold_left_reduction_p): Copy from
+	needs_fold_left_reduction_p.
+	(parloops_is_simple_reduction): Copy from
+	vect_is_simple_reduction.
+	(parloops_force_simple_reduction): Copy from
+	vect_force_simple_reduction.
+	(gather_scalar_reductions): Adjust.
+	* tree-vect-loop.c (vect_force_simple_reduction): Make static.
+	* tree-vectorizer.h (vect_force_simple_reduction): Remove.
+
+2019-09-18  Richard Biener  <rguenther@suse.de>
+
 	* tree-vectorizer.h (get_initial_def_for_reduction): Remove.
 	* tree-vect-loop.c (get_initial_def_for_reduction): Make
 	static.
