@@ -1475,8 +1475,7 @@ package body Exp_Ch5 is
       --  optimization in that case as well.  We could complicate this code by
       --  actually looking for such volatile and independent components.
 
-      if RTE_Available (RE_Copy_Bitfield)
-        and then Is_Bit_Packed_Array (L_Type)
+      if Is_Bit_Packed_Array (L_Type)
         and then Is_Bit_Packed_Array (R_Type)
         and then not Reverse_Storage_Order (L_Type)
         and then not Reverse_Storage_Order (R_Type)
@@ -1489,6 +1488,7 @@ package body Exp_Ch5 is
         and then not Has_Independent_Components (R_Type)
         and then not L_Prefix_Comp
         and then not R_Prefix_Comp
+        and then RTE_Available (RE_Copy_Bitfield)
       then
          return Expand_Assign_Array_Bitfield
            (N, Larray, Rarray, L_Type, R_Type, Rev);
