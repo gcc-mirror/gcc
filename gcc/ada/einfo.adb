@@ -215,6 +215,7 @@ package body Einfo is
    --    Stored_Constraint               Elist23
 
    --    Incomplete_Actuals              Elist24
+   --    Minimum_Accessibility           Node24
    --    Related_Expression              Node24
    --    Subps_Index                     Uint24
 
@@ -2846,6 +2847,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Function or else Is_Formal (Id));
       return UI_To_Int (Uint8 (Id));
    end Mechanism;
+
+   function Minimum_Accessibility (Id : E) return E is
+   begin
+      pragma Assert (Ekind (Id) in Formal_Kind);
+      return Node24 (Id);
+   end Minimum_Accessibility;
 
    function Modulus (Id : E) return Uint is
    begin
@@ -6075,6 +6082,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Function or else Is_Formal (Id));
       Set_Uint8 (Id, UI_From_Int (V));
    end Set_Mechanism;
+
+   procedure Set_Minimum_Accessibility (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind (Id) in Formal_Kind);
+      Set_Node24 (Id, V);
+   end Set_Minimum_Accessibility;
 
    procedure Set_Modulus (Id : E; V : U) is
    begin
@@ -10912,6 +10925,9 @@ package body Einfo is
             | E_Variable
          =>
             Write_Str ("Related_Expression");
+
+         when Formal_Kind =>
+            Write_Str ("Minimum_Accessibility");
 
          when E_Function
             | E_Operator

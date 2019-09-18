@@ -1,3 +1,20 @@
+2019-09-18  Justin Squirek  <squirek@adacore.com>
+
+	* einfo.adb, einfo.ads (Minimum_Accessibility): Added new field.
+	(Set_Minimum_Accessibility): Added to set new field.
+	(Minimum_Accessibility): Added to fetch new field.
+	* exp_ch6.adb (Expand_Subprogram_Call): Modify calls to fetch
+	accessibility levels to the new subprogram Get_Accessibility
+	which handles cases where minimum accessibility might be needed.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Add section to
+	generate a Minimum_Accessibility object within relevant
+	subprograms.
+	* sem_util.adb, sem_util.ads (Dynamic_Accessibility_Level):
+	Additional documentation added and modify section to use new
+	function Get_Accessibility.
+	(Get_Accessibility): Added to centralize processing of
+	accessibility levels.
+
 2019-09-18  Steve Baird  <baird@adacore.com>
 
 	* sem_util.ads (Interval_Lists): A new visible package. This

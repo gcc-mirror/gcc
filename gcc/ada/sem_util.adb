@@ -6531,10 +6531,11 @@ package body Sem_Util is
             return Dynamic_Accessibility_Level (Renamed_Object (E));
          end if;
 
-         if Is_Formal (E) or else Ekind_In (E, E_Variable, E_Constant) then
-            if Present (Extra_Accessibility (E)) then
-               return New_Occurrence_Of (Extra_Accessibility (E), Loc);
-            end if;
+         if (Is_Formal (E)
+              or else Ekind_In (E, E_Variable, E_Constant))
+           and then Present (Get_Accessibility (E))
+         then
+            return New_Occurrence_Of (Get_Accessibility (E), Loc);
          end if;
       end if;
 
@@ -9211,6 +9212,30 @@ package body Sem_Util is
            (Typ, Component_List (Variant), Governed_By, Into, Report_Errors);
       end if;
    end Gather_Components;
+
+   -----------------------
+   -- Get_Accessibility --
+   -----------------------
+
+   function Get_Accessibility (E : Entity_Id) return Node_Id is
+   begin
+      --  When minimum accessibility is set for E then we utilize it - except
+      --  in a few edge cases like the expansion of select statements where
+      --  generated subprogram may attempt to unnecessarily use a minimum
+      --  accessibility object declared outside of scope.
+
+      --  To avoid these situations where expansion may get complex we verify
+      --  that the minimum accessibility object is within scope.
+
+      if Ekind (E) in Formal_Kind
+        and then Present (Minimum_Accessibility (E))
+        and then In_Open_Scopes (Scope (Minimum_Accessibility (E)))
+      then
+         return Minimum_Accessibility (E);
+      end if;
+
+      return Extra_Accessibility (E);
+   end Get_Accessibility;
 
    ------------------------
    -- Get_Actual_Subtype --
