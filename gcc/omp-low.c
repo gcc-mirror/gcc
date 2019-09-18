@@ -13708,7 +13708,7 @@ lower_omp_teams (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 }
 
 static int
-process_oacc_gangprivate_1 (splay_tree_node node, void *data)
+process_oacc_gangprivate_1 (splay_tree_node node, void * /* data */)
 {
   omp_context *ctx = (omp_context *) node->value;
   unsigned level_total = 0;
