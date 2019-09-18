@@ -3103,6 +3103,13 @@ package body Exp_Aggr is
               Make_Selected_Component (Loc,
                 Prefix        => New_Copy_Tree (Lhs),
                 Selector_Name => Make_Identifier (Loc, Chars (Expr))));
+
+            --  The generated code will be reanalyzed, but if the reference
+            --  to the discriminant appears within an already analyzed
+            --  expression (e.g. a conditional) we must set its proper entity
+            --  now. Context is an initialization procedure.
+
+            Analyze (Expr);
          end if;
 
          return OK;

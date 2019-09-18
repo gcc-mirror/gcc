@@ -1,3 +1,7 @@
+2019-09-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/discr58.adb: New testcase.
+
 2019-09-18  Justin Squirek  <squirek@adacore.com>
 
 	* gnat.dg/warn30.adb, gnat.dg/warn30.ads: New testcase.
