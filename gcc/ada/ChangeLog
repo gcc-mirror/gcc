@@ -1,3 +1,9 @@
+2019-09-18  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-cofuma.adb (Remove, Elements_Equal_Except,
+	Keys_Included, Keys_Included_Except): Rename loop indexes and
+	global constants from I to J.
+
 2019-09-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_unst.adb (Unnest_Subprograms): Refine previous change.
