@@ -1,3 +1,8 @@
+2019-09-18  Frederic Konrad  <konrad@adacore.com>
+
+	* adaint.c: Include dosFsLib.h and vwModNum.h for VxWorks 6.
+	(__gnat_rename): Map S_dosFsLib_FILE_NOT_FOUND to ENOENT.
+
 2019-09-18  Steve Baird  <baird@adacore.com>
 
 	* freeze.adb (Freeze_Object_Declaration): Do not call
