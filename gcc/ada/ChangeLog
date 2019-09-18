@@ -1,3 +1,9 @@
+2019-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Build_Array_Aggr_Code): In STEP 1 (c), duplicate
+	the expression and reset the Loop_Actions for each loop
+	generated for an others choice.
+
 2019-09-18  Justin Squirek  <squirek@adacore.com>
 
 	* einfo.adb, einfo.ads (Minimum_Accessibility): Added new field.
