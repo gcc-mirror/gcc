@@ -1,3 +1,11 @@
+2019-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR lto/91763
+	* lto-streamer-in.c (input_eh_regions): Move EH init to
+	lto_materialize_function.
+	* tree-streamer-in.c (lto_input_ts_function_decl_tree_pointers):
+	Likewise.
+
 2019-09-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-ssa-ccp.c (get_value_for_expr): Check whether CONSTANTs
