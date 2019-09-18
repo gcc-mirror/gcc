@@ -240,6 +240,10 @@ package Exp_Util is
    --  Note that the added nodes are not analyzed. The analyze call is found in
    --  Exp_Ch13.Expand_N_Freeze_Entity.
 
+   function Attribute_Constrained_Static_Value (Pref : Node_Id) return Boolean;
+   --  Return the static value of a statically known attribute reference
+   --  Pref'Constrained.
+
    procedure Build_Allocate_Deallocate_Proc
      (N           : Node_Id;
       Is_Allocate : Boolean);

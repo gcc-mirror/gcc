@@ -2770,40 +2770,6 @@ package body Exp_Attr is
       when Attribute_Constrained => Constrained : declare
          Formal_Ent : constant Entity_Id := Param_Entity (Pref);
 
-         function Is_Constrained_Aliased_View (Obj : Node_Id) return Boolean;
-         --  Ada 2005 (AI-363): Returns True if the object name Obj denotes a
-         --  view of an aliased object whose subtype is constrained.
-
-         ---------------------------------
-         -- Is_Constrained_Aliased_View --
-         ---------------------------------
-
-         function Is_Constrained_Aliased_View (Obj : Node_Id) return Boolean is
-            E : Entity_Id;
-
-         begin
-            if Is_Entity_Name (Obj) then
-               E := Entity (Obj);
-
-               if Present (Renamed_Object (E)) then
-                  return Is_Constrained_Aliased_View (Renamed_Object (E));
-               else
-                  return Is_Aliased (E) and then Is_Constrained (Etype (E));
-               end if;
-
-            else
-               return Is_Aliased_View (Obj)
-                        and then
-                      (Is_Constrained (Etype (Obj))
-                         or else
-                           (Nkind (Obj) = N_Explicit_Dereference
-                              and then
-                                not Object_Type_Has_Constrained_Partial_View
-                                      (Typ  => Base_Type (Etype (Obj)),
-                                       Scop => Current_Scope)));
-            end if;
-         end Is_Constrained_Aliased_View;
-
       --  Start of processing for Constrained
 
       begin
@@ -2844,115 +2810,23 @@ package body Exp_Attr is
               New_Occurrence_Of
                 (Extra_Constrained (Entity (Pref)), Sloc (N)));
 
-         --  For all other entity names, we can tell at compile time
-
-         elsif Is_Entity_Name (Pref) then
-            declare
-               Ent : constant Entity_Id   := Entity (Pref);
-               Res : Boolean;
-
-            begin
-               --  (RM J.4) obsolescent cases
-
-               if Is_Type (Ent) then
-
-                  --  Private type
-
-                  if Is_Private_Type (Ent) then
-                     Res := not Has_Discriminants (Ent)
-                              or else Is_Constrained (Ent);
-
-                  --  It not a private type, must be a generic actual type
-                  --  that corresponded to a private type. We know that this
-                  --  correspondence holds, since otherwise the reference
-                  --  within the generic template would have been illegal.
-
-                  else
-                     if Is_Composite_Type (Underlying_Type (Ent)) then
-                        Res := Is_Constrained (Ent);
-                     else
-                        Res := True;
-                     end if;
-                  end if;
-
-               else
-                  --  For access type, apply access check as needed
-
-                  if Is_Access_Type (Ptyp) then
-                     Apply_Access_Check (N);
-                  end if;
-
-                  --  If the prefix is not a variable or is aliased, then
-                  --  definitely true; if it's a formal parameter without an
-                  --  associated extra formal, then treat it as constrained.
-
-                  --  Ada 2005 (AI-363): An aliased prefix must be known to be
-                  --  constrained in order to set the attribute to True.
-
-                  if not Is_Variable (Pref)
-                    or else Present (Formal_Ent)
-                    or else (Ada_Version < Ada_2005
-                              and then Is_Aliased_View (Pref))
-                    or else (Ada_Version >= Ada_2005
-                              and then Is_Constrained_Aliased_View (Pref))
-                  then
-                     Res := True;
-
-                  --  Variable case, look at type to see if it is constrained.
-                  --  Note that the one case where this is not accurate (the
-                  --  procedure formal case), has been handled above.
-
-                  --  We use the Underlying_Type here (and below) in case the
-                  --  type is private without discriminants, but the full type
-                  --  has discriminants. This case is illegal, but we generate
-                  --  it internally for passing to the Extra_Constrained
-                  --  parameter.
-
-                  else
-                     --  In Ada 2012, test for case of a limited tagged type,
-                     --  in which case the attribute is always required to
-                     --  return True. The underlying type is tested, to make
-                     --  sure we also return True for cases where there is an
-                     --  unconstrained object with an untagged limited partial
-                     --  view which has defaulted discriminants (such objects
-                     --  always produce a False in earlier versions of
-                     --  Ada). (Ada 2012: AI05-0214)
-
-                     Res :=
-                       Is_Constrained (Underlying_Type (Etype (Ent)))
-                         or else
-                           (Ada_Version >= Ada_2012
-                             and then Is_Tagged_Type (Underlying_Type (Ptyp))
-                             and then Is_Limited_Type (Ptyp));
-                  end if;
-               end if;
-
-               Rewrite (N, New_Occurrence_Of (Boolean_Literals (Res), Loc));
-            end;
-
-         --  Prefix is not an entity name. These are also cases where we can
-         --  always tell at compile time by looking at the form and type of the
-         --  prefix. If an explicit dereference of an object with constrained
-         --  partial view, this is unconstrained (Ada 2005: AI95-0363). If the
-         --  underlying type is a limited tagged type, then Constrained is
-         --  required to always return True (Ada 2012: AI05-0214).
+         --  For all other cases, we can tell at compile time
 
          else
+            --  For access type, apply access check as needed
+
+            if Is_Entity_Name (Pref)
+              and then not Is_Type (Entity (Pref))
+              and then Is_Access_Type (Ptyp)
+            then
+               Apply_Access_Check (N);
+            end if;
+
             Rewrite (N,
-              New_Occurrence_Of (
-                Boolean_Literals (
-                  not Is_Variable (Pref)
-                    or else
-                     (Nkind (Pref) = N_Explicit_Dereference
-                       and then
-                         not Object_Type_Has_Constrained_Partial_View
-                               (Typ  => Base_Type (Ptyp),
-                                Scop => Current_Scope))
-                    or else Is_Constrained (Underlying_Type (Ptyp))
-                    or else (Ada_Version >= Ada_2012
-                              and then Is_Tagged_Type (Underlying_Type (Ptyp))
-                              and then Is_Limited_Type (Ptyp))),
-                Loc));
+              New_Occurrence_Of
+                (Boolean_Literals
+                   (Exp_Util.Attribute_Constrained_Static_Value
+                      (Pref)), Sloc (N)));
          end if;
 
          Analyze_And_Resolve (N, Standard_Boolean);
