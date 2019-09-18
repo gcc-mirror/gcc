@@ -1,3 +1,13 @@
+2019-09-18  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm.md (arm_mulsi3): Remove pattern.
+	(arm_mulsi3_v6): Likewise.
+	(mulsi3addsi_v6): Likewise.
+	(mulsi3subsi): Likewise.
+	(mul): Add new multiply pattern.
+	(mla): Likewise.
+	(mls): Likewise.
+
 2019-09-18  Richard Biener  <rguenther@suse.de>
 
 	* tree-parloops.c (report_ploop_op): Copy from report_vect_op.

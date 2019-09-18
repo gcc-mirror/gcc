@@ -1595,28 +1595,46 @@
   ""
 )
 
-;; Use `&' and then `0' to prevent the operands 0 and 1 being the same
-(define_insn "*arm_mulsi3"
-  [(set (match_operand:SI          0 "s_register_operand" "=&r,&r")
-	(mult:SI (match_operand:SI 2 "s_register_operand" "r,r")
-		 (match_operand:SI 1 "s_register_operand" "%0,r")))]
-  "TARGET_32BIT && !arm_arch6"
+;; Use `&' and then `0' to prevent operands 0 and 2 being the same
+(define_insn "*mul"
+  [(set (match_operand:SI          0 "s_register_operand" "=l,r,&r,&r")
+	(mult:SI (match_operand:SI 2 "s_register_operand" "l,r,r,r")
+		 (match_operand:SI 1 "s_register_operand" "%0,r,0,r")))]
+  "TARGET_32BIT"
   "mul%?\\t%0, %2, %1"
   [(set_attr "type" "mul")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "arch" "t2,v6,nov6,nov6")
+   (set_attr "length" "4")
+   (set_attr "predicable_short_it" "yes,no,*,*")]
 )
 
-(define_insn "*arm_mulsi3_v6"
-  [(set (match_operand:SI          0 "s_register_operand" "=l,l,r")
-	(mult:SI (match_operand:SI 1 "s_register_operand" "0,l,r")
-		 (match_operand:SI 2 "s_register_operand" "l,0,r")))]
-  "TARGET_32BIT && arm_arch6"
-  "mul%?\\t%0, %1, %2"
-  [(set_attr "type" "mul")
+;; MLA and MLS instruction. Use operand 1 for the accumulator to prefer
+;; reusing the same register.
+
+(define_insn "*mla"
+  [(set (match_operand:SI 0 "s_register_operand" "=r,&r,&r,&r")
+	(plus:SI
+	  (mult:SI (match_operand:SI 3 "s_register_operand" "r,r,r,r")
+		   (match_operand:SI 2 "s_register_operand" "%r,r,0,r"))
+	  (match_operand:SI 1 "s_register_operand" "r,0,r,r")))]
+  "TARGET_32BIT"
+  "mla%?\\t%0, %3, %2, %1"
+  [(set_attr "type" "mla")
    (set_attr "predicable" "yes")
-   (set_attr "arch" "t2,t2,*")
-   (set_attr "length" "4")
-   (set_attr "predicable_short_it" "yes,yes,no")]
+   (set_attr "arch" "v6,nov6,nov6,nov6")]
+)
+
+(define_insn "*mls"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(minus:SI
+	  (match_operand:SI 1 "s_register_operand" "r")
+	  (mult:SI (match_operand:SI 3 "s_register_operand" "r")
+		   (match_operand:SI 2 "s_register_operand" "r"))))]
+  "TARGET_32BIT && arm_arch_thumb2"
+  "mls%?\\t%0, %3, %2, %1"
+  [(set_attr "type" "mla")
+   (set_attr "predicable" "yes")]
 )
 
 (define_insn "*mulsi3_compare0"
@@ -1671,32 +1689,6 @@
   "muls%?\\t%0, %2, %1"
   [(set_attr "conds" "set")
    (set_attr "type" "muls")]
-)
-
-;; Unnamed templates to match MLA instruction.
-
-(define_insn "*mulsi3addsi"
-  [(set (match_operand:SI 0 "s_register_operand" "=&r,&r,&r,&r")
-	(plus:SI
-	  (mult:SI (match_operand:SI 2 "s_register_operand" "r,r,r,r")
-		   (match_operand:SI 1 "s_register_operand" "%0,r,0,r"))
-	  (match_operand:SI 3 "s_register_operand" "r,r,0,0")))]
-  "TARGET_32BIT && !arm_arch6"
-  "mla%?\\t%0, %2, %1, %3"
-  [(set_attr "type" "mla")
-   (set_attr "predicable" "yes")]
-)
-
-(define_insn "*mulsi3addsi_v6"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(plus:SI
-	  (mult:SI (match_operand:SI 2 "s_register_operand" "r")
-		   (match_operand:SI 1 "s_register_operand" "r"))
-	  (match_operand:SI 3 "s_register_operand" "r")))]
-  "TARGET_32BIT && arm_arch6"
-  "mla%?\\t%0, %2, %1, %3"
-  [(set_attr "type" "mla")
-   (set_attr "predicable" "yes")]
 )
 
 (define_insn "*mulsi3addsi_compare0"
@@ -1761,18 +1753,6 @@
   "mlas%?\\t%0, %2, %1, %3"
   [(set_attr "conds" "set")
    (set_attr "type" "mlas")]
-)
-
-(define_insn "*mulsi3subsi"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(minus:SI
-	  (match_operand:SI 3 "s_register_operand" "r")
-	  (mult:SI (match_operand:SI 2 "s_register_operand" "r")
-		   (match_operand:SI 1 "s_register_operand" "r"))))]
-  "TARGET_32BIT && arm_arch_thumb2"
-  "mls%?\\t%0, %2, %1, %3"
-  [(set_attr "type" "mla")
-   (set_attr "predicable" "yes")]
 )
 
 (define_expand "maddsidi4"
