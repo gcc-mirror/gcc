@@ -1,3 +1,7 @@
+2019-09-18  Nicolas Roche  <roche@adacore.com>
+
+	* gnat.dg/float_value2.adb: New testcase.
+
 2019-09-18  Vadim Godunko  <godunko@adacore.com>
 
 	* gnat.dg/expect4.adb: New testcase.

@@ -29,118 +29,323 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Powten_Table;  use System.Powten_Table;
 with System.Val_Util;      use System.Val_Util;
 with System.Float_Control;
 
 package body System.Val_Real is
+
+   procedure Scan_Integral_Digits
+      (Str            : String;
+       Index          : in out Integer;
+       Max            : Integer;
+       Value          : out Long_Long_Integer;
+       Scale          : out Integer;
+       Base_Violation : in out Boolean;
+       Base           : Long_Long_Integer := 10;
+       Base_Specified : Boolean := False);
+   --  Scan the integral part of a real (i.e: before decimal separator)
+   --
+   --  The string parsed is Str (Index .. Max), and after the call Index will
+   --  point to the first non parsed character.
+   --
+   --  For each digit parsed either value := value * base + digit, or scale
+   --  is incremented by 1.
+   --
+   --  Base_Violation will be set to True a digit found is not part of the Base
+
+   procedure Scan_Decimal_Digits
+      (Str            : String;
+       Index          : in out Integer;
+       Max            : Integer;
+       Value          : in out Long_Long_Integer;
+       Scale          : in out Integer;
+       Base_Violation : in out Boolean;
+       Base           : Long_Long_Integer := 10;
+       Base_Specified : Boolean := False);
+   --  Scan the decimal part of a real (i.e: after decimal separator)
+   --
+   --  The string parsed is Str (Index .. Max), and after the call Index will
+   --  point to the first non parsed character.
+   --
+   --  For each digit parsed value = value * base + digit and scale is
+   --  decremented by 1. If precision limit is reached remaining digits are
+   --  still parsed but ignored.
+   --
+   --  Base_Violation will be set to True a digit found is not part of the Base
+
+   subtype Char_As_Digit is Long_Long_Integer range -2 .. 15;
+   subtype Valid_Digit is Char_As_Digit range 0 .. Char_As_Digit'Last;
+   Underscore : constant Char_As_Digit := -2;
+   E_Digit : constant Char_As_Digit := 14;
+
+   function As_Digit (C : Character) return Char_As_Digit;
+   --  Given a character return the digit it represent. If the character is
+   --  not a digit then a negative value is returned, -2 for underscore and
+   --  -1 for any other character.
+
+   Precision_Limit : constant Long_Long_Integer :=
+      2 ** (Long_Long_Float'Machine_Mantissa - 1) - 1;
+   --  This is an upper bound for the number of bits used to represent the
+   --  mantissa. Beyond that number, any digits parsed are useless.
+
+   --------------
+   -- As_Digit --
+   --------------
+
+   function As_Digit (C : Character) return Char_As_Digit
+   is
+   begin
+      case C is
+         when '0' .. '9' =>
+            return Character'Pos (C) - Character'Pos ('0');
+         when 'a' .. 'f' =>
+            return Character'Pos (C) - (Character'Pos ('a') - 10);
+         when 'A' .. 'F' =>
+            return Character'Pos (C) - (Character'Pos ('A') - 10);
+         when '_' =>
+            return Underscore;
+         when others =>
+            return -1;
+      end case;
+   end As_Digit;
+
+   -------------------------
+   -- Scan_Decimal_Digits --
+   -------------------------
+
+   procedure Scan_Decimal_Digits
+      (Str            : String;
+       Index          : in out Integer;
+       Max            : Integer;
+       Value          : in out Long_Long_Integer;
+       Scale          : in out Integer;
+       Base_Violation : in out Boolean;
+       Base           : Long_Long_Integer := 10;
+       Base_Specified : Boolean := False)
+
+   is
+      Precision_Limit_Reached : Boolean := False;
+      --  Set to True if addition of a digit will cause Value to be superior
+      --  to Precision_Limit.
+
+      Digit : Char_As_Digit;
+      --  The current digit.
+
+      Trailing_Zeros : Natural := 0;
+      --  Number of trailing zeros at a given point.
+   begin
+
+      --  If initial Scale is not 0 then it means that Precision_Limit was
+      --  reached during integral part scanning.
+      if Scale > 0 then
+         Precision_Limit_Reached := True;
+      end if;
+
+      --  The function precondition is that the first character is a valid
+      --  digit.
+      Digit := As_Digit (Str (Index));
+
+      loop
+         --  Check if base is correct. If the base is not specified the digit
+         --  E or e cannot be considered as a base violation as it can be used
+         --  for exponentiation.
+         if Digit >= Base then
+            if Base_Specified then
+               Base_Violation := True;
+            elsif Digit = E_Digit then
+               return;
+            else
+               Base_Violation := True;
+            end if;
+         end if;
+
+         --  If precision limit has been reached just ignore any remaining
+         --  digits for the computation of Value and Scale. The scanning
+         --  should continue only to assess the validity of the string
+         if not Precision_Limit_Reached then
+            if Digit = 0 then
+               --  Trailing '0' digits are ignored unless a non-zero digit is
+               --  found.
+               Trailing_Zeros := Trailing_Zeros + 1;
+            else
+
+               --  Handle accumulated zeros.
+               for J in 1 .. Trailing_Zeros loop
+                  if Value > Precision_Limit / Base then
+                     Precision_Limit_Reached := True;
+                     exit;
+                  else
+                     Value := Value * Base;
+                     Scale := Scale - 1;
+                  end if;
+               end loop;
+
+               --  Reset trailing zero counter
+               Trailing_Zeros := 0;
+
+               --  Handle current non zero digit
+               if Value > (Precision_Limit - Digit) / Base then
+                  Precision_Limit_Reached := True;
+               else
+                  Value := Value * Base + Digit;
+                  Scale := Scale - 1;
+               end if;
+            end if;
+         end if;
+
+         --  Check next character
+         Index := Index + 1;
+
+         if Index > Max then
+            return;
+         end if;
+
+         Digit := As_Digit (Str (Index));
+
+         if Digit < 0 then
+            if Digit = Underscore and Index + 1 <= Max then
+               --  Underscore is only alllowed if followed by a digit
+               Digit := As_Digit (Str (Index + 1));
+               if Digit in Valid_Digit then
+                  Index := Index + 1;
+               else
+                  return;
+               end if;
+            else
+               --  Neither a valid underscore nor a digit.
+               return;
+            end if;
+         end if;
+      end loop;
+
+   end Scan_Decimal_Digits;
+
+   --------------------------
+   -- Scan_Integral_Digits --
+   --------------------------
+
+   procedure Scan_Integral_Digits
+      (Str            : String;
+       Index          : in out Integer;
+       Max            : Integer;
+       Value          : out Long_Long_Integer;
+       Scale          : out Integer;
+       Base_Violation : in out Boolean;
+       Base           : Long_Long_Integer := 10;
+       Base_Specified : Boolean := False)
+   is
+      Precision_Limit_Reached : Boolean := False;
+      --  Set to True if addition of a digit will cause Value to be superior
+      --  to Precision_Limit.
+
+      Digit : Char_As_Digit;
+      --  The current digit
+   begin
+
+      --  Initialize Scale and Value
+      Value := 0;
+      Scale := 0;
+
+      --  The function precondition is that the first character is a valid
+      --  digit.
+      Digit := As_Digit (Str (Index));
+
+      loop
+         --  Check if base is correct. If the base is not specified the digit
+         --  E or e cannot be considered as a base violation as it can be used
+         --  for exponentiation.
+         if Digit >= Base then
+            if Base_Specified then
+               Base_Violation := True;
+            elsif Digit = E_Digit then
+               return;
+            else
+               Base_Violation := True;
+            end if;
+         end if;
+
+         if Precision_Limit_Reached then
+            --  Precision limit has been reached so just update the exponent
+            Scale := Scale + 1;
+         else
+            if Value > (Precision_Limit - Digit) / Base then
+               --  Updating Value will overflow so ignore this digit and any
+               --  following ones. Only update the scale
+               Precision_Limit_Reached := True;
+               Scale := Scale + 1;
+            else
+               Value := Value * Base + Digit;
+            end if;
+         end if;
+
+         --  Look for the next character
+         Index := Index + 1;
+         if Index > Max then
+            return;
+         end if;
+
+         Digit := As_Digit (Str (Index));
+
+         if Digit not in Valid_Digit then
+            --  Next character is not a digit. In that case stop scanning
+            --  unless the next chracter is an underscore followed by a digit.
+            if Digit = Underscore and Index + 1 <= Max then
+               Digit := As_Digit (Str (Index + 1));
+               if Digit in Valid_Digit then
+                  Index := Index + 1;
+               else
+                  return;
+               end if;
+            else
+               return;
+            end if;
+         end if;
+      end loop;
+
+   end Scan_Integral_Digits;
 
    ---------------
    -- Scan_Real --
    ---------------
 
    function Scan_Real
-     (Str : String;
-      Ptr : not null access Integer;
-      Max : Integer) return Long_Long_Float
+      (Str : String;
+       Ptr : not null access Integer;
+       Max : Integer)
+      return Long_Long_Float
+
    is
-      P : Integer;
-      --  Local copy of string pointer
-
-      Base : Long_Long_Float;
-      --  Base value
-
-      Uval : Long_Long_Float;
-      --  Accumulated float result
-
-      subtype Digs is Character range '0' .. '9';
-      --  Used to check for decimal digit
-
-      Scale : Integer := 0;
-      --  Power of Base to multiply result by
-
       Start : Positive;
       --  Position of starting non-blank character
 
       Minus : Boolean;
       --  Set to True if minus sign is present, otherwise to False
 
-      Bad_Base : Boolean := False;
-      --  Set True if Base out of range or if out of range digit
+      Index : Integer;
+      --  Local copy of string pointer
 
-      After_Point : Natural := 0;
-      --  Set to 1 after the point
+      Int_Value : Long_Long_Integer := -1;
+      --  Mantissa as an Integer
 
-      Precision_Limit : constant Long_Long_Float :=
-         2.0 ** (Long_Long_Float'Machine_Mantissa - 1);
-      --  This is an upper bound for the number of bits used to represent the
-      --  mantissa. Beyond that number, any digits parsed by Scanf are useless.
-      --  Thus, only the scale should be updated. This ensures that infinity is
-      --  not reached by the temporary Uval, which could lead to erroneous
-      --  rounding (for example: 0.4444444... or 1<n zero>E-n).
+      Int_Scale : Integer := 0;
+      --  Exponent value
 
-      procedure Scanf;
-      --  Scans integer literal value starting at current character position.
-      --  For each digit encountered, Uval is multiplied by 10.0, and the new
-      --  digit value is incremented. In addition Scale is decremented for each
-      --  digit encountered if we are after the point (After_Point = 1). The
-      --  longest possible syntactically valid numeral is scanned out, and on
-      --  return P points past the last character. On entry, the current
-      --  character is known to be a digit, so a numeral is definitely present.
+      Base_Violation : Boolean := False;
+      --  If True some digits where not in the base. The float is still scan
+      --  till the end even if an error will be raised.
 
-      -----------
-      -- Scanf --
-      -----------
+      Uval : Long_Long_Float := 0.0;
+      --  Contain the final value at the end of the function
 
-      procedure Scanf is
-         Digit                   : Natural;
-         Uval_Tmp                : Long_Long_Float;
-         Precision_Limit_Reached : Boolean := False;
-      begin
-         loop
-            Digit := Character'Pos (Str (P)) - Character'Pos ('0');
+      After_Point : Boolean := False;
+      --  True if a decimal should be parsed
 
-            if not Precision_Limit_Reached then
-               --  Compute potential new value
-               Uval_Tmp := Uval * 10.0 + Long_Long_Float (Digit);
+      Base : Long_Long_Integer := 10;
+      --  Current base (default: 10)
 
-               if Uval_Tmp > Precision_Limit then
-                  Precision_Limit_Reached := True;
-               end if;
-            end if;
-
-            if Precision_Limit_Reached then
-               --  If beyond the precision of the mantissa then just ignore the
-               --  digit, to avoid rounding issues.
-               if After_Point = 0 then
-                  Scale := Scale + 1;
-               end if;
-            else
-               Uval := Uval_Tmp;
-               Scale := Scale - After_Point;
-            end if;
-
-            --  Check next character
-            P := P + 1;
-
-            if P > Max then
-               --  Done if end of input field
-               return;
-
-            elsif Str (P) not in Digs then
-               --  If next character is not a digit, check if this is an
-               --  underscore. If this is not the case, then return.
-               if Str (P) = '_' then
-                  Scan_Underscore (Str, P, Ptr, Max, False);
-               else
-                  return;
-               end if;
-            end if;
-
-         end loop;
-      end Scanf;
-
-   --  Start of processing for System.Scan_Real
+      Base_Char : Character := ASCII.NUL;
+      --  Character used to set the base. If Nul this means that default
+      --  base is used.
 
    begin
       --  We do not tolerate strings with Str'Last = Positive'Last
@@ -157,218 +362,136 @@ package body System.Val_Real is
 
       System.Float_Control.Reset;
 
+      --  Scan the optional sign
       Scan_Sign (Str, Ptr, Max, Minus, Start);
-      P := Ptr.all;
+      Index := Ptr.all;
       Ptr.all := Start;
 
-      --  If digit, scan numeral before point
-
-      if Str (P) in Digs then
-         Uval := 0.0;
-         Scanf;
-
-      --  Initial point, allowed only if followed by digit (RM 3.5(47))
-
-      elsif Str (P) = '.'
-        and then P < Max
-        and then Str (P + 1) in Digs
+      --  First character can be either a decimal digit or a dot.
+      if Str (Index) in '0' .. '9' then
+         --  If this is a digit it can indicates either the float decimal
+         --  part or the base to use
+         Scan_Integral_Digits
+            (Str,
+             Index,
+             Max            => Max,
+             Value          => Int_Value,
+             Scale          => Int_Scale,
+             Base_Violation => Base_Violation,
+             Base           => 10);
+      elsif Str (Index) = '.' and then
+         --  A dot is only allowed if followed by a digit.
+         Index < Max and then
+         Str (Index + 1) in '0' .. '9'
       then
-         Uval := 0.0;
-
-      --  Any other initial character is an error
-
+         --  Initial point, allowed only if followed by digit (RM 3.5(47))
+         After_Point := True;
+         Index := Index + 1;
+         Int_Value := 0;
       else
          Bad_Value (Str);
       end if;
 
-      --  Deal with based case. We reognize either the standard '#' or the
-      --  allowed alternative replacement ':' (see RM J.2(3)).
+      --  Check if the first number encountered is a base
+      if Index < Max and then
+         (Str (Index) = '#' or else Str (Index) = ':')
+      then
+         Base_Char := Str (Index);
+         Base := Int_Value;
 
-      if P < Max and then (Str (P) = '#' or else Str (P) = ':') then
-         declare
-            Base_Char : constant Character := Str (P);
-            Digit     : Natural;
-            Fdigit    : Long_Long_Float;
-            Uval_Tmp  : Long_Long_Float;
-            Precision_Limit_Reached : Boolean := False;
-         begin
-            --  Set bad base if out of range, and use safe base of 16.0,
-            --  to guard against division by zero in the loop below.
-
-            if Uval < 2.0 or else Uval > 16.0 then
-               Bad_Base := True;
-               Uval := 16.0;
-            end if;
-
-            Base := Uval;
-            Uval := 0.0;
-            P := P + 1;
-
-            --  Special check to allow initial point (RM 3.5(49))
-
-            if Str (P) = '.' then
-               After_Point := 1;
-               P := P + 1;
-            end if;
-
-            --  Loop to scan digits of based number. On entry to the loop we
-            --  must have a valid digit. If we don't, then we have an illegal
-            --  floating-point value, and we raise Constraint_Error, note that
-            --  Ptr at this stage was reset to the proper (Start) value.
-
-            loop
-               if P > Max then
-                  Bad_Value (Str);
-
-               elsif Str (P) in Digs then
-                  Digit := Character'Pos (Str (P)) - Character'Pos ('0');
-
-               elsif Str (P) in 'A' .. 'F' then
-                  Digit :=
-                    Character'Pos (Str (P)) - (Character'Pos ('A') - 10);
-
-               elsif Str (P) in 'a' .. 'f' then
-                  Digit :=
-                    Character'Pos (Str (P)) - (Character'Pos ('a') - 10);
-
-               else
-                  Bad_Value (Str);
-               end if;
-
-               if not Precision_Limit_Reached then
-                  --  Compute potential new value
-                  Uval_Tmp := Uval * Base + Long_Long_Float (Digit);
-
-                  if Uval_Tmp > Precision_Limit then
-                     Precision_Limit_Reached := True;
-                  end if;
-               end if;
-
-               if Precision_Limit_Reached then
-                  --  If beyond precision of the mantissa then just update
-                  --  the scale and discard remaining digits.
-
-                  if After_Point = 0 then
-                     Scale := Scale + 1;
-                  end if;
-
-               else
-                  --  Now accumulate the new digit
-
-                  Fdigit := Long_Long_Float (Digit);
-
-                  if Fdigit >= Base then
-                     Bad_Base := True;
-                  else
-                     Scale := Scale - After_Point;
-                     Uval := Uval_Tmp;
-                  end if;
-               end if;
-
-               P := P + 1;
-
-               if P > Max then
-                  Bad_Value (Str);
-
-               elsif Str (P) = '_' then
-                  Scan_Underscore (Str, P, Ptr, Max, True);
-
-               else
-                  --  Skip past period after digit. Note that the processing
-                  --  here will permit either a digit after the period, or the
-                  --  terminating base character, as allowed in (RM 3.5(48))
-
-                  if Str (P) = '.' and then After_Point = 0 then
-                     P := P + 1;
-                     After_Point := 1;
-
-                     if P > Max then
-                        Bad_Value (Str);
-                     end if;
-                  end if;
-
-                  exit when Str (P) = Base_Char;
-               end if;
-            end loop;
-
-            --  Based number successfully scanned out (point was found)
-
-            Ptr.all := P + 1;
-         end;
-
-      --  Non-based case, check for being at decimal point now. Note that
-      --  in Ada 95, we do not insist on a decimal point being present
-
-      else
-         Base := 10.0;
-         After_Point := 1;
-
-         if P <= Max and then Str (P) = '.' then
-            P := P + 1;
-
-            --  Scan digits after point if any are present (RM 3.5(46))
-
-            if P <= Max and then Str (P) in Digs then
-               Scanf;
-            end if;
+         --  Reset Int_Value to indicate that parsing of integral value should
+         --  be done
+         Int_Value := -1;
+         if Base < 2 or else Base > 16 then
+            Base_Violation := True;
+            Base := 16;
          end if;
 
-         Ptr.all := P;
-      end if;
+         Index := Index + 1;
 
-      --  At this point, we have Uval containing the digits of the value as
-      --  an integer, and Scale indicates the negative of the number of digits
-      --  after the point. Base contains the base value (an integral value in
-      --  the range 2.0 .. 16.0). Test for exponent, must be at least one
-      --  character after the E for the exponent to be valid.
-
-      Scale := Scale + Scan_Exponent (Str, Ptr, Max, Real => True);
-
-      --  At this point the exponent has been scanned if one is present and
-      --  Scale is adjusted to include the exponent value. Uval contains the
-      --  the integral value which is to be multiplied by Base ** Scale.
-
-      --  If base is not 10, use exponentiation for scaling
-
-      if Base /= 10.0 then
-         Uval := Uval * Base ** Scale;
-
-      --  For base 10, use power of ten table, repeatedly if necessary
-
-      elsif Scale > 0 then
-         while Scale > Maxpow and then Uval'Valid loop
-            Uval := Uval * Powten (Maxpow);
-            Scale := Scale - Maxpow;
-         end loop;
-
-         --  Note that we still know that Scale > 0, since the loop
-         --  above leaves Scale in the range 1 .. Maxpow.
-
-         if Uval'Valid then
-            Uval := Uval * Powten (Scale);
-         end if;
-
-      elsif Scale < 0 then
-         while (-Scale) > Maxpow and then Uval'Valid loop
-            Uval := Uval / Powten (Maxpow);
-            Scale := Scale + Maxpow;
-         end loop;
-
-         --  Note that we still know that Scale < 0, since the loop
-         --  above leaves Scale in the range -Maxpow .. -1.
-         if Uval'Valid then
-            Uval := Uval / Powten (-Scale);
+         if Str (Index) = '.' and then
+            Index < Max and then
+            As_Digit (Str (Index + 1)) in Valid_Digit
+         then
+            After_Point := True;
+            Index := Index + 1;
+            Int_Value := 0;
          end if;
       end if;
+
+      --  Does scanning of integral part needed
+      if Int_Value < 0 then
+         if Index > Max or else As_Digit (Str (Index)) not in Valid_Digit then
+            Bad_Value (Str);
+         end if;
+
+         Scan_Integral_Digits
+            (Str,
+             Index,
+             Max => Max,
+             Value => Int_Value,
+             Scale => Int_Scale,
+             Base_Violation => Base_Violation,
+             Base => Base,
+             Base_Specified => Base_Char /= ASCII.NUL);
+      end if;
+
+      --  Do we have a dot ?
+      if not After_Point and then
+         Index <= Max and then
+         Str (Index) = '.'
+      then
+         --  At this stage if After_Point was not set, this means that an
+         --  integral part has been found. Thus the dot is valid even if not
+         --  followed by a digit.
+         if Index < Max and then As_Digit (Str (Index + 1)) in Valid_Digit then
+            After_Point := True;
+         end if;
+
+         Index := Index + 1;
+      end if;
+
+      if After_Point then
+         --  Parse decimal part
+         Scan_Decimal_Digits
+            (Str,
+             Index,
+             Max => Max,
+             Value => Int_Value,
+             Scale => Int_Scale,
+             Base_Violation => Base_Violation,
+             Base => Base,
+             Base_Specified => Base_Char /= ASCII.NUL);
+      end if;
+
+      --  If an explicit base was specified ensure that the delimiter is found
+      if Base_Char /= ASCII.NUL then
+         if Index > Max or else Str (Index) /= Base_Char then
+            Bad_Value (Str);
+         else
+            Index := Index + 1;
+         end if;
+      end if;
+
+      --  Compute the final value
+      Uval := Long_Long_Float (Int_Value);
+
+      --  Update pointer and scan exponent.
+      Ptr.all := Index;
+
+      Int_Scale := Int_Scale + Scan_Exponent (Str,
+                                              Ptr,
+                                              Max,
+                                              Real => True);
+
+      Uval := Uval * Long_Long_Float (Base) ** Int_Scale;
 
       --  Here is where we check for a bad based number
-
-      if Bad_Base then
+      if Base_Violation then
          Bad_Value (Str);
 
       --  If OK, then deal with initial minus sign, note that this processing
       --  is done even if Uval is zero, so that -0.0 is correctly interpreted.
-
       else
          if Minus then
             return -Uval;
@@ -376,6 +499,7 @@ package body System.Val_Real is
             return Uval;
          end if;
       end if;
+
    end Scan_Real;
 
    ----------------
