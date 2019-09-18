@@ -9434,6 +9434,10 @@ trees_in::is_skippable_defn (tree defn, bool have_defn)
   if (get_overrun ())
     return +1;
 
+  /* If we don't already have a definition, then read this one.  */
+  if (!have_defn)
+    return 0;
+
   /* The most common case is to have nothing to skip.  Short circuit
      the complexity in that case. */
   if (!any_skip_defns ())
@@ -9451,17 +9455,9 @@ trees_in::is_skippable_defn (tree defn, bool have_defn)
       return skip;
     }
 
-  /* This isn't skippable.  There'd better not be an existing
-     defn.  */
-  if (!have_defn)
-    return 0;
-
-  if (defn)
-    {
-      record_skip_defn (top, true, false);
-      error_at (state->loc, "unexpected definition of %q#D", defn);
-      inform (DECL_SOURCE_LOCATION (defn), "existing definition here");
-    }
+  record_skip_defn (top, true, false);
+  error_at (state->loc, "unexpected definition of %q#D", defn);
+  inform (DECL_SOURCE_LOCATION (defn), "existing definition here");
 
   return +1;
 }
@@ -15903,8 +15899,8 @@ module_state::read_config (module_state_config &config)
 	    inform (loc, "compiler is experimental version %s,"
 		    " close enough? %c%c\\%c(%c%c%c)%c/%c%c",
 		    my_string, 0xc2, 0xaf, '_',
-		    0xe3, 0x83,
-		    '_', 0x84, 0xc2, 0xaf);
+		    0xe3, 0x83, 0x84,
+		    '_', 0xc2, 0xaf);
 	    note_cmi_name ();
 	  }
     }

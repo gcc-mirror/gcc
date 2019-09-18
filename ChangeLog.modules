@@ -1,3 +1,11 @@
+2019-09-17  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_in::is_skippable_defns): Defns always complete
+	incomplete.
+	gcc/testsuite/
+	* g++.dg/modules/merge-3_[ab].[CH]: New.
+
 2019-09-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
