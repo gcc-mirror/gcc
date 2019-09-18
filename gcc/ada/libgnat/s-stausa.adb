@@ -42,7 +42,7 @@ package body System.Stack_Usage is
    -- Stack_Slots --
    -----------------
 
-   --  Stackl_Slots is an internal data type to represent a sequence of real
+   --  Stack_Slots is an internal data type to represent a sequence of real
    --  stack slots initialized with a provided pattern, with operations to
    --  abstract away the target call stack growth direction.
 
