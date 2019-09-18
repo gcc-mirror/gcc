@@ -615,11 +615,6 @@ input_eh_regions (class lto_input_block *ib, class data_in *data_in,
 
   lto_tag_check_range (tag, LTO_eh_table, LTO_eh_table);
 
-  /* If the file contains EH regions, then it was compiled with
-     -fexceptions.  In that case, initialize the backend EH
-     machinery.  */
-  lto_init_eh ();
-
   gcc_assert (fn->eh);
 
   root_region = streamer_read_hwi (ib);
