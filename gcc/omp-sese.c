@@ -1346,7 +1346,7 @@ oacc_do_neutering (void)
   vec<propagation_set *> prop_set;
   prop_set.create (last_basic_block_for_fn (cfun));
 
-  for (unsigned i = 0; i < last_basic_block_for_fn (cfun); i++)
+  for (int i = 0; i < last_basic_block_for_fn (cfun); i++)
     prop_set.quick_push (0);
 
   find_ssa_names_to_propagate (par, mask, worker_single, vector_single,
@@ -1638,7 +1638,7 @@ omp_sese_number (int n, int p, int dir, basic_block b,
       size_t offset = (dir > 0 ? offsetof (edge_def, dest)
 		       : offsetof (edge_def, src));
       edge e;
-      edge_iterator (ei);
+      edge_iterator ei;
 
       FOR_EACH_EDGE (e, ei, edges)
 	{
@@ -1661,7 +1661,7 @@ omp_sese_pseudo (basic_block me, bb_sese *sese, int depth, int dir,
 		   vec<edge, va_gc> *edges, size_t offset)
 {
   edge e;
-  edge_iterator (ei);
+  edge_iterator ei;
   int hi_back = depth;
   pseudo_node_t node_back (0, depth);
   int hi_child = depth;

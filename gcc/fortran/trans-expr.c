@@ -2576,7 +2576,7 @@ gfc_auto_dereference_var (location_t loc, gfc_symbol *sym, tree var,
 	  && (sym->attr.dummy
 	      || sym->attr.function
 	      || sym->attr.result))
-	var = build_fold_indirect_ref_loc (input_location, var);
+	var = build_fold_indirect_ref_loc (loc, var);
     }
   else if (!sym->attr.value)
     {
@@ -2587,7 +2587,7 @@ gfc_auto_dereference_var (location_t loc, gfc_symbol *sym, tree var,
 	  if (!descriptor_only_p)
 	    var = GFC_DECL_SAVED_DESCRIPTOR (var);
 
-	  var = build_fold_indirect_ref_loc (input_location, var);
+	  var = build_fold_indirect_ref_loc (loc, var);
 	}
 
       /* Dereference non-character scalar dummy arguments.  */
@@ -2597,14 +2597,14 @@ gfc_auto_dereference_var (location_t loc, gfc_symbol *sym, tree var,
 	      || (!CLASS_DATA (sym)->attr.dimension
 		  && !(CLASS_DATA (sym)->attr.codimension
 		       && CLASS_DATA (sym)->attr.allocatable))))
-	var = build_fold_indirect_ref_loc (input_location, var);
+	var = build_fold_indirect_ref_loc (loc, var);
 
       /* Dereference scalar hidden result.  */
       if (flag_f2c && sym->ts.type == BT_COMPLEX
 	  && (sym->attr.function || sym->attr.result)
 	  && !sym->attr.dimension && !sym->attr.pointer
 	  && !sym->attr.always_explicit)
-	var = build_fold_indirect_ref_loc (input_location, var);
+	var = build_fold_indirect_ref_loc (loc, var);
 
       /* Dereference non-character, non-class pointer variables.
 	 These must be dummies, results, or scalars.  */
@@ -2617,7 +2617,7 @@ gfc_auto_dereference_var (location_t loc, gfc_symbol *sym, tree var,
 	      || sym->attr.result
 	      || (!sym->attr.dimension
 		  && (!sym->attr.codimension || !sym->attr.allocatable))))
-	var = build_fold_indirect_ref_loc (input_location, var);
+	var = build_fold_indirect_ref_loc (loc, var);
       /* Now treat the class array pointer variables accordingly.  */
       else if (sym->ts.type == BT_CLASS
 	       && sym->attr.dummy
@@ -2627,7 +2627,7 @@ gfc_auto_dereference_var (location_t loc, gfc_symbol *sym, tree var,
 		    && CLASS_DATA (sym)->as->type == AS_ASSUMED_RANK)
 		   || CLASS_DATA (sym)->attr.allocatable
 		   || CLASS_DATA (sym)->attr.class_pointer))
-	var = build_fold_indirect_ref_loc (input_location, var);
+	var = build_fold_indirect_ref_loc (loc, var);
       /* And the case where a non-dummy, non-result, non-function,
 	 non-allotable and non-pointer classarray is present.  This case was
 	 previously covered by the first if, but with introducing the
@@ -2642,7 +2642,7 @@ gfc_auto_dereference_var (location_t loc, gfc_symbol *sym, tree var,
 	       && (sym->assoc
 		   || !CLASS_DATA (sym)->attr.allocatable)
 	       && !CLASS_DATA (sym)->attr.class_pointer)
-	var = build_fold_indirect_ref_loc (input_location, var);
+	var = build_fold_indirect_ref_loc (loc, var);
     }
 
   return var;

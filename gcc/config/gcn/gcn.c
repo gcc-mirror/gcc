@@ -1766,7 +1766,6 @@ gcn_expand_scalar_to_vector_address (machine_mode mode, rtx exec, rtx mem,
 	  /* tmp[:] += zext (mem_base)  */
 	  if (exec)
 	    {
-	      rtx undef_di = gcn_gen_undef (DImode);
 	      emit_insn (gen_addv64si3_vcc_dup_exec (tmplo, mem_base_lo, tmplo,
 						     vcc, undef_v64si, exec));
 	      emit_insn (gen_addcv64si3_exec (tmphi, tmphi, const0_rtx,
@@ -3167,6 +3166,7 @@ tree
 gcn_emutls_var_init (tree, tree decl, tree)
 {
   sorry_at (DECL_SOURCE_LOCATION (decl), "TLS is not implemented for GCN.");
+  return NULL_TREE;
 }
 
 /* }}}  */
@@ -4292,8 +4292,6 @@ gcn_md_reorg (void)
 {
   basic_block bb;
   rtx exec_reg = gen_rtx_REG (DImode, EXEC_REG);
-  rtx exec_lo_reg = gen_rtx_REG (SImode, EXEC_LO_REG);
-  rtx exec_hi_reg = gen_rtx_REG (SImode, EXEC_HI_REG);
   regset_head live;
 
   INIT_REG_SET (&live);

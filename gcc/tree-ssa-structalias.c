@@ -4711,7 +4711,7 @@ find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
 		  fnpos = 1;
 		  argpos = 3;
 		  if (targetm.goacc.explode_args ())
-		    for (int i = 6; i < gimple_call_num_args (t); i++)
+		    for (unsigned int i = 6; i < gimple_call_num_args (t); i++)
 		      {
 		        tree arg = gimple_call_arg (t, i);
 			if (TREE_CODE (arg) == INTEGER_CST
@@ -5288,7 +5288,7 @@ find_func_clobbers (struct function *fn, gimple *origt)
 		  implicit_use_args[num_implicit_use_args++] = 4;
 		  implicit_use_args[num_implicit_use_args++] = 5;
 		  if (targetm.goacc.explode_args ())
-		    for (int i = 6; i < gimple_call_num_args (t); i++)
+		    for (unsigned int i = 6; i < gimple_call_num_args (t); i++)
 		      {
 		        tree arg = gimple_call_arg (t, i);
 			if (TREE_CODE (arg) == INTEGER_CST

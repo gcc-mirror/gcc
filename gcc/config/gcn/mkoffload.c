@@ -367,8 +367,6 @@ process_obj (FILE *in, FILE *cfile)
 {
   size_t len = 0;
   const char *input = read_file (in, &len);
-  id_map const *id;
-  unsigned ix;
 
   /* Dump out an array containing the binary.
      FIXME: do this with objcopy.  */

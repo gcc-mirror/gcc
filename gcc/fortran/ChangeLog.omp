@@ -1,3 +1,7 @@
+2019-09-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-expr.c (gfc_auto_dereference_var): Use passed loc argument.
+
 2019-09-06  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:

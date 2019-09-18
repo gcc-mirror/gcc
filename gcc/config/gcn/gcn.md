@@ -840,7 +840,7 @@
  [(set (match_operand:DI 0 "nonimmediate_operand" "=Sg")
        (match_operand:DI 1 "general_operand" "Y"))
   (clobber (reg:BI CC_SAVE_REG))]
- "GET_CODE (operands[1]) == SYMBOL_REF || GET_CODE (operands[1]) == LABEL_REF
+ "(GET_CODE (operands[1]) == SYMBOL_REF || GET_CODE (operands[1]) == LABEL_REF)
   && (lra_in_progress || reload_completed)"
  "#"
  "reload_completed"

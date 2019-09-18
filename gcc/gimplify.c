@@ -9757,7 +9757,6 @@ static oacc_array_mapping_info *
 gomp_oacc_needs_data_present (tree decl)
 {
   gimplify_omp_ctx *ctx = NULL;
-  bool ref_p = TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE;
 
   if (gimplify_omp_ctxp->region_type != ORT_ACC_PARALLEL
       && gimplify_omp_ctxp->region_type != ORT_ACC_KERNELS
@@ -10437,8 +10436,8 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	  /* OpenACC reductions need a present_or_copy data clause.
 	     Add one if necessary.  Emit error when the reduction is
 	     private.  */
-	  if (DECL_P (decl) && ctx->region_type == ORT_ACC_PARALLEL
-	      || ctx->region_type == ORT_ACC_SERIAL)
+	  if (DECL_P (decl) && (ctx->region_type == ORT_ACC_PARALLEL
+				|| ctx->region_type == ORT_ACC_SERIAL))
 	    {
 	      n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
 	      if (n->value & (GOVD_PRIVATE | GOVD_FIRSTPRIVATE))
