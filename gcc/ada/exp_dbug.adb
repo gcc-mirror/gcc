@@ -1058,9 +1058,9 @@ package body Exp_Dbug is
    -- Get_Homonym_Number --
    ------------------------
 
-   function Get_Homonym_Number (E : Entity_Id) return Nat is
+   function Get_Homonym_Number (E : Entity_Id) return Pos is
       H  : Entity_Id := Homonym (E);
-      Nr : Nat := 1;
+      Nr : Pos := 1;
 
    begin
       while Present (H) loop

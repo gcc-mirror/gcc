@@ -460,7 +460,7 @@ package Exp_Dbug is
    -- Subprograms for Handling Qualification --
    --------------------------------------------
 
-   function Get_Homonym_Number (E : Entity_Id) return Nat;
+   function Get_Homonym_Number (E : Entity_Id) return Pos;
    --  Return the homonym number for E, which is its position in the homonym
    --  chain starting at 1. This is exported for use in GNATprove.
 

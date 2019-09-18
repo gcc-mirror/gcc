@@ -26183,7 +26183,7 @@ package body Sem_Util is
 
          if Has_Homonym (U) then
             declare
-               N : constant Nat := Get_Homonym_Number (U);
+               N : constant Pos := Get_Homonym_Number (U);
                S : constant String := N'Img;
             begin
                if N > 1 then
