@@ -3280,56 +3280,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 	  || !flow_bb_inside_loop_p (loop, gimple_bb (def2_info->stmt))
 	  || vect_valid_reduction_input_p (def2_info)))
     {
-      if (! nested_in_vect_loop && orig_code != MINUS_EXPR)
-	{
-	  /* Check if we can swap operands (just for simplicity - so that
-	     the rest of the code can assume that the reduction variable
-	     is always the last (second) argument).  */
-	  if (code == COND_EXPR)
-	    {
-	      /* Swap cond_expr by inverting the condition.  */
-	      tree cond_expr = gimple_assign_rhs1 (def_stmt);
-	      enum tree_code invert_code = ERROR_MARK;
-	      enum tree_code cond_code = TREE_CODE (cond_expr);
-
-	      if (TREE_CODE_CLASS (cond_code) == tcc_comparison)
-		{
-		  bool honor_nans = HONOR_NANS (TREE_OPERAND (cond_expr, 0));
-		  invert_code = invert_tree_comparison (cond_code, honor_nans);
-		}
-	      if (invert_code != ERROR_MARK)
-		{
-		  TREE_SET_CODE (cond_expr, invert_code);
-		  swap_ssa_operands (def_stmt,
-				     gimple_assign_rhs2_ptr (def_stmt),
-				     gimple_assign_rhs3_ptr (def_stmt));
-		}
-	      else
-		{
-		  if (dump_enabled_p ())
-		    report_vect_op (MSG_NOTE, def_stmt,
-				    "detected reduction: cannot swap operands "
-				    "for cond_expr");
-		  return NULL;
-		}
-	    }
-	  else
-	    swap_ssa_operands (def_stmt, gimple_assign_rhs1_ptr (def_stmt),
-			       gimple_assign_rhs2_ptr (def_stmt));
-
-	  if (dump_enabled_p ())
-	    report_vect_op (MSG_NOTE, def_stmt,
-			    "detected reduction: need to swap operands: ");
-
-	  if (CONSTANT_CLASS_P (gimple_assign_rhs1 (def_stmt)))
-	    LOOP_VINFO_OPERANDS_SWAPPED (loop_info) = true;
-        }
-      else
-        {
-          if (dump_enabled_p ())
-            report_vect_op (MSG_NOTE, def_stmt, "detected reduction: ");
-        }
-
+      if (dump_enabled_p ())
+	report_vect_op (MSG_NOTE, def_stmt, "detected reduction: ");
       return def_stmt_info;
     }
 
@@ -5969,7 +5921,6 @@ vectorize_fold_left_reduction (stmt_vec_info stmt_info,
   gcc_assert (!nested_in_vect_loop_p (loop, stmt_info));
   gcc_assert (ncopies == 1);
   gcc_assert (TREE_CODE_LENGTH (code) == binary_op);
-  gcc_assert (reduc_index == (code == MINUS_EXPR ? 0 : 1));
   gcc_assert (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
 	      == FOLD_LEFT_REDUCTION);
 
@@ -6542,9 +6493,9 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  reduc_index = i;
 	}
 
-      if (i == 1 && code == COND_EXPR)
+      if (code == COND_EXPR)
 	{
-	  /* Record how value of COND_EXPR is defined.  */
+	  /* Record how the non-reduction-def value of COND_EXPR is defined.  */
 	  if (dt == vect_constant_def)
 	    {
 	      cond_reduc_dt = dt;
@@ -6621,10 +6572,6 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			     "conditional reduction chains not supported\n");
 	  return false;
 	}
-
-      /* vect_is_simple_reduction ensured that operand 2 is the
-	 loop-carried operand.  */
-      gcc_assert (reduc_index == 2);
 
       /* Loop peeling modifies initial value of reduction PHI, which
 	 makes the reduction stmt to be transformed different to the

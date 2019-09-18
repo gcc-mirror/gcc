@@ -1,3 +1,11 @@
+2019-09-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_is_simple_reduction): Remove operand
+	swapping.
+	(vectorize_fold_left_reduction): Remove assert.
+	(vectorizable_reduction): Also expect COND_EXPR non-reduction
+	operand in position 2.  Remove assert.
+
 2019-09-18  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/arm.md (arm_mulsi3): Remove pattern.
