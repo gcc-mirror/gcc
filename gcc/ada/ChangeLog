@@ -1,3 +1,7 @@
+2019-09-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprograms): Refine previous change.
+
 2019-09-17  Claire Dross  <dross@adacore.com>
 
 	* libgnat/a-cofuma.ads, libgnat/a-cofuma.adb (Remove): New
