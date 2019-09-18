@@ -1,3 +1,10 @@
+2019-09-18  Vadim Godunko  <godunko@adacore.com>
+
+	* libgnat/g-expect.adb (Expect_Internal): Don't include invalid
+	file descriptors into the set of file descriptors for Poll.
+	Raise Process_Died exception when computed set of file
+	descriptors to monitor is empty.
+
 2019-09-18  Frederic Konrad  <konrad@adacore.com>
 
 	* adaint.c: Include dosFsLib.h and vwModNum.h for VxWorks 6.
