@@ -1,5 +1,10 @@
 2019-09-18  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* stor-layout.c (compute_record_mode): Operate on poly_uint64
+	sizes instead of uhwi sizes.
+
+2019-09-18  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* dwarf2out.c (loc_list_from_tree_1): Handle POLY_INT_CST.
 	(add_const_value_attribute): Handle CONST_POLY_INT.
 
