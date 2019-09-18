@@ -1,3 +1,21 @@
+2019-09-18  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm.md (maddsidi4): Remove expander.
+	(mulsidi3adddi): Remove pattern.
+	(mulsidi3adddi_v6): Likewise.
+	(mulsidi3_nov6): Likewise.
+	(mulsidi3_v6): Likewise.
+	(umulsidi3): Remove expander.
+	(umulsidi3_nov6): Remove pattern.
+	(umulsidi3_v6): Likewise.
+	(umulsidi3adddi): Likewise.
+	(umulsidi3adddi_v6): Likewise.
+	(<Us>mulsidi3): Add combined expander.
+	(<Us>maddsidi4): Likewise.
+	(<US>mull): Add combined umull and smull pattern.
+	(<US>mlal): Likewise.
+	* config/arm/iterators.md (Us): Add new iterator.
+
 2019-09-18  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_is_simple_reduction): Remove operand

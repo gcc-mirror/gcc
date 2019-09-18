@@ -796,6 +796,7 @@
 
 ;; Assembler mnemonics for signedness of widening operations.
 (define_code_attr US [(sign_extend "s") (zero_extend "u")])
+(define_code_attr Us [(sign_extend "") (zero_extend "u")])
 
 ;; Signedness suffix for float->fixed conversions.  Empty for signed
 ;; conversion.
