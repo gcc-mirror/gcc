@@ -2762,8 +2762,9 @@ private:
   module_state *state;		/* Module being imported.  */
   vec<tree> back_refs;		/* Back references.  */
   vec<tree> mergeables;		/* (Duplicate) mergeable decls.  */
-  vec<intptr_t> skip_defns;	/* Definitions to skip.  */
   vec<tree> post_decls;		/* Decls to post process.  */
+  bool any_deduping;		/* There is at least one thing to
+				   dedup.  (optimizes searches).  */
 
 public:
   trees_in (module_state *);
@@ -2812,7 +2813,6 @@ public:
   
 private:
   bool is_matching_decl (tree existing, tree node);
-  int is_skippable_defn (tree node, bool have_defn);
   bool read_function_def (tree decl, tree maybe_template);
   bool read_var_def (tree decl, tree maybe_template);
   bool read_class_def (tree decl, tree maybe_template);
@@ -2828,62 +2828,46 @@ public:
     /* We push both the existing decl and the duplicate.  */
     mergeables.reserve (len * 2);
   }
-  bool register_mergeable (tree decl, tree existing)
-  {
-    bool ok = mergeables.space (2);
-    if (ok)
-      {
-	mergeables.quick_push (decl);
-	mergeables.quick_push (existing);
-      }
-    return ok;
-  }
-  tree *lookup_mergeable (unsigned ix)
-  {
-    ix *= 2;
-    if (ix >= mergeables.length ())
-      return NULL;
+  bool register_mergeable (tree decl, tree existing);
 
-    return &mergeables[ix];
-  }
-  bool is_existing_mergeable (tree decl)
+  enum dupness
   {
-    for (unsigned ix = mergeables.length (); ix;)
-      {
-	ix -= 2;
-	if (mergeables[ix + 1] == decl)
-	  return true;
-      }
-    return false;
-  }
+    DUP_unique,
+    DUP_new,
+    DUP_dup,
+  };
+  dupness get_dupness (tree decl, bool known_mergeable = true);
+
+  enum odrness
+  {
+    ODR_new,  /* A new entity, absorb it.  */
+    ODR_check, /* A duplicate entity, check it.  */
+    ODR_ignore /* A duplicate entity, ignore it. */
+  };
+  odrness get_odrness (tree decl, bool has_existing_defn);
+
+public:
+  /* Return the next decl to postprocess, or NULL.  */
   tree post_process ()
   {
     return post_decls.length () ? post_decls.pop () : NULL_TREE;
   }
-
 private:
-  /* We expect very few bad decls, usually none!.  */
-  void record_skip_defn (tree defn, bool informed, bool existing = false);
-  int is_skip_defn (tree defn);
-  bool any_skip_defns () const
-  {
-    return skip_defns.length () != 0;
-  }
+  /* Register DECL for postprocessing.  */
   void post_process (tree decl)
   {
     post_decls.safe_push (decl);
   }
 
 private:
-  void assert_definition (tree, int);
+  void assert_definition (tree, odrness);
 };
 
 trees_in::trees_in (module_state *state)
-  :parent (), state (state)
+  :parent (), state (state), any_deduping (false)
 {
   back_refs.create (500);
   mergeables.create (0);
-  skip_defns.create (0);
   post_decls.create (0);
 }
 
@@ -2891,7 +2875,6 @@ trees_in::~trees_in ()
 {
   back_refs.release ();
   mergeables.release ();
-  skip_defns.release ();
   post_decls.release ();
 }
 
@@ -3243,10 +3226,11 @@ static hash_set<tree> *note_defs;
 #endif
 
 void
-trees_in::assert_definition (tree decl ATTRIBUTE_UNUSED, int odr ATTRIBUTE_UNUSED)
+trees_in::assert_definition (tree decl ATTRIBUTE_UNUSED,
+			     odrness odr ATTRIBUTE_UNUSED)
 {
 #if CHECKING_P
-  if (!odr)
+  if (odr == ODR_new)
     {
       /* We must be inserting for the first time.  */
       bool existed = note_defs->add (decl);
@@ -3258,7 +3242,7 @@ trees_in::assert_definition (tree decl ATTRIBUTE_UNUSED, int odr ATTRIBUTE_UNUSE
        should be in the table.  Global module entities could have been
        defined textually in the current TU and so might or might not
        be present.  */
-    gcc_assert (!is_existing_mergeable (decl)
+    gcc_assert (get_dupness (decl, false) != DUP_dup
 		? !note_defs->contains (decl)
 		: (MAYBE_DECL_MODULE_OWNER (decl) == MODULE_NONE
 		   || note_defs->contains (decl)));
@@ -7894,8 +7878,8 @@ trees_in::tree_value (walk_kind walk)
 	case MK_clone:
 	  kind = "clone";
 	  /* Our merging is the same as that of the thing we cloned.  */
-	  // FIXME: do we need to check skip_defns too?
-	  if (is_existing_mergeable (container))
+	  if (get_dupness (get_module_owner (container, true), false)
+	      == DUP_dup)
 	    /* The existing clone will be the one following KEY.  */
 	    existing = DECL_CHAIN (key);
 	  else
@@ -8078,9 +8062,8 @@ trees_in::tree_value (walk_kind walk)
 	TREE_TYPE (res) = TREE_TYPE (inner);
 
       bool matched = is_matching_decl (existing, res);
-      /* Record EXISTING as the skip defn, because that's what we'll
-	 see when reading a definition.  */
-      record_skip_defn (existing, !matched, false);
+      // FIXME: Record matchedness into the mergable decl array so
+      // that get_odrness can return ODR_ignore
 
       /* And our result is the existing node.  */
       res = existing;
@@ -8815,43 +8798,6 @@ trees_in::tree_node ()
   return res;
 }
 
-void
-trees_in::record_skip_defn (tree defn, bool informed, bool existing)
-{
-  dump (dumper::MERGE)
-    && dump ("Recording %s skippable %C:%N",
-	     existing ? "existing" : "new", TREE_CODE (defn), defn);
-
-  if (!existing)
-    {
-      gcc_checking_assert (!is_skip_defn (defn));
-      skip_defns.safe_push (intptr_t (defn) | intptr_t (informed));
-    }
-  else if (informed)
-    {
-      /* Record that we informed the user of a problem.  So we don't
-	 give a whole slew of mismatch diagnostics.  */
-      for (unsigned ix = skip_defns.length (); ix--;)
-	if ((skip_defns[ix] & ~intptr_t (1)) == intptr_t (defn))
-	  {
-	    skip_defns[ix] |= 1;
-	    break;
-	  }
-    }
-}
-
-/* Return non-zero if DEFN is a skippable entity.  >0 if we already
-   warned, < 0 if we have not.  */
-
-int
-trees_in::is_skip_defn (tree defn)
-{
-  for (unsigned ix = skip_defns.length (); ix--;)
-    if ((skip_defns[ix] & ~intptr_t (1)) == intptr_t (defn))
-      return (skip_defns[ix] & 1) ? +1 : -1;
-  return 0;
-}
-
 /* PARMS is a LIST, one node per level.
    TREE_VALUE is a TREE_VEC of parm info for that level.
    each ELT is a TREE_LIST
@@ -9395,71 +9341,82 @@ has_definition (tree decl)
   return false;
 }
 
-/* Return the namespace scope DECL enclosing T.  */
-// FIXME: Isn't this the wrong thing for instantiations?
-// And to deal with partial specializations, I think we have to go
-// from the skip_defn array to each scope enclosing defn
+/* We're starting to read mergeable DECL.  EXISTING is the already
+   known node (which is NULL if DECL is new.  */
 
-static tree
-topmost_decl (tree t)
+bool
+trees_in::register_mergeable (tree decl, tree existing)
 {
-  for (;;)
-    {
-      while (TYPE_P (t))
-	{
-	  if (tree name = TYPE_NAME (t))
-	    t = name;
-	  else
-	    return NULL_TREE;
-	}
+  if (existing)
+    any_deduping = true;
 
-      gcc_checking_assert (DECL_P (t));
-      tree ctx = CP_DECL_CONTEXT (t);
-      if (!ctx || TREE_CODE (ctx) == NAMESPACE_DECL)
-	return t;
-      t = ctx;
+  bool ok = mergeables.space (2);
+  if (ok)
+    {
+      /* Register the template result, as that's what we find via
+	 module owner.  */
+      mergeables.quick_push (STRIP_TEMPLATE (decl));
+      mergeables.quick_push (existing ? STRIP_TEMPLATE (existing) : NULL_TREE);
     }
+  return ok;
 }
 
-/* We're reading a definition of DEFN (a _DECL or structured _TYPE).
-   Check that makes sense and issue a diagnostic on errors.  Return
-   zero if the new defn should be added.  Return +1 if it should be
-   ignored and -1 if it should be checked for ODR.  */
+/* DECL is the controlling mergeable decl of some graph.  Did we find
+   an existing decl, or is it a new decl?  */
 
-int
-trees_in::is_skippable_defn (tree defn, bool have_defn)
+trees_in::dupness
+trees_in::get_dupness (tree decl, bool known_mergeable)
 {
-  gcc_assert (DECL_P (defn));
+  if (!CHECKING_P && !any_deduping)
+    return DUP_unique;
 
-  if (get_overrun ())
-    return +1;
+  decl = STRIP_TEMPLATE (decl);
 
-  /* If we don't already have a definition, then read this one.  */
+  for (unsigned ix = mergeables.length (); ix--;)
+    if (mergeables[ix] == decl)
+      {
+	/* If IX is odd, we matched the existing decl, otherwise we
+	   matched the new decl.  */
+	gcc_checking_assert (ix & 1 || !mergeables[ix + 1]);
+	return ix & 1 ? DUP_dup : DUP_new;
+      }
+
+  /* We never registered this as a mergeable.  */
+  gcc_checking_assert (!known_mergeable);
+
+  return DUP_unique;
+}
+
+/* DECL is an about-to-be defined decl.  Determine the ODR mergeness.
+   HAVE_DEFN indicates whether we already have a definition for it.  */
+
+trees_in::odrness
+trees_in::get_odrness (tree decl, bool have_defn)
+{
+  /* If there's no deduping going on, we want this one.  */
+  if (!any_deduping)
+    return ODR_new;
+
+  tree owner = get_module_owner (decl, true);
+  dupness dup = get_dupness (owner, false);
+
   if (!have_defn)
-    return 0;
+    if (dup != DUP_dup || STRIP_TEMPLATE (decl) == owner)
+      return ODR_new;
 
-  /* The most common case is to have nothing to skip.  Short circuit
-     the complexity in that case. */
-  if (!any_skip_defns ())
-    return 0;
+  if (dup == DUP_dup)
+    // FIXME: it'd be good to be able to locate the thing to check
+    // against and allow checking in all cases
+    return STRIP_TEMPLATE (decl) == owner ? ODR_check : ODR_ignore;
 
-  /* If there are skip defns, we're merging entities.  Find the
-     namespace-scope dominating decl. */
-  // FIXME: Breaks for specializations
-  tree top = topmost_decl (defn);
-  if (int skip = is_skip_defn (top))
-    {
-      dump (dumper::MERGE)
-	&& dump ("Skipping definition %N%s",
-		 defn, skip < 0 ? " check ODR" : "");
-      return skip;
-    }
+  /* This is a non-mergeable entity, but we already have a
+     definition for it!  */
 
-  record_skip_defn (top, true, false);
-  error_at (state->loc, "unexpected definition of %q#D", defn);
-  inform (DECL_SOURCE_LOCATION (defn), "existing definition here");
+  // FIXME: It'd be good to find the matching decl and use its location
+  error_at (state->loc, "unexpected definition of %q#D", decl);
+  inform (DECL_SOURCE_LOCATION (decl), "existing definition here");
 
-  return +1;
+  return ODR_ignore;
 }
 
 /* The following writer functions rely on the current behaviour of
@@ -9514,11 +9471,11 @@ trees_in::read_function_def (tree decl, tree maybe_template)
   if (get_overrun ())
     return NULL_TREE;
 
-  int odr = is_skippable_defn (maybe_template,
-			       DECL_SAVED_TREE (decl) != NULL_TREE);
+  odrness odr = get_odrness (maybe_template,
+			     DECL_SAVED_TREE (decl) != NULL_TREE);
   assert_definition (maybe_template, odr);
 
-  if (!odr)
+  if (odr == ODR_new)
     {
       DECL_RESULT (decl) = result;
       DECL_INITIAL (decl) = initial;
@@ -9529,7 +9486,7 @@ trees_in::read_function_def (tree decl, tree maybe_template)
 	register_constexpr_fundef (cexpr);
       post_process (maybe_template);
     }
-  else if (odr < 0)
+  else if (odr == ODR_check)
     {
       // FIXME: Check matching defn
     }
@@ -9556,14 +9513,13 @@ trees_in::read_var_def (tree decl, tree maybe_template)
   if (get_overrun ())
     return false;
 
-  int odr = is_skippable_defn (maybe_template,
-			       DECL_INITIAL (decl) != NULL_TREE);
+  odrness odr = get_odrness (maybe_template, DECL_INITIAL (decl) != NULL_TREE);
   assert_definition (maybe_template, odr);
-  if (!odr)
+  if (odr == ODR_new)
     {
       DECL_INITIAL (decl) = init;
     }
-  else if (odr < 0)
+  else if (odr == ODR_check)
     {
       // FIXME: Check matching defn
     }
@@ -9871,9 +9827,9 @@ trees_in::read_class_def (tree defn, tree maybe_template)
   // FIXME: Read more stuff!
   // lang->nested_udts
 
-  int odr = is_skippable_defn (maybe_template, TYPE_SIZE (type) != NULL_TREE);
+  odrness odr = get_odrness (maybe_template, TYPE_SIZE (type) != NULL_TREE);
   assert_definition (maybe_template, odr);
-  if (!odr)
+  if (odr == ODR_new)
     {
       TYPE_SIZE (type) = size;
       TYPE_SIZE_UNIT (type) = size_unit;
@@ -9911,7 +9867,7 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	  resort_type_member_vec (member_vec, NULL, nop, NULL);
 	}
     }
-  else if (odr < 0)
+  else if (odr == ODR_check)
     {
       // FIXME: Check matching defn
     }
@@ -9975,7 +9931,7 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	}
       decl_list = nreverse (decl_list);
 
-      if (!odr)
+      if (odr == ODR_new)
 	{
 	  CLASSTYPE_PRIMARY_BINFO (type) = primary;
 	  CLASSTYPE_AS_BASE (type) = as_base;
@@ -10019,13 +9975,13 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	while (tree vfunc = tree_node ())
 	  {
 	    tree thunks = chained_decls ();
-	    if (!odr)
+	    if (odr == ODR_new)
 	      SET_DECL_THUNKS (vfunc, thunks);
 	  }
     }
 
   /* Propagate to all variants.  */
-  if (!odr)
+  if (odr == ODR_new)
     fixup_type_variants (type);
 
   /* IS_FAKE_BASE_TYPE is inaccurate at this point, because if this is
@@ -10090,14 +10046,21 @@ trees_in::read_enum_def (tree defn, tree maybe_template)
     return false;
 
   // FIXME: ODR ?
-  int odr = 0;
+  odrness odr = get_odrness (defn, TYPE_VALUES (type) != NULL_TREE);
   assert_definition (maybe_template, odr);
 
-  TYPE_VALUES (type) = values;
-  TYPE_MIN_VALUE (type) = min;
-  TYPE_MAX_VALUE (type) = max;
+  if (odr == ODR_new)
+    {
+      TYPE_VALUES (type) = values;
+      TYPE_MIN_VALUE (type) = min;
+      TYPE_MAX_VALUE (type) = max;
 
-  rest_of_type_compilation (type, DECL_NAMESPACE_SCOPE_P (defn));
+      rest_of_type_compilation (type, DECL_NAMESPACE_SCOPE_P (defn));
+    }
+  else if (odr == ODR_check)
+    {
+      // FIXME: check odr
+    }
 
   return true;
 }
@@ -13627,7 +13590,7 @@ module_state::read_cluster (unsigned snum)
 
 	    if (type
 		&& CP_DECL_CONTEXT (type) == ns
-		&& !sec.is_existing_mergeable (type))
+		&& sec.get_dupness (type, false) != trees_in::DUP_dup)
 	      add_module_decl (ns, name, type);
 
 	    for (ovl_iterator iter (decls); iter; ++iter)
@@ -13635,7 +13598,7 @@ module_state::read_cluster (unsigned snum)
 		{
 		  tree decl = *iter;
 		  if (CP_DECL_CONTEXT (decl) == ns
-		      && !sec.is_existing_mergeable (decl))
+		      && sec.get_dupness (decl, false) != trees_in::DUP_dup)
 		    add_module_decl (ns, name, decl);
 		}
 	  }

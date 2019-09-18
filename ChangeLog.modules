@@ -1,3 +1,21 @@
+2019-09-18  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_in): Delete skip_defns & handling.  Add
+	any_deduping field.
+	(trees_in::register_mergeable): Outline.
+	(trees_in::{enum dupness,get_dupness}): New.
+	(trees_in::{enum odrness,get_odrness}): New.
+	(trees_in::lookup_mergeable): Delete.
+	(trees_in::is_existing_mergeable): Delete, use get_dupness.
+	(trees_in::is_skippable_defn): Delete, ise get_odrness.
+	(trees_in::assert_definition): Adjust.
+	(trees_in::read_{function,class,var,enum}_def): Adjust.
+	(topmost_decl): Delete.
+	gcc/testsuite/
+	* g++.dg/modules/part-3_c.C: Adjust scans.
+	* g++.dg/modules/tdef-6_b.C: Adjust scans.
+
 2019-09-17  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
