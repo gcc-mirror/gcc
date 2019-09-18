@@ -1,3 +1,9 @@
+2019-09-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/i386/pr82361-1.c (f1, f2, f3, f4, f5, f6): Force
+	"c" to be in %rax and "d" to be in %rdx.
+	* gcc.target/i386/pr82361-2.c: Expect 4 instances of "movl\t%edx".
+
 2019-19-17  Christophe Lyon  <christophe.lyon@st.com>
 
 	* lib/target-supports.exp
