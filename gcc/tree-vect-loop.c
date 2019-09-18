@@ -4203,7 +4203,7 @@ vect_model_induction_cost (stmt_vec_info stmt_info, int ncopies,
 
    A cost model should help decide between these two schemes.  */
 
-tree
+static tree
 get_initial_def_for_reduction (stmt_vec_info stmt_vinfo, tree init_val,
                                tree *adjustment_def)
 {
@@ -4585,7 +4585,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
      (in case of SLP, do it for all the phis). */
 
   /* Get the loop-entry arguments.  */
-  enum vect_def_type initial_def_dt = vect_unknown_def_type;
   if (slp_node)
     {
       unsigned vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
@@ -4623,7 +4622,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
 	{
 	  /* Do not use an adjustment def as that case is not supported
 	     correctly if ncopies is not one.  */
-	  vect_is_simple_use (initial_def, loop_vinfo, &initial_def_dt);
 	  vec_initial_def = vect_get_vec_def_for_operand (initial_def,
 							  stmt_info);
 	}
