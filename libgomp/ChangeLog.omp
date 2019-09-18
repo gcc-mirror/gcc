@@ -1,5 +1,11 @@
 2019-09-18  Tobias Burnus  <tobias@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Fix dg-warning
+	line numbers.
+	* testsuite/libgomp.oacc-c-c++-common/serial-dims.c: Likewise.
+
+2019-09-18  Tobias Burnus  <tobias@codesourcery.com>
+
 	* linux/gomp_print.c (gomp_print_integer): Use PRId64 if available,
 	otherwise cast for %ld.
 

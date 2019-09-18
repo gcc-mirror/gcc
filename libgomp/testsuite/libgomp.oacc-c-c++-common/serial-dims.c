@@ -59,10 +59,10 @@ int main ()
     gangs_max = workers_max = vectors_max = INT_MIN;
     gangs_actual = workers_actual = vectors_actual = 1;
 #pragma acc serial
-    /* { dg-warning "region contains gang partitioned code but is not gang partitioned" "" { target *-*-* } .-1 } */
-    /* { dg-warning "region contains worker partitioned code but is not worker partitioned" "" { target *-*-* } .-2 } */
-    /* { dg-warning "region contains vector partitioned code but is not vector partitioned" "" { target *-*-* } .-3 } */
-    /* { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } .-4 } */
+    /* { dg-warning "region contains gang partitioned code but is not gang partitioned" "" { target *-*-* } 61 } */
+    /* { dg-warning "region contains worker partitioned code but is not worker partitioned" "" { target *-*-* } 61 } */
+    /* { dg-warning "region contains vector partitioned code but is not vector partitioned" "" { target *-*-* } 61 } */
+    /* { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } 61 } */
     {
       if (acc_on_device (acc_device_nvidia))
 	{
