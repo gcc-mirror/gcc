@@ -1,5 +1,10 @@
 2019-09-18  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/90878
+	* gcc.target/i386/pr90878.c: New test.
+
+2019-09-18  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/91446
 	* gcc.target/i386/pr91446.c: New test.
 
