@@ -1,3 +1,10 @@
+2019-09-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (get_initial_def_for_reduction): Remove.
+	* tree-vect-loop.c (get_initial_def_for_reduction): Make
+	static.
+	(vect_create_epilog_for_reduction): Remove dead code.
+
 2019-09-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* varasm.c (assemble_real): Generate canonical const_ints.
