@@ -13258,7 +13258,9 @@ package body Sem_Ch3 is
 
       function Build_Constrained_Discriminated_Type
         (Old_Type : Entity_Id) return Entity_Id;
-      --  Ditto for record components
+      --  Ditto for record components. Handle the case where the constraint
+      --  is a conversion of the discriminant value, introduced during
+      --  expansion.
 
       function Build_Constrained_Access_Type
         (Old_Type : Entity_Id) return Entity_Id;
@@ -13443,6 +13445,17 @@ package body Sem_Ch3 is
 
             if Is_Discriminant (Expr) then
                Need_To_Create_Itype := True;
+
+            --  After expansion of discriminated task types, the value
+            --  of the discriminant may be converted to a run-time type
+            --  for restricted run-times. Propagate the value of the
+            --  discriminant ss well, so that e.g. the secondary stack
+            --  component has a static constraint. Necessry for LLVM.
+
+            elsif Nkind (Expr) = N_Type_Conversion
+              and then Is_Discriminant (Expression (Expr))
+            then
+               Need_To_Create_Itype := True;
             end if;
 
             Next_Elmt (Old_Constraint);
@@ -13457,6 +13470,12 @@ package body Sem_Ch3 is
 
                if Is_Discriminant (Expr) then
                   Expr := Get_Discr_Value (Expr);
+
+               elsif Nkind (Expr) = N_Type_Conversion
+                 and then Is_Discriminant (Expression (Expr))
+               then
+                  Expr := New_Copy_Tree (Expr);
+                  Set_Expression (Expr, Get_Discr_Value (Expression (Expr)));
                end if;
 
                Append (New_Copy_Tree (Expr), To => Constr_List);

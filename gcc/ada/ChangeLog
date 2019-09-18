@@ -1,5 +1,14 @@
 2019-09-18  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch3.adb (Constrain_Component_Type): For a discriminated
+	type, handle the case of a constraint given by a conversion of a
+	discriminant of the enclosing type. Necessary when compiling a
+	discriminated task for a restricted run-time, when the generated
+	Secondary_Stack component may be set by means of an aspect on
+	the task type.
+
+2019-09-18  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_aggr.adb (Expand_Record_Aggregate, Rewrite_Discriminant):
 	After rewriting a reference to an outer discriminant as a
 	selected component of the enclosing object, analyze the selected
