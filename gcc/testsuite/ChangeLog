@@ -1,3 +1,7 @@
+2019-09-18  Steve Baird  <baird@adacore.com>
+
+	* gnat.dg/ai12_0086_example.adb: New testcase.
+
 2019-09-18  Nicolas Roche  <roche@adacore.com>
 
 	* gnat.dg/float_value2.adb: New testcase.
