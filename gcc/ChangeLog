@@ -1,3 +1,9 @@
+2019-09-18  Martin Liska  <mliska@suse.cz>
+
+	* dbgcnt.def (store_merging): New counter.
+	* gimple-ssa-store-merging.c (imm_store_chain_info::output_merged_stores):
+	Use it in store merging.
+
 2019-09-17  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_sched_variable_issue): New
