@@ -1,5 +1,11 @@
 2019-09-18  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/90878
+	* config/i386/x86-tune-costs.h (skylake_cost): Restore SImode
+	hard register store cost to 6.
+
+2019-09-18  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/91446
 	* config/i386/x86-tune-costs.h (skylake_cost): Increase SImode
 	pseudo register store cost from 3 to 6 to make it the same as
