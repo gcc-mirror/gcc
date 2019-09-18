@@ -154,6 +154,8 @@ along with GCC; see the file COPYING3.  If not see
 */
 
 static void vect_estimate_min_profitable_iters (loop_vec_info, int *, int *);
+static stmt_vec_info vect_force_simple_reduction (loop_vec_info, stmt_vec_info,
+						  bool *, bool);
 
 /* Subroutine of vect_determine_vf_for_stmt that handles only one
    statement.  VECTYPE_MAYBE_SET_P is true if STMT_VINFO_VECTYPE
@@ -3361,7 +3363,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
    in-place if it enables detection of more reductions.  Arguments
    as there.  */
 
-stmt_vec_info
+static stmt_vec_info
 vect_force_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 			     bool *double_reduc,
 			     bool need_wrapping_integral_overflow)
