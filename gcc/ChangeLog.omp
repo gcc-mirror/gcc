@@ -1,3 +1,14 @@
+2019-09-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.c (gomp_oacc_needs_data_present): Remove unused variables.
+	* omp-low.c (process_oacc_gangprivate_1): Comment unused
+	parameter name to silence unused warning.
+	* omp-sese.c (omp_sese_number, omp_sese_pseudo): Remove
+	superfluous ().
+	(oacc_do_neutering): Use signed int to avoid a warning.
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call,
+	find_func_clobbers): Use unsigned to silence warning.
+
 2019-09-06  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.c (gimplify_omp_for): Use for_stmt in call to

@@ -9969,7 +9969,6 @@ static oacc_array_mapping_info *
 gomp_oacc_needs_data_present (tree decl)
 {
   gimplify_omp_ctx *ctx = NULL;
-  bool ref_p = TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE;
 
   if (gimplify_omp_ctxp->region_type != ORT_ACC_PARALLEL
       && gimplify_omp_ctxp->region_type != ORT_ACC_KERNELS)
