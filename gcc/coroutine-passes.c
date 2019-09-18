@@ -282,6 +282,7 @@ execute_early_expand_coro_ifns (void)
   /* Some of the possible YIELD points will hopefully have been removed by
      earlier optimisations, record the ones that are present.  */
   hash_map <int_hash <HOST_WIDE_INT, -1, -2>, tree> destinations;
+  hash_set<tree> to_remove;
   bool changed = false;
 
   basic_block bb;
@@ -337,6 +338,8 @@ execute_early_expand_coro_ifns (void)
 	      }
 	    else
 	      dst_dest = dst_tgt;
+	    to_remove.add (res_tgt);
+	    to_remove.add (dst_tgt);
 	    /* lose the co_yield.  */
 	    gsi_remove (&gsi, true);
 	    stmt = gsi_stmt (gsi); /* next. */
@@ -386,8 +389,8 @@ execute_early_expand_coro_ifns (void)
 	gimple *stmt = gsi_stmt (gsi);
 	if (!is_gimple_call (stmt) || !gimple_call_internal_p (stmt))
 	  {
-	  gsi_next (&gsi);
-	  continue;
+	    gsi_next (&gsi);
+	    continue;
 	  }
 	if (gimple_call_internal_fn (stmt) != IFN_CO_ACTOR)
 	  gsi_next (&gsi);
@@ -436,6 +439,25 @@ execute_early_expand_coro_ifns (void)
 
   if (changed)
     {
+      /* Remove the labels we inserted to map our hidden CFG, this
+	 avoids confusing block merges when there are also EH labels.  */
+      FOR_EACH_BB_FN (bb, cfun)
+	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+	  {
+	    gimple *stmt = gsi_stmt (gsi);
+	    if (glabel *glab = dyn_cast <glabel*> (stmt))
+	      {
+		tree rem = gimple_label_label (glab);
+		if (to_remove.contains (rem))
+		  {
+		    gsi_remove (&gsi, true);
+		    to_remove.remove (rem);
+		    continue; /* We already moved to the next insn.  */
+		  }
+	      }
+	    gsi_next (&gsi);
+	  }
+
       /* Sledgehammer fix up to DOM, however attempts to do it more cheaply
          were not terribly successful.  */
       free_dominance_info (CDI_DOMINATORS);
