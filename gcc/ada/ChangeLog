@@ -1,3 +1,10 @@
+2019-09-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_dbug.ads, exp_dbug.adb (Get_Homonym_Number): Refine type
+	from Nat to Pos.
+	* sem_util.adb (Add_Homonym_Suffix): Refine type of a local
+	variable.
+
 2019-09-18  Yannick Moy  <moy@adacore.com>
 
 	* exp_dbug.adb (Append_Homonym_Number): Use new function
