@@ -2516,6 +2516,7 @@ do_subscript (gfc_expr **e)
 	      bool have_do_start, have_do_end;
 	      bool error_not_proven;
 	      int warn;
+	      int sgn;
 
 	      dl = lp->c;
 	      if (dl == NULL)
@@ -2544,7 +2545,16 @@ do_subscript (gfc_expr **e)
 		 Do not warn in this case.  */
 	  
 	      if (dl->ext.iterator->step->expr_type == EXPR_CONSTANT)
-		mpz_init_set (do_step, dl->ext.iterator->step->value.integer);
+		{
+		  sgn = mpz_cmp_ui (dl->ext.iterator->step->value.integer, 0);
+		  /* This can happen, but then the error has been
+		     reported previusly.  */
+		  if (sgn == 0)
+		    continue;
+
+		  mpz_init_set (do_step, dl->ext.iterator->step->value.integer);
+		}
+
 	      else
 		continue;
 
@@ -2567,6 +2577,16 @@ do_subscript (gfc_expr **e)
 
 	      if (!have_do_start && !have_do_end)
 		return 0;
+
+	      /* No warning inside a zero-trip loop.  */
+	      if (have_do_start && have_do_end)
+		{
+		  int cmp;
+
+		  cmp = mpz_cmp (do_end, do_start);
+		  if ((sgn > 0 && cmp < 0) || (sgn < 0 && cmp > 0))
+		    break;
+		}
 
 	      /* May have to correct the end value if the step does not equal
 		 one.  */
