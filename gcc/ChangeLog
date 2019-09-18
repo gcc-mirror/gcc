@@ -1,3 +1,10 @@
+2019-09-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/91446
+	* config/i386/x86-tune-costs.h (skylake_cost): Increase SImode
+	pseudo register store cost from 3 to 6 to make it the same as
+	QImode and HImode.
+
 2019-09-18  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/arm.md (maddsidi4): Remove expander.
