@@ -1,3 +1,7 @@
+2019-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn31.adb, gnat.dg/warn31.ads: New testcase.
+
 2019-09-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/fixedpnt8.adb: New testcase.

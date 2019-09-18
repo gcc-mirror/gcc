@@ -1,3 +1,12 @@
+2019-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.ads (Alignment_Warnings_Record): Add P component.
+	* checks.adb (Apply_Address_Clause_Check): Be prepared to kill
+	the warning also if the clause is of the form X'Address.
+	(Validate_Alignment_Check_Warning): Kill the warning if the
+	clause is of the form X'Address and the alignment of X is
+	compatible.
+
 2019-09-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Set_Mixed_Node_Expression): If a conditional
