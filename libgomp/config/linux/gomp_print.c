@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "config.h"  /* For HAVE_INTTYPES_H.  */
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>  /* For PRId64.  */
+#endif
+
 void
 gomp_print_string (const char *msg, const char *value)
 {
@@ -10,7 +15,11 @@ gomp_print_string (const char *msg, const char *value)
 void
 gomp_print_integer (const char *msg, int64_t value)
 {
-  printf ("%s%ld\n", msg, value);
+#ifdef HAVE_INTTYPES_H
+  printf ("%s%" PRId64 "\n", msg, value);
+#else
+  printf ("%s%ld\n", msg, (long) value);
+#endif
 }
 
 void
