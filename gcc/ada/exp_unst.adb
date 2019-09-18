@@ -2592,9 +2592,9 @@ package body Exp_Unst is
          then
             Subp_Body := Parent (Declaration_Node
                                    (Corresponding_Body (Subp_Body)));
-            Unnest_Subprogram (Subp, Subp_Body, For_Inline => True);
          end if;
 
+         Unnest_Subprogram (Subp, Subp_Body, For_Inline => True);
          Next_Inlined_Subprogram (Subp);
       end loop;
    end Unnest_Subprograms;
