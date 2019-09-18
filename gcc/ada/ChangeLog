@@ -1,3 +1,10 @@
+2019-09-18  Nicolas Roche  <roche@adacore.com>
+
+	* libgnat/s-valrea.adb (Scan_Integral_Digits): New procedure.
+	(Scan_Decimal_Digits): New procedure.
+	(As_Digit): New function.
+	(Scan_Real): Use Scan_Integral_Digits and Scan_Decimal_Digits.
+
 2019-09-18  Claire Dross  <dross@adacore.com>
 
 	* exp_attr.adb (Expand_N_Attribute_Reference): Call routine from
