@@ -1,3 +1,12 @@
+2019-09-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Expand_Record_Aggregate, Rewrite_Discriminant):
+	After rewriting a reference to an outer discriminant as a
+	selected component of the enclosing object, analyze the selected
+	component to ensure that the entity of the selector name is
+	properly set. This is necessary when the aggregate appears
+	within an expression that may have been analyzed already.
+
 2019-09-18  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch8.adb (Use_One_Type): Add guard to prevent warning on a
