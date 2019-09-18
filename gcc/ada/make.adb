@@ -3789,7 +3789,7 @@ package body Make is
 
                if Gprbuild = null then
                   Fail_Program
-                    ("project files are no longer supported by gnamake;" &
+                    ("project files are no longer supported by gnatmake;" &
                      " use gprbuild instead");
                end if;
 
