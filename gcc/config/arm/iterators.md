@@ -239,6 +239,8 @@
 ;; A list of ...
 (define_code_iterator IOR_XOR [ior xor])
 
+(define_code_iterator LOGICAL [and ior xor])
+
 ;; Operations on two halves of a quadword vector.
 (define_code_iterator VQH_OPS [plus smin smax umin umax])
 
@@ -284,6 +286,9 @@
 (define_code_attr cmp_type [(eq "i") (gt "s") (ge "s") (lt "s") (le "s")])
 
 (define_code_attr vfml_op [(plus "a") (minus "s")])
+
+(define_code_attr logical_op [(ior "ior") (xor "xor") (and "and")])
+(define_code_attr logical_OP [(ior "IOR") (xor "XOR") (and "AND")])
 
 ;;----------------------------------------------------------------------------
 ;; Int iterators
