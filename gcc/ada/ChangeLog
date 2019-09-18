@@ -1,3 +1,8 @@
+2019-09-18  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Fix minor
+	formatting issue.
+
 2019-09-18  Javier Miranda  <miranda@adacore.com>
 
 	* exp_disp.adb (Make_DT, Make_Secondary_DT): Remove generation

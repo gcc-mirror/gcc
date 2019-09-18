@@ -6179,7 +6179,7 @@ usually supplied automatically by the project manager. A pragma
 Source_File_Name cannot appear after a :ref:`Pragma_Source_File_Name_Project`.
 
 For more details on the use of the ``Source_File_Name`` pragma, see the
-sections on ``Using Other File Names`` and `Alternative File Naming Schemes'
+sections on `Using Other File Names` and `Alternative File Naming Schemes`
 in the :title:`GNAT User's Guide`.
 
 ..  _Pragma_Source_File_Name_Project:
