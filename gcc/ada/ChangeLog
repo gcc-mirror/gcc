@@ -1,5 +1,13 @@
 2019-09-18  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_res.adb (Set_Mixed_Node_Expression): If a conditional
+	expression has universal_real alternaitves and the context is
+	Universal_Fixed, as when it is an operand in a fixed-point
+	multiplication or division, resolve the expression with a
+	visible fixed-point type, which must be unique.
+
+2019-09-18  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch3.adb (Constrain_Component_Type): For a discriminated
 	type, handle the case of a constraint given by a conversion of a
 	discriminant of the enclosing type. Necessary when compiling a
