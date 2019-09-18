@@ -1,3 +1,8 @@
+2019-09-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* dwarf2out.c (loc_list_from_tree_1): Handle POLY_INT_CST.
+	(add_const_value_attribute): Handle CONST_POLY_INT.
+
 2019-09-18  Martin Liska  <mliska@suse.cz>
 
 	* dbgcnt.def (store_merging): New counter.
