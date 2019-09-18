@@ -1,5 +1,9 @@
 2019-09-18  Justin Squirek  <squirek@adacore.com>
 
+	* gnat.dg/warn30.adb, gnat.dg/warn30.ads: New testcase.
+
+2019-09-18  Justin Squirek  <squirek@adacore.com>
+
 	* gnat.dg/access8.adb, gnat.dg/access8_pkg.adb,
 	gnat.dg/access8_pkg.ads: New testcase.
 
