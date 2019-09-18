@@ -3516,6 +3516,14 @@ package Einfo is
 --       is also set (to the default value of zero = Default_Mechanism) in a
 --       subprogram body entity but not used in this context.
 
+--    Minimum_Accessibility (Node24)
+--       Defined in formal parameters in the non-generic case. Normally Empty,
+--       but if expansion is active, and a parameter exists for which a
+--       dynamic accessibility check is required, then an object is generated
+--       within such a subprogram representing the accessibility level of the
+--       subprogram or the formal's Extra_Accessibility - whichever one is
+--       lesser. The Minimum_Accessibility field then points to this object.
+
 --    Modulus (Uint17) [base type only]
 --       Defined in modular types. Contains the modulus. For the binary case,
 --       this will be a power of 2, but if Non_Binary_Modulus is set, then it
@@ -6273,6 +6281,7 @@ package Einfo is
    --    Default_Expr_Function               (Node21)
    --    Protected_Formal                    (Node22)
    --    Extra_Constrained                   (Node23)
+   --    Minimum_Accessibility               (Node24)
    --    Last_Assignment                     (Node26)   (OUT, IN-OUT only)
    --    Activation_Record_Component         (Node31)
    --    Has_Initial_Value                   (Flag219)
@@ -7398,6 +7407,7 @@ package Einfo is
    function Materialize_Entity                  (Id : E) return B;
    function May_Inherit_Delayed_Rep_Aspects     (Id : E) return B;
    function Mechanism                           (Id : E) return M;
+   function Minimum_Accessibility               (Id : E) return E;
    function Modulus                             (Id : E) return U;
    function Must_Be_On_Byte_Boundary            (Id : E) return B;
    function Must_Have_Preelab_Init              (Id : E) return B;
@@ -8103,6 +8113,7 @@ package Einfo is
    procedure Set_Materialize_Entity              (Id : E; V : B := True);
    procedure Set_May_Inherit_Delayed_Rep_Aspects (Id : E; V : B := True);
    procedure Set_Mechanism                       (Id : E; V : M);
+   procedure Set_Minimum_Accessibility           (Id : E; V : E);
    procedure Set_Modulus                         (Id : E; V : U);
    procedure Set_Must_Be_On_Byte_Boundary        (Id : E; V : B := True);
    procedure Set_Must_Have_Preelab_Init          (Id : E; V : B := True);
@@ -8973,6 +8984,7 @@ package Einfo is
    pragma Inline (Materialize_Entity);
    pragma Inline (May_Inherit_Delayed_Rep_Aspects);
    pragma Inline (Mechanism);
+   pragma Inline (Minimum_Accessibility);
    pragma Inline (Modulus);
    pragma Inline (Must_Be_On_Byte_Boundary);
    pragma Inline (Must_Have_Preelab_Init);
@@ -9466,6 +9478,7 @@ package Einfo is
    pragma Inline (Set_Materialize_Entity);
    pragma Inline (Set_May_Inherit_Delayed_Rep_Aspects);
    pragma Inline (Set_Mechanism);
+   pragma Inline (Set_Minimum_Accessibility);
    pragma Inline (Set_Modulus);
    pragma Inline (Set_Must_Be_On_Byte_Boundary);
    pragma Inline (Set_Must_Have_Preelab_Init);

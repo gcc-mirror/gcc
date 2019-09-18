@@ -983,6 +983,10 @@ package Sem_Util is
    --  discriminants. Otherwise all components of the parent must be included
    --  in the subtype for semantic analysis.
 
+   function Get_Accessibility (E : Entity_Id) return Node_Id;
+   --  Obtain the accessibility level for a given entity formal taking into
+   --  account both extra and minimum accessibility.
+
    function Get_Actual_Subtype (N : Node_Id) return Entity_Id;
    --  Given a node for an expression, obtain the actual subtype of the
    --  expression. In the case of a parameter where the formal is an
