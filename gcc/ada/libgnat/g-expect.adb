@@ -653,7 +653,9 @@ package body GNAT.Expect is
 
    begin
       for J in Descriptors'Range loop
-         if Descriptors (J) /= null then
+         if Descriptors (J) /= null
+           and then Descriptors (J).Output_Fd /= Invalid_FD
+         then
             Fds (Fds'First + Fds_Count) := Descriptors (J).Output_Fd;
             Fds_To_Descriptor (Fds'First + Fds_Count) := J;
             Fds_Count := Fds_Count + 1;
@@ -666,6 +668,14 @@ package body GNAT.Expect is
             end if;
          end if;
       end loop;
+
+      if Fds_Count = 0 then
+         --  There are no descriptors to monitor, it means that process died.
+
+         Result := Expect_Process_Died;
+
+         return;
+      end if;
 
       declare
          Buffer : aliased String (1 .. Buffer_Size);
