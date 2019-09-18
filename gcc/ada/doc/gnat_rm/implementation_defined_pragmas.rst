@@ -3254,7 +3254,7 @@ Ada exceptions, or used to implement run-time functions such as the
 Pragma ``Interrupt_State`` provides a general mechanism for overriding
 such uses of interrupts.  It subsumes the functionality of pragma
 ``Unreserve_All_Interrupts``.  Pragma ``Interrupt_State`` is not
-available on Windows or VMS.  On all other platforms than VxWorks,
+available on Windows.  On all other platforms than VxWorks,
 it applies to signals; on VxWorks, it applies to vectored hardware interrupts
 and may be used to mark interrupts required by the board support package
 as reserved.
@@ -7689,7 +7689,7 @@ asterisks is similar in effect to specifying ``pragma Warnings (Off)`` except (i
 ``pragma Warnings (On, "***")`` will be required. This can be
 helpful in avoiding forgetting to turn warnings back on.
 
-Note: the debug flag :switch:`-gnatd.i` (``/NOWARNINGS_PRAGMAS`` in VMS) can be
+Note: the debug flag :switch:`-gnatd.i` can be
 used to cause the compiler to entirely ignore all WARNINGS pragmas. This can
 be useful in checking whether obsolete pragmas in existing programs are hiding
 real problems.
