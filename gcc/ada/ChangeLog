@@ -1,3 +1,9 @@
+2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Is_Legal_Copy): Also return false for an aliased
+	formal and a formal passed by reference in convention Ada.  Add
+	missing guard to the existing test on Is_Valued_Procedure.
+
 2019-09-19  Bob Duff  <duff@adacore.com>
 
 	* rtsfind.ads (RTE_Available): Improve comment.
