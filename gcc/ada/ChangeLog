@@ -1,3 +1,12 @@
+2019-09-19  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Global_In_Decl_Part): Do not issue an
+	error when a constant of an access type is used as output in a
+	Global contract.
+	(Analyze_Depends_In_Decl_Part): Do not issue an error when a
+	constant of an access type is used as output in a Depends
+	contract.
+
 2019-09-19  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_attr.adb: Remove obsolete comment.

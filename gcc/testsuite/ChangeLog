@@ -1,3 +1,7 @@
+2019-09-19  Yannick Moy  <moy@adacore.com>
+
+	* gnat.dg/global2.adb, gnat.dg/global2.ads: New testcase.
+
 2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/access9.adb: New testcase.
