@@ -2761,7 +2761,7 @@ class trees_in : public bytes_in {
 private:
   module_state *state;		/* Module being imported.  */
   vec<tree> back_refs;		/* Back references.  */
-  vec<tree> mergeables;		/* (Duplicate) mergeable decls.  */
+  vec<intptr_t> mergeables;	/* Mergeable decls & their originals.  */
   vec<tree> post_decls;		/* Decls to post process.  */
   bool any_deduping;		/* There is at least one thing to
 				   dedup.  (optimizes searches).  */
@@ -2828,15 +2828,20 @@ public:
     /* We push both the existing decl and the duplicate.  */
     mergeables.reserve (len * 2);
   }
-  bool register_mergeable (tree decl, tree existing);
+  int register_mergeable (tree decl, tree existing);
+  void unmatched_mergeable (int index)
+  {
+    mergeables[index] |= 1;
+  }
 
   enum dupness
   {
     DUP_unique,
     DUP_new,
     DUP_dup,
+    DUP_bad
   };
-  dupness get_dupness (tree decl, bool known_mergeable = true);
+  dupness get_dupness (tree decl);
 
   enum odrness
   {
@@ -3242,7 +3247,7 @@ trees_in::assert_definition (tree decl ATTRIBUTE_UNUSED,
        should be in the table.  Global module entities could have been
        defined textually in the current TU and so might or might not
        be present.  */
-    gcc_assert (get_dupness (decl, false) != DUP_dup
+    gcc_assert (get_dupness (decl) < DUP_dup
 		? !note_defs->contains (decl)
 		: (MAYBE_DECL_MODULE_OWNER (decl) == MODULE_NONE
 		   || note_defs->contains (decl)));
@@ -7808,6 +7813,7 @@ trees_in::tree_value (walk_kind walk)
       return NULL_TREE;
     }
 
+  int merge_slot = -1;
   tree parms = NULL_TREE;
   if (walk != WK_body)
     {
@@ -7878,7 +7884,7 @@ trees_in::tree_value (walk_kind walk)
 	case MK_clone:
 	  kind = "clone";
 	  /* Our merging is the same as that of the thing we cloned.  */
-	  if (get_dupness (get_module_owner (container, true), false)
+	  if (get_dupness (get_module_owner (container, true))
 	      == DUP_dup)
 	    /* The existing clone will be the one following KEY.  */
 	    existing = DECL_CHAIN (key);
@@ -7922,7 +7928,8 @@ trees_in::tree_value (walk_kind walk)
 	  break;
 	}
 
-      if (!register_mergeable (res, existing))
+      merge_slot = register_mergeable (res, existing);
+      if (merge_slot < 0)
 	goto bail;
 
       if (existing)
@@ -8061,9 +8068,8 @@ trees_in::tree_value (walk_kind walk)
 	/* Set the TEMPLATE_DECL's type.  */
 	TREE_TYPE (res) = TREE_TYPE (inner);
 
-      bool matched = is_matching_decl (existing, res);
-      // FIXME: Record matchedness into the mergable decl array so
-      // that get_odrness can return ODR_ignore
+      if (!is_matching_decl (existing, res))
+	unmatched_mergeable (merge_slot);
 
       /* And our result is the existing node.  */
       res = existing;
@@ -9344,46 +9350,53 @@ has_definition (tree decl)
 /* We're starting to read mergeable DECL.  EXISTING is the already
    known node (which is NULL if DECL is new.  */
 
-bool
+int
 trees_in::register_mergeable (tree decl, tree existing)
 {
   if (existing)
     any_deduping = true;
 
-  bool ok = mergeables.space (2);
-  if (ok)
-    {
-      /* Register the template result, as that's what we find via
-	 module owner.  */
-      mergeables.quick_push (STRIP_TEMPLATE (decl));
-      mergeables.quick_push (existing ? STRIP_TEMPLATE (existing) : NULL_TREE);
-    }
-  return ok;
+  if (!mergeables.space (2))
+    return -1;
+
+  mergeables.quick_push (reinterpret_cast<intptr_t> (decl));
+  mergeables.quick_push (reinterpret_cast<intptr_t> (existing));
+
+  return mergeables.length () - 1;
 }
 
 /* DECL is the controlling mergeable decl of some graph.  Did we find
    an existing decl, or is it a new decl?  */
 
 trees_in::dupness
-trees_in::get_dupness (tree decl, bool known_mergeable)
+trees_in::get_dupness (tree decl)
 {
   if (!CHECKING_P && !any_deduping)
     return DUP_unique;
 
-  decl = STRIP_TEMPLATE (decl);
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    decl = DECL_TEMPLATE_RESULT (decl);
 
   for (unsigned ix = mergeables.length (); ix--;)
-    if (mergeables[ix] == decl)
-      {
-	/* If IX is odd, we matched the existing decl, otherwise we
-	   matched the new decl.  */
-	gcc_checking_assert (ix & 1 || !mergeables[ix + 1]);
-	return ix & 1 ? DUP_dup : DUP_new;
-      }
+    {
+      intptr_t slot = mergeables[ix];
+      if (tree val = reinterpret_cast<tree> (slot & ~intptr_t (1)))
+	{
+	  if (STRIP_TEMPLATE (val) == decl)
+	    {
+	      /* If IX is odd, we matched the existing decl, otherwise
+		 we matched the new decl.  */
+	      gcc_checking_assert (ix & 1 || !mergeables[ix + 1]);
+
+	      if (!(ix & 1))
+		return DUP_new;
+	      else
+		return slot & 1 ? DUP_bad : DUP_dup;
+	    }
+	}
+    }
 
   /* We never registered this as a mergeable.  */
-  gcc_checking_assert (!known_mergeable);
-
   return DUP_unique;
 }
 
@@ -9398,10 +9411,13 @@ trees_in::get_odrness (tree decl, bool have_defn)
     return ODR_new;
 
   tree owner = get_module_owner (decl, true);
-  dupness dup = get_dupness (owner, false);
+  dupness dup = get_dupness (owner);
+
+  if (dup == DUP_bad)
+    return ODR_ignore;
 
   if (!have_defn)
-    if (dup != DUP_dup || STRIP_TEMPLATE (decl) == owner)
+    if (dup < DUP_dup || STRIP_TEMPLATE (decl) == owner)
       return ODR_new;
 
   if (dup == DUP_dup)
@@ -9409,13 +9425,7 @@ trees_in::get_odrness (tree decl, bool have_defn)
     // against and allow checking in all cases
     return STRIP_TEMPLATE (decl) == owner ? ODR_check : ODR_ignore;
 
-  /* This is a non-mergeable entity, but we already have a
-     definition for it!  */
-
-  // FIXME: It'd be good to find the matching decl and use its location
-  error_at (state->loc, "unexpected definition of %q#D", decl);
-  inform (DECL_SOURCE_LOCATION (decl), "existing definition here");
-
+  gcc_unreachable ();
   return ODR_ignore;
 }
 
@@ -13590,7 +13600,7 @@ module_state::read_cluster (unsigned snum)
 
 	    if (type
 		&& CP_DECL_CONTEXT (type) == ns
-		&& sec.get_dupness (type, false) != trees_in::DUP_dup)
+		&& sec.get_dupness (type) < trees_in::DUP_dup)
 	      add_module_decl (ns, name, type);
 
 	    for (ovl_iterator iter (decls); iter; ++iter)
@@ -13598,7 +13608,7 @@ module_state::read_cluster (unsigned snum)
 		{
 		  tree decl = *iter;
 		  if (CP_DECL_CONTEXT (decl) == ns
-		      && sec.get_dupness (decl, false) != trees_in::DUP_dup)
+		      && sec.get_dupness (decl) < trees_in::DUP_dup)
 		    add_module_decl (ns, name, decl);
 		}
 	  }

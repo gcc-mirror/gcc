@@ -1,6 +1,14 @@
 2019-09-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_in::mergeables): Vec of intptr_t.
+	(trees_in::register_mergeable): Return index.
+	(trees_in::unmatched_mergeable): New.
+	(trees_in::get_dupness): Drop last parm.  Return DUP_bad as
+	necessary.  Adjust callers.
+	(trees_in::tree_value): Call unmatched_mergeable as necessary.
+
+	gcc/cp/
 	* module.cc (trees_in): Delete skip_defns & handling.  Add
 	any_deduping field.
 	(trees_in::register_mergeable): Outline.
