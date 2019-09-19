@@ -1,3 +1,9 @@
+2019-09-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations): Simplify
+	handling of expressions in predicates when the context is a
+	generic unit.
+
 2019-09-19  Bob Duff  <duff@adacore.com>
 
 	* sem_attr.adb (Resolve_Attribute): Make sure the secondary
