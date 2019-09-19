@@ -1,3 +1,8 @@
+2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/aarch64.c (aarch64_print_operand): Allow integer
+	registers with %R.
+
 2019-09-19  Feng Xue  <fxue@os.amperecomputing.com>
 
 	* ipa-fnsummary.c (set_cond_stmt_execution_predicate): Do not compute
