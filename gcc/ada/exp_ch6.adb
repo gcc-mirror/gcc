@@ -1859,12 +1859,16 @@ package body Exp_Ch6 is
          --  An attempt to copy a value of such a type can only occur if
          --  representation clauses give the actual a misaligned address.
 
-         if Is_By_Reference_Type (Etype (Formal)) then
+         if Is_By_Reference_Type (Etype (Formal))
+           or else Is_Aliased (Formal)
+           or else (Mechanism (Formal) = By_Reference
+                     and then not Has_Foreign_Convention (Subp))
+         then
 
             --  The actual may in fact be properly aligned but there is not
             --  enough front-end information to determine this. In that case
-            --  gigi will emit an error if a copy is not legal, or generate
-            --  the proper code.
+            --  gigi will emit an error or a warning if a copy is not legal,
+            --  or generate the proper code.
 
             return False;
 
@@ -1875,6 +1879,7 @@ package body Exp_Ch6 is
          --  be lurking.
 
          elsif Mechanism (Formal) = By_Reference
+           and then Ekind (Scope (Formal)) = E_Procedure
            and then Is_Valued_Procedure (Scope (Formal))
          then
             Error_Msg_N
