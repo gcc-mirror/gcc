@@ -11442,6 +11442,68 @@ package body Sem_Ch12 is
          else
             Load_Parent_Of_Generic
               (Inst_Node, Specification (Gen_Decl), Body_Optional);
+
+            --  Surprisingly enough, loading the body of the parent can cause
+            --  the body to be instantiated and the double instantiation needs
+            --  to be prevented in order to avoid giving bogus semantic errors.
+
+            --  This case can occur because of the Collect_Previous_Instances
+            --  machinery of Load_Parent_Of_Generic, which will instantiate
+            --  bodies that are deemed to be ahead of the body of the parent
+            --  in the compilation unit. But the relative position of these
+            --  bodies is computed using the mere comparison of their Sloc.
+
+            --  Now suppose that you have two generic packages G and H, with
+            --  G containing a mere instantiation of H:
+
+            --    generic
+            --    package H is
+
+            --      generic
+            --      package Nested_G is
+            --         ...
+            --      end Nested_G;
+
+            --    end H;
+
+            --    with H;
+
+            --    generic
+            --    package G is
+
+            --      package My_H is new H;
+
+            --    end G;
+
+            --  and a third package Q instantiating G and Nested_G:
+
+            --    with G;
+
+            --    package Q is
+
+            --      package My_G is new G;
+
+            --      package My_Nested_G is new My_G.My_H.Nested_G;
+
+            --    end Q;
+
+            --  The body to be instantiated is that of My_Nested_G and its
+            --  parent is the instance My_G.My_H. This latter instantiation
+            --  is done when My_G is analyzed, i.e. after the declarations
+            --  of My_G and My_Nested_G have been parsed; as a result, the
+            --  Sloc of My_G.My_H is greater than the Sloc of My_Nested_G.
+
+            --  Therefore loading the body of My_G.My_H will cause the body
+            --  of My_Nested_G to be instantiated because it is deemed to be
+            --  ahead of My_G.My_H. This means that Load_Parent_Of_Generic
+            --  will again be invoked on My_G.My_H, but this time with the
+            --  Collect_Previous_Instances machinery disabled, so there is
+            --  no endless mutual recursion and things are done in order.
+
+            if Present (Corresponding_Body (Instance_Spec (Inst_Node))) then
+               goto Leave;
+            end if;
+
             Gen_Body_Id := Corresponding_Body (Gen_Decl);
          end if;
       end if;
