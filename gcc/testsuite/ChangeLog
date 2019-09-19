@@ -1,8 +1,13 @@
+2019-09-19  Feng Xue  <fxue@os.amperecomputing.com>
+
+	* gcc.dg/ipa/pr91089.c: Add a new function and pattern.
+
 2019-09-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91812
 	* gcc.dg/torture/pr91812.c: New testcase.
 
+>>>>>>> .r275960
 2019-09-19  Tom Tromey  <tromey@adacore.com>
 
 	* gnat.dg/bias1.adb: New testcase.

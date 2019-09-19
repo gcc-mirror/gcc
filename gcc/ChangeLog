@@ -1,3 +1,13 @@
+2019-09-19  Feng Xue  <fxue@os.amperecomputing.com>
+
+	* ipa-fnsummary.c (set_cond_stmt_execution_predicate): Do not compute
+	trivial predicate for condition branch.
+	(set_switch_stmt_execution_predicate): Do not compute trivial predicate
+	for switch case.
+	(compute_bb_predicates): Update predicate based on post-dominating
+	relationship.
+	(analyze_function_body): Calculate post-dominating information.
+
 2019-09-19  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vectorizer.h (vectorizable_condition): Take an int
