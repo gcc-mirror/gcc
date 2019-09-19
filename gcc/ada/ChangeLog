@@ -1,3 +1,9 @@
+2019-09-19  Bob Duff  <duff@adacore.com>
+
+	* exp_ch3.adb (Rewrite_As_Renaming): Return False if there are
+	any aspect specifications, because otherwise Insert_Actions
+	blows up.
+
 2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch6.adb (Add_Simple_Call_By_Copy_Code): Add
