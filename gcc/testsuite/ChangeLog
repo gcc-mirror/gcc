@@ -1,3 +1,8 @@
+2019-09-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/pr89313.c: Test for __POWERPC__ in addition to
+	__powerpc__ in register name selection.
+
 2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
 
 	* gcc.target/aarch64/atomic-op-acq_rel.c: Use -mno-outline-atomics.
