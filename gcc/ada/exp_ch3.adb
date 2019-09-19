@@ -6318,7 +6318,8 @@ package body Exp_Ch3 is
       -------------------------
 
       function Rewrite_As_Renaming return Boolean is
-      begin
+         Result : constant Boolean :=
+
          --  If the object declaration appears in the form
 
          --    Obj : Ctrl_Typ := Func (...);
@@ -6336,12 +6337,12 @@ package body Exp_Ch3 is
 
          --  This part is disabled for now, because it breaks GPS builds
 
-         return (False -- ???
-             and then Nkind (Expr_Q) = N_Explicit_Dereference
-             and then not Comes_From_Source (Expr_Q)
-             and then Nkind (Original_Node (Expr_Q)) = N_Function_Call
-             and then Nkind (Object_Definition (N)) in N_Has_Entity
-             and then (Needs_Finalization (Entity (Object_Definition (N)))))
+         (False -- ???
+            and then Nkind (Expr_Q) = N_Explicit_Dereference
+            and then not Comes_From_Source (Expr_Q)
+            and then Nkind (Original_Node (Expr_Q)) = N_Function_Call
+            and then Nkind (Object_Definition (N)) in N_Has_Entity
+            and then (Needs_Finalization (Entity (Object_Definition (N)))))
 
            --  If the initializing expression is for a variable with attribute
            --  OK_To_Rename set, then transform:
@@ -6362,6 +6363,14 @@ package body Exp_Ch3 is
                and then Ekind (Entity (Expr_Q)) = E_Variable
                and then OK_To_Rename (Entity (Expr_Q))
                and then Is_Entity_Name (Obj_Def));
+      begin
+         --  Return False if there are any aspect specifications, because
+         --  otherwise we duplicate that corresponding implicit attribute
+         --  definition, and call Insert_Action, which has no place to insert
+         --  the attribute definition. The attribute definition is stored in
+         --  Aspect_Rep_Item, which is not a list.
+
+         return Result and then No (Aspect_Specifications (N));
       end Rewrite_As_Renaming;
 
       --  Local variables
