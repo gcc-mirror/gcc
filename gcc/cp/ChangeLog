@@ -1,3 +1,11 @@
+2019-09-19  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	* call.c (build_new_op_1): Don't apply any standard conversions to
+	the operands of a built-in operator.  Don't suppress conversions in
+	cp_build_unary_op.
+	* typeck.c (cp_build_unary_op): Do integral promotions for enums.
+
 2019-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokdeclarator): Use declspecs->locations and
