@@ -1,3 +1,12 @@
+2019-09-19  Bob Duff  <duff@adacore.com>
+
+	* xref_lib.adb (Get_Symbol_Name): If we reach EOF in the first
+	loop without finding the symbol, return "???". Otherwise, it's
+	an infinite loop.
+	(Parse_EOL): Assert that we're not already at EOF.  Remove
+	processing of LF/CR -- there are no operating systems that use
+	that.
+
 2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch6.adb (Is_Legal_Copy): Also return false for an aliased
