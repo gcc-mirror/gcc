@@ -1,3 +1,8 @@
+2019-09-19  Tom Tromey  <tromey@adacore.com>
+
+	* gcc-interface/misc.c (gnat_get_type_bias): Return the bias
+	when -fgnat-encodings=gdb.
+
 2019-09-19  Steve Baird  <baird@adacore.com>
 
 	* sem_prag.adb (Preferred_String_Type): A new function. Given an
