@@ -1,3 +1,8 @@
+2019-09-19  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprogram): Bypass the transformation of
+	up-level references unless Opt.Generate_C_Code is enabled.
+
 2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch4.adb (Expand_Array_Equality): If optimization is
