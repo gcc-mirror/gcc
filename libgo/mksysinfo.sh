@@ -1393,4 +1393,10 @@ grep '^type _mactun_info_t ' gen-sysinfo.go | \
     sed -e 's/_in6_addr_t/[16]byte/g' \
     >> ${OUT}
 
+# Type 'uint128' is needed in a couple of type definitions on arm64,such
+# as _user_fpsimd_struct, _elf_fpregset_t, etc.
+if ! grep '^type uint128' ${OUT} > /dev/null 2>&1; then
+    echo "type uint128 [16]byte" >> ${OUT}
+fi
+
 exit $?
