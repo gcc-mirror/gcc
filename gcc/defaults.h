@@ -1459,4 +1459,18 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DWARF_GNAT_ENCODINGS_DEFAULT DWARF_GNAT_ENCODINGS_GDB
 #endif
 
+#ifndef USED_FOR_TARGET
+/* Done this way to keep gengtype happy.  */
+#if BITS_PER_UNIT == 8
+#define TARGET_UNIT uint8_t
+#elif BITS_PER_UNIT == 16
+#define TARGET_UNIT uint16_t
+#elif BITS_PER_UNIT == 32
+#define TARGET_UNIT uint32_t
+#else
+#error Unknown BITS_PER_UNIT
+#endif
+typedef TARGET_UNIT target_unit;
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */
