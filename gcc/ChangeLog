@@ -1,3 +1,8 @@
+2019-09-19  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.c (sort_congruence_class_groups_by_decl_uid):
+	Use proper casting.
+
 2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
 
 	* config/aarch64/aarch64.c (aarch64_print_operand): Allow integer
