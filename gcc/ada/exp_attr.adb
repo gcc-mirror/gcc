@@ -2381,9 +2381,6 @@ package body Exp_Attr is
          --  generate a call to a run-time subprogram that returns the base
          --  address of the object.
 
-         --  This processing is not needed in the VM case, where dispatching
-         --  issues are taken care of by the virtual machine.
-
          elsif Is_Class_Wide_Type (Ptyp)
            and then Is_Interface (Underlying_Type (Ptyp))
            and then Tagged_Type_Expansion

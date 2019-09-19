@@ -1,3 +1,7 @@
+2019-09-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_attr.adb: Remove obsolete comment.
+
 2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch3.adb (Build_Derived_Access_Type): If this is an access-
