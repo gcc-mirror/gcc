@@ -1326,13 +1326,38 @@ split_function (basic_block return_bb, class split_point *split_point,
 	  }
     }
 
+  ipa_param_adjustments *adjustments;
+  bool skip_return = (!split_part_return_p
+		      || !split_point->split_part_set_retval);
+  /* TODO: Perhaps get rid of args_to_skip entirely, after we make sure the
+     debug info generation and discrepancy avoiding works well too.  */
+  if ((args_to_skip && !bitmap_empty_p (args_to_skip))
+      || skip_return)
+    {
+      vec<ipa_adjusted_param, va_gc> *new_params = NULL;
+      unsigned j;
+      for (parm = DECL_ARGUMENTS (current_function_decl), j = 0;
+	   parm; parm = DECL_CHAIN (parm), j++)
+	if (!args_to_skip || !bitmap_bit_p (args_to_skip, j))
+	  {
+	    ipa_adjusted_param adj;
+	    memset (&adj, 0, sizeof (adj));
+	    adj.op = IPA_PARAM_OP_COPY;
+	    adj.base_index = j;
+	    adj.prev_clone_index = j;
+	    vec_safe_push (new_params, adj);
+	  }
+      adjustments = new ipa_param_adjustments (new_params, j, skip_return);
+    }
+  else
+    adjustments = NULL;
+
   /* Now create the actual clone.  */
   cgraph_edge::rebuild_edges ();
   node = cur_node->create_version_clone_with_body
-    (vNULL, NULL, args_to_skip,
-     !split_part_return_p || !split_point->split_part_set_retval,
+    (vNULL, NULL, adjustments,
      split_point->split_bbs, split_point->entry_bb, "part");
-
+  delete adjustments;
   node->split_part = true;
 
   if (cur_node->same_comdat_group)
@@ -1469,6 +1494,7 @@ split_function (basic_block return_bb, class split_point *split_point,
 	      = gimple_build_debug_bind (ddecl, unshare_expr (arg), call);
 	    gsi_insert_after (&gsi, def_temp, GSI_NEW_STMT);
 	  }
+      BITMAP_FREE (args_to_skip);
     }
 
   /* We avoid address being taken on any variable used by split part,

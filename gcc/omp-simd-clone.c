@@ -86,21 +86,23 @@ simd_clone_struct_copy (struct cgraph_simd_clone *to,
 			* sizeof (struct cgraph_simd_clone_arg))));
 }
 
-/* Return vector of parameter types of function FNDECL.  This uses
-   TYPE_ARG_TYPES if available, otherwise falls back to types of
+/* Fill an empty vector ARGS with parameter types of function FNDECL.  This
+   uses TYPE_ARG_TYPES if available, otherwise falls back to types of
    DECL_ARGUMENTS types.  */
 
-static vec<tree>
-simd_clone_vector_of_formal_parm_types (tree fndecl)
+static void
+simd_clone_vector_of_formal_parm_types (vec<tree> *args, tree fndecl)
 {
   if (TYPE_ARG_TYPES (TREE_TYPE (fndecl)))
-    return ipa_get_vector_of_formal_parm_types (TREE_TYPE (fndecl));
-  vec<tree> args = ipa_get_vector_of_formal_parms (fndecl);
+    {
+      push_function_arg_types (args, TREE_TYPE (fndecl));
+      return;
+    }
+  push_function_arg_decls (args, fndecl);
   unsigned int i;
   tree arg;
-  FOR_EACH_VEC_ELT (args, i, arg)
-    args[i] = TREE_TYPE (args[i]);
-  return args;
+  FOR_EACH_VEC_ELT (*args, i, arg)
+    (*args)[i] = TREE_TYPE ((*args)[i]);
 }
 
 /* Given a simd function in NODE, extract the simd specific
@@ -113,7 +115,8 @@ static struct cgraph_simd_clone *
 simd_clone_clauses_extract (struct cgraph_node *node, tree clauses,
 			    bool *inbranch_specified)
 {
-  vec<tree> args = simd_clone_vector_of_formal_parm_types (node->decl);
+  auto_vec<tree> args;
+  simd_clone_vector_of_formal_parm_types (&args, node->decl);
   tree t;
   int n;
   *inbranch_specified = false;
@@ -192,14 +195,12 @@ simd_clone_clauses_extract (struct cgraph_node *node, tree clauses,
 		  {
 		    warning_at (OMP_CLAUSE_LOCATION (t), 0,
 				"ignoring large linear step");
-		    args.release ();
 		    return NULL;
 		  }
 		else if (integer_zerop (step))
 		  {
 		    warning_at (OMP_CLAUSE_LOCATION (t), 0,
 				"ignoring zero linear step");
-		    args.release ();
 		    return NULL;
 		  }
 		else
@@ -263,7 +264,6 @@ simd_clone_clauses_extract (struct cgraph_node *node, tree clauses,
       warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
 		  "ignoring %<#pragma omp declare simd%> on function "
 		  "with %<_Atomic%> qualified return type");
-      args.release ();
       return NULL;
     }
 
@@ -278,7 +278,6 @@ simd_clone_clauses_extract (struct cgraph_node *node, tree clauses,
 	return NULL;
       }
 
-  args.release ();
   return clone_info;
 }
 
@@ -303,14 +302,14 @@ simd_clone_compute_base_data_type (struct cgraph_node *node,
         such parameter.  */
   else
     {
-      vec<tree> map = simd_clone_vector_of_formal_parm_types (fndecl);
+      auto_vec<tree> map;
+      simd_clone_vector_of_formal_parm_types (&map, fndecl);
       for (unsigned int i = 0; i < clone_info->nargs; ++i)
 	if (clone_info->args[i].arg_type == SIMD_CLONE_ARG_TYPE_VECTOR)
 	  {
 	    type = map[i];
 	    break;
 	  }
-      map.release ();
     }
 
   /* c) If the characteristic data type determined by a) or b) above
@@ -441,7 +440,7 @@ simd_clone_create (struct cgraph_node *old_node)
 	return NULL;
       old_node->get_body ();
       new_node = old_node->create_version_clone_with_body (vNULL, NULL, NULL,
-							   false, NULL, NULL,
+							   NULL, NULL,
 							   "simdclone");
     }
   else
@@ -561,31 +560,33 @@ create_tmp_simd_array (const char *prefix, tree type, int simdlen)
 
    NODE is the function whose arguments are to be adjusted.
 
-   Returns an adjustment vector that will be filled describing how the
-   argument types will be adjusted.  */
+   If NODE does not represent function definition, returns NULL.  Otherwise
+   returns an adjustment class that will be filled describing how the argument
+   declarations will be remapped.  New arguments which are not to be remapped
+   are marked with USER_FLAG.  */
 
-static ipa_parm_adjustment_vec
+static ipa_param_body_adjustments *
 simd_clone_adjust_argument_types (struct cgraph_node *node)
 {
-  vec<tree> args;
-  ipa_parm_adjustment_vec adjustments;
+  auto_vec<tree> args;
 
   if (node->definition)
-    args = ipa_get_vector_of_formal_parms (node->decl);
+    push_function_arg_decls (&args, node->decl);
   else
-    args = simd_clone_vector_of_formal_parm_types (node->decl);
-  adjustments.create (args.length ());
-  unsigned i, j, veclen;
-  struct ipa_parm_adjustment adj;
+    simd_clone_vector_of_formal_parm_types (&args, node->decl);
   struct cgraph_simd_clone *sc = node->simdclone;
+  vec<ipa_adjusted_param, va_gc> *new_params = NULL;
+  vec_safe_reserve (new_params, sc->nargs);
+  unsigned i, j, veclen;
 
   for (i = 0; i < sc->nargs; ++i)
     {
+      ipa_adjusted_param adj;
       memset (&adj, 0, sizeof (adj));
       tree parm = args[i];
       tree parm_type = node->definition ? TREE_TYPE (parm) : parm;
       adj.base_index = i;
-      adj.base = parm;
+      adj.prev_clone_index = i;
 
       sc->args[i].orig_arg = node->definition ? parm : NULL_TREE;
       sc->args[i].orig_type = parm_type;
@@ -594,7 +595,7 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	{
 	default:
 	  /* No adjustment necessary for scalar arguments.  */
-	  adj.op = IPA_PARM_OP_COPY;
+	  adj.op = IPA_PARAM_OP_COPY;
 	  break;
 	case SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_CONSTANT_STEP:
 	case SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_VARIABLE_STEP:
@@ -603,7 +604,7 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	      = create_tmp_simd_array (IDENTIFIER_POINTER (DECL_NAME (parm)),
 				       TREE_TYPE (parm_type),
 				       sc->simdlen);
-	  adj.op = IPA_PARM_OP_COPY;
+	  adj.op = IPA_PARAM_OP_COPY;
 	  break;
 	case SIMD_CLONE_ARG_TYPE_LINEAR_VAL_CONSTANT_STEP:
 	case SIMD_CLONE_ARG_TYPE_LINEAR_VAL_VARIABLE_STEP:
@@ -615,7 +616,8 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	  veclen /= GET_MODE_BITSIZE (SCALAR_TYPE_MODE (parm_type));
 	  if (veclen > sc->simdlen)
 	    veclen = sc->simdlen;
-	  adj.arg_prefix = "simd";
+	  adj.op = IPA_PARAM_OP_NEW;
+	  adj.param_prefix_index = IPA_PARAM_PREFIX_SIMD;
 	  if (POINTER_TYPE_P (parm_type))
 	    adj.type = build_vector_type (pointer_sized_int_node, veclen);
 	  else
@@ -623,13 +625,15 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	  sc->args[i].vector_type = adj.type;
 	  for (j = veclen; j < sc->simdlen; j += veclen)
 	    {
-	      adjustments.safe_push (adj);
+	      vec_safe_push (new_params, adj);
 	      if (j == veclen)
 		{
 		  memset (&adj, 0, sizeof (adj));
-		  adj.op = IPA_PARM_OP_NEW;
-		  adj.arg_prefix = "simd";
+		  adj.op = IPA_PARAM_OP_NEW;
+		  adj.user_flag = 1;
+		  adj.param_prefix_index = IPA_PARAM_PREFIX_SIMD;
 		  adj.base_index = i;
+		  adj.prev_clone_index = i;
 		  adj.type = sc->args[i].vector_type;
 		}
 	    }
@@ -640,18 +644,20 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 				       ? IDENTIFIER_POINTER (DECL_NAME (parm))
 				       : NULL, parm_type, sc->simdlen);
 	}
-      adjustments.safe_push (adj);
+      vec_safe_push (new_params, adj);
     }
 
   if (sc->inbranch)
     {
       tree base_type = simd_clone_compute_base_data_type (sc->origin, sc);
-
+      ipa_adjusted_param adj;
       memset (&adj, 0, sizeof (adj));
-      adj.op = IPA_PARM_OP_NEW;
-      adj.arg_prefix = "mask";
+      adj.op = IPA_PARAM_OP_NEW;
+      adj.user_flag = 1;
+      adj.param_prefix_index = IPA_PARAM_PREFIX_MASK;
 
       adj.base_index = i;
+      adj.prev_clone_index = i;
       if (INTEGRAL_TYPE_P (base_type) || POINTER_TYPE_P (base_type))
 	veclen = sc->vecsize_int;
       else
@@ -666,10 +672,10 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	adj.type = build_vector_type (pointer_sized_int_node, veclen);
       else
 	adj.type = build_vector_type (base_type, veclen);
-      adjustments.safe_push (adj);
+      vec_safe_push (new_params, adj);
 
       for (j = veclen; j < sc->simdlen; j += veclen)
-	adjustments.safe_push (adj);
+	vec_safe_push (new_params, adj);
 
       /* We have previously allocated one extra entry for the mask.  Use
 	 it and fill it.  */
@@ -694,7 +700,13 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
     }
 
   if (node->definition)
-    ipa_modify_formal_parameters (node->decl, adjustments);
+    {
+      ipa_param_body_adjustments *adjustments
+	= new ipa_param_body_adjustments (new_params, node->decl);
+
+      adjustments->modify_formal_parameters ();
+      return adjustments;
+    }
   else
     {
       tree new_arg_types = NULL_TREE, new_reversed;
@@ -703,12 +715,12 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	last_parm_void = true;
 
       gcc_assert (TYPE_ARG_TYPES (TREE_TYPE (node->decl)));
-      j = adjustments.length ();
+      j = vec_safe_length (new_params);
       for (i = 0; i < j; i++)
 	{
-	  struct ipa_parm_adjustment *adj = &adjustments[i];
+	  struct ipa_adjusted_param *adj = &(*new_params)[i];
 	  tree ptype;
-	  if (adj->op == IPA_PARM_OP_COPY)
+	  if (adj->op == IPA_PARAM_OP_COPY)
 	    ptype = args[adj->base_index];
 	  else
 	    ptype = adj->type;
@@ -723,10 +735,8 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	    new_reversed = void_list_node;
 	}
       TYPE_ARG_TYPES (TREE_TYPE (node->decl)) = new_reversed;
-      adjustments.release ();
+      return NULL;
     }
-  args.release ();
-  return adjustments;
 }
 
 /* Initialize and copy the function arguments in NODE to their
@@ -735,7 +745,7 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 
 static gimple_seq
 simd_clone_init_simd_arrays (struct cgraph_node *node,
-			     ipa_parm_adjustment_vec adjustments)
+			     ipa_param_body_adjustments *adjustments)
 {
   gimple_seq seq = NULL;
   unsigned i = 0, j = 0, k;
@@ -744,7 +754,7 @@ simd_clone_init_simd_arrays (struct cgraph_node *node,
        arg;
        arg = DECL_CHAIN (arg), i++, j++)
     {
-      if (adjustments[j].op == IPA_PARM_OP_COPY
+      if ((*adjustments->m_adj_params)[j].op == IPA_PARAM_OP_COPY
 	  || POINTER_TYPE_P (TREE_TYPE (arg)))
 	continue;
 
@@ -809,7 +819,7 @@ simd_clone_init_simd_arrays (struct cgraph_node *node,
 /* Callback info for ipa_simd_modify_stmt_ops below.  */
 
 struct modify_stmt_info {
-  ipa_parm_adjustment_vec adjustments;
+  ipa_param_body_adjustments *adjustments;
   gimple *stmt;
   /* True if the parent statement was modified by
      ipa_simd_modify_stmt_ops.  */
@@ -829,15 +839,26 @@ ipa_simd_modify_stmt_ops (tree *tp, int *walk_subtrees, void *data)
   tree *orig_tp = tp;
   if (TREE_CODE (*tp) == ADDR_EXPR)
     tp = &TREE_OPERAND (*tp, 0);
-  struct ipa_parm_adjustment *cand = NULL;
+
+  if (TREE_CODE (*tp) == BIT_FIELD_REF
+      || TREE_CODE (*tp) == IMAGPART_EXPR
+      || TREE_CODE (*tp) == REALPART_EXPR)
+    tp = &TREE_OPERAND (*tp, 0);
+
+  tree repl = NULL_TREE;
+  ipa_param_body_replacement *pbr = NULL;
+
   if (TREE_CODE (*tp) == PARM_DECL)
-    cand = ipa_get_adjustment_candidate (&tp, NULL, info->adjustments, true);
+    {
+      pbr = info->adjustments->get_expr_replacement (*tp, true);
+      if (pbr)
+	repl = pbr->repl;
+    }
   else if (TYPE_P (*tp))
     *walk_subtrees = 0;
 
-  tree repl = NULL_TREE;
-  if (cand)
-    repl = unshare_expr (cand->new_decl);
+  if (repl)
+    repl = unshare_expr (repl);
   else
     {
       if (tp != orig_tp)
@@ -861,13 +882,13 @@ ipa_simd_modify_stmt_ops (tree *tp, int *walk_subtrees, void *data)
   if (tp != orig_tp)
     {
       if (gimple_code (info->stmt) == GIMPLE_PHI
-	  && cand
+	  && pbr
 	  && TREE_CODE (*orig_tp) == ADDR_EXPR
 	  && TREE_CODE (TREE_OPERAND (*orig_tp, 0)) == PARM_DECL
-	  && cand->alias_ptr_type)
+	  && pbr->dummy)
 	{
-	  gcc_assert (TREE_CODE (cand->alias_ptr_type) == SSA_NAME);
-	  *orig_tp = cand->alias_ptr_type;
+	  gcc_assert (TREE_CODE (pbr->dummy) == SSA_NAME);
+	  *orig_tp = pbr->dummy;
 	  info->modified = true;
 	  return NULL_TREE;
 	}
@@ -893,10 +914,13 @@ ipa_simd_modify_stmt_ops (tree *tp, int *walk_subtrees, void *data)
 	{
 	  gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 	  /* Cache SSA_NAME for next time.  */
-	  if (cand
+	  if (pbr
 	      && TREE_CODE (*orig_tp) == ADDR_EXPR
 	      && TREE_CODE (TREE_OPERAND (*orig_tp, 0)) == PARM_DECL)
-	    cand->alias_ptr_type = repl;
+	    {
+	      gcc_assert (!pbr->dummy);
+	      pbr->dummy = repl;
+	    }
 	}
       else
 	gsi = gsi_for_stmt (info->stmt);
@@ -926,70 +950,56 @@ ipa_simd_modify_stmt_ops (tree *tp, int *walk_subtrees, void *data)
 
 static void
 ipa_simd_modify_function_body (struct cgraph_node *node,
-			       ipa_parm_adjustment_vec adjustments,
+			       ipa_param_body_adjustments *adjustments,
 			       tree retval_array, tree iter)
 {
   basic_block bb;
-  unsigned int i, j, l;
+  unsigned int i, j;
 
-  /* Re-use the adjustments array, but this time use it to replace
-     every function argument use to an offset into the corresponding
-     simd_array.  */
+
+  /* Register replacements for every function argument use to an offset into
+     the corresponding simd_array.  */
   for (i = 0, j = 0; i < node->simdclone->nargs; ++i, ++j)
     {
-      if (!node->simdclone->args[i].vector_arg)
+      if (!node->simdclone->args[i].vector_arg
+	  || (*adjustments->m_adj_params)[j].user_flag)
 	continue;
 
       tree basetype = TREE_TYPE (node->simdclone->args[i].orig_arg);
       tree vectype = TREE_TYPE (node->simdclone->args[i].vector_arg);
-      adjustments[j].new_decl
-	= build4 (ARRAY_REF,
-		  basetype,
-		  node->simdclone->args[i].simd_array,
-		  iter,
-		  NULL_TREE, NULL_TREE);
-      if (adjustments[j].op == IPA_PARM_OP_NONE
-	  && simd_clone_subparts (vectype) < node->simdclone->simdlen)
+      tree r = build4 (ARRAY_REF, basetype, node->simdclone->args[i].simd_array,
+		  iter, NULL_TREE, NULL_TREE);
+      adjustments->register_replacement (&(*adjustments->m_adj_params)[j], r);
+
+      if (simd_clone_subparts (vectype) < node->simdclone->simdlen)
 	j += node->simdclone->simdlen / simd_clone_subparts (vectype) - 1;
     }
 
-  l = adjustments.length ();
   tree name;
-
   FOR_EACH_SSA_NAME (i, name, cfun)
     {
+      tree base_var;
       if (SSA_NAME_VAR (name)
-	  && TREE_CODE (SSA_NAME_VAR (name)) == PARM_DECL)
+	  && TREE_CODE (SSA_NAME_VAR (name)) == PARM_DECL
+	  && (base_var
+	      = adjustments->get_replacement_ssa_base (SSA_NAME_VAR (name))))
 	{
-	  for (j = 0; j < l; j++)
-	    if (SSA_NAME_VAR (name) == adjustments[j].base
-		&& adjustments[j].new_decl)
-	      {
-		tree base_var;
-		if (adjustments[j].new_ssa_base == NULL_TREE)
-		  {
-		    base_var
-		      = copy_var_decl (adjustments[j].base,
-				       DECL_NAME (adjustments[j].base),
-				       TREE_TYPE (adjustments[j].base));
-		    adjustments[j].new_ssa_base = base_var;
-		  }
-		else
-		  base_var = adjustments[j].new_ssa_base;
-		if (SSA_NAME_IS_DEFAULT_DEF (name))
-		  {
-		    bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-		    gimple_stmt_iterator gsi = gsi_after_labels (bb);
-		    tree new_decl = unshare_expr (adjustments[j].new_decl);
-		    set_ssa_default_def (cfun, adjustments[j].base, NULL_TREE);
-		    SET_SSA_NAME_VAR_OR_IDENTIFIER (name, base_var);
-		    SSA_NAME_IS_DEFAULT_DEF (name) = 0;
-		    gimple *stmt = gimple_build_assign (name, new_decl);
-		    gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
-		  }
-		else
-		  SET_SSA_NAME_VAR_OR_IDENTIFIER (name, base_var);
-	      }
+	  if (SSA_NAME_IS_DEFAULT_DEF (name))
+	    {
+	      tree old_decl = SSA_NAME_VAR (name);
+	      bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+	      gimple_stmt_iterator gsi = gsi_after_labels (bb);
+	      tree repl = adjustments->lookup_replacement (old_decl, 0);
+	      gcc_checking_assert (repl);
+	      repl = unshare_expr (repl);
+	      set_ssa_default_def (cfun, old_decl, NULL_TREE);
+	      SET_SSA_NAME_VAR_OR_IDENTIFIER (name, base_var);
+	      SSA_NAME_IS_DEFAULT_DEF (name) = 0;
+	      gimple *stmt = gimple_build_assign (name, repl);
+	      gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+	    }
+	  else
+	    SET_SSA_NAME_VAR_OR_IDENTIFIER (name, base_var);
 	}
     }
 
@@ -1162,8 +1172,9 @@ simd_clone_adjust (struct cgraph_node *node)
   targetm.simd_clone.adjust (node);
 
   tree retval = simd_clone_adjust_return_type (node);
-  ipa_parm_adjustment_vec adjustments
+  ipa_param_body_adjustments *adjustments
     = simd_clone_adjust_argument_types (node);
+  gcc_assert (adjustments);
 
   push_gimplify_context ();
 
@@ -1175,7 +1186,7 @@ simd_clone_adjust (struct cgraph_node *node)
   tree iter1 = make_ssa_name (iter);
   tree iter2 = NULL_TREE;
   ipa_simd_modify_function_body (node, adjustments, retval, iter1);
-  adjustments.release ();
+  delete adjustments;
 
   /* Initialize the iteration variable.  */
   basic_block entry_bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));

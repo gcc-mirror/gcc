@@ -1062,6 +1062,13 @@ DEFPARAM (PARAM_IPA_SRA_PTR_GROWTH_FACTOR,
 	  "that ipa-sra replaces a pointer to an aggregate with.",
 	  2, 0, 0)
 
+DEFPARAM (PARAM_IPA_SRA_MAX_REPLACEMENTS,
+	  "ipa-sra-max-replacements",
+	  "Maximum pieces that IPA-SRA tracks per formal parameter, as "
+	  "a consequence, also the maximum number of replacements of a formal "
+	  "parameter.",
+	  8, 0, 16)
+
 DEFPARAM (PARAM_TM_MAX_AGGREGATE_SIZE,
 	  "tm-max-aggregate-size",
 	  "Size in bytes after which thread-local aggregates should be "

@@ -1,3 +1,43 @@
+2019-09-20  Martin Jambor  <mjambor@suse.cz>
+
+        * g++.dg/ipa/pr81248.C: Adjust dg-options and dump-scan.
+        * gcc.dg/ipa/ipa-sra-1.c: Likewise.
+        * gcc.dg/ipa/ipa-sra-10.c: Likewise.
+        * gcc.dg/ipa/ipa-sra-11.c: Likewise.
+        * gcc.dg/ipa/ipa-sra-3.c: Likewise.
+        * gcc.dg/ipa/ipa-sra-4.c: Likewise.
+        * gcc.dg/ipa/ipa-sra-5.c: Likewise.
+        * gcc.dg/ipa/ipacost-2.c: Disable ipa-sra.
+        * gcc.dg/ipa/ipcp-agg-9.c: Likewise.
+        * gcc.dg/ipa/pr78121.c: Adjust scan pattern.
+        * gcc.dg/ipa/vrp1.c: Likewise.
+        * gcc.dg/ipa/vrp2.c: Likewise.
+        * gcc.dg/ipa/vrp3.c: Likewise.
+        * gcc.dg/ipa/vrp7.c: Likewise.
+        * gcc.dg/ipa/vrp8.c: Likewise.
+        * gcc.dg/noreorder.c: use noipa attribute instead of noinline.
+        * gcc.dg/ipa/20040703-wpa.c: New test.
+	* gcc.dg/ipa/ipa-sra-12.c: New test.
+	* gcc.dg/ipa/ipa-sra-13.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-14.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-15.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-16.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-17.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-18.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-19.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-20.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-21.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-22.c: Likewise.
+	* gcc.dg/sso/ipa-sra-1.c: Likewise.
+	* g++.dg/ipa/ipa-sra-2.C: Likewise.
+	* g++.dg/ipa/ipa-sra-3.C: Likewise.
+	* gcc.dg/tree-ssa/ipa-cp-1.c: Make return value used.
+	* g++.dg/ipa/devirt-19.C: Add missing return, add -fipa-cp-clone
+	option.
+	* g++.dg/lto/devirt-19_0.C: Add -fipa-cp-clone option.
+	* gcc.dg/ipa/ipa-sra-2.c: Removed.
+	* gcc.dg/ipa/ipa-sra-6.c: Likewise.
+
 2019-09-19  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/91631

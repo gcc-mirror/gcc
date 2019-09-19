@@ -2,7 +2,7 @@
    Previously we were failing by considering CLOBBER statement to be
    a type change.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-ipa-cp"  } */
+/* { dg-options "-O2 -fdump-ipa-cp -fipa-cp-clone"  } */
 /* { dg-additional-options "-Wno-return-type"  } */
 
 struct A {
@@ -23,9 +23,12 @@ public:
 
 C<int, int> b;
 template <typename T, typename M> const M &C<T, M>::m_fn2(const T &) {
+
   A a = _map.m_fn2();
   a == _map.m_fn1();
   m_fn1();
+  static M m;
+  return m;
 }
 
 void fn1() { b.m_fn2(0); }
