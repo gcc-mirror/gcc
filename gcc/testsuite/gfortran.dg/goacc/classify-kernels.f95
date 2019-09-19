@@ -15,8 +15,9 @@ program main
 
   call setup(a, b)
 
-  !$acc kernels copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1)) ! { dg-message "optimized: assigned OpenACC gang loop parallelism" }
-  do i = 0, n - 1
+  !$acc kernels copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1))
+  do i = 0, n - 1 ! { dg-message "optimized: assigned OpenACC gang loop parallelism" }
+                  ! { dg-message "optimized: beginning .parloops. region in OpenACC .kernels. construct" "" { target *-*-* } 19 }
      c(i) = a(i) + b(i)
   end do
   !$acc end kernels
