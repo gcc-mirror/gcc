@@ -1,3 +1,8 @@
+2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Restore_Private_Views): Comment out new code
+	that clear the Is_Generic_Actual_Type also on the full view.
+
 2019-09-19  Bob Duff  <duff@adacore.com>
 
 	* exp_ch3.adb (Rewrite_As_Renaming): Return False if there are
