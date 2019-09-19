@@ -1,5 +1,11 @@
 2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sem_ch12.adb (Instantiate_Package_Body): Check that the body
+	has not already been instantiated when the body of the parent
+	was being loaded.
+
+2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* sem_util.adb (In_Instance): Test whether the current unit has
 	been analyzed instead of being on the scope stack to detect the
 	case of actuals of an instantiation of a generic child unit done
