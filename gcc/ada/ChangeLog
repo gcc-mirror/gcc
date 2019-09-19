@@ -1,3 +1,11 @@
+2019-09-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch7.adb (Install_Parent_Private_Declarations): If a
+	generic child unit is instantiated within a sibling child unit,
+	the analysis of its private part requires that the private part
+	of the ancestor be available, as is done when the context
+	includes an instance of the ancestor.
+
 2019-09-19  Yannick Moy  <moy@adacore.com>
 
 	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Add special
