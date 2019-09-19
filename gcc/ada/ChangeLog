@@ -1,3 +1,8 @@
+2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Access_Type): If this is an access-
+	to-subprogram type, copy Can_Use_Internal_Rep from the parent.
+
 2019-09-19  Yannick Moy  <moy@adacore.com>
 
 	* gcc-interface/Make-lang.in: Remove references to sem_spark.
