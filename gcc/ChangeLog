@@ -1,3 +1,29 @@
+2019-09-18  Jim Wilson  <jimw@sifive.com>
+
+	PR target/91683
+	* config/riscv/riscv-protos.h (riscv_split_symbol): New bool parameter.
+	(riscv_move_integer): Likewise.
+	* config/riscv/riscv.c (riscv_split_integer): Pass FALSE for new
+	riscv_move_integer arg.
+	(riscv_legitimize_move): Likewise.
+	(riscv_force_temporary): New parameter in_splitter.  Don't call
+	force_reg if true.
+	(riscv_unspec_offset_high): Pass FALSE for new riscv_force_temporary
+	arg.
+	(riscv_add_offset): Likewise.
+	(riscv_split_symbol): New parameter in_splitter.  Pass to
+	riscv_force_temporary.
+	(riscv_legitimize_address): Pass FALSE for new riscv_split_symbol
+	arg.
+	(riscv_move_integer): New parameter in_splitter.  New local
+	can_create_psuedo.  Don't call riscv_split_integer or force_reg when
+	in_splitter TRUE.
+	(riscv_legitimize_const_move): Pass FALSE for new riscv_move_integer,
+	riscv_split_symbol, and riscv_force_temporary args.
+	* config/riscv/riscv.md (low<mode>+1): Pass TRUE for new
+	riscv_move_integer arg.
+	(low<mode>+2): Pass TRUE for new riscv_split_symbol arg.
+
 2019-09-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/90878
