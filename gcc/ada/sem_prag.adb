@@ -1272,13 +1272,7 @@ package body Sem_Prag is
             if Ekind_In (Item_Id, E_Constant,
                                   E_Generic_In_Parameter,
                                   E_In_Parameter)
-
-              --  If Item_Id is of a private type whose completion has not been
-              --  analyzed yet, its Underlying_Type is empty and we handle it
-              --  as a constant.
-
-              and then Present (Underlying_Type (Etype (Item_Id)))
-              and then Is_Access_Type (Underlying_Type (Etype (Item_Id)))
+              and then Is_Access_Type (Etype (Item_Id))
             then
                Adjusted_Kind := E_Variable;
             end if;

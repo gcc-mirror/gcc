@@ -1,3 +1,8 @@
+2019-09-19  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Depends_In_Decl_Part): Simplify previous
+	test.
+
 2019-09-19  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch7.adb (Install_Parent_Private_Declarations): If a
