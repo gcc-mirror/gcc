@@ -1,3 +1,9 @@
+2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Is_Inline_Floating_Point_Attribute): Treat
+	Machine_Rounding as an alias for Rounding.
+	* sem_res.adb (Simplify_Type_Conversion): Likewise.
+
 2019-09-19  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_unst.adb (Unnest_Subprogram): Bypass the transformation of
