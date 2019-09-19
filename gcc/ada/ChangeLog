@@ -1,3 +1,17 @@
+2019-09-19  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-socket.ads, libgnat/g-socket.adb
+	(Create_Socket_Pair): New routine.
+	* libgnat/g-socthi.ads (OS_Has_Socketpair): Boolean constant.
+	(C_Socketpair): New imported routine.
+	* libgnat/g-socthi__mingw.ads, libgnat/g-socthi__vxworks.ads
+	(Default_Socket_Pair_Family): New constant.
+	(C_Socketpair): New routine.
+	* libgnat/g-socthi__mingw.adb, libgnat/g-socthi__vxworks.adb
+	(C_Socketpair): Is separated in anouther file.
+	* libgnat/g-sthcso.adb (C_Socketpair): Non UNIX implementation.
+	* libgnat/g-stsifd__sockets.adb: Reuse C_Socketpair.
+
 2019-09-19  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb (Analyze_Depends_In_Decl_Part): Simplify previous
