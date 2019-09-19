@@ -14638,9 +14638,17 @@ package body Sem_Ch12 is
             else
                Set_Is_Generic_Actual_Type (E, False);
 
-               if Is_Private_Type (E) and then Present (Full_View (E)) then
-                  Set_Is_Generic_Actual_Type (Full_View (E), False);
-               end if;
+               --  It might seem reasonable to clear the Is_Generic_Actual_Type
+               --  flag also on the Full_View if the type is private, since it
+               --  was set also on this Full_View. However, this flag is relied
+               --  upon by Covers to spot "types exported from instantiations"
+               --  which are implicit Full_Views built for instantiations made
+               --  on private types and we get type mismatches if we do it when
+               --  the block exchanging the declarations below triggers ???
+
+               --  if Is_Private_Type (E) and then Present (Full_View (E)) then
+               --    Set_Is_Generic_Actual_Type (Full_View (E), False);
+               --  end if;
             end if;
 
             --  An unusual case of aliasing: the actual may also be directly
