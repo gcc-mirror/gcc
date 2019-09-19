@@ -1,5 +1,9 @@
 2019-09-19  Raphael Amiard  <amiard@adacore.com>
 
+	* libgnat/a-cfhase.ads (Set): Add comments to public primitives.
+
+2019-09-19  Raphael Amiard  <amiard@adacore.com>
+
 	* libgnat/a-cbhama.ads, libgnat/a-cbhase.ads,
 	libgnat/a-chtgop.ads (Clear): Refine comments
 
