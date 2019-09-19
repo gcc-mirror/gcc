@@ -668,10 +668,13 @@ scalar_chain::emit_conversion_insns (rtx insns, rtx_insn *after)
 static rtx
 gen_gpr_to_xmm_move_src (enum machine_mode vmode, rtx gpr)
 {
+  if (!nonimmediate_operand (gpr, GET_MODE_INNER (vmode)))
+    gpr = force_reg (GET_MODE_INNER (vmode), gpr);
   switch (GET_MODE_NUNITS (vmode))
     {
     case 1:
-      return gen_rtx_SUBREG (vmode, gpr, 0);
+      /* We are not using this case currently.  */
+      gcc_unreachable ();
     case 2:
       return gen_rtx_VEC_CONCAT (vmode, gpr,
 				 CONST0_RTX (GET_MODE_INNER (vmode)));
