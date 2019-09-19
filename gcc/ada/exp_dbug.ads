@@ -460,10 +460,6 @@ package Exp_Dbug is
    -- Subprograms for Handling Qualification --
    --------------------------------------------
 
-   function Get_Homonym_Number (E : Entity_Id) return Pos;
-   --  Return the homonym number for E, which is its position in the homonym
-   --  chain starting at 1. This is exported for use in GNATprove.
-
    procedure Qualify_Entity_Names (N : Node_Id);
    --  Given a node N, that represents a block, subprogram body, or package
    --  body or spec, or protected or task type, sets a fully qualified name

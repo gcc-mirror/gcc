@@ -33,7 +33,6 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Erroutc;  use Erroutc;
 with Exp_Ch11; use Exp_Ch11;
-with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
@@ -26314,7 +26313,7 @@ package body Sem_Util is
 
          if Has_Homonym (U) then
             declare
-               N : constant Pos := Get_Homonym_Number (U);
+               N : constant Pos := Homonym_Number (U);
                S : constant String := N'Img;
             begin
                if N > 1 then

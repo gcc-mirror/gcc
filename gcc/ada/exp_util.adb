@@ -6795,13 +6795,11 @@ package body Exp_Util is
    -- Homonym_Number --
    --------------------
 
-   function Homonym_Number (Subp : Entity_Id) return Nat is
-      Count : Nat;
-      Hom   : Entity_Id;
+   function Homonym_Number (Subp : Entity_Id) return Pos is
+      Hom   : Entity_Id := Homonym (Subp);
+      Count : Pos := 1;
 
    begin
-      Count := 1;
-      Hom := Homonym (Subp);
       while Present (Hom) loop
          if Scope (Hom) = Scope (Subp) then
             Count := Count + 1;

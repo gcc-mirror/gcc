@@ -1,3 +1,14 @@
+2019-09-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_dbug.ads, exp_dbug.adb (Get_Homonym_Number): Remove.
+	(Append_Homonym_Number): Use Homonym_Number instead of
+	Get_Homonym_Number.
+	* exp_util.ads, exp_util.adb (Homonym_Number): Mirror style of
+	the removed Get_Homonym_Number routine, i.e. initialize local
+	objects at declaration and refine the type of result.
+	* sem_util.adb (Add_Homonym_Suffix): Use Homonym_Number instead
+	of Get_Homonym_Number.
+
 2019-09-19  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations): Simplify
