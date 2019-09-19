@@ -13085,6 +13085,56 @@ package body Sem_Prag is
             Expr    : Node_Id;
             Nam_Arg : Node_Id;
 
+            --------------------------
+            -- Inferred_String_Type --
+            --------------------------
+
+            function Preferred_String_Type (Expr : Node_Id) return Entity_Id;
+            --  Infer the type to use for a string literal or a concatentation
+            --  of operands whose types can be inferred. For such expressions,
+            --  returns the "narrowest" of the three predefined string types
+            --  that can represent the characters occuring in the expression.
+            --  For other expressions, returns Empty.
+
+            function Preferred_String_Type (Expr : Node_Id) return Entity_Id is
+            begin
+               case Nkind (Expr) is
+                  when N_String_Literal =>
+                     if Has_Wide_Wide_Character (Expr) then
+                        return Standard_Wide_Wide_String;
+                     elsif Has_Wide_Character (Expr) then
+                        return Standard_Wide_String;
+                     else
+                        return Standard_String;
+                     end if;
+
+                  when N_Op_Concat =>
+                     declare
+                        L_Type : constant Entity_Id
+                          := Preferred_String_Type (Left_Opnd (Expr));
+                        R_Type : constant Entity_Id
+                          := Preferred_String_Type (Right_Opnd (Expr));
+
+                        Type_Table : constant array (1 .. 4) of Entity_Id
+                          := (Empty,
+                              Standard_Wide_Wide_String,
+                              Standard_Wide_String,
+                              Standard_String);
+                     begin
+                        for Idx in Type_Table'Range loop
+                           if (L_Type = Type_Table (Idx)) or
+                              (R_Type = Type_Table (Idx))
+                           then
+                              return Type_Table (Idx);
+                           end if;
+                        end loop;
+                        raise Program_Error;
+                     end;
+
+                  when others =>
+                     return Empty;
+               end case;
+            end Preferred_String_Type;
          begin
             GNAT_Pragma;
             Check_At_Least_N_Arguments (1);
@@ -13144,18 +13194,12 @@ package body Sem_Prag is
                   if Is_Entity_Name (Expr) then
                      null;
 
-                  --  For string literals, we assume Standard_String as the
-                  --  type, unless the string contains wide or wide_wide
-                  --  characters.
+                  --  For string literals and concatenations of string literals
+                  --  we assume Standard_String as the type, unless the string
+                  --  contains wide or wide_wide characters.
 
-                  elsif Nkind (Expr) = N_String_Literal then
-                     if Has_Wide_Wide_Character (Expr) then
-                        Resolve (Expr, Standard_Wide_Wide_String);
-                     elsif Has_Wide_Character (Expr) then
-                        Resolve (Expr, Standard_Wide_String);
-                     else
-                        Resolve (Expr, Standard_String);
-                     end if;
+                  elsif Present (Preferred_String_Type (Expr)) then
+                     Resolve (Expr, Preferred_String_Type (Expr));
 
                   elsif Is_Overloaded (Expr) then
                      Error_Pragma_Arg ("ambiguous argument for pragma%", Expr);
