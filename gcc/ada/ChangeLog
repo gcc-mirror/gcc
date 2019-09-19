@@ -1,5 +1,11 @@
 2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* exp_util.adb (Is_Possibly_Unaligned_Slice): Do not return true
+	on pure alignment considerations if the target does not require
+	the strict alignment of memory accesses.
+
+2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* sem_ch12.adb (Check_Private_View): Add a comment to indicate
 	future work.
 
