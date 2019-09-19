@@ -1,3 +1,16 @@
+2019-09-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vectorizable_condition): Take an int
+	reduction index instead of a boolean flag.
+	* tree-vect-stmts.c (vectorizable_condition): Likewise.
+	Swap the "then" and "else" values for EXTRACT_LAST_REDUCTION
+	reductions if the reduction accumulator is the "then" rather
+	than the "else" value.
+	(vect_analyze_stmt): Update call accordingly.
+	(vect_transform_stmt): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): Likewise,
+	asserting that the index is > 0.
+
 2019-09-19  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf.c (sort_sem_items_by_decl_uid): Simplify comparator.

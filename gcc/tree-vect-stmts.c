@@ -9778,7 +9778,7 @@ vect_is_simple_cond (tree cond, vec_info *vinfo,
 
 bool
 vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
-			stmt_vec_info *vec_stmt, bool for_reduction,
+			stmt_vec_info *vec_stmt, int reduc_index,
 			slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {
   vec_info *vinfo = stmt_info->vinfo;
@@ -9807,6 +9807,7 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   vec<tree> vec_oprnds3 = vNULL;
   tree vec_cmp_type;
   bool masked = false;
+  bool for_reduction = (reduc_index > 0);
 
   if (for_reduction && STMT_SLP_TYPE (stmt_info))
     return false;
@@ -9886,6 +9887,29 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     {
       cond_expr0 = TREE_OPERAND (cond_expr, 0);
       cond_expr1 = TREE_OPERAND (cond_expr, 1);
+    }
+
+  /* For conditional reductions, the "then" value needs to be the candidate
+     value calculated by this iteration while the "else" value needs to be
+     the result carried over from previous iterations.  If the COND_EXPR
+     is the other way around, we need to swap it.  */
+  bool must_invert_cmp_result = false;
+  if (reduction_type == EXTRACT_LAST_REDUCTION && reduc_index == 1)
+    {
+      if (masked)
+	must_invert_cmp_result = true;
+      else
+	{
+	  bool honor_nans = HONOR_NANS (TREE_TYPE (cond_expr0));
+	  tree_code new_code = invert_tree_comparison (cond_code, honor_nans);
+	  if (new_code == ERROR_MARK)
+	    must_invert_cmp_result = true;
+	  else
+	    cond_code = new_code;
+	}
+      /* Make sure we don't accidentally use the old condition.  */
+      cond_expr = NULL_TREE;
+      std::swap (then_clause, else_clause);
     }
 
   if (!masked && VECTOR_BOOLEAN_TYPE_P (comp_vectype))
@@ -10098,6 +10122,15 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		{
 		  tree vec_compare_name = make_ssa_name (vec_cmp_type);
 		  gassign *new_stmt = gimple_build_assign (vec_compare_name,
+							   vec_compare);
+		  vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
+		  vec_compare = vec_compare_name;
+		}
+	      if (must_invert_cmp_result)
+		{
+		  tree vec_compare_name = make_ssa_name (vec_cmp_type);
+		  gassign *new_stmt = gimple_build_assign (vec_compare_name,
+							   BIT_NOT_EXPR,
 							   vec_compare);
 		  vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
 		  vec_compare = vec_compare_name;
@@ -10635,7 +10668,7 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 				     node_instance, cost_vec)
 	  || vectorizable_induction (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_shift (stmt_info, NULL, NULL, node, cost_vec)
-	  || vectorizable_condition (stmt_info, NULL, NULL, false, node,
+	  || vectorizable_condition (stmt_info, NULL, NULL, 0, node,
 				     cost_vec)
 	  || vectorizable_comparison (stmt_info, NULL, NULL, node,
 				      cost_vec));
@@ -10654,7 +10687,7 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 	      || vectorizable_load (stmt_info, NULL, NULL, node, node_instance,
 				    cost_vec)
 	      || vectorizable_store (stmt_info, NULL, NULL, node, cost_vec)
-	      || vectorizable_condition (stmt_info, NULL, NULL, false, node,
+	      || vectorizable_condition (stmt_info, NULL, NULL, 0, node,
 					 cost_vec)
 	      || vectorizable_comparison (stmt_info, NULL, NULL, node,
 					  cost_vec));
@@ -10759,7 +10792,7 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       break;
 
     case condition_vec_info_type:
-      done = vectorizable_condition (stmt_info, gsi, &vec_stmt, false,
+      done = vectorizable_condition (stmt_info, gsi, &vec_stmt, 0,
 				     slp_node, NULL);
       gcc_assert (done);
       break;
