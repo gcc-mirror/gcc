@@ -1,3 +1,11 @@
+2019-09-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Add
+	one dg-message for additional -fopt-info-optimized-omp output.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-1.f95: Change 'note' to
+	'optimized' in dg-message.
+
 2019-09-17  Julian Brown  <julian@codesourcery.com>
 
 	* c-c++-common/goacc/classify-kernels-unparallelized.c: Update expected
