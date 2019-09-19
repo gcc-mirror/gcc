@@ -287,9 +287,6 @@
 
 (define_code_attr vfml_op [(plus "a") (minus "s")])
 
-(define_code_attr logical_op [(ior "ior") (xor "xor") (and "and")])
-(define_code_attr logical_OP [(ior "IOR") (xor "XOR") (and "AND")])
-
 ;;----------------------------------------------------------------------------
 ;; Int iterators
 ;;----------------------------------------------------------------------------
@@ -797,7 +794,14 @@
                 (umax "u")])
 
 (define_code_attr cnb [(ltu "CC_C") (geu "CC")])
-(define_code_attr optab [(ltu "ltu") (geu "geu")])
+
+;; Map rtl operator codes to optab names
+(define_code_attr optab
+ [(ltu "ltu")
+  (geu "geu")
+  (and "and")
+  (ior "ior")
+  (xor "xor")])
 
 ;; Assembler mnemonics for signedness of widening operations.
 (define_code_attr US [(sign_extend "s") (zero_extend "u")])

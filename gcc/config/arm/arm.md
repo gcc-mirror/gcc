@@ -2039,16 +2039,16 @@
 ; operands or complex immediates, which leads to fewer LDRD/STRD instructions.
 ; So an explicit expander is needed to generate better code.
 
-(define_expand "<logical_op>di3"
+(define_expand "<LOGICAL:optab>di3"
   [(set (match_operand:DI	  0 "s_register_operand")
 	(LOGICAL:DI (match_operand:DI 1 "s_register_operand")
-		    (match_operand:DI 2 "arm_<logical_op>di_operand")))]
+		    (match_operand:DI 2 "arm_<optab>di_operand")))]
   "TARGET_32BIT"
   {
-      rtx low  = simplify_gen_binary (<logical_OP>, SImode,
+      rtx low  = simplify_gen_binary (<CODE>, SImode,
 				      gen_lowpart (SImode, operands[1]),
 				      gen_lowpart (SImode, operands[2]));
-      rtx high = simplify_gen_binary (<logical_OP>, SImode,
+      rtx high = simplify_gen_binary (<CODE>, SImode,
 				      gen_highpart (SImode, operands[1]),
 				      gen_highpart_mode (SImode, DImode,
 							 operands[2]));
