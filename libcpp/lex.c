@@ -1313,7 +1313,9 @@ warn_about_normalization (cpp_reader *pfile,
     }
 }
 
-/* Returns TRUE if the sequence starting at buffer->cur is invalid in
+static const cppchar_t utf8_signifier = 0xC0;
+
+/* Returns TRUE if the sequence starting at buffer->cur is valid in
    an identifier.  FIRST is TRUE if this starts an identifier.  */
 static bool
 forms_identifier_p (cpp_reader *pfile, int first,
@@ -1336,17 +1338,25 @@ forms_identifier_p (cpp_reader *pfile, int first,
       return true;
     }
 
-  /* Is this a syntactically valid UCN?  */
-  if (CPP_OPTION (pfile, extended_identifiers)
-      && *buffer->cur == '\\'
-      && (buffer->cur[1] == 'u' || buffer->cur[1] == 'U'))
+  /* Is this a syntactically valid UCN or a valid UTF-8 char?  */
+  if (CPP_OPTION (pfile, extended_identifiers))
     {
       cppchar_t s;
-      buffer->cur += 2;
-      if (_cpp_valid_ucn (pfile, &buffer->cur, buffer->rlimit, 1 + !first,
-			  state, &s, NULL, NULL))
-	return true;
-      buffer->cur -= 2;
+      if (*buffer->cur >= utf8_signifier)
+	{
+	  if (_cpp_valid_utf8 (pfile, &buffer->cur, buffer->rlimit, 1 + !first,
+			       state, &s))
+	    return true;
+	}
+      else if (*buffer->cur == '\\'
+	       && (buffer->cur[1] == 'u' || buffer->cur[1] == 'U'))
+	{
+	  buffer->cur += 2;
+	  if (_cpp_valid_ucn (pfile, &buffer->cur, buffer->rlimit, 1 + !first,
+			      state, &s, NULL, NULL))
+	    return true;
+	  buffer->cur -= 2;
+	}
     }
 
   return false;
@@ -1464,7 +1474,8 @@ lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
   pfile->buffer->cur = cur;
   if (starts_ucn || forms_identifier_p (pfile, false, nst))
     {
-      /* Slower version for identifiers containing UCNs (or $).  */
+      /* Slower version for identifiers containing UCNs
+	 or extended chars (including $).  */
       do {
 	while (ISIDNUM (*pfile->buffer->cur))
 	  {
@@ -3123,12 +3134,12 @@ _cpp_lex_direct (cpp_reader *pfile)
       /* @ is a punctuator in Objective-C.  */
     case '@': result->type = CPP_ATSIGN; break;
 
-    case '$':
-    case '\\':
+    default:
       {
 	const uchar *base = --buffer->cur;
-	struct normalize_state nst = INITIAL_NORMALIZE_STATE;
 
+	/* Check for an extended identifier ($ or UCN or UTF-8).  */
+	struct normalize_state nst = INITIAL_NORMALIZE_STATE;
 	if (forms_identifier_p (pfile, true, &nst))
 	  {
 	    result->type = CPP_NAME;
@@ -3137,13 +3148,21 @@ _cpp_lex_direct (cpp_reader *pfile)
 	    warn_about_normalization (pfile, result, &nst);
 	    break;
 	  }
-	buffer->cur++;
-      }
-      /* FALLTHRU */
 
-    default:
-      create_literal (pfile, result, buffer->cur - 1, 1, CPP_OTHER);
-      break;
+	/* Otherwise this will form a CPP_OTHER token.  Parse valid UTF-8 as a
+	   single token.  */
+	buffer->cur++;
+	if (c >= utf8_signifier)
+	  {
+	    const uchar *pstr = base;
+	    cppchar_t s;
+	    if (_cpp_valid_utf8 (pfile, &pstr, buffer->rlimit, 0, NULL, &s))
+	      buffer->cur = pstr;
+	  }
+	create_literal (pfile, result, base, buffer->cur - base, CPP_OTHER);
+	break;
+      }
+
     }
 
   /* Potentially convert the location of the token to a range.  */
