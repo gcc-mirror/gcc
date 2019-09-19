@@ -1,3 +1,11 @@
+2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Add_Simple_Call_By_Copy_Code): Add
+	Bit_Packed_Array parameter and documet it. Always insert a copy
+	if it is set True.
+	(Expand_Actuals): Adjust the calls to
+	Add_Simple_Call_By_Copy_Code.
+
 2019-09-19  Bob Duff  <duff@adacore.com>
 
 	* xref_lib.adb (Get_Symbol_Name): If we reach EOF in the first
