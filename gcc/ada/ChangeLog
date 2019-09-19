@@ -1,3 +1,9 @@
+2019-09-19  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute): Make sure the secondary
+	stack is properly managed in the case of a 'Range attribute in a
+	loop.
+
 2019-09-19  Raphael Amiard  <amiard@adacore.com>
 
 	* libgnat/a-cfhase.ads (Set): Add comments to public primitives.
