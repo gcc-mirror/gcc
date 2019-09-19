@@ -9270,11 +9270,14 @@ trees_in::key_mergeable (tree decl, tree inner, tree,
 }
 
 /* DECL is a just streamed mergeable decl that should match EXISTING.  Check
-   it does and issue an appropriate diagnostic if not.  */
+   it does and issue an appropriate diagnostic if not.  Merge any
+   bits from DECL to EXISTING.  */
 
 bool
 trees_in::is_matching_decl (tree existing, tree decl)
 {
+  // FIXME: We should probably do some duplicate decl-like stuff here
+  // (beware, default parms should be the same?)
   // FIXME: Inhibit TYPENAME_TYPE resolution, all the way down!
   if (!comptypes (TREE_TYPE (existing), TREE_TYPE (decl),
 		  COMPARE_STRUCTURAL))
@@ -9285,6 +9288,12 @@ trees_in::is_matching_decl (tree existing, tree decl)
 	      "existing declaration %#qD", existing);
       return false;
     }
+
+  if ((TREE_CODE (decl) == VAR_DECL
+       || TREE_CODE (decl) == FUNCTION_DECL)
+      && DECL_TEMPLATE_INSTANTIATED (decl))
+    /* Don't instantiate again!  */
+    DECL_TEMPLATE_INSTANTIATED (existing) = true;
 
   return true;
 }
@@ -13718,14 +13727,18 @@ module_state::read_cluster (unsigned snum)
     }
 
   /* When lazy loading is in effect, we can be in the middle of
-     parsing or instantiating a function.  Save it away.  */
+     parsing or instantiating a function.  Save it away.
+     push_function_context does too much work.   */
   tree old_cfd = current_function_decl;
   struct function *old_cfun = cfun;
   while (tree decl = sec.post_process ())
     {
-      bool abstract = TREE_CODE (decl) == TEMPLATE_DECL;
-      if (abstract)
-	decl = DECL_TEMPLATE_RESULT (decl);
+      bool abstract = false;
+      if (TREE_CODE (decl) == TEMPLATE_DECL)
+	{
+	  abstract = true;
+	  decl = DECL_TEMPLATE_RESULT (decl);
+	}
 
       current_function_decl = decl;
       allocate_struct_function (decl, abstract);
@@ -13740,7 +13753,7 @@ module_state::read_cluster (unsigned snum)
 	  cgraph_node::finalize_function (decl, true);
 	}
     }
-  set_cfun (old_cfun);
+  cfun = old_cfun;
   current_function_decl = old_cfd;
 
   dump.outdent ();

@@ -1,6 +1,12 @@
 2019-09-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_in::is_matching_decl): Copy
+	DECL_TEMPLATE_INSTANTIATED.
+	gcc/testsuite/
+	* g++.dg/modules/inst-5_[ab].[CH]: New.
+
+	gcc/cp/
 	* module.cc (trees_in::mergeables): Vec of intptr_t.
 	(trees_in::register_mergeable): Return index.
 	(trees_in::unmatched_mergeable): New.
