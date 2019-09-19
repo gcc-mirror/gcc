@@ -3373,9 +3373,9 @@ static int
 sort_congruence_class_groups_by_decl_uid (const void *a, const void *b)
 {
   const std::pair<congruence_class_group *, int> *g1
-    = *(const std::pair<congruence_class_group *, int> *const *) a;
+    = (const std::pair<congruence_class_group *, int> *) a;
   const std::pair<congruence_class_group *, int> *g2
-    = *(const std::pair<congruence_class_group *, int> *const *) b;
+    = (const std::pair<congruence_class_group *, int> *) b;
   return g1->second - g2->second;
 }
 
