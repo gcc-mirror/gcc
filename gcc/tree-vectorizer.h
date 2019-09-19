@@ -528,12 +528,6 @@ public:
      we need to peel off iterations at the end to form an epilogue loop.  */
   bool peeling_for_niter;
 
-  /* Reductions are canonicalized so that the last operand is the reduction
-     operand.  If this places a constant into RHS1, this decanonicalizes
-     GIMPLE for other phases, so we must track when this has occurred and
-     fix it up.  */
-  bool operands_swapped;
-
   /* True if there are no loop carried data dependencies in the loop.
      If loop->safelen <= 1, then this is always true, either the loop
      didn't have any loop carried data dependencies, or the loop is being
@@ -610,7 +604,6 @@ public:
 #define LOOP_VINFO_REDUCTION_CHAINS(L)     (L)->reduction_chains
 #define LOOP_VINFO_TARGET_COST_DATA(L)     (L)->target_cost_data
 #define LOOP_VINFO_PEELING_FOR_GAPS(L)     (L)->peeling_for_gaps
-#define LOOP_VINFO_OPERANDS_SWAPPED(L)     (L)->operands_swapped
 #define LOOP_VINFO_PEELING_FOR_NITER(L)    (L)->peeling_for_niter
 #define LOOP_VINFO_NO_DATA_DEPENDENCIES(L) (L)->no_data_dependencies
 #define LOOP_VINFO_SCALAR_LOOP(L)	   (L)->scalar_loop

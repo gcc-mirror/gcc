@@ -347,9 +347,6 @@ parloops_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
 				 gimple_assign_rhs1_ptr (next_stmt),
                                  gimple_assign_rhs2_ptr (next_stmt));
 	      update_stmt (next_stmt);
-
-	      if (CONSTANT_CLASS_P (gimple_assign_rhs1 (next_stmt)))
-		LOOP_VINFO_OPERANDS_SWAPPED (loop_info) = true;
 	    }
 	  else
 	    return false;
@@ -831,9 +828,6 @@ parloops_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 	  if (dump_enabled_p ())
 	    report_ploop_op (MSG_NOTE, def_stmt,
 			     "detected reduction: need to swap operands: ");
-
-	  if (CONSTANT_CLASS_P (gimple_assign_rhs1 (def_stmt)))
-	    LOOP_VINFO_OPERANDS_SWAPPED (loop_info) = true;
         }
       else
         {

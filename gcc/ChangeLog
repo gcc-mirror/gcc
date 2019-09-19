@@ -1,3 +1,15 @@
+2019-09-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-parloops.c (parloops_is_slp_reduction): Do not set
+	LOOP_VINFO_OPERANDS_SWAPPED.
+	(parloops_is_simple_reduction): Likewise.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Do not
+	initialize operands_swapped.
+	(_loop_vec_info::~_loop_vec_info): Do not re-canonicalize stmts.
+	(vect_is_slp_reduction): Do not swap operands.
+	* tree-vectorizer.h (_loop_vec_info::operands_swapped): Remove.
+	(LOOP_VINFO_OPERANDS_SWAPPED): Likewise.
+
 2019-09-19  Hongtao Liu <hongtao.liu@intel.com>
 
 	PR target/87007

@@ -832,7 +832,6 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     fully_masked_p (false),
     peeling_for_gaps (false),
     peeling_for_niter (false),
-    operands_swapped (false),
     no_data_dependencies (false),
     has_mask_store (false),
     scalar_loop_scaling (profile_probability::uninitialized ()),
@@ -906,57 +905,6 @@ release_vec_loop_masks (vec_loop_masks *masks)
 
 _loop_vec_info::~_loop_vec_info ()
 {
-  int nbbs;
-  gimple_stmt_iterator si;
-  int j;
-
-  nbbs = loop->num_nodes;
-  for (j = 0; j < nbbs; j++)
-    {
-      basic_block bb = bbs[j];
-      for (si = gsi_start_bb (bb); !gsi_end_p (si); )
-        {
-	  gimple *stmt = gsi_stmt (si);
-
-	  /* We may have broken canonical form by moving a constant
-	     into RHS1 of a commutative op.  Fix such occurrences.  */
-	  if (operands_swapped && is_gimple_assign (stmt))
-	    {
-	      enum tree_code code = gimple_assign_rhs_code (stmt);
-
-	      if ((code == PLUS_EXPR
-		   || code == POINTER_PLUS_EXPR
-		   || code == MULT_EXPR)
-		  && CONSTANT_CLASS_P (gimple_assign_rhs1 (stmt)))
-		swap_ssa_operands (stmt,
-				   gimple_assign_rhs1_ptr (stmt),
-				   gimple_assign_rhs2_ptr (stmt));
-	      else if (code == COND_EXPR
-		       && CONSTANT_CLASS_P (gimple_assign_rhs2 (stmt)))
-		{
-		  tree cond_expr = gimple_assign_rhs1 (stmt);
-		  enum tree_code cond_code = TREE_CODE (cond_expr);
-
-		  if (TREE_CODE_CLASS (cond_code) == tcc_comparison)
-		    {
-		      bool honor_nans = HONOR_NANS (TREE_OPERAND (cond_expr,
-								  0));
-		      cond_code = invert_tree_comparison (cond_code,
-							  honor_nans);
-		      if (cond_code != ERROR_MARK)
-			{
-			  TREE_SET_CODE (cond_expr, cond_code);
-			  swap_ssa_operands (stmt,
-					     gimple_assign_rhs2_ptr (stmt),
-					     gimple_assign_rhs3_ptr (stmt));
-			}
-		    }
-		}
-	    }
-          gsi_next (&si);
-        }
-    }
-
   free (bbs);
 
   release_vec_loop_masks (&masks);
@@ -2715,7 +2663,8 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
 	}
       else
 	{
-          tree op = gimple_assign_rhs2 (next_stmt);
+	  gcc_assert (gimple_assign_rhs1 (next_stmt) == lhs);
+	  tree op = gimple_assign_rhs2 (next_stmt);
 	  stmt_vec_info def_stmt_info = loop_info->lookup_def (op);
 
           /* Check that the other def is either defined in the loop
@@ -2725,23 +2674,12 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
 	      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt_info->stmt))
 	      && vect_valid_reduction_input_p (def_stmt_info))
   	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location, "swapping oprnds: %G",
-				 next_stmt);
-
-	      swap_ssa_operands (next_stmt,
-	 		         gimple_assign_rhs1_ptr (next_stmt),
-                                 gimple_assign_rhs2_ptr (next_stmt));
-	      update_stmt (next_stmt);
-
-	      if (CONSTANT_CLASS_P (gimple_assign_rhs1 (next_stmt)))
-		LOOP_VINFO_OPERANDS_SWAPPED (loop_info) = true;
+	      lhs = gimple_assign_lhs (next_stmt);
+	      continue;
 	    }
-	  else
-	    return false;
-        }
 
-      lhs = gimple_assign_lhs (next_stmt);
+	  return false;
+        }
     }
 
   /* Build up the actual chain.  */
