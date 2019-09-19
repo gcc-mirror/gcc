@@ -1,3 +1,10 @@
+2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Array_Equality): If optimization is
+	enabled, generate a simple conjunction of comparisons for the
+	specific case of constrained 1-dimensional 2-element arrays.
+	Fix formatting.
+
 2019-09-19  Piotr Trojanek  <trojanek@adacore.com>
 
 	* exp_dbug.ads, exp_dbug.adb (Get_Homonym_Number): Remove.
