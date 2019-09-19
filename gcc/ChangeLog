@@ -1,3 +1,9 @@
+2019-09-19  Hongtao Liu <hongtao.liu@intel.com>
+
+	PR target/87007
+	* config/i386.md (*floatuns<SWI48:mode><MODEF:mode>2_avx512):
+	Add avx_partial_xmm_update.
+
 2019-09-18  Jim Wilson  <jimw@sifive.com>
 
 	PR target/91683

@@ -1,3 +1,8 @@
+2019-09-19  Hongtao Liu <hongtao.liu@intel.com>
+
+	PR target/87007
+	* gcc.target/i386/pr87007-3.c: New test.
+
 2019-09-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/90878
