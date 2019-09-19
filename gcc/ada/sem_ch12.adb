@@ -7478,6 +7478,11 @@ package body Sem_Ch12 is
                end loop;
             end;
 
+         --  The following case does not test Has_Private_View (N) so it may
+         --  end up switching views when they are not supposed to be switched.
+         --  This might be in keeping with Set_Global_Type setting the flag
+         --  for an array type even if it is not private ???
+
          elsif Is_Private_Type (T)
            and then Present (Full_View (T))
            and then Is_Array_Type (Full_View (T))

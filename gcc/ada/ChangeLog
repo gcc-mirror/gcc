@@ -1,5 +1,10 @@
 2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sem_ch12.adb (Check_Private_View): Add a comment to indicate
+	future work.
+
+2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* exp_aggr.adb (Has_Mutable_Components): Look at the underlying
 	type of components to find out whether they are mutable.
 
