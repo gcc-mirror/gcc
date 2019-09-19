@@ -29,6 +29,9 @@
 ;; Iterator for HI, SI, DI, some instructions can only work on these modes.
 (define_mode_iterator GPI_I16 [(HI "AARCH64_ISA_F16") SI DI])
 
+;; "Iterator" for just TI -- features like @pattern only work with iterators.
+(define_mode_iterator JUST_TI [TI])
+
 ;; Iterator for QI and HI modes
 (define_mode_iterator SHORT [QI HI])
 
