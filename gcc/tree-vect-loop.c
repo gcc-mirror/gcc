@@ -2541,163 +2541,6 @@ vect_valid_reduction_input_p (stmt_vec_info def_stmt_info)
 	      && !is_loop_header_bb_p (gimple_bb (def_stmt_info->stmt))));
 }
 
-/* Detect SLP reduction of the form:
-
-   #a1 = phi <a5, a0>
-   a2 = operation (a1)
-   a3 = operation (a2)
-   a4 = operation (a3)
-   a5 = operation (a4)
-
-   #a = phi <a5>
-
-   PHI is the reduction phi node (#a1 = phi <a5, a0> above)
-   FIRST_STMT is the first reduction stmt in the chain
-   (a2 = operation (a1)).
-
-   Return TRUE if a reduction chain was detected.  */
-
-static bool
-vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
-		       gimple *first_stmt)
-{
-  class loop *loop = (gimple_bb (phi))->loop_father;
-  class loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
-  enum tree_code code;
-  gimple *loop_use_stmt = NULL;
-  stmt_vec_info use_stmt_info;
-  tree lhs;
-  imm_use_iterator imm_iter;
-  use_operand_p use_p;
-  int nloop_uses, size = 0, n_out_of_loop_uses;
-  bool found = false;
-
-  if (loop != vect_loop)
-    return false;
-
-  auto_vec<stmt_vec_info, 8> reduc_chain;
-  lhs = PHI_RESULT (phi);
-  code = gimple_assign_rhs_code (first_stmt);
-  while (1)
-    {
-      nloop_uses = 0;
-      n_out_of_loop_uses = 0;
-      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
-        {
-	  gimple *use_stmt = USE_STMT (use_p);
-	  if (is_gimple_debug (use_stmt))
-	    continue;
-
-          /* Check if we got back to the reduction phi.  */
-	  if (use_stmt == phi)
-            {
-	      loop_use_stmt = use_stmt;
-              found = true;
-              break;
-            }
-
-          if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
-            {
-	      loop_use_stmt = use_stmt;
-	      nloop_uses++;
-            }
-           else
-             n_out_of_loop_uses++;
-
-           /* There are can be either a single use in the loop or two uses in
-              phi nodes.  */
-           if (nloop_uses > 1 || (n_out_of_loop_uses && nloop_uses))
-             return false;
-        }
-
-      if (found)
-        break;
-
-      /* We reached a statement with no loop uses.  */
-      if (nloop_uses == 0)
-	return false;
-
-      /* This is a loop exit phi, and we haven't reached the reduction phi.  */
-      if (gimple_code (loop_use_stmt) == GIMPLE_PHI)
-        return false;
-
-      if (!is_gimple_assign (loop_use_stmt)
-	  || code != gimple_assign_rhs_code (loop_use_stmt)
-	  || !flow_bb_inside_loop_p (loop, gimple_bb (loop_use_stmt)))
-        return false;
-
-      /* Insert USE_STMT into reduction chain.  */
-      use_stmt_info = loop_info->lookup_stmt (loop_use_stmt);
-      reduc_chain.safe_push (use_stmt_info);
-
-      lhs = gimple_assign_lhs (loop_use_stmt);
-      size++;
-   }
-
-  if (!found || loop_use_stmt != phi || size < 2)
-    return false;
-
-  /* Swap the operands, if needed, to make the reduction operand be the second
-     operand.  */
-  lhs = PHI_RESULT (phi);
-  for (unsigned i = 0; i < reduc_chain.length (); ++i)
-    {
-      gassign *next_stmt = as_a <gassign *> (reduc_chain[i]->stmt);
-      if (gimple_assign_rhs2 (next_stmt) == lhs)
-	{
-	  tree op = gimple_assign_rhs1 (next_stmt);
-	  stmt_vec_info def_stmt_info = loop_info->lookup_def (op);
-
-	  /* Check that the other def is either defined in the loop
-	     ("vect_internal_def"), or it's an induction (defined by a
-	     loop-header phi-node).  */
-	  if (def_stmt_info
-	      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt_info->stmt))
-	      && vect_valid_reduction_input_p (def_stmt_info))
-	    {
-	      lhs = gimple_assign_lhs (next_stmt);
- 	      continue;
-	    }
-
-	  return false;
-	}
-      else
-	{
-	  gcc_assert (gimple_assign_rhs1 (next_stmt) == lhs);
-	  tree op = gimple_assign_rhs2 (next_stmt);
-	  stmt_vec_info def_stmt_info = loop_info->lookup_def (op);
-
-          /* Check that the other def is either defined in the loop
-            ("vect_internal_def"), or it's an induction (defined by a
-            loop-header phi-node).  */
-	  if (def_stmt_info
-	      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt_info->stmt))
-	      && vect_valid_reduction_input_p (def_stmt_info))
-  	    {
-	      lhs = gimple_assign_lhs (next_stmt);
-	      continue;
-	    }
-
-	  return false;
-        }
-    }
-
-  /* Build up the actual chain.  */
-  for (unsigned i = 0; i < reduc_chain.length () - 1; ++i)
-    {
-      REDUC_GROUP_FIRST_ELEMENT (reduc_chain[i]) = reduc_chain[0];
-      REDUC_GROUP_NEXT_ELEMENT (reduc_chain[i]) = reduc_chain[i+1];
-    }
-  REDUC_GROUP_FIRST_ELEMENT (reduc_chain.last ()) = reduc_chain[0];
-  REDUC_GROUP_NEXT_ELEMENT (reduc_chain.last ()) = NULL;
-
-  /* Save the chain for further analysis in SLP detection.  */
-  LOOP_VINFO_REDUCTION_CHAINS (loop_info).safe_push (reduc_chain[0]);
-  REDUC_GROUP_SIZE (reduc_chain[0]) = size;
-
-  return true;
-}
-
 /* Return true if we need an in-order reduction for operation CODE
    on type TYPE.  NEED_WRAPPING_INTEGRAL_OVERFLOW is true if integer
    overflow must wrap.  */
@@ -2738,11 +2581,11 @@ needs_fold_left_reduction_p (tree type, tree_code code,
 /* Return true if the reduction PHI in LOOP with latch arg LOOP_ARG and
    reduction operation CODE has a handled computation expression.  */
 
-bool
+static bool
 check_reduction_path (dump_user_location_t loc, loop_p loop, gphi *phi,
-		      tree loop_arg, enum tree_code code)
+		      tree loop_arg, enum tree_code code,
+		      vec<std::pair<ssa_op_iter, use_operand_p> > &path)
 {
-  auto_vec<std::pair<ssa_op_iter, use_operand_p> > path;
   auto_bitmap visited;
   tree lookfor = PHI_RESULT (phi);
   ssa_op_iter curri;
@@ -2838,6 +2681,15 @@ pop:
     }
   return ! fail && ! neg;
 }
+
+bool
+check_reduction_path (dump_user_location_t loc, loop_p loop, gphi *phi,
+		      tree loop_arg, enum tree_code code)
+{
+  auto_vec<std::pair<ssa_op_iter, use_operand_p> > path;
+  return check_reduction_path (loc, loop, phi, loop_arg, code, path);
+}
+
 
 
 /* Function vect_is_simple_reduction
@@ -3223,22 +3075,45 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       return def_stmt_info;
     }
 
-  /* Try to find SLP reduction chain.  */
-  if (! nested_in_vect_loop
-      && code != COND_EXPR
-      && orig_code != MINUS_EXPR
-      && vect_is_slp_reduction (loop_info, phi, def_stmt))
+  /* Look for the expression computing loop_arg from loop PHI result.  */
+  auto_vec<std::pair<ssa_op_iter, use_operand_p> > path;
+  if (check_reduction_path (vect_location, loop, phi, loop_arg, code,
+			    path))
     {
-      if (dump_enabled_p ())
-        report_vect_op (MSG_NOTE, def_stmt,
-			"reduction: detected reduction chain: ");
+      /* Try building an SLP reduction chain for which the additional
+         restriction is that all operations in the chain are the same.  */
+      auto_vec<stmt_vec_info, 8> reduc_chain;
+      unsigned i;
+      for (i = path.length () - 1; i >= 1; --i)
+	{
+	  gimple *stmt = USE_STMT (path[i].second);
+	  if (gimple_assign_rhs_code (stmt) != code)
+	    break;
+	  reduc_chain.safe_push (loop_info->lookup_stmt (stmt));
+	}
+      if (i == 0
+	  && ! nested_in_vect_loop
+	  && code != COND_EXPR)
+	{
+	  for (unsigned i = 0; i < reduc_chain.length () - 1; ++i)
+	    {
+	      REDUC_GROUP_FIRST_ELEMENT (reduc_chain[i]) = reduc_chain[0];
+	      REDUC_GROUP_NEXT_ELEMENT (reduc_chain[i]) = reduc_chain[i+1];
+	    }
+	  REDUC_GROUP_FIRST_ELEMENT (reduc_chain.last ()) = reduc_chain[0];
+	  REDUC_GROUP_NEXT_ELEMENT (reduc_chain.last ()) = NULL;
+
+	  /* Save the chain for further analysis in SLP detection.  */
+	  LOOP_VINFO_REDUCTION_CHAINS (loop_info).safe_push (reduc_chain[0]);
+	  REDUC_GROUP_SIZE (reduc_chain[0]) = reduc_chain.length ();
+
+	  if (dump_enabled_p ())
+	    report_vect_op (MSG_NOTE, def_stmt,
+			    "reduction: detected reduction chain: ");
+	}
 
       return def_stmt_info;
     }
-
-  /* Look for the expression computing loop_arg from loop PHI result.  */
-  if (check_reduction_path (vect_location, loop, phi, loop_arg, code))
-    return def_stmt_info;
 
   if (dump_enabled_p ())
     {
