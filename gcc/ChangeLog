@@ -1,3 +1,10 @@
+2019-09-19  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm.md (<logical_op>di3): Use <optab> and <CODE>.
+	* config/arm/iterators.md (optab): Add and, ior, xor entries.
+	(logical_op): Remove code attribute.
+	(logical_OP): Likewise.
+
 2019-09-19  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf.c (sort_congruence_class_groups_by_decl_uid):
