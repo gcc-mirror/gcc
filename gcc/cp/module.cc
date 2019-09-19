@@ -156,10 +156,7 @@ Classes used:
    is unavailable, fileno IO is used to read and write blocks of data.
 
    The mapper object uses fileno IO to communicate with the server or
-   program.
-
-   I have a confession: tri-valued bools are not the worst thing in
-   this file.  */
+   program.   */
 
 // FIXME: I'm probably using TYPE_NAME in places TYPE_STUB_DECL is
 // correct.  They are usually the same, except when 'typedef struct {} foo'
@@ -8328,12 +8325,14 @@ trees_in::tree_node ()
 	  case ARRAY_TYPE:
 	    {
 	      tree domain = tree_node ();
-	      res = build_cplus_array_type (res, domain);
+	      if (!get_overrun ())
+		res = build_cplus_array_type (res, domain);
 	    }
 	    break;
 
 	  case COMPLEX_TYPE:
-	    res = build_complex_type (res);
+	    if (!get_overrun ())
+	      res = build_complex_type (res);
 	    break;
 
 	  case INTEGER_TYPE:
@@ -8343,13 +8342,15 @@ trees_in::tree_node ()
 		tree min = tree_node ();
 		tree max = tree_node ();
 
-		res = build_range_type (res, min, max);
+		if (!get_overrun ())
+		  res = build_range_type (res, min, max);
 	      }
 	    else
 	      {
 		/* A new integral type (representing a bitfield).  */
 		unsigned enc = u ();
-		res = build_nonstandard_integer_type (enc >> 1, enc & 1);
+		if (!get_overrun ())
+		  res = build_nonstandard_integer_type (enc >> 1, enc & 1);
 	      }
 	    break;
 
@@ -8358,19 +8359,22 @@ trees_in::tree_node ()
 	  case UNDERLYING_TYPE:
 	    {
 	      tree expr = tree_node ();
-	      res = cxx_make_type (code);
-	      TYPE_VALUES_RAW (res) = expr;
-	      if (code == DECLTYPE_TYPE)
-		tree_node_bools (res);
-	      SET_TYPE_STRUCTURAL_EQUALITY (res);
-	      
+	      if (!get_overrun ())
+		{
+		  res = cxx_make_type (code);
+		  TYPE_VALUES_RAW (res) = expr;
+		  if (code == DECLTYPE_TYPE)
+		    tree_node_bools (res);
+		  SET_TYPE_STRUCTURAL_EQUALITY (res);
+		}
 	    }
 	    break;
 
 	  case FUNCTION_TYPE:
 	    {
 	      tree args = tree_node ();
-	      res = build_function_type (res, args);
+	      if (!get_overrun ())
+		res = build_function_type (res, args);
 	    }
 	    break;
 
@@ -8378,48 +8382,56 @@ trees_in::tree_node ()
 	    {
 	      tree klass = tree_node ();
 	      tree args = tree_node ();
-
-	      res = build_method_type_directly (klass, res, args);
+	      
+	      if (!get_overrun ())
+		res = build_method_type_directly (klass, res, args);
 	    }
 	    break;
 	    
 	  case OFFSET_TYPE:
 	    {
 	      tree base = tree_node ();
-	      res = build_offset_type (base, res);
+	      if (!get_overrun ())
+		res = build_offset_type (base, res);
 	    }
 	    break;
 
 	  case POINTER_TYPE:
-	    res = build_pointer_type (res);
+	    if (!get_overrun ())
+	      res = build_pointer_type (res);
 	    break;
 
 	  case REFERENCE_TYPE:
 	    {
 	      bool rval = bool (u ());
-	      res = cp_build_reference_type (res, rval);
+	      if (!get_overrun ())
+		res = cp_build_reference_type (res, rval);
 	    }
 	    break;
 
 	  case TYPE_ARGUMENT_PACK:
-	    {
-	      tree pack = cxx_make_type (TYPE_ARGUMENT_PACK);
-	      SET_TYPE_STRUCTURAL_EQUALITY (pack);
-	      SET_ARGUMENT_PACK_ARGS (pack, res);
-	      res = pack;
-	    }
+	    if (!get_overrun ())
+	      {
+		tree pack = cxx_make_type (TYPE_ARGUMENT_PACK);
+		SET_TYPE_STRUCTURAL_EQUALITY (pack);
+		SET_ARGUMENT_PACK_ARGS (pack, res);
+		res = pack;
+	      }
 	    break;
 
 	  case TYPE_PACK_EXPANSION:
 	    {
 	      bool local = u ();
 	      tree param_packs = tree_node ();
-	      tree expn = cxx_make_type (TYPE_PACK_EXPANSION);
-	      SET_TYPE_STRUCTURAL_EQUALITY (expn);
-	      SET_PACK_EXPANSION_PATTERN (expn, res);
-	      PACK_EXPANSION_PARAMETER_PACKS (expn) = param_packs;
-	      PACK_EXPANSION_LOCAL_P (expn) = local;
-	      res = expn;
+	      if (!get_overrun ())
+		{
+		  tree expn = cxx_make_type (TYPE_PACK_EXPANSION);
+		  SET_TYPE_STRUCTURAL_EQUALITY (expn);
+		  SET_PACK_EXPANSION_PATTERN (expn, res);
+		  PACK_EXPANSION_PARAMETER_PACKS (expn) = param_packs;
+		  PACK_EXPANSION_LOCAL_P (expn) = local;
+		  res = expn;
+		}
 	    }
 	    break;
 
@@ -8429,14 +8441,16 @@ trees_in::tree_node ()
 	      tree name = tree_node ();
 	      tree parms = tree_node ();
 
-	      res = make_unbound_class_template_raw (ctx, name, parms);
+	      if (!get_overrun ())
+		res = make_unbound_class_template_raw (ctx, name, parms);
 	    }
 	    break;
 
 	  case VECTOR_TYPE:
 	    {
 	      unsigned HOST_WIDE_INT nunits = wu ();
-	      res = build_vector_type (res, static_cast<poly_int64> (nunits));
+	      if (!get_overrun ())
+		res = build_vector_type (res, static_cast<poly_int64> (nunits));
 	    }
 	    break;
 	  }
@@ -8469,7 +8483,9 @@ trees_in::tree_node ()
       {
 	res = tree_node ();
 	int flags = i ();
-	if (flags < 0)
+	if (get_overrun ())
+	  ;
+	else if (flags < 0)
 	  /* No change.  */;
 	else if (TREE_CODE (res) == FUNCTION_TYPE
 		 || TREE_CODE (res) == METHOD_TYPE)
@@ -8493,15 +8509,23 @@ trees_in::tree_node ()
 	  }
 
 	tree attribs = tree_node ();
-	if (attribs != error_mark_node)
+	if (attribs != error_mark_node
+	    && !get_overrun ())
 	  res = cp_build_type_attribute_variant (res, attribs);
 
 	int quals = i ();
-	if (quals >= 0)
+	if (quals >= 0 && !get_overrun ())
 	  res = cp_build_qualified_type (res, quals);
 
 	int tag = i ();
-	if (tag)
+	if (!tag)
+	  {
+	    tag = insert (res);
+	    if (res)
+	      dump (dumper::TREE)
+		&& dump ("Created:%d variant type %C", tag, TREE_CODE (res));
+	  }
+	else if (unsigned (~tag) < back_refs.length ())
 	  {
 	    res = back_refs[~tag];
 	    if (res)
@@ -8511,10 +8535,8 @@ trees_in::tree_node ()
 	  }
 	else
 	  {
-	    tag = insert (res);
-	    if (res)
-	      dump (dumper::TREE)
-		&& dump ("Created:%d variant type %C", tag, TREE_CODE (res));
+	    set_overrun ();
+	    res = NULL_TREE;
 	  }
       }
       break;
