@@ -16,6 +16,10 @@
 	(aarch64_store_exclusive_pair): New.
 	* config/aarch64/iterators.md (JUST_TI): New.
 
+	* config/aarch64/aarch64 (aarch64_split_compare_and_swap): Disable
+	strong_zero_p for aarch64_track_speculation; unify some code paths;
+	use aarch64_gen_compare_reg instead of open-coding.
+
 2019-09-19  Feng Xue  <fxue@os.amperecomputing.com>
 
 	* ipa-fnsummary.c (set_cond_stmt_execution_predicate): Do not compute
