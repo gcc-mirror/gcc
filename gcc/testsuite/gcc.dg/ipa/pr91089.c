@@ -41,6 +41,52 @@ int callee (int i)
   return data += i;
 }
 
+int fn2 ();
+
+int callee_complex_predicate (int i)
+{
+  switch (i )
+    {
+      case 0:
+	fn ();
+	fn ();
+	fn ();
+      case 1:
+	fn ();
+	fn ();
+      case -1:
+	fn ();
+      case -2:
+	fn ();
+	fn ();
+	fn ();
+	fn ();
+	fn ();
+	fn ();
+	fn ();
+	fn ();
+	fn ();
+	fn ();
+	fn ();
+	fn ();
+	fn ();
+	fn ();
+	fn ();
+	fn ();
+	data += i;
+	break;
+    }
+
+  if (i == 1000)
+    {
+      int j;
+
+      for (j = 0; j < 100; j++)
+	fn2 ();
+    }
+  return i + 3;
+}
+
 int caller ()
 {
   return callee (-127) +
@@ -60,3 +106,4 @@ int caller ()
 /* { dg-final { scan-ipa-dump "op0 != 0"   "fnsummary" } } */
 /* { dg-final { scan-ipa-dump "op0 < 5"    "fnsummary" } } */
 /* { dg-final { scan-ipa-dump "op0 > 7"    "fnsummary" } } */
+/* { dg-final { scan-ipa-dump "loop depth: 1 .+ time:\[ \]*\[0-9\]+ predicate: \\(op0 == 1000\\)\[\r\n]+" "fnsummary" } } */
