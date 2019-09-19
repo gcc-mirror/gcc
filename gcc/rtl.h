@@ -2406,11 +2406,29 @@ extern int rtx_cost (rtx, machine_mode, enum rtx_code, int, bool);
 extern int address_cost (rtx, machine_mode, addr_space_t, bool);
 extern void get_full_rtx_cost (rtx, machine_mode, enum rtx_code, int,
 			       struct full_rtx_costs *);
+extern bool native_encode_rtx (machine_mode, rtx, vec<target_unit> &,
+			       unsigned int, unsigned int);
+extern rtx native_decode_rtx (machine_mode, vec<target_unit>,
+			      unsigned int);
+extern rtx native_decode_vector_rtx (machine_mode, vec<target_unit>,
+				     unsigned int, unsigned int, unsigned int);
 extern poly_uint64 subreg_lsb (const_rtx);
-extern poly_uint64 subreg_lsb_1 (machine_mode, machine_mode, poly_uint64);
+extern poly_uint64 subreg_size_lsb (poly_uint64, poly_uint64, poly_uint64);
 extern poly_uint64 subreg_size_offset_from_lsb (poly_uint64, poly_uint64,
 						poly_uint64);
 extern bool read_modify_subreg_p (const_rtx);
+
+/* Given a subreg's OUTER_MODE, INNER_MODE, and SUBREG_BYTE, return the
+   bit offset at which the subreg begins (counting from the least significant
+   bit of the operand).  */
+
+inline poly_uint64
+subreg_lsb_1 (machine_mode outer_mode, machine_mode inner_mode,
+	      poly_uint64 subreg_byte)
+{
+  return subreg_size_lsb (GET_MODE_SIZE (outer_mode),
+			  GET_MODE_SIZE (inner_mode), subreg_byte);
+}
 
 /* Return the subreg byte offset for a subreg whose outer mode is
    OUTER_MODE, whose inner mode is INNER_MODE, and where there are

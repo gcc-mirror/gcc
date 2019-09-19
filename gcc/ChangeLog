@@ -1,3 +1,24 @@
+2019-09-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* defaults.h (TARGET_UNIT): New macro.
+	(target_unit): New type.
+	* rtl.h (native_encode_rtx, native_decode_rtx)
+	(native_decode_vector_rtx, subreg_size_lsb): Declare.
+	(subreg_lsb_1): Turn into an inline wrapper around subreg_size_lsb.
+	* rtlanal.c (subreg_lsb_1): Delete.
+	(subreg_size_lsb): New function.
+	* simplify-rtx.c: Include rtx-vector-builder.h
+	(simplify_immed_subreg): Delete.
+	(native_encode_rtx, native_decode_vector_rtx, native_decode_rtx)
+	(simplify_const_vector_byte_offset, simplify_const_vector_subreg): New
+	functions.
+	(simplify_subreg): Use them.
+	(test_vector_subregs_modes, test_vector_subregs_repeating)
+	(test_vector_subregs_fore_back, test_vector_subregs_stepped)
+	(test_vector_subregs): New functions.
+	(test_vector_ops): Call test_vector_subregs for integer vector
+	modes with at least 2 elements.
+
 2019-09-19  Richard Biener  <rguenther@suse.de>
 
 	* tree-parloops.c (parloops_is_slp_reduction): Do not set
