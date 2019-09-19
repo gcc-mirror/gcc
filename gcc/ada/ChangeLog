@@ -1,3 +1,7 @@
+2019-09-19  Bob Duff  <duff@adacore.com>
+
+	* rtsfind.ads (RTE_Available): Improve comment.
+
 2019-09-18  Bob Duff  <duff@adacore.com>
 
 	* exp_ch5.adb (Expand_Assign_Array_Loop_Or_Bitfield): Move call
