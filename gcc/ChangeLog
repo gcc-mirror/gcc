@@ -1,3 +1,11 @@
+2019-09-19  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.c (sort_sem_items_by_decl_uid): Simplify comparator.
+	(sort_congruence_classes_by_decl_uid): Likewise.
+	(sort_congruence_class_groups_by_decl_uid): Use std::pair for
+	easier sorting.
+	(sem_item_optimizer::merge_classes): Likewise.
+
 2019-09-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91812
