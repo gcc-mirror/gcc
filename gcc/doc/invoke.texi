@@ -11870,6 +11870,11 @@ parameters only when their cumulative size is less or equal to
 @option{ipa-sra-ptr-growth-factor} times the size of the original
 pointer parameter.
 
+@item ipa-sra-max-replacements
+Maximum pieces of an aggregate that IPA-SRA tracks.  As a
+consequence, it is also the maximum number of replacements of a formal
+parameter.
+
 @item sra-max-scalarization-size-Ospeed
 @itemx sra-max-scalarization-size-Osize
 The two Scalar Reduction of Aggregates passes (SRA and IPA-SRA) aim to

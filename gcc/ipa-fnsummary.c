@@ -616,9 +616,7 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
 
 	  for (j = 0; vec_safe_iterate (dst->clone.tree_map, j, &r); j++)
 	    {
-	      if (((!r->old_tree && r->parm_num == i)
-		   || (r->old_tree && r->old_tree == ipa_get_param (parms_info, i)))
-		   && r->replace_p && !r->ref_p)
+	      if (r->parm_num == i)
 		{
 		  known_vals[i] = r->new_tree;
 		  break;
