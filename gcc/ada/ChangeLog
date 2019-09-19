@@ -1,5 +1,10 @@
 2019-09-19  Yannick Moy  <moy@adacore.com>
 
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Add special
+	case for traversal functions.
+
+2019-09-19  Yannick Moy  <moy@adacore.com>
+
 	* sem_prag.adb (Analyze_Global_In_Decl_Part): Do not issue an
 	error when a constant of an access type is used as output in a
 	Global contract.
