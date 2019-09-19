@@ -12380,15 +12380,15 @@ package body Sem_Util is
          if Is_Generic_Instance (S) then
 
             --  A child instance is always compiled in the context of a parent
-            --  instance. Nevertheless, the actuals are not analyzed in an
+            --  instance. Nevertheless, its actuals must not be analyzed in an
             --  instance context. We detect this case by examining the current
             --  compilation unit, which must be a child instance, and checking
-            --  that it is not currently on the scope stack.
+            --  that it has not been analyzed yet.
 
             if Is_Child_Unit (Curr_Unit)
               and then Nkind (Unit (Cunit (Current_Sem_Unit))) =
                                                      N_Package_Instantiation
-              and then not In_Open_Scopes (Curr_Unit)
+              and then Ekind (Curr_Unit) = E_Void
             then
                return False;
             else
