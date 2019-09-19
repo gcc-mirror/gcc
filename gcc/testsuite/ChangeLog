@@ -1,3 +1,12 @@
+2019-09-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91631
+	* /c-c++-common/Warray-bounds-3.c: Correct expected offsets.
+	* /c-c++-common/Warray-bounds-4.c: Same.
+	* gcc.dg/Warray-bounds-39.c: Remove xfails.
+	* gcc.dg/Warray-bounds-45.c: New test.
+	* gcc.dg/Warray-bounds-46.c: New test.
+
 2019-09-19  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR c/67224

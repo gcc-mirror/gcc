@@ -3562,54 +3562,6 @@ check_access (tree exp, tree, tree, tree dstwrite,
   return true;
 }
 
-/* Determines the size of the member referenced by the COMPONENT_REF
-   REF, using its initializer expression if necessary in order to
-   determine the size of an initialized flexible array member.
-   Returns the size (which might be zero for an object with
-   an uninitialized flexible array member) or null if the size
-   cannot be determined.  */
-
-static tree
-component_size (tree ref)
-{
-  gcc_assert (TREE_CODE (ref) == COMPONENT_REF);
-
-  tree member = TREE_OPERAND (ref, 1);
-
-  /* If the member is not last or has a size greater than one, return
-     it.  Otherwise it's either a flexible array member or a zero-length
-     array member, or an array of length one treated as such.  */
-  tree size = DECL_SIZE_UNIT (member);
-  if (size
-      && (!array_at_struct_end_p (ref)
-	  || (!integer_zerop (size)
-	      && !integer_onep (size))))
-    return size;
-
-  /* If the reference is to a declared object and the member a true
-     flexible array, try to determine its size from its initializer.  */
-  poly_int64 off = 0;
-  tree base = get_addr_base_and_unit_offset (ref, &off);
-  if (!base || !VAR_P (base))
-    return NULL_TREE;
-
-  /* The size of any member of a declared object other than a flexible
-     array member is that obtained above.  */
-  if (size)
-    return size;
-
-  if (tree init = DECL_INITIAL (base))
-    if (TREE_CODE (init) == CONSTRUCTOR)
-      {
-	off <<= LOG2_BITS_PER_UNIT;
-	init = fold_ctor_reference (NULL_TREE, init, off, 0, base);
-	if (init)
-	  return TYPE_SIZE_UNIT (TREE_TYPE (init));
-      }
-
-  return DECL_EXTERNAL (base) ? NULL_TREE : integer_zero_node;
-}
-
 /* Helper to compute the size of the object referenced by the DEST
    expression which must have pointer type, using Object Size type
    OSTYPE (only the least significant 2 bits are used).  Return
@@ -3744,7 +3696,7 @@ compute_objsize (tree dest, int ostype, tree *pdecl /* = NULL */)
   if (TREE_CODE (dest) == COMPONENT_REF)
     {
       *pdecl = TREE_OPERAND (dest, 1);
-      return component_size (dest);
+      return component_ref_size (dest);
     }
 
   if (TREE_CODE (dest) != ADDR_EXPR)

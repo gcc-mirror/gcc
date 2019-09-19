@@ -1,3 +1,34 @@
+2019-09-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91631
+	* builtins.c (component_size): Correct trailing array computation,
+	rename to component_ref_size and move...
+	(compute_objsize): Adjust.
+	* gimple-ssa-warn-restrict.c (builtin_memref::refsize): New member.
+	(builtin_access::strict): Do not consider memmove.
+	(builtin_access::write_off): New function.
+	(builtin_memref::builtin_memref): Initialize refsize.
+	(builtin_memref::set_base_and_offset): Adjust refoff and compute
+	refsize.
+	(builtin_memref::offset_out_of_bounds): Use ooboff input values.
+	Handle refsize.
+	(builtin_access::builtin_access): Initialize dstoff to destination
+	refeence offset here instead of in maybe_diag_overlap.  Adjust
+	referencess even to unrelated objects.	Adjust sizrange of bounded
+	string functions to reflect bound.  For strcat, adjust destination
+	sizrange by that of source.
+	(builtin_access::strcat_overlap):  Adjust offsets and sizes
+	to reflect the increase in destination sizrange above.
+	(builtin_access::overlap): Do not set dstoff here but instead
+	in builtin_access::builtin_access.
+	(check_bounds_or_overlap): Use builtin_access::write_off.
+	(maybe_diag_access_bounds): Add argument.  Add informational notes.
+	(dump_builtin_memref, dump_builtin_access): New functions.
+	* tree.c (component_ref_size): ...to here.
+	* tree.h (component_ref_size): Declare.
+	* tree-ssa-strlen (handle_builtin_strcat): Include the terminating
+	nul in the size of the source string.
+
 2019-09-19  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR c/67224
