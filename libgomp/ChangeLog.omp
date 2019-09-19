@@ -1,3 +1,8 @@
+2019-09-19  Julian Brown  <julian@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_openacc_async_host2dev):
+	Add EPHEMERAL parameter, and FIXME function comment.
+
 2019-09-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Fix dg-warning
