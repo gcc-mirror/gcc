@@ -1262,8 +1262,28 @@ package body Sem_Prag is
            (Item_Is_Input  : out Boolean;
             Item_Is_Output : out Boolean)
          is
+            --  A constant or IN parameter of access type should be handled
+            --  like a variable, as the underlying memory pointed-to can be
+            --  modified. Use Adjusted_Kind to do this adjustment.
+
+            Adjusted_Kind : Entity_Kind := Ekind (Item_Id);
+
          begin
-            case Ekind (Item_Id) is
+            if Ekind_In (Item_Id, E_Constant,
+                                  E_Generic_In_Parameter,
+                                  E_In_Parameter)
+
+              --  If Item_Id is of a private type whose completion has not been
+              --  analyzed yet, its Underlying_Type is empty and we handle it
+              --  as a constant.
+
+              and then Present (Underlying_Type (Etype (Item_Id)))
+              and then Is_Access_Type (Underlying_Type (Etype (Item_Id)))
+            then
+               Adjusted_Kind := E_Variable;
+            end if;
+
+            case Adjusted_Kind is
 
                --  Abstract states
 
@@ -1303,7 +1323,9 @@ package body Sem_Prag is
 
                   Item_Is_Output := False;
 
-               --  Variables and IN OUT parameters
+               --  Variables and IN OUT parameters, as well as constants and
+               --  IN parameters of access type which are handled like
+               --  variables.
 
                when E_Generic_In_Out_Parameter
                   | E_In_Out_Parameter
@@ -2412,10 +2434,13 @@ package body Sem_Prag is
 
                --  Constant related checks
 
-               elsif Ekind (Item_Id) = E_Constant then
+               elsif Ekind (Item_Id) = E_Constant
+                 and then
+                   not Is_Access_Type (Underlying_Type (Etype (Item_Id)))
+               then
 
-                  --  A constant is a read-only item, therefore it cannot act
-                  --  as an output.
+                  --  Unless it is of an access type, a constant is a read-only
+                  --  item, therefore it cannot act as an output.
 
                   if Nam_In (Global_Mode, Name_In_Out, Name_Output) then
                      SPARK_Msg_NE
