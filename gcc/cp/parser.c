@@ -11297,7 +11297,10 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
     }
   /* Anything that starts with a `{' must be a compound-statement.  */
   else if (token->type == CPP_OPEN_BRACE)
-    statement = cp_parser_compound_statement (parser, NULL, BCS_NORMAL, false);
+    {
+      std_attrs = process_stmt_hotness_attribute (std_attrs, attrs_loc);
+      statement = cp_parser_compound_statement (parser, NULL, BCS_NORMAL, false);
+    }
   /* CPP_PRAGMA is a #pragma inside a function body, which constitutes
      a statement all its own.  */
   else if (token->type == CPP_PRAGMA)
