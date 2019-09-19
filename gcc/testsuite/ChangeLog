@@ -1,3 +1,8 @@
+2019-09-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/generic2-child.ads, gnat.dg/generic2-io_any.adb,
+	gnat.dg/generic2-io_any.ads, gnat.dg/generic2.ads: New testcase.
+
 2019-09-19  Yannick Moy  <moy@adacore.com>
 
 	* gnat.dg/global2.adb, gnat.dg/global2.ads: New testcase.
