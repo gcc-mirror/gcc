@@ -11570,6 +11570,16 @@ package body Sem_Attr is
          begin
             if not Is_Entity_Name (P) or else not Is_Type (Entity (P)) then
                Resolve (P);
+
+               --  If the prefix is a function call returning on the secondary
+               --  stack, we must make sure to mark/release the stack.
+
+               if Nkind (P) = N_Function_Call
+                 and then Nkind (Parent (N)) = N_Loop_Parameter_Specification
+                 and then Requires_Transient_Scope (Etype (P))
+               then
+                  Set_Uses_Sec_Stack (Scope (Current_Scope));
+               end if;
             end if;
 
             Dims := Expressions (N);
