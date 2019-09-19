@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=armv8-a+nolse -O2 -fno-ipa-icf" } */
+/* { dg-options "-march=armv8-a+nolse -O2 -fno-ipa-icf -mno-outline-atomics" } */
 
 #include "atomic-comp-swap-release-acquire.x"
 

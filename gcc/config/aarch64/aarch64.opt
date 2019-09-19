@@ -255,3 +255,6 @@ user-land code.
 TargetVariable
 long aarch64_stack_protector_guard_offset = 0
 
+moutline-atomics
+Target Report Mask(OUTLINE_ATOMICS) Save
+Generate local calls to out-of-line atomic operations.
