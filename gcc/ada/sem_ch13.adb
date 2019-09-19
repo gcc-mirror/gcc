@@ -9374,17 +9374,22 @@ package body Sem_Ch13 is
 
       else
          --  In a generic context freeze nodes are not always generated, so
-         --  analyze the expression now. If the aspect is for a type, this
-         --  makes its potential components accessible.
+         --  analyze the expression now. If the aspect is for a type, we must
+         --  also make its potential components accessible.
 
          if not Analyzed (Freeze_Expr) and then Inside_A_Generic then
             if A_Id = Aspect_Dynamic_Predicate
               or else A_Id = Aspect_Predicate
-              or else A_Id = Aspect_Priority
             then
                Push_Type (Ent);
-               Preanalyze_Spec_Expression (Freeze_Expr, T);
+               Preanalyze_Spec_Expression (Freeze_Expr, Standard_Boolean);
                Pop_Type (Ent);
+
+            elsif A_Id = Aspect_Priority then
+               Push_Type (Ent);
+               Preanalyze_Spec_Expression (Freeze_Expr, Any_Integer);
+               Pop_Type (Ent);
+
             else
                Preanalyze (Freeze_Expr);
             end if;
@@ -9395,12 +9400,23 @@ package body Sem_Ch13 is
 
          Set_Parent (End_Decl_Expr, ASN);
 
-         --  In a generic context the aspect expressions have not been
-         --  preanalyzed, so do it now. There are no conformance checks
-         --  to perform in this case.
+         --  In a generic context the original  aspect expressions have not
+         --  been preanalyzed, so do it now. There are no conformance checks
+         --  to perform in this case. As before, we have to make components
+         --  visible for aspects that may reference them.
 
          if No (T) then
-            Check_Aspect_At_Freeze_Point (ASN);
+            if A_Id = Aspect_Dynamic_Predicate
+              or else A_Id = Aspect_Predicate
+              or else A_Id = Aspect_Priority
+            then
+               Push_Type (Ent);
+               Check_Aspect_At_Freeze_Point (ASN);
+               Pop_Type (Ent);
+
+            else
+               Check_Aspect_At_Freeze_Point (ASN);
+            end if;
             return;
 
          --  The default values attributes may be defined in the private part,
