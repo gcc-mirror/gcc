@@ -1,5 +1,12 @@
 2019-09-19  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-loop.c (vect_is_slp_reduction): Remove.
+	(check_reduction_path): New overload having the path as result.
+	(vect_is_simple_reduction): From the detected reduction
+	path build a SLP reduction chain if possible.
+
+2019-09-19  Richard Biener  <rguenther@suse.de>
+
 	PR target/91814
 	* config/i386/i386-features.c (gen_gpr_to_xmm_move_src):
 	Force operand to a register if it isn't nonimmediate_operand.
