@@ -2177,11 +2177,14 @@ package body Exp_Unst is
             --  not need rewriting (e.g. the appearence in a conversion).
             --  Also ignore if no reference was specified or if the rewriting
             --  has already been done (this can happen if the N_Identifier
-            --  occurs more than one time in the tree).
+            --  occurs more than one time in the tree). Also ignore references
+            --  when not generating C code (in particular for the case of LLVM,
+            --  since GNAT-LLVM will handle the processing for up-level refs).
 
             if No (UPJ.Ref)
               or else not Is_Entity_Name (UPJ.Ref)
               or else not Present (Entity (UPJ.Ref))
+              or else not Opt.Generate_C_Code
             then
                goto Continue;
             end if;
