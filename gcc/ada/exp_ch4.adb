@@ -1582,7 +1582,7 @@ package body Exp_Ch4 is
       Index_List1 : constant List_Id    := New_List;
       Index_List2 : constant List_Id    := New_List;
 
-      Actuals   : List_Id;
+      First_Idx : Node_Id;
       Formals   : List_Id;
       Func_Name : Entity_Id;
       Func_Body : Node_Id;
@@ -1593,6 +1593,10 @@ package body Exp_Ch4 is
       Ltyp : Entity_Id;
       Rtyp : Entity_Id;
       --  The parameter types to be used for the formals
+
+      New_Lhs : Node_Id;
+      New_Rhs : Node_Id;
+      --  The LHS and RHS converted to the parameter types
 
       function Arr_Attr
         (Arr : Entity_Id;
@@ -1962,6 +1966,82 @@ package body Exp_Ch4 is
          pragma Assert (Ltyp = Rtyp);
       end if;
 
+      --  If the array type is distinct from the type of the arguments, it
+      --  is the full view of a private type. Apply an unchecked conversion
+      --  to ensure that analysis of the code below succeeds.
+
+      if No (Etype (Lhs))
+        or else Base_Type (Etype (Lhs)) /= Base_Type (Ltyp)
+      then
+         New_Lhs := OK_Convert_To (Ltyp, Lhs);
+      else
+         New_Lhs := Lhs;
+      end if;
+
+      if No (Etype (Rhs))
+        or else Base_Type (Etype (Rhs)) /= Base_Type (Rtyp)
+      then
+         New_Rhs := OK_Convert_To (Rtyp, Rhs);
+      else
+         New_Rhs := Rhs;
+      end if;
+
+      First_Idx := First_Index (Ltyp);
+
+      --  If optimization is enabled and the array boils down to a couple of
+      --  consecutive elements, generate a simple conjunction of comparisons
+      --  which should be easier to optimize by the code generator.
+
+      if Optimization_Level > 0
+        and then Ltyp = Rtyp
+        and then Is_Constrained (Ltyp)
+        and then Number_Dimensions (Ltyp) = 1
+        and then Nkind (First_Idx) = N_Range
+        and then Compile_Time_Known_Value (Low_Bound (First_Idx))
+        and then Compile_Time_Known_Value (High_Bound (First_Idx))
+        and then Expr_Value (High_Bound (First_Idx)) =
+                                         Expr_Value (Low_Bound (First_Idx)) + 1
+      then
+         declare
+            Ctyp         : constant Entity_Id := Component_Type (Ltyp);
+            L, R         : Node_Id;
+            TestL, TestH : Node_Id;
+            Index_List   : List_Id;
+
+         begin
+            Index_List := New_List (New_Copy_Tree (Low_Bound (First_Idx)));
+
+            L :=
+              Make_Indexed_Component (Loc,
+                Prefix      => New_Copy_Tree (New_Lhs),
+                Expressions => Index_List);
+
+            R :=
+              Make_Indexed_Component (Loc,
+                Prefix      => New_Copy_Tree (New_Rhs),
+                Expressions => Index_List);
+
+            TestL := Expand_Composite_Equality (Nod, Ctyp, L, R, Bodies);
+
+            Index_List := New_List (New_Copy_Tree (High_Bound (First_Idx)));
+
+            L :=
+              Make_Indexed_Component (Loc,
+                Prefix      => New_Lhs,
+                Expressions => Index_List);
+
+            R :=
+              Make_Indexed_Component (Loc,
+                Prefix      => New_Rhs,
+                Expressions => Index_List);
+
+            TestH := Expand_Composite_Equality (Nod, Ctyp, L, R, Bodies);
+
+            return
+              Make_And_Then (Loc, Left_Opnd => TestL, Right_Opnd => TestH);
+         end;
+      end if;
+
       --  Build list of formals for function
 
       Formals := New_List (
@@ -2004,46 +2084,20 @@ package body Exp_Ch4 is
                     Make_Simple_Return_Statement (Loc,
                       Expression => New_Occurrence_Of (Standard_False, Loc)))),
 
-                Handle_One_Dimension (1, First_Index (Ltyp)),
+                Handle_One_Dimension (1, First_Idx),
 
                 Make_Simple_Return_Statement (Loc,
                   Expression => New_Occurrence_Of (Standard_True, Loc)))));
 
-         Set_Has_Completion (Func_Name, True);
-         Set_Is_Inlined (Func_Name);
+      Set_Has_Completion (Func_Name, True);
+      Set_Is_Inlined (Func_Name);
 
-         --  If the array type is distinct from the type of the arguments, it
-         --  is the full view of a private type. Apply an unchecked conversion
-         --  to ensure that analysis of the call succeeds.
+      Append_To (Bodies, Func_Body);
 
-         declare
-            L, R : Node_Id;
-
-         begin
-            L := Lhs;
-            R := Rhs;
-
-            if No (Etype (Lhs))
-              or else Base_Type (Etype (Lhs)) /= Base_Type (Ltyp)
-            then
-               L := OK_Convert_To (Ltyp, Lhs);
-            end if;
-
-            if No (Etype (Rhs))
-              or else Base_Type (Etype (Rhs)) /= Base_Type (Rtyp)
-            then
-               R := OK_Convert_To (Rtyp, Rhs);
-            end if;
-
-            Actuals := New_List (L, R);
-         end;
-
-         Append_To (Bodies, Func_Body);
-
-         return
-           Make_Function_Call (Loc,
-             Name                   => New_Occurrence_Of (Func_Name, Loc),
-             Parameter_Associations => Actuals);
+      return
+        Make_Function_Call (Loc,
+          Name                   => New_Occurrence_Of (Func_Name, Loc),
+          Parameter_Associations => New_List (New_Lhs, New_Rhs));
    end Expand_Array_Equality;
 
    -----------------------------
