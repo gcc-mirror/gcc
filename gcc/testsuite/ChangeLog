@@ -1,3 +1,42 @@
+2019-09-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c/67224
+	* c-c++-common/cpp/ucnid-2011-1-utf8.c: New test.
+	* g++.dg/cpp/ucnid-1-utf8.C: New test.
+	* g++.dg/cpp/ucnid-2-utf8.C: New test.
+	* g++.dg/cpp/ucnid-3-utf8.C: New test.
+	* g++.dg/cpp/ucnid-4-utf8.C: New test.
+	* g++.dg/other/ucnid-1-utf8.C: New test.
+	* gcc.dg/cpp/ucnid-1-utf8.c: New test.
+	* gcc.dg/cpp/ucnid-10-utf8.c: New test.
+	* gcc.dg/cpp/ucnid-11-utf8.c: New test.
+	* gcc.dg/cpp/ucnid-12-utf8.c: New test.
+	* gcc.dg/cpp/ucnid-13-utf8.c: New test.
+	* gcc.dg/cpp/ucnid-14-utf8.c: New test.
+	* gcc.dg/cpp/ucnid-15-utf8.c: New test.
+	* gcc.dg/cpp/ucnid-2-utf8.c: New test.
+	* gcc.dg/cpp/ucnid-3-utf8.c: New test.
+	* gcc.dg/cpp/ucnid-4-utf8.c: New test.
+	* gcc.dg/cpp/ucnid-6-utf8.c: New test.
+	* gcc.dg/cpp/ucnid-7-utf8.c: New test.
+	* gcc.dg/cpp/ucnid-9-utf8.c: New test.
+	* gcc.dg/ucnid-1-utf8.c: New test.
+	* gcc.dg/ucnid-10-utf8.c: New test.
+	* gcc.dg/ucnid-11-utf8.c: New test.
+	* gcc.dg/ucnid-12-utf8.c: New test.
+	* gcc.dg/ucnid-13-utf8.c: New test.
+	* gcc.dg/ucnid-14-utf8.c: New test.
+	* gcc.dg/ucnid-15-utf8.c: New test.
+	* gcc.dg/ucnid-16-utf8.c: New test.
+	* gcc.dg/ucnid-2-utf8.c: New test.
+	* gcc.dg/ucnid-3-utf8.c: New test.
+	* gcc.dg/ucnid-4-utf8.c: New test.
+	* gcc.dg/ucnid-5-utf8.c: New test.
+	* gcc.dg/ucnid-6-utf8.c: New test.
+	* gcc.dg/ucnid-7-utf8.c: New test.
+	* gcc.dg/ucnid-8-utf8.c: New test.
+	* gcc.dg/ucnid-9-utf8.c: New test.
+
 2019-09-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.dg/pr89313.c: Test for __POWERPC__ in addition to

@@ -1198,6 +1198,84 @@ convert_ucn (cpp_reader *pfile, const uchar *from, const uchar *limit,
   return from;
 }
 
+/*  Performs a similar task as _cpp_valid_ucn, but parses UTF-8-encoded
+    extended characters rather than UCNs.  If the return value is TRUE, then a
+    character was successfully decoded and stored in *CP; *PSTR has been
+    updated to point one past the valid UTF-8 sequence.  Diagnostics may have
+    been emitted if the character parsed is not allowed in the current context.
+    If the return value is FALSE, then *PSTR has not been modified and *CP may
+    equal 0, to indicate that *PSTR does not form a valid UTF-8 sequence, or it
+    may, when processing an identifier in C mode, equal a codepoint that was
+    validly encoded but is not allowed to appear in an identifier.  In either
+    case, no diagnostic is emitted, and the return value of FALSE should cause
+    a new token to be formed.
+
+    Unlike _cpp_valid_ucn, this will never be called when lexing a string; only
+    a potential identifier, or a CPP_OTHER token.  NST is unused in the latter
+    case.
+
+    As in _cpp_valid_ucn, IDENTIFIER_POS is 0 when not in an identifier, 1 for
+    the start of an identifier, or 2 otherwise.  */
+
+extern bool
+_cpp_valid_utf8 (cpp_reader *pfile,
+		 const uchar **pstr,
+		 const uchar *limit,
+		 int identifier_pos,
+		 struct normalize_state *nst,
+		 cppchar_t *cp)
+{
+  const uchar *base = *pstr;
+  size_t inbytesleft = limit - base;
+  if (one_utf8_to_cppchar (pstr, &inbytesleft, cp))
+    {
+      /* No diagnostic here as this byte will rather become a
+	 new token.  */
+      *cp = 0;
+      return false;
+    }
+
+  if (identifier_pos)
+    {
+      switch (ucn_valid_in_identifier (pfile, *cp, nst))
+	{
+
+	case 0:
+	  /* In C++, this is an error for invalid character in an identifier
+	     because logically, the UTF-8 was converted to a UCN during
+	     translation phase 1 (even though we don't physically do it that
+	     way).  In C, this byte rather becomes grammatically a separate
+	     token.  */
+
+	  if (CPP_OPTION (pfile, cplusplus))
+	    cpp_error (pfile, CPP_DL_ERROR,
+		       "extended character %.*s is not valid in an identifier",
+		       (int) (*pstr - base), base);
+	  else
+	    {
+	      *pstr = base;
+	      return false;
+	    }
+
+	  break;
+
+	case 2:
+	  if (identifier_pos == 1)
+	    {
+	      /* This is treated the same way in C++ or C99 -- lexed as an
+		 identifier which is then invalid because an identifier is
+		 not allowed to start with this character.  */
+	      cpp_error (pfile, CPP_DL_ERROR,
+	  "extended character %.*s is not valid at the start of an identifier",
+			 (int) (*pstr - base), base);
+	    }
+	  break;
+	}
+    }
+
+  return true;
+}
+
 /* Subroutine of convert_hex and convert_oct.  N is the representation
    in the execution character set of a numeric escape; write it into the
    string buffer TBUF and update the end-of-string pointer therein.  WIDE
@@ -1956,8 +2034,9 @@ cpp_interpret_charconst (cpp_reader *pfile, const cpp_token *token,
 }
 
 /* Convert an identifier denoted by ID and LEN, which might contain
-   UCN escapes, to the source character set, either UTF-8 or
-   UTF-EBCDIC.  Assumes that the identifier is actually a valid identifier.  */
+   UCN escapes or UTF-8 multibyte chars, to the source character set,
+   either UTF-8 or UTF-EBCDIC.  Assumes that the identifier is actually
+   a valid identifier.  */
 cpp_hashnode *
 _cpp_interpret_identifier (cpp_reader *pfile, const uchar *id, size_t len)
 {

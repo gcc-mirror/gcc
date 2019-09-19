@@ -1,3 +1,10 @@
+2019-09-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c/67224
+	* doc/cpp.texi: Document support for extended characters in
+	identifiers.
+	* doc/cppopts.texi: Likewise.
+
 2019-09-19  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_is_slp_reduction): Remove.
