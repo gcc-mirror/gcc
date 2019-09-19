@@ -1836,7 +1836,8 @@ not otherwise analyze it. The second optional identifier is also left
 unanalyzed, and by convention is used to control the action of the tool to
 which the annotation is addressed.  The remaining ARG arguments
 can be either string literals or more generally expressions.
-String literals are assumed to be either of type
+String literals (and concatenations of string literals) are assumed to be
+either of type
 @code{Standard.String} or else @code{Wide_String} or @code{Wide_Wide_String}
 depending on the character literals they contain.
 All other kinds of arguments are analyzed as expressions, and must be
@@ -7706,7 +7707,8 @@ usually supplied automatically by the project manager. A pragma
 Source_File_Name cannot appear after a @ref{ec,,Pragma Source_File_Name_Project}.
 
 For more details on the use of the @code{Source_File_Name} pragma, see the
-sections on @code{Using Other File Names} and @cite{Alternative File Naming Schemes' in the :title:`GNAT User's Guide}.
+sections on @cite{Using Other File Names} and @cite{Alternative File Naming Schemes}
+in the @cite{GNAT User's Guide}.
 
 @node Pragma Source_File_Name_Project,Pragma Source_Reference,Pragma Source_File_Name,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-source-file-name-project}@anchor{ec}@anchor{gnat_rm/implementation_defined_pragmas id41}@anchor{ed}

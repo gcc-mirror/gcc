@@ -1,3 +1,18 @@
+2019-09-19  Steve Baird  <baird@adacore.com>
+
+	* sem_prag.adb (Preferred_String_Type): A new function. Given an
+	expression, determines whether the preference rules defined for
+	the third-and-later arguments of pragma Annotate suffice to
+	determine the type of the expression. If so, then the preferred
+	type is returned; if not then Empty is returned. Handles
+	concatenations.
+	(Analyze_Pragma): Replace previous code, which dealt only with
+	string literals, with calls to the new Preferred_String_Type
+	function, which also handles concatenations.
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Update
+	documentation for pragma Annotate.
+	* gnat_rm.texi: Regenerate.
+
 2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_util.adb (Is_Possibly_Unaligned_Slice): Do not return true
