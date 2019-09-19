@@ -1,3 +1,10 @@
+2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (In_Instance): Test whether the current unit has
+	been analyzed instead of being on the scope stack to detect the
+	case of actuals of an instantiation of a generic child unit done
+	as a compilation unit.
+
 2019-09-19  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* libgnat/g-socket.ads, libgnat/g-socket.adb

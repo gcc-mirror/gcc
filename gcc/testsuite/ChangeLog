@@ -1,3 +1,10 @@
+2019-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/inline20.adb, gnat.dg/inline20_g.adb,
+	gnat.dg/inline20_g.ads, gnat.dg/inline20_h.ads,
+	gnat.dg/inline20_i.ads, gnat.dg/inline20_q-io.ads,
+	gnat.dg/inline20_q.ads, gnat.dg/inline20_r.ads: New testcase.
+
 2019-09-19  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/generic2-child.ads, gnat.dg/generic2-io_any.adb,
