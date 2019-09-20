@@ -1,6 +1,16 @@
 2019-09-19  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (enum merge_kind): Add MK_{decl,type}_tmpl_spec,
+	MK_type_partual_spec.
+	(tree_in::tree_value): Process them.
+	(trees_{in,out}::key_mergeable): Stream them.
+	* pt.c (match_mergeable_specialization): Only store if spec !=
+	NULL.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-tpl-merge-[12]{,_[ab].[hHC]: New.
+
+	gcc/cp/
 	* module.cc (slurping::slurping): Init current to mostpos - 1.
 	(module_state::read): Increment slurp->current when done.
 

@@ -28427,13 +28427,17 @@ match_mergeable_specialization (bool decl_p, tree tmpl, tree args, tree spec)
     = decl_p ? decl_specializations : type_specializations;
   spec_entry **slot = specializations->find_slot (&elt, INSERT);
   spec_entry *entry = slot ? *slot: NULL;
+  
   if (entry)
     return entry->spec;
 
-  entry = ggc_alloc<spec_entry> ();
-  *entry = elt;
-  entry->spec = spec;
-  *slot = entry;
+  if (spec)
+    {
+      entry = ggc_alloc<spec_entry> ();
+      *entry = elt;
+      entry->spec = spec;
+      *slot = entry;
+    }
 
   return NULL_TREE;
 }

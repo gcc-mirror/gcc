@@ -2735,7 +2735,10 @@ enum merge_kind
 {
   MK_named,  /* Found by CTX, NAME + maybe_arg types.  */
   MK_decl_spec,   /* Found by PRIMARY, SPECS.  */
+  MK_decl_tmpl_spec,   /* Found by PRIMARY, SPECS.  */
   MK_type_spec,   /* Found by PRIMARY, SPECS.  */
+  MK_type_tmpl_spec,   /* Found by PRIMARY, SPECS.  */
+  MK_type_partial_spec,   /* Found by PRIMARY, SPECS.  */
   MK_clone,  /* Found by CLONED, PREV.  */
   MK_linkage, /* Found by tdef name.  */
   MK_enum,   /* Found by CTX, & 1stMemberNAME.  */
@@ -2745,7 +2748,10 @@ enum merge_kind
   MK_none
 };
 static char const *const merge_kind_name[] =
-  {"named", "decl specialization", "type specialization",
+  {"named",
+   "decl specialization", "decl tmpl specialization",
+   "type specialization", "type tmpl specialization",
+   "type partial specialization",
    "clone", "linkage", "enum"};
 
 /* Tree stream reader.  Note that reading a stream doesn't mark the
@@ -5916,6 +5922,7 @@ trees_out::core_vals (tree t)
 	  WU (((lang_tree_node *)t)->tpi.orig_level);
 	}
       WT (((lang_tree_node *)t)->tpi.decl);
+      // FIXME: TEMPLATE_PARM_DESCENDANTS?
       break;
       
     case TRAIT_EXPR:
@@ -7846,7 +7853,10 @@ trees_in::tree_value (walk_kind walk)
 	  break;
 
 	case MK_decl_spec:
+	case MK_decl_tmpl_spec:
 	case MK_type_spec:
+	case MK_type_tmpl_spec:
+	case MK_type_partial_spec:
 	  /* A specialization of some kind.  */
 	  DECL_NAME (res) = DECL_NAME (container);
 	  DECL_CONTEXT (res) = DECL_CONTEXT (container);
@@ -7897,33 +7907,67 @@ trees_in::tree_value (walk_kind walk)
 	    }
 	  break;
 
-	case MK_type_spec:
-	  existing
-	    = match_mergeable_specialization (false, container, key, type);
-
-	  if (existing)
-	    {
-	      if (inner_tag != 0)
-		{
-		  /* This is a partial specialization, we need to get
-		     back to its TEMPLATE_DECL.  */
-		  for (tree partial
-			 = DECL_TEMPLATE_SPECIALIZATIONS (container);
-		       partial; partial = TREE_CHAIN (partial))
-		    if (TREE_TYPE (partial) == existing)
-		      {
-			existing = TREE_VALUE (partial);
-			break;
-		      }
-		  gcc_assert (TREE_CODE (existing) == TEMPLATE_DECL);
-		}
-	      else
-		existing = TYPE_NAME (existing);
-	    }
-	  break;
-	  
 	case MK_decl_spec:
 	  existing = match_mergeable_specialization (true, container, key, res);
+	  break;
+
+	case MK_decl_tmpl_spec:
+	  if (!inner_tag)
+	    goto bail;
+
+	  existing = match_mergeable_specialization (true, container, key,
+						     inner);
+	  if (existing)
+	    if (tree ti = DECL_TEMPLATE_INFO (existing))
+	      {
+		tree tmpl = TI_TEMPLATE (ti);
+		if (DECL_TEMPLATE_RESULT (tmpl) == existing)
+		  existing = tmpl;
+	      }
+	  break;
+
+	case MK_type_spec:
+	  if (inner_tag)
+	    goto bail;
+
+	  existing
+	    = match_mergeable_specialization (false, container, key, type);
+	  if (existing)
+	    existing = TYPE_NAME (existing);
+	  break;
+
+	case MK_type_tmpl_spec:
+	  if (!inner_tag)
+	    goto bail;
+
+	  existing = match_mergeable_specialization (false, container, key,
+						     type);
+	  if (existing)
+	    if (tree ti = CLASSTYPE_TEMPLATE_INFO (existing))
+	      {
+		tree tmpl = TI_TEMPLATE (ti);
+		if (DECL_TEMPLATE_RESULT (tmpl) == TYPE_NAME (existing))
+		  existing = tmpl;
+	      }
+	  break;
+
+	case MK_type_partial_spec:
+	  if (!inner_tag)
+	    goto bail;
+
+	  existing
+	    = match_mergeable_specialization (false, container, key, type);
+	  if (existing)
+	    {
+	      for (tree partial = DECL_TEMPLATE_SPECIALIZATIONS (container);
+		   partial; partial = TREE_CHAIN (partial))
+		if (TREE_TYPE (partial) == existing)
+		  {
+		    existing = TREE_VALUE (partial);
+		    break;
+		  }
+	      gcc_assert (TREE_CODE (existing) == TEMPLATE_DECL);
+	    }
 	  break;
 	}
 
@@ -8726,9 +8770,9 @@ trees_in::tree_node ()
 	owner = u ();
 	owner = state->slurp->remap_module (owner);
 	int ident = i ();
-	if ((owner != MODULE_NONE
-	     || TREE_CODE (ctx) != NAMESPACE_DECL)
-	    && !get_overrun ())
+	if (!get_overrun ()
+	    && (owner != MODULE_NONE
+		|| TREE_CODE (ctx) != NAMESPACE_DECL))
 	  {
 	    res = lookup_by_ident (ctx, name, owner, ident);
 	    if (!res)
@@ -9097,6 +9141,14 @@ trees_out::key_mergeable (depset *dep)
   tree decl = dep->get_entity ();
   tree inner = STRIP_TEMPLATE (decl);
 
+  if (!streaming_p ())
+    {
+      /* When /determining/ mergeable ordering, there's an indirection.  */
+      gcc_assert (dep->is_special ());
+      dep = dep->deps[0];
+    }
+
+  spec_entry *entry = NULL;
   merge_kind mk = MK_named;
   switch (dep->get_entity_kind ())
     {
@@ -9118,7 +9170,24 @@ trees_out::key_mergeable (depset *dep)
       break;
 
     case depset::EK_SPECIALIZATION:
-      mk = dep->is_type_spec () ? MK_type_spec : MK_decl_spec;
+      gcc_checking_assert (dep->is_special ());
+      entry = reinterpret_cast <spec_entry *> (dep->deps[0]);
+
+      if (dep->is_type_spec ())
+	{
+	  if (dep->is_partial ())
+	    mk = MK_type_partial_spec;
+	  else if (TREE_CODE (decl) == TEMPLATE_DECL
+		   && TREE_TYPE (DECL_TEMPLATE_RESULT (decl)) == entry->spec)
+	    mk = MK_type_tmpl_spec;
+	  else
+	    mk = MK_type_spec;
+	}
+      else if (TREE_CODE (decl) == TEMPLATE_DECL
+	       && DECL_TEMPLATE_RESULT (decl) == entry->spec)
+	mk = MK_decl_tmpl_spec;
+      else
+	mk = MK_decl_spec;
       break;
     }
 
@@ -9216,23 +9285,57 @@ trees_out::key_mergeable (depset *dep)
       break;
 
     case MK_decl_spec:
+    case MK_decl_tmpl_spec:
     case MK_type_spec:
+    case MK_type_tmpl_spec:
+    case MK_type_partial_spec:
       {
 	/* Specializations are located via their originating template,
 	   and the set of template args they specialize.  */
-	depset *spec = dep;
-	if (!streaming_p ())
-	  {
-	    /* When /determining/ mergeable ordering, there's an indirection.  */
-	    gcc_assert (spec->is_special ());
-	    spec = dep->deps[0];
-	  }
-
-	gcc_assert (spec->is_special ());
-	spec_entry *entry = reinterpret_cast <spec_entry *> (spec->deps[0]);
 
 	tree_ctx (entry->tmpl, false, NULL_TREE);
 	tree_node (entry->args);
+
+	if (CHECKING_P)
+	  {
+	    tree existing = match_mergeable_specialization
+	      (mk == MK_decl_tmpl_spec || mk == MK_decl_spec,
+	       entry->tmpl, entry->args, NULL);
+
+	    switch (mk)
+	      {
+	      default:
+		gcc_unreachable ();
+
+	      case MK_type_spec:
+		existing = TYPE_NAME (existing);
+		break;
+
+	      case MK_type_tmpl_spec:
+		if (tree ti = CLASSTYPE_TEMPLATE_INFO (existing))
+		  existing = TI_TEMPLATE (ti);
+		break;
+
+	      case MK_type_partial_spec:
+		for (tree partial = DECL_TEMPLATE_SPECIALIZATIONS (entry->tmpl);
+		     partial; partial = TREE_CHAIN (partial))
+		  if (TREE_TYPE (partial) == existing)
+		    {
+		      existing = TREE_VALUE (partial);
+		      break;
+		    }
+		break;
+
+	      case MK_decl_spec:
+		break;
+
+	      case MK_decl_tmpl_spec:
+		if (tree ti = DECL_TEMPLATE_INFO (existing))
+		  existing = TI_TEMPLATE (ti);
+		break;
+	      }
+	    gcc_assert (existing == decl);
+	  }
       }
       break;
     }
@@ -9284,7 +9387,10 @@ trees_in::key_mergeable (tree decl, tree inner, tree,
 
     case MK_clone:
     case MK_decl_spec:
+    case MK_decl_tmpl_spec:
     case MK_type_spec:
+    case MK_type_tmpl_spec:
+    case MK_type_partial_spec:
       *container = tree_node ();
       *key = tree_node ();
       break;
