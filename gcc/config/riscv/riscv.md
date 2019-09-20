@@ -1284,7 +1284,7 @@
   ""
   [(const_int 0)]
 {
-  riscv_move_integer (operands[2], operands[0], INTVAL (operands[1]));
+  riscv_move_integer (operands[2], operands[0], INTVAL (operands[1]), TRUE);
   DONE;
 })
 
@@ -1293,11 +1293,11 @@
   [(set (match_operand:P 0 "register_operand")
 	(match_operand:P 1))
    (clobber (match_operand:P 2 "register_operand"))]
-  "riscv_split_symbol (operands[2], operands[1], MAX_MACHINE_MODE, NULL)"
+  "riscv_split_symbol (operands[2], operands[1], MAX_MACHINE_MODE, NULL, TRUE)"
   [(set (match_dup 0) (match_dup 3))]
 {
   riscv_split_symbol (operands[2], operands[1],
-		     MAX_MACHINE_MODE, &operands[3]);
+		      MAX_MACHINE_MODE, &operands[3], TRUE);
 })
 
 ;; 64-bit integer moves
