@@ -10200,8 +10200,8 @@ pa_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
     }
 
 #ifdef HAVE_ENABLE_EXECUTE_STACK
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
-		     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
+		     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
 #endif
 }
 
