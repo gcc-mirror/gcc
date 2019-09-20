@@ -1210,7 +1210,10 @@ general_scalar_chain::convert_registers ()
   bitmap_iterator bi;
   unsigned id;
   EXECUTE_IF_SET_IN_BITMAP (defs_conv, 0, id, bi)
-    defs_map.put (regno_reg_rtx[id], gen_reg_rtx (smode));
+    {
+      rtx chain_reg = gen_reg_rtx (smode);
+      defs_map.put (regno_reg_rtx[id], chain_reg);
+    }
   EXECUTE_IF_SET_IN_BITMAP (insns_conv, 0, id, bi)
     for (df_ref ref = DF_INSN_UID_DEFS (id); ref; ref = DF_REF_NEXT_LOC (ref))
       if (bitmap_bit_p (defs_conv, DF_REF_REGNO (ref)))

@@ -1,3 +1,10 @@
+2019-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR target/91767
+	* config/i386/i386-features.c (general_scalar_chain::convert_registers):
+	Ensure there's a sequence point between allocating the new register
+	and passing a reference to a reg via regno_reg_rtx.
+
 2019-09-20  Martin Jambor  <mjambor@suse.cz>
 
         * coretypes.h (cgraph_edge): Declare.
