@@ -668,8 +668,6 @@ scalar_chain::emit_conversion_insns (rtx insns, rtx_insn *after)
 static rtx
 gen_gpr_to_xmm_move_src (enum machine_mode vmode, rtx gpr)
 {
-  if (!nonimmediate_operand (gpr, GET_MODE_INNER (vmode)))
-    gpr = force_reg (GET_MODE_INNER (vmode), gpr);
   switch (GET_MODE_NUNITS (vmode))
     {
     case 1:
@@ -834,6 +832,15 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
   else if (MEM_P (*op))
     {
       rtx tmp = gen_reg_rtx (GET_MODE (*op));
+
+      /* Handle movabs.  */
+      if (!memory_operand (*op, GET_MODE (*op)))
+	{
+	  rtx tmp2 = gen_reg_rtx (GET_MODE (*op));
+
+	  emit_insn_before (gen_rtx_SET (tmp2, *op), insn);
+	  *op = tmp2;
+	}
 
       emit_insn_before (gen_rtx_SET (gen_rtx_SUBREG (vmode, tmp, 0),
 				     gen_gpr_to_xmm_move_src (vmode, *op)),
