@@ -1,3 +1,8 @@
+2019-09-20  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (localize_reductions): Rewrite references for
+	OMP_CLAUSE_PRIVATE also.
+
 2019-09-06  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.cc (gimplify_omp_for): Use for_stmt in call to
@@ -24,7 +29,7 @@
 	(walk_tree_1): Adjust accordingly.
 	* tree.h (OMP_CLAUSE_REDUCTION_PRIVATE_DECL): Add macro.
 
-2018-09-05  Cesar Philippidis  <cesar@codesourcery.com>
+2019-07-10  Cesar Philippidis  <cesar@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* gimplify.cc (omp_add_variable): Enable firstprivate reduction
