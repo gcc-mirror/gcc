@@ -1,3 +1,8 @@
+2019-09-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/naked-1.c: Alter options to use non-
+	PIC codegen for m32 Darwin.
+
 2019-09-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/78260
