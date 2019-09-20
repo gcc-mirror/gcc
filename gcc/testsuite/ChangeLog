@@ -1,3 +1,16 @@
+2019-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/78260
+	* gfortran.dg/goacc/parameter.f95: Change
+	dg-error as it is now detected earlier.
+	* gfortran.dg/goacc/pr85701.f90: Modify to
+	use a separate result variable.
+	* gfortran.dg/goacc/pr78260.f90: New.
+	* gfortran.dg/goacc/pr78260-2.f90: New.
+	* gfortran.dg/gomp/pr78260.f90: New.
+	* gfortran.dg/gomp/pr78260-2.f90: New.
+	* gfortran.dg/gomp/pr78260-3.f90: New.
+
 2019-09-20  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/system_info1.adb: Restrict to *-*-linux* and *-*-mingw*.
@@ -13,23 +26,23 @@
 
 2019-09-20  Martin Jambor  <mjambor@suse.cz>
 
-        * g++.dg/ipa/pr81248.C: Adjust dg-options and dump-scan.
-        * gcc.dg/ipa/ipa-sra-1.c: Likewise.
-        * gcc.dg/ipa/ipa-sra-10.c: Likewise.
-        * gcc.dg/ipa/ipa-sra-11.c: Likewise.
-        * gcc.dg/ipa/ipa-sra-3.c: Likewise.
-        * gcc.dg/ipa/ipa-sra-4.c: Likewise.
-        * gcc.dg/ipa/ipa-sra-5.c: Likewise.
-        * gcc.dg/ipa/ipacost-2.c: Disable ipa-sra.
-        * gcc.dg/ipa/ipcp-agg-9.c: Likewise.
-        * gcc.dg/ipa/pr78121.c: Adjust scan pattern.
-        * gcc.dg/ipa/vrp1.c: Likewise.
-        * gcc.dg/ipa/vrp2.c: Likewise.
-        * gcc.dg/ipa/vrp3.c: Likewise.
-        * gcc.dg/ipa/vrp7.c: Likewise.
-        * gcc.dg/ipa/vrp8.c: Likewise.
-        * gcc.dg/noreorder.c: use noipa attribute instead of noinline.
-        * gcc.dg/ipa/20040703-wpa.c: New test.
+	* g++.dg/ipa/pr81248.C: Adjust dg-options and dump-scan.
+	* gcc.dg/ipa/ipa-sra-1.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-10.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-11.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-3.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-4.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-5.c: Likewise.
+	* gcc.dg/ipa/ipacost-2.c: Disable ipa-sra.
+	* gcc.dg/ipa/ipcp-agg-9.c: Likewise.
+	* gcc.dg/ipa/pr78121.c: Adjust scan pattern.
+	* gcc.dg/ipa/vrp1.c: Likewise.
+	* gcc.dg/ipa/vrp2.c: Likewise.
+	* gcc.dg/ipa/vrp3.c: Likewise.
+	* gcc.dg/ipa/vrp7.c: Likewise.
+	* gcc.dg/ipa/vrp8.c: Likewise.
+	* gcc.dg/noreorder.c: use noipa attribute instead of noinline.
+	* gcc.dg/ipa/20040703-wpa.c: New test.
 	* gcc.dg/ipa/ipa-sra-12.c: New test.
 	* gcc.dg/ipa/ipa-sra-13.c: Likewise.
 	* gcc.dg/ipa/ipa-sra-14.c: Likewise.

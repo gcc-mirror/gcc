@@ -1,3 +1,11 @@
+2019-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/78260
+	* openmp.c (gfc_resolve_oacc_declare): Reject all
+	non variables but accept function result variables.
+	* trans-openmp.c (gfc_trans_omp_clauses): Handle
+	function-result variables for remaing cases.
+
 2019-09-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/91588
