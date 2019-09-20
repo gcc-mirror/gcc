@@ -2658,7 +2658,13 @@ pop:
       gimple *use_stmt = USE_STMT (path[i].second);
       tree op = USE_FROM_PTR (path[i].second);
       if (! has_single_use (op)
-	  || ! is_gimple_assign (use_stmt))
+	  || ! is_gimple_assign (use_stmt)
+	  /* The following make sure we can compute the operand index
+	     easily plus it mostly disallows chaining via COND_EXPR condition
+	     operands.  */
+	  || (gimple_assign_rhs1 (use_stmt) != op
+	      && gimple_assign_rhs2 (use_stmt) != op
+	      && gimple_assign_rhs3 (use_stmt) != op))
 	{
 	  fail = true;
 	  break;
@@ -3058,6 +3064,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 	  || !flow_bb_inside_loop_p (loop, gimple_bb (def1_info->stmt))
 	  || vect_valid_reduction_input_p (def1_info)))
     {
+      STMT_VINFO_REDUC_IDX (def_stmt_info) = 1;
       if (dump_enabled_p ())
 	report_vect_op (MSG_NOTE, def_stmt, "detected reduction: ");
       return def_stmt_info;
@@ -3070,6 +3077,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 	  || !flow_bb_inside_loop_p (loop, gimple_bb (def2_info->stmt))
 	  || vect_valid_reduction_input_p (def2_info)))
     {
+      STMT_VINFO_REDUC_IDX (def_stmt_info) = 0;
       if (dump_enabled_p ())
 	report_vect_op (MSG_NOTE, def_stmt, "detected reduction: ");
       return def_stmt_info;
@@ -3084,16 +3092,18 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
          restriction is that all operations in the chain are the same.  */
       auto_vec<stmt_vec_info, 8> reduc_chain;
       unsigned i;
+      bool is_slp_reduc = !nested_in_vect_loop && code != COND_EXPR;
       for (i = path.length () - 1; i >= 1; --i)
 	{
 	  gimple *stmt = USE_STMT (path[i].second);
 	  if (gimple_assign_rhs_code (stmt) != code)
-	    break;
-	  reduc_chain.safe_push (loop_info->lookup_stmt (stmt));
+	    is_slp_reduc = false;
+	  stmt_vec_info stmt_info = loop_info->lookup_stmt (stmt);
+	  STMT_VINFO_REDUC_IDX (stmt_info)
+	    = path[i].second->use - gimple_assign_rhs1_ptr (stmt);
+	  reduc_chain.safe_push (stmt_info);
 	}
-      if (i == 0
-	  && ! nested_in_vect_loop
-	  && code != COND_EXPR)
+      if (is_slp_reduc)
 	{
 	  for (unsigned i = 0; i < reduc_chain.length () - 1; ++i)
 	    {

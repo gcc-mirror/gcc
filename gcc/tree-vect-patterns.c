@@ -868,6 +868,8 @@ vect_reassociating_reduction_p (stmt_vec_info stmt_info, tree_code code,
 
   *op0_out = gimple_assign_rhs1 (assign);
   *op1_out = gimple_assign_rhs2 (assign);
+  if (commutative_tree_code (code) && STMT_VINFO_REDUC_IDX (stmt_info) == 0)
+    std::swap (*op0_out, *op1_out);
   return true;
 }
 
