@@ -1,3 +1,7 @@
+2019-09-20  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/system_info1.adb: Restrict to *-*-linux* and *-*-mingw*.
+
 2019-09-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pr91269.c: New test.
