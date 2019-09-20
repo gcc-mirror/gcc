@@ -1,3 +1,8 @@
+2019-09-20  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (localize_reductions): Rewrite references for
+	OMP_CLAUSE_PRIVATE also.
+
 2019-09-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gimplify.cc (gomp_oacc_needs_data_present): Remove unused variable.
