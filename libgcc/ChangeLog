@@ -1,3 +1,12 @@
+2019-09-20  Christophe Lyon  <christophe.lyon@st.com>
+
+	Revert:
+	2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+		Mickaël Guêné <mickael.guene@st.com>
+
+	* config/arm/unwind-arm.c (_Unwind_VRS_Set): Handle thumb-only
+	architecture.
+
 2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
 
 	* config/aarch64/lse-init.c: New file.
