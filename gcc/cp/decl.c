@@ -4811,12 +4811,12 @@ fixup_anonymous_aggr (tree t)
   TYPE_HAS_COPY_ASSIGN (t) = 0;
   TYPE_HAS_CONST_COPY_ASSIGN (t) = 0;
 
-  /* Splice the implicitly generated functions out of TYPE_FIELDS.  */
-  for (tree probe, *prev_p = &TYPE_FIELDS (t); (probe = *prev_p);)
-    if (TREE_CODE (probe) == FUNCTION_DECL && DECL_ARTIFICIAL (probe))
-      *prev_p = DECL_CHAIN (probe);
-    else
-      prev_p = &DECL_CHAIN (probe);
+  CLASSTYPE_LAZY_DEFAULT_CTOR (t) = false;
+  CLASSTYPE_LAZY_COPY_CTOR (t) = false;
+  CLASSTYPE_LAZY_MOVE_CTOR (t) = false;
+  CLASSTYPE_LAZY_DESTRUCTOR (t) = false;
+  CLASSTYPE_LAZY_COPY_ASSIGN (t) = false;
+  CLASSTYPE_LAZY_MOVE_ASSIGN (t) = false;
 
   /* Anonymous aggregates cannot have fields with ctors, dtors or complex
      assignment operators (because they cannot have these methods themselves).

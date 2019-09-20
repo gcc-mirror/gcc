@@ -16492,7 +16492,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
 
 	spaces.release ();
 	if (!ok)
-	goto bail;
+	  goto bail;
 
 	/* And unnamed.  */
 	unnamed_lwm = vec_safe_length (unnamed_ary);
@@ -16510,6 +16510,10 @@ module_state::read (int fd, int e, cpp_reader *reader)
 		load_section (ix);
 		if (from ()->get_error ())
 		  goto bail;
+	      }
+	    if (CHECKING_P)
+	      {
+		// FIXME: check we loaded everything
 	      }
 	  }
 
@@ -17108,13 +17112,20 @@ module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
   dump () && dump ("Lazily binding %P@%N section:%u", ns, id, name, snum);
 
   unsigned diags = outermost ? errorcount + warningcount + 1 : 0;
-  if (snum < slurp->current && flag_module_lazy)
-    load_section (snum);
+  int e;
+  if (snum < slurp->current)
+    {
+      load_section (snum);
+      e = elf::E_BAD_DATA;
+    }
+  else
+    e = elf::E_BAD_LAZY;
 
   if (mslot->is_lazy ())
     {
+      /* Oops, the section didn't set this slot.  */
+      from ()->set_error (e);
       *mslot = NULL_TREE;
-      from ()->set_error (elf::E_BAD_LAZY);
     }
 
   bool ok = check_read (diags, ns, id);

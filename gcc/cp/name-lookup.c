@@ -4247,6 +4247,7 @@ get_binding_or_decl (tree ctx, tree name, unsigned mod)
 	  /* The originating module might not have lazily declared
 	     members, but the referencing module will have done so.
 	     We need to repeat that declaration at this point.  */
+	  // FIXME: This is wrong, it causes instantiations to load
 	  maybe_lazily_declare (ctx, name);
 	  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (ctx))
 	    binding = member_vec_binary_search (member_vec, name);

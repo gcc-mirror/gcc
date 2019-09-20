@@ -1,3 +1,14 @@
+2019-09-20  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* decl.c (fixup_anonymous_aggr): Clear LAZY flags, no need to
+	strip out fns.
+	* module.cc (module_state::lazy_load): Distinguish out of order
+	from failure to set slot.
+	* name-lookup.c (get_binding_or_decl): Fixme :(
+	gcc/testsuite/
+	* g++.dg/modules/anon-2{,_[ab]}.[hHC]: New.
+
 2019-09-19  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
