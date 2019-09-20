@@ -1,3 +1,8 @@
+2019-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/typedef-var-1.c: New test.
+	* gcc.dg/typedef-var-2.c: Likewise.
+
 2019-09-20  Martin Jambor  <mjambor@suse.cz>
 
         * g++.dg/ipa/pr81248.C: Adjust dg-options and dump-scan.
