@@ -9778,7 +9778,8 @@ vect_is_simple_cond (tree cond, vec_info *vinfo,
 
 bool
 vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
-			stmt_vec_info *vec_stmt, int reduc_index,
+			stmt_vec_info *vec_stmt, bool for_reduction,
+			int reduc_index,
 			slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {
   vec_info *vinfo = stmt_info->vinfo;
@@ -9807,7 +9808,6 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   vec<tree> vec_oprnds3 = vNULL;
   tree vec_cmp_type;
   bool masked = false;
-  bool for_reduction = (reduc_index > 0);
 
   if (for_reduction && STMT_SLP_TYPE (stmt_info))
     return false;
@@ -10668,7 +10668,7 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 				     node_instance, cost_vec)
 	  || vectorizable_induction (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_shift (stmt_info, NULL, NULL, node, cost_vec)
-	  || vectorizable_condition (stmt_info, NULL, NULL, 0, node,
+	  || vectorizable_condition (stmt_info, NULL, NULL, false, -1, node,
 				     cost_vec)
 	  || vectorizable_comparison (stmt_info, NULL, NULL, node,
 				      cost_vec));
@@ -10687,7 +10687,7 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 	      || vectorizable_load (stmt_info, NULL, NULL, node, node_instance,
 				    cost_vec)
 	      || vectorizable_store (stmt_info, NULL, NULL, node, cost_vec)
-	      || vectorizable_condition (stmt_info, NULL, NULL, 0, node,
+	      || vectorizable_condition (stmt_info, NULL, NULL, false, -1, node,
 					 cost_vec)
 	      || vectorizable_comparison (stmt_info, NULL, NULL, node,
 					  cost_vec));
@@ -10792,7 +10792,7 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       break;
 
     case condition_vec_info_type:
-      done = vectorizable_condition (stmt_info, gsi, &vec_stmt, 0,
+      done = vectorizable_condition (stmt_info, gsi, &vec_stmt, false, -1,
 				     slp_node, NULL);
       gcc_assert (done);
       break;
