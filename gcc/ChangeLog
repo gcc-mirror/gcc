@@ -1,4 +1,13 @@
 2019-09-20  Richard Biener  <rguenther@suse.de>
+	Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/91814
+	* config/i386/i386-features.c (gen_gpr_to_xmm_move_src): Revert
+	previous change.
+	(general_scalar_chain::convert_op): Force not suitable memory
+	operands to a register.
+
+2019-09-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91821
 	* tree-vect-loop.c (check_reduction_path): Check we can compute
