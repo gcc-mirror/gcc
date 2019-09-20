@@ -13857,6 +13857,21 @@ localize_reductions (tree clauses, tree body)
 
 	OMP_CLAUSE_REDUCTION_PRIVATE_DECL (c) = new_var;
       }
+    else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE)
+      {
+	var = OMP_CLAUSE_DECL (c);
+
+	if (!lang_hooks.decls.omp_privatize_by_reference (var))
+	  continue;
+
+	type = TREE_TYPE (TREE_TYPE (var));
+	new_var = create_tmp_var (type, IDENTIFIER_POINTER (DECL_NAME (var)));
+
+	pr.ref_var = var;
+	pr.local_var = new_var;
+
+	walk_tree (&body, localize_reductions_r, &pr, NULL);
+      }
 }
 
 
