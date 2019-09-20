@@ -1,3 +1,16 @@
+2019-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91821
+	* tree-vect-loop.c (check_reduction_path): Check we can compute
+	reduc_idx.
+	(vect_is_simple_reduction): Set STMT_VINFO_REDUC_IDX.
+	* tree-vect-patterns.c (vect_reassociating_reduction_p): Return
+	operands in canonical order.
+	* tree-vectorizer.c (vec_info::new_stmt_vec_info): Initialize
+	STMT_VINFO_REDUC_IDX.
+	* tree-vectorizer.h (_stmt_vec_info::reduc_idx): New.
+	(STMT_VINFO_REDUC_IDX): Likewise.
+
 2019-09-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/91269

@@ -941,6 +941,10 @@ public:
      vect_force_simple_reduction.  */
   enum vect_reduction_type reduc_type;
 
+  /* On a stmt participating in the reduction the index of the operand
+     on the reduction SSA cycle.  */
+  int reduc_idx;
+
   /* On a reduction PHI the def returned by vect_force_simple_reduction.
      On the def returned by vect_force_simple_reduction the
      corresponding PHI.  */
@@ -1030,6 +1034,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_SIMD_LANE_ACCESS_P(S)   (S)->simd_lane_access_p
 #define STMT_VINFO_VEC_REDUCTION_TYPE(S)   (S)->v_reduc_type
 #define STMT_VINFO_VEC_CONST_COND_REDUC_CODE(S) (S)->const_cond_reduc_code
+#define STMT_VINFO_REDUC_IDX(S)		   (S)->reduc_idx
 
 #define STMT_VINFO_DR_WRT_VEC_LOOP(S)      (S)->dr_wrt_vec_loop
 #define STMT_VINFO_DR_BASE_ADDRESS(S)      (S)->dr_wrt_vec_loop.base_address
