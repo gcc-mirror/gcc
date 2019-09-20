@@ -1,3 +1,8 @@
+2019-09-20  Jonas Pfeil  <jonas.pfeil@uli-ulm.de>
+
+	* config/microblaze/microblaze.h (ASM_OUTPUT_SKIP): Use
+	HOST_WIDE_PRINT_UNSIGNED.
+
 2019-09-20  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_trampoline_init): Remove spurious extended
