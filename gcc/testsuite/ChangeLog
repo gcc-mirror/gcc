@@ -1,5 +1,9 @@
 2019-09-20  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc.dg/pr91269.c: New test.
+
+2019-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc.dg/typedef-var-1.c: New test.
 	* gcc.dg/typedef-var-2.c: Likewise.
 
