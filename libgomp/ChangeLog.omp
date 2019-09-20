@@ -1,3 +1,9 @@
+2019-09-20  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/privatized-ref-1.f95: New test.
+	* testsuite/libgomp.oacc-c++/privatized-ref-2.C: New test.
+	* testsuite/libgomp.oacc-c++/privatized-ref-3.C: New test.
+
 2019-09-17  Julian Brown  <julian@codesourcery.com>
 
 	* oacc-host.c (host_openacc_async_queue_callback): Invoke callback
