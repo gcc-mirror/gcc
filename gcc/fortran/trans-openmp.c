@@ -2280,7 +2280,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	      tree node = build_omp_clause (input_location, OMP_CLAUSE_DEPEND);
 	      if (n->expr == NULL || n->expr->ref->u.ar.type == AR_FULL)
 		{
-		  tree decl = gfc_get_symbol_decl (n->sym);
+		  tree decl = gfc_trans_omp_variable (n->sym, false);
 		  if (gfc_omp_privatize_by_reference (decl))
 		    decl = build_fold_indirect_ref (decl);
 		  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
@@ -2341,7 +2341,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	      tree node2 = NULL_TREE;
 	      tree node3 = NULL_TREE;
 	      tree node4 = NULL_TREE;
-	      tree decl = gfc_get_symbol_decl (n->sym);
+	      tree decl = gfc_trans_omp_variable (n->sym, false);
 	      if (DECL_P (decl))
 		TREE_ADDRESSABLE (decl) = 1;
 
@@ -2749,7 +2749,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	      tree node = build_omp_clause (input_location, clause_code);
 	      if (n->expr == NULL || n->expr->ref->u.ar.type == AR_FULL)
 		{
-		  tree decl = gfc_get_symbol_decl (n->sym);
+		  tree decl = gfc_trans_omp_variable (n->sym, false);
 		  if (gfc_omp_privatize_by_reference (decl))
 		    decl = build_fold_indirect_ref (decl);
 		  else if (DECL_P (decl))

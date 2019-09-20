@@ -1,3 +1,13 @@
+2019-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline
+	2019-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (gfc_resolve_oacc_declare): Reject all
+	non variables but accept function result variables.
+	* trans-openmp.c (gfc_trans_omp_clauses): Handle
+	function-result variables for remaing cases.
+
 2019-09-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-expr.c (gfc_auto_dereference_var): Use passed loc argument.

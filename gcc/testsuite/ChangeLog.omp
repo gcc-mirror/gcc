@@ -1,3 +1,18 @@
+2019-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline
+	2019-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/parameter.f95: Change
+	dg-error as it is now detected earlier.
+	* gfortran.dg/goacc/pr85701.f90: Modify to
+	use a separate result variable.
+	* gfortran.dg/goacc/pr78260.f90: New.
+	* gfortran.dg/goacc/pr78260-2.f90: New.
+	* gfortran.dg/gomp/pr78260.f90: New.
+	* gfortran.dg/gomp/pr78260-2.f90: New.
+	* gfortran.dg/gomp/pr78260-3.f90: New.
+
 2019-09-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Add

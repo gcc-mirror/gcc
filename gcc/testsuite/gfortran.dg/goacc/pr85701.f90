@@ -9,11 +9,11 @@ subroutine s2
    !$acc declare present(s2) ! { dg-error "is not a variable" }
 end
 
-function f1 ()
+function f1 () result(res)
    !$acc declare copy(f1) ! { dg-error "is not a variable" }
 end
 
-function f2 ()
+function f2 () result(res)
    !$acc declare present(f2) ! { dg-error "is not a variable" }
 end
 
