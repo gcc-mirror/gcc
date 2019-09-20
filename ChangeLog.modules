@@ -1,6 +1,10 @@
 2019-09-19  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (slurping::slurping): Init current to mostpos - 1.
+	(module_state::read): Increment slurp->current when done.
+
+	gcc/cp/
 	* module.cc (trees_in::tree_node): Check overrun more.
 
 2019-09-18  Nathan Sidwell  <nathan@acm.org>

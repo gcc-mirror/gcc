@@ -3207,7 +3207,9 @@ slurping::slurping (elf_in *from)
   : remap (NULL), from (from),
     headers (BITMAP_GGC_ALLOC ()), macro_defs (), macro_tbl (),
     loc_deltas (0, 0),
-    current (~0u), remaining (0), lru (0)
+    /* Start CURRENT with a non-terminator value, so we don't close
+       the input during the initial import.  */
+    current (~0u - 1), remaining (0), lru (0)
 {
 }
 
@@ -10845,6 +10847,7 @@ depset::hash::add_specializations (bool decl_p)
       tree spec = entry->spec;
       bool is_partial = false;
       int use_tpl = 0;
+
       if (!decl_p)
 	{
 	  use_tpl = CLASSTYPE_USE_TEMPLATE (spec);
@@ -16313,103 +16316,110 @@ module_state::read (int fd, int e, cpp_reader *reader)
 {
   gcc_checking_assert (!slurp);
   slurp = new slurping (new elf_in (fd, e));
-  if (!from ()->begin (loc))
-    return;
 
-  module_state_config config;
+  {
+    if (!from ()->begin (loc))
+      goto bail;
 
-  if (!read_config (config))
-    return;
+    module_state_config config;
 
-  if (!read_ordinary_maps ())
-    return;
+    if (!read_config (config))
+      goto bail;
 
-  /* Read the import table.  */
-  if (config.num_imports > MODULE_IMPORT_BASE
-      && !read_imports (reader, line_table))
-    return;
+    if (!read_ordinary_maps ())
+      goto bail;
 
-  /* Read the elided partition table, if we're the primary partition.  */
-  if (config.num_partitions && is_primary ()
-      && !read_partitions (config.num_partitions))
-    return;
+    /* Read the import table.  */
+    if (config.num_imports > MODULE_IMPORT_BASE
+	&& !read_imports (reader, line_table))
+      goto bail;
 
-  /* Determine the module's number.  */
-  gcc_checking_assert (mod == MODULE_UNKNOWN);
-  gcc_checking_assert (this != (*modules)[MODULE_PURVIEW]);
+    /* Read the elided partition table, if we're the primary partition.  */
+    if (config.num_partitions && is_primary ()
+	&& !read_partitions (config.num_partitions))
+      goto bail;
 
-  unsigned ix = modules->length ();
-  if (ix == MODULE_LIMIT)
-    {
-      sorry ("too many modules loaded (limit is %u)", ix);
-      from ()->set_error (elf::E_BAD_IMPORT);
-      return;
-    }
+    /* Determine the module's number.  */
+    gcc_checking_assert (mod == MODULE_UNKNOWN);
+    gcc_checking_assert (this != (*modules)[MODULE_PURVIEW]);
 
-  vec_safe_push (modules, this);
-  /* We always import and export ourselves. */
-  bitmap_set_bit (imports, ix);
-  bitmap_set_bit (exports, ix);
-  if (is_header ())
-    bitmap_set_bit (slurp->headers, ix);
-  mod = remap = ix;
+    unsigned ix = modules->length ();
+    if (ix == MODULE_LIMIT)
+      {
+	sorry ("too many modules loaded (limit is %u)", ix);
+	from ()->set_error (elf::E_BAD_IMPORT);
+	goto bail;
+      }
 
-  (*slurp->remap)[MODULE_PURVIEW] = mod;
-  dump () && dump ("Assigning %M module number %u", this, mod);
+    vec_safe_push (modules, this);
+    /* We always import and export ourselves. */
+    bitmap_set_bit (imports, ix);
+    bitmap_set_bit (exports, ix);
+    if (is_header ())
+      bitmap_set_bit (slurp->headers, ix);
+    mod = remap = ix;
 
-  /* We should not have been frozen during the importing done by
-     read_config.  */
-  gcc_assert (!from ()->is_frozen ());
+    (*slurp->remap)[MODULE_PURVIEW] = mod;
+    dump () && dump ("Assigning %M module number %u", this, mod);
 
-  if (!read_macro_maps ())
-    return;
+    /* We should not have been frozen during the importing done by
+       read_config.  */
+    gcc_assert (!from ()->is_frozen ());
 
-  cpp_options *cpp_opts = cpp_get_options (reader);
-  if (config.num_macros && !cpp_opts->preprocessed)
-    if (!read_macros ())
-      return;
+    if (!read_macro_maps ())
+      goto bail;
 
-  if (!flag_preprocess_only)
-    {
-      available_clusters += config.sec_range.second - config.sec_range.first;
+    cpp_options *cpp_opts = cpp_get_options (reader);
+    if (config.num_macros && !cpp_opts->preprocessed)
+      if (!read_macros ())
+	goto bail;
 
-      /* Read the namespace hierarchy. */
-      vec<tree> spaces = read_namespaces ();
+    if (!flag_preprocess_only)
+      {
+	available_clusters += config.sec_range.second - config.sec_range.first;
 
-      bool ok = spaces.length ()
-	&& read_bindings (spaces, config.num_bindings, config.sec_range);
+	/* Read the namespace hierarchy. */
+	vec<tree> spaces = read_namespaces ();
 
-      spaces.release ();
-      if (!ok)
-	return;
+	bool ok = spaces.length ()
+	  && read_bindings (spaces, config.num_bindings, config.sec_range);
 
-      /* And unnamed.  */
-      unnamed_lwm = vec_safe_length (unnamed_ary);
-      if (config.num_unnamed
-	  && !read_unnamed (config.num_unnamed, config.sec_range))
-	return;
+	spaces.release ();
+	if (!ok)
+	goto bail;
 
-      if (!flag_module_lazy)
-	{
-	  /* Read the sections in forward order, so that dependencies are read
-	     first.  See note about tarjan_connect.  */
-	  unsigned hwm = config.sec_range.second;
-	  for (unsigned ix = config.sec_range.first; ix != hwm; ix++)
-	    {
-	      load_section (ix);
-	      if (from ()->get_error ())
-		break;
-	    }
-	}
+	/* And unnamed.  */
+	unnamed_lwm = vec_safe_length (unnamed_ary);
+	if (config.num_unnamed
+	    && !read_unnamed (config.num_unnamed, config.sec_range))
+	  goto bail;
 
-      if (!read_inits (config.num_inits))
-	return;
-    }
+	if (!flag_module_lazy)
+	  {
+	    /* Read the sections in forward order, so that dependencies are read
+	       first.  See note about tarjan_connect.  */
+	    unsigned hwm = config.sec_range.second;
+	    for (unsigned ix = config.sec_range.first; ix != hwm; ix++)
+	      {
+		load_section (ix);
+		if (from ()->get_error ())
+		  goto bail;
+	      }
+	  }
 
-  /* We're done with the string and non-decl sections now.  */
-  from ()->release ();
-  slurp->remaining = config.sec_range.second - config.sec_range.first;
-  slurp->lru = ++lazy_lru;
+	if (!read_inits (config.num_inits))
+	  goto bail;
+      }
+
+    /* We're done with the string and non-decl sections now.  */
+    from ()->release ();
+    slurp->remaining = config.sec_range.second - config.sec_range.first;
+    slurp->lru = ++lazy_lru;
+  }
+  
+ bail:
+  slurp->current++;
+  gcc_assert (slurp->current == ~0u);
 }
 
 void
