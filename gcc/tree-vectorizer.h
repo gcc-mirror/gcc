@@ -1534,7 +1534,7 @@ extern void vect_remove_stores (stmt_vec_info);
 extern opt_result vect_analyze_stmt (stmt_vec_info, bool *, slp_tree,
 				     slp_instance, stmt_vector_for_cost *);
 extern bool vectorizable_condition (stmt_vec_info, gimple_stmt_iterator *,
-				    stmt_vec_info *, int, slp_tree,
+				    stmt_vec_info *, bool, int, slp_tree,
 				    stmt_vector_for_cost *);
 extern bool vectorizable_shift (stmt_vec_info, gimple_stmt_iterator *,
 				stmt_vec_info *, slp_tree,

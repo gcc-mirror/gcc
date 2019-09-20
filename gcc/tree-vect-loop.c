@@ -6534,9 +6534,10 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     {
       /* Only call during the analysis stage, otherwise we'll lose
 	 STMT_VINFO_TYPE.  */
-      gcc_assert (reduc_index > 0);
+      gcc_assert (nested_cycle || reduc_index > 0);
       if (!vec_stmt && !vectorizable_condition (stmt_info, gsi, NULL,
-						reduc_index, NULL, cost_vec))
+						true, reduc_index,
+						NULL, cost_vec))
         {
           if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6991,7 +6992,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     {
       gcc_assert (!slp_node && reduc_index > 0);
       return vectorizable_condition (stmt_info, gsi, vec_stmt,
-				     reduc_index, NULL, NULL);
+				     true, reduc_index, NULL, NULL);
     }
 
   /* Create the destination vector  */
@@ -7021,8 +7022,8 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     {
       if (code == COND_EXPR)
         {
-          gcc_assert (!slp_node && reduc_index > 0);
-	  vectorizable_condition (stmt_info, gsi, vec_stmt,
+          gcc_assert (!slp_node && (nested_cycle || reduc_index > 0));
+	  vectorizable_condition (stmt_info, gsi, vec_stmt, true,
 				  reduc_index, NULL, NULL);
           break;
         }
