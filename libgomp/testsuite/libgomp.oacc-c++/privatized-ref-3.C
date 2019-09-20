@@ -47,7 +47,7 @@ void gangs (void)
     int tmpvar;
     int &tmpref = tmpvar;
 #pragma acc loop collapse(2) gang private(tmpref) /* { dg-line l_loop[incr c_loop] } */
-    /* { dg-note {variable 'tmpref' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop } */
+    /* { dg-note {variable 'tmpref' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { xfail *-*-* } l_loop$c_loop } */
     /* { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop } */
     /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop } */
     for (i = 0; i < 256; i++)
@@ -96,7 +96,7 @@ void workers (void)
     for (i = 0; i < 256; i++)
       {
 #pragma acc loop worker private(tmpref) /* { dg-line l_loop[incr c_loop] } */
-	/* { dg-note {variable 'tmpref' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop } */
+	/* { dg-note {variable 'tmpref' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { xfail *-*-* } l_loop$c_loop } */
 	/* { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop } */
 	for (j = 0; j < 256; j++)
 	  {
@@ -142,7 +142,7 @@ void vectors (void)
     for (i = 0; i < 256; i++)
       {
 #pragma acc loop vector private(tmpref) /* { dg-line l_loop[incr c_loop] } */
-	/* { dg-note {variable 'tmpref' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop } */
+	/* { dg-note {variable 'tmpref' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { xfail *-*-* } l_loop$c_loop } */
 	/* { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop } */
 	for (j = 0; j < 256; j++)
 	  {
@@ -184,7 +184,7 @@ void gangs_workers_vectors (void)
     int tmpvar;
     int &tmpref = tmpvar;
 #pragma acc loop collapse(2) gang worker vector private(tmpref) /* { dg-line l_loop[incr c_loop] } */
-    /* { dg-note {variable 'tmpref' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop } */
+    /* { dg-note {variable 'tmpref' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { xfail *-*-* } l_loop$c_loop } */
     /* { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop } */
     /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop } */
     for (i = 0; i < 256; i++)

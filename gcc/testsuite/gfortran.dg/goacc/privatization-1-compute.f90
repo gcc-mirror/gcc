@@ -37,12 +37,12 @@ contains
           ! (See C/C++ example.)
 
           a = g (i, j, a, c)
-          ! { dg-warning {'i' is used uninitialized} {} { target *-*-* } .-1 }
-          !   { dg-note {'i' was declared here} {} { target *-*-* } l_function$c_function }
-          ! { dg-warning {'j' is used uninitialized} {} { target *-*-* } .-3 }
-          !   { dg-note {'j' was declared here} {} { target *-*-* } l_function$c_function }
-          ! { dg-warning {'a' is used uninitialized} {} { target *-*-* } .-5 }
-          !   { dg-note {'a' was declared here} {} { target *-*-* } l_function$c_function }
+          ! { dg-warning {'i\.[0-9]+' is used uninitialized} {} { target *-*-* } .-1 }
+          !   { dg-note {'i\.[0-9]+' was declared here} {} { target *-*-* } l_compute$c_compute }
+          ! { dg-warning {'j\.[0-9]+' is used uninitialized} {} { target *-*-* } .-3 }
+          !   { dg-note {'j\.[0-9]+' was declared here} {} { target *-*-* } l_compute$c_compute }
+          ! { dg-warning {'a\.[0-9]+' is used uninitialized} {} { target *-*-* } .-5 }
+          !   { dg-note {'a\.[0-9]+' was declared here} {} { target *-*-* } l_compute$c_compute }
           x = a
           !$acc atomic write ! ... to force 'TREE_ADDRESSABLE'.
           y = a
