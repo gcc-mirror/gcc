@@ -1,3 +1,8 @@
+2019-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/91269
+	* config/sparc/sparc.h (HARD_REGNO_CALLER_SAVE_MODE): Define.
+
 2019-09-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91822
