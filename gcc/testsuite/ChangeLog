@@ -1,3 +1,14 @@
+2019-09-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/81058
+	* gcc.target/i386/avx512bw-vpmovswb-1.c: Use regular data section
+	for variables on Darwin, rather than common.
+	* gcc.target/i386/avx512bw-vpmovuswb-1.c: Likewise.
+	* gcc.target/i386/avx512bw-vpmovwb-1.c: Likewise.
+
 2019-09-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
