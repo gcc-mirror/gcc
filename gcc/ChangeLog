@@ -1,5 +1,13 @@
 2019-09-21  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* ira-conflicts.c (can_use_same_reg_p): New function.
+	(process_reg_shuffles): Take an insn parameter.  Ignore cases
+	in which input operand op_num could seemingly never be allocated
+	to the same register as the destination.
+	(add_insn_allocno_copies): Update call to process_reg_shuffles.
+
+2019-09-21  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* simplify-rtx.c (neg_const_int): Replace with...
 	(neg_poly_int_rtx): ...this new function.
 	(simplify_binary_operation_1): Extend (minus x C) -> (plus X -C)

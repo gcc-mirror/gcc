@@ -1,3 +1,9 @@
+2019-09-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cond_convert_1.c: Remove XFAILs.
+	* gcc.target/aarch64/sve/cond_convert_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_unary_2.c: Likewise.
+
 2019-09-20  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/i386/naked-1.c: Alter options to use non-
