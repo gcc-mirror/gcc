@@ -1,3 +1,8 @@
+2019-09-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (machopic_legitimize_pic_address): Check
+	for lra not reload.
+
 2019-09-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* ira-conflicts.c (can_use_same_reg_p): New function.
