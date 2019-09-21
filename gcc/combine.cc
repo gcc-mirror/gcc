@@ -108,10 +108,6 @@ static int combine_extras;
 
 static int combine_successes;
 
-/* Totals over entire compilation.  */
-
-static int total_attempts, total_merges, total_extras, total_successes;
-
 /* combine_instructions may try to replace the right hand side of the
    second instruction with the value of an associated REG_EQUAL note
    before throwing it at try_combine.  That is problematic when there
@@ -1456,10 +1452,10 @@ retry:
     undobuf.frees = 0;
   }
 
-  total_attempts += combine_attempts;
-  total_merges += combine_merges;
-  total_extras += combine_extras;
-  total_successes += combine_successes;
+  statistics_counter_event (cfun, "attempts", combine_attempts);
+  statistics_counter_event (cfun, "merges", combine_merges);
+  statistics_counter_event (cfun, "extras", combine_extras);
+  statistics_counter_event (cfun, "successes", combine_successes);
 
   nonzero_sign_valid = 0;
   rtl_hooks = general_rtl_hooks;
@@ -14934,24 +14930,6 @@ unmentioned_reg_p (rtx equiv, rtx expr)
 	return true;
     }
   return false;
-}
-
-DEBUG_FUNCTION void
-dump_combine_stats (FILE *file)
-{
-  fprintf
-    (file,
-     ";; Combiner statistics: %d attempts, %d substitutions (%d requiring new space),\n;; %d successes.\n\n",
-     combine_attempts, combine_merges, combine_extras, combine_successes);
-}
-
-void
-dump_combine_total_stats (FILE *file)
-{
-  fprintf
-    (file,
-     "\n;; Combiner totals: %d attempts, %d substitutions (%d requiring new space),\n;; %d successes.\n",
-     total_attempts, total_merges, total_extras, total_successes);
 }
 
 /* Make pseudo-to-pseudo copies after every hard-reg-to-pseudo-copy, because
