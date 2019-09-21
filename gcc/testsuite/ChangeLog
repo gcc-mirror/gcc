@@ -1,3 +1,8 @@
+2019-09-21  Marek Polacek  <polacek@redhat.com>
+
+	DR 2345 - Jumping across initializers in init-statements and conditions.
+	* g++.dg/cpp1z/init-statement10.C: New test.
+
 2019-09-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/cond_convert_1.c: Remove XFAILs.
