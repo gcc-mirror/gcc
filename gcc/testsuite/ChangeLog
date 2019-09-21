@@ -1,3 +1,8 @@
+2019-09-21  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91830
+	* gcc/testsuite/gcc.dg/Warray-bounds-47.c: New test.
+
 2019-09-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/30277

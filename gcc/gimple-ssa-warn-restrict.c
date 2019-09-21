@@ -517,14 +517,8 @@ builtin_memref::set_base_and_offset (tree expr)
 	       struct S { char a, b[3]; } s[2];
 	       strcpy (s[1].b, "1234");
 	     REFOFF is set to s[1].b - (char*)s.  */
-      	  tree basetype = TREE_TYPE (TREE_TYPE (base));
-	  if (tree basesize = TYPE_SIZE_UNIT (basetype))
-	    if (TREE_CODE (basesize) == INTEGER_CST)
-	      {
-		offset_int size = wi::to_offset (basesize);
-		offset_int off = tree_to_shwi (memrefoff);
-		refoff += size * (off / size);
-	      }
+	  offset_int off = tree_to_shwi (memrefoff);
+	  refoff += off;
       	}
 
       if (!integer_zerop (memrefoff))
