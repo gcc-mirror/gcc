@@ -1,3 +1,11 @@
+2019-09-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* simplify-rtx.c (neg_const_int): Replace with...
+	(neg_poly_int_rtx): ...this new function.
+	(simplify_binary_operation_1): Extend (minus x C) -> (plus X -C)
+	to all CONST_SCALAR_INTs and to CONST_POLY_INT.
+	(simplify_plus_minus): Likewise for constant terms here.
+
 2019-09-20  Jonas Pfeil  <jonas.pfeil@uli-ulm.de>
 
 	* config/microblaze/microblaze.h (ASM_OUTPUT_SKIP): Use
