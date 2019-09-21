@@ -46,7 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #define HWI_SIGN_EXTEND(low) \
   ((((HOST_WIDE_INT) low) < 0) ? HOST_WIDE_INT_M1 : HOST_WIDE_INT_0)
 
-static rtx neg_const_int (machine_mode, const_rtx);
 static bool plus_minus_operand_p (const_rtx);
 static rtx simplify_plus_minus (enum rtx_code, machine_mode, rtx, rtx);
 static rtx simplify_associative_operation (enum rtx_code, machine_mode,
@@ -57,17 +56,12 @@ static rtx simplify_unary_operation_1 (enum rtx_code, machine_mode, rtx);
 static rtx simplify_binary_operation_1 (enum rtx_code, machine_mode,
 					rtx, rtx, rtx, rtx);
 
-/* Negate a CONST_INT rtx.  */
+/* Negate I, which satisfies poly_int_rtx_p.  MODE is the mode of I.  */
+
 static rtx
-neg_const_int (machine_mode mode, const_rtx i)
+neg_poly_int_rtx (machine_mode mode, const_rtx i)
 {
-  unsigned HOST_WIDE_INT val = -UINTVAL (i);
-  
-  if (!HWI_COMPUTABLE_MODE_P (mode)
-      && val == UINTVAL (i))
-    return simplify_const_unary_operation (NEG, mode, CONST_CAST_RTX (i),
-					   mode);
-  return gen_int_mode (val, mode);
+  return immed_wide_int_const (-wi::to_poly_wide (i, mode), mode);
 }
 
 /* Test whether expression, X, is an immediate constant that represents
@@ -2547,10 +2541,10 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	return plus_constant (mode, op0, trunc_int_for_mode (-offset, mode));
 
       /* Don't let a relocatable value get a negative coeff.  */
-      if (CONST_INT_P (op1) && GET_MODE (op0) != VOIDmode)
+      if (poly_int_rtx_p (op1) && GET_MODE (op0) != VOIDmode)
 	return simplify_gen_binary (PLUS, mode,
 				    op0,
-				    neg_const_int (mode, op1));
+				    neg_poly_int_rtx (mode, op1));
 
       /* (x - (x & y)) -> (x & ~y) */
       if (INTEGRAL_MODE_P (mode) && GET_CODE (op1) == AND)
@@ -4619,11 +4613,12 @@ simplify_plus_minus (enum rtx_code code, machine_mode mode, rtx op0,
 		}
 	      break;
 
-	    case CONST_INT:
+	    CASE_CONST_SCALAR_INT:
+	    case CONST_POLY_INT:
 	      n_constants++;
 	      if (this_neg)
 		{
-		  ops[i].op = neg_const_int (mode, this_op);
+		  ops[i].op = neg_poly_int_rtx (mode, this_op);
 		  ops[i].neg = 0;
 		  changed = 1;
 		  canonicalized = 1;
@@ -4748,8 +4743,8 @@ simplify_plus_minus (enum rtx_code code, machine_mode mode, rtx op0,
 		    lneg &= rneg;
 		    if (GET_CODE (tem) == NEG)
 		      tem = XEXP (tem, 0), lneg = !lneg;
-		    if (CONST_INT_P (tem) && lneg)
-		      tem = neg_const_int (mode, tem), lneg = 0;
+		    if (poly_int_rtx_p (tem) && lneg)
+		      tem = neg_poly_int_rtx (mode, tem), lneg = 0;
 
 		    ops[i].op = tem;
 		    ops[i].neg = lneg;
@@ -4808,12 +4803,12 @@ simplify_plus_minus (enum rtx_code code, machine_mode mode, rtx op0,
      in the array and that any other constant will be next-to-last.  */
 
   if (n_ops > 1
-      && CONST_INT_P (ops[n_ops - 1].op)
+      && poly_int_rtx_p (ops[n_ops - 1].op)
       && CONSTANT_P (ops[n_ops - 2].op))
     {
       rtx value = ops[n_ops - 1].op;
       if (ops[n_ops - 1].neg ^ ops[n_ops - 2].neg)
-	value = neg_const_int (mode, value);
+	value = neg_poly_int_rtx (mode, value);
       if (CONST_INT_P (value))
 	{
 	  ops[n_ops - 2].op = plus_constant (mode, ops[n_ops - 2].op,
