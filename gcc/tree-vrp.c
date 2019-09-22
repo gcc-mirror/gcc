@@ -6921,9 +6921,9 @@ value_range_base::normalize_symbolics () const
     {
       // [SYM, NUM] -> [-MIN, NUM]
       if (min_symbolic)
-	return value_range_base (VR_RANGE, vrp_val_min (ttype), max ());
+	return value_range_base (VR_RANGE, vrp_val_min (ttype, true), max ());
       // [NUM, SYM] -> [NUM, +MAX]
-      return value_range_base (VR_RANGE, min (), vrp_val_max (ttype));
+      return value_range_base (VR_RANGE, min (), vrp_val_max (ttype, true));
     }
   gcc_assert (kind () == VR_ANTI_RANGE);
   // ~[SYM, NUM] -> [NUM + 1, +MAX]
@@ -6932,7 +6932,7 @@ value_range_base::normalize_symbolics () const
       if (!vrp_val_is_max (max ()))
 	{
 	  tree n = wide_int_to_tree (ttype, wi::to_wide (max ()) + 1);
-	  return value_range_base (VR_RANGE, n, vrp_val_max (ttype));
+	  return value_range_base (VR_RANGE, n, vrp_val_max (ttype, true));
 	}
       value_range_base var;
       var.set_varying (ttype);
@@ -6942,7 +6942,7 @@ value_range_base::normalize_symbolics () const
   if (!vrp_val_is_min (min ()))
     {
       tree n = wide_int_to_tree (ttype, wi::to_wide (min ()) - 1);
-      return value_range_base (VR_RANGE, vrp_val_min (ttype), n);
+      return value_range_base (VR_RANGE, vrp_val_min (ttype, true), n);
     }
   value_range_base var;
   var.set_varying (ttype);
