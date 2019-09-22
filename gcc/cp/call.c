@@ -5878,7 +5878,10 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
     goto builtin;
 
   if (code == POSTINCREMENT_EXPR || code == POSTDECREMENT_EXPR)
-    arg2 = integer_zero_node;
+    {
+      arg2 = integer_zero_node;
+      arg2_type = integer_type_node;
+    }
 
   vec_alloc (arglist, 3);
   arglist->quick_push (arg1);

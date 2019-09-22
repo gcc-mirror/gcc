@@ -1,3 +1,8 @@
+2019-09-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91819 - ICE with operator++ and enum.
+	* call.c (build_new_op_1): Set arg2_type.
+
 2019-09-17  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_statement): Handle [[likely]] on
