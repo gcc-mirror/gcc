@@ -2521,6 +2521,13 @@ assert_compare_value_ranges (const value_range_base *old_vr,
   if (code == EXACT_DIV_EXPR && vr0->nonzero_p ())
     return;
 
+  /* RSHIFT by [SYM, INT] is dropped to varying in VRP.  Range-ops can
+     normalize this to [0, INT] which can sometimes give better
+     results.  */
+  if (code == RSHIFT_EXPR && vr1->symbolic_p ()
+      && TREE_CODE (vr1->max ()) == INTEGER_CST)
+    return;
+
   /* The ordering in which range-ops and
      extract_range_from_binary_expr split up and handle sub-ranges
      matters, and this can yield slightly worse results for VRP at
