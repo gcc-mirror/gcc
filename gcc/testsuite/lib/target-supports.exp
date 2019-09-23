@@ -3489,18 +3489,43 @@ proc check_effective_target_arm_soft_ok { } {
     }
 }
 
-# Return 1 if this is an ARM target supporting -mfpu=vfp
-# -mfloat-abi=softfp.  Some multilibs may be incompatible with these
-# options.
+# Return 1 if this is an ARM target supporting -mfpu=vfp with an
+# appropriate abi.
+
+proc check_effective_target_arm_vfp_ok_nocache { } {
+    global et_arm_vfp_flags
+    set et_arm_vfp_flags ""
+    if { [check_effective_target_arm32] } {
+	foreach flags {"-mfpu=vfp" "-mfpu=vfp -mfloat-abi=softfp" "-mpu=vfp -mfloat-abi=hard"} {
+	    if { [check_no_compiler_messages_nocache arm_fp_ok object {
+		#ifndef __ARM_FP
+		#error __ARM_FP not defined
+		#endif
+	    } "$flags"] } {
+		set et_arm_vfp_flags $flags
+		return 1
+	    }
+	}
+    }
+
+    return 0
+}
 
 proc check_effective_target_arm_vfp_ok { } {
-    if { [check_effective_target_arm32] } {
-	return [check_no_compiler_messages arm_vfp_ok object {
-	    int dummy;
-	} "-mfpu=vfp -mfloat-abi=softfp"]
-    } else {
-	return 0
+    return [check_cached_effective_target arm_vfp_ok \
+		check_effective_target_arm_vfp_ok_nocache]
+}
+
+# Add the options needed to compile code with -mfpu=vfp.  We need either
+# -mfloat-abi=softfp or -mfloat-abi=hard, but if one is already
+# specified by the multilib, use it.
+
+proc add_options_for_arm_vfp { flags } {
+    if { ! [check_effective_target_arm_vfp_ok] } {
+	return "$flags"
     }
+    global et_arm_vfp_flags
+    return "$flags $et_arm_vfp_flags"
 }
 
 # Return 1 if this is an ARM target supporting -mfpu=vfp3
@@ -6677,6 +6702,9 @@ proc check_effective_target_sqrt_insn { } {
 proc add_options_for_sqrt_insn { flags } {
     if { [istarget amdgcn*-*-*] } {
 	return "$flags -ffast-math"
+    }
+    if { [istarget arm*-*-*] } {
+	return [add_options_for_arm_vfp "$flags"]
     }
     return $flags
 }
