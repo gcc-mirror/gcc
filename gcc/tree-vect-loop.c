@@ -4003,8 +4003,10 @@ get_initial_def_for_reduction (stmt_vec_info stmt_vinfo, tree init_val,
   gcc_assert (nested_in_vect_loop_p (loop, stmt_vinfo)
 	      || loop == (gimple_bb (stmt_vinfo->stmt))->loop_father);
 
-  vect_reduction_type reduction_type
-    = STMT_VINFO_VEC_REDUCTION_TYPE (stmt_vinfo);
+  /* ADJUSTMENT_DEF is NULL when called from
+     vect_create_epilog_for_reduction to vectorize double reduction.  */
+  if (adjustment_def)
+    *adjustment_def = NULL;
 
   switch (code)
     {
@@ -4018,11 +4020,6 @@ get_initial_def_for_reduction (stmt_vec_info stmt_vinfo, tree init_val,
     case MULT_EXPR:
     case BIT_AND_EXPR:
       {
-        /* ADJUSTMENT_DEF is NULL when called from
-           vect_create_epilog_for_reduction to vectorize double reduction.  */
-        if (adjustment_def)
-	  *adjustment_def = init_val;
-
         if (code == MULT_EXPR)
           {
             real_init_val = dconst1;
@@ -4037,10 +4034,14 @@ get_initial_def_for_reduction (stmt_vec_info stmt_vinfo, tree init_val,
         else
           def_for_init = build_int_cst (scalar_type, int_init_val);
 
-	if (adjustment_def)
-	  /* Option1: the first element is '0' or '1' as well.  */
-	  init_def = gimple_build_vector_from_val (&stmts, vectype,
-						   def_for_init);
+	if (adjustment_def || operand_equal_p (def_for_init, init_val, 0))
+	  {
+	    /* Option1: the first element is '0' or '1' as well.  */
+	    if (!operand_equal_p (def_for_init, init_val, 0))
+	      *adjustment_def = init_val;
+	    init_def = gimple_build_vector_from_val (&stmts, vectype,
+						     def_for_init);
+	  }
 	else if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant ())
 	  {
 	    /* Option2 (variable length): the first element is INIT_VAL.  */
@@ -4064,16 +4065,6 @@ get_initial_def_for_reduction (stmt_vec_info stmt_vinfo, tree init_val,
     case MAX_EXPR:
     case COND_EXPR:
       {
-	if (adjustment_def)
-          {
-	    *adjustment_def = NULL_TREE;
-	    if (reduction_type != COND_REDUCTION
-		&& reduction_type != EXTRACT_LAST_REDUCTION)
-	      {
-		init_def = vect_get_vec_def_for_operand (init_val, stmt_vinfo);
-		break;
-	      }
-	  }
 	init_val = gimple_convert (&stmts, TREE_TYPE (vectype), init_val);
 	init_def = gimple_build_vector_from_val (&stmts, vectype, init_val);
       }
@@ -4304,7 +4295,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
   tree vec_dest;
   tree new_temp = NULL_TREE, new_dest, new_name, new_scalar_dest;
   gimple *epilog_stmt = NULL;
-  enum tree_code code = gimple_assign_rhs_code (stmt_info->stmt);
   gimple *exit_phi;
   tree bitsize;
   tree adjustment_def = NULL;
@@ -4645,12 +4635,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
       gcc_assert (STMT_VINFO_IN_PATTERN_P (orig_stmt_info));
       gcc_assert (STMT_VINFO_RELATED_STMT (orig_stmt_info) == stmt_info);
     }
-
-  code = gimple_assign_rhs_code (orig_stmt_info->stmt);
-  /* For MINUS_EXPR the initial vector is [init_val,0,...,0], therefore,
-     partial results are added and not subtracted.  */
-  if (code == MINUS_EXPR) 
-    code = PLUS_EXPR;
   
   scalar_dest = gimple_assign_lhs (orig_stmt_info->stmt);
   scalar_type = TREE_TYPE (scalar_dest);
@@ -4665,7 +4649,14 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
      in the vectorized outer-loop, or reduced to a scalar result at the end of
      the outer-loop.  */
   if (nested_in_vect_loop && !double_reduc)
-    goto vect_finalize_reduction;
+    ;
+  else
+    {
+  enum tree_code code = gimple_assign_rhs_code (orig_stmt_info->stmt);
+  /* For MINUS_EXPR the initial vector is [init_val,0,...,0], therefore,
+     partial results are added and not subtracted.  */
+  if (code == MINUS_EXPR) 
+    code = PLUS_EXPR;
 
   /* SLP reduction without reduction chain, e.g.,
      # a1 = phi <a2, a0>
@@ -5352,12 +5343,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
 	  scalar_results[0] = tmp;
 	}
     }
-  
-vect_finalize_reduction:
-
-  if (double_reduc)
-    loop = loop->inner;
-
+ 
   /* 2.5 Adjust the final result by the initial value of the reduction
 	 variable. (When such adjustment is not needed, then
 	 'adjustment_def' is zero).  For example, if code is PLUS we create:
@@ -5401,6 +5387,10 @@ vect_finalize_reduction:
 
       new_phis[0] = epilog_stmt;
     }
+    }
+
+  if (double_reduc)
+    loop = loop->inner;
 
   /* 2.6  Handle the loop-exit phis.  Replace the uses of scalar loop-exit
           phis with new adjusted scalar results, i.e., replace use <s_out0>

@@ -1,3 +1,10 @@
+2019-09-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (get_initial_def_for_reduction): Simplify,
+	avoid adjusting by + 0 or * 1.
+	(vect_create_epilog_for_reduction): Get reduction code only
+	when necessary.  Deal with adjustment_def only when necessary.
+
 2019-09-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/atomics.md (aarch64_store_exclusive_pair): Fix
