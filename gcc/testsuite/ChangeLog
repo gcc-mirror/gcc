@@ -1,7 +1,7 @@
 2019-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/compile_time1.ads: New test.
-	* gnat.dg/specs/compile_time1_pkg.ads! New helper.
+	* gnat.dg/specs/compile_time1_pkg.ads: New helper.
 
 2019-09-22  Marek Polacek  <polacek@redhat.com>
 
