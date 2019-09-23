@@ -2269,7 +2269,8 @@ private:
     DB_MERGEABLE_BIT,		/* An entity that needs merging.  */
     DB_PSEUDO_SPEC_BIT,		/* A non-specialization
 				   specialization.  */
-    DB_TYPE_SPEC_BIT,		/* Specialization from the type hash.  */
+    DB_TYPE_SPEC_BIT,		/* Specialization from the type table.  */
+    DB_BOTH_SPEC_BIT,		/* Specialization in both spec tables.  */
   };
 
 public:
@@ -10795,45 +10796,24 @@ static void
 specialization_add (bool decl_p, spec_entry *entry, void *data_)
 {
   vec<spec_entry *> *data = reinterpret_cast <vec<spec_entry *> *> (data_);
-  tree spec = entry->spec;
-
-#if CHECKING_P
-  /* We exclusively use decls to locate things.  Make sure there's
-     no mismatch between the two specialization tables we keep.
-     pt.c optimizes instantiation lookup using a complicated
-     heuristic.  We don't attempt to replicate that algorithm, but
-     observe its behaviour and reproduce it upon read back.  */
-  if (TREE_CODE (DECL_TEMPLATE_RESULT (entry->tmpl)) == TYPE_DECL
-      && TYPE_DECL_ALIAS_P (DECL_TEMPLATE_RESULT (entry->tmpl)))
-    {
-      // FIXME: It's not entirely clear to me the relationship when
-      // the template's an alias.
-    }
-  else if (!decl_p)
-    {
-      /* If it's a (non-template-alias) type, we don't expect to find
-	 its TYPE_STUB_DECL.  */
-      gcc_checking_assert (DECL_CLASS_TEMPLATE_P (entry->tmpl));
-      tree existing = check_mergeable_specialization
-	(true, entry->tmpl, entry->args);
-      gcc_checking_assert (!existing);
-    }
-#endif
 
   if (!decl_p)
     {
-      if (TYPE_DECL_ALIAS_P (DECL_TEMPLATE_RESULT (entry->tmpl)))
-	/* This will be found via the decl walk.  We only want it
-	   once.  */
-	// FIXME: Sure?
-	return;
+      /* We exclusively use decls to locate things.  Make sure there's
+	 no mismatch between the two specialization tables we keep.
+	 pt.c optimizes instantiation lookup using a complicated
+	 heuristic.  We don't attempt to replicate that algorithm, but
+	 observe its behaviour and reproduce it upon read back.  */
 
-      if (TREE_CODE (TREE_TYPE (DECL_TEMPLATE_RESULT (entry->tmpl)))
-	  == ENUMERAL_TYPE)
-	// FIXME: Likewise. Hey, make anon enum tags anon
-	return;
+       gcc_checking_assert (DECL_ALIAS_TEMPLATE_P (entry->tmpl)
+			   || TREE_CODE (entry->spec) == ENUMERAL_TYPE
+			   || DECL_CLASS_TEMPLATE_P (entry->tmpl));
 
-      spec = TYPE_STUB_DECL (spec);
+       /* Only alias templates can appear in both tables (and
+	  if they're in the type table they must also be in the decl table).  */
+       gcc_checking_assert (!check_mergeable_specialization
+			    (true, entry->tmpl, entry->args)
+			    == (decl_p || !DECL_ALIAS_TEMPLATE_P (entry->tmpl)));
     }
 
   data->safe_push (entry);
@@ -10868,7 +10848,7 @@ specialization_cmp (const void *a_, const void *b_)
 
 /* Insert a redirect for the DECL_TEMPLATE_RESULT of a partial
    specialization, as we're unable to go from there to here (without
-   repeating the DCL_TEMPLATE_SPECIALIZATIONS walk for *every*
+   repeating the DECL_TEMPLATE_SPECIALIZATIONS walk for *every*
    MAYBE_SPEC dependency add.  */
 
 depset *
@@ -10953,28 +10933,65 @@ depset::hash::add_specializations (bool decl_p)
       tree spec = entry->spec;
       bool is_partial = false;
       int use_tpl = 0;
+      bool is_alias = false;
 
-      if (!decl_p)
+      if (!decl_p && DECL_ALIAS_TEMPLATE_P (entry->tmpl))
 	{
-	  use_tpl = CLASSTYPE_USE_TEMPLATE (spec);
+	  spec = TYPE_NAME (spec);
+	  is_alias = true;
+	}
 
-	  tree partial = DECL_TEMPLATE_SPECIALIZATIONS (entry->tmpl);
-	  for (; partial; partial = TREE_CHAIN (partial))
-	    if (TREE_TYPE (partial) == spec)
-	      break;
-
-	  if (partial)
+      if (decl_p || is_alias)
+	{
+	  if (tree ti = DECL_TEMPLATE_INFO (spec))
 	    {
-	      gcc_checking_assert (entry->args == TREE_PURPOSE (partial));
-	      is_partial = true;
-	      /* Get the TEMPLATE_DECL for the partial
-		 specialization.  */
-	      spec = TREE_VALUE (partial);
-	      gcc_assert (DECL_USE_TEMPLATE (spec) == use_tpl);
+	      tree tmpl = TI_TEMPLATE (ti);
+
+	      use_tpl = DECL_USE_TEMPLATE (spec);
+	      if (spec == DECL_TEMPLATE_RESULT (tmpl))
+		{
+		  spec = tmpl;
+		  gcc_checking_assert (DECL_USE_TEMPLATE (spec) == use_tpl);
+		}
+	    }
+	  else
+	    /* This is some kind of friend.  */
+	    gcc_assert (!DECL_USE_TEMPLATE (spec));
+	}
+      else
+	{
+	  if (TREE_CODE (spec) == ENUMERAL_TYPE)
+	    {
+	      tree ctx = DECL_CONTEXT (TYPE_NAME (spec));
+
+	      if (TYPE_P (ctx))
+		use_tpl = CLASSTYPE_USE_TEMPLATE (ctx);
+	      else
+		use_tpl = DECL_USE_TEMPLATE (ctx);
 	    }
 	  else
 	    {
-	      tree ti = CLASSTYPE_TEMPLATE_INFO (spec);
+	      use_tpl = CLASSTYPE_USE_TEMPLATE (spec);
+
+	      tree partial = DECL_TEMPLATE_SPECIALIZATIONS (entry->tmpl);
+	      for (; partial; partial = TREE_CHAIN (partial))
+		if (TREE_TYPE (partial) == spec)
+		  break;
+
+	      if (partial)
+		{
+		  gcc_checking_assert (entry->args == TREE_PURPOSE (partial));
+		  is_partial = true;
+		  /* Get the TEMPLATE_DECL for the partial
+		     specialization.  */
+		  spec = TREE_VALUE (partial);
+		  gcc_assert (DECL_USE_TEMPLATE (spec) == use_tpl);
+		}
+	    }
+
+	  if (!is_partial)
+	    {
+	      tree ti = TYPE_TEMPLATE_INFO (spec);
 	      tree tmpl = TI_TEMPLATE (ti);
 
 	      spec = TYPE_NAME (spec);
@@ -10985,20 +11002,6 @@ depset::hash::add_specializations (bool decl_p)
 		}
 	    }
 	}
-      else if (tree ti = DECL_TEMPLATE_INFO (spec))
-	{
-	  tree tmpl = TI_TEMPLATE (ti);
-
-	  use_tpl = DECL_USE_TEMPLATE (spec);
-	  if (spec == DECL_TEMPLATE_RESULT (tmpl))
-	    {
-	      spec = tmpl;
-	      gcc_checking_assert (DECL_USE_TEMPLATE (spec) == use_tpl);
-	    }
-	}
-      else
-	/* This is some kind of friend.  */
-	gcc_assert (!DECL_USE_TEMPLATE (spec));
 
       bool needs_reaching = false;
       if (use_tpl == 1)
@@ -11035,11 +11038,14 @@ depset::hash::add_specializations (bool decl_p)
 	  /* An already located specialization, this must be a friend
 	     with a different entry->tmpl.  */
 	  spec_entry *other = reinterpret_cast <spec_entry *> (dep->deps[0]);
-	  gcc_checking_assert (other->tmpl != entry->tmpl);
-	  gcc_checking_assert (!is_partial
-			       && needs_reaching == dep->is_unreached ());
-	  // FIXME: Should we record this alias and do something with
-	  // it?
+	  if (other->tmpl != entry->tmpl)
+	    gcc_checking_assert (!is_partial
+				 && needs_reaching == dep->is_unreached ());
+	  else
+	    {
+	      gcc_checking_assert (!decl_p && !dep->is_type_spec ());
+	      // dep->set_flag_bit<DB_BOTH_SPEC_BIT> ();
+	    }
 	}
       else
 	{

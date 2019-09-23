@@ -1,3 +1,11 @@
+2019-09-23  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (depset): Add DB_BOTH_SPEC_BIT.
+	(specialization_add): Accept template aliases for !decl_p.
+	(depset::hash::add_specializations): Notice duplicate
+	specialization paths.
+
 2019-09-20  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
