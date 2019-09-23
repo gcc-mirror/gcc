@@ -167,6 +167,8 @@ proc gnat_target_compile { source dest type options } {
 	set options [concat "additional_flags=$TOOL_OPTIONS" $options]
     }
 
+    set options [concat "{ada}" $options]
+
     return [target_compile $source $dest $type $options]
 }
 
