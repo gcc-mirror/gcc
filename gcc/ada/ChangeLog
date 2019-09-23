@@ -1,5 +1,12 @@
 2019-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gnat_compile_time_expr_list): New variable.
+	(Pragma_to_gnu): Rename local variable.  Save the (first) expression
+	of pragma Compile_Time_{Error|Warning} for later processing.
+	(Compilation_Unit_to_gnu): Process the expressions saved above.
+
+2019-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Attribute_to_gnu): Test Can_Use_Internal_Rep
 	on the underlying type of the node.
 	(Call_to_gnu): Likewise with the type of the prefix.

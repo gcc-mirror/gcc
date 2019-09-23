@@ -95,6 +95,9 @@ bool type_annotate_only;
 /* List of N_Validate_Unchecked_Conversion nodes in the unit.  */
 static vec<Node_Id> gnat_validate_uc_list;
 
+/* List of expressions of pragma Compile_Time_{Error|Warning} in the unit.  */
+static vec<Node_Id> gnat_compile_time_expr_list;
+
 /* When not optimizing, we cache the 'First, 'Last and 'Length attributes
    of unconstrained array IN parameters to avoid emitting a great deal of
    redundant instructions to recompute them each time.  */
@@ -1508,17 +1511,28 @@ static tree
 Pragma_to_gnu (Node_Id gnat_node)
 {
   tree gnu_result = alloc_stmt_list ();
-  unsigned char pragma_id;
   Node_Id gnat_temp;
 
-  /* Do nothing if we are just annotating types and check for (and ignore)
-     unrecognized pragmas.  */
-  if (type_annotate_only
-      || !Is_Pragma_Name (Chars (Pragma_Identifier (gnat_node))))
+  /* Check for (and ignore) unrecognized pragmas.  */
+  if (!Is_Pragma_Name (Chars (Pragma_Identifier (gnat_node))))
     return gnu_result;
 
-  pragma_id = Get_Pragma_Id (Chars (Pragma_Identifier (gnat_node)));
-  switch (pragma_id)
+  const unsigned char id
+    = Get_Pragma_Id (Chars (Pragma_Identifier (gnat_node)));
+
+  /* Save the expression of pragma Compile_Time_{Error|Warning} for later.  */
+  if (id == Pragma_Compile_Time_Error || id == Pragma_Compile_Time_Warning)
+    {
+      gnat_temp = First (Pragma_Argument_Associations (gnat_node));
+      gnat_compile_time_expr_list.safe_push (Expression (gnat_temp));
+      return gnu_result;
+    }
+
+  /* Stop there if we are just annotating types.  */
+  if (type_annotate_only)
+    return gnu_result;
+
+  switch (id)
     {
     case Pragma_Inspection_Point:
       /* Do nothing at top level: all such variables are already viewable.  */
@@ -1670,11 +1684,11 @@ Pragma_to_gnu (Node_Id gnat_node)
 	  break;
 
 	tree gnu_clauses = gnu_loop_stack->last ()->omp_construct_clauses;
-	if (pragma_id == Pragma_Acc_Data)
+	if (id == Pragma_Acc_Data)
 	  gnu_loop_stack->last ()->omp_code = OACC_DATA;
-	else if (pragma_id == Pragma_Acc_Kernels)
+	else if (id == Pragma_Acc_Kernels)
 	  gnu_loop_stack->last ()->omp_code = OACC_KERNELS;
-	else if (pragma_id == Pragma_Acc_Parallel)
+	else if (id == Pragma_Acc_Parallel)
 	  gnu_loop_stack->last ()->omp_code = OACC_PARALLEL;
 	else
 	  gcc_unreachable ();
@@ -1914,7 +1928,7 @@ Pragma_to_gnu (Node_Id gnat_node)
 	/* This is the String form: pragma Warning{s|_As_Error}(String).  */
 	if (Nkind (Expression (gnat_temp)) == N_String_Literal)
 	  {
-	    switch (pragma_id)
+	    switch (id)
 	      {
 	      case Pragma_Warning_As_Error:
 		kind = DK_ERROR;
@@ -6319,7 +6333,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
 		       || Nkind (gnat_unit) == N_Subprogram_Body);
   const Entity_Id gnat_unit_entity = Defining_Entity (gnat_unit);
   Entity_Id gnat_entity;
-  Node_Id gnat_pragma;
+  Node_Id gnat_pragma, gnat_iter;
   /* Make the decl for the elaboration procedure.  Emit debug info for it, so
      that users can break into their elaboration code in debuggers.  Kludge:
      don't consider it as a definition so that we have a line map for its
@@ -6414,6 +6428,12 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   add_stmt_list (Pragmas_After (Aux_Decls_Node (gnat_node)));
   add_stmt_list (Actions (Aux_Decls_Node (gnat_node)));
   finalize_from_limited_with ();
+
+  /* Then process the expressions of pragma Compile_Time_{Error|Warning} to
+     annotate types referenced therein if they have not been annotated.  */
+  for (int i = 0; gnat_compile_time_expr_list.iterate (i, &gnat_iter); i++)
+    (void) gnat_to_gnu_external (gnat_iter);
+  gnat_compile_time_expr_list.release ();
 
   /* Save away what we've made so far and finish it up.  */
   set_current_block_context (gnu_elab_proc_decl);
