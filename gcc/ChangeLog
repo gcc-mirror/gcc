@@ -1,3 +1,9 @@
+2019-09-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR ipa/91835
+	* lto-section-in.c (lto_section_name): Use "ipa_sra" instead of
+	"ipa-sra".
+
 2019-09-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/rs6000.c (machopic_output_stub): Remove dead
