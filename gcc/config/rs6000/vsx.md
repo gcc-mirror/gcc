@@ -2941,41 +2941,47 @@
   "xxpermdi %x0,%x1,%x1,2"
   [(set_attr "type" "vecperm")])
 
-(define_insn "*vsx_xxpermdi4_le_<mode>"
-  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
-        (vec_select:VSX_W
-          (match_operand:VSX_W 1 "vsx_register_operand" "wa")
-          (parallel [(const_int 2) (const_int 3)
-                     (const_int 0) (const_int 1)])))]
-  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (<MODE>mode)"
-  "xxpermdi %x0,%x1,%x1,2"
-  [(set_attr "type" "vecperm")])
-
-(define_insn "*vsx_xxpermdi8_le_V8HI"
-  [(set (match_operand:V8HI 0 "vsx_register_operand" "=wa")
-        (vec_select:V8HI
-          (match_operand:V8HI 1 "vsx_register_operand" "wa")
-          (parallel [(const_int 4) (const_int 5)
-                     (const_int 6) (const_int 7)
-                     (const_int 0) (const_int 1)
-                     (const_int 2) (const_int 3)])))]
-  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (V8HImode)"
-  "xxpermdi %x0,%x1,%x1,2"
-  [(set_attr "type" "vecperm")])
-
-(define_insn "*vsx_xxpermdi16_le_V16QI"
+(define_insn "xxswapd_v16qi"
   [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
-        (vec_select:V16QI
-          (match_operand:V16QI 1 "vsx_register_operand" "wa")
-          (parallel [(const_int 8) (const_int 9)
-                     (const_int 10) (const_int 11)
-                     (const_int 12) (const_int 13)
-                     (const_int 14) (const_int 15)
-                     (const_int 0) (const_int 1)
-                     (const_int 2) (const_int 3)
-                     (const_int 4) (const_int 5)
-                     (const_int 6) (const_int 7)])))]
-  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (V16QImode)"
+	(vec_select:V16QI
+	  (match_operand:V16QI 1 "vsx_register_operand" "wa")
+	  (parallel [(const_int 8) (const_int 9)
+		     (const_int 10) (const_int 11)
+		     (const_int 12) (const_int 13)
+		     (const_int 14) (const_int 15)
+		     (const_int 0) (const_int 1)
+		     (const_int 2) (const_int 3)
+		     (const_int 4) (const_int 5)
+		     (const_int 6) (const_int 7)])))]
+  "TARGET_VSX"
+;; AIX does not support the extended mnemonic xxswapd.  Use the basic
+;; mnemonic xxpermdi instead.
+  "xxpermdi %x0,%x1,%x1,2"
+  [(set_attr "type" "vecperm")])
+
+(define_insn "xxswapd_v8hi"
+  [(set (match_operand:V8HI 0 "vsx_register_operand" "=wa")
+	(vec_select:V8HI
+	  (match_operand:V8HI 1 "vsx_register_operand" "wa")
+	  (parallel [(const_int 4) (const_int 5)
+		     (const_int 6) (const_int 7)
+		     (const_int 0) (const_int 1)
+		     (const_int 2) (const_int 3)])))]
+  "TARGET_VSX"
+;; AIX does not support the extended mnemonic xxswapd.  Use the basic
+;; mnemonic xxpermdi instead.
+  "xxpermdi %x0,%x1,%x1,2"
+  [(set_attr "type" "vecperm")])
+
+(define_insn "xxswapd_<mode>"
+  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
+	(vec_select:VSX_W
+	  (match_operand:VSX_W 1 "vsx_register_operand" "wa")
+	  (parallel [(const_int 2) (const_int 3)
+		     (const_int 0) (const_int 1)])))]
+  "TARGET_VSX"
+;; AIX does not support extended mnemonic xxswapd.  Use the basic
+;; mnemonic xxpermdi instead.
   "xxpermdi %x0,%x1,%x1,2"
   [(set_attr "type" "vecperm")])
 
