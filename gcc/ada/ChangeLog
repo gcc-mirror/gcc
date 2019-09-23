@@ -1,5 +1,17 @@
 2019-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Regular_Loop_to_gnu): Do not rotate the loop
+	if -Og is enabled.
+	(build_return_expr): Do not perform NRV if -Og is enabled.
+	(Subprogram_Body_to_gnu): Likewise.
+	(gnat_to_gnu) <N_Simple_Return_Statement>: Likewise.
+	(Handled_Sequence_Of_Statements_to_gnu): Do not inline finalizers if
+	-Og is enabled.
+	* gcc-interface/utils.c (convert_to_index_type): Return early if -Og
+	is enabled.
+
+2019-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_compile_time_expr_list): New variable.
 	(Pragma_to_gnu): Rename local variable.  Save the (first) expression
 	of pragma Compile_Time_{Error|Warning} for later processing.
