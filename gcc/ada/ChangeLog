@@ -1,3 +1,9 @@
+2019-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Attribute_to_gnu): Test Can_Use_Internal_Rep
+	on the underlying type of the node.
+	(Call_to_gnu): Likewise with the type of the prefix.
+
 2019-09-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
