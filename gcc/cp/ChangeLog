@@ -1,3 +1,12 @@
+2019-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91844 - Implement CWG 2352, Similar types and reference binding.
+	* call.c (reference_related_p): Use similar_type_p instead of
+	same_type_p.
+	(reference_compatible_p): Update implementation to match CWG 2352.
+	* cp-tree.h (similar_type_p): Declare.
+	* typeck.c (similar_type_p): New.
+
 2019-09-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91819 - ICE with operator++ and enum.

@@ -1,3 +1,12 @@
+2019-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91844 - Implement CWG 2352, Similar types and reference binding.
+	* g++.dg/cpp0x/pr33930.C: Add dg-error.
+	* g++.dg/cpp0x/ref-bind1.C: New test.
+	* g++.dg/cpp0x/ref-bind2.C: New test.
+	* g++.dg/cpp0x/ref-bind3.C: New test.
+	* g++.old-deja/g++.pt/spec35.C: Remove dg-error.
+
 2019-09-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/ucnid-5-utf8.c: Skip unless ucn is supported.
