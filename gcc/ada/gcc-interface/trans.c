@@ -3653,7 +3653,7 @@ Regular_Loop_to_gnu (Node_Id gnat_node, tree *gnu_cond_expr_p)
 
 	 which works in all cases.  */
 
-      if (optimize)
+      if (optimize && !optimize_debug)
 	{
 	  /* We can use the do-while form directly if GNU_FIRST-1 doesn't
 	     overflow.  */
@@ -4436,6 +4436,7 @@ build_return_expr (tree ret_obj, tree ret_val)
 	 a candidate for Named Return Value.  If so, record it.  Otherwise,
 	 if this is an expression of some kind, record it elsewhere.  */
       if (optimize
+	  && !optimize_debug
 	  && AGGREGATE_TYPE_P (operation_type)
 	  && !TYPE_IS_FAT_POINTER_P (operation_type)
 	  && TYPE_MODE (operation_type) == BLKmode
@@ -4773,7 +4774,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   /* If the function returns an aggregate type and we have candidates for
      a Named Return Value, finalize the optimization.  */
-  if (optimize && gnu_subprog_language->named_ret_val)
+  if (optimize && !optimize_debug && gnu_subprog_language->named_ret_val)
     {
       finalize_nrv (gnu_subprog_decl,
 		    gnu_subprog_language->named_ret_val,
@@ -5893,7 +5894,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 
       /* When not optimizing, disable inlining of finalizers as this can
 	 create a more complex CFG in the parent function.  */
-      if (!optimize)
+      if (!optimize || optimize_debug)
 	DECL_DECLARED_INLINE_P (proc_decl) = 0;
 
       /* If there is no end label attached, we use the location of the At_End
@@ -8050,7 +8051,9 @@ gnat_to_gnu (Node_Id gnat_node)
 
 		/* And find out whether this is a candidate for Named Return
 		   Value.  If so, record it.  */
-		if (!TYPE_CI_CO_LIST (gnu_subprog_type) && optimize)
+		if (optimize
+		    && !optimize_debug
+		    && !TYPE_CI_CO_LIST (gnu_subprog_type))
 		  {
 		    tree ret_val = gnu_ret_val;
 
