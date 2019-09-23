@@ -259,6 +259,11 @@ package System.OS_Interface is
    function To_Timespec (D : Duration) return timespec;
    pragma Inline (To_Timespec);
 
+   function sysconf (name : int) return long;
+   pragma Import (C, sysconf);
+
+   SC_NPROCESSORS_ONLN : constant := 15;
+
    -------------
    -- Process --
    -------------
