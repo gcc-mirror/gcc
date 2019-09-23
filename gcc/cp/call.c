@@ -7485,15 +7485,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 tree
 convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 {
-  tree arg_type;
+  tree arg_type = TREE_TYPE (arg);
   location_t loc = cp_expr_loc_or_input_loc (arg);
 
-  /* [expr.call]
-
-     The lvalue-to-rvalue, array-to-pointer, and function-to-pointer
-     standard conversions are performed.  */
-  arg = decay_conversion (arg, complain);
-  arg_type = TREE_TYPE (arg);
   /* [expr.call]
 
      If the argument has integral or enumeration type that is subject
@@ -7536,6 +7530,12 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
       else
 	arg = cp_perform_integral_promotions (arg, complain);
     }
+  else
+    /* [expr.call]
+
+       The lvalue-to-rvalue, array-to-pointer, and function-to-pointer
+       standard conversions are performed.  */
+    arg = decay_conversion (arg, complain);
 
   arg = require_complete_type_sfinae (arg, complain);
   arg_type = TREE_TYPE (arg);

@@ -1,3 +1,9 @@
+2019-09-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91809 - bit-field and ellipsis.
+	* call.c (convert_arg_to_ellipsis): Don't call decay_conversion for
+	arithmetic arguments.
+
 2019-09-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91844 - Implement CWG 2352, Similar types and reference binding.
