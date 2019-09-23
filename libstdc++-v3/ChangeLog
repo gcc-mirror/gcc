@@ -1,3 +1,7 @@
+2019-09-23  Andreas Schwab  <schwab@suse.de>
+
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
+
 2019-09-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91748
