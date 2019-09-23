@@ -8,9 +8,9 @@ subroutine foo1 (arg)
   integer :: i
   integer, dimension(3) :: arg
   select rank (arg)   ! { dg-error "must be an assumed rank variable" }
-    rank (3)
+    rank (3)          ! { dg-error "Unexpected RANK statement" }
     print *, arg
-  end select
+  end select          ! { dg-error "Expecting END SUBROUTINE" }
 end
 
 subroutine foo2 (arg)
