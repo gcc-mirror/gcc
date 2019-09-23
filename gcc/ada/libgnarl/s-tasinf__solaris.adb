@@ -84,4 +84,23 @@ package body System.Task_Info is
       return (False, False);
    end Unbound_Thread_Attributes;
 
+   N_CPU : Natural := 0;
+   pragma Atomic (N_CPU);
+   --  Cache CPU number. Use pragma Atomic to avoid a race condition when
+   --  setting N_CPU in Number_Of_Processors below.
+
+   --------------------------
+   -- Number_Of_Processors --
+   --------------------------
+
+   function Number_Of_Processors return Positive is
+   begin
+      if N_CPU = 0 then
+         N_CPU := Natural
+           (OS_Interface.sysconf (OS_Interface.SC_NPROCESSORS_ONLN));
+      end if;
+
+      return N_CPU;
+   end Number_Of_Processors;
+
 end System.Task_Info;

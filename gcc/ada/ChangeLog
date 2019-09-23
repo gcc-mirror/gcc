@@ -1,3 +1,11 @@
+2019-09-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* libgnarl/s-osinte__solaris.ads (sysconf): Declare.
+	(SC_NPROCESSORS_ONLN): Define.
+	* libgnarl/s-tasinf__solaris.ads (Number_Of_Processors): Declare.
+	* libgnarl/s-tasinf__solaris.adb (N_CPU): New variable.
+	(Number_Of_Processors): New function.
+
 2019-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Regular_Loop_to_gnu): Do not rotate the loop

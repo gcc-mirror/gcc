@@ -3,7 +3,7 @@
 --  both 32bit and 64bit Windows. Additional configurations where the
 --  feature was verified to work can opt-in.
 
---  { dg-do run { target *-*-mingw* *-*-linux* } }
+--  { dg-do run { target *-*-linux* *-*-mingw* *-*-solaris2.* } }
 
 with System.Multiprocessors;
 with System.Task_Info;

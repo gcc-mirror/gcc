@@ -1,3 +1,8 @@
+2019-09-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gnat.dg/system_info1.adb: Sort dg-do target list.
+	Add *-*-solaris2.*.
+
 2019-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/compile_time1.ads: New test.
