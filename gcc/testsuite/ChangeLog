@@ -1,3 +1,8 @@
+2019-09-23  Maciej W. Rozycki  <macro@wdc.com>
+
+	* lib/gnat.exp (gnat_target_compile): Pass the `ada' option to
+	`target_compile'.
+
 2019-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/pr68724.C: Check location(s) too.
