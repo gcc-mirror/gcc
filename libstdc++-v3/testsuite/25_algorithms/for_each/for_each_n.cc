@@ -47,11 +47,42 @@ void test01()
   };
   auto res = std::for_each_n(con.begin(), Size(con.size()), Func(sum));
 
-  VERIFY( res.ptr == con.end().ptr );
+  VERIFY( res == con.end() );
   VERIFY( sum == 15 );
+}
+
+void
+test02()
+{
+  using __gnu_test::test_container;
+  using __gnu_test::random_access_iterator_wrapper;
+  int array[5] = { 2, 4, 6, 8, 10 };
+  test_container<int, random_access_iterator_wrapper> con(array);
+
+  int prod = 1;
+  struct Func
+  {
+    Func(int& i) : i(i) { }
+    Func(Func&&) = default;
+    Func& operator=(Func&&) = delete;
+    void operator()(int n) const { i *= n; }
+    int& i;
+  };
+
+  struct Size
+  {
+    Size(short v) : val(v) { }
+    operator short() const { return val; }
+    short val;
+  };
+  auto res = std::for_each_n(con.begin(), Size(con.size()), Func(prod));
+
+  VERIFY( res == con.end() );
+  VERIFY( prod == 3840 );
 }
 
 int main()
 {
   test01();
+  test02();
 }

@@ -239,6 +239,8 @@
 ;; A list of ...
 (define_code_iterator IOR_XOR [ior xor])
 
+(define_code_iterator LOGICAL [and ior xor])
+
 ;; Operations on two halves of a quadword vector.
 (define_code_iterator VQH_OPS [plus smin smax umin umax])
 
@@ -792,10 +794,18 @@
                 (umax "u")])
 
 (define_code_attr cnb [(ltu "CC_C") (geu "CC")])
-(define_code_attr optab [(ltu "ltu") (geu "geu")])
+
+;; Map rtl operator codes to optab names
+(define_code_attr optab
+ [(ltu "ltu")
+  (geu "geu")
+  (and "and")
+  (ior "ior")
+  (xor "xor")])
 
 ;; Assembler mnemonics for signedness of widening operations.
 (define_code_attr US [(sign_extend "s") (zero_extend "u")])
+(define_code_attr Us [(sign_extend "") (zero_extend "u")])
 
 ;; Signedness suffix for float->fixed conversions.  Empty for signed
 ;; conversion.

@@ -42,7 +42,7 @@
                         adc_imm,adcs_imm,adc_reg,adcs_reg,\
                         adr, mov_imm,mov_reg,\
                         mvn_imm,mvn_reg,extend,\
-                        mrs,multiple,no_insn"))
+                        mrs,multiple"))
   "ca17_alu")
 
 (define_insn_reservation "cortex_a17_alu_shiftimm" 2

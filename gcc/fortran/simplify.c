@@ -4780,8 +4780,13 @@ gfc_simplify_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
   gfc_constructor *tsource_ctor, *fsource_ctor, *mask_ctor;
 
   if (mask->expr_type == EXPR_CONSTANT)
-    return gfc_get_parentheses (gfc_copy_expr (mask->value.logical
-					       ? tsource : fsource));
+    {
+      result = gfc_copy_expr (mask->value.logical ? tsource : fsource);
+      /* Parenthesis is needed to get lower bounds of 1.  */
+      result = gfc_get_parentheses (result);
+      gfc_simplify_expr (result, 1);
+      return result;
+    }
 
   if (!mask->rank || !is_constant_array_expr (mask)
       || !is_constant_array_expr (tsource) || !is_constant_array_expr (fsource))
@@ -8503,6 +8508,12 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	    {
 	      if (c->expr->expr_type == EXPR_ARRAY)
 		tmp = gfc_convert_constant (c->expr, type, kind);
+	      else if (c->expr->expr_type == EXPR_OP
+		       && c->expr->value.op.op == INTRINSIC_PARENTHESES)
+		{
+		  gfc_simplify_expr (c->expr, 1);
+		  tmp = f (c->expr, kind);
+		}
 	      else
 		tmp = f (c->expr, kind);
 	    }

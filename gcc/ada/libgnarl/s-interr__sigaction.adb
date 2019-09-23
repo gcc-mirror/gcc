@@ -487,9 +487,11 @@ package body System.Interrupts is
    function Is_Registered (Handler : Parameterless_Handler) return Boolean is
       Ptr : R_Link := Registered_Handlers;
 
+      type Acc_Proc is access procedure;
+
       type Fat_Ptr is record
          Object_Addr  : System.Address;
-         Handler_Addr : System.Address;
+         Handler_Addr : Acc_Proc;
       end record;
 
       function To_Fat_Ptr is new Ada.Unchecked_Conversion
@@ -505,7 +507,7 @@ package body System.Interrupts is
       Fat := To_Fat_Ptr (Handler);
 
       while Ptr /= null loop
-         if Ptr.H = Fat.Handler_Addr then
+         if Ptr.H = Fat.Handler_Addr.all'Address then
             return True;
          end if;
 

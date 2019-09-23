@@ -802,12 +802,6 @@ lto_input_ts_function_decl_tree_pointers (class lto_input_block *ib,
       }
   }
 #endif
-
-  /* If the file contains a function with an EH personality set,
-     then it was compiled with -fexceptions.  In that case, initialize
-     the backend EH machinery.  */
-  if (DECL_FUNCTION_PERSONALITY (expr))
-    lto_init_eh ();
 }
 
 

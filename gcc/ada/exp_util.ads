@@ -240,6 +240,10 @@ package Exp_Util is
    --  Note that the added nodes are not analyzed. The analyze call is found in
    --  Exp_Ch13.Expand_N_Freeze_Entity.
 
+   function Attribute_Constrained_Static_Value (Pref : Node_Id) return Boolean;
+   --  Return the static value of a statically known attribute reference
+   --  Pref'Constrained.
+
    procedure Build_Allocate_Deallocate_Proc
      (N           : Node_Id;
       Is_Allocate : Boolean);
@@ -730,7 +734,7 @@ package Exp_Util is
    --  pragmas at the start of the package declaration contains
    --    pragma Annotate (GNATprove, External_Axiomatization);
 
-   function Homonym_Number (Subp : Entity_Id) return Nat;
+   function Homonym_Number (Subp : Entity_Id) return Pos;
    --  Here subp is the entity for a subprogram. This routine returns the
    --  homonym number used to disambiguate overloaded subprograms in the same
    --  scope (the number is used as part of constructed names to make sure that

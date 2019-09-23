@@ -94,6 +94,10 @@ as_internal_fn (combined_fn code)
   (MARK_TS_TYPE_COMMON (C),				\
    tree_contains_struct[C][TS_TYPE_WITH_LANG_SPECIFIC] = true)
 
+#define MARK_TS_TYPE_NON_COMMON(C)			\
+  (MARK_TS_TYPE_WITH_LANG_SPECIFIC (C),			\
+   tree_contains_struct[C][TS_TYPE_NON_COMMON] = true)	\
+
 #define MARK_TS_DECL_MINIMAL(C)				\
   (MARK_TS_COMMON (C),					\
    tree_contains_struct[C][TS_DECL_MINIMAL] = true)
@@ -5258,6 +5262,13 @@ extern bool array_at_struct_end_p (tree);
 /* Return a tree representing the offset, in bytes, of the field referenced
    by EXP.  This does not include any offset in DECL_FIELD_BIT_OFFSET.  */
 extern tree component_ref_field_offset (tree);
+
+/* Return the size of the member referenced by the COMPONENT_REF, using
+   its initializer expression if necessary in order to determine the size
+   of an initialized flexible array member.  The size might be zero for
+   an object with an uninitialized flexible array member or null if it
+   cannot be determined.  */
+extern tree component_ref_size (tree);
 
 extern int tree_map_base_eq (const void *, const void *);
 extern unsigned int tree_map_base_hash (const void *);

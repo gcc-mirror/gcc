@@ -224,6 +224,9 @@ func structToFFI(typ *structtype) *__ffi_type {
 	if c == 0 {
 		return emptyStructToFFI()
 	}
+	if typ.typ.kind&kindDirectIface != 0 {
+		return ffi_type_pointer()
+	}
 
 	fields := make([]*__ffi_type, 0, c+1)
 	checkPad := false
@@ -306,6 +309,9 @@ func complexToFFI(ffiFloatType *__ffi_type) *__ffi_type {
 func arrayToFFI(typ *arraytype) *__ffi_type {
 	if typ.len == 0 {
 		return emptyStructToFFI()
+	}
+	if typ.typ.kind&kindDirectIface != 0 {
+		return ffi_type_pointer()
 	}
 	elements := make([]*__ffi_type, typ.len+1)
 	et := typeToFFI(typ.elem)

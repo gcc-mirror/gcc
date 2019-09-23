@@ -1184,7 +1184,10 @@ initialize_node_lattices (struct cgraph_node *node)
   int i;
 
   gcc_checking_assert (node->has_gimple_body_p ());
-  if (node->local.local)
+
+  if (!ipa_get_param_count (info))
+    disable = true;
+  else if (node->local.local)
     {
       int caller_count = 0;
       node->call_for_symbol_thunks_and_aliases (count_callers, &caller_count,
@@ -1206,32 +1209,72 @@ initialize_node_lattices (struct cgraph_node *node)
 	disable = true;
     }
 
-  for (i = 0; i < ipa_get_param_count (info); i++)
+  if (dump_file && (dump_flags & TDF_DETAILS)
+      && !node->alias && !node->thunk.thunk_p)
     {
-      class ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
-      plats->m_value_range.init ();
+      fprintf (dump_file, "Initializing lattices of %s\n",
+	       node->dump_name ());
+      if (disable || variable)
+	fprintf (dump_file, "  Marking all lattices as %s\n",
+		 disable ? "BOTTOM" : "VARIABLE");
     }
 
-  if (disable || variable)
+  auto_vec<bool, 16> surviving_params;
+  bool pre_modified = false;
+  if (!disable && node->clone.param_adjustments)
     {
-      for (i = 0; i < ipa_get_param_count (info); i++)
-	{
-	  class ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
-	  if (disable)
-	    {
-	      plats->itself.set_to_bottom ();
-	      plats->ctxlat.set_to_bottom ();
-	      set_agg_lats_to_bottom (plats);
-	      plats->bits_lattice.set_to_bottom ();
-	      plats->m_value_range.set_to_bottom ();
-	    }
-	  else
-	    set_all_contains_variable (plats);
-	}
+      /* At the moment all IPA optimizations should use the number of
+	 parameters of the prevailing decl as the m_always_copy_start.
+	 Handling any other value would complicate the code below, so for the
+	 time bing let's only assert it is so.  */
+      gcc_assert ((node->clone.param_adjustments->m_always_copy_start
+		   == ipa_get_param_count (info))
+		  || node->clone.param_adjustments->m_always_copy_start < 0);
+
+      pre_modified = true;
+      node->clone.param_adjustments->get_surviving_params (&surviving_params);
+
       if (dump_file && (dump_flags & TDF_DETAILS)
 	  && !node->alias && !node->thunk.thunk_p)
-	fprintf (dump_file, "Marking all lattices of %s as %s\n",
-		 node->dump_name (), disable ? "BOTTOM" : "VARIABLE");
+	{
+	  bool first = true;
+	  for (int j = 0; j < ipa_get_param_count (info); j++)
+	    {
+	      if (j < (int) surviving_params.length ()
+		  && surviving_params[j])
+		continue;
+	      if (first)
+		{
+		  fprintf (dump_file,
+			   "  The following parameters are dead on arrival:");
+		  first = false;
+		}
+	      fprintf (dump_file, " %u", j);
+	    }
+	  if (!first)
+	      fprintf (dump_file, "\n");
+	}
+    }
+
+  for (i = 0; i < ipa_get_param_count (info); i++)
+    {
+      ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
+      if (disable
+	  || (pre_modified && (surviving_params.length () <= (unsigned) i
+			       || !surviving_params[i])))
+	{
+	  plats->itself.set_to_bottom ();
+	  plats->ctxlat.set_to_bottom ();
+	  set_agg_lats_to_bottom (plats);
+	  plats->bits_lattice.set_to_bottom ();
+	  plats->m_value_range.set_to_bottom ();
+	}
+      else
+	{
+	  plats->m_value_range.init ();
+	  if (variable)
+	    set_all_contains_variable (plats);
+	}
     }
 
   for (ie = node->indirect_calls; ie; ie = ie->next_callee)
@@ -3654,12 +3697,8 @@ get_replacement_map (class ipa_node_params *info, tree value, int parm_num)
       print_generic_expr (dump_file, value);
       fprintf (dump_file, "\n");
     }
-  replace_map->old_tree = NULL;
   replace_map->parm_num = parm_num;
   replace_map->new_tree = value;
-  replace_map->replace_p = true;
-  replace_map->ref_p = false;
-
   return replace_map;
 }
 
@@ -3797,6 +3836,35 @@ update_specialized_profile (struct cgraph_node *new_node,
     dump_profile_updates (orig_node, new_node);
 }
 
+/* Return true if we would like to remove a parameter from NODE when cloning it
+   with KNOWN_CSTS scalar constants.  */
+
+static bool
+want_remove_some_param_p (cgraph_node *node, vec<tree> known_csts)
+{
+  auto_vec<bool, 16> surviving;
+  bool filled_vec = false;
+  ipa_node_params *info = IPA_NODE_REF (node);
+  int i, count = ipa_get_param_count (info);
+
+  for (i = 0; i < count; i++)
+    {
+      if (!known_csts[i] && ipa_is_param_used (info, i))
+       continue;
+
+      if (!filled_vec)
+       {
+         if (!node->clone.param_adjustments)
+           return true;
+         node->clone.param_adjustments->get_surviving_params (&surviving);
+         filled_vec = true;
+       }
+      if (surviving.length() < (unsigned) i &&  surviving[i])
+       return true;
+    }
+  return false;
+}
+
 /* Create a specialized version of NODE with known constants in KNOWN_CSTS,
    known contexts in KNOWN_CONTEXTS and known aggregate values in AGGVALS and
    redirect all edges in CALLERS to it.  */
@@ -3810,31 +3878,65 @@ create_specialized_node (struct cgraph_node *node,
 {
   class ipa_node_params *new_info, *info = IPA_NODE_REF (node);
   vec<ipa_replace_map *, va_gc> *replace_trees = NULL;
+  vec<ipa_adjusted_param, va_gc> *new_params = NULL;
   struct ipa_agg_replacement_value *av;
   struct cgraph_node *new_node;
   int i, count = ipa_get_param_count (info);
-  bitmap args_to_skip;
-
+  ipa_param_adjustments *old_adjustments = node->clone.param_adjustments;
+  ipa_param_adjustments *new_adjustments;
   gcc_assert (!info->ipcp_orig_node);
+  gcc_assert (node->local.can_change_signature
+	      || !old_adjustments);
 
-  if (node->local.can_change_signature)
+  if (old_adjustments)
     {
-      args_to_skip = BITMAP_GGC_ALLOC ();
-      for (i = 0; i < count; i++)
+      /* At the moment all IPA optimizations should use the number of
+	 parameters of the prevailing decl as the m_always_copy_start.
+	 Handling any other value would complicate the code below, so for the
+	 time bing let's only assert it is so.  */
+      gcc_assert (old_adjustments->m_always_copy_start == count
+		  || old_adjustments->m_always_copy_start < 0);
+      int old_adj_count = vec_safe_length (old_adjustments->m_adj_params);
+      for (i = 0; i < old_adj_count; i++)
 	{
-	  tree t = known_csts[i];
+	  ipa_adjusted_param *old_adj = &(*old_adjustments->m_adj_params)[i];
+	  if (!node->local.can_change_signature
+	      || old_adj->op != IPA_PARAM_OP_COPY
+	      || (!known_csts[old_adj->base_index]
+		  && ipa_is_param_used (info, old_adj->base_index)))
+	    {
+	      ipa_adjusted_param new_adj = *old_adj;
 
-	  if (t || !ipa_is_param_used (info, i))
-	    bitmap_set_bit (args_to_skip, i);
+	      new_adj.prev_clone_adjustment = true;
+	      new_adj.prev_clone_index = i;
+	      vec_safe_push (new_params, new_adj);
+	    }
 	}
+      bool skip_return = old_adjustments->m_skip_return;
+      new_adjustments = (new (ggc_alloc <ipa_param_adjustments> ())
+			 ipa_param_adjustments (new_params, count,
+						skip_return));
+    }
+  else if (node->local.can_change_signature
+	   && want_remove_some_param_p (node, known_csts))
+    {
+      ipa_adjusted_param adj;
+      memset (&adj, 0, sizeof (adj));
+      adj.op = IPA_PARAM_OP_COPY;
+      for (i = 0; i < count; i++)
+	if (!known_csts[i] && ipa_is_param_used (info, i))
+	  {
+	    adj.base_index = i;
+	    adj.prev_clone_index = i;
+	    vec_safe_push (new_params, adj);
+	  }
+      new_adjustments = (new (ggc_alloc <ipa_param_adjustments> ())
+			 ipa_param_adjustments (new_params, count, false));
     }
   else
-    {
-      args_to_skip = NULL;
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "      cannot change function signature\n");
-    }
+    new_adjustments = NULL;
 
+  replace_trees = vec_safe_copy (node->clone.tree_map);
   for (i = 0; i < count; i++)
     {
       tree t = known_csts[i];
@@ -3863,7 +3965,7 @@ create_specialized_node (struct cgraph_node *node,
 			       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (
 				 node->decl)));
   new_node = node->create_virtual_clone (callers, replace_trees,
-					 args_to_skip, "constprop",
+					 new_adjustments, "constprop",
 					 suffix_counter);
   suffix_counter++;
 

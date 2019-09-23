@@ -3203,6 +3203,23 @@ package Rtsfind is
    --  Returns true if a call to RTE will succeed without raising an exception
    --  and without generating an error message, i.e. if the call will obtain
    --  the desired entity without any problems.
+   --
+   --  If we call this and it returns True, we should generate a call to E.
+   --  In other words, the compiler should not call RTE_Available (E) until
+   --  it has decided it wants to generate a call to E. Otherwise we can get
+   --  spurious dependencies and elaboration orders.
+   --
+   --     if RTE_Available (E) -- WRONG!
+   --       and then <some condition>
+   --     then
+   --        generate call to E;
+   --
+   --  Should be:
+   --
+   --     if <some condition>
+   --       and then RTE_Available (E) -- Correct
+   --     then
+   --        generate call to E;
 
    function RTE_Record_Component (E : RE_Id) return Entity_Id;
    --  Given the entity defined in the above tables, as identified by the

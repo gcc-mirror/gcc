@@ -20,7 +20,7 @@ sub (int *a)
 int
 main (void)
 {
-  int a[DIM][DIM];  /* { dg-error "exceeds maximum object size" } */
+  int a[DIM][DIM];  /* { dg-error "7:exceeds maximum object size" } */
   return sub (&a[0][0]);  /* { dg-error "declared" } */
 }
 

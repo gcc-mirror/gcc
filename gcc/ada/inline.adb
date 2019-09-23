@@ -1512,6 +1512,12 @@ package body Inline is
       --  Return True if subprogram Id is defined in the package specification,
       --  either its visible or private part.
 
+      function Maybe_Traversal_Function (Id : Entity_Id) return Boolean;
+      --  Return True if subprogram Id could be a traversal function, as
+      --  defined in SPARK RM 3.10. This is only a safe approximation, as the
+      --  knowledge of the SPARK boundary is needed to determine exactly
+      --  traversal functions.
+
       ---------------------------------------------------
       -- Has_Formal_With_Discriminant_Dependent_Fields --
       ---------------------------------------------------
@@ -1635,6 +1641,20 @@ package body Inline is
          return Nkind (Parent (Decl)) = N_Compilation_Unit;
       end Is_Unit_Subprogram;
 
+      ------------------------------
+      -- Maybe_Traversal_Function --
+      ------------------------------
+
+      function Maybe_Traversal_Function (Id : Entity_Id) return Boolean is
+      begin
+         return Ekind (Id) = E_Function
+
+           --  Only traversal functions return an anonymous access-to-object
+           --  type in SPARK.
+
+           and then Is_Anonymous_Access_Type (Etype (Id));
+      end Maybe_Traversal_Function;
+
       --  Local declarations
 
       Id : Entity_Id;
@@ -1679,6 +1699,12 @@ package body Inline is
       --  calls.
 
       elsif not In_Extended_Main_Code_Unit (Id) then
+         return False;
+
+      --  Do not inline dispatching operations, as only their static calls
+      --  can be analyzed in context, and not their dispatching calls.
+
+      elsif Is_Dispatching_Operation (Id) then
          return False;
 
       --  Do not inline subprograms marked No_Return, possibly used for
@@ -1749,6 +1775,15 @@ package body Inline is
       --  packed arrays).
 
       elsif Has_Formal_With_Discriminant_Dependent_Fields (Id) then
+         return False;
+
+      --  Do not inline subprograms which may be traversal functions. Such
+      --  inlining introduces temporary variables of named access type for
+      --  which assignments are move instead of borrow/observe, possibly
+      --  leading to spurious errors when checking SPARK rules related to
+      --  pointer usage.
+
+      elsif Maybe_Traversal_Function (Id) then
          return False;
 
       --  Otherwise, this is a subprogram declared inside the private part of a

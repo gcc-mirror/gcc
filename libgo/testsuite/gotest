@@ -326,7 +326,7 @@ x)
 	    esac
 
 	    if test x$tag1 != xnonmatchingtag -a x$tag2 != xnonmatchingtag; then
-		tags=`sed '/^package /q' < $f | grep '^// \?+build '`
+		tags=`sed '/^package /q' < $f | grep '^// *+build '`
 		omatch=true
 		first=true
 		match=false
@@ -419,10 +419,12 @@ esac
 # Split $gofiles into external gofiles (those in *_test packages)
 # and internal ones (those in the main package).
 xgofiles=
+xpackage=
 for f in $gofiles; do
     package=`grep '^package[ 	]' $f | sed 1q`
     case "$package" in
     *_test)
+	xpackage=`echo $package | sed -e 's/package[ 	]//' -e 's/[ 	]*$//'`
 	xgofiles="$xgofiles $f"
 	;;
     *)
@@ -471,10 +473,17 @@ $GC -g $pkgpatharg $prefixarg -c -I . -fno-toplevel-reorder -o _gotest_.o $gofil
 if $havex; then
 	mkdir -p `dirname $package`
 	cp _gotest_.o `dirname $package`/lib`basename $package`.a
+
+	# Force the test version of the package to be imported first,
+	# so that it's type definitions will be used, in case any new
+	# methods appear in export_test.go files.
+	echo "package $xpackage" > _first_test.go
+	echo 'import _ "'$package'"' >> _first_test.go
+
 	if test "$trace" = "true"; then
-	    echo $GC -g $xpkgpatharg -c -I . -fno-toplevel-reorder -o $xofile $xgofiles
+	    echo $GC -g $xpkgpatharg -c -I . -fno-toplevel-reorder -o $xofile _first_test.go $xgofiles
 	fi
-	$GC -g $xpkgpatharg -c -I . -fno-toplevel-reorder -o $xofile $xgofiles
+	$GC -g $xpkgpatharg -c -I . -fno-toplevel-reorder -o $xofile _first_test.go $xgofiles
 fi
 
 # They all compile; now generate the code to call them.

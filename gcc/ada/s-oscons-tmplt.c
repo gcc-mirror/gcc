@@ -1053,6 +1053,11 @@ CND(AF_INET, "IPv4 address family")
 #endif
 CND(AF_INET6, "IPv6 address family")
 
+#ifndef AF_UNIX
+# define AF_UNIX -1
+#endif
+CND(AF_UNIX, "Local unix family")
+
 #ifndef AF_UNSPEC
 # define AF_UNSPEC -1
 #else
@@ -1700,6 +1705,19 @@ CND(SIZEOF_sockaddr_in, "struct sockaddr_in")
 # define SIZEOF_sockaddr_in6 0
 #endif
 CND(SIZEOF_sockaddr_in6, "struct sockaddr_in6")
+
+/**
+ ** The sockaddr_un structure is not defined in MINGW C headers
+ ** but Windows supports it from build 17063.
+ **/
+#if defined(__MINGW32__)
+struct sockaddr_un {
+  ADDRESS_FAMILY sun_family;    /* AF_UNIX */
+  char           sun_path[108]; /* Pathname */
+};
+#endif
+#define SIZEOF_sockaddr_un (sizeof (struct sockaddr_un))
+CND(SIZEOF_sockaddr_un, "struct sockaddr_un")
 
 #define SIZEOF_fd_set (sizeof (fd_set))
 CND(SIZEOF_fd_set, "fd_set")

@@ -42,7 +42,7 @@ struct array_traits<T[N]>
   static const bool has_constant_size = true;
   static const size_t constant_size = N;
   static const T *base (const T (&x)[N]) { return x; }
-  static size_t size (const T (&x)[N]) { return N; }
+  static size_t size (const T (&)[N]) { return N; }
 };
 
 #endif

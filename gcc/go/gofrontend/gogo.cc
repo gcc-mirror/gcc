@@ -2541,7 +2541,7 @@ Gogo::add_linkname(const std::string& go_name, bool is_exported,
     {
       if (ext_name.empty())
 	go_error_at(loc,
-		    ("//%<go:linkname%> missing external name "
+		    ("%<//go:linkname%> missing external name "
 		     "for declaration of %s"),
 		    go_name.c_str());
       else
@@ -8718,7 +8718,13 @@ Named_object::get_backend(Gogo* gogo, std::vector<Bexpression*>& const_decls,
     case NAMED_OBJECT_TYPE:
       {
         Named_type* named_type = this->u_.type_value;
-	if (!Gogo::is_erroneous_name(this->name_) && !named_type->is_alias())
+
+        // No need to do anything for aliases-- whatever has to be done
+        // can be done for the alias target.
+        if (named_type->is_alias())
+          break;
+
+	if (!Gogo::is_erroneous_name(this->name_))
 	  type_decls.push_back(named_type->get_backend(gogo));
 
         // We need to produce a type descriptor for every named

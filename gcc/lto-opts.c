@@ -94,6 +94,10 @@ lto_write_options (void)
 				      : "-fno-pie");
     }
 
+  /* If debug info is enabled append -g.  */
+  if (debug_info_level > DINFO_LEVEL_NONE)
+    append_to_collect_gcc_options (&temporary_obstack, &first_p, "-g");
+
   /* Append options from target hook and store them to offload_lto section.  */
   if (lto_stream_offload_p)
     {

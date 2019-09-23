@@ -8949,10 +8949,10 @@ grokfndecl (tree ctype,
   if (location == UNKNOWN_LOCATION)
     location = input_location;
 
-  // Was the concept specifier present?
+  /* Was the concept specifier present?  */
   bool concept_p = inlinep & 4;
 
-  // Concept declarations must have a corresponding definition.
+  /* Concept declarations must have a corresponding definition.  */
   if (concept_p && !funcdef_flag)
     {
       error_at (location, "concept %qD has no definition", declarator);
@@ -10948,14 +10948,15 @@ grokdeclarator (const cp_declarator *declarator,
     {
       if (! int_n_enabled_p[declspecs->int_n_idx])
 	{
-	  error ("%<__int%d%> is not supported by this target",
-		 int_n_data[declspecs->int_n_idx].bitsize);
+	  error_at (declspecs->locations[ds_type_spec],
+		    "%<__int%d%> is not supported by this target",
+		    int_n_data[declspecs->int_n_idx].bitsize);
 	  explicit_intN = false;
 	}
       /* Don't pedwarn if the alternate "__intN__" form has been used instead
 	 of "__intN".  */
       else if (!int_n_alt && pedantic && ! in_system_header_at (input_location))
-	pedwarn (input_location, OPT_Wpedantic,
+	pedwarn (declspecs->locations[ds_type_spec], OPT_Wpedantic,
 		 "ISO C++ does not support %<__int%d%> for %qs",
 		 int_n_data[declspecs->int_n_idx].bitsize, name);
     }
@@ -11330,7 +11331,10 @@ grokdeclarator (const cp_declarator *declarator,
 	   && storage_class != sc_static)
 	  || typedef_p))
     {
-      error ("multiple storage classes in declaration of %qs", name);
+      location_t loc
+	= min_location (declspecs->locations[ds_thread],
+			declspecs->locations[ds_storage_class]);
+      error_at (loc, "multiple storage classes in declaration of %qs", name);
       thread_p = false;
     }
   if (decl_context != NORMAL
@@ -11489,7 +11493,9 @@ grokdeclarator (const cp_declarator *declarator,
 	  type = create_array_type_for_decl (dname, type,
 					     declarator->u.array.bounds,
 					     declarator->id_loc);
-	  if (!valid_array_size_p (input_location, type, dname))
+	  if (!valid_array_size_p (dname
+				   ? declarator->id_loc : input_location,
+				   type, dname))
 	    type = error_mark_node;
 
 	  if (declarator->std_attributes)
@@ -16876,20 +16882,20 @@ cp_tree_node_structure (union lang_tree_node * t)
 {
   switch (TREE_CODE (&t->generic))
     {
-    case DEFERRED_PARSE:	return TS_CP_DEFERRED_PARSE;
-    case DEFERRED_NOEXCEPT:	return TS_CP_DEFERRED_NOEXCEPT;
-    case IDENTIFIER_NODE:	return TS_CP_IDENTIFIER;
-    case OVERLOAD:		return TS_CP_OVERLOAD;
-    case TEMPLATE_PARM_INDEX:	return TS_CP_TPI;
-    case PTRMEM_CST:		return TS_CP_PTRMEM;
-    case BASELINK:		return TS_CP_BASELINK;
-    case TEMPLATE_DECL:		return TS_CP_TEMPLATE_DECL;
-    case STATIC_ASSERT:		return TS_CP_STATIC_ASSERT;
     case ARGUMENT_PACK_SELECT:  return TS_CP_ARGUMENT_PACK_SELECT;
-    case TRAIT_EXPR:		return TS_CP_TRAIT_EXPR;
-    case LAMBDA_EXPR:		return TS_CP_LAMBDA_EXPR;
-    case TEMPLATE_INFO:		return TS_CP_TEMPLATE_INFO;
+    case BASELINK:		return TS_CP_BASELINK;
     case CONSTRAINT_INFO:       return TS_CP_CONSTRAINT_INFO;
+    case DEFERRED_NOEXCEPT:	return TS_CP_DEFERRED_NOEXCEPT;
+    case DEFERRED_PARSE:	return TS_CP_DEFERRED_PARSE;
+    case IDENTIFIER_NODE:	return TS_CP_IDENTIFIER;
+    case LAMBDA_EXPR:		return TS_CP_LAMBDA_EXPR;
+    case OVERLOAD:		return TS_CP_OVERLOAD;
+    case PTRMEM_CST:		return TS_CP_PTRMEM;
+    case STATIC_ASSERT:		return TS_CP_STATIC_ASSERT;
+    case TEMPLATE_DECL:		return TS_CP_TEMPLATE_DECL;
+    case TEMPLATE_INFO:		return TS_CP_TEMPLATE_INFO;
+    case TEMPLATE_PARM_INDEX:	return TS_CP_TPI;
+    case TRAIT_EXPR:		return TS_CP_TRAIT_EXPR;
     case USERDEF_LITERAL:	return TS_CP_USERDEF_LITERAL;
     default:			return TS_CP_GENERIC;
     }

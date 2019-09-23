@@ -171,7 +171,7 @@ libiberty		Ian Lance Taylor	<ian@airs.com>
 libitm			Torvald Riegel		<triegel@redhat.com>
 libobjc			Nicola Pero		<nicola.pero@meta-innovation.com>
 libobjc			Andrew Pinski		<pinskia@gmail.com>
-libquadmath		Tobias Burnus		<burnus@net-b.de>
+libquadmath		Tobias Burnus		<tobias@codesourcery.com>
 libquadmath		Jakub Jelinek		<jakub@redhat.com>
 libvtv			Caroline Tice		<cmtice@google.com>
 libhsail-rt		Pekka Jääskeläinen	<pekka.jaaskelainen@parmance.com>
@@ -261,7 +261,7 @@ dataflow		Seongbae Park		<seongbae.park@gmail.com>
 dataflow		Kenneth Zadeck		<zadeck@naturalbridge.com>
 driver			Joseph Myers		<joseph@codesourcery.com>
 Fortran			Janne Blomqvist		<jb@gcc.gnu.org>
-Fortran			Tobias Burnus		<burnus@net-b.de>
+Fortran			Tobias Burnus		<tobias@codesourcery.com>
 Fortran			François-Xavier Coudert	<fxcoudert@gcc.gnu.org>
 Fortran			Jerry DeLisle		<jvdelisle@gcc.gnu.org>
 Fortran			Erik Edelmann		<erik.edelmann@iki.fi>
@@ -598,7 +598,7 @@ Gabriele Svelto					<gabriele.svelto@st.com>
 Toma Tabacu					<toma.tabacu@imgtec.com>
 Sriraman Tallam					<tmsriram@google.com>
 Samuel Tardieu					<sam@rfc1149.net>
-Sam Tebbs					<sam.tebbs@arm.com>
+Sam Tebbs					<samuel.tebbs@gmail.com>
 Dinar Temirbulatov				<dtemirbulatov@gmail.com>
 Kresten Krab Thorup				<krab@gcc.gnu.org>
 Kai Tietz					<ktietz70@googlemail.com>

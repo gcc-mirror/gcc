@@ -215,10 +215,7 @@ package body ALI.Util is
    -- Read_Withed_ALIs --
    ----------------------
 
-   procedure Read_Withed_ALIs
-     (Id            : ALI_Id;
-      Ignore_Errors : Boolean := False)
-   is
+   procedure Read_Withed_ALIs (Id : ALI_Id) is
       Afile  : File_Name_Type;
       Text   : Text_Buffer_Ptr;
       Idread : ALI_Id;
@@ -240,14 +237,14 @@ package body ALI.Util is
             then
                Text := Read_Library_Info (Afile);
 
-               --  Unless Ignore_Errors is true, return with an error if source
+               --  Unless in GNATprove mode, return with an error if source
                --  cannot be found. We used to skip this check when we did not
                --  compile library generics separately, but we now always do,
                --  so there is no special case here anymore.
 
                if Text = null then
 
-                  if not Ignore_Errors then
+                  if not GNATprove_Mode then
                      Error_Msg_File_1 := Afile;
                      Error_Msg_File_2 := Withs.Table (W).Sfile;
                      Error_Msg ("{ not found, { must be compiled");
@@ -268,7 +265,7 @@ package body ALI.Util is
                   Free (Text);
 
                   if ALIs.Table (Idread).Compile_Errors
-                    and then not Ignore_Errors
+                    and then not GNATprove_Mode
                   then
                      Error_Msg_File_1 := Withs.Table (W).Sfile;
                      Error_Msg ("{ had errors, must be fixed, and recompiled");
@@ -279,7 +276,6 @@ package body ALI.Util is
 
                   elsif ALIs.Table (Idread).No_Object
                     and then not GNATprove_Mode
-                    and then not Ignore_Errors
                   then
                      Error_Msg_File_1 := Withs.Table (W).Sfile;
                      Error_Msg ("{ must be recompiled");

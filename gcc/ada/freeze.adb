@@ -3569,7 +3569,8 @@ package body Freeze is
             Error_Msg_N ("\??use explicit size clause to set size", E);
          end if;
 
-         if Is_Array_Type (Typ) then
+         --  Declaring a too-big array in disabled ghost code is OK
+         if Is_Array_Type (Typ) and then not Is_Ignored_Ghost_Entity (E) then
             Check_Large_Modular_Array (Typ);
          end if;
       end Freeze_Object_Declaration;

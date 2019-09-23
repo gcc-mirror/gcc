@@ -524,6 +524,7 @@ package body Bindgen is
         and then not Configurable_Run_Time_On_Target
       then
          WBI ("   type No_Param_Proc is access procedure;");
+         WBI ("   pragma Favor_Top_Level (No_Param_Proc);");
          WBI ("");
       end if;
 

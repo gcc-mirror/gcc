@@ -18568,6 +18568,24 @@ loc_list_from_tree_1 (tree loc, int want_address,
 	}
       break;
 
+    case POLY_INT_CST:
+      {
+	if (want_address)
+	  {
+	    expansion_failed (loc, NULL_RTX,
+			      "constant address with a runtime component");
+	    return 0;
+	  }
+	poly_int64 value;
+	if (!poly_int_tree_p (loc, &value))
+	  {
+	    expansion_failed (loc, NULL_RTX, "constant too big");
+	    return 0;
+	  }
+	ret = int_loc_descriptor (value);
+      }
+      break;
+
     case CONSTRUCTOR:
     case REAL_CST:
     case STRING_CST:
@@ -19684,6 +19702,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
     case MINUS:
     case SIGN_EXTEND:
     case ZERO_EXTEND:
+    case CONST_POLY_INT:
       return false;
 
     case MEM:
@@ -26660,16 +26679,12 @@ dwarf2out_late_global_decl (tree decl)
     {
       dw_die_ref die = lookup_decl_die (decl);
 
-      /* We may have to generate early debug late for LTO in case debug
+      /* We may have to generate full debug late for LTO in case debug
          was not enabled at compile-time or the target doesn't support
 	 the LTO early debug scheme.  */
       if (! die && in_lto_p)
-	{
-	  dwarf2out_decl (decl);
-	  die = lookup_decl_die (decl);
-	}
-
-      if (die)
+	dwarf2out_decl (decl);
+      else if (die)
 	{
 	  /* We get called via the symtab code invoking late_global_decl
 	     for symbols that are optimized out.

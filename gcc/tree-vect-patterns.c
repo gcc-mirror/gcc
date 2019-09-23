@@ -868,6 +868,8 @@ vect_reassociating_reduction_p (stmt_vec_info stmt_info, tree_code code,
 
   *op0_out = gimple_assign_rhs1 (assign);
   *op1_out = gimple_assign_rhs2 (assign);
+  if (commutative_tree_code (code) && STMT_VINFO_REDUC_IDX (stmt_info) == 0)
+    std::swap (*op0_out, *op1_out);
   return true;
 }
 
@@ -1721,6 +1723,175 @@ vect_recog_over_widening_pattern (stmt_vec_info last_stmt_info, tree *type_out)
 				      pattern_stmt, new_vectype);
 
   return pattern_stmt;
+}
+
+/* Recognize the following patterns:
+
+     ATYPE a;  // narrower than TYPE
+     BTYPE b;  // narrower than TYPE
+
+   1) Multiply high with scaling
+     TYPE res = ((TYPE) a * (TYPE) b) >> c;
+   2) ... or also with rounding
+     TYPE res = (((TYPE) a * (TYPE) b) >> d + 1) >> 1;
+
+   where only the bottom half of res is used.  */
+
+static gimple *
+vect_recog_mulhs_pattern (stmt_vec_info last_stmt_info, tree *type_out)
+{
+  /* Check for a right shift.  */
+  gassign *last_stmt = dyn_cast <gassign *> (last_stmt_info->stmt);
+  if (!last_stmt
+      || gimple_assign_rhs_code (last_stmt) != RSHIFT_EXPR)
+    return NULL;
+  vec_info *vinfo = last_stmt_info->vinfo;
+
+  /* Check that the shift result is wider than the users of the
+     result need (i.e. that narrowing would be a natural choice).  */
+  tree lhs_type = TREE_TYPE (gimple_assign_lhs (last_stmt));
+  unsigned int target_precision
+    = vect_element_precision (last_stmt_info->min_output_precision);
+  if (!INTEGRAL_TYPE_P (lhs_type)
+      || target_precision >= TYPE_PRECISION (lhs_type))
+    return NULL;
+
+  /* Look through any change in sign on the outer shift input.  */
+  vect_unpromoted_value unprom_rshift_input;
+  tree rshift_input = vect_look_through_possible_promotion
+    (vinfo, gimple_assign_rhs1 (last_stmt), &unprom_rshift_input);
+  if (!rshift_input
+      || TYPE_PRECISION (TREE_TYPE (rshift_input))
+	   != TYPE_PRECISION (lhs_type))
+    return NULL;
+
+  /* Get the definition of the shift input.  */
+  stmt_vec_info rshift_input_stmt_info
+    = vect_get_internal_def (vinfo, rshift_input);
+  if (!rshift_input_stmt_info)
+    return NULL;
+  gassign *rshift_input_stmt
+    = dyn_cast <gassign *> (rshift_input_stmt_info->stmt);
+  if (!rshift_input_stmt)
+    return NULL;
+
+  stmt_vec_info mulh_stmt_info;
+  tree scale_term;
+  internal_fn ifn;
+  unsigned int expect_offset;
+
+  /* Check for the presence of the rounding term.  */
+  if (gimple_assign_rhs_code (rshift_input_stmt) == PLUS_EXPR)
+    {
+      /* Check that the outer shift was by 1.  */
+      if (!integer_onep (gimple_assign_rhs2 (last_stmt)))
+	return NULL;
+
+      /* Check that the second operand of the PLUS_EXPR is 1.  */
+      if (!integer_onep (gimple_assign_rhs2 (rshift_input_stmt)))
+	return NULL;
+
+      /* Look through any change in sign on the addition input.  */
+      vect_unpromoted_value unprom_plus_input;
+      tree plus_input = vect_look_through_possible_promotion
+	(vinfo, gimple_assign_rhs1 (rshift_input_stmt), &unprom_plus_input);
+      if (!plus_input
+	   || TYPE_PRECISION (TREE_TYPE (plus_input))
+		!= TYPE_PRECISION (TREE_TYPE (rshift_input)))
+	return NULL;
+
+      /* Get the definition of the multiply-high-scale part.  */
+      stmt_vec_info plus_input_stmt_info
+	= vect_get_internal_def (vinfo, plus_input);
+      if (!plus_input_stmt_info)
+	return NULL;
+      gassign *plus_input_stmt
+	= dyn_cast <gassign *> (plus_input_stmt_info->stmt);
+      if (!plus_input_stmt
+	  || gimple_assign_rhs_code (plus_input_stmt) != RSHIFT_EXPR)
+	return NULL;
+
+      /* Look through any change in sign on the scaling input.  */
+      vect_unpromoted_value unprom_scale_input;
+      tree scale_input = vect_look_through_possible_promotion
+	(vinfo, gimple_assign_rhs1 (plus_input_stmt), &unprom_scale_input);
+      if (!scale_input
+	  || TYPE_PRECISION (TREE_TYPE (scale_input))
+	       != TYPE_PRECISION (TREE_TYPE (plus_input)))
+	return NULL;
+
+      /* Get the definition of the multiply-high part.  */
+      mulh_stmt_info = vect_get_internal_def (vinfo, scale_input);
+      if (!mulh_stmt_info)
+	return NULL;
+
+      /* Get the scaling term.  */
+      scale_term = gimple_assign_rhs2 (plus_input_stmt);
+
+      expect_offset = target_precision + 2;
+      ifn = IFN_MULHRS;
+    }
+  else
+    {
+      mulh_stmt_info = rshift_input_stmt_info;
+      scale_term = gimple_assign_rhs2 (last_stmt);
+
+      expect_offset = target_precision + 1;
+      ifn = IFN_MULHS;
+    }
+
+  /* Check that the scaling factor is correct.  */
+  if (TREE_CODE (scale_term) != INTEGER_CST
+      || wi::to_widest (scale_term) + expect_offset
+	   != TYPE_PRECISION (lhs_type))
+    return NULL;
+
+  /* Check whether the scaling input term can be seen as two widened
+     inputs multiplied together.  */
+  vect_unpromoted_value unprom_mult[2];
+  tree new_type;
+  unsigned int nops
+    = vect_widened_op_tree (mulh_stmt_info, MULT_EXPR, WIDEN_MULT_EXPR,
+			    false, 2, unprom_mult, &new_type);
+  if (nops != 2)
+    return NULL;
+
+  vect_pattern_detected ("vect_recog_mulhs_pattern", last_stmt);
+
+  /* Adjust output precision.  */
+  if (TYPE_PRECISION (new_type) < target_precision)
+    new_type = build_nonstandard_integer_type
+      (target_precision, TYPE_UNSIGNED (new_type));
+
+  /* Check for target support.  */
+  tree new_vectype = get_vectype_for_scalar_type (new_type);
+  if (!new_vectype
+      || !direct_internal_fn_supported_p
+	    (ifn, new_vectype, OPTIMIZE_FOR_SPEED))
+    return NULL;
+
+  /* The IR requires a valid vector type for the cast result, even though
+     it's likely to be discarded.  */
+  *type_out = get_vectype_for_scalar_type (lhs_type);
+  if (!*type_out)
+    return NULL;
+
+  /* Generate the IFN_MULHRS call.  */
+  tree new_var = vect_recog_temp_ssa_var (new_type, NULL);
+  tree new_ops[2];
+  vect_convert_inputs (last_stmt_info, 2, new_ops, new_type,
+		       unprom_mult, new_vectype);
+  gcall *mulhrs_stmt
+    = gimple_build_call_internal (ifn, 2, new_ops[0], new_ops[1]);
+  gimple_call_set_lhs (mulhrs_stmt, new_var);
+  gimple_set_location (mulhrs_stmt, gimple_location (last_stmt));
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "created pattern stmt: %G", mulhrs_stmt);
+
+  return vect_convert_output (last_stmt_info, lhs_type,
+			      mulhrs_stmt, new_vectype);
 }
 
 /* Recognize the patterns:
@@ -4713,6 +4884,7 @@ static vect_recog_func vect_vect_recog_func_ptrs[] = {
   /* Must come after over_widening, which narrows the shift as much as
      possible beforehand.  */
   { vect_recog_average_pattern, "average" },
+  { vect_recog_mulhs_pattern, "mult_high" },
   { vect_recog_cast_forwprop_pattern, "cast_forwprop" },
   { vect_recog_widen_mult_pattern, "widen_mult" },
   { vect_recog_dot_prod_pattern, "dot_prod" },

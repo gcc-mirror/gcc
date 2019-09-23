@@ -166,6 +166,7 @@
 #include "rtl.h"
 #include "expr.h"	/* For get_bit_range.  */
 #include "optabs-tree.h"
+#include "dbgcnt.h"
 #include "selftest.h"
 
 /* The maximum size (in bits) of the stores this pass should generate.  */
@@ -4195,7 +4196,8 @@ imm_store_chain_info::output_merged_stores ()
   bool ret = false;
   FOR_EACH_VEC_ELT (m_merged_store_groups, i, merged_store)
     {
-      if (output_merged_store (merged_store))
+      if (dbg_cnt (store_merging)
+	  && output_merged_store (merged_store))
 	{
 	  unsigned int j;
 	  store_immediate_info *store;

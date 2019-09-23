@@ -3057,11 +3057,12 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 
       /* Compute the size of the source sequence, including the nul.  */
       tree srcsize = srclen ? srclen : size_zero_node;
-      srcsize = fold_build2 (PLUS_EXPR, type, srcsize, build_int_cst (type, 1));
-
+      tree one = build_int_cst (type, 1);
+      srcsize = fold_build2 (PLUS_EXPR, type, srcsize, one);
+      tree dstsize = fold_build2 (PLUS_EXPR, type, dstlen, one);
       tree sptr = si && si->ptr ? si->ptr : src;
 
-      if (check_bounds_or_overlap (stmt, dst, sptr, dstlen, srcsize))
+      if (check_bounds_or_overlap (stmt, dst, sptr, dstsize, srcsize))
 	{
 	  gimple_set_no_warning (stmt, true);
 	  set_no_warning = true;

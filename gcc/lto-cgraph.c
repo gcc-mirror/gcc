@@ -1804,8 +1804,7 @@ output_cgraph_opt_summary_p (struct cgraph_node *node)
 {
   return ((node->clone_of || node->former_clone_of)
 	  && (node->clone.tree_map
-	      || node->clone.args_to_skip
-	      || node->clone.combined_args_to_skip));
+	      || node->clone.param_adjustments));
 }
 
 /* Output optimization summary for EDGE to OB.  */
@@ -1822,42 +1821,53 @@ output_node_opt_summary (struct output_block *ob,
 			 struct cgraph_node *node,
 			 lto_symtab_encoder_t encoder)
 {
-  unsigned int index;
-  bitmap_iterator bi;
   struct ipa_replace_map *map;
-  struct bitpack_d bp;
   int i;
   struct cgraph_edge *e;
 
-  if (node->clone.args_to_skip)
+  /* TODO: Should this code be moved to ipa-param-manipulation?  */
+  struct bitpack_d bp;
+  bp = bitpack_create (ob->main_stream);
+  bp_pack_value (&bp, (node->clone.param_adjustments != NULL), 1);
+  streamer_write_bitpack (&bp);
+  if (ipa_param_adjustments *adjustments = node->clone.param_adjustments)
     {
-      streamer_write_uhwi (ob, bitmap_count_bits (node->clone.args_to_skip));
-      EXECUTE_IF_SET_IN_BITMAP (node->clone.args_to_skip, 0, index, bi)
-	streamer_write_uhwi (ob, index);
+      streamer_write_uhwi (ob, vec_safe_length (adjustments->m_adj_params));
+      ipa_adjusted_param *adj;
+      FOR_EACH_VEC_SAFE_ELT (adjustments->m_adj_params, i, adj)
+	{
+	  bp = bitpack_create (ob->main_stream);
+	  bp_pack_value (&bp, adj->base_index, IPA_PARAM_MAX_INDEX_BITS);
+	  bp_pack_value (&bp, adj->prev_clone_index, IPA_PARAM_MAX_INDEX_BITS);
+	  bp_pack_value (&bp, adj->op, 2);
+	  bp_pack_value (&bp, adj->param_prefix_index, 2);
+	  bp_pack_value (&bp, adj->prev_clone_adjustment, 1);
+	  bp_pack_value (&bp, adj->reverse, 1);
+	  bp_pack_value (&bp, adj->user_flag, 1);
+	  streamer_write_bitpack (&bp);
+	  if (adj->op == IPA_PARAM_OP_SPLIT
+	      || adj->op == IPA_PARAM_OP_NEW)
+	    {
+	      stream_write_tree (ob, adj->type, true);
+	      if (adj->op == IPA_PARAM_OP_SPLIT)
+		{
+		  stream_write_tree (ob, adj->alias_ptr_type, true);
+		  streamer_write_uhwi (ob, adj->unit_offset);
+		}
+	    }
+	}
+      streamer_write_hwi (ob, adjustments->m_always_copy_start);
+      bp = bitpack_create (ob->main_stream);
+      bp_pack_value (&bp, node->clone.param_adjustments->m_skip_return, 1);
+      streamer_write_bitpack (&bp);
     }
-  else
-    streamer_write_uhwi (ob, 0);
-  if (node->clone.combined_args_to_skip)
-    {
-      streamer_write_uhwi (ob, bitmap_count_bits (node->clone.combined_args_to_skip));
-      EXECUTE_IF_SET_IN_BITMAP (node->clone.combined_args_to_skip, 0, index, bi)
-	streamer_write_uhwi (ob, index);
-    }
-  else
-    streamer_write_uhwi (ob, 0);
+
   streamer_write_uhwi (ob, vec_safe_length (node->clone.tree_map));
   FOR_EACH_VEC_SAFE_ELT (node->clone.tree_map, i, map)
     {
-      /* At the moment we assume all old trees to be PARM_DECLs, because we have no
-         mechanism to store function local declarations into summaries.  */
-      gcc_assert (!map->old_tree);
       streamer_write_uhwi (ob, map->parm_num);
       gcc_assert (EXPR_LOCATION (map->new_tree) == UNKNOWN_LOCATION);
       stream_write_tree (ob, map->new_tree, true);
-      bp = bitpack_create (ob->main_stream);
-      bp_pack_value (&bp, map->replace_p, 1);
-      bp_pack_value (&bp, map->ref_p, 1);
-      streamer_write_bitpack (&bp);
     }
 
   if (lto_symtab_encoder_in_partition_p (encoder, node))
@@ -1922,26 +1932,49 @@ input_node_opt_summary (struct cgraph_node *node,
 {
   int i;
   int count;
-  int bit;
-  struct bitpack_d bp;
   struct cgraph_edge *e;
 
-  count = streamer_read_uhwi (ib_main);
-  if (count)
-    node->clone.args_to_skip = BITMAP_GGC_ALLOC ();
-  for (i = 0; i < count; i++)
+  /* TODO: Should this code be moved to ipa-param-manipulation?  */
+  struct bitpack_d bp;
+  bp = streamer_read_bitpack (ib_main);
+  bool have_adjustments = bp_unpack_value (&bp, 1);
+  if (have_adjustments)
     {
-      bit = streamer_read_uhwi (ib_main);
-      bitmap_set_bit (node->clone.args_to_skip, bit);
+      count = streamer_read_uhwi (ib_main);
+      vec<ipa_adjusted_param, va_gc> *new_params = NULL;
+      for (i = 0; i < count; i++)
+	{
+	  ipa_adjusted_param adj;
+	  memset (&adj, 0, sizeof (adj));
+	  bp = streamer_read_bitpack (ib_main);
+	  adj.base_index = bp_unpack_value (&bp, IPA_PARAM_MAX_INDEX_BITS);
+	  adj.prev_clone_index
+	    = bp_unpack_value (&bp, IPA_PARAM_MAX_INDEX_BITS);
+	  adj.op = (enum ipa_parm_op) bp_unpack_value (&bp, 2);
+	  adj.param_prefix_index = bp_unpack_value (&bp, 2);
+	  adj.prev_clone_adjustment = bp_unpack_value (&bp, 1);
+	  adj.reverse = bp_unpack_value (&bp, 1);
+	  adj.user_flag = bp_unpack_value (&bp, 1);
+	  if (adj.op == IPA_PARAM_OP_SPLIT
+	      || adj.op == IPA_PARAM_OP_NEW)
+	    {
+	      adj.type = stream_read_tree (ib_main, data_in);
+	      if (adj.op == IPA_PARAM_OP_SPLIT)
+		{
+		  adj.alias_ptr_type = stream_read_tree (ib_main, data_in);
+		  adj.unit_offset = streamer_read_uhwi (ib_main);
+		}
+	    }
+	  vec_safe_push (new_params, adj);
+	}
+      int always_copy_start = streamer_read_hwi (ib_main);
+      bp = streamer_read_bitpack (ib_main);
+      bool skip_return = bp_unpack_value (&bp, 1);
+      node->clone.param_adjustments
+	= (new (ggc_alloc <ipa_param_adjustments> ())
+	   ipa_param_adjustments (new_params, always_copy_start, skip_return));
     }
-  count = streamer_read_uhwi (ib_main);
-  if (count)
-    node->clone.combined_args_to_skip = BITMAP_GGC_ALLOC ();
-  for (i = 0; i < count; i++)
-    {
-      bit = streamer_read_uhwi (ib_main);
-      bitmap_set_bit (node->clone.combined_args_to_skip, bit);
-    }
+
   count = streamer_read_uhwi (ib_main);
   for (i = 0; i < count; i++)
     {
@@ -1949,11 +1982,7 @@ input_node_opt_summary (struct cgraph_node *node,
 
       vec_safe_push (node->clone.tree_map, map);
       map->parm_num = streamer_read_uhwi (ib_main);
-      map->old_tree = NULL;
       map->new_tree = stream_read_tree (ib_main, data_in);
-      bp = streamer_read_bitpack (ib_main);
-      map->replace_p = bp_unpack_value (&bp, 1);
-      map->ref_p = bp_unpack_value (&bp, 1);
     }
   for (e = node->callees; e; e = e->next_callee)
     input_edge_opt_summary (e, ib_main);

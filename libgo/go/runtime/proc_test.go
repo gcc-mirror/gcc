@@ -984,3 +984,7 @@ func TestPreemptionAfterSyscall(t *testing.T) {
 		})
 	}
 }
+
+func TestGetgThreadSwitch(t *testing.T) {
+	runtime.RunGetgThreadSwitchTest()
+}

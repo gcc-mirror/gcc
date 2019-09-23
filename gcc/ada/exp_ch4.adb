@@ -1582,7 +1582,7 @@ package body Exp_Ch4 is
       Index_List1 : constant List_Id    := New_List;
       Index_List2 : constant List_Id    := New_List;
 
-      Actuals   : List_Id;
+      First_Idx : Node_Id;
       Formals   : List_Id;
       Func_Name : Entity_Id;
       Func_Body : Node_Id;
@@ -1593,6 +1593,10 @@ package body Exp_Ch4 is
       Ltyp : Entity_Id;
       Rtyp : Entity_Id;
       --  The parameter types to be used for the formals
+
+      New_Lhs : Node_Id;
+      New_Rhs : Node_Id;
+      --  The LHS and RHS converted to the parameter types
 
       function Arr_Attr
         (Arr : Entity_Id;
@@ -1962,6 +1966,82 @@ package body Exp_Ch4 is
          pragma Assert (Ltyp = Rtyp);
       end if;
 
+      --  If the array type is distinct from the type of the arguments, it
+      --  is the full view of a private type. Apply an unchecked conversion
+      --  to ensure that analysis of the code below succeeds.
+
+      if No (Etype (Lhs))
+        or else Base_Type (Etype (Lhs)) /= Base_Type (Ltyp)
+      then
+         New_Lhs := OK_Convert_To (Ltyp, Lhs);
+      else
+         New_Lhs := Lhs;
+      end if;
+
+      if No (Etype (Rhs))
+        or else Base_Type (Etype (Rhs)) /= Base_Type (Rtyp)
+      then
+         New_Rhs := OK_Convert_To (Rtyp, Rhs);
+      else
+         New_Rhs := Rhs;
+      end if;
+
+      First_Idx := First_Index (Ltyp);
+
+      --  If optimization is enabled and the array boils down to a couple of
+      --  consecutive elements, generate a simple conjunction of comparisons
+      --  which should be easier to optimize by the code generator.
+
+      if Optimization_Level > 0
+        and then Ltyp = Rtyp
+        and then Is_Constrained (Ltyp)
+        and then Number_Dimensions (Ltyp) = 1
+        and then Nkind (First_Idx) = N_Range
+        and then Compile_Time_Known_Value (Low_Bound (First_Idx))
+        and then Compile_Time_Known_Value (High_Bound (First_Idx))
+        and then Expr_Value (High_Bound (First_Idx)) =
+                                         Expr_Value (Low_Bound (First_Idx)) + 1
+      then
+         declare
+            Ctyp         : constant Entity_Id := Component_Type (Ltyp);
+            L, R         : Node_Id;
+            TestL, TestH : Node_Id;
+            Index_List   : List_Id;
+
+         begin
+            Index_List := New_List (New_Copy_Tree (Low_Bound (First_Idx)));
+
+            L :=
+              Make_Indexed_Component (Loc,
+                Prefix      => New_Copy_Tree (New_Lhs),
+                Expressions => Index_List);
+
+            R :=
+              Make_Indexed_Component (Loc,
+                Prefix      => New_Copy_Tree (New_Rhs),
+                Expressions => Index_List);
+
+            TestL := Expand_Composite_Equality (Nod, Ctyp, L, R, Bodies);
+
+            Index_List := New_List (New_Copy_Tree (High_Bound (First_Idx)));
+
+            L :=
+              Make_Indexed_Component (Loc,
+                Prefix      => New_Lhs,
+                Expressions => Index_List);
+
+            R :=
+              Make_Indexed_Component (Loc,
+                Prefix      => New_Rhs,
+                Expressions => Index_List);
+
+            TestH := Expand_Composite_Equality (Nod, Ctyp, L, R, Bodies);
+
+            return
+              Make_And_Then (Loc, Left_Opnd => TestL, Right_Opnd => TestH);
+         end;
+      end if;
+
       --  Build list of formals for function
 
       Formals := New_List (
@@ -2004,46 +2084,20 @@ package body Exp_Ch4 is
                     Make_Simple_Return_Statement (Loc,
                       Expression => New_Occurrence_Of (Standard_False, Loc)))),
 
-                Handle_One_Dimension (1, First_Index (Ltyp)),
+                Handle_One_Dimension (1, First_Idx),
 
                 Make_Simple_Return_Statement (Loc,
                   Expression => New_Occurrence_Of (Standard_True, Loc)))));
 
-         Set_Has_Completion (Func_Name, True);
-         Set_Is_Inlined (Func_Name);
+      Set_Has_Completion (Func_Name, True);
+      Set_Is_Inlined (Func_Name);
 
-         --  If the array type is distinct from the type of the arguments, it
-         --  is the full view of a private type. Apply an unchecked conversion
-         --  to ensure that analysis of the call succeeds.
+      Append_To (Bodies, Func_Body);
 
-         declare
-            L, R : Node_Id;
-
-         begin
-            L := Lhs;
-            R := Rhs;
-
-            if No (Etype (Lhs))
-              or else Base_Type (Etype (Lhs)) /= Base_Type (Ltyp)
-            then
-               L := OK_Convert_To (Ltyp, Lhs);
-            end if;
-
-            if No (Etype (Rhs))
-              or else Base_Type (Etype (Rhs)) /= Base_Type (Rtyp)
-            then
-               R := OK_Convert_To (Rtyp, Rhs);
-            end if;
-
-            Actuals := New_List (L, R);
-         end;
-
-         Append_To (Bodies, Func_Body);
-
-         return
-           Make_Function_Call (Loc,
-             Name                   => New_Occurrence_Of (Func_Name, Loc),
-             Parameter_Associations => Actuals);
+      return
+        Make_Function_Call (Loc,
+          Name                   => New_Occurrence_Of (Func_Name, Loc),
+          Parameter_Associations => New_List (New_Lhs, New_Rhs));
    end Expand_Array_Equality;
 
    -----------------------------
@@ -8221,6 +8275,32 @@ package body Exp_Ch4 is
             Insert_Actions      (N, Bodies,           Suppress => All_Checks);
             Analyze_And_Resolve (N, Standard_Boolean, Suppress => All_Checks);
          end if;
+
+      --  If unnesting, handle elementary types whose Equivalent_Types are
+      --  records because there may be padding or undefined fields.
+
+      elsif Unnest_Subprogram_Mode
+        and then Ekind_In (Typl, E_Class_Wide_Type,
+                                 E_Class_Wide_Subtype,
+                                 E_Access_Subprogram_Type,
+                                 E_Access_Protected_Subprogram_Type,
+                                 E_Anonymous_Access_Protected_Subprogram_Type,
+                                 E_Access_Subprogram_Type,
+                                 E_Exception_Type)
+        and then Present (Equivalent_Type (Typl))
+        and then Is_Record_Type (Equivalent_Type (Typl))
+      then
+         Typl := Equivalent_Type (Typl);
+         Remove_Side_Effects (Lhs);
+         Remove_Side_Effects (Rhs);
+         Rewrite (N,
+           Expand_Record_Equality (N, Typl,
+             Unchecked_Convert_To (Typl, Lhs),
+             Unchecked_Convert_To (Typl, Rhs),
+             Bodies));
+
+         Insert_Actions      (N, Bodies,           Suppress => All_Checks);
+         Analyze_And_Resolve (N, Standard_Boolean, Suppress => All_Checks);
       end if;
 
       --  Test if result is known at compile time
@@ -9497,10 +9577,21 @@ package body Exp_Ch4 is
       Typ : constant Entity_Id := Etype (Left_Opnd (N));
 
    begin
-      --  Case of elementary type with standard operator
+      --  Case of elementary type with standard operator.  But if
+      --  unnesting, handle elementary types whose Equivalent_Types are
+      --  records because there may be padding or undefined fields.
 
       if Is_Elementary_Type (Typ)
         and then Sloc (Entity (N)) = Standard_Location
+        and then not (Ekind_In (Typ, E_Class_Wide_Type,
+                                E_Class_Wide_Subtype,
+                                E_Access_Subprogram_Type,
+                                E_Access_Protected_Subprogram_Type,
+                                E_Anonymous_Access_Protected_Subprogram_Type,
+                                E_Access_Subprogram_Type,
+                                E_Exception_Type)
+                        and then Present (Equivalent_Type (Typ))
+                        and then Is_Record_Type (Equivalent_Type (Typ)))
       then
          Binary_Op_Validity_Checks (N);
 
@@ -10964,6 +11055,7 @@ package body Exp_Ch4 is
    procedure Expand_N_Type_Conversion (N : Node_Id) is
       Loc          : constant Source_Ptr := Sloc (N);
       Operand      : constant Node_Id    := Expression (N);
+      Operand_Acc  : Node_Id             := Operand;
       Target_Type  : Entity_Id           := Etype (N);
       Operand_Type : Entity_Id           := Etype (Operand);
 
@@ -11681,6 +11773,15 @@ package body Exp_Ch4 is
       --  Case of converting to an access type
 
       if Is_Access_Type (Target_Type) then
+         --  In terms of accessibility rules, an anonymous access discriminant
+         --  is not considered separate from its parent object.
+
+         if Nkind (Operand) = N_Selected_Component
+           and then Ekind (Entity (Selector_Name (Operand))) = E_Discriminant
+           and then Ekind (Operand_Type) = E_Anonymous_Access_Type
+         then
+            Operand_Acc := Original_Node (Prefix (Operand));
+         end if;
 
          --  If this type conversion was internally generated by the front end
          --  to displace the pointer to the object to reference an interface
@@ -11704,9 +11805,9 @@ package body Exp_Ch4 is
          --  other checks may still need to be applied below (such as tagged
          --  type checks).
 
-         elsif Is_Entity_Name (Operand)
-           and then Has_Extra_Accessibility (Entity (Operand))
-           and then Ekind (Etype (Operand)) = E_Anonymous_Access_Type
+         elsif Is_Entity_Name (Operand_Acc)
+           and then Has_Extra_Accessibility (Entity (Operand_Acc))
+           and then Ekind (Etype (Operand_Acc)) = E_Anonymous_Access_Type
            and then (Nkind (Original_Node (N)) /= N_Attribute_Reference
                       or else Attribute_Name (Original_Node (N)) = Name_Access)
          then
@@ -11721,7 +11822,7 @@ package body Exp_Ch4 is
 
             else
                Apply_Accessibility_Check
-                 (Operand, Target_Type, Insert_Node => Operand);
+                 (Operand_Acc, Target_Type, Insert_Node => Operand);
             end if;
 
          --  If the level of the operand type is statically deeper than the

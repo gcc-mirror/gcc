@@ -1408,12 +1408,13 @@ package body Exp_Ch5 is
               Expressions => New_List (New_Copy_Tree (Right_Lo))),
           Attribute_Name => Name_Bit);
 
-      --  Compute the Size of the bitfield. ???We can't use Size here, because
-      --  it doesn't work properly for slices of packed arrays, so we compute
-      --  the L'Size as L'Length*L'Component_Size.
-      --
+      --  Compute the Size of the bitfield
+
       --  Note that the length check has already been done, so we can use the
-      --  size of either L or R.
+      --  size of either L or R; they are equal. We can't use 'Size here,
+      --  because sometimes bit fields get copied into a temp, and the 'Size
+      --  ends up being the size of the temp (e.g. an 8-bit temp containing
+      --  a 4-bit bit field).
 
       Size : constant Node_Id :=
         Make_Op_Multiply (Loc,
@@ -1448,23 +1449,46 @@ package body Exp_Ch5 is
    is
       Slices : constant Boolean :=
         Nkind (Name (N)) = N_Slice or else Nkind (Expression (N)) = N_Slice;
+      L_Prefix_Comp : constant Boolean :=
+        --  True if the left-hand side is a slice of a component or slice
+        Nkind (Name (N)) = N_Slice
+        and then Nkind_In (Prefix (Name (N)),
+                           N_Selected_Component,
+                           N_Indexed_Component,
+                           N_Slice);
+      R_Prefix_Comp : constant Boolean :=
+        --  Likewise for the right-hand side
+        Nkind (Expression (N)) = N_Slice
+        and then Nkind_In (Prefix (Expression (N)),
+                           N_Selected_Component,
+                           N_Indexed_Component,
+                           N_Slice);
    begin
       --  Determine whether Copy_Bitfield is appropriate (will work, and will
       --  be more efficient than component-by-component copy). Copy_Bitfield
-      --  doesn't work for reversed storage orders. It is efficient only for
-      --  slices of bit-packed arrays.
+      --  doesn't work for reversed storage orders. It is efficient for slices
+      --  of bit-packed arrays. Copy_Bitfield can read and write bits that are
+      --  not part of the objects being copied, so we don't want to use it if
+      --  there are volatile or independent components. If the Prefix of the
+      --  slice is a component or slice, then it might be a part of an object
+      --  with some other volatile or independent components, so we disable the
+      --  optimization in that case as well.  We could complicate this code by
+      --  actually looking for such volatile and independent components.
 
-      --  Note that Expand_Assign_Array_Bitfield is disabled for now
-
-      if False -- ???
-        and then Is_Bit_Packed_Array (L_Type)
+      if Is_Bit_Packed_Array (L_Type)
         and then Is_Bit_Packed_Array (R_Type)
-        and then RTE_Available (RE_Copy_Bitfield)
         and then not Reverse_Storage_Order (L_Type)
         and then not Reverse_Storage_Order (R_Type)
         and then Ndim = 1
         and then not Rev
         and then Slices
+        and then not Has_Volatile_Component (L_Type)
+        and then not Has_Volatile_Component (R_Type)
+        and then not Has_Independent_Components (L_Type)
+        and then not Has_Independent_Components (R_Type)
+        and then not L_Prefix_Comp
+        and then not R_Prefix_Comp
+        and then RTE_Available (RE_Copy_Bitfield)
       then
          return Expand_Assign_Array_Bitfield
            (N, Larray, Rarray, L_Type, R_Type, Rev);

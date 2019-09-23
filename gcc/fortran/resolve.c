@@ -1429,8 +1429,7 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	  if (s2 && !gfc_compare_interfaces (comp->ts.interface, s2, name, 0, 1,
 					     err, sizeof (err), NULL, NULL))
 	    {
-	      gfc_error_opt (OPT_Wargument_mismatch,
-			     "Interface mismatch for procedure-pointer "
+	      gfc_error_opt (0, "Interface mismatch for procedure-pointer "
 			     "component %qs in structure constructor at %L:"
 			     " %s", comp->name, &cons->expr->where, err);
 	      return false;
@@ -2609,8 +2608,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where, int sub)
       if (!gfc_compare_interfaces (sym, def_sym, sym->name, 0, 1,
 				   reason, sizeof(reason), NULL, NULL))
 	{
-	  gfc_error_opt (OPT_Wargument_mismatch,
-			 "Interface mismatch in global procedure %qs at %L:"
+	  gfc_error_opt (0, "Interface mismatch in global procedure %qs at %L:"
 			 " %s", sym->name, &sym->declared_at, reason);
 	  goto done;
 	}
@@ -7107,19 +7105,6 @@ gfc_resolve_iterator (gfc_iterator *iter, bool real_ok, bool own_scope)
 				  "Step expression in DO loop"))
     return false;
 
-  if (iter->step->expr_type == EXPR_CONSTANT)
-    {
-      if ((iter->step->ts.type == BT_INTEGER
-	   && mpz_cmp_ui (iter->step->value.integer, 0) == 0)
-	  || (iter->step->ts.type == BT_REAL
-	      && mpfr_sgn (iter->step->value.real) == 0))
-	{
-	  gfc_error ("Step expression in DO loop at %L cannot be zero",
-		     &iter->step->where);
-	  return false;
-	}
-    }
-
   /* Convert start, end, and step to the same type as var.  */
   if (iter->start->ts.kind != iter->var->ts.kind
       || iter->start->ts.type != iter->var->ts.type)
@@ -7132,6 +7117,19 @@ gfc_resolve_iterator (gfc_iterator *iter, bool real_ok, bool own_scope)
   if (iter->step->ts.kind != iter->var->ts.kind
       || iter->step->ts.type != iter->var->ts.type)
     gfc_convert_type (iter->step, &iter->var->ts, 1);
+
+  if (iter->step->expr_type == EXPR_CONSTANT)
+    {
+      if ((iter->step->ts.type == BT_INTEGER
+	   && mpz_cmp_ui (iter->step->value.integer, 0) == 0)
+	  || (iter->step->ts.type == BT_REAL
+	      && mpfr_sgn (iter->step->value.real) == 0))
+	{
+	  gfc_error ("Step expression in DO loop at %L cannot be zero",
+		     &iter->step->where);
+	  return false;
+	}
+    }
 
   if (iter->start->expr_type == EXPR_CONSTANT
       && iter->end->expr_type == EXPR_CONSTANT
@@ -7487,7 +7485,7 @@ conformable_arrays (gfc_expr *e1, gfc_expr *e2)
   for (tail = e2->ref; tail && tail->next; tail = tail->next);
 
   /* First compare rank.  */
-  if ((tail && e1->rank != tail->u.ar.as->rank)
+  if ((tail && (!tail->u.ar.as || e1->rank != tail->u.ar.as->rank))
       || (!tail && e1->rank != e2->rank))
     {
       gfc_error ("Source-expr at %L must be scalar or have the "

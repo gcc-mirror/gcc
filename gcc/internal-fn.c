@@ -3245,6 +3245,8 @@ first_commutative_argument (internal_fn fn)
     case IFN_FNMS:
     case IFN_AVG_FLOOR:
     case IFN_AVG_CEIL:
+    case IFN_MULHS:
+    case IFN_MULHRS:
     case IFN_FMIN:
     case IFN_FMAX:
       return 0;

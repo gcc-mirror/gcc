@@ -2088,12 +2088,15 @@ eliminate_redundant_comparison (enum tree_code opcode,
 
       /* If we got here, we have a match.  See if we can combine the
 	 two comparisons.  */
+      tree type = TREE_TYPE (gimple_assign_lhs (def1));
       if (opcode == BIT_IOR_EXPR)
-	t = maybe_fold_or_comparisons (lcode, op1, op2,
+	t = maybe_fold_or_comparisons (type,
+				       lcode, op1, op2,
 				       rcode, gimple_assign_rhs1 (def2),
 				       gimple_assign_rhs2 (def2));
       else
-	t = maybe_fold_and_comparisons (lcode, op1, op2,
+	t = maybe_fold_and_comparisons (type,
+					lcode, op1, op2,
 					rcode, gimple_assign_rhs1 (def2),
 					gimple_assign_rhs2 (def2));
       if (!t)
@@ -3745,10 +3748,11 @@ optimize_range_tests (enum tree_code opcode,
 
 /* A subroutine of optimize_vec_cond_expr to extract and canonicalize
    the operands of the VEC_COND_EXPR.  Returns ERROR_MARK on failure,
-   otherwise the comparison code.  */
+   otherwise the comparison code.  TYPE is a return value that is set
+   to type of comparison.  */
 
 static tree_code
-ovce_extract_ops (tree var, gassign **rets, bool *reti)
+ovce_extract_ops (tree var, gassign **rets, bool *reti, tree *type)
 {
   if (TREE_CODE (var) != SSA_NAME)
     return ERROR_MARK;
@@ -3790,6 +3794,8 @@ ovce_extract_ops (tree var, gassign **rets, bool *reti)
     *rets = stmt;
   if (reti)
     *reti = inv;
+  if (type)
+    *type = TREE_TYPE (cond);
   return cmp;
 }
 
@@ -3811,7 +3817,8 @@ optimize_vec_cond_expr (tree_code opcode, vec<operand_entry *> *ops)
 
       gassign *stmt0;
       bool invert;
-      tree_code cmp0 = ovce_extract_ops (elt0, &stmt0, &invert);
+      tree type;
+      tree_code cmp0 = ovce_extract_ops (elt0, &stmt0, &invert, &type);
       if (cmp0 == ERROR_MARK)
 	continue;
 
@@ -3820,7 +3827,7 @@ optimize_vec_cond_expr (tree_code opcode, vec<operand_entry *> *ops)
 	  tree &elt1 = (*ops)[j]->op;
 
 	  gassign *stmt1;
-	  tree_code cmp1 = ovce_extract_ops (elt1, &stmt1, NULL);
+	  tree_code cmp1 = ovce_extract_ops (elt1, &stmt1, NULL, NULL);
 	  if (cmp1 == ERROR_MARK)
 	    continue;
 
@@ -3834,9 +3841,11 @@ optimize_vec_cond_expr (tree_code opcode, vec<operand_entry *> *ops)
 
 	  tree comb;
 	  if (opcode == BIT_AND_EXPR)
-	    comb = maybe_fold_and_comparisons (cmp0, x0, y0, cmp1, x1, y1);
+	    comb = maybe_fold_and_comparisons (type, cmp0, x0, y0, cmp1, x1,
+					       y1);
 	  else if (opcode == BIT_IOR_EXPR)
-	    comb = maybe_fold_or_comparisons (cmp0, x0, y0, cmp1, x1, y1);
+	    comb = maybe_fold_or_comparisons (type, cmp0, x0, y0, cmp1, x1,
+					      y1);
 	  else
 	    gcc_unreachable ();
 	  if (comb == NULL)

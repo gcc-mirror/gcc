@@ -1,3 +1,9 @@
+2019-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c/91815
+	* c-decl.c (pushdecl): In C detect duplicate declarations across scopes
+	of identifiers in the external scope only for variables and functions.
+
 2019-09-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR c/78736

@@ -67,6 +67,11 @@ package System.Stack_Usage is
    --  Type of the stack analyzer tool. It is used to fill a portion of the
    --  stack with Pattern, and to compute the stack used after some execution.
 
+   --  Note that Fill_Stack writes data past the current top of the stack
+   --  (i.e. at addresses less than the stack pointer register, assuming the
+   --  stack grows downward). Therefore, this package is incompatible with
+   --  tools like Valgrind and DrMemory.
+
    --  Usage:
 
    --  A typical use of the package is something like:

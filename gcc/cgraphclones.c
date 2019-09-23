@@ -142,96 +142,6 @@ cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
   return new_edge;
 }
 
-/* Build variant of function type ORIG_TYPE skipping ARGS_TO_SKIP and the
-   return value if SKIP_RETURN is true.  */
-
-tree
-cgraph_build_function_type_skip_args (tree orig_type, bitmap args_to_skip,
-				      bool skip_return)
-{
-  tree new_type = NULL;
-  tree args, new_args = NULL;
-  tree new_reversed;
-  int i = 0;
-
-  for (args = TYPE_ARG_TYPES (orig_type); args && args != void_list_node;
-       args = TREE_CHAIN (args), i++)
-    if (!args_to_skip || !bitmap_bit_p (args_to_skip, i))
-      new_args = tree_cons (NULL_TREE, TREE_VALUE (args), new_args);
-
-  new_reversed = nreverse (new_args);
-  if (args)
-    {
-      if (new_reversed)
-        TREE_CHAIN (new_args) = void_list_node;
-      else
-	new_reversed = void_list_node;
-    }
-
-  /* Use copy_node to preserve as much as possible from original type
-     (debug info, attribute lists etc.)
-     Exception is METHOD_TYPEs must have THIS argument.
-     When we are asked to remove it, we need to build new FUNCTION_TYPE
-     instead.  */
-  if (TREE_CODE (orig_type) != METHOD_TYPE
-      || !args_to_skip
-      || !bitmap_bit_p (args_to_skip, 0))
-    {
-      new_type = build_distinct_type_copy (orig_type);
-      TYPE_ARG_TYPES (new_type) = new_reversed;
-    }
-  else
-    {
-      new_type
-        = build_distinct_type_copy (build_function_type (TREE_TYPE (orig_type),
-							 new_reversed));
-      TYPE_CONTEXT (new_type) = TYPE_CONTEXT (orig_type);
-    }
-
-  if (skip_return)
-    TREE_TYPE (new_type) = void_type_node;
-
-  return new_type;
-}
-
-/* Build variant of function decl ORIG_DECL skipping ARGS_TO_SKIP and the
-   return value if SKIP_RETURN is true.
-
-   Arguments from DECL_ARGUMENTS list can't be removed now, since they are
-   linked by TREE_CHAIN directly.  The caller is responsible for eliminating
-   them when they are being duplicated (i.e. copy_arguments_for_versioning).  */
-
-static tree
-build_function_decl_skip_args (tree orig_decl, bitmap args_to_skip,
-			       bool skip_return)
-{
-  tree new_decl = copy_node (orig_decl);
-  tree new_type;
-
-  new_type = TREE_TYPE (orig_decl);
-  if (prototype_p (new_type)
-      || (skip_return && !VOID_TYPE_P (TREE_TYPE (new_type))))
-    new_type
-      = cgraph_build_function_type_skip_args (new_type, args_to_skip,
-					      skip_return);
-  TREE_TYPE (new_decl) = new_type;
-
-  /* For declarations setting DECL_VINDEX (i.e. methods)
-     we expect first argument to be THIS pointer.   */
-  if (args_to_skip && bitmap_bit_p (args_to_skip, 0))
-    DECL_VINDEX (new_decl) = NULL_TREE;
-
-  /* When signature changes, we need to clear builtin info.  */
-  if (fndecl_built_in_p (new_decl)
-      && args_to_skip
-      && !bitmap_empty_p (args_to_skip))
-    set_decl_built_in_function (new_decl, NOT_BUILT_IN, 0);
-  /* The FE might have information and assumptions about the other
-     arguments.  */
-  DECL_LANG_SPECIFIC (new_decl) = NULL;
-  return new_decl;
-}
-
 /* Set flags of NEW_NODE and its decl.  NEW_NODE is a newly created private
    clone or its thunk.  */
 
@@ -281,35 +191,21 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
       return cs->caller;
 
   tree new_decl;
-  if (!node->clone.args_to_skip)
-    new_decl = copy_node (thunk->decl);
-  else
+  if (node->clone.param_adjustments)
     {
       /* We do not need to duplicate this_adjusting thunks if we have removed
 	 this.  */
       if (thunk->thunk.this_adjusting
-	  && bitmap_bit_p (node->clone.args_to_skip, 0))
+	  && !node->clone.param_adjustments->first_param_intact_p ())
 	return node;
 
-      new_decl = build_function_decl_skip_args (thunk->decl,
-						node->clone.args_to_skip,
-						false);
+      new_decl = copy_node (thunk->decl);
+      ipa_param_body_adjustments body_adj (node->clone.param_adjustments,
+					   new_decl);
+      body_adj.modify_formal_parameters ();
     }
-
-  tree *link = &DECL_ARGUMENTS (new_decl);
-  int i = 0;
-  for (tree pd = DECL_ARGUMENTS (thunk->decl); pd; pd = DECL_CHAIN (pd), i++)
-    {
-      if (!node->clone.args_to_skip
-	  || !bitmap_bit_p (node->clone.args_to_skip, i))
-	{
-	  tree nd = copy_node (pd);
-	  DECL_CONTEXT (nd) = new_decl;
-	  *link = nd;
-	  link = &DECL_CHAIN (nd);
-	}
-    }
-  *link = NULL_TREE;
+  else
+    new_decl = copy_node (thunk->decl);
 
   gcc_checking_assert (!DECL_STRUCT_FUNCTION (new_decl));
   gcc_checking_assert (!DECL_INITIAL (new_decl));
@@ -331,8 +227,7 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   new_thunk->thunk = thunk->thunk;
   new_thunk->unique_name = in_lto_p;
   new_thunk->former_clone_of = thunk->decl;
-  new_thunk->clone.args_to_skip = node->clone.args_to_skip;
-  new_thunk->clone.combined_args_to_skip = node->clone.combined_args_to_skip;
+  new_thunk->clone.param_adjustments = node->clone.param_adjustments;
 
   cgraph_edge *e = new_thunk->create_edge (node, NULL, new_thunk->count);
   symtab->call_edge_duplication_hooks (thunk->callees, e);
@@ -415,7 +310,11 @@ dump_callgraph_transformation (const cgraph_node *original,
    If the new node is being inlined into another one, NEW_INLINED_TO should be
    the outline function the new one is (even indirectly) inlined to.  All hooks
    will see this in node's global.inlined_to, when invoked.  Can be NULL if the
-   node is not inlined.  */
+   node is not inlined.
+
+   If PARAM_ADJUSTMENTS is non-NULL, the parameter manipulation information
+   will be overwritten by the new structure.  Otherwise the new node will
+   share parameter manipulation information with the original node.  */
 
 cgraph_node *
 cgraph_node::create_clone (tree new_decl, profile_count prof_count,
@@ -423,7 +322,8 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
 			   vec<cgraph_edge *> redirect_callers,
 			   bool call_duplication_hook,
 			   cgraph_node *new_inlined_to,
-			   bitmap args_to_skip, const char *suffix)
+			   ipa_param_adjustments *param_adjustments,
+			   const char *suffix)
 {
   cgraph_node *new_node = symtab->create_empty ();
   cgraph_edge *e;
@@ -467,19 +367,13 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   new_node->merged_comdat = merged_comdat;
   new_node->thunk = thunk;
 
-  new_node->clone.tree_map = NULL;
-  new_node->clone.args_to_skip = args_to_skip;
-  new_node->split_part = split_part;
-  if (!args_to_skip)
-    new_node->clone.combined_args_to_skip = clone.combined_args_to_skip;
-  else if (clone.combined_args_to_skip)
-    {
-      new_node->clone.combined_args_to_skip = BITMAP_GGC_ALLOC ();
-      bitmap_ior (new_node->clone.combined_args_to_skip,
-		  clone.combined_args_to_skip, args_to_skip);
-    }
+  if (param_adjustments)
+    new_node->clone.param_adjustments = param_adjustments;
   else
-    new_node->clone.combined_args_to_skip = args_to_skip;
+    new_node->clone.param_adjustments = clone.param_adjustments;
+  new_node->clone.tree_map = NULL;
+  new_node->clone.performed_splits = vec_safe_copy (clone.performed_splits);
+  new_node->split_part = split_part;
 
   FOR_EACH_VEC_ELT (redirect_callers, i, e)
     {
@@ -621,8 +515,8 @@ clone_function_name (tree decl, const char *suffix)
 cgraph_node *
 cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
 				   vec<ipa_replace_map *, va_gc> *tree_map,
-				   bitmap args_to_skip, const char * suffix,
-				   unsigned num_suffix)
+				   ipa_param_adjustments *param_adjustments,
+				   const char * suffix, unsigned num_suffix)
 {
   tree old_decl = decl;
   cgraph_node *new_node = NULL;
@@ -632,13 +526,16 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
   char *name;
 
   gcc_checking_assert (local.versionable);
-  gcc_assert (local.can_change_signature || !args_to_skip);
+  /* TODO: It would be nice if we could recognize that param_adjustments do not
+     actually perform any changes, but at the moment let's require it simply
+     does not exist.  */
+  gcc_assert (local.can_change_signature || !param_adjustments);
 
   /* Make a new FUNCTION_DECL tree node */
-  if (!args_to_skip)
+  if (!param_adjustments)
     new_decl = copy_node (old_decl);
   else
-    new_decl = build_function_decl_skip_args (old_decl, args_to_skip, false);
+    new_decl = param_adjustments->adjust_decl (old_decl);
 
   /* These pointers represent function body and will be populated only when clone
      is materialized.  */
@@ -662,7 +559,8 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
   SET_DECL_RTL (new_decl, NULL);
 
   new_node = create_clone (new_decl, count, false,
-			   redirect_callers, false, NULL, args_to_skip, suffix);
+			   redirect_callers, false, NULL, param_adjustments,
+			   suffix);
 
   /* Update the properties.
      Make clone visible only within this translation unit.  Make sure
@@ -1021,9 +919,10 @@ cgraph_node::create_version_clone (tree new_decl,
 cgraph_node *
 cgraph_node::create_version_clone_with_body
   (vec<cgraph_edge *> redirect_callers,
-   vec<ipa_replace_map *, va_gc> *tree_map, bitmap args_to_skip,
-   bool skip_return, bitmap bbs_to_copy, basic_block new_entry_block,
-   const char *suffix, tree target_attributes)
+   vec<ipa_replace_map *, va_gc> *tree_map,
+   ipa_param_adjustments *param_adjustments,
+   bitmap bbs_to_copy, basic_block new_entry_block, const char *suffix,
+   tree target_attributes)
 {
   tree old_decl = decl;
   cgraph_node *new_version_node = NULL;
@@ -1032,14 +931,16 @@ cgraph_node::create_version_clone_with_body
   if (!tree_versionable_function_p (old_decl))
     return NULL;
 
-  gcc_assert (local.can_change_signature || !args_to_skip);
+  /* TODO: Restore an assert that we do not change signature if
+     local.can_change_signature is false.  We cannot just check that
+     param_adjustments is NULL because unfortunately ipa-split removes return
+     values from such functions.  */
 
   /* Make a new FUNCTION_DECL tree node for the new version. */
-  if (!args_to_skip && !skip_return)
-    new_decl = copy_node (old_decl);
+  if (param_adjustments)
+    new_decl = param_adjustments->adjust_decl (old_decl);
   else
-    new_decl
-      = build_function_decl_skip_args (old_decl, args_to_skip, skip_return);
+    new_decl = copy_node (old_decl);
 
   /* Generate a new name for the new version. */
   DECL_NAME (new_decl) = clone_function_name_numbered (old_decl, suffix);
@@ -1076,8 +977,8 @@ cgraph_node::create_version_clone_with_body
     new_version_node->ipa_transforms_to_apply
       = ipa_transforms_to_apply.copy ();
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
-  tree_function_versioning (old_decl, new_decl, tree_map, false, args_to_skip,
-			    skip_return, bbs_to_copy, new_entry_block);
+  tree_function_versioning (old_decl, new_decl, tree_map, param_adjustments,
+			    false, bbs_to_copy, new_entry_block);
 
   /* Update the new version's properties.
      Make The new version visible only within this translation unit.  Make sure
@@ -1117,9 +1018,8 @@ cgraph_materialize_clone (cgraph_node *node)
     node->former_clone_of = node->clone_of->former_clone_of;
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
   tree_function_versioning (node->clone_of->decl, node->decl,
-  			    node->clone.tree_map, true,
-			    node->clone.args_to_skip, false,
-			    NULL, NULL);
+			    node->clone.tree_map, node->clone.param_adjustments,
+			    true, NULL, NULL);
   if (symtab->dump_file)
     {
       dump_function_to_file (node->clone_of->decl, symtab->dump_file,
@@ -1194,28 +1094,15 @@ symbol_table::materialize_all_clones (void)
 			    {
 			      ipa_replace_map *replace_info;
 			      replace_info = (*node->clone.tree_map)[i];
-			      print_generic_expr (symtab->dump_file,
-						  replace_info->old_tree);
-			      fprintf (symtab->dump_file, " -> ");
+			      fprintf (symtab->dump_file, "%i -> ",
+				       (*node->clone.tree_map)[i]->parm_num);
 			      print_generic_expr (symtab->dump_file,
 						  replace_info->new_tree);
-			      fprintf (symtab->dump_file, "%s%s;",
-			      	       replace_info->replace_p ? "(replace)":"",
-				       replace_info->ref_p ? "(ref)":"");
 			    }
 			  fprintf (symtab->dump_file, "\n");
 			}
-		      if (node->clone.args_to_skip)
-			{
-			  fprintf (symtab->dump_file, "   args_to_skip: ");
-			  dump_bitmap (symtab->dump_file,
-				       node->clone.args_to_skip);
-			}
-		      if (node->clone.args_to_skip)
-			{
-			  fprintf (symtab->dump_file, "   combined_args_to_skip:");
-			  dump_bitmap (symtab->dump_file, node->clone.combined_args_to_skip);
-			}
+		      if (node->clone.param_adjustments)
+			node->clone.param_adjustments->dump (symtab->dump_file);
 		    }
 		  cgraph_materialize_clone (node);
 		  stabilized = false;

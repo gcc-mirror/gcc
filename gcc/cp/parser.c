@@ -11328,7 +11328,10 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
     }
   /* Anything that starts with a `{' must be a compound-statement.  */
   else if (token->type == CPP_OPEN_BRACE)
-    statement = cp_parser_compound_statement (parser, NULL, BCS_NORMAL, false);
+    {
+      std_attrs = process_stmt_hotness_attribute (std_attrs, attrs_loc);
+      statement = cp_parser_compound_statement (parser, NULL, BCS_NORMAL, false);
+    }
   /* CPP_PRAGMA is a #pragma inside a function body, which constitutes
      a statement all its own.  */
   else if (token->type == CPP_PRAGMA)
@@ -19772,7 +19775,7 @@ cp_parser_alias_declaration (cp_parser* parser)
   if (decl == error_mark_node)
     return decl;
 
-  // Attach constraints to the alias declaration.
+  /* Attach constraints to the alias declaration.  */
   if (flag_concepts && current_template_parms)
     {
       tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
@@ -22589,12 +22592,14 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	  && !LAMBDA_TYPE_P (current_class_type))
 	default_argument = cp_parser_cache_defarg (parser, /*nsdmi=*/false);
 
-      // A constrained-type-specifier may declare a type template-parameter.
+      /* A constrained-type-specifier may declare a type
+	 template-parameter.  */
       else if (declares_constrained_type_template_parameter (type))
         default_argument
           = cp_parser_default_type_template_argument (parser);
 
-      // A constrained-type-specifier may declare a template-template-parameter.
+      /* A constrained-type-specifier may declare a
+	 template-template-parameter.  */
       else if (declares_constrained_template_template_parameter (type))
         default_argument
           = cp_parser_default_template_template_argument (parser);
@@ -28548,9 +28553,9 @@ cp_parser_single_declaration (cp_parser* parser,
       if (cp_parser_declares_only_class_p (parser)
 	  || (declares_class_or_enum & 2))
 	{
-	  // If this is a declaration, but not a definition, associate
-	  // any constraints with the type declaration. Constraints
-	  // are associated with definitions in cp_parser_class_specifier.
+	  /* If this is a declaration, but not a definition, associate
+	     any constraints with the type declaration. Constraints
+	     are associated with definitions in cp_parser_class_specifier.  */
 	  if (declares_class_or_enum == 1)
 	    associate_classtype_constraints (decl_specifiers.type);
 
@@ -42107,7 +42112,7 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
       non_type = true;
     }
 
-  // Attach the constraint to the parm before processing.
+  /* Attach the constraint to the parm before processing.  */
   tree node = build_tree_list (NULL_TREE, synth_tmpl_parm);
   TREE_TYPE (node) = constr;
   tree new_parm
@@ -42150,8 +42155,8 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
       TREE_VEC_ELT (new_parms, new_parm_idx) = parser->implicit_template_parms;
     }
 
-  // If the new parameter was constrained, we need to add that to the
-  // constraints in the template parameter list.
+  /* If the new parameter was constrained, we need to add that to the
+     constraints in the template parameter list.  */
   if (tree req = TEMPLATE_PARM_CONSTRAINTS (tree_last (new_parm)))
     {
       tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);

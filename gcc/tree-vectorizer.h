@@ -528,12 +528,6 @@ public:
      we need to peel off iterations at the end to form an epilogue loop.  */
   bool peeling_for_niter;
 
-  /* Reductions are canonicalized so that the last operand is the reduction
-     operand.  If this places a constant into RHS1, this decanonicalizes
-     GIMPLE for other phases, so we must track when this has occurred and
-     fix it up.  */
-  bool operands_swapped;
-
   /* True if there are no loop carried data dependencies in the loop.
      If loop->safelen <= 1, then this is always true, either the loop
      didn't have any loop carried data dependencies, or the loop is being
@@ -610,7 +604,6 @@ public:
 #define LOOP_VINFO_REDUCTION_CHAINS(L)     (L)->reduction_chains
 #define LOOP_VINFO_TARGET_COST_DATA(L)     (L)->target_cost_data
 #define LOOP_VINFO_PEELING_FOR_GAPS(L)     (L)->peeling_for_gaps
-#define LOOP_VINFO_OPERANDS_SWAPPED(L)     (L)->operands_swapped
 #define LOOP_VINFO_PEELING_FOR_NITER(L)    (L)->peeling_for_niter
 #define LOOP_VINFO_NO_DATA_DEPENDENCIES(L) (L)->no_data_dependencies
 #define LOOP_VINFO_SCALAR_LOOP(L)	   (L)->scalar_loop
@@ -948,6 +941,10 @@ public:
      vect_force_simple_reduction.  */
   enum vect_reduction_type reduc_type;
 
+  /* On a stmt participating in the reduction the index of the operand
+     on the reduction SSA cycle.  */
+  int reduc_idx;
+
   /* On a reduction PHI the def returned by vect_force_simple_reduction.
      On the def returned by vect_force_simple_reduction the
      corresponding PHI.  */
@@ -1037,6 +1034,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_SIMD_LANE_ACCESS_P(S)   (S)->simd_lane_access_p
 #define STMT_VINFO_VEC_REDUCTION_TYPE(S)   (S)->v_reduc_type
 #define STMT_VINFO_VEC_CONST_COND_REDUC_CODE(S) (S)->const_cond_reduc_code
+#define STMT_VINFO_REDUC_IDX(S)		   (S)->reduc_idx
 
 #define STMT_VINFO_DR_WRT_VEC_LOOP(S)      (S)->dr_wrt_vec_loop
 #define STMT_VINFO_DR_BASE_ADDRESS(S)      (S)->dr_wrt_vec_loop.base_address
@@ -1541,7 +1539,7 @@ extern void vect_remove_stores (stmt_vec_info);
 extern opt_result vect_analyze_stmt (stmt_vec_info, bool *, slp_tree,
 				     slp_instance, stmt_vector_for_cost *);
 extern bool vectorizable_condition (stmt_vec_info, gimple_stmt_iterator *,
-				    stmt_vec_info *, bool, slp_tree,
+				    stmt_vec_info *, bool, int, slp_tree,
 				    stmt_vector_for_cost *);
 extern bool vectorizable_shift (stmt_vec_info, gimple_stmt_iterator *,
 				stmt_vec_info *, slp_tree,
@@ -1611,11 +1609,8 @@ extern tree vect_create_addr_base_for_vector_ref (stmt_vec_info, gimple_seq *,
 						  tree, tree = NULL_TREE);
 
 /* In tree-vect-loop.c.  */
-/* FORNOW: Used in tree-parloops.c.  */
-extern stmt_vec_info vect_force_simple_reduction (loop_vec_info, stmt_vec_info,
-						  bool *, bool);
 extern widest_int vect_iv_limit_for_full_masking (loop_vec_info loop_vinfo);
-/* Used in gimple-loop-interchange.c.  */
+/* Used in gimple-loop-interchange.c and tree-parloops.c.  */
 extern bool check_reduction_path (dump_user_location_t, loop_p, gphi *, tree,
 				  enum tree_code);
 /* Drive for loop analysis stage.  */
@@ -1645,7 +1640,6 @@ extern bool vectorizable_reduction (stmt_vec_info, gimple_stmt_iterator *,
 extern bool vectorizable_induction (stmt_vec_info, gimple_stmt_iterator *,
 				    stmt_vec_info *, slp_tree,
 				    stmt_vector_for_cost *);
-extern tree get_initial_def_for_reduction (stmt_vec_info, tree, tree *);
 extern bool vect_worthwhile_without_simd_p (vec_info *, tree_code);
 extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,
 					stmt_vector_for_cost *,

@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "regs.h"
 #include "tree-vector-builder.h"
+#include "gimple-fold.h"
 
 /* Tree code classes.  */
 
@@ -455,71 +456,61 @@ tree_node_structure_for_code (enum tree_code code)
   switch (TREE_CODE_CLASS (code))
     {
     case tcc_declaration:
-      {
-	switch (code)
-	  {
-	  case FIELD_DECL:
-	    return TS_FIELD_DECL;
-	  case PARM_DECL:
-	    return TS_PARM_DECL;
-	  case VAR_DECL:
-	    return TS_VAR_DECL;
-	  case LABEL_DECL:
-	    return TS_LABEL_DECL;
-	  case RESULT_DECL:
-	    return TS_RESULT_DECL;
-	  case DEBUG_EXPR_DECL:
-	    return TS_DECL_WRTL;
-	  case CONST_DECL:
-	    return TS_CONST_DECL;
-	  case TYPE_DECL:
-	    return TS_TYPE_DECL;
-	  case FUNCTION_DECL:
-	    return TS_FUNCTION_DECL;
-	  case TRANSLATION_UNIT_DECL:
-	    return TS_TRANSLATION_UNIT_DECL;
-	  default:
-	    return TS_DECL_NON_COMMON;
-	  }
-      }
-    case tcc_type:
-      return TS_TYPE_NON_COMMON;
-    case tcc_reference:
-    case tcc_comparison:
-    case tcc_unary:
+      switch (code)
+	{
+	case CONST_DECL:	return TS_CONST_DECL;
+	case DEBUG_EXPR_DECL:	return TS_DECL_WRTL;
+	case FIELD_DECL:	return TS_FIELD_DECL;
+	case FUNCTION_DECL:	return TS_FUNCTION_DECL;
+	case LABEL_DECL:	return TS_LABEL_DECL;
+	case PARM_DECL:		return TS_PARM_DECL;
+	case RESULT_DECL:	return TS_RESULT_DECL;
+	case TRANSLATION_UNIT_DECL: return TS_TRANSLATION_UNIT_DECL;
+	case TYPE_DECL:		return TS_TYPE_DECL;
+	case VAR_DECL:		return TS_VAR_DECL;
+	default: 		return TS_DECL_NON_COMMON;
+	}
+
+    case tcc_type:		return TS_TYPE_NON_COMMON;
+
     case tcc_binary:
+    case tcc_comparison:
     case tcc_expression:
+    case tcc_reference:
     case tcc_statement:
-    case tcc_vl_exp:
-      return TS_EXP;
+    case tcc_unary:
+    case tcc_vl_exp:		return TS_EXP;
+
     default:  /* tcc_constant and tcc_exceptional */
       break;
     }
+
   switch (code)
     {
       /* tcc_constant cases.  */
-    case VOID_CST:		return TS_TYPED;
+    case COMPLEX_CST:		return TS_COMPLEX;
+    case FIXED_CST:		return TS_FIXED_CST;
     case INTEGER_CST:		return TS_INT_CST;
     case POLY_INT_CST:		return TS_POLY_INT_CST;
     case REAL_CST:		return TS_REAL_CST;
-    case FIXED_CST:		return TS_FIXED_CST;
-    case COMPLEX_CST:		return TS_COMPLEX;
-    case VECTOR_CST:		return TS_VECTOR;
     case STRING_CST:		return TS_STRING;
+    case VECTOR_CST:		return TS_VECTOR;
+    case VOID_CST:		return TS_TYPED;
+
       /* tcc_exceptional cases.  */
-    case ERROR_MARK:		return TS_COMMON;
-    case IDENTIFIER_NODE:	return TS_IDENTIFIER;
-    case TREE_LIST:		return TS_LIST;
-    case TREE_VEC:		return TS_VEC;
-    case SSA_NAME:		return TS_SSA_NAME;
-    case PLACEHOLDER_EXPR:	return TS_COMMON;
-    case STATEMENT_LIST:	return TS_STATEMENT_LIST;
     case BLOCK:			return TS_BLOCK;
     case CONSTRUCTOR:		return TS_CONSTRUCTOR;
-    case TREE_BINFO:		return TS_BINFO;
+    case ERROR_MARK:		return TS_COMMON;
+    case IDENTIFIER_NODE:	return TS_IDENTIFIER;
     case OMP_CLAUSE:		return TS_OMP_CLAUSE;
     case OPTIMIZATION_NODE:	return TS_OPTIMIZATION;
+    case PLACEHOLDER_EXPR:	return TS_COMMON;
+    case SSA_NAME:		return TS_SSA_NAME;
+    case STATEMENT_LIST:	return TS_STATEMENT_LIST;
     case TARGET_OPTION_NODE:	return TS_TARGET_OPTION;
+    case TREE_BINFO:		return TS_BINFO;
+    case TREE_LIST:		return TS_LIST;
+    case TREE_VEC:		return TS_VEC;
 
     default:
       gcc_unreachable ();
@@ -13858,6 +13849,75 @@ component_ref_field_offset (tree exp)
      any PLACEHOLDER_EXPR that we have.  */
   else
     return SUBSTITUTE_PLACEHOLDER_IN_EXPR (DECL_FIELD_OFFSET (field), exp);
+}
+
+/* Determines the size of the member referenced by the COMPONENT_REF
+   REF, using its initializer expression if necessary in order to
+   determine the size of an initialized flexible array member.
+   Returns the size (which might be zero for an object with
+   an uninitialized flexible array member) or null if the size
+   cannot be determined.  */
+
+tree
+component_ref_size (tree ref)
+{
+  gcc_assert (TREE_CODE (ref) == COMPONENT_REF);
+
+  tree member = TREE_OPERAND (ref, 1);
+
+  /* If the member is not an array, or is not last, or is an array with
+     more than one element, return its size.  Otherwise it's either
+     a bona fide flexible array member, or a zero-length array member,
+     or an array of length one treated as such.  */
+  tree size = DECL_SIZE_UNIT (member);
+  if (size)
+    {
+      tree memtype = TREE_TYPE (member);
+      if (TREE_CODE (memtype) != ARRAY_TYPE
+	  || !array_at_struct_end_p (ref))
+	return size;
+
+      if (!integer_zerop (size))
+	if (tree dom = TYPE_DOMAIN (memtype))
+	  if (tree min = TYPE_MIN_VALUE (dom))
+	    if (tree max = TYPE_MAX_VALUE (dom))
+	      if (TREE_CODE (min) == INTEGER_CST
+		  && TREE_CODE (max) == INTEGER_CST)
+		{
+		  offset_int minidx = wi::to_offset (min);
+		  offset_int maxidx = wi::to_offset (max);
+		  if (maxidx - minidx > 1)
+		    return size;
+		}
+    }
+
+  /* If the reference is to a declared object and the member a true
+     flexible array, try to determine its size from its initializer.  */
+  poly_int64 off = 0;
+  tree base = get_addr_base_and_unit_offset (ref, &off);
+  if (!base || !VAR_P (base))
+    return NULL_TREE;
+
+  /* The size of any member of a declared object other than a flexible
+     array member is that obtained above.  */
+  if (size)
+    return size;
+
+  if (tree init = DECL_INITIAL (base))
+    if (TREE_CODE (init) == CONSTRUCTOR)
+      {
+	off <<= LOG2_BITS_PER_UNIT;
+	init = fold_ctor_reference (NULL_TREE, init, off, 0, base);
+	if (init)
+	  return TYPE_SIZE_UNIT (TREE_TYPE (init));
+      }
+
+  /* Return "don't know" for an external non-array object since its
+     flexible array member can be initialized to have any number of
+     elements.  Otherwise, return zero because the flexible array
+     member has no elements.  */
+  return (DECL_EXTERNAL (base) && TREE_CODE (TREE_TYPE (base)) != ARRAY_TYPE
+	  ? NULL_TREE : integer_zero_node);
 }
 
 /* Return the machine mode of T.  For vectors, returns the mode of the

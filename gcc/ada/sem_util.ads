@@ -983,6 +983,10 @@ package Sem_Util is
    --  discriminants. Otherwise all components of the parent must be included
    --  in the subtype for semantic analysis.
 
+   function Get_Accessibility (E : Entity_Id) return Node_Id;
+   --  Obtain the accessibility level for a given entity formal taking into
+   --  account both extra and minimum accessibility.
+
    function Get_Actual_Subtype (N : Node_Id) return Entity_Id;
    --  Given a node for an expression, obtain the actual subtype of the
    --  expression. In the case of a parameter where the formal is an
@@ -1548,6 +1552,9 @@ package Sem_Util is
    function Is_Atomic_Or_VFA_Object (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a reference to an object
    --  which is either atomic or Volatile_Full_Access.
+
+   function Is_Attribute_Old (N : Node_Id) return Boolean;
+   --  Determine whether node N denotes attribute 'Old
 
    function Is_Attribute_Result (N : Node_Id) return Boolean;
    --  Determine whether node N denotes attribute 'Result
@@ -2962,4 +2969,40 @@ package Sem_Util is
    function Yields_Universal_Type (N : Node_Id) return Boolean;
    --  Determine whether unanalyzed node N yields a universal type
 
+   package Interval_Lists is
+      type Discrete_Interval is
+         record
+            Low, High : Uint;
+         end record;
+
+      type Discrete_Interval_List is
+        array (Pos range <>) of Discrete_Interval;
+      --  A sorted (in ascending order) list of non-empty pairwise-disjoint
+      --  intervals, always with a gap of at least one value between
+      --  successive intervals (i.e., mergeable intervals are merged).
+      --  Low bound is one; high bound is nonnegative.
+
+      function Type_Intervals (Typ : Entity_Id) return Discrete_Interval_List;
+      --  Given a static discrete type or subtype, returns the (unique)
+      --  interval list representing the values of the type/subtype.
+      --  If no static predicates are involved, the length of the result
+      --  will be at most one.
+
+      function Choice_List_Intervals (Discrete_Choices : List_Id)
+                                     return Discrete_Interval_List;
+      --  Given a discrete choice list, returns the (unique) interval
+      --  list representing the chosen values..
+
+      function Is_Subset (Subset, Of_Set : Discrete_Interval_List)
+        return Boolean;
+      --  Returns True iff every value belonging to some interval of
+      --  Subset also belongs to some interval of Of_Set.
+
+      --  TBD: When we get around to implementing "is statically compatible"
+      --  correctly for real types with static predicates, we may need
+      --  an analogous Real_Interval_List type. Most of the language
+      --  rules that reference "is statically compatible" pertain to
+      --  discriminants and therefore do require support for real types;
+      --  the exception is 12.5.1(8).
+   end Interval_Lists;
 end Sem_Util;

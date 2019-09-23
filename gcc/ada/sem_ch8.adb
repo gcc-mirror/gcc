@@ -10337,11 +10337,18 @@ package body Sem_Ch8 is
          --  The package where T is declared is already used
 
          elsif In_Use (Scope (T)) then
-            Error_Msg_Sloc :=
-              Sloc (Find_Most_Prev (Current_Use_Clause (Scope (T))));
-            Error_Msg_NE -- CODEFIX
-              ("& is already use-visible through package use clause #??",
-               Id, T);
+            --  Due to expansion of contracts we could be attempting to issue
+            --  a spurious warning - so verify there is a previous use clause.
+
+            if Current_Use_Clause (Scope (T)) /=
+                 Find_Most_Prev (Current_Use_Clause (Scope (T)))
+            then
+               Error_Msg_Sloc :=
+                 Sloc (Find_Most_Prev (Current_Use_Clause (Scope (T))));
+               Error_Msg_NE -- CODEFIX
+                 ("& is already use-visible through package use clause #??",
+                  Id, T);
+            end if;
 
          --  The current scope is the package where T is declared
 

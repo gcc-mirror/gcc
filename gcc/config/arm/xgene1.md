@@ -64,11 +64,6 @@
        (eq_attr "type" "branch"))
   "xgene1_decode1op")
 
-(define_insn_reservation "xgene1_nop" 1
-  (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "no_insn"))
-  "xgene1_decode1op")
-
 (define_insn_reservation "xgene1_call" 1
   (and (eq_attr "tune" "xgene1")
        (eq_attr "type" "call"))

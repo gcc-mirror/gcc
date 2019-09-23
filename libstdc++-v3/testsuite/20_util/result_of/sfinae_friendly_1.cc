@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-additional-options "-Wno-volatile" { target c++2a } }
 
 // Copyright (C) 2012-2019 Free Software Foundation, Inc.
 //
@@ -21,9 +22,9 @@
 #include <cstddef>
 #include <type_traits>
 
-// TODO: Uncomment the following define once gcc has fixed bug 52748
+// Uncomment the following define once gcc has fixed bug 52748
 // (incomplete types in function call expressions):
-//#define HAS_52748_FIXED
+#define HAS_52748_FIXED
 
 // Helper types:
 struct has_type_impl
@@ -627,9 +628,9 @@ static_assert(is_type<std::result_of
 static_assert(is_type<std::result_of
 	      <variable_functor<Ukn>&(int, int, int)>, Ukn>(), "Error!");
 
-static_assert(is_type<std::result_of<PMSIncomplete(int)>, Ukn>(), "Error!");
-static_assert(is_type<std::result_of<PMSIncomplete&(int)>, Ukn>(), "Error!");
-static_assert(is_type<std::result_of<PMSIncomplete&&(int)>, Ukn>(), "Error!");
+static_assert(is_type<std::result_of<PMSIncomplete(S*, int)>, Ukn>(), "Error!");
+static_assert(is_type<std::result_of<PMSIncomplete&(const S&, int)>, Ukn>(), "Error!");
+static_assert(is_type<std::result_of<PMSIncomplete&&(S&&, int)>, Ukn>(), "Error!");
 
 static_assert(is_type<std::result_of<FuncIncomplete(int)>, Ukn>(), "Error!");
 static_assert(is_type<std::result_of<FuncIncomplete&(int)>, Ukn>(), "Error!");
