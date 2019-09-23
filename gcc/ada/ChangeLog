@@ -1,3 +1,9 @@
+2019-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (components_to_record): Do not reorder fields
+	in packed record types if they contain fixed-size fields that cannot
+	be laid out in a packed manner.
+
 2019-09-19  Tom Tromey  <tromey@adacore.com>
 
 	* gcc-interface/misc.c (gnat_get_type_bias): Return the bias
