@@ -1,3 +1,21 @@
+2019-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/pr68724.C: Check location(s) too.
+	* g++.dg/cpp0x/variadic38.C: Likewise.
+	* g++.dg/cpp1z/nontype2.C: Likewise.
+	* g++.dg/parse/explicit1.C: Likewise.
+	* g++.dg/template/crash11.C: Likewise.
+	* g++.dg/template/non-dependent8.C: Likewise.
+	* g++.dg/template/nontype-array1.C: Likewise.
+	* g++.dg/template/nontype3.C: Likewise.
+	* g++.dg/template/nontype8.C: Likewise.
+	* g++.dg/template/partial5.C: Likewise.
+	* g++.dg/template/spec33.C: Likewise.
+	* g++.old-deja/g++.pt/memtemp64.C: Likewise.
+	* g++.old-deja/g++.pt/spec20.C: Likewise.
+	* g++.old-deja/g++.pt/spec21.C: Likewise.
+	* g++.old-deja/g++.robertl/eb103.C: Likewise.
+
 2019-09-23  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* lib/target-supports.exp

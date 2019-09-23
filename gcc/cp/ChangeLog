@@ -1,3 +1,12 @@
+2019-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (check_explicit_specialization): Use cp_expr_loc_or_input_loc.
+	(process_partial_specialization): Likewise.
+	(convert_nontype_argument_function): Likewise.
+	(invalid_tparm_referent_p): Likewise.
+	(convert_template_argument): Likewise.
+	(check_valid_ptrmem_cst_expr): Tidy.
+
 2019-09-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/91809 - bit-field and ellipsis.
