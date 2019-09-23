@@ -1530,9 +1530,8 @@ reference_related_p (tree t1, tree t2)
   /* [dcl.init.ref]
 
      Given types "cv1 T1" and "cv2 T2," "cv1 T1" is reference-related
-     to "cv2 T2" if T1 is the same type as T2, or T1 is a base class
-     of T2.  */
-  return (same_type_p (t1, t2)
+     to "cv2 T2" if T1 is similar to T2, or T1 is a base class of T2.  */
+  return (similar_type_p (t1, t2)
 	  || (CLASS_TYPE_P (t1) && CLASS_TYPE_P (t2)
 	      && DERIVED_FROM_P (t1, t2)));
 }
@@ -1545,14 +1544,15 @@ reference_compatible_p (tree t1, tree t2)
   /* [dcl.init.ref]
 
      "cv1 T1" is reference compatible with "cv2 T2" if
-       * T1 is reference-related to T2 or
-       * T2 is "noexcept function" and T1 is "function", where the
-         function types are otherwise the same,
-     and cv1 is the same cv-qualification as, or greater cv-qualification
-     than, cv2.  */
-  return ((reference_related_p (t1, t2)
-	   || fnptr_conv_p (t1, t2))
-	  && at_least_as_qualified_p (t1, t2));
+     a prvalue of type "pointer to cv2 T2" can be converted to the type
+     "pointer to cv1 T1" via a standard conversion sequence.  */
+  tree ptype1 = build_pointer_type (t1);
+  tree ptype2 = build_pointer_type (t2);
+  conversion *conv = standard_conversion (ptype1, ptype2, NULL_TREE,
+					  /*c_cast_p=*/false, 0, tf_none);
+  if (!conv || conv->bad_p)
+    return false;
+  return true;
 }
 
 /* A reference of the indicated TYPE is being bound directly to the
