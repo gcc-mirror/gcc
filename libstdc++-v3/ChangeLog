@@ -1,3 +1,11 @@
+2019-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91871
+	* testsuite/util/testsuite_hooks.h
+	(conversion::iterator_to_const_iterator()): Do not return an invalid
+	iterator. Test direct-initialization and direct-list-initialization
+	as well as implicit conversion.
+
 2019-09-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91788 (partial)
