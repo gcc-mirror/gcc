@@ -1,5 +1,16 @@
 2019-09-24  Martin Jambor  <mjambor@suse.cz>
 
+	PR ipa/91831
+	* ipa-param-manipulation.c (carry_over_param): Make a method of
+	ipa_param_body_adjustments, remove now unnecessary argument.  Also copy
+	in case of a context mismatch.
+	(ipa_param_body_adjustments::common_initialization): Adjust call to
+	carry_over_param.
+	* ipa-param-manipulation.h (class ipa_param_body_adjustments): Add
+	private method carry_over_param.
+
+2019-09-24  Martin Jambor  <mjambor@suse.cz>
+
 	PR ipa/91832
 	* ipa-sra.c (scan_expr_access): Check that offset is non-negative.
 
