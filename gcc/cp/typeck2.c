@@ -2068,11 +2068,11 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
   tree binfo;
   tree ctype;
 
-  if (error_operand_p (datum) || error_operand_p (component))
-    return error_mark_node;
-
   datum = mark_lvalue_use (datum);
   component = mark_rvalue_use (component);
+
+  if (error_operand_p (datum) || error_operand_p (component))
+    return error_mark_node;
 
   ptrmem_type = TREE_TYPE (component);
   if (!TYPE_PTRMEM_P (ptrmem_type))
