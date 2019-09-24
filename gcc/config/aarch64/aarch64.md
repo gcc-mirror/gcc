@@ -1104,8 +1104,8 @@
 	(match_operand:GPI 1 "general_operand"))]
   ""
   "
-    if (MEM_P (operands[0]) && CONST_INT_P (operands[1])
-	&& <MODE>mode == DImode
+    if (MEM_P (operands[0]) && !MEM_VOLATILE_P (operands[0])
+	&& CONST_INT_P (operands[1]) && <MODE>mode == DImode
 	&& aarch64_split_dimode_const_store (operands[0], operands[1]))
       DONE;
 
