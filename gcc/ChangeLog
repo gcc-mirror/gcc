@@ -1,3 +1,8 @@
+2019-09-24  Stamatis Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (fp16fml):
+	Update hwcap string for fp16fml.
+
 2019-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/91866
