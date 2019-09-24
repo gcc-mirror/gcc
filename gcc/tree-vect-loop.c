@@ -3981,14 +3981,14 @@ vect_model_induction_cost (stmt_vec_info stmt_info, int ncopies,
    A cost model should help decide between these two schemes.  */
 
 static tree
-get_initial_def_for_reduction (stmt_vec_info stmt_vinfo, tree init_val,
+get_initial_def_for_reduction (stmt_vec_info stmt_vinfo,
+			       enum tree_code code, tree init_val,
                                tree *adjustment_def)
 {
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree scalar_type = TREE_TYPE (init_val);
   tree vectype = get_vectype_for_scalar_type (scalar_type);
-  enum tree_code code = gimple_assign_rhs_code (stmt_vinfo->stmt);
   tree def_for_init;
   tree init_def;
   REAL_VALUE_TYPE real_init_val = dconst0;
@@ -4273,14 +4273,15 @@ static void
 vect_create_epilog_for_reduction (vec<tree> vect_defs,
 				  stmt_vec_info stmt_info,
 				  gimple *reduc_def_stmt,
+				  enum tree_code code,
 				  int ncopies, internal_fn reduc_fn,
 				  vec<stmt_vec_info> reduction_phis,
                                   bool double_reduc, 
 				  slp_tree slp_node,
 				  slp_instance slp_node_instance,
-				  tree induc_val, enum tree_code induc_code,
 				  tree neutral_op)
 {
+  tree induc_val = NULL_TREE;
   stmt_vec_info prev_phi_info;
   tree vectype;
   machine_mode mode;
@@ -4370,17 +4371,22 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
       /* Optimize: if initial_def is for REDUC_MAX smaller than the base
 	 and we can't use zero for induc_val, use initial_def.  Similarly
 	 for REDUC_MIN and initial_def larger than the base.  */
-      if (TREE_CODE (initial_def) == INTEGER_CST
-	  && (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
-	      == INTEGER_INDUC_COND_REDUCTION)
-	  && !integer_zerop (induc_val)
-	  && ((induc_code == MAX_EXPR
-	       && tree_int_cst_lt (initial_def, induc_val))
-	      || (induc_code == MIN_EXPR
-		  && tree_int_cst_lt (induc_val, initial_def))))
-	induc_val = initial_def;
-
-      if (double_reduc)
+      if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+	  == INTEGER_INDUC_COND_REDUCTION)
+	{
+	  induc_val = STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL (stmt_info);
+	  if (TREE_CODE (initial_def) == INTEGER_CST
+	      && (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+		  == INTEGER_INDUC_COND_REDUCTION)
+	      && !integer_zerop (induc_val)
+	      && ((code == MAX_EXPR
+		   && tree_int_cst_lt (initial_def, induc_val))
+		  || (code == MIN_EXPR
+		      && tree_int_cst_lt (induc_val, initial_def))))
+	    induc_val = initial_def;
+	  vec_initial_def = build_vector_from_val (vectype, induc_val);
+	}
+      else if (double_reduc)
 	/* In case of double reduction we only create a vector variable
 	   to be put in the reduction phi node.  The actual statement
 	   creation is done later in this function.  */
@@ -4394,7 +4400,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
 	}
       else
 	vec_initial_def
-	  = get_initial_def_for_reduction (stmt_info, initial_def,
+	  = get_initial_def_for_reduction (stmt_info, code, initial_def,
 					   &adjustment_def);
       vec_initial_defs.create (1);
       vec_initial_defs.quick_push (vec_initial_def);
@@ -4418,24 +4424,8 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
 	  /* Set the loop-entry arg of the reduction-phi.  */
 
 	  gphi *phi = as_a <gphi *> (phi_info->stmt);
-	  if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
-	      == INTEGER_INDUC_COND_REDUCTION)
-	    {
-	      /* Initialise the reduction phi to zero.  This prevents initial
-		 values of non-zero interferring with the reduction op.  */
-	      gcc_assert (ncopies == 1);
-	      gcc_assert (i == 0);
-
-	      tree vec_init_def_type = TREE_TYPE (vec_init_def);
-	      tree induc_val_vec
-		= build_vector_from_val (vec_init_def_type, induc_val);
-
-	      add_phi_arg (phi, induc_val_vec, loop_preheader_edge (loop),
-			   UNKNOWN_LOCATION);
-	    }
-	  else
-	    add_phi_arg (phi, vec_init_def, loop_preheader_edge (loop),
-			 UNKNOWN_LOCATION);
+	  add_phi_arg (phi, vec_init_def, loop_preheader_edge (loop),
+		       UNKNOWN_LOCATION);
 
           /* Set the loop-latch arg for the reduction-phi.  */
           if (j > 0)
@@ -4652,12 +4642,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
     ;
   else
     {
-  enum tree_code code = gimple_assign_rhs_code (orig_stmt_info->stmt);
-  /* For MINUS_EXPR the initial vector is [init_val,0,...,0], therefore,
-     partial results are added and not subtracted.  */
-  if (code == MINUS_EXPR) 
-    code = PLUS_EXPR;
-
   /* SLP reduction without reduction chain, e.g.,
      # a1 = phi <a2, a0>
      # b1 = phi <b2, b0>
@@ -5048,20 +5032,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
     {
       bool reduce_with_shift;
       tree vec_temp;
-
-      /* COND reductions all do the final reduction with MAX_EXPR
-	 or MIN_EXPR.  */
-      if (code == COND_EXPR)
-	{
-	  if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
-	      == INTEGER_INDUC_COND_REDUCTION)
-	    code = induc_code;
-	  else if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
-		   == CONST_COND_REDUCTION)
-	    code = STMT_VINFO_VEC_CONST_COND_REDUC_CODE (stmt_info);
-	  else
-	    code = MAX_EXPR;
-	}
 
       /* See if the target wants to do the final (shift) reduction
 	 in a vector mode of smaller size and first reduce upper/lower
@@ -5543,7 +5513,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
                   preheader_arg = PHI_ARG_DEF_FROM_EDGE (use_stmt,
                                              loop_preheader_edge (outer_loop));
                   vect_phi_init = get_initial_def_for_reduction
-		    (stmt_info, preheader_arg, NULL);
+		    (stmt_info, code, preheader_arg, NULL);
 
                   /* Update phi node arguments with vs0 and vs2.  */
                   add_phi_arg (vect_phi, vect_phi_init,
@@ -6021,7 +5991,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   tree vectype_in = NULL_TREE;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  enum tree_code code, orig_code;
+  enum tree_code code;
   internal_fn reduc_fn;
   machine_mode vec_mode;
   int op_type;
@@ -6029,7 +5999,6 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   tree new_temp = NULL_TREE;
   enum vect_def_type dt, cond_reduc_dt = vect_unknown_def_type;
   stmt_vec_info cond_stmt_vinfo = NULL;
-  enum tree_code cond_reduc_op_code = ERROR_MARK;
   tree scalar_type;
   bool is_simple_use;
   int i;
@@ -6362,9 +6331,11 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     = STMT_VINFO_REDUC_TYPE (reduc_def_info);
   stmt_vec_info tmp = STMT_VINFO_REDUC_DEF (reduc_def_info);
 
-  STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) = v_reduc_type;
+  if (!vec_stmt)
+    STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) = v_reduc_type;
   /* If we have a condition reduction, see if we can simplify it further.  */
-  if (v_reduc_type == COND_REDUCTION)
+  if (v_reduc_type == COND_REDUCTION
+      && !vec_stmt)
     {
       /* TODO: We can't yet handle reduction chains, since we need to treat
 	 each COND_EXPR in the chain specially, not just the last one.
@@ -6386,20 +6357,8 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  return false;
 	}
 
-      /* Loop peeling modifies initial value of reduction PHI, which
-	 makes the reduction stmt to be transformed different to the
-	 original stmt analyzed.  We need to record reduction code for
-	 CONST_COND_REDUCTION type reduction at analyzing stage, thus
-	 it can be used directly at transform stage.  */
-      if (STMT_VINFO_VEC_CONST_COND_REDUC_CODE (stmt_info) == MAX_EXPR
-	  || STMT_VINFO_VEC_CONST_COND_REDUC_CODE (stmt_info) == MIN_EXPR)
-	{
-	  /* Also set the reduction type to CONST_COND_REDUCTION.  */
-	  gcc_assert (cond_reduc_dt == vect_constant_def);
-	  STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) = CONST_COND_REDUCTION;
-	}
-      else if (direct_internal_fn_supported_p (IFN_FOLD_EXTRACT_LAST,
-					       vectype_in, OPTIMIZE_FOR_SPEED))
+      if (direct_internal_fn_supported_p (IFN_FOLD_EXTRACT_LAST,
+					  vectype_in, OPTIMIZE_FOR_SPEED))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6416,6 +6375,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  gcc_assert (TREE_CODE (base) == INTEGER_CST
 		      && TREE_CODE (step) == INTEGER_CST);
 	  cond_reduc_val = NULL_TREE;
+	  enum tree_code cond_reduc_op_code = ERROR_MARK;
 	  tree res = PHI_RESULT (STMT_VINFO_STMT (cond_stmt_vinfo));
 	  if (!types_compatible_p (TREE_TYPE (res), TREE_TYPE (base)))
 	    ;
@@ -6444,10 +6404,10 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    }
 	  if (cond_reduc_val)
 	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "condition expression based on "
-				 "integer induction.\n");
+	      STMT_VINFO_VEC_COND_REDUC_CODE (stmt_info)
+		= cond_reduc_op_code;
+	      STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL (stmt_info)
+		= cond_reduc_val;
 	      STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
 		= INTEGER_INDUC_COND_REDUCTION;
 	    }
@@ -6474,7 +6434,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 				     "condition expression based on "
 				     "compile time constant.\n");
 		  /* Record reduction code at analysis stage.  */
-		  STMT_VINFO_VEC_CONST_COND_REDUC_CODE (stmt_info)
+		  STMT_VINFO_VEC_COND_REDUC_CODE (stmt_info)
 		    = integer_onep (e) ? MAX_EXPR : MIN_EXPR;
 		  STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
 		    = CONST_COND_REDUCTION;
@@ -6482,6 +6442,11 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    }
 	}
     }
+  if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) == INTEGER_INDUC_COND_REDUCTION
+      && dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "condition expression based on "
+		     "integer induction.\n");
 
   if (orig_stmt_info)
     gcc_assert (tmp == orig_stmt_info
@@ -6637,6 +6602,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
           (and also the same tree-code) when generating the epilog code and
           when generating the code inside the loop.  */
 
+  enum tree_code orig_code;
   if (orig_stmt_info
       && (reduction_type == TREE_CODE_REDUCTION
 	  || reduction_type == FOLD_LEFT_REDUCTION))
@@ -6658,13 +6624,12 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
       /* For simple condition reductions, replace with the actual expression
 	 we want to base our reduction around.  */
-      if (reduction_type == CONST_COND_REDUCTION)
+      if (reduction_type == CONST_COND_REDUCTION
+	  || reduction_type == INTEGER_INDUC_COND_REDUCTION)
 	{
-	  orig_code = STMT_VINFO_VEC_CONST_COND_REDUC_CODE (stmt_info);
+	  orig_code = STMT_VINFO_VEC_COND_REDUC_CODE (stmt_info);
 	  gcc_assert (orig_code == MAX_EXPR || orig_code == MIN_EXPR);
 	}
-      else if (reduction_type == INTEGER_INDUC_COND_REDUCTION)
-	orig_code = cond_reduc_op_code;
     }
 
   reduc_fn = IFN_LAST;
@@ -7171,9 +7136,8 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     vect_defs[0] = gimple_get_lhs ((*vec_stmt)->stmt);
 
   vect_create_epilog_for_reduction (vect_defs, stmt_info, reduc_def_phi,
-				    epilog_copies, reduc_fn, phis,
+				    orig_code, epilog_copies, reduc_fn, phis,
 				    double_reduc, slp_node, slp_node_instance,
-				    cond_reduc_val, cond_reduc_op_code,
 				    neutral_op);
 
   return true;

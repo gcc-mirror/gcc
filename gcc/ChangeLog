@@ -1,3 +1,21 @@
+2019-09-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_stmt_vec_info::const_cond_reduc_code):
+	Rename to...
+	(_stmt_vec_info::cond_reduc_code): ... this.
+	(_stmt_vec_info::induc_cond_initial_val): Add.
+	(STMT_VINFO_VEC_CONST_COND_REDUC_CODE): Rename to...
+	(STMT_VINFO_VEC_COND_REDUC_CODE): ... this.
+	(STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL): Add.
+	* tree-vectorizer.c (vec_info::new_stmt_vec_info): Adjust.
+	* tree-vect-loop.c (get_initial_def_for_reduction): Pass in
+	the reduction code.
+	(vect_create_epilog_for_reduction): Drop special
+	induction condition reduction params, pass in reduction code
+	and simplify.
+	(vectorizable_reduction): Perform condition reduction kind
+	selection only at analysis time.  Adjust passing on state.
+
 2019-09-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.md (mov<mode>): Don't call
