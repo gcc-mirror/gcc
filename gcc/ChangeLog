@@ -1,3 +1,9 @@
+2019-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91866
+	* match.pd (((T)(A)) + CST -> (T)(A + CST)): Formatting fix.
+	(((T)(A + CST1)) + CST2 -> (T)(A) + (T)CST1 + CST2): New optimization.
+
 2019-09-24  Martin Liska  <mliska@suse.cz>
 
 	* cfgexpand.c (gimple_assign_rhs_to_tree): Use switch statement
