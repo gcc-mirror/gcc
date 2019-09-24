@@ -1,3 +1,8 @@
+2019-09-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (mov<mode>): Don't call
+	aarch64_split_dimode_const_store on volatile MEM.
+
 2019-09-24  Stamatis Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* config/aarch64/aarch64-option-extensions.def (fp16fml):
