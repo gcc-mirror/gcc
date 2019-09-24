@@ -934,8 +934,12 @@ public:
   /* For reduction loops, this is the type of reduction.  */
   enum vect_reduction_type v_reduc_type;
 
-  /* For CONST_COND_REDUCTION, record the reduc code.  */
-  enum tree_code const_cond_reduc_code;
+  /* For CONST_COND_REDUCTION and INTEGER_INDUC_COND_REDUCTION, the
+     reduction code.  */
+  enum tree_code cond_reduc_code;
+
+  /* For INTEGER_INDUC_COND_REDUCTION, the initial value to be used.  */
+  tree induc_cond_initial_val;
 
   /* On a reduction PHI the reduction type as detected by
      vect_force_simple_reduction.  */
@@ -1033,7 +1037,8 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_MEMORY_ACCESS_TYPE(S)   (S)->memory_access_type
 #define STMT_VINFO_SIMD_LANE_ACCESS_P(S)   (S)->simd_lane_access_p
 #define STMT_VINFO_VEC_REDUCTION_TYPE(S)   (S)->v_reduc_type
-#define STMT_VINFO_VEC_CONST_COND_REDUC_CODE(S) (S)->const_cond_reduc_code
+#define STMT_VINFO_VEC_COND_REDUC_CODE(S)  (S)->cond_reduc_code
+#define STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL(S) (S)->induc_cond_initial_val
 #define STMT_VINFO_REDUC_IDX(S)		   (S)->reduc_idx
 
 #define STMT_VINFO_DR_WRT_VEC_LOOP(S)      (S)->dr_wrt_vec_loop
