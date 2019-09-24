@@ -1,5 +1,10 @@
 2019-09-24  Martin Jambor  <mjambor@suse.cz>
 
+	PR ipa/91831
+	* g++.dg/ipa/pr91831.C: New test.
+
+2019-09-24  Martin Jambor  <mjambor@suse.cz>
+
 	PR ipa/91832
 	* gcc.dg/ipa/pr91832.c: New test.
 
