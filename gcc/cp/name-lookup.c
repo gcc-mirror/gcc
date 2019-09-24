@@ -2771,7 +2771,7 @@ check_local_shadow (tree decl)
 	msg = "declaration of %qD shadows a previous local";
 
       auto_diagnostic_group d;
-      if (warning_at (input_location, warning_code, msg, decl))
+      if (warning_at (DECL_SOURCE_LOCATION (decl), warning_code, msg, decl))
 	inform_shadowed (old);
       return;
     }
@@ -2798,7 +2798,7 @@ check_local_shadow (tree decl)
 	    || TYPE_PTRMEMFUNC_P (TREE_TYPE (decl)))
 	  {
 	    auto_diagnostic_group d;
-	    if (warning_at (input_location, OPT_Wshadow,
+	    if (warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wshadow,
 			    "declaration of %qD shadows a member of %qT",
 			    decl, current_nonlambda_class_type ())
 		&& DECL_P (member))
@@ -2818,7 +2818,7 @@ check_local_shadow (tree decl)
     /* XXX shadow warnings in outer-more namespaces */
     {
       auto_diagnostic_group d;
-      if (warning_at (input_location, OPT_Wshadow,
+      if (warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wshadow,
 		      "declaration of %qD shadows a global declaration",
 		      decl))
 	inform_shadowed (old);
