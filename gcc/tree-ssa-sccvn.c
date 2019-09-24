@@ -2935,8 +2935,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  else
 	    return (void *)-1;
 	}
-      if (TREE_CODE (rhs) != SSA_NAME
-	  && TREE_CODE (rhs) != ADDR_EXPR)
+      if (TREE_CODE (rhs) == SSA_NAME)
+	rhs = SSA_VAL (rhs);
+      else if (TREE_CODE (rhs) != ADDR_EXPR)
 	return (void *)-1;
 
       /* The bases of the destination and the references have to agree.  */
