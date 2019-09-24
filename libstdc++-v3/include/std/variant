@@ -1520,9 +1520,7 @@ namespace __variant
       constexpr size_t index() const noexcept
       {
 	using __index_type = typename _Base::__index_type;
-	if constexpr (is_same_v<__index_type, size_t>)
-	  return this->_M_index;
-	else if constexpr (__detail::__variant::__never_valueless<_Types...>())
+	if constexpr (__detail::__variant::__never_valueless<_Types...>())
 	  return this->_M_index;
 	else if constexpr (sizeof...(_Types) <= __index_type(-1) / 2)
 	  return make_signed_t<__index_type>(this->_M_index);

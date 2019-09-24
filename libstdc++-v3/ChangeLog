@@ -1,5 +1,7 @@
 2019-09-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/variant (variant::index()): Remove impossible case.
+
 	PR libstdc++/91871
 	* testsuite/util/testsuite_hooks.h
 	(conversion::iterator_to_const_iterator()): Do not return an invalid
