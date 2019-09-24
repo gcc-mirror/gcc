@@ -2703,6 +2703,7 @@ enum tree_tag {
   tt_ptrmem_type,	/* Pointer to member type.  */
 
   tt_enum_int,		/* An enum const.  */
+  tt_data_member,	/* Data member or enum value.  */
 
   tt_namespace,		/* Namespace reference.  */
   tt_binfo,		/* A BINFO.  */
@@ -7080,6 +7081,44 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
       return false;
     }
 
+  if (TREE_CODE (decl) == CONST_DECL
+      || TREE_CODE (decl) == FIELD_DECL)
+    {
+      if (streaming_p ())
+	i (tt_data_member);
+
+      tree ctx = DECL_CONTEXT (decl);
+      tree_ctx (ctx, true, decl);
+      tree name = DECL_NAME (decl);
+
+      if (!name || IDENTIFIER_ANON_P (name))
+	name = NULL_TREE;
+
+      tree_node (name);
+      if (!name && streaming_p ())
+	{
+	  /* Anonymous enum members are not a thing!  */
+	  gcc_checking_assert (TREE_CODE (decl) == FIELD_DECL);
+
+	  unsigned ix = get_field_ident (ctx, decl);
+	  u (ix);
+	}
+
+      int tag = insert (decl);
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Wrote member:%d %C:%N", tag, TREE_CODE (decl), decl);
+      return false;
+    }
+
+#if 0
+  /* Everything left should be a thing that is in the entity table.  */
+  gcc_checking_assert (TREE_CODE (decl) == VAR_DECL
+		       || TREE_CODE (decl) == FUNCTION_DECL
+		       || TREE_CODE (decl) == TYPE_DECL
+		       || TREE_CODE (decl) == TEMPLATE_DECL);
+#endif
+  
   const char *kind = NULL;
   unsigned owner = MODULE_UNKNOWN;
   if (use_tpl > 0)
@@ -8647,6 +8686,41 @@ trees_in::tree_node ()
 
 	if (!res)
 	  set_overrun ();
+      }
+      break;
+
+    case tt_data_member:
+      /* A data member or enumeration constant.  */
+      {
+	tree ctx = tree_node ();
+	tree name = tree_node ();
+
+	if (get_overrun ())
+	  ;
+	else if (TREE_CODE (ctx) == ENUMERAL_TYPE)
+	  {
+	    for (tree values = TYPE_VALUES (ctx);
+		 values; values = TREE_CHAIN (values))
+	      if (DECL_NAME (TREE_VALUE (values)) == name)
+		{
+		  res = TREE_VALUE (values);
+		  break;
+		}
+	  }
+	else if (RECORD_OR_UNION_TYPE_P (ctx))
+	  {
+	    unsigned ix = name ? 0 : u ();
+	    res = lookup_field_ident (ctx, name, ix);
+	  }
+
+	if (!res)
+	  set_overrun ();
+	else
+	  {
+	    int tag = insert (res);
+	    dump (dumper::TREE)
+	      && dump ("Read member:%d %C:%N", tag, TREE_CODE (res), res);
+	  }
       }
       break;
 
@@ -10627,7 +10701,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 }
 
 /* VALUE is an overload of decls that is bound in this module.  Create
-   the relevant depsets for the binding and its conents.  MAYBE_TYPE
+   the relevant depsets for the binding and its contents.  MAYBE_TYPE
    is used for struct stat hack behaviour.  */
 
 bool
@@ -16849,25 +16923,6 @@ set_module_owner (tree decl)
 	  gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL);
 	  DECL_MODULE_EXPORT_P (decl) = true;
 	}
-    }
-}
-
-/* DECL has been implicitly declared, set its module owner from
-   FROM.  */
-
-void
-set_implicit_module_owner (tree decl, tree from)
-{
-  if (!modules_p ())
-    return;
-  if (!DECL_NAMESPACE_SCOPE_P (decl))
-    return;
-
-  if (unsigned owner = MAYBE_DECL_MODULE_OWNER (from))
-    {
-      DECL_MODULE_EXPORT_P (decl) = DECL_MODULE_EXPORT_P (from);
-      retrofit_lang_decl (decl);
-      DECL_MODULE_OWNER (decl) = owner;
     }
 }
 

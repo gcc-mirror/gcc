@@ -4399,6 +4399,63 @@ get_lookup_ident (tree ctx, tree name, unsigned mod, tree decl)
   return res;
 }
 
+unsigned
+get_field_ident (tree ctx, tree decl)
+{
+  gcc_checking_assert (!DECL_NAME (decl)
+		       || IDENTIFIER_ANON_P (DECL_NAME (decl)));
+
+  unsigned ix = 0;
+  for (tree fields = TYPE_FIELDS (ctx);
+       fields; fields = DECL_CHAIN (fields))
+    {
+      if (fields == decl)
+	return ix;
+
+      if (TREE_CODE (fields) == FIELD_DECL
+	  && DECL_CONTEXT (fields) == ctx
+	  && (!DECL_NAME (fields)
+	      || IDENTIFIER_ANON_P (DECL_NAME (fields))))
+	/* Count this anon field.  */
+	ix++;
+    }
+  gcc_unreachable ();
+}
+
+tree
+lookup_field_ident (tree ctx, tree name, unsigned ix)
+{
+  if (!name)
+    {
+      for (tree fields = TYPE_FIELDS (ctx);
+	   fields; fields = DECL_CHAIN (fields))
+	if (TREE_CODE (fields) == FIELD_DECL
+	    && DECL_CONTEXT (fields) == ctx
+	    && (!DECL_NAME (fields)
+		|| IDENTIFIER_ANON_P (DECL_NAME (fields))))
+	  if (!ix--)
+	    return fields;
+
+      return NULL_TREE;
+    }
+
+  tree val = NULL_TREE;
+  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (ctx))
+    val = member_vec_binary_search (member_vec, name);
+  else
+    // FIXME: Force streamed structs to have a member vec?
+    val = fields_linear_search (ctx, name, false);
+
+  if (!val)
+    ;
+  else if (TREE_CODE (val) != FIELD_DECL)
+    val = NULL_TREE;
+  else if (DECL_CONTEXT (val) != ctx)
+    val = NULL_TREE;
+
+  return val;
+}
+
 tree
 get_imported_namespace (tree ctx, tree name, unsigned mod)
 {

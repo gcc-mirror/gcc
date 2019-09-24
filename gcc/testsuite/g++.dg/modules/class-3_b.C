@@ -13,5 +13,5 @@ export inline void Frob (X &q)
 // { dg-final { scan-lang-dump {Wrote decl's type:-[0-9]* record_type:'::X@One:2'} module } }
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* type_decl:'::X@One:2'@One} module } }
 // { dg-final { scan-lang-dump {Wrote decl's type:-[0-9]* record_type:'::X@One:2'} module } }
-// { dg-final { scan-lang-dump {Wrote import:-[0-9]* field_decl:'::X@One:2::a'@One} module } }
-// { dg-final { scan-lang-dump {Wrote import:-[0-9]* field_decl:'::X@One:2::b'@One} module } }
+// { dg-final { scan-lang-dump {Wrote member:-[0-9]* field_decl:'::X@One:2::a'} module } }
+// { dg-final { scan-lang-dump {Wrote member:-[0-9]* field_decl:'::X@One:2::b'} module } }

@@ -1,3 +1,17 @@
+2019-09-24  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* modules.cc (enum tree_tag): Add tt_data_member.
+	(trees_out::tree_decl): Use it for consts and fields.
+	(trees_in::tree_node): Read it.
+	(set_implicit_module_owner): Delete.
+	* name-lookup.c (get_field_ident, lookup_field_ident): New.
+	* name-lookup.h (get_field_ident, lookup_field_ident): Declare.
+	* cp-tree.h (set_implicit_module_owner): Delete.
+	gcc/testsuite/
+	* g++.dg/modules/class-3_[bd].C: Adjust scans.
+	* g++.dg/modules/indirect-1_c.C: Likewise.
+
 2019-09-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
