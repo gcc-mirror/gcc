@@ -6990,6 +6990,8 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     }
 
   if (TREE_CODE (decl) == PARM_DECL
+      || TREE_CODE (decl) == RESULT_DECL
+      || TREE_CODE (decl) == LABEL_DECL
       || !DECL_CONTEXT (decl)
       || (TREE_CODE (decl) == TEMPLATE_DECL &&
 	  TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TEMPLATE_PARM))
@@ -7111,14 +7113,13 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
       return false;
     }
 
-#if 0
-  /* Everything left should be a thing that is in the entity table.  */
-  gcc_checking_assert (TREE_CODE (decl) == VAR_DECL
-		       || TREE_CODE (decl) == FUNCTION_DECL
-		       || TREE_CODE (decl) == TYPE_DECL
-		       || TREE_CODE (decl) == TEMPLATE_DECL);
-#endif
-  
+  /* Everything left should be a thing that is in the entity table.
+     Things that can be defined outside of their (original
+     declaration) context.  */
+  gcc_checking_assert (TREE_CODE (STRIP_TEMPLATE (decl)) == VAR_DECL
+		       || TREE_CODE (STRIP_TEMPLATE (decl)) == FUNCTION_DECL
+		       || TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL);
+
   const char *kind = NULL;
   unsigned owner = MODULE_UNKNOWN;
   if (use_tpl > 0)

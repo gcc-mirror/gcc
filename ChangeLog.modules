@@ -1,6 +1,10 @@
 2019-09-24  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* modules.cc (trees_out::tree_decl): RESULT and LABEL decls
+	written by value.  Assert only expected things remain by name.
+
+	gcc/cp/
 	* modules.cc (enum tree_tag): Add tt_data_member.
 	(trees_out::tree_decl): Use it for consts and fields.
 	(trees_in::tree_node): Read it.
