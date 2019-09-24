@@ -217,7 +217,7 @@ You should have received a copy of the GNU General Public License
   "")
 
 (define_expand "load_macho_picbase"
-  [(set (reg:SI LR_REGNO)
+  [(set (reg LR_REGNO)
         (unspec [(match_operand 0 "")]
                    UNSPEC_LD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
@@ -230,27 +230,11 @@ You should have received a copy of the GNU General Public License
   DONE;
 })
 
-(define_insn "load_macho_picbase_si"
-  [(set (reg:SI LR_REGNO)
-	(unspec:SI [(match_operand:SI 0 "immediate_operand" "s")
+(define_insn "load_macho_picbase_<mode>"
+  [(set (reg:P LR_REGNO)
+	(unspec:P [(match_operand:P 0 "immediate_operand" "s")
 		    (pc)] UNSPEC_LD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
-{
-#if TARGET_MACHO
-  machopic_should_output_picbase_label (); /* Update for new func.  */
-#else
-  gcc_unreachable ();
-#endif
-  return "bcl 20,31,%0\n%0:";
-}
-  [(set_attr "type" "branch")
-   (set_attr "cannot_copy" "yes")])
-
-(define_insn "load_macho_picbase_di"
-  [(set (reg:DI LR_REGNO)
-	(unspec:DI [(match_operand:DI 0 "immediate_operand" "s")
-		    (pc)] UNSPEC_LD_MPIC))]
-  "(DEFAULT_ABI == ABI_DARWIN) && flag_pic && TARGET_64BIT"
 {
 #if TARGET_MACHO
   machopic_should_output_picbase_label (); /* Update for new func.  */
@@ -301,7 +285,7 @@ You should have received a copy of the GNU General Public License
   [(set_attr "length" "8")])
 
 (define_expand "reload_macho_picbase"
-  [(set (reg:SI LR_REGNO)
+  [(set (reg LR_REGNO)
         (unspec [(match_operand 0 "")]
                    UNSPEC_RELD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
@@ -314,34 +298,11 @@ You should have received a copy of the GNU General Public License
   DONE;
 })
 
-(define_insn "reload_macho_picbase_si"
-  [(set (reg:SI LR_REGNO)
-        (unspec:SI [(match_operand:SI 0 "immediate_operand" "s")
+(define_insn "reload_macho_picbase_<mode>"
+  [(set (reg:P LR_REGNO)
+        (unspec:P [(match_operand:P 0 "immediate_operand" "s")
 		    (pc)] UNSPEC_RELD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
-{
-#if TARGET_MACHO
-  if (machopic_should_output_picbase_label ())
-    {
-      static char tmp[64];
-      const char *cnam = machopic_get_function_picbase ();
-      snprintf (tmp, 64, "bcl 20,31,%s\n%s:\n%%0:", cnam, cnam);
-      return tmp;
-    }
-  else
-#else
-  gcc_unreachable ();
-#endif
-    return "bcl 20,31,%0\n%0:";
-}
-  [(set_attr "type" "branch")
-   (set_attr "cannot_copy" "yes")])
-
-(define_insn "reload_macho_picbase_di"
-  [(set (reg:DI LR_REGNO)
-	(unspec:DI [(match_operand:DI 0 "immediate_operand" "s")
-		    (pc)] UNSPEC_RELD_MPIC))]
-  "(DEFAULT_ABI == ABI_DARWIN) && flag_pic && TARGET_64BIT"
 {
 #if TARGET_MACHO
   if (machopic_should_output_picbase_label ())

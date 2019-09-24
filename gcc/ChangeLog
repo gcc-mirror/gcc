@@ -1,5 +1,11 @@
 2019-09-24  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config/rs6000/rs6000.md (load_macho_picbase_<mode>): New, using
+	the 'P' mode iterator, replacing the (removed) SI and DI variants.
+	(reload_macho_picbase_<mode>): Likewise.
+
+2019-09-24  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* config/rs6000/rs6000.md: Move darwin.md include until
 	after the definition of the mode iterators.
 
