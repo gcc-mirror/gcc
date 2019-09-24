@@ -1,3 +1,11 @@
+2019-09-24  Martin Liska  <mliska@suse.cz>
+
+	* cfgexpand.c (gimple_assign_rhs_to_tree): Use switch statement
+	instead of if-elseif-elseif-...
+	* gimple-expr.c (extract_ops_from_tree): Likewise.
+	* gimple.c (get_gimple_rhs_num_ops): Likewise.
+	* tree-ssa-forwprop.c (rhs_to_tree): Likewise.
+
 2019-09-24  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/91831
