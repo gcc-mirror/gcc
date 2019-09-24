@@ -1,5 +1,8 @@
 2019-09-24  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/91868 - improve -Wshadow location.
+	* g++.dg/warn/Wshadow-16.C: New test.
+
 	PR c++/91845 - ICE with invalid pointer-to-member.
 	* g++.dg/cpp1y/pr91845.C: New test.
 
