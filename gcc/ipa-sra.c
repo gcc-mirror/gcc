@@ -1692,7 +1692,12 @@ scan_expr_access (tree expr, gimple *stmt, isra_scan_context ctx,
       disqualify_split_candidate (desc, "Encountered a bit-field access.");
       return;
     }
-  gcc_assert (offset >= 0);
+  if (offset < 0)
+    {
+      disqualify_split_candidate (desc, "Encountered an access at a "
+				  "negative offset.");
+      return;
+    }
   gcc_assert ((offset % BITS_PER_UNIT) == 0);
   gcc_assert ((size % BITS_PER_UNIT) == 0);
   if ((offset / BITS_PER_UNIT) >= (UINT_MAX - ISRA_ARG_SIZE_LIMIT)

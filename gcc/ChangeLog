@@ -1,3 +1,8 @@
+2019-09-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/91832
+	* ipa-sra.c (scan_expr_access): Check that offset is non-negative.
+
 2019-09-24  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Valueize MEM_REF
