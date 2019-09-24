@@ -1,3 +1,8 @@
+2019-09-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/91832
+	* gcc.dg/ipa/pr91832.c: New test.
+
 2019-09-24  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/torture/20190924-1.c: New testcase.
