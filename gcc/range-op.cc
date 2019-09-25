@@ -2691,7 +2691,7 @@ private:
 range_operator *
 range_op_table::operator[] (enum tree_code code)
 {
-  gcc_assert (code > 0 && code < MAX_TREE_CODES);
+  gcc_checking_assert (code > 0 && code < MAX_TREE_CODES);
   return m_range_tree[code];
 }
 

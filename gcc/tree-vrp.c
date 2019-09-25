@@ -143,7 +143,7 @@ value_range_base::value_range_base (enum value_range_kind kind,
 {
   tree min = wide_int_to_tree (type, wmin);
   tree max = wide_int_to_tree (type, wmax);
-  gcc_assert (kind == VR_RANGE || kind == VR_ANTI_RANGE);
+  gcc_checking_assert (kind == VR_RANGE || kind == VR_ANTI_RANGE);
   set (kind, min, max);
 }
 
@@ -6009,7 +6009,7 @@ value_range_base::normalize_symbolics () const
       // [NUM, SYM] -> [NUM, +MAX]
       return value_range_base (VR_RANGE, min (), vrp_val_max (ttype, true));
     }
-  gcc_assert (kind () == VR_ANTI_RANGE);
+  gcc_checking_assert (kind () == VR_ANTI_RANGE);
   // ~[SYM, NUM] -> [NUM + 1, +MAX]
   if (min_symbolic)
     {
@@ -6059,8 +6059,8 @@ value_range_base::lower_bound (unsigned pair) const
   if (symbolic_p ())
     return normalize_symbolics ().lower_bound (pair);
 
-  gcc_assert (!undefined_p ());
-  gcc_assert (pair + 1 <= num_pairs ());
+  gcc_checking_assert (!undefined_p ());
+  gcc_checking_assert (pair + 1 <= num_pairs ());
   tree t = NULL;
   if (m_kind == VR_ANTI_RANGE)
     {
@@ -6084,8 +6084,8 @@ value_range_base::upper_bound (unsigned pair) const
   if (symbolic_p ())
     return normalize_symbolics ().upper_bound (pair);
 
-  gcc_assert (!undefined_p ());
-  gcc_assert (pair + 1 <= num_pairs ());
+  gcc_checking_assert (!undefined_p ());
+  gcc_checking_assert (pair + 1 <= num_pairs ());
   tree t = NULL;
   if (m_kind == VR_ANTI_RANGE)
     {
@@ -6107,7 +6107,7 @@ wide_int
 value_range_base::upper_bound () const
 {
   unsigned pairs = num_pairs ();
-  gcc_assert (pairs > 0);
+  gcc_checking_assert (pairs > 0);
   return upper_bound (pairs - 1);
 }
 
@@ -6116,7 +6116,7 @@ value_range_base::upper_bound () const
 bool
 value_range_base::contains_p (tree cst) const
 {
-  gcc_assert (TREE_CODE (cst) == INTEGER_CST);
+  gcc_checking_assert (TREE_CODE (cst) == INTEGER_CST);
   if (symbolic_p ())
     return normalize_symbolics ().contains_p (cst);
   return value_inside_range (cst) == 1;
