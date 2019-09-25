@@ -1,3 +1,9 @@
+2019-09-25  Richard Henderson  <richard.henderson@linaro.org>
+
+	PR target/91834
+	* config/aarch64/lse.S (LDNM): Ensure STXR output does not
+	overlap the inputs.
+
 2019-09-25  Shaokun Zhang  <zhangshaokun@hisilicon.com>
 
 	* config/aarch64/sync-cache.c (__aarch64_sync_cache_range): Add support for
