@@ -1,3 +1,8 @@
+#if __has_include(<experimental/coroutine>)
+
+#include <experimental/coroutine>
+
+#else
 #ifndef __CORO_H_N4830
 #define __CORO_H_N4830
 
@@ -114,3 +119,5 @@ struct suspend_never {
 # error "coro.h requires support for coroutines TS 4775, add -fcoroutines"
 #endif
 #endif // __CORO_H_N4830
+
+#endif

@@ -1,5 +1,11 @@
 2019-09-25  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/testsuite/
+	* g++.dg/coroutines/coro.h: Include experimental/coroutine when
+	it is available.
+
+2019-09-25  Iain Sandoe  <iain@sandoe.co.uk>
+
 	libstdc++-v3/
 	* include/Makefile.am (experimental_headers): Add
 	experimental/coroutine.
