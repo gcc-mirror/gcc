@@ -1,3 +1,68 @@
+2019-09-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (OBJS): Add range.o and range-op.o.
+	Remove wide-int-range.o.
+	(GTFILES): Add range.h.
+	* function-tests.c (test_ranges): New.
+	(function_tests_c_tests): Call test_ranges.
+	* ipa-cp.c (ipa_vr_operation_and_type_effects): Call
+	range_fold_unary_expr instead of extract_range_from_unary_expr.
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Same.
+	* range-op.cc: New file.
+	* range-op.h: New file.
+	* range.cc: New file.
+	* range.h: New file.
+	* selftest.h (range_tests): New prototype.
+	* ssa.h: Include range.h.
+	* tree-vrp.c (value_range_base::value_range_base): New
+	constructors.
+	(value_range_base::singleton_p): Do not call
+	ranges_from_anti_range until sure we will need to.
+	(value_range_base::type): Rename gcc_assert to
+	gcc_checking_assert.
+	(vrp_val_is_max): New argument.
+	(vrp_val_is_min): Same.
+	(wide_int_range_set_zero_nonzero_bits): Move from
+	wide-int-range.cc.
+	(extract_range_into_wide_ints): Remove.
+	(extract_range_from_multiplicative_op): Remove.
+	(extract_range_from_pointer_plus_expr): Abstract POINTER_PLUS code
+	from extract_range_from_binary_expr.
+	(extract_range_from_plus_minus_expr): Abstract PLUS/MINUS code
+	from extract_range_from_binary_expr.
+	(extract_range_from_binary_expr): Remove.
+	(normalize_for_range_ops): New.
+	(range_fold_binary_expr): New.
+	(range_fold_unary_expr): New.
+	(value_range_base::num_pairs): New.
+	(value_range_base::lower_bound): New.
+	(value_range_base::upper_bound): New.
+	(value_range_base::upper_bound): New.
+	(value_range_base::contains_p): New.
+	(value_range_base::invert): New.
+	(value_range_base::union_): New.
+	(value_range_base::intersect): New.
+	(range_compatible_p): New.
+	(value_range_base::operator==): New.
+	(determine_value_range_1): Call range_fold_*expr instead of
+	extract_range_from_*expr.
+	* tree-vrp.h (class value_range_base): Add new constructors.
+	Add methods for union_, intersect, operator==, contains_p,
+	num_pairs, lower_bound, upper_bound, invert.
+	(vrp_val_is_min): Add handle_pointers argument.
+	(vrp_val_is_max): Same.
+	(extract_range_from_unary_expr): Remove.
+	(extract_range_from_binary_expr): Remove.
+	(range_fold_unary_expr): New.
+	(range_fold_binary_expr): New.
+	* vr-values.c (vr_values::extract_range_from_binary_expr): Call
+	range_fold_binary_expr instead of extract_range_from_binary_expr.
+	(vr_values::extract_range_basic): Same.
+	(vr_values::extract_range_from_unary_expr): Call
+	range_fold_unary_expr instead of extract_range_from_unary_expr.
+	* wide-int-range.cc: Remove.
+	* wide-int-range.h: Remove.
+
 2019-08-27  Richard Biener  <rguenther@suse.de>
 
 	* config/i386/i386-features.h
