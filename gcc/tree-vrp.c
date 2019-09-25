@@ -1543,53 +1543,49 @@ set_value_range_with_overflow (value_range_kind &kind, tree &min, tree &max,
     }
 }
 
-/* Fold two value range's of a POINTER_PLUS_EXPR into VR.  Return TRUE
-   if successful.  */
+/* Fold two value range's of a POINTER_PLUS_EXPR into VR.  */
 
-static bool
+static void
 extract_range_from_pointer_plus_expr (value_range_base *vr,
 				      enum tree_code code,
 				      tree expr_type,
 				      const value_range_base *vr0,
 				      const value_range_base *vr1)
 {
-  if (POINTER_TYPE_P (expr_type) && code == POINTER_PLUS_EXPR)
-    {
-      /* For pointer types, we are really only interested in asserting
-	 whether the expression evaluates to non-NULL.
-	 With -fno-delete-null-pointer-checks we need to be more
-	 conservative.  As some object might reside at address 0,
-	 then some offset could be added to it and the same offset
-	 subtracted again and the result would be NULL.
-	 E.g.
-	 static int a[12]; where &a[0] is NULL and
-	 ptr = &a[6];
-	 ptr -= 6;
-	 ptr will be NULL here, even when there is POINTER_PLUS_EXPR
-	 where the first range doesn't include zero and the second one
-	 doesn't either.  As the second operand is sizetype (unsigned),
-	 consider all ranges where the MSB could be set as possible
-	 subtractions where the result might be NULL.  */
-      if ((!range_includes_zero_p (vr0)
-	   || !range_includes_zero_p (vr1))
-	  && !TYPE_OVERFLOW_WRAPS (expr_type)
-	  && (flag_delete_null_pointer_checks
-	      || (range_int_cst_p (vr1)
-		  && !tree_int_cst_sign_bit (vr1->max ()))))
-	vr->set_nonzero (expr_type);
-      else if (vr0->zero_p () && vr1->zero_p ())
-	vr->set_zero (expr_type);
-      else
-	vr->set_varying (expr_type);
-      return true;
-    }
-  return false;
+  gcc_checking_assert (POINTER_TYPE_P (expr_type)
+		       && code == POINTER_PLUS_EXPR);
+  /* For pointer types, we are really only interested in asserting
+     whether the expression evaluates to non-NULL.
+     With -fno-delete-null-pointer-checks we need to be more
+     conservative.  As some object might reside at address 0,
+     then some offset could be added to it and the same offset
+     subtracted again and the result would be NULL.
+     E.g.
+     static int a[12]; where &a[0] is NULL and
+     ptr = &a[6];
+     ptr -= 6;
+     ptr will be NULL here, even when there is POINTER_PLUS_EXPR
+     where the first range doesn't include zero and the second one
+     doesn't either.  As the second operand is sizetype (unsigned),
+     consider all ranges where the MSB could be set as possible
+     subtractions where the result might be NULL.  */
+  if ((!range_includes_zero_p (vr0)
+       || !range_includes_zero_p (vr1))
+      && !TYPE_OVERFLOW_WRAPS (expr_type)
+      && (flag_delete_null_pointer_checks
+	  || (range_int_cst_p (vr1)
+	      && !tree_int_cst_sign_bit (vr1->max ()))))
+    vr->set_nonzero (expr_type);
+  else if (vr0->zero_p () && vr1->zero_p ())
+    vr->set_zero (expr_type);
+  else
+    vr->set_varying (expr_type);
 }
 
 /* Extract range information from a PLUS/MINUS_EXPR and store the
    result in *VR.  */
 
-void
+static void
 extract_range_from_plus_minus_expr (value_range_base *vr,
 				    enum tree_code code,
 				    tree expr_type,
@@ -1599,12 +1595,7 @@ extract_range_from_plus_minus_expr (value_range_base *vr,
   gcc_checking_assert (code == PLUS_EXPR || code == MINUS_EXPR);
 
   value_range_base vr0 = *vr0_, vr1 = *vr1_;
-  value_range_kind kind;
   value_range_base vrtem0, vrtem1;
-  value_range_kind vr0_kind = vr0.kind (), vr1_kind = vr1.kind ();
-  tree vr0_min = vr0.min (), vr0_max = vr0.max ();
-  tree vr1_min = vr1.min (), vr1_max = vr1.max ();
-  tree min = NULL, max = NULL;
 
   /* Now canonicalize anti-ranges to ranges when they are not symbolic
      and express ~[] op X as ([]' op X) U ([]'' op X).  */
@@ -1635,6 +1626,12 @@ extract_range_from_plus_minus_expr (value_range_base *vr,
 	}
       return;
     }
+
+  value_range_kind kind;
+  value_range_kind vr0_kind = vr0.kind (), vr1_kind = vr1.kind ();
+  tree vr0_min = vr0.min (), vr0_max = vr0.max ();
+  tree vr1_min = vr1.min (), vr1_max = vr1.max ();
+  tree min = NULL, max = NULL;
 
   /* This will normalize things such that calculating
      [0,0] - VR_VARYING is not dropped to varying, but is
@@ -1807,34 +1804,42 @@ range_fold_binary_expr (value_range_base *vr,
       vr->set_varying (expr_type);
       return;
     }
-  /* Mimic any behavior users of extract_range_from_binary_expr may
-     expect.  */
+  if (vr0_->undefined_p () && vr1_->undefined_p ())
+    {
+      vr->set_undefined ();
+      return;
+    }
   range_operator *op = range_op_handler (code, expr_type);
   if (!op)
     {
       vr->set_varying (expr_type);
       return;
     }
+
+  /* Mimic any behavior users of extract_range_from_binary_expr may
+     expect.  */
   value_range_base vr0 = *vr0_, vr1 = *vr1_;
-  if (vr0.undefined_p () && vr1.undefined_p ())
-    {
-      vr->set_undefined ();
-      return;
-    }
   if (vr0.undefined_p ())
     vr0.set_varying (expr_type);
   else if (vr1.undefined_p ())
     vr1.set_varying (expr_type);
 
   /* Handle symbolics.  */
-  if ((code == PLUS_EXPR || code == MINUS_EXPR)
-      && (vr0.symbolic_p () || vr1.symbolic_p ()))
+  if (vr0.symbolic_p () || vr1.symbolic_p ())
     {
-      extract_range_from_plus_minus_expr (vr, code, expr_type, &vr0, &vr1);
-      return;
+      if ((code == PLUS_EXPR || code == MINUS_EXPR))
+	{
+	  extract_range_from_plus_minus_expr (vr, code, expr_type,
+					      &vr0, &vr1);
+	  return;
+	}
+      if (POINTER_TYPE_P (expr_type) && code == POINTER_PLUS_EXPR)
+	{
+	  extract_range_from_pointer_plus_expr (vr, code, expr_type,
+						&vr0, &vr1);
+	  return;
+	}
     }
-  if (extract_range_from_pointer_plus_expr (vr, code, expr_type, &vr0, &vr1))
-    return;
 
   /* Do the range-ops dance.  */
   value_range_base n0 = normalize_for_range_ops (vr0);
@@ -1850,16 +1855,10 @@ range_fold_unary_expr (value_range_base *vr,
 		       const value_range_base *vr0,
 		       tree vr0_type)
 {
-  if (!value_range_base::supports_type_p (expr_type)
-      || !value_range_base::supports_type_p (vr0_type))
-    {
-      vr->set_varying (expr_type);
-      return;
-    }
   /* Mimic any behavior users of extract_range_from_unary_expr may
      expect.  */
-  range_operator *op = range_op_handler (code, expr_type);
-  if (!op)
+  if (!value_range_base::supports_type_p (expr_type)
+      || !value_range_base::supports_type_p (vr0_type))
     {
       vr->set_varying (expr_type);
       return;
@@ -1869,22 +1868,35 @@ range_fold_unary_expr (value_range_base *vr,
       vr->set_undefined ();
       return;
     }
-
-  /* Handle symbolics.  */
-  if (code == NEGATE_EXPR && vr0->symbolic_p ())
+  range_operator *op = range_op_handler (code, expr_type);
+  if (!op)
     {
-      /* -X is simply 0 - X.  */
-      value_range_base zero;
-      zero.set_zero (vr0->type ());
-      range_fold_binary_expr (vr, MINUS_EXPR, expr_type, &zero, vr0);
+      vr->set_varying (expr_type);
       return;
     }
-  if (code == BIT_NOT_EXPR && vr0->symbolic_p ())
+
+  /* Handle symbolics.  */
+  if (vr0->symbolic_p ())
     {
-      /* ~X is simply -1 - X.  */
-      value_range_base minusone;
-      minusone.set (build_int_cst (vr0->type (), -1));
-      range_fold_binary_expr (vr, MINUS_EXPR, expr_type, &minusone, vr0);
+      if (code == NEGATE_EXPR)
+	{
+	  /* -X is simply 0 - X.  */
+	  value_range_base zero;
+	  zero.set_zero (vr0->type ());
+	  range_fold_binary_expr (vr, MINUS_EXPR, expr_type, &zero, vr0);
+	  return;
+	}
+      if (code == BIT_NOT_EXPR)
+	{
+	  /* ~X is simply -1 - X.  */
+	  value_range_base minusone;
+	  minusone.set (build_int_cst (vr0->type (), -1));
+	  range_fold_binary_expr (vr, MINUS_EXPR, expr_type, &minusone, vr0);
+	  return;
+	}
+      *vr = op->fold_range (expr_type,
+			    normalize_for_range_ops (*vr0),
+			    value_range_base (expr_type));
       return;
     }
   if (CONVERT_EXPR_CODE_P (code) && (POINTER_TYPE_P (expr_type)
