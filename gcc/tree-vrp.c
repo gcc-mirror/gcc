@@ -380,10 +380,14 @@ value_range_base::singleton_p (tree *result) const
 	  return false;
 	}
 
-      value_range_base vr0, vr1;
-      return (ranges_from_anti_range (this, &vr0, &vr1, true)
-	      && vr1.undefined_p ()
-	      && vr0.singleton_p (result));
+      /* An anti-range that includes an extreme, is just a range with
+	 one sub-range.  Use the one sub-range.  */
+      if (vrp_val_is_min (m_min, true) || vrp_val_is_max (m_max, true))
+	{
+	  value_range_base vr0, vr1;
+	  ranges_from_anti_range (this, &vr0, &vr1, true);
+	  return vr0.singleton_p (result);
+	}
     }
   if (m_kind == VR_RANGE
       && vrp_operand_equal_p (min (), max ())
@@ -399,7 +403,7 @@ value_range_base::singleton_p (tree *result) const
 tree
 value_range_base::type () const
 {
-  gcc_assert (m_min);
+  gcc_checking_assert (m_min);
   return TREE_TYPE (min ());
 }
 
@@ -603,9 +607,9 @@ vrp_val_min (const_tree type, bool handle_pointers)
    is not == to the integer constant with the same value in the type.  */
 
 bool
-vrp_val_is_max (const_tree val)
+vrp_val_is_max (const_tree val, bool handle_pointers)
 {
-  tree type_max = vrp_val_max (TREE_TYPE (val));
+  tree type_max = vrp_val_max (TREE_TYPE (val), handle_pointers);
   return (val == type_max
 	  || (type_max != NULL_TREE
 	      && operand_equal_p (val, type_max, 0)));
@@ -614,9 +618,9 @@ vrp_val_is_max (const_tree val)
 /* Return whether VAL is equal to the minimum value of its type.  */
 
 bool
-vrp_val_is_min (const_tree val)
+vrp_val_is_min (const_tree val, bool handle_pointers)
 {
-  tree type_min = vrp_val_min (TREE_TYPE (val));
+  tree type_min = vrp_val_min (TREE_TYPE (val), handle_pointers);
   return (val == type_min
 	  || (type_min != NULL_TREE
 	      && operand_equal_p (val, type_min, 0)));
@@ -1323,11 +1327,6 @@ ranges_from_anti_range (const value_range_base *ar,
 			value_range_base *vr0, value_range_base *vr1,
 			bool handle_pointers)
 {
-  /* ?? This function is called multiple times from num_pairs,
-     lower_bound, and upper_bound.  We should probably memoize this, or
-     rewrite the callers in such a way that we're not re-calculating
-     this constantly.  */
-
   tree type = ar->type ();
 
   vr0->set_undefined ();
@@ -6044,9 +6043,9 @@ value_range_base::num_pairs () const
     return normalize_symbolics ().num_pairs ();
   if (m_kind == VR_ANTI_RANGE)
     {
-      value_range_base vr0, vr1;
-      gcc_assert (ranges_from_anti_range (this, &vr0, &vr1, true));
-      if (vr1.undefined_p ())
+      // ~[MIN, X] has one sub-range of [X+1, MAX], and
+      // ~[X, MAX] has one sub-range of [MIN, X-1].
+      if (vrp_val_is_min (m_min, true) || vrp_val_is_max (m_max, true))
 	return 1;
       return 2;
     }
@@ -6067,14 +6066,11 @@ value_range_base::lower_bound (unsigned pair) const
   tree t = NULL;
   if (m_kind == VR_ANTI_RANGE)
     {
-      value_range_base vr0, vr1;
-      gcc_assert (ranges_from_anti_range (this, &vr0, &vr1, true));
-      if (pair == 0)
-	t = vr0.min ();
-      else if (pair == 1)
-	t = vr1.min ();
+      tree typ = type ();
+      if (pair == 1 || vrp_val_is_min (m_min, true))
+	t = wide_int_to_tree (typ, wi::to_wide (m_max) + 1);
       else
-	gcc_unreachable ();
+	t = vrp_val_min (typ, true);
     }
   else
     t = m_min;
@@ -6095,14 +6091,11 @@ value_range_base::upper_bound (unsigned pair) const
   tree t = NULL;
   if (m_kind == VR_ANTI_RANGE)
     {
-      value_range_base vr0, vr1;
-      gcc_assert (ranges_from_anti_range (this, &vr0, &vr1, true));
-      if (pair == 0)
-	t = vr0.max ();
-      else if (pair == 1)
-	t = vr1.max ();
+      tree typ = type ();
+      if (pair == 1 || vrp_val_is_min (m_min, true))
+	t = vrp_val_max (typ, true);
       else
-	gcc_unreachable ();
+	t = wide_int_to_tree (typ, wi::to_wide (m_min) - 1);
     }
   else
     t = m_max;

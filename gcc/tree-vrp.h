@@ -296,8 +296,8 @@ extern bool range_int_cst_singleton_p (const value_range_base *);
 extern int compare_values (tree, tree);
 extern int compare_values_warnv (tree, tree, bool *);
 extern int operand_less_p (tree, tree);
-extern bool vrp_val_is_min (const_tree);
-extern bool vrp_val_is_max (const_tree);
+extern bool vrp_val_is_min (const_tree, bool handle_pointers = false);
+extern bool vrp_val_is_max (const_tree, bool handle_pointers = false);
 
 extern tree vrp_val_min (const_tree, bool handle_pointers = false);
 extern tree vrp_val_max (const_tree, bool handle_pointers = false);
