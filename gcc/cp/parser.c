@@ -7375,11 +7375,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		    maybe_generic_this_capture (instance, fn);
 		    postfix_expression
 		      = build_min_nt_call_vec (postfix_expression, args);
-		    release_tree_vector (args);
-		    break;
 		  }
-
-		if (BASELINK_P (fn))
+		else if (BASELINK_P (fn))
 		  {
 		  postfix_expression
 		    = (build_new_method_call
