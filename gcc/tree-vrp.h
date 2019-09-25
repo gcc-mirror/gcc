@@ -302,15 +302,11 @@ extern bool vrp_val_is_max (const_tree);
 extern tree vrp_val_min (const_tree, bool handle_pointers = false);
 extern tree vrp_val_max (const_tree, bool handle_pointers = false);
 
-extern void extract_range_from_unary_expr (value_range_base *vr,
-					   enum tree_code code,
-					   tree type,
-					   const value_range_base *vr0_,
-					   tree op0_type);
-extern void extract_range_from_binary_expr (value_range_base *,
-					    enum tree_code,
-					    tree, const value_range_base *,
-					    const value_range_base *);
+void range_fold_unary_expr (value_range_base *, enum tree_code, tree type,
+			    const value_range_base *, tree op0_type);
+void range_fold_binary_expr (value_range_base *, enum tree_code, tree type,
+			     const value_range_base *,
+			     const value_range_base *);
 
 extern bool vrp_operand_equal_p (const_tree, const_tree);
 extern enum value_range_kind intersect_range_with_nonzero_bits
@@ -324,11 +320,6 @@ extern bool overflow_comparison_p (tree_code, tree, tree, bool, tree *);
 extern tree get_single_symbol (tree, bool *, tree *);
 extern void maybe_set_nonzero_bits (edge, tree);
 extern value_range_kind determine_value_range (tree, wide_int *, wide_int *);
-void range_fold_binary_expr (value_range_base *, enum tree_code, tree,
-			     const value_range_base *,
-			     const value_range_base *);
-void range_fold_unary_expr (value_range_base *, enum tree_code, tree,
-			    const value_range_base *, tree);
 
 /* Return TRUE if *VR includes the value zero.  */
 

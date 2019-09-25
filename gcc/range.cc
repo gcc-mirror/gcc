@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "ssa.h"
 #include "range.h"
-#include "wide-int-range.h"
 
 value_range_base
 range_intersect (const value_range_base &r1, const value_range_base &r2)

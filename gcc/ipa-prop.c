@@ -1923,8 +1923,8 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	      value_range_base tmpvr (type,
 				      wide_int_to_tree (TREE_TYPE (arg), min),
 				      wide_int_to_tree (TREE_TYPE (arg), max));
-	      extract_range_from_unary_expr (&resvr, NOP_EXPR, param_type,
-					     &tmpvr, TREE_TYPE (arg));
+	      range_fold_unary_expr (&resvr, NOP_EXPR, param_type,
+				     &tmpvr, TREE_TYPE (arg));
 	      if (!resvr.undefined_p () && !resvr.varying_p ())
 		ipa_set_jfunc_vr (jfunc, &resvr);
 	      else
