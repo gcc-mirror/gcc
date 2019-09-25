@@ -227,8 +227,8 @@ STARTFN	NAME(LDNM)
 8:	mov		s(tmp0), s(0)
 0:	LDXR		s(0), [x1]
 	OP		s(tmp1), s(0), s(tmp0)
-	STXR		w(tmp1), s(tmp1), [x1]
-	cbnz		w(tmp1), 0b
+	STXR		w(tmp2), s(tmp1), [x1]
+	cbnz		w(tmp2), 0b
 	ret
 
 ENDFN	NAME(LDNM)
