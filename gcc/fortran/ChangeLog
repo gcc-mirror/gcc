@@ -1,3 +1,21 @@
+2019-09-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR fortran/91426
+	* error.c (curr_diagnostic): New static variable.
+	(gfc_report_diagnostic): New static function.
+	(gfc_warning): Replace call to diagnostic_report_diagnostic with
+	call to gfc_report_diagnostic.
+	(gfc_format_decoder): Colorize the text of %L and %C to match the
+	colorization used by diagnostic_show_locus.
+	(gfc_warning_now_at): Replace call to diagnostic_report_diagnostic with
+	call to gfc_report_diagnostic.
+	(gfc_warning_now): Likewise.
+	(gfc_warning_internal): Likewise.
+	(gfc_error_now): Likewise.
+	(gfc_fatal_error): Likewise.
+	(gfc_error_opt): Likewise.
+	(gfc_internal_error): Likewise.
+
 2019-09-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/91729
