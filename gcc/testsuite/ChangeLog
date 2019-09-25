@@ -1,3 +1,10 @@
+2019-09-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2019-08-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/acle/crc_hf_1.c: New test.
+
 2019-09-20  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
