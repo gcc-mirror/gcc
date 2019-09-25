@@ -1,3 +1,8 @@
+2019-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91896
+	* gcc.dg/torture/pr91896.c: New testcase.
+
 2019-09-25  Martin Liska  <mliska@suse.cz>
 
 	* gcc.target/s390/pr91014.c: Move to ...
