@@ -1,3 +1,8 @@
+2019-09-25  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/s390/pr91014.c: Move to ...
+	* gcc.dg/pr91014.c: ... this.
+
 2019-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/diagnostic/redeclaration-1.C: New.
