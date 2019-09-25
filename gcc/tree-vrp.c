@@ -1767,8 +1767,7 @@ extract_range_from_plus_minus_expr (value_range_base *vr,
     vr->set (kind, min, max);
 }
 
-/* Normalize a value_range for use in range_ops and return it.
-   Eventually, range-ops should do this for us.  */
+/* Normalize a value_range for use in range_ops and return it.  */
 
 static value_range_base
 normalize_for_range_ops (const value_range_base &vr)
@@ -1901,7 +1900,6 @@ range_fold_unary_expr (value_range_base *vr,
 	vr->set_varying (expr_type);
       return;
     }
-
 
   /* Do the range-ops dance.  */
   value_range_base n0 = normalize_for_range_ops (*vr0);
@@ -6033,6 +6031,8 @@ value_range_base::normalize_symbolics () const
   return var;
 }
 
+/* Return the number of sub-ranges in a range.  */
+
 unsigned
 value_range_base::num_pairs () const
 {
@@ -6052,6 +6052,9 @@ value_range_base::num_pairs () const
     }
   return 1;
 }
+
+/* Return the lower bound for a sub-range.  PAIR is the sub-range in
+   question.  */
 
 wide_int
 value_range_base::lower_bound (unsigned pair) const
@@ -6078,6 +6081,9 @@ value_range_base::lower_bound (unsigned pair) const
   return wi::to_wide (t);
 }
 
+/* Return the upper bound for a sub-range.  PAIR is the sub-range in
+   question.  */
+
 wide_int
 value_range_base::upper_bound (unsigned pair) const
 {
@@ -6103,6 +6109,8 @@ value_range_base::upper_bound (unsigned pair) const
   return wi::to_wide (t);
 }
 
+/* Return the highest bound in a range.  */
+
 wide_int
 value_range_base::upper_bound () const
 {
@@ -6122,6 +6130,8 @@ value_range_base::contains_p (tree cst) const
   return value_inside_range (cst) == 1;
 }
 
+/* Return the inverse of a range.  */
+
 void
 value_range_base::invert ()
 {
@@ -6137,6 +6147,8 @@ value_range_base::invert ()
     gcc_unreachable ();
 }
 
+/* Range union, but for references.  */
+
 void
 value_range_base::union_ (const value_range_base &r)
 {
@@ -6149,6 +6161,8 @@ value_range_base::union_ (const value_range_base &r)
   if (details)
     dump_flags |= TDF_DETAILS;
 }
+
+/* Range intersect, but for references.  */
 
 void
 value_range_base::intersect (const value_range_base &r)
@@ -6163,7 +6177,7 @@ value_range_base::intersect (const value_range_base &r)
     dump_flags |= TDF_DETAILS;
 }
 
-// Return TRUE if two types are compatible for range operations.
+/* Return TRUE if two types are compatible for range operations.  */
 
 static bool
 range_compatible_p (tree t1, tree t2)
@@ -6177,8 +6191,6 @@ range_compatible_p (tree t1, tree t2)
 bool
 value_range_base::operator== (const value_range_base &r) const
 {
-  // Special case this because a freshly initialized range may be
-  // typeless.
   if (undefined_p ())
     return r.undefined_p ();
 

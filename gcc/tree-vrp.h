@@ -68,6 +68,8 @@ public:
 
   void union_ (const value_range_base *);
   void intersect (const value_range_base *);
+  void union_ (const value_range_base &);
+  void intersect (const value_range_base &);
 
   bool operator== (const value_range_base &) const;
   bool operator!= (const value_range_base &) const /* = delete */;
@@ -92,8 +94,6 @@ public:
   wide_int upper_bound (unsigned) const;
   wide_int upper_bound () const;
   void invert ();
-  void union_ (const value_range_base &);
-  void intersect (const value_range_base &);
 
 protected:
   void check ();
