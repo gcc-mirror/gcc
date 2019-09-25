@@ -1,3 +1,8 @@
+2019-09-25  Shaokun Zhang  <zhangshaokun@hisilicon.com>
+
+	* config/aarch64/sync-cache.c (__aarch64_sync_cache_range): Add support for
+	CTR_EL0.IDC and CTR_EL0.DIC.
+
 2019-09-20  Christophe Lyon  <christophe.lyon@st.com>
 
 	Revert:
