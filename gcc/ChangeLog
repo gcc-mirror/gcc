@@ -1,3 +1,8 @@
+2019-09-25  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (no_accesses_p): Remove.
+	(no_accesses_representant): Likewise.
+
 2019-09-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/arm_neon.h (vaba_s8): Use __ in identifiers
