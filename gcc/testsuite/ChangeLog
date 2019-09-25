@@ -1,3 +1,11 @@
+2019-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/redeclaration-1.C: New.
+	* g++.dg/lookup/extern-c-hidden.C: Test location(s) too.
+	* g++.dg/lookup/extern-c-redecl.C: Likewise.
+	* g++.dg/lookup/extern-c-redecl6.C: Likewise.
+	* g++.old-deja/g++.other/using9.C: Likewise.
+
 2019-09-23  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/91570

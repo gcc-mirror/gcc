@@ -1,3 +1,8 @@
+2019-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* name-lookup.c (check_extern_c_conflict): Use DECL_SOURCE_LOCATION.
+	(check_local_shadow): Use it in three additional places.
+
 2019-09-24  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_postfix_expression): Do set location of
