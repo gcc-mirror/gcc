@@ -6101,6 +6101,8 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (ncopies > 1
 	  && STMT_VINFO_RELEVANT (reduc_stmt_info) <= vect_used_only_live
 	  && (use_stmt_info = loop_vinfo->lookup_single_use (phi_result))
+	  && (!STMT_VINFO_IN_PATTERN_P (use_stmt_info)
+	      || !STMT_VINFO_PATTERN_DEF_SEQ (use_stmt_info))
 	  && vect_stmt_to_vectorize (use_stmt_info) == reduc_stmt_info)
 	single_defuse_cycle = true;
 
@@ -6868,6 +6870,8 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (ncopies > 1
       && (STMT_VINFO_RELEVANT (stmt_info) <= vect_used_only_live)
       && (use_stmt_info = loop_vinfo->lookup_single_use (reduc_phi_result))
+      && (!STMT_VINFO_IN_PATTERN_P (use_stmt_info)
+	  || !STMT_VINFO_PATTERN_DEF_SEQ (use_stmt_info))
       && vect_stmt_to_vectorize (use_stmt_info) == stmt_info)
     {
       single_defuse_cycle = true;
