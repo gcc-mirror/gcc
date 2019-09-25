@@ -1,3 +1,11 @@
+2019-09-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h
+	(basic_regex::assign(const C*, size_t, flag_type)): Add default
+	argument (LWG 3296).
+	* testsuite/28_regex/basic_regex/assign/char/lwg3296.cc: New test.
+	* testsuite/28_regex/basic_regex/assign/wchar_t/lwg3296.cc: New test.
+
 2019-09-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/variant (variant::index()): Remove impossible case.
