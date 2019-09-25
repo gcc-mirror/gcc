@@ -1,0 +1,167 @@
+// <experimental/coroutine> -*- C++ -*-
+
+// Copyright (C) 2019 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file experimental/coroutine
+ *  This is a TS C++ Library header.
+ *  @ingroup coroutine-ts
+ */
+
+// TODO put the real section numbers from the Draft.
+
+#ifndef _GLIBCXX_EXPERIMENTAL_COROUTINE
+#define _GLIBCXX_EXPERIMENTAL_COROUTINE 1
+
+#pragma GCC system_header
+
+// It's possible that earlier versions would work, but they are untested.
+#if __cplusplus >= 201402L
+
+#include <bits/c++config.h>
+
+namespace std _GLIBCXX_VISIBILITY (default)
+{
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+#if __cpp_coroutines
+
+  namespace experimental {
+  inline namespace coroutines_n4830 {
+
+  // 21.11.1 coroutine traits
+  template <typename _R, typename...> struct coroutine_traits
+  {
+    using promise_type = typename _R::promise_type;
+  };
+
+  // 21.11.2  coroutine handle
+  template <typename _Promise = void> struct coroutine_handle;
+
+  template <> struct coroutine_handle<void>
+  {
+  public:
+    // 21.11.2.1 construct/reset
+    constexpr coroutine_handle () noexcept : __fr_ptr (0) {}
+    constexpr coroutine_handle (decltype (nullptr) __h) noexcept
+      : __fr_ptr (__h)
+    {}
+    coroutine_handle &operator= (decltype (nullptr)) noexcept
+    {
+      __fr_ptr = nullptr;
+      return *this;
+    }
+
+  public:
+    // 21.11.2.2 export/import
+    constexpr void *address () const noexcept { return __fr_ptr; }
+    constexpr static coroutine_handle from_address (void *__a) noexcept
+    {
+      coroutine_handle __self;
+      __self.__fr_ptr = __a;
+      return __self;
+    }
+
+  public:
+    // 21.11.2.3 observers
+    constexpr explicit operator bool () const noexcept
+    {
+      return bool(__fr_ptr);
+    }
+    bool done () const noexcept { return __builtin_coro_done (__fr_ptr); }
+    // 21.11.2.4 resumption
+    void operator() () const { resume (); }
+    void resume () const { __builtin_coro_resume (__fr_ptr); }
+    void destroy () const { __builtin_coro_destroy (__fr_ptr); }
+    bool suspended_p () const { return __builtin_coro_is_suspended (__fr_ptr); }
+
+  protected:
+    void *__fr_ptr;
+
+  private:
+    bool __is_suspended () const noexcept
+    {
+      return __builtin_coro_is_suspended (__fr_ptr);
+    }
+  };
+
+  template <class _Promise> struct coroutine_handle : coroutine_handle<>
+  {
+    // 21.11.2.1 construct/reset
+    using coroutine_handle<>::coroutine_handle;
+    static coroutine_handle from_promise (_Promise &p)
+    {
+      coroutine_handle __self;
+      __self.__fr_ptr
+	= __builtin_coro_promise ((char *) &p, __alignof(_Promise), true);
+      return __self;
+    }
+    coroutine_handle &operator= (decltype (nullptr)) noexcept
+    {
+      coroutine_handle<>::operator= (nullptr);
+      return *this;
+    }
+    // 21.11.2.2 export/import
+    constexpr static coroutine_handle from_address (void *__a)
+    {
+      coroutine_handle __self;
+      __self.__fr_ptr = __a;
+      return __self;
+    }
+    // 21.11.2.5 promise access
+    _Promise &promise () const
+    {
+      void *__t
+	= __builtin_coro_promise (this->__fr_ptr, __alignof(_Promise), false);
+      return *static_cast<_Promise *> (__t);
+    }
+  };
+
+  // n4830 - 21.11.5 trivial awaitables
+
+  struct suspend_always
+  {
+    bool await_ready () { return false; }
+    void await_suspend (coroutine_handle<>) {}
+    void await_resume () {}
+  };
+
+  struct suspend_never
+  {
+    bool await_ready () { return true; }
+    void await_suspend (coroutine_handle<>) {}
+    void await_resume () {}
+  };
+
+  } // namespace coroutines_n4830
+  } // namespace experimental
+
+#else
+#error "coroutine requires -fcoroutines"
+#endif
+
+  _GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std_GLIBCXX_VISIBILITY(default)
+
+#endif // C++14
+
+#endif // _GLIBCXX_EXPERIMENTAL_COROUTINE

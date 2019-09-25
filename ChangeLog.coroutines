@@ -1,3 +1,11 @@
+2019-09-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	libstdc++-v3/
+	* include/Makefile.am (experimental_headers): Add
+	experimental/coroutine.
+	* include/Makefile.in: Regenerated.
+	* include/experimental/coroutine: New file.
+
 2019-09-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Merge trunk r276035.
