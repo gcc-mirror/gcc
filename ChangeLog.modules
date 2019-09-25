@@ -1,3 +1,12 @@
+2019-09-25  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* modules.cc (enum merge_kind): Rearrange.
+	(merge_kind_name): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/inst_-[234]-[ab].C: Adjust scans.
+	* g++.dg/modules/indirect-[234]_b.C: Likewise.
+
 2019-09-24  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

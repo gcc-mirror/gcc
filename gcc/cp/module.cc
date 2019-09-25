@@ -318,7 +318,6 @@ struct nodel_ptr_hash : pointer_hash<T>, typed_noop_remove <T *> {
 typedef simple_hashmap_traits<nodel_ptr_hash<void>, int> ptr_int_traits;
 typedef hash_map<void *,signed,ptr_int_traits> ptr_int_hash_map;
 
-
 /********************************************************************/
 /* Basic streaming & ELF.  Serialization is usually via mmap.  For
    writing we slide a buffer over the output file, syncing it
@@ -2735,26 +2734,35 @@ static char const *const walk_kind_name[] =
 
 enum merge_kind
 {
-  MK_named,  /* Found by CTX, NAME + maybe_arg types.  */
-  MK_decl_spec,   /* Found by PRIMARY, SPECS.  */
-  MK_decl_tmpl_spec,   /* Found by PRIMARY, SPECS.  */
-  MK_type_spec,   /* Found by PRIMARY, SPECS.  */
-  MK_type_tmpl_spec,   /* Found by PRIMARY, SPECS.  */
-  MK_type_partial_spec,   /* Found by PRIMARY, SPECS.  */
-  MK_clone,  /* Found by CLONED, PREV.  */
-  MK_linkage, /* Found by tdef name.  */
-  MK_enum,   /* Found by CTX, & 1stMemberNAME.  */
-  // FIXME: It's possible there are other merge key kinds --
-  // namespace-scope anonymous unions keyed to the injected reference?
-  // (maybe those must be static?)
-  MK_none
+  MK_none,
+
+  MK_named = 4,	/* Found by CTX, NAME + maybe_arg types.  */
+  MK_clone,	/* Found by CLONED, PREV.  */
+  MK_linkage,	/* Found by tdef name.  */
+  MK_enum,	/* Found by CTX, & 1stMemberNAME.  */
+
+  /* Template specialization kinds below. These are all found via
+     primary template and specialization args.  */
+  MK_template_mask = 0x8,
+  MK_tmpl_decl_mask = 0x4,
+  MK_tmpl_tmpl_mask = 0x1,
+  MK_tmpl_both_mask = 0x2,
+
+  MK_decl_spec = MK_template_mask | MK_tmpl_decl_mask,
+  MK_decl_tmpl_spec = MK_decl_spec | MK_tmpl_tmpl_mask,
+
+  MK_type_spec = MK_template_mask,
+  MK_type_tmpl_spec = MK_type_spec | MK_tmpl_tmpl_mask,
+
+  MK_type_partial_spec = MK_type_spec | MK_tmpl_both_mask,
+
+  MK_lwm = 4,
+  MK_hwm = 16
 };
-static char const *const merge_kind_name[] =
-  {"named",
-   "decl specialization", "decl tmpl specialization",
-   "type specialization", "type tmpl specialization",
-   "type partial specialization",
-   "clone", "linkage", "enum"};
+static char const *const merge_kind_name[MK_hwm] =
+  {"none", NULL, NULL, NULL, "named", "clone", "linkage", "enum",
+   "type spec", "type tmpl spec", "type partial spec", NULL,
+   "decl spec", "decl tmpl spec", "both spec", "both tmpl spec"};
 
 /* Tree stream reader.  Note that reading a stream doesn't mark the
    read trees with TREE_VISITED.  Thus it's quite safe to have
@@ -9432,7 +9440,7 @@ trees_in::key_mergeable (tree decl, tree inner, tree,
   *fn_args = *r_type = NULL_TREE;
 
   unsigned i = u ();
-  if (i >= MK_none)
+  if (i >= MK_hwm || i < MK_lwm)
     return MK_none;
   merge_kind mk = merge_kind (i);
 

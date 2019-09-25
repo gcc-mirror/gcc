@@ -25,5 +25,5 @@ namespace bar
 
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo::TPL@bar:1<0x0>'\n(  \[.\]=clone (declaration|definition) '::hidey[^\n]* '\n)*  \[.*\]=specialization declaration '::foo::TPL@bar:1<0x0>::TPL<0x0>'\n  \[.*]=decl definition '::foo::TPL@bar:1<0x0>::frob@bar:1<0x0>'} module } }
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo::X@foo:2::frob@bar:1<0x0>'} module } }
-// { dg-final { scan-lang-dump {Writing type specialization key for mergeable specialization type_decl:'::foo::TPL@bar:1<0x0>'} module } }
-// { dg-final { scan-lang-dump {Writing decl specialization key for mergeable specialization function_decl:'::foo::X@foo:2::frob@bar:1<0x0>'} module } }
+// { dg-final { scan-lang-dump {Writing type spec key for mergeable specialization type_decl:'::foo::TPL@bar:1<0x0>'} module } }
+// { dg-final { scan-lang-dump {Writing decl spec key for mergeable specialization function_decl:'::foo::X@foo:2::frob@bar:1<0x0>'} module } }
