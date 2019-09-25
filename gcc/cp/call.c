@@ -7382,8 +7382,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    tree type = TREE_TYPE (ref_type);
 	    cp_lvalue_kind lvalue = lvalue_kind (expr);
 
-	    gcc_assert (same_type_ignoring_top_level_qualifiers_p
-			(type, next_conversion (convs)->type));
+	    gcc_assert (similar_type_p (type, next_conversion (convs)->type));
 	    if (!CP_TYPE_CONST_NON_VOLATILE_P (type)
 		&& !TYPE_REF_IS_RVALUE (ref_type))
 	      {
