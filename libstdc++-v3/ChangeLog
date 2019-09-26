@@ -1,5 +1,7 @@
 2019-09-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/debug/array (to_array): Define for debug mode.
+
 	* include/bits/stl_pair.h (pair): Add _GLIBCXX20_CONSTEXPR to
 	piecewise construction constructor, assignment operators, and swap.
 	* include/std/tuple (pair::pair(piecewise_construct_t, tuple, tuple)):
