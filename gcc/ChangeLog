@@ -1,3 +1,17 @@
+2019-09-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-06-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.opt (prebind, noprebind, seglinkedit,
+	noseglinkedit): Add RejectNegative.
+
+	Backport from mainline
+	2019-06-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.opt: Add RejectNegative where needed, reorder
+	and add minimal functional descriptions.
+
 2019-09-25  Kyrylo Tkachov <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
