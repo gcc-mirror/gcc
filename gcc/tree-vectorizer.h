@@ -941,9 +941,15 @@ public:
   /* For INTEGER_INDUC_COND_REDUCTION, the initial value to be used.  */
   tree induc_cond_initial_val;
 
+  /* If not NULL the value to be added to compute final reduction value.  */
+  tree reduc_epilogue_adjustment;
+
   /* On a reduction PHI the reduction type as detected by
      vect_force_simple_reduction.  */
   enum vect_reduction_type reduc_type;
+
+  /* The original reduction code, to be used in the epilogue.  */
+  enum tree_code reduc_code;
 
   /* On a stmt participating in the reduction the index of the operand
      on the reduction SSA cycle.  */
@@ -1039,6 +1045,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_VEC_REDUCTION_TYPE(S)   (S)->v_reduc_type
 #define STMT_VINFO_VEC_COND_REDUC_CODE(S)  (S)->cond_reduc_code
 #define STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL(S) (S)->induc_cond_initial_val
+#define STMT_VINFO_REDUC_EPILOGUE_ADJUSTMENT(S) (S)->reduc_epilogue_adjustment
 #define STMT_VINFO_REDUC_IDX(S)		   (S)->reduc_idx
 
 #define STMT_VINFO_DR_WRT_VEC_LOOP(S)      (S)->dr_wrt_vec_loop
@@ -1070,6 +1077,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_MIN_NEG_DIST(S)	(S)->min_neg_dist
 #define STMT_VINFO_NUM_SLP_USES(S)	(S)->num_slp_uses
 #define STMT_VINFO_REDUC_TYPE(S)	(S)->reduc_type
+#define STMT_VINFO_REDUC_CODE(S)	(S)->reduc_code
 #define STMT_VINFO_REDUC_DEF(S)		(S)->reduc_def
 #define STMT_VINFO_SLP_VECT_ONLY(S)     (S)->slp_vect_only_p
 

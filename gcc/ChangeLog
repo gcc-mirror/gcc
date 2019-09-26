@@ -1,3 +1,22 @@
+2019-09-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_analyze_loop_operations): Also call
+	vectorizable_reduction for vect_double_reduction_def.
+	(vect_transform_loop): Likewise.
+	(vect_create_epilog_for_reduction): Move double-reduction
+	PHI creation and preheader argument setting of PHIs ...
+	(vectorizable_reduction): ... here.  Also process
+	vect_double_reduction_def PHIs, creating the vectorized
+	PHI nodes, remembering the scalar adjustment computed for
+	the epilogue in STMT_VINFO_REDUC_EPILOGUE_ADJUSTMENT.
+	Remember the original reduction code in STMT_VINFO_REDUC_CODE.
+	* tree-vectorizer.c (vec_info::new_stmt_vec_info):
+	Initialize STMT_VINFO_REDUC_CODE.
+	* tree-vectorizer.h (_stmt_vec_info::reduc_epilogue_adjustment): New.
+	(_stmt_vec_info::reduc_code): Likewise.
+	(STMT_VINFO_REDUC_EPILOGUE_ADJUSTMENT): Likewise.
+	(STMT_VINFO_REDUC_CODE): Likewise.
+
 2019-09-26  Matt Turner  <mattst88@gmail.com>
 
 	PR driver/69471
