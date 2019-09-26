@@ -1,3 +1,11 @@
+2020-04-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Backport from mainline.
+	2019-09-26  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* gcc.target/xtensa/pr91880.c: New test case.
+	* gcc.target/xtensa/xtensa.exp: New test suite.
+
 2020-04-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
