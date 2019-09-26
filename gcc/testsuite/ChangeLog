@@ -1,3 +1,11 @@
+2019-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/cpp/ucs.c: Add test for new warning and adjust.
+	* gcc.dg/cpp/utf8-5byte-1.c: Add -w to the options.
+	* gcc.dg/attr-alias-5.c: Likewise.
+	* g++.dg/cpp/ucn-1.C: Add test for new warning.
+	* g++.dg/cpp2a/ucn1.C: New test.
+
 2019-09-26  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* gcc.target/xtensa/pr91880.c: New test case.

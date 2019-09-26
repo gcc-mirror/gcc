@@ -1,3 +1,10 @@
+2019-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* charset.c (UCS_LIMIT): New macro.
+	(ucn_valid_in_identifier): Use it instead of a hardcoded constant.
+	(_cpp_valid_ucn): Issue a pedantic warning for UCNs larger than
+	UCS_LIMIT outside of identifiers in C and in C++2a or later.
+
 2019-09-19  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR c/67224
