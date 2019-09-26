@@ -107,6 +107,14 @@ typedef struct gfc_se
 }
 gfc_se;
 
+typedef struct gfc_co_subroutines_args
+{
+  tree image_index;
+  tree stat;
+  tree errmsg;
+  tree errmsg_len;
+}
+gfc_co_subroutines_args;
 
 /* Denotes different types of coarray.
    Please keep in sync with libgfortran/caf/libcaf.h.  */
