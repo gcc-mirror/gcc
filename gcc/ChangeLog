@@ -1,3 +1,11 @@
+2019-09-26  Matt Turner  <mattst88@gmail.com>
+
+	PR driver/69471
+	* config/aarch64/aarch64.opt (march=): Add Negative(march=).
+	(mtune=): Add Negative(mtune=).
+	(mcpu=): Add Negative(mcpu=).
+	* config/arm/arm.opt: Likewise.
+
 2019-09-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (arm_<simd32_op>): New define_insn.
