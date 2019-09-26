@@ -1,3 +1,8 @@
+2019-09-26  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* gcc.target/xtensa/pr91880.c: New test case.
+	* gcc.target/xtensa/xtensa.exp: New test suite.
+
 2019-09-26  Will Schmidt <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/pure-builtin-redundant-load.c:  New.
