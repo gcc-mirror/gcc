@@ -1,3 +1,7 @@
+2019-09-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* osint.adb (OS_Time_To_GNAT_Time): Remove dependency on To_C/To_Ada
+
 2019-09-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* libgnarl/s-osinte__solaris.ads (sysconf): Declare.

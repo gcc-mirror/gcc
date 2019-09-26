@@ -2183,7 +2183,19 @@ package body Osint is
    function OS_Time_To_GNAT_Time (T : OS_Time) return Time_Stamp_Type is
       GNAT_Time : Time_Stamp_Type;
 
-      TI : Long_Integer := To_C (T);
+      type Underlying_OS_Time is
+        range -(2 ** (Standard'Address_Size - Integer'(1))) ..
+              +(2 ** (Standard'Address_Size - Integer'(1)) - 1);
+      --  Underlying_OS_Time is a redeclaration of OS_Time to allow integer
+      --  manipulation. Remove this in favor of To_Ada/To_C once newer
+      --  GNAT releases are available with these functions.
+
+      function To_Int is
+        new Unchecked_Conversion (OS_Time, Underlying_OS_Time);
+      function From_Int is
+        new Unchecked_Conversion (Underlying_OS_Time, OS_Time);
+
+      TI : Underlying_OS_Time := To_Int (T);
       Y  : Year_Type;
       Mo : Month_Type;
       D  : Day_Type;
@@ -2205,7 +2217,7 @@ package body Osint is
          TI := TI + 1;
       end if;
 
-      GM_Split (To_Ada (TI), Y, Mo, D, H, Mn, S);
+      GM_Split (From_Int (TI), Y, Mo, D, H, Mn, S);
 
       Make_Time_Stamp
         (Year    => Nat (Y),
