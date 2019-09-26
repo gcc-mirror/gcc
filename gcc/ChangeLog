@@ -1,3 +1,13 @@
+2019-09-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.md: Replace the expanders for
+	load_macho_picbase and reload_macho_picbase with use of '@'
+	and <mode> in their respective define_insns.
+	(nonlocal_goto_receiver): Pass Pmode to gen_reload_macho_picbase.
+	* config/rs6000/rs6000-logue.c (rs6000_emit_prologue): Pass
+	Pmode to gen_load_macho_picbase.
+	* config/rs6000/rs6000.md: Likewise.
+
 2019-09-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91896
