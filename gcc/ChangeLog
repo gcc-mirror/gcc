@@ -1,3 +1,16 @@
+2019-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* function.c (gimplify_parameters): Use build_clobber function.
+	* tree-ssa.c (execute_update_addresses_taken): Likewise.
+	* tree-inline.c (expand_call_inline): Likewise.
+	* tree-sra.c (clobber_subtree): Likewise.
+	* tree-ssa-ccp.c (insert_clobber_before_stack_restore): Likewise.
+	* omp-low.c (lower_rec_simd_input_clauses, lower_rec_input_clauses,
+	lower_omp_single, lower_depend_clauses, lower_omp_taskreg,
+	lower_omp_target): Likewise.
+	* omp-expand.c (expand_omp_for_generic): Likewise.
+	* omp-offload.c (ompdevlow_adjust_simt_enter): Likewise.
+
 2019-09-26  Will Schmidt <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def: (LVSL, LVSR, LVEBX, LVEHX,

@@ -3892,9 +3892,8 @@ gimplify_parameters (gimple_seq *cleanup)
 		  if (!is_gimple_reg (local)
 		      && flag_stack_reuse != SR_NONE)
 		    {
-		      tree clobber = build_constructor (type, NULL);
+		      tree clobber = build_clobber (type);
 		      gimple *clobber_stmt;
-		      TREE_THIS_VOLATILE (clobber) = 1;
 		      clobber_stmt = gimple_build_assign (local, clobber);
 		      gimple_seq_add_stmt (cleanup, clobber_stmt);
 		    }

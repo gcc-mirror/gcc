@@ -3028,8 +3028,7 @@ clobber_subtree (struct access *access, gimple_stmt_iterator *gsi,
   if (access->grp_to_be_replaced)
     {
       tree rep = get_access_replacement (access);
-      tree clobber = build_constructor (access->type, NULL);
-      TREE_THIS_VOLATILE (clobber) = 1;
+      tree clobber = build_clobber (access->type);
       gimple *stmt = gimple_build_assign (rep, clobber);
 
       if (insert_after)
