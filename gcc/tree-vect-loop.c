@@ -1519,12 +1519,16 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
                   phi_op = PHI_ARG_DEF (phi, 0);
 		  stmt_vec_info op_def_info = loop_vinfo->lookup_def (phi_op);
 		  if (!op_def_info)
-		    return opt_result::failure_at (phi, "unsupported phi");
+		    return opt_result::failure_at (phi, "unsupported phi\n");
 
 		  if (STMT_VINFO_RELEVANT (op_def_info) != vect_used_in_outer
 		      && (STMT_VINFO_RELEVANT (op_def_info)
 			  != vect_used_in_outer_by_reduction))
-		    return opt_result::failure_at (phi, "unsupported phi");
+		    return opt_result::failure_at (phi, "unsupported phi\n");
+
+		  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_internal_def
+		      && !vectorizable_lc_phi (stmt_info, NULL, NULL))
+		    return opt_result::failure_at (phi, "unsupported phi\n");
                 }
 
               continue;
@@ -4396,6 +4400,10 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
         }
     }
 
+  /* For vectorizing nested cycles the above is all we need to do.  */
+  if (nested_in_vect_loop && !double_reduc)
+    return;
+
   /* For cond reductions we want to create a new vector (INDEX_COND_EXPR)
      which is updated with the current index of the loop for every match of
      the original loop's cond_expr (VEC_STMT).  This results in a vector
@@ -4588,16 +4596,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
   new_scalar_dest = vect_create_destination_var (scalar_dest, NULL);
   bitsize = TYPE_SIZE (scalar_type);
 
-  /* In case this is a reduction in an inner-loop while vectorizing an outer
-     loop - we don't need to extract a single scalar result at the end of the
-     inner-loop (unless it is double reduction, i.e., the use of reduction is
-     outside the outer-loop).  The final vector of partial results will be used
-     in the vectorized outer-loop, or reduced to a scalar result at the end of
-     the outer-loop.  */
-  if (nested_in_vect_loop && !double_reduc)
-    ;
-  else
-    {
   /* SLP reduction without reduction chain, e.g.,
      # a1 = phi <a2, a0>
      # b1 = phi <b2, b0>
@@ -5313,7 +5311,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
 
       new_phis[0] = epilog_stmt;
     }
-    }
 
   if (double_reduc)
     loop = loop->inner;
@@ -5473,7 +5470,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
           if (double_reduc)
             loop = outer_loop;
           else
-            continue;
+	    gcc_unreachable ();
         }
 
       phis.create (3);
@@ -7167,6 +7164,76 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   return true;
 }
 
+/* Vectorizes LC PHIs of nested cycles (sofar).  */
+
+bool
+vectorizable_lc_phi (stmt_vec_info stmt_info, stmt_vec_info *vec_stmt,
+		     slp_tree slp_node)
+{
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  if (!loop_vinfo
+      || !is_a <gphi *> (stmt_info->stmt)
+      || gimple_phi_num_args (stmt_info->stmt) != 1)
+    return false;
+
+  /* To handle the nested_cycle_def for double-reductions we have to
+     refactor epilogue generation more.  */
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def
+      /* && STMT_VINFO_DEF_TYPE (stmt_info) != vect_double_reduction_def */)
+    return false;
+
+  if (!vec_stmt) /* transformation not required.  */
+    {
+      STMT_VINFO_TYPE (stmt_info) = lc_phi_info_type;
+      return true;
+    }
+
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree scalar_dest = gimple_phi_result (stmt_info->stmt);
+  basic_block bb = gimple_bb (stmt_info->stmt);
+  edge e = single_pred_edge (bb);
+  tree vec_dest = vect_create_destination_var (scalar_dest, vectype);
+  vec<tree> vec_oprnds = vNULL;
+  vect_get_vec_defs (gimple_phi_arg_def (stmt_info->stmt, 0), NULL_TREE,
+		     stmt_info, &vec_oprnds, NULL, slp_node);
+  if (slp_node)
+    {
+      unsigned vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+      gcc_assert (vec_oprnds.length () == vec_num);
+      for (unsigned i = 0; i < vec_num; i++)
+	{
+	  /* Create the vectorized LC PHI node.  */
+	  gphi *new_phi = create_phi_node (vec_dest, bb);
+	  add_phi_arg (new_phi, vec_oprnds[i], e, UNKNOWN_LOCATION);
+	  stmt_vec_info new_phi_info = loop_vinfo->add_stmt (new_phi);
+	  SLP_TREE_VEC_STMTS (slp_node).quick_push (new_phi_info);
+	}
+    }
+  else
+    {
+      unsigned ncopies = vect_get_num_copies (loop_vinfo, vectype);
+      stmt_vec_info prev_phi_info = NULL;
+      for (unsigned i = 0; i < ncopies; i++)
+	{
+	  if (i != 0)
+	    vect_get_vec_defs_for_stmt_copy (loop_vinfo, &vec_oprnds, NULL);
+	  /* Create the vectorized LC PHI node.  */
+	  gphi *new_phi = create_phi_node (vec_dest, bb);
+	  add_phi_arg (new_phi, vec_oprnds[0], e, UNKNOWN_LOCATION);
+	  stmt_vec_info new_phi_info = loop_vinfo->add_stmt (new_phi);
+	  if (i == 0)
+	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_phi_info;
+	  else
+	    STMT_VINFO_RELATED_STMT (prev_phi_info) = new_phi_info;
+	  prev_phi_info = new_phi_info;
+	}
+    }
+  vec_oprnds.release ();
+
+  return true;
+}
+
+
 /* Function vect_min_worthwhile_factor.
 
    For a loop where we could vectorize the operation indicated by CODE,
@@ -8399,7 +8466,8 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	  if ((STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def
 	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
 	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def
-	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle)
+	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle
+	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_internal_def)
 	      && ! PURE_SLP_STMT (stmt_info))
 	    {
 	      if (dump_enabled_p ())

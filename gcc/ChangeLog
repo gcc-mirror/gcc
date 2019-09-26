@@ -1,5 +1,17 @@
 2019-09-26  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-loop.c (vect_analyze_loop_operations): Analyze
+	loop-closed PHIs that are vect_internal_def.
+	(vect_create_epilog_for_reduction): Exit early for nested cycles.
+	Simplify.
+	(vectorizable_lc_phi): New.
+	* tree-vect-stmts.c (vect_analyze_stmt): Call vectorize_lc_phi.
+	(vect_transform_stmt): Likewise.
+	* tree-vectorizer.h (stmt_vec_info_type): Add lc_phi_info_type.
+	(vectorizable_lc_phi): Declare.
+
+2019-09-26  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-loop.c (vect_analyze_loop_operations): Also call
 	vectorizable_reduction for vect_double_reduction_def.
 	(vect_transform_loop): Likewise.
