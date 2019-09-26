@@ -5016,9 +5016,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	  tree *varp = id->decl_map->get (p);
 	  if (varp && VAR_P (*varp) && !is_gimple_reg (*varp))
 	    {
-	      tree clobber = build_constructor (TREE_TYPE (*varp), NULL);
+	      tree clobber = build_clobber (TREE_TYPE (*varp));
 	      gimple *clobber_stmt;
-	      TREE_THIS_VOLATILE (clobber) = 1;
 	      clobber_stmt = gimple_build_assign (*varp, clobber);
 	      gimple_set_location (clobber_stmt, gimple_location (stmt));
 	      gsi_insert_before (&stmt_gsi, clobber_stmt, GSI_SAME_STMT);
@@ -5086,9 +5085,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	  && !is_gimple_reg (id->retvar)
 	  && !stmt_ends_bb_p (stmt))
 	{
-	  tree clobber = build_constructor (TREE_TYPE (id->retvar), NULL);
+	  tree clobber = build_clobber (TREE_TYPE (id->retvar));
 	  gimple *clobber_stmt;
-	  TREE_THIS_VOLATILE (clobber) = 1;
 	  clobber_stmt = gimple_build_assign (id->retvar, clobber);
 	  gimple_set_location (clobber_stmt, gimple_location (old_stmt));
 	  gsi_insert_after (&stmt_gsi, clobber_stmt, GSI_SAME_STMT);
@@ -5134,9 +5132,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	       && !TREE_THIS_VOLATILE (id->retvar)
 	       && !is_gimple_reg (id->retvar))
 	{
-	  tree clobber = build_constructor (TREE_TYPE (id->retvar), NULL);
+	  tree clobber = build_clobber (TREE_TYPE (id->retvar));
 	  gimple *clobber_stmt;
-	  TREE_THIS_VOLATILE (clobber) = 1;
 	  clobber_stmt = gimple_build_assign (id->retvar, clobber);
 	  gimple_set_location (clobber_stmt, gimple_location (stmt));
 	  gsi_replace (&stmt_gsi, clobber_stmt, false);
