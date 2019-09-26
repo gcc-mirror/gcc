@@ -403,7 +403,36 @@ __usada8 (uint8x4_t __a, uint8x4_t __b, uint32_t __c)
   return __builtin_arm_usada8 (__a, __b, __c);
 }
 
+__extension__ extern __inline int64_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smlald (int16x2_t __a, int16x2_t __b, int64_t __c)
+{
+  return __builtin_arm_smlald (__a, __b, __c);
+}
+
+__extension__ extern __inline int64_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smlaldx (int16x2_t __a, int16x2_t __b, int64_t __c)
+{
+  return __builtin_arm_smlaldx (__a, __b, __c);
+}
+
+__extension__ extern __inline int64_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smlsld (int16x2_t __a, int16x2_t __b, int64_t __c)
+{
+  return __builtin_arm_smlsld (__a, __b, __c);
+}
+
+__extension__ extern __inline int64_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__smlsldx (int16x2_t __a, int16x2_t __b, int64_t __c)
+{
+  return __builtin_arm_smlsldx (__a, __b, __c);
+}
+
 #endif
+
 
 #pragma GCC push_options
 #ifdef __ARM_FEATURE_CRC32

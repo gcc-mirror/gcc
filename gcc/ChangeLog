@@ -1,6 +1,16 @@
 2019-09-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (arm_<simd32_op>): New define_insn.
+	* config/arm/arm_acle.h (__smlald, __smlaldx, __smlsld, __smlsldx):
+	Define.
+	* config/arm/arm_acle.h: Define builtins for the above.
+	* config/arm/iterators.md (SIMD32_DIMODE): New int_iterator.
+	(simd32_op): Handle the above.
+	* config/arm/unspecs.md: Define unspecs for the above.
+
+2019-09-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (arm_<simd32_op>): New define_insn.
 	(arm_<sup>xtb16): Likewise.
 	(arm_usada8): Likewise.
 	* config/arm/arm_acle.h (__qadd8, __qsub8, __shadd8, __shsub8,

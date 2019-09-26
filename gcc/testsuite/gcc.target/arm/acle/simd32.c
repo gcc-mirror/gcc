@@ -244,3 +244,35 @@ test_usada8 (uint8x4_t a, uint8x4_t b, uint32_t c)
 }
 
 /* { dg-final { scan-assembler-times "\tusada8\t...?, ...?, ...?, ...?" 1 } } */
+
+int64_t
+test_smlald (int16x2_t a, int16x2_t b, int64_t c)
+{
+  return __smlald (a, b, c);
+}
+
+/* { dg-final { scan-assembler-times "\tsmlald\t...?, ...?, ...?, ...?" 1 } } */
+
+int64_t
+test_smlaldx (int16x2_t a, int16x2_t b, int64_t c)
+{
+  return __smlaldx (a, b, c);
+}
+
+/* { dg-final { scan-assembler-times "\tsmlaldx\t...?, ...?, ...?, ...?" 1 } } */
+
+int64_t
+test_smlsld (int16x2_t a, int16x2_t b, int64_t c)
+{
+  return __smlsld (a, b, c);
+}
+
+/* { dg-final { scan-assembler-times "\tsmlsld\t...?, ...?, ...?, ...?" 1 } } */
+
+int64_t
+test_smlsldx (int16x2_t a, int16x2_t b, int64_t c)
+{
+  return __smlsldx (a, b, c);
+}
+
+/* { dg-final { scan-assembler-times "\tsmlsldx\t...?, ...?, ...?, ...?" 1 } } */
