@@ -1,3 +1,9 @@
+2019-09-26  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (hwloop_optimize): Insert zero overhead
+	loop instruction into new basic block before the loop when basic
+	block that precedes the loop is empty.
+
 2019-09-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* function.c (gimplify_parameters): Use build_clobber function.
