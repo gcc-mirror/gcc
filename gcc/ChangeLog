@@ -1,3 +1,10 @@
+2019-09-26  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/91885
+	* tree-vectorizer.c (try_vectorize_loop_1):
+	Add TODO_update_ssa_only_virtuals similarly to what slp
+	pass does.
+
 2019-09-26  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_rtx_costs): Use
