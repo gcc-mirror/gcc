@@ -1,3 +1,7 @@
+2019-09-26  Will Schmidt <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/pure-builtin-redundant-load.c:  New.
+
 2019-09-26  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/91897
