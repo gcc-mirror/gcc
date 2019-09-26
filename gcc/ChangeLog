@@ -1,3 +1,9 @@
+2019-09-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Use
+	aarch64_plus_immediate rather than aarch64_uimm12_shift
+	to test for valid PLUS immediates.
+
 2019-09-25  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (no_accesses_p): Remove.
