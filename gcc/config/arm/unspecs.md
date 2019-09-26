@@ -123,6 +123,10 @@
   UNSPEC_SMUSDX		; Represent the SMUSDX operation.
   UNSPEC_USAD8		; Represent the USAD8 operation.
   UNSPEC_USADA8		; Represent the USADA8 operation.
+  UNSPEC_SMLALD		; Represent the SMLALD operation.
+  UNSPEC_SMLALDX	; Represent the SMLALDX operation.
+  UNSPEC_SMLSLD		; Represent the SMLSLD operation.
+  UNSPEC_SMLSLDX	; Represent the SMLSLDX operation.
 ])
 
 

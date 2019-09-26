@@ -5088,6 +5088,17 @@
   [(set_attr "predicable" "yes")
    (set_attr "type" "alu_dsp_reg")])
 
+(define_insn "arm_<simd32_op>"
+  [(set (match_operand:DI 0 "s_register_operand" "=r")
+	(unspec:DI
+	  [(match_operand:SI 1 "s_register_operand" "r")
+	   (match_operand:SI 2 "s_register_operand" "r")
+	   (match_operand:DI 3 "s_register_operand" "0")] SIMD32_DIMODE))]
+  "TARGET_INT_SIMD"
+  "<simd32_op>%?\\t%Q0, %R0, %1, %2"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "smlald")])
+
 (define_expand "extendsfdf2"
   [(set (match_operand:DF                  0 "s_register_operand")
 	(float_extend:DF (match_operand:SF 1 "s_register_operand")))]

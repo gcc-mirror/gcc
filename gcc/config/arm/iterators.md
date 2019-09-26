@@ -443,6 +443,9 @@
 				 UNSPEC_UQSUB16 UNSPEC_SMUSD UNSPEC_SMUSDX
 				 UNSPEC_SXTAB16 UNSPEC_UXTAB16 UNSPEC_USAD8])
 
+(define_int_iterator SIMD32_DIMODE [UNSPEC_SMLALD UNSPEC_SMLALDX
+				    UNSPEC_SMLSLD UNSPEC_SMLSLDX])
+
 (define_int_iterator VQRDMLH_AS [UNSPEC_VQRDMLAH UNSPEC_VQRDMLSH])
 
 (define_int_iterator VFM_LANE_AS [UNSPEC_VFMA_LANE UNSPEC_VFMS_LANE])
@@ -1051,7 +1054,9 @@
 			    (UNSPEC_UQSAX "uqsax") (UNSPEC_UQSUB16 "uqsub16")
 			    (UNSPEC_SMUSD "smusd") (UNSPEC_SMUSDX "smusdx")
 			    (UNSPEC_SXTAB16 "sxtab16") (UNSPEC_UXTAB16 "uxtab16")
-			    (UNSPEC_USAD8 "usad8")])
+			    (UNSPEC_USAD8 "usad8") (UNSPEC_SMLALD "smlald")
+			    (UNSPEC_SMLALDX "smlaldx") (UNSPEC_SMLSLD "smlsld")
+			    (UNSPEC_SMLSLDX "smlsldx")])
 
 ;; Both kinds of return insn.
 (define_code_iterator RETURNS [return simple_return])
