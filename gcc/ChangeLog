@@ -1,5 +1,10 @@
 2019-09-26  Martin Jambor  <mjambor@suse.cz>
 
+	* ipa-sra.c (verify_splitting_accesses): Fix quoting in a call to
+	internal_error.
+
+2019-09-26  Martin Jambor  <mjambor@suse.cz>
+
 	* ipa-sra.c (process_scan_results): Fix continue condition.
 
 2019-09-26  Martin Liska  <mliska@suse.cz>
