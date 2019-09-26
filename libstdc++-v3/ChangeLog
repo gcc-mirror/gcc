@@ -1,3 +1,18 @@
+2019-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/array: Remove references to profile mode.
+	* include/std/bitset: Likewise.
+	* include/std/deque: Likewise.
+	* include/std/forward_list: Likewise.
+	* include/std/list: Likewise.
+	* include/std/map: Likewise.
+	* include/std/set: Likewise.
+	* include/std/unordered_map: Likewise.
+	* include/std/unordered_set: Likewise.
+	* include/std/vector: Likewise.
+	* testsuite/17_intro/headers/c++1998/profile_mode.cc: New test.
+	* testsuite/17_intro/headers/c++2011/profile_mode.cc: New test.
+
 2019-09-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/regex.h

@@ -52,10 +52,6 @@
 # include <debug/unordered_map>
 #endif
 
-#ifdef _GLIBCXX_PROFILE
-# include <profile/unordered_map>
-#endif
-
 #if __cplusplus >= 201703L
 namespace std _GLIBCXX_VISIBILITY(default)
 {
