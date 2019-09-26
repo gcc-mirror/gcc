@@ -1,3 +1,12 @@
+2020-04-15  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Backport from mainline.
+	2019-09-26  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (hwloop_optimize): Insert zero overhead
+	loop instruction into new basic block before the loop when basic
+	block that precedes the loop is empty.
+
 2020-04-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/94603
