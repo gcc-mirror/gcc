@@ -10786,13 +10786,12 @@ gfc_walk_intrinsic_function (gfc_ss * ss, gfc_expr * expr,
     }
 }
 
-
 static tree
 conv_co_collective (gfc_code *code)
 {
   gfc_se argse;
   stmtblock_t block, post_block;
-  tree fndecl, array, strlen, image_index, stat, errmsg, errmsg_len;
+  tree fndecl, array = NULL_TREE, strlen, image_index, stat, errmsg, errmsg_len;
   gfc_expr *image_idx_expr, *stat_expr, *errmsg_expr, *opr_expr;
 
   gfc_start_block (&block);
@@ -10857,6 +10856,7 @@ conv_co_collective (gfc_code *code)
       gfc_conv_expr_descriptor (&argse, code->ext.actual->expr);
       array = argse.expr;
     }
+
   gfc_add_block_to_block (&block, &argse.pre);
   gfc_add_block_to_block (&post_block, &argse.post);
 
@@ -10915,46 +10915,64 @@ conv_co_collective (gfc_code *code)
       gcc_unreachable ();
     }
 
-  if (code->resolved_isym->id == GFC_ISYM_CO_SUM
-      || code->resolved_isym->id == GFC_ISYM_CO_BROADCAST)
-    fndecl = build_call_expr_loc (input_location, fndecl, 5, array,
-				  image_index, stat, errmsg, errmsg_len);
-  else if (code->resolved_isym->id != GFC_ISYM_CO_REDUCE)
-    fndecl = build_call_expr_loc (input_location, fndecl, 6, array, image_index,
-				  stat, errmsg, strlen, errmsg_len);
+  gfc_symbol *derived = code->ext.actual->expr->ts.type == BT_DERIVED
+    ? code->ext.actual->expr->ts.u.derived : NULL;
+
+  if (derived && derived->attr.alloc_comp
+      && code->resolved_isym->id == GFC_ISYM_CO_BROADCAST)
+    /* The derived type has the attribute 'alloc_comp'.  */
+    {
+      tree tmp = gfc_bcast_alloc_comp (derived, code->ext.actual->expr,
+				       code->ext.actual->expr->rank,
+				       image_index, stat, errmsg, errmsg_len);
+      gfc_add_expr_to_block (&block, tmp);
+    }
   else
     {
-      tree opr, opr_flags;
-
-      // FIXME: Handle TS29113's bind(C) strings with descriptor.
-      int opr_flag_int;
-      if (gfc_is_proc_ptr_comp (opr_expr))
-	{
-	  gfc_symbol *sym = gfc_get_proc_ptr_comp (opr_expr)->ts.interface;
-	  opr_flag_int = sym->attr.dimension
-			 || (sym->ts.type == BT_CHARACTER
-			     && !sym->attr.is_bind_c)
-			 ? GFC_CAF_BYREF : 0;
-	  opr_flag_int |= opr_expr->ts.type == BT_CHARACTER
-			  && !sym->attr.is_bind_c
-			  ? GFC_CAF_HIDDENLEN : 0;
-	  opr_flag_int |= sym->formal->sym->attr.value ? GFC_CAF_ARG_VALUE : 0;
-	}
+      if (code->resolved_isym->id == GFC_ISYM_CO_SUM
+	  || code->resolved_isym->id == GFC_ISYM_CO_BROADCAST)
+	fndecl = build_call_expr_loc (input_location, fndecl, 5, array,
+				      image_index, stat, errmsg, errmsg_len);
+      else if (code->resolved_isym->id != GFC_ISYM_CO_REDUCE)
+	fndecl = build_call_expr_loc (input_location, fndecl, 6, array,
+				      image_index, stat, errmsg,
+				      strlen, errmsg_len);
       else
 	{
-	  opr_flag_int = gfc_return_by_reference (opr_expr->symtree->n.sym)
-			 ? GFC_CAF_BYREF : 0;
-	  opr_flag_int |= opr_expr->ts.type == BT_CHARACTER
-			  && !opr_expr->symtree->n.sym->attr.is_bind_c
-			  ? GFC_CAF_HIDDENLEN : 0;
-	  opr_flag_int |= opr_expr->symtree->n.sym->formal->sym->attr.value
-			  ? GFC_CAF_ARG_VALUE : 0;
+	  tree opr, opr_flags;
+
+	  // FIXME: Handle TS29113's bind(C) strings with descriptor.
+	  int opr_flag_int;
+	  if (gfc_is_proc_ptr_comp (opr_expr))
+	    {
+	      gfc_symbol *sym = gfc_get_proc_ptr_comp (opr_expr)->ts.interface;
+	      opr_flag_int = sym->attr.dimension
+		|| (sym->ts.type == BT_CHARACTER
+		    && !sym->attr.is_bind_c)
+		? GFC_CAF_BYREF : 0;
+	      opr_flag_int |= opr_expr->ts.type == BT_CHARACTER
+		&& !sym->attr.is_bind_c
+		? GFC_CAF_HIDDENLEN : 0;
+	      opr_flag_int |= sym->formal->sym->attr.value
+		? GFC_CAF_ARG_VALUE : 0;
+	    }
+	  else
+	    {
+	      opr_flag_int = gfc_return_by_reference (opr_expr->symtree->n.sym)
+		? GFC_CAF_BYREF : 0;
+	      opr_flag_int |= opr_expr->ts.type == BT_CHARACTER
+		&& !opr_expr->symtree->n.sym->attr.is_bind_c
+		? GFC_CAF_HIDDENLEN : 0;
+	      opr_flag_int |= opr_expr->symtree->n.sym->formal->sym->attr.value
+		? GFC_CAF_ARG_VALUE : 0;
+	    }
+	  opr_flags = build_int_cst (integer_type_node, opr_flag_int);
+	  gfc_conv_expr (&argse, opr_expr);
+	  opr = argse.expr;
+	  fndecl = build_call_expr_loc (input_location, fndecl, 8, array, opr,
+					opr_flags, image_index, stat, errmsg,
+					strlen, errmsg_len);
 	}
-      opr_flags = build_int_cst (integer_type_node, opr_flag_int);
-      gfc_conv_expr (&argse, opr_expr);
-      opr = argse.expr;
-      fndecl = build_call_expr_loc (input_location, fndecl, 8, array, opr, opr_flags,
-				    image_index, stat, errmsg, strlen, errmsg_len);
     }
 
   gfc_add_expr_to_block (&block, fndecl);
