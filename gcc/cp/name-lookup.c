@@ -171,13 +171,24 @@ search_imported_binding_slot (tree *slot, unsigned ix)
 static void
 init_global_partition (module_cluster *cluster, tree decl)
 {
-  mc_slot *mslot;
+  bool purview = true;
+  if (header_module_p ())
+    purview = false;
+  else if (TREE_PUBLIC (decl)
+	   && TREE_CODE (decl) == NAMESPACE_DECL
+	   && !DECL_NAMESPACE_ALIAS (decl))
+    purview = false;
+  else
+    {
+      tree owner = get_module_owner (decl);
 
-  if (MAYBE_DECL_MODULE_OWNER (decl) == MODULE_NONE
-      || header_module_p ()
-      || (TREE_PUBLIC (decl)
-	  && TREE_CODE (decl) == NAMESPACE_DECL
-	  && !DECL_NAMESPACE_ALIAS (decl)))
+      if (DECL_LANG_SPECIFIC (owner)
+	  && DECL_MODULE_OWNER (owner) == MODULE_NONE)
+	purview = false;
+    }
+
+  mc_slot *mslot;
+  if (!purview)
     mslot = &cluster[0].slots[MODULE_SLOT_GLOBAL];
   else
     mslot = &cluster[MODULE_SLOT_PARTITION
@@ -244,7 +255,7 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
 	  /* Propagate existing value to current slot.  */
 	  cluster[0].slots[MODULE_SLOT_CURRENT] = orig;
 
-	  /* Propagate a global & module entities to the global and
+	  /* Propagate global & module entities to the global and
 	     partition slots.  */
 	  if (tree type = MAYBE_STAT_TYPE (orig))
 	    init_global_partition (cluster, type);
@@ -1491,7 +1502,7 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 		  /* Add fns in the innermost namespace partition of the
 		     type.  */
 		  tree owner = get_module_owner (TYPE_NAME (scope));
-		  unsigned mod = MAYBE_DECL_MODULE_OWNER (owner);
+		  unsigned mod = DECL_MODULE_OWNER (owner);
 
 		  /* If the module was in the inst path, we'll look at its
 		     namespace partition anyway.  */
@@ -3860,7 +3871,8 @@ do_pushdecl (tree decl, bool is_friend)
 	  if (level->kind == sk_namespace
 	      && TREE_PUBLIC (level->this_entity))
 	    {
-	      if (DECL_MODULE_EXPORT_P (decl)
+	      if (TREE_CODE (decl) != CONST_DECL
+		  && DECL_MODULE_EXPORT_P (decl)
 		  && !DECL_MODULE_EXPORT_P (level->this_entity))
 		implicitly_export_namespace (level->this_entity);
 
@@ -5230,16 +5242,21 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	{
 	  tree new_fn = *usings;
 	  bool exporting = revealing_p && module_exporting_p ();
-	  if (exporting
-	      && !DECL_MODULE_EXPORT_P (new_fn)
-	      && (MAYBE_DECL_MODULE_OWNER (new_fn)
-		  || !TREE_PUBLIC (CP_DECL_CONTEXT (new_fn))
-		  || DECL_THIS_STATIC (new_fn)))
+	  if (exporting)
 	    {
-	      error ("%q#D does not have external linkage", new_fn);
-	      inform (DECL_SOURCE_LOCATION (new_fn),
-		      "%q#D declared here", new_fn);
-	      exporting = false;
+	      /* If the using decl is exported, the things it refers
+		 to must also be exported.  */
+	      tree owner = get_module_owner (new_fn);
+	      if (!DECL_MODULE_EXPORT_P (owner)
+		  && (DECL_MODULE_OWNER (owner)
+		      || !TREE_PUBLIC (CP_DECL_CONTEXT (owner))
+		      || DECL_THIS_STATIC (new_fn)))
+		{
+		  error ("%q#D does not have external linkage", new_fn);
+		  inform (DECL_SOURCE_LOCATION (new_fn),
+			  "%q#D declared here", new_fn);
+		  exporting = false;
+		}
 	    }
 
 	  /* [namespace.udecl]
@@ -8844,7 +8861,7 @@ make_namespace (tree ctx, tree name, location_t loc,
 	  if (module_interface_p ())
 	    {
 	      /* We must use the full partition name.  */
-	      const char *name = module_name (MODULE_PURVIEW);
+	      const char *name = module_name (MODULE_PURVIEW, true);
 	      unsigned len = strlen (name);
 	      unsigned pos = IDENTIFIER_LENGTH (asm_name);
 	      char *buf = XALLOCAVEC (char, pos + len * 3 + 1);
@@ -8855,7 +8872,7 @@ make_namespace (tree ctx, tree name, location_t loc,
 		if (ISALNUM (*ptr))
 		  buf[pos++] = *ptr;
 		else
-		  pos += sprintf (&buf[pos], "_%02x", *ptr);
+		  pos += sprintf (&buf[pos], "_%02x", (unsigned char)*ptr);
 	      asm_name = get_identifier_with_length (buf, pos);
 	    }
 	  else if (global_purview_p ())

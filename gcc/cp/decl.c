@@ -1912,9 +1912,20 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       && TREE_CODE (olddecl) != NAMESPACE_DECL
       && !newdecl_is_friend)
     {
-      if (!DECL_ARTIFICIAL (olddecl))
+      tree owner = get_module_owner (olddecl, true);
+
+      if (DECL_ARTIFICIAL (olddecl))
 	{
-	  if (!module_may_redeclare (MAYBE_DECL_MODULE_OWNER (olddecl)))
+	  gcc_checking_assert (!DECL_LANG_SPECIFIC (owner)
+			       || DECL_MODULE_OWNER (owner) == MODULE_NONE);
+	  if (!(global_purview_p () || not_module_p ()))
+	    error ("declaration %qD conflicts with builtin", newdecl);
+	  set_module_owner (olddecl);
+	}
+      else
+	{
+	  if (DECL_LANG_SPECIFIC (owner)
+	      && !module_may_redeclare (DECL_MODULE_OWNER (owner)))
 	    {
 	      error ("declaration %qD conflicts with import", newdecl);
 	      inform (olddecl_loc, "import declared %q#D here", olddecl);
@@ -1922,18 +1933,12 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	      return error_mark_node;
 	    }
 
-	  if (DECL_MODULE_EXPORT_P (newdecl) && !DECL_MODULE_EXPORT_P (olddecl))
+	  if (DECL_MODULE_EXPORT_P (newdecl)
+	      && !DECL_MODULE_EXPORT_P (olddecl))
 	    {
 	      error ("conflicting exporting declaration %qD", newdecl);
 	      inform (olddecl_loc, "previous declaration %q#D here", olddecl);
 	    }
-	}
-      else
-	{
-	  gcc_checking_assert (!MAYBE_DECL_MODULE_OWNER (olddecl));
-	  if (!(global_purview_p () || not_module_p ()))
-	    error ("declaration %qD conflicts with builtin", newdecl);
-	  set_module_owner (olddecl);
 	}
     }
 
@@ -15094,6 +15099,11 @@ finish_enum_value_list (tree enumtype)
   else
     underlying_type = ENUM_UNDERLYING_TYPE (enumtype);
 
+  /* If the enum is exported, mark the consts too.  */
+  bool export_p = (UNSCOPED_ENUM_P (enumtype)
+		   && DECL_MODULE_EXPORT_P (TYPE_STUB_DECL (enumtype))
+		   && at_namespace_scope_p ());
+
   /* Convert each of the enumerators to the type of the underlying
      type of the enumeration.  */
   for (values = TYPE_VALUES (enumtype); values; values = TREE_CHAIN (values))
@@ -15121,6 +15131,8 @@ finish_enum_value_list (tree enumtype)
 	  TREE_TYPE (value) = enumtype;
 	}
       DECL_INITIAL (decl) = value;
+      if (export_p)
+	DECL_MODULE_EXPORT_P (decl) = true;
     }
 
   /* Fix up all variant types of this enum type.  */
@@ -15136,10 +15148,6 @@ finish_enum_value_list (tree enumtype)
 	  /* TYPE_FIELDS needs fixup.  */
 	  fixup_type_variants (current_class_type);
 	}
-
-      if (at_namespace_scope_p ())
-	/* Each member of the enum needs to be marked as an export.  */
-	fixup_unscoped_enum_owner (enumtype);
     }
 
   /* Finish debugging output for this type.  */

@@ -875,25 +875,25 @@ mangle_identifier (tree id)
 static void
 maybe_write_module (tree decl)
 {
-  tree owner = get_module_owner (decl);
+  tree owner_decl = get_module_owner (decl);
 
-  if (DECL_MODULE_EXPORT_P (owner))
+  if (DECL_MODULE_EXPORT_P (owner_decl))
     return;
 
-  if (tree ti = maybe_template_info (decl))
-    // FIXME: most general template?
-    owner = TI_TEMPLATE (ti);
+  unsigned m = MODULE_NONE;
+  if (DECL_LANG_SPECIFIC (decl))
+    m =DECL_MODULE_OWNER (owner_decl);
 
   /* Legacy modules have an owner, but everything from them is
      exported so we never get here in that case.  */
-  if (MAYBE_DECL_MODULE_OWNER (owner) == MODULE_NONE)
+  if (m == MODULE_NONE)
     return;
 
   G.mod = true;
 
   write_char ('W');
 
-  mangle_module (DECL_MODULE_OWNER (owner));
+  mangle_module (m);
 
   write_char ('E');
 }
@@ -951,7 +951,8 @@ write_name (tree decl, const int ignore_local_scope)
       decl = TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (decl)));
     }
 
-  maybe_write_module (decl);
+  if (modules_p ())
+    maybe_write_module (decl);
 
   context = decl_mangling_context (decl);
 

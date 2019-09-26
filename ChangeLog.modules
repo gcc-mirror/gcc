@@ -1,3 +1,41 @@
+2019-09-26  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (DECL_MODULE_OWNER): Restrict to
+	var/fn/type/template/namespace.
+	(MAYBE_DECL_MODULE_EXPORT_P): Delete.
+	({set,get}_{declared,implicit}_module_origin): Declare.
+	(module_name): Delete and adjust.
+	* modules.cc: Adjust throughout for loss of
+	MAYBE_DECL_MODULE_EXPORT_P.  Use get_module_owner more.
+	(fixup_unscoped_enum_owner): Delete.
+	* class.c (layout_class_type): Use set_implicit_module_origin.
+	* decl.c (duplicate_decls): Use get_module_owner.
+	(finish_enum_value_list): Set DECL_MODULE_EXPORT_P directly.
+	* decl2.c (no_linkage_error): Use DECL_MODULE_OWNER.
+	* error.c (dump_module_suffix): Reimplement.
+	* mangle.c (maybe_write_module): Adjust.
+	* name-lookup.c (init_global_partition): Adjust.
+	(name_lookup::search_adl): Owner always has module.
+	(do_pushdecl): Adjust namespace exporting.
+	(do_nonmember_using_decl): Adjust exporting check.
+	* pt.c (build_template_decl): Only propagate module info when
+	needed.
+	(lookup_template_class_1): Use set_implicit_module_origin.
+	(tsubst_friend_function): Propagate to outer template.
+	(tsubst_function_decl): Use set_implicit_module_origin.
+	(tsubst_template_decl): Simplify tsubst if cascade.  Propagate
+	inner module info.
+	(instantiate_template_1): Use set_module_owner.
+	* ptree.c (cxx_print_decl): Protect module info display.
+	gcc/testsuite/
+	* g++.dg/modules/friend-1_a.C: Adjust scans.
+	* g++.dg/modules/indirect-[13]_[bc].C: Likewise.
+	* g++.dg/modules/indirect-4_b.C: Likewise.
+	* g++.dg/modules/late-ret-3_a.H: Likewise.
+	* g++.dg/modules/scc-1.C: Likewise.
+	* g++.dg/modules/vmort-2_[abc].C: Likewise.
+
 2019-09-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

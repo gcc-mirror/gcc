@@ -4400,7 +4400,8 @@ no_linkage_error (tree decl)
     /* In C++11 it's ok if the decl is defined.  */
     return;
 
-  if (MAYBE_DECL_MODULE_OWNER (decl) >= MODULE_IMPORT_BASE)
+  if (DECL_LANG_SPECIFIC (decl)
+      && DECL_MODULE_OWNER (decl) >= MODULE_IMPORT_BASE)
     /* An imported decl is ok.  */
     return;
 
@@ -4409,6 +4410,7 @@ no_linkage_error (tree decl)
     /* The type that got us on no_linkage_decls must have gotten a name for
        linkage purposes.  */;
   else if (CLASS_TYPE_P (t) && TYPE_BEING_DEFINED (t))
+    // FIXME: This is now invalid, as a DR to c++98
     /* The type might end up having a typedef name for linkage purposes.  */
     vec_safe_push (no_linkage_decls, decl);
   else if (TYPE_UNNAMED_P (t))

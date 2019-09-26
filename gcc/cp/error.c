@@ -179,12 +179,28 @@ dump_module_suffix (cxx_pretty_printer *pp, tree decl)
   if (!modules_p ())
     return;
 
-  if (const char *module = module_name (decl))
+  if (TREE_CODE (decl) != CONST_DECL
+      || !DECL_CONTEXT (decl)
+      || !UNSCOPED_ENUM_P (DECL_CONTEXT (decl)))
     {
-      pp_character (pp, '@');
-      pp->padding = pp_none;
-      pp_string (pp, module);
+      if (!DECL_NAMESPACE_SCOPE_P (decl))
+	return;
+
+      if (TREE_CODE (decl) == NAMESPACE_DECL
+	  && !DECL_NAMESPACE_ALIAS (decl)
+	  && (TREE_PUBLIC (decl) || !TREE_PUBLIC (CP_DECL_CONTEXT (decl))))
+	return;
     }
+
+  tree origin = get_module_owner (decl);
+  if (DECL_LANG_SPECIFIC (origin))
+    if (unsigned m = DECL_MODULE_OWNER (origin))
+      if (const char *n = module_name (m, false))
+	{
+	  pp_character (pp, '@');
+	  pp->padding = pp_none;
+	  pp_string (pp, n);
+	}
 }
 
 /* Dump a scope, if deemed necessary.  */

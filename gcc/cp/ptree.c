@@ -58,12 +58,22 @@ cxx_print_decl (FILE *file, tree node, int indent)
     }
 
   bool need_indent = true;
-  if (unsigned mod = MAYBE_DECL_MODULE_OWNER (node))
+
+  if (TREE_CODE (node) == FUNCTION_DECL
+      || TREE_CODE (node) == VAR_DECL
+      || TREE_CODE (node) == TYPE_DECL
+      || TREE_CODE (node) == TEMPLATE_DECL
+      || TREE_CODE (node) == NAMESPACE_DECL)
     {
-      if (need_indent)
-	indent_to (file, indent + 3);
-      fprintf (file, " module %d:%s", mod, module_name (mod));
-      need_indent = false;
+      tree d = STRIP_TEMPLATE (node);
+      if (DECL_LANG_SPECIFIC (d))
+	if (unsigned m = DECL_MODULE_OWNER (d))
+	  {
+	    if (need_indent)
+	      indent_to (file, indent + 3);
+	    fprintf (file, " module %d:%s", m, module_name (m, true));
+	    need_indent = false;
+	  }
     }
 
   if (DECL_MODULE_EXPORT_P (node))

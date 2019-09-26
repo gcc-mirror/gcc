@@ -1674,20 +1674,24 @@ check_constraint_info (tree t)
    numbers are related.  */
 #define MODULE_SLOT_CURRENT 0	/* Slot for current TU.  */
 #define MODULE_SLOT_GLOBAL 1	/* Slot for merged global module. */
-#define MODULE_SLOT_PARTITION 2 /* Slot for merged partition entities.  */
+#define MODULE_SLOT_PARTITION 2 /* Slot for merged partition entities
+				   (optional).  */
 #define MODULE_SLOTS_FIXED 2	/* Number of always-allocated slots.  */
 
-/* The owning module of a DECL.  */
+#define DECL_MODULE_OWNER_CHECK(NODE) \
+  TREE_CHECK5(NODE,FUNCTION_DECL,VAR_DECL,TYPE_DECL,TEMPLATE_DECL,NAMESPACE_DECL)
+
+/* The owning module of a DECL.  Held on any decl that can have
+   independent declaration and definition (function, var, type, or
+   namespace.  templates hold it on their template_result).  */
 #define DECL_MODULE_OWNER(N) \
-  (DECL_LANG_SPECIFIC (N)->u.base.module_owner)
+  (DECL_LANG_SPECIFIC (DECL_MODULE_OWNER_CHECK (N))->u.base.module_owner)
 
-/* Whether this is an exported DECL.  */
-#define DECL_MODULE_EXPORT_P(NODE) \
-  TREE_LANG_FLAG_3 (DECL_CHECK (NODE))
-
-/* Any namespace-scope decl lacking lang-specific is in no module.  */
-#define MAYBE_DECL_MODULE_OWNER(N)				\
-  (DECL_LANG_SPECIFIC (N) ? DECL_MODULE_OWNER (N) : MODULE_NONE)
+/* Whether this is an exported DECL.  Held on any decl that can
+   appear at namespace scope (function, var, type, template, const or
+   namespace).  templates copy from their template_result, consts
+   have it for unscoped enums.  */
+#define DECL_MODULE_EXPORT_P(NODE) TREE_LANG_FLAG_3 (NODE)
 
 
 enum cp_tree_node_structure_enum {
@@ -6867,6 +6871,12 @@ extern module_state *get_module (tree name, module_state *parent = NULL,
 extern void module_preprocess (mkdeps *, module_state *, int is_module);
 extern bool module_may_redeclare (unsigned);
 extern tree get_module_owner (tree, bool = false) ATTRIBUTE_PURE;
+
+extern void set_declared_module_origin (tree);
+extern void set_implicit_module_origin (tree);
+extern tree get_declared_module_origin (tree) ATTRIBUTE_PURE;
+extern tree get_implicit_module_origin (tree) ATTRIBUTE_PURE;
+
 extern void set_module_owner (tree);
 extern void mangle_module (int m);
 extern void mangle_module_fini ();
@@ -6874,7 +6884,6 @@ extern bool module_normal_import_p (unsigned m);
 extern void lazy_load_binding (unsigned mod, tree ns, tree id,
 			       mc_slot *mslot, bool outermost);
 extern void lazy_load_specializations (tree tmpl);
-extern void fixup_unscoped_enum_owner (tree);
 extern bool import_module (module_state *, location_t, bool, tree,
 			   cpp_reader *, bool in_extern_c);
 extern bool declare_module (module_state *, location_t, bool, tree,
@@ -6885,8 +6894,7 @@ extern cpp_macro *module_cpp_deferred_macro (cpp_reader *,
 					     location_t, cpp_hashnode *);
 extern void init_module_processing (cpp_reader *);
 extern void finish_module_processing (cpp_reader *);
-extern char const *module_name (unsigned);
-extern char const *module_name (tree decl);
+extern char const *module_name (unsigned, bool header_ok);
 extern bitmap get_import_bitmap ();
 extern bitmap module_visible_instantiation_path (bitmap *);
 extern void module_begin_main_file (cpp_reader *, line_maps *,

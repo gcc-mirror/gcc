@@ -6450,14 +6450,10 @@ layout_class_type (tree t, tree *virtuals_p)
       tree base_t = make_node (TREE_CODE (t));
       tree base_d = create_implicit_typedef (as_base_identifier, base_t);
 
-      if (unsigned mod = MAYBE_DECL_MODULE_OWNER (TYPE_NAME (t)))
-	{
-	  retrofit_lang_decl (base_d);
-	  DECL_MODULE_OWNER (base_d) = mod;
-	}
-
       TYPE_CONTEXT (base_t) = t;
       DECL_CONTEXT (base_d) = t;
+
+      set_implicit_module_origin (base_d);
 
       /* If the ABI version is not at least two, and the last
 	 field was a bit-field, RLI may not be on a byte

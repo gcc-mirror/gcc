@@ -2995,7 +2995,7 @@ public:
 private:
   bool tree_decl (tree, walk_kind ref, bool looking_inside);
   bool tree_type (tree, walk_kind ref, bool looking_inside);
-  void tree_namespace (tree, walk_kind ref, tree inner_decl);
+  void tree_namespace (tree, walk_kind ref, tree);
 
  public:
   /* Serialize various definitions. */
@@ -3264,7 +3264,8 @@ trees_in::assert_definition (tree decl ATTRIBUTE_UNUSED,
        be present.  */
     gcc_assert (get_dupness (decl) < DUP_dup
 		? !note_defs->contains (decl)
-		: (MAYBE_DECL_MODULE_OWNER (decl) == MODULE_NONE
+		: (!DECL_LANG_SPECIFIC (decl)
+		   || DECL_MODULE_OWNER (decl) == MODULE_NONE
 		   || note_defs->contains (decl)));
 
   if (TREE_CODE (decl) == TEMPLATE_DECL)
@@ -4061,7 +4062,15 @@ dumper::impl::nested_name (tree t)
 	    || nested_name (ctx))
 	  fputs ("::", stream);
 
-      owner = MAYBE_DECL_MODULE_OWNER (t);
+      if (TREE_CODE (t) == FUNCTION_DECL
+	  || TREE_CODE (t) == VAR_DECL
+	  || TREE_CODE (t) == TYPE_DECL
+	  || (TREE_CODE (t) == TEMPLATE_DECL && DECL_TEMPLATE_RESULT (t)))
+	{
+	  tree origin = get_module_owner (t, true);
+	  if (DECL_LANG_SPECIFIC (origin))
+	    owner = DECL_MODULE_OWNER (origin);
+	}
 
       int use_tpl;
       ti = node_template_info (t, use_tpl);
@@ -6575,12 +6584,23 @@ trees_out::tree_node_bools (tree t)
     {
     case tcc_declaration:
       {
-	/* The only decls we should stream out are those from this
-	   module, a partition or the global module.  All other decls
-	   should be by name.  */
-	gcc_checking_assert ((*modules)[MAYBE_DECL_MODULE_OWNER (t)]->remap
-			     < MODULE_IMPORT_BASE || t != get_module_owner (t));
-
+	/* The only nameable decls we should stream out are those from
+	   this module, a partition or the global module.  All other
+	   decls should be by name.  */
+#if CHECKING_P
+	if (TREE_CODE (t) == TEMPLATE_DECL
+	    || TREE_CODE (t) == FUNCTION_DECL
+	    || TREE_CODE (t) == VAR_DECL
+	    || TREE_CODE (t) == TYPE_DECL
+	    || (TREE_CODE (t) == CONST_DECL && DECL_CONTEXT (t)
+		&& TREE_CODE (DECL_CONTEXT (t)) == ENUMERAL_TYPE))
+	  {
+	    tree owner = get_module_owner (t, true);
+	    if (DECL_LANG_SPECIFIC (owner))
+	      gcc_checking_assert ((*modules)[DECL_MODULE_OWNER (owner)]->remap
+				   < MODULE_IMPORT_BASE);
+	  }
+#endif
 	bool specific = DECL_LANG_SPECIFIC (t) != NULL;
 	b (specific);
 	if (specific && VAR_P (t))
@@ -6809,18 +6829,19 @@ trees_out::tree_ctx (tree ctx, bool need_contents, tree inner_decl)
 }
 
 void
-trees_out::tree_namespace (tree ns, walk_kind ref, tree inner_decl)
+trees_out::tree_namespace (tree ns, walk_kind ref, tree)
 {
+  unsigned owner = MODULE_NONE;
+  if (!TREE_PUBLIC (ns))
+    {
+      owner = DECL_MODULE_OWNER (ns);
+      if (owner >= MODULE_IMPORT_BASE)
+	owner = (*modules)[owner]->remap;
+    }
+
   if (streaming_p ())
     {
       i (tt_namespace);
-      unsigned owner = MODULE_NONE;
-      if (!TREE_PUBLIC (ns))
-	{
-	  owner = MAYBE_DECL_MODULE_OWNER (inner_decl);
-	  if (owner >= MODULE_IMPORT_BASE)
-	    owner = (*modules)[owner]->remap;
-	}
       u (owner);
       tree_ctx (CP_DECL_CONTEXT (ns), true, ns);
       tree_node (DECL_NAME (ns));
@@ -6835,8 +6856,7 @@ trees_out::tree_namespace (tree ns, walk_kind ref, tree inner_decl)
     dump (dumper::TREE)
       && dump ("Wrote%s namespace:%d %C:%N@%M",
 	       TREE_PUBLIC (ns) ? " public" : "", tag, TREE_CODE (ns), ns,
-	       TREE_PUBLIC (ns) ? NULL
-	       : (*modules)[MAYBE_DECL_MODULE_OWNER (inner_decl)]);
+	       TREE_PUBLIC (ns) ? NULL : (*modules)[owner]);
 }
 
 /* Reference DECL.  REF indicates the walk kind we are performing.
@@ -6852,12 +6872,6 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 
   if (ref == WK_body || ref == WK_mergeable || ref == WK_clone)
     {
-      /* If we requested by-value, this better not be a cross-module
-	 import.  */
-      gcc_checking_assert ((*modules)[MAYBE_DECL_MODULE_OWNER
-				      (get_module_owner (decl, true))]->remap
-			   < MODULE_IMPORT_BASE);
-
       if (!streaming_p ()
 	  && DECL_MAYBE_IN_CHARGE_CDTOR_P (decl))
 	{
@@ -7137,10 +7151,19 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
          it.  Those that are not there are findable by name, but a
          specializations in that their definitions can be generated
          anywhere -- we need to write them out if we did it.  */
+      // FIXME: Is is true that not all specializations are here, or
+      // was that a deduction from faulty manipulation of the table?
+      // Local specializations are not in the table.  We should know
+      // what they are implicitly (scope is function, or inner is
+      // not var/function/type)?
       depset *dep;
       if (!streaming_p ())
 	{
-	  owner = MAYBE_DECL_MODULE_OWNER (decl);
+	  tree inner = STRIP_TEMPLATE (decl);
+	  gcc_checking_assert (inner == get_module_owner (decl, true));
+
+	  if (DECL_LANG_SPECIFIC (inner))
+	    owner = DECL_MODULE_OWNER (inner);
 	  if (owner >= MODULE_IMPORT_BASE)
 	    owner = (*modules)[owner]->remap;
 
@@ -7175,7 +7198,8 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
   {
     /* Find the owning module and determine what to do.  */
     tree owner_decl = get_module_owner (decl, true);
-    owner = MAYBE_DECL_MODULE_OWNER (owner_decl);
+    if (DECL_LANG_SPECIFIC (owner_decl))
+      owner = DECL_MODULE_OWNER (owner_decl);
     if (owner >= MODULE_IMPORT_BASE)
       owner = (*modules)[owner]->remap;
 
@@ -7233,16 +7257,13 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 		    gcc_checking_assert (TREE_CODE (TREE_TYPE (decl))
 					 == ENUMERAL_TYPE);
 		    proxy = TYPE_VALUES (TREE_TYPE (decl));
-		    if (proxy)
-		      {
-			proxy = TREE_VALUE (proxy);
-			name = DECL_NAME (proxy);
-		      }
-		    else
-		      // FIXME: empty anon enum. but can we get here?
-		      name = NULL_TREE;
+		    /* If the values list is empty, then the enum is
+	  	       empty.  As it's anonymous, how did we manage to
+	  	       refer to it?  */
+		    gcc_checking_assert (proxy);
+		    proxy = TREE_VALUE (proxy);
+		    name = DECL_NAME (proxy);
 		  }
-		gcc_checking_assert (MAYBE_DECL_MODULE_OWNER (proxy) == owner);
 		gcc_checking_assert (TYPE_STUB_DECL (TREE_TYPE (proxy)) == decl);
 		code = tt_anon;
 	      }
@@ -7655,18 +7676,23 @@ trees_out::tree_value (tree t, walk_kind walk)
       start (t);
 
       if (walk == WK_mergeable && !state->is_header ())
-	/* Tell the importer whether this is a global module entity,
-	   or a module entity.  This bool merges into the next block
-	   of bools.  Sneaky.  */
-	b (MAYBE_DECL_MODULE_OWNER (t) != MODULE_NONE);
+	{
+	  /* Tell the importer whether this is a global module entity,
+	     or a module entity.  This bool merges into the next block
+	     of bools.  Sneaky.  */
+	  tree inner = STRIP_TEMPLATE (t);
+	  bool is_mod = false;
+	  if (DECL_LANG_SPECIFIC (inner))
+	    is_mod = DECL_MODULE_OWNER (inner) != MODULE_NONE;
+	  b (is_mod);
+	}
       tree_node_bools (t);
     }
 
   int tag = insert (t, walk);
   if (streaming_p ())
     dump (dumper::TREE)
-      && dump ("Writing:%d %C:%N%S%s", tag, TREE_CODE (t), t, t,
-	       DECL_P (t) && DECL_MODULE_EXPORT_P (t) ? " (exported)" : "");
+      && dump ("Writing:%d %C:%N%S", tag, TREE_CODE (t), t, t);
 
   if (walk != WK_body)
     walk = WK_merging;
@@ -10515,6 +10541,21 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
   if (ek == EK_UNNAMED)
     /* Unnameable things are not namespace scope  */
     gcc_checking_assert (TREE_CODE (CP_DECL_CONTEXT (decl)) != NAMESPACE_DECL);
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    {
+      /* The template should have copied these from its result decl.  */
+      tree res = DECL_TEMPLATE_RESULT (decl);
+      gcc_checking_assert (DECL_MODULE_EXPORT_P (decl)
+			   == DECL_MODULE_EXPORT_P (res));
+      // FIXME: in template fns, vars are themselves templates.  But
+      // are local instantiations, I don;t think they can end up in
+      // the instantiation table, and so we shouldn't depend on them
+      // here.  See the comment in trees_out::tree_decl about having
+      // to look to see if we can find it there.
+      if (TREE_CODE (DECL_CONTEXT (decl)) != FUNCTION_DECL)
+	gcc_checking_assert (DECL_MODULE_OWNER (decl)
+			     == DECL_MODULE_OWNER (res));
+    }
 
   depset **slot = entity_slot (decl, !is_for_mergeable ());
   if (!slot)
@@ -10611,8 +10652,6 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	      // CWG, it is weird.
 	      /* A reachable global module fragment entity.  Add
 		 it to its scope's binding depset.  */
-	      gcc_checking_assert (MAYBE_DECL_MODULE_OWNER (decl)
-				   == MODULE_NONE);
 	      depset **bslot = binding_slot (ctx, DECL_NAME (decl), true);
 	      depset *bdep = *bslot;
 	      if (!bdep)
@@ -10730,14 +10769,22 @@ depset::hash::add_binding (tree ns, tree value)
 			     && !DECL_NAMESPACE_ALIAS (decl)));
       // FIXME:Distinguish GMF usings from purview usings.
 
-      if (MAYBE_DECL_MODULE_OWNER (decl) == MODULE_NONE)
+      tree inner = decl;
+
+      if (TREE_CODE (inner) == CONST_DECL
+	  && TREE_CODE (DECL_CONTEXT (inner)) == ENUMERAL_TYPE)
+	inner = TYPE_STUB_DECL (DECL_CONTEXT (inner));
+      else if (TREE_CODE (inner) == TEMPLATE_DECL)
+	inner = DECL_TEMPLATE_RESULT (inner);
+
+      if (!DECL_LANG_SPECIFIC (inner)
+	  || DECL_MODULE_OWNER (inner) == MODULE_NONE)
 	/* Ignore global module fragment entities.  */
 	continue;
 
-      tree not_tmpl = STRIP_TEMPLATE (decl);
-      if (TREE_CODE (not_tmpl) != CONST_DECL
-	  && TREE_CODE (not_tmpl) != TYPE_DECL
-	  && DECL_THIS_STATIC (not_tmpl))
+      if ((TREE_CODE (inner) == VAR_DECL
+	   || TREE_CODE (inner) == FUNCTION_DECL)
+	  && DECL_THIS_STATIC (inner))
 	{
 	  if (!header_module_p ())
 	    /* Ignore internal-linkage entitites.  */
@@ -10766,7 +10813,9 @@ depset::hash::add_binding (tree ns, tree value)
 	  // FIXME: name-lookup should preserve this, but we tend to
 	  // drop it for non-function decls :(
 	  maybe_using = ovl_make (decl, NULL_TREE);
-	  if (DECL_MODULE_EXPORT_P (decl))
+	  if (DECL_MODULE_EXPORT_P (TREE_CODE (decl) == CONST_DECL
+				    ? TYPE_STUB_DECL (TREE_TYPE (decl))
+				    : STRIP_TEMPLATE (decl)))
 	    OVL_EXPORT_P (maybe_using) = true;
 	  ek = depset::EK_USING;
 	}
@@ -11086,11 +11135,14 @@ depset::hash::add_specializations (bool decl_p)
 	    }
 	}
 
+      gcc_checking_assert (STRIP_TEMPLATE (spec)
+			   == get_module_owner (spec, true));
+
       bool needs_reaching = false;
       if (use_tpl == 1)
 	/* Implicit instantiations only walked if we reach them.  */
 	needs_reaching = true;
-      else if (!MAYBE_DECL_MODULE_OWNER (spec))
+      else if (DECL_MODULE_OWNER (spec) == MODULE_NONE)
 	/* Likewise, GMF entities.  */
 	needs_reaching = true;
 
@@ -11111,8 +11163,9 @@ depset::hash::add_specializations (bool decl_p)
     have_spec:;
 #endif
 
-      unsigned owner = MAYBE_DECL_MODULE_OWNER (spec);
+      unsigned owner = DECL_MODULE_OWNER (spec);
       if (owner >= MODULE_IMPORT_BASE)
+	// FIXME: We should just always allow remapping
 	owner = (*modules)[owner]->remap;
       depset *dep = add_dependency (spec, depset::EK_SPECIALIZATION,
 				    owner >= MODULE_IMPORT_BASE);
@@ -11319,7 +11372,9 @@ binding_cmp (const void *a_, const void *b_)
       a_ent = OVL_FUNCTION (a_ent);
     }
   else
-    a_export = DECL_MODULE_EXPORT_P (a_ent);
+    a_export = DECL_MODULE_EXPORT_P (TREE_CODE (a_ent) == CONST_DECL
+				     ? TYPE_STUB_DECL (TREE_TYPE (a_ent))
+				     : STRIP_TEMPLATE (a_ent));
   
   bool b_using = b->get_entity_kind () == depset::EK_USING;
   bool b_export;
@@ -11329,7 +11384,9 @@ binding_cmp (const void *a_, const void *b_)
       b_ent = OVL_FUNCTION (b_ent);
     }
   else
-    b_export = DECL_MODULE_EXPORT_P (b_ent);
+    b_export = DECL_MODULE_EXPORT_P (TREE_CODE (b_ent) == CONST_DECL
+				     ? TYPE_STUB_DECL (TREE_TYPE (b_ent))
+				     : STRIP_TEMPLATE (b_ent));
 
   /* Non-exports before exports.  */
   if (a_export != b_export)
@@ -13457,12 +13514,13 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		      bool is_imported = d->is_import ();
 		      gcc_checking_assert (is_imported == !d->cluster);
 		      sec.u (ct_horcrux);
-		      unsigned owner = 0;
+		      unsigned owner = MODULE_NONE;
 		      unsigned index = d->cluster - 1;
 		      if (is_imported)
 			{
 			  tree o_decl = get_module_owner (u_decl);
-			  owner = MAYBE_DECL_MODULE_OWNER (o_decl);
+			  if (DECL_LANG_SPECIFIC (o_decl))
+			    owner = DECL_MODULE_OWNER (o_decl);
 			  module_state *import = (*modules)[owner];
 			  /* It must be in the unnamed map.  */
 			  index = *unnamed_map->get (DECL_UID (u_decl));
@@ -13622,7 +13680,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		    gcc_assert (!DECL_IMPLICIT_TYPEDEF_P (decl) || !jx);
 		    if (dep->is_hidden ())
 		      flags |= cbf_hidden;
-		    else if (DECL_MODULE_EXPORT_P (decl))
+		    else if (DECL_MODULE_EXPORT_P (STRIP_TEMPLATE (decl)))
 		      flags |= cbf_export;
 		  }
 
@@ -14234,9 +14292,10 @@ module_state::write_unnamed (elf_out *to, vec<depset *> depsets,
 	  if (d->get_entity_kind () == depset::EK_SPECIALIZATION)
 	    {
 	      tree key = get_module_owner (uent);
-	      unsigned owner = MAYBE_DECL_MODULE_OWNER (key);
+	      unsigned owner = (DECL_LANG_SPECIFIC (key)
+				? DECL_MODULE_OWNER (key) : MODULE_NONE);
 	      unsigned import_kind = MODULE_IMPORT_BASE;
-	      if (owner)
+	      if (owner != MODULE_NONE)
 		{
 		  module_state *import = (*modules)[owner];
 
@@ -16726,35 +16785,14 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
    including dots.  */
 
 char const *
-module_name (unsigned ix)
+module_name (unsigned ix, bool header_ok)
 {
   module_state *imp = (*modules)[ix];
 
   if (!imp->name)
     imp = imp->parent;
 
-  return imp->get_flatname ();
-}
-
-char const *
-module_name (tree decl)
-{
-  if (TREE_CODE (decl) == NAMESPACE_DECL
-      ? !DECL_NAMESPACE_ALIAS (decl)
-      : !DECL_NAMESPACE_SCOPE_P (decl))
-    return NULL;
-
-  if (unsigned owner = MAYBE_DECL_MODULE_OWNER (decl))
-    {
-      module_state *module = (*modules)[owner];
-      if (!module->name)
-	module = module->parent;
-
-      if (!module->is_header ())
-	return module->get_flatname ();
-    }
-
-  return NULL;
+  return header_ok || !imp->is_header () ? imp->get_flatname () : NULL;
 }
 
 /* Return the bitmap describing what modules are imported.  Remember,
@@ -16796,13 +16834,14 @@ module_visible_instantiation_path (bitmap *path_map_p)
 	  if (TYPE_P (decl))
 	    decl = TYPE_STUB_DECL (decl);
 	  decl = get_module_owner (decl);
-	  if (unsigned mod = MAYBE_DECL_MODULE_OWNER (decl))
-	    if (!bitmap_bit_p (path_map, mod))
-	      {
-		bitmap_set_bit (path_map, mod);
-		bitmap imports = (*modules)[mod]->imports;
-		bitmap_ior_into (visible, imports);
-	      }
+	  if (DECL_LANG_SPECIFIC (decl))
+	    if (unsigned mod = DECL_MODULE_OWNER (decl))
+	      if (!bitmap_bit_p (path_map, mod))
+		{
+		  bitmap_set_bit (path_map, mod);
+		  bitmap imports = (*modules)[mod]->imports;
+		  bitmap_ior_into (visible, imports);
+		}
 	}
       *path_map_p = path_map;
     }
@@ -16841,7 +16880,15 @@ module_state::set_import (module_state const *other, bool is_export)
 tree
 get_module_owner (tree decl, bool inst_owner_p)
 {
-  gcc_checking_assert (TREE_CODE (decl) != NAMESPACE_DECL);
+  tree not_tmpl = STRIP_TEMPLATE (decl);
+
+  // FIXME: Have it return NULL for wrong things
+  gcc_checking_assert (TREE_CODE (not_tmpl) == FUNCTION_DECL
+		       || TREE_CODE (not_tmpl) == VAR_DECL
+		       || TREE_CODE (not_tmpl) == TYPE_DECL
+		       || (TREE_CODE (not_tmpl) == CONST_DECL
+			   && (TREE_CODE (CP_DECL_CONTEXT (not_tmpl))
+			       == ENUMERAL_TYPE)));
 
   for (tree ctx;; decl = ctx)
     {
@@ -16850,8 +16897,8 @@ get_module_owner (tree decl, bool inst_owner_p)
       if (use > 0)
 	{
 	  if (inst_owner_p)
-	    return decl;
-	  decl = DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti));
+	    break;
+	  decl = TI_TEMPLATE (ti);
 	}
 
       ctx = CP_DECL_CONTEXT (decl);
@@ -16869,14 +16916,6 @@ get_module_owner (tree decl, bool inst_owner_p)
     }
 
   decl = STRIP_TEMPLATE (decl);
-  
-  /* An enumeration is controlled by its enum-decl.  Its
-     enumerations may not have that as DECL_CONTEXT.  */
-  if (TREE_CODE (decl) == CONST_DECL
-      && TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE
-      /*
-	&& DECL_CONTEXT (decl) == DECL_CONTEXT (TYPE_NAME (TREE_TYPE (decl)))*/)
-    decl = TYPE_NAME (TREE_TYPE (decl));
 
   return decl;
 }
@@ -16895,8 +16934,20 @@ module_may_redeclare (unsigned from)
   return (*modules)[from]->is_primary ();
 }
 
-/* Set the module EXPORT and OWNER fields on DECL.  Only
-   namespace-scope entites get this.  */
+/* DECL is being created by this TU.  Record it came from here.  */
+
+void
+set_implicit_module_origin (tree decl)
+{
+  if (!modules_p ())
+    return;
+
+  retrofit_lang_decl (decl);
+  DECL_MODULE_OWNER (decl)
+    = module_purview_p () ? MODULE_PURVIEW : MODULE_NONE;
+}
+
+/* Set the module EXPORT and OWNER fields on explicit DECL.  */
 
 void
 set_module_owner (tree decl)
@@ -16904,16 +16955,13 @@ set_module_owner (tree decl)
   if (!modules_p ())
     return;
 
+  set_implicit_module_origin (decl);
+
   int use_tpl = -1;
   node_template_info (decl, use_tpl);
   if (use_tpl > 0)
-    {
-      /* Some kind of specialization.  */
-      retrofit_lang_decl (decl);
-      DECL_MODULE_OWNER (decl)
-	= module_purview_p () ? MODULE_PURVIEW : MODULE_NONE;
-      return;
-    }
+    /* Some kind of specialization.  */
+    return;
 
   if (!DECL_NAMESPACE_SCOPE_P (decl))
     return;
@@ -16924,36 +16972,10 @@ set_module_owner (tree decl)
 
   if (module_purview_p ())
     {
-      retrofit_lang_decl (decl);
-      DECL_MODULE_OWNER (decl) = MODULE_PURVIEW;
-
       if (module_exporting_p ())
 	{
 	  gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL);
 	  DECL_MODULE_EXPORT_P (decl) = true;
-	}
-    }
-}
-
-/* ENUMTYPE is an unscoped enum in namespace scope.  Fixup its
-   CONST_DECLs to match the enum's TYPE_DECL.  */
-
-void
-fixup_unscoped_enum_owner (tree enumtype)
-{
-  tree tdef = TYPE_NAME (enumtype);
-  if (unsigned owner = MAYBE_DECL_MODULE_OWNER (tdef))
-    {
-      bool exported = DECL_MODULE_EXPORT_P (tdef);
-
-      for (tree values = TYPE_VALUES (enumtype); values;
-	   values = TREE_CHAIN (values))
-	{
-	  tree decl = TREE_VALUE (values);
-
-	  DECL_MODULE_EXPORT_P (decl) = exported;
-	  retrofit_lang_decl (decl);
-	  DECL_MODULE_OWNER (decl) = owner;
 	}
     }
 }
