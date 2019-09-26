@@ -1,3 +1,10 @@
+2019-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91896
+	* tree-vect-loop.c (vectorizable_reduction): The single
+	def-use cycle optimization cannot apply when there's more
+	than one pattern stmt involved.
+
 2019-09-26  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_analyze_loop_operations): Analyze
