@@ -1,3 +1,11 @@
+2019-09-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_simd32_ok_nocache): New procedure.
+	(check_effective_target_arm_simd32_ok): Likewise.
+	(add_options_for_arm_simd32): Likewise.
+	* gcc.target/arm/acle/simd32.c: New test.
+
 2019-09-26  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/arm/fp16-compile-alt-3.c: Expect (__fp16) -2.0

@@ -1,3 +1,21 @@
+2019-09-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (arm_<simd32_op>): New define_insn.
+	(arm_<sup>xtb16): Likewise.
+	(arm_usada8): Likewise.
+	* config/arm/arm_acle.h (__qadd8, __qsub8, __shadd8, __shsub8,
+	__uhadd8, __uhsub8, __uqadd8, __uqsub8, __qadd16, __qasx, __qsax,
+	__qsub16, __shadd16, __shasx, __shsax, __shsub16, __uhadd16, __uhasx,
+	__uhsax, __uhsub16, __uqadd16, __uqasx, __uqsax, __uqsub16, __sxtab16,
+	__sxtb16, __uxtab16, __uxtb16): Define.
+	* config/arm/arm_acle_builtins.def: Define builtins for the above.
+	* config/arm/unspecs.md: Define unspecs for the above.
+	* config/arm/iterators.md (SIMD32_NOGE_BINOP): New int_iterator.
+	(USXTB16): Likewise.
+	(simd32_op): New int_attribute.
+	(sup): Handle UNSPEC_SXTB16, UNSPEC_UXTB16.
+	* doc/sourcebuild.exp (arm_simd32_ok): Document.
+
 2019-09-26  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-sra.c (verify_splitting_accesses): Fix quoting in a call to

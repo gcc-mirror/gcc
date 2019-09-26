@@ -5058,6 +5058,36 @@
    (set_attr "predicable" "yes")]
 )
 
+(define_insn "arm_<sup>xtb16"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand" "r")] USXTB16))]
+  "TARGET_INT_SIMD"
+  "<sup>xtb16%?\\t%0, %1"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "alu_dsp_reg")])
+
+(define_insn "arm_<simd32_op>"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand" "r")
+	   (match_operand:SI 2 "s_register_operand" "r")] SIMD32_NOGE_BINOP))]
+  "TARGET_INT_SIMD"
+  "<simd32_op>%?\\t%0, %1, %2"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "alu_dsp_reg")])
+
+(define_insn "arm_usada8"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand" "r")
+	   (match_operand:SI 2 "s_register_operand" "r")
+	   (match_operand:SI 3 "s_register_operand" "r")] UNSPEC_USADA8))]
+  "TARGET_INT_SIMD"
+  "usada8%?\\t%0, %1, %2, %3"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "alu_dsp_reg")])
+
 (define_expand "extendsfdf2"
   [(set (match_operand:DF                  0 "s_register_operand")
 	(float_extend:DF (match_operand:SF 1 "s_register_operand")))]
