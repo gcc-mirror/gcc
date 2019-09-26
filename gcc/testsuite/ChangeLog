@@ -1,3 +1,9 @@
+2019-09-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/arm/fp16-compile-alt-3.c: Expect (__fp16) -2.0
+	to be written as a negative short rather than a positive one.
+	* gcc.target/arm/fp16-compile-ieee-3.c: Likewise.
+
 2019-09-26  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/91885
