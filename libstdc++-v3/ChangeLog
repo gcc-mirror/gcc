@@ -1,5 +1,8 @@
 2019-09-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/internet (operator==, operator<): Fix loop
+	condition to avoid reading past the end of the array.
+
 	* include/std/array: Remove references to profile mode.
 	* include/std/bitset: Likewise.
 	* include/std/deque: Likewise.
