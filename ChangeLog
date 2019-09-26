@@ -1,3 +1,7 @@
+2019-09-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* MAINTAINERS: Add myself as an aarch64 maintainer.
+
 2019-09-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* MAINTAINERS: Add myself as aarch64 maintainer.
