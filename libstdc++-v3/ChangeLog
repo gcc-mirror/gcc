@@ -1,5 +1,13 @@
 2019-09-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_pair.h (pair): Add _GLIBCXX20_CONSTEXPR to
+	piecewise construction constructor, assignment operators, and swap.
+	* include/std/tuple (pair::pair(piecewise_construct_t, tuple, tuple)):
+	Add _GLIBCXX20_CONSTEXPR.
+	(pair::pair(tuple, tuple, _Index_tuple, _Index_tuple)): Likewise.
+	* testsuite/20_util/pair/constexpr_assign.cc: New test.
+	* testsuite/20_util/pair/constexpr_swap.cc: New test.
+
 	* include/experimental/internet (operator==, operator<): Fix loop
 	condition to avoid reading past the end of the array.
 
