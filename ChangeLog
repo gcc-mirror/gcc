@@ -1,3 +1,7 @@
+2019-09-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* MAINTAINERS: Add myself as aarch64 maintainer.
+
 2019-09-23  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/vsx.md (xxswapd_v4si, xxswapd_v8hi, xxswapd_v16qi):
