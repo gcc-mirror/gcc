@@ -2239,7 +2239,7 @@ process_scan_results (cgraph_node *node, struct function *fun,
        desc_index++, parm = DECL_CHAIN (parm))
     {
       gensum_param_desc *desc = &(*param_descriptions)[desc_index];
-      if (!desc->locally_unused && !desc->split_candidate)
+      if (!desc->split_candidate)
 	continue;
 
       if (flag_checking)
