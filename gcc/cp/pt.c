@@ -10941,7 +10941,6 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
 static void
 perform_typedefs_access_check (tree tmpl, tree targs)
 {
-  location_t saved_location;
   unsigned i;
   qualified_typedef_usage_t *iter;
 
@@ -10950,7 +10949,6 @@ perform_typedefs_access_check (tree tmpl, tree targs)
 	  && TREE_CODE (tmpl) != FUNCTION_DECL))
     return;
 
-  saved_location = input_location;
   FOR_EACH_VEC_SAFE_ELT (get_types_needing_access_check (tmpl), i, iter)
     {
       tree type_decl = iter->typedef_decl;
@@ -10966,12 +10964,11 @@ perform_typedefs_access_check (tree tmpl, tree targs)
 
       /* Make access check error messages point to the location
          of the use of the typedef.  */
-      input_location = iter->locus;
+      iloc_sentinel ils (iter->locus);
       perform_or_defer_access_check (TYPE_BINFO (type_scope),
 				     type_decl, type_decl,
 				     tf_warning_or_error);
     }
-    input_location = saved_location;
 }
 
 static tree

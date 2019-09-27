@@ -1,3 +1,10 @@
+2019-09-27  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (class iloc_sentinel): New.
+	* decl.c (grokdeclarator, finish_enum_value_list): Use it.
+	* mangle.c (mangle_decl_string): Use it.
+	* pt.c (perform_typedefs_access_check): Use it.
+
 2019-09-27  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* cp-tree.h (build_cxx_call): Take the original function decl

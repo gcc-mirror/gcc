@@ -1762,6 +1762,24 @@ public:
   ~warning_sentinel() { flag = val; }
 };
 
+/* RAII sentinel to temporarily override input_location.  This will not set
+   input_location to UNKNOWN_LOCATION or BUILTINS_LOCATION.  */
+
+class iloc_sentinel
+{
+  location_t saved_loc;
+public:
+  iloc_sentinel (location_t loc): saved_loc (input_location)
+  {
+    if (loc >= RESERVED_LOCATION_COUNT)
+      input_location = loc;
+  }
+  ~iloc_sentinel ()
+  {
+    input_location = saved_loc;
+  }
+};
+
 /* RAII sentinel that saves the value of a variable, optionally
    overrides it right away, and restores its value when the sentinel
    id destructed.  */
