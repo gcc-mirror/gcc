@@ -123,3 +123,22 @@
   }
 )
 
+;; Unpredicated signed / unsigned shift-right accumulate.
+(define_insn_and_rewrite "*aarch64_sve2_sra<mode>"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w")
+	(plus:SVE_I
+	  (unspec:SVE_I
+	    [(match_operand 4)
+	     (SHIFTRT:SVE_I
+	       (match_operand:SVE_I 2 "register_operand" "w")
+	       (match_operand:SVE_I 3 "aarch64_simd_rshift_imm" "Dr"))]
+	    UNSPEC_PRED_X)
+	 (match_operand:SVE_I 1 "register_operand" "0")))]
+  "TARGET_SVE2"
+  "<sra_op>sra\t%0.<Vetype>, %2.<Vetype>, #%3"
+  "&& !CONSTANT_P (operands[4])"
+  {
+    operands[4] = CONSTM1_RTX (<VPRED>mode);
+  }
+)
+
