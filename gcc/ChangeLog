@@ -1,5 +1,11 @@
 2019-09-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target.def (check_builtin_call): New target hook.
+	* doc/tm.texi.in (TARGET_CHECK_BUILTIN_CALL): New @hook.
+	* doc/tm.texi: Regenerate.
+
+2019-09-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR tree-optimization/91909
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Take a
 	reduc_index parameter.  When handling COND_REDUCTION, make sure
