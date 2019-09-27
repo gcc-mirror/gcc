@@ -4073,11 +4073,7 @@ dumper::impl::nested_name (tree t)
 	  || TREE_CODE (t) == VAR_DECL
 	  || TREE_CODE (t) == TYPE_DECL
 	  || (TREE_CODE (t) == TEMPLATE_DECL && DECL_TEMPLATE_RESULT (t)))
-	{
-	  tree origin = get_module_owner (t, true);
-	  if (DECL_LANG_SPECIFIC (origin))
-	    owner = DECL_MODULE_OWNER (origin);
-	}
+	owner = get_instantiating_module (t);
 
       int use_tpl;
       ti = node_template_info (t, use_tpl);
@@ -6601,12 +6597,8 @@ trees_out::tree_node_bools (tree t)
 	    || TREE_CODE (t) == TYPE_DECL
 	    || (TREE_CODE (t) == CONST_DECL && DECL_CONTEXT (t)
 		&& TREE_CODE (DECL_CONTEXT (t)) == ENUMERAL_TYPE))
-	  {
-	    tree owner = get_module_owner (t, true);
-	    if (DECL_LANG_SPECIFIC (owner))
-	      gcc_checking_assert ((*modules)[DECL_MODULE_OWNER (owner)]->remap
-				   < MODULE_IMPORT_BASE);
-	  }
+	  gcc_checking_assert ((*modules)[get_instantiating_module (t)]->remap
+			       < MODULE_IMPORT_BASE);
 #endif
 	bool specific = DECL_LANG_SPECIFIC (t) != NULL;
 	b (specific);
@@ -7166,11 +7158,9 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
       depset *dep;
       if (!streaming_p ())
 	{
-	  tree inner = STRIP_TEMPLATE (decl);
-	  gcc_checking_assert (inner == get_module_owner (decl, true));
-
-	  if (DECL_LANG_SPECIFIC (inner))
-	    owner = DECL_MODULE_OWNER (inner);
+	  gcc_checking_assert (STRIP_TEMPLATE (decl)
+			       == get_instantiating_module_decl (decl));
+	  owner = get_instantiating_module (decl);
 	  if (owner >= MODULE_IMPORT_BASE)
 	    owner = (*modules)[owner]->remap;
 
@@ -7204,9 +7194,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 
   {
     /* Find the owning module and determine what to do.  */
-    tree owner_decl = get_module_owner (decl, true);
-    if (DECL_LANG_SPECIFIC (owner_decl))
-      owner = DECL_MODULE_OWNER (owner_decl);
+    owner = get_instantiating_module (decl);
     if (owner >= MODULE_IMPORT_BASE)
       owner = (*modules)[owner]->remap;
 
@@ -7975,7 +7963,7 @@ trees_in::tree_value (walk_kind walk)
 	case MK_clone:
 	  kind = "clone";
 	  /* Our merging is the same as that of the thing we cloned.  */
-	  if (get_dupness (get_module_owner (container, true))
+	  if (get_dupness (get_instantiating_module_decl (container))
 	      == DUP_dup)
 	    /* The existing clone will be the one following KEY.  */
 	    existing = DECL_CHAIN (key);
@@ -9666,7 +9654,7 @@ trees_in::get_odrness (tree decl, bool have_defn)
   if (!any_deduping)
     return ODR_new;
 
-  tree owner = get_module_owner (decl, true);
+  tree owner = get_instantiating_module_decl (decl);
   dupness dup = get_dupness (owner);
 
   if (dup == DUP_bad)
@@ -11143,7 +11131,7 @@ depset::hash::add_specializations (bool decl_p)
 	}
 
       gcc_checking_assert (STRIP_TEMPLATE (spec)
-			   == get_module_owner (spec, true));
+			   == get_instantiating_module_decl (spec));
 
       bool needs_reaching = false;
       if (use_tpl == 1)
@@ -11172,7 +11160,6 @@ depset::hash::add_specializations (bool decl_p)
 
       unsigned owner = DECL_MODULE_OWNER (spec);
       if (owner >= MODULE_IMPORT_BASE)
-	// FIXME: We should just always allow remapping
 	owner = (*modules)[owner]->remap;
       depset *dep = add_dependency (spec, depset::EK_SPECIALIZATION,
 				    owner >= MODULE_IMPORT_BASE);
@@ -16949,43 +16936,35 @@ get_originating_module (tree decl, bool for_mangle)
   return DECL_MODULE_OWNER (owner);
 }
 
-/* Return the namespace-scope decl that determines the owning module
-   of DECL.  That may be DECL itself, or it may DECL's context, or it
-   may be some other DECL (for instance an unscoped enum's CONST_DECLs
-   are owned by the TYPE_DECL).  */
-
 tree
-get_module_owner (tree decl, bool inst_owner_p)
+get_instantiating_module_decl (tree decl)
 {
-  tree not_tmpl = STRIP_TEMPLATE (decl);
+  if (TREE_CODE (decl) == CONST_DECL
+      && DECL_CONTEXT (decl)
+      && (TREE_CODE (DECL_CONTEXT (decl)) == ENUMERAL_TYPE))
+    decl = TYPE_STUB_DECL (DECL_CONTEXT (decl));
 
-  // FIXME: Have it return NULL for wrong things
-  gcc_checking_assert (TREE_CODE (not_tmpl) == FUNCTION_DECL
-		       || TREE_CODE (not_tmpl) == VAR_DECL
-		       || TREE_CODE (not_tmpl) == TYPE_DECL
-		       || (TREE_CODE (not_tmpl) == CONST_DECL
-			   && (TREE_CODE (CP_DECL_CONTEXT (not_tmpl))
-			       == ENUMERAL_TYPE)));
+  gcc_checking_assert (TREE_CODE (decl) == TEMPLATE_DECL
+		       || TREE_CODE (decl) == FUNCTION_DECL
+		       || TREE_CODE (decl) == TYPE_DECL
+		       || TREE_CODE (decl) == VAR_DECL
+		       || TREE_CODE (decl) == NAMESPACE_DECL);
 
   for (tree ctx;; decl = ctx)
     {
       int use;
-      tree ti = node_template_info (decl, use);
+      node_template_info (decl, use);
       if (use > 0)
-	{
-	  if (inst_owner_p)
-	    break;
-	  decl = TI_TEMPLATE (ti);
-	}
+	// FIXME: Is this right for a local instantiation?
+	break;
 
       ctx = CP_DECL_CONTEXT (decl);
       if (TREE_CODE (ctx) == NAMESPACE_DECL)
 	break;
       if (TYPE_P (ctx))
 	{
-	  if (tree tn = TYPE_STUB_DECL (ctx))
-	    ctx = tn;
-	  else
+	  ctx = TYPE_STUB_DECL (ctx);
+	  if (!ctx)
 	    /* Always return something, global_namespace is a useful
 	       non-owning decl.  */
 	    return global_namespace;
@@ -16997,7 +16976,19 @@ get_module_owner (tree decl, bool inst_owner_p)
   return decl;
 }
 
+unsigned
+get_instantiating_module (tree decl)
+{
+  tree owner = get_instantiating_module_decl (decl);
+
+  if (!DECL_LANG_SPECIFIC (owner))
+    return MODULE_NONE;
+
+  return DECL_MODULE_OWNER (owner);
+}
+
 /* Is it permissible to redeclare an entity with owner FROM.  */
+// FIXME: This needs extending, see its use in duplicate_decls
 
 bool
 module_may_redeclare (unsigned from)
@@ -17043,7 +17034,8 @@ set_module_owner (tree decl)
   if (!DECL_NAMESPACE_SCOPE_P (decl))
     return;
 
-  gcc_checking_assert (STRIP_TEMPLATE (decl) == get_module_owner (decl, true));
+  gcc_checking_assert (STRIP_TEMPLATE (decl)
+		       == get_instantiating_module_decl (decl));
 
   // FIXME: Check ill-formed linkage
 

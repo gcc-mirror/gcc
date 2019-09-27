@@ -1,6 +1,16 @@
 2019-09-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (get_module_owner): Delete.
+	(get_instantiating_module_decl, get_instantiating_module): Declare.
+	* module.cc (get_instantiating_module_decl)
+	(get_instantiating_module): New.
+	(dumper::impl::nested_name, trees_out::tree_node)
+	(trees_out::tree_decl, depset::hash::add_specializations)
+	(set_module_owner): Use them.
+	(get_module_owner): Delete.
+
+	gcc/cp/
 	* cp-tree.h (get_declared_module_origin): Delete.
 	(get_originating_module, get_originating_module_decl): Declare.
 	* module.cc (get_originating_module_decl): New.

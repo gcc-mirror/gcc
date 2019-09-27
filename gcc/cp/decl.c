@@ -1912,18 +1912,21 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       && TREE_CODE (olddecl) != NAMESPACE_DECL
       && !newdecl_is_friend)
     {
-      tree owner = get_module_owner (olddecl, true);
-
       if (DECL_ARTIFICIAL (olddecl))
 	{
-	  gcc_checking_assert (!DECL_LANG_SPECIFIC (owner)
-			       || DECL_MODULE_OWNER (owner) == MODULE_NONE);
+	  gcc_checking_assert (!get_originating_module (olddecl));
 	  if (!(global_purview_p () || not_module_p ()))
 	    error ("declaration %qD conflicts with builtin", newdecl);
 	  set_module_owner (olddecl);
 	}
       else
 	{
+	  // FIXME: push specialization declaration checking elsewhere
+	  // We want to allow specializations when we've not seen one
+	  // from elsewhare, and we want to allow explicit
+	  // instantiations whatever.
+	  tree owner = get_instantiating_module_decl (olddecl);
+
 	  if (DECL_LANG_SPECIFIC (owner)
 	      && !module_may_redeclare (DECL_MODULE_OWNER (owner)))
 	    {
