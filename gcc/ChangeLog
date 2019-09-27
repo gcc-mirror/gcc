@@ -1,3 +1,17 @@
+2019-09-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_stmt_vec_info::reduc_fn): New.
+	(STMT_VINFO_REDUC_FN): Likewise.
+	* tree-vectorizer.c (vec_info::new_stmt_vec_info): Initialize
+	STMT_VINFO_REDUC_FN.
+	* tree-vect-loop.c (vect_is_simple_reduction): Fix STMT_VINFO_REDUC_IDX
+	for condition reductions.
+	(vect_create_epilog_for_reduction): Compute all required state
+	from the stmt to be vectorized.
+	(vectorizable_reduction): Simplify vect_create_epilog_for_reduction
+	invocation and remove then dead code.  For single def-use chains
+	record only a single vector stmt.
+
 2019-09-27  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_builtin_class): New enum.
