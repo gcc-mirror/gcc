@@ -4812,21 +4812,6 @@ push_throw_library_fn (tree name, tree type)
 void
 fixup_anonymous_aggr (tree t)
 {
-  /* Wipe out memory of synthesized methods.  */
-  TYPE_HAS_USER_CONSTRUCTOR (t) = 0;
-  TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 0;
-  TYPE_HAS_COPY_CTOR (t) = 0;
-  TYPE_HAS_CONST_COPY_CTOR (t) = 0;
-  TYPE_HAS_COPY_ASSIGN (t) = 0;
-  TYPE_HAS_CONST_COPY_ASSIGN (t) = 0;
-
-  CLASSTYPE_LAZY_DEFAULT_CTOR (t) = false;
-  CLASSTYPE_LAZY_COPY_CTOR (t) = false;
-  CLASSTYPE_LAZY_MOVE_CTOR (t) = false;
-  CLASSTYPE_LAZY_DESTRUCTOR (t) = false;
-  CLASSTYPE_LAZY_COPY_ASSIGN (t) = false;
-  CLASSTYPE_LAZY_MOVE_ASSIGN (t) = false;
-
   /* Anonymous aggregates cannot have fields with ctors, dtors or complex
      assignment operators (because they cannot have these methods themselves).
      For anonymous unions this is already checked because they are not allowed
@@ -9358,6 +9343,8 @@ grokfndecl (tree ctype,
       && !processing_template_decl)
     deduce_noexcept_on_destructor (decl);
 
+  set_originating_module (decl);
+
   decl = check_explicit_specialization (orig_declarator, decl,
 					template_count,
 					2 * funcdef_flag +
@@ -9366,10 +9353,6 @@ grokfndecl (tree ctype,
 					*attrlist);
   if (decl == error_mark_node)
     return NULL_TREE;
-
-  // FIXME: This should probably go before
-  // check_explicit_specialization, but that fn needs work
-  set_originating_module (decl);
 
   if (DECL_STATIC_FUNCTION_P (decl))
     check_static_quals (decl, quals);
@@ -12874,6 +12857,8 @@ grokdeclarator (const cp_declarator *declarator,
 	      ;  /* We already issued a permerror.  */
 	    else if (decl && DECL_NAME (decl))
 	      {
+		set_originating_module (decl);
+		
 		if (template_class_depth (current_class_type) == 0)
 		  {
 		    decl = check_explicit_specialization
@@ -12883,10 +12868,6 @@ grokdeclarator (const cp_declarator *declarator,
 		      return error_mark_node;
 		  }
 
-		// FIXME: Perhaps before
-		// check_explicit_specialization?  see similar call
-		set_originating_module (decl);
-		
 		decl = do_friend (ctype, unqualified_id, decl,
 				  *attrlist, flags,
 				  funcdef_flag);

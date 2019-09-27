@@ -1,6 +1,12 @@
 2019-09-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* decl.c (fixup_anonymous_aggr): Partially revert recent change.
+	(grokfndecl): Call set_originating_module before determining
+	specialization.
+	(grokdeclarator): Likewise.
+
+	gcc/cp/
 	* cp-tree.h (set_{originating,instantiating}_module): Declare.
 	* class.c (layout_class_type): Use set_instantiating_module.
 	* pt.c (lookup_template_class_1): Likewise.
