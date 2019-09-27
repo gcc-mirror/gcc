@@ -1,3 +1,8 @@
+2019-09-26  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc-interface/decl.c (components_to_record): Set
+	DECL_SIZE_UNIT for zero-sized fields.
+
 2019-09-26  Arnaud Charlet  <charlet@adacore.com>
 
 	* osint.adb (OS_Time_To_GNAT_Time): Remove dependency on To_C/To_Ada
