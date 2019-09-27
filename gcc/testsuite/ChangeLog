@@ -1,5 +1,10 @@
 2019-09-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/88203
+	* c-c++-common/gomp/pr88203-1.c: New test.
+	* c-c++-common/gomp/pr88203-2.c: New test.
+	* c-c++-common/gomp/pr88203-3.c: New test.
+
 	PR middle-end/91920
 	* c-c++-common/gomp/pr91920.c: New test.
 
