@@ -1,3 +1,14 @@
+2019-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88203
+	* parser.c (cp_parser_omp_var_list_no_open): Parse predefined
+	variables.
+	* semantics.c (finish_omp_clauses): Allow predefined variables in
+	shared and firstprivate clauses, even when they are predetermined
+	shared.
+	* cp-gimplify.c (cxx_omp_predetermined_sharing_1): Return
+	OMP_CLAUSE_DEFAULT_SHARED for predefined variables.
+
 2019-09-27  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.c (cxx_fold_indirect_ref): Use similar_type_p.

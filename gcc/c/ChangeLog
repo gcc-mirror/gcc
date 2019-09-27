@@ -1,3 +1,13 @@
+2019-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88203
+	* c-parser.c (c_parser_predefined_identifier): New function.
+	(c_parser_postfix_expression): Use it.
+	(c_parser_omp_variable_list): Parse predefined identifiers.
+	* c-typeck.c (c_finish_omp_clauses): Allow predefined variables
+	in shared and firstprivate clauses, even when they are predetermined
+	shared.
+
 2019-09-27  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-typeck.c (build_function_call_vec): Take the original function
