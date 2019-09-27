@@ -1,5 +1,12 @@
 2019-09-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* fibonacci_heap.h (fibonacci_heap::empty): Make const.
+	(fibonacci_heap::nodes): Likewise.
+	(fibonacci_heap::min_key): Likewise.
+	(fibonacci_heap::min): Likewise.
+
+2019-09-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* cgraph.c (cgraph_node::get_fun): Make const.
 	* cgraph.h (cgraph_node::get_fun): Likewise.
 
