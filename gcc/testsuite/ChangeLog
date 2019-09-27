@@ -1,3 +1,8 @@
+2019-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91919
+	* gcc.c-torture/compile/pr91919.c: New.test
+
 2019-09-27  Manfred Schwarb  <manfred99@gmx.ch>
 
 	* gfortran.dg/associate_48.f90: Fix a dg directive.

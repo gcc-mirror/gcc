@@ -1812,8 +1812,8 @@
   [(set (match_operand:SI 0 "s_register_operand" "=r,&r")
 	(plus:SI
 	 (mult:SI
-	  (SE:DI (match_operand:SI 4 "s_register_operand" "%r,r"))
-	  (SE:DI (match_operand:SI 5 "s_register_operand" "r,r")))
+	  (match_operand:SI 4 "s_register_operand" "%r,r")
+	  (match_operand:SI 5 "s_register_operand" "r,r"))
 	 (match_operand:SI 1 "s_register_operand" "0,0")))
    (set (match_operand:SI 2 "s_register_operand" "=r,&r")
 	(plus:SI
