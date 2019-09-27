@@ -1,4 +1,4 @@
-! { dg-compile }
+! { dg-do compile }
 
 ! Contributed by Mark Eggleston <mark.eggleston@codethink.com>
 program test
