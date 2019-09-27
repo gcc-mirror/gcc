@@ -1,3 +1,11 @@
+2019-09-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.md (@macho_correct_pic_<mode>): New,
+	replaces the expander and two define_insn entries.
+	(@reload_macho_picbase_<mode>): Update gen_macho_correct_pic
+	call.
+	* config/rs6000/rs6000.md (builtin_setjmp_receiver): Likewise.
+
 2019-09-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* fibonacci_heap.h (fibonacci_heap::empty): Make const.

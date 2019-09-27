@@ -216,6 +216,16 @@ You should have received a copy of the GNU General Public License
 	(match_dup 2))]
   "")
 
+(define_insn "@macho_correct_pic_<mode>"
+  [(set (match_operand:P 0 "gpc_reg_operand" "=r")
+	(plus:P (match_operand:P 1 "gpc_reg_operand" "r")
+		 (unspec:P [(match_operand:P 2 "immediate_operand" "s")
+			     (match_operand:P 3 "immediate_operand" "s")]
+			    UNSPEC_MPIC_CORRECT)))]
+  "DEFAULT_ABI == ABI_DARWIN"
+  "addis %0,%1,ha16(%2-%3)\n\taddi %0,%0,lo16(%2-%3)"
+  [(set_attr "length" "8")])
+
 (define_insn "@load_macho_picbase_<mode>"
   [(set (reg:P LR_REGNO)
 	(unspec:P [(match_operand:P 0 "immediate_operand" "s")
@@ -231,44 +241,6 @@ You should have received a copy of the GNU General Public License
 }
   [(set_attr "type" "branch")
    (set_attr "cannot_copy" "yes")])
-
-(define_expand "macho_correct_pic"
-  [(set (match_operand 0 "")
-	(plus (match_operand 1 "")
-		 (unspec [(match_operand 2 "")
-			     (match_operand 3 "")]
-			    UNSPEC_MPIC_CORRECT)))]
-  "DEFAULT_ABI == ABI_DARWIN"
-{
-  if (TARGET_32BIT)
-    emit_insn (gen_macho_correct_pic_si (operands[0], operands[1], operands[2],
-	       operands[3]));
-  else
-    emit_insn (gen_macho_correct_pic_di (operands[0], operands[1], operands[2],
-	       operands[3]));
-
-  DONE;
-})
-
-(define_insn "macho_correct_pic_si"
-  [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
-	(plus:SI (match_operand:SI 1 "gpc_reg_operand" "r")
-		 (unspec:SI [(match_operand:SI 2 "immediate_operand" "s")
-			     (match_operand:SI 3 "immediate_operand" "s")]
-			    UNSPEC_MPIC_CORRECT)))]
-  "DEFAULT_ABI == ABI_DARWIN"
-  "addis %0,%1,ha16(%2-%3)\n\taddi %0,%0,lo16(%2-%3)"
-  [(set_attr "length" "8")])
-
-(define_insn "macho_correct_pic_di"
-  [(set (match_operand:DI 0 "gpc_reg_operand" "=r")
-	(plus:DI (match_operand:DI 1 "gpc_reg_operand" "r")
-		 (unspec:DI [(match_operand:DI 2 "immediate_operand" "s")
-			     (match_operand:DI 3 "immediate_operand" "s")]
-			    16)))]
-  "DEFAULT_ABI == ABI_DARWIN && TARGET_64BIT"
-  "addis %0,%1,ha16(%2-%3)\n\taddi %0,%0,lo16(%2-%3)"
-  [(set_attr "length" "8")])
 
 (define_insn "@reload_macho_picbase_<mode>"
   [(set (reg:P LR_REGNO)
@@ -316,7 +288,8 @@ You should have received a copy of the GNU General Public License
 
       emit_insn (gen_reload_macho_picbase (Pmode, tmplrtx));
       emit_move_insn (picreg, gen_rtx_REG (Pmode, LR_REGNO));
-      emit_insn (gen_macho_correct_pic (picreg, picreg, picrtx, tmplrtx));
+      emit_insn (gen_macho_correct_pic (Pmode, picreg, picreg,
+					picrtx, tmplrtx));
     }
   else
     /* Not using PIC reg, no reload needed.  */
