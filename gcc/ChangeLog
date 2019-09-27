@@ -1,3 +1,12 @@
+2019-09-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/91909
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Take a
+	reduc_index parameter.  When handling COND_REDUCTION, make sure
+	that the reduction phi operand is in the correct arm of the
+	VEC_COND_EXPR.
+	(vectorizable_reduction): Pass reduc_index to the above.
+
 2019-09-27  Yuliang Wang  <yuliang.wang@arm.com>
 
 	* config/aarch64/aarch64-sve2.md (aarch64_sve2_sra<mode>):

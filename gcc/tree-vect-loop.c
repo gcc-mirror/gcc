@@ -4235,6 +4235,8 @@ get_initial_defs_for_reduction (slp_tree slp_node,
    INDUC_CODE is the code for epilog reduction if INTEGER_INDUC_COND_REDUCTION.
    NEUTRAL_OP is the value given by neutral_op_for_slp_reduction; it is
      null if this is not an SLP reduction
+   REDUC_INDEX says which rhs operand of the STMT_INFO is the reduction phi
+     (counting from 0)
 
    This function:
    1. Creates the reduction def-use cycles: sets the arguments for 
@@ -4285,7 +4287,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
                                   bool double_reduc, 
 				  slp_tree slp_node,
 				  slp_instance slp_node_instance,
-				  tree neutral_op)
+				  tree neutral_op, int reduc_index)
 {
   tree induc_val = NULL_TREE;
   stmt_vec_info prev_phi_info;
@@ -4469,11 +4471,17 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
       tree ccompare = unshare_expr (gimple_assign_rhs1 (vec_stmt));
 
       /* Create a conditional, where the condition is taken from vec_stmt
-	 (CCOMPARE), then is the induction index (INDEX_BEFORE_INCR) and
-	 else is the phi (NEW_PHI_TREE).  */
-      tree index_cond_expr = build3 (VEC_COND_EXPR, cr_index_vector_type,
-				     ccompare, indx_before_incr,
-				     new_phi_tree);
+	 (CCOMPARE).  The then and else values mirror the main VEC_COND_EXPR:
+	 the reduction phi corresponds to NEW_PHI_TREE and the new values
+	 correspond to INDEX_BEFORE_INCR.  */
+      gcc_assert (reduc_index >= 1);
+      tree index_cond_expr;
+      if (reduc_index == 2)
+	index_cond_expr = build3 (VEC_COND_EXPR, cr_index_vector_type,
+				  ccompare, indx_before_incr, new_phi_tree);
+      else
+	index_cond_expr = build3 (VEC_COND_EXPR, cr_index_vector_type,
+				  ccompare, new_phi_tree, indx_before_incr);
       induction_index = make_ssa_name (cr_index_vector_type);
       gimple *index_condition = gimple_build_assign (induction_index,
 						     index_cond_expr);
@@ -7159,7 +7167,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   vect_create_epilog_for_reduction (vect_defs, stmt_info, reduc_def_phi,
 				    orig_code, epilog_copies, reduc_fn, phis,
 				    double_reduc, slp_node, slp_node_instance,
-				    neutral_op);
+				    neutral_op, reduc_index);
 
   return true;
 }
