@@ -1,3 +1,7 @@
+2019-09-27  Yuliang Wang  <yuliang.wang@arm.com>
+
+	* gcc.target/aarch64/sve2/shracc_1.c: New test.
+
 2019-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/cpp/ucs.c: Add test for new warning and adjust.
