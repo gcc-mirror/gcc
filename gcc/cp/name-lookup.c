@@ -172,20 +172,15 @@ static void
 init_global_partition (module_cluster *cluster, tree decl)
 {
   bool purview = true;
+
   if (header_module_p ())
     purview = false;
   else if (TREE_PUBLIC (decl)
 	   && TREE_CODE (decl) == NAMESPACE_DECL
 	   && !DECL_NAMESPACE_ALIAS (decl))
     purview = false;
-  else
-    {
-      tree owner = get_module_owner (decl);
-
-      if (DECL_LANG_SPECIFIC (owner)
-	  && DECL_MODULE_OWNER (owner) == MODULE_NONE)
-	purview = false;
-    }
+  else if (!get_originating_module (decl))
+    purview = false;
 
   mc_slot *mslot;
   if (!purview)
@@ -1501,15 +1496,18 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 		{
 		  /* Add fns in the innermost namespace partition of the
 		     type.  */
-		  tree owner = get_module_owner (TYPE_NAME (scope));
-		  unsigned mod = DECL_MODULE_OWNER (owner);
+		  tree origin = get_originating_module_decl (TYPE_NAME (scope));
+
+		  unsigned mod = MODULE_NONE;
+		  if (origin && DECL_LANG_SPECIFIC (origin))
+		    mod = DECL_MODULE_OWNER (origin);
 
 		  /* If the module was in the inst path, we'll look at its
 		     namespace partition anyway.  */
 		  if (mod >= MODULE_IMPORT_BASE
 		      && !(inst_path && bitmap_bit_p (inst_path, mod)))
 		    {
-		      tree ns = CP_DECL_CONTEXT (owner);
+		      tree ns = CP_DECL_CONTEXT (origin);
 		      if (tree *slot = find_namespace_slot (ns, name, false))
 			if (mc_slot *mslot
 			    = search_imported_binding_slot (slot, mod))
@@ -5246,11 +5244,7 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	    {
 	      /* If the using decl is exported, the things it refers
 		 to must also be exported.  */
-	      tree owner = get_module_owner (new_fn);
-	      if (!DECL_MODULE_EXPORT_P (owner)
-		  && (DECL_MODULE_OWNER (owner)
-		      || !TREE_PUBLIC (CP_DECL_CONTEXT (owner))
-		      || DECL_THIS_STATIC (new_fn)))
+	      if (!DECL_MODULE_EXPORT_P (new_fn))
 		{
 		  error ("%q#D does not have external linkage", new_fn);
 		  inform (DECL_SOURCE_LOCATION (new_fn),

@@ -192,15 +192,13 @@ dump_module_suffix (cxx_pretty_printer *pp, tree decl)
 	return;
     }
 
-  tree origin = get_module_owner (decl);
-  if (DECL_LANG_SPECIFIC (origin))
-    if (unsigned m = DECL_MODULE_OWNER (origin))
-      if (const char *n = module_name (m, false))
-	{
-	  pp_character (pp, '@');
-	  pp->padding = pp_none;
-	  pp_string (pp, n);
-	}
+  if (unsigned m = get_originating_module (decl))
+    if (const char *n = module_name (m, false))
+      {
+	pp_character (pp, '@');
+	pp->padding = pp_none;
+	pp_string (pp, n);
+      }
 }
 
 /* Dump a scope, if deemed necessary.  */

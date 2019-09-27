@@ -1,3 +1,21 @@
+2019-09-27  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (get_declared_module_origin): Delete.
+	(get_originating_module, get_originating_module_decl): Declare.
+	* module.cc (get_originating_module_decl): New.
+	(get_originating_module): New.
+	(module_state::write_cluster, module_visible_instantiation_path): Use
+	get_originating_module.
+	* module.cc (module_state::write_unnamed)
+	(lazy_load_specializations): Use get_originating_module_decl.
+	* error.c (dump_module_suffix): Use get_originating_module.
+	* mangle.c (maybe_write_module): Likewise.
+	* name-lookup.c (init_global_partition): Use
+	get_originating_module.
+	(name_lookup::search_adl): Use get_originating_module_decl.
+	* pt.c (lookup_template_class_1): Propagate DECL_MODULE_EXPORT_P.
+
 2019-09-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

@@ -875,27 +875,14 @@ mangle_identifier (tree id)
 static void
 maybe_write_module (tree decl)
 {
-  tree owner_decl = get_module_owner (decl);
+  if (unsigned m = get_originating_module (decl, true))
+    {
+      G.mod = true;
 
-  if (DECL_MODULE_EXPORT_P (owner_decl))
-    return;
-
-  unsigned m = MODULE_NONE;
-  if (DECL_LANG_SPECIFIC (decl))
-    m =DECL_MODULE_OWNER (owner_decl);
-
-  /* Legacy modules have an owner, but everything from them is
-     exported so we never get here in that case.  */
-  if (m == MODULE_NONE)
-    return;
-
-  G.mod = true;
-
-  write_char ('W');
-
-  mangle_module (m);
-
-  write_char ('E');
+      write_char ('W');
+      mangle_module (m);
+      write_char ('E');
+    }
 }
 
 /* Lambdas can have a bit more context for mangling, specifically VAR_DECL

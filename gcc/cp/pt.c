@@ -9608,8 +9608,11 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	    = DECL_SOURCE_LOCATION (TYPE_STUB_DECL (template_type));
 	}
 
+      /* Although GEN_TMPL is the TEMPLATE_DECL, it has the same value
+	 of export flag.  */
+      DECL_MODULE_EXPORT_P (type_decl) = DECL_MODULE_EXPORT_P (gen_tmpl);
       set_implicit_module_origin (type_decl);
-      
+
       if (CLASS_TYPE_P (template_type))
 	{
 	  TREE_PRIVATE (type_decl)

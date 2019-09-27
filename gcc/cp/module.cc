@@ -3848,6 +3848,12 @@ get_clone_target (tree decl)
 	 CLONE && DECL_CLONED_FUNCTION_P (CLONE);	\
 	 CLONE = DECL_CHAIN (CLONE))
 
+/* It'd be nice if USE_TEMPLATE was a field of template_info
+   (a) it'd solve the enum case dealt with below,
+   (b) both class templates and decl templates would store this in the
+   same place
+   (c) this function wouldn't need the by-ref arg, which is annoying.  */
+
 static tree
 node_template_info (tree decl, int &use)
 {
@@ -3857,6 +3863,7 @@ node_template_info (tree decl, int &use)
     {
       tree type = TREE_TYPE (decl);
       /* During read in, type might not have been set yet!  */
+      // FIXME:This sounds wrong now.
       if (type)
 	ti = TYPE_TEMPLATE_INFO (type);
 
@@ -13518,9 +13525,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		      unsigned index = d->cluster - 1;
 		      if (is_imported)
 			{
-			  tree o_decl = get_module_owner (u_decl);
-			  if (DECL_LANG_SPECIFIC (o_decl))
-			    owner = DECL_MODULE_OWNER (o_decl);
+			  owner = get_originating_module (u_decl);
 			  module_state *import = (*modules)[owner];
 			  /* It must be in the unnamed map.  */
 			  index = *unnamed_map->get (DECL_UID (u_decl));
@@ -14291,7 +14296,7 @@ module_state::write_unnamed (elf_out *to, vec<depset *> depsets,
 
 	  if (d->get_entity_kind () == depset::EK_SPECIALIZATION)
 	    {
-	      tree key = get_module_owner (uent);
+	      tree key = get_originating_module_decl (uent);
 	      unsigned owner = (DECL_LANG_SPECIFIC (key)
 				? DECL_MODULE_OWNER (key) : MODULE_NONE);
 	      unsigned import_kind = MODULE_IMPORT_BASE;
@@ -16833,15 +16838,13 @@ module_visible_instantiation_path (bitmap *path_map_p)
 	    decl = TREE_PURPOSE (decl);
 	  if (TYPE_P (decl))
 	    decl = TYPE_STUB_DECL (decl);
-	  decl = get_module_owner (decl);
-	  if (DECL_LANG_SPECIFIC (decl))
-	    if (unsigned mod = DECL_MODULE_OWNER (decl))
-	      if (!bitmap_bit_p (path_map, mod))
-		{
-		  bitmap_set_bit (path_map, mod);
-		  bitmap imports = (*modules)[mod]->imports;
-		  bitmap_ior_into (visible, imports);
-		}
+	  if (unsigned mod = get_originating_module (decl))
+	    if (!bitmap_bit_p (path_map, mod))
+	      {
+		bitmap_set_bit (path_map, mod);
+		bitmap imports = (*modules)[mod]->imports;
+		bitmap_ior_into (visible, imports);
+	      }
 	}
       *path_map_p = path_map;
     }
@@ -16870,6 +16873,80 @@ module_state::set_import (module_state const *other, bool is_export)
   if (is_header () && other->is_header () && mod >= MODULE_IMPORT_BASE)
     /* We only see OTHER's headers if it is header.  */
     bitmap_ior_into (slurp->headers, other->slurp->headers);
+}
+
+/* Return the declaring entity of DECL.  That is the decl determining
+   how to decorate DECL with module information.  Returns NULL_TREE if
+   it's the global module.  */
+
+tree
+get_originating_module_decl (tree decl)
+{
+  /* An enumeration constant.  */
+  if (TREE_CODE (decl) == CONST_DECL
+      && DECL_CONTEXT (decl)
+      && (TREE_CODE (DECL_CONTEXT (decl)) == ENUMERAL_TYPE))
+    decl = TYPE_STUB_DECL (DECL_CONTEXT (decl));
+
+  gcc_checking_assert (TREE_CODE (decl) == TEMPLATE_DECL
+		       || TREE_CODE (decl) == FUNCTION_DECL
+		       || TREE_CODE (decl) == TYPE_DECL
+		       || TREE_CODE (decl) == VAR_DECL
+		       || TREE_CODE (decl) == NAMESPACE_DECL);
+
+  for (tree ctx;; decl = ctx)
+    {
+      ctx = CP_DECL_CONTEXT (decl);
+      if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	break;
+
+      if (TYPE_P (ctx))
+	{
+	  ctx = TYPE_STUB_DECL (ctx);
+	  if (!ctx)
+	    {
+	      /* Some kind of internal type.  */
+	      gcc_checking_assert (DECL_ARTIFICIAL (decl));
+	      return NULL_TREE;
+	    }
+	}
+    }
+
+  int use;
+  tree ti = node_template_info (decl, use);
+  if (use > 0)
+    {
+      decl = TI_TEMPLATE (ti);
+      /* It could be a partial specialization, so look again.  */
+      ti = node_template_info (decl, use);
+      if (use > 0)
+	{
+	  decl = TI_TEMPLATE (ti);
+	  gcc_checking_assert ((node_template_info (decl, use), use <= 0));
+	}
+    }
+
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    decl = DECL_TEMPLATE_RESULT (decl);
+
+  return decl;
+}
+
+unsigned
+get_originating_module (tree decl, bool for_mangle)
+{
+  tree owner = get_originating_module_decl (decl);
+
+  if (!owner)
+    return MODULE_NONE;
+
+  if (for_mangle && DECL_MODULE_EXPORT_P (owner))
+    return MODULE_NONE;
+
+  if (!DECL_LANG_SPECIFIC (owner))
+    return MODULE_NONE;
+
+  return DECL_MODULE_OWNER (owner);
 }
 
 /* Return the namespace-scope decl that determines the owning module
@@ -17274,7 +17351,7 @@ lazy_load_specializations (tree tmpl)
 {
   gcc_checking_assert (DECL_TEMPLATE_LAZY_SPECIALIZATIONS_P (tmpl));
 
-  tree owner = get_module_owner (tmpl);
+  tree owner = get_originating_module_decl (tmpl);
 
   timevar_start (TV_MODULE_IMPORT);
   if (specset *set

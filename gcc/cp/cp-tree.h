@@ -6874,7 +6874,11 @@ extern tree get_module_owner (tree, bool = false) ATTRIBUTE_PURE;
 
 extern void set_declared_module_origin (tree);
 extern void set_implicit_module_origin (tree);
-extern tree get_declared_module_origin (tree) ATTRIBUTE_PURE;
+
+extern unsigned get_originating_module (tree,
+					bool for_mangle = false) ATTRIBUTE_PURE;
+extern tree get_originating_module_decl (tree) ATTRIBUTE_PURE;
+
 extern tree get_implicit_module_origin (tree) ATTRIBUTE_PURE;
 
 extern void set_module_owner (tree);
