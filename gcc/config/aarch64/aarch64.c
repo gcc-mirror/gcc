@@ -11646,6 +11646,79 @@ aarch64_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
   return aarch64_tune_params.memmov_cost;
 }
 
+/* Implement TARGET_INIT_BUILTINS.  */
+static void
+aarch64_init_builtins ()
+{
+  aarch64_general_init_builtins ();
+}
+
+/* Implement TARGET_FOLD_BUILTIN.  */
+static tree
+aarch64_fold_builtin (tree fndecl, int nargs, tree *args, bool)
+{
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> AARCH64_BUILTIN_SHIFT;
+  tree type = TREE_TYPE (TREE_TYPE (fndecl));
+  switch (code & AARCH64_BUILTIN_CLASS)
+    {
+    case AARCH64_BUILTIN_GENERAL:
+      return aarch64_general_fold_builtin (subcode, type, nargs, args);
+    }
+  gcc_unreachable ();
+}
+
+/* Implement TARGET_GIMPLE_FOLD_BUILTIN.  */
+static bool
+aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
+{
+  gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
+  tree fndecl = gimple_call_fndecl (stmt);
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> AARCH64_BUILTIN_SHIFT;
+  gimple *new_stmt = NULL;
+  switch (code & AARCH64_BUILTIN_CLASS)
+    {
+    case AARCH64_BUILTIN_GENERAL:
+      new_stmt = aarch64_general_gimple_fold_builtin (subcode, stmt);
+      break;
+    }
+
+  if (!new_stmt)
+    return false;
+
+  gsi_replace (gsi, new_stmt, true);
+  return true;
+}
+
+/* Implement TARGET_EXPAND_BUILTIN.  */
+static rtx
+aarch64_expand_builtin (tree exp, rtx target, rtx, machine_mode, int)
+{
+  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> AARCH64_BUILTIN_SHIFT;
+  switch (code & AARCH64_BUILTIN_CLASS)
+    {
+    case AARCH64_BUILTIN_GENERAL:
+      return aarch64_general_expand_builtin (subcode, exp, target);
+    }
+  gcc_unreachable ();
+}
+
+/* Implement TARGET_BUILTIN_DECL.  */
+static tree
+aarch64_builtin_decl (unsigned int code, bool initialize_p)
+{
+  unsigned int subcode = code >> AARCH64_BUILTIN_SHIFT;
+  switch (code & AARCH64_BUILTIN_CLASS)
+    {
+    case AARCH64_BUILTIN_GENERAL:
+      return aarch64_general_builtin_decl (subcode, initialize_p);
+    }
+  gcc_unreachable ();
+}
+
 /* Return true if it is safe and beneficial to use the approximate rsqrt optabs
    to optimize 1.0/sqrt.  */
 
@@ -11669,7 +11742,14 @@ aarch64_builtin_reciprocal (tree fndecl)
 
   if (!use_rsqrt_p (mode))
     return NULL_TREE;
-  return aarch64_builtin_rsqrt (DECL_MD_FUNCTION_CODE (fndecl));
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> AARCH64_BUILTIN_SHIFT;
+  switch (code & AARCH64_BUILTIN_CLASS)
+    {
+    case AARCH64_BUILTIN_GENERAL:
+      return aarch64_general_builtin_rsqrt (subcode);
+    }
+  gcc_unreachable ();
 }
 
 /* Emit instruction sequence to compute either the approximate square root
@@ -15081,7 +15161,7 @@ aarch64_mangle_type (const_tree type)
   /* Mangle AArch64-specific internal types.  TYPE_NAME is non-NULL_TREE for
      builtin types.  */
   if (TYPE_NAME (type) != NULL)
-    return aarch64_mangle_builtin_type (type);
+    return aarch64_general_mangle_builtin_type (type);
 
   /* Use the default mangling.  */
   return NULL;

@@ -556,6 +556,17 @@ static tree aarch64_simd_intXI_type_node = NULL_TREE;
 tree aarch64_fp16_type_node = NULL_TREE;
 tree aarch64_fp16_ptr_type_node = NULL_TREE;
 
+/* Wrapper around add_builtin_function.  NAME is the name of the built-in
+   function, TYPE is the function type, and CODE is the function subcode
+   (relative to AARCH64_BUILTIN_GENERAL).  */
+static tree
+aarch64_general_add_builtin (const char *name, tree type, unsigned int code)
+{
+  code = (code << AARCH64_BUILTIN_SHIFT) | AARCH64_BUILTIN_GENERAL;
+  return add_builtin_function (name, type, code, BUILT_IN_MD,
+			       NULL, NULL_TREE);
+}
+
 static const char *
 aarch64_mangle_builtin_scalar_type (const_tree type)
 {
@@ -594,7 +605,7 @@ aarch64_mangle_builtin_vector_type (const_tree type)
 }
 
 const char *
-aarch64_mangle_builtin_type (const_tree type)
+aarch64_general_mangle_builtin_type (const_tree type)
 {
   const char *mangle;
   /* Walk through all the AArch64 builtins types tables to filter out the
@@ -825,8 +836,7 @@ aarch64_init_fcmla_laneq_builtins (void)
 	= aarch64_simd_builtin_std_type (SImode, qualifier_lane_pair_index);
       tree ftype = build_function_type_list (argtype, argtype, argtype,
 					     quadtype, lanetype, NULL_TREE);
-      tree fndecl = add_builtin_function (d->name, ftype, d->fcode,
-					  BUILT_IN_MD, NULL, NULL_TREE);
+      tree fndecl = aarch64_general_add_builtin (d->name, ftype, d->fcode);
 
       aarch64_builtin_decls[d->fcode] = fndecl;
     }
@@ -855,10 +865,10 @@ aarch64_init_simd_builtins (void)
 						  size_type_node,
 						  intSI_type_node,
 						  NULL);
-  aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_LANE_CHECK] =
-      add_builtin_function ("__builtin_aarch64_im_lane_boundsi", lane_check_fpr,
-			    AARCH64_SIMD_BUILTIN_LANE_CHECK, BUILT_IN_MD,
-			    NULL, NULL_TREE);
+  aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_LANE_CHECK]
+    = aarch64_general_add_builtin ("__builtin_aarch64_im_lane_boundsi",
+				   lane_check_fpr,
+				   AARCH64_SIMD_BUILTIN_LANE_CHECK);
 
   for (i = 0; i < ARRAY_SIZE (aarch64_simd_builtin_data); i++, fcode++)
     {
@@ -956,8 +966,7 @@ aarch64_init_simd_builtins (void)
 	snprintf (namebuf, sizeof (namebuf), "__builtin_aarch64_%s",
 		  d->name);
 
-      fndecl = add_builtin_function (namebuf, ftype, fcode, BUILT_IN_MD,
-				     NULL, NULL_TREE);
+      fndecl = aarch64_general_add_builtin (namebuf, ftype, fcode);
       aarch64_builtin_decls[fcode] = fndecl;
     }
 
@@ -977,8 +986,7 @@ aarch64_init_crc32_builtins ()
       tree argtype = aarch64_simd_builtin_std_type (d->mode,
 						    qualifier_unsigned);
       tree ftype = build_function_type_list (usi_type, usi_type, argtype, NULL_TREE);
-      tree fndecl = add_builtin_function (d->name, ftype, d->fcode,
-                                          BUILT_IN_MD, NULL, NULL_TREE);
+      tree fndecl = aarch64_general_add_builtin (d->name, ftype, d->fcode);
 
       aarch64_builtin_decls[d->fcode] = fndecl;
     }
@@ -1018,8 +1026,8 @@ aarch64_init_builtin_rsqrt (void)
   for (; bdd < bdd_end; bdd++)
   {
     ftype = build_function_type_list (bdd->type_node, bdd->type_node, NULL_TREE);
-    fndecl = add_builtin_function (bdd->builtin_name,
-      ftype, bdd->function_code, BUILT_IN_MD, NULL, NULL_TREE);
+    fndecl = aarch64_general_add_builtin (bdd->builtin_name,
+					  ftype, bdd->function_code);
     aarch64_builtin_decls[bdd->function_code] = fndecl;
   }
 }
@@ -1053,25 +1061,25 @@ aarch64_init_pauth_hint_builtins (void)
     = build_function_type_list (ptr_type_node, ptr_type_node, NULL_TREE);
 
   aarch64_builtin_decls[AARCH64_PAUTH_BUILTIN_AUTIA1716]
-    = add_builtin_function ("__builtin_aarch64_autia1716", ftype_pointer_auth,
-			    AARCH64_PAUTH_BUILTIN_AUTIA1716, BUILT_IN_MD, NULL,
-			    NULL_TREE);
+    = aarch64_general_add_builtin ("__builtin_aarch64_autia1716",
+				   ftype_pointer_auth,
+				   AARCH64_PAUTH_BUILTIN_AUTIA1716);
   aarch64_builtin_decls[AARCH64_PAUTH_BUILTIN_PACIA1716]
-    = add_builtin_function ("__builtin_aarch64_pacia1716", ftype_pointer_auth,
-			    AARCH64_PAUTH_BUILTIN_PACIA1716, BUILT_IN_MD, NULL,
-			    NULL_TREE);
+    = aarch64_general_add_builtin ("__builtin_aarch64_pacia1716",
+				   ftype_pointer_auth,
+				   AARCH64_PAUTH_BUILTIN_PACIA1716);
   aarch64_builtin_decls[AARCH64_PAUTH_BUILTIN_AUTIB1716]
-    = add_builtin_function ("__builtin_aarch64_autib1716", ftype_pointer_auth,
-			    AARCH64_PAUTH_BUILTIN_AUTIB1716, BUILT_IN_MD, NULL,
-			    NULL_TREE);
+    = aarch64_general_add_builtin ("__builtin_aarch64_autib1716",
+				   ftype_pointer_auth,
+				   AARCH64_PAUTH_BUILTIN_AUTIB1716);
   aarch64_builtin_decls[AARCH64_PAUTH_BUILTIN_PACIB1716]
-    = add_builtin_function ("__builtin_aarch64_pacib1716", ftype_pointer_auth,
-			    AARCH64_PAUTH_BUILTIN_PACIB1716, BUILT_IN_MD, NULL,
-			    NULL_TREE);
+    = aarch64_general_add_builtin ("__builtin_aarch64_pacib1716",
+				   ftype_pointer_auth,
+				   AARCH64_PAUTH_BUILTIN_PACIB1716);
   aarch64_builtin_decls[AARCH64_PAUTH_BUILTIN_XPACLRI]
-    = add_builtin_function ("__builtin_aarch64_xpaclri", ftype_pointer_strip,
-			    AARCH64_PAUTH_BUILTIN_XPACLRI, BUILT_IN_MD, NULL,
-			    NULL_TREE);
+    = aarch64_general_add_builtin ("__builtin_aarch64_xpaclri",
+				   ftype_pointer_strip,
+				   AARCH64_PAUTH_BUILTIN_XPACLRI);
 }
 
 /* Initialize the transactional memory extension (TME) builtins.  */
@@ -1086,25 +1094,26 @@ aarch64_init_tme_builtins (void)
     = build_function_type_list (void_type_node, uint64_type_node, NULL);
 
   aarch64_builtin_decls[AARCH64_TME_BUILTIN_TSTART]
-    = add_builtin_function ("__builtin_aarch64_tstart", ftype_uint64_void,
-			    AARCH64_TME_BUILTIN_TSTART, BUILT_IN_MD,
-			    NULL, NULL_TREE);
+    = aarch64_general_add_builtin ("__builtin_aarch64_tstart",
+				   ftype_uint64_void,
+				   AARCH64_TME_BUILTIN_TSTART);
   aarch64_builtin_decls[AARCH64_TME_BUILTIN_TTEST]
-    = add_builtin_function ("__builtin_aarch64_ttest", ftype_uint64_void,
-			    AARCH64_TME_BUILTIN_TTEST, BUILT_IN_MD,
-			    NULL, NULL_TREE);
+    = aarch64_general_add_builtin ("__builtin_aarch64_ttest",
+				   ftype_uint64_void,
+				   AARCH64_TME_BUILTIN_TTEST);
   aarch64_builtin_decls[AARCH64_TME_BUILTIN_TCOMMIT]
-    = add_builtin_function ("__builtin_aarch64_tcommit", ftype_void_void,
-			    AARCH64_TME_BUILTIN_TCOMMIT, BUILT_IN_MD,
-			    NULL, NULL_TREE);
+    = aarch64_general_add_builtin ("__builtin_aarch64_tcommit",
+				   ftype_void_void,
+				   AARCH64_TME_BUILTIN_TCOMMIT);
   aarch64_builtin_decls[AARCH64_TME_BUILTIN_TCANCEL]
-    = add_builtin_function ("__builtin_aarch64_tcancel", ftype_void_uint64,
-			    AARCH64_TME_BUILTIN_TCANCEL, BUILT_IN_MD,
-			    NULL, NULL_TREE);
+    = aarch64_general_add_builtin ("__builtin_aarch64_tcancel",
+				   ftype_void_uint64,
+				   AARCH64_TME_BUILTIN_TCANCEL);
 }
 
+/* Initialize all builtins in the AARCH64_BUILTIN_GENERAL group.  */
 void
-aarch64_init_builtins (void)
+aarch64_general_init_builtins (void)
 {
   tree ftype_set_fpr
     = build_function_type_list (void_type_node, unsigned_type_node, NULL);
@@ -1112,17 +1121,21 @@ aarch64_init_builtins (void)
     = build_function_type_list (unsigned_type_node, NULL);
 
   aarch64_builtin_decls[AARCH64_BUILTIN_GET_FPCR]
-    = add_builtin_function ("__builtin_aarch64_get_fpcr", ftype_get_fpr,
-			    AARCH64_BUILTIN_GET_FPCR, BUILT_IN_MD, NULL, NULL_TREE);
+    = aarch64_general_add_builtin ("__builtin_aarch64_get_fpcr",
+				   ftype_get_fpr,
+				   AARCH64_BUILTIN_GET_FPCR);
   aarch64_builtin_decls[AARCH64_BUILTIN_SET_FPCR]
-    = add_builtin_function ("__builtin_aarch64_set_fpcr", ftype_set_fpr,
-			    AARCH64_BUILTIN_SET_FPCR, BUILT_IN_MD, NULL, NULL_TREE);
+    = aarch64_general_add_builtin ("__builtin_aarch64_set_fpcr",
+				   ftype_set_fpr,
+				   AARCH64_BUILTIN_SET_FPCR);
   aarch64_builtin_decls[AARCH64_BUILTIN_GET_FPSR]
-    = add_builtin_function ("__builtin_aarch64_get_fpsr", ftype_get_fpr,
-			    AARCH64_BUILTIN_GET_FPSR, BUILT_IN_MD, NULL, NULL_TREE);
+    = aarch64_general_add_builtin ("__builtin_aarch64_get_fpsr",
+				   ftype_get_fpr,
+				   AARCH64_BUILTIN_GET_FPSR);
   aarch64_builtin_decls[AARCH64_BUILTIN_SET_FPSR]
-    = add_builtin_function ("__builtin_aarch64_set_fpsr", ftype_set_fpr,
-			    AARCH64_BUILTIN_SET_FPSR, BUILT_IN_MD, NULL, NULL_TREE);
+    = aarch64_general_add_builtin ("__builtin_aarch64_set_fpsr",
+				   ftype_set_fpr,
+				   AARCH64_BUILTIN_SET_FPSR);
 
   aarch64_init_fp16_types ();
 
@@ -1135,8 +1148,8 @@ aarch64_init_builtins (void)
   tree ftype_jcvt
     = build_function_type_list (intSI_type_node, double_type_node, NULL);
   aarch64_builtin_decls[AARCH64_JSCVT]
-    = add_builtin_function ("__builtin_aarch64_jcvtzs", ftype_jcvt,
-			    AARCH64_JSCVT, BUILT_IN_MD, NULL, NULL_TREE);
+    = aarch64_general_add_builtin ("__builtin_aarch64_jcvtzs", ftype_jcvt,
+				   AARCH64_JSCVT);
 
   /* Initialize pointer authentication builtins which are backed by instructions
      in NOP encoding space.
@@ -1151,8 +1164,9 @@ aarch64_init_builtins (void)
     aarch64_init_tme_builtins ();
 }
 
+/* Implement TARGET_BUILTIN_DECL for the AARCH64_BUILTIN_GENERAL group.  */
 tree
-aarch64_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
+aarch64_general_builtin_decl (unsigned code, bool)
 {
   if (code >= AARCH64_BUILTIN_MAX)
     return error_mark_node;
@@ -1593,17 +1607,11 @@ aarch64_expand_builtin_tme (int fcode, tree exp, rtx target)
     return target;
 }
 
-/* Expand an expression EXP that calls a built-in function,
+/* Expand an expression EXP that calls built-in function FCODE,
    with result going to TARGET if that's convenient.  */
 rtx
-aarch64_expand_builtin (tree exp,
-		     rtx target,
-		     rtx subtarget ATTRIBUTE_UNUSED,
-		     machine_mode mode ATTRIBUTE_UNUSED,
-		     int ignore ATTRIBUTE_UNUSED)
+aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target)
 {
-  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  int fcode = DECL_MD_FUNCTION_CODE (fndecl);
   int icode;
   rtx pat, op0;
   tree arg0;
@@ -1880,7 +1888,7 @@ aarch64_builtin_vectorized_function (unsigned int fn, tree type_out,
 /* Return builtin for reciprocal square root.  */
 
 tree
-aarch64_builtin_rsqrt (unsigned int fn)
+aarch64_general_builtin_rsqrt (unsigned int fn)
 {
   if (fn == AARCH64_SIMD_BUILTIN_UNOP_sqrtv2df)
     return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_V2DF];
@@ -1895,13 +1903,14 @@ aarch64_builtin_rsqrt (unsigned int fn)
 #define VAR1(T, N, MAP, A) \
   case AARCH64_SIMD_BUILTIN_##T##_##N##A:
 
+/* Try to fold a call to the built-in function with subcode FCODE.  The
+   function is passed the N_ARGS arguments in ARGS and it returns a value
+   of type TYPE.  Return the new expression on success and NULL_TREE on
+   failure.  */
 tree
-aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
-		      bool ignore ATTRIBUTE_UNUSED)
+aarch64_general_fold_builtin (unsigned int fcode, tree type,
+			      unsigned int n_args ATTRIBUTE_UNUSED, tree *args)
 {
-  int fcode = DECL_MD_FUNCTION_CODE (fndecl);
-  tree type = TREE_TYPE (TREE_TYPE (fndecl));
-
   switch (fcode)
     {
       BUILTIN_VDQF (UNOP, abs, 2)
@@ -1917,109 +1926,90 @@ aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
   return NULL_TREE;
 }
 
-bool
-aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
+/* Try to fold STMT, given that it's a call to the built-in function with
+   subcode FCODE.  Return the new statement on success and null on
+   failure.  */
+gimple *
+aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt)
 {
-  bool changed = false;
-  gimple *stmt = gsi_stmt (*gsi);
-  tree call = gimple_call_fn (stmt);
-  tree fndecl;
   gimple *new_stmt = NULL;
+  unsigned nargs = gimple_call_num_args (stmt);
+  tree *args = (nargs > 0
+		? gimple_call_arg_ptr (stmt, 0)
+		: &error_mark_node);
 
-  if (call)
+  /* We use gimple's IFN_REDUC_(PLUS|MIN|MAX)s for float, signed int
+     and unsigned int; it will distinguish according to the types of
+     the arguments to the __builtin.  */
+  switch (fcode)
     {
-      fndecl = gimple_call_fndecl (stmt);
-      if (fndecl)
+      BUILTIN_VALL (UNOP, reduc_plus_scal_, 10)
+	new_stmt = gimple_build_call_internal (IFN_REDUC_PLUS,
+					       1, args[0]);
+	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
+	break;
+      BUILTIN_VDQIF (UNOP, reduc_smax_scal_, 10)
+      BUILTIN_VDQ_BHSI (UNOPU, reduc_umax_scal_, 10)
+	new_stmt = gimple_build_call_internal (IFN_REDUC_MAX,
+					       1, args[0]);
+	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
+	break;
+      BUILTIN_VDQIF (UNOP, reduc_smin_scal_, 10)
+      BUILTIN_VDQ_BHSI (UNOPU, reduc_umin_scal_, 10)
+	new_stmt = gimple_build_call_internal (IFN_REDUC_MIN,
+					       1, args[0]);
+	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
+	break;
+      BUILTIN_GPF (BINOP, fmulx, 0)
 	{
-	  int fcode = DECL_MD_FUNCTION_CODE (fndecl);
-	  unsigned nargs = gimple_call_num_args (stmt);
-	  tree *args = (nargs > 0
-			? gimple_call_arg_ptr (stmt, 0)
-			: &error_mark_node);
-
-	  /* We use gimple's IFN_REDUC_(PLUS|MIN|MAX)s for float, signed int
-	     and unsigned int; it will distinguish according to the types of
-	     the arguments to the __builtin.  */
-	  switch (fcode)
+	  gcc_assert (nargs == 2);
+	  bool a0_cst_p = TREE_CODE (args[0]) == REAL_CST;
+	  bool a1_cst_p = TREE_CODE (args[1]) == REAL_CST;
+	  if (a0_cst_p || a1_cst_p)
 	    {
-	      BUILTIN_VALL (UNOP, reduc_plus_scal_, 10)
-	        new_stmt = gimple_build_call_internal (IFN_REDUC_PLUS,
-						       1, args[0]);
-		gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
-		break;
-	      BUILTIN_VDQIF (UNOP, reduc_smax_scal_, 10)
-	      BUILTIN_VDQ_BHSI (UNOPU, reduc_umax_scal_, 10)
-	        new_stmt = gimple_build_call_internal (IFN_REDUC_MAX,
-						       1, args[0]);
-		gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
-		break;
-	      BUILTIN_VDQIF (UNOP, reduc_smin_scal_, 10)
-	      BUILTIN_VDQ_BHSI (UNOPU, reduc_umin_scal_, 10)
-	        new_stmt = gimple_build_call_internal (IFN_REDUC_MIN,
-						       1, args[0]);
-		gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
-		break;
-	      BUILTIN_GPF (BINOP, fmulx, 0)
+	      if (a0_cst_p && a1_cst_p)
 		{
-		  gcc_assert (nargs == 2);
-		  bool a0_cst_p = TREE_CODE (args[0]) == REAL_CST;
-		  bool a1_cst_p = TREE_CODE (args[1]) == REAL_CST;
-		  if (a0_cst_p || a1_cst_p)
+		  tree t0 = TREE_TYPE (args[0]);
+		  real_value a0 = (TREE_REAL_CST (args[0]));
+		  real_value a1 = (TREE_REAL_CST (args[1]));
+		  if (real_equal (&a1, &dconst0))
+		    std::swap (a0, a1);
+		  /* According to real_equal (), +0 equals -0.  */
+		  if (real_equal (&a0, &dconst0) && real_isinf (&a1))
 		    {
-		      if (a0_cst_p && a1_cst_p)
-			{
-			  tree t0 = TREE_TYPE (args[0]);
-			  real_value a0 = (TREE_REAL_CST (args[0]));
-			  real_value a1 = (TREE_REAL_CST (args[1]));
-			  if (real_equal (&a1, &dconst0))
-			    std::swap (a0, a1);
-			  /* According to real_equal (), +0 equals -0.  */
-			  if (real_equal (&a0, &dconst0) && real_isinf (&a1))
-			    {
-			      real_value res = dconst2;
-			      res.sign = a0.sign ^ a1.sign;
-			      new_stmt =
-				gimple_build_assign (gimple_call_lhs (stmt),
-						     REAL_CST,
-						     build_real (t0, res));
-			    }
-			  else
-			    new_stmt =
-			      gimple_build_assign (gimple_call_lhs (stmt),
-						   MULT_EXPR,
-						   args[0], args[1]);
-			}
-		      else /* a0_cst_p ^ a1_cst_p.  */
-			{
-			  real_value const_part = a0_cst_p
-			    ? TREE_REAL_CST (args[0]) : TREE_REAL_CST (args[1]);
-			  if (!real_equal (&const_part, &dconst0)
-			      && !real_isinf (&const_part))
-			    new_stmt =
-			      gimple_build_assign (gimple_call_lhs (stmt),
-						   MULT_EXPR, args[0], args[1]);
-			}
+		      real_value res = dconst2;
+		      res.sign = a0.sign ^ a1.sign;
+		      new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+						      REAL_CST,
+						      build_real (t0, res));
 		    }
-		  if (new_stmt)
-		    {
-		      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-		      gimple_set_vdef (new_stmt, gimple_vdef (stmt));
-		    }
-		  break;
+		  else
+		    new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+						    MULT_EXPR,
+						    args[0], args[1]);
 		}
-	    default:
-	      break;
+	      else /* a0_cst_p ^ a1_cst_p.  */
+		{
+		  real_value const_part = a0_cst_p
+		    ? TREE_REAL_CST (args[0]) : TREE_REAL_CST (args[1]);
+		  if (!real_equal (&const_part, &dconst0)
+		      && !real_isinf (&const_part))
+		    new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+						    MULT_EXPR, args[0],
+						    args[1]);
+		}
 	    }
+	  if (new_stmt)
+	    {
+	      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+	      gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+	    }
+	  break;
 	}
+    default:
+      break;
     }
-
-  if (new_stmt)
-    {
-      gsi_replace (gsi, new_stmt, true);
-      changed = true;
-    }
-
-  return changed;
+  return new_stmt;
 }
 
 void

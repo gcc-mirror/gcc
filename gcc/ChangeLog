@@ -1,5 +1,49 @@
 2019-09-27  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-protos.h (aarch64_builtin_class): New enum.
+	(AARCH64_BUILTIN_SHIFT, AARCH64_BUILTIN_CLASS): New constants.
+	(aarch64_gimple_fold_builtin, aarch64_mangle_builtin_type)
+	(aarch64_fold_builtin, aarch64_init_builtins, aarch64_expand_builtin):
+	(aarch64_builtin_decl, aarch64_builtin_rsqrt): Delete.
+	(aarch64_general_mangle_builtin_type, aarch64_general_init_builtins):
+	(aarch64_general_fold_builtin, aarch64_general_gimple_fold_builtin):
+	(aarch64_general_expand_builtin, aarch64_general_builtin_decl):
+	(aarch64_general_builtin_rsqrt): Declare.
+	* config/aarch64/aarch64-builtins.c (aarch64_general_add_builtin):
+	New function.
+	(aarch64_mangle_builtin_type): Rename to...
+	(aarch64_general_mangle_builtin_type): ...this.
+	(aarch64_init_fcmla_laneq_builtins, aarch64_init_simd_builtins)
+	(aarch64_init_crc32_builtins, aarch64_init_builtin_rsqrt)
+	(aarch64_init_pauth_hint_builtins, aarch64_init_tme_builtins): Use
+	aarch64_general_add_builtin instead of add_builtin_function.
+	(aarch64_init_builtins): Rename to...
+	(aarch64_general_init_builtins): ...this.  Use
+	aarch64_general_add_builtin instead of add_builtin_function.
+	(aarch64_builtin_decl): Rename to...
+	(aarch64_general_builtin_decl): ...this and remove the unused
+	arguments.
+	(aarch64_expand_builtin): Rename to...
+	(aarch64_general_expand_builtin): ...this and remove the unused
+	arguments.
+	(aarch64_builtin_rsqrt): Rename to...
+	(aarch64_general_builtin_rsqrt): ...this.
+	(aarch64_fold_builtin): Rename to...
+	(aarch64_general_fold_builtin): ...this.  Take the function subcode
+	and return type as arguments.  Remove the "ignored" argument.
+	(aarch64_gimple_fold_builtin): Rename to...
+	(aarch64_general_gimple_fold_builtin): ...this.  Take the function
+	subcode and gcall as arguments, and return the new function call.
+	* config/aarch64/aarch64.c (aarch64_init_builtins)
+	(aarch64_fold_builtin, aarch64_gimple_fold_builtin)
+	(aarch64_expand_builtin, aarch64_builtin_decl): New functions.
+	(aarch64_builtin_reciprocal): Call aarch64_general_builtin_rsqrt
+	instead of aarch64_builtin_rsqrt.
+	(aarch64_mangle_type): Call aarch64_general_mangle_builtin_type
+	instead of aarch64_mangle_builtin_type.
+
+2019-09-27  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target.def (check_builtin_call): New target hook.
 	* doc/tm.texi.in (TARGET_CHECK_BUILTIN_CALL): New @hook.
 	* doc/tm.texi: Regenerate.
