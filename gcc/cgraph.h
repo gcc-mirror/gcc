@@ -1142,7 +1142,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   void release_body (bool keep_arguments = false);
 
   /* Return the DECL_STRUCT_FUNCTION of the function.  */
-  struct function *get_fun (void);
+  struct function *get_fun () const;
 
   /* cgraph_node is no longer nested function; update cgraph accordingly.  */
   void unnest (void);

@@ -3602,9 +3602,9 @@ cgraph_node::get_body (void)
 /* Return the DECL_STRUCT_FUNCTION of the function.  */
 
 struct function *
-cgraph_node::get_fun (void)
+cgraph_node::get_fun () const
 {
-  cgraph_node *node = this;
+  const cgraph_node *node = this;
   struct function *fun = DECL_STRUCT_FUNCTION (node->decl);
 
   while (!fun && node->clone_of)
