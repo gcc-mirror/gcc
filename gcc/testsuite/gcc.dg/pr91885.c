@@ -2,8 +2,8 @@
 /* { dg-options "-O3 -fprofile-generate" } */
 /* { dg-require-profiling "-fprofile-generate" } */
 
-typedef signed long int __int64_t;
-typedef unsigned long int __uint64_t;
+typedef signed long long int __int64_t;
+typedef unsigned long long int __uint64_t;
 typedef __int64_t int64_t;
 typedef __uint64_t uint64_t;
 inline void
