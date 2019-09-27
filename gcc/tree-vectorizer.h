@@ -951,6 +951,8 @@ public:
 
   /* The original reduction code, to be used in the epilogue.  */
   enum tree_code reduc_code;
+  /* An internal function we should use in the epilogue.  */
+  internal_fn reduc_fn;
 
   /* On a stmt participating in the reduction the index of the operand
      on the reduction SSA cycle.  */
@@ -1079,6 +1081,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_NUM_SLP_USES(S)	(S)->num_slp_uses
 #define STMT_VINFO_REDUC_TYPE(S)	(S)->reduc_type
 #define STMT_VINFO_REDUC_CODE(S)	(S)->reduc_code
+#define STMT_VINFO_REDUC_FN(S)		(S)->reduc_fn
 #define STMT_VINFO_REDUC_DEF(S)		(S)->reduc_def
 #define STMT_VINFO_SLP_VECT_ONLY(S)     (S)->slp_vect_only_p
 
