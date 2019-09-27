@@ -6871,8 +6871,8 @@ extern module_state *get_module (tree name, module_state *parent = NULL,
 extern void module_preprocess (mkdeps *, module_state *, int is_module);
 extern bool module_may_redeclare (unsigned);
 
-extern void set_declared_module_origin (tree);
-extern void set_implicit_module_origin (tree);
+extern void set_originating_module (tree);
+extern void set_instantiating_module (tree);
 
 extern tree get_originating_module_decl (tree) ATTRIBUTE_PURE;
 extern unsigned get_originating_module (tree,

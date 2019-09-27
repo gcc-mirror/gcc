@@ -6453,7 +6453,7 @@ layout_class_type (tree t, tree *virtuals_p)
       TYPE_CONTEXT (base_t) = t;
       DECL_CONTEXT (base_d) = t;
 
-      set_implicit_module_origin (base_d);
+      set_instantiating_module (base_d);
 
       /* If the ABI version is not at least two, and the last
 	 field was a bit-field, RLI may not be on a byte

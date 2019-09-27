@@ -621,7 +621,6 @@ do_friend (tree ctype, tree declarator, tree decl,
 		 class specialization, and pushdecl will insert an
 		 unqualified friend decl into the template parameter
 		 scope, rather than the namespace containing it.  */
-	      set_module_owner (decl);
 
 	      tree ns = decl_namespace_context (decl);
 	      push_nested_namespace (ns);

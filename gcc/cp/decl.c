@@ -1917,6 +1917,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  gcc_checking_assert (!get_originating_module (olddecl));
 	  if (!(global_purview_p () || not_module_p ()))
 	    error ("declaration %qD conflicts with builtin", newdecl);
+	  // FIXME: take the bits from newdecl
 	  set_module_owner (olddecl);
 	}
       else
@@ -9126,7 +9127,9 @@ grokfndecl (tree ctype,
   /* If this decl has namespace scope, set that up.  */
   if (in_namespace)
     set_decl_namespace (decl, in_namespace, friendp);
-  else if (!ctype)
+  else if (ctype)
+    DECL_CONTEXT (decl) = ctype;
+  else
     DECL_CONTEXT (decl) = FROB_CONTEXT (current_decl_namespace ());
 
   /* `main' and builtins have implicit 'C' linkage.  */
@@ -9154,12 +9157,8 @@ grokfndecl (tree ctype,
   if (deletedp)
     DECL_DELETED_FN (decl) = 1;
 
-  if (ctype)
-    {
-      DECL_CONTEXT (decl) = ctype;
-      if (funcdef_flag)
-	check_class_member_definition_namespace (decl);
-    }
+  if (ctype && funcdef_flag)
+    check_class_member_definition_namespace (decl);
 
   if (ctype == NULL_TREE && DECL_MAIN_P (decl))
     {
@@ -9368,7 +9367,9 @@ grokfndecl (tree ctype,
   if (decl == error_mark_node)
     return NULL_TREE;
 
-  set_module_owner (decl);
+  // FIXME: This should probably go before
+  // check_explicit_specialization, but that fn needs work
+  set_originating_module (decl);
 
   if (DECL_STATIC_FUNCTION_P (decl))
     check_static_quals (decl, quals);
@@ -9597,8 +9598,6 @@ grokvardecl (tree type,
 				|| volatilep
 				|| inlinep));
       TREE_STATIC (decl) = ! DECL_EXTERNAL (decl);
-
-      set_module_owner (decl);
     }
   /* Not at top level, only `static' makes a static definition.  */
   else
@@ -9606,6 +9605,8 @@ grokvardecl (tree type,
       TREE_STATIC (decl) = declspecs->storage_class == sc_static;
       TREE_PUBLIC (decl) = DECL_EXTERNAL (decl);
     }
+
+  set_originating_module (decl);
 
   if (decl_spec_seq_has_spec_p (declspecs, ds_thread))
     {
@@ -12370,10 +12371,7 @@ grokdeclarator (const cp_declarator *declarator,
       if (decl_context != FIELD)
 	{
 	  if (!current_function_decl)
-	    {
-	      DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
-	      set_module_owner (decl);
-	    }
+	    DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
 	  else if (DECL_MAYBE_IN_CHARGE_CDTOR_P (current_function_decl))
 	    /* The TYPE_DECL is "abstract" because there will be
 	       clones of this constructor/destructor, and there will
@@ -12382,6 +12380,8 @@ grokdeclarator (const cp_declarator *declarator,
                revert this subsequently if it determines that
                the clones should share a common implementation.  */
 	    DECL_ABSTRACT_P (decl) = true;
+
+	  set_originating_module (decl);
 	}
       else if (current_class_type
 	       && constructor_name_p (unqualified_id, current_class_type))
@@ -12883,6 +12883,10 @@ grokdeclarator (const cp_declarator *declarator,
 		      return error_mark_node;
 		  }
 
+		// FIXME: Perhaps before
+		// check_explicit_specialization?  see similar call
+		set_originating_module (decl);
+		
 		decl = do_friend (ctype, unqualified_id, decl,
 				  *attrlist, flags,
 				  funcdef_flag);

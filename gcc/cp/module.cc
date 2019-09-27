@@ -17005,14 +17005,41 @@ module_may_redeclare (unsigned from)
 /* DECL is being created by this TU.  Record it came from here.  */
 
 void
-set_implicit_module_origin (tree decl)
+set_instantiating_module (tree decl)
 {
   if (!modules_p ())
     return;
 
   retrofit_lang_decl (decl);
-  DECL_MODULE_OWNER (decl)
-    = module_purview_p () ? MODULE_PURVIEW : MODULE_NONE;
+  DECL_MODULE_OWNER (decl) = module_purview_p () ? MODULE_PURVIEW : MODULE_NONE;
+}
+
+void
+set_originating_module (tree decl)
+{
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
+	      || TREE_CODE (decl) == VAR_DECL
+	      || TREE_CODE (decl) == TYPE_DECL);
+
+  if (!modules_p ())
+    return;
+
+  retrofit_lang_decl (decl);
+  DECL_MODULE_OWNER (decl) = module_purview_p () ? MODULE_PURVIEW : MODULE_NONE;
+
+  if (!module_purview_p ())
+    return;
+
+  if (TREE_CODE (CP_DECL_CONTEXT (decl)) != NAMESPACE_DECL)
+    return;
+
+  gcc_checking_assert (decl == get_instantiating_module_decl (decl));
+
+  if (!module_exporting_p ())
+    return;
+  
+  // FIXME: Check ill-formed linkage
+  DECL_MODULE_EXPORT_P (decl) = true;
 }
 
 /* Set the module EXPORT and OWNER fields on explicit DECL.  */
@@ -17023,7 +17050,7 @@ set_module_owner (tree decl)
   if (!modules_p ())
     return;
 
-  set_implicit_module_origin (decl);
+  set_instantiating_module (decl);
 
   int use_tpl = -1;
   node_template_info (decl, use_tpl);

@@ -9611,7 +9611,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       /* Although GEN_TMPL is the TEMPLATE_DECL, it has the same value
 	 of export flag.  */
       DECL_MODULE_EXPORT_P (type_decl) = DECL_MODULE_EXPORT_P (gen_tmpl);
-      set_implicit_module_origin (type_decl);
+      set_instantiating_module (type_decl);
 
       if (CLASS_TYPE_P (template_type))
 	{
@@ -10487,16 +10487,6 @@ tsubst_friend_function (tree decl, tree args)
 
 	  not_tmpl = DECL_TEMPLATE_RESULT (new_friend);
 	  new_friend_result_template_info = DECL_TEMPLATE_INFO (not_tmpl);
-	}
-
-      set_module_owner (not_tmpl);
-      if (modules_p ()
-	  && TREE_CODE (new_friend) == TEMPLATE_DECL
-	  && TREE_CODE (DECL_CONTEXT (new_friend)) != FUNCTION_DECL)
-	{
-	  DECL_MODULE_EXPORT_P (new_friend)
-	    = DECL_MODULE_EXPORT_P (not_tmpl);
-	  DECL_MODULE_OWNER (new_friend) = DECL_MODULE_OWNER (not_tmpl);
 	}
 
       /* Inside pushdecl_namespace_level, we will push into the
@@ -13103,7 +13093,7 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
   if (!DECL_DELETED_FN (r))
     DECL_INITIAL (r) = NULL_TREE;
   DECL_CONTEXT (r) = ctx;
-  set_implicit_module_origin (r);
+  set_instantiating_module (r);
 
   /* Handle explicit(dependent-expr).  */
   if (DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P (t))
@@ -19938,7 +19928,7 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
   DECL_TI_TEMPLATE (fndecl) = tmpl;
   DECL_TI_ARGS (fndecl) = targ_ptr;
 
-  set_module_owner (fndecl);
+  set_instantiating_module (fndecl);
 
   /* Now we know the specialization, compute access previously
      deferred.  Do no access control for inheriting constructors,

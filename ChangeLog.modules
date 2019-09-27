@@ -1,6 +1,23 @@
 2019-09-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (set_{originating,instantiating}_module): Declare.
+	* class.c (layout_class_type): Use set_instantiating_module.
+	* pt.c (lookup_template_class_1): Likewise.
+	(tsubst_function_decl, instantiate_template_1): Likewise.
+	(tsubst_friend): Not here.
+	* decl.c (grokfndecl): Use set_originating_module.
+	(grokvardecl,grokdeclarator): Likewise.
+	* name-lookup.c (do_pushtag): Likewise.
+	* friend.c (do_friend): Not here.
+	* module.cc (set_implicit_module_origin): Rename to ...
+	(set_instantiating_module): ... here.
+	(set_originating_module): New.
+	gcc/testsuite/
+	* g++.dg/modules/friend-3.C: New.
+	* g++.dg/modules/friend-4_[ab].C: New.
+
+	gcc/cp/
 	* cp-tree.h (get_module_owner): Delete.
 	(get_instantiating_module_decl, get_instantiating_module): Declare.
 	* module.cc (get_instantiating_module_decl)

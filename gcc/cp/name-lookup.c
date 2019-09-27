@@ -8334,8 +8334,7 @@ do_pushtag (tree name, tree type, tag_scope scope)
 
       tdef = create_implicit_typedef (name, type);
       DECL_CONTEXT (tdef) = FROB_CONTEXT (context);
-      /* Friends also get the same owner and export status.  */
-      set_module_owner (tdef);
+      set_originating_module (tdef);
       if (scope == ts_within_enclosing_non_class)
 	{
 	  /* This is a friend.  Make this TYPE_DECL node hidden from
