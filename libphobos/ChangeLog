@@ -1,3 +1,7 @@
+2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure: Regenerate.
+
 2019-09-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* testsuite/lib/libphobos.exp (libphobos_init): Add multi-lib libgcc

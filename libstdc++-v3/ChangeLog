@@ -1,3 +1,7 @@
+2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure: Regenerate.
+
 2019-09-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91910
