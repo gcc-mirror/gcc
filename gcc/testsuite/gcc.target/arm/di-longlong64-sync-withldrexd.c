@@ -1,7 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_arm_ok } */
 /* { dg-options "-marm -std=gnu99" } */
-/* { dg-require-effective-target arm_arch_v6k_ok } */
+/* { dg-require-effective-target arm_arch_v6k_arm_ok } */
 /* { dg-add-options arm_arch_v6k } */
 /* { dg-message "note: '__sync_fetch_and_nand' changed semantics in GCC 4.4" "fetch_and_nand" { target *-*-* } 0 } */
 /* { dg-message "note: '__sync_nand_and_fetch' changed semantics in GCC 4.4" "nand_and_fetch" { target *-*-* } 0 } */

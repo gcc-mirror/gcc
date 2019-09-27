@@ -1368,6 +1368,7 @@ OBJS = \
 	init-regs.o \
 	internal-fn.o \
 	ipa-cp.o \
+	ipa-sra.o \
 	ipa-devirt.o \
 	ipa-fnsummary.o \
 	ipa-polymorphic-call.o \
@@ -2527,7 +2528,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/reload.h $(srcdir)/caller-save.c $(srcdir)/symtab.c \
   $(srcdir)/alias.c $(srcdir)/bitmap.c $(srcdir)/cselib.c $(srcdir)/cgraph.c \
   $(srcdir)/ipa-prop.c $(srcdir)/ipa-cp.c $(srcdir)/ipa-utils.h \
-  $(srcdir)/dbxout.c \
+  $(srcdir)/ipa-param-manipulation.h $(srcdir)/ipa-sra.c $(srcdir)/dbxout.c \
   $(srcdir)/signop.h \
   $(srcdir)/dwarf2out.h \
   $(srcdir)/dwarf2asm.c \
@@ -2783,7 +2784,7 @@ build/genmddump.o : genmddump.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)
 build/genmatch.o : genmatch.c $(BCONFIG_H) $(SYSTEM_H) \
   $(CORETYPES_H) errors.h $(HASH_TABLE_H) hash-map.h $(GGC_H) is-a.h \
-  tree.def builtins.def internal-fn.def case-cfn-macros.h
+  tree.def builtins.def internal-fn.def case-cfn-macros.h $(CPPLIB_H)
 build/gencfn-macros.o : gencfn-macros.c $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) errors.h $(HASH_TABLE_H) hash-set.h builtins.def	\
   internal-fn.def

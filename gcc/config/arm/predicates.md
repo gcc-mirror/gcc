@@ -206,6 +206,21 @@
        (and (match_code "const_int")
 	    (match_test "const_ok_for_dimode_op (INTVAL (op), PLUS)"))))
 
+(define_predicate "arm_anddi_operand"
+  (ior (match_operand 0 "s_register_operand")
+       (and (match_code "const_int")
+	    (match_test "const_ok_for_dimode_op (INTVAL (op), AND)"))))
+
+(define_predicate "arm_iordi_operand"
+  (ior (match_operand 0 "s_register_operand")
+       (and (match_code "const_int")
+	    (match_test "const_ok_for_dimode_op (INTVAL (op), IOR)"))))
+
+(define_predicate "arm_xordi_operand"
+  (ior (match_operand 0 "s_register_operand")
+       (and (match_code "const_int")
+	    (match_test "const_ok_for_dimode_op (INTVAL (op), XOR)"))))
+
 (define_predicate "arm_addimm_operand"
   (ior (match_operand 0 "arm_immediate_operand")
        (match_operand 0 "arm_neg_immediate_operand")))

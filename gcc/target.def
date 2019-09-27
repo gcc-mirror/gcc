@@ -2397,6 +2397,24 @@ another @code{CALL_EXPR}.\n\
 @var{arglist} really has type @samp{VEC(tree,gc)*}",
  tree, (unsigned int /*location_t*/ loc, tree fndecl, void *arglist), NULL)
 
+DEFHOOK
+(check_builtin_call,
+ "Perform semantic checking on a call to a machine-specific built-in\n\
+function after its arguments have been constrained to the function\n\
+signature.  Return true if the call is valid, otherwise report an error\n\
+and return false.\n\
+\n\
+This hook is called after @code{TARGET_RESOLVE_OVERLOADED_BUILTIN}.\n\
+The call was originally to built-in function @var{orig_fndecl},\n\
+but after the optional @code{TARGET_RESOLVE_OVERLOADED_BUILTIN}\n\
+step is now to built-in function @var{fndecl}.  @var{loc} is the\n\
+location of the call and @var{args} is an array of function arguments,\n\
+of which there are @var{nargs}.  @var{arg_loc} specifies the location\n\
+of each argument.",
+ bool, (location_t loc, vec<location_t> arg_loc, tree fndecl,
+	tree orig_fndecl, unsigned int nargs, tree *args),
+ NULL)
+
 /* Fold a target-specific builtin to a tree valid for both GIMPLE
    and GENERIC.  */
 DEFHOOK

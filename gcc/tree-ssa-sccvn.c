@@ -2189,7 +2189,7 @@ adjust_offsets_for_equal_base_address (tree base1, poly_int64 *offset1,
 
 static void *
 vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
-		       bool *disambiguate_only)
+		       translate_flags *disambiguate_only)
 {
   vn_walk_cb_data *data = (vn_walk_cb_data *)data_;
   vn_reference_t vr = data->vr;
@@ -2210,8 +2210,11 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       lhs_ops.truncate (0);
       basic_block saved_rpo_bb = vn_context_bb;
       vn_context_bb = gimple_bb (def_stmt);
-      copy_reference_ops_from_ref (lhs, &lhs_ops);
-      lhs_ops = valueize_refs_1 (lhs_ops, &valueized_anything, true);
+      if (*disambiguate_only <= TR_VALUEIZE_AND_DISAMBIGUATE)
+	{
+	  copy_reference_ops_from_ref (lhs, &lhs_ops);
+	  lhs_ops = valueize_refs_1 (lhs_ops, &valueized_anything, true);
+	}
       vn_context_bb = saved_rpo_bb;
       if (valueized_anything)
 	{
@@ -2221,7 +2224,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  if (lhs_ref_ok
 	      && !refs_may_alias_p_1 (ref, &lhs_ref, data->tbaa_p))
 	    {
-	      *disambiguate_only = true;
+	      *disambiguate_only = TR_VALUEIZE_AND_DISAMBIGUATE;
 	      return NULL;
 	    }
 	}
@@ -2248,7 +2251,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    }
 	  if (!refs_may_alias_p_1 (&data->orig_ref, lref, data->tbaa_p))
 	    {
-	      *disambiguate_only = true;
+	      *disambiguate_only = (valueized_anything
+				    ? TR_VALUEIZE_AND_DISAMBIGUATE
+				    : TR_DISAMBIGUATE);
 	      return NULL;
 	    }
 	}
@@ -2290,7 +2295,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    }
 	}
     }
-  else if (gimple_call_builtin_p (def_stmt, BUILT_IN_NORMAL)
+  else if (*disambiguate_only <= TR_VALUEIZE_AND_DISAMBIGUATE
+	   && gimple_call_builtin_p (def_stmt, BUILT_IN_NORMAL)
 	   && gimple_call_num_args (def_stmt) <= 4)
     {
       /* For builtin calls valueize its arguments and call the
@@ -2319,7 +2325,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    gimple_call_set_arg (def_stmt, i, oldargs[i]);
 	  if (!res)
 	    {
-	      *disambiguate_only = true;
+	      *disambiguate_only = TR_VALUEIZE_AND_DISAMBIGUATE;
 	      return NULL;
 	    }
 	}
@@ -2327,7 +2333,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 
   /* If we are looking for redundant stores do not create new hashtable
      entries from aliasing defs with made up alias-sets.  */
-  if (*disambiguate_only || !data->tbaa_p)
+  if (*disambiguate_only > TR_TRANSLATE || !data->tbaa_p)
     return (void *)-1;
 
   /* If we cannot constrain the size of the reference we cannot
@@ -2929,8 +2935,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  else
 	    return (void *)-1;
 	}
-      if (TREE_CODE (rhs) != SSA_NAME
-	  && TREE_CODE (rhs) != ADDR_EXPR)
+      if (TREE_CODE (rhs) == SSA_NAME)
+	rhs = SSA_VAL (rhs);
+      else if (TREE_CODE (rhs) != ADDR_EXPR)
 	return (void *)-1;
 
       /* The bases of the destination and the references have to agree.  */

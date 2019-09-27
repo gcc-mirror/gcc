@@ -1894,10 +1894,15 @@ dt_node *
 dt_node::append_simplify (simplify *s, unsigned pattern_no,
 			  dt_operand **indexes)
 {
+  dt_simplify *s2;
   dt_simplify *n = new dt_simplify (s, pattern_no, indexes);
   for (unsigned i = 0; i < kids.length (); ++i)
-    if (dt_simplify *s2 = dyn_cast <dt_simplify *> (kids[i]))
+    if ((s2 = dyn_cast <dt_simplify *> (kids[i]))
+	&& (verbose >= 1
+	    || s->match->location != s2->s->match->location))
       {
+	/* With a nested patters, it's hard to avoid these in order
+	   to keep match.pd rules relatively small.  */
 	warning_at (s->match->location, "duplicate pattern");
 	warning_at (s2->s->match->location, "previous pattern defined here");
 	print_operand (s->match, stderr);

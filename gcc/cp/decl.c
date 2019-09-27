@@ -10555,7 +10555,6 @@ grokdeclarator (const cp_declarator *declarator,
   bool constinit_p = decl_spec_seq_has_spec_p (declspecs, ds_constinit);
   bool late_return_type_p = false;
   bool array_parameter_p = false;
-  location_t saved_loc = input_location;
   tree reqs = NULL_TREE;
 
   signed_p = decl_spec_seq_has_spec_p (declspecs, ds_signed);
@@ -10980,14 +10979,15 @@ grokdeclarator (const cp_declarator *declarator,
     {
       if (! int_n_enabled_p[declspecs->int_n_idx])
 	{
-	  error ("%<__int%d%> is not supported by this target",
-		 int_n_data[declspecs->int_n_idx].bitsize);
+	  error_at (declspecs->locations[ds_type_spec],
+		    "%<__int%d%> is not supported by this target",
+		    int_n_data[declspecs->int_n_idx].bitsize);
 	  explicit_intN = false;
 	}
       /* Don't pedwarn if the alternate "__intN__" form has been used instead
 	 of "__intN".  */
       else if (!int_n_alt && pedantic && ! in_system_header_at (input_location))
-	pedwarn (input_location, OPT_Wpedantic,
+	pedwarn (declspecs->locations[ds_type_spec], OPT_Wpedantic,
 		 "ISO C++ does not support %<__int%d%> for %qs",
 		 int_n_data[declspecs->int_n_idx].bitsize, name);
     }
@@ -11362,7 +11362,10 @@ grokdeclarator (const cp_declarator *declarator,
 	   && storage_class != sc_static)
 	  || typedef_p))
     {
-      error ("multiple storage classes in declaration of %qs", name);
+      location_t loc
+	= min_location (declspecs->locations[ds_thread],
+			declspecs->locations[ds_storage_class]);
+      error_at (loc, "multiple storage classes in declaration of %qs", name);
       thread_p = false;
     }
   if (decl_context != NORMAL
@@ -11521,7 +11524,9 @@ grokdeclarator (const cp_declarator *declarator,
 	  type = create_array_type_for_decl (dname, type,
 					     declarator->u.array.bounds,
 					     declarator->id_loc);
-	  if (!valid_array_size_p (input_location, type, dname))
+	  if (!valid_array_size_p (dname
+				   ? declarator->id_loc : input_location,
+				   type, dname))
 	    type = error_mark_node;
 
 	  if (declarator->std_attributes)
@@ -11540,9 +11545,10 @@ grokdeclarator (const cp_declarator *declarator,
 
 	    /* Declaring a function type.  */
 
-	    input_location = declspecs->locations[ds_type_spec];
-	    abstract_virtuals_error (ACU_RETURN, type);
-	    input_location = saved_loc;
+	    {
+	      iloc_sentinel ils (declspecs->locations[ds_type_spec]);
+	      abstract_virtuals_error (ACU_RETURN, type);
+	    }
 
 	    /* Pick up type qualifiers which should be applied to `this'.  */
 	    memfn_quals = declarator->u.function.qualifiers;
@@ -15096,11 +15102,8 @@ finish_enum_value_list (tree enumtype)
      type of the enumeration.  */
   for (values = TYPE_VALUES (enumtype); values; values = TREE_CHAIN (values))
     {
-      location_t saved_location;
-
       decl = TREE_VALUE (values);
-      saved_location = input_location;
-      input_location = DECL_SOURCE_LOCATION (decl);
+      iloc_sentinel ils (DECL_SOURCE_LOCATION (decl));
       if (fixed_underlying_type_p)
         /* If the enumeration type has a fixed underlying type, we
            already checked all of the enumerator values.  */
@@ -15109,8 +15112,6 @@ finish_enum_value_list (tree enumtype)
         value = perform_implicit_conversion (underlying_type,
                                              DECL_INITIAL (decl),
                                              tf_warning_or_error);
-      input_location = saved_location;
-
       /* Do not clobber shared ints.  */
       if (value != error_mark_node)
 	{

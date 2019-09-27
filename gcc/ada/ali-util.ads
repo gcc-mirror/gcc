@@ -107,15 +107,13 @@ package ALI.Util is
    -- Subprograms for Manipulating ALI Information --
    --------------------------------------------------
 
-   procedure Read_Withed_ALIs
-     (Id            : ALI_Id;
-      Ignore_Errors : Boolean := False);
+   procedure Read_Withed_ALIs (Id : ALI_Id);
    --  Process an ALI file which has been read and scanned by looping through
    --  all withed units in the ALI file, checking if they have been processed.
    --  Each unit that has not yet been processed will be read, scanned, and
-   --  processed recursively. If Ignore_Errors is True, then failure to read an
-   --  ALI file is not reported as an error, and scanning continues with other
-   --  ALI files.
+   --  processed recursively. In GNATprove mode a failure to read an ALI file
+   --  is not reported as an error, and scanning continues with other ALI
+   --  files.
 
    procedure Set_Source_Table (A : ALI_Id);
    --  Build source table entry corresponding to the ALI file whose id is A

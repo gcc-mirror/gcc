@@ -130,7 +130,6 @@ static void copy_bind_expr (tree *, int *, copy_body_data *);
 static void declare_inline_vars (tree, tree);
 static void remap_save_expr (tree *, hash_map<tree, tree> *, int *);
 static void prepend_lexical_block (tree current_block, tree new_block);
-static tree copy_decl_to_var (tree, copy_body_data *);
 static tree copy_result_decl_to_var (tree, copy_body_data *);
 static tree copy_decl_maybe_to_var (tree, copy_body_data *);
 static gimple_seq remap_gimple_stmt (gimple *, copy_body_data *);
@@ -192,7 +191,21 @@ remap_ssa_name (tree name, copy_body_data *id)
 
   n = id->decl_map->get (name);
   if (n)
-    return unshare_expr (*n);
+    {
+      /* WHen we perform edge redirection as part of CFG copy, IPA-SRA can
+	 remove an unused LHS from a call statement.  Such LHS can however
+	 still appear in debug statements, but their value is lost in this
+	 function and we do not want to map them.  */
+      if (id->killed_new_ssa_names
+	  && id->killed_new_ssa_names->contains (*n))
+	{
+	  gcc_assert (processing_debug_stmt);
+	  processing_debug_stmt = -1;
+	  return name;
+	}
+
+      return unshare_expr (*n);
+    }
 
   if (processing_debug_stmt)
     {
@@ -1902,6 +1915,21 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
       gcc_assert (n);
       gimple_set_block (copy, *n);
     }
+  if (id->param_body_adjs)
+    {
+      gimple_seq extra_stmts = NULL;
+      id->param_body_adjs->modify_gimple_stmt (&copy, &extra_stmts);
+      if (!gimple_seq_empty_p (extra_stmts))
+	{
+	  memset (&wi, 0, sizeof (wi));
+	  wi.info = id;
+	  for (gimple_stmt_iterator egsi = gsi_start (extra_stmts);
+	       !gsi_end_p (egsi);
+	       gsi_next (&egsi))
+	    walk_gimple_op (gsi_stmt (egsi), remap_gimple_op_r, &wi);
+	  gimple_seq_add_seq (&stmts, extra_stmts);
+	}
+    }
 
   if (id->reset_location)
     gimple_set_location (copy, input_location);
@@ -2865,10 +2893,24 @@ redirect_all_calls (copy_body_data * id, basic_block bb)
       gimple *stmt = gsi_stmt (si);
       if (is_gimple_call (stmt))
 	{
+	  tree old_lhs = gimple_call_lhs (stmt);
 	  struct cgraph_edge *edge = id->dst_node->get_edge (stmt);
 	  if (edge)
 	    {
-	      edge->redirect_call_stmt_to_callee ();
+	      gimple *new_stmt = edge->redirect_call_stmt_to_callee ();
+	      /* If IPA-SRA transformation, run as part of edge redirection,
+		 removed the LHS because it is unused, save it to
+		 killed_new_ssa_names so that we can prune it from debug
+		 statements.  */
+	      if (old_lhs
+		  && TREE_CODE (old_lhs) == SSA_NAME
+		  && !gimple_call_lhs (new_stmt))
+		{
+		  if (!id->killed_new_ssa_names)
+		    id->killed_new_ssa_names = new hash_set<tree> (16);
+		  id->killed_new_ssa_names->add (old_lhs);
+		}
+
 	      if (stmt == last && id->call_stmt && maybe_clean_eh_stmt (stmt))
 		gimple_purge_dead_eh_edges (bb);
 	    }
@@ -3189,6 +3231,8 @@ copy_body (copy_body_data *id,
   body = copy_cfg_body (id, entry_block_map, exit_block_map,
 			new_entry);
   copy_debug_stmts (id);
+  delete id->killed_new_ssa_names;
+  id->killed_new_ssa_names = NULL;
 
   return body;
 }
@@ -4908,6 +4952,38 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   /* Add local vars in this inlined callee to caller.  */
   add_local_variables (id->src_cfun, cfun, id);
 
+  if (id->src_node->clone.performed_splits)
+    {
+      /* Any calls from the inlined function will be turned into calls from the
+	 function we inline into.  We must preserve notes about how to split
+	 parameters such calls should be redirected/updated.  */
+      unsigned len = vec_safe_length (id->src_node->clone.performed_splits);
+      for (unsigned i = 0; i < len; i++)
+	{
+	  ipa_param_performed_split ps
+	    = (*id->src_node->clone.performed_splits)[i];
+	  ps.dummy_decl = remap_decl (ps.dummy_decl, id);
+	  vec_safe_push (id->dst_node->clone.performed_splits, ps);
+	}
+
+      if (flag_checking)
+	{
+	  len = vec_safe_length (id->dst_node->clone.performed_splits);
+	  for (unsigned i = 0; i < len; i++)
+	    {
+	      ipa_param_performed_split *ps1
+		= &(*id->dst_node->clone.performed_splits)[i];
+	      for (unsigned j = i + 1; j < len; j++)
+		{
+		  ipa_param_performed_split *ps2
+		    = &(*id->dst_node->clone.performed_splits)[j];
+		  gcc_assert (ps1->dummy_decl != ps2->dummy_decl
+			      || ps1->unit_offset != ps2->unit_offset);
+		}
+	    }
+	}
+    }
+
   if (dump_enabled_p ())
     {
       char buf[128];
@@ -4940,9 +5016,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	  tree *varp = id->decl_map->get (p);
 	  if (varp && VAR_P (*varp) && !is_gimple_reg (*varp))
 	    {
-	      tree clobber = build_constructor (TREE_TYPE (*varp), NULL);
+	      tree clobber = build_clobber (TREE_TYPE (*varp));
 	      gimple *clobber_stmt;
-	      TREE_THIS_VOLATILE (clobber) = 1;
 	      clobber_stmt = gimple_build_assign (*varp, clobber);
 	      gimple_set_location (clobber_stmt, gimple_location (stmt));
 	      gsi_insert_before (&stmt_gsi, clobber_stmt, GSI_SAME_STMT);
@@ -5010,9 +5085,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	  && !is_gimple_reg (id->retvar)
 	  && !stmt_ends_bb_p (stmt))
 	{
-	  tree clobber = build_constructor (TREE_TYPE (id->retvar), NULL);
+	  tree clobber = build_clobber (TREE_TYPE (id->retvar));
 	  gimple *clobber_stmt;
-	  TREE_THIS_VOLATILE (clobber) = 1;
 	  clobber_stmt = gimple_build_assign (id->retvar, clobber);
 	  gimple_set_location (clobber_stmt, gimple_location (old_stmt));
 	  gsi_insert_after (&stmt_gsi, clobber_stmt, GSI_SAME_STMT);
@@ -5058,9 +5132,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	       && !TREE_THIS_VOLATILE (id->retvar)
 	       && !is_gimple_reg (id->retvar))
 	{
-	  tree clobber = build_constructor (TREE_TYPE (id->retvar), NULL);
+	  tree clobber = build_clobber (TREE_TYPE (id->retvar));
 	  gimple *clobber_stmt;
-	  TREE_THIS_VOLATILE (clobber) = 1;
 	  clobber_stmt = gimple_build_assign (id->retvar, clobber);
 	  gimple_set_location (clobber_stmt, gimple_location (stmt));
 	  gsi_replace (&stmt_gsi, clobber_stmt, false);
@@ -5733,7 +5806,11 @@ copy_decl_for_dup_finish (copy_body_data *id, tree decl, tree copy)
   return copy;
 }
 
-static tree
+/* Create a new VAR_DECL that is indentical in all respect to DECL except that
+   DECL can be either a VAR_DECL, a PARM_DECL or RESULT_DECL.  The original
+   DECL must come from ID->src_fn and the copy will be part of ID->dst_fn.  */
+
+tree
 copy_decl_to_var (tree decl, copy_body_data *id)
 {
   tree copy, type;
@@ -5816,38 +5893,24 @@ copy_decl_maybe_to_var (tree decl, copy_body_data *id)
     return copy_decl_no_change (decl, id);
 }
 
-/* Return a copy of the function's argument tree.  */
+/* Return a copy of the function's argument tree without any modifications.  */
+
 static tree
-copy_arguments_for_versioning (tree orig_parm, copy_body_data * id,
-			       bitmap args_to_skip, tree *vars)
+copy_arguments_nochange (tree orig_parm, copy_body_data * id)
 {
   tree arg, *parg;
   tree new_parm = NULL;
-  int i = 0;
 
   parg = &new_parm;
-
-  for (arg = orig_parm; arg; arg = DECL_CHAIN (arg), i++)
-    if (!args_to_skip || !bitmap_bit_p (args_to_skip, i))
-      {
-        tree new_tree = remap_decl (arg, id);
-	if (TREE_CODE (new_tree) != PARM_DECL)
-	  new_tree = id->copy_decl (arg, id);
-        lang_hooks.dup_lang_specific_decl (new_tree);
-        *parg = new_tree;
-	parg = &DECL_CHAIN (new_tree);
-      }
-    else if (!id->decl_map->get (arg))
-      {
-	/* Make an equivalent VAR_DECL.  If the argument was used
-	   as temporary variable later in function, the uses will be
-	   replaced by local variable.  */
-	tree var = copy_decl_to_var (arg, id);
-	insert_decl_map (id, arg, var);
-        /* Declare this new variable.  */
-        DECL_CHAIN (var) = *vars;
-        *vars = var;
-      }
+  for (arg = orig_parm; arg; arg = DECL_CHAIN (arg))
+    {
+      tree new_tree = remap_decl (arg, id);
+      if (TREE_CODE (new_tree) != PARM_DECL)
+	new_tree = id->copy_decl (arg, id);
+      lang_hooks.dup_lang_specific_decl (new_tree);
+      *parg = new_tree;
+      parg = &DECL_CHAIN (new_tree);
+    }
   return new_parm;
 }
 
@@ -5883,6 +5946,18 @@ tree_versionable_function_p (tree fndecl)
 static void
 update_clone_info (copy_body_data * id)
 {
+  vec<ipa_param_performed_split, va_gc> *cur_performed_splits
+    = id->dst_node->clone.performed_splits;
+  if (cur_performed_splits)
+    {
+      unsigned len = cur_performed_splits->length ();
+      for (unsigned i = 0; i < len; i++)
+	{
+	  ipa_param_performed_split *ps = &(*cur_performed_splits)[i];
+	  ps->dummy_decl = remap_decl (ps->dummy_decl, id);
+	}
+    }
+
   struct cgraph_node *node;
   if (!id->dst_node->clones)
     return;
@@ -5896,10 +5971,55 @@ update_clone_info (copy_body_data * id)
 	    {
 	      struct ipa_replace_map *replace_info;
 	      replace_info = (*node->clone.tree_map)[i];
-	      walk_tree (&replace_info->old_tree, copy_tree_body_r, id, NULL);
 	      walk_tree (&replace_info->new_tree, copy_tree_body_r, id, NULL);
 	    }
 	}
+      if (node->clone.performed_splits)
+	{
+	  unsigned len = vec_safe_length (node->clone.performed_splits);
+	  for (unsigned i = 0; i < len; i++)
+	    {
+	      ipa_param_performed_split *ps
+		= &(*node->clone.performed_splits)[i];
+	      ps->dummy_decl = remap_decl (ps->dummy_decl, id);
+	    }
+	}
+      if (unsigned len = vec_safe_length (cur_performed_splits))
+	{
+	  /* We do not want to add current performed splits when we are saving
+	     a copy of function body for later during inlining, that would just
+	     duplicate all entries.  So let's have a look whether anything
+	     referring to the first dummy_decl is present.  */
+	  unsigned dst_len = vec_safe_length (node->clone.performed_splits);
+	  ipa_param_performed_split *first = &(*cur_performed_splits)[0];
+	  for (unsigned i = 0; i < dst_len; i++)
+	    if ((*node->clone.performed_splits)[i].dummy_decl
+		== first->dummy_decl)
+	      {
+		len = 0;
+		break;
+	      }
+
+	  for (unsigned i = 0; i < len; i++)
+	    vec_safe_push (node->clone.performed_splits,
+			   (*cur_performed_splits)[i]);
+	  if (flag_checking)
+	    {
+	      for (unsigned i = 0; i < dst_len; i++)
+		{
+		  ipa_param_performed_split *ps1
+		    = &(*node->clone.performed_splits)[i];
+		  for (unsigned j = i + 1; j < dst_len; j++)
+		    {
+		      ipa_param_performed_split *ps2
+			= &(*node->clone.performed_splits)[j];
+		      gcc_assert (ps1->dummy_decl != ps2->dummy_decl
+				  || ps1->unit_offset != ps2->unit_offset);
+		    }
+		}
+	    }
+	}
+
       if (node->clones)
 	node = node->clones;
       else if (node->next_sibling_clone)
@@ -5921,19 +6041,18 @@ update_clone_info (copy_body_data * id)
    tree with another tree while duplicating the function's
    body, TREE_MAP represents the mapping between these
    trees. If UPDATE_CLONES is set, the call_stmt fields
-   of edges of clones of the function will be updated.  
+   of edges of clones of the function will be updated.
 
-   If non-NULL ARGS_TO_SKIP determine function parameters to remove
-   from new version.
-   If SKIP_RETURN is true, the new version will return void.
-   If non-NULL BLOCK_TO_COPY determine what basic blocks to copy.
+   If non-NULL PARAM_ADJUSTMENTS determines how function prototype (i.e. the
+   function parameters and return value) should be modified).
+   If non-NULL BLOCKS_TO_COPY determine what basic blocks to copy.
    If non_NULL NEW_ENTRY determine new entry BB of the clone.
 */
 void
 tree_function_versioning (tree old_decl, tree new_decl,
 			  vec<ipa_replace_map *, va_gc> *tree_map,
-			  bool update_clones, bitmap args_to_skip,
-			  bool skip_return, bitmap blocks_to_copy,
+			  ipa_param_adjustments *param_adjustments,
+			  bool update_clones, bitmap blocks_to_copy,
 			  basic_block new_entry)
 {
   struct cgraph_node *old_version_node;
@@ -5945,7 +6064,6 @@ tree_function_versioning (tree old_decl, tree new_decl,
   basic_block old_entry_block, bb;
   auto_vec<gimple *, 10> init_stmts;
   tree vars = NULL_TREE;
-  bitmap debug_args_to_skip = args_to_skip;
 
   gcc_assert (TREE_CODE (old_decl) == FUNCTION_DECL
 	      && TREE_CODE (new_decl) == FUNCTION_DECL);
@@ -6021,96 +6139,78 @@ tree_function_versioning (tree old_decl, tree new_decl,
     DECL_STRUCT_FUNCTION (new_decl)->static_chain_decl
       = copy_static_chain (p, &id);
 
+  auto_vec<int, 16> new_param_indices;
+  ipa_param_adjustments *old_param_adjustments
+    = old_version_node->clone.param_adjustments;
+  if (old_param_adjustments)
+    old_param_adjustments->get_updated_indices (&new_param_indices);
+
   /* If there's a tree_map, prepare for substitution.  */
   if (tree_map)
     for (i = 0; i < tree_map->length (); i++)
       {
 	gimple *init;
 	replace_info = (*tree_map)[i];
-	if (replace_info->replace_p)
-	  {
-	    int parm_num = -1;
-	    if (!replace_info->old_tree)
-	      {
-		int p = replace_info->parm_num;
-		tree parm;
-		tree req_type, new_type;
 
-		for (parm = DECL_ARGUMENTS (old_decl); p;
-		     parm = DECL_CHAIN (parm))
-		  p--;
-		replace_info->old_tree = parm;
-		parm_num = replace_info->parm_num;
-		req_type = TREE_TYPE (parm);
-		new_type = TREE_TYPE (replace_info->new_tree);
-		if (!useless_type_conversion_p (req_type, new_type))
-		  {
-		    if (fold_convertible_p (req_type, replace_info->new_tree))
-		      replace_info->new_tree
-			= fold_build1 (NOP_EXPR, req_type,
-				       replace_info->new_tree);
-		    else if (TYPE_SIZE (req_type) == TYPE_SIZE (new_type))
-		      replace_info->new_tree
-			= fold_build1 (VIEW_CONVERT_EXPR, req_type,
-				       replace_info->new_tree);
-		    else
-		      {
-			if (dump_file)
-			  {
-			    fprintf (dump_file, "    const ");
-			    print_generic_expr (dump_file,
-						replace_info->new_tree);
-			    fprintf (dump_file,
-				     "  can't be converted to param ");
-			    print_generic_expr (dump_file, parm);
-			    fprintf (dump_file, "\n");
-			  }
-			replace_info->old_tree = NULL;
-		      }
-		  }
-	      }
+	int p = replace_info->parm_num;
+	if (old_param_adjustments)
+	  p = new_param_indices[p];
+
+	tree parm;
+	tree req_type, new_type;
+
+	for (parm = DECL_ARGUMENTS (old_decl); p;
+	     parm = DECL_CHAIN (parm))
+	  p--;
+	tree old_tree = parm;
+	req_type = TREE_TYPE (parm);
+	new_type = TREE_TYPE (replace_info->new_tree);
+	if (!useless_type_conversion_p (req_type, new_type))
+	  {
+	    if (fold_convertible_p (req_type, replace_info->new_tree))
+	      replace_info->new_tree
+		= fold_build1 (NOP_EXPR, req_type, replace_info->new_tree);
+	    else if (TYPE_SIZE (req_type) == TYPE_SIZE (new_type))
+	      replace_info->new_tree
+		= fold_build1 (VIEW_CONVERT_EXPR, req_type,
+			       replace_info->new_tree);
 	    else
-	      gcc_assert (TREE_CODE (replace_info->old_tree) == PARM_DECL);
-	    if (replace_info->old_tree)
 	      {
-		init = setup_one_parameter (&id, replace_info->old_tree,
-					    replace_info->new_tree, id.src_fn,
-					    NULL,
-					    &vars);
-		if (init)
-		  init_stmts.safe_push (init);
-		if (MAY_HAVE_DEBUG_BIND_STMTS && args_to_skip)
+		if (dump_file)
 		  {
-		    if (parm_num == -1)
-		      {
-			tree parm;
-			int p;
-			for (parm = DECL_ARGUMENTS (old_decl), p = 0; parm;
-			     parm = DECL_CHAIN (parm), p++)
-			  if (parm == replace_info->old_tree)
-			    {
-			      parm_num = p;
-			      break;
-			    }
-		      }
-		    if (parm_num != -1)
-		      {
-			if (debug_args_to_skip == args_to_skip)
-			  {
-			    debug_args_to_skip = BITMAP_ALLOC (NULL);
-			    bitmap_copy (debug_args_to_skip, args_to_skip);
-			  }
-			bitmap_clear_bit (debug_args_to_skip, parm_num);
-		      }
+		    fprintf (dump_file, "    const ");
+		    print_generic_expr (dump_file,
+					replace_info->new_tree);
+		    fprintf (dump_file,
+			     "  can't be converted to param ");
+		    print_generic_expr (dump_file, parm);
+		    fprintf (dump_file, "\n");
 		  }
+		old_tree = NULL;
 	      }
 	  }
+
+	if (old_tree)
+	  {
+	    init = setup_one_parameter (&id, old_tree, replace_info->new_tree,
+					id.src_fn, NULL, &vars);
+	    if (init)
+	      init_stmts.safe_push (init);
+	  }
       }
-  /* Copy the function's arguments.  */
-  if (DECL_ARGUMENTS (old_decl) != NULL_TREE)
+
+  ipa_param_body_adjustments *param_body_adjs = NULL;
+  if (param_adjustments)
+    {
+      param_body_adjs = new ipa_param_body_adjustments (param_adjustments,
+							new_decl, old_decl,
+							&id, &vars, tree_map);
+      id.param_body_adjs = param_body_adjs;
+      DECL_ARGUMENTS (new_decl) = param_body_adjs->get_new_param_chain ();
+    }
+  else if (DECL_ARGUMENTS (old_decl) != NULL_TREE)
     DECL_ARGUMENTS (new_decl)
-      = copy_arguments_for_versioning (DECL_ARGUMENTS (old_decl), &id,
-				       args_to_skip, &vars);
+      = copy_arguments_nochange (DECL_ARGUMENTS (old_decl), &id);
 
   DECL_INITIAL (new_decl) = remap_blocks (DECL_INITIAL (id.src_fn), &id);
   BLOCK_SUPERCONTEXT (DECL_INITIAL (new_decl)) = new_decl;
@@ -6123,12 +6223,19 @@ tree_function_versioning (tree old_decl, tree new_decl,
 
   if (DECL_RESULT (old_decl) == NULL_TREE)
     ;
-  else if (skip_return && !VOID_TYPE_P (TREE_TYPE (DECL_RESULT (old_decl))))
+  else if (param_adjustments && param_adjustments->m_skip_return
+	   && !VOID_TYPE_P (TREE_TYPE (DECL_RESULT (old_decl))))
     {
+      tree resdecl_repl = copy_result_decl_to_var (DECL_RESULT (old_decl),
+						   &id);
+      declare_inline_vars (NULL, resdecl_repl);
+      insert_decl_map (&id, DECL_RESULT (old_decl), resdecl_repl);
+
       DECL_RESULT (new_decl)
 	= build_decl (DECL_SOURCE_LOCATION (DECL_RESULT (old_decl)),
 		      RESULT_DECL, NULL_TREE, void_type_node);
       DECL_CONTEXT (DECL_RESULT (new_decl)) = new_decl;
+      DECL_IS_MALLOC (new_decl) = false;
       cfun->returns_struct = 0;
       cfun->returns_pcc_struct = 0;
     }
@@ -6221,29 +6328,30 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	}
     }
 
-  if (debug_args_to_skip && MAY_HAVE_DEBUG_BIND_STMTS)
+  if (param_body_adjs && MAY_HAVE_DEBUG_BIND_STMTS)
     {
-      tree parm;
       vec<tree, va_gc> **debug_args = NULL;
       unsigned int len = 0;
-      for (parm = DECL_ARGUMENTS (old_decl), i = 0;
-	   parm; parm = DECL_CHAIN (parm), i++)
-	if (bitmap_bit_p (debug_args_to_skip, i) && is_gimple_reg (parm))
-	  {
-	    tree ddecl;
+      unsigned reset_len = param_body_adjs->m_reset_debug_decls.length ();
 
-	    if (debug_args == NULL)
-	      {
-		debug_args = decl_debug_args_insert (new_decl);
-		len = vec_safe_length (*debug_args);
-	      }
-	    ddecl = make_node (DEBUG_EXPR_DECL);
-	    DECL_ARTIFICIAL (ddecl) = 1;
-	    TREE_TYPE (ddecl) = TREE_TYPE (parm);
-	    SET_DECL_MODE (ddecl, DECL_MODE (parm));
-	    vec_safe_push (*debug_args, DECL_ORIGIN (parm));
-	    vec_safe_push (*debug_args, ddecl);
-	  }
+      for (i = 0; i < reset_len; i++)
+	{
+	  tree parm = param_body_adjs->m_reset_debug_decls[i];
+	  gcc_assert (is_gimple_reg (parm));
+	  tree ddecl;
+
+	  if (debug_args == NULL)
+	    {
+	      debug_args = decl_debug_args_insert (new_decl);
+	      len = vec_safe_length (*debug_args);
+	    }
+	  ddecl = make_node (DEBUG_EXPR_DECL);
+	  DECL_ARTIFICIAL (ddecl) = 1;
+	  TREE_TYPE (ddecl) = TREE_TYPE (parm);
+	  SET_DECL_MODE (ddecl, DECL_MODE (parm));
+	  vec_safe_push (*debug_args, DECL_ORIGIN (parm));
+	  vec_safe_push (*debug_args, ddecl);
+	}
       if (debug_args != NULL)
 	{
 	  /* On the callee side, add
@@ -6269,7 +6377,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	      if (var == NULL_TREE)
 		break;
 	      vexpr = make_node (DEBUG_EXPR_DECL);
-	      parm = (**debug_args)[i];
+	      tree parm = (**debug_args)[i];
 	      DECL_ARTIFICIAL (vexpr) = 1;
 	      TREE_TYPE (vexpr) = TREE_TYPE (parm);
 	      SET_DECL_MODE (vexpr, DECL_MODE (parm));
@@ -6281,9 +6389,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	  while (i > len);
 	}
     }
-
-  if (debug_args_to_skip && debug_args_to_skip != args_to_skip)
-    BITMAP_FREE (debug_args_to_skip);
+  delete param_body_adjs;
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
 

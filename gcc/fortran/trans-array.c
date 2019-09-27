@@ -8580,13 +8580,15 @@ gfc_caf_is_dealloc_only (int caf_mode)
 
 enum {DEALLOCATE_ALLOC_COMP = 1, NULLIFY_ALLOC_COMP,
       COPY_ALLOC_COMP, COPY_ONLY_ALLOC_COMP, REASSIGN_CAF_COMP,
-      ALLOCATE_PDT_COMP, DEALLOCATE_PDT_COMP, CHECK_PDT_DUMMY};
+      ALLOCATE_PDT_COMP, DEALLOCATE_PDT_COMP, CHECK_PDT_DUMMY,
+      BCAST_ALLOC_COMP};
 
 static gfc_actual_arglist *pdt_param_list;
 
 static tree
 structure_alloc_comps (gfc_symbol * der_type, tree decl,
-		       tree dest, int rank, int purpose, int caf_mode)
+		       tree dest, int rank, int purpose, int caf_mode,
+		       gfc_co_subroutines_args *args)
 {
   gfc_component *c;
   gfc_loopinfo loop;
@@ -8672,14 +8674,14 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	  && !caf_enabled (caf_mode))
 	{
 	  tmp = build_fold_indirect_ref_loc (input_location,
-					 gfc_conv_array_data (dest));
+					     gfc_conv_array_data (dest));
 	  dref = gfc_build_array_ref (tmp, index, NULL);
 	  tmp = structure_alloc_comps (der_type, vref, dref, rank,
-				       COPY_ALLOC_COMP, 0);
+				       COPY_ALLOC_COMP, 0, args);
 	}
       else
 	tmp = structure_alloc_comps (der_type, vref, NULL_TREE, rank, purpose,
-				     caf_mode);
+				     caf_mode, args);
 
       gfc_add_expr_to_block (&loopbody, tmp);
 
@@ -8713,13 +8715,13 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
   if (purpose == DEALLOCATE_ALLOC_COMP && der_type->attr.pdt_type)
     {
       tmp = structure_alloc_comps (der_type, decl, NULL_TREE, rank,
-				   DEALLOCATE_PDT_COMP, 0);
+				   DEALLOCATE_PDT_COMP, 0, args);
       gfc_add_expr_to_block (&fnblock, tmp);
     }
   else if (purpose == ALLOCATE_PDT_COMP && der_type->attr.alloc_comp)
     {
       tmp = structure_alloc_comps (der_type, decl, NULL_TREE, rank,
-				   NULLIFY_ALLOC_COMP, 0);
+				   NULLIFY_ALLOC_COMP, 0, args);
       gfc_add_expr_to_block (&fnblock, tmp);
     }
 
@@ -8741,6 +8743,125 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
       switch (purpose)
 	{
+
+	case BCAST_ALLOC_COMP:
+
+	  tree ubound;
+	  tree cdesc;
+	  stmtblock_t derived_type_block;
+
+	  gfc_init_block (&tmpblock);
+
+	  comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
+				  decl, cdecl, NULL_TREE);
+
+	  /* Shortcut to get the attributes of the component.  */
+	  if (c->ts.type == BT_CLASS)
+	    {
+	      attr = &CLASS_DATA (c)->attr;
+	      if (attr->class_pointer)
+		continue;
+	    }
+	  else
+	    {
+	      attr = &c->attr;
+	      if (attr->pointer)
+		continue;
+	    }
+
+	  add_when_allocated = NULL_TREE;
+	  if (cmp_has_alloc_comps
+	      && !c->attr.pointer && !c->attr.proc_pointer)
+	    {
+	      if (c->ts.type == BT_CLASS)
+		{
+		  rank = CLASS_DATA (c)->as ? CLASS_DATA (c)->as->rank : 0;
+		  add_when_allocated
+		      = structure_alloc_comps (CLASS_DATA (c)->ts.u.derived,
+					       comp, NULL_TREE, rank, purpose,
+					       caf_mode, args);
+		}
+	      else
+		{
+		  rank = c->as ? c->as->rank : 0;
+		  add_when_allocated = structure_alloc_comps (c->ts.u.derived,
+							      comp, NULL_TREE,
+							      rank, purpose,
+							      caf_mode, args);
+		}
+	    }
+
+	  gfc_init_block (&derived_type_block);
+	  if (add_when_allocated)
+	    gfc_add_expr_to_block (&derived_type_block, add_when_allocated);
+	  tmp = gfc_finish_block (&derived_type_block);
+	  gfc_add_expr_to_block (&tmpblock, tmp);
+
+	  /* Convert the component into a rank 1 descriptor type.  */
+	  if (attr->dimension)
+	    {
+	      tmp = gfc_get_element_type (TREE_TYPE (comp));
+	      ubound = gfc_full_array_size (&tmpblock, comp,
+					    c->ts.type == BT_CLASS
+					    ? CLASS_DATA (c)->as->rank
+					    : c->as->rank);
+	    }
+	  else
+	    {
+	      tmp = TREE_TYPE (comp);
+	      ubound = build_int_cst (gfc_array_index_type, 1);
+	    }
+
+	  cdesc = gfc_get_array_type_bounds (tmp, 1, 0, &gfc_index_one_node,
+					     &ubound, 1,
+					     GFC_ARRAY_ALLOCATABLE, false);
+
+	  cdesc = gfc_create_var (cdesc, "cdesc");
+	  DECL_ARTIFICIAL (cdesc) = 1;
+  
+	  gfc_add_modify (&tmpblock, gfc_conv_descriptor_dtype (cdesc),
+	  		  gfc_get_dtype_rank_type (1, tmp));
+	  gfc_conv_descriptor_lbound_set (&tmpblock, cdesc,
+					  gfc_index_zero_node,
+					  gfc_index_one_node);
+	  gfc_conv_descriptor_stride_set (&tmpblock, cdesc,
+					  gfc_index_zero_node,
+					  gfc_index_one_node);
+	  gfc_conv_descriptor_ubound_set (&tmpblock, cdesc,
+					  gfc_index_zero_node, ubound);
+  
+	  if (attr->dimension)
+	    comp = gfc_conv_descriptor_data_get (comp);
+	  else
+	    {
+	      gfc_se se;
+
+	      gfc_init_se (&se, NULL);
+
+	      comp = gfc_conv_scalar_to_descriptor (&se, comp,
+	      					    c->ts.type == BT_CLASS
+	      					    ? CLASS_DATA (c)->attr
+	      					    : c->attr);
+	      comp = gfc_build_addr_expr (NULL_TREE, comp);
+	      gfc_add_block_to_block (&tmpblock, &se.pre);
+	    }
+
+	  gfc_conv_descriptor_data_set (&tmpblock, cdesc, comp);
+
+	  tree fndecl;
+
+	  fndecl = build_call_expr_loc (input_location,
+					gfor_fndecl_co_broadcast, 5,
+					gfc_build_addr_expr (pvoid_type_node,cdesc),
+					args->image_index,
+					null_pointer_node, null_pointer_node,
+					null_pointer_node);
+
+	  gfc_add_expr_to_block (&tmpblock, fndecl);
+	  gfc_add_block_to_block (&fnblock, &tmpblock);
+
+	  break;
+
 	case DEALLOCATE_ALLOC_COMP:
 
 	  gfc_init_block (&tmpblock);
@@ -8791,7 +8912,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 		  add_when_allocated
 		      = structure_alloc_comps (CLASS_DATA (c)->ts.u.derived,
 					       comp, NULL_TREE, rank, purpose,
-					       caf_mode);
+					       caf_mode, args);
 		}
 	      else
 		{
@@ -8799,7 +8920,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 		  add_when_allocated = structure_alloc_comps (c->ts.u.derived,
 							      comp, NULL_TREE,
 							      rank, purpose,
-							      caf_mode);
+							      caf_mode, args);
 		}
 	    }
 
@@ -9075,7 +9196,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 				      decl, cdecl, NULL_TREE);
 	      rank = c->as ? c->as->rank : 0;
 	      tmp = structure_alloc_comps (c->ts.u.derived, comp, NULL_TREE,
-					   rank, purpose, caf_mode);
+					   rank, purpose, caf_mode, args);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
 	  break;
@@ -9110,7 +9231,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 		{
 		  tmp = structure_alloc_comps (c->ts.u.derived, comp, dcmp,
 					       rank, purpose, caf_mode
-					   | GFC_STRUCTURE_CAF_MODE_IN_COARRAY);
+					       | GFC_STRUCTURE_CAF_MODE_IN_COARRAY,
+					       args);
 		  gfc_add_expr_to_block (&fnblock, tmp);
 		}
 	    }
@@ -9230,7 +9352,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      add_when_allocated = structure_alloc_comps (c->ts.u.derived,
 							  comp, dcmp,
 							  rank, purpose,
-							  caf_mode);
+							  caf_mode, args);
 	    }
 	  else
 	    add_when_allocated = NULL_TREE;
@@ -9594,7 +9716,7 @@ gfc_nullify_alloc_comp (gfc_symbol * der_type, tree decl, int rank,
 {
   return structure_alloc_comps (der_type, decl, NULL_TREE, rank,
 				NULLIFY_ALLOC_COMP,
-			      GFC_STRUCTURE_CAF_MODE_ENABLE_COARRAY | caf_mode);
+				GFC_STRUCTURE_CAF_MODE_ENABLE_COARRAY | caf_mode, NULL);
 }
 
 
@@ -9607,9 +9729,47 @@ gfc_deallocate_alloc_comp (gfc_symbol * der_type, tree decl, int rank,
 {
   return structure_alloc_comps (der_type, decl, NULL_TREE, rank,
 				DEALLOCATE_ALLOC_COMP,
-			      GFC_STRUCTURE_CAF_MODE_ENABLE_COARRAY | caf_mode);
+				GFC_STRUCTURE_CAF_MODE_ENABLE_COARRAY | caf_mode, NULL);
 }
 
+tree
+gfc_bcast_alloc_comp (gfc_symbol *derived, gfc_expr *expr, int rank,
+		      tree image_index, tree stat, tree errmsg,
+		      tree errmsg_len)
+{
+  tree tmp, array;
+  gfc_se argse;
+  stmtblock_t block, post_block;
+  gfc_co_subroutines_args args;
+
+  args.image_index = image_index;
+  args.stat = stat;
+  args.errmsg = errmsg;
+  args.errmsg = errmsg_len;
+
+  if (rank == 0)
+    {
+      gfc_start_block (&block);
+      gfc_init_block (&post_block);
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr (&argse, expr);
+      gfc_add_block_to_block (&block, &argse.pre);
+      gfc_add_block_to_block (&post_block, &argse.post);
+      array = argse.expr;
+    }
+  else
+    {
+      gfc_init_se (&argse, NULL);
+      argse.want_pointer = 1;
+      gfc_conv_expr_descriptor (&argse, expr);
+      array = argse.expr;
+    }
+
+  tmp = structure_alloc_comps (derived, array, NULL_TREE, rank,
+			       BCAST_ALLOC_COMP,
+  			       GFC_STRUCTURE_CAF_MODE_ENABLE_COARRAY, &args);
+  return tmp;
+}
 
 /* Recursively traverse an object of derived type, generating code to
    deallocate allocatable components.  But do not deallocate coarrays.
@@ -9620,7 +9780,7 @@ tree
 gfc_deallocate_alloc_comp_no_caf (gfc_symbol * der_type, tree decl, int rank)
 {
   return structure_alloc_comps (der_type, decl, NULL_TREE, rank,
-				DEALLOCATE_ALLOC_COMP, 0);
+				DEALLOCATE_ALLOC_COMP, 0, NULL);
 }
 
 
@@ -9628,7 +9788,7 @@ tree
 gfc_reassign_alloc_comp_caf (gfc_symbol *der_type, tree decl, tree dest)
 {
   return structure_alloc_comps (der_type, decl, dest, 0, REASSIGN_CAF_COMP,
-				GFC_STRUCTURE_CAF_MODE_ENABLE_COARRAY);
+				GFC_STRUCTURE_CAF_MODE_ENABLE_COARRAY, NULL);
 }
 
 
@@ -9640,7 +9800,7 @@ gfc_copy_alloc_comp (gfc_symbol * der_type, tree decl, tree dest, int rank,
 		     int caf_mode)
 {
   return structure_alloc_comps (der_type, decl, dest, rank, COPY_ALLOC_COMP,
-				caf_mode);
+				caf_mode, NULL);
 }
 
 
@@ -9651,7 +9811,7 @@ tree
 gfc_copy_only_alloc_comp (gfc_symbol * der_type, tree decl, tree dest, int rank)
 {
   return structure_alloc_comps (der_type, decl, dest, rank,
-				COPY_ONLY_ALLOC_COMP, 0);
+				COPY_ONLY_ALLOC_COMP, 0, NULL);
 }
 
 
@@ -9666,7 +9826,7 @@ gfc_allocate_pdt_comp (gfc_symbol * der_type, tree decl, int rank,
   gfc_actual_arglist *old_param_list = pdt_param_list;
   pdt_param_list = param_list;
   res = structure_alloc_comps (der_type, decl, NULL_TREE, rank,
-			       ALLOCATE_PDT_COMP, 0);
+			       ALLOCATE_PDT_COMP, 0, NULL);
   pdt_param_list = old_param_list;
   return res;
 }
@@ -9678,7 +9838,7 @@ tree
 gfc_deallocate_pdt_comp (gfc_symbol * der_type, tree decl, int rank)
 {
   return structure_alloc_comps (der_type, decl, NULL_TREE, rank,
-				DEALLOCATE_PDT_COMP, 0);
+				DEALLOCATE_PDT_COMP, 0, NULL);
 }
 
 
@@ -9693,7 +9853,7 @@ gfc_check_pdt_dummy (gfc_symbol * der_type, tree decl, int rank,
   gfc_actual_arglist *old_param_list = pdt_param_list;
   pdt_param_list = param_list;
   res = structure_alloc_comps (der_type, decl, NULL_TREE, rank,
-			       CHECK_PDT_DUMMY, 0);
+			       CHECK_PDT_DUMMY, 0, NULL);
   pdt_param_list = old_param_list;
   return res;
 }

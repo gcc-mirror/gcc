@@ -965,12 +965,13 @@ Type::get_backend(Gogo* gogo)
   if (this->btype_ != NULL)
     return this->btype_;
 
-  if (this->named_type() != NULL && this->named_type()->is_alias()) {
-    Btype* bt = this->unalias()->get_backend(gogo);
-    if (gogo != NULL && gogo->named_types_are_converted())
-      this->btype_ = bt;
-    return bt;
-  }
+  if (this->named_type() != NULL && this->named_type()->is_alias())
+    {
+      Btype* bt = this->unalias()->get_backend(gogo);
+      if (gogo != NULL && gogo->named_types_are_converted())
+	this->btype_ = bt;
+      return bt;
+    }
 
   if (this->forward_declaration_type() != NULL
       || this->named_type() != NULL)

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fipa-sra -fdump-tree-eipa_sra-details"  } */
+/* { dg-options "-O2 -fno-ipa-cp -fipa-sra -fdump-ipa-sra"  } */
 
 extern void consume (int);
 extern int glob, glob1, glob2;
@@ -31,4 +31,4 @@ bar (int a)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "replacing an SSA name of a removed param" 4 "eipa_sra" } } */
+/* { dg-final { scan-ipa-dump "Will remove parameter 0" "sra" } } */

@@ -424,7 +424,11 @@ EREF(MNT_FORCE);
 
 #if defined(HAVE_SYS_PTRACE_H)
 // From <sys/ptrace.h>
+#if defined (__aarch64__)
+SREF(user_pt_regs);
+#else
 SREF(pt_regs);
+#endif
 EREF(PTRACE_PEEKTEXT);
 #endif
 

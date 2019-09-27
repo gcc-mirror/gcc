@@ -2541,7 +2541,7 @@ Gogo::add_linkname(const std::string& go_name, bool is_exported,
     {
       if (ext_name.empty())
 	go_error_at(loc,
-		    ("//%<go:linkname%> missing external name "
+		    ("%<//go:linkname%> missing external name "
 		     "for declaration of %s"),
 		    go_name.c_str());
       else

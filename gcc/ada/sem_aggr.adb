@@ -3158,6 +3158,9 @@ package body Sem_Aggr is
          elsif Nkind (Anc) = N_Qualified_Expression then
             return Valid_Limited_Ancestor (Expression (Anc));
 
+         elsif Nkind (Anc) = N_Raise_Expression then
+            return True;
+
          else
             return False;
          end if;
@@ -3197,6 +3200,13 @@ package body Sem_Aggr is
               and then Present (Full_View (A_Type))
               and then Base_Type (Full_View (A_Type)) = Etype (Imm_Type)
             then
+               return True;
+
+            --  The parent type may be a raise expression (which is legal in
+            --  any expression context).
+
+            elsif A_Type = Raise_Type then
+               A_Type := Etype (Imm_Type);
                return True;
 
             else

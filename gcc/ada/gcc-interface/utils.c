@@ -5023,7 +5023,7 @@ convert_to_index_type (tree expr)
 
   /* If the type is unsigned, overflow is allowed so we cannot be sure that
      EXPR doesn't overflow.  Keep it simple if optimization is disabled.  */
-  if (TYPE_UNSIGNED (type) || !optimize)
+  if (TYPE_UNSIGNED (type) || !optimize || optimize_debug)
     return convert (sizetype, expr);
 
   switch (code)

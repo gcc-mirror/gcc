@@ -3058,8 +3058,8 @@ finish_template_template_parm (tree aggr, tree identifier)
   DECL_TEMPLATE_RESULT (tmpl) = decl;
   DECL_ARTIFICIAL (decl) = 1;
 
-  // Associate the constraints with the underlying declaration,
-  // not the template.
+  /* Associate the constraints with the underlying declaration,
+     not the template.  */
   tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
   tree constr = build_constraints (reqs, NULL_TREE);
   set_constraints (decl, constr);
@@ -10076,7 +10076,6 @@ apply_deduced_return_type (tree fco, tree return_type)
 #endif
       cfun->returns_struct = aggr;
     }
-
 }
 
 /* DECL is a local variable or parameter from the surrounding scope of a
@@ -10133,7 +10132,7 @@ capture_decltype (tree decl)
 static tree
 finish_unary_fold_expr (tree expr, int op, tree_code dir)
 {
-  // Build a pack expansion (assuming expr has pack type).
+  /* Build a pack expansion (assuming expr has pack type).  */
   if (!uses_parameter_packs (expr))
     {
       error_at (location_of (expr), "operand of fold expression has no "
@@ -10142,7 +10141,7 @@ finish_unary_fold_expr (tree expr, int op, tree_code dir)
     }
   tree pack = make_pack_expansion (expr);
 
-  // Build the fold expression.
+  /* Build the fold expression.  */
   tree code = build_int_cstu (integer_type_node, abs (op));
   tree fold = build_min_nt_loc (UNKNOWN_LOCATION, dir, code, pack);
   FOLD_EXPR_MODIFY_P (fold) = (op < 0);

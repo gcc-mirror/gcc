@@ -257,6 +257,7 @@ static bool arm_sched_can_speculate_insn (rtx_insn *);
 static bool arm_macro_fusion_p (void);
 static bool arm_cannot_copy_insn_p (rtx_insn *);
 static int arm_issue_rate (void);
+static int arm_sched_variable_issue (FILE *, int, rtx_insn *, int);
 static int arm_first_cycle_multipass_dfa_lookahead (void);
 static int arm_first_cycle_multipass_dfa_lookahead_guard (rtx_insn *, int);
 static void arm_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
@@ -664,6 +665,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE arm_issue_rate
+
+#undef TARGET_SCHED_VARIABLE_ISSUE
+#define TARGET_SCHED_VARIABLE_ISSUE arm_sched_variable_issue
 
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \
@@ -4386,8 +4390,8 @@ const_ok_for_dimode_op (HOST_WIDE_INT i, enum rtx_code code)
     case AND:
     case IOR:
     case XOR:
-      return (const_ok_for_op (hi_val, code) || hi_val == 0xFFFFFFFF)
-              && (const_ok_for_op (lo_val, code) || lo_val == 0xFFFFFFFF);
+      return const_ok_for_op (hi_val, code) || hi_val == 0xFFFFFFFF
+	     || const_ok_for_op (lo_val, code) || lo_val == 0xFFFFFFFF;
     case PLUS:
       return arm_not_operand (hi, SImode) && arm_add_operand (lo, SImode);
 
@@ -28495,6 +28499,23 @@ arm_issue_rate (void)
   return current_tune->issue_rate;
 }
 
+/* Implement TARGET_SCHED_VARIABLE_ISSUE.  */
+static int
+arm_sched_variable_issue (FILE *, int, rtx_insn *insn, int more)
+{
+  if (DEBUG_INSN_P (insn))
+    return more;
+
+  rtx_code code = GET_CODE (PATTERN (insn));
+  if (code == USE || code == CLOBBER)
+    return more;
+
+  if (get_attr_type (insn) == TYPE_NO_INSN)
+    return more;
+
+  return more - 1;
+}
+
 /* Return how many instructions should scheduler lookahead to choose the
    best one.  */
 static int
@@ -31179,7 +31200,11 @@ arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
     {
       argstr = NULL;
       if (!strcmp (q, "thumb"))
-	opts->x_target_flags |= MASK_THUMB;
+	{
+	  opts->x_target_flags |= MASK_THUMB;
+	  if (TARGET_FDPIC && !arm_arch_thumb2)
+	    sorry ("FDPIC mode is not supported in Thumb-1 mode");
+	}
 
       else if (!strcmp (q, "arm"))
 	opts->x_target_flags &= ~MASK_THUMB;

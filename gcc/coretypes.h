@@ -141,6 +141,7 @@ struct gomp_teams;
 struct symtab_node;
   struct cgraph_node;
   struct varpool_node;
+struct cgraph_edge;
 
 union section;
 typedef union section section;

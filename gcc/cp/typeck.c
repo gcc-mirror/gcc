@@ -1530,6 +1530,33 @@ same_type_ignoring_top_level_qualifiers_p (tree type1, tree type2)
   return same_type_p (type1, type2);
 }
 
+/* Returns nonzero iff TYPE1 and TYPE2 are similar, as per [conv.qual].  */
+
+bool
+similar_type_p (tree type1, tree type2)
+{
+  if (type1 == error_mark_node || type2 == error_mark_node)
+    return false;
+
+  /* Informally, two types are similar if, ignoring top-level cv-qualification:
+     * they are the same type; or
+     * they are both pointers, and the pointed-to types are similar; or
+     * they are both pointers to member of the same class, and the types of
+       the pointed-to members are similar; or
+     * they are both arrays of the same size or both arrays of unknown bound,
+       and the array element types are similar.  */
+
+  if (same_type_ignoring_top_level_qualifiers_p (type1, type2))
+    return true;
+
+  /* FIXME This ought to handle ARRAY_TYPEs too.  */
+  if ((TYPE_PTR_P (type1) && TYPE_PTR_P (type2))
+      || (TYPE_PTRDATAMEM_P (type1) && TYPE_PTRDATAMEM_P (type2)))
+    return comp_ptr_ttypes_const (type1, type2);
+
+  return false;
+}
+
 /* Returns 1 if TYPE1 is at least as qualified as TYPE2.  */
 
 bool
@@ -1971,12 +1998,6 @@ is_bitfield_expr_with_lowered_type (const_tree exp)
       else
 	return NULL_TREE;
 
-    CASE_CONVERT:
-      if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (exp, 0)))
-	  == TYPE_MAIN_VARIANT (TREE_TYPE (exp)))
-	return is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 0));
-      /* Fallthrough.  */
-
     default:
       return NULL_TREE;
     }
@@ -2189,13 +2210,23 @@ cp_perform_integral_promotions (tree expr, tsubst_flags_t complain)
   if (error_operand_p (expr))
     return error_mark_node;
 
+  type = TREE_TYPE (expr);
+
   /* [conv.prom]
 
-     If the bitfield has an enumerated type, it is treated as any
-     other value of that type for promotion purposes.  */
-  type = is_bitfield_expr_with_lowered_type (expr);
-  if (!type || TREE_CODE (type) != ENUMERAL_TYPE)
-    type = TREE_TYPE (expr);
+     A prvalue for an integral bit-field (11.3.9) can be converted to a prvalue
+     of type int if int can represent all the values of the bit-field;
+     otherwise, it can be converted to unsigned int if unsigned int can
+     represent all the values of the bit-field. If the bit-field is larger yet,
+     no integral promotion applies to it. If the bit-field has an enumerated
+     type, it is treated as any other value of that type for promotion
+     purposes.  */
+  tree bitfield_type = is_bitfield_expr_with_lowered_type (expr);
+  if (bitfield_type
+      && (TREE_CODE (bitfield_type) == ENUMERAL_TYPE
+	  || TYPE_PRECISION (type) > TYPE_PRECISION (integer_type_node)))
+    type = bitfield_type;
+
   gcc_assert (INTEGRAL_OR_ENUMERATION_TYPE_P (type));
   /* Scoped enums don't promote.  */
   if (SCOPED_ENUM_P (type))
@@ -2203,6 +2234,9 @@ cp_perform_integral_promotions (tree expr, tsubst_flags_t complain)
   promoted_type = type_promotes_to (type);
   if (type != promoted_type)
     expr = cp_convert (promoted_type, expr, complain);
+  else if (bitfield_type && bitfield_type != type)
+    /* Prevent decay_conversion from converting to bitfield_type.  */
+    expr = build_nop (type, expr);
   return expr;
 }
 
@@ -3739,11 +3773,11 @@ build_function_call (location_t /*loc*/,
 tree
 build_function_call_vec (location_t /*loc*/, vec<location_t> /*arg_loc*/,
 			 tree function, vec<tree, va_gc> *params,
-			 vec<tree, va_gc> * /*origtypes*/)
+			 vec<tree, va_gc> * /*origtypes*/, tree orig_function)
 {
   vec<tree, va_gc> *orig_params = params;
   tree ret = cp_build_function_call_vec (function, &params,
-					 tf_warning_or_error);
+					 tf_warning_or_error, orig_function);
 
   /* cp_build_function_call_vec can reallocate PARAMS by adding
      default arguments.  That should never happen here.  Verify
@@ -3784,13 +3818,15 @@ cp_build_function_call_nary (tree function, tsubst_flags_t complain, ...)
   return ret;
 }
 
-/* Build a function call using a vector of arguments.  PARAMS may be
-   NULL if there are no parameters.  This changes the contents of
-   PARAMS.  */
+/* Build a function call using a vector of arguments.
+   If FUNCTION is the result of resolving an overloaded target built-in,
+   ORIG_FNDECL is the original function decl, otherwise it is null.
+   PARAMS may be NULL if there are no parameters.  This changes the
+   contents of PARAMS.  */
 
 tree
 cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
-			    tsubst_flags_t complain)
+			    tsubst_flags_t complain, tree orig_fndecl)
 {
   tree fntype, fndecl;
   int is_method;
@@ -3915,7 +3951,7 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
   bool warned_p = check_function_arguments (input_location, fndecl, fntype,
 					    nargs, argarray, NULL);
 
-  ret = build_cxx_call (function, nargs, argarray, complain);
+  ret = build_cxx_call (function, nargs, argarray, complain, orig_fndecl);
 
   if (warned_p)
     {

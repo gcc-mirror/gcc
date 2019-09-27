@@ -1111,7 +1111,7 @@ gnat_get_type_bias (const_tree gnu_type)
 {
   if (TREE_CODE (gnu_type) == INTEGER_TYPE
       && TYPE_BIASED_REPRESENTATION_P (gnu_type)
-      && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+      && gnat_encodings != DWARF_GNAT_ENCODINGS_ALL)
     return TYPE_RM_MIN_VALUE (gnu_type);
 
   return NULL_TREE;

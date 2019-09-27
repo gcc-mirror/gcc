@@ -644,7 +644,8 @@ Objective-C and Objective-C++ Dialects}.
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}  @gol
 -moverride=@var{string}  -mverbose-cost-dump @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{sysreg} @gol
--mstack-protector-guard-offset=@var{offset} -mtrack-speculation }
+-mstack-protector-guard-offset=@var{offset} -mtrack-speculation @gol
+-moutline-atomics }
 
 @emph{Adapteva Epiphany Options}
 @gccoptlist{-mhalf-reg-file  -mprefer-short-insn-regs @gol
@@ -11915,6 +11916,11 @@ parameters only when their cumulative size is less or equal to
 @option{ipa-sra-ptr-growth-factor} times the size of the original
 pointer parameter.
 
+@item ipa-sra-max-replacements
+Maximum pieces of an aggregate that IPA-SRA tracks.  As a
+consequence, it is also the maximum number of replacements of a formal
+parameter.
+
 @item sra-max-scalarization-size-Ospeed
 @itemx sra-max-scalarization-size-Osize
 The two Scalar Reduction of Aggregates passes (SRA and IPA-SRA) aim to
@@ -11982,6 +11988,12 @@ in order to track values pointed to by function parameters.  In order
 not spend too much time analyzing huge functions, it gives up and
 consider all memory clobbered after examining
 @option{ipa-max-aa-steps} statements modifying memory.
+
+@item ipa-max-switch-predicate-bounds
+Maximal number of boundary endpoints of case ranges of switch statement.
+For switch exceeding this limit, IPA-CP will not construct cloning cost
+predicate, which is used to estimate cloning benefit, for default case
+of the switch statement.
 
 @item lto-partitions
 Specify desired number of partitions produced during WHOPR compilation.
@@ -15926,6 +15938,19 @@ execution through conditional branches.  The tracking state can then
 be used by the compiler when expanding calls to
 @code{__builtin_speculation_safe_copy} to permit a more efficient code
 sequence to be generated.
+
+@item -moutline-atomics
+@itemx -mno-outline-atomics
+Enable or disable calls to out-of-line helpers to implement atomic operations.
+These helpers will, at runtime, determine if the LSE instructions from
+ARMv8.1-A can be used; if not, they will use the load/store-exclusive
+instructions that are present in the base ARMv8.0 ISA.
+
+This option is only applicable when compiling for the base ARMv8.0
+instruction set.  If using a later revision, e.g. @option{-march=armv8.1-a}
+or @option{-march=armv8-a+lse}, the ARMv8.1-Atomics instructions will be
+used directly.  The same applies when using @option{-mcpu=} when the
+selected cpu supports the @samp{lse} feature.
 
 @item -march=@var{name}
 @opindex march

@@ -88,15 +88,15 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
       New_Key : Key_Type) return Boolean
    is
    begin
-      for I in 1 .. Length (Left.Keys) loop
+      for J in 1 .. Length (Left.Keys) loop
          declare
-            K : constant Key_Type := Get (Left.Keys, I);
+            K : constant Key_Type := Get (Left.Keys, J);
          begin
             if not Equivalent_Keys (K, New_Key)
               and then
                 (Find (Right.Keys, K) = 0
                   or else Get (Right.Elements, Find (Right.Keys, K)) /=
-                          Get (Left.Elements, I))
+                          Get (Left.Elements, J))
             then
                return False;
             end if;
@@ -112,16 +112,16 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
       Y     : Key_Type) return Boolean
    is
    begin
-      for I in 1 .. Length (Left.Keys) loop
+      for J in 1 .. Length (Left.Keys) loop
          declare
-            K : constant Key_Type := Get (Left.Keys, I);
+            K : constant Key_Type := Get (Left.Keys, J);
          begin
             if not Equivalent_Keys (K, X)
               and then not Equivalent_Keys (K, Y)
               and then
                 (Find (Right.Keys, K) = 0
                   or else Get (Right.Elements, Find (Right.Keys, K)) /=
-                          Get (Left.Elements, I))
+                          Get (Left.Elements, J))
             then
                return False;
             end if;
@@ -173,9 +173,9 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
 
    function Keys_Included (Left : Map; Right : Map) return Boolean is
    begin
-      for I in 1 .. Length (Left.Keys) loop
+      for J in 1 .. Length (Left.Keys) loop
          declare
-            K : constant Key_Type := Get (Left.Keys, I);
+            K : constant Key_Type := Get (Left.Keys, J);
          begin
             if Find (Right.Keys, K) = 0 then
                return False;
@@ -196,9 +196,9 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
       New_Key : Key_Type) return Boolean
    is
    begin
-      for I in 1 .. Length (Left.Keys) loop
+      for J in 1 .. Length (Left.Keys) loop
          declare
-            K : constant Key_Type := Get (Left.Keys, I);
+            K : constant Key_Type := Get (Left.Keys, J);
          begin
             if not Equivalent_Keys (K, New_Key)
               and then Find (Right.Keys, K) = 0
@@ -218,9 +218,9 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
       Y     : Key_Type) return Boolean
    is
    begin
-      for I in 1 .. Length (Left.Keys) loop
+      for J in 1 .. Length (Left.Keys) loop
          declare
-            K : constant Key_Type := Get (Left.Keys, I);
+            K : constant Key_Type := Get (Left.Keys, J);
          begin
             if not Equivalent_Keys (K, X)
               and then not Equivalent_Keys (K, Y)
@@ -242,6 +242,18 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
    begin
       return Length (Container.Elements);
    end Length;
+
+   ------------
+   -- Remove --
+   ------------
+
+   function Remove (Container : Map; Key : Key_Type) return Map is
+      J : constant Extended_Index := Find (Container.Keys, Key);
+   begin
+      return
+        (Keys     => Remove (Container.Keys, J),
+         Elements => Remove (Container.Elements, J));
+   end Remove;
 
    ---------------
    -- Same_Keys --

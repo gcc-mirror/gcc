@@ -3019,12 +3019,12 @@ check_extern_c_conflict (tree decl)
       if (mismatch)
 	{
 	  auto_diagnostic_group d;
-	  pedwarn (input_location, 0,
+	  pedwarn (DECL_SOURCE_LOCATION (decl), 0,
 		   "conflicting C language linkage declaration %q#D", decl);
 	  inform (DECL_SOURCE_LOCATION (old),
 		  "previous declaration %q#D", old);
 	  if (mismatch < 0)
-	    inform (input_location,
+	    inform (DECL_SOURCE_LOCATION (decl),
 		    "due to different exception specifications");
 	}
       else
@@ -3144,7 +3144,8 @@ check_local_shadow (tree decl)
 	  /* ARM $8.3 */
 	  if (b->kind == sk_function_parms)
 	    {
-	      error ("declaration of %q#D shadows a parameter", decl);
+	      error_at (DECL_SOURCE_LOCATION (decl),
+			"declaration of %q#D shadows a parameter", decl);
 	      return;
 	    }
 	}
@@ -3170,7 +3171,8 @@ check_local_shadow (tree decl)
 	       && (old_scope->kind == sk_cond || old_scope->kind == sk_for))
 	{
 	  auto_diagnostic_group d;
-	  error ("redeclaration of %q#D", decl);
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "redeclaration of %q#D", decl);
 	  inform (DECL_SOURCE_LOCATION (old),
 		  "%q#D previously declared here", old);
 	  return;
@@ -3193,7 +3195,8 @@ check_local_shadow (tree decl)
 		   && in_function_try_handler))
 	{
 	  auto_diagnostic_group d;
-	  if (permerror (input_location, "redeclaration of %q#D", decl))
+	  if (permerror (DECL_SOURCE_LOCATION (decl),
+			 "redeclaration of %q#D", decl))
 	    inform (DECL_SOURCE_LOCATION (old),
 		    "%q#D previously declared here", old);
 	  return;
@@ -3241,7 +3244,7 @@ check_local_shadow (tree decl)
 	msg = "declaration of %qD shadows a previous local";
 
       auto_diagnostic_group d;
-      if (warning_at (input_location, warning_code, msg, decl))
+      if (warning_at (DECL_SOURCE_LOCATION (decl), warning_code, msg, decl))
 	inform_shadowed (old);
       return;
     }
@@ -3268,7 +3271,7 @@ check_local_shadow (tree decl)
 	    || TYPE_PTRMEMFUNC_P (TREE_TYPE (decl)))
 	  {
 	    auto_diagnostic_group d;
-	    if (warning_at (input_location, OPT_Wshadow,
+	    if (warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wshadow,
 			    "declaration of %qD shadows a member of %qT",
 			    decl, current_nonlambda_class_type ())
 		&& DECL_P (member))
@@ -3288,7 +3291,7 @@ check_local_shadow (tree decl)
     /* XXX shadow warnings in outer-more namespaces */
     {
       auto_diagnostic_group d;
-      if (warning_at (input_location, OPT_Wshadow,
+      if (warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wshadow,
 		      "declaration of %qD shadows a global declaration",
 		      decl))
 	inform_shadowed (old);

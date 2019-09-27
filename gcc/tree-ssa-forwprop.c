@@ -347,19 +347,22 @@ rhs_to_tree (tree type, gimple *stmt)
 {
   location_t loc = gimple_location (stmt);
   enum tree_code code = gimple_assign_rhs_code (stmt);
-  if (get_gimple_rhs_class (code) == GIMPLE_TERNARY_RHS)
-    return fold_build3_loc (loc, code, type, gimple_assign_rhs1 (stmt),
-			    gimple_assign_rhs2 (stmt),
-			    gimple_assign_rhs3 (stmt));
-  else if (get_gimple_rhs_class (code) == GIMPLE_BINARY_RHS)
-    return fold_build2_loc (loc, code, type, gimple_assign_rhs1 (stmt),
-			gimple_assign_rhs2 (stmt));
-  else if (get_gimple_rhs_class (code) == GIMPLE_UNARY_RHS)
-    return build1 (code, type, gimple_assign_rhs1 (stmt));
-  else if (get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS)
-    return gimple_assign_rhs1 (stmt);
-  else
-    gcc_unreachable ();
+  switch (get_gimple_rhs_class (code))
+    {
+    case GIMPLE_TERNARY_RHS:
+      return fold_build3_loc (loc, code, type, gimple_assign_rhs1 (stmt),
+			      gimple_assign_rhs2 (stmt),
+			      gimple_assign_rhs3 (stmt));
+    case GIMPLE_BINARY_RHS:
+      return fold_build2_loc (loc, code, type, gimple_assign_rhs1 (stmt),
+			      gimple_assign_rhs2 (stmt));
+    case GIMPLE_UNARY_RHS:
+      return build1 (code, type, gimple_assign_rhs1 (stmt));
+    case GIMPLE_SINGLE_RHS:
+      return gimple_assign_rhs1 (stmt);
+    default:
+      gcc_unreachable ();
+    }
 }
 
 /* Combine OP0 CODE OP1 in the context of a COND_EXPR.  Returns

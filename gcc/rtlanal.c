@@ -3637,23 +3637,31 @@ loc_mentioned_in_p (rtx *loc, const_rtx in)
   return 0;
 }
 
-/* Helper function for subreg_lsb.  Given a subreg's OUTER_MODE, INNER_MODE,
-   and SUBREG_BYTE, return the bit offset where the subreg begins
-   (counting from the least significant bit of the operand).  */
+/* Reinterpret a subreg as a bit extraction from an integer and return
+   the position of the least significant bit of the extracted value.
+   In other words, if the extraction were performed as a shift right
+   and mask, return the number of bits to shift right.
+
+   The outer value of the subreg has OUTER_BYTES bytes and starts at
+   byte offset SUBREG_BYTE within an inner value of INNER_BYTES bytes.  */
 
 poly_uint64
-subreg_lsb_1 (machine_mode outer_mode,
-	      machine_mode inner_mode,
-	      poly_uint64 subreg_byte)
+subreg_size_lsb (poly_uint64 outer_bytes,
+		 poly_uint64 inner_bytes,
+		 poly_uint64 subreg_byte)
 {
   poly_uint64 subreg_end, trailing_bytes, byte_pos;
 
   /* A paradoxical subreg begins at bit position 0.  */
-  if (paradoxical_subreg_p (outer_mode, inner_mode))
-    return 0;
+  gcc_checking_assert (ordered_p (outer_bytes, inner_bytes));
+  if (maybe_gt (outer_bytes, inner_bytes))
+    {
+      gcc_checking_assert (known_eq (subreg_byte, 0U));
+      return 0;
+    }
 
-  subreg_end = subreg_byte + GET_MODE_SIZE (outer_mode);
-  trailing_bytes = GET_MODE_SIZE (inner_mode) - subreg_end;
+  subreg_end = subreg_byte + outer_bytes;
+  trailing_bytes = inner_bytes - subreg_end;
   if (WORDS_BIG_ENDIAN && BYTES_BIG_ENDIAN)
     byte_pos = trailing_bytes;
   else if (!WORDS_BIG_ENDIAN && !BYTES_BIG_ENDIAN)

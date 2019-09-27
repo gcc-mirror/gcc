@@ -671,7 +671,8 @@ gen_gpr_to_xmm_move_src (enum machine_mode vmode, rtx gpr)
   switch (GET_MODE_NUNITS (vmode))
     {
     case 1:
-      return gen_rtx_SUBREG (vmode, gpr, 0);
+      /* We are not using this case currently.  */
+      gcc_unreachable ();
     case 2:
       return gen_rtx_VEC_CONCAT (vmode, gpr,
 				 CONST0_RTX (GET_MODE_INNER (vmode)));
@@ -831,6 +832,15 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
   else if (MEM_P (*op))
     {
       rtx tmp = gen_reg_rtx (GET_MODE (*op));
+
+      /* Handle movabs.  */
+      if (!memory_operand (*op, GET_MODE (*op)))
+	{
+	  rtx tmp2 = gen_reg_rtx (GET_MODE (*op));
+
+	  emit_insn_before (gen_rtx_SET (tmp2, *op), insn);
+	  *op = tmp2;
+	}
 
       emit_insn_before (gen_rtx_SET (gen_rtx_SUBREG (vmode, tmp, 0),
 				     gen_gpr_to_xmm_move_src (vmode, *op)),
@@ -1207,7 +1217,10 @@ general_scalar_chain::convert_registers ()
   bitmap_iterator bi;
   unsigned id;
   EXECUTE_IF_SET_IN_BITMAP (defs_conv, 0, id, bi)
-    defs_map.put (regno_reg_rtx[id], gen_reg_rtx (smode));
+    {
+      rtx chain_reg = gen_reg_rtx (smode);
+      defs_map.put (regno_reg_rtx[id], chain_reg);
+    }
   EXECUTE_IF_SET_IN_BITMAP (insns_conv, 0, id, bi)
     for (df_ref ref = DF_INSN_UID_DEFS (id); ref; ref = DF_REF_NEXT_LOC (ref))
       if (bitmap_bit_p (defs_conv, DF_REF_REGNO (ref)))

@@ -3003,6 +3003,8 @@ inform_declaration (tree decl)
 }
 
 /* Build a function call to function FUNCTION with parameters PARAMS.
+   If FUNCTION is the result of resolving an overloaded target built-in,
+   ORIG_FUNDECL is the original function decl, otherwise it is null.
    ORIGTYPES, if not NULL, is a vector of types; each element is
    either NULL or the original type of the corresponding element in
    PARAMS.  The original type may differ from TREE_TYPE of the
@@ -3013,7 +3015,7 @@ inform_declaration (tree decl)
 tree
 build_function_call_vec (location_t loc, vec<location_t> arg_loc,
 			 tree function, vec<tree, va_gc> *params,
-			 vec<tree, va_gc> *origtypes)
+			 vec<tree, va_gc> *origtypes, tree orig_fundecl)
 {
   tree fntype, fundecl = NULL_TREE;
   tree name = NULL_TREE, result;
@@ -3033,6 +3035,8 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
       if (flag_tm)
 	tm_malloc_replacement (function);
       fundecl = function;
+      if (!orig_fundecl)
+	orig_fundecl = fundecl;
       /* Atomic functions have type checking/casting already done.  They are 
 	 often rewritten and don't match the original parameter list.  */
       if (name && !strncmp (IDENTIFIER_POINTER (name), "__atomic_", 9))
@@ -3110,9 +3114,10 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
   argarray = vec_safe_address (params);
 
   /* Check that arguments to builtin functions match the expectations.  */
-  if (fundecl && fndecl_built_in_p (fundecl, BUILT_IN_NORMAL)
-      && !check_builtin_function_arguments (loc, arg_loc, fundecl, nargs,
-					    argarray))
+  if (fundecl
+      && fndecl_built_in_p (fundecl)
+      && !check_builtin_function_arguments (loc, arg_loc, fundecl,
+					    orig_fundecl, nargs, argarray))
     return error_mark_node;
 
   /* Check that the arguments to the function are valid.  */

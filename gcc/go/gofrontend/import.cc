@@ -290,14 +290,8 @@ Import::Import(Stream* stream, Location location)
   : gogo_(NULL), stream_(stream), location_(location), package_(NULL),
     add_to_globals_(false), packages_(), type_data_(), type_pos_(0),
     type_offsets_(), builtin_types_((- SMALLEST_BUILTIN_CODE) + 1),
-    types_(), finalizer_(NULL), version_(EXPORT_FORMAT_UNKNOWN)
+    types_(), version_(EXPORT_FORMAT_UNKNOWN)
 {
-}
-
-Import::~Import()
-{
-  if (this->finalizer_ != NULL)
-    delete this->finalizer_;
 }
 
 // Import the data in the associated stream.
@@ -692,16 +686,22 @@ Import::read_types()
 void
 Import::finalize_methods()
 {
-  if (this->finalizer_ == NULL)
-    this->finalizer_ = new Finalize_methods(gogo_);
+  Finalize_methods finalizer(this->gogo_);
   Unordered_set(Type*) real_for_named;
   for (size_t i = 1; i < this->types_.size(); i++)
     {
       Type* type = this->types_[i];
       if (type != NULL && type->named_type() != NULL)
         {
-          this->finalizer_->type(type);
-          real_for_named.insert(type->named_type()->real_type());
+          finalizer.type(type);
+
+	  // If the real type is a struct type, we don't want to
+	  // finalize its methods.  For a named type defined as a
+	  // struct type, we only want to finalize the methods of the
+	  // named type.  This is like Finalize_methods::type.
+	  Type* real_type = type->named_type()->real_type();
+	  if (real_type->struct_type() != NULL)
+	    real_for_named.insert(real_type);
         }
     }
   for (size_t i = 1; i < this->types_.size(); i++)
@@ -710,7 +710,7 @@ Import::finalize_methods()
       if (type != NULL
           && type->named_type() == NULL
           && real_for_named.find(type) == real_for_named.end())
-        this->finalizer_->type(type);
+        finalizer.type(type);
     }
 }
 
@@ -1105,11 +1105,11 @@ Import::read_named_type(int index)
     type = this->types_[index];
   else
     {
-      type = this->read_type();
-
       if (no->is_type_declaration())
 	{
 	  // We can define the type now.
+
+	  type = this->read_type();
 
 	  no = package->add_type(type_name, type, this->location_);
 	  Named_type* ntype = no->type_value();
@@ -1127,14 +1127,18 @@ Import::read_named_type(int index)
 	}
       else if (no->is_type())
 	{
-	  // We have seen this type before.  FIXME: it would be a good
-	  // idea to check that the two imported types are identical,
-	  // but we have not finalized the methods yet, which means
-	  // that we can not reliably compare interface types.
+	  // We have seen this type before.
 	  type = no->type_value();
 
 	  // Don't change the visibility of the existing type.
+
+	  // For older export versions, we need to skip the type
+	  // definition in the stream.
+	  if (this->version_ < EXPORT_FORMAT_V3)
+	    this->read_type();
 	}
+      else
+	go_unreachable();
 
       this->types_[index] = type;
 

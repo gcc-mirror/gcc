@@ -306,7 +306,7 @@
 			rotate_imm,shift_imm,shift_reg,\
 			mov_imm,mov_reg,\
 			mvn_imm,mvn_reg,\
-			mrs,multiple,no_insn"))
+			mrs,multiple"))
   "ca57_sx1|ca57_sx2")
 
 ;; ALU ops with immediate shift

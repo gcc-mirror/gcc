@@ -3130,8 +3130,11 @@ pushdecl (tree x)
      detecting duplicate declarations of the same object, no matter
      what scope they are in; this is what we do here.  (C99 6.2.7p2:
      All declarations that refer to the same object or function shall
-     have compatible type; otherwise, the behavior is undefined.)  */
-  if (DECL_EXTERNAL (x) || scope == file_scope)
+     have compatible type; otherwise, the behavior is undefined.)
+     However, in Objective-C, we also want to detect declarations
+     conflicting with those of the basic types.  */
+  if ((DECL_EXTERNAL (x) || scope == file_scope)
+      && (VAR_OR_FUNCTION_DECL_P (x) || c_dialect_objc ()))
     {
       tree type = TREE_TYPE (x);
       tree vistype = NULL_TREE;

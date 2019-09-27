@@ -1,3 +1,67 @@
+2019-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91910
+	* src/c++11/debug.cc (_Safe_iterator_base::_M_detach()): Load pointer
+	atomically and lock the mutex before accessing the sequence.
+	(_Safe_local_iterator_base::_M_detach()): Likewise.
+	(_Safe_iterator_base::_M_reset()): Clear _M_sequence atomically.
+
+2019-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/array (to_array): Define for debug mode.
+
+	* include/bits/stl_pair.h (pair): Add _GLIBCXX20_CONSTEXPR to
+	piecewise construction constructor, assignment operators, and swap.
+	* include/std/tuple (pair::pair(piecewise_construct_t, tuple, tuple)):
+	Add _GLIBCXX20_CONSTEXPR.
+	(pair::pair(tuple, tuple, _Index_tuple, _Index_tuple)): Likewise.
+	* testsuite/20_util/pair/constexpr_assign.cc: New test.
+	* testsuite/20_util/pair/constexpr_swap.cc: New test.
+
+	* include/experimental/internet (operator==, operator<): Fix loop
+	condition to avoid reading past the end of the array.
+
+	* include/std/array: Remove references to profile mode.
+	* include/std/bitset: Likewise.
+	* include/std/deque: Likewise.
+	* include/std/forward_list: Likewise.
+	* include/std/list: Likewise.
+	* include/std/map: Likewise.
+	* include/std/set: Likewise.
+	* include/std/unordered_map: Likewise.
+	* include/std/unordered_set: Likewise.
+	* include/std/vector: Likewise.
+	* testsuite/17_intro/headers/c++1998/profile_mode.cc: New test.
+	* testsuite/17_intro/headers/c++2011/profile_mode.cc: New test.
+
+2019-09-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h
+	(basic_regex::assign(const C*, size_t, flag_type)): Add default
+	argument (LWG 3296).
+	* testsuite/28_regex/basic_regex/assign/char/lwg3296.cc: New test.
+	* testsuite/28_regex/basic_regex/assign/wchar_t/lwg3296.cc: New test.
+
+2019-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (variant::index()): Remove impossible case.
+
+	PR libstdc++/91871
+	* testsuite/util/testsuite_hooks.h
+	(conversion::iterator_to_const_iterator()): Do not return an invalid
+	iterator. Test direct-initialization and direct-list-initialization
+	as well as implicit conversion.
+
+2019-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91788 (partial)
+	* include/std/variant (variant::index()): Improve codegen for cases
+	where conversion to size_t already works correctly.
+
+2019-09-23  Andreas Schwab  <schwab@suse.de>
+
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
+
 2019-09-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91748

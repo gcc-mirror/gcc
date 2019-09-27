@@ -115,7 +115,7 @@ void test_memcpy_bounds_anti_range (char *d, const char *s, size_t n)
      offset, i.e., 7 + 3.  Including the whole final range because would be
      confusing (the upper bound would either be negative or a very large
      positive number) so only the lower bound is included.  */
-  T (char, 9, a, a + SAR ( 0,  6), 3);   /* { dg-warning "forming offset 10 is out of the bounds \\\[0, 9] of object " "memcpy" } */
+  T (char, 9, a, a + SAR ( 0,  6), 3);   /* { dg-warning "forming offset 9 is out of the bounds \\\[0, 9] of object " "memcpy" } */
 
   /* This fails because the offset isn't represented as an SSA_NAME
      but rather as a GIMPLE_PHI (offset, 0).  With some effort it is
@@ -129,18 +129,18 @@ void test_memcpy_bounds_anti_range (char *d, const char *s, size_t n)
   T (char, 9, a, a + SAR ( 2,  6), 3);
   T (char, 9, a, a + SAR ( 3,  6), 3);
 
-  T (char, 9, a, a + SAR (-1,  7), 3);   /* { dg-warning "forming offset \\\[10, 11] is out of the bounds \\\[0, 9] of object " "memcpy" } */
-  T (char, 9, a, a + SAR (-2,  8), 3);   /* { dg-warning "forming offset \\\[10, 12] is out of the bounds \\\[0, 9] of object " "memcpy" } */
-  T (char, 9, a, a + SAR (-3,  7), 5);   /* { dg-warning "forming offset \\\[10, 13] is out of the bounds \\\[0, 9] of object " "memcpy" } */
+  T (char, 9, a, a + SAR (-1,  7), 3);   /* { dg-warning "forming offset \\\[9, 10] is out of the bounds \\\[0, 9] of object " "memcpy" } */
+  T (char, 9, a, a + SAR (-2,  8), 3);   /* { dg-warning "offset \\\[9, 11] is out of the bounds \\\[0, 9] of object " "memcpy" } */
+  T (char, 9, a, a + SAR (-3,  7), 5);   /* { dg-warning "forming offset \\\[9, 12] is out of the bounds \\\[0, 9] of object " "memcpy" } */
 
   T (char, 9, a + SAR (-2, -1), a, 3);
   T (char, 9, a + SAR (-1,  1), a, 3);
   T (char, 9, a + SAR ( 0,  1), a, 3);
   T (char, 9, a + SAR ( 0,  2), a, 3);
   T (char, 9, a + SAR ( 0,  3), a, 3);
-  T (char, 9, a + SAR ( 0,  6), a, 3);   /* { dg-warning "forming offset 10 is out of the bounds \\\[0, 9] of object " "memcpy" } */
-  T (char, 9, a + SAR (-1,  7), a, 3);   /* { dg-warning "forming offset \\\[10, 11] is out of the bounds \\\[0, 9] of object " "memcpy" } */
-  T (char, 9, a + SAR (-2,  8), a, 3);   /* { dg-warning "forming offset \\\[10, 12] is out of the bounds \\\[0, 9] of object " "memcpy" } */
+  T (char, 9, a + SAR ( 0,  6), a, 3);   /* { dg-warning "forming offset 9 is out of the bounds \\\[0, 9] of object " "memcpy" } */
+  T (char, 9, a + SAR (-1,  7), a, 3);   /* { dg-warning "forming offset \\\[9, 10] is out of the bounds \\\[0, 9] of object " "memcpy" } */
+  T (char, 9, a + SAR (-2,  8), a, 3);   /* { dg-warning "offset \\\[9, 11] is out of the bounds \\\[0, 9] of object " "memcpy" } */
 
   ptrdiff_t i = SAR (DIFF_MIN + 1, DIFF_MAX - 4);
   T (char, 1, d, d + SAR (DIFF_MIN + 3, DIFF_MAX - 1), 3);
@@ -312,13 +312,13 @@ void test_strcpy_bounds (char *d, const char *s)
      it out of bounds (it isn't) but because the final source offset
      after the access has completed, is.  It would be clearer if
      the warning mentioned the final offset.  */
-  TI (char, 2, "", a + SR (2, DIFF_MAX - 1), s);   /* { dg-warning "forming offset 3 is out of the bounds \\\[0, 2] of object \[^\n\r\]+ with type .char ?\\\[2\\\]."  "strcpy" } */
+  TI (char, 2, "", a + SR (2, DIFF_MAX - 1), s);   /* { dg-warning "offset 2 is out of the bounds \\\[0, 2] of object \[^\n\r\]+ with type .char ?\\\[2\\\]."  "strcpy" } */
   TI (char, 2, "", a + SR (3, DIFF_MAX - 1), s);   /* { dg-warning "offset \\\[3, \[0-9\]+] is out of the bounds \\\[0, 2] of object \[^\n\r\]+ with type .char ?\\\[2\\\]."  "strcpy" } */
 
   TI (char, 3, "", a + SR (0, DIFF_MAX - 1), s);
   TI (char, 3, "", a + SR (1, DIFF_MAX - 1), s);
   TI (char, 3, "", a + SR (2, DIFF_MAX - 1), s);
-  TI (char, 3, "", a + SR (3, DIFF_MAX - 1), s);   /* { dg-warning "forming offset 4 is out of the bounds \\\[0, 3] of object \[^\n\r\]+ with type .char ?\\\[3\\\]."  "strcpy" } */
+  TI (char, 3, "", a + SR (3, DIFF_MAX - 1), s);   /* { dg-warning "offset 3 is out of the bounds \\\[0, 3] of object \[^\n\r\]+ with type .char ?\\\[3\\\]."  "strcpy" } */
   TI (char, 3, "", a + SR (4, DIFF_MAX - 1), s);   /* { dg-warning "offset \\\[4, \[0-9\]+] is out of the bounds \\\[0, 3] of object \[^\n\r\]+ with type .char ?\\\[3\\\]."  "strcpy" } */
 
   TI (char, 4, "", a + SR (DIFF_MAX - 2, DIFF_MAX - 1), s);   /* { dg-warning "offset \\\[\[0-9\]+, \[0-9\]+] is out of the bounds \\\[0, 4] of object \[^\n\r\]+ with type .char ?\\\[4\\\]."  "strcpy" } */
@@ -364,15 +364,15 @@ void test_strcpy_bounds_memarray_range (void)
   TM (a5, "0",    ma.a5 + i, ma.a5);
   TM (a5, "01",   ma.a5 + i, ma.a5);
   TM (a5, "012",  ma.a5 + i, ma.a5);
-  TM (a5, "0123", ma.a5 + i, ma.a5);     /* { dg-warning "offset 10 from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char ?\\\[5]. at offset 4" "strcpy" } */
+  TM (a5, "0123", ma.a5 + i, ma.a5);     /* { dg-warning "offset 9 from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char ?\\\[5]. at offset 4" "strcpy" } */
 
   TM (a11, "0",       ma.a5, ma.a11);
   TM (a11, "01",      ma.a5, ma.a11);
   TM (a11, "012",     ma.a5, ma.a11);
   TM (a11, "0123",    ma.a5, ma.a11);
-  TM (a11, "01234",   ma.a5, ma.a11);    /* { dg-warning "offset 10 from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char ?\\\[5]' at offset 4" } */
-  TM (a11, "012345",  ma.a5, ma.a11);    /* { dg-warning "offset \\\[10, 11] from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char ?\\\[5]' at offset 4" } */
-  TM (a11, "0123456", ma.a5, ma.a11);    /* { dg-warning "offset \\\[10, 12] from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char ?\\\[5]' at offset 4" } */
+  TM (a11, "01234",   ma.a5, ma.a11);    /* { dg-warning "offset 9 from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char ?\\\[5]' at offset 4" } */
+  TM (a11, "012345",  ma.a5, ma.a11);    /* { dg-warning "offset \\\[9, 10] from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char ?\\\[5]' at offset 4" } */
+  TM (a11, "0123456", ma.a5, ma.a11);    /* { dg-warning "offset \\\[9, 11] from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char ?\\\[5]' at offset 4" } */
 
   TM (a11, "0123456", ma.a11 + i, "789abcd");
 }

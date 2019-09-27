@@ -1,3 +1,8 @@
+2019-09-18  Martin Liska  <mliska@suse.cz>
+
+	* clang-format: Tweak configuration based on new
+	options offered.
+
 2019-09-09  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* config-list.mk (LIST): Disable go in bpf-*-* targets.

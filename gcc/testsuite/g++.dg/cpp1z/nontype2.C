@@ -8,7 +8,7 @@ template<int* p> class X { };
 template<const char *s> class Y {};
 template<const std::type_info &> class Z {};
 
-X<&s.m> x7;			// { dg-error "" }
+X<&s.m> x7;			// { dg-error "3:.& s.S::m. is not a valid template argument" }
 Y<"foo"> y1;			// { dg-error "string literal" }
 Z<typeid(p)> z1;		// { dg-error "" }
 

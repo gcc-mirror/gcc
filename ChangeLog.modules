@@ -1,5 +1,7 @@
 2019-09-27  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r276201.
+
 	gcc/cp/
 	* decl.c (fixup_anonymous_aggr): Partially revert recent change.
 	(grokfndecl): Call set_originating_module before determining

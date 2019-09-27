@@ -616,9 +616,7 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
 
 	  for (j = 0; vec_safe_iterate (dst->clone.tree_map, j, &r); j++)
 	    {
-	      if (((!r->old_tree && r->parm_num == i)
-		   || (r->old_tree && r->old_tree == ipa_get_param (parms_info, i)))
-		   && r->replace_p && !r->ref_p)
+	      if (r->parm_num == i)
 		{
 		  known_vals[i] = r->new_tree;
 		  break;
@@ -1197,8 +1195,14 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 				      ? code : inverted_code);
 	  /* invert_tree_comparison will return ERROR_MARK on FP
 	     comparsions that are not EQ/NE instead of returning proper
-	     unordered one.  Be sure it is not confused with NON_CONSTANT.  */
-	  if (this_code != ERROR_MARK)
+	     unordered one.  Be sure it is not confused with NON_CONSTANT.
+
+	     And if the edge's target is the final block of diamond CFG graph
+	     of this conditional statement, we do not need to compute
+	     predicate for the edge because the final block's predicate must
+	     be at least as that of the first block of the statement.  */
+	  if (this_code != ERROR_MARK
+	      && !dominated_by_p (CDI_POST_DOMINATORS, bb, e->dest))
 	    {
 	      predicate p
 		= add_condition (summary, index, size, &aggpos, this_code,
@@ -1269,28 +1273,51 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   if (!unmodified_parm_or_parm_agg_item (fbi, last, op, &index, &size, &aggpos))
     return;
 
+  auto_vec<std::pair<tree, tree> > ranges;
+  tree type = TREE_TYPE (op);
+  int bound_limit = PARAM_VALUE (PARAM_IPA_MAX_SWITCH_PREDICATE_BOUNDS);
+  int bound_count = 0;
+  wide_int vr_wmin, vr_wmax;
+  value_range_kind vr_type = get_range_info (op, &vr_wmin, &vr_wmax);
+
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
       e->aux = edge_predicate_pool.allocate ();
       *(predicate *) e->aux = false;
     }
+
+  e = gimple_switch_edge (cfun, last, 0);
+  /* Set BOUND_COUNT to maximum count to bypass computing predicate for
+     default case if its target basic block is in convergence point of all
+     switch cases, which can be determined by checking whether it
+     post-dominates the switch statement.  */
+  if (dominated_by_p (CDI_POST_DOMINATORS, bb, e->dest))
+    bound_count = INT_MAX;
+
   n = gimple_switch_num_labels (last);
-  for (case_idx = 0; case_idx < n; ++case_idx)
+  for (case_idx = 1; case_idx < n; ++case_idx)
     {
       tree cl = gimple_switch_label (last, case_idx);
-      tree min, max;
+      tree min = CASE_LOW (cl);
+      tree max = CASE_HIGH (cl);
       predicate p;
 
-      e = gimple_switch_edge (cfun, last, case_idx);
-      min = CASE_LOW (cl);
-      max = CASE_HIGH (cl);
+      /* The case value might not have same type as switch expression,
+	 extend the value based on the expression type.  */
+      if (TREE_TYPE (min) != type)
+	min = wide_int_to_tree (type, wi::to_wide (min));
 
-      /* For default we might want to construct predicate that none
-         of cases is met, but it is bit hard to do not having negations
-         of conditionals handy.  */
-      if (!min && !max)
+      if (!max)
+	max = min;
+      else if (TREE_TYPE (max) != type)
+	max = wide_int_to_tree (type, wi::to_wide (max));
+
+      /* The case's target basic block is in convergence point of all switch
+	 cases, its predicate should be at least as that of the switch
+	 statement.  */
+      if (dominated_by_p (CDI_POST_DOMINATORS, bb, e->dest))
 	p = true;
-      else if (!max)
+      else if (min == max)
 	p = add_condition (summary, index, size, &aggpos, EQ_EXPR,
 			   unshare_expr_without_location (min));
       else
@@ -1302,9 +1329,113 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 			      unshare_expr_without_location (max));
 	  p = p1 & p2;
 	}
+      e = gimple_switch_edge (cfun, last, case_idx);
       *(class predicate *) e->aux
 	= p.or_with (summary->conds, *(class predicate *) e->aux);
+
+      /* If there are too many disjoint case ranges, predicate for default
+	 case might become too complicated.  So add a limit here.  */
+      if (bound_count > bound_limit)
+	continue;
+
+      bool new_range = true;
+
+      if (!ranges.is_empty ())
+	{
+	  wide_int curr_wmin = wi::to_wide (min);
+	  wide_int last_wmax = wi::to_wide (ranges.last ().second);
+
+	  /* Merge case ranges if they are continuous.  */
+	  if (curr_wmin == last_wmax + 1)
+	    new_range = false;
+	  else if (vr_type == VR_ANTI_RANGE)
+	    {
+	      /* If two disjoint case ranges can be connected by anti-range
+		 of switch index, combine them to one range.  */
+	      if (wi::lt_p (vr_wmax, curr_wmin - 1, TYPE_SIGN (type)))
+		vr_type = VR_UNDEFINED;
+	      else if (wi::le_p (vr_wmin, last_wmax + 1, TYPE_SIGN (type)))
+		new_range = false;
+	    }
+	}
+
+      /* Create/extend a case range.  And we count endpoints of range set,
+	 this number nearly equals to number of conditions that we will create
+	 for predicate of default case.  */
+      if (new_range)
+	{
+	  bound_count += (min == max) ? 1 : 2;
+	  ranges.safe_push (std::make_pair (min, max));
+	}
+      else
+	{
+	  bound_count += (ranges.last ().first == ranges.last ().second);
+	  ranges.last ().second = max;
+	}
     }
+
+  e = gimple_switch_edge (cfun, last, 0);
+  if (bound_count > bound_limit)
+    {
+      *(class predicate *) e->aux = true;
+      return;
+    }
+
+  predicate p_seg = true;
+  predicate p_all = false;
+
+  if (vr_type != VR_RANGE)
+    {
+      vr_wmin = wi::to_wide (TYPE_MIN_VALUE (type));
+      vr_wmax = wi::to_wide (TYPE_MAX_VALUE (type));
+    }
+
+  /* Construct predicate to represent default range set that is negation of
+     all case ranges.  Case range is classified as containing single/non-single
+     values.  Suppose a piece of case ranges in the following.
+
+                [D1...D2]  [S1] ... [Sn]  [D3...D4]
+
+     To represent default case's range sets between two non-single value
+     case ranges (From D2 to D3), we construct predicate as:
+
+              D2 < x < D3 && x != S1 && ... && x != Sn
+   */
+  for (size_t i = 0; i < ranges.length (); i++)
+    {
+      tree min = ranges[i].first;
+      tree max = ranges[i].second;
+
+      if (min == max)
+	p_seg &= add_condition (summary, index, size, &aggpos, NE_EXPR,
+				unshare_expr_without_location (min));
+      else
+	{
+	  /* Do not create sub-predicate for range that is beyond low bound
+	     of switch index.  */
+	  if (wi::lt_p (vr_wmin, wi::to_wide (min), TYPE_SIGN (type)))
+	    {
+	      p_seg &= add_condition (summary, index, size, &aggpos, LT_EXPR,
+				      unshare_expr_without_location (min));
+	      p_all = p_all.or_with (summary->conds, p_seg);
+	    }
+
+	  /* Do not create sub-predicate for range that is beyond up bound
+	     of switch index.  */
+	  if (wi::le_p (vr_wmax, wi::to_wide (max), TYPE_SIGN (type)))
+	    {
+	      p_seg = false;
+	      break;
+	    }
+
+	  p_seg = add_condition (summary, index, size, &aggpos, GT_EXPR,
+				 unshare_expr_without_location (max));
+	}
+    }
+
+  p_all = p_all.or_with (summary->conds, p_seg);
+  *(class predicate *) e->aux
+    = p_all.or_with (summary->conds, *(class predicate *) e->aux);
 }
 
 
@@ -1354,10 +1485,10 @@ compute_bb_predicates (struct ipa_func_body_info *fbi,
 		    break;
 		}
 	    }
-	  if (p == false)
-	    gcc_checking_assert (!bb->aux);
-	  else
+	  if (p != false)
 	    {
+	      basic_block pdom_bb;
+
 	      if (!bb->aux)
 		{
 		  done = false;
@@ -1374,6 +1505,34 @@ compute_bb_predicates (struct ipa_func_body_info *fbi,
 		    {
 		      done = false;
 		      *((predicate *) bb->aux) = p;
+		    }
+		}
+
+	      /* For switch/if statement, we can OR-combine predicates of all
+		 its cases/branches to get predicate for basic block in their
+		 convergence point, but sometimes this will generate very
+		 complicated predicate.  Actually, we can get simplified
+		 predicate in another way by using the fact that predicate
+		 for a basic block must also hold true for its post dominators.
+		 To be specific, basic block in convergence point of
+		 conditional statement should include predicate of the
+		 statement.  */
+	      pdom_bb = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
+	      if (pdom_bb == EXIT_BLOCK_PTR_FOR_FN (my_function) || !pdom_bb)
+		;
+	      else if (!pdom_bb->aux)
+		{
+		  done = false;
+		  pdom_bb->aux = edge_predicate_pool.allocate ();
+		  *((predicate *) pdom_bb->aux) = p;
+		}
+	      else if (p != *(predicate *) pdom_bb->aux)
+		{
+		  p = p.or_with (summary->conds, *(predicate *)pdom_bb->aux);
+		  if (p != *(predicate *) pdom_bb->aux)
+		    {
+		      done = false;
+		      *((predicate *) pdom_bb->aux) = p;
 		    }
 		}
 	    }
@@ -1980,6 +2139,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
   if (opt_for_fn (node->decl, optimize))
     {
       calculate_dominance_info (CDI_DOMINATORS);
+      calculate_dominance_info (CDI_POST_DOMINATORS);
       if (!early)
         loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
       else
@@ -2360,6 +2520,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
       else if (!ipa_edge_args_sum)
 	ipa_free_all_node_params ();
       free_dominance_info (CDI_DOMINATORS);
+      free_dominance_info (CDI_POST_DOMINATORS);
     }
   if (dump_file)
     {

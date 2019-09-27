@@ -90,7 +90,7 @@ package Checks is
    --  When we have address clauses, there is an issue of whether the address
    --  specified is appropriate to the alignment. In the general case where the
    --  address is dynamic, we generate a check and a possible warning (this
-   --  warning occurs for example if we have a restricted run time with the
+   --  warning occurs for example if we have a restricted runtime with the
    --  restriction No_Exception_Propagation). We also issue this warning in
    --  the case where the address is static, but we don't know the alignment
    --  at the time we process the address clause. In such a case, we issue the
@@ -98,7 +98,7 @@ package Checks is
    --  annotated the actual alignment chosen) that the warning was not needed.
 
    --  To deal with deleting these potentially annoying warnings, we save the
-   --  warning information in a table, and then delete the waranings in the
+   --  warning information in a table, and then delete the warnings in the
    --  post compilation validation stage if we can tell that the check would
    --  never fail (in general the back end will also optimize away the check
    --  in such cases).
@@ -112,6 +112,9 @@ package Checks is
       A : Uint;
       --  Compile time known value of address clause for which the alignment
       --  is to be checked once we know the alignment.
+
+      P : Node_Id;
+      --  Prefix of address clause when it is of the form X'Address
 
       W : Error_Msg_Id;
       --  Id of warning message we might delete

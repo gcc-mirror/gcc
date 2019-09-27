@@ -4230,7 +4230,9 @@ hwloop_optimize (hwloop_info loop)
 
   seq = get_insns ();
 
-  if (!single_succ_p (entry_bb) || vec_safe_length (loop->incoming) > 1)
+  entry_after = BB_END (entry_bb);
+  if (!single_succ_p (entry_bb) || vec_safe_length (loop->incoming) > 1
+      || !entry_after)
     {
       basic_block new_bb;
       edge e;
@@ -4251,7 +4253,6 @@ hwloop_optimize (hwloop_info loop)
     }
   else
     {
-      entry_after = BB_END (entry_bb);
       while (DEBUG_INSN_P (entry_after)
              || (NOTE_P (entry_after)
 		 && NOTE_KIND (entry_after) != NOTE_INSN_BASIC_BLOCK))

@@ -1,3 +1,15 @@
+2019-09-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-typeck.c (build_function_call_vec): Take the original function
+	decl as an optional final parameter.  Pass all built-in calls to
+	check_builtin_function_arguments.
+
+2019-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c/91815
+	* c-decl.c (pushdecl): In C detect duplicate declarations across scopes
+	of identifiers in the external scope only for variables and functions.
+
 2019-09-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR c/78736

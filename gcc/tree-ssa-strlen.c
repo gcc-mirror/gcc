@@ -896,7 +896,8 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
 
 		      if (!argdata.minlen
 			  || (integer_zerop (argdata.minlen)
-			      && integer_all_onesp (argdata.maxbound)
+			      && (!argdata.maxbound
+				  || integer_all_onesp (argdata.maxbound))
 			      && integer_all_onesp (argdata.maxlen)))
 			{
 			  /* Set the upper bound of the length to unbounded.  */
@@ -910,11 +911,13 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
 			  || tree_int_cst_lt (argdata.minlen, pdata->minlen))
 			pdata->minlen = argdata.minlen;
 		      if (!pdata->maxlen
-			  || tree_int_cst_lt (pdata->maxlen, argdata.maxlen))
+			  || (argdata.maxlen
+			      && tree_int_cst_lt (pdata->maxlen, argdata.maxlen)))
 			pdata->maxlen = argdata.maxlen;
 		      if (!pdata->maxbound
-			  || (tree_int_cst_lt (pdata->maxbound,
-					       argdata.maxbound)
+			  || (argdata.maxbound
+			      && tree_int_cst_lt (pdata->maxbound,
+						  argdata.maxbound)
 			      && !integer_all_onesp (argdata.maxbound)))
 			pdata->maxbound = argdata.maxbound;
 		    }
@@ -944,8 +947,7 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
   if (strinfo *si = get_strinfo (idx))
     {
       pdata->minlen = get_string_length (si);
-      if (!pdata->minlen
-	  && si->nonzero_chars)
+      if (!pdata->minlen && si->nonzero_chars)
 	{
 	  if (TREE_CODE (si->nonzero_chars) == INTEGER_CST)
 	    pdata->minlen = si->nonzero_chars;
@@ -989,7 +991,7 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
 	  else
 	    pdata->maxlen = build_all_ones_cst (size_type_node);
 	}
-      else if (TREE_CODE (pdata->minlen) == SSA_NAME)
+      else if (pdata->minlen && TREE_CODE (pdata->minlen) == SSA_NAME)
 	{
 	  const value_range *vr
 	    = CONST_CAST (class vr_values *, rvals)
@@ -1007,10 +1009,18 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
 	      pdata->maxlen = build_all_ones_cst (size_type_node);
 	    }
 	}
-      else
+      else if (pdata->minlen && TREE_CODE (pdata->minlen) == INTEGER_CST)
 	{
 	  pdata->maxlen = pdata->minlen;
 	  pdata->maxbound = pdata->minlen;
+	}
+      else
+	{
+	  /* For PDATA->MINLEN that's a non-constant expression such
+	     as PLUS_EXPR whose value range is unknown, set the bounds
+	     to zero and SIZE_MAX.  */
+	  pdata->minlen = build_zero_cst (size_type_node);
+	  pdata->maxlen = build_all_ones_cst (size_type_node);
 	}
 
       return true;
@@ -3057,11 +3067,12 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 
       /* Compute the size of the source sequence, including the nul.  */
       tree srcsize = srclen ? srclen : size_zero_node;
-      srcsize = fold_build2 (PLUS_EXPR, type, srcsize, build_int_cst (type, 1));
-
+      tree one = build_int_cst (type, 1);
+      srcsize = fold_build2 (PLUS_EXPR, type, srcsize, one);
+      tree dstsize = fold_build2 (PLUS_EXPR, type, dstlen, one);
       tree sptr = si && si->ptr ? si->ptr : src;
 
-      if (check_bounds_or_overlap (stmt, dst, sptr, dstlen, srcsize))
+      if (check_bounds_or_overlap (stmt, dst, sptr, dstsize, srcsize))
 	{
 	  gimple_set_no_warning (stmt, true);
 	  set_no_warning = true;

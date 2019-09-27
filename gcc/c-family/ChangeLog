@@ -1,3 +1,17 @@
+2019-09-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-common.h (build_function_call_vec): Take the original
+	function decl as an optional final parameter.
+	(check_builtin_function_arguments): Take the original function decl.
+	* c-common.c (check_builtin_function_arguments): Likewise.
+	Handle all built-in functions, not just BUILT_IN_NORMAL ones.
+	Use targetm.check_builtin_call to check BUILT_IN_MD functions.
+
+2019-09-15  Jason Merrill  <jason@redhat.com>
+
+	* c-warn.c (warn_logical_operator): Strip location wrappers.  Don't
+	fold_for_warn in "|| mask" warning.
+
 2019-09-10  Martin Liska  <mliska@suse.cz>
 
 	* c.opt: Use newly added WarnRemoved.

@@ -1,0 +1,44 @@
+# Out-of-line LSE atomics for AArch64 architecture.
+# Copyright (C) 2019 Free Software Foundation, Inc.
+# Contributed by Linaro Ltd.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Compare-and-swap has 5 sizes and 4 memory models.
+S0 := $(foreach s, 1 2 4 8 16, $(addsuffix _$(s), cas))
+O0 := $(foreach m, 1 2 3 4, $(addsuffix _$(m)$(objext), $(S0)))
+
+# Swap, Load-and-operate have 4 sizes and 4 memory models
+S1 := $(foreach s, 1 2 4 8, $(addsuffix _$(s), swp ldadd ldclr ldeor ldset))
+O1 := $(foreach m, 1 2 3 4, $(addsuffix _$(m)$(objext), $(S1)))
+
+LSE_OBJS := $(O0) $(O1)
+
+libgcc-objects += $(LSE_OBJS) lse-init$(objext)
+
+empty      =
+space      = $(empty) $(empty)
+PAT_SPLIT  = $(subst _,$(space),$(*F))
+PAT_BASE   = $(word 1,$(PAT_SPLIT))
+PAT_N      = $(word 2,$(PAT_SPLIT))
+PAT_M      = $(word 3,$(PAT_SPLIT))
+
+lse-init$(objext): $(srcdir)/config/aarch64/lse-init.c
+	$(gcc_compile) -c $<
+
+$(LSE_OBJS): $(srcdir)/config/aarch64/lse.S
+	$(gcc_compile) -DL_$(PAT_BASE) -DSIZE=$(PAT_N) -DMODEL=$(PAT_M) -c $<

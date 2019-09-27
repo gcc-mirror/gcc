@@ -7662,11 +7662,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		    maybe_generic_this_capture (instance, fn);
 		    postfix_expression
 		      = build_min_nt_call_vec (postfix_expression, args);
-		    release_tree_vector (args);
-		    break;
 		  }
-
-		if (BASELINK_P (fn))
+		else if (BASELINK_P (fn))
 		  {
 		  postfix_expression
 		    = (build_new_method_call
@@ -11584,7 +11581,10 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
     }
   /* Anything that starts with a `{' must be a compound-statement.  */
   else if (token->type == CPP_OPEN_BRACE)
-    statement = cp_parser_compound_statement (parser, NULL, BCS_NORMAL, false);
+    {
+      std_attrs = process_stmt_hotness_attribute (std_attrs, attrs_loc);
+      statement = cp_parser_compound_statement (parser, NULL, BCS_NORMAL, false);
+    }
   /* CPP_PRAGMA is a #pragma inside a function body, which constitutes
      a statement all its own.  */
   else if (token->type == CPP_PRAGMA)
@@ -42547,7 +42547,7 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
       non_type = true;
     }
 
-  // Attach the constraint to the parm before processing.
+  /* Attach the constraint to the parm before processing.  */
   tree node = build_tree_list (NULL_TREE, synth_tmpl_parm);
   TREE_TYPE (node) = constr;
   tree new_parm
@@ -42590,8 +42590,8 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
       TREE_VEC_ELT (new_parms, new_parm_idx) = parser->implicit_template_parms;
     }
 
-  // If the new parameter was constrained, we need to add that to the
-  // constraints in the template parameter list.
+  /* If the new parameter was constrained, we need to add that to the
+     constraints in the template parameter list.  */
   if (tree req = TEMPLATE_PARM_CONSTRAINTS (tree_last (new_parm)))
     {
       tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);

@@ -3828,7 +3828,6 @@ static tree
 mangle_decl_string (const tree decl)
 {
   tree result;
-  location_t saved_loc = input_location;
   tree saved_fn = NULL_TREE;
   bool template_p = false;
 
@@ -3846,7 +3845,7 @@ mangle_decl_string (const tree decl)
 	  current_function_decl = NULL_TREE;
 	}
     }
-  input_location = DECL_SOURCE_LOCATION (decl);
+  iloc_sentinel ils (DECL_SOURCE_LOCATION (decl));
 
   start_mangling (decl);
 
@@ -3865,7 +3864,6 @@ mangle_decl_string (const tree decl)
       pop_tinst_level ();
       current_function_decl = saved_fn;
     }
-  input_location = saved_loc;
 
   return result;
 }

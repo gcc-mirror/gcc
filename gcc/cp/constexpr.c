@@ -3387,7 +3387,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
       if (TREE_CODE (op) == CONST_DECL)
 	return DECL_INITIAL (op);
       /* *&p => p;  make sure to handle *&"str"[cst] here.  */
-      if (same_type_ignoring_tlq_and_bounds_p (optype, type))
+      if (similar_type_p (optype, type))
 	{
 	  tree fop = fold_read_from_constant_string (op);
 	  if (fop)
@@ -3397,8 +3397,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	}
       /* *(foo *)&fooarray => fooarray[0] */
       else if (TREE_CODE (optype) == ARRAY_TYPE
-	       && (same_type_ignoring_top_level_qualifiers_p
-		   (type, TREE_TYPE (optype))))
+	       && similar_type_p (type, TREE_TYPE (optype)))
 	{
 	  tree type_domain = TYPE_DOMAIN (optype);
 	  tree min_val = size_zero_node;
@@ -3409,13 +3408,11 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	}
       /* *(foo *)&complexfoo => __real__ complexfoo */
       else if (TREE_CODE (optype) == COMPLEX_TYPE
-	       && (same_type_ignoring_top_level_qualifiers_p
-		   (type, TREE_TYPE (optype))))
+	       && similar_type_p (type, TREE_TYPE (optype)))
 	return fold_build1_loc (loc, REALPART_EXPR, type, op);
       /* *(foo *)&vectorfoo => BIT_FIELD_REF<vectorfoo,...> */
       else if (VECTOR_TYPE_P (optype)
-	       && (same_type_ignoring_top_level_qualifiers_p
-		   (type, TREE_TYPE (optype))))
+	       && similar_type_p (type, TREE_TYPE (optype)))
 	{
 	  tree part_width = TYPE_SIZE (type);
 	  tree index = bitsize_int (0);
@@ -3439,8 +3436,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	    if (TREE_CODE (field) == FIELD_DECL
 		&& TREE_TYPE (field) != error_mark_node
 		&& integer_zerop (byte_position (field))
-		&& (same_type_ignoring_top_level_qualifiers_p
-		    (TREE_TYPE (field), type)))
+		&& similar_type_p (TREE_TYPE (field), type))
 	      return fold_build3 (COMPONENT_REF, type, op, field, NULL_TREE);
 	}
     }
@@ -3459,8 +3455,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 
 	  /* ((foo*)&vectorfoo)[1] => BIT_FIELD_REF<vectorfoo,...> */
 	  if (VECTOR_TYPE_P (op00type)
-	      && same_type_ignoring_top_level_qualifiers_p
-						(type, TREE_TYPE (op00type))
+	      && similar_type_p (type, TREE_TYPE (op00type))
 	      /* POINTER_PLUS_EXPR second operand is sizetype, unsigned,
 		 but we want to treat offsets with MSB set as negative.
 		 For the code below negative offsets are invalid and
@@ -3485,8 +3480,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	    }
 	  /* ((foo*)&complexfoo)[1] => __imag__ complexfoo */
 	  else if (TREE_CODE (op00type) == COMPLEX_TYPE
-		   && (same_type_ignoring_top_level_qualifiers_p
-		       (type, TREE_TYPE (op00type))))
+		   && similar_type_p (type, TREE_TYPE (op00type)))
 	    {
 	      if (known_eq (wi::to_poly_offset (TYPE_SIZE_UNIT (type)),
 			    const_op01))
@@ -3494,8 +3488,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	    }
 	  /* ((foo *)&fooarray)[1] => fooarray[1] */
 	  else if (TREE_CODE (op00type) == ARRAY_TYPE
-		   && (same_type_ignoring_top_level_qualifiers_p
-		       (type, TREE_TYPE (op00type))))
+		   && similar_type_p (type, TREE_TYPE (op00type)))
 	    {
 	      tree type_domain = TYPE_DOMAIN (op00type);
 	      tree min_val = size_zero_node;
@@ -3530,8 +3523,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 		if (TREE_CODE (field) == FIELD_DECL
 		    && TREE_TYPE (field) != error_mark_node
 		    && tree_int_cst_equal (byte_position (field), op01)
-		    && (same_type_ignoring_top_level_qualifiers_p
-			(TREE_TYPE (field), type)))
+		    && similar_type_p (TREE_TYPE (field), type))
 		  return fold_build3 (COMPONENT_REF, type, op00,
 				      field, NULL_TREE);
 	    }
@@ -3539,8 +3531,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
     }
   /* *(foo *)fooarrptr => (*fooarrptr)[0] */
   else if (TREE_CODE (TREE_TYPE (subtype)) == ARRAY_TYPE
-	   && (same_type_ignoring_top_level_qualifiers_p
-	       (type, TREE_TYPE (TREE_TYPE (subtype)))))
+	   && similar_type_p (type, TREE_TYPE (TREE_TYPE (subtype))))
     {
       tree type_domain;
       tree min_val = size_zero_node;
@@ -3610,13 +3601,14 @@ cxx_eval_indirect_ref (const constexpr_ctx *ctx, tree t,
 	  STRIP_NOPS (sub);
 	  if (TREE_CODE (sub) == ADDR_EXPR)
 	    {
-	      gcc_assert (!same_type_ignoring_top_level_qualifiers_p
+	      gcc_assert (!similar_type_p
 			  (TREE_TYPE (TREE_TYPE (sub)), TREE_TYPE (t)));
 	      /* DR 1188 says we don't have to deal with this.  */
 	      if (!ctx->quiet)
-		error ("accessing value of %qE through a %qT glvalue in a "
-		       "constant expression", build_fold_indirect_ref (sub),
-		       TREE_TYPE (t));
+		error_at (cp_expr_loc_or_input_loc (t),
+			  "accessing value of %qE through a %qT glvalue in a "
+			  "constant expression", build_fold_indirect_ref (sub),
+			  TREE_TYPE (t));
 	      *non_constant_p = true;
 	      return t;
 	    }

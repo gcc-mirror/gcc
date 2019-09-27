@@ -37,18 +37,59 @@ package body GNAT.Sockets.Thin_Common is
 
    procedure Set_Address
      (Sin     : Sockaddr_Access;
-      Address : Sock_Addr_Type)
+      Address : Sock_Addr_Type;
+      Length  : out C.int)
    is
+      use type C.char;
+
+      function Network_Port return C.unsigned_short is
+        (Short_To_Network (C.unsigned_short (Address.Port))) with Inline;
+
    begin
       Set_Family (Sin.Sin_Family, Address.Family);
-      Sin.Sin_Port := Short_To_Network (C.unsigned_short (Address.Port));
+
+      Length := C.int (Lengths (Address.Family));
 
       case Address.Family is
          when Family_Inet =>
+            Sin.Sin_Port := Network_Port;
             Sin.Sin_Addr := To_In_Addr (Address.Addr);
+
          when Family_Inet6 =>
+            Sin.Sin6_Port := Network_Port;
             Sin.Sin6_Addr := To_In6_Addr (Address.Addr);
             Sin.Sin6_Scope_Id := 0;
+
+         when Family_Unix =>
+            declare
+               use type C.size_t;
+               Name_Len : constant C.size_t :=
+                            C.size_t (ASU.Length (Address.Name));
+            begin
+               Length := Sockaddr_Length_And_Family'Size / System.Storage_Unit
+                         + C.int (Name_Len);
+
+               if Name_Len > Sin.Sun_Path'Length then
+                  raise Constraint_Error with
+                    "Too big address length for UNIX local communication";
+               end if;
+
+               if Name_Len = 0 then
+                  Sin.Sun_Path (1) := C.nul;
+
+               else
+                  Sin.Sun_Path (1 .. Name_Len) :=
+                    C.To_C (ASU.To_String (Address.Name), Append_Nul => False);
+
+                  if Sin.Sun_Path (1) /= C.nul
+                    and then Name_Len < Sin.Sun_Path'Length
+                  then
+                     Sin.Sun_Path (Name_Len + 1) := C.nul;
+                     Length := Length + 1;
+                  end if;
+               end if;
+            end;
+
          when Family_Unspec =>
             null;
       end case;
@@ -58,26 +99,39 @@ package body GNAT.Sockets.Thin_Common is
    -- Get_Address --
    -----------------
 
-   function Get_Address (Sin : Sockaddr) return Sock_Addr_Type is
-      use type C.unsigned_short;
+   function Get_Address
+     (Sin : Sockaddr; Length : C.int) return Sock_Addr_Type
+   is
+      use type C.unsigned_short, C.size_t, C.char, SOSC.OS_Type;
       Family : constant C.unsigned_short :=
         (if SOSC.Has_Sockaddr_Len = 0 then Sin.Sin_Family.Short_Family
          else C.unsigned_short (Sin.Sin_Family.Char_Family));
-      AF_INET6_Defined : constant Boolean := SOSC.AF_INET6 > 0;
       Result : Sock_Addr_Type
-        (if AF_INET6_Defined and then SOSC.AF_INET6 = Family then Family_Inet6
+        (if SOSC.AF_INET6 > 0 and then SOSC.AF_INET6 = Family then Family_Inet6
+         elsif SOSC.AF_UNIX > 0 and then SOSC.AF_UNIX = Family then Family_Unix
          elsif SOSC.AF_INET = Family then Family_Inet
          else Family_Unspec);
    begin
-      Result.Port := Port_Type (Network_To_Short (Sin.Sin_Port));
-
       case Result.Family is
          when Family_Inet =>
+            Result.Port := Port_Type (Network_To_Short (Sin.Sin_Port));
             To_Inet_Addr (Sin.Sin_Addr, Result.Addr);
          when Family_Inet6 =>
+            Result.Port := Port_Type (Network_To_Short (Sin.Sin6_Port));
             To_Inet_Addr (Sin.Sin6_Addr, Result.Addr);
+         when Family_Unix =>
+            if Length > Sin.Sin_Family'Size / System.Storage_Unit then
+               Result.Name := ASU.To_Unbounded_String
+                 (C.To_Ada
+                    (Sin.Sun_Path
+                         (1 .. C.size_t (Length)
+                          - Sin.Sin_Family'Size / System.Storage_Unit),
+                     Trim_Nul => Sin.Sun_Path (1) /= C.nul
+                                 or else SOSC.Target_OS = SOSC.Windows));
+            end if;
+
          when Family_Unspec =>
-            Result.Addr := (Family => Family_Unspec);
+            null;
       end case;
 
       return Result;

@@ -11567,6 +11567,21 @@ another @code{CALL_EXPR}.
 @var{arglist} really has type @samp{VEC(tree,gc)*}
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_CHECK_BUILTIN_CALL (location_t @var{loc}, vec<location_t> @var{arg_loc}, tree @var{fndecl}, tree @var{orig_fndecl}, unsigned int @var{nargs}, tree *@var{args})
+Perform semantic checking on a call to a machine-specific built-in
+function after its arguments have been constrained to the function
+signature.  Return true if the call is valid, otherwise report an error
+and return false.
+
+This hook is called after @code{TARGET_RESOLVE_OVERLOADED_BUILTIN}.
+The call was originally to built-in function @var{orig_fndecl},
+but after the optional @code{TARGET_RESOLVE_OVERLOADED_BUILTIN}
+step is now to built-in function @var{fndecl}.  @var{loc} is the
+location of the call and @var{args} is an array of function arguments,
+of which there are @var{nargs}.  @var{arg_loc} specifies the location
+of each argument.
+@end deftypefn
+
 @deftypefn {Target Hook} tree TARGET_FOLD_BUILTIN (tree @var{fndecl}, int @var{n_args}, tree *@var{argp}, bool @var{ignore})
 Fold a call to a machine specific built-in function that was set up by
 @samp{TARGET_INIT_BUILTINS}.  @var{fndecl} is the declaration of the

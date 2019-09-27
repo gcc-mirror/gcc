@@ -1,3 +1,39 @@
+2019-09-25  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config.in, configure: Re-rebuild with stock autoconf 2.69,
+	not the ubuntu modified 2.69.
+
+	PR target/91833
+	* config/aarch64/lse-init.c: Include auto-target.h.  Disable
+	initialization if !HAVE_SYS_AUXV_H.
+	* configure.ac (AC_CHECK_HEADERS): Add sys/auxv.h.
+	* config.in, configure: Rebuild.
+
+	PR target/91834
+	* config/aarch64/lse.S (LDNM): Ensure STXR output does not
+	overlap the inputs.
+
+2019-09-25  Shaokun Zhang  <zhangshaokun@hisilicon.com>
+
+	* config/aarch64/sync-cache.c (__aarch64_sync_cache_range): Add support for
+	CTR_EL0.IDC and CTR_EL0.DIC.
+
+2019-09-20  Christophe Lyon  <christophe.lyon@st.com>
+
+	Revert:
+	2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+		Mickaël Guêné <mickael.guene@st.com>
+
+	* config/arm/unwind-arm.c (_Unwind_VRS_Set): Handle thumb-only
+	architecture.
+
+2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/lse-init.c: New file.
+	* config/aarch64/lse.S: New file.
+	* config/aarch64/t-lse: New file.
+	* config.host: Add t-lse to all aarch64 tuples.
+
 2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
 	Mickaël Guêné <mickael.guene@st.com>
 

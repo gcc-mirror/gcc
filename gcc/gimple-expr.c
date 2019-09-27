@@ -528,37 +528,40 @@ void
 extract_ops_from_tree (tree expr, enum tree_code *subcode_p, tree *op1_p,
 		       tree *op2_p, tree *op3_p)
 {
-  enum gimple_rhs_class grhs_class;
-
   *subcode_p = TREE_CODE (expr);
-  grhs_class = get_gimple_rhs_class (*subcode_p);
-
-  if (grhs_class == GIMPLE_TERNARY_RHS)
+  switch (get_gimple_rhs_class (*subcode_p))
     {
-      *op1_p = TREE_OPERAND (expr, 0);
-      *op2_p = TREE_OPERAND (expr, 1);
-      *op3_p = TREE_OPERAND (expr, 2);
+    case GIMPLE_TERNARY_RHS:
+      {
+	*op1_p = TREE_OPERAND (expr, 0);
+	*op2_p = TREE_OPERAND (expr, 1);
+	*op3_p = TREE_OPERAND (expr, 2);
+	break;
+      }
+    case GIMPLE_BINARY_RHS:
+      {
+	*op1_p = TREE_OPERAND (expr, 0);
+	*op2_p = TREE_OPERAND (expr, 1);
+	*op3_p = NULL_TREE;
+	break;
+      }
+    case GIMPLE_UNARY_RHS:
+      {
+	*op1_p = TREE_OPERAND (expr, 0);
+	*op2_p = NULL_TREE;
+	*op3_p = NULL_TREE;
+	break;
+      }
+    case GIMPLE_SINGLE_RHS:
+      {
+	*op1_p = expr;
+	*op2_p = NULL_TREE;
+	*op3_p = NULL_TREE;
+	break;
+      }
+    default:
+      gcc_unreachable ();
     }
-  else if (grhs_class == GIMPLE_BINARY_RHS)
-    {
-      *op1_p = TREE_OPERAND (expr, 0);
-      *op2_p = TREE_OPERAND (expr, 1);
-      *op3_p = NULL_TREE;
-    }
-  else if (grhs_class == GIMPLE_UNARY_RHS)
-    {
-      *op1_p = TREE_OPERAND (expr, 0);
-      *op2_p = NULL_TREE;
-      *op3_p = NULL_TREE;
-    }
-  else if (grhs_class == GIMPLE_SINGLE_RHS)
-    {
-      *op1_p = expr;
-      *op2_p = NULL_TREE;
-      *op3_p = NULL_TREE;
-    }
-  else
-    gcc_unreachable ();
 }
 
 /* Extract operands for a GIMPLE_COND statement out of COND_EXPR tree COND.  */

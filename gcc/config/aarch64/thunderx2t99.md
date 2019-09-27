@@ -74,7 +74,7 @@
 
 (define_insn_reservation "thunderx2t99_nothing" 0
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "no_insn,block"))
+       (eq_attr "type" "block"))
   "nothing")
 
 (define_insn_reservation "thunderx2t99_mrs" 0

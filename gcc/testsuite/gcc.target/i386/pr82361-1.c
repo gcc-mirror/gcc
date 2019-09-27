@@ -4,50 +4,50 @@
 /* We should be able to optimize all %eax to %rax zero extensions, because
    div and idiv instructions with 32-bit operands zero-extend both results.   */
 /* { dg-final { scan-assembler-not "movl\t%eax, %eax" } } */
-/* FIXME: We are still not able to optimize the modulo in f1/f2, only manage
-   one.  */
+/* FIXME: The compiler does not merge zero-extension to the modulo part
+   of f1 and f2.  */
 /* { dg-final { scan-assembler-times "movl\t%edx" 2 } } */
 
 void
 f1 (unsigned int a, unsigned int b)
 {
-  unsigned long long c = a / b;
-  unsigned long long d = a % b;
+  register unsigned long long c asm ("rax") = a / b;
+  register unsigned long long d asm ("rdx") = a % b;
   asm volatile ("" : : "r" (c), "r" (d));
 }
 
 void
 f2 (int a, int b)
 {
-  unsigned long long c = (unsigned int) (a / b);
-  unsigned long long d = (unsigned int) (a % b);
+  register unsigned long long c asm ("rax") = (unsigned int) (a / b);
+  register unsigned long long d asm ("rdx") = (unsigned int) (a % b);
   asm volatile ("" : : "r" (c), "r" (d));
 }
 
 void
 f3 (unsigned int a, unsigned int b)
 {
-  unsigned long long c = a / b;
+  register unsigned long long c asm ("rax") = a / b;
   asm volatile ("" : : "r" (c));
 }
 
 void
 f4 (int a, int b)
 {
-  unsigned long long c = (unsigned int) (a / b);
+  register unsigned long long c asm ("rax") = (unsigned int) (a / b);
   asm volatile ("" : : "r" (c));
 }
 
 void
 f5 (unsigned int a, unsigned int b)
 {
-  unsigned long long d = a % b;
+  register unsigned long long d asm ("rdx") = a % b;
   asm volatile ("" : : "r" (d));
 }
 
 void
 f6 (int a, int b)
 {
-  unsigned long long d = (unsigned int) (a % b);
+  register unsigned long long d asm ("rdx") = (unsigned int) (a % b);
   asm volatile ("" : : "r" (d));
 }

@@ -772,9 +772,8 @@ Convention Name         Interpretation
                         be present at all.  This convention is useful during development for the
                         inclusion of subprograms whose body has not yet been written.
                         In addition, all otherwise unrecognized convention names are also
-                        treated as being synonymous with convention C.  In all implementations
-                        except for VMS, use of such other names results in a warning.  In VMS
-                        implementations, these names are accepted silently.
+                        treated as being synonymous with convention C.  In all implementations,
+                        use of such other names results in a warning.
 ======================= ==============================================================================
 
 *

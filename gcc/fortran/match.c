@@ -6510,7 +6510,7 @@ gfc_match_select_rank (void)
   char name[GFC_MAX_SYMBOL_LEN];
   gfc_symbol *sym, *sym2;
   gfc_namespace *ns = gfc_current_ns;
-  gfc_array_spec *as;
+  gfc_array_spec *as = NULL;
 
   m = gfc_match_label ();
   if (m == MATCH_ERROR)
@@ -6538,13 +6538,21 @@ gfc_match_select_rank (void)
 	}
 
       sym = expr1->symtree->n.sym;
-      sym2 = expr2->symtree->n.sym;
 
-      as = sym2->ts.type == BT_CLASS ? CLASS_DATA (sym2)->as : sym2->as;
+      if (expr2->symtree)
+	{
+	  sym2 = expr2->symtree->n.sym;
+	  as = sym2->ts.type == BT_CLASS ? CLASS_DATA (sym2)->as : sym2->as;
+	}
+
       if (expr2->expr_type != EXPR_VARIABLE
 	  || !(as && as->type == AS_ASSUMED_RANK))
-	gfc_error_now ("The SELECT RANK selector at %C must be an assumed "
-		       "rank variable");
+	{
+	  gfc_error ("The SELECT RANK selector at %C must be an assumed "
+		     "rank variable");
+	  m = MATCH_ERROR;
+	  goto cleanup;
+	}
 
       if (expr2->ts.type == BT_CLASS)
 	{
@@ -6583,12 +6591,20 @@ gfc_match_select_rank (void)
 	  return m;
 	}
 
-      sym = expr1->symtree->n.sym;
-      as = sym->ts.type == BT_CLASS ? CLASS_DATA (sym)->as : sym->as;
+      if (expr1->symtree)
+	{
+	  sym = expr1->symtree->n.sym;
+	  as = sym->ts.type == BT_CLASS ? CLASS_DATA (sym)->as : sym->as;
+	}
+
       if (expr1->expr_type != EXPR_VARIABLE
 	  || !(as && as->type == AS_ASSUMED_RANK))
-	gfc_error_now ("The SELECT RANK selector at %C must be an assumed "
-		       "rank variable");
+	{
+	  gfc_error("The SELECT RANK selector at %C must be an assumed "
+		    "rank variable");
+	  m = MATCH_ERROR;
+	  goto cleanup;
+	}
     }
 
   m = gfc_match (" )%t");

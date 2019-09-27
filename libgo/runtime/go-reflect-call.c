@@ -44,8 +44,8 @@ go_results_size (const struct functype *func)
 
   types = (const struct _type **) func->out.__values;
 
-  /* A single integer return value is always promoted to a full
-     word.  */
+  /* A single integer return value is always promoted to a full word.
+     There is similar code below and in libgo/go/reflect/makefunc_ffi.go.*/
   if (count == 1)
     {
       switch (types[0]->kind & kindMask)
@@ -57,8 +57,6 @@ go_results_size (const struct functype *func)
 	case kindUint8:
 	case kindUint16:
 	case kindUint32:
-	case kindInt:
-	case kindUint:
 	  return sizeof (ffi_arg);
 
 	default:
@@ -108,8 +106,8 @@ go_set_results (const struct functype *func, unsigned char *call_result,
 
   types = (const struct _type **) func->out.__values;
 
-  /* A single integer return value is always promoted to a full
-     word.  */
+  /* A single integer return value is always promoted to a full word.
+     There is similar code above and in libgo/go/reflect/makefunc_ffi.go.*/
   if (count == 1)
     {
       switch (types[0]->kind & kindMask)
@@ -121,8 +119,6 @@ go_set_results (const struct functype *func, unsigned char *call_result,
 	case kindUint8:
 	case kindUint16:
 	case kindUint32:
-	case kindInt:
-	case kindUint:
 	  {
 	    union
 	    {

@@ -88,7 +88,8 @@ along with GCC; see the file COPYING3.  If not see
    More info can also be found at http://gcc.gnu.org/wiki/AutoParInGCC  */
 /*
   Reduction handling:
-  currently we use vect_force_simple_reduction() to detect reduction patterns.
+  currently we use code inspired by vect_force_simple_reduction to detect
+  reduction patterns.
   The code transformation will be introduced by an example.
 
 
@@ -181,6 +182,711 @@ parloop
 }
 
 */
+
+/* Error reporting helper for parloops_is_simple_reduction below.  GIMPLE
+   statement STMT is printed with a message MSG. */
+
+static void
+report_ploop_op (dump_flags_t msg_type, gimple *stmt, const char *msg)
+{
+  dump_printf_loc (msg_type, vect_location, "%s%G", msg, stmt);
+}
+
+/* DEF_STMT_INFO occurs in a loop that contains a potential reduction
+   operation.  Return true if the results of DEF_STMT_INFO are something
+   that can be accumulated by such a reduction.  */
+
+static bool
+parloops_valid_reduction_input_p (stmt_vec_info def_stmt_info)
+{
+  return (is_gimple_assign (def_stmt_info->stmt)
+	  || is_gimple_call (def_stmt_info->stmt)
+	  || STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_induction_def
+	  || (gimple_code (def_stmt_info->stmt) == GIMPLE_PHI
+	      && STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_internal_def
+	      && !is_loop_header_bb_p (gimple_bb (def_stmt_info->stmt))));
+}
+
+/* Detect SLP reduction of the form:
+
+   #a1 = phi <a5, a0>
+   a2 = operation (a1)
+   a3 = operation (a2)
+   a4 = operation (a3)
+   a5 = operation (a4)
+
+   #a = phi <a5>
+
+   PHI is the reduction phi node (#a1 = phi <a5, a0> above)
+   FIRST_STMT is the first reduction stmt in the chain
+   (a2 = operation (a1)).
+
+   Return TRUE if a reduction chain was detected.  */
+
+static bool
+parloops_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
+			   gimple *first_stmt)
+{
+  class loop *loop = (gimple_bb (phi))->loop_father;
+  class loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
+  enum tree_code code;
+  gimple *loop_use_stmt = NULL;
+  stmt_vec_info use_stmt_info;
+  tree lhs;
+  imm_use_iterator imm_iter;
+  use_operand_p use_p;
+  int nloop_uses, size = 0, n_out_of_loop_uses;
+  bool found = false;
+
+  if (loop != vect_loop)
+    return false;
+
+  auto_vec<stmt_vec_info, 8> reduc_chain;
+  lhs = PHI_RESULT (phi);
+  code = gimple_assign_rhs_code (first_stmt);
+  while (1)
+    {
+      nloop_uses = 0;
+      n_out_of_loop_uses = 0;
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
+        {
+	  gimple *use_stmt = USE_STMT (use_p);
+	  if (is_gimple_debug (use_stmt))
+	    continue;
+
+          /* Check if we got back to the reduction phi.  */
+	  if (use_stmt == phi)
+            {
+	      loop_use_stmt = use_stmt;
+              found = true;
+              break;
+            }
+
+          if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
+            {
+	      loop_use_stmt = use_stmt;
+	      nloop_uses++;
+            }
+           else
+             n_out_of_loop_uses++;
+
+           /* There are can be either a single use in the loop or two uses in
+              phi nodes.  */
+           if (nloop_uses > 1 || (n_out_of_loop_uses && nloop_uses))
+             return false;
+        }
+
+      if (found)
+        break;
+
+      /* We reached a statement with no loop uses.  */
+      if (nloop_uses == 0)
+	return false;
+
+      /* This is a loop exit phi, and we haven't reached the reduction phi.  */
+      if (gimple_code (loop_use_stmt) == GIMPLE_PHI)
+        return false;
+
+      if (!is_gimple_assign (loop_use_stmt)
+	  || code != gimple_assign_rhs_code (loop_use_stmt)
+	  || !flow_bb_inside_loop_p (loop, gimple_bb (loop_use_stmt)))
+        return false;
+
+      /* Insert USE_STMT into reduction chain.  */
+      use_stmt_info = loop_info->lookup_stmt (loop_use_stmt);
+      reduc_chain.safe_push (use_stmt_info);
+
+      lhs = gimple_assign_lhs (loop_use_stmt);
+      size++;
+   }
+
+  if (!found || loop_use_stmt != phi || size < 2)
+    return false;
+
+  /* Swap the operands, if needed, to make the reduction operand be the second
+     operand.  */
+  lhs = PHI_RESULT (phi);
+  for (unsigned i = 0; i < reduc_chain.length (); ++i)
+    {
+      gassign *next_stmt = as_a <gassign *> (reduc_chain[i]->stmt);
+      if (gimple_assign_rhs2 (next_stmt) == lhs)
+	{
+	  tree op = gimple_assign_rhs1 (next_stmt);
+	  stmt_vec_info def_stmt_info = loop_info->lookup_def (op);
+
+	  /* Check that the other def is either defined in the loop
+	     ("vect_internal_def"), or it's an induction (defined by a
+	     loop-header phi-node).  */
+	  if (def_stmt_info
+	      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt_info->stmt))
+	      && parloops_valid_reduction_input_p (def_stmt_info))
+	    {
+	      lhs = gimple_assign_lhs (next_stmt);
+	      continue;
+	    }
+
+	  return false;
+	}
+      else
+	{
+          tree op = gimple_assign_rhs2 (next_stmt);
+	  stmt_vec_info def_stmt_info = loop_info->lookup_def (op);
+
+          /* Check that the other def is either defined in the loop
+            ("vect_internal_def"), or it's an induction (defined by a
+            loop-header phi-node).  */
+	  if (def_stmt_info
+	      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt_info->stmt))
+	      && parloops_valid_reduction_input_p (def_stmt_info))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location, "swapping oprnds: %G",
+				 next_stmt);
+
+	      swap_ssa_operands (next_stmt,
+				 gimple_assign_rhs1_ptr (next_stmt),
+                                 gimple_assign_rhs2_ptr (next_stmt));
+	      update_stmt (next_stmt);
+	    }
+	  else
+	    return false;
+        }
+
+      lhs = gimple_assign_lhs (next_stmt);
+    }
+
+  /* Build up the actual chain.  */
+  for (unsigned i = 0; i < reduc_chain.length () - 1; ++i)
+    {
+      REDUC_GROUP_FIRST_ELEMENT (reduc_chain[i]) = reduc_chain[0];
+      REDUC_GROUP_NEXT_ELEMENT (reduc_chain[i]) = reduc_chain[i+1];
+    }
+  REDUC_GROUP_FIRST_ELEMENT (reduc_chain.last ()) = reduc_chain[0];
+  REDUC_GROUP_NEXT_ELEMENT (reduc_chain.last ()) = NULL;
+
+  /* Save the chain for further analysis in SLP detection.  */
+  LOOP_VINFO_REDUCTION_CHAINS (loop_info).safe_push (reduc_chain[0]);
+  REDUC_GROUP_SIZE (reduc_chain[0]) = size;
+
+  return true;
+}
+
+/* Return true if we need an in-order reduction for operation CODE
+   on type TYPE.  NEED_WRAPPING_INTEGRAL_OVERFLOW is true if integer
+   overflow must wrap.  */
+
+static bool
+parloops_needs_fold_left_reduction_p (tree type, tree_code code,
+				      bool need_wrapping_integral_overflow)
+{
+  /* CHECKME: check for !flag_finite_math_only too?  */
+  if (SCALAR_FLOAT_TYPE_P (type))
+    switch (code)
+      {
+      case MIN_EXPR:
+      case MAX_EXPR:
+	return false;
+
+      default:
+	return !flag_associative_math;
+      }
+
+  if (INTEGRAL_TYPE_P (type))
+    {
+      if (!operation_no_trapping_overflow (type, code))
+	return true;
+      if (need_wrapping_integral_overflow
+	  && !TYPE_OVERFLOW_WRAPS (type)
+	  && operation_can_overflow (code))
+	return true;
+      return false;
+    }
+
+  if (SAT_FIXED_POINT_TYPE_P (type))
+    return true;
+
+  return false;
+}
+
+
+/* Function parloops_is_simple_reduction
+
+   (1) Detect a cross-iteration def-use cycle that represents a simple
+   reduction computation.  We look for the following pattern:
+
+   loop_header:
+     a1 = phi < a0, a2 >
+     a3 = ...
+     a2 = operation (a3, a1)
+
+   or
+
+   a3 = ...
+   loop_header:
+     a1 = phi < a0, a2 >
+     a2 = operation (a3, a1)
+
+   such that:
+   1. operation is commutative and associative and it is safe to
+      change the order of the computation
+   2. no uses for a2 in the loop (a2 is used out of the loop)
+   3. no uses of a1 in the loop besides the reduction operation
+   4. no uses of a1 outside the loop.
+
+   Conditions 1,4 are tested here.
+   Conditions 2,3 are tested in vect_mark_stmts_to_be_vectorized.
+
+   (2) Detect a cross-iteration def-use cycle in nested loops, i.e.,
+   nested cycles.
+
+   (3) Detect cycles of phi nodes in outer-loop vectorization, i.e., double
+   reductions:
+
+     a1 = phi < a0, a2 >
+     inner loop (def of a3)
+     a2 = phi < a3 >
+
+   (4) Detect condition expressions, ie:
+     for (int i = 0; i < N; i++)
+       if (a[i] < val)
+	ret_val = a[i];
+
+*/
+
+static stmt_vec_info
+parloops_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
+			  bool *double_reduc,
+			  bool need_wrapping_integral_overflow,
+			  enum vect_reduction_type *v_reduc_type)
+{
+  gphi *phi = as_a <gphi *> (phi_info->stmt);
+  class loop *loop = (gimple_bb (phi))->loop_father;
+  class loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
+  bool nested_in_vect_loop = flow_loop_nested_p (vect_loop, loop);
+  gimple *phi_use_stmt = NULL;
+  enum tree_code orig_code, code;
+  tree op1, op2, op3 = NULL_TREE, op4 = NULL_TREE;
+  tree type;
+  tree name;
+  imm_use_iterator imm_iter;
+  use_operand_p use_p;
+  bool phi_def;
+
+  *double_reduc = false;
+  *v_reduc_type = TREE_CODE_REDUCTION;
+
+  tree phi_name = PHI_RESULT (phi);
+  /* ???  If there are no uses of the PHI result the inner loop reduction
+     won't be detected as possibly double-reduction by vectorizable_reduction
+     because that tries to walk the PHI arg from the preheader edge which
+     can be constant.  See PR60382.  */
+  if (has_zero_uses (phi_name))
+    return NULL;
+  unsigned nphi_def_loop_uses = 0;
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, phi_name)
+    {
+      gimple *use_stmt = USE_STMT (use_p);
+      if (is_gimple_debug (use_stmt))
+	continue;
+
+      if (!flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
+        {
+          if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "intermediate value used outside loop.\n");
+
+          return NULL;
+        }
+
+      nphi_def_loop_uses++;
+      phi_use_stmt = use_stmt;
+    }
+
+  edge latch_e = loop_latch_edge (loop);
+  tree loop_arg = PHI_ARG_DEF_FROM_EDGE (phi, latch_e);
+  if (TREE_CODE (loop_arg) != SSA_NAME)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "reduction: not ssa_name: %T\n", loop_arg);
+      return NULL;
+    }
+
+  stmt_vec_info def_stmt_info = loop_info->lookup_def (loop_arg);
+  if (!def_stmt_info
+      || !flow_bb_inside_loop_p (loop, gimple_bb (def_stmt_info->stmt)))
+    return NULL;
+
+  if (gassign *def_stmt = dyn_cast <gassign *> (def_stmt_info->stmt))
+    {
+      name = gimple_assign_lhs (def_stmt);
+      phi_def = false;
+    }
+  else if (gphi *def_stmt = dyn_cast <gphi *> (def_stmt_info->stmt))
+    {
+      name = PHI_RESULT (def_stmt);
+      phi_def = true;
+    }
+  else
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "reduction: unhandled reduction operation: %G",
+			 def_stmt_info->stmt);
+      return NULL;
+    }
+
+  unsigned nlatch_def_loop_uses = 0;
+  auto_vec<gphi *, 3> lcphis;
+  bool inner_loop_of_double_reduc = false;
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, name)
+    {
+      gimple *use_stmt = USE_STMT (use_p);
+      if (is_gimple_debug (use_stmt))
+	continue;
+      if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
+	nlatch_def_loop_uses++;
+      else
+	{
+	  /* We can have more than one loop-closed PHI.  */
+	  lcphis.safe_push (as_a <gphi *> (use_stmt));
+	  if (nested_in_vect_loop
+	      && (STMT_VINFO_DEF_TYPE (loop_info->lookup_stmt (use_stmt))
+		  == vect_double_reduction_def))
+	    inner_loop_of_double_reduc = true;
+	}
+    }
+
+  /* If this isn't a nested cycle or if the nested cycle reduction value
+     is used ouside of the inner loop we cannot handle uses of the reduction
+     value.  */
+  if ((!nested_in_vect_loop || inner_loop_of_double_reduc)
+      && (nlatch_def_loop_uses > 1 || nphi_def_loop_uses > 1))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "reduction used in loop.\n");
+      return NULL;
+    }
+
+  /* If DEF_STMT is a phi node itself, we expect it to have a single argument
+     defined in the inner loop.  */
+  if (phi_def)
+    {
+      gphi *def_stmt = as_a <gphi *> (def_stmt_info->stmt);
+      op1 = PHI_ARG_DEF (def_stmt, 0);
+
+      if (gimple_phi_num_args (def_stmt) != 1
+          || TREE_CODE (op1) != SSA_NAME)
+        {
+          if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "unsupported phi node definition.\n");
+
+          return NULL;
+        }
+
+      gimple *def1 = SSA_NAME_DEF_STMT (op1);
+      if (gimple_bb (def1)
+	  && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
+          && loop->inner
+          && flow_bb_inside_loop_p (loop->inner, gimple_bb (def1))
+          && is_gimple_assign (def1)
+	  && is_a <gphi *> (phi_use_stmt)
+	  && flow_bb_inside_loop_p (loop->inner, gimple_bb (phi_use_stmt)))
+        {
+          if (dump_enabled_p ())
+            report_ploop_op (MSG_NOTE, def_stmt,
+			     "detected double reduction: ");
+
+          *double_reduc = true;
+	  return def_stmt_info;
+        }
+
+      return NULL;
+    }
+
+  /* If we are vectorizing an inner reduction we are executing that
+     in the original order only in case we are not dealing with a
+     double reduction.  */
+  bool check_reduction = true;
+  if (flow_loop_nested_p (vect_loop, loop))
+    {
+      gphi *lcphi;
+      unsigned i;
+      check_reduction = false;
+      FOR_EACH_VEC_ELT (lcphis, i, lcphi)
+	FOR_EACH_IMM_USE_FAST (use_p, imm_iter, gimple_phi_result (lcphi))
+	  {
+	    gimple *use_stmt = USE_STMT (use_p);
+	    if (is_gimple_debug (use_stmt))
+	      continue;
+	    if (! flow_bb_inside_loop_p (vect_loop, gimple_bb (use_stmt)))
+	      check_reduction = true;
+	  }
+    }
+
+  gassign *def_stmt = as_a <gassign *> (def_stmt_info->stmt);
+  code = orig_code = gimple_assign_rhs_code (def_stmt);
+
+  if (nested_in_vect_loop && !check_reduction)
+    {
+      /* FIXME: Even for non-reductions code generation is funneled
+	 through vectorizable_reduction for the stmt defining the
+	 PHI latch value.  So we have to artificially restrict ourselves
+	 for the supported operations.  */
+      switch (get_gimple_rhs_class (code))
+	{
+	case GIMPLE_BINARY_RHS:
+	case GIMPLE_TERNARY_RHS:
+	  break;
+	default:
+	  /* Not supported by vectorizable_reduction.  */
+	  if (dump_enabled_p ())
+	    report_ploop_op (MSG_MISSED_OPTIMIZATION, def_stmt,
+			     "nested cycle: not handled operation: ");
+	  return NULL;
+	}
+      if (dump_enabled_p ())
+	report_ploop_op (MSG_NOTE, def_stmt, "detected nested cycle: ");
+      return def_stmt_info;
+    }
+
+  /* We can handle "res -= x[i]", which is non-associative by
+     simply rewriting this into "res += -x[i]".  Avoid changing
+     gimple instruction for the first simple tests and only do this
+     if we're allowed to change code at all.  */
+  if (code == MINUS_EXPR && gimple_assign_rhs2 (def_stmt) != phi_name)
+    code = PLUS_EXPR;
+
+  if (code == COND_EXPR)
+    {
+      if (! nested_in_vect_loop)
+	*v_reduc_type = COND_REDUCTION;
+
+      op3 = gimple_assign_rhs1 (def_stmt);
+      if (COMPARISON_CLASS_P (op3))
+        {
+          op4 = TREE_OPERAND (op3, 1);
+          op3 = TREE_OPERAND (op3, 0);
+        }
+      if (op3 == phi_name || op4 == phi_name)
+	{
+	  if (dump_enabled_p ())
+	    report_ploop_op (MSG_MISSED_OPTIMIZATION, def_stmt,
+			     "reduction: condition depends on previous"
+			     " iteration: ");
+	  return NULL;
+	}
+
+      op1 = gimple_assign_rhs2 (def_stmt);
+      op2 = gimple_assign_rhs3 (def_stmt);
+    }
+  else if (!commutative_tree_code (code) || !associative_tree_code (code))
+    {
+      if (dump_enabled_p ())
+	report_ploop_op (MSG_MISSED_OPTIMIZATION, def_stmt,
+			 "reduction: not commutative/associative: ");
+      return NULL;
+    }
+  else if (get_gimple_rhs_class (code) == GIMPLE_BINARY_RHS)
+    {
+      op1 = gimple_assign_rhs1 (def_stmt);
+      op2 = gimple_assign_rhs2 (def_stmt);
+    }
+  else
+    {
+      if (dump_enabled_p ())
+	report_ploop_op (MSG_MISSED_OPTIMIZATION, def_stmt,
+			 "reduction: not handled operation: ");
+      return NULL;
+    }
+
+  if (TREE_CODE (op1) != SSA_NAME && TREE_CODE (op2) != SSA_NAME)
+    {
+      if (dump_enabled_p ())
+	report_ploop_op (MSG_MISSED_OPTIMIZATION, def_stmt,
+			 "reduction: both uses not ssa_names: ");
+
+      return NULL;
+    }
+
+  type = TREE_TYPE (gimple_assign_lhs (def_stmt));
+  if ((TREE_CODE (op1) == SSA_NAME
+       && !types_compatible_p (type,TREE_TYPE (op1)))
+      || (TREE_CODE (op2) == SSA_NAME
+          && !types_compatible_p (type, TREE_TYPE (op2)))
+      || (op3 && TREE_CODE (op3) == SSA_NAME
+          && !types_compatible_p (type, TREE_TYPE (op3)))
+      || (op4 && TREE_CODE (op4) == SSA_NAME
+          && !types_compatible_p (type, TREE_TYPE (op4))))
+    {
+      if (dump_enabled_p ())
+        {
+          dump_printf_loc (MSG_NOTE, vect_location,
+			   "reduction: multiple types: operation type: "
+			   "%T, operands types: %T,%T",
+			   type,  TREE_TYPE (op1), TREE_TYPE (op2));
+          if (op3)
+	    dump_printf (MSG_NOTE, ",%T", TREE_TYPE (op3));
+
+          if (op4)
+	    dump_printf (MSG_NOTE, ",%T", TREE_TYPE (op4));
+          dump_printf (MSG_NOTE, "\n");
+        }
+
+      return NULL;
+    }
+
+  /* Check whether it's ok to change the order of the computation.
+     Generally, when vectorizing a reduction we change the order of the
+     computation.  This may change the behavior of the program in some
+     cases, so we need to check that this is ok.  One exception is when
+     vectorizing an outer-loop: the inner-loop is executed sequentially,
+     and therefore vectorizing reductions in the inner-loop during
+     outer-loop vectorization is safe.  */
+  if (check_reduction
+      && *v_reduc_type == TREE_CODE_REDUCTION
+      && parloops_needs_fold_left_reduction_p (type, code,
+					       need_wrapping_integral_overflow))
+    *v_reduc_type = FOLD_LEFT_REDUCTION;
+
+  /* Reduction is safe. We're dealing with one of the following:
+     1) integer arithmetic and no trapv
+     2) floating point arithmetic, and special flags permit this optimization
+     3) nested cycle (i.e., outer loop vectorization).  */
+  stmt_vec_info def1_info = loop_info->lookup_def (op1);
+  stmt_vec_info def2_info = loop_info->lookup_def (op2);
+  if (code != COND_EXPR && !def1_info && !def2_info)
+    {
+      if (dump_enabled_p ())
+	report_ploop_op (MSG_NOTE, def_stmt,
+			 "reduction: no defs for operands: ");
+      return NULL;
+    }
+
+  /* Check that one def is the reduction def, defined by PHI,
+     the other def is either defined in the loop ("vect_internal_def"),
+     or it's an induction (defined by a loop-header phi-node).  */
+
+  if (def2_info
+      && def2_info->stmt == phi
+      && (code == COND_EXPR
+	  || !def1_info
+	  || !flow_bb_inside_loop_p (loop, gimple_bb (def1_info->stmt))
+	  || parloops_valid_reduction_input_p (def1_info)))
+    {
+      if (dump_enabled_p ())
+	report_ploop_op (MSG_NOTE, def_stmt, "detected reduction: ");
+      return def_stmt_info;
+    }
+
+  if (def1_info
+      && def1_info->stmt == phi
+      && (code == COND_EXPR
+	  || !def2_info
+	  || !flow_bb_inside_loop_p (loop, gimple_bb (def2_info->stmt))
+	  || parloops_valid_reduction_input_p (def2_info)))
+    {
+      if (! nested_in_vect_loop && orig_code != MINUS_EXPR)
+	{
+	  /* Check if we can swap operands (just for simplicity - so that
+	     the rest of the code can assume that the reduction variable
+	     is always the last (second) argument).  */
+	  if (code == COND_EXPR)
+	    {
+	      /* Swap cond_expr by inverting the condition.  */
+	      tree cond_expr = gimple_assign_rhs1 (def_stmt);
+	      enum tree_code invert_code = ERROR_MARK;
+	      enum tree_code cond_code = TREE_CODE (cond_expr);
+
+	      if (TREE_CODE_CLASS (cond_code) == tcc_comparison)
+		{
+		  bool honor_nans = HONOR_NANS (TREE_OPERAND (cond_expr, 0));
+		  invert_code = invert_tree_comparison (cond_code, honor_nans);
+		}
+	      if (invert_code != ERROR_MARK)
+		{
+		  TREE_SET_CODE (cond_expr, invert_code);
+		  swap_ssa_operands (def_stmt,
+				     gimple_assign_rhs2_ptr (def_stmt),
+				     gimple_assign_rhs3_ptr (def_stmt));
+		}
+	      else
+		{
+		  if (dump_enabled_p ())
+		    report_ploop_op (MSG_NOTE, def_stmt,
+				     "detected reduction: cannot swap operands "
+				     "for cond_expr");
+		  return NULL;
+		}
+	    }
+	  else
+	    swap_ssa_operands (def_stmt, gimple_assign_rhs1_ptr (def_stmt),
+			       gimple_assign_rhs2_ptr (def_stmt));
+
+	  if (dump_enabled_p ())
+	    report_ploop_op (MSG_NOTE, def_stmt,
+			     "detected reduction: need to swap operands: ");
+        }
+      else
+        {
+          if (dump_enabled_p ())
+            report_ploop_op (MSG_NOTE, def_stmt, "detected reduction: ");
+        }
+
+      return def_stmt_info;
+    }
+
+  /* Try to find SLP reduction chain.  */
+  if (! nested_in_vect_loop
+      && code != COND_EXPR
+      && orig_code != MINUS_EXPR
+      && parloops_is_slp_reduction (loop_info, phi, def_stmt))
+    {
+      if (dump_enabled_p ())
+        report_ploop_op (MSG_NOTE, def_stmt,
+			 "reduction: detected reduction chain: ");
+
+      return def_stmt_info;
+    }
+
+  /* Look for the expression computing loop_arg from loop PHI result.  */
+  if (check_reduction_path (vect_location, loop, phi, loop_arg, code))
+    return def_stmt_info;
+
+  if (dump_enabled_p ())
+    {
+      report_ploop_op (MSG_MISSED_OPTIMIZATION, def_stmt,
+		       "reduction: unknown pattern: ");
+    }
+
+  return NULL;
+}
+
+/* Wrapper around vect_is_simple_reduction, which will modify code
+   in-place if it enables detection of more reductions.  Arguments
+   as there.  */
+
+stmt_vec_info
+parloops_force_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
+			     bool *double_reduc,
+			     bool need_wrapping_integral_overflow)
+{
+  enum vect_reduction_type v_reduc_type;
+  stmt_vec_info def_info
+    = parloops_is_simple_reduction (loop_info, phi_info, double_reduc,
+				need_wrapping_integral_overflow,
+				&v_reduc_type);
+  if (def_info)
+    {
+      STMT_VINFO_REDUC_TYPE (phi_info) = v_reduc_type;
+      STMT_VINFO_REDUC_DEF (phi_info) = def_info;
+      STMT_VINFO_REDUC_TYPE (def_info) = v_reduc_type;
+      STMT_VINFO_REDUC_DEF (def_info) = phi_info;
+    }
+  return def_info;
+}
 
 /* Minimal number of iterations of a loop that should be executed in each
    thread.  */
@@ -2615,9 +3321,9 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 	continue;
 
       stmt_vec_info reduc_stmt_info
-	= vect_force_simple_reduction (simple_loop_info,
-				       simple_loop_info->lookup_stmt (phi),
-				       &double_reduc, true);
+	= parloops_force_simple_reduction (simple_loop_info,
+					   simple_loop_info->lookup_stmt (phi),
+					   &double_reduc, true);
       if (!reduc_stmt_info || !valid_reduction_p (reduc_stmt_info))
 	continue;
 
@@ -2664,9 +3370,9 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 	      stmt_vec_info inner_phi_info
 		= simple_loop_info->lookup_stmt (inner_phi);
 	      stmt_vec_info inner_reduc_stmt_info
-		= vect_force_simple_reduction (simple_loop_info,
-					       inner_phi_info,
-					       &double_reduc, true);
+		= parloops_force_simple_reduction (simple_loop_info,
+						   inner_phi_info,
+						   &double_reduc, true);
 	      gcc_assert (!double_reduc);
 	      if (!inner_reduc_stmt_info
 		  || !valid_reduction_p (inner_reduc_stmt_info))

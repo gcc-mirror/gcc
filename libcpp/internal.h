@@ -798,6 +798,14 @@ extern bool _cpp_valid_ucn (cpp_reader *, const unsigned char **,
 			    cppchar_t *,
 			    source_range *char_range,
 			    cpp_string_location_reader *loc_reader);
+
+extern bool _cpp_valid_utf8 (cpp_reader *pfile,
+			     const uchar **pstr,
+			     const uchar *limit,
+			     int identifier_pos,
+			     struct normalize_state *nst,
+			     cppchar_t *cp);
+
 extern void _cpp_destroy_iconv (cpp_reader *);
 extern unsigned char *_cpp_convert_input (cpp_reader *, const char *,
 					  unsigned char *, size_t, size_t,

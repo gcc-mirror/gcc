@@ -433,6 +433,22 @@ enum aarch64_svpattern {
 };
 #undef AARCH64_SVENUM
 
+/* It's convenient to divide the built-in function codes into groups,
+   rather than having everything in a single enum.  This type enumerates
+   those groups.  */
+enum aarch64_builtin_class
+{
+  AARCH64_BUILTIN_GENERAL
+};
+
+/* Built-in function codes are structured so that the low
+   AARCH64_BUILTIN_SHIFT bits contain the aarch64_builtin_class
+   and the upper bits contain a group-specific subcode.  */
+const unsigned int AARCH64_BUILTIN_SHIFT = 1;
+
+/* Mask that selects the aarch64_builtin_class part of a function code.  */
+const unsigned int AARCH64_BUILTIN_CLASS = (1 << AARCH64_BUILTIN_SHIFT) - 1;
+
 void aarch64_post_cfi_startproc (void);
 poly_int64 aarch64_initial_elimination_offset (unsigned, unsigned);
 int aarch64_get_condition_code (rtx);
@@ -459,7 +475,6 @@ bool aarch64_float_const_rtx_p (rtx);
 bool aarch64_function_arg_regno_p (unsigned);
 bool aarch64_fusion_enabled_p (enum aarch64_fusion_pairs);
 bool aarch64_gen_cpymemqi (rtx *);
-bool aarch64_gimple_fold_builtin (gimple_stmt_iterator *);
 bool aarch64_is_extend_from_extract (scalar_int_mode, rtx, rtx);
 bool aarch64_is_long_call_p (rtx);
 bool aarch64_is_noplt_call_p (rtx);
@@ -517,7 +532,6 @@ bool aarch64_symbolic_address_p (rtx);
 bool aarch64_uimm12_shift (HOST_WIDE_INT);
 bool aarch64_use_return_insn_p (void);
 bool aarch64_use_simple_return_insn_p (void);
-const char *aarch64_mangle_builtin_type (const_tree);
 const char *aarch64_output_casesi (rtx *);
 
 enum aarch64_symbol_type aarch64_classify_symbol (rtx, HOST_WIDE_INT);
@@ -544,7 +558,6 @@ rtx aarch64_simd_vect_par_cnst_half (machine_mode, int, bool);
 rtx aarch64_gen_stepped_int_parallel (unsigned int, int, int);
 bool aarch64_stepped_int_parallel_p (rtx, int);
 rtx aarch64_tls_get_addr (void);
-tree aarch64_fold_builtin (tree, int, tree *, bool);
 unsigned aarch64_dbx_register_number (unsigned);
 unsigned aarch64_trampoline_size (void);
 void aarch64_asm_output_labelref (FILE *, const char *);
@@ -639,18 +652,16 @@ bool aarch64_prepare_sve_int_fma (rtx *, rtx_code);
 bool aarch64_prepare_sve_cond_int_fma (rtx *, rtx_code);
 #endif /* RTX_CODE */
 
-void aarch64_init_builtins (void);
-
 bool aarch64_process_target_attr (tree);
 void aarch64_override_options_internal (struct gcc_options *);
 
-rtx aarch64_expand_builtin (tree exp,
-			    rtx target,
-			    rtx subtarget ATTRIBUTE_UNUSED,
-			    machine_mode mode ATTRIBUTE_UNUSED,
-			    int ignore ATTRIBUTE_UNUSED);
-tree aarch64_builtin_decl (unsigned, bool ATTRIBUTE_UNUSED);
-tree aarch64_builtin_rsqrt (unsigned int);
+const char *aarch64_general_mangle_builtin_type (const_tree);
+void aarch64_general_init_builtins (void);
+tree aarch64_general_fold_builtin (unsigned int, tree, unsigned int, tree *);
+gimple *aarch64_general_gimple_fold_builtin (unsigned int, gcall *);
+rtx aarch64_general_expand_builtin (unsigned int, tree, rtx);
+tree aarch64_general_builtin_decl (unsigned, bool);
+tree aarch64_general_builtin_rsqrt (unsigned int);
 tree aarch64_builtin_vectorized_function (unsigned int, tree, tree);
 
 extern void aarch64_split_combinev16qi (rtx operands[3]);
@@ -695,5 +706,18 @@ rtl_opt_pass *make_pass_insert_bti (gcc::context *ctxt);
 poly_uint64 aarch64_regmode_natural_size (machine_mode);
 
 bool aarch64_high_bits_all_ones_p (HOST_WIDE_INT);
+
+struct atomic_ool_names
+{
+    const char *str[5][4];
+};
+
+rtx aarch64_atomic_ool_func(machine_mode mode, rtx model_rtx,
+			    const atomic_ool_names *names);
+extern const atomic_ool_names aarch64_ool_swp_names;
+extern const atomic_ool_names aarch64_ool_ldadd_names;
+extern const atomic_ool_names aarch64_ool_ldset_names;
+extern const atomic_ool_names aarch64_ool_ldclr_names;
+extern const atomic_ool_names aarch64_ool_ldeor_names;
 
 #endif /* GCC_AARCH64_PROTOS_H */

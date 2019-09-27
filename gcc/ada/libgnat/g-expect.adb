@@ -222,15 +222,17 @@ package body GNAT.Expect is
       Next_Filter    : Filter_List;
 
    begin
-      if Descriptor.Input_Fd /= Invalid_FD then
-         Close (Descriptor.Input_Fd);
-      end if;
+      Close_Input (Descriptor);
 
-      if Descriptor.Error_Fd /= Descriptor.Output_Fd then
+      if Descriptor.Error_Fd /= Descriptor.Output_Fd
+        and then Descriptor.Error_Fd /= Invalid_FD
+      then
          Close (Descriptor.Error_Fd);
       end if;
 
-      Close (Descriptor.Output_Fd);
+      if Descriptor.Output_Fd /= Invalid_FD then
+         Close (Descriptor.Output_Fd);
+      end if;
 
       --  ??? Should have timeouts for different signals
 
@@ -266,6 +268,27 @@ package body GNAT.Expect is
    begin
       Close (Descriptor, Status);
    end Close;
+
+   -----------------
+   -- Close_Input --
+   -----------------
+
+   procedure Close_Input (Pid : in out Process_Descriptor) is
+   begin
+      if Pid.Input_Fd /= Invalid_FD then
+         Close (Pid.Input_Fd);
+      end if;
+
+      if Pid.Output_Fd = Pid.Input_Fd then
+         Pid.Output_Fd := Invalid_FD;
+      end if;
+
+      if Pid.Error_Fd = Pid.Input_Fd then
+         Pid.Error_Fd := Invalid_FD;
+      end if;
+
+      Pid.Input_Fd := Invalid_FD;
+   end Close_Input;
 
    ------------
    -- Expect --
@@ -630,7 +653,9 @@ package body GNAT.Expect is
 
    begin
       for J in Descriptors'Range loop
-         if Descriptors (J) /= null then
+         if Descriptors (J) /= null
+           and then Descriptors (J).Output_Fd /= Invalid_FD
+         then
             Fds (Fds'First + Fds_Count) := Descriptors (J).Output_Fd;
             Fds_To_Descriptor (Fds'First + Fds_Count) := J;
             Fds_Count := Fds_Count + 1;
@@ -644,6 +669,14 @@ package body GNAT.Expect is
          end if;
       end loop;
 
+      if Fds_Count = 0 then
+         --  There are no descriptors to monitor, it means that process died.
+
+         Result := Expect_Process_Died;
+
+         return;
+      end if;
+
       declare
          Buffer : aliased String (1 .. Buffer_Size);
          --  Buffer used for input. This is allocated only once, not for
@@ -656,8 +689,17 @@ package body GNAT.Expect is
          --  Loop until we match or we have a timeout
 
          loop
-            Num_Descriptors :=
-              Poll (Fds'Address, Fds_Count, Timeout, D'Access, Is_Set'Address);
+            --  Poll may be interrupted on Linux by a signal and need to be
+            --  repeated. We don't want to check for errno = EINTER, so just
+            --  attempt to call Poll a few times.
+
+            for J in 1 .. 3 loop
+               Num_Descriptors :=
+                 Poll
+                   (Fds'Address, Fds_Count, Timeout, D'Access, Is_Set'Address);
+
+               exit when Num_Descriptors /= -1;
+            end loop;
 
             case Num_Descriptors is
 
@@ -667,8 +709,7 @@ package body GNAT.Expect is
                   Result := Expect_Internal_Error;
 
                   if D /= 0 then
-                     Close (Descriptors (D).Input_Fd);
-                     Descriptors (D).Input_Fd := Invalid_FD;
+                     Close_Input (Descriptors (D).all);
                   end if;
 
                   return;
@@ -707,9 +748,9 @@ package body GNAT.Expect is
                         --  Error or End of file
 
                         if N <= 0 then
-                           Close (Descriptors (D).Input_Fd);
-                           Descriptors (D).Input_Fd := Invalid_FD;
+                           Close_Input (Descriptors (D).all);
                            Result := Expect_Process_Died;
+
                            return;
 
                         else
@@ -931,8 +972,7 @@ package body GNAT.Expect is
          Send (Process, Input);
       end if;
 
-      Close (Process.Input_Fd);
-      Process.Input_Fd := Invalid_FD;
+      Close_Input (Process);
 
       declare
          Result : Expect_Match;

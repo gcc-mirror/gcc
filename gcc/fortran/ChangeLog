@@ -1,3 +1,77 @@
+2019-09-26  Alessandro Fanfarillo  <afanfa@gcc.gnu.org>
+
+	* trans-array.c (structure_alloc_comps):
+	Add new enum item for BCAST_ALLOC_COMP.
+	New argument for structure_alloc_comp, and new case to handle
+	recursive components in derived types.
+	* trans-array.c (gfc_bcast_alloc_comp): New function
+	used to handleco_broadcast for allocatable components
+	of derived types.
+	* trans-array.h: Add gfc_bcast_alloc_comp
+	* trans-intrinsics.c (conv_co_collective): Add check for
+	derived type variable and invocation of co_bcast_alloc_comp.
+	* trans.h: New data structure gfc_co_subroutines_args.
+
+2019-09-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR fortran/91426
+	* error.c (curr_diagnostic): New static variable.
+	(gfc_report_diagnostic): New static function.
+	(gfc_warning): Replace call to diagnostic_report_diagnostic with
+	call to gfc_report_diagnostic.
+	(gfc_format_decoder): Colorize the text of %L and %C to match the
+	colorization used by diagnostic_show_locus.
+	(gfc_warning_now_at): Replace call to diagnostic_report_diagnostic with
+	call to gfc_report_diagnostic.
+	(gfc_warning_now): Likewise.
+	(gfc_warning_internal): Likewise.
+	(gfc_error_now): Likewise.
+	(gfc_fatal_error): Likewise.
+	(gfc_error_opt): Likewise.
+	(gfc_internal_error): Likewise.
+
+2019-09-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91729
+	* match.c (gfc_match_select_rank): Initialise 'as' to NULL.
+	Check for a symtree in the selector expression before trying to
+	assign a value to 'as'. Revert to gfc_error and go to cleanup
+	after setting a MATCH_ERROR.
+
+2019-09-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/78260
+	* openmp.c (gfc_resolve_oacc_declare): Reject all
+	non variables but accept function result variables.
+	* trans-openmp.c (gfc_trans_omp_clauses): Handle
+	function-result variables for remaing cases.
+
+2019-09-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91588
+	* expr.c (check_inquiry): Remove extended component refs by
+	using symbol pointers. If a function argument is an associate
+	variable with a constant target, copy the target expression in
+	place of the argument expression. Check that the charlen is not
+	NULL before using the string length.
+	(gfc_check_assign): Remove extraneous space.
+
+2019-09-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91727
+	* resolve.c (conformable_arrays):  If array-spec is NULL, then
+	allocate-object is a scalar.  a conformability check only occurs
+	for an array source-expr.
+
+2019-09-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/91550
+	* frontend-passes.c (do_subscript): If step equals
+	zero, a previuos error has been reported; do nothing
+	in this case.
+	* resolve.c (gfc_resolve_iterator): Move error checking
+	after type conversion.
+
 2019-09-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/91557
