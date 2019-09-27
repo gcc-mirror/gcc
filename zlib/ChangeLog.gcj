@@ -1,3 +1,7 @@
+2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure: Regenerate.
+
 2019-01-21  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* Makefile.am (noinst_LTLIBRARIES): Rename libzgcj_convience.la to
