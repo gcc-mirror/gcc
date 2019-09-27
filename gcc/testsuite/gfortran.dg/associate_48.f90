@@ -1,4 +1,4 @@
-! { dg=do run }
+! { dg-do run }
 !
 ! Test the fix for PR90498.
 !

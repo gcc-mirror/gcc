@@ -1,3 +1,10 @@
+2019-09-27  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* gfortran.dg/associate_48.f90: Fix a dg directive.
+	* gfortran.dg/auto_in_equiv_1.f90: Ditto.
+	* gfortran.dg/auto_in_equiv_2.f90: Ditto.
+	* gfortran.dg/lto/pr87689_0.f: Ditto.
+
 2019-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91885
