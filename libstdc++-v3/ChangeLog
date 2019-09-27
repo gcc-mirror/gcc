@@ -1,3 +1,11 @@
+2019-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91910
+	* src/c++11/debug.cc (_Safe_iterator_base::_M_detach()): Load pointer
+	atomically and lock the mutex before accessing the sequence.
+	(_Safe_local_iterator_base::_M_detach()): Likewise.
+	(_Safe_iterator_base::_M_reset()): Clear _M_sequence atomically.
+
 2019-09-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/debug/array (to_array): Define for debug mode.
