@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "analyzer/analyzer-selftests.h"
 
 /* This function needed to be split out from selftest.c as it references
    tests from the whole source tree, and so is within
@@ -76,6 +77,7 @@ selftest::run_tests ()
   cgraph_c_tests ();
   optinfo_emit_json_cc_tests ();
   opt_problem_cc_tests ();
+  ordered_hash_map_tests_cc_tests ();
 
   /* Mid-level data structures.  */
   input_c_tests ();
@@ -85,6 +87,8 @@ selftest::run_tests ()
   gimple_c_tests ();
   rtl_tests_c_tests ();
   read_rtl_function_c_tests ();
+  digraph_cc_tests ();
+  tristate_cc_tests ();
 
   /* Higher-level tests, or for components that other selftests don't
      rely on.  */
@@ -113,6 +117,9 @@ selftest::run_tests ()
 
   /* Run any lang-specific selftests.  */
   lang_hooks.run_lang_selftests ();
+
+  /* Run the analyzer selftests (if enabled).  */
+  run_analyzer_selftests ();
 
   /* Force a GC at the end of the selftests, to shake out GC-related
      issues.  For example, if any GC-managed items have buggy (or missing)

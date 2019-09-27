@@ -909,6 +909,18 @@ vtable_verify=`if test x$enable_vtable_verify = xyes; then echo 1; else echo 0; 
 AC_DEFINE_UNQUOTED(ENABLE_VTABLE_VERIFY, $vtable_verify,
 [Define 0/1 if vtable verification feature is enabled.])
 
+AC_ARG_ENABLE(analyzer,
+[AS_HELP_STRING([--disable-analyzer],
+		[disable -fanalyzer static analyzer])],
+if test x$enable_analyzer = xno; then
+	analyzer=0
+else
+	analyzer=1
+fi,
+analyzer=1)
+AC_DEFINE_UNQUOTED(ENABLE_ANALYZER, $analyzer,
+[Define 0/1 if static analyzer feature is enabled.])
+
 AC_ARG_ENABLE(objc-gc,
 [AS_HELP_STRING([--enable-objc-gc],
 		[enable the use of Boehm's garbage collector with
@@ -1214,7 +1226,7 @@ AC_CHECK_HEADERS(ext/hash_map)
 ZW_CREATE_DEPDIR
 AC_CONFIG_COMMANDS([gccdepdir],[
   ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs build/$DEPDIR
-  for lang in $subdirs c-family common
+  for lang in $subdirs c-family common analyzer
   do
       ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs $lang/$DEPDIR
   done], [subdirs="$subdirs" ac_aux_dir=$ac_aux_dir DEPDIR=$DEPDIR])

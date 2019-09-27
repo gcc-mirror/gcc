@@ -180,6 +180,16 @@ proc dg-require-iconv { args } {
     }
 }
 
+# If this host does not have "dot", skip this test.
+
+proc dg-require-dot { args } {
+    verbose "dg-require-dot" 2
+    if { ![ check_dot_available ] } {
+	upvar dg-do-what dg-do-what
+        set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    }
+}
+
 # If this target does not have sufficient stack size, skip this test.
 
 proc dg-require-stack-size { args } {

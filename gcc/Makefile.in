@@ -567,7 +567,7 @@ xm_include_list=@xm_include_list@
 xm_defines=@xm_defines@
 lang_checks=
 lang_checks_parallelized=
-lang_opt_files=@lang_opt_files@ $(srcdir)/c-family/c.opt $(srcdir)/common.opt $(srcdir)/params.opt
+lang_opt_files=@lang_opt_files@ $(srcdir)/c-family/c.opt $(srcdir)/common.opt $(srcdir)/params.opt $(srcdir)/analyzer/analyzer.opt
 lang_specs_files=@lang_specs_files@
 lang_tree_files=@lang_tree_files@
 target_cpu_default=@target_cpu_default@
@@ -1214,6 +1214,32 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
   c-family/c-ubsan.o c-family/known-headers.o \
   c-family/c-attribs.o c-family/c-warn.o c-family/c-spellcheck.o
 
+# Analyzer object files
+ANALYZER_OBJS = \
+	analyzer/analysis-plan.o \
+	analyzer/analyzer.o \
+	analyzer/analyzer-logging.o \
+	analyzer/analyzer-pass.o \
+	analyzer/analyzer-selftests.o \
+	analyzer/call-string.o \
+	analyzer/checker-path.o \
+	analyzer/constraint-manager.o \
+	analyzer/diagnostic-manager.o \
+	analyzer/engine.o \
+	analyzer/pending-diagnostic.o \
+	analyzer/program-point.o \
+	analyzer/program-state.o \
+	analyzer/region-model.o \
+	analyzer/sm.o \
+	analyzer/sm-file.o \
+	analyzer/sm-malloc.o \
+	analyzer/sm-pattern-test.o \
+	analyzer/sm-sensitive.o \
+	analyzer/sm-signal.o \
+	analyzer/sm-taint.o \
+	analyzer/state-purge.o \
+	analyzer/supergraph.o
+
 # Language-independent object files.
 # We put the *-match.o and insn-*.o files first so that a parallel make
 # will build them sooner, because they are large and otherwise tend to be
@@ -1283,6 +1309,7 @@ OBJS = \
 	df-problems.o \
 	df-scan.o \
 	dfp.o \
+	digraph.o \
 	dojump.o \
 	dominance.o \
 	domwalk.o \
@@ -1344,6 +1371,7 @@ OBJS = \
 	godump.o \
 	graph.o \
 	graphds.o \
+	graphviz.o \
 	graphite.o \
 	graphite-isl-ast-to-gimple.o \
 	graphite-dependences.o \
@@ -1443,6 +1471,7 @@ OBJS = \
 	optinfo-emit-json.o \
 	options-save.o \
 	opts-global.o \
+	ordered-hash-map-tests.o \
 	passes.o \
 	plugin.o \
 	postreload-gcse.o \
@@ -1600,6 +1629,7 @@ OBJS = \
 	tree-vector-builder.o \
 	tree-vrp.o \
 	tree.o \
+	tristate.o \
 	typed-splay-tree.o \
 	unique-ptr-tests.o \
 	valtrack.o \
@@ -1617,6 +1647,7 @@ OBJS = \
 	wide-int-print.o \
 	xcoffout.o \
 	$(out_object_file) \
+	$(ANALYZER_OBJS) \
 	$(EXTRA_OBJS) \
 	$(host_hook_obj)
 
@@ -3220,7 +3251,7 @@ TEXI_GCCINT_FILES = gccint.texi gcc-common.texi gcc-vers.texi		\
 	 gnu.texi gpl_v3.texi fdl.texi contrib.texi languages.texi	\
 	 sourcebuild.texi gty.texi libgcc.texi cfg.texi tree-ssa.texi	\
 	 loop.texi generic.texi gimple.texi plugins.texi optinfo.texi   \
-	 match-and-simplify.texi ux.texi poly-int.texi
+	 match-and-simplify.texi analyzer.texi ux.texi poly-int.texi
 
 TEXI_GCCINSTALL_FILES = install.texi install-old.texi fdl.texi		\
 	 gcc-common.texi gcc-vers.texi

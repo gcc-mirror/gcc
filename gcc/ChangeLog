@@ -1,3 +1,81 @@
+2020-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (lang_opt_files): Add analyzer.opt.
+	(ANALYZER_OBJS): New.
+	(OBJS): Add digraph.o, graphviz.o, ordered-hash-map-tests.o,
+	tristate.o and ANALYZER_OBJS.
+	(TEXI_GCCINT_FILES): Add analyzer.texi.
+	* common.opt (-fanalyzer): New driver option.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (--disable-analyzer, ENABLE_ANALYZER): New option.
+	(gccdepdir): Also create depdir for "analyzer" subdir.
+	* digraph.cc: New file.
+	* digraph.h: New file.
+	* doc/analyzer.texi: New file.
+	* doc/gccint.texi ("Static Analyzer") New menu item.
+	(analyzer.texi): Include it.
+	* doc/invoke.texi ("Static Analyzer Options"): New list and new section.
+	("Warning Options"): Add static analysis warnings to the list.
+	(-Wno-analyzer-double-fclose): New option.
+	(-Wno-analyzer-double-free): New option.
+	(-Wno-analyzer-exposure-through-output-file): New option.
+	(-Wno-analyzer-file-leak): New option.
+	(-Wno-analyzer-free-of-non-heap): New option.
+	(-Wno-analyzer-malloc-leak): New option.
+	(-Wno-analyzer-possible-null-argument): New option.
+	(-Wno-analyzer-possible-null-dereference): New option.
+	(-Wno-analyzer-null-argument): New option.
+	(-Wno-analyzer-null-dereference): New option.
+	(-Wno-analyzer-stale-setjmp-buffer): New option.
+	(-Wno-analyzer-tainted-array-index): New option.
+	(-Wno-analyzer-use-after-free): New option.
+	(-Wno-analyzer-use-of-pointer-in-stale-stack-frame): New option.
+	(-Wno-analyzer-use-of-uninitialized-value): New option.
+	(-Wanalyzer-too-complex): New option.
+	(-fanalyzer-call-summaries): New warning.
+	(-fanalyzer-checker=): New warning.
+	(-fanalyzer-fine-grained): New warning.
+	(-fno-analyzer-state-merge): New warning.
+	(-fno-analyzer-state-purge): New warning.
+	(-fanalyzer-transitivity): New warning.
+	(-fanalyzer-verbose-edges): New warning.
+	(-fanalyzer-verbose-state-changes): New warning.
+	(-fanalyzer-verbosity=): New warning.
+	(-fdump-analyzer): New warning.
+	(-fdump-analyzer-callgraph): New warning.
+	(-fdump-analyzer-exploded-graph): New warning.
+	(-fdump-analyzer-exploded-nodes): New warning.
+	(-fdump-analyzer-exploded-nodes-2): New warning.
+	(-fdump-analyzer-exploded-nodes-3): New warning.
+	(-fdump-analyzer-supergraph): New warning.
+	* doc/sourcebuild.texi (dg-require-dot): New.
+	(dg-check-dot): New.
+	* gdbinit.in (break-on-saved-diagnostic): New command.
+	* graphviz.cc: New file.
+	* graphviz.h: New file.
+	* ordered-hash-map-tests.cc: New file.
+	* ordered-hash-map.h: New file.
+	* passes.def (pass_analyzer): Add before
+	pass_ipa_whole_program_visibility.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::ordered_hash_map_tests_cc_tests.
+	* selftest.h (selftest::ordered_hash_map_tests_cc_tests): New
+	decl.
+	* shortest-paths.h: New file.
+	* timevar.def (TV_ANALYZER): New timevar.
+	(TV_ANALYZER_SUPERGRAPH): Likewise.
+	(TV_ANALYZER_STATE_PURGE): Likewise.
+	(TV_ANALYZER_PLAN): Likewise.
+	(TV_ANALYZER_SCC): Likewise.
+	(TV_ANALYZER_WORKLIST): Likewise.
+	(TV_ANALYZER_DUMP): Likewise.
+	(TV_ANALYZER_DIAGNOSTICS): Likewise.
+	(TV_ANALYZER_SHORTEST_PATHS): Likewise.
+	* tree-pass.h (make_pass_analyzer): New decl.
+	* tristate.cc: New file.
+	* tristate.h: New file.
+
 2020-01-14  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/93254
