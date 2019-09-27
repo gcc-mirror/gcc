@@ -1,7 +1,10 @@
 2019-09-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/91920
+	* c-c++-common/gomp/pr91920.c: New test.
+
 	PR target/91919
-	* gcc.c-torture/compile/pr91919.c: New.test
+	* gcc.c-torture/compile/pr91919.c: New test.
 
 2019-09-27  Manfred Schwarb  <manfred99@gmx.ch>
 
