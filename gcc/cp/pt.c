@@ -25232,8 +25232,9 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
     {
       if (cxx_dialect < cxx2a)
 	{
-	  error ("non-type template parameters of class type only available "
-		 "with %<-std=c++2a%> or %<-std=gnu++2a%>");
+	  if (complain & tf_error)
+	    error ("non-type template parameters of class type only available "
+		   "with %<-std=c++2a%> or %<-std=gnu++2a%>");
 	  return true;
 	}
       if (dependent_type_p (type))
