@@ -2914,12 +2914,12 @@ warn_hidden (tree t)
 	FOR_EACH_VEC_ELT (base_fndecls, j, base_fndecl)
 	  if (base_fndecl)
 	    {
+	      auto_diagnostic_group d;
 	      /* Here we know it is a hider, and no overrider exists.  */
-	      warning_at (location_of (base_fndecl),
-			  OPT_Woverloaded_virtual,
-			  "%qD was hidden", base_fndecl);
-	      warning_at (location_of (fns),
-			  OPT_Woverloaded_virtual, "  by %qD", fns);
+	      if (warning_at (location_of (base_fndecl),
+			      OPT_Woverloaded_virtual,
+			      "%qD was hidden", base_fndecl))
+		inform (location_of (fns), "  by %qD", fns);
 	    }
       }
 }

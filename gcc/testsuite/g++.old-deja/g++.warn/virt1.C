@@ -6,5 +6,5 @@ struct A {
 };
 
 struct B: public A {
-  void f(int); // { dg-warning "" } by this
+  void f(int); // { dg-message "" } by this
 };
