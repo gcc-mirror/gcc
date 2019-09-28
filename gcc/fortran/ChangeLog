@@ -1,3 +1,12 @@
+2019-09-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91864
+	* gcc/fortran/io.c (match_io_element): An inquiry parameter cannot be
+	read into.
+	* gcc/fortran/match.c (gfc_match_allocate): An inquiry parameter 
+	can be neither an allocate-object nor stat variable.
+	(gfc_match_deallocate): An inquiry parameter cannot be deallocated.
+
 2019-09-26  Alessandro Fanfarillo  <afanfa@gcc.gnu.org>
 
 	* trans-array.c (structure_alloc_comps):

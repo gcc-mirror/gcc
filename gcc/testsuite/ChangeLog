@@ -1,3 +1,8 @@
+2019-09-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91864
+	* gcc/testsuite/gfortran.dg/pr91864.f90
+
 2019-09-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91889 - follow-up fix for DR 2352.
