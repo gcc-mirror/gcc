@@ -1,3 +1,14 @@
+2019-09-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (gen_macho_high): Amend to include the mode
+	argument.
+	(machopic_indirect_data_reference): Amend gen_macho_high call
+	to include mode argument.
+	(machopic_legitimize_pic_address): Likewise.
+	* config/rs6000/rs6000.c (rs6000_legitimize_address):
+	* config/rs6000/darwin.md (@macho_high_<mode>): New, replaces
+	the macho_high expander and two define_insn entries.
+
 2019-09-28  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/86805

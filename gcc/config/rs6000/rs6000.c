@@ -7978,7 +7978,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       if (TARGET_ELF)
 	emit_insn (gen_elf_high (reg, x));
       else
-	emit_insn (gen_macho_high (reg, x));
+	emit_insn (gen_macho_high (Pmode, reg, x));
       return gen_rtx_LO_SUM (Pmode, reg, x);
     }
   else if (TARGET_TOC
@@ -9691,7 +9691,7 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 		  return;
 		}
 #endif
-	      emit_insn (gen_macho_high (target, operands[1]));
+	      emit_insn (gen_macho_high (Pmode, target, operands[1]));
 	      emit_insn (gen_macho_low (operands[0], target, operands[1]));
 	      return;
 	    }
