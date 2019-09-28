@@ -736,7 +736,7 @@ got_mode_name:;
     {
       if (tokens[i] == "strict")
 	ret.strict = true;
-      else if (tokens[i].find ("gbr-offset=") == 0)
+      else if (!tokens[i].compare (0, strlen ("gbr-offset="), "gbr-offset="))
 	{
 	  std::string offset_str = tokens[i].substr (strlen ("gbr-offset="));
 	  ret.tcb_gbr_offset = integral_argument (offset_str.c_str ());
