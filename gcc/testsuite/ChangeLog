@@ -1,3 +1,8 @@
+2019-09-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91923 - failure-to-SFINAE with class type NTTP in C++17.
+	* g++.dg/cpp0x/nontype5.C: New test.
+
 2019-09-28  Alan Modra  <amodra@gmail.com>
 
 	PR testsuite/91676

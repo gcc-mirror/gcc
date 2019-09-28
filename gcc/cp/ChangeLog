@@ -1,3 +1,9 @@
+2019-09-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91923 - failure-to-SFINAE with class type NTTP in C++17.
+	* pt.c (invalid_nontype_parm_type_p): Only emit errors when
+	tf_error.
+
 2019-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88203
