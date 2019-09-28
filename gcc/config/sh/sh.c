@@ -10875,12 +10875,6 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	  emit_insn (gen_add2_insn (scratch0, GEN_INT (vcall_offset)));
 	  offset_addr = scratch0;
 	}
-      else if (scratch0 != scratch1)
-	{
-	  emit_move_insn (scratch1, GEN_INT (vcall_offset));
-	  emit_insn (gen_add2_insn (scratch0, scratch1));
-	  offset_addr = scratch0;
-	}
       else
 	gcc_unreachable (); /* FIXME */
       emit_load_ptr (scratch0, offset_addr);

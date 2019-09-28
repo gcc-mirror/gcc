@@ -1,3 +1,12 @@
+2018-09-28  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2018-07-15  Jeff Law  <law@redhat.com>
+
+	PR target/85993
+	* config/sh/sh.c (output_mi_thunk): Remove dead conditional
+	block.
+
 2019-09-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
