@@ -1,6 +1,15 @@
 2019-09-28  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
+	2019-09-28  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/80672
+	* config/sh/sh.c (parse_validate_atomic_model_option): Use
+	std::string::compare instead of std::string::find.
+
+2019-09-28  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
 	2018-07-15  Jeff Law  <law@redhat.com>
 
 	PR target/85993
