@@ -1,5 +1,12 @@
 2019-09-28  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/91921 - stray warning with -Woverloaded-virtual.
+	* g++.dg/warn/Woverloaded-2.C: New.
+	* g++.dg/warn/Woverloaded-2.h: New.
+	* g++.dg/warn/pr61945.C: Turn dg-warning into dg-message.
+	* g++.old-deja/g++.mike/warn6.C: Likewise.
+	* g++.old-deja/g++.warn/virt1.C: Likewise.
+
 	PR c++/91923 - failure-to-SFINAE with class type NTTP in C++17.
 	* g++.dg/cpp0x/nontype5.C: New test.
 
