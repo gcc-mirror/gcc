@@ -12373,7 +12373,12 @@ Call_expression::do_inlining_cost() const
 void
 Call_expression::do_export(Export_function_body* efb) const
 {
+  bool simple_call = (this->fn_->func_expression() != NULL);
+  if (!simple_call)
+    efb->write_c_string("(");
   this->fn_->export_expression(efb);
+  if (!simple_call)
+    efb->write_c_string(")");
   this->export_arguments(efb);
 }
 
