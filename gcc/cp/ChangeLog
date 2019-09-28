@@ -1,5 +1,12 @@
 2019-09-28  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/91889 - follow-up fix for DR 2352.
+	* call.c (involves_qualification_conversion_p): New function.
+	(direct_reference_binding): Build a ck_qual if the conversion
+	would involve a qualification conversion.
+	(convert_like_real): Strip the conversion created by the ck_qual
+	in direct_reference_binding.
+
 	PR c++/91921 - stray warning with -Woverloaded-virtual.
 	* class.c (warn_hidden): Only emit the second part of
 	-Woverloaded-virtual if the first part was issued.  Use inform instead

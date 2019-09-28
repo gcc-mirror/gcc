@@ -1555,6 +1555,27 @@ reference_compatible_p (tree t1, tree t2)
   return true;
 }
 
+/* Return true if converting FROM to TO would involve a qualification
+   conversion.  */
+
+static bool
+involves_qualification_conversion_p (tree to, tree from)
+{
+  /* If we're not convering a pointer to another one, we won't get
+     a qualification conversion.  */
+  if (!((TYPE_PTR_P (to) && TYPE_PTR_P (from))
+	|| (TYPE_PTRDATAMEM_P (to) && TYPE_PTRDATAMEM_P (from))))
+    return false;
+
+  conversion *conv = standard_conversion (to, from, NULL_TREE,
+					  /*c_cast_p=*/false, 0, tf_none);
+  for (conversion *t = conv; t; t = next_conversion (t))
+    if (t->kind == ck_qual)
+      return true;
+
+  return false;
+}
+
 /* A reference of the indicated TYPE is being bound directly to the
    expression represented by the implicit conversion sequence CONV.
    Return a conversion sequence for this binding.  */
@@ -1598,6 +1619,19 @@ direct_reference_binding (tree type, conversion *conv)
 	 That way, convert_like knows not to generate a temporary.  */
       conv->need_temporary_p = false;
     }
+  else if (involves_qualification_conversion_p (t, conv->type))
+    /* Represent the qualification conversion.  After DR 2352
+       #1 and #2 were indistinguishable conversion sequences:
+
+	 void f(int*); // #1
+	 void f(const int* const &); // #2
+	 void g(int* p) { f(p); }
+
+       because the types "int *" and "const int *const" are
+       reference-related and we were binding both directly and they
+       had the same rank.  To break it up, we add a ck_qual under the
+       ck_ref_bind so that conversion sequence ranking chooses #1.  */
+    conv = build_conv (ck_qual, t, conv);
 
   return build_conv (ck_ref_bind, type, conv);
 }
@@ -7341,6 +7375,18 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
     case ck_ref_bind:
       {
 	tree ref_type = totype;
+
+	/* direct_reference_binding might have inserted a ck_qual under
+	   this ck_ref_bind for the benefit of conversion sequence ranking.
+	   Ignore the conversion; we'll create our own below.  */
+	if (next_conversion (convs)->kind == ck_qual)
+	  {
+	    gcc_assert (same_type_p (TREE_TYPE (expr),
+				     next_conversion (convs)->type));
+	    /* Strip the cast created by the ck_qual; cp_build_addr_expr
+	       below expects an lvalue.  */
+	    STRIP_NOPS (expr);
+	  }
 
 	if (convs->bad_p && !next_conversion (convs)->bad_p)
 	  {
