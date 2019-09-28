@@ -1,3 +1,12 @@
+2019-09-28  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2018-08-03  Sergei Trofimovich  <slyfox@gentoo.org>
+
+	PR target/86712
+	* config/sh/sjlj.S: Adjust to use PIC vs normal code to avoid
+	absolute relocation in a shared library.
+
 2019-02-22  Release Manager
 
 	* GCC 8.3.0 released.
