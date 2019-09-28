@@ -10,7 +10,14 @@ int
 d (u16 e, u64 f)
 {
   b |= e;
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
   __builtin_memset (&f, e, 2);
+#elif (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ \
+       || __BYTE_ORDER__ == __ORDER_PDP_ENDIAN__)
+  __builtin_memset ((char *) &f + sizeof (f) - 2, e, 2);
+#else
+#error "endian unknown?"
+#endif
   a = (u16) - e >= 2 ? : __builtin_popcountll (f);
   return a + c;
 }
