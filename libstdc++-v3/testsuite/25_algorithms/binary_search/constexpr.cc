@@ -29,7 +29,7 @@ test()
   const auto out4 = std::binary_search(ca0.begin(), ca0.end(), 5);
 
   const auto out5 = std::binary_search(ca0.begin(), ca0.end(), 5,
-				       std::equal_to<int>());
+				       std::less<int>());
 
   return true;
 }
