@@ -1,5 +1,6 @@
 /* PR target/r84530 */
 /* { dg-do compile { target ia32 } } */
+/* { dg-skip-if "ABI differs for return complex value" { *-*-darwin* } } */
 /* { dg-options "-O2 -mfunction-return=thunk -fcheck-pointer-bounds -mmpx -fno-pic" } */
 
 struct s { _Complex unsigned short x; };
