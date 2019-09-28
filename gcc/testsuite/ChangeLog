@@ -1,5 +1,12 @@
 2019-09-28  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/91889 - follow-up fix for DR 2352.
+	* g++.dg/cpp0x/ref-bind3.C: Add dg-error.
+	* g++.dg/cpp0x/ref-bind4.C: New test.
+	* g++.dg/cpp0x/ref-bind5.C: New test.
+	* g++.dg/cpp0x/ref-bind6.C: New test.
+	* g++.old-deja/g++.pt/spec35.C: Revert earlier change.
+
 	PR c++/91921 - stray warning with -Woverloaded-virtual.
 	* g++.dg/warn/Woverloaded-2.C: New.
 	* g++.dg/warn/Woverloaded-2.h: New.
