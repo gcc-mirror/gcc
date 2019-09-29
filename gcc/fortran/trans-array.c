@@ -3609,7 +3609,8 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 
   if (ar->dimen == 0)
     {
-      gcc_assert (ar->codimen || sym->attr.select_rank_temporary);
+      gcc_assert (ar->codimen || sym->attr.select_rank_temporary
+		  || (ar->as && ar->as->corank));
 
       if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se->expr)))
 	se->expr = build_fold_indirect_ref (gfc_conv_array_data (se->expr));
