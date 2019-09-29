@@ -1,3 +1,8 @@
+2019-09-29  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* gcc.target/powerpc/conv-vectorize-1.c: New test.
+	* gcc.target/powerpc/conv-vectorize-2.c: New test.
+
 2019-09-28  Steven G. Kargl  <kargl@gcc.ngu.org>
 
 	PR fortran/91802
