@@ -1,3 +1,9 @@
+2019-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91714
+	* decl.c (gfc_match_decl_type_spec):  Issue errors for a few
+	mangled types.
+
 2019-09-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/91726

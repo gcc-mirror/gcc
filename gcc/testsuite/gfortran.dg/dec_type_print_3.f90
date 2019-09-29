@@ -8,9 +8,9 @@
 
 include 'dec_type_print.f90'
 
-! { dg-error "Invalid character in name" "" { target *-*-* } 52 }
+! { dg-error "Mangled derived type definition" "" { target *-*-* } 52 }
 ! { dg-error "Invalid character in name" "" { target *-*-* } 53 }
-! { dg-error "Invalid character in name" "" { target *-*-* } 54 }
+! { dg-error "Mangled derived type definition" "" { target *-*-* } 54 }
 ! { dg-error "Invalid character in name" "" { target *-*-* } 55 }
 ! { dg-error "Invalid character in name" "" { target *-*-* } 56 }
 ! { dg-error "Invalid character in name" "" { target *-*-* } 57 }
