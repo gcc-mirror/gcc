@@ -1,3 +1,9 @@
+2019-09-28  Jerry DeLisle  <jvdelisle@gcc.ngu.org>
+
+	PR fortran/91802
+	* decl.c (attr_decl1): Return MATCH_ERROR without free to avoid
+	bad expression type in free_expr0() ICE in rank+corank check.
+
 2019-09-28  Steven G. Kargl  <kargl@gcc.ngu.org>
 
 	PR fortran/91802

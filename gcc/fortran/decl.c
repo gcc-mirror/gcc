@@ -8474,7 +8474,7 @@ attr_decl1 (void)
     {
       gfc_error ("rank + corank of %qs exceeds 15 at %C", sym->name);
       m = MATCH_ERROR;
-      goto cleanup;
+      return m;
     }
 
   if (sym->attr.cray_pointee && sym->as != NULL)
