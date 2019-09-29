@@ -4774,7 +4774,8 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 1;
 
       case vec_perm:
-	if (TARGET_VSX)
+	/* Power7 has only one permute unit, make it a bit expensive.  */
+	if (TARGET_VSX && rs6000_tune == PROCESSOR_POWER7)
 	  return 3;
 	else
 	  return 1;
