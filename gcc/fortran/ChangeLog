@@ -1,5 +1,11 @@
 2019-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/91641
+	* check.c (gfc_check_is_contiguous): null() cannot be an actual
+	argument to is_contiguous().
+
+2019-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/91714
 	* decl.c (gfc_match_decl_type_spec):  Issue errors for a few
 	mangled types.

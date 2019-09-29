@@ -1,5 +1,10 @@
 2019-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/91641
+	* gfortran.dg/pr91641.f90: New test.
+
+2019-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/91714
 	* gfortran.dg/dec_type_print_3.f90: Update dg-error regex.
 	* gfortran.dg/pr91714.f90: New test.
