@@ -9682,6 +9682,8 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 	  if (DEFAULT_ABI == ABI_DARWIN)
 	    {
 #if TARGET_MACHO
+	      /* This is not PIC code, but could require the subset of
+		 indirections used by mdynamic-no-pic.  */
 	      if (MACHO_DYNAMIC_NO_PIC_P)
 		{
 		  /* Take care of any required data indirection.  */
@@ -9693,7 +9695,8 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 		}
 #endif
 	      emit_insn (gen_macho_high (Pmode, target, operands[1]));
-	      emit_insn (gen_macho_low (operands[0], target, operands[1]));
+	      emit_insn (gen_macho_low (Pmode, operands[0],
+					target, operands[1]));
 	      return;
 	    }
 

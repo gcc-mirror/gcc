@@ -1,3 +1,13 @@
+2019-09-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (gen_macho_low):Amend to include the mode
+	argument.
+	(machopic_indirect_data_reference): Amend gen_macho_low call
+	to include mode argument
+	* config/rs6000/rs6000.c (emit_move): Likewise. Amend a comment.
+	* config/rs6000/darwin.md (@macho_low_<mode>): New, replaces
+	the macho_high expander and two define_insn entries.
+
 2019-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/90543
