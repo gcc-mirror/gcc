@@ -1,3 +1,8 @@
+2019-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/90543
+	* optc-save-gen.awk: Fix up printing string option differences.
+
 2019-09-29  Kewen Lin  <linkw@gcc.gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost): Lower
