@@ -7098,12 +7098,19 @@ gfc_check_ttynam_sub (gfc_expr *unit, gfc_expr *name)
 bool
 gfc_check_is_contiguous (gfc_expr *array)
 {
+  if (array->expr_type == EXPR_NULL
+      && array->symtree->n.sym->attr.pointer == 1)
+    {
+      gfc_error ("Actual argument at %L of %qs intrinsic shall be an "
+		 "associated pointer", &array->where, gfc_current_intrinsic);
+      return false;
+    }
+
   if (!array_check (array, 0))
     return false;
 
   return true;
 }
-
 
 
 bool
