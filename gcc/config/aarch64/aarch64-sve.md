@@ -71,6 +71,7 @@
 ;; ---- [INT] Binary logical operations
 ;; ---- [INT] Binary logical operations (inverted second input)
 ;; ---- [INT] Shifts
+;; ---- [INT] Shifts (rounding towards 0)
 ;; ---- [FP] General binary arithmetic corresponding to rtx codes
 ;; ---- [FP] General binary arithmetic corresponding to unspecs
 ;; ---- [FP] Addition
@@ -2561,6 +2562,46 @@
     operands[4] = operands[2] = operands[0];
   }
   [(set_attr "movprfx" "yes")]
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Shifts (rounding towards 0)
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - ASRD
+;; -------------------------------------------------------------------------
+
+;; Unpredicated arithmetic right shift for division by power-of-2.
+(define_expand "sdiv_pow2<mode>3"
+  [(set (match_operand:SVE_I 0 "register_operand")
+	(unspec:SVE_I
+	  [(match_dup 3)
+	   (unspec:SVE_I
+	     [(match_operand:SVE_I 1 "register_operand")
+	      (match_operand 2 "aarch64_simd_rshift_imm")]
+	    UNSPEC_ASRD)]
+	 UNSPEC_PRED_X))]
+  "TARGET_SVE"
+  {
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
+  }
+)
+
+;; Predicated ASRD with PTRUE.
+(define_insn "*sdiv_pow2<mode>3"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_I
+	     [(match_operand:SVE_I 2 "register_operand" "0, w")
+	      (match_operand 3 "aarch64_simd_rshift_imm")]
+	    UNSPEC_ASRD)]
+	 UNSPEC_PRED_X))]
+  "TARGET_SVE"
+  "@
+  asrd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+  movprfx\t%0, %2\;asrd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3"
+  [(set_attr "movprfx" "*,yes")]
 )
 
 ;; -------------------------------------------------------------------------

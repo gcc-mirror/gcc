@@ -5414,6 +5414,17 @@ op0 = (narrow) (((((wide) op1 * (wide) op2) >> (N / 2 - 2)) + 1) >> 1);
 where the sign of @samp{narrow} determines whether this is a signed
 or unsigned operation, and @var{N} is the size of @samp{wide} in bits.
 
+@cindex @code{sdiv_pow2@var{m3}} instruction pattern
+@item @samp{sdiv_pow2@var{m3}}
+@cindex @code{sdiv_pow2@var{m3}} instruction pattern
+@itemx @samp{sdiv_pow2@var{m3}}
+Signed division by power-of-2 immediate. Equivalent to:
+@smallexample
+signed op0, op1;
+@dots{}
+op0 = op1 / (1 << imm);
+@end smallexample
+
 @cindex @code{vec_shl_insert_@var{m}} instruction pattern
 @item @samp{vec_shl_insert_@var{m}}
 Shift the elements in vector input operand 1 left one element (i.e.@:
