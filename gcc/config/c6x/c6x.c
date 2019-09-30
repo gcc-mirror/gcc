@@ -55,6 +55,7 @@
 #include "sel-sched.h"
 #include "debug.h"
 #include "hw-doloop.h"
+#include "function-abi.h"
 #include "regrename.h"
 #include "dumpfile.h"
 #include "builtins.h"
