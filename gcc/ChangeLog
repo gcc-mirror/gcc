@@ -1,3 +1,11 @@
+2019-09-30  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config.gcc: Use the secure-plt on FreeBSD 13 and upwards for
+	32-bit PowerPC.
+	Define TARGET_FREEBSD32_SECURE_PLT for 64-bit PowerPC.
+	* config/rs6000/t-freebsd64: Make use of the above define and build
+	the 32-bit libraries with secure-plt.
+
 2019-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/91931
