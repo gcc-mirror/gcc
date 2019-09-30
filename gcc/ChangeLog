@@ -1,3 +1,9 @@
+2019-09-30  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/77918
+	* config/s390/vector.md (vec_unordered<mode>): Call
+	gen_vec_ordered<mode>.
+
 2019-09-30  Yuliang Wang  <yuliang.wang@arm.com>
 
 	* config/aarch64/aarch64-sve.md (sdiv_pow2<mode>3):
