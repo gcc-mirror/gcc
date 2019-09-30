@@ -1,3 +1,12 @@
+2019-09-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/91853
+	* tree-inline.c (force_value_to_type): New function.
+	(setup_one_parameter): Use force_value_to_type to convert type.
+	* tree-inline.c (force_value_to_type): Declare.
+	* ipa-param-manipulation.c (ipa_param_adjustments::modify_call): Deal
+	with register type mismatches.
+
 2019-09-30  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config.gcc: Use the secure-plt on FreeBSD 13 and upwards for

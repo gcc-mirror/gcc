@@ -3333,6 +3333,29 @@ insert_init_stmt (copy_body_data *id, basic_block bb, gimple *init_stmt)
     }
 }
 
+/* Deal with mismatched formal/actual parameters, in a rather brute-force way
+   if need be (which should only be necessary for invalid programs).  Attempt
+   to convert VAL to TYPE and return the result if it is possible, just return
+   a zero constant of the given type if it fails.  */
+
+tree
+force_value_to_type (tree type, tree value)
+{
+  /* If we can match up types by promotion/demotion do so.  */
+  if (fold_convertible_p (type, value))
+    return fold_convert (type, value);
+
+  /* ???  For valid programs we should not end up here.
+     Still if we end up with truly mismatched types here, fall back
+     to using a VIEW_CONVERT_EXPR or a literal zero to not leak invalid
+     GIMPLE to the following passes.  */
+  if (!is_gimple_reg_type (TREE_TYPE (value))
+	   || TYPE_SIZE (type) == TYPE_SIZE (TREE_TYPE (value)))
+    return fold_build1 (VIEW_CONVERT_EXPR, type, value);
+  else
+    return build_zero_cst (type);
+}
+
 /* Initialize parameter P with VALUE.  If needed, produce init statement
    at the end of BB.  When BB is NULL, we return init statement to be
    output later.  */
@@ -3349,23 +3372,7 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
   if (value
       && value != error_mark_node
       && !useless_type_conversion_p (TREE_TYPE (p), TREE_TYPE (value)))
-    {
-      /* If we can match up types by promotion/demotion do so.  */
-      if (fold_convertible_p (TREE_TYPE (p), value))
-	rhs = fold_convert (TREE_TYPE (p), value);
-      else
-	{
-	  /* ???  For valid programs we should not end up here.
-	     Still if we end up with truly mismatched types here, fall back
-	     to using a VIEW_CONVERT_EXPR or a literal zero to not leak invalid
-	     GIMPLE to the following passes.  */
-	  if (!is_gimple_reg_type (TREE_TYPE (value))
-	      || TYPE_SIZE (TREE_TYPE (p)) == TYPE_SIZE (TREE_TYPE (value)))
-	    rhs = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (p), value);
-	  else
-	    rhs = build_zero_cst (TREE_TYPE (p));
-	}
-    }
+    rhs = force_value_to_type (TREE_TYPE (p), value);
 
   /* Make an equivalent VAR_DECL.  Note that we must NOT remap the type
      here since the type of this decl must be visible to the calling
