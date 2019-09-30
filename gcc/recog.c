@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgcleanup.h"
 #include "reload.h"
 #include "tree-pass.h"
+#include "function-abi.h"
 
 #ifndef STACK_POP_CODE
 #if STACK_GROWS_DOWNWARD
@@ -3227,7 +3228,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
 	      break;
 	    }
 	  /* And that we don't create an extra save/restore.  */
-	  if (! call_used_or_fixed_reg_p (regno + j)
+	  if (! crtl->abi->clobbers_full_reg_p (regno + j)
 	      && ! df_regs_ever_live_p (regno + j))
 	    {
 	      success = 0;
