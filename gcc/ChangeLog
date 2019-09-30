@@ -1,5 +1,13 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* cse.c: Include regs.h and function-abi.h.
+	(invalidate_for_call): Take the call insn as an argument.
+	Use insn_callee_abi to get the ABI of the call and invalidate
+	partially clobbered registers as well as fully clobbered ones.
+	(cse_insn): Update call accordingly.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* combine.c: Include function-abi.h.
 	(record_dead_and_set_regs): Use insn_callee_abi to get the ABI
 	of the target of call insns.  Invalidate partially-clobbered

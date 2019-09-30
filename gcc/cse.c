@@ -42,6 +42,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "dbgcnt.h"
 #include "rtl-iter.h"
+#include "regs.h"
+#include "function-abi.h"
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
@@ -566,7 +568,6 @@ static void remove_invalid_subreg_refs (unsigned int, poly_uint64,
 					machine_mode);
 static void rehash_using_reg (rtx);
 static void invalidate_memory (void);
-static void invalidate_for_call (void);
 static rtx use_related_value (rtx, struct table_elt *);
 
 static inline unsigned canon_hash (rtx, machine_mode);
@@ -2091,23 +2092,31 @@ rehash_using_reg (rtx x)
 }
 
 /* Remove from the hash table any expression that is a call-clobbered
-   register.  Also update their TICK values.  */
+   register in INSN.  Also update their TICK values.  */
 
 static void
-invalidate_for_call (void)
+invalidate_for_call (rtx_insn *insn)
 {
-  unsigned int regno, endregno;
-  unsigned int i;
+  unsigned int regno;
   unsigned hash;
   struct table_elt *p, *next;
   int in_table = 0;
   hard_reg_set_iterator hrsi;
 
-  /* Go through all the hard registers.  For each that is clobbered in
-     a CALL_INSN, remove the register from quantity chains and update
+  /* Go through all the hard registers.  For each that might be clobbered
+     in call insn INSN, remove the register from quantity chains and update
      reg_tick if defined.  Also see if any of these registers is currently
-     in the table.  */
-  EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call, 0, regno, hrsi)
+     in the table.
+
+     ??? We could be more precise for partially-clobbered registers,
+     and only invalidate values that actually occupy the clobbered part
+     of the registers.  It doesn't seem worth the effort though, since
+     we shouldn't see this situation much before RA.  Whatever choice
+     we make here has to be consistent with the table walk below,
+     so any change to this test will require a change there too.  */
+  HARD_REG_SET callee_clobbers
+    = insn_callee_abi (insn).full_and_partial_reg_clobbers ();
+  EXECUTE_IF_SET_IN_HARD_REG_SET (callee_clobbers, 0, regno, hrsi)
     {
       delete_reg_equiv (regno);
       if (REG_TICK (regno) >= 0)
@@ -2132,15 +2141,11 @@ invalidate_for_call (void)
 	      || REGNO (p->exp) >= FIRST_PSEUDO_REGISTER)
 	    continue;
 
-	  regno = REGNO (p->exp);
-	  endregno = END_REGNO (p->exp);
-
-	  for (i = regno; i < endregno; i++)
-	    if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
-	      {
-		remove_from_table (p, hash);
-		break;
-	      }
+	  /* This must use the same test as above rather than the
+	     more accurate clobbers_reg_p.  */
+	  if (overlaps_hard_reg_set_p (callee_clobbers, GET_MODE (p->exp),
+				       REGNO (p->exp)))
+	    remove_from_table (p, hash);
 	}
 }
 
@@ -5823,7 +5828,7 @@ cse_insn (rtx_insn *insn)
 	  if (GET_CODE (XEXP (tem, 0)) == USE
 	      && MEM_P (XEXP (XEXP (tem, 0), 0)))
 	    invalidate (XEXP (XEXP (tem, 0), 0), VOIDmode);
-      invalidate_for_call ();
+      invalidate_for_call (insn);
     }
 
   /* Now invalidate everything set by this instruction.
