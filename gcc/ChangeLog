@@ -1,5 +1,11 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* cfgloopanal.c: Include regs.h and function-abi.h.
+	(init_set_costs): Use default_function_abi to test whether
+	a general register is call-clobbered.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* cfgcleanup.c (old_insns_match_p): Compare the ABIs of calls
 	instead of the call-clobbered sets.
 
