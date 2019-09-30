@@ -1,5 +1,11 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* function.c (aggregate_value_p): Work out which ABI the
+	function is using before testing which registers are at least
+	partly preserved by a call.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* early-remat.c: Include regs.h and function-abi.h.
 	(early_remat::maybe_add_candidate): Don't check for call-clobbered
 	registers here.
