@@ -1,5 +1,29 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* regrename.h (du_head::call_clobber_mask): New field.
+	(du_head::need_caller_save_reg): Replace with...
+	(du_head::call_abis): ...this new field.
+	* regrename.c: Include function-abi.h.
+	(call_clobbered_in_chain_p): New function.
+	(check_new_reg_p): Use crtl->abi when deciding whether a register
+	is free for use after RA.  Use call_clobbered_in_chain_p to test
+	whether a candidate register would be clobbered by a call.
+	(find_rename_reg): Don't add call-clobber conflicts here.
+	(rename_chains): Check call_abis instead of need_caller_save_reg.
+	(merge_chains): Update for changes to du_head.
+	(build_def_use): Use insn_callee_abi to get the ABI of the call insn
+	target.  Record the ABI identifier in call_abis and the set of
+	fully or partially clobbered registers in call_clobber_mask.
+	Add fully-clobbered registers to hard_conflicts here rather
+	than in find_rename_reg.
+	* config/aarch64/cortex-a57-fma-steering.c: Include function-abi.h.
+	(rename_single_chain): Check call_abis instead of need_caller_save_reg.
+	* config/aarch64/falkor-tag-collision-avoidance.c: Include
+	function-abi.h.
+	* config/c6x/c6x.c: Likewise.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* regcprop.c (copyprop_hardreg_forward_1): Use the recorded
 	mode of the register when deciding whether it is no longer
 	available after a call.

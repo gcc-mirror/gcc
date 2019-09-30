@@ -38,6 +38,7 @@
 #include "optabs.h"
 #include "regs.h"
 #include "recog.h"
+#include "function-abi.h"
 #include "regrename.h"
 #include "print-rtl.h"
 
