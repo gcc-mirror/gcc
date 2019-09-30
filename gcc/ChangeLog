@@ -1,5 +1,10 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* cfgcleanup.c (old_insns_match_p): Compare the ABIs of calls
+	instead of the call-clobbered sets.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* caller-save.c (setup_save_areas): Remove redundant |s of
 	fixed_reg_set.
 	(save_call_clobbered_regs): Likewise.  Use the call ABI rather

@@ -1227,13 +1227,7 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx_insn *i1, rtx_insn *i2)
 	    }
 	}
 
-      HARD_REG_SET i1_used = insn_callee_abi (i1).full_reg_clobbers ();
-      HARD_REG_SET i2_used = insn_callee_abi (i2).full_reg_clobbers ();
-      /* ??? This preserves traditional behavior; it might not be needed.  */
-      i1_used |= fixed_reg_set;
-      i2_used |= fixed_reg_set;
-
-      if (i1_used != i2_used)
+      if (insn_callee_abi (i1) != insn_callee_abi (i2))
         return dir_none;
     }
 
