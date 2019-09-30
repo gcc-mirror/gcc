@@ -1,5 +1,12 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* postreload-gcse.c: Include regs.h and function-abi.h.
+	(record_opr_changes): Use insn_callee_abi to get the ABI of the
+	call insn target.  Conservatively assume that partially-clobbered
+	registers are altered.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* postreload.c (reload_combine_recognize_pattern): Use crtl->abi
 	when deciding whether a register is free for use after RA.
 	(reload_combine): Remove unnecessary use of fixed_reg_set.
