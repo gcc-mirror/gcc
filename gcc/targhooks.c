@@ -2363,9 +2363,4 @@ default_speculation_safe_value (machine_mode mode ATTRIBUTE_UNUSED,
   return result;
 }
 
-void
-default_remove_extra_call_preserved_regs (rtx_insn *, HARD_REG_SET *)
-{
-}
-
 #include "gt-targhooks.h"

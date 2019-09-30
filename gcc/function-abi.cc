@@ -143,5 +143,28 @@ function_abi
 fndecl_abi (const_tree fndecl)
 {
   gcc_assert (TREE_CODE (fndecl) == FUNCTION_DECL);
-  return fntype_abi (TREE_TYPE (fndecl));
+  const predefined_function_abi &base_abi = fntype_abi (TREE_TYPE (fndecl));
+
+  if (flag_ipa_ra && decl_binds_to_current_def_p (fndecl))
+    if (cgraph_rtl_info *info = cgraph_node::rtl_info (fndecl))
+      return function_abi (base_abi, info->function_used_regs);
+
+  return base_abi;
+}
+
+/* Return the ABI of the function called by INSN.  */
+
+function_abi
+insn_callee_abi (const rtx_insn *insn)
+{
+  gcc_assert (insn && CALL_P (insn));
+
+  if (flag_ipa_ra)
+    if (tree fndecl = get_call_fndecl (insn))
+      return fndecl_abi (fndecl);
+
+  if (targetm.calls.insn_callee_abi)
+    return targetm.calls.insn_callee_abi (insn);
+
+  return default_function_abi;
 }

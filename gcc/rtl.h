@@ -3447,6 +3447,7 @@ extern int rtx_unstable_p (const_rtx);
 extern bool rtx_varies_p (const_rtx, bool);
 extern bool rtx_addr_varies_p (const_rtx, bool);
 extern rtx get_call_rtx_from (const rtx_insn *);
+extern tree get_call_fndecl (const rtx_insn *);
 extern HOST_WIDE_INT get_integer_term (const_rtx);
 extern rtx get_related_value (const_rtx);
 extern bool offset_within_block_p (const_rtx, HOST_WIDE_INT);
@@ -4401,14 +4402,11 @@ extern tree GTY(()) global_regs_decl[FIRST_PSEUDO_REGISTER];
    Available only for functions that has been already assembled.  */
 
 struct GTY(()) cgraph_rtl_info {
-   unsigned int preferred_incoming_stack_boundary;
+  unsigned int preferred_incoming_stack_boundary;
 
-  /* Call unsaved hard registers really used by the corresponding
-     function (including ones used by functions called by the
-     function).  */
+  /* Which registers the function clobbers, either directly or by
+     calling another function.  */
   HARD_REG_SET function_used_regs;
-  /* Set if function_used_regs is valid.  */
-  unsigned function_used_regs_valid: 1;
 };
 
 /* If loads from memories of mode MODE always sign or zero extend,

@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ira.h"
 #include "ira-int.h"
 #include "sparseset.h"
+#include "function-abi.h"
 
 /* The code in this file is similar to one in global but the code
    works on the allocno basis and creates live ranges instead of
@@ -1254,10 +1255,11 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		  ira_object_t obj = ira_object_id_map[i];
 		  a = OBJECT_ALLOCNO (obj);
 		  int num = ALLOCNO_NUM (a);
-		  HARD_REG_SET this_call_used_reg_set;
-
-		  get_call_reg_set_usage (insn, &this_call_used_reg_set,
-					  call_used_or_fixed_regs);
+		  HARD_REG_SET this_call_used_reg_set
+		    = insn_callee_abi (insn).full_reg_clobbers ();
+		  /* ??? This preserves traditional behavior; it might not be
+		     needed.  */
+		  this_call_used_reg_set |= fixed_reg_set;
 
 		  /* Don't allocate allocnos that cross setjmps or any
 		     call, if this function receives a nonlocal

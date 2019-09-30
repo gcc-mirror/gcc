@@ -224,6 +224,8 @@ struct target_function_abi_info
      * crtl->abi is the ABI of the function that we are currently
        compiling to rtl.
 
+     * insn_callee_abi (INSN) is the ABI used by the target of call insn INSN.
+
      * eh_edge_abi is the "ABI" used when taking an EH edge from an
        exception-throwing statement to an exception handler.  Catching
        exceptions from calls can be treated as an abnormal return from
@@ -265,5 +267,6 @@ extern target_function_abi_info *this_target_function_abi_info;
 
 extern const predefined_function_abi &fntype_abi (const_tree);
 extern function_abi fndecl_abi (const_tree);
+extern function_abi insn_callee_abi (const rtx_insn *);
 
 #endif

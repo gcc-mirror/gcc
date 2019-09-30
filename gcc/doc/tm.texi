@@ -1905,6 +1905,17 @@ descriptor.  Targets only need to define this hook if they support
 interoperability between several ABIs in the same translation unit.
 @end deftypefn
 
+@deftypefn {Target Hook} {const predefined_function_abi &} TARGET_INSN_CALLEE_ABI (const rtx_insn *@var{insn})
+This hook returns a description of the ABI used by the target of
+call instruction @var{insn}; see the definition of
+@code{predefined_function_abi} for details of the ABI descriptor.
+Only the global function @code{insn_callee_abi} should call this hook
+directly.
+
+Targets only need to define this hook if they support
+interoperability between several ABIs in the same translation unit.
+@end deftypefn
+
 @cindex call-used register
 @cindex call-clobbered register
 @cindex call-saved register
@@ -1919,18 +1930,6 @@ mode but false for a 32-bit mode.
 
 The default implementation returns false, which is correct
 for targets that don't have partly call-clobbered registers.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS (rtx_insn *@var{insn}, HARD_REG_SET *@var{used_regs})
-This hook removes registers from the set of call-clobbered registers
- in @var{used_regs} if, contrary to the default rules, something guarantees
- that @samp{insn} preserves those registers.  For example, some targets
- support variant ABIs in which functions preserve more registers than
- normal functions would.  Removing those extra registers from @var{used_regs}
- can lead to better register allocation.
- 
- The default implementation does nothing, which is always safe.
- Defining the hook is purely an optimization.
 @end deftypefn
 
 @deftypefn {Target Hook} {rtx_insn *} TARGET_RETURN_CALL_WITH_MAX_CLOBBERS (rtx_insn *@var{call_1}, rtx_insn *@var{call_2})

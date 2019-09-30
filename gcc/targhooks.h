@@ -281,7 +281,5 @@ extern tree default_preferred_else_value (unsigned, tree, unsigned, tree *);
 extern bool default_have_speculation_safe_value (bool);
 extern bool speculation_safe_value_not_needed (bool);
 extern rtx default_speculation_safe_value (machine_mode, rtx, rtx, rtx);
-extern void default_remove_extra_call_preserved_regs (rtx_insn *,
-						      HARD_REG_SET *);
 
 #endif /* GCC_TARGHOOKS_H */

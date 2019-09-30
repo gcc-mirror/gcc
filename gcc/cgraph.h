@@ -1379,7 +1379,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   static cgraph_local_info *local_info (tree decl);
 
   /* Return local info for the compiled function.  */
-  static struct cgraph_rtl_info *rtl_info (tree);
+  static struct cgraph_rtl_info *rtl_info (const_tree);
 
   /* Return the cgraph node that has ASMNAME for its DECL_ASSEMBLER_NAME.
      Return NULL if there's no such node.  */

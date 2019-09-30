@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 #include "dumpfile.h"
 #include "calls.h"
-
+#include "function-abi.h"
 
 /* The set of hard registers in eliminables[i].from. */
 
@@ -3088,13 +3088,11 @@ df_get_call_refs (class df_collection_rec *collection_rec,
   bool is_sibling_call;
   unsigned int i;
   HARD_REG_SET defs_generated;
-  HARD_REG_SET fn_reg_set_usage;
 
   CLEAR_HARD_REG_SET (defs_generated);
   df_find_hard_reg_defs (PATTERN (insn_info->insn), &defs_generated);
   is_sibling_call = SIBLING_CALL_P (insn_info->insn);
-  get_call_reg_set_usage (insn_info->insn, &fn_reg_set_usage,
-			  regs_invalidated_by_call);
+  function_abi callee_abi = insn_callee_abi (insn_info->insn);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
@@ -3118,7 +3116,7 @@ df_get_call_refs (class df_collection_rec *collection_rec,
 			       NULL, bb, insn_info, DF_REF_REG_DEF, flags);
 	    }
 	}
-      else if (TEST_HARD_REG_BIT (fn_reg_set_usage, i)
+      else if (callee_abi.clobbers_full_reg_p (i)
 	       /* no clobbers for regs that are the result of the call */
 	       && !TEST_HARD_REG_BIT (defs_generated, i)
 	       && (!is_sibling_call

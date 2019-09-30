@@ -81,6 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "rtl-iter.h"
 #include "print-rtl.h"
+#include "function-abi.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data declarations.  */
@@ -230,7 +231,6 @@ static int alter_cond (rtx);
 #endif
 static int align_fuzz (rtx, rtx, int, unsigned);
 static void collect_fn_hard_reg_usage (void);
-static tree get_call_fndecl (rtx_insn *);
 
 /* Initialize data in final at the beginning of a compilation.  */
 
@@ -4994,7 +4994,16 @@ collect_fn_hard_reg_usage (void)
   if (!targetm.call_fusage_contains_non_callee_clobbers)
     return;
 
-  CLEAR_HARD_REG_SET (function_used_regs);
+  /* Be conservative - mark fixed and global registers as used.  */
+  function_used_regs = fixed_reg_set;
+
+#ifdef STACK_REGS
+  /* Handle STACK_REGS conservatively, since the df-framework does not
+     provide accurate information for them.  */
+
+  for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
+    SET_HARD_REG_BIT (function_used_regs, i);
+#endif
 
   for (insn = get_insns (); insn != NULL_RTX; insn = next_insn (insn))
     {
@@ -5005,96 +5014,23 @@ collect_fn_hard_reg_usage (void)
 
       if (CALL_P (insn)
 	  && !self_recursive_call_p (insn))
-	{
-	  if (!get_call_reg_set_usage (insn, &insn_used_regs,
-				       call_used_or_fixed_regs))
-	    return;
-
-	  function_used_regs |= insn_used_regs;
-	}
+	function_used_regs
+	  |= insn_callee_abi (insn).full_and_partial_reg_clobbers ();
 
       find_all_hard_reg_sets (insn, &insn_used_regs, false);
       function_used_regs |= insn_used_regs;
+
+      if (hard_reg_set_subset_p (crtl->abi->full_and_partial_reg_clobbers (),
+				 function_used_regs))
+	return;
     }
 
-  /* Be conservative - mark fixed and global registers as used.  */
-  function_used_regs |= fixed_reg_set;
-
-#ifdef STACK_REGS
-  /* Handle STACK_REGS conservatively, since the df-framework does not
-     provide accurate information for them.  */
-
-  for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
-    SET_HARD_REG_BIT (function_used_regs, i);
-#endif
-
-  /* The information we have gathered is only interesting if it exposes a
-     register from the call_used_regs that is not used in this function.  */
-  if (hard_reg_set_subset_p (call_used_or_fixed_regs, function_used_regs))
-    return;
+  /* Mask out fully-saved registers, so that they don't affect equality
+     comparisons between function_abis.  */
+  function_used_regs &= crtl->abi->full_and_partial_reg_clobbers ();
 
   node = cgraph_node::rtl_info (current_function_decl);
   gcc_assert (node != NULL);
 
   node->function_used_regs = function_used_regs;
-  node->function_used_regs_valid = 1;
-}
-
-/* Get the declaration of the function called by INSN.  */
-
-static tree
-get_call_fndecl (rtx_insn *insn)
-{
-  rtx note, datum;
-
-  note = find_reg_note (insn, REG_CALL_DECL, NULL_RTX);
-  if (note == NULL_RTX)
-    return NULL_TREE;
-
-  datum = XEXP (note, 0);
-  if (datum != NULL_RTX)
-    return SYMBOL_REF_DECL (datum);
-
-  return NULL_TREE;
-}
-
-/* Return the cgraph_rtl_info of the function called by INSN.  Returns NULL for
-   call targets that can be overwritten.  */
-
-static struct cgraph_rtl_info *
-get_call_cgraph_rtl_info (rtx_insn *insn)
-{
-  tree fndecl;
-
-  if (insn == NULL_RTX)
-    return NULL;
-
-  fndecl = get_call_fndecl (insn);
-  if (fndecl == NULL_TREE
-      || !decl_binds_to_current_def_p (fndecl))
-    return NULL;
-
-  return cgraph_node::rtl_info (fndecl);
-}
-
-/* Find hard registers used by function call instruction INSN, and return them
-   in REG_SET.  Return DEFAULT_SET in REG_SET if not found.  */
-
-bool
-get_call_reg_set_usage (rtx_insn *insn, HARD_REG_SET *reg_set,
-			HARD_REG_SET default_set)
-{
-  if (flag_ipa_ra)
-    {
-      struct cgraph_rtl_info *node = get_call_cgraph_rtl_info (insn);
-      if (node != NULL
-	  && node->function_used_regs_valid)
-	{
-	  *reg_set = node->function_used_regs & default_set;
-	  return true;
-	}
-    }
-  *reg_set = default_set;
-  targetm.remove_extra_call_preserved_regs (insn, reg_set);
-  return false;
 }
