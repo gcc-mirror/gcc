@@ -6686,7 +6686,6 @@ frv_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
     case FDPIC_REGS:
     case FDPIC_FPTR_REGS:
     case FDPIC_CALL_REGS:
-
       switch (to)
 	{
 	default:
@@ -6700,7 +6699,6 @@ frv_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 	case FDPIC_REGS:
 	case FDPIC_FPTR_REGS:
 	case FDPIC_CALL_REGS:
-
 	  return LOW_COST;
 
 	case FPR_REGS:
@@ -6711,6 +6709,7 @@ frv_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 	case SPR_REGS:
 	  return LOW_COST;
 	}
+      break;
 
     case QUAD_FPR_REGS:
       switch (to)
@@ -6734,6 +6733,7 @@ frv_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 	case QUAD_FPR_REGS:
 	  return LOW_COST;
 	}
+      break;
 
     case LCR_REG:
     case LR_REG:
@@ -6751,9 +6751,9 @@ frv_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 	case FDPIC_REGS:
 	case FDPIC_FPTR_REGS:
 	case FDPIC_CALL_REGS:
-
 	  return MEDIUM_COST;
 	}
+      break;
 
     case QUAD_ACC_REGS:
     case ACCG_REGS:
@@ -6764,8 +6764,8 @@ frv_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 
 	case QUAD_FPR_REGS:
 	  return MEDIUM_COST;
-
 	}
+      break;
     }
 
   return HIGH_COST;
