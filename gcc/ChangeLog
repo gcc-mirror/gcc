@@ -1,5 +1,11 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* shrink-wrap.c: Include function-abi.h.
+	(requires_stack_frame_p): Use crtl->abi to test whether the
+	current function can use a register without saving it first.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* sel-sched-ir.h (_def::crosses_call): Replace with...
 	(_def::crossed_call_abis): ..this new field.
 	(def_list_add): Take a mask of ABIs instead of a crosses_call
