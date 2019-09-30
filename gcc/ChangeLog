@@ -1,5 +1,69 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target.def (insn_callee_abi): New hook.
+	(remove_extra_call_preserved_regs): Delete.
+	* doc/tm.texi.in (TARGET_INSN_CALLEE_ABI): New macro.
+	(TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS): Delete.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_remove_extra_call_preserved_regs): Delete.
+	* targhooks.c (default_remove_extra_call_preserved_regs): Delete.
+	* config/aarch64/aarch64.c (aarch64_simd_call_p): Constify the
+	insn argument.
+	(aarch64_remove_extra_call_preserved_regs): Delete.
+	(aarch64_insn_callee_abi): New function.
+	(TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS): Delete.
+	(TARGET_INSN_CALLEE_ABI): New macro.
+	* rtl.h (get_call_fndecl): Declare.
+	(cgraph_rtl_info): Fix formatting.  Tweak comment for
+	function_used_regs.  Remove function_used_regs_valid.
+	* rtlanal.c (get_call_fndecl): Moved from final.c
+	* function-abi.h (insn_callee_abi): Declare.
+	(target_function_abi_info): Mention insn_callee_abi.
+	* function-abi.cc (fndecl_abi): Handle flag_ipa_ra in a similar
+	way to get_call_reg_set_usage did.
+	(insn_callee_abi): New function.
+	* regs.h (get_call_reg_set_usage): Delete.
+	* final.c: Include function-abi.h.
+	(collect_fn_hard_reg_usage): Add fixed and stack registers to
+	function_used_regs before the main loop rather than afterwards.
+	Use insn_callee_abi instead of get_call_reg_set_usage.  Exit early
+	if function_used_regs ends up not being useful.
+	(get_call_fndecl): Move to rtlanal.c
+	(get_call_cgraph_rtl_info, get_call_reg_set_usage): Delete.
+	* caller-save.c: Include function-abi.h.
+	(setup_save_areas, save_call_clobbered_regs): Use insn_callee_abi
+	instead of get_call_reg_set_usage.
+	* cfgcleanup.c: Include function-abi.h.
+	(old_insns_match_p): Use insn_callee_abi instead of
+	get_call_reg_set_usage.
+	* cgraph.h (cgraph_node::rtl_info): Take a const_tree instead of
+	a tree.
+	* cgraph.c (cgraph_node::rtl_info): Likewise.  Initialize
+	function_used_regs.
+	* df-scan.c: Include function-abi.h.
+	(df_get_call_refs): Use insn_callee_abi instead of
+	get_call_reg_set_usage.
+	* ira-lives.c: Include function-abi.h.
+	(process_bb_node_lives): Use insn_callee_abi instead of
+	get_call_reg_set_usage.
+	* lra-lives.c: Include function-abi.h.
+	(process_bb_lives): Use insn_callee_abi instead of
+	get_call_reg_set_usage.
+	* postreload.c: Include function-abi.h.
+	(reload_combine): Use insn_callee_abi instead of
+	get_call_reg_set_usage.
+	* regcprop.c: Include function-abi.h.
+	(copyprop_hardreg_forward_1): Use insn_callee_abi instead of
+	get_call_reg_set_usage.
+	* resource.c: Include function-abi.h.
+	(mark_set_resources, mark_target_live_regs): Use insn_callee_abi
+	instead of get_call_reg_set_usage.
+	* var-tracking.c: Include function-abi.h.
+	(dataflow_set_clear_at_call): Use insn_callee_abi instead of
+	get_call_reg_set_usage.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target.def (fntype_abi): New target hook.
 	* doc/tm.texi.in (TARGET_FNTYPE_ABI): Likewise.
 	* doc/tm.texi: Regenerate.

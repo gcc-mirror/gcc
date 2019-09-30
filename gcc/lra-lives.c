@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "sparseset.h"
 #include "lra-int.h"
 #include "target.h"
+#include "function-abi.h"
 
 /* Program points are enumerated by numbers from range
    0..LRA_LIVE_MAX_POINT-1.  There are approximately two times more
@@ -931,9 +932,11 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	    last_call_used_reg_set = call_used_or_fixed_regs;
 	  else
 	    {
-	      HARD_REG_SET this_call_used_reg_set;
-	      get_call_reg_set_usage (curr_insn, &this_call_used_reg_set,
-				      call_used_or_fixed_regs);
+	      HARD_REG_SET this_call_used_reg_set
+		= insn_callee_abi (curr_insn).full_reg_clobbers ();
+	      /* ??? This preserves traditional behavior; it might not
+		 be needed.  */
+	      this_call_used_reg_set |= fixed_reg_set;
 
 	      bool flush = (! hard_reg_set_empty_p (last_call_used_reg_set)
 			    && (last_call_used_reg_set

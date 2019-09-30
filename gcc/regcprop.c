@@ -35,6 +35,7 @@
 #include "rtl-iter.h"
 #include "cfgrtl.h"
 #include "target.h"
+#include "function-abi.h"
 
 /* The following code does forward propagation of hard register copies.
    The object is to eliminate as many dependencies as possible, so that
@@ -1035,7 +1036,6 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	  unsigned int set_nregs = 0;
 	  unsigned int regno;
 	  rtx exp;
-	  HARD_REG_SET regs_invalidated_by_this_call;
 
 	  for (exp = CALL_INSN_FUNCTION_USAGE (insn); exp; exp = XEXP (exp, 1))
 	    {
@@ -1053,11 +1053,9 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		}
 	    }
 
-	  get_call_reg_set_usage (insn,
-				  &regs_invalidated_by_this_call,
-				  regs_invalidated_by_call);
+	  function_abi callee_abi = insn_callee_abi (insn);
 	  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	    if ((TEST_HARD_REG_BIT (regs_invalidated_by_this_call, regno)
+	    if ((callee_abi.clobbers_full_reg_p (regno)
 		 || (targetm.hard_regno_call_part_clobbered
 		     (insn, regno, vd->e[regno].mode)))
 		&& (regno < set_regno || regno >= set_regno + set_nregs))

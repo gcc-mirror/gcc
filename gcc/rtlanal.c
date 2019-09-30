@@ -822,6 +822,24 @@ get_call_rtx_from (const rtx_insn *insn)
     return x;
   return NULL_RTX;
 }
+
+/* Get the declaration of the function called by INSN.  */
+
+tree
+get_call_fndecl (const rtx_insn *insn)
+{
+  rtx note, datum;
+
+  note = find_reg_note (insn, REG_CALL_DECL, NULL_RTX);
+  if (note == NULL_RTX)
+    return NULL_TREE;
+
+  datum = XEXP (note, 0);
+  if (datum != NULL_RTX)
+    return SYMBOL_REF_DECL (datum);
+
+  return NULL_TREE;
+}
 
 /* Return the value of the integer term in X, if one is apparent;
    otherwise return 0.

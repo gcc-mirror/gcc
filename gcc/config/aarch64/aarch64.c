@@ -1877,7 +1877,7 @@ aarch64_reg_save_mode (tree fndecl, unsigned regno)
    the function.  */
 
 static bool
-aarch64_simd_call_p (rtx_insn *insn)
+aarch64_simd_call_p (const rtx_insn *insn)
 {
   rtx symbol;
   rtx call;
@@ -1895,20 +1895,14 @@ aarch64_simd_call_p (rtx_insn *insn)
   return aarch64_simd_decl_p (fndecl);
 }
 
-/* Implement TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS.  If INSN calls
-   a function that uses the SIMD ABI, take advantage of the extra
-   call-preserved registers that the ABI provides.  */
+/* Implement TARGET_INSN_CALLEE_ABI.  */
 
-void
-aarch64_remove_extra_call_preserved_regs (rtx_insn *insn,
-					  HARD_REG_SET *return_set)
+const predefined_function_abi &
+aarch64_insn_callee_abi (const rtx_insn *insn)
 {
   if (aarch64_simd_call_p (insn))
-    {
-      for (int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	if (FP_SIMD_SAVED_REGNUM_P (regno))
-	  CLEAR_HARD_REG_BIT (*return_set, regno);
-    }
+    return aarch64_simd_abi ();
+  return default_function_abi;
 }
 
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  The callee only saves
@@ -21004,9 +20998,8 @@ aarch64_libgcc_floating_mode_supported_p
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
   aarch64_hard_regno_call_part_clobbered
 
-#undef TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS
-#define TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS \
-  aarch64_remove_extra_call_preserved_regs
+#undef TARGET_INSN_CALLEE_ABI
+#define TARGET_INSN_CALLEE_ABI aarch64_insn_callee_abi
 
 #undef TARGET_RETURN_CALL_WITH_MAX_CLOBBERS
 #define TARGET_RETURN_CALL_WITH_MAX_CLOBBERS \

@@ -1839,7 +1839,7 @@ cgraph_node::local_info (tree decl)
 /* Return local info for the compiled function.  */
 
 cgraph_rtl_info *
-cgraph_node::rtl_info (tree decl)
+cgraph_node::rtl_info (const_tree decl)
 {
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
   cgraph_node *node = get (decl);
@@ -1854,7 +1854,10 @@ cgraph_node::rtl_info (tree decl)
     return NULL;
   /* Allocate if it doesn't exist.  */
   if (node->rtl == NULL)
-    node->rtl = ggc_cleared_alloc<cgraph_rtl_info> ();
+    {
+      node->rtl = ggc_cleared_alloc<cgraph_rtl_info> ();
+      node->rtl->function_used_regs = reg_class_contents[ALL_REGS];
+    }
   return node->rtl;
 }
 

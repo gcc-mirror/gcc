@@ -4952,6 +4952,19 @@ interoperability between several ABIs in the same translation unit.",
  const predefined_function_abi &, (const_tree type),
  NULL)
 
+DEFHOOK
+(insn_callee_abi,
+ "This hook returns a description of the ABI used by the target of\n\
+call instruction @var{insn}; see the definition of\n\
+@code{predefined_function_abi} for details of the ABI descriptor.\n\
+Only the global function @code{insn_callee_abi} should call this hook\n\
+directly.\n\
+\n\
+Targets only need to define this hook if they support\n\
+interoperability between several ABIs in the same translation unit.",
+ const predefined_function_abi &, (const rtx_insn *insn),
+ NULL)
+
 /* ??? Documenting this hook requires a GFDL license grant.  */
 DEFHOOK_UNDOC
 (internal_arg_pointer,
@@ -5833,20 +5846,6 @@ DEFHOOK
  "This hook returns name of multilib ABI name.",
  const char *, (void),
  hook_constcharptr_void_null)
-
-DEFHOOK
-(remove_extra_call_preserved_regs,
- "This hook removes registers from the set of call-clobbered registers\n\
- in @var{used_regs} if, contrary to the default rules, something guarantees\n\
- that @samp{insn} preserves those registers.  For example, some targets\n\
- support variant ABIs in which functions preserve more registers than\n\
- normal functions would.  Removing those extra registers from @var{used_regs}\n\
- can lead to better register allocation.\n\
- \n\
- The default implementation does nothing, which is always safe.\n\
- Defining the hook is purely an optimization.",
- void, (rtx_insn *insn, HARD_REG_SET *used_regs),
- default_remove_extra_call_preserved_regs)
 
 /* Return the smallest number of different values for which it is best to
    use a jump-table instead of a tree of conditional branches.  */

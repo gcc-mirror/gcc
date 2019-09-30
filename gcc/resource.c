@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "resource.h"
 #include "insn-attr.h"
 #include "params.h"
+#include "function-abi.h"
 
 /* This structure is used to record liveness information at the targets or
    fallthrough insns of branches.  We will most likely need the information
@@ -662,12 +663,10 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 	{
 	  rtx_call_insn *call_insn = as_a <rtx_call_insn *> (x);
 	  rtx link;
-	  HARD_REG_SET regs;
 
 	  res->cc = res->memory = 1;
 
-	  get_call_reg_set_usage (call_insn, &regs, regs_invalidated_by_call);
-	  res->regs |= regs;
+	  res->regs |= insn_callee_abi (call_insn).full_reg_clobbers ();
 
 	  for (link = CALL_INSN_FUNCTION_USAGE (call_insn);
 	       link; link = XEXP (link, 1))
@@ -1038,10 +1037,8 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 		 predicated instruction, or if the CALL is NORETURN.  */
 	      if (GET_CODE (PATTERN (real_insn)) != COND_EXEC)
 		{
-		  HARD_REG_SET regs_invalidated_by_this_call;
-		  get_call_reg_set_usage (real_insn,
-					  &regs_invalidated_by_this_call,
-					  regs_invalidated_by_call);
+		  HARD_REG_SET regs_invalidated_by_this_call
+		    = insn_callee_abi (real_insn).full_reg_clobbers ();
 		  /* CALL clobbers all call-used regs that aren't fixed except
 		     sp, ap, and fp.  Do this before setting the result of the
 		     call live.  */

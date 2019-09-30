@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cselib.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
+#include "function-abi.h"
 
 static int reload_cse_noop_set_p (rtx);
 static bool reload_cse_simplify (rtx_insn *, rtx);
@@ -1330,9 +1331,10 @@ reload_combine (void)
       if (CALL_P (insn))
 	{
 	  rtx link;
-	  HARD_REG_SET used_regs;
-
-	  get_call_reg_set_usage (insn, &used_regs, call_used_or_fixed_regs);
+	  HARD_REG_SET used_regs = insn_callee_abi (insn).full_reg_clobbers ();
+	  /* ??? This preserves traditional behavior; it might not be
+	     needed.  */
+	  used_regs |= fixed_reg_set;
 
 	  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
 	    if (TEST_HARD_REG_BIT (used_regs, r))
