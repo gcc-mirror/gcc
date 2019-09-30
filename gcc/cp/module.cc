@@ -17011,6 +17011,7 @@ set_instantiating_module (tree decl)
     return;
 
   retrofit_lang_decl (decl);
+  // FIXME: Perhaps this is always module purview in a module?
   DECL_MODULE_OWNER (decl) = module_purview_p () ? MODULE_PURVIEW : MODULE_NONE;
 }
 
@@ -17040,40 +17041,6 @@ set_originating_module (tree decl)
   
   // FIXME: Check ill-formed linkage
   DECL_MODULE_EXPORT_P (decl) = true;
-}
-
-/* Set the module EXPORT and OWNER fields on explicit DECL.  */
-
-void
-set_module_owner (tree decl)
-{
-  if (!modules_p ())
-    return;
-
-  set_instantiating_module (decl);
-
-  int use_tpl = -1;
-  node_template_info (decl, use_tpl);
-  if (use_tpl > 0)
-    /* Some kind of specialization.  */
-    return;
-
-  if (!DECL_NAMESPACE_SCOPE_P (decl))
-    return;
-
-  gcc_checking_assert (STRIP_TEMPLATE (decl)
-		       == get_instantiating_module_decl (decl));
-
-  // FIXME: Check ill-formed linkage
-
-  if (module_purview_p ())
-    {
-      if (module_exporting_p ())
-	{
-	  gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL);
-	  DECL_MODULE_EXPORT_P (decl) = true;
-	}
-    }
 }
 
 /* Create the flat name string.  It is simplest to have it handy.  */

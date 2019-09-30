@@ -1917,8 +1917,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  gcc_checking_assert (!get_originating_module (olddecl));
 	  if (!(global_purview_p () || not_module_p ()))
 	    error ("declaration %qD conflicts with builtin", newdecl);
-	  // FIXME: take the bits from newdecl
-	  set_module_owner (olddecl);
+	  else
+	    DECL_MODULE_EXPORT_P (olddecl) = DECL_MODULE_EXPORT_P (newdecl);
 	}
       else
 	{
@@ -2159,6 +2159,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		DECL_CONTEXT (parm) = old_result;
 	    }
 	}
+
+      DECL_MODULE_OWNER (olddecl)
+	= DECL_MODULE_OWNER (old_result)
+	= DECL_MODULE_OWNER (newdecl);
 
       return olddecl;
     }
@@ -2679,6 +2683,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
     TREE_USED (newdecl) = 1;
   else if (TREE_USED (newdecl))
     TREE_USED (olddecl) = 1;
+
   if (VAR_P (newdecl))
     {
       if (DECL_READ_P (olddecl))
@@ -2686,6 +2691,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       else if (DECL_READ_P (newdecl))
 	DECL_READ_P (olddecl) = 1;
     }
+
   if (DECL_PRESERVE_P (olddecl))
     DECL_PRESERVE_P (newdecl) = 1;
   else if (DECL_PRESERVE_P (newdecl))

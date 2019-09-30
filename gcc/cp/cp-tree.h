@@ -6890,17 +6890,17 @@ extern module_state *get_module (tree name, module_state *parent = NULL,
 extern void module_preprocess (mkdeps *, module_state *, int is_module);
 extern bool module_may_redeclare (unsigned);
 
+/* Where the namespace-scope decl was originally declared.  */
 extern void set_originating_module (tree);
-extern void set_instantiating_module (tree);
-
 extern tree get_originating_module_decl (tree) ATTRIBUTE_PURE;
 extern unsigned get_originating_module (tree,
 					bool for_mangle = false) ATTRIBUTE_PURE;
 
+/* Where current instance of the decl got declared/defined/instantiated.  */
+extern void set_instantiating_module (tree);
 extern tree get_instantiating_module_decl (tree) ATTRIBUTE_PURE;
 extern unsigned get_instantiating_module (tree) ATTRIBUTE_PURE;
 
-extern void set_module_owner (tree);
 extern void mangle_module (int m);
 extern void mangle_module_fini ();
 extern bool module_normal_import_p (unsigned m);
