@@ -1,5 +1,19 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* reload.c: Include function-abi.h.
+	(find_equiv_reg): Use clobbers_reg_p to test whether either
+	of the equivalent registers is clobbered by a call.
+	* reload1.c: Include function-abi.h.
+	(reg_reloaded_call_part_clobbered): Delete.
+	(reload): Use crtl->abi to test which registers would need
+	saving in the prologue before use.
+	(find_reg): Likewise.
+	(emit_reload_insns): Remove code for reg_reloaded_call_part_clobbered.
+	(reload_as_needed): Likewise.  Use full_and_partial_reg_clobbers
+	instead of call_used_or_fixed_regs | reg_reloaded_call_part_clobbered.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* regrename.h (du_head::call_clobber_mask): New field.
 	(du_head::need_caller_save_reg): Replace with...
 	(du_head::call_abis): ...this new field.
