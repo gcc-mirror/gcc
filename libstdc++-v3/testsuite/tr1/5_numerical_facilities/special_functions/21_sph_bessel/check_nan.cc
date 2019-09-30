@@ -1,5 +1,6 @@
 // { dg-require-c-std "" }
 // { dg-add-options ieee }
+// { dg-prune-output ".*warning: tgammal has lower than advertised precision" }
 
 // 2007-01-10  Edward Smith-Rowland <3dw4rd@verizon.net>
 //
