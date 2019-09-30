@@ -1,5 +1,16 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* rtlanal.c: Include function-abi.h.
+	(reg_set_p): Use insn_callee_abi to get the ABI of the called
+	function and clobbers_reg_p to test whether the register
+	is call-clobbered.
+	(find_all_hard_reg_sets): When implicit is true, use insn_callee_abi
+	to get the ABI of the called function and full_reg_clobbers to
+	get the set of fully call-clobbered registers.  Warn about the
+	pitfalls of using this mode.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* reload.c: Include function-abi.h.
 	(find_equiv_reg): Use clobbers_reg_p to test whether either
 	of the equivalent registers is clobbered by a call.
