@@ -1,5 +1,32 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* sel-sched-ir.h (_def::crosses_call): Replace with...
+	(_def::crossed_call_abis): ..this new field.
+	(def_list_add): Take a mask of ABIs instead of a crosses_call
+	boolean.
+	* sel-sched-ir.c (def_list_add): Likewise.  Update initialization
+	of _def accordingly.
+	* sel-sched.c: Include function-abi.h.
+	(hard_regs_data::regs_for_call_clobbered): Delete.
+	(reg_rename::crosses_call): Replace with...
+	(reg_rename::crossed_call_abis): ...this new field.
+	(fur_static_params::crosses_call): Replace with...
+	(fur_static_params::crossed_call_abis): ...this new field.
+	(init_regs_for_mode): Don't initialize sel_hrd.regs_for_call_clobbered.
+	(init_hard_regs_data): Use crtl->abi to test which registers the
+	current function would need to save before it uses them.
+	(mark_unavailable_hard_regs): Update handling of call-clobbered
+	registers, using call_clobbers_in_region to find out which registers
+	might be call-clobbered (but without taking -fipa-ra into account
+	for now).  Remove separate handling of partially call-clobbered
+	registers.
+	(verify_target_availability): Use crossed_call_abis instead of
+	crosses_call.
+	(get_spec_check_type_for_insn, find_used_regs): Likewise.
+	(fur_orig_expr_found, fur_on_enter, fur_orig_expr_not_found): Likewise.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* sched-deps.c (deps_analyze_insn): Use the ABI of the target
 	function to test whether a register is fully or partly clobbered.
 
