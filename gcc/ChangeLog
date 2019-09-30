@@ -1,3 +1,56 @@
+2019-09-30  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/predicates.md (pcrel_address): Delete predicate.
+	(pcrel_local_address): Replace pcrel_address predicate, use the
+	new function address_to_insn_form.
+	(pcrel_external_address): Replace with new implementation using
+	address_to_insn_form..
+	(prefixed_mem_operand): Delete predicate which is now unused.
+	(pcrel_external_mem_operand): Delete predicate which is now
+	unused.
+	* config/rs6000/rs6000-protos.h (enum insn_form): New
+	enumeration.
+	(enum non_prefixed): New enumeration.
+	(address_to_insn_form): New declaration.
+	(prefixed_load_p): New declaration.
+	(prefixed_store_p): New declaration.
+	(prefixed_paddi_p): New declaration.
+	(rs6000_asm_output_opcode): New declaration.
+	(rs6000_final_prescan_insn): Move declaration and update calling
+	signature.
+	(address_is_prefixed): New helper inline function.
+	* config/rs6000/rs6000.c(print_operand_address): Check for either
+	PC-relative local symbols or PC-relative external symbols.
+	(rs6000_emit_move): Support loading PC-relative addresses.
+	(mode_supports_prefixed_address_p): Delete, no longer used.
+	(rs6000_prefixed_address_mode_p): Delete, no longer used.
+	(address_to_insn_form): New function to decode an address format.
+	(reg_to_non_prefixed): New function to identify what the
+	non-prefixed memory instruction format is for a register.
+	(prefixed_load_p): New function to identify prefixed loads.
+	(prefixed_store_p): New function to identify prefixed stores.
+	(prefixed_paddi_p): New function to identify prefixed load
+	immediates.
+	(next_insn_prefixed_p): New static state variable.
+	(rs6000_final_prescan_insn): New function to determine if an insn
+	uses a prefixed instruction.
+	(rs6000_asm_output_opcode): New function to emit 'p' in front of a
+	prefixed instruction.
+	* config/rs6000/rs6000.h (FINAL_PRESCAN_INSN): New target hook.
+	(ASM_OUTPUT_OPCODE): New target hook.
+	* config/rs6000/rs6000.md (prefixed): New insn attribute for
+	prefixed instructions.
+	(prefixed_length): New insn attribute for the size of prefixed
+	instructions.
+	(non_prefixed_length): New insn attribute for the size of
+	non-prefixed instructions.
+	(pcrel_local_addr): New insn to load up a local PC-relative
+	address.
+	(pcrel_extern_addr): New insn to load up an external PC-relative
+	address.
+	(mov<mode>_64bit_dm): Split the alternatives for loading 0.0 to a
+	GPR and loading a 128-bit floating point type to a GPR.
+
 2019-09-30  Richard Biener  <rguenther@suse.de>
 
 	* gimple.c (gimple_get_lhs): For PHIs return the result.
