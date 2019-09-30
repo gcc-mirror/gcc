@@ -1,5 +1,13 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* hard-reg-set.h (regs_invalidated_by_call): Only define if
+	IN_TARGET_CODE.
+	(call_used_or_fixed_regs): Likewise.
+	(call_used_or_fixed_reg_p): Likewise.
+	* reginfo.c (regs_invalidated_by_call): New macro.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* shrink-wrap.c: Include function-abi.h.
 	(requires_stack_frame_p): Use crtl->abi to test whether the
 	current function can use a register without saving it first.
