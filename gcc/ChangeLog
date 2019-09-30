@@ -1,5 +1,23 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* df-problems.c: Include regs.h and function-abi.h.
+	(df_rd_problem_data): Rename sparse_invalidated_by_call to
+	sparse_invalidated_by_eh and dense_invalidated_by_call to
+	dense_invalidated_by_eh.
+	(df_print_bb_index): Update accordingly.
+	(df_rd_alloc, df_rd_start_dump, df_rd_confluence_n): Likewise.
+	(df_lr_confluence_n): Use eh_edge_abi to get the set of registers
+	that are clobbered by an EH edge.  Clobber partially-clobbered
+	registers as well as fully-clobbered ones.
+	(df_md_confluence_n): Likewise.
+	(df_rd_local_compute): Likewise.  Update for changes to
+	df_rd_problem_data.
+	* df-scan.c (df_scan_start_dump): Use eh_edge_abi to get the set
+	of registers that are clobbered by an EH edge.  Includde partially-
+	clobbered registers as well as fully-clobbered ones.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* cselib.c (cselib_process_insn): If we know what mode a
 	register was set in, check whether it is clobbered in that
 	mode by a call.  Only fall back to reg_raw_mode if that fails.

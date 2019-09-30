@@ -312,8 +312,9 @@ df_scan_start_dump (FILE *file ATTRIBUTE_UNUSED)
   basic_block bb;
   rtx_insn *insn;
 
-  fprintf (file, ";;  invalidated by call \t");
-  df_print_regset (file, bitmap_view<HARD_REG_SET> (regs_invalidated_by_call));
+  fprintf (file, ";;  fully invalidated by EH \t");
+  df_print_regset
+    (file, bitmap_view<HARD_REG_SET> (eh_edge_abi.full_reg_clobbers ()));
   fprintf (file, ";;  hardware regs used \t");
   df_print_regset (file, &df->hardware_regs_used);
   fprintf (file, ";;  regular block artificial uses \t");
