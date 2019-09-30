@@ -1136,7 +1136,8 @@ reload_combine_recognize_pattern (rtx_insn *insn)
 	      if (TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS], i)
 		  && reg_state[i].use_index == RELOAD_COMBINE_MAX_USES
 		  && reg_state[i].store_ruid <= reg_state[regno].use_ruid
-		  && (call_used_or_fixed_reg_p (i) || df_regs_ever_live_p (i))
+		  && (crtl->abi->clobbers_full_reg_p (i)
+		      || df_regs_ever_live_p (i))
 		  && (!frame_pointer_needed || i != HARD_FRAME_POINTER_REGNUM)
 		  && !fixed_regs[i] && !global_regs[i]
 		  && hard_regno_nregs (i, GET_MODE (reg)) == 1
@@ -1332,9 +1333,6 @@ reload_combine (void)
 	{
 	  rtx link;
 	  HARD_REG_SET used_regs = insn_callee_abi (insn).full_reg_clobbers ();
-	  /* ??? This preserves traditional behavior; it might not be
-	     needed.  */
-	  used_regs |= fixed_reg_set;
 
 	  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
 	    if (TEST_HARD_REG_BIT (used_regs, r))
@@ -2126,12 +2124,13 @@ reload_cse_move2add (rtx_insn *first)
 	 unknown values.  */
       if (CALL_P (insn))
 	{
+	  function_abi callee_abi = insn_callee_abi (insn);
 	  for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; i--)
-	    {
-	      if (call_used_or_fixed_reg_p (i))
-		/* Reset the information about this register.  */
-		reg_mode[i] = VOIDmode;
-	    }
+	    if (reg_mode[i] != VOIDmode
+		&& reg_mode[i] != BLKmode
+		&& callee_abi.clobbers_reg_p (reg_mode[i], i))
+	      /* Reset the information about this register.  */
+	      reg_mode[i] = VOIDmode;
 	}
     }
   return changed;
