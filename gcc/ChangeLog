@@ -1,5 +1,15 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* function-abi.h (function_abi_aggregator): New class.
+	* function-abi.cc (function_abi_aggregator::caller_save_regs): New
+	function.
+	* ira.c (update_equiv_regs_prescan): New function.  Call
+	set_paradoxical_subreg here rather than...
+	(update_equiv_regs): ...here.
+	(ira): Call update_equiv_regs_prescan.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* hard-reg-set.h (regs_invalidated_by_call): Only define if
 	IN_TARGET_CODE.
 	(call_used_or_fixed_regs): Likewise.
