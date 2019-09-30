@@ -160,6 +160,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "gcse.h"
 #include "gcse-common.h"
+#include "function-abi.h"
 
 /* We support GCSE via Partial Redundancy Elimination.  PRE optimizations
    are a superset of those done by classic GCSE.
@@ -1528,8 +1529,13 @@ compute_hash_table_work (struct gcse_hash_table_d *table)
 	  if (CALL_P (insn))
 	    {
 	      hard_reg_set_iterator hrsi;
-	      EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call,
-					      0, regno, hrsi)
+
+	      /* We don't track modes of hard registers, so we need
+		 to be conservative and assume that partial kills
+		 are full kills.  */
+	      HARD_REG_SET callee_clobbers
+		= insn_callee_abi (insn).full_and_partial_reg_clobbers ();
+	      EXECUTE_IF_SET_IN_HARD_REG_SET (callee_clobbers, 0, regno, hrsi)
 		record_last_reg_set_info (insn, regno);
 
 	      if (! RTL_CONST_OR_PURE_CALL_P (insn)
