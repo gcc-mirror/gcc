@@ -1,5 +1,13 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* caller-save.c (setup_save_areas): Remove redundant |s of
+	fixed_reg_set.
+	(save_call_clobbered_regs): Likewise.  Use the call ABI rather
+	than call_used_or_fixed_regs to decide whether a REG_RETURNED
+	value is useful.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* rtl.h (predefined_function_abi): Declare.
 	(choose_hard_reg_mode): Take a pointer to a predefined_function_abi
 	instead of a boolean call_save flag.
