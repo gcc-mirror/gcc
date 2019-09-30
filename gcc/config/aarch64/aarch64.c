@@ -74,6 +74,7 @@
 #include "rtx-vector-builder.h"
 #include "intl.h"
 #include "expmed.h"
+#include "function-abi.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -1365,6 +1366,24 @@ svpattern_token (enum aarch64_svpattern pattern)
   gcc_unreachable ();
 }
 
+/* Return the descriptor of the SIMD ABI.  */
+
+static const predefined_function_abi &
+aarch64_simd_abi (void)
+{
+  predefined_function_abi &simd_abi = function_abis[ARM_PCS_SIMD];
+  if (!simd_abi.initialized_p ())
+    {
+      HARD_REG_SET full_reg_clobbers
+	= default_function_abi.full_reg_clobbers ();
+      for (int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	if (FP_SIMD_SAVED_REGNUM_P (regno))
+	  CLEAR_HARD_REG_BIT (full_reg_clobbers, regno);
+      simd_abi.initialize (ARM_PCS_SIMD, full_reg_clobbers);
+    }
+  return simd_abi;
+}
+
 /* Generate code to enable conditional branches in functions over 1 MiB.  */
 const char *
 aarch64_gen_far_branch (rtx * operands, int pos_label, const char * dest,
@@ -1808,6 +1827,16 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
     }
 
   return false;
+}
+
+/* Implement TARGET_FNTYPE_ABI.  */
+
+static const predefined_function_abi &
+aarch64_fntype_abi (const_tree fntype)
+{
+  if (lookup_attribute ("aarch64_vector_pcs", TYPE_ATTRIBUTES (fntype)))
+    return aarch64_simd_abi ();
+  return default_function_abi;
 }
 
 /* Return true if this is a definition of a vectorized simd function.  */
@@ -21023,6 +21052,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_GET_MULTILIB_ABI_NAME
 #define TARGET_GET_MULTILIB_ABI_NAME aarch64_get_multilib_abi_name
+
+#undef TARGET_FNTYPE_ABI
+#define TARGET_FNTYPE_ABI aarch64_fntype_abi
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

@@ -1898,6 +1898,16 @@ must be defined.  Modern ports should define @code{CALL_REALLY_USED_REGISTERS}.
 @cindex call-used register
 @cindex call-clobbered register
 @cindex call-saved register
+@deftypefn {Target Hook} {const predefined_function_abi &} TARGET_FNTYPE_ABI (const_tree @var{type})
+Return the ABI used by a function with type @var{type}; see the
+definition of @code{predefined_function_abi} for details of the ABI
+descriptor.  Targets only need to define this hook if they support
+interoperability between several ABIs in the same translation unit.
+@end deftypefn
+
+@cindex call-used register
+@cindex call-clobbered register
+@cindex call-saved register
 @deftypefn {Target Hook} bool TARGET_HARD_REGNO_CALL_PART_CLOBBERED (rtx_insn *@var{insn}, unsigned int @var{regno}, machine_mode @var{mode})
 This hook should return true if @var{regno} is partly call-saved and
 partly call-clobbered, and if a value of mode @var{mode} would be partly

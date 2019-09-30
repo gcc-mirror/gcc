@@ -152,6 +152,9 @@ class _stmt_vec_info;
 /* This is defined in calls.h.  */
 class function_arg_info;
 
+/* This is defined in function-abi.h.  */
+class predefined_function_abi;
+
 /* These are defined in tree-vect-stmts.c.  */
 extern tree stmt_vectype (class _stmt_vec_info *);
 extern bool stmt_in_inner_loop_p (class _stmt_vec_info *);

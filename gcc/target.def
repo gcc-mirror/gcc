@@ -4943,6 +4943,15 @@ If this hook is not defined, then FUNCTION_VALUE_REGNO_P will be used.",
  bool, (const unsigned int regno),
  default_function_value_regno_p)
 
+DEFHOOK
+(fntype_abi,
+ "Return the ABI used by a function with type @var{type}; see the\n\
+definition of @code{predefined_function_abi} for details of the ABI\n\
+descriptor.  Targets only need to define this hook if they support\n\
+interoperability between several ABIs in the same translation unit.",
+ const predefined_function_abi &, (const_tree type),
+ NULL)
+
 /* ??? Documenting this hook requires a GFDL license grant.  */
 DEFHOOK_UNDOC
 (internal_arg_pointer,
