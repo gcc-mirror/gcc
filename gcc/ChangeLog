@@ -1,5 +1,11 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* recog.c: Include function-abi.h.
+	(peep2_find_free_register): Use crtl->abi when deciding whether
+	a register is free for use after RA.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* postreload-gcse.c: Include regs.h and function-abi.h.
 	(record_opr_changes): Use insn_callee_abi to get the ABI of the
 	call insn target.  Conservatively assume that partially-clobbered
