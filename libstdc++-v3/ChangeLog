@@ -1,5 +1,12 @@
 2019-09-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/span (span(element_type(&)[N]))
+	(span(array<value_type, N>&), span(const array<value_type, N>&)):
+	Deduce array element type to allow safe const conversions (LWG 3255).
+	[!_GLIBCXX_P1394] (span(Container&), span(const Container&)): Use
+	remove_cv_t on arguments to __is_std_span and __is_std_array.
+	* testsuite/23_containers/span/lwg3255.cc: New test.
+
 	PR libstdc++/77936
 	* include/parallel/checkers.h (__is_sorted): Remove unused variable.
 
