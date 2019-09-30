@@ -95,6 +95,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "i386-builtins.h"
 #include "i386-expand.h"
 #include "i386-features.h"
+#include "function-abi.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -13510,6 +13511,15 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
 		return AVX_U128_DIRTY;
 	    }
 	}
+
+      /* If the function is known to preserve some SSE registers,
+	 RA and previous passes can legitimately rely on that for
+	 modes wider than 256 bits.  It's only safe to issue a
+	 vzeroupper if all SSE registers are clobbered.  */
+      const function_abi &abi = insn_callee_abi (insn);
+      if (!hard_reg_set_subset_p (reg_class_contents[ALL_SSE_REGS],
+				  abi.mode_clobbers (V4DImode)))
+	return AVX_U128_ANY;
 
       return AVX_U128_CLEAN;
     }
