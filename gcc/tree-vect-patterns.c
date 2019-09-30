@@ -2927,6 +2927,37 @@ vect_recog_divmod_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
       /* Pattern detected.  */
       vect_pattern_detected ("vect_recog_divmod_pattern", last_stmt);
 
+      *type_out = vectype;
+
+      /* Check if the target supports this internal function.  */
+      internal_fn ifn = IFN_DIV_POW2;
+      if (direct_internal_fn_supported_p (ifn, vectype, OPTIMIZE_FOR_SPEED))
+	{
+	  tree shift = build_int_cst (itype, tree_log2 (oprnd1));
+
+	  tree var_div = vect_recog_temp_ssa_var (itype, NULL);
+	  gimple *div_stmt = gimple_build_call_internal (ifn, 2, oprnd0, shift);
+	  gimple_call_set_lhs (div_stmt, var_div);
+
+	  if (rhs_code == TRUNC_MOD_EXPR)
+	    {
+	      append_pattern_def_seq (stmt_vinfo, div_stmt);
+	      def_stmt
+		= gimple_build_assign (vect_recog_temp_ssa_var (itype, NULL),
+				       LSHIFT_EXPR, var_div, shift);
+	      append_pattern_def_seq (stmt_vinfo, def_stmt);
+	      pattern_stmt
+		= gimple_build_assign (vect_recog_temp_ssa_var (itype, NULL),
+				       MINUS_EXPR, oprnd0,
+				       gimple_assign_lhs (def_stmt));
+	    }
+	  else
+	    pattern_stmt = div_stmt;
+	  gimple_set_location (pattern_stmt, gimple_location (last_stmt));
+
+	  return pattern_stmt;
+	}
+
       cond = build2 (LT_EXPR, boolean_type_node, oprnd0,
 		     build_int_cst (itype, 0));
       if (rhs_code == TRUNC_DIV_EXPR
@@ -3003,7 +3034,6 @@ vect_recog_divmod_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 				   signmask);
 	}
 
-      *type_out = vectype;
       return pattern_stmt;
     }
 

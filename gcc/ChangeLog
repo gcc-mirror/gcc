@@ -1,3 +1,16 @@
+2019-09-30  Yuliang Wang  <yuliang.wang@arm.com>
+
+	* config/aarch64/aarch64-sve.md (sdiv_pow2<mode>3):
+	New pattern for ASRD.
+	* config/aarch64/iterators.md (UNSPEC_ASRD): New unspec.
+	* internal-fn.def (IFN_DIV_POW2): New internal function.
+	* optabs.def (sdiv_pow2_optab): New optab.
+	* tree-vect-patterns.c (vect_recog_divmod_pattern):
+	Modify pattern to support new operation.
+	* doc/md.texi (sdiv_pow2$var{m3}): Documentation for the above.
+	* doc/sourcebuild.texi (vect_sdiv_pow2_si):
+	Document new target selector.
+
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_layout_frame): Use crtl->abi

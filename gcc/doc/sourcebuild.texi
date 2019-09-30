@@ -1446,6 +1446,10 @@ of bytes.
 Target supports both signed and unsigned multiply-high-with-round-and-scale
 operations on vectors of half-words.
 
+@item vect_sdiv_pow2_si
+Target supports signed division by constant power-of-2 operations
+on vectors of 4-byte integers.
+
 @item vect_condition
 Target supports vector conditional operations.
 

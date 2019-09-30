@@ -1,3 +1,10 @@
+2019-09-30  Yuliang Wang  <yuliang.wang@arm.com>
+
+	* gcc.dg/vect/vect-sdiv-pow2-1.c: New test.
+	* gcc.target/aarch64/sve/asrdiv_1.c: As above.
+	* lib/target-supports.exp (check_effective_target_vect_sdiv_pow2_si):
+	Return true for AArch64 with SVE.
+
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/torture/simd-abi-9.c: New test.
