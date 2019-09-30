@@ -1,5 +1,11 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/i386/i386.c: Include function-abi.h.
+	(ix86_avx_u128_mode_needed): Treat function calls as AVX_U128_ANY
+	if they preserve some 256-bit or 512-bit SSE registers.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target.def (insn_callee_abi): New hook.
 	(remove_extra_call_preserved_regs): Delete.
 	* doc/tm.texi.in (TARGET_INSN_CALLEE_ABI): New macro.
