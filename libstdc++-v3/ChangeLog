@@ -1,3 +1,11 @@
+2019-09-30  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/array: Add C++20 constexpr to comparison operators.
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc: Adapt
+	dg-error line numbers.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Likewise.
+
 2019-09-30  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* include/experimental/internet: Include netinet/in.h if we have
