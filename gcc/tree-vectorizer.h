@@ -1649,7 +1649,8 @@ extern class loop *vect_transform_loop (loop_vec_info);
 extern opt_loop_vec_info vect_analyze_loop_form (class loop *,
 						 vec_info_shared *);
 extern bool vectorizable_live_operation (stmt_vec_info, gimple_stmt_iterator *,
-					 slp_tree, int, stmt_vec_info *,
+					 slp_tree, slp_instance, int,
+					 stmt_vec_info *,
 					 stmt_vector_for_cost *);
 extern bool vectorizable_reduction (stmt_vec_info, gimple_stmt_iterator *,
 				    stmt_vec_info *, slp_tree, slp_instance,
