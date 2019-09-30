@@ -1926,19 +1926,6 @@ aarch64_hard_regno_call_part_clobbered (unsigned int abi_id,
   return false;
 }
 
-/* Implement TARGET_RETURN_CALL_WITH_MAX_CLOBBERS.  */
-
-rtx_insn *
-aarch64_return_call_with_max_clobbers (rtx_insn *call_1, rtx_insn *call_2)
-{
-  gcc_assert (CALL_P (call_1) && CALL_P (call_2));
-
-  if (!aarch64_simd_call_p (call_1) || aarch64_simd_call_p (call_2))
-    return call_1;
-  else
-    return call_2;
-}
-
 /* Implement REGMODE_NATURAL_SIZE.  */
 poly_uint64
 aarch64_regmode_natural_size (machine_mode mode)
@@ -21001,10 +20988,6 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_INSN_CALLEE_ABI
 #define TARGET_INSN_CALLEE_ABI aarch64_insn_callee_abi
-
-#undef TARGET_RETURN_CALL_WITH_MAX_CLOBBERS
-#define TARGET_RETURN_CALL_WITH_MAX_CLOBBERS \
-  aarch64_return_call_with_max_clobbers
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT aarch64_constant_alignment

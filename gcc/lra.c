@@ -121,6 +121,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "lra.h"
 #include "lra-int.h"
 #include "print-rtl.h"
+#include "function-abi.h"
 
 /* Dump bitmap SET with TITLE and BB INDEX.  */
 void
@@ -1323,7 +1324,6 @@ initialize_lra_reg_info_element (int i)
   lra_reg_info[i].no_stack_p = false;
 #endif
   CLEAR_HARD_REG_SET (lra_reg_info[i].conflict_hard_regs);
-  CLEAR_HARD_REG_SET (lra_reg_info[i].actual_call_used_reg_set);
   lra_reg_info[i].preferred_hard_regno1 = -1;
   lra_reg_info[i].preferred_hard_regno2 = -1;
   lra_reg_info[i].preferred_hard_regno_profit1 = 0;
@@ -1336,7 +1336,6 @@ initialize_lra_reg_info_element (int i)
   lra_reg_info[i].val = get_new_reg_value ();
   lra_reg_info[i].offset = 0;
   lra_reg_info[i].copies = NULL;
-  lra_reg_info[i].call_insn = NULL;
 }
 
 /* Initialize common reg info and copies.  */
@@ -2420,7 +2419,9 @@ lra (FILE *f)
 
   if (crtl->saves_all_registers)
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (!call_used_or_fixed_reg_p (i) && !fixed_regs[i] && !LOCAL_REGNO (i))
+      if (!crtl->abi->clobbers_full_reg_p (i)
+	  && !fixed_regs[i]
+	  && !LOCAL_REGNO (i))
 	df_set_regs_ever_live (i, true);
 
   /* We don't DF from now and avoid its using because it is to
@@ -2478,19 +2479,7 @@ lra (FILE *f)
 	    }
 	  /* Do inheritance only for regular algorithms.  */
 	  if (! lra_simple_p)
-	    {
-	      if (flag_ipa_ra)
-		{
-		  if (live_p)
-		    lra_clear_live_ranges ();
-		  /* As a side-effect of lra_create_live_ranges, we calculate
-		     actual_call_used_reg_set,  which is needed during
-		     lra_inheritance.  */
-		  lra_create_live_ranges (true, true);
-		  live_p = true;
-		}
-	      lra_inheritance ();
-	    }
+	    lra_inheritance ();
 	  if (live_p)
 	    lra_clear_live_ranges ();
 	  bool fails_p;
