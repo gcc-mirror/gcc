@@ -2768,12 +2768,24 @@ cselib_process_insn (rtx_insn *insn)
     {
       function_abi callee_abi = insn_callee_abi (insn);
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (call_used_or_fixed_reg_p (i)
-	    || (REG_VALUES (i) && REG_VALUES (i)->elt
-		&& (targetm.hard_regno_call_part_clobbered
-		    (callee_abi.id (), i,
-		     GET_MODE (REG_VALUES (i)->elt->val_rtx)))))
-	  cselib_invalidate_regno (i, reg_raw_mode[i]);
+	if (elt_list *values = REG_VALUES (i))
+	  {
+	    /* If we know what mode the value was set in, check whether
+	       it is still available after the call in that mode.  If we
+	       don't know the mode, we have to check for the worst-case
+	       scenario instead.  */
+	    if (values->elt)
+	      {
+		machine_mode mode = GET_MODE (values->elt->val_rtx);
+		if (callee_abi.clobbers_reg_p (mode, i))
+		  cselib_invalidate_regno (i, mode);
+	      }
+	    else
+	      {
+		if (callee_abi.clobbers_at_least_part_of_reg_p (i))
+		  cselib_invalidate_regno (i, reg_raw_mode[i]);
+	      }
+	  }
 
       /* Since it is not clear how cselib is going to be used, be
 	 conservative here and treat looping pure or const functions
