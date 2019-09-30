@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "regcprop.h"
 #include "rtl-iter.h"
 #include "valtrack.h"
-
+#include "function-abi.h"
 
 /* Return true if INSN requires the stack frame to be set up.
    PROLOGUE_USED contains the hard registers used in the function
@@ -76,7 +76,7 @@ requires_stack_frame_p (rtx_insn *insn, HARD_REG_SET prologue_used,
     }
   if (hard_reg_set_intersect_p (hardregs, prologue_used))
     return true;
-  hardregs &= ~call_used_or_fixed_regs;
+  hardregs &= ~crtl->abi->full_reg_clobbers ();
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (TEST_HARD_REG_BIT (hardregs, regno)
 	&& df_regs_ever_live_p (regno))
