@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "dumpfile.h"
 #include "rtl-iter.h"
+#include "function-abi.h"
 
 /* This file contains the reload pass of the compiler, which is
    run after register allocation has been done.  It checks that
@@ -119,11 +120,6 @@ static HARD_REG_SET reg_reloaded_valid;
 /* Indicate if the register was dead at the end of the reload.
    This is only valid if reg_reloaded_contents is set and valid.  */
 static HARD_REG_SET reg_reloaded_dead;
-
-/* Indicate whether the register's current value is one that is not
-   safe to retain across a call, even for registers that are normally
-   call-saved.  This is only meaningful for members of reg_reloaded_valid.  */
-static HARD_REG_SET reg_reloaded_call_part_clobbered;
 
 /* Number of spill-regs so far; number of valid elements of spill_regs.  */
 static int n_spills;
@@ -795,7 +791,7 @@ reload (rtx_insn *first, int global)
 
   if (crtl->saves_all_registers)
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (! call_used_or_fixed_reg_p (i)
+      if (! crtl->abi->clobbers_full_reg_p (i)
 	  && ! fixed_regs[i]
 	  && ! LOCAL_REGNO (i))
 	df_set_regs_ever_live (i, true);
@@ -1908,8 +1904,8 @@ find_reg (class insn_chain *chain, int order)
 		  && (inv_reg_alloc_order[regno]
 		      < inv_reg_alloc_order[best_reg])
 #else
-		  && call_used_or_fixed_reg_p (regno)
-		  && ! call_used_or_fixed_reg_p (best_reg)
+		  && crtl->abi->clobbers_full_reg_p (regno)
+		  && !crtl->abi->clobbers_full_reg_p (best_reg)
 #endif
 		  ))
 	    {
@@ -4464,7 +4460,6 @@ reload_as_needed (int live_known)
   reg_last_reload_reg = XCNEWVEC (rtx, max_regno);
   INIT_REG_SET (&reg_has_output_reload);
   CLEAR_HARD_REG_SET (reg_reloaded_valid);
-  CLEAR_HARD_REG_SET (reg_reloaded_call_part_clobbered);
 
   set_initial_elim_offsets ();
 
@@ -4786,8 +4781,8 @@ reload_as_needed (int live_known)
          be partially clobbered by the call.  */
       else if (CALL_P (insn))
 	{
-	  reg_reloaded_valid &= ~(call_used_or_fixed_regs
-				  | reg_reloaded_call_part_clobbered);
+	  reg_reloaded_valid
+	    &= ~insn_callee_abi (insn).full_and_partial_reg_clobbers ();
 
 	  /* If this is a call to a setjmp-type function, we must not
 	     reuse any reload reg contents across the call; that will
@@ -8193,13 +8188,6 @@ emit_reload_insns (class insn_chain *chain)
 			   : out_regno + k);
 		      reg_reloaded_insn[regno + k] = insn;
 		      SET_HARD_REG_BIT (reg_reloaded_valid, regno + k);
-		      if (targetm.hard_regno_call_part_clobbered (0, regno + k,
-								  mode))
-			SET_HARD_REG_BIT (reg_reloaded_call_part_clobbered,
-					  regno + k);
-		      else
-			CLEAR_HARD_REG_BIT (reg_reloaded_call_part_clobbered,
-					    regno + k);
 		    }
 		}
 	    }
@@ -8273,13 +8261,6 @@ emit_reload_insns (class insn_chain *chain)
 			   : in_regno + k);
 		      reg_reloaded_insn[regno + k] = insn;
 		      SET_HARD_REG_BIT (reg_reloaded_valid, regno + k);
-		      if (targetm.hard_regno_call_part_clobbered (0, regno + k,
-								  mode))
-			SET_HARD_REG_BIT (reg_reloaded_call_part_clobbered,
-					  regno + k);
-		      else
-			CLEAR_HARD_REG_BIT (reg_reloaded_call_part_clobbered,
-					    regno + k);
 		    }
 		}
 	    }
@@ -8388,13 +8369,6 @@ emit_reload_insns (class insn_chain *chain)
 		      reg_reloaded_insn[src_regno + k] = store_insn;
 		      CLEAR_HARD_REG_BIT (reg_reloaded_dead, src_regno + k);
 		      SET_HARD_REG_BIT (reg_reloaded_valid, src_regno + k);
-		      if (targetm.hard_regno_call_part_clobbered
-			  (0, src_regno + k, mode))
-			SET_HARD_REG_BIT (reg_reloaded_call_part_clobbered,
-					  src_regno + k);
-		      else
-			CLEAR_HARD_REG_BIT (reg_reloaded_call_part_clobbered,
-					    src_regno + k);
 		      SET_HARD_REG_BIT (reg_is_output_reload, src_regno + k);
 		      if (note)
 			SET_HARD_REG_BIT (reg_reloaded_died, src_regno);
