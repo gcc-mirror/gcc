@@ -586,7 +586,7 @@
 	unused.
 	* config/rs6000/rs6000-protos.h (enum insn_form): New
 	enumeration.
-	(enum non_prefixed): New enumeration.
+	(enum non_prefixed_form): New enumeration.
 	(address_to_insn_form): New declaration.
 	(prefixed_load_p): New declaration.
 	(prefixed_store_p): New declaration.
