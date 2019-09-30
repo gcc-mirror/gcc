@@ -1,6 +1,12 @@
+2019-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91931
+	* config/i386/i386-expand.c (ix86_expand_adjust_ufix_to_sfix_si): Use
+	gen_int_mode instead of GEN_INT.
+
 2019-09-29  Iain Sandoe  <iain@sandoe.co.uk>
 
-	* config/darwin.c (gen_macho_low):Amend to include the mode
+	* config/darwin.c (gen_macho_low): Amend to include the mode
 	argument.
 	(machopic_indirect_data_reference): Amend gen_macho_low call
 	to include mode argument
