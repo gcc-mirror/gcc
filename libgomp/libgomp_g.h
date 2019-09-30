@@ -31,7 +31,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include "gstdint.h"
+#include <stdint.h>
 
 /* barrier.c */
 
