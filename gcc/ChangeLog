@@ -1,5 +1,25 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* rtl.h (predefined_function_abi): Declare.
+	(choose_hard_reg_mode): Take a pointer to a predefined_function_abi
+	instead of a boolean call_save flag.
+	* config/gcn/gcn.c (gcn_hard_regno_caller_save_mode): Update call
+	accordingly.
+	* config/i386/i386.h (HARD_REGNO_CALLER_SAVE_MODE): Likewise.
+	* config/ia64/ia64.h (HARD_REGNO_CALLER_SAVE_MODE): Likewise.
+	* config/mips/mips.c (mips_hard_regno_caller_save_mode): Likewise.
+	* config/msp430/msp430.h (HARD_REGNO_CALLER_SAVE_MODE): Likewise.
+	* config/rs6000/rs6000.h (HARD_REGNO_CALLER_SAVE_MODE): Likewise.
+	* config/sh/sh.c (sh_hard_regno_caller_save_mode): Likewise.
+	* reginfo.c (init_reg_modes_target): Likewise.
+	(choose_hard_reg_mode): Take a pointer to a predefined_function_abi
+	instead of a boolean call_save flag.
+	* targhooks.c: Include function-abi.h.
+	(default_dwarf_frame_reg_mode): Update call to choose_hard_reg_mode,
+	using eh_edge_abi to choose the mode.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* target.def (hard_regno_call_part_clobbered): Take an ABI
 	identifier instead of an rtx_insn.
 	* doc/tm.texi: Regenerate.

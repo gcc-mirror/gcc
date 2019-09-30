@@ -10637,7 +10637,7 @@ sh_hard_regno_caller_save_mode (unsigned int regno, unsigned int nregs,
 	      && ((regno - FIRST_FP_REG) & 1) == 0)))
     return mode;
 
-  return choose_hard_reg_mode (regno, nregs, false);
+  return choose_hard_reg_mode (regno, nregs, NULL);
 }
 
 /* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */

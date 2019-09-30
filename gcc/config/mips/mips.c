@@ -22174,7 +22174,7 @@ mips_hard_regno_caller_save_mode (unsigned int regno,
   /* For performance, avoid saving/restoring upper parts of a register
      by returning MODE as save mode when the mode is known.  */
   if (mode == VOIDmode)
-    return choose_hard_reg_mode (regno, nregs, false);
+    return choose_hard_reg_mode (regno, nregs, NULL);
   else
     return mode;
 }

@@ -1258,7 +1258,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE)			\
   (CC_REGNO_P (REGNO) ? VOIDmode					\
    : (MODE) == VOIDmode && (NREGS) != 1 ? VOIDmode			\
-   : (MODE) == VOIDmode ? choose_hard_reg_mode ((REGNO), (NREGS), false) \
+   : (MODE) == VOIDmode ? choose_hard_reg_mode ((REGNO), (NREGS), NULL)	\
    : (MODE) == HImode && !((GENERAL_REGNO_P (REGNO)			\
 			    && TARGET_PARTIAL_REG_STALL)		\
 			   || MASK_REGNO_P (REGNO)) ? SImode		\

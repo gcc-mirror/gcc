@@ -36,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "hard-reg-set.h"
 
+class predefined_function_abi;
+
 /* Value used by some passes to "recognize" noop moves as valid
  instructions.  */
 #define NOOP_MOVE_INSN_CODE	INT_MAX
@@ -3410,7 +3412,8 @@ extern bool val_signbit_known_clear_p (machine_mode,
 				       unsigned HOST_WIDE_INT);
 
 /* In reginfo.c  */
-extern machine_mode choose_hard_reg_mode (unsigned int, unsigned int, bool);
+extern machine_mode choose_hard_reg_mode (unsigned int, unsigned int,
+					  const predefined_function_abi *);
 extern const HARD_REG_SET &simplifiable_subregs (const subreg_shape &);
 
 /* In emit-rtl.c  */
