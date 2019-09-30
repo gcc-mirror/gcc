@@ -18794,8 +18794,8 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
    the low 16 bytes are saved.  */
 
 static bool
-ix86_hard_regno_call_part_clobbered (rtx_insn *insn ATTRIBUTE_UNUSED,
-				     unsigned int regno, machine_mode mode)
+ix86_hard_regno_call_part_clobbered (unsigned int, unsigned int regno,
+				     machine_mode mode)
 {
   return SSE_REGNO_P (regno) && GET_MODE_SIZE (mode) > 16;
 }

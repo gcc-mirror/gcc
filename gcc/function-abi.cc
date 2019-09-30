@@ -50,7 +50,7 @@ predefined_function_abi::initialize (unsigned int id,
 
      If the ABI specifies that part of a hard register R is call-clobbered,
      we should be able to find a single-register mode M for which
-     targetm.hard_regno_call_part_clobbered (NULL, R, M) is true.
+     targetm.hard_regno_call_part_clobbered (m_id, R, M) is true.
      In other words, it shouldn't be the case that R can hold all
      single-register modes across a call, but can't hold part of
      a multi-register mode.
@@ -66,7 +66,7 @@ predefined_function_abi::initialize (unsigned int id,
       for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
 	if (targetm.hard_regno_mode_ok (regno, mode)
 	    && hard_regno_nregs (regno, mode) == 1
-	    && targetm.hard_regno_call_part_clobbered (NULL, regno, mode))
+	    && targetm.hard_regno_call_part_clobbered (m_id, regno, mode))
 	  SET_HARD_REG_BIT (m_full_and_partial_reg_clobbers, regno);
     }
 
@@ -89,7 +89,7 @@ predefined_function_abi::initialize (unsigned int id,
       for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
 	if (targetm.hard_regno_mode_ok (regno, mode)
 	    && !overlaps_hard_reg_set_p (m_full_reg_clobbers, mode, regno)
-	    && !targetm.hard_regno_call_part_clobbered (NULL, regno, mode))
+	    && !targetm.hard_regno_call_part_clobbered (m_id, regno, mode))
 	  remove_from_hard_reg_set (&m_mode_clobbers[i], mode, regno);
     }
 
@@ -104,7 +104,7 @@ predefined_function_abi::initialize (unsigned int id,
 	for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
 	  if (targetm.hard_regno_mode_ok (regno, mode)
 	      && !overlaps_hard_reg_set_p (m_full_reg_clobbers, mode, regno)
-	      && targetm.hard_regno_call_part_clobbered (NULL, regno, mode))
+	      && targetm.hard_regno_call_part_clobbered (m_id, regno, mode))
 	    gcc_assert (overlaps_hard_reg_set_p (all_clobbers, mode, regno)
 			&& overlaps_hard_reg_set_p (m_mode_clobbers[i],
 						    mode, regno));

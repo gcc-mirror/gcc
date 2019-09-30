@@ -1,5 +1,50 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target.def (hard_regno_call_part_clobbered): Take an ABI
+	identifier instead of an rtx_insn.
+	* doc/tm.texi: Regenerate.
+	* hooks.h (hook_bool_insn_uint_mode_false): Delete.
+	(hook_bool_uint_uint_mode_false): New function.
+	* hooks.c (hook_bool_insn_uint_mode_false): Delete.
+	(hook_bool_uint_uint_mode_false): New function.
+	* config/aarch64/aarch64.c (aarch64_hard_regno_call_part_clobbered):
+	Take an ABI identifier instead of an rtx_insn.
+	* config/avr/avr.c (avr_hard_regno_call_part_clobbered): Likewise.
+	* config/i386/i386.c (ix86_hard_regno_call_part_clobbered): Likewise.
+	* config/mips/mips.c (mips_hard_regno_call_part_clobbered): Likewise.
+	* config/pru/pru.c (pru_hard_regno_call_part_clobbered): Likewise.
+	* config/rs6000/rs6000.c (rs6000_hard_regno_call_part_clobbered):
+	Likewise.
+	* config/s390/s390.c (s390_hard_regno_call_part_clobbered): Likewise.
+	* cselib.c: Include function-abi.h.
+	(cselib_process_insn): Update call to
+	targetm.hard_regno_call_part_clobbered, using insn_callee_abi
+	to get the appropriate ABI identifier.
+	* function-abi.cc (predefined_function_abi::initialize): Update call
+	to targetm.hard_regno_call_part_clobbered.
+	* ira-conflicts.c (ira_build_conflicts): Likewise.
+	* ira-costs.c (ira_tune_allocno_costs): Likewise.
+	* lra-constraints.c: Include function-abi.h.
+	(need_for_call_save_p): Update call to
+	targetm.hard_regno_call_part_clobbered, using insn_callee_abi
+	to get the appropriate ABI identifier.
+	* lra-lives.c (check_pseudos_live_through_calls): Likewise.
+	* regcprop.c (copyprop_hardreg_forward_1): Update call
+	to targetm.hard_regno_call_part_clobbered.
+	* reginfo.c (choose_hard_reg_mode): Likewise.
+	* regrename.c (check_new_reg_p): Likewise.
+	* reload.c (find_equiv_reg): Likewise.
+	* reload1.c (emit_reload_insns): Likewise.
+	* sched-deps.c: Include function-abi.h.
+	(deps_analyze_insn): Update call to
+	targetm.hard_regno_call_part_clobbered, using insn_callee_abi
+	to get the appropriate ABI identifier.
+	* sel-sched.c (init_regs_for_mode, mark_unavailable_hard_regs): Update
+	call to targetm.hard_regno_call_part_clobbered.
+	* targhooks.c (default_dwarf_frame_reg_mode): Likewise.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/i386/i386.c: Include function-abi.h.
 	(ix86_avx_u128_mode_needed): Treat function calls as AVX_U128_ANY
 	if they preserve some 256-bit or 512-bit SSE registers.

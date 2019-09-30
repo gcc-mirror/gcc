@@ -1910,12 +1910,13 @@ aarch64_insn_callee_abi (const rtx_insn *insn)
    clobbers the top 64 bits when restoring the bottom 64 bits.  */
 
 static bool
-aarch64_hard_regno_call_part_clobbered (rtx_insn *insn, unsigned int regno,
+aarch64_hard_regno_call_part_clobbered (unsigned int abi_id,
+					unsigned int regno,
 					machine_mode mode)
 {
   if (FP_REGNUM_P (regno))
     {
-      bool simd_p = insn && CALL_P (insn) && aarch64_simd_call_p (insn);
+      bool simd_p = (abi_id == ARM_PCS_SIMD);
       poly_int64 per_register_size = GET_MODE_SIZE (mode);
       unsigned int nregs = hard_regno_nregs (regno, mode);
       if (nregs > 1)

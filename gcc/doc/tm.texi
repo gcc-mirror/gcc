@@ -1919,14 +1919,23 @@ interoperability between several ABIs in the same translation unit.
 @cindex call-used register
 @cindex call-clobbered register
 @cindex call-saved register
-@deftypefn {Target Hook} bool TARGET_HARD_REGNO_CALL_PART_CLOBBERED (rtx_insn *@var{insn}, unsigned int @var{regno}, machine_mode @var{mode})
-This hook should return true if @var{regno} is partly call-saved and
-partly call-clobbered, and if a value of mode @var{mode} would be partly
-clobbered by call instruction @var{insn}.  If @var{insn} is NULL then it
-should return true if any call could partly clobber the register.
-For example, if the low 32 bits of @var{regno} are preserved across a call
-but higher bits are clobbered, this hook should return true for a 64-bit
-mode but false for a 32-bit mode.
+@deftypefn {Target Hook} bool TARGET_HARD_REGNO_CALL_PART_CLOBBERED (unsigned int @var{abi_id}, unsigned int @var{regno}, machine_mode @var{mode})
+ABIs usually specify that calls must preserve the full contents
+of a particular register, or that calls can alter any part of a
+particular register.  This information is captured by the target macro
+@code{CALL_REALLY_USED_REGISTERS}.  However, some ABIs specify that calls
+must preserve certain bits of a particular register but can alter others.
+This hook should return true if this applies to at least one of the
+registers in @samp{(reg:@var{mode} @var{regno})}, and if as a result the
+call would alter part of the @var{mode} value.  For example, if a call
+preserves the low 32 bits of a 64-bit hard register @var{regno} but can
+clobber the upper 32 bits, this hook should return true for a 64-bit mode
+but false for a 32-bit mode.
+
+The value of @var{abi_id} comes from the @code{predefined_function_abi}
+structure that describes the ABI of the call; see the definition of the
+structure for more details.  If (as is usual) the target uses the same ABI
+for all functions in a translation unit, @var{abi_id} is always 0.
 
 The default implementation returns false, which is correct
 for targets that don't have partly call-clobbered registers.
