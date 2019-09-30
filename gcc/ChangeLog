@@ -1,5 +1,11 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* haifa-sched.c: Include function-abi.h.
+	(alloc_global_sched_pressure_data): Use crtl->abi to check whether
+	the function would need to save a register before using it.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcse.c: Include function-abi.h.
 	(compute_hash_table_work): Use insn_callee_abi to get the ABI of
 	the call insn target.  Invalidate partially call-clobbered
