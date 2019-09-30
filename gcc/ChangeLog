@@ -1,3 +1,11 @@
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/i386/i386.h (ix86_frame::expensive_p): New field.
+	(ix86_frame::expensive_count): Likewise.
+	* config/i386/i386.c (ix86_compute_frame_layout): Make the choice
+	of use_fast_prologue_epilogue robust against incidental changes
+	in function size.
+
 2019-09-30  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR target/77918

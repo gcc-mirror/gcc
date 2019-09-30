@@ -5877,7 +5877,14 @@ ix86_compute_frame_layout (void)
 	 case function is known to be outside hot spot (this is known with
 	 feedback only).  Weight the size of function by number of registers
 	 to save as it is cheap to use one or two push instructions but very
-	 slow to use many of them.  */
+	 slow to use many of them.
+
+	 Calling this hook multiple times with the same frame requirements
+	 must produce the same layout, since the RA might otherwise be
+	 unable to reach a fixed point or might fail its final sanity checks.
+	 This means that once we've assumed that a function does or doesn't
+	 have a particular size, we have to stick to that assumption
+	 regardless of how the function has changed since.  */
       if (count)
 	count = (count - 1) * FAST_PROLOGUE_INSN_COUNT;
       if (node->frequency < NODE_FREQUENCY_NORMAL
@@ -5885,8 +5892,14 @@ ix86_compute_frame_layout (void)
 	      && node->frequency < NODE_FREQUENCY_HOT))
 	m->use_fast_prologue_epilogue = false;
       else
-	m->use_fast_prologue_epilogue
-	   = !expensive_function_p (count);
+	{
+	  if (count != frame->expensive_count)
+	    {
+	      frame->expensive_count = count;
+	      frame->expensive_p = expensive_function_p (count);
+	    }
+	  m->use_fast_prologue_epilogue = !frame->expensive_p;
+	}
     }
 
   frame->save_regs_using_mov
