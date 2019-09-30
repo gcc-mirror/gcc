@@ -51,6 +51,9 @@
 #ifdef _GLIBCXX_HAVE_ARPA_INET_H
 # include <arpa/inet.h>		// inet_ntop
 #endif
+#ifdef _GLIBCXX_HAVE_NETINET_IN_H
+# include <netinet/in.h>	// IPPROTO_IP
+#endif
 #ifdef _GLIBCXX_HAVE_NETINET_TCP_H
 # include <netinet/tcp.h>	// TCP_NODELAY
 #endif

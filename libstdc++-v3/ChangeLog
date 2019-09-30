@@ -1,5 +1,8 @@
 2019-09-30  Andreas Tobler  <andreast@gcc.gnu.org>
 
+	* include/experimental/internet: Include netinet/in.h if we have
+	_GLIBCXX_HAVE_NETINET_IN_H defined.
+
 	* testsuite/ext/special_functions/airy_ai/check_nan.cc: Ignore the
 	FreeBSD warning about lower advertised precision of tgammal.
 	* testsuite/ext/special_functions/airy_bi/check_nan.cc: Likewise.
