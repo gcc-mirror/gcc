@@ -208,6 +208,27 @@ protected:
   HARD_REG_SET m_mask;
 };
 
+/* This class collects information about the ABIs of functions that are
+   called in a particular region of code.  It is mostly intended to be
+   used as a local variable during an IR walk.  */
+class function_abi_aggregator
+{
+public:
+  function_abi_aggregator () : m_abi_clobbers () {}
+
+  /* Record that the code region calls a function with the given ABI.  */
+  void
+  note_callee_abi (const function_abi &abi)
+  {
+    m_abi_clobbers[abi.id ()] |= abi.full_and_partial_reg_clobbers ();
+  }
+
+  HARD_REG_SET caller_save_regs (const function_abi &) const;
+
+private:
+  HARD_REG_SET m_abi_clobbers[NUM_ABI_IDS];
+};
+
 struct target_function_abi_info
 {
   /* An array of all the target ABIs that are available in this

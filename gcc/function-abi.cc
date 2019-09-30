@@ -126,6 +126,42 @@ predefined_function_abi::add_full_reg_clobber (unsigned int regno)
     SET_HARD_REG_BIT (m_mode_clobbers[i], regno);
 }
 
+/* Return the set of registers that the caller of the recorded functions must
+   save in order to honor the requirements of CALLER_ABI.  */
+
+HARD_REG_SET
+function_abi_aggregator::
+caller_save_regs (const function_abi &caller_abi) const
+{
+  HARD_REG_SET result;
+  CLEAR_HARD_REG_SET (result);
+  for (unsigned int abi_id = 0; abi_id < NUM_ABI_IDS; ++abi_id)
+    {
+      const predefined_function_abi &callee_abi = function_abis[abi_id];
+
+      /* Skip cases that clearly aren't problematic.  */
+      if (abi_id == caller_abi.id ()
+	  || hard_reg_set_empty_p (m_abi_clobbers[abi_id]))
+	continue;
+
+      /* Collect the set of registers that can be "more clobbered" by
+	 CALLEE_ABI than by CALLER_ABI.  */
+      HARD_REG_SET extra_clobbers;
+      CLEAR_HARD_REG_SET (extra_clobbers);
+      for (unsigned int i = 0; i < NUM_MACHINE_MODES; ++i)
+	{
+	  machine_mode mode = (machine_mode) i;
+	  extra_clobbers |= (callee_abi.mode_clobbers (mode)
+			     & ~caller_abi.mode_clobbers (mode));
+	}
+
+      /* Restrict it to the set of registers that we actually saw
+	 clobbers for (e.g. taking -fipa-ra into account).  */
+      result |= (extra_clobbers & m_abi_clobbers[abi_id]);
+    }
+  return result;
+}
+
 /* Return the set of registers that cannot be used to hold a value of
    mode MODE across the calls in a region described by ABIS and MASK, where:
 
