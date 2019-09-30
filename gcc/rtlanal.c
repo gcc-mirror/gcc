@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "addresses.h"
 #include "rtl-iter.h"
 #include "hard-reg-set.h"
+#include "function-abi.h"
 
 /* Forward declarations */
 static void set_of_1 (rtx, const_rtx, void *);
@@ -1270,8 +1271,8 @@ reg_set_p (const_rtx reg, const_rtx insn)
 	  || (CALL_P (insn)
 	      && ((REG_P (reg)
 		   && REGNO (reg) < FIRST_PSEUDO_REGISTER
-		   && overlaps_hard_reg_set_p (regs_invalidated_by_call,
-					       GET_MODE (reg), REGNO (reg)))
+		   && (insn_callee_abi (as_a<const rtx_insn *> (insn))
+		       .clobbers_reg_p (GET_MODE (reg), REGNO (reg))))
 		  || MEM_P (reg)
 		  || find_reg_fusage (insn, CLOBBER, reg)))))
     return true;
@@ -1486,7 +1487,11 @@ record_hard_reg_sets (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 }
 
 /* Examine INSN, and compute the set of hard registers written by it.
-   Store it in *PSET.  Should only be called after reload.  */
+   Store it in *PSET.  Should only be called after reload.
+
+   IMPLICIT is true if we should include registers that are fully-clobbered
+   by calls.  This should be used with caution, since it doesn't include
+   partially-clobbered registers.  */
 void
 find_all_hard_reg_sets (const rtx_insn *insn, HARD_REG_SET *pset, bool implicit)
 {
@@ -1495,7 +1500,7 @@ find_all_hard_reg_sets (const rtx_insn *insn, HARD_REG_SET *pset, bool implicit)
   CLEAR_HARD_REG_SET (*pset);
   note_stores (insn, record_hard_reg_sets, pset);
   if (CALL_P (insn) && implicit)
-    *pset |= call_used_or_fixed_regs;
+    *pset |= insn_callee_abi (insn).full_reg_clobbers ();
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) == REG_INC)
       record_hard_reg_sets (XEXP (link, 0), NULL, pset);
