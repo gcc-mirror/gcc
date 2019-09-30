@@ -1,3 +1,8 @@
+2019-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/77936
+	* include/parallel/checkers.h (__is_sorted): Remove unused variable.
+
 2019-09-28  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_algo.h (merge): Fix documentation.
