@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "lto-section-names.h"
 #include "intl.h"
+#include "optabs.h"
 
 /* Darwin supports a feature called fix-and-continue, which is used
    for rapid turn around debugging.  When code is compiled with the
@@ -108,8 +109,8 @@ section * darwin_sections[NUM_DARWIN_SECTIONS];
 
 /* While we transition to using in-tests instead of ifdef'd code.  */
 #if !HAVE_lo_sum
-#define gen_macho_high(a,b) (a)
-#define gen_macho_low(a,b,c) (a)
+#define gen_macho_high(m,a,b) (a)
+#define gen_macho_low(m,a,b,c) (a)
 #endif
 
 /* True if we're setting __attribute__ ((ms_struct)).  */
@@ -654,8 +655,8 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 	    {
 	  /* Create a new register for CSE opportunities.  */
 	  rtx hi_reg = (!can_create_pseudo_p () ? reg : gen_reg_rtx (Pmode));
- 	  emit_insn (gen_macho_high (hi_reg, orig));
- 	  emit_insn (gen_macho_low (reg, hi_reg, orig));
+	  emit_insn (gen_macho_high (Pmode, hi_reg, orig));
+	  emit_insn (gen_macho_low (Pmode, reg, hi_reg, orig));
 	      return reg;
  	    }
 	  else if (DARWIN_X86)
@@ -858,7 +859,7 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 	      rtx asym = XEXP (orig, 0);
 	      rtx mem;
 
-	      emit_insn (gen_macho_high (temp_reg, asym));
+	      emit_insn (gen_macho_high (Pmode, temp_reg, asym));
 	      mem = gen_const_mem (GET_MODE (orig),
 				   gen_rtx_LO_SUM (Pmode, temp_reg,
 						   copy_rtx (asym)));

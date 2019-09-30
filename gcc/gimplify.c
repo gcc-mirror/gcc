@@ -7132,6 +7132,8 @@ omp_default_clause (struct gimplify_omp_ctx *ctx, tree decl,
   kind = lang_hooks.decls.omp_predetermined_sharing (decl);
   if (kind != OMP_CLAUSE_DEFAULT_UNSPECIFIED)
     default_kind = kind;
+  else if (VAR_P (decl) && TREE_STATIC (decl) && DECL_IN_CONSTANT_POOL (decl))
+    default_kind = OMP_CLAUSE_DEFAULT_SHARED;
 
   switch (default_kind)
     {

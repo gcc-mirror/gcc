@@ -2198,13 +2198,8 @@
   "VECTOR_UNIT_ALTIVEC_P (V4SFmode)"
 {
   rtx mask = gen_reg_rtx (V4SImode);
-  rtvec v = rtvec_alloc (4);
-  unsigned HOST_WIDE_INT mask_val = ((unsigned HOST_WIDE_INT)1) << 31;
-
-  RTVEC_ELT (v, 0) = GEN_INT (mask_val);
-  RTVEC_ELT (v, 1) = GEN_INT (mask_val);
-  RTVEC_ELT (v, 2) = GEN_INT (mask_val);
-  RTVEC_ELT (v, 3) = GEN_INT (mask_val);
+  rtx mask_val = gen_int_mode (HOST_WIDE_INT_1U << 31, SImode);
+  rtvec v = gen_rtvec (4, mask_val, mask_val, mask_val, mask_val);
 
   emit_insn (gen_vec_initv4sisi (mask, gen_rtx_PARALLEL (V4SImode, v)));
   emit_insn (gen_vector_select_v4sf (operands[0], operands[1], operands[2],

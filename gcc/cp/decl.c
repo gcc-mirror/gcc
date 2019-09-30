@@ -10523,7 +10523,6 @@ grokdeclarator (const cp_declarator *declarator,
   bool constinit_p = decl_spec_seq_has_spec_p (declspecs, ds_constinit);
   bool late_return_type_p = false;
   bool array_parameter_p = false;
-  location_t saved_loc = input_location;
   tree reqs = NULL_TREE;
 
   signed_p = decl_spec_seq_has_spec_p (declspecs, ds_signed);
@@ -11514,9 +11513,10 @@ grokdeclarator (const cp_declarator *declarator,
 
 	    /* Declaring a function type.  */
 
-	    input_location = declspecs->locations[ds_type_spec];
-	    abstract_virtuals_error (ACU_RETURN, type);
-	    input_location = saved_loc;
+	    {
+	      iloc_sentinel ils (declspecs->locations[ds_type_spec]);
+	      abstract_virtuals_error (ACU_RETURN, type);
+	    }
 
 	    /* Pick up type qualifiers which should be applied to `this'.  */
 	    memfn_quals = declarator->u.function.qualifiers;
@@ -15061,11 +15061,8 @@ finish_enum_value_list (tree enumtype)
      type of the enumeration.  */
   for (values = TYPE_VALUES (enumtype); values; values = TREE_CHAIN (values))
     {
-      location_t saved_location;
-
       decl = TREE_VALUE (values);
-      saved_location = input_location;
-      input_location = DECL_SOURCE_LOCATION (decl);
+      iloc_sentinel ils (DECL_SOURCE_LOCATION (decl));
       if (fixed_underlying_type_p)
         /* If the enumeration type has a fixed underlying type, we
            already checked all of the enumerator values.  */
@@ -15074,8 +15071,6 @@ finish_enum_value_list (tree enumtype)
         value = perform_implicit_conversion (underlying_type,
                                              DECL_INITIAL (decl),
                                              tf_warning_or_error);
-      input_location = saved_location;
-
       /* Do not clobber shared ints.  */
       if (value != error_mark_node)
 	{

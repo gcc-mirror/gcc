@@ -1900,6 +1900,13 @@ in @ref{arm_coproc2_ok} in addition the following: @code{MCRR} and @code{MRRC}.
 @item arm_coproc4_ok
 ARM target supports all the coprocessor instructions also listed as supported
 in @ref{arm_coproc3_ok} in addition the following: @code{MCRR2} and @code{MRRC2}.
+
+@item arm_simd32_ok
+@anchor{arm_simd32_ok}
+ARM Target supports options suitable for accessing the SIMD32 intrinsics from
+@code{arm_acle.h}.
+Some multilibs may be incompatible with these options.
+
 @end table
 
 @subsubsection AArch64-specific attributes

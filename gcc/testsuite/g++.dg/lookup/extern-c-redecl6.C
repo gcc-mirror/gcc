@@ -16,10 +16,10 @@ extern "C" {
 
   namespace BAD
   {
-    long i; // { dg-error "C language linkage" }
-    double f; // { dg-error "C language linkage" }
-    int fn (); // { dg-error "C language linkage" }
-    int ai1[2]; // { dg-error "C language linkage" }
+    long i; // { dg-error "10:conflicting C language linkage" }
+    double f; // { dg-error "12:conflicting C language linkage" }
+    int fn (); // { dg-error "9:conflicting C language linkage" }
+    int ai1[2]; // { dg-error "9:conflicting C language linkage" }
   }
 }
 

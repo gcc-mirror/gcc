@@ -370,6 +370,7 @@ public:
 private:
   void common_initialization (tree old_fndecl, tree *vars,
 			      vec<ipa_replace_map *, va_gc> *tree_map);
+  tree carry_over_param (tree t);
   unsigned get_base_index (ipa_adjusted_param *apm);
   ipa_param_body_replacement *lookup_replacement_1 (tree base,
 						    unsigned unit_offset);

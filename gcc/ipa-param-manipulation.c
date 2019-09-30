@@ -906,18 +906,24 @@ ipa_param_body_adjustments::register_replacement (ipa_adjusted_param *apm,
   m_replacements.safe_push (psr);
 }
 
-/* Copy or not, as appropriate given ID, a pre-existing PARM_DECL T so that
-   it can be included in the parameters of the modified function.  */
+/* Copy or not, as appropriate given m_id and decl context, a pre-existing
+   PARM_DECL T so that it can be included in the parameters of the modified
+   function.  */
 
-static tree
-carry_over_param (tree t, struct copy_body_data *id)
+tree
+ipa_param_body_adjustments::carry_over_param (tree t)
 {
   tree new_parm;
-  if (id)
+  if (m_id)
     {
-      new_parm = remap_decl (t, id);
+      new_parm = remap_decl (t, m_id);
       if (TREE_CODE (new_parm) != PARM_DECL)
-	new_parm = id->copy_decl (t, id);
+	new_parm = m_id->copy_decl (t, m_id);
+    }
+  else if (DECL_CONTEXT (t) != m_fndecl)
+    {
+      new_parm = copy_node (t);
+      DECL_CONTEXT (new_parm) = m_fndecl;
     }
   else
     new_parm = t;
@@ -982,7 +988,7 @@ ipa_param_body_adjustments::common_initialization (tree old_fndecl,
 	  || apm->prev_clone_adjustment)
 	{
 	  kept[prev_index] = true;
-	  new_parm = carry_over_param (m_oparms[prev_index], m_id);
+	  new_parm = carry_over_param (m_oparms[prev_index]);
 	  m_new_decls.quick_push (new_parm);
 	}
       else if (apm->op == IPA_PARAM_OP_NEW

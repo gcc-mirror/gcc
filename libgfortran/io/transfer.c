@@ -193,7 +193,8 @@ static const st_option async_opt[] = {
 
 typedef enum
 { FORMATTED_SEQUENTIAL, UNFORMATTED_SEQUENTIAL,
-  FORMATTED_DIRECT, UNFORMATTED_DIRECT, FORMATTED_STREAM, UNFORMATTED_STREAM
+  FORMATTED_DIRECT, UNFORMATTED_DIRECT, FORMATTED_STREAM,
+  UNFORMATTED_STREAM, FORMATTED_UNSPECIFIED
 }
 file_mode;
 
@@ -203,7 +204,7 @@ current_mode (st_parameter_dt *dtp)
 {
   file_mode m;
 
-  m = FORM_UNSPECIFIED;
+  m = FORMATTED_UNSPECIFIED;
 
   if (dtp->u.p.current_unit->flags.access == ACCESS_DIRECT)
     {
@@ -1727,17 +1728,17 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 
 	case FMT_S:
 	  consume_data_flag = 0;
-	  dtp->u.p.sign_status = SIGN_S;
+	  dtp->u.p.sign_status = SIGN_PROCDEFINED;
 	  break;
 
 	case FMT_SS:
 	  consume_data_flag = 0;
-	  dtp->u.p.sign_status = SIGN_SS;
+	  dtp->u.p.sign_status = SIGN_SUPPRESS;
 	  break;
 
 	case FMT_SP:
 	  consume_data_flag = 0;
-	  dtp->u.p.sign_status = SIGN_SP;
+	  dtp->u.p.sign_status = SIGN_PLUS;
 	  break;
 
 	case FMT_BN:
@@ -2186,17 +2187,17 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 
 	case FMT_S:
 	  consume_data_flag = 0;
-	  dtp->u.p.sign_status = SIGN_S;
+	  dtp->u.p.sign_status = SIGN_PROCDEFINED;
 	  break;
 
 	case FMT_SS:
 	  consume_data_flag = 0;
-	  dtp->u.p.sign_status = SIGN_SS;
+	  dtp->u.p.sign_status = SIGN_SUPPRESS;
 	  break;
 
 	case FMT_SP:
 	  consume_data_flag = 0;
-	  dtp->u.p.sign_status = SIGN_SP;
+	  dtp->u.p.sign_status = SIGN_PLUS;
 	  break;
 
 	case FMT_BN:
@@ -2766,6 +2767,8 @@ pre_position (st_parameter_dt *dtp)
     case UNFORMATTED_DIRECT:
       dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
       break;
+    case FORMATTED_UNSPECIFIED:
+      gcc_unreachable ();
     }
 
   dtp->u.p.current_unit->current_record = 1;
@@ -3637,6 +3640,8 @@ next_record_r (st_parameter_dt *dtp, int done)
 	  while (p != '\n');
 	}
       break;
+    case FORMATTED_UNSPECIFIED:
+      gcc_unreachable ();
     }
 }
 
@@ -4002,6 +4007,8 @@ next_record_w (st_parameter_dt *dtp, int done)
 	}
 
       break;
+    case FORMATTED_UNSPECIFIED:
+      gcc_unreachable ();
 
     io_error:
       generate_error (&dtp->common, LIBERROR_OS, NULL);

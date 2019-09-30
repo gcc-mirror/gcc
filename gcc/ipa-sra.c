@@ -1692,7 +1692,12 @@ scan_expr_access (tree expr, gimple *stmt, isra_scan_context ctx,
       disqualify_split_candidate (desc, "Encountered a bit-field access.");
       return;
     }
-  gcc_assert (offset >= 0);
+  if (offset < 0)
+    {
+      disqualify_split_candidate (desc, "Encountered an access at a "
+				  "negative offset.");
+      return;
+    }
   gcc_assert ((offset % BITS_PER_UNIT) == 0);
   gcc_assert ((size % BITS_PER_UNIT) == 0);
   if ((offset / BITS_PER_UNIT) >= (UINT_MAX - ISRA_ARG_SIZE_LIMIT)
@@ -2234,7 +2239,7 @@ process_scan_results (cgraph_node *node, struct function *fun,
        desc_index++, parm = DECL_CHAIN (parm))
     {
       gensum_param_desc *desc = &(*param_descriptions)[desc_index];
-      if (!desc->locally_unused && !desc->split_candidate)
+      if (!desc->split_candidate)
 	continue;
 
       if (flag_checking)
@@ -2447,7 +2452,7 @@ verify_splitting_accesses (cgraph_node *node, bool certain_must_exist)
 
       bool certain_access_present = !certain_must_exist;
       if (overlapping_certain_accesses_p (desc, &certain_access_present))
-	internal_error ("Function %s, parameter %u, has IPA_SRA accesses "
+	internal_error ("Function %qs, parameter %u, has IPA-SRA accesses "
 			"which overlap", node->dump_name (), pidx);
       if (!certain_access_present)
 	internal_error ("Function %s, parameter %u, is used but does not "

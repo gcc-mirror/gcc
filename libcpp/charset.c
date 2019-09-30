@@ -901,6 +901,9 @@ struct ucnrange {
 };
 #include "ucnid.h"
 
+/* ISO 10646 defines the UCS codespace as the range 0-0x10FFFF inclusive.  */
+#define UCS_LIMIT 0x10FFFF
+
 /* Returns 1 if C is valid in an identifier, 2 if C is valid except at
    the start of an identifier, and 0 if C is not valid in an
    identifier.  We assume C has already gone through the checks of
@@ -915,7 +918,7 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
   int mn, mx, md;
   unsigned short valid_flags, invalid_start_flags;
 
-  if (c > 0x10FFFF)
+  if (c > UCS_LIMIT)
     return 0;
 
   mn = 0;
@@ -1015,6 +1018,10 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
    C99 6.4.3: A universal character name shall not specify a character
    whose short identifier is less than 00A0 other than 0024 ($), 0040 (@),
    or 0060 (`), nor one in the range D800 through DFFF inclusive.
+
+   If the hexadecimal value is larger than the upper bound of the UCS
+   codespace specified in ISO/IEC 10646, a pedantic warning is issued
+   in all versions of C and in the C++2a or later versions of C++.
 
    *PSTR must be preceded by "\u" or "\U"; it is assumed that the
    buffer end is delimited by a non-hex digit.  Returns false if the
@@ -1135,6 +1142,12 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
    "universal character %.*s is not valid at the start of an identifier",
 		   (int) (str - base), base);
     }
+  else if (result > UCS_LIMIT
+	   && (!CPP_OPTION (pfile, cplusplus)
+	       || CPP_OPTION (pfile, lang) > CLK_CXX17))
+    cpp_error (pfile, CPP_DL_PEDWARN,
+	       "%.*s is outside the UCS codespace",
+	       (int) (str - base), base);
 
   *cp = result;
   return true;

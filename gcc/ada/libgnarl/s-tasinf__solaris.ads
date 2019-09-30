@@ -139,4 +139,7 @@ package System.Task_Info is
 
    Unspecified_Task_Info : constant Task_Info_Type := null;
 
+   function Number_Of_Processors return Positive;
+   --  Returns the number of processors on the running host
+
 end System.Task_Info;

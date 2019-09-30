@@ -7230,12 +7230,13 @@ get_inner_reference (tree exp, poly_int64_pod *pbitsize,
       *punsignedp = (! INTEGRAL_TYPE_P (TREE_TYPE (exp))
 		     || TYPE_UNSIGNED (TREE_TYPE (exp)));
 
-      /* For vector types, with the correct size of access, use the mode of
-	 inner type.  */
-      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == VECTOR_TYPE
-	  && TREE_TYPE (exp) == TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0)))
-	  && tree_int_cst_equal (size_tree, TYPE_SIZE (TREE_TYPE (exp))))
-        mode = TYPE_MODE (TREE_TYPE (exp));
+      /* For vector element types with the correct size of access or for
+         vector typed accesses use the mode of the access type.  */
+      if ((TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == VECTOR_TYPE
+	   && TREE_TYPE (exp) == TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0)))
+	   && tree_int_cst_equal (size_tree, TYPE_SIZE (TREE_TYPE (exp))))
+	  || VECTOR_TYPE_P (TREE_TYPE (exp)))
+	mode = TYPE_MODE (TREE_TYPE (exp));
     }
   else
     {

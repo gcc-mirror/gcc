@@ -4774,7 +4774,8 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 1;
 
       case vec_perm:
-	if (TARGET_VSX)
+	/* Power7 has only one permute unit, make it a bit expensive.  */
+	if (TARGET_VSX && rs6000_tune == PROCESSOR_POWER7)
 	  return 3;
 	else
 	  return 1;
@@ -7978,7 +7979,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       if (TARGET_ELF)
 	emit_insn (gen_elf_high (reg, x));
       else
-	emit_insn (gen_macho_high (reg, x));
+	emit_insn (gen_macho_high (Pmode, reg, x));
       return gen_rtx_LO_SUM (Pmode, reg, x);
     }
   else if (TARGET_TOC
@@ -9681,6 +9682,8 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 	  if (DEFAULT_ABI == ABI_DARWIN)
 	    {
 #if TARGET_MACHO
+	      /* This is not PIC code, but could require the subset of
+		 indirections used by mdynamic-no-pic.  */
 	      if (MACHO_DYNAMIC_NO_PIC_P)
 		{
 		  /* Take care of any required data indirection.  */
@@ -9691,8 +9694,9 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 		  return;
 		}
 #endif
-	      emit_insn (gen_macho_high (target, operands[1]));
-	      emit_insn (gen_macho_low (operands[0], target, operands[1]));
+	      emit_insn (gen_macho_high (Pmode, target, operands[1]));
+	      emit_insn (gen_macho_low (Pmode, operands[0],
+					target, operands[1]));
 	      return;
 	    }
 

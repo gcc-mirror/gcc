@@ -7521,6 +7521,7 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
   bool all_rep_and_size = all_rep && TYPE_SIZE (gnu_record_type);
   bool variants_have_rep = all_rep;
   bool layout_with_rep = false;
+  bool has_non_packed_fixed_size_field = false;
   bool has_self_field = false;
   bool has_aliased_after_self_field = false;
   Entity_Id gnat_component_decl, gnat_variant_part;
@@ -7577,6 +7578,10 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 		  has_self_field = true;
 		else if (has_self_field && DECL_ALIASED_P (gnu_field))
 		  has_aliased_after_self_field = true;
+		else if (!DECL_FIELD_OFFSET (gnu_field)
+			 && !DECL_PACKED (gnu_field)
+			 && !field_has_variable_size (gnu_field))
+		  has_non_packed_fixed_size_field = true;
 	      }
 	  }
 
@@ -7868,8 +7873,9 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
      self-referential/variable offset or misaligned.  Note, in the latter
      case, that this can only happen in packed record types so the alignment
      is effectively capped to the byte for the whole record.  But we don't
-     do it for non-packed record types if pragma Optimize_Alignment (Space)
-     is specified because this can prevent alignment gaps from being filled.
+     do it for packed record types if not all fixed-size fiels can be packed
+     and for non-packed record types if pragma Optimize_Alignment (Space) is
+     specified, because this can prevent alignment gaps from being filled.
 
      Optionally, if the layout warning is enabled, keep track of the above 4
      different kinds of fields and issue a warning if some of them would be
@@ -7880,8 +7886,9 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
   const bool do_reorder
     = (Convention (gnat_record_type) == Convention_Ada
        && !No_Reordering (gnat_record_type)
-       && (!Optimize_Alignment_Space (gnat_record_type)
-	   || Is_Packed (gnat_record_type))
+       && !(Is_Packed (gnat_record_type)
+	    ? has_non_packed_fixed_size_field
+	    : Optimize_Alignment_Space (gnat_record_type))
        && !debug__debug_flag_dot_r);
   const bool w_reorder
     = (Convention (gnat_record_type) == Convention_Ada
@@ -7921,6 +7928,7 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 
       if (DECL_SIZE (gnu_field) && integer_zerop (DECL_SIZE (gnu_field)))
 	{
+	  DECL_SIZE_UNIT (gnu_field) = size_zero_node;
 	  DECL_FIELD_OFFSET (gnu_field) = size_zero_node;
 	  SET_DECL_OFFSET_ALIGN (gnu_field, BIGGEST_ALIGNMENT);
 	  DECL_FIELD_BIT_OFFSET (gnu_field) = bitsize_zero_node;

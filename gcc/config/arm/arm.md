@@ -1812,8 +1812,8 @@
   [(set (match_operand:SI 0 "s_register_operand" "=r,&r")
 	(plus:SI
 	 (mult:SI
-	  (SE:DI (match_operand:SI 4 "s_register_operand" "%r,r"))
-	  (SE:DI (match_operand:SI 5 "s_register_operand" "r,r")))
+	  (match_operand:SI 4 "s_register_operand" "%r,r")
+	  (match_operand:SI 5 "s_register_operand" "r,r"))
 	 (match_operand:SI 1 "s_register_operand" "0,0")))
    (set (match_operand:SI 2 "s_register_operand" "=r,&r")
 	(plus:SI
@@ -5057,6 +5057,47 @@
   [(set_attr "type" "alu_shift_reg")
    (set_attr "predicable" "yes")]
 )
+
+(define_insn "arm_<sup>xtb16"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand" "r")] USXTB16))]
+  "TARGET_INT_SIMD"
+  "<sup>xtb16%?\\t%0, %1"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "alu_dsp_reg")])
+
+(define_insn "arm_<simd32_op>"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand" "r")
+	   (match_operand:SI 2 "s_register_operand" "r")] SIMD32_NOGE_BINOP))]
+  "TARGET_INT_SIMD"
+  "<simd32_op>%?\\t%0, %1, %2"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "alu_dsp_reg")])
+
+(define_insn "arm_usada8"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI
+	  [(match_operand:SI 1 "s_register_operand" "r")
+	   (match_operand:SI 2 "s_register_operand" "r")
+	   (match_operand:SI 3 "s_register_operand" "r")] UNSPEC_USADA8))]
+  "TARGET_INT_SIMD"
+  "usada8%?\\t%0, %1, %2, %3"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "alu_dsp_reg")])
+
+(define_insn "arm_<simd32_op>"
+  [(set (match_operand:DI 0 "s_register_operand" "=r")
+	(unspec:DI
+	  [(match_operand:SI 1 "s_register_operand" "r")
+	   (match_operand:SI 2 "s_register_operand" "r")
+	   (match_operand:DI 3 "s_register_operand" "0")] SIMD32_DIMODE))]
+  "TARGET_INT_SIMD"
+  "<simd32_op>%?\\t%Q0, %R0, %1, %2"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "smlald")])
 
 (define_expand "extendsfdf2"
   [(set (match_operand:DF                  0 "s_register_operand")

@@ -10671,7 +10671,8 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 	  || vectorizable_condition (stmt_info, NULL, NULL, false, -1, node,
 				     cost_vec)
 	  || vectorizable_comparison (stmt_info, NULL, NULL, node,
-				      cost_vec));
+				      cost_vec)
+	  || vectorizable_lc_phi (stmt_info, NULL, node));
   else
     {
       if (bb_vinfo)
@@ -10817,6 +10818,11 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     case reduc_vec_info_type:
       done = vectorizable_reduction (stmt_info, gsi, &vec_stmt, slp_node,
 				     slp_node_instance, NULL);
+      gcc_assert (done);
+      break;
+
+    case lc_phi_info_type:
+      done = vectorizable_lc_phi (stmt_info, &vec_stmt, slp_node);
       gcc_assert (done);
       break;
 

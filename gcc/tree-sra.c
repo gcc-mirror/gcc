@@ -327,17 +327,6 @@ static struct obstack name_obstack;
    propagated to their assignment counterparts. */
 static struct access *work_queue_head;
 
-/* Representative of no accesses at all. */
-static struct access  no_accesses_representant;
-
-/* Predicate to test the special value.  */
-
-static inline bool
-no_accesses_p (struct access *access)
-{
-  return access == &no_accesses_representant;
-}
-
 /* Dump contents of ACCESS to file F in a human friendly way.  If GRP is true,
    representative fields are dumped, otherwise those which only describe the
    individual access are.  */
@@ -3039,8 +3028,7 @@ clobber_subtree (struct access *access, gimple_stmt_iterator *gsi,
   if (access->grp_to_be_replaced)
     {
       tree rep = get_access_replacement (access);
-      tree clobber = build_constructor (access->type, NULL);
-      TREE_THIS_VOLATILE (clobber) = 1;
+      tree clobber = build_clobber (access->type);
       gimple *stmt = gimple_build_assign (rep, clobber);
 
       if (insert_after)

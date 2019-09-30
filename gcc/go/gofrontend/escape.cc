@@ -511,16 +511,28 @@ Node::is_big(Escape_context* context) const
       || t->is_abstract())
     return false;
 
-  int64_t size;
-  bool ok = t->backend_type_size(context->gogo(), &size);
-  bool big = ok && (size < 0 || size > 10 * 1024 * 1024);
+  bool big = false;
+  if (t->struct_type() != NULL
+      || (t->array_type() != NULL && !t->is_slice_type()))
+    {
+      int64_t size;
+      bool ok = t->backend_type_size(context->gogo(), &size);
+      big = ok && (size < 0 || size > 10 * 1024 * 1024);
+    }
 
   if (this->expr() != NULL)
     {
       if (this->expr()->allocation_expression() != NULL)
 	{
-	  ok = t->deref()->backend_type_size(context->gogo(), &size);
-	  big = big || size <= 0 || size >= (1 << 16);
+	  Type* pt = t->deref();
+	  if (pt->struct_type() != NULL
+	      || (pt->array_type() != NULL && !pt->is_slice_type()))
+	    {
+	      int64_t size;
+	      bool ok = pt->backend_type_size(context->gogo(), &size);
+	      if (ok)
+		big = big || size <= 0 || size >= (1 << 16);
+	    }
 	}
       else if (this->expr()->call_expression() != NULL)
 	{

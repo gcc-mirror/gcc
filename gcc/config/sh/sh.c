@@ -661,6 +661,9 @@ static const struct attribute_spec sh_attribute_table[] =
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
 
+#undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 
@@ -734,7 +737,7 @@ got_mode_name:;
     {
       if (tokens[i] == "strict")
 	ret.strict = true;
-      else if (tokens[i].find ("gbr-offset=") == 0)
+      else if (!tokens[i].compare (0, strlen ("gbr-offset="), "gbr-offset="))
 	{
 	  std::string offset_str = tokens[i].substr (strlen ("gbr-offset="));
 	  ret.tcb_gbr_offset = integral_argument (offset_str.c_str ());

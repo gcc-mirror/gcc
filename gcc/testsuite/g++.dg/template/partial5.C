@@ -21,4 +21,4 @@ template<typename T, T V>
 struct Z { };
 
 template<typename T>
-struct Z<T, (T)0> { }; // { dg-error "involves template parameter" }
+struct Z<T, (T)0> { }; // { dg-error "13:template argument" }
