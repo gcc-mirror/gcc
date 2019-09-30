@@ -3499,7 +3499,9 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
       /* Defs for the callee saved registers are inserted so that the
 	 pushes have some defining location.  */
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if ((call_used_or_fixed_reg_p (i) == 0) && (df_regs_ever_live_p (i)))
+	if (!crtl->abi->clobbers_full_reg_p (i)
+	    && !fixed_regs[i]
+	    && df_regs_ever_live_p (i))
 	  bitmap_set_bit (entry_block_defs, i);
     }
 
@@ -3672,8 +3674,9 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
     {
       /* Mark all call-saved registers that we actually used.  */
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (df_regs_ever_live_p (i) && !LOCAL_REGNO (i)
-	    && !TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
+	if (df_regs_ever_live_p (i)
+	    && !LOCAL_REGNO (i)
+	    && !crtl->abi->clobbers_full_reg_p (i))
 	  bitmap_set_bit (exit_block_uses, i);
     }
 
