@@ -2643,6 +2643,11 @@ struct GTY(()) ix86_frame
   /* When save_regs_using_mov is set, emit prologue using
      move instead of push instructions.  */
   bool save_regs_using_mov;
+
+  /* Assume without checking that:
+       EXPENSIVE_P = expensive_function_p (EXPENSIVE_COUNT).  */
+  bool expensive_p;
+  int expensive_count;
 };
 
 /* Machine specific frame tracking during prologue/epilogue generation.  All
