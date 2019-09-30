@@ -2381,7 +2381,7 @@ ira_tune_allocno_costs (void)
 						   *crossed_calls_clobber_regs)
 		  && (ira_hard_reg_set_intersection_p (regno, mode,
 						       call_used_or_fixed_regs)
-		      || targetm.hard_regno_call_part_clobbered (NULL, regno,
+		      || targetm.hard_regno_call_part_clobbered (0, regno,
 								 mode)))
 		cost += (ALLOCNO_CALL_FREQ (a)
 			 * (ira_memory_move_cost[mode][rclass][0]

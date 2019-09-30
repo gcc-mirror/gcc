@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "sched-int.h"
 #include "params.h"
 #include "cselib.h"
+#include "function-abi.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -3723,6 +3724,7 @@ deps_analyze_insn (class deps_desc *deps, rtx_insn *insn)
         }
       else
         {
+	  function_abi callee_abi = insn_callee_abi (insn);
           for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
             /* A call may read and modify global register variables.  */
             if (global_regs[i])
@@ -3734,8 +3736,8 @@ deps_analyze_insn (class deps_desc *deps, rtx_insn *insn)
              Since we only have a choice between 'might be clobbered'
              and 'definitely not clobbered', we must include all
              partly call-clobbered registers here.  */
-	    else if (targetm.hard_regno_call_part_clobbered (insn, i,
-							     reg_raw_mode[i])
+	    else if (targetm.hard_regno_call_part_clobbered
+		     (callee_abi.id (), i, reg_raw_mode[i])
                      || TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
               SET_REGNO_REG_SET (reg_pending_clobbers, i);
           /* We don't know what set of fixed registers might be used

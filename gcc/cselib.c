@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "cselib.h"
 #include "params.h"
+#include "function-abi.h"
 
 /* A list of cselib_val structures.  */
 struct elt_list
@@ -2765,11 +2766,13 @@ cselib_process_insn (rtx_insn *insn)
      memory.  */
   if (CALL_P (insn))
     {
+      function_abi callee_abi = insn_callee_abi (insn);
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (call_used_or_fixed_reg_p (i)
 	    || (REG_VALUES (i) && REG_VALUES (i)->elt
 		&& (targetm.hard_regno_call_part_clobbered
-		    (insn, i, GET_MODE (REG_VALUES (i)->elt->val_rtx)))))
+		    (callee_abi.id (), i,
+		     GET_MODE (REG_VALUES (i)->elt->val_rtx)))))
 	  cselib_invalidate_regno (i, reg_raw_mode[i]);
 
       /* Since it is not clear how cselib is going to be used, be

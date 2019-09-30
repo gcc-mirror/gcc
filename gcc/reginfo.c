@@ -568,7 +568,7 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
     if (hard_regno_nregs (regno, mode) == nregs
 	&& targetm.hard_regno_mode_ok (regno, mode)
 	&& (!call_saved
-	    || !targetm.hard_regno_call_part_clobbered (NULL, regno, mode))
+	    || !targetm.hard_regno_call_part_clobbered (0, regno, mode))
 	&& maybe_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (found_mode)))
       found_mode = mode;
 
@@ -576,7 +576,7 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
     if (hard_regno_nregs (regno, mode) == nregs
 	&& targetm.hard_regno_mode_ok (regno, mode)
 	&& (!call_saved
-	    || !targetm.hard_regno_call_part_clobbered (NULL, regno, mode))
+	    || !targetm.hard_regno_call_part_clobbered (0, regno, mode))
 	&& maybe_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (found_mode)))
       found_mode = mode;
 
@@ -584,7 +584,7 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
     if (hard_regno_nregs (regno, mode) == nregs
 	&& targetm.hard_regno_mode_ok (regno, mode)
 	&& (!call_saved
-	    || !targetm.hard_regno_call_part_clobbered (NULL, regno, mode))
+	    || !targetm.hard_regno_call_part_clobbered (0, regno, mode))
 	&& maybe_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (found_mode)))
       found_mode = mode;
 
@@ -592,7 +592,7 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
     if (hard_regno_nregs (regno, mode) == nregs
 	&& targetm.hard_regno_mode_ok (regno, mode)
 	&& (!call_saved
-	    || !targetm.hard_regno_call_part_clobbered (NULL, regno, mode))
+	    || !targetm.hard_regno_call_part_clobbered (0, regno, mode))
 	&& maybe_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (found_mode)))
       found_mode = mode;
 
@@ -606,7 +606,7 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
       if (hard_regno_nregs (regno, mode) == nregs
 	  && targetm.hard_regno_mode_ok (regno, mode)
 	  && (!call_saved
-	      || !targetm.hard_regno_call_part_clobbered (NULL, regno, mode)))
+	      || !targetm.hard_regno_call_part_clobbered (0, regno, mode)))
 	return mode;
     }
 

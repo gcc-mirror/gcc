@@ -594,7 +594,7 @@ check_pseudos_live_through_calls (int regno,
   if (! sparseset_bit_p (pseudos_live_through_calls, regno))
     return;
 
-  gcc_assert (call_insn && CALL_P (call_insn));
+  function_abi callee_abi = insn_callee_abi (call_insn);
   old_call_insn = lra_reg_info[regno].call_insn;
   if (!old_call_insn
       || (targetm.return_call_with_max_clobbers
@@ -606,7 +606,7 @@ check_pseudos_live_through_calls (int regno,
   lra_reg_info[regno].conflict_hard_regs |= last_call_used_reg_set;
 
   for (hr = 0; HARD_REGISTER_NUM_P (hr); hr++)
-    if (targetm.hard_regno_call_part_clobbered (call_insn, hr,
+    if (targetm.hard_regno_call_part_clobbered (callee_abi.id (), hr,
 						PSEUDO_REGNO_MODE (regno)))
       add_to_hard_reg_set (&lra_reg_info[regno].conflict_hard_regs,
 			   PSEUDO_REGNO_MODE (regno), hr);

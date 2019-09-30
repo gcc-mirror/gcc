@@ -838,7 +838,7 @@ ira_build_conflicts (void)
 		 regs must conflict with them.  */
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 		if (!TEST_HARD_REG_BIT (call_used_or_fixed_regs, regno)
-		    && targetm.hard_regno_call_part_clobbered (NULL, regno,
+		    && targetm.hard_regno_call_part_clobbered (0, regno,
 							       obj_mode))
 		  {
 		    SET_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (obj), regno);

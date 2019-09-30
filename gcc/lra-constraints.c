@@ -131,6 +131,7 @@
 #include "lra.h"
 #include "lra-int.h"
 #include "print-rtl.h"
+#include "function-abi.h"
 
 /* Value of LRA_CURR_RELOAD_NUM at the beginning of BB of the current
    insn.  Remember that LRA_CURR_RELOAD_NUM is the number of emitted
@@ -5442,7 +5443,8 @@ need_for_call_save_p (int regno)
 	       : call_used_or_fixed_regs,
 	       PSEUDO_REGNO_MODE (regno), reg_renumber[regno])
 	      || (targetm.hard_regno_call_part_clobbered
-		  (lra_reg_info[regno].call_insn,
+		  (lra_reg_info[regno].call_insn
+		   ? insn_callee_abi (lra_reg_info[regno].call_insn).id () : 0,
 		   reg_renumber[regno], PSEUDO_REGNO_MODE (regno)))));
 }
 
