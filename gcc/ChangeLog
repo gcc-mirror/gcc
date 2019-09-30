@@ -1,5 +1,12 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcse.c: Include function-abi.h.
+	(compute_hash_table_work): Use insn_callee_abi to get the ABI of
+	the call insn target.  Invalidate partially call-clobbered
+	registers as well as fully call-clobbered ones.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* function.c (aggregate_value_p): Work out which ABI the
 	function is using before testing which registers are at least
 	partly preserved by a call.
