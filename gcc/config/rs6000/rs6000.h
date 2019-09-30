@@ -1038,7 +1038,7 @@ enum data_align { align_abi, align_opt, align_both };
    ? DFmode								\
    : (MODE) == TDmode && FP_REGNO_P (REGNO)				\
    ? DImode								\
-   : choose_hard_reg_mode ((REGNO), (NREGS), false))
+   : choose_hard_reg_mode ((REGNO), (NREGS), NULL))
 
 #define VSX_VECTOR_MODE(MODE)		\
 	 ((MODE) == V4SFmode		\
