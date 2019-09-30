@@ -1,3 +1,27 @@
+2019-09-30  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* testsuite/ext/special_functions/airy_ai/check_nan.cc: Ignore the
+	FreeBSD warning about lower advertised precision of tgammal.
+	* testsuite/ext/special_functions/airy_bi/check_nan.cc: Likewise.
+	* testsuite/special_functions/07_cyl_bessel_i/check_nan.cc: Likewise.
+	* testsuite/special_functions/08_cyl_bessel_j/check_nan.cc: Likewise.
+	* testsuite/special_functions/09_cyl_bessel_k/check_nan.cc: Likewise.
+	* testsuite/special_functions/10_cyl_neumann/check_nan.cc: Likewise.
+	* testsuite/special_functions/19_sph_bessel/check_nan.cc: Likewise.
+	* testsuite/special_functions/21_sph_neumann/check_nan.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	08_cyl_bessel_i/check_nan.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	09_cyl_bessel_j/check_nan.cc: Likewise.
+	* testuite/tr1/5_numerical_facilities/special_functions/
+	10_cyl_bessel_k/check_nan.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	11_cyl_neumann/check_nan.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	21_sph_bessel/check_nan.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	23_sph_neumann/check_nan.cc: Likewise.
+
 2019-09-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/span (span(element_type(&)[N]))
