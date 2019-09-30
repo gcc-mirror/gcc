@@ -1890,9 +1890,16 @@ static bool
 aarch64_hard_regno_call_part_clobbered (rtx_insn *insn, unsigned int regno,
 					machine_mode mode)
 {
-  bool simd_p = insn && CALL_P (insn) && aarch64_simd_call_p (insn);
-  return FP_REGNUM_P (regno)
-	 && maybe_gt (GET_MODE_SIZE (mode), simd_p ? 16 : 8);
+  if (FP_REGNUM_P (regno))
+    {
+      bool simd_p = insn && CALL_P (insn) && aarch64_simd_call_p (insn);
+      poly_int64 per_register_size = GET_MODE_SIZE (mode);
+      unsigned int nregs = hard_regno_nregs (regno, mode);
+      if (nregs > 1)
+	per_register_size = exact_div (per_register_size, nregs);
+      return maybe_gt (per_register_size, simd_p ? 16 : 8);
+    }
+  return false;
 }
 
 /* Implement TARGET_RETURN_CALL_WITH_MAX_CLOBBERS.  */
