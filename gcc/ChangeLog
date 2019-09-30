@@ -1,5 +1,11 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* cselib.c (cselib_process_insn): If we know what mode a
+	register was set in, check whether it is clobbered in that
+	mode by a call.  Only fall back to reg_raw_mode if that fails.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* cse.c: Include regs.h and function-abi.h.
 	(invalidate_for_call): Take the call insn as an argument.
 	Use insn_callee_abi to get the ABI of the call and invalidate
