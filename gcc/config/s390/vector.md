@@ -1546,15 +1546,15 @@
 
 ; UNORDERED (a, b): !ORDERED (a, b)
 (define_expand "vec_unordered<mode>"
-  [(set (match_operand:<tointvec>          0 "register_operand" "=v")
-	(ge:<tointvec> (match_operand:VFT 1 "register_operand"  "v")
-		 (match_operand:VFT 2 "register_operand"  "v")))
-   (set (match_dup 3) (gt:<tointvec> (match_dup 2) (match_dup 1)))
-   (set (match_dup 0) (ior:<tointvec> (match_dup 0) (match_dup 3)))
-   (set (match_dup 0) (not:<tointvec> (match_dup 0)))]
+  [(match_operand:<tointvec> 0 "register_operand" "=v")
+   (match_operand:VFT        1 "register_operand" "v")
+   (match_operand:VFT        2 "register_operand" "v")]
   "TARGET_VX"
 {
-  operands[3] = gen_reg_rtx (<tointvec>mode);
+  emit_insn (gen_vec_ordered<mode> (operands[0], operands[1], operands[2]));
+  emit_insn (gen_rtx_SET (operands[0],
+	     gen_rtx_NOT (<tointvec>mode, operands[0])));
+  DONE;
 })
 
 (define_expand "vec_unordered"
