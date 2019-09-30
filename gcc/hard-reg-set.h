@@ -477,10 +477,12 @@ extern struct target_hard_regs *this_target_hard_regs;
 #endif
 #define savable_regs \
   (this_target_hard_regs->x_savable_regs)
+#ifdef IN_TARGET_CODE
 #define regs_invalidated_by_call \
   (this_target_hard_regs->x_regs_invalidated_by_call)
 #define call_used_or_fixed_regs \
   (regs_invalidated_by_call | fixed_reg_set)
+#endif
 #define reg_alloc_order \
   (this_target_hard_regs->x_reg_alloc_order)
 #define inv_reg_alloc_order \
@@ -509,6 +511,7 @@ extern const char * reg_class_names[];
 #define REG_CAN_CHANGE_MODE_P(REGN, FROM, TO)                          \
   (targetm.can_change_mode_class (FROM, TO, REGNO_REG_CLASS (REGN)))
 
+#ifdef IN_TARGET_CODE
 /* Return true if register REGNO is either fixed or call-used
    (aka call-clobbered).  */
 
@@ -517,5 +520,6 @@ call_used_or_fixed_reg_p (unsigned int regno)
 {
   return fixed_regs[regno] || this_target_hard_regs->x_call_used_regs[regno];
 }
+#endif
 
 #endif /* ! GCC_HARD_REG_SET_H */

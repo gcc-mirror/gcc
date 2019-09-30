@@ -69,6 +69,8 @@ struct target_regs *this_target_regs = &default_target_regs;
 
 #define call_used_regs \
   (this_target_hard_regs->x_call_used_regs)
+#define regs_invalidated_by_call \
+  (this_target_hard_regs->x_regs_invalidated_by_call)
 
 /* Data for initializing fixed_regs.  */
 static const char initial_fixed_regs[] = FIXED_REGISTERS;
