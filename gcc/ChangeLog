@@ -1,5 +1,18 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Use crtl->abi
+	to test whether we're compiling a vector PCS function and to test
+	whether the function needs to save a particular register.
+	Remove the vector PCS handling of df_set_regs_ever_live.
+	(aarch64_components_for_bb): Use crtl->abi to test whether
+	the function needs to save a particular register.
+	(aarch64_process_components): Use crtl->abi to test whether
+	we're compiling a vector PCS function.
+	(aarch64_expand_prologue, aarch64_expand_epilogue): Likewise.
+	(aarch64_epilogue_uses): Remove handling of vector PCS functions.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-protos.h (aarch64_use_simple_return_insn_p):
 	Delete.
 	* config/aarch64/aarch64.c (aarch64_components_for_bb): Check

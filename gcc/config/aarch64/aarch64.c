@@ -5334,7 +5334,7 @@ aarch64_layout_frame (void)
 {
   HOST_WIDE_INT offset = 0;
   int regno, last_fp_reg = INVALID_REGNUM;
-  bool simd_function = aarch64_simd_decl_p (cfun->decl);
+  bool simd_function = (crtl->abi->id () == ARM_PCS_SIMD);
 
   cfun->machine->frame.emit_frame_chain = aarch64_needs_frame_chain ();
 
@@ -5347,17 +5347,6 @@ aarch64_layout_frame (void)
 
   cfun->machine->frame.wb_candidate1 = INVALID_REGNUM;
   cfun->machine->frame.wb_candidate2 = INVALID_REGNUM;
-
-  /* If this is a non-leaf simd function with calls we assume that
-     at least one of those calls is to a non-simd function and thus
-     we must save V8 to V23 in the prologue.  */
-
-  if (simd_function && !crtl->is_leaf)
-    {
-      for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
-	if (FP_SIMD_SAVED_REGNUM_P (regno))
- 	  df_set_regs_ever_live (regno, true);
-    }
 
   /* First mark all the registers that really need to be saved...  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
@@ -5375,14 +5364,15 @@ aarch64_layout_frame (void)
   /* ... and any callee saved register that dataflow says is live.  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
     if (df_regs_ever_live_p (regno)
+	&& !fixed_regs[regno]
 	&& (regno == R30_REGNUM
-	    || !call_used_or_fixed_reg_p (regno)))
+	    || !crtl->abi->clobbers_full_reg_p (regno)))
       cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
     if (df_regs_ever_live_p (regno)
-	&& (!call_used_or_fixed_reg_p (regno)
-	    || (simd_function && FP_SIMD_SAVED_REGNUM_P (regno))))
+	&& !fixed_regs[regno]
+	&& !crtl->abi->clobbers_full_reg_p (regno))
       {
 	cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
 	last_fp_reg = regno;
@@ -5971,7 +5961,6 @@ aarch64_components_for_bb (basic_block bb)
   bitmap in = DF_LIVE_IN (bb);
   bitmap gen = &DF_LIVE_BB_INFO (bb)->gen;
   bitmap kill = &DF_LIVE_BB_INFO (bb)->kill;
-  bool simd_function = aarch64_simd_decl_p (cfun->decl);
 
   sbitmap components = sbitmap_alloc (LAST_SAVED_REGNUM + 1);
   bitmap_clear (components);
@@ -5994,8 +5983,8 @@ aarch64_components_for_bb (basic_block bb)
 
   /* GPRs are used in a bb if they are in the IN, GEN, or KILL sets.  */
   for (unsigned regno = 0; regno <= LAST_SAVED_REGNUM; regno++)
-    if ((!call_used_or_fixed_reg_p (regno)
-	|| (simd_function && FP_SIMD_SAVED_REGNUM_P (regno)))
+    if (!fixed_regs[regno]
+	&& !crtl->abi->clobbers_full_reg_p (regno)
 	&& (TEST_HARD_REG_BIT (extra_caller_saves, regno)
 	    || bitmap_bit_p (in, regno)
 	    || bitmap_bit_p (gen, regno)
@@ -6100,7 +6089,7 @@ aarch64_process_components (sbitmap components, bool prologue_p)
 	 mergeable with the current one into a pair.  */
       if (!satisfies_constraint_Ump (mem)
 	  || GP_REGNUM_P (regno) != GP_REGNUM_P (regno2)
-	  || (aarch64_simd_decl_p (cfun->decl) && FP_REGNUM_P (regno))
+	  || (crtl->abi->id () == ARM_PCS_SIMD && FP_REGNUM_P (regno))
 	  || maybe_ne ((offset2 - cfun->machine->frame.reg_offset[regno]),
 		       GET_MODE_SIZE (mode)))
 	{
@@ -6432,8 +6421,6 @@ aarch64_epilogue_uses (int regno)
     {
       if (regno == LR_REGNUM)
 	return 1;
-      if (aarch64_simd_decl_p (cfun->decl) && FP_SIMD_SAVED_REGNUM_P (regno))
-	return 1;
     }
   return 0;
 }
@@ -6634,7 +6621,7 @@ aarch64_expand_prologue (void)
 
   aarch64_save_callee_saves (DImode, callee_offset, R0_REGNUM, R30_REGNUM,
 			     callee_adjust != 0 || emit_frame_chain);
-  if (aarch64_simd_decl_p (cfun->decl))
+  if (crtl->abi->id () == ARM_PCS_SIMD)
     aarch64_save_callee_saves (TFmode, callee_offset, V0_REGNUM, V31_REGNUM,
 			       callee_adjust != 0 || emit_frame_chain);
   else
@@ -6733,7 +6720,7 @@ aarch64_expand_epilogue (bool for_sibcall)
 
   aarch64_restore_callee_saves (DImode, callee_offset, R0_REGNUM, R30_REGNUM,
 				callee_adjust != 0, &cfi_ops);
-  if (aarch64_simd_decl_p (cfun->decl))
+  if (crtl->abi->id () == ARM_PCS_SIMD)
     aarch64_restore_callee_saves (TFmode, callee_offset, V0_REGNUM, V31_REGNUM,
 				  callee_adjust != 0, &cfi_ops);
   else
