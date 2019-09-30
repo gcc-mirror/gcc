@@ -2340,7 +2340,6 @@ ira_tune_allocno_costs (void)
   ira_allocno_object_iterator oi;
   ira_object_t obj;
   bool skip_p;
-  HARD_REG_SET *crossed_calls_clobber_regs;
 
   FOR_EACH_ALLOCNO (a, ai)
     {
@@ -2375,14 +2374,7 @@ ira_tune_allocno_costs (void)
 		continue;
 	      rclass = REGNO_REG_CLASS (regno);
 	      cost = 0;
-	      crossed_calls_clobber_regs
-		= &(ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a));
-	      if (ira_hard_reg_set_intersection_p (regno, mode,
-						   *crossed_calls_clobber_regs)
-		  && (ira_hard_reg_set_intersection_p (regno, mode,
-						       call_used_or_fixed_regs)
-		      || targetm.hard_regno_call_part_clobbered (0, regno,
-								 mode)))
+	      if (ira_need_caller_save_p (a, regno))
 		cost += (ALLOCNO_CALL_FREQ (a)
 			 * (ira_memory_move_cost[mode][rclass][0]
 			    + ira_memory_move_cost[mode][rclass][1]));

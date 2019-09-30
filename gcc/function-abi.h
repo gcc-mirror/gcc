@@ -265,6 +265,32 @@ extern target_function_abi_info *this_target_function_abi_info;
   (this_target_function_abi_info->x_function_abis[0])
 #define eh_edge_abi default_function_abi
 
+extern HARD_REG_SET call_clobbers_in_region (unsigned int, const_hard_reg_set,
+					     machine_mode mode);
+
+/* Return true if (reg:MODE REGNO) might be clobbered by one of the
+   calls in a region described by ABIS and MASK, where:
+
+   * Bit ID of ABIS is set if the region contains a call with
+     function_abi identifier ID.
+
+   * MASK contains all the registers that are fully or partially
+     clobbered by calls in the region.
+
+   This is not quite as accurate as testing each individual call,
+   but it's a close and conservatively-correct approximation.
+   It's much better for some targets than:
+
+     overlaps_hard_reg_set_p (MASK, MODE, REGNO).  */
+
+inline bool
+call_clobbered_in_region_p (unsigned int abis, const_hard_reg_set mask,
+			    machine_mode mode, unsigned int regno)
+{
+  HARD_REG_SET clobbers = call_clobbers_in_region (abis, mask, mode);
+  return overlaps_hard_reg_set_p (clobbers, mode, regno);
+}
+
 extern const predefined_function_abi &fntype_abi (const_tree);
 extern function_abi fndecl_abi (const_tree);
 extern function_abi insn_callee_abi (const rtx_insn *);
