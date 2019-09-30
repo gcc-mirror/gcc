@@ -2687,8 +2687,14 @@ powerpc*-*-freebsd*)
 	    	tm_file="${tm_file} rs6000/default64.h rs6000/freebsd64.h"
 		tmake_file="${tmake_file} rs6000/t-freebsd64"
 		extra_options="${extra_options} rs6000/linux64.opt"
+		if test $fbsd_major -ge 13; then
+		    tm_defines="${tm_defines} TARGET_FREEBSD32_SECURE_PLT=1"
+		fi
 		;;
 	     *)
+		if test $fbsd_major -ge 13; then
+		    tm_file="rs6000/secureplt.h ${tm_file}"
+		fi
 	        tm_file="${tm_file} rs6000/freebsd.h"
 		;;
 	esac
