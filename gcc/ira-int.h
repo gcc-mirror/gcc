@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_IRA_INT_H
 
 #include "recog.h"
+#include "function-abi.h"
 
 /* To provide consistency in naming, all IRA external variables,
    functions, common typedefs start with prefix ira_.  */
@@ -287,6 +288,9 @@ struct ira_allocno
   /* Register class which should be used for allocation for given
      allocno.  NO_REGS means that we should use memory.  */
   ENUM_BITFIELD (reg_class) aclass : 16;
+  /* A bitmask of the ABIs used by calls that occur while the allocno
+     is live.  */
+  unsigned int crossed_calls_abis : NUM_ABI_IDS;
   /* During the reload, value TRUE means that we should not reassign a
      hard register to the allocno got memory earlier.  It is set up
      when we removed memory-memory move insn before each iteration of
@@ -423,6 +427,7 @@ struct ira_allocno
 #define ALLOCNO_CALL_FREQ(A) ((A)->call_freq)
 #define ALLOCNO_CALLS_CROSSED_NUM(A) ((A)->calls_crossed_num)
 #define ALLOCNO_CHEAP_CALLS_CROSSED_NUM(A) ((A)->cheap_calls_crossed_num)
+#define ALLOCNO_CROSSED_CALLS_ABIS(A) ((A)->crossed_calls_abis)
 #define ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS(A) \
   ((A)->crossed_calls_clobbered_regs)
 #define ALLOCNO_MEM_OPTIMIZED_DEST(A) ((A)->mem_optimized_dest)
@@ -1509,5 +1514,29 @@ ira_allocate_and_set_or_copy_costs (int **vec, enum reg_class aclass,
 
 extern rtx ira_create_new_reg (rtx);
 extern int first_moveable_pseudo, last_moveable_pseudo;
+
+/* Return the set of registers that would need a caller save if allocno A
+   overlapped them.  */
+
+inline HARD_REG_SET
+ira_need_caller_save_regs (ira_allocno_t a)
+{
+  return call_clobbers_in_region (ALLOCNO_CROSSED_CALLS_ABIS (a),
+				  ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a),
+				  ALLOCNO_MODE (a));
+}
+
+/* Return true if we would need to save allocno A around a call if we
+   assigned hard register REGNO.  */
+
+inline bool
+ira_need_caller_save_p (ira_allocno_t a, unsigned int regno)
+{
+  if (ALLOCNO_CALLS_CROSSED_NUM (a) == 0)
+    return false;
+  return call_clobbered_in_region_p (ALLOCNO_CROSSED_CALLS_ABIS (a),
+				     ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a),
+				     ALLOCNO_MODE (a), regno);
+}
 
 #endif /* GCC_IRA_INT_H */

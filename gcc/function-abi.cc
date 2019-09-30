@@ -126,6 +126,31 @@ predefined_function_abi::add_full_reg_clobber (unsigned int regno)
     SET_HARD_REG_BIT (m_mode_clobbers[i], regno);
 }
 
+/* Return the set of registers that cannot be used to hold a value of
+   mode MODE across the calls in a region described by ABIS and MASK, where:
+
+   * Bit ID of ABIS is set if the region contains a call with
+     function_abi identifier ID.
+
+   * MASK contains all the registers that are fully or partially
+     clobbered by calls in the region.
+
+   This is not quite as accurate as testing each individual call,
+   but it's a close and conservatively-correct approximation.
+   It's much better for some targets than just using MASK.  */
+
+HARD_REG_SET
+call_clobbers_in_region (unsigned int abis, const_hard_reg_set mask,
+			 machine_mode mode)
+{
+  HARD_REG_SET result;
+  CLEAR_HARD_REG_SET (result);
+  for (unsigned int id = 0; abis; abis >>= 1, ++id)
+    if (abis & 1)
+      result |= function_abis[id].mode_clobbers (mode);
+  return result & mask;
+}
+
 /* Return the predefined ABI used by functions with type TYPE.  */
 
 const predefined_function_abi &

@@ -1,5 +1,51 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* function-abi.h (call_clobbers_in_region): Declare.
+	(call_clobbered_in_region_p): New function.
+	* function-abi.cc (call_clobbers_in_region): Likewise.
+	* ira-int.h: Include function-abi.h.
+	(ira_allocno::crossed_calls_abis): New field.
+	(ALLOCNO_CROSSED_CALLS_ABIS): New macro.
+	(ira_need_caller_save_regs): New function.
+	(ira_need_caller_save_p): Likewise.
+	* ira.c (setup_reg_renumber): Use ira_need_caller_save_p instead
+	of call_used_or_fixed_regs.
+	(do_reload): Use crtl->abi to test whether the current function
+	needs to save a register in the prologue.  Count registers that
+	need to be saved rather than registers that don't.
+	* ira-build.c (create_cap_allocno): Copy ALLOCNO_CROSSED_CALLS_ABIS.
+	Remove unnecessary | from ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS.
+	(propagate_allocno_info): Merge ALLOCNO_CROSSED_CALLS_ABIS too.
+	(propagate_some_info_from_allocno): Likewise.
+	(copy_info_to_removed_store_destinations): Likewise.
+	(ira_flattening): Say that ALLOCNO_CROSSED_CALLS_ABIS and
+	ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS are handled conservatively.
+	(ira_build): Use ira_need_caller_save_regs instead of
+	call_used_or_fixed_regs.
+	* ira-color.c (calculate_saved_nregs): Use crtl->abi to test
+	whether the current function would need to save a register
+	before using it.
+	(calculate_spill_cost): Likewise.
+	(allocno_reload_assign): Use ira_need_caller_save_regs and
+	ira_need_caller_save_p instead of call_used_or_fixed_regs.
+	* ira-conflicts.c (ira_build_conflicts): Use
+	ira_need_caller_save_regs rather than call_used_or_fixed_regs
+	as the set of call-clobbered registers.  Remove the
+	call_used_or_fixed_regs mask from the calculation of
+	temp_hard_reg_set and mask its use instead.  Remove special
+	handling of partially-clobbered registers.
+	* ira-costs.c (ira_tune_allocno_costs): Use ira_need_caller_save_p.
+	* ira-lives.c (process_bb_node_lives): Use mode_clobbers to
+	calculate the set of conflicting registers for calls that
+	can throw.  Record the ABIs of calls in ALLOCNO_CROSSED_CALLS_ABIS.
+	Use full_and_partial_reg_clobbers rather than full_reg_clobbers
+	for the calculation of ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS.
+	Use eh_edge_abi to calculate the set of registers that could
+	be clobbered by an EH edge.  Include partially-clobbered as
+	well as fully-clobbered registers.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* haifa-sched.c: Include function-abi.h.
 	(alloc_global_sched_pressure_data): Use crtl->abi to check whether
 	the function would need to save a register before using it.
