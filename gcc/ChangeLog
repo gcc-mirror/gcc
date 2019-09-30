@@ -1,3 +1,21 @@
+2019-09-30  Richard Biener  <rguenther@suse.de>
+
+	* gimple.c (gimple_get_lhs): For PHIs return the result.
+	* tree-vectorizer.h (vectorizable_live_operation): Also get the
+	SLP instance as argument.
+	* tree-vect-loop.c (vect_analyze_loop_operations): Also handle
+	double-reduction PHIs with vectorizable_lc_phi.
+	(vect_analyze_loop_operations): Adjust.
+	(vect_create_epilog_for_reduction): Remove all code not dealing
+	with reduction LC PHI or epilogue generation.
+	(vectorizable_live_operation): Call vect_create_epilog_for_reduction
+	for live stmts of reductions.
+	* tree-vect-stmts.c (vectorizable_condition): When !for_reduction
+	do not handle defs that are not vect_internal_def.
+	(can_vectorize_live_stmts): Adjust.
+	(vect_analyze_stmt): When the vectorized stmt defined a value
+	used on backedges adjust the backedge uses of vectorized PHIs.
+
 2019-09-30  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/91853
