@@ -1,5 +1,11 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* regcprop.c (copyprop_hardreg_forward_1): Use the recorded
+	mode of the register when deciding whether it is no longer
+	available after a call.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* recog.c: Include function-abi.h.
 	(peep2_find_free_register): Use crtl->abi when deciding whether
 	a register is free for use after RA.

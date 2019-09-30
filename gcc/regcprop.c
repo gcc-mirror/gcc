@@ -1055,16 +1055,15 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
 	  function_abi callee_abi = insn_callee_abi (insn);
 	  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	    if ((callee_abi.clobbers_full_reg_p (regno)
-		 || (targetm.hard_regno_call_part_clobbered
-		     (callee_abi.id (), regno, vd->e[regno].mode)))
+	    if (vd->e[regno].mode != VOIDmode
+		&& callee_abi.clobbers_reg_p (vd->e[regno].mode, regno)
 		&& (regno < set_regno || regno >= set_regno + set_nregs))
 	      kill_value_regno (regno, 1, vd);
 
 	  /* If SET was seen in CALL_INSN_FUNCTION_USAGE, and SET_SRC
-	     of the SET isn't in regs_invalidated_by_call hard reg set,
-	     but instead among CLOBBERs on the CALL_INSN, we could wrongly
-	     assume the value in it is still live.  */
+	     of the SET isn't clobbered by CALLEE_ABI, but instead among
+	     CLOBBERs on the CALL_INSN, we could wrongly assume the
+	     value in it is still live.  */
 	  if (ksvd.ignore_set_reg)
 	    kill_clobbered_values (insn, vd);
 	}
