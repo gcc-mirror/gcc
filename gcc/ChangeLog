@@ -1,5 +1,10 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* sched-deps.c (deps_analyze_insn): Use the ABI of the target
+	function to test whether a register is fully or partly clobbered.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* rtlanal.c: Include function-abi.h.
 	(reg_set_p): Use insn_callee_abi to get the ABI of the called
 	function and clobbers_reg_p to test whether the register
