@@ -5976,13 +5976,30 @@ aarch64_components_for_bb (basic_block bb)
   sbitmap components = sbitmap_alloc (LAST_SAVED_REGNUM + 1);
   bitmap_clear (components);
 
+  /* Clobbered registers don't generate values in any meaningful sense,
+     since nothing after the clobber can rely on their value.  And we can't
+     say that partially-clobbered registers are unconditionally killed,
+     because whether they're killed or not depends on the mode of the
+     value they're holding.  Thus partially call-clobbered registers
+     appear in neither the kill set nor the gen set.
+
+     Check manually for any calls that clobber more of a register than the
+     current function can.  */
+  function_abi_aggregator callee_abis;
+  rtx_insn *insn;
+  FOR_BB_INSNS (bb, insn)
+    if (CALL_P (insn))
+      callee_abis.note_callee_abi (insn_callee_abi (insn));
+  HARD_REG_SET extra_caller_saves = callee_abis.caller_save_regs (*crtl->abi);
+
   /* GPRs are used in a bb if they are in the IN, GEN, or KILL sets.  */
   for (unsigned regno = 0; regno <= LAST_SAVED_REGNUM; regno++)
     if ((!call_used_or_fixed_reg_p (regno)
 	|| (simd_function && FP_SIMD_SAVED_REGNUM_P (regno)))
-       && (bitmap_bit_p (in, regno)
-	   || bitmap_bit_p (gen, regno)
-	   || bitmap_bit_p (kill, regno)))
+	&& (TEST_HARD_REG_BIT (extra_caller_saves, regno)
+	    || bitmap_bit_p (in, regno)
+	    || bitmap_bit_p (gen, regno)
+	    || bitmap_bit_p (kill, regno)))
       {
 	unsigned regno2, offset, offset2;
 	bitmap_set_bit (components, regno);
@@ -6646,19 +6663,6 @@ aarch64_use_return_insn_p (void)
     return false;
 
   return known_eq (cfun->machine->frame.frame_size, 0);
-}
-
-/* Return false for non-leaf SIMD functions in order to avoid
-   shrink-wrapping them.  Doing this will lose the necessary
-   save/restore of FP registers.  */
-
-bool
-aarch64_use_simple_return_insn_p (void)
-{
-  if (aarch64_simd_decl_p (cfun->decl) && !crtl->is_leaf)
-    return false;
-
-  return true;
 }
 
 /* Generate the epilogue instructions for returning from a function.

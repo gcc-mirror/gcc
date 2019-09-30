@@ -799,7 +799,7 @@
 
 (define_insn "simple_return"
   [(simple_return)]
-  "aarch64_use_simple_return_insn_p ()"
+  ""
   "ret"
   [(set_attr "type" "branch")]
 )

@@ -531,7 +531,6 @@ bool aarch64_split_dimode_const_store (rtx, rtx);
 bool aarch64_symbolic_address_p (rtx);
 bool aarch64_uimm12_shift (HOST_WIDE_INT);
 bool aarch64_use_return_insn_p (void);
-bool aarch64_use_simple_return_insn_p (void);
 const char *aarch64_output_casesi (rtx *);
 
 enum aarch64_symbol_type aarch64_classify_symbol (rtx, HOST_WIDE_INT);

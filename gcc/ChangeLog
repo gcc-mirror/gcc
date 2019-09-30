@@ -1,5 +1,15 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-protos.h (aarch64_use_simple_return_insn_p):
+	Delete.
+	* config/aarch64/aarch64.c (aarch64_components_for_bb): Check
+	whether the block calls a function that clobbers more registers
+	than the current function is allowed to.
+	(aarch64_use_simple_return_insn_p): Delete.
+	* config/aarch64/aarch64.md (simple_return): Remove condition.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* function-abi.h (function_abi_aggregator): New class.
 	* function-abi.cc (function_abi_aggregator::caller_save_regs): New
 	function.

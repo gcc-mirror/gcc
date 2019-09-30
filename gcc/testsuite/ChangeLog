@@ -1,5 +1,9 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/torture/simd-abi-9.c: New test.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/torture/simd-abi-8.c: New test.
 
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
