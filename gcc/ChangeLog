@@ -1,5 +1,59 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target.def (return_call_with_max_clobbers): Delete.
+	* doc/tm.texi.in (TARGET_RETURN_CALL_WITH_MAX_CLOBBERS): Delete.
+	* doc/tm.texi: Regenerate.
+	* config/aarch64/aarch64.c (aarch64_return_call_with_max_clobbers)
+	(TARGET_RETURN_CALL_WITH_MAX_CLOBBERS): Delete.
+	* lra-int.h (lra_reg::actual_call_used_reg_set): Delete.
+	(lra_reg::call_insn): Delete.
+	* lra.c: Include function-abi.h.
+	(initialize_lra_reg_info_element): Don't initialize the fields above.
+	(lra): Use crtl->abi to test whether the current function needs to
+	save a register in the prologue.  Remove special pre-inheritance
+	lra_create_live_ranges pass for flag_ipa_ra.
+	* lra-assigns.c: Include function-abi.h
+	(find_hard_regno_for_1): Use crtl->abi to test whether the current
+	function needs to save a register in the prologue.
+	(lra_assign): Assert that registers aren't allocated to a
+	conflicting register, rather than checking only for overlaps
+	with call_used_or_fixed_regs.  Do this even for flag_ipa_ra,
+	and for registers that are not live across a call.
+	* lra-constraints.c (last_call_for_abi): New variable.
+	(full_and_partial_call_clobbers): Likewise.
+	(setup_next_usage_insn): Remove the register from
+	full_and_partial_call_clobbers.
+	(need_for_call_save_p): Use call_clobbered_in_region_p to test
+	whether the register needs a caller save.
+	(need_for_split_p): Use full_and_partial_reg_clobbers instead
+	of call_used_or_fixed_regs.
+	(inherit_in_ebb): Initialize and maintain last_call_for_abi and
+	full_and_partial_call_clobbers.
+	* lra-lives.c (check_pseudos_live_through_calls): Replace
+	last_call_used_reg_set and call_insn arguments with an abi argument.
+	Remove handling of lra_reg::call_insn.  Use function_abi::mode_clobbers
+	as the set of conflicting registers.
+	(calls_have_same_clobbers_p): Delete.
+	(process_bb_lives): Track the ABI of the last call instead of an
+	insn/HARD_REG_SET pair.  Update calls to
+	check_pseudos_live_through_calls.  Use eh_edge_abi to calculate
+	the set of registers that could be clobbered by an EH edge.
+	Include partially-clobbered as well as fully-clobbered registers.
+	(lra_create_live_ranges_1): Don't initialize lra_reg::call_insn.
+	* lra-remat.c: Include function-abi.h.
+	(call_used_regs_arr_len, call_used_regs_arr): Delete.
+	(set_bb_regs): Use insn_callee_abi to get the set of call-clobbered
+	registers and bitmap_view to combine them into dead_regs.
+	(call_used_input_regno_present_p): Take a function_abi argument
+	and use it to test whether a register is call-clobbered.
+	(calculate_gen_cands): Use insn_callee_abi to get the ABI of the
+	call insn target.  Update tje call to call_used_input_regno_present_p.
+	(do_remat): Likewise.
+	(lra_remat): Remove the initialization of call_used_regs_arr_len
+	and call_used_regs_arr.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* loop-iv.c: Include regs.h and function-abi.h.
 	(simplify_using_initial_values): Use insn_callee_abi to get the
 	ABI of the call insn target.  Conservatively assume that

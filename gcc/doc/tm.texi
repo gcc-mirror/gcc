@@ -1941,18 +1941,6 @@ The default implementation returns false, which is correct
 for targets that don't have partly call-clobbered registers.
 @end deftypefn
 
-@deftypefn {Target Hook} {rtx_insn *} TARGET_RETURN_CALL_WITH_MAX_CLOBBERS (rtx_insn *@var{call_1}, rtx_insn *@var{call_2})
-This hook returns a pointer to the call that partially clobbers the
-most registers.  If a platform supports multiple ABIs where the registers
-that are partially clobbered may vary, this function compares two
-calls and returns a pointer to the one that clobbers the most registers.
-If both calls clobber the same registers, @var{call_1} must be returned.
-
-The registers clobbered in different ABIs must be a proper subset or
-superset of all other ABIs.  @var{call_1} must always be a call insn,
-call_2 may be NULL or a call insn.
-@end deftypefn
-
 @deftypefn {Target Hook} {const char *} TARGET_GET_MULTILIB_ABI_NAME (void)
 This hook returns name of multilib ABI name.
 @end deftypefn
