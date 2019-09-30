@@ -43,7 +43,7 @@ msgstr ""
 "Project-Id-Version: gcc 9.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2019-05-02 20:28+0000\n"
-"PO-Revision-Date: 2019-08-31 18:04+0200\n"
+"PO-Revision-Date: 2019-09-30 17:16+0200\n"
 "Last-Translator: Antonio Ceballos Roa <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -6795,7 +6795,7 @@ msgstr "Advierte de conversiones de entero a puntero y viceversa incompatibles."
 
 #: c-family/c.opt:677
 msgid "Warn for suspicious integer expressions in boolean context."
-msgstr ""
+msgstr "Advierte de expresiones enteras sospechosas en contexto booleano."
 
 #: c-family/c.opt:681
 msgid "Warn when there is a cast to a pointer from an integer of a different size."
@@ -6859,7 +6859,7 @@ msgstr "Avisa sobre campos faltantes en los inicializadores de struct."
 
 #: c-family/c.opt:745
 msgid "Warn about unsafe macros expanding to multiple statements used as a body of a clause such as if, else, while, switch, or for."
-msgstr ""
+msgstr "Advierte de expansiones de macros no seguras a sentencias múltiples utilizadas como cuerpo de una cláusula como if, while, switch o for."
 
 #: c-family/c.opt:749
 msgid "Warn on direct multiple inheritance."
@@ -6871,7 +6871,7 @@ msgstr "Advierta de la definición de espacios de nombres."
 
 #: c-family/c.opt:757
 msgid "Warn when fields in a struct with the packed attribute are misaligned."
-msgstr ""
+msgstr "Avisa cuando un struct con el atributo «packed» tiene campos desalineados."
 
 #: c-family/c.opt:761
 msgid "Warn about missing sized deallocation functions."
@@ -6879,7 +6879,7 @@ msgstr "Advierte de funciones de desasignación con tamaño ausentes."
 
 #: c-family/c.opt:765
 msgid "Warn about suspicious divisions of two sizeof expressions that don't work correctly with pointers."
-msgstr ""
+msgstr "Advierte de divisiones sospechosas de dos expresiones sizeof que no funcionan correctamente con punteros."
 
 #: c-family/c.opt:769
 msgid "Warn about suspicious length parameters to certain string functions if the argument uses sizeof."
@@ -6891,7 +6891,7 @@ msgstr "Avisa cuando se aplica sizeof a parámetros declarados como array."
 
 #: c-family/c.opt:777
 msgid "Warn about buffer overflow in string manipulation functions like memcpy and strcpy."
-msgstr ""
+msgstr "Advierte de desbordamiento de búfer en funciones que manipulan cadenas, como memcpy y strcpy."
 
 #: c-family/c.opt:782
 msgid "Under the control of Object Size type, warn about buffer overflow in string manipulation functions like memcpy and strcpy."
@@ -7059,7 +7059,7 @@ msgstr "Avisa sobre malos usos de pragmas."
 
 #: c-family/c.opt:991
 msgid "Warn if constructor or destructors with priorities from 0 to 100 are used."
-msgstr ""
+msgstr "Avisa si se usan constructores o destructores con prioridades entre 0 y 100."
 
 #: c-family/c.opt:995
 msgid "Warn if a property for an Objective-C object has no assign semantics specified."
@@ -7079,7 +7079,7 @@ msgstr "Avisa sobre declaraciones múltiples del mismo objeto."
 
 #: c-family/c.opt:1015
 msgid "Warn about redundant calls to std::move."
-msgstr ""
+msgstr "Advierte de llamadas redundantes a std::move."
 
 #: c-family/c.opt:1019
 msgid "Warn about uses of register storage specifier."
@@ -7283,11 +7283,11 @@ msgstr "-fada-spec-parent=unidad  Vuelca specs de Ada como unidades hijas del pa
 
 #: c-family/c.opt:1267
 msgid "Support C++17 allocation of over-aligned types."
-msgstr ""
+msgstr "Admite alojamiento C++17 de tipos sobrealineados."
 
 #: c-family/c.opt:1271
 msgid "-faligned-new=<N> Use C++17 over-aligned type allocation for alignments greater than N."
-msgstr ""
+msgstr "-faligned-new=<N> Usa alojamiento de tipo sobrealineado de C++17 para alineamientos mayores que N."
 
 #: c-family/c.opt:1278
 msgid "Allow variadic functions without named parameter."
@@ -7312,7 +7312,7 @@ msgstr "Donde acorte, usar rutas canonicalizadas para cabeceras de sistemas."
 
 #: c-family/c.opt:1305
 msgid "Enable the char8_t fundamental type and use it as the type for UTF-8 string and character literals."
-msgstr ""
+msgstr "Habilita el tipo fundamental char8_t y lo usa como el tipo para los literales de cadenas UTF-8 y de caracteres."
 
 #: c-family/c.opt:1393
 msgid "Deprecated in GCC 8.  This switch has no effect."
@@ -7356,7 +7356,7 @@ msgstr "Factoriza constructores y destructores complejos para favorecer el espac
 
 #: c-family/c.opt:1441
 msgid "Print hierarchical comparisons when template types are mismatched."
-msgstr ""
+msgstr "Imprime comparaciones jerárquicas cuando los tipos de plantilla no coinciden."
 
 #: c-family/c.opt:1445
 msgid "Preprocess directives only."
@@ -7368,7 +7368,7 @@ msgstr "Permite '$' como un identificador de carácter."
 
 #: c-family/c.opt:1453
 msgid "-fmacro-prefix-map=<old>=<new> Map one directory name to another in __FILE__, __BASE_FILE__, and __builtin_FILE()."
-msgstr ""
+msgstr "-fmacro-prefix-map=<viejo>=<nuevo> Asocia un nombre de directorio a otro en __FILE__, __BASE_FILE__, y __builtin_FILE()."
 
 #: c-family/c.opt:1457
 msgid "Write all declarations as Ada code transitively."
@@ -7909,13 +7909,11 @@ msgstr "No considerada."
 
 #: d/lang.opt:51
 msgid "-Hd <dir>\tWrite D interface files to directory <dir>."
-msgstr ""
+msgstr "-Hd <dir>\tEscribe los ficheros de interfaz de D en el directorio <dir>."
 
 #: d/lang.opt:55
-#, fuzzy
-#| msgid "-o <file>\tPlace output into <file>."
 msgid "-Hf <file>\tWrite D interface to <file>."
-msgstr "-o <fichero>\tColoca la salida en el <fichero>."
+msgstr "-Hf <fichero>\tEscribe el interfaz de D en el <fichero>."
 
 #: d/lang.opt:123
 msgid "Warn about casts that will produce a null result."
@@ -7950,10 +7948,8 @@ msgid "Generate code for all template instantiations."
 msgstr "Genera código para todas las instanciaciones de plantillas."
 
 #: d/lang.opt:178
-#, fuzzy
-#| msgid "Generate code for GNU assembler (gas)."
 msgid "Generate code for assert contracts."
-msgstr "Genera código para el ensamblador de GNU (gas)."
+msgstr "Genera código para contratos de assert."
 
 #: d/lang.opt:186
 msgid "-fbounds-check=[on|safeonly|off]\tTurn array bounds checks on, in @safe code only, or off."
@@ -8019,19 +8015,15 @@ msgstr "Genera código para el modo de usuario."
 
 #: d/lang.opt:262
 msgid "Process all modules specified on the command line, but only generate code for the module specified by the argument."
-msgstr ""
+msgstr "Procesa todos los módulos especificados en la línea de órdenes, pero solo genera código para el módulo especificado por el argumento."
 
 #: d/lang.opt:266
-#, fuzzy
-#| msgid "Generate code for built-in atomic operations."
 msgid "Generate code for postcondition contracts."
-msgstr "Genera código para operaciones atómicas internas."
+msgstr "Genera código para contratos de postcondiciones."
 
 #: d/lang.opt:270
-#, fuzzy
-#| msgid "Generate code for built-in atomic operations."
 msgid "Generate code for precondition contracts."
-msgstr "Genera código para operaciones atómicas internas."
+msgstr "Genera código para contratos de precondiciones."
 
 #: d/lang.opt:274
 #, fuzzy
@@ -8040,14 +8032,12 @@ msgid "Compile release version."
 msgstr "Muestra la versión del compilador."
 
 #: d/lang.opt:282
-#, fuzzy
-#| msgid "Generate code for the supervisor mode (default)."
 msgid "Generate code for switches without a default case."
-msgstr "Genera código para el modo supervisor (predeterminado)."
+msgstr "Genera código para las opciones sin caso predefinido."
 
 #: d/lang.opt:286
 msgid "List information on all language changes."
-msgstr ""
+msgstr "Muestra información sobre todos los cambios del lenguaje."
 
 #: d/lang.opt:290
 msgid "Give deprecation messages about -ftransition=import anomalies."
@@ -8055,7 +8045,7 @@ msgstr ""
 
 #: d/lang.opt:294
 msgid "List all usages of complex or imaginary types."
-msgstr ""
+msgstr "Enumera todos los usos de los tipos complejo o imaginario."
 
 #: d/lang.opt:298
 msgid "Implement DIP1000: Scoped pointers (experimental)."
@@ -8067,21 +8057,19 @@ msgstr ""
 
 #: d/lang.opt:306
 msgid "List all non-mutable fields which occupy an object instance."
-msgstr ""
+msgstr "Enumera todos los campos no mutables que ocupan la instancia de un objeto."
 
 #: d/lang.opt:310
 msgid "Revert to single phase name lookup."
-msgstr ""
+msgstr "Revierta a búsqueda de nombres de una sola fase."
 
 #: d/lang.opt:314
 msgid "List all hidden GC allocations."
 msgstr ""
 
 #: d/lang.opt:318
-#, fuzzy
-#| msgid "Use given thread-local storage dialect."
 msgid "List all variables going into thread local storage."
-msgstr "Usa el dialecto de almacenamiento thread-local dado."
+msgstr "Enumera todas las variables que van al almacenamiento local del hilo."
 
 #: d/lang.opt:322
 #, fuzzy
@@ -8094,18 +8082,16 @@ msgid "-fversion=<level|ident>\tCompile in version code >= <level> or identified
 msgstr ""
 
 #: d/lang.opt:350
-#, fuzzy
-#| msgid "Do not assume that standard C libraries and \"main\" exist."
 msgid "Do not link the standard D library in the compilation."
-msgstr "No asume que existen las bibliotecas C estándar y \"main\"."
+msgstr "No enlaza la biblioteca D estándar en la compilación."
 
 #: d/lang.opt:358
 msgid "Link the standard D library statically in the compilation."
-msgstr ""
+msgstr "Enlaza la biblioteca D estándar estáticamente en la compilación."
 
 #: d/lang.opt:362
 msgid "Link the standard D library dynamically in the compilation."
-msgstr ""
+msgstr "Enlaza la biblioteca D estándar dinámicamente en la compilación."
 
 #: go/lang.opt:42
 msgid "-fgo-c-header=<file>\tWrite Go struct definitions to file as C code."
@@ -8172,16 +8158,12 @@ msgid "-mpointer-size=[no,32,short,64,long]\tSet the default pointer size."
 msgstr "-mpointer-size=[no,32,short,64,long]\tEstablece el tamaña predeterminado de los punteros."
 
 #: config/mcore/mcore.opt:23
-#, fuzzy
-#| msgid "Generate code for the M*Core M210"
 msgid "Generate code for the M*Core M210."
-msgstr "Genera código para el M*Core M210"
+msgstr "Genera código para el M*Core M210."
 
 #: config/mcore/mcore.opt:27
-#, fuzzy
-#| msgid "Generate code for the M*Core M340"
 msgid "Generate code for the M*Core M340."
-msgstr "Genera código para el M*Core M340"
+msgstr "Genera código para el M*Core M340."
 
 #: config/mcore/mcore.opt:31
 msgid "Force functions to be aligned to a 4 byte boundary."
@@ -8551,7 +8533,7 @@ msgstr "Activa la biblioteca compartida basada en ID."
 
 #: config/m68k/m68k.opt:147
 msgid "Use 32-bit offsets in jump tables rather than 16-bit offsets."
-msgstr ""
+msgstr "Usa desplazamientos de 32 bits en las tablas de saltos en lugar de desplazamientos de 16 bits."
 
 #: config/m68k/m68k.opt:151
 msgid "Do not use the bit-field instructions."
@@ -8662,11 +8644,11 @@ msgstr "Utiliza operadores %reloc() en vez de macros de ensamblador para cargar 
 
 #: config/riscv/riscv.opt:114
 msgid "Take advantage of linker relaxations to reduce the number of instructions required to materialize symbol addresses."
-msgstr ""
+msgstr "Aprovecha los descansos del enlazador para reducir el número de instrucciones requeridas para materializar direcciones de símbolos."
 
 #: config/riscv/riscv.opt:133
 msgid "Emit RISC-V ELF attribute."
-msgstr ""
+msgstr "Emite el atributo ELF de RISC-V."
 
 #: config/m32c/m32c.opt:23
 msgid "-msim\tUse simulator runtime."
