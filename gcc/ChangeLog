@@ -1,3 +1,19 @@
+2019-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (line_label::line_label): Initialize
+	m_has_vbar.
+	(line_label::comparator): Reverse the sort order by m_state_idx,
+	so that when the list is walked backwards the labels appear in
+	order of insertion into the rich_location.
+	(line_label::m_has_vbar): New field.
+	(layout::print_any_labels): When dealing with multiple labels at
+	the same line and column, only print vertical bars for the one
+	with the highest label_line.
+	(selftest::test_one_liner_labels): Update test for multiple labels
+	to expect the labels to be in the order of insertion into the
+	rich_location.  Add a test for many such labels, where the column
+	numbers are out-of-order relative to the insertion order.
+
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/i386/i386.h (ix86_frame::expensive_p): New field.
