@@ -525,7 +525,7 @@ pp_c_parameter_type_list (c_pretty_printer *pp, tree t)
       if (!first && !parms)
 	{
 	  pp_separate_with (pp, ',');
-	  pp_c_ws_string (pp, "...");
+	  pp_string (pp, "...");
 	}
     }
   pp_c_right_paren (pp);
