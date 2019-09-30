@@ -1,5 +1,19 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* early-remat.c: Include regs.h and function-abi.h.
+	(early_remat::maybe_add_candidate): Don't check for call-clobbered
+	registers here.
+	(early_remat::restrict_remat_for_unavail_regs): New function.
+	(early_remat::restrict_remat_for_call): Likewise.
+	(early_remat::process_block): Before calling emit_remat_insns
+	for a previous call in the block, invalidate any candidates
+	that would clobber call-preserved registers.
+	(early_remat::emit_remat_insns_for_block): Likewise for the
+	final call in a block.  Do the same thing for live-in registers
+	when calling emit_remat_insns at the head of a block.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* df-scan.c (df_get_entry_block_def_set): Use crtl->abi to test
 	whether the current function needs to save at least part of a
 	register before using it.
