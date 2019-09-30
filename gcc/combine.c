@@ -105,6 +105,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "valtrack.h"
 #include "rtl-iter.h"
 #include "print-rtl.h"
+#include "function-abi.h"
 
 /* Number of attempts to combine instructions in this function.  */
 
@@ -13464,11 +13465,21 @@ record_dead_and_set_regs (rtx_insn *insn)
 
   if (CALL_P (insn))
     {
+      HARD_REG_SET callee_clobbers
+	= insn_callee_abi (insn).full_and_partial_reg_clobbers ();
       hard_reg_set_iterator hrsi;
-      EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call, 0, i, hrsi)
+      EXECUTE_IF_SET_IN_HARD_REG_SET (callee_clobbers, 0, i, hrsi)
 	{
 	  reg_stat_type *rsp;
 
+	  /* ??? We could try to preserve some information from the last
+	     set of register I if the call doesn't actually clobber
+	     (reg:last_set_mode I), which might be true for ABIs with
+	     partial clobbers.  However, it would be difficult to
+	     update last_set_nonzero_bits and last_sign_bit_copies
+	     to account for the part of I that actually was clobbered.
+	     It wouldn't help much anyway, since we rarely see this
+	     situation before RA.  */
 	  rsp = &reg_stat[i];
 	  rsp->last_set_invalid = 1;
 	  rsp->last_set = insn;
