@@ -466,6 +466,17 @@ set_mode_and_regno (rtx x, machine_mode mode, unsigned int regno)
   set_regno_raw (x, regno, nregs);
 }
 
+/* Initialize a fresh REG rtx with mode MODE and register REGNO.  */
+
+rtx
+init_raw_REG (rtx x, machine_mode mode, unsigned int regno)
+{
+  set_mode_and_regno (x, mode, regno);
+  REG_ATTRS (x) = NULL;
+  ORIGINAL_REGNO (x) = regno;
+  return x;
+}
+
 /* Generate a new REG rtx.  Make sure ORIGINAL_REGNO is set properly, and
    don't attempt to share with the various global pieces of rtl (such as
    frame_pointer_rtx).  */
@@ -474,9 +485,7 @@ rtx
 gen_raw_REG (machine_mode mode, unsigned int regno)
 {
   rtx x = rtx_alloc (REG MEM_STAT_INFO);
-  set_mode_and_regno (x, mode, regno);
-  REG_ATTRS (x) = NULL;
-  ORIGINAL_REGNO (x) = regno;
+  init_raw_REG (x, mode, regno);
   return x;
 }
 
