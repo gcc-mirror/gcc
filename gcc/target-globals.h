@@ -26,6 +26,7 @@ extern struct target_regs *this_target_regs;
 extern struct target_rtl *this_target_rtl;
 extern struct target_recog *this_target_recog;
 extern struct target_hard_regs *this_target_hard_regs;
+extern struct target_function_abi_info *this_target_function_abi_info;
 extern struct target_reload *this_target_reload;
 extern struct target_expmed *this_target_expmed;
 extern struct target_optabs *this_target_optabs;
@@ -48,6 +49,7 @@ public:
   struct target_rtl *rtl;
   struct target_recog *GTY((skip)) recog;
   struct target_hard_regs *GTY((skip)) hard_regs;
+  struct target_function_abi_info *GTY((skip)) function_abi_info;
   struct target_reload *GTY((skip)) reload;
   struct target_expmed *GTY((skip)) expmed;
   struct target_optabs *GTY((skip)) optabs;
@@ -75,6 +77,7 @@ restore_target_globals (class target_globals *g)
   this_target_rtl = g->rtl;
   this_target_recog = g->recog;
   this_target_hard_regs = g->hard_regs;
+  this_target_function_abi_info = g->function_abi_info;
   this_target_reload = g->reload;
   this_target_expmed = g->expmed;
   this_target_optabs = g->optabs;

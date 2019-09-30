@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "output.h"
 #include "tree-pass.h"
+#include "function-abi.h"
 
 /* Maximum register number used in this function, plus one.  */
 
@@ -419,6 +420,8 @@ init_reg_sets_1 (void)
 	       }
 	  }
      }
+
+  default_function_abi.initialize (0, regs_invalidated_by_call);
 }
 
 /* Compute the table of register modes.
@@ -728,7 +731,11 @@ globalize_reg (tree decl, int i)
      appropriate regs_invalidated_by_call bit, even if it's already
      set in fixed_regs.  */
   if (i != STACK_POINTER_REGNUM)
-    SET_HARD_REG_BIT (regs_invalidated_by_call, i);
+    {
+      SET_HARD_REG_BIT (regs_invalidated_by_call, i);
+      for (unsigned int i = 0; i < NUM_ABI_IDS; ++i)
+	function_abis[i].add_full_reg_clobber (i);
+    }
 
   /* If already fixed, nothing else to do.  */
   if (fixed_regs[i])
