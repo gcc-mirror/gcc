@@ -2120,10 +2120,17 @@ aggregate_value_p (const_tree exp, const_tree fntype)
   if (!REG_P (reg))
     return 0;
 
+  /* Use the default ABI if the type of the function isn't known.
+     The scheme for handling interoperability between different ABIs
+     requires us to be able to tell when we're calling a function with
+     a nondefault ABI.  */
+  const predefined_function_abi &abi = (fntype
+					? fntype_abi (fntype)
+					: default_function_abi);
   regno = REGNO (reg);
   nregs = hard_regno_nregs (regno, TYPE_MODE (type));
   for (i = 0; i < nregs; i++)
-    if (! call_used_or_fixed_reg_p (regno + i))
+    if (!fixed_regs[regno + i] && !abi.clobbers_full_reg_p (regno + i))
       return 1;
 
   return 0;
