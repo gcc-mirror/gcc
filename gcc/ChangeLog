@@ -1,5 +1,12 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* df-scan.c (df_get_entry_block_def_set): Use crtl->abi to test
+	whether the current function needs to save at least part of a
+	register before using it.
+	(df_get_exit_block_use_set): Likewise for epilogue restores.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* df-problems.c: Include regs.h and function-abi.h.
 	(df_rd_problem_data): Rename sparse_invalidated_by_call to
 	sparse_invalidated_by_eh and dense_invalidated_by_call to
