@@ -41,6 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "read-rtl-function.h"
 #include "selftest.h"
 #include "selftest-rtl.h"
+#include "regs.h"
+#include "function-abi.h"
 
 /* Forward decls.  */
 class function_reader;
@@ -1611,6 +1613,7 @@ bool
 read_rtl_function_body (const char *path)
 {
   initialize_rtl ();
+  crtl->abi = &default_function_abi;
   init_emit ();
   init_varasm_status ();
 
@@ -1644,6 +1647,7 @@ read_rtl_function_body_from_file_range (location_t start_loc,
     }
 
   initialize_rtl ();
+  crtl->abi = &fndecl_abi (cfun->decl).base_abi ();
   init_emit ();
   init_varasm_status ();
 

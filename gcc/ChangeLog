@@ -1,3 +1,27 @@
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* Makefile.in (OBJS): Add function-abi.o.
+	(GTFILES): Add function-abi.h.
+	* function-abi.cc: New file.
+	* function-abi.h: Likewise.
+	* emit-rtl.h (rtl_data::abi): New field.
+	* function.c: Include function-abi.h.
+	(prepare_function_start): Initialize crtl->abi.
+	* read-rtl-function.c: Include regs.h and function-abi.h.
+	(read_rtl_function_body): Initialize crtl->abi.
+	(read_rtl_function_body_from_file_range): Likewise.
+	* reginfo.c: Include function-abi.h.
+	(init_reg_sets_1): Initialize default_function_abi.
+	(globalize_reg): Call add_full_reg_clobber for each predefined ABI
+	when making a register global.
+	* target-globals.h (this_target_function_abi_info): Declare.
+	(target_globals::function_abi_info): New field.
+	(restore_target_globals): Copy it.
+	* target-globals.c: Include function-abi.h.
+	(default_target_globals): Initialize the function_abi_info field.
+	(target_globals): Allocate it.
+	(save_target_globals): Free it.
+
 2019-09-30  Nick Clifton  <nickc@redhat.com>
 
 	PR target/85978

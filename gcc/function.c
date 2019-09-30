@@ -79,6 +79,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "gimple.h"
 #include "options.h"
+#include "function-abi.h"
 
 /* So we can assign to cfun in this file.  */
 #undef cfun
@@ -4826,6 +4827,12 @@ static void
 prepare_function_start (void)
 {
   gcc_assert (!get_last_insn ());
+
+  if (in_dummy_function)
+    crtl->abi = &default_function_abi;
+  else
+    crtl->abi = &fndecl_abi (cfun->decl).base_abi ();
+
   init_temp_slots ();
   init_emit ();
   init_varasm_status ();
