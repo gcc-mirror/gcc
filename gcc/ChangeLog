@@ -1,5 +1,12 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* loop-iv.c: Include regs.h and function-abi.h.
+	(simplify_using_initial_values): Use insn_callee_abi to get the
+	ABI of the call insn target.  Conservatively assume that
+	partially-clobbered registers are altered.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* function-abi.h (call_clobbers_in_region): Declare.
 	(call_clobbered_in_region_p): New function.
 	* function-abi.cc (call_clobbers_in_region): Likewise.
