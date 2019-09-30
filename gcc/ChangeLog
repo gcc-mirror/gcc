@@ -1,3 +1,15 @@
+2019-09-30  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* emit-rtl.c (init_raw_REG): New function.
+	(gen_raw_REG): Use init_raw_REG.
+	* gengenrtl.c (gendef): Emit init_* functions and alloca_*
+	macros.
+	* rtl.c (rtx_alloc_stat_v): Use rtx_init.
+	* rtl.h (rtx_init): New function.
+	(rtx_alloca): New function.
+	(init_raw_REG): New function.
+	(alloca_raw_REG): New macro.
+
 2019-09-30  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/predicates.md (pcrel_address): Delete predicate.

@@ -2957,6 +2957,15 @@ extern HOST_WIDE_INT get_stack_check_protect (void);
 
 /* In rtl.c */
 extern rtx rtx_alloc (RTX_CODE CXX_MEM_STAT_INFO);
+inline rtx
+rtx_init (rtx rt, RTX_CODE code)
+{
+  memset (rt, 0, RTX_HDR_SIZE);
+  PUT_CODE (rt, code);
+  return rt;
+}
+#define rtx_alloca(code) \
+  rtx_init ((rtx) alloca (RTX_CODE_SIZE ((code))), (code))
 extern rtx rtx_alloc_stat_v (RTX_CODE MEM_STAT_DECL, int);
 #define rtx_alloc_v(c, SZ) rtx_alloc_stat_v (c MEM_STAT_INFO, SZ)
 #define const_wide_int_alloc(NWORDS)				\
@@ -3823,7 +3832,10 @@ gen_rtx_INSN (machine_mode mode, rtx_insn *prev_insn, rtx_insn *next_insn,
 extern rtx gen_rtx_CONST_INT (machine_mode, HOST_WIDE_INT);
 extern rtx gen_rtx_CONST_VECTOR (machine_mode, rtvec);
 extern void set_mode_and_regno (rtx, machine_mode, unsigned int);
+extern rtx init_raw_REG (rtx, machine_mode, unsigned int);
 extern rtx gen_raw_REG (machine_mode, unsigned int);
+#define alloca_raw_REG(mode, regno) \
+  init_raw_REG (rtx_alloca (REG), (mode), (regno))
 extern rtx gen_rtx_REG (machine_mode, unsigned int);
 extern rtx gen_rtx_SUBREG (machine_mode, rtx, poly_uint64);
 extern rtx gen_rtx_MEM (machine_mode, rtx);
