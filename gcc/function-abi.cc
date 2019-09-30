@@ -132,6 +132,8 @@ const predefined_function_abi &
 fntype_abi (const_tree type)
 {
   gcc_assert (FUNC_OR_METHOD_TYPE_P (type));
+  if (targetm.calls.fntype_abi)
+    return targetm.calls.fntype_abi (type);
   return default_function_abi;
 }
 

@@ -1,5 +1,18 @@
 2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* target.def (fntype_abi): New target hook.
+	* doc/tm.texi.in (TARGET_FNTYPE_ABI): Likewise.
+	* doc/tm.texi: Regenerate.
+	* target.h (predefined_function_abi): Declare.
+	* function-abi.cc (fntype_abi): Call targetm.calls.fntype_abi,
+	if defined.
+	* config/aarch64/aarch64.h (ARM_PCS_SIMD): New arm_pcs value.
+	* config/aarch64/aarch64.c: Include function-abi.h.
+	(aarch64_simd_abi, aarch64_fntype_abi): New functions.
+	(TARGET_FNTYPE_ABI): Define.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* Makefile.in (OBJS): Add function-abi.o.
 	(GTFILES): Add function-abi.h.
 	* function-abi.cc: New file.
