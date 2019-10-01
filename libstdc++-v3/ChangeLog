@@ -1,5 +1,33 @@
 2019-10-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/17_intro/using_namespace_std_tr1_neg.cc: Skip test for
+	parallel mode.
+	* testsuite/20_util/hash/84998.cc: Likewise.
+	* testsuite/23_containers/deque/types/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/forward_list/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/list/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/map/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/multimap/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/multiset/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/set/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/unordered_map/pmr_typedefs_debug.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/pmr_typedefs_debug.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/pmr_typedefs_debug.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/pmr_typedefs_debug.cc:
+	Likewise.
+	* testsuite/23_containers/vector/cons/destructible_debug_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/types/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/25_algorithms/binary_search/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/copy/86658.cc: Likewise.
+	* testsuite/25_algorithms/equal_range/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/lexicographical_compare/71545.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/partitioned.cc: Likewise.
+
 	* include/parallel/algo.h: Replace non-reserved names.
 	* include/parallel/multiway_merge.h: Likewise.
 	* include/parallel/multiway_mergesort.h: Likewise.
