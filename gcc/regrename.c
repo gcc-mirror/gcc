@@ -1517,7 +1517,7 @@ scan_rtx (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 }
 
 /* Hide operands of the current insn (of which there are N_OPS) by
-   substituting cc0 for them.
+   substituting pc for them.
    Previous values are stored in the OLD_OPERANDS and OLD_DUPS.
    For every bit set in DO_NOT_HIDE, we leave the operand alone.
    If INOUT_AND_EC_ONLY is set, we only do this for OP_INOUT type operands
@@ -1541,7 +1541,7 @@ hide_operands (int n_ops, rtx *old_operands, rtx *old_dups,
 	continue;
       if (!inout_and_ec_only || recog_data.operand_type[i] == OP_INOUT
 	  || op_alt[i].earlyclobber)
-	*recog_data.operand_loc[i] = cc0_rtx;
+	*recog_data.operand_loc[i] = pc_rtx;
     }
   for (i = 0; i < recog_data.n_dups; i++)
     {
@@ -1551,7 +1551,7 @@ hide_operands (int n_ops, rtx *old_operands, rtx *old_dups,
 	continue;
       if (!inout_and_ec_only || recog_data.operand_type[opn] == OP_INOUT
 	  || op_alt[opn].earlyclobber)
-	*recog_data.dup_loc[i] = cc0_rtx;
+	*recog_data.dup_loc[i] = pc_rtx;
     }
 }
 
@@ -1754,7 +1754,7 @@ build_def_use (basic_block bb)
 
 	  /* Step 2: Mark chains for which we have reads outside operands
 	     as unrenamable.
-	     We do this by munging all operands into CC0, and closing
+	     We do this by munging all operands into PC, and closing
 	     everything remaining.  */
 
 	  hide_operands (n_ops, old_operands, old_dups, untracked_operands,

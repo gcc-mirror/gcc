@@ -1,3 +1,8 @@
+2019-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* regrename.c (hide_operands): Use pc_rtx instead of cc0_rtx.
+	(build_def_use): Use PC instead of CC0 in a comment.
+
 2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* rtl.def (CLOBBER_HIGH): Delete.
