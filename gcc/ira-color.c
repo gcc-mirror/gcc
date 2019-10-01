@@ -2817,6 +2817,7 @@ allocno_copy_cost_saving (ira_allocno_t allocno, int hard_regno)
 	}
       else
 	gcc_unreachable ();
+      ira_init_register_move_cost_if_necessary (allocno_mode);
       cost += cp->freq * ira_register_move_cost[allocno_mode][rclass][rclass];
     }
   return cost;
