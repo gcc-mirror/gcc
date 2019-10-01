@@ -1,3 +1,9 @@
+2019-10-01  Maciej W. Rozycki  <macro@wdc.com>
+
+	* Makefile.in (gnat_install_lib): New variable.
+	* configure.ac: Substitute it.
+	* configure: Regenerate.
+
 2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/91222
