@@ -1,3 +1,8 @@
+2019-10-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-opts.c (c_diagnostic_finalizer): Temporarily clear prefix when
+	calling diagnostic_show_locus, rather than destroying it afterwards.
+
 2019-10-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91925

@@ -1137,6 +1137,7 @@ gfc_diagnostic_starter (diagnostic_context *context,
       free (locus_prefix);
       /* Fortran uses an empty line between locus and caret line.  */
       pp_newline (context->printer);
+      pp_set_prefix (context->printer, NULL);
       diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
       /* If the caret line was shown, the prefix does not contain the
 	 locus.  */

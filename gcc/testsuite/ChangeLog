@@ -1,3 +1,12 @@
+2019-10-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_group_plugin.c (test_begin_group_cb):
+	Clear the prefix before emitting the "END GROUP" line.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c
+	(custom_diagnostic_finalizer): Temporarily clear prefix when
+	calling diagnostic_show_locus, rather than destroying it
+	afterwards.
+
 2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/tree-ssa/alias-access-path-10.c: New testcase.
