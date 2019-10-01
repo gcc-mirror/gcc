@@ -3063,7 +3063,6 @@ equiv_init_movable_p (rtx x, int regno)
 
     case CC0:
     case CLOBBER:
-    case CLOBBER_HIGH:
       return 0;
 
     case PRE_INC:
@@ -3170,7 +3169,6 @@ memref_referenced_p (rtx memref, rtx x, bool read_p)
       return memref_referenced_p (memref, SET_SRC (x), true);
 
     case CLOBBER:
-    case CLOBBER_HIGH:
       if (process_set_for_memref_referenced_p (memref, XEXP (x, 0)))
 	return true;
 
@@ -4451,7 +4449,6 @@ rtx_moveable_p (rtx *loc, enum op_type type)
 	      && rtx_moveable_p (&XEXP (x, 2), OP_IN));
 
     case CLOBBER:
-    case CLOBBER_HIGH:
       return rtx_moveable_p (&SET_DEST (x), OP_OUT);
 
     case UNSPEC_VOLATILE:
@@ -4904,9 +4901,7 @@ interesting_dest_for_shprep (rtx_insn *insn, basic_block call_dom)
   for (int i = 0; i < XVECLEN (pat, 0); i++)
     {
       rtx sub = XVECEXP (pat, 0, i);
-      if (GET_CODE (sub) == USE
-	  || GET_CODE (sub) == CLOBBER
-	  || GET_CODE (sub) == CLOBBER_HIGH)
+      if (GET_CODE (sub) == USE || GET_CODE (sub) == CLOBBER)
 	continue;
       if (GET_CODE (sub) != SET
 	  || side_effects_p (sub))

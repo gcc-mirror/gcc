@@ -16430,7 +16430,6 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
     case CONST_FIXED:
     case CLRSB:
     case CLOBBER:
-    case CLOBBER_HIGH:
       break;
 
     case CONST_STRING:

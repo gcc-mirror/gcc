@@ -134,8 +134,6 @@ reload_cse_simplify (rtx_insn *insn, rtx testreg)
 	  for (i = XVECLEN (body, 0) - 1; i >= 0; --i)
 	    {
 	      rtx part = XVECEXP (body, 0, i);
-	      /* asms can only have full clobbers, not clobber_highs.  */
-	      gcc_assert (GET_CODE (part) != CLOBBER_HIGH);
 	      if (GET_CODE (part) == CLOBBER && REG_P (XEXP (part, 0)))
 		cselib_invalidate_rtx (XEXP (part, 0));
 	    }
@@ -158,9 +156,7 @@ reload_cse_simplify (rtx_insn *insn, rtx testreg)
 		  value = SET_DEST (part);
 		}
 	    }
-	  else if (GET_CODE (part) != CLOBBER
-		   && GET_CODE (part) != CLOBBER_HIGH
-		   && GET_CODE (part) != USE)
+	  else if (GET_CODE (part) != CLOBBER && GET_CODE (part) != USE)
 	    break;
 	}
 
@@ -1515,10 +1511,6 @@ reload_combine_note_use (rtx *xp, rtx_insn *insn, int ruid, rtx containing_mem)
 	}
       break;
 
-    case CLOBBER_HIGH:
-      gcc_assert (REG_P (SET_DEST (x)));
-      return;
-
     case PLUS:
       /* We are interested in (plus (reg) (const_int)) .  */
       if (!REG_P (XEXP (x, 0))
@@ -2283,13 +2275,6 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
 	= trunc_int_for_mode (offset + reg_offset[base_regno], mode);
 
       move2add_record_mode (dst);
-    }
-  else if (GET_CODE (set) == CLOBBER_HIGH)
-    {
-      /* Only invalidate if actually clobbered.  */
-      if (reg_mode[regno] == BLKmode
-	  || reg_is_clobbered_by_clobber_high (regno, reg_mode[regno], dst))
-	 goto invalidate;
     }
   else
     {

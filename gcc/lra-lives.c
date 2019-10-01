@@ -668,7 +668,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       bool call_p;
       int n_alt, dst_regno, src_regno;
       rtx set;
-      struct lra_insn_reg *reg, *hr;
+      struct lra_insn_reg *reg;
 
       if (!NONDEBUG_INSN_P (curr_insn))
 	continue;
@@ -700,7 +700,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 		break;
 	      }
 	  for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
-	    if (reg->type != OP_IN && !reg->clobber_high)
+	    if (reg->type != OP_IN)
 	      {
 		remove_p = false;
 		break;
@@ -837,23 +837,13 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	 unused values because they still conflict with quantities
 	 that are live at the time of the definition.  */
       for (reg = curr_id->regs; reg != NULL; reg = reg->next)
-	{
-	  if (reg->type != OP_IN)
-	    {
-	      update_pseudo_point (reg->regno, curr_point, USE_POINT);
-	      mark_regno_live (reg->regno, reg->biggest_mode);
-	      /* ??? Should be a no-op for unused registers.  */
-	      check_pseudos_live_through_calls (reg->regno, last_call_abi);
-	    }
-
-	  if (!HARD_REGISTER_NUM_P (reg->regno))
-	    for (hr = curr_static_id->hard_regs; hr != NULL; hr = hr->next)
-	      if (hr->clobber_high
-		  && maybe_gt (GET_MODE_SIZE (PSEUDO_REGNO_MODE (reg->regno)),
-			       GET_MODE_SIZE (hr->biggest_mode)))
-		SET_HARD_REG_BIT (lra_reg_info[reg->regno].conflict_hard_regs,
-				  hr->regno);
-	}
+	if (reg->type != OP_IN)
+	  {
+	    update_pseudo_point (reg->regno, curr_point, USE_POINT);
+	    mark_regno_live (reg->regno, reg->biggest_mode);
+	    /* ??? Should be a no-op for unused registers.  */
+	    check_pseudos_live_through_calls (reg->regno, last_call_abi);
+	  }
 
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
 	if (reg->type != OP_IN)
