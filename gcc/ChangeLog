@@ -1,6 +1,14 @@
 2019-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
+	2019-09-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (mov<mode>): Don't call
+	aarch64_split_dimode_const_store on volatile MEM.
+
+2019-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
 	2019-09-26  Matt Turner  <mattst88@gmail.com>
 
 	PR driver/69471
