@@ -1,3 +1,9 @@
+2019-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* doc/md.texi (vec_pack_trunc_@var{m}): Fix typo.
+	(vec_pack_sfix_trunc_@var{m}, vec_pack_ufix_trunc_@var{m}): Ditto.
+	(vec_packs_float_@var{m}, vec_packu_float_@var{m}): Ditto.
+
 2019-09-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c (line_label::line_label): Initialize
