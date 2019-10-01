@@ -5767,7 +5767,6 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			slp_instance slp_node_instance,
 			stmt_vector_for_cost *cost_vec)
 {
-  tree vec_dest;
   tree scalar_dest;
   tree vectype_out = STMT_VINFO_VECTYPE (stmt_info);
   tree vectype_in = NULL_TREE;
@@ -5778,29 +5777,21 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   machine_mode vec_mode;
   int op_type;
   optab optab;
-  tree new_temp = NULL_TREE;
   enum vect_def_type dt, cond_reduc_dt = vect_unknown_def_type;
   stmt_vec_info cond_stmt_vinfo = NULL;
   tree scalar_type;
   bool is_simple_use;
   int i;
   int ncopies;
-  stmt_vec_info prev_stmt_info, prev_phi_info;
+  stmt_vec_info prev_phi_info;
   bool single_defuse_cycle = false;
-  stmt_vec_info new_stmt_info = NULL;
   int j;
   tree ops[3];
   enum vect_def_type dts[3];
   bool nested_cycle = false, found_nested_cycle_def = false;
   bool double_reduc = false;
-  basic_block def_bb;
-  class loop * def_stmt_loop;
-  tree def_arg;
-  auto_vec<tree> vec_oprnds0;
-  auto_vec<tree> vec_oprnds1;
-  auto_vec<tree> vec_oprnds2;
   int vec_num;
-  tree def0, tem;
+  tree tem;
   tree cr_index_scalar_type = NULL_TREE, cr_index_vector_type = NULL_TREE;
   tree cond_reduc_val = NULL_TREE;
 
@@ -5900,7 +5891,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	}
 
       /* Create the destination vector  */
-      vec_dest = vect_create_destination_var (phi_result, vectype_out);
+      tree vec_dest = vect_create_destination_var (phi_result, vectype_out);
 
       /* Get the loop-entry arguments.  */
       tree vec_initial_def;
@@ -6348,15 +6339,16 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
   if (nested_cycle)
     {
-      def_bb = gimple_bb (reduc_def_phi);
-      def_stmt_loop = def_bb->loop_father;
-      def_arg = PHI_ARG_DEF_FROM_EDGE (reduc_def_phi,
-                                       loop_preheader_edge (def_stmt_loop));
+      basic_block def_bb = gimple_bb (reduc_def_phi);
+      class loop *def_stmt_loop = def_bb->loop_father;
+      tree def_arg = PHI_ARG_DEF_FROM_EDGE (reduc_def_phi,
+					    loop_preheader_edge (def_stmt_loop));
       stmt_vec_info def_arg_stmt_info = loop_vinfo->lookup_def (def_arg);
       if (def_arg_stmt_info
 	  && (STMT_VINFO_DEF_TYPE (def_arg_stmt_info)
 	      == vect_double_reduction_def))
         double_reduc = true;
+      gcc_assert (!double_reduc || STMT_VINFO_RELEVANT (stmt_info) == vect_used_in_outer_by_reduction);
     }
 
   vect_reduction_type reduction_type
@@ -6670,6 +6662,8 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (code == DOT_PROD_EXPR
       && !types_compatible_p (TREE_TYPE (ops[0]), TREE_TYPE (ops[1])))
     {
+      gcc_unreachable ();
+      /* No testcase for this.  PR49478.  */
       if (TREE_CODE (ops[0]) == INTEGER_CST)
         ops[0] = fold_convert (TREE_TYPE (ops[1]), ops[0]);
       else if (TREE_CODE (ops[1]) == INTEGER_CST)
@@ -6812,7 +6806,15 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       return true;
     }
 
+
   /* Transform.  */
+  stmt_vec_info new_stmt_info = NULL;
+  stmt_vec_info prev_stmt_info;
+  tree new_temp = NULL_TREE;
+  auto_vec<tree> vec_oprnds0;
+  auto_vec<tree> vec_oprnds1;
+  auto_vec<tree> vec_oprnds2;
+  tree def0;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "transform reduction.\n");
@@ -6836,7 +6838,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     }
 
   /* Create the destination vector  */
-  vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
+  tree vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
 
   prev_stmt_info = NULL;
   prev_phi_info = NULL;
