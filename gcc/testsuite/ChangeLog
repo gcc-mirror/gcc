@@ -1,3 +1,18 @@
+2019-10-01  Alexandre Oliva <oliva@adacore.com>
+
+	PR debug/91507
+	* gcc.dg/debug/dwarf2/array-0.c: New.
+	* gcc.dg/debug/dwarf2/array-1.c: New.
+	* gcc.dg/debug/dwarf2/array-2.c: New.
+	* gcc.dg/debug/dwarf2/array-3.c: New.
+	* g++.dg/debug/dwarf2/array-0.C: New.
+	* g++.dg/debug/dwarf2/array-1.C: New.
+	* g++.dg/debug/dwarf2/array-2.C: New.  Based on libstdc++-v3's
+	src/c++98/pool_allocator.cc:__pool_alloc_base::_S_heap_size.
+	* g++.dg/debug/dwarf2/array-3.C: New.  Based on
+	gcc's config/i386/i386-features.c:xlogue_layout::s_instances.
+	* g++.dg/debug/dwarf2/array-4.C: New.
+
 2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/diag-aka-1.c (T): Turn into a pointer typedef.
