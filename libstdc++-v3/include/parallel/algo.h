@@ -2189,6 +2189,11 @@ namespace __parallel
       return __min_element_switch(__begin, __end, __comp,
 				  std::__iterator_category(__begin));
     }
+
+#if __cplusplus >= 201703L
+  using _GLIBCXX_STD_A::for_each_n;
+  using _GLIBCXX_STD_A::sample;
+#endif
 } // end namespace
 } // end namespace
 
