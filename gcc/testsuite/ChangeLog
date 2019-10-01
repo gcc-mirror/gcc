@@ -1,5 +1,7 @@
 2019-10-01  Alexandre Oliva <oliva@adacore.com>
 
+	* gcc.dg/torture/pr41094.c: Introduce intermediate variable.
+
 	PR debug/91507
 	* gcc.dg/debug/dwarf2/array-0.c: New.
 	* gcc.dg/debug/dwarf2/array-1.c: New.
