@@ -113,6 +113,7 @@
 #define BidirectionalIterator	BidirectionalIterator is not a reserved name
 #define RandomAccessIterator	RandomAccessIterator is not a reserved name
 #define RandomAccessOutputIterator	RandomAccessOutputIterator is not a reserved name
+#define RAI			RAI is not a reserved name
 #define RAIter			RAIter is not a reserved name
 #define FwdIter			FwdIter is not a reserved name
 #define OutIter			OutIter is not a reserved name
