@@ -6523,10 +6523,10 @@ s390_expand_vec_compare (rtx target, enum rtx_code cond,
 	  emit_insn (gen_vec_cmpltgt (target, cmp_op1, cmp_op2));
 	  return;
 	case ORDERED:
-	  emit_insn (gen_vec_ordered (target, cmp_op1, cmp_op2));
+	  emit_insn (gen_vec_cmpordered (target, cmp_op1, cmp_op2));
 	  return;
 	case UNORDERED:
-	  emit_insn (gen_vec_unordered (target, cmp_op1, cmp_op2));
+	  emit_insn (gen_vec_cmpunordered (target, cmp_op1, cmp_op2));
 	  return;
 	default: break;
 	}
