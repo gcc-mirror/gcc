@@ -1,3 +1,11 @@
+2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/91948
+	* ira-build.c (ira_create_allocno): Initialize
+	ALLOCNO_CROSSED_CALLS_ABIS.
+	* ira-color.c (allocno_reload_assign): Pass hard_regno rather
+	than regno to ira_need_caller_save_p.
+
 2019-10-01  Alexandre Oliva <oliva@adacore.com>
 
 	* config/i386/i386-options.c

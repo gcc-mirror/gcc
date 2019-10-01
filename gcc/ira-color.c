@@ -4398,7 +4398,7 @@ allocno_reload_assign (ira_allocno_t a, HARD_REG_SET forbidden_regs)
 	       ? ALLOCNO_CLASS_COST (a)
 	       : ALLOCNO_HARD_REG_COSTS (a)[ira_class_hard_reg_index
 					    [aclass][hard_regno]]));
-      if (ira_need_caller_save_p (a, regno))
+      if (ira_need_caller_save_p (a, hard_regno))
 	{
 	  ira_assert (flag_caller_saves);
 	  caller_save_needed = 1;
