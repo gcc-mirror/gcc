@@ -1,3 +1,10 @@
+2019-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2019-09-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/nosplit-di-const-volatile_1.c: New test.
+
 2019-10-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pr91854.c: New test.
