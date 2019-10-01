@@ -1,5 +1,36 @@
 2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-protos.h (aarch64_expand_call): Take an
+	extra callee_abi argument.
+	* config/aarch64/aarch64.c (aarch64_expand_call): Likewise.
+	Insert a CALLEE_ABI unspec into the call pattern as the second
+	element in the PARALLEL.
+	(aarch64_simd_call_p): Delete.
+	(aarch64_insn_callee_abi): Get the arm_pcs of the callee from
+	the new CALLEE_ABI element of the PARALLEL.
+	(aarch64_init_cumulative_args): Get the arm_pcs of the callee
+	from the function type, if given.
+	(aarch64_function_arg_advance): Handle ARM_PCS_SIMD.
+	(aarch64_function_arg): Likewise.  Return the arm_pcs of the callee
+	when passed the function_arg_info end marker.
+	(aarch64_output_mi_thunk): Pass the arm_pcs of the callee as the
+	final argument of gen_sibcall.
+	* config/aarch64/aarch64.md (UNSPEC_CALLEE_ABI): New unspec.
+	(call): Make operand 2 a const_int_operand and pass it to expand_call.
+	Wrap it in an UNSPEC_CALLEE_ABI unspec for the dummy define_expand
+	pattern.
+	(call_value): Likewise operand 3.
+	(sibcall): Likewise operand 2.  Place the unspec before rather than
+	after the return.
+	(sibcall_value): Likewise operand 3.
+	(*call_insn, *call_value_insn): Include an UNSPEC_CALLEE_ABI.
+	(tlsgd_small_<mode>, *tlsgd_small_<mode>): Likewise.
+	(*sibcall_insn, *sibcall_value_insn): Likewise.  Remove empty
+	constraint strings.
+	(untyped_call): Pass const0_rtx as the callee ABI to gen_call.
+
+2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* regs.h (HARD_REGNO_CALLER_SAVE_MODE): Update call to
 	choose_hard_reg_mode.
 	* config/sparc/sparc.h (HARD_REGNO_CALLER_SAVE_MODE): Likewise.

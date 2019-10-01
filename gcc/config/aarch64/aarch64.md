@@ -130,6 +130,7 @@
     UNSPEC_AUTIB1716
     UNSPEC_AUTIASP
     UNSPEC_AUTIBSP
+    UNSPEC_CALLEE_ABI
     UNSPEC_CASESI
     UNSPEC_CRC32B
     UNSPEC_CRC32CB
@@ -913,14 +914,15 @@
 ;; -------------------------------------------------------------------
 
 (define_expand "call"
-  [(parallel [(call (match_operand 0 "memory_operand")
-		    (match_operand 1 "general_operand"))
-	      (use (match_operand 2 "" ""))
-	      (clobber (reg:DI LR_REGNUM))])]
+  [(parallel
+     [(call (match_operand 0 "memory_operand")
+	    (match_operand 1 "general_operand"))
+      (unspec:DI [(match_operand 2 "const_int_operand")] UNSPEC_CALLEE_ABI)
+      (clobber (reg:DI LR_REGNUM))])]
   ""
   "
   {
-    aarch64_expand_call (NULL_RTX, operands[0], false);
+    aarch64_expand_call (NULL_RTX, operands[0], operands[2], false);
     DONE;
   }"
 )
@@ -928,6 +930,7 @@
 (define_insn "*call_insn"
   [(call (mem:DI (match_operand:DI 0 "aarch64_call_insn_operand" "r, Usf"))
 	 (match_operand 1 "" ""))
+   (unspec:DI [(match_operand:DI 2 "const_int_operand")] UNSPEC_CALLEE_ABI)
    (clobber (reg:DI LR_REGNUM))]
   ""
   "@
@@ -937,15 +940,16 @@
 )
 
 (define_expand "call_value"
-  [(parallel [(set (match_operand 0 "" "")
-		   (call (match_operand 1 "memory_operand")
-			 (match_operand 2 "general_operand")))
-	      (use (match_operand 3 "" ""))
-	      (clobber (reg:DI LR_REGNUM))])]
+  [(parallel
+     [(set (match_operand 0 "")
+	   (call (match_operand 1 "memory_operand")
+		 (match_operand 2 "general_operand")))
+     (unspec:DI [(match_operand 3 "const_int_operand")] UNSPEC_CALLEE_ABI)
+     (clobber (reg:DI LR_REGNUM))])]
   ""
   "
   {
-    aarch64_expand_call (operands[0], operands[1], false);
+    aarch64_expand_call (operands[0], operands[1], operands[3], false);
     DONE;
   }"
 )
@@ -954,6 +958,7 @@
   [(set (match_operand 0 "" "")
 	(call (mem:DI (match_operand:DI 1 "aarch64_call_insn_operand" "r, Usf"))
 		      (match_operand 2 "" "")))
+   (unspec:DI [(match_operand:DI 3 "const_int_operand")] UNSPEC_CALLEE_ABI)
    (clobber (reg:DI LR_REGNUM))]
   ""
   "@
@@ -963,33 +968,36 @@
 )
 
 (define_expand "sibcall"
-  [(parallel [(call (match_operand 0 "memory_operand")
-		    (match_operand 1 "general_operand"))
-	      (return)
-	      (use (match_operand 2 "" ""))])]
+  [(parallel
+     [(call (match_operand 0 "memory_operand")
+	    (match_operand 1 "general_operand"))
+      (unspec:DI [(match_operand 2 "const_int_operand")] UNSPEC_CALLEE_ABI)
+      (return)])]
   ""
   {
-    aarch64_expand_call (NULL_RTX, operands[0], true);
+    aarch64_expand_call (NULL_RTX, operands[0], operands[2], true);
     DONE;
   }
 )
 
 (define_expand "sibcall_value"
-  [(parallel [(set (match_operand 0 "" "")
-		   (call (match_operand 1 "memory_operand")
-			 (match_operand 2 "general_operand")))
-	      (return)
-	      (use (match_operand 3 "" ""))])]
+  [(parallel
+     [(set (match_operand 0 "")
+	   (call (match_operand 1 "memory_operand")
+		 (match_operand 2 "general_operand")))
+      (unspec:DI [(match_operand 3 "const_int_operand")] UNSPEC_CALLEE_ABI)
+      (return)])]
   ""
   {
-    aarch64_expand_call (operands[0], operands[1], true);
+    aarch64_expand_call (operands[0], operands[1], operands[3], true);
     DONE;
   }
 )
 
 (define_insn "*sibcall_insn"
   [(call (mem:DI (match_operand:DI 0 "aarch64_call_insn_operand" "Ucs, Usf"))
-	 (match_operand 1 "" ""))
+	 (match_operand 1 ""))
+   (unspec:DI [(match_operand:DI 2 "const_int_operand")] UNSPEC_CALLEE_ABI)
    (return)]
   "SIBLING_CALL_P (insn)"
   "@
@@ -999,10 +1007,11 @@
 )
 
 (define_insn "*sibcall_value_insn"
-  [(set (match_operand 0 "" "")
+  [(set (match_operand 0 "")
 	(call (mem:DI
 		(match_operand:DI 1 "aarch64_call_insn_operand" "Ucs, Usf"))
-	      (match_operand 2 "" "")))
+	      (match_operand 2 "")))
+   (unspec:DI [(match_operand:DI 3 "const_int_operand")] UNSPEC_CALLEE_ABI)
    (return)]
   "SIBLING_CALL_P (insn)"
   "@
@@ -1022,7 +1031,9 @@
 {
   int i;
 
-  emit_call_insn (gen_call (operands[0], const0_rtx, NULL));
+  /* Untyped calls always use the default ABI.  It's only possible to use
+     ABI variants if we know the type of the target function.  */
+  emit_call_insn (gen_call (operands[0], const0_rtx, const0_rtx));
 
   for (i = 0; i < XVECLEN (operands[2], 0); i++)
     {
@@ -6682,6 +6693,7 @@
 (define_expand "tlsgd_small_<mode>"
  [(parallel [(set (match_operand 0 "register_operand")
                   (call (mem:DI (match_dup 2)) (const_int 1)))
+	     (unspec:DI [(const_int 0)] UNSPEC_CALLEE_ABI)
 	     (unspec:DI [(match_operand:PTR 1 "aarch64_valid_symref")] UNSPEC_GOTSMALLTLS)
 	     (clobber (reg:DI LR_REGNUM))])]
  ""
@@ -6692,6 +6704,7 @@
 (define_insn "*tlsgd_small_<mode>"
   [(set (match_operand 0 "register_operand" "")
 	(call (mem:DI (match_operand:DI 2 "" "")) (const_int 1)))
+   (unspec:DI [(const_int 0)] UNSPEC_CALLEE_ABI)
    (unspec:DI [(match_operand:PTR 1 "aarch64_valid_symref" "S")] UNSPEC_GOTSMALLTLS)
    (clobber (reg:DI LR_REGNUM))
   ]
