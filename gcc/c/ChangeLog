@@ -1,3 +1,8 @@
+2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-objc-common.c (useful_aka_type_p): New function.
+	(print_type): Use it to decide whether an aka type is worth printing.
+
 2019-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88203
