@@ -1,3 +1,8 @@
+2019-10-01  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* tree-if-conv.c (tree_if_conversion): Move call to ifcvt_local_dce
+	after local CSE.
+
 2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* doc/invoke.texi (early-inlining-insns-O2): Document.
