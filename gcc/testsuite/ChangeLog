@@ -1,5 +1,10 @@
 2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
 
+	* gcc.dg/tree-ssa/alias-access-path-10.c: New testcase.
+	* gcc.dg/tree-ssa/alias-access-path-11.c: New testcase.
+
+2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
 	* g++.dg/lto/odr-6_0.C: New testcase.
 	* g++.dg/lto/odr-6_1.c: New testcase.
 
