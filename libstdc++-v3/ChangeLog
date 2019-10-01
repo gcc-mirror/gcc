@@ -1,5 +1,10 @@
 2019-10-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/algorithm (experimental::sample): Qualify call
+	to __sample correctly.
+	* include/parallel/algo.h (sample, for_each_n): Add using-declarations
+	for algorithms that don't have parallel implementations.
+
 	* include/parallel/algobase.h (equal, lexicographical_compare): Add
 	_GLIBCXX20_CONSTEXPR and dispatch to sequential algorithm when being
 	constant evaluated.
