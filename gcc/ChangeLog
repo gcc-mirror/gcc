@@ -1,3 +1,22 @@
+2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (nonoverlapping_component_refs_since_match_p):
+	Rename to ...
+	(nonoverlapping_refs_since_match_p): ... this; handle also
+	ARRAY_REFs.
+	(alias_stats): Update stats.
+	(dump_alias_stats): Likewise.
+	(cheap_array_ref_low_bound): New function.
+	(aliasing_matching_component_refs_p): Add partial_overlap
+	argument;
+	pass it to nonoverlapping_refs_since_match_p.
+	(aliasing_component_refs_walk): Update call of
+	aliasing_matching_component_refs_p
+	(nonoverlapping_array_refs_p): New function.
+	(decl_refs_may_alias_p, indirect_ref_may_alias_decl_p,
+	indirect_refs_may_alias_p): Update calls of
+	nonoverlapping_refs_since_match_p.
+
 2019-10-01  Maya Rashish  <coypu@sdf.org>
 
 	PR target/85401
