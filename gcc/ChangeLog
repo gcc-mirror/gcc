@@ -1,5 +1,10 @@
 2019-10-01  Alexandre Oliva <oliva@adacore.com>
 
+	* config/i386/i386-options.c
+	(ix86_recompute_optlev_based_flags): New, moved out of...
+	(ix86_option_override_internal): ... this.  Call it.
+	(ix86_override_options_after_change): Call it here too.
+
 	PR debug/91507
 	* dwarf2out.c (override_type_for_decl_p): New.
 	(gen_variable_die): Use it.
