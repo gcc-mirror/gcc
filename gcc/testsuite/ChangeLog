@@ -1,3 +1,8 @@
+2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/torture/simd-abi-10.c: New test.
+	* gcc.target/aarch64/torture/simd-abi-11.c: Likewise.
+
 2019-09-30  Yuliang Wang  <yuliang.wang@arm.com>
 
 	* gcc.dg/vect/vect-sdiv-pow2-1.c: New test.

@@ -1872,37 +1872,17 @@ aarch64_reg_save_mode (tree fndecl, unsigned regno)
 	   : (aarch64_simd_decl_p (fndecl) ? E_TFmode : E_DFmode);
 }
 
-/* Return true if the instruction is a call to a SIMD function, false
-   if it is not a SIMD function or if we do not know anything about
-   the function.  */
-
-static bool
-aarch64_simd_call_p (const rtx_insn *insn)
-{
-  rtx symbol;
-  rtx call;
-  tree fndecl;
-
-  gcc_assert (CALL_P (insn));
-  call = get_call_rtx_from (insn);
-  symbol = XEXP (XEXP (call, 0), 0);
-  if (GET_CODE (symbol) != SYMBOL_REF)
-    return false;
-  fndecl = SYMBOL_REF_DECL (symbol);
-  if (!fndecl)
-    return false;
-
-  return aarch64_simd_decl_p (fndecl);
-}
-
 /* Implement TARGET_INSN_CALLEE_ABI.  */
 
 const predefined_function_abi &
 aarch64_insn_callee_abi (const rtx_insn *insn)
 {
-  if (aarch64_simd_call_p (insn))
-    return aarch64_simd_abi ();
-  return default_function_abi;
+  rtx pat = PATTERN (insn);
+  gcc_assert (GET_CODE (pat) == PARALLEL);
+  rtx unspec = XVECEXP (pat, 0, 1);
+  gcc_assert (GET_CODE (unspec) == UNSPEC
+	      && XINT (unspec, 1) == UNSPEC_CALLEE_ABI);
+  return function_abis[INTVAL (XVECEXP (unspec, 0, 0))];
 }
 
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  The callee only saves
@@ -4847,10 +4827,11 @@ static rtx
 aarch64_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
-  gcc_assert (pcum->pcs_variant == ARM_PCS_AAPCS64);
+  gcc_assert (pcum->pcs_variant == ARM_PCS_AAPCS64
+	      || pcum->pcs_variant == ARM_PCS_SIMD);
 
   if (arg.end_marker_p ())
-    return NULL_RTX;
+    return gen_int_mode (pcum->pcs_variant, DImode);
 
   aarch64_layout_arg (pcum_v, arg.mode, arg.type, arg.named);
   return pcum->aapcs_reg;
@@ -4858,16 +4839,19 @@ aarch64_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 
 void
 aarch64_init_cumulative_args (CUMULATIVE_ARGS *pcum,
-			   const_tree fntype ATTRIBUTE_UNUSED,
-			   rtx libname ATTRIBUTE_UNUSED,
-			   const_tree fndecl ATTRIBUTE_UNUSED,
-			   unsigned n_named ATTRIBUTE_UNUSED)
+			      const_tree fntype,
+			      rtx libname ATTRIBUTE_UNUSED,
+			      const_tree fndecl ATTRIBUTE_UNUSED,
+			      unsigned n_named ATTRIBUTE_UNUSED)
 {
   pcum->aapcs_ncrn = 0;
   pcum->aapcs_nvrn = 0;
   pcum->aapcs_nextncrn = 0;
   pcum->aapcs_nextnvrn = 0;
-  pcum->pcs_variant = ARM_PCS_AAPCS64;
+  if (fntype)
+    pcum->pcs_variant = (arm_pcs) fntype_abi (fntype).id ();
+  else
+    pcum->pcs_variant = ARM_PCS_AAPCS64;
   pcum->aapcs_reg = NULL_RTX;
   pcum->aapcs_arg_processed = false;
   pcum->aapcs_stack_words = 0;
@@ -4892,7 +4876,8 @@ aarch64_function_arg_advance (cumulative_args_t pcum_v,
 			      const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
-  if (pcum->pcs_variant == ARM_PCS_AAPCS64)
+  if (pcum->pcs_variant == ARM_PCS_AAPCS64
+      || pcum->pcs_variant == ARM_PCS_SIMD)
     {
       aarch64_layout_arg (pcum_v, arg.mode, arg.type, arg.named);
       gcc_assert ((pcum->aapcs_reg != NULL_RTX)
@@ -6921,7 +6906,8 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
     }
   funexp = XEXP (DECL_RTL (function), 0);
   funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
-  insn = emit_call_insn (gen_sibcall (funexp, const0_rtx, NULL_RTX));
+  rtx callee_abi = gen_int_mode (fndecl_abi (function).id (), DImode);
+  insn = emit_call_insn (gen_sibcall (funexp, const0_rtx, callee_abi));
   SIBLING_CALL_P (insn) = 1;
 
   insn = get_insns ();
@@ -7999,11 +7985,12 @@ aarch64_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
    RESULT is the register in which the result is returned.  It's NULL for
    "call" and "sibcall".
    MEM is the location of the function call.
+   CALLEE_ABI is a const_int that gives the arm_pcs of the callee.
    SIBCALL indicates whether this function call is normal call or sibling call.
    It will generate different pattern accordingly.  */
 
 void
-aarch64_expand_call (rtx result, rtx mem, bool sibcall)
+aarch64_expand_call (rtx result, rtx mem, rtx callee_abi, bool sibcall)
 {
   rtx call, callee, tmp;
   rtvec vec;
@@ -8033,7 +8020,11 @@ aarch64_expand_call (rtx result, rtx mem, bool sibcall)
   else
     tmp = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNUM));
 
-  vec = gen_rtvec (2, call, tmp);
+  gcc_assert (CONST_INT_P (callee_abi));
+  callee_abi = gen_rtx_UNSPEC (DImode, gen_rtvec (1, callee_abi),
+			       UNSPEC_CALLEE_ABI);
+
+  vec = gen_rtvec (3, call, callee_abi, tmp);
   call = gen_rtx_PARALLEL (VOIDmode, vec);
 
   aarch64_emit_call_insn (call);

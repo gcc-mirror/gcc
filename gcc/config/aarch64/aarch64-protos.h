@@ -468,7 +468,7 @@ bool aarch64_const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT,
 bool aarch64_constant_address_p (rtx);
 bool aarch64_emit_approx_div (rtx, rtx, rtx);
 bool aarch64_emit_approx_sqrt (rtx, rtx, bool);
-void aarch64_expand_call (rtx, rtx, bool);
+void aarch64_expand_call (rtx, rtx, rtx, bool);
 bool aarch64_expand_cpymem (rtx *);
 bool aarch64_float_const_zero_rtx_p (rtx);
 bool aarch64_float_const_rtx_p (rtx);
