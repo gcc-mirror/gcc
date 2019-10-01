@@ -11291,9 +11291,17 @@ recursion depth can be guessed from the probability that function recurses
 via a given call expression.  This parameter limits inlining only to call
 expressions whose probability exceeds the given threshold (in percents).
 
+@item early-inlining-insns-O2
+Specify growth that the early inliner can make.  In effect it increases
+the amount of inlining for code having a large abstraction penalty.
+This is applied to functions compiled with @option{-O1} or @option{-O2}
+optimization levels.
+
 @item early-inlining-insns
 Specify growth that the early inliner can make.  In effect it increases
 the amount of inlining for code having a large abstraction penalty.
+This is applied to functions compiled with @option{-O3} or @option{-Ofast}
+optimization levels.
 
 @item max-early-inliner-iterations
 Limit of iterations of the early inliner.  This basically bounds
