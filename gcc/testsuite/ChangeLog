@@ -1,5 +1,11 @@
 2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.dg/diag-aka-3.c: New test.
+	* gcc.target/aarch64/diag_aka_1.c: New test.
+	* g++.dg/diagnostic/aka4.C: New test.
+
+2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/torture/simd-abi-10.c: New test.
 	* gcc.target/aarch64/torture/simd-abi-11.c: Likewise.
 
