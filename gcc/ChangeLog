@@ -1,3 +1,11 @@
+2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* doc/invoke.texi (early-inlining-insns-O2): Document.
+	(early-inlining-insns): Update.
+	* params.def (early-inlining-insns-O2): New bound.
+	(early-inlining-insns): Update docs.
+	* ipa-inline.c (want_early_inline_function_p): Use new bound.
+
 2019-10-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/88562

@@ -1,3 +1,12 @@
+2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-ssa/pr61034.C: Set early-inlining-insns-O2=14.
+	* g++.dg/tree-ssa/pr8781.C: Likewise.
+	* g++.dg/warn/Wstringop-truncation-1.C: Likewise.
+	* gcc.dg/ipa/pr63416.c: likewise.
+	* gcc.dg/vect/pr66142.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-thread-12.c: Mark compure_idf inline.
+
 2019-10-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91925

@@ -641,6 +641,10 @@ want_early_inline_function_p (struct cgraph_edge *e)
     {
       int growth = estimate_edge_growth (e);
       int n;
+      int early_inlining_insns = opt_for_fn (e->caller->decl, optimize) >= 3
+				 ? PARAM_VALUE (PARAM_EARLY_INLINING_INSNS)
+				 : PARAM_VALUE (PARAM_EARLY_INLINING_INSNS_O2);
+
 
       if (growth <= PARAM_VALUE (PARAM_MAX_INLINE_INSNS_SIZE))
 	;
@@ -654,26 +658,28 @@ want_early_inline_function_p (struct cgraph_edge *e)
 			     growth);
 	  want_inline = false;
 	}
-      else if (growth > PARAM_VALUE (PARAM_EARLY_INLINING_INSNS))
+      else if (growth > early_inlining_insns)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, e->call_stmt,
 			     "  will not early inline: %C->%C, "
-			     "growth %i exceeds --param early-inlining-insns\n",
-			     e->caller, callee,
-			     growth);
+			     "growth %i exceeds --param early-inlining-insns%s\n",
+			     e->caller, callee, growth,
+			     opt_for_fn (e->caller->decl, optimize) >= 3
+			     ? "" : "-O2");
 	  want_inline = false;
 	}
       else if ((n = num_calls (callee)) != 0
-	       && growth * (n + 1) > PARAM_VALUE (PARAM_EARLY_INLINING_INSNS))
+	       && growth * (n + 1) > early_inlining_insns)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, e->call_stmt,
 			     "  will not early inline: %C->%C, "
-			     "growth %i exceeds --param early-inlining-insns "
+			     "growth %i exceeds --param early-inlining-insns%s "
 			     "divided by number of calls\n",
-			     e->caller, callee,
-			     growth);
+			     e->caller, callee, growth,
+			     opt_for_fn (e->caller->decl, optimize) >= 3
+			     ? "" : "-O2");
 	  want_inline = false;
 	}
     }

@@ -233,8 +233,12 @@ DEFPARAM(PARAM_IPCP_UNIT_GROWTH,
 	 10, 0, 0)
 DEFPARAM(PARAM_EARLY_INLINING_INSNS,
 	 "early-inlining-insns",
-	 "Maximal estimated growth of function body caused by early inlining of single call.",
+	 "Maximal estimated growth of function body caused by early inlining of single call with -O3 and -Ofast.",
 	 14, 0, 0)
+DEFPARAM(PARAM_EARLY_INLINING_INSNS_O2,
+	 "early-inlining-insns-O2",
+	 "Maximal estimated growth of function body caused by early inlining of single call with -O1 and -O2.",
+	 6, 0, 0)
 DEFPARAM(PARAM_LARGE_STACK_FRAME,
 	 "large-stack-frame",
 	 "The size of stack frame to be considered large.",
