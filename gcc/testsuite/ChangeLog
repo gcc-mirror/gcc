@@ -1,3 +1,8 @@
+2019-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91925
+	* g++.dg/conversion/packed2.C: New test.
+
 2019-10-01  Bill Schmidt  <wschmdit@linux.ibm.com>
 
 	* gcc.target/powerpc/pr91275.c: New.

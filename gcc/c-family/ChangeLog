@@ -1,3 +1,9 @@
+2019-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91925
+	* c-warn.c (check_alignment_of_packed_member): Ignore FIELD_DECLs
+	with NULL DECL_FIELD_OFFSET.
+
 2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-pretty-print.c (pp_c_specifier_qualifier_list): If a vector type
