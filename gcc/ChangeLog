@@ -1,3 +1,9 @@
+2019-10-01  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/77918
+	* config/s390/vector.md (V_HW): Add V1TI in order to make
+	vcond$a$b generate vcondv1tiv1tf.
+
 2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/91948
