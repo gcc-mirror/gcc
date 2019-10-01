@@ -702,6 +702,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 with_build_libsubdir
+enable_version_specific_runtime_libs
 enable_maintainer_mode
 enable_multilib
 enable_shared
@@ -1325,6 +1326,9 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-version-specific-runtime-libs
+                          specify that runtime libraries should be installed
+                          in a compiler-specific directory
   --enable-maintainer-mode
                           enable make rules and dependencies not useful (and
                           sometimes confusing) to the casual installer
@@ -2215,6 +2219,22 @@ target_subdir=${target_noncanonical}
 
 
 # Command-line options.
+
+# Check whether --enable-version-specific-runtime-libs was given.
+if test "${enable_version_specific_runtime_libs+set}" = set; then :
+  enableval=$enable_version_specific_runtime_libs; case "$enableval" in
+     yes|no)
+       ;;
+     *)
+       as_fn_error $? "--enable-version-specific-runtime-libs must be yes or no" "$LINENO" 5
+       ;;
+   esac
+else
+  enable_version_specific_runtime_libs=yes
+
+fi
+
+
 # Very limited version of AC_MAINTAINER_MODE.
 # Check whether --enable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then :
@@ -2273,8 +2293,8 @@ case ${enable_version_specific_runtime_libs} in
     # Need the gcc compiler version to know where to install libraries
     # and header files if --enable-version-specific-runtime-libs option
     # is selected.
-    toolexecdir='$(libdir)/gcc/$(target_alias)'
-    toolexeclibdir='$(toolexecdir)/$(gcc_version)$(MULTISUBDIR)'
+    toolexecdir='$(libdir)/gcc/$(target_noncanonical)'
+    toolexeclibdir='$(toolexecdir)/$(version)$(MULTISUBDIR)/adalib'
     ;;
   no)
     if test -n "$with_cross_host" &&
@@ -2295,7 +2315,6 @@ case ${enable_version_specific_runtime_libs} in
 esac
 
 
-#TODO: toolexeclibdir is currently disregarded
 
 # Check the compiler.
 # The same as in boehm-gc and libstdc++. Have to borrow it from there.

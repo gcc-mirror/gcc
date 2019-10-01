@@ -1,5 +1,11 @@
 2019-10-01  Maciej W. Rozycki  <macro@wdc.com>
 
+	* gcc-interface/Makefile.in (ADA_RTL_DSO_DIR): New variable.
+	(install-gnatlib): Use it in place of ADA_RTL_OBJ_DIR for shared 
+	library installation.
+
+2019-10-01  Maciej W. Rozycki  <macro@wdc.com>
+
 	* gcc-interface/Make-lang.in (ada.install-common): Split into...
 	(gnat-install-tools, gnat-install-lib): ... these.
 
