@@ -16900,8 +16900,7 @@ get_originating_module_decl (tree decl)
     }
 
   int use;
-  tree ti = node_template_info (decl, use);
-  if (use > 0)
+  if (tree ti = node_template_info (decl, use))
     {
       decl = TI_TEMPLATE (ti);
       /* It could be a partial specialization, so look again.  */
@@ -17007,8 +17006,16 @@ module_may_redeclare (unsigned from)
 void
 set_instantiating_module (tree decl)
 {
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
+	      || TREE_CODE (decl) == VAR_DECL
+	      || TREE_CODE (decl) == TYPE_DECL);
+
   if (!modules_p ())
     return;
+
+  /* We cannot assert that this is not the originating decl because
+  we've not necessarily completed all the necessary instantiation of
+  DECL.  */
 
   retrofit_lang_decl (decl);
   // FIXME: Perhaps this is always module purview in a module?
@@ -17016,7 +17023,7 @@ set_instantiating_module (tree decl)
 }
 
 void
-set_originating_module (tree decl)
+set_originating_module (tree decl, bool friend_p ATTRIBUTE_UNUSED)
 {
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
 	      || TREE_CODE (decl) == VAR_DECL
@@ -17028,17 +17035,14 @@ set_originating_module (tree decl)
   retrofit_lang_decl (decl);
   DECL_MODULE_OWNER (decl) = module_purview_p () ? MODULE_PURVIEW : MODULE_NONE;
 
-  if (!module_purview_p ())
-    return;
-
   if (TREE_CODE (CP_DECL_CONTEXT (decl)) != NAMESPACE_DECL)
     return;
 
-  gcc_checking_assert (decl == get_instantiating_module_decl (decl));
+  gcc_checking_assert (friend_p || decl == get_originating_module_decl (decl));
 
   if (!module_exporting_p ())
     return;
-  
+
   // FIXME: Check ill-formed linkage
   DECL_MODULE_EXPORT_P (decl) = true;
 }

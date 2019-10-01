@@ -12869,7 +12869,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      ;  /* We already issued a permerror.  */
 	    else if (decl && DECL_NAME (decl))
 	      {
-		set_originating_module (decl);
+		set_originating_module (decl, true);
 		
 		if (template_class_depth (current_class_type) == 0)
 		  {

@@ -6891,7 +6891,7 @@ extern void module_preprocess (mkdeps *, module_state *, int is_module);
 extern bool module_may_redeclare (unsigned);
 
 /* Where the namespace-scope decl was originally declared.  */
-extern void set_originating_module (tree);
+extern void set_originating_module (tree, bool friend_p = false);
 extern tree get_originating_module_decl (tree) ATTRIBUTE_PURE;
 extern unsigned get_originating_module (tree,
 					bool for_mangle = false) ATTRIBUTE_PURE;

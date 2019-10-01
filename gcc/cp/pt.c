@@ -9623,7 +9623,8 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	}
 
       /* Although GEN_TMPL is the TEMPLATE_DECL, it has the same value
-	 of export flag.  */
+	 of export flag.  We want to propagate this because it might
+	 be a friend declaration that pushes a new hidden binding.  */
       DECL_MODULE_EXPORT_P (type_decl) = DECL_MODULE_EXPORT_P (gen_tmpl);
       set_instantiating_module (type_decl);
 
