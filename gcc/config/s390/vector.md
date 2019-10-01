@@ -1472,22 +1472,6 @@
   operands[3] = gen_reg_rtx (<tointvec>mode);
 })
 
-(define_expand "vec_cmpuneq"
-  [(match_operand 0 "register_operand" "")
-   (match_operand 1 "register_operand" "")
-   (match_operand 2 "register_operand" "")]
-  "TARGET_VX"
-{
-  if (GET_MODE (operands[1]) == V4SFmode)
-    emit_insn (gen_vec_cmpuneqv4sf (operands[0], operands[1], operands[2]));
-  else if (GET_MODE (operands[1]) == V2DFmode)
-    emit_insn (gen_vec_cmpuneqv2df (operands[0], operands[1], operands[2]));
-  else
-    gcc_unreachable ();
-
-  DONE;
-})
-
 ; LTGT a <> b -> a > b | b > a
 (define_expand "vec_cmpltgt<mode>"
   [(set (match_operand:<tointvec>         0 "register_operand" "=v")
@@ -1500,24 +1484,8 @@
   operands[3] = gen_reg_rtx (<tointvec>mode);
 })
 
-(define_expand "vec_cmpltgt"
-  [(match_operand 0 "register_operand" "")
-   (match_operand 1 "register_operand" "")
-   (match_operand 2 "register_operand" "")]
-  "TARGET_VX"
-{
-  if (GET_MODE (operands[1]) == V4SFmode)
-    emit_insn (gen_vec_cmpltgtv4sf (operands[0], operands[1], operands[2]));
-  else if (GET_MODE (operands[1]) == V2DFmode)
-    emit_insn (gen_vec_cmpltgtv2df (operands[0], operands[1], operands[2]));
-  else
-    gcc_unreachable ();
-
-  DONE;
-})
-
 ; ORDERED (a, b): a >= b | b > a
-(define_expand "vec_ordered<mode>"
+(define_expand "vec_cmpordered<mode>"
   [(set (match_operand:<tointvec>          0 "register_operand" "=v")
 	(ge:<tointvec> (match_operand:VFT 1 "register_operand"  "v")
 		 (match_operand:VFT 2 "register_operand"  "v")))
@@ -1528,45 +1496,32 @@
   operands[3] = gen_reg_rtx (<tointvec>mode);
 })
 
-(define_expand "vec_ordered"
-  [(match_operand 0 "register_operand" "")
-   (match_operand 1 "register_operand" "")
-   (match_operand 2 "register_operand" "")]
-  "TARGET_VX"
-{
-  if (GET_MODE (operands[1]) == V4SFmode)
-    emit_insn (gen_vec_orderedv4sf (operands[0], operands[1], operands[2]));
-  else if (GET_MODE (operands[1]) == V2DFmode)
-    emit_insn (gen_vec_orderedv2df (operands[0], operands[1], operands[2]));
-  else
-    gcc_unreachable ();
-
-  DONE;
-})
-
 ; UNORDERED (a, b): !ORDERED (a, b)
-(define_expand "vec_unordered<mode>"
+(define_expand "vec_cmpunordered<mode>"
   [(match_operand:<tointvec> 0 "register_operand" "=v")
    (match_operand:VFT        1 "register_operand" "v")
    (match_operand:VFT        2 "register_operand" "v")]
   "TARGET_VX"
 {
-  emit_insn (gen_vec_ordered<mode> (operands[0], operands[1], operands[2]));
+  emit_insn (gen_vec_cmpordered<mode> (operands[0], operands[1], operands[2]));
   emit_insn (gen_rtx_SET (operands[0],
 	     gen_rtx_NOT (<tointvec>mode, operands[0])));
   DONE;
 })
 
-(define_expand "vec_unordered"
+(define_code_iterator VEC_CMP_EXPAND
+  [uneq ltgt ordered unordered])
+
+(define_expand "vec_cmp<code>"
   [(match_operand 0 "register_operand" "")
-   (match_operand 1 "register_operand" "")
-   (match_operand 2 "register_operand" "")]
+   (VEC_CMP_EXPAND (match_operand 1 "register_operand" "")
+                   (match_operand 2 "register_operand" ""))]
   "TARGET_VX"
 {
   if (GET_MODE (operands[1]) == V4SFmode)
-    emit_insn (gen_vec_unorderedv4sf (operands[0], operands[1], operands[2]));
+    emit_insn (gen_vec_cmp<code>v4sf (operands[0], operands[1], operands[2]));
   else if (GET_MODE (operands[1]) == V2DFmode)
-    emit_insn (gen_vec_unorderedv2df (operands[0], operands[1], operands[2]));
+    emit_insn (gen_vec_cmp<code>v2df (operands[0], operands[1], operands[2]));
   else
     gcc_unreachable ();
 

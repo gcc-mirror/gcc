@@ -1,6 +1,18 @@
 2019-10-01  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR target/77918
+	* config/s390/s390.c (s390_expand_vec_compare): Use
+	gen_vec_cmpordered and gen_vec_cmpunordered.
+	* config/s390/vector.md (vec_cmpuneq, vec_cmpltgt, vec_ordered,
+	vec_unordered): Delete.
+	(vec_ordered<mode>): Rename to vec_cmpordered<mode>.
+	(vec_unordered<mode>): Rename to vec_cmpunordered<mode>.
+	(VEC_CMP_EXPAND): New iterator for the generic dispatcher.
+	(vec_cmp<code>): Generic dispatcher.
+
+2019-10-01  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/77918
 	* config/s390/vector.md (V_HW): Add V1TI in order to make
 	vcond$a$b generate vcondv1tiv1tf.
 
