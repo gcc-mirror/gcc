@@ -1,3 +1,8 @@
+2019-10-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vectorizable_reduction): Move variables
+	to where they are used.
+
 2019-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* regrename.c (hide_operands): Use pc_rtx instead of cc0_rtx.
