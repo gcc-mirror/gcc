@@ -1,5 +1,10 @@
 2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
 
+	* g++.dg/lto/odr-6_0.C: New testcase.
+	* g++.dg/lto/odr-6_1.c: New testcase.
+
+2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
 	* gcc.dg/tree-ssa/ssa-thread-12.c: Fix warning introduced by my
 	previous change.
 
