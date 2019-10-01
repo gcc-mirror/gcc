@@ -34,7 +34,6 @@
 #define _GNU_SOURCE
 #include "openacc.h"
 #include "config.h"
-#include "gstdint.h"
 #include "libgomp-plugin.h"
 #include "oacc-plugin.h"
 #include "gomp-constants.h"
