@@ -1,3 +1,7 @@
+2019-10-01  Bill Schmidt  <wschmdit@linux.ibm.com>
+
+	* gcc.target/powerpc/pr91275.c: New.
+
 2019-10-01  Alexandre Oliva <oliva@adacore.com>
 
 	* gcc.dg/torture/pr41094.c: Introduce intermediate variable.

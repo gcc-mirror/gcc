@@ -1,3 +1,8 @@
+2019-10-01  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-p8swap.c (rtx_is_swappable_p): Don't swap
+	vpmsumd.
+
 2019-10-01  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR target/77918
