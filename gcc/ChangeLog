@@ -1,5 +1,80 @@
 2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* rtl.def (CLOBBER_HIGH): Delete.
+	* doc/rtl.texi (clobber_high): Remove documentation.
+	* rtl.h (SET_DEST): Remove CLOBBER_HIGH from the list of codes.
+	(reg_is_clobbered_by_clobber_high): Delete.
+	(gen_hard_reg_clobber_high): Likewise.
+	* alias.c (record_set): Remove CLOBBER_HIGH handling.
+	* cfgexpand.c (expand_gimple_stmt): Likewise.
+	* combine-stack-adj.c (single_set_for_csa): Likewise.
+	* combine.c (find_single_use_1, set_nonzero_bits_and_sign_copies)
+	(can_combine_p, is_parallel_of_n_reg_sets, try_combine)
+	(record_dead_and_set_regs_1, reg_dead_at_p_1): Likewise.
+	* cse.c (invalidate_reg): Remove clobber_high parameter.
+	(invalidate): Update call accordingly.
+	(canonicalize_insn): Remove CLOBBER_HIGH handling.
+	(invalidate_from_clobbers, invalidate_from_sets_and_clobbers)
+	(count_reg_usage, insn_live_p): Likewise.
+	* cselib.h (cselib_invalidate_rtx): Remove sett argument.
+	* cselib.c (cselib_invalidate_regno, cselib_invalidate_rtx): Likewise.
+	(cselib_invalidate_rtx_note_stores): Update call accordingly.
+	(cselib_expand_value_rtx_1): Remove CLOBBER_HIGH handling.
+	(cselib_invalidate_regno, cselib_process_insn): Likewise.
+	* dce.c (deletable_insn_p, mark_nonreg_stores_1): Likewise.
+	(mark_nonreg_stores_2): Likewise.
+	* df-scan.c (df_find_hard_reg_defs, df_uses_record): Likewise.
+	(df_get_call_refs): Likewise.
+	* dwarf2out.c (mem_loc_descriptor): Likewise.
+	* emit-rtl.c (verify_rtx_sharing): Likewise.
+	(copy_insn_1, copy_rtx_if_shared_1): Likewise.
+	(hard_reg_clobbers_high, gen_hard_reg_clobber_high): Delete.
+	* genconfig.c (walk_insn_part): Remove CLOBBER_HIGH handling.
+	* genemit.c (gen_exp, gen_insn): Likewise.
+	* genrecog.c (validate_pattern, remove_clobbers): Likewise.
+	* haifa-sched.c (haifa_classify_rtx): Likewise.
+	* ira-build.c (create_insn_allocnos): Likewise.
+	* ira-costs.c (scan_one_insn): Likewise.
+	* ira.c (equiv_init_movable_p, memref_referenced_p): Likewise.
+	(rtx_moveable_p, interesting_dest_for_shprep): Likewise.
+	* jump.c (mark_jump_label_1): Likewise.
+	* lra-int.h (lra_insn_reg::clobber_high): Delete.
+	* lra-eliminations.c (lra_eliminate_regs_1): Remove CLOBBER_HIGH
+	handling.
+	(mark_not_eliminable): Likewise.
+	* lra-lives.c (process_bb_lives): Likewise.
+	* lra.c (new_insn_reg): Remove clobber_high parameter.
+	(collect_non_operand_hard_regs): Likewise.  Update call to new
+	insn_reg.  Remove CLOBBER_HIGH handling.
+	(lra_set_insn_recog_data): Remove CLOBBER_HIGH handling.  Update call
+	to collect_non_operand_hard_regs.
+	(add_regs_to_insn_regno_info): Remove CLOBBER_HIGH handling.
+	Update call to new_insn_reg.
+	(lra_update_insn_regno_info): Remove CLOBBER_HIGH handling.
+	* postreload.c (reload_cse_simplify, reload_combine_note_use)
+	(move2add_note_store): Likewise.
+	* print-rtl.c (print_pattern): Likewise.
+	* recog.c (store_data_bypass_p_1, store_data_bypass_p): Likewise.
+	(if_test_bypass_p): Likewise.
+	* regcprop.c (kill_clobbered_value, kill_set_value): Likewise.
+	* reginfo.c (reg_scan_mark_refs): Likewise.
+	* reload1.c (maybe_fix_stack_asms, eliminate_regs_1): Likewise.
+	(elimination_effects, mark_not_eliminable, scan_paradoxical_subregs)
+	(forget_old_reloads_1): Likewise.
+	* reorg.c (find_end_label, try_merge_delay_insns, redundant_insn)
+	(own_thread_p, fill_simple_delay_slots, fill_slots_from_thread)
+	(dbr_schedule): Likewise.
+	* resource.c (update_live_status, mark_referenced_resources)
+	(mark_set_resources): Likewise.
+	* rtl.c (copy_rtx): Likewise.
+	* rtlanal.c (reg_referenced_p, set_of_1, single_set_2, noop_move_p)
+	(note_pattern_stores): Likewise.
+	(reg_is_clobbered_by_clobber_high): Delete.
+	* sched-deps.c (sched_analyze_reg, sched_analyze_insn): Remove
+	CLOBBER_HIGH handling.
+
+2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR target/91452
 	* config/aarch64/aarch64.h (ARM_PCS_TLSDESC): New arm_pcs.
 	* config/aarch64/aarch64-protos.h (aarch64_tlsdesc_abi_id): Declare.

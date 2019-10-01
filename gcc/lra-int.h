@@ -154,8 +154,6 @@ struct lra_insn_reg
   /* True if the reg is accessed through a subreg and the subreg is
      just a part of the register.  */
   unsigned int subreg_p : 1;
-  /* True if the reg is clobber highed by the operand.  */
-  unsigned int clobber_high : 1;
   /* The corresponding regno of the register.  */
   int regno;
   /* Next reg info of the same insn.  */

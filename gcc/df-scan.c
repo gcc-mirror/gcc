@@ -2775,7 +2775,6 @@ df_find_hard_reg_defs (rtx x, HARD_REG_SET *defs)
       break;
 
     case CLOBBER:
-    case CLOBBER_HIGH:
       df_find_hard_reg_defs_1 (XEXP (x, 0), defs);
       break;
 
@@ -2833,10 +2832,6 @@ df_uses_record (class df_collection_rec *collection_rec,
 			flags);
 
       /* If we're clobbering a REG then we have a def so ignore.  */
-      return;
-
-    case CLOBBER_HIGH:
-      gcc_assert (REG_P (XEXP (x, 0)));
       return;
 
     case MEM:
@@ -3133,7 +3128,6 @@ df_get_call_refs (class df_collection_rec *collection_rec,
   for (note = CALL_INSN_FUNCTION_USAGE (insn_info->insn); note;
        note = XEXP (note, 1))
     {
-      gcc_assert (GET_CODE (XEXP (note, 0)) != CLOBBER_HIGH);
       if (GET_CODE (XEXP (note, 0)) == USE)
         df_uses_record (collection_rec, &XEXP (XEXP (note, 0), 0),
 			DF_REF_REG_USE, bb, insn_info, flags);

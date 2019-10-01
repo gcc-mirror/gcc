@@ -2679,7 +2679,7 @@ do {								        \
 
 /* For a SET rtx, SET_DEST is the place that is set
    and SET_SRC is the value it is set to.  */
-#define SET_DEST(RTX) XC3EXP (RTX, 0, SET, CLOBBER, CLOBBER_HIGH)
+#define SET_DEST(RTX) XC2EXP (RTX, 0, SET, CLOBBER)
 #define SET_SRC(RTX) XCEXP (RTX, 1, SET)
 #define SET_IS_RETURN_P(RTX)						\
   (RTL_FLAG_CHECK1 ("SET_IS_RETURN_P", (RTX), SET)->jump)
@@ -3524,16 +3524,6 @@ extern rtx tablejump_casesi_pattern (const rtx_insn *insn);
 extern int computed_jump_p (const rtx_insn *);
 extern bool tls_referenced_p (const_rtx);
 extern bool contains_mem_rtx_p (rtx x);
-extern bool reg_is_clobbered_by_clobber_high (unsigned int, machine_mode,
-					      const_rtx);
-
-/* Convenient wrapper for reg_is_clobbered_by_clobber_high.  */
-inline bool
-reg_is_clobbered_by_clobber_high (const_rtx x, const_rtx clobber_high_op)
-{
-  return reg_is_clobbered_by_clobber_high (REGNO (x), GET_MODE (x),
-					   clobber_high_op);
-}
 
 /* Overload for refers_to_regno_p for checking a single register.  */
 inline bool
@@ -4330,7 +4320,6 @@ extern void vt_equate_reg_base_value (const_rtx, const_rtx);
 extern bool memory_modified_in_insn_p (const_rtx, const_rtx);
 extern bool may_be_sp_based_p (rtx);
 extern rtx gen_hard_reg_clobber (machine_mode, unsigned int);
-extern rtx gen_hard_reg_clobber_high (machine_mode, unsigned int);
 extern rtx get_reg_known_value (unsigned int);
 extern bool get_reg_known_equiv_p (unsigned int);
 extern rtx get_reg_base_value (unsigned int);
