@@ -4219,6 +4219,12 @@ gfc_match_allocate (void)
       if (m == MATCH_ERROR)
 	goto cleanup;
 
+      if (tail->expr->expr_type == EXPR_CONSTANT)
+	{
+	  gfc_error ("Unexpected constant at %C");
+	  goto cleanup;
+	}
+
       if (gfc_check_do_variable (tail->expr->symtree))
 	goto cleanup;
 
@@ -4350,6 +4356,12 @@ alloc_opt_list:
 	  stat = tmp;
 	  tmp = NULL;
 	  saw_stat = true;
+
+	  if (stat->expr_type == EXPR_CONSTANT)
+	    {
+	      gfc_error ("STAT tag at %L cannot be a constant", &stat->where);
+	      goto cleanup;
+	    }
 
 	  if (gfc_check_do_variable (stat->symtree))
 	    goto cleanup;
@@ -4626,6 +4638,12 @@ gfc_match_deallocate (void)
 	goto cleanup;
       if (m == MATCH_NO)
 	goto syntax;
+
+      if (tail->expr->expr_type == EXPR_CONSTANT)
+	{
+	  gfc_error ("Unexpected constant at %C");
+	  goto cleanup;
+	}
 
       if (gfc_check_do_variable (tail->expr->symtree))
 	goto cleanup;
