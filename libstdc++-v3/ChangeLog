@@ -1,3 +1,11 @@
+2019-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/parallel/algo.h: Replace non-reserved names.
+	* include/parallel/multiway_merge.h: Likewise.
+	* include/parallel/multiway_mergesort.h: Likewise.
+	* include/parallel/numericfwd.h: Likewise.
+	* testsuite/17_intro/names.cc: Add RAI to test macros.
+
 2019-09-30  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/array: Add C++20 constexpr to comparison operators.

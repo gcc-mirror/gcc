@@ -311,11 +311,11 @@ namespace __parallel
     { return _GLIBCXX_STD_A::unique_copy(__begin, __last, __out, __pred); }
 
   // Parallel unique_copy for random access iterators
-  template<typename _RAIter, typename RandomAccessOutputIterator,
+  template<typename _RAIter, typename _RandomAccessOutputIterator,
 	   typename _Predicate>
-    RandomAccessOutputIterator
+    _RandomAccessOutputIterator
     __unique_copy_switch(_RAIter __begin, _RAIter __last,
-			 RandomAccessOutputIterator __out, _Predicate __pred,
+			 _RandomAccessOutputIterator __out, _Predicate __pred,
 			 random_access_iterator_tag, random_access_iterator_tag)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
