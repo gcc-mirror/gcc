@@ -1,3 +1,4 @@
+//  { dg-do run }
 
 #include <vector>
 #include <string>
@@ -107,19 +108,32 @@ struct looper {
 
 int gX ;
 
+struct mycounter 
+{ 
+  mycounter () : v(0) { PRINT ("mycounter CTOR"); }
+  ~mycounter () { gX = 6174; PRINT ("mycounter DTOR"); }
+  int value () { return v; }
+  void incr () { v++; }
+  int v;
+};
+
 template <typename T> 
 looper<T> with_ctorable_state (std::vector<T> d) noexcept
 {
   std::vector<T> loc;
-  for (unsigned  i = 0; i < d.size()-1 ; ++i)
+  unsigned lim = d.size()-1;
+  mycounter c;
+  for (unsigned  i = 0; i < lim ; ++i)
     {
       loc.push_back(d[i]);
+      c.incr();
       PRINTF ("f: about to yield value %d \n", i);
       co_yield loc[i];
      }
+  loc.push_back(d[lim]);
 
   PRINT ("f: done");
-  co_return loc[d.size()-1];
+  co_return loc[lim];
 }
 
 int main ()
@@ -158,6 +172,11 @@ int main ()
       //x.handle.resume();
     }
 
+  if (gX != 6174)
+    {
+      PRINT ("main: apparently we didn't run mycounter DTOR...");
+      abort ();
+    }
   PRINT ("main: returning");
   return 0;
 }

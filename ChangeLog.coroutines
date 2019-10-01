@@ -1,3 +1,10 @@
+2019-10-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/co-yield-strings.C: Update the test
+	to show that a DTOR for coro state is run on scope exit.  Make
+	the test run.
+
 2019-09-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Merge trunk r276292.
