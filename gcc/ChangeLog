@@ -1,3 +1,10 @@
+2019-10-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/88562
+	* config/sh/sh.c (sh_extending_set_of_reg::use_as_extended_reg): Use
+	sh_check_add_incdec_notes to preserve REG_INC notes when replacing
+	a memory access insn.
+
 2019-10-01  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* config/rs6000/rs6000-p8swap.c (rtx_is_swappable_p): Don't swap
