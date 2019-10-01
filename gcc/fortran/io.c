@@ -3608,7 +3608,17 @@ match_io_element (io_kind k, gfc_code **cpp)
     {
       m = gfc_match_variable (&expr, 0);
       if (m == MATCH_NO)
-	gfc_error ("Expected variable in READ statement at %C");
+	{
+	  gfc_error ("Expecting variable in READ statement at %C");
+	  m = MATCH_ERROR;
+	}
+
+      if (m == MATCH_YES && expr->expr_type == EXPR_CONSTANT)
+	{
+	  gfc_error ("Expecting variable or io-implied-do in READ statement "
+		   "at %L", &expr->where);
+	  m = MATCH_ERROR;
+	}
 
       if (m == MATCH_YES
 	  && expr->expr_type == EXPR_VARIABLE
@@ -3618,7 +3628,6 @@ match_io_element (io_kind k, gfc_code **cpp)
 		     &expr->where);
 	  m = MATCH_ERROR;
 	}
-
     }
   else
     {
