@@ -1,5 +1,11 @@
 2019-10-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/parallel/algobase.h (equal, lexicographical_compare): Add
+	_GLIBCXX20_CONSTEXPR and dispatch to sequential algorithm when being
+	constant evaluated.
+	* include/parallel/algorithmfwd.h (equal, lexicographical_compare):
+	Add _GLIBCXX20_CONSTEXPR.
+
 	* testsuite/17_intro/using_namespace_std_tr1_neg.cc: Skip test for
 	parallel mode.
 	* testsuite/20_util/hash/84998.cc: Likewise.
