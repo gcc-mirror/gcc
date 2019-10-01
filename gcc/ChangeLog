@@ -1,5 +1,17 @@
 2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR target/91452
+	* config/aarch64/aarch64.h (ARM_PCS_TLSDESC): New arm_pcs.
+	* config/aarch64/aarch64-protos.h (aarch64_tlsdesc_abi_id): Declare.
+	* config/aarch64/aarch64.c (aarch64_hard_regno_call_part_clobbered):
+	Handle ARM_PCS_TLSDESC.
+	(aarch64_tlsdesc_abi_id): New function.
+	* config/aarch64/aarch64.md (tlsdesc_small_sve_<mode>): Use a call
+	rtx instead of a list of clobbers and clobber_highs.
+	(tlsdesc_small_<mode>): Update accordingly.
+
+2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-protos.h (aarch64_expand_call): Take an
 	extra callee_abi argument.
 	* config/aarch64/aarch64.c (aarch64_expand_call): Likewise.

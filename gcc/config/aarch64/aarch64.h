@@ -784,6 +784,7 @@ enum arm_pcs
 {
   ARM_PCS_AAPCS64,		/* Base standard AAPCS for 64 bit.  */
   ARM_PCS_SIMD,			/* For aarch64_vector_pcs functions.  */
+  ARM_PCS_TLSDESC,		/* For targets of tlsdesc calls.  */
   ARM_PCS_UNKNOWN
 };
 

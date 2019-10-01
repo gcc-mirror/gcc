@@ -1896,12 +1896,13 @@ aarch64_hard_regno_call_part_clobbered (unsigned int abi_id,
 {
   if (FP_REGNUM_P (regno))
     {
-      bool simd_p = (abi_id == ARM_PCS_SIMD);
       poly_int64 per_register_size = GET_MODE_SIZE (mode);
       unsigned int nregs = hard_regno_nregs (regno, mode);
       if (nregs > 1)
 	per_register_size = exact_div (per_register_size, nregs);
-      return maybe_gt (per_register_size, simd_p ? 16 : 8);
+      if (abi_id == ARM_PCS_SIMD || abi_id == ARM_PCS_TLSDESC)
+	return maybe_gt (per_register_size, 16);
+      return maybe_gt (per_register_size, 8);
     }
   return false;
 }
@@ -13951,6 +13952,26 @@ aarch64_can_inline_p (tree caller, tree callee)
     return false;
 
   return true;
+}
+
+/* Return the ID of the TLDESC ABI, initializing the descriptor if hasn't
+   been already.  */
+
+unsigned int
+aarch64_tlsdesc_abi_id ()
+{
+  predefined_function_abi &tlsdesc_abi = function_abis[ARM_PCS_TLSDESC];
+  if (!tlsdesc_abi.initialized_p ())
+    {
+      HARD_REG_SET full_reg_clobbers;
+      CLEAR_HARD_REG_SET (full_reg_clobbers);
+      SET_HARD_REG_BIT (full_reg_clobbers, R0_REGNUM);
+      SET_HARD_REG_BIT (full_reg_clobbers, CC_REGNUM);
+      for (int regno = P0_REGNUM; regno <= P15_REGNUM; ++regno)
+	SET_HARD_REG_BIT (full_reg_clobbers, regno);
+      tlsdesc_abi.initialize (ARM_PCS_TLSDESC, full_reg_clobbers);
+    }
+  return tlsdesc_abi.id ();
 }
 
 /* Return true if SYMBOL_REF X binds locally.  */
