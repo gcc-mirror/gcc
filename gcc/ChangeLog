@@ -1,3 +1,22 @@
+2019-10-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (layout::print_gap_in_line_numbering):
+	Call pp_emit_prefix.
+	(layout::print_source_line): Likewise.
+	(layout::start_annotation_line): Likewise.
+	(diagnostic_show_locus): Remove call to temporarily clear the
+	prefix.
+	(selftest::test_one_liner_fixit_remove): Add test coverage for the
+	interaction of pp_set_prefix with rulers and fix-it hints.
+	* diagnostic.c (default_diagnostic_finalizer): Temporarily clear
+	prefix when calling diagnostic_show_locus, rather than destroying
+	it afterwards.
+	(print_parseable_fixits): Temporarily clear prefix.
+	* pretty-print.c (pp_format): Save and restore line_length, rather
+	than assuming it is zero.
+	(pp_output_formatted_text): Remove assertion that line_length is
+	zero.
+
 2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-alias.c (nonoverlapping_component_refs_since_match_p):

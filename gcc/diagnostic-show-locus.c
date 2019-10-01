@@ -1039,6 +1039,8 @@ layout::print_gap_in_line_numbering ()
 {
   gcc_assert (m_show_line_numbers_p);
 
+  pp_emit_prefix (m_pp);
+
   for (int i = 0; i < m_linenum_width + 1; i++)
     pp_character (m_pp, '.');
 
@@ -1266,6 +1268,8 @@ layout::print_source_line (linenum_type row, const char *line, int line_width,
 							   line_width);
   line += m_x_offset;
 
+  pp_emit_prefix (m_pp);
+
   if (m_show_line_numbers_p)
     {
       int width = num_digits (row);
@@ -1346,6 +1350,7 @@ layout::should_print_annotation_line_p (linenum_type row) const
 void
 layout::start_annotation_line (char margin_char) const
 {
+  pp_emit_prefix (m_pp);
   if (m_show_line_numbers_p)
     {
       /* Print the margin.  If MARGIN_CHAR != ' ', then print up to 3
@@ -2297,9 +2302,6 @@ diagnostic_show_locus (diagnostic_context * context,
 
   context->last_location = loc;
 
-  char *saved_prefix = pp_take_prefix (context->printer);
-  pp_set_prefix (context->printer, NULL);
-
   layout layout (context, richloc, diagnostic_kind);
   for (int line_span_idx = 0; line_span_idx < layout.get_num_line_spans ();
        line_span_idx++)
@@ -2329,8 +2331,6 @@ diagnostic_show_locus (diagnostic_context * context,
 	   row <= last_line; row++)
 	layout.print_line (row);
     }
-
-  pp_set_prefix (context->printer, saved_prefix);
 }
 
 #if CHECKING_P
@@ -2463,23 +2463,93 @@ test_one_liner_fixit_insert_after ()
 		pp_formatted_text (dc.printer));
 }
 
-/* Removal fix-it hint: removal of the ".field". */
+/* Removal fix-it hint: removal of the ".field".
+   Also verify the interaction of pp_set_prefix with rulers and
+   fix-it hints.  */
 
 static void
 test_one_liner_fixit_remove ()
 {
-  test_diagnostic_context dc;
   location_t start = linemap_position_for_column (line_table, 10);
   location_t finish = linemap_position_for_column (line_table, 15);
   location_t dot = make_location (start, start, finish);
   rich_location richloc (line_table, dot);
   richloc.add_fixit_remove ();
-  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-  ASSERT_STREQ ("\n"
-		" foo = bar.field;\n"
-		"          ^~~~~~\n"
-		"          ------\n",
-		pp_formatted_text (dc.printer));
+
+  /* Normal.  */
+  {
+    test_diagnostic_context dc;
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  " foo = bar.field;\n"
+		  "          ^~~~~~\n"
+		  "          ------\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Test of adding a prefix.  */
+  {
+    test_diagnostic_context dc;
+    pp_prefixing_rule (dc.printer) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+    pp_set_prefix (dc.printer, xstrdup ("TEST PREFIX:"));
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "TEST PREFIX: foo = bar.field;\n"
+		  "TEST PREFIX:          ^~~~~~\n"
+		  "TEST PREFIX:          ------\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Normal, with ruler.  */
+  {
+    test_diagnostic_context dc;
+    dc.show_ruler_p = true;
+    dc.caret_max_width = 104;
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "          0         0         0         0         0         0         0         0         0         1    \n"
+		  "          1         2         3         4         5         6         7         8         9         0    \n"
+		  " 12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234\n"
+		  " foo = bar.field;\n"
+		  "          ^~~~~~\n"
+		  "          ------\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Test of adding a prefix, with ruler.  */
+  {
+    test_diagnostic_context dc;
+    dc.show_ruler_p = true;
+    dc.caret_max_width = 50;
+    pp_prefixing_rule (dc.printer) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+    pp_set_prefix (dc.printer, xstrdup ("TEST PREFIX:"));
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "TEST PREFIX:          1         2         3         4         5\n"
+		  "TEST PREFIX: 12345678901234567890123456789012345678901234567890\n"
+		  "TEST PREFIX: foo = bar.field;\n"
+		  "TEST PREFIX:          ^~~~~~\n"
+		  "TEST PREFIX:          ------\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Test of adding a prefix, with ruler and line numbers.  */
+  {
+    test_diagnostic_context dc;
+    dc.show_ruler_p = true;
+    dc.caret_max_width = 50;
+    dc.show_line_numbers_p = true;
+    pp_prefixing_rule (dc.printer) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+    pp_set_prefix (dc.printer, xstrdup ("TEST PREFIX:"));
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "TEST PREFIX:      |          1         2         3         4         5\n"
+		  "TEST PREFIX:      | 12345678901234567890123456789012345678901234567890\n"
+		  "TEST PREFIX:    1 | foo = bar.field;\n"
+		  "TEST PREFIX:      |          ^~~~~~\n"
+		  "TEST PREFIX:      |          ------\n",
+		  pp_formatted_text (dc.printer));
+  }
 }
 
 /* Replace fix-it hint: replacing "field" with "m_field". */

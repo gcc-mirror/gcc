@@ -197,6 +197,7 @@ test_begin_group_cb (diagnostic_context * context)
 static void
 test_end_group_cb (diagnostic_context * context)
 {
+  pp_set_prefix (context->printer, NULL);
   pp_string (context->printer,
 	     "---------------------------------- END GROUP -------------------------------");
   pp_newline_and_flush (context->printer);
