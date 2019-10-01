@@ -13,7 +13,8 @@ double foo(void)
 
 int main()
 {
-  if (foo() != 2.0)
+  double r = foo ();
+  if (r != 2.0)
     abort ();
   return 0;
 }
