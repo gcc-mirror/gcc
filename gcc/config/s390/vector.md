@@ -29,7 +29,7 @@
 ; All modes directly supported by the hardware having full vector reg size
 ; V_HW2 is duplicate of V_HW for having two iterators expanding
 ; independently e.g. vcond
-(define_mode_iterator V_HW  [V16QI V8HI V4SI V2DI V2DF (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")])
+(define_mode_iterator V_HW  [V16QI V8HI V4SI V2DI (V1TI "TARGET_VXE") V2DF (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")])
 (define_mode_iterator V_HW2 [V16QI V8HI V4SI V2DI V2DF (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")])
 
 (define_mode_iterator V_HW_64 [V2DI V2DF])
