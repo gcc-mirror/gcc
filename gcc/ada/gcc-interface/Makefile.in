@@ -534,15 +534,15 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR) install-gcc-specs
 	for file in gnat gnarl; do \
 	   if [ -f $(RTSDIR)/lib$${file}$(hyphen)$(LIBRARY_VERSION)$(soext) ]; then \
 	      $(INSTALL) $(RTSDIR)/lib$${file}$(hyphen)$(LIBRARY_VERSION)$(soext) \
-			 $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
+			 $(DESTDIR)$(ADA_RTL_DSO_DIR); \
 	   fi; \
 	   if [ -f $(RTSDIR)/lib$${file}$(soext) ]; then \
 	      $(LN_S) lib$${file}$(hyphen)$(LIBRARY_VERSION)$(soext) \
-	      $(DESTDIR)$(ADA_RTL_OBJ_DIR)/lib$${file}$(soext); \
+	      $(DESTDIR)$(ADA_RTL_DSO_DIR)/lib$${file}$(soext); \
 	   fi; \
 	   if [ -d $(RTSDIR)/lib$${file}$(hyphen)$(LIBRARY_VERSION)$(soext).dSYM ]; then \
 	      $(CP) -r $(RTSDIR)/lib$${file}$(hyphen)$(LIBRARY_VERSION)$(soext).dSYM \
-	        $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
+	        $(DESTDIR)$(ADA_RTL_DSO_DIR); \
 	   fi; \
 	done
 # This copy must be done preserving the date on the original file.
@@ -882,6 +882,7 @@ b_gnatm.o : b_gnatm.adb
 
 ADA_INCLUDE_DIR = $(libsubdir)/adainclude
 ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
+ADA_RTL_DSO_DIR = $(toolexeclibdir)
 
 # Special flags
 
