@@ -1,5 +1,10 @@
 2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
 
+	* gcc.dg/tree-ssa/ssa-thread-12.c: Fix warning introduced by my
+	previous change.
+
+2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
 	* g++.dg/tree-ssa/pr61034.C: Set early-inlining-insns-O2=14.
 	* g++.dg/tree-ssa/pr8781.C: Likewise.
 	* g++.dg/warn/Wstringop-truncation-1.C: Likewise.
