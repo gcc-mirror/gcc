@@ -3754,7 +3754,8 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
       if (!build_expr_type_conversion (WANT_INT | WANT_ENUM, nelts, false))
         {
           if (complain & tf_error)
-            permerror (input_location, "size in array new must have integral type");
+	    permerror (cp_expr_loc_or_input_loc (nelts),
+		       "size in array new must have integral type");
           else
             return error_mark_node;
         }
@@ -3769,7 +3770,8 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
 	 less than zero. ... If the expression is a constant expression,
 	 the program is ill-fomed.  */
       if (TREE_CODE (cst_nelts) == INTEGER_CST
-	  && !valid_array_size_p (input_location, cst_nelts, NULL_TREE,
+	  && !valid_array_size_p (cp_expr_loc_or_input_loc (nelts),
+				  cst_nelts, NULL_TREE,
 				  complain & tf_error))
 	return error_mark_node;
 
