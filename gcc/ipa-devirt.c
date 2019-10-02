@@ -986,8 +986,8 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
       || (type_with_linkage_p (TYPE_MAIN_VARIANT (t2))
 	  && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t2))))
     {
-      if (type_with_linkage_p (TYPE_MAIN_VARIANT (t1))
-	  && !type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t1)))
+      if (!type_with_linkage_p (TYPE_MAIN_VARIANT (t1))
+	  || !type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t1)))
 	{
 	  std::swap (t1, t2);
 	  std::swap (loc_t1, loc_t2);
