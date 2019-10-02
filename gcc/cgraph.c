@@ -1866,7 +1866,7 @@ cgraph_node::rtl_info (const_tree decl)
   if (node->rtl == NULL)
     {
       node->rtl = ggc_cleared_alloc<cgraph_rtl_info> ();
-      node->rtl->function_used_regs = reg_class_contents[ALL_REGS];
+      SET_HARD_REG_SET (node->rtl->function_used_regs);
     }
   return node->rtl;
 }
