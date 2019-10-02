@@ -1,5 +1,7 @@
 2019-10-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* config/abi/pre/gnu.ver: Tighten up greedy wildcards.
+
 	* doc/xml/manual/parallel_mode.xml: Add caveat about support for
 	recent standards.
 	* doc/html/*: Regenerate.
