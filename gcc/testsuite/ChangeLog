@@ -1,3 +1,8 @@
+2019-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR c++/91606
+	* g++.dg/torture/pr91606.C: New testcase.
+
 2019-10-02  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/goacc/asyncwait-1.f95: Handle new error message.

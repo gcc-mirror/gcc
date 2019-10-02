@@ -9665,10 +9665,12 @@ build_ptrmemfunc_type (tree type)
   TYPE_PTRMEMFUNC_FLAG (t) = 1;
 
   field = build_decl (input_location, FIELD_DECL, pfn_identifier, type);
+  DECL_NONADDRESSABLE_P (field) = 1;
   fields = field;
 
   field = build_decl (input_location, FIELD_DECL, delta_identifier, 
 		      delta_type_node);
+  DECL_NONADDRESSABLE_P (field) = 1;
   DECL_CHAIN (field) = fields;
   fields = field;
 
