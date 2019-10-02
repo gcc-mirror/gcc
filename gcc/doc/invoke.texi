@@ -8346,6 +8346,7 @@ also turns on the following optimization flags:
 -ffinite-loops @gol
 -fgcse  -fgcse-lm  @gol
 -fhoist-adjacent-loads @gol
+-finline-functions @gol
 -finline-small-functions @gol
 -findirect-inlining @gol
 -fipa-bit-cp  -fipa-cp  -fipa-icf @gol
@@ -8379,7 +8380,6 @@ by @option{-O2} and also turns on the following optimization flags:
 
 @c Please keep the following list alphabetized!
 @gccoptlist{-fgcse-after-reload @gol
--finline-functions @gol
 -fipa-cp-clone
 -floop-interchange @gol
 -floop-unroll-and-jam @gol
@@ -8559,7 +8559,7 @@ If all calls to a given function are integrated, and the function is
 declared @code{static}, then the function is normally not output as
 assembler code in its own right.
 
-Enabled at levels @option{-O3}, @option{-Os}.  Also enabled
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.  Also enabled
 by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -finline-functions-called-once
@@ -11175,18 +11175,29 @@ when modulo scheduling a loop.  Larger values can exponentially increase
 compilation time.
 
 @item max-inline-insns-single
-Several parameters control the tree inliner used in GCC@.
-This number sets the maximum number of instructions (counted in GCC's
-internal representation) in a single function that the tree inliner
-considers for inlining.  This only affects functions declared
-inline and methods implemented in a class declaration (C++).
+@item max-inline-insns-single-O2
+Several parameters control the tree inliner used in GCC@.  This number sets the
+maximum number of instructions (counted in GCC's internal representation) in a
+single function that the tree inliner considers for inlining.  This only
+affects functions declared inline and methods implemented in a class
+declaration (C++). 
+
+For functions compiled with optimization levels
+@option{-O3} and @option{-Ofast} parameter @option{max-inline-insns-single} is
+applied. In other cases @option{max-inline-insns-single-O2} is applied.
+
 
 @item max-inline-insns-auto
+@item max-inline-insns-auto-O2
 When you use @option{-finline-functions} (included in @option{-O3}),
 a lot of functions that would otherwise not be considered for inlining
 by the compiler are investigated.  To those functions, a different
 (more restrictive) limit compared to functions declared inline can
 be applied.
+
+For functions compiled with optimization levels
+@option{-O3} and @option{-Ofast} parameter @option{max-inline-insns-auto} is
+applied. In other cases @option{max-inline-insns-auto-O2} is applied.
 
 @item max-inline-insns-small
 This is bound applied to calls which are considered relevant with
@@ -11210,10 +11221,15 @@ Same as @option{--param uninlined-function-insns} and
 @option{--param uninlined-function-time} but applied to function thunks
 
 @item inline-min-speedup
+@item inline-min-speedup-O2
 When estimated performance improvement of caller + callee runtime exceeds this
 threshold (in percent), the function can be inlined regardless of the limit on
 @option{--param max-inline-insns-single} and @option{--param
 max-inline-insns-auto}.
+
+For functions compiled with optimization levels
+@option{-O3} and @option{-Ofast} parameter @option{inline-min-speedup} is
+applied. In other cases @option{inline-min-speedup-O2} is applied.
 
 @item large-function-insns
 The limit specifying really large functions.  For functions larger than this
@@ -11291,17 +11307,14 @@ recursion depth can be guessed from the probability that function recurses
 via a given call expression.  This parameter limits inlining only to call
 expressions whose probability exceeds the given threshold (in percents).
 
+@item early-inlining-insns
 @item early-inlining-insns-O2
 Specify growth that the early inliner can make.  In effect it increases
 the amount of inlining for code having a large abstraction penalty.
-This is applied to functions compiled with @option{-O1} or @option{-O2}
-optimization levels.
 
-@item early-inlining-insns
-Specify growth that the early inliner can make.  In effect it increases
-the amount of inlining for code having a large abstraction penalty.
-This is applied to functions compiled with @option{-O3} or @option{-Ofast}
-optimization levels.
+For functions compiled with optimization levels
+@option{-O3} and @option{-Ofast} parameter @option{early-inlining-insns} is
+applied. In other cases @option{early-inlining-insns-O2} is applied.
 
 @item max-early-inliner-iterations
 Limit of iterations of the early inliner.  This basically bounds

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-thread2-details -fdump-tree-thread3-details -fdump-tree-thread4-details -fno-finite-loops" } */
+/* { dg-options "-O2 -fdump-tree-thread2-details -fdump-tree-thread3-details -fdump-tree-thread4-details -fno-finite-loops --param early-inlining-insns-O2=14 -fno-inline-functions" } */
 /* { dg-final { scan-tree-dump "FSM" "thread2" } } */
 /* { dg-final { scan-tree-dump "FSM" "thread3" } } */
 /* { dg-final { scan-tree-dump "FSM" "thread4" { xfail *-*-* } } } */
@@ -56,7 +56,7 @@ bmp_iter_and_compl (bitmap_iterator * bi, unsigned *bit_no)
 }
 
 extern int VEC_int_base_length (VEC_int_base *);
-static __inline__ bitmap
+bitmap
 compute_idf (bitmap def_blocks, bitmap_head * dfs)
 {
   bitmap_iterator bi;
