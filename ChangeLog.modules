@@ -1,6 +1,11 @@
 2019-10-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::tree_ctx): Drop need_contents parm.
+	Update callers.
+	(trees_out::tree_{type,decl}: Likewise.
+
+	gcc/cp/
 	* module.cc (trees_out::tree_ctx): Drop inner_decl parm.  Update
 	callers.
 	(trees_out::tree_namespace): Likewise.
