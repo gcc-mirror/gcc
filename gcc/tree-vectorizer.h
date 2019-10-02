@@ -1659,6 +1659,8 @@ extern bool vectorizable_reduction (stmt_vec_info, gimple_stmt_iterator *,
 extern bool vectorizable_induction (stmt_vec_info, gimple_stmt_iterator *,
 				    stmt_vec_info *, slp_tree,
 				    stmt_vector_for_cost *);
+extern bool vect_transform_reduction (stmt_vec_info, gimple_stmt_iterator *,
+				      stmt_vec_info *, slp_tree);
 extern bool vect_transform_cycle_phi (stmt_vec_info, stmt_vec_info *,
 				      slp_tree, slp_instance);
 extern bool vectorizable_lc_phi (stmt_vec_info, stmt_vec_info *, slp_tree);
