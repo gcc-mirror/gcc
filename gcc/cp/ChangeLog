@@ -1,3 +1,8 @@
+2019-10-02  Jason Merrill  <jason@redhat.com>
+
+	* typeck2.c (store_init_value): Only clear_cv_and_fold_caches if the
+	value is constant.
+
 2019-09-30  Jason Merrill  <jason@redhat.com>
 
 	Use hash_map_safe_* functions.
