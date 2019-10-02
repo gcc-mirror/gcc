@@ -1,3 +1,8 @@
+2019-10-02  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/87047
+	* gcc.dg/pr87047.c: New test.
+
 2019-10-02  Martin Jambor  <mjambor@suse.cz>
 
 	PR testsuite/91842
