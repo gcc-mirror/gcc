@@ -1,3 +1,8 @@
+2019-10-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cgraph.c (cgraph_node::rtl_info): Use SET_HARD_REG_SET
+	instead of reg_class_contents[ALL_REGS].
+
 2019-09-30  Jason Merrill  <jason@redhat.com>
 
 	Add some hash_map_safe_* functions like vec_safe_*.
