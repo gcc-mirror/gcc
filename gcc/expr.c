@@ -73,9 +73,10 @@ along with GCC; see the file COPYING3.  If not see
 int cse_not_expected;
 
 static bool block_move_libcall_safe_for_call_parm (void);
-static bool emit_block_move_via_cpymem (rtx, rtx, rtx, unsigned, unsigned, HOST_WIDE_INT,
-					unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
-					unsigned HOST_WIDE_INT);
+static bool emit_block_move_via_pattern (rtx, rtx, rtx, unsigned, unsigned, 
+					 HOST_WIDE_INT, unsigned HOST_WIDE_INT,
+					 unsigned HOST_WIDE_INT,
+					 unsigned HOST_WIDE_INT, bool);
 static void emit_block_move_via_loop (rtx, rtx, rtx, unsigned);
 static void clear_by_pieces (rtx, unsigned HOST_WIDE_INT, unsigned int);
 static rtx_insn *compress_float_constant (rtx, rtx);
@@ -1562,7 +1563,8 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 		       unsigned HOST_WIDE_INT min_size,
 		       unsigned HOST_WIDE_INT max_size,
 		       unsigned HOST_WIDE_INT probable_max_size,
-		       bool bail_out_libcall, bool *is_move_done)
+		       bool bail_out_libcall, bool *is_move_done,
+		       bool might_overlap)
 {
   int may_use_call;
   rtx retval = 0;
@@ -1622,13 +1624,30 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
       set_mem_size (y, const_size);
     }
 
-  if (CONST_INT_P (size) && can_move_by_pieces (INTVAL (size), align))
-    move_by_pieces (x, y, INTVAL (size), align, RETURN_BEGIN);
-  else if (emit_block_move_via_cpymem (x, y, size, align,
-				       expected_align, expected_size,
-				       min_size, max_size, probable_max_size))
+  bool pieces_ok = can_move_by_pieces (INTVAL (size), align);
+  bool pattern_ok = false;
+
+  if (!CONST_INT_P (size) || !pieces_ok || might_overlap)
+    {
+      pattern_ok = 
+	emit_block_move_via_pattern (x, y, size, align,
+				     expected_align, expected_size,
+				     min_size, max_size, probable_max_size,
+				     might_overlap);
+      if (!pattern_ok && might_overlap)
+	{
+	  /* Do not try any of the other methods below as they are not safe
+	     for overlapping moves.  */
+	  *is_move_done = false;
+	  return retval;
+	}
+    }
+
+  if (pattern_ok)
     ;
-  else if (may_use_call
+  else if (CONST_INT_P (size) && pieces_ok)
+    move_by_pieces (x, y, INTVAL (size), align, RETURN_BEGIN);
+  else if (may_use_call && !might_overlap
 	   && ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (x))
 	   && ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (y)))
     {
@@ -1645,7 +1664,8 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
       retval = emit_block_copy_via_libcall (x, y, size,
 					    method == BLOCK_OP_TAILCALL);
     }
-
+  else if (might_overlap)
+    *is_move_done = false;
   else
     emit_block_move_via_loop (x, y, size, align);
 
@@ -1721,15 +1741,26 @@ block_move_libcall_safe_for_call_parm (void)
   return true;
 }
 
-/* A subroutine of emit_block_move.  Expand a cpymem pattern;
-   return true if successful.  */
+/* A subroutine of emit_block_move.  Expand a cpymem or movmem pattern;
+   return true if successful.
+  
+   X is the destination of the copy or move.
+   Y is the source of the copy or move.
+   SIZE is the size of the block to be moved.
+
+   MIGHT_OVERLAP indicates this originated with expansion of a
+   builtin_memmove() and the source and destination blocks may
+   overlap.
+  */
 
 static bool
-emit_block_move_via_cpymem (rtx x, rtx y, rtx size, unsigned int align,
-			    unsigned int expected_align, HOST_WIDE_INT expected_size,
-			    unsigned HOST_WIDE_INT min_size,
-			    unsigned HOST_WIDE_INT max_size,
-			    unsigned HOST_WIDE_INT probable_max_size)
+emit_block_move_via_pattern (rtx x, rtx y, rtx size, unsigned int align,
+			     unsigned int expected_align,
+			     HOST_WIDE_INT expected_size,
+			     unsigned HOST_WIDE_INT min_size,
+			     unsigned HOST_WIDE_INT max_size,
+			     unsigned HOST_WIDE_INT probable_max_size,
+			     bool might_overlap)
 {
   if (expected_align < align)
     expected_align = align;
@@ -1752,7 +1783,11 @@ emit_block_move_via_cpymem (rtx x, rtx y, rtx size, unsigned int align,
   FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
     {
       scalar_int_mode mode = mode_iter.require ();
-      enum insn_code code = direct_optab_handler (cpymem_optab, mode);
+      enum insn_code code;
+      if (might_overlap)
+	code = direct_optab_handler (movmem_optab, mode);
+      else
+	code = direct_optab_handler (cpymem_optab, mode);
 
       if (code != CODE_FOR_nothing
 	  /* We don't need MODE to be narrower than BITS_PER_HOST_WIDE_INT
