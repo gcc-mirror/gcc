@@ -1,3 +1,18 @@
+2019-10-02  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.c (symbol_table::create_edge): New parameter cloning_p,
+	do not compute some stuff when set.
+	(cgraph_node::create_edge): Likewise.
+	(cgraph_node::create_indirect_edge): Renamed last parameter to
+	coning_p and flipped its meaning, don't even calculate
+	inline_failed when set.
+	* cgraph.h (cgraph_node::create_edge): Add new parameter.
+	(symbol_table::::create_edge): Likewise.
+	(cgraph_node::create_indirect_edge): Rename last parameter, flip
+	the default value.
+	* cgraphclones.c (cgraph_edge::clone): Pass true cloning_p to all
+	call graph edge creating functions.
+
 2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR c++/91222
