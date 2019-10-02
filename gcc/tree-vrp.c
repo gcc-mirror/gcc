@@ -6150,11 +6150,7 @@ value_range_base::contains_p (tree cst) const
 void
 value_range_base::invert ()
 {
-  if (undefined_p ())
-    return;
-  if (varying_p ())
-    set_undefined ();
-  else if (m_kind == VR_RANGE)
+  if (m_kind == VR_RANGE)
     m_kind = VR_ANTI_RANGE;
   else if (m_kind == VR_ANTI_RANGE)
     m_kind = VR_RANGE;

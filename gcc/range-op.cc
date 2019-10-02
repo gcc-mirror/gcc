@@ -3005,13 +3005,6 @@ range_tests ()
   r2.invert ();
   ASSERT_TRUE (r0 == r2);
 
-  // NOT(-MIN,+MAX) is the empty set and should return false.
-  r0 = value_range_base (minint, maxint);
-  r0.invert ();
-  ASSERT_TRUE (r0.undefined_p ());
-  r1.set_undefined ();
-  ASSERT_TRUE (r0 == r1);
-
   // Test that booleans and their inverse work as expected.
   r0 = range_zero (boolean_type_node);
   ASSERT_TRUE (r0 == value_range_base (build_zero_cst (boolean_type_node),
