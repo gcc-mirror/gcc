@@ -1,3 +1,10 @@
+2019-10-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91957
+	* lra-lives.c (make_hard_regno_dead): Don't record conflicts for
+	eliminable registers.
+	(make_hard_regno_live): Likewise, and don't make them live.
+
 2019-10-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c (layout::print_gap_in_line_numbering):
