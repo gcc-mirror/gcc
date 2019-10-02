@@ -4899,14 +4899,21 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case CLEANUP_STMT:
-      r = cxx_eval_constant_expression (ctx, CLEANUP_BODY (t), lval,
+      {
+	tree initial_jump_target = jump_target ? *jump_target : NULL_TREE;
+	r = cxx_eval_constant_expression (ctx, CLEANUP_BODY (t), lval,
+					  non_constant_p, overflow_p,
+					  jump_target);
+	if (!CLEANUP_EH_ONLY (t) && !*non_constant_p)
+	  /* Also evaluate the cleanup.  If we weren't skipping at the
+	     start of the CLEANUP_BODY, change jump_target temporarily
+	     to &initial_jump_target, so that even a return or break or
+	     continue in the body doesn't skip the cleanup.  */
+	  cxx_eval_constant_expression (ctx, CLEANUP_EXPR (t), true,
 					non_constant_p, overflow_p,
-					jump_target);
-      if (!CLEANUP_EH_ONLY (t) && !*non_constant_p)
-	/* Also evaluate the cleanup.  */
-	cxx_eval_constant_expression (ctx, CLEANUP_EXPR (t), true,
-				      non_constant_p, overflow_p,
-				      jump_target);
+					jump_target ? &initial_jump_target
+					: NULL);
+      }
       break;
 
       /* These differ from cxx_eval_unary_expression in that this doesn't
@@ -6975,6 +6982,12 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return true;
 
     case CLEANUP_STMT:
+      if (!RECUR (CLEANUP_BODY (t), any))
+	return false;
+      if (!CLEANUP_EH_ONLY (t) && !RECUR (CLEANUP_EXPR (t), any))
+	return false;
+      return true;
+
     case EMPTY_CLASS_EXPR:
     case PREDICT_EXPR:
       return false;

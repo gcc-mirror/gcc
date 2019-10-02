@@ -1,5 +1,11 @@
 2019-10-03  Jakub Jelinek  <jakub@redhat.com>
 
+	* constexpr.c (cxx_eval_constant_expression) <case CLEANUP_STMT>: If
+	not skipping upon entry to body, run cleanup with the same *jump_target
+	as it started to run the cleanup even if the body returns, breaks or
+	continues.
+	(potential_constant_expression_1): Allow CLEANUP_STMT.
+
 	* constexpr.c (cxx_eval_store_expression): Formatting fix.  Handle
 	const_object_being_modified with array type.
 
