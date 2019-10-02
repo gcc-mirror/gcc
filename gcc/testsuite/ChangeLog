@@ -1,3 +1,10 @@
+2019-10-02  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/80936
+	* gcc.dg/Wnonnull-2.c: New test.
+	* gcc.dg/Wnonnull-3.c: New test.
+	* gcc.dg/nonnull-3.c: Expect more warnings.
+
 2019-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91784
