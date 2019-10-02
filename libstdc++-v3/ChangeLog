@@ -1,3 +1,9 @@
+2019-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/parallel_mode.xml: Add caveat about support for
+	recent standards.
+	* doc/html/*: Regenerate.
+
 2019-10-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/algorithm (experimental::sample): Qualify call
