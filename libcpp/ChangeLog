@@ -1,3 +1,11 @@
+2019-10-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_options): Add member scope.
+	* init.c (struct lang_flags, lang_defaults): Likewise.
+	(cpp_set_lang): Set scope member of pfile.
+	* lex.c (_cpp_lex_direct): Test CPP_OPTION (pfile, scope) not
+	CPP_OPTION (pfile, cplusplus) for creating CPP_SCOPE tokens.
+
 2019-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* charset.c (UCS_LIMIT): New macro.

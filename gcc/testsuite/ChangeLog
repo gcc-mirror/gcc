@@ -1,3 +1,12 @@
+2019-10-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/asm-scope-1.c, gcc.dg/cpp/c11-scope-1.c,
+	gcc.dg/cpp/c17-scope-1.c, gcc.dg/cpp/c2x-scope-1.c,
+	gcc.dg/cpp/c2x-scope-2.c, gcc.dg/cpp/c90-scope-1.c,
+	gcc.dg/cpp/c94-scope-1.c, gcc.dg/cpp/c99-scope-1.c,
+	gcc.dg/cpp/gnu11-scope-1.c, gcc.dg/cpp/gnu17-scope-1.c,
+	gcc.dg/cpp/gnu89-scope-1.c, gcc.dg/cpp/gnu99-scope-1.c: New tests.
+
 2019-10-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/diagnostic_group_plugin.c (test_begin_group_cb):
