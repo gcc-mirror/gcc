@@ -1624,16 +1624,18 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
       set_mem_size (y, const_size);
     }
 
-  bool pieces_ok = can_move_by_pieces (INTVAL (size), align);
+  bool pieces_ok = false;
+  if (CONST_INT_P (size))
+    pieces_ok = can_move_by_pieces (INTVAL (size), align);
   bool pattern_ok = false;
 
-  if (!CONST_INT_P (size) || !pieces_ok || might_overlap)
+  if (!pieces_ok || might_overlap)
     {
-      pattern_ok = 
-	emit_block_move_via_pattern (x, y, size, align,
-				     expected_align, expected_size,
-				     min_size, max_size, probable_max_size,
-				     might_overlap);
+      pattern_ok
+	= emit_block_move_via_pattern (x, y, size, align,
+				       expected_align, expected_size,
+				       min_size, max_size, probable_max_size,
+				       might_overlap);
       if (!pattern_ok && might_overlap)
 	{
 	  /* Do not try any of the other methods below as they are not safe
@@ -1645,7 +1647,7 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 
   if (pattern_ok)
     ;
-  else if (CONST_INT_P (size) && pieces_ok)
+  else if (pieces_ok)
     move_by_pieces (x, y, INTVAL (size), align, RETURN_BEGIN);
   else if (may_use_call && !might_overlap
 	   && ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (x))
