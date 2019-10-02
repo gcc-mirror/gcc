@@ -104,6 +104,18 @@ namespace std _GLIBCXX_VISIBILITY (default)
     }
   };
 
+  // 4830 17.12.3.6 Comparison operators
+  constexpr bool
+  operator==(coroutine_handle<> __a, coroutine_handle<> __b) noexcept
+  {
+    return __a.address () == __b.address ();
+  }
+
+  // We do not have spaceship yet, so this is...
+  // TODO:
+  //constexpr strong_ordering
+  //operator<=>(coroutine_handle<> __a, coroutine_handle<> __b) noexcept;
+
   template <class _Promise> struct coroutine_handle : coroutine_handle<>
   {
     // 21.11.2.1 construct/reset
