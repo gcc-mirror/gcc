@@ -1,3 +1,8 @@
+2019-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt82.adb: New test.
+	* gnat.dg/opt82_pkg.ads: New helper.
+
 2019-10-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/mips/call-clobbered-3.c: Remove skip for -Os.
