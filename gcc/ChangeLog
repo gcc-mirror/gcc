@@ -1,3 +1,14 @@
+2019-10-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (stmt_vec_info_type::cycle_phi_info_type):
+	New.
+	(vect_transform_cycle_phi): Declare.
+	* tree-vect-stmts.c (vect_transform_stmt): Call
+	vect_transform_cycle_phi.
+	* tree-vect-loop.c (vectorizable_reduction): Split out
+	PHI transformation stage to ...
+	(vect_transform_cycle_phi): ... here.
+
 2019-10-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/91957

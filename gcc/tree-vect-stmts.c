@@ -10824,6 +10824,12 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       gcc_assert (done);
       break;
 
+    case cycle_phi_info_type:
+      done = vect_transform_cycle_phi (stmt_info, &vec_stmt, slp_node,
+				       slp_node_instance);
+      gcc_assert (done);
+      break;
+
     case lc_phi_info_type:
       done = vectorizable_lc_phi (stmt_info, &vec_stmt, slp_node);
       gcc_assert (done);
