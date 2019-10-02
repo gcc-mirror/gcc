@@ -1,3 +1,11 @@
+2019-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91940
+	* gcc.dg/vect/vect-bswap16.c: Add -msse4 on x86, run on all targets,
+	expect vectorized 1 loops message on both vect_bswap and sse4_runtime
+	targets.
+	* gcc.dg/vect/vect-bswap16a.c: New test.
+
 2019-10-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/asm-scope-1.c, gcc.dg/cpp/c11-scope-1.c,

@@ -1,3 +1,12 @@
+2019-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91940
+	* tree-vect-patterns.c: Include tree-vector-builder.h and
+	vec-perm-indices.h.
+	(vect_recog_rotate_pattern): Also handle __builtin_bswap16, either by
+	unpromoting the argument back to uint16_t, or by converting into a
+	rotate, or into shifts plus ior.
+
 2019-10-02  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (stmt_vec_info_type::cycle_phi_info_type):
