@@ -281,7 +281,8 @@ static void
 make_hard_regno_live (int regno)
 {
   lra_assert (HARD_REGISTER_NUM_P (regno));
-  if (TEST_HARD_REG_BIT (hard_regs_live, regno))
+  if (TEST_HARD_REG_BIT (hard_regs_live, regno)
+      || TEST_HARD_REG_BIT (eliminable_regset, regno))
     return;
   SET_HARD_REG_BIT (hard_regs_live, regno);
   sparseset_set_bit (start_living, regno);
@@ -295,6 +296,9 @@ make_hard_regno_live (int regno)
 static void
 make_hard_regno_dead (int regno)
 {
+  if (TEST_HARD_REG_BIT (eliminable_regset, regno))
+    return;
+
   lra_assert (HARD_REGISTER_NUM_P (regno));
   unsigned int i;
   EXECUTE_IF_SET_IN_SPARSESET (pseudos_live, i)
