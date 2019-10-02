@@ -10819,8 +10819,7 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       break;
 
     case reduc_vec_info_type:
-      done = vectorizable_reduction (stmt_info, gsi, &vec_stmt, slp_node,
-				     slp_node_instance, NULL);
+      done = vect_transform_reduction (stmt_info, gsi, &vec_stmt, slp_node);
       gcc_assert (done);
       break;
 
