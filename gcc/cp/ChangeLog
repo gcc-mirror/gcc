@@ -1,3 +1,8 @@
+2019-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* constexpr.c (cxx_eval_store_expression): Formatting fix.  Handle
+	const_object_being_modified with array type.
+
 2019-10-02  Jason Merrill  <jason@redhat.com>
 
 	* typeck2.c (store_init_value): Only clear_cv_and_fold_caches if the
