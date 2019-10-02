@@ -2687,6 +2687,11 @@ create_function_arglist (gfc_symbol * sym)
 	  && (!f->sym->attr.proc_pointer
 	      && f->sym->attr.flavor != FL_PROCEDURE))
 	DECL_BY_REFERENCE (parm) = 1;
+      if (f->sym->attr.optional)
+	{
+	  gfc_allocate_lang_decl (parm);
+	  GFC_DECL_OPTIONAL_ARGUMENT (parm) = 1;
+	}
 
       gfc_finish_decl (parm);
       gfc_finish_decl_attrs (parm, &f->sym->attr);
