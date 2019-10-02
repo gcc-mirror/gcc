@@ -1,3 +1,9 @@
+2019-10-01  Jan Hubicka  <jh@suse.cz>
+
+	* module.c (load_commons): Initialize flags to 0 to silecne
+	-Wmaybe-uninitialized warning.
+	(read_module): Likewise for n and comp_name.
+
 2019-10-02  Tobias Burnus  <tobias@codesourcery.com>
 
 	* dump-parse-tree.c (show_omp_clauses): Handle OMP_LIST_USE_DEVICE_ADDR.
@@ -33,6 +39,7 @@
 	(lang_decl): Add new optional_arg field.
 	(GFC_DECL_OPTIONAL_ARGUMENT): New macro.
 
+>>>>>>> .r276463
 2019-10-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.c (gfc_diagnostic_starter): Clear the prefix before
