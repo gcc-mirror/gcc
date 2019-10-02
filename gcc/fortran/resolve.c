@@ -3242,6 +3242,21 @@ resolve_function (gfc_expr *expr)
   if (expr->expr_type != EXPR_FUNCTION)
     return t;
 
+  /* Walk the argument list looking for invalid BOZ.  */
+  if (expr->value.function.esym)
+    {
+      gfc_actual_arglist *a;
+
+      for (a = expr->value.function.actual; a; a = a->next)
+	if (a->expr && a->expr->ts.type == BT_BOZ)
+	  {
+	    gfc_error ("A BOZ literal constant at %L cannot appear as an "
+			"actual argument in a function reference",
+			&a->expr->where);
+	    return false;
+	  }
+    }
+
   temp = need_full_assumed_size;
   need_full_assumed_size = 0;
 

@@ -1,3 +1,8 @@
+2019-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91943
+	gfortran.dg/pr91943.f90
+
 2019-10-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/tree-ssa/pr53844.C: Add -fno-inline-functions --param
