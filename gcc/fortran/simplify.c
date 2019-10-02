@@ -8508,10 +8508,10 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	    {
 	      if (c->expr->expr_type == EXPR_ARRAY)
 		tmp = gfc_convert_constant (c->expr, type, kind);
-	      else if (c->expr->expr_type == EXPR_OP
-		       && c->expr->value.op.op == INTRINSIC_PARENTHESES)
+	      else if (c->expr->expr_type == EXPR_OP)
 		{
-		  gfc_simplify_expr (c->expr, 1);
+		  if (!gfc_simplify_expr (c->expr, 1))
+		    return &gfc_bad_expr;
 		  tmp = f (c->expr, kind);
 		}
 	      else
