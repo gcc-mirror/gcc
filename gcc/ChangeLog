@@ -1,3 +1,21 @@
+2019-10-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cif-code.def (MAX_INLINE_INSNS_SINGLE_O2_LIMIT,
+	MAX_INLINE_INSNS_AUTO_O2_LIMIT): New.
+	* ipa-inline.c (inline_insns_single, inline_insns_auto): New functions.
+	(can_inline_edge_by_limits_p): Use it.
+	(big_speedup_p): Use PARAM_INLINE_MIN_SPEEDUP_O2.
+	(want_inline_small_function_p): Use O2 bounds.
+	(edge_badness): LIkewise.
+	* opts.c (default_options): Add OPT_finline_functions.
+	* params.def (PARAM_INLINE_MIN_SPEEDUP_O2,
+	PARAM_MAX_INLINE_INSNS_SINGLE_O2, PARAM_MAX_INLINE_INSNS_AUTO_O2):
+	New parameters.
+	* doc/invoke.texi (-finline-functions): Update documentation.
+	(max-inline-insns-single-O2, max-inline-insns-auto-O2,
+	inline-min-speedup-O2): Document.
+	(early-inlining-insns-O2): Simplify docs.
+
 2019-10-02  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/87047

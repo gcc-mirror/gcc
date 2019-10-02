@@ -1,3 +1,19 @@
+2019-10-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-ssa/pr53844.C: Add -fno-inline-functions --param
+	max-inline-insns-single-O2=200.
+	* gcc.c-torture/execute/builtins/builtins.exp: Add
+	-fno-inline-functions to additional_flags.
+	* gcc.dg/ipa/inline-7.c: Add -fno-inline-functions.
+	* gcc.dg/optimize-bswapsi-5.c: Add -fno-inline-functions.
+	* gcc.dg/tree-ssa/ssa-thread-12.c: Add --param
+	early-inlining-insns-O2=14 -fno-inline-functions; revert previous
+	change.
+	* gcc.dg/winline-3.c: Use --param max-inline-insns-single-O2=1
+	--param inline-min-speedup-O2=100
+	instead of --param max-inline-insns-single=1 --param
+	inline-min-speedup=100
+
 2019-10-02  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/87047
