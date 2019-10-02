@@ -1,3 +1,9 @@
+2019-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR c++/91606
+	* decl.c (build_ptrmemfunc_type): Mark pointer-to-member
+	fat pointer structure members as DECL_NONADDRESSABLE_P.
+
 2019-09-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91889 - follow-up fix for DR 2352.
