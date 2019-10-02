@@ -1,3 +1,9 @@
+2019-10-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/cr-decimal-dig-2.c: New test.
+	* gcc.dg/limits-width-2.c: New test.  Based on limits-width-1.c.
+	* gcc.dg/stdint-width-2.c: New test.  Based on stdint-width-1.c.
+
 2019-10-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/diagnostic/integral-array-size-1.C: New.
