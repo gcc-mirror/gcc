@@ -3001,7 +3001,7 @@ public:
 
 private:
   bool tree_decl (tree, walk_kind ref);
-  bool tree_type (tree, walk_kind ref);
+  void type_node (tree);
   void tree_namespace (tree, walk_kind ref);
 
  public:
@@ -6825,9 +6825,16 @@ trees_out::tree_ctx (tree ctx)
       bool by_value = false;
 
       if (TYPE_P (ctx))
-	by_value = tree_type (ctx, walk);
+	{
+	  gcc_assert (walk == WK_normal);
+	  type_node (ctx);
+	}
       else if (TREE_CODE (ctx) == NAMESPACE_DECL)
-	tree_namespace (ctx, walk);
+	{
+	  gcc_assert (walk == WK_normal
+		      || walk == WK_body);
+	  tree_namespace (ctx, walk);
+	}
       else
 	by_value = tree_decl (ctx, walk);
 
@@ -7371,15 +7378,12 @@ trees_out::tree_decl (tree decl, walk_kind ref)
   return false;
 }
 
-bool
-trees_out::tree_type (tree type, walk_kind ref)
+void
+trees_out::type_node (tree type)
 {
   gcc_assert (TYPE_P (type));
-  if (ref == WK_body)
-    return true;
-
   tree name = TYPE_NAME (type);
-  
+
   if (name
       && TREE_CODE (name) == TYPE_DECL
       && DECL_ORIGINAL_TYPE (name))
@@ -7431,7 +7435,7 @@ trees_out::tree_type (tree type, walk_kind ref)
 				     TREE_CODE (name), name, name);
       if (ref_node (type) == WK_none)
 	/* We emitted the type node via the name.  */
-	return false;
+	return;
     }
 
   tree root = (TYPE_NAME (type)
@@ -7500,7 +7504,7 @@ trees_out::tree_type (tree type, walk_kind ref)
 		&& dump ("Wrote:%d variant type %C", tag, TREE_CODE (type));
 	    }
 	}
-      return false;
+      return;
     }
 
   if (TYPE_PTRMEMFUNC_P (type))
@@ -7513,7 +7517,7 @@ trees_out::tree_type (tree type, walk_kind ref)
       int tag = insert (type);
       if (streaming_p ())
 	dump (dumper::TREE) && dump ("Writen:%d ptrmem type", tag);
-      return false;
+      return;
     }
 
   if (streaming_p ())
@@ -7632,7 +7636,7 @@ trees_out::tree_type (tree type, walk_kind ref)
 	}
     }
 
-  return false;
+  return;
 }
 
 /* T is a node that must be written by value.  WALK indicates the kind
@@ -8285,10 +8289,13 @@ trees_out::tree_node (tree t)
 	 node.  */
     }
 
- skip_normal:
-  if (TYPE_P (t) && !tree_type (t, ref))
-    goto done;
+  if (TYPE_P (t))
+    {
+      type_node (t);
+      goto done;
+    }
 
+ skip_normal:
   if (DECL_P (t) && !tree_decl (t, ref))
     goto done;
 
