@@ -1,3 +1,17 @@
+2019-10-02  Aaron Sawdey <acsawdey@linux.ibm.com>
+
+	* builtins.c (expand_builtin_memory_copy_args): Add might_overlap parm.
+	(expand_builtin_memcpy): Use might_overlap parm.
+	(expand_builtin_mempcpy_args): Use might_overlap parm.
+	(expand_builtin_memmove): Call expand_builtin_memory_copy_args.
+	(expand_builtin_memory_copy_args): Add might_overlap parm.
+	* expr.c (emit_block_move_via_cpymem): Rename to
+	emit_block_move_via_pattern, add might_overlap parm, use cpymem
+	or movmem optab as appropriate.
+	(emit_block_move_hints): Add might_overlap parm, do the right
+	thing for might_overlap==true.
+	* expr.h (emit_block_move_hints): Update prototype.
+
 2019-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-eh.h (unsplit_eh_edges): Declare.

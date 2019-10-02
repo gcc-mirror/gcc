@@ -116,7 +116,8 @@ extern rtx emit_block_move_hints (rtx, rtx, rtx, enum block_op_methods,
 				  unsigned HOST_WIDE_INT,
 				  unsigned HOST_WIDE_INT,
 				  bool bail_out_libcall = false,
-				  bool *is_move_done = NULL);
+				  bool *is_move_done = NULL,
+				  bool might_overlap = false);
 extern rtx emit_block_cmp_hints (rtx, rtx, rtx, tree, rtx, bool,
 				 by_pieces_constfn, void *);
 extern bool emit_storent_insn (rtx to, rtx from);
