@@ -3080,8 +3080,9 @@ do_pushdecl (tree decl, bool is_friend)
 		  /* In a local class, a friend function declaration must
 		     find a matching decl in the innermost non-class scope.
 		     [class.friend/11] */
-		  error ("friend declaration %qD in local class without "
-			 "prior local declaration", decl);
+		  error_at (DECL_SOURCE_LOCATION (decl),
+			    "friend declaration %qD in local class without "
+			    "prior local declaration", decl);
 		  /* Don't attempt to push it.  */
 		  return error_mark_node;
 		}
@@ -4451,9 +4452,9 @@ push_class_level_binding_1 (tree name, tree x)
       tree scope = context_for_name_lookup (x);
       if (TYPE_P (scope) && same_type_p (scope, current_class_type))
 	{
-	  error ("%qD has the same name as the class in which it is "
-		 "declared",
-		 x);
+	  error_at (DECL_SOURCE_LOCATION (x),
+		    "%qD has the same name as the class in which it is "
+		    "declared", x);
 	  return false;
 	}
     }
@@ -4757,7 +4758,8 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
       /* Writing "N::i" to declare something directly in "N" is invalid.  */
       if (CP_DECL_CONTEXT (decl) == current_namespace
 	  && at_namespace_scope_p ())
-	error ("explicit qualification in declaration of %qD", decl);
+	error_at (DECL_SOURCE_LOCATION (decl),
+		  "explicit qualification in declaration of %qD", decl);
       return;
     }
 

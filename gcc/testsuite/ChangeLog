@@ -1,3 +1,13 @@
+2019-10-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/integral-array-size-1.C: New.
+	* g++.dg/cpp0x/alias-decl-1.C: Test location(s) too.
+	* g++.dg/init/new43.C: Likewise.
+	* g++.dg/lookup/friend12.C: Likewise.
+	* g++.dg/lookup/pr79766.C: Likewise.
+	* g++.dg/lookup/pr84375.C: Likewise.
+	* g++.dg/other/new-size-type.C: Likewise.
+
 2019-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/ext/constexpr-attr-cleanup1.C: New test.

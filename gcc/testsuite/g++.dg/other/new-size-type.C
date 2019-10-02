@@ -5,5 +5,5 @@
 const char*
 foo()
 {
-    return new char[~static_cast<size_t>(0)];// { dg-error "exceeds maximum object size" }
+    return new char[~static_cast<size_t>(0)];// { dg-error "21:exceeds maximum object size" }
 }
