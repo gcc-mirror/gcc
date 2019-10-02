@@ -1,5 +1,13 @@
 2019-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/91942
+	* io.c (match_vtag): Check for non-NULL result->symtree.
+	(match_out_tag): Check for invalid constant due to inquiry parameter.
+	(match_filepos): Instead of a syntax error, go to cleanup to get better
+	error messages.
+
+2019-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/91943
 	* match.c (gfc_match_call): BOZ cannot be an actual argument in
 	a subroutine reference.
