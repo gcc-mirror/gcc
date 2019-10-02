@@ -4984,6 +4984,16 @@ gfc_match_call (void)
 	goto syntax;
     }
 
+  /* Walk the argument list looking for invalid BOZ.  */
+  for (a = arglist; a; a = a->next)
+    if (a->expr && a->expr->ts.type == BT_BOZ)
+      {
+	gfc_error ("A BOZ literal constant at %L cannot appear as an actual "
+		   "argument in a subroutine reference", &a->expr->where);
+	goto cleanup;
+      }
+
+
   /* If any alternate return labels were found, construct a SELECT
      statement that will jump to the right place.  */
 
