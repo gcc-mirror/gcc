@@ -24,7 +24,7 @@ subroutine parloop
      end do
   end do 
 
-  !$acc parallel loop tile ! { dg-error "Unclassifiable" }
+  !$acc parallel loop tile ! { dg-error "Failed to match clause" }
   do i = 1, n
   end do
 
@@ -92,7 +92,7 @@ subroutine par
   integer i, j, k
 
   !$acc parallel
-  !$acc loop tile ! { dg-error "Unclassifiable" }
+  !$acc loop tile ! { dg-error "Failed to match clause" }
   do i = 1, n
   end do
 
@@ -173,7 +173,7 @@ subroutine kern
   integer i, j, k
 
   !$acc kernels
-  !$acc loop tile  ! { dg-error "Unclassifiable" }
+  !$acc loop tile  ! { dg-error "Failed to match clause" }
   do i = 1, n
   end do
 
@@ -275,7 +275,7 @@ subroutine kernsloop
      end do
   end do 
 
-  !$acc kernels loop tile ! { dg-error "Unclassifiable" }
+  !$acc kernels loop tile ! { dg-error "Failed to match clause" }
   do i = 1, n
   end do
 

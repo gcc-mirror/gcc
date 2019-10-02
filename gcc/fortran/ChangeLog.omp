@@ -1,3 +1,13 @@
+2019-10-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline
+	2019-10-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_clauses): Show a clause-parsing
+	error if none was rised before.
+	* parse.c (matcha, matcho): If error occurred after
+	OpenMP/OpenACC directive matched, do not try other directives.
+
 2019-09-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline

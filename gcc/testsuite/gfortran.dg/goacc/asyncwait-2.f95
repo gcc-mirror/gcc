@@ -83,13 +83,13 @@ program asyncwait
   end do
   !$acc end parallel ! { dg-error "Unexpected \\\!\\\$ACC END PARALLEL" }
 
-  !$acc parallel copyin (a(1:N)) copy (b(1:N)) waitasync ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc parallel copyin (a(1:N)) copy (b(1:N)) waitasync ! { dg-error "Failed to match clause" }
   do i = 1, N
      b(i) = a(i)
   end do
   !$acc end parallel ! { dg-error "Unexpected \\\!\\\$ACC END PARALLEL" }
 
-  !$acc parallel copyin (a(1:N)) copy (b(1:N)) asyncwait ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc parallel copyin (a(1:N)) copy (b(1:N)) asyncwait ! { dg-error "Failed to match clause" }
   do i = 1, N
      b(i) = a(i)
   end do

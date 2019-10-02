@@ -2,7 +2,7 @@
 
 subroutine t1
   implicit none
-  !$acc routine gang if_present ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc routine gang if_present ! { dg-error "Failed to match clause" }
   integer a, b, c(10)
   real, allocatable :: x, y, z(:)
 
@@ -12,10 +12,10 @@ subroutine t1
 
   allocate (x, y, z(100))
 
-  !$acc enter data copyin(a) if_present ! { dg-error "Unclassifiable OpenACC directive" }
-  !$acc exit data copyout(a) if_present ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc enter data copyin(a) if_present ! { dg-error "Failed to match clause" }
+  !$acc exit data copyout(a) if_present ! { dg-error "Failed to match clause" }
 
-  !$acc data copy(a) if_present ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc data copy(a) if_present ! { dg-error "Failed to match clause" }
   !$acc end data ! { dg-error "Unexpected ..ACC END DATA statement" }
 
   !$acc declare link(a) if_present ! { dg-error "Unexpected junk after" }
@@ -23,7 +23,7 @@ subroutine t1
   !$acc init if_present ! { dg-error "Unclassifiable OpenACC directive" }
   !$acc shutdown if_present ! { dg-error "Unclassifiable OpenACC directive" }
   
-  !$acc update self(a) device_type(nvidia) device(b) if_present ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc update self(a) device_type(nvidia) device(b) if_present ! { dg-error "Failed to match clause" }
 end subroutine t1
 
 subroutine t2
@@ -35,17 +35,17 @@ subroutine t2
   c(:) = -1
 
   !$acc parallel
-  !$acc loop if_present ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc loop if_present ! { dg-error "Failed to match clause" }
   do b = 1, 10
   end do
   !$acc end parallel
 
-  !$acc kernels loop if_present ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc kernels loop if_present ! { dg-error "Failed to match clause" }
   do b = 1, 10
   end do
   !$acc end kernels loop ! { dg-error "Unexpected ..ACC END KERNELS LOOP statement" }
 
-  !$acc parallel loop if_present ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc parallel loop if_present ! { dg-error "Failed to match clause" }
   do b = 1, 10
   end do
   !$acc end parallel loop   ! { dg-error "Unexpected ..ACC END PARALLEL LOOP statement" }

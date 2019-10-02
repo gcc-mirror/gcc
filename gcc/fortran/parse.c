@@ -607,13 +607,18 @@ decode_statement (void)
 
 /* Like match and if spec_only, goto do_spec_only without actually
    matching.  */
+/* If the directive matched but the clauses failed, do not start
+   matching the next directive in the same switch statement. */
 #define matcha(keyword, subr, st)				\
     do {							\
+      match m2;							\
       if (spec_only && gfc_match (keyword) == MATCH_YES)	\
 	goto do_spec_only;					\
-      else if (match_word (keyword, subr, &old_locus)		\
+      else if ((m2 = match_word (keyword, subr, &old_locus))	\
 	       == MATCH_YES)					\
 	return st;						\
+      else if (m2 == MATCH_ERROR)				\
+	goto error_handling;					\
       else							\
 	undo_new_statement ();				  	\
     } while (0)
@@ -713,6 +718,7 @@ decode_oacc_directive (void)
   /* Directive not found or stored an error message.
      Check and give up.  */
 
+ error_handling:
   if (gfc_error_check () == 0)
     gfc_error_now ("Unclassifiable OpenACC directive at %C");
 
@@ -748,18 +754,23 @@ decode_oacc_directive (void)
 
 /* Like match, but don't match anything if not -fopenmp
    and if spec_only, goto do_spec_only without actually matching.  */
+/* If the directive matched but the clauses failed, do not start
+   matching the next directive in the same switch statement. */
 #define matcho(keyword, subr, st)				\
     do {							\
+      match m2;							\
       if (!flag_openmp)						\
 	;							\
       else if (spec_only && gfc_match (keyword) == MATCH_YES)	\
 	goto do_spec_only;					\
-      else if (match_word (keyword, subr, &old_locus)		\
+      else if ((m2 = match_word (keyword, subr, &old_locus))	\
 	       == MATCH_YES)					\
 	{							\
 	  ret = st;						\
 	  goto finish;						\
 	}							\
+      else if (m2 == MATCH_ERROR)				\
+	goto error_handling;					\
       else							\
 	undo_new_statement ();				  	\
     } while (0)
@@ -1032,6 +1043,7 @@ decode_omp_directive (void)
      not -fopenmp and simd_matched is false, i.e. if a directive other
      than one marked with match has been seen.  */
 
+ error_handling:
   if (flag_openmp || simd_matched)
     {
       if (!gfc_error_check ())

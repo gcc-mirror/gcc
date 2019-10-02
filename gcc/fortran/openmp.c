@@ -1973,6 +1973,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 
   if (gfc_match_omp_eos () != MATCH_YES)
     {
+      if (!gfc_error_flag_test ())
+	gfc_error ("Failed to match clause at %C");
       gfc_free_omp_clauses (c);
       return MATCH_ERROR;
     }

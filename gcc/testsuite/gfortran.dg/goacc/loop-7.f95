@@ -30,13 +30,13 @@ program test
     !$acc loop gang(num:num, static:1)
     DO i = 1,10
     ENDDO
-    !$acc loop gang(static:*, num:5, static:5) ! { dg-error "Unclassifiable OpenACC directive" }
+    !$acc loop gang(static:*, num:5, static:5) ! { dg-error "Failed to match clause" }
     DO i = 1,10
     ENDDO
-    !$acc loop gang(1, num:2, static:3) ! { dg-error "Unclassifiable OpenACC directive" }
+    !$acc loop gang(1, num:2, static:3) ! { dg-error "Failed to match clause" }
     DO i = 1,10
     ENDDO
-    !$acc loop gang(num:num static:1) ! { dg-error "Unclassifiable OpenACC directive" }
+    !$acc loop gang(num:num static:1) ! { dg-error "Failed to match clause" }
     DO i = 1,10
     ENDDO
     !$acc loop gang(num)
@@ -45,7 +45,7 @@ program test
     !$acc loop gang(num:num+1, static:1+num)
     DO i = 1,10
     ENDDO
-    !$acc loop gang(length:num) ! { dg-error "Unclassifiable OpenACC directive" }
+    !$acc loop gang(length:num) ! { dg-error "Failed to match clause" }
     DO i = 1,10
     ENDDO
 
@@ -58,19 +58,19 @@ program test
     !$acc loop worker (num)
     DO i = 1,10
     ENDDO
-    !$acc loop worker (static:num) ! { dg-error "Unclassifiable OpenACC directive" }
+    !$acc loop worker (static:num) ! { dg-error "Failed to match clause" }
     DO i = 1,10
     ENDDO
     !$acc loop worker (num:,) ! { dg-error "Invalid character" }
     DO i = 1,10
     ENDDO
-    !$acc loop worker (num:num:num) ! { dg-error "Unclassifiable OpenACC directive" }
+    !$acc loop worker (num:num:num) ! { dg-error "Failed to match clause" }
     DO i = 1,10
     ENDDO
     !$acc loop worker (num:num*num)
     DO i = 1,10
     ENDDO
-    !$acc loop worker (length:num*num) ! { dg-error "Unclassifiable OpenACC directive" }
+    !$acc loop worker (length:num*num) ! { dg-error "Failed to match clause" }
     DO i = 1,10
     ENDDO
     !$acc loop worker (num:*) ! { dg-error "Invalid character" }
@@ -89,13 +89,13 @@ program test
     !$acc loop vector (length)
     DO i = 1,10
     ENDDO
-    !$acc loop vrctor (static:num) ! { dg-error "Unclassifiable OpenACC directive" }
+    !$acc loop vrctor (static:num) ! { dg-error "Failed to match clause" }
     DO i = 1,10
     ENDDO
     !$acc loop vector (length:,) ! { dg-error "Invalid character" }
     DO i = 1,10
     ENDDO
-    !$acc loop vector (length:num:num) ! { dg-error "Unclassifiable OpenACC directive" }
+    !$acc loop vector (length:num:num) ! { dg-error "Failed to match clause" }
     DO i = 1,10
     ENDDO
     !$acc loop vector (length:static*num)
@@ -107,7 +107,7 @@ program test
     !$acc loop vector (length:32)
     DO i = 1,10
     ENDDO
-    !$acc loop vector (num:num*num) ! { dg-error "Unclassifiable OpenACC directive" }
+    !$acc loop vector (num:num*num) ! { dg-error "Failed to match clause" }
     DO i = 1,10
     ENDDO
     !$acc loop vector (length:*) ! { dg-error "Invalid character" }
