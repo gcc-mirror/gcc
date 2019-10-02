@@ -1,6 +1,13 @@
 2019-10-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::tree_ctx): Delete, forward all callers to
+	tree_node.
+	(trees_out::tree_namespace): Delete, move into tree_decl.
+	(trees_out::tree_decl): Rename to ...
+	(trees_out::decl_node): ... this.  Update caller.
+
+	gcc/cp/
 	* module.cc (trees_out::tree_type): Rename to ...
 	(trees_out::type_node): Drop walk_kind arg, return void.  Update
 	callers.

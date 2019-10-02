@@ -2997,12 +2997,10 @@ public:
 
 public:
   void tree_value (tree, walk_kind ref);
-  void tree_ctx (tree);
 
 private:
-  bool tree_decl (tree, walk_kind ref);
+  bool decl_node (tree, walk_kind ref);
   void type_node (tree);
-  void tree_namespace (tree, walk_kind ref);
 
  public:
   /* Serialize various definitions. */
@@ -5518,9 +5516,9 @@ trees_out::core_vals (tree t)
       WT (t->decl_minimal.name);
       if (TREE_TYPE (t)
 	  && TREE_CODE (TREE_TYPE (t)) == TEMPLATE_TEMPLATE_PARM)
-	tree_node (NULL_TREE);
+	WT (NULL_TREE);
       else
-	tree_ctx (t->decl_minimal.context);
+	WT (t->decl_minimal.context);
 
       state->write_location (*this, t->decl_minimal.locus);
     }
@@ -5534,7 +5532,7 @@ trees_out::core_vals (tree t)
 
       /* Stream the name & context first, for better log information  */
       WT (t->type_common.name);
-      tree_ctx (t->type_common.context);
+      WT (t->type_common.context);
 
       /* By construction we want to make sure we have the canonical
 	 and main variants already in the type table, so emit them
@@ -6533,7 +6531,7 @@ trees_out::tree_binfo (tree binfo, int depth, bool via_virt)
   else
     {
       dom = BINFO_TYPE (binfo);
-      tree_ctx (dom);
+      tree_node (dom);
 
       if (streaming_p ())
 	{
@@ -6813,76 +6811,49 @@ trees_out::ref_node (tree t)
   return WK_none;
 }
 
-/* CTX is a context of some node.  NEED_CONTENTS is true if we're
-   ultimately looking for something inside CTX.  */
-// FIXME: return indicator if we discoverd a voldemort
-void
-trees_out::tree_ctx (tree ctx)
-{
-  walk_kind walk = ref_node (ctx);
-  if (walk != WK_none)
-    {
-      bool by_value = false;
-
-      if (TYPE_P (ctx))
-	{
-	  gcc_assert (walk == WK_normal);
-	  type_node (ctx);
-	}
-      else if (TREE_CODE (ctx) == NAMESPACE_DECL)
-	{
-	  gcc_assert (walk == WK_normal
-		      || walk == WK_body);
-	  tree_namespace (ctx, walk);
-	}
-      else
-	by_value = tree_decl (ctx, walk);
-
-      if (by_value)
-	tree_value (ctx, walk);
-    }
-}
-
-void
-trees_out::tree_namespace (tree ns, walk_kind ref)
-{
-  int origin = -1;
-  // FIXME: non-public must be in purview?
-  if (!TREE_PUBLIC (ns))
-    {
-      origin = DECL_MODULE_ORIGIN (ns);
-      if (origin)
-	origin = (*modules)[origin]->remap;
-    }
-
-  if (streaming_p ())
-    {
-      i (tt_namespace);
-      i (origin);
-      tree_ctx (CP_DECL_CONTEXT (ns));
-      tree_node (DECL_NAME (ns));
-    }
-  else if (ref == WK_body)
-    tree_ctx (CP_DECL_CONTEXT (ns));
-  else if (DECL_SOURCE_LOCATION (ns) != BUILTINS_LOCATION)
-    dep_hash->add_dependency (ns, depset::EK_NAMESPACE);
-
-  int tag = insert (ns, ref);
-  if (streaming_p ())
-    dump (dumper::TREE)
-      && dump ("Wrote%s namespace:%d %C:%N@%M",
-	       origin < 0 ? " public" : "", tag, TREE_CODE (ns), ns,
-	       origin < 0 ? NULL : (*modules)[origin]);
-}
-
 /* Reference DECL.  REF indicates the walk kind we are performing.
    Return true if we should write this decl by value.  */
 
 bool
-trees_out::tree_decl (tree decl, walk_kind ref)
+trees_out::decl_node (tree decl, walk_kind ref)
 {
-  gcc_checking_assert (DECL_P (decl)
-		       && TREE_CODE (decl) != NAMESPACE_DECL);
+  gcc_checking_assert (DECL_P (decl));
+
+  if (TREE_CODE (decl) == NAMESPACE_DECL
+      && !DECL_NAMESPACE_ALIAS (decl))
+    {
+      int origin = -1;
+      if (!TREE_PUBLIC (decl))
+	{
+	  origin = DECL_MODULE_ORIGIN (decl);
+	  if (origin)
+	    origin = (*modules)[origin]->remap;
+	}
+
+      if (streaming_p ())
+	{
+	  i (tt_namespace);
+	  i (origin);
+	  tree_node (CP_DECL_CONTEXT (decl));
+	  tree_node (DECL_NAME (decl));
+	}
+      else
+	{
+	  if (ref == WK_body)
+	    tree_node (CP_DECL_CONTEXT (decl));
+	  else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
+	    dep_hash->add_dependency (decl, depset::EK_NAMESPACE);
+	}
+
+      int tag = insert (decl, ref);
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Wrote%s namespace:%d %C:%N@%M",
+		   origin < 0 ? " public" : "", tag, TREE_CODE (decl), decl,
+		   origin < 0 ? NULL : (*modules)[origin]);
+
+      return false;
+    }
 
   if (ref == WK_body || ref == WK_mergeable || ref == WK_clone)
     {
@@ -6899,10 +6870,6 @@ trees_out::tree_decl (tree decl, walk_kind ref)
 
       return true;
     }
-
-  if (ref_node (decl) == WK_none)
-    /* If this is a fixed decl, we're done.  */
-    return false;
 
   if (TREE_CODE (decl) == VAR_DECL && DECL_TINFO_P (decl))
     {
@@ -7121,7 +7088,7 @@ trees_out::tree_decl (tree decl, walk_kind ref)
 	i (tt_data_member);
 
       tree ctx = DECL_CONTEXT (decl);
-      tree_ctx (ctx);
+      tree_node (ctx);
       tree name = DECL_NAME (decl);
 
       if (!name || IDENTIFIER_ANON_P (name))
@@ -7324,7 +7291,7 @@ trees_out::tree_decl (tree decl, walk_kind ref)
 	  }
 
 	i (code);
-	tree_ctx (ctx);
+	tree_node (ctx);
 	tree_node (name);
 	u (origin);
 	i (ident);
@@ -7334,7 +7301,7 @@ trees_out::tree_decl (tree decl, walk_kind ref)
 	if (is_import)
 	  ;
 	else if (TREE_CODE (ctx) != NAMESPACE_DECL)
-	  tree_ctx (ctx);
+	  tree_node (ctx);
 	else
 	  dep_hash->add_dependency (decl, depset::EK_DECL);
 
@@ -7429,7 +7396,7 @@ trees_out::type_node (tree type)
 	    && dump ("Writing typedef %C:%N%S",
 		     TREE_CODE (name), name, name);
 	}
-      tree_ctx (name);
+      tree_node (name);
       if (streaming_p ())
 	dump (dumper::TREE) && dump ("Wrote typedef %C:%N%S",
 				     TREE_CODE (name), name, name);
@@ -8296,7 +8263,7 @@ trees_out::tree_node (tree t)
     }
 
  skip_normal:
-  if (DECL_P (t) && !tree_decl (t, ref))
+  if (DECL_P (t) && !decl_node (t, ref))
     goto done;
 
   /* Otherwise by value */
@@ -9315,7 +9282,7 @@ trees_out::key_mergeable (depset *dep)
      decls -- other decls will still refer to it, and we want it
      correctly canonicalized before we start emitting keys for this
      decl.  */
-  tree_ctx (CP_DECL_CONTEXT (decl));
+  tree_node (CP_DECL_CONTEXT (decl));
 
   if (mk != MK_clone && decl != inner)
     /* A template needs its template parms for identification.  */
@@ -9348,7 +9315,7 @@ trees_out::key_mergeable (depset *dep)
 	  }
 
 	gcc_assert (clone);
-	tree_ctx (target);
+	tree_node (target);
 	tree_node (predecessor);
       }
       break;
@@ -9405,7 +9372,7 @@ trees_out::key_mergeable (depset *dep)
 	/* Specializations are located via their originating template,
 	   and the set of template args they specialize.  */
 
-	tree_ctx (entry->tmpl);
+	tree_node (entry->tmpl);
 	tree_node (entry->args);
 
 	if (CHECKING_P)
@@ -10552,7 +10519,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
       // FIXME: in template fns, vars are themselves templates.  But
       // are local instantiations, I don't think they can end up in
       // the instantiation table, and so we shouldn't depend on them
-      // here.  See the comment in trees_out::tree_decl about having
+      // here.  See the comment in trees_out::decl_node about having
       // to look to see if we can find it there.
       if (TREE_CODE (DECL_CONTEXT (decl)) != FUNCTION_DECL)
 	gcc_checking_assert (DECL_MODULE_ORIGIN (decl)
@@ -11235,10 +11202,10 @@ depset::hash::find_dependencies ()
 		    /* We also want to make specializations of members
 		       depend on their container -- that might well be
 		       in the same SCC.  */
-		    walker.tree_ctx (CP_DECL_CONTEXT (decl));
+		    walker.tree_node (CP_DECL_CONTEXT (decl));
 		}
 	      else if (current->get_entity_kind () == EK_USING)
-		walker.tree_ctx (OVL_FUNCTION (decl));
+		walker.tree_node (OVL_FUNCTION (decl));
 	      else if (TREE_VISITED (decl))
 		/* A global tree.  */;
 	      else
@@ -11260,7 +11227,7 @@ depset::hash::find_dependencies ()
 
 		  /* Turn the Sneakoscope on when depending the decl.  */
 		  sneakoscope = true;
-		  walker.tree_ctx (decl);
+		  walker.tree_node (decl);
 		  sneakoscope = false;
 		  if (current->has_defn ())
 		    walker.write_definition (decl);
@@ -13613,7 +13580,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	case depset::EK_UNNAMED:
 	case depset::EK_CLONE:
 	  sec.u (ct_decl);
-	  sec.tree_ctx (decl);
+	  sec.tree_node (decl);
 	  dump () && dump ("Wrote declaration of %N", decl);
 
 	  if (b->cluster)
@@ -13652,7 +13619,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    dump () && dump ("Depset:%u binding %C:%P", ix, TREE_CODE (decl),
 			     decl, b->get_name ());
 	    sec.u (ct_bind);
-	    sec.tree_ctx (decl);
+	    sec.tree_node (decl);
 	    sec.tree_node (b->get_name ());
 
 	    /* Write in reverse order, so reading will see the exports
@@ -14302,7 +14269,7 @@ module_state::write_unnamed (elf_out *to, vec<depset *> depsets,
 
 	      tree ctx = CP_DECL_CONTEXT (key);
 	      gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
-	      sec.tree_ctx (ctx);
+	      sec.tree_node (ctx);
 	      sec.tree_node (DECL_NAME (key));
 	      sec.u (import_kind);
 	      dump () && dump ("Specialization %N section:%u keyed to %N (%u)",
