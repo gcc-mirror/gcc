@@ -1,3 +1,7 @@
+2019-10-02  Shahab Vahedi  <shahab@synopsys.com>
+
+	* config/arc/arc.h (ASM_SPEC): Pass -mcode-density.
+
 2019-10-02  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (vect_transform_reduction): Declare.
