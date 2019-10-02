@@ -1,3 +1,15 @@
+2019-09-30  Jason Merrill  <jason@redhat.com>
+
+	Use hash_map_safe_* functions.
+	* constexpr.c (maybe_initialize_fundef_copies_table): Remove.
+	(get_fundef_copy): Use hash_map_safe_get_or_insert.
+	* cp-objcp-common.c (cp_get_debug_type): Use hash_map_safe_*.
+	* decl.c (store_decomp_type): Remove.
+	(cp_finish_decomp): Use hash_map_safe_put.
+	* init.c (get_nsdmi): Use hash_map_safe_*.
+	* pt.c (store_defaulted_ttp, lookup_defaulted_ttp): Remove.
+	(add_defaults_to_ttp): Use hash_map_safe_*.
+
 2019-10-02  Richard Biener  <rguenther@suse.de>
 
 	PR c++/91606

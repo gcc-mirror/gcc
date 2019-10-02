@@ -7704,13 +7704,6 @@ get_tuple_decomp_init (tree decl, unsigned i)
    based on the actual type of the variable, so store it in a hash table.  */
 
 static GTY((cache)) tree_cache_map *decomp_type_table;
-static void
-store_decomp_type (tree v, tree t)
-{
-  if (!decomp_type_table)
-    decomp_type_table = tree_cache_map::create_ggc (13);
-  decomp_type_table->put (v, t);
-}
 
 tree
 lookup_decomp_type (tree v)
@@ -7946,7 +7939,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	      goto error_out;
 	    }
 	  /* Save the decltype away before reference collapse.  */
-	  store_decomp_type (v[i], eltype);
+	  hash_map_safe_put<hm_ggc> (decomp_type_table, v[i], eltype);
 	  eltype = cp_build_reference_type (eltype, !lvalue_p (init));
 	  TREE_TYPE (v[i]) = eltype;
 	  layout_decl (v[i], 0);

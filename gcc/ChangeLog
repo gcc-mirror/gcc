@@ -1,3 +1,11 @@
+2019-09-30  Jason Merrill  <jason@redhat.com>
+
+	Add some hash_map_safe_* functions like vec_safe_*.
+	* hash-map.h (default_hash_map_size): New variable.
+	(create_ggc): Use it as default argument.
+	(hash_map_maybe_create, hash_map_safe_get)
+	(hash_map_safe_get_or_insert, hash_map_safe_put): New fns.
+
 2019-10-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cif-code.def (MAX_INLINE_INSNS_SINGLE_O2_LIMIT,
