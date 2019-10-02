@@ -3895,7 +3895,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   bool no_zero_init = true;
 
   releasing_vec ctors;
-  while (!refs->is_empty())
+  while (!refs->is_empty ())
     {
       if (*valp == NULL_TREE)
 	{
@@ -4036,7 +4036,9 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   if (const_object_being_modified)
     {
       bool fail = false;
-      if (!CLASS_TYPE_P (TREE_TYPE (const_object_being_modified)))
+      tree const_objtype
+	= strip_array_types (TREE_TYPE (const_object_being_modified));
+      if (!CLASS_TYPE_P (const_objtype))
 	fail = true;
       else
 	{
