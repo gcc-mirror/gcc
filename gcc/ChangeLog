@@ -1,3 +1,16 @@
+2019-10-02  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* langhooks-def.h (LANG_HOOKS_OMP_IS_OPTIONAL_ARGUMENT): Default to
+	false.
+	(LANG_HOOKS_DECLS): Add LANG_HOOKS_OMP_IS_OPTIONAL_ARGUMENT.
+	* langhooks.h (omp_is_optional_argument): New hook.
+	* omp-general.c (omp_is_optional_argument): New.
+	* omp-general.h (omp_is_optional_argument): New declaration.
+	* omp-low.c (lower_omp_target): Create temporary for received value
+	and take the address for new_var if the original variable was a
+	DECL_BY_REFERENCE.  Use size of referenced object when a
+	pass-by-reference optional argument used as argument to firstprivate.
+
 2019-10-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91940

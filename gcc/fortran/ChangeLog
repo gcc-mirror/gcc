@@ -1,3 +1,17 @@
+2019-10-02  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* f95-lang.c (LANG_HOOKS_OMP_IS_OPTIONAL_ARGUMENT): Define to
+	gfc_omp_is_optional_argument.
+	* trans-decl.c (create_function_arglist): Set
+	GFC_DECL_OPTIONAL_ARGUMENT in the generated decl if the parameter is
+	optional.
+	* trans-openmp.c (gfc_omp_is_optional_argument): New.
+	(gfc_omp_privatize_by_reference): Return true if the decl is an
+	optional pass-by-reference argument.
+	* trans.h (gfc_omp_is_optional_argument): New declaration.
+	(lang_decl): Add new optional_arg field.
+	(GFC_DECL_OPTIONAL_ARGUMENT): New macro.
+
 2019-10-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.c (gfc_diagnostic_starter): Clear the prefix before
