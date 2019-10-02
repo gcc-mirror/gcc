@@ -2,7 +2,6 @@
 
 	* Makefile.in (OBJS): Add range.o and range-op.o.
 	Remove wide-int-range.o.
-	(GTFILES): Add range.h.
 	* function-tests.c (test_ranges): New.
 	(function_tests_c_tests): Call test_ranges.
 	* ipa-cp.c (ipa_vr_operation_and_type_effects): Call

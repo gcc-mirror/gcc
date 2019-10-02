@@ -317,7 +317,7 @@ range_false (tree type)
   return value_range_base (type, wi::zero (prec), wi::zero (prec));
 }
 
-// Return a value_range_base instance that is a boolean FALSE.
+// Return a value_range_base that covers both true and false.
 
 static inline value_range_base
 range_true_and_false (tree type)
@@ -329,7 +329,7 @@ range_true_and_false (tree type)
 enum bool_range_state { BRS_FALSE, BRS_TRUE, BRS_EMPTY, BRS_FULL };
 
 // Return the summary information about boolean range LHS.  Return an
-// "interesting" range in R.  For EMPTY or FULL, return the equivilent
+// "interesting" range in R.  For EMPTY or FULL, return the equivalent
 // range for TYPE, for BRS_TRUE and BRS false, return the negation of
 // the bool range.
 
@@ -337,7 +337,7 @@ static bool_range_state
 get_bool_state (value_range_base &r,
 		const value_range_base &lhs, tree val_type)
 {
-  // If there is no result, then this is unexectuable.
+  // If there is no result, then this is unexecutable.
   if (lhs.undefined_p ())
     {
       r.set_undefined ();
@@ -412,22 +412,22 @@ operator_equal::op1_range (value_range_base &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-      case BRS_FALSE:
-        // If the result is false, the only time we know anything is
-	// if OP2 is a constant.
-	if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
-	  r = range_invert (op2);
-	else
-	  r.set_varying (type);
-	break;
+    case BRS_FALSE:
+      // If the result is false, the only time we know anything is
+      // if OP2 is a constant.
+      if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
+	r = range_invert (op2);
+      else
+	r.set_varying (type);
+      break;
 
-      case BRS_TRUE:
-        // If it's true, the result is the same as OP2.
-        r = op2;
-	break;
+    case BRS_TRUE:
+      // If it's true, the result is the same as OP2.
+      r = op2;
+      break;
 
-      default:
-        break;
+    default:
+      break;
     }
   return true;
 }
@@ -495,22 +495,22 @@ operator_not_equal::op1_range (value_range_base &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-      case BRS_TRUE:
-        // If the result is true, the only time we know anything is if
-	// OP2 is a constant.
-	if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
-	  r = range_invert (op2);
-	else
-	  r.set_varying (type);
-	break;
+    case BRS_TRUE:
+      // If the result is true, the only time we know anything is if
+      // OP2 is a constant.
+      if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
+	r = range_invert (op2);
+      else
+	r.set_varying (type);
+      break;
 
-      case BRS_FALSE:
-        // If its true, the result is the same as OP2.
-        r = op2;
-	break;
+    case BRS_FALSE:
+      // If its true, the result is the same as OP2.
+      r = op2;
+      break;
 
-      default:
-        break;
+    default:
+      break;
     }
   return true;
 }
@@ -598,11 +598,10 @@ operator_lt::fold_range (tree type,
 
   if (wi::lt_p (op1.upper_bound (), op2.lower_bound (), sign))
     r = range_true (type);
+  else if (!wi::lt_p (op1.lower_bound (), op2.upper_bound (), sign))
+    r = range_false (type);
   else
-    if (!wi::lt_p (op1.lower_bound (), op2.upper_bound (), sign))
-      r = range_false (type);
-    else
-      r = range_true_and_false (type);
+    r = range_true_and_false (type);
   return r;
 }
 
@@ -613,16 +612,16 @@ operator_lt::op1_range (value_range_base &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-      case BRS_TRUE:
-	build_lt (r, type, op2.upper_bound ());
-	break;
+    case BRS_TRUE:
+      build_lt (r, type, op2.upper_bound ());
+      break;
 
-      case BRS_FALSE:
-	build_ge (r, type, op2.lower_bound ());
-	break;
+    case BRS_FALSE:
+      build_ge (r, type, op2.lower_bound ());
+      break;
 
-      default:
-        break;
+    default:
+      break;
     }
   return true;
 }
@@ -634,16 +633,16 @@ operator_lt::op2_range (value_range_base &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-      case BRS_FALSE:
-	build_le (r, type, op1.upper_bound ());
-	break;
+    case BRS_FALSE:
+      build_le (r, type, op1.upper_bound ());
+      break;
 
-      case BRS_TRUE:
-	build_gt (r, type, op1.lower_bound ());
-	break;
+    case BRS_TRUE:
+      build_gt (r, type, op1.lower_bound ());
+      break;
 
-      default:
-        break;
+    default:
+      break;
     }
   return true;
 }
@@ -677,11 +676,10 @@ operator_le::fold_range (tree type,
 
   if (wi::le_p (op1.upper_bound (), op2.lower_bound (), sign))
     r = range_true (type);
+  else if (!wi::le_p (op1.lower_bound (), op2.upper_bound (), sign))
+    r = range_false (type);
   else
-    if (!wi::le_p (op1.lower_bound (), op2.upper_bound (), sign))
-      r = range_false (type);
-    else
-      r = range_true_and_false (type);
+    r = range_true_and_false (type);
   return r;
 }
 
@@ -692,16 +690,16 @@ operator_le::op1_range (value_range_base &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-      case BRS_TRUE:
-	build_le (r, type, op2.upper_bound ());
-	break;
+    case BRS_TRUE:
+      build_le (r, type, op2.upper_bound ());
+      break;
 
-      case BRS_FALSE:
-	build_gt (r, type, op2.lower_bound ());
-	break;
+    case BRS_FALSE:
+      build_gt (r, type, op2.lower_bound ());
+      break;
 
-      default:
-        break;
+    default:
+      break;
     }
   return true;
 }
@@ -713,16 +711,16 @@ operator_le::op2_range (value_range_base &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-      case BRS_FALSE:
-	build_lt (r, type, op1.upper_bound ());
-	break;
+    case BRS_FALSE:
+      build_lt (r, type, op1.upper_bound ());
+      break;
 
-      case BRS_TRUE:
-	build_ge (r, type, op1.lower_bound ());
-	break;
+    case BRS_TRUE:
+      build_ge (r, type, op1.lower_bound ());
+      break;
 
-      default:
-        break;
+    default:
+      break;
     }
   return true;
 }
@@ -756,11 +754,10 @@ operator_gt::fold_range (tree type,
 
   if (wi::gt_p (op1.lower_bound (), op2.upper_bound (), sign))
     r = range_true (type);
+  else if (!wi::gt_p (op1.upper_bound (), op2.lower_bound (), sign))
+    r = range_false (type);
   else
-    if (!wi::gt_p (op1.upper_bound (), op2.lower_bound (), sign))
-      r = range_false (type);
-    else
-      r = range_true_and_false (type);
+    r = range_true_and_false (type);
   return r;
 }
 
@@ -771,16 +768,16 @@ operator_gt::op1_range (value_range_base &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-      case BRS_TRUE:
-	build_gt (r, type, op2.lower_bound ());
-	break;
+    case BRS_TRUE:
+      build_gt (r, type, op2.lower_bound ());
+      break;
 
-      case BRS_FALSE:
-	build_le (r, type, op2.upper_bound ());
-	break;
+    case BRS_FALSE:
+      build_le (r, type, op2.upper_bound ());
+      break;
 
-      default:
-        break;
+    default:
+      break;
     }
   return true;
 }
@@ -792,16 +789,16 @@ operator_gt::op2_range (value_range_base &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-      case BRS_FALSE:
-	build_ge (r, type, op1.lower_bound ());
-	break;
+    case BRS_FALSE:
+      build_ge (r, type, op1.lower_bound ());
+      break;
 
-      case BRS_TRUE:
-	build_lt (r, type, op1.upper_bound ());
-	break;
+    case BRS_TRUE:
+      build_lt (r, type, op1.upper_bound ());
+      break;
 
-      default:
-        break;
+    default:
+      break;
     }
   return true;
 }
@@ -849,16 +846,16 @@ operator_ge::op1_range (value_range_base &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-      case BRS_TRUE:
-	build_ge (r, type, op2.lower_bound ());
-	break;
+    case BRS_TRUE:
+      build_ge (r, type, op2.lower_bound ());
+      break;
 
-      case BRS_FALSE:
-	build_lt (r, type, op2.upper_bound ());
-	break;
+    case BRS_FALSE:
+      build_lt (r, type, op2.upper_bound ());
+      break;
 
-      default:
-        break;
+    default:
+      break;
     }
   return true;
 }
@@ -870,16 +867,16 @@ operator_ge::op2_range (value_range_base &r, tree type,
 {
   switch (get_bool_state (r, lhs, type))
     {
-      case BRS_FALSE:
-	build_gt (r, type, op1.lower_bound ());
-	break;
+    case BRS_FALSE:
+      build_gt (r, type, op1.lower_bound ());
+      break;
 
-      case BRS_TRUE:
-	build_le (r, type, op1.upper_bound ());
-	break;
+    case BRS_TRUE:
+      build_le (r, type, op1.upper_bound ());
+      break;
 
-      default:
-        break;
+    default:
+      break;
     }
   return true;
 }
@@ -1449,7 +1446,7 @@ operator_lshift::wi_fold (tree type,
 	  // For non-negative numbers, we're shifting out only zeroes,
 	  // the value increases monotonically.  For negative numbers,
 	  // we're shifting out only ones, the value decreases
-	  // monotomically.
+	  // monotonically.
 	  in_bounds = true;
 	}
     }
@@ -1656,7 +1653,7 @@ operator_cast::op1_range (value_range_base &r, tree type,
     }
 
   // If the LHS precision is greater than the rhs precision, the LHS
-  // range is resticted to the range of the RHS by this
+  // range is restricted to the range of the RHS by this
   // assignment.
   if (TYPE_PRECISION (lhs_type) > TYPE_PRECISION (type))
     {
@@ -1721,17 +1718,17 @@ operator_logical_and::op1_range (value_range_base &r, tree type,
 {
    switch (get_bool_state (r, lhs, type))
      {
+     case BRS_TRUE:
        // A true result means both sides of the AND must be true.
-       case BRS_TRUE:
-         r = range_true (type);
-	 break;
+       r = range_true (type);
+       break;
+     default:
        // Any other result means only one side has to be false, the
        // other side can be anything. So we cannott be sure of any
        // result here.
-      default:
-	r = range_true_and_false (type);
-	break;
-    }
+       r = range_true_and_false (type);
+       break;
+     }
   return true;
 }
 
@@ -1994,16 +1991,16 @@ operator_logical_or::op1_range (value_range_base &r, tree type,
 {
    switch (get_bool_state (r, lhs, type))
      {
+     case BRS_FALSE:
        // A false result means both sides of the OR must be false.
-       case BRS_FALSE:
-         r = range_false (type);
-	 break;
+       r = range_false (type);
+       break;
+     default:
        // Any other result means only one side has to be true, the
        // other side can be anything. so we can't be sure of any result
        // here.
-      default:
-	r = range_true_and_false (type);
-	break;
+       r = range_true_and_false (type);
+       break;
     }
   return true;
 }
@@ -2633,8 +2630,8 @@ value_range_base
 pointer_and_operator::wi_fold (tree type,
 			       const wide_int &lh_lb,
 			       const wide_int &lh_ub,
-			       const wide_int &rh_lb,
-			       const wide_int &rh_ub) const
+			       const wide_int &rh_lb ATTRIBUTE_UNUSED,
+			       const wide_int &rh_ub ATTRIBUTE_UNUSED) const
 {
   // For pointer types, we are really only interested in asserting
   // whether the expression evaluates to non-NULL.
