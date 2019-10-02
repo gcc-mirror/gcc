@@ -731,8 +731,8 @@ globalize_reg (tree decl, int i)
   if (i != STACK_POINTER_REGNUM)
     {
       SET_HARD_REG_BIT (regs_invalidated_by_call, i);
-      for (unsigned int i = 0; i < NUM_ABI_IDS; ++i)
-	function_abis[i].add_full_reg_clobber (i);
+      for (unsigned int j = 0; j < NUM_ABI_IDS; ++j)
+	function_abis[j].add_full_reg_clobber (i);
     }
 
   /* If already fixed, nothing else to do.  */

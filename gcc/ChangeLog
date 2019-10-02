@@ -1,3 +1,8 @@
+2019-10-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* reginfo.c (globalize_reg): Fix shadowed variable in
+	function_abis walk.
+
 2019-10-02  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraph.c (symbol_table::create_edge): New parameter cloning_p,
