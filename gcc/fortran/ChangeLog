@@ -1,5 +1,11 @@
 2019-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/91784
+	* simplify.c (gfc_convert_constant): Simplify expression if the
+	expression type is EXPR_OP.
+
+2019-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/91785
 	* primary.c (gfc_match_varspec): Ensure an inquiry parameter has
 	it locus set.
