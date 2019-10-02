@@ -1,6 +1,9 @@
 2019-10-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (MK_*): Document better.
+
+	gcc/cp/
 	* cp-tree.h (MODULE_CURRENT, MODULE_IMPORT_BASE): Delete.
 	* module.cc: Replace with zero/one
 	* name-lookup.c: Likewise.

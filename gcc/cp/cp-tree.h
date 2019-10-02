@@ -6853,16 +6853,17 @@ extern tree implicitly_declare_fn               (special_function_kind, tree,
 class module_state; /* Forward declare.  */
 inline bool modules_p () { return flag_modules != 0; }
 
-#define MK_MODULE (1 << 0)
-#define MK_GLOBAL (1 << 1)
-#define MK_INTERFACE (1 << 2)
-#define MK_PARTITION (1 << 3)
-#define MK_EXPORTING (1 << 4)  // FIXME: Not needed
+#define MK_MODULE (1 << 0)     /* This TU is a module.  */
+#define MK_GLOBAL (1 << 1)     /* Entities are in the global module.  */
+#define MK_INTERFACE (1 << 2)  /* This TU is an interface.  */
+#define MK_PARTITION (1 << 3)  /* This TU is a partition.  */
+#define MK_EXPORTING (1 << 4)  /* We are in an export region.  */
 extern unsigned module_kind;
 
-/* MODULE GLOBAL
+/*  MK_MODULE & MK_GLOBAL have the following combined meanings:
+ MODULE GLOBAL
    0	  0    not a module
-   0      1    GMF of named module
+   0      1    GMF of named module (we've not yet seen module-decl)
    1      0    purview of named module
    1      1    header unit.   */
 
@@ -6887,7 +6888,7 @@ inline bool module_partition_p ()
 inline bool module_has_cmi_p ()
 { return module_kind & (MK_INTERFACE | MK_PARTITION); }
 
-// FIXME: This is confused.  We only set this for header modules,
+/* We're currently exporting declarations.  */
 inline bool module_exporting_p ()
 { return module_kind & MK_EXPORTING; }
 
