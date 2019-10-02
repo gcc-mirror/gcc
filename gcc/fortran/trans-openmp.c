@@ -52,7 +52,8 @@ int ompws_flags;
 bool
 gfc_omp_is_optional_argument (const_tree decl)
 {
-  return (TREE_CODE (decl) == PARM_DECL && DECL_LANG_SPECIFIC (decl)
+  return (TREE_CODE (decl) == PARM_DECL
+	  && DECL_LANG_SPECIFIC (decl)
 	  && GFC_DECL_OPTIONAL_ARGUMENT (decl));
 }
 
