@@ -50,6 +50,7 @@ extern bool maybe_duplicate_eh_stmt_fn (struct function *, gimple *,
 					hash_map<void *, void *> *, int);
 extern bool maybe_duplicate_eh_stmt (gimple *, gimple *);
 extern void maybe_remove_unreachable_handlers (void);
+extern void unsplit_eh_edges (void);
 extern bool verify_eh_edges (gimple *);
 extern bool verify_eh_dispatch_edge (geh_dispatch *);
 
