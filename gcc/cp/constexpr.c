@@ -1098,15 +1098,6 @@ maybe_initialize_constexpr_call_table (void)
 
 static GTY(()) hash_map<tree, tree> *fundef_copies_table;
 
-/* Initialize FUNDEF_COPIES_TABLE if it's not initialized.  */
-
-static void
-maybe_initialize_fundef_copies_table ()
-{
-  if (fundef_copies_table == NULL)
-    fundef_copies_table = hash_map<tree,tree>::create_ggc (101);
-}
-
 /* Reuse a copy or create a new unshared copy of the function FUN.
    Return this copy.  We use a TREE_LIST whose PURPOSE is body, VALUE
    is parms, TYPE is result.  */
@@ -1114,11 +1105,10 @@ maybe_initialize_fundef_copies_table ()
 static tree
 get_fundef_copy (constexpr_fundef *fundef)
 {
-  maybe_initialize_fundef_copies_table ();
-
   tree copy;
   bool existed;
-  tree *slot = &fundef_copies_table->get_or_insert (fundef->decl, &existed);
+  tree *slot = &(hash_map_safe_get_or_insert<hm_ggc>
+		 (fundef_copies_table, fundef->decl, &existed, 127));
 
   if (!existed)
     {
