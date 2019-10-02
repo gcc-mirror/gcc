@@ -11870,7 +11870,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      var = build_fold_addr_expr (var);
 	    else
 	      {
-		if (omp_is_reference (ovar))
+		if (omp_is_reference (ovar) || omp_is_optional_argument (ovar))
 		  {
 		    type = TREE_TYPE (type);
 		    if (TREE_CODE (type) != ARRAY_TYPE

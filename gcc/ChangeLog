@@ -1,3 +1,8 @@
+2019-10-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.c (lower_omp_target): Dereference optional argument
+	to work with the right pointer.
+
 2019-10-02  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* langhooks-def.h (LANG_HOOKS_OMP_IS_OPTIONAL_ARGUMENT): Default to
