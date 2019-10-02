@@ -1,3 +1,8 @@
+2019-10-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR testsuite/91842
+	* gcc.dg/ipa/ipa-sra-19.c: Skip on powerpc.
+
 2019-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt82.adb: New test.
