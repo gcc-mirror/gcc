@@ -66,9 +66,7 @@ cxx_print_decl (FILE *file, tree node, int indent)
       || TREE_CODE (node) == NAMESPACE_DECL)
     {
       tree d = STRIP_TEMPLATE (node);
-      unsigned m = MODULE_CURRENT;
-      if (DECL_LANG_SPECIFIC (d))
-	m = DECL_MODULE_ORIGIN (d);
+      unsigned m = DECL_LANG_SPECIFIC (d) ? DECL_MODULE_ORIGIN (d) : 0;
       if (const char *name = module_name (m, true))
 	{
 	  if (need_indent)

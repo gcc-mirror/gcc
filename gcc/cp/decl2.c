@@ -4400,8 +4400,7 @@ no_linkage_error (tree decl)
     /* In C++11 it's ok if the decl is defined.  */
     return;
 
-  if (DECL_LANG_SPECIFIC (decl)
-      && DECL_MODULE_ORIGIN (decl) >= MODULE_IMPORT_BASE)
+  if (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_ORIGIN (decl))
     /* An imported decl is ok.  */
     return;
 

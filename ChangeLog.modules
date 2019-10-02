@@ -1,5 +1,12 @@
 2019-10-02  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (MODULE_CURRENT, MODULE_IMPORT_BASE): Delete.
+	* module.cc: Replace with zero/one
+	* name-lookup.c: Likewise.
+	* decl2.c (no_linkage_error): Likewise.
+	* ptree.c (cxx_print_decl): Likewise.
+
 	Don't equivocate GMF with module
 	gcc/cp/
 	* cp-tree.h (MODULE_NONE, MODULE_PURVIEW): Delete.

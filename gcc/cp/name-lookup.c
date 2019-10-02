@@ -122,7 +122,7 @@ find_namespace_value (tree ns, tree name)
 static mc_slot *
 search_imported_binding_slot (tree *slot, unsigned ix)
 {
-  gcc_assert (ix >= MODULE_IMPORT_BASE);
+  gcc_assert (ix);
 
   if (!*slot)
     return NULL;
@@ -287,7 +287,7 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
 static mc_slot *
 append_imported_binding_slot (tree *slot, tree name, unsigned ix)
 {
-  gcc_checking_assert (ix >= MODULE_IMPORT_BASE);
+  gcc_checking_assert (ix);
 
   if (!*slot ||  TREE_CODE (*slot) != MODULE_VECTOR)
     /* Make an initial module vector.  */
@@ -1498,14 +1498,13 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 		     type.  */
 		  tree origin = get_originating_module_decl (TYPE_NAME (scope));
 
-		  unsigned mod = MODULE_CURRENT;
+		  unsigned mod = 0;
 		  if (origin && DECL_LANG_SPECIFIC (origin))
 		    mod = DECL_MODULE_ORIGIN (origin);
 
 		  /* If the module was in the inst path, we'll look at its
 		     namespace partition anyway.  */
-		  if (mod >= MODULE_IMPORT_BASE
-		      && !(inst_path && bitmap_bit_p (inst_path, mod)))
+		  if (mod && !(inst_path && bitmap_bit_p (inst_path, mod)))
 		    {
 		      tree ns = CP_DECL_CONTEXT (origin);
 		      if (tree *slot = find_namespace_slot (ns, name, false))
@@ -4119,7 +4118,7 @@ set_module_binding (tree ns, tree name, unsigned mod, bool inter_p,
 
   gcc_assert (TREE_CODE (value) != NAMESPACE_DECL
 	      || DECL_NAMESPACE_ALIAS (value));
-  gcc_checking_assert (mod >= MODULE_IMPORT_BASE);
+  gcc_checking_assert (mod);
 
   tree *slot = find_namespace_slot (ns, name, true);
   mc_slot *mslot = search_imported_binding_slot (slot, mod);
@@ -4245,7 +4244,7 @@ get_binding_or_decl (tree ctx, tree name, unsigned mod)
       if (tree *slot = find_namespace_slot (ctx, name))
 	{
 	  /* We reference ourselves via the dependency table.  */
-	  gcc_assert (mod >= MODULE_IMPORT_BASE);
+	  gcc_assert (mod);
 	  if (mc_slot *mslot = search_imported_binding_slot (slot, mod))
 	    {
 	      /* During an import we reference a dependent import.  */
@@ -4482,10 +4481,10 @@ get_imported_namespace (tree ctx, tree name, int mod)
 
   if (tree *slot = find_namespace_slot (ctx, name))
     {
-      if (mod <= MODULE_CURRENT)
+      if (mod <= 0)
 	{
-	  mod = mod < 0 ? MODULE_SLOT_GLOBAL : MODULE_SLOT_CURRENT;
-	  tree *mslot = get_fixed_binding_slot (slot, name, mod, false);
+	  unsigned fixed = mod ? MODULE_SLOT_GLOBAL : MODULE_SLOT_CURRENT;
+	  tree *mslot = get_fixed_binding_slot (slot, name, fixed, false);
 	  if (mslot)
 	    binding = *mslot;
 	}
@@ -8863,7 +8862,7 @@ make_namespace (tree ctx, tree name, location_t loc,
 	  if (module_interface_p ())
 	    {
 	      /* We must use the full partition name.  */
-	      const char *name = module_name (MODULE_CURRENT, true);
+	      const char *name = module_name (0, true);
 	      unsigned len = strlen (name);
 	      unsigned pos = IDENTIFIER_LENGTH (asm_name);
 	      char *buf = XALLOCAVEC (char, pos + len * 3 + 1);
@@ -9058,8 +9057,11 @@ add_imported_namespace (tree ctx, tree name, int mod, location_t loc,
 
   /* Now insert.  */
   tree *mslot = NULL;
-  if (mod < MODULE_IMPORT_BASE)
-    mslot = get_fixed_binding_slot (slot, name, MODULE_SLOT_CURRENT, true);
+  if (mod <= 0)
+    {
+      unsigned fixed = mod ? MODULE_SLOT_GLOBAL : MODULE_SLOT_CURRENT;
+      mslot = get_fixed_binding_slot (slot, name, fixed, true);
+    }
   else
     {
       if (TREE_PUBLIC (decl) && TREE_CODE (*slot) == MODULE_VECTOR)

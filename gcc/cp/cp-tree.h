@@ -1672,10 +1672,6 @@ check_constraint_info (tree t)
 
 /* Module defines.  */
 
-/* Module origin numbers.   */
-#define MODULE_CURRENT 0	/* The current TU (not necesarily a module).  */
-#define MODULE_IMPORT_BASE 1	/* An import.  */
-
 #define DECL_MODULE_ORIGIN_CHECK(NODE) \
   TREE_CHECK5(NODE,FUNCTION_DECL,VAR_DECL,TYPE_DECL,TEMPLATE_DECL,NAMESPACE_DECL)
 

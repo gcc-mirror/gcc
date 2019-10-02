@@ -29,18 +29,24 @@ along with GCC; see the file COPYING3.  If not see
    The merged modules proposal, p1103r1, allows me to drop support for
    two different schemes.
    
-   Each namespace-scope decl has a MODULE_OWNER.  This is MODULE_NONE
-   for entities declared in the Global Module Fragment.  In the
-   purview of the current module, it is MODULE_PURVIEW.  For any
-   imported declaration it is >= MODULE_IMPORT_BASE.  Decls from
-   header imports have such a MODULE_OWNER, even though they are in the
-   global module.  Builtins are always MODULE_NONE. (Note that
-   this is happenstance for decls lacking DECL_LANG_SPECIFIC.)
+   Each namespace-scope fn/var/type/namespace decl has an originating
+   module.  If it comes from the current TU, it is zero.  For any
+   imported declaration it is non-zero.
 
-   Each template instantiation also has a MODULE_OWNER, set according
-   to the instantiating translation unit.  This may well be different
-   to either the containing instantiation, or the template
-   definition.
+   Each instantiation and class member fn/var/type has an
+   instantiating module.  This may be different to the containing
+   class's instantiating or originating module.  This is the same
+   field as the originating module, DECL_MODULE_ORIGIN.
+
+   The originating module determines ownership of everything within
+   that context, and the permisibility of redefinitions from other
+   TUs.
+
+   For simplicitly template_decls propagate their result's module.
+
+   These decls also have a DECL_MODULE_PURVIEW_P flag, indicating
+   whether the declaration was in the global module fragment or in the
+   module's purview.
 
    The decls for a particular module are held located in a sparse
    array hanging off the ns-level binding of the name.  This is
@@ -5268,8 +5274,7 @@ trees_out::lang_decl_bools (tree t)
   WB (lang->u.base.concept_p);
   WB (lang->u.base.var_declared_inline_p);
   WB (lang->u.base.dependent_init_p);
-  gcc_checking_assert ((*modules)[lang->u.base.module_origin]->remap
-		       == MODULE_CURRENT);
+  gcc_checking_assert (!(*modules)[lang->u.base.module_origin]->remap);
   WB (lang->u.base.module_purview_p);
   switch (lang->u.base.selector)
     {
@@ -6602,8 +6607,7 @@ trees_out::tree_node_bools (tree t)
 	    || TREE_CODE (t) == TYPE_DECL
 	    || (TREE_CODE (t) == CONST_DECL && DECL_CONTEXT (t)
 		&& TREE_CODE (DECL_CONTEXT (t)) == ENUMERAL_TYPE))
-	  gcc_checking_assert ((*modules)[get_instantiating_module (t)]->remap
-			       < MODULE_IMPORT_BASE);
+	  gcc_checking_assert (!(*modules)[get_instantiating_module (t)]->remap);
 #endif
 	bool specific = DECL_LANG_SPECIFIC (t) != NULL;
 	b (specific);
@@ -6840,7 +6844,7 @@ trees_out::tree_namespace (tree ns, walk_kind ref, tree)
   if (!TREE_PUBLIC (ns))
     {
       origin = DECL_MODULE_ORIGIN (ns);
-      if (origin >= MODULE_IMPORT_BASE)
+      if (origin)
 	origin = (*modules)[origin]->remap;
     }
 
@@ -7167,11 +7171,10 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	  gcc_checking_assert (STRIP_TEMPLATE (decl)
 			       == get_instantiating_module_decl (decl));
 	  origin = get_instantiating_module (decl);
-	  if (origin >= MODULE_IMPORT_BASE)
+	  if (origin)
 	    origin = (*modules)[origin]->remap;
 
-	  dep = dep_hash->add_dependency (decl, depset::EK_MAYBE_SPEC,
-					  origin >= MODULE_IMPORT_BASE);
+	  dep = dep_hash->add_dependency (decl, depset::EK_MAYBE_SPEC, origin);
 	  /* We should always insert or find something.  */
 	  gcc_assert (dep);
 	}
@@ -7201,11 +7204,11 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
   {
     /* Find the owning module and determine what to do.  */
     origin = get_instantiating_module (decl);
-    if (origin >= MODULE_IMPORT_BASE)
+    if (origin)
       origin = (*modules)[origin]->remap;
 
     tree ctx = CP_DECL_CONTEXT (decl);
-    bool is_import = origin >= MODULE_IMPORT_BASE;
+    bool is_import = origin != 0;
 
     if (TREE_CODE (ctx) == FUNCTION_DECL)
       {
@@ -7272,7 +7275,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	      name = NULL_TREE;
 	  }
 
-	if (TREE_CODE (ctx) == NAMESPACE_DECL && origin < MODULE_IMPORT_BASE)
+	if (TREE_CODE (ctx) == NAMESPACE_DECL && !origin)
 	  {
 	    /* Look directly into the binding depset, as that's
 	       what importers will observe.  */
@@ -11164,10 +11167,9 @@ depset::hash::add_specializations (bool decl_p)
 #endif
 
       unsigned origin = DECL_MODULE_ORIGIN (spec);
-      if (origin >= MODULE_IMPORT_BASE)
+      if (origin)
 	origin = (*modules)[origin]->remap;
-      depset *dep = add_dependency (spec, depset::EK_SPECIALIZATION,
-				    origin >= MODULE_IMPORT_BASE);
+      depset *dep = add_dependency (spec, depset::EK_SPECIALIZATION, origin);
       if (dep->is_special ())
 	{
 	  /* An already located specialization, this must be a friend
@@ -11852,7 +11854,7 @@ get_module (tree name, module_state *parent, bool partition)
   if (partition)
     {
       if (!parent)
-	parent = get_primary ((*modules)[MODULE_CURRENT]);
+	parent = get_primary ((*modules)[0]);
 
       if (!parent->is_partition () && !parent->flatname)
 	parent->set_flatname ();
@@ -12800,7 +12802,7 @@ module_mapper::translate_include (location_t loc, const char *path, size_t len)
 bool
 module_state::check_not_purview (location_t loc)
 {
-  module_state *imp = (*modules)[MODULE_CURRENT];
+  module_state *imp = (*modules)[0];
   if (imp && !imp->name)
     imp = imp->parent;
   if (imp == this)
@@ -12938,7 +12940,7 @@ module_state::write_readme (elf_out *to, const char *dialect,
   }
 
   /* Its direct imports.  */
-  for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
+  for (unsigned ix = 1; ix < modules->length (); ix++)
     {
       module_state *state = (*modules)[ix];
 
@@ -13020,22 +13022,22 @@ module_state::write_imports (bytes_out &sec, bool direct)
 {
   unsigned count = 0;
 
-  for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
+  for (unsigned ix = 1; ix < modules->length (); ix++)
     {
       module_state *imp = (*modules)[ix];
 
-      if (imp->remap >= MODULE_IMPORT_BASE && imp->is_direct () == direct)
+      if (imp->remap && imp->is_direct () == direct)
 	count++;
     }
 
   gcc_assert (!direct || count);
 
   sec.u (count);
-  for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
+  for (unsigned ix = 1; ix < modules->length (); ix++)
     {
       module_state *imp = (*modules)[ix];
 
-      if (imp->remap >= MODULE_IMPORT_BASE && imp->is_direct () == direct)
+      if (imp->remap && imp->is_direct () == direct)
 	{
 	  dump () && dump ("Writing %simport:%u->%u %M (crc=%x)",
 			   !direct ? "indirect "
@@ -13066,8 +13068,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
   while (count--)
     {
       unsigned ix = sec.u ();
-      if (ix >= slurp->remap->length ()
-	  || ix < MODULE_IMPORT_BASE || (*slurp->remap)[ix])
+      if (ix >= slurp->remap->length () || !ix || (*slurp->remap)[ix])
 	{
 	  sec.set_overrun ();
 	  break;
@@ -13082,7 +13083,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	 module as this TU.  */
       if (imp && imp->is_partition () &&
 	  (!named_module_p ()
-	   || (get_primary ((*modules)[MODULE_CURRENT]) != get_primary (imp))))
+	   || (get_primary ((*modules)[0]) != get_primary (imp))))
 	imp = NULL;
 
       if (!imp)
@@ -13189,14 +13190,13 @@ module_state::read_imports (cpp_reader *reader, line_maps *lmaps)
   if (!sec.begin (loc, from (), MOD_SNAME_PFX ".imp"))
     return false;
 
-  dump () && dump ("Reading %u imports",
-		   slurp->remap->length () - MODULE_IMPORT_BASE);
+  dump () && dump ("Reading %u imports", slurp->remap->length () - 1);
   dump.indent ();
 
   /* Read the imports.  */
   unsigned direct = read_imports (sec, reader, lmaps);
   unsigned indirect = read_imports (sec, NULL, NULL);
-  if (direct + indirect + MODULE_IMPORT_BASE != slurp->remap->length ())
+  if (direct + indirect + 1 != slurp->remap->length ())
     from ()->set_error (elf::E_BAD_IMPORT);
 
   dump.outdent ();
@@ -13218,7 +13218,7 @@ module_state::write_partitions (elf_out *to, unsigned count, unsigned *crc_ptr)
   bytes_out sec (to);
   sec.begin ();
 
-  for (unsigned ix = MODULE_IMPORT_BASE; ix != modules->length (); ix++)
+  for (unsigned ix = 1; ix != modules->length (); ix++)
     {
       module_state *imp = (*modules)[ix];
       if (imp->is_partition ())
@@ -13514,7 +13514,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		      bool is_imported = d->is_import ();
 		      gcc_checking_assert (is_imported == !d->cluster);
 		      sec.u (ct_horcrux);
-		      unsigned origin = MODULE_CURRENT;
+		      unsigned origin = 0;
 		      unsigned index = d->cluster - 1;
 		      if (is_imported)
 			{
@@ -13525,7 +13525,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 			  index -= import->unnamed_lwm;
 			  gcc_checking_assert (index < import->unnamed_num);
 			  origin = import->remap;
-			  gcc_checking_assert (origin >= MODULE_IMPORT_BASE);
+			  gcc_checking_assert (origin);
 			}
 		      sec.u (origin);
 		      sec.u (index);
@@ -14081,8 +14081,7 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
 
       /* We should only be naming public namespaces, or our own
 	 private ones.  */
-      gcc_checking_assert (public_p
-			   || DECL_MODULE_ORIGIN (ns) == MODULE_CURRENT);
+      gcc_checking_assert (public_p || !DECL_MODULE_ORIGIN (ns));
       unsigned flags = 0;
       if (export_p)
 	flags |= 1;
@@ -14243,8 +14242,7 @@ module_state::read_bindings (vec<tree> spaces, unsigned num,
 	  tree ctx = spaces[nsnum];
 	  tree id = get_identifier (name);
 	  dump () && dump ("Bindings %P section:%u", ctx, id, snum);
-	  if (mod >= MODULE_IMPORT_BASE
-	      && !import_module_binding (ctx, id, mod, snum))
+	  if (mod && !import_module_binding (ctx, id, mod, snum))
 	    break;
 	}
     }
@@ -14292,7 +14290,7 @@ module_state::write_unnamed (elf_out *to, vec<depset *> depsets,
 	    {
 	      tree key = get_originating_module_decl (uent);
 	      unsigned origin = (DECL_LANG_SPECIFIC (key)
-				 ? DECL_MODULE_ORIGIN (key) : MODULE_CURRENT);
+				 ? DECL_MODULE_ORIGIN (key) : 0);
 	      module_state *import = (*modules)[origin];
 
 	      unsigned import_kind;
@@ -14384,7 +14382,7 @@ enum loc_kind {
 static const module_state *
 module_for_ordinary_loc (location_t loc)
 {
-  unsigned pos = MODULE_IMPORT_BASE;
+  unsigned pos = 1;
   unsigned len = modules->length () - pos;
 
   while (len)
@@ -14408,7 +14406,7 @@ module_for_ordinary_loc (location_t loc)
 static const module_state *
 module_for_macro_loc (location_t loc)
 {
-  unsigned pos = MODULE_IMPORT_BASE;
+  unsigned pos = 1;
   unsigned len = modules->length () - pos;
 
   while (len)
@@ -14574,7 +14572,7 @@ module_state::read_location (bytes_in &sec) const
 	 unsigned mod = slurp->remap_module (sec.u ());
 	 unsigned off = sec.u ();
 
-	 if (mod < MODULE_IMPORT_BASE)
+	 if (!mod)
 	   sec.set_overrun ();
 	 else
 	   {
@@ -16332,8 +16330,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
   if (!is_header () && !is_partition ())
     partitions = BITMAP_GGC_ALLOC ();
 
-  unsigned mod_hwm = MODULE_IMPORT_BASE;
-  for (unsigned ix = MODULE_IMPORT_BASE; ix != modules->length (); ix++)
+  unsigned mod_hwm = 1;
+  for (unsigned ix = 1; ix != modules->length (); ix++)
     {
       module_state *imp = (*modules)[ix];
 
@@ -16350,7 +16348,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	{
 	  dump () && dump ("Partition %M %u", imp, ix);
 	  bitmap_set_bit (partitions, ix);
-	  imp->remap = MODULE_CURRENT;
+	  imp->remap = 0;
 	  /* All interface partitions must be exported.  */
 	  if (imp->is_interface () && !bitmap_bit_p (exports, imp->mod))
 	    {
@@ -16524,7 +16522,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
     write_unnamed (to, sccs, table, config.num_unnamed, &crc);
 
   /* Write the import table.  */
-  if (config.num_imports > MODULE_IMPORT_BASE)
+  if (config.num_imports > 1)
     write_imports (to, &crc);
 
   /* Write elided partition table.  */
@@ -16582,8 +16580,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
       goto bail;
 
     /* Read the import table.  */
-    if (config.num_imports > MODULE_IMPORT_BASE
-	&& !read_imports (reader, line_table))
+    if (config.num_imports > 1 && !read_imports (reader, line_table))
       goto bail;
 
     /* Read the elided partition table, if we're the primary partition.  */
@@ -16593,7 +16590,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
 
     /* Determine the module's number.  */
     gcc_checking_assert (mod == MODULE_UNKNOWN);
-    gcc_checking_assert (this != (*modules)[MODULE_CURRENT]);
+    gcc_checking_assert (this != (*modules)[0]);
 
     unsigned ix = modules->length ();
     if (ix == MODULE_LIMIT)
@@ -16611,7 +16608,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
       bitmap_set_bit (slurp->headers, ix);
     mod = remap = ix;
 
-    (*slurp->remap)[MODULE_CURRENT] = mod;
+    (*slurp->remap)[0] = mod;
     dump () && dump ("Assigning %M module number %u", this, mod);
 
     /* We should not have been frozen during the importing done by
@@ -16813,12 +16810,12 @@ module_visible_instantiation_path (bitmap *path_map_p)
   if (!modules_p ())
     return NULL;
 
-  bitmap visible = (*modules)[MODULE_CURRENT]->imports;
+  bitmap visible = (*modules)[0]->imports;
 
   if (tinst_level *path = current_instantiation ())
     {
       bitmap path_map = BITMAP_GGC_ALLOC ();
-      bitmap_set_bit (path_map, MODULE_CURRENT);
+      bitmap_set_bit (path_map, 0);
 
       bitmap tmp = BITMAP_GGC_ALLOC ();
       bitmap_copy (tmp, visible);
@@ -16862,7 +16859,7 @@ module_state::set_import (module_state const *other, bool is_export)
     /* We'll export OTHER's exports.  */
     bitmap_ior_into (exports, other->exports);
 
-  if (is_header () && other->is_header () && mod >= MODULE_IMPORT_BASE)
+  if (is_header () && other->is_header () && mod)
     /* We only see OTHER's headers if it is header.  */
     bitmap_ior_into (slurp->headers, other->slurp->headers);
 }
@@ -16989,7 +16986,7 @@ get_instantiating_module (tree decl)
   tree owner = get_instantiating_module_decl (decl);
 
   if (!DECL_LANG_SPECIFIC (owner))
-    return MODULE_CURRENT;
+    return 0;
 
   return DECL_MODULE_ORIGIN (owner);
 }
@@ -17000,18 +16997,17 @@ get_instantiating_module (tree decl)
 bool
 module_may_redeclare (tree inst)
 {
-  int origin
-    = DECL_LANG_SPECIFIC (inst) ? DECL_MODULE_ORIGIN (inst) : MODULE_CURRENT;
+  int origin = DECL_LANG_SPECIFIC (inst) ? DECL_MODULE_ORIGIN (inst) : 0;
 
   module_state *them = (*modules)[origin];
-  module_state *me = (*modules)[MODULE_CURRENT];
+  module_state *me = (*modules)[0];
 
   if (them->is_header ())
     /* If it came from a header, it's in the global module.  */
     return (me->is_header ()
 	    || !module_purview_p ());
 
-  if (origin == MODULE_CURRENT)
+  if (!origin)
     return ((DECL_LANG_SPECIFIC (inst) && DECL_MODULE_PURVIEW_P (inst))
 	    == module_purview_p ());
 
@@ -17043,7 +17039,7 @@ set_instantiating_module (tree decl)
 
   // FIXME: Lazily allocate?
   retrofit_lang_decl (decl);
-  DECL_MODULE_ORIGIN (decl) = MODULE_CURRENT;
+  DECL_MODULE_ORIGIN (decl) = 0;
   DECL_MODULE_PURVIEW_P (decl) = module_purview_p ();
 }
 
@@ -17059,7 +17055,7 @@ set_originating_module (tree decl, bool friend_p ATTRIBUTE_UNUSED)
 
   // FIXME: Lazily allocate?
   retrofit_lang_decl (decl);
-  DECL_MODULE_ORIGIN (decl) = MODULE_CURRENT;
+  DECL_MODULE_ORIGIN (decl) = 0;
   DECL_MODULE_PURVIEW_P (decl) = module_purview_p ();
 
   if (TREE_CODE (CP_DECL_CONTEXT (decl)) != NAMESPACE_DECL)
@@ -17172,7 +17168,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
   bool ok = check_read (diags);
   // FIXME: The below conditional looks odd.  I don't think we ever
   // now import MODULE_CURRENT, even in module implementation units?
-  announce (flag_module_lazy && mod != MODULE_CURRENT ? "lazy" : "imported");
+  announce (flag_module_lazy && mod ? "lazy" : "imported");
 
   return ok;
 }
@@ -17223,7 +17219,7 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
       if (exported_p)
 	exported_p = true;
 
-      (*modules)[MODULE_CURRENT]->set_import (this, exported_p);
+      (*modules)[0]->set_import (this, exported_p);
       if (is_header ())
 	import_macros ();
     }
@@ -17336,7 +17332,7 @@ module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
 void
 lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
 {
-  gcc_checking_assert (mod >= MODULE_IMPORT_BASE);
+  gcc_checking_assert (mod);
   if (outer)
     timevar_start (TV_MODULE_IMPORT);
   (*modules)[mod]->lazy_load (ns, id, mslot, outer);
@@ -17348,7 +17344,7 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
 module_state *
 module_for_unnamed (unsigned unnamed)
 {
-  unsigned pos = MODULE_IMPORT_BASE;
+  unsigned pos = 1;
   unsigned len = modules->length () - pos;
   while (len)
     {
@@ -17448,7 +17444,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
   gcc_assert (global_namespace == current_scope ());
   from_loc = ordinary_loc_of (line_table, from_loc);
 
-  module_state *current = (*modules)[MODULE_CURRENT];
+  module_state *current = (*modules)[0];
   if (module_purview_p () || !state->is_detached ())
     {
       if (module_purview_p ())
@@ -17488,8 +17484,8 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
       /* Copy the importing information we may have already done.  */
       state->imports = current->imports;
 
-      state->mod = MODULE_CURRENT;
-      (*modules)[MODULE_CURRENT] = state;
+      state->mod = 0;
+      (*modules)[0] = state;
     }
   else
     {
@@ -17704,7 +17700,7 @@ module_preprocess (mkdeps *deps, module_state *state, int is_module)
   if (is_module)
     /* Record the module, so that partition imports resolve
        correctly.  */
-    (*modules)[MODULE_CURRENT] = state;
+    (*modules)[0] = state;
 
   if (!state->flatname)
     state->set_flatname ();
@@ -17778,7 +17774,7 @@ process_deferred_imports (cpp_reader *reader)
 
   module_state *imp = (*pending_imports)[0];
   module_mapper *mapper = module_mapper::get (imp->from_loc);
-  bool has_bmi = imp->mod == MODULE_CURRENT;
+  bool has_bmi = !imp->mod;
   bool any = false;
 
   timevar_start (TV_MODULE_MAPPER);
@@ -17906,14 +17902,11 @@ init_module_processing (cpp_reader *reader)
 
   vec_safe_reserve (modules, 20);
 
-  gcc_checking_assert (MODULE_CURRENT == 0
-		       && MODULE_IMPORT_BASE == MODULE_CURRENT + 1);
-
   /* Create module for current TU.  */
   module_state *current
     = new (ggc_alloc<module_state> ()) module_state (NULL_TREE, NULL, false);
-  current->mod = MODULE_CURRENT;
-  bitmap_set_bit (current->imports, MODULE_CURRENT);
+  current->mod = 0;
+  bitmap_set_bit (current->imports, 0);
   modules->quick_push (current);
 
   gcc_checking_assert (!fixed_trees);
@@ -18088,7 +18081,7 @@ finish_module_processing (cpp_reader *reader)
       dump.pop (n);
     }
 
-  if (!modules || !(*modules)[MODULE_CURRENT]->name)
+  if (!modules || !(*modules)[0]->name)
     {
       if (flag_module_only)
 	warning (0, "%<-fmodule-only%> used for non-interface");
@@ -18108,7 +18101,7 @@ finish_module_processing (cpp_reader *reader)
       /* We write to a tmpname, and then atomically rename.  */
       const char *path = NULL;
       char *tmp_name = NULL;
-      module_state *state = (*modules)[MODULE_CURRENT];
+      module_state *state = (*modules)[0];
 
       unsigned n = dump.push (state);
       state->announce ("creating");
@@ -18179,8 +18172,7 @@ finish_module_processing (cpp_reader *reader)
   if (modules)
     {
       unsigned n = dump.push (NULL);
-      dump () && dump ("Imported %u modules",
-		       modules->length () - MODULE_IMPORT_BASE);
+      dump () && dump ("Imported %u modules", modules->length () - 1);
       dump () && dump ("Containing %u clusters", available_clusters);
       dump () && dump ("Loaded %u clusters (%u%%)", loaded_clusters,
 		       (loaded_clusters * 100 + 50) /
@@ -18204,7 +18196,7 @@ finish_module_processing (cpp_reader *reader)
 #endif
 
   if (modules)
-    for (unsigned ix = modules->length (); --ix >= MODULE_IMPORT_BASE;)
+    for (unsigned ix = modules->length (); --ix;)
       if (module_state *state = (*modules)[ix])
 	state->release ();
 
