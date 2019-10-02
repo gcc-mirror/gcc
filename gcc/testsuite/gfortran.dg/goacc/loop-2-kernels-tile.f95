@@ -3,7 +3,7 @@ program test
   integer :: i, j
 
   !$acc kernels
-    !$acc loop tile ! { dg-error "Unclassifiable" }
+    !$acc loop tile ! { dg-error "Failed to match clause" }
     DO i = 1,10
     ENDDO
     !$acc loop tile() ! { dg-error "Syntax error" }
@@ -65,7 +65,7 @@ program test
     ENDDO
   !$acc end kernels
 
-  !$acc kernels loop tile ! { dg-error "Unclassifiable" }
+  !$acc kernels loop tile ! { dg-error "Failed to match clause" }
   DO i = 1,10
   ENDDO
   !$acc kernels loop tile() ! { dg-error "Syntax error" }
