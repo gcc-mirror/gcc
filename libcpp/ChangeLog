@@ -1,3 +1,7 @@
+2019-10-02  Richard Biener  <rguenther@suse.de>
+
+	* internal.h (enum include_type): Remove trailing comma.
+
 2019-10-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* include/cpplib.h (struct cpp_options): Add member scope.
