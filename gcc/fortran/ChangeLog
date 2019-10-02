@@ -1,3 +1,8 @@
+2019-10-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.c (gfc_omp_is_optional_argument): Fix coding
+	style.
+
 2019-10-02  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* f95-lang.c (LANG_HOOKS_OMP_IS_OPTIONAL_ARGUMENT): Define to
