@@ -69,7 +69,7 @@ extern void rs6000_generate_float2_code (bool, rtx, rtx, rtx);
 extern void rs6000_generate_float2_double_code (rtx, rtx, rtx);
 extern void rs6000_generate_vsigned2_code (bool, rtx, rtx, rtx);
 extern int expand_block_clear (rtx[]);
-extern int expand_block_move (rtx[]);
+extern int expand_block_move (rtx[], bool);
 extern bool expand_block_compare (rtx[]);
 extern bool expand_strn_compare (rtx[], int);
 extern bool rs6000_is_valid_mask (rtx, int *, int *, machine_mode);

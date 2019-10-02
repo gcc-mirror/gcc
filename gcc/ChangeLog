@@ -1,5 +1,13 @@
 2019-10-02  Aaron Sawdey <acsawdey@linux.ibm.com>
 
+	* config/rs6000/rs6000-protos.h (expand_block_move): Change prototype.
+	* config/rs6000/rs6000-string.c (expand_block_move): Add
+	might_overlap parm.
+	* config/rs6000/rs6000.md (movmemsi): Add new pattern.
+	(cpymemsi): Add might_overlap parm to expand_block_move() call.
+
+2019-10-02  Aaron Sawdey <acsawdey@linux.ibm.com>
+
 	* builtins.c (expand_builtin_memory_copy_args): Add might_overlap parm.
 	(expand_builtin_memcpy): Use might_overlap parm.
 	(expand_builtin_mempcpy_args): Use might_overlap parm.
