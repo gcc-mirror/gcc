@@ -15,12 +15,12 @@ int main ()
 
 // { dg-final { scan-lang-dump {Lazily binding '::bar::quux'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {>Lazily binding '::foo::X'@'foo' section} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo::X@foo:2::frob@foo:2'@foo} module } }
-// { dg-final { scan-lang-dump-not {Instantiation:-[0-9]* function_decl:'::foo::X@foo:2::frob@1()<0x0>'} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo::X@foo:.::frob@foo:.'@foo} module } }
+// { dg-final { scan-lang-dump-not {Instantiation:-[0-9]* function_decl:'::foo::X@foo:.::frob@.()<0x0>'} module } }
 
 // { dg-final { scan-lang-dump {Lazily binding '::bar::toto'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {>Lazily binding '::foo::TPL'@'foo' section} module } }
 
-// { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo::TPL@foo:2'@foo} module } }
-// { dg-final { scan-lang-dump {Reading definition type_decl '::foo::TPL@bar:3<0x0>'} module } }
-// { dg-final { scan-lang-dump {Voldemort decl:0 \[0\] '::foo::TPL@bar:3<0x0>} module } }
+// { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo::TPL@foo:.'@foo} module } }
+// { dg-final { scan-lang-dump {Reading definition type_decl '::foo::TPL@bar:.<0x0>'} module } }
+// { dg-final { scan-lang-dump {Voldemort decl:0 \[0\] '::foo::TPL@bar:.<0x0>} module } }

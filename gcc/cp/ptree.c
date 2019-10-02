@@ -66,14 +66,24 @@ cxx_print_decl (FILE *file, tree node, int indent)
       || TREE_CODE (node) == NAMESPACE_DECL)
     {
       tree d = STRIP_TEMPLATE (node);
+      unsigned m = MODULE_CURRENT;
       if (DECL_LANG_SPECIFIC (d))
-	if (unsigned m = DECL_MODULE_OWNER (d))
-	  {
-	    if (need_indent)
-	      indent_to (file, indent + 3);
-	    fprintf (file, " module %d:%s", m, module_name (m, true));
-	    need_indent = false;
-	  }
+	m = DECL_MODULE_ORIGIN (d);
+      if (const char *name = module_name (m, true))
+	{
+	  if (need_indent)
+	    indent_to (file, indent + 3);
+	  fprintf (file, " module %d:%s", m, name);
+	  need_indent = false;
+	}
+
+      if (DECL_LANG_SPECIFIC (node) && DECL_MODULE_PURVIEW_P (node))
+	{
+	  if (need_indent)
+	    indent_to (file, indent + 3);
+	  fprintf (file, " purview");
+	  need_indent = false;
+	}
     }
 
   if (DECL_MODULE_EXPORT_P (node))

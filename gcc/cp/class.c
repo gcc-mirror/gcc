@@ -8379,20 +8379,21 @@ void
 build_self_reference (void)
 {
   tree name = DECL_NAME (TYPE_NAME (current_class_type));
-  tree value = build_lang_decl (TYPE_DECL, name, current_class_type);
+  tree decl = build_lang_decl (TYPE_DECL, name, current_class_type);
 
-  DECL_NONLOCAL (value) = 1;
-  DECL_CONTEXT (value) = current_class_type;
-  DECL_ARTIFICIAL (value) = 1;
-  SET_DECL_SELF_REFERENCE_P (value);
-  set_underlying_type (value);
+  DECL_NONLOCAL (decl) = 1;
+  DECL_CONTEXT (decl) = current_class_type;
+  DECL_ARTIFICIAL (decl) = 1;
+  SET_DECL_SELF_REFERENCE_P (decl);
+  set_underlying_type (decl);
+  set_instantiating_module (decl);  
 
   if (processing_template_decl)
-    value = push_template_decl (value);
+    decl = push_template_decl (decl);
 
   tree saved_cas = current_access_specifier;
   current_access_specifier = access_public_node;
-  finish_member_declaration (value);
+  finish_member_declaration (decl);
   current_access_specifier = saved_cas;
 }
 

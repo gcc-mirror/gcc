@@ -11,5 +11,5 @@ class X
 
 export X *f ();
 
-// { dg-final { scan-lang-dump {Wrote purview:-[0-9]* type_decl:'::X@frob:1'} "module" } }
-// { dg-final { scan-lang-dump {Wrote decl's type:-[0-9]* record_type:'::X@frob:1'} "module" } }
+// { dg-final { scan-lang-dump {Wrote purview:-[0-9]* type_decl:'::X@frob:.'} "module" } }
+// { dg-final { scan-lang-dump {Wrote decl's type:-[0-9]* record_type:'::X@frob:.'} "module" } }

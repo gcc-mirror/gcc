@@ -33,9 +33,9 @@ template class TPL<float>;  // instantiate
 // the ::foo fns and TPL should be in different depsets
 // the friend decl should be streamed as part of TPL's definition
 
-// { dg-final { scan-lang-dump-not {Connecting declaration decl template_decl:'::foo@foo:1'} module } }
+// { dg-final { scan-lang-dump-not {Connecting declaration decl template_decl:'::foo@foo:.'} module } }
 
-// { dg-final { scan-lang-dump {Template friend '::foo@foo:1' discovered} module } }
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization declaration '::foo@foo:1'\n  \[1\]=decl declaration '::foo@foo:1'\n  \[2\]=binding '::foo'} module } }
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::TPL@foo:1'\n  \[1\]=binding '::TPL'} module } }
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::TPL@foo:1<float>'} module } }
+// { dg-final { scan-lang-dump {Template friend '::foo@foo:.' discovered} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization declaration '::foo@foo:.'\n  \[1\]=decl declaration '::foo@foo:.'\n  \[2\]=binding '::foo'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::TPL@foo:.'\n  \[1\]=binding '::TPL'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::TPL@foo:.<float>'} module } }

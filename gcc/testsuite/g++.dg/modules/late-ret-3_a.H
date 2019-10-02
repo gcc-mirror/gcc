@@ -17,4 +17,4 @@ auto Bar (const A& arg)
   -> TPL_3<typename TPL_1<decltype(arg)>::type>
   {return 3;}
 
-// { dg-final { scan-lang-dump {Ordering 4 depsets\n  Mergeable 0 is '::Foo@[^\n]*/late-ret-3_a.H:1'\n  Mergeable 1 is '::TPL_1@[^\n]*/late-ret-3_a.H:1<#null#>' \(tight\)\n  Mergeable 2 is '::TPL_3@[^\n]*/late-ret-3_a.H:1<::TPL_1@[^\n]*/late-ret-3_a.H:1<#null#>::type@[^\n]*>' \(tight\)\n  Mergeable 3 is '::TPL_2@[^\n]*/late-ret-3_a.H:1<::TPL_1@[^\n]*/late-ret-3_a.H:1<#null#>::type@[^\n]*>'\n} module } }
+// { dg-final { scan-lang-dump {Ordering 4 depsets\n  Mergeable 0 is '::Foo@[^\n]*/late-ret-3_a.H:.'\n  Mergeable 1 is '::TPL_1@[^\n]*/late-ret-3_a.H:.<#null#>' \(tight\)\n  Mergeable 2 is '::TPL_3@[^\n]*/late-ret-3_a.H:.<::TPL_1@[^\n]*/late-ret-3_a.H:.<#null#>::type@[^\n]*>' \(tight\)\n  Mergeable 3 is '::TPL_2@[^\n]*/late-ret-3_a.H:.<::TPL_1@[^\n]*/late-ret-3_a.H:.<#null#>::type@[^\n]*>'\n} module } }

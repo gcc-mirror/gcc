@@ -4401,7 +4401,7 @@ no_linkage_error (tree decl)
     return;
 
   if (DECL_LANG_SPECIFIC (decl)
-      && DECL_MODULE_OWNER (decl) >= MODULE_IMPORT_BASE)
+      && DECL_MODULE_ORIGIN (decl) >= MODULE_IMPORT_BASE)
     /* An imported decl is ok.  */
     return;
 

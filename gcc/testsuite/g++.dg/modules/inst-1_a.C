@@ -36,7 +36,7 @@ export inline void user ()
   foo (1.0f);
 }
 
-// { dg-final { scan-lang-dump {Depending definition function_decl:'::foo@foo:1<float>'} module } }
-// { dg-final { scan-lang-dump {Depending definition function_decl:'::foo@foo:1<int>'} module } }
-// { dg-final { scan-lang-dump {\[0\]=specialization definition '::foo@foo:1<float>'} module } }
-// { dg-final { scan-lang-dump {\[0\]=specialization definition '::foo@foo:1<int>'} module } }
+// { dg-final { scan-lang-dump {Depending definition function_decl:'::foo@foo:.<float>'} module } }
+// { dg-final { scan-lang-dump {Depending definition function_decl:'::foo@foo:.<int>'} module } }
+// { dg-final { scan-lang-dump {\[0\]=specialization definition '::foo@foo:.<float>'} module } }
+// { dg-final { scan-lang-dump {\[0\]=specialization definition '::foo@foo:.<int>'} module } }

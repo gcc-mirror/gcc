@@ -15,9 +15,9 @@ template class TPL<int>;  // instantiate
 
 void foo (int, void *);
 
-// { dg-final { scan-lang-dump-not {Connecting declaration decl template_decl:'::foo@foo:1'} module } }
+// { dg-final { scan-lang-dump-not {Connecting declaration decl template_decl:'::foo@foo:.'} module } }
 
-// { dg-final { scan-lang-dump {Template friend '::foo@foo:1<int>' discovered} module } }
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::TPL@foo:1'\n  \[1\]=binding '::TPL'} module } }
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization declaration '::foo@foo:1<int>'\n  \[1\]=binding '::foo'} module } }
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::TPL@foo:1<int>'} module } }
+// { dg-final { scan-lang-dump {Template friend '::foo@foo:.<int>' discovered} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::TPL@foo:.'\n  \[1\]=binding '::TPL'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization declaration '::foo@foo:.<int>'\n  \[1\]=binding '::foo'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::TPL@foo:.<int>'} module } }

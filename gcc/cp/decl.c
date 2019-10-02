@@ -1928,8 +1928,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  // instantiations whatever.
 	  tree owner = get_instantiating_module_decl (olddecl);
 
-	  if (DECL_LANG_SPECIFIC (owner)
-	      && !module_may_redeclare (DECL_MODULE_OWNER (owner)))
+	  if (!module_may_redeclare (owner))
 	    {
 	      error ("declaration %qD conflicts with import", newdecl);
 	      inform (olddecl_loc, "import declared %q#D here", olddecl);
@@ -2160,9 +2159,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    }
 	}
 
-      DECL_MODULE_OWNER (olddecl)
-	= DECL_MODULE_OWNER (old_result)
-	= DECL_MODULE_OWNER (newdecl);
+      DECL_MODULE_ORIGIN (olddecl)
+	= DECL_MODULE_ORIGIN (old_result)
+	= DECL_MODULE_ORIGIN (newdecl);
 
       return olddecl;
     }

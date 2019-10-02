@@ -19,4 +19,4 @@ int main ()
   return 0;
 }
 
-// { dg-final { scan-lang-dump {Read:-1's named merge key \(matched\) template_decl:'::Foo@[^\n]*/late-ret-3_b.H:3'\n  Deduping '::Foo@[^\n]*/late-ret-3_a.H:2'\n} module } }
+// { dg-final { scan-lang-dump {Read:-1's named merge key \(matched\) template_decl:'::Foo@[^\n]*/late-ret-3_b.H:.'\n  Deduping '::Foo@[^\n]*/late-ret-3_a.H:.'\n} module } }

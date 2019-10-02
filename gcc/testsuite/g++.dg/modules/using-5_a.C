@@ -11,5 +11,5 @@ using One::X;
 }
 
 
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl declaration '::One::X@foo:1'\n  \[1\]=binding '::One::X'} module } }
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=using declaration '::One::X@foo:1'\n  \[1\]=binding '::Two::X'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl declaration '::One::X@foo:.'\n  \[1\]=binding '::One::X'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=using declaration '::One::X@foo:.'\n  \[1\]=binding '::Two::X'} module } }

@@ -7,4 +7,4 @@ import Foo;
 
 // { dg-final { scan-lang-dump "Starting module Foo" "module" } }
 // { dg-final { scan-lang-dump "Starting module Baz" "module" } }
-// { dg-final { scan-lang-dump "Writing import:2->2 Foo" "module" } }
+// { dg-final { scan-lang-dump "Writing import:1->1 Foo" "module" } }

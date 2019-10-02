@@ -278,8 +278,9 @@ int module_dump_id;
 
 /* We have a special module owner.  */
 #define MODULE_UNKNOWN (unsigned short)(~0U)    /* Not yet known.  */
+#define MODULE_UNKNOWN_PARTITION (MODULE_UNKNOWN - 1)
 #define MODULE_LIMIT (1 << MODULE_BITS < MODULE_UNKNOWN \
-		      ? 1 << MODULE_BITS : MODULE_UNKNOWN)
+		      ? 1 << MODULE_BITS : MODULE_UNKNOWN_PARTITION)
 
 /* Prefix for section names.  */
 #define MOD_SNAME_PFX ".gnu.c++"
@@ -3202,9 +3203,9 @@ struct GTY(()) slurping {
     for (unsigned ix = size; ix--;)
       remap->quick_push (0);
   }
-  unsigned remap_module (unsigned owner)
+  int remap_module (unsigned owner)
   {
-    return owner < remap->length () ? (*remap)[owner] : MODULE_NONE;
+    return owner < remap->length () ? int((*remap)[owner]) : -1;
   }
 
  public:
@@ -3265,7 +3266,7 @@ trees_in::assert_definition (tree decl ATTRIBUTE_UNUSED,
     gcc_assert (get_dupness (decl) < DUP_dup
 		? !note_defs->contains (decl)
 		: (!DECL_LANG_SPECIFIC (decl)
-		   || DECL_MODULE_OWNER (decl) == MODULE_NONE
+		   || !DECL_MODULE_PURVIEW_P (decl)
 		   || note_defs->contains (decl)));
 
   if (TREE_CODE (decl) == TEMPLATE_DECL)
@@ -3509,7 +3510,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   void set_flatname ();
   const char *get_flatname () const
   {
-    gcc_checking_assert (flatname);
     return flatname;
   }
 
@@ -4047,7 +4047,7 @@ bool
 dumper::impl::nested_name (tree t)
 {
   tree ti = NULL_TREE;
-  unsigned owner = MODULE_NONE;
+  int origin = -1;
   bool ttp = false;
 
   if (t && TREE_CODE (t) == TREE_BINFO)
@@ -4073,7 +4073,11 @@ dumper::impl::nested_name (tree t)
 	  || TREE_CODE (t) == VAR_DECL
 	  || TREE_CODE (t) == TYPE_DECL
 	  || (TREE_CODE (t) == TEMPLATE_DECL && DECL_TEMPLATE_RESULT (t)))
-	owner = get_instantiating_module (t);
+	{
+	  tree o = get_instantiating_module_decl (t);
+	  if (DECL_LANG_SPECIFIC (o))
+	    origin = DECL_MODULE_ORIGIN (o);
+	}
 
       int use_tpl;
       ti = node_template_info (t, use_tpl);
@@ -4107,11 +4111,11 @@ dumper::impl::nested_name (tree t)
   else
     fputs ("#null#", stream);
 
-  if (owner != MODULE_NONE)
+  if (origin >= 0)
     {
-      const module_state *mod = (*modules)[owner];
-      fprintf (stream, "@%s:%d", !mod ? "" : !mod->name ? "(unnamed)"
-	       : mod->get_flatname (), owner);
+      const module_state *module = (*modules)[origin];
+      fprintf (stream, "@%s:%d", !module ? "" : !module->name ? "(unnamed)"
+	       : module->get_flatname (), origin);
     }
 
   if (ti)
@@ -5264,9 +5268,9 @@ trees_out::lang_decl_bools (tree t)
   WB (lang->u.base.concept_p);
   WB (lang->u.base.var_declared_inline_p);
   WB (lang->u.base.dependent_init_p);
-  gcc_checking_assert ((*modules)[lang->u.base.module_owner]->remap
-		       < MODULE_IMPORT_BASE);
-  WB (lang->u.base.module_owner != 0);
+  gcc_checking_assert ((*modules)[lang->u.base.module_origin]->remap
+		       == MODULE_CURRENT);
+  WB (lang->u.base.module_purview_p);
   switch (lang->u.base.selector)
     {
     default:
@@ -5324,7 +5328,8 @@ trees_in::lang_decl_bools (tree t)
   RB (lang->u.base.concept_p);
   RB (lang->u.base.var_declared_inline_p);
   RB (lang->u.base.dependent_init_p);
-  lang->u.base.module_owner = b () ? state->mod : MODULE_NONE;
+  lang->u.base.module_origin = state->mod;
+  RB (lang->u.base.module_purview_p);
   switch (lang->u.base.selector)
     {
     default:
@@ -6830,18 +6835,19 @@ trees_out::tree_ctx (tree ctx, bool need_contents, tree inner_decl)
 void
 trees_out::tree_namespace (tree ns, walk_kind ref, tree)
 {
-  unsigned owner = MODULE_NONE;
+  int origin = -1;
+  // FIXME: non-public must be in purview?
   if (!TREE_PUBLIC (ns))
     {
-      owner = DECL_MODULE_OWNER (ns);
-      if (owner >= MODULE_IMPORT_BASE)
-	owner = (*modules)[owner]->remap;
+      origin = DECL_MODULE_ORIGIN (ns);
+      if (origin >= MODULE_IMPORT_BASE)
+	origin = (*modules)[origin]->remap;
     }
 
   if (streaming_p ())
     {
       i (tt_namespace);
-      u (owner);
+      i (origin);
       tree_ctx (CP_DECL_CONTEXT (ns), true, ns);
       tree_node (DECL_NAME (ns));
     }
@@ -6854,8 +6860,8 @@ trees_out::tree_namespace (tree ns, walk_kind ref, tree)
   if (streaming_p ())
     dump (dumper::TREE)
       && dump ("Wrote%s namespace:%d %C:%N@%M",
-	       TREE_PUBLIC (ns) ? " public" : "", tag, TREE_CODE (ns), ns,
-	       TREE_PUBLIC (ns) ? NULL : (*modules)[owner]);
+	       origin < 0 ? " public" : "", tag, TREE_CODE (ns), ns,
+	       origin < 0 ? NULL : (*modules)[origin]);
 }
 
 /* Reference DECL.  REF indicates the walk kind we are performing.
@@ -7142,7 +7148,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 		       || TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL);
 
   const char *kind = NULL;
-  unsigned owner = MODULE_UNKNOWN;
+  int origin = -1;
   if (use_tpl > 0)
     {
       /* Some kind of specialization.   */
@@ -7160,12 +7166,12 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	{
 	  gcc_checking_assert (STRIP_TEMPLATE (decl)
 			       == get_instantiating_module_decl (decl));
-	  owner = get_instantiating_module (decl);
-	  if (owner >= MODULE_IMPORT_BASE)
-	    owner = (*modules)[owner]->remap;
+	  origin = get_instantiating_module (decl);
+	  if (origin >= MODULE_IMPORT_BASE)
+	    origin = (*modules)[origin]->remap;
 
 	  dep = dep_hash->add_dependency (decl, depset::EK_MAYBE_SPEC,
-					  owner >= MODULE_IMPORT_BASE);
+					  origin >= MODULE_IMPORT_BASE);
 	  /* We should always insert or find something.  */
 	  gcc_assert (dep);
 	}
@@ -7194,12 +7200,12 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 
   {
     /* Find the owning module and determine what to do.  */
-    owner = get_instantiating_module (decl);
-    if (owner >= MODULE_IMPORT_BASE)
-      owner = (*modules)[owner]->remap;
+    origin = get_instantiating_module (decl);
+    if (origin >= MODULE_IMPORT_BASE)
+      origin = (*modules)[origin]->remap;
 
     tree ctx = CP_DECL_CONTEXT (decl);
-    bool is_import = owner >= MODULE_IMPORT_BASE;
+    bool is_import = origin >= MODULE_IMPORT_BASE;
 
     if (TREE_CODE (ctx) == FUNCTION_DECL)
       {
@@ -7266,7 +7272,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	      name = NULL_TREE;
 	  }
 
-	if (TREE_CODE (ctx) == NAMESPACE_DECL && owner < MODULE_IMPORT_BASE)
+	if (TREE_CODE (ctx) == NAMESPACE_DECL && origin < MODULE_IMPORT_BASE)
 	  {
 	    /* Look directly into the binding depset, as that's
 	       what importers will observe.  */
@@ -7301,23 +7307,23 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 		  ident--;
 	      }
 
-	    kind = owner == MODULE_NONE ? "GMF" : "purview";
-	    /* Any GMF entities need to be looked up on this module's slot.  */
-	    owner = MODULE_PURVIEW;
+	    tree o = get_originating_module_decl (decl);
+	    kind = (o && DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o)
+		    ? "purview" : "GMF");
 	  }
 	else
 	  {
-	    ident = get_lookup_ident (ctx, name, owner, proxy);
+	    ident = get_lookup_ident (ctx, name, origin, proxy);
 	    /* Make sure we can find it by name.  */
 	    gcc_checking_assert
-	      (proxy == lookup_by_ident (ctx, name, owner, ident));
+	      (proxy == lookup_by_ident (ctx, name, origin, ident));
 	    kind = is_import ? "import" : "member";
 	  }
 
 	i (code);
 	tree_ctx (ctx, true, decl);
 	tree_node (name);
-	u (owner);
+	u (origin);
 	i (ident);
       }
     else
@@ -7338,7 +7344,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
   if (streaming_p ())
     dump (dumper::TREE)
       && dump ("Wrote %s:%d %C:%N@%M", kind, tag, TREE_CODE (decl), decl,
-	       owner == MODULE_UNKNOWN ? NULL : (*modules)[owner]);
+	       origin < 0 ? NULL : (*modules)[origin]);
 
   tree proxy = decl;
   if (TREE_CODE (decl) == TEMPLATE_DECL)
@@ -7675,10 +7681,10 @@ trees_out::tree_value (tree t, walk_kind walk)
 	  /* Tell the importer whether this is a global module entity,
 	     or a module entity.  This bool merges into the next block
 	     of bools.  Sneaky.  */
-	  tree inner = STRIP_TEMPLATE (t);
 	  bool is_mod = false;
-	  if (DECL_LANG_SPECIFIC (inner))
-	    is_mod = DECL_MODULE_OWNER (inner) != MODULE_NONE;
+	  tree o = get_originating_module_decl (t);
+	  if (DECL_LANG_SPECIFIC (o))
+	    is_mod = DECL_MODULE_PURVIEW_P (o);
 	  b (is_mod);
 	}
       tree_node_bools (t);
@@ -8757,13 +8763,14 @@ trees_in::tree_node ()
     case tt_namespace:
       /* Namespace reference.  */
       {
-	unsigned owner = u ();
+	int origin = i ();
 	tree ctx = tree_node ();
 	tree name = tree_node ();
-	if (owner != MODULE_NONE)
-	  owner = state->slurp->remap_module (owner);
 
-	res = get_imported_namespace (ctx, name, owner);
+	if (origin >= 0)
+	  origin = state->slurp->remap_module (origin);
+
+	res = get_imported_namespace (ctx, name, origin);
 	if (!res || TREE_CODE (res) != NAMESPACE_DECL)
 	  {
 	    error_at (state->loc, "failed to find namespace %<%E%s%E%>",
@@ -8778,7 +8785,7 @@ trees_in::tree_node ()
 	    int tag = insert (res);
 	    dump (dumper::TREE)
 	      && dump ("Namespace:%d %C:%N@%M", tag, TREE_CODE (res),
-		       res, owner == MODULE_NONE ? NULL : (*modules)[owner]);
+		       res, origin < 0 ? NULL : (*modules)[origin]);
 	  }
       }
       break;
@@ -8867,19 +8874,18 @@ trees_in::tree_node ()
     case tt_implicit_template:
       /* A named, anonymois or implicit decl.  */
       {
-	unsigned owner;
 	tree ctx = tree_node ();
 	tree name = tree_node ();
 
-	// FIXME: I think owner is only needed for namespace-scope CTX?
-	owner = u ();
-	owner = state->slurp->remap_module (owner);
+	// FIXME: I think owner is only needed for namespace-scope
+	// CTX?  Yup.
+	int origin = u ();
+	origin = state->slurp->remap_module (origin);
 	int ident = i ();
 	if (!get_overrun ()
-	    && (owner != MODULE_NONE
-		|| TREE_CODE (ctx) != NAMESPACE_DECL))
+	    && (origin >= 0 || TREE_CODE (ctx) != NAMESPACE_DECL))
 	  {
-	    res = lookup_by_ident (ctx, name, owner, ident);
+	    res = lookup_by_ident (ctx, name, origin, ident);
 	    if (!res)
 	      ;
 	    else if (tag == tt_anon)
@@ -8897,21 +8903,20 @@ trees_in::tree_node ()
 	    error_at (state->loc, "failed to find %<%E%s%E%s%s%>",
 		      ctx, &"::"[2 * (ctx == global_namespace)],
 		      name ? name : get_identifier ("<anonymous>"),
-		      owner ? "@" : "",
-		      owner ? (*modules)[owner]->get_flatname () : "");
+		      origin >= 0 ? "@" : "",
+		      origin >= 0 ? (*modules)[origin]->get_flatname () : "");
 	    set_overrun ();
 	  }
-	else if (TREE_CODE (res) != TYPE_DECL
-		 && owner != state->mod)
+	else if (TREE_CODE (res) != TYPE_DECL && origin != state->mod)
 	  mark_used (res, tf_none);
 
-	const char *kind = (owner != state->mod ? "Imported" : "Named");
+	const char *kind = (origin != state->mod ? "Imported" : "Named");
 	int tag = insert (res);
 	if (res)
 	  {
 	    dump (dumper::TREE)
 	      && dump ("%s:%d %C:%N@%M", kind, tag, TREE_CODE (res),
-		       res, (*modules)[owner]);
+		       res, (*modules)[origin]);
 
 	    tree proxy = res;
 	    if (TREE_CODE (proxy) == TEMPLATE_DECL)
@@ -10543,13 +10548,13 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
       gcc_checking_assert (DECL_MODULE_EXPORT_P (decl)
 			   == DECL_MODULE_EXPORT_P (res));
       // FIXME: in template fns, vars are themselves templates.  But
-      // are local instantiations, I don;t think they can end up in
+      // are local instantiations, I don't think they can end up in
       // the instantiation table, and so we shouldn't depend on them
       // here.  See the comment in trees_out::tree_decl about having
       // to look to see if we can find it there.
       if (TREE_CODE (DECL_CONTEXT (decl)) != FUNCTION_DECL)
-	gcc_checking_assert (DECL_MODULE_OWNER (decl)
-			     == DECL_MODULE_OWNER (res));
+	gcc_checking_assert (DECL_MODULE_ORIGIN (decl)
+			     == DECL_MODULE_ORIGIN (res));
     }
 
   depset **slot = entity_slot (decl, !is_for_mergeable ());
@@ -10772,8 +10777,7 @@ depset::hash::add_binding (tree ns, tree value)
       else if (TREE_CODE (inner) == TEMPLATE_DECL)
 	inner = DECL_TEMPLATE_RESULT (inner);
 
-      if (!DECL_LANG_SPECIFIC (inner)
-	  || DECL_MODULE_OWNER (inner) == MODULE_NONE)
+      if (!DECL_LANG_SPECIFIC (inner) || !DECL_MODULE_PURVIEW_P (inner))
 	/* Ignore global module fragment entities.  */
 	continue;
 
@@ -11137,7 +11141,8 @@ depset::hash::add_specializations (bool decl_p)
       if (use_tpl == 1)
 	/* Implicit instantiations only walked if we reach them.  */
 	needs_reaching = true;
-      else if (DECL_MODULE_OWNER (spec) == MODULE_NONE)
+      else if (!DECL_LANG_SPECIFIC (spec)
+	       || !DECL_MODULE_PURVIEW_P (spec))
 	/* Likewise, GMF entities.  */
 	needs_reaching = true;
 
@@ -11158,11 +11163,11 @@ depset::hash::add_specializations (bool decl_p)
     have_spec:;
 #endif
 
-      unsigned owner = DECL_MODULE_OWNER (spec);
-      if (owner >= MODULE_IMPORT_BASE)
-	owner = (*modules)[owner]->remap;
+      unsigned origin = DECL_MODULE_ORIGIN (spec);
+      if (origin >= MODULE_IMPORT_BASE)
+	origin = (*modules)[origin]->remap;
       depset *dep = add_dependency (spec, depset::EK_SPECIALIZATION,
-				    owner >= MODULE_IMPORT_BASE);
+				    origin >= MODULE_IMPORT_BASE);
       if (dep->is_special ())
 	{
 	  /* An already located specialization, this must be a friend
@@ -11847,7 +11852,7 @@ get_module (tree name, module_state *parent, bool partition)
   if (partition)
     {
       if (!parent)
-	parent = get_primary ((*modules)[MODULE_PURVIEW]);
+	parent = get_primary ((*modules)[MODULE_CURRENT]);
 
       if (!parent->is_partition () && !parent->flatname)
 	parent->set_flatname ();
@@ -12795,7 +12800,7 @@ module_mapper::translate_include (location_t loc, const char *path, size_t len)
 bool
 module_state::check_not_purview (location_t loc)
 {
-  module_state *imp = (*modules)[MODULE_PURVIEW];
+  module_state *imp = (*modules)[MODULE_CURRENT];
   if (imp && !imp->name)
     imp = imp->parent;
   if (imp == this)
@@ -13077,7 +13082,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	 module as this TU.  */
       if (imp && imp->is_partition () &&
 	  (!named_module_p ()
-	   || (get_primary ((*modules)[MODULE_PURVIEW]) != get_primary (imp))))
+	   || (get_primary ((*modules)[MODULE_CURRENT]) != get_primary (imp))))
 	imp = NULL;
 
       if (!imp)
@@ -13112,7 +13117,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	      else if (!fname[0])
 		fname = module_mapper::import_export (imp, false);
 
-	      if (imp->mod == MODULE_NONE)
+	      if (imp->mod == MODULE_UNKNOWN_PARTITION)
 		{
 		  /* Must import the partition now, as inter-module
 		     references from the partition we must be in
@@ -13266,7 +13271,8 @@ module_state::read_partitions (unsigned count)
 	 for real if it's indirectly imported.  */
       imp->attach (floc);
       imp->crc = crc;
-      imp->mod = MODULE_NONE; /* Mark as wierd.   */
+      // FIXME: Can't we use MODULE_UNKNOWN and imp->is_partition ()?
+      imp->mod = MODULE_UNKNOWN_PARTITION; /* Mark as wierd.   */
       if (!imp->filename && fname[0])
 	imp->filename = xstrdup (fname);
     }
@@ -13508,23 +13514,24 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		      bool is_imported = d->is_import ();
 		      gcc_checking_assert (is_imported == !d->cluster);
 		      sec.u (ct_horcrux);
-		      unsigned owner = MODULE_NONE;
+		      unsigned origin = MODULE_CURRENT;
 		      unsigned index = d->cluster - 1;
 		      if (is_imported)
 			{
-			  owner = get_originating_module (u_decl);
-			  module_state *import = (*modules)[owner];
+			  origin = get_originating_module (u_decl);
+			  module_state *import = (*modules)[origin];
 			  /* It must be in the unnamed map.  */
 			  index = *unnamed_map->get (DECL_UID (u_decl));
 			  index -= import->unnamed_lwm;
 			  gcc_checking_assert (index < import->unnamed_num);
-			  owner = import->remap;
+			  origin = import->remap;
+			  gcc_checking_assert (origin >= MODULE_IMPORT_BASE);
 			}
-		      sec.u (owner);
+		      sec.u (origin);
 		      sec.u (index);
 		      unsigned tag = sec.insert (u_decl);
 		      dump () && dump ("Inserted:%d horcrux:%u@%u for %N",
-				       tag, index, owner, u_decl);
+				       tag, index, origin, u_decl);
 
 		      tree proxy = u_decl;
 		      if (TREE_CODE (proxy) == TEMPLATE_DECL)
@@ -14075,7 +14082,7 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
       /* We should only be naming public namespaces, or our own
 	 private ones.  */
       gcc_checking_assert (public_p
-			   || DECL_MODULE_OWNER (ns) == MODULE_PURVIEW);
+			   || DECL_MODULE_ORIGIN (ns) == MODULE_CURRENT);
       unsigned flags = 0;
       if (export_p)
 	flags |= 1;
@@ -14098,8 +14105,8 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
       /* Don't use bools, because this can be near the end of the
 	 section, and it won't save anything anyway.  */
       sec.u (flags);
-      write_location (sec, DECL_MODULE_OWNER (ns) == MODULE_PURVIEW
-		      ? DECL_SOURCE_LOCATION (ns) : UNKNOWN_LOCATION);
+      write_location (sec, (TREE_PUBLIC (ns)
+			    ? UNKNOWN_LOCATION : DECL_SOURCE_LOCATION (ns)));
     }
 
   sec.end (to, to->name (MOD_SNAME_PFX ".nms"), crc_p);
@@ -14284,18 +14291,17 @@ module_state::write_unnamed (elf_out *to, vec<depset *> depsets,
 	  if (d->get_entity_kind () == depset::EK_SPECIALIZATION)
 	    {
 	      tree key = get_originating_module_decl (uent);
-	      unsigned owner = (DECL_LANG_SPECIFIC (key)
-				? DECL_MODULE_OWNER (key) : MODULE_NONE);
-	      unsigned import_kind = MODULE_IMPORT_BASE;
-	      if (owner != MODULE_NONE)
-		{
-		  module_state *import = (*modules)[owner];
+	      unsigned origin = (DECL_LANG_SPECIFIC (key)
+				 ? DECL_MODULE_ORIGIN (key) : MODULE_CURRENT);
+	      module_state *import = (*modules)[origin];
 
-		  if (import->is_header ())
-		    import_kind = MODULE_NONE;
-		  else if (import->is_partition ())
-		    import_kind = MODULE_PURVIEW;
-		}
+	      unsigned import_kind;
+	      if (import->is_header ())
+		import_kind = 0;
+	      else if (import->is_partition ())
+		import_kind = 1;
+	      else
+		import_kind = 2;
 
 	      tree ctx = CP_DECL_CONTEXT (key);
 	      gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
@@ -14348,9 +14354,9 @@ module_state::read_unnamed (unsigned count, const range_t &range)
 
 	  /* It's now a regular import kind, if it's not part of the
 	     same module.  */
-	  if (import_kind == MODULE_PURVIEW
+	  if (import_kind == 1
 	      && !(is_primary () || is_partition ()))
-	    import_kind = MODULE_IMPORT_BASE;
+	    import_kind = 2;
 	  dump () && dump ("Specialization key %P (%u) section:%u",
 			   uent->ns, uent->id, import_kind, snum);
 	  if (specset::table->add (uent->ns, uent->id, ix + unnamed_lwm))
@@ -16344,7 +16350,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	{
 	  dump () && dump ("Partition %M %u", imp, ix);
 	  bitmap_set_bit (partitions, ix);
-	  imp->remap = MODULE_PURVIEW;
+	  imp->remap = MODULE_CURRENT;
 	  /* All interface partitions must be exported.  */
 	  if (imp->is_interface () && !bitmap_bit_p (exports, imp->mod))
 	    {
@@ -16587,7 +16593,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
 
     /* Determine the module's number.  */
     gcc_checking_assert (mod == MODULE_UNKNOWN);
-    gcc_checking_assert (this != (*modules)[MODULE_PURVIEW]);
+    gcc_checking_assert (this != (*modules)[MODULE_CURRENT]);
 
     unsigned ix = modules->length ();
     if (ix == MODULE_LIMIT)
@@ -16605,7 +16611,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
       bitmap_set_bit (slurp->headers, ix);
     mod = remap = ix;
 
-    (*slurp->remap)[MODULE_PURVIEW] = mod;
+    (*slurp->remap)[MODULE_CURRENT] = mod;
     dump () && dump ("Assigning %M module number %u", this, mod);
 
     /* We should not have been frozen during the importing done by
@@ -16807,13 +16813,12 @@ module_visible_instantiation_path (bitmap *path_map_p)
   if (!modules_p ())
     return NULL;
 
-  bitmap visible = (*modules)[MODULE_NONE]->imports;
+  bitmap visible = (*modules)[MODULE_CURRENT]->imports;
 
   if (tinst_level *path = current_instantiation ())
     {
       bitmap path_map = BITMAP_GGC_ALLOC ();
-      bitmap_set_bit (path_map, MODULE_NONE);
-      bitmap_set_bit (path_map, MODULE_PURVIEW);
+      bitmap_set_bit (path_map, MODULE_CURRENT);
 
       bitmap tmp = BITMAP_GGC_ALLOC ();
       bitmap_copy (tmp, visible);
@@ -16918,21 +16923,24 @@ get_originating_module_decl (tree decl)
   return decl;
 }
 
-unsigned
+int
 get_originating_module (tree decl, bool for_mangle)
 {
   tree owner = get_originating_module_decl (decl);
 
   if (!owner)
-    return MODULE_NONE;
+    return -1;
 
   if (for_mangle && DECL_MODULE_EXPORT_P (owner))
-    return MODULE_NONE;
+    return -1;
 
   if (!DECL_LANG_SPECIFIC (owner))
-    return MODULE_NONE;
+    return -1;
 
-  return DECL_MODULE_OWNER (owner);
+  if (for_mangle && !DECL_MODULE_PURVIEW_P (owner))
+    return -1;
+
+  return DECL_MODULE_ORIGIN (owner);
 }
 
 tree
@@ -16981,24 +16989,40 @@ get_instantiating_module (tree decl)
   tree owner = get_instantiating_module_decl (decl);
 
   if (!DECL_LANG_SPECIFIC (owner))
-    return MODULE_NONE;
+    return MODULE_CURRENT;
 
-  return DECL_MODULE_OWNER (owner);
+  return DECL_MODULE_ORIGIN (owner);
 }
 
-/* Is it permissible to redeclare an entity with owner FROM.  */
+/* Is it permissible to redeclare an entity instantiated by DECL.  */
 // FIXME: This needs extending, see its use in duplicate_decls
 
 bool
-module_may_redeclare (unsigned from)
+module_may_redeclare (tree inst)
 {
-  if (from == MODULE_PURVIEW)
-    return true;
+  int origin
+    = DECL_LANG_SPECIFIC (inst) ? DECL_MODULE_ORIGIN (inst) : MODULE_CURRENT;
 
-  if (from == MODULE_NONE)
-    return !module_purview_p ();
+  module_state *them = (*modules)[origin];
+  module_state *me = (*modules)[MODULE_CURRENT];
 
-  return (*modules)[from]->is_primary ();
+  if (them->is_header ())
+    /* If it came from a header, it's in the global module.  */
+    return (me->is_header ()
+	    || !module_purview_p ());
+
+  if (origin == MODULE_CURRENT)
+    return ((DECL_LANG_SPECIFIC (inst) && DECL_MODULE_PURVIEW_P (inst))
+	    == module_purview_p ());
+
+  if (!me->name)
+    me = me->parent;
+
+  /* We can't have found a GMF entity from a named module.  */
+  gcc_checking_assert (DECL_LANG_SPECIFIC (inst)
+		       && DECL_MODULE_PURVIEW_P (inst));
+
+  return me && get_primary (them) == get_primary (me);
 }
 
 /* DECL is being created by this TU.  Record it came from here.  */
@@ -17014,12 +17038,13 @@ set_instantiating_module (tree decl)
     return;
 
   /* We cannot assert that this is not the originating decl because
-  we've not necessarily completed all the necessary instantiation of
-  DECL.  */
+     we've not necessarily completed all the necessary instantiation
+     of DECL.  */
 
+  // FIXME: Lazily allocate?
   retrofit_lang_decl (decl);
-  // FIXME: Perhaps this is always module purview in a module?
-  DECL_MODULE_OWNER (decl) = module_purview_p () ? MODULE_PURVIEW : MODULE_NONE;
+  DECL_MODULE_ORIGIN (decl) = MODULE_CURRENT;
+  DECL_MODULE_PURVIEW_P (decl) = module_purview_p ();
 }
 
 void
@@ -17032,13 +17057,20 @@ set_originating_module (tree decl, bool friend_p ATTRIBUTE_UNUSED)
   if (!modules_p ())
     return;
 
+  // FIXME: Lazily allocate?
   retrofit_lang_decl (decl);
-  DECL_MODULE_OWNER (decl) = module_purview_p () ? MODULE_PURVIEW : MODULE_NONE;
+  DECL_MODULE_ORIGIN (decl) = MODULE_CURRENT;
+  DECL_MODULE_PURVIEW_P (decl) = module_purview_p ();
 
   if (TREE_CODE (CP_DECL_CONTEXT (decl)) != NAMESPACE_DECL)
     return;
 
   gcc_checking_assert (friend_p || decl == get_originating_module_decl (decl));
+
+  if (!module_purview_p ())
+    return;
+
+  /* We're in the purview of a module -- including a header unit.  */
 
   if (!module_exporting_p ())
     return;
@@ -17138,7 +17170,9 @@ module_state::do_import (char const *fname, cpp_reader *reader)
   lazy_open++;
   read (fd, e, reader);
   bool ok = check_read (diags);
-  announce (flag_module_lazy && mod != MODULE_PURVIEW ? "lazy" : "imported");
+  // FIXME: The below conditional looks odd.  I don't think we ever
+  // now import MODULE_CURRENT, even in module implementation units?
+  announce (flag_module_lazy && mod != MODULE_CURRENT ? "lazy" : "imported");
 
   return ok;
 }
@@ -17189,7 +17223,7 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
       if (exported_p)
 	exported_p = true;
 
-      (*modules)[MODULE_NONE]->set_import (this, exported_p);
+      (*modules)[MODULE_CURRENT]->set_import (this, exported_p);
       if (is_header ())
 	import_macros ();
     }
@@ -17414,10 +17448,12 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
   gcc_assert (global_namespace == current_scope ());
   from_loc = ordinary_loc_of (line_table, from_loc);
 
+  module_state *current = (*modules)[MODULE_CURRENT];
   if (module_purview_p () || !state->is_detached ())
     {
       if (module_purview_p ())
-	state = (*modules)[MODULE_PURVIEW];
+	state = current;
+
       error_at (from_loc, module_purview_p ()
 		? G_("module already declared")
 		: G_("module already imported"));
@@ -17429,15 +17465,12 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
       return false;
     }
 
-  gcc_assert (!(*modules)[MODULE_PURVIEW]);
-
   state->attach (from_loc);
 
   /* Yer a module, 'arry.  */
   module_kind &= ~MK_GLOBAL;
   module_kind |= MK_MODULE;
 
-  module_state *gmf = (*modules)[MODULE_NONE];
   if (state->is_partition () || exporting_p)
     {
       if (state->is_partition ())
@@ -17453,19 +17486,16 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
 	module_kind |= MK_GLOBAL | MK_EXPORTING;
 
       /* Copy the importing information we may have already done.  */
-      state->imports = gmf->imports;
+      state->imports = current->imports;
 
-      state->mod = MODULE_PURVIEW;
-      gmf = state;
-      (*modules)[MODULE_NONE] = state;
+      state->mod = MODULE_CURRENT;
+      (*modules)[MODULE_CURRENT] = state;
     }
   else
     {
       state->primary_p = state->interface_p = true;
-      gmf->parent = state; /* So mangler knows module identity.  */
+      current->parent = state; /* So mangler knows module identity. */
     }
-
-  (*modules)[MODULE_PURVIEW] = gmf;
 
   vec_safe_push (pending_imports, state);
 
@@ -17674,7 +17704,7 @@ module_preprocess (mkdeps *deps, module_state *state, int is_module)
   if (is_module)
     /* Record the module, so that partition imports resolve
        correctly.  */
-    (*modules)[MODULE_PURVIEW] = state;
+    (*modules)[MODULE_CURRENT] = state;
 
   if (!state->flatname)
     state->set_flatname ();
@@ -17748,7 +17778,7 @@ process_deferred_imports (cpp_reader *reader)
 
   module_state *imp = (*pending_imports)[0];
   module_mapper *mapper = module_mapper::get (imp->from_loc);
-  bool has_bmi = imp->mod == MODULE_PURVIEW;
+  bool has_bmi = imp->mod == MODULE_CURRENT;
   bool any = false;
 
   timevar_start (TV_MODULE_MAPPER);
@@ -17849,6 +17879,10 @@ init_module_processing (cpp_reader *reader)
     fatal_error (input_location,
 		 "C++ modules are incompatible with precompiled headers");
 
+  if (cpp_get_options (reader)->traditional)
+    fatal_error (input_location,
+		 "C++ modules are incompatible with traditional preprocessing");
+
   if (flag_preprocess_only)
     {
       cpp_options *cpp_opts = cpp_get_options (reader);
@@ -17871,15 +17905,16 @@ init_module_processing (cpp_reader *reader)
   modules_hash = hash_table<module_state_hash>::create_ggc (31);
 
   vec_safe_reserve (modules, 20);
-  for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
-    modules->quick_push (NULL);
+
+  gcc_checking_assert (MODULE_CURRENT == 0
+		       && MODULE_IMPORT_BASE == MODULE_CURRENT + 1);
 
   /* Create module for current TU.  */
   module_state *current
     = new (ggc_alloc<module_state> ()) module_state (NULL_TREE, NULL, false);
-  current->mod = MODULE_NONE;
-  bitmap_set_bit (current->imports, MODULE_NONE);
-  (*modules)[MODULE_NONE] = current;
+  current->mod = MODULE_CURRENT;
+  bitmap_set_bit (current->imports, MODULE_CURRENT);
+  modules->quick_push (current);
 
   gcc_checking_assert (!fixed_trees);
 
@@ -18053,11 +18088,7 @@ finish_module_processing (cpp_reader *reader)
       dump.pop (n);
     }
 
-  module_state *state = NULL;
-  if (modules_p ())
-    state = (*modules)[MODULE_PURVIEW];
-
-  if (!state || state->mod != MODULE_PURVIEW)
+  if (!modules || !(*modules)[MODULE_CURRENT]->name)
     {
       if (flag_module_only)
 	warning (0, "%<-fmodule-only%> used for non-interface");
@@ -18077,6 +18108,7 @@ finish_module_processing (cpp_reader *reader)
       /* We write to a tmpname, and then atomically rename.  */
       const char *path = NULL;
       char *tmp_name = NULL;
+      module_state *state = (*modules)[MODULE_CURRENT];
 
       unsigned n = dump.push (state);
       state->announce ("creating");

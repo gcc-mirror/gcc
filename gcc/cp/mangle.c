@@ -875,7 +875,8 @@ mangle_identifier (tree id)
 static void
 maybe_write_module (tree decl)
 {
-  if (unsigned m = get_originating_module (decl, true))
+  int m = get_originating_module (decl, true);
+  if (m >= 0)
     {
       G.mod = true;
 

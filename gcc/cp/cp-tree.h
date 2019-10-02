@@ -931,6 +931,13 @@ struct GTY(()) module_cluster
 #define MODULE_VECTOR_CLUSTER(NODE,IX) \
   (((tree_module_vec *)MODULE_VECTOR_CHECK (NODE))->vec[IX])
 
+/* Slots in MODULE_VEC.  */
+#define MODULE_SLOT_CURRENT 0	/* Slot for current TU.  */
+#define MODULE_SLOT_GLOBAL 1	/* Slot for merged global module. */
+#define MODULE_SLOT_PARTITION 2 /* Slot for merged partition entities
+				   (optional).  */
+#define MODULE_SLOTS_FIXED 2	/* Number of always-allocated slots.  */
+
 struct GTY(()) tree_module_vec {
   struct tree_base base;
   tree name;
@@ -1665,27 +1672,22 @@ check_constraint_info (tree t)
 
 /* Module defines.  */
 
-/* Module owner numbers.   */
-#define MODULE_NONE 0		/* The global module.  */
-#define MODULE_PURVIEW 1	/* Current TU purview.  */
-#define MODULE_IMPORT_BASE 2	/* An import.  */
+/* Module origin numbers.   */
+#define MODULE_CURRENT 0	/* The current TU (not necesarily a module).  */
+#define MODULE_IMPORT_BASE 1	/* An import.  */
 
-/* Slots in MODULE_VEC.   See module.cc for how slots and module
-   numbers are related.  */
-#define MODULE_SLOT_CURRENT 0	/* Slot for current TU.  */
-#define MODULE_SLOT_GLOBAL 1	/* Slot for merged global module. */
-#define MODULE_SLOT_PARTITION 2 /* Slot for merged partition entities
-				   (optional).  */
-#define MODULE_SLOTS_FIXED 2	/* Number of always-allocated slots.  */
-
-#define DECL_MODULE_OWNER_CHECK(NODE) \
+#define DECL_MODULE_ORIGIN_CHECK(NODE) \
   TREE_CHECK5(NODE,FUNCTION_DECL,VAR_DECL,TYPE_DECL,TEMPLATE_DECL,NAMESPACE_DECL)
 
 /* The owning module of a DECL.  Held on any decl that can have
    independent declaration and definition (function, var, type, or
    namespace.  templates hold it on their template_result).  */
-#define DECL_MODULE_OWNER(N) \
-  (DECL_LANG_SPECIFIC (DECL_MODULE_OWNER_CHECK (N))->u.base.module_owner)
+#define DECL_MODULE_ORIGIN(N) \
+  (DECL_LANG_SPECIFIC (DECL_MODULE_ORIGIN_CHECK (N))->u.base.module_origin)
+
+/* In the purview of a module (including header unit).  */
+#define DECL_MODULE_PURVIEW_P(N) \
+  (DECL_LANG_SPECIFIC (DECL_MODULE_ORIGIN_CHECK (N))->u.base.module_purview_p)
 
 /* Whether this is an exported DECL.  Held on any decl that can
    appear at namespace scope (function, var, type, template, const or
@@ -2720,8 +2722,9 @@ struct GTY(()) lang_decl_base {
   unsigned var_declared_inline_p : 1;	   /* var */
 
   unsigned dependent_init_p : 1;	   /* var */
-#define MODULE_BITS (16)
-  unsigned module_owner : MODULE_BITS;     /* Owning module. */
+  unsigned module_purview_p : 1;	   /* var,fn,type,template,namespace  */
+#define MODULE_BITS (15)
+  unsigned module_origin : MODULE_BITS;     /* var,fn,type,template,namespace */
   /* No spare bits.  */
 };
 
@@ -6858,8 +6861,14 @@ inline bool modules_p () { return flag_modules != 0; }
 #define MK_GLOBAL (1 << 1)
 #define MK_INTERFACE (1 << 2)
 #define MK_PARTITION (1 << 3)
-#define MK_EXPORTING (1 << 4)
+#define MK_EXPORTING (1 << 4)  // FIXME: Not needed
 extern unsigned module_kind;
+
+/* MODULE GLOBAL
+   0	  0    not a module
+   0      1    GMF of named module
+   1      0    purview of named module
+   1      1    header unit.   */
 
 inline bool module_purview_p ()
 { return module_kind & MK_MODULE; }
@@ -6882,19 +6891,19 @@ inline bool module_partition_p ()
 inline bool module_has_cmi_p ()
 { return module_kind & (MK_INTERFACE | MK_PARTITION); }
 
+// FIXME: This is confused.  We only set this for header modules,
 inline bool module_exporting_p ()
 { return module_kind & MK_EXPORTING; }
 
 extern module_state *get_module (tree name, module_state *parent = NULL,
 				 bool partition = false);
 extern void module_preprocess (mkdeps *, module_state *, int is_module);
-extern bool module_may_redeclare (unsigned);
+extern bool module_may_redeclare (tree decl);
 
 /* Where the namespace-scope decl was originally declared.  */
 extern void set_originating_module (tree, bool friend_p = false);
 extern tree get_originating_module_decl (tree) ATTRIBUTE_PURE;
-extern unsigned get_originating_module (tree,
-					bool for_mangle = false) ATTRIBUTE_PURE;
+extern int get_originating_module (tree, bool for_mangle = false) ATTRIBUTE_PURE;
 
 /* Where current instance of the decl got declared/defined/instantiated.  */
 extern void set_instantiating_module (tree);

@@ -18,12 +18,13 @@ namespace bar
 }
 
 // { dg-final { scan-lang-dump {Lazily binding '::foo::X'@'foo' section} module } }
-// { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::X@foo:2::frob@foo:2'@foo} module } }
+// { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::X@foo:.::frob@foo:.'@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily binding '::foo::TPL'@'foo' section} module } }
-// { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::TPL@foo:2'@foo} module } }
+// { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::TPL@foo:.'@foo} module } }
 
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo::TPL@bar:1<0x0>'\n(  \[.\]=clone (declaration|definition) '::hidey[^\n]* '\n)*  \[.*\]=specialization declaration '::foo::TPL@bar:1<0x0>::TPL<0x0>'\n  \[.*]=decl definition '::foo::TPL@bar:1<0x0>::frob@bar:1<0x0>'} module } }
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo::X@foo:2::frob@bar:1<0x0>'} module } }
-// { dg-final { scan-lang-dump {Writing type spec key for mergeable specialization type_decl:'::foo::TPL@bar:1<0x0>'} module } }
-// { dg-final { scan-lang-dump {Writing decl spec key for mergeable specialization function_decl:'::foo::X@foo:2::frob@bar:1<0x0>'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo::TPL@bar:.<0x0>'\n  \[[0-9]*\]=specialization declaration '::foo::TPL@bar:.<0x0>::TPL@bar:.<0x0>'(\n  \[[0-9]*\]=clone (declaration|definition) '::foo[^'\n]* [^'\n]*')*\n  \[[0-9]*\]=decl definition '::foo::TPL@bar:.<0x0>::frob@bar:.<0x0>'} module } }
+
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo::X@foo:.::frob@bar:.<0x0>'} module } }
+// { dg-final { scan-lang-dump {Writing type spec key for mergeable specialization type_decl:'::foo::TPL@bar:.<0x0>'} module } }
+// { dg-final { scan-lang-dump {Writing decl spec key for mergeable specialization function_decl:'::foo::X@foo:.::frob@bar:.<0x0>'} module } }

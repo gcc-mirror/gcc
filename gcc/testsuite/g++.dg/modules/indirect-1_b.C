@@ -35,13 +35,13 @@ namespace bar
 
 // { dg-final { scan-lang-dump {Lazily binding '::foo::frob'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Wrote public namespace:-[0-9]* namespace_decl:'::foo'@\(none\)} module } }
-// { dg-final { scan-lang-dump {Wrote import:-[0-9]* function_decl:'::foo::frob@foo:2'@foo} module } }
+// { dg-final { scan-lang-dump {Wrote import:-[0-9]* function_decl:'::foo::frob@foo:.'@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily binding '::foo::X'@'foo' section:} module } }
-// { dg-final { scan-lang-dump {Wrote import:-[0-9]* type_decl:'::foo::X@foo:2'@foo} module } }
+// { dg-final { scan-lang-dump {Wrote import:-[0-9]* type_decl:'::foo::X@foo:.'@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily binding '::foo::Y'@'foo' section:} module } }
-// { dg-final { scan-lang-dump {Wrote import:-[0-9]* type_decl:'::foo::Y@foo:2'@foo} module } }
+// { dg-final { scan-lang-dump {Wrote import:-[0-9]* type_decl:'::foo::Y@foo:.'@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily binding '::foo::B'@'foo' section:} module } }
 // { dg-final { scan-lang-dump-not {Lazily binding '::foo::C@foo:.'@'foo' section:} module } }

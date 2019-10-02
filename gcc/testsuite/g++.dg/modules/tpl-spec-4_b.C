@@ -14,4 +14,4 @@ int main ()
   return 0;
 }
 
-// { dg-final { scan-lang-dump {Reading 1 pending specializations keyed to '::X@TPL:2<T>'} module } }
+// { dg-final { scan-lang-dump {Reading 1 pending specializations keyed to '::X@TPL:.<T>'} module } }

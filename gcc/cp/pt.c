@@ -4688,7 +4688,8 @@ build_template_decl (tree decl, tree parms, bool member_template_p)
     {
       /* Propagate module information from the decl.  */
       DECL_MODULE_EXPORT_P (tmpl) = DECL_MODULE_EXPORT_P (decl);
-      DECL_MODULE_OWNER (tmpl) = DECL_MODULE_OWNER (decl);
+      DECL_MODULE_ORIGIN (tmpl) = DECL_MODULE_ORIGIN (decl);
+      DECL_MODULE_PURVIEW_P (tmpl) = DECL_MODULE_PURVIEW_P (decl);
     }
 
   return tmpl;
@@ -13415,7 +13416,8 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
     {
       /* Propagate module information from the decl.  */
       DECL_MODULE_EXPORT_P (r) = DECL_MODULE_EXPORT_P (inner);
-      DECL_MODULE_OWNER (r) = DECL_MODULE_OWNER (inner);
+      DECL_MODULE_ORIGIN (r) = DECL_MODULE_ORIGIN (inner);
+      DECL_MODULE_PURVIEW_P (r) = DECL_MODULE_PURVIEW_P (inner);
     }
 
   DECL_TEMPLATE_INSTANTIATIONS (r) = NULL_TREE;
@@ -13965,6 +13967,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	SET_DECL_ASSEMBLER_NAME (r, NULL_TREE);
 	if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WRTL))
 	  SET_DECL_RTL (r, NULL);
+	set_instantiating_module (r);
+
 	/* The initializer must not be expanded until it is required;
 	   see [temp.inst].  */
 	DECL_INITIAL (r) = NULL_TREE;

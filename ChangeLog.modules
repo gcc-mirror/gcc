@@ -1,3 +1,59 @@
+2019-10-02  Nathan Sidwell  <nathan@acm.org>
+
+	Don't equivocate GMF with module
+	gcc/cp/
+	* cp-tree.h (MODULE_NONE, MODULE_PURVIEW): Delete.
+	(MODULE_CURRENT): New.
+	(MODULE_IMPORT_BASE): Reduce.
+	(DECL_MODULE_OWNER): Rename to ...
+	(DECL_MODULE_ORIGIN): ... this.
+	(DECL_MODULE_PURVIEW_P): New.
+	(MODULE_BITS): Reduce.
+	(lang_decl_base::module_purview_p): New bit.
+	(module_may_redeclare): Take decl.
+	* module.cc (MODULE_UNKNOWN_PARTITION): New.
+	(MODULE_LIMIT): Adjust.
+	(slurping::remap_module): Return int.
+	(trees_in::assert_definition): Adjust.
+	(dumper::impl::nested_name): Adjust.
+	(trees_{in,out}::lang_decl_bits): Stream module_purview_p.
+	(trees_out::tree_{namespace,decl,value}): Adjust.
+	(trees_in::tree_node): Adjust.
+	(depset::hash::add_{dependency,binding,specializations}): Adjust.
+	(module_state::check_not_purview): Adjust.
+	(module_state::read_{imports,partitions}): Adjust.
+	(module_state::write_{cluster,namespaces,unnamed}): Adjust.
+	(module_state::read_unnamed): Adjust.
+	(module_state::{write,read}): Adjust.
+	(module_visible_instantiation_path): Adjust.
+	(get_originating_module): Return int.
+	(get_instantiating_module): Adjust.
+	(module_may_redeclare): Reimplement.
+	(set_{instantating,originating}_module): Adjust.
+	(module_state::{do,direct}_import): Adjust.
+	(declare_module, module_preprocess, process_deferred_imports): Adjust.
+	({init,finish}_module_processing): Adjust.
+	* name-lookup.c (get_fixed_binding_slot): Adjust.
+	(name_lookup::{search_namespace_only,adl_namespace_fns,search_adl):
+	Adjust.
+	(check_module_override, extract_module_binding): Adjust.
+	(note_pending_specializations): Adjust.
+	(get_imported_namespaxe, finish_nonmember_using_decl)
+	(lookup_type_scope_1): Adjust.
+	(add_imported_namespace): Take int.
+	* name-lookup.h ({add,get}_imported_namespace): Module is int.
+	* class.c (build_self_ref): Set instantiating module.
+	* decl.c (duplicate_decls): Adjust.
+	* decl2.c (no_linkage_error): Adjust.
+	* mangle.c (maybe_write_module): Adjust.
+	* pt.c (build_template_decl): Propagate purview flag.
+	(tsubst_template_decl): Likewise.
+	(tsubst_decl): Set instantiating_module as necessary.
+	* ptree.c (cxx_print_decl): Adjust, print purview flag.
+	* rtti.c (tinfo_base_init): Clear purview flag.
+	gcc/testsuite/
+	* g++.dg/modules/*: Update lang dump scans.
+
 2019-10-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

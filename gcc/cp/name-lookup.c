@@ -207,7 +207,7 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
   gcc_checking_assert (ix <= MODULE_SLOT_PARTITION);
 
   /* An assumption is that the fixed slots all reside in one cluster.  */
-  gcc_checking_assert (MODULE_VECTOR_SLOTS_PER_CLUSTER >= MODULE_IMPORT_BASE);
+  gcc_checking_assert (MODULE_VECTOR_SLOTS_PER_CLUSTER >= MODULE_SLOTS_FIXED);
 
   if (!*slot || TREE_CODE (*slot) != MODULE_VECTOR)
     {
@@ -229,7 +229,7 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
       module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (new_vec);
 
       /* Initialize the fixed slots.  */
-      for (unsigned jx = MODULE_IMPORT_BASE; jx--;)
+      for (unsigned jx = MODULE_SLOTS_FIXED; jx--;)
 	{
 	  cluster[0].indices[jx].base = 0;
 	  cluster[0].indices[jx].span = 1;
@@ -809,7 +809,7 @@ name_lookup::search_namespace_only (tree scope)
 
 	  /* Scan the imported bindings.  */
 	  unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val);
-	  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_IMPORT_BASE)
+	  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_SLOTS_FIXED)
 	    {
 	      ix--;
 	      cluster++;
@@ -1094,7 +1094,7 @@ name_lookup::adl_namespace_fns (tree scope, bitmap imports, bitmap inst_path)
 
 	  /* Scan the imported bindings.  */
 	  unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val);
-	  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_IMPORT_BASE)
+	  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_SLOTS_FIXED)
 	    {
 	      ix--;
 	      cluster++;
@@ -1498,9 +1498,9 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 		     type.  */
 		  tree origin = get_originating_module_decl (TYPE_NAME (scope));
 
-		  unsigned mod = MODULE_NONE;
+		  unsigned mod = MODULE_CURRENT;
 		  if (origin && DECL_LANG_SPECIFIC (origin))
-		    mod = DECL_MODULE_OWNER (origin);
+		    mod = DECL_MODULE_ORIGIN (origin);
 
 		  /* If the module was in the inst path, we'll look at its
 		     namespace partition anyway.  */
@@ -3594,7 +3594,7 @@ check_module_override (tree decl, tree mvec, bool is_friend,
   module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (mvec);
   unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (mvec);
 
-  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_IMPORT_BASE)
+  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_SLOTS_FIXED)
     {
       cluster++;
       ix--;
@@ -3968,7 +3968,7 @@ extract_module_binding (tree &binding, tree ns, bitmap partitions)
 
 	  /* Collect the slots.  */
 	  unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (binding);
-	  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_IMPORT_BASE)
+	  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_SLOTS_FIXED)
 	    {
 	      ix--;
 	      cluster++;
@@ -4150,6 +4150,12 @@ set_module_binding (tree ns, tree name, unsigned mod, bool inter_p,
   return true;
 }
 
+// FIXME: I think we set the wrong number for instantiations of GMF
+// entities from modules/imports.  check?  oh, and use an enum!
+// 0->header unit
+// 1->module
+// 2->import
+
 bool
 note_pending_specializations (tree ns, tree name, unsigned import_kind)
 {
@@ -4162,10 +4168,10 @@ note_pending_specializations (tree ns, tree name, unsigned import_kind)
   tree vec = *slot;
   MODULE_VECTOR_LAZY_SPEC_P (vec) = true;
 
-  if (import_kind < MODULE_IMPORT_BASE)
+  if (import_kind != 2)
     {
       /* Mark the global or partition slot.  */
-      unsigned ix = (import_kind == MODULE_PURVIEW
+      unsigned ix = (import_kind == 1
 		     ? MODULE_SLOT_PARTITION : MODULE_SLOT_GLOBAL);
       module_cluster &cluster
 	= MODULE_VECTOR_CLUSTER (vec, ix / MODULE_VECTOR_SLOTS_PER_CLUSTER);
@@ -4181,7 +4187,7 @@ note_pending_specializations (tree ns, tree name, unsigned import_kind)
       /* Mark every slot's loaded entities.  */
       module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (vec);
       unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (vec);
-      if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_IMPORT_BASE)
+      if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_SLOTS_FIXED)
 	{
 	  ix--;
 	  cluster++;
@@ -4470,15 +4476,15 @@ lookup_field_ident (tree ctx, tree name, unsigned ix)
 }
 
 tree
-get_imported_namespace (tree ctx, tree name, unsigned mod)
+get_imported_namespace (tree ctx, tree name, int mod)
 {
   tree binding = NULL_TREE;
 
   if (tree *slot = find_namespace_slot (ctx, name))
     {
-      if (mod == MODULE_PURVIEW || mod == MODULE_NONE)
+      if (mod <= MODULE_CURRENT)
 	{
-	  mod = mod == MODULE_NONE ? MODULE_SLOT_GLOBAL : MODULE_SLOT_CURRENT;
+	  mod = mod < 0 ? MODULE_SLOT_GLOBAL : MODULE_SLOT_CURRENT;
 	  tree *mslot = get_fixed_binding_slot (slot, name, mod, false);
 	  if (mslot)
 	    binding = *mslot;
@@ -6468,7 +6474,7 @@ finish_nonmember_using_decl (tree scope, tree name)
 
 	  /* Scan the imported bindings.  */
 	  unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (*slot);
-	  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_IMPORT_BASE)
+	  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_SLOTS_FIXED)
 	    {
 	      ix--;
 	      cluster++;
@@ -8071,7 +8077,7 @@ lookup_type_scope_1 (tree name, tag_scope scope)
 
 	  /* Scan the imported bindings.  */
 	  unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (*slot);
-	  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_IMPORT_BASE)
+	  if (MODULE_VECTOR_SLOTS_PER_CLUSTER == MODULE_SLOTS_FIXED)
 	    {
 	      ix--;
 	      cluster++;
@@ -8857,7 +8863,7 @@ make_namespace (tree ctx, tree name, location_t loc,
 	  if (module_interface_p ())
 	    {
 	      /* We must use the full partition name.  */
-	      const char *name = module_name (MODULE_PURVIEW, true);
+	      const char *name = module_name (MODULE_CURRENT, true);
 	      unsigned len = strlen (name);
 	      unsigned pos = IDENTIFIER_LENGTH (asm_name);
 	      char *buf = XALLOCAVEC (char, pos + len * 3 + 1);
@@ -9033,7 +9039,7 @@ pop_namespace (void)
 }
 
 tree
-add_imported_namespace (tree ctx, tree name, unsigned mod, location_t loc,
+add_imported_namespace (tree ctx, tree name, int mod, location_t loc,
 			bool visible_p, bool inline_p, tree anon_name)
 {
   tree *slot = find_namespace_slot (ctx, name, true);
@@ -9071,8 +9077,8 @@ add_imported_namespace (tree ctx, tree name, unsigned mod, location_t loc,
 	      && MAYBE_STAT_DECL (final) == decl
 	      && last->indices[jx].base + last->indices[jx].span == mod
 	      && (MODULE_VECTOR_NUM_CLUSTERS (*slot) > 1
-		  || (MODULE_VECTOR_SLOTS_PER_CLUSTER > MODULE_IMPORT_BASE
-		      && jx >= MODULE_IMPORT_BASE)))
+		  || (MODULE_VECTOR_SLOTS_PER_CLUSTER > MODULE_SLOTS_FIXED
+		      && jx >= MODULE_SLOTS_FIXED)))
 	    {
 	      last->indices[jx].span++;
 	      return decl;

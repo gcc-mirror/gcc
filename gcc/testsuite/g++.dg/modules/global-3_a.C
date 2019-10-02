@@ -10,7 +10,7 @@ export void Log (char const *msg)
   std::cout << "Logging:" << msg << "\n";
 }
 
-// { dg-final { scan-lang-dump {Dependencies of decl function_decl:'::Log@logger:1'} module } }
+// { dg-final { scan-lang-dump {Dependencies of decl function_decl:'::Log@logger:.'} module } }
 // not reachable (body not inline)
-// { dg-final { scan-lang-dump-not {Reachable GMF '::printf' added} module } }
+// { dg-final { scan-lang-dump-not {Reachable GMF '::printf[^'\n]*' added} module } }
 

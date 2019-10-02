@@ -14,5 +14,5 @@ int main ()
   return 0;
 }
 
-// { dg-final { scan-lang-dump {Reading 1 pending specializations keyed to '::X@TPL:2<T,#unnamed#>'} module } }
-// { dg-final { scan-lang-dump {Adding partial specialization '::X@TPL:2<T,0x1>' to '::X@TPL:2<T,#unnamed#>'} module } }
+// { dg-final { scan-lang-dump {Reading 1 pending specializations keyed to '::X@TPL:.<T,#unnamed#>'} module } }
+// { dg-final { scan-lang-dump {Adding partial specialization '::X@TPL:.<T,0x1>' to '::X@TPL:.<T,#unnamed#>'} module } }

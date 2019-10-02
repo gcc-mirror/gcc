@@ -20,8 +20,8 @@ int two ()
   return 0;
 }
 
-// { dg-final { scan-lang-dump {Reading 1 pending specializations keyed to '::foo@TPL:2<T>'} module } }
-// { dg-final { scan-lang-dump-not {Reading definition function_decl '::foo@TPL:2<int>'} module } }
+// { dg-final { scan-lang-dump {Reading 1 pending specializations keyed to '::foo@TPL:.<T>'} module } }
+// { dg-final { scan-lang-dump-not {Reading definition function_decl '::foo@TPL:.<int>'} module } }
 
 // { dg-final { scan-assembler-not {_Z3fooIiEiT_:} } }
 // { dg-final { scan-assembler {_Z3fooIfEiT_:} } }
