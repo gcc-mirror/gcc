@@ -11,13 +11,13 @@ program asyncwait
   a(:) = 3.0
   b(:) = 0.0
 
-  !$acc parallel copyin (a(1:N)) copy (b(1:N)) async (1 2) ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc parallel copyin (a(1:N)) copy (b(1:N)) async (1 2) ! { dg-error "Failed to match clause" }
   do i = 1, N
      b(i) = a(i)
   end do
   !$acc end parallel ! { dg-error "Unexpected \\\!\\\$ACC END PARALLEL" }
 
-  !$acc parallel copyin (a(1:N)) copy (b(1:N)) async (1,) ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc parallel copyin (a(1:N)) copy (b(1:N)) async (1,) ! { dg-error "Failed to match clause" }
   do i = 1, N
      b(i) = a(i)
   end do
@@ -29,25 +29,25 @@ program asyncwait
   end do
   !$acc end parallel ! { dg-error "Unexpected \\\!\\\$ACC END PARALLEL" }
 
-  !$acc parallel copyin (a(1:N)) copy (b(1:N)) async (1,2,) ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc parallel copyin (a(1:N)) copy (b(1:N)) async (1,2,) ! { dg-error "Failed to match clause" }
   do i = 1, N
      b(i) = a(i)
   end do
   !$acc end parallel ! { dg-error "Unexpected \\\!\\\$ACC END PARALLEL" }
 
-  !$acc parallel copyin (a(1:N)) copy (b(1:N)) async (1,2 3) ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc parallel copyin (a(1:N)) copy (b(1:N)) async (1,2 3) ! { dg-error "Failed to match clause" }
   do i = 1, N
      b(i) = a(i)
   end do
   !$acc end parallel ! { dg-error "Unexpected \\\!\\\$ACC END PARALLEL" }
 
-  !$acc parallel copyin (a(1:N)) copy (b(1:N)) async (1,2,,) ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc parallel copyin (a(1:N)) copy (b(1:N)) async (1,2,,) ! { dg-error "Failed to match clause" }
   do i = 1, N
      b(i) = a(i)
   end do
   !$acc end parallel ! { dg-error "Unexpected \\\!\\\$ACC END PARALLEL" }
 
-  !$acc parallel copyin (a(1:N)) copy (b(1:N)) async (1  ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc parallel copyin (a(1:N)) copy (b(1:N)) async (1  ! { dg-error "Failed to match clause" }
   do i = 1, N
      b(i) = a(i)
   end do

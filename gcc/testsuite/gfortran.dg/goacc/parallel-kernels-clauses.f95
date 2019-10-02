@@ -16,8 +16,8 @@ program test
   !$acc parallel async(i)
   !$acc end parallel
 
-  !$acc kernels async(0, 1) { dg-error "Unclassifiable" }
-  !$acc parallel async(0, 1) { dg-error "Unclassifiable" }
+  !$acc kernels async(0, 1) { dg-error "Failed to match clause" }
+  !$acc parallel async(0, 1) { dg-error "Failed to match clause" }
 
   !$acc kernels async
   !$acc end kernels
@@ -37,11 +37,11 @@ program test
   !$acc kernels async() { dg-error "Invalid character" }
   !$acc parallel async() { dg-error "Invalid character" }
 
-  !$acc kernels async("a") { dg-error "Unclassifiable" }
-  !$acc parallel async("a") { dg-error "Unclassifiable" }
+  !$acc kernels async("a") { dg-error "Failed to match clause" }
+  !$acc parallel async("a") { dg-error "Failed to match clause" }
 
-  !$acc kernels async(.true.) { dg-error "Unclassifiable" }
-  !$acc parallel async(.true.) { dg-error "Unclassifiable" }
+  !$acc kernels async(.true.) { dg-error "Failed to match clause" }
+  !$acc parallel async(.true.) { dg-error "Failed to match clause" }
 
   ! default(none)
   !$acc kernels default(none)
@@ -59,17 +59,17 @@ program test
   !$acc parallel default ( none )
   !$acc end parallel
 
-  !$acc kernels default { dg-error "Unclassifiable" }
-  !$acc parallel default { dg-error "Unclassifiable" }
+  !$acc kernels default { dg-error "Failed to match clause" }
+  !$acc parallel default { dg-error "Failed to match clause" }
 
-  !$acc kernels default() { dg-error "Unclassifiable" }
-  !$acc parallel default() { dg-error "Unclassifiable" }
+  !$acc kernels default() { dg-error "Failed to match clause" }
+  !$acc parallel default() { dg-error "Failed to match clause" }
 
-  !$acc kernels default(i) { dg-error "Unclassifiable" }
-  !$acc parallel default(i) { dg-error "Unclassifiable" }
+  !$acc kernels default(i) { dg-error "Failed to match clause" }
+  !$acc parallel default(i) { dg-error "Failed to match clause" }
 
-  !$acc kernels default(1) { dg-error "Unclassifiable" }
-  !$acc parallel default(1) { dg-error "Unclassifiable" }
+  !$acc kernels default(1) { dg-error "Failed to match clause" }
+  !$acc parallel default(1) { dg-error "Failed to match clause" }
 
   ! Wait
   !$acc kernels wait (l) ! { dg-error "INTEGER" }
