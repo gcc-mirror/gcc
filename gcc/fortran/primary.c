@@ -2331,6 +2331,8 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 
       if (tmp && tmp->type == REF_INQUIRY)
 	{
+	  if (!primary->where.lb || !primary->where.nextc)
+	    primary->where = gfc_current_locus;
 	  gfc_simplify_expr (primary, 0);
 
 	  if (primary->expr_type == EXPR_CONSTANT)

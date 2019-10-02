@@ -1,5 +1,11 @@
 2019-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/91785
+	* primary.c (gfc_match_varspec): Ensure an inquiry parameter has
+	it locus set.
+
+2019-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/91942
 	* io.c (match_vtag): Check for non-NULL result->symtree.
 	(match_out_tag): Check for invalid constant due to inquiry parameter.
