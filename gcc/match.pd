@@ -305,13 +305,31 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* (A / (1 << B)) -> (A >> B).
    Only for unsigned A.  For signed A, this would not preserve rounding
    toward zero.
-   For example: (-1 / ( 1 << B)) !=  -1 >> B.  */
+   For example: (-1 / ( 1 << B)) !=  -1 >> B.
+   Also also widening conversions, like:
+   (A / (unsigned long long) (1U << B)) -> (A >> B)
+   or
+   (A / (unsigned long long) (1 << B)) -> (A >> B).
+   If the left shift is signed, it can be done only if the upper bits
+   of A starting from shift's type sign bit are zero, as
+   (unsigned long long) (1 << 31) is -2147483648ULL, not 2147483648ULL,
+   so it is valid only if A >> 31 is zero.  */
 (simplify
- (trunc_div @0 (lshift integer_onep@1 @2))
+ (trunc_div @0 (convert? (lshift integer_onep@1 @2)))
  (if ((TYPE_UNSIGNED (type) || tree_expr_nonnegative_p (@0))
       && (!VECTOR_TYPE_P (type)
 	  || target_supports_op_p (type, RSHIFT_EXPR, optab_vector)
-	  || target_supports_op_p (type, RSHIFT_EXPR, optab_scalar)))
+	  || target_supports_op_p (type, RSHIFT_EXPR, optab_scalar))
+      && (useless_type_conversion_p (type, TREE_TYPE (@1))
+	  || (element_precision (type) >= element_precision (TREE_TYPE (@1))
+	      && (TYPE_UNSIGNED (TREE_TYPE (@1))
+		  || (element_precision (type)
+		      == element_precision (TREE_TYPE (@1)))
+		  || (INTEGRAL_TYPE_P (type)
+		      && (tree_nonzero_bits (@0)
+			  & wi::mask (element_precision (TREE_TYPE (@1)) - 1,
+				      true,
+				      element_precision (type))) == 0)))))
   (rshift @0 @2)))
 
 /* Preserve explicit divisions by 0: the C++ front-end wants to detect
@@ -830,6 +848,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (bit_xor:c (bit_and:cs @0 (bit_not @1)) (bit_not @0))
  (bit_not (bit_and @0 @1)))
+
+/* (~a & b) ^ a  -->   (a | b)   */
+(simplify
+ (bit_xor:c (bit_and:cs (bit_not @0) @1) @0)
+ (bit_ior @0 @1))
 
 /* (a | b) & ~(a ^ b)  -->  a & b  */
 (simplify
@@ -1569,8 +1592,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	tree etype = range_check_type (TREE_TYPE (@0));
 	if (etype)
 	  {
-	    if (! TYPE_UNSIGNED (etype))
-	      etype = unsigned_type_for (etype);
 	    hi = fold_convert (etype, hi);
 	    lo = fold_convert (etype, lo);
 	    hi = const_binop (MINUS_EXPR, etype, hi, lo);
@@ -1862,6 +1883,212 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     { wide_int_to_tree (type, (wi::to_wide (@1)
 			       & (bitpos / BITS_PER_UNIT))); }))))
 
+(match min_value
+ INTEGER_CST
+ (if (INTEGRAL_TYPE_P (type)
+      && wi::eq_p (wi::to_wide (t), wi::min_value (type)))))
+
+(match max_value
+ INTEGER_CST
+ (if (INTEGRAL_TYPE_P (type)
+      && wi::eq_p (wi::to_wide (t), wi::max_value (type)))))
+
+/* x >  y  &&  x != XXX_MIN  -->  x > y
+   x >  y  &&  x == XXX_MIN  -->  false . */
+(for eqne (eq ne)
+ (simplify
+  (bit_and:c (gt:c@2 @0 @1) (eqne @0 min_value))
+   (switch
+    (if (eqne == EQ_EXPR)
+     { constant_boolean_node (false, type); })
+    (if (eqne == NE_EXPR)
+     @2)
+    )))
+
+/* x <  y  &&  x != XXX_MAX  -->  x < y
+   x <  y  &&  x == XXX_MAX  -->  false.  */
+(for eqne (eq ne)
+ (simplify
+  (bit_and:c (lt:c@2 @0 @1) (eqne @0 max_value))
+   (switch
+    (if (eqne == EQ_EXPR)
+     { constant_boolean_node (false, type); })
+    (if (eqne == NE_EXPR)
+     @2)
+    )))
+
+/* x <=  y  &&  x == XXX_MIN  -->  x == XXX_MIN.  */
+(simplify
+ (bit_and:c (le:c @0 @1) (eq@2 @0 min_value))
+  @2)
+
+/* x >=  y  &&  x == XXX_MAX  -->  x == XXX_MAX.  */
+(simplify
+ (bit_and:c (ge:c @0 @1) (eq@2 @0 max_value))
+  @2)
+
+/* x >  y  ||  x != XXX_MIN   -->  x != XXX_MIN.  */
+(simplify
+ (bit_ior:c (gt:c @0 @1) (ne@2 @0 min_value))
+  @2)
+
+/* x <=  y  ||  x != XXX_MIN   -->  true.  */
+(simplify
+ (bit_ior:c (le:c @0 @1) (ne @0 min_value))
+  { constant_boolean_node (true, type); })
+
+/* x <=  y  ||  x == XXX_MIN   -->  x <= y.  */
+(simplify
+ (bit_ior:c (le:c@2 @0 @1) (eq @0 min_value))
+  @2)
+
+/* x <  y  ||  x != XXX_MAX   -->  x != XXX_MAX.  */
+(simplify
+ (bit_ior:c (lt:c @0 @1) (ne@2 @0 max_value))
+  @2)
+
+/* x >=  y  ||  x != XXX_MAX   -->  true
+   x >=  y  ||  x == XXX_MAX   -->  x >= y.  */
+(for eqne (eq ne)
+ (simplify
+  (bit_ior:c (ge:c@2 @0 @1) (eqne @0 max_value))
+   (switch
+    (if (eqne == EQ_EXPR)
+     @2)
+    (if (eqne == NE_EXPR)
+     { constant_boolean_node (true, type); }))))
+
+/* Convert (X == CST1) && (X OP2 CST2) to a known value
+   based on CST1 OP2 CST2.  Similarly for (X != CST1).  */
+
+(for code1 (eq ne)
+ (for code2 (eq ne lt gt le ge)
+  (simplify
+   (bit_and:c (code1@3 @0 INTEGER_CST@1) (code2@4 @0 INTEGER_CST@2))
+    (with
+     {
+      int cmp = tree_int_cst_compare (@1, @2);
+      bool val;
+      switch (code2)
+	 {
+	case EQ_EXPR: val = (cmp == 0); break;
+	case NE_EXPR: val = (cmp != 0); break;
+	case LT_EXPR: val = (cmp < 0); break;
+	case GT_EXPR: val = (cmp > 0); break;
+	case LE_EXPR: val = (cmp <= 0); break;
+	case GE_EXPR: val = (cmp >= 0); break;
+	default: gcc_unreachable ();
+	}
+     }
+     (switch
+      (if (code1 == EQ_EXPR && val) @3)
+      (if (code1 == EQ_EXPR && !val) { constant_boolean_node (false, type); })
+      (if (code1 == NE_EXPR && !val) @4))))))
+
+/* Convert (X OP1 CST1) && (X OP2 CST2).  */
+
+(for code1 (lt le gt ge)
+ (for code2 (lt le gt ge)
+  (simplify
+  (bit_and (code1:c@3 @0 INTEGER_CST@1) (code2:c@4 @0 INTEGER_CST@2))
+   (with
+    {
+     int cmp = tree_int_cst_compare (@1, @2);
+    }
+    (switch
+     /* Choose the more restrictive of two < or <= comparisons.  */
+     (if ((code1 == LT_EXPR || code1 == LE_EXPR)
+	  && (code2 == LT_EXPR || code2 == LE_EXPR))
+      (if ((cmp < 0) || (cmp == 0 && code1 == LT_EXPR))
+       @3
+       @4))
+     /* Likewise chose the more restrictive of two > or >= comparisons.  */
+     (if ((code1 == GT_EXPR || code1 == GE_EXPR)
+	  && (code2 == GT_EXPR || code2 == GE_EXPR))
+      (if ((cmp > 0) || (cmp == 0 && code1 == GT_EXPR))
+       @3
+       @4))
+     /* Check for singleton ranges.  */
+     (if (cmp == 0
+	  && ((code1 == LE_EXPR && code2 == GE_EXPR)
+	    || (code1 == GE_EXPR && code2 == LE_EXPR)))
+      (eq @0 @1))
+     /* Check for disjoint ranges.  */
+     (if (cmp <= 0
+	  && (code1 == LT_EXPR || code1 == LE_EXPR)
+	  && (code2 == GT_EXPR || code2 == GE_EXPR))
+      { constant_boolean_node (false, type); })
+     (if (cmp >= 0
+	  && (code1 == GT_EXPR || code1 == GE_EXPR)
+	  && (code2 == LT_EXPR || code2 == LE_EXPR))
+      { constant_boolean_node (false, type); })
+     )))))
+
+/* Convert (X == CST1) || (X OP2 CST2) to a known value
+   based on CST1 OP2 CST2.  Similarly for (X != CST1).  */
+
+(for code1 (eq ne)
+ (for code2 (eq ne lt gt le ge)
+  (simplify
+   (bit_ior:c (code1@3 @0 INTEGER_CST@1) (code2@4 @0 INTEGER_CST@2))
+    (with
+     {
+      int cmp = tree_int_cst_compare (@1, @2);
+      bool val;
+      switch (code2)
+	{
+	case EQ_EXPR: val = (cmp == 0); break;
+	case NE_EXPR: val = (cmp != 0); break;
+	case LT_EXPR: val = (cmp < 0); break;
+	case GT_EXPR: val = (cmp > 0); break;
+	case LE_EXPR: val = (cmp <= 0); break;
+	case GE_EXPR: val = (cmp >= 0); break;
+	default: gcc_unreachable ();
+	}
+     }
+     (switch
+      (if (code1 == EQ_EXPR && val) @4)
+      (if (code1 == NE_EXPR && val) { constant_boolean_node (true, type); })
+      (if (code1 == NE_EXPR && !val) @3))))))
+
+/* Convert (X OP1 CST1) || (X OP2 CST2).  */
+
+(for code1 (lt le gt ge)
+ (for code2 (lt le gt ge)
+  (simplify
+  (bit_ior (code1@3 @0 INTEGER_CST@1) (code2@4 @0 INTEGER_CST@2))
+   (with
+    {
+     int cmp = tree_int_cst_compare (@1, @2);
+    }
+    (switch
+     /* Choose the more restrictive of two < or <= comparisons.  */
+     (if ((code1 == LT_EXPR || code1 == LE_EXPR)
+	  && (code2 == LT_EXPR || code2 == LE_EXPR))
+      (if ((cmp < 0) || (cmp == 0 && code1 == LT_EXPR))
+       @4
+       @3))
+     /* Likewise chose the more restrictive of two > or >= comparisons.  */
+     (if ((code1 == GT_EXPR || code1 == GE_EXPR)
+	  && (code2 == GT_EXPR || code2 == GE_EXPR))
+      (if ((cmp > 0) || (cmp == 0 && code1 == GT_EXPR))
+       @4
+       @3))
+     /* Check for singleton ranges.  */
+     (if (cmp == 0
+	  && ((code1 == LT_EXPR && code2 == GT_EXPR)
+	      || (code1 == GT_EXPR && code2 == LT_EXPR)))
+      (ne @0 @2))
+     /* Check for disjoint ranges.  */
+     (if (cmp >= 0
+	  && (code1 == LT_EXPR || code1 == LE_EXPR)
+	  && (code2 == GT_EXPR || code2 == GE_EXPR))
+      { constant_boolean_node (true, type); })
+     (if (cmp <= 0
+	  && (code1 == GT_EXPR || code1 == GE_EXPR)
+	  && (code2 == LT_EXPR || code2 == LE_EXPR))
+      { constant_boolean_node (true, type); })
+     )))))
 
 /* We can't reassociate at all for saturating types.  */
 (if (!TYPE_SATURATING (type))
@@ -2038,8 +2265,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			  max_ovf = wi::OVF_OVERFLOW;
         tree inner_type = TREE_TYPE (@0);
 
-        wide_int w1 = wide_int::from (wi::to_wide (@1), TYPE_PRECISION (inner_type),
-	    TYPE_SIGN (inner_type));
+	wide_int w1
+	  = wide_int::from (wi::to_wide (@1), TYPE_PRECISION (inner_type),
+			    TYPE_SIGN (inner_type));
 
         wide_int wmin0, wmax0;
         if (get_range_info (@0, &wmin0, &wmax0) == VR_RANGE)
@@ -2051,6 +2279,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (if (min_ovf == wi::OVF_NONE && max_ovf == wi::OVF_NONE)
       (convert (plus @0 { wide_int_to_tree (TREE_TYPE (@0), w1); } )))
      )))
+#endif
+
+/* ((T)(A + CST1)) + CST2 -> (T)(A) + (T)CST1 + CST2  */
+#if GIMPLE
+  (for op (plus minus)
+   (simplify
+    (plus (convert:s (op:s @0 INTEGER_CST@1)) INTEGER_CST@2)
+     (if (TREE_CODE (TREE_TYPE (@0)) == INTEGER_TYPE
+	  && TREE_CODE (type) == INTEGER_TYPE
+	  && TYPE_PRECISION (type) > TYPE_PRECISION (TREE_TYPE (@0))
+	  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+	  && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0))
+	  && TYPE_OVERFLOW_WRAPS (type))
+       (plus (convert @0) (op @2 (convert @1))))))
 #endif
 
   /* ~A + A -> -1 */
@@ -5404,10 +5646,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    on c, so could drop potentially-trapping arithmetic, but that's a valid
    simplification if the result of the operation isn't needed.
 
-   Avoid speculatively generating a stand-alone vector comparison                                                                                
-   on targets that might not support them.  Any target implementing                                                                              
-   conditional internal functions must support the same comparisons                                                                              
-   inside and outside a VEC_COND_EXPR.  */                                                                                                       
+   Avoid speculatively generating a stand-alone vector comparison
+   on targets that might not support them.  Any target implementing
+   conditional internal functions must support the same comparisons
+   inside and outside a VEC_COND_EXPR.  */
 
 #if GIMPLE
 (for uncond_op (UNCOND_BINARY)

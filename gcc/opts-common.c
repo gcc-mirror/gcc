@@ -667,7 +667,7 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
       size_t new_opt_index = option->alias_target;
 
       if (new_opt_index == OPT_SPECIAL_ignore
-	  || new_opt_index == OPT_SPECIAL_deprecated)
+	  || new_opt_index == OPT_SPECIAL_warn_removed)
 	{
 	  gcc_assert (option->alias_arg == NULL);
 	  gcc_assert (option->neg_alias_arg == NULL);
@@ -840,7 +840,7 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
 	decoded->canonical_option[i] = NULL;
     }
   if (opt_index != OPT_SPECIAL_unknown && opt_index != OPT_SPECIAL_ignore
-      && opt_index != OPT_SPECIAL_deprecated)
+      && opt_index != OPT_SPECIAL_warn_removed)
     {
       generate_canonical_option (opt_index, arg, value, decoded);
       if (separate_args > 1)
@@ -1018,7 +1018,7 @@ prune_options (struct cl_decoded_option **decoded_options,
 	{
 	case OPT_SPECIAL_unknown:
 	case OPT_SPECIAL_ignore:
-	case OPT_SPECIAL_deprecated:
+	case OPT_SPECIAL_warn_removed:
 	case OPT_SPECIAL_program_name:
 	case OPT_SPECIAL_input_file:
 	  goto keep;
@@ -1348,7 +1348,7 @@ read_cmdline_option (struct gcc_options *opts,
   if (decoded->opt_index == OPT_SPECIAL_ignore)
     return;
 
-  if (decoded->opt_index == OPT_SPECIAL_deprecated)
+  if (decoded->opt_index == OPT_SPECIAL_warn_removed)
     {
       /* Warn only about positive ignored options.  */
       if (decoded->value)
@@ -1532,7 +1532,9 @@ option_enabled (int opt_idx, unsigned lang_mask, void *opts)
 
   /* A language-specific option can only be considered enabled when it's
      valid for the current language.  */
-  if (option->flags & CL_LANG_ALL && !(option->flags | lang_mask))
+  if (!(option->flags & CL_COMMON)
+      && (option->flags & CL_LANG_ALL)
+      && !(option->flags & lang_mask))
     return 0;
 
   struct gcc_options *optsg = (struct gcc_options *) opts;
@@ -1651,7 +1653,7 @@ control_warning_option (unsigned int opt_index, int kind, const char *arg,
 	arg = cl_options[opt_index].alias_arg;
       opt_index = cl_options[opt_index].alias_target;
     }
-  if (opt_index == OPT_SPECIAL_ignore || opt_index == OPT_SPECIAL_deprecated)
+  if (opt_index == OPT_SPECIAL_ignore || opt_index == OPT_SPECIAL_warn_removed)
     return;
   if (dc)
     diagnostic_classify_diagnostic (dc, opt_index, (diagnostic_t) kind, loc);

@@ -128,14 +128,12 @@ package body GNAT.Sockets is
    Socket_Error_Id : constant Exception_Id := Socket_Error'Identity;
    Host_Error_Id   : constant Exception_Id := Host_Error'Identity;
 
-   type In_Addr_Union (Family : Family_Type) is record
+   type In_Addr_Union (Family : Family_Inet_4_6) is record
       case Family is
          when Family_Inet =>
             In4 : In_Addr;
          when Family_Inet6 =>
             In6 : In6_Addr;
-         when Family_Unspec =>
-            null;
       end case;
    end record with Unchecked_Union;
 
@@ -291,7 +289,7 @@ package body GNAT.Sockets is
    --  or the null selector.
 
    function Create_Address
-     (Family : Family_Type; Bytes : Inet_Addr_Bytes) return Inet_Addr_Type
+     (Family : Family_Inet_4_6; Bytes : Inet_Addr_Bytes) return Inet_Addr_Type
      with Inline;
    --  Creates address from family and Inet_Addr_Bytes array.
 
@@ -354,7 +352,7 @@ package body GNAT.Sockets is
       end if;
 
       Socket := Socket_Type (Res);
-      Address := Get_Address (Sin);
+      Address := Get_Address (Sin, Len);
    end Accept_Socket;
 
    -------------------
@@ -465,12 +463,12 @@ package body GNAT.Sockets is
    is
       Res : C.int;
       Sin : aliased Sockaddr;
+      Len : C.int;
 
    begin
-      Set_Address (Sin'Unchecked_Access, Address);
+      Set_Address (Sin'Unchecked_Access, Address, Len);
 
-      Res := C_Bind
-        (C.int (Socket), Sin'Address, C.int (Lengths (Address.Family)));
+      Res := C_Bind (C.int (Socket), Sin'Address, Len);
 
       if Res = Failure then
          Raise_Socket_Error (Socket_Errno);
@@ -670,11 +668,11 @@ package body GNAT.Sockets is
       Server : Sock_Addr_Type) return C.int
    is
       Sin : aliased Sockaddr;
+      Len : C.int;
    begin
-      Set_Address (Sin'Unchecked_Access, Server);
+      Set_Address (Sin'Unchecked_Access, Server, Len);
 
-      return C_Connect
-        (C.int (Socket), Sin'Address, C.int (Lengths (Server.Family)));
+      return C_Connect (C.int (Socket), Sin'Address, Len);
    end Connect_Socket;
 
    procedure Connect_Socket
@@ -869,6 +867,34 @@ package body GNAT.Sockets is
       Socket := Socket_Type (Res);
    end Create_Socket;
 
+   ------------------------
+   -- Create_Socket_Pair --
+   ------------------------
+
+   procedure Create_Socket_Pair
+     (Left   : out Socket_Type;
+      Right  : out Socket_Type;
+      Family : Family_Type := Family_Unspec;
+      Mode   : Mode_Type   := Socket_Stream;
+      Level  : Level_Type  := IP_Protocol_For_IP_Level)
+   is
+      Res  : C.int;
+      Pair : aliased Thin_Common.Fd_Pair;
+
+   begin
+      Res := C_Socketpair
+        ((if Family = Family_Unspec then Default_Socket_Pair_Family
+          else Families (Family)),
+         Modes (Mode), Levels (Level), Pair'Access);
+
+      if Res = Failure then
+         Raise_Socket_Error (Socket_Errno);
+      end if;
+
+      Left  := Socket_Type (Pair (Pair'First));
+      Right := Socket_Type (Pair (Pair'Last));
+   end Create_Socket_Pair;
+
    -----------
    -- Empty --
    -----------
@@ -1039,10 +1065,17 @@ package body GNAT.Sockets is
          for J in Result'Range loop
             Look_For_Supported : loop
                if Iter = null then
+                  pragma Warnings
+                    (Off, "may be referenced before it has a value");
+
                   return Result (1 .. J - 1);
+
+                  pragma Warnings
+                    (On, "may be referenced before it has a value");
                end if;
 
-               Result (J).Addr := Get_Address (Iter.ai_addr.all);
+               Result (J).Addr :=
+                 Get_Address (Iter.ai_addr.all, C.int (Iter.ai_addrlen));
 
                if Result (J).Addr.Family = Family_Unspec then
                   Unsupported;
@@ -1071,10 +1104,6 @@ package body GNAT.Sockets is
                end if;
 
                Iter := Iter.ai_next;
-
-               if Iter = null then
-                  return Result (1 .. J - 1);
-               end if;
             end loop Look_For_Supported;
 
             Iter := Iter.ai_next;
@@ -1149,15 +1178,16 @@ package body GNAT.Sockets is
       Numeric_Host : Boolean := False;
       Numeric_Serv : Boolean := False) return Host_Service
    is
-      SA : aliased Sockaddr;
-      H  : aliased C.char_array := (1 .. SOSC.NI_MAXHOST => C.nul);
-      S  : aliased C.char_array := (1 .. SOSC.NI_MAXSERV => C.nul);
-      RC : C.int;
+      SA  : aliased Sockaddr;
+      H   : aliased C.char_array := (1 .. SOSC.NI_MAXHOST => C.nul);
+      S   : aliased C.char_array := (1 .. SOSC.NI_MAXSERV => C.nul);
+      RC  : C.int;
+      Len : C.int;
    begin
-      Set_Address (SA'Unchecked_Access, Addr);
+      Set_Address (SA'Unchecked_Access, Addr, Len);
 
       RC := C_Getnameinfo
-        (SA'Unchecked_Access, socklen_t (Lengths (Addr.Family)),
+        (SA'Unchecked_Access, socklen_t (Len),
          H'Unchecked_Access, H'Length,
          S'Unchecked_Access, S'Length,
          (if Numeric_Host then SOSC.NI_NUMERICHOST else 0) +
@@ -1197,9 +1227,6 @@ package body GNAT.Sockets is
             HA.In4 := To_In_Addr (Address);
          when Family_Inet6 =>
             HA.In6 := To_In6_Addr (Address);
-         when Family_Unspec =>
-            return (0, 0, (1, " "), (1 .. 0 => (1, " ")),
-                    (1 .. 0 => No_Inet_Addr));
       end case;
 
       Netdb_Lock;
@@ -1208,8 +1235,7 @@ package body GNAT.Sockets is
         (HA'Address,
          (case Address.Family is
              when Family_Inet => HA.In4'Size,
-             when Family_Inet6 => HA.In6'Size,
-             when Family_Unspec => 0) / 8,
+             when Family_Inet6 => HA.In6'Size) / 8,
          Families (Address.Family),
          Res'Access, Buf'Address, Buflen, Err'Access) /= 0
       then
@@ -1280,7 +1306,7 @@ package body GNAT.Sockets is
          Raise_Socket_Error (Socket_Errno);
       end if;
 
-      return Get_Address (Sin);
+      return Get_Address (Sin, Len);
    end Get_Peer_Name;
 
    -------------------------
@@ -1364,7 +1390,7 @@ package body GNAT.Sockets is
          return No_Sock_Addr;
       end if;
 
-      return Get_Address (Sin);
+      return Get_Address (Sin, Len);
    end Get_Socket_Name;
 
    -----------------------
@@ -1572,9 +1598,8 @@ package body GNAT.Sockets is
       Size : constant socklen_t :=
         (case Value.Family is
             when Family_Inet   => 4 * Value.Sin_V4'Length,
-            when Family_Inet6  => 6 * 5 + 4 * 4,
+            when Family_Inet6  => 6 * 5 + 4 * 4);
             --  1234:1234:1234:1234:1234:1234:123.123.123.123
-            when Family_Unspec => 0);
       Dst : aliased C.char_array := (1 .. C.size_t (Size) => C.nul);
       Ia  : aliased In_Addr_Union (Value.Family);
    begin
@@ -1583,8 +1608,6 @@ package body GNAT.Sockets is
             Ia.In6 := To_In6_Addr (Value);
          when Family_Inet =>
             Ia.In4 := To_In_Addr (Value);
-         when Family_Unspec =>
-            return "";
       end case;
 
       if Inet_Ntop
@@ -1602,11 +1625,30 @@ package body GNAT.Sockets is
    -----------
 
    function Image (Value : Sock_Addr_Type) return String is
-      Port : constant String := Value.Port'Img;
       function Ipv6_Brackets (S : String) return String is
         (if Value.Family = Family_Inet6 then "[" & S & "]" else S);
    begin
-      return Ipv6_Brackets (Image (Value.Addr)) & ':' & Port (2 .. Port'Last);
+      case Value.Family is
+         when Family_Unix =>
+            if ASU.Length (Value.Name) > 0
+              and then ASU.Element (Value.Name, 1) = ASCII.NUL
+            then
+               return '@' & ASU.Slice (Value.Name, 2, ASU.Length (Value.Name));
+            else
+               return ASU.To_String (Value.Name);
+            end if;
+
+         when Family_Inet_4_6 =>
+            declare
+               Port : constant String := Value.Port'Img;
+            begin
+               return Ipv6_Brackets (Image (Value.Addr)) & ':'
+                 & Port (2 .. Port'Last);
+            end;
+
+         when Family_Unspec =>
+            return "";
+      end case;
    end Image;
 
    -----------
@@ -1924,6 +1966,19 @@ package body GNAT.Sockets is
       end if;
    end Netdb_Unlock;
 
+   ----------------------------
+   -- Network_Socket_Address --
+   ----------------------------
+
+   function Network_Socket_Address
+     (Addr : Inet_Addr_Type; Port : Port_Type) return Sock_Addr_Type is
+   begin
+      return Result : Sock_Addr_Type (Addr.Family) do
+         Result.Addr := Addr;
+         Result.Port := Port;
+      end return;
+   end Network_Socket_Address;
+
    --------------------------------
    -- Normalize_Empty_Socket_Set --
    --------------------------------
@@ -2139,7 +2194,7 @@ package body GNAT.Sockets is
 
       Last := Last_Index (First => Item'First, Count => size_t (Res));
 
-      From := Get_Address (Sin);
+      From := Get_Address (Sin, Len);
    end Receive_Socket;
 
    --------------------
@@ -2404,9 +2459,8 @@ package body GNAT.Sockets is
 
    begin
       if To /= null then
-         Set_Address (Sin'Unchecked_Access, To.all);
+         Set_Address (Sin'Unchecked_Access, To.all, Len);
          C_To := Sin'Address;
-         Len := C.int (Thin_Common.Lengths (To.Family));
 
       else
          C_To := System.Null_Address;
@@ -3055,12 +3109,11 @@ package body GNAT.Sockets is
    --------------------
 
    function Create_Address
-     (Family : Family_Type; Bytes : Inet_Addr_Bytes) return Inet_Addr_Type
+     (Family : Family_Inet_4_6; Bytes : Inet_Addr_Bytes) return Inet_Addr_Type
    is
      (case Family is
          when Family_Inet => (Family_Inet, Bytes),
-         when Family_Inet6 => (Family_Inet6, Bytes),
-         when Family_Unspec => (Family => Family_Unspec));
+         when Family_Inet6 => (Family_Inet6, Bytes));
 
    ---------------
    -- Get_Bytes --
@@ -3069,15 +3122,14 @@ package body GNAT.Sockets is
    function Get_Bytes (Addr : Inet_Addr_Type) return Inet_Addr_Bytes is
      (case Addr.Family is
          when Family_Inet => Addr.Sin_V4,
-         when Family_Inet6 => Addr.Sin_V6,
-         when Family_Unspec => (1 .. 0 => 0));
+         when Family_Inet6 => Addr.Sin_V6);
 
    ----------
    -- Mask --
    ----------
 
    function Mask
-     (Family : Family_Type;
+     (Family : Family_Inet_4_6;
       Length : Natural;
       Host   : Boolean := False) return Inet_Addr_Type
    is
@@ -3108,6 +3160,15 @@ package body GNAT.Sockets is
          return Create_Address (Family, B);
       end;
    end Mask;
+
+   -------------------------
+   -- Unix_Socket_Address --
+   -------------------------
+
+   function Unix_Socket_Address (Addr : String) return Sock_Addr_Type is
+   begin
+      return Sock_Addr_Type'(Family_Unix, ASU.To_Unbounded_String (Addr));
+   end Unix_Socket_Address;
 
    -----------
    -- "and" --

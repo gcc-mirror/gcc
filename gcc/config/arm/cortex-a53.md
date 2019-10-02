@@ -86,7 +86,7 @@
 			alu_sreg,alus_sreg,logic_reg,logics_reg,
 			adc_imm,adcs_imm,adc_reg,adcs_reg,
 			csel,clz,rbit,rev,alu_dsp_reg,
-			mov_reg,mvn_reg,mrs,multiple,no_insn"))
+			mov_reg,mvn_reg,mrs,multiple"))
   "cortex_a53_slot_any")
 
 (define_insn_reservation "cortex_a53_alu_shift" 3

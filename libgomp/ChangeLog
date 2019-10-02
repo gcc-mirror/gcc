@@ -1,3 +1,45 @@
+2019-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Remove GCC_HEADER_STDINT(gstdint.h).
+	* libgomp.h: Include <stdint.h> instead of "gstdint.h".
+	* oacc-parallel.c: Don't include "libgomp_g.h".
+	* plugin/plugin-hsa.c: Include <stdint.h> instead of "gstdint.h".
+	* plugin/plugin-nvptx.c: Don't include "gstdint.h".
+	* aclocal.m4: Regenerated.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
+2019-09-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* libgomp_g.h: Include stdint.h instead of gstdint.h.
+
+2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure: Regenerate.
+
+2019-09-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* plugin/plugin-hsa.c (hsa_warn, hsa_fatal, hsa_error): Ensure
+	string is initialized.
+
+2019-09-06  Florian Weimer  <fweimer@redhat.com>
+
+	* configure: Regenerate.
+
+2019-09-03  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR other/79543
+	* acinclude.m4 (LIBGOMP_CHECK_LINKER_FEATURES): Fix GNU ld --version
+	scanning to conform to the GNU Coding Standards.
+	* configure: Regenerate.
+
+2019-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/91530
+	* testsuite/libgomp.c/scan-21.c: New test.
+	* testsuite/libgomp.c/scan-22.c: New test.
+
 2019-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/91530

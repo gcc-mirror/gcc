@@ -1,5 +1,5 @@
 /* PR target/65780 */
-/* { dg-do link { target *-*-linux* *-*-gnu* } } */
+/* { dg-do link { target *-*-linux* *-*-gnu* *-*-uclinux* } } */
 /* { dg-options "-O2" } */
 
 int optopt;

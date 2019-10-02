@@ -293,8 +293,8 @@ nested and a @code{for} can have multiple operators to iterate.
 @end smallexample
 
 In this example the pattern will be repeated four times with
-@code{opa, opb, opc} being @code{plus, minus, plus},
-@code{plus, minus, minus}, @code{minus, plus, plus},
+@code{opa, opb, opc} being @code{plus, minus, plus};
+@code{plus, minus, minus}; @code{minus, plus, plus};
 @code{minus, plus, minus}.
 
 To avoid repeating operator lists in @code{for} you can name

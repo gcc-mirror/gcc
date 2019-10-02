@@ -2988,8 +2988,7 @@ expand_omp_for_generic (struct omp_region *region,
 				true, GSI_SAME_STMT);
   if (arr && !TREE_STATIC (arr))
     {
-      tree clobber = build_constructor (TREE_TYPE (arr), NULL);
-      TREE_THIS_VOLATILE (clobber) = 1;
+      tree clobber = build_clobber (TREE_TYPE (arr));
       gsi_insert_before (&gsi, gimple_build_assign (arr, clobber),
 			 GSI_SAME_STMT);
     }
@@ -3356,8 +3355,7 @@ expand_omp_for_generic (struct omp_region *region,
   if (fd->ordered)
     {
       tree arr = counts[fd->ordered];
-      tree clobber = build_constructor (TREE_TYPE (arr), NULL);
-      TREE_THIS_VOLATILE (clobber) = 1;
+      tree clobber = build_clobber (TREE_TYPE (arr));
       gsi_insert_after (&gsi, gimple_build_assign (arr, clobber),
 			GSI_SAME_STMT);
     }

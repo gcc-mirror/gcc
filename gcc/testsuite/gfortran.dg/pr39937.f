@@ -6,7 +6,7 @@ C { dg-options "-std=legacy" }
      $                   WORK( * )
       DOUBLE PRECISION   X( 2, 2 )
       CALL DLALN2( .FALSE., 1, 1, SMIN, ONE, T( J, J ),
-     $                            ZERO, X, 2, SCALE, XNORM, IERR )
+     $                            ZERO, X, 2, SCALE, XNORM, IERR ) ! { dg-warning "Type mismatch" }
       CALL DSCAL( KI, SCALE, WORK( 1+N ), 1 )
       DO 90 J = KI - 2, 1, -1
       IF( J.GT.JNXT )
@@ -19,8 +19,8 @@ C { dg-options "-std=legacy" }
               END IF
           END IF
           CALL DLALN2( .FALSE., 2, 2, SMIN, ONE,
-     $                            T( J-1, J-1 ), LDT, ONE, ONE,
-     $                            XNORM, IERR ) ! { dg-warning "Type mismatch" }
+     $                            T( J-1, J-1 ), LDT, ONE, ONE,  ! { dg-warning "Type mismatch" }
+     $                            XNORM, IERR )
           CALL DAXPY( J-2, -X( 1, 1 ), T( 1, J-1 ), 1,
      $                           WORK( 1+N ), 1 )
           CALL DAXPY( J-2, -X( 2, 2 ), T( 1, J ), 1,

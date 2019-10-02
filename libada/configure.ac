@@ -38,6 +38,21 @@ ACX_NONCANONICAL_TARGET
 GCC_TOPLEV_SUBDIRS
 
 # Command-line options.
+
+AC_ARG_ENABLE(version-specific-runtime-libs,
+  [AS_HELP_STRING([--enable-version-specific-runtime-libs],
+		  [specify that runtime libraries should be
+		   installed in a compiler-specific directory])],
+  [case "$enableval" in
+     yes|no)
+       ;;
+     *)
+       AC_MSG_ERROR([--enable-version-specific-runtime-libs must be yes or no])
+       ;;
+   esac],
+  [enable_version_specific_runtime_libs=yes]
+)
+
 # Very limited version of AC_MAINTAINER_MODE.
 AC_ARG_ENABLE([maintainer-mode],
   [AC_HELP_STRING([--enable-maintainer-mode],
@@ -60,8 +75,8 @@ case ${enable_version_specific_runtime_libs} in
     # Need the gcc compiler version to know where to install libraries
     # and header files if --enable-version-specific-runtime-libs option
     # is selected.
-    toolexecdir='$(libdir)/gcc/$(target_alias)'
-    toolexeclibdir='$(toolexecdir)/$(gcc_version)$(MULTISUBDIR)'
+    toolexecdir='$(libdir)/gcc/$(target_noncanonical)'
+    toolexeclibdir='$(toolexecdir)/$(version)$(MULTISUBDIR)/adalib'
     ;;
   no)
     if test -n "$with_cross_host" &&
@@ -82,7 +97,6 @@ case ${enable_version_specific_runtime_libs} in
 esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
-#TODO: toolexeclibdir is currently disregarded
 
 # Check the compiler.
 # The same as in boehm-gc and libstdc++. Have to borrow it from there.

@@ -106,6 +106,7 @@ a register with any other reload.  */
 #include "reload.h"
 #include "addresses.h"
 #include "params.h"
+#include "function-abi.h"
 
 /* True if X is a constant that can be forced into the constant pool.
    MODE is the mode of the operand, or VOIDmode if not known.  */
@@ -6904,24 +6905,19 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
 	 if either of the two is in a call-clobbered register, or memory.  */
       if (CALL_P (p))
 	{
-	  int i;
-
 	  if (goal_mem || need_stable_sp)
 	    return 0;
 
-	  if (regno >= 0 && regno < FIRST_PSEUDO_REGISTER)
-	    for (i = 0; i < nregs; ++i)
-	      if (call_used_regs[regno + i]
-		  || targetm.hard_regno_call_part_clobbered (NULL, regno + i,
-							     mode))
-		return 0;
+	  function_abi callee_abi = insn_callee_abi (p);
+	  if (regno >= 0
+	      && regno < FIRST_PSEUDO_REGISTER
+	      && callee_abi.clobbers_reg_p (mode, regno))
+	    return 0;
 
-	  if (valueno >= 0 && valueno < FIRST_PSEUDO_REGISTER)
-	    for (i = 0; i < valuenregs; ++i)
-	      if (call_used_regs[valueno + i]
-		  || targetm.hard_regno_call_part_clobbered (NULL, valueno + i,
-							     mode))
-		return 0;
+	  if (valueno >= 0
+	      && valueno < FIRST_PSEUDO_REGISTER
+	      && callee_abi.clobbers_reg_p (mode, valueno))
+	    return 0;
 	}
 
       if (INSN_P (p))

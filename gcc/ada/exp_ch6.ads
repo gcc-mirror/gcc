@@ -244,6 +244,9 @@ package Exp_Ch6 is
    --  functions with tagged result types, since they can be invoked via
    --  dispatching calls, and descendant types may require finalization.
 
+   function Needs_BIP_Task_Actuals (Func_Id : Entity_Id) return Boolean;
+   --  Return True if the function returns an object of a type that has tasks.
+
    function Needs_Result_Accessibility_Level
      (Func_Id : Entity_Id) return Boolean;
    --  Ada 2012 (AI05-0234): Return True if the function needs an implicit

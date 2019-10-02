@@ -1641,6 +1641,48 @@ class_has_len_component (gfc_symbol *sym)
 }
 
 
+static void
+copy_descriptor (stmtblock_t *block, tree dst, tree src, int rank)
+{
+  int n;
+  tree dim;
+  tree tmp;
+  tree tmp2;
+  tree size;
+  tree offset;
+
+  offset = gfc_index_zero_node;
+
+  /* Use memcpy to copy the descriptor. The size is the minimum of
+     the sizes of 'src' and 'dst'. This avoids a non-trivial conversion.  */
+  tmp = TYPE_SIZE_UNIT (TREE_TYPE (src));
+  tmp2 = TYPE_SIZE_UNIT (TREE_TYPE (dst));
+  size = fold_build2_loc (input_location, MIN_EXPR,
+			  TREE_TYPE (tmp), tmp, tmp2);
+  tmp = builtin_decl_explicit (BUILT_IN_MEMCPY);
+  tmp = build_call_expr_loc (input_location, tmp, 3,
+			     gfc_build_addr_expr (NULL_TREE, dst),
+			     gfc_build_addr_expr (NULL_TREE, src),
+			     fold_convert (size_type_node, size));
+  gfc_add_expr_to_block (block, tmp);
+
+  /* Set the offset correctly.  */
+  for (n = 0; n < rank; n++)
+    {
+      dim = gfc_rank_cst[n];
+      tmp = gfc_conv_descriptor_lbound_get (src, dim);
+      tmp2 = gfc_conv_descriptor_stride_get (src, dim);
+      tmp = fold_build2_loc (input_location, MULT_EXPR, TREE_TYPE (tmp),
+			     tmp, tmp2);
+      offset = fold_build2_loc (input_location, MINUS_EXPR,
+			TREE_TYPE (offset), offset, tmp);
+      offset = gfc_evaluate_now (offset, block);
+    }
+
+  gfc_conv_descriptor_offset_set (block, dst, offset);
+}
+
+
 /* Do proper initialization for ASSOCIATE names.  */
 
 static void
@@ -1658,6 +1700,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
   bool need_len_assign;
   bool whole_array = true;
   gfc_ref *ref;
+  gfc_symbol *sym2;
 
   gcc_assert (sym->assoc);
   e = sym->assoc->target;
@@ -1690,12 +1733,140 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
                      && e->ts.u.derived->attr.unlimited_polymorphic))
       && (sym->ts.type == BT_CHARACTER
           || ((sym->ts.type == BT_CLASS || sym->ts.type == BT_DERIVED)
-              && class_has_len_component (sym))));
+              && class_has_len_component (sym)))
+      && !sym->attr.select_rank_temporary);
+
   /* Do a `pointer assignment' with updated descriptor (or assign descriptor
      to array temporary) for arrays with either unknown shape or if associating
-     to a variable.  */
-  if (sym->attr.dimension && !class_target
-      && (sym->as->type == AS_DEFERRED || sym->assoc->variable))
+     to a variable. Select rank temporaries need somewhat different treatment
+     to other associate names and case temporaries. This because the selector
+     is assumed rank and so the offset in particular has to be changed. Also,
+     the case temporaries carry both allocatable and target attributes if
+     present in the selector. This means that an allocatation or change of
+     association can occur and so has to be dealt with.  */
+  if (sym->attr.select_rank_temporary)
+    {
+      gfc_se se;
+      tree class_decl = NULL_TREE;
+      int rank = 0;
+      bool class_ptr;
+
+      sym2 = e->symtree->n.sym;
+      gfc_init_se (&se, NULL);
+      if (e->ts.type == BT_CLASS)
+	{
+	  /* Go straight to the class data.  */
+	  if (sym2->attr.dummy)
+	    {
+	      class_decl = DECL_LANG_SPECIFIC (sym2->backend_decl) ?
+			   GFC_DECL_SAVED_DESCRIPTOR (sym2->backend_decl) :
+			   sym2->backend_decl;
+	      if (POINTER_TYPE_P (TREE_TYPE (class_decl)))
+		class_decl = build_fold_indirect_ref_loc (input_location,
+							  class_decl);
+	      gcc_assert (GFC_CLASS_TYPE_P (TREE_TYPE (class_decl)));
+	      se.expr = gfc_class_data_get (class_decl);
+	    }
+	  else
+	    {
+	      class_decl = sym2->backend_decl;
+	      gfc_conv_expr_descriptor (&se, e);
+	      if (POINTER_TYPE_P (TREE_TYPE (se.expr)))
+		se.expr = build_fold_indirect_ref_loc (input_location,
+						       se.expr);
+	    }
+
+	  if (CLASS_DATA (sym)->as && CLASS_DATA (sym)->as->rank > 0)
+	    rank = CLASS_DATA (sym)->as->rank;
+	}
+      else
+	{
+	  gfc_conv_expr_descriptor (&se, e);
+	  if (sym->as && sym->as->rank > 0)
+	    rank = sym->as->rank;
+	}
+
+      desc = sym->backend_decl;
+
+      /* The SELECT TYPE mechanisms turn class temporaries into pointers, which
+	 point to the selector. */
+      class_ptr = class_decl != NULL_TREE && POINTER_TYPE_P (TREE_TYPE (desc));
+      if (class_ptr)
+	{
+	  tmp = gfc_create_var (TREE_TYPE (TREE_TYPE (desc)), "class");
+	  tmp = gfc_build_addr_expr (NULL, tmp);
+	  gfc_add_modify (&se.pre, desc, tmp);
+
+	  tmp = gfc_class_vptr_get (class_decl);
+	  gfc_add_modify (&se.pre, gfc_class_vptr_get (desc), tmp);
+	  if (UNLIMITED_POLY (sym))
+	    gfc_add_modify (&se.pre, gfc_class_len_get (desc),
+			    gfc_class_len_get (class_decl));
+
+	  desc = gfc_class_data_get (desc);
+	}
+
+      /* SELECT RANK temporaries can carry the allocatable and pointer
+	 attributes so the selector descriptor must be copied in and
+	 copied out.  */
+      if (rank > 0)
+	copy_descriptor (&se.pre, desc, se.expr, rank);
+      else
+	{
+	  tmp = gfc_conv_descriptor_data_get (se.expr);
+	  gfc_add_modify (&se.pre, desc,
+			  fold_convert (TREE_TYPE (desc), tmp));
+	}
+
+      /* Deal with associate_name => selector. Class associate names are
+	 treated in the same way as in SELECT TYPE.  */
+      sym2 = sym->assoc->target->symtree->n.sym;
+      if (sym2->assoc && sym->assoc->target && sym2->ts.type != BT_CLASS)
+	{
+	  sym2 = sym2->assoc->target->symtree->n.sym;
+	  se.expr = sym2->backend_decl;
+
+	  if (POINTER_TYPE_P (TREE_TYPE (se.expr)))
+	    se.expr = build_fold_indirect_ref_loc (input_location,
+						   se.expr);
+	}
+
+      /* There could have been reallocation.  Copy descriptor back to the
+	 selector and update the offset.  */
+      if (sym->attr.allocatable || sym->attr.pointer
+	  || (sym->ts.type == BT_CLASS
+	      && (CLASS_DATA (sym)->attr.allocatable
+		  || CLASS_DATA (sym)->attr.pointer)))
+	{
+	  if (rank > 0)
+	    copy_descriptor (&se.post, se.expr, desc, rank);
+	  else
+	    {
+	      tmp = gfc_conv_descriptor_data_get (desc);
+	      gfc_conv_descriptor_data_set (&se.post, se.expr, tmp);
+	    }
+
+	  /* The dynamic type could have changed too.  */
+	  if (sym->ts.type == BT_CLASS)
+	    {
+	      tmp = sym->backend_decl;
+	      if (class_ptr)
+		tmp = build_fold_indirect_ref_loc (input_location, tmp);
+	      gfc_add_modify (&se.post, gfc_class_vptr_get (class_decl),
+			      gfc_class_vptr_get (tmp));
+	      if (UNLIMITED_POLY (sym))
+		gfc_add_modify (&se.post, gfc_class_len_get (class_decl),
+				gfc_class_len_get (tmp));
+	    }
+	}
+
+      tmp = gfc_finish_block (&se.post);
+
+      gfc_add_init_cleanup (block, gfc_finish_block (&se.pre), tmp);
+    }
+  /* Now all the other kinds of associate variable.  */
+  else if (sym->attr.dimension && !class_target
+	   && (sym->as->type == AS_DEFERRED || sym->assoc->variable))
     {
       gfc_se se;
       tree desc;
@@ -1928,7 +2099,43 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	}
       else
 	{
+	  tree ctree = gfc_get_class_from_expr (se.expr);
 	  tmp = TREE_TYPE (sym->backend_decl);
+
+	  /* Coarray scalar component expressions can emerge from
+	     the front end as array elements of the _data field.  */
+	  if (sym->ts.type == BT_CLASS
+	      && e->ts.type == BT_CLASS && e->rank == 0
+	      && !GFC_CLASS_TYPE_P (TREE_TYPE (se.expr)) && ctree)
+	    {
+	      tree stmp;
+	      tree dtmp;
+
+	      se.expr = ctree;
+	      dtmp = TREE_TYPE (TREE_TYPE (sym->backend_decl));
+	      ctree = gfc_create_var (dtmp, "class");
+
+	      stmp = gfc_class_data_get (se.expr);
+	      gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (stmp)));
+
+	      /* Set the fields of the target class variable.  */
+	      stmp = gfc_conv_descriptor_data_get (stmp);
+	      dtmp = gfc_class_data_get (ctree);
+	      stmp = fold_convert (TREE_TYPE (dtmp), stmp);
+	      gfc_add_modify (&se.pre, dtmp, stmp);
+	      stmp = gfc_class_vptr_get (se.expr);
+	      dtmp = gfc_class_vptr_get (ctree);
+	      stmp = fold_convert (TREE_TYPE (dtmp), stmp);
+	      gfc_add_modify (&se.pre, dtmp, stmp);
+	      if (UNLIMITED_POLY (sym))
+		{
+		  stmp = gfc_class_len_get (se.expr);
+		  dtmp = gfc_class_len_get (ctree);
+		  stmp = fold_convert (TREE_TYPE (dtmp), stmp);
+		  gfc_add_modify (&se.pre, dtmp, stmp);
+		}
+	      se.expr = ctree;
+	    }
 	  tmp = gfc_build_addr_expr (tmp, se.expr);
 	}
 
@@ -2172,6 +2379,19 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
       = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		build_int_cst (integer_type_node, annot_expr_unroll_kind),
 		build_int_cst (integer_type_node, code->ext.iterator->unroll));
+
+  if (code->ext.iterator->ivdep && cond != error_mark_node)
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node, annot_expr_ivdep_kind),
+		   integer_zero_node);
+  if (code->ext.iterator->vector && cond != error_mark_node)
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node, annot_expr_vector_kind),
+		   integer_zero_node);
+  if (code->ext.iterator->novector && cond != error_mark_node)
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node, annot_expr_no_vector_kind),
+		   integer_zero_node);
 
   /* The loop exit.  */
   tmp = fold_build1_loc (loc, GOTO_EXPR, void_type_node, exit_label);
@@ -2503,6 +2723,20 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
       = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		build_int_cst (integer_type_node, annot_expr_unroll_kind),
 		build_int_cst (integer_type_node, code->ext.iterator->unroll));
+
+  if (code->ext.iterator->ivdep && cond != error_mark_node)
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node, annot_expr_ivdep_kind),
+		   integer_zero_node);
+  if (code->ext.iterator->vector && cond != error_mark_node)
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node, annot_expr_vector_kind),
+		   integer_zero_node);
+  if (code->ext.iterator->novector && cond != error_mark_node)
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node, annot_expr_no_vector_kind),
+		   integer_zero_node);
+
   tmp = fold_build1_loc (loc, GOTO_EXPR, void_type_node, exit_label);
   tmp = fold_build3_loc (loc, COND_EXPR, void_type_node,
 			 cond, tmp, build_empty_stmt (loc));
@@ -3386,6 +3620,142 @@ gfc_trans_select_type (gfc_code * code)
     body = build_empty_stmt (input_location);
   else
     body = gfc_trans_select_type_cases (code);
+
+  /* Build everything together.  */
+  gfc_add_expr_to_block (&block, body);
+
+  if (TREE_USED (exit_label))
+    gfc_add_expr_to_block (&block, build1_v (LABEL_EXPR, exit_label));
+
+  return gfc_finish_block (&block);
+}
+
+
+static tree
+gfc_trans_select_rank_cases (gfc_code * code)
+{
+  gfc_code *c;
+  gfc_case *cp;
+  tree tmp;
+  tree cond;
+  tree low;
+  tree sexpr;
+  tree rank;
+  tree rank_minus_one;
+  tree minus_one;
+  gfc_se se;
+  gfc_se cse;
+  stmtblock_t block;
+  stmtblock_t body;
+  bool def = false;
+
+  gfc_start_block (&block);
+
+  /* Calculate the switch expression.  */
+  gfc_init_se (&se, NULL);
+  gfc_conv_expr_descriptor (&se, code->expr1);
+  rank = gfc_conv_descriptor_rank (se.expr);
+  rank = gfc_evaluate_now (rank, &block);
+  minus_one = build_int_cst (TREE_TYPE (rank), -1);
+  tmp = fold_build2_loc (input_location, MINUS_EXPR,
+			 gfc_array_index_type,
+			 fold_convert (gfc_array_index_type, rank),
+			 build_int_cst (gfc_array_index_type, 1));
+  rank_minus_one = gfc_evaluate_now (tmp, &block);
+  tmp = gfc_conv_descriptor_ubound_get (se.expr, rank_minus_one);
+  cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
+			  tmp, build_int_cst (TREE_TYPE (tmp), -1));
+  tmp = fold_build3_loc (input_location, COND_EXPR,
+			 TREE_TYPE (rank), cond,
+			 rank, minus_one);
+  cond = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
+			  rank, build_int_cst (TREE_TYPE (rank), 0));
+  sexpr = fold_build3_loc (input_location, COND_EXPR,
+			   TREE_TYPE (rank), cond,
+			   rank, tmp);
+  sexpr = gfc_evaluate_now (sexpr, &block);
+  TREE_USED (code->exit_label) = 0;
+
+repeat:
+  for (c = code->block; c; c = c->block)
+    {
+      cp = c->ext.block.case_list;
+
+      /* Assume it's the default case.  */
+      low = NULL_TREE;
+      tmp = NULL_TREE;
+
+      /* Put the default case at the end.  */
+      if ((!def && !cp->low) || (def && cp->low))
+	continue;
+
+      if (cp->low)
+	{
+	  gfc_init_se (&cse, NULL);
+	  gfc_conv_expr_val (&cse, cp->low);
+	  gfc_add_block_to_block (&block, &cse.pre);
+	  low = cse.expr;
+	}
+
+      gfc_init_block (&body);
+
+      /* Add the statements for this case.  */
+      tmp = gfc_trans_code (c->next);
+      gfc_add_expr_to_block (&body, tmp);
+
+      /* Break to the end of the SELECT RANK construct.  The default
+	 case just falls through.  */
+      if (!def)
+	{
+	  TREE_USED (code->exit_label) = 1;
+	  tmp = build1_v (GOTO_EXPR, code->exit_label);
+	  gfc_add_expr_to_block (&body, tmp);
+	}
+
+      tmp = gfc_finish_block (&body);
+
+      if (low != NULL_TREE)
+	{
+	  cond = fold_build2_loc (input_location, EQ_EXPR,
+				  TREE_TYPE (sexpr), sexpr,
+				  fold_convert (TREE_TYPE (sexpr), low));
+	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+				 cond, tmp,
+				 build_empty_stmt (input_location));
+	}
+
+      gfc_add_expr_to_block (&block, tmp);
+    }
+
+  if (!def)
+    {
+      def = true;
+      goto repeat;
+    }
+
+  return gfc_finish_block (&block);
+}
+
+
+tree
+gfc_trans_select_rank (gfc_code * code)
+{
+  stmtblock_t block;
+  tree body;
+  tree exit_label;
+
+  gcc_assert (code && code->expr1);
+  gfc_init_block (&block);
+
+  /* Build the exit label and hang it in.  */
+  exit_label = gfc_build_label_decl (NULL_TREE);
+  code->exit_label = exit_label;
+
+  /* Empty SELECT constructs are legal.  */
+  if (code->block == NULL)
+    body = build_empty_stmt (input_location);
+  else
+    body = gfc_trans_select_rank_cases (code);
 
   /* Build everything together.  */
   gfc_add_expr_to_block (&block, body);

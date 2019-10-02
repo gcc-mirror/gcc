@@ -1226,6 +1226,10 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   if (opts->x_flag_live_patching && opts->x_flag_lto)
     sorry ("live patching is not supported with LTO");
 
+  /* Currently vtable verification is not supported for LTO */
+  if (opts->x_flag_vtable_verify && opts->x_flag_lto)
+    sorry ("vtable verification is not supported with LTO");
+
   /* Control IPA optimizations based on different -flive-patching level.  */
   if (opts->x_flag_live_patching)
     {
@@ -1537,7 +1541,7 @@ print_filtered_help (unsigned int include_flags,
 	  if (print_state)
 	    {
 	      if (option->alias_target < N_OPTS
-		  && option->alias_target != OPT_SPECIAL_deprecated
+		  && option->alias_target != OPT_SPECIAL_warn_removed
 		  && option->alias_target != OPT_SPECIAL_ignore
 		  && option->alias_target != OPT_SPECIAL_input_file
 		  && option->alias_target != OPT_SPECIAL_program_name

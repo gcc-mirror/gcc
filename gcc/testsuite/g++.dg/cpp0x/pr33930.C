@@ -6,5 +6,5 @@ int& foo( type&& ggg );
 
 void bar( int* someptr )
 {
-  int& x = foo( someptr );
+  int& x = foo( someptr ); // { dg-error "cannot bind non-const lvalue reference" }
 }

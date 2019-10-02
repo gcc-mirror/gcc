@@ -146,6 +146,12 @@ package body Exp_Ch6 is
    --  access discriminants do not require secondary stack use. Note we must
    --  always use the secondary stack for dispatching-on-result calls.
 
+   function Check_Number_Of_Actuals
+     (Subp_Call : Node_Id;
+      Subp_Id   : Entity_Id) return Boolean;
+   --  Given a subprogram call to the given subprogram return True if the
+   --  number of actual parameters (including extra actuals) is correct.
+
    procedure Check_Overriding_Operation (Subp : Entity_Id);
    --  Subp is a dispatching operation. Check whether it may override an
    --  inherited private operation, in which case its DT entry is that of
@@ -543,8 +549,6 @@ package body Exp_Ch6 is
       Chain         : Node_Id := Empty)
    is
       Loc           : constant Source_Ptr := Sloc (Function_Call);
-      Result_Subt   : constant Entity_Id :=
-                        Available_View (Etype (Function_Id));
       Actual        : Node_Id;
       Chain_Actual  : Node_Id;
       Chain_Formal  : Node_Id;
@@ -553,7 +557,7 @@ package body Exp_Ch6 is
    begin
       --  No such extra parameters are needed if there are no tasks
 
-      if not Has_Task (Result_Subt) then
+      if not Needs_BIP_Task_Actuals (Function_Id) then
          return;
       end if;
 
@@ -868,6 +872,33 @@ package body Exp_Ch6 is
             and then No (Controlling_Argument (Func_Call)))
         or else not Requires_Transient_Scope (Underlying_Type (Result_Subt));
    end Caller_Known_Size;
+
+   -----------------------------
+   -- Check_Number_Of_Actuals --
+   -----------------------------
+
+   function Check_Number_Of_Actuals
+     (Subp_Call : Node_Id;
+      Subp_Id   : Entity_Id) return Boolean
+   is
+      Formal : Entity_Id;
+      Actual : Node_Id;
+
+   begin
+      pragma Assert (Nkind_In (Subp_Call, N_Entry_Call_Statement,
+                                          N_Function_Call,
+                                          N_Procedure_Call_Statement));
+
+      Formal := First_Formal_With_Extras (Subp_Id);
+      Actual := First_Actual (Subp_Call);
+
+      while Present (Formal) and then Present (Actual) loop
+         Next_Formal_With_Extras (Formal);
+         Next_Actual (Actual);
+      end loop;
+
+      return No (Formal) and then No (Actual);
+   end Check_Number_Of_Actuals;
 
    --------------------------------
    -- Check_Overriding_Operation --
@@ -1221,10 +1252,11 @@ package body Exp_Ch6 is
       --  also takes care of any constraint checks required for the type
       --  conversion case (on both the way in and the way out).
 
-      procedure Add_Simple_Call_By_Copy_Code;
+      procedure Add_Simple_Call_By_Copy_Code (Bit_Packed_Array : Boolean);
       --  This is similar to the above, but is used in cases where we know
       --  that all that is needed is to simply create a temporary and copy
-      --  the value in and out of the temporary.
+      --  the value in and out of the temporary. If Bit_Packed_Array is True,
+      --  the procedure is called for a bit-packed array actual.
 
       procedure Add_Validation_Call_By_Copy_Code (Act : Node_Id);
       --  Perform copy-back for actual parameter Act which denotes a validation
@@ -1238,11 +1270,11 @@ package body Exp_Ch6 is
 
       function Is_Legal_Copy return Boolean;
       --  Check that an actual can be copied before generating the temporary
-      --  to be used in the call. If the actual is of a by_reference type then
-      --  the program is illegal (this can only happen in the presence of
-      --  rep. clauses that force an incorrect alignment). If the formal is
-      --  a by_reference parameter imposed by a DEC pragma, emit a warning to
-      --  the effect that this might lead to unaligned arguments.
+      --  to be used in the call. If the formal is of a by_reference type or
+      --  is aliased, then the program is illegal (this can only happen in
+      --  the presence of representation clauses that force a misalignment)
+      --  If the formal is a by_reference parameter imposed by a DEC pragma,
+      --  emit a warning that this might lead to unaligned arguments.
 
       function Make_Var (Actual : Node_Id) return Entity_Id;
       --  Returns an entity that refers to the given actual parameter, Actual
@@ -1579,7 +1611,7 @@ package body Exp_Ch6 is
       -- Add_Simple_Call_By_Copy_Code --
       ----------------------------------
 
-      procedure Add_Simple_Call_By_Copy_Code is
+      procedure Add_Simple_Call_By_Copy_Code (Bit_Packed_Array : Boolean) is
          Decl   : Node_Id;
          F_Typ  : Entity_Id := Etype (Formal);
          Incod  : Node_Id;
@@ -1590,7 +1622,12 @@ package body Exp_Ch6 is
          Temp   : Entity_Id;
 
       begin
-         if not Is_Legal_Copy then
+         --  ??? We need to do the copy for a bit-packed array because this is
+         --  where the rewriting into a mask-and-shift sequence is done. But of
+         --  course this may break the program if it expects bits to be really
+         --  passed by reference. That's what we have done historically though.
+
+         if not Bit_Packed_Array and then not Is_Legal_Copy then
             return;
          end if;
 
@@ -1828,12 +1865,16 @@ package body Exp_Ch6 is
          --  An attempt to copy a value of such a type can only occur if
          --  representation clauses give the actual a misaligned address.
 
-         if Is_By_Reference_Type (Etype (Formal)) then
+         if Is_By_Reference_Type (Etype (Formal))
+           or else Is_Aliased (Formal)
+           or else (Mechanism (Formal) = By_Reference
+                     and then not Has_Foreign_Convention (Subp))
+         then
 
             --  The actual may in fact be properly aligned but there is not
             --  enough front-end information to determine this. In that case
-            --  gigi will emit an error if a copy is not legal, or generate
-            --  the proper code.
+            --  gigi will emit an error or a warning if a copy is not legal,
+            --  or generate the proper code.
 
             return False;
 
@@ -1844,6 +1885,7 @@ package body Exp_Ch6 is
          --  be lurking.
 
          elsif Mechanism (Formal) = By_Reference
+           and then Ekind (Scope (Formal)) = E_Procedure
            and then Is_Valued_Procedure (Scope (Formal))
          then
             Error_Msg_N
@@ -2040,7 +2082,7 @@ package body Exp_Ch6 is
             --  [in] out parameters.
 
             elsif Is_Ref_To_Bit_Packed_Array (Actual) then
-               Add_Simple_Call_By_Copy_Code;
+               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => True);
 
             --  If a nonscalar actual is possibly bit-aligned, we need a copy
             --  because the back-end cannot cope with such objects. In other
@@ -2056,7 +2098,7 @@ package body Exp_Ch6 is
                 Component_May_Be_Bit_Aligned (Entity (Selector_Name (Actual)))
               and then not Represented_As_Scalar (Etype (Formal))
             then
-               Add_Simple_Call_By_Copy_Code;
+               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => False);
 
             --  References to slices of bit-packed arrays are expanded
 
@@ -2259,14 +2301,14 @@ package body Exp_Ch6 is
             --  Is this really necessary in all cases???
 
             elsif Is_Ref_To_Bit_Packed_Array (Actual) then
-               Add_Simple_Call_By_Copy_Code;
+               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => True);
 
             --  If a nonscalar actual is possibly unaligned, we need a copy
 
             elsif Is_Possibly_Unaligned_Object (Actual)
               and then not Represented_As_Scalar (Etype (Formal))
             then
-               Add_Simple_Call_By_Copy_Code;
+               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => False);
 
             --  Similarly, we have to expand slices of packed arrays here
             --  because the result must be byte aligned.
@@ -3190,7 +3232,7 @@ package body Exp_Ch6 is
 
          --  Create possible extra actual for accessibility level
 
-         if Present (Extra_Accessibility (Formal)) then
+         if Present (Get_Accessibility (Formal)) then
 
             --  Ada 2005 (AI-252): If the actual was rewritten as an Access
             --  attribute, then the original actual may be an aliased object
@@ -3266,8 +3308,8 @@ package body Exp_Ch6 is
 
                   Add_Extra_Actual
                     (Expr =>
-                       New_Occurrence_Of (Extra_Accessibility (Parm_Ent), Loc),
-                     EF   => Extra_Accessibility (Formal));
+                       New_Occurrence_Of (Get_Accessibility (Parm_Ent), Loc),
+                     EF   => Get_Accessibility (Formal));
                end;
 
             elsif Is_Entity_Name (Prev_Orig) then
@@ -3296,12 +3338,12 @@ package body Exp_Ch6 is
                   begin
                      pragma Assert (Present (Parm_Ent));
 
-                     if Present (Extra_Accessibility (Parm_Ent)) then
+                     if Present (Get_Accessibility (Parm_Ent)) then
                         Add_Extra_Actual
                           (Expr =>
                              New_Occurrence_Of
-                               (Extra_Accessibility (Parm_Ent), Loc),
-                           EF   => Extra_Accessibility (Formal));
+                               (Get_Accessibility (Parm_Ent), Loc),
+                           EF   => Get_Accessibility (Formal));
 
                      --  If the actual access parameter does not have an
                      --  associated extra formal providing its scope level,
@@ -3313,7 +3355,7 @@ package body Exp_Ch6 is
                           (Expr =>
                              Make_Integer_Literal (Loc,
                                Intval => Scope_Depth (Standard_Standard)),
-                           EF   => Extra_Accessibility (Formal));
+                           EF   => Get_Accessibility (Formal));
                      end if;
                   end;
 
@@ -3323,7 +3365,7 @@ package body Exp_Ch6 is
                else
                   Add_Extra_Actual
                     (Expr => Dynamic_Accessibility_Level (Prev_Orig),
-                     EF   => Extra_Accessibility (Formal));
+                     EF   => Get_Accessibility (Formal));
                end if;
 
             --  If the actual is an access discriminant, then pass the level
@@ -3339,7 +3381,7 @@ package body Exp_Ch6 is
                  (Expr =>
                     Make_Integer_Literal (Loc,
                       Intval => Object_Access_Level (Prefix (Prev_Orig))),
-                  EF   => Extra_Accessibility (Formal));
+                  EF   => Get_Accessibility (Formal));
 
             --  All other cases
 
@@ -3409,19 +3451,19 @@ package body Exp_Ch6 is
                                    Make_Integer_Literal (Loc,
                                      Intval =>
                                        Type_Access_Level (Pref_Entity)),
-                                 EF   => Extra_Accessibility (Formal));
+                                 EF   => Get_Accessibility (Formal));
 
                            elsif Nkind (Prev_Orig) = N_Explicit_Dereference
                              and then Present (Pref_Entity)
                              and then Is_Formal (Pref_Entity)
                              and then Present
-                                        (Extra_Accessibility (Pref_Entity))
+                                        (Get_Accessibility (Pref_Entity))
                            then
                               Add_Extra_Actual
                                 (Expr =>
                                    New_Occurrence_Of
-                                     (Extra_Accessibility (Pref_Entity), Loc),
-                                 EF   => Extra_Accessibility (Formal));
+                                     (Get_Accessibility (Pref_Entity), Loc),
+                                 EF   => Get_Accessibility (Formal));
 
                            else
                               Add_Extra_Actual
@@ -3429,7 +3471,7 @@ package body Exp_Ch6 is
                                    Make_Integer_Literal (Loc,
                                      Intval =>
                                        Object_Access_Level (Prev_Orig)),
-                                 EF   => Extra_Accessibility (Formal));
+                                 EF   => Get_Accessibility (Formal));
                            end if;
 
                         --  Treat the unchecked attributes as library-level
@@ -3441,7 +3483,7 @@ package body Exp_Ch6 is
                              (Expr =>
                                 Make_Integer_Literal (Loc,
                                   Intval => Scope_Depth (Standard_Standard)),
-                              EF   => Extra_Accessibility (Formal));
+                              EF   => Get_Accessibility (Formal));
 
                         --  No other cases of attributes returning access
                         --  values that can be passed to access parameters.
@@ -3463,7 +3505,7 @@ package body Exp_Ch6 is
                        (Expr =>
                           Make_Integer_Literal (Loc,
                             Intval => Scope_Depth (Current_Scope) + 1),
-                        EF   => Extra_Accessibility (Formal));
+                        EF   => Get_Accessibility (Formal));
 
                   --  For most other cases we simply pass the level of the
                   --  actual's access type. The type is retrieved from
@@ -3474,7 +3516,7 @@ package body Exp_Ch6 is
                   when others =>
                      Add_Extra_Actual
                        (Expr => Dynamic_Accessibility_Level (Prev),
-                        EF   => Extra_Accessibility (Formal));
+                        EF   => Get_Accessibility (Formal));
                end case;
             end if;
          end if;
@@ -8335,6 +8377,7 @@ package body Exp_Ch6 is
       Rewrite (Allocator, New_Occurrence_Of (Return_Obj_Access, Loc));
 
       Analyze_And_Resolve (Allocator, Acc_Type);
+      pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
    end Make_Build_In_Place_Call_In_Allocator;
 
    ---------------------------------------------------
@@ -8456,6 +8499,8 @@ package body Exp_Ch6 is
          Add_Access_Actual_To_Build_In_Place_Call
            (Func_Call, Function_Id, New_Occurrence_Of (Return_Obj_Id, Loc));
 
+         pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
+
       --  When the result subtype is unconstrained, the function must allocate
       --  the return object in the secondary stack, so appropriate implicit
       --  parameters are added to the call to indicate that. A transient
@@ -8479,6 +8524,8 @@ package body Exp_Ch6 is
 
          Add_Access_Actual_To_Build_In_Place_Call
            (Func_Call, Function_Id, Empty);
+
+         pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
       end if;
    end Make_Build_In_Place_Call_In_Anonymous_Context;
 
@@ -8584,6 +8631,7 @@ package body Exp_Ch6 is
       Insert_After_And_Analyze (Ptr_Typ_Decl, Obj_Decl);
 
       Rewrite (Assign, Make_Null_Statement (Loc));
+      pragma Assert (Check_Number_Of_Actuals (Func_Call, Func_Id));
    end Make_Build_In_Place_Call_In_Assignment;
 
    ----------------------------------------------------
@@ -8908,7 +8956,7 @@ package body Exp_Ch6 is
          Master_Exp => Fmaster_Actual);
 
       if Nkind (Parent (Obj_Decl)) = N_Extended_Return_Statement
-        and then Has_Task (Result_Subt)
+        and then Needs_BIP_Task_Actuals (Function_Id)
       then
          --  Here we're passing along the master that was passed in to this
          --  function.
@@ -9025,6 +9073,8 @@ package body Exp_Ch6 is
          Replace_Renaming_Declaration_Id
            (Obj_Decl, Original_Node (Obj_Decl));
       end if;
+
+      pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
    end Make_Build_In_Place_Call_In_Object_Declaration;
 
    -------------------------------------------------
@@ -9295,6 +9345,17 @@ package body Exp_Ch6 is
 
       Analyze_And_Resolve (Allocator, Acc_Type);
    end Make_CPP_Constructor_Call_In_Allocator;
+
+   ----------------------------
+   -- Needs_BIP_Task_Actuals --
+   ----------------------------
+
+   function Needs_BIP_Task_Actuals (Func_Id : Entity_Id) return Boolean is
+      pragma Assert (Is_Build_In_Place_Function (Func_Id));
+      Func_Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
+   begin
+      return Has_Task (Func_Typ);
+   end Needs_BIP_Task_Actuals;
 
    -----------------------------------
    -- Needs_BIP_Finalization_Master --

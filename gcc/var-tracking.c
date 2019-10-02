@@ -116,6 +116,7 @@
 #include "rtl-iter.h"
 #include "fibonacci_heap.h"
 #include "print-rtl.h"
+#include "function-abi.h"
 
 typedef fibonacci_heap <long, basic_block_def> bb_heap_t;
 typedef fibonacci_node <long, basic_block_def> bb_heap_node_t;
@@ -1239,7 +1240,7 @@ adjust_insn (basic_block bb, rtx_insn *insn)
   amd.stack_adjust = -VTI (bb)->out.stack_adjust;
 
   amd.store = true;
-  note_stores (PATTERN (insn), adjust_mem_stores, &amd);
+  note_stores (insn, adjust_mem_stores, &amd);
 
   amd.store = false;
   if (GET_CODE (PATTERN (insn)) == PARALLEL
@@ -4900,12 +4901,10 @@ dataflow_set_clear_at_call (dataflow_set *set, rtx_insn *call_insn)
 {
   unsigned int r;
   hard_reg_set_iterator hrsi;
-  HARD_REG_SET invalidated_regs;
 
-  get_call_reg_set_usage (call_insn, &invalidated_regs,
-			  regs_invalidated_by_call);
+  function_abi callee_abi = insn_callee_abi (call_insn);
 
-  EXECUTE_IF_SET_IN_HARD_REG_SET (invalidated_regs, 0, r, hrsi)
+  EXECUTE_IF_SET_IN_HARD_REG_SET (callee_abi.full_reg_clobbers (), 0, r, hrsi)
     var_regno_delete (set, r);
 
   if (MAY_HAVE_DEBUG_BIND_INSNS)
@@ -6632,7 +6631,7 @@ add_with_sets (rtx_insn *insn, struct cselib_set *sets, int n_sets)
      insert notes before it without worrying about any
      notes that MO_USEs might emit after the insn.  */
   cui.store_p = true;
-  note_stores (PATTERN (insn), add_stores, &cui);
+  note_stores (insn, add_stores, &cui);
   n2 = VTI (bb)->mos.length () - 1;
   mos = VTI (bb)->mos.address ();
 

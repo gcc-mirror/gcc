@@ -176,6 +176,7 @@ package body Exp_SPARK is
       Aname   : constant Name_Id      := Attribute_Name (N);
       Attr_Id : constant Attribute_Id := Get_Attribute_Id (Aname);
       Loc     : constant Source_Ptr   := Sloc (N);
+      Pref    : constant Node_Id      := Prefix (N);
       Typ     : constant Entity_Id    := Etype (N);
       Expr    : Node_Id;
 
@@ -302,6 +303,20 @@ package body Exp_SPARK is
                Set_Do_Overflow_Check (N);
             end if;
          end;
+
+      elsif Attr_Id = Attribute_Constrained then
+
+         --  If the prefix is an access to object, the attribute applies to
+         --  the designated object, so rewrite with an explicit dereference.
+
+         if Is_Access_Type (Etype (Pref))
+           and then
+             (not Is_Entity_Name (Pref) or else Is_Object (Entity (Pref)))
+         then
+            Rewrite (Pref,
+                     Make_Explicit_Dereference (Loc, Relocate_Node (Pref)));
+            Analyze_And_Resolve (N, Standard_Boolean);
+         end if;
       end if;
    end Expand_SPARK_N_Attribute_Reference;
 

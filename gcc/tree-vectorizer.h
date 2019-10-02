@@ -132,6 +132,9 @@ struct _slp_tree {
   unsigned int vec_stmts_size;
   /* Reference count in the SLP graph.  */
   unsigned int refcnt;
+  /* The maximum number of vector elements for the subtree rooted
+     at this node.  */
+  poly_uint64 max_nunits;
   /* Whether the scalar computations use two different operators.  */
   bool two_operators;
   /* The DEF type of this node.  */
@@ -525,12 +528,6 @@ public:
      we need to peel off iterations at the end to form an epilogue loop.  */
   bool peeling_for_niter;
 
-  /* Reductions are canonicalized so that the last operand is the reduction
-     operand.  If this places a constant into RHS1, this decanonicalizes
-     GIMPLE for other phases, so we must track when this has occurred and
-     fix it up.  */
-  bool operands_swapped;
-
   /* True if there are no loop carried data dependencies in the loop.
      If loop->safelen <= 1, then this is always true, either the loop
      didn't have any loop carried data dependencies, or the loop is being
@@ -607,7 +604,6 @@ public:
 #define LOOP_VINFO_REDUCTION_CHAINS(L)     (L)->reduction_chains
 #define LOOP_VINFO_TARGET_COST_DATA(L)     (L)->target_cost_data
 #define LOOP_VINFO_PEELING_FOR_GAPS(L)     (L)->peeling_for_gaps
-#define LOOP_VINFO_OPERANDS_SWAPPED(L)     (L)->operands_swapped
 #define LOOP_VINFO_PEELING_FOR_NITER(L)    (L)->peeling_for_niter
 #define LOOP_VINFO_NO_DATA_DEPENDENCIES(L) (L)->no_data_dependencies
 #define LOOP_VINFO_SCALAR_LOOP(L)	   (L)->scalar_loop
@@ -698,6 +694,7 @@ enum stmt_vec_info_type {
   type_promotion_vec_info_type,
   type_demotion_vec_info_type,
   type_conversion_vec_info_type,
+  lc_phi_info_type,
   loop_exit_ctrl_vec_info_type
 };
 
@@ -938,12 +935,28 @@ public:
   /* For reduction loops, this is the type of reduction.  */
   enum vect_reduction_type v_reduc_type;
 
-  /* For CONST_COND_REDUCTION, record the reduc code.  */
-  enum tree_code const_cond_reduc_code;
+  /* For CONST_COND_REDUCTION and INTEGER_INDUC_COND_REDUCTION, the
+     reduction code.  */
+  enum tree_code cond_reduc_code;
+
+  /* For INTEGER_INDUC_COND_REDUCTION, the initial value to be used.  */
+  tree induc_cond_initial_val;
+
+  /* If not NULL the value to be added to compute final reduction value.  */
+  tree reduc_epilogue_adjustment;
 
   /* On a reduction PHI the reduction type as detected by
      vect_force_simple_reduction.  */
   enum vect_reduction_type reduc_type;
+
+  /* The original reduction code, to be used in the epilogue.  */
+  enum tree_code reduc_code;
+  /* An internal function we should use in the epilogue.  */
+  internal_fn reduc_fn;
+
+  /* On a stmt participating in the reduction the index of the operand
+     on the reduction SSA cycle.  */
+  int reduc_idx;
 
   /* On a reduction PHI the def returned by vect_force_simple_reduction.
      On the def returned by vect_force_simple_reduction the
@@ -1033,7 +1046,10 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_MEMORY_ACCESS_TYPE(S)   (S)->memory_access_type
 #define STMT_VINFO_SIMD_LANE_ACCESS_P(S)   (S)->simd_lane_access_p
 #define STMT_VINFO_VEC_REDUCTION_TYPE(S)   (S)->v_reduc_type
-#define STMT_VINFO_VEC_CONST_COND_REDUC_CODE(S) (S)->const_cond_reduc_code
+#define STMT_VINFO_VEC_COND_REDUC_CODE(S)  (S)->cond_reduc_code
+#define STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL(S) (S)->induc_cond_initial_val
+#define STMT_VINFO_REDUC_EPILOGUE_ADJUSTMENT(S) (S)->reduc_epilogue_adjustment
+#define STMT_VINFO_REDUC_IDX(S)		   (S)->reduc_idx
 
 #define STMT_VINFO_DR_WRT_VEC_LOOP(S)      (S)->dr_wrt_vec_loop
 #define STMT_VINFO_DR_BASE_ADDRESS(S)      (S)->dr_wrt_vec_loop.base_address
@@ -1064,6 +1080,8 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_MIN_NEG_DIST(S)	(S)->min_neg_dist
 #define STMT_VINFO_NUM_SLP_USES(S)	(S)->num_slp_uses
 #define STMT_VINFO_REDUC_TYPE(S)	(S)->reduc_type
+#define STMT_VINFO_REDUC_CODE(S)	(S)->reduc_code
+#define STMT_VINFO_REDUC_FN(S)		(S)->reduc_fn
 #define STMT_VINFO_REDUC_DEF(S)		(S)->reduc_def
 #define STMT_VINFO_SLP_VECT_ONLY(S)     (S)->slp_vect_only_p
 
@@ -1375,17 +1393,25 @@ vect_get_num_copies (loop_vec_info loop_vinfo, tree vectype)
 }
 
 /* Update maximum unit count *MAX_NUNITS so that it accounts for
+   NUNITS.  *MAX_NUNITS can be 1 if we haven't yet recorded anything.  */
+
+static inline void
+vect_update_max_nunits (poly_uint64 *max_nunits, poly_uint64 nunits)
+{
+  /* All unit counts have the form current_vector_size * X for some
+     rational X, so two unit sizes must have a common multiple.
+     Everything is a multiple of the initial value of 1.  */
+  *max_nunits = force_common_multiple (*max_nunits, nunits);
+}
+
+/* Update maximum unit count *MAX_NUNITS so that it accounts for
    the number of units in vector type VECTYPE.  *MAX_NUNITS can be 1
    if we haven't yet recorded any vector types.  */
 
 static inline void
 vect_update_max_nunits (poly_uint64 *max_nunits, tree vectype)
 {
-  /* All unit counts have the form current_vector_size * X for some
-     rational X, so two unit sizes must have a common multiple.
-     Everything is a multiple of the initial value of 1.  */
-  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  *max_nunits = force_common_multiple (*max_nunits, nunits);
+  vect_update_max_nunits (max_nunits, TYPE_VECTOR_SUBPARTS (vectype));
 }
 
 /* Return the vectorization factor that should be used for costing
@@ -1530,7 +1556,7 @@ extern void vect_remove_stores (stmt_vec_info);
 extern opt_result vect_analyze_stmt (stmt_vec_info, bool *, slp_tree,
 				     slp_instance, stmt_vector_for_cost *);
 extern bool vectorizable_condition (stmt_vec_info, gimple_stmt_iterator *,
-				    stmt_vec_info *, bool, slp_tree,
+				    stmt_vec_info *, bool, int, slp_tree,
 				    stmt_vector_for_cost *);
 extern bool vectorizable_shift (stmt_vec_info, gimple_stmt_iterator *,
 				stmt_vec_info *, slp_tree,
@@ -1600,11 +1626,8 @@ extern tree vect_create_addr_base_for_vector_ref (stmt_vec_info, gimple_seq *,
 						  tree, tree = NULL_TREE);
 
 /* In tree-vect-loop.c.  */
-/* FORNOW: Used in tree-parloops.c.  */
-extern stmt_vec_info vect_force_simple_reduction (loop_vec_info, stmt_vec_info,
-						  bool *, bool);
 extern widest_int vect_iv_limit_for_full_masking (loop_vec_info loop_vinfo);
-/* Used in gimple-loop-interchange.c.  */
+/* Used in gimple-loop-interchange.c and tree-parloops.c.  */
 extern bool check_reduction_path (dump_user_location_t, loop_p, gphi *, tree,
 				  enum tree_code);
 /* Drive for loop analysis stage.  */
@@ -1626,7 +1649,8 @@ extern class loop *vect_transform_loop (loop_vec_info);
 extern opt_loop_vec_info vect_analyze_loop_form (class loop *,
 						 vec_info_shared *);
 extern bool vectorizable_live_operation (stmt_vec_info, gimple_stmt_iterator *,
-					 slp_tree, int, stmt_vec_info *,
+					 slp_tree, slp_instance, int,
+					 stmt_vec_info *,
 					 stmt_vector_for_cost *);
 extern bool vectorizable_reduction (stmt_vec_info, gimple_stmt_iterator *,
 				    stmt_vec_info *, slp_tree, slp_instance,
@@ -1634,7 +1658,7 @@ extern bool vectorizable_reduction (stmt_vec_info, gimple_stmt_iterator *,
 extern bool vectorizable_induction (stmt_vec_info, gimple_stmt_iterator *,
 				    stmt_vec_info *, slp_tree,
 				    stmt_vector_for_cost *);
-extern tree get_initial_def_for_reduction (stmt_vec_info, tree, tree *);
+extern bool vectorizable_lc_phi (stmt_vec_info, stmt_vec_info *, slp_tree);
 extern bool vect_worthwhile_without_simd_p (vec_info *, tree_code);
 extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,
 					stmt_vector_for_cost *,

@@ -1994,10 +1994,21 @@ get_string_length (tree str, unsigned eltsize, const vr_values *vr)
      or it's SIZE_MAX otherwise.  */
 
   /* Return the default result when nothing is known about the string.  */
-  if (lendata.maxbound
-      && integer_all_onesp (lendata.maxbound)
-      && integer_all_onesp (lendata.maxlen))
-    return fmtresult ();
+  if (lendata.maxbound)
+    {
+      if (integer_all_onesp (lendata.maxbound)
+      	  && integer_all_onesp (lendata.maxlen))
+      	return fmtresult ();
+
+      if (!tree_fits_uhwi_p (lendata.maxbound)
+	  || !tree_fits_uhwi_p (lendata.maxlen))
+      	return fmtresult ();
+
+      unsigned HOST_WIDE_INT lenmax = tree_to_uhwi (max_object_size ()) - 2;
+      if (lenmax <= tree_to_uhwi (lendata.maxbound)
+	  && lenmax <= tree_to_uhwi (lendata.maxlen))
+	return fmtresult ();
+    }
 
   HOST_WIDE_INT min
     = (tree_fits_uhwi_p (lendata.minlen)

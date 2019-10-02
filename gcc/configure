@@ -814,6 +814,7 @@ SET_MAKE
 accel_dir_suffix
 real_target_noncanonical
 enable_as_accelerator
+gnat_install_lib
 REPORT_BUGS_TEXI
 REPORT_BUGS_TO
 PKGVERSION
@@ -7826,6 +7827,16 @@ else
 fi
 
 
+# If top-level libada has been disabled, then wire in install-gnatlib
+# invocation with `make install', so that one can build and install
+# the library manually with `make -C gcc all gnatlib gnattools install'.
+if test x"$enable_libada" = xno; then
+  gnat_install_lib=gnat-install-lib
+else
+  gnat_install_lib=
+fi
+
+
 if test x"$enable_as_accelerator_for" != x; then
 
 $as_echo "#define ACCEL_COMPILER 1" >>confdefs.h
@@ -13783,7 +13794,7 @@ irix5* | irix6* | nonstopux*)
   ;;
 
 # This must be Linux ELF.
-linux* | k*bsd*-gnu | kopensolaris*-gnu)
+linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
   lt_cv_deplibs_check_method=pass_all
   ;;
 
@@ -16594,7 +16605,7 @@ _LT_EOF
       archive_expsym_cmds='sed "s,^,_," $export_symbols >$output_objdir/$soname.expsym~$CC -shared $pic_flag $libobjs $deplibs $compiler_flags ${wl}-h,$soname ${wl}--retain-symbols-file,$output_objdir/$soname.expsym ${wl}--image-base,`expr ${RANDOM-$$} % 4096 / 2 \* 262144 + 1342177280` -o $lib'
       ;;
 
-    gnu* | linux* | tpf* | k*bsd*-gnu | kopensolaris*-gnu)
+    gnu* | linux* | tpf* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
       tmp_diet=no
       if test "$host_os" = linux-dietlibc; then
 	case $cc_basename in
@@ -18125,7 +18136,12 @@ linux*oldld* | linux*aout* | linux*coff*)
   ;;
 
 # This must be Linux ELF.
-linux* | k*bsd*-gnu | kopensolaris*-gnu)
+
+# uclinux* changes (here and below) have been submitted to the libtool
+# project, but have not yet been accepted: they are GCC-local changes
+# for the time being.  (See
+# https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
   version_type=linux
   need_lib_prefix=no
   need_version=no
@@ -18814,7 +18830,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18817 "configure"
+#line 18833 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18920,7 +18936,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18923 "configure"
+#line 18939 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -21785,7 +21801,12 @@ linux*oldld* | linux*aout* | linux*coff*)
   ;;
 
 # This must be Linux ELF.
-linux* | k*bsd*-gnu | kopensolaris*-gnu)
+
+# uclinux* changes (here and below) have been submitted to the libtool
+# project, but have not yet been accepted: they are GCC-local changes
+# for the time being.  (See
+# https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
   version_type=linux
   need_lib_prefix=no
   need_version=no
@@ -27962,7 +27983,7 @@ esac
 # version to the per-target configury.
 case "$cpu_type" in
   aarch64 | alpha | arc | arm | avr | bfin | cris | csky | i386 | m32c | m68k \
-  | microblaze | mips | nds32 | nios2 | pa | riscv | rs6000 | score | sparc | spu \
+  | microblaze | mips | nds32 | nios2 | pa | riscv | rs6000 | score | sparc \
   | tilegx | tilepro | visium | xstormy16 | xtensa)
     insn="nop"
     ;;

@@ -100,8 +100,8 @@ f4 (int *a)
   #pragma omp loop order(concurrent) bind(parallel)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp atomic read
-      a[i] = v;				/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a 'loop' region" } */
+      #pragma omp atomic read		/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a 'loop' region" "" { target c++ } } */
+      a[i] = v;				/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a 'loop' region" "" { target c } } */
     }
   #pragma omp loop order(concurrent) bind(parallel)
   for (i = 0; i < 64; i++)
@@ -172,8 +172,8 @@ f5 (int *a)
   #pragma omp loop
   for (i = 0; i < 64; i++)
     {
-      #pragma omp atomic read
-      a[i] = v;				/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a 'loop' region" } */
+      #pragma omp atomic read		/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a 'loop' region" "" { target c++ } } */
+      a[i] = v;				/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a 'loop' region" "" { target c } } */
     }
   #pragma omp loop
   for (i = 0; i < 64; i++)
@@ -245,8 +245,8 @@ f6 (int *a)
   #pragma omp loop
   for (i = 0; i < 64; i++)
     {
-      #pragma omp atomic read
-      a[i] = v;				/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a 'loop' region" } */
+      #pragma omp atomic read		/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a 'loop' region" "" { target c++ } } */
+      a[i] = v;				/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a 'loop' region" "" { target c } } */
     }
   #pragma omp loop
   for (i = 0; i < 64; i++)

@@ -141,6 +141,7 @@ gfc_free_statement (gfc_code *p)
 
     case EXEC_SELECT:
     case EXEC_SELECT_TYPE:
+    case EXEC_SELECT_RANK:
       if (p->ext.block.case_list)
 	gfc_free_case_list (p->ext.block.case_list);
       break;

@@ -3301,6 +3301,22 @@ gfc_check_kill_sub (gfc_expr *pid, gfc_expr *sig, gfc_expr *status)
 
       if (!scalar_check (status, 2))
 	return false;
+
+      if (status->expr_type != EXPR_VARIABLE)
+	{
+	  gfc_error ("STATUS at %L shall be an INTENT(OUT) variable",
+		     &status->where);
+	  return false;
+	}
+
+      if (status->expr_type == EXPR_VARIABLE
+	  && status->symtree && status->symtree->n.sym
+	  && status->symtree->n.sym->attr.intent == INTENT_IN)
+	{
+	  gfc_error ("%qs at %L shall be an INTENT(OUT) variable",
+		     status->symtree->name, &status->where);
+	  return false;
+	}
     }
 
   return true;
@@ -7082,12 +7098,19 @@ gfc_check_ttynam_sub (gfc_expr *unit, gfc_expr *name)
 bool
 gfc_check_is_contiguous (gfc_expr *array)
 {
+  if (array->expr_type == EXPR_NULL
+      && array->symtree->n.sym->attr.pointer == 1)
+    {
+      gfc_error ("Actual argument at %L of %qs intrinsic shall be an "
+		 "associated pointer", &array->where, gfc_current_intrinsic);
+      return false;
+    }
+
   if (!array_check (array, 0))
     return false;
 
   return true;
 }
-
 
 
 bool

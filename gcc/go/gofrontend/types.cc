@@ -965,12 +965,13 @@ Type::get_backend(Gogo* gogo)
   if (this->btype_ != NULL)
     return this->btype_;
 
-  if (this->named_type() != NULL && this->named_type()->is_alias()) {
-    Btype* bt = this->unalias()->get_backend(gogo);
-    if (gogo != NULL && gogo->named_types_are_converted())
-      this->btype_ = bt;
-    return bt;
-  }
+  if (this->named_type() != NULL && this->named_type()->is_alias())
+    {
+      Btype* bt = this->unalias()->get_backend(gogo);
+      if (gogo != NULL && gogo->named_types_are_converted())
+	this->btype_ = bt;
+      return bt;
+    }
 
   if (this->forward_declaration_type() != NULL
       || this->named_type() != NULL)
@@ -6777,8 +6778,6 @@ Struct_type::can_write_to_c_header(
        p != fields->end();
        ++p)
     {
-      if (p->is_anonymous())
-	return false;
       if (!this->can_write_type_to_c_header(p->type(), requires, declare))
 	return false;
       if (Gogo::message_name(p->field_name()) == "_")
@@ -6847,6 +6846,9 @@ Struct_type::can_write_type_to_c_header(
 	  }
 	if (t->struct_type() != NULL)
 	  {
+	    // We will accept empty struct fields, but not print them.
+	    if (t->struct_type()->total_field_count() == 0)
+	      return true;
 	    requires->push_back(no);
 	    return t->struct_type()->can_write_to_c_header(requires, declare);
 	  }
@@ -6871,6 +6873,12 @@ Struct_type::write_to_c_header(std::ostream& os) const
        p != fields->end();
        ++p)
     {
+      // Skip fields that are empty struct types.  The C code can't
+      // refer to them anyhow.
+      if (p->type()->struct_type() != NULL
+	  && p->type()->struct_type()->total_field_count() == 0)
+	continue;
+
       os << '\t';
       this->write_field_to_c_header(os, p->field_name(), p->type());
       os << ';' << std::endl;

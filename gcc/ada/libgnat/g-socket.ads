@@ -45,6 +45,7 @@
 
 with Ada.Exceptions;
 with Ada.Streams;
+with Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
 
 with Interfaces.C;
@@ -469,11 +470,13 @@ package GNAT.Sockets is
    --  Return a file descriptor to be used by external subprograms. This is
    --  useful for C functions that are not yet interfaced in this package.
 
-   type Family_Type is (Family_Inet, Family_Inet6, Family_Unspec);
+   type Family_Type is (Family_Inet, Family_Inet6, Family_Unix, Family_Unspec);
    --  Address family (or protocol family) identifies the communication domain
    --  and groups protocols with similar address formats.
    --  The order of the enumeration elements should not be changed unilaterally
    --  because the IPv6_TCP_Preferred routine rely on it.
+
+   subtype Family_Inet_4_6 is Family_Type range Family_Inet .. Family_Inet6;
 
    type Mode_Type is (Socket_Stream, Socket_Datagram, Socket_Raw);
    --  Stream sockets provide connection-oriented byte streams. Datagram
@@ -502,8 +505,8 @@ package GNAT.Sockets is
    type Inet_Addr_Comp_Type is mod 2 ** 8;
    --  Octet for Internet address
 
-   Inet_Addr_Bytes_Length : constant array (Family_Type) of Natural :=
-     (Family_Inet => 4, Family_Inet6 => 16, Family_Unspec => 0);
+   Inet_Addr_Bytes_Length : constant array (Family_Inet_4_6) of Natural :=
+     (Family_Inet => 4, Family_Inet6 => 16);
 
    type Inet_Addr_Bytes is array (Natural range <>) of Inet_Addr_Comp_Type;
 
@@ -515,16 +518,13 @@ package GNAT.Sockets is
    subtype Inet_Addr_VN_Type is Inet_Addr_Bytes;
    --  For backwards compatibility
 
-   type Inet_Addr_Type (Family : Family_Type := Family_Inet) is record
+   type Inet_Addr_Type (Family : Family_Inet_4_6 := Family_Inet) is record
       case Family is
          when Family_Inet =>
             Sin_V4 : Inet_Addr_V4_Type := (others => 0);
 
          when Family_Inet6 =>
             Sin_V6 : Inet_Addr_V6_Type := (others => 0);
-
-         when Family_Unspec =>
-            null;
 
       end case;
    end record;
@@ -540,10 +540,6 @@ package GNAT.Sockets is
 
    No_Inet_Addr        : constant Inet_Addr_Type;
    --  Uninitialized inet address
-
-   Unspecified_Addr    : constant Inet_Addr_Type;
-   --  Unspecified address. Unlike of No_Inet_Addr the constraint is
-   --  Family_Unspec for this constant.
 
    Broadcast_Inet_Addr : constant Inet_Addr_Type;
    --  Broadcast destination address in the current network
@@ -581,7 +577,7 @@ package GNAT.Sockets is
    --  Functions to handle masks and prefixes
 
    function Mask
-     (Family : Family_Type;
+     (Family : Family_Inet_4_6;
       Length : Natural;
       Host   : Boolean := False) return Inet_Addr_Type;
    --  Return an address mask of the given family with the given prefix length.
@@ -596,8 +592,15 @@ package GNAT.Sockets is
    --  same address family).
 
    type Sock_Addr_Type (Family : Family_Type := Family_Inet) is record
-      Addr : Inet_Addr_Type (Family);
-      Port : Port_Type;
+      case Family is
+         when Family_Unix =>
+            Name : Ada.Strings.Unbounded.Unbounded_String;
+         when Family_Inet_4_6 =>
+            Addr : Inet_Addr_Type (Family);
+            Port : Port_Type;
+         when Family_Unspec =>
+            null;
+      end case;
    end record;
    pragma No_Component_Reordering (Sock_Addr_Type);
    --  Socket addresses fully define a socket connection with protocol family,
@@ -619,11 +622,19 @@ package GNAT.Sockets is
    --  8 hextets in hexadecimal format separated by colons.
 
    function Image (Value : Sock_Addr_Type) return String;
-   --  Return inet address image and port image separated by a colon
+   --  Return socket address image. Network socket address image will be with
+   --  a port image separated by a colon.
 
    function Inet_Addr (Image : String) return Inet_Addr_Type;
    --  Convert address image from numbers-dots-and-colons notation into an
    --  inet address.
+
+   function Unix_Socket_Address (Addr : String) return Sock_Addr_Type;
+   --  Convert unix local socket name to Sock_Addr_Type
+
+   function Network_Socket_Address
+     (Addr : Inet_Addr_Type; Port : Port_Type) return Sock_Addr_Type;
+   --  Create network socket address
 
    --  Host entries provide complete information on a given host: the official
    --  name, an array of alternative names or aliases and array of network
@@ -1093,7 +1104,17 @@ package GNAT.Sockets is
       Family : Family_Type := Family_Inet;
       Mode   : Mode_Type   := Socket_Stream;
       Level  : Level_Type  := IP_Protocol_For_IP_Level);
-   --  Create an endpoint for communication. Raises Socket_Error on error
+   --  Create an endpoint for communication. Raises Socket_Error on error.
+
+   procedure Create_Socket_Pair
+     (Left   : out Socket_Type;
+      Right  : out Socket_Type;
+      Family : Family_Type := Family_Unspec;
+      Mode   : Mode_Type   := Socket_Stream;
+      Level  : Level_Type  := IP_Protocol_For_IP_Level);
+   --  Create two connected sockets. Raises Socket_Error on error.
+   --  If Family is unspecified, it creates Family_Unix sockets on UNIX and
+   --  Family_Inet sockets on non UNIX platforms.
 
    procedure Accept_Socket
      (Server  : Socket_Type;
@@ -1439,6 +1460,8 @@ package GNAT.Sockets is
 
 private
 
+   package ASU renames Ada.Strings.Unbounded;
+
    type Socket_Type is new Integer;
    No_Socket : constant Socket_Type := -1;
 
@@ -1493,8 +1516,6 @@ private
                            (Family_Inet6, (others => 0));
    No_Inet_Addr        : constant Inet_Addr_Type :=
                            (Family_Inet, (others => 0));
-   Unspecified_Addr    : constant Inet_Addr_Type :=
-                           (Family => Family_Unspec);
    Broadcast_Inet_Addr : constant Inet_Addr_Type :=
                            (Family_Inet, (others => 255));
    Loopback_Inet_Addr  : constant Inet_Addr_Type :=

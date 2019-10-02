@@ -14,6 +14,104 @@ type mOS struct{}
 //extern _umtx_op
 func sys_umtx_op(addr *uint32, mode int32, val uint32, uaddr1 uinptr, ts *umtx_time) int32
 
+//go:noescape
+//extern sysctl
+func sysctl(*uint32, uint32, *byte, *uintptr, *byte, uintptr) int32
+
+const (
+	_CTL_MAXNAME     = 24
+	_CPU_LEVEL_WHICH = 3
+	_CPU_WHICH_PID   = 2
+)
+
+// From FreeBSD's <sys/sysctl.h>
+const (
+	_CTL_HW      = 6
+	_HW_PAGESIZE = 7
+)
+
+// Undocumented numbers from FreeBSD's lib/libc/gen/sysctlnametomib.c.
+const (
+	_CTL_QUERY     = 0
+	_CTL_QUERY_MIB = 3
+)
+
+// sysctlnametomib fill mib with dynamically assigned sysctl entries of name,
+// return count of effected mib slots, return 0 on error.
+func sysctlnametomib(name []byte, mib *[_CTL_MAXNAME]uint32) uint32 {
+	oid := [2]uint32{_CTL_QUERY, _CTL_QUERY_MIB}
+	miblen := uintptr(_CTL_MAXNAME)
+	if sysctl(&oid[0], 2, (*byte)(unsafe.Pointer(mib)), &miblen, (*byte)(unsafe.Pointer(&name[0])), (uintptr)(len(name))) < 0 {
+		return 0
+	}
+	miblen /= unsafe.Sizeof(uint32(0))
+	if miblen <= 0 {
+		return 0
+	}
+	return uint32(miblen)
+}
+
+const (
+	_CPU_CURRENT_PID = -1 // Current process ID.
+)
+
+//go:noescape
+//extern cpuset_getaffinity
+func cpuset_getaffinity(level int32, which int32, id int64, size uintptr, mask *byte) int32
+
+//go:systemstack
+func getncpu() int32 {
+	// Use a large buffer for the CPU mask. We're on the system
+	// stack, so this is fine, and we can't allocate memory for a
+	// dynamically-sized buffer at this point.
+	const maxCPUs = 64 * 1024
+	var mask [maxCPUs / 8]byte
+	var mib [_CTL_MAXNAME]uint32
+
+	// According to FreeBSD's /usr/src/sys/kern/kern_cpuset.c,
+	// cpuset_getaffinity return ERANGE when provided buffer size exceed the limits in kernel.
+	// Querying kern.smp.maxcpus to calculate maximum buffer size.
+	// See https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=200802
+
+	// Variable kern.smp.maxcpus introduced at Dec 23 2003, revision 123766,
+	// with dynamically assigned sysctl entries.
+	miblen := sysctlnametomib([]byte("kern.smp.maxcpus"), &mib)
+	if miblen == 0 {
+		return 1
+	}
+
+	// Query kern.smp.maxcpus.
+	dstsize := uintptr(4)
+	maxcpus := uint32(0)
+	if sysctl(&mib[0], miblen, (*byte)(unsafe.Pointer(&maxcpus)), &dstsize, nil, 0) != 0 {
+		return 1
+	}
+
+	maskSize := uintptr(int(maxcpus+7) / 8)
+	if maskSize < sys.PtrSize {
+		maskSize = sys.PtrSize
+	}
+	if maskSize > uintptr(len(mask)) {
+		maskSize = uintptr(len(mask))
+	}
+
+	if cpuset_getaffinity(_CPU_LEVEL_WHICH, _CPU_WHICH_PID, _CPU_CURRENT_PID,
+		maskSize, (*byte)(unsafe.Pointer(&mask[0]))) != 0 {
+		return 1
+	}
+	n := int32(0)
+	for _, v := range mask[:maskSize] {
+		for v != 0 {
+			n += int32(v & 1)
+			v >>= 1
+		}
+	}
+	if n == 0 {
+		return 1
+	}
+	return n
+}
+
 func getPageSize() uintptr {
 	mib := [2]uint32{_CTL_HW, _HW_PAGESIZE}
 	out := uint32(0)
@@ -41,7 +139,7 @@ func futexsleep1(addr *uint32, val uint32, ns int64) {
 	if ns >= 0 {
 		var ut umtx_time
 		ut._clockid = _CLOCK_MONOTONIC
-		ut._timeout.set_sec(int64(timediv(ns, 1000000000, (*int32)(unsafe.Pointer(&ut._timeout.tv_nsec)))))
+		ut._timeout.setNsec(ns)
 		utp = &ut
 	}
 	ret := sys_umtx_op(addr, _UMTX_OP_WAIT_UINT_PRIVATE, val, unsafe.Sizeof(*utp), utp)
@@ -62,6 +160,13 @@ func futexwakeup(addr *uint32, cnt uint32) {
 	systemstack(func() {
 		print("umtx_wake_addr=", addr, " ret=", ret, "\n")
 	})
+}
+
+func osinit() {
+	ncpu = getncpu()
+	if physPageSize == 0 {
+		physPageSize = getPageSize()
+	}
 }
 
 func sysargs(argc int32, argv **byte) {

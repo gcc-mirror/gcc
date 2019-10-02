@@ -1,3 +1,103 @@
+2019-09-25  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config.in, configure: Re-rebuild with stock autoconf 2.69,
+	not the ubuntu modified 2.69.
+
+	PR target/91833
+	* config/aarch64/lse-init.c: Include auto-target.h.  Disable
+	initialization if !HAVE_SYS_AUXV_H.
+	* configure.ac (AC_CHECK_HEADERS): Add sys/auxv.h.
+	* config.in, configure: Rebuild.
+
+	PR target/91834
+	* config/aarch64/lse.S (LDNM): Ensure STXR output does not
+	overlap the inputs.
+
+2019-09-25  Shaokun Zhang  <zhangshaokun@hisilicon.com>
+
+	* config/aarch64/sync-cache.c (__aarch64_sync_cache_range): Add support for
+	CTR_EL0.IDC and CTR_EL0.DIC.
+
+2019-09-20  Christophe Lyon  <christophe.lyon@st.com>
+
+	Revert:
+	2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+		Mickaël Guêné <mickael.guene@st.com>
+
+	* config/arm/unwind-arm.c (_Unwind_VRS_Set): Handle thumb-only
+	architecture.
+
+2019-09-19  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/lse-init.c: New file.
+	* config/aarch64/lse.S: New file.
+	* config/aarch64/t-lse: New file.
+	* config.host: Add t-lse to all aarch64 tuples.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
+
+	* config/arm/unwind-arm.c (_Unwind_VRS_Set): Handle thumb-only
+	architecture.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
+
+	* unwind-arm-common.inc (ARM_SET_R7_RT_SIGRETURN)
+	(THUMB2_SET_R7_RT_SIGRETURN, FDPIC_LDR_R12_WITH_FUNCDESC)
+	(FDPIC_LDR_R9_WITH_GOT, FDPIC_LDR_PC_WITH_RESTORER)
+	(FDPIC_FUNCDESC_OFFSET, ARM_NEW_RT_SIGFRAME_UCONTEXT)
+	(ARM_UCONTEXT_SIGCONTEXT, ARM_SIGCONTEXT_R0, FDPIC_T2_LDR_R12_WITH_FUNCDESC)
+	(FDPIC_T2_LDR_R9_WITH_GOT, FDPIC_T2_LDR_PC_WITH_RESTORER): New.
+	(__gnu_personality_sigframe_fdpic): New.
+	(get_eit_entry): Add FDPIC signal frame support.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
+
+	* config/arm/linux-atomic.c (__kernel_cmpxchg): Add FDPIC support.
+	(__kernel_dmb): Likewise.
+	(__fdpic_cmpxchg): New function.
+	(__fdpic_dmb): New function.
+	* config/arm/unwind-arm.h (FDPIC_REGNUM): New define.
+	(gnu_Unwind_Find_got): New function.
+	(_Unwind_decode_typeinfo_ptr): Add FDPIC support.
+	* unwind-arm-common.inc (UCB_PR_GOT): New.
+	(funcdesc_t): New struct.
+	(get_eit_entry): Add FDPIC support.
+	(unwind_phase2): Likewise.
+	(unwind_phase2_forced): Likewise.
+	(__gnu_Unwind_RaiseException): Likewise.
+	(__gnu_Unwind_Resume): Likewise.
+	(__gnu_Unwind_Backtrace): Likewise.
+	* unwind-pe.h (read_encoded_value_with_base): Likewise.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
+
+	* libgcc/crtstuff.c: Add support for FDPIC.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
+	* config.host: Handle *-*-uclinuxfdpiceabi.
+
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config.host: Set cpu_type for bpf-*-* targets.
+	* config/bpf/t-bpf: Likewise.
+	* config/bpf/crtn.S: Likewise.
+	* config/bpf/crti.S: New file.
+
+2019-09-06  Jim Wilson  <jimw@sifive.com>
+
+	* config.host (riscv*-*-linux*): Add t-slibgcc-libgcc to tmake_file.
+	(riscv*-*-freebsd*): Likewise.
+
+2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config.host: Remove references to spu.
+	* config/spu/: Remove directory.
+
 2019-08-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	PR target/91306

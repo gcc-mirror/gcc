@@ -249,11 +249,6 @@ const char *constant_string_class_name;
 
 int warn_abi_version = -1;
 
-/* Nonzero means generate separate instantiation control files and
-   juggle them at link time.  */
-
-int flag_use_repository;
-
 /* The C++ dialect being used.  Default set in c_common_post_options.  */
 
 enum cxx_dialect cxx_dialect = cxx_unset;
@@ -326,8 +321,9 @@ static bool nonnull_check_p (tree, unsigned HOST_WIDE_INT);
    C --std=c89: D_C99 | D_CXXONLY | D_OBJC | D_CXX_OBJC
    C --std=c99: D_CXXONLY | D_OBJC
    ObjC is like C except that D_OBJC and D_CXX_OBJC are not set
-   C++ --std=c++98: D_CONLY | D_CXX11 | D_OBJC
-   C++ --std=c++11: D_CONLY | D_OBJC
+   C++ --std=c++98: D_CONLY | D_CXX11 | D_CXX20 | D_OBJC
+   C++ --std=c++11: D_CONLY | D_CXX20 | D_OBJC
+   C++ --std=c++2a: D_CONLY | D_OBJC
    ObjC++ is like C++ except that D_OBJC is not set
 
    If -fno-asm is used, D_ASM is added to the mask.  If
@@ -392,6 +388,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__complex__",	RID_COMPLEX,	0 },
   { "__const",		RID_CONST,	0 },
   { "__const__",	RID_CONST,	0 },
+  { "__constinit",	RID_CONSTINIT,	D_CXXONLY },
   { "__decltype",       RID_DECLTYPE,   D_CXXONLY },
   { "__direct_bases",   RID_DIRECT_BASES, D_CXXONLY },
   { "__extension__",	RID_EXTENSION,	0 },
@@ -462,6 +459,7 @@ const struct c_common_resword c_common_reswords[] =
   { "class",		RID_CLASS,	D_CXX_OBJC | D_CXXWARN },
   { "const",		RID_CONST,	0 },
   { "constexpr",	RID_CONSTEXPR,	D_CXXONLY | D_CXX11 | D_CXXWARN },
+  { "constinit",	RID_CONSTINIT,	D_CXXONLY | D_CXX20 | D_CXXWARN },
   { "const_cast",	RID_CONSTCAST,	D_CXXONLY | D_CXXWARN },
   { "continue",		RID_CONTINUE,	0 },
   { "decltype",         RID_DECLTYPE,   D_CXXONLY | D_CXX11 | D_CXXWARN },
@@ -5858,15 +5856,27 @@ builtin_function_validate_nargs (location_t loc, tree fndecl, int nargs,
 /* Verifies the NARGS arguments ARGS to the builtin function FNDECL.
    Returns false if there was an error, otherwise true.  LOC is the
    location of the function; ARG_LOC is a vector of locations of the
-   arguments.  */
+   arguments.  If FNDECL is the result of resolving an overloaded
+   target built-in, ORIG_FNDECL is the original function decl,
+   otherwise it is null.  */
 
 bool
 check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
-				  tree fndecl, int nargs, tree *args)
+				  tree fndecl, tree orig_fndecl,
+				  int nargs, tree *args)
 {
-  if (!fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+  if (!fndecl_built_in_p (fndecl))
     return true;
 
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
+    return (!targetm.check_builtin_call
+	    || targetm.check_builtin_call (loc, arg_loc, fndecl,
+					   orig_fndecl, nargs, args));
+
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_FRONTEND)
+    return true;
+
+  gcc_assert (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL);
   switch (DECL_FUNCTION_CODE (fndecl))
     {
     case BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX:
@@ -7927,6 +7937,7 @@ keyword_is_decl_specifier (enum rid keyword)
     case RID_TYPEDEF:
     case RID_FRIEND:
     case RID_CONSTEXPR:
+    case RID_CONSTINIT:
       return true;
     default:
       return false;

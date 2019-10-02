@@ -146,6 +146,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "dumpfile.h"
 #include "print-rtl.h"
+#include "function-abi.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -528,9 +529,6 @@ haifa_classify_rtx (const_rtx x)
 	case CLOBBER:
 	  /* Test if it is a 'store'.  */
 	  tmp_class = may_trap_exp (XEXP (x, 0), 1);
-	  break;
-	case CLOBBER_HIGH:
-	  gcc_assert (REG_P (XEXP (x, 0)));
 	  break;
 	case SET:
 	  /* Test if it is a store.  */
@@ -939,7 +937,8 @@ static bitmap tmp_bitmap;
 /* Effective number of available registers of a given class (see comment
    in sched_pressure_start_bb).  */
 static int sched_class_regs_num[N_REG_CLASSES];
-/* Number of call_saved_regs and fixed_regs.  Helpers for calculating of
+/* The number of registers that the function would need to save before it
+   uses them, and the number of fixed_regs.  Helpers for calculating of
    sched_class_regs_num.  */
 static int call_saved_regs_num[N_REG_CLASSES];
 static int fixed_regs_num[N_REG_CLASSES];
@@ -7207,10 +7206,13 @@ alloc_global_sched_pressure_data (void)
 	  fixed_regs_num[cl] = 0;
 
 	  for (int i = 0; i < ira_class_hard_regs_num[cl]; ++i)
-	    if (!call_used_regs[ira_class_hard_regs[cl][i]])
-	      ++call_saved_regs_num[cl];
-	    else if (fixed_regs[ira_class_hard_regs[cl][i]])
-	      ++fixed_regs_num[cl];
+	    {
+	      unsigned int regno = ira_class_hard_regs[cl][i];
+	      if (fixed_regs[regno])
+		++fixed_regs_num[cl];
+	      else if (!crtl->abi->clobbers_full_reg_p (regno))
+		++call_saved_regs_num[cl];
+	    }
 	}
     }
 }

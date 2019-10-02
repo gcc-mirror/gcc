@@ -160,6 +160,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "gcse.h"
 #include "gcse-common.h"
+#include "function-abi.h"
 
 /* We support GCSE via Partial Redundancy Elimination.  PRE optimizations
    are a superset of those done by classic GCSE.
@@ -1049,7 +1050,7 @@ load_killed_in_block_p (const_basic_block bb, int uid_limit, const_rtx x,
 	 note_stores to examine each hunk of memory that is modified.  */
       mci.mem = x;
       mci.conflict = false;
-      note_stores (PATTERN (setter), mems_conflict_for_gcse_p, &mci);
+      note_stores (setter, mems_conflict_for_gcse_p, &mci);
       if (mci.conflict)
 	return 1;
     }
@@ -1528,8 +1529,13 @@ compute_hash_table_work (struct gcse_hash_table_d *table)
 	  if (CALL_P (insn))
 	    {
 	      hard_reg_set_iterator hrsi;
-	      EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call,
-					      0, regno, hrsi)
+
+	      /* We don't track modes of hard registers, so we need
+		 to be conservative and assume that partial kills
+		 are full kills.  */
+	      HARD_REG_SET callee_clobbers
+		= insn_callee_abi (insn).full_and_partial_reg_clobbers ();
+	      EXECUTE_IF_SET_IN_HARD_REG_SET (callee_clobbers, 0, regno, hrsi)
 		record_last_reg_set_info (insn, regno);
 
 	      if (! RTL_CONST_OR_PURE_CALL_P (insn)
@@ -1537,7 +1543,7 @@ compute_hash_table_work (struct gcse_hash_table_d *table)
 		record_last_mem_set_info (insn);
 	    }
 
-	  note_stores (PATTERN (insn), record_last_set_info, insn);
+	  note_stores (insn, record_last_set_info, insn);
 	}
 
       /* The next pass builds the hash table.  */
@@ -2415,7 +2421,7 @@ single_set_gcse (rtx_insn *insn)
 
   s.insn = insn;
   s.nsets = 0;
-  note_stores (pattern, record_set_data, &s);
+  note_pattern_stores (pattern, record_set_data, &s);
 
   /* Considered invariant insns have exactly one set.  */
   gcc_assert (s.nsets == 1);

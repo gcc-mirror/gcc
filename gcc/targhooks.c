@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "real.h"
 #include "langhooks.h"
 #include "sbitmap.h"
+#include "function-abi.h"
 
 bool
 default_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
@@ -1054,12 +1055,6 @@ default_return_pops_args (tree, tree, poly_int64)
 }
 
 reg_class_t
-default_branch_target_register_class (void)
-{
-  return NO_REGS;
-}
-
-reg_class_t
 default_ira_change_pseudo_allocno_class (int regno ATTRIBUTE_UNUSED,
 					 reg_class_t cl,
 					 reg_class_t best_cl ATTRIBUTE_UNUSED)
@@ -1934,8 +1929,9 @@ default_dwarf_frame_reg_mode (int regno)
 {
   machine_mode save_mode = reg_raw_mode[regno];
 
-  if (targetm.hard_regno_call_part_clobbered (NULL, regno, save_mode))
-    save_mode = choose_hard_reg_mode (regno, 1, true);
+  if (targetm.hard_regno_call_part_clobbered (eh_edge_abi.id (),
+					      regno, save_mode))
+    save_mode = choose_hard_reg_mode (regno, 1, &eh_edge_abi);
   return save_mode;
 }
 
@@ -2367,11 +2363,6 @@ default_speculation_safe_value (machine_mode mode ATTRIBUTE_UNUSED,
 #endif
 
   return result;
-}
-
-void
-default_remove_extra_call_preserved_regs (rtx_insn *, HARD_REG_SET *)
-{
 }
 
 #include "gt-targhooks.h"

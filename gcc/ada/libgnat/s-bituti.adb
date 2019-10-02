@@ -43,6 +43,31 @@ package body System.Bitfield_Utils is
 
       Val_Bytes : constant Address := Address (Val'Size / Storage_Unit);
 
+      --  A Val_2 can cross a memory page boundary (e.g. an 8-byte Val_2 that
+      --  starts 4 bytes before the end of a page). If the bit field also
+      --  crosses that boundary, then the second page is known to exist, and we
+      --  can safely load or store the Val_2. On the other hand, if the bit
+      --  field is entirely within the first half of the Val_2, then it is
+      --  possible (albeit highly unlikely) that the second page does not
+      --  exist, so we must load or store only the first half of the Val_2.
+      --  Get_Val_2 and Set_Val_2 take care of all this.
+
+      function Get_Val_2
+        (Src_Address : Address;
+         Src_Offset : Bit_Offset;
+         Size : Small_Size)
+        return Val_2;
+      --  Get the Val_2, taking care to only load the first half when
+      --  necessary.
+
+      procedure Set_Val_2
+        (Dest_Address : Address;
+         Dest_Offset : Bit_Offset;
+         V : Val_2;
+         Size : Small_Size);
+      --  Set the Val_2, taking care to only store the first half when
+      --  necessary.
+
       --  Get_Bitfield and Set_Bitfield are helper functions that get/set small
       --  bit fields -- the value fits in Val, and the bit field is placed
       --  starting at some offset within the first half of a Val_2.
@@ -56,11 +81,6 @@ package body System.Bitfield_Utils is
       --  Returns the bit field in Src starting at Src_Offset, of the given
       --  Size. If Size < Small_Size'Last, then high order bits are zero.
 
-      function Get_Full_Bitfield
-        (Src : Val_2; Src_Offset : Bit_Offset) return Val;
-      --  Same as Get_Bitfield, except the Size is hardwired to the maximum
-      --  allowed.
-
       function Set_Bitfield
         (Src_Value : Val;
          Dest : Val_2;
@@ -71,49 +91,12 @@ package body System.Bitfield_Utils is
       --  set to Src_Value. Src_Value must have high order bits (Size and
       --  above) zero. The result is returned as the function result.
 
-      function Get_Bitfield
-        (Src : Val_2; Src_Offset : Bit_Offset; Size : Small_Size)
-         return Val
-      is
-         L_Shift_Amount : constant Natural :=
-           (case Endian is
-              when Little => Val_2'Size - (Src_Offset + Size),
-              when Big => Src_Offset);
-         Temp1 : constant Val_2 :=
-           Shift_Left (Src, L_Shift_Amount);
-         Temp2 : constant Val_2 :=
-           Shift_Right (Temp1, Val_2'Size - Size);
-      begin
-         return Val (Temp2);
-      end Get_Bitfield;
-
-      function Get_Full_Bitfield
-        (Src : Val_2; Src_Offset : Bit_Offset) return Val is
-      begin
-         return Get_Bitfield (Src, Src_Offset, Size => Val'Size);
-      end Get_Full_Bitfield;
-
-      function Set_Bitfield
+      procedure Set_Bitfield
         (Src_Value : Val;
-         Dest : Val_2;
+         Dest_Address : Address;
          Dest_Offset : Bit_Offset;
-         Size : Small_Size)
-        return Val_2
-      is
-         pragma Assert (Size = Val'Size or else Src_Value < 2**Size);
-         L_Shift_Amount : constant Natural :=
-           (case Endian is
-              when Little => Dest_Offset,
-              when Big => Val_2'Size - (Dest_Offset + Size));
-         Mask : constant Val_2 :=
-           Shift_Left (Shift_Left (1, Size) - 1, L_Shift_Amount);
-         Temp1 : constant Val_2 := Dest and not Mask;
-         Temp2 : constant Val_2 :=
-           Shift_Left (Val_2 (Src_Value), L_Shift_Amount);
-         Result : constant Val_2 := Temp1 or Temp2;
-      begin
-         return Result;
-      end Set_Bitfield;
+         Size : Small_Size);
+      --  This version takes the bit address and size of the destination.
 
       procedure Copy_Small_Bitfield
         (Src_Address  : Address;
@@ -138,6 +121,121 @@ package body System.Bitfield_Utils is
       --  bit address, because it copies forward (from lower to higher
       --  bit addresses).
 
+      function Get_Val_2
+        (Src_Address : Address;
+         Src_Offset : Bit_Offset;
+         Size : Small_Size)
+        return Val_2 is
+      begin
+         pragma Assert (Src_Address mod Val'Alignment = 0);
+
+         --  Bit field fits in first half; fetch just one Val. On little
+         --  endian, we want that in the low half, but on big endian, we
+         --  want it in the high half.
+
+         if Src_Offset + Size <= Val'Size then
+            declare
+               Result : aliased constant Val with
+                 Import, Address => Src_Address;
+            begin
+               return (case Endian is
+                  when Little => Val_2 (Result),
+                  when Big => Shift_Left (Val_2 (Result), Val'Size));
+            end;
+
+         --  Bit field crosses into the second half, so it's safe to fetch the
+         --  whole Val_2.
+
+         else
+            declare
+               Result : aliased constant Val_2 with
+                 Import, Address => Src_Address;
+            begin
+               return Result;
+            end;
+         end if;
+      end Get_Val_2;
+
+      procedure Set_Val_2
+        (Dest_Address : Address;
+         Dest_Offset : Bit_Offset;
+         V : Val_2;
+         Size : Small_Size) is
+      begin
+         pragma Assert (Dest_Address mod Val'Alignment = 0);
+
+         --  Comments in Get_Val_2 apply, except we're storing instead of
+         --  fetching.
+
+         if Dest_Offset + Size <= Val'Size then
+            declare
+               Dest : aliased Val with Import, Address => Dest_Address;
+            begin
+               Dest := (case Endian is
+                  when Little => Val'Mod (V),
+                  when Big => Val (Shift_Right (V, Val'Size)));
+            end;
+         else
+            declare
+               Dest : aliased Val_2 with Import, Address => Dest_Address;
+            begin
+               Dest := V;
+            end;
+         end if;
+      end Set_Val_2;
+
+      function Get_Bitfield
+        (Src : Val_2; Src_Offset : Bit_Offset; Size : Small_Size)
+         return Val
+      is
+         L_Shift_Amount : constant Natural :=
+           (case Endian is
+              when Little => Val_2'Size - (Src_Offset + Size),
+              when Big => Src_Offset);
+         Temp1 : constant Val_2 :=
+           Shift_Left (Src, L_Shift_Amount);
+         Temp2 : constant Val_2 :=
+           Shift_Right (Temp1, Val_2'Size - Size);
+      begin
+         return Val (Temp2);
+      end Get_Bitfield;
+
+      function Set_Bitfield
+        (Src_Value : Val;
+         Dest : Val_2;
+         Dest_Offset : Bit_Offset;
+         Size : Small_Size)
+        return Val_2
+      is
+         pragma Assert (Size = Val'Size or else Src_Value < 2**Size);
+         L_Shift_Amount : constant Natural :=
+           (case Endian is
+              when Little => Dest_Offset,
+              when Big => Val_2'Size - (Dest_Offset + Size));
+         Mask : constant Val_2 :=
+           Shift_Left (Shift_Left (1, Size) - 1, L_Shift_Amount);
+         Temp1 : constant Val_2 := Dest and not Mask;
+         Temp2 : constant Val_2 :=
+           Shift_Left (Val_2 (Src_Value), L_Shift_Amount);
+         Result : constant Val_2 := Temp1 or Temp2;
+      begin
+         return Result;
+      end Set_Bitfield;
+
+      procedure Set_Bitfield
+        (Src_Value : Val;
+         Dest_Address : Address;
+         Dest_Offset : Bit_Offset;
+         Size : Small_Size)
+      is
+         Old_Dest : constant Val_2 :=
+           Get_Val_2 (Dest_Address, Dest_Offset, Size);
+         New_Dest : constant Val_2 :=
+           Set_Bitfield (Src_Value, Old_Dest, Dest_Offset, Size);
+      begin
+         Set_Val_2 (Dest_Address, Dest_Offset, New_Dest, Size);
+      end Set_Bitfield;
+
       procedure Copy_Small_Bitfield
         (Src_Address  : Address;
          Src_Offset   : Bit_Offset;
@@ -145,11 +243,10 @@ package body System.Bitfield_Utils is
          Dest_Offset  : Bit_Offset;
          Size         : Small_Size)
       is
-         Src : constant Val_2 with Import, Address => Src_Address;
+         Src : constant Val_2 := Get_Val_2 (Src_Address, Src_Offset, Size);
          V : constant Val := Get_Bitfield (Src, Src_Offset, Size);
-         Dest : Val_2 with Import, Address => Dest_Address;
       begin
-         Dest := Set_Bitfield (V, Dest, Dest_Offset, Size);
+         Set_Bitfield (V, Dest_Address, Dest_Offset, Size);
       end Copy_Small_Bitfield;
 
       --  Copy_Large_Bitfield does the main work. Copying aligned Vals is more
@@ -168,9 +265,9 @@ package body System.Bitfield_Utils is
       --      Address). Get_Bitfield and Set_Bitfield are used here.
       --
       --      Step 2:
-      --      Loop, copying Vals. Get_Full_Bitfield is used to fetch a
-      --      Val-sized bit field, but Set_Bitfield is not needed -- we can set
-      --      the aligned Val with an array indexing.
+      --      Loop, copying Vals. Get_Bitfield is used to fetch a Val-sized
+      --      bit field, but Set_Bitfield is not needed -- we can set the
+      --      aligned Val with an array indexing.
       --
       --      Step 3:
       --      Copy remaining smaller-than-Val bits, if any
@@ -216,13 +313,13 @@ package body System.Bitfield_Utils is
 
             declare
                Initial_Size : constant Small_Size := Val'Size - D_Off;
-               Initial_Val_2 : constant Val_2 with Import, Address => S_Addr;
+               Initial_Val_2 : constant Val_2 :=
+                 Get_Val_2 (S_Addr, S_Off, Initial_Size);
                Initial_Val : constant Val :=
                  Get_Bitfield (Initial_Val_2, S_Off, Initial_Size);
-               Initial_Dest : Val_2 with Import, Address => D_Addr;
             begin
-               Initial_Dest := Set_Bitfield
-                 (Initial_Val, Initial_Dest, D_Off, Initial_Size);
+               Set_Bitfield
+                 (Initial_Val, D_Addr, D_Off, Initial_Size);
 
                Sz := Sz - Initial_Size;
                declare
@@ -253,8 +350,10 @@ package body System.Bitfield_Utils is
                   pragma Assert (Dest_Comp in Val);
                   pragma Warnings (On);
                   pragma Assert (Dest_Comp'Valid);
-                  Src_V_2 : constant Val_2 with Import, Address => S_Addr;
-                  Full_V : constant Val := Get_Full_Bitfield (Src_V_2, S_Off);
+                  Src_V_2 : constant Val_2 :=
+                    Get_Val_2 (S_Addr, S_Off, Val'Size);
+                  Full_V : constant Val :=
+                    Get_Bitfield (Src_V_2, S_Off, Val'Size);
                begin
                   Dest_Comp := Full_V;
                   S_Addr := S_Addr + Val_Bytes;
@@ -262,18 +361,18 @@ package body System.Bitfield_Utils is
                end;
             end loop;
 
-            if Sz mod Val'Size /= 0 then
+            Sz := Sz mod Val'Size;
+            if Sz /= 0 then
                --  Step 3:
 
                declare
-                  Final_Val_2 : constant Val_2 with Import, Address => S_Addr;
+                  Final_Val_2 : constant Val_2 :=
+                    Get_Val_2 (S_Addr, S_Off, Sz);
                   Final_Val : constant Val :=
-                    Get_Bitfield (Final_Val_2, S_Off, Sz mod Val'Size);
-                  Final_Dest : Val_2  with Import,
-                    Address => D_Addr + Dest_Arr'Length * Val_Bytes;
+                    Get_Bitfield (Final_Val_2, S_Off, Sz);
                begin
-                  Final_Dest := Set_Bitfield
-                    (Final_Val, Final_Dest, 0, Sz mod Val'Size);
+                  Set_Bitfield
+                    (Final_Val, D_Addr + Dest_Arr'Length * Val_Bytes, 0, Sz);
                end;
             end if;
          end;

@@ -306,8 +306,11 @@
     {
       operands[1] = force_reg (<MODE>mode, operands[1]);
 
-      /* For seq-cst stores, when we lack MFENCE, use XCHG.  */
-      if (is_mm_seq_cst (model) && !(TARGET_64BIT || TARGET_SSE2))
+      /* For seq-cst stores, use XCHG when we lack MFENCE
+      	 or when target prefers XCHG.  */
+      if (is_mm_seq_cst (model)
+	  && (!(TARGET_64BIT || TARGET_SSE2)
+	      || TARGET_USE_XCHG_FOR_ATOMIC_STORE))
 	{
 	  emit_insn (gen_atomic_exchange<mode> (gen_reg_rtx (<MODE>mode),
 						operands[0], operands[1],

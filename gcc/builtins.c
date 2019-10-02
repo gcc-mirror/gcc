@@ -72,6 +72,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "file-prefix-map.h" /* remap_macro_filename()  */
 #include "gomp-constants.h"
 #include "omp-general.h"
+#include "tree-dfa.h"
 
 struct target_builtins default_target_builtins;
 #if SWITCHABLE_TARGET
@@ -3475,11 +3476,6 @@ check_access (tree exp, tree, tree, tree dstwrite,
   if (maxread)
     {
       get_size_range (maxread, range);
-
-      /* Use the lower end for MAXREAD from now on.  */
-      if (range[0])
-	maxread = range[0];
-
       if (range[0] && dstsize && tree_fits_uhwi_p (dstsize))
 	{
 	  location_t loc = tree_nonartificial_location (exp);
@@ -3573,12 +3569,18 @@ check_access (tree exp, tree, tree, tree dstwrite,
    the size cannot be determined.  When the referenced object involves
    a non-constant offset in some range the returned value represents
    the largest size given the smallest non-negative offset in the
-   range.  The function is intended for diagnostics and should not
-   be used to influence code generation or optimization.  */
+   range.  If nonnull, set *PDECL to the decl of the referenced
+   subobject if it can be determined, or to null otherwise.
+   The function is intended for diagnostics and should not be used
+   to influence code generation or optimization.  */
 
 tree
-compute_objsize (tree dest, int ostype)
+compute_objsize (tree dest, int ostype, tree *pdecl /* = NULL */)
 {
+  tree dummy = NULL_TREE;
+  if (!pdecl)
+    pdecl = &dummy;
+
   unsigned HOST_WIDE_INT size;
 
   /* Only the two least significant bits are meaningful.  */
@@ -3605,7 +3607,7 @@ compute_objsize (tree dest, int ostype)
 	  tree off = gimple_assign_rhs2 (stmt);
 	  if (TREE_CODE (off) == INTEGER_CST)
 	    {
-	      if (tree size = compute_objsize (dest, ostype))
+	      if (tree size = compute_objsize (dest, ostype, pdecl))
 		{
 		  wide_int wioff = wi::to_wide (off);
 		  wide_int wisiz = wi::to_wide (size);
@@ -3630,7 +3632,7 @@ compute_objsize (tree dest, int ostype)
 
 	      if (rng == VR_RANGE)
 		{
-		  if (tree size = compute_objsize (dest, ostype))
+		  if (tree size = compute_objsize (dest, ostype, pdecl))
 		    {
 		      wide_int wisiz = wi::to_wide (size);
 
@@ -3658,12 +3660,31 @@ compute_objsize (tree dest, int ostype)
   if (!ostype)
     return NULL_TREE;
 
-  if (TREE_CODE (dest) == MEM_REF)
+  if (TREE_CODE (dest) == ARRAY_REF
+      || TREE_CODE (dest) == MEM_REF)
     {
       tree ref = TREE_OPERAND (dest, 0);
       tree off = TREE_OPERAND (dest, 1);
-      if (tree size = compute_objsize (ref, ostype))
+      if (tree size = compute_objsize (ref, ostype, pdecl))
 	{
+	  /* If the declaration of the destination object is known
+	     to have zero size, return zero.  */
+	  if (integer_zerop (size))
+	    return integer_zero_node;
+
+	  if (TREE_CODE (off) != INTEGER_CST
+	      || TREE_CODE (size) != INTEGER_CST)
+	    return NULL_TREE;
+
+	  if (TREE_CODE (dest) == ARRAY_REF)
+	    {
+	      tree eltype = TREE_TYPE (dest);
+	      if (tree tpsize = TYPE_SIZE_UNIT (eltype))
+		off = fold_build2 (MULT_EXPR, size_type_node, off, tpsize);
+	      else
+		return NULL_TREE;
+	    }
+
 	  if (tree_int_cst_lt (off, size))
 	    return fold_build2 (MINUS_EXPR, size_type_node, size, off);
 	  return integer_zero_node;
@@ -3672,8 +3693,21 @@ compute_objsize (tree dest, int ostype)
       return NULL_TREE;
     }
 
+  if (TREE_CODE (dest) == COMPONENT_REF)
+    {
+      *pdecl = TREE_OPERAND (dest, 1);
+      return component_ref_size (dest);
+    }
+
   if (TREE_CODE (dest) != ADDR_EXPR)
     return NULL_TREE;
+
+  tree ref = TREE_OPERAND (dest, 0);
+  if (DECL_P (ref))
+    {
+      *pdecl = ref;
+      return DECL_SIZE_UNIT (ref);
+    }
 
   tree type = TREE_TYPE (dest);
   if (TREE_CODE (type) == POINTER_TYPE)
@@ -3682,14 +3716,10 @@ compute_objsize (tree dest, int ostype)
   type = TYPE_MAIN_VARIANT (type);
 
   if (TREE_CODE (type) == ARRAY_TYPE
-      && !array_at_struct_end_p (TREE_OPERAND (dest, 0)))
+      && !array_at_struct_end_p (ref))
     {
-      /* Return the constant size unless it's zero (that's a zero-length
-	 array likely at the end of a struct).  */
-      tree size = TYPE_SIZE_UNIT (type);
-      if (size && TREE_CODE (size) == INTEGER_CST
-	  && !integer_zerop (size))
-	return size;
+      if (tree size = TYPE_SIZE_UNIT (type))
+	return TREE_CODE (size) == INTEGER_CST ? size : NULL_TREE;
     }
 
   return NULL_TREE;

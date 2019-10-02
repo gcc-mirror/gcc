@@ -37,6 +37,7 @@
 #include "insn-attr.h"
 #include "context.h"
 #include "tree-pass.h"
+#include "function-abi.h"
 #include "regrename.h"
 #include "aarch64-protos.h"
 
@@ -267,7 +268,7 @@ rename_single_chain (du_head_p head, HARD_REG_SET *unavailable)
       if (DEBUG_INSN_P (tmp->insn))
 	continue;
       n_uses++;
-      IOR_COMPL_HARD_REG_SET (*unavailable, reg_class_contents[tmp->cl]);
+      *unavailable |= ~reg_class_contents[tmp->cl];
       super_class = reg_class_superunion[(int) super_class][(int) tmp->cl];
     }
 
@@ -281,7 +282,7 @@ rename_single_chain (du_head_p head, HARD_REG_SET *unavailable)
     {
       fprintf (dump_file, "Register %s in insn %d", reg_names[reg],
 	       INSN_UID (head->first->insn));
-      if (head->need_caller_save_reg)
+      if (head->call_abis)
 	fprintf (dump_file, " crosses a call");
     }
 

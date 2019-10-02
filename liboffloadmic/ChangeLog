@@ -1,3 +1,11 @@
+2019-10-01  Maciej W. Rozycki  <macro@wdc.com>
+
+	* plugin/configure: Regenerate.
+
+2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure: Regenerate.
+
 2019-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/16615

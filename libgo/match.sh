@@ -135,7 +135,7 @@ for f in $gofiles; do
 
     if test x$tag1 != xnonmatchingtag -a x$tag2 != xnonmatchingtag; then
 	# Pipe through cat so that `set -e` doesn't affect fgrep.
-	tags=`sed '/^package /q' < $f | grep '^// +build ' | cat`
+	tags=`sed '/^package /q' < $f | grep '^// *+build ' | cat`
 	omatch=true
 	first=true
 	match=false
@@ -143,7 +143,7 @@ for f in $gofiles; do
 	    case $tag in
 		"//")
 		    ;;
-		"+build")
+		"+build" | "//+build")
 		    if test "$first" = "true"; then
 			first=false
 		    elif test "$match" = "false"; then

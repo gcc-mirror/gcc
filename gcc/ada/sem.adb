@@ -1360,7 +1360,8 @@ package body Sem is
          --  unconditionally, and has no restore mechanism, because it is
          --  intended as a lowest-level Pure package.
 
-         Saved_ML : constant Int := Style_Max_Line_Length;
+         Saved_ML  : constant Int     := Style_Max_Line_Length;
+         Saved_CML : constant Boolean := Style_Check_Max_Line_Length;
 
          List : Elist_Id;
 
@@ -1395,7 +1396,7 @@ package body Sem is
          Restore_Scope_Stack  (List);
          Restore_Ghost_Region (Saved_GM, Saved_IGR);
          Style_Max_Line_Length := Saved_ML;
-         Style_Check_Max_Line_Length := Style_Max_Line_Length /= 0;
+         Style_Check_Max_Line_Length := Saved_CML;
       end Do_Analyze;
 
       --  Local variables

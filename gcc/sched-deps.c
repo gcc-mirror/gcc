@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "sched-int.h"
 #include "params.h"
 #include "cselib.h"
+#include "function-abi.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -2203,9 +2204,9 @@ init_insn_reg_pressure_info (rtx_insn *insn)
       reg_pressure_info[cl].change = 0;
     }
 
-  note_stores (PATTERN (insn), mark_insn_reg_clobber, insn);
+  note_stores (insn, mark_insn_reg_clobber, insn);
 
-  note_stores (PATTERN (insn), mark_insn_reg_store, insn);
+  note_stores (insn, mark_insn_reg_store, insn);
 
   if (AUTO_INC_DEC)
     for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
@@ -2319,13 +2320,6 @@ sched_analyze_reg (class deps_desc *deps, int regno, machine_mode mode,
 	  while (--i >= 0)
 	    note_reg_use (regno + i);
 	}
-      else if (ref == CLOBBER_HIGH)
-	{
-	  gcc_assert (i == 1);
-	  /* We don't know the current state of the register, so have to treat
-	     the clobber high as a full clobber.  */
-	  note_reg_clobber (regno);
-	}
       else
 	{
 	  while (--i >= 0)
@@ -2349,8 +2343,6 @@ sched_analyze_reg (class deps_desc *deps, int regno, machine_mode mode,
       else if (ref == USE)
 	note_reg_use (regno);
       else
-	/* For CLOBBER_HIGH, we don't know the current state of the register,
-	   so have to treat it as a full clobber.  */
 	note_reg_clobber (regno);
 
       /* Pseudos that are REG_EQUIV to something may be replaced
@@ -2885,7 +2877,7 @@ get_implicit_reg_pending_clobbers (HARD_REG_SET *temp, rtx_insn *insn)
   preprocess_constraints (insn);
   alternative_mask preferred = get_preferred_alternatives (insn);
   ira_implicitly_set_insn_hard_regs (temp, preferred);
-  AND_COMPL_HARD_REG_SET (*temp, ira_no_alloc_regs);
+  *temp &= ~ira_no_alloc_regs;
 }
 
 /* Analyze an INSN with pattern X to find all dependencies.  */
@@ -2901,7 +2893,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
     {
       HARD_REG_SET temp;
       get_implicit_reg_pending_clobbers (&temp, insn);
-      IOR_HARD_REG_SET (implicit_reg_pending_clobbers, temp);
+      implicit_reg_pending_clobbers |= temp;
     }
 
   can_start_lhs_rhs_p = (NONJUMP_INSN_P (insn)
@@ -2973,7 +2965,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 	      sub = COND_EXEC_CODE (sub);
 	      code = GET_CODE (sub);
 	    }
-	  else if (code == SET || code == CLOBBER || code == CLOBBER_HIGH)
+	  else if (code == SET || code == CLOBBER)
 	    sched_analyze_1 (deps, sub, insn);
 	  else
 	    sched_analyze_2 (deps, sub, insn);
@@ -2989,10 +2981,6 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 	{
 	  if (GET_CODE (XEXP (link, 0)) == CLOBBER)
 	    sched_analyze_1 (deps, XEXP (link, 0), insn);
-	  else if (GET_CODE (XEXP (link, 0)) == CLOBBER_HIGH)
-	    /* We could support CLOBBER_HIGH and treat it in the same way as
-	      HARD_REGNO_CALL_PART_CLOBBERED, but no port needs that yet.  */
-	    gcc_unreachable ();
 	  else if (GET_CODE (XEXP (link, 0)) != SET)
 	    sched_analyze_2 (deps, XEXP (link, 0), insn);
 	}
@@ -3332,10 +3320,9 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
       IOR_REG_SET (&deps->reg_last_in_use, reg_pending_uses);
       IOR_REG_SET (&deps->reg_last_in_use, reg_pending_clobbers);
       IOR_REG_SET (&deps->reg_last_in_use, reg_pending_sets);
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (TEST_HARD_REG_BIT (implicit_reg_pending_uses, i)
-	    || TEST_HARD_REG_BIT (implicit_reg_pending_clobbers, i))
-	  SET_REGNO_REG_SET (&deps->reg_last_in_use, i);
+      IOR_REG_SET_HRS (&deps->reg_last_in_use,
+		       implicit_reg_pending_uses
+		       | implicit_reg_pending_clobbers);
 
       /* Set up the pending barrier found.  */
       deps->last_reg_pending_barrier = reg_pending_barrier;
@@ -3724,6 +3711,7 @@ deps_analyze_insn (class deps_desc *deps, rtx_insn *insn)
         }
       else
         {
+	  function_abi callee_abi = insn_callee_abi (insn);
           for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
             /* A call may read and modify global register variables.  */
             if (global_regs[i])
@@ -3735,9 +3723,7 @@ deps_analyze_insn (class deps_desc *deps, rtx_insn *insn)
              Since we only have a choice between 'might be clobbered'
              and 'definitely not clobbered', we must include all
              partly call-clobbered registers here.  */
-	    else if (targetm.hard_regno_call_part_clobbered (insn, i,
-							     reg_raw_mode[i])
-                     || TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
+	    else if (callee_abi.clobbers_at_least_part_of_reg_p (i))
               SET_REGNO_REG_SET (reg_pending_clobbers, i);
           /* We don't know what set of fixed registers might be used
              by the function, but it is certain that the stack pointer

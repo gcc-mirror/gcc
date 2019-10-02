@@ -42,7 +42,7 @@
 #endif
 
 #include "config.h"
-#include "gstdint.h"
+#include <stdint.h>
 #include "libgomp-plugin.h"
 #include "gomp-constants.h"
 

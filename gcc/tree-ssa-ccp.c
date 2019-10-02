@@ -615,9 +615,17 @@ get_value_for_expr (tree expr, bool for_bits_p)
 	  val.mask = -1;
 	}
       if (for_bits_p
-	  && val.lattice_val == CONSTANT
-	  && TREE_CODE (val.value) == ADDR_EXPR)
-	val = get_value_from_alignment (val.value);
+	  && val.lattice_val == CONSTANT)
+	{
+	  if (TREE_CODE (val.value) == ADDR_EXPR)
+	    val = get_value_from_alignment (val.value);
+	  else if (TREE_CODE (val.value) != INTEGER_CST)
+	    {
+	      val.lattice_val = VARYING;
+	      val.value = NULL_TREE;
+	      val.mask = -1;
+	    }
+	}
       /* Fall back to a copy value.  */
       if (!for_bits_p
 	  && val.lattice_val == VARYING
@@ -2085,9 +2093,7 @@ insert_clobber_before_stack_restore (tree saved_val, tree var,
   FOR_EACH_IMM_USE_STMT (stmt, iter, saved_val)
     if (gimple_call_builtin_p (stmt, BUILT_IN_STACK_RESTORE))
       {
-	clobber = build_constructor (TREE_TYPE (var),
-				     NULL);
-	TREE_THIS_VOLATILE (clobber) = 1;
+	clobber = build_clobber (TREE_TYPE (var));
 	clobber_stmt = gimple_build_assign (var, clobber);
 
 	i = gsi_for_stmt (stmt);

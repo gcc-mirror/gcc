@@ -3789,7 +3789,7 @@ package body Make is
 
                if Gprbuild = null then
                   Fail_Program
-                    ("project files are no longer supported by gnamake;" &
+                    ("project files are no longer supported by gnatmake;" &
                      " use gprbuild instead");
                end if;
 
@@ -4516,7 +4516,9 @@ package body Make is
                end;
             end if;
 
-         elsif Argv'Length >= 8 and then Argv (1 .. 8) = "--param=" then
+         elsif (Argv'Length >= 8 and then Argv (1 .. 8) = "--param=")
+           or else (Argv'Length >= 10 and then Argv (1 .. 10) = "--sysroot=")
+         then
             Add_Switch (Argv, Compiler);
             Add_Switch (Argv, Linker);
 

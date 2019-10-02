@@ -4,7 +4,7 @@
 /* This checks that string constants are put in per-function rodata
    sections, so that they can be garbage collected.  */
 
-/* { dg-do compile { target *-*-linux* } } */
+/* { dg-do compile { target *-*-linux* *-*-uclinux* } } */
 /* { dg-options "-O -ffunction-sections -fdata-sections" } */
 
 const char *f1(void) { return "falderalde"; }

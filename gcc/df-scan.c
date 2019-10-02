@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 #include "dumpfile.h"
 #include "calls.h"
-
+#include "function-abi.h"
 
 /* The set of hard registers in eliminables[i].from. */
 
@@ -312,8 +312,9 @@ df_scan_start_dump (FILE *file ATTRIBUTE_UNUSED)
   basic_block bb;
   rtx_insn *insn;
 
-  fprintf (file, ";;  invalidated by call \t");
-  df_print_regset (file, regs_invalidated_by_call_regset);
+  fprintf (file, ";;  fully invalidated by EH \t");
+  df_print_regset
+    (file, bitmap_view<HARD_REG_SET> (eh_edge_abi.full_reg_clobbers ()));
   fprintf (file, ";;  hardware regs used \t");
   df_print_regset (file, &df->hardware_regs_used);
   fprintf (file, ";;  regular block artificial uses \t");
@@ -2774,7 +2775,6 @@ df_find_hard_reg_defs (rtx x, HARD_REG_SET *defs)
       break;
 
     case CLOBBER:
-    case CLOBBER_HIGH:
       df_find_hard_reg_defs_1 (XEXP (x, 0), defs);
       break;
 
@@ -2832,10 +2832,6 @@ df_uses_record (class df_collection_rec *collection_rec,
 			flags);
 
       /* If we're clobbering a REG then we have a def so ignore.  */
-      return;
-
-    case CLOBBER_HIGH:
-      gcc_assert (REG_P (XEXP (x, 0)));
       return;
 
     case MEM:
@@ -3088,13 +3084,11 @@ df_get_call_refs (class df_collection_rec *collection_rec,
   bool is_sibling_call;
   unsigned int i;
   HARD_REG_SET defs_generated;
-  HARD_REG_SET fn_reg_set_usage;
 
   CLEAR_HARD_REG_SET (defs_generated);
   df_find_hard_reg_defs (PATTERN (insn_info->insn), &defs_generated);
   is_sibling_call = SIBLING_CALL_P (insn_info->insn);
-  get_call_reg_set_usage (insn_info->insn, &fn_reg_set_usage,
-			  regs_invalidated_by_call);
+  function_abi callee_abi = insn_callee_abi (insn_info->insn);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
@@ -3118,7 +3112,7 @@ df_get_call_refs (class df_collection_rec *collection_rec,
 			       NULL, bb, insn_info, DF_REF_REG_DEF, flags);
 	    }
 	}
-      else if (TEST_HARD_REG_BIT (fn_reg_set_usage, i)
+      else if (callee_abi.clobbers_full_reg_p (i)
 	       /* no clobbers for regs that are the result of the call */
 	       && !TEST_HARD_REG_BIT (defs_generated, i)
 	       && (!is_sibling_call
@@ -3134,7 +3128,6 @@ df_get_call_refs (class df_collection_rec *collection_rec,
   for (note = CALL_INSN_FUNCTION_USAGE (insn_info->insn); note;
        note = XEXP (note, 1))
     {
-      gcc_assert (GET_CODE (XEXP (note, 0)) != CLOBBER_HIGH);
       if (GET_CODE (XEXP (note, 0)) == USE)
         df_uses_record (collection_rec, &XEXP (XEXP (note, 0), 0),
 			DF_REF_REG_USE, bb, insn_info, flags);
@@ -3500,7 +3493,9 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
       /* Defs for the callee saved registers are inserted so that the
 	 pushes have some defining location.  */
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if ((call_used_regs[i] == 0) && (df_regs_ever_live_p (i)))
+	if (!crtl->abi->clobbers_full_reg_p (i)
+	    && !fixed_regs[i]
+	    && df_regs_ever_live_p (i))
 	  bitmap_set_bit (entry_block_defs, i);
     }
 
@@ -3673,8 +3668,9 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
     {
       /* Mark all call-saved registers that we actually used.  */
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (df_regs_ever_live_p (i) && !LOCAL_REGNO (i)
-	    && !TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
+	if (df_regs_ever_live_p (i)
+	    && !LOCAL_REGNO (i)
+	    && !crtl->abi->clobbers_full_reg_p (i))
 	  bitmap_set_bit (exit_block_uses, i);
     }
 

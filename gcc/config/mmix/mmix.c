@@ -464,7 +464,8 @@ mmix_opposite_regno (int regno, int incoming)
 int
 mmix_local_regno (int regno)
 {
-  return regno <= MMIX_LAST_STACK_REGISTER_REGNUM && !call_used_regs[regno];
+  return (regno <= MMIX_LAST_STACK_REGISTER_REGNUM
+	  && !call_used_or_fixed_reg_p (regno));
 }
 
 /* TARGET_PREFERRED_RELOAD_CLASS.
@@ -604,7 +605,7 @@ mmix_initial_elimination_offset (int fromreg, int toreg)
   for (regno = MMIX_FIRST_GLOBAL_REGNUM;
        regno <= 255;
        regno++)
-    if ((df_regs_ever_live_p (regno) && ! call_used_regs[regno])
+    if ((df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
 	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
       fp_sp_offset += 8;
 
@@ -866,7 +867,7 @@ mmix_reorg (void)
   for (regno = MMIX_LAST_STACK_REGISTER_REGNUM;
        regno >= 0;
        regno--)
-    if ((df_regs_ever_live_p (regno) && !call_used_regs[regno])
+    if ((df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
 	|| (regno == MMIX_FRAME_POINTER_REGNUM && frame_pointer_needed))
       break;
 
@@ -1958,7 +1959,7 @@ mmix_use_simple_return (void)
     /* Note that we assume that the frame-pointer-register is one of these
        registers, in which case we don't count it here.  */
     if ((((regno != MMIX_FRAME_POINTER_REGNUM || !frame_pointer_needed)
-	  && df_regs_ever_live_p (regno) && !call_used_regs[regno]))
+	  && df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno)))
 	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
       return 0;
 
@@ -1994,7 +1995,7 @@ mmix_expand_prologue (void)
     /* Note that we assume that the frame-pointer-register is one of these
        registers, in which case we don't count it here.  */
     if ((((regno != MMIX_FRAME_POINTER_REGNUM || !frame_pointer_needed)
-	  && df_regs_ever_live_p (regno) && !call_used_regs[regno]))
+	  && df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno)))
 	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
       stack_space_to_allocate += 8;
 
@@ -2180,7 +2181,7 @@ mmix_expand_prologue (void)
        regno >= MMIX_FIRST_GLOBAL_REGNUM;
        regno--)
     if (((regno != MMIX_FRAME_POINTER_REGNUM || !frame_pointer_needed)
-	 && df_regs_ever_live_p (regno) && ! call_used_regs[regno])
+	 && df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
 	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
       {
 	rtx insn;
@@ -2233,7 +2234,7 @@ mmix_expand_epilogue (void)
        regno >= MMIX_FIRST_GLOBAL_REGNUM;
        regno--)
     if (((regno != MMIX_FRAME_POINTER_REGNUM || !frame_pointer_needed)
-	 && df_regs_ever_live_p (regno) && !call_used_regs[regno])
+	 && df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
 	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
       stack_space_to_deallocate += 8;
 
@@ -2262,7 +2263,7 @@ mmix_expand_epilogue (void)
        regno <= 255;
        regno++)
     if (((regno != MMIX_FRAME_POINTER_REGNUM || !frame_pointer_needed)
-	 && df_regs_ever_live_p (regno) && !call_used_regs[regno])
+	 && df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
 	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
       {
 	if (offset > 255)

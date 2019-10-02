@@ -131,6 +131,7 @@
 #include "lra.h"
 #include "lra-int.h"
 #include "print-rtl.h"
+#include "function-abi.h"
 
 /* Value of LRA_CURR_RELOAD_NUM at the beginning of BB of the current
    insn.  Remember that LRA_CURR_RELOAD_NUM is the number of emitted
@@ -1854,8 +1855,7 @@ prohibited_class_reg_set_mode_p (enum reg_class rclass,
   HARD_REG_SET temp;
   
   lra_assert (hard_reg_set_subset_p (reg_class_contents[rclass], set));
-  COPY_HARD_REG_SET (temp, set);
-  AND_COMPL_HARD_REG_SET (temp, lra_no_alloc_regs);
+  temp = set & ~lra_no_alloc_regs;
   return (hard_reg_set_subset_p
 	  (temp, ira_prohibited_class_mode_regs[rclass][mode]));
 }
@@ -2288,7 +2288,7 @@ process_alt_operands (int only_alternative)
 		       reloads. */
 		    badop = false;
 		    this_alternative = curr_alt[m];
-		    COPY_HARD_REG_SET (this_alternative_set, curr_alt_set[m]);
+		    this_alternative_set = curr_alt_set[m];
 		    winreg = this_alternative != NO_REGS;
 		    break;
 		  }
@@ -2373,14 +2373,12 @@ process_alt_operands (int only_alternative)
 		  if (mode == BLKmode)
 		    break;
 		  this_alternative = reg_class_subunion[this_alternative][cl];
-		  IOR_HARD_REG_SET (this_alternative_set,
-				    reg_class_contents[cl]);
+		  this_alternative_set |= reg_class_contents[cl];
 		  if (costly_p)
 		    {
 		      this_costly_alternative
 			= reg_class_subunion[this_costly_alternative][cl];
-		      IOR_HARD_REG_SET (this_costly_alternative_set,
-					reg_class_contents[cl]);
+		      this_costly_alternative_set |= reg_class_contents[cl];
 		    }
 		  winreg = true;
 		  if (REG_P (op))
@@ -2515,14 +2513,11 @@ process_alt_operands (int only_alternative)
 
 	      if (this_alternative != NO_REGS)
 		{
-		  HARD_REG_SET available_regs;
-		  
-		  COPY_HARD_REG_SET (available_regs,
-				     reg_class_contents[this_alternative]);
-		  AND_COMPL_HARD_REG_SET
-		    (available_regs,
-		     ira_prohibited_class_mode_regs[this_alternative][mode]);
-		  AND_COMPL_HARD_REG_SET (available_regs, lra_no_alloc_regs);
+		  HARD_REG_SET available_regs
+		    = (reg_class_contents[this_alternative]
+		       & ~((ira_prohibited_class_mode_regs
+			    [this_alternative][mode])
+			   | lra_no_alloc_regs));
 		  if (hard_reg_set_empty_p (available_regs))
 		    {
 		      /* There are no hard regs holding a value of given
@@ -2888,7 +2883,7 @@ process_alt_operands (int only_alternative)
 	      goto fail;
 	    }
 	  curr_alt[nop] = this_alternative;
-	  COPY_HARD_REG_SET (curr_alt_set[nop], this_alternative_set);
+	  curr_alt_set[nop] = this_alternative_set;
 	  curr_alt_win[nop] = this_alternative_win;
 	  curr_alt_match_win[nop] = this_alternative_match_win;
 	  curr_alt_offmemok[nop] = this_alternative_offmemok;
@@ -4560,7 +4555,7 @@ contains_reg_p (rtx x, bool hard_reg_p, bool spilled_p)
 	    regno = lra_get_regno_hard_regno (regno);
 	  if (regno < 0)
 	    return false;
-	  COMPL_HARD_REG_SET (alloc_regs, lra_no_alloc_regs);
+	  alloc_regs = ~lra_no_alloc_regs;
 	  return overlaps_hard_reg_set_p (alloc_regs, GET_MODE (x), regno);
 	}
       else
@@ -5152,6 +5147,14 @@ static int reloads_num;
 /* Number of calls passed so far in current EBB.  */
 static int calls_num;
 
+/* Index ID is the CALLS_NUM associated the last call we saw with
+   ABI identifier ID.  */
+static int last_call_for_abi[NUM_ABI_IDS];
+
+/* Which registers have been fully or partially clobbered by a call
+   since they were last used.  */
+static HARD_REG_SET full_and_partial_call_clobbers;
+
 /* Current reload pseudo check for validity of elements in
    USAGE_INSNS.	 */
 static int curr_usage_insns_check;
@@ -5195,6 +5198,10 @@ setup_next_usage_insn (int regno, rtx insn, int reloads_num, bool after_p)
   usage_insns[regno].reloads_num = reloads_num;
   usage_insns[regno].calls_num = calls_num;
   usage_insns[regno].after_p = after_p;
+  if (regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] >= 0)
+    remove_from_hard_reg_set (&full_and_partial_call_clobbers,
+			      PSEUDO_REGNO_MODE (regno),
+			      reg_renumber[regno]);
 }
 
 /* The function is used to form list REGNO usages which consists of
@@ -5440,16 +5447,19 @@ static inline bool
 need_for_call_save_p (int regno)
 {
   lra_assert (regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] >= 0);
-  return (usage_insns[regno].calls_num < calls_num
-	  && (overlaps_hard_reg_set_p
-	      ((flag_ipa_ra &&
-		! hard_reg_set_empty_p (lra_reg_info[regno].actual_call_used_reg_set))
-	       ? lra_reg_info[regno].actual_call_used_reg_set
-	       : call_used_reg_set,
-	       PSEUDO_REGNO_MODE (regno), reg_renumber[regno])
-	      || (targetm.hard_regno_call_part_clobbered
-		  (lra_reg_info[regno].call_insn,
-		   reg_renumber[regno], PSEUDO_REGNO_MODE (regno)))));
+  if (usage_insns[regno].calls_num < calls_num)
+    {
+      unsigned int abis = 0;
+      for (unsigned int i = 0; i < NUM_ABI_IDS; ++i)
+	if (last_call_for_abi[i] > usage_insns[regno].calls_num)
+	  abis |= 1 << i;
+      gcc_assert (abis);
+      if (call_clobbered_in_region_p (abis, full_and_partial_call_clobbers,
+				      PSEUDO_REGNO_MODE (regno),
+				      reg_renumber[regno]))
+	return true;
+    }
+  return false;
 }
 
 /* Global registers occurring in the current EBB.  */
@@ -5489,8 +5499,7 @@ need_for_split_p (HARD_REG_SET potential_reload_hard_regs, int regno)
 	      true) the assign pass assumes that all pseudos living
 	      through calls are assigned to call saved hard regs.  */
 	   && (regno >= FIRST_PSEUDO_REGISTER
-	       || ! TEST_HARD_REG_BIT (call_used_reg_set, regno)
-	       || usage_insns[regno].calls_num == calls_num)
+	       || !TEST_HARD_REG_BIT (full_and_partial_call_clobbers, regno))
 	   /* We need at least 2 reloads to make pseudo splitting
 	      profitable.  We should provide hard regno splitting in
 	      any case to solve 1st insn scheduling problem when
@@ -6242,12 +6251,14 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
   curr_usage_insns_check++;
   clear_invariants ();
   reloads_num = calls_num = 0;
+  for (unsigned int i = 0; i < NUM_ABI_IDS; ++i)
+    last_call_for_abi[i] = 0;
+  CLEAR_HARD_REG_SET (full_and_partial_call_clobbers);
   bitmap_clear (&check_only_regs);
   bitmap_clear (&invalid_invariant_regs);
   last_processed_bb = NULL;
   CLEAR_HARD_REG_SET (potential_reload_hard_regs);
-  COPY_HARD_REG_SET (live_hard_regs, eliminable_regset);
-  IOR_HARD_REG_SET (live_hard_regs, lra_no_alloc_regs);
+  live_hard_regs = eliminable_regset | lra_no_alloc_regs;
   /* We don't process new insns generated in the loop.	*/
   for (curr_insn = tail; curr_insn != PREV_INSN (head); curr_insn = prev_insn)
     {
@@ -6317,8 +6328,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	  else
 	    setup_next_usage_insn (src_regno, curr_insn, reloads_num, false);
 	  if (hard_reg_set_subset_p (reg_class_contents[cl], live_hard_regs))
-	    IOR_HARD_REG_SET (potential_reload_hard_regs,
-			      reg_class_contents[cl]);
+	    potential_reload_hard_regs |= reg_class_contents[cl];
 	}
       else if (src_regno < 0
 	       && dst_regno >= lra_constraint_new_regno_start
@@ -6335,8 +6345,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	  if (process_invariant_for_inheritance (SET_DEST (curr_set), SET_SRC (curr_set)))
 	    change_p = true;
 	  if (hard_reg_set_subset_p (reg_class_contents[cl], live_hard_regs))
-	    IOR_HARD_REG_SET (potential_reload_hard_regs,
-			      reg_class_contents[cl]);
+	    potential_reload_hard_regs |= reg_class_contents[cl];
 	}
       else if (src_regno >= lra_constraint_new_regno_start
 	       && dst_regno < lra_constraint_new_regno_start
@@ -6358,8 +6367,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	  /* Invalidate.  */
 	  usage_insns[dst_regno].check = 0;
 	  if (hard_reg_set_subset_p (reg_class_contents[cl], live_hard_regs))
-	    IOR_HARD_REG_SET (potential_reload_hard_regs,
-			      reg_class_contents[cl]);
+	    potential_reload_hard_regs |= reg_class_contents[cl];
 	}
       else if (INSN_P (curr_insn))
 	{
@@ -6414,8 +6422,8 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 		      else
 			add_to_hard_reg_set (&s, PSEUDO_REGNO_MODE (dst_regno),
 					     reg_renumber[dst_regno]);
-		      AND_COMPL_HARD_REG_SET (live_hard_regs, s);
-		      AND_COMPL_HARD_REG_SET (potential_reload_hard_regs, s);
+		      live_hard_regs &= ~s;
+		      potential_reload_hard_regs &= ~s;
 		    }
 		  /* We should invalidate potential inheritance or
 		     splitting for the current insn usages to the next
@@ -6459,6 +6467,10 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	      int regno, hard_regno;
 
 	      calls_num++;
+	      function_abi callee_abi = insn_callee_abi (curr_insn);
+	      last_call_for_abi[callee_abi.id ()] = calls_num;
+	      full_and_partial_call_clobbers
+		|= callee_abi.full_and_partial_reg_clobbers ();
 	      if ((cheap = find_reg_note (curr_insn,
 					  REG_RETURNED, NULL_RTX)) != NULL_RTX
 		  && ((cheap = XEXP (cheap, 0)), true)
@@ -6468,7 +6480,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 		  /* If there are pending saves/restores, the
 		     optimization is not worth.	 */
 		  && usage_insns[regno].calls_num == calls_num - 1
-		  && TEST_HARD_REG_BIT (call_used_reg_set, hard_regno))
+		  && callee_abi.clobbers_reg_p (GET_MODE (cheap), hard_regno))
 		{
 		  /* Restore the pseudo from the call result as
 		     REG_RETURNED note says that the pseudo value is
@@ -6491,6 +6503,9 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 		      /* We don't need to save/restore of the pseudo from
 			 this call.	 */
 		      usage_insns[regno].calls_num = calls_num;
+		      remove_from_hard_reg_set
+			(&full_and_partial_call_clobbers,
+			 GET_MODE (cheap), hard_regno);
 		      bitmap_set_bit (&check_only_regs, regno);
 		    }
 		}
@@ -6594,8 +6609,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	      if (ira_class_hard_regs_num[cl] <= max_small_class_regs_num)
 		reloads_num++;
 	      if (hard_reg_set_subset_p (reg_class_contents[cl], live_hard_regs))
-		IOR_HARD_REG_SET (potential_reload_hard_regs,
-	                          reg_class_contents[cl]);
+		potential_reload_hard_regs |= reg_class_contents[cl];
 	    }
 	}
       if (NONDEBUG_INSN_P (curr_insn))

@@ -30,13 +30,13 @@ struct D : public B, public B2, public B3 {
 
   virtual void bothsame(int);
 
-  virtual void bothdiff(int);		// { dg-warning "" } 
+  virtual void bothdiff(int);		// { dg-message "" } 
 
   virtual void both2same(int);
   virtual void both2same(float);
 
-  virtual void both12diff(int);		// { dg-warning "" } 
+  virtual void both12diff(int);		// { dg-message "" } 
 
-  virtual void bothfardiff(int);	// { dg-warning "" } 
+  virtual void bothfardiff(int);	// { dg-message "" } 
 };
 

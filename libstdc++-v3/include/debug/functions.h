@@ -219,6 +219,7 @@ namespace __gnu_debug
   // Can't check if an input iterator sequence is sorted, because we
   // can't step through the sequence.
   template<typename _InputIterator>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __check_sorted_aux(const _InputIterator&, const _InputIterator&,
                        std::input_iterator_tag)
@@ -227,6 +228,7 @@ namespace __gnu_debug
   // Can verify if a forward iterator sequence is in fact sorted using
   // std::__is_sorted
   template<typename _ForwardIterator>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __check_sorted_aux(_ForwardIterator __first, _ForwardIterator __last,
                        std::forward_iterator_tag)
@@ -245,6 +247,7 @@ namespace __gnu_debug
   // Can't check if an input iterator sequence is sorted, because we can't step
   // through the sequence.
   template<typename _InputIterator, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __check_sorted_aux(const _InputIterator&, const _InputIterator&,
                        _Predicate, std::input_iterator_tag)
@@ -253,6 +256,7 @@ namespace __gnu_debug
   // Can verify if a forward iterator sequence is in fact sorted using
   // std::__is_sorted
   template<typename _ForwardIterator, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __check_sorted_aux(_ForwardIterator __first, _ForwardIterator __last,
                        _Predicate __pred, std::forward_iterator_tag)
@@ -270,31 +274,26 @@ namespace __gnu_debug
 
   // Determine if a sequence is sorted.
   template<typename _InputIterator>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __check_sorted(const _InputIterator& __first, const _InputIterator& __last)
     {
-      // Verify that the < operator for elements in the sequence is a
-      // StrictWeakOrdering by checking that it is irreflexive.
-      __glibcxx_assert(__first == __last || !(*__first < *__first));
-
       return __check_sorted_aux(__first, __last,
 				std::__iterator_category(__first));
     }
 
   template<typename _InputIterator, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __check_sorted(const _InputIterator& __first, const _InputIterator& __last,
                    _Predicate __pred)
     {
-      // Verify that the predicate is StrictWeakOrdering by checking that it
-      // is irreflexive.
-      __glibcxx_assert(__first == __last || !__pred(*__first, *__first));
-
       return __check_sorted_aux(__first, __last, __pred,
 				std::__iterator_category(__first));
     }
 
   template<typename _InputIterator>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __check_sorted_set_aux(const _InputIterator& __first,
 			   const _InputIterator& __last,
@@ -302,6 +301,7 @@ namespace __gnu_debug
     { return __check_sorted(__first, __last); }
 
   template<typename _InputIterator>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __check_sorted_set_aux(const _InputIterator&,
 			   const _InputIterator&,
@@ -309,6 +309,7 @@ namespace __gnu_debug
     { return true; }
 
   template<typename _InputIterator, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __check_sorted_set_aux(const _InputIterator& __first,
 			   const _InputIterator& __last,
@@ -316,6 +317,7 @@ namespace __gnu_debug
     { return __check_sorted(__first, __last, __pred); }
 
   template<typename _InputIterator, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __check_sorted_set_aux(const _InputIterator&,
 			   const _InputIterator&, _Predicate,
@@ -324,6 +326,7 @@ namespace __gnu_debug
 
   // ... special variant used in std::merge, std::includes, std::set_*.
   template<typename _InputIterator1, typename _InputIterator2>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __check_sorted_set(const _InputIterator1& __first,
 		       const _InputIterator1& __last,
@@ -341,6 +344,7 @@ namespace __gnu_debug
 
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __check_sorted_set(const _InputIterator1& __first,
 		       const _InputIterator1& __last,
@@ -360,6 +364,7 @@ namespace __gnu_debug
   // 270. Binary search requirements overly strict
   // Determine if a sequence is partitioned w.r.t. this element.
   template<typename _ForwardIterator, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __check_partitioned_lower(_ForwardIterator __first,
 			      _ForwardIterator __last, const _Tp& __value)
@@ -376,6 +381,7 @@ namespace __gnu_debug
     }
 
   template<typename _ForwardIterator, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __check_partitioned_upper(_ForwardIterator __first,
 			      _ForwardIterator __last, const _Tp& __value)
@@ -393,6 +399,7 @@ namespace __gnu_debug
 
   // Determine if a sequence is partitioned w.r.t. this element.
   template<typename _ForwardIterator, typename _Tp, typename _Pred>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __check_partitioned_lower(_ForwardIterator __first,
 			      _ForwardIterator __last, const _Tp& __value,
@@ -410,6 +417,7 @@ namespace __gnu_debug
     }
 
   template<typename _ForwardIterator, typename _Tp, typename _Pred>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __check_partitioned_upper(_ForwardIterator __first,
 			      _ForwardIterator __last, const _Tp& __value,
@@ -435,35 +443,41 @@ namespace __gnu_debug
 
     template<typename _It,
 	     typename = decltype(__deref<_It>() < __deref<_It>())>
+      _GLIBCXX20_CONSTEXPR
       static bool
       _S_is_valid(_It __it)
       { return !(*__it < *__it); }
 
     // Fallback method if operator doesn't exist.
     template<typename... _Args>
+      _GLIBCXX20_CONSTEXPR
       static bool
       _S_is_valid(_Args...)
       { return true; }
 
     template<typename _It, typename _Pred, typename
 	= decltype(std::declval<_Pred>()(__deref<_It>(), __deref<_It>()))>
+      _GLIBCXX20_CONSTEXPR
       static bool
       _S_is_valid_pred(_It __it, _Pred __pred)
       { return !__pred(*__it, *__it); }
 
     // Fallback method if predicate can't be invoked.
     template<typename... _Args>
+      _GLIBCXX20_CONSTEXPR
       static bool
       _S_is_valid_pred(_Args...)
       { return true; }
   };
 
   template<typename _Iterator>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __is_irreflexive(_Iterator __it)
     { return _Irreflexive_checker::_S_is_valid(__it); }
 
   template<typename _Iterator, typename _Pred>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __is_irreflexive_pred(_Iterator __it, _Pred __pred)
     { return _Irreflexive_checker::_S_is_valid_pred(__it, __pred); }

@@ -1,3 +1,5 @@
+/* { dg-skip-if "exceeds eBPF stack limit" { bpf-*-* } } */
+
 int foo;
 typedef long unsigned int size_t;
 typedef short unsigned int wchar_t;

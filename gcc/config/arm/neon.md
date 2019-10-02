@@ -23,6 +23,16 @@
 ;; type attribute definitions.
 (define_attr "vqh_mnem" "vadd,vmin,vmax" (const_string "vadd"))
 
+(define_insn "unaligned_storev8qi"
+  [(set (match_operand:V8QI 0 "memory_operand" "=Un")
+	(unspec:V8QI [(match_operand:V8QI 1 "s_register_operand" "w")]
+		     UNSPEC_UNALIGNED_STORE))]
+  "TARGET_NEON"
+  "*
+  return output_move_neon (operands);
+  "
+  [(set_attr "type" "neon_store1_1reg")])
+
 (define_insn "*neon_mov<mode>"
   [(set (match_operand:VDX 0 "nonimmediate_operand"
 	  "=w,Un,w, w, w,  ?r,?w,?r, ?Us,*r")
@@ -127,6 +137,8 @@
 	(match_operand:TI 1 "general_operand"))]
   "TARGET_NEON"
 {
+  gcc_checking_assert (aligned_operand (operands[0], TImode));
+  gcc_checking_assert (aligned_operand (operands[1], TImode));
   if (can_create_pseudo_p ())
     {
       if (!REG_P (operands[0]))
@@ -139,6 +151,8 @@
 	(match_operand:VSTRUCT 1 "general_operand"))]
   "TARGET_NEON"
 {
+  gcc_checking_assert (aligned_operand (operands[0], <MODE>mode));
+  gcc_checking_assert (aligned_operand (operands[1], <MODE>mode));
   if (can_create_pseudo_p ())
     {
       if (!REG_P (operands[0]))
@@ -151,6 +165,8 @@
 	(match_operand:VH 1 "s_register_operand"))]
   "TARGET_NEON"
 {
+  gcc_checking_assert (aligned_operand (operands[0], <MODE>mode));
+  gcc_checking_assert (aligned_operand (operands[1], <MODE>mode));
   if (can_create_pseudo_p ())
     {
       if (!REG_P (operands[0]))

@@ -466,6 +466,17 @@ set_mode_and_regno (rtx x, machine_mode mode, unsigned int regno)
   set_regno_raw (x, regno, nregs);
 }
 
+/* Initialize a fresh REG rtx with mode MODE and register REGNO.  */
+
+rtx
+init_raw_REG (rtx x, machine_mode mode, unsigned int regno)
+{
+  set_mode_and_regno (x, mode, regno);
+  REG_ATTRS (x) = NULL;
+  ORIGINAL_REGNO (x) = regno;
+  return x;
+}
+
 /* Generate a new REG rtx.  Make sure ORIGINAL_REGNO is set properly, and
    don't attempt to share with the various global pieces of rtl (such as
    frame_pointer_rtx).  */
@@ -474,9 +485,7 @@ rtx
 gen_raw_REG (machine_mode mode, unsigned int regno)
 {
   rtx x = rtx_alloc (REG MEM_STAT_INFO);
-  set_mode_and_regno (x, mode, regno);
-  REG_ATTRS (x) = NULL;
-  ORIGINAL_REGNO (x) = regno;
+  init_raw_REG (x, mode, regno);
   return x;
 }
 
@@ -2889,7 +2898,6 @@ verify_rtx_sharing (rtx orig, rtx insn)
       /* SCRATCH must be shared because they represent distinct values.  */
       return;
     case CLOBBER:
-    case CLOBBER_HIGH:
       /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
@@ -3143,7 +3151,6 @@ repeat:
       /* SCRATCH must be shared because they represent distinct values.  */
       return;
     case CLOBBER:
-    case CLOBBER_HIGH:
       /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
@@ -5717,7 +5724,6 @@ copy_insn_1 (rtx orig)
     case SIMPLE_RETURN:
       return orig;
     case CLOBBER:
-    case CLOBBER_HIGH:
       /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
@@ -6527,21 +6533,6 @@ gen_hard_reg_clobber (machine_mode mode, unsigned int regno)
   else
     return (hard_reg_clobbers[mode][regno] =
 	    gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (mode, regno)));
-}
-
-static GTY((deletable)) rtx
-hard_reg_clobbers_high[NUM_MACHINE_MODES][FIRST_PSEUDO_REGISTER];
-
-/* Return a CLOBBER_HIGH expression for register REGNO that clobbers MODE,
-   caching into HARD_REG_CLOBBERS_HIGH.  */
-rtx
-gen_hard_reg_clobber_high (machine_mode mode, unsigned int regno)
-{
-  if (hard_reg_clobbers_high[mode][regno])
-    return hard_reg_clobbers_high[mode][regno];
-  else
-    return (hard_reg_clobbers_high[mode][regno]
-	    = gen_rtx_CLOBBER_HIGH (VOIDmode, gen_rtx_REG (mode, regno)));
 }
 
 location_t prologue_location;

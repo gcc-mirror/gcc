@@ -1,4 +1,5 @@
 /* { dg-require-effective-target size20plus } */
+/* { dg-require-stack-size "32753*2" } */
 
 typedef __SIZE_TYPE__ size_t;
 

@@ -485,7 +485,8 @@ byte_reg (rtx x, int b)
    && ! TREE_THIS_VOLATILE (current_function_decl)			\
    && (h8300_saveall_function_p (current_function_decl)			\
        /* Save any call saved register that was used.  */		\
-       || (df_regs_ever_live_p (regno) && !call_used_regs[regno])	\
+       || (df_regs_ever_live_p (regno)					\
+	   && !call_used_or_fixed_reg_p (regno))			\
        /* Save the frame pointer if it was used.  */			\
        || (regno == HARD_FRAME_POINTER_REGNUM && df_regs_ever_live_p (regno)) \
        /* Save any register used in an interrupt handler.  */		\
@@ -494,7 +495,7 @@ byte_reg (rtx x, int b)
        /* Save call clobbered registers in non-leaf interrupt		\
 	  handlers.  */							\
        || (h8300_current_function_interrupt_function_p ()		\
-	   && call_used_regs[regno]					\
+	   && call_used_or_fixed_reg_p (regno)				\
 	   && !crtl->is_leaf)))
 
 /* We use this to wrap all emitted insns in the prologue.  */

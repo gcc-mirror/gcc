@@ -21,12 +21,6 @@
 #include <algorithm>
 #include <array>
 
-#ifndef __cpp_lib_constexpr_algorithms
-# error "Feature-test macro for constexpr algorithms missing"
-#elif __cpp_lib_constexpr_algorithms < 201711L
-# error "Feature-test macro for constexpr algorithms has wrong value"
-#endif
-
 constexpr bool
 test()
 {
@@ -35,7 +29,7 @@ test()
   const auto out4 = std::binary_search(ca0.begin(), ca0.end(), 5);
 
   const auto out5 = std::binary_search(ca0.begin(), ca0.end(), 5,
-				       std::equal_to<int>());
+				       std::less<int>());
 
   return true;
 }

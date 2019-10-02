@@ -31,7 +31,7 @@ func sem_reltimedwait_np(sem *semt, timeout *timespec) int32
 
 //go:nosplit
 func semacreate(mp *m) {
-	if mp.mos.waitsema != 0 {
+	if mp.waitsema != 0 {
 		return
 	}
 
@@ -44,7 +44,7 @@ func semacreate(mp *m) {
 	if sem_init(sem, 0, 0) != 0 {
 		throw("sem_init")
 	}
-	mp.mos.waitsema = uintptr(unsafe.Pointer(sem))
+	mp.waitsema = uintptr(unsafe.Pointer(sem))
 }
 
 //go:nosplit
@@ -52,10 +52,9 @@ func semasleep(ns int64) int32 {
 	_m_ := getg().m
 	if ns >= 0 {
 		var ts timespec
-		ts.set_sec(ns / 1000000000)
-		ts.set_nsec(int32(ns % 1000000000))
+		ts.setNsec(ns)
 
-		if sem_reltimedwait_np((*semt)(unsafe.Pointer(_m_.mos.waitsema)), &ts) != 0 {
+		if sem_reltimedwait_np((*semt)(unsafe.Pointer(_m_.waitsema)), &ts) != 0 {
 			err := errno()
 			if err == _ETIMEDOUT || err == _EAGAIN || err == _EINTR {
 				return -1
@@ -65,7 +64,7 @@ func semasleep(ns int64) int32 {
 		return 0
 	}
 	for {
-		r1 := sem_wait((*semt)(unsafe.Pointer(_m_.mos.waitsema)))
+		r1 := sem_wait((*semt)(unsafe.Pointer(_m_.waitsema)))
 		if r1 == 0 {
 			break
 		}
@@ -79,7 +78,7 @@ func semasleep(ns int64) int32 {
 
 //go:nosplit
 func semawakeup(mp *m) {
-	if sem_post((*semt)(unsafe.Pointer(mp.mos.waitsema))) != 0 {
+	if sem_post((*semt)(unsafe.Pointer(mp.waitsema))) != 0 {
 		throw("sem_post")
 	}
 }

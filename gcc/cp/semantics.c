@@ -723,6 +723,28 @@ begin_if_stmt (void)
   return r;
 }
 
+/* Returns true if FN, a CALL_EXPR, is a call to
+   std::is_constant_evaluated or __builtin_is_constant_evaluated.  */
+
+static bool
+is_std_constant_evaluated_p (tree fn)
+{
+  /* std::is_constant_evaluated takes no arguments.  */
+  if (call_expr_nargs (fn) != 0)
+    return false;
+
+  tree fndecl = cp_get_callee_fndecl_nofold (fn);
+  if (fndecl_built_in_p (fndecl, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
+			 BUILT_IN_FRONTEND))
+    return true;
+
+  if (!decl_in_std_namespace_p (fndecl))
+    return false;
+
+  tree name = DECL_NAME (fndecl);
+  return name && id_equal (name, "is_constant_evaluated");
+}
+
 /* Process the COND of an if-statement, which may be given by
    IF_STMT.  */
 
@@ -738,6 +760,20 @@ finish_if_stmt_cond (tree cond, tree if_stmt)
 	 converted to bool.  */
       && TYPE_MAIN_VARIANT (TREE_TYPE (cond)) == boolean_type_node)
     {
+      /* if constexpr (std::is_constant_evaluated()) is always true,
+	 so give the user a clue.  */
+      if (warn_tautological_compare)
+	{
+	  tree t = cond;
+	  if (TREE_CODE (t) == CLEANUP_POINT_EXPR)
+	    t = TREE_OPERAND (t, 0);
+	  if (TREE_CODE (t) == CALL_EXPR
+	      && is_std_constant_evaluated_p (t))
+	    warning_at (EXPR_LOCATION (cond), OPT_Wtautological_compare,
+			"%qs always evaluates to true in %<if constexpr%>",
+			"std::is_constant_evaluated");
+	}
+
       cond = instantiate_non_dependent_expr (cond);
       cond = cxx_constant_value (cond, NULL_TREE);
     }
@@ -774,6 +810,18 @@ finish_else_clause (tree if_stmt)
   ELSE_CLAUSE (if_stmt) = pop_stmt_list (ELSE_CLAUSE (if_stmt));
 }
 
+/* Callback for cp_walk_tree to mark all {VAR,PARM}_DECLs in a tree as
+   read.  */
+
+static tree
+maybe_mark_exp_read_r (tree *tp, int *, void *)
+{
+  tree t = *tp;
+  if (VAR_P (t) || TREE_CODE (t) == PARM_DECL)
+    mark_exp_read (t);
+  return NULL_TREE;
+}
+
 /* Finish an if-statement.  */
 
 void
@@ -781,6 +829,16 @@ finish_if_stmt (tree if_stmt)
 {
   tree scope = IF_SCOPE (if_stmt);
   IF_SCOPE (if_stmt) = NULL;
+  if (IF_STMT_CONSTEXPR_P (if_stmt))
+    {
+      /* Prevent various -Wunused warnings.  We might not instantiate
+	 either of these branches, so we would not mark the variables
+	 used in that branch as read.  */
+      cp_walk_tree_without_duplicates (&THEN_CLAUSE (if_stmt),
+				       maybe_mark_exp_read_r, NULL);
+      cp_walk_tree_without_duplicates (&ELSE_CLAUSE (if_stmt),
+				       maybe_mark_exp_read_r, NULL);
+    }
   add_stmt (do_poplevel (scope));
 }
 
@@ -3000,8 +3058,8 @@ finish_template_template_parm (tree aggr, tree identifier)
   DECL_TEMPLATE_RESULT (tmpl) = decl;
   DECL_ARTIFICIAL (decl) = 1;
 
-  // Associate the constraints with the underlying declaration,
-  // not the template.
+  /* Associate the constraints with the underlying declaration,
+     not the template.  */
   tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
   tree constr = build_constraints (reqs, NULL_TREE);
   set_constraints (decl, constr);
@@ -7909,6 +7967,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    case OMP_CLAUSE_DEFAULT_UNSPECIFIED:
 	      break;
 	    case OMP_CLAUSE_DEFAULT_SHARED:
+	      if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED
+		   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE)
+		  && c_omp_predefined_variable (t))
+		/* The __func__ variable and similar function-local predefined
+		   variables may be listed in a shared or firstprivate
+		   clause.  */
+		break;
 	      if (VAR_P (t)
 		  && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
 		  && TREE_STATIC (t)
@@ -9863,7 +9928,7 @@ check_trait_type (tree type)
 /* Process a trait expression.  */
 
 tree
-finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
+finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
 {
   if (type1 == error_mark_node
       || type2 == error_mark_node)
@@ -9876,6 +9941,7 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
       TRAIT_EXPR_TYPE1 (trait_expr) = type1;
       TRAIT_EXPR_TYPE2 (trait_expr) = type2;
       TRAIT_EXPR_KIND (trait_expr) = kind;
+      TRAIT_EXPR_LOCATION (trait_expr) = loc;
       return trait_expr;
     }
 
@@ -9933,8 +9999,9 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
       gcc_unreachable ();
     }
 
-  return (trait_expr_value (kind, type1, type2)
-	  ? boolean_true_node : boolean_false_node);
+tree val = (trait_expr_value (kind, type1, type2)
+	    ? boolean_true_node : boolean_false_node);
+ return maybe_wrap_with_location (val, loc);
 }
 
 /* Do-nothing variants of functions to handle pragma FLOAT_CONST_DECIMAL64,
@@ -10015,7 +10082,6 @@ apply_deduced_return_type (tree fco, tree return_type)
 #endif
       cfun->returns_struct = aggr;
     }
-
 }
 
 /* DECL is a local variable or parameter from the surrounding scope of a
@@ -10072,7 +10138,7 @@ capture_decltype (tree decl)
 static tree
 finish_unary_fold_expr (tree expr, int op, tree_code dir)
 {
-  // Build a pack expansion (assuming expr has pack type).
+  /* Build a pack expansion (assuming expr has pack type).  */
   if (!uses_parameter_packs (expr))
     {
       error_at (location_of (expr), "operand of fold expression has no "
@@ -10081,7 +10147,7 @@ finish_unary_fold_expr (tree expr, int op, tree_code dir)
     }
   tree pack = make_pack_expansion (expr);
 
-  // Build the fold expression.
+  /* Build the fold expression.  */
   tree code = build_int_cstu (integer_type_node, abs (op));
   tree fold = build_min_nt_loc (UNKNOWN_LOCATION, dir, code, pack);
   FOLD_EXPR_MODIFY_P (fold) = (op < 0);

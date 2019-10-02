@@ -471,8 +471,7 @@ setup_class_hard_regs (void)
   ira_assert (SHRT_MAX >= FIRST_PSEUDO_REGISTER);
   for (cl = (int) N_REG_CLASSES - 1; cl >= 0; cl--)
     {
-      COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
-      AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
+      temp_hard_regset = reg_class_contents[cl] & ~no_unit_alloc_regs;
       CLEAR_HARD_REG_SET (processed_hard_reg_set);
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	{
@@ -514,7 +513,7 @@ setup_alloc_regs (bool use_hard_frame_p)
 #ifdef ADJUST_REG_ALLOC_ORDER
   ADJUST_REG_ALLOC_ORDER;
 #endif
-  COPY_HARD_REG_SET (no_unit_alloc_regs, fixed_nonglobal_reg_set);
+  no_unit_alloc_regs = fixed_nonglobal_reg_set;
   if (! use_hard_frame_p)
     SET_HARD_REG_BIT (no_unit_alloc_regs, HARD_FRAME_POINTER_REGNUM);
   setup_class_hard_regs ();
@@ -541,8 +540,7 @@ setup_reg_subclasses (void)
       if (i == (int) NO_REGS)
 	continue;
 
-      COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[i]);
-      AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
+      temp_hard_regset = reg_class_contents[i] & ~no_unit_alloc_regs;
       if (hard_reg_set_empty_p (temp_hard_regset))
 	continue;
       for (j = 0; j < N_REG_CLASSES; j++)
@@ -550,8 +548,7 @@ setup_reg_subclasses (void)
 	  {
 	    enum reg_class *p;
 
-	    COPY_HARD_REG_SET (temp_hard_regset2, reg_class_contents[j]);
-	    AND_COMPL_HARD_REG_SET (temp_hard_regset2, no_unit_alloc_regs);
+	    temp_hard_regset2 = reg_class_contents[j] & ~no_unit_alloc_regs;
 	    if (! hard_reg_set_subset_p (temp_hard_regset,
 					 temp_hard_regset2))
 	      continue;
@@ -605,10 +602,8 @@ setup_class_subset_and_memory_move_costs (void)
   for (cl = (int) N_REG_CLASSES - 1; cl >= 0; cl--)
     for (cl2 = (int) N_REG_CLASSES - 1; cl2 >= 0; cl2--)
       {
-	COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
-	AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
-	COPY_HARD_REG_SET (temp_hard_regset2, reg_class_contents[cl2]);
-	AND_COMPL_HARD_REG_SET (temp_hard_regset2, no_unit_alloc_regs);
+	temp_hard_regset = reg_class_contents[cl] & ~no_unit_alloc_regs;
+	temp_hard_regset2 = reg_class_contents[cl2] & ~no_unit_alloc_regs;
 	ira_class_subset_p[cl][cl2]
 	  = hard_reg_set_subset_p (temp_hard_regset, temp_hard_regset2);
 	if (! hard_reg_set_empty_p (temp_hard_regset2)
@@ -757,8 +752,7 @@ setup_stack_reg_pressure_class (void)
     for (i = 0; i < ira_pressure_classes_num; i++)
       {
 	cl = ira_pressure_classes[i];
-	COPY_HARD_REG_SET (temp_hard_regset2, temp_hard_regset);
-	AND_HARD_REG_SET (temp_hard_regset2, reg_class_contents[cl]);
+	temp_hard_regset2 = temp_hard_regset & reg_class_contents[cl];
 	size = hard_reg_set_size (temp_hard_regset2);
 	if (best < size)
 	  {
@@ -816,10 +810,10 @@ setup_pressure_classes (void)
 		 register pressure class.  */
 	      for (m = 0; m < NUM_MACHINE_MODES; m++)
 		{
-		  COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
-		  AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
-		  AND_COMPL_HARD_REG_SET (temp_hard_regset,
-					  ira_prohibited_class_mode_regs[cl][m]);
+		  temp_hard_regset
+		    = (reg_class_contents[cl]
+		       & ~(no_unit_alloc_regs
+			   | ira_prohibited_class_mode_regs[cl][m]));
 		  if (hard_reg_set_empty_p (temp_hard_regset))
 		    continue;
 		  ira_init_register_move_cost_if_necessary ((machine_mode) m);
@@ -833,8 +827,7 @@ setup_pressure_classes (void)
 	    }
 	  curr = 0;
 	  insert_p = true;
-	  COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
-	  AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
+	  temp_hard_regset = reg_class_contents[cl] & ~no_unit_alloc_regs;
 	  /* Remove so far added pressure classes which are subset of the
 	     current candidate class.  Prefer GENERAL_REGS as a pressure
 	     register class to another class containing the same
@@ -845,11 +838,10 @@ setup_pressure_classes (void)
 	  for (i = 0; i < n; i++)
 	    {
 	      cl2 = pressure_classes[i];
-	      COPY_HARD_REG_SET (temp_hard_regset2, reg_class_contents[cl2]);
-	      AND_COMPL_HARD_REG_SET (temp_hard_regset2, no_unit_alloc_regs);
+	      temp_hard_regset2 = (reg_class_contents[cl2]
+				   & ~no_unit_alloc_regs);
 	      if (hard_reg_set_subset_p (temp_hard_regset, temp_hard_regset2)
-		  && (! hard_reg_set_equal_p (temp_hard_regset,
-					      temp_hard_regset2)
+		  && (temp_hard_regset != temp_hard_regset2
 		      || cl2 == (int) GENERAL_REGS))
 		{
 		  pressure_classes[curr++] = (enum reg_class) cl2;
@@ -857,11 +849,10 @@ setup_pressure_classes (void)
 		  continue;
 		}
 	      if (hard_reg_set_subset_p (temp_hard_regset2, temp_hard_regset)
-		  && (! hard_reg_set_equal_p (temp_hard_regset2,
-					      temp_hard_regset)
+		  && (temp_hard_regset2 != temp_hard_regset
 		      || cl == (int) GENERAL_REGS))
 		continue;
-	      if (hard_reg_set_equal_p (temp_hard_regset2, temp_hard_regset))
+	      if (temp_hard_regset2 == temp_hard_regset)
 		insert_p = false;
 	      pressure_classes[curr++] = (enum reg_class) cl2;
 	    }
@@ -882,7 +873,7 @@ setup_pressure_classes (void)
        registers available for the allocation.  */
     CLEAR_HARD_REG_SET (temp_hard_regset);
     CLEAR_HARD_REG_SET (temp_hard_regset2);
-    COPY_HARD_REG_SET (ignore_hard_regs, no_unit_alloc_regs);
+    ignore_hard_regs = no_unit_alloc_regs;
     for (cl = 0; cl < LIM_REG_CLASSES; cl++)
       {
 	/* For some targets (like MIPS with MD_REGS), there are some
@@ -893,23 +884,23 @@ setup_pressure_classes (void)
 	    break;
 	if (m >= NUM_MACHINE_MODES)
 	  {
-	    IOR_HARD_REG_SET (ignore_hard_regs, reg_class_contents[cl]);
+	    ignore_hard_regs |= reg_class_contents[cl];
 	    continue;
 	  }
 	for (i = 0; i < n; i++)
 	  if ((int) pressure_classes[i] == cl)
 	    break;
-	IOR_HARD_REG_SET (temp_hard_regset2, reg_class_contents[cl]);
+	temp_hard_regset2 |= reg_class_contents[cl];
 	if (i < n)
-	  IOR_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
+	  temp_hard_regset |= reg_class_contents[cl];
       }
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
       /* Some targets (like SPARC with ICC reg) have allocatable regs
 	 for which no reg class is defined.  */
       if (REGNO_REG_CLASS (i) == NO_REGS)
 	SET_HARD_REG_BIT (ignore_hard_regs, i);
-    AND_COMPL_HARD_REG_SET (temp_hard_regset, ignore_hard_regs);
-    AND_COMPL_HARD_REG_SET (temp_hard_regset2, ignore_hard_regs);
+    temp_hard_regset &= ~ignore_hard_regs;
+    temp_hard_regset2 &= ~ignore_hard_regs;
     ira_assert (hard_reg_set_subset_p (temp_hard_regset2, temp_hard_regset));
   }
 #endif
@@ -1001,16 +992,12 @@ setup_allocno_and_important_classes (void)
      same set of hard registers.  */
   for (i = 0; i < LIM_REG_CLASSES; i++)
     {
-      COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[i]);
-      AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
+      temp_hard_regset = reg_class_contents[i] & ~no_unit_alloc_regs;
       for (j = 0; j < n; j++)
 	{
 	  cl = classes[j];
-	  COPY_HARD_REG_SET (temp_hard_regset2, reg_class_contents[cl]);
-	  AND_COMPL_HARD_REG_SET (temp_hard_regset2,
-				  no_unit_alloc_regs);
-	  if (hard_reg_set_equal_p (temp_hard_regset,
-				    temp_hard_regset2))
+	  temp_hard_regset2 = reg_class_contents[cl] & ~no_unit_alloc_regs;
+	  if (temp_hard_regset == temp_hard_regset2)
 	    break;
 	}
       if (j >= n || targetm.additional_allocno_class_p (i))
@@ -1037,14 +1024,12 @@ setup_allocno_and_important_classes (void)
   for (cl = 0; cl < N_REG_CLASSES; cl++)
     if (ira_class_hard_regs_num[cl] > 0)
       {
-	COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
-	AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
+	temp_hard_regset = reg_class_contents[cl] & ~no_unit_alloc_regs;
 	set_p = false;
 	for (j = 0; j < ira_allocno_classes_num; j++)
 	  {
-	    COPY_HARD_REG_SET (temp_hard_regset2,
-			       reg_class_contents[ira_allocno_classes[j]]);
-	    AND_COMPL_HARD_REG_SET (temp_hard_regset2, no_unit_alloc_regs);
+	    temp_hard_regset2 = (reg_class_contents[ira_allocno_classes[j]]
+				 & ~no_unit_alloc_regs);
 	    if ((enum reg_class) cl == ira_allocno_classes[j])
 	      break;
 	    else if (hard_reg_set_subset_p (temp_hard_regset,
@@ -1118,10 +1103,9 @@ setup_class_translate_array (enum reg_class *class_translate,
       for (i = 0; i < classes_num; i++)
 	{
 	  aclass = classes[i];
-	  COPY_HARD_REG_SET (temp_hard_regset,
-			     reg_class_contents[aclass]);
-	  AND_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
-	  AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
+	  temp_hard_regset = (reg_class_contents[aclass]
+			      & reg_class_contents[cl]
+			      & ~no_unit_alloc_regs);
 	  if (! hard_reg_set_empty_p (temp_hard_regset))
 	    {
 	      min_cost = INT_MAX;
@@ -1223,10 +1207,8 @@ setup_reg_class_relations (void)
 	  ira_reg_classes_intersect_p[cl1][cl2] = false;
 	  ira_reg_class_intersect[cl1][cl2] = NO_REGS;
 	  ira_reg_class_subset[cl1][cl2] = NO_REGS;
-	  COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl1]);
-	  AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
-	  COPY_HARD_REG_SET (temp_set2, reg_class_contents[cl2]);
-	  AND_COMPL_HARD_REG_SET (temp_set2, no_unit_alloc_regs);
+	  temp_hard_regset = reg_class_contents[cl1] & ~no_unit_alloc_regs;
+	  temp_set2 = reg_class_contents[cl2] & ~no_unit_alloc_regs;
 	  if (hard_reg_set_empty_p (temp_hard_regset)
 	      && hard_reg_set_empty_p (temp_set2))
 	    {
@@ -1264,16 +1246,14 @@ setup_reg_class_relations (void)
 	    }
 	  ira_reg_class_subunion[cl1][cl2] = NO_REGS;
 	  ira_reg_class_superunion[cl1][cl2] = NO_REGS;
-	  COPY_HARD_REG_SET (intersection_set, reg_class_contents[cl1]);
-	  AND_HARD_REG_SET (intersection_set, reg_class_contents[cl2]);
-	  AND_COMPL_HARD_REG_SET (intersection_set, no_unit_alloc_regs);
-	  COPY_HARD_REG_SET (union_set, reg_class_contents[cl1]);
-	  IOR_HARD_REG_SET (union_set, reg_class_contents[cl2]);
-	  AND_COMPL_HARD_REG_SET (union_set, no_unit_alloc_regs);
+	  intersection_set = (reg_class_contents[cl1]
+			      & reg_class_contents[cl2]
+			      & ~no_unit_alloc_regs);
+	  union_set = ((reg_class_contents[cl1] | reg_class_contents[cl2])
+		       & ~no_unit_alloc_regs);
 	  for (cl3 = 0; cl3 < N_REG_CLASSES; cl3++)
 	    {
-	      COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl3]);
-	      AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
+	      temp_hard_regset = reg_class_contents[cl3] & ~no_unit_alloc_regs;
 	      if (hard_reg_set_subset_p (temp_hard_regset, intersection_set))
 		{
 		  /* CL3 allocatable hard register set is inside of
@@ -1281,17 +1261,16 @@ setup_reg_class_relations (void)
 		     of CL1 and CL2.  */
 		  if (important_class_p[cl3])
 		    {
-		      COPY_HARD_REG_SET
-			(temp_set2,
-			 reg_class_contents
-			 [(int) ira_reg_class_intersect[cl1][cl2]]);
-		      AND_COMPL_HARD_REG_SET (temp_set2, no_unit_alloc_regs);
+		      temp_set2
+			= (reg_class_contents
+			   [ira_reg_class_intersect[cl1][cl2]]);
+		      temp_set2 &= ~no_unit_alloc_regs;
 		      if (! hard_reg_set_subset_p (temp_hard_regset, temp_set2)
 			  /* If the allocatable hard register sets are
 			     the same, prefer GENERAL_REGS or the
 			     smallest class for debugging
 			     purposes.  */
-			  || (hard_reg_set_equal_p (temp_hard_regset, temp_set2)
+			  || (temp_hard_regset == temp_set2
 			      && (cl3 == GENERAL_REGS
 				  || ((ira_reg_class_intersect[cl1][cl2]
 				       != GENERAL_REGS)
@@ -1302,14 +1281,13 @@ setup_reg_class_relations (void)
 					   ira_reg_class_intersect[cl1][cl2]])))))
 			ira_reg_class_intersect[cl1][cl2] = (enum reg_class) cl3;
 		    }
-		  COPY_HARD_REG_SET
-		    (temp_set2,
-		     reg_class_contents[(int) ira_reg_class_subset[cl1][cl2]]);
-		  AND_COMPL_HARD_REG_SET (temp_set2, no_unit_alloc_regs);
+		  temp_set2
+		    = (reg_class_contents[ira_reg_class_subset[cl1][cl2]]
+		       & ~no_unit_alloc_regs);
 		  if (! hard_reg_set_subset_p (temp_hard_regset, temp_set2)
 		      /* Ignore unavailable hard registers and prefer
 			 smallest class for debugging purposes.  */
-		      || (hard_reg_set_equal_p (temp_hard_regset, temp_set2)
+		      || (temp_hard_regset == temp_set2
 			  && hard_reg_set_subset_p
 			     (reg_class_contents[cl3],
 			      reg_class_contents
@@ -1322,15 +1300,13 @@ setup_reg_class_relations (void)
 		  /* CL3 allocatable hard register set is inside of
 		     union of allocatable hard register sets of CL1
 		     and CL2.  */
-		  COPY_HARD_REG_SET
-		    (temp_set2,
-		     reg_class_contents[(int) ira_reg_class_subunion[cl1][cl2]]);
-		  AND_COMPL_HARD_REG_SET (temp_set2, no_unit_alloc_regs);
+		  temp_set2
+		    = (reg_class_contents[ira_reg_class_subunion[cl1][cl2]]
+		       & ~no_unit_alloc_regs);
 	 	  if (ira_reg_class_subunion[cl1][cl2] == NO_REGS
 		      || (hard_reg_set_subset_p (temp_set2, temp_hard_regset)
 			  
-			  && (! hard_reg_set_equal_p (temp_set2,
-						      temp_hard_regset)
+			  && (temp_set2 != temp_hard_regset
 			      || cl3 == GENERAL_REGS
 			      /* If the allocatable hard register sets are the
 				 same, prefer GENERAL_REGS or the smallest
@@ -1347,15 +1323,13 @@ setup_reg_class_relations (void)
 		  /* CL3 allocatable hard register set contains union
 		     of allocatable hard register sets of CL1 and
 		     CL2.  */
-		  COPY_HARD_REG_SET
-		    (temp_set2,
-		     reg_class_contents[(int) ira_reg_class_superunion[cl1][cl2]]);
-		  AND_COMPL_HARD_REG_SET (temp_set2, no_unit_alloc_regs);
+		  temp_set2
+		    = (reg_class_contents[ira_reg_class_superunion[cl1][cl2]]
+		       & ~no_unit_alloc_regs);
 	 	  if (ira_reg_class_superunion[cl1][cl2] == NO_REGS
 		      || (hard_reg_set_subset_p (temp_hard_regset, temp_set2)
 
-			  && (! hard_reg_set_equal_p (temp_set2,
-						      temp_hard_regset)
+			  && (temp_set2 != temp_hard_regset
 			      || cl3 == GENERAL_REGS
 			      /* If the allocatable hard register sets are the
 				 same, prefer GENERAL_REGS or the smallest
@@ -1499,8 +1473,7 @@ setup_prohibited_class_mode_regs (void)
 
   for (cl = (int) N_REG_CLASSES - 1; cl >= 0; cl--)
     {
-      COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
-      AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
+      temp_hard_regset = reg_class_contents[cl] & ~no_unit_alloc_regs;
       for (j = 0; j < NUM_MACHINE_MODES; j++)
 	{
 	  count = 0;
@@ -2305,7 +2278,7 @@ ira_setup_eliminable_regset (void)
   if (frame_pointer_needed)
     df_set_regs_ever_live (HARD_FRAME_POINTER_REGNUM, true);
     
-  COPY_HARD_REG_SET (ira_no_alloc_regs, no_unit_alloc_regs);
+  ira_no_alloc_regs = no_unit_alloc_regs;
   CLEAR_HARD_REG_SET (eliminable_regset);
 
   compute_regs_asm_clobbered ();
@@ -2392,12 +2365,10 @@ setup_reg_renumber (void)
 	  for (i = 0; i < nwords; i++)
 	    {
 	      obj = ALLOCNO_OBJECT (a, i);
-	      IOR_COMPL_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-				      reg_class_contents[pclass]);
+	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj)
+		|= ~reg_class_contents[pclass];
 	    }
-	  if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0
-	      && ira_hard_reg_set_intersection_p (hard_regno, ALLOCNO_MODE (a),
-						  call_used_reg_set))
+	  if (ira_need_caller_save_p (a, hard_regno))
 	    {
 	      ira_assert (!optimize || flag_caller_saves
 			  || (ALLOCNO_CALLS_CROSSED_NUM (a)
@@ -3004,7 +2975,7 @@ validate_equiv_mem (rtx_insn *start, rtx reg, rtx memref)
 	    return valid_none;
 	}
 
-      note_stores (PATTERN (insn), validate_equiv_mem_from_store, &info);
+      note_stores (insn, validate_equiv_mem_from_store, &info);
       if (info.equiv_mem_modified)
 	return valid_none;
 
@@ -3092,7 +3063,6 @@ equiv_init_movable_p (rtx x, int regno)
 
     case CC0:
     case CLOBBER:
-    case CLOBBER_HIGH:
       return 0;
 
     case PRE_INC:
@@ -3199,7 +3169,6 @@ memref_referenced_p (rtx memref, rtx x, bool read_p)
       return memref_referenced_p (memref, SET_SRC (x), true);
 
     case CLOBBER:
-    case CLOBBER_HIGH:
       if (process_set_for_memref_referenced_p (memref, XEXP (x, 0)))
 	return true;
 
@@ -3391,6 +3360,37 @@ def_dominates_uses (int regno)
   return true;
 }
 
+/* Scan the instructions before update_equiv_regs.  Record which registers
+   are referenced as paradoxical subregs.  Also check for cases in which
+   the current function needs to save a register that one of its call
+   instructions clobbers.
+
+   These things are logically unrelated, but it's more efficient to do
+   them together.  */
+
+static void
+update_equiv_regs_prescan (void)
+{
+  basic_block bb;
+  rtx_insn *insn;
+  function_abi_aggregator callee_abis;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    FOR_BB_INSNS (bb, insn)
+      if (NONDEBUG_INSN_P (insn))
+	{
+	  set_paradoxical_subreg (insn);
+	  if (CALL_P (insn))
+	    callee_abis.note_callee_abi (insn_callee_abi (insn));
+	}
+
+  HARD_REG_SET extra_caller_saves = callee_abis.caller_save_regs (*crtl->abi);
+  if (!hard_reg_set_empty_p (extra_caller_saves))
+    for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
+      if (TEST_HARD_REG_BIT (extra_caller_saves, regno))
+	df_set_regs_ever_live (regno, true);
+}
+
 /* Find registers that are equivalent to a single value throughout the
    compilation (either because they can be referenced in memory or are
    set once from a single constant).  Lower their priority for a
@@ -3406,15 +3406,6 @@ update_equiv_regs (void)
 {
   rtx_insn *insn;
   basic_block bb;
-
-  /* Scan insns and set pdx_subregs if the reg is used in a
-     paradoxical subreg.  Don't set such reg equivalent to a mem,
-     because lra will not substitute such equiv memory in order to
-     prevent access beyond allocated memory for paradoxical memory subreg.  */
-  FOR_EACH_BB_FN (bb, cfun)
-    FOR_BB_INSNS (bb, insn)
-      if (NONDEBUG_INSN_P (insn))
-	set_paradoxical_subreg (insn);
 
   /* Scan the insns and find which registers have equivalences.  Do this
      in a separate scan of the insns because (due to -fcse-follow-jumps)
@@ -3447,7 +3438,7 @@ update_equiv_regs (void)
 	  if (set == NULL_RTX
 	      || side_effects_p (SET_SRC (set)))
 	    {
-	      note_stores (PATTERN (insn), no_equiv, NULL);
+	      note_pattern_stores (PATTERN (insn), no_equiv, NULL);
 	      continue;
 	    }
 	  else if (GET_CODE (PATTERN (insn)) == PARALLEL)
@@ -3458,7 +3449,7 @@ update_equiv_regs (void)
 		{
 		  rtx part = XVECEXP (PATTERN (insn), 0, i);
 		  if (part != set)
-		    note_stores (part, no_equiv, NULL);
+		    note_pattern_stores (part, no_equiv, NULL);
 		}
 	    }
 
@@ -3516,7 +3507,7 @@ update_equiv_regs (void)
 	    {
 	      /* This might be setting a SUBREG of a pseudo, a pseudo that is
 		 also set somewhere else to a constant.  */
-	      note_stores (set, no_equiv, NULL);
+	      note_pattern_stores (set, no_equiv, NULL);
 	      continue;
 	    }
 
@@ -3524,7 +3515,7 @@ update_equiv_regs (void)
 	     equivalent to a mem.  */
 	  if (MEM_P (src) && reg_equiv[regno].pdx_subregs)
 	    {
-	      note_stores (set, no_equiv, NULL);
+	      note_pattern_stores (set, no_equiv, NULL);
 	      continue;
 	    }
 
@@ -4458,7 +4449,6 @@ rtx_moveable_p (rtx *loc, enum op_type type)
 	      && rtx_moveable_p (&XEXP (x, 2), OP_IN));
 
     case CLOBBER:
-    case CLOBBER_HIGH:
       return rtx_moveable_p (&SET_DEST (x), OP_OUT);
 
     case UNSPEC_VOLATILE:
@@ -4911,9 +4901,7 @@ interesting_dest_for_shprep (rtx_insn *insn, basic_block call_dom)
   for (int i = 0; i < XVECLEN (pat, 0); i++)
     {
       rtx sub = XVECEXP (pat, 0, i);
-      if (GET_CODE (sub) == USE
-	  || GET_CODE (sub) == CLOBBER
-	  || GET_CODE (sub) == CLOBBER_HIGH)
+      if (GET_CODE (sub) == USE || GET_CODE (sub) == CLOBBER)
 	continue;
       if (GET_CODE (sub) != SET
 	  || side_effects_p (sub))
@@ -5305,6 +5293,7 @@ ira (FILE *f)
   init_alias_analysis ();
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
   reg_equiv = XCNEWVEC (struct equivalence, max_reg_num ());
+  update_equiv_regs_prescan ();
   update_equiv_regs ();
 
   /* Don't move insns if live range shrinkage or register
@@ -5616,7 +5605,9 @@ do_reload (void)
       poly_int64 size = get_frame_size () + STACK_CHECK_FIXED_FRAME_SIZE;
 
       for (int i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (df_regs_ever_live_p (i) && !fixed_regs[i] && call_used_regs[i])
+	if (df_regs_ever_live_p (i)
+	    && !fixed_regs[i]
+	    && !crtl->abi->clobbers_full_reg_p (i))
 	  size += UNITS_PER_WORD;
 
       if (constant_lower_bound (size) > STACK_CHECK_MAX_FRAME_SIZE)

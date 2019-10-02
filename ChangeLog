@@ -1,3 +1,58 @@
+2019-10-01  Frederik Harwath <frederik@codesourcery.com>
+
+	* MAINTAINERS: Add myself to Write After Approval
+
+2019-09-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* MAINTAINERS: Add myself as an aarch64 maintainer.
+
+2019-09-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* MAINTAINERS: Add myself as aarch64 maintainer.
+
+2019-09-23  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/vsx.md (xxswapd_v4si, xxswapd_v8hi, xxswapd_v16qi):
+	New define_insn.
+	(vsx_xxpermdi4_le_<mode> for VSX_W, vsx_xxpermdi8_le_V8HI,
+	vsx_xxpermdi16_le_V16QI): Removed define_insn.
+
+2019-09-13  Sam Tebbs  <sam.tebbs@arm.com>
+
+	* MAINTAINERS (Sam Tebbs): Update email address.
+
+2019-09-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	* MAINTAINERS: Update my email address.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
+	* libtool.m4: Handle uclinuxfdpiceabi.
+
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* MAINTAINERS: Add myself as the maintainer of the eBPF port.
+	Remove myself from Write After Approval section.
+
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* configure.ac: Support for bpf-*-* targets.
+	* configure: Regenerate.
+
+2019-09-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config.sub: Import upstream version 2019-06-30.
+	* config.guess: Import upstream version 2019-07-24.
+
+2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* MAINTAINERS: Remove spu port maintainers.
+
+2019-08-28  Martin Liska  <mliska@suse.cz>
+
+	* .gitignore: Add .clangd and compile_commands.json
+	to .gitignore.
+
 2019-08-23  Michael Forney  <mforney@mforney.org>
 
 	* Makefile.tpl (HOST_EXPORTS): Add CXX_FOR_BUILD.

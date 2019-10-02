@@ -901,6 +901,9 @@ struct ucnrange {
 };
 #include "ucnid.h"
 
+/* ISO 10646 defines the UCS codespace as the range 0-0x10FFFF inclusive.  */
+#define UCS_LIMIT 0x10FFFF
+
 /* Returns 1 if C is valid in an identifier, 2 if C is valid except at
    the start of an identifier, and 0 if C is not valid in an
    identifier.  We assume C has already gone through the checks of
@@ -915,7 +918,7 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
   int mn, mx, md;
   unsigned short valid_flags, invalid_start_flags;
 
-  if (c > 0x10FFFF)
+  if (c > UCS_LIMIT)
     return 0;
 
   mn = 0;
@@ -1015,6 +1018,10 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
    C99 6.4.3: A universal character name shall not specify a character
    whose short identifier is less than 00A0 other than 0024 ($), 0040 (@),
    or 0060 (`), nor one in the range D800 through DFFF inclusive.
+
+   If the hexadecimal value is larger than the upper bound of the UCS
+   codespace specified in ISO/IEC 10646, a pedantic warning is issued
+   in all versions of C and in the C++2a or later versions of C++.
 
    *PSTR must be preceded by "\u" or "\U"; it is assumed that the
    buffer end is delimited by a non-hex digit.  Returns false if the
@@ -1135,6 +1142,12 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
    "universal character %.*s is not valid at the start of an identifier",
 		   (int) (str - base), base);
     }
+  else if (result > UCS_LIMIT
+	   && (!CPP_OPTION (pfile, cplusplus)
+	       || CPP_OPTION (pfile, lang) > CLK_CXX17))
+    cpp_error (pfile, CPP_DL_PEDWARN,
+	       "%.*s is outside the UCS codespace",
+	       (int) (str - base), base);
 
   *cp = result;
   return true;
@@ -1196,6 +1209,84 @@ convert_ucn (cpp_reader *pfile, const uchar *from, const uchar *limit,
     }
 
   return from;
+}
+
+/*  Performs a similar task as _cpp_valid_ucn, but parses UTF-8-encoded
+    extended characters rather than UCNs.  If the return value is TRUE, then a
+    character was successfully decoded and stored in *CP; *PSTR has been
+    updated to point one past the valid UTF-8 sequence.  Diagnostics may have
+    been emitted if the character parsed is not allowed in the current context.
+    If the return value is FALSE, then *PSTR has not been modified and *CP may
+    equal 0, to indicate that *PSTR does not form a valid UTF-8 sequence, or it
+    may, when processing an identifier in C mode, equal a codepoint that was
+    validly encoded but is not allowed to appear in an identifier.  In either
+    case, no diagnostic is emitted, and the return value of FALSE should cause
+    a new token to be formed.
+
+    Unlike _cpp_valid_ucn, this will never be called when lexing a string; only
+    a potential identifier, or a CPP_OTHER token.  NST is unused in the latter
+    case.
+
+    As in _cpp_valid_ucn, IDENTIFIER_POS is 0 when not in an identifier, 1 for
+    the start of an identifier, or 2 otherwise.  */
+
+extern bool
+_cpp_valid_utf8 (cpp_reader *pfile,
+		 const uchar **pstr,
+		 const uchar *limit,
+		 int identifier_pos,
+		 struct normalize_state *nst,
+		 cppchar_t *cp)
+{
+  const uchar *base = *pstr;
+  size_t inbytesleft = limit - base;
+  if (one_utf8_to_cppchar (pstr, &inbytesleft, cp))
+    {
+      /* No diagnostic here as this byte will rather become a
+	 new token.  */
+      *cp = 0;
+      return false;
+    }
+
+  if (identifier_pos)
+    {
+      switch (ucn_valid_in_identifier (pfile, *cp, nst))
+	{
+
+	case 0:
+	  /* In C++, this is an error for invalid character in an identifier
+	     because logically, the UTF-8 was converted to a UCN during
+	     translation phase 1 (even though we don't physically do it that
+	     way).  In C, this byte rather becomes grammatically a separate
+	     token.  */
+
+	  if (CPP_OPTION (pfile, cplusplus))
+	    cpp_error (pfile, CPP_DL_ERROR,
+		       "extended character %.*s is not valid in an identifier",
+		       (int) (*pstr - base), base);
+	  else
+	    {
+	      *pstr = base;
+	      return false;
+	    }
+
+	  break;
+
+	case 2:
+	  if (identifier_pos == 1)
+	    {
+	      /* This is treated the same way in C++ or C99 -- lexed as an
+		 identifier which is then invalid because an identifier is
+		 not allowed to start with this character.  */
+	      cpp_error (pfile, CPP_DL_ERROR,
+	  "extended character %.*s is not valid at the start of an identifier",
+			 (int) (*pstr - base), base);
+	    }
+	  break;
+	}
+    }
+
+  return true;
 }
 
 /* Subroutine of convert_hex and convert_oct.  N is the representation
@@ -1956,8 +2047,9 @@ cpp_interpret_charconst (cpp_reader *pfile, const cpp_token *token,
 }
 
 /* Convert an identifier denoted by ID and LEN, which might contain
-   UCN escapes, to the source character set, either UTF-8 or
-   UTF-EBCDIC.  Assumes that the identifier is actually a valid identifier.  */
+   UCN escapes or UTF-8 multibyte chars, to the source character set,
+   either UTF-8 or UTF-EBCDIC.  Assumes that the identifier is actually
+   a valid identifier.  */
 cpp_hashnode *
 _cpp_interpret_identifier (cpp_reader *pfile, const uchar *id, size_t len)
 {

@@ -247,8 +247,6 @@ static void cp_lexer_stop_debugging
 
 static cp_token_cache *cp_token_cache_new
   (cp_token *, cp_token *);
-static tree cp_parser_noexcept_specification_opt
-  (cp_parser *, bool, bool *, bool, bool);
 static tree cp_parser_late_noexcept_specifier
   (cp_parser *, tree);
 static void noexcept_override_late_checks
@@ -834,14 +832,28 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
             {
               /* Warn about the C++0x keyword (but still treat it as
                  an identifier).  */
-              warning (OPT_Wc__11_compat,
-                       "identifier %qE is a keyword in C++11",
-                       token->u.value);
+	      warning_at (token->location, OPT_Wc__11_compat,
+			  "identifier %qE is a keyword in C++11",
+			  token->u.value);
 
               /* Clear out the C_RID_CODE so we don't warn about this
                  particular identifier-turned-keyword again.  */
               C_SET_RID_CODE (token->u.value, RID_MAX);
             }
+	  if (warn_cxx20_compat
+	      && C_RID_CODE (token->u.value) >= RID_FIRST_CXX20
+	      && C_RID_CODE (token->u.value) <= RID_LAST_CXX20)
+	    {
+	      /* Warn about the C++20 keyword (but still treat it as
+		 an identifier).  */
+	      warning_at (token->location, OPT_Wc__20_compat,
+			  "identifier %qE is a keyword in C++20",
+			  token->u.value);
+
+	      /* Clear out the C_RID_CODE so we don't warn about this
+		 particular identifier-turned-keyword again.  */
+	      C_SET_RID_CODE (token->u.value, RID_MAX);
+	    }
 
 	  token->keyword = RID_MAX;
 	}
@@ -986,6 +998,7 @@ cp_keyword_starts_decl_specifier_p (enum rid keyword)
     case RID_DECLTYPE:
     case RID_UNDERLYING_TYPE:
     case RID_CONSTEXPR:
+    case RID_CONSTINIT:
       return true;
 
     default:
@@ -1815,7 +1828,9 @@ enum
   /* When parsing a decl-specifier-seq, only allow mutable or constexpr.  */
   CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR = 0x10,
   /* When parsing a decl-specifier-seq, allow missing typename.  */
-  CP_PARSER_FLAGS_TYPENAME_OPTIONAL = 0x20
+  CP_PARSER_FLAGS_TYPENAME_OPTIONAL = 0x20,
+  /* When parsing of the noexcept-specifier should be delayed.  */
+  CP_PARSER_FLAGS_DELAY_NOEXCEPT = 0x40
 };
 
 /* This type is used for parameters and variables which hold
@@ -2365,7 +2380,7 @@ static void cp_parser_explicit_instantiation
 static void cp_parser_explicit_specialization
   (cp_parser *);
 
-/* Exception handling [gram.exception] */
+/* Exception handling [gram.except] */
 
 static tree cp_parser_try_block
   (cp_parser *);
@@ -2380,9 +2395,11 @@ static tree cp_parser_exception_declaration
 static tree cp_parser_throw_expression
   (cp_parser *);
 static tree cp_parser_exception_specification_opt
-  (cp_parser *, bool = false);
+  (cp_parser *, cp_parser_flags);
 static tree cp_parser_type_id_list
   (cp_parser *);
+static tree cp_parser_noexcept_specification_opt
+  (cp_parser *, cp_parser_flags, bool, bool *, bool);
 
 /* GNU Extensions */
 
@@ -3353,6 +3370,9 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	       && id_equal (id, "thread_local"))
 	inform (location, "C++11 %<thread_local%> only available with "
 		"%<-std=c++11%> or %<-std=gnu++11%>");
+      else if (cxx_dialect < cxx2a && id == ridpointers[(int)RID_CONSTINIT])
+	inform (location, "C++20 %<constinit%> only available with "
+		"%<-std=c++2a%> or %<-std=gnu++2a%>");
       else if (!flag_concepts && id == ridpointers[(int)RID_CONCEPT])
 	inform (location, "%<concept%> only available with %<-fconcepts%>");
       else if (processing_template_decl && current_class_type
@@ -7355,11 +7375,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		    maybe_generic_this_capture (instance, fn);
 		    postfix_expression
 		      = build_min_nt_call_vec (postfix_expression, args);
-		    release_tree_vector (args);
-		    break;
 		  }
-
-		if (BASELINK_P (fn))
+		else if (BASELINK_P (fn))
 		  {
 		  postfix_expression
 		    = (build_new_method_call
@@ -10378,7 +10395,7 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
     case CPTK_DIRECT_BASES:
       return cp_expr (finish_bases (type1, true), trait_loc);
     default:
-      return cp_expr (finish_trait_expr (kind, type1, type2), trait_loc);
+      return finish_trait_expr (trait_loc, kind, type1, type2);
     }
 }
 
@@ -10920,7 +10937,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       tx_qual = cp_parser_tx_qualifier_opt (parser);
 
       /* Parse optional exception specification.  */
-      exception_spec = cp_parser_exception_specification_opt (parser);
+      exception_spec
+	= cp_parser_exception_specification_opt (parser, CP_PARSER_FLAGS_NONE);
 
       std_attrs = cp_parser_std_attribute_spec_seq (parser);
 
@@ -11276,7 +11294,10 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
     }
   /* Anything that starts with a `{' must be a compound-statement.  */
   else if (token->type == CPP_OPEN_BRACE)
-    statement = cp_parser_compound_statement (parser, NULL, BCS_NORMAL, false);
+    {
+      std_attrs = process_stmt_hotness_attribute (std_attrs, attrs_loc);
+      statement = cp_parser_compound_statement (parser, NULL, BCS_NORMAL, false);
+    }
   /* CPP_PRAGMA is a #pragma inside a function body, which constitutes
      a statement all its own.  */
   else if (token->type == CPP_PRAGMA)
@@ -13839,9 +13860,12 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 
       if (decl != error_mark_node)
 	{
+	  int flags = (decl_spec_seq_has_spec_p (decl_specifiers, ds_constinit)
+		       ? LOOKUP_CONSTINIT : 0);
 	  cp_maybe_mangle_decomp (decl, prev, v.length ());
 	  cp_finish_decl (decl, initializer, non_constant_p, NULL_TREE,
-			  is_direct_init ? LOOKUP_NORMAL : LOOKUP_IMPLICIT);
+			  (is_direct_init ? LOOKUP_NORMAL : LOOKUP_IMPLICIT)
+			  | flags);
 	  cp_finish_decomp (decl, prev, v.length ());
 	}
     }
@@ -13993,7 +14017,8 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	{
 	  /* decl-specifier:
 	       friend
-               constexpr */
+	       constexpr
+	       constinit */
 	case RID_FRIEND:
 	  if (!at_class_scope_p ())
 	    {
@@ -14014,6 +14039,11 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	  ds = ds_constexpr;
           cp_lexer_consume_token (parser->lexer);
           break;
+
+	case RID_CONSTINIT:
+	  ds = ds_constinit;
+	  cp_lexer_consume_token (parser->lexer);
+	  break;
 
         case RID_CONCEPT:
           ds = ds_concept;
@@ -19704,7 +19734,7 @@ cp_parser_alias_declaration (cp_parser* parser)
   if (decl == error_mark_node)
     return decl;
 
-  // Attach constraints to the alias declaration.
+  /* Attach constraints to the alias declaration.  */
   if (flag_concepts && current_template_parms)
     {
       tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
@@ -20532,6 +20562,8 @@ cp_parser_init_declarator (cp_parser* parser,
      declarations.  */
   if (!member_p && decl && decl != error_mark_node && !range_for_decl_p)
     {
+      int cf = (decl_spec_seq_has_spec_p (decl_specifiers, ds_constinit)
+		? LOOKUP_CONSTINIT : 0);
       cp_finish_decl (decl,
 		      initializer, !is_non_constant_init,
 		      asm_specification,
@@ -20540,7 +20572,7 @@ cp_parser_init_declarator (cp_parser* parser,
 			 `explicit' constructor is OK.  Otherwise, an
 			 `explicit' constructor cannot be used.  */
 		      ((is_direct_init || !is_initialized)
-		       ? LOOKUP_NORMAL : LOOKUP_IMPLICIT));
+		       ? LOOKUP_NORMAL : LOOKUP_IMPLICIT) | cf);
     }
   else if ((cxx_dialect != cxx98) && friend_p
 	   && decl && TREE_CODE (decl) == FUNCTION_DECL)
@@ -20848,7 +20880,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  tree tx_qual = cp_parser_tx_qualifier_opt (parser);
 		  /* And the exception-specification.  */
 		  exception_specification
-		    = cp_parser_exception_specification_opt (parser, friend_p);
+		    = cp_parser_exception_specification_opt (parser, flags);
 
 		  attrs = cp_parser_std_attribute_spec_seq (parser);
 
@@ -22519,12 +22551,14 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	  && !LAMBDA_TYPE_P (current_class_type))
 	default_argument = cp_parser_cache_defarg (parser, /*nsdmi=*/false);
 
-      // A constrained-type-specifier may declare a type template-parameter.
+      /* A constrained-type-specifier may declare a type
+	 template-parameter.  */
       else if (declares_constrained_type_template_parameter (type))
         default_argument
           = cp_parser_default_type_template_argument (parser);
 
-      // A constrained-type-specifier may declare a template-template-parameter.
+      /* A constrained-type-specifier may declare a
+	 template-template-parameter.  */
       else if (declares_constrained_template_template_parameter (type))
         default_argument
           = cp_parser_default_template_template_argument (parser);
@@ -24751,11 +24785,15 @@ cp_parser_member_declaration (cp_parser* parser)
 	      tree asm_specification;
 	      int ctor_dtor_or_conv_p;
 	      bool static_p = (decl_specifiers.storage_class == sc_static);
+	      cp_parser_flags flags = CP_PARSER_FLAGS_TYPENAME_OPTIONAL;
+	      if (!friend_p
+		  && !decl_spec_seq_has_spec_p (&decl_specifiers, ds_typedef))
+		flags |= CP_PARSER_FLAGS_DELAY_NOEXCEPT;
 
 	      /* Parse the declarator.  */
 	      declarator
 		= cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
-					CP_PARSER_FLAGS_TYPENAME_OPTIONAL,
+					flags,
 					&ctor_dtor_or_conv_p,
 					/*parenthesized_p=*/NULL,
 					/*member_p=*/true,
@@ -25330,10 +25368,10 @@ cp_parser_late_noexcept_specifier (cp_parser *parser, tree default_arg)
   /* Parse the cached noexcept-specifier.  */
   tree parsed_arg
     = cp_parser_noexcept_specification_opt (parser,
+					    CP_PARSER_FLAGS_NONE,
 					    /*require_constexpr=*/true,
 					    /*consumed_expr=*/NULL,
-					    /*return_cond=*/false,
-					    /*friend_p=*/false);
+					    /*return_cond=*/false);
 
   /* Revert to the main lexer.  */
   cp_parser_pop_lexer (parser);
@@ -25382,15 +25420,15 @@ noexcept_override_late_checks (tree type, tree fndecl)
    expression if parentheses follow noexcept, or return BOOLEAN_TRUE_NODE if
    there are no parentheses.  CONSUMED_EXPR will be set accordingly.
    Otherwise, returns a noexcept specification unless RETURN_COND is true,
-   in which case a boolean condition is returned instead.  If FRIEND_P is true,
-   the function with this noexcept-specification had the `friend' specifier.  */
+   in which case a boolean condition is returned instead.  The parser flags
+   FLAGS is used to control parsing.  */
 
 static tree
 cp_parser_noexcept_specification_opt (cp_parser* parser,
+				      cp_parser_flags flags,
 				      bool require_constexpr,
 				      bool* consumed_expr,
-				      bool return_cond,
-				      bool friend_p)
+				      bool return_cond)
 {
   cp_token *token;
   const char *saved_message;
@@ -25417,8 +25455,10 @@ cp_parser_noexcept_specification_opt (cp_parser* parser,
 	  /* No need to delay parsing for a number literal or true/false.  */
 	  && !literal_p
 	  && at_class_scope_p ()
-	  /* Don't delay parsing for friend member functions.  */
-	  && !friend_p
+	  /* We don't delay parsing for friend member functions,
+	     alias-declarations, and typedefs, even though the standard seems
+	     to require it.  */
+	  && (flags & CP_PARSER_FLAGS_DELAY_NOEXCEPT)
 	  && TYPE_BEING_DEFINED (current_class_type)
 	  && !LAMBDA_TYPE_P (current_class_type))
 	return cp_parser_save_noexcept (parser);
@@ -25493,11 +25533,11 @@ cp_parser_noexcept_specification_opt (cp_parser* parser,
      throw ( type-id-list [opt] )
 
    Returns a TREE_LIST representing the exception-specification.  The
-   TREE_VALUE of each node is a type.  If FRIEND_P is true, the function
-   with this noexcept-specification had the `friend' specifier.  */
+   TREE_VALUE of each node is a type.  The parser flags FLAGS is used to
+   control parsing.  */
 
 static tree
-cp_parser_exception_specification_opt (cp_parser* parser, bool friend_p)
+cp_parser_exception_specification_opt (cp_parser* parser, cp_parser_flags flags)
 {
   cp_token *token;
   tree type_id_list;
@@ -25508,11 +25548,10 @@ cp_parser_exception_specification_opt (cp_parser* parser, bool friend_p)
 
   /* Is it a noexcept-specification?  */
   type_id_list
-    = cp_parser_noexcept_specification_opt (parser,
+    = cp_parser_noexcept_specification_opt (parser, flags,
 					    /*require_constexpr=*/true,
 					    /*consumed_expr=*/NULL,
-					    /*return_cond=*/false,
-					    friend_p);
+					    /*return_cond=*/false);
   if (type_id_list != NULL_TREE)
     return type_id_list;
 
@@ -28438,9 +28477,9 @@ cp_parser_single_declaration (cp_parser* parser,
       if (cp_parser_declares_only_class_p (parser)
 	  || (declares_class_or_enum & 2))
 	{
-	  // If this is a declaration, but not a definition, associate
-	  // any constraints with the type declaration. Constraints
-	  // are associated with definitions in cp_parser_class_specifier.
+	  /* If this is a declaration, but not a definition, associate
+	     any constraints with the type declaration. Constraints
+	     are associated with definitions in cp_parser_class_specifier.  */
 	  if (declares_class_or_enum == 1)
 	    associate_classtype_constraints (decl_specifiers.type);
 
@@ -29470,7 +29509,8 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 	    "typedef",
 	    "using",
             "constexpr",
-	    "__complex"
+	    "__complex",
+	    "constinit"
 	  };
 	  gcc_rich_location richloc (location);
 	  richloc.add_fixit_remove ();
@@ -32695,6 +32735,14 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	      || CONVERT_EXPR_P (decl))
 	    decl = TREE_OPERAND (decl, 0);
 	  cp_lexer_consume_token (parser->lexer);
+	}
+      else if (cp_parser_is_keyword (token, RID_FUNCTION_NAME)
+	       || cp_parser_is_keyword (token, RID_PRETTY_FUNCTION_NAME)
+	       || cp_parser_is_keyword (token, RID_C99_FUNCTION_NAME))
+	{
+	  cp_id_kind idk;
+	  decl = cp_parser_primary_expression (parser, false, false, false,
+					       &idk);
 	}
       else
 	{
@@ -41132,10 +41180,10 @@ cp_parser_transaction (cp_parser *parser, cp_token *token)
     }
   else
     noex = cp_parser_noexcept_specification_opt (parser,
+						 CP_PARSER_FLAGS_NONE,
 						 /*require_constexpr=*/true,
 						 /*consumed_expr=*/NULL,
-						 /*return_cond=*/true,
-						 /*friend_p=*/false);
+						 /*return_cond=*/true);
 
   /* Keep track if we're in the lexical scope of an outer transaction.  */
   new_in = this_in | (old_in & TM_STMT_ATTR_OUTER);
@@ -41196,10 +41244,10 @@ cp_parser_transaction_expression (cp_parser *parser, enum rid keyword)
 
   /* Parse a noexcept specification.  */
   noex = cp_parser_noexcept_specification_opt (parser,
+					       CP_PARSER_FLAGS_NONE,
 					       /*require_constexpr=*/false,
 					       &noex_expr,
-					       /*return_cond=*/true,
-					       /*friend_p=*/false);
+					       /*return_cond=*/true);
 
   if (!noex || !noex_expr
       || cp_lexer_peek_token (parser->lexer)->type == CPP_OPEN_PAREN)
@@ -41993,7 +42041,7 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
       non_type = true;
     }
 
-  // Attach the constraint to the parm before processing.
+  /* Attach the constraint to the parm before processing.  */
   tree node = build_tree_list (NULL_TREE, synth_tmpl_parm);
   TREE_TYPE (node) = constr;
   tree new_parm
@@ -42036,8 +42084,8 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
       TREE_VEC_ELT (new_parms, new_parm_idx) = parser->implicit_template_parms;
     }
 
-  // If the new parameter was constrained, we need to add that to the
-  // constraints in the template parameter list.
+  /* If the new parameter was constrained, we need to add that to the
+     constraints in the template parameter list.  */
   if (tree req = TEMPLATE_PARM_CONSTRAINTS (tree_last (new_parm)))
     {
       tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);

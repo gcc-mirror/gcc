@@ -648,7 +648,7 @@
 
 (define_insn_reservation "falkor_other_0_nothing" 0
   (and (eq_attr "tune" "falkor")
-       (eq_attr "type" "no_insn,trap,block"))
+       (eq_attr "type" "trap,block"))
   "nothing")
 
 (define_insn_reservation "falkor_other_2_z" 2

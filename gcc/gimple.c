@@ -110,10 +110,27 @@ gimple_set_code (gimple *g, enum gimple_code code)
 /* Return the number of bytes needed to hold a GIMPLE statement with
    code CODE.  */
 
-static inline size_t
-gimple_size (enum gimple_code code)
+size_t
+gimple_size (enum gimple_code code, unsigned num_ops)
 {
-  return gsstruct_code_size[gss_for_code (code)];
+  size_t size = gsstruct_code_size[gss_for_code (code)];
+  if (num_ops > 0)
+    size += (sizeof (tree) * (num_ops - 1));
+  return size;
+}
+
+/* Initialize GIMPLE statement G with CODE and NUM_OPS.  */
+
+void
+gimple_init (gimple *g, enum gimple_code code, unsigned num_ops)
+{
+  gimple_set_code (g, code);
+  gimple_set_num_ops (g, num_ops);
+
+  /* Do not call gimple_set_modified here as it has other side
+     effects and this tuple is still not completely built.  */
+  g->modified = 1;
+  gimple_init_singleton (g);
 }
 
 /* Allocate memory for a GIMPLE statement with code CODE and NUM_OPS
@@ -125,10 +142,7 @@ gimple_alloc (enum gimple_code code, unsigned num_ops MEM_STAT_DECL)
   size_t size;
   gimple *stmt;
 
-  size = gimple_size (code);
-  if (num_ops > 0)
-    size += sizeof (tree) * (num_ops - 1);
-
+  size = gimple_size (code, num_ops);
   if (GATHER_STATISTICS)
     {
       enum gimple_alloc_kind kind = gimple_alloc_kind (code);
@@ -137,14 +151,7 @@ gimple_alloc (enum gimple_code code, unsigned num_ops MEM_STAT_DECL)
     }
 
   stmt = ggc_alloc_cleared_gimple_statement_stat (size PASS_MEM_STAT);
-  gimple_set_code (stmt, code);
-  gimple_set_num_ops (stmt, num_ops);
-
-  /* Do not call gimple_set_modified here as it has other side
-     effects and this tuple is still not completely built.  */
-  stmt->modified = 1;
-  gimple_init_singleton (stmt);
-
+  gimple_init (stmt, code, num_ops);
   return stmt;
 }
 
@@ -1790,6 +1797,8 @@ gimple_get_lhs (const gimple *stmt)
     return gimple_assign_lhs (stmt);
   else if (code == GIMPLE_CALL)
     return gimple_call_lhs (stmt);
+  else if (code == GIMPLE_PHI)
+    return gimple_phi_result (stmt);
   else
     return NULL_TREE;
 }
@@ -2218,16 +2227,18 @@ dump_gimple_statistics (void)
 unsigned
 get_gimple_rhs_num_ops (enum tree_code code)
 {
-  enum gimple_rhs_class rhs_class = get_gimple_rhs_class (code);
-
-  if (rhs_class == GIMPLE_UNARY_RHS || rhs_class == GIMPLE_SINGLE_RHS)
-    return 1;
-  else if (rhs_class == GIMPLE_BINARY_RHS)
-    return 2;
-  else if (rhs_class == GIMPLE_TERNARY_RHS)
-    return 3;
-  else
-    gcc_unreachable ();
+  switch (get_gimple_rhs_class (code))
+    {
+    case GIMPLE_UNARY_RHS:
+    case GIMPLE_SINGLE_RHS:
+      return 1;
+    case GIMPLE_BINARY_RHS:
+      return 2;
+    case GIMPLE_TERNARY_RHS:
+      return 3;
+    default:
+      gcc_unreachable ();
+    }
 }
 
 #define DEFTREECODE(SYM, STRING, TYPE, NARGS)   			    \

@@ -457,7 +457,7 @@ lm32_compute_frame_size (int size)
      and calculate size required to store them in the stack.  */
   for (regno = 1; regno < SP_REGNUM; regno++)
     {
-      if (df_regs_ever_live_p (regno) && !call_used_regs[regno])
+      if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
 	{
 	  reg_save_mask |= 1 << regno;
 	  callee_size += UNITS_PER_WORD;

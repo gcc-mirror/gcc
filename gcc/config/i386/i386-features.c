@@ -549,11 +549,18 @@ general_scalar_chain::compute_convert_gain ()
 	       || GET_CODE (src) == ASHIFTRT
 	       || GET_CODE (src) == LSHIFTRT)
 	{
+	  if (m == 2)
+	    {
+	      if (INTVAL (XEXP (src, 1)) >= 32)
+		igain += ix86_cost->add;
+	      else
+		igain += ix86_cost->shift_const;
+	    }
+
+	  igain += ix86_cost->shift_const - ix86_cost->sse_op;
+
 	  if (CONST_INT_P (XEXP (src, 0)))
 	    igain -= vector_const_cost (XEXP (src, 0));
-	  igain += m * ix86_cost->shift_const - ix86_cost->sse_op;
-	  if (INTVAL (XEXP (src, 1)) >= 32)
-	    igain -= COSTS_N_INSNS (1);
 	}
       else if (GET_CODE (src) == PLUS
 	       || GET_CODE (src) == MINUS
@@ -664,7 +671,8 @@ gen_gpr_to_xmm_move_src (enum machine_mode vmode, rtx gpr)
   switch (GET_MODE_NUNITS (vmode))
     {
     case 1:
-      return gen_rtx_SUBREG (vmode, gpr, 0);
+      /* We are not using this case currently.  */
+      gcc_unreachable ();
     case 2:
       return gen_rtx_VEC_CONCAT (vmode, gpr,
 				 CONST0_RTX (GET_MODE_INNER (vmode)));
@@ -825,6 +833,15 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
     {
       rtx tmp = gen_reg_rtx (GET_MODE (*op));
 
+      /* Handle movabs.  */
+      if (!memory_operand (*op, GET_MODE (*op)))
+	{
+	  rtx tmp2 = gen_reg_rtx (GET_MODE (*op));
+
+	  emit_insn_before (gen_rtx_SET (tmp2, *op), insn);
+	  *op = tmp2;
+	}
+
       emit_insn_before (gen_rtx_SET (gen_rtx_SUBREG (vmode, tmp, 0),
 				     gen_gpr_to_xmm_move_src (vmode, *op)),
 			insn);
@@ -880,18 +897,52 @@ general_scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 void
 general_scalar_chain::convert_insn (rtx_insn *insn)
 {
-  /* Generate copies for out-of-chain uses of defs.  */
+  /* Generate copies for out-of-chain uses of defs and adjust debug uses.  */
   for (df_ref ref = DF_INSN_DEFS (insn); ref; ref = DF_REF_NEXT_LOC (ref))
     if (bitmap_bit_p (defs_conv, DF_REF_REGNO (ref)))
       {
 	df_link *use;
 	for (use = DF_REF_CHAIN (ref); use; use = use->next)
-	  if (DF_REF_REG_MEM_P (use->ref)
-	      || !bitmap_bit_p (insns, DF_REF_INSN_UID (use->ref)))
+	  if (NONDEBUG_INSN_P (DF_REF_INSN (use->ref))
+	      && (DF_REF_REG_MEM_P (use->ref)
+		  || !bitmap_bit_p (insns, DF_REF_INSN_UID (use->ref))))
 	    break;
 	if (use)
 	  convert_reg (insn, DF_REF_REG (ref),
 		       *defs_map.get (regno_reg_rtx [DF_REF_REGNO (ref)]));
+	else if (MAY_HAVE_DEBUG_BIND_INSNS)
+	  {
+	    /* If we generated a scalar copy we can leave debug-insns
+	       as-is, if not, we have to adjust them.  */
+	    auto_vec<rtx_insn *, 5> to_reset_debug_insns;
+	    for (use = DF_REF_CHAIN (ref); use; use = use->next)
+	      if (DEBUG_INSN_P (DF_REF_INSN (use->ref)))
+		{
+		  rtx_insn *debug_insn = DF_REF_INSN (use->ref);
+		  /* If there's a reaching definition outside of the
+		     chain we have to reset.  */
+		  df_link *def;
+		  for (def = DF_REF_CHAIN (use->ref); def; def = def->next)
+		    if (!bitmap_bit_p (insns, DF_REF_INSN_UID (def->ref)))
+		      break;
+		  if (def)
+		    to_reset_debug_insns.safe_push (debug_insn);
+		  else
+		    {
+		      *DF_REF_REAL_LOC (use->ref)
+			= *defs_map.get (regno_reg_rtx [DF_REF_REGNO (ref)]);
+		      df_insn_rescan (debug_insn);
+		    }
+		}
+	    /* Have to do the reset outside of the DF_CHAIN walk to not
+	       disrupt it.  */
+	    while (!to_reset_debug_insns.is_empty ())
+	      {
+		rtx_insn *debug_insn = to_reset_debug_insns.pop ();
+		INSN_VAR_LOCATION_LOC (debug_insn) = gen_rtx_UNKNOWN_VAR_LOC ();
+		df_insn_rescan_debug_internal (debug_insn);
+	      }
+	  }
       }
 
   /* Replace uses in this insn with the defs we use in the chain.  */
@@ -1166,7 +1217,10 @@ general_scalar_chain::convert_registers ()
   bitmap_iterator bi;
   unsigned id;
   EXECUTE_IF_SET_IN_BITMAP (defs_conv, 0, id, bi)
-    defs_map.put (regno_reg_rtx[id], gen_reg_rtx (smode));
+    {
+      rtx chain_reg = gen_reg_rtx (smode);
+      defs_map.put (regno_reg_rtx[id], chain_reg);
+    }
   EXECUTE_IF_SET_IN_BITMAP (insns_conv, 0, id, bi)
     for (df_ref ref = DF_INSN_UID_DEFS (id); ref; ref = DF_REF_NEXT_LOC (ref))
       if (bitmap_bit_p (defs_conv, DF_REF_REGNO (ref)))
@@ -1325,7 +1379,7 @@ general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
     case ASHIFT:
     case LSHIFTRT:
       if (!CONST_INT_P (XEXP (src, 1))
-	  || !IN_RANGE (INTVAL (XEXP (src, 1)), 0, 63))
+	  || !IN_RANGE (INTVAL (XEXP (src, 1)), 0, GET_MODE_BITSIZE (mode)-1))
 	return false;
       break;
 
@@ -1564,7 +1618,6 @@ convert_scalars_to_vector (bool timode_p)
   calculate_dominance_info (CDI_DOMINATORS);
   df_set_flags (DF_DEFER_INSN_RESCAN);
   df_chain_add_problem (DF_DU_CHAIN | DF_UD_CHAIN);
-  df_md_add_problem ();
   df_analyze ();
 
   /* Find all instructions we want to convert into vector mode.  */
@@ -1651,6 +1704,32 @@ convert_scalars_to_vector (bool timode_p)
 	crtl->stack_alignment_needed = 128;
       if (crtl->stack_alignment_estimated < 128)
 	crtl->stack_alignment_estimated = 128;
+
+      crtl->stack_realign_needed
+	= INCOMING_STACK_BOUNDARY < crtl->stack_alignment_estimated;
+      crtl->stack_realign_tried = crtl->stack_realign_needed;
+
+      crtl->stack_realign_processed = true;
+
+      if (!crtl->drap_reg)
+	{
+	  rtx drap_rtx = targetm.calls.get_drap_rtx ();
+
+	  /* stack_realign_drap and drap_rtx must match.  */
+	  gcc_assert ((stack_realign_drap != 0) == (drap_rtx != NULL));
+
+	  /* Do nothing if NULL is returned,
+	     which means DRAP is not needed.  */
+	  if (drap_rtx != NULL)
+	    {
+	      crtl->args.internal_arg_pointer = drap_rtx;
+
+	      /* Call fixup_tail_calls to clean up
+		 REG_EQUIV note if DRAP is needed. */
+	      fixup_tail_calls ();
+	    }
+	}
+
       /* Fix up DECL_RTL/DECL_INCOMING_RTL of arguments.  */
       if (TARGET_64BIT)
 	for (tree parm = DECL_ARGUMENTS (current_function_decl);

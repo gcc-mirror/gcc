@@ -3,6 +3,7 @@
 // { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__" }
 // { dg-add-options ieee }
 // { dg-skip-if "no extensions in strict dialects" { *-*-* } { "-std=c++*" } }
+// { dg-prune-output ".*warning: tgammal has lower than advertised precision" }
 
 // Copyright (C) 2016-2019 Free Software Foundation, Inc.
 //

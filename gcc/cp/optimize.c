@@ -223,9 +223,6 @@ can_alias_cdtor (tree fn)
   /* We can't use an alias if there are virtual bases.  */
   if (CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fn)))
     return false;
-  /* ??? Why not use aliases with -frepo?  */
-  if (flag_use_repository)
-    return false;
   gcc_assert (DECL_MAYBE_IN_CHARGE_CDTOR_P (fn));
   /* Don't use aliases for weak/linkonce definitions unless we can put both
      symbols in the same COMDAT group.  */

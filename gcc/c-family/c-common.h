@@ -180,6 +180,9 @@ enum rid
   /* C++11 */
   RID_CONSTEXPR, RID_DECLTYPE, RID_NOEXCEPT, RID_NULLPTR, RID_STATIC_ASSERT,
 
+  /* C++20 */
+  RID_CONSTINIT,
+
   /* char8_t */
   RID_CHAR8,
 
@@ -250,6 +253,8 @@ enum rid
 
   RID_FIRST_CXX11 = RID_CONSTEXPR,
   RID_LAST_CXX11 = RID_STATIC_ASSERT,
+  RID_FIRST_CXX20 = RID_CONSTINIT,
+  RID_LAST_CXX20 = RID_CONSTINIT,
   RID_FIRST_AT = RID_AT_ENCODE,
   RID_LAST_AT = RID_AT_IMPLEMENTATION,
   RID_FIRST_PQ = RID_IN,
@@ -427,6 +432,7 @@ extern machine_mode c_default_pointer_mode;
 #define D_CXX_CONCEPTS  0x0400	/* In C++, only with concepts.  */
 #define D_TRANSMEM	0X0800	/* C++ transactional memory TS.  */
 #define D_CXX_CHAR8_T	0X1000	/* In C++, only with -fchar8_t.  */
+#define D_CXX20		0x2000  /* In C++, C++20 only.  */
 
 #define D_CXX_CONCEPTS_FLAGS D_CXXONLY | D_CXX_CONCEPTS
 #define D_CXX_CHAR8_T_FLAGS D_CXXONLY | D_CXX_CHAR8_T
@@ -695,11 +701,6 @@ extern int warn_abi_version;
    != (warn_abi_version == 0			\
        || warn_abi_version >= (N)))
 
-/* Nonzero means generate separate instantiation control files and
-   juggle them at link time.  */
-
-extern int flag_use_repository;
-
 /* The supported C++ dialects.  */
 
 enum cxx_dialect {
@@ -817,7 +818,7 @@ extern void check_function_arguments_recurse (void (*)
 					      void *, tree,
 					      unsigned HOST_WIDE_INT);
 extern bool check_builtin_function_arguments (location_t, vec<location_t>,
-					      tree, int, tree *);
+					      tree, tree, int, tree *);
 extern void check_function_format (const_tree, tree, int, tree *,
 				   vec<location_t> *);
 extern bool attribute_fallthrough_p (tree);
@@ -994,7 +995,8 @@ extern bool c_switch_covers_all_cases_p (splay_tree, tree);
 extern tree build_function_call (location_t, tree, tree);
 
 extern tree build_function_call_vec (location_t, vec<location_t>, tree,
-				     vec<tree, va_gc> *, vec<tree, va_gc> *);
+				     vec<tree, va_gc> *, vec<tree, va_gc> *,
+				     tree = NULL_TREE);
 
 extern tree resolve_overloaded_builtin (location_t, tree, vec<tree, va_gc> *);
 
@@ -1185,6 +1187,7 @@ extern void c_omp_split_clauses (location_t, enum tree_code, omp_clause_mask,
 				 tree, tree *);
 extern tree c_omp_declare_simd_clauses_to_numbers (tree, tree);
 extern void c_omp_declare_simd_clauses_to_decls (tree, tree);
+extern bool c_omp_predefined_variable (tree);
 extern enum omp_clause_default_kind c_omp_predetermined_sharing (tree);
 
 /* Return next tree in the chain for chain_next walking of tree nodes.  */

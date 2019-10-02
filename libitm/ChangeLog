@@ -1,3 +1,27 @@
+2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure: Regenerate.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
+	* config/arm/sjlj.S (ldaddr): Add FDPIC support.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
+	* configure.tgt: Handle *-*-uclinux*.
+	* configure: Regenerate.
+
+2019-09-06  Florian Weimer  <fweimer@redhat.com>
+
+	* configure: Regenerate.
+
+2019-09-03  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR other/79543
+	* acinclude.m4 (LIBITM_CHECK_LINKER_FEATURES): Fix GNU ld --version
+	scanning to conform to the GNU Coding Standards.
+	* configure: Regenerate.
+
 2019-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.am (finclude): Remove.

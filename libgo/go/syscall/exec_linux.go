@@ -19,6 +19,9 @@ import (
 //sysnb rawMount(source *byte, target *byte, fstype *byte, flags uintptr, data *byte) (err Errno)
 //mount(source *byte, target *byte, fstype *byte, flags _C_long, data *byte) _C_int
 
+//sysnb rawOpenat(dirfd int, pathname *byte, flags int, perm uint32) (fd int, err Errno)
+//openat(dirfd _C_int, pathname *byte, flags _C_int, perm Mode_t) _C_int
+
 // SysProcIDMap holds Container ID to Host ID mappings used for User Namespaces in Linux.
 // See user_namespaces(7).
 type SysProcIDMap struct {
@@ -94,17 +97,43 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 
 	if sys.UidMappings != nil || sys.GidMappings != nil {
 		Close(p[0])
-		err := writeUidGidMappings(pid, sys)
 		var err2 Errno
-		if err != nil {
-			err2 = err.(Errno)
+		// uid/gid mappings will be written after fork and unshare(2) for user
+		// namespaces.
+		if sys.Unshareflags&CLONE_NEWUSER == 0 {
+			if err := writeUidGidMappings(pid, sys); err != nil {
+				err2 = err.(Errno)
+			}
 		}
-		RawSyscall(SYS_WRITE, uintptr(p[1]), uintptr(unsafe.Pointer(&err2)), unsafe.Sizeof(err2))
+		raw_write(p[1], (*byte)(unsafe.Pointer(&err2)), int(unsafe.Sizeof(err2)))
 		Close(p[1])
 	}
 
 	return pid, 0
 }
+
+const _LINUX_CAPABILITY_VERSION_3 = 0x20080522
+
+type capHeader struct {
+	version uint32
+	pid     int32
+}
+
+type capData struct {
+	effective   uint32
+	permitted   uint32
+	inheritable uint32
+}
+type caps struct {
+	hdr  capHeader
+	data [2]capData
+}
+
+// See CAP_TO_INDEX in linux/capability.h:
+func capToIndex(cap uintptr) uintptr { return cap >> 5 }
+
+// See CAP_TO_MASK in linux/capability.h:
+func capToMask(cap uintptr) uint32 { return 1 << uint(cap&31) }
 
 // forkAndExecInChild1 implements the body of forkAndExecInChild up to
 // the parent's post-fork path. This is a separate function so we can
@@ -131,11 +160,32 @@ func forkAndExecInChild1(argv0 *byte, argv, envv []*byte, chroot, dir *byte, att
 	// Declare all variables at top in case any
 	// declarations require heap allocation (e.g., err1).
 	var (
-		err2   Errno
-		nextfd int
-		i      int
-		r2     int
+		err2                      Errno
+		nextfd                    int
+		i                         int
+		r2                        int
+		caps                      caps
+		fd1                       int
+		puid, psetgroups, pgid    []byte
+		uidmap, setgroups, gidmap []byte
 	)
+
+	if sys.UidMappings != nil {
+		puid = []byte("/proc/self/uid_map\000")
+		uidmap = formatIDMappings(sys.UidMappings)
+	}
+
+	if sys.GidMappings != nil {
+		psetgroups = []byte("/proc/self/setgroups\000")
+		pgid = []byte("/proc/self/gid_map\000")
+
+		if sys.GidMappingsEnableSetgroups {
+			setgroups = []byte("allow\000")
+		} else {
+			setgroups = []byte("deny\000")
+		}
+		gidmap = formatIDMappings(sys.GidMappings)
+	}
 
 	// Record parent PID so child can test if it has died.
 	ppid := raw_getpid()
@@ -187,7 +237,7 @@ func forkAndExecInChild1(argv0 *byte, argv, envv []*byte, chroot, dir *byte, att
 
 	// Enable the "keep capabilities" flag to set ambient capabilities later.
 	if len(sys.AmbientCaps) > 0 {
-		_, _, err1 = RawSyscall6(SYS_PRCTL, PR_SET_KEEPCAPS, 1, 0, 0, 0, 0)
+		_, err1 = raw_prctl(PR_SET_KEEPCAPS, 1, 0, 0, 0)
 		if err1 != 0 {
 			goto childerror
 		}
@@ -195,14 +245,14 @@ func forkAndExecInChild1(argv0 *byte, argv, envv []*byte, chroot, dir *byte, att
 
 	// Wait for User ID/Group ID mappings to be written.
 	if sys.UidMappings != nil || sys.GidMappings != nil {
-		if _, _, err1 = RawSyscall(SYS_CLOSE, uintptr(p[1]), 0, 0); err1 != 0 {
+		if err1 = raw_close(p[1]); err1 != 0 {
 			goto childerror
 		}
-		r1, _, err1 = RawSyscall(SYS_READ, uintptr(p[0]), uintptr(unsafe.Pointer(&err2)), unsafe.Sizeof(err2))
+		r2, err1 = raw_read(p[0], (*byte)(unsafe.Pointer(&err2)), int(unsafe.Sizeof(err2)))
 		if err1 != 0 {
 			goto childerror
 		}
-		if r1 != unsafe.Sizeof(err2) {
+		if r2 != int(unsafe.Sizeof(err2)) {
 			err1 = EINVAL
 			goto childerror
 		}
@@ -248,6 +298,46 @@ func forkAndExecInChild1(argv0 *byte, argv, envv []*byte, chroot, dir *byte, att
 		if err1 != 0 {
 			goto childerror
 		}
+
+		if sys.Unshareflags&CLONE_NEWUSER != 0 && sys.GidMappings != nil {
+			dirfd := int(_AT_FDCWD)
+			if fd1, err1 = rawOpenat(dirfd, &psetgroups[0], O_WRONLY, 0); err1 != 0 {
+				goto childerror
+			}
+			_, err1 = raw_write(fd1, &setgroups[0], len(setgroups))
+			if err1 != 0 {
+				goto childerror
+			}
+			if err1 = raw_close(fd1); err1 != 0 {
+				goto childerror
+			}
+
+			if fd1, err1 = rawOpenat(dirfd, &pgid[0], O_WRONLY, 0); err1 != 0 {
+				goto childerror
+			}
+			_, err1 = raw_write(fd1, &gidmap[0], len(gidmap))
+			if err1 != 0 {
+				goto childerror
+			}
+			if err1 = raw_close(fd1); err1 != 0 {
+				goto childerror
+			}
+		}
+
+		if sys.Unshareflags&CLONE_NEWUSER != 0 && sys.UidMappings != nil {
+			dirfd := int(_AT_FDCWD)
+			if fd1, err1 = rawOpenat(dirfd, &puid[0], O_WRONLY, 0); err1 != 0 {
+				goto childerror
+			}
+			_, err1 = raw_write(fd1, &uidmap[0], len(uidmap))
+			if err1 != 0 {
+				goto childerror
+			}
+			if err1 = raw_close(fd1); err1 != 0 {
+				goto childerror
+			}
+		}
+
 		// The unshare system call in Linux doesn't unshare mount points
 		// mounted with --shared. Systemd mounts / with --shared. For a
 		// long discussion of the pros and cons of this see debian bug 739593.
@@ -294,10 +384,31 @@ func forkAndExecInChild1(argv0 *byte, argv, envv []*byte, chroot, dir *byte, att
 		}
 	}
 
-	for _, c := range sys.AmbientCaps {
-		_, _, err1 = RawSyscall6(SYS_PRCTL, PR_CAP_AMBIENT, uintptr(PR_CAP_AMBIENT_RAISE), c, 0, 0, 0)
-		if err1 != 0 {
+	if len(sys.AmbientCaps) != 0 {
+		// Ambient capabilities were added in the 4.3 kernel,
+		// so it is safe to always use _LINUX_CAPABILITY_VERSION_3.
+		caps.hdr.version = _LINUX_CAPABILITY_VERSION_3
+
+		if _, _, err1 = RawSyscall(SYS_CAPGET, uintptr(unsafe.Pointer(&caps.hdr)), uintptr(unsafe.Pointer(&caps.data[0])), 0); err1 != 0 {
 			goto childerror
+		}
+
+		for _, c := range sys.AmbientCaps {
+			// Add the c capability to the permitted and inheritable capability mask,
+			// otherwise we will not be able to add it to the ambient capability mask.
+			caps.data[capToIndex(c)].permitted |= capToMask(c)
+			caps.data[capToIndex(c)].inheritable |= capToMask(c)
+		}
+
+		if _, _, err1 = RawSyscall(SYS_CAPSET, uintptr(unsafe.Pointer(&caps.hdr)), uintptr(unsafe.Pointer(&caps.data[0])), 0); err1 != 0 {
+			goto childerror
+		}
+
+		for _, c := range sys.AmbientCaps {
+			_, _, err1 = RawSyscall6(SYS_PRCTL, PR_CAP_AMBIENT, uintptr(PR_CAP_AMBIENT_RAISE), c, 0, 0, 0)
+			if err1 != 0 {
+				goto childerror
+			}
 		}
 	}
 
@@ -396,7 +507,7 @@ func forkAndExecInChild1(argv0 *byte, argv, envv []*byte, chroot, dir *byte, att
 
 	// Set the controlling TTY to Ctty
 	if sys.Setctty {
-		_, err1 = raw_ioctl(sys.Ctty, TIOCSCTTY, sys.Ctty)
+		_, err1 = raw_ioctl(sys.Ctty, TIOCSCTTY, 1)
 		if err1 != 0 {
 			goto childerror
 		}
@@ -440,6 +551,14 @@ func forkExecPipe(p []int) (err error) {
 	return
 }
 
+func formatIDMappings(idMap []SysProcIDMap) []byte {
+	var data []byte
+	for _, im := range idMap {
+		data = append(data, []byte(itoa(im.ContainerID)+" "+itoa(im.HostID)+" "+itoa(im.Size)+"\n")...)
+	}
+	return data
+}
+
 // writeIDMappings writes the user namespace User ID or Group ID mappings to the specified path.
 func writeIDMappings(path string, idMap []SysProcIDMap) error {
 	fd, err := Open(path, O_RDWR, 0)
@@ -447,18 +566,7 @@ func writeIDMappings(path string, idMap []SysProcIDMap) error {
 		return err
 	}
 
-	data := ""
-	for _, im := range idMap {
-		data = data + itoa(im.ContainerID) + " " + itoa(im.HostID) + " " + itoa(im.Size) + "\n"
-	}
-
-	bytes, err := ByteSliceFromString(data)
-	if err != nil {
-		Close(fd)
-		return err
-	}
-
-	if _, err := Write(fd, bytes); err != nil {
+	if _, err := Write(fd, formatIDMappings(idMap)); err != nil {
 		Close(fd)
 		return err
 	}

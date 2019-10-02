@@ -74,9 +74,6 @@ package body GNAT.Expect.TTY is
       procedure Free_Process (Process : System.Address);
       pragma Import (C, Free_Process, "__gnat_free_process");
 
-      procedure Close_TTY (Process : System.Address);
-      pragma Import (C, Close_TTY, "__gnat_close_tty");
-
    begin
       --  If we haven't already closed the process
 
@@ -93,9 +90,7 @@ package body GNAT.Expect.TTY is
          --  signal, so this needs to be done while the file descriptors are
          --  still open (it used to be after the closes and that was wrong).
 
-         if Descriptor.Input_Fd /= Invalid_FD then
-            Close (Descriptor.Input_Fd);
-         end if;
+         Close_Input (Descriptor);
 
          if Descriptor.Error_Fd /= Descriptor.Output_Fd
            and then Descriptor.Error_Fd /= Invalid_FD
@@ -125,10 +120,6 @@ package body GNAT.Expect.TTY is
             Status := Descriptor.Exit_Status;
          end if;
 
-         if not On_Windows then
-            Close_TTY (Descriptor.Process);
-         end if;
-
          Free_Process (Descriptor.Process'Address);
          Descriptor.Process := System.Null_Address;
 
@@ -142,6 +133,47 @@ package body GNAT.Expect.TTY is
    begin
       Close (Descriptor, Status);
    end Close;
+
+   -----------------
+   -- Close_Input --
+   -----------------
+
+   overriding procedure Close_Input
+     (Descriptor : in out TTY_Process_Descriptor)
+   is
+      function TTY_FD
+        (Handle : System.Address) return GNAT.OS_Lib.File_Descriptor;
+      pragma Import (C, TTY_FD, "__gnat_tty_fd");
+
+      procedure Close_TTY (Process : System.Address);
+      pragma Import (C, Close_TTY, "__gnat_close_tty");
+
+   begin
+      if not On_Windows and then Descriptor.Process /= System.Null_Address then
+         --  Check whether input/output/error streams use master descriptor and
+         --  reset corresponding members.
+
+         if Descriptor.Input_Fd = TTY_FD (Descriptor.Process) then
+            Descriptor.Input_Fd := Invalid_FD;
+         end if;
+
+         if Descriptor.Output_Fd = TTY_FD (Descriptor.Process) then
+            Descriptor.Output_Fd := Invalid_FD;
+         end if;
+
+         if Descriptor.Error_Fd = TTY_FD (Descriptor.Process) then
+            Descriptor.Error_Fd := Invalid_FD;
+         end if;
+
+         --  Close master descriptor.
+
+         Close_TTY (Descriptor.Process);
+      end if;
+
+      --  Call parent's implementation to close all remaining descriptors.
+
+      Process_Descriptor (Descriptor).Close_Input;
+   end Close_Input;
 
    -----------------------------
    -- Close_Pseudo_Descriptor --

@@ -5,7 +5,7 @@
 class f_class		       // { dg-message "note" "candidates" }
 { };
 
-volatile f_class
+volatile f_class	      // { dg-warning "deprecated" "" { target c++2a } }
 ret_v_f_class()
 {
   f_class t;

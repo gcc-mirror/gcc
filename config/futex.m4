@@ -9,7 +9,7 @@ AC_DEFUN([GCC_LINUX_FUTEX],[dnl
 GCC_ENABLE(linux-futex,default, ,[use the Linux futex system call],
 	   permit yes|no|default)
 case "$target" in
-  *-linux*)
+  *-linux* | *-uclinux*)
     case "$enable_linux_futex" in
       default)
 	# If headers don't have gettid/futex syscalls definition, then
@@ -22,6 +22,7 @@ case "$target" in
 	AC_LINK_IFELSE(
 	 [AC_LANG_PROGRAM(
 	  [#include <sys/syscall.h>
+	   #include <unistd.h>
 	   int lk;],
 	  [syscall (SYS_gettid); syscall (SYS_futex, &lk, 0, 0, 0);])],
 	  [save_LIBS="$LIBS"
@@ -48,6 +49,7 @@ If so, please configure with --disable-linux-futex])
 	AC_LINK_IFELSE(
 	 [AC_LANG_PROGRAM(
 	  [#include <sys/syscall.h>
+	   #include <unistd.h>
 	   int lk;],
 	  [syscall (SYS_gettid); syscall (SYS_futex, &lk, 0, 0, 0);])],[],
 	  [AC_MSG_ERROR([SYS_gettid and SYS_futex required for --enable-linux-futex])])

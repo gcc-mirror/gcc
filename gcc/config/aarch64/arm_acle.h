@@ -34,6 +34,69 @@ extern "C" {
 #endif
 
 #pragma GCC push_options
+#pragma GCC target ("arch=armv8.3-a")
+__extension__ static __inline int32_t __attribute__ ((__always_inline__))
+__jcvt (double __a)
+{
+  return __builtin_aarch64_jcvtzs (__a);
+}
+
+#pragma GCC pop_options
+
+#pragma GCC push_options
+#pragma GCC target ("arch=armv8.5-a")
+__extension__ static __inline float __attribute__ ((__always_inline__))
+__rint32zf (float __a)
+{
+  return __builtin_aarch64_frint32zsf (__a);
+}
+
+__extension__ static __inline double __attribute__ ((__always_inline__))
+__rint32z (double __a)
+{
+  return __builtin_aarch64_frint32zdf (__a);
+}
+
+__extension__ static __inline float __attribute__ ((__always_inline__))
+__rint64zf (float __a)
+{
+  return __builtin_aarch64_frint64zsf (__a);
+}
+
+__extension__ static __inline double __attribute__ ((__always_inline__))
+__rint64z (double __a)
+{
+  return __builtin_aarch64_frint64zdf (__a);
+}
+
+__extension__ static __inline float __attribute__ ((__always_inline__))
+__rint32xf (float __a)
+{
+  return __builtin_aarch64_frint32xsf (__a);
+}
+
+__extension__ static __inline double __attribute__ ((__always_inline__))
+__rint32x (double __a)
+{
+  return __builtin_aarch64_frint32xdf (__a);
+}
+
+__extension__ static __inline float __attribute__ ((__always_inline__))
+__rint64xf (float __a)
+{
+  return __builtin_aarch64_frint64xsf (__a);
+}
+
+__extension__ static __inline double __attribute__ ((__always_inline__))
+__rint64x (double __a)
+{
+  return __builtin_aarch64_frint64xdf (__a);
+}
+
+
+#pragma GCC pop_options
+
+#pragma GCC push_options
 
 #pragma GCC target ("+nothing+crc")
 

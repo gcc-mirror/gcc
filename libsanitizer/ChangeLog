@@ -1,3 +1,13 @@
+2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure: Regenerate.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
+
+	* configure.tgt (arm*-*-*fdpiceabi): Sanitizers are
+	unsupported in this configuration.
+
 2019-08-16  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* LOCAL_PATCHES: Add r274585.

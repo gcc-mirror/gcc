@@ -3350,13 +3350,7 @@ sort_sem_items_by_decl_uid (const void *a, const void *b)
 
   int uid1 = DECL_UID (i1->decl);
   int uid2 = DECL_UID (i2->decl);
-
-  if (uid1 < uid2)
-    return -1;
-  else if (uid1 > uid2)
-    return 1;
-  else
-    return 0;
+  return uid1 - uid2;
 }
 
 /* Sort pair of congruence_classes A and B by DECL_UID of the first member.  */
@@ -3369,13 +3363,7 @@ sort_congruence_classes_by_decl_uid (const void *a, const void *b)
 
   int uid1 = DECL_UID (c1->members[0]->decl);
   int uid2 = DECL_UID (c2->members[0]->decl);
-
-  if (uid1 < uid2)
-    return -1;
-  else if (uid1 > uid2)
-    return 1;
-  else
-    return 0;
+  return uid1 - uid2;
 }
 
 /* Sort pair of congruence_class_groups A and B by
@@ -3384,20 +3372,11 @@ sort_congruence_classes_by_decl_uid (const void *a, const void *b)
 static int
 sort_congruence_class_groups_by_decl_uid (const void *a, const void *b)
 {
-  const congruence_class_group *g1
-    = *(const congruence_class_group * const *)a;
-  const congruence_class_group *g2
-    = *(const congruence_class_group * const *)b;
-
-  int uid1 = DECL_UID (g1->classes[0]->members[0]->decl);
-  int uid2 = DECL_UID (g2->classes[0]->members[0]->decl);
-
-  if (uid1 < uid2)
-    return -1;
-  else if (uid1 > uid2)
-    return 1;
-  else
-    return 0;
+  const std::pair<congruence_class_group *, int> *g1
+    = (const std::pair<congruence_class_group *, int> *) a;
+  const std::pair<congruence_class_group *, int> *g2
+    = (const std::pair<congruence_class_group *, int> *) b;
+  return g1->second - g2->second;
 }
 
 /* After reduction is done, we can declare all items in a group
@@ -3445,10 +3424,14 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 	  }
       }
 
-  auto_vec <congruence_class_group *> classes (m_classes.elements ());
+  auto_vec<std::pair<congruence_class_group *, int> > classes (
+    m_classes.elements ());
   for (hash_table<congruence_class_hash>::iterator it = m_classes.begin ();
        it != m_classes.end (); ++it)
-    classes.quick_push (*it);
+    {
+      int uid = DECL_UID ((*it)->classes[0]->members[0]->decl);
+      classes.quick_push (std::pair<congruence_class_group *, int> (*it, uid));
+    }
 
   classes.qsort (sort_congruence_class_groups_by_decl_uid);
 
@@ -3470,11 +3453,11 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
     }
 
   unsigned int l;
-  congruence_class_group *it;
+  std::pair<congruence_class_group *, int> *it;
   FOR_EACH_VEC_ELT (classes, l, it)
-    for (unsigned int i = 0; i < it->classes.length (); i++)
+    for (unsigned int i = 0; i < it->first->classes.length (); i++)
       {
-	congruence_class *c = it->classes[i];
+	congruence_class *c = it->first->classes[i];
 
 	if (c->members.length () == 1)
 	  continue;

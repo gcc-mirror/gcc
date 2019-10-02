@@ -1948,7 +1948,7 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
       if (DECL_BIT_FIELD (field)
 	  && operand_equal_p (this_size, TYPE_SIZE (type), 0))
 	{
-	  unsigned int align = TYPE_ALIGN (type);
+	  const unsigned int align = TYPE_ALIGN (type);
 
 	  /* In the general case, type alignment is required.  */
 	  if (value_factor_p (pos, align))
@@ -2764,10 +2764,12 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
   return var_decl;
 }
 
-/* Return true if TYPE, an aggregate type, contains (or is) an array.  */
+/* Return true if TYPE, an aggregate type, contains (or is) an array.
+   If SELF_REFERENTIAL is true, then an additional requirement on the
+   array is that it be self-referential.  */
 
-static bool
-aggregate_type_contains_array_p (tree type)
+bool
+aggregate_type_contains_array_p (tree type, bool self_referential)
 {
   switch (TREE_CODE (type))
     {
@@ -2778,13 +2780,14 @@ aggregate_type_contains_array_p (tree type)
 	tree field;
 	for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	  if (AGGREGATE_TYPE_P (TREE_TYPE (field))
-	      && aggregate_type_contains_array_p (TREE_TYPE (field)))
+	      && aggregate_type_contains_array_p (TREE_TYPE (field),
+						  self_referential))
 	    return true;
 	return false;
       }
 
     case ARRAY_TYPE:
-      return true;
+      return self_referential ? type_contains_placeholder_p (type) : true;
 
     default:
       gcc_unreachable ();
@@ -2807,18 +2810,6 @@ create_field_decl (tree name, tree type, tree record_type, tree size, tree pos,
 
   DECL_CONTEXT (field_decl) = record_type;
   TREE_READONLY (field_decl) = TYPE_READONLY (type);
-
-  /* If FIELD_TYPE is BLKmode, we must ensure this is aligned to at least a
-     byte boundary since GCC cannot handle less-aligned BLKmode bitfields.
-     Likewise for an aggregate without specified position that contains an
-     array, because in this case slices of variable length of this array
-     must be handled by GCC and variable-sized objects need to be aligned
-     to at least a byte boundary.  */
-  if (packed && (TYPE_MODE (type) == BLKmode
-		 || (!pos
-		     && AGGREGATE_TYPE_P (type)
-		     && aggregate_type_contains_array_p (type))))
-    SET_DECL_ALIGN (field_decl, BITS_PER_UNIT);
 
   /* If a size is specified, use it.  Otherwise, if the record type is packed
      compute a size to use, which may differ from the object's natural size.
@@ -2872,23 +2863,39 @@ create_field_decl (tree name, tree type, tree record_type, tree size, tree pos,
 
   DECL_PACKED (field_decl) = pos ? DECL_BIT_FIELD (field_decl) : packed;
 
+  /* If FIELD_TYPE is BLKmode, we must ensure this is aligned to at least a
+     byte boundary since GCC cannot handle less-aligned BLKmode bitfields.
+     Likewise for an aggregate without specified position that contains an
+     array, because in this case slices of variable length of this array
+     must be handled by GCC and variable-sized objects need to be aligned
+     to at least a byte boundary.  */
+  if (packed && (TYPE_MODE (type) == BLKmode
+		 || (!pos
+		     && AGGREGATE_TYPE_P (type)
+		     && aggregate_type_contains_array_p (type, false))))
+    SET_DECL_ALIGN (field_decl, BITS_PER_UNIT);
+
   /* Bump the alignment if need be, either for bitfield/packing purposes or
-     to satisfy the type requirements if no such consideration applies.  When
+     to satisfy the type requirements if no such considerations apply.  When
      we get the alignment from the type, indicate if this is from an explicit
      user request, which prevents stor-layout from lowering it later on.  */
-  {
-    unsigned int bit_align
-      = (DECL_BIT_FIELD (field_decl) ? 1
-	 : packed && TYPE_MODE (type) != BLKmode ? BITS_PER_UNIT : 0);
+  else
+    {
+      const unsigned int field_align
+	= DECL_BIT_FIELD (field_decl)
+	  ? 1
+	  : packed
+	    ? BITS_PER_UNIT
+	    : 0;
 
-    if (bit_align > DECL_ALIGN (field_decl))
-      SET_DECL_ALIGN (field_decl, bit_align);
-    else if (!bit_align && TYPE_ALIGN (type) > DECL_ALIGN (field_decl))
-      {
-	SET_DECL_ALIGN (field_decl, TYPE_ALIGN (type));
-	DECL_USER_ALIGN (field_decl) = TYPE_USER_ALIGN (type);
-      }
-  }
+      if (field_align > DECL_ALIGN (field_decl))
+	SET_DECL_ALIGN (field_decl, field_align);
+      else if (!field_align && TYPE_ALIGN (type) > DECL_ALIGN (field_decl))
+	{
+	  SET_DECL_ALIGN (field_decl, TYPE_ALIGN (type));
+	  DECL_USER_ALIGN (field_decl) = TYPE_USER_ALIGN (type);
+	}
+    }
 
   if (pos)
     {
@@ -3953,27 +3960,30 @@ build_template (tree template_type, tree array_type, tree expr)
 	  && TYPE_HAS_ACTUAL_BOUNDS_P (array_type)))
     bound_list = TYPE_ACTUAL_BOUNDS (array_type);
 
-  /* First make the list for a CONSTRUCTOR for the template.  Go down the
-     field list of the template instead of the type chain because this
-     array might be an Ada array of arrays and we can't tell where the
-     nested arrays stop being the underlying object.  */
-
-  for (field = TYPE_FIELDS (template_type); field;
-       (bound_list
-	? (bound_list = TREE_CHAIN (bound_list))
-	: (array_type = TREE_TYPE (array_type))),
+  /* First make the list for a CONSTRUCTOR for the template.  Go down
+     the field list of the template instead of the type chain because
+     this array might be an Ada array of array and we can't tell where
+     the nested array stop being the underlying object.  */
+  for (field = TYPE_FIELDS (template_type);
+       field;
        field = DECL_CHAIN (DECL_CHAIN (field)))
     {
       tree bounds, min, max;
 
       /* If we have a bound list, get the bounds from there.  Likewise
 	 for an ARRAY_TYPE.  Otherwise, if expr is a PARM_DECL with
-	 DECL_BY_COMPONENT_PTR_P, use the bounds of the field in the template.
-	 This will give us a maximum range.  */
+	 DECL_BY_COMPONENT_PTR_P, use the bounds of the field in the
+	 template, but this will only give us a maximum range.  */
       if (bound_list)
-	bounds = TREE_VALUE (bound_list);
+	{
+	  bounds = TREE_VALUE (bound_list);
+	  bound_list = TREE_CHAIN (bound_list);
+	}
       else if (TREE_CODE (array_type) == ARRAY_TYPE)
-	bounds = TYPE_INDEX_TYPE (TYPE_DOMAIN (array_type));
+	{
+	  bounds = TYPE_INDEX_TYPE (TYPE_DOMAIN (array_type));
+	  array_type = TREE_TYPE (array_type);
+	}
       else if (expr && TREE_CODE (expr) == PARM_DECL
 	       && DECL_BY_COMPONENT_PTR_P (expr))
 	bounds = TREE_TYPE (field);
@@ -5013,7 +5023,7 @@ convert_to_index_type (tree expr)
 
   /* If the type is unsigned, overflow is allowed so we cannot be sure that
      EXPR doesn't overflow.  Keep it simple if optimization is disabled.  */
-  if (TYPE_UNSIGNED (type) || !optimize)
+  if (TYPE_UNSIGNED (type) || !optimize || optimize_debug)
     return convert (sizetype, expr);
 
   switch (code)

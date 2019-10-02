@@ -2549,12 +2549,12 @@ check_extern_c_conflict (tree decl)
       if (mismatch)
 	{
 	  auto_diagnostic_group d;
-	  pedwarn (input_location, 0,
+	  pedwarn (DECL_SOURCE_LOCATION (decl), 0,
 		   "conflicting C language linkage declaration %q#D", decl);
 	  inform (DECL_SOURCE_LOCATION (old),
 		  "previous declaration %q#D", old);
 	  if (mismatch < 0)
-	    inform (input_location,
+	    inform (DECL_SOURCE_LOCATION (decl),
 		    "due to different exception specifications");
 	}
       else
@@ -2674,7 +2674,8 @@ check_local_shadow (tree decl)
 	  /* ARM $8.3 */
 	  if (b->kind == sk_function_parms)
 	    {
-	      error ("declaration of %q#D shadows a parameter", decl);
+	      error_at (DECL_SOURCE_LOCATION (decl),
+			"declaration of %q#D shadows a parameter", decl);
 	      return;
 	    }
 	}
@@ -2700,7 +2701,8 @@ check_local_shadow (tree decl)
 	       && (old_scope->kind == sk_cond || old_scope->kind == sk_for))
 	{
 	  auto_diagnostic_group d;
-	  error ("redeclaration of %q#D", decl);
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "redeclaration of %q#D", decl);
 	  inform (DECL_SOURCE_LOCATION (old),
 		  "%q#D previously declared here", old);
 	  return;
@@ -2723,7 +2725,8 @@ check_local_shadow (tree decl)
 		   && in_function_try_handler))
 	{
 	  auto_diagnostic_group d;
-	  if (permerror (input_location, "redeclaration of %q#D", decl))
+	  if (permerror (DECL_SOURCE_LOCATION (decl),
+			 "redeclaration of %q#D", decl))
 	    inform (DECL_SOURCE_LOCATION (old),
 		    "%q#D previously declared here", old);
 	  return;
@@ -2771,7 +2774,7 @@ check_local_shadow (tree decl)
 	msg = "declaration of %qD shadows a previous local";
 
       auto_diagnostic_group d;
-      if (warning_at (input_location, warning_code, msg, decl))
+      if (warning_at (DECL_SOURCE_LOCATION (decl), warning_code, msg, decl))
 	inform_shadowed (old);
       return;
     }
@@ -2798,7 +2801,7 @@ check_local_shadow (tree decl)
 	    || TYPE_PTRMEMFUNC_P (TREE_TYPE (decl)))
 	  {
 	    auto_diagnostic_group d;
-	    if (warning_at (input_location, OPT_Wshadow,
+	    if (warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wshadow,
 			    "declaration of %qD shadows a member of %qT",
 			    decl, current_nonlambda_class_type ())
 		&& DECL_P (member))
@@ -2818,7 +2821,7 @@ check_local_shadow (tree decl)
     /* XXX shadow warnings in outer-more namespaces */
     {
       auto_diagnostic_group d;
-      if (warning_at (input_location, OPT_Wshadow,
+      if (warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wshadow,
 		      "declaration of %qD shadows a global declaration",
 		      decl))
 	inform_shadowed (old);
@@ -7455,13 +7458,6 @@ cp_emit_debug_info_for_using (tree t, tree context)
   if (seen_error ())
     return;
 
-  /* Ignore this FUNCTION_DECL if it refers to a builtin declaration
-     of a builtin function.  */
-  if (TREE_CODE (t) == FUNCTION_DECL
-      && DECL_EXTERNAL (t)
-      && fndecl_built_in_p (t))
-    return;
-
   /* Do not supply context to imported_module_or_decl, if
      it is a global namespace.  */
   if (context == global_namespace)
@@ -7469,18 +7465,26 @@ cp_emit_debug_info_for_using (tree t, tree context)
 
   t = MAYBE_BASELINK_FUNCTIONS (t);
 
-  /* FIXME: Handle TEMPLATE_DECLs.  */
   for (lkp_iterator iter (t); iter; ++iter)
     {
       tree fn = *iter;
-      if (TREE_CODE (fn) != TEMPLATE_DECL)
-	{
-	  if (building_stmt_list_p ())
-	    add_stmt (build_stmt (input_location, USING_STMT, fn));
-	  else
-	    debug_hooks->imported_module_or_decl (fn, NULL_TREE, context,
-						  false, false);
-	}
+
+      if (TREE_CODE (fn) == TEMPLATE_DECL)
+	/* FIXME: Handle TEMPLATE_DECLs.  */
+	continue;
+      
+      /* Ignore this FUNCTION_DECL if it refers to a builtin declaration
+	 of a builtin function.  */
+      if (TREE_CODE (fn) == FUNCTION_DECL
+	  && DECL_EXTERNAL (fn)
+	  && fndecl_built_in_p (fn))
+	continue;
+
+      if (building_stmt_list_p ())
+	add_stmt (build_stmt (input_location, USING_STMT, fn));
+      else
+	debug_hooks->imported_module_or_decl (fn, NULL_TREE, context,
+					      false, false);
     }
 }
 

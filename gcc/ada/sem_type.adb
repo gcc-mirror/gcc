@@ -2849,7 +2849,7 @@ package body Sem_Type is
          return False;
 
       else
-         return In_Generic_Actual (Parent (Par));
+         return In_Generic_Actual (Par);
       end if;
    end In_Generic_Actual;
 

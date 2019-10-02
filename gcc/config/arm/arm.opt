@@ -82,7 +82,7 @@ mapcs-stack-check
 Target Report Mask(APCS_STACK) Undocumented
 
 march=
-Target RejectNegative ToLower Joined Var(arm_arch_string)
+Target RejectNegative Negative(march=) ToLower Joined Var(arm_arch_string)
 Specify the name of the target architecture.
 
 ; Other arm_arch values are loaded from arm-tables.opt
@@ -107,7 +107,7 @@ Target Report Mask(CALLER_INTERWORKING)
 Thumb: Assume function pointers may go to non-Thumb aware code.
 
 mcpu=
-Target RejectNegative ToLower Joined Var(arm_cpu_string)
+Target RejectNegative Negative(mcpu=) ToLower Joined Var(arm_cpu_string)
 Specify the name of the target CPU.
 
 mfloat-abi=
@@ -232,7 +232,7 @@ Target Report Mask(TPCS_LEAF_FRAME)
 Thumb: Generate (leaf) stack frames even if not needed.
 
 mtune=
-Target RejectNegative ToLower Joined Var(arm_tune_string)
+Target RejectNegative Negative(mtune=) ToLower Joined Var(arm_tune_string)
 Tune code for the given processor.
 
 mprint-tune-info
@@ -276,7 +276,7 @@ Target Report Var(unaligned_access) Init(2) Save
 Enable unaligned word and halfword accesses to packed data.
 
 mneon-for-64bits
-Target Deprecated
+Target WarnRemoved
 This option is deprecated and has no effect.
 
 mslow-flash-data
@@ -306,3 +306,7 @@ Cost to assume for a branch insn.
 mgeneral-regs-only
 Target Report RejectNegative Mask(GENERAL_REGS_ONLY) Save
 Generate code which uses the core registers only (r0-r14).
+
+mfdpic
+Target Report Mask(FDPIC)
+Enable Function Descriptor PIC mode.

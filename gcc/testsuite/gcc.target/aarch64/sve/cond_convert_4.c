@@ -32,6 +32,5 @@ TEST_ALL (DEF_LOOP)
 /* { dg-final { scan-assembler-times {\tfcvtzu\tz[0-9]+\.d, p[0-7]/m,} 1 } } */
 
 /* { dg-final { scan-assembler-not {\tmov\tz} } } */
-/* At the moment we don't manage to avoid using MOVPRFX.  */
-/* { dg-final { scan-assembler-not {\tmovprfx\t} { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-not {\tmovprfx\t} } } */
 /* { dg-final { scan-assembler-not {\tsel\t} } } */

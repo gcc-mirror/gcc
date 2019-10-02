@@ -12,7 +12,7 @@ import (
 )
 
 // Export temporarily for gccgo's C code to call:
-//go:linkname netpoll runtime.netpoll
+//go:linkname netpoll
 
 // Integrated network poller (platform-independent part).
 // A particular implementation (epoll/kqueue) must define the following functions:
@@ -52,13 +52,14 @@ type pollDesc struct {
 	// The lock protects pollOpen, pollSetDeadline, pollUnblock and deadlineimpl operations.
 	// This fully covers seq, rt and wt variables. fd is constant throughout the PollDesc lifetime.
 	// pollReset, pollWait, pollWaitCanceled and runtime·netpollready (IO readiness notification)
-	// proceed w/o taking the lock. So closing, rg, rd, wg and wd are manipulated
+	// proceed w/o taking the lock. So closing, everr, rg, rd, wg and wd are manipulated
 	// in a lock-free way by all operations.
 	// NOTE(dvyukov): the following code uses uintptr to store *g (rg/wg),
 	// that will blow up when GC starts moving objects.
 	lock    mutex // protects the following fields
 	fd      uintptr
 	closing bool
+	everr   bool    // marks event scanning error happened
 	user    uint32  // user settable cookie
 	rseq    uintptr // protects from stale read timers
 	rg      uintptr // pdReady, pdWait, G waiting for read or nil
@@ -123,6 +124,7 @@ func poll_runtime_pollOpen(fd uintptr) (uintptr, int) {
 	}
 	pd.fd = fd
 	pd.closing = false
+	pd.everr = false
 	pd.rseq++
 	pd.rg = 0
 	pd.rd = 0
@@ -181,8 +183,8 @@ func poll_runtime_pollWait(ctx uintptr, mode int) int {
 	if err != 0 {
 		return err
 	}
-	// As for now only Solaris, AIX and Hurd use level-triggered IO.
-	if GOOS == "solaris" || GOOS == "aix" || GOOS == "hurd" {
+	// As for now only Solaris, illumos, and AIX use level-triggered IO.
+	if GOOS == "solaris" || GOOS == "illumos" || GOOS == "aix" || GOOS == "hurd" {
 		netpollarm(pd, mode)
 	}
 	for !netpollblock(pd, int32(mode), false) {
@@ -344,10 +346,16 @@ func netpollready(toRun *gList, pd *pollDesc, mode int32) {
 
 func netpollcheckerr(pd *pollDesc, mode int32) int {
 	if pd.closing {
-		return 1 // errClosing
+		return 1 // ErrFileClosing or ErrNetClosing
 	}
 	if (mode == 'r' && pd.rd < 0) || (mode == 'w' && pd.wd < 0) {
-		return 2 // errTimeout
+		return 2 // ErrTimeout
+	}
+	// Report an event scanning error only on a read event.
+	// An error on a write event will be captured in a subsequent
+	// write call that is able to report a more specific error.
+	if mode == 'r' && pd.everr {
+		return 3 // ErrNotPollable
 	}
 	return 0
 }

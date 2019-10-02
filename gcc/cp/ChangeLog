@@ -1,3 +1,349 @@
+2019-09-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91889 - follow-up fix for DR 2352.
+	* call.c (involves_qualification_conversion_p): New function.
+	(direct_reference_binding): Build a ck_qual if the conversion
+	would involve a qualification conversion.
+	(convert_like_real): Strip the conversion created by the ck_qual
+	in direct_reference_binding.
+
+	PR c++/91921 - stray warning with -Woverloaded-virtual.
+	* class.c (warn_hidden): Only emit the second part of
+	-Woverloaded-virtual if the first part was issued.  Use inform instead
+	warning_at.
+
+	PR c++/91923 - failure-to-SFINAE with class type NTTP in C++17.
+	* pt.c (invalid_nontype_parm_type_p): Only emit errors when
+	tf_error.
+
+2019-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88203
+	* parser.c (cp_parser_omp_var_list_no_open): Parse predefined
+	variables.
+	* semantics.c (finish_omp_clauses): Allow predefined variables in
+	shared and firstprivate clauses, even when they are predetermined
+	shared.
+	* cp-gimplify.c (cxx_omp_predetermined_sharing_1): Return
+	OMP_CLAUSE_DEFAULT_SHARED for predefined variables.
+
+2019-09-27  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_fold_indirect_ref): Use similar_type_p.
+	(cxx_eval_indirect_ref): Likewise.  Improve error location.
+
+	* cp-tree.h (class iloc_sentinel): New.
+	* decl.c (grokdeclarator, finish_enum_value_list): Use it.
+	* mangle.c (mangle_decl_string): Use it.
+	* pt.c (perform_typedefs_access_check): Use it.
+
+2019-09-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cp-tree.h (build_cxx_call): Take the original function decl
+	as an optional final parameter.
+	(cp_build_function_call_vec): Likewise.
+	* call.c (build_cxx_call): Likewise.  Pass all built-in calls to
+	check_builtin_function_arguments.
+	* typeck.c (build_function_call_vec): Take the original function
+	decl as an optional final parameter and pass it to
+	cp_build_function_call_vec.
+	(cp_build_function_call_vec): Take the original function
+	decl as an optional final parameter and pass it to build_cxx_call.
+
+2019-09-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91877 - ICE with converting member of packed struct.
+	* call.c (convert_like_real): Use similar_type_p in an assert.
+
+2019-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* name-lookup.c (check_extern_c_conflict): Use DECL_SOURCE_LOCATION.
+	(check_local_shadow): Use it in three additional places.
+
+2019-09-24  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_postfix_expression): Do set location of
+	dependent member call.
+
+2019-09-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91868 - improve -Wshadow location.
+	* name-lookup.c (check_local_shadow): Use DECL_SOURCE_LOCATION
+	instead of input_location.
+
+	PR c++/91845 - ICE with invalid pointer-to-member.
+	* expr.c (mark_use): Use error_operand_p.
+	* typeck2.c (build_m_component_ref): Check error_operand_p after
+	calling mark_[lr]value_use.
+
+2019-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (check_explicit_specialization): Use cp_expr_loc_or_input_loc.
+	(process_partial_specialization): Likewise.
+	(convert_nontype_argument_function): Likewise.
+	(invalid_tparm_referent_p): Likewise.
+	(convert_template_argument): Likewise.
+	(check_valid_ptrmem_cst_expr): Tidy.
+
+2019-09-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91809 - bit-field and ellipsis.
+	* call.c (convert_arg_to_ellipsis): Don't call decay_conversion for
+	arithmetic arguments.
+
+2019-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91844 - Implement CWG 2352, Similar types and reference binding.
+	* call.c (reference_related_p): Use similar_type_p instead of
+	same_type_p.
+	(reference_compatible_p): Update implementation to match CWG 2352.
+	* cp-tree.h (similar_type_p): Declare.
+	* typeck.c (similar_type_p): New.
+
+2019-09-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91819 - ICE with operator++ and enum.
+	* call.c (build_new_op_1): Set arg2_type.
+
+2019-09-17  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_statement): Handle [[likely]] on
+	compound-statement.
+
+2019-09-19  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	* call.c (build_new_op_1): Don't apply any standard conversions to
+	the operands of a built-in operator.  Don't suppress conversions in
+	cp_build_unary_op.
+	* typeck.c (cp_build_unary_op): Do integral promotions for enums.
+
+2019-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use declspecs->locations and
+	declarator->id_loc in a few error messages.
+	* pt.c (finish_member_template_decl): Use DECL_SOURCE_LOCATION.
+	(push_template_decl_real): Likewise.
+
+2019-09-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/30277 - int-width bit-field promotion.
+	PR c++/33819 - long bit-field promotion.
+	* typeck.c (cp_perform_integral_promotions): Handle large bit-fields
+	properly.  Handle 32-bit non-int bit-fields properly.
+	(is_bitfield_expr_with_lowered_type): Don't look through NOP_EXPR.
+
+	PR c++/82165 - enum bitfields and operator overloading.
+	* call.c (build_new_op_1): Use unlowered_expr_type.
+
+	* call.c (build_new_op_1): Don't apply any standard conversions to
+	the operands of a built-in operator.  Don't suppress conversions in
+	cp_build_unary_op.
+	* typeck.c (cp_build_unary_op): Do integral promotions for enums.
+
+2019-09-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91740 - ICE with constexpr call and ?: in ARRAY_REF.
+	* pt.c (build_non_dependent_expr): Call build_non_dependent_expr for
+	the first operand.
+
+2019-09-15  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_CLONED_FUNCTION_P): Reimplement using
+	IDENTIFIER_CDTOR_P, correct documentation.
+	(DECL_CLONED_FUNCTION): Directly access field.
+	(decl_cloned_function_p): Delete.
+	* class.c (decl_cloned_function_p): Delete.
+	* pt.c (instantiate_template_1): Check DECL_CHAIN is a decl.
+
+2019-09-11  Nathan Sidwell  <nathan@acm.org>
+
+	* c-objcp-common.c (cp-objcp-common.c): Alphababetize and
+	correctly mark all C++ nodes.
+	* decl.c (cp_tree_node_structure): Alphabetize.
+
+2019-09-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91673 - ICE with noexcept in alias-declaration.
+	* parser.c (CP_PARSER_FLAGS_DELAY_NOEXCEPT): New parser flag.
+	(cp_parser_lambda_declarator_opt): Pass CP_PARSER_FLAGS_NONE to
+	cp_parser_exception_specification_opt.
+	(cp_parser_direct_declarator): Adjust a call to
+	cp_parser_exception_specification_opt.
+	(cp_parser_member_declaration): Pass CP_PARSER_FLAGS_DELAY_NOEXCEPT
+	to cp_parser_declarator if not processing a friend or typedef
+	declaration.
+	(cp_parser_late_noexcept_specifier): Adjust a call to
+	cp_parser_noexcept_specification_opt.
+	(cp_parser_noexcept_specification_opt): New parameter for parser flags,
+	drop the FRIEND_P parameter.  Use the new parameter.
+	(cp_parser_exception_specification_opt): Likewise.
+	(cp_parser_transaction): Adjust a call to
+	cp_parser_noexcept_specification_opt.
+	(cp_parser_transaction_expression): Likewise.
+
+2019-09-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91705 - constexpr evaluation rejects ++/-- on floats.
+	* constexpr.c (cxx_eval_increment_expression): Call fold_simple on
+	the offset.
+
+2019-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (has_designator_problem): Use cp_expr_loc_or_input_loc
+	in error_at.
+	(build_enumerator): Likewise.
+	(cp_finish_decl): Use DECL_SOURCE_LOCATION.
+	(grokdeclarator): Use id_loc in two error_at; change errror
+	message about constinit together constexpr to use two ranges.
+
+2019-09-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84374 - diagnose invalid uses of decltype(auto).
+	* decl.c (grokdeclarator): Diagnose wrong usage of decltype(auto) in
+	a function declaration.
+
+2019-09-06  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/91125
+	* cp-tree.h (IDENTIFIER_REPO_CHOSEN, DECL_REPO_AVAILABLE_P): Delete.
+	(struct lang_decl_base): Remove repo_available_p.
+	* decl.c (duplicate_decls): Don't copy DECL_REPO_AVAILABLE_P.
+
+	(Reserve TREE_LANG_FLAG_3 for modules.
+	* cp-tree.h (DECL_CONSTRUCTION_VTABLE_P): Delete.
+	(DECL_NON_TRIVIALLY_INITIALIZED_P): Move to TREE_LANG_FLAG_6.
+	* class.c (build_ctor_vtbl_group): Don't set
+	DECL_CONSTRUCTION_VTABLE_P.
+	* decl2.c (determine_visibility_from_class): Don't check
+	DECL_CONSTRUCTION_VTABLE_P anymore.
+
+2019-09-06  Martin Liska  <mliska@suse.cz>
+
+	PR c++/91125
+	* Make-lang.in: Remove repo.o.
+	* config-lang.in: Likewise.
+	* cp-tree.h (init_repo): Remove declarations
+	of repo-related functions.
+	(repo_emit_p): Likewise.
+	(repo_export_class_p): Likewise.
+	(finish_repo): Likewise.
+	* decl2.c (import_export_class): Always
+	set -1 value/
+	(mark_needed): Remove -frepo from comment.
+	(import_export_decl): Similarly here.
+	(c_parse_final_cleanups): Remove call of finish_repo.
+	* lex.c (cxx_init): Remove call to init_repo.
+	* optimize.c (can_alias_cdtor): Remove dead condition.
+	* pt.c (push_template_decl_real): Update comment.
+	(instantiate_decl): Remove dead code used for -frepo.
+	* repo.c: Remove.
+
+2019-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91644 - ICE with constinit in function template.
+	* decl.c (start_decl): Call retrofit_lang_decl for constinit variables.
+	* pt.c (tsubst_expr): Pass LOOKUP_CONSTINIT down to cp_finish_decl for
+	constinit variables.
+
+2019-09-05  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_VTABLE_OR_VTT_P): Forward to DECL_VIRTUAL_P.
+
+2019-09-04  Marek Polacek  <polacek@redhat.com>
+
+	* call.c (build_over_call): Remove -fdeduce-init-list implementation.
+	* pt.c (unify): Likewise.
+
+2019-09-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91129 - wrong error with binary op in template argument.
+	* typeck.c (warn_for_null_address): Use fold_for_warn instead of
+	fold_non_dependent_expr.
+	(cp_build_binary_op): Likewise.
+
+2019-08-30  Jason Merrill  <jason@redhat.com>
+
+	Add source location to TRAIT_EXPR.
+	* cp-tree.h (TRAIT_EXPR_LOCATION): New.
+	(struct tree_trait_expr): Add locus field.
+	* parser.c (cp_parser_trait_expr): Pass trait_loc down.
+	* pt.c (tsubst_copy_and_build) [TRAIT_EXPR]: Likewise.
+	* semantics.c (finish_trait_expr): Add location parm.
+	* tree.c (cp_expr_location): Handle TRAIT_EXPR.
+
+2019-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (check_var_type): Add location_t parameter and use it.
+	(grokdeclarator): Adjust call.
+	* pt.c (tsubst_decl): Likewise.
+	* cp-tree.h: Adjust declaration.
+
+2019-08-28  Marek Polacek  <polacek@redhat.com>
+
+	Implement P1152R4: Deprecating some uses of volatile.
+	PR c++/91361
+	* cp-gimplify.c (cp_fold): Set TREE_THIS_VOLATILE.
+	* decl.c (grokdeclarator): Warn about a volatile-qualified structured
+	binding and return type.
+	(grokparms): Warn about a volatile-qualified function parameter.
+	* expr.c (mark_use) <case MODIFY_EXPR>: Emit a -Wvolatile warning.
+	* typeck.c (cp_build_unary_op): Emit a -Wvolatile warning for pre and
+	post ++/-- on a volatile operand.
+	(genericize_compound_lvalue): Use a better location.  Don't lose
+	TREE_THIS_VOLATILE.
+	(cp_build_modify_expr): Emit a -Wvolatile warning for a compound
+	assignment whose LHS is volatile-qualified.  Build the assignment with
+	a more precise location.
+
+2019-08-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91360 - Implement C++20 P1143R2: constinit.
+	* cp-tree.h (TINFO_VAR_DECLARED_CONSTINIT): Define.
+	(LOOKUP_CONSTINIT): Define.
+	(enum cp_decl_spec): Add ds_constinit.
+	* decl.c (check_tag_decl): Give an error for constinit in type
+	declarations.
+	(check_initializer): Also check LOOKUP_CONSTINIT.
+	(cp_finish_decl): Add checking for a constinit declaration.  Set
+	TINFO_VAR_DECLARED_CONSTINIT.
+	(grokdeclarator): Add checking for a declaration with the constinit
+	specifier.
+	* lex.c (init_reswords): Handle D_CXX20.
+	* parser.c (cp_lexer_get_preprocessor_token): Pass a better location
+	to warning_at.  Warn about C++20 keywords.
+	(cp_keyword_starts_decl_specifier_p): Handle RID_CONSTINIT.
+	(cp_parser_diagnose_invalid_type_name): Add an inform about constinit.
+	(cp_parser_decomposition_declaration): Maybe pass LOOKUP_CONSTINIT to
+	cp_finish_decl.
+	(cp_parser_decl_specifier_seq): Handle RID_CONSTINIT.
+	(cp_parser_init_declarator): Maybe pass LOOKUP_CONSTINIT to
+	cp_finish_decl.
+	(set_and_check_decl_spec_loc): Add "constinit".
+	* pt.c (tsubst_decl): Set TINFO_VAR_DECLARED_CONSTINIT.
+	(instantiate_decl): Maybe pass LOOKUP_CONSTINIT to cp_finish_decl.
+	* typeck2.c (store_init_value): If a constinit variable wasn't
+	initialized using a constant initializer, give an error.
+
+2019-08-28  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/90613
+	* name-lookup.c (cp_emit_debug_info): Check for builtins during
+	overload iteration.
+
+2019-08-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81676 - bogus -Wunused warnings in constexpr if.
+	* semantics.c (maybe_mark_exp_read_r): New function.
+	(finish_if_stmt): Call it on THEN_CLAUSE and ELSE_CLAUSE.
+
+	PR c++/91428 - warn about std::is_constant_evaluated in if constexpr.
+	* cp-tree.h (decl_in_std_namespace_p): Declare.
+	* semantics.c (is_std_constant_evaluated_p): New.
+	(finish_if_stmt_cond): Warn about "std::is_constant_evaluated ()" in
+	an if-constexpr.
+	* typeck.c (decl_in_std_namespace_p): No longer static.
+
 2019-08-26  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (duplicate_decls): Always merge DECL_DECLARED_CONSTEXPR_P.

@@ -986,6 +986,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	{
 	  /* Set feature test macros for C++2a.  */
 	  cpp_define (pfile, "__cpp_conditional_explicit=201806");
+	  cpp_define (pfile, "__cpp_constinit=201907");
 	  cpp_define (pfile, "__cpp_nontype_template_parameter_class=201806");
 	  cpp_define (pfile, "__cpp_impl_destroying_delete=201806");
 	}
@@ -1643,6 +1644,7 @@ builtin_define_with_hex_fp_value (const char *macro,
   /* This is very expensive, so if possible expand them lazily.  */
   if (lazy_hex_fp_value_count < LAZY_HEX_FP_VALUES_CNT
       && flag_dump_macros == 0
+      && flag_dump_go_spec == NULL
       && !cpp_get_options (parse_in)->traditional)
     {
       if (lazy_hex_fp_value_count == 0)

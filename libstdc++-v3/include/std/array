@@ -422,10 +422,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 # include <debug/array>
 #endif
 
-#ifdef _GLIBCXX_PROFILE
-# include <profile/array>
-#endif
-
 #endif // C++11
 
 #endif // _GLIBCXX_ARRAY

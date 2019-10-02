@@ -3993,7 +3993,11 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       auto __n2 = std::__size_to_integer(__n);
       using _Cat = typename iterator_traits<_InputIterator>::iterator_category;
       if constexpr (is_base_of_v<random_access_iterator_tag, _Cat>)
-	return std::for_each(__first, __first + __n2, __f);
+	{
+	  auto __last = __first + __n2;
+	  std::for_each(__first, __last, std::move(__f));
+	  return __last;
+	}
       else
 	{
 	  while (__n2-->0)
@@ -5053,8 +5057,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @param  __last1   Another iterator.
    *  @param  __last2   Another iterator.
    *  @param  __result  An iterator pointing to the end of the merged range.
-   *  @return         An iterator pointing to the first element <em>not less
-   *                  than</em> @e val.
+   *  @return   An output iterator equal to @p __result + (__last1 - __first1)
+   *            + (__last2 - __first2).
    *
    *  Merges the ranges @p [__first1,__last1) and @p [__first2,__last2) into
    *  the sorted range @p [__result, __result + (__last1-__first1) +
@@ -5101,8 +5105,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  @param  __last2   Another iterator.
    *  @param  __result  An iterator pointing to the end of the merged range.
    *  @param  __comp    A functor to use for comparisons.
-   *  @return         An iterator pointing to the first element "not less
-   *                  than" @e val.
+   *  @return   An output iterator equal to @p __result + (__last1 - __first1)
+   *            + (__last2 - __first2).
    *
    *  Merges the ranges @p [__first1,__last1) and @p [__first2,__last2) into
    *  the sorted range @p [__result, __result + (__last1-__first1) +

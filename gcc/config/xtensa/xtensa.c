@@ -2686,8 +2686,7 @@ xtensa_call_save_reg(int regno)
   if (crtl->calls_eh_return && regno >= 2 && regno < 4)
     return true;
 
-  return !fixed_regs[regno] && !call_used_regs[regno] &&
-    df_regs_ever_live_p (regno);
+  return !call_used_or_fixed_reg_p (regno) && df_regs_ever_live_p (regno);
 }
 
 /* Return the bytes needed to compute the frame pointer from the current
@@ -4231,7 +4230,9 @@ hwloop_optimize (hwloop_info loop)
 
   seq = get_insns ();
 
-  if (!single_succ_p (entry_bb) || vec_safe_length (loop->incoming) > 1)
+  entry_after = BB_END (entry_bb);
+  if (!single_succ_p (entry_bb) || vec_safe_length (loop->incoming) > 1
+      || !entry_after)
     {
       basic_block new_bb;
       edge e;
@@ -4252,7 +4253,6 @@ hwloop_optimize (hwloop_info loop)
     }
   else
     {
-      entry_after = BB_END (entry_bb);
       while (DEBUG_INSN_P (entry_after)
              || (NOTE_P (entry_after)
 		 && NOTE_KIND (entry_after) != NOTE_INSN_BASIC_BLOCK))

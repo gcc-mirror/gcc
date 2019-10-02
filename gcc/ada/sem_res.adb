@@ -5674,13 +5674,21 @@ package body Sem_Res is
 
          --  A universal real conditional expression can appear in a fixed-type
          --  context and must be resolved with that context to facilitate the
-         --  code generation in the back end.
+         --  code generation in the back end. However, If the context is
+         --  Universal_fixed (i.e. as an operand of a multiplication/division
+         --  involving a fixed-point operand) the conditional expression must
+         --  resolve to a unique visible fixed_point type, normally Duration.
 
          elsif Nkind_In (N, N_Case_Expression, N_If_Expression)
            and then Etype (N) = Universal_Real
            and then Is_Fixed_Point_Type (B_Typ)
          then
-            Resolve (N, B_Typ);
+            if B_Typ = Universal_Fixed then
+               Resolve (N, Unique_Fixed_Point_Type (N));
+
+            else
+               Resolve (N, B_Typ);
+            end if;
 
          else
             Resolve (N);
@@ -12431,7 +12439,8 @@ package body Sem_Res is
             --     ityp (x)
 
             --  with the Float_Truncate flag set to False or True respectively,
-            --  which is more efficient.
+            --  which is more efficient. We reuse Rounding for Machine_Rounding
+            --  as System.Fat_Gen, which is a permissible behavior.
 
             if Is_Floating_Point_Type (Opnd_Typ)
               and then
@@ -12440,6 +12449,7 @@ package body Sem_Res is
                             and then Conversion_OK (N)))
               and then Nkind (Operand) = N_Attribute_Reference
               and then Nam_In (Attribute_Name (Operand), Name_Rounding,
+                                                         Name_Machine_Rounding,
                                                          Name_Truncation)
             then
                declare

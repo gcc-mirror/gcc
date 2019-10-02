@@ -467,7 +467,7 @@ typedef struct
    when spilling hard registers when they may contain PSImode values.  */
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO,NREGS,MODE) \
   ((TARGET_LARGE && ((NREGS) <= 2)) ? PSImode \
-   : choose_hard_reg_mode ((REGNO), (NREGS), false))
+   : choose_hard_reg_mode ((REGNO), (NREGS), NULL))
 
 #define ACCUMULATE_OUTGOING_ARGS 1
 

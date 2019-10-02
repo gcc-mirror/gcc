@@ -1,3 +1,7 @@
+2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure: Regenerate.
+
 2019-02-19  Caroline Tice <cmtice@google.com>
 
 	Fix testsuite

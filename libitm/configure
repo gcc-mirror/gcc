@@ -6731,7 +6731,7 @@ irix5* | irix6* | nonstopux*)
   ;;
 
 # This must be Linux ELF.
-linux* | k*bsd*-gnu | kopensolaris*-gnu)
+linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
   lt_cv_deplibs_check_method=pass_all
   ;;
 
@@ -9812,7 +9812,7 @@ _LT_EOF
       archive_expsym_cmds='sed "s,^,_," $export_symbols >$output_objdir/$soname.expsym~$CC -shared $pic_flag $libobjs $deplibs $compiler_flags ${wl}-h,$soname ${wl}--retain-symbols-file,$output_objdir/$soname.expsym ${wl}--image-base,`expr ${RANDOM-$$} % 4096 / 2 \* 262144 + 1342177280` -o $lib'
       ;;
 
-    gnu* | linux* | tpf* | k*bsd*-gnu | kopensolaris*-gnu)
+    gnu* | linux* | tpf* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
       tmp_diet=no
       if test "$host_os" = linux-dietlibc; then
 	case $cc_basename in
@@ -11343,7 +11343,12 @@ linux*oldld* | linux*aout* | linux*coff*)
   ;;
 
 # This must be Linux ELF.
-linux* | k*bsd*-gnu | kopensolaris*-gnu)
+
+# uclinux* changes (here and below) have been submitted to the libtool
+# project, but have not yet been accepted: they are GCC-local changes
+# for the time being.  (See
+# https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
   version_type=linux
   need_lib_prefix=no
   need_version=no
@@ -12032,7 +12037,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12035 "configure"
+#line 12040 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12138,7 +12143,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12141 "configure"
+#line 12146 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15003,7 +15008,12 @@ linux*oldld* | linux*aout* | linux*coff*)
   ;;
 
 # This must be Linux ELF.
-linux* | k*bsd*-gnu | kopensolaris*-gnu)
+
+# uclinux* changes (here and below) have been submitted to the libtool
+# project, but have not yet been accepted: they are GCC-local changes
+# for the time being.  (See
+# https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
+linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
   version_type=linux
   need_lib_prefix=no
   need_version=no
@@ -16468,7 +16478,7 @@ fi
 
 
 case "$target" in
-  *-linux*)
+  *-linux* | *-uclinux*)
     case "$enable_linux_futex" in
       default)
 	# If headers don't have gettid/futex syscalls definition, then
@@ -16481,6 +16491,7 @@ case "$target" in
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <sys/syscall.h>
+	   #include <unistd.h>
 	   int lk;
 int
 main ()
@@ -16533,6 +16544,7 @@ rm -f core conftest.err conftest.$ac_objext \
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <sys/syscall.h>
+	   #include <unistd.h>
 	   int lk;
 int
 main ()
@@ -16591,7 +16603,7 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   chktls_save_LDFLAGS="$LDFLAGS"
 	  	  	  case $host in
-	    *-*-linux*)
+	    *-*-linux* | -*-uclinuxfdpic*)
 	      LDFLAGS="-shared -Wl,--no-undefined $LDFLAGS"
 	      ;;
 	  esac
@@ -17059,7 +17071,7 @@ fi
   fi
 
   ldver=`$LD --version 2>/dev/null |
-         sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
+         sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
 
   libitm_gnu_ld_version=`echo $ldver | \
          $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`

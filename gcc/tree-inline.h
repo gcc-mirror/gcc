@@ -172,6 +172,15 @@ struct copy_body_data
      outside of the inlined function, this should be the number
      of basic blocks in the caller before inlining.  Zero otherwise.  */
   int add_clobbers_to_eh_landing_pads;
+
+  /* Class managing changes to function parameters and return value planned
+     during IPA stage.  */
+  class ipa_param_body_adjustments *param_body_adjs;
+
+  /* Hash set of SSA names that have been killed during call graph edge
+   redirection and should not be introduced into debug statements or NULL if no
+   SSA_NAME was deleted during redirections happened.  */
+  hash_set <tree> *killed_new_ssa_names;
 };
 
 /* Weights of constructions for estimate_num_insns.  */
@@ -240,6 +249,8 @@ extern bool debug_find_tree (tree, tree);
 extern tree copy_fn (tree, tree&, tree&);
 extern const char *copy_forbidden (struct function *fun);
 extern tree copy_decl_for_dup_finish (copy_body_data *id, tree decl, tree copy);
+extern tree copy_decl_to_var (tree, copy_body_data *);
+extern tree force_value_to_type (tree type, tree value);
 
 /* This is in tree-inline.c since the routine uses
    data structures from the inliner.  */

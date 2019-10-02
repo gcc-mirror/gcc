@@ -1220,3 +1220,7 @@
           crypto_sha256_fast, crypto_sha256_slow")
         (const_string "yes")
         (const_string "no")))
+
+(define_insn_reservation "no_reservation" 0
+  (eq_attr "type" "no_insn")
+  "nothing")

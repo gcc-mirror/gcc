@@ -171,6 +171,11 @@ type Symbol struct {
 	Info, Other byte
 	Section     SectionIndex
 	Value, Size uint64
+
+	// Version and Library are present only for the dynamic symbol
+	// table.
+	Version string
+	Library string
 }
 
 /*
@@ -276,7 +281,6 @@ func NewFile(r io.ReaderAt) (*File, error) {
 	var phentsize, phnum int
 	var shoff int64
 	var shentsize, shnum, shstrndx int
-	shstrndx = -1
 	switch f.Class {
 	case ELFCLASS32:
 		hdr := new(Header32)
@@ -318,7 +322,11 @@ func NewFile(r io.ReaderAt) (*File, error) {
 		shstrndx = int(hdr.Shstrndx)
 	}
 
-	if shnum > 0 && shoff > 0 && (shstrndx < 0 || shstrndx >= shnum) {
+	if shoff == 0 && shnum != 0 {
+		return nil, &FormatError{0, "invalid ELF shnum for shoff=0", shnum}
+	}
+
+	if shnum > 0 && shstrndx >= shnum {
 		return nil, &FormatError{0, "invalid ELF shstrndx", shstrndx}
 	}
 
@@ -1318,12 +1326,23 @@ func (f *File) Symbols() ([]Symbol, error) {
 // DynamicSymbols returns the dynamic symbol table for f. The symbols
 // will be listed in the order they appear in f.
 //
+// If f has a symbol version table, the returned Symbols will have
+// initialized Version and Library fields.
+//
 // For compatibility with Symbols, DynamicSymbols omits the null symbol at index 0.
 // After retrieving the symbols as symtab, an externally supplied index x
 // corresponds to symtab[x-1], not symtab[x].
 func (f *File) DynamicSymbols() ([]Symbol, error) {
-	sym, _, err := f.getSymbols(SHT_DYNSYM)
-	return sym, err
+	sym, str, err := f.getSymbols(SHT_DYNSYM)
+	if err != nil {
+		return nil, err
+	}
+	if f.gnuVersionInit(str) {
+		for i := range sym {
+			sym[i].Library, sym[i].Version = f.gnuVersion(i)
+		}
+	}
+	return sym, nil
 }
 
 type ImportedSymbol struct {
@@ -1346,7 +1365,8 @@ func (f *File) ImportedSymbols() ([]ImportedSymbol, error) {
 	for i, s := range sym {
 		if ST_BIND(s.Info) == STB_GLOBAL && s.Section == SHN_UNDEF {
 			all = append(all, ImportedSymbol{Name: s.Name})
-			f.gnuVersion(i, &all[len(all)-1])
+			sym := &all[len(all)-1]
+			sym.Library, sym.Version = f.gnuVersion(i)
 		}
 	}
 	return all, nil
@@ -1359,11 +1379,16 @@ type verneed struct {
 
 // gnuVersionInit parses the GNU version tables
 // for use by calls to gnuVersion.
-func (f *File) gnuVersionInit(str []byte) {
+func (f *File) gnuVersionInit(str []byte) bool {
+	if f.gnuNeed != nil {
+		// Already initialized
+		return true
+	}
+
 	// Accumulate verneed information.
 	vn := f.SectionByType(SHT_GNU_VERNEED)
 	if vn == nil {
-		return
+		return false
 	}
 	d, _ := vn.Data()
 
@@ -1418,17 +1443,18 @@ func (f *File) gnuVersionInit(str []byte) {
 	// Versym parallels symbol table, indexing into verneed.
 	vs := f.SectionByType(SHT_GNU_VERSYM)
 	if vs == nil {
-		return
+		return false
 	}
 	d, _ = vs.Data()
 
 	f.gnuNeed = need
 	f.gnuVersym = d
+	return true
 }
 
 // gnuVersion adds Library and Version information to sym,
 // which came from offset i of the symbol table.
-func (f *File) gnuVersion(i int, sym *ImportedSymbol) {
+func (f *File) gnuVersion(i int) (library string, version string) {
 	// Each entry is two bytes.
 	i = (i + 1) * 2
 	if i >= len(f.gnuVersym) {
@@ -1439,8 +1465,7 @@ func (f *File) gnuVersion(i int, sym *ImportedSymbol) {
 		return
 	}
 	n := &f.gnuNeed[j]
-	sym.Library = n.File
-	sym.Version = n.Name
+	return n.File, n.Name
 }
 
 // ImportedLibraries returns the names of all libraries

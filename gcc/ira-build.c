@@ -456,12 +456,10 @@ ira_create_object (ira_allocno_t a, int subword)
   OBJECT_CONFLICT_VEC_P (obj) = false;
   OBJECT_CONFLICT_ARRAY (obj) = NULL;
   OBJECT_NUM_CONFLICTS (obj) = 0;
-  COPY_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj), ira_no_alloc_regs);
-  COPY_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), ira_no_alloc_regs);
-  IOR_COMPL_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-			  reg_class_contents[aclass]);
-  IOR_COMPL_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-			  reg_class_contents[aclass]);
+  OBJECT_CONFLICT_HARD_REGS (obj) = ira_no_alloc_regs;
+  OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) = ira_no_alloc_regs;
+  OBJECT_CONFLICT_HARD_REGS (obj) |= ~reg_class_contents[aclass];
+  OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= ~reg_class_contents[aclass];
   OBJECT_MIN (obj) = INT_MAX;
   OBJECT_MAX (obj) = -1;
   OBJECT_LIVE_RANGES (obj) = NULL;
@@ -506,6 +504,7 @@ ira_create_allocno (int regno, bool cap_p,
   ALLOCNO_CALL_FREQ (a) = 0;
   ALLOCNO_CALLS_CROSSED_NUM (a) = 0;
   ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a) = 0;
+  ALLOCNO_CROSSED_CALLS_ABIS (a) = 0;
   CLEAR_HARD_REG_SET (ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a));
 #ifdef STACK_REGS
   ALLOCNO_NO_STACK_REG_P (a) = false;
@@ -549,10 +548,8 @@ ira_set_allocno_class (ira_allocno_t a, enum reg_class aclass)
   ALLOCNO_CLASS (a) = aclass;
   FOR_EACH_ALLOCNO_OBJECT (a, obj, oi)
     {
-      IOR_COMPL_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-			      reg_class_contents[aclass]);
-      IOR_COMPL_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-			      reg_class_contents[aclass]);
+      OBJECT_CONFLICT_HARD_REGS (obj) |= ~reg_class_contents[aclass];
+      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= ~reg_class_contents[aclass];
     }
 }
 
@@ -602,10 +599,10 @@ merge_hard_reg_conflicts (ira_allocno_t from, ira_allocno_t to,
       ira_object_t to_obj = ALLOCNO_OBJECT (to, i);
 
       if (!total_only)
-	IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (to_obj),
-			  OBJECT_CONFLICT_HARD_REGS (from_obj));
-      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (to_obj),
-			OBJECT_TOTAL_CONFLICT_HARD_REGS (from_obj));
+	OBJECT_CONFLICT_HARD_REGS (to_obj)
+	  |= OBJECT_CONFLICT_HARD_REGS (from_obj);
+      OBJECT_TOTAL_CONFLICT_HARD_REGS (to_obj)
+	|= OBJECT_TOTAL_CONFLICT_HARD_REGS (from_obj);
     }
 #ifdef STACK_REGS
   if (!total_only && ALLOCNO_NO_STACK_REG_P (from))
@@ -618,15 +615,15 @@ merge_hard_reg_conflicts (ira_allocno_t from, ira_allocno_t to,
 /* Update hard register conflict information for all objects associated with
    A to include the regs in SET.  */
 void
-ior_hard_reg_conflicts (ira_allocno_t a, HARD_REG_SET *set)
+ior_hard_reg_conflicts (ira_allocno_t a, const_hard_reg_set set)
 {
   ira_allocno_object_iterator i;
   ira_object_t obj;
 
   FOR_EACH_ALLOCNO_OBJECT (a, obj, i)
     {
-      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj), *set);
-      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), *set);
+      OBJECT_CONFLICT_HARD_REGS (obj) |= set;
+      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= set;
     }
 }
 
@@ -907,8 +904,9 @@ create_cap_allocno (ira_allocno_t a)
 
   ALLOCNO_CALLS_CROSSED_NUM (cap) = ALLOCNO_CALLS_CROSSED_NUM (a);
   ALLOCNO_CHEAP_CALLS_CROSSED_NUM (cap) = ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a);
-  IOR_HARD_REG_SET (ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (cap),
-		    ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a));
+  ALLOCNO_CROSSED_CALLS_ABIS (cap) = ALLOCNO_CROSSED_CALLS_ABIS (a);
+  ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (cap)
+    = ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a);
   if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
     {
       fprintf (ira_dump_file, "    Creating cap ");
@@ -1876,11 +1874,6 @@ create_insn_allocnos (rtx x, rtx outer, bool output_p)
       create_insn_allocnos (XEXP (x, 0), NULL, true);
       return;
     }
-  else if (code == CLOBBER_HIGH)
-    {
-      gcc_assert (REG_P (XEXP (x, 0)) && HARD_REGISTER_P (XEXP (x, 0)));
-      return;
-    }
   else if (code == MEM)
     {
       create_insn_allocnos (XEXP (x, 0), NULL, false);
@@ -2036,8 +2029,10 @@ propagate_allocno_info (void)
 	    += ALLOCNO_CALLS_CROSSED_NUM (a);
 	  ALLOCNO_CHEAP_CALLS_CROSSED_NUM (parent_a)
 	    += ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a);
- 	  IOR_HARD_REG_SET (ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (parent_a),
- 			    ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a));
+	  ALLOCNO_CROSSED_CALLS_ABIS (parent_a)
+	    |= ALLOCNO_CROSSED_CALLS_ABIS (a);
+	  ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (parent_a)
+	    |= ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a);
 	  ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (parent_a)
 	    += ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a);
 	  aclass = ALLOCNO_CLASS (a);
@@ -2419,8 +2414,9 @@ propagate_some_info_from_allocno (ira_allocno_t a, ira_allocno_t from_a)
   ALLOCNO_CALLS_CROSSED_NUM (a) += ALLOCNO_CALLS_CROSSED_NUM (from_a);
   ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a)
     += ALLOCNO_CHEAP_CALLS_CROSSED_NUM (from_a);
-  IOR_HARD_REG_SET (ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a),
- 		    ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (from_a));
+  ALLOCNO_CROSSED_CALLS_ABIS (a) |= ALLOCNO_CROSSED_CALLS_ABIS (from_a);
+  ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a)
+    |= ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (from_a);
 
   ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a)
     += ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (from_a);
@@ -2569,8 +2565,8 @@ remove_low_level_allocnos (void)
 	  ALLOCNO_NEXT_REGNO_ALLOCNO (a) = NULL;
 	  ALLOCNO_CAP_MEMBER (a) = NULL;
 	  FOR_EACH_ALLOCNO_OBJECT (a, obj, oi)
-	    COPY_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-			       OBJECT_TOTAL_CONFLICT_HARD_REGS (obj));
+	    OBJECT_CONFLICT_HARD_REGS (obj)
+	      = OBJECT_TOTAL_CONFLICT_HARD_REGS (obj);
 #ifdef STACK_REGS
 	  if (ALLOCNO_TOTAL_NO_STACK_REG_P (a))
 	    ALLOCNO_NO_STACK_REG_P (a) = true;
@@ -3060,8 +3056,10 @@ copy_info_to_removed_store_destinations (int regno)
 	+= ALLOCNO_CALLS_CROSSED_NUM (a);
       ALLOCNO_CHEAP_CALLS_CROSSED_NUM (parent_a)
 	+= ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a);
-      IOR_HARD_REG_SET (ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (parent_a),
- 			ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a));
+      ALLOCNO_CROSSED_CALLS_ABIS (parent_a)
+	|= ALLOCNO_CROSSED_CALLS_ABIS (a);
+      ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (parent_a)
+	|= ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a);
       ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (parent_a)
 	+= ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a);
       merged_p = true;
@@ -3108,8 +3106,8 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 	   flattening.  */
 	continue;
       FOR_EACH_ALLOCNO_OBJECT (a, obj, oi)
-	COPY_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-			   OBJECT_CONFLICT_HARD_REGS (obj));
+	OBJECT_TOTAL_CONFLICT_HARD_REGS (obj)
+	  = OBJECT_CONFLICT_HARD_REGS (obj);
 #ifdef STACK_REGS
       ALLOCNO_TOTAL_NO_STACK_REG_P (a) = ALLOCNO_NO_STACK_REG_P (a);
 #endif
@@ -3159,6 +3157,9 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 		-= ALLOCNO_CALLS_CROSSED_NUM (a);
 	      ALLOCNO_CHEAP_CALLS_CROSSED_NUM (parent_a)
 		-= ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a);
+	      /* Assume that ALLOCNO_CROSSED_CALLS_ABIS and
+		 ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS stay the same.
+		 We'd need to rebuild the IR to do better.  */
 	      ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (parent_a)
 		-= ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a);
 	      ira_assert (ALLOCNO_CALLS_CROSSED_NUM (parent_a) >= 0
@@ -3466,7 +3467,7 @@ ira_build (void)
 	 allocno crossing calls.  */
       FOR_EACH_ALLOCNO (a, ai)
 	if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
-	  ior_hard_reg_conflicts (a, &call_used_reg_set);
+	  ior_hard_reg_conflicts (a, ira_need_caller_save_regs (a));
     }
   if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
     print_copies (ira_dump_file);

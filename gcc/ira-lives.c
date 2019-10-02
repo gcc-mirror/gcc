@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ira.h"
 #include "ira-int.h"
 #include "sparseset.h"
+#include "function-abi.h"
 
 /* The code in this file is similar to one in global but the code
    works on the allocno basis and creates live ranges instead of
@@ -188,8 +189,8 @@ make_object_dead (ira_object_t obj)
 	}
     }
 
-  IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj), hard_regs_live);
-  IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), hard_regs_live);
+  OBJECT_CONFLICT_HARD_REGS (obj) |= hard_regs_live;
+  OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= hard_regs_live;
 
   /* If IGNORE_REG_FOR_CONFLICTS did not already conflict with OBJ, make
      sure it still doesn't.  */
@@ -990,10 +991,8 @@ process_single_reg_class_operands (bool in_p, int freq)
 	      /* We could increase costs of A instead of making it
 		 conflicting with the hard register.  But it works worse
 		 because it will be spilled in reload in anyway.  */
-	      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-				reg_class_contents[cl]);
-	      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-				reg_class_contents[cl]);
+	      OBJECT_CONFLICT_HARD_REGS (obj) |= reg_class_contents[cl];
+	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= reg_class_contents[cl];
 	    }
 	}
     }
@@ -1131,8 +1130,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
       reg_live_out = df_get_live_out (bb);
       sparseset_clear (objects_live);
       REG_SET_TO_HARD_REG_SET (hard_regs_live, reg_live_out);
-      AND_COMPL_HARD_REG_SET (hard_regs_live, eliminable_regset);
-      AND_COMPL_HARD_REG_SET (hard_regs_live, ira_no_alloc_regs);
+      hard_regs_live &= ~(eliminable_regset | ira_no_alloc_regs);
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (TEST_HARD_REG_BIT (hard_regs_live, i))
 	  {
@@ -1257,10 +1255,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		  ira_object_t obj = ira_object_id_map[i];
 		  a = OBJECT_ALLOCNO (obj);
 		  int num = ALLOCNO_NUM (a);
-		  HARD_REG_SET this_call_used_reg_set;
-
-		  get_call_reg_set_usage (insn, &this_call_used_reg_set,
-					  call_used_reg_set);
+		  function_abi callee_abi = insn_callee_abi (insn);
 
 		  /* Don't allocate allocnos that cross setjmps or any
 		     call, if this function receives a nonlocal
@@ -1275,10 +1270,10 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		    }
 		  if (can_throw_internal (insn))
 		    {
-		      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-					this_call_used_reg_set);
-		      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-					this_call_used_reg_set);
+		      OBJECT_CONFLICT_HARD_REGS (obj)
+			|= callee_abi.mode_clobbers (ALLOCNO_MODE (a));
+		      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj)
+			|= callee_abi.mode_clobbers (ALLOCNO_MODE (a));
 		    }
 
 		  if (sparseset_bit_p (allocnos_processed, num))
@@ -1295,8 +1290,9 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		  /* Mark it as saved at the next call.  */
 		  allocno_saved_at_call[num] = last_call_num + 1;
 		  ALLOCNO_CALLS_CROSSED_NUM (a)++;
-		  IOR_HARD_REG_SET (ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a),
-				    this_call_used_reg_set);
+		  ALLOCNO_CROSSED_CALLS_ABIS (a) |= 1 << callee_abi.id ();
+		  ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a)
+		    |= callee_abi.full_and_partial_reg_clobbers ();
 		  if (cheap_reg != NULL_RTX
 		      && ALLOCNO_REGNO (a) == (int) REGNO (cheap_reg))
 		    ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a)++;
@@ -1360,10 +1356,11 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  }
 
       /* Allocnos can't go in stack regs at the start of a basic block
-	 that is reached by an abnormal edge. Likewise for call
-	 clobbered regs, because caller-save, fixup_abnormal_edges and
-	 possibly the table driven EH machinery are not quite ready to
-	 handle such allocnos live across such edges.  */
+	 that is reached by an abnormal edge. Likewise for registers
+	 that are at least partly call clobbered, because caller-save,
+	 fixup_abnormal_edges and possibly the table driven EH machinery
+	 are not quite ready to handle such allocnos live across such
+	 edges.  */
       if (bb_has_abnormal_pred (bb))
 	{
 #ifdef STACK_REGS
@@ -1383,7 +1380,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  if (!cfun->has_nonlocal_label
 	      && has_abnormal_call_or_eh_pred_edge_p (bb))
 	    for (px = 0; px < FIRST_PSEUDO_REGISTER; px++)
-	      if (call_used_regs[px]
+	      if (eh_edge_abi.clobbers_at_least_part_of_reg_p (px)
 #ifdef REAL_PIC_OFFSET_TABLE_REGNUM
 		  /* We should create a conflict of PIC pseudo with
 		     PIC hard reg as PIC hard reg can have a wrong

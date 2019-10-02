@@ -28,17 +28,19 @@
 #
 # Author: Yury Gribov <tetra2005@gmail.com>
 
+import argparse
 import sys
 import re
 import os.path
 import os
-import getopt
 import tempfile
 import time
 import shutil
 from subprocess import Popen, PIPE
 
 me = os.path.basename(sys.argv[0])
+
+pr_regex = re.compile('\+(\/(\/|\*)|[Cc*!])\s+(PR [a-z+-]+\/[0-9]+)')
 
 def error(msg):
   sys.stderr.write("%s: error: %s\n" % (me, msg))
@@ -65,21 +67,6 @@ class RegexCache(object):
     return self.last_match.group(n)
 
 cache = RegexCache()
-
-def print_help_and_exit():
-    print("""\
-Usage: %s [-i | --inline] [PATCH]
-Generate ChangeLog template for PATCH.
-PATCH must be generated using diff(1)'s -up or -cp options
-(or their equivalent in Subversion/git).
-
-When PATCH is - or missing, read standard input.
-
-When -i is used, prepends ChangeLog to PATCH.
-If PATCH is not stdin, modifies PATCH in-place, otherwise writes
-to stdout.
-""" % me)
-    sys.exit(1)
 
 def run(cmd, die_on_error):
   """Simple wrapper for Popen."""
@@ -314,7 +301,7 @@ def parse_patch(contents):
         if l != r:
           break
         comps.append(l)
-    
+
       if not comps:
         error("failed to extract common name for %s and %s" % (left, right))
 
@@ -353,41 +340,41 @@ def parse_patch(contents):
 
   return diffs
 
+
+def get_pr_from_testcase(line):
+    r = pr_regex.search(line)
+    if r != None:
+        return r.group(3)
+    else:
+        return None
+
 def main():
   name, email = read_user_info()
 
-  try:
-    opts, args = getopt.getopt(sys.argv[1:], 'hiv', ['help', 'verbose', 'inline'])
-  except getopt.GetoptError as err:
-    error(str(err))
+  help_message =  """\
+Generate ChangeLog template for PATCH.
+PATCH must be generated using diff(1)'s -up or -cp options
+(or their equivalent in Subversion/git).
+"""
 
-  inline = False
-  verbose = 0
+  inline_message = """\
+Prepends ChangeLog to PATCH.
+If PATCH is not stdin, modifies PATCH in-place,
+otherwise writes to stdout.'
+"""
 
-  for o, a in opts:
-    if o in ('-h', '--help'):
-      print_help_and_exit()
-    elif o in ('-i', '--inline'):
-      inline = True
-    elif o in ('-v', '--verbose'):
-      verbose += 1
-    else:
-      assert False, "unhandled option"
-
-  if len(args) == 0:
-    args = ['-']
-
-  if len(args) == 1 and args[0] == '-':
-    input = sys.stdin
-  elif len(args) == 1:
-    input = open(args[0])
-  else:
-    error("too many arguments; for more details run with -h")
-
+  parser = argparse.ArgumentParser(description = help_message)
+  parser.add_argument('-v', '--verbose', action = 'store_true', help = 'Verbose messages')
+  parser.add_argument('-i', '--inline', action = 'store_true', help = inline_message)
+  parser.add_argument('input', nargs = '?', help = 'Patch file (or missing, read standard input)')
+  args = parser.parse_args()
+  if args.input == '-':
+      args.input = None
+  input = open(args.input) if args.input else sys.stdin
   contents = input.read()
   diffs = parse_patch(contents)
 
-  if verbose:
+  if args.verbose:
     print("Parse results:")
     for d in diffs:
       d.dump()
@@ -395,6 +382,7 @@ def main():
   # Generate template ChangeLog.
 
   logs = {}
+  prs = []
   for d in diffs:
     log_name = d.clname
 
@@ -410,13 +398,17 @@ def main():
       if hunk0.is_file_addition():
         if re.search(r'testsuite.*(?<!\.exp)$', d.filename):
           change_msg = ': New test.\n'
+          pr = get_pr_from_testcase(hunk0.lines[0])
+          if pr and pr not in prs:
+              prs.append(pr)
         else:
           change_msg = ": New file.\n"
       elif hunk0.is_file_removal():
         change_msg = ": Remove.\n"
 
     _, ext = os.path.splitext(d.filename)
-    if not change_msg and ext in ['.c', '.cpp', '.C', '.cc', '.h', '.inc', '.def']:
+    if (not change_msg and ext in ['.c', '.cpp', '.C', '.cc', '.h', '.inc', '.def']
+        and not 'testsuite' in d.filename):
       fns = []
       for hunk in d.hunks:
         for fn in find_changed_funs(hunk):
@@ -431,7 +423,7 @@ def main():
 
     logs[log_name] += change_msg if change_msg else ":\n"
 
-  if inline and args[0] != '-':
+  if args.inline and args.input:
     # Get a temp filename, rather than an open filehandle, because we use
     # the open to truncate.
     fd, tmp = tempfile.mkstemp("tmp.XXXXXXXX")
@@ -439,7 +431,7 @@ def main():
 
     # Copy permissions to temp file
     # (old Pythons do not support shutil.copymode)
-    shutil.copymode(args[0], tmp)
+    shutil.copymode(args.input, tmp)
 
     # Open the temp file, clearing contents.
     out = open(tmp, 'w')
@@ -449,22 +441,26 @@ def main():
 
   # Print log
   date = time.strftime('%Y-%m-%d')
+  bugmsg = ''
+  if len(prs):
+    bugmsg = '\n'.join(['\t' + pr for pr in prs]) + '\n'
+
   for log_name, msg in sorted(logs.items()):
     out.write("""\
 %s:
 
 %s  %s  <%s>
 
-%s\n""" % (log_name, date, name, email, msg))
+%s%s\n""" % (log_name, date, name, email, bugmsg, msg))
 
-  if inline:
+  if args.inline:
     # Append patch body
     out.write(contents)
 
-    if args[0] != '-':
+    if args.input:
       # Write new contents atomically
       out.close()
-      shutil.move(tmp, args[0])
+      shutil.move(tmp, args.input)
 
 if __name__ == '__main__':
     main()

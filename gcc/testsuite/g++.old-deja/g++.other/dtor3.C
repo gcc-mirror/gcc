@@ -2,27 +2,27 @@
 
 struct S1
 {
-  ~S1(int); // { dg-error "" } destructors may not have parameters
+  ~S1(int); // { dg-error "3:destructors may not have parameters" }
 };
 
 
 template <class T>
 struct S2
 {
-  ~S2(int); // { dg-error "" } destructors may not have parameters
+  ~S2(int); // { dg-error "3:destructors may not have parameters" }
 };
 
 
 struct S3 
 {
-  ~S3(double) {} // { dg-error "" } destructors may not have parameters
+  ~S3(double) {} // { dg-error "3:destructors may not have parameters" }
 };
 
 
 template <class T>
 struct S4
 {
-  ~S4(double) {} // { dg-error "" } destructors may not have parameters
+  ~S4(double) {} // { dg-error "3:destructors may not have parameters" }
 };
 
 

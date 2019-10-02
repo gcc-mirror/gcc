@@ -91,9 +91,7 @@ pass_stack_ptr_mod::execute (function *fun)
 	  if (INSN_P (insn))
 	    {
 	      /* Check if insn modifies the stack pointer.  */
-	      note_stores (PATTERN (insn),
-			   notice_stack_pointer_modification_1,
-			   NULL);
+	      note_stores (insn, notice_stack_pointer_modification_1, NULL);
 	      if (! crtl->sp_is_unchanging)
 		return 0;
 	    }

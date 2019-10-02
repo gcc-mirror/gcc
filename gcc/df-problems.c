@@ -36,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "valtrack.h"
 #include "dumpfile.h"
 #include "rtl-iter.h"
+#include "regs.h"
+#include "function-abi.h"
 
 /* Note that turning REG_DEAD_DEBUGGING on will cause
    gcc.c-torture/unsorted/dump-noaddr.c to fail because it prints
@@ -139,18 +141,17 @@ df_print_bb_index (basic_block bb, FILE *file)
    these along with the bitmap_clear_range call to remove ranges of
    bits without actually generating a knockout vector.
 
-   The kill and sparse_kill and the dense_invalidated_by_call and
-   sparse_invalidated_by_call both play this game.  */
+   The kill and sparse_kill and the dense_invalidated_by_eh and
+   sparse_invalidated_by_eh both play this game.  */
 
 /* Private data used to compute the solution for this problem.  These
    data structures are not accessible outside of this module.  */
 class df_rd_problem_data
 {
 public:
-  /* The set of defs to regs invalidated by call.  */
-  bitmap_head sparse_invalidated_by_call;
-  /* The set of defs to regs invalidate by call for rd.  */
-  bitmap_head dense_invalidated_by_call;
+  /* The set of defs to regs invalidated by EH edges.  */
+  bitmap_head sparse_invalidated_by_eh;
+  bitmap_head dense_invalidated_by_eh;
   /* An obstack for the bitmaps we need for this problem.  */
   bitmap_obstack rd_bitmaps;
 };
@@ -187,8 +188,8 @@ df_rd_alloc (bitmap all_blocks)
   if (df_rd->problem_data)
     {
       problem_data = (class df_rd_problem_data *) df_rd->problem_data;
-      bitmap_clear (&problem_data->sparse_invalidated_by_call);
-      bitmap_clear (&problem_data->dense_invalidated_by_call);
+      bitmap_clear (&problem_data->sparse_invalidated_by_eh);
+      bitmap_clear (&problem_data->dense_invalidated_by_eh);
     }
   else
     {
@@ -196,9 +197,9 @@ df_rd_alloc (bitmap all_blocks)
       df_rd->problem_data = problem_data;
 
       bitmap_obstack_initialize (&problem_data->rd_bitmaps);
-      bitmap_initialize (&problem_data->sparse_invalidated_by_call,
+      bitmap_initialize (&problem_data->sparse_invalidated_by_eh,
 			 &problem_data->rd_bitmaps);
-      bitmap_initialize (&problem_data->dense_invalidated_by_call,
+      bitmap_initialize (&problem_data->dense_invalidated_by_eh,
 			 &problem_data->rd_bitmaps);
     }
 
@@ -389,11 +390,10 @@ df_rd_local_compute (bitmap all_blocks)
 {
   unsigned int bb_index;
   bitmap_iterator bi;
-  unsigned int regno;
   class df_rd_problem_data *problem_data
     = (class df_rd_problem_data *) df_rd->problem_data;
-  bitmap sparse_invalidated = &problem_data->sparse_invalidated_by_call;
-  bitmap dense_invalidated = &problem_data->dense_invalidated_by_call;
+  bitmap sparse_invalidated = &problem_data->sparse_invalidated_by_eh;
+  bitmap dense_invalidated = &problem_data->dense_invalidated_by_eh;
 
   bitmap_initialize (&seen_in_block, &df_bitmap_obstack);
   bitmap_initialize (&seen_in_insn, &df_bitmap_obstack);
@@ -405,11 +405,13 @@ df_rd_local_compute (bitmap all_blocks)
       df_rd_bb_local_compute (bb_index);
     }
 
-  /* Set up the knockout bit vectors to be applied across EH_EDGES.  */
-  EXECUTE_IF_SET_IN_BITMAP (regs_invalidated_by_call_regset, 0, regno, bi)
-    {
-      if (! HARD_REGISTER_NUM_P (regno)
-	  || !(df->changeable_flags & DF_NO_HARD_REGS))
+  /* Set up the knockout bit vectors to be applied across EH_EDGES.
+     Conservatively treat partially-clobbered registers as surviving
+     across the EH edge, i.e. assume that definitions before the edge
+     is taken *might* reach uses after it has been taken.  */
+  if (!(df->changeable_flags & DF_NO_HARD_REGS))
+    for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
+      if (eh_edge_abi.clobbers_full_reg_p (regno))
 	{
 	  if (DF_DEFS_COUNT (regno) > DF_SPARSE_THRESHOLD)
 	    bitmap_set_bit (sparse_invalidated, regno);
@@ -418,7 +420,6 @@ df_rd_local_compute (bitmap all_blocks)
 			      DF_DEFS_BEGIN (regno),
 			      DF_DEFS_COUNT (regno));
 	}
-    }
 
   bitmap_release (&seen_in_block);
   bitmap_release (&seen_in_insn);
@@ -458,8 +459,8 @@ df_rd_confluence_n (edge e)
     {
       class df_rd_problem_data *problem_data
 	= (class df_rd_problem_data *) df_rd->problem_data;
-      bitmap sparse_invalidated = &problem_data->sparse_invalidated_by_call;
-      bitmap dense_invalidated = &problem_data->dense_invalidated_by_call;
+      bitmap sparse_invalidated = &problem_data->sparse_invalidated_by_eh;
+      bitmap dense_invalidated = &problem_data->dense_invalidated_by_eh;
       bitmap_iterator bi;
       unsigned int regno;
 
@@ -582,9 +583,9 @@ df_rd_start_dump (FILE *file)
   fprintf (file, ";; Reaching defs:\n");
 
   fprintf (file, ";;  sparse invalidated \t");
-  dump_bitmap (file, &problem_data->sparse_invalidated_by_call);
+  dump_bitmap (file, &problem_data->sparse_invalidated_by_eh);
   fprintf (file, ";;  dense invalidated \t");
-  dump_bitmap (file, &problem_data->dense_invalidated_by_call);
+  dump_bitmap (file, &problem_data->dense_invalidated_by_eh);
 
   fprintf (file, ";;  reg->defs[] map:\t");
   for (regno = 0; regno < m; regno++)
@@ -979,11 +980,17 @@ df_lr_confluence_n (edge e)
   bitmap op2 = &df_lr_get_bb_info (e->dest->index)->in;
   bool changed = false;
 
-  /* Call-clobbered registers die across exception and call edges.  */
+  /* Call-clobbered registers die across exception and call edges.
+     Conservatively treat partially-clobbered registers as surviving
+     across the edges; they might or might not, depending on what
+     mode they have.  */
   /* ??? Abnormal call edges ignored for the moment, as this gets
      confused by sibling call edges, which crashes reg-stack.  */
   if (e->flags & EDGE_EH)
-    changed = bitmap_ior_and_compl_into (op1, op2, regs_invalidated_by_call_regset);
+    {
+      bitmap_view<HARD_REG_SET> eh_kills (eh_edge_abi.full_reg_clobbers ());
+      changed = bitmap_ior_and_compl_into (op1, op2, eh_kills);
+    }
   else
     changed = bitmap_ior_into (op1, op2);
 
@@ -4094,8 +4101,7 @@ can_move_insns_across (rtx_insn *from, rtx_insn *to,
 	  if (volatile_insn_p (PATTERN (insn)))
 	    return false;
 	  memrefs_in_across |= find_memory (insn);
-	  note_stores (PATTERN (insn), find_memory_stores,
-		       &mem_sets_in_across);
+	  note_stores (insn, find_memory_stores, &mem_sets_in_across);
 	  /* This is used just to find sets of the stack pointer.  */
 	  memrefs_in_across |= mem_sets_in_across;
 	  trapping_insns_in_across |= may_trap_p (PATTERN (insn));
@@ -4174,7 +4180,7 @@ can_move_insns_across (rtx_insn *from, rtx_insn *to,
 	    {
 	      int mem_ref_flags = 0;
 	      int mem_set_flags = 0;
-	      note_stores (PATTERN (insn), find_memory_stores, &mem_set_flags);
+	      note_stores (insn, find_memory_stores, &mem_set_flags);
 	      mem_ref_flags = find_memory (insn);
 	      /* Catch sets of the stack pointer.  */
 	      mem_ref_flags |= mem_set_flags;
@@ -4636,8 +4642,13 @@ df_md_confluence_n (edge e)
     return false;
 
   if (e->flags & EDGE_EH)
-    return bitmap_ior_and_compl_into (op1, op2,
-				      regs_invalidated_by_call_regset);
+    {
+      /* Conservatively treat partially-clobbered registers as surviving
+	 across the edge; they might or might not, depending on what mode
+	 they have.  */
+      bitmap_view<HARD_REG_SET> eh_kills (eh_edge_abi.full_reg_clobbers ());
+      return bitmap_ior_and_compl_into (op1, op2, eh_kills);
+    }
   else
     return bitmap_ior_into (op1, op2);
 }

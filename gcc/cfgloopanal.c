@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphds.h"
 #include "params.h"
 #include "sreal.h"
+#include "regs.h"
+#include "function-abi.h"
 
 struct target_cfgloop default_target_cfgloop;
 #if SWITCHABLE_TARGET
@@ -353,7 +355,10 @@ init_set_costs (void)
 	&& !fixed_regs[i])
       {
 	target_avail_regs++;
-	if (call_used_regs[i])
+	/* ??? This is only a rough heuristic.  It doesn't cope well
+	   with alternative ABIs, but that's an optimization rather than
+	   correctness issue.  */
+	if (default_function_abi.clobbers_full_reg_p (i))
 	  target_clobbered_regs++;
       }
 

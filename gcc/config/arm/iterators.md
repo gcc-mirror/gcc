@@ -239,6 +239,8 @@
 ;; A list of ...
 (define_code_iterator IOR_XOR [ior xor])
 
+(define_code_iterator LOGICAL [and ior xor])
+
 ;; Operations on two halves of a quadword vector.
 (define_code_iterator VQH_OPS [plus smin smax umin umax])
 
@@ -427,6 +429,22 @@
 
 (define_int_iterator CRYPTO_SELECTING [UNSPEC_SHA1C UNSPEC_SHA1M
                                        UNSPEC_SHA1P])
+
+(define_int_iterator USXTB16 [UNSPEC_SXTB16 UNSPEC_UXTB16])
+(define_int_iterator SIMD32_NOGE_BINOP
+				[UNSPEC_QADD8 UNSPEC_QSUB8 UNSPEC_SHADD8
+				 UNSPEC_SHSUB8 UNSPEC_UHADD8 UNSPEC_UHSUB8
+				 UNSPEC_UQADD8 UNSPEC_UQSUB8
+				 UNSPEC_QADD16 UNSPEC_QASX UNSPEC_QSAX
+				 UNSPEC_QSUB16 UNSPEC_SHADD16 UNSPEC_SHASX
+				 UNSPEC_SHSAX UNSPEC_SHSUB16 UNSPEC_UHADD16
+				 UNSPEC_UHASX UNSPEC_UHSAX UNSPEC_UHSUB16
+				 UNSPEC_UQADD16 UNSPEC_UQASX UNSPEC_UQSAX
+				 UNSPEC_UQSUB16 UNSPEC_SMUSD UNSPEC_SMUSDX
+				 UNSPEC_SXTAB16 UNSPEC_UXTAB16 UNSPEC_USAD8])
+
+(define_int_iterator SIMD32_DIMODE [UNSPEC_SMLALD UNSPEC_SMLALDX
+				    UNSPEC_SMLSLD UNSPEC_SMLSLDX])
 
 (define_int_iterator VQRDMLH_AS [UNSPEC_VQRDMLAH UNSPEC_VQRDMLSH])
 
@@ -792,10 +810,18 @@
                 (umax "u")])
 
 (define_code_attr cnb [(ltu "CC_C") (geu "CC")])
-(define_code_attr optab [(ltu "ltu") (geu "geu")])
+
+;; Map rtl operator codes to optab names
+(define_code_attr optab
+ [(ltu "ltu")
+  (geu "geu")
+  (and "and")
+  (ior "ior")
+  (xor "xor")])
 
 ;; Assembler mnemonics for signedness of widening operations.
 (define_code_attr US [(sign_extend "s") (zero_extend "u")])
+(define_code_attr Us [(sign_extend "") (zero_extend "u")])
 
 ;; Signedness suffix for float->fixed conversions.  Empty for signed
 ;; conversion.
@@ -825,6 +851,7 @@
 ;; Mapping between vector UNSPEC operations and the signed ('s'),
 ;; unsigned ('u'), poly ('p') or float ('f') nature of their data type.
 (define_int_attr sup [
+  (UNSPEC_SXTB16 "s") (UNSPEC_UXTB16 "u")
   (UNSPEC_VADDL_S "s") (UNSPEC_VADDL_U "u")
   (UNSPEC_VADDW_S "s") (UNSPEC_VADDW_U "u")
   (UNSPEC_VRHADD_S "s") (UNSPEC_VRHADD_U "u")
@@ -1012,6 +1039,24 @@
 		      (UNSPEC_VCMLA90 "90")
 		      (UNSPEC_VCMLA180 "180")
 		      (UNSPEC_VCMLA270 "270")])
+
+(define_int_attr simd32_op [(UNSPEC_QADD8 "qadd8") (UNSPEC_QSUB8 "qsub8")
+			    (UNSPEC_SHADD8 "shadd8") (UNSPEC_SHSUB8 "shsub8")
+			    (UNSPEC_UHADD8 "uhadd8") (UNSPEC_UHSUB8 "uhsub8")
+			    (UNSPEC_UQADD8 "uqadd8") (UNSPEC_UQSUB8 "uqsub8")
+			    (UNSPEC_QADD16 "qadd16") (UNSPEC_QASX "qasx")
+			    (UNSPEC_QSAX "qsax") (UNSPEC_QSUB16 "qsub16")
+			    (UNSPEC_SHADD16 "shadd16") (UNSPEC_SHASX "shasx")
+			    (UNSPEC_SHSAX "shsax") (UNSPEC_SHSUB16 "shsub16")
+			    (UNSPEC_UHADD16 "uhadd16") (UNSPEC_UHASX "uhasx")
+			    (UNSPEC_UHSAX "uhsax") (UNSPEC_UHSUB16 "uhsub16")
+			    (UNSPEC_UQADD16 "uqadd16") (UNSPEC_UQASX "uqasx")
+			    (UNSPEC_UQSAX "uqsax") (UNSPEC_UQSUB16 "uqsub16")
+			    (UNSPEC_SMUSD "smusd") (UNSPEC_SMUSDX "smusdx")
+			    (UNSPEC_SXTAB16 "sxtab16") (UNSPEC_UXTAB16 "uxtab16")
+			    (UNSPEC_USAD8 "usad8") (UNSPEC_SMLALD "smlald")
+			    (UNSPEC_SMLALDX "smlaldx") (UNSPEC_SMLSLD "smlsld")
+			    (UNSPEC_SMLSLDX "smlsldx")])
 
 ;; Both kinds of return insn.
 (define_code_iterator RETURNS [return simple_return])

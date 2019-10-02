@@ -2055,6 +2055,9 @@ cxx_omp_predetermined_sharing_1 (tree decl)
       tree ctx = CP_DECL_CONTEXT (decl);
       if (TYPE_P (ctx) && MAYBE_CLASS_TYPE_P (ctx))
 	return OMP_CLAUSE_DEFAULT_SHARED;
+
+      if (c_omp_predefined_variable (decl))
+	return OMP_CLAUSE_DEFAULT_SHARED;
     }
 
   /* this may not be specified in data-sharing clauses, still we need
@@ -2507,6 +2510,9 @@ cp_fold (tree x)
 	  else
 	    x = org_x;
 	}
+      if (code == MODIFY_EXPR && TREE_CODE (x) == MODIFY_EXPR)
+	TREE_THIS_VOLATILE (x) = TREE_THIS_VOLATILE (org_x);
+
       break;
 
     case VEC_COND_EXPR:

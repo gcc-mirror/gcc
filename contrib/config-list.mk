@@ -40,6 +40,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   arm-linux-androideabi arm-uclinux_eabi arm-eabi arm-rtems \
   arm-symbianelf avr-elf \
   bfin-elf bfin-uclinux bfin-linux-uclibc bfin-rtems bfin-openbsd \
+  bpf-unknown-none \
   c6x-elf c6x-uclinux cr16-elf cris-elf cris-linux crisv32-elf crisv32-linux \
   csky-elf csky-linux-gnu \
   epiphany-elf epiphany-elfOPT-with-stack-offset=16 fido-elf \
@@ -90,7 +91,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   sparc-leon3-linux-gnuOPT-enable-target=all sparc-netbsdelf \
   sparc64-sun-solaris2.11OPT-with-gnu-ldOPT-with-gnu-asOPT-enable-threads=posix \
   sparc-wrs-vxworks sparc64-elf sparc64-rtems sparc64-linux sparc64-freebsd6 \
-  sparc64-netbsd sparc64-openbsd spu-elf \
+  sparc64-netbsd sparc64-openbsd \
   tilegx-linux-gnu tilegxbe-linux-gnu tilepro-linux-gnu \
   v850e-elf v850-elf v850-rtems vax-linux-gnu \
   vax-netbsdelf vax-openbsd visium-elf x86_64-apple-darwin \
@@ -123,7 +124,7 @@ $(LIST): make-log-dir
 		TGT=`echo $@ | awk 'BEGIN { FS = "OPT" }; { print $$1 }'` &&			\
 		TGT=`$(GCC_SRC_DIR)/config.sub $$TGT` &&					\
 		case $$TGT in									\
-			*-*-darwin* | *-*-cygwin* | *-*-mingw* | *-*-aix*)			\
+			*-*-darwin* | *-*-cygwin* | *-*-mingw* | *-*-aix* | bpf-*-*)			\
 				ADDITIONAL_LANGUAGES="";					\
 				;;								\
 			*)									\

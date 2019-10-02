@@ -157,7 +157,6 @@ static void iq2000_setup_incoming_varargs (cumulative_args_t,
 static bool iq2000_rtx_costs          (rtx, machine_mode, int, int, int *, bool);
 static int  iq2000_address_cost       (rtx, machine_mode, addr_space_t,
 				       bool);
-static section *iq2000_select_section (tree, int, unsigned HOST_WIDE_INT);
 static rtx  iq2000_legitimize_address (rtx, rtx, machine_mode);
 static bool iq2000_pass_by_reference  (cumulative_args_t,
 				       const function_arg_info &);
@@ -197,16 +196,9 @@ static HOST_WIDE_INT iq2000_starting_frame_offset (void);
 #define TARGET_RTX_COSTS		iq2000_rtx_costs
 #undef  TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST		iq2000_address_cost
-#undef  TARGET_ASM_SELECT_SECTION
-#define TARGET_ASM_SELECT_SECTION	iq2000_select_section
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS	iq2000_legitimize_address
-
-/* The assembler supports switchable .bss sections, but
-   iq2000_select_section doesn't yet make use of them.  */
-#undef  TARGET_HAVE_SWITCHABLE_BSS_SECTIONS
-#define TARGET_HAVE_SWITCHABLE_BSS_SECTIONS false
 
 #undef  TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND		iq2000_print_operand
@@ -2201,48 +2193,6 @@ iq2000_select_rtx_section (machine_mode mode, rtx x ATTRIBUTE_UNUSED,
   return mergeable_constant_section (mode, align, 0);
 }
 
-/* Choose the section to use for DECL.  RELOC is true if its value contains
-   any relocatable expression.
-
-   Some of the logic used here needs to be replicated in
-   ENCODE_SECTION_INFO in iq2000.h so that references to these symbols
-   are done correctly.  */
-
-static section *
-iq2000_select_section (tree decl, int reloc ATTRIBUTE_UNUSED,
-		       unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
-{
-  if (TARGET_EMBEDDED_DATA)
-    {
-      /* For embedded applications, always put an object in read-only data
-	 if possible, in order to reduce RAM usage.  */
-      if ((TREE_CODE (decl) == VAR_DECL
-	   && TREE_READONLY (decl) && !TREE_SIDE_EFFECTS (decl)
-	   && DECL_INITIAL (decl)
-	   && (DECL_INITIAL (decl) == error_mark_node
-	       || TREE_CONSTANT (DECL_INITIAL (decl))))
-	  /* Deal with calls from output_constant_def_contents.  */
-	  || TREE_CODE (decl) != VAR_DECL)
-	return readonly_data_section;
-      else
-	return data_section;
-    }
-  else
-    {
-      /* For hosted applications, always put an object in small data if
-	 possible, as this gives the best performance.  */
-      if ((TREE_CODE (decl) == VAR_DECL
-	   && TREE_READONLY (decl) && !TREE_SIDE_EFFECTS (decl)
-	   && DECL_INITIAL (decl)
-	   && (DECL_INITIAL (decl) == error_mark_node
-	       || TREE_CONSTANT (DECL_INITIAL (decl))))
-	  /* Deal with calls from output_constant_def_contents.  */
-	  || TREE_CODE (decl) != VAR_DECL)
-	return readonly_data_section;
-      else
-	return data_section;
-    }
-}
 /* Return register to use for a function return value with VALTYPE for function
    FUNC.  */
 

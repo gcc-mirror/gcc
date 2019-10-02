@@ -1,3 +1,5 @@
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+
 typedef short v16hi __attribute__ ((vector_size (32)));
 typedef int v8si __attribute__ ((vector_size (32)));
 typedef long long v4di __attribute__ ((vector_size (32)));

@@ -1429,7 +1429,7 @@ package ALI is
    --    both. If both are provided then only the Read_Lines value is used,
    --    and the Ignore_Lines parameter is ignored.
    --
-   --    Read_XREF is set True to read and acquire the cross-reference
+   --    Read_Xref is set True to read and acquire the cross-reference
    --    information. If Read_XREF is set to True, then the effect is to ignore
    --    all lines other than U, W, D and X lines and the Ignore_Lines and
    --    Read_Lines parameters are ignored (i.e. the use of True for Read_XREF

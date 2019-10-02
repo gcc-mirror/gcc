@@ -4053,7 +4053,7 @@ pa_expand_prologue (void)
 	}
 
       for (i = 18; i >= 4; i--)
-	if (df_regs_ever_live_p (i) && ! call_used_regs[i])
+	if (df_regs_ever_live_p (i) && !call_used_or_fixed_reg_p (i))
 	  {
 	    store_reg (i, offset, HARD_FRAME_POINTER_REGNUM);
 	    offset += UNITS_PER_WORD;
@@ -4093,7 +4093,7 @@ pa_expand_prologue (void)
 	}
 
       for (i = 18; i >= 3; i--)
-      	if (df_regs_ever_live_p (i) && ! call_used_regs[i])
+	if (df_regs_ever_live_p (i) && !call_used_or_fixed_reg_p (i))
 	  {
 	    /* If merge_sp_adjust_with_store is nonzero, then we can
 	       optimize the first GR save.  */
@@ -4394,7 +4394,7 @@ pa_expand_epilogue (void)
 	}
 
       for (i = 18; i >= 4; i--)
-	if (df_regs_ever_live_p (i) && ! call_used_regs[i])
+	if (df_regs_ever_live_p (i) && !call_used_or_fixed_reg_p (i))
 	  {
 	    load_reg (i, offset, HARD_FRAME_POINTER_REGNUM);
 	    offset += UNITS_PER_WORD;
@@ -4431,7 +4431,7 @@ pa_expand_epilogue (void)
 
       for (i = 18; i >= 3; i--)
 	{
-	  if (df_regs_ever_live_p (i) && ! call_used_regs[i])
+	  if (df_regs_ever_live_p (i) && !call_used_or_fixed_reg_p (i))
 	    {
 	      /* Only for the first load.
 	         merge_sp_adjust_with_load holds the register load
@@ -10197,7 +10197,7 @@ pa_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
     }
 
 #ifdef HAVE_ENABLE_EXECUTE_STACK
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
 		     LCT_NORMAL, VOIDmode, XEXP (m_tramp, 0), Pmode);
 #endif
 }

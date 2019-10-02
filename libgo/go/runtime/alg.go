@@ -10,44 +10,43 @@ import (
 	"unsafe"
 )
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
+// For gccgo, use go:linkname to export compiler-called functions.
 //
-//go:linkname memhash0 runtime.memhash0
-//go:linkname memhash8 runtime.memhash8
-//go:linkname memhash16 runtime.memhash16
-//go:linkname memhash32 runtime.memhash32
-//go:linkname memhash64 runtime.memhash64
-//go:linkname memhash128 runtime.memhash128
-//go:linkname strhash runtime.strhash
-//go:linkname f32hash runtime.f32hash
-//go:linkname f64hash runtime.f64hash
-//go:linkname c64hash runtime.c64hash
-//go:linkname c128hash runtime.c128hash
-//go:linkname interhash runtime.interhash
-//go:linkname nilinterhash runtime.nilinterhash
-//go:linkname memequal0 runtime.memequal0
-//go:linkname memequal8 runtime.memequal8
-//go:linkname memequal16 runtime.memequal16
-//go:linkname memequal32 runtime.memequal32
-//go:linkname memequal64 runtime.memequal64
-//go:linkname memequal128 runtime.memequal128
-//go:linkname strequal runtime.strequal
-//go:linkname f32equal runtime.f32equal
-//go:linkname f64equal runtime.f64equal
-//go:linkname c64equal runtime.c64equal
-//go:linkname c128equal runtime.c128equal
-//go:linkname interequal runtime.interequal
-//go:linkname nilinterequal runtime.nilinterequal
-//go:linkname efaceeq runtime.efaceeq
-//go:linkname ifaceeq runtime.ifaceeq
-//go:linkname ifacevaleq runtime.ifacevaleq
-//go:linkname ifaceefaceeq runtime.ifaceefaceeq
-//go:linkname efacevaleq runtime.efacevaleq
-//go:linkname cmpstring runtime.cmpstring
+//go:linkname memhash0
+//go:linkname memhash8
+//go:linkname memhash16
+//go:linkname memhash32
+//go:linkname memhash64
+//go:linkname memhash128
+//go:linkname strhash
+//go:linkname f32hash
+//go:linkname f64hash
+//go:linkname c64hash
+//go:linkname c128hash
+//go:linkname interhash
+//go:linkname nilinterhash
+//go:linkname memequal0
+//go:linkname memequal8
+//go:linkname memequal16
+//go:linkname memequal32
+//go:linkname memequal64
+//go:linkname memequal128
+//go:linkname strequal
+//go:linkname f32equal
+//go:linkname f64equal
+//go:linkname c64equal
+//go:linkname c128equal
+//go:linkname interequal
+//go:linkname nilinterequal
+//go:linkname efaceeq
+//go:linkname ifaceeq
+//go:linkname ifacevaleq
+//go:linkname ifaceefaceeq
+//go:linkname efacevaleq
+//go:linkname cmpstring
 //
 // Temporary to be called from C code.
-//go:linkname alginit runtime.alginit
+//go:linkname alginit
 
 const (
 	c0 = uintptr((8-sys.PtrSize)/4*2860486313 + (sys.PtrSize-4)/4*33054211828000289)
@@ -236,6 +235,9 @@ func ifaceeq(x, y iface) bool {
 		panic(errorString("comparing uncomparable type " + t.string()))
 	}
 	if isDirectIface(t) {
+		// Direct interface types are ptr, chan, map, func, and single-element structs/arrays thereof.
+		// Maps and funcs are not comparable, so they can't reach here.
+		// Ptrs, chans, and single-element items can be compared directly using ==.
 		return x.data == y.data
 	}
 	return eq(x.data, y.data)
@@ -292,6 +294,7 @@ func efacevaleq(x eface, t *_type, p unsafe.Pointer) bool {
 		panic(errorString("comparing uncomparable type " + t.string()))
 	}
 	if isDirectIface(t) {
+		// See comment in efaceeq.
 		return x.data == p
 	}
 	return eq(x.data, p)
@@ -420,4 +423,22 @@ func initAlgAES() {
 	useAeshash = true
 	// Initialize with random data so hash collisions will be hard to engineer.
 	getRandomData(aeskeysched[:])
+}
+
+// Note: These routines perform the read with an native endianness.
+func readUnaligned32(p unsafe.Pointer) uint32 {
+	q := (*[4]byte)(p)
+	if sys.BigEndian {
+		return uint32(q[3]) | uint32(q[2])<<8 | uint32(q[1])<<16 | uint32(q[0])<<24
+	}
+	return uint32(q[0]) | uint32(q[1])<<8 | uint32(q[2])<<16 | uint32(q[3])<<24
+}
+
+func readUnaligned64(p unsafe.Pointer) uint64 {
+	q := (*[8]byte)(p)
+	if sys.BigEndian {
+		return uint64(q[7]) | uint64(q[6])<<8 | uint64(q[5])<<16 | uint64(q[4])<<24 |
+			uint64(q[3])<<32 | uint64(q[2])<<40 | uint64(q[1])<<48 | uint64(q[0])<<56
+	}
+	return uint64(q[0]) | uint64(q[1])<<8 | uint64(q[2])<<16 | uint64(q[3])<<24 | uint64(q[4])<<32 | uint64(q[5])<<40 | uint64(q[6])<<48 | uint64(q[7])<<56
 }

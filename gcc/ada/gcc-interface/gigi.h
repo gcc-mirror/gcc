@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2019, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -835,6 +835,11 @@ extern tree get_base_type (tree type);
    in bits.  If we don't know anything about the alignment, return 0.  */
 extern unsigned int known_alignment (tree exp);
 
+/* Return true if TYPE, an aggregate type, contains (or is) an array.
+   If SELF_REFERENTIAL is true, then an additional requirement on the
+   array is that it be self-referential.  */
+extern bool aggregate_type_contains_array_p (tree type, bool self_referential);
+
 /* Return true if VALUE is a multiple of FACTOR. FACTOR must be a power
    of 2.  */
 extern bool value_factor_p (tree value, unsigned HOST_WIDE_INT factor);
@@ -1053,6 +1058,12 @@ extern void enumerate_modes (void (*f) (const char *, int, int, int, int, int,
 #ifdef __cplusplus
 }
 #endif
+
+/* Use gigi_checking_assert to test invariants in code generation mode.
+   It's effective only if the compiler is configured with more checking
+   than the release mode and can be disabled by means of -fchecking.  */
+#define gigi_checking_assert(EXPR) \
+  gcc_checking_assert ((EXPR) || type_annotate_only)
 
 /* If EXP's type is a VECTOR_TYPE, return EXP converted to the associated
    TYPE_REPRESENTATIVE_ARRAY.  */

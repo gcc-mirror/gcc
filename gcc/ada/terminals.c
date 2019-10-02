@@ -1648,8 +1648,8 @@ __gnat_new_tty (void)
  */
 void __gnat_close_tty (pty_desc* desc)
 {
-  if (desc->master_fd >= 0) close (desc->master_fd);
-  if (desc->slave_fd  >= 0) close (desc->slave_fd);
+  if (desc->master_fd >= 0) { close (desc->master_fd); desc->master_fd = -1; }
+  if (desc->slave_fd  >= 0) { close (desc->slave_fd);  desc->slave_fd  = -1; }
 }
 
 /* __gnat_tty_name - return slave side device name

@@ -655,7 +655,6 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
       return x;
 
     case CLOBBER:
-    case CLOBBER_HIGH:
     case SET:
       gcc_unreachable ();
 
@@ -806,16 +805,6 @@ mark_not_eliminable (rtx x, machine_mode mem_mode)
 	  if (ep->to_rtx == XEXP (x, 0)
 	      && ep->to_rtx != hard_frame_pointer_rtx)
 	    setup_can_eliminate (ep, false);
-      return;
-
-    case CLOBBER_HIGH:
-      gcc_assert (REG_P (XEXP (x, 0)));
-      gcc_assert (REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER);
-      for (ep = reg_eliminate;
-	   ep < &reg_eliminate[NUM_ELIMINABLE_REGS];
-	   ep++)
-	if (reg_is_clobbered_by_clobber_high (ep->to_rtx, XEXP (x, 0)))
-	  setup_can_eliminate (ep, false);
       return;
 
     case SET:
@@ -1089,7 +1078,7 @@ spill_pseudos (HARD_REG_SET set)
 	reg_renumber[i] = -1;
 	bitmap_ior_into (&to_process, &lra_reg_info[i].insn_bitmap);
       }
-  IOR_HARD_REG_SET (lra_no_alloc_regs, set);
+  lra_no_alloc_regs |= set;
   for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
     if (bitmap_bit_p (&to_process, INSN_UID (insn)))
       {
@@ -1202,8 +1191,8 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
 	    result = true;
 	  }
       }
-  IOR_HARD_REG_SET (lra_no_alloc_regs, temp_hard_reg_set);
-  AND_COMPL_HARD_REG_SET (eliminable_regset, temp_hard_reg_set);
+  lra_no_alloc_regs |= temp_hard_reg_set;
+  eliminable_regset &= ~temp_hard_reg_set;
   spill_pseudos (temp_hard_reg_set);
   return result;
 }

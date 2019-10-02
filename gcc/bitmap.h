@@ -210,6 +210,7 @@ along with GCC; see the file COPYING3.  If not see
    on which many random-access membership tests will happen.  */
 
 #include "obstack.h"
+#include "array-traits.h"
 
 /* Bitmap memory usage.  */
 class bitmap_usage: public mem_usage
@@ -435,7 +436,7 @@ extern bool bitmap_clear_bit (bitmap, int);
 extern bool bitmap_set_bit (bitmap, int);
 
 /* Return true if a bit is set in a bitmap.  */
-extern int bitmap_bit_p (bitmap, int);
+extern int bitmap_bit_p (const_bitmap, int);
 
 /* Debug functions to print a bitmap.  */
 extern void debug_bitmap (const_bitmap);
@@ -955,5 +956,124 @@ class auto_bitmap
 
   bitmap_head m_bits;
 };
+
+/* Base class for bitmap_view; see there for details.  */
+template<typename T, typename Traits = array_traits<T> >
+class base_bitmap_view
+{
+public:
+  typedef typename Traits::element_type array_element_type;
+
+  base_bitmap_view (const T &, bitmap_element *);
+  operator const_bitmap () const { return &m_head; }
+
+private:
+  base_bitmap_view (const base_bitmap_view &);
+
+  bitmap_head m_head;
+};
+
+/* Provides a read-only bitmap view of a single integer bitmask or a
+   constant-sized array of integer bitmasks, or of a wrapper around such
+   bitmasks.  */
+template<typename T, typename Traits>
+class bitmap_view<T, Traits, true> : public base_bitmap_view<T, Traits>
+{
+public:
+  bitmap_view (const T &array)
+    : base_bitmap_view<T, Traits> (array, m_bitmap_elements) {}
+
+private:
+  /* How many bitmap_elements we need to hold a full T.  */
+  static const size_t num_bitmap_elements
+    = CEIL (CHAR_BIT
+	    * sizeof (typename Traits::element_type)
+	    * Traits::constant_size,
+	    BITMAP_ELEMENT_ALL_BITS);
+  bitmap_element m_bitmap_elements[num_bitmap_elements];
+};
+
+/* Initialize the view for array ARRAY, using the array of bitmap
+   elements in BITMAP_ELEMENTS (which is known to contain enough
+   entries).  */
+template<typename T, typename Traits>
+base_bitmap_view<T, Traits>::base_bitmap_view (const T &array,
+					       bitmap_element *bitmap_elements)
+{
+  m_head.obstack = NULL;
+
+  /* The code currently assumes that each element of ARRAY corresponds
+     to exactly one bitmap_element.  */
+  const size_t array_element_bits = CHAR_BIT * sizeof (array_element_type);
+  STATIC_ASSERT (BITMAP_ELEMENT_ALL_BITS % array_element_bits == 0);
+  size_t array_step = BITMAP_ELEMENT_ALL_BITS / array_element_bits;
+  size_t array_size = Traits::size (array);
+
+  /* Process each potential bitmap_element in turn.  The loop is written
+     this way rather than per array element because usually there are
+     only a small number of array elements per bitmap element (typically
+     two or four).  The inner loops should therefore unroll completely.  */
+  const array_element_type *array_elements = Traits::base (array);
+  unsigned int indx = 0;
+  for (size_t array_base = 0;
+       array_base < array_size;
+       array_base += array_step, indx += 1)
+    {
+      /* How many array elements are in this particular bitmap_element.  */
+      unsigned int array_count
+	= (STATIC_CONSTANT_P (array_size % array_step == 0)
+	   ? array_step : MIN (array_step, array_size - array_base));
+
+      /* See whether we need this bitmap element.  */
+      array_element_type ior = array_elements[array_base];
+      for (size_t i = 1; i < array_count; ++i)
+	ior |= array_elements[array_base + i];
+      if (ior == 0)
+	continue;
+
+      /* Grab the next bitmap element and chain it.  */
+      bitmap_element *bitmap_element = bitmap_elements++;
+      if (m_head.current)
+	m_head.current->next = bitmap_element;
+      else
+	m_head.first = bitmap_element;
+      bitmap_element->prev = m_head.current;
+      bitmap_element->next = NULL;
+      bitmap_element->indx = indx;
+      m_head.current = bitmap_element;
+      m_head.indx = indx;
+
+      /* Fill in the bits of the bitmap element.  */
+      if (array_element_bits < BITMAP_WORD_BITS)
+	{
+	  /* Multiple array elements fit in one element of
+	     bitmap_element->bits.  */
+	  size_t array_i = array_base;
+	  for (unsigned int word_i = 0; word_i < BITMAP_ELEMENT_WORDS;
+	       ++word_i)
+	    {
+	      BITMAP_WORD word = 0;
+	      for (unsigned int shift = 0;
+		   shift < BITMAP_WORD_BITS && array_i < array_size;
+		   shift += array_element_bits)
+		word |= array_elements[array_i++] << shift;
+	      bitmap_element->bits[word_i] = word;
+	    }
+	}
+      else
+	{
+	  /* Array elements are the same size as elements of
+	     bitmap_element->bits, or are an exact multiple of that size.  */
+	  unsigned int word_i = 0;
+	  for (unsigned int i = 0; i < array_count; ++i)
+	    for (unsigned int shift = 0; shift < array_element_bits;
+		 shift += BITMAP_WORD_BITS)
+	      bitmap_element->bits[word_i++]
+		= array_elements[array_base + i] >> shift;
+	  while (word_i < BITMAP_ELEMENT_WORDS)
+	    bitmap_element->bits[word_i++] = 0;
+	}
+    }
+}
 
 #endif /* GCC_BITMAP_H */

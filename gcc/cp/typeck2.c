@@ -885,7 +885,22 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
       if (!TYPE_REF_P (type))
 	TREE_CONSTANT (decl) = const_init && decl_maybe_constant_var_p (decl);
       if (!const_init)
-	value = oldval;
+	{
+	  /* [dcl.constinit]/2 "If a variable declared with the constinit
+	     specifier has dynamic initialization, the program is
+	     ill-formed."  */
+	  if (flags & LOOKUP_CONSTINIT)
+	    {
+	      error_at (location_of (decl),
+			"%<constinit%> variable %qD does not have a constant "
+			"initializer", decl);
+	      if (require_constant_expression (value))
+		cxx_constant_init (value, decl);
+	      value = error_mark_node;
+	    }
+	  else
+	    value = oldval;
+	}
     }
   value = cp_fully_fold_init (value);
 
@@ -2053,11 +2068,11 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
   tree binfo;
   tree ctype;
 
-  if (error_operand_p (datum) || error_operand_p (component))
-    return error_mark_node;
-
   datum = mark_lvalue_use (datum);
   component = mark_rvalue_use (component);
+
+  if (error_operand_p (datum) || error_operand_p (component))
+    return error_mark_node;
 
   ptrmem_type = TREE_TYPE (component);
   if (!TYPE_PTRMEM_P (ptrmem_type))

@@ -896,7 +896,8 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
 
 		      if (!argdata.minlen
 			  || (integer_zerop (argdata.minlen)
-			      && integer_all_onesp (argdata.maxbound)
+			      && (!argdata.maxbound
+				  || integer_all_onesp (argdata.maxbound))
 			      && integer_all_onesp (argdata.maxlen)))
 			{
 			  /* Set the upper bound of the length to unbounded.  */
@@ -910,11 +911,13 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
 			  || tree_int_cst_lt (argdata.minlen, pdata->minlen))
 			pdata->minlen = argdata.minlen;
 		      if (!pdata->maxlen
-			  || tree_int_cst_lt (pdata->maxlen, argdata.maxlen))
+			  || (argdata.maxlen
+			      && tree_int_cst_lt (pdata->maxlen, argdata.maxlen)))
 			pdata->maxlen = argdata.maxlen;
 		      if (!pdata->maxbound
-			  || (tree_int_cst_lt (pdata->maxbound,
-					       argdata.maxbound)
+			  || (argdata.maxbound
+			      && tree_int_cst_lt (pdata->maxbound,
+						  argdata.maxbound)
 			      && !integer_all_onesp (argdata.maxbound)))
 			pdata->maxbound = argdata.maxbound;
 		    }
@@ -944,8 +947,7 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
   if (strinfo *si = get_strinfo (idx))
     {
       pdata->minlen = get_string_length (si);
-      if (!pdata->minlen
-	  && si->nonzero_chars)
+      if (!pdata->minlen && si->nonzero_chars)
 	{
 	  if (TREE_CODE (si->nonzero_chars) == INTEGER_CST)
 	    pdata->minlen = si->nonzero_chars;
@@ -989,7 +991,7 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
 	  else
 	    pdata->maxlen = build_all_ones_cst (size_type_node);
 	}
-      else if (TREE_CODE (pdata->minlen) == SSA_NAME)
+      else if (pdata->minlen && TREE_CODE (pdata->minlen) == SSA_NAME)
 	{
 	  const value_range *vr
 	    = CONST_CAST (class vr_values *, rvals)
@@ -1007,10 +1009,18 @@ get_range_strlen_dynamic (tree src, c_strlen_data *pdata, bitmap *visited,
 	      pdata->maxlen = build_all_ones_cst (size_type_node);
 	    }
 	}
-      else
+      else if (pdata->minlen && TREE_CODE (pdata->minlen) == INTEGER_CST)
 	{
 	  pdata->maxlen = pdata->minlen;
 	  pdata->maxbound = pdata->minlen;
+	}
+      else
+	{
+	  /* For PDATA->MINLEN that's a non-constant expression such
+	     as PLUS_EXPR whose value range is unknown, set the bounds
+	     to zero and SIZE_MAX.  */
+	  pdata->minlen = build_zero_cst (size_type_node);
+	  pdata->maxlen = build_all_ones_cst (size_type_node);
 	}
 
       return true;
@@ -3057,11 +3067,12 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 
       /* Compute the size of the source sequence, including the nul.  */
       tree srcsize = srclen ? srclen : size_zero_node;
-      srcsize = fold_build2 (PLUS_EXPR, type, srcsize, build_int_cst (type, 1));
-
+      tree one = build_int_cst (type, 1);
+      srcsize = fold_build2 (PLUS_EXPR, type, srcsize, one);
+      tree dstsize = fold_build2 (PLUS_EXPR, type, dstlen, one);
       tree sptr = si && si->ptr ? si->ptr : src;
 
-      if (check_bounds_or_overlap (stmt, dst, sptr, dstlen, srcsize))
+      if (check_bounds_or_overlap (stmt, dst, sptr, dstsize, srcsize))
 	{
 	  gimple_set_no_warning (stmt, true);
 	  set_no_warning = true;
@@ -4026,16 +4037,35 @@ handle_store (gimple_stmt_iterator *gsi)
       rhs_minlen = lenrange[0];
       storing_nonzero_p = lenrange[1] > 0;
 
-      if (tree dstsize = compute_objsize (lhs, 1))
-	if (compare_tree_int (dstsize, lenrange[2]) < 0)
-	  {
-	    location_t loc = gimple_nonartificial_location (stmt);
-	    warning_n (loc, OPT_Wstringop_overflow_,
-		       lenrange[2],
-		       "%Gwriting %u byte into a region of size %E",
-		       "%Gwriting %u bytes into a region of size %E",
-		       stmt, lenrange[2], dstsize);
-	  }
+      /* Avoid issuing multiple warnings for the same LHS or statement.
+	 For example, -Warray-bounds may have already been issued for
+	 an out-of-bounds subscript.  */
+      if (!TREE_NO_WARNING (lhs) && !gimple_no_warning_p (stmt))
+	{
+	  /* Set to the declaration referenced by LHS (if known).  */
+	  tree decl = NULL_TREE;
+	  if (tree dstsize = compute_objsize (lhs, 1, &decl))
+	    if (compare_tree_int (dstsize, lenrange[2]) < 0)
+	      {
+		/* Fall back on the LHS location if the statement
+		   doesn't have one.  */
+		location_t loc = gimple_nonartificial_location (stmt);
+		if (loc == UNKNOWN_LOCATION)
+		  loc = tree_nonartificial_location (lhs);
+		loc = expansion_point_location_if_in_system_header (loc);
+		if (warning_n (loc, OPT_Wstringop_overflow_,
+			       lenrange[2],
+			       "%Gwriting %u byte into a region of size %E",
+			       "%Gwriting %u bytes into a region of size %E",
+			       stmt, lenrange[2], dstsize))
+		  {
+		    if (decl)
+		      inform (DECL_SOURCE_LOCATION (decl),
+			      "destination object declared here");
+		    gimple_set_no_warning (stmt, true);
+		  }
+	      }
+	}
     }
   else
     {
@@ -4850,13 +4880,6 @@ printf_strlen_execute (function *fun, bool warn_only)
 {
   strlen_optimize = !warn_only;
 
-  gcc_assert (!strlen_to_stridx);
-  if (warn_stringop_overflow || warn_stringop_truncation)
-    strlen_to_stridx = new hash_map<tree, stridx_strlenloc> ();
-
-  ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names);
-  max_stridx = 1;
-
   calculate_dominance_info (CDI_DOMINATORS);
 
   bool use_scev = optimize > 0 && flag_printf_return_value;
@@ -4865,6 +4888,15 @@ printf_strlen_execute (function *fun, bool warn_only)
       loop_optimizer_init (LOOPS_NORMAL);
       scev_initialize ();
     }
+
+  gcc_assert (!strlen_to_stridx);
+  if (warn_stringop_overflow || warn_stringop_truncation)
+    strlen_to_stridx = new hash_map<tree, stridx_strlenloc> ();
+
+  /* This has to happen after initializing the loop optimizer
+     and initializing SCEV as they create new SSA_NAMEs.  */
+  ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names);
+  max_stridx = 1;
 
   /* String length optimization is implemented as a walk of the dominator
      tree and a forward walk of statements within each block.  */

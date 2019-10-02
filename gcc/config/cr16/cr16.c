@@ -367,7 +367,7 @@ cr16_compute_save_regs (void)
       /* If this reg is used and not call-used (except RA), save it.  */
       if (cr16_interrupt_function_p ())
 	{
-	  if (!crtl->is_leaf && call_used_regs[regno])
+	  if (!crtl->is_leaf && call_used_or_fixed_reg_p (regno))
 	    /* This is a volatile reg in a non-leaf interrupt routine - save 
 	       it for the sake of its sons.  */
 	    current_frame_info.save_regs[regno] = 1;
@@ -382,7 +382,8 @@ cr16_compute_save_regs (void)
 	{
 	  /* If this reg is used and not call-used (except RA), save it.  */
 	  if (df_regs_ever_live_p (regno)
-	      && (!call_used_regs[regno] || regno == RETURN_ADDRESS_REGNUM))
+	      && (!call_used_or_fixed_reg_p (regno)
+		  || regno == RETURN_ADDRESS_REGNUM))
 	    current_frame_info.save_regs[regno] = 1;
 	  else
 	    current_frame_info.save_regs[regno] = 0;

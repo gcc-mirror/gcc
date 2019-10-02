@@ -169,15 +169,6 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used, md_rtx_info *info)
 	  return;
 	}
       break;
-    case CLOBBER_HIGH:
-      if (!REG_P (XEXP (x, 0)))
-	error ("CLOBBER_HIGH argument is not a register expr, at %s:%d",
-	       info->loc.filename, info->loc.lineno);
-      printf ("gen_hard_reg_clobber_high (%smode, %i)",
-	      GET_MODE_NAME (GET_MODE (XEXP (x, 0))),
-	      REGNO (XEXP (x, 0)));
-      return;
-      break;
     case CC0:
       printf ("cc0_rtx");
       return;
@@ -343,8 +334,7 @@ gen_insn (md_rtx_info *info)
 
       for (i = XVECLEN (insn, 1) - 1; i > 0; i--)
 	{
-	  if (GET_CODE (XVECEXP (insn, 1, i)) != CLOBBER
-	      && GET_CODE (XVECEXP (insn, 1, i)) != CLOBBER_HIGH)
+	  if (GET_CODE (XVECEXP (insn, 1, i)) != CLOBBER)
 	    break;
 
 	  if (REG_P (XEXP (XVECEXP (insn, 1, i), 0)))
@@ -609,9 +599,14 @@ gen_split (md_rtx_info *info)
   if (GET_CODE (split) == DEFINE_PEEPHOLE2)
     output_peephole2_scratches (split);
 
+  const char *fn = info->loc.filename;
+  for (const char *p = fn; *p; p++)
+    if (*p == '/')
+      fn = p + 1;
+
   printf ("  if (dump_file)\n");
-  printf ("    fprintf (dump_file, \"Splitting with gen_%s_%d\\n\");\n",
-	  name, info->index);
+  printf ("    fprintf (dump_file, \"Splitting with gen_%s_%d (%s:%d)\\n\");\n",
+	  name, info->index, fn, info->loc.lineno);
 
   printf ("  start_sequence ();\n");
 

@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 #include "runtime.h"
-#include "go-type.h"
 
 #ifdef USE_LIBFFI
 
@@ -26,8 +25,9 @@ void makeFuncFFI(void *cif, void *impl)
    function ffiCall with the pointer to the arguments, the results area,
    and the closure structure.  */
 
-extern void FFICallbackGo(void *result, void **args, ffi_go_closure *closure)
-  __asm__ (GOSYM_PREFIX "reflect.FFICallbackGo");
+extern void ffiCallbackGo(void *result, void **args, ffi_go_closure *closure,
+                          int32 wordsize, _Bool big_endian)
+  __asm__ (GOSYM_PREFIX "reflect.ffiCallbackGo");
 
 extern void makefuncfficanrecover(Slice)
   __asm__ (GOSYM_PREFIX "runtime.makefuncfficanrecover");
@@ -73,7 +73,8 @@ ffi_callback (ffi_cif* cif __attribute__ ((unused)), void *results,
       makefuncfficanrecover (s);
     }
 
-  FFICallbackGo(results, args, closure);
+  ffiCallbackGo(results, args, closure, sizeof(ffi_arg),
+                __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__);
 
   if (i < n)
     makefuncreturning ();

@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cselib.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
+#include "function-abi.h"
 
 static int reload_cse_noop_set_p (rtx);
 static bool reload_cse_simplify (rtx_insn *, rtx);
@@ -133,8 +134,6 @@ reload_cse_simplify (rtx_insn *insn, rtx testreg)
 	  for (i = XVECLEN (body, 0) - 1; i >= 0; --i)
 	    {
 	      rtx part = XVECEXP (body, 0, i);
-	      /* asms can only have full clobbers, not clobber_highs.  */
-	      gcc_assert (GET_CODE (part) != CLOBBER_HIGH);
 	      if (GET_CODE (part) == CLOBBER && REG_P (XEXP (part, 0)))
 		cselib_invalidate_rtx (XEXP (part, 0));
 	    }
@@ -157,9 +156,7 @@ reload_cse_simplify (rtx_insn *insn, rtx testreg)
 		  value = SET_DEST (part);
 		}
 	    }
-	  else if (GET_CODE (part) != CLOBBER
-		   && GET_CODE (part) != CLOBBER_HIGH
-		   && GET_CODE (part) != USE)
+	  else if (GET_CODE (part) != CLOBBER && GET_CODE (part) != USE)
 	    break;
 	}
 
@@ -1135,7 +1132,8 @@ reload_combine_recognize_pattern (rtx_insn *insn)
 	      if (TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS], i)
 		  && reg_state[i].use_index == RELOAD_COMBINE_MAX_USES
 		  && reg_state[i].store_ruid <= reg_state[regno].use_ruid
-		  && (call_used_regs[i] || df_regs_ever_live_p (i))
+		  && (crtl->abi->clobbers_full_reg_p (i)
+		      || df_regs_ever_live_p (i))
 		  && (!frame_pointer_needed || i != HARD_FRAME_POINTER_REGNUM)
 		  && !fixed_regs[i] && !global_regs[i]
 		  && hard_regno_nregs (i, GET_MODE (reg)) == 1
@@ -1267,8 +1265,8 @@ reload_combine (void)
 
 	  REG_SET_TO_HARD_REG_SET (live, live_in);
 	  compute_use_by_pseudos (&live, live_in);
-	  COPY_HARD_REG_SET (LABEL_LIVE (insn), live);
-	  IOR_HARD_REG_SET (ever_live_at_start, live);
+	  LABEL_LIVE (insn) = live;
+	  ever_live_at_start |= live;
 	}
     }
 
@@ -1325,14 +1323,12 @@ reload_combine (void)
 	  || reload_combine_recognize_pattern (insn))
 	continue;
 
-      note_stores (PATTERN (insn), reload_combine_note_store, NULL);
+      note_stores (insn, reload_combine_note_store, NULL);
 
       if (CALL_P (insn))
 	{
 	  rtx link;
-	  HARD_REG_SET used_regs;
-
-	  get_call_reg_set_usage (insn, &used_regs, call_used_reg_set);
+	  HARD_REG_SET used_regs = insn_callee_abi (insn).full_reg_clobbers ();
 
 	  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
 	    if (TEST_HARD_REG_BIT (used_regs, r))
@@ -1346,22 +1342,12 @@ reload_combine (void)
 	    {
 	      rtx setuse = XEXP (link, 0);
 	      rtx usage_rtx = XEXP (setuse, 0);
-	      /* We could support CLOBBER_HIGH and treat it in the same way as
-		 HARD_REGNO_CALL_PART_CLOBBERED, but no port needs that yet.  */
-	      gcc_assert (GET_CODE (setuse) != CLOBBER_HIGH);
 
-	      if ((GET_CODE (setuse) == USE || GET_CODE (setuse) == CLOBBER)
-		  && REG_P (usage_rtx))
+	      if (GET_CODE (setuse) == USE && REG_P (usage_rtx))
 	        {
 		  unsigned int end_regno = END_REGNO (usage_rtx);
 		  for (unsigned int i = REGNO (usage_rtx); i < end_regno; ++i)
-		    if (GET_CODE (XEXP (link, 0)) == CLOBBER)
-		      {
-		        reg_state[i].use_index = RELOAD_COMBINE_MAX_USES;
-		        reg_state[i].store_ruid = reload_combine_ruid;
-		      }
-		    else
-		      reg_state[i].use_index = -1;
+		    reg_state[i].use_index = -1;
 	         }
 	     }
 	}
@@ -1524,10 +1510,6 @@ reload_combine_note_use (rtx *xp, rtx_insn *insn, int ruid, rtx containing_mem)
 	  return;
 	}
       break;
-
-    case CLOBBER_HIGH:
-      gcc_assert (REG_P (SET_DEST (x)));
-      return;
 
     case PLUS:
       /* We are interested in (plus (reg) (const_int)) .  */
@@ -2104,7 +2086,7 @@ reload_cse_move2add (rtx_insn *first)
 		}
 	    }
 	}
-      note_stores (PATTERN (insn), move2add_note_store, insn);
+      note_stores (insn, move2add_note_store, insn);
 
       /* If INSN is a conditional branch, we try to extract an
 	 implicit set out of it.  */
@@ -2134,32 +2116,13 @@ reload_cse_move2add (rtx_insn *first)
 	 unknown values.  */
       if (CALL_P (insn))
 	{
-	  rtx link;
-
+	  function_abi callee_abi = insn_callee_abi (insn);
 	  for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; i--)
-	    {
-	      if (call_used_regs[i])
-		/* Reset the information about this register.  */
-		reg_mode[i] = VOIDmode;
-	    }
-
-	  for (link = CALL_INSN_FUNCTION_USAGE (insn); link;
-	       link = XEXP (link, 1))
-	    {
-	      rtx setuse = XEXP (link, 0);
-	      rtx usage_rtx = XEXP (setuse, 0);
-	      /* CALL_INSN_FUNCTION_USAGEs can only have full clobbers, not
-		 clobber_highs.  */
-	      gcc_assert (GET_CODE (setuse) != CLOBBER_HIGH);
-	      if (GET_CODE (setuse) == CLOBBER
-		  && REG_P (usage_rtx))
-	        {
-		  unsigned int end_regno = END_REGNO (usage_rtx);
-		  for (unsigned int r = REGNO (usage_rtx); r < end_regno; ++r)
-		    /* Reset the information about this register.  */
-		    reg_mode[r] = VOIDmode;
-		}
-	    }
+	    if (reg_mode[i] != VOIDmode
+		&& reg_mode[i] != BLKmode
+		&& callee_abi.clobbers_reg_p (reg_mode[i], i))
+	      /* Reset the information about this register.  */
+	      reg_mode[i] = VOIDmode;
 	}
     }
   return changed;
@@ -2312,13 +2275,6 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
 	= trunc_int_for_mode (offset + reg_offset[base_regno], mode);
 
       move2add_record_mode (dst);
-    }
-  else if (GET_CODE (set) == CLOBBER_HIGH)
-    {
-      /* Only invalidate if actually clobbered.  */
-      if (reg_mode[regno] == BLKmode
-	  || reg_is_clobbered_by_clobber_high (regno, reg_mode[regno], dst))
-	 goto invalidate;
     }
   else
     {

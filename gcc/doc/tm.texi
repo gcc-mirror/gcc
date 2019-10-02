@@ -1878,6 +1878,9 @@ function calls.
 If a register has 0 in @code{CALL_USED_REGISTERS}, the compiler
 automatically saves it on function entry and restores it on function
 exit, if the register is used within the function.
+
+Exactly one of @code{CALL_USED_REGISTERS} and @code{CALL_REALLY_USED_REGISTERS}
+must be defined.  Modern ports should define @code{CALL_REALLY_USED_REGISTERS}.
 @end defmac
 
 @defmac CALL_REALLY_USED_REGISTERS
@@ -1887,48 +1890,55 @@ exit, if the register is used within the function.
 Like @code{CALL_USED_REGISTERS} except this macro doesn't require
 that the entire set of @code{FIXED_REGISTERS} be included.
 (@code{CALL_USED_REGISTERS} must be a superset of @code{FIXED_REGISTERS}).
-This macro is optional.  If not specified, it defaults to the value
-of @code{CALL_USED_REGISTERS}.
+
+Exactly one of @code{CALL_USED_REGISTERS} and @code{CALL_REALLY_USED_REGISTERS}
+must be defined.  Modern ports should define @code{CALL_REALLY_USED_REGISTERS}.
 @end defmac
 
 @cindex call-used register
 @cindex call-clobbered register
 @cindex call-saved register
-@deftypefn {Target Hook} bool TARGET_HARD_REGNO_CALL_PART_CLOBBERED (rtx_insn *@var{insn}, unsigned int @var{regno}, machine_mode @var{mode})
-This hook should return true if @var{regno} is partly call-saved and
-partly call-clobbered, and if a value of mode @var{mode} would be partly
-clobbered by call instruction @var{insn}.  If @var{insn} is NULL then it
-should return true if any call could partly clobber the register.
-For example, if the low 32 bits of @var{regno} are preserved across a call
-but higher bits are clobbered, this hook should return true for a 64-bit
-mode but false for a 32-bit mode.
+@deftypefn {Target Hook} {const predefined_function_abi &} TARGET_FNTYPE_ABI (const_tree @var{type})
+Return the ABI used by a function with type @var{type}; see the
+definition of @code{predefined_function_abi} for details of the ABI
+descriptor.  Targets only need to define this hook if they support
+interoperability between several ABIs in the same translation unit.
+@end deftypefn
+
+@deftypefn {Target Hook} {const predefined_function_abi &} TARGET_INSN_CALLEE_ABI (const rtx_insn *@var{insn})
+This hook returns a description of the ABI used by the target of
+call instruction @var{insn}; see the definition of
+@code{predefined_function_abi} for details of the ABI descriptor.
+Only the global function @code{insn_callee_abi} should call this hook
+directly.
+
+Targets only need to define this hook if they support
+interoperability between several ABIs in the same translation unit.
+@end deftypefn
+
+@cindex call-used register
+@cindex call-clobbered register
+@cindex call-saved register
+@deftypefn {Target Hook} bool TARGET_HARD_REGNO_CALL_PART_CLOBBERED (unsigned int @var{abi_id}, unsigned int @var{regno}, machine_mode @var{mode})
+ABIs usually specify that calls must preserve the full contents
+of a particular register, or that calls can alter any part of a
+particular register.  This information is captured by the target macro
+@code{CALL_REALLY_USED_REGISTERS}.  However, some ABIs specify that calls
+must preserve certain bits of a particular register but can alter others.
+This hook should return true if this applies to at least one of the
+registers in @samp{(reg:@var{mode} @var{regno})}, and if as a result the
+call would alter part of the @var{mode} value.  For example, if a call
+preserves the low 32 bits of a 64-bit hard register @var{regno} but can
+clobber the upper 32 bits, this hook should return true for a 64-bit mode
+but false for a 32-bit mode.
+
+The value of @var{abi_id} comes from the @code{predefined_function_abi}
+structure that describes the ABI of the call; see the definition of the
+structure for more details.  If (as is usual) the target uses the same ABI
+for all functions in a translation unit, @var{abi_id} is always 0.
 
 The default implementation returns false, which is correct
 for targets that don't have partly call-clobbered registers.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS (rtx_insn *@var{insn}, HARD_REG_SET *@var{used_regs})
-This hook removes registers from the set of call-clobbered registers
- in @var{used_regs} if, contrary to the default rules, something guarantees
- that @samp{insn} preserves those registers.  For example, some targets
- support variant ABIs in which functions preserve more registers than
- normal functions would.  Removing those extra registers from @var{used_regs}
- can lead to better register allocation.
- 
- The default implementation does nothing, which is always safe.
- Defining the hook is purely an optimization.
-@end deftypefn
-
-@deftypefn {Target Hook} {rtx_insn *} TARGET_RETURN_CALL_WITH_MAX_CLOBBERS (rtx_insn *@var{call_1}, rtx_insn *@var{call_2})
-This hook returns a pointer to the call that partially clobbers the
-most registers.  If a platform supports multiple ABIs where the registers
-that are partially clobbered may vary, this function compares two
-calls and returns a pointer to the one that clobbers the most registers.
-If both calls clobber the same registers, @var{call_1} must be returned.
-
-The registers clobbered in different ABIs must be a proper subset or
-superset of all other ABIs.  @var{call_1} must always be a call insn,
-call_2 may be NULL or a call insn.
 @end deftypefn
 
 @deftypefn {Target Hook} {const char *} TARGET_GET_MULTILIB_ABI_NAME (void)
@@ -10391,6 +10401,14 @@ attributes, or a copy of the list may be made if further changes are
 needed.
 @end deftypefn
 
+@deftypefn {Target Hook} tree TARGET_HANDLE_GENERIC_ATTRIBUTE (tree *@var{node}, tree @var{name}, tree @var{args}, int @var{flags}, bool *@var{no_add_attrs})
+Define this target hook if you want to be able to perform additional
+target-specific processing of an attribute which is handled generically
+by a front end.  The arguments are the same as those which are passed to
+attribute handlers.  So far this only affects the @var{noinit} and
+@var{section} attribute.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P (const_tree @var{fndecl})
 @cindex inlining
 This target hook returns @code{true} if it is OK to inline @var{fndecl}
@@ -11555,6 +11573,21 @@ another @code{CALL_EXPR}.
 @var{arglist} really has type @samp{VEC(tree,gc)*}
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_CHECK_BUILTIN_CALL (location_t @var{loc}, vec<location_t> @var{arg_loc}, tree @var{fndecl}, tree @var{orig_fndecl}, unsigned int @var{nargs}, tree *@var{args})
+Perform semantic checking on a call to a machine-specific built-in
+function after its arguments have been constrained to the function
+signature.  Return true if the call is valid, otherwise report an error
+and return false.
+
+This hook is called after @code{TARGET_RESOLVE_OVERLOADED_BUILTIN}.
+The call was originally to built-in function @var{orig_fndecl},
+but after the optional @code{TARGET_RESOLVE_OVERLOADED_BUILTIN}
+step is now to built-in function @var{fndecl}.  @var{loc} is the
+location of the call and @var{args} is an array of function arguments,
+of which there are @var{nargs}.  @var{arg_loc} specifies the location
+of each argument.
+@end deftypefn
+
 @deftypefn {Target Hook} tree TARGET_FOLD_BUILTIN (tree @var{fndecl}, int @var{n_args}, tree *@var{argp}, bool @var{ignore})
 Fold a call to a machine specific built-in function that was set up by
 @samp{TARGET_INIT_BUILTINS}.  @var{fndecl} is the declaration of the
@@ -11602,6 +11635,36 @@ This target hook is required only when the target supports low-overhead
 loops, and will help ivopts to make some decisions.
 The default version of this hook returns false.
 @end deftypefn
+
+@deftypevr {Target Hook} bool TARGET_HAVE_COUNT_REG_DECR_P
+Return true if the target supports hardware count register for decrement
+and branch.
+The default value is false.
+@end deftypevr
+
+@deftypevr {Target Hook} int64_t TARGET_DOLOOP_COST_FOR_GENERIC
+One IV candidate dedicated for doloop is introduced in IVOPTs, we can
+calculate the computation cost of adopting it to any generic IV use by
+function get_computation_cost as before.  But for targets which have
+hardware count register support for decrement and branch, it may have to
+move IV value from hardware count register to general purpose register
+while doloop IV candidate is used for generic IV uses.  It probably takes
+expensive penalty.  This hook allows target owners to define the cost for
+this especially for generic IV uses.
+The default value is zero.
+@end deftypevr
+
+@deftypevr {Target Hook} int64_t TARGET_DOLOOP_COST_FOR_ADDRESS
+One IV candidate dedicated for doloop is introduced in IVOPTs, we can
+calculate the computation cost of adopting it to any address IV use by
+function get_computation_cost as before.  But for targets which have
+hardware count register support for decrement and branch, it may have to
+move IV value from hardware count register to general purpose register
+while doloop IV candidate is used for address IV uses.  It probably takes
+expensive penalty.  This hook allows target owners to define the cost for
+this escpecially for address IV uses.
+The default value is zero.
+@end deftypevr
 
 @deftypefn {Target Hook} bool TARGET_CAN_USE_DOLOOP_P (const widest_int @var{&iterations}, const widest_int @var{&iterations_max}, unsigned int @var{loop_depth}, bool @var{entered_at_top})
 Return true if it is possible to use low-overhead loops (@code{doloop_end}
@@ -11745,28 +11808,6 @@ cannot_modify_jumps_past_reload_p ()
   return (reload_completed || reload_in_progress);
 @}
 @end smallexample
-@end deftypefn
-
-@deftypefn {Target Hook} reg_class_t TARGET_BRANCH_TARGET_REGISTER_CLASS (void)
-This target hook returns a register class for which branch target register
-optimizations should be applied.  All registers in this class should be
-usable interchangeably.  After reload, registers in this class will be
-re-allocated and loads will be hoisted out of loops and be subjected
-to inter-block scheduling.
-@end deftypefn
-
-@deftypefn {Target Hook} bool TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED (bool @var{after_prologue_epilogue_gen})
-Branch target register optimization will by default exclude callee-saved
-registers
-that are not already live during the current function; if this target hook
-returns true, they will be included.  The target code must than make sure
-that all target registers in the class returned by
-@samp{TARGET_BRANCH_TARGET_REGISTER_CLASS} that might need saving are
-saved.  @var{after_prologue_epilogue_gen} indicates if prologues and
-epilogues have already been generated.  Note, even if you only return
-true when @var{after_prologue_epilogue_gen} is false, you still are likely
-to have to make special provisions in @code{INITIAL_ELIMINATION_OFFSET}
-to reserve space for caller-saved target registers.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_HAVE_CONDITIONAL_EXECUTION (void)

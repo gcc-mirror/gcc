@@ -5009,8 +5009,7 @@ ipa_tm_create_version (struct cgraph_node *old_node)
 	}
 
       tree_function_versioning (old_decl, new_decl,
-				NULL, false, NULL,
-				false, NULL, NULL);
+				NULL,  NULL, false, NULL, NULL);
     }
 
   record_tm_clone_pair (old_decl, new_decl);

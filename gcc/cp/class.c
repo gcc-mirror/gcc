@@ -2914,12 +2914,12 @@ warn_hidden (tree t)
 	FOR_EACH_VEC_ELT (base_fndecls, j, base_fndecl)
 	  if (base_fndecl)
 	    {
+	      auto_diagnostic_group d;
 	      /* Here we know it is a hider, and no overrider exists.  */
-	      warning_at (location_of (base_fndecl),
-			  OPT_Woverloaded_virtual,
-			  "%qD was hidden", base_fndecl);
-	      warning_at (location_of (fns),
-			  OPT_Woverloaded_virtual, "  by %qD", fns);
+	      if (warning_at (location_of (base_fndecl),
+			      OPT_Woverloaded_virtual,
+			      "%qD was hidden", base_fndecl))
+		inform (location_of (fns), "  by %qD", fns);
 	    }
       }
 }
@@ -4605,7 +4605,7 @@ build_clone (tree fn, tree name)
     }
   else
     {
-      // Clone constraints.
+      /* Clone constraints.  */
       if (flag_concepts)
         if (tree ci = get_constraints (fn))
           set_constraints (clone, copy_node (ci));
@@ -4699,43 +4699,6 @@ build_clone (tree fn, tree name)
   rest_of_decl_compilation (clone, /*top_level=*/1, at_eof);
 
   return clone;
-}
-
-/* Implementation of DECL_CLONED_FUNCTION and DECL_CLONED_FUNCTION_P, do
-   not invoke this function directly.
-
-   For a non-thunk function, returns the address of the slot for storing
-   the function it is a clone of.  Otherwise returns NULL_TREE.
-
-   If JUST_TESTING, looks through TEMPLATE_DECL and returns NULL if
-   cloned_function is unset.  This is to support the separate
-   DECL_CLONED_FUNCTION and DECL_CLONED_FUNCTION_P modes; using the latter
-   on a template makes sense, but not the former.  */
-
-tree *
-decl_cloned_function_p (const_tree decl, bool just_testing)
-{
-  tree *ptr;
-  if (just_testing)
-    decl = STRIP_TEMPLATE (decl);
-
-  if (TREE_CODE (decl) != FUNCTION_DECL
-      || !DECL_LANG_SPECIFIC (decl)
-      || DECL_LANG_SPECIFIC (decl)->u.fn.thunk_p)
-    {
-#if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
-      if (!just_testing)
-	lang_check_failed (__FILE__, __LINE__, __FUNCTION__);
-      else
-#endif
-	return NULL;
-    }
-
-  ptr = &DECL_LANG_SPECIFIC (decl)->u.fn.u5.cloned_function;
-  if (just_testing && *ptr == NULL_TREE)
-    return NULL;
-  else
-    return ptr;
 }
 
 /* Produce declarations for all appropriate clones of FN.  If
@@ -9175,7 +9138,7 @@ build_ctor_vtbl_group (tree binfo, tree t)
      constructing the addresses of secondary vtables in the
      construction vtable group.  */
   vtbl = build_vtable (t, id, ptr_type_node);
-  DECL_CONSTRUCTION_VTABLE_P (vtbl) = 1;
+
   /* Don't export construction vtables from shared libraries.  Even on
      targets that don't support hidden visibility, this tells
      can_refer_decl_in_current_unit_p not to assume that it's safe to

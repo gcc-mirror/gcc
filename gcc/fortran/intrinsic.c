@@ -4190,35 +4190,45 @@ sort_actual (const char *name, gfc_actual_arglist **ap,
 
   /* ALLOCATED has two mutually exclusive keywords, but only one
      can be present at time and neither is optional. */
-  if (strcmp (name, "allocated") == 0 && a->name)
+  if (strcmp (name, "allocated") == 0)
     {
-      if (strcmp (a->name, "scalar") == 0)
+      if (!a)
 	{
-          if (a->next)
-	    goto whoops;
-	  if (a->expr->rank != 0)
-	    {
-	      gfc_error ("Scalar entity required at %L", &a->expr->where);
-	      return false;
-	    }
-          return true;
-	}
-      else if (strcmp (a->name, "array") == 0)
-	{
-          if (a->next)
-	    goto whoops;
-	  if (a->expr->rank == 0)
-	    {
-	      gfc_error ("Array entity required at %L", &a->expr->where);
-	      return false;
-	    }
-          return true;
-	}
-      else
-	{
-	  gfc_error ("Invalid keyword %qs in %qs intrinsic function at %L",
-		     a->name, name, &a->expr->where);
+	  gfc_error ("ALLOCATED intrinsic at %L requires an array or scalar "
+		     "allocatable entity", where);
 	  return false;
+	}
+
+      if (a->name)
+	{
+	  if (strcmp (a->name, "scalar") == 0)
+	    {
+	      if (a->next)
+		goto whoops;
+	      if (a->expr->rank != 0)
+		{
+		  gfc_error ("Scalar entity required at %L", &a->expr->where);
+		  return false;
+		}
+	      return true;
+	    }
+	  else if (strcmp (a->name, "array") == 0)
+	    {
+	      if (a->next)
+		goto whoops;
+	      if (a->expr->rank == 0)
+		{
+		  gfc_error ("Array entity required at %L", &a->expr->where);
+		  return false;
+		}
+	      return true;
+	    }
+	  else
+	    {
+	      gfc_error ("Invalid keyword %qs in %qs intrinsic function at %L",
+			 a->name, name, &a->expr->where);
+	      return false;
+	    }
 	}
     }
 

@@ -1570,7 +1570,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<class _T1, class _T2>
     template<typename... _Args1, typename... _Args2>
-      inline
+      _GLIBCXX20_CONSTEXPR inline
       pair<_T1, _T2>::
       pair(piecewise_construct_t,
 	   tuple<_Args1...> __first, tuple<_Args2...> __second)
@@ -1582,7 +1582,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<class _T1, class _T2>
     template<typename... _Args1, std::size_t... _Indexes1,
              typename... _Args2, std::size_t... _Indexes2>
-      inline
+      _GLIBCXX20_CONSTEXPR inline
       pair<_T1, _T2>::
       pair(tuple<_Args1...>& __tuple1, tuple<_Args2...>& __tuple2,
 	   _Index_tuple<_Indexes1...>, _Index_tuple<_Indexes2...>)

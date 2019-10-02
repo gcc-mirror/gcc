@@ -65,6 +65,10 @@ void test_assign_init_list (void)
   T (5, ARGS ({ 1, 2, 3, 4, 5, 6, 0 }), "s=%.*s", 3, &a[2]);
 }
 
+#if __x86_64__
+
+/* Enabled only on x86_64 to work around PR 83543.  */
+
 #undef T
 #define T(expect, init, fmt, ...)			\
   do {							\
@@ -87,6 +91,9 @@ void test_assign_aggregate (void)
   T (5, "123456", "s=%.*s", 3, &s.a[2]);
 }
 
+/* { dg-final { scan-tree-dump-times "Function test_assign_aggregate" 1 "optimized" { xfail { { ! x86_64-*-* } || { ilp32 } } } } } */
+
+#endif   /* x86_64 */
 
 #undef T
 #define T(expect, init, fmt, ...)			\

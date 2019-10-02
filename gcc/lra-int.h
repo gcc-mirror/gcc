@@ -73,10 +73,6 @@ public:
   /* The following fields are defined only for pseudos.	 */
   /* Hard registers with which the pseudo conflicts.  */
   HARD_REG_SET conflict_hard_regs;
-  /* Call used registers with which the pseudo conflicts, taking into account
-     the registers used by functions called from calls which cross the
-     pseudo.  */
-  HARD_REG_SET actual_call_used_reg_set;
   /* We assign hard registers to reload pseudos which can occur in few
      places.  So two hard register preferences are enough for them.
      The following fields define the preferred hard registers.	If
@@ -104,8 +100,6 @@ public:
   int val;
   /* Offset from relative eliminate register to pesudo reg.  */
   poly_int64 offset;
-  /* Call instruction, if any, that may affect this psuedo reg.  */
-  rtx_insn *call_insn;
   /* These members are set up in lra-lives.c and updated in
      lra-coalesce.c.  */
   /* The biggest size mode in which each pseudo reg is referred in
@@ -160,8 +154,6 @@ struct lra_insn_reg
   /* True if the reg is accessed through a subreg and the subreg is
      just a part of the register.  */
   unsigned int subreg_p : 1;
-  /* True if the reg is clobber highed by the operand.  */
-  unsigned int clobber_high : 1;
   /* The corresponding regno of the register.  */
   int regno;
   /* Next reg info of the same insn.  */

@@ -428,34 +428,6 @@ extern int csky_arch_isa_features[];
      1									\
 }
 
-/* 1 for registers that is clobbered (in general) by function calls.
-   If a register has 0, the compiler automatically saves it on
-   function entry and restores it on function exit, if the register
-   is used within the function.  */
-#define CALL_USED_REGISTERS \
- /*  r0	   r1	 r2    r3    r4	   r5	 r6    r7  */			\
-{    1,	   1,	 1,    1,    0,	   0,	 0,    0,			\
- /*  r8	   r9	 r10   r11   r12   r13	 r14   r15 */			\
-     0,	   0,	 0,    0,    1,	   1,	 1,    0,			\
- /*  r16   r17	 r18   r19   r20   r21	 r22   r23 */			\
-     0,	   0,	 1,    1,    1,	   1,	 1,    1,			\
- /*  r24   r25	 r26   r27   r28   r29	 r30   r31 */			\
-     1,	   1,	 1,    1,    1,	   1,	 1,    1,			\
- /*  reserved	 c     hi    lo */					\
-     1,		 1,    1,    1,						\
- /*  reserved */							\
-     1,	   1,	 1,    1,    1,	   1,	 1,    1,			\
-     1,	   1,	 1,    1,    1,	   1,	 1,    1,			\
- /*  vr0   vr1	 vr2   vr3   vr4   vr5	 vr6   vr7 */			\
-     1,	   1,	 1,    1,    1,	   1,	 1,    1,			\
- /*  vr8   vr9	 vr10  vr11  vr12  vr13	 vr14  vr15 */			\
-     1,	   1,	 1,    1,    1,	   1,	 1,    1,			\
- /*  reserved */							\
-     1,	   1,								\
- /*  epc */								\
-     1									\
-}
-
 /* Like `CALL_USED_REGISTERS' but used to overcome a historical
    problem which makes CALL_USED_REGISTERS *always* include
    all the FIXED_REGISTERS.  Until this problem has been

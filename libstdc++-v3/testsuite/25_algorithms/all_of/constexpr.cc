@@ -21,12 +21,6 @@
 #include <algorithm>
 #include <array>
 
-#ifndef __cpp_lib_constexpr_algorithms
-# error "Feature-test macro for constexpr algorithms missing"
-#elif __cpp_lib_constexpr_algorithms < 201711L
-# error "Feature-test macro for constexpr algorithms has wrong value"
-#endif
-
 constexpr std::array<int, 6> cae{{0, 2, 4, 6, 8, 10}};
 
 constexpr auto out2 = std::all_of(cae.begin(), cae.end(),

@@ -20,6 +20,7 @@ func kevent(kq int32, ch *keventt, nch uintptr, ev *keventt, nev uintptr, ts *ti
 //extern __go_fcntl_uintptr
 func fcntlUintptr(fd, cmd, arg uintptr) (uintptr, uintptr)
 
+//go:nosplit
 func closeonexec(fd int32) {
 	fcntlUintptr(uintptr(fd), _F_SETFD, _FD_CLOEXEC)
 }
@@ -117,7 +118,12 @@ retry:
 			mode += 'w'
 		}
 		if mode != 0 {
-			netpollready(&toRun, (*pollDesc)(unsafe.Pointer(ev.udata)), mode)
+			pd := (*pollDesc)(unsafe.Pointer(ev.udata))
+			pd.everr = false
+			if ev.flags == _EV_ERROR {
+				pd.everr = true
+			}
+			netpollready(&toRun, pd, mode)
 		}
 	}
 	if block && toRun.empty() {

@@ -1,6 +1,6 @@
 // PR c++/65775
 // { dg-do compile { target c++11 } }
-// { dg-options "-Wignored-qualifiers" }
+// { dg-options "-Wignored-qualifiers -Wno-volatile" }
 
 using Qi = int const volatile;
 Qi q1();           // { dg-warning "1: type qualifiers ignored" }

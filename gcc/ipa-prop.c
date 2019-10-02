@@ -1243,9 +1243,7 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
 	    break;
 	  }
 	case GIMPLE_UNARY_RHS:
-	  if (is_gimple_assign (stmt)
-	      && gimple_assign_rhs_class (stmt) == GIMPLE_UNARY_RHS
-	      && ! CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt)))
+	  if (!CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt)))
 	    ipa_set_jf_unary_pass_through (jfunc, index,
 					   gimple_assign_rhs_code (stmt));
 	default:;
@@ -2724,12 +2722,6 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	      dst->value.ancestor.formal_id = src->value.pass_through.formal_id;
 	      dst->value.ancestor.agg_preserved &=
 		src->value.pass_through.agg_preserved;
-	    }
-	  else if (src->type == IPA_JF_PASS_THROUGH
-		   && TREE_CODE_CLASS (src->value.pass_through.operation) == tcc_unary)
-	    {
-	      dst->value.ancestor.formal_id = src->value.pass_through.formal_id;
-	      dst->value.ancestor.agg_preserved = false;
 	    }
 	  else if (src->type == IPA_JF_ANCESTOR)
 	    {
@@ -4859,31 +4851,24 @@ adjust_agg_replacement_values (struct cgraph_node *node,
 			       struct ipa_agg_replacement_value *aggval)
 {
   struct ipa_agg_replacement_value *v;
-  int i, c = 0, d = 0, *adj;
 
-  if (!node->clone.combined_args_to_skip)
+  if (!node->clone.param_adjustments)
     return;
 
+  auto_vec<int, 16> new_indices;
+  node->clone.param_adjustments->get_updated_indices (&new_indices);
   for (v = aggval; v; v = v->next)
     {
-      gcc_assert (v->index >= 0);
-      if (c < v->index)
-	c = v->index;
+      gcc_checking_assert (v->index >= 0);
+
+      if ((unsigned) v->index < new_indices.length ())
+	v->index = new_indices[v->index];
+      else
+	/* This can happen if we know about a constant passed by reference by
+	   an argument which is never actually used for anything, let alone
+	   loading that constant.  */
+	v->index = -1;
     }
-  c++;
-
-  adj = XALLOCAVEC (int, c);
-  for (i = 0; i < c; i++)
-    if (bitmap_bit_p (node->clone.combined_args_to_skip, i))
-      {
-	adj[i] = -1;
-	d++;
-      }
-    else
-      adj[i] = i - d;
-
-  for (v = aggval; v; v = v->next)
-    v->index = adj[v->index];
 }
 
 /* Dominator walker driving the ipcp modification phase.  */
@@ -4933,7 +4918,7 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
 	{
 	  /* V_C_E can do things like convert an array of integers to one
 	     bigger integer and similar things we do not handle below.  */
-	  if (TREE_CODE (rhs) == VIEW_CONVERT_EXPR)
+	  if (TREE_CODE (t) == VIEW_CONVERT_EXPR)
 	    {
 	      vce = true;
 	      break;
@@ -5009,24 +4994,41 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
 static void
 ipcp_update_bits (struct cgraph_node *node)
 {
-  tree parm = DECL_ARGUMENTS (node->decl);
-  tree next_parm = parm;
   ipcp_transformation *ts = ipcp_get_transformation_summary (node);
 
   if (!ts || vec_safe_length (ts->bits) == 0)
     return;
-
   vec<ipa_bits *, va_gc> &bits = *ts->bits;
   unsigned count = bits.length ();
+  if (!count)
+    return;
 
-  for (unsigned i = 0; i < count; ++i, parm = next_parm)
+  auto_vec<int, 16> new_indices;
+  bool need_remapping = false;
+  if (node->clone.param_adjustments)
     {
-      if (node->clone.combined_args_to_skip
-	  && bitmap_bit_p (node->clone.combined_args_to_skip, i))
-	continue;
+      node->clone.param_adjustments->get_updated_indices (&new_indices);
+      need_remapping = true;
+    }
+  auto_vec <tree, 16> parm_decls;
+  push_function_arg_decls (&parm_decls, node->decl);
 
+  for (unsigned i = 0; i < count; ++i)
+    {
+      tree parm;
+      if (need_remapping)
+	{
+	  if (i >= new_indices.length ())
+	    continue;
+	  int idx = new_indices[i];
+	  if (idx < 0)
+	    continue;
+	  parm = parm_decls[idx];
+	}
+      else
+	parm = parm_decls[i];
       gcc_checking_assert (parm);
-      next_parm = DECL_CHAIN (parm);
+
 
       if (!bits[i]
 	  || !(INTEGRAL_TYPE_P (TREE_TYPE (parm))
@@ -5101,22 +5103,42 @@ ipcp_update_bits (struct cgraph_node *node)
 static void
 ipcp_update_vr (struct cgraph_node *node)
 {
-  tree fndecl = node->decl;
-  tree parm = DECL_ARGUMENTS (fndecl);
-  tree next_parm = parm;
   ipcp_transformation *ts = ipcp_get_transformation_summary (node);
   if (!ts || vec_safe_length (ts->m_vr) == 0)
     return;
   const vec<ipa_vr, va_gc> &vr = *ts->m_vr;
   unsigned count = vr.length ();
+  if (!count)
+    return;
 
-  for (unsigned i = 0; i < count; ++i, parm = next_parm)
+  auto_vec<int, 16> new_indices;
+  bool need_remapping = false;
+  if (node->clone.param_adjustments)
     {
-      if (node->clone.combined_args_to_skip
-	  && bitmap_bit_p (node->clone.combined_args_to_skip, i))
-	continue;
+      node->clone.param_adjustments->get_updated_indices (&new_indices);
+      need_remapping = true;
+    }
+  auto_vec <tree, 16> parm_decls;
+  push_function_arg_decls (&parm_decls, node->decl);
+
+  for (unsigned i = 0; i < count; ++i)
+    {
+      tree parm;
+      int remapped_idx;
+      if (need_remapping)
+	{
+	  if (i >= new_indices.length ())
+	    continue;
+	  remapped_idx = new_indices[i];
+	  if (remapped_idx < 0)
+	    continue;
+	}
+      else
+	remapped_idx = i;
+
+      parm = parm_decls[remapped_idx];
+
       gcc_checking_assert (parm);
-      next_parm = DECL_CHAIN (parm);
       tree ddef = ssa_default_def (DECL_STRUCT_FUNCTION (node->decl), parm);
 
       if (!ddef || !is_gimple_reg (parm))
@@ -5131,7 +5153,8 @@ ipcp_update_vr (struct cgraph_node *node)
 	    {
 	      if (dump_file)
 		{
-		  fprintf (dump_file, "Setting value range of param %u ", i);
+		  fprintf (dump_file, "Setting value range of param %u "
+			   "(now %i) ", i, remapped_idx);
 		  fprintf (dump_file, "%s[",
 			   (vr[i].type == VR_ANTI_RANGE) ? "~" : "");
 		  print_decs (vr[i].min, dump_file);

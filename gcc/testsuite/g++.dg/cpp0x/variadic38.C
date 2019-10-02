@@ -3,4 +3,4 @@ template<int... Values>
 struct int_vec {};
 
 template<int... Values>
-struct int_vec<0, (Values+1)...> {}; // { dg-error "involves template parameter" }
+struct int_vec<0, (Values+1)...> {}; // { dg-error "26:template argument" }

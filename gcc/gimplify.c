@@ -1754,11 +1754,12 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
       tree init = DECL_INITIAL (decl);
       bool is_vla = false;
 
-      if (TREE_CODE (DECL_SIZE_UNIT (decl)) != INTEGER_CST
+      poly_uint64 size;
+      if (!poly_int_tree_p (DECL_SIZE_UNIT (decl), &size)
 	  || (!TREE_STATIC (decl)
 	      && flag_stack_check == GENERIC_STACK_CHECK
-	      && compare_tree_int (DECL_SIZE_UNIT (decl),
-				   STACK_CHECK_MAX_VAR_SIZE) > 0))
+	      && maybe_gt (size,
+			   (unsigned HOST_WIDE_INT) STACK_CHECK_MAX_VAR_SIZE)))
 	{
 	  gimplify_vla_decl (decl, seq_p);
 	  is_vla = true;
@@ -7131,6 +7132,8 @@ omp_default_clause (struct gimplify_omp_ctx *ctx, tree decl,
   kind = lang_hooks.decls.omp_predetermined_sharing (decl);
   if (kind != OMP_CLAUSE_DEFAULT_UNSPECIFIED)
     default_kind = kind;
+  else if (VAR_P (decl) && TREE_STATIC (decl) && DECL_IN_CONSTANT_POOL (decl))
+    default_kind = OMP_CLAUSE_DEFAULT_SHARED;
 
   switch (default_kind)
     {

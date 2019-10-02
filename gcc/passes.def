@@ -89,7 +89,6 @@ along with GCC; see the file COPYING3.  If not see
           NEXT_PASS (pass_dse);
 	  NEXT_PASS (pass_cd_dce);
 	  NEXT_PASS (pass_phiopt, true /* early_p */);
-	  NEXT_PASS (pass_early_ipa_sra);
 	  NEXT_PASS (pass_tail_recursion);
 	  NEXT_PASS (pass_convert_switch);
 	  NEXT_PASS (pass_cleanup_eh);
@@ -148,6 +147,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_icf);
   NEXT_PASS (pass_ipa_devirt);
   NEXT_PASS (pass_ipa_cp);
+  NEXT_PASS (pass_ipa_sra);
   NEXT_PASS (pass_ipa_cdtor_merge);
   NEXT_PASS (pass_ipa_hsa);
   NEXT_PASS (pass_ipa_fn_summary);
@@ -461,7 +461,6 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_split_after_reload);
 	  NEXT_PASS (pass_ree);
 	  NEXT_PASS (pass_compare_elim_after_reload);
-	  NEXT_PASS (pass_branch_target_load_optimize1);
 	  NEXT_PASS (pass_thread_prologue_and_epilogue);
 	  NEXT_PASS (pass_rtl_dse2);
 	  NEXT_PASS (pass_stack_adjustments);
@@ -474,7 +473,6 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_cprop_hardreg);
 	  NEXT_PASS (pass_fast_rtl_dce);
 	  NEXT_PASS (pass_reorder_blocks);
-	  NEXT_PASS (pass_branch_target_load_optimize2);
 	  NEXT_PASS (pass_leaf_regs);
 	  NEXT_PASS (pass_split_before_sched2);
 	  NEXT_PASS (pass_sched2);

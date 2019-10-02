@@ -2638,9 +2638,6 @@ pointer_and_operator::wi_fold (tree type,
 {
   // For pointer types, we are really only interested in asserting
   // whether the expression evaluates to non-NULL.
-  if (!wi_includes_zero_p (type, lh_lb, lh_ub)
-      && !wi_includes_zero_p (type, rh_lb, rh_ub))
-    return range_nonzero (type);
   if (wi_zero_p (type, lh_lb, lh_ub) || wi_zero_p (type, lh_lb, lh_ub))
     return range_zero (type);
 

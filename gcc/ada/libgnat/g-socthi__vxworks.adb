@@ -419,6 +419,16 @@ package body GNAT.Sockets.Thin is
       return R;
    end C_Socket;
 
+   ------------------
+   -- C_Socketpair --
+   ------------------
+
+   function C_Socketpair
+     (Domain   : C.int;
+      Typ      : C.int;
+      Protocol : C.int;
+      Fds      : not null access Fd_Pair) return C.int is separate;
+
    --------------
    -- Finalize --
    --------------

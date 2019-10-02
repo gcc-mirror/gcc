@@ -13,12 +13,14 @@ package testenv
 import (
 	"errors"
 	"flag"
+	"internal/cfg"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -101,6 +103,12 @@ func GoToolPath(t testing.TB) string {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Add all environment variables that affect the Go command to test metadata.
+	// Cached test results will be invalidate when these variables change.
+	// See golang.org/issue/32285.
+	for _, envVar := range strings.Fields(cfg.KnownEnv) {
+		os.Getenv(envVar)
+	}
 	return path
 }
 
@@ -160,6 +168,24 @@ func HasSrc() bool {
 func MustHaveExec(t testing.TB) {
 	if !HasExec() {
 		t.Skipf("skipping test: cannot exec subprocess on %s/%s", runtime.GOOS, runtime.GOARCH)
+	}
+}
+
+var execPaths sync.Map // path -> error
+
+// MustHaveExecPath checks that the current system can start the named executable
+// using os.StartProcess or (more commonly) exec.Command.
+// If not, MustHaveExecPath calls t.Skip with an explanation.
+func MustHaveExecPath(t testing.TB, path string) {
+	MustHaveExec(t)
+
+	err, found := execPaths.Load(path)
+	if !found {
+		_, err = exec.LookPath(path)
+		err, _ = execPaths.LoadOrStore(path, err)
+	}
+	if err != nil {
+		t.Skipf("skipping test: %s: %s", path, err)
 	}
 }
 

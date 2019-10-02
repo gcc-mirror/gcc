@@ -2531,9 +2531,22 @@ Gogo::add_linkname(const std::string& go_name, bool is_exported,
   if (no == NULL)
     go_error_at(loc, "%s is not defined", go_name.c_str());
   else if (no->is_function())
-    no->func_value()->set_asm_name(ext_name);
+    {
+      if (ext_name.empty())
+	no->func_value()->set_is_exported_by_linkname();
+      else
+	no->func_value()->set_asm_name(ext_name);
+    }
   else if (no->is_function_declaration())
-    no->func_declaration_value()->set_asm_name(ext_name);
+    {
+      if (ext_name.empty())
+	go_error_at(loc,
+		    ("%<//go:linkname%> missing external name "
+		     "for declaration of %s"),
+		    go_name.c_str());
+      else
+	no->func_declaration_value()->set_asm_name(ext_name);
+    }
   else
     go_error_at(loc,
 		("%s is not a function; "
@@ -2576,9 +2589,11 @@ Gogo::define_global_names()
   if (this->is_main_package())
     {
       // Every Go program has to import the runtime package, so that
-      // it is properly initialized.
+      // it is properly initialized.  We can't use
+      // predeclared_location here as it will cause runtime functions
+      // to appear to be builtin functions.
       this->import_package("runtime", "_", false, false,
-			   Linemap::predeclared_location());
+			   this->package_->location());
     }
 
   for (Bindings::const_declarations_iterator p =
@@ -5238,11 +5253,11 @@ Gogo::write_c_header()
       // package they are mostly types defined by mkrsysinfo.sh based
       // on the C system header files.  We don't need to translate
       // types to C and back to Go.  But do accept the special cases
-      // _defer and _panic.
+      // _defer, _panic, and _type.
       std::string name = Gogo::unpack_hidden_name(no->name());
       if (name[0] == '_'
 	  && (name[1] < 'A' || name[1] > 'Z')
-	  && (name != "_defer" && name != "_panic"))
+	  && (name != "_defer" && name != "_panic" && name != "_type"))
 	continue;
 
       if (no->is_type() && no->type_value()->struct_type() != NULL)
@@ -5465,7 +5480,8 @@ Function::Function(Function_type* type, Named_object* enclosing, Block* block,
     calls_recover_(false), is_recover_thunk_(false), has_recover_thunk_(false),
     calls_defer_retaddr_(false), is_type_specific_function_(false),
     in_unique_section_(false), export_for_inlining_(false),
-    is_inline_only_(false), is_referenced_by_inline_(false)
+    is_inline_only_(false), is_referenced_by_inline_(false),
+    is_exported_by_linkname_(false)
 {
 }
 
@@ -6220,6 +6236,11 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
       if (this->is_referenced_by_inline_)
 	flags |= Backend::function_is_visible;
 
+      // A go:linkname directive can be used to force a function to be
+      // visible.
+      if (this->is_exported_by_linkname_)
+	flags |= Backend::function_is_visible;
+
       // If a function calls the predeclared recover function, we
       // can't inline it, because recover behaves differently in a
       // function passed directly to defer.  If this is a recover
@@ -6300,6 +6321,7 @@ Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no)
 	    }
 
 	  if (this->asm_name_ == "runtime.gopanic"
+	      || this->asm_name_.compare(0, 15, "runtime.goPanic") == 0
 	      || this->asm_name_ == "__go_runtime_error"
               || this->asm_name_ == "runtime.panicdottype"
               || this->asm_name_ == "runtime.block")
@@ -8696,7 +8718,13 @@ Named_object::get_backend(Gogo* gogo, std::vector<Bexpression*>& const_decls,
     case NAMED_OBJECT_TYPE:
       {
         Named_type* named_type = this->u_.type_value;
-	if (!Gogo::is_erroneous_name(this->name_) && !named_type->is_alias())
+
+        // No need to do anything for aliases-- whatever has to be done
+        // can be done for the alias target.
+        if (named_type->is_alias())
+          break;
+
+	if (!Gogo::is_erroneous_name(this->name_))
 	  type_decls.push_back(named_type->get_backend(gogo));
 
         // We need to produce a type descriptor for every named

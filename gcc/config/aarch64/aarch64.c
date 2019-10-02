@@ -74,6 +74,7 @@
 #include "rtx-vector-builder.h"
 #include "intl.h"
 #include "expmed.h"
+#include "function-abi.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -1365,6 +1366,24 @@ svpattern_token (enum aarch64_svpattern pattern)
   gcc_unreachable ();
 }
 
+/* Return the descriptor of the SIMD ABI.  */
+
+static const predefined_function_abi &
+aarch64_simd_abi (void)
+{
+  predefined_function_abi &simd_abi = function_abis[ARM_PCS_SIMD];
+  if (!simd_abi.initialized_p ())
+    {
+      HARD_REG_SET full_reg_clobbers
+	= default_function_abi.full_reg_clobbers ();
+      for (int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	if (FP_SIMD_SAVED_REGNUM_P (regno))
+	  CLEAR_HARD_REG_BIT (full_reg_clobbers, regno);
+      simd_abi.initialize (ARM_PCS_SIMD, full_reg_clobbers);
+    }
+  return simd_abi;
+}
+
 /* Generate code to enable conditional branches in functions over 1 MiB.  */
 const char *
 aarch64_gen_far_branch (rtx * operands, int pos_label, const char * dest,
@@ -1810,6 +1829,16 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
   return false;
 }
 
+/* Implement TARGET_FNTYPE_ABI.  */
+
+static const predefined_function_abi &
+aarch64_fntype_abi (const_tree fntype)
+{
+  if (lookup_attribute ("aarch64_vector_pcs", TYPE_ATTRIBUTES (fntype)))
+    return aarch64_simd_abi ();
+  return default_function_abi;
+}
+
 /* Return true if this is a definition of a vectorized simd function.  */
 
 static bool
@@ -1843,43 +1872,17 @@ aarch64_reg_save_mode (tree fndecl, unsigned regno)
 	   : (aarch64_simd_decl_p (fndecl) ? E_TFmode : E_DFmode);
 }
 
-/* Return true if the instruction is a call to a SIMD function, false
-   if it is not a SIMD function or if we do not know anything about
-   the function.  */
+/* Implement TARGET_INSN_CALLEE_ABI.  */
 
-static bool
-aarch64_simd_call_p (rtx_insn *insn)
+const predefined_function_abi &
+aarch64_insn_callee_abi (const rtx_insn *insn)
 {
-  rtx symbol;
-  rtx call;
-  tree fndecl;
-
-  gcc_assert (CALL_P (insn));
-  call = get_call_rtx_from (insn);
-  symbol = XEXP (XEXP (call, 0), 0);
-  if (GET_CODE (symbol) != SYMBOL_REF)
-    return false;
-  fndecl = SYMBOL_REF_DECL (symbol);
-  if (!fndecl)
-    return false;
-
-  return aarch64_simd_decl_p (fndecl);
-}
-
-/* Implement TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS.  If INSN calls
-   a function that uses the SIMD ABI, take advantage of the extra
-   call-preserved registers that the ABI provides.  */
-
-void
-aarch64_remove_extra_call_preserved_regs (rtx_insn *insn,
-					  HARD_REG_SET *return_set)
-{
-  if (aarch64_simd_call_p (insn))
-    {
-      for (int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	if (FP_SIMD_SAVED_REGNUM_P (regno))
-	  CLEAR_HARD_REG_BIT (*return_set, regno);
-    }
+  rtx pat = PATTERN (insn);
+  gcc_assert (GET_CODE (pat) == PARALLEL);
+  rtx unspec = XVECEXP (pat, 0, 1);
+  gcc_assert (GET_CODE (unspec) == UNSPEC
+	      && XINT (unspec, 1) == UNSPEC_CALLEE_ABI);
+  return function_abis[INTVAL (XVECEXP (unspec, 0, 0))];
 }
 
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  The callee only saves
@@ -1887,25 +1890,21 @@ aarch64_remove_extra_call_preserved_regs (rtx_insn *insn,
    clobbers the top 64 bits when restoring the bottom 64 bits.  */
 
 static bool
-aarch64_hard_regno_call_part_clobbered (rtx_insn *insn, unsigned int regno,
+aarch64_hard_regno_call_part_clobbered (unsigned int abi_id,
+					unsigned int regno,
 					machine_mode mode)
 {
-  bool simd_p = insn && CALL_P (insn) && aarch64_simd_call_p (insn);
-  return FP_REGNUM_P (regno)
-	 && maybe_gt (GET_MODE_SIZE (mode), simd_p ? 16 : 8);
-}
-
-/* Implement TARGET_RETURN_CALL_WITH_MAX_CLOBBERS.  */
-
-rtx_insn *
-aarch64_return_call_with_max_clobbers (rtx_insn *call_1, rtx_insn *call_2)
-{
-  gcc_assert (CALL_P (call_1) && CALL_P (call_2));
-
-  if (!aarch64_simd_call_p (call_1) || aarch64_simd_call_p (call_2))
-    return call_1;
-  else
-    return call_2;
+  if (FP_REGNUM_P (regno))
+    {
+      poly_int64 per_register_size = GET_MODE_SIZE (mode);
+      unsigned int nregs = hard_regno_nregs (regno, mode);
+      if (nregs > 1)
+	per_register_size = exact_div (per_register_size, nregs);
+      if (abi_id == ARM_PCS_SIMD || abi_id == ARM_PCS_TLSDESC)
+	return maybe_gt (per_register_size, 16);
+      return maybe_gt (per_register_size, 8);
+    }
+  return false;
 }
 
 /* Implement REGMODE_NATURAL_SIZE.  */
@@ -2039,10 +2038,33 @@ emit_set_insn (rtx x, rtx y)
 rtx
 aarch64_gen_compare_reg (RTX_CODE code, rtx x, rtx y)
 {
-  machine_mode mode = SELECT_CC_MODE (code, x, y);
-  rtx cc_reg = gen_rtx_REG (mode, CC_REGNUM);
+  machine_mode cmp_mode = GET_MODE (x);
+  machine_mode cc_mode;
+  rtx cc_reg;
 
-  emit_set_insn (cc_reg, gen_rtx_COMPARE (mode, x, y));
+  if (cmp_mode == TImode)
+    {
+      gcc_assert (code == NE);
+
+      cc_mode = CCmode;
+      cc_reg = gen_rtx_REG (cc_mode, CC_REGNUM);
+
+      rtx x_lo = operand_subword (x, 0, 0, TImode);
+      rtx y_lo = operand_subword (y, 0, 0, TImode);
+      emit_set_insn (cc_reg, gen_rtx_COMPARE (cc_mode, x_lo, y_lo));
+
+      rtx x_hi = operand_subword (x, 1, 0, TImode);
+      rtx y_hi = operand_subword (y, 1, 0, TImode);
+      emit_insn (gen_ccmpdi (cc_reg, cc_reg, x_hi, y_hi,
+			     gen_rtx_EQ (cc_mode, cc_reg, const0_rtx),
+			     GEN_INT (AARCH64_EQ)));
+    }
+  else
+    {
+      cc_mode = SELECT_CC_MODE (code, x, y);
+      cc_reg = gen_rtx_REG (cc_mode, CC_REGNUM);
+      emit_set_insn (cc_reg, gen_rtx_COMPARE (cc_mode, x, y));
+    }
   return cc_reg;
 }
 
@@ -2593,7 +2615,6 @@ aarch64_zero_extend_const_eq (machine_mode xmode, rtx x,
   gcc_assert (r != NULL);
   return rtx_equal_p (x, r);
 }
-			      
 
 /* Return TARGET if it is nonnull and a register of mode MODE.
    Otherwise, return a fresh register of mode MODE if we can,
@@ -4807,10 +4828,11 @@ static rtx
 aarch64_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
-  gcc_assert (pcum->pcs_variant == ARM_PCS_AAPCS64);
+  gcc_assert (pcum->pcs_variant == ARM_PCS_AAPCS64
+	      || pcum->pcs_variant == ARM_PCS_SIMD);
 
   if (arg.end_marker_p ())
-    return NULL_RTX;
+    return gen_int_mode (pcum->pcs_variant, DImode);
 
   aarch64_layout_arg (pcum_v, arg.mode, arg.type, arg.named);
   return pcum->aapcs_reg;
@@ -4818,16 +4840,19 @@ aarch64_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 
 void
 aarch64_init_cumulative_args (CUMULATIVE_ARGS *pcum,
-			   const_tree fntype ATTRIBUTE_UNUSED,
-			   rtx libname ATTRIBUTE_UNUSED,
-			   const_tree fndecl ATTRIBUTE_UNUSED,
-			   unsigned n_named ATTRIBUTE_UNUSED)
+			      const_tree fntype,
+			      rtx libname ATTRIBUTE_UNUSED,
+			      const_tree fndecl ATTRIBUTE_UNUSED,
+			      unsigned n_named ATTRIBUTE_UNUSED)
 {
   pcum->aapcs_ncrn = 0;
   pcum->aapcs_nvrn = 0;
   pcum->aapcs_nextncrn = 0;
   pcum->aapcs_nextnvrn = 0;
-  pcum->pcs_variant = ARM_PCS_AAPCS64;
+  if (fntype)
+    pcum->pcs_variant = (arm_pcs) fntype_abi (fntype).id ();
+  else
+    pcum->pcs_variant = ARM_PCS_AAPCS64;
   pcum->aapcs_reg = NULL_RTX;
   pcum->aapcs_arg_processed = false;
   pcum->aapcs_stack_words = 0;
@@ -4852,7 +4877,8 @@ aarch64_function_arg_advance (cumulative_args_t pcum_v,
 			      const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
-  if (pcum->pcs_variant == ARM_PCS_AAPCS64)
+  if (pcum->pcs_variant == ARM_PCS_AAPCS64
+      || pcum->pcs_variant == ARM_PCS_SIMD)
     {
       aarch64_layout_arg (pcum_v, arg.mode, arg.type, arg.named);
       gcc_assert ((pcum->aapcs_reg != NULL_RTX)
@@ -5294,7 +5320,7 @@ aarch64_layout_frame (void)
 {
   HOST_WIDE_INT offset = 0;
   int regno, last_fp_reg = INVALID_REGNUM;
-  bool simd_function = aarch64_simd_decl_p (cfun->decl);
+  bool simd_function = (crtl->abi->id () == ARM_PCS_SIMD);
 
   cfun->machine->frame.emit_frame_chain = aarch64_needs_frame_chain ();
 
@@ -5307,17 +5333,6 @@ aarch64_layout_frame (void)
 
   cfun->machine->frame.wb_candidate1 = INVALID_REGNUM;
   cfun->machine->frame.wb_candidate2 = INVALID_REGNUM;
-
-  /* If this is a non-leaf simd function with calls we assume that
-     at least one of those calls is to a non-simd function and thus
-     we must save V8 to V23 in the prologue.  */
-
-  if (simd_function && !crtl->is_leaf)
-    {
-      for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
-	if (FP_SIMD_SAVED_REGNUM_P (regno))
- 	  df_set_regs_ever_live (regno, true);
-    }
 
   /* First mark all the registers that really need to be saved...  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
@@ -5335,14 +5350,15 @@ aarch64_layout_frame (void)
   /* ... and any callee saved register that dataflow says is live.  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
     if (df_regs_ever_live_p (regno)
+	&& !fixed_regs[regno]
 	&& (regno == R30_REGNUM
-	    || !call_used_regs[regno]))
+	    || !crtl->abi->clobbers_full_reg_p (regno)))
       cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
     if (df_regs_ever_live_p (regno)
-	&& (!call_used_regs[regno]
-	    || (simd_function && FP_SIMD_SAVED_REGNUM_P (regno))))
+	&& !fixed_regs[regno]
+	&& !crtl->abi->clobbers_full_reg_p (regno))
       {
 	cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
 	last_fp_reg = regno;
@@ -5931,18 +5947,34 @@ aarch64_components_for_bb (basic_block bb)
   bitmap in = DF_LIVE_IN (bb);
   bitmap gen = &DF_LIVE_BB_INFO (bb)->gen;
   bitmap kill = &DF_LIVE_BB_INFO (bb)->kill;
-  bool simd_function = aarch64_simd_decl_p (cfun->decl);
 
   sbitmap components = sbitmap_alloc (LAST_SAVED_REGNUM + 1);
   bitmap_clear (components);
 
+  /* Clobbered registers don't generate values in any meaningful sense,
+     since nothing after the clobber can rely on their value.  And we can't
+     say that partially-clobbered registers are unconditionally killed,
+     because whether they're killed or not depends on the mode of the
+     value they're holding.  Thus partially call-clobbered registers
+     appear in neither the kill set nor the gen set.
+
+     Check manually for any calls that clobber more of a register than the
+     current function can.  */
+  function_abi_aggregator callee_abis;
+  rtx_insn *insn;
+  FOR_BB_INSNS (bb, insn)
+    if (CALL_P (insn))
+      callee_abis.note_callee_abi (insn_callee_abi (insn));
+  HARD_REG_SET extra_caller_saves = callee_abis.caller_save_regs (*crtl->abi);
+
   /* GPRs are used in a bb if they are in the IN, GEN, or KILL sets.  */
   for (unsigned regno = 0; regno <= LAST_SAVED_REGNUM; regno++)
-    if ((!call_used_regs[regno]
-	|| (simd_function && FP_SIMD_SAVED_REGNUM_P (regno)))
-       && (bitmap_bit_p (in, regno)
-	   || bitmap_bit_p (gen, regno)
-	   || bitmap_bit_p (kill, regno)))
+    if (!fixed_regs[regno]
+	&& !crtl->abi->clobbers_full_reg_p (regno)
+	&& (TEST_HARD_REG_BIT (extra_caller_saves, regno)
+	    || bitmap_bit_p (in, regno)
+	    || bitmap_bit_p (gen, regno)
+	    || bitmap_bit_p (kill, regno)))
       {
 	unsigned regno2, offset, offset2;
 	bitmap_set_bit (components, regno);
@@ -6043,7 +6075,7 @@ aarch64_process_components (sbitmap components, bool prologue_p)
 	 mergeable with the current one into a pair.  */
       if (!satisfies_constraint_Ump (mem)
 	  || GP_REGNUM_P (regno) != GP_REGNUM_P (regno2)
-	  || (aarch64_simd_decl_p (cfun->decl) && FP_REGNUM_P (regno))
+	  || (crtl->abi->id () == ARM_PCS_SIMD && FP_REGNUM_P (regno))
 	  || maybe_ne ((offset2 - cfun->machine->frame.reg_offset[regno]),
 		       GET_MODE_SIZE (mode)))
 	{
@@ -6375,8 +6407,6 @@ aarch64_epilogue_uses (int regno)
     {
       if (regno == LR_REGNUM)
 	return 1;
-      if (aarch64_simd_decl_p (cfun->decl) && FP_SIMD_SAVED_REGNUM_P (regno))
-	return 1;
     }
   return 0;
 }
@@ -6577,7 +6607,7 @@ aarch64_expand_prologue (void)
 
   aarch64_save_callee_saves (DImode, callee_offset, R0_REGNUM, R30_REGNUM,
 			     callee_adjust != 0 || emit_frame_chain);
-  if (aarch64_simd_decl_p (cfun->decl))
+  if (crtl->abi->id () == ARM_PCS_SIMD)
     aarch64_save_callee_saves (TFmode, callee_offset, V0_REGNUM, V31_REGNUM,
 			       callee_adjust != 0 || emit_frame_chain);
   else
@@ -6606,19 +6636,6 @@ aarch64_use_return_insn_p (void)
     return false;
 
   return known_eq (cfun->machine->frame.frame_size, 0);
-}
-
-/* Return false for non-leaf SIMD functions in order to avoid
-   shrink-wrapping them.  Doing this will lose the necessary
-   save/restore of FP registers.  */
-
-bool
-aarch64_use_simple_return_insn_p (void)
-{
-  if (aarch64_simd_decl_p (cfun->decl) && !crtl->is_leaf)
-    return false;
-
-  return true;
 }
 
 /* Generate the epilogue instructions for returning from a function.
@@ -6689,7 +6706,7 @@ aarch64_expand_epilogue (bool for_sibcall)
 
   aarch64_restore_callee_saves (DImode, callee_offset, R0_REGNUM, R30_REGNUM,
 				callee_adjust != 0, &cfi_ops);
-  if (aarch64_simd_decl_p (cfun->decl))
+  if (crtl->abi->id () == ARM_PCS_SIMD)
     aarch64_restore_callee_saves (TFmode, callee_offset, V0_REGNUM, V31_REGNUM,
 				  callee_adjust != 0, &cfi_ops);
   else
@@ -6890,7 +6907,8 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
     }
   funexp = XEXP (DECL_RTL (function), 0);
   funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
-  insn = emit_call_insn (gen_sibcall (funexp, const0_rtx, NULL_RTX));
+  rtx callee_abi = gen_int_mode (fndecl_abi (function).id (), DImode);
+  insn = emit_call_insn (gen_sibcall (funexp, const0_rtx, callee_abi));
   SIBLING_CALL_P (insn) = 1;
 
   insn = get_insns ();
@@ -7968,11 +7986,12 @@ aarch64_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
    RESULT is the register in which the result is returned.  It's NULL for
    "call" and "sibcall".
    MEM is the location of the function call.
+   CALLEE_ABI is a const_int that gives the arm_pcs of the callee.
    SIBCALL indicates whether this function call is normal call or sibling call.
    It will generate different pattern accordingly.  */
 
 void
-aarch64_expand_call (rtx result, rtx mem, bool sibcall)
+aarch64_expand_call (rtx result, rtx mem, rtx callee_abi, bool sibcall)
 {
   rtx call, callee, tmp;
   rtvec vec;
@@ -8002,7 +8021,11 @@ aarch64_expand_call (rtx result, rtx mem, bool sibcall)
   else
     tmp = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNUM));
 
-  vec = gen_rtvec (2, call, tmp);
+  gcc_assert (CONST_INT_P (callee_abi));
+  callee_abi = gen_rtx_UNSPEC (DImode, gen_rtvec (1, callee_abi),
+			       UNSPEC_CALLEE_ABI);
+
+  vec = gen_rtvec (3, call, callee_abi, tmp);
   call = gen_rtx_PARALLEL (VOIDmode, vec);
 
   aarch64_emit_call_insn (call);
@@ -8420,7 +8443,7 @@ sizetochar (int size)
      'S/T/U/V':		Print a FP/SIMD register name for a register list.
 			The register printed is the FP/SIMD register name
 			of X + 0/1/2/3 for S/T/U/V.
-     'R':		Print a scalar FP/SIMD register name + 1.
+     'R':		Print a scalar Integer/FP/SIMD register name + 1.
      'X':		Print bottom 16 bits of integer constant in hex.
      'w/x':		Print a general register name or the zero register
 			(32-bit or 64-bit).
@@ -8623,12 +8646,13 @@ aarch64_print_operand (FILE *f, rtx x, int code)
       break;
 
     case 'R':
-      if (!REG_P (x) || !FP_REGNUM_P (REGNO (x)))
-	{
-	  output_operand_lossage ("incompatible floating point / vector register operand for '%%%c'", code);
-	  return;
-	}
-      asm_fprintf (f, "q%d", REGNO (x) - V0_REGNUM + 1);
+      if (REG_P (x) && FP_REGNUM_P (REGNO (x)))
+	asm_fprintf (f, "q%d", REGNO (x) - V0_REGNUM + 1);
+      else if (REG_P (x) && GP_REGNUM_P (REGNO (x)))
+	asm_fprintf (f, "x%d", REGNO (x) - R0_REGNUM + 1);
+      else
+	output_operand_lossage ("incompatible register operand for '%%%c'",
+				code);
       break;
 
     case 'X':
@@ -10730,7 +10754,7 @@ cost_plus:
 	  }
 
 	if (GET_MODE_CLASS (mode) == MODE_INT
-	    && ((CONST_INT_P (op1) && aarch64_uimm12_shift (INTVAL (op1)))
+	    && (aarch64_plus_immediate (op1, mode)
 		|| aarch64_sve_addvl_addpl_immediate (op1, mode)))
 	  {
 	    *cost += rtx_cost (op0, mode, PLUS, 0, speed);
@@ -11623,6 +11647,79 @@ aarch64_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
   return aarch64_tune_params.memmov_cost;
 }
 
+/* Implement TARGET_INIT_BUILTINS.  */
+static void
+aarch64_init_builtins ()
+{
+  aarch64_general_init_builtins ();
+}
+
+/* Implement TARGET_FOLD_BUILTIN.  */
+static tree
+aarch64_fold_builtin (tree fndecl, int nargs, tree *args, bool)
+{
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> AARCH64_BUILTIN_SHIFT;
+  tree type = TREE_TYPE (TREE_TYPE (fndecl));
+  switch (code & AARCH64_BUILTIN_CLASS)
+    {
+    case AARCH64_BUILTIN_GENERAL:
+      return aarch64_general_fold_builtin (subcode, type, nargs, args);
+    }
+  gcc_unreachable ();
+}
+
+/* Implement TARGET_GIMPLE_FOLD_BUILTIN.  */
+static bool
+aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
+{
+  gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
+  tree fndecl = gimple_call_fndecl (stmt);
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> AARCH64_BUILTIN_SHIFT;
+  gimple *new_stmt = NULL;
+  switch (code & AARCH64_BUILTIN_CLASS)
+    {
+    case AARCH64_BUILTIN_GENERAL:
+      new_stmt = aarch64_general_gimple_fold_builtin (subcode, stmt);
+      break;
+    }
+
+  if (!new_stmt)
+    return false;
+
+  gsi_replace (gsi, new_stmt, true);
+  return true;
+}
+
+/* Implement TARGET_EXPAND_BUILTIN.  */
+static rtx
+aarch64_expand_builtin (tree exp, rtx target, rtx, machine_mode, int)
+{
+  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> AARCH64_BUILTIN_SHIFT;
+  switch (code & AARCH64_BUILTIN_CLASS)
+    {
+    case AARCH64_BUILTIN_GENERAL:
+      return aarch64_general_expand_builtin (subcode, exp, target);
+    }
+  gcc_unreachable ();
+}
+
+/* Implement TARGET_BUILTIN_DECL.  */
+static tree
+aarch64_builtin_decl (unsigned int code, bool initialize_p)
+{
+  unsigned int subcode = code >> AARCH64_BUILTIN_SHIFT;
+  switch (code & AARCH64_BUILTIN_CLASS)
+    {
+    case AARCH64_BUILTIN_GENERAL:
+      return aarch64_general_builtin_decl (subcode, initialize_p);
+    }
+  gcc_unreachable ();
+}
+
 /* Return true if it is safe and beneficial to use the approximate rsqrt optabs
    to optimize 1.0/sqrt.  */
 
@@ -11646,7 +11743,14 @@ aarch64_builtin_reciprocal (tree fndecl)
 
   if (!use_rsqrt_p (mode))
     return NULL_TREE;
-  return aarch64_builtin_rsqrt (DECL_MD_FUNCTION_CODE (fndecl));
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> AARCH64_BUILTIN_SHIFT;
+  switch (code & AARCH64_BUILTIN_CLASS)
+    {
+    case AARCH64_BUILTIN_GENERAL:
+      return aarch64_general_builtin_rsqrt (subcode);
+    }
+  gcc_unreachable ();
 }
 
 /* Emit instruction sequence to compute either the approximate square root
@@ -11802,6 +11906,23 @@ static int
 aarch64_sched_issue_rate (void)
 {
   return aarch64_tune_params.issue_rate;
+}
+
+/* Implement TARGET_SCHED_VARIABLE_ISSUE.  */
+static int
+aarch64_sched_variable_issue (FILE *, int, rtx_insn *insn, int more)
+{
+  if (DEBUG_INSN_P (insn))
+    return more;
+
+  rtx_code code = GET_CODE (PATTERN (insn));
+  if (code == USE || code == CLOBBER)
+    return more;
+
+  if (get_attr_type (insn) == TYPE_NO_INSN)
+    return more;
+
+  return more - 1;
 }
 
 static int
@@ -13833,6 +13954,26 @@ aarch64_can_inline_p (tree caller, tree callee)
   return true;
 }
 
+/* Return the ID of the TLDESC ABI, initializing the descriptor if hasn't
+   been already.  */
+
+unsigned int
+aarch64_tlsdesc_abi_id ()
+{
+  predefined_function_abi &tlsdesc_abi = function_abis[ARM_PCS_TLSDESC];
+  if (!tlsdesc_abi.initialized_p ())
+    {
+      HARD_REG_SET full_reg_clobbers;
+      CLEAR_HARD_REG_SET (full_reg_clobbers);
+      SET_HARD_REG_BIT (full_reg_clobbers, R0_REGNUM);
+      SET_HARD_REG_BIT (full_reg_clobbers, CC_REGNUM);
+      for (int regno = P0_REGNUM; regno <= P15_REGNUM; ++regno)
+	SET_HARD_REG_BIT (full_reg_clobbers, regno);
+      tlsdesc_abi.initialize (ARM_PCS_TLSDESC, full_reg_clobbers);
+    }
+  return tlsdesc_abi.id ();
+}
+
 /* Return true if SYMBOL_REF X binds locally.  */
 
 static bool
@@ -15041,7 +15182,7 @@ aarch64_mangle_type (const_tree type)
   /* Mangle AArch64-specific internal types.  TYPE_NAME is non-NULL_TREE for
      builtin types.  */
   if (TYPE_NAME (type) != NULL)
-    return aarch64_mangle_builtin_type (type);
+    return aarch64_general_mangle_builtin_type (type);
 
   /* Use the default mangling.  */
   return NULL;
@@ -16796,16 +16937,26 @@ static void
 aarch64_emit_load_exclusive (machine_mode mode, rtx rval,
 			     rtx mem, rtx model_rtx)
 {
-  emit_insn (gen_aarch64_load_exclusive (mode, rval, mem, model_rtx));
+  if (mode == TImode)
+    emit_insn (gen_aarch64_load_exclusive_pair (gen_lowpart (DImode, rval),
+						gen_highpart (DImode, rval),
+						mem, model_rtx));
+  else
+    emit_insn (gen_aarch64_load_exclusive (mode, rval, mem, model_rtx));
 }
 
 /* Emit store exclusive.  */
 
 static void
 aarch64_emit_store_exclusive (machine_mode mode, rtx bval,
-			      rtx rval, rtx mem, rtx model_rtx)
+			      rtx mem, rtx rval, rtx model_rtx)
 {
-  emit_insn (gen_aarch64_store_exclusive (mode, bval, rval, mem, model_rtx));
+  if (mode == TImode)
+    emit_insn (gen_aarch64_store_exclusive_pair
+	       (bval, mem, operand_subword (rval, 0, 0, TImode),
+		operand_subword (rval, 1, 0, TImode), model_rtx));
+  else
+    emit_insn (gen_aarch64_store_exclusive (mode, bval, mem, rval, model_rtx));
 }
 
 /* Mark the previous jump instruction as unlikely.  */
@@ -16816,6 +16967,82 @@ aarch64_emit_unlikely_jump (rtx insn)
   rtx_insn *jump = emit_jump_insn (insn);
   add_reg_br_prob_note (jump, profile_probability::very_unlikely ());
 }
+
+/* We store the names of the various atomic helpers in a 5x4 array.
+   Return the libcall function given MODE, MODEL and NAMES.  */
+
+rtx
+aarch64_atomic_ool_func(machine_mode mode, rtx model_rtx,
+			const atomic_ool_names *names)
+{
+  memmodel model = memmodel_base (INTVAL (model_rtx));
+  int mode_idx, model_idx;
+
+  switch (mode)
+    {
+    case E_QImode:
+      mode_idx = 0;
+      break;
+    case E_HImode:
+      mode_idx = 1;
+      break;
+    case E_SImode:
+      mode_idx = 2;
+      break;
+    case E_DImode:
+      mode_idx = 3;
+      break;
+    case E_TImode:
+      mode_idx = 4;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  switch (model)
+    {
+    case MEMMODEL_RELAXED:
+      model_idx = 0;
+      break;
+    case MEMMODEL_CONSUME:
+    case MEMMODEL_ACQUIRE:
+      model_idx = 1;
+      break;
+    case MEMMODEL_RELEASE:
+      model_idx = 2;
+      break;
+    case MEMMODEL_ACQ_REL:
+    case MEMMODEL_SEQ_CST:
+      model_idx = 3;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  return init_one_libfunc_visibility (names->str[mode_idx][model_idx],
+				      VISIBILITY_HIDDEN);
+}
+
+#define DEF0(B, N) \
+  { "__aarch64_" #B #N "_relax", \
+    "__aarch64_" #B #N "_acq", \
+    "__aarch64_" #B #N "_rel", \
+    "__aarch64_" #B #N "_acq_rel" }
+
+#define DEF4(B)  DEF0(B, 1), DEF0(B, 2), DEF0(B, 4), DEF0(B, 8), \
+		 { NULL, NULL, NULL, NULL }
+#define DEF5(B)  DEF0(B, 1), DEF0(B, 2), DEF0(B, 4), DEF0(B, 8), DEF0(B, 16)
+
+static const atomic_ool_names aarch64_ool_cas_names = { { DEF5(cas) } };
+const atomic_ool_names aarch64_ool_swp_names = { { DEF4(swp) } };
+const atomic_ool_names aarch64_ool_ldadd_names = { { DEF4(ldadd) } };
+const atomic_ool_names aarch64_ool_ldset_names = { { DEF4(ldset) } };
+const atomic_ool_names aarch64_ool_ldclr_names = { { DEF4(ldclr) } };
+const atomic_ool_names aarch64_ool_ldeor_names = { { DEF4(ldeor) } };
+
+#undef DEF0
+#undef DEF4
+#undef DEF5
 
 /* Expand a compare and swap pattern.  */
 
@@ -16863,6 +17090,17 @@ aarch64_expand_compare_and_swap (rtx operands[])
 						   newval, mod_s));
       cc_reg = aarch64_gen_compare_reg_maybe_ze (NE, rval, oldval, mode);
     }
+  else if (TARGET_OUTLINE_ATOMICS)
+    {
+      /* Oldval must satisfy compare afterward.  */
+      if (!aarch64_plus_operand (oldval, mode))
+	oldval = force_reg (mode, oldval);
+      rtx func = aarch64_atomic_ool_func (mode, mod_s, &aarch64_ool_cas_names);
+      rval = emit_library_call_value (func, NULL_RTX, LCT_NORMAL, r_mode,
+				      oldval, mode, newval, mode,
+				      XEXP (mem, 0), Pmode);
+      cc_reg = aarch64_gen_compare_reg_maybe_ze (NE, rval, oldval, mode);
+    }
   else
     {
       /* The oldval predicate varies by mode.  Test it and force to reg.  */
@@ -16905,13 +17143,11 @@ aarch64_emit_post_barrier (enum memmodel model)
 void
 aarch64_split_compare_and_swap (rtx operands[])
 {
-  rtx rval, mem, oldval, newval, scratch;
+  rtx rval, mem, oldval, newval, scratch, x, model_rtx;
   machine_mode mode;
   bool is_weak;
   rtx_code_label *label1, *label2;
-  rtx x, cond;
   enum memmodel model;
-  rtx model_rtx;
 
   rval = operands[0];
   mem = operands[1];
@@ -16932,7 +17168,8 @@ aarch64_split_compare_and_swap (rtx operands[])
 	CBNZ	scratch, .label1
     .label2:
 	CMP	rval, 0.  */
-  bool strong_zero_p = !is_weak && oldval == const0_rtx;
+  bool strong_zero_p = (!is_weak && !aarch64_track_speculation &&
+			oldval == const0_rtx && mode != TImode);
 
   label1 = NULL;
   if (!is_weak)
@@ -16945,35 +17182,20 @@ aarch64_split_compare_and_swap (rtx operands[])
   /* The initial load can be relaxed for a __sync operation since a final
      barrier will be emitted to stop code hoisting.  */
   if (is_mm_sync (model))
-    aarch64_emit_load_exclusive (mode, rval, mem,
-				 GEN_INT (MEMMODEL_RELAXED));
+    aarch64_emit_load_exclusive (mode, rval, mem, GEN_INT (MEMMODEL_RELAXED));
   else
     aarch64_emit_load_exclusive (mode, rval, mem, model_rtx);
 
   if (strong_zero_p)
-    {
-      if (aarch64_track_speculation)
-	{
-	  /* Emit an explicit compare instruction, so that we can correctly
-	     track the condition codes.  */
-	  rtx cc_reg = aarch64_gen_compare_reg (NE, rval, const0_rtx);
-	  x = gen_rtx_NE (GET_MODE (cc_reg), cc_reg, const0_rtx);
-	}
-      else
-	x = gen_rtx_NE (VOIDmode, rval, const0_rtx);
-
-      x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
-				gen_rtx_LABEL_REF (Pmode, label2), pc_rtx);
-      aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
-    }
+    x = gen_rtx_NE (VOIDmode, rval, const0_rtx);
   else
     {
-      cond = aarch64_gen_compare_reg_maybe_ze (NE, rval, oldval, mode);
-      x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
-      x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
-				gen_rtx_LABEL_REF (Pmode, label2), pc_rtx);
-      aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
+      rtx cc_reg = aarch64_gen_compare_reg_maybe_ze (NE, rval, oldval, mode);
+      x = gen_rtx_NE (VOIDmode, cc_reg, const0_rtx);
     }
+  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
+			    gen_rtx_LABEL_REF (Pmode, label2), pc_rtx);
+  aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
 
   aarch64_emit_store_exclusive (mode, scratch, mem, newval, model_rtx);
 
@@ -16994,22 +17216,16 @@ aarch64_split_compare_and_swap (rtx operands[])
       aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
     }
   else
-    {
-      cond = gen_rtx_REG (CCmode, CC_REGNUM);
-      x = gen_rtx_COMPARE (CCmode, scratch, const0_rtx);
-      emit_insn (gen_rtx_SET (cond, x));
-    }
+    aarch64_gen_compare_reg (NE, scratch, const0_rtx);
 
   emit_label (label2);
+
   /* If we used a CBNZ in the exchange loop emit an explicit compare with RVAL
      to set the condition flags.  If this is not used it will be removed by
      later passes.  */
   if (strong_zero_p)
-    {
-      cond = gen_rtx_REG (CCmode, CC_REGNUM);
-      x = gen_rtx_COMPARE (CCmode, rval, const0_rtx);
-      emit_insn (gen_rtx_SET (cond, x));
-    }
+    aarch64_gen_compare_reg (NE, rval, const0_rtx);
+
   /* Emit any final barrier needed for a __sync operation.  */
   if (is_mm_sync (model))
     aarch64_emit_post_barrier (model);
@@ -20584,6 +20800,9 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE aarch64_sched_issue_rate
 
+#undef TARGET_SCHED_VARIABLE_ISSUE
+#define TARGET_SCHED_VARIABLE_ISSUE aarch64_sched_variable_issue
+
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \
   aarch64_sched_first_cycle_multipass_dfa_lookahead
@@ -20770,13 +20989,8 @@ aarch64_libgcc_floating_mode_supported_p
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
   aarch64_hard_regno_call_part_clobbered
 
-#undef TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS
-#define TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS \
-  aarch64_remove_extra_call_preserved_regs
-
-#undef TARGET_RETURN_CALL_WITH_MAX_CLOBBERS
-#define TARGET_RETURN_CALL_WITH_MAX_CLOBBERS \
-  aarch64_return_call_with_max_clobbers
+#undef TARGET_INSN_CALLEE_ABI
+#define TARGET_INSN_CALLEE_ABI aarch64_insn_callee_abi
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT aarch64_constant_alignment
@@ -20818,6 +21032,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_GET_MULTILIB_ABI_NAME
 #define TARGET_GET_MULTILIB_ABI_NAME aarch64_get_multilib_abi_name
+
+#undef TARGET_FNTYPE_ABI
+#define TARGET_FNTYPE_ABI aarch64_fntype_abi
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

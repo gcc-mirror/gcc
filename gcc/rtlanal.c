@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "addresses.h"
 #include "rtl-iter.h"
 #include "hard-reg-set.h"
+#include "function-abi.h"
 
 /* Forward declarations */
 static void set_of_1 (rtx, const_rtx, void *);
@@ -811,10 +812,9 @@ rtx_addr_varies_p (const_rtx x, bool for_alias)
 /* Return the CALL in X if there is one.  */
 
 rtx
-get_call_rtx_from (rtx x)
+get_call_rtx_from (const rtx_insn *insn)
 {
-  if (INSN_P (x))
-    x = PATTERN (x);
+  rtx x = PATTERN (insn);
   if (GET_CODE (x) == PARALLEL)
     x = XVECEXP (x, 0, 0);
   if (GET_CODE (x) == SET)
@@ -822,6 +822,24 @@ get_call_rtx_from (rtx x)
   if (GET_CODE (x) == CALL && MEM_P (XEXP (x, 0)))
     return x;
   return NULL_RTX;
+}
+
+/* Get the declaration of the function called by INSN.  */
+
+tree
+get_call_fndecl (const rtx_insn *insn)
+{
+  rtx note, datum;
+
+  note = find_reg_note (insn, REG_CALL_DECL, NULL_RTX);
+  if (note == NULL_RTX)
+    return NULL_TREE;
+
+  datum = XEXP (note, 0);
+  if (datum != NULL_RTX)
+    return SYMBOL_REF_DECL (datum);
+
+  return NULL_TREE;
 }
 
 /* Return the value of the integer term in X, if one is apparent;
@@ -1198,10 +1216,6 @@ reg_referenced_p (const_rtx x, const_rtx body)
 	  return 1;
       return 0;
 
-    case CLOBBER_HIGH:
-      gcc_assert (REG_P (XEXP (body, 0)));
-      return 0;
-
     case COND_EXEC:
       if (reg_overlap_mentioned_p (x, COND_EXEC_TEST (body)))
 	return 1;
@@ -1253,8 +1267,8 @@ reg_set_p (const_rtx reg, const_rtx insn)
 	  || (CALL_P (insn)
 	      && ((REG_P (reg)
 		   && REGNO (reg) < FIRST_PSEUDO_REGISTER
-		   && overlaps_hard_reg_set_p (regs_invalidated_by_call,
-					       GET_MODE (reg), REGNO (reg)))
+		   && (insn_callee_abi (as_a<const rtx_insn *> (insn))
+		       .clobbers_reg_p (GET_MODE (reg), REGNO (reg))))
 		  || MEM_P (reg)
 		  || find_reg_fusage (insn, CLOBBER, reg)))))
     return true;
@@ -1424,11 +1438,7 @@ set_of_1 (rtx x, const_rtx pat, void *data1)
 {
   struct set_of_data *const data = (struct set_of_data *) (data1);
   if (rtx_equal_p (x, data->pat)
-      || (GET_CODE (pat) == CLOBBER_HIGH
-	  && REGNO(data->pat) == REGNO(XEXP (pat, 0))
-	  && reg_is_clobbered_by_clobber_high (data->pat, XEXP (pat, 0)))
-      || (GET_CODE (pat) != CLOBBER_HIGH && !MEM_P (x)
-	  && reg_overlap_mentioned_p (data->pat, x)))
+      || (!MEM_P (x) && reg_overlap_mentioned_p (data->pat, x)))
     data->found = pat;
 }
 
@@ -1440,7 +1450,7 @@ set_of (const_rtx pat, const_rtx insn)
   struct set_of_data data;
   data.found = NULL_RTX;
   data.pat = pat;
-  note_stores (INSN_P (insn) ? PATTERN (insn) : insn, set_of_1, &data);
+  note_pattern_stores (INSN_P (insn) ? PATTERN (insn) : insn, set_of_1, &data);
   return data.found;
 }
 
@@ -1469,22 +1479,20 @@ record_hard_reg_sets (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 }
 
 /* Examine INSN, and compute the set of hard registers written by it.
-   Store it in *PSET.  Should only be called after reload.  */
+   Store it in *PSET.  Should only be called after reload.
+
+   IMPLICIT is true if we should include registers that are fully-clobbered
+   by calls.  This should be used with caution, since it doesn't include
+   partially-clobbered registers.  */
 void
 find_all_hard_reg_sets (const rtx_insn *insn, HARD_REG_SET *pset, bool implicit)
 {
   rtx link;
 
   CLEAR_HARD_REG_SET (*pset);
-  note_stores (PATTERN (insn), record_hard_reg_sets, pset);
-  if (CALL_P (insn))
-    {
-      if (implicit)
-	IOR_HARD_REG_SET (*pset, call_used_reg_set);
-
-      for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
-	record_hard_reg_sets (XEXP (link, 0), NULL, pset);
-    }
+  note_stores (insn, record_hard_reg_sets, pset);
+  if (CALL_P (insn) && implicit)
+    *pset |= insn_callee_abi (insn).full_reg_clobbers ();
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) == REG_INC)
       record_hard_reg_sets (XEXP (link, 0), NULL, pset);
@@ -1517,7 +1525,6 @@ single_set_2 (const rtx_insn *insn, const_rtx pat)
 	    {
 	    case USE:
 	    case CLOBBER:
-	    case CLOBBER_HIGH:
 	      break;
 
 	    case SET:
@@ -1671,9 +1678,7 @@ noop_move_p (const rtx_insn *insn)
 	{
 	  rtx tem = XVECEXP (pat, 0, i);
 
-	  if (GET_CODE (tem) == USE
-	      || GET_CODE (tem) == CLOBBER
-	      || GET_CODE (tem) == CLOBBER_HIGH)
+	  if (GET_CODE (tem) == USE || GET_CODE (tem) == CLOBBER)
 	    continue;
 
 	  if (GET_CODE (tem) != SET || ! set_noop_p (tem))
@@ -1899,16 +1904,15 @@ reg_overlap_mentioned_p (const_rtx x, const_rtx in)
   the SUBREG will be passed.  */
 
 void
-note_stores (const_rtx x, void (*fun) (rtx, const_rtx, void *), void *data)
+note_pattern_stores (const_rtx x,
+		     void (*fun) (rtx, const_rtx, void *), void *data)
 {
   int i;
 
   if (GET_CODE (x) == COND_EXEC)
     x = COND_EXEC_CODE (x);
 
-  if (GET_CODE (x) == SET
-      || GET_CODE (x) == CLOBBER
-      || GET_CODE (x) == CLOBBER_HIGH)
+  if (GET_CODE (x) == SET || GET_CODE (x) == CLOBBER)
     {
       rtx dest = SET_DEST (x);
 
@@ -1933,7 +1937,22 @@ note_stores (const_rtx x, void (*fun) (rtx, const_rtx, void *), void *data)
 
   else if (GET_CODE (x) == PARALLEL)
     for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
-      note_stores (XVECEXP (x, 0, i), fun, data);
+      note_pattern_stores (XVECEXP (x, 0, i), fun, data);
+}
+
+/* Same, but for an instruction.  If the instruction is a call, include
+   any CLOBBERs in its CALL_INSN_FUNCTION_USAGE.  */
+
+void
+note_stores (const rtx_insn *insn,
+	     void (*fun) (rtx, const_rtx, void *), void *data)
+{
+  if (CALL_P (insn))
+    for (rtx link = CALL_INSN_FUNCTION_USAGE (insn);
+	 link; link = XEXP (link, 1))
+      if (GET_CODE (XEXP (link, 0)) == CLOBBER)
+	note_pattern_stores (XEXP (link, 0), fun, data);
+  note_pattern_stores (PATTERN (insn), fun, data);
 }
 
 /* Like notes_stores, but call FUN for each expression that is being
@@ -3628,23 +3647,31 @@ loc_mentioned_in_p (rtx *loc, const_rtx in)
   return 0;
 }
 
-/* Helper function for subreg_lsb.  Given a subreg's OUTER_MODE, INNER_MODE,
-   and SUBREG_BYTE, return the bit offset where the subreg begins
-   (counting from the least significant bit of the operand).  */
+/* Reinterpret a subreg as a bit extraction from an integer and return
+   the position of the least significant bit of the extracted value.
+   In other words, if the extraction were performed as a shift right
+   and mask, return the number of bits to shift right.
+
+   The outer value of the subreg has OUTER_BYTES bytes and starts at
+   byte offset SUBREG_BYTE within an inner value of INNER_BYTES bytes.  */
 
 poly_uint64
-subreg_lsb_1 (machine_mode outer_mode,
-	      machine_mode inner_mode,
-	      poly_uint64 subreg_byte)
+subreg_size_lsb (poly_uint64 outer_bytes,
+		 poly_uint64 inner_bytes,
+		 poly_uint64 subreg_byte)
 {
   poly_uint64 subreg_end, trailing_bytes, byte_pos;
 
   /* A paradoxical subreg begins at bit position 0.  */
-  if (paradoxical_subreg_p (outer_mode, inner_mode))
-    return 0;
+  gcc_checking_assert (ordered_p (outer_bytes, inner_bytes));
+  if (maybe_gt (outer_bytes, inner_bytes))
+    {
+      gcc_checking_assert (known_eq (subreg_byte, 0U));
+      return 0;
+    }
 
-  subreg_end = subreg_byte + GET_MODE_SIZE (outer_mode);
-  trailing_bytes = GET_MODE_SIZE (inner_mode) - subreg_end;
+  subreg_end = subreg_byte + outer_bytes;
+  trailing_bytes = inner_bytes - subreg_end;
   if (WORDS_BIG_ENDIAN && BYTES_BIG_ENDIAN)
     byte_pos = trailing_bytes;
   else if (!WORDS_BIG_ENDIAN && !BYTES_BIG_ENDIAN)
@@ -4140,7 +4167,7 @@ find_first_parameter_load (rtx_insn *call_insn, rtx_insn *boundary)
       if (INSN_P (before))
 	{
 	  int nregs_old = parm.nregs;
-	  note_stores (PATTERN (before), parms_set, &parm);
+	  note_stores (before, parms_set, &parm);
 	  /* If we found something that did not set a parameter reg,
 	     we're done.  Do not keep going, as that might result
 	     in hoisting an insn before the setting of a pseudo
@@ -4810,7 +4837,7 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 	       || ((extend_op = load_extend_op (inner_mode)) == SIGN_EXTEND
 		   ? val_signbit_known_set_p (inner_mode, nonzero)
 		   : extend_op != ZERO_EXTEND)
-	       || (!MEM_P (SUBREG_REG (x)) && !REG_P (SUBREG_REG (x))))
+	       || !MEM_P (SUBREG_REG (x)))
 	      && xmode_width > inner_width)
 	    nonzero
 	      |= (GET_MODE_MASK (GET_MODE (x)) & ~GET_MODE_MASK (inner_mode));
@@ -6617,33 +6644,4 @@ tls_referenced_p (const_rtx x)
     if (GET_CODE (*iter) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (*iter) != 0)
       return true;
   return false;
-}
-
-/* Return true if reg REGNO with mode REG_MODE would be clobbered by the
-   clobber_high operand in CLOBBER_HIGH_OP.  */
-
-bool
-reg_is_clobbered_by_clobber_high (unsigned int regno, machine_mode reg_mode,
-				  const_rtx clobber_high_op)
-{
-  unsigned int clobber_regno = REGNO (clobber_high_op);
-  machine_mode clobber_mode = GET_MODE (clobber_high_op);
-  unsigned char regno_nregs = hard_regno_nregs (regno, reg_mode);
-
-  /* Clobber high should always span exactly one register.  */
-  gcc_assert (REG_NREGS (clobber_high_op) == 1);
-
-  /* Clobber high needs to match with one of the registers in X.  */
-  if (clobber_regno < regno || clobber_regno >= regno + regno_nregs)
-    return false;
-
-  gcc_assert (reg_mode != BLKmode && clobber_mode != BLKmode);
-
-  if (reg_mode == VOIDmode)
-    return clobber_mode != VOIDmode;
-
-  /* Clobber high will clobber if its size might be greater than the size of
-     register regno.  */
-  return maybe_gt (exact_div (GET_MODE_SIZE (reg_mode), regno_nregs),
-		 GET_MODE_SIZE (clobber_mode));
 }

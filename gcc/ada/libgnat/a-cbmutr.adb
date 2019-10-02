@@ -625,15 +625,12 @@ package body Ada.Containers.Bounded_Multiway_Trees is
      (Source   : Tree;
       Capacity : Count_Type := 0) return Tree
    is
-      C : Count_Type;
-
+      C : constant Count_Type :=
+        (if Capacity = 0 then Source.Count
+         else Capacity);
    begin
-      if Capacity = 0 then
-         C := Source.Count;
-      elsif Capacity >= Source.Count then
-         C := Capacity;
-      elsif Checks then
-         raise Capacity_Error with "Capacity value too small";
+      if Checks and then C < Source.Count then
+         raise Capacity_Error with "Capacity too small";
       end if;
 
       return Target : Tree (Capacity => C) do

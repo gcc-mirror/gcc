@@ -216,7 +216,7 @@ enum gfc_statement
   ST_POINTER_ASSIGNMENT, ST_SELECT_CASE, ST_SEQUENCE, ST_SIMPLE_IF,
   ST_STATEMENT_FUNCTION, ST_DERIVED_DECL, ST_LABEL_ASSIGNMENT, ST_ENUM,
   ST_ENUMERATOR, ST_END_ENUM, ST_SELECT_TYPE, ST_TYPE_IS, ST_CLASS_IS,
-  ST_STRUCTURE_DECL, ST_END_STRUCTURE,
+  ST_SELECT_RANK, ST_RANK, ST_STRUCTURE_DECL, ST_END_STRUCTURE,
   ST_UNION, ST_END_UNION, ST_MAP, ST_END_MAP,
   ST_OACC_PARALLEL_LOOP, ST_OACC_END_PARALLEL_LOOP, ST_OACC_PARALLEL,
   ST_OACC_END_PARALLEL, ST_OACC_KERNELS, ST_OACC_END_KERNELS, ST_OACC_DATA,
@@ -894,9 +894,9 @@ typedef struct
 	   event_comp:1, defined_assign_comp:1, unlimited_polymorphic:1,
 	   has_dtio_procs:1, caf_token:1;
 
-  /* This is a temporary selector for SELECT TYPE or an associate
-     variable for SELECT_TYPE or ASSOCIATE.  */
-  unsigned select_type_temporary:1, associate_var:1;
+  /* This is a temporary selector for SELECT TYPE/RANK or an associate
+     variable for SELECT TYPE/RANK or ASSOCIATE.  */
+  unsigned select_type_temporary:1, select_rank_temporary:1, associate_var:1;
 
   /* These are the attributes required for parameterized derived
      types.  */
@@ -1610,6 +1610,9 @@ typedef struct gfc_symbol
   /* Set if this is a module function or subroutine with the
      abreviated declaration in a submodule.  */
   unsigned abr_modproc_decl:1;
+  /* Set if a previous error or warning has occurred and no other
+     should be reported.  */
+  unsigned error:1;
 
   int refs;
   struct gfc_namespace *ns;	/* namespace containing this symbol */
@@ -2418,6 +2421,9 @@ typedef struct
 {
   gfc_expr *var, *start, *end, *step;
   unsigned short unroll;
+  bool ivdep;
+  bool vector;
+  bool novector;
 }
 gfc_iterator;
 
@@ -2552,8 +2558,8 @@ enum gfc_exec_op
   EXEC_IF, EXEC_ARITHMETIC_IF, EXEC_DO, EXEC_DO_CONCURRENT, EXEC_DO_WHILE,
   EXEC_SELECT, EXEC_BLOCK, EXEC_FORALL, EXEC_WHERE, EXEC_CYCLE, EXEC_EXIT,
   EXEC_CALL_PPC, EXEC_ALLOCATE, EXEC_DEALLOCATE, EXEC_END_PROCEDURE,
-  EXEC_SELECT_TYPE, EXEC_SYNC_ALL, EXEC_SYNC_MEMORY, EXEC_SYNC_IMAGES,
-  EXEC_OPEN, EXEC_CLOSE, EXEC_WAIT,
+  EXEC_SELECT_TYPE, EXEC_SELECT_RANK, EXEC_SYNC_ALL, EXEC_SYNC_MEMORY,
+  EXEC_SYNC_IMAGES, EXEC_OPEN, EXEC_CLOSE, EXEC_WAIT,
   EXEC_READ, EXEC_WRITE, EXEC_IOLENGTH, EXEC_TRANSFER, EXEC_DT_END,
   EXEC_BACKSPACE, EXEC_ENDFILE, EXEC_INQUIRE, EXEC_REWIND, EXEC_FLUSH,
   EXEC_FORM_TEAM, EXEC_CHANGE_TEAM, EXEC_END_TEAM, EXEC_SYNC_TEAM,
@@ -2794,6 +2800,9 @@ gfc_finalizer;
 bool gfc_in_match_data (void);
 match gfc_match_char_spec (gfc_typespec *);
 extern int directive_unroll;
+extern bool directive_ivdep;
+extern bool directive_vector;
+extern bool directive_novector;
 
 /* SIMD clause enum.  */
 enum gfc_simd_clause

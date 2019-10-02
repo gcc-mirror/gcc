@@ -107,6 +107,14 @@ typedef struct gfc_se
 }
 gfc_se;
 
+typedef struct gfc_co_subroutines_args
+{
+  tree image_index;
+  tree stat;
+  tree errmsg;
+  tree errmsg_len;
+}
+gfc_co_subroutines_args;
 
 /* Denotes different types of coarray.
    Please keep in sync with libgfortran/caf/libcaf.h.  */
@@ -434,6 +442,7 @@ tree gfc_vptr_final_get (tree);
 tree gfc_vptr_deallocate_get (tree);
 void gfc_reset_vptr (stmtblock_t *, gfc_expr *);
 void gfc_reset_len (stmtblock_t *, gfc_expr *);
+tree gfc_get_class_from_expr (tree);
 tree gfc_get_vptr_from_expr (tree);
 tree gfc_get_class_array_ref (tree, tree, tree, bool);
 tree gfc_copy_class_to_class (tree, tree, tree, bool);

@@ -1183,9 +1183,9 @@ avr_regs_to_save (HARD_REG_SET *set)
       if (fixed_regs[reg])
         continue;
 
-      if ((int_or_sig_p && !crtl->is_leaf && call_used_regs[reg])
+      if ((int_or_sig_p && !crtl->is_leaf && call_used_or_fixed_reg_p (reg))
           || (df_regs_ever_live_p (reg)
-              && (int_or_sig_p || !call_used_regs[reg])
+              && (int_or_sig_p || !call_used_or_fixed_reg_p (reg))
               /* Don't record frame pointer registers here.  They are treated
                  indivitually in prologue.  */
               && !(frame_pointer_needed
@@ -1367,7 +1367,7 @@ sequent_regs_live (void)
             continue;
         }
 
-      if (!call_used_regs[reg])
+      if (!call_used_or_fixed_reg_p (reg))
         {
           if (df_regs_ever_live_p (reg))
             {
@@ -3421,7 +3421,7 @@ avr_function_arg_advance (cumulative_args_t cum_v,
 
   if (cum->regno >= 8
       && cum->nregs >= 0
-      && !call_used_regs[cum->regno])
+      && !call_used_or_fixed_reg_p (cum->regno))
     {
       /* FIXME: We ship info on failing tail-call in struct machine_function.
          This uses internals of calls.c:expand_call() and the way args_so_far
@@ -3568,7 +3568,7 @@ avr_find_unused_d_reg (rtx_insn *insn, rtx exclude)
           && (TREE_THIS_VOLATILE (current_function_decl)
               || cfun->machine->is_OS_task
               || cfun->machine->is_OS_main
-              || (!isr_p && call_used_regs[regno])))
+              || (!isr_p && call_used_or_fixed_reg_p (regno))))
         {
           return reg;
         }
@@ -9552,7 +9552,7 @@ _reg_unused_after (rtx_insn *insn, rtx reg)
 		&& REG_P (XEXP (XEXP (tem, 0), 0))
 		&& reg_overlap_mentioned_p (reg, XEXP (XEXP (tem, 0), 0)))
 	      return 0;
-	  if (call_used_regs[REGNO (reg)])
+	  if (call_used_or_fixed_reg_p (REGNO (reg)))
 	    return 1;
 	}
 
@@ -12164,8 +12164,8 @@ avr_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  */
 
 static bool
-avr_hard_regno_call_part_clobbered (rtx_insn *insn ATTRIBUTE_UNUSED,
-				    unsigned regno, machine_mode mode)
+avr_hard_regno_call_part_clobbered (unsigned, unsigned regno,
+				    machine_mode mode)
 {
   /* FIXME: This hook gets called with MODE:REGNO combinations that don't
         represent valid hard registers like, e.g. HI:29.  Returning TRUE

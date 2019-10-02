@@ -135,7 +135,7 @@ AARCH64_OPT_EXTENSION("sm4", AARCH64_FL_SM4, AARCH64_FL_SIMD, \
 /* Enabling "fp16fml" also enables "fp" and "fp16".
    Disabling "fp16fml" just disables "fp16fml".  */
 AARCH64_OPT_EXTENSION("fp16fml", AARCH64_FL_F16FML, \
-		      AARCH64_FL_FP | AARCH64_FL_F16, 0, false, "asimdfml")
+		      AARCH64_FL_FP | AARCH64_FL_F16, 0, false, "asimdfhm")
 
 /* Enabling "sve" also enables "fp16", "fp" and "simd".
    Disabling "sve" disables "sve", "sve2", "sve2-aes", "sve2-sha3", "sve2-sm4"
@@ -155,10 +155,10 @@ AARCH64_OPT_EXTENSION("rng", AARCH64_FL_RNG, 0, 0, false, "")
 AARCH64_OPT_EXTENSION("memtag", AARCH64_FL_MEMTAG, 0, 0, false, "")
 
 /* Enabling/Disabling "sb" only changes "sb".  */
-AARCH64_OPT_EXTENSION("sb", AARCH64_FL_SB, 0, 0, false, "")
+AARCH64_OPT_EXTENSION("sb", AARCH64_FL_SB, 0, 0, false, "sb")
 
 /* Enabling/Disabling "ssbs" only changes "ssbs".  */
-AARCH64_OPT_EXTENSION("ssbs", AARCH64_FL_SSBS, 0, 0, false, "")
+AARCH64_OPT_EXTENSION("ssbs", AARCH64_FL_SSBS, 0, 0, false, "ssbs")
 
 /* Enabling/Disabling "predres" only changes "predres".  */
 AARCH64_OPT_EXTENSION("predres", AARCH64_FL_PREDRES, 0, 0, false, "")
@@ -169,31 +169,31 @@ AARCH64_OPT_EXTENSION("predres", AARCH64_FL_PREDRES, 0, 0, false, "")
 AARCH64_OPT_EXTENSION("sve2", AARCH64_FL_SVE2, AARCH64_FL_SVE | \
 		      AARCH64_FL_FP | AARCH64_FL_SIMD | AARCH64_FL_F16, \
 		      AARCH64_FL_SVE2_AES | AARCH64_FL_SVE2_SHA3 | \
-		      AARCH64_FL_SVE2_SM4 | AARCH64_FL_SVE2_BITPERM, false, "")
+		      AARCH64_FL_SVE2_SM4 | AARCH64_FL_SVE2_BITPERM, false, "sve2")
 
 /* Enabling "sve2-sm4" also enables "sm4", "simd", "fp16", "fp", "sve", and
    "sve2". Disabling "sve2-sm4" just disables "sve2-sm4".  */
 AARCH64_OPT_EXTENSION("sve2-sm4", AARCH64_FL_SVE2_SM4, AARCH64_FL_SM4 | \
 		      AARCH64_FL_SIMD | AARCH64_FL_F16 | AARCH64_FL_FP | \
-		      AARCH64_FL_SVE | AARCH64_FL_SVE2, 0, false, "")
+		      AARCH64_FL_SVE | AARCH64_FL_SVE2, 0, false, "svesm4")
 
 /* Enabling "sve2-aes" also enables "aes", "simd", "fp16", "fp", "sve", and
    "sve2". Disabling "sve2-aes" just disables "sve2-aes".  */
 AARCH64_OPT_EXTENSION("sve2-aes", AARCH64_FL_SVE2_AES, AARCH64_FL_AES | \
 		      AARCH64_FL_SIMD | AARCH64_FL_F16 | AARCH64_FL_FP | \
-		      AARCH64_FL_SVE | AARCH64_FL_SVE2, 0, false, "")
+		      AARCH64_FL_SVE | AARCH64_FL_SVE2, 0, false, "sveaes")
 
 /* Enabling "sve2-sha3" also enables "sha3", "simd", "fp16", "fp", "sve", and
    "sve2". Disabling "sve2-sha3" just disables "sve2-sha3".  */
 AARCH64_OPT_EXTENSION("sve2-sha3", AARCH64_FL_SVE2_SHA3, AARCH64_FL_SHA3 | \
 		      AARCH64_FL_SIMD | AARCH64_FL_F16 | AARCH64_FL_FP | \
-		      AARCH64_FL_SVE | AARCH64_FL_SVE2, 0, false, "")
+		      AARCH64_FL_SVE | AARCH64_FL_SVE2, 0, false, "svesha3")
 
 /* Enabling "sve2-bitperm" also enables "simd", "fp16", "fp", "sve", and
    "sve2".  Disabling "sve2-bitperm" just disables "sve2-bitperm".  */
 AARCH64_OPT_EXTENSION("sve2-bitperm", AARCH64_FL_SVE2_BITPERM, AARCH64_FL_SIMD | \
 		      AARCH64_FL_F16 | AARCH64_FL_FP | AARCH64_FL_SVE | \
-		      AARCH64_FL_SVE2, 0, false, "")
+		      AARCH64_FL_SVE2, 0, false, "svebitperm")
 
 /* Enabling or disabling "tme" only changes "tme".  */
 AARCH64_OPT_EXTENSION("tme", AARCH64_FL_TME, 0, 0, false, "")

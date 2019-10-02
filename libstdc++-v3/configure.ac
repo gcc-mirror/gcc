@@ -220,6 +220,9 @@ GLIBCXX_ENABLE_LIBSTDCXX_TIME
 # Check for tmpnam which is obsolescent in POSIX.1-2008
 GLIBCXX_CHECK_TMPNAM
 
+# For pthread_cond_clockwait
+GLIBCXX_CHECK_PTHREAD_COND_CLOCKWAIT
+
 AC_LC_MESSAGES
 
 # For hardware_concurrency

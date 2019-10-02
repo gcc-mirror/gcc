@@ -760,6 +760,23 @@ gfc_clear_pp_buffer (output_buffer *this_buffer)
   global_dc->last_location = UNKNOWN_LOCATION;
 }
 
+/* The currently-printing diagnostic, for use by gfc_format_decoder,
+   for colorizing %C and %L.  */
+
+static diagnostic_info *curr_diagnostic;
+
+/* A helper function to call diagnostic_report_diagnostic, while setting
+   curr_diagnostic for the duration of the call.  */
+
+static bool
+gfc_report_diagnostic (diagnostic_info *diagnostic)
+{
+  gcc_assert (diagnostic != NULL);
+  curr_diagnostic = diagnostic;
+  bool ret = diagnostic_report_diagnostic (global_dc, diagnostic);
+  curr_diagnostic = NULL;
+  return ret;
+}
 
 /* This is just a helper function to avoid duplicating the logic of
    gfc_warning.  */
@@ -789,7 +806,7 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
   diagnostic.option_index = opt;
-  bool ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
+  bool ret = gfc_report_diagnostic (&diagnostic);
 
   if (buffered_p)
     {
@@ -954,7 +971,18 @@ gfc_format_decoder (pretty_printer *pp, text_info *text, const char *spec,
 						 loc->lb->location,
 						 offset);
 	text->set_location (loc_num, src_loc, SHOW_RANGE_WITH_CARET);
+	/* Colorize the markers to match the color choices of
+	   diagnostic_show_locus (the initial location has a color given
+	   by the "kind" of the diagnostic, the secondary location has
+	   color "range1").  */
+	gcc_assert (curr_diagnostic != NULL);
+	const char *color
+	  = (loc_num
+	     ? "range1"
+	     : diagnostic_get_color_for_kind (curr_diagnostic->kind));
+	pp_string (pp, colorize_start (pp_show_color (pp), color));
 	pp_string (pp, result[loc_num]);
+	pp_string (pp, colorize_stop (pp_show_color (pp)));
 	return true;
       }
     default:
@@ -1109,6 +1137,7 @@ gfc_diagnostic_starter (diagnostic_context *context,
       free (locus_prefix);
       /* Fortran uses an empty line between locus and caret line.  */
       pp_newline (context->printer);
+      pp_set_prefix (context->printer, NULL);
       diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
       /* If the caret line was shown, the prefix does not contain the
 	 locus.  */
@@ -1153,7 +1182,7 @@ gfc_warning_now_at (location_t loc, int opt, const char *gmsgid, ...)
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_WARNING);
   diagnostic.option_index = opt;
-  ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
+  ret = gfc_report_diagnostic (&diagnostic);
   va_end (argp);
   return ret;
 }
@@ -1172,7 +1201,7 @@ gfc_warning_now (int opt, const char *gmsgid, ...)
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
   diagnostic.option_index = opt;
-  ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
+  ret = gfc_report_diagnostic (&diagnostic);
   va_end (argp);
   return ret;
 }
@@ -1191,7 +1220,7 @@ gfc_warning_internal (int opt, const char *gmsgid, ...)
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
   diagnostic.option_index = opt;
-  ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
+  ret = gfc_report_diagnostic (&diagnostic);
   va_end (argp);
   return ret;
 }
@@ -1209,7 +1238,7 @@ gfc_error_now (const char *gmsgid, ...)
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_ERROR);
-  diagnostic_report_diagnostic (global_dc, &diagnostic);
+  gfc_report_diagnostic (&diagnostic);
   va_end (argp);
 }
 
@@ -1225,7 +1254,7 @@ gfc_fatal_error (const char *gmsgid, ...)
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_FATAL);
-  diagnostic_report_diagnostic (global_dc, &diagnostic);
+  gfc_report_diagnostic (&diagnostic);
   va_end (argp);
 
   gcc_unreachable ();
@@ -1310,7 +1339,7 @@ gfc_error_opt (int opt, const char *gmsgid, va_list ap)
     }
 
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &richloc, DK_ERROR);
-  diagnostic_report_diagnostic (global_dc, &diagnostic);
+  gfc_report_diagnostic (&diagnostic);
 
   if (buffered_p)
     {
@@ -1360,7 +1389,7 @@ gfc_internal_error (const char *gmsgid, ...)
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_ICE);
-  diagnostic_report_diagnostic (global_dc, &diagnostic);
+  gfc_report_diagnostic (&diagnostic);
   va_end (argp);
 
   gcc_unreachable ();

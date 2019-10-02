@@ -10,7 +10,6 @@
 
 #include "runtime.h"
 #include "go-assert.h"
-#include "go-type.h"
 
 #ifdef USE_LIBFFI
 #include "ffi.h"
@@ -22,45 +21,42 @@
    reflect_call calls a libffi function, which will be compiled
    without -fsplit-stack, it will always run with a large stack.  */
 
-static size_t go_results_size (const struct __go_func_type *)
+static size_t go_results_size (const struct functype *)
   __attribute__ ((no_split_stack));
-static void go_set_results (const struct __go_func_type *, unsigned char *,
-			    void **)
+static void go_set_results (const struct functype *, unsigned char *, void **)
   __attribute__ ((no_split_stack));
 
 /* Get the total size required for the result parameters of a
    function.  */
 
 static size_t
-go_results_size (const struct __go_func_type *func)
+go_results_size (const struct functype *func)
 {
   int count;
-  const struct __go_type_descriptor **types;
+  const struct _type **types;
   size_t off;
   size_t maxalign;
   int i;
 
-  count = func->__out.__count;
+  count = func->out.__count;
   if (count == 0)
     return 0;
 
-  types = (const struct __go_type_descriptor **) func->__out.__values;
+  types = (const struct _type **) func->out.__values;
 
-  /* A single integer return value is always promoted to a full
-     word.  */
+  /* A single integer return value is always promoted to a full word.
+     There is similar code below and in libgo/go/reflect/makefunc_ffi.go.*/
   if (count == 1)
     {
-      switch (types[0]->__code & GO_CODE_MASK)
+      switch (types[0]->kind & kindMask)
 	{
-	case GO_BOOL:
-	case GO_INT8:
-	case GO_INT16:
-	case GO_INT32:
-	case GO_UINT8:
-	case GO_UINT16:
-	case GO_UINT32:
-	case GO_INT:
-	case GO_UINT:
+	case kindBool:
+	case kindInt8:
+	case kindInt16:
+	case kindInt32:
+	case kindUint8:
+	case kindUint16:
+	case kindUint32:
 	  return sizeof (ffi_arg);
 
 	default:
@@ -74,11 +70,11 @@ go_results_size (const struct __go_func_type *func)
     {
       size_t align;
 
-      align = types[i]->__field_align;
+      align = types[i]->fieldAlign;
       if (align > maxalign)
 	maxalign = align;
       off = (off + align - 1) & ~ (align - 1);
-      off += types[i]->__size;
+      off += types[i]->size;
     }
 
   off = (off + maxalign - 1) & ~ (maxalign - 1);
@@ -96,35 +92,33 @@ go_results_size (const struct __go_func_type *func)
    into the addresses in RESULTS.  */
 
 static void
-go_set_results (const struct __go_func_type *func, unsigned char *call_result,
+go_set_results (const struct functype *func, unsigned char *call_result,
 		void **results)
 {
   int count;
-  const struct __go_type_descriptor **types;
+  const struct _type **types;
   size_t off;
   int i;
 
-  count = func->__out.__count;
+  count = func->out.__count;
   if (count == 0)
     return;
 
-  types = (const struct __go_type_descriptor **) func->__out.__values;
+  types = (const struct _type **) func->out.__values;
 
-  /* A single integer return value is always promoted to a full
-     word.  */
+  /* A single integer return value is always promoted to a full word.
+     There is similar code above and in libgo/go/reflect/makefunc_ffi.go.*/
   if (count == 1)
     {
-      switch (types[0]->__code & GO_CODE_MASK)
+      switch (types[0]->kind & kindMask)
 	{
-	case GO_BOOL:
-	case GO_INT8:
-	case GO_INT16:
-	case GO_INT32:
-	case GO_UINT8:
-	case GO_UINT16:
-	case GO_UINT32:
-	case GO_INT:
-	case GO_UINT:
+	case kindBool:
+	case kindInt8:
+	case kindInt16:
+	case kindInt32:
+	case kindUint8:
+	case kindUint16:
+	case kindUint32:
 	  {
 	    union
 	    {
@@ -136,7 +130,7 @@ go_set_results (const struct __go_func_type *func, unsigned char *call_result,
 	    __builtin_memcpy (&u.buf, call_result, sizeof (ffi_arg));
 	    v = u.v;
 
-	    switch (types[0]->__size)
+	    switch (types[0]->size)
 	      {
 	      case 1:
 		{
@@ -191,8 +185,8 @@ go_set_results (const struct __go_func_type *func, unsigned char *call_result,
       size_t align;
       size_t size;
 
-      align = types[i]->__field_align;
-      size = types[i]->__size;
+      align = types[i]->fieldAlign;
+      size = types[i]->size;
       off = (off + align - 1) & ~ (align - 1);
       __builtin_memcpy (results[i], call_result + off, size);
       off += size;
@@ -201,7 +195,7 @@ go_set_results (const struct __go_func_type *func, unsigned char *call_result,
 
 /* The code that converts the Go type to an FFI type is written in Go,
    so that it can allocate Go heap memory.  */
-extern void ffiFuncToCIF(const struct __go_func_type*, _Bool, _Bool, ffi_cif*)
+extern void ffiFuncToCIF(const struct functype*, _Bool, _Bool, ffi_cif*)
   __asm__ ("runtime.ffiFuncToCIF");
 
 /* Call a function.  The type of the function is FUNC_TYPE, and the
@@ -217,14 +211,14 @@ extern void ffiFuncToCIF(const struct __go_func_type*, _Bool, _Bool, ffi_cif*)
    regardless of FUNC_TYPE, it is passed as a pointer.  */
 
 void
-reflect_call (const struct __go_func_type *func_type, FuncVal *func_val,
+reflect_call (const struct functype *func_type, FuncVal *func_val,
 	      _Bool is_interface, _Bool is_method, void **params,
 	      void **results)
 {
   ffi_cif cif;
   unsigned char *call_result;
 
-  __go_assert ((func_type->__common.__code & GO_CODE_MASK) == GO_FUNC);
+  __go_assert ((func_type->typ.kind & kindMask) == kindFunc);
   ffiFuncToCIF (func_type, is_interface, is_method, &cif);
 
   call_result = (unsigned char *) malloc (go_results_size (func_type));
@@ -243,7 +237,7 @@ reflect_call (const struct __go_func_type *func_type, FuncVal *func_val,
 #else /* !defined(USE_LIBFFI) */
 
 void
-reflect_call (const struct __go_func_type *func_type __attribute__ ((unused)),
+reflect_call (const struct functype *func_type __attribute__ ((unused)),
 	      FuncVal *func_val __attribute__ ((unused)),
 	      _Bool is_interface __attribute__ ((unused)),
 	      _Bool is_method __attribute__ ((unused)),

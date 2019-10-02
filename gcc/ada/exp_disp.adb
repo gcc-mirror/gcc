@@ -4041,7 +4041,6 @@ package body Exp_Disp is
          --                     predef-prim-op-thunk-2'address,
          --                     ...
          --                     predef-prim-op-thunk-n'address);
-         --   for Predef_Prims'Alignment use Address'Alignment
 
          --  Create the thunks associated with the predefined primitives and
          --  save their entity to fill the aggregate.
@@ -4125,16 +4124,6 @@ package body Exp_Disp is
                 Object_Definition   => New_Occurrence_Of
                                          (Defining_Identifier (Decl), Loc),
                 Expression => New_Node));
-
-            Append_To (Result,
-              Make_Attribute_Definition_Clause (Loc,
-                Name       => New_Occurrence_Of (Predef_Prims, Loc),
-                Chars      => Name_Alignment,
-                Expression =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix =>
-                      New_Occurrence_Of (RTE (RE_Integer_Address), Loc),
-                    Attribute_Name => Name_Alignment)));
          end;
 
          --  Generate
@@ -4143,6 +4132,7 @@ package body Exp_Disp is
          --          (OSD_Table => (1 => <value>,
          --                           ...
          --                         N => <value>));
+         --   for OSD'Alignment use Address'Alignment;
 
          --   Iface_DT : Dispatch_Table (Nb_Prims) :=
          --               ([ Signature   => <sig-value> ],
@@ -4154,7 +4144,6 @@ package body Exp_Disp is
          --                                  prim-op-2'address,
          --                                  ...
          --                                  prim-op-n'address));
-         --   for Iface_DT'Alignment use Address'Alignment;
 
          --  Stage 3: Initialize the discriminant and the record components
 
@@ -4453,17 +4442,6 @@ package body Exp_Disp is
              Expression          =>
                Make_Aggregate (Loc,
                  Expressions => DT_Aggr_List)));
-
-         Append_To (Result,
-           Make_Attribute_Definition_Clause (Loc,
-             Name       => New_Occurrence_Of (Iface_DT, Loc),
-             Chars      => Name_Alignment,
-
-             Expression =>
-               Make_Attribute_Reference (Loc,
-                 Prefix         =>
-                   New_Occurrence_Of (RTE (RE_Integer_Address), Loc),
-                 Attribute_Name => Name_Alignment)));
 
          if Exporting_Table then
             Export_DT (Typ, Iface_DT, Suffix_Index);
@@ -4946,7 +4924,6 @@ package body Exp_Disp is
 
          --  Generate:
          --    DT     : No_Dispatch_Table_Wrapper;
-         --    for DT'Alignment use Address'Alignment;
          --    DT_Ptr : Tag := !Tag (DT.NDT_Prims_Ptr'Address);
 
          if not Has_DT (Typ) then
@@ -4958,16 +4935,6 @@ package body Exp_Disp is
                 Object_Definition   =>
                   New_Occurrence_Of
                     (RTE (RE_No_Dispatch_Table_Wrapper), Loc)));
-
-            Append_To (Result,
-              Make_Attribute_Definition_Clause (Loc,
-                Name       => New_Occurrence_Of (DT, Loc),
-                Chars      => Name_Alignment,
-                Expression =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix         =>
-                      New_Occurrence_Of (RTE (RE_Integer_Address), Loc),
-                    Attribute_Name => Name_Alignment)));
 
             Append_To (Result,
               Make_Object_Declaration (Loc,
@@ -5008,7 +4975,6 @@ package body Exp_Disp is
 
          --  Generate:
          --    DT : Dispatch_Table_Wrapper (Nb_Prim);
-         --    for DT'Alignment use Address'Alignment;
          --    DT_Ptr : Tag := !Tag (DT.Prims_Ptr'Address);
 
          else
@@ -5035,16 +5001,6 @@ package body Exp_Disp is
                     Constraint   =>
                       Make_Index_Or_Discriminant_Constraint (Loc,
                         Constraints => DT_Constr_List))));
-
-            Append_To (Result,
-              Make_Attribute_Definition_Clause (Loc,
-                Name       => New_Occurrence_Of (DT, Loc),
-                Chars      => Name_Alignment,
-                Expression =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix         =>
-                      New_Occurrence_Of (RTE (RE_Integer_Address), Loc),
-                    Attribute_Name => Name_Alignment)));
 
             Append_To (Result,
               Make_Object_Declaration (Loc,
@@ -5161,7 +5117,6 @@ package body Exp_Disp is
       --            Tags_Table         => (0 => null,
       --                                   1 => Parent'Tag
       --                                   ...);
-      --   for TSD'Alignment use Address'Alignment
 
       TSD_Aggr_List := New_List;
 
@@ -5699,16 +5654,6 @@ package body Exp_Disp is
                          Make_Integer_Literal (Loc, Num_Ifaces),
                          Make_Aggregate (Loc, TSD_Ifaces_List)))));
 
-               Append_To (Result,
-                 Make_Attribute_Definition_Clause (Loc,
-                   Name       => New_Occurrence_Of (ITable, Loc),
-                   Chars      => Name_Alignment,
-                   Expression =>
-                     Make_Attribute_Reference (Loc,
-                       Prefix         =>
-                         New_Occurrence_Of (RTE (RE_Integer_Address), Loc),
-                       Attribute_Name => Name_Alignment)));
-
                Iface_Table_Node :=
                  Make_Attribute_Reference (Loc,
                    Prefix         => New_Occurrence_Of (ITable, Loc),
@@ -5859,16 +5804,6 @@ package body Exp_Disp is
 
       Set_Is_True_Constant (TSD, Building_Static_DT (Typ));
 
-      Append_To (Result,
-        Make_Attribute_Definition_Clause (Loc,
-          Name       => New_Occurrence_Of (TSD, Loc),
-          Chars      => Name_Alignment,
-          Expression =>
-            Make_Attribute_Reference (Loc,
-              Prefix         =>
-                New_Occurrence_Of (RTE (RE_Integer_Address), Loc),
-              Attribute_Name => Name_Alignment)));
-
       --  Initialize or declare the dispatch table object
 
       if not Has_DT (Typ) then
@@ -5906,7 +5841,6 @@ package body Exp_Disp is
          --   DT : aliased constant No_Dispatch_Table :=
          --          (NDT_TSD       => TSD'Address;
          --           NDT_Prims_Ptr => 0);
-         --   for DT'Alignment use Address'Alignment;
 
          else
             Append_To (Result,
@@ -5917,16 +5851,6 @@ package body Exp_Disp is
                 Object_Definition   =>
                   New_Occurrence_Of (RTE (RE_No_Dispatch_Table_Wrapper), Loc),
                 Expression          => Make_Aggregate (Loc, DT_Aggr_List)));
-
-            Append_To (Result,
-              Make_Attribute_Definition_Clause (Loc,
-                Name       => New_Occurrence_Of (DT, Loc),
-                Chars      => Name_Alignment,
-                Expression =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix         =>
-                      New_Occurrence_Of (RTE (RE_Integer_Address), Loc),
-                    Attribute_Name => Name_Alignment)));
 
             Export_DT (Typ, DT);
          end if;
@@ -5940,7 +5864,6 @@ package body Exp_Disp is
       --                     predef-prim-op-2'address,
       --                     ...
       --                     predef-prim-op-n'address);
-      --   for Predef_Prims'Alignment use Address'Alignment
 
       --   DT : Dispatch_Table (Nb_Prims) :=
       --          (Signature => <sig-value>,
@@ -6025,16 +5948,6 @@ package body Exp_Disp is
             --  Remember aggregates initializing dispatch tables
 
             Append_Elmt (New_Node, DT_Aggr);
-
-            Append_To (Result,
-              Make_Attribute_Definition_Clause (Loc,
-                Name       => New_Occurrence_Of (Predef_Prims, Loc),
-                Chars      => Name_Alignment,
-                Expression =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix         =>
-                      New_Occurrence_Of (RTE (RE_Integer_Address), Loc),
-                    Attribute_Name => Name_Alignment)));
          end;
 
          --  Stage 1: Initialize the discriminant and the record components
@@ -6220,16 +6133,6 @@ package body Exp_Disp is
                     Constraint   => Make_Index_Or_Discriminant_Constraint (Loc,
                                       Constraints => DT_Constr_List)),
                 Expression          => Make_Aggregate (Loc, DT_Aggr_List)));
-
-            Append_To (Result,
-              Make_Attribute_Definition_Clause (Loc,
-                Name       => New_Occurrence_Of (DT, Loc),
-                Chars      => Name_Alignment,
-                Expression =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix         =>
-                      New_Occurrence_Of (RTE (RE_Integer_Address), Loc),
-                    Attribute_Name => Name_Alignment)));
 
             Export_DT (Typ, DT);
          end if;

@@ -21,7 +21,6 @@ cmd/go/internal/par
 cmd/go/internal/search
 cmd/go/internal/semver
 cmd/go/internal/txtar
-cmd/go/internal/web2
 cmd/go/internal/work
 cmd/internal/buildid
 cmd/internal/edit
@@ -42,6 +41,7 @@ crypto/cipher
 crypto/des
 crypto/dsa
 crypto/ecdsa
+crypto/ed25519
 crypto/elliptic
 crypto/hmac
 crypto/internal/subtle
@@ -107,19 +107,9 @@ index/suffixarray
 internal/cpu
 internal/fmtsort
 internal/poll
+internal/reflectlite
 internal/singleflight
 internal/trace
-internal/x/crypto/chacha20poly1305
-internal/x/crypto/cryptobyte
-internal/x/crypto/curve25519
-internal/x/crypto/hkdf
-internal/x/crypto/internal/chacha20
-internal/x/crypto/poly1305
-internal/x/net/dns/dnsmessage
-internal/x/net/http/httpguts
-internal/x/net/http/httpproxy
-internal/x/net/http2/hpack
-internal/x/net/idna
 internal/xcoff
 io
 io/ioutil

@@ -7,7 +7,6 @@
 #include <stdarg.h>
 #include "runtime.h"
 #include "array.h"
-#include "go-type.h"
 
 extern void runtime_printlock(void)
   __asm__(GOSYM_PREFIX "runtime.printlock");

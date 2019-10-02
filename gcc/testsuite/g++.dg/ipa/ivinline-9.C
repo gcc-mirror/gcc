@@ -2,7 +2,7 @@
    inlining, even when a typecast to an ancestor is involved along the
    way and that ancestor itself has an ancestor wich is not the
    primary base class.  */
-/* { dg-do run { target nonpic } } */
+/* { dg-do run { target { nonpic || pie_enabled } } } */
 /* { dg-options "-O3 -fdump-ipa-inline -fno-early-inlining -fno-ipa-cp"  } */
 
 extern "C" void abort (void);

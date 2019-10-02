@@ -329,9 +329,9 @@ class Node
   Node* child_;
 
   // Cache all the Nodes created via Node::make_node to make the API simpler.
-  static std::map<Named_object*, Node*> objects;
-  static std::map<Expression*, Node*> expressions;
-  static std::map<Statement*, Node*> statements;
+  static Unordered_map(Named_object*, Node*) objects;
+  static Unordered_map(Expression*, Node*) expressions;
+  static Unordered_map(Statement*, Node*) statements;
 
   // Collection of all NODE_INDIRECT Nodes, used for reclaiming memory. This
   // is not a cache -- each make_indirect_node will make a fresh Node.

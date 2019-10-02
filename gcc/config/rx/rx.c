@@ -1483,10 +1483,10 @@ rx_get_stack_layout (unsigned int * lowest,
 	   /* Always save all call clobbered registers inside non-leaf
 	      interrupt handlers, even if they are not live - they may
 	      be used in (non-interrupt aware) routines called from this one.  */
-	   || (call_used_regs[reg]
+	   || (call_used_or_fixed_reg_p (reg)
 	       && is_interrupt_func (NULL_TREE)
 	       && ! crtl->is_leaf))
-	  && (! call_used_regs[reg]
+	  && (! call_used_or_fixed_reg_p (reg)
 	      /* Even call clobbered registered must
 		 be pushed inside interrupt handlers.  */
 	      || is_interrupt_func (NULL_TREE)

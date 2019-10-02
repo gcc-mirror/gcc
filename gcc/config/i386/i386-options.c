@@ -1527,12 +1527,61 @@ ix86_default_align (struct gcc_options *opts)
     opts->x_str_align_functions = processor_cost_table[ix86_tune]->align_func;
 }
 
+#ifndef USE_IX86_FRAME_POINTER
+#define USE_IX86_FRAME_POINTER 0
+#endif
+
+/* (Re)compute option overrides affected by optimization levels in
+   target-specific ways.  */
+
+static void
+ix86_recompute_optlev_based_flags (struct gcc_options *opts,
+				   struct gcc_options *opts_set)
+{
+  /* Set the default values for switches whose default depends on TARGET_64BIT
+     in case they weren't overwritten by command line options.  */
+  if (TARGET_64BIT_P (opts->x_ix86_isa_flags))
+    {
+      if (opts->x_optimize >= 1 && !opts_set->x_flag_omit_frame_pointer)
+	opts->x_flag_omit_frame_pointer = !USE_IX86_FRAME_POINTER;
+      if (opts->x_flag_asynchronous_unwind_tables
+	  && !opts_set->x_flag_unwind_tables
+	  && TARGET_64BIT_MS_ABI)
+	opts->x_flag_unwind_tables = 1;
+      if (opts->x_flag_asynchronous_unwind_tables == 2)
+	opts->x_flag_unwind_tables
+	  = opts->x_flag_asynchronous_unwind_tables = 1;
+      if (opts->x_flag_pcc_struct_return == 2)
+	opts->x_flag_pcc_struct_return = 0;
+    }
+  else
+    {
+      if (opts->x_optimize >= 1 && !opts_set->x_flag_omit_frame_pointer)
+	opts->x_flag_omit_frame_pointer
+	  = !(USE_IX86_FRAME_POINTER || opts->x_optimize_size);
+      if (opts->x_flag_asynchronous_unwind_tables == 2)
+	opts->x_flag_asynchronous_unwind_tables = !USE_IX86_FRAME_POINTER;
+      if (opts->x_flag_pcc_struct_return == 2)
+	{
+	  /* Intel MCU psABI specifies that -freg-struct-return should
+	     be on.  Instead of setting DEFAULT_PCC_STRUCT_RETURN to 1,
+	     we check -miamcu so that -freg-struct-return is always
+	     turned on if -miamcu is used.  */
+	  if (TARGET_IAMCU_P (opts->x_target_flags))
+	    opts->x_flag_pcc_struct_return = 0;
+	  else
+	    opts->x_flag_pcc_struct_return = DEFAULT_PCC_STRUCT_RETURN;
+	}
+    }
+}
+
 /* Implement TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE hook.  */
 
 void
 ix86_override_options_after_change (void)
 {
   ix86_default_align (&global_options);
+  ix86_recompute_optlev_based_flags (&global_options, &global_options_set);
 }
 
 /* Clear stack slot assignments remembered from previous functions.
@@ -2220,45 +2269,7 @@ ix86_option_override_internal (bool main_args_p,
 
   set_ix86_tune_features (ix86_tune, opts->x_ix86_dump_tunes);
 
-#ifndef USE_IX86_FRAME_POINTER
-#define USE_IX86_FRAME_POINTER 0
-#endif
-
-  /* Set the default values for switches whose default depends on TARGET_64BIT
-     in case they weren't overwritten by command line options.  */
-  if (TARGET_64BIT_P (opts->x_ix86_isa_flags))
-    {
-      if (opts->x_optimize >= 1 && !opts_set->x_flag_omit_frame_pointer)
-	opts->x_flag_omit_frame_pointer = !USE_IX86_FRAME_POINTER;
-      if (opts->x_flag_asynchronous_unwind_tables
-	  && !opts_set->x_flag_unwind_tables
-	  && TARGET_64BIT_MS_ABI)
-	opts->x_flag_unwind_tables = 1;
-      if (opts->x_flag_asynchronous_unwind_tables == 2)
-	opts->x_flag_unwind_tables
-	  = opts->x_flag_asynchronous_unwind_tables = 1;
-      if (opts->x_flag_pcc_struct_return == 2)
-	opts->x_flag_pcc_struct_return = 0;
-    }
-  else
-    {
-      if (opts->x_optimize >= 1 && !opts_set->x_flag_omit_frame_pointer)
-	opts->x_flag_omit_frame_pointer
-	  = !(USE_IX86_FRAME_POINTER || opts->x_optimize_size);
-      if (opts->x_flag_asynchronous_unwind_tables == 2)
-	opts->x_flag_asynchronous_unwind_tables = !USE_IX86_FRAME_POINTER;
-      if (opts->x_flag_pcc_struct_return == 2)
-	{
-	  /* Intel MCU psABI specifies that -freg-struct-return should
-	     be on.  Instead of setting DEFAULT_PCC_STRUCT_RETURN to 1,
-	     we check -miamcu so that -freg-struct-return is always
-	     turned on if -miamcu is used.  */
-	  if (TARGET_IAMCU_P (opts->x_target_flags))
-	    opts->x_flag_pcc_struct_return = 0;
-	  else
-	    opts->x_flag_pcc_struct_return = DEFAULT_PCC_STRUCT_RETURN;
-	}
-    }
+  ix86_recompute_optlev_based_flags (opts, opts_set);
 
   ix86_tune_cost = processor_cost_table[ix86_tune];
   /* TODO: ix86_cost should be chosen at instruction or function granuality
@@ -3076,7 +3087,7 @@ ix86_set_current_function (tree fndecl)
      Avoid expensive re-initialization of init_regs each time we switch
      function context.  */
   if (TARGET_64BIT
-      && (call_used_regs[SI_REG]
+      && (call_used_or_fixed_reg_p (SI_REG)
 	  == (cfun->machine->call_abi == MS_ABI)))
     reinit_regs ();
   /* Need to re-initialize init_regs if caller-saved registers are

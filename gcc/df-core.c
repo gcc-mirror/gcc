@@ -2052,7 +2052,7 @@ debug_regset (regset r)
    This is part of making a debugging dump.  */
 
 void
-df_print_regset (FILE *file, bitmap r)
+df_print_regset (FILE *file, const_bitmap r)
 {
   unsigned int i;
   bitmap_iterator bi;
@@ -2077,7 +2077,7 @@ df_print_regset (FILE *file, bitmap r)
    debugging dump.  */
 
 void
-df_print_word_regset (FILE *file, bitmap r)
+df_print_word_regset (FILE *file, const_bitmap r)
 {
   unsigned int max_reg = max_reg_num ();
 

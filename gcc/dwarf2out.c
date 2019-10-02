@@ -16430,7 +16430,6 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
     case CONST_FIXED:
     case CLRSB:
     case CLOBBER:
-    case CLOBBER_HIGH:
       break;
 
     case CONST_STRING:
@@ -18568,6 +18567,24 @@ loc_list_from_tree_1 (tree loc, int want_address,
 	}
       break;
 
+    case POLY_INT_CST:
+      {
+	if (want_address)
+	  {
+	    expansion_failed (loc, NULL_RTX,
+			      "constant address with a runtime component");
+	    return 0;
+	  }
+	poly_int64 value;
+	if (!poly_int_tree_p (loc, &value))
+	  {
+	    expansion_failed (loc, NULL_RTX, "constant too big");
+	    return 0;
+	  }
+	ret = int_loc_descriptor (value);
+      }
+      break;
+
     case CONSTRUCTOR:
     case REAL_CST:
     case STRING_CST:
@@ -19684,6 +19701,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
     case MINUS:
     case SIGN_EXTEND:
     case ZERO_EXTEND:
+    case CONST_POLY_INT:
       return false;
 
     case MEM:
@@ -23687,6 +23705,34 @@ local_function_static (tree decl)
     && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL;
 }
 
+/* Return true iff DECL overrides (presumably completes) the type of
+   OLD_DIE within CONTEXT_DIE.  */
+
+static bool
+override_type_for_decl_p (tree decl, dw_die_ref old_die,
+			  dw_die_ref context_die)
+{
+  tree type = TREE_TYPE (decl);
+  int cv_quals;
+
+  if (decl_by_reference_p (decl))
+    {
+      type = TREE_TYPE (type);
+      cv_quals = TYPE_UNQUALIFIED;
+    }
+  else
+    cv_quals = decl_quals (decl);
+
+  dw_die_ref type_die = modified_type_die (type,
+					   cv_quals | TYPE_QUALS (type),
+					   false,
+					   context_die);
+
+  dw_die_ref old_type_die = get_AT_ref (old_die, DW_AT_type);
+
+  return type_die != old_type_die;
+}
+
 /* Generate a DIE to represent a declared data object.
    Either DECL or ORIGIN must be non-null.  */
 
@@ -23939,7 +23985,9 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 	  && !DECL_ABSTRACT_P (decl_or_origin)
 	  && variably_modified_type_p (TREE_TYPE (decl_or_origin),
 				       decl_function_context
-							(decl_or_origin))))
+				       (decl_or_origin)))
+      || (old_die && specialization_p
+	  && override_type_for_decl_p (decl_or_origin, old_die, context_die)))
     {
       tree type = TREE_TYPE (decl_or_origin);
 
@@ -24432,7 +24480,7 @@ gen_producer_string (void)
       case OPT_U:
       case OPT_SPECIAL_unknown:
       case OPT_SPECIAL_ignore:
-      case OPT_SPECIAL_deprecated:
+      case OPT_SPECIAL_warn_removed:
       case OPT_SPECIAL_program_name:
       case OPT_SPECIAL_input_file:
       case OPT_grecord_gcc_switches:
@@ -26660,16 +26708,12 @@ dwarf2out_late_global_decl (tree decl)
     {
       dw_die_ref die = lookup_decl_die (decl);
 
-      /* We may have to generate early debug late for LTO in case debug
+      /* We may have to generate full debug late for LTO in case debug
          was not enabled at compile-time or the target doesn't support
 	 the LTO early debug scheme.  */
       if (! die && in_lto_p)
-	{
-	  dwarf2out_decl (decl);
-	  die = lookup_decl_die (decl);
-	}
-
-      if (die)
+	dwarf2out_decl (decl);
+      else if (die)
 	{
 	  /* We get called via the symtab code invoking late_global_decl
 	     for symbols that are optimized out.
@@ -27505,7 +27549,7 @@ create_label:
       ca_loc->tail_call_p = SIBLING_CALL_P (prev);
 
       /* Look for a SYMBOL_REF in the "prev" instruction.  */
-      rtx x = get_call_rtx_from (PATTERN (prev));
+      rtx x = get_call_rtx_from (prev);
       if (x)
 	{
 	  /* Try to get the call symbol, if any.  */

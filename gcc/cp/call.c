@@ -1530,9 +1530,8 @@ reference_related_p (tree t1, tree t2)
   /* [dcl.init.ref]
 
      Given types "cv1 T1" and "cv2 T2," "cv1 T1" is reference-related
-     to "cv2 T2" if T1 is the same type as T2, or T1 is a base class
-     of T2.  */
-  return (same_type_p (t1, t2)
+     to "cv2 T2" if T1 is similar to T2, or T1 is a base class of T2.  */
+  return (similar_type_p (t1, t2)
 	  || (CLASS_TYPE_P (t1) && CLASS_TYPE_P (t2)
 	      && DERIVED_FROM_P (t1, t2)));
 }
@@ -1545,14 +1544,36 @@ reference_compatible_p (tree t1, tree t2)
   /* [dcl.init.ref]
 
      "cv1 T1" is reference compatible with "cv2 T2" if
-       * T1 is reference-related to T2 or
-       * T2 is "noexcept function" and T1 is "function", where the
-         function types are otherwise the same,
-     and cv1 is the same cv-qualification as, or greater cv-qualification
-     than, cv2.  */
-  return ((reference_related_p (t1, t2)
-	   || fnptr_conv_p (t1, t2))
-	  && at_least_as_qualified_p (t1, t2));
+     a prvalue of type "pointer to cv2 T2" can be converted to the type
+     "pointer to cv1 T1" via a standard conversion sequence.  */
+  tree ptype1 = build_pointer_type (t1);
+  tree ptype2 = build_pointer_type (t2);
+  conversion *conv = standard_conversion (ptype1, ptype2, NULL_TREE,
+					  /*c_cast_p=*/false, 0, tf_none);
+  if (!conv || conv->bad_p)
+    return false;
+  return true;
+}
+
+/* Return true if converting FROM to TO would involve a qualification
+   conversion.  */
+
+static bool
+involves_qualification_conversion_p (tree to, tree from)
+{
+  /* If we're not convering a pointer to another one, we won't get
+     a qualification conversion.  */
+  if (!((TYPE_PTR_P (to) && TYPE_PTR_P (from))
+	|| (TYPE_PTRDATAMEM_P (to) && TYPE_PTRDATAMEM_P (from))))
+    return false;
+
+  conversion *conv = standard_conversion (to, from, NULL_TREE,
+					  /*c_cast_p=*/false, 0, tf_none);
+  for (conversion *t = conv; t; t = next_conversion (t))
+    if (t->kind == ck_qual)
+      return true;
+
+  return false;
 }
 
 /* A reference of the indicated TYPE is being bound directly to the
@@ -1598,6 +1619,19 @@ direct_reference_binding (tree type, conversion *conv)
 	 That way, convert_like knows not to generate a temporary.  */
       conv->need_temporary_p = false;
     }
+  else if (involves_qualification_conversion_p (t, conv->type))
+    /* Represent the qualification conversion.  After DR 2352
+       #1 and #2 were indistinguishable conversion sequences:
+
+	 void f(int*); // #1
+	 void f(const int* const &); // #2
+	 void g(int* p) { f(p); }
+
+       because the types "int *" and "const int *const" are
+       reference-related and we were binding both directly and they
+       had the same rank.  To break it up, we add a ck_qual under the
+       ck_ref_bind so that conversion sequence ranking chooses #1.  */
+    conv = build_conv (ck_qual, t, conv);
 
   return build_conv (ck_ref_bind, type, conv);
 }
@@ -5815,6 +5849,9 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
     }
   tree fnname = ovl_op_identifier (ismodop, ismodop ? code2 : code);
 
+  tree arg1_type = unlowered_expr_type (arg1);
+  tree arg2_type = arg2 ? unlowered_expr_type (arg2) : NULL_TREE;
+
   arg1 = prep_operand (arg1);
 
   bool memonly = false;
@@ -5846,8 +5883,8 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
     case EQ_EXPR:
     case NE_EXPR:
       /* These are saved for the sake of maybe_warn_bool_compare.  */
-      code_orig_arg1 = TREE_CODE (TREE_TYPE (arg1));
-      code_orig_arg2 = TREE_CODE (TREE_TYPE (arg2));
+      code_orig_arg1 = TREE_CODE (arg1_type);
+      code_orig_arg2 = TREE_CODE (arg2_type);
       break;
 
       /* =, ->, [], () must be non-static member functions.  */
@@ -5870,12 +5907,15 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
   if (code == COND_EXPR)
     /* Use build_conditional_expr instead.  */
     gcc_unreachable ();
-  else if (! OVERLOAD_TYPE_P (TREE_TYPE (arg1))
-	   && (! arg2 || ! OVERLOAD_TYPE_P (TREE_TYPE (arg2))))
+  else if (! OVERLOAD_TYPE_P (arg1_type)
+	   && (! arg2 || ! OVERLOAD_TYPE_P (arg2_type)))
     goto builtin;
 
   if (code == POSTINCREMENT_EXPR || code == POSTDECREMENT_EXPR)
-    arg2 = integer_zero_node;
+    {
+      arg2 = integer_zero_node;
+      arg2_type = integer_type_node;
+    }
 
   vec_alloc (arglist, 3);
   arglist->quick_push (arg1);
@@ -5903,11 +5943,11 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
   args[2] = NULL_TREE;
 
   /* Add class-member operators to the candidate set.  */
-  if (CLASS_TYPE_P (TREE_TYPE (arg1)))
+  if (CLASS_TYPE_P (arg1_type))
     {
       tree fns;
 
-      fns = lookup_fnfields (TREE_TYPE (arg1), fnname, 1);
+      fns = lookup_fnfields (arg1_type, fnname, 1);
       if (fns == error_mark_node)
 	{
 	  result = error_mark_node;
@@ -5927,7 +5967,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
      has an enumeration type, or T2 or reference to cv-qualified-opt
      T2 for the second argument, if the second argument has an
      enumeration type.  Filter out those that don't match.  */
-  else if (! arg2 || ! CLASS_TYPE_P (TREE_TYPE (arg2)))
+  else if (! arg2 || ! CLASS_TYPE_P (arg2_type))
     {
       struct z_candidate **candp, **next;
 
@@ -5947,9 +5987,9 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 
 	      if (TYPE_REF_P (parmtype))
 		parmtype = TREE_TYPE (parmtype);
-	      if (TREE_CODE (TREE_TYPE (args[i])) == ENUMERAL_TYPE
+	      if (TREE_CODE (unlowered_expr_type (args[i])) == ENUMERAL_TYPE
 		  && (same_type_ignoring_top_level_qualifiers_p
-		      (TREE_TYPE (args[i]), parmtype)))
+		      (unlowered_expr_type (args[i]), parmtype)))
 		break;
 
 	      parmlist = TREE_CHAIN (parmlist);
@@ -6124,15 +6164,15 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	    case LE_EXPR:
 	    case EQ_EXPR:
 	    case NE_EXPR:
-	      if (TREE_CODE (TREE_TYPE (arg1)) == ENUMERAL_TYPE
-		  && TREE_CODE (TREE_TYPE (arg2)) == ENUMERAL_TYPE
-		  && (TYPE_MAIN_VARIANT (TREE_TYPE (arg1))
-		      != TYPE_MAIN_VARIANT (TREE_TYPE (arg2)))
+	      if (TREE_CODE (arg1_type) == ENUMERAL_TYPE
+		  && TREE_CODE (arg2_type) == ENUMERAL_TYPE
+		  && (TYPE_MAIN_VARIANT (arg1_type)
+		      != TYPE_MAIN_VARIANT (arg2_type))
 		  && (complain & tf_warning))
 		{
 		  warning (OPT_Wenum_compare,
 			   "comparison between %q#T and %q#T",
-			   TREE_TYPE (arg1), TREE_TYPE (arg2));
+			   arg1_type, arg2_type);
 		}
 	      break;
 	    default:
@@ -7336,6 +7376,18 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       {
 	tree ref_type = totype;
 
+	/* direct_reference_binding might have inserted a ck_qual under
+	   this ck_ref_bind for the benefit of conversion sequence ranking.
+	   Ignore the conversion; we'll create our own below.  */
+	if (next_conversion (convs)->kind == ck_qual)
+	  {
+	    gcc_assert (same_type_p (TREE_TYPE (expr),
+				     next_conversion (convs)->type));
+	    /* Strip the cast created by the ck_qual; cp_build_addr_expr
+	       below expects an lvalue.  */
+	    STRIP_NOPS (expr);
+	  }
+
 	if (convs->bad_p && !next_conversion (convs)->bad_p)
 	  {
 	    tree extype = TREE_TYPE (expr);
@@ -7376,8 +7428,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    tree type = TREE_TYPE (ref_type);
 	    cp_lvalue_kind lvalue = lvalue_kind (expr);
 
-	    gcc_assert (same_type_ignoring_top_level_qualifiers_p
-			(type, next_conversion (convs)->type));
+	    gcc_assert (similar_type_p (type, next_conversion (convs)->type));
 	    if (!CP_TYPE_CONST_NON_VOLATILE_P (type)
 		&& !TYPE_REF_IS_RVALUE (ref_type))
 	      {
@@ -7479,15 +7530,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 tree
 convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 {
-  tree arg_type;
+  tree arg_type = TREE_TYPE (arg);
   location_t loc = cp_expr_loc_or_input_loc (arg);
 
-  /* [expr.call]
-
-     The lvalue-to-rvalue, array-to-pointer, and function-to-pointer
-     standard conversions are performed.  */
-  arg = decay_conversion (arg, complain);
-  arg_type = TREE_TYPE (arg);
   /* [expr.call]
 
      If the argument has integral or enumeration type that is subject
@@ -7530,6 +7575,12 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
       else
 	arg = cp_perform_integral_promotions (arg, complain);
     }
+  else
+    /* [expr.call]
+
+       The lvalue-to-rvalue, array-to-pointer, and function-to-pointer
+       standard conversions are performed.  */
+    arg = decay_conversion (arg, complain);
 
   arg = require_complete_type_sfinae (arg, complain);
   arg_type = TREE_TYPE (arg);
@@ -8337,38 +8388,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
           && !(flags & LOOKUP_EXPLICIT_TMPL_ARGS))
         conversion_warning = false;
 
-      /* Warn about initializer_list deduction that isn't currently in the
-	 working draft.  */
-      if (cxx_dialect > cxx98
-	  && flag_deduce_init_list
-	  && cand->template_decl
-	  && is_std_init_list (non_reference (type))
-	  && BRACE_ENCLOSED_INITIALIZER_P (arg))
-	{
-	  tree tmpl = TI_TEMPLATE (cand->template_decl);
-	  tree realparm = chain_index (j, DECL_ARGUMENTS (cand->fn));
-	  tree patparm = get_pattern_parm (realparm, tmpl);
-	  tree pattype = TREE_TYPE (patparm);
-	  if (PACK_EXPANSION_P (pattype))
-	    pattype = PACK_EXPANSION_PATTERN (pattype);
-	  pattype = non_reference (pattype);
-
-	  if (TREE_CODE (pattype) == TEMPLATE_TYPE_PARM
-	      && (cand->explicit_targs == NULL_TREE
-		  || (TREE_VEC_LENGTH (cand->explicit_targs)
-		      <= TEMPLATE_TYPE_IDX (pattype))))
-	    {
-	      pedwarn (input_location, 0, "deducing %qT as %qT",
-		       non_reference (TREE_TYPE (patparm)),
-		       non_reference (type));
-	      pedwarn (DECL_SOURCE_LOCATION (cand->fn), 0,
-		       "  in call to %qD", cand->fn);
-	      pedwarn (input_location, 0,
-		       "  (you can disable this with "
-		       "%<-fno-deduce-init-list%>)");
-	    }
-	}
-
       /* Set user_conv_p on the argument conversions, so rvalue/base handling
 	 knows not to allow any more UDCs.  This needs to happen after we
 	 process cand->warnings.  */
@@ -9132,12 +9151,14 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl,
 }
 
 /* Build and return a call to FN, using NARGS arguments in ARGARRAY.
+   If FN is the result of resolving an overloaded target built-in,
+   ORIG_FNDECL is the original function decl, otherwise it is null.
    This function performs no overload resolution, conversion, or other
    high-level operations.  */
 
 tree
 build_cxx_call (tree fn, int nargs, tree *argarray,
-		tsubst_flags_t complain)
+		tsubst_flags_t complain, tree orig_fndecl)
 {
   tree fndecl;
 
@@ -9147,11 +9168,13 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
   SET_EXPR_LOCATION (fn, loc);
 
   fndecl = get_callee_fndecl (fn);
+  if (!orig_fndecl)
+    orig_fndecl = fndecl;
 
   /* Check that arguments to builtin functions match the expectations.  */
   if (fndecl
       && !processing_template_decl
-      && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+      && fndecl_built_in_p (fndecl))
     {
       int i;
 
@@ -9161,7 +9184,7 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
 	argarray[i] = maybe_constant_value (argarray[i]);
 
       if (!check_builtin_function_arguments (EXPR_LOCATION (fn), vNULL, fndecl,
-					     nargs, argarray))
+					     orig_fndecl, nargs, argarray))
 	return error_mark_node;
     }
 

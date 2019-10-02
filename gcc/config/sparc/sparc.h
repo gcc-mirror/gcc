@@ -678,31 +678,6 @@ along with GCC; see the file COPYING3.  If not see
   0, 0, 0, 0, 1, 1, 1}
 
 /* 1 for registers not available across function calls.
-   These must include the FIXED_REGISTERS and also any
-   registers that can be used without being saved.
-   The latter must include the registers where values are returned
-   and the register where structure-value addresses are passed.
-   Aside from that, you can include as many other registers as you like.  */
-
-#define CALL_USED_REGISTERS  \
- {1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  0, 0, 0, 0, 0, 0, 0, 0,	\
-  0, 0, 0, 0, 0, 0, 0, 1,	\
-				\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-				\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1,	\
-				\
-  1, 1, 1, 1, 1, 1, 1}
-
-/* 1 for registers not available across function calls.
    Unlike the above, this need not include the FIXED_REGISTERS, but any
    registers that can be used without being saved.
    The latter must include the registers where values are returned
@@ -735,6 +710,13 @@ along with GCC; see the file COPYING3.  If not see
    register TO.  We cannot rename %g1 as it may be used before the save
    register window instruction in the prologue.  */
 #define HARD_REGNO_RENAME_OK(FROM, TO) ((FROM) != 1)
+
+/* Select a register mode required for caller save of hard regno REGNO.
+   Contrary to what is documented, the default is not the smallest suitable
+   mode but the largest suitable mode for the given (REGNO, NREGS) pair and
+   it quickly creates paradoxical subregs that can be problematic.  */
+#define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE) \
+  ((MODE) == VOIDmode ? choose_hard_reg_mode (REGNO, NREGS, NULL) : (MODE))
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */

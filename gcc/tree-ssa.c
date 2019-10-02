@@ -2016,9 +2016,7 @@ execute_update_addresses_taken (void)
 			    /* In ASAN_MARK (UNPOISON, &b, ...) the variable
 			       is uninitialized.  Avoid dependencies on
 			       previous out of scope value.  */
-			    tree clobber
-			      = build_constructor (TREE_TYPE (var), NULL);
-			    TREE_THIS_VOLATILE (clobber) = 1;
+			    tree clobber = build_clobber (TREE_TYPE (var));
 			    gimple *g = gimple_build_assign (var, clobber);
 			    gsi_replace (&gsi, g, GSI_SAME_STMT);
 			  }

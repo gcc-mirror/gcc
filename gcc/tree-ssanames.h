@@ -82,6 +82,7 @@ extern void fini_ssanames (struct function *);
 extern void ssanames_print_statistics (void);
 extern tree make_ssa_name_fn (struct function *, tree, gimple *,
 			      unsigned int version = 0);
+extern void init_ssa_name_imm_use (tree);
 extern void release_ssa_name_fn (struct function *, tree);
 extern bool get_ptr_info_alignment (struct ptr_info_def *, unsigned int *,
 				    unsigned int *);

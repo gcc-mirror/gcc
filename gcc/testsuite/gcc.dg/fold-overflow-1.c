@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target int32plus } */
-/* { dg-skip-if "No Inf support" { spu-*-* } } */
 /* { dg-options "-O -ftrapping-math" } */
 
 /* There should be exactly 2 +Inf in the assembly file.  */

@@ -95,6 +95,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "i386-builtins.h"
 #include "i386-expand.h"
 #include "i386-features.h"
+#include "function-abi.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -497,18 +498,15 @@ ix86_conditional_register_usage (void)
 
   /* If MMX is disabled, disable the registers.  */
   if (! TARGET_MMX)
-    AND_COMPL_HARD_REG_SET (accessible_reg_set,
-			    reg_class_contents[(int) MMX_REGS]);
+    accessible_reg_set &= ~reg_class_contents[MMX_REGS];
 
   /* If SSE is disabled, disable the registers.  */
   if (! TARGET_SSE)
-    AND_COMPL_HARD_REG_SET (accessible_reg_set,
-			    reg_class_contents[(int) ALL_SSE_REGS]);
+    accessible_reg_set &= ~reg_class_contents[ALL_SSE_REGS];
 
   /* If the FPU is disabled, disable the registers.  */
   if (! (TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387))
-    AND_COMPL_HARD_REG_SET (accessible_reg_set,
-			    reg_class_contents[(int) FLOAT_REGS]);
+    accessible_reg_set &= ~reg_class_contents[FLOAT_REGS];
 
   /* If AVX512F is disabled, disable the registers.  */
   if (! TARGET_AVX512F)
@@ -516,8 +514,7 @@ ix86_conditional_register_usage (void)
       for (i = FIRST_EXT_REX_SSE_REG; i <= LAST_EXT_REX_SSE_REG; i++)
 	CLEAR_HARD_REG_BIT (accessible_reg_set, i);
 
-      AND_COMPL_HARD_REG_SET (accessible_reg_set,
-			      reg_class_contents[(int) ALL_MASK_REGS]);
+      accessible_reg_set &= ~reg_class_contents[ALL_MASK_REGS];
     }
 }
 
@@ -5669,8 +5666,7 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return, bool ignore_outlined)
     return true;
 
   return (df_regs_ever_live_p (regno)
-	  && !call_used_regs[regno]
-	  && !fixed_regs[regno]
+	  && !call_used_or_fixed_reg_p (regno)
 	  && (regno != HARD_FRAME_POINTER_REGNUM || !frame_pointer_needed));
 }
 
@@ -5881,7 +5877,14 @@ ix86_compute_frame_layout (void)
 	 case function is known to be outside hot spot (this is known with
 	 feedback only).  Weight the size of function by number of registers
 	 to save as it is cheap to use one or two push instructions but very
-	 slow to use many of them.  */
+	 slow to use many of them.
+
+	 Calling this hook multiple times with the same frame requirements
+	 must produce the same layout, since the RA might otherwise be
+	 unable to reach a fixed point or might fail its final sanity checks.
+	 This means that once we've assumed that a function does or doesn't
+	 have a particular size, we have to stick to that assumption
+	 regardless of how the function has changed since.  */
       if (count)
 	count = (count - 1) * FAST_PROLOGUE_INSN_COUNT;
       if (node->frequency < NODE_FREQUENCY_NORMAL
@@ -5889,8 +5892,14 @@ ix86_compute_frame_layout (void)
 	      && node->frequency < NODE_FREQUENCY_HOT))
 	m->use_fast_prologue_epilogue = false;
       else
-	m->use_fast_prologue_epilogue
-	   = !expensive_function_p (count);
+	{
+	  if (count != frame->expensive_count)
+	    {
+	      frame->expensive_count = count;
+	      frame->expensive_p = expensive_function_p (count);
+	    }
+	  m->use_fast_prologue_epilogue = !frame->expensive_p;
+	}
     }
 
   frame->save_regs_using_mov
@@ -7841,7 +7850,7 @@ ix86_expand_prologue (void)
 	       "around by avoiding functions with aggregate return.");
 
       /* Only need to push parameter pointer reg if it is caller saved.  */
-      if (!call_used_regs[REGNO (crtl->drap_reg)])
+      if (!call_used_or_fixed_reg_p (REGNO (crtl->drap_reg)))
 	{
 	  /* Push arg pointer reg */
 	  insn = emit_insn (gen_push (crtl->drap_reg));
@@ -8016,7 +8025,7 @@ ix86_expand_prologue (void)
 	  if (ix86_static_chain_on_stack)
 	    stack_size += UNITS_PER_WORD;
 
-	  if (!call_used_regs[REGNO (crtl->drap_reg)])
+	  if (!call_used_or_fixed_reg_p (REGNO (crtl->drap_reg)))
 	    stack_size += UNITS_PER_WORD;
 
 	  /* This over-estimates by 1 minimal-stack-alignment-unit but
@@ -8907,7 +8916,7 @@ ix86_expand_epilogue (int style)
 
       if (ix86_static_chain_on_stack)
 	param_ptr_offset += UNITS_PER_WORD;
-      if (!call_used_regs[REGNO (crtl->drap_reg)])
+      if (!call_used_or_fixed_reg_p (REGNO (crtl->drap_reg)))
 	param_ptr_offset += UNITS_PER_WORD;
 
       insn = emit_insn (gen_rtx_SET
@@ -8925,7 +8934,7 @@ ix86_expand_epilogue (int style)
 				  GEN_INT (param_ptr_offset)));
       RTX_FRAME_RELATED_P (insn) = 1;
 
-      if (!call_used_regs[REGNO (crtl->drap_reg)])
+      if (!call_used_or_fixed_reg_p (REGNO (crtl->drap_reg)))
 	ix86_emit_restore_reg_using_pop (crtl->drap_reg);
     }
 
@@ -13516,6 +13525,15 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
 	    }
 	}
 
+      /* If the function is known to preserve some SSE registers,
+	 RA and previous passes can legitimately rely on that for
+	 modes wider than 256 bits.  It's only safe to issue a
+	 vzeroupper if all SSE registers are clobbered.  */
+      const function_abi &abi = insn_callee_abi (insn);
+      if (!hard_reg_set_subset_p (reg_class_contents[ALL_SSE_REGS],
+				  abi.mode_clobbers (V4DImode)))
+	return AVX_U128_ANY;
+
       return AVX_U128_CLEAN;
     }
 
@@ -13635,7 +13653,7 @@ ix86_avx_u128_mode_after (int mode, rtx_insn *insn)
   if (CALL_P (insn))
     {
       bool avx_upper_reg_found = false;
-      note_stores (pat, ix86_check_avx_upper_stores, &avx_upper_reg_found);
+      note_stores (insn, ix86_check_avx_upper_stores, &avx_upper_reg_found);
 
       return avx_upper_reg_found ? AVX_U128_DIRTY : AVX_U128_CLEAN;
     }
@@ -18306,16 +18324,19 @@ inline_secondary_memory_needed (machine_mode mode, reg_class_t class1,
   if (FLOAT_CLASS_P (class1) != FLOAT_CLASS_P (class2))
     return true;
 
-  /* Between mask and general, we have moves no larger than word size.  */
-  if ((MASK_CLASS_P (class1) != MASK_CLASS_P (class2))
-      && (GET_MODE_SIZE (mode) > UNITS_PER_WORD))
-  return true;
-
   /* ??? This is a lie.  We do have moves between mmx/general, and for
      mmx/sse2.  But by saying we need secondary memory we discourage the
      register allocator from using the mmx registers unless needed.  */
   if (MMX_CLASS_P (class1) != MMX_CLASS_P (class2))
     return true;
+
+  /* Between mask and general, we have moves no larger than word size.  */
+  if (MASK_CLASS_P (class1) != MASK_CLASS_P (class2))
+    {
+      if (!(INTEGER_CLASS_P (class1) || INTEGER_CLASS_P (class2))
+	  || GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	return true;
+    }
 
   if (SSE_CLASS_P (class1) != SSE_CLASS_P (class2))
     {
@@ -18323,14 +18344,16 @@ inline_secondary_memory_needed (machine_mode mode, reg_class_t class1,
       if (!TARGET_SSE2)
 	return true;
 
+      /* Between SSE and general, we have moves no larger than word size.  */
+      if (!(INTEGER_CLASS_P (class1) || INTEGER_CLASS_P (class2))
+	  || GET_MODE_SIZE (mode) < GET_MODE_SIZE (SImode)
+	  || GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	return true;
+
       /* If the target says that inter-unit moves are more expensive
 	 than moving through memory, then don't generate them.  */
       if ((SSE_CLASS_P (class1) && !TARGET_INTER_UNIT_MOVES_FROM_VEC)
 	  || (SSE_CLASS_P (class2) && !TARGET_INTER_UNIT_MOVES_TO_VEC))
-	return true;
-
-      /* Between SSE and general, we have moves no larger than word size.  */
-      if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	return true;
     }
 
@@ -18608,18 +18631,10 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
   if (MMX_CLASS_P (class1) != MMX_CLASS_P (class2))
     gcc_unreachable ();
 
-  /* Moves between SSE and integer units are expensive.  */
   if (SSE_CLASS_P (class1) != SSE_CLASS_P (class2))
-
-    /* ??? By keeping returned value relatively high, we limit the number
-       of moves between integer and SSE registers for all targets.
-       Additionally, high value prevents problem with x86_modes_tieable_p(),
-       where integer modes in SSE registers are not tieable
-       because of missing QImode and HImode moves to, from or between
-       MMX/SSE registers.  */
-    return MAX (8, SSE_CLASS_P (class1)
-		? ix86_cost->hard_register.sse_to_integer
-		: ix86_cost->hard_register.integer_to_sse);
+    return (SSE_CLASS_P (class1)
+	    ? ix86_cost->hard_register.sse_to_integer
+	    : ix86_cost->hard_register.integer_to_sse);
 
   if (MAYBE_FLOAT_CLASS_P (class1))
     return ix86_cost->hard_register.fp_move;
@@ -18792,8 +18807,8 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
    the low 16 bytes are saved.  */
 
 static bool
-ix86_hard_regno_call_part_clobbered (rtx_insn *insn ATTRIBUTE_UNUSED,
-				     unsigned int regno, machine_mode mode)
+ix86_hard_regno_call_part_clobbered (unsigned int, unsigned int regno,
+				     machine_mode mode)
 {
   return SSE_REGNO_P (regno) && GET_MODE_SIZE (mode) > 16;
 }
@@ -19650,12 +19665,12 @@ x86_order_regs_for_local_alloc (void)
 
    /* First allocate the local general purpose registers.  */
    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-     if (GENERAL_REGNO_P (i) && call_used_regs[i])
+     if (GENERAL_REGNO_P (i) && call_used_or_fixed_reg_p (i))
 	reg_alloc_order [pos++] = i;
 
    /* Global general purpose registers.  */
    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-     if (GENERAL_REGNO_P (i) && !call_used_regs[i])
+     if (GENERAL_REGNO_P (i) && !call_used_or_fixed_reg_p (i))
 	reg_alloc_order [pos++] = i;
 
    /* x87 registers come first in case we are doing FP math

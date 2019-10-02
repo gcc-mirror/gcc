@@ -6411,7 +6411,9 @@ c_parser_for_statement (c_parser *parser, bool ivdep, unsigned short unroll,
 
    The form with asm-goto-operands is valid if and only if the
    asm-qualifier-list contains goto, and is the only allowed form in that case.
-   Duplicate asm-qualifiers are not allowed.  */
+   Duplicate asm-qualifiers are not allowed.
+
+   The :: token is considered equivalent to two consecutive : tokens.  */
 
 static tree
 c_parser_asm_statement (c_parser *parser)
@@ -6509,17 +6511,28 @@ c_parser_asm_statement (c_parser *parser)
   nsections = 3 + is_goto;
   for (section = 0; section < nsections; ++section)
     {
-      if (!c_parser_require (parser, CPP_COLON,
-			     is_goto
-			     ? G_("expected %<:%>")
-			     : G_("expected %<:%> or %<)%>"),
-			     UNKNOWN_LOCATION, is_goto))
+      if (c_parser_next_token_is (parser, CPP_SCOPE))
+	{
+	  ++section;
+	  if (section == nsections)
+	    {
+	      c_parser_error (parser, "expected %<)%>");
+	      goto error_close_paren;
+	    }
+	  c_parser_consume_token (parser);
+	}
+      else if (!c_parser_require (parser, CPP_COLON,
+				  is_goto
+				  ? G_("expected %<:%>")
+				  : G_("expected %<:%> or %<)%>"),
+				  UNKNOWN_LOCATION, is_goto))
 	goto error_close_paren;
 
       /* Once past any colon, we're no longer a simple asm.  */
       simple = false;
 
       if ((!c_parser_next_token_is (parser, CPP_COLON)
+	   && !c_parser_next_token_is (parser, CPP_SCOPE)
 	   && !c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	  || section == 3)
 	switch (section)
@@ -8049,6 +8062,41 @@ enum tgmath_parm_kind
     tgmath_fixed, tgmath_real, tgmath_complex
   };
 
+/* Helper function for c_parser_postfix_expression.  Parse predefined
+   identifiers.  */
+
+static struct c_expr
+c_parser_predefined_identifier (c_parser *parser)
+{
+  location_t loc = c_parser_peek_token (parser)->location;
+  switch (c_parser_peek_token (parser)->keyword)
+    {
+    case RID_FUNCTION_NAME:
+      pedwarn (loc, OPT_Wpedantic, "ISO C does not support %qs predefined "
+	       "identifier", "__FUNCTION__");
+      break;
+    case RID_PRETTY_FUNCTION_NAME:
+      pedwarn (loc, OPT_Wpedantic, "ISO C does not support %qs predefined "
+	       "identifier", "__PRETTY_FUNCTION__");
+      break;
+    case RID_C99_FUNCTION_NAME:
+      pedwarn_c90 (loc, OPT_Wpedantic, "ISO C90 does not support "
+		   "%<__func__%> predefined identifier");
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  struct c_expr expr;
+  expr.original_code = ERROR_MARK;
+  expr.original_type = NULL;
+  expr.value = fname_decl (loc, c_parser_peek_token (parser)->keyword,
+			   c_parser_peek_token (parser)->value);
+  set_c_expr_source_range (&expr, loc, loc);
+  c_parser_consume_token (parser);
+  return expr;
+}
+
 /* Parse a postfix expression (C90 6.3.1-6.3.2, C99 6.5.1-6.5.2,
    C11 6.5.1-6.5.2).  Compound literals aren't handled here; callers have to
    call c_parser_postfix_expression_after_paren_type on encountering them.
@@ -8269,31 +8317,9 @@ c_parser_postfix_expression (c_parser *parser)
       switch (c_parser_peek_token (parser)->keyword)
 	{
 	case RID_FUNCTION_NAME:
-	  pedwarn (loc, OPT_Wpedantic,  "ISO C does not support "
-		   "%<__FUNCTION__%> predefined identifier");
-	  expr.value = fname_decl (loc,
-				   c_parser_peek_token (parser)->keyword,
-				   c_parser_peek_token (parser)->value);
-	  set_c_expr_source_range (&expr, loc, loc);
-	  c_parser_consume_token (parser);
-	  break;
 	case RID_PRETTY_FUNCTION_NAME:
-	  pedwarn (loc, OPT_Wpedantic,  "ISO C does not support "
-		   "%<__PRETTY_FUNCTION__%> predefined identifier");
-	  expr.value = fname_decl (loc,
-				   c_parser_peek_token (parser)->keyword,
-				   c_parser_peek_token (parser)->value);
-	  set_c_expr_source_range (&expr, loc, loc);
-	  c_parser_consume_token (parser);
-	  break;
 	case RID_C99_FUNCTION_NAME:
-	  pedwarn_c90 (loc, OPT_Wpedantic,  "ISO C90 does not support "
-		   "%<__func__%> predefined identifier");
-	  expr.value = fname_decl (loc,
-				   c_parser_peek_token (parser)->keyword,
-				   c_parser_peek_token (parser)->value);
-	  set_c_expr_source_range (&expr, loc, loc);
-	  c_parser_consume_token (parser);
+	  expr = c_parser_predefined_identifier (parser);
 	  break;
 	case RID_VA_ARG:
 	  {
@@ -11997,15 +12023,9 @@ c_parser_omp_variable_list (c_parser *parser,
 {
   auto_vec<c_token> tokens;
   unsigned int tokens_avail = 0;
+  bool first = true;
 
-  if (kind != OMP_CLAUSE_DEPEND
-      && (c_parser_next_token_is_not (parser, CPP_NAME)
-	  || c_parser_peek_token (parser)->id_kind != C_ID_ID))
-    c_parser_error (parser, "expected identifier");
-
-  while (kind == OMP_CLAUSE_DEPEND
-	 || (c_parser_next_token_is (parser, CPP_NAME)
-	     && c_parser_peek_token (parser)->id_kind == C_ID_ID))
+  while (1)
     {
       bool array_section_p = false;
       if (kind == OMP_CLAUSE_DEPEND)
@@ -12026,6 +12046,7 @@ c_parser_omp_variable_list (c_parser *parser,
 		break;
 
 	      c_parser_consume_token (parser);
+	      first = false;
 	      continue;
 	    }
 
@@ -12076,16 +12097,35 @@ c_parser_omp_variable_list (c_parser *parser,
 	  parser->tokens_avail = tokens.length ();
 	}
 
-      tree t = lookup_name (c_parser_peek_token (parser)->value);
+      tree t = NULL_TREE;
 
-      if (t == NULL_TREE)
+      if (c_parser_next_token_is (parser, CPP_NAME)
+	  && c_parser_peek_token (parser)->id_kind == C_ID_ID)
 	{
-	  undeclared_variable (c_parser_peek_token (parser)->location,
-			       c_parser_peek_token (parser)->value);
-	  t = error_mark_node;
-	}
+	  t = lookup_name (c_parser_peek_token (parser)->value);
 
-      c_parser_consume_token (parser);
+	  if (t == NULL_TREE)
+	    {
+	      undeclared_variable (c_parser_peek_token (parser)->location,
+	      c_parser_peek_token (parser)->value);
+	      t = error_mark_node;
+	    }
+
+	  c_parser_consume_token (parser);
+	}
+      else if (c_parser_next_token_is (parser, CPP_KEYWORD)
+	       && (c_parser_peek_token (parser)->keyword == RID_FUNCTION_NAME
+		   || (c_parser_peek_token (parser)->keyword
+		       == RID_PRETTY_FUNCTION_NAME)
+		   || (c_parser_peek_token (parser)->keyword
+		       == RID_C99_FUNCTION_NAME)))
+	t = c_parser_predefined_identifier (parser).value;
+      else
+	{
+	  if (first)
+	    c_parser_error (parser, "expected identifier");
+	  break;
+	}
 
       if (t == error_mark_node)
 	;
@@ -12223,6 +12263,7 @@ c_parser_omp_variable_list (c_parser *parser,
 	break;
 
       c_parser_consume_token (parser);
+      first = false;
     }
 
   return list;

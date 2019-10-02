@@ -3,7 +3,6 @@
 !
 ! { dg-do run }
 ! { dg-add-options ieee }
-! { dg-skip-if "NaN not supported" { spu-*-* } }
 !
 module aux2
   interface isnan

@@ -67,10 +67,6 @@
 # include <debug/list>
 #endif
 
-#ifdef _GLIBCXX_PROFILE
-# include <profile/list>
-#endif
-
 #if __cplusplus >= 201703L
 namespace std _GLIBCXX_VISIBILITY(default)
 {

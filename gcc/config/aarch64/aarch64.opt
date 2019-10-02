@@ -119,15 +119,15 @@ EnumValue
 Enum(aarch64_tls_size) String(48) Value(48)
 
 march=
-Target RejectNegative ToLower Joined Var(aarch64_arch_string)
+Target RejectNegative Negative(march=) ToLower Joined Var(aarch64_arch_string)
 Use features of architecture ARCH.
 
 mcpu=
-Target RejectNegative ToLower Joined Var(aarch64_cpu_string)
+Target RejectNegative Negative(mcpu=) ToLower Joined Var(aarch64_cpu_string)
 Use features of and optimize for CPU.
 
 mtune=
-Target RejectNegative ToLower Joined Var(aarch64_tune_string)
+Target RejectNegative Negative(mtune=) ToLower Joined Var(aarch64_tune_string)
 Optimize for CPU.
 
 mabi=
@@ -157,7 +157,7 @@ Target RejectNegative Joined Var(aarch64_branch_protection_string) Save
 Use branch-protection features.
 
 msign-return-address=
-Target Deprecated RejectNegative Joined Enum(aarch64_ra_sign_scope_t) Var(aarch64_ra_sign_scope) Init(AARCH64_FUNCTION_NONE) Save
+Target WarnRemoved RejectNegative Joined Enum(aarch64_ra_sign_scope_t) Var(aarch64_ra_sign_scope) Init(AARCH64_FUNCTION_NONE) Save
 Select return address signing scope.
 
 Enum
@@ -255,3 +255,6 @@ user-land code.
 TargetVariable
 long aarch64_stack_protector_guard_offset = 0
 
+moutline-atomics
+Target Report Mask(OUTLINE_ATOMICS) Save
+Generate local calls to out-of-line atomic operations.

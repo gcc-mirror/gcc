@@ -4,6 +4,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-Wframe-larger-than=2048" } */
+/* { dg-skip-if "exceeds eBPF stack limit" { bpf-*-* } } */
 
 extern void func(char *);
 

@@ -1,5 +1,6 @@
 /* { dg-do compile { target fpic } } */
 /* { dg-options "-O2 -fpic" } */
+/* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
 
 extern void foo (void *a, double x, double y);
 void

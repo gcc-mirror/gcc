@@ -311,9 +311,10 @@ flist_clear (flist_t *lp)
     flist_remove (lp);
 }
 
-/* Add ORIGINAL_INSN the def list DL honoring CROSSES_CALL.  */
+/* Add ORIGINAL_INSN the def list DL honoring CROSSED_CALL_ABIS.  */
 void
-def_list_add (def_list_t *dl, insn_t original_insn, bool crosses_call)
+def_list_add (def_list_t *dl, insn_t original_insn,
+	      unsigned int crossed_call_abis)
 {
   def_t d;
 
@@ -321,7 +322,7 @@ def_list_add (def_list_t *dl, insn_t original_insn, bool crosses_call)
   d = DEF_LIST_DEF (*dl);
 
   d->orig_insn = original_insn;
-  d->crosses_call = crosses_call;
+  d->crossed_call_abis = crossed_call_abis;
 }
 
 
@@ -2661,12 +2662,9 @@ setup_id_implicit_regs (idata_t id, insn_t insn)
     return;
 
   HARD_REG_SET temp;
-  unsigned regno;
-  hard_reg_set_iterator hrsi;
 
   get_implicit_reg_pending_clobbers (&temp, insn);
-  EXECUTE_IF_SET_IN_HARD_REG_SET (temp, 0, regno, hrsi)
-    SET_REGNO_REG_SET (IDATA_REG_SETS (id), regno);
+  IOR_REG_SET_HRS (IDATA_REG_SETS (id), temp);
 }
 
 /* Setup register sets describing INSN in ID.  */

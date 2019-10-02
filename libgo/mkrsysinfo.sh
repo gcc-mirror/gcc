@@ -31,6 +31,19 @@ grep -v '^// ' gen-sysinfo.go | \
       -e 's/\([^a-zA-Z0-9_]\)_timespec\([^a-zA-Z0-9_]\)/\1timespec\2/g' \
     >> ${OUT}
 
+# The C long type, needed because that is the type that ptrace returns.
+sizeof_long=`grep '^const ___SIZEOF_LONG__ = ' gen-sysinfo.go | sed -e 's/.*= //'`
+if test "$sizeof_long" = "4"; then
+  echo "type _C_long int32" >> ${OUT}
+  echo "type _C_ulong uint32" >> ${OUT}
+elif test "$sizeof_long" = "8"; then
+  echo "type _C_long int64" >> ${OUT}
+  echo "type _C_ulong uint64" >> ${OUT}
+else
+  echo 1>&2 "mkrsysinfo.sh: could not determine size of long (got $sizeof_long)"
+  exit 1
+fi
+
 # On AIX, the _arpcom struct, is filtered by the above grep sequence, as it as
 # a field of type _in6_addr, but other types depend on _arpcom, so we need to
 # put it back.
@@ -73,13 +86,11 @@ echo $timespec | \
       -e 's/tv_sec *[a-zA-Z0-9_]*/tv_sec timespec_sec_t/' \
       -e 's/tv_nsec *[a-zA-Z0-9_]*/tv_nsec timespec_nsec_t/' >> ${OUT}
 echo >> ${OUT}
-echo "func (ts *timespec) set_sec(x int64) {" >> ${OUT}
-echo "	ts.tv_sec = timespec_sec_t(x)" >> ${OUT}
+echo "func (ts *timespec) setNsec(ns int64) {" >> ${OUT}
+echo "	ts.tv_sec = timespec_sec_t(ns / 1e9)" >> ${OUT}
+echo "	ts.tv_nsec = timespec_nsec_t(ns % 1e9)" >> ${OUT}
 echo "}" >> ${OUT}
 echo >> ${OUT}
-echo "func (ts *timespec) set_nsec(x int32) {" >> ${OUT}
-echo "	ts.tv_nsec = timespec_nsec_t(x)" >> ${OUT}
-echo "}" >> ${OUT}
 
 # Define the epollevent struct.  This needs special attention because
 # the C definition uses a union and is sometimes packed.
@@ -198,3 +209,9 @@ grep '^type _kevent ' gen-sysinfo.go | \
     sed -e s'/_kevent/keventt/' \
       -e 's/ udata [^;}]*/ udata *byte/' \
     >> ${OUT}
+
+# Type 'uint128' is needed in a couple of type definitions on arm64,such
+# as _user_fpsimd_struct, _elf_fpregset_t, etc.
+if ! grep '^type uint128' ${OUT} > /dev/null 2>&1; then
+    echo "type uint128 [16]byte" >> ${OUT}
+fi

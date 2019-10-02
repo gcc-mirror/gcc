@@ -147,13 +147,31 @@ package body System.Arith_64 is
          Raise_Error;
       end if;
 
+      --  Set final signs (RM 4.5.5(27-30))
+
+      Den_Pos := (Y < 0) = (Z < 0);
+
       --  Compute Y * Z. Note that if the result overflows 64 bits unsigned,
-      --  then the rounded result is clearly zero (since the dividend is at
-      --  most 2**63 - 1, the extra bit of precision is nice here).
+      --  then the rounded result is zero, except for the very special case
+      --  where X = -2**63 and abs(Y*Z) = 2**64, when Round is True.
 
       if Yhi /= 0 then
          if Zhi /= 0 then
-            Q := 0;
+
+            --  Handle the special case when Round is True
+
+            if Yhi = 1
+              and then Zhi = 1
+              and then Ylo = 0
+              and then Zlo = 0
+              and then X = Int64'First
+              and then Round
+            then
+               Q := (if Den_Pos then -1 else 1);
+            else
+               Q := 0;
+            end if;
+
             R := X;
             return;
          else
@@ -161,25 +179,34 @@ package body System.Arith_64 is
          end if;
 
       else
-         T2 := (if Zhi /= 0 then Ylo * Zhi else 0);
+         T2 := Ylo * Zhi;
       end if;
 
       T1 := Ylo * Zlo;
       T2 := T2 + Hi (T1);
 
       if Hi (T2) /= 0 then
-         Q := 0;
+
+         --  Handle the special case when Round is True
+
+         if Hi (T2) = 1
+           and then Lo (T2) = 0
+           and then Lo (T1) = 0
+           and then X = Int64'First
+           and then Round
+         then
+            Q := (if Den_Pos then -1 else 1);
+         else
+            Q := 0;
+         end if;
+
          R := X;
          return;
       end if;
 
       Du := Lo (T2) & Lo (T1);
 
-      --  Set final signs (RM 4.5.5(27-30))
-
-      Den_Pos := (Y < 0) = (Z < 0);
-
-      --  Check overflow case of largest negative number divided by 1
+      --  Check overflow case of largest negative number divided by -1
 
       if X = Int64'First and then Du = 1 and then not Den_Pos then
          Raise_Error;
@@ -204,9 +231,13 @@ package body System.Arith_64 is
 
       --  Case of dividend (X) sign negative
 
+      --  We perform the unary minus operation on the unsigned value
+      --  before conversion to signed, to avoid a possible overflow for
+      --  value -2**63, both for computing R and Q.
+
       else
-         R := -To_Int (Ru);
-         Q := (if Den_Pos then -To_Int (Qu) else To_Int (Qu));
+         R := To_Int (-Ru);
+         Q := (if Den_Pos then To_Int (-Qu) else To_Int (Qu));
       end if;
    end Double_Divide;
 
@@ -400,15 +431,16 @@ package body System.Arith_64 is
             Ru := T2 rem Zlo;
          end if;
 
-      --  If divisor is double digit and too large, raise error
+      --  If divisor is double digit and dividend is too large, raise error
 
       elsif (D (1) & D (2)) >= Zu then
          Raise_Error;
 
       --  This is the complex case where we definitely have a double digit
       --  divisor and a dividend of at least three digits. We use the classical
-      --  multiple division algorithm (see section (4.3.1) of Knuth's "The Art
-      --  of Computer Programming", Vol. 2 for a description (algorithm D).
+      --  multiple-precision division algorithm (see section (4.3.1) of Knuth's
+      --  "The Art of Computer Programming", Vol. 2 for a description
+      --  (algorithm D).
 
       else
          --  First normalize the divisor so that it has the leading bit on.
@@ -446,7 +478,7 @@ package body System.Arith_64 is
 
          --  Note that when we scale up the dividend, it still fits in four
          --  digits, since we already tested for overflow, and scaling does
-         --  not change the invariant that (D (1) & D (2)) >= Zu.
+         --  not change the invariant that (D (1) & D (2)) < Zu.
 
          T1 := Shift_Left (D (1) & D (2), Scale);
          D (1) := Hi (T1);
@@ -481,6 +513,19 @@ package body System.Arith_64 is
 
             --  Adjust quotient digit if it was too high
 
+            --  We use the version of the algorithm in the 2nd Edition of
+            --  "The Art of Computer Programming". This had a bug not
+            --  discovered till 1995, see Vol 2 errata:
+            --     http://www-cs-faculty.stanford.edu/~uno/err2-2e.ps.gz.
+            --  Under rare circumstances the expression in the test could
+            --  overflow. This version was further corrected in 2005, see
+            --  Vol 2 errata:
+            --     http://www-cs-faculty.stanford.edu/~uno/all2-pre.ps.gz.
+            --  This implementation is not impacted by these bugs, due to the
+            --  use of a word-size comparison done in function Le3 instead of
+            --  a comparison on two-word integer quantities in the original
+            --  algorithm.
+
             loop
                exit when Le3 (S1, S2, S3, D (J + 1), D (J + 2), D (J + 3));
                Qd (J + 1) := Qd (J + 1) - 1;
@@ -507,6 +552,14 @@ package body System.Arith_64 is
       --  Deal with rounding case
 
       if Round and then Ru > (Zu - Uns64'(1)) / Uns64'(2) then
+
+         --  Protect against wrapping around when rounding, by signaling
+         --  an overflow when the quotient is too large.
+
+         if Qu = Uns64'Last then
+            Raise_Error;
+         end if;
+
          Qu := Qu + Uns64 (1);
       end if;
 

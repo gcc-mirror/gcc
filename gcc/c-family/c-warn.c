@@ -208,32 +208,32 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
      programmer. That is, an expression such as op && MASK
      where op should not be any boolean expression, nor a
      constant, and mask seems to be a non-boolean integer constant.  */
+  STRIP_ANY_LOCATION_WRAPPER (op_right);
   if (TREE_CODE (op_right) == CONST_DECL)
     /* An enumerator counts as a constant.  */
     op_right = DECL_INITIAL (op_right);
+  tree stripped_op_left = tree_strip_any_location_wrapper (op_left);
   if (!truth_value_p (code_left)
       && INTEGRAL_TYPE_P (TREE_TYPE (op_left))
-      && !CONSTANT_CLASS_P (op_left)
-      && !TREE_NO_WARNING (op_left))
+      && !CONSTANT_CLASS_P (stripped_op_left)
+      && TREE_CODE (stripped_op_left) != CONST_DECL
+      && !TREE_NO_WARNING (op_left)
+      && TREE_CODE (op_right) == INTEGER_CST
+      && !integer_zerop (op_right)
+      && !integer_onep (op_right))
     {
-      tree folded_op_right = fold_for_warn (op_right);
-      if (TREE_CODE (folded_op_right) == INTEGER_CST
-	  && !integer_zerop (folded_op_right)
-	  && !integer_onep (folded_op_right))
-	{
-	  bool warned;
-	  if (or_op)
-	    warned
-	      = warning_at (location, OPT_Wlogical_op,
-			    "logical %<or%> applied to non-boolean constant");
-	  else
-	    warned
-	      = warning_at (location, OPT_Wlogical_op,
-			    "logical %<and%> applied to non-boolean constant");
-	  if (warned)
-	    TREE_NO_WARNING (op_left) = true;
-	  return;
-	}
+      bool warned;
+      if (or_op)
+	warned
+	  = warning_at (location, OPT_Wlogical_op,
+			"logical %<or%> applied to non-boolean constant");
+      else
+	warned
+	  = warning_at (location, OPT_Wlogical_op,
+			"logical %<and%> applied to non-boolean constant");
+      if (warned)
+	TREE_NO_WARNING (op_left) = true;
+      return;
     }
 
   /* We do not warn for constants because they are typical of macro
@@ -2798,6 +2798,8 @@ check_alignment_of_packed_member (tree type, tree field, bool rvalue)
   /* Check alignment of the data member.  */
   if (TREE_CODE (field) == FIELD_DECL
       && (DECL_PACKED (field) || TYPE_PACKED (TREE_TYPE (field)))
+      /* Ignore FIELDs not laid out yet.  */
+      && DECL_FIELD_OFFSET (field)
       && (!rvalue || TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE))
     {
       /* Check the expected alignment against the field alignment.  */

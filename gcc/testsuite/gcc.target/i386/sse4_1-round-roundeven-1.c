@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse4.1" } */
+/* { dg-options "-O2 -msse4.1 -mfpmath=sse" } */
 
 __attribute__((noinline, noclone)) double
 f1 (double x)

@@ -1442,6 +1442,14 @@ vector alignment.
 Target supports both signed and unsigned averaging operations on vectors
 of bytes.
 
+@item vect_mulhrs_hi
+Target supports both signed and unsigned multiply-high-with-round-and-scale
+operations on vectors of half-words.
+
+@item vect_sdiv_pow2_si
+Target supports signed division by constant power-of-2 operations
+on vectors of 4-byte integers.
+
 @item vect_condition
 Target supports vector conditional operations.
 
@@ -1896,6 +1904,13 @@ in @ref{arm_coproc2_ok} in addition the following: @code{MCRR} and @code{MRRC}.
 @item arm_coproc4_ok
 ARM target supports all the coprocessor instructions also listed as supported
 in @ref{arm_coproc3_ok} in addition the following: @code{MCRR2} and @code{MRRC2}.
+
+@item arm_simd32_ok
+@anchor{arm_simd32_ok}
+ARM Target supports options suitable for accessing the SIMD32 intrinsics from
+@code{arm_acle.h}.
+Some multilibs may be incompatible with these options.
+
 @end table
 
 @subsubsection AArch64-specific attributes
@@ -2010,9 +2025,6 @@ PowerPC target supports PowerPC 405.
 
 @item ppc_recip_hw
 PowerPC target supports executing reciprocal estimate instructions.
-
-@item spu_auto_overlay
-SPU target has toolchain that supports automatic overlay generation.
 
 @item vmx_hw
 PowerPC target supports executing AltiVec instructions.
@@ -2377,6 +2389,10 @@ Target supports @code{wchar_t} that is compatible with @code{char32_t}.
 
 @item comdat_group
 Target uses comdat groups.
+
+@item indirect_calls
+Target supports indirect calls, i.e. calls where the target is not
+constant.
 @end table
 
 @subsubsection Local to tests in @code{gcc.target/i386}
@@ -2421,13 +2437,6 @@ Target supports compiling @code{vpclmul} instructions.
 
 @item xop
 Target supports compiling @code{xop} instructions.
-@end table
-
-@subsubsection Local to tests in @code{gcc.target/spu/ea}
-
-@table @code
-@item ealib
-Target @code{__ea} library functions are available.
 @end table
 
 @subsubsection Local to tests in @code{gcc.test-framework}
@@ -2873,9 +2882,6 @@ int main() @{ return 0; @}
 
 @item cleanup-profile-file
 Removes profiling files generated for this test.
-
-@item cleanup-repo-files
-Removes files generated for this test for @option{-frepo}.
 
 @end table
 

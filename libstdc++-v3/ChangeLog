@@ -1,3 +1,606 @@
+2019-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/algorithm (experimental::sample): Qualify call
+	to __sample correctly.
+	* include/parallel/algo.h (sample, for_each_n): Add using-declarations
+	for algorithms that don't have parallel implementations.
+
+	* include/parallel/algobase.h (equal, lexicographical_compare): Add
+	_GLIBCXX20_CONSTEXPR and dispatch to sequential algorithm when being
+	constant evaluated.
+	* include/parallel/algorithmfwd.h (equal, lexicographical_compare):
+	Add _GLIBCXX20_CONSTEXPR.
+
+	* testsuite/17_intro/using_namespace_std_tr1_neg.cc: Skip test for
+	parallel mode.
+	* testsuite/20_util/hash/84998.cc: Likewise.
+	* testsuite/23_containers/deque/types/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/forward_list/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/list/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/map/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/multimap/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/multiset/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/set/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/unordered_map/pmr_typedefs_debug.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/pmr_typedefs_debug.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/pmr_typedefs_debug.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/pmr_typedefs_debug.cc:
+	Likewise.
+	* testsuite/23_containers/vector/cons/destructible_debug_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/types/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/25_algorithms/binary_search/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/copy/86658.cc: Likewise.
+	* testsuite/25_algorithms/equal_range/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/lexicographical_compare/71545.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/partitioned.cc: Likewise.
+
+	* include/parallel/algo.h: Replace non-reserved names.
+	* include/parallel/multiway_merge.h: Likewise.
+	* include/parallel/multiway_mergesort.h: Likewise.
+	* include/parallel/numericfwd.h: Likewise.
+	* testsuite/17_intro/names.cc: Add RAI to test macros.
+
+2019-09-30  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/array: Add C++20 constexpr to comparison operators.
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc: Adapt
+	dg-error line numbers.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Likewise.
+
+2019-09-30  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* include/experimental/internet: Include netinet/in.h if we have
+	_GLIBCXX_HAVE_NETINET_IN_H defined.
+
+	* testsuite/ext/special_functions/airy_ai/check_nan.cc: Ignore the
+	FreeBSD warning about lower advertised precision of tgammal.
+	* testsuite/ext/special_functions/airy_bi/check_nan.cc: Likewise.
+	* testsuite/special_functions/07_cyl_bessel_i/check_nan.cc: Likewise.
+	* testsuite/special_functions/08_cyl_bessel_j/check_nan.cc: Likewise.
+	* testsuite/special_functions/09_cyl_bessel_k/check_nan.cc: Likewise.
+	* testsuite/special_functions/10_cyl_neumann/check_nan.cc: Likewise.
+	* testsuite/special_functions/19_sph_bessel/check_nan.cc: Likewise.
+	* testsuite/special_functions/21_sph_neumann/check_nan.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	08_cyl_bessel_i/check_nan.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	09_cyl_bessel_j/check_nan.cc: Likewise.
+	* testuite/tr1/5_numerical_facilities/special_functions/
+	10_cyl_bessel_k/check_nan.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	11_cyl_neumann/check_nan.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	21_sph_bessel/check_nan.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	23_sph_neumann/check_nan.cc: Likewise.
+
+2019-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/span (span(element_type(&)[N]))
+	(span(array<value_type, N>&), span(const array<value_type, N>&)):
+	Deduce array element type to allow safe const conversions (LWG 3255).
+	[!_GLIBCXX_P1394] (span(Container&), span(const Container&)): Use
+	remove_cv_t on arguments to __is_std_span and __is_std_array.
+	* testsuite/23_containers/span/lwg3255.cc: New test.
+
+	PR libstdc++/77936
+	* include/parallel/checkers.h (__is_sorted): Remove unused variable.
+
+2019-09-28  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algo.h (merge): Fix documentation.
+	* include/debug/functions.h (__check_sorted_aux): Add C++20 constexpr.
+	(__check_sorted): Likewise and remove nested irreflexive check.
+	(__check_sorted_set_aux, __check_sorted_set): Add C++20 constexpr.
+	(__check_partitioned_lower, __check_partitioned_upper): Likewise.
+	(_Irreflexive_checker::_S_is_valid): Likewise.
+	(__is_irreflexive, __is_irreflexive_pred): Likewise.
+	* include/debug/helper_functions.h (__get_distance): Add constexpr.
+	(__valid_range_aux): Add C++20 constexpr.
+	(__valid_range(_Iter, _Iter, _Distance_traits<_Iter>::__type&)):
+	Likewise and add std::is_constant_evaluated check.
+	(__valid_range_aux(_Iter, _Iter, std::input_iterator_tag)): New.
+	(__valid_range_aux(_Iter, _Iter, std::random_accss_iterator_tag)): New.
+	(__valid_range_aux(_Integral, _Integral, std::__true_type)): New,
+	use latter.
+	(__valid_range(_Iter, _Iter)): Adapt to use latter, add constexpr and
+	__builtin_is_contant_evaludated check..
+	(__can_advance, __base): Add constexpr.
+	* include/debug/macros.h [_GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED]
+	(_GLIBCXX_DEBUG_VERIFY_COND_AT): New.
+	(__glibcxx_check_sorted): Use __glibcxx_check_irreflexive.
+	(__glibcxx_check_sorted_pred): Use __glibcxx_check_irreflexive_pred.
+	* testsuite/25_algorithms/binary_search/constexpr.cc: Use irreflexive
+	std::less.
+	* testsuite/25_algorithms/is_sorted/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/merge/constexpr.cc: Fix order in camm. Fix
+	lambda to be irreflexive.
+
+2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure: Regenerate.
+
+2019-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91910
+	* src/c++11/debug.cc (_Safe_iterator_base::_M_detach()): Load pointer
+	atomically and lock the mutex before accessing the sequence.
+	(_Safe_local_iterator_base::_M_detach()): Likewise.
+	(_Safe_iterator_base::_M_reset()): Clear _M_sequence atomically.
+
+2019-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/array (to_array): Define for debug mode.
+
+	* include/bits/stl_pair.h (pair): Add _GLIBCXX20_CONSTEXPR to
+	piecewise construction constructor, assignment operators, and swap.
+	* include/std/tuple (pair::pair(piecewise_construct_t, tuple, tuple)):
+	Add _GLIBCXX20_CONSTEXPR.
+	(pair::pair(tuple, tuple, _Index_tuple, _Index_tuple)): Likewise.
+	* testsuite/20_util/pair/constexpr_assign.cc: New test.
+	* testsuite/20_util/pair/constexpr_swap.cc: New test.
+
+	* include/experimental/internet (operator==, operator<): Fix loop
+	condition to avoid reading past the end of the array.
+
+	* include/std/array: Remove references to profile mode.
+	* include/std/bitset: Likewise.
+	* include/std/deque: Likewise.
+	* include/std/forward_list: Likewise.
+	* include/std/list: Likewise.
+	* include/std/map: Likewise.
+	* include/std/set: Likewise.
+	* include/std/unordered_map: Likewise.
+	* include/std/unordered_set: Likewise.
+	* include/std/vector: Likewise.
+	* testsuite/17_intro/headers/c++1998/profile_mode.cc: New test.
+	* testsuite/17_intro/headers/c++2011/profile_mode.cc: New test.
+
+2019-09-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h
+	(basic_regex::assign(const C*, size_t, flag_type)): Add default
+	argument (LWG 3296).
+	* testsuite/28_regex/basic_regex/assign/char/lwg3296.cc: New test.
+	* testsuite/28_regex/basic_regex/assign/wchar_t/lwg3296.cc: New test.
+
+2019-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (variant::index()): Remove impossible case.
+
+	PR libstdc++/91871
+	* testsuite/util/testsuite_hooks.h
+	(conversion::iterator_to_const_iterator()): Do not return an invalid
+	iterator. Test direct-initialization and direct-list-initialization
+	as well as implicit conversion.
+
+2019-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91788 (partial)
+	* include/std/variant (variant::index()): Improve codegen for cases
+	where conversion to size_t already works correctly.
+
+2019-09-23  Andreas Schwab  <schwab@suse.de>
+
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
+
+2019-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91748
+	* include/bits/stl_algo.h (for_each_n): Fix random access iterator
+	case.
+	* testsuite/25_algorithms/for_each/for_each_n.cc: Test with random
+	access iterators.
+
+2019-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/xmethods.py (SharedPtrUseCountWorker.__call__):
+	Fix syntax error.
+
+	* testsuite/20_util/result_of/sfinae_friendly_1.cc: Add -Wno-volatile
+	for C++2a and up. Define HAS_52748_FIXED and fix incorrect tests.
+	* testsuite/tr1/3_function_objects/result_of.cc: Add -Wno-volatile
+	for C++2a and up.
+
+2019-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__do_common_type_impl): Implement
+	additional COND-RES(CREF(D1), CRED(D2)) condition for C++20.
+	(basic_common_reference, common_reference, common_reference_t): Define
+	for C++20.
+	* testsuite/20_util/common_reference/requirements/alias_decl.cc: New
+	test.
+	* testsuite/20_util/common_reference/requirements/
+	explicit_instantiation.cc: New test.
+	* testsuite/20_util/common_reference/requirements/typedefs.cc: New
+	test.
+
+	* include/std/charconv (to_chars): Rename to __to_chars_i. Define
+	non-template overloads for each signed and unsigned integer type and
+	char. Define deleted overload for bool (LWG 3266).
+	* testsuite/20_util/to_chars/1_neg.cc: Remove.
+	* testsuite/20_util/to_chars/3.cc: New test.
+	* testsuite/20_util/to_chars/lwg3266.cc: New test.
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+
+	* acinclude.m4: Handle uclinux*.
+	* configure: Regenerate.
+	* configure.host: Handle uclinux*
+
+2019-09-10  Christophe Lyon  <christophe.lyon@st.com>
+	Mickaël Guêné <mickael.guene@st.com>
+
+	* libsupc++/eh_personality.cc (get_ttype_entry): Add FDPIC
+	support.
+
+2019-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91711
+	* testsuite/23_containers/span/get_neg.cc: Avoid ambiguity due to
+	0ul being a valid null pointer constant.
+
+	* include/std/type_traits (__remove_cv_t): New alias template.
+	(is_void, is_integral, is_floating_point, is_pointer)
+	(is_member_object_pointer, is_member_function_pointer, is_null_pointer)
+	(is_member_point), __is_signed_integer, __is_unsigned_integer)
+	(__make_unsigned_selector, __make_signed_selector, remove_pointer)
+	(__decay_selector): Use __remove_cv_t.
+	(remove_cv): Add partial specializations for cv-qualified types.
+	(__decay_t): New alias template.
+	(__decay_and_strip, __common_type_impl, __result_of_impl): Use
+	__decay_t.
+	(__enable_if_t): Move earlier in the file.
+	(_Require): Use __enable_if_t.
+	(swap(T&, T&)): Use _Require.
+	(swap(T(&)[N])): Use __enable_if_t.
+
+2019-09-09  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement C++20 p1424 - 'constexpr' feature macro concerns,
+	Issue 3256 - Feature testing macro for constexpr algorithms,
+	and Issue 3257 - Missing feature testing macro update from P0858.
+	* include/std/version (__cpp_lib_constexpr_algorithms): Bump value.
+	* include/bits/algorithmfwd.h: Ditto.
+	* include/std/utility: Ditto.
+	* testsuite/25_algorithms/constexpr_macro.cc: Ditto.
+	* testsuite/25_algorithms/cpp_lib_constexpr.cc: New check for
+	__cpp_lib_constexpr macro in <algorith>.
+	* testsuite/20_util/exchange/constexpr.cc: Add check for
+	__cpp_lib_constexpr macro in <utility>.
+	* testsuite/25_algorithms/adjacent_find/constexpr.cc: Remove check for
+	__cpp_lib_constexpr_algorithms.
+	* testsuite/25_algorithms/all_of/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/any_of/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/binary_search/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/copy/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/copy_backward/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/copy_if/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/copy_n/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/count/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/count_if/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/equal/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/equal_range/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/fill/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/fill_n/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/find/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/find_end/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/find_first_of/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/find_if/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/find_if_not/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/for_each/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/generate/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/generate_n/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/is_heap/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/is_heap_until/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/is_partitioned/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/is_permutation/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/is_sorted/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/is_sorted_until/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/lexicographical_compare/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/lower_bound/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/merge/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/mismatch/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/none_of/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/partition_copy/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/partition_point/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/remove/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/remove_copy/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/remove_copy_if/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/remove_if/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/replace_copy/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/replace_copy_if/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/replace_if/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/reverse_copy/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/rotate_copy/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/search/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/search_n/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/set_difference/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/set_intersection/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/set_symmetric_difference/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/set_union/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/transform/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/unique/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/unique_copy/constexpr.cc: Ditto.
+	* testsuite/25_algorithms/upper_bound/constexpr.cc: Ditto.
+
+2019-09-09  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Update docs for recent <span> and constexpr lib changes.
+	* doc/xml/manual/status_cxx2020.xml: Update p0202r3, p0858r0, p0879r0,
+	p1023r0, p1085r2 status.
+	* doc/html/manual/status.html: Regenerate.
+
+2019-09-09  Antony Polukhin  <antoshkka@gmail.com>
+
+	* include/bits/charconv.h (__detail::__to_chars_10_impl): Replace
+	final offsets with constants.
+
+2019-09-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (__adl_to_address): Remove.
+	* include/std/span (__is_base_derived_safe_convertible_v): Replace
+	with span::__is_compatible.
+	(__is_std_array_v): Replace with __is_std_array class template and
+	partial specializations.
+	(__is_std_array, __is_std_span): New class templates and partial
+	specializations.
+	(span::__is_compatible): New alias template for SFINAE constraints.
+	(span::span(element_type (&)[N])): Remove redundant constraints. Do
+	not use __adl_data to obtain a pointer.
+	(span::span(array<value_type, N>&)): Likewise.
+	(span::span(const array<value_type, N>&)): Likewise.
+	[_GLIBCXX_P1394] (span::iter_reference_t, span::iterator_t)
+	(span::iter_value_t, span::derived_from): New alias templates for
+	SFINAE constraints, until the equivalents are supported in <concepts>
+	and <iterator>.
+	[_GLIBCXX_P1394] (span::__is_compatible_iterator): New alias template
+	for SFINAE constraints.
+	[_GLIBCXX_P1394] (span::is_compatible_range): New class template for
+	SFINAE constraints.
+	[_GLIBCXX_P1394] (span::span(Range&&)): Improve constraints.
+	[_GLIBCXX_P1394] (span::span(ContiguousIterator, Sentinel)): Likewise.
+	Use std::to_address instead of __adl_to_address.
+	[_GLIBCXX_P1394] (span::span(ContiguousIterator, size_type)): Likewise.
+	[!_GLIBCXX_P1394] (span::__is_compatible_container): New alias
+	template for SFINAE constraints.
+	[!_GLIBCXX_P1394] (span::span(Container&))
+	(span::span(const Container&)): Improve constraints.
+	[!_GLIBCXX_P1394] (span::span(pointer, size_type))
+	(span::span(pointer, pointer)): Remove redundant cast of pointer.
+	(span(const span<OType, OExtent>&)): New constructor.
+
+2019-09-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (ssize): Define for C++20.
+	* testsuite/24_iterators/range_access_cpp20.cc: New test.
+	* doc/xml/manual/status_cxx2020.xml: Update P1227R2 status.
+	* doc/html/*: Regenerate.
+
+2019-09-06  Florian Weimer  <fweimer@redhat.com>
+
+	* configure: Regenerate.
+
+2019-09-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Update status for P0122R7 and
+	P1024R3. Remove entry for P0920R2.
+	* include/std/span  (__cpp_lib_span): Change value.
+	(__extent_storage, __extent_storage<dynamic_extent>): Remove default
+	constructor.
+	(span): Replace __extent_storage base class with data member.
+	(span::_S_subspan_extent): New function.
+	(span::empty()): Add nodiscard attribute.
+	(span::front, span::back, span::operator[]): Check preconditions.
+	(span::first, span::last, span::subspan): Add noexcept. Improve
+	precondition checks (LWG 3103).
+	(get): Remove redundant condition from static_assert.
+	(tuple_element<I, span<T, E>>): Fix static_assert message and simplify.
+	(as_writable_bytes): Add inline specifier.
+	* include/std/version (__cpp_lib_span): Change value.
+	* testsuite/23_containers/span/back_neg.cc: Remove stray semi-colon.
+	* testsuite/23_containers/span/front_neg.cc: Likewise.
+	* testsuite/23_containers/span/index_op_neg.cc: Likewise.
+	* testsuite/23_containers/span/last_neg.cc: Improve test.
+	* testsuite/23_containers/span/subspan_neg.cc: Likewise.
+	* testsuite/23_containers/span/1.cc: New test.
+	* testsuite/23_containers/span/2.cc: New test.
+	* testsuite/23_containers/span/back_assert_neg.cc: New test.
+	* testsuite/23_containers/span/first_2_assert_neg.cc: New test.
+	* testsuite/23_containers/span/first_assert_neg.cc: New test.
+	* testsuite/23_containers/span/first_neg.cc: New test.
+	* testsuite/23_containers/span/front_assert_neg.cc: New test.
+	* testsuite/23_containers/span/index_op_assert_neg.cc: New test.
+	* testsuite/23_containers/span/last_2_assert_neg.cc: New test.
+	* testsuite/23_containers/span/last_assert_neg.cc: New test.
+	* testsuite/23_containers/span/subspan_2_assert_neg.cc: New test.
+	* testsuite/23_containers/span/subspan_3_assert_neg.cc: New test.
+	* testsuite/23_containers/span/subspan_4_assert_neg.cc: New test.
+	* testsuite/23_containers/span/subspan_5_assert_neg.cc: New test.
+	* testsuite/23_containers/span/subspan_6_assert_neg.cc: New test.
+	* testsuite/23_containers/span/subspan_assert_neg.cc: New test.
+
+2019-09-05  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+
+	* include/Makefile.am: Add <span> header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/range_access.h (__adl_begin, __adl_end, __adl_cbegin)
+	(__adl_cend, __adl_rbegin, __adl_rend, __adl_crbegin, __adl_crend)
+	(__adl_data, __adl_cdata, __adl_size, __adl_empty, __adl_to_address):
+	New functions for performing argument-dependent lookup of range
+	customization points.
+	* include/bits/stl_iterator.h (__normal_iterator): Add
+	_GLIBCXX20_CONSTEXPR to all functions.
+	* include/std/span: New header.
+	* include/std/version (__cpp_lib_span): Define feature test macro.
+	* testsuite/23_containers/span/contiguous_range_neg.cc: New test.
+	* testsuite/23_containers/span/everything.cc: New test.
+	* testsuite/23_containers/span/get_neg.cc: New test.
+	* testsuite/23_containers/span/last_neg.cc: New test.
+	* testsuite/23_containers/span/subspan_neg.cc: New test.
+	* testsuite/23_containers/span/tuple_element_dynamic_neg.cc: New test.
+	* testsuite/23_containers/span/tuple_element_oob_neg.cc: New test.
+	* testsuite/23_containers/span/tuple_size_neg.cc: New test.
+
+2019-09-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/allocator.xml: Remove URL for bibliography entry.
+	* doc/html/*: Regenerate.
+
+2019-09-04  Mike Crowe  <mac@mcrowe.com>
+
+	PR libstdc++/41861
+	* acinclude.m4 (GLIBCXX_CHECK_PTHREAD_COND_CLOCKWAIT): Check for new
+	pthread_cond_clockwait function.
+	* configure.ac: Use GLIBCXX_CHECK_PTHREAD_COND_CLOCKWAIT.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* include/std/condition_variable: (condition_variable): Rename
+	__steady_clock_t typedef and add system_clock. Change __clock_t to be
+	a typedef for the preferred clock to convert arbitrary other clocks to.
+	[_GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT] (wait_until): Add a steady_clock
+	overload.
+	(wait_until): Change __clock_t overload to use system_clock.
+	[_GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT] (__wait_until_impl): Add
+	steady_clock overload that calls pthread_cond_clockwait.
+	(__wait_until_impl): Change __clock_t overload to use system_clock.
+	(condition_variable_any) [_GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT]: Use
+	steady_clock for __clock_t if pthread_cond_clockwait is available.
+
+2019-09-04  Mike Crowe  <mac@mcrowe.com>
+
+	* testsuite/30_threads/condition_variable/members/2.cc (test01):
+	Parameterise so that test can be run against an arbitrary clock.
+	(main): Test using std::chrono::steady_clock and a user-defined
+	clock in addition to the previous std::chrono::system_clock.
+	* testsuite/30_threads/condition_variable_any/members/2.cc: Likewise.
+
+2019-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* crossconfig.m4: Remove references to spu.
+	* configure: Regenerate.
+	* doc/xml/manual/appendix_contributing.xml: Remove references
+	to __ea as "badword" for spu.
+	* doc/html/manual/source_code_style.html: Regenerate.
+	* include/tr1/ell_integral.tcc (__ellint_rd): Do not attempt
+	to avoid __ea (as "badword" for spu).
+	(__ellint_rj): Likewise.
+
+2019-09-03  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR other/79543
+	* acinclude.m4 (GLIBCXX_CHECK_LINKER_FEATURES): Fix GNU ld --version
+	scanning to conform to the GNU Coding Standards.
+	* configure: Regenerate.
+
+2019-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/memory_resource.cc: Use __constinit keyword.
+
+2019-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Document 9.x library versions.
+	* doc/html/*: Regenerate.
+
+2019-09-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (__detail::__to_chars_2_len): Use std::log2p1.
+	(__detail::__to_chars_8_len): Remove.
+	(__detail::__to_chars_8): Inline length calculation here.
+	(__detail::__from_chars_binary): Use numeric_limits instead of
+	CHAR_BIT.
+
+2019-09-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/i386-solaris/baseline_symbols.txt: Regenerate.
+	* config/abi/post/i386-solaris/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris/sparcv9/baseline_symbols.txt:
+	Likewise.
+
+2019-09-01  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite_files/util/testsuite_performance.h
+	(resource_counter::start): Ignore unused malloc(0) result.
+
+2019-09-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml (COM: Component
+	Model Object Technologies): Adjust name and link.
+
+2019-08-30  Antony Polukhin  <antoshkka@gmail.com>
+
+	* include/std/charconv (__detail::__to_chars_8)
+	__detail::__to_chars_16): Replace array of precomputed digits with
+	arithmetic operations to avoid CPU cache misses. Remove zero
+	termination from array of digits to allow symbol merge with generic
+	implementation of __detail::__to_chars. Replace final offsets with
+	constants. Use __detail::__to_chars_len_2 instead of a generic
+	__detail::__to_chars_len.
+	(__detail::__to_chars): Remove zero termination from array of digits.
+	(__detail::__to_chars_2): Leading digit is always '1'.
+
+2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/vector/cons/89164_c++17.cc: Fix errors.
+
+2019-08-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
+
+2019-08-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89164
+	* include/bits/stl_algobase.h (__copy_move): Give descriptive names
+	to template parameters.
+	* include/bits/stl_uninitialized.h (uninitialized_copy)
+	(uninitialized_fill, uninitialized_fill_n): Add static assertions to
+	diagnose invalid uses.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/1.cc:
+	Adjust expected error.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/89164.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy_n/
+	89164.cc: New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/89164.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/
+	89164.cc: New test.
+	* testsuite/23_containers/vector/cons/89164.cc: New test.
+	* testsuite/23_containers/vector/cons/89164_c++17.cc: New test.
+
+2019-08-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91067
+	* acinclude.m4 (libtool_VERSION): Bump to 6:28:0.
+	* configure: Regenerate.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.28): Add new version. Export
+	missing symbols.
+	* testsuite/27_io/filesystem/iterators/91067.cc: Test move
+	constructors.
+	* testsuite/util/testsuite_abi.cc: Add new symbol version.
+
+2019-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Update.
+
+2019-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.
+
 2019-08-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* src/filesystem/ops-common.h [_GLIBCXX_FILESYSTEM_IS_WINDOWS]

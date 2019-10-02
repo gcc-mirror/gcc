@@ -202,7 +202,6 @@ static void prepend_one_attribute_pragma (struct attrib **, Node_Id);
 static void prepend_attributes (struct attrib **, Entity_Id);
 static tree elaborate_expression (Node_Id, Entity_Id, const char *, bool, bool,
 				  bool);
-static bool type_has_variable_size (tree);
 static tree elaborate_expression_1 (tree, Entity_Id, const char *, bool, bool);
 static tree elaborate_expression_2 (tree, Entity_Id, const char *, bool, bool,
 				    unsigned int);
@@ -233,6 +232,7 @@ static tree build_position_list (tree, bool, tree, tree, unsigned int, tree);
 static vec<subst_pair> build_subst_list (Entity_Id, Entity_Id, bool);
 static vec<variant_desc> build_variant_list (tree, vec<subst_pair>,
 					     vec<variant_desc>);
+static tree maybe_saturate_size (tree);
 static tree validate_size (Uint, tree, Entity_Id, enum tree_code, bool, bool);
 static void set_rm_size (Uint, tree, Entity_Id);
 static unsigned int validate_alignment (Uint, Entity_Id, unsigned int);
@@ -447,13 +447,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
      If we are not defining it, it must be a type or an entity that is defined
      elsewhere or externally, otherwise we should have defined it already.  */
   gcc_assert (definition
-	      || type_annotate_only
 	      || is_type
 	      || kind == E_Discriminant
 	      || kind == E_Component
 	      || kind == E_Label
 	      || (kind == E_Constant && Present (Full_View (gnat_entity)))
-	      || Is_Public (gnat_entity));
+	      || Is_Public (gnat_entity)
+	      || type_annotate_only);
 
   /* Get the name of the entity and set up the line number and filename of
      the original definition for use in any decl we make.  Make sure we do
@@ -1758,34 +1758,29 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
     case E_Modular_Integer_Type:
       {
-	/* For modular types, make the unsigned type of the proper number
-	   of bits and then set up the modulus, if required.  */
-	tree gnu_modulus, gnu_high = NULL_TREE;
-
 	/* Packed Array Impl. Types are supposed to be subtypes only.  */
 	gcc_assert (!Is_Packed_Array_Impl_Type (gnat_entity));
 
+	/* For modular types, make the unsigned type of the proper number
+	   of bits and then set up the modulus, if required.  */
 	gnu_type = make_unsigned_type (esize);
 
-	/* Get the modulus in this type.  If it overflows, assume it is because
-	   it is equal to 2**Esize.  Note that there is no overflow checking
-	   done on unsigned type, so we detect the overflow by looking for
-	   a modulus of zero, which is otherwise invalid.  */
-	gnu_modulus = UI_To_gnu (Modulus (gnat_entity), gnu_type);
+	/* Get the modulus in this type.  If the modulus overflows, assume
+	   that this is because it was equal to 2**Esize.  Note that there
+	   is no overflow checking done on unsigned types, so we detect the
+	   overflow by looking for a modulus of zero, which is invalid.  */
+	tree gnu_modulus = UI_To_gnu (Modulus (gnat_entity), gnu_type);
 
+	/* If the modulus is not 2**Esize, then this also means that the upper
+	   bound of the type, i.e. modulus - 1, is not maximal, so we create an
+	   extra subtype to carry it and set the modulus on the base type.  */
 	if (!integer_zerop (gnu_modulus))
 	  {
+	    TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "UMT");
 	    TYPE_MODULAR_P (gnu_type) = 1;
 	    SET_TYPE_MODULUS (gnu_type, gnu_modulus);
-	    gnu_high = fold_build2 (MINUS_EXPR, gnu_type, gnu_modulus,
-				    build_int_cst (gnu_type, 1));
-	  }
-
-	/* If the upper bound is not maximal, make an extra subtype.  */
-	if (gnu_high
-	    && !tree_int_cst_equal (gnu_high, TYPE_MAX_VALUE (gnu_type)))
-	  {
-	    TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "UMT");
+	    tree gnu_high = fold_build2 (MINUS_EXPR, gnu_type, gnu_modulus,
+					 build_int_cst (gnu_type, 1));
 	    gnu_type
 	      = create_extra_subtype (gnu_type, TYPE_MIN_VALUE (gnu_type),
 				      gnu_high);
@@ -2958,10 +2953,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      : 0;
 	const bool has_align = Known_Alignment (gnat_entity);
 	const bool has_discr = Has_Discriminants (gnat_entity);
-	const bool has_rep = Has_Specified_Layout (gnat_entity);
 	const bool is_extension
 	  = (Is_Tagged_Type (gnat_entity)
 	     && Nkind (record_definition) == N_Derived_Type_Definition);
+	const bool has_rep
+	  = is_extension
+	    ? Has_Record_Rep_Clause (gnat_entity)
+	    : Has_Specified_Layout (gnat_entity);
 	const bool is_unchecked_union = Is_Unchecked_Union (gnat_entity);
 	bool all_rep = has_rep;
 
@@ -2987,8 +2985,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		|| Present (Record_Extension_Part (record_definition)))
 	      record_definition = Record_Extension_Part (record_definition);
 
-	    gcc_assert (type_annotate_only
-			|| Present (Parent_Subtype (gnat_entity)));
+	    gcc_assert (Present (Parent_Subtype (gnat_entity))
+		        || type_annotate_only);
 	  }
 
 	/* Make a node for the record.  If we are not defining the record,
@@ -4330,9 +4328,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	{
 	  tree gnu_size = TYPE_SIZE (gnu_type);
 
-	  /* If the size is self-referential, annotate the maximum value.  */
+	  /* If the size is self-referential, annotate the maximum value
+	     after saturating it, if need be, to avoid a No_Uint value.  */
 	  if (CONTAINS_PLACEHOLDER_P (gnu_size))
-	    gnu_size = max_size (gnu_size, true);
+	    gnu_size = maybe_saturate_size (max_size (gnu_size, true));
 
 	  /* If we are just annotating types and the type is tagged, the tag
 	     and the parent components are not generated by the front-end so
@@ -4368,7 +4367,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		  gnu_size = size_binop (PLUS_EXPR, gnu_size, offset);
 		}
 
-	      gnu_size = round_up (gnu_size, align);
+	      gnu_size = maybe_saturate_size (round_up (gnu_size, align));
 	      Set_Esize (gnat_entity, annotate_value (gnu_size));
 
 	      /* Tagged types are Strict_Alignment so RM_Size = Esize.  */
@@ -5211,6 +5210,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
   bool ro_param = in_param && !Address_Taken (gnat_param);
   bool by_return = false, by_component_ptr = false;
   bool by_ref = false;
+  bool forced_by_ref = false;
   bool restricted_aliasing_p = false;
   location_t saved_location = input_location;
   tree gnu_param;
@@ -5238,7 +5238,11 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
   /* Or else, see if a Mechanism was supplied that forced this parameter
      to be passed one way or another.  */
   else if (mech == Default || mech == By_Copy || mech == By_Reference)
-    ;
+    forced_by_ref
+      = (mech == By_Reference
+	 && !foreign
+	 && !TYPE_IS_BY_REFERENCE_P (gnu_param_type)
+	 && !Is_Aliased (gnat_param));
 
   /* Positive mechanism means by copy for sufficiently small parameters.  */
   else if (mech > 0)
@@ -5371,6 +5375,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
   gnu_param = create_param_decl (gnu_param_name, gnu_param_type);
   TREE_READONLY (gnu_param) = ro_param || by_ref || by_component_ptr;
   DECL_BY_REF_P (gnu_param) = by_ref;
+  DECL_FORCED_BY_REF_P (gnu_param) = forced_by_ref;
   DECL_BY_COMPONENT_PTR_P (gnu_param) = by_component_ptr;
   DECL_POINTS_TO_READONLY_P (gnu_param)
     = (ro_param && (by_ref || by_component_ptr));
@@ -6870,11 +6875,13 @@ choices_to_gnu (tree gnu_operand, Node_Id gnat_choices)
 static int
 adjust_packed (tree field_type, tree record_type, int packed)
 {
-  /* If the field contains an item of variable size, we cannot pack it
-     because we cannot create temporaries of non-fixed size in case
-     we need to take the address of the field.  See addressable_p and
-     the notes on the addressability issues for further details.  */
-  if (type_has_variable_size (field_type))
+  /* If the field contains an array with self-referential size, we'd better
+     not pack it because this would misalign it and, therefore, cause large
+     temporaries to be created in case we need to take the address of the
+     field.  See addressable_p and the notes on the addressability issues
+     for further details.  */
+  if (AGGREGATE_TYPE_P (field_type)
+      && aggregate_type_contains_array_p (field_type, true))
     return 0;
 
   /* In the other cases, we can honor the packing.  */
@@ -7279,31 +7286,6 @@ components_need_strict_alignment (Node_Id component_list)
   return false;
 }
 
-/* Return true if TYPE is a type with variable size or a padding type with a
-   field of variable size or a record that has a field with such a type.  */
-
-static bool
-type_has_variable_size (tree type)
-{
-  tree field;
-
-  if (!TREE_CONSTANT (TYPE_SIZE (type)))
-    return true;
-
-  if (TYPE_IS_PADDING_P (type)
-      && !TREE_CONSTANT (DECL_SIZE (TYPE_FIELDS (type))))
-    return true;
-
-  if (!RECORD_OR_UNION_TYPE_P (type))
-    return false;
-
-  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
-    if (type_has_variable_size (TREE_TYPE (field)))
-      return true;
-
-  return false;
-}
-
 /* Return true if FIELD is an artificial field.  */
 
 static bool
@@ -7539,6 +7521,7 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
   bool all_rep_and_size = all_rep && TYPE_SIZE (gnu_record_type);
   bool variants_have_rep = all_rep;
   bool layout_with_rep = false;
+  bool has_non_packed_fixed_size_field = false;
   bool has_self_field = false;
   bool has_aliased_after_self_field = false;
   Entity_Id gnat_component_decl, gnat_variant_part;
@@ -7595,6 +7578,10 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 		  has_self_field = true;
 		else if (has_self_field && DECL_ALIASED_P (gnu_field))
 		  has_aliased_after_self_field = true;
+		else if (!DECL_FIELD_OFFSET (gnu_field)
+			 && !DECL_PACKED (gnu_field)
+			 && !field_has_variable_size (gnu_field))
+		  has_non_packed_fixed_size_field = true;
 	      }
 	  }
 
@@ -7886,8 +7873,9 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
      self-referential/variable offset or misaligned.  Note, in the latter
      case, that this can only happen in packed record types so the alignment
      is effectively capped to the byte for the whole record.  But we don't
-     do it for non-packed record types if pragma Optimize_Alignment (Space)
-     is specified because this can prevent alignment gaps from being filled.
+     do it for packed record types if not all fixed-size fiels can be packed
+     and for non-packed record types if pragma Optimize_Alignment (Space) is
+     specified, because this can prevent alignment gaps from being filled.
 
      Optionally, if the layout warning is enabled, keep track of the above 4
      different kinds of fields and issue a warning if some of them would be
@@ -7898,8 +7886,9 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
   const bool do_reorder
     = (Convention (gnat_record_type) == Convention_Ada
        && !No_Reordering (gnat_record_type)
-       && (!Optimize_Alignment_Space (gnat_record_type)
-	   || Is_Packed (gnat_record_type))
+       && !(Is_Packed (gnat_record_type)
+	    ? has_non_packed_fixed_size_field
+	    : Optimize_Alignment_Space (gnat_record_type))
        && !debug__debug_flag_dot_r);
   const bool w_reorder
     = (Convention (gnat_record_type) == Convention_Ada
@@ -7939,6 +7928,7 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 
       if (DECL_SIZE (gnu_field) && integer_zerop (DECL_SIZE (gnu_field)))
 	{
+	  DECL_SIZE_UNIT (gnu_field) = size_zero_node;
 	  DECL_FIELD_OFFSET (gnu_field) = size_zero_node;
 	  SET_DECL_OFFSET_ALIGN (gnu_field, BIGGEST_ALIGNMENT);
 	  DECL_FIELD_BIT_OFFSET (gnu_field) = bitsize_zero_node;
@@ -8403,7 +8393,7 @@ annotate_value (tree gnu_size)
       /* In regular mode, inline back only if symbolic annotation is requested
 	 in order to avoid memory explosion on big discriminated record types.
 	 But not in ASIS mode, as symbolic annotation is required for DDA.  */
-      if (List_Representation_Info == 3 || type_annotate_only)
+      if (List_Representation_Info >= 3 || type_annotate_only)
 	{
 	  tree t = maybe_inline_call_in_expr (gnu_size);
 	  return t ? annotate_value (t) : No_Uint;
@@ -8743,6 +8733,19 @@ build_variant_list (tree qual_union_type, vec<subst_pair> subst_list,
   return gnu_list;
 }
 
+/* If SIZE has overflowed, return the maximum valid size, which is the upper
+   bound of the signed sizetype in bits; otherwise return SIZE unmodified.  */
+
+static tree
+maybe_saturate_size (tree size)
+{
+  if (TREE_CODE (size) == INTEGER_CST && TREE_OVERFLOW (size))
+    size = size_binop (MULT_EXPR,
+		       fold_convert (bitsizetype, TYPE_MAX_VALUE (ssizetype)),
+		       build_int_cst (bitsizetype, BITS_PER_UNIT));
+  return size;
+}
+
 /* UINT_SIZE is a Uint giving the specified size for an object of GNU_TYPE
    corresponding to GNAT_OBJECT.  If the size is valid, return an INTEGER_CST
    corresponding to its value.  Otherwise, return NULL_TREE.  KIND is set to
@@ -10157,7 +10160,7 @@ concat_name (tree gnu_name, const char *suffix)
   return get_identifier_with_length (new_name, len);
 }
 
-/* Initialize data structures of the decl.c module.  */
+/* Initialize the data structures of the decl.c module.  */
 
 void
 init_gnat_decl (void)
@@ -10169,7 +10172,7 @@ init_gnat_decl (void)
   dummy_to_subprog_map = hash_table<dummy_type_hasher>::create_ggc (512);
 }
 
-/* Destroy data structures of the decl.c module.  */
+/* Destroy the data structures of the decl.c module.  */
 
 void
 destroy_gnat_decl (void)

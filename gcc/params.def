@@ -233,8 +233,12 @@ DEFPARAM(PARAM_IPCP_UNIT_GROWTH,
 	 10, 0, 0)
 DEFPARAM(PARAM_EARLY_INLINING_INSNS,
 	 "early-inlining-insns",
-	 "Maximal estimated growth of function body caused by early inlining of single call.",
+	 "Maximal estimated growth of function body caused by early inlining of single call with -O3 and -Ofast.",
 	 14, 0, 0)
+DEFPARAM(PARAM_EARLY_INLINING_INSNS_O2,
+	 "early-inlining-insns-O2",
+	 "Maximal estimated growth of function body caused by early inlining of single call with -O1 and -O2.",
+	 6, 0, 0)
 DEFPARAM(PARAM_LARGE_STACK_FRAME,
 	 "large-stack-frame",
 	 "The size of stack frame to be considered large.",
@@ -1062,6 +1066,13 @@ DEFPARAM (PARAM_IPA_SRA_PTR_GROWTH_FACTOR,
 	  "that ipa-sra replaces a pointer to an aggregate with.",
 	  2, 0, 0)
 
+DEFPARAM (PARAM_IPA_SRA_MAX_REPLACEMENTS,
+	  "ipa-sra-max-replacements",
+	  "Maximum pieces that IPA-SRA tracks per formal parameter, as "
+	  "a consequence, also the maximum number of replacements of a formal "
+	  "parameter.",
+	  8, 0, 16)
+
 DEFPARAM (PARAM_TM_MAX_AGGREGATE_SIZE,
 	  "tm-max-aggregate-size",
 	  "Size in bytes after which thread-local aggregates should be "
@@ -1122,6 +1133,12 @@ DEFPARAM (PARAM_IPA_MAX_AA_STEPS,
 	  "Maximum number of statements that will be visited by IPA formal "
 	  "parameter analysis based on alias analysis in any given function.",
 	  25000, 0, 0)
+
+DEFPARAM (PARAM_IPA_MAX_SWITCH_PREDICATE_BOUNDS,
+	  "ipa-max-switch-predicate-bounds",
+	  "Maximal number of boundary endpoints of case ranges of switch "
+	  "statement used during IPA functoin summary generation.",
+	  5, 0, 0)
 
 /* WHOPR partitioning configuration.  */
 

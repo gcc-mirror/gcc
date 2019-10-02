@@ -312,16 +312,6 @@ DEF_RTL_EXPR(USE, "use", "e", RTX_EXTRA)
    is considered undeletable before reload.  */
 DEF_RTL_EXPR(CLOBBER, "clobber", "e", RTX_EXTRA)
 
-/* Indicate that the upper parts of something are clobbered in a way that we
-   don't want to explain.  The MODE references the lower bits that will be
-   preserved.  Anything above that size will be clobbered.
-
-   CLOBBER_HIGH only occurs as the operand of a PARALLEL rtx.  It cannot appear
-   in other contexts, and unlike CLOBBER, it cannot appear on its own.
-   CLOBBER_HIGH can only be used with fixed register rtxes.  */
-
-DEF_RTL_EXPR(CLOBBER_HIGH, "clobber_high", "e", RTX_EXTRA)
-
 /* Call a subroutine.
    Operand 1 is the address to call.
    Operand 2 is the number of arguments.  */
@@ -552,20 +542,25 @@ DEF_RTL_EXPR(POST_INC, "post_inc", "e", RTX_AUTOINC)
 DEF_RTL_EXPR(PRE_MODIFY, "pre_modify", "ee", RTX_AUTOINC)
 DEF_RTL_EXPR(POST_MODIFY, "post_modify", "ee", RTX_AUTOINC)
 
-/* Comparison operations.  The ordered comparisons exist in two
-   flavors, signed and unsigned.  */
+/* Comparison operations.  The first 6 are allowed only for integral,
+floating-point and vector modes.  LTGT is only allowed for floating-point
+modes.  The last 4 are allowed only for integral and vector modes.
+For floating-point operations, if either operand is a NaN, then NE returns
+true and the remaining operations return false.  The operations other than
+EQ and NE may generate an exception on quiet NaNs.  */
 DEF_RTL_EXPR(NE, "ne", "ee", RTX_COMM_COMPARE)
 DEF_RTL_EXPR(EQ, "eq", "ee", RTX_COMM_COMPARE)
 DEF_RTL_EXPR(GE, "ge", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(GT, "gt", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(LE, "le", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(LT, "lt", "ee", RTX_COMPARE)
+DEF_RTL_EXPR(LTGT, "ltgt", "ee", RTX_COMM_COMPARE)
 DEF_RTL_EXPR(GEU, "geu", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(GTU, "gtu", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(LEU, "leu", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(LTU, "ltu", "ee", RTX_COMPARE)
 
-/* Additional floating point unordered comparison flavors.  */
+/* Additional floating-point unordered comparison flavors.  */
 DEF_RTL_EXPR(UNORDERED, "unordered", "ee", RTX_COMM_COMPARE)
 DEF_RTL_EXPR(ORDERED, "ordered", "ee", RTX_COMM_COMPARE)
 
@@ -575,9 +570,6 @@ DEF_RTL_EXPR(UNGE, "unge", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(UNGT, "ungt", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(UNLE, "unle", "ee", RTX_COMPARE)
 DEF_RTL_EXPR(UNLT, "unlt", "ee", RTX_COMPARE)
-
-/* This is an ordered NE, ie !UNEQ, ie false for NaN.  */
-DEF_RTL_EXPR(LTGT, "ltgt", "ee", RTX_COMM_COMPARE)
 
 /* Represents the result of sign-extending the sole operand.
    The machine modes of the operand and of the SIGN_EXTEND expression

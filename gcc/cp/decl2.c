@@ -2079,7 +2079,7 @@ import_export_class (tree ctype)
        repository.  If the virtual table is assigned to this
        translation unit, then export the class; otherwise, import
        it.  */
-      import_export = repo_export_class_p (ctype) ? 1 : -1;
+      import_export = -1;
   else if (TYPE_POLYMORPHIC_P (ctype))
     {
       /* The ABI specifies that the virtual table and associated
@@ -2135,7 +2135,7 @@ mark_needed (tree decl)
       struct cgraph_node *node = cgraph_node::get_create (decl);
       node->forced_by_abi = true;
 
-      /* #pragma interface and -frepo code can call mark_needed for
+      /* #pragma interface can call mark_needed for
           maybe-in-charge 'tors; mark the clones as well.  */
       tree clone;
       FOR_EACH_CLONE (clone, decl)
@@ -2713,13 +2713,8 @@ determine_visibility_from_class (tree decl, tree class_type)
   /* Give the target a chance to override the visibility associated
      with DECL.  */
   if (VAR_P (decl)
-      && (DECL_TINFO_P (decl)
-	  || (DECL_VTABLE_OR_VTT_P (decl)
-	      /* Construction virtual tables are not exported because
-		 they cannot be referred to from other object files;
-		 their name is not standardized by the ABI.  */
-	      && !DECL_CONSTRUCTION_VTABLE_P (decl)))
       && TREE_PUBLIC (decl)
+      && (DECL_TINFO_P (decl) || DECL_VTABLE_OR_VTT_P (decl))
       && !DECL_REALLY_EXTERN (decl)
       && !CLASSTYPE_VISIBILITY_SPECIFIED (class_type))
     targetm.cxx.determine_class_data_visibility (decl);
@@ -2969,7 +2964,6 @@ tentative_decl_linkage (tree decl)
 void
 import_export_decl (tree decl)
 {
-  int emit_p;
   bool comdat_p;
   bool import_p;
   tree class_type = NULL_TREE;
@@ -2980,11 +2974,7 @@ import_export_decl (tree decl)
   /* We cannot determine what linkage to give to an entity with vague
      linkage until the end of the file.  For example, a virtual table
      for a class will be defined if and only if the key method is
-     defined in this translation unit.  As a further example, consider
-     that when compiling a translation unit that uses PCH file with
-     "-frepo" it would be incorrect to make decisions about what
-     entities to emit when building the PCH; those decisions must be
-     delayed until the repository information has been processed.  */
+     defined in this translation unit.  */
   gcc_assert (at_eof);
   /* Object file linkage for explicit instantiations is handled in
      mark_decl_instantiated.  For static variables in functions with
@@ -3030,27 +3020,7 @@ import_export_decl (tree decl)
      unit.  */
   import_p = false;
 
-  /* See if the repository tells us whether or not to emit DECL in
-     this translation unit.  */
-  emit_p = repo_emit_p (decl);
-  if (emit_p == 0)
-    import_p = true;
-  else if (emit_p == 1)
-    {
-      /* The repository indicates that this entity should be defined
-	 here.  Make sure the back end honors that request.  */
-      mark_needed (decl);
-      /* Output the definition as an ordinary strong definition.  */
-      DECL_EXTERNAL (decl) = 0;
-      DECL_INTERFACE_KNOWN (decl) = 1;
-      return;
-    }
-
-  if (import_p)
-    /* We have already decided what to do with this DECL; there is no
-       need to check anything further.  */
-    ;
-  else if (VAR_P (decl) && DECL_VTABLE_OR_VTT_P (decl))
+  if (VAR_P (decl) && DECL_VTABLE_OR_VTT_P (decl))
     {
       class_type = DECL_CONTEXT (decl);
       import_export_class (class_type);
@@ -3156,8 +3126,7 @@ import_export_decl (tree decl)
     {
       /* DECL is an implicit instantiation of a function or static
 	 data member.  */
-      if ((flag_implicit_templates
-	   && !flag_use_repository)
+      if (flag_implicit_templates
 	  || (flag_implicit_inline_templates
 	      && TREE_CODE (decl) == FUNCTION_DECL
 	      && DECL_DECLARED_INLINE_P (decl)))
@@ -5142,7 +5111,6 @@ c_parse_final_cleanups (void)
 
   perform_deferred_noexcept_checks ();
 
-  finish_repo ();
   fini_constexpr ();
 
   /* The entire file is now complete.  If requested, dump everything

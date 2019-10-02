@@ -314,9 +314,9 @@ The state of this option should be stored in variable @var{var}
 (actually a macro for @code{global_options.x_@var{var}}).
 The way that the state is stored depends on the type of option:
 
-@item Deprecated
-The option is deprecated and every usage of such option will
-result in a warning.
+@item WarnRemoved
+The option is removed and every usage of such option will
+result in a warning.  We use it option backward compatibility.
 
 @item Var(@var{var}, @var{set})
 The option controls an integer variable @var{var} and is active when

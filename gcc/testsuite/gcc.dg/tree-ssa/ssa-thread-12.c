@@ -56,7 +56,7 @@ bmp_iter_and_compl (bitmap_iterator * bi, unsigned *bit_no)
 }
 
 extern int VEC_int_base_length (VEC_int_base *);
-bitmap
+static __inline__ bitmap
 compute_idf (bitmap def_blocks, bitmap_head * dfs)
 {
   bitmap_iterator bi;

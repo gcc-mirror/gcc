@@ -410,8 +410,7 @@ find_end_label (rtx kind)
   while (NOTE_P (insn)
 	 || (NONJUMP_INSN_P (insn)
 	     && (GET_CODE (PATTERN (insn)) == USE
-		 || GET_CODE (PATTERN (insn)) == CLOBBER
-		 || GET_CODE (PATTERN (insn)) == CLOBBER_HIGH)))
+		 || GET_CODE (PATTERN (insn)) == CLOBBER)))
     insn = PREV_INSN (insn);
 
   /* When a target threads its epilogue we might already have a
@@ -1311,8 +1310,7 @@ try_merge_delay_insns (rtx_insn *insn, rtx_insn *thread)
 
       /* TRIAL must be a CALL_INSN or INSN.  Skip USE and CLOBBER.  */
       if (NONJUMP_INSN_P (trial)
-	  && (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER
-	      || GET_CODE (pat) == CLOBBER_HIGH))
+	  && (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER))
 	continue;
 
       if (GET_CODE (next_to_match) == GET_CODE (trial)
@@ -1506,8 +1504,7 @@ redundant_insn (rtx insn, rtx_insn *target, const vec<rtx_insn *> &delay_list)
       --insns_to_search;
 
       pat = PATTERN (trial);
-      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER
-	  || GET_CODE (pat) == CLOBBER_HIGH)
+      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
 	continue;
 
       if (GET_CODE (trial) == DEBUG_INSN)
@@ -1575,7 +1572,7 @@ redundant_insn (rtx insn, rtx_insn *target, const vec<rtx_insn *> &delay_list)
   /* Insns we pass may not set either NEEDED or SET, so merge them for
      simpler tests.  */
   needed.memory |= set.memory;
-  IOR_HARD_REG_SET (needed.regs, set.regs);
+  needed.regs |= set.regs;
 
   /* This insn isn't redundant if it conflicts with an insn that either is
      or will be in a delay slot of TARGET.  */
@@ -1605,8 +1602,7 @@ redundant_insn (rtx insn, rtx_insn *target, const vec<rtx_insn *> &delay_list)
       --insns_to_search;
 
       pat = PATTERN (trial);
-      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER
-	  || GET_CODE (pat) == CLOBBER_HIGH)
+      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
 	continue;
 
       if (GET_CODE (trial) == DEBUG_INSN)
@@ -1718,8 +1714,7 @@ own_thread_p (rtx thread, rtx label, int allow_fallthrough)
 	|| LABEL_P (insn)
 	|| (NONJUMP_INSN_P (insn)
 	    && GET_CODE (PATTERN (insn)) != USE
-	    && GET_CODE (PATTERN (insn)) != CLOBBER
-	    && GET_CODE (PATTERN (insn)) != CLOBBER_HIGH))
+	    && GET_CODE (PATTERN (insn)) != CLOBBER))
       return 0;
 
   return 1;
@@ -2042,8 +2037,7 @@ fill_simple_delay_slots (int non_jumps_p)
 	      pat = PATTERN (trial);
 
 	      /* Stand-alone USE and CLOBBER are just for flow.  */
-	      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER
-		  || GET_CODE (pat) == CLOBBER_HIGH)
+	      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
 		continue;
 
 	      /* And DEBUG_INSNs never go into delay slots.  */
@@ -2169,8 +2163,7 @@ fill_simple_delay_slots (int non_jumps_p)
 	      pat = PATTERN (trial);
 
 	      /* Stand-alone USE and CLOBBER are just for flow.  */
-	      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER
-		  || GET_CODE (pat) == CLOBBER_HIGH)
+	      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
 		continue;
 
 	      /* And DEBUG_INSNs do not go in delay slots.  */
@@ -2438,8 +2431,7 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
 	}
 
       pat = PATTERN (trial);
-      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER
-	  || GET_CODE (pat) == CLOBBER_HIGH)
+      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
 	continue;
 
       if (GET_CODE (trial) == DEBUG_INSN)
@@ -3833,8 +3825,7 @@ dbr_schedule (rtx_insn *first)
 	  if (! insn->deleted ()
 	      && NONJUMP_INSN_P (insn)
 	      && GET_CODE (PATTERN (insn)) != USE
-	      && GET_CODE (PATTERN (insn)) != CLOBBER
-	      && GET_CODE (PATTERN (insn)) != CLOBBER_HIGH)
+	      && GET_CODE (PATTERN (insn)) != CLOBBER)
 	    {
 	      if (GET_CODE (PATTERN (insn)) == SEQUENCE)
 		{

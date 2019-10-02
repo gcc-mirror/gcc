@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stmt.h"
 #include "expr.h"
 #include "expmed.h"
+#include "optabs.h"
 #include "output.h"
 #include "langhooks.h"
 #include "debug.h"
@@ -2872,25 +2873,27 @@ assemble_real (REAL_VALUE_TYPE d, scalar_float_mode mode, unsigned int align,
   real_to_target (data, &d, mode);
 
   /* Put out the first word with the specified alignment.  */
+  unsigned int chunk_nunits = MIN (nunits, units_per);
   if (reverse)
     elt = flip_storage_order (SImode, gen_int_mode (data[nelts - 1], SImode));
   else
-    elt = GEN_INT (data[0]);
-  assemble_integer (elt, MIN (nunits, units_per), align, 1);
-  nunits -= units_per;
+    elt = GEN_INT (sext_hwi (data[0], chunk_nunits * BITS_PER_UNIT));
+  assemble_integer (elt, chunk_nunits, align, 1);
+  nunits -= chunk_nunits;
 
   /* Subsequent words need only 32-bit alignment.  */
   align = min_align (align, 32);
 
   for (int i = 1; i < nelts; i++)
     {
+      chunk_nunits = MIN (nunits, units_per);
       if (reverse)
 	elt = flip_storage_order (SImode,
 				  gen_int_mode (data[nelts - 1 - i], SImode));
       else
-	elt = GEN_INT (data[i]);
-      assemble_integer (elt, MIN (nunits, units_per), align, 1);
-      nunits -= units_per;
+	elt = GEN_INT (sext_hwi (data[i], chunk_nunits * BITS_PER_UNIT));
+      assemble_integer (elt, chunk_nunits, align, 1);
+      nunits -= chunk_nunits;
     }
 }
 
@@ -3386,7 +3389,15 @@ build_constant_desc (tree exp)
   if (TREE_CODE (exp) == STRING_CST)
     SET_DECL_ALIGN (decl, targetm.constant_alignment (exp, DECL_ALIGN (decl)));
   else
-    align_variable (decl, 0);
+    {
+      align_variable (decl, 0);
+      if (DECL_ALIGN (decl) < GET_MODE_ALIGNMENT (DECL_MODE (decl))
+	  && ((optab_handler (movmisalign_optab, DECL_MODE (decl))
+	       != CODE_FOR_nothing)
+	      || targetm.slow_unaligned_access (DECL_MODE (decl),
+						DECL_ALIGN (decl))))
+	SET_DECL_ALIGN (decl, GET_MODE_ALIGNMENT (DECL_MODE (decl)));
+    }
 
   /* Now construct the SYMBOL_REF and the MEM.  */
   if (use_object_blocks_p ())

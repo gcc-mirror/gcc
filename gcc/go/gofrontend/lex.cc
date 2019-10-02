@@ -1996,7 +1996,7 @@ Lex::skip_cpp_comment()
 
 	      while (ps < pend && *ps != ' ' && *ps != '\t')
 		++ps;
-	      if (ps < pend)
+	      if (ps <= pend)
 		go_name = std::string(pg, ps - pg);
 	      while (ps < pend && (*ps == ' ' || *ps == '\t'))
 		++ps;
@@ -2015,8 +2015,8 @@ Lex::skip_cpp_comment()
 	      ext_name.clear();
 	    }
 	}
-      if (go_name.empty() || ext_name.empty())
-	go_error_at(loc, "usage: %<//go:linkname%> localname linkname");
+      if (go_name.empty())
+	go_error_at(loc, "usage: %<//go:linkname%> localname [linkname]");
       else
 	{
 	  if (this->linknames_ == NULL)

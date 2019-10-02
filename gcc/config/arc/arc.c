@@ -2735,7 +2735,7 @@ arc_must_save_register (int regno, struct function *func, bool special_p)
       break;
     }
 
-  if (((df_regs_ever_live_p (regno) && !call_used_regs[regno])
+  if (((df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
        /* In an interrupt save everything.  */
        || (ARC_INTERRUPT_P (fn_type)
 	   && (df_regs_ever_live_p (RETURN_ADDR_REGNUM)
@@ -10331,7 +10331,7 @@ arc_epilogue_uses (int regno)
   if (epilogue_completed && ARC_INTERRUPT_P (fn_type))
     {
       /* An interrupt function restores more registers.  */
-      if (df_regs_ever_live_p (regno) || call_used_regs[regno])
+      if (df_regs_ever_live_p (regno) || call_used_or_fixed_reg_p (regno))
 	return true;
     }
 

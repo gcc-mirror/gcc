@@ -65,15 +65,10 @@ along with GCC; see the file COPYING3.	If not see
 #include "recog.h"
 #include "lra.h"
 #include "lra-int.h"
+#include "function-abi.h"
 
 /* Number of candidates for rematerialization.  */
 static unsigned int cands_num;
-
-/* The following is used for representation of call_used_reg_set in
-   form array whose elements are hard register numbers with nonzero bit
-   in CALL_USED_REG_SET. */
-static int call_used_regs_arr_len;
-static int call_used_regs_arr[FIRST_PSEUDO_REGISTER];
 
 /* Bitmap used for different calculations.  */
 static bitmap_head temp_bitmap;
@@ -633,9 +628,12 @@ set_bb_regs (basic_block bb, rtx_insn *insn)
 	bitmap_set_bit (&subreg_regs, regno);
     }
   if (CALL_P (insn))
-    for (int i = 0; i < call_used_regs_arr_len; i++)
-      bitmap_set_bit (&get_remat_bb_data (bb)->dead_regs,
-		      call_used_regs_arr[i]);
+    {
+      /* Partially-clobbered registers might still be live.  */
+      HARD_REG_SET clobbers = insn_callee_abi (insn).full_reg_clobbers ();
+      bitmap_ior_into (&get_remat_bb_data (bb)->dead_regs,
+		       bitmap_view<HARD_REG_SET> (clobbers));
+    }
 }
 
 /* Calculate changed_regs and dead_regs for each BB.  */
@@ -698,7 +696,7 @@ reg_overlap_for_remat_p (lra_insn_reg *reg, rtx_insn *insn)
 
 /* Return true if a call used register is an input operand of INSN.  */
 static bool
-call_used_input_regno_present_p (rtx_insn *insn)
+call_used_input_regno_present_p (const function_abi &abi, rtx_insn *insn)
 {
   int iter;
   lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
@@ -709,8 +707,9 @@ call_used_input_regno_present_p (rtx_insn *insn)
     for (reg = (iter == 0 ? id->regs : static_id->hard_regs);
 	 reg != NULL;
 	 reg = reg->next)
-      if (reg->type == OP_IN && reg->regno < FIRST_PSEUDO_REGISTER
-	  && TEST_HARD_REG_BIT (call_used_reg_set, reg->regno))
+      if (reg->type == OP_IN
+	  && reg->regno < FIRST_PSEUDO_REGISTER
+	  && abi.clobbers_reg_p (reg->biggest_mode, reg->regno))
 	return true;
   return false;
 }
@@ -799,18 +798,21 @@ calculate_gen_cands (void)
 		    }
 	    
 	    if (CALL_P (insn))
-	      EXECUTE_IF_SET_IN_BITMAP (gen_insns, 0, uid, bi)
-		{
-		  rtx_insn *insn2 = lra_insn_recog_data[uid]->insn;
+	      {
+		function_abi callee_abi = insn_callee_abi (insn);
+		EXECUTE_IF_SET_IN_BITMAP (gen_insns, 0, uid, bi)
+		  {
+		    rtx_insn *insn2 = lra_insn_recog_data[uid]->insn;
 		  
-		  cand = insn_to_cand[INSN_UID (insn2)];
-		  gcc_assert (cand != NULL);
-		  if (call_used_input_regno_present_p (insn2))
-		    {
-		      bitmap_clear_bit (gen_cands, cand->index);
-		      bitmap_set_bit (&temp_bitmap, uid);
-		    }
-		}
+		    cand = insn_to_cand[INSN_UID (insn2)];
+		    gcc_assert (cand != NULL);
+		    if (call_used_input_regno_present_p (callee_abi, insn2))
+		      {
+			bitmap_clear_bit (gen_cands, cand->index);
+			bitmap_set_bit (&temp_bitmap, uid);
+		      }
+		  }
+	      }
 	    bitmap_and_compl_into (gen_insns, &temp_bitmap);
 
 	    cand = insn_to_cand[INSN_UID (insn)];
@@ -1205,13 +1207,16 @@ do_remat (void)
 		  }
 
 	  if (CALL_P (insn))
-	    EXECUTE_IF_SET_IN_BITMAP (avail_cands, 0, cid, bi)
-	      {
-		cand = all_cands[cid];
+	    {
+	      function_abi callee_abi = insn_callee_abi (insn);
+	      EXECUTE_IF_SET_IN_BITMAP (avail_cands, 0, cid, bi)
+		{
+		  cand = all_cands[cid];
 		
-		if (call_used_input_regno_present_p (cand->insn))
-		  bitmap_set_bit (&temp_bitmap, cand->index);
-	      }
+		  if (call_used_input_regno_present_p (callee_abi, cand->insn))
+		    bitmap_set_bit (&temp_bitmap, cand->index);
+		}
+	    }
 
 	  bitmap_and_compl_into (avail_cands, &temp_bitmap);
 
@@ -1307,10 +1312,6 @@ lra_remat (void)
   insn_to_cand_activation = XCNEWVEC (cand_t, get_max_uid ());
   regno_cands = XCNEWVEC (cand_t, max_regno);
   all_cands.create (8000);
-  call_used_regs_arr_len = 0;
-  for (int i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (call_used_regs[i])
-      call_used_regs_arr[call_used_regs_arr_len++] = i;
   initiate_cand_table ();
   create_remat_bb_data ();
   bitmap_initialize (&temp_bitmap, &reg_obstack);

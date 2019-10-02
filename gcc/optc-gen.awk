@@ -332,12 +332,14 @@ for (i = 0; i < n_opts; i++) {
         if (flag_set_p("Report", flags[i]))
 				  print "#error Ignored option with Report"
       }
-    else if (flag_set_p("Deprecated", flags[i])) {
-			  alias_data = "NULL, NULL, OPT_SPECIAL_deprecated"
+    else if (flag_set_p("Deprecated", flags[i]))
+        print "#error Deprecated was replaced with WarnRemoved"
+    else if (flag_set_p("WarnRemoved", flags[i])) {
+			  alias_data = "NULL, NULL, OPT_SPECIAL_warn_removed"
         if (warn_message != "NULL")
-				  print "#error Deprecated option with Warn"
+				  print "#error WarnRemoved option with Warn"
         if (flag_set_p("Report", flags[i]))
-				  print "#error Deprecated option with Report"
+				  print "#error WarnRemoved option with Report"
       }
 		else
 			alias_data = "NULL, NULL, N_OPTS"

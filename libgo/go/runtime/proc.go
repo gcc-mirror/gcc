@@ -12,37 +12,37 @@ import (
 )
 
 // Functions called by C code.
-//go:linkname main runtime.main
-//go:linkname goparkunlock runtime.goparkunlock
-//go:linkname newextram runtime.newextram
-//go:linkname acquirep runtime.acquirep
-//go:linkname releasep runtime.releasep
-//go:linkname incidlelocked runtime.incidlelocked
-//go:linkname ginit runtime.ginit
-//go:linkname schedinit runtime.schedinit
-//go:linkname ready runtime.ready
-//go:linkname stopm runtime.stopm
-//go:linkname handoffp runtime.handoffp
-//go:linkname wakep runtime.wakep
-//go:linkname stoplockedm runtime.stoplockedm
-//go:linkname schedule runtime.schedule
-//go:linkname execute runtime.execute
-//go:linkname goexit1 runtime.goexit1
-//go:linkname reentersyscall runtime.reentersyscall
-//go:linkname reentersyscallblock runtime.reentersyscallblock
-//go:linkname exitsyscall runtime.exitsyscall
-//go:linkname gfget runtime.gfget
-//go:linkname kickoff runtime.kickoff
-//go:linkname mstart1 runtime.mstart1
-//go:linkname mexit runtime.mexit
-//go:linkname globrunqput runtime.globrunqput
-//go:linkname pidleget runtime.pidleget
+//go:linkname main
+//go:linkname goparkunlock
+//go:linkname newextram
+//go:linkname acquirep
+//go:linkname releasep
+//go:linkname incidlelocked
+//go:linkname ginit
+//go:linkname schedinit
+//go:linkname ready
+//go:linkname stopm
+//go:linkname handoffp
+//go:linkname wakep
+//go:linkname stoplockedm
+//go:linkname schedule
+//go:linkname execute
+//go:linkname goexit1
+//go:linkname reentersyscall
+//go:linkname reentersyscallblock
+//go:linkname exitsyscall
+//go:linkname gfget
+//go:linkname kickoff
+//go:linkname mstart1
+//go:linkname mexit
+//go:linkname globrunqput
+//go:linkname pidleget
 
 // Exported for test (see runtime/testdata/testprogcgo/dropm_stub.go).
-//go:linkname getm runtime.getm
+//go:linkname getm
 
 // Function called by misc/cgo/test.
-//go:linkname lockedOSThread runtime.lockedOSThread
+//go:linkname lockedOSThread
 
 // C functions for thread and context management.
 func newosproc(*m)
@@ -69,6 +69,9 @@ func main_init()
 func main_main()
 
 var buildVersion = sys.TheVersion
+
+// set using cmd/go/internal/modload.ModInfoProg
+var modinfo string
 
 // Goroutine scheduler
 // The scheduler's job is to distribute ready-to-run goroutines over worker threads.
@@ -134,8 +137,9 @@ var buildVersion = sys.TheVersion
 // for nmspinning manipulation.
 
 var (
-	m0 m
-	g0 g
+	m0           m
+	g0           g
+	raceprocctx0 uintptr
 )
 
 // main_init_done is a signal used by cgocallbackg that initialization
@@ -187,6 +191,10 @@ func main(unsafe.Pointer) {
 		throw("runtime.main not on m0")
 	}
 
+	if nanotime() == 0 {
+		throw("nanotime returning zero")
+	}
+
 	// Defer unlock so that runtime.Goexit during init does the unlock too.
 	needUnlock := true
 	defer func() {
@@ -211,12 +219,12 @@ func main(unsafe.Pointer) {
 	createGcRootsIndex()
 	close(main_init_done)
 
-	needUnlock = false
-	unlockOSThread()
-
 	// For gccgo we have to wait until after main is initialized
 	// to enable GC, because initializing main registers the GC roots.
 	gcenable()
+
+	needUnlock = false
+	unlockOSThread()
 
 	if isarchive || islibrary {
 		// A program compiled with -buildmode=c-archive or c-shared
@@ -322,7 +330,7 @@ func gopark(unlockf func(*g, unsafe.Pointer) bool, lock unsafe.Pointer, reason w
 		throw("gopark: bad g status")
 	}
 	mp.waitlock = lock
-	mp.waitunlockf = *(*unsafe.Pointer)(unsafe.Pointer(&unlockf))
+	mp.waitunlockf = unlockf
 	gp.waitreason = reason
 	mp.waittraceev = traceEv
 	mp.waittraceskip = traceskip
@@ -491,7 +499,7 @@ func cpuinit() {
 	var env string
 
 	switch GOOS {
-	case "aix", "darwin", "dragonfly", "freebsd", "netbsd", "openbsd", "solaris", "linux":
+	case "aix", "darwin", "dragonfly", "freebsd", "netbsd", "openbsd", "illumos", "solaris", "linux":
 		cpu.DebugOptions = true
 
 		// Similar to goenv_unix but extracts the environment value for
@@ -577,6 +585,11 @@ func schedinit() {
 		// to ensure runtime·buildVersion is kept in the resulting binary.
 		buildVersion = "unknown"
 	}
+	if len(modinfo) == 1 {
+		// Condition should never trigger. This code just serves
+		// to ensure runtime·modinfo is kept in the resulting binary.
+		modinfo = ""
+	}
 }
 
 func dumpgstatus(gp *g) {
@@ -637,7 +650,7 @@ func ready(gp *g, traceskip int, next bool) {
 
 	// Mark runnable.
 	_g_ := getg()
-	_g_.m.locks++ // disable preemption because it can be holding p in a local var
+	mp := acquirem() // disable preemption because it can be holding p in a local var
 	if status&^_Gscan != _Gwaiting {
 		dumpgstatus(gp)
 		throw("bad g->status in ready")
@@ -649,7 +662,7 @@ func ready(gp *g, traceskip int, next bool) {
 	if atomic.Load(&sched.npidle) != 0 && atomic.Load(&sched.nmspinning) == 0 {
 		wakep()
 	}
-	_g_.m.locks--
+	releasem(mp)
 }
 
 // freezeStopWait is a large value that freezetheworld sets
@@ -682,13 +695,6 @@ func freezetheworld() {
 	usleep(1000)
 	preemptall()
 	usleep(1000)
-}
-
-func isscanstatus(status uint32) bool {
-	if status == _Gscan {
-		throw("isscanstatus: Bad status Gscan")
-	}
-	return status&_Gscan == _Gscan
 }
 
 // All reads and writes of g's status go through readgstatus, casgstatus
@@ -1111,9 +1117,7 @@ func stopTheWorldWithSema() {
 }
 
 func startTheWorldWithSema(emitTraceEvent bool) int64 {
-	_g_ := getg()
-
-	_g_.m.locks++ // disable preemption because it can be holding p in a local var
+	mp := acquirem() // disable preemption because it can be holding p in a local var
 	if netpollinited() {
 		list := netpoll(false) // non-blocking
 		injectglist(&list)
@@ -1163,7 +1167,7 @@ func startTheWorldWithSema(emitTraceEvent bool) int64 {
 		wakep()
 	}
 
-	_g_.m.locks--
+	releasem(mp)
 
 	return startTime
 }
@@ -1477,7 +1481,7 @@ func runSafePointFn() {
 //go:yeswritebarrierrec
 func allocm(_p_ *p, fn func(), allocatestack bool) (mp *m, g0Stack unsafe.Pointer, g0StackSize uintptr) {
 	_g_ := getg()
-	_g_.m.locks++ // disable GC because it can be called from sysmon
+	acquirem() // disable GC because it can be called from sysmon
 	if _g_.m.p == 0 {
 		acquirep(_p_) // temporarily borrow p for mallocs in this function
 	}
@@ -1512,7 +1516,7 @@ func allocm(_p_ *p, fn func(), allocatestack bool) (mp *m, g0Stack unsafe.Pointe
 	if _p_ == _g_.m.p.ptr() {
 		releasep()
 	}
-	_g_.m.locks--
+	releasem(_g_.m)
 
 	return mp, g0Stack, g0StackSize
 }
@@ -2480,15 +2484,22 @@ top:
 
 	var gp *g
 	var inheritTime bool
+
+	// Normal goroutines will check for need to wakeP in ready,
+	// but GCworkers and tracereaders will not, so the check must
+	// be done here instead.
+	tryWakeP := false
 	if trace.enabled || trace.shutdown {
 		gp = traceReader()
 		if gp != nil {
 			casgstatus(gp, _Gwaiting, _Grunnable)
 			traceGoUnpark(gp, 0)
+			tryWakeP = true
 		}
 	}
 	if gp == nil && gcBlackenEnabled != 0 {
 		gp = gcController.findRunnableGCWorker(_g_.m.p.ptr())
+		tryWakeP = tryWakeP || gp != nil
 	}
 	if gp == nil {
 		// Check the global runnable queue once in a while to ensure fairness.
@@ -2549,6 +2560,13 @@ top:
 		}
 	}
 
+	// If about to schedule a not-normal goroutine (a GCworker or tracereader),
+	// wake a P if there is one.
+	if tryWakeP {
+		if atomic.Load(&sched.npidle) != 0 && atomic.Load(&sched.nmspinning) == 0 {
+			wakep()
+		}
+	}
 	if gp.lockedm != 0 {
 		// Hands off own p to the locked m,
 		// then blocks waiting for a new p.
@@ -2589,8 +2607,7 @@ func park_m(gp *g) {
 	dropg()
 	casgstatus(gp, _Grunning, _Gwaiting)
 
-	if _g_.m.waitunlockf != nil {
-		fn := *(*func(*g, unsafe.Pointer) bool)(unsafe.Pointer(&_g_.m.waitunlockf))
+	if fn := _g_.m.waitunlockf; fn != nil {
 		ok := fn(gp, _g_.m.waitlock)
 		_g_.m.waitunlockf = nil
 		_g_.m.waitlock = nil
@@ -3151,7 +3168,7 @@ func newproc(fn uintptr, arg unsafe.Pointer) *g {
 		_g_.m.throwing = -1 // do not dump full stacks
 		throw("go of nil func value")
 	}
-	_g_.m.locks++ // disable preemption because it can be holding p in a local var
+	acquirem() // disable preemption because it can be holding p in a local var
 
 	_p_ := _g_.m.p.ptr()
 	newg := gfget(_p_)
@@ -3214,7 +3231,7 @@ func newproc(fn uintptr, arg unsafe.Pointer) *g {
 	if atomic.Load(&sched.npidle) != 0 && atomic.Load(&sched.nmspinning) == 0 && mainStarted {
 		wakep()
 	}
-	_g_.m.locks--
+	releasem(_g_.m)
 	return newg
 }
 
@@ -3488,9 +3505,6 @@ func _GC()                        { _GC() }
 func _LostSIGPROFDuringAtomic64() { _LostSIGPROFDuringAtomic64() }
 func _VDSO()                      { _VDSO() }
 
-// Counts SIGPROFs received while in atomic64 critical section, on mips{,le}
-var lostAtomic64Count uint64
-
 var _SystemPC = funcPC(_System)
 var _ExternalCodePC = funcPC(_ExternalCode)
 var _LostExternalCodePC = funcPC(_LostExternalCode)
@@ -3581,10 +3595,6 @@ func sigprof(pc uintptr, gp *g, mp *m) {
 	}
 
 	if prof.hz != 0 {
-		if (GOARCH == "mips" || GOARCH == "mipsle" || GOARCH == "arm") && lostAtomic64Count > 0 {
-			cpuprof.addLostAtomic64(lostAtomic64Count)
-			lostAtomic64Count = 0
-		}
 		cpuprof.add(gp, stk[:n])
 	}
 	getg().m.mallocing--
@@ -3673,6 +3683,88 @@ func setcpuprofilerate(hz int32) {
 	_g_.m.locks--
 }
 
+// init initializes pp, which may be a freshly allocated p or a
+// previously destroyed p, and transitions it to status _Pgcstop.
+func (pp *p) init(id int32) {
+	pp.id = id
+	pp.status = _Pgcstop
+	pp.sudogcache = pp.sudogbuf[:0]
+	pp.deferpool = pp.deferpoolbuf[:0]
+	pp.wbBuf.reset()
+	if pp.mcache == nil {
+		if id == 0 {
+			if getg().m.mcache == nil {
+				throw("missing mcache?")
+			}
+			pp.mcache = getg().m.mcache // bootstrap
+		} else {
+			pp.mcache = allocmcache()
+		}
+	}
+	if raceenabled && pp.raceprocctx == 0 {
+		if id == 0 {
+			pp.raceprocctx = raceprocctx0
+			raceprocctx0 = 0 // bootstrap
+		} else {
+			pp.raceprocctx = raceproccreate()
+		}
+	}
+}
+
+// destroy releases all of the resources associated with pp and
+// transitions it to status _Pdead.
+//
+// sched.lock must be held and the world must be stopped.
+func (pp *p) destroy() {
+	// Move all runnable goroutines to the global queue
+	for pp.runqhead != pp.runqtail {
+		// Pop from tail of local queue
+		pp.runqtail--
+		gp := pp.runq[pp.runqtail%uint32(len(pp.runq))].ptr()
+		// Push onto head of global queue
+		globrunqputhead(gp)
+	}
+	if pp.runnext != 0 {
+		globrunqputhead(pp.runnext.ptr())
+		pp.runnext = 0
+	}
+	// If there's a background worker, make it runnable and put
+	// it on the global queue so it can clean itself up.
+	if gp := pp.gcBgMarkWorker.ptr(); gp != nil {
+		casgstatus(gp, _Gwaiting, _Grunnable)
+		if trace.enabled {
+			traceGoUnpark(gp, 0)
+		}
+		globrunqput(gp)
+		// This assignment doesn't race because the
+		// world is stopped.
+		pp.gcBgMarkWorker.set(nil)
+	}
+	// Flush p's write barrier buffer.
+	if gcphase != _GCoff {
+		wbBufFlush1(pp)
+		pp.gcw.dispose()
+	}
+	for i := range pp.sudogbuf {
+		pp.sudogbuf[i] = nil
+	}
+	pp.sudogcache = pp.sudogbuf[:0]
+	for i := range pp.deferpoolbuf {
+		pp.deferpoolbuf[i] = nil
+	}
+	pp.deferpool = pp.deferpoolbuf[:0]
+	freemcache(pp.mcache)
+	pp.mcache = nil
+	gfpurge(pp)
+	traceProcFree(pp)
+	if raceenabled {
+		raceprocdestroy(pp.raceprocctx)
+		pp.raceprocctx = 0
+	}
+	pp.gcAssistTime = 0
+	pp.status = _Pdead
+}
+
 // Change number of processors. The world is stopped, sched is locked.
 // gcworkbufs are not being modified by either the GC or
 // the write barrier code.
@@ -3711,89 +3803,13 @@ func procresize(nprocs int32) *p {
 	}
 
 	// initialize new P's
-	for i := int32(0); i < nprocs; i++ {
+	for i := old; i < nprocs; i++ {
 		pp := allp[i]
 		if pp == nil {
 			pp = new(p)
-			pp.id = i
-			pp.status = _Pgcstop
-			pp.sudogcache = pp.sudogbuf[:0]
-			pp.deferpool = pp.deferpoolbuf[:0]
-			pp.wbBuf.reset()
-			atomicstorep(unsafe.Pointer(&allp[i]), unsafe.Pointer(pp))
 		}
-		if pp.mcache == nil {
-			if old == 0 && i == 0 {
-				if getg().m.mcache == nil {
-					throw("missing mcache?")
-				}
-				pp.mcache = getg().m.mcache // bootstrap
-			} else {
-				pp.mcache = allocmcache()
-			}
-		}
-	}
-
-	// free unused P's
-	for i := nprocs; i < old; i++ {
-		p := allp[i]
-		if trace.enabled && p == getg().m.p.ptr() {
-			// moving to p[0], pretend that we were descheduled
-			// and then scheduled again to keep the trace sane.
-			traceGoSched()
-			traceProcStop(p)
-		}
-		// move all runnable goroutines to the global queue
-		for p.runqhead != p.runqtail {
-			// pop from tail of local queue
-			p.runqtail--
-			gp := p.runq[p.runqtail%uint32(len(p.runq))].ptr()
-			// push onto head of global queue
-			globrunqputhead(gp)
-		}
-		if p.runnext != 0 {
-			globrunqputhead(p.runnext.ptr())
-			p.runnext = 0
-		}
-		// if there's a background worker, make it runnable and put
-		// it on the global queue so it can clean itself up
-		if gp := p.gcBgMarkWorker.ptr(); gp != nil {
-			casgstatus(gp, _Gwaiting, _Grunnable)
-			if trace.enabled {
-				traceGoUnpark(gp, 0)
-			}
-			globrunqput(gp)
-			// This assignment doesn't race because the
-			// world is stopped.
-			p.gcBgMarkWorker.set(nil)
-		}
-		// Flush p's write barrier buffer.
-		if gcphase != _GCoff {
-			wbBufFlush1(p)
-			p.gcw.dispose()
-		}
-		for i := range p.sudogbuf {
-			p.sudogbuf[i] = nil
-		}
-		p.sudogcache = p.sudogbuf[:0]
-		for i := range p.deferpoolbuf {
-			p.deferpoolbuf[i] = nil
-		}
-		p.deferpool = p.deferpoolbuf[:0]
-		freemcache(p.mcache)
-		p.mcache = nil
-		gfpurge(p)
-		traceProcFree(p)
-		p.gcAssistTime = 0
-		p.status = _Pdead
-		// can't free P itself because it can be referenced by an M in syscall
-	}
-
-	// Trim allp.
-	if int32(len(allp)) != nprocs {
-		lock(&allpLock)
-		allp = allp[:nprocs]
-		unlock(&allpLock)
+		pp.init(i)
+		atomicstorep(unsafe.Pointer(&allp[i]), unsafe.Pointer(pp))
 	}
 
 	_g_ := getg()
@@ -3802,8 +3818,19 @@ func procresize(nprocs int32) *p {
 		_g_.m.p.ptr().status = _Prunning
 		_g_.m.p.ptr().mcache.prepareForSweep()
 	} else {
-		// release the current P and acquire allp[0]
+		// release the current P and acquire allp[0].
+		//
+		// We must do this before destroying our current P
+		// because p.destroy itself has write barriers, so we
+		// need to do that from a valid P.
 		if _g_.m.p != 0 {
+			if trace.enabled {
+				// Pretend that we were descheduled
+				// and then scheduled again to keep
+				// the trace sane.
+				traceGoSched()
+				traceProcStop(_g_.m.p.ptr())
+			}
 			_g_.m.p.ptr().m = 0
 		}
 		_g_.m.p = 0
@@ -3816,6 +3843,21 @@ func procresize(nprocs int32) *p {
 			traceGoStart()
 		}
 	}
+
+	// release resources from unused P's
+	for i := nprocs; i < old; i++ {
+		p := allp[i]
+		p.destroy()
+		// can't free P itself because it can be referenced by an M in syscall
+	}
+
+	// Trim allp.
+	if int32(len(allp)) != nprocs {
+		lock(&allpLock)
+		allp = allp[:nprocs]
+		unlock(&allpLock)
+	}
+
 	var runnablePs *p
 	for i := nprocs - 1; i >= 0; i-- {
 		p := allp[i]
@@ -3893,7 +3935,7 @@ func releasep() *p {
 	}
 	_p_ := _g_.m.p.ptr()
 	if _p_.m.ptr() != _g_.m || _p_.mcache != _g_.m.mcache || _p_.status != _Prunning {
-		print("releasep: m=", _g_.m, " m->p=", _g_.m.p.ptr(), " p->m=", _p_.m, " m->mcache=", _g_.m.mcache, " p->mcache=", _p_.mcache, " p->status=", _p_.status, "\n")
+		print("releasep: m=", _g_.m, " m->p=", _g_.m.p.ptr(), " p->m=", hex(_p_.m), " m->mcache=", _g_.m.mcache, " p->mcache=", _p_.mcache, " p->status=", _p_.status, "\n")
 		throw("releasep: invalid p state")
 	}
 	if trace.enabled {
@@ -3940,7 +3982,12 @@ func checkdead() {
 	// for details.)
 	var run0 int32
 	if !iscgo && cgoHasExtraM {
-		run0 = 1
+		mp := lockextra(true)
+		haveExtraM := extraMCount > 0
+		unlockextra(mp)
+		if haveExtraM {
+			run0 = 1
+		}
 	}
 
 	run := mcount() - sched.nmidle - sched.nmidlelocked - sched.nmsys
@@ -4016,19 +4063,6 @@ func sysmon() {
 	checkdead()
 	unlock(&sched.lock)
 
-	// If a heap span goes unused for 5 minutes after a garbage collection,
-	// we hand it back to the operating system.
-	scavengelimit := int64(5 * 60 * 1e9)
-
-	if debug.scavenge > 0 {
-		// Scavenge-a-lot for testing.
-		forcegcperiod = 10 * 1e6
-		scavengelimit = 20 * 1e6
-	}
-
-	lastscavenge := nanotime()
-	nscavenge := 0
-
 	lasttrace := int64(0)
 	idle := 0 // how many cycles in succession we had not wokeup somebody
 	delay := uint32(0)
@@ -4050,9 +4084,6 @@ func sysmon() {
 				// Make wake-up period small enough
 				// for the sampling to be correct.
 				maxsleep := forcegcperiod / 2
-				if scavengelimit < forcegcperiod {
-					maxsleep = scavengelimit / 2
-				}
 				shouldRelax := true
 				if osRelaxMinNS > 0 {
 					next := timeSleepUntil()
@@ -4115,12 +4146,6 @@ func sysmon() {
 			injectglist(&list)
 			unlock(&forcegc.lock)
 		}
-		// scavenge heap once in a while
-		if lastscavenge+scavengelimit/2 < now {
-			mheap_.scavenge(int32(nscavenge), uint64(now), uint64(scavengelimit))
-			lastscavenge = now
-			nscavenge++
-		}
 		if debug.schedtrace > 0 && lasttrace+int64(debug.schedtrace)*1000000 <= now {
 			lasttrace = now
 			schedtrace(debug.scheddetail > 0)
@@ -4156,10 +4181,24 @@ func retake(now int64) uint32 {
 		}
 		pd := &_p_.sysmontick
 		s := _p_.status
+		sysretake := false
+		if s == _Prunning || s == _Psyscall {
+			// Preempt G if it's running for too long.
+			t := int64(_p_.schedtick)
+			if int64(pd.schedtick) != t {
+				pd.schedtick = uint32(t)
+				pd.schedwhen = now
+			} else if pd.schedwhen+forcePreemptNS <= now {
+				preemptone(_p_)
+				// In case of syscall, preemptone() doesn't
+				// work, because there is no M wired to P.
+				sysretake = true
+			}
+		}
 		if s == _Psyscall {
 			// Retake P from syscall if it's there for more than 1 sysmon tick (at least 20us).
 			t := int64(_p_.syscalltick)
-			if int64(pd.syscalltick) != t {
+			if !sysretake && int64(pd.syscalltick) != t {
 				pd.syscalltick = uint32(t)
 				pd.syscallwhen = now
 				continue
@@ -4188,18 +4227,6 @@ func retake(now int64) uint32 {
 			}
 			incidlelocked(1)
 			lock(&allpLock)
-		} else if s == _Prunning {
-			// Preempt G if it's running for too long.
-			t := int64(_p_.schedtick)
-			if int64(pd.schedtick) != t {
-				pd.schedtick = uint32(t)
-				pd.schedwhen = now
-				continue
-			}
-			if pd.schedwhen+forcePreemptNS > now {
-				continue
-			}
-			preemptone(_p_)
 		}
 	}
 	unlock(&allpLock)

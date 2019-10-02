@@ -2208,6 +2208,17 @@ needed.",
  void, (tree node, tree *attr_ptr),
  hook_void_tree_treeptr)
 
+/* Perform additional target-specific processing of generic attributes.  */
+DEFHOOK
+(handle_generic_attribute,
+ "Define this target hook if you want to be able to perform additional\n\
+target-specific processing of an attribute which is handled generically\n\
+by a front end.  The arguments are the same as those which are passed to\n\
+attribute handlers.  So far this only affects the @var{noinit} and\n\
+@var{section} attribute.",
+ tree, (tree *node, tree name, tree args, int flags, bool *no_add_attrs),
+ hook_tree_treeptr_tree_tree_int_boolptr_null)
+
 /* Return true if FNDECL (which has at least one machine attribute)
    can be inlined despite its machine attributes, false otherwise.  */
 DEFHOOK
@@ -2385,6 +2396,24 @@ complete expression that implements the operation, usually\n\
 another @code{CALL_EXPR}.\n\
 @var{arglist} really has type @samp{VEC(tree,gc)*}",
  tree, (unsigned int /*location_t*/ loc, tree fndecl, void *arglist), NULL)
+
+DEFHOOK
+(check_builtin_call,
+ "Perform semantic checking on a call to a machine-specific built-in\n\
+function after its arguments have been constrained to the function\n\
+signature.  Return true if the call is valid, otherwise report an error\n\
+and return false.\n\
+\n\
+This hook is called after @code{TARGET_RESOLVE_OVERLOADED_BUILTIN}.\n\
+The call was originally to built-in function @var{orig_fndecl},\n\
+but after the optional @code{TARGET_RESOLVE_OVERLOADED_BUILTIN}\n\
+step is now to built-in function @var{fndecl}.  @var{loc} is the\n\
+location of the call and @var{args} is an array of function arguments,\n\
+of which there are @var{nargs}.  @var{arg_loc} specifies the location\n\
+of each argument.",
+ bool, (location_t loc, vec<location_t> arg_loc, tree fndecl,
+	tree orig_fndecl, unsigned int nargs, tree *args),
+ NULL)
 
 /* Fold a target-specific builtin to a tree valid for both GIMPLE
    and GENERIC.  */
@@ -2585,38 +2614,6 @@ DEFHOOK
   follow through a hot/cold partitioning.",
  bool, (const rtx_insn *follower, const rtx_insn *followee),
  hook_bool_const_rtx_insn_const_rtx_insn_true)
-
-/* Return a register class for which branch target register
-   optimizations should be applied.  */
-DEFHOOK
-(branch_target_register_class,
- "This target hook returns a register class for which branch target register\n\
-optimizations should be applied.  All registers in this class should be\n\
-usable interchangeably.  After reload, registers in this class will be\n\
-re-allocated and loads will be hoisted out of loops and be subjected\n\
-to inter-block scheduling.",
- reg_class_t, (void),
- default_branch_target_register_class)
-
-/* Return true if branch target register optimizations should include
-   callee-saved registers that are not already live during the current
-   function.  AFTER_PE_GEN is true if prologues and epilogues have
-   already been generated.  */
-DEFHOOK
-(branch_target_register_callee_saved,
- "Branch target register optimization will by default exclude callee-saved\n\
-registers\n\
-that are not already live during the current function; if this target hook\n\
-returns true, they will be included.  The target code must than make sure\n\
-that all target registers in the class returned by\n\
-@samp{TARGET_BRANCH_TARGET_REGISTER_CLASS} that might need saving are\n\
-saved.  @var{after_prologue_epilogue_gen} indicates if prologues and\n\
-epilogues have already been generated.  Note, even if you only return\n\
-true when @var{after_prologue_epilogue_gen} is false, you still are likely\n\
-to have to make special provisions in @code{INITIAL_ELIMINATION_OFFSET}\n\
-to reserve space for caller-saved target registers.",
- bool, (bool after_prologue_epilogue_gen),
- hook_bool_bool_false)
 
 /* Return true if the target supports conditional execution.  */
 DEFHOOK
@@ -4246,6 +4243,39 @@ The default version of this hook returns false.",
  bool, (class loop *loop),
  default_predict_doloop_p)
 
+DEFHOOKPOD
+(have_count_reg_decr_p,
+ "Return true if the target supports hardware count register for decrement\n\
+and branch.\n\
+The default value is false.",
+ bool, false)
+
+DEFHOOKPOD
+(doloop_cost_for_generic,
+ "One IV candidate dedicated for doloop is introduced in IVOPTs, we can\n\
+calculate the computation cost of adopting it to any generic IV use by\n\
+function get_computation_cost as before.  But for targets which have\n\
+hardware count register support for decrement and branch, it may have to\n\
+move IV value from hardware count register to general purpose register\n\
+while doloop IV candidate is used for generic IV uses.  It probably takes\n\
+expensive penalty.  This hook allows target owners to define the cost for\n\
+this especially for generic IV uses.\n\
+The default value is zero.",
+ int64_t, 0)
+
+DEFHOOKPOD
+(doloop_cost_for_address,
+ "One IV candidate dedicated for doloop is introduced in IVOPTs, we can\n\
+calculate the computation cost of adopting it to any address IV use by\n\
+function get_computation_cost as before.  But for targets which have\n\
+hardware count register support for decrement and branch, it may have to\n\
+move IV value from hardware count register to general purpose register\n\
+while doloop IV candidate is used for address IV uses.  It probably takes\n\
+expensive penalty.  This hook allows target owners to define the cost for\n\
+this escpecially for address IV uses.\n\
+The default value is zero.",
+ int64_t, 0)
+
 DEFHOOK
 (can_use_doloop_p,
  "Return true if it is possible to use low-overhead loops (@code{doloop_end}\n\
@@ -4912,6 +4942,28 @@ should recognize only the caller's register numbers.\n\
 If this hook is not defined, then FUNCTION_VALUE_REGNO_P will be used.",
  bool, (const unsigned int regno),
  default_function_value_regno_p)
+
+DEFHOOK
+(fntype_abi,
+ "Return the ABI used by a function with type @var{type}; see the\n\
+definition of @code{predefined_function_abi} for details of the ABI\n\
+descriptor.  Targets only need to define this hook if they support\n\
+interoperability between several ABIs in the same translation unit.",
+ const predefined_function_abi &, (const_tree type),
+ NULL)
+
+DEFHOOK
+(insn_callee_abi,
+ "This hook returns a description of the ABI used by the target of\n\
+call instruction @var{insn}; see the definition of\n\
+@code{predefined_function_abi} for details of the ABI descriptor.\n\
+Only the global function @code{insn_callee_abi} should call this hook\n\
+directly.\n\
+\n\
+Targets only need to define this hook if they support\n\
+interoperability between several ABIs in the same translation unit.",
+ const predefined_function_abi &, (const rtx_insn *insn),
+ NULL)
 
 /* ??? Documenting this hook requires a GFDL license grant.  */
 DEFHOOK_UNDOC
@@ -5762,52 +5814,33 @@ The default version of this hook always returns @code{true}.",
 
 DEFHOOK
 (hard_regno_call_part_clobbered,
- "This hook should return true if @var{regno} is partly call-saved and\n\
-partly call-clobbered, and if a value of mode @var{mode} would be partly\n\
-clobbered by call instruction @var{insn}.  If @var{insn} is NULL then it\n\
-should return true if any call could partly clobber the register.\n\
-For example, if the low 32 bits of @var{regno} are preserved across a call\n\
-but higher bits are clobbered, this hook should return true for a 64-bit\n\
-mode but false for a 32-bit mode.\n\
+ "ABIs usually specify that calls must preserve the full contents\n\
+of a particular register, or that calls can alter any part of a\n\
+particular register.  This information is captured by the target macro\n\
+@code{CALL_REALLY_USED_REGISTERS}.  However, some ABIs specify that calls\n\
+must preserve certain bits of a particular register but can alter others.\n\
+This hook should return true if this applies to at least one of the\n\
+registers in @samp{(reg:@var{mode} @var{regno})}, and if as a result the\n\
+call would alter part of the @var{mode} value.  For example, if a call\n\
+preserves the low 32 bits of a 64-bit hard register @var{regno} but can\n\
+clobber the upper 32 bits, this hook should return true for a 64-bit mode\n\
+but false for a 32-bit mode.\n\
+\n\
+The value of @var{abi_id} comes from the @code{predefined_function_abi}\n\
+structure that describes the ABI of the call; see the definition of the\n\
+structure for more details.  If (as is usual) the target uses the same ABI\n\
+for all functions in a translation unit, @var{abi_id} is always 0.\n\
 \n\
 The default implementation returns false, which is correct\n\
 for targets that don't have partly call-clobbered registers.",
- bool, (rtx_insn *insn, unsigned int regno, machine_mode mode),
- hook_bool_insn_uint_mode_false)
-
-DEFHOOK
-(return_call_with_max_clobbers,
- "This hook returns a pointer to the call that partially clobbers the\n\
-most registers.  If a platform supports multiple ABIs where the registers\n\
-that are partially clobbered may vary, this function compares two\n\
-calls and returns a pointer to the one that clobbers the most registers.\n\
-If both calls clobber the same registers, @var{call_1} must be returned.\n\
-\n\
-The registers clobbered in different ABIs must be a proper subset or\n\
-superset of all other ABIs.  @var{call_1} must always be a call insn,\n\
-call_2 may be NULL or a call insn.",
- rtx_insn *, (rtx_insn *call_1, rtx_insn *call_2),
- NULL)
+ bool, (unsigned int abi_id, unsigned int regno, machine_mode mode),
+ hook_bool_uint_uint_mode_false)
 
 DEFHOOK
 (get_multilib_abi_name,
  "This hook returns name of multilib ABI name.",
  const char *, (void),
  hook_constcharptr_void_null)
-
-DEFHOOK
-(remove_extra_call_preserved_regs,
- "This hook removes registers from the set of call-clobbered registers\n\
- in @var{used_regs} if, contrary to the default rules, something guarantees\n\
- that @samp{insn} preserves those registers.  For example, some targets\n\
- support variant ABIs in which functions preserve more registers than\n\
- normal functions would.  Removing those extra registers from @var{used_regs}\n\
- can lead to better register allocation.\n\
- \n\
- The default implementation does nothing, which is always safe.\n\
- Defining the hook is purely an optimization.",
- void, (rtx_insn *insn, HARD_REG_SET *used_regs),
- default_remove_extra_call_preserved_regs)
 
 /* Return the smallest number of different values for which it is best to
    use a jump-table instead of a tree of conditional branches.  */

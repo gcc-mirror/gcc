@@ -121,6 +121,9 @@ static HOST_WIDE_INT vax_starting_frame_offset (void);
 #undef TARGET_STARTING_FRAME_OFFSET
 #define TARGET_STARTING_FRAME_OFFSET vax_starting_frame_offset
 
+#undef TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Set global variables as needed for the options enabled.  */
@@ -166,7 +169,7 @@ vax_expand_prologue (void)
   rtx insn;
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (df_regs_ever_live_p (regno) && !call_used_regs[regno])
+    if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
       mask |= 1 << regno;
 
   insn = emit_insn (gen_procedure_entry_mask (GEN_INT (mask)));

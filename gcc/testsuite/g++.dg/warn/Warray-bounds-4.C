@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-options "-O2 -Warray-bounds" }
+// { dg-skip-if "" { *-*-aix* } }
 
 class String
 {

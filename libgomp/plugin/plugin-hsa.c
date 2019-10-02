@@ -28,7 +28,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#include "gstdint.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -289,7 +289,7 @@ hsa_warn (const char *str, hsa_status_t status)
   if (!debug)
     return;
 
-  const char *hsa_error_msg;
+  const char *hsa_error_msg = "[unknown]";
   hsa_fns.hsa_status_string_fn (status, &hsa_error_msg);
 
   fprintf (stderr, "HSA warning: %s\nRuntime message: %s", str, hsa_error_msg);
@@ -301,7 +301,7 @@ hsa_warn (const char *str, hsa_status_t status)
 static void
 hsa_fatal (const char *str, hsa_status_t status)
 {
-  const char *hsa_error_msg;
+  const char *hsa_error_msg = "[unknown]";
   hsa_fns.hsa_status_string_fn (status, &hsa_error_msg);
   GOMP_PLUGIN_fatal ("HSA fatal error: %s\nRuntime message: %s", str,
 		     hsa_error_msg);
@@ -313,7 +313,7 @@ hsa_fatal (const char *str, hsa_status_t status)
 static bool
 hsa_error (const char *str, hsa_status_t status)
 {
-  const char *hsa_error_msg;
+  const char *hsa_error_msg = "[unknown]";
   hsa_fns.hsa_status_string_fn (status, &hsa_error_msg);
   GOMP_PLUGIN_error ("HSA fatal error: %s\nRuntime message: %s", str,
 		     hsa_error_msg);

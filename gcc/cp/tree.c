@@ -5500,6 +5500,8 @@ cp_expr_location (const_tree t_)
       return LAMBDA_EXPR_LOCATION (t);
     case STATIC_ASSERT:
       return STATIC_ASSERT_SOURCE_LOCATION (t);
+    case TRAIT_EXPR:
+      return TRAIT_EXPR_LOCATION (t);
     default:
       return EXPR_LOCATION (t);
     }

@@ -552,7 +552,7 @@ fp_regs_to_save (void)
     return 0;
 
   for (i = FIRST_FP_REGNUM; i <= LAST_FP_REGNUM; ++i)
-    if (df_regs_ever_live_p (i) && ! call_really_used_regs[i])
+    if (df_regs_ever_live_p (i) && ! call_used_regs[i])
       ++n;
 
   return n;
@@ -640,7 +640,7 @@ mn10300_get_live_callee_saved_regs (unsigned int * bytes_saved)
 
   count = mask = 0;
   for (i = 0; i <= LAST_EXTENDED_REGNUM; i++)
-    if (df_regs_ever_live_p (i) && ! call_really_used_regs[i])
+    if (df_regs_ever_live_p (i) && ! call_used_regs[i])
       {
 	mask |= (1 << i);
 	++ count;
@@ -878,7 +878,7 @@ mn10300_expand_prologue (void)
 	 frame pointer, size is nonzero and the user hasn't
 	 changed the calling conventions of a0.  */
       if (! frame_pointer_needed && size
-	  && call_really_used_regs [FIRST_ADDRESS_REGNUM]
+	  && call_used_regs[FIRST_ADDRESS_REGNUM]
 	  && ! fixed_regs[FIRST_ADDRESS_REGNUM])
 	{
 	  /* Insn: add -(size + 4 * num_regs_to_save), sp.  */
@@ -902,7 +902,7 @@ mn10300_expand_prologue (void)
 
       /* Consider alternative save_a0_no_merge if the user hasn't
 	 changed the calling conventions of a0.  */
-      if (call_really_used_regs [FIRST_ADDRESS_REGNUM]
+      if (call_used_regs[FIRST_ADDRESS_REGNUM]
 	  && ! fixed_regs[FIRST_ADDRESS_REGNUM])
 	{
 	  /* Insn: add -4 * num_regs_to_save, sp.  */
@@ -984,7 +984,7 @@ mn10300_expand_prologue (void)
 
       /* Now actually save the FP registers.  */
       for (i = FIRST_FP_REGNUM; i <= LAST_FP_REGNUM; ++i)
-	if (df_regs_ever_live_p (i) && ! call_really_used_regs [i])
+	if (df_regs_ever_live_p (i) && ! call_used_regs[i])
 	  {
 	    rtx addr;
 
@@ -1118,7 +1118,7 @@ mn10300_expand_epilogue (void)
 
 	  /* Consider using a1 in post-increment mode, as long as the
 	     user hasn't changed the calling conventions of a1.  */
-	  if (call_really_used_regs [FIRST_ADDRESS_REGNUM + 1]
+	  if (call_used_regs[FIRST_ADDRESS_REGNUM + 1]
 	      && ! fixed_regs[FIRST_ADDRESS_REGNUM+1])
 	    {
 	      /* Insn: mov sp,a1.  */
@@ -1186,7 +1186,7 @@ mn10300_expand_epilogue (void)
 	reg = gen_rtx_POST_INC (SImode, reg);
 
       for (i = FIRST_FP_REGNUM; i <= LAST_FP_REGNUM; ++i)
-	if (df_regs_ever_live_p (i) && ! call_really_used_regs [i])
+	if (df_regs_ever_live_p (i) && ! call_used_regs[i])
 	  {
 	    rtx addr;
 
@@ -2830,17 +2830,16 @@ mn10300_conditional_register_usage (void)
     {
       for (i = FIRST_EXTENDED_REGNUM;
 	   i <= LAST_EXTENDED_REGNUM; i++)
-	fixed_regs[i] = call_used_regs[i] = 1;
+	fixed_regs[i] = 1;
     }
   if (!TARGET_AM33_2)
     {
       for (i = FIRST_FP_REGNUM;
 	   i <= LAST_FP_REGNUM; i++)
-	fixed_regs[i] = call_used_regs[i] = 1;
+	fixed_regs[i] = 1;
     }
   if (flag_pic)
-    fixed_regs[PIC_OFFSET_TABLE_REGNUM] =
-    call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
 }
 
 /* Worker function for TARGET_MD_ASM_ADJUST.
