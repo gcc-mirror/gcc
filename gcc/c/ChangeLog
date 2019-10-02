@@ -1,3 +1,8 @@
+2019-10-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_asm_statement): Handle CPP_SCOPE like two
+	CPP_COLON tokens.
+
 2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-objc-common.c (useful_aka_type_p): New function.
