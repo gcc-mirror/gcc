@@ -1,3 +1,8 @@
+2019-10-03  Aaron Sawdey <acsawdey@linux.ibm.com>
+
+	* expr.c (emit_block_move_hints): Slightly cleaner fix to
+	can_move_by_pieces issue.
+
 2019-10-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/87243
