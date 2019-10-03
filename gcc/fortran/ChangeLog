@@ -1,3 +1,9 @@
+2019-10-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* primary.c (match_real_constant): Remove shadowing local vars.
+	Rename local vars.  Fix undefined behavior in loop termination.
+	(gfc_convert_to_structure_constructor): Rename local var.
+
 2019-10-03  Thomas Koenig <tkoenig@gcc.gnu.org>
 
 	PR fortran/84487
