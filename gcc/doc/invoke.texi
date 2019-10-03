@@ -11215,6 +11215,18 @@ function prologue and epilogue.
 Extra time accounted by inliner for function overhead such as time needed to
 execute function prologue and epilogue
 
+@item inline-heuristics-hint-percent
+@item inline-heuristics-hint-percent-O2
+The scale (in percents) applied to @option{inline-insns-single},
+@option{inline-insns-single-O2}, @option{inline-insns-auto},
+@option{inline-insns-auto-O2} when inline heuristics hints that inlining is
+very profitable (will enable later optimizations).
+
+For functions compiled with optimization levels
+@option{-O3} and @option{-Ofast} parameter
+@option{inline-heuristics-hint-percent} is applied. In other cases
+@option{inline-heuristics-hint-percent-O2} is applied.
+
 @item uninlined-thunk-insns
 @item uninlined-thunk-time
 Same as @option{--param uninlined-function-insns} and
