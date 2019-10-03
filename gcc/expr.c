@@ -1624,9 +1624,8 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
       set_mem_size (y, const_size);
     }
 
-  bool pieces_ok = false;
-  if (CONST_INT_P (size))
-    pieces_ok = can_move_by_pieces (INTVAL (size), align);
+  bool pieces_ok = CONST_INT_P (size)
+    && can_move_by_pieces (INTVAL (size), align);
   bool pattern_ok = false;
 
   if (!pieces_ok || might_overlap)
