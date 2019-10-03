@@ -1620,14 +1620,17 @@ elf_in::defrost (const char *name)
 	  char *mapping = reinterpret_cast<char *>
 	    (mmap (NULL, hdr.pos, PROT_READ, MAP_SHARED, fd, 0));
 	  if (mapping == MAP_FAILED)
-	    set_error (errno);
+	  fail:
+	      set_error (errno);
 	  else
 	    {
+	      if (madvise (mapping, hdr.pos, MADV_RANDOM))
+		goto fail;
+
 	      /* These buffers are never NULL in this case.  */
 	      strtab.buffer = mapping + strtab.pos;
 	      sectab.buffer = mapping + sectab.pos;
 	      hdr.buffer = mapping;
-	      // FIXME: madvise (mapping, hdr.pos, MADV_RANDOM);
 	    }
 	}
 #endif
@@ -1724,10 +1727,14 @@ elf_in::begin (location_t loc)
   void *mapping = mmap (NULL, size, PROT_READ, MAP_SHARED, fd, 0);
   if (mapping == MAP_FAILED)
     {
+    fail:
       set_error (errno);
       return false;
     }
-  // FIXME: madvise (mapping, size, MADV_RANDOM);
+  /* We'll be hopping over this randomly.  */
+  if (madvise (mapping, size, MADV_RANDOM))
+    goto fail;
+
   hdr.buffer = (char *)mapping;
 #else
   read (&hdr, 0, sizeof (header));
