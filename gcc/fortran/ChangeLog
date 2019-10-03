@@ -1,3 +1,10 @@
+2019-10-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91497
+	* simplify.c (gfc_simplify_dble, simplify_intconv, gfc_simplify_real,
+	gfc_simplify_sngl): Disable -Wconversion and -Wconversion-extra
+	warnings for explicit conversion of literal constants.
+
 2019-10-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* primary.c (match_real_constant): Remove shadowing local vars.

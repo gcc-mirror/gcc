@@ -1,3 +1,8 @@
+2019-10-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91497
+	* gfortran.dg/pr91497.f90: New test.
+
 2019-10-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/tree-ssa/pr61034.C: Add --param max-inline-insns-single-O2=200.
