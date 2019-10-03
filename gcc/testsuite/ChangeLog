@@ -1,3 +1,7 @@
+2019-10-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-ssa/pr61034.C: Add --param max-inline-insns-single-O2=200.
+
 2019-10-03  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
 
 	PR target/91769
