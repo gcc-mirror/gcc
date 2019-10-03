@@ -1,3 +1,7 @@
+2019-10-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* include/parallel/multiway_merge.h (_RAIter3): Replace _C by _Cp.
+
 2019-10-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver: Tighten up greedy wildcards.
