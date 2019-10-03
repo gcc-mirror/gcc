@@ -1,3 +1,11 @@
+2019-10-02   Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (mem_operand_gpr): Use
+	SIGNED_16BIT_OFFSET_EXTRA_P macro.
+	(mem_operand_ds_form): Use SIGNED_16BIT_OFFSET_EXTRA_P macro.
+	(rs6000_mode_dependent_address): Use SIGNED_16BIT_OFFSET_EXTRA_P
+	macro.
+
 2019-10-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* ginclude/stdint-gcc.h [__STDC_WANT_IEC_60559_BFP_EXT__]: Change
