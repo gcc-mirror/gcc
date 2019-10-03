@@ -1,3 +1,47 @@
+2019-10-03  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* array.c (check_element_type): Call gfc_typename with the gfc_expr
+	"expr" instead of its gfc_typespec "ts".
+	* check.c (gfc_check_co_reduce): Call gfc_typename with the gfc_expr
+	"a" instead of its gfc_typespec "ts".
+	(gfc_check_co_reduce): Call gfc_typename with the gfc_expr "a" instead
+	 of its gfc_typespec "ts".
+	(gfc_check_eoshift): Call gfc_typename with the gfc_expr "array"
+	instead of its gfc_typespec ts.
+	(gfc_check_same_type_as): In two calls to gfc_typename use "a" and "b"
+	of type gfc_expr instead of the "ts" fields of "a" and "b"
+	* decl.c (variable_decl): Call gfc_typename with the gfc_expr
+	"initializer" instead of its gfc_typespec "ts".
+	* expr.c (gfc_check_assign): Use "rvalue" and "lvalue" of type gfc_expr
+	in calls to gfc_typename instead of their "ts" fields of type
+	gfc_typespec.
+	(gfc_check_pointer_assign): Use "rvalue" and "lvalue" of type gfc_expr
+	in calls to gfc_typename instead of their "ts" fields of type
+	gfc_typespec.
+	* gfortran.h: Add prototypes for gfc_dummy_typename and a new function
+	gfc_typename for gfc_expr *.
+	*interface.c (gfc_check_dummy_characteristics): Use gfc_dummy_typename
+	for the dummy variable.
+	(compare_parameter): Use gfc_dummy_typename for the formal argument.
+	Use "actual" of type gfc_expr in call to gfc_typename for the actual
+	argument.
+	* intrinsic.c (check_arglist): Use gfc_dummy_typename for the formal
+	argument. Use expressions of type gfc_expr from the argument list to
+	call gfc_typename.
+	(gfc_convert_type_warn): New local variable "is_char_constant" set if
+	the expression type is a character constant. At the "bad" label
+	determine source type name by calling gfc_typename with either "expr"
+	for character constants or "from_ts" and use that in the warning
+	messages instead of the original call to gfc_typename.
+	* misc.c (gfc_typename): New function for gfc_expr *, use for where
+	character types are possible it can get the character length from
+        gfc_expr for character literals.
+	(gfc_dummy_typename): New functionfor gfc_typespec *, if no character
+	length is present the character type is assumed and the appropriate 
+	string is return otherwise it calls gfc_typename for gfc_typespec *.
+	(gfc_typespec): for character types construct the type name with length
+	and kind (if it is not default kind).
+
 2019-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91784

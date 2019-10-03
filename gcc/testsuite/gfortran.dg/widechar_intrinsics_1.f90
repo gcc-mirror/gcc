@@ -15,18 +15,18 @@
   call date_and_time(s4, t4, u4) ! { dg-error "must be of kind 1" }
 
   call get_command(s1)
-  call get_command(s4) ! { dg-error "Type of argument" }
+  call get_command(s4) ! { dg-error "'CHARACTER\\(20,4\\)' to 'CHARACTER\\(\\*\\)'" }
 
   call get_command_argument(1, s1)
-  call get_command_argument(1, s4) ! { dg-error "Type of argument" }
+  call get_command_argument(1, s4) ! { dg-error "'CHARACTER\\(20,4\\)' to 'CHARACTER\\(\\*\\)'" }
 
   call get_environment_variable("PATH", s1)
   call get_environment_variable(s1)
   call get_environment_variable(s1, t1)
-  call get_environment_variable(4_"PATH", s1) ! { dg-error "Type of argument" }
-  call get_environment_variable(s4) ! { dg-error "Type of argument" }
-  call get_environment_variable(s1, t4) ! { dg-error "Type of argument" }
-  call get_environment_variable(s4, t1) ! { dg-error "Type of argument" }
+  call get_environment_variable(4_"PATH", s1) ! { dg-error "'CHARACTER\\(4,4\\)' to 'CHARACTER\\(\\*\\)'" }
+  call get_environment_variable(s4) ! { dg-error "'CHARACTER\\(20,4\\)' to 'CHARACTER\\(\\*\\)'" }
+  call get_environment_variable(s1, t4) ! { dg-error "'CHARACTER\\(20,4\\)' to 'CHARACTER\\(\\*\\)'" }
+  call get_environment_variable(s4, t1) ! { dg-error "'CHARACTER\\(20,4\\)' to 'CHARACTER\\(\\*\\)'" }
 
   print *, lge(s1,t1)
   print *, lge(s1,"foo")
