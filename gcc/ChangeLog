@@ -1,3 +1,10 @@
+2019-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/87243
+	* config/darwin-driver.c (maybe_get_sysroot_from_sdkroot): New.
+	(darwin_driver_init): Use the sysroot provided by SDKROOT when that
+	is available and the user has not set one on the command line.
+
 2019-10-03  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
 
 	PR target/91769
