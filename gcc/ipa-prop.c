@@ -3758,6 +3758,18 @@ ipcp_transformation_initialize (void)
     ipcp_transformation_sum = ipcp_transformation_t::create_ggc (symtab);
 }
 
+/* Release the IPA CP transformation summary.  */
+
+void
+ipcp_free_transformation_sum (void)
+{
+  if (!ipcp_transformation_sum)
+    return;
+
+  ipcp_transformation_sum->release ();
+  ipcp_transformation_sum = NULL;
+}
+
 /* Set the aggregate replacements of NODE to be AGGVALS.  */
 
 void
