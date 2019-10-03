@@ -1,3 +1,8 @@
+2019-10-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arm/arm.c (arm_print_value): Use real_to_decimal
+	to print CONST_DOUBLEs.
+
 2019-10-03  Andrea Corallo  <andrea.corallo@arm.com>
 
 	* ipa-cp.c (ipa_cp_c_finalize): Release ipcp_transformation_sum.
