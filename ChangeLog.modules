@@ -1,6 +1,11 @@
 2019-10-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::decl_node): Merge and reorder tinfo
+	streaming.
+	(trees_in::tree_node): Merge tinfo streaming.
+
+	gcc/cp/
 	* module.cc (depset::hash::add_dependency): Separate EK_REDIRECT
 	handling from EK_MAYBE_SPEC.
 	(get_instantiating_module_decl): Reorder checks, remove fixme.

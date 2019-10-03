@@ -6850,7 +6850,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	{
 	  if (ref == WK_body)
 	    tree_node (CP_DECL_CONTEXT (decl));
-	  else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
+	  else
 	    dep_hash->add_dependency (decl, depset::EK_NAMESPACE);
 	}
 
@@ -6860,6 +6860,50 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  && dump ("Wrote%s namespace:%d %C:%N@%M",
 		   origin < 0 ? " public" : "", tag, TREE_CODE (decl), decl,
 		   origin < 0 ? NULL : (*modules)[origin]);
+
+      return false;
+    }
+
+  if ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == TYPE_DECL)
+      && DECL_TINFO_P (decl))
+    {
+      /* A typeinfo, tt_tinfo_typedef or tt_tinfo_var.  */
+      gcc_checking_assert (ref = WK_normal);
+
+      bool is_var = TREE_CODE (decl) == VAR_DECL;
+      tree type = TREE_TYPE (decl);
+      unsigned ix = get_pseudo_tinfo_index (type);
+      if (streaming_p ())
+	{
+	  i (is_var ? tt_tinfo_var : tt_tinfo_typedef);
+	  u (ix);
+	}
+
+      if (is_var)
+	{
+	  /* We also need the type it is for and mangled name, so the
+	     reader doesn't need to complete the type (which would
+	     break section ordering).  The type it is for is stashed
+	     on the name's TREE_TYPE.  */
+	  tree name = DECL_NAME (decl);
+	  tree_node (name);
+	  type = TREE_TYPE (name);
+	  tree_node (type);
+	}
+
+      int tag = insert (decl);
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Wrote tinfo_%s:%d %u %N", is_var ? "var" : "type",
+		   tag, ix, type);
+
+      if (!is_var)
+	{
+	  tag = insert (type);
+	  if (streaming_p ())
+	    dump (dumper::TREE)
+	      && dump ("Wrote tinfo_type:%d %u %N", tag, ix, type);
+	}
 
       return false;
     }
@@ -6878,29 +6922,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	}
 
       return true;
-    }
-
-  if (TREE_CODE (decl) == VAR_DECL && DECL_TINFO_P (decl))
-    {
-      /* A typeinfo object -> tt_tinfo_var.  These need recreating by
-	 the loader.  The type it is for is stashed on the name's
-	 TREE_TYPE.  But we also need the mangled name and pseudo
-	 index, so the reader doesn't need to complete the type
-	 (which would break section ordering).  */
-      tree type = TREE_TYPE (DECL_NAME (decl));
-      unsigned ix = get_pseudo_tinfo_index (TREE_TYPE (decl));
-      if (streaming_p ())
-	{
-	  i (tt_tinfo_var);
-	  u (ix);
-	}
-      tree_node (type);
-      tree_node (DECL_NAME (decl));
-      int tag = insert (decl);
-      if (streaming_p ())
-	dump (dumper::TREE)
-	  && dump ("Wrote tinfo_var:%d %S:%u for %N", tag, decl, ix, type);
-      return false;
     }
 
   if (TREE_CODE (decl) == VAR_DECL && DECL_VTABLE_OR_VTT_P (decl))
@@ -6923,27 +6944,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	    return false;
 	  }
       gcc_unreachable ();
-    }
-
-  if (TREE_CODE (decl) == TYPE_DECL && DECL_TINFO_P (decl))
-    {
-      /* A typeinfo pseudo type -> tt_tinfo_typedef.  */
-      unsigned ix = get_pseudo_tinfo_index (TREE_TYPE (decl));
-
-      if (streaming_p ())
-	{
-	  i (tt_tinfo_typedef);
-	  u (ix);
-	}
-      int tag = insert (decl);
-      if (streaming_p ())
-	dump (dumper::TREE)
-	  && dump ("Wrote:%d typeinfo decl %u %N", tag, ix, decl);
-      tag = insert (TREE_TYPE (decl));
-      if (streaming_p ())
-	dump (dumper::TREE)
-	  && dump ("Wrote:%d typeinfo type %u %N", tag, ix, decl);
-      return false;
     }
 
   if (DECL_THUNK_P (decl))
@@ -8643,34 +8643,42 @@ trees_in::tree_node ()
       break;
 
     case tt_tinfo_var:
-      /* A typeinfo var.  */
+    case tt_tinfo_typedef:
+      /* A tinfo var or typedef.  */
       {
+	bool is_var = tag == tt_tinfo_var;
 	unsigned ix = u ();
-	tree type = tree_node ();
-	tree name = tree_node ();
+	tree type = NULL_TREE;
 
-	if (!get_overrun ())
+	if (is_var)
 	  {
-	    res = get_tinfo_decl_direct (type, name, int (ix));
+	    tree name = tree_node ();
+	    type = tree_node ();
+
+	    if (!get_overrun ())
+	      res = get_tinfo_decl_direct (type, name, int (ix));
+	  }
+	else
+	  {
+	    if (!get_overrun ())
+	      {
+		type = get_pseudo_tinfo_type (ix);
+		res = TYPE_NAME (type);
+	      }
+	  }
+	if (res)
+	  {
 	    int tag = insert (res);
 	    dump (dumper::TREE)
-	      && dump ("Created tinfo_var:%d %S:%u for %N", tag, res, ix, type);
+	      && dump ("Created tinfo_%s:%d %S:%u for %N",
+		       is_var ? "var" : "decl", tag, res, ix, type);
+	    if (!is_var)
+	      {
+		tag = insert (type);
+		dump (dumper::TREE)
+		  && dump ("Created tinfo_type:%d %u %N", tag, ix, type);
+	      }
 	  }
-      }
-      break;
-
-    case tt_tinfo_typedef:
-      /* A pseudo typeinfo typedef.  */
-      {
-	unsigned ix = u ();
-
-	res = TYPE_NAME (get_pseudo_tinfo_type (ix));
-	int tag = insert (res);
-	dump (dumper::TREE)
-	  && dump ("Created tinfo_decl:%d %u %N", tag, ix, res);
-	tag = insert (TREE_TYPE (res));
-	dump (dumper::TREE)
-	  && dump ("Created tinfo_type:%d %u %N", tag, ix, TREE_TYPE (res));
       }
       break;
 
