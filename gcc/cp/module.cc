@@ -2521,7 +2521,7 @@ public:
   public:
     void add_mergeable (depset *);
     void add_mergeable_horcrux (depset *);
-    depset *add_dependency (tree decl, entity_kind, bool is_import = false);
+    depset *add_dependency (tree decl, entity_kind);
     depset *add_partial_redirect (depset *partial);
     depset *add_clone (tree clone, tree target);
     bool add_binding (tree ns, tree value);
@@ -7143,9 +7143,9 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  if (origin)
 	    origin = (*modules)[origin]->remap;
 
-	  dep = dep_hash->add_dependency (decl, depset::EK_MAYBE_SPEC, origin);
+	  dep = dep_hash->add_dependency (decl, depset::EK_MAYBE_SPEC);
 	  /* We should always insert or find something.  */
-	  gcc_assert (dep);
+	  gcc_assert (dep && dep->is_import () == (origin != 0));
 	}
       else
 	dep = dep_hash->find_entity (decl);
@@ -7187,7 +7187,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  {
 	    /* We've found a voldemort type.  Add it as a
 	       dependency.  */
-	    dep_hash->add_dependency (decl, depset::EK_UNNAMED, is_import);
+	    depset *dep = dep_hash->add_dependency (decl, depset::EK_UNNAMED);
+	    gcc_assert (dep->is_import () == is_import);
 	    kind = "unnamed";
 	    goto insert;
 	  }
@@ -10477,16 +10478,7 @@ depset::hash::find_binding (tree ctx, tree name)
 
 /* DECL is a newly discovered dependency of current.  Create the
    depset, if it doesn't already exist.  Add it to the worklist if so.
-   Append it to current's depset.  The decls newly discovered at this
-   point are not export or module linkage.  They may be voldemort
-   types, internal-linkage entities or reachable global module
-   fragment entities.
-
-   IS_IMPORT indicates a reference to an EK_UNNAMED or
-   EK_SPECIALIZATION from another module.  We need to insert horcrux
-   information for them, and then lazy load.  If we used their general
-   template and instantiation args, we'd load all the instantiations
-   of the template, which might be suboptimal.
+   Append it to current's depset.
 
    DECL will be an OVL_USING_P OVERLOAD, if it's from a binding that's
    a using decl.
@@ -10496,7 +10488,7 @@ depset::hash::find_binding (tree ctx, tree name)
    prevents us wanting to do it anyway.  */
 
 depset *
-depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
+depset::hash::add_dependency (tree decl, entity_kind ek)
 {
   /* Make sure we're being told consistent information.  */
   gcc_checking_assert ((ek == EK_NAMESPACE)
@@ -10505,14 +10497,11 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
   gcc_checking_assert (ek != EK_BINDING && ek != EK_REDIRECT);
   if (ek == EK_USING)
     gcc_checking_assert (current->is_binding () && TREE_CODE (decl) == OVERLOAD);
-  if (is_import)
-    /* Only (potentially) unnameable imports need to be so marked.  */
-    gcc_checking_assert (ek == EK_UNNAMED || ek == EK_SPECIALIZATION
-			 || ek == EK_MAYBE_SPEC);
 
   if (ek == EK_UNNAMED)
     /* Unnameable things are not namespace scope  */
     gcc_checking_assert (TREE_CODE (CP_DECL_CONTEXT (decl)) != NAMESPACE_DECL);
+
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
       /* The template should have copied these from its result decl.  */
@@ -10531,6 +10520,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	gcc_checking_assert (DECL_MODULE_ORIGIN (decl)
 			     == DECL_MODULE_ORIGIN (res));
     }
+
   if (ek != EK_USING)
     {
       /* We should only be given instantiating decls, except for
@@ -10538,10 +10528,6 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
       gcc_checking_assert ((STRIP_TEMPLATE (decl)
 			    == get_instantiating_module_decl (decl))
 			   == (ek != EK_UNNAMED));
-      unsigned origin
-	= DECL_LANG_SPECIFIC (decl) ? DECL_MODULE_ORIGIN (decl) : 0;
-      origin = (*modules)[origin]->remap;
-      gcc_checking_assert (is_import == (origin != 0));
     }
 
   depset **slot = entity_slot (decl, !is_for_mergeable ());
@@ -10576,29 +10562,29 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	gcc_checking_assert
 	  (!entity_slot (DECL_TEMPLATE_RESULT (decl), false));
 
+      if (ek != EK_USING)
+	if (unsigned origin
+	    = DECL_LANG_SPECIFIC (decl) ? DECL_MODULE_ORIGIN (decl) : 0)
+	  if ((*modules)[origin]->remap)
+	    {
+	      dep->set_flag_bit<DB_IMPORTED_BIT> ();
+	      gcc_checking_assert (ek ==EK_UNNAMED || ek == EK_SPECIALIZATION
+				   || maybe_spec);
+	    }
+
       if (binding_p)
 	/* Dependency of a namespace binding.  */;
       else if (ek == EK_NAMESPACE)
 	/* Dependency is a namespace.  */;
       else if (maybe_spec)
-	{
-	  /* Remember this has some specialization properties.  */
-	  dep->set_flag_bit<DB_PSEUDO_SPEC_BIT> ();
-	  if (is_import)
-	    dep->set_flag_bit<DB_IMPORTED_BIT> ();
-	}
+	/* Remember this has some specialization properties.  */
+	dep->set_flag_bit<DB_PSEUDO_SPEC_BIT> ();
       else if (ek == EK_UNNAMED
 	       || ek == EK_SPECIALIZATION)
-	{
-	  /* Dependency is unnameable.  We do not have to apply
-	     the below checks to this entity, because we can only
-	     refer to it by depending on its containing entity,
-	     and that entity will have the below checks applied to
-	     it.  */
-	  if (is_import)
-	    /* Note this entity came from elsewhere.  */
-	    dep->set_flag_bit<DB_IMPORTED_BIT> ();
-	}
+	/* Dependency is unnameable.  We do not have to apply the
+	   below checks to this entity, because we can only refer to
+	   it by depending on its containing entity, and that entity
+	   will have the below checks applied to it.  */;
       else
 	{
 	  tree ctx = CP_DECL_CONTEXT (decl);
@@ -11150,10 +11136,9 @@ depset::hash::add_specializations (bool decl_p)
     have_spec:;
 #endif
 
-      unsigned origin = DECL_MODULE_ORIGIN (spec);
-      if (origin)
-	origin = (*modules)[origin]->remap;
-      depset *dep = add_dependency (spec, depset::EK_SPECIALIZATION, origin);
+      depset *dep = add_dependency (spec, depset::EK_SPECIALIZATION);
+      gcc_assert (dep->is_import ()
+		  == ((*modules)[DECL_MODULE_ORIGIN (spec)]->remap != 0));
       if (dep->is_special ())
 	{
 	  /* An already located specialization, this must be a friend
