@@ -232,7 +232,7 @@ namespace __gnu_parallel
    *
    * @return End iterator of output sequence.
    */
-  template<template<typename _RAI, typename _C> class iterator,
+  template<template<typename _RAI, typename _Cp> class iterator,
            typename _RAIterIterator,
            typename _RAIter3,
            typename _DifferenceTp,
@@ -351,7 +351,7 @@ namespace __gnu_parallel
    *
    * @return End iterator of output sequence.
    */
-  template<template<typename _RAI, typename _C> class iterator,
+  template<template<typename _RAI, typename _Cp> class iterator,
            typename _RAIterIterator,
            typename _RAIter3,
            typename _DifferenceTp,
