@@ -1,3 +1,8 @@
+2019-10-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/cpp0x/gen-attrs-67.C: Expect constructor priorities error
+	on any !init_priority target.
+
 2019-10-03  Thomas Koenig <tkoenig@gcc.gnu.org>
 
 	PR fortran/84487
