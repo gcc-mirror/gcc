@@ -1627,6 +1627,7 @@ elf_in::defrost (const char *name)
 	      strtab.buffer = mapping + strtab.pos;
 	      sectab.buffer = mapping + sectab.pos;
 	      hdr.buffer = mapping;
+	      // FIXME: madvise (mapping, hdr.pos, MADV_RANDOM);
 	    }
 	}
 #endif
@@ -1726,6 +1727,7 @@ elf_in::begin (location_t loc)
       set_error (errno);
       return false;
     }
+  // FIXME: madvise (mapping, size, MADV_RANDOM);
   hdr.buffer = (char *)mapping;
 #else
   read (&hdr, 0, sizeof (header));
@@ -10507,6 +10509,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
     /* Only (potentially) unnameable imports need to be so marked.  */
     gcc_checking_assert (ek == EK_UNNAMED || ek == EK_SPECIALIZATION
 			 || ek == EK_MAYBE_SPEC);
+
   if (ek == EK_UNNAMED)
     /* Unnameable things are not namespace scope  */
     gcc_checking_assert (TREE_CODE (CP_DECL_CONTEXT (decl)) != NAMESPACE_DECL);
@@ -10514,8 +10517,11 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
     {
       /* The template should have copied these from its result decl.  */
       tree res = DECL_TEMPLATE_RESULT (decl);
+
       gcc_checking_assert (DECL_MODULE_EXPORT_P (decl)
 			   == DECL_MODULE_EXPORT_P (res));
+      gcc_checking_assert (DECL_MODULE_PURVIEW_P (decl)
+			   == DECL_MODULE_PURVIEW_P (res));
       // FIXME: in template fns, vars are themselves templates.  But
       // are local instantiations, I don't think they can end up in
       // the instantiation table, and so we shouldn't depend on them
@@ -10524,6 +10530,18 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
       if (TREE_CODE (DECL_CONTEXT (decl)) != FUNCTION_DECL)
 	gcc_checking_assert (DECL_MODULE_ORIGIN (decl)
 			     == DECL_MODULE_ORIGIN (res));
+    }
+  if (ek != EK_USING)
+    {
+      /* We should only be given instantiating decls, except for
+	 voldemorts, where we should only get non-instantiating decls.  */
+      gcc_checking_assert ((STRIP_TEMPLATE (decl)
+			    == get_instantiating_module_decl (decl))
+			   == (ek != EK_UNNAMED));
+      unsigned origin
+	= DECL_LANG_SPECIFIC (decl) ? DECL_MODULE_ORIGIN (decl) : 0;
+      origin = (*modules)[origin]->remap;
+      gcc_checking_assert (is_import == (origin != 0));
     }
 
   depset **slot = entity_slot (decl, !is_for_mergeable ());

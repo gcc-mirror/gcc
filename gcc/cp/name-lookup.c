@@ -48,6 +48,13 @@ static name_hint maybe_suggest_missing_std_header (location_t location,
 static name_hint suggest_alternatives_for_1 (location_t location, tree name,
 					     bool suggest_misspellings);
 
+/* Slots in MODULE_VEC.  */
+#define MODULE_SLOT_CURRENT 0	/* Slot for current TU.  */
+#define MODULE_SLOT_GLOBAL 1	/* Slot for merged global module. */
+#define MODULE_SLOT_PARTITION 2 /* Slot for merged partition entities
+				   (optional).  */
+#define MODULE_SLOTS_FIXED 2	/* Number of always-allocated slots.  */
+
 /* Create an overload suitable for recording an artificial TYPE_DECL
    and another decl.  We use this machanism to implement the struct
    stat hack.  */

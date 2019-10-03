@@ -1,3 +1,12 @@
+2019-10-03  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (MODULE_SLOT_*): Move to ...
+	* name-lookup.c (MODULE_SLOT_*): ... here.
+	* module.cc (depset::hash::add_dependency): More asserts.
+	* pt.c (build_template_decl, tsubst_template_decl): Always
+	propagate from result.
+
 2019-10-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

@@ -931,13 +931,6 @@ struct GTY(()) module_cluster
 #define MODULE_VECTOR_CLUSTER(NODE,IX) \
   (((tree_module_vec *)MODULE_VECTOR_CHECK (NODE))->vec[IX])
 
-/* Slots in MODULE_VEC.  */
-#define MODULE_SLOT_CURRENT 0	/* Slot for current TU.  */
-#define MODULE_SLOT_GLOBAL 1	/* Slot for merged global module. */
-#define MODULE_SLOT_PARTITION 2 /* Slot for merged partition entities
-				   (optional).  */
-#define MODULE_SLOTS_FIXED 2	/* Number of always-allocated slots.  */
-
 struct GTY(()) tree_module_vec {
   struct tree_base base;
   tree name;

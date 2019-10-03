@@ -4684,7 +4684,7 @@ build_template_decl (tree decl, tree parms, bool member_template_p)
   DECL_SOURCE_LOCATION (tmpl) = DECL_SOURCE_LOCATION (decl);
   DECL_MEMBER_TEMPLATE_P (tmpl) = member_template_p;
 
-  if (modules_p () && TREE_CODE (DECL_CONTEXT (tmpl)) != FUNCTION_DECL)
+  if (modules_p ())
     {
       /* Propagate module information from the decl.  */
       DECL_MODULE_EXPORT_P (tmpl) = DECL_MODULE_EXPORT_P (decl);
@@ -9623,11 +9623,11 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	    = DECL_SOURCE_LOCATION (TYPE_STUB_DECL (template_type));
 	}
 
+      set_instantiating_module (type_decl);
       /* Although GEN_TMPL is the TEMPLATE_DECL, it has the same value
 	 of export flag.  We want to propagate this because it might
 	 be a friend declaration that pushes a new hidden binding.  */
       DECL_MODULE_EXPORT_P (type_decl) = DECL_MODULE_EXPORT_P (gen_tmpl);
-      set_instantiating_module (type_decl);
 
       if (CLASS_TYPE_P (template_type))
 	{
@@ -13412,7 +13412,7 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
   TREE_TYPE (r) = TREE_TYPE (inner);
   DECL_CONTEXT (r) = DECL_CONTEXT (inner);
 
-  if (modules_p () && TREE_CODE (DECL_CONTEXT (r)) != FUNCTION_DECL)
+  if (modules_p ())
     {
       /* Propagate module information from the decl.  */
       DECL_MODULE_EXPORT_P (r) = DECL_MODULE_EXPORT_P (inner);
