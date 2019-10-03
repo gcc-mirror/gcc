@@ -1,3 +1,8 @@
+2019-10-03  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	PR target/91769
+	* gcc.target/mips/pr91769.c: New test.
+
 2019-10-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/cpp0x/gen-attrs-67.C: Expect constructor priorities error

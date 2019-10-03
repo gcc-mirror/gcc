@@ -1,3 +1,9 @@
+2019-10-03  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	PR target/91769
+	* config/mips/mips.c (mips_split_move): Use reg_overlap_mentioned_p
+	instead of REGNO equality check on addr.reg.
+
 2019-10-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* params.def (PARAM_INLINE_HEURISTICS_HINT_PERCENT,
