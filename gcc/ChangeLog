@@ -1,3 +1,13 @@
+2019-10-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* params.def (PARAM_INLINE_HEURISTICS_HINT_PERCENT,
+	PARAM_INLINE_HEURISTICS_HINT_PERCENT_O2): New.
+	* doc/invoke.texi (inline-heuristics-hint-percent,
+	inline-heuristics-hint-percent-O2): Document.
+	* tree-inline.c (inline_insns_single, inline_insns_auto): Add new
+	hint attribute.
+	(can_inline_edge_by_limits_p): Use it.
+
 2019-10-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/arm/arm.c (arm_print_value): Use real_to_decimal
