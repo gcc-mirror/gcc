@@ -10531,13 +10531,11 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
     }
 
   if (ek != EK_USING)
-    {
-      /* We should only be given instantiating decls, except for
-	 voldemorts, where we should only get non-instantiating decls.  */
-      gcc_checking_assert ((STRIP_TEMPLATE (decl)
-			    == get_instantiating_module_decl (decl))
-			   == (ek != EK_UNNAMED));
-    }
+    /* We should only be given instantiating decls, except for
+       voldemorts, where we should only get non-instantiating decls.  */
+    gcc_checking_assert ((STRIP_TEMPLATE (decl)
+			  == get_instantiating_module_decl (decl))
+			 == (ek != EK_UNNAMED));
 
   depset **slot = entity_slot (decl, !is_for_mergeable ());
   if (!slot)
@@ -10658,26 +10656,22 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 	worklist.safe_push (dep);
     }
   else if (ek == EK_MAYBE_SPEC)
-    {
-      /* It's whatever we already found.  */
-      ek = dep->get_entity_kind ();
-      if (ek == EK_REDIRECT)
-	{
-	  dump (dumper::DEPEND)
-	    && dump ("Redirect for %C:%N found", TREE_CODE (decl), decl);
-	  return dep;
-	}
-    }
+    /* It's whatever we already found.  */
+    ek = dep->get_entity_kind ();
   else if (ek == EK_DECL && dep->get_entity_kind () == EK_SPECIALIZATION)
-    {
-      /* decl is a friend of a template instantiation.  These
-	 have some of the properties of regular decls.  */
-      dump (dumper::DEPEND)
-	&& dump ("Template friend %N discovered", decl);
-    }
+    /* decl is a friend of a template instantiation.  These
+       have some of the properties of regular decls.  */
+    dump (dumper::DEPEND) && dump ("Template friend %N discovered", decl);
   else
     /* Make sure we have consistent categorization.  */
     gcc_checking_assert (dep->get_entity_kind () == ek);
+
+  if (ek == EK_REDIRECT)
+    {
+      dump (dumper::DEPEND)
+	&& dump ("Redirect for %C:%N found", TREE_CODE (decl), decl);
+      return dep;
+    }
 
   dump (dumper::DEPEND)
     && dump ("%s on %s %C:%N added", binding_p ? "Binding" : "Dependency",
@@ -16930,15 +16924,16 @@ get_instantiating_module_decl (tree decl)
 
   for (tree ctx;; decl = ctx)
     {
+      ctx = CP_DECL_CONTEXT (decl);
+
+      if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	break;
+
       int use;
       node_template_info (decl, use);
       if (use > 0)
-	// FIXME: Is this right for a local instantiation?
 	break;
 
-      ctx = CP_DECL_CONTEXT (decl);
-      if (TREE_CODE (ctx) == NAMESPACE_DECL)
-	break;
       if (TYPE_P (ctx))
 	{
 	  ctx = TYPE_STUB_DECL (ctx);

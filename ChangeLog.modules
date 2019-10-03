@@ -1,6 +1,11 @@
 2019-10-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::hash::add_dependency): Separate EK_REDIRECT
+	handling from EK_MAYBE_SPEC.
+	(get_instantiating_module_decl): Reorder checks, remove fixme.
+
+	gcc/cp/
 	* module.cc (trees_out::decl_node): Check DECL_LANG_SPECIFIC.
 	(depset::hash::add_dependency): Likewise.
 	(get_originating_module_decl): Return global_namespace for null.
