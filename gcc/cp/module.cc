@@ -7288,7 +7288,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	      }
 
 	    tree o = get_originating_module_decl (decl);
-	    kind = (o && DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o)
+	    kind = (DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o)
 		    ? "purview" : "GMF");
 	  }
 	else
@@ -10516,16 +10516,18 @@ depset::hash::add_dependency (tree decl, entity_kind ek)
 
       gcc_checking_assert (DECL_MODULE_EXPORT_P (decl)
 			   == DECL_MODULE_EXPORT_P (res));
-      gcc_checking_assert (DECL_MODULE_PURVIEW_P (decl)
-			   == DECL_MODULE_PURVIEW_P (res));
-      // FIXME: in template fns, vars are themselves templates.  But
-      // are local instantiations, I don't think they can end up in
-      // the instantiation table, and so we shouldn't depend on them
-      // here.  See the comment in trees_out::decl_node about having
-      // to look to see if we can find it there.
-      if (TREE_CODE (DECL_CONTEXT (decl)) != FUNCTION_DECL)
-	gcc_checking_assert (DECL_MODULE_ORIGIN (decl)
-			     == DECL_MODULE_ORIGIN (res));
+      if (DECL_LANG_SPECIFIC (res))
+	{
+	  gcc_checking_assert (DECL_MODULE_PURVIEW_P (decl)
+			       == DECL_MODULE_PURVIEW_P (res));
+	  // FIXME: in template fns, vars are themselves templates.  But
+	  // are local instantiations, I don't think they can end up in
+	  // the instantiation table, and so we shouldn't depend on them
+	  // here.  See the comment in trees_out::decl_node about having
+	  // to look to see if we can find it there.
+	  gcc_checking_assert ((DECL_MODULE_ORIGIN (decl)
+				== DECL_MODULE_ORIGIN (res)));
+	}
     }
 
   if (ek != EK_USING)
@@ -11145,7 +11147,8 @@ depset::hash::add_specializations (bool decl_p)
 
       depset *dep = add_dependency (spec, depset::EK_SPECIALIZATION);
       gcc_assert (dep->is_import ()
-		  == ((*modules)[DECL_MODULE_ORIGIN (spec)]->remap != 0));
+		  == ((*modules)[DECL_LANG_SPECIFIC (spec)
+				 ? DECL_MODULE_ORIGIN (spec) : 0]->remap != 0));
       if (dep->is_special ())
 	{
 	  /* An already located specialization, this must be a friend
@@ -16872,7 +16875,7 @@ get_originating_module_decl (tree decl)
 	    {
 	      /* Some kind of internal type.  */
 	      gcc_checking_assert (DECL_ARTIFICIAL (decl));
-	      return NULL_TREE;
+	      return global_namespace;
 	    }
 	}
     }
@@ -16901,16 +16904,11 @@ get_originating_module (tree decl, bool for_mangle)
 {
   tree owner = get_originating_module_decl (decl);
 
-  if (!owner)
-    return -1;
-
-  if (for_mangle && DECL_MODULE_EXPORT_P (owner))
-    return -1;
-
   if (!DECL_LANG_SPECIFIC (owner))
-    return -1;
+    return for_mangle ? -1 : 0;
 
-  if (for_mangle && !DECL_MODULE_PURVIEW_P (owner))
+  if (for_mangle
+      && (DECL_MODULE_EXPORT_P (owner) || !DECL_MODULE_PURVIEW_P (owner)))
     return -1;
 
   return DECL_MODULE_ORIGIN (owner);
@@ -17009,40 +17007,24 @@ set_instantiating_module (tree decl)
   if (!modules_p ())
     return;
 
-  /* We cannot assert that this is not the originating decl because
-     we've not necessarily completed all the necessary instantiation
-     of DECL.  */
-
-  // FIXME: Lazily allocate?
-  retrofit_lang_decl (decl);
-  DECL_MODULE_ORIGIN (decl) = 0;
-  DECL_MODULE_PURVIEW_P (decl) = module_purview_p ();
+  if (!DECL_LANG_SPECIFIC (decl) && module_purview_p ())
+    retrofit_lang_decl (decl);
+  if (DECL_LANG_SPECIFIC (decl))
+    {
+      DECL_MODULE_PURVIEW_P (decl) = module_purview_p ();
+      DECL_MODULE_ORIGIN (decl) = 0;
+    }
 }
 
 void
 set_originating_module (tree decl, bool friend_p ATTRIBUTE_UNUSED)
 {
-  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
-	      || TREE_CODE (decl) == VAR_DECL
-	      || TREE_CODE (decl) == TYPE_DECL);
-
-  if (!modules_p ())
-    return;
-
-  // FIXME: Lazily allocate?
-  retrofit_lang_decl (decl);
-  DECL_MODULE_ORIGIN (decl) = 0;
-  DECL_MODULE_PURVIEW_P (decl) = module_purview_p ();
+  set_instantiating_module (decl);
 
   if (TREE_CODE (CP_DECL_CONTEXT (decl)) != NAMESPACE_DECL)
     return;
 
   gcc_checking_assert (friend_p || decl == get_originating_module_decl (decl));
-
-  if (!module_purview_p ())
-    return;
-
-  /* We're in the purview of a module -- including a header unit.  */
 
   if (!module_exporting_p ())
     return;

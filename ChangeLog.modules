@@ -1,6 +1,18 @@
 2019-10-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::decl_node): Check DECL_LANG_SPECIFIC.
+	(depset::hash::add_dependency): Likewise.
+	(get_originating_module_decl): Return global_namespace for null.
+	(get_originating_module): Correctly handle lack of
+	DECL_LANG_SPECIFIC.
+	(set_instantiating_module): Lazily allocate lang specific.
+	(set_originating_module): Call set_instantiating_module.
+	* pt.c (build_template_decl, tsubst_template_decl): Check
+	DECL_LANG_SPECIFIC.
+	* rtti.c (tinfo_base_init): Likewise.
+
+	gcc/cp/
 	* module.cc (elf_in::{defrost,begin}): Advise random seeking.
 
 	gcc/cp/
