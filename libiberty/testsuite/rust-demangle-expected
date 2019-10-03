@@ -41,7 +41,7 @@ main::main::he714a2e23ed7db2g
 # $XX$ substitutions should not contain just numbers.
 --format=auto
 _ZN4main4$99$17he714a2e23ed7db23E
-main::$99$::he714a2e23ed7db23
+main::$99$
 # _ at start of path should be removed.
 # ".." translates to "::" "$GT$" to ">" and "$LT$" to "<".
 --format=rust
