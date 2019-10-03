@@ -1,5 +1,7 @@
 2019-10-03  John David Anglin  <danglin@gcc.gnu.org>
 
+	* config/pa/pa.h (MAX_PCREL17F_OFFSET): Adjust.
+
 	* config/pa/pa.c (pa_output_call): Remove 64-bit sibcall sequence.
 	(pa_attr_length_call): Adjust length for 64-bit plabel sequence.
 
