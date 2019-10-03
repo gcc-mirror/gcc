@@ -62,6 +62,9 @@ _dl_read_access_allowed (unsigned int *addr)
   return result;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+
 /* __canonicalize_funcptr_for_compare must be hidden so that it is not
    placed in the dynamic symbol table.  Like millicode functions, it
    must be linked into all binaries in order access the got table of 
@@ -141,3 +144,5 @@ __canonicalize_funcptr_for_compare (fptr_t fptr)
 
   return plabel[0];
 }
+
+#pragma GCC diagnostic pop
