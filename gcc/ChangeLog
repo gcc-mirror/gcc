@@ -1,3 +1,8 @@
+2019-10-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_output_call): Remove 64-bit sibcall sequence.
+	(pa_attr_length_call): Adjust length for 64-bit plabel sequence.
+
 2019-10-03  Aaron Sawdey <acsawdey@linux.ibm.com>
 
 	* expr.c (emit_block_move_hints): Slightly cleaner fix to
