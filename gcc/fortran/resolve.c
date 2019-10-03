@@ -3980,7 +3980,7 @@ resolve_operator (gfc_expr *e)
 	}
 
       sprintf (msg, _("Operand of unary numeric operator %%<%s%%> at %%L is %s"),
-	       gfc_op2string (e->value.op.op), gfc_typename (&e->ts));
+	       gfc_op2string (e->value.op.op), gfc_typename (e));
       goto bad_op;
 
     case INTRINSIC_PLUS:
@@ -4002,8 +4002,8 @@ resolve_operator (gfc_expr *e)
       else
       	sprintf (msg,
 	       _("Operands of binary numeric operator %%<%s%%> at %%L are %s/%s"),
-	       gfc_op2string (e->value.op.op), gfc_typename (&op1->ts),
-	       gfc_typename (&op2->ts));
+	       gfc_op2string (e->value.op.op), gfc_typename (op1),
+	       gfc_typename (op2));
       goto bad_op;
 
     case INTRINSIC_CONCAT:
@@ -4017,7 +4017,7 @@ resolve_operator (gfc_expr *e)
 
       sprintf (msg,
 	       _("Operands of string concatenation operator at %%L are %s/%s"),
-	       gfc_typename (&op1->ts), gfc_typename (&op2->ts));
+	       gfc_typename (op1), gfc_typename (op2));
       goto bad_op;
 
     case INTRINSIC_AND:
@@ -4059,8 +4059,8 @@ resolve_operator (gfc_expr *e)
 	}
 
       sprintf (msg, _("Operands of logical operator %%<%s%%> at %%L are %s/%s"),
-	       gfc_op2string (e->value.op.op), gfc_typename (&op1->ts),
-	       gfc_typename (&op2->ts));
+	       gfc_op2string (e->value.op.op), gfc_typename (op1),
+	       gfc_typename (op2));
 
       goto bad_op;
 
@@ -4082,7 +4082,7 @@ resolve_operator (gfc_expr *e)
 	}
 
       sprintf (msg, _("Operand of .not. operator at %%L is %s"),
-	       gfc_typename (&op1->ts));
+		      gfc_typename (op1));
       goto bad_op;
 
     case INTRINSIC_GT:
@@ -4168,7 +4168,7 @@ resolve_operator (gfc_expr *e)
 		    msg = "Inequality comparison for %s at %L";
 
 		  gfc_warning (OPT_Wcompare_reals, msg,
-			       gfc_typename (&op1->ts), &op1->where);
+			       gfc_typename (op1), &op1->where);
 		}
 	    }
 
@@ -4184,8 +4184,8 @@ resolve_operator (gfc_expr *e)
       else
 	sprintf (msg,
 		 _("Operands of comparison operator %%<%s%%> at %%L are %s/%s"),
-		 gfc_op2string (e->value.op.op), gfc_typename (&op1->ts),
-		 gfc_typename (&op2->ts));
+		 gfc_op2string (e->value.op.op), gfc_typename (op1),
+		 gfc_typename (op2));
 
       goto bad_op;
 
@@ -4203,12 +4203,12 @@ resolve_operator (gfc_expr *e)
 	}
       else if (op2 == NULL)
 	sprintf (msg, _("Operand of user operator %%<%s%%> at %%L is %s"),
-		 e->value.op.uop->name, gfc_typename (&op1->ts));
+		 e->value.op.uop->name, gfc_typename (op1));
       else
 	{
 	  sprintf (msg, _("Operands of user operator %%<%s%%> at %%L are %s/%s"),
-		   e->value.op.uop->name, gfc_typename (&op1->ts),
-		   gfc_typename (&op2->ts));
+		   e->value.op.uop->name, gfc_typename (op1),
+		   gfc_typename (op2));
 	  e->value.op.uop->op->sym->attr.referenced = 1;
 	}
 
@@ -8509,7 +8509,7 @@ resolve_select (gfc_code *code, bool select_type)
   if (type != BT_LOGICAL && type != BT_INTEGER && type != BT_CHARACTER)
     {
       gfc_error ("Argument of SELECT statement at %L cannot be %s",
-		 &case_expr->where, gfc_typename (&case_expr->ts));
+		 &case_expr->where, gfc_typename (case_expr));
 
       /* Punt. Going on here just produce more garbage error messages.  */
       return;
@@ -8538,7 +8538,7 @@ resolve_select (gfc_code *code, bool select_type)
 					  case_expr->ts.kind) != ARITH_OK)
 	    gfc_warning (0, "Expression in CASE statement at %L is "
 			 "not in the range of %s", &cp->low->where,
-			 gfc_typename (&case_expr->ts));
+			 gfc_typename (case_expr));
 
 	  if (cp->high
 	      && cp->low != cp->high
@@ -8546,7 +8546,7 @@ resolve_select (gfc_code *code, bool select_type)
 					  case_expr->ts.kind) != ARITH_OK)
 	    gfc_warning (0, "Expression in CASE statement at %L is "
 			 "not in the range of %s", &cp->high->where,
-			 gfc_typename (&case_expr->ts));
+			 gfc_typename (case_expr));
 	}
 
   /* PR 19168 has a long discussion concerning a mismatch of the kinds

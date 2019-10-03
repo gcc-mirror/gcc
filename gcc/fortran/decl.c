@@ -2908,7 +2908,7 @@ variable_decl (int elem)
     {
       gfc_error ("Incompatible initialization between a derived type "
 		 "entity and an entity with %qs type at %C",
-		  gfc_typename (&initializer->ts));
+		  gfc_typename (initializer));
       m = MATCH_ERROR;
       goto cleanup;
     }

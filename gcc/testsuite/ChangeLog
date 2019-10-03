@@ -1,3 +1,17 @@
+2019-10-03 Mark Eggleston <mark.eggleston@codethink.com>
+
+	* gfortran.dg/bad_operands.f90: New test.
+	* gfortran.dg/character mismatch.f90: New test.
+	* gfortran.dg/compare_interfaces.f90: New test.
+	* gfortran.dg/hollerith_to_char_parameter_1.f90: New test.
+	* gfortran.dg/hollerith_to_char_parameter_2.f90: New test.
+	* gfortran.dg/widechar_intrinsics_1.f90: Checked for specific character
+	type names instead of "Type of argument".
+	* gfortran.dg/widechar_intrinsics_2.f90: Checked for specific character
+	type names instead of "Type of argument".
+	* gfortran.dg/widechar_intrinsics_3.f90: Checked for specific character
+	type names instead of "Type of argument".
+
 2019-10-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/cr-decimal-dig-2.c: New test.
