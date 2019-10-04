@@ -1,3 +1,7 @@
+2019-10-04  Richard Biener  <rguenther@suse.de>
+
+	* gcc.c-torture/execute/loop-3.c: Fix undefined behavior.
+
 2019-10-04  Yuliang Wang  <yuliang.wang@arm.com>
 
 	* gcc.target/aarch64/sve2/shracc_1.c: Tighten scan-assembler-nots
