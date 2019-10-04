@@ -1,3 +1,8 @@
+2019-10-04  Jeff Law  <law@redhat.com>
+
+	* range-op.cc (range_tests): Avoid two tests when ints and
+	shorts are the same size.
+
 2019-10-04  Richard Biener  <rguenther@suse.de>
 
 	PR lto/91968

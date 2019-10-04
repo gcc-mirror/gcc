@@ -2910,10 +2910,14 @@ range_tests ()
 
   // If a range is in any way outside of the range for the converted
   // to range, default to the range for the new type.
-  r1 = value_range_base (integer_zero_node, maxint);
-  range_cast (r1, short_integer_type_node);
-  ASSERT_TRUE (r1.lower_bound () == wi::to_wide (minshort)
-	       && r1.upper_bound() == wi::to_wide (maxshort));
+  if (TYPE_PRECISION (TREE_TYPE (maxint))
+      > TYPE_PRECISION (short_integer_type_node))
+    {
+      r1 = value_range_base (integer_zero_node, maxint);
+      range_cast (r1, short_integer_type_node);
+      ASSERT_TRUE (r1.lower_bound () == wi::to_wide (minshort)
+		   && r1.upper_bound() == wi::to_wide (maxshort));
+    }
 
   // (unsigned char)[-5,-1] => [251,255].
   r0 = rold = value_range_base (SCHAR (-5), SCHAR (-1));
@@ -3020,11 +3024,15 @@ range_tests ()
   // "NOT 0 at signed 32-bits" ==> [-MIN_32,-1][1, +MAX_32].  This is
   // is outside of the range of a smaller range, return the full
   // smaller range.
-  r0 = range_nonzero (integer_type_node);
-  range_cast (r0, short_integer_type_node);
-  r1 = value_range_base (TYPE_MIN_VALUE (short_integer_type_node),
-			 TYPE_MAX_VALUE (short_integer_type_node));
-  ASSERT_TRUE (r0 == r1);
+  if (TYPE_PRECISION (integer_type_node)
+      > TYPE_PRECISION (short_integer_type_node))
+    {
+      r0 = range_nonzero (integer_type_node);
+      range_cast (r0, short_integer_type_node);
+      r1 = value_range_base (TYPE_MIN_VALUE (short_integer_type_node),
+			     TYPE_MAX_VALUE (short_integer_type_node));
+      ASSERT_TRUE (r0 == r1);
+    }
 
   // Casting NONZERO from a narrower signed to a wider signed.
   //
