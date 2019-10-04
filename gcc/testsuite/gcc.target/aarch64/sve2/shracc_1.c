@@ -24,9 +24,9 @@ SHRACC (uint64_t, 53);
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 8 "vect" } } */
 
-/* { dg-final { scan-assembler-not {\tasr\t} } } */
-/* { dg-final { scan-assembler-not {\tlsr\t} } } */
-/* { dg-final { scan-assembler-not {\tadd\t} } } */
+/* { dg-final { scan-assembler-not {\tasr\tz[0-9]+\.[bhsd]} } } */
+/* { dg-final { scan-assembler-not {\tlsr\tz[0-9]+\.[bhsd]} } } */
+/* { dg-final { scan-assembler-not {\tadd\tz[0-9]+\.[bhsd]} } } */
 
 /* { dg-final { scan-assembler-times {\tssra\tz[0-9]+\.b, z[0-9]+\.b, #5\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tssra\tz[0-9]+\.h, z[0-9]+\.h, #14\n} 1 } } */
