@@ -184,6 +184,16 @@ package GNAT.Sockets.Thin is
    function C_System
      (Command : System.Address) return C.int;
 
+   Default_Socket_Pair_Family : constant := SOSC.AF_UNIX;
+   --  UNIX has socketpair system call and AF_UNIX family is widely supported
+
+   function C_Socketpair
+     (Domain   : C.int;
+      Typ      : C.int;
+      Protocol : C.int;
+      Fds      : not null access Fd_Pair) return C.int;
+   --  Creates pair of connected sockets
+
    -------------------------------------------------------
    -- Signalling file descriptors for selector abortion --
    -------------------------------------------------------
@@ -249,6 +259,7 @@ private
    pragma Import (C, C_Select, "select");
    pragma Import (C, C_Setsockopt, "setsockopt");
    pragma Import (C, C_Shutdown, "shutdown");
+   pragma Import (C, C_Socketpair, "socketpair");
    pragma Import (C, C_System, "system");
 
    pragma Import (C, Nonreentrant_Gethostbyname, "gethostbyname");

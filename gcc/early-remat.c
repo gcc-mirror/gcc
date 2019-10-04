@@ -36,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtlhash.h"
 #include "print-rtl.h"
 #include "rtl-iter.h"
+#include "regs.h"
+#include "function-abi.h"
 
 /* This pass runs before register allocation and implements an aggressive
    form of rematerialization.  It looks for pseudo registers R of mode M
@@ -435,6 +437,8 @@ private:
   void compute_clobbers (unsigned int);
   void assign_value_number (unsigned int);
   void decide_candidate_validity (void);
+  void restrict_remat_for_unavail_regs (bitmap, const_bitmap);
+  void restrict_remat_for_call (bitmap, rtx_insn *);
   bool stable_use_p (unsigned int);
   void emit_copy_before (unsigned int, rtx, rtx);
   void stabilize_pattern (unsigned int);
@@ -889,27 +893,13 @@ early_remat::maybe_add_candidate (rtx_insn *insn, unsigned int regno)
       else
 	{
 	  /* The instruction can set additional registers, provided that
-	     they're call-clobbered hard registers.  This is useful for
-	     instructions that alter the condition codes.  */
+	     they're hard registers.  This is useful for instructions
+	     that alter the condition codes.  */
 	  if (!HARD_REGISTER_NUM_P (def_regno))
 	    {
 	      if (dump_file)
 		fprintf (dump_file, FAILURE_FORMAT "insn also sets"
 			 " pseudo reg %d\n", FAILURE_ARGS, def_regno);
-	      return false;
-	    }
-	  if (global_regs[def_regno])
-	    {
-	      if (dump_file)
-		fprintf (dump_file, FAILURE_FORMAT "insn also sets"
-			 " global reg %d\n", FAILURE_ARGS, def_regno);
-	      return false;
-	    }
-	  if (!TEST_HARD_REG_BIT (regs_invalidated_by_call, def_regno))
-	    {
-	      if (dump_file)
-		fprintf (dump_file, FAILURE_FORMAT "insn also sets"
-			 " call-preserved reg %d\n", FAILURE_ARGS, def_regno);
 	      return false;
 	    }
 	}
@@ -1532,6 +1522,39 @@ early_remat::decide_candidate_validity (void)
       }
 }
 
+/* Remove any candidates in CANDIDATES that would clobber a register in
+   UNAVAIL_REGS.  */
+
+void
+early_remat::restrict_remat_for_unavail_regs (bitmap candidates,
+					      const_bitmap unavail_regs)
+{
+  bitmap_clear (&m_tmp_bitmap);
+  unsigned int cand_index;
+  bitmap_iterator bi;
+  EXECUTE_IF_SET_IN_BITMAP (candidates, 0, cand_index, bi)
+    {
+      remat_candidate *cand = &m_candidates[cand_index];
+      if (cand->clobbers
+	  && bitmap_intersect_p (cand->clobbers, unavail_regs))
+	bitmap_set_bit (&m_tmp_bitmap, cand_index);
+    }
+  bitmap_and_compl_into (candidates, &m_tmp_bitmap);
+}
+
+/* Remove any candidates in CANDIDATES that would clobber a register
+   that is potentially live across CALL.  */
+
+void
+early_remat::restrict_remat_for_call (bitmap candidates, rtx_insn *call)
+{
+  /* We don't know whether partially-clobbered registers are live
+     across the call or not, so assume that they are.  */
+  bitmap_view<HARD_REG_SET> call_preserved_regs
+    (~insn_callee_abi (call).full_reg_clobbers ());
+  restrict_remat_for_unavail_regs (candidates, call_preserved_regs);
+}
+
 /* Assuming that every path reaching a point P contains a copy of a
    use U of REGNO, return true if another copy of U at P would have
    access to the same value of REGNO.  */
@@ -1984,10 +2007,13 @@ early_remat::process_block (basic_block bb)
 	      init_temp_bitmap (&m_required);
 	    }
 	  else
-	    /* The fully-local case: candidates that need to be
-	       rematerialized after a previous call in the block.  */
-	    emit_remat_insns (m_required, NULL, info->rd_after_call,
-			      last_call);
+	    {
+	      /* The fully-local case: candidates that need to be
+		 rematerialized after a previous call in the block.  */
+	      restrict_remat_for_call (m_required, last_call);
+	      emit_remat_insns (m_required, NULL, info->rd_after_call,
+				last_call);
+	    }
 	  last_call = insn;
 	  bitmap_clear (m_available);
 	  gcc_checking_assert (empty_p (m_required));
@@ -2480,8 +2506,11 @@ early_remat::emit_remat_insns_for_block (basic_block bb)
   remat_block_info *info = &m_block_info[bb->index];
 
   if (info->last_call && !empty_p (info->required_after_call))
-    emit_remat_insns (info->required_after_call, NULL,
-		      info->rd_after_call, info->last_call);
+    {
+      restrict_remat_for_call (info->required_after_call, info->last_call);
+      emit_remat_insns (info->required_after_call, NULL,
+			info->rd_after_call, info->last_call);
+    }
 
   if (!empty_p (info->required_in))
     {
@@ -2489,6 +2518,7 @@ early_remat::emit_remat_insns_for_block (basic_block bb)
       while (insn != BB_END (bb)
 	     && !INSN_P (NEXT_INSN (insn)))
 	insn = NEXT_INSN (insn);
+      restrict_remat_for_unavail_regs (info->required_in, DF_LR_IN (bb));
       emit_remat_insns (info->required_in, info->available_in,
 			info->rd_in, insn);
     }

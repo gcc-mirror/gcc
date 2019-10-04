@@ -127,7 +127,8 @@ static rtx expand_builtin_memchr (tree, rtx);
 static rtx expand_builtin_memcpy (tree, rtx);
 static rtx expand_builtin_memory_copy_args (tree dest, tree src, tree len,
 					    rtx target, tree exp,
-					    memop_ret retmode);
+					    memop_ret retmode,
+					    bool might_overlap);
 static rtx expand_builtin_memmove (tree, rtx);
 static rtx expand_builtin_mempcpy (tree, rtx);
 static rtx expand_builtin_mempcpy_args (tree, tree, tree, rtx, tree, memop_ret);
@@ -3562,54 +3563,6 @@ check_access (tree exp, tree, tree, tree dstwrite,
   return true;
 }
 
-/* Determines the size of the member referenced by the COMPONENT_REF
-   REF, using its initializer expression if necessary in order to
-   determine the size of an initialized flexible array member.
-   Returns the size (which might be zero for an object with
-   an uninitialized flexible array member) or null if the size
-   cannot be determined.  */
-
-static tree
-component_size (tree ref)
-{
-  gcc_assert (TREE_CODE (ref) == COMPONENT_REF);
-
-  tree member = TREE_OPERAND (ref, 1);
-
-  /* If the member is not last or has a size greater than one, return
-     it.  Otherwise it's either a flexible array member or a zero-length
-     array member, or an array of length one treated as such.  */
-  tree size = DECL_SIZE_UNIT (member);
-  if (size
-      && (!array_at_struct_end_p (ref)
-	  || (!integer_zerop (size)
-	      && !integer_onep (size))))
-    return size;
-
-  /* If the reference is to a declared object and the member a true
-     flexible array, try to determine its size from its initializer.  */
-  poly_int64 off = 0;
-  tree base = get_addr_base_and_unit_offset (ref, &off);
-  if (!base || !VAR_P (base))
-    return NULL_TREE;
-
-  /* The size of any member of a declared object other than a flexible
-     array member is that obtained above.  */
-  if (size)
-    return size;
-
-  if (tree init = DECL_INITIAL (base))
-    if (TREE_CODE (init) == CONSTRUCTOR)
-      {
-	off <<= LOG2_BITS_PER_UNIT;
-	init = fold_ctor_reference (NULL_TREE, init, off, 0, base);
-	if (init)
-	  return TYPE_SIZE_UNIT (TREE_TYPE (init));
-      }
-
-  return DECL_EXTERNAL (base) ? NULL_TREE : integer_zero_node;
-}
-
 /* Helper to compute the size of the object referenced by the DEST
    expression which must have pointer type, using Object Size type
    OSTYPE (only the least significant 2 bits are used).  Return
@@ -3744,7 +3697,7 @@ compute_objsize (tree dest, int ostype, tree *pdecl /* = NULL */)
   if (TREE_CODE (dest) == COMPONENT_REF)
     {
       *pdecl = TREE_OPERAND (dest, 1);
-      return component_size (dest);
+      return component_ref_size (dest);
     }
 
   if (TREE_CODE (dest) != ADDR_EXPR)
@@ -3838,14 +3791,14 @@ expand_builtin_memcpy (tree exp, rtx target)
   check_memop_access (exp, dest, src, len);
 
   return expand_builtin_memory_copy_args (dest, src, len, target, exp,
-					  /*retmode=*/ RETURN_BEGIN);
+					  /*retmode=*/ RETURN_BEGIN, false);
 }
 
 /* Check a call EXP to the memmove built-in for validity.
    Return NULL_RTX on both success and failure.  */
 
 static rtx
-expand_builtin_memmove (tree exp, rtx)
+expand_builtin_memmove (tree exp, rtx target)
 {
   if (!validate_arglist (exp,
  			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -3857,7 +3810,8 @@ expand_builtin_memmove (tree exp, rtx)
 
   check_memop_access (exp, dest, src, len);
 
-  return NULL_RTX;
+  return expand_builtin_memory_copy_args (dest, src, len, target, exp,
+					  /*retmode=*/ RETURN_BEGIN, true);
 }
 
 /* Expand a call EXP to the mempcpy builtin.
@@ -3906,7 +3860,8 @@ expand_builtin_mempcpy (tree exp, rtx target)
 
 static rtx
 expand_builtin_memory_copy_args (tree dest, tree src, tree len,
-				 rtx target, tree exp, memop_ret retmode)
+				 rtx target, tree exp, memop_ret retmode,
+				 bool might_overlap)
 {
   const char *src_str;
   unsigned int src_align = get_pointer_alignment (src);
@@ -3942,9 +3897,12 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
 			&probable_max_size);
   src_str = c_getstr (src);
 
-  /* If SRC is a string constant and block move would be done
-     by pieces, we can avoid loading the string from memory
-     and only stored the computed constants.  */
+  /* If SRC is a string constant and block move would be done by
+     pieces, we can avoid loading the string from memory and only
+     stored the computed constants.  This works in the overlap
+     (memmove) case as well because store_by_pieces just generates a
+     series of stores of constants from the string constant returned
+     by c_getstr().  */
   if (src_str
       && CONST_INT_P (len_rtx)
       && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1
@@ -3971,13 +3929,14 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
     method = BLOCK_OP_TAILCALL;
   bool use_mempcpy_call = (targetm.libc_has_fast_function (BUILT_IN_MEMPCPY)
 			   && retmode == RETURN_END
+			   && !might_overlap
 			   && target != const0_rtx);
   if (use_mempcpy_call)
     method = BLOCK_OP_NO_LIBCALL_RET;
   dest_addr = emit_block_move_hints (dest_mem, src_mem, len_rtx, method,
 				     expected_align, expected_size,
 				     min_size, max_size, probable_max_size,
-				     use_mempcpy_call, &is_move_done);
+				     use_mempcpy_call, &is_move_done, might_overlap);
 
   /* Bail out when a mempcpy call would be expanded as libcall and when
      we have a target that provides a fast implementation
@@ -4010,7 +3969,7 @@ expand_builtin_mempcpy_args (tree dest, tree src, tree len,
 			     rtx target, tree orig_exp, memop_ret retmode)
 {
   return expand_builtin_memory_copy_args (dest, src, len, target, orig_exp,
-					  retmode);
+					  retmode, false);
 }
 
 /* Expand into a movstr instruction, if one is available.  Return NULL_RTX if

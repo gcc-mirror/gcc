@@ -139,7 +139,7 @@
 // #include <concepts>
 #include <numbers>
 // #include <ranges>
-// #include <span>
+#include <span>
 // #include <syncstream>
 #include <version>
 #endif

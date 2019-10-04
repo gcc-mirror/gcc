@@ -6795,13 +6795,11 @@ package body Exp_Util is
    -- Homonym_Number --
    --------------------
 
-   function Homonym_Number (Subp : Entity_Id) return Nat is
-      Count : Nat;
-      Hom   : Entity_Id;
+   function Homonym_Number (Subp : Entity_Id) return Pos is
+      Hom   : Entity_Id := Homonym (Subp);
+      Count : Pos := 1;
 
    begin
-      Count := 1;
-      Hom := Homonym (Subp);
       while Present (Hom) loop
          if Scope (Hom) = Scope (Subp) then
             Count := Count + 1;
@@ -8694,9 +8692,11 @@ package body Exp_Util is
                --  We are definitely in trouble if the record in question
                --  has an alignment, and either we know this alignment is
                --  inconsistent with the alignment of the slice, or we don't
-               --  know what the alignment of the slice should be.
+               --  know what the alignment of the slice should be. But this
+               --  really matters only if the target has strict alignment.
 
-               if Known_Alignment (Ptyp)
+               if Target_Strict_Alignment
+                 and then Known_Alignment (Ptyp)
                  and then (Unknown_Alignment (Styp)
                             or else Alignment (Styp) > Alignment (Ptyp))
                then

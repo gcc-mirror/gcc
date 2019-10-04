@@ -209,3 +209,9 @@ grep '^type _kevent ' gen-sysinfo.go | \
     sed -e s'/_kevent/keventt/' \
       -e 's/ udata [^;}]*/ udata *byte/' \
     >> ${OUT}
+
+# Type 'uint128' is needed in a couple of type definitions on arm64,such
+# as _user_fpsimd_struct, _elf_fpregset_t, etc.
+if ! grep '^type uint128' ${OUT} > /dev/null 2>&1; then
+    echo "type uint128 [16]byte" >> ${OUT}
+fi

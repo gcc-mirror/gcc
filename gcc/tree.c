@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "regs.h"
 #include "tree-vector-builder.h"
+#include "gimple-fold.h"
 
 /* Tree code classes.  */
 
@@ -5962,8 +5963,9 @@ find_decls_types_r (tree *tp, int *ws, void *data)
     {
       for (tree *tem = &BLOCK_VARS (t); *tem; )
 	{
-	  if (TREE_CODE (*tem) != VAR_DECL
-	      || !auto_var_in_fn_p (*tem, DECL_CONTEXT (*tem)))
+	  if (TREE_CODE (*tem) != LABEL_DECL
+	      && (TREE_CODE (*tem) != VAR_DECL
+		  || !auto_var_in_fn_p (*tem, DECL_CONTEXT (*tem))))
 	    {
 	      gcc_assert (TREE_CODE (*tem) != RESULT_DECL
 			  && TREE_CODE (*tem) != PARM_DECL);
@@ -13848,6 +13850,75 @@ component_ref_field_offset (tree exp)
      any PLACEHOLDER_EXPR that we have.  */
   else
     return SUBSTITUTE_PLACEHOLDER_IN_EXPR (DECL_FIELD_OFFSET (field), exp);
+}
+
+/* Determines the size of the member referenced by the COMPONENT_REF
+   REF, using its initializer expression if necessary in order to
+   determine the size of an initialized flexible array member.
+   Returns the size (which might be zero for an object with
+   an uninitialized flexible array member) or null if the size
+   cannot be determined.  */
+
+tree
+component_ref_size (tree ref)
+{
+  gcc_assert (TREE_CODE (ref) == COMPONENT_REF);
+
+  tree member = TREE_OPERAND (ref, 1);
+
+  /* If the member is not an array, or is not last, or is an array with
+     more than one element, return its size.  Otherwise it's either
+     a bona fide flexible array member, or a zero-length array member,
+     or an array of length one treated as such.  */
+  tree size = DECL_SIZE_UNIT (member);
+  if (size)
+    {
+      tree memtype = TREE_TYPE (member);
+      if (TREE_CODE (memtype) != ARRAY_TYPE
+	  || !array_at_struct_end_p (ref))
+	return size;
+
+      if (!integer_zerop (size))
+	if (tree dom = TYPE_DOMAIN (memtype))
+	  if (tree min = TYPE_MIN_VALUE (dom))
+	    if (tree max = TYPE_MAX_VALUE (dom))
+	      if (TREE_CODE (min) == INTEGER_CST
+		  && TREE_CODE (max) == INTEGER_CST)
+		{
+		  offset_int minidx = wi::to_offset (min);
+		  offset_int maxidx = wi::to_offset (max);
+		  if (maxidx - minidx > 1)
+		    return size;
+		}
+    }
+
+  /* If the reference is to a declared object and the member a true
+     flexible array, try to determine its size from its initializer.  */
+  poly_int64 off = 0;
+  tree base = get_addr_base_and_unit_offset (ref, &off);
+  if (!base || !VAR_P (base))
+    return NULL_TREE;
+
+  /* The size of any member of a declared object other than a flexible
+     array member is that obtained above.  */
+  if (size)
+    return size;
+
+  if (tree init = DECL_INITIAL (base))
+    if (TREE_CODE (init) == CONSTRUCTOR)
+      {
+	off <<= LOG2_BITS_PER_UNIT;
+	init = fold_ctor_reference (NULL_TREE, init, off, 0, base);
+	if (init)
+	  return TYPE_SIZE_UNIT (TREE_TYPE (init));
+      }
+
+  /* Return "don't know" for an external non-array object since its
+     flexible array member can be initialized to have any number of
+     elements.  Otherwise, return zero because the flexible array
+     member has no elements.  */
+  return (DECL_EXTERNAL (base) && TREE_CODE (TREE_TYPE (base)) != ARRAY_TYPE
+	  ? NULL_TREE : integer_zero_node);
 }
 
 /* Return the machine mode of T.  For vectors, returns the mode of the

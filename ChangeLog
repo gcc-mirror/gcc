@@ -1,3 +1,22 @@
+2019-10-01  Frederik Harwath <frederik@codesourcery.com>
+
+	* MAINTAINERS: Add myself to Write After Approval
+
+2019-09-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* MAINTAINERS: Add myself as an aarch64 maintainer.
+
+2019-09-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* MAINTAINERS: Add myself as aarch64 maintainer.
+
+2019-09-23  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/vsx.md (xxswapd_v4si, xxswapd_v8hi, xxswapd_v16qi):
+	New define_insn.
+	(vsx_xxpermdi4_le_<mode> for VSX_W, vsx_xxpermdi8_le_V8HI,
+	vsx_xxpermdi16_le_V16QI): Removed define_insn.
+
 2019-09-13  Sam Tebbs  <sam.tebbs@arm.com>
 
 	* MAINTAINERS (Sam Tebbs): Update email address.

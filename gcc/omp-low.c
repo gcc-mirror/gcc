@@ -4044,8 +4044,7 @@ lower_rec_simd_input_clauses (tree new_var, omp_context *ctx,
       DECL_ATTRIBUTES (ivar) = tree_cons (get_identifier ("omp simt private"),
 					  NULL, DECL_ATTRIBUTES (ivar));
       sctx->simt_eargs.safe_push (build1 (ADDR_EXPR, ptype, ivar));
-      tree clobber = build_constructor (type, NULL);
-      TREE_THIS_VOLATILE (clobber) = 1;
+      tree clobber = build_clobber (type);
       gimple *g = gimple_build_assign (ivar, clobber);
       gimple_seq_add_stmt (&sctx->simt_dlist, g);
     }
@@ -5939,8 +5938,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
     }
   if (tskred_avar)
     {
-      tree clobber = build_constructor (TREE_TYPE (tskred_avar), NULL);
-      TREE_THIS_VOLATILE (clobber) = 1;
+      tree clobber = build_clobber (TREE_TYPE (tskred_avar));
       gimple_seq_add_stmt (ilist, gimple_build_assign (tskred_avar, clobber));
     }
 
@@ -7896,8 +7894,7 @@ lower_omp_single (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   if (ctx->record_type)
     {
       gimple_stmt_iterator gsi = gsi_start (bind_body_tail);
-      tree clobber = build_constructor (ctx->record_type, NULL);
-      TREE_THIS_VOLATILE (clobber) = 1;
+      tree clobber = build_clobber (ctx->record_type);
       gsi_insert_after (&gsi, gimple_build_assign (ctx->sender_decl,
 						   clobber), GSI_SAME_STMT);
     }
@@ -11029,8 +11026,7 @@ lower_depend_clauses (tree *pclauses, gimple_seq *iseq, gimple_seq *oseq)
   OMP_CLAUSE_DECL (c) = build_fold_addr_expr (array);
   OMP_CLAUSE_CHAIN (c) = *pclauses;
   *pclauses = c;
-  tree clobber = build_constructor (type, NULL);
-  TREE_THIS_VOLATILE (clobber) = 1;
+  tree clobber = build_clobber (type);
   g = gimple_build_assign (array, clobber);
   gimple_seq_add_stmt (oseq, g);
 }
@@ -11165,8 +11161,7 @@ lower_omp_taskreg (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   if (ctx->record_type)
     {
-      tree clobber = build_constructor (TREE_TYPE (ctx->sender_decl), NULL);
-      TREE_THIS_VOLATILE (clobber) = 1;
+      tree clobber = build_clobber (TREE_TYPE (ctx->sender_decl));
       gimple_seq_add_stmt (&olist, gimple_build_assign (ctx->sender_decl,
 							clobber));
     }
@@ -11400,7 +11395,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      {
 		gcc_assert (is_gimple_omp_oacc (ctx->stmt));
 		if (omp_is_reference (new_var)
-		    && TREE_CODE (TREE_TYPE (new_var)) != POINTER_TYPE)
+		    && (TREE_CODE (TREE_TYPE (new_var)) != POINTER_TYPE
+		        || DECL_BY_REFERENCE (var)))
 		  {
 		    /* Create a local object to hold the instance
 		       value.  */
@@ -11874,7 +11870,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      var = build_fold_addr_expr (var);
 	    else
 	      {
-		if (omp_is_reference (ovar))
+		if (omp_is_reference (ovar) || omp_is_optional_argument (ovar))
 		  {
 		    type = TREE_TYPE (type);
 		    if (TREE_CODE (type) != ARRAY_TYPE
@@ -11911,16 +11907,13 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 				  &initlist, true, NULL_TREE);
 	    gimple_seq_add_seq (&ilist, initlist);
 
-	    tree clobber = build_constructor (TREE_TYPE (TREE_VEC_ELT (t, i)),
-					      NULL);
-	    TREE_THIS_VOLATILE (clobber) = 1;
+	    tree clobber = build_clobber (TREE_TYPE (TREE_VEC_ELT (t, i)));
 	    gimple_seq_add_stmt (&olist,
 				 gimple_build_assign (TREE_VEC_ELT (t, i),
 						      clobber));
 	  }
 
-      tree clobber = build_constructor (ctx->record_type, NULL);
-      TREE_THIS_VOLATILE (clobber) = 1;
+      tree clobber = build_clobber (ctx->record_type);
       gimple_seq_add_stmt (&olist, gimple_build_assign (ctx->sender_decl,
 							clobber));
     }

@@ -1,3 +1,176 @@
+2019-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71504
+	* constexpr.c (cxx_fold_indirect_ref_1): New function.
+	(cxx_fold_indirect_ref): Use it.
+
+	PR c++/91974
+	* cp-gimplify.c (cp_gimplify_expr) <case CALL_EXPR>: For
+	-fstrong-eval-order ensure CALL_EXPR_FN side-effects are evaluated
+	before any arguments.  Additionally, ensure CALL_EXPR_FN that isn't
+	invariant nor OBJ_TYPE_REF nor SSA_NAME is forced into a temporary.
+
+2019-10-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* init.c (build_new): Use cp_expr_loc_or_input_loc in two places.
+	* name-lookup.c (do_pushdecl): Use DECL_SOURCE_LOCATION.
+	(push_class_level_binding_1): Likewise.
+	(set_decl_namespace): Likewise.
+
+2019-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* constexpr.c (cxx_eval_constant_expression) <case CLEANUP_STMT>: If
+	not skipping upon entry to body, run cleanup with the same *jump_target
+	as it started to run the cleanup even if the body returns, breaks or
+	continues.
+	(potential_constant_expression_1): Allow CLEANUP_STMT.
+
+	* constexpr.c (cxx_eval_store_expression): Formatting fix.  Handle
+	const_object_being_modified with array type.
+
+2019-10-02  Jason Merrill  <jason@redhat.com>
+
+	* typeck2.c (store_init_value): Only clear_cv_and_fold_caches if the
+	value is constant.
+
+2019-09-30  Jason Merrill  <jason@redhat.com>
+
+	Use hash_map_safe_* functions.
+	* constexpr.c (maybe_initialize_fundef_copies_table): Remove.
+	(get_fundef_copy): Use hash_map_safe_get_or_insert.
+	* cp-objcp-common.c (cp_get_debug_type): Use hash_map_safe_*.
+	* decl.c (store_decomp_type): Remove.
+	(cp_finish_decomp): Use hash_map_safe_put.
+	* init.c (get_nsdmi): Use hash_map_safe_*.
+	* pt.c (store_defaulted_ttp, lookup_defaulted_ttp): Remove.
+	(add_defaults_to_ttp): Use hash_map_safe_*.
+
+2019-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR c++/91606
+	* decl.c (build_ptrmemfunc_type): Mark pointer-to-member
+	fat pointer structure members as DECL_NONADDRESSABLE_P.
+
+2019-09-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91889 - follow-up fix for DR 2352.
+	* call.c (involves_qualification_conversion_p): New function.
+	(direct_reference_binding): Build a ck_qual if the conversion
+	would involve a qualification conversion.
+	(convert_like_real): Strip the conversion created by the ck_qual
+	in direct_reference_binding.
+
+	PR c++/91921 - stray warning with -Woverloaded-virtual.
+	* class.c (warn_hidden): Only emit the second part of
+	-Woverloaded-virtual if the first part was issued.  Use inform instead
+	warning_at.
+
+	PR c++/91923 - failure-to-SFINAE with class type NTTP in C++17.
+	* pt.c (invalid_nontype_parm_type_p): Only emit errors when
+	tf_error.
+
+2019-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88203
+	* parser.c (cp_parser_omp_var_list_no_open): Parse predefined
+	variables.
+	* semantics.c (finish_omp_clauses): Allow predefined variables in
+	shared and firstprivate clauses, even when they are predetermined
+	shared.
+	* cp-gimplify.c (cxx_omp_predetermined_sharing_1): Return
+	OMP_CLAUSE_DEFAULT_SHARED for predefined variables.
+
+2019-09-27  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_fold_indirect_ref): Use similar_type_p.
+	(cxx_eval_indirect_ref): Likewise.  Improve error location.
+
+	* cp-tree.h (class iloc_sentinel): New.
+	* decl.c (grokdeclarator, finish_enum_value_list): Use it.
+	* mangle.c (mangle_decl_string): Use it.
+	* pt.c (perform_typedefs_access_check): Use it.
+
+2019-09-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cp-tree.h (build_cxx_call): Take the original function decl
+	as an optional final parameter.
+	(cp_build_function_call_vec): Likewise.
+	* call.c (build_cxx_call): Likewise.  Pass all built-in calls to
+	check_builtin_function_arguments.
+	* typeck.c (build_function_call_vec): Take the original function
+	decl as an optional final parameter and pass it to
+	cp_build_function_call_vec.
+	(cp_build_function_call_vec): Take the original function
+	decl as an optional final parameter and pass it to build_cxx_call.
+
+2019-09-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91877 - ICE with converting member of packed struct.
+	* call.c (convert_like_real): Use similar_type_p in an assert.
+
+2019-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* name-lookup.c (check_extern_c_conflict): Use DECL_SOURCE_LOCATION.
+	(check_local_shadow): Use it in three additional places.
+
+2019-09-24  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_postfix_expression): Do set location of
+	dependent member call.
+
+2019-09-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91868 - improve -Wshadow location.
+	* name-lookup.c (check_local_shadow): Use DECL_SOURCE_LOCATION
+	instead of input_location.
+
+	PR c++/91845 - ICE with invalid pointer-to-member.
+	* expr.c (mark_use): Use error_operand_p.
+	* typeck2.c (build_m_component_ref): Check error_operand_p after
+	calling mark_[lr]value_use.
+
+2019-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (check_explicit_specialization): Use cp_expr_loc_or_input_loc.
+	(process_partial_specialization): Likewise.
+	(convert_nontype_argument_function): Likewise.
+	(invalid_tparm_referent_p): Likewise.
+	(convert_template_argument): Likewise.
+	(check_valid_ptrmem_cst_expr): Tidy.
+
+2019-09-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91809 - bit-field and ellipsis.
+	* call.c (convert_arg_to_ellipsis): Don't call decay_conversion for
+	arithmetic arguments.
+
+2019-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91844 - Implement CWG 2352, Similar types and reference binding.
+	* call.c (reference_related_p): Use similar_type_p instead of
+	same_type_p.
+	(reference_compatible_p): Update implementation to match CWG 2352.
+	* cp-tree.h (similar_type_p): Declare.
+	* typeck.c (similar_type_p): New.
+
+2019-09-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91819 - ICE with operator++ and enum.
+	* call.c (build_new_op_1): Set arg2_type.
+
+2019-09-17  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_statement): Handle [[likely]] on
+	compound-statement.
+
+2019-09-19  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	* call.c (build_new_op_1): Don't apply any standard conversions to
+	the operands of a built-in operator.  Don't suppress conversions in
+	cp_build_unary_op.
+	* typeck.c (cp_build_unary_op): Do integral promotions for enums.
+
 2019-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokdeclarator): Use declspecs->locations and

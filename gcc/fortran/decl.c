@@ -2908,7 +2908,7 @@ variable_decl (int elem)
     {
       gfc_error ("Incompatible initialization between a derived type "
 		 "entity and an entity with %qs type at %C",
-		  gfc_typename (&initializer->ts));
+		  gfc_typename (initializer));
       m = MATCH_ERROR;
       goto cleanup;
     }
@@ -4444,6 +4444,7 @@ get_kind:
 	      gfc_next_ascii_char ();
 	      return MATCH_YES;
 	    }
+	  gfc_error ("Malformed type-spec at %C");
 	  return MATCH_NO;
 	}
     }
@@ -4457,7 +4458,10 @@ get_kind:
     }
 
   if (matched_type && gfc_match_char (')') != MATCH_YES)
-    return MATCH_ERROR;
+    {
+      gfc_error ("Malformed type-spec at %C");
+      return MATCH_ERROR;
+    }
 
   /* Defer association of the KIND expression of function results
      until after USE and IMPORT statements.  */
@@ -8468,6 +8472,15 @@ attr_decl1 (void)
       goto cleanup;
     }
 
+  /* Check F2018:C822.  */
+  if (sym->attr.dimension && sym->attr.codimension
+      && sym->as && sym->as->rank + sym->as->corank > 15)
+    {
+      gfc_error ("rank + corank of %qs exceeds 15 at %C", sym->name);
+      m = MATCH_ERROR;
+      return m;
+    }
+
   if (sym->attr.cray_pointee && sym->as != NULL)
     {
       /* Fix the array spec.  */
@@ -10231,6 +10244,20 @@ gfc_match_derived_decl (void)
       return MATCH_ERROR;
     }
 
+  /*  In free source form, need to check for TYPE XXX as oppose to TYPEXXX.
+      But, we need to simply return for TYPE(.  */ 
+  if (m == MATCH_NO && gfc_current_form == FORM_FREE)
+    {
+      char c = gfc_peek_ascii_char ();
+      if (c == '(')
+	return m;
+      if (!gfc_is_whitespace (c))
+	{
+	  gfc_error ("Mangled derived type definition at %C");
+	  return MATCH_NO;
+	}
+    }
+
   m = gfc_match (" %n ", name);
   if (m != MATCH_YES)
     return m;
@@ -10238,7 +10265,7 @@ gfc_match_derived_decl (void)
   /* Make sure that we don't identify TYPE IS (...) as a parameterized
      derived type named 'is'.
      TODO Expand the check, when 'name' = "is" by matching " (tname) "
-     and checking if this is a(n intrinsic) typename. his picks up
+     and checking if this is a(n intrinsic) typename.  This picks up
      misplaced TYPE IS statements such as in select_type_1.f03.  */
   if (gfc_peek_ascii_char () == '(')
     {

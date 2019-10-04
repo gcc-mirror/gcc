@@ -3489,18 +3489,43 @@ proc check_effective_target_arm_soft_ok { } {
     }
 }
 
-# Return 1 if this is an ARM target supporting -mfpu=vfp
-# -mfloat-abi=softfp.  Some multilibs may be incompatible with these
-# options.
+# Return 1 if this is an ARM target supporting -mfpu=vfp with an
+# appropriate abi.
+
+proc check_effective_target_arm_vfp_ok_nocache { } {
+    global et_arm_vfp_flags
+    set et_arm_vfp_flags ""
+    if { [check_effective_target_arm32] } {
+	foreach flags {"-mfpu=vfp" "-mfpu=vfp -mfloat-abi=softfp" "-mpu=vfp -mfloat-abi=hard"} {
+	    if { [check_no_compiler_messages_nocache arm_fp_ok object {
+		#ifndef __ARM_FP
+		#error __ARM_FP not defined
+		#endif
+	    } "$flags"] } {
+		set et_arm_vfp_flags $flags
+		return 1
+	    }
+	}
+    }
+
+    return 0
+}
 
 proc check_effective_target_arm_vfp_ok { } {
-    if { [check_effective_target_arm32] } {
-	return [check_no_compiler_messages arm_vfp_ok object {
-	    int dummy;
-	} "-mfpu=vfp -mfloat-abi=softfp"]
-    } else {
-	return 0
+    return [check_cached_effective_target arm_vfp_ok \
+		check_effective_target_arm_vfp_ok_nocache]
+}
+
+# Add the options needed to compile code with -mfpu=vfp.  We need either
+# -mfloat-abi=softfp or -mfloat-abi=hard, but if one is already
+# specified by the multilib, use it.
+
+proc add_options_for_arm_vfp { flags } {
+    if { ! [check_effective_target_arm_vfp_ok] } {
+	return "$flags"
     }
+    global et_arm_vfp_flags
+    return "$flags $et_arm_vfp_flags"
 }
 
 # Return 1 if this is an ARM target supporting -mfpu=vfp3
@@ -3779,6 +3804,45 @@ proc check_effective_target_arm_neon_ok_nocache { } {
 proc check_effective_target_arm_neon_ok { } {
     return [check_cached_effective_target arm_neon_ok \
 		check_effective_target_arm_neon_ok_nocache]
+}
+
+
+# Return 1 if this is an ARM target supporting the SIMD32 intrinsics
+# from arm_acle.h.  Some multilibs may be incompatible with these options.
+# Also set et_arm_simd32_flags to the best options to add.
+# arm_acle.h includes stdint.h which can cause trouble with incompatible
+# -mfloat-abi= options.
+
+proc check_effective_target_arm_simd32_ok_nocache { } {
+    global et_arm_simd32_flags
+    set et_arm_simd32_flags ""
+    foreach flags {"" "-march=armv6" "-march=armv6 -mfloat-abi=softfp" "-march=armv6 -mfloat-abi=hard"} {
+      if { [check_no_compiler_messages_nocache arm_simd32_ok object {
+	#include <arm_acle.h>
+	int dummy;
+	#ifndef __ARM_FEATURE_SIMD32
+	#error not SIMD32
+	#endif
+      } "$flags"] } {
+	set et_arm_simd32_flags $flags
+	return 1
+      }
+    }
+
+  return 0
+}
+
+proc check_effective_target_arm_simd32_ok { } {
+    return [check_cached_effective_target arm_simd32_ok \
+		check_effective_target_arm_simd32_ok_nocache]
+}
+
+proc add_options_for_arm_simd32 { flags } {
+    if { ! [check_effective_target_arm_simd32_ok] } {
+	return "$flags"
+    }
+    global et_arm_simd32_flags
+    return "$flags $et_arm_simd32_flags"
 }
 
 # Return 1 if this is an ARM target supporting -mfpu=neon without any
@@ -6192,6 +6256,14 @@ proc check_effective_target_vect_mulhrs_hi {} {
 		   && [check_effective_target_aarch64_sve2] }]
 }
 
+# Return 1 if the target plus current options supports signed division
+# by power-of-2 operations on vectors of 4-byte integers.
+
+proc check_effective_target_vect_sdiv_pow2_si {} {
+    return [expr { [istarget aarch64*-*-*]
+		   && [check_effective_target_aarch64_sve] }]
+}
+
 # Return 1 if the target plus current options supports a vector
 # demotion (packing) of shorts (to chars) and ints (to shorts) 
 # using modulo arithmetic, 0 otherwise.
@@ -6677,6 +6749,9 @@ proc check_effective_target_sqrt_insn { } {
 proc add_options_for_sqrt_insn { flags } {
     if { [istarget amdgcn*-*-*] } {
 	return "$flags -ffast-math"
+    }
+    if { [istarget arm*-*-*] } {
+	return [add_options_for_arm_vfp "$flags"]
     }
     return $flags
 }

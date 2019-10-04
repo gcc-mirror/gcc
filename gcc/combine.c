@@ -105,6 +105,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "valtrack.h"
 #include "rtl-iter.h"
 #include "print-rtl.h"
+#include "function-abi.h"
 
 /* Number of attempts to combine instructions in this function.  */
 
@@ -571,7 +572,6 @@ find_single_use_1 (rtx dest, rtx *loc)
     case SYMBOL_REF:
     CASE_CONST_ANY:
     case CLOBBER:
-    case CLOBBER_HIGH:
       return 0;
 
     case SET:
@@ -1762,9 +1762,6 @@ set_nonzero_bits_and_sign_copies (rtx x, const_rtx set, void *data)
 	  return;
 	}
 
-      /* Should not happen as we only using pseduo registers.  */
-      gcc_assert (GET_CODE (set) != CLOBBER_HIGH);
-
       /* If this register is being initialized using itself, and the
 	 register is uninitialized in this basic block, and there are
 	 no LOG_LINKS which set the register, then part of the
@@ -1923,7 +1920,6 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
 
 	      /* We can ignore CLOBBERs.  */
 	    case CLOBBER:
-	    case CLOBBER_HIGH:
 	      break;
 
 	    case SET:
@@ -2594,8 +2590,6 @@ is_parallel_of_n_reg_sets (rtx pat, int n)
 	if (XEXP (XVECEXP (pat, 0, i), 0) == const0_rtx)
 	  return false;
 	break;
-      case CLOBBER_HIGH:
-	break;
       default:
 	return false;
       }
@@ -2896,8 +2890,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       for (i = 0; ok && i < XVECLEN (p2, 0); i++)
 	{
 	  if ((GET_CODE (XVECEXP (p2, 0, i)) == SET
-	       || GET_CODE (XVECEXP (p2, 0, i)) == CLOBBER
-	       || GET_CODE (XVECEXP (p2, 0, i)) == CLOBBER_HIGH)
+	       || GET_CODE (XVECEXP (p2, 0, i)) == CLOBBER)
 	      && reg_overlap_mentioned_p (SET_DEST (PATTERN (i3)),
 					  SET_DEST (XVECEXP (p2, 0, i))))
 	    ok = false;
@@ -13408,15 +13401,6 @@ record_dead_and_set_regs_1 (rtx dest, const_rtx setter, void *data)
 			      ? SET_SRC (setter)
 			      : gen_lowpart (GET_MODE (dest),
 					     SET_SRC (setter)));
-      else if (GET_CODE (setter) == CLOBBER_HIGH)
-	{
-	  reg_stat_type *rsp = &reg_stat[REGNO (dest)];
-	  if (rsp->last_set_value
-	      && reg_is_clobbered_by_clobber_high
-		   (REGNO (dest), GET_MODE (rsp->last_set_value),
-		    XEXP (setter, 0)))
-	    record_value_for_reg (dest, NULL, NULL_RTX);
-	}
       else
 	record_value_for_reg (dest, record_dead_insn, NULL_RTX);
     }
@@ -13464,11 +13448,21 @@ record_dead_and_set_regs (rtx_insn *insn)
 
   if (CALL_P (insn))
     {
+      HARD_REG_SET callee_clobbers
+	= insn_callee_abi (insn).full_and_partial_reg_clobbers ();
       hard_reg_set_iterator hrsi;
-      EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call, 0, i, hrsi)
+      EXECUTE_IF_SET_IN_HARD_REG_SET (callee_clobbers, 0, i, hrsi)
 	{
 	  reg_stat_type *rsp;
 
+	  /* ??? We could try to preserve some information from the last
+	     set of register I if the call doesn't actually clobber
+	     (reg:last_set_mode I), which might be true for ABIs with
+	     partial clobbers.  However, it would be difficult to
+	     update last_set_nonzero_bits and last_sign_bit_copies
+	     to account for the part of I that actually was clobbered.
+	     It wouldn't help much anyway, since we rarely see this
+	     situation before RA.  */
 	  rsp = &reg_stat[i];
 	  rsp->last_set_invalid = 1;
 	  rsp->last_set = insn;
@@ -13850,10 +13844,6 @@ reg_dead_at_p_1 (rtx dest, const_rtx x, void *data ATTRIBUTE_UNUSED)
   unsigned int regno, endregno;
 
   if (!REG_P (dest))
-    return;
-
-  if (GET_CODE (x) == CLOBBER_HIGH
-      && !reg_is_clobbered_by_clobber_high (reg_dead_reg, XEXP (x, 0)))
     return;
 
   regno = REGNO (dest);

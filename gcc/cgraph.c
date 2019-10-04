@@ -824,12 +824,13 @@ cgraph_edge::set_call_stmt (gcall *new_stmt, bool update_speculative)
 
 /* Allocate a cgraph_edge structure and fill it with data according to the
    parameters of which only CALLEE can be NULL (when creating an indirect call
-   edge).  */
+   edge).  CLONING_P should be set if properties that are copied from an
+   original edge should not be calculated.  */
 
 cgraph_edge *
 symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
 			   gcall *call_stmt, profile_count count,
-			   bool indir_unknown_callee)
+			   bool indir_unknown_callee, bool cloning_p)
 {
   cgraph_edge *edge;
 
@@ -862,8 +863,17 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
   edge->lto_stmt_uid = 0;
 
   edge->count = count;
-
   edge->call_stmt = call_stmt;
+  edge->indirect_info = NULL;
+  edge->indirect_inlining_edge = 0;
+  edge->speculative = false;
+  edge->indirect_unknown_callee = indir_unknown_callee;
+  if (call_stmt && caller->call_site_hash)
+    cgraph_add_edge_to_call_site_hash (edge);
+
+  if (cloning_p)
+    return edge;
+
   edge->can_throw_external
     = call_stmt ? stmt_can_throw_external (DECL_STRUCT_FUNCTION (caller->decl),
 					   call_stmt) : false;
@@ -881,10 +891,6 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
       edge->call_stmt_cannot_inline_p = false;
     }
 
-  edge->indirect_info = NULL;
-  edge->indirect_inlining_edge = 0;
-  edge->speculative = false;
-  edge->indirect_unknown_callee = indir_unknown_callee;
   if (opt_for_fn (edge->caller->decl, flag_devirtualize)
       && call_stmt && DECL_STRUCT_FUNCTION (caller->decl))
     edge->in_polymorphic_cdtor
@@ -892,22 +898,23 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
 				      caller->decl);
   else
     edge->in_polymorphic_cdtor = caller->thunk.thunk_p;
-  if (call_stmt && caller->call_site_hash)
-    cgraph_add_edge_to_call_site_hash (edge);
 
   return edge;
 }
 
-/* Create edge from a given function to CALLEE in the cgraph.  */
+/* Create edge from a given function to CALLEE in the cgraph.  CLONING_P should
+   be set if properties that are copied from an original edge should not be
+   calculated.  */
 
 cgraph_edge *
 cgraph_node::create_edge (cgraph_node *callee,
-			  gcall *call_stmt, profile_count count)
+			  gcall *call_stmt, profile_count count, bool cloning_p)
 {
   cgraph_edge *edge = symtab->create_edge (this, callee, call_stmt, count,
-					   false);
+					   false, cloning_p);
 
-  initialize_inline_failed (edge);
+  if (!cloning_p)
+    initialize_inline_failed (edge);
 
   edge->next_caller = callee->callers;
   if (callee->callers)
@@ -935,25 +942,28 @@ cgraph_allocate_init_indirect_info (void)
 
 /* Create an indirect edge with a yet-undetermined callee where the call
    statement destination is a formal parameter of the caller with index
-   PARAM_INDEX. */
+   PARAM_INDEX. CLONING_P should be set if properties that are copied from an
+   original edge should not be calculated and indirect_info structure should
+   not be calculated.  */
 
 cgraph_edge *
 cgraph_node::create_indirect_edge (gcall *call_stmt, int ecf_flags,
 				   profile_count count,
-				   bool compute_indirect_info)
+				   bool cloning_p)
 {
-  cgraph_edge *edge = symtab->create_edge (this, NULL, call_stmt,
-							    count, true);
+  cgraph_edge *edge = symtab->create_edge (this, NULL, call_stmt, count, true,
+					   cloning_p);
   tree target;
 
-  initialize_inline_failed (edge);
+  if (!cloning_p)
+    initialize_inline_failed (edge);
 
   edge->indirect_info = cgraph_allocate_init_indirect_info ();
   edge->indirect_info->ecf_flags = ecf_flags;
   edge->indirect_info->vptr_changed = true;
 
   /* Record polymorphic call info.  */
-  if (compute_indirect_info
+  if (!cloning_p
       && call_stmt
       && (target = gimple_call_fn (call_stmt))
       && virtual_method_call_p (target))
@@ -1342,7 +1352,7 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
   if (flag_checking && decl)
     {
       cgraph_node *node = cgraph_node::get (decl);
-      gcc_assert (!node || !node->clone.combined_args_to_skip);
+      gcc_assert (!node || !node->clone.param_adjustments);
     }
 
   if (symtab->dump_file)
@@ -1350,25 +1360,36 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
       fprintf (symtab->dump_file, "updating call of %s -> %s: ",
 	       e->caller->dump_name (), e->callee->dump_name ());
       print_gimple_stmt (symtab->dump_file, e->call_stmt, 0, dump_flags);
-      if (e->callee->clone.combined_args_to_skip)
+      if (e->callee->clone.param_adjustments)
+	e->callee->clone.param_adjustments->dump (symtab->dump_file);
+      unsigned performed_len
+	= vec_safe_length (e->caller->clone.performed_splits);
+      if (performed_len > 0)
+	fprintf (symtab->dump_file, "Performed splits records:\n");
+      for (unsigned i = 0; i < performed_len; i++)
 	{
-	  fprintf (symtab->dump_file, " combined args to skip: ");
-	  dump_bitmap (symtab->dump_file,
-		       e->callee->clone.combined_args_to_skip);
+	  ipa_param_performed_split *sm
+	    = &(*e->caller->clone.performed_splits)[i];
+	  print_node_brief (symtab->dump_file, "  dummy_decl: ", sm->dummy_decl,
+			    TDF_UID);
+	  fprintf (symtab->dump_file, ", unit_offset: %u\n", sm->unit_offset);
 	}
     }
 
-  if (e->callee->clone.combined_args_to_skip)
+  if (ipa_param_adjustments *padjs = e->callee->clone.param_adjustments)
     {
-      int lp_nr;
+      /* We need to defer cleaning EH info on the new statement to
+         fixup-cfg.  We may not have dominator information at this point
+	 and thus would end up with unreachable blocks and have no way
+	 to communicate that we need to run CFG cleanup then.  */
+      int lp_nr = lookup_stmt_eh_lp (e->call_stmt);
+      if (lp_nr != 0)
+	remove_stmt_from_eh_lp (e->call_stmt);
 
-      new_stmt = e->call_stmt;
-      if (e->callee->clone.combined_args_to_skip)
-	new_stmt
-	  = gimple_call_copy_skip_args (new_stmt,
-					e->callee->clone.combined_args_to_skip);
       tree old_fntype = gimple_call_fntype (e->call_stmt);
-      gimple_call_set_fndecl (new_stmt, e->callee->decl);
+      new_stmt = padjs->modify_call (e->call_stmt,
+				     e->caller->clone.performed_splits,
+				     e->callee->decl, false);
       cgraph_node *origin = e->callee;
       while (origin->clone_of)
 	origin = origin->clone_of;
@@ -1379,92 +1400,12 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	gimple_call_set_fntype (new_stmt, TREE_TYPE (e->callee->decl));
       else
 	{
-	  bitmap skip = e->callee->clone.combined_args_to_skip;
-	  tree t = cgraph_build_function_type_skip_args (old_fntype, skip,
-							 false);
-	  gimple_call_set_fntype (new_stmt, t);
+	  tree new_fntype = padjs->build_new_function_type (old_fntype, true);
+	  gimple_call_set_fntype (new_stmt, new_fntype);
 	}
 
-      if (gimple_vdef (new_stmt)
-	  && TREE_CODE (gimple_vdef (new_stmt)) == SSA_NAME)
-	SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
-
-      gsi = gsi_for_stmt (e->call_stmt);
-
-      /* For optimized away parameters, add on the caller side
-	 before the call
-	 DEBUG D#X => parm_Y(D)
-	 stmts and associate D#X with parm in decl_debug_args_lookup
-	 vector to say for debug info that if parameter parm had been passed,
-	 it would have value parm_Y(D).  */
-      if (e->callee->clone.combined_args_to_skip && MAY_HAVE_DEBUG_BIND_STMTS)
-	{
-	  vec<tree, va_gc> **debug_args
-	    = decl_debug_args_lookup (e->callee->decl);
-	  tree old_decl = gimple_call_fndecl (e->call_stmt);
-	  if (debug_args && old_decl)
-	    {
-	      tree parm;
-	      unsigned i = 0, num;
-	      unsigned len = vec_safe_length (*debug_args);
-	      unsigned nargs = gimple_call_num_args (e->call_stmt);
-	      for (parm = DECL_ARGUMENTS (old_decl), num = 0;
-		   parm && num < nargs;
-		   parm = DECL_CHAIN (parm), num++)
-		if (bitmap_bit_p (e->callee->clone.combined_args_to_skip, num)
-		    && is_gimple_reg (parm))
-		  {
-		    unsigned last = i;
-
-		    while (i < len && (**debug_args)[i] != DECL_ORIGIN (parm))
-		      i += 2;
-		    if (i >= len)
-		      {
-			i = 0;
-			while (i < last
-			       && (**debug_args)[i] != DECL_ORIGIN (parm))
-			  i += 2;
-			if (i >= last)
-			  continue;
-		      }
-		    tree ddecl = (**debug_args)[i + 1];
-		    tree arg = gimple_call_arg (e->call_stmt, num);
-		    if (!useless_type_conversion_p (TREE_TYPE (ddecl),
-						    TREE_TYPE (arg)))
-		      {
-			tree rhs1;
-			if (!fold_convertible_p (TREE_TYPE (ddecl), arg))
-			  continue;
-			if (TREE_CODE (arg) == SSA_NAME
-			    && gimple_assign_cast_p (SSA_NAME_DEF_STMT (arg))
-			    && (rhs1
-				= gimple_assign_rhs1 (SSA_NAME_DEF_STMT (arg)))
-			    && useless_type_conversion_p (TREE_TYPE (ddecl),
-							  TREE_TYPE (rhs1)))
-			  arg = rhs1;
-			else
-			  arg = fold_convert (TREE_TYPE (ddecl), arg);
-		      }
-
-		    gimple *def_temp
-		      = gimple_build_debug_bind (ddecl, unshare_expr (arg),
-						 e->call_stmt);
-		    gsi_insert_before (&gsi, def_temp, GSI_SAME_STMT);
-		  }
-	    }
-	}
-
-      gsi_replace (&gsi, new_stmt, false);
-      /* We need to defer cleaning EH info on the new statement to
-         fixup-cfg.  We may not have dominator information at this point
-	 and thus would end up with unreachable blocks and have no way
-	 to communicate that we need to run CFG cleanup then.  */
-      lp_nr = lookup_stmt_eh_lp (e->call_stmt);
       if (lp_nr != 0)
-	{
-	  remove_stmt_from_eh_lp (e->call_stmt);
-	  add_stmt_to_eh_lp (new_stmt, lp_nr);
-	}
+	add_stmt_to_eh_lp (new_stmt, lp_nr);
     }
   else
     {
@@ -1908,7 +1849,7 @@ cgraph_node::local_info (tree decl)
 /* Return local info for the compiled function.  */
 
 cgraph_rtl_info *
-cgraph_node::rtl_info (tree decl)
+cgraph_node::rtl_info (const_tree decl)
 {
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
   cgraph_node *node = get (decl);
@@ -1923,7 +1864,10 @@ cgraph_node::rtl_info (tree decl)
     return NULL;
   /* Allocate if it doesn't exist.  */
   if (node->rtl == NULL)
-    node->rtl = ggc_cleared_alloc<cgraph_rtl_info> ();
+    {
+      node->rtl = ggc_cleared_alloc<cgraph_rtl_info> ();
+      SET_HARD_REG_SET (node->rtl->function_used_regs);
+    }
   return node->rtl;
 }
 
@@ -3014,8 +2958,8 @@ clone_of_p (cgraph_node *node, cgraph_node *node2)
 	return true;
       node = node->callees->callee->ultimate_alias_target ();
 
-      if (!node2->clone.args_to_skip
-	  || !bitmap_bit_p (node2->clone.args_to_skip, 0))
+      if (!node2->clone.param_adjustments
+	  || node2->clone.param_adjustments->first_param_intact_p ())
 	return false;
       if (node2->former_clone_of == node->decl)
 	return true;
@@ -3671,9 +3615,9 @@ cgraph_node::get_body (void)
 /* Return the DECL_STRUCT_FUNCTION of the function.  */
 
 struct function *
-cgraph_node::get_fun (void)
+cgraph_node::get_fun () const
 {
-  cgraph_node *node = this;
+  const cgraph_node *node = this;
   struct function *fun = DECL_STRUCT_FUNCTION (node->decl);
 
   while (!fun && node->clone_of)

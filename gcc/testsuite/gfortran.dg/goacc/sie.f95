@@ -67,7 +67,7 @@ program test
   !$acc end kernels
 
 
-  !$acc parallel num_gangs ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc parallel num_gangs ! { dg-error "Failed to match clause" }
 
   !$acc parallel num_gangs(3)
   !$acc end parallel
@@ -95,7 +95,7 @@ program test
   !$acc parallel num_gangs("1") ! { dg-error "scalar INTEGER expression" }
   !$acc end parallel
 
-  !$acc kernels num_gangs ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc kernels num_gangs ! { dg-error "Failed to match clause" }
 
   !$acc kernels num_gangs(3)
   !$acc end kernels
@@ -124,7 +124,7 @@ program test
   !$acc end kernels
 
 
-  !$acc parallel num_workers ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc parallel num_workers ! { dg-error "Failed to match clause" }
 
   !$acc parallel num_workers(3)
   !$acc end parallel
@@ -152,7 +152,7 @@ program test
   !$acc parallel num_workers("1") ! { dg-error "scalar INTEGER expression" }
   !$acc end parallel
 
-  !$acc kernels num_workers ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc kernels num_workers ! { dg-error "Failed to match clause" }
 
   !$acc kernels num_workers(3)
   !$acc end kernels
@@ -181,7 +181,7 @@ program test
   !$acc end kernels
 
 
-  !$acc parallel vector_length ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc parallel vector_length ! { dg-error "Failed to match clause" }
 
   !$acc parallel vector_length(3)
   !$acc end parallel
@@ -209,7 +209,7 @@ program test
   !$acc parallel vector_length("1") ! { dg-error "scalar INTEGER expression" }
   !$acc end parallel
 
-  !$acc kernels vector_length ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc kernels vector_length ! { dg-error "Failed to match clause" }
 
   !$acc kernels vector_length(3)
   !$acc end kernels

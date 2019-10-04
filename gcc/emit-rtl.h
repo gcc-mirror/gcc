@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 class temp_slot;
 typedef class temp_slot *temp_slot_p;
+class predefined_function_abi;
 
 /* Information mainlined about RTL representation of incoming arguments.  */
 struct GTY(()) incoming_args {
@@ -63,6 +64,14 @@ struct GTY(()) rtl_data {
   struct incoming_args args;
   struct function_subsections subsections;
   struct rtl_eh eh;
+
+  /* The ABI of the function, i.e. the interface it presents to its callers.
+     This is the ABI that should be queried to see which registers the
+     function needs to save before it uses them.
+
+     Other functions (including those called by this function) might use
+     different ABIs.  */
+  const predefined_function_abi *GTY((skip)) abi;
 
   /* For function.c  */
 

@@ -6723,6 +6723,11 @@ package body Sem_Ch3 is
                               Has_Private_Component (Derived_Type));
       Conditional_Delay      (Derived_Type, Subt);
 
+      if Is_Access_Subprogram_Type (Derived_Type) then
+         Set_Can_Use_Internal_Rep
+           (Derived_Type, Can_Use_Internal_Rep (Parent_Type));
+      end if;
+
       --  Ada 2005 (AI-231): Set the null-exclusion attribute, and verify
       --  that it is not redundant.
 

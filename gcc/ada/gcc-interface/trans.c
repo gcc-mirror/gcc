@@ -95,6 +95,9 @@ bool type_annotate_only;
 /* List of N_Validate_Unchecked_Conversion nodes in the unit.  */
 static vec<Node_Id> gnat_validate_uc_list;
 
+/* List of expressions of pragma Compile_Time_{Error|Warning} in the unit.  */
+static vec<Node_Id> gnat_compile_time_expr_list;
+
 /* When not optimizing, we cache the 'First, 'Last and 'Length attributes
    of unconstrained array IN parameters to avoid emitting a great deal of
    redundant instructions to recompute them each time.  */
@@ -1508,17 +1511,28 @@ static tree
 Pragma_to_gnu (Node_Id gnat_node)
 {
   tree gnu_result = alloc_stmt_list ();
-  unsigned char pragma_id;
   Node_Id gnat_temp;
 
-  /* Do nothing if we are just annotating types and check for (and ignore)
-     unrecognized pragmas.  */
-  if (type_annotate_only
-      || !Is_Pragma_Name (Chars (Pragma_Identifier (gnat_node))))
+  /* Check for (and ignore) unrecognized pragmas.  */
+  if (!Is_Pragma_Name (Chars (Pragma_Identifier (gnat_node))))
     return gnu_result;
 
-  pragma_id = Get_Pragma_Id (Chars (Pragma_Identifier (gnat_node)));
-  switch (pragma_id)
+  const unsigned char id
+    = Get_Pragma_Id (Chars (Pragma_Identifier (gnat_node)));
+
+  /* Save the expression of pragma Compile_Time_{Error|Warning} for later.  */
+  if (id == Pragma_Compile_Time_Error || id == Pragma_Compile_Time_Warning)
+    {
+      gnat_temp = First (Pragma_Argument_Associations (gnat_node));
+      gnat_compile_time_expr_list.safe_push (Expression (gnat_temp));
+      return gnu_result;
+    }
+
+  /* Stop there if we are just annotating types.  */
+  if (type_annotate_only)
+    return gnu_result;
+
+  switch (id)
     {
     case Pragma_Inspection_Point:
       /* Do nothing at top level: all such variables are already viewable.  */
@@ -1670,11 +1684,11 @@ Pragma_to_gnu (Node_Id gnat_node)
 	  break;
 
 	tree gnu_clauses = gnu_loop_stack->last ()->omp_construct_clauses;
-	if (pragma_id == Pragma_Acc_Data)
+	if (id == Pragma_Acc_Data)
 	  gnu_loop_stack->last ()->omp_code = OACC_DATA;
-	else if (pragma_id == Pragma_Acc_Kernels)
+	else if (id == Pragma_Acc_Kernels)
 	  gnu_loop_stack->last ()->omp_code = OACC_KERNELS;
-	else if (pragma_id == Pragma_Acc_Parallel)
+	else if (id == Pragma_Acc_Parallel)
 	  gnu_loop_stack->last ()->omp_code = OACC_PARALLEL;
 	else
 	  gcc_unreachable ();
@@ -1914,7 +1928,7 @@ Pragma_to_gnu (Node_Id gnat_node)
 	/* This is the String form: pragma Warning{s|_As_Error}(String).  */
 	if (Nkind (Expression (gnat_temp)) == N_String_Literal)
 	  {
-	    switch (pragma_id)
+	    switch (id)
 	      {
 	      case Pragma_Warning_As_Error:
 		kind = DK_ERROR;
@@ -2254,32 +2268,29 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       /* For other address attributes applied to a nested function,
 	 find an inner ADDR_EXPR and annotate it so that we can issue
 	 a useful warning with -Wtrampolines.  */
-      else if (FUNC_OR_METHOD_TYPE_P (TREE_TYPE (gnu_prefix)))
+      else if (FUNC_OR_METHOD_TYPE_P (TREE_TYPE (gnu_prefix))
+	       && (gnu_expr = remove_conversions (gnu_result, false))
+	       && TREE_CODE (gnu_expr) == ADDR_EXPR
+	       && decl_function_context (TREE_OPERAND (gnu_expr, 0)))
 	{
-	  gnu_expr = remove_conversions (gnu_result, false);
+	  set_expr_location_from_node (gnu_expr, gnat_node);
 
-	  if (TREE_CODE (gnu_expr) == ADDR_EXPR
-	      && decl_function_context (TREE_OPERAND (gnu_expr, 0)))
-	    {
-	      set_expr_location_from_node (gnu_expr, gnat_node);
+	  /* Also check the inlining status.  */
+	  check_inlining_for_nested_subprog (TREE_OPERAND (gnu_expr, 0));
 
-	      /* Also check the inlining status.  */
-	      check_inlining_for_nested_subprog (TREE_OPERAND (gnu_expr, 0));
+	  /* Moreover, for 'Access or 'Unrestricted_Access with non-
+	     foreign-compatible representation, mark the ADDR_EXPR so
+	     that we can build a descriptor instead of a trampoline.  */
+	  if ((attribute == Attr_Access
+	       || attribute == Attr_Unrestricted_Access)
+	      && targetm.calls.custom_function_descriptors > 0
+	      && Can_Use_Internal_Rep (Underlying_Type (Etype (gnat_node))))
+	    FUNC_ADDR_BY_DESCRIPTOR (gnu_expr) = 1;
 
-	      /* Moreover, for 'Access or 'Unrestricted_Access with non-
-		 foreign-compatible representation, mark the ADDR_EXPR so
-		 that we can build a descriptor instead of a trampoline.  */
-	      if ((attribute == Attr_Access
-		   || attribute == Attr_Unrestricted_Access)
-		  && targetm.calls.custom_function_descriptors > 0
-		  && Can_Use_Internal_Rep (Etype (gnat_node)))
-		FUNC_ADDR_BY_DESCRIPTOR (gnu_expr) = 1;
-
-	      /* Otherwise, we need to check that we are not violating the
-		 No_Implicit_Dynamic_Code restriction.  */
-	      else if (targetm.calls.custom_function_descriptors != 0)
-	        Check_Implicit_Dynamic_Code_Allowed (gnat_node);
-	    }
+	  /* Otherwise, we need to check that we are not violating the
+	     No_Implicit_Dynamic_Code restriction.  */
+	  else if (targetm.calls.custom_function_descriptors != 0)
+	    Check_Implicit_Dynamic_Code_Allowed (gnat_node);
 	}
       break;
 
@@ -3642,7 +3653,7 @@ Regular_Loop_to_gnu (Node_Id gnat_node, tree *gnu_cond_expr_p)
 
 	 which works in all cases.  */
 
-      if (optimize)
+      if (optimize && !optimize_debug)
 	{
 	  /* We can use the do-while form directly if GNU_FIRST-1 doesn't
 	     overflow.  */
@@ -4425,6 +4436,7 @@ build_return_expr (tree ret_obj, tree ret_val)
 	 a candidate for Named Return Value.  If so, record it.  Otherwise,
 	 if this is an expression of some kind, record it elsewhere.  */
       if (optimize
+	  && !optimize_debug
 	  && AGGREGATE_TYPE_P (operation_type)
 	  && !TYPE_IS_FAT_POINTER_P (operation_type)
 	  && TYPE_MODE (operation_type) == BLKmode
@@ -4762,7 +4774,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   /* If the function returns an aggregate type and we have candidates for
      a Named Return Value, finalize the optimization.  */
-  if (optimize && gnu_subprog_language->named_ret_val)
+  if (optimize && !optimize_debug && gnu_subprog_language->named_ret_val)
     {
       finalize_nrv (gnu_subprog_decl,
 		    gnu_subprog_language->named_ret_val,
@@ -5111,7 +5123,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       /* If the access type doesn't require foreign-compatible representation,
 	 be prepared for descriptors.  */
       if (targetm.calls.custom_function_descriptors > 0
-	  && Can_Use_Internal_Rep (Etype (Prefix (Name (gnat_node)))))
+	  && Can_Use_Internal_Rep
+	     (Underlying_Type (Etype (Prefix (Name (gnat_node))))))
 	by_descriptor = true;
     }
   else if (Nkind (Name (gnat_node)) == N_Attribute_Reference)
@@ -5881,7 +5894,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 
       /* When not optimizing, disable inlining of finalizers as this can
 	 create a more complex CFG in the parent function.  */
-      if (!optimize)
+      if (!optimize || optimize_debug)
 	DECL_DECLARED_INLINE_P (proc_decl) = 0;
 
       /* If there is no end label attached, we use the location of the At_End
@@ -6321,7 +6334,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
 		       || Nkind (gnat_unit) == N_Subprogram_Body);
   const Entity_Id gnat_unit_entity = Defining_Entity (gnat_unit);
   Entity_Id gnat_entity;
-  Node_Id gnat_pragma;
+  Node_Id gnat_pragma, gnat_iter;
   /* Make the decl for the elaboration procedure.  Emit debug info for it, so
      that users can break into their elaboration code in debuggers.  Kludge:
      don't consider it as a definition so that we have a line map for its
@@ -6416,6 +6429,12 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   add_stmt_list (Pragmas_After (Aux_Decls_Node (gnat_node)));
   add_stmt_list (Actions (Aux_Decls_Node (gnat_node)));
   finalize_from_limited_with ();
+
+  /* Then process the expressions of pragma Compile_Time_{Error|Warning} to
+     annotate types referenced therein if they have not been annotated.  */
+  for (int i = 0; gnat_compile_time_expr_list.iterate (i, &gnat_iter); i++)
+    (void) gnat_to_gnu_external (gnat_iter);
+  gnat_compile_time_expr_list.release ();
 
   /* Save away what we've made so far and finish it up.  */
   set_current_block_context (gnu_elab_proc_decl);
@@ -8032,7 +8051,9 @@ gnat_to_gnu (Node_Id gnat_node)
 
 		/* And find out whether this is a candidate for Named Return
 		   Value.  If so, record it.  */
-		if (!TYPE_CI_CO_LIST (gnu_subprog_type) && optimize)
+		if (optimize
+		    && !optimize_debug
+		    && !TYPE_CI_CO_LIST (gnu_subprog_type))
 		  {
 		    tree ret_val = gnu_ret_val;
 

@@ -4390,8 +4390,8 @@ const_ok_for_dimode_op (HOST_WIDE_INT i, enum rtx_code code)
     case AND:
     case IOR:
     case XOR:
-      return (const_ok_for_op (hi_val, code) || hi_val == 0xFFFFFFFF)
-              && (const_ok_for_op (lo_val, code) || lo_val == 0xFFFFFFFF);
+      return const_ok_for_op (hi_val, code) || hi_val == 0xFFFFFFFF
+	     || const_ok_for_op (lo_val, code) || lo_val == 0xFFFFFFFF;
     case PLUS:
       return arm_not_operand (hi, SImode) && arm_add_operand (lo, SImode);
 
@@ -16122,7 +16122,12 @@ arm_print_value (FILE *f, rtx x)
       return;
 
     case CONST_DOUBLE:
-      fprintf (f, "<0x%lx,0x%lx>", (long)XWINT (x, 2), (long)XWINT (x, 3));
+      {
+	char fpstr[20];
+	real_to_decimal (fpstr, CONST_DOUBLE_REAL_VALUE (x),
+			 sizeof (fpstr), 0, 1);
+	fputs (fpstr, f);
+      }
       return;
 
     case CONST_VECTOR:

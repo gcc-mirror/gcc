@@ -1946,8 +1946,8 @@ rs6000_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  */
 
 static bool
-rs6000_hard_regno_call_part_clobbered (rtx_insn *insn ATTRIBUTE_UNUSED,
-				       unsigned int regno, machine_mode mode)
+rs6000_hard_regno_call_part_clobbered (unsigned int, unsigned int regno,
+				       machine_mode mode)
 {
   if (TARGET_32BIT
       && TARGET_POWERPC64
@@ -4774,7 +4774,8 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 1;
 
       case vec_perm:
-	if (TARGET_VSX)
+	/* Power7 has only one permute unit, make it a bit expensive.  */
+	if (TARGET_VSX && rs6000_tune == PROCESSOR_POWER7)
 	  return 3;
 	else
 	  return 1;
@@ -7371,7 +7372,7 @@ mem_operand_gpr (rtx op, machine_mode mode)
        causes a wrap, so test only the low 16 bits.  */
     offset = ((offset & 0xffff) ^ 0x8000) - 0x8000;
 
-  return offset + 0x8000 < 0x10000u - extra;
+  return SIGNED_16BIT_OFFSET_EXTRA_P (offset, extra);
 }
 
 /* As above, but for DS-FORM VSX insns.  Unlike mem_operand_gpr,
@@ -7404,7 +7405,7 @@ mem_operand_ds_form (rtx op, machine_mode mode)
        causes a wrap, so test only the low 16 bits.  */
     offset = ((offset & 0xffff) ^ 0x8000) - 0x8000;
 
-  return offset + 0x8000 < 0x10000u - extra;
+  return SIGNED_16BIT_OFFSET_EXTRA_P (offset, extra);
 }
 
 /* Subroutines of rs6000_legitimize_address and rs6000_legitimate_address_p.  */
@@ -7753,8 +7754,7 @@ rs6000_legitimate_offset_address_p (machine_mode mode, rtx x,
       break;
     }
 
-  offset += 0x8000;
-  return offset < 0x10000 - extra;
+  return SIGNED_16BIT_OFFSET_EXTRA_P (offset, extra);
 }
 
 bool
@@ -7978,7 +7978,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       if (TARGET_ELF)
 	emit_insn (gen_elf_high (reg, x));
       else
-	emit_insn (gen_macho_high (reg, x));
+	emit_insn (gen_macho_high (Pmode, reg, x));
       return gen_rtx_LO_SUM (Pmode, reg, x);
     }
   else if (TARGET_TOC
@@ -8771,8 +8771,9 @@ rs6000_mode_dependent_address (const_rtx addr)
 	  && XEXP (addr, 0) != arg_pointer_rtx
 	  && CONST_INT_P (XEXP (addr, 1)))
 	{
-	  unsigned HOST_WIDE_INT val = INTVAL (XEXP (addr, 1));
-	  return val + 0x8000 >= 0x10000 - (TARGET_POWERPC64 ? 8 : 12);
+	  HOST_WIDE_INT val = INTVAL (XEXP (addr, 1));
+	  HOST_WIDE_INT extra = TARGET_POWERPC64 ? 8 : 12;
+	  return !SIGNED_16BIT_OFFSET_EXTRA_P (val, extra);
 	}
       break;
 
@@ -9639,6 +9640,14 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 	  return;
 	}
 
+      /* Use the default pattern for loading up PC-relative addresses.  */
+      if (TARGET_PCREL && mode == Pmode
+	  && pcrel_local_or_external_address (operands[1], Pmode))
+	{
+	  emit_insn (gen_rtx_SET (operands[0], operands[1]));
+	  return;
+	}
+
       if (DEFAULT_ABI == ABI_V4
 	  && mode == Pmode && mode == SImode
 	  && flag_pic == 1 && got_operand (operands[1], mode))
@@ -9681,6 +9690,8 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 	  if (DEFAULT_ABI == ABI_DARWIN)
 	    {
 #if TARGET_MACHO
+	      /* This is not PIC code, but could require the subset of
+		 indirections used by mdynamic-no-pic.  */
 	      if (MACHO_DYNAMIC_NO_PIC_P)
 		{
 		  /* Take care of any required data indirection.  */
@@ -9691,8 +9702,9 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 		  return;
 		}
 #endif
-	      emit_insn (gen_macho_high (target, operands[1]));
-	      emit_insn (gen_macho_low (operands[0], target, operands[1]));
+	      emit_insn (gen_macho_high (Pmode, target, operands[1]));
+	      emit_insn (gen_macho_low (Pmode, operands[0],
+					target, operands[1]));
 	      return;
 	    }
 
@@ -13078,8 +13090,8 @@ print_operand_address (FILE *file, rtx x)
   if (REG_P (x))
     fprintf (file, "0(%s)", reg_names[ REGNO (x) ]);
 
-  /* Is it a pc-relative address?  */
-  else if (pcrel_address (x, Pmode))
+  /* Is it a PC-relative address?  */
+  else if (TARGET_PCREL && pcrel_local_or_external_address (x, VOIDmode))
     {
       HOST_WIDE_INT offset;
 
@@ -13099,7 +13111,10 @@ print_operand_address (FILE *file, rtx x)
       if (offset)
 	fprintf (file, "%+" PRId64, offset);
 
-      fputs ("@pcrel", file);
+      if (SYMBOL_REF_P (x) && !SYMBOL_REF_LOCAL_P (x))
+	fprintf (file, "@got");
+
+      fprintf (file, "@pcrel");
     }
   else if (SYMBOL_REF_P (x) || GET_CODE (x) == CONST
 	   || GET_CODE (x) == LABEL_REF)
@@ -13584,71 +13599,6 @@ rs6000_pltseq_template (rtx *operands, int which)
   return str;
 }
 #endif
-
-/* Helper function to return whether a MODE can do prefixed loads/stores.
-   VOIDmode is used when we are loading the pc-relative address into a base
-   register, but we are not using it as part of a memory operation.  As modes
-   add support for prefixed memory, they will be added here.  */
-
-static bool
-mode_supports_prefixed_address_p (machine_mode mode)
-{
-  return mode == VOIDmode;
-}
-
-/* Function to return true if ADDR is a valid prefixed memory address that uses
-   mode MODE.  */
-
-bool
-rs6000_prefixed_address_mode_p (rtx addr, machine_mode mode)
-{
-  if (!TARGET_PREFIXED_ADDR || !mode_supports_prefixed_address_p (mode))
-    return false;
-
-  /* Check for PC-relative addresses.  */
-  if (pcrel_address (addr, Pmode))
-    return true;
-
-  /* Check for prefixed memory addresses that have a large numeric offset,
-     or an offset that can't be used for a DS/DQ-form memory operation.  */
-  if (GET_CODE (addr) == PLUS)
-    {
-      rtx op0 = XEXP (addr, 0);
-      rtx op1 = XEXP (addr, 1);
-
-      if (!base_reg_operand (op0, Pmode) || !CONST_INT_P (op1))
-	return false;
-
-      HOST_WIDE_INT value = INTVAL (op1);
-      if (!SIGNED_34BIT_OFFSET_P (value))
-	return false;
-
-      /* Offset larger than 16-bits?  */
-      if (!SIGNED_16BIT_OFFSET_P (value))
-	return true;
-
-      /* DQ instruction (bottom 4 bits must be 0) for vectors.  */
-      HOST_WIDE_INT mask;
-      if (GET_MODE_SIZE (mode) >= 16)
-	mask = 15;
-
-      /* DS instruction (bottom 2 bits must be 0).  For 32-bit integers, we
-	 need to use DS instructions if we are sign-extending the value with
-	 LWA.  For 32-bit floating point, we need DS instructions to load and
-	 store values to the traditional Altivec registers.  */
-      else if (GET_MODE_SIZE (mode) >= 4)
-	mask = 3;
-
-      /* QImode/HImode has no restrictions.  */
-      else
-	return true;
-
-      /* Return true if we must use a prefixed instruction.  */
-      return (value & mask) != 0;
-    }
-
-  return false;
-}
 
 #if defined (HAVE_GAS_HIDDEN) && !TARGET_MACHO
 /* Emit an assembler directive to set symbol visibility for DECL to
@@ -19499,7 +19449,6 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
   /* Lose our funky encoding stuff so it doesn't contaminate the stub.  */
   symb = (*targetm.strip_name_encoding) (symb);
 
-
   length = strlen (symb);
   symbol_name = XALLOCAVEC (char, length + 32);
   GEN_SYMBOL_NAME_FOR_SYMBOL (symbol_name, symb, length);
@@ -19507,13 +19456,9 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
   lazy_ptr_name = XALLOCAVEC (char, length + 32);
   GEN_LAZY_PTR_NAME_FOR_SYMBOL (lazy_ptr_name, symb, length);
 
-  if (flag_pic == 2)
-    switch_to_section (darwin_sections[machopic_picsymbol_stub1_section]);
-  else
-    switch_to_section (darwin_sections[machopic_symbol_stub1_section]);
-
-  if (flag_pic == 2)
+  if (MACHOPIC_PURE)
     {
+      switch_to_section (darwin_sections[machopic_picsymbol_stub1_section]);
       fprintf (file, "\t.align 5\n");
 
       fprintf (file, "%s:\n", stub);
@@ -19524,18 +19469,8 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
       sprintf (local_label_0, "L%u$spb", label);
 
       fprintf (file, "\tmflr r0\n");
-      if (TARGET_LINK_STACK)
-	{
-	  char name[32];
-	  get_ppc476_thunk_name (name);
-	  fprintf (file, "\tbl %s\n", name);
-	  fprintf (file, "%s:\n\tmflr r11\n", local_label_0);
-	}
-      else
-	{
-	  fprintf (file, "\tbcl 20,31,%s\n", local_label_0);
-	  fprintf (file, "%s:\n\tmflr r11\n", local_label_0);
-	}
+      fprintf (file, "\tbcl 20,31,%s\n", local_label_0);
+      fprintf (file, "%s:\n\tmflr r11\n", local_label_0);
       fprintf (file, "\taddis r11,r11,ha16(%s-%s)\n",
 	       lazy_ptr_name, local_label_0);
       fprintf (file, "\tmtlr r0\n");
@@ -19545,8 +19480,9 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
       fprintf (file, "\tmtctr r12\n");
       fprintf (file, "\tbctr\n");
     }
-  else
+  else /* mdynamic-no-pic or mkernel.  */
     {
+      switch_to_section (darwin_sections[machopic_symbol_stub1_section]);
       fprintf (file, "\t.align 4\n");
 
       fprintf (file, "%s:\n", stub);
@@ -24627,6 +24563,385 @@ rs6000_pcrel_p (struct function *fn)
   return rs6000_fndecl_pcrel_p (fn->decl);
 }
 
+
+/* Given an address (ADDR), a mode (MODE), and what the format of the
+   non-prefixed address (NON_PREFIXED_FORMAT) is, return the instruction format
+   for the address.  */
+
+enum insn_form
+address_to_insn_form (rtx addr,
+		      machine_mode mode,
+		      enum non_prefixed_form non_prefixed_format)
+{
+  /* Single register is easy.  */
+  if (REG_P (addr) || SUBREG_P (addr))
+    return INSN_FORM_BASE_REG;
+
+  /* If the non prefixed instruction format doesn't support offset addressing,
+     make sure only indexed addressing is allowed.
+
+     We special case SDmode so that the register allocator does not try to move
+     SDmode through GPR registers, but instead uses the 32-bit integer load and
+     store instructions for the floating point registers.  */
+  if (non_prefixed_format == NON_PREFIXED_X || (mode == SDmode && TARGET_DFP))
+    {
+      if (GET_CODE (addr) != PLUS)
+	return INSN_FORM_BAD;
+
+      rtx op0 = XEXP (addr, 0);
+      rtx op1 = XEXP (addr, 1);
+      if (!REG_P (op0) && !SUBREG_P (op0))
+	return INSN_FORM_BAD;
+
+      if (!REG_P (op1) && !SUBREG_P (op1))
+	return INSN_FORM_BAD;
+
+      return INSN_FORM_X;
+    }
+
+  /* Deal with update forms.  */
+  if (GET_RTX_CLASS (GET_CODE (addr)) == RTX_AUTOINC)
+    return INSN_FORM_UPDATE;
+
+  /* Handle PC-relative symbols and labels.  Check for both local and external
+     symbols.  Assume labels are always local.  */
+  if (TARGET_PCREL)
+    {
+      if (SYMBOL_REF_P (addr) && !SYMBOL_REF_LOCAL_P (addr))
+	return INSN_FORM_PCREL_EXTERNAL;
+
+      if (SYMBOL_REF_P (addr) || LABEL_REF_P (addr))
+	return INSN_FORM_PCREL_LOCAL;
+    }
+
+  if (GET_CODE (addr) == CONST)
+    addr = XEXP (addr, 0);
+
+  /* Recognize LO_SUM addresses used with TOC and 32-bit addressing.  */
+  if (GET_CODE (addr) == LO_SUM)
+    return INSN_FORM_LO_SUM;
+
+  /* Everything below must be an offset address of some form.  */
+  if (GET_CODE (addr) != PLUS)
+    return INSN_FORM_BAD;
+
+  rtx op0 = XEXP (addr, 0);
+  rtx op1 = XEXP (addr, 1);
+
+  /* Check for indexed addresses.  */
+  if (REG_P (op1) || SUBREG_P (op1))
+    {
+      if (REG_P (op0) || SUBREG_P (op0))
+	return INSN_FORM_X;
+
+      return INSN_FORM_BAD;
+    }
+
+  if (!CONST_INT_P (op1))
+    return INSN_FORM_BAD;
+
+  HOST_WIDE_INT offset = INTVAL (op1);
+  if (!SIGNED_34BIT_OFFSET_P (offset))
+    return INSN_FORM_BAD;
+
+  /* Check for local and external PC-relative addresses.  Labels are always
+     local.  */
+  if (TARGET_PCREL)
+    {
+      if (SYMBOL_REF_P (op0) && !SYMBOL_REF_LOCAL_P (op0))
+	return INSN_FORM_PCREL_EXTERNAL;
+
+      if (SYMBOL_REF_P (op0) || LABEL_REF_P (op0))
+	return INSN_FORM_PCREL_LOCAL;
+    }
+
+  /* If it isn't PC-relative, the address must use a base register.  */
+  if (!REG_P (op0) && !SUBREG_P (op0))
+    return INSN_FORM_BAD;
+
+  /* Large offsets must be prefixed.  */
+  if (!SIGNED_16BIT_OFFSET_P (offset))
+    {
+      if (TARGET_PREFIXED_ADDR)
+	return INSN_FORM_PREFIXED_NUMERIC;
+
+      return INSN_FORM_BAD;
+    }
+
+  /* We have a 16-bit offset, see what default instruction format to use.  */
+  if (non_prefixed_format == NON_PREFIXED_DEFAULT)
+    {
+      unsigned size = GET_MODE_SIZE (mode);
+
+      /* On 64-bit systems, assume 64-bit integers need to use DS form
+	 addresses (for LD/STD).  VSX vectors need to use DQ form addresses
+	 (for LXV and STXV).  TImode is problematical in that its normal usage
+	 is expected to be GPRs where it wants a DS instruction format, but if
+	 it goes into the vector registers, it wants a DQ instruction
+	 format.  */
+      if (TARGET_POWERPC64 && size >= 8 && GET_MODE_CLASS (mode) == MODE_INT)
+	non_prefixed_format = NON_PREFIXED_DS;
+
+      else if (TARGET_VSX && size >= 16
+	       && (VECTOR_MODE_P (mode) || FLOAT128_VECTOR_P (mode)))
+	non_prefixed_format = NON_PREFIXED_DQ;
+
+      else
+	non_prefixed_format = NON_PREFIXED_D;
+    }
+
+  /* Classify the D/DS/DQ-form addresses.  */
+  switch (non_prefixed_format)
+    {
+      /* Instruction format D, all 16 bits are valid.  */
+    case NON_PREFIXED_D:
+      return INSN_FORM_D;
+
+      /* Instruction format DS, bottom 2 bits must be 0.  */
+    case NON_PREFIXED_DS:
+      if ((offset & 3) == 0)
+	return INSN_FORM_DS;
+
+      else if (TARGET_PREFIXED_ADDR)
+	return INSN_FORM_PREFIXED_NUMERIC;
+
+      else
+	return INSN_FORM_BAD;
+
+      /* Instruction format DQ, bottom 4 bits must be 0.  */
+    case NON_PREFIXED_DQ:
+      if ((offset & 15) == 0)
+	return INSN_FORM_DQ;
+
+      else if (TARGET_PREFIXED_ADDR)
+	return INSN_FORM_PREFIXED_NUMERIC;
+
+      else
+	return INSN_FORM_BAD;
+
+    default:
+      break;
+    }
+
+  return INSN_FORM_BAD;
+}
+
+/* Helper function to take a REG and a MODE and turn it into the non-prefixed
+   instruction format (D/DS/DQ) used for offset memory.  */
+
+static enum non_prefixed_form
+reg_to_non_prefixed (rtx reg, machine_mode mode)
+{
+  /* If it isn't a register, use the defaults.  */
+  if (!REG_P (reg) && !SUBREG_P (reg))
+    return NON_PREFIXED_DEFAULT;
+
+  unsigned int r = reg_or_subregno (reg);
+
+  /* If we have a pseudo, use the default instruction format.  */
+  if (!HARD_REGISTER_NUM_P (r))
+    return NON_PREFIXED_DEFAULT;
+
+  unsigned size = GET_MODE_SIZE (mode);
+
+  /* FPR registers use D-mode for scalars, and DQ-mode for vectors, IEEE
+     128-bit floating point, and 128-bit integers.  */
+  if (FP_REGNO_P (r))
+    {
+      if (mode == SFmode || size == 8 || FLOAT128_2REG_P (mode))
+	return NON_PREFIXED_D;
+
+      else if (size < 8)
+	return NON_PREFIXED_X;
+
+      else if (TARGET_VSX && size >= 16
+	       && (VECTOR_MODE_P (mode)
+		   || FLOAT128_VECTOR_P (mode)
+		   || mode == TImode || mode == CTImode))
+	return NON_PREFIXED_DQ;
+
+      else
+	return NON_PREFIXED_DEFAULT;
+    }
+
+  /* Altivec registers use DS-mode for scalars, and DQ-mode for vectors, IEEE
+     128-bit floating point, and 128-bit integers.  */
+  else if (ALTIVEC_REGNO_P (r))
+    {
+      if (mode == SFmode || size == 8 || FLOAT128_2REG_P (mode))
+	return NON_PREFIXED_DS;
+
+      else if (size < 8)
+	return NON_PREFIXED_X;
+
+      else if (TARGET_VSX && size >= 16
+	       && (VECTOR_MODE_P (mode)
+		   || FLOAT128_VECTOR_P (mode)
+		   || mode == TImode || mode == CTImode))
+	return NON_PREFIXED_DQ;
+
+      else
+	return NON_PREFIXED_DEFAULT;
+    }
+
+  /* GPR registers use DS-mode for 64-bit items on 64-bit systems, and D-mode
+     otherwise.  Assume that any other register, such as LR, CRs, etc. will go
+     through the GPR registers for memory operations.  */
+  else if (TARGET_POWERPC64 && size >= 8)
+    return NON_PREFIXED_DS;
+
+  return NON_PREFIXED_D;
+}
+
+
+/* Whether a load instruction is a prefixed instruction.  This is called from
+   the prefixed attribute processing.  */
+
+bool
+prefixed_load_p (rtx_insn *insn)
+{
+  /* Validate the insn to make sure it is a normal load insn.  */
+  extract_insn_cached (insn);
+  if (recog_data.n_operands < 2)
+    return false;
+
+  rtx reg = recog_data.operand[0];
+  rtx mem = recog_data.operand[1];
+
+  if (!REG_P (reg) && !SUBREG_P (reg))
+    return false;
+
+  if (!MEM_P (mem))
+    return false;
+
+  /* Prefixed load instructions do not support update or indexed forms.  */
+  if (get_attr_indexed (insn) == INDEXED_YES
+      || get_attr_update (insn) == UPDATE_YES)
+    return false;
+
+  /* LWA uses the DS format instead of the D format that LWZ uses.  */
+  enum non_prefixed_form non_prefixed;
+  machine_mode reg_mode = GET_MODE (reg);
+  machine_mode mem_mode = GET_MODE (mem);
+
+  if (mem_mode == SImode && reg_mode == DImode
+      && get_attr_sign_extend (insn) == SIGN_EXTEND_YES)
+    non_prefixed = NON_PREFIXED_DS;
+
+  else
+    non_prefixed = reg_to_non_prefixed (reg, mem_mode);
+
+  return address_is_prefixed (XEXP (mem, 0), mem_mode, non_prefixed);
+}
+
+/* Whether a store instruction is a prefixed instruction.  This is called from
+   the prefixed attribute processing.  */
+
+bool
+prefixed_store_p (rtx_insn *insn)
+{
+  /* Validate the insn to make sure it is a normal store insn.  */
+  extract_insn_cached (insn);
+  if (recog_data.n_operands < 2)
+    return false;
+
+  rtx mem = recog_data.operand[0];
+  rtx reg = recog_data.operand[1];
+
+  if (!REG_P (reg) && !SUBREG_P (reg))
+    return false;
+
+  if (!MEM_P (mem))
+    return false;
+
+  /* Prefixed store instructions do not support update or indexed forms.  */
+  if (get_attr_indexed (insn) == INDEXED_YES
+      || get_attr_update (insn) == UPDATE_YES)
+    return false;
+
+  machine_mode mem_mode = GET_MODE (mem);
+  enum non_prefixed_form non_prefixed = reg_to_non_prefixed (reg, mem_mode);
+  return address_is_prefixed (XEXP (mem, 0), mem_mode, non_prefixed);
+}
+
+/* Whether a load immediate or add instruction is a prefixed instruction.  This
+   is called from the prefixed attribute processing.  */
+
+bool
+prefixed_paddi_p (rtx_insn *insn)
+{
+  rtx set = single_set (insn);
+  if (!set)
+    return false;
+
+  rtx dest = SET_DEST (set);
+  rtx src = SET_SRC (set);
+
+  if (!REG_P (dest) && !SUBREG_P (dest))
+    return false;
+
+  /* Is this a load immediate that can't be done with a simple ADDI or
+     ADDIS?  */
+  if (CONST_INT_P (src))
+    return (satisfies_constraint_eI (src)
+	    && !satisfies_constraint_I (src)
+	    && !satisfies_constraint_L (src));
+
+  /* Is this a PADDI instruction that can't be done with a simple ADDI or
+     ADDIS?  */
+  if (GET_CODE (src) == PLUS)
+    {
+      rtx op1 = XEXP (src, 1);
+
+      return (CONST_INT_P (op1)
+	      && satisfies_constraint_eI (op1)
+	      && !satisfies_constraint_I (op1)
+	      && !satisfies_constraint_L (op1));
+    }
+
+  /* If not, is it a load of a PC-relative address?  */
+  if (!TARGET_PCREL || GET_MODE (dest) != Pmode)
+    return false;
+
+  if (!SYMBOL_REF_P (src) && !LABEL_REF_P (src) && GET_CODE (src) != CONST)
+    return false;
+
+  enum insn_form iform = address_to_insn_form (src, Pmode,
+					       NON_PREFIXED_DEFAULT);
+
+  return (iform == INSN_FORM_PCREL_EXTERNAL || iform == INSN_FORM_PCREL_LOCAL);
+}
+
+/* Whether the next instruction needs a 'p' prefix issued before the
+   instruction is printed out.  */
+static bool next_insn_prefixed_p;
+
+/* Define FINAL_PRESCAN_INSN if some processing needs to be done before
+   outputting the assembler code.  On the PowerPC, we remember if the current
+   insn is a prefixed insn where we need to emit a 'p' before the insn.
+
+   In addition, if the insn is part of a PC-relative reference to an external
+   label optimization, this is recorded also.  */
+void
+rs6000_final_prescan_insn (rtx_insn *insn, rtx [], int)
+{
+  next_insn_prefixed_p = (get_attr_prefixed (insn) != PREFIXED_NO);
+  return;
+}
+
+/* Define ASM_OUTPUT_OPCODE to do anything special before emitting an opcode.
+   We use it to emit a 'p' for prefixed insns that is set in
+   FINAL_PRESCAN_INSN.  */
+void
+rs6000_asm_output_opcode (FILE *stream)
+{
+  if (next_insn_prefixed_p)
+    fprintf (stream, "p");
+
+  return;
+}
+
+
 #ifdef HAVE_GAS_HIDDEN
 # define USE_HIDDEN_LINKONCE 1
 #else

@@ -123,7 +123,7 @@ char* test_strcpy_s0 (char *d)
 
 char* test_strcpy_s0_0 (char *d)
 {
-  return strcpy (d, s0_0[0]);     /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr88991" { xfail *-*-* } } */
+  return strcpy (d, s0_0[0]);     /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" } */
 }
 
 
@@ -139,10 +139,10 @@ char* test_strncpy_s0_2 (char *d)
 
 char* test_strncpy_s0_0_1 (char *d)
 {
-  return strncpy (d, s0_0[0], 1); /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr88991" { xfail *-*-* } } */
+  return strncpy (d, s0_0[0], 1); /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" } */
 }
 
 char* test_strncpy_s0_0_2 (char *d)
 {
-  return strncpy (d, s0_0[0], 2); /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr88991" { xfail *-*-* } } */
+  return strncpy (d, s0_0[0], 2); /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" } */
 }

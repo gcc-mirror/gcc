@@ -907,9 +907,6 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
   /* Handle aggregate NSDMI in non-constant initializers, too.  */
   value = replace_placeholders (value, decl);
 
-  /* DECL may change value; purge caches.  */
-  clear_cv_and_fold_caches ();
-
   /* If the initializer is not a constant, fill in DECL_INITIAL with
      the bits that are constant, and then return an expression that
      will perform the dynamic initialization.  */
@@ -918,6 +915,10 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 	  || vla_type_p (type)
 	  || ! reduced_constant_expression_p (value)))
     return split_nonconstant_init (decl, value);
+
+  /* DECL may change value; purge caches.  */
+  clear_cv_and_fold_caches ();
+
   /* If the value is a constant, just put it in DECL_INITIAL.  If DECL
      is an automatic variable, the middle end will turn this into a
      dynamic initialization later.  */
@@ -2068,11 +2069,11 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
   tree binfo;
   tree ctype;
 
-  if (error_operand_p (datum) || error_operand_p (component))
-    return error_mark_node;
-
   datum = mark_lvalue_use (datum);
   component = mark_rvalue_use (component);
+
+  if (error_operand_p (datum) || error_operand_p (component))
+    return error_mark_node;
 
   ptrmem_type = TREE_TYPE (component);
   if (!TYPE_PTRMEM_P (ptrmem_type))

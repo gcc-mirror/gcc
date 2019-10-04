@@ -3,10 +3,10 @@
 
 struct S
 {
-  signed long l: 32;
+  signed long long l: 32;
 };
 
-void foo(long) = delete;
+void foo(long long) = delete;
 void foo(int) {}
 
 int main()

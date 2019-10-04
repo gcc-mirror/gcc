@@ -1,3 +1,24 @@
+2019-10-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/91593
+	* io/read.c (read_decimal): Cast constant to size_t to turn off
+	a bogus warning.
+	* io/write.c (btoa_big): Use memset in lieu of setting the null
+	byte in a string buffer to turn off a bogus warning.
+
+2019-09-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/91593
+	* io/io.h: Add gcc_unreachable().
+	* io/transfer.c (file_mode, current_mode,
+	formatted_transfer_scalar_read, formatted_transfer_scalar_write,
+	pre_position, next_record_r, next_record_w): Add and use
+	FORMATTED_UNSPECIFIED to enumeration.
+	
+2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure: Regenerate.
+
 2019-09-05  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* intrinsics/random.c (master_init): Replace with

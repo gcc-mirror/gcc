@@ -53,7 +53,8 @@ const char *lto_section_name[LTO_N_SECTION_TYPES] =
   "offload_table",
   "mode_table",
   "hsa",
-  "lto"
+  "lto",
+  "ipa_sra"
 };
 
 /* Hooks so that the ipa passes can call into the lto front end to get

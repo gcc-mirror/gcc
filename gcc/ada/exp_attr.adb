@@ -2381,9 +2381,6 @@ package body Exp_Attr is
          --  generate a call to a run-time subprogram that returns the base
          --  address of the object.
 
-         --  This processing is not needed in the VM case, where dispatching
-         --  issues are taken care of by the virtual machine.
-
          elsif Is_Class_Wide_Type (Ptyp)
            and then Is_Interface (Underlying_Type (Ptyp))
            and then Tagged_Type_Expansion
@@ -8360,13 +8357,13 @@ package body Exp_Attr is
          return False;
       end if;
 
-      --  Here we are in the integer conversion context
+      --  Here we are in the integer conversion context. We reuse Rounding for
+      --  Machine_Rounding as System.Fat_Gen, which is a permissible behavior.
 
-      --  Very probably we should also recognize the cases of Machine_Rounding
-      --  and unbiased rounding in this conversion context, but the back end is
-      --  not yet prepared to handle these cases ???
-
-      return Id = Attribute_Rounding or else Id = Attribute_Truncation;
+      return
+        Id = Attribute_Rounding
+          or else Id = Attribute_Machine_Rounding
+          or else Id = Attribute_Truncation;
    end Is_Inline_Floating_Point_Attribute;
 
 end Exp_Attr;

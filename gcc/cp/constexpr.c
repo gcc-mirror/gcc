@@ -1098,15 +1098,6 @@ maybe_initialize_constexpr_call_table (void)
 
 static GTY(()) hash_map<tree, tree> *fundef_copies_table;
 
-/* Initialize FUNDEF_COPIES_TABLE if it's not initialized.  */
-
-static void
-maybe_initialize_fundef_copies_table ()
-{
-  if (fundef_copies_table == NULL)
-    fundef_copies_table = hash_map<tree,tree>::create_ggc (101);
-}
-
 /* Reuse a copy or create a new unshared copy of the function FUN.
    Return this copy.  We use a TREE_LIST whose PURPOSE is body, VALUE
    is parms, TYPE is result.  */
@@ -1114,11 +1105,10 @@ maybe_initialize_fundef_copies_table ()
 static tree
 get_fundef_copy (constexpr_fundef *fundef)
 {
-  maybe_initialize_fundef_copies_table ();
-
   tree copy;
   bool existed;
-  tree *slot = &fundef_copies_table->get_or_insert (fundef->decl, &existed);
+  tree *slot = &(hash_map_safe_get_or_insert<hm_ggc>
+		 (fundef_copies_table, fundef->decl, &existed, 127));
 
   if (!existed)
     {
@@ -3356,6 +3346,103 @@ same_type_ignoring_tlq_and_bounds_p (tree type1, tree type2)
   return same_type_ignoring_top_level_qualifiers_p (type1, type2);
 }
 
+/* Helper function for cxx_fold_indirect_ref_1, called recursively.  */
+
+static tree
+cxx_fold_indirect_ref_1 (location_t loc, tree type, tree op,
+			 unsigned HOST_WIDE_INT off, bool *empty_base)
+{
+  tree optype = TREE_TYPE (op);
+  unsigned HOST_WIDE_INT const_nunits;
+  if (off == 0)
+    {
+      if (similar_type_p (optype, type))
+	return op;
+      /* Also handle conversion to an empty base class, which
+	 is represented with a NOP_EXPR.  */
+      /* *(foo *)&complexfoo => __real__ complexfoo */
+      else if (TREE_CODE (optype) == COMPLEX_TYPE
+	       && similar_type_p (type, TREE_TYPE (optype)))
+	return build1_loc (loc, REALPART_EXPR, type, op);
+    }
+  /* ((foo*)&complexfoo)[1] => __imag__ complexfoo */
+  else if (TREE_CODE (optype) == COMPLEX_TYPE
+	   && similar_type_p (type, TREE_TYPE (optype))
+	   && tree_to_uhwi (TYPE_SIZE_UNIT (type)) == off)
+    return build1_loc (loc, IMAGPART_EXPR, type, op);
+  if (is_empty_class (type)
+      && CLASS_TYPE_P (optype)
+      && DERIVED_FROM_P (type, optype))
+    {
+      *empty_base = true;
+      return op;
+    }
+  /* ((foo*)&vectorfoo)[x] => BIT_FIELD_REF<vectorfoo,...> */
+  else if (VECTOR_TYPE_P (optype)
+	   && similar_type_p (type, TREE_TYPE (optype))
+	   && TYPE_VECTOR_SUBPARTS (optype).is_constant (&const_nunits))
+    {
+      unsigned HOST_WIDE_INT part_width = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+      unsigned HOST_WIDE_INT max_offset = part_width * const_nunits;
+      if (off < max_offset && off % part_width == 0)
+	{
+	  tree index = bitsize_int (off * BITS_PER_UNIT);
+	  return build3_loc (loc, BIT_FIELD_REF, type, op,
+			     TYPE_SIZE (type), index);
+	}
+    }
+  /* ((foo *)&fooarray)[x] => fooarray[x] */
+  else if (TREE_CODE (optype) == ARRAY_TYPE
+	   && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (optype)))
+	   && !integer_zerop (TYPE_SIZE_UNIT (TREE_TYPE (optype))))
+    {
+      tree type_domain = TYPE_DOMAIN (optype);
+      tree min_val = size_zero_node;
+      if (type_domain && TYPE_MIN_VALUE (type_domain))
+	min_val = TYPE_MIN_VALUE (type_domain);
+      unsigned HOST_WIDE_INT el_sz
+	= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (optype)));
+      unsigned HOST_WIDE_INT idx = off / el_sz;
+      unsigned HOST_WIDE_INT rem = off % el_sz;
+      if (tree_fits_uhwi_p (min_val))
+	{
+	  tree index = size_int (idx + tree_to_uhwi (min_val));
+	  op = build4_loc (loc, ARRAY_REF, TREE_TYPE (optype), op, index,
+			   NULL_TREE, NULL_TREE);
+	  return cxx_fold_indirect_ref_1 (loc, type, op, rem,
+					  empty_base);
+	}
+    }
+  /* ((foo *)&struct_with_foo_field)[x] => COMPONENT_REF */
+  else if (TREE_CODE (optype) == RECORD_TYPE)
+    {
+      for (tree field = TYPE_FIELDS (optype);
+	   field; field = DECL_CHAIN (field))
+	if (TREE_CODE (field) == FIELD_DECL
+	    && TREE_TYPE (field) != error_mark_node
+	    && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (field))))
+	  {
+	    tree pos = byte_position (field);
+	    if (!tree_fits_uhwi_p (pos))
+	      continue;
+	    unsigned HOST_WIDE_INT upos = tree_to_uhwi (pos);
+	    unsigned el_sz
+	      = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (field)));
+	    if (upos <= off && off < upos + el_sz)
+	      {
+		tree cop = build3 (COMPONENT_REF, TREE_TYPE (field),
+				   op, field, NULL_TREE);
+		if (tree ret = cxx_fold_indirect_ref_1 (loc, type, cop,
+							off - upos,
+							empty_base))
+		  return ret;
+	      }
+	  }
+    }
+
+  return NULL_TREE;
+}
+
 /* A less strict version of fold_indirect_ref_1, which requires cv-quals to
    match.  We want to be less strict for simple *& folding; if we have a
    non-const temporary that we access through a const pointer, that should
@@ -3363,9 +3450,7 @@ same_type_ignoring_tlq_and_bounds_p (tree type1, tree type2)
    because we're dealing with things like ADDR_EXPR of INTEGER_CST which
    don't really make sense outside of constant expression evaluation.  Also
    we want to allow folding to COMPONENT_REF, which could cause trouble
-   with TBAA in fold_indirect_ref_1.
-
-   Try to keep this function synced with fold_indirect_ref_1.  */
+   with TBAA in fold_indirect_ref_1.  */
 
 static tree
 cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
@@ -3388,7 +3473,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
       if (TREE_CODE (op) == CONST_DECL)
 	return DECL_INITIAL (op);
       /* *&p => p;  make sure to handle *&"str"[cst] here.  */
-      if (same_type_ignoring_tlq_and_bounds_p (optype, type))
+      if (similar_type_p (optype, type))
 	{
 	  tree fop = fold_read_from_constant_string (op);
 	  if (fop)
@@ -3396,152 +3481,23 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	  else
 	    return op;
 	}
-      /* *(foo *)&fooarray => fooarray[0] */
-      else if (TREE_CODE (optype) == ARRAY_TYPE
-	       && (same_type_ignoring_top_level_qualifiers_p
-		   (type, TREE_TYPE (optype))))
-	{
-	  tree type_domain = TYPE_DOMAIN (optype);
-	  tree min_val = size_zero_node;
-	  if (type_domain && TYPE_MIN_VALUE (type_domain))
-	    min_val = TYPE_MIN_VALUE (type_domain);
-	  return build4_loc (loc, ARRAY_REF, type, op, min_val,
-			     NULL_TREE, NULL_TREE);
-	}
-      /* *(foo *)&complexfoo => __real__ complexfoo */
-      else if (TREE_CODE (optype) == COMPLEX_TYPE
-	       && (same_type_ignoring_top_level_qualifiers_p
-		   (type, TREE_TYPE (optype))))
-	return fold_build1_loc (loc, REALPART_EXPR, type, op);
-      /* *(foo *)&vectorfoo => BIT_FIELD_REF<vectorfoo,...> */
-      else if (VECTOR_TYPE_P (optype)
-	       && (same_type_ignoring_top_level_qualifiers_p
-		   (type, TREE_TYPE (optype))))
-	{
-	  tree part_width = TYPE_SIZE (type);
-	  tree index = bitsize_int (0);
-	  return fold_build3_loc (loc, BIT_FIELD_REF, type, op, part_width,
-				  index);
-	}
-      /* Also handle conversion to an empty base class, which
-	 is represented with a NOP_EXPR.  */
-      else if (is_empty_class (type)
-	       && CLASS_TYPE_P (optype)
-	       && DERIVED_FROM_P (type, optype))
-	{
-	  *empty_base = true;
-	  return op;
-	}
-      /* *(foo *)&struct_with_foo_field => COMPONENT_REF */
-      else if (RECORD_OR_UNION_TYPE_P (optype))
-	{
-	  tree field = TYPE_FIELDS (optype);
-	  for (; field; field = DECL_CHAIN (field))
-	    if (TREE_CODE (field) == FIELD_DECL
-		&& TREE_TYPE (field) != error_mark_node
-		&& integer_zerop (byte_position (field))
-		&& (same_type_ignoring_top_level_qualifiers_p
-		    (TREE_TYPE (field), type)))
-	      return fold_build3 (COMPONENT_REF, type, op, field, NULL_TREE);
-	}
+      else
+	return cxx_fold_indirect_ref_1 (loc, type, op, 0, empty_base);
     }
   else if (TREE_CODE (sub) == POINTER_PLUS_EXPR
-	   && poly_int_tree_p (TREE_OPERAND (sub, 1), &const_op01))
+	   && tree_fits_uhwi_p (TREE_OPERAND (sub, 1)))
     {
       tree op00 = TREE_OPERAND (sub, 0);
       tree op01 = TREE_OPERAND (sub, 1);
 
       STRIP_NOPS (op00);
       if (TREE_CODE (op00) == ADDR_EXPR)
-	{
-	  tree op00type;
-	  op00 = TREE_OPERAND (op00, 0);
-	  op00type = TREE_TYPE (op00);
-
-	  /* ((foo*)&vectorfoo)[1] => BIT_FIELD_REF<vectorfoo,...> */
-	  if (VECTOR_TYPE_P (op00type)
-	      && same_type_ignoring_top_level_qualifiers_p
-						(type, TREE_TYPE (op00type))
-	      /* POINTER_PLUS_EXPR second operand is sizetype, unsigned,
-		 but we want to treat offsets with MSB set as negative.
-		 For the code below negative offsets are invalid and
-		 TYPE_SIZE of the element is something unsigned, so
-		 check whether op01 fits into poly_int64, which implies
-		 it is from 0 to INTTYPE_MAXIMUM (HOST_WIDE_INT), and
-		 then just use poly_uint64 because we want to treat the
-		 value as unsigned.  */
-	      && tree_fits_poly_int64_p (op01))
-	    {
-	      tree part_width = TYPE_SIZE (type);
-	      poly_uint64 max_offset
-		= (tree_to_uhwi (part_width) / BITS_PER_UNIT
-		   * TYPE_VECTOR_SUBPARTS (op00type));
-	      if (known_lt (const_op01, max_offset))
-		{
-		  tree index = bitsize_int (const_op01 * BITS_PER_UNIT);
-		  return fold_build3_loc (loc,
-					  BIT_FIELD_REF, type, op00,
-					  part_width, index);
-		}
-	    }
-	  /* ((foo*)&complexfoo)[1] => __imag__ complexfoo */
-	  else if (TREE_CODE (op00type) == COMPLEX_TYPE
-		   && (same_type_ignoring_top_level_qualifiers_p
-		       (type, TREE_TYPE (op00type))))
-	    {
-	      if (known_eq (wi::to_poly_offset (TYPE_SIZE_UNIT (type)),
-			    const_op01))
-		return fold_build1_loc (loc, IMAGPART_EXPR, type, op00);
-	    }
-	  /* ((foo *)&fooarray)[1] => fooarray[1] */
-	  else if (TREE_CODE (op00type) == ARRAY_TYPE
-		   && (same_type_ignoring_top_level_qualifiers_p
-		       (type, TREE_TYPE (op00type))))
-	    {
-	      tree type_domain = TYPE_DOMAIN (op00type);
-	      tree min_val = size_zero_node;
-	      if (type_domain && TYPE_MIN_VALUE (type_domain))
-		min_val = TYPE_MIN_VALUE (type_domain);
-	      offset_int off = wi::to_offset (op01);
-	      offset_int el_sz = wi::to_offset (TYPE_SIZE_UNIT (type));
-	      offset_int remainder;
-	      off = wi::divmod_trunc (off, el_sz, SIGNED, &remainder);
-	      if (remainder == 0 && TREE_CODE (min_val) == INTEGER_CST)
-		{
-		  off = off + wi::to_offset (min_val);
-		  op01 = wide_int_to_tree (sizetype, off);
-		  return build4_loc (loc, ARRAY_REF, type, op00, op01,
-				     NULL_TREE, NULL_TREE);
-		}
-	    }
-	  /* Also handle conversion to an empty base class, which
-	     is represented with a NOP_EXPR.  */
-	  else if (is_empty_class (type)
-		   && CLASS_TYPE_P (op00type)
-		   && DERIVED_FROM_P (type, op00type))
-	    {
-	      *empty_base = true;
-	      return op00;
-	    }
-	  /* ((foo *)&struct_with_foo_field)[1] => COMPONENT_REF */
-	  else if (RECORD_OR_UNION_TYPE_P (op00type))
-	    {
-	      tree field = TYPE_FIELDS (op00type);
-	      for (; field; field = DECL_CHAIN (field))
-		if (TREE_CODE (field) == FIELD_DECL
-		    && TREE_TYPE (field) != error_mark_node
-		    && tree_int_cst_equal (byte_position (field), op01)
-		    && (same_type_ignoring_top_level_qualifiers_p
-			(TREE_TYPE (field), type)))
-		  return fold_build3 (COMPONENT_REF, type, op00,
-				      field, NULL_TREE);
-	    }
-	}
+	return cxx_fold_indirect_ref_1 (loc, type, TREE_OPERAND (op00, 0),
+					tree_to_uhwi (op01), empty_base);
     }
   /* *(foo *)fooarrptr => (*fooarrptr)[0] */
   else if (TREE_CODE (TREE_TYPE (subtype)) == ARRAY_TYPE
-	   && (same_type_ignoring_top_level_qualifiers_p
-	       (type, TREE_TYPE (TREE_TYPE (subtype)))))
+	   && similar_type_p (type, TREE_TYPE (TREE_TYPE (subtype))))
     {
       tree type_domain;
       tree min_val = size_zero_node;
@@ -3611,13 +3567,14 @@ cxx_eval_indirect_ref (const constexpr_ctx *ctx, tree t,
 	  STRIP_NOPS (sub);
 	  if (TREE_CODE (sub) == ADDR_EXPR)
 	    {
-	      gcc_assert (!same_type_ignoring_top_level_qualifiers_p
+	      gcc_assert (!similar_type_p
 			  (TREE_TYPE (TREE_TYPE (sub)), TREE_TYPE (t)));
 	      /* DR 1188 says we don't have to deal with this.  */
 	      if (!ctx->quiet)
-		error ("accessing value of %qE through a %qT glvalue in a "
-		       "constant expression", build_fold_indirect_ref (sub),
-		       TREE_TYPE (t));
+		error_at (cp_expr_loc_or_input_loc (t),
+			  "accessing value of %qE through a %qT glvalue in a "
+			  "constant expression", build_fold_indirect_ref (sub),
+			  TREE_TYPE (t));
 	      *non_constant_p = true;
 	      return t;
 	    }
@@ -3913,7 +3870,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   bool no_zero_init = true;
 
   releasing_vec ctors;
-  while (!refs->is_empty())
+  while (!refs->is_empty ())
     {
       if (*valp == NULL_TREE)
 	{
@@ -4054,7 +4011,9 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   if (const_object_being_modified)
     {
       bool fail = false;
-      if (!CLASS_TYPE_P (TREE_TYPE (const_object_being_modified)))
+      tree const_objtype
+	= strip_array_types (TREE_TYPE (const_object_being_modified));
+      if (!CLASS_TYPE_P (const_objtype))
 	fail = true;
       else
 	{
@@ -4915,14 +4874,21 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case CLEANUP_STMT:
-      r = cxx_eval_constant_expression (ctx, CLEANUP_BODY (t), lval,
+      {
+	tree initial_jump_target = jump_target ? *jump_target : NULL_TREE;
+	r = cxx_eval_constant_expression (ctx, CLEANUP_BODY (t), lval,
+					  non_constant_p, overflow_p,
+					  jump_target);
+	if (!CLEANUP_EH_ONLY (t) && !*non_constant_p)
+	  /* Also evaluate the cleanup.  If we weren't skipping at the
+	     start of the CLEANUP_BODY, change jump_target temporarily
+	     to &initial_jump_target, so that even a return or break or
+	     continue in the body doesn't skip the cleanup.  */
+	  cxx_eval_constant_expression (ctx, CLEANUP_EXPR (t), true,
 					non_constant_p, overflow_p,
-					jump_target);
-      if (!CLEANUP_EH_ONLY (t) && !*non_constant_p)
-	/* Also evaluate the cleanup.  */
-	cxx_eval_constant_expression (ctx, CLEANUP_EXPR (t), true,
-				      non_constant_p, overflow_p,
-				      jump_target);
+					jump_target ? &initial_jump_target
+					: NULL);
+      }
       break;
 
       /* These differ from cxx_eval_unary_expression in that this doesn't
@@ -6991,6 +6957,12 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return true;
 
     case CLEANUP_STMT:
+      if (!RECUR (CLEANUP_BODY (t), any))
+	return false;
+      if (!CLEANUP_EH_ONLY (t) && !RECUR (CLEANUP_EXPR (t), any))
+	return false;
+      return true;
+
     case EMPTY_CLASS_EXPR:
     case PREDICT_EXPR:
       return false;

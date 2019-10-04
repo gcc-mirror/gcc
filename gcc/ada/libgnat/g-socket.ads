@@ -1104,7 +1104,17 @@ package GNAT.Sockets is
       Family : Family_Type := Family_Inet;
       Mode   : Mode_Type   := Socket_Stream;
       Level  : Level_Type  := IP_Protocol_For_IP_Level);
-   --  Create an endpoint for communication. Raises Socket_Error on error
+   --  Create an endpoint for communication. Raises Socket_Error on error.
+
+   procedure Create_Socket_Pair
+     (Left   : out Socket_Type;
+      Right  : out Socket_Type;
+      Family : Family_Type := Family_Unspec;
+      Mode   : Mode_Type   := Socket_Stream;
+      Level  : Level_Type  := IP_Protocol_For_IP_Level);
+   --  Create two connected sockets. Raises Socket_Error on error.
+   --  If Family is unspecified, it creates Family_Unix sockets on UNIX and
+   --  Family_Inet sockets on non UNIX platforms.
 
    procedure Accept_Socket
      (Server  : Socket_Type;

@@ -559,8 +559,8 @@ pru_hard_regno_scratch_ok (unsigned int regno)
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  */
 
 static bool
-pru_hard_regno_call_part_clobbered (rtx_insn *insn ATTRIBUTE_UNUSED,
-				    unsigned regno, machine_mode mode)
+pru_hard_regno_call_part_clobbered (unsigned, unsigned regno,
+				    machine_mode mode)
 {
   HARD_REG_SET caller_saved_set;
   HARD_REG_SET callee_saved_set;

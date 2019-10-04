@@ -2099,7 +2099,43 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	}
       else
 	{
+	  tree ctree = gfc_get_class_from_expr (se.expr);
 	  tmp = TREE_TYPE (sym->backend_decl);
+
+	  /* Coarray scalar component expressions can emerge from
+	     the front end as array elements of the _data field.  */
+	  if (sym->ts.type == BT_CLASS
+	      && e->ts.type == BT_CLASS && e->rank == 0
+	      && !GFC_CLASS_TYPE_P (TREE_TYPE (se.expr)) && ctree)
+	    {
+	      tree stmp;
+	      tree dtmp;
+
+	      se.expr = ctree;
+	      dtmp = TREE_TYPE (TREE_TYPE (sym->backend_decl));
+	      ctree = gfc_create_var (dtmp, "class");
+
+	      stmp = gfc_class_data_get (se.expr);
+	      gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (stmp)));
+
+	      /* Set the fields of the target class variable.  */
+	      stmp = gfc_conv_descriptor_data_get (stmp);
+	      dtmp = gfc_class_data_get (ctree);
+	      stmp = fold_convert (TREE_TYPE (dtmp), stmp);
+	      gfc_add_modify (&se.pre, dtmp, stmp);
+	      stmp = gfc_class_vptr_get (se.expr);
+	      dtmp = gfc_class_vptr_get (ctree);
+	      stmp = fold_convert (TREE_TYPE (dtmp), stmp);
+	      gfc_add_modify (&se.pre, dtmp, stmp);
+	      if (UNLIMITED_POLY (sym))
+		{
+		  stmp = gfc_class_len_get (se.expr);
+		  dtmp = gfc_class_len_get (ctree);
+		  stmp = fold_convert (TREE_TYPE (dtmp), stmp);
+		  gfc_add_modify (&se.pre, dtmp, stmp);
+		}
+	      se.expr = ctree;
+	    }
 	  tmp = gfc_build_addr_expr (tmp, se.expr);
 	}
 

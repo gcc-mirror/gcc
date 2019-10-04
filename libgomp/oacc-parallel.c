@@ -28,7 +28,6 @@
 
 #include "openacc.h"
 #include "libgomp.h"
-#include "libgomp_g.h"
 #include "gomp-constants.h"
 #include "oacc-int.h"
 #ifdef HAVE_INTTYPES_H

@@ -46,7 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #define HWI_SIGN_EXTEND(low) \
   ((((HOST_WIDE_INT) low) < 0) ? HOST_WIDE_INT_M1 : HOST_WIDE_INT_0)
 
-static rtx neg_const_int (machine_mode, const_rtx);
 static bool plus_minus_operand_p (const_rtx);
 static rtx simplify_plus_minus (enum rtx_code, machine_mode, rtx, rtx);
 static rtx simplify_associative_operation (enum rtx_code, machine_mode,
@@ -57,17 +56,12 @@ static rtx simplify_unary_operation_1 (enum rtx_code, machine_mode, rtx);
 static rtx simplify_binary_operation_1 (enum rtx_code, machine_mode,
 					rtx, rtx, rtx, rtx);
 
-/* Negate a CONST_INT rtx.  */
+/* Negate I, which satisfies poly_int_rtx_p.  MODE is the mode of I.  */
+
 static rtx
-neg_const_int (machine_mode mode, const_rtx i)
+neg_poly_int_rtx (machine_mode mode, const_rtx i)
 {
-  unsigned HOST_WIDE_INT val = -UINTVAL (i);
-  
-  if (!HWI_COMPUTABLE_MODE_P (mode)
-      && val == UINTVAL (i))
-    return simplify_const_unary_operation (NEG, mode, CONST_CAST_RTX (i),
-					   mode);
-  return gen_int_mode (val, mode);
+  return immed_wide_int_const (-wi::to_poly_wide (i, mode), mode);
 }
 
 /* Test whether expression, X, is an immediate constant that represents
@@ -2547,10 +2541,10 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	return plus_constant (mode, op0, trunc_int_for_mode (-offset, mode));
 
       /* Don't let a relocatable value get a negative coeff.  */
-      if (CONST_INT_P (op1) && GET_MODE (op0) != VOIDmode)
+      if (poly_int_rtx_p (op1) && GET_MODE (op0) != VOIDmode)
 	return simplify_gen_binary (PLUS, mode,
 				    op0,
-				    neg_const_int (mode, op1));
+				    neg_poly_int_rtx (mode, op1));
 
       /* (x - (x & y)) -> (x & ~y) */
       if (INTEGRAL_MODE_P (mode) && GET_CODE (op1) == AND)
@@ -4619,11 +4613,12 @@ simplify_plus_minus (enum rtx_code code, machine_mode mode, rtx op0,
 		}
 	      break;
 
-	    case CONST_INT:
+	    CASE_CONST_SCALAR_INT:
+	    case CONST_POLY_INT:
 	      n_constants++;
 	      if (this_neg)
 		{
-		  ops[i].op = neg_const_int (mode, this_op);
+		  ops[i].op = neg_poly_int_rtx (mode, this_op);
 		  ops[i].neg = 0;
 		  changed = 1;
 		  canonicalized = 1;
@@ -4748,8 +4743,8 @@ simplify_plus_minus (enum rtx_code code, machine_mode mode, rtx op0,
 		    lneg &= rneg;
 		    if (GET_CODE (tem) == NEG)
 		      tem = XEXP (tem, 0), lneg = !lneg;
-		    if (CONST_INT_P (tem) && lneg)
-		      tem = neg_const_int (mode, tem), lneg = 0;
+		    if (poly_int_rtx_p (tem) && lneg)
+		      tem = neg_poly_int_rtx (mode, tem), lneg = 0;
 
 		    ops[i].op = tem;
 		    ops[i].neg = lneg;
@@ -4808,12 +4803,12 @@ simplify_plus_minus (enum rtx_code code, machine_mode mode, rtx op0,
      in the array and that any other constant will be next-to-last.  */
 
   if (n_ops > 1
-      && CONST_INT_P (ops[n_ops - 1].op)
+      && poly_int_rtx_p (ops[n_ops - 1].op)
       && CONSTANT_P (ops[n_ops - 2].op))
     {
       rtx value = ops[n_ops - 1].op;
       if (ops[n_ops - 1].neg ^ ops[n_ops - 2].neg)
-	value = neg_const_int (mode, value);
+	value = neg_poly_int_rtx (mode, value);
       if (CONST_INT_P (value))
 	{
 	  ops[n_ops - 2].op = plus_constant (mode, ops[n_ops - 2].op,
@@ -6130,342 +6125,466 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
   return 0;
 }
 
-/* Evaluate a SUBREG of a CONST_INT or CONST_WIDE_INT or CONST_DOUBLE
-   or CONST_FIXED or CONST_VECTOR, returning another CONST_INT or
-   CONST_WIDE_INT or CONST_DOUBLE or CONST_FIXED or CONST_VECTOR.
+/* Try to calculate NUM_BYTES bytes of the target memory image of X,
+   starting at byte FIRST_BYTE.  Return true on success and add the
+   bytes to BYTES, such that each byte has BITS_PER_UNIT bits and such
+   that the bytes follow target memory order.  Leave BYTES unmodified
+   on failure.
 
-   Works by unpacking INNER_BYTES bytes of OP into a collection of 8-bit values
-   represented as a little-endian array of 'unsigned char', selecting by BYTE,
-   and then repacking them again for OUTERMODE.  If OP is a CONST_VECTOR,
-   FIRST_ELEM is the number of the first element to extract, otherwise
-   FIRST_ELEM is ignored.  */
+   MODE is the mode of X.  The caller must reserve NUM_BYTES bytes in
+   BYTES before calling this function.  */
+
+bool
+native_encode_rtx (machine_mode mode, rtx x, vec<target_unit> &bytes,
+		   unsigned int first_byte, unsigned int num_bytes)
+{
+  /* Check the mode is sensible.  */
+  gcc_assert (GET_MODE (x) == VOIDmode
+	      ? is_a <scalar_int_mode> (mode)
+	      : mode == GET_MODE (x));
+
+  if (GET_CODE (x) == CONST_VECTOR)
+    {
+      /* CONST_VECTOR_ELT follows target memory order, so no shuffling
+	 is necessary.  The only complication is that MODE_VECTOR_BOOL
+	 vectors can have several elements per byte.  */
+      unsigned int elt_bits = vector_element_size (GET_MODE_BITSIZE (mode),
+						   GET_MODE_NUNITS (mode));
+      unsigned int elt = first_byte * BITS_PER_UNIT / elt_bits;
+      if (elt_bits < BITS_PER_UNIT)
+	{
+	  /* This is the only case in which elements can be smaller than
+	     a byte.  */
+	  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL);
+	  for (unsigned int i = 0; i < num_bytes; ++i)
+	    {
+	      target_unit value = 0;
+	      for (unsigned int j = 0; j < BITS_PER_UNIT; j += elt_bits)
+		{
+		  value |= (INTVAL (CONST_VECTOR_ELT (x, elt)) & 1) << j;
+		  elt += 1;
+		}
+	      bytes.quick_push (value);
+	    }
+	  return true;
+	}
+
+      unsigned int start = bytes.length ();
+      unsigned int elt_bytes = GET_MODE_UNIT_SIZE (mode);
+      /* Make FIRST_BYTE relative to ELT.  */
+      first_byte %= elt_bytes;
+      while (num_bytes > 0)
+	{
+	  /* Work out how many bytes we want from element ELT.  */
+	  unsigned int chunk_bytes = MIN (num_bytes, elt_bytes - first_byte);
+	  if (!native_encode_rtx (GET_MODE_INNER (mode),
+				  CONST_VECTOR_ELT (x, elt), bytes,
+				  first_byte, chunk_bytes))
+	    {
+	      bytes.truncate (start);
+	      return false;
+	    }
+	  elt += 1;
+	  first_byte = 0;
+	  num_bytes -= chunk_bytes;
+	}
+      return true;
+    }
+
+  /* All subsequent cases are limited to scalars.  */
+  scalar_mode smode;
+  if (!is_a <scalar_mode> (mode, &smode))
+    return false;
+
+  /* Make sure that the region is in range.  */
+  unsigned int end_byte = first_byte + num_bytes;
+  unsigned int mode_bytes = GET_MODE_SIZE (smode);
+  gcc_assert (end_byte <= mode_bytes);
+
+  if (CONST_SCALAR_INT_P (x))
+    {
+      /* The target memory layout is affected by both BYTES_BIG_ENDIAN
+	 and WORDS_BIG_ENDIAN.  Use the subreg machinery to get the lsb
+	 position of each byte.  */
+      rtx_mode_t value (x, smode);
+      wide_int_ref value_wi (value);
+      for (unsigned int byte = first_byte; byte < end_byte; ++byte)
+	{
+	  /* Always constant because the inputs are.  */
+	  unsigned int lsb
+	    = subreg_size_lsb (1, mode_bytes, byte).to_constant ();
+	  /* Operate directly on the encoding rather than using
+	     wi::extract_uhwi, so that we preserve the sign or zero
+	     extension for modes that are not a whole number of bits in
+	     size.  (Zero extension is only used for the combination of
+	     innermode == BImode && STORE_FLAG_VALUE == 1).  */
+	  unsigned int elt = lsb / HOST_BITS_PER_WIDE_INT;
+	  unsigned int shift = lsb % HOST_BITS_PER_WIDE_INT;
+	  unsigned HOST_WIDE_INT uhwi = value_wi.elt (elt);
+	  bytes.quick_push (uhwi >> shift);
+	}
+      return true;
+    }
+
+  if (CONST_DOUBLE_P (x))
+    {
+      /* real_to_target produces an array of integers in target memory order.
+	 All integers before the last one have 32 bits; the last one may
+	 have 32 bits or fewer, depending on whether the mode bitsize
+	 is divisible by 32.  Each of these integers is then laid out
+	 in target memory as any other integer would be.  */
+      long el32[MAX_BITSIZE_MODE_ANY_MODE / 32];
+      real_to_target (el32, CONST_DOUBLE_REAL_VALUE (x), smode);
+
+      /* The (maximum) number of target bytes per element of el32.  */
+      unsigned int bytes_per_el32 = 32 / BITS_PER_UNIT;
+      gcc_assert (bytes_per_el32 != 0);
+
+      /* Build up the integers in a similar way to the CONST_SCALAR_INT_P
+	 handling above.  */
+      for (unsigned int byte = first_byte; byte < end_byte; ++byte)
+	{
+	  unsigned int index = byte / bytes_per_el32;
+	  unsigned int subbyte = byte % bytes_per_el32;
+	  unsigned int int_bytes = MIN (bytes_per_el32,
+					mode_bytes - index * bytes_per_el32);
+	  /* Always constant because the inputs are.  */
+	  unsigned int lsb
+	    = subreg_size_lsb (1, int_bytes, subbyte).to_constant ();
+	  bytes.quick_push ((unsigned long) el32[index] >> lsb);
+	}
+      return true;
+    }
+
+  if (GET_CODE (x) == CONST_FIXED)
+    {
+      for (unsigned int byte = first_byte; byte < end_byte; ++byte)
+	{
+	  /* Always constant because the inputs are.  */
+	  unsigned int lsb
+	    = subreg_size_lsb (1, mode_bytes, byte).to_constant ();
+	  unsigned HOST_WIDE_INT piece = CONST_FIXED_VALUE_LOW (x);
+	  if (lsb >= HOST_BITS_PER_WIDE_INT)
+	    {
+	      lsb -= HOST_BITS_PER_WIDE_INT;
+	      piece = CONST_FIXED_VALUE_HIGH (x);
+	    }
+	  bytes.quick_push (piece >> lsb);
+	}
+      return true;
+    }
+
+  return false;
+}
+
+/* Read a vector of mode MODE from the target memory image given by BYTES,
+   starting at byte FIRST_BYTE.  The vector is known to be encodable using
+   NPATTERNS interleaved patterns with NELTS_PER_PATTERN elements each,
+   and BYTES is known to have enough bytes to supply NPATTERNS *
+   NELTS_PER_PATTERN vector elements.  Each element of BYTES contains
+   BITS_PER_UNIT bits and the bytes are in target memory order.
+
+   Return the vector on success, otherwise return NULL_RTX.  */
+
+rtx
+native_decode_vector_rtx (machine_mode mode, vec<target_unit> bytes,
+			  unsigned int first_byte, unsigned int npatterns,
+			  unsigned int nelts_per_pattern)
+{
+  rtx_vector_builder builder (mode, npatterns, nelts_per_pattern);
+
+  unsigned int elt_bits = vector_element_size (GET_MODE_BITSIZE (mode),
+					       GET_MODE_NUNITS (mode));
+  if (elt_bits < BITS_PER_UNIT)
+    {
+      /* This is the only case in which elements can be smaller than a byte.
+	 Element 0 is always in the lsb of the containing byte.  */
+      gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL);
+      for (unsigned int i = 0; i < builder.encoded_nelts (); ++i)
+	{
+	  unsigned int bit_index = first_byte * BITS_PER_UNIT + i * elt_bits;
+	  unsigned int byte_index = bit_index / BITS_PER_UNIT;
+	  unsigned int lsb = bit_index % BITS_PER_UNIT;
+	  builder.quick_push (bytes[byte_index] & (1 << lsb)
+			      ? CONST1_RTX (BImode)
+			      : CONST0_RTX (BImode));
+	}
+    }
+  else
+    {
+      for (unsigned int i = 0; i < builder.encoded_nelts (); ++i)
+	{
+	  rtx x = native_decode_rtx (GET_MODE_INNER (mode), bytes, first_byte);
+	  if (!x)
+	    return NULL_RTX;
+	  builder.quick_push (x);
+	  first_byte += elt_bits / BITS_PER_UNIT;
+	}
+    }
+  return builder.build ();
+}
+
+/* Read an rtx of mode MODE from the target memory image given by BYTES,
+   starting at byte FIRST_BYTE.  Each element of BYTES contains BITS_PER_UNIT
+   bits and the bytes are in target memory order.  The image has enough
+   values to specify all bytes of MODE.
+
+   Return the rtx on success, otherwise return NULL_RTX.  */
+
+rtx
+native_decode_rtx (machine_mode mode, vec<target_unit> bytes,
+		   unsigned int first_byte)
+{
+  if (VECTOR_MODE_P (mode))
+    {
+      /* If we know at compile time how many elements there are,
+	 pull each element directly from BYTES.  */
+      unsigned int nelts;
+      if (GET_MODE_NUNITS (mode).is_constant (&nelts))
+	return native_decode_vector_rtx (mode, bytes, first_byte, nelts, 1);
+      return NULL_RTX;
+    }
+
+  scalar_int_mode imode;
+  if (is_a <scalar_int_mode> (mode, &imode)
+      && GET_MODE_PRECISION (imode) <= MAX_BITSIZE_MODE_ANY_INT)
+    {
+      /* Pull the bytes msb first, so that we can use simple
+	 shift-and-insert wide_int operations.  */
+      unsigned int size = GET_MODE_SIZE (imode);
+      wide_int result (wi::zero (GET_MODE_PRECISION (imode)));
+      for (unsigned int i = 0; i < size; ++i)
+	{
+	  unsigned int lsb = (size - i - 1) * BITS_PER_UNIT;
+	  /* Always constant because the inputs are.  */
+	  unsigned int subbyte
+	    = subreg_size_offset_from_lsb (1, size, lsb).to_constant ();
+	  result <<= BITS_PER_UNIT;
+	  result |= bytes[first_byte + subbyte];
+	}
+      return immed_wide_int_const (result, imode);
+    }
+
+  scalar_float_mode fmode;
+  if (is_a <scalar_float_mode> (mode, &fmode))
+    {
+      /* We need to build an array of integers in target memory order.
+	 All integers before the last one have 32 bits; the last one may
+	 have 32 bits or fewer, depending on whether the mode bitsize
+	 is divisible by 32.  */
+      long el32[MAX_BITSIZE_MODE_ANY_MODE / 32];
+      unsigned int num_el32 = CEIL (GET_MODE_BITSIZE (fmode), 32);
+      memset (el32, 0, num_el32 * sizeof (long));
+
+      /* The (maximum) number of target bytes per element of el32.  */
+      unsigned int bytes_per_el32 = 32 / BITS_PER_UNIT;
+      gcc_assert (bytes_per_el32 != 0);
+
+      unsigned int mode_bytes = GET_MODE_SIZE (fmode);
+      for (unsigned int byte = 0; byte < mode_bytes; ++byte)
+	{
+	  unsigned int index = byte / bytes_per_el32;
+	  unsigned int subbyte = byte % bytes_per_el32;
+	  unsigned int int_bytes = MIN (bytes_per_el32,
+					mode_bytes - index * bytes_per_el32);
+	  /* Always constant because the inputs are.  */
+	  unsigned int lsb
+	    = subreg_size_lsb (1, int_bytes, subbyte).to_constant ();
+	  el32[index] |= (unsigned long) bytes[first_byte + byte] << lsb;
+	}
+      REAL_VALUE_TYPE r;
+      real_from_target (&r, el32, fmode);
+      return const_double_from_real_value (r, fmode);
+    }
+
+  if (ALL_SCALAR_FIXED_POINT_MODE_P (mode))
+    {
+      scalar_mode smode = as_a <scalar_mode> (mode);
+      FIXED_VALUE_TYPE f;
+      f.data.low = 0;
+      f.data.high = 0;
+      f.mode = smode;
+
+      unsigned int mode_bytes = GET_MODE_SIZE (smode);
+      for (unsigned int byte = 0; byte < mode_bytes; ++byte)
+	{
+	  /* Always constant because the inputs are.  */
+	  unsigned int lsb
+	    = subreg_size_lsb (1, mode_bytes, byte).to_constant ();
+	  unsigned HOST_WIDE_INT unit = bytes[first_byte + byte];
+	  if (lsb >= HOST_BITS_PER_WIDE_INT)
+	    f.data.high |= unit << (lsb - HOST_BITS_PER_WIDE_INT);
+	  else
+	    f.data.low |= unit << lsb;
+	}
+      return CONST_FIXED_FROM_FIXED_VALUE (f, mode);
+    }
+
+  return NULL_RTX;
+}
+
+/* Simplify a byte offset BYTE into CONST_VECTOR X.  The main purpose
+   is to convert a runtime BYTE value into a constant one.  */
+
+static poly_uint64
+simplify_const_vector_byte_offset (rtx x, poly_uint64 byte)
+{
+  /* Cope with MODE_VECTOR_BOOL by operating on bits rather than bytes.  */
+  machine_mode mode = GET_MODE (x);
+  unsigned int elt_bits = vector_element_size (GET_MODE_BITSIZE (mode),
+					       GET_MODE_NUNITS (mode));
+  /* The number of bits needed to encode one element from each pattern.  */
+  unsigned int sequence_bits = CONST_VECTOR_NPATTERNS (x) * elt_bits;
+
+  /* Identify the start point in terms of a sequence number and a byte offset
+     within that sequence.  */
+  poly_uint64 first_sequence;
+  unsigned HOST_WIDE_INT subbit;
+  if (can_div_trunc_p (byte * BITS_PER_UNIT, sequence_bits,
+		       &first_sequence, &subbit))
+    {
+      unsigned int nelts_per_pattern = CONST_VECTOR_NELTS_PER_PATTERN (x);
+      if (nelts_per_pattern == 1)
+	/* This is a duplicated vector, so the value of FIRST_SEQUENCE
+	   doesn't matter.  */
+	byte = subbit / BITS_PER_UNIT;
+      else if (nelts_per_pattern == 2 && known_gt (first_sequence, 0U))
+	{
+	  /* The subreg drops the first element from each pattern and
+	     only uses the second element.  Find the first sequence
+	     that starts on a byte boundary.  */
+	  subbit += least_common_multiple (sequence_bits, BITS_PER_UNIT);
+	  byte = subbit / BITS_PER_UNIT;
+	}
+    }
+  return byte;
+}
+
+/* Subroutine of simplify_subreg in which:
+
+   - X is known to be a CONST_VECTOR
+   - OUTERMODE is known to be a vector mode
+
+   Try to handle the subreg by operating on the CONST_VECTOR encoding
+   rather than on each individual element of the CONST_VECTOR.
+
+   Return the simplified subreg on success, otherwise return NULL_RTX.  */
 
 static rtx
-simplify_immed_subreg (fixed_size_mode outermode, rtx op,
-		       machine_mode innermode, unsigned int byte,
-		       unsigned int first_elem, unsigned int inner_bytes)
+simplify_const_vector_subreg (machine_mode outermode, rtx x,
+			      machine_mode innermode, unsigned int first_byte)
 {
-  enum {
-    value_bit = 8,
-    value_mask = (1 << value_bit) - 1
-  };
-  unsigned char value[MAX_BITSIZE_MODE_ANY_MODE / value_bit];
-  int value_start;
-  int i;
-  int elem;
-
-  int num_elem;
-  rtx * elems;
-  int elem_bitsize;
-  rtx result_s = NULL;
-  rtvec result_v = NULL;
-  enum mode_class outer_class;
-  scalar_mode outer_submode;
-  int max_bitsize;
-
-  /* Some ports misuse CCmode.  */
-  if (GET_MODE_CLASS (outermode) == MODE_CC && CONST_INT_P (op))
-    return op;
-
-  /* We have no way to represent a complex constant at the rtl level.  */
-  if (COMPLEX_MODE_P (outermode))
+  /* Paradoxical subregs of vectors have dubious semantics.  */
+  if (paradoxical_subreg_p (outermode, innermode))
     return NULL_RTX;
 
-  /* We support any size mode.  */
-  max_bitsize = MAX (GET_MODE_BITSIZE (outermode),
-		     inner_bytes * BITS_PER_UNIT);
+  /* We can only preserve the semantics of a stepped pattern if the new
+     vector element is the same as the original one.  */
+  if (CONST_VECTOR_STEPPED_P (x)
+      && GET_MODE_INNER (outermode) != GET_MODE_INNER (innermode))
+    return NULL_RTX;
 
-  /* Unpack the value.  */
+  /* Cope with MODE_VECTOR_BOOL by operating on bits rather than bytes.  */
+  unsigned int x_elt_bits
+    = vector_element_size (GET_MODE_BITSIZE (innermode),
+			   GET_MODE_NUNITS (innermode));
+  unsigned int out_elt_bits
+    = vector_element_size (GET_MODE_BITSIZE (outermode),
+			   GET_MODE_NUNITS (outermode));
 
-  if (GET_CODE (op) == CONST_VECTOR)
+  /* The number of bits needed to encode one element from every pattern
+     of the original vector.  */
+  unsigned int x_sequence_bits = CONST_VECTOR_NPATTERNS (x) * x_elt_bits;
+
+  /* The number of bits needed to encode one element from every pattern
+     of the result.  */
+  unsigned int out_sequence_bits
+    = least_common_multiple (x_sequence_bits, out_elt_bits);
+
+  /* Work out the number of interleaved patterns in the output vector
+     and the number of encoded elements per pattern.  */
+  unsigned int out_npatterns = out_sequence_bits / out_elt_bits;
+  unsigned int nelts_per_pattern = CONST_VECTOR_NELTS_PER_PATTERN (x);
+
+  /* The encoding scheme requires the number of elements to be a multiple
+     of the number of patterns, so that each pattern appears at least once
+     and so that the same number of elements appear from each pattern.  */
+  bool ok_p = multiple_p (GET_MODE_NUNITS (outermode), out_npatterns);
+  unsigned int const_nunits;
+  if (GET_MODE_NUNITS (outermode).is_constant (&const_nunits)
+      && (!ok_p || out_npatterns * nelts_per_pattern > const_nunits))
     {
-      num_elem = CEIL (inner_bytes, GET_MODE_UNIT_SIZE (innermode));
-      elem_bitsize = GET_MODE_UNIT_BITSIZE (innermode);
+      /* Either the encoding is invalid, or applying it would give us
+	 more elements than we need.  Just encode each element directly.  */
+      out_npatterns = const_nunits;
+      nelts_per_pattern = 1;
+    }
+  else if (!ok_p)
+    return NULL_RTX;
+
+  /* Get enough bytes of X to form the new encoding.  */
+  unsigned int buffer_bits = out_npatterns * nelts_per_pattern * out_elt_bits;
+  unsigned int buffer_bytes = CEIL (buffer_bits, BITS_PER_UNIT);
+  auto_vec<target_unit, 128> buffer (buffer_bytes);
+  if (!native_encode_rtx (innermode, x, buffer, first_byte, buffer_bytes))
+    return NULL_RTX;
+
+  /* Reencode the bytes as OUTERMODE.  */
+  return native_decode_vector_rtx (outermode, buffer, 0, out_npatterns,
+				   nelts_per_pattern);
+}
+
+/* Try to simplify a subreg of a constant by encoding the subreg region
+   as a sequence of target bytes and reading them back in the new mode.
+   Return the new value on success, otherwise return null.
+
+   The subreg has outer mode OUTERMODE, inner mode INNERMODE, inner value X
+   and byte offset FIRST_BYTE.  */
+
+static rtx
+simplify_immed_subreg (fixed_size_mode outermode, rtx x,
+		       machine_mode innermode, unsigned int first_byte)
+{
+  unsigned int buffer_bytes = GET_MODE_SIZE (outermode);
+  auto_vec<target_unit, 128> buffer (buffer_bytes);
+
+  /* Some ports misuse CCmode.  */
+  if (GET_MODE_CLASS (outermode) == MODE_CC && CONST_INT_P (x))
+    return x;
+
+  /* Paradoxical subregs read undefined values for bytes outside of the
+     inner value.  However, we have traditionally always sign-extended
+     integer constants and zero-extended others.  */
+  unsigned int inner_bytes = buffer_bytes;
+  if (paradoxical_subreg_p (outermode, innermode))
+    {
+      if (!GET_MODE_SIZE (innermode).is_constant (&inner_bytes))
+	return NULL_RTX;
+
+      target_unit filler = 0;
+      if (CONST_SCALAR_INT_P (x) && wi::neg_p (rtx_mode_t (x, innermode)))
+	filler = -1;
+
+      /* Add any leading bytes due to big-endian layout.  The number of
+	 bytes must be constant because both modes have constant size.  */
+      unsigned int leading_bytes
+	= -byte_lowpart_offset (outermode, innermode).to_constant ();
+      for (unsigned int i = 0; i < leading_bytes; ++i)
+	buffer.quick_push (filler);
+
+      if (!native_encode_rtx (innermode, x, buffer, first_byte, inner_bytes))
+	return NULL_RTX;
+
+      /* Add any trailing bytes due to little-endian layout.  */
+      while (buffer.length () < buffer_bytes)
+	buffer.quick_push (filler);
     }
   else
     {
-      num_elem = 1;
-      elem_bitsize = max_bitsize;
-    }
-  /* If this asserts, it is too complicated; reducing value_bit may help.  */
-  gcc_assert (BITS_PER_UNIT % value_bit == 0);
-  /* I don't know how to handle endianness of sub-units.  */
-  gcc_assert (elem_bitsize % BITS_PER_UNIT == 0);
-
-  for (elem = 0; elem < num_elem; elem++)
-    {
-      unsigned char * vp;
-      rtx el = (GET_CODE (op) == CONST_VECTOR
-		? CONST_VECTOR_ELT (op, first_elem + elem)
-		: op);
-
-      /* Vectors are kept in target memory order.  (This is probably
-	 a mistake.)  */
-      {
-	unsigned byte = (elem * elem_bitsize) / BITS_PER_UNIT;
-	unsigned ibyte = (((num_elem - 1 - elem) * elem_bitsize)
-			  / BITS_PER_UNIT);
-	unsigned word_byte = WORDS_BIG_ENDIAN ? ibyte : byte;
-	unsigned subword_byte = BYTES_BIG_ENDIAN ? ibyte : byte;
-	unsigned bytele = (subword_byte % UNITS_PER_WORD
-			 + (word_byte / UNITS_PER_WORD) * UNITS_PER_WORD);
-	vp = value + (bytele * BITS_PER_UNIT) / value_bit;
+      if (!native_encode_rtx (innermode, x, buffer, first_byte, inner_bytes))
+	return NULL_RTX;
       }
-
-      switch (GET_CODE (el))
-	{
-	case CONST_INT:
-	  for (i = 0;
-	       i < HOST_BITS_PER_WIDE_INT && i < elem_bitsize;
-	       i += value_bit)
-	    *vp++ = INTVAL (el) >> i;
-	  /* CONST_INTs are always logically sign-extended.  */
-	  for (; i < elem_bitsize; i += value_bit)
-	    *vp++ = INTVAL (el) < 0 ? -1 : 0;
-	  break;
-
-	case CONST_WIDE_INT:
-	  {
-	    rtx_mode_t val = rtx_mode_t (el, GET_MODE_INNER (innermode));
-	    unsigned char extend = wi::sign_mask (val);
-	    int prec = wi::get_precision (val);
-
-	    for (i = 0; i < prec && i < elem_bitsize; i += value_bit)
-	      *vp++ = wi::extract_uhwi (val, i, value_bit);
-	    for (; i < elem_bitsize; i += value_bit)
-	      *vp++ = extend;
-	  }
-	  break;
-
-	case CONST_DOUBLE:
-	  if (TARGET_SUPPORTS_WIDE_INT == 0 && GET_MODE (el) == VOIDmode)
-	    {
-	      unsigned char extend = 0;
-	      /* If this triggers, someone should have generated a
-		 CONST_INT instead.  */
-	      gcc_assert (elem_bitsize > HOST_BITS_PER_WIDE_INT);
-
-	      for (i = 0; i < HOST_BITS_PER_WIDE_INT; i += value_bit)
-		*vp++ = CONST_DOUBLE_LOW (el) >> i;
-	      while (i < HOST_BITS_PER_DOUBLE_INT && i < elem_bitsize)
-		{
-		  *vp++
-		    = CONST_DOUBLE_HIGH (el) >> (i - HOST_BITS_PER_WIDE_INT);
-		  i += value_bit;
-		}
-
-	      if (CONST_DOUBLE_HIGH (el) >> (HOST_BITS_PER_WIDE_INT - 1))
-		extend = -1;
-	      for (; i < elem_bitsize; i += value_bit)
-		*vp++ = extend;
-	    }
-	  else
-	    {
-	      /* This is big enough for anything on the platform.  */
-	      long tmp[MAX_BITSIZE_MODE_ANY_MODE / 32];
-	      scalar_float_mode el_mode;
-
-	      el_mode = as_a <scalar_float_mode> (GET_MODE (el));
-	      int bitsize = GET_MODE_BITSIZE (el_mode);
-
-	      gcc_assert (bitsize <= elem_bitsize);
-	      gcc_assert (bitsize % value_bit == 0);
-
-	      real_to_target (tmp, CONST_DOUBLE_REAL_VALUE (el),
-			      GET_MODE (el));
-
-	      /* real_to_target produces its result in words affected by
-		 FLOAT_WORDS_BIG_ENDIAN.  However, we ignore this,
-		 and use WORDS_BIG_ENDIAN instead; see the documentation
-	         of SUBREG in rtl.texi.  */
-	      for (i = 0; i < bitsize; i += value_bit)
-		{
-		  int ibase;
-		  if (WORDS_BIG_ENDIAN)
-		    ibase = bitsize - 1 - i;
-		  else
-		    ibase = i;
-		  *vp++ = tmp[ibase / 32] >> i % 32;
-		}
-
-	      /* It shouldn't matter what's done here, so fill it with
-		 zero.  */
-	      for (; i < elem_bitsize; i += value_bit)
-		*vp++ = 0;
-	    }
-	  break;
-
-        case CONST_FIXED:
-	  if (elem_bitsize <= HOST_BITS_PER_WIDE_INT)
-	    {
-	      for (i = 0; i < elem_bitsize; i += value_bit)
-		*vp++ = CONST_FIXED_VALUE_LOW (el) >> i;
-	    }
-	  else
-	    {
-	      for (i = 0; i < HOST_BITS_PER_WIDE_INT; i += value_bit)
-		*vp++ = CONST_FIXED_VALUE_LOW (el) >> i;
-              for (; i < HOST_BITS_PER_DOUBLE_INT && i < elem_bitsize;
-		   i += value_bit)
-		*vp++ = CONST_FIXED_VALUE_HIGH (el)
-			>> (i - HOST_BITS_PER_WIDE_INT);
-	      for (; i < elem_bitsize; i += value_bit)
-		*vp++ = 0;
-	    }
-          break;
-
-	default:
-	  gcc_unreachable ();
-	}
-    }
-
-  /* Now, pick the right byte to start with.  */
-  /* Renumber BYTE so that the least-significant byte is byte 0.  A special
-     case is paradoxical SUBREGs, which shouldn't be adjusted since they
-     will already have offset 0.  */
-  if (inner_bytes >= GET_MODE_SIZE (outermode))
-    {
-      unsigned ibyte = inner_bytes - GET_MODE_SIZE (outermode) - byte;
-      unsigned word_byte = WORDS_BIG_ENDIAN ? ibyte : byte;
-      unsigned subword_byte = BYTES_BIG_ENDIAN ? ibyte : byte;
-      byte = (subword_byte % UNITS_PER_WORD
-	      + (word_byte / UNITS_PER_WORD) * UNITS_PER_WORD);
-    }
-
-  /* BYTE should still be inside OP.  (Note that BYTE is unsigned,
-     so if it's become negative it will instead be very large.)  */
-  gcc_assert (byte < inner_bytes);
-
-  /* Convert from bytes to chunks of size value_bit.  */
-  value_start = byte * (BITS_PER_UNIT / value_bit);
-
-  /* Re-pack the value.  */
-  num_elem = GET_MODE_NUNITS (outermode);
-
-  if (VECTOR_MODE_P (outermode))
-    {
-      result_v = rtvec_alloc (num_elem);
-      elems = &RTVEC_ELT (result_v, 0);
-    }
-  else
-    elems = &result_s;
-
-  outer_submode = GET_MODE_INNER (outermode);
-  outer_class = GET_MODE_CLASS (outer_submode);
-  elem_bitsize = GET_MODE_BITSIZE (outer_submode);
-
-  gcc_assert (elem_bitsize % value_bit == 0);
-  gcc_assert (elem_bitsize + value_start * value_bit <= max_bitsize);
-
-  for (elem = 0; elem < num_elem; elem++)
-    {
-      unsigned char *vp;
-
-      /* Vectors are stored in target memory order.  (This is probably
-	 a mistake.)  */
-      {
-	unsigned byte = (elem * elem_bitsize) / BITS_PER_UNIT;
-	unsigned ibyte = (((num_elem - 1 - elem) * elem_bitsize)
-			  / BITS_PER_UNIT);
-	unsigned word_byte = WORDS_BIG_ENDIAN ? ibyte : byte;
-	unsigned subword_byte = BYTES_BIG_ENDIAN ? ibyte : byte;
-	unsigned bytele = (subword_byte % UNITS_PER_WORD
-			 + (word_byte / UNITS_PER_WORD) * UNITS_PER_WORD);
-	vp = value + value_start + (bytele * BITS_PER_UNIT) / value_bit;
-      }
-
-      switch (outer_class)
-	{
-	case MODE_INT:
-	case MODE_PARTIAL_INT:
-	  {
-	    int u;
-	    int base = 0;
-	    int units
-	      = (GET_MODE_BITSIZE (outer_submode) + HOST_BITS_PER_WIDE_INT - 1)
-	      / HOST_BITS_PER_WIDE_INT;
-	    HOST_WIDE_INT tmp[MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT];
-	    wide_int r;
-
-	    if (GET_MODE_PRECISION (outer_submode) > MAX_BITSIZE_MODE_ANY_INT)
-	      return NULL_RTX;
-	    for (u = 0; u < units; u++)
-	      {
-		unsigned HOST_WIDE_INT buf = 0;
-		for (i = 0;
-		     i < HOST_BITS_PER_WIDE_INT && base + i < elem_bitsize;
-		     i += value_bit)
-		  buf |= (unsigned HOST_WIDE_INT)(*vp++ & value_mask) << i;
-
-		tmp[u] = buf;
-		base += HOST_BITS_PER_WIDE_INT;
-	      }
-	    r = wide_int::from_array (tmp, units,
-				      GET_MODE_PRECISION (outer_submode));
-#if TARGET_SUPPORTS_WIDE_INT == 0
-	    /* Make sure r will fit into CONST_INT or CONST_DOUBLE.  */
-	    if (wi::min_precision (r, SIGNED) > HOST_BITS_PER_DOUBLE_INT)
-	      return NULL_RTX;
-#endif
-	    elems[elem] = immed_wide_int_const (r, outer_submode);
-	  }
-	  break;
-
-	case MODE_FLOAT:
-	case MODE_DECIMAL_FLOAT:
-	  {
-	    REAL_VALUE_TYPE r;
-	    long tmp[MAX_BITSIZE_MODE_ANY_MODE / 32] = { 0 };
-
-	    /* real_from_target wants its input in words affected by
-	       FLOAT_WORDS_BIG_ENDIAN.  However, we ignore this,
-	       and use WORDS_BIG_ENDIAN instead; see the documentation
-	       of SUBREG in rtl.texi.  */
-	    for (i = 0; i < elem_bitsize; i += value_bit)
-	      {
-		int ibase;
-		if (WORDS_BIG_ENDIAN)
-		  ibase = elem_bitsize - 1 - i;
-		else
-		  ibase = i;
-		tmp[ibase / 32] |= (*vp++ & value_mask) << i % 32;
-	      }
-
-	    real_from_target (&r, tmp, outer_submode);
-	    elems[elem] = const_double_from_real_value (r, outer_submode);
-	  }
-	  break;
-
-	case MODE_FRACT:
-	case MODE_UFRACT:
-	case MODE_ACCUM:
-	case MODE_UACCUM:
-	  {
-	    FIXED_VALUE_TYPE f;
-	    f.data.low = 0;
-	    f.data.high = 0;
-	    f.mode = outer_submode;
-
-	    for (i = 0;
-		 i < HOST_BITS_PER_WIDE_INT && i < elem_bitsize;
-		 i += value_bit)
-	      f.data.low |= (unsigned HOST_WIDE_INT)(*vp++ & value_mask) << i;
-	    for (; i < elem_bitsize; i += value_bit)
-	      f.data.high |= ((unsigned HOST_WIDE_INT)(*vp++ & value_mask)
-			     << (i - HOST_BITS_PER_WIDE_INT));
-
-	    elems[elem] = CONST_FIXED_FROM_FIXED_VALUE (f, outer_submode);
-          }
-          break;
-
-	default:
-	  gcc_unreachable ();
-	}
-    }
-  if (VECTOR_MODE_P (outermode))
-    return gen_rtx_CONST_VECTOR (outermode, result_v);
-  else
-    return result_s;
+  return native_decode_rtx (outermode, buffer, 0);
 }
 
 /* Simplify SUBREG:OUTERMODE(OP:INNERMODE, BYTE)
@@ -6494,6 +6613,9 @@ simplify_subreg (machine_mode outermode, rtx op,
   if (outermode == innermode && known_eq (byte, 0U))
     return op;
 
+  if (GET_CODE (op) == CONST_VECTOR)
+    byte = simplify_const_vector_byte_offset (op, byte);
+
   if (multiple_p (byte, GET_MODE_UNIT_SIZE (innermode)))
     {
       rtx elt;
@@ -6513,30 +6635,21 @@ simplify_subreg (machine_mode outermode, rtx op,
       || CONST_FIXED_P (op)
       || GET_CODE (op) == CONST_VECTOR)
     {
-      /* simplify_immed_subreg deconstructs OP into bytes and constructs
-	 the result from bytes, so it only works if the sizes of the modes
-	 and the value of the offset are known at compile time.  Cases that
-	 that apply to general modes and offsets should be handled here
-	 before calling simplify_immed_subreg.  */
-      fixed_size_mode fs_outermode, fs_innermode;
       unsigned HOST_WIDE_INT cbyte;
-      if (is_a <fixed_size_mode> (outermode, &fs_outermode)
-	  && is_a <fixed_size_mode> (innermode, &fs_innermode)
-	  && byte.is_constant (&cbyte))
-	return simplify_immed_subreg (fs_outermode, op, fs_innermode, cbyte,
-				      0, GET_MODE_SIZE (fs_innermode));
+      if (byte.is_constant (&cbyte))
+	{
+	  if (GET_CODE (op) == CONST_VECTOR && VECTOR_MODE_P (outermode))
+	    {
+	      rtx tmp = simplify_const_vector_subreg (outermode, op,
+						      innermode, cbyte);
+	      if (tmp)
+		return tmp;
+	    }
 
-      /* Handle constant-sized outer modes and variable-sized inner modes.  */
-      unsigned HOST_WIDE_INT first_elem;
-      if (GET_CODE (op) == CONST_VECTOR
-	  && is_a <fixed_size_mode> (outermode, &fs_outermode)
-	  && constant_multiple_p (byte, GET_MODE_UNIT_SIZE (innermode),
-				  &first_elem))
-	return simplify_immed_subreg (fs_outermode, op, innermode, 0,
-				      first_elem,
-				      GET_MODE_SIZE (fs_outermode));
-
-      return NULL_RTX;
+	  fixed_size_mode fs_outermode;
+	  if (is_a <fixed_size_mode> (outermode, &fs_outermode))
+	    return simplify_immed_subreg (fs_outermode, op, innermode, cbyte);
+	}
     }
 
   /* Changing mode twice with SUBREG => just change it once,
@@ -7179,6 +7292,165 @@ test_vec_merge (machine_mode mode)
 		 simplify_rtx (nvm));
 }
 
+/* Test subregs of integer vector constant X, trying elements in
+   the range [ELT_BIAS, ELT_BIAS + constant_lower_bound (NELTS)),
+   where NELTS is the number of elements in X.  Subregs involving
+   elements [ELT_BIAS, ELT_BIAS + FIRST_VALID) are expected to fail.  */
+
+static void
+test_vector_subregs_modes (rtx x, poly_uint64 elt_bias = 0,
+			   unsigned int first_valid = 0)
+{
+  machine_mode inner_mode = GET_MODE (x);
+  scalar_mode int_mode = GET_MODE_INNER (inner_mode);
+
+  for (unsigned int modei = 0; modei < NUM_MACHINE_MODES; ++modei)
+    {
+      machine_mode outer_mode = (machine_mode) modei;
+      if (!VECTOR_MODE_P (outer_mode))
+	continue;
+
+      unsigned int outer_nunits;
+      if (GET_MODE_INNER (outer_mode) == int_mode
+	  && GET_MODE_NUNITS (outer_mode).is_constant (&outer_nunits)
+	  && multiple_p (GET_MODE_NUNITS (inner_mode), outer_nunits))
+	{
+	  /* Test subregs in which the outer mode is a smaller,
+	     constant-sized vector of the same element type.  */
+	  unsigned int limit
+	    = constant_lower_bound (GET_MODE_NUNITS (inner_mode));
+	  for (unsigned int elt = 0; elt < limit; elt += outer_nunits)
+	    {
+	      rtx expected = NULL_RTX;
+	      if (elt >= first_valid)
+		{
+		  rtx_vector_builder builder (outer_mode, outer_nunits, 1);
+		  for (unsigned int i = 0; i < outer_nunits; ++i)
+		    builder.quick_push (CONST_VECTOR_ELT (x, elt + i));
+		  expected = builder.build ();
+		}
+	      poly_uint64 byte = (elt_bias + elt) * GET_MODE_SIZE (int_mode);
+	      ASSERT_RTX_EQ (expected,
+			     simplify_subreg (outer_mode, x,
+					      inner_mode, byte));
+	    }
+	}
+      else if (known_eq (GET_MODE_SIZE (outer_mode),
+			 GET_MODE_SIZE (inner_mode))
+	       && known_eq (elt_bias, 0U)
+	       && (GET_MODE_CLASS (outer_mode) != MODE_VECTOR_BOOL
+		   || known_eq (GET_MODE_BITSIZE (outer_mode),
+				GET_MODE_NUNITS (outer_mode)))
+	       && (!FLOAT_MODE_P (outer_mode)
+		   || (FLOAT_MODE_FORMAT (outer_mode)->ieee_bits
+		       == GET_MODE_UNIT_PRECISION (outer_mode)))
+	       && (GET_MODE_SIZE (inner_mode).is_constant ()
+		   || !CONST_VECTOR_STEPPED_P (x)))
+	{
+	  /* Try converting to OUTER_MODE and back.  */
+	  rtx outer_x = simplify_subreg (outer_mode, x, inner_mode, 0);
+	  ASSERT_TRUE (outer_x != NULL_RTX);
+	  ASSERT_RTX_EQ (x, simplify_subreg (inner_mode, outer_x,
+					     outer_mode, 0));
+	}
+    }
+
+  if (BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN)
+    {
+      /* Test each byte in the element range.  */
+      unsigned int limit
+	= constant_lower_bound (GET_MODE_SIZE (inner_mode));
+      for (unsigned int i = 0; i < limit; ++i)
+	{
+	  unsigned int elt = i / GET_MODE_SIZE (int_mode);
+	  rtx expected = NULL_RTX;
+	  if (elt >= first_valid)
+	    {
+	      unsigned int byte_shift = i % GET_MODE_SIZE (int_mode);
+	      if (BYTES_BIG_ENDIAN)
+		byte_shift = GET_MODE_SIZE (int_mode) - byte_shift - 1;
+	      rtx_mode_t vec_elt (CONST_VECTOR_ELT (x, elt), int_mode);
+	      wide_int shifted_elt
+		= wi::lrshift (vec_elt, byte_shift * BITS_PER_UNIT);
+	      expected = immed_wide_int_const (shifted_elt, QImode);
+	    }
+	  poly_uint64 byte = elt_bias * GET_MODE_SIZE (int_mode) + i;
+	  ASSERT_RTX_EQ (expected,
+			 simplify_subreg (QImode, x, inner_mode, byte));
+	}
+    }
+}
+
+/* Test constant subregs of integer vector mode INNER_MODE, using 1
+   element per pattern.  */
+
+static void
+test_vector_subregs_repeating (machine_mode inner_mode)
+{
+  poly_uint64 nunits = GET_MODE_NUNITS (inner_mode);
+  unsigned int min_nunits = constant_lower_bound (nunits);
+  scalar_mode int_mode = GET_MODE_INNER (inner_mode);
+  unsigned int count = gcd (min_nunits, 8);
+
+  rtx_vector_builder builder (inner_mode, count, 1);
+  for (unsigned int i = 0; i < count; ++i)
+    builder.quick_push (gen_int_mode (8 - i, int_mode));
+  rtx x = builder.build ();
+
+  test_vector_subregs_modes (x);
+  if (!nunits.is_constant ())
+    test_vector_subregs_modes (x, nunits - min_nunits);
+}
+
+/* Test constant subregs of integer vector mode INNER_MODE, using 2
+   elements per pattern.  */
+
+static void
+test_vector_subregs_fore_back (machine_mode inner_mode)
+{
+  poly_uint64 nunits = GET_MODE_NUNITS (inner_mode);
+  unsigned int min_nunits = constant_lower_bound (nunits);
+  scalar_mode int_mode = GET_MODE_INNER (inner_mode);
+  unsigned int count = gcd (min_nunits, 4);
+
+  rtx_vector_builder builder (inner_mode, count, 2);
+  for (unsigned int i = 0; i < count; ++i)
+    builder.quick_push (gen_int_mode (i, int_mode));
+  for (unsigned int i = 0; i < count; ++i)
+    builder.quick_push (gen_int_mode (-(int) i, int_mode));
+  rtx x = builder.build ();
+
+  test_vector_subregs_modes (x);
+  if (!nunits.is_constant ())
+    test_vector_subregs_modes (x, nunits - min_nunits, count);
+}
+
+/* Test constant subregs of integer vector mode INNER_MODE, using 3
+   elements per pattern.  */
+
+static void
+test_vector_subregs_stepped (machine_mode inner_mode)
+{
+  /* Build { 0, 1, 2, 3, ... }.  */
+  scalar_mode int_mode = GET_MODE_INNER (inner_mode);
+  rtx_vector_builder builder (inner_mode, 1, 3);
+  for (unsigned int i = 0; i < 3; ++i)
+    builder.quick_push (gen_int_mode (i, int_mode));
+  rtx x = builder.build ();
+
+  test_vector_subregs_modes (x);
+}
+
+/* Test constant subregs of integer vector mode INNER_MODE.  */
+
+static void
+test_vector_subregs (machine_mode inner_mode)
+{
+  test_vector_subregs_repeating (inner_mode);
+  test_vector_subregs_fore_back (inner_mode);
+  test_vector_subregs_stepped (inner_mode);
+}
+
 /* Verify some simplifications involving vectors.  */
 
 static void
@@ -7193,7 +7465,10 @@ test_vector_ops ()
 	  test_vector_ops_duplicate (mode, scalar_reg);
 	  if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
 	      && maybe_gt (GET_MODE_NUNITS (mode), 2))
-	    test_vector_ops_series (mode, scalar_reg);
+	    {
+	      test_vector_ops_series (mode, scalar_reg);
+	      test_vector_subregs (mode);
+	    }
 	  test_vec_merge (mode);
 	}
     }

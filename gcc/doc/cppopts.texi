@@ -254,8 +254,9 @@ Accept @samp{$} in identifiers.
 
 @item -fextended-identifiers
 @opindex fextended-identifiers
-Accept universal character names in identifiers.  This option is
-enabled by default for C99 (and later C standard versions) and C++.
+Accept universal character names and extended characters in
+identifiers.  This option is enabled by default for C99 (and later C
+standard versions) and C++.
 
 @item -fno-canonical-system-headers
 @opindex fno-canonical-system-headers

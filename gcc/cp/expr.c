@@ -96,7 +96,7 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 {
 #define RECUR(t) mark_use ((t), rvalue_p, read_p, loc, reject_builtin)
 
-  if (expr == NULL_TREE || expr == error_mark_node)
+  if (expr == NULL_TREE || error_operand_p (expr))
     return expr;
 
   if (reject_builtin && reject_gcc_builtin (expr, loc))

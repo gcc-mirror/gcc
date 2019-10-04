@@ -2368,9 +2368,7 @@ setup_reg_renumber (void)
 	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj)
 		|= ~reg_class_contents[pclass];
 	    }
-	  if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0
-	      && ira_hard_reg_set_intersection_p (hard_regno, ALLOCNO_MODE (a),
-						  call_used_or_fixed_regs))
+	  if (ira_need_caller_save_p (a, hard_regno))
 	    {
 	      ira_assert (!optimize || flag_caller_saves
 			  || (ALLOCNO_CALLS_CROSSED_NUM (a)
@@ -3065,7 +3063,6 @@ equiv_init_movable_p (rtx x, int regno)
 
     case CC0:
     case CLOBBER:
-    case CLOBBER_HIGH:
       return 0;
 
     case PRE_INC:
@@ -3172,7 +3169,6 @@ memref_referenced_p (rtx memref, rtx x, bool read_p)
       return memref_referenced_p (memref, SET_SRC (x), true);
 
     case CLOBBER:
-    case CLOBBER_HIGH:
       if (process_set_for_memref_referenced_p (memref, XEXP (x, 0)))
 	return true;
 
@@ -3364,6 +3360,37 @@ def_dominates_uses (int regno)
   return true;
 }
 
+/* Scan the instructions before update_equiv_regs.  Record which registers
+   are referenced as paradoxical subregs.  Also check for cases in which
+   the current function needs to save a register that one of its call
+   instructions clobbers.
+
+   These things are logically unrelated, but it's more efficient to do
+   them together.  */
+
+static void
+update_equiv_regs_prescan (void)
+{
+  basic_block bb;
+  rtx_insn *insn;
+  function_abi_aggregator callee_abis;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    FOR_BB_INSNS (bb, insn)
+      if (NONDEBUG_INSN_P (insn))
+	{
+	  set_paradoxical_subreg (insn);
+	  if (CALL_P (insn))
+	    callee_abis.note_callee_abi (insn_callee_abi (insn));
+	}
+
+  HARD_REG_SET extra_caller_saves = callee_abis.caller_save_regs (*crtl->abi);
+  if (!hard_reg_set_empty_p (extra_caller_saves))
+    for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
+      if (TEST_HARD_REG_BIT (extra_caller_saves, regno))
+	df_set_regs_ever_live (regno, true);
+}
+
 /* Find registers that are equivalent to a single value throughout the
    compilation (either because they can be referenced in memory or are
    set once from a single constant).  Lower their priority for a
@@ -3379,15 +3406,6 @@ update_equiv_regs (void)
 {
   rtx_insn *insn;
   basic_block bb;
-
-  /* Scan insns and set pdx_subregs if the reg is used in a
-     paradoxical subreg.  Don't set such reg equivalent to a mem,
-     because lra will not substitute such equiv memory in order to
-     prevent access beyond allocated memory for paradoxical memory subreg.  */
-  FOR_EACH_BB_FN (bb, cfun)
-    FOR_BB_INSNS (bb, insn)
-      if (NONDEBUG_INSN_P (insn))
-	set_paradoxical_subreg (insn);
 
   /* Scan the insns and find which registers have equivalences.  Do this
      in a separate scan of the insns because (due to -fcse-follow-jumps)
@@ -4431,7 +4449,6 @@ rtx_moveable_p (rtx *loc, enum op_type type)
 	      && rtx_moveable_p (&XEXP (x, 2), OP_IN));
 
     case CLOBBER:
-    case CLOBBER_HIGH:
       return rtx_moveable_p (&SET_DEST (x), OP_OUT);
 
     case UNSPEC_VOLATILE:
@@ -4884,9 +4901,7 @@ interesting_dest_for_shprep (rtx_insn *insn, basic_block call_dom)
   for (int i = 0; i < XVECLEN (pat, 0); i++)
     {
       rtx sub = XVECEXP (pat, 0, i);
-      if (GET_CODE (sub) == USE
-	  || GET_CODE (sub) == CLOBBER
-	  || GET_CODE (sub) == CLOBBER_HIGH)
+      if (GET_CODE (sub) == USE || GET_CODE (sub) == CLOBBER)
 	continue;
       if (GET_CODE (sub) != SET
 	  || side_effects_p (sub))
@@ -5278,6 +5293,7 @@ ira (FILE *f)
   init_alias_analysis ();
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
   reg_equiv = XCNEWVEC (struct equivalence, max_reg_num ());
+  update_equiv_regs_prescan ();
   update_equiv_regs ();
 
   /* Don't move insns if live range shrinkage or register
@@ -5591,7 +5607,7 @@ do_reload (void)
       for (int i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (df_regs_ever_live_p (i)
 	    && !fixed_regs[i]
-	    && call_used_or_fixed_reg_p (i))
+	    && !crtl->abi->clobbers_full_reg_p (i))
 	  size += UNITS_PER_WORD;
 
       if (constant_lower_bound (size) > STACK_CHECK_MAX_FRAME_SIZE)

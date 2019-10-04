@@ -27,6 +27,7 @@ with Alloc;
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
+with Exp_Util; use Exp_Util;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
@@ -224,7 +225,7 @@ package body Exp_Dbug is
             Homonym_Numbers (Homonym_Len) := '_';
          end if;
 
-         Add_Nat_To_H (Get_Homonym_Number (E));
+         Add_Nat_To_H (Homonym_Number (E));
       end if;
    end Append_Homonym_Number;
 
@@ -1053,26 +1054,6 @@ package body Exp_Dbug is
          Next_Entity (E);
       end loop;
    end Build_Subprogram_Instance_Renamings;
-
-   ------------------------
-   -- Get_Homonym_Number --
-   ------------------------
-
-   function Get_Homonym_Number (E : Entity_Id) return Pos is
-      H  : Entity_Id := Homonym (E);
-      Nr : Pos := 1;
-
-   begin
-      while Present (H) loop
-         if Scope (H) = Scope (E) then
-            Nr := Nr + 1;
-         end if;
-
-         H := Homonym (H);
-      end loop;
-
-      return Nr;
-   end Get_Homonym_Number;
 
    ------------------------------------
    -- Get_Secondary_DT_External_Name --

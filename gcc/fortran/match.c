@@ -4242,6 +4242,12 @@ gfc_match_allocate (void)
       if (m == MATCH_ERROR)
 	goto cleanup;
 
+      if (tail->expr->expr_type == EXPR_CONSTANT)
+	{
+	  gfc_error ("Unexpected constant at %C");
+	  goto cleanup;
+	}
+
       if (gfc_check_do_variable (tail->expr->symtree))
 	goto cleanup;
 
@@ -4373,6 +4379,12 @@ alloc_opt_list:
 	  stat = tmp;
 	  tmp = NULL;
 	  saw_stat = true;
+
+	  if (stat->expr_type == EXPR_CONSTANT)
+	    {
+	      gfc_error ("STAT tag at %L cannot be a constant", &stat->where);
+	      goto cleanup;
+	    }
 
 	  if (gfc_check_do_variable (stat->symtree))
 	    goto cleanup;
@@ -4649,6 +4661,12 @@ gfc_match_deallocate (void)
 	goto cleanup;
       if (m == MATCH_NO)
 	goto syntax;
+
+      if (tail->expr->expr_type == EXPR_CONSTANT)
+	{
+	  gfc_error ("Unexpected constant at %C");
+	  goto cleanup;
+	}
 
       if (gfc_check_do_variable (tail->expr->symtree))
 	goto cleanup;
@@ -4965,6 +4983,16 @@ gfc_match_call (void)
       if (gfc_match_eos () != MATCH_YES)
 	goto syntax;
     }
+
+  /* Walk the argument list looking for invalid BOZ.  */
+  for (a = arglist; a; a = a->next)
+    if (a->expr && a->expr->ts.type == BT_BOZ)
+      {
+	gfc_error ("A BOZ literal constant at %L cannot appear as an actual "
+		   "argument in a subroutine reference", &a->expr->where);
+	goto cleanup;
+      }
+
 
   /* If any alternate return labels were found, construct a SELECT
      statement that will jump to the right place.  */
@@ -6510,7 +6538,7 @@ gfc_match_select_rank (void)
   char name[GFC_MAX_SYMBOL_LEN];
   gfc_symbol *sym, *sym2;
   gfc_namespace *ns = gfc_current_ns;
-  gfc_array_spec *as;
+  gfc_array_spec *as = NULL;
 
   m = gfc_match_label ();
   if (m == MATCH_ERROR)
@@ -6538,13 +6566,21 @@ gfc_match_select_rank (void)
 	}
 
       sym = expr1->symtree->n.sym;
-      sym2 = expr2->symtree->n.sym;
 
-      as = sym2->ts.type == BT_CLASS ? CLASS_DATA (sym2)->as : sym2->as;
+      if (expr2->symtree)
+	{
+	  sym2 = expr2->symtree->n.sym;
+	  as = sym2->ts.type == BT_CLASS ? CLASS_DATA (sym2)->as : sym2->as;
+	}
+
       if (expr2->expr_type != EXPR_VARIABLE
 	  || !(as && as->type == AS_ASSUMED_RANK))
-	gfc_error_now ("The SELECT RANK selector at %C must be an assumed "
-		       "rank variable");
+	{
+	  gfc_error ("The SELECT RANK selector at %C must be an assumed "
+		     "rank variable");
+	  m = MATCH_ERROR;
+	  goto cleanup;
+	}
 
       if (expr2->ts.type == BT_CLASS)
 	{
@@ -6583,12 +6619,20 @@ gfc_match_select_rank (void)
 	  return m;
 	}
 
-      sym = expr1->symtree->n.sym;
-      as = sym->ts.type == BT_CLASS ? CLASS_DATA (sym)->as : sym->as;
+      if (expr1->symtree)
+	{
+	  sym = expr1->symtree->n.sym;
+	  as = sym->ts.type == BT_CLASS ? CLASS_DATA (sym)->as : sym->as;
+	}
+
       if (expr1->expr_type != EXPR_VARIABLE
 	  || !(as && as->type == AS_ASSUMED_RANK))
-	gfc_error_now ("The SELECT RANK selector at %C must be an assumed "
-		       "rank variable");
+	{
+	  gfc_error("The SELECT RANK selector at %C must be an assumed "
+		    "rank variable");
+	  m = MATCH_ERROR;
+	  goto cleanup;
+	}
     }
 
   m = gfc_match (" )%t");

@@ -2265,8 +2265,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			  max_ovf = wi::OVF_OVERFLOW;
         tree inner_type = TREE_TYPE (@0);
 
-        wide_int w1 = wide_int::from (wi::to_wide (@1), TYPE_PRECISION (inner_type),
-	    TYPE_SIGN (inner_type));
+	wide_int w1
+	  = wide_int::from (wi::to_wide (@1), TYPE_PRECISION (inner_type),
+			    TYPE_SIGN (inner_type));
 
         wide_int wmin0, wmax0;
         if (get_range_info (@0, &wmin0, &wmax0) == VR_RANGE)
@@ -2278,6 +2279,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (if (min_ovf == wi::OVF_NONE && max_ovf == wi::OVF_NONE)
       (convert (plus @0 { wide_int_to_tree (TREE_TYPE (@0), w1); } )))
      )))
+#endif
+
+/* ((T)(A + CST1)) + CST2 -> (T)(A) + (T)CST1 + CST2  */
+#if GIMPLE
+  (for op (plus minus)
+   (simplify
+    (plus (convert:s (op:s @0 INTEGER_CST@1)) INTEGER_CST@2)
+     (if (TREE_CODE (TREE_TYPE (@0)) == INTEGER_TYPE
+	  && TREE_CODE (type) == INTEGER_TYPE
+	  && TYPE_PRECISION (type) > TYPE_PRECISION (TREE_TYPE (@0))
+	  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+	  && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0))
+	  && TYPE_OVERFLOW_WRAPS (type))
+       (plus (convert @0) (op @2 (convert @1))))))
 #endif
 
   /* ~A + A -> -1 */

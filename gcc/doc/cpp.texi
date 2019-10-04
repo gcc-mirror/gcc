@@ -274,11 +274,11 @@ the character in the source character set that they represent, then
 converted to the execution character set, just like unescaped
 characters.
 
-In identifiers, characters outside the ASCII range can only be
-specified with the @samp{\u} and @samp{\U} escapes, not used
-directly.  If strict ISO C90 conformance is specified with an option
+In identifiers, characters outside the ASCII range can be specified
+with the @samp{\u} and @samp{\U} escapes or used directly in the input
+encoding.  If strict ISO C90 conformance is specified with an option
 such as @option{-std=c90}, or @option{-fno-extended-identifiers} is
-used, then those escapes are not permitted in identifiers.
+used, then those constructs are not permitted in identifiers.
 
 @node Initial processing
 @section Initial processing
@@ -503,8 +503,7 @@ In the 1999 C standard, identifiers may contain letters which are not
 part of the ``basic source character set'', at the implementation's
 discretion (such as accented Latin letters, Greek letters, or Chinese
 ideograms).  This may be done with an extended character set, or the
-@samp{\u} and @samp{\U} escape sequences.  GCC only accepts such
-characters in the @samp{\u} and @samp{\U} forms.
+@samp{\u} and @samp{\U} escape sequences.
 
 As an extension, GCC treats @samp{$} as a letter.  This is for
 compatibility with some systems, such as VMS, where @samp{$} is commonly
@@ -584,15 +583,15 @@ Punctuator:      @{   @}   [   ]   #    ##
 @end smallexample
 
 @cindex other tokens
-Any other single character is considered ``other''.  It is passed on to
-the preprocessor's output unmolested.  The C compiler will almost
-certainly reject source code containing ``other'' tokens.  In ASCII, the
-only other characters are @samp{@@}, @samp{$}, @samp{`}, and control
+Any other single byte is considered ``other'' and passed on to the
+preprocessor's output unchanged.  The C compiler will almost certainly
+reject source code containing ``other'' tokens.  In ASCII, the only
+``other'' characters are @samp{@@}, @samp{$}, @samp{`}, and control
 characters other than NUL (all bits zero).  (Note that @samp{$} is
-normally considered a letter.)  All characters with the high bit set
-(numeric range 0x7F--0xFF) are also ``other'' in the present
-implementation.  This will change when proper support for international
-character sets is added to GCC@.
+normally considered a letter.)  All bytes with the high bit set
+(numeric range 0x7F--0xFF) that were not succesfully interpreted as
+part of an extended character in the input encoding are also ``other''
+in the present implementation.
 
 NUL is a special case because of the high probability that its
 appearance is accidental, and because it may be invisible to the user
@@ -4179,7 +4178,10 @@ be controlled using the @option{-fexec-charset} and
 The C and C++ standards allow identifiers to be composed of @samp{_}
 and the alphanumeric characters.  C++ also allows universal character
 names.  C99 and later C standards permit both universal character
-names and implementation-defined characters.
+names and implementation-defined characters.  In both C and C++ modes,
+GCC accepts in identifiers exactly those extended characters that
+correspond to universal character names permitted by the chosen
+standard.
 
 GCC allows the @samp{$} character in identifiers as an extension for
 most targets.  This is true regardless of the @option{std=} switch,

@@ -13,17 +13,31 @@
 
 
 <para> The libstdc++ parallel mode is an experimental parallel
-implementation of many algorithms the C++ Standard Library.
+implementation of many algorithms of the C++ Standard Library.
 </para>
 
 <para>
 Several of the standard algorithms, for instance
 <function>std::sort</function>, are made parallel using OpenMP
-annotations. These parallel mode constructs and can be invoked by
+annotations. These parallel mode constructs can be invoked by
 explicit source declaration or by compiling existing sources with a
 specific compiler flag.
 </para>
 
+<note>
+  <para>
+    The parallel mode has not been kept up to date with recent C++ standards
+    and so it only conforms to the C++03 requirements.
+    That means that move-only predicates may not work with parallel mode
+    algorithms, and for C++20 most of the algorithms cannot be used in
+    <code>constexpr</code> functions.
+  </para>
+  <para>
+    For C++17 and above there are new overloads of the standard algorithms
+    which take an execution policy argument. You should consider using those
+    instead of the non-standard parallel mode extensions.
+  </para>
+</note>
 
 <section xml:id="manual.ext.parallel_mode.intro" xreflabel="Intro"><info><title>Intro</title></info>
   

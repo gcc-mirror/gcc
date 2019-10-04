@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-O2 -fdump-tree-fre3 -fdump-tree-optimized -fdelete-null-pointer-checks" }
+// { dg-options "-O2 -fdump-tree-fre3 -fdump-tree-optimized -fdelete-null-pointer-checks --param early-inlining-insns-O2=14 --param max-inline-insns-single-O2=200" }
 
 #define assume(x) if(!(x))__builtin_unreachable()
 

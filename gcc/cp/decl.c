@@ -7704,13 +7704,6 @@ get_tuple_decomp_init (tree decl, unsigned i)
    based on the actual type of the variable, so store it in a hash table.  */
 
 static GTY((cache)) tree_cache_map *decomp_type_table;
-static void
-store_decomp_type (tree v, tree t)
-{
-  if (!decomp_type_table)
-    decomp_type_table = tree_cache_map::create_ggc (13);
-  decomp_type_table->put (v, t);
-}
 
 tree
 lookup_decomp_type (tree v)
@@ -7946,7 +7939,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	      goto error_out;
 	    }
 	  /* Save the decltype away before reference collapse.  */
-	  store_decomp_type (v[i], eltype);
+	  hash_map_safe_put<hm_ggc> (decomp_type_table, v[i], eltype);
 	  eltype = cp_build_reference_type (eltype, !lvalue_p (init));
 	  TREE_TYPE (v[i]) = eltype;
 	  layout_decl (v[i], 0);
@@ -9665,10 +9658,12 @@ build_ptrmemfunc_type (tree type)
   TYPE_PTRMEMFUNC_FLAG (t) = 1;
 
   field = build_decl (input_location, FIELD_DECL, pfn_identifier, type);
+  DECL_NONADDRESSABLE_P (field) = 1;
   fields = field;
 
   field = build_decl (input_location, FIELD_DECL, delta_identifier, 
 		      delta_type_node);
+  DECL_NONADDRESSABLE_P (field) = 1;
   DECL_CHAIN (field) = fields;
   fields = field;
 
@@ -10523,7 +10518,6 @@ grokdeclarator (const cp_declarator *declarator,
   bool constinit_p = decl_spec_seq_has_spec_p (declspecs, ds_constinit);
   bool late_return_type_p = false;
   bool array_parameter_p = false;
-  location_t saved_loc = input_location;
   tree reqs = NULL_TREE;
 
   signed_p = decl_spec_seq_has_spec_p (declspecs, ds_signed);
@@ -11514,9 +11508,10 @@ grokdeclarator (const cp_declarator *declarator,
 
 	    /* Declaring a function type.  */
 
-	    input_location = declspecs->locations[ds_type_spec];
-	    abstract_virtuals_error (ACU_RETURN, type);
-	    input_location = saved_loc;
+	    {
+	      iloc_sentinel ils (declspecs->locations[ds_type_spec]);
+	      abstract_virtuals_error (ACU_RETURN, type);
+	    }
 
 	    /* Pick up type qualifiers which should be applied to `this'.  */
 	    memfn_quals = declarator->u.function.qualifiers;
@@ -15061,11 +15056,8 @@ finish_enum_value_list (tree enumtype)
      type of the enumeration.  */
   for (values = TYPE_VALUES (enumtype); values; values = TREE_CHAIN (values))
     {
-      location_t saved_location;
-
       decl = TREE_VALUE (values);
-      saved_location = input_location;
-      input_location = DECL_SOURCE_LOCATION (decl);
+      iloc_sentinel ils (DECL_SOURCE_LOCATION (decl));
       if (fixed_underlying_type_p)
         /* If the enumeration type has a fixed underlying type, we
            already checked all of the enumerator values.  */
@@ -15074,8 +15066,6 @@ finish_enum_value_list (tree enumtype)
         value = perform_implicit_conversion (underlying_type,
                                              DECL_INITIAL (decl),
                                              tf_warning_or_error);
-      input_location = saved_location;
-
       /* Do not clobber shared ints.  */
       if (value != error_mark_node)
 	{

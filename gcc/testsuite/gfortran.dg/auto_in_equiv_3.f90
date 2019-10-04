@@ -1,4 +1,4 @@
-! { dg-run }
+! { dg-do run }
 ! { dg-options "-fdec-static -fno-automatic" }
 
 ! Contributed by Mark Eggleston <mark.eggleston@codethink.com>

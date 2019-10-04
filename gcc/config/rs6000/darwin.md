@@ -150,59 +150,19 @@ You should have received a copy of the GNU General Public License
    stfd %0,lo16(%2)(%1)"
   [(set_attr "type" "store")])
 
-;; Mach-O PIC trickery.
-(define_expand "macho_high"
-  [(set (match_operand 0 "")
-	(high (match_operand 1 "")))]
-  "TARGET_MACHO"
-{
-  if (TARGET_64BIT)
-    emit_insn (gen_macho_high_di (operands[0], operands[1]));
-  else
-    emit_insn (gen_macho_high_si (operands[0], operands[1]));
+;; Mach-O PIC.
 
-  DONE;
-})
-
-(define_insn "macho_high_si"
-  [(set (match_operand:SI 0 "gpc_reg_operand" "=b*r")
-	(high:SI (match_operand 1 "" "")))]
-  "TARGET_MACHO && ! TARGET_64BIT"
-  "lis %0,ha16(%1)")
-  
-
-(define_insn "macho_high_di"
-  [(set (match_operand:DI 0 "gpc_reg_operand" "=b*r")
-	(high:DI (match_operand 1 "" "")))]
-  "TARGET_MACHO && TARGET_64BIT"
+(define_insn "@macho_high_<mode>"
+  [(set (match_operand:P 0 "gpc_reg_operand" "=b*r")
+	(high:P (match_operand 1 "" "")))]
+  "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN)"
   "lis %0,ha16(%1)")
 
-(define_expand "macho_low"
-  [(set (match_operand 0 "")
-	(lo_sum (match_operand 1 "")
-		   (match_operand 2 "")))]
-   "TARGET_MACHO"
-{
-  if (TARGET_64BIT)
-    emit_insn (gen_macho_low_di (operands[0], operands[1], operands[2]));
-  else
-    emit_insn (gen_macho_low_si (operands[0], operands[1], operands[2]));
-
-  DONE;
-})
-
-(define_insn "macho_low_si"
-  [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
-	(lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+(define_insn "@macho_low_<mode>"
+  [(set (match_operand:P 0 "gpc_reg_operand" "=r")
+	(lo_sum:P (match_operand:P 1 "gpc_reg_operand" "b")
 		   (match_operand 2 "" "")))]
-   "TARGET_MACHO && ! TARGET_64BIT"
-   "la %0,lo16(%2)(%1)")
-
-(define_insn "macho_low_di"
-  [(set (match_operand:DI 0 "gpc_reg_operand" "=r")
-	(lo_sum:DI (match_operand:DI 1 "gpc_reg_operand" "b")
-		   (match_operand 2 "" "")))]
-   "TARGET_MACHO && TARGET_64BIT"
+   "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN)"
    "la %0,lo16(%2)(%1)")
 
 (define_split
@@ -216,23 +176,19 @@ You should have received a copy of the GNU General Public License
 	(match_dup 2))]
   "")
 
-(define_expand "load_macho_picbase"
-  [(set (reg:SI LR_REGNO)
-        (unspec [(match_operand 0 "")]
-                   UNSPEC_LD_MPIC))]
-  "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
-{
-  if (TARGET_32BIT)
-    emit_insn (gen_load_macho_picbase_si (operands[0]));
-  else
-    emit_insn (gen_load_macho_picbase_di (operands[0]));
+(define_insn "@macho_correct_pic_<mode>"
+  [(set (match_operand:P 0 "gpc_reg_operand" "=r")
+	(plus:P (match_operand:P 1 "gpc_reg_operand" "r")
+		 (unspec:P [(match_operand:P 2 "immediate_operand" "s")
+			     (match_operand:P 3 "immediate_operand" "s")]
+			    UNSPEC_MPIC_CORRECT)))]
+  "DEFAULT_ABI == ABI_DARWIN"
+  "addis %0,%1,ha16(%2-%3)\n\taddi %0,%0,lo16(%2-%3)"
+  [(set_attr "length" "8")])
 
-  DONE;
-})
-
-(define_insn "load_macho_picbase_si"
-  [(set (reg:SI LR_REGNO)
-	(unspec:SI [(match_operand:SI 0 "immediate_operand" "s")
+(define_insn "@load_macho_picbase_<mode>"
+  [(set (reg:P LR_REGNO)
+	(unspec:P [(match_operand:P 0 "immediate_operand" "s")
 		    (pc)] UNSPEC_LD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
 {
@@ -246,102 +202,11 @@ You should have received a copy of the GNU General Public License
   [(set_attr "type" "branch")
    (set_attr "cannot_copy" "yes")])
 
-(define_insn "load_macho_picbase_di"
-  [(set (reg:DI LR_REGNO)
-	(unspec:DI [(match_operand:DI 0 "immediate_operand" "s")
-		    (pc)] UNSPEC_LD_MPIC))]
-  "(DEFAULT_ABI == ABI_DARWIN) && flag_pic && TARGET_64BIT"
-{
-#if TARGET_MACHO
-  machopic_should_output_picbase_label (); /* Update for new func.  */
-#else
-  gcc_unreachable ();
-#endif
-  return "bcl 20,31,%0\n%0:";
-}
-  [(set_attr "type" "branch")
-   (set_attr "cannot_copy" "yes")])
-
-(define_expand "macho_correct_pic"
-  [(set (match_operand 0 "")
-	(plus (match_operand 1 "")
-		 (unspec [(match_operand 2 "")
-			     (match_operand 3 "")]
-			    UNSPEC_MPIC_CORRECT)))]
-  "DEFAULT_ABI == ABI_DARWIN"
-{
-  if (TARGET_32BIT)
-    emit_insn (gen_macho_correct_pic_si (operands[0], operands[1], operands[2],
-	       operands[3]));
-  else
-    emit_insn (gen_macho_correct_pic_di (operands[0], operands[1], operands[2],
-	       operands[3]));
-
-  DONE;
-})
-
-(define_insn "macho_correct_pic_si"
-  [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
-	(plus:SI (match_operand:SI 1 "gpc_reg_operand" "r")
-		 (unspec:SI [(match_operand:SI 2 "immediate_operand" "s")
-			     (match_operand:SI 3 "immediate_operand" "s")]
-			    UNSPEC_MPIC_CORRECT)))]
-  "DEFAULT_ABI == ABI_DARWIN"
-  "addis %0,%1,ha16(%2-%3)\n\taddi %0,%0,lo16(%2-%3)"
-  [(set_attr "length" "8")])
-
-(define_insn "macho_correct_pic_di"
-  [(set (match_operand:DI 0 "gpc_reg_operand" "=r")
-	(plus:DI (match_operand:DI 1 "gpc_reg_operand" "r")
-		 (unspec:DI [(match_operand:DI 2 "immediate_operand" "s")
-			     (match_operand:DI 3 "immediate_operand" "s")]
-			    16)))]
-  "DEFAULT_ABI == ABI_DARWIN && TARGET_64BIT"
-  "addis %0,%1,ha16(%2-%3)\n\taddi %0,%0,lo16(%2-%3)"
-  [(set_attr "length" "8")])
-
-(define_expand "reload_macho_picbase"
-  [(set (reg:SI LR_REGNO)
-        (unspec [(match_operand 0 "")]
-                   UNSPEC_RELD_MPIC))]
-  "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
-{
-  if (TARGET_32BIT)
-    emit_insn (gen_reload_macho_picbase_si (operands[0]));
-  else
-    emit_insn (gen_reload_macho_picbase_di (operands[0]));
-
-  DONE;
-})
-
-(define_insn "reload_macho_picbase_si"
-  [(set (reg:SI LR_REGNO)
-        (unspec:SI [(match_operand:SI 0 "immediate_operand" "s")
+(define_insn "@reload_macho_picbase_<mode>"
+  [(set (reg:P LR_REGNO)
+        (unspec:P [(match_operand:P 0 "immediate_operand" "s")
 		    (pc)] UNSPEC_RELD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
-{
-#if TARGET_MACHO
-  if (machopic_should_output_picbase_label ())
-    {
-      static char tmp[64];
-      const char *cnam = machopic_get_function_picbase ();
-      snprintf (tmp, 64, "bcl 20,31,%s\n%s:\n%%0:", cnam, cnam);
-      return tmp;
-    }
-  else
-#else
-  gcc_unreachable ();
-#endif
-    return "bcl 20,31,%0\n%0:";
-}
-  [(set_attr "type" "branch")
-   (set_attr "cannot_copy" "yes")])
-
-(define_insn "reload_macho_picbase_di"
-  [(set (reg:DI LR_REGNO)
-	(unspec:DI [(match_operand:DI 0 "immediate_operand" "s")
-		    (pc)] UNSPEC_RELD_MPIC))]
-  "(DEFAULT_ABI == ABI_DARWIN) && flag_pic && TARGET_64BIT"
 {
 #if TARGET_MACHO
   if (machopic_should_output_picbase_label ())
@@ -381,9 +246,10 @@ You should have received a copy of the GNU General Public License
       ASM_GENERATE_INTERNAL_LABEL(tmplab, "Lnlgr", ++n);
       tmplrtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (tmplab));
 
-      emit_insn (gen_reload_macho_picbase (tmplrtx));
+      emit_insn (gen_reload_macho_picbase (Pmode, tmplrtx));
       emit_move_insn (picreg, gen_rtx_REG (Pmode, LR_REGNO));
-      emit_insn (gen_macho_correct_pic (picreg, picreg, picrtx, tmplrtx));
+      emit_insn (gen_macho_correct_pic (Pmode, picreg, picreg,
+					picrtx, tmplrtx));
     }
   else
     /* Not using PIC reg, no reload needed.  */

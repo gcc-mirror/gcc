@@ -12,7 +12,17 @@ d (u16 g)
 {
   u64 f = __builtin_bswap64 (c);
   f = g == a;
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
   __builtin_memmove (&f, &e, 1);
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  __builtin_memmove ((char *) &f + sizeof (f) - 1,
+		     (char *) &e + sizeof (e) - 1, 1);
+#elif __BYTE_ORDER__ == __ORDER_PDP_ENDIAN__
+  __builtin_memmove ((char *) &f + sizeof (f) - 2,
+		     (char *) &e + sizeof (e) - 2, 1);
+#else
+#error "endian unknown?"
+#endif
   e >>= b;
   return a + f;
 }

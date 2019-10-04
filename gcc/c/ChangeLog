@@ -1,3 +1,35 @@
+2019-10-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_asm_statement): Handle CPP_SCOPE like two
+	CPP_COLON tokens.
+
+2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-objc-common.c (useful_aka_type_p): New function.
+	(print_type): Use it to decide whether an aka type is worth printing.
+
+2019-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88203
+	* c-parser.c (c_parser_predefined_identifier): New function.
+	(c_parser_postfix_expression): Use it.
+	(c_parser_omp_variable_list): Parse predefined identifiers.
+	* c-typeck.c (c_finish_omp_clauses): Allow predefined variables
+	in shared and firstprivate clauses, even when they are predetermined
+	shared.
+
+2019-09-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-typeck.c (build_function_call_vec): Take the original function
+	decl as an optional final parameter.  Pass all built-in calls to
+	check_builtin_function_arguments.
+
+2019-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c/91815
+	* c-decl.c (pushdecl): In C detect duplicate declarations across scopes
+	of identifiers in the external scope only for variables and functions.
+
 2019-09-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR c/78736

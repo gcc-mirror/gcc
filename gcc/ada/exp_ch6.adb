@@ -1252,10 +1252,11 @@ package body Exp_Ch6 is
       --  also takes care of any constraint checks required for the type
       --  conversion case (on both the way in and the way out).
 
-      procedure Add_Simple_Call_By_Copy_Code;
+      procedure Add_Simple_Call_By_Copy_Code (Bit_Packed_Array : Boolean);
       --  This is similar to the above, but is used in cases where we know
       --  that all that is needed is to simply create a temporary and copy
-      --  the value in and out of the temporary.
+      --  the value in and out of the temporary. If Bit_Packed_Array is True,
+      --  the procedure is called for a bit-packed array actual.
 
       procedure Add_Validation_Call_By_Copy_Code (Act : Node_Id);
       --  Perform copy-back for actual parameter Act which denotes a validation
@@ -1269,11 +1270,11 @@ package body Exp_Ch6 is
 
       function Is_Legal_Copy return Boolean;
       --  Check that an actual can be copied before generating the temporary
-      --  to be used in the call. If the actual is of a by_reference type then
-      --  the program is illegal (this can only happen in the presence of
-      --  rep. clauses that force an incorrect alignment). If the formal is
-      --  a by_reference parameter imposed by a DEC pragma, emit a warning to
-      --  the effect that this might lead to unaligned arguments.
+      --  to be used in the call. If the formal is of a by_reference type or
+      --  is aliased, then the program is illegal (this can only happen in
+      --  the presence of representation clauses that force a misalignment)
+      --  If the formal is a by_reference parameter imposed by a DEC pragma,
+      --  emit a warning that this might lead to unaligned arguments.
 
       function Make_Var (Actual : Node_Id) return Entity_Id;
       --  Returns an entity that refers to the given actual parameter, Actual
@@ -1610,7 +1611,7 @@ package body Exp_Ch6 is
       -- Add_Simple_Call_By_Copy_Code --
       ----------------------------------
 
-      procedure Add_Simple_Call_By_Copy_Code is
+      procedure Add_Simple_Call_By_Copy_Code (Bit_Packed_Array : Boolean) is
          Decl   : Node_Id;
          F_Typ  : Entity_Id := Etype (Formal);
          Incod  : Node_Id;
@@ -1621,7 +1622,12 @@ package body Exp_Ch6 is
          Temp   : Entity_Id;
 
       begin
-         if not Is_Legal_Copy then
+         --  ??? We need to do the copy for a bit-packed array because this is
+         --  where the rewriting into a mask-and-shift sequence is done. But of
+         --  course this may break the program if it expects bits to be really
+         --  passed by reference. That's what we have done historically though.
+
+         if not Bit_Packed_Array and then not Is_Legal_Copy then
             return;
          end if;
 
@@ -1859,12 +1865,16 @@ package body Exp_Ch6 is
          --  An attempt to copy a value of such a type can only occur if
          --  representation clauses give the actual a misaligned address.
 
-         if Is_By_Reference_Type (Etype (Formal)) then
+         if Is_By_Reference_Type (Etype (Formal))
+           or else Is_Aliased (Formal)
+           or else (Mechanism (Formal) = By_Reference
+                     and then not Has_Foreign_Convention (Subp))
+         then
 
             --  The actual may in fact be properly aligned but there is not
             --  enough front-end information to determine this. In that case
-            --  gigi will emit an error if a copy is not legal, or generate
-            --  the proper code.
+            --  gigi will emit an error or a warning if a copy is not legal,
+            --  or generate the proper code.
 
             return False;
 
@@ -1875,6 +1885,7 @@ package body Exp_Ch6 is
          --  be lurking.
 
          elsif Mechanism (Formal) = By_Reference
+           and then Ekind (Scope (Formal)) = E_Procedure
            and then Is_Valued_Procedure (Scope (Formal))
          then
             Error_Msg_N
@@ -2071,7 +2082,7 @@ package body Exp_Ch6 is
             --  [in] out parameters.
 
             elsif Is_Ref_To_Bit_Packed_Array (Actual) then
-               Add_Simple_Call_By_Copy_Code;
+               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => True);
 
             --  If a nonscalar actual is possibly bit-aligned, we need a copy
             --  because the back-end cannot cope with such objects. In other
@@ -2087,7 +2098,7 @@ package body Exp_Ch6 is
                 Component_May_Be_Bit_Aligned (Entity (Selector_Name (Actual)))
               and then not Represented_As_Scalar (Etype (Formal))
             then
-               Add_Simple_Call_By_Copy_Code;
+               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => False);
 
             --  References to slices of bit-packed arrays are expanded
 
@@ -2290,14 +2301,14 @@ package body Exp_Ch6 is
             --  Is this really necessary in all cases???
 
             elsif Is_Ref_To_Bit_Packed_Array (Actual) then
-               Add_Simple_Call_By_Copy_Code;
+               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => True);
 
             --  If a nonscalar actual is possibly unaligned, we need a copy
 
             elsif Is_Possibly_Unaligned_Object (Actual)
               and then not Represented_As_Scalar (Etype (Formal))
             then
-               Add_Simple_Call_By_Copy_Code;
+               Add_Simple_Call_By_Copy_Code (Bit_Packed_Array => False);
 
             --  Similarly, we have to expand slices of packed arrays here
             --  because the result must be byte aligned.

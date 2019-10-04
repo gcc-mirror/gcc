@@ -21,11 +21,11 @@
 ;; Instruction patterns.
 
 (define_expand "@atomic_compare_and_swap<mode>"
-  [(match_operand:SI 0 "register_operand")			;; bool out
-   (match_operand:ALLI 1 "register_operand")			;; val out
-   (match_operand:ALLI 2 "aarch64_sync_memory_operand")		;; memory
-   (match_operand:ALLI 3 "nonmemory_operand")			;; expected
-   (match_operand:ALLI 4 "aarch64_reg_or_zero")			;; desired
+  [(match_operand:SI 0 "register_operand" "")			;; bool out
+   (match_operand:ALLI_TI 1 "register_operand" "")		;; val out
+   (match_operand:ALLI_TI 2 "aarch64_sync_memory_operand" "")	;; memory
+   (match_operand:ALLI_TI 3 "nonmemory_operand" "")		;; expected
+   (match_operand:ALLI_TI 4 "aarch64_reg_or_zero" "")		;; desired
    (match_operand:SI 5 "const_int_operand")			;; is_weak
    (match_operand:SI 6 "const_int_operand")			;; mod_s
    (match_operand:SI 7 "const_int_operand")]			;; mod_f
@@ -88,6 +88,30 @@
   }
 )
 
+(define_insn_and_split "@aarch64_compare_and_swap<mode>"
+  [(set (reg:CC CC_REGNUM)					;; bool out
+    (unspec_volatile:CC [(const_int 0)] UNSPECV_ATOMIC_CMPSW))
+   (set (match_operand:JUST_TI 0 "register_operand" "=&r")	;; val out
+    (match_operand:JUST_TI 1 "aarch64_sync_memory_operand" "+Q")) ;; memory
+   (set (match_dup 1)
+    (unspec_volatile:JUST_TI
+      [(match_operand:JUST_TI 2 "aarch64_reg_or_zero" "rZ")	;; expect
+       (match_operand:JUST_TI 3 "aarch64_reg_or_zero" "rZ")	;; desired
+       (match_operand:SI 4 "const_int_operand")			;; is_weak
+       (match_operand:SI 5 "const_int_operand")			;; mod_s
+       (match_operand:SI 6 "const_int_operand")]		;; mod_f
+      UNSPECV_ATOMIC_CMPSW))
+   (clobber (match_scratch:SI 7 "=&r"))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    aarch64_split_compare_and_swap (operands);
+    DONE;
+  }
+)
+
 (define_insn "@aarch64_compare_and_swap<mode>_lse"
   [(set (match_operand:SI 0 "register_operand" "+r")		;; val out
     (zero_extend:SI
@@ -133,6 +157,28 @@
     return "casal<atomic_sfx>\t%<w>0, %<w>2, %1";
 })
 
+(define_insn "@aarch64_compare_and_swap<mode>_lse"
+  [(set (match_operand:JUST_TI 0 "register_operand" "+r")	;; val out
+    (match_operand:JUST_TI 1 "aarch64_sync_memory_operand" "+Q")) ;; memory
+   (set (match_dup 1)
+    (unspec_volatile:JUST_TI
+      [(match_dup 0)						;; expect
+       (match_operand:JUST_TI 2 "register_operand" "r")		;; desired
+       (match_operand:SI 3 "const_int_operand")]		;; mod_s
+      UNSPECV_ATOMIC_CMPSW))]
+  "TARGET_LSE"
+{
+  enum memmodel model = memmodel_from_int (INTVAL (operands[3]));
+  if (is_mm_relaxed (model))
+    return "casp\t%0, %R0, %2, %R2, %1";
+  else if (is_mm_acquire (model) || is_mm_consume (model))
+    return "caspa\t%0, %R0, %2, %R2, %1";
+  else if (is_mm_release (model))
+    return "caspl\t%0, %R0, %2, %R2, %1";
+  else
+    return "caspal\t%0, %R0, %2, %R2, %1";
+})
+
 (define_expand "atomic_exchange<mode>"
  [(match_operand:ALLI 0 "register_operand")
   (match_operand:ALLI 1 "aarch64_sync_memory_operand")
@@ -140,16 +186,27 @@
   (match_operand:SI 3 "const_int_operand")]
   ""
   {
-    rtx (*gen) (rtx, rtx, rtx, rtx);
-
     /* Use an atomic SWP when available.  */
     if (TARGET_LSE)
-      gen = gen_aarch64_atomic_exchange<mode>_lse;
+      {
+	emit_insn (gen_aarch64_atomic_exchange<mode>_lse
+		   (operands[0], operands[1], operands[2], operands[3]));
+      }
+    else if (TARGET_OUTLINE_ATOMICS)
+      {
+	machine_mode mode = <MODE>mode;
+	rtx func = aarch64_atomic_ool_func (mode, operands[3],
+					    &aarch64_ool_swp_names);
+	rtx rval = emit_library_call_value (func, operands[0], LCT_NORMAL,
+					    mode, operands[2], mode,
+					    XEXP (operands[1], 0), Pmode);
+        emit_move_insn (operands[0], rval);
+      }
     else
-      gen = gen_aarch64_atomic_exchange<mode>;
-
-    emit_insn (gen (operands[0], operands[1], operands[2], operands[3]));
-
+      {
+	emit_insn (gen_aarch64_atomic_exchange<mode>
+		   (operands[0], operands[1], operands[2], operands[3]));
+      }
     DONE;
   }
 )
@@ -233,6 +290,39 @@
 	    gcc_unreachable ();
 	  }
 	operands[1] = force_reg (<MODE>mode, operands[1]);
+      }
+    else if (TARGET_OUTLINE_ATOMICS)
+      {
+        const atomic_ool_names *names;
+	switch (<CODE>)
+	  {
+	  case MINUS:
+	    operands[1] = expand_simple_unop (<MODE>mode, NEG, operands[1],
+					      NULL, 1);
+	    /* fallthru */
+	  case PLUS:
+	    names = &aarch64_ool_ldadd_names;
+	    break;
+	  case IOR:
+	    names = &aarch64_ool_ldset_names;
+	    break;
+	  case XOR:
+	    names = &aarch64_ool_ldeor_names;
+	    break;
+	  case AND:
+	    operands[1] = expand_simple_unop (<MODE>mode, NOT, operands[1],
+					      NULL, 1);
+	    names = &aarch64_ool_ldclr_names;
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+        machine_mode mode = <MODE>mode;
+	rtx func = aarch64_atomic_ool_func (mode, operands[2], names);
+	emit_library_call_value (func, NULL_RTX, LCT_NORMAL, mode,
+				 operands[1], mode,
+				 XEXP (operands[0], 0), Pmode);
+        DONE;
       }
     else
       gen = gen_aarch64_atomic_<atomic_optab><mode>;
@@ -359,6 +449,40 @@
 	}
       operands[2] = force_reg (<MODE>mode, operands[2]);
     }
+  else if (TARGET_OUTLINE_ATOMICS)
+    {
+      const atomic_ool_names *names;
+      switch (<CODE>)
+	{
+	case MINUS:
+	  operands[2] = expand_simple_unop (<MODE>mode, NEG, operands[2],
+					    NULL, 1);
+	  /* fallthru */
+	case PLUS:
+	  names = &aarch64_ool_ldadd_names;
+	  break;
+	case IOR:
+	  names = &aarch64_ool_ldset_names;
+	  break;
+	case XOR:
+	  names = &aarch64_ool_ldeor_names;
+	  break;
+	case AND:
+	  operands[2] = expand_simple_unop (<MODE>mode, NOT, operands[2],
+					    NULL, 1);
+	  names = &aarch64_ool_ldclr_names;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      machine_mode mode = <MODE>mode;
+      rtx func = aarch64_atomic_ool_func (mode, operands[3], names);
+      rtx rval = emit_library_call_value (func, operands[0], LCT_NORMAL, mode,
+					  operands[2], mode,
+					  XEXP (operands[1], 0), Pmode);
+      emit_move_insn (operands[0], rval);
+      DONE;
+    }
   else
     gen = gen_aarch64_atomic_fetch_<atomic_optab><mode>;
 
@@ -448,7 +572,7 @@
 {
   /* Use an atomic load-operate instruction when possible.  In this case
      we will re-compute the result from the original mem value. */
-  if (TARGET_LSE)
+  if (TARGET_LSE || TARGET_OUTLINE_ATOMICS)
     {
       rtx tmp = gen_reg_rtx (<MODE>mode);
       operands[2] = force_reg (<MODE>mode, operands[2]);
@@ -581,6 +705,24 @@
   }
 )
 
+(define_insn "aarch64_load_exclusive_pair"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec_volatile:DI
+	  [(match_operand:TI 2 "aarch64_sync_memory_operand" "Q")
+	   (match_operand:SI 3 "const_int_operand")]
+	  UNSPECV_LX))
+   (set (match_operand:DI 1 "register_operand" "=r")
+	(unspec_volatile:DI [(match_dup 2) (match_dup 3)] UNSPECV_LX))]
+  ""
+  {
+    enum memmodel model = memmodel_from_int (INTVAL (operands[3]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_release (model))
+      return "ldxp\t%0, %1, %2";
+    else
+      return "ldaxp\t%0, %1, %2";
+  }
+)
+
 (define_insn "@aarch64_store_exclusive<mode>"
   [(set (match_operand:SI 0 "register_operand" "=&r")
     (unspec_volatile:SI [(const_int 0)] UNSPECV_SX))
@@ -596,6 +738,25 @@
       return "stxr<atomic_sfx>\t%w0, %<w>2, %1";
     else
       return "stlxr<atomic_sfx>\t%w0, %<w>2, %1";
+  }
+)
+
+(define_insn "aarch64_store_exclusive_pair"
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_SX))
+   (set (match_operand:TI 1 "aarch64_sync_memory_operand" "=Q")
+	(unspec_volatile:TI
+	  [(match_operand:DI 2 "aarch64_reg_or_zero" "rZ")
+	   (match_operand:DI 3 "aarch64_reg_or_zero" "rZ")
+	   (match_operand:SI 4 "const_int_operand")]
+	  UNSPECV_SX))]
+  ""
+  {
+    enum memmodel model = memmodel_from_int (INTVAL (operands[4]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_acquire (model))
+      return "stxp\t%w0, %x2, %x3, %1";
+    else
+      return "stlxp\t%w0, %x2, %x3, %1";
   }
 )
 

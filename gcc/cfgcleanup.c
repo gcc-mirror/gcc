@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "rtl-iter.h"
 #include "regs.h"
+#include "function-abi.h"
 
 #define FORWARDER_BLOCK_P(BB) ((BB)->flags & BB_FORWARDER_BLOCK)
 
@@ -1226,12 +1227,7 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx_insn *i1, rtx_insn *i2)
 	    }
 	}
 
-      HARD_REG_SET i1_used, i2_used;
-
-      get_call_reg_set_usage (i1, &i1_used, call_used_or_fixed_regs);
-      get_call_reg_set_usage (i2, &i2_used, call_used_or_fixed_regs);
-
-      if (i1_used != i2_used)
+      if (insn_callee_abi (i1) != insn_callee_abi (i2))
         return dir_none;
     }
 

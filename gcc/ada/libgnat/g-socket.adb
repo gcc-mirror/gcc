@@ -867,6 +867,34 @@ package body GNAT.Sockets is
       Socket := Socket_Type (Res);
    end Create_Socket;
 
+   ------------------------
+   -- Create_Socket_Pair --
+   ------------------------
+
+   procedure Create_Socket_Pair
+     (Left   : out Socket_Type;
+      Right  : out Socket_Type;
+      Family : Family_Type := Family_Unspec;
+      Mode   : Mode_Type   := Socket_Stream;
+      Level  : Level_Type  := IP_Protocol_For_IP_Level)
+   is
+      Res  : C.int;
+      Pair : aliased Thin_Common.Fd_Pair;
+
+   begin
+      Res := C_Socketpair
+        ((if Family = Family_Unspec then Default_Socket_Pair_Family
+          else Families (Family)),
+         Modes (Mode), Levels (Level), Pair'Access);
+
+      if Res = Failure then
+         Raise_Socket_Error (Socket_Errno);
+      end if;
+
+      Left  := Socket_Type (Pair (Pair'First));
+      Right := Socket_Type (Pair (Pair'Last));
+   end Create_Socket_Pair;
+
    -----------
    -- Empty --
    -----------

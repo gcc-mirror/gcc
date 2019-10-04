@@ -55,7 +55,6 @@ namespace __gnu_parallel
 
       _IIter __current(__begin), __recent(__begin);
 
-      unsigned long long __position = 1;
       for (__current++; __current != __end; __current++)
         {
           if (__comp(*__current, *__recent))
@@ -63,7 +62,6 @@ namespace __gnu_parallel
               return false;
             }
           __recent = __current;
-          __position++;
         }
 
       return true;

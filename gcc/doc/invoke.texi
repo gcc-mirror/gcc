@@ -643,7 +643,8 @@ Objective-C and Objective-C++ Dialects}.
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}  @gol
 -moverride=@var{string}  -mverbose-cost-dump @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{sysreg} @gol
--mstack-protector-guard-offset=@var{offset} -mtrack-speculation }
+-mstack-protector-guard-offset=@var{offset} -mtrack-speculation @gol
+-moutline-atomics }
 
 @emph{Adapteva Epiphany Options}
 @gccoptlist{-mhalf-reg-file  -mprefer-short-insn-regs @gol
@@ -6476,13 +6477,14 @@ Do not warn whenever a local variable shadows an instance variable in an
 Objective-C method.
 
 @item -Wshadow=global
-@opindex Wshadow=local
+@opindex Wshadow=global
 The default for @option{-Wshadow}. Warns for any (global) shadowing.
+This warning is enabled by @option{-Wshadow=global}.
 
 @item -Wshadow=local
 @opindex Wshadow=local
 Warn when a local variable shadows another local variable or parameter.
-This warning is enabled by @option{-Wshadow=global}.
+This warning is enabled by @option{-Wshadow=local}.
 
 @item -Wshadow=compatible-local
 @opindex Wshadow=compatible-local
@@ -6514,8 +6516,10 @@ in place of the other, type checking will catch that and emit an error or
 warning. So not warning (about shadowing) in this case will not lead to
 undetected bugs. Use of this flag instead of @option{-Wshadow=local} can
 possibly reduce the number of warnings triggered by intentional shadowing.
+Note that this does also mean that shadowing @code{const char *i} by
+@code{char *i} will not emit a warning.
 
-This warning is enabled by @option{-Wshadow=local}.
+This warning is enabled by @option{-Wshadow=compatible-local}.
 
 @item -Wlarger-than=@var{byte-size}
 @opindex Wlarger-than=
@@ -8345,6 +8349,7 @@ also turns on the following optimization flags:
 -ffinite-loops @gol
 -fgcse  -fgcse-lm  @gol
 -fhoist-adjacent-loads @gol
+-finline-functions @gol
 -finline-small-functions @gol
 -findirect-inlining @gol
 -fipa-bit-cp  -fipa-cp  -fipa-icf @gol
@@ -8378,7 +8383,6 @@ by @option{-O2} and also turns on the following optimization flags:
 
 @c Please keep the following list alphabetized!
 @gccoptlist{-fgcse-after-reload @gol
--finline-functions @gol
 -fipa-cp-clone
 -floop-interchange @gol
 -floop-unroll-and-jam @gol
@@ -8558,7 +8562,7 @@ If all calls to a given function are integrated, and the function is
 declared @code{static}, then the function is normally not output as
 assembler code in its own right.
 
-Enabled at levels @option{-O3}, @option{-Os}.  Also enabled
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.  Also enabled
 by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -finline-functions-called-once
@@ -11174,18 +11178,29 @@ when modulo scheduling a loop.  Larger values can exponentially increase
 compilation time.
 
 @item max-inline-insns-single
-Several parameters control the tree inliner used in GCC@.
-This number sets the maximum number of instructions (counted in GCC's
-internal representation) in a single function that the tree inliner
-considers for inlining.  This only affects functions declared
-inline and methods implemented in a class declaration (C++).
+@item max-inline-insns-single-O2
+Several parameters control the tree inliner used in GCC@.  This number sets the
+maximum number of instructions (counted in GCC's internal representation) in a
+single function that the tree inliner considers for inlining.  This only
+affects functions declared inline and methods implemented in a class
+declaration (C++). 
+
+For functions compiled with optimization levels
+@option{-O3} and @option{-Ofast} parameter @option{max-inline-insns-single} is
+applied. In other cases @option{max-inline-insns-single-O2} is applied.
+
 
 @item max-inline-insns-auto
+@item max-inline-insns-auto-O2
 When you use @option{-finline-functions} (included in @option{-O3}),
 a lot of functions that would otherwise not be considered for inlining
 by the compiler are investigated.  To those functions, a different
 (more restrictive) limit compared to functions declared inline can
 be applied.
+
+For functions compiled with optimization levels
+@option{-O3} and @option{-Ofast} parameter @option{max-inline-insns-auto} is
+applied. In other cases @option{max-inline-insns-auto-O2} is applied.
 
 @item max-inline-insns-small
 This is bound applied to calls which are considered relevant with
@@ -11203,16 +11218,33 @@ function prologue and epilogue.
 Extra time accounted by inliner for function overhead such as time needed to
 execute function prologue and epilogue
 
+@item inline-heuristics-hint-percent
+@item inline-heuristics-hint-percent-O2
+The scale (in percents) applied to @option{inline-insns-single},
+@option{inline-insns-single-O2}, @option{inline-insns-auto},
+@option{inline-insns-auto-O2} when inline heuristics hints that inlining is
+very profitable (will enable later optimizations).
+
+For functions compiled with optimization levels
+@option{-O3} and @option{-Ofast} parameter
+@option{inline-heuristics-hint-percent} is applied. In other cases
+@option{inline-heuristics-hint-percent-O2} is applied.
+
 @item uninlined-thunk-insns
 @item uninlined-thunk-time
 Same as @option{--param uninlined-function-insns} and
 @option{--param uninlined-function-time} but applied to function thunks
 
 @item inline-min-speedup
+@item inline-min-speedup-O2
 When estimated performance improvement of caller + callee runtime exceeds this
 threshold (in percent), the function can be inlined regardless of the limit on
 @option{--param max-inline-insns-single} and @option{--param
 max-inline-insns-auto}.
+
+For functions compiled with optimization levels
+@option{-O3} and @option{-Ofast} parameter @option{inline-min-speedup} is
+applied. In other cases @option{inline-min-speedup-O2} is applied.
 
 @item large-function-insns
 The limit specifying really large functions.  For functions larger than this
@@ -11291,8 +11323,13 @@ via a given call expression.  This parameter limits inlining only to call
 expressions whose probability exceeds the given threshold (in percents).
 
 @item early-inlining-insns
+@item early-inlining-insns-O2
 Specify growth that the early inliner can make.  In effect it increases
 the amount of inlining for code having a large abstraction penalty.
+
+For functions compiled with optimization levels
+@option{-O3} and @option{-Ofast} parameter @option{early-inlining-insns} is
+applied. In other cases @option{early-inlining-insns-O2} is applied.
 
 @item max-early-inliner-iterations
 Limit of iterations of the early inliner.  This basically bounds
@@ -11868,6 +11905,11 @@ IPA-SRA replaces a pointer to an aggregate with one or more new
 parameters only when their cumulative size is less or equal to
 @option{ipa-sra-ptr-growth-factor} times the size of the original
 pointer parameter.
+
+@item ipa-sra-max-replacements
+Maximum pieces of an aggregate that IPA-SRA tracks.  As a
+consequence, it is also the maximum number of replacements of a formal
+parameter.
 
 @item sra-max-scalarization-size-Ospeed
 @itemx sra-max-scalarization-size-Osize
@@ -15873,6 +15915,19 @@ execution through conditional branches.  The tracking state can then
 be used by the compiler when expanding calls to
 @code{__builtin_speculation_safe_copy} to permit a more efficient code
 sequence to be generated.
+
+@item -moutline-atomics
+@itemx -mno-outline-atomics
+Enable or disable calls to out-of-line helpers to implement atomic operations.
+These helpers will, at runtime, determine if the LSE instructions from
+ARMv8.1-A can be used; if not, they will use the load/store-exclusive
+instructions that are present in the base ARMv8.0 ISA.
+
+This option is only applicable when compiling for the base ARMv8.0
+instruction set.  If using a later revision, e.g. @option{-march=armv8.1-a}
+or @option{-march=armv8-a+lse}, the ARMv8.1-Atomics instructions will be
+used directly.  The same applies when using @option{-mcpu=} when the
+selected cpu supports the @samp{lse} feature.
 
 @item -march=@var{name}
 @opindex march

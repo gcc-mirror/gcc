@@ -8162,13 +8162,15 @@ package body Exp_Aggr is
 
    function Has_Mutable_Components (Typ : Entity_Id) return Boolean is
       Comp : Entity_Id;
+      Ctyp : Entity_Id;
 
    begin
       Comp := First_Component (Typ);
       while Present (Comp) loop
-         if Is_Record_Type (Etype (Comp))
-           and then Has_Discriminants (Etype (Comp))
-           and then not Is_Constrained (Etype (Comp))
+         Ctyp := Underlying_Type (Etype (Comp));
+         if Is_Record_Type (Ctyp)
+           and then Has_Discriminants (Ctyp)
+           and then not Is_Constrained (Ctyp)
          then
             return True;
          end if;

@@ -235,6 +235,7 @@ enum lto_section_type
   LTO_section_mode_table,
   LTO_section_ipa_hsa,
   LTO_section_lto,
+  LTO_section_ipa_sra,
   LTO_N_SECTION_TYPES		/* Must be last.  */
 };
 

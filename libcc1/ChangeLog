@@ -1,3 +1,7 @@
+2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure: Regenerate.
+
 2019-05-21  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (plugin_add_using_decl): Use

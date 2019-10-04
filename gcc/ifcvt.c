@@ -3358,6 +3358,16 @@ bb_ok_for_noce_convert_multiple_sets (basic_block test_bb)
   return count > 1 && count <= param;
 }
 
+/* Compute average of two given costs weighted by relative probabilities
+   of respective basic blocks in an IF-THEN-ELSE.  E is the IF-THEN edge.
+   With P as the probability to take the IF-THEN branch, return
+   P * THEN_COST + (1 - P) * ELSE_COST.  */
+static unsigned
+average_cost (unsigned then_cost, unsigned else_cost, edge e)
+{
+  return else_cost + e->probability.apply ((signed) (then_cost - else_cost));
+}
+
 /* Given a simple IF-THEN-JOIN or IF-THEN-ELSE-JOIN block, attempt to convert
    it without using conditional execution.  Return TRUE if we were successful
    at converting the block.  */
@@ -3413,10 +3423,9 @@ noce_process_if_block (struct noce_if_info *if_info)
 				       &if_info->else_simple))
     return false;
 
-  if (else_bb == NULL)
-    if_info->original_cost += then_cost;
-  else if (speed_p)
-    if_info->original_cost += MIN (then_cost, else_cost);
+  if (speed_p)
+    if_info->original_cost += average_cost (then_cost, else_cost,
+					    find_edge (test_bb, then_bb));
   else
     if_info->original_cost += then_cost + else_cost;
 

@@ -12439,7 +12439,8 @@ package body Sem_Res is
             --     ityp (x)
 
             --  with the Float_Truncate flag set to False or True respectively,
-            --  which is more efficient.
+            --  which is more efficient. We reuse Rounding for Machine_Rounding
+            --  as System.Fat_Gen, which is a permissible behavior.
 
             if Is_Floating_Point_Type (Opnd_Typ)
               and then
@@ -12448,6 +12449,7 @@ package body Sem_Res is
                             and then Conversion_OK (N)))
               and then Nkind (Operand) = N_Attribute_Reference
               and then Nam_In (Attribute_Name (Operand), Name_Rounding,
+                                                         Name_Machine_Rounding,
                                                          Name_Truncation)
             then
                declare

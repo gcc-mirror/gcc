@@ -1038,7 +1038,7 @@ enum data_align { align_abi, align_opt, align_both };
    ? DFmode								\
    : (MODE) == TDmode && FP_REGNO_P (REGNO)				\
    ? DImode								\
-   : choose_hard_reg_mode ((REGNO), (NREGS), false))
+   : choose_hard_reg_mode ((REGNO), (NREGS), NULL))
 
 #define VSX_VECTOR_MODE(MODE)		\
 	 ((MODE) == V4SFmode		\
@@ -2547,3 +2547,24 @@ typedef struct GTY(()) machine_function
   IN_RANGE ((VALUE),							\
 	    -(HOST_WIDE_INT_1 << 33),					\
 	    (HOST_WIDE_INT_1 << 33) - 1 - (EXTRA))
+
+/* Define this if some processing needs to be done before outputting the
+   assembler code.  On the PowerPC, we remember if the current insn is a normal
+   prefixed insn where we need to emit a 'p' before the insn.  */
+#define FINAL_PRESCAN_INSN(INSN, OPERANDS, NOPERANDS)			\
+do									\
+  {									\
+    if (TARGET_PREFIXED_ADDR)						\
+      rs6000_final_prescan_insn (INSN, OPERANDS, NOPERANDS);		\
+  }									\
+while (0)
+
+/* Do anything special before emitting an opcode.  We use it to emit a 'p' for
+   prefixed insns that is set in FINAL_PRESCAN_INSN.  */
+#define ASM_OUTPUT_OPCODE(STREAM, OPCODE)				\
+  do									\
+    {									\
+     if (TARGET_PREFIXED_ADDR)						\
+       rs6000_asm_output_opcode (STREAM);				\
+    }									\
+  while (0)

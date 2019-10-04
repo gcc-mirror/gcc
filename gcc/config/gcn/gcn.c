@@ -3017,7 +3017,7 @@ machine_mode
 gcn_hard_regno_caller_save_mode (unsigned int regno, unsigned int nregs,
 				 machine_mode regmode)
 {
-  machine_mode result = choose_hard_reg_mode (regno, nregs, false);
+  machine_mode result = choose_hard_reg_mode (regno, nregs, NULL);
 
   if (VECTOR_MODE_P (result) && !VECTOR_MODE_P (regmode))
     result = (nregs == 1 ? SImode : DImode);

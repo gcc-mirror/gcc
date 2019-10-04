@@ -90,7 +90,45 @@
   UNSPEC_SP_TEST	; Represent the testing of stack protector's canary
 			; against the guard.
   UNSPEC_PIC_RESTORE	; Use to restore fdpic register
+
+  UNSPEC_SXTAB16	; Represent the SXTAB16 operation.
+  UNSPEC_UXTAB16	; Represent the UXTAB16 operation.
+  UNSPEC_SXTB16		; Represent the SXTB16 operation.
+  UNSPEC_UXTB16		; Represent the UXTB16 operation.
+  UNSPEC_QADD8		; Represent the QADD8 operation.
+  UNSPEC_QSUB8		; Represent the QSUB8 operation.
+  UNSPEC_SHADD8		; Represent the SHADD8 operation.
+  UNSPEC_SHSUB8		; Represent the SHSUB8 operation.
+  UNSPEC_UHADD8		; Represent the UHADD8 operation.
+  UNSPEC_UHSUB8		; Represent the UHSUB8 operation.
+  UNSPEC_UQADD8		; Represent the UQADD8 operation.
+  UNSPEC_UQSUB8		; Represent the UQSUB8 operation.
+  UNSPEC_QADD16		; Represent the QADD16 operation.
+  UNSPEC_QASX		; Represent the QASX operation.
+  UNSPEC_QSAX		; Represent the QSAX operation.
+  UNSPEC_QSUB16		; Represent the QSUB16 operation.
+  UNSPEC_SHADD16	; Represent the SHADD16 operation.
+  UNSPEC_SHASX		; Represent the SHASX operation.
+  UNSPEC_SHSAX		; Represent the SSAX operation.
+  UNSPEC_SHSUB16	; Represent the SHSUB16 operation.
+  UNSPEC_UHADD16	; Represent the UHADD16 operation.
+  UNSPEC_UHASX		; Represent the UHASX operation.
+  UNSPEC_UHSAX		; Represent the USAX operation.
+  UNSPEC_UHSUB16	; Represent the UHSUB16 operation.
+  UNSPEC_UQADD16	; Represent the UQADD16 operation.
+  UNSPEC_UQASX		; Represent the UQASX operation.
+  UNSPEC_UQSAX		; Represent the UQSAX operation.
+  UNSPEC_UQSUB16	; Represent the UQSUB16 operation.
+  UNSPEC_SMUSD		; Represent the SMUSD operation.
+  UNSPEC_SMUSDX		; Represent the SMUSDX operation.
+  UNSPEC_USAD8		; Represent the USAD8 operation.
+  UNSPEC_USADA8		; Represent the USADA8 operation.
+  UNSPEC_SMLALD		; Represent the SMLALD operation.
+  UNSPEC_SMLALDX	; Represent the SMLALDX operation.
+  UNSPEC_SMLSLD		; Represent the SMLSLD operation.
+  UNSPEC_SMLSLDX	; Represent the SMLSLDX operation.
 ])
+
 
 (define_c_enum "unspec" [
   UNSPEC_WADDC		; Used by the intrinsic form of the iWMMXt WADDC instruction.

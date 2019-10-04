@@ -149,17 +149,17 @@ namespace __parallel
                   _BinaryFunction2, __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2, typename _Tp,
-           typename BinaryFunction1, typename BinaryFunction2>
+           typename _BinaryFunction1, typename _BinaryFunction2>
     _Tp
-    inner_product(_IIter1, _IIter1, _IIter2, _Tp, BinaryFunction1,
-                  BinaryFunction2, __gnu_parallel::_Parallelism);
+    inner_product(_IIter1, _IIter1, _IIter2, _Tp, _BinaryFunction1,
+                  _BinaryFunction2, __gnu_parallel::_Parallelism);
 
   template<typename _RAIter1, typename _RAIter2, typename _Tp,
-           typename BinaryFunction1, typename BinaryFunction2>
+           typename _BinaryFunction1, typename _BinaryFunction2>
     _Tp
-    __inner_product_switch(_RAIter1, _RAIter1, _RAIter2, _Tp, BinaryFunction1,
-                         BinaryFunction2, random_access_iterator_tag, 
-                         random_access_iterator_tag, 
+    __inner_product_switch(_RAIter1, _RAIter1, _RAIter2, _Tp, _BinaryFunction1,
+                         _BinaryFunction2, random_access_iterator_tag,
+                         random_access_iterator_tag,
                          __gnu_parallel::_Parallelism
                          = __gnu_parallel::parallel_unbalanced);
 

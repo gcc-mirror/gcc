@@ -130,10 +130,12 @@ namespace __parallel
           __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2>
+    _GLIBCXX20_CONSTEXPR
     bool
     equal(_IIter1, _IIter1, _IIter2);
 
   template<typename _IIter1, typename _IIter2, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     bool
     equal(_IIter1, _IIter1, _IIter2, _Predicate);
 
@@ -285,10 +287,12 @@ namespace __parallel
                             __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2>
+    _GLIBCXX20_CONSTEXPR
     bool
     lexicographical_compare(_IIter1, _IIter1, _IIter2, _IIter2);
 
   template<typename _IIter1, typename _IIter2, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     bool
     lexicographical_compare(_IIter1, _IIter1, _IIter2, _IIter2, _Predicate);
 

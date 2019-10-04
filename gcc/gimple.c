@@ -1797,6 +1797,8 @@ gimple_get_lhs (const gimple *stmt)
     return gimple_assign_lhs (stmt);
   else if (code == GIMPLE_CALL)
     return gimple_call_lhs (stmt);
+  else if (code == GIMPLE_PHI)
+    return gimple_phi_result (stmt);
   else
     return NULL_TREE;
 }
@@ -2225,16 +2227,18 @@ dump_gimple_statistics (void)
 unsigned
 get_gimple_rhs_num_ops (enum tree_code code)
 {
-  enum gimple_rhs_class rhs_class = get_gimple_rhs_class (code);
-
-  if (rhs_class == GIMPLE_UNARY_RHS || rhs_class == GIMPLE_SINGLE_RHS)
-    return 1;
-  else if (rhs_class == GIMPLE_BINARY_RHS)
-    return 2;
-  else if (rhs_class == GIMPLE_TERNARY_RHS)
-    return 3;
-  else
-    gcc_unreachable ();
+  switch (get_gimple_rhs_class (code))
+    {
+    case GIMPLE_UNARY_RHS:
+    case GIMPLE_SINGLE_RHS:
+      return 1;
+    case GIMPLE_BINARY_RHS:
+      return 2;
+    case GIMPLE_TERNARY_RHS:
+      return 3;
+    default:
+      gcc_unreachable ();
+    }
 }
 
 #define DEFTREECODE(SYM, STRING, TYPE, NARGS)   			    \

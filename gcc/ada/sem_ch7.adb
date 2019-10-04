@@ -1508,9 +1508,21 @@ package body Sem_Ch7 is
                   Inst_Par := Renamed_Entity (Inst_Par);
                end if;
 
-               Gen_Par :=
-                 Generic_Parent
-                   (Specification (Unit_Declaration_Node (Inst_Par)));
+               --  The instance may appear in a sibling generic unit, in
+               --  which case the prefix must include the common (generic)
+               --  ancestor, which is treated as a current instance.
+
+               if Inside_A_Generic
+                 and then Ekind (Inst_Par) = E_Generic_Package
+               then
+                  Gen_Par := Inst_Par;
+                  pragma Assert (In_Open_Scopes (Gen_Par));
+
+               else
+                  Gen_Par :=
+                    Generic_Parent
+                      (Specification (Unit_Declaration_Node (Inst_Par)));
+               end if;
 
                --  Install the private declarations and private use clauses
                --  of a parent instance of the child instance, unless the

@@ -982,6 +982,16 @@ AC_ARG_ENABLE(languages,
 esac],
 [enable_languages=c])
 
+# If top-level libada has been disabled, then wire in install-gnatlib
+# invocation with `make install', so that one can build and install
+# the library manually with `make -C gcc all gnatlib gnattools install'.
+if test x"$enable_libada" = xno; then
+  gnat_install_lib=gnat-install-lib
+else
+  gnat_install_lib=
+fi
+AC_SUBST(gnat_install_lib)
+
 if test x"$enable_as_accelerator_for" != x; then
   AC_DEFINE(ACCEL_COMPILER, 1,
     [Define if this compiler should be built as the offload target compiler.])

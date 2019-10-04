@@ -1,3 +1,238 @@
+2019-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81091
+	PR libstdc++/91947
+	* configure.ac: Use AC_SYS_LARGEFILE to enable 64-bit file APIs.
+	* config.h.in: Regenerate:
+	* configure: Regenerate:
+	* include/Makefile.am (${host_builddir}/largefile-config.h): New
+	target to generate config header for filesystem library.
+	(${host_builddir}/c++config.h): Rename macros for large file support.
+	* include/Makefile.in: Regenerate.
+	* src/c++17/fs_dir.cc: Include new config header.
+	* src/c++17/fs_ops.cc: Likewise.
+	(filesystem::file_size): Use uintmax_t for size.
+	* src/filesystem/dir.cc: Include new config header.
+	* src/filesystem/ops.cc: Likewise.
+	(experimental::filesystem::file_size): Use uintmax_t for size.
+
+	* testsuite/util/testsuite_abi.h: Use std::unordered_map instead of
+	std::tr1::unordered_map.
+	* testsuite/util/testsuite_allocator.h: Likewise.
+
+	* include/tr1/hashtable.h: Add header for __gnu_cxx::__alloc_traits.
+
+	* include/tr1/hashtable.h (tr1::_Hashtable::_M_allocate_node): Use
+	__gnu_cxx::__alloc_traits for allocator construct function.
+	(tr1::_Hashtable::_M_deallocate_node): Likewise for destroy function.
+
+	* include/precompiled/stdc++.h: Include <span> for C++20.
+	* testsuite/17_intro/names.cc: Do not define 'e' for C++20.
+
+2019-10-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* include/parallel/multiway_merge.h (_RAIter3): Replace _C by _Cp.
+
+2019-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Tighten up greedy wildcards.
+
+	* doc/xml/manual/parallel_mode.xml: Add caveat about support for
+	recent standards.
+	* doc/html/*: Regenerate.
+
+2019-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/algorithm (experimental::sample): Qualify call
+	to __sample correctly.
+	* include/parallel/algo.h (sample, for_each_n): Add using-declarations
+	for algorithms that don't have parallel implementations.
+
+	* include/parallel/algobase.h (equal, lexicographical_compare): Add
+	_GLIBCXX20_CONSTEXPR and dispatch to sequential algorithm when being
+	constant evaluated.
+	* include/parallel/algorithmfwd.h (equal, lexicographical_compare):
+	Add _GLIBCXX20_CONSTEXPR.
+
+	* testsuite/17_intro/using_namespace_std_tr1_neg.cc: Skip test for
+	parallel mode.
+	* testsuite/20_util/hash/84998.cc: Likewise.
+	* testsuite/23_containers/deque/types/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/forward_list/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/list/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/map/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/multimap/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/multiset/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/set/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/23_containers/unordered_map/pmr_typedefs_debug.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/pmr_typedefs_debug.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/pmr_typedefs_debug.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/pmr_typedefs_debug.cc:
+	Likewise.
+	* testsuite/23_containers/vector/cons/destructible_debug_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/types/pmr_typedefs_debug.cc: Likewise.
+	* testsuite/25_algorithms/binary_search/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/copy/86658.cc: Likewise.
+	* testsuite/25_algorithms/equal_range/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/lexicographical_compare/71545.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/partitioned.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/partitioned.cc: Likewise.
+
+	* include/parallel/algo.h: Replace non-reserved names.
+	* include/parallel/multiway_merge.h: Likewise.
+	* include/parallel/multiway_mergesort.h: Likewise.
+	* include/parallel/numericfwd.h: Likewise.
+	* testsuite/17_intro/names.cc: Add RAI to test macros.
+
+2019-09-30  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/array: Add C++20 constexpr to comparison operators.
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc: Adapt
+	dg-error line numbers.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Likewise.
+
+2019-09-30  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* include/experimental/internet: Include netinet/in.h if we have
+	_GLIBCXX_HAVE_NETINET_IN_H defined.
+
+	* testsuite/ext/special_functions/airy_ai/check_nan.cc: Ignore the
+	FreeBSD warning about lower advertised precision of tgammal.
+	* testsuite/ext/special_functions/airy_bi/check_nan.cc: Likewise.
+	* testsuite/special_functions/07_cyl_bessel_i/check_nan.cc: Likewise.
+	* testsuite/special_functions/08_cyl_bessel_j/check_nan.cc: Likewise.
+	* testsuite/special_functions/09_cyl_bessel_k/check_nan.cc: Likewise.
+	* testsuite/special_functions/10_cyl_neumann/check_nan.cc: Likewise.
+	* testsuite/special_functions/19_sph_bessel/check_nan.cc: Likewise.
+	* testsuite/special_functions/21_sph_neumann/check_nan.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	08_cyl_bessel_i/check_nan.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	09_cyl_bessel_j/check_nan.cc: Likewise.
+	* testuite/tr1/5_numerical_facilities/special_functions/
+	10_cyl_bessel_k/check_nan.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	11_cyl_neumann/check_nan.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	21_sph_bessel/check_nan.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	23_sph_neumann/check_nan.cc: Likewise.
+
+2019-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/span (span(element_type(&)[N]))
+	(span(array<value_type, N>&), span(const array<value_type, N>&)):
+	Deduce array element type to allow safe const conversions (LWG 3255).
+	[!_GLIBCXX_P1394] (span(Container&), span(const Container&)): Use
+	remove_cv_t on arguments to __is_std_span and __is_std_array.
+	* testsuite/23_containers/span/lwg3255.cc: New test.
+
+	PR libstdc++/77936
+	* include/parallel/checkers.h (__is_sorted): Remove unused variable.
+
+2019-09-28  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algo.h (merge): Fix documentation.
+	* include/debug/functions.h (__check_sorted_aux): Add C++20 constexpr.
+	(__check_sorted): Likewise and remove nested irreflexive check.
+	(__check_sorted_set_aux, __check_sorted_set): Add C++20 constexpr.
+	(__check_partitioned_lower, __check_partitioned_upper): Likewise.
+	(_Irreflexive_checker::_S_is_valid): Likewise.
+	(__is_irreflexive, __is_irreflexive_pred): Likewise.
+	* include/debug/helper_functions.h (__get_distance): Add constexpr.
+	(__valid_range_aux): Add C++20 constexpr.
+	(__valid_range(_Iter, _Iter, _Distance_traits<_Iter>::__type&)):
+	Likewise and add std::is_constant_evaluated check.
+	(__valid_range_aux(_Iter, _Iter, std::input_iterator_tag)): New.
+	(__valid_range_aux(_Iter, _Iter, std::random_accss_iterator_tag)): New.
+	(__valid_range_aux(_Integral, _Integral, std::__true_type)): New,
+	use latter.
+	(__valid_range(_Iter, _Iter)): Adapt to use latter, add constexpr and
+	__builtin_is_contant_evaludated check..
+	(__can_advance, __base): Add constexpr.
+	* include/debug/macros.h [_GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED]
+	(_GLIBCXX_DEBUG_VERIFY_COND_AT): New.
+	(__glibcxx_check_sorted): Use __glibcxx_check_irreflexive.
+	(__glibcxx_check_sorted_pred): Use __glibcxx_check_irreflexive_pred.
+	* testsuite/25_algorithms/binary_search/constexpr.cc: Use irreflexive
+	std::less.
+	* testsuite/25_algorithms/is_sorted/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/merge/constexpr.cc: Fix order in camm. Fix
+	lambda to be irreflexive.
+
+2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure: Regenerate.
+
+2019-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91910
+	* src/c++11/debug.cc (_Safe_iterator_base::_M_detach()): Load pointer
+	atomically and lock the mutex before accessing the sequence.
+	(_Safe_local_iterator_base::_M_detach()): Likewise.
+	(_Safe_iterator_base::_M_reset()): Clear _M_sequence atomically.
+
+2019-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/array (to_array): Define for debug mode.
+
+	* include/bits/stl_pair.h (pair): Add _GLIBCXX20_CONSTEXPR to
+	piecewise construction constructor, assignment operators, and swap.
+	* include/std/tuple (pair::pair(piecewise_construct_t, tuple, tuple)):
+	Add _GLIBCXX20_CONSTEXPR.
+	(pair::pair(tuple, tuple, _Index_tuple, _Index_tuple)): Likewise.
+	* testsuite/20_util/pair/constexpr_assign.cc: New test.
+	* testsuite/20_util/pair/constexpr_swap.cc: New test.
+
+	* include/experimental/internet (operator==, operator<): Fix loop
+	condition to avoid reading past the end of the array.
+
+	* include/std/array: Remove references to profile mode.
+	* include/std/bitset: Likewise.
+	* include/std/deque: Likewise.
+	* include/std/forward_list: Likewise.
+	* include/std/list: Likewise.
+	* include/std/map: Likewise.
+	* include/std/set: Likewise.
+	* include/std/unordered_map: Likewise.
+	* include/std/unordered_set: Likewise.
+	* include/std/vector: Likewise.
+	* testsuite/17_intro/headers/c++1998/profile_mode.cc: New test.
+	* testsuite/17_intro/headers/c++2011/profile_mode.cc: New test.
+
+2019-09-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h
+	(basic_regex::assign(const C*, size_t, flag_type)): Add default
+	argument (LWG 3296).
+	* testsuite/28_regex/basic_regex/assign/char/lwg3296.cc: New test.
+	* testsuite/28_regex/basic_regex/assign/wchar_t/lwg3296.cc: New test.
+
+2019-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (variant::index()): Remove impossible case.
+
+	PR libstdc++/91871
+	* testsuite/util/testsuite_hooks.h
+	(conversion::iterator_to_const_iterator()): Do not return an invalid
+	iterator. Test direct-initialization and direct-list-initialization
+	as well as implicit conversion.
+
+2019-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91788 (partial)
+	* include/std/variant (variant::index()): Improve codegen for cases
+	where conversion to size_t already works correctly.
+
+2019-09-23  Andreas Schwab  <schwab@suse.de>
+
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
+
 2019-09-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91748

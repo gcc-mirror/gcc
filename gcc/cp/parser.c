@@ -7375,11 +7375,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		    maybe_generic_this_capture (instance, fn);
 		    postfix_expression
 		      = build_min_nt_call_vec (postfix_expression, args);
-		    release_tree_vector (args);
-		    break;
 		  }
-
-		if (BASELINK_P (fn))
+		else if (BASELINK_P (fn))
 		  {
 		  postfix_expression
 		    = (build_new_method_call
@@ -11297,7 +11294,10 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
     }
   /* Anything that starts with a `{' must be a compound-statement.  */
   else if (token->type == CPP_OPEN_BRACE)
-    statement = cp_parser_compound_statement (parser, NULL, BCS_NORMAL, false);
+    {
+      std_attrs = process_stmt_hotness_attribute (std_attrs, attrs_loc);
+      statement = cp_parser_compound_statement (parser, NULL, BCS_NORMAL, false);
+    }
   /* CPP_PRAGMA is a #pragma inside a function body, which constitutes
      a statement all its own.  */
   else if (token->type == CPP_PRAGMA)
@@ -32735,6 +32735,14 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	      || CONVERT_EXPR_P (decl))
 	    decl = TREE_OPERAND (decl, 0);
 	  cp_lexer_consume_token (parser->lexer);
+	}
+      else if (cp_parser_is_keyword (token, RID_FUNCTION_NAME)
+	       || cp_parser_is_keyword (token, RID_PRETTY_FUNCTION_NAME)
+	       || cp_parser_is_keyword (token, RID_C99_FUNCTION_NAME))
+	{
+	  cp_id_kind idk;
+	  decl = cp_parser_primary_expression (parser, false, false, false,
+					       &idk);
 	}
       else
 	{

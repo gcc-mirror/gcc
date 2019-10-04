@@ -104,38 +104,38 @@ tree
 gimple_assign_rhs_to_tree (gimple *stmt)
 {
   tree t;
-  enum gimple_rhs_class grhs_class;
-
-  grhs_class = get_gimple_rhs_class (gimple_expr_code (stmt));
-
-  if (grhs_class == GIMPLE_TERNARY_RHS)
-    t = build3 (gimple_assign_rhs_code (stmt),
-		TREE_TYPE (gimple_assign_lhs (stmt)),
-		gimple_assign_rhs1 (stmt),
-		gimple_assign_rhs2 (stmt),
-		gimple_assign_rhs3 (stmt));
-  else if (grhs_class == GIMPLE_BINARY_RHS)
-    t = build2 (gimple_assign_rhs_code (stmt),
-		TREE_TYPE (gimple_assign_lhs (stmt)),
-		gimple_assign_rhs1 (stmt),
-		gimple_assign_rhs2 (stmt));
-  else if (grhs_class == GIMPLE_UNARY_RHS)
-    t = build1 (gimple_assign_rhs_code (stmt),
-		TREE_TYPE (gimple_assign_lhs (stmt)),
-		gimple_assign_rhs1 (stmt));
-  else if (grhs_class == GIMPLE_SINGLE_RHS)
+  switch (get_gimple_rhs_class (gimple_expr_code (stmt)))
     {
-      t = gimple_assign_rhs1 (stmt);
-      /* Avoid modifying this tree in place below.  */
-      if ((gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (t)
-	   && gimple_location (stmt) != EXPR_LOCATION (t))
-	  || (gimple_block (stmt)
-	      && currently_expanding_to_rtl
-	      && EXPR_P (t)))
-	t = copy_node (t);
+    case GIMPLE_TERNARY_RHS:
+      t = build3 (gimple_assign_rhs_code (stmt),
+		  TREE_TYPE (gimple_assign_lhs (stmt)),
+		  gimple_assign_rhs1 (stmt), gimple_assign_rhs2 (stmt),
+		  gimple_assign_rhs3 (stmt));
+      break;
+    case GIMPLE_BINARY_RHS:
+      t = build2 (gimple_assign_rhs_code (stmt),
+		  TREE_TYPE (gimple_assign_lhs (stmt)),
+		  gimple_assign_rhs1 (stmt), gimple_assign_rhs2 (stmt));
+      break;
+    case GIMPLE_UNARY_RHS:
+      t = build1 (gimple_assign_rhs_code (stmt),
+		  TREE_TYPE (gimple_assign_lhs (stmt)),
+		  gimple_assign_rhs1 (stmt));
+      break;
+    case GIMPLE_SINGLE_RHS:
+      {
+	t = gimple_assign_rhs1 (stmt);
+	/* Avoid modifying this tree in place below.  */
+	if ((gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (t)
+	     && gimple_location (stmt) != EXPR_LOCATION (t))
+	    || (gimple_block (stmt) && currently_expanding_to_rtl
+		&& EXPR_P (t)))
+	  t = copy_node (t);
+	break;
+      }
+    default:
+      gcc_unreachable ();
     }
-  else
-    gcc_unreachable ();
 
   if (gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (t))
     SET_EXPR_LOCATION (t, gimple_location (stmt));
@@ -3891,7 +3891,6 @@ expand_gimple_stmt (gimple *stmt)
 	      /* If we want exceptions for non-call insns, any
 		 may_trap_p instruction may throw.  */
 	      && GET_CODE (PATTERN (insn)) != CLOBBER
-	      && GET_CODE (PATTERN (insn)) != CLOBBER_HIGH
 	      && GET_CODE (PATTERN (insn)) != USE
 	      && insn_could_throw_p (insn))
 	    make_reg_eh_region_note (insn, 0, lp_nr);

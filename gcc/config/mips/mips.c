@@ -4862,7 +4862,7 @@ mips_split_move (rtx dest, rtx src, enum mips_split_type split_type, rtx insn_)
 		{
 		  rtx tmp = XEXP (src, 0);
 		  mips_classify_address (&addr, tmp, GET_MODE (tmp), true);
-		  if (addr.reg && REGNO (addr.reg) != REGNO (dest))
+		  if (addr.reg && !reg_overlap_mentioned_p (dest, addr.reg))
 		    validate_change (next, &SET_SRC (set), src, false);
 		}
 	      else
@@ -12928,8 +12928,8 @@ mips_hard_regno_scratch_ok (unsigned int regno)
    registers with MODE > 64 bits are part clobbered too.  */
 
 static bool
-mips_hard_regno_call_part_clobbered (rtx_insn *insn ATTRIBUTE_UNUSED,
-				     unsigned int regno, machine_mode mode)
+mips_hard_regno_call_part_clobbered (unsigned int, unsigned int regno,
+				     machine_mode mode)
 {
   if (TARGET_FLOATXX
       && hard_regno_nregs (regno, mode) == 1
@@ -22174,7 +22174,7 @@ mips_hard_regno_caller_save_mode (unsigned int regno,
   /* For performance, avoid saving/restoring upper parts of a register
      by returning MODE as save mode when the mode is known.  */
   if (mode == VOIDmode)
-    return choose_hard_reg_mode (regno, nregs, false);
+    return choose_hard_reg_mode (regno, nregs, NULL);
   else
     return mode;
 }

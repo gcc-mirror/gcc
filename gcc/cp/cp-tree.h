@@ -1762,6 +1762,24 @@ public:
   ~warning_sentinel() { flag = val; }
 };
 
+/* RAII sentinel to temporarily override input_location.  This will not set
+   input_location to UNKNOWN_LOCATION or BUILTINS_LOCATION.  */
+
+class iloc_sentinel
+{
+  location_t saved_loc;
+public:
+  iloc_sentinel (location_t loc): saved_loc (input_location)
+  {
+    if (loc >= RESERVED_LOCATION_COUNT)
+      input_location = loc;
+  }
+  ~iloc_sentinel ()
+  {
+    input_location = saved_loc;
+  }
+};
+
 /* RAII sentinel that saves the value of a variable, optionally
    overrides it right away, and restores its value when the sentinel
    id destructed.  */
@@ -6257,7 +6275,8 @@ extern tree perform_direct_initialization_if_possible (tree, tree, bool,
                                                        tsubst_flags_t);
 extern tree in_charge_arg_for_name		(tree);
 extern tree build_cxx_call			(tree, int, tree *,
-						 tsubst_flags_t);
+						 tsubst_flags_t,
+						 tree = NULL_TREE);
 extern bool is_std_init_list			(tree);
 extern bool is_list_ctor			(tree);
 extern void validate_conversion_obstack		(void);
@@ -7361,6 +7380,7 @@ enum { ce_derived, ce_type, ce_normal, ce_exact };
 extern bool comp_except_specs			(const_tree, const_tree, int);
 extern bool comptypes				(tree, tree, int);
 extern bool same_type_ignoring_top_level_qualifiers_p (tree, tree);
+extern bool similar_type_p			(tree, tree);
 extern bool compparms				(const_tree, const_tree);
 extern int comp_cv_qualification		(const_tree, const_tree);
 extern int comp_cv_qualification		(int, int);
@@ -7390,7 +7410,8 @@ extern tree get_member_function_from_ptrfunc	(tree *, tree, tsubst_flags_t);
 extern tree cp_build_function_call_nary         (tree, tsubst_flags_t, ...)
 						ATTRIBUTE_SENTINEL;
 extern tree cp_build_function_call_vec		(tree, vec<tree, va_gc> **,
-						 tsubst_flags_t);
+						 tsubst_flags_t,
+						 tree = NULL_TREE);
 extern tree build_x_binary_op			(const op_location_t &,
 						 enum tree_code, tree,
 						 enum tree_code, tree,
