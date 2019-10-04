@@ -2938,7 +2938,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
       go_assert(call_statement->classification() == STATEMENT_EXPRESSION);
       Expression_statement* es =
 	static_cast<Expression_statement*>(call_statement);
-      Call_expression* ce = es->expr()->call_expression();
+      ce = es->expr()->call_expression();
       if (ce == NULL)
 	go_assert(saw_errors());
       else
@@ -5972,10 +5972,11 @@ Select_statement::lower_two_case(Block* b)
           // if selectnbrecv2(&lhs, &ok, chan) { body } else { default body }
 
           Type* booltype = Type::make_boolean_type();
-          Temporary_statement* ts = Statement::make_temporary(booltype, NULL, loc);
-          b->add_statement(ts);
+          Temporary_statement* okts = Statement::make_temporary(booltype, NULL,
+                                                                loc);
+          b->add_statement(okts);
 
-          okref = Expression::make_temporary_reference(ts, loc);
+          okref = Expression::make_temporary_reference(okts, loc);
           Expression* okaddr = Expression::make_unary(OPERATOR_AND, okref, loc);
           call = Runtime::make_call(Runtime::SELECTNBRECV2, loc, 3, addr, okaddr,
                                     chanref);
@@ -6595,7 +6596,7 @@ For_range_statement::lower_range_array(Gogo* gogo,
       iter_init = new Block(body_block, loc);
 
       ref = Expression::make_temporary_reference(range_temp, loc);
-      Expression* ref2 = Expression::make_temporary_reference(index_temp, loc);
+      ref2 = Expression::make_temporary_reference(index_temp, loc);
       Expression* index = Expression::make_index(ref, ref2, NULL, NULL, loc);
 
       tref = Expression::make_temporary_reference(value_temp, loc);
@@ -6693,7 +6694,7 @@ For_range_statement::lower_range_slice(Gogo* gogo,
       iter_init = new Block(body_block, loc);
 
       ref = Expression::make_temporary_reference(for_temp, loc);
-      Expression* ref2 = Expression::make_temporary_reference(index_temp, loc);
+      ref2 = Expression::make_temporary_reference(index_temp, loc);
       Expression* index = Expression::make_index(ref, ref2, NULL, NULL, loc);
 
       tref = Expression::make_temporary_reference(value_temp, loc);
@@ -7179,9 +7180,9 @@ For_range_statement::lower_array_range_clear(Gogo* gogo,
   else
     {
       Type* int32_type = Type::lookup_integer_type("int32");
-      Expression* zero = Expression::make_integer_ul(0, int32_type, loc);
+      Expression* zero32 = Expression::make_integer_ul(0, int32_type, loc);
       call = Runtime::make_call(Runtime::BUILTIN_MEMSET, loc, 3, ptr_arg,
-                                zero, sz_arg);
+                                zero32, sz_arg);
     }
   Statement* cs3 = Statement::make_statement(call, true);
   b->add_statement(cs3);

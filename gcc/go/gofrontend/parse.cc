@@ -836,7 +836,7 @@ Parse::parameter_list(bool* is_varargs)
     {
       std::string name = token->identifier();
       bool is_exported = token->is_identifier_exported();
-      Location location = token->location();
+      Location id_location = token->location();
       token = this->advance_token();
       if (!token->is_op(OPERATOR_COMMA))
 	{
@@ -861,7 +861,7 @@ Parse::parameter_list(bool* is_varargs)
 	    }
 
 	  this->unget_token(Token::make_identifier_token(name, is_exported,
-							 location));
+							 id_location));
 	}
       else
 	{
@@ -872,15 +872,15 @@ Parse::parameter_list(bool* is_varargs)
 	  // commas as we can.
 	  std::string id_name = this->gogo_->pack_hidden_name(name,
 							      is_exported);
-	  ret->push_back(Typed_identifier(id_name, NULL, location));
+	  ret->push_back(Typed_identifier(id_name, NULL, id_location));
 	  bool just_saw_comma = true;
 	  while (this->advance_token()->is_identifier())
 	    {
 	      name = this->peek_token()->identifier();
 	      is_exported = this->peek_token()->is_identifier_exported();
-	      location = this->peek_token()->location();
+	      id_location = this->peek_token()->location();
 	      id_name = this->gogo_->pack_hidden_name(name, is_exported);
-	      ret->push_back(Typed_identifier(id_name, NULL, location));
+	      ret->push_back(Typed_identifier(id_name, NULL, id_location));
 	      if (!this->advance_token()->is_op(OPERATOR_COMMA))
 		{
 		  just_saw_comma = false;
@@ -909,7 +909,7 @@ Parse::parameter_list(bool* is_varargs)
 	      // names.
 	      parameters_have_names = false;
 	      this->unget_token(Token::make_identifier_token(name, is_exported,
-							     location));
+							     id_location));
 	      ret->pop_back();
 	      just_saw_comma = true;
 	    }
@@ -2808,7 +2808,7 @@ Parse::composite_lit(Type* type, int depth, Location location)
 	{
 	  std::string identifier = token->identifier();
 	  bool is_exported = token->is_identifier_exported();
-	  Location location = token->location();
+	  Location id_location = token->location();
 
 	  if (this->advance_token()->is_op(OPERATOR_COLON))
 	    {
@@ -2820,14 +2820,14 @@ Parse::composite_lit(Type* type, int depth, Location location)
 	      Gogo* gogo = this->gogo_;
 	      val = this->id_to_expression(gogo->pack_hidden_name(identifier,
 								  is_exported),
-					   location, false);
+					   id_location, false);
 	      is_name = true;
 	    }
 	  else
 	    {
 	      this->unget_token(Token::make_identifier_token(identifier,
 							     is_exported,
-							     location));
+							     id_location));
 	      val = this->expression(PRECEDENCE_NORMAL, false, true, NULL,
 				     NULL);
 	    }
@@ -2923,14 +2923,14 @@ Parse::composite_lit(Type* type, int depth, Location location)
 	    go_error_at(this->location(), "expected %<,%> or %<}%>");
 
 	  this->gogo_->mark_locals_used();
-	  int depth = 0;
+	  int edepth = 0;
 	  while (!token->is_eof()
-		 && (depth > 0 || !token->is_op(OPERATOR_RCURLY)))
+		 && (edepth > 0 || !token->is_op(OPERATOR_RCURLY)))
 	    {
 	      if (token->is_op(OPERATOR_LCURLY))
-		++depth;
+		++edepth;
 	      else if (token->is_op(OPERATOR_RCURLY))
-		--depth;
+		--edepth;
 	      token = this->advance_token();
 	    }
 	  if (token->is_op(OPERATOR_RCURLY))
