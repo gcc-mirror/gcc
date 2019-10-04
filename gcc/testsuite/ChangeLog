@@ -1,3 +1,8 @@
+2019-10-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran.91959
+	* gfortran.dg/pr91959.f90: New test.
+
 2019-10-04  Rafael Tsuha  <rafael.tsuha@usp.br>
 
         * gcc.dg/sinhovercosh-1.c: New test.
