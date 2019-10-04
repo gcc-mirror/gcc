@@ -1,5 +1,10 @@
 2019-10-04  Jeff Law  <law@redhat.com>
 
+	* config/h8300/h8300.md (cpymemsi): Disable.
+	(movmd, movmd_internal_<mode>, movstr, movsd):
+	(movstr, movsd, stpcpy_internal_<mode>: Likewise.
+	(movmd splitter, movsd splitter): Likewise.
+
 	* range-op.cc (range_tests): Avoid two tests when ints and
 	shorts are the same size.
 
