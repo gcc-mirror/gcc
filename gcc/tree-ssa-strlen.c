@@ -3801,40 +3801,44 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
       tree type = TREE_TYPE (exp);
       if (TREE_CODE (type) == INTEGER_TYPE
 	  && TYPE_MODE (type) == TYPE_MODE (char_type_node)
-	  && TYPE_PRECISION (type) == TYPE_PRECISION (char_type_node))
+	  && TYPE_PRECISION (type) == TYPE_PRECISION (char_type_node)
+	  && tree_expr_nonzero_p (exp))
 	{
-	  /* Determine if the character EXP is known to be non-zero
-	     (even if its exact value is not known) and if so, recurse
-	     once to set the range, etc.  */
-	  if (tree_expr_nonzero_p (exp))
-	    return count_nonzero_bytes (build_int_cst (type, 1),
-					offset, nbytes, lenrange,
-					nulterm, allnul, allnonnul, snlim);
-	  /* Don't know whether EXP is or isn't nonzero.  */
-	  return false;
+	  /* If the character EXP is known to be non-zero (even if its
+	     exact value is not known) recurse once to set the range
+	     for an arbitrary constant.  */
+	  exp = build_int_cst (type, 1);
+	  return count_nonzero_bytes (exp, offset, 1, lenrange,
+				      nulterm, allnul, allnonnul, snlim);
 	}
 
       gimple *stmt = SSA_NAME_DEF_STMT (exp);
-      if (gimple_code (stmt) != GIMPLE_PHI)
-	return false;
-
-      /* Avoid processing an SSA_NAME that has already been visited
-	 or if an SSA_NAME limit has been reached.  Indicate success
-	 if the former and failure if the latter.  */
-      if (int res = snlim.next_ssa_name (exp))
-	return res > 0;
-
-      /* Determine the minimum and maximum from the PHI arguments.  */
-      unsigned int n = gimple_phi_num_args (stmt);
-      for (unsigned i = 0; i != n; i++)
+      if (gimple_assign_single_p (stmt))
 	{
-	  tree def = gimple_phi_arg_def (stmt, i);
-	  if (!count_nonzero_bytes (def, offset, nbytes, lenrange, nulterm,
-				    allnul, allnonnul, snlim))
+	  exp = gimple_assign_rhs1 (stmt);
+	  if (TREE_CODE (exp) != MEM_REF)
 	    return false;
 	}
+      else if (gimple_code (stmt) == GIMPLE_PHI)
+	{
+	  /* Avoid processing an SSA_NAME that has already been visited
+	     or if an SSA_NAME limit has been reached.  Indicate success
+	     if the former and failure if the latter.  */
+	  if (int res = snlim.next_ssa_name (exp))
+	    return res > 0;
 
-      return true;
+	  /* Determine the minimum and maximum from the PHI arguments.  */
+	  unsigned int n = gimple_phi_num_args (stmt);
+	  for (unsigned i = 0; i != n; i++)
+	    {
+	      tree def = gimple_phi_arg_def (stmt, i);
+	      if (!count_nonzero_bytes (def, offset, nbytes, lenrange, nulterm,
+					allnul, allnonnul, snlim))
+		return false;
+	    }
+
+	  return true;
+	}
     }
 
   if (TREE_CODE (exp) == MEM_REF)
@@ -3897,14 +3901,25 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
       prep = reinterpret_cast <char *>(buf);
       /* Try to extract the representation of the constant object
 	 or expression starting from the offset.  */
-      nbytes = native_encode_expr (exp, buf, sizeof buf, offset);
-      if (!nbytes)
-	return false;
+      unsigned repsize = native_encode_expr (exp, buf, sizeof buf, offset);
+      if (repsize < nbytes)
+	{
+	  /* This should only happen when REPSIZE is zero because EXP
+	     doesn't denote an object with a known initializer, except
+	     perhaps when the reference reads past its end.  */
+	  lenrange[0] = 0;
+	  prep = NULL;
+	}
+      else
+	nbytes = repsize;
     }
+
+  if (!nbytes)
+    return false;
 
   /* Compute the number of leading nonzero bytes in the representation
      and update the minimum and maximum.  */
-  unsigned n = strnlen (prep, nbytes);
+  unsigned n = prep ? strnlen (prep, nbytes) : nbytes;
 
   if (n < lenrange[0])
     lenrange[0] = n;

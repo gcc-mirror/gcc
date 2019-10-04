@@ -1,5 +1,12 @@
 2019-10-04  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/91977
+	* tree-ssa-strlen.c (count_nonzero_bytes): Handle assignments with
+	MEM_REF right operand.  Avoid failing for MEM_REF assignments from
+	uninitialized objects.
+
+2019-10-04  Martin Sebor  <msebor@redhat.com>
+
 	* builtins.c (compute_objsize): Add an argument.
 	* tree-object-size.c (addr_object_size): Same.
 	(compute_builtin_object_size): Same.
