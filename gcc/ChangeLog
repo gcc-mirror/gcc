@@ -1,4 +1,13 @@
-	2019-10-04  Dragan Mladjenovic <dmladjenovic@wavecomp.com>
+2019-10-04  Dragan Mladjenovic <dmladjenovic@wavecomp.com>
+
+	Backport from mainline
+	2019-10-03  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	PR target/91769
+	* config/mips/mips.c (mips_split_move): Use reg_overlap_mentioned_p
+	instead of REGNO equality check on addr.reg.
+
+2019-10-04  Dragan Mladjenovic <dmladjenovic@wavecomp.com>
 
 	Backport from mainline
 	2019-07-07  Richard Sandiford  <richard.sandiford@arm.com>
