@@ -1,3 +1,13 @@
+2019-10-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	(value_range_from_overflowed_bounds): Rename from
+	adjust_overflow_bound.
+	(value_range_with_overflow): Rename from
+	create_range_with_overflow.
+	(create_possibly_reversed_range): Adjusted for above renames.
+	(operator_*::wi_fold): Same.
+	(cross_product_operator::wi_cross_productor): Same.
+
 2019-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* doc/invoke.texi (-Wshadow=global, -Wshadow=local,
