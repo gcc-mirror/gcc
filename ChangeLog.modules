@@ -1,6 +1,10 @@
 2019-10-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_in::tree_value): Rework merge_kind switching.
+	(trees_{in,out}::key_mergeable): Likewise.
+
+	gcc/cp/
 	* module.cc (enum merge_kind): Reorder.
 
 2019-10-03  Nathan Sidwell  <nathan@acm.org>

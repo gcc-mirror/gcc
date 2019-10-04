@@ -2769,7 +2769,7 @@ enum merge_kind
 
   MK_type_spec = MK_template_mask,
   MK_type_tmpl_spec = MK_type_spec | MK_tmpl_tmpl_mask,
-  MK_type_partial_spec = MK_type_spec | MK_tmpl_partial_mask,
+  MK_type_partial_spec = MK_type_tmpl_spec | MK_tmpl_partial_mask,
 
   MK_decl_spec = MK_template_mask | MK_tmpl_decl_mask,
   MK_decl_tmpl_spec = MK_decl_spec | MK_tmpl_tmpl_mask,
@@ -2782,7 +2782,7 @@ static char const *const merge_kind_name[MK_hwm] =
   {
     "none", NULL, "named", "implicit",  /* 0...3  */
     "clone", NULL, "linkage", "enum",   /* 4...7  */
-    "type spec", "type tmpl spec", "type partial spec", NULL, /* 8...11  */
+    "type spec", "type tmpl spec", NULL, "type partial spec", /* 8...11  */
     "decl spec", "decl tmpl spec", "both spec", "both tmpl spec" /* 12...15  */
   };
 
@@ -7891,34 +7891,17 @@ trees_in::tree_value (walk_kind walk)
 				     &container, &key, &fn_args, &r_type,
 				     &parm_tag);
 
-      switch (mk)
+      if (mk & MK_template_mask)
 	{
-	default:
-	  goto bail;
-
-	case MK_clone:
-	  DECL_CONTEXT (res) = FROB_CONTEXT (container);
-	  break;
-
-	case MK_named:
-	  /* A named decl.  */
-	  DECL_NAME (res) = key;
-	  /* FALLTHROUGH.  */
-
-	case MK_enum:
-	case MK_linkage:
-	  DECL_CONTEXT (res) = FROB_CONTEXT (container);
-	  break;
-
-	case MK_decl_spec:
-	case MK_decl_tmpl_spec:
-	case MK_type_spec:
-	case MK_type_tmpl_spec:
-	case MK_type_partial_spec:
 	  /* A specialization of some kind.  */
 	  DECL_NAME (res) = DECL_NAME (container);
 	  DECL_CONTEXT (res) = DECL_CONTEXT (container);
-	  break;
+	}
+      else
+	{
+	  if (!(mk & MK_indirect_mask))
+	    DECL_NAME (res) = key;
+	  DECL_CONTEXT (res) = FROB_CONTEXT (container);
 	}
 
       if (inner_tag != 0)
@@ -7930,25 +7913,79 @@ trees_in::tree_value (walk_kind walk)
       const char *kind = "new";
       tree existing = NULL_TREE;
 
-      switch (mk)
+      if (mk & MK_template_mask)
 	{
-	default:
-	  if (is_mod && !(state->is_primary () || state->is_partition ()))
-	    /* This is a module-purview entity, and we're not loading part
-	       of the current module, so it must be unique.  */
-	    kind = "unique";
-	  else
-	    existing = match_mergeable_decl (res, container, key, is_mod,
-					     r_type, fn_args);
-	  break;
+	  tree insert = res;
+	  if (mk & MK_tmpl_tmpl_mask)
+	    {
+	      if (!inner_tag)
+		goto bail;
+	      insert = inner;
+	    }
+	  bool is_decl = mk & MK_tmpl_decl_mask;
+	  if (!is_decl)
+	    {
+	      if (mk == MK_type_spec && inner_tag)
+		goto bail;
+	      insert = type;
+	    }
 
-	case MK_linkage:
+	  existing = match_mergeable_specialization (is_decl, container, key,
+						     insert);
+
+	  if (!existing)
+	    {
+	      if (mk & MK_tmpl_decl_mask && mk & MK_tmpl_both_mask)
+		{} // FIXME: insert into type table
+	    }
+	  else if (mk & MK_tmpl_decl_mask)
+	    {
+	      /* A declaration specialization.  */
+	      if (mk & MK_tmpl_tmpl_mask)
+		if (tree ti = DECL_TEMPLATE_INFO (existing))
+		  {
+		    tree tmpl = TI_TEMPLATE (ti);
+		    if (DECL_TEMPLATE_RESULT (tmpl) == existing)
+		      existing = tmpl;
+		  }
+
+	      if (mk & MK_tmpl_both_mask)
+		{} // FIXME: check it's in the type table too
+	    }
+	  else
+	    {
+	      /* A type specialization.  */
+	      if (!(mk & MK_tmpl_tmpl_mask))
+		existing = TYPE_NAME (existing);
+	      else if (mk & MK_tmpl_partial_mask)
+		{
+		  /* A partial specialization.  */
+		  for (tree partial = DECL_TEMPLATE_SPECIALIZATIONS (container);
+		       partial; partial = TREE_CHAIN (partial))
+		    if (TREE_TYPE (partial) == existing)
+		      {
+			existing = TREE_VALUE (partial);
+			break;
+		      }
+		  gcc_assert (TREE_CODE (existing) == TEMPLATE_DECL);
+		}
+	      else
+		if (tree ti = CLASSTYPE_TEMPLATE_INFO (existing))
+		  {
+		    tree tmpl = TI_TEMPLATE (ti);
+		    if (DECL_TEMPLATE_RESULT (tmpl) == TYPE_NAME (existing))
+		      existing = tmpl;
+		  }
+	    }
+	}
+      else if (mk == MK_linkage)
+	{
 	  /* KEY will be the typedef.  We're its TREE_TYPE's TYPE_STUB_DECL.  */
 	  if (tree tdef_type = TREE_TYPE (key))
 	    existing = TYPE_STUB_DECL (tdef_type);
-	  break;
-
-	case MK_clone:
+	}
+      else if (mk == MK_clone)
+	{
 	  kind = "clone";
 	  /* Our merging is the same as that of the thing we cloned.  */
 	  if (get_dupness (get_instantiating_module_decl (container))
@@ -7963,70 +8000,16 @@ trees_in::tree_value (walk_kind walk)
 	      if (inner != res)
 		DECL_CHAIN (DECL_TEMPLATE_RESULT (key)) = inner;
 	    }
-	  break;
-
-	case MK_decl_spec:
-	  existing = match_mergeable_specialization (true, container, key, res);
-	  break;
-
-	case MK_decl_tmpl_spec:
-	  if (!inner_tag)
-	    goto bail;
-
-	  existing = match_mergeable_specialization (true, container, key,
-						     inner);
-	  if (existing)
-	    if (tree ti = DECL_TEMPLATE_INFO (existing))
-	      {
-		tree tmpl = TI_TEMPLATE (ti);
-		if (DECL_TEMPLATE_RESULT (tmpl) == existing)
-		  existing = tmpl;
-	      }
-	  break;
-
-	case MK_type_spec:
-	  if (inner_tag)
-	    goto bail;
-
-	  existing
-	    = match_mergeable_specialization (false, container, key, type);
-	  if (existing)
-	    existing = TYPE_NAME (existing);
-	  break;
-
-	case MK_type_tmpl_spec:
-	  if (!inner_tag)
-	    goto bail;
-
-	  existing = match_mergeable_specialization (false, container, key,
-						     type);
-	  if (existing)
-	    if (tree ti = CLASSTYPE_TEMPLATE_INFO (existing))
-	      {
-		tree tmpl = TI_TEMPLATE (ti);
-		if (DECL_TEMPLATE_RESULT (tmpl) == TYPE_NAME (existing))
-		  existing = tmpl;
-	      }
-	  break;
-
-	case MK_type_partial_spec:
-	  if (!inner_tag)
-	    goto bail;
-
-	  existing
-	    = match_mergeable_specialization (false, container, key, type);
-	  if (existing)
-	    {
-	      for (tree partial = DECL_TEMPLATE_SPECIALIZATIONS (container);
-		   partial; partial = TREE_CHAIN (partial))
-		if (TREE_TYPE (partial) == existing)
-		  {
-		    existing = TREE_VALUE (partial);
-		    break;
-		  }
-	      gcc_assert (TREE_CODE (existing) == TEMPLATE_DECL);
-	    }
-	  break;
+	}
+      else
+	{
+	  if (is_mod && !(state->is_primary () || state->is_partition ()))
+	    /* This is a module-purview entity, and we're not loading part
+	       of the current module, so it must be unique.  */
+	    kind = "unique";
+	  else
+	    existing = match_mergeable_decl (res, container, key, is_mod,
+					     r_type, fn_args);
 	}
 
       merge_slot = register_mergeable (res, existing);
@@ -9276,21 +9259,25 @@ trees_out::key_mergeable (depset *dep)
       gcc_checking_assert (dep->is_special ());
       entry = reinterpret_cast <spec_entry *> (dep->deps[0]);
 
-      if (dep->is_type_spec ())
-	{
-	  if (dep->is_partial ())
-	    mk = MK_type_partial_spec;
-	  else if (TREE_CODE (decl) == TEMPLATE_DECL
-		   && TREE_TYPE (DECL_TEMPLATE_RESULT (decl)) == entry->spec)
-	    mk = MK_type_tmpl_spec;
-	  else
-	    mk = MK_type_spec;
-	}
-      else if (TREE_CODE (decl) == TEMPLATE_DECL
-	       && DECL_TEMPLATE_RESULT (decl) == entry->spec)
-	mk = MK_decl_tmpl_spec;
-      else
+      if (!dep->is_type_spec ())
 	mk = MK_decl_spec;
+      else if (dep->is_partial ())
+	mk = MK_type_partial_spec;
+      else
+	mk = MK_type_spec;
+
+      if (TREE_CODE (decl) == TEMPLATE_DECL)
+	{
+	  tree res = DECL_TEMPLATE_RESULT (decl);
+	  if (!(mk & MK_tmpl_decl_mask))
+	    res = TREE_TYPE (res);
+	  if (res == entry->spec)
+	    mk = merge_kind (mk | MK_tmpl_tmpl_mask);
+	}
+
+      // FIXME: check if BOTH_SPEC_BIT
+      if (false)
+	mk = merge_kind (mk | MK_tmpl_both_mask);
       break;
     }
 
@@ -9319,129 +9306,110 @@ trees_out::key_mergeable (depset *dep)
     fn_parms_init (inner);
 
   /* Now write the locating information. */
-  switch (mk)
+  if (mk & MK_template_mask)
     {
-    default:
-      gcc_unreachable ();
+      /* Specializations are located via their originating template,
+	 and the set of template args they specialize.  */
+      tree_node (entry->tmpl);
+      tree_node (entry->args);
 
-    case MK_clone:
-      {
-	/* Clones are located by the thing they clone.  We also use their
-	   predecessor entity, to force their ordering.  */
-	tree target = get_clone_target (decl);
-	tree predecessor = target;
-	tree clone = NULL_TREE;
-	FOR_EVERY_CLONE (clone, target)
-	  {
-	    if (clone == decl)
-	      break;
-	    predecessor = clone;
-	  }
+      if (CHECKING_P)
+	{
+	  /* Make sure we can locate the decl.  */
+	  tree existing = match_mergeable_specialization
+	    (bool (mk & MK_tmpl_decl_mask), entry->tmpl, entry->args, NULL);
 
-	gcc_assert (clone);
-	tree_node (target);
-	tree_node (predecessor);
-      }
-      break;
-
-    case MK_enum:
-      /* Anonymous enums are located by their first identifier.  */
-      {
-	gcc_checking_assert (UNSCOPED_ENUM_P (TREE_TYPE (decl)));
-	tree name = NULL_TREE;
-	if (tree values = TYPE_VALUES (TREE_TYPE (decl)))
-	  name = DECL_NAME (TREE_VALUE (values));
-	tree_node (name);
-      }
-      break;
-
-    case MK_linkage:
-      {
-	/* Anonymous types with a typedef name for linkage purposes
-	   are located by that typedef.  */
-	tree namer = TYPE_NAME (TREE_TYPE (decl));
-
-	gcc_checking_assert (!IDENTIFIER_ANON_P (DECL_NAME (namer)));
-	tree_node (namer);
-      }
-      break;
-
-    case MK_named:
-      {
-	/* Regular decls are located by their context, name, and
-	   additional disambiguating data.  */
-	tree_node (DECL_NAME (decl));
-
-	if (TREE_CODE (inner) == FUNCTION_DECL)
-	  {
-	    /* Functions are distinguished by parameter types.  */
-	    tree fn_type = TREE_TYPE (inner);
-	    fn_arg_types (TYPE_ARG_TYPES (fn_type));
-
-	    if (decl != inner)
-	      /* And a function template needs the return type.  */
-	      // FIXME: What if the return type is a voldemort?  We
-	      // should be using the declared return type.
-	      tree_node (TREE_TYPE (fn_type));
-	  }
-      }
-      break;
-
-    case MK_decl_spec:
-    case MK_decl_tmpl_spec:
-    case MK_type_spec:
-    case MK_type_tmpl_spec:
-    case MK_type_partial_spec:
-      {
-	/* Specializations are located via their originating template,
-	   and the set of template args they specialize.  */
-
-	tree_node (entry->tmpl);
-	tree_node (entry->args);
-
-	if (CHECKING_P)
-	  {
-	    tree existing = match_mergeable_specialization
-	      (mk == MK_decl_tmpl_spec || mk == MK_decl_spec,
-	       entry->tmpl, entry->args, NULL);
-
-	    switch (mk)
-	      {
-	      default:
-		gcc_unreachable ();
-
-	      case MK_type_spec:
-		existing = TYPE_NAME (existing);
-		break;
-
-	      case MK_type_tmpl_spec:
-		if (tree ti = CLASSTYPE_TEMPLATE_INFO (existing))
-		  existing = TI_TEMPLATE (ti);
-		break;
-
-	      case MK_type_partial_spec:
-		for (tree partial = DECL_TEMPLATE_SPECIALIZATIONS (entry->tmpl);
-		     partial; partial = TREE_CHAIN (partial))
-		  if (TREE_TYPE (partial) == existing)
-		    {
-		      existing = TREE_VALUE (partial);
-		      break;
-		    }
-		break;
-
-	      case MK_decl_spec:
-		break;
-
-	      case MK_decl_tmpl_spec:
+	  gcc_assert (existing);
+	  if (mk & MK_tmpl_decl_mask)
+	    {
+	      if (mk & MK_tmpl_tmpl_mask)
 		if (tree ti = DECL_TEMPLATE_INFO (existing))
 		  existing = TI_TEMPLATE (ti);
-		break;
-	      }
-	    gcc_assert (existing == decl);
-	  }
-      }
-      break;
+	      if (mk & MK_tmpl_both_mask)
+		{} // FIXME: check it's inthe type table too
+	    }
+	  else
+	    {
+	      if (!(mk & MK_tmpl_tmpl_mask))
+		existing = TYPE_NAME (existing);
+	      else if (mk & MK_tmpl_partial_mask)
+		{
+		  /* A partial specialization.  */
+		  for (tree partial
+			 = DECL_TEMPLATE_SPECIALIZATIONS (entry->tmpl);
+		       partial; partial = TREE_CHAIN (partial))
+		    if (TREE_TYPE (partial) == existing)
+		      {
+			existing = TREE_VALUE (partial);
+			break;
+		      }
+		}
+	      else
+		if (tree ti = CLASSTYPE_TEMPLATE_INFO (existing))
+		  existing = TI_TEMPLATE (ti);
+	    }
+	  /* The walkabout should have found ourselves.  */
+	  gcc_assert (existing == decl);
+	}
     }
+ else if (mk == MK_clone)
+   {
+     /* Clones are located by the thing they clone.  We also use their
+	predecessor entity, to force their ordering.  */
+     tree target = get_clone_target (decl);
+     tree predecessor = target;
+     tree clone = NULL_TREE;
+     FOR_EVERY_CLONE (clone, target)
+       {
+	 if (clone == decl)
+	   break;
+	 predecessor = clone;
+       }
+
+     gcc_assert (clone);
+     tree_node (target);
+     tree_node (predecessor);
+   }
+ else if (mk & MK_indirect_mask)
+   {
+     tree name = NULL_TREE;
+
+     if (mk == MK_enum)
+       {
+	 /* Anonymous enums are located by their first identifier.  */
+	 gcc_checking_assert (UNSCOPED_ENUM_P (TREE_TYPE (decl)));
+	 if (tree values = TYPE_VALUES (TREE_TYPE (decl)))
+	   name = DECL_NAME (TREE_VALUE (values));
+       }
+     else
+       {
+	 /* Anonymous types with a typedef name for linkage purposes
+	    are located by that typedef.  */
+	 name = TYPE_NAME (TREE_TYPE (decl));
+	 gcc_checking_assert (!IDENTIFIER_ANON_P (DECL_NAME (name)));
+       }
+
+     tree_node (name);
+   }
+ else
+   {
+     /* Regular decls are located by their context, name, and
+	additional disambiguating data.  */
+     tree_node (DECL_NAME (decl));
+
+     if (TREE_CODE (inner) == FUNCTION_DECL)
+       {
+	 /* Functions are distinguished by parameter types.  */
+	 tree fn_type = TREE_TYPE (inner);
+	 fn_arg_types (TYPE_ARG_TYPES (fn_type));
+
+	 if (decl != inner)
+	   /* And a function template needs the return type.  */
+	   // FIXME: What if the return type is a voldemort?  We
+	   // should be using the declared return type.
+	   tree_node (TREE_TYPE (fn_type));
+       }
+   }
 
   return mk;
 }
@@ -9465,7 +9433,8 @@ trees_in::key_mergeable (tree decl, tree inner, tree,
 
   tree ctx = tree_node ();
 
-  if (mk != MK_clone && decl != inner)
+  if (decl != inner
+      && mk != MK_clone)
     /* A template needs its template parms for identification.  */
     if (!tpl_header (decl))
       return MK_none;
@@ -9474,9 +9443,14 @@ trees_in::key_mergeable (tree decl, tree inner, tree,
     *parm_tag = fn_parms_init (inner);
 
   /* Now read the locating information. */
-  switch (mk)
+  if (mk & MK_template_mask
+      || mk == MK_clone)
     {
-    default:
+      *container = tree_node ();
+      *key = tree_node ();
+    }
+  else
+    {
       *container = ctx;
       *key = tree_node ();
 
@@ -9486,17 +9460,6 @@ trees_in::key_mergeable (tree decl, tree inner, tree,
 	  if (decl != inner)
 	    *r_type = tree_node ();
 	}
-      break;
-
-    case MK_clone:
-    case MK_decl_spec:
-    case MK_decl_tmpl_spec:
-    case MK_type_spec:
-    case MK_type_tmpl_spec:
-    case MK_type_partial_spec:
-      *container = tree_node ();
-      *key = tree_node ();
-      break;
     }
 
   return get_overrun () ? MK_none : mk;
