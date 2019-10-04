@@ -1,3 +1,8 @@
+2019-10-04  Maya Rashish  <coypu@sdf.org>
+
+	* ira-color.c (update_costs_from_allocno): Call
+	ira_init_register_move_cost_if_necessary.
+
 2019-10-04  Jeff Law  <law@redhat.com>
 
 	* config/h8300/h8300.md (cpymemsi): Disable.
