@@ -3234,6 +3234,10 @@ class Const_expression : public Expression
   named_object()
   { return this->constant_; }
 
+  const Named_object*
+  named_object() const
+  { return this->constant_; }
+
   // Check that the initializer does not refer to the constant itself.
   void
   check_for_init_loop();
@@ -16780,6 +16784,15 @@ Expression::is_local_variable() const
   const Named_object* no = ve->named_object();
   return (no->is_result_variable()
 	  || (no->is_variable() && !no->var_value()->is_global()));
+}
+
+const Named_object*
+Expression::named_constant() const
+{
+  if (this->classification() != EXPRESSION_CONST_REFERENCE)
+    return NULL;
+  const Const_expression* ce = static_cast<const Const_expression*>(this);
+  return ce->named_object();
 }
 
 // Class Type_guard_expression.
