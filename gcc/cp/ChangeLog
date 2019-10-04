@@ -1,3 +1,11 @@
+2019-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91974
+	* cp-gimplify.c (cp_gimplify_expr) <case CALL_EXPR>: For
+	-fstrong-eval-order ensure CALL_EXPR_FN side-effects are evaluated
+	before any arguments.  Additionally, ensure CALL_EXPR_FN that isn't
+	invariant nor OBJ_TYPE_REF nor SSA_NAME is forced into a temporary.
+
 2019-10-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* init.c (build_new): Use cp_expr_loc_or_input_loc in two places.
