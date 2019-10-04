@@ -1,3 +1,8 @@
+2019-10-04  Yuliang Wang  <yuliang.wang@arm.com>
+
+	* gcc.target/aarch64/sve2/shracc_1.c: Tighten scan-assembler-nots
+	to avoid matching scalar code.
+
 2019-10-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/use_without_only_1.f90: Update column num in dg-warning.
