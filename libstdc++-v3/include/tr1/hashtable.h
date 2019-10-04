@@ -34,6 +34,7 @@
 #pragma GCC system_header
 
 #include <tr1/hashtable_policy.h>
+#include <ext/alloc_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
