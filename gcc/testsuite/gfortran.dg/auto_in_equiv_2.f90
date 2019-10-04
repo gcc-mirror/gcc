@@ -1,38 +1,14 @@
 ! { dg-do run }
-! { dg-options "-fdec-static" }
+! { dg-options "-fdec-static -frecursive -fno-automatic" }
 
 ! Contributed by Mark Eggleston <mark.eggleston@codethink.com>
+!
+! Check that -fno-automatic does not break recursion. The recursive
+! function is not marked with the resursive key word consequently
+! local variables can be made static when -fno-automatic is used. The
+! recursive function contains an equivalence that has a variable with
+! the automatic attribute and one without.
+!
+include "auto_in_equiv_1.f90"
 
-program test
-  call suba(0)
-  call subb(0)
-  call suba(1)
-
-contains
-  subroutine suba(option) 
-    integer, intent(in) :: option
-    integer, automatic :: a
-    integer :: b
-    integer :: c
-    equivalence (a, b)
-    if (option.eq.0) then
-      ! initialise a and c
-      a = 9
-      c = 99
-      if (a.ne.b) stop 1
-      if (loc(a).ne.loc(b)) stop 2
-    else
-      ! a should've been overwritten
-      if (a.eq.9) stop 3
-    end if
-  end subroutine suba
-
-  subroutine subb(dummy)
-    integer, intent(in) :: dummy
-    integer, automatic :: x
-    integer :: y
-    x = 77
-    y = 7
-  end subroutine subb
-
-end program test
+! { dg-warning "Flag '-fno-automatic' overwrites '-frecursive'" "warning" { target *-*-* } 0 } 
