@@ -1,5 +1,10 @@
 2019-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	* hash-table.h (hash_table::empty_slow): Don't assign
+	size_t values to int variables.
+
+2019-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
 	* expr.c (convert_mode_scalar): Remove shadowing local var.
 	(emit_block_move): Rename local vars.
 	(block_move_libcall_safe_for_call_parm): Remove shadowing local var.
