@@ -1,3 +1,7 @@
+2019-10-04  Rafael Tsuha  <rafael.tsuha@usp.br>
+
+        * gcc.dg/sinhovercosh-1.c: New test.
+
 2019-10-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c11-builtins-1.c, gcc.dg/c2x-builtins-1.c,

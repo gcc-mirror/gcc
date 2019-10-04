@@ -1,3 +1,7 @@
+2019-10-04  Rafael Tsuha  <rafael.tsuha@usp.br>
+
+        * match.pd (sinh (x) / cosh (x)): New simplification rule.
+
 2019-10-04  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-ssa-forwprop.c (simplify_builtin_call): Set gimple call
