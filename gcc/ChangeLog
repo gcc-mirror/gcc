@@ -1,5 +1,9 @@
 2019-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	* cgraph.h (FOR_EACH_ALIAS): Avoid shadowing the loop variable.
+
+2019-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
 	* genmatch.c (commutate): Rename local var.
 	(lower_cond): Reuse local var.
 	(dt_node::gen, dt_node::gen_kids, dt_node::gen_kids_1,

@@ -648,8 +648,10 @@ symtab_node::checking_verify_symtab_nodes (void)
 }
 
 /* Walk all aliases for NODE.  */
-#define FOR_EACH_ALIAS(node, alias) \
-  for (unsigned x_i = 0; node->iterate_direct_aliases (x_i, alias); x_i++)
+#define FOR_EACH_ALIAS(NODE, ALIAS)				\
+  for (unsigned ALIAS##_iter_ = 0;				\
+       (NODE)->iterate_direct_aliases (ALIAS##_iter_, ALIAS);	\
+       ALIAS##_iter_++)
 
 /* This is the information that is put into the cgraph local structure
    to recover a function.  */
