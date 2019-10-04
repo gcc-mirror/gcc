@@ -6870,50 +6870,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return false;
     }
 
-  if ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == TYPE_DECL)
-      && DECL_TINFO_P (decl))
-    {
-      /* A typeinfo, tt_tinfo_typedef or tt_tinfo_var.  */
-      gcc_checking_assert (ref = WK_normal);
-
-      bool is_var = TREE_CODE (decl) == VAR_DECL;
-      tree type = TREE_TYPE (decl);
-      unsigned ix = get_pseudo_tinfo_index (type);
-      if (streaming_p ())
-	{
-	  i (is_var ? tt_tinfo_var : tt_tinfo_typedef);
-	  u (ix);
-	}
-
-      if (is_var)
-	{
-	  /* We also need the type it is for and mangled name, so the
-	     reader doesn't need to complete the type (which would
-	     break section ordering).  The type it is for is stashed
-	     on the name's TREE_TYPE.  */
-	  tree name = DECL_NAME (decl);
-	  tree_node (name);
-	  type = TREE_TYPE (name);
-	  tree_node (type);
-	}
-
-      int tag = insert (decl);
-      if (streaming_p ())
-	dump (dumper::TREE)
-	  && dump ("Wrote tinfo_%s:%d %u %N", is_var ? "var" : "type",
-		   tag, ix, type);
-
-      if (!is_var)
-	{
-	  tag = insert (type);
-	  if (streaming_p ())
-	    dump (dumper::TREE)
-	      && dump ("Wrote tinfo_type:%d %u %N", tag, ix, type);
-	}
-
-      return false;
-    }
-
   if (ref == WK_body || ref == WK_mergeable || ref == WK_clone)
     {
       if (!streaming_p ()
@@ -6949,6 +6905,47 @@ trees_out::decl_node (tree decl, walk_kind ref)
     case TEMPLATE_DECL:
       if (TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TEMPLATE_PARM)
 	return true; 	// FIXME: Likewise in tpl_header
+
+      if (DECL_CHAIN (decl)
+	  && RECORD_OR_UNION_CODE_P (TREE_CODE (DECL_CHAIN (decl))))
+	{
+	  /* A (local template) friend of a template.  */
+	  if (streaming_p ())
+	    {
+	      i (tt_friend_template);
+	      dump (dumper::TREE) && dump ("Writing friend template %C:%N",
+					   TREE_CODE (decl), decl);
+	    }
+
+	  tree klass = DECL_CHAIN (decl);
+	  tree_node (klass);
+
+	  if (streaming_p ())
+	    {
+	      tree decls = CLASSTYPE_DECL_LIST (klass);
+	      for (unsigned ix = 0;; decls = TREE_CHAIN (decls))
+		if (!TREE_PURPOSE (decls))
+		  {
+		    tree frnd = friend_from_decl_list (TREE_VALUE (decls));
+		    if (frnd == decl)
+		      {
+			u (ix);
+			dump (dumper::TREE)
+			  && dump ("Wrote friend %N[%u], %C:%N",
+				   klass, ix, TREE_CODE (decl), decl);
+			break;
+		      }
+
+		    /* Count every friend to make streaming in simpler.  */
+		    ix++;
+		  }
+
+	      /* We must have found it.  */
+	      gcc_checking_assert (decls);
+	    }
+
+	  return false;
+	}
       break;
 
     case CONST_DECL:
@@ -7007,9 +7004,53 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	      }
 	  gcc_unreachable ();
 	}
+
+      if (DECL_TINFO_P (decl))
+	{
+	tinfo:
+	  /* A typeinfo, tt_tinfo_typedef or tt_tinfo_var.  */
+	  bool is_var = TREE_CODE (decl) == VAR_DECL;
+	  tree type = TREE_TYPE (decl);
+	  unsigned ix = get_pseudo_tinfo_index (type);
+	  if (streaming_p ())
+	    {
+	      i (is_var ? tt_tinfo_var : tt_tinfo_typedef);
+	      u (ix);
+	    }
+
+	  if (is_var)
+	    {
+	      /* We also need the type it is for and mangled name, so
+		 the reader doesn't need to complete the type (which
+		 would break section ordering).  The type it is for is
+		 stashed on the name's TREE_TYPE.  */
+	      tree name = DECL_NAME (decl);
+	      tree_node (name);
+	      type = TREE_TYPE (name);
+	      tree_node (type);
+	    }
+
+	  int tag = insert (decl);
+	  if (streaming_p ())
+	    dump (dumper::TREE)
+	      && dump ("Wrote tinfo_%s:%d %u %N", is_var ? "var" : "type",
+		       tag, ix, type);
+
+	  if (!is_var)
+	    {
+	      tag = insert (type);
+	      if (streaming_p ())
+		dump (dumper::TREE)
+		  && dump ("Wrote tinfo_type:%d %u %N", tag, ix, type);
+	    }
+	  return false;
+	}
       break;
 
     case TYPE_DECL:
+      if (DECL_TINFO_P (decl))
+	goto tinfo;
+
       if (decl == TYPE_STUB_DECL (TREE_TYPE (decl))
 	  && TREE_CODE (TREE_TYPE (decl)) == TYPENAME_TYPE)
 	{
@@ -7082,6 +7123,14 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return false;
     }
 
+  /* Everything left should be a thing that is in the entity table.
+     Things that can be defined outside of their (original
+     declaration) context.  */
+  // FIXME: *could* be in the entity table.  I don't get that right yet
+  gcc_checking_assert (TREE_CODE (STRIP_TEMPLATE (decl)) == VAR_DECL
+		       || TREE_CODE (STRIP_TEMPLATE (decl)) == FUNCTION_DECL
+		       || TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL);
+
   int use_tpl = -1;
   tree ti = node_template_info (decl, use_tpl);
   tree tpl = NULL_TREE;
@@ -7105,55 +7154,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	gcc_checking_assert (TREE_VISITED (TREE_TYPE (decl)));
       return false;
     }
-
-  if (TREE_CODE (decl) == TEMPLATE_DECL
-      && DECL_CHAIN (decl)
-      && RECORD_OR_UNION_CODE_P (TREE_CODE (DECL_CHAIN (decl))))
-    {
-      /* A (local template) friend of a template.  */
-      if (streaming_p ())
-	{
-	  i (tt_friend_template);
-	  dump (dumper::TREE)
-	    && dump ("Writing friend template %C:%N", TREE_CODE (decl), decl);
-	}
-
-      tree klass = DECL_CHAIN (decl);
-      tree_node (klass);
-
-      if (streaming_p ())
-	{
-	  tree decls = CLASSTYPE_DECL_LIST (klass);
-	  for (unsigned ix = 0;; decls = TREE_CHAIN (decls))
-	    if (!TREE_PURPOSE (decls))
-	      {
-		tree frnd = friend_from_decl_list (TREE_VALUE (decls));
-		if (frnd == decl)
-		  {
-		    u (ix);
-		    dump (dumper::TREE)
-		      && dump ("Wrote friend %N[%u], %C:%N",
-			       klass, ix, TREE_CODE (decl), decl);
-		    break;
-		  }
-
-		/* Count every friend to make streaming in simpler.  */
-		ix++;
-	      }
-
-	  /* We must have found it.  */
-	  gcc_checking_assert (decls);
-	}
-
-      return false;
-    }
-
-  /* Everything left should be a thing that is in the entity table.
-     Things that can be defined outside of their (original
-     declaration) context.  */
-  gcc_checking_assert (TREE_CODE (STRIP_TEMPLATE (decl)) == VAR_DECL
-		       || TREE_CODE (STRIP_TEMPLATE (decl)) == FUNCTION_DECL
-		       || TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL);
 
   const char *kind = NULL;
   int origin = -1;
