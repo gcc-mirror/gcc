@@ -1,5 +1,17 @@
 2019-10-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71504
+	* g++.dg/cpp0x/constexpr-array21.C: New test.
+	* g++.dg/cpp1y/constexpr-array7.C: New test.
+	* g++.dg/cpp1z/constexpr-array1.C: New test.
+
+2019-10-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/71504
+	* g++.dg/cpp0x/constexpr-array20.C: New test.
+
+2019-10-04  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/91974
 	* g++.dg/cpp1z/eval-order5.C: New test.
 
