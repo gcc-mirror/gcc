@@ -1,3 +1,7 @@
+2019-10-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/use_without_only_1.f90: Update column num in dg-warning.
+
 2019-10-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/71504

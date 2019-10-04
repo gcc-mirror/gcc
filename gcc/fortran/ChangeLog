@@ -1,3 +1,7 @@
+2019-10-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* error (error_print, gfc_format_decoder): Fix off-by one issue with %C.
+
 2019-10-03  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91497
@@ -54,7 +58,7 @@
 	messages instead of the original call to gfc_typename.
 	* misc.c (gfc_typename): New function for gfc_expr *, use for where
 	character types are possible it can get the character length from
-        gfc_expr for character literals.
+	gfc_expr for character literals.
 	(gfc_dummy_typename): New functionfor gfc_typespec *, if no character
 	length is present the character type is assumed and the appropriate 
 	string is return otherwise it calls gfc_typename for gfc_typespec *.
@@ -88,10 +92,10 @@
 	a subroutine reference.
 	* resolve.c (resolve_function): BOZ cannot be an actual argument in
 	a function reference.
- 
+
 2019-10-01  Jan Hubicka  <jh@suse.cz>
 
-	* module.c (load_commons): Initialize flags to 0 to silecne
+	* module.c (load_commons): Initialize flags to 0 to silence
 	-Wmaybe-uninitialized warning.
 	(read_module): Likewise for n and comp_name.
 

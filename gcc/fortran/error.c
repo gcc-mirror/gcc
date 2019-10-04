@@ -618,12 +618,18 @@ error_print (const char *type, const char *format0, va_list argp)
 	      {
 		l2 = loc;
 		arg[pos].u.stringval = "(2)";
+		/* Point %C first offending character not the last good one. */
+		if (arg[pos].type == TYPE_CURRENTLOC)
+		  l2->nextc++;
 	      }
 	    else
 	      {
 		l1 = loc;
 		have_l1 = 1;
 		arg[pos].u.stringval = "(1)";
+		/* Point %C first offending character not the last good one. */
+		if (arg[pos].type == TYPE_CURRENTLOC)
+		  l1->nextc++;
 	      }
 	    break;
 
@@ -963,6 +969,9 @@ gfc_format_decoder (pretty_printer *pp, text_info *text, const char *spec,
 	  loc = va_arg (*text->args_ptr, locus *);
 	gcc_assert (loc->nextc - loc->lb->line >= 0);
 	unsigned int offset = loc->nextc - loc->lb->line;
+	if (*spec == 'C')
+	  /* Point %C first offending character not the last good one. */
+	  offset++;
 	/* If location[0] != UNKNOWN_LOCATION means that we already
 	   processed one of %C/%L.  */
 	int loc_num = text->get_location (0) == UNKNOWN_LOCATION ? 0 : 1;
@@ -1401,7 +1410,7 @@ gfc_internal_error (const char *gmsgid, ...)
 void
 gfc_clear_error (void)
 {
-  error_buffer.flag = 0;
+  error_buffer.flag = false;
   warnings_not_errors = false;
   gfc_clear_pp_buffer (pp_error_buffer);
 }
