@@ -4862,7 +4862,7 @@ mips_split_move (rtx dest, rtx src, enum mips_split_type split_type, rtx insn_)
 		{
 		  rtx tmp = XEXP (src, 0);
 		  mips_classify_address (&addr, tmp, GET_MODE (tmp), true);
-		  if (addr.reg && REGNO (addr.reg) != REGNO (dest))
+		  if (addr.reg && !reg_overlap_mentioned_p (dest, addr.reg))
 		    validate_change (next, &SET_SRC (set), src, false);
 		}
 	      else
