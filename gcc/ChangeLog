@@ -1,3 +1,10 @@
+2019-10-04  Martin Sebor  <msebor@redhat.com>
+
+	* builtins.c (compute_objsize): Add an argument.
+	* tree-object-size.c (addr_object_size): Same.
+	(compute_builtin_object_size): Same.
+	* tree-object-size.h (compute_builtin_object): Same.
+
 2019-10-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline.c (inline_insns_single, inline_insns_auto): Fix typo.

@@ -3587,7 +3587,7 @@ compute_objsize (tree dest, int ostype, tree *pdecl /* = NULL */)
   /* Only the two least significant bits are meaningful.  */
   ostype &= 3;
 
-  if (compute_builtin_object_size (dest, ostype, &size))
+  if (compute_builtin_object_size (dest, ostype, &size, pdecl))
     return build_int_cst (sizetype, size);
 
   if (TREE_CODE (dest) == SSA_NAME)
