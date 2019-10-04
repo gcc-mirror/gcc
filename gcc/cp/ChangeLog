@@ -1,5 +1,9 @@
 2019-10-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71504
+	* constexpr.c (cxx_fold_indirect_ref_1): New function.
+	(cxx_fold_indirect_ref): Use it.
+
 	PR c++/91974
 	* cp-gimplify.c (cp_gimplify_expr) <case CALL_EXPR>: For
 	-fstrong-eval-order ensure CALL_EXPR_FN side-effects are evaluated
