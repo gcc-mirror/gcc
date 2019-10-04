@@ -1,3 +1,8 @@
+2019-10-04  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/82752
+	* gcc.dg/format/c2x-strftime-1.c: New test.
+
 2019-10-04  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/91977
