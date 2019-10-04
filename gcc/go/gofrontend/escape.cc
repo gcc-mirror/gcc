@@ -1541,7 +1541,6 @@ Escape_analysis_assign::expression(Expression** pexpr)
 
   if (debug_level > 1)
     {
-      Node* n = Node::make_node(*pexpr);
       std::string fn_name = this->context_->current_function_name();
       go_debug((*pexpr)->location(), "[%d] %s esc: %s",
 	       this->context_->loop_depth(), fn_name.c_str(),
