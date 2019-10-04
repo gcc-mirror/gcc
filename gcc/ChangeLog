@@ -1,3 +1,11 @@
+2019-10-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* builtins.def (DEF_C2X_BUILTIN): New macro.
+	(exp10, exp10f, exp10l, fabsd32, fabsd64, fabsd128, nand32)
+	(nand64, nand128, roundeven, roundevenf, roundevenl, strdup)
+	(strndup): Use DEF_C2X_BUILTIN.
+	* coretypes.h (enum function_class): Add function_c2x_misc.
+
 2019-10-04  Maya Rashish  <coypu@sdf.org>
 
 	* ira-color.c (update_costs_from_allocno): Call
