@@ -33,6 +33,7 @@
 #include "addresses.h"
 #include "cfganal.h"
 #include "tree-pass.h"
+#include "function-abi.h"
 #include "regrename.h"
 
 /* This file implements the RTL register renaming pass of the compiler.  It is
@@ -303,6 +304,18 @@ merge_overlapping_regs (HARD_REG_SET *pset, class du_head *head)
     }
 }
 
+/* Return true if (reg:MODE REGNO) would be clobbered by a call covered
+   by THIS_HEAD.  */
+
+static bool
+call_clobbered_in_chain_p (du_head *this_head, machine_mode mode,
+			   unsigned int regno)
+{
+  return call_clobbered_in_region_p (this_head->call_abis,
+				     this_head->call_clobber_mask,
+				     mode, regno);
+}
+
 /* Check if NEW_REG can be the candidate register to rename for
    REG in THIS_HEAD chain.  THIS_UNAVAILABLE is a set of unavailable hard
    registers.  */
@@ -322,7 +335,7 @@ check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
 	|| global_regs[new_reg + i]
 	/* Can't use regs which aren't saved by the prologue.  */
 	|| (! df_regs_ever_live_p (new_reg + i)
-	    && ! call_used_or_fixed_reg_p (new_reg + i))
+	    && ! crtl->abi->clobbers_full_reg_p (new_reg + i))
 #ifdef LEAF_REGISTERS
 	/* We can't use a non-leaf register if we're in a
 	   leaf function.  */
@@ -337,11 +350,8 @@ check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
   for (tmp = this_head->first; tmp; tmp = tmp->next_use)
     if ((!targetm.hard_regno_mode_ok (new_reg, GET_MODE (*tmp->loc))
 	 && ! DEBUG_INSN_P (tmp->insn))
-	|| (this_head->need_caller_save_reg
-	    && ! (targetm.hard_regno_call_part_clobbered
-		  (NULL, reg, GET_MODE (*tmp->loc)))
-	    && (targetm.hard_regno_call_part_clobbered
-		(NULL, new_reg, GET_MODE (*tmp->loc)))))
+	|| call_clobbered_in_chain_p (this_head, GET_MODE (*tmp->loc),
+				      new_reg))
       return false;
 
   return true;
@@ -362,12 +372,6 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
   enum reg_class preferred_class;
   int pass;
   int best_new_reg = old_reg;
-
-  /* Further narrow the set of registers we can use for renaming.
-     If the chain needs a call-saved register, mark the call-used
-     registers as unavailable.  */
-  if (this_head->need_caller_save_reg)
-    *unavailable |= call_used_or_fixed_regs;
 
   /* Mark registers that overlap this chain's lifetime as unavailable.  */
   merge_overlapping_regs (unavailable, this_head);
@@ -499,7 +503,7 @@ rename_chains (void)
 	{
 	  fprintf (dump_file, "Register %s in insn %d",
 		   reg_names[reg], INSN_UID (this_head->first->insn));
-	  if (this_head->need_caller_save_reg)
+	  if (this_head->call_abis)
 	    fprintf (dump_file, " crosses a call");
 	}
 
@@ -680,7 +684,8 @@ merge_chains (du_head_p c1, du_head_p c2)
   c1->hard_conflicts |= c2->hard_conflicts;
   bitmap_ior_into (&c1->conflicts, &c2->conflicts);
 
-  c1->need_caller_save_reg |= c2->need_caller_save_reg;
+  c1->call_clobber_mask |= c2->call_clobber_mask;
+  c1->call_abis |= c2->call_abis;
   c1->cannot_rename |= c2->cannot_rename;
 }
 
@@ -1512,7 +1517,7 @@ scan_rtx (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 }
 
 /* Hide operands of the current insn (of which there are N_OPS) by
-   substituting cc0 for them.
+   substituting pc for them.
    Previous values are stored in the OLD_OPERANDS and OLD_DUPS.
    For every bit set in DO_NOT_HIDE, we leave the operand alone.
    If INOUT_AND_EC_ONLY is set, we only do this for OP_INOUT type operands
@@ -1536,7 +1541,7 @@ hide_operands (int n_ops, rtx *old_operands, rtx *old_dups,
 	continue;
       if (!inout_and_ec_only || recog_data.operand_type[i] == OP_INOUT
 	  || op_alt[i].earlyclobber)
-	*recog_data.operand_loc[i] = cc0_rtx;
+	*recog_data.operand_loc[i] = pc_rtx;
     }
   for (i = 0; i < recog_data.n_dups; i++)
     {
@@ -1546,7 +1551,7 @@ hide_operands (int n_ops, rtx *old_operands, rtx *old_dups,
 	continue;
       if (!inout_and_ec_only || recog_data.operand_type[opn] == OP_INOUT
 	  || op_alt[opn].earlyclobber)
-	*recog_data.dup_loc[i] = cc0_rtx;
+	*recog_data.dup_loc[i] = pc_rtx;
     }
 }
 
@@ -1749,7 +1754,7 @@ build_def_use (basic_block bb)
 
 	  /* Step 2: Mark chains for which we have reads outside operands
 	     as unrenamable.
-	     We do this by munging all operands into CC0, and closing
+	     We do this by munging all operands into PC, and closing
 	     everything remaining.  */
 
 	  hide_operands (n_ops, old_operands, old_dups, untracked_operands,
@@ -1834,9 +1839,15 @@ build_def_use (basic_block bb)
 	     requires a caller-saved reg.  */
 	  if (CALL_P (insn))
 	    {
+	      function_abi callee_abi = insn_callee_abi (insn);
 	      class du_head *p;
 	      for (p = open_chains; p; p = p->next_chain)
-		p->need_caller_save_reg = 1;
+		{
+		  p->call_abis |= (1 << callee_abi.id ());
+		  p->call_clobber_mask
+		    |= callee_abi.full_and_partial_reg_clobbers ();
+		  p->hard_conflicts |= callee_abi.full_reg_clobbers ();
+		}
 	    }
 
 	  /* Step 5: Close open chains that overlap writes.  Similar to

@@ -94,6 +94,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "params.h"
 #include "lra.h"
 #include "lra-int.h"
+#include "function-abi.h"
 
 /* Current iteration number of the pass and current iteration number
    of the pass after the latest spill pass when any former reload
@@ -654,7 +655,7 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
 	  for (j = 0;
 	       j < hard_regno_nregs (hard_regno, PSEUDO_REGNO_MODE (regno));
 	       j++)
-	    if (! TEST_HARD_REG_BIT (call_used_or_fixed_regs, hard_regno + j)
+	    if (! crtl->abi->clobbers_full_reg_p (hard_regno + j)
 		&& ! df_regs_ever_live_p (hard_regno + j))
 	      /* It needs save restore.	 */
 	      hard_regno_costs[hard_regno]
@@ -1634,14 +1635,14 @@ lra_assign (bool &fails_p)
   bitmap_initialize (&all_spilled_pseudos, &reg_obstack);
   create_live_range_start_chains ();
   setup_live_pseudos_and_spill_after_risky_transforms (&all_spilled_pseudos);
-  if (! lra_asm_error_p && flag_checking && !flag_ipa_ra)
+  if (! lra_asm_error_p && flag_checking)
     /* Check correctness of allocation for call-crossed pseudos but
        only when there are no asm errors as in the case of errors the
        asm is removed and it can result in incorrect allocation.  */
     for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
-      if (lra_reg_info[i].nrefs != 0 && reg_renumber[i] >= 0
-	  && lra_reg_info[i].call_insn
-	  && overlaps_hard_reg_set_p (call_used_or_fixed_regs,
+      if (lra_reg_info[i].nrefs != 0
+	  && reg_renumber[i] >= 0
+	  && overlaps_hard_reg_set_p (lra_reg_info[i].conflict_hard_regs,
 				      PSEUDO_REGNO_MODE (i), reg_renumber[i]))
 	gcc_unreachable ();
   /* Setup insns to process on the next constraint pass.  */

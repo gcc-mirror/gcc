@@ -7968,6 +7968,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    case OMP_CLAUSE_DEFAULT_UNSPECIFIED:
 	      break;
 	    case OMP_CLAUSE_DEFAULT_SHARED:
+	      if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED
+		   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE)
+		  && c_omp_predefined_variable (t))
+		/* The __func__ variable and similar function-local predefined
+		   variables may be listed in a shared or firstprivate
+		   clause.  */
+		break;
 	      if (VAR_P (t)
 		  && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
 		  && TREE_STATIC (t)

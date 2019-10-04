@@ -1,3 +1,21 @@
+2019-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/91991
+	* line-map.c (linemap_line_start): Clear max_column_hint if we run
+	out of locations.
+
+2019-10-02  Richard Biener  <rguenther@suse.de>
+
+	* internal.h (enum include_type): Remove trailing comma.
+
+2019-10-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_options): Add member scope.
+	* init.c (struct lang_flags, lang_defaults): Likewise.
+	(cpp_set_lang): Set scope member of pfile.
+	* lex.c (_cpp_lex_direct): Test CPP_OPTION (pfile, scope) not
+	CPP_OPTION (pfile, cplusplus) for creating CPP_SCOPE tokens.
+
 2019-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* charset.c (UCS_LIMIT): New macro.

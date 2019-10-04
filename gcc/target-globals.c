@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcse.h"
 #include "bb-reorder.h"
 #include "lower-subreg.h"
+#include "function-abi.h"
 
 #if SWITCHABLE_TARGET
 class target_globals default_target_globals = {
@@ -48,6 +49,7 @@ class target_globals default_target_globals = {
   &default_target_rtl,
   &default_target_recog,
   &default_target_hard_regs,
+  &default_target_function_abi_info,
   &default_target_reload,
   &default_target_expmed,
   &default_target_optabs,
@@ -70,6 +72,7 @@ save_target_globals (void)
   g->rtl = ggc_cleared_alloc<target_rtl> ();
   g->recog = XCNEW (struct target_recog);
   g->hard_regs = XCNEW (struct target_hard_regs);
+  g->function_abi_info = XCNEW (struct target_function_abi_info);
   g->reload = XCNEW (struct target_reload);
   g->expmed = XCNEW (struct target_expmed);
   g->optabs = XCNEW (struct target_optabs);
@@ -127,6 +130,7 @@ target_globals::~target_globals ()
       XDELETE (regs);
       XDELETE (recog);
       XDELETE (hard_regs);
+      XDELETE (function_abi_info);
       XDELETE (reload);
       XDELETE (expmed);
       XDELETE (optabs);

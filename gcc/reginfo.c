@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "output.h"
 #include "tree-pass.h"
+#include "function-abi.h"
 
 /* Maximum register number used in this function, plus one.  */
 
@@ -68,6 +69,8 @@ struct target_regs *this_target_regs = &default_target_regs;
 
 #define call_used_regs \
   (this_target_hard_regs->x_call_used_regs)
+#define regs_invalidated_by_call \
+  (this_target_hard_regs->x_regs_invalidated_by_call)
 
 /* Data for initializing fixed_regs.  */
 static const char initial_fixed_regs[] = FIXED_REGISTERS;
@@ -419,6 +422,8 @@ init_reg_sets_1 (void)
 	       }
 	  }
      }
+
+  default_function_abi.initialize (0, regs_invalidated_by_call);
 }
 
 /* Compute the table of register modes.
@@ -439,7 +444,7 @@ init_reg_modes_target (void)
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      reg_raw_mode[i] = choose_hard_reg_mode (i, 1, false);
+      reg_raw_mode[i] = choose_hard_reg_mode (i, 1, NULL);
 
       /* If we couldn't find a valid mode, just use the previous mode
 	 if it is suitable, otherwise fall back on word_mode.  */
@@ -547,10 +552,11 @@ memory_move_secondary_cost (machine_mode mode, reg_class_t rclass,
 
 /* Return a machine mode that is legitimate for hard reg REGNO and large
    enough to save nregs.  If we can't find one, return VOIDmode.
-   If CALL_SAVED is true, only consider modes that are call saved.  */
+   If ABI is nonnull, only consider modes that are preserved across
+   calls that use ABI.  */
 machine_mode
 choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
-		      unsigned int nregs, bool call_saved)
+		      unsigned int nregs, const predefined_function_abi *abi)
 {
   unsigned int /* machine_mode */ m;
   machine_mode found_mode = VOIDmode, mode;
@@ -564,32 +570,28 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
   FOR_EACH_MODE_IN_CLASS (mode, MODE_INT)
     if (hard_regno_nregs (regno, mode) == nregs
 	&& targetm.hard_regno_mode_ok (regno, mode)
-	&& (!call_saved
-	    || !targetm.hard_regno_call_part_clobbered (NULL, regno, mode))
+	&& (!abi || !abi->clobbers_reg_p (mode, regno))
 	&& maybe_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (found_mode)))
       found_mode = mode;
 
   FOR_EACH_MODE_IN_CLASS (mode, MODE_FLOAT)
     if (hard_regno_nregs (regno, mode) == nregs
 	&& targetm.hard_regno_mode_ok (regno, mode)
-	&& (!call_saved
-	    || !targetm.hard_regno_call_part_clobbered (NULL, regno, mode))
+	&& (!abi || !abi->clobbers_reg_p (mode, regno))
 	&& maybe_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (found_mode)))
       found_mode = mode;
 
   FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_FLOAT)
     if (hard_regno_nregs (regno, mode) == nregs
 	&& targetm.hard_regno_mode_ok (regno, mode)
-	&& (!call_saved
-	    || !targetm.hard_regno_call_part_clobbered (NULL, regno, mode))
+	&& (!abi || !abi->clobbers_reg_p (mode, regno))
 	&& maybe_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (found_mode)))
       found_mode = mode;
 
   FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_INT)
     if (hard_regno_nregs (regno, mode) == nregs
 	&& targetm.hard_regno_mode_ok (regno, mode)
-	&& (!call_saved
-	    || !targetm.hard_regno_call_part_clobbered (NULL, regno, mode))
+	&& (!abi || !abi->clobbers_reg_p (mode, regno))
 	&& maybe_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (found_mode)))
       found_mode = mode;
 
@@ -602,8 +604,7 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
       mode = (machine_mode) m;
       if (hard_regno_nregs (regno, mode) == nregs
 	  && targetm.hard_regno_mode_ok (regno, mode)
-	  && (!call_saved
-	      || !targetm.hard_regno_call_part_clobbered (NULL, regno, mode)))
+	  && (!abi || !abi->clobbers_reg_p (mode, regno)))
 	return mode;
     }
 
@@ -728,7 +729,11 @@ globalize_reg (tree decl, int i)
      appropriate regs_invalidated_by_call bit, even if it's already
      set in fixed_regs.  */
   if (i != STACK_POINTER_REGNUM)
-    SET_HARD_REG_BIT (regs_invalidated_by_call, i);
+    {
+      SET_HARD_REG_BIT (regs_invalidated_by_call, i);
+      for (unsigned int j = 0; j < NUM_ABI_IDS; ++j)
+	function_abis[j].add_full_reg_clobber (i);
+    }
 
   /* If already fixed, nothing else to do.  */
   if (fixed_regs[i])
@@ -1018,10 +1023,6 @@ reg_scan_mark_refs (rtx x, rtx_insn *insn)
     case CLOBBER:
       if (MEM_P (XEXP (x, 0)))
 	reg_scan_mark_refs (XEXP (XEXP (x, 0), 0), insn);
-      break;
-
-    case CLOBBER_HIGH:
-      gcc_assert (!(MEM_P (XEXP (x, 0))));
       break;
 
     case SET:

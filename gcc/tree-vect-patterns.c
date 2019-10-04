@@ -46,6 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "omp-simd-clone.h"
 #include "predict.h"
+#include "tree-vector-builder.h"
+#include "vec-perm-indices.h"
 
 /* Return true if we have a useful VR_RANGE range for VAR, storing it
    in *MIN_VALUE and *MAX_VALUE if so.  Note the range in the dump files.  */
@@ -2168,24 +2170,107 @@ vect_recog_rotate_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
   enum vect_def_type dt;
   optab optab1, optab2;
   edge ext_def = NULL;
+  bool bswap16_p = false;
 
-  if (!is_gimple_assign (last_stmt))
+  if (is_gimple_assign (last_stmt))
+    {
+      rhs_code = gimple_assign_rhs_code (last_stmt);
+      switch (rhs_code)
+	{
+	case LROTATE_EXPR:
+	case RROTATE_EXPR:
+	  break;
+	default:
+	  return NULL;
+	}
+
+      lhs = gimple_assign_lhs (last_stmt);
+      oprnd0 = gimple_assign_rhs1 (last_stmt);
+      type = TREE_TYPE (oprnd0);
+      oprnd1 = gimple_assign_rhs2 (last_stmt);
+    }
+  else if (gimple_call_builtin_p (last_stmt, BUILT_IN_BSWAP16))
+    {
+      /* __builtin_bswap16 (x) is another form of x r>> 8.
+	 The vectorizer has bswap support, but only if the argument isn't
+	 promoted.  */
+      lhs = gimple_call_lhs (last_stmt);
+      oprnd0 = gimple_call_arg (last_stmt, 0);
+      type = TREE_TYPE (oprnd0);
+      if (TYPE_PRECISION (TREE_TYPE (lhs)) != 16
+	  || TYPE_PRECISION (type) <= 16
+	  || TREE_CODE (oprnd0) != SSA_NAME
+	  || BITS_PER_UNIT != 8
+	  || !TYPE_UNSIGNED (TREE_TYPE (lhs)))
+	return NULL;
+
+      stmt_vec_info def_stmt_info;
+      if (!vect_is_simple_use (oprnd0, vinfo, &dt, &def_stmt_info, &def_stmt))
+	return NULL;
+
+      if (dt != vect_internal_def)
+	return NULL;
+
+      if (gimple_assign_cast_p (def_stmt))
+	{
+	  def = gimple_assign_rhs1 (def_stmt);
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (def))
+	      && TYPE_PRECISION (TREE_TYPE (def)) == 16)
+	    oprnd0 = def;
+	}
+
+      type = TREE_TYPE (lhs);
+      vectype = get_vectype_for_scalar_type (type);
+      if (vectype == NULL_TREE)
+	return NULL;
+
+      if (tree char_vectype = get_same_sized_vectype (char_type_node, vectype))
+	{
+	  /* The encoding uses one stepped pattern for each byte in the
+	     16-bit word.  */
+	  vec_perm_builder elts (TYPE_VECTOR_SUBPARTS (char_vectype), 2, 3);
+	  for (unsigned i = 0; i < 3; ++i)
+	    for (unsigned j = 0; j < 2; ++j)
+	      elts.quick_push ((i + 1) * 2 - j - 1);
+
+	  vec_perm_indices indices (elts, 1,
+				    TYPE_VECTOR_SUBPARTS (char_vectype));
+	  if (can_vec_perm_const_p (TYPE_MODE (char_vectype), indices))
+	    {
+	      /* vectorizable_bswap can handle the __builtin_bswap16 if we
+		 undo the argument promotion.  */
+	      if (!useless_type_conversion_p (type, TREE_TYPE (oprnd0)))
+		{
+		  def = vect_recog_temp_ssa_var (type, NULL);
+		  def_stmt = gimple_build_assign (def, NOP_EXPR, oprnd0);
+		  append_pattern_def_seq (stmt_vinfo, def_stmt);
+		  oprnd0 = def;
+		}
+
+	      /* Pattern detected.  */
+	      vect_pattern_detected ("vect_recog_rotate_pattern", last_stmt);
+
+	      *type_out = vectype;
+
+	      /* Pattern supported.  Create a stmt to be used to replace the
+		 pattern, with the unpromoted argument.  */
+	      var = vect_recog_temp_ssa_var (type, NULL);
+	      pattern_stmt = gimple_build_call (gimple_call_fndecl (last_stmt),
+						1, oprnd0);
+	      gimple_call_set_lhs (pattern_stmt, var);
+	      gimple_call_set_fntype (as_a <gcall *> (pattern_stmt),
+				      gimple_call_fntype (last_stmt));
+	      return pattern_stmt;
+	    }
+	}
+
+      oprnd1 = build_int_cst (integer_type_node, 8);
+      rhs_code = LROTATE_EXPR;
+      bswap16_p = true;
+    }
+  else
     return NULL;
 
-  rhs_code = gimple_assign_rhs_code (last_stmt);
-  switch (rhs_code)
-    {
-    case LROTATE_EXPR:
-    case RROTATE_EXPR:
-      break;
-    default:
-      return NULL;
-    }
-
-  lhs = gimple_assign_lhs (last_stmt);
-  oprnd0 = gimple_assign_rhs1 (last_stmt);
-  type = TREE_TYPE (oprnd0);
-  oprnd1 = gimple_assign_rhs2 (last_stmt);
   if (TREE_CODE (oprnd0) != SSA_NAME
       || TYPE_PRECISION (TREE_TYPE (lhs)) != TYPE_PRECISION (type)
       || !INTEGRAL_TYPE_P (type)
@@ -2210,14 +2295,39 @@ vect_recog_rotate_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
   optab1 = optab_for_tree_code (rhs_code, vectype, optab_vector);
   if (optab1
       && optab_handler (optab1, TYPE_MODE (vectype)) != CODE_FOR_nothing)
-    return NULL;
+    {
+     use_rotate:
+      if (bswap16_p)
+	{
+	  if (!useless_type_conversion_p (type, TREE_TYPE (oprnd0)))
+	    {
+	      def = vect_recog_temp_ssa_var (type, NULL);
+	      def_stmt = gimple_build_assign (def, NOP_EXPR, oprnd0);
+	      append_pattern_def_seq (stmt_vinfo, def_stmt);
+	      oprnd0 = def;
+	    }
+
+	  /* Pattern detected.  */
+	  vect_pattern_detected ("vect_recog_rotate_pattern", last_stmt);
+
+	  *type_out = vectype;
+
+	  /* Pattern supported.  Create a stmt to be used to replace the
+	     pattern.  */
+	  var = vect_recog_temp_ssa_var (type, NULL);
+	  pattern_stmt = gimple_build_assign (var, LROTATE_EXPR, oprnd0,
+					      oprnd1);
+	  return pattern_stmt;
+	}
+      return NULL;
+    }
 
   if (is_a <bb_vec_info> (vinfo) || dt != vect_internal_def)
     {
       optab2 = optab_for_tree_code (rhs_code, vectype, optab_scalar);
       if (optab2
 	  && optab_handler (optab2, TYPE_MODE (vectype)) != CODE_FOR_nothing)
-	return NULL;
+	goto use_rotate;
     }
 
   /* If vector/vector or vector/scalar shifts aren't supported by the target,
@@ -2241,6 +2351,14 @@ vect_recog_rotate_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
     }
 
   *type_out = vectype;
+
+  if (bswap16_p && !useless_type_conversion_p (type, TREE_TYPE (oprnd0)))
+    {
+      def = vect_recog_temp_ssa_var (type, NULL);
+      def_stmt = gimple_build_assign (def, NOP_EXPR, oprnd0);
+      append_pattern_def_seq (stmt_vinfo, def_stmt);
+      oprnd0 = def;
+    }
 
   if (dt == vect_external_def
       && TREE_CODE (oprnd1) == SSA_NAME)
@@ -2927,6 +3045,37 @@ vect_recog_divmod_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
       /* Pattern detected.  */
       vect_pattern_detected ("vect_recog_divmod_pattern", last_stmt);
 
+      *type_out = vectype;
+
+      /* Check if the target supports this internal function.  */
+      internal_fn ifn = IFN_DIV_POW2;
+      if (direct_internal_fn_supported_p (ifn, vectype, OPTIMIZE_FOR_SPEED))
+	{
+	  tree shift = build_int_cst (itype, tree_log2 (oprnd1));
+
+	  tree var_div = vect_recog_temp_ssa_var (itype, NULL);
+	  gimple *div_stmt = gimple_build_call_internal (ifn, 2, oprnd0, shift);
+	  gimple_call_set_lhs (div_stmt, var_div);
+
+	  if (rhs_code == TRUNC_MOD_EXPR)
+	    {
+	      append_pattern_def_seq (stmt_vinfo, div_stmt);
+	      def_stmt
+		= gimple_build_assign (vect_recog_temp_ssa_var (itype, NULL),
+				       LSHIFT_EXPR, var_div, shift);
+	      append_pattern_def_seq (stmt_vinfo, def_stmt);
+	      pattern_stmt
+		= gimple_build_assign (vect_recog_temp_ssa_var (itype, NULL),
+				       MINUS_EXPR, oprnd0,
+				       gimple_assign_lhs (def_stmt));
+	    }
+	  else
+	    pattern_stmt = div_stmt;
+	  gimple_set_location (pattern_stmt, gimple_location (last_stmt));
+
+	  return pattern_stmt;
+	}
+
       cond = build2 (LT_EXPR, boolean_type_node, oprnd0,
 		     build_int_cst (itype, 0));
       if (rhs_code == TRUNC_DIV_EXPR
@@ -3003,7 +3152,6 @@ vect_recog_divmod_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 				   signmask);
 	}
 
-      *type_out = vectype;
       return pattern_stmt;
     }
 

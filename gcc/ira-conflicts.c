@@ -770,9 +770,7 @@ ira_build_conflicts (void)
   if (! targetm.class_likely_spilled_p (base))
     CLEAR_HARD_REG_SET (temp_hard_reg_set);
   else
-    temp_hard_reg_set = (reg_class_contents[base]
-			 & ~ira_no_alloc_regs
-			 & call_used_or_fixed_regs);
+    temp_hard_reg_set = reg_class_contents[base] & ~ira_no_alloc_regs;
   FOR_EACH_ALLOCNO (a, ai)
     {
       int i, n = ALLOCNO_NUM_OBJECTS (a);
@@ -780,29 +778,28 @@ ira_build_conflicts (void)
       for (i = 0; i < n; i++)
 	{
 	  ira_object_t obj = ALLOCNO_OBJECT (a, i);
-	  machine_mode obj_mode = obj->allocno->mode;
 	  rtx allocno_reg = regno_reg_rtx [ALLOCNO_REGNO (a)];
 
-	  if ((! flag_caller_saves && ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
-	      /* For debugging purposes don't put user defined variables in
-		 callee-clobbered registers.  However, do allow parameters
-		 in callee-clobbered registers to improve debugging.  This
-		 is a bit of a fragile hack.  */
-	      || (optimize == 0
-		  && REG_USERVAR_P (allocno_reg)
-		  && ! reg_is_parm_p (allocno_reg)))
+	  /* For debugging purposes don't put user defined variables in
+	     callee-clobbered registers.  However, do allow parameters
+	     in callee-clobbered registers to improve debugging.  This
+	     is a bit of a fragile hack.  */
+	  if (optimize == 0
+	      && REG_USERVAR_P (allocno_reg)
+	      && ! reg_is_parm_p (allocno_reg))
 	    {
-	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= call_used_or_fixed_regs;
-	      OBJECT_CONFLICT_HARD_REGS (obj) |= call_used_or_fixed_regs;
+	      HARD_REG_SET new_conflict_regs = crtl->abi->full_reg_clobbers ();
+	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
+	      OBJECT_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
 	    }
-	  else if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
+
+	  if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
 	    {
-	      HARD_REG_SET no_caller_save_reg_set
-		= (call_used_or_fixed_regs & ~savable_regs);
-	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= no_caller_save_reg_set;
-	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= temp_hard_reg_set;
-	      OBJECT_CONFLICT_HARD_REGS (obj) |= no_caller_save_reg_set;
-	      OBJECT_CONFLICT_HARD_REGS (obj) |= temp_hard_reg_set;
+	      HARD_REG_SET new_conflict_regs = ira_need_caller_save_regs (a);
+	      if (flag_caller_saves)
+		new_conflict_regs &= (~savable_regs | temp_hard_reg_set);
+	      OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
+	      OBJECT_CONFLICT_HARD_REGS (obj) |= new_conflict_regs;
 	    }
 
 	  /* Now we deal with paradoxical subreg cases where certain registers
@@ -828,23 +825,6 @@ ira_build_conflicts (void)
 					 inner_regno);
 		     }
 		}
-	    }
-
-	  if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
-	    {
-	      int regno;
-
-	      /* Allocnos bigger than the saved part of call saved
-		 regs must conflict with them.  */
-	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		if (!TEST_HARD_REG_BIT (call_used_or_fixed_regs, regno)
-		    && targetm.hard_regno_call_part_clobbered (NULL, regno,
-							       obj_mode))
-		  {
-		    SET_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (obj), regno);
-		    SET_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-				      regno);
-		  }
 	    }
 	}
     }

@@ -661,6 +661,9 @@ static const struct attribute_spec sh_attribute_table[] =
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
 
+#undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 
@@ -734,7 +737,7 @@ got_mode_name:;
     {
       if (tokens[i] == "strict")
 	ret.strict = true;
-      else if (tokens[i].find ("gbr-offset=") == 0)
+      else if (!tokens[i].compare (0, strlen ("gbr-offset="), "gbr-offset="))
 	{
 	  std::string offset_str = tokens[i].substr (strlen ("gbr-offset="));
 	  ret.tcb_gbr_offset = integral_argument (offset_str.c_str ());
@@ -10634,7 +10637,7 @@ sh_hard_regno_caller_save_mode (unsigned int regno, unsigned int nregs,
 	      && ((regno - FIRST_FP_REG) & 1) == 0)))
     return mode;
 
-  return choose_hard_reg_mode (regno, nregs, false);
+  return choose_hard_reg_mode (regno, nregs, NULL);
 }
 
 /* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
@@ -12065,9 +12068,11 @@ sh_extending_set_of_reg::use_as_extended_reg (rtx_insn* use_at_insn) const
 	rtx r = gen_reg_rtx (SImode);
 	rtx_insn* i0;
 	if (from_mode == QImode)
-	  i0 = emit_insn_after (gen_extendqisi2 (r, set_src), insn);
+	  i0 = sh_check_add_incdec_notes (
+			emit_insn_after (gen_extendqisi2 (r, set_src), insn));
 	else if (from_mode == HImode)
-	  i0 = emit_insn_after (gen_extendhisi2 (r, set_src), insn);
+	  i0 = sh_check_add_incdec_notes (
+			emit_insn_after (gen_extendhisi2 (r, set_src), insn));
 	else
 	  gcc_unreachable ();
 

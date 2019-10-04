@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "resource.h"
 #include "insn-attr.h"
 #include "params.h"
+#include "function-abi.h"
 
 /* This structure is used to record liveness information at the targets or
    fallthrough insns of branches.  We will most likely need the information
@@ -108,11 +109,6 @@ update_live_status (rtx dest, const_rtx x, void *data ATTRIBUTE_UNUSED)
   if (GET_CODE (x) == CLOBBER)
     for (i = first_regno; i < last_regno; i++)
       CLEAR_HARD_REG_BIT (current_live_regs, i);
-  else if (GET_CODE (x) == CLOBBER_HIGH)
-    /* No current target supports both branch delay slots and CLOBBER_HIGH.
-       We'd need more elaborate liveness tracking to handle that
-       combination.  */
-    gcc_unreachable ();
   else
     for (i = first_regno; i < last_regno; i++)
       {
@@ -298,7 +294,6 @@ mark_referenced_resources (rtx x, struct resources *res,
       return;
 
     case CLOBBER:
-    case CLOBBER_HIGH:
       return;
 
     case CALL_INSN:
@@ -662,24 +657,16 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 	{
 	  rtx_call_insn *call_insn = as_a <rtx_call_insn *> (x);
 	  rtx link;
-	  HARD_REG_SET regs;
 
 	  res->cc = res->memory = 1;
 
-	  get_call_reg_set_usage (call_insn, &regs, regs_invalidated_by_call);
-	  res->regs |= regs;
+	  res->regs |= insn_callee_abi (call_insn).full_reg_clobbers ();
 
 	  for (link = CALL_INSN_FUNCTION_USAGE (call_insn);
 	       link; link = XEXP (link, 1))
-	    {
-	      /* We could support CLOBBER_HIGH and treat it in the same way as
-		 HARD_REGNO_CALL_PART_CLOBBERED, but no port needs that
-		 yet.  */
-	      gcc_assert (GET_CODE (XEXP (link, 0)) != CLOBBER_HIGH);
-	      if (GET_CODE (XEXP (link, 0)) == CLOBBER)
-		mark_set_resources (SET_DEST (XEXP (link, 0)), res, 1,
-				    MARK_SRC_DEST);
-	    }
+	    if (GET_CODE (XEXP (link, 0)) == CLOBBER)
+	      mark_set_resources (SET_DEST (XEXP (link, 0)), res, 1,
+				  MARK_SRC_DEST);
 
 	  /* Check for a REG_SETJMP.  If it exists, then we must
 	     assume that this call can clobber any register.  */
@@ -721,12 +708,6 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
     case CLOBBER:
       mark_set_resources (XEXP (x, 0), res, 1, MARK_SRC_DEST);
       return;
-
-    case CLOBBER_HIGH:
-      /* No current target supports both branch delay slots and CLOBBER_HIGH.
-	 We'd need more elaborate liveness tracking to handle that
-	 combination.  */
-      gcc_unreachable ();
 
     case SEQUENCE:
       {
@@ -1038,10 +1019,8 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 		 predicated instruction, or if the CALL is NORETURN.  */
 	      if (GET_CODE (PATTERN (real_insn)) != COND_EXEC)
 		{
-		  HARD_REG_SET regs_invalidated_by_this_call;
-		  get_call_reg_set_usage (real_insn,
-					  &regs_invalidated_by_this_call,
-					  regs_invalidated_by_call);
+		  HARD_REG_SET regs_invalidated_by_this_call
+		    = insn_callee_abi (real_insn).full_reg_clobbers ();
 		  /* CALL clobbers all call-used regs that aren't fixed except
 		     sp, ap, and fp.  Do this before setting the result of the
 		     call live.  */

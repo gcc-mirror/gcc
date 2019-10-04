@@ -842,9 +842,8 @@ hash_table<Descriptor, Lazy, Allocator>::empty_slow ()
   size_t size = m_size;
   size_t nsize = size;
   value_type *entries = m_entries;
-  int i;
 
-  for (i = size - 1; i >= 0; i--)
+  for (size_t i = size - 1; i < size; i--)
     if (!is_empty (entries[i]) && !is_deleted (entries[i]))
       Descriptor::remove (entries[i]);
 
@@ -856,8 +855,9 @@ hash_table<Descriptor, Lazy, Allocator>::empty_slow ()
 
   if (nsize != size)
     {
-      int nindex = hash_table_higher_prime_index (nsize);
-      int nsize = prime_tab[nindex].prime;
+      unsigned int nindex = hash_table_higher_prime_index (nsize);
+
+      nsize = prime_tab[nindex].prime;
 
       if (!m_ggc)
 	Allocator <value_type> ::data_free (m_entries);

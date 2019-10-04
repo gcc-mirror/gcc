@@ -1,5 +1,7 @@
 2019-10-04  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r276597.
+
 	gcc/cp/
 	* module.c (trees_out:decl_node): More switchification and code
 	movement.

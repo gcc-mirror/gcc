@@ -234,16 +234,19 @@ namespace __debug
 
   // Array comparisons.
   template<typename _Tp, std::size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     operator==(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return std::equal(__one.begin(), __one.end(), __two.begin()); }
 
   template<typename _Tp, std::size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     operator!=(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return !(__one == __two); }
 
   template<typename _Tp, std::size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     operator<(const array<_Tp, _Nm>& __a, const array<_Tp, _Nm>& __b)
     {
@@ -252,16 +255,19 @@ namespace __debug
     }
 
   template<typename _Tp, std::size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     operator>(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return __two < __one; }
 
   template<typename _Tp, std::size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     operator<=(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return !(__one > __two); }
 
   template<typename _Tp, std::size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     operator>=(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return !(__one < __two); }

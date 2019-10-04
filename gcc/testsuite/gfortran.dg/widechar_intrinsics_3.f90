@@ -35,7 +35,7 @@ program failme
   print *, fputc (i, s4) ! { dg-error "must be of kind" }
 
   print *, getcwd (s1)
-  print *, getcwd (s4) ! { dg-error "Type of argument" }
+  print *, getcwd (s4) ! { dg-error "'CHARACTER\\(20,4\\)' to 'CHARACTER\\(\\*\\)'" }
 
   print *, hostnm (s1)
   print *, hostnm (s4) ! { dg-error "must be of kind" }
@@ -61,7 +61,7 @@ program failme
   print *, symlnk (s4, t4) ! { dg-error "must be of kind" }
 
   print *, system (s1)
-  print *, system (s4) ! { dg-error "Type of argument" }
+  print *, system (s4) ! { dg-error "'CHARACTER\\(20,4\\)' to 'CHARACTER\\(\\*\\)'" }
 
   print *, unlink (s1)
   print *, unlink (s4) ! { dg-error "must be of kind" }

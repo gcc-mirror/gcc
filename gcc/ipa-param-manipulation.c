@@ -651,8 +651,15 @@ ipa_param_adjustments::modify_call (gcall *stmt,
       bool deref_base = false;
       unsigned int deref_align = 0;
       if (TREE_CODE (base) != ADDR_EXPR
-	  && POINTER_TYPE_P (TREE_TYPE (base)))
-	off = build_int_cst (apm->alias_ptr_type, apm->unit_offset);
+	  && is_gimple_reg_type (TREE_TYPE (base)))
+	{
+	  /* Detect type mismatches in calls in invalid programs and make a
+	     poor attempt to gracefully convert them so that we don't ICE.  */
+	  if (!POINTER_TYPE_P (TREE_TYPE (base)))
+	    base = force_value_to_type (ptr_type_node, base);
+
+	  off = build_int_cst (apm->alias_ptr_type, apm->unit_offset);
+	}
       else
 	{
 	  bool addrof;

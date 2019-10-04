@@ -1,3 +1,38 @@
+2019-10-02  Julian Brown  <julian@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* libgomp.h (OFFSET_INLINED, OFFSET_POINTER, OFFSET_STRUCT): Define.
+	* target.c (FIELD_TGT_EMPTY): Define.
+	(gomp_map_val): Use OFFSET_* macros instead of magic constants.  Write
+	as switch instead of list of ifs.
+	(gomp_map_vars_internal): Use OFFSET_* and FIELD_TGT_EMPTY macros.
+
+2019-10-02  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-default.h: Remove alloca.h
+	include. Replace alloca () with __builtin_alloca ().
+	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c: Likewise.
+
+2019-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Remove GCC_HEADER_STDINT(gstdint.h).
+	* libgomp.h: Include <stdint.h> instead of "gstdint.h".
+	* oacc-parallel.c: Don't include "libgomp_g.h".
+	* plugin/plugin-hsa.c: Include <stdint.h> instead of "gstdint.h".
+	* plugin/plugin-nvptx.c: Don't include "gstdint.h".
+	* aclocal.m4: Regenerated.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
+2019-09-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* libgomp_g.h: Include stdint.h instead of gstdint.h.
+
+2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure: Regenerate.
+
 2019-09-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	* plugin/plugin-hsa.c (hsa_warn, hsa_fatal, hsa_error): Ensure

@@ -4242,6 +4242,12 @@ gfc_match_allocate (void)
       if (m == MATCH_ERROR)
 	goto cleanup;
 
+      if (tail->expr->expr_type == EXPR_CONSTANT)
+	{
+	  gfc_error ("Unexpected constant at %C");
+	  goto cleanup;
+	}
+
       if (gfc_check_do_variable (tail->expr->symtree))
 	goto cleanup;
 
@@ -4373,6 +4379,12 @@ alloc_opt_list:
 	  stat = tmp;
 	  tmp = NULL;
 	  saw_stat = true;
+
+	  if (stat->expr_type == EXPR_CONSTANT)
+	    {
+	      gfc_error ("STAT tag at %L cannot be a constant", &stat->where);
+	      goto cleanup;
+	    }
 
 	  if (gfc_check_do_variable (stat->symtree))
 	    goto cleanup;
@@ -4649,6 +4661,12 @@ gfc_match_deallocate (void)
 	goto cleanup;
       if (m == MATCH_NO)
 	goto syntax;
+
+      if (tail->expr->expr_type == EXPR_CONSTANT)
+	{
+	  gfc_error ("Unexpected constant at %C");
+	  goto cleanup;
+	}
 
       if (gfc_check_do_variable (tail->expr->symtree))
 	goto cleanup;
@@ -4965,6 +4983,16 @@ gfc_match_call (void)
       if (gfc_match_eos () != MATCH_YES)
 	goto syntax;
     }
+
+  /* Walk the argument list looking for invalid BOZ.  */
+  for (a = arglist; a; a = a->next)
+    if (a->expr && a->expr->ts.type == BT_BOZ)
+      {
+	gfc_error ("A BOZ literal constant at %L cannot appear as an actual "
+		   "argument in a subroutine reference", &a->expr->where);
+	goto cleanup;
+      }
+
 
   /* If any alternate return labels were found, construct a SELECT
      statement that will jump to the right place.  */

@@ -125,6 +125,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Tp>
 	using __is_compatible = is_convertible<_Tp(*)[], _Type(*)[]>;
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3255. span's array constructor is too strict
+      template<typename _Tp, size_t _ArrayExtent,
+	       typename = enable_if_t<_Extent == dynamic_extent
+				      || _ArrayExtent == _Extent>>
+	using __is_compatible_array  = __is_compatible<_Tp>;
+
     public:
       // member types
       using value_type             = remove_cv_t<_Type>;
@@ -149,9 +156,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // constructors
 
-      template <typename _Dummy = _Type,
-		enable_if_t<is_same_v<_Dummy, _Type>
-		  && (_Extent == dynamic_extent || _Extent == 0)>* = nullptr>
+      template<bool _DefaultConstructible = (_Extent + 1u) <= 1u,
+	       enable_if_t<_DefaultConstructible>* = nullptr>
 	constexpr
 	span() noexcept : _M_extent(0), _M_ptr(nullptr)
 	{ }
@@ -159,28 +165,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr
       span(const span&) noexcept = default;
 
-      template<size_t _ArrayExtent,
-	enable_if_t<_Extent == dynamic_extent || _ArrayExtent == _Extent>*
-	  = nullptr>
+      template<typename _Tp, size_t _ArrayExtent,
+	       typename = _Require<__is_compatible_array<_Tp, _ArrayExtent>>>
 	constexpr
-	span(element_type (&__arr)[_ArrayExtent]) noexcept
+	span(_Tp (&__arr)[_ArrayExtent]) noexcept
 	: span(static_cast<pointer>(__arr), _ArrayExtent)
 	{ }
 
-      template<size_t _ArrayExtent,
-	enable_if_t<_Extent == dynamic_extent || _ArrayExtent == _Extent>*
-	  = nullptr>
+      template<typename _Tp, size_t _ArrayExtent,
+	       typename = _Require<__is_compatible_array<_Tp, _ArrayExtent>>>
 	constexpr
-	span(array<value_type, _ArrayExtent>& __arr) noexcept
-	: span(__arr.data(), _ArrayExtent)
+	span(array<_Tp, _ArrayExtent>& __arr) noexcept
+	: span(static_cast<pointer>(__arr.data()), _ArrayExtent)
 	{ }
 
-      template<size_t _ArrayExtent,
-	enable_if_t<_Extent == dynamic_extent || _ArrayExtent == _Extent>*
-	  = nullptr>
+      template<typename _Tp, size_t _ArrayExtent,
+	       typename = _Require<__is_compatible_array<_Tp, _ArrayExtent>>>
 	constexpr
-	span(const array<value_type, _ArrayExtent>& __arr) noexcept
-	: span(__arr.data(), _ArrayExtent)
+	span(const array<_Tp, _ArrayExtent>& __arr) noexcept
+	: span(static_cast<pointer>(__arr.data()), _ArrayExtent)
 	{ }
 
       // NOTE: when the time comes, and P1394 -
@@ -271,8 +274,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       template<typename _Container, typename = _Require<
 		bool_constant<_Extent == dynamic_extent>,
-		__not_<__detail::__is_std_span<_Container>>,
-		__not_<__detail::__is_std_array<_Container>>,
+		__not_<__detail::__is_std_span<remove_cv_t<_Container>>>,
+		__not_<__detail::__is_std_array<remove_cv_t<_Container>>>,
 		__not_<is_array<_Container>>,
 		__is_compatible_container<_Container>>>
 	constexpr
@@ -283,8 +286,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Container, typename = _Require<
 		bool_constant<_Extent == dynamic_extent>,
-		__not_<__detail::__is_std_span<_Container>>,
-		__not_<__detail::__is_std_array<_Container>>,
+		__not_<__detail::__is_std_span<remove_cv_t<_Container>>>,
+		__not_<__detail::__is_std_array<remove_cv_t<_Container>>>,
 		__not_<is_array<_Container>>,
 		__is_compatible_container<const _Container>>>
 	constexpr

@@ -85,7 +85,6 @@ static const size_t hash_prefix_len = 3;
 static const size_t hash_len = 16;
 
 static int is_prefixed_hash (const char *start);
-static int looks_like_rust (const char *sym, size_t len);
 static int parse_lower_hex_nibble (char nibble);
 static char parse_legacy_escape (const char **in);
 
@@ -105,16 +104,13 @@ static char parse_legacy_escape (const char **in);
       negative (the rare Rust symbol is not demangled) so this sets
       the balance in favor of false negatives.
 
-   3. There must be no characters other than a-zA-Z0-9 and _.:$
-
-   4. There must be no unrecognized $-sign sequences.
-
-   5. There must be no sequence of three or more dots in a row ("...").  */
+   3. There must be no characters other than a-zA-Z0-9 and _.:$  */
 
 int
 rust_is_mangled (const char *sym)
 {
   size_t len, len_without_hash;
+  const char *end;
 
   if (!sym)
     return 0;
@@ -128,12 +124,22 @@ rust_is_mangled (const char *sym)
   if (!is_prefixed_hash (sym + len_without_hash))
     return 0;
 
-  return looks_like_rust (sym, len_without_hash);
+  end = sym + len_without_hash;
+
+  while (sym < end)
+    {
+      if (*sym == '$' || *sym == '.' || *sym == '_' || *sym == ':'
+          || ISALNUM (*sym))
+        sym++;
+      else
+        return 0;
+    }
+
+  return 1;
 }
 
 /* A hash is the prefix "::h" followed by 16 lowercase hex digits. The
-   hex digits must comprise between 5 and 15 (inclusive) distinct
-   digits.  */
+   hex digits must contain at least 5 distinct digits.  */
 
 static int
 is_prefixed_hash (const char *str)
@@ -162,28 +168,7 @@ is_prefixed_hash (const char *str)
     if (seen[i])
       count++;
 
-  return count >= 5 && count <= 15;
-}
-
-static int
-looks_like_rust (const char *str, size_t len)
-{
-  const char *end = str + len;
-
-  while (str < end)
-    {
-      if (*str == '$')
-        {
-          if (!parse_legacy_escape (&str))
-            return 0;
-        }
-      else if (*str == '.' || *str == '_' || *str == ':' || ISALNUM (*str))
-        str++;
-      else
-        return 0;
-    }
-
-  return 1;
+  return count >= 5;
 }
 
 /*
@@ -215,8 +200,9 @@ rust_demangle_sym (char *sym)
           if (unescaped)
             *out++ = unescaped;
           else
-            /* unexpected escape sequence, not looks_like_rust. */
-            goto fail;
+            /* unexpected escape sequence, skip the rest of this segment. */
+            while (in < end && *in != ':')
+              *out++ = *in++;
         }
       else if (*in == '_')
         {
@@ -248,14 +234,14 @@ rust_demangle_sym (char *sym)
       else if (*in == ':' || ISALNUM (*in))
         *out++ = *in++;
       else
-        /* unexpected character in symbol, not looks_like_rust.  */
-        goto fail;
+        {
+          /* unexpected character in symbol, not rust_is_mangled.  */
+          *out++ = '?'; /* This is pretty lame, but it's hard to do better. */
+          *out = '\0';
+          return;
+        }
     }
-  goto done;
 
-fail:
-  *out++ = '?'; /* This is pretty lame, but it's hard to do better. */
-done:
   *out = '\0';
 }
 

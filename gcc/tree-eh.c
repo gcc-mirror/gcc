@@ -4040,15 +4040,14 @@ maybe_remove_unreachable_handlers (void)
 
   if (cfun->eh == NULL)
     return;
-           
+
   FOR_EACH_VEC_SAFE_ELT (cfun->eh->lp_array, i, lp)
-    if (lp && lp->post_landing_pad)
+    if (lp
+	&& (lp->post_landing_pad == NULL_TREE
+	    || label_to_block (cfun, lp->post_landing_pad) == NULL))
       {
-	if (label_to_block (cfun, lp->post_landing_pad) == NULL)
-	  {
-	    remove_unreachable_handlers ();
-	    return;
-	  }
+	remove_unreachable_handlers ();
+	return;
       }
 }
 
@@ -4209,6 +4208,27 @@ unsplit_all_eh (void)
       changed |= unsplit_eh (lp);
 
   return changed;
+}
+
+/* Wrapper around unsplit_all_eh that makes it usable everywhere.  */
+
+void
+unsplit_eh_edges (void)
+{
+  bool changed;
+
+  /* unsplit_all_eh can die looking up unreachable landing pads.  */
+  maybe_remove_unreachable_handlers ();
+
+  changed = unsplit_all_eh ();
+
+  /* If EH edges have been unsplit, delete unreachable forwarder blocks.  */
+  if (changed)
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      free_dominance_info (CDI_POST_DOMINATORS);
+      delete_unreachable_blocks ();
+    }
 }
 
 /* A subroutine of cleanup_empty_eh.  Redirect all EH edges incoming

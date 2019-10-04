@@ -4745,7 +4745,7 @@ load_commons (void)
 
   while (peek_atom () != ATOM_RPAREN)
     {
-      int flags;
+      int flags = 0;
       char* label;
       mio_lparen ();
       mio_internal_string (name);
@@ -5243,8 +5243,8 @@ read_module (void)
 	  for (c = sym->components; c; c = c->next)
 	    {
 	      pointer_info *p;
-	      const char *comp_name;
-	      int n;
+	      const char *comp_name = NULL;
+	      int n = 0;
 
 	      mio_lparen (); /* component opening.  */
 	      mio_integer (&n);

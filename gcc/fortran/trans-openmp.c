@@ -47,6 +47,16 @@ along with GCC; see the file COPYING3.  If not see
 
 int ompws_flags;
 
+/* True if OpenMP should treat this DECL as an optional argument.  */
+
+bool
+gfc_omp_is_optional_argument (const_tree decl)
+{
+  return (TREE_CODE (decl) == PARM_DECL
+	  && DECL_LANG_SPECIFIC (decl)
+	  && GFC_DECL_OPTIONAL_ARGUMENT (decl));
+}
+
 /* True if OpenMP should privatize what this DECL points to rather
    than the DECL itself.  */
 
@@ -57,6 +67,10 @@ gfc_omp_privatize_by_reference (const_tree decl)
 
   if (TREE_CODE (type) == REFERENCE_TYPE
       && (!DECL_ARTIFICIAL (decl) || TREE_CODE (decl) == PARM_DECL))
+    return true;
+
+  if (TREE_CODE (type) == POINTER_TYPE
+      && gfc_omp_is_optional_argument (decl))
     return true;
 
   if (TREE_CODE (type) == POINTER_TYPE)

@@ -822,7 +822,9 @@ doc/gnat-style.pdf: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 # gnatlink, gnatls, gnatmake, gnatname, gnatprep, gnatxref, gnatfind,
 # gnatclean).
 # gnatdll is only used on Windows.
-ada.install-common:
+ada.install-common: $(gnat_install_lib) gnat-install-tools
+
+gnat-install-tools:
 	$(MKDIR) $(DESTDIR)$(bindir)
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
@@ -843,6 +845,7 @@ ada.install-common:
 #
 # Finally, install the library
 #
+gnat-install-lib: | gnat-install-tools
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  $(MAKE) $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) install-gnatlib; \

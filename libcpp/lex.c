@@ -3120,7 +3120,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 
     case ':':
       result->type = CPP_COLON;
-      if (*buffer->cur == ':' && CPP_OPTION (pfile, cplusplus))
+      if (*buffer->cur == ':' && CPP_OPTION (pfile, scope))
 	buffer->cur++, result->type = CPP_SCOPE;
       else if (*buffer->cur == '>' && CPP_OPTION (pfile, digraphs))
 	{

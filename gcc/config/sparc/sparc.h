@@ -716,7 +716,7 @@ along with GCC; see the file COPYING3.  If not see
    mode but the largest suitable mode for the given (REGNO, NREGS) pair and
    it quickly creates paradoxical subregs that can be problematic.  */
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE) \
-  ((MODE) == VOIDmode ? choose_hard_reg_mode (REGNO, NREGS, false) : (MODE))
+  ((MODE) == VOIDmode ? choose_hard_reg_mode (REGNO, NREGS, NULL) : (MODE))
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */

@@ -1944,8 +1944,7 @@ ipa_vr_operation_and_type_effects (value_range_base *dst_vr,
 				   enum tree_code operation,
 				   tree dst_type, tree src_type)
 {
-  extract_range_from_unary_expr (dst_vr, operation, dst_type,
-				 src_vr, src_type);
+  range_fold_unary_expr (dst_vr, operation, dst_type, src_vr, src_type);
   if (dst_vr->varying_p () || dst_vr->undefined_p ())
     return false;
   return true;
@@ -5305,4 +5304,5 @@ ipa_cp_c_finalize (void)
   max_count = profile_count::uninitialized ();
   overall_size = 0;
   max_new_size = 0;
+  ipcp_free_transformation_sum ();
 }

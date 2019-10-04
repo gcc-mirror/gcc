@@ -2266,7 +2266,7 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
     {
       gfc_error ("The A argument at %L has type %s but the function passed as "
 		 "OPERATOR at %L returns %s",
-		 &a->where, gfc_typename (&a->ts), &op->where,
+		 &a->where, gfc_typename (a), &op->where,
 		 gfc_typename (&sym->result->ts));
       return false;
     }
@@ -2276,7 +2276,7 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
       gfc_error ("The function passed as OPERATOR at %L has arguments of type "
 		 "%s and %s but shall have type %s", &op->where,
 		 gfc_typename (&formal->sym->ts),
-		 gfc_typename (&formal->next->sym->ts), gfc_typename (&a->ts));
+		 gfc_typename (&formal->next->sym->ts), gfc_typename (a));
       return false;
     }
   if (op->rank || attr.allocatable || attr.pointer || formal->sym->as
@@ -2844,7 +2844,7 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 		     "of type %qs", gfc_current_intrinsic_arg[2]->name,
 		     gfc_current_intrinsic, &array->where,
 		     gfc_current_intrinsic_arg[0]->name,
-		     gfc_typename (&array->ts));
+		     gfc_typename (array));
 	  return false;
 	}
     }
@@ -4808,7 +4808,7 @@ gfc_check_same_type_as (gfc_expr *a, gfc_expr *b)
 		   "cannot be of type %s",
 		   gfc_current_intrinsic_arg[0]->name,
 		   gfc_current_intrinsic,
-		   &a->where, gfc_typename (&a->ts));
+		   &a->where, gfc_typename (a));
         return false;
     }
 
@@ -4827,7 +4827,7 @@ gfc_check_same_type_as (gfc_expr *a, gfc_expr *b)
 		   "cannot be of type %s",
 		   gfc_current_intrinsic_arg[0]->name,
 		   gfc_current_intrinsic,
-		   &b->where, gfc_typename (&b->ts));
+		   &b->where, gfc_typename (b));
       return false;
     }
 
@@ -7098,12 +7098,19 @@ gfc_check_ttynam_sub (gfc_expr *unit, gfc_expr *name)
 bool
 gfc_check_is_contiguous (gfc_expr *array)
 {
+  if (array->expr_type == EXPR_NULL
+      && array->symtree->n.sym->attr.pointer == 1)
+    {
+      gfc_error ("Actual argument at %L of %qs intrinsic shall be an "
+		 "associated pointer", &array->where, gfc_current_intrinsic);
+      return false;
+    }
+
   if (!array_check (array, 0))
     return false;
 
   return true;
 }
-
 
 
 bool

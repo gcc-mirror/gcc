@@ -1,5 +1,4 @@
 #include <openacc.h>
-#include <alloca.h>
 #include <string.h>
 #include <stdio.h>
 #include <gomp-constants.h>
@@ -28,9 +27,9 @@ check (const int *ary, int size, int gp, int wp, int vp)
 {
   int exit = 0;
   int ix;
-  int *gangs = (int *)alloca (gp * sizeof (int));
-  int *workers = (int *)alloca (wp * sizeof (int));
-  int *vectors = (int *)alloca (vp * sizeof (int));
+  int *gangs = (int *)__builtin_alloca (gp * sizeof (int));
+  int *workers = (int *)__builtin_alloca (wp * sizeof (int));
+  int *vectors = (int *)__builtin_alloca (vp * sizeof (int));
   int offloaded = 0;
 
   memset (gangs, 0, gp * sizeof (int));

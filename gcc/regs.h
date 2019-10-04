@@ -192,7 +192,7 @@ extern int caller_save_needed;
 /* Select a register mode required for caller save of hard regno REGNO.  */
 #ifndef HARD_REGNO_CALLER_SAVE_MODE
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE) \
-  choose_hard_reg_mode (REGNO, NREGS, false)
+  choose_hard_reg_mode (REGNO, NREGS, NULL)
 #endif
 
 /* Target-dependent globals.  */
@@ -382,9 +382,5 @@ range_in_hard_reg_set_p (const_hard_reg_set set, unsigned regno, int nregs)
       return false;
   return true;
 }
-
-/* Get registers used by given function call instruction.  */
-extern bool get_call_reg_set_usage (rtx_insn *insn, HARD_REG_SET *reg_set,
-				    HARD_REG_SET default_set);
 
 #endif /* GCC_REGS_H */

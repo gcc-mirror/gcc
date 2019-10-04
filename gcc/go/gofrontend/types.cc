@@ -6410,12 +6410,11 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
         fvals->push_back(Expression::make_nil(bloc));
       else
 	{
-	  std::string n;
           if (is_embedded_builtin)
             n = gogo->package_name();
           else
             n = Gogo::hidden_name_pkgpath(pf->field_name());
-	  Expression* s = Expression::make_string(n, bloc);
+	  s = Expression::make_string(n, bloc);
 	  fvals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
 	}
 
@@ -6429,7 +6428,7 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 	fvals->push_back(Expression::make_nil(bloc));
       else
 	{
-	  Expression* s = Expression::make_string(pf->tag(), bloc);
+	  s = Expression::make_string(pf->tag(), bloc);
 	  fvals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
 	}
 
@@ -6635,22 +6634,22 @@ Struct_type::do_reflection(Gogo* gogo, std::string* ret) const
 	{
 	  const std::string& tag(p->tag());
 	  ret->append(" \"");
-	  for (std::string::const_iterator p = tag.begin();
-	       p != tag.end();
-	       ++p)
+	  for (std::string::const_iterator pt = tag.begin();
+	       pt != tag.end();
+	       ++pt)
 	    {
-	      if (*p == '\0')
+	      if (*pt == '\0')
 		ret->append("\\x00");
-	      else if (*p == '\n')
+	      else if (*pt == '\n')
 		ret->append("\\n");
-	      else if (*p == '\t')
+	      else if (*pt == '\t')
 		ret->append("\\t");
-	      else if (*p == '"')
+	      else if (*pt == '"')
 		ret->append("\\\"");
-	      else if (*p == '\\')
+	      else if (*pt == '\\')
 		ret->append("\\\\");
 	      else
-		ret->push_back(*p);
+		ret->push_back(*pt);
 	    }
 	  ret->push_back('"');
 	}
@@ -7197,11 +7196,11 @@ Array_type::verify_length()
       return false;
     case Numeric_constant::NC_UL_BIG:
       {
-	mpz_t val;
-	if (!nc.to_int(&val))
+	mpz_t mval;
+	if (!nc.to_int(&mval))
 	  go_unreachable();
-	unsigned int bits = mpz_sizeinbase(val, 2);
-	mpz_clear(val);
+	unsigned int bits = mpz_sizeinbase(mval, 2);
+	mpz_clear(mval);
 	if (bits >= tbits)
 	  {
 	    go_error_at(this->length_->location(), "array bound overflows");
@@ -7704,6 +7703,7 @@ Array_type::do_export(Export* exp) const
         }
       char* s = mpz_get_str(NULL, 10, val);
       exp->write_string(s);
+      free(s);
       exp->write_string(" ");
       mpz_clear(val);
     }
@@ -9752,7 +9752,7 @@ Interface_type::do_import(Import* imp)
 	  parameters = new Typed_identifier_list;
 	  while (true)
 	    {
-	      std::string name = imp->read_name();
+	      std::string pname = imp->read_name();
 	      imp->require_c_string(" ");
 
 	      if (imp->match_c_string("..."))
@@ -9764,7 +9764,7 @@ Interface_type::do_import(Import* imp)
 	      Type* ptype = imp->read_type();
 	      if (is_varargs)
 		ptype = Type::make_array_type(ptype, NULL);
-	      parameters->push_back(Typed_identifier(name, ptype,
+	      parameters->push_back(Typed_identifier(pname, ptype,
 						     imp->location()));
 	      if (imp->peek_char() != ',')
 		break;
@@ -9791,10 +9791,10 @@ Interface_type::do_import(Import* imp)
 	      imp->advance(1);
 	      while (true)
 		{
-		  std::string name = imp->read_name();
+		  std::string rname = imp->read_name();
 		  imp->require_c_string(" ");
 		  Type* rtype = imp->read_type();
-		  results->push_back(Typed_identifier(name, rtype,
+		  results->push_back(Typed_identifier(rname, rtype,
 						      imp->location()));
 		  if (imp->peek_char() != ',')
 		    break;

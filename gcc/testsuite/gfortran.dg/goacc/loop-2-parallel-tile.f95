@@ -3,7 +3,7 @@ program test
   integer :: i, j
 
   !$acc parallel
-    !$acc loop tile ! { dg-error "Unclassifiable" }
+    !$acc loop tile ! { dg-error "Failed to match clause" }
     DO i = 1,10
     ENDDO
     !$acc loop tile() ! { dg-error "Syntax error" }
@@ -56,7 +56,7 @@ program test
     ENDDO
   !$acc end parallel
 
-  !$acc parallel loop tile ! { dg-error "Unclassifiable" }
+  !$acc parallel loop tile ! { dg-error "Failed to match clause" }
   DO i = 1,10
   ENDDO
   !$acc parallel loop tile() ! { dg-error "Syntax error" }

@@ -1,3 +1,85 @@
+2019-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71504
+	* constexpr.c (cxx_fold_indirect_ref_1): New function.
+	(cxx_fold_indirect_ref): Use it.
+
+	PR c++/91974
+	* cp-gimplify.c (cp_gimplify_expr) <case CALL_EXPR>: For
+	-fstrong-eval-order ensure CALL_EXPR_FN side-effects are evaluated
+	before any arguments.  Additionally, ensure CALL_EXPR_FN that isn't
+	invariant nor OBJ_TYPE_REF nor SSA_NAME is forced into a temporary.
+
+2019-10-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* init.c (build_new): Use cp_expr_loc_or_input_loc in two places.
+	* name-lookup.c (do_pushdecl): Use DECL_SOURCE_LOCATION.
+	(push_class_level_binding_1): Likewise.
+	(set_decl_namespace): Likewise.
+
+2019-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* constexpr.c (cxx_eval_constant_expression) <case CLEANUP_STMT>: If
+	not skipping upon entry to body, run cleanup with the same *jump_target
+	as it started to run the cleanup even if the body returns, breaks or
+	continues.
+	(potential_constant_expression_1): Allow CLEANUP_STMT.
+
+	* constexpr.c (cxx_eval_store_expression): Formatting fix.  Handle
+	const_object_being_modified with array type.
+
+2019-10-02  Jason Merrill  <jason@redhat.com>
+
+	* typeck2.c (store_init_value): Only clear_cv_and_fold_caches if the
+	value is constant.
+
+2019-09-30  Jason Merrill  <jason@redhat.com>
+
+	Use hash_map_safe_* functions.
+	* constexpr.c (maybe_initialize_fundef_copies_table): Remove.
+	(get_fundef_copy): Use hash_map_safe_get_or_insert.
+	* cp-objcp-common.c (cp_get_debug_type): Use hash_map_safe_*.
+	* decl.c (store_decomp_type): Remove.
+	(cp_finish_decomp): Use hash_map_safe_put.
+	* init.c (get_nsdmi): Use hash_map_safe_*.
+	* pt.c (store_defaulted_ttp, lookup_defaulted_ttp): Remove.
+	(add_defaults_to_ttp): Use hash_map_safe_*.
+
+2019-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR c++/91606
+	* decl.c (build_ptrmemfunc_type): Mark pointer-to-member
+	fat pointer structure members as DECL_NONADDRESSABLE_P.
+
+2019-09-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91889 - follow-up fix for DR 2352.
+	* call.c (involves_qualification_conversion_p): New function.
+	(direct_reference_binding): Build a ck_qual if the conversion
+	would involve a qualification conversion.
+	(convert_like_real): Strip the conversion created by the ck_qual
+	in direct_reference_binding.
+
+	PR c++/91921 - stray warning with -Woverloaded-virtual.
+	* class.c (warn_hidden): Only emit the second part of
+	-Woverloaded-virtual if the first part was issued.  Use inform instead
+	warning_at.
+
+	PR c++/91923 - failure-to-SFINAE with class type NTTP in C++17.
+	* pt.c (invalid_nontype_parm_type_p): Only emit errors when
+	tf_error.
+
+2019-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88203
+	* parser.c (cp_parser_omp_var_list_no_open): Parse predefined
+	variables.
+	* semantics.c (finish_omp_clauses): Allow predefined variables in
+	shared and firstprivate clauses, even when they are predetermined
+	shared.
+	* cp-gimplify.c (cxx_omp_predetermined_sharing_1): Return
+	OMP_CLAUSE_DEFAULT_SHARED for predefined variables.
+
 2019-09-27  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.c (cxx_fold_indirect_ref): Use similar_type_p.

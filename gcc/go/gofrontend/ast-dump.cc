@@ -135,11 +135,11 @@ Ast_dump_traverse_blocks_and_functions::function(Named_object* no)
         {
           if (it != res->begin())
             this->ast_dump_context_->ostream() << ",";
-          Named_object* no = (*it);
+          Named_object* rno = (*it);
 
-          this->ast_dump_context_->ostream() << no->name() << " ";
-          go_assert(no->is_result_variable());
-          Result_variable* resvar = no->result_var_value();
+          this->ast_dump_context_->ostream() << rno->name() << " ";
+          go_assert(rno->is_result_variable());
+          Result_variable* resvar = rno->result_var_value();
 
           this->ast_dump_context_->dump_type(resvar->type());
 

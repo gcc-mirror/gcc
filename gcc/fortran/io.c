@@ -1482,24 +1482,29 @@ match_vtag (const io_tag *tag, gfc_expr **v)
       return MATCH_ERROR;
     }
 
-  if (result->symtree->n.sym->attr.intent == INTENT_IN)
+  if (result->symtree)
     {
-      gfc_error ("Variable %s cannot be INTENT(IN) at %C", tag->name);
-      gfc_free_expr (result);
-      return MATCH_ERROR;
-    }
+      bool impure;
 
-  bool impure = gfc_impure_variable (result->symtree->n.sym);
-  if (impure && gfc_pure (NULL))
-    {
-      gfc_error ("Variable %s cannot be assigned in PURE procedure at %C",
-		 tag->name);
-      gfc_free_expr (result);
-      return MATCH_ERROR;
-    }
+      if (result->symtree->n.sym->attr.intent == INTENT_IN)
+	{
+	  gfc_error ("Variable %s cannot be INTENT(IN) at %C", tag->name);
+	  gfc_free_expr (result);
+	  return MATCH_ERROR;
+	}
 
-  if (impure)
-    gfc_unset_implicit_pure (NULL);
+      impure = gfc_impure_variable (result->symtree->n.sym);
+      if (impure && gfc_pure (NULL))
+	{
+	  gfc_error ("Variable %s cannot be assigned in PURE procedure at %C",
+		     tag->name);
+	  gfc_free_expr (result);
+	  return MATCH_ERROR;
+	}
+
+      if (impure)
+	gfc_unset_implicit_pure (NULL);
+    }
 
   *v = result;
   return MATCH_YES;
@@ -1515,7 +1520,16 @@ match_out_tag (const io_tag *tag, gfc_expr **result)
 
   m = match_vtag (tag, result);
   if (m == MATCH_YES)
-    gfc_check_do_variable ((*result)->symtree);
+    {
+      if ((*result)->symtree)
+	gfc_check_do_variable ((*result)->symtree);
+
+      if ((*result)->expr_type == EXPR_CONSTANT)
+	{
+	  gfc_error ("Expecting a variable at %L", &(*result)->where);
+	  return MATCH_ERROR;
+	}
+    }
 
   return m;
 }
@@ -2845,7 +2859,7 @@ match_filepos (gfc_statement st, gfc_exec_op op)
 
   m = match_file_element (fp);
   if (m == MATCH_ERROR)
-    goto syntax;
+    goto cleanup;
   if (m == MATCH_NO)
     {
       m = gfc_match_expr (&fp->unit);
@@ -3657,7 +3671,17 @@ match_io_element (io_kind k, gfc_code **cpp)
     {
       m = gfc_match_variable (&expr, 0);
       if (m == MATCH_NO)
-	gfc_error ("Expected variable in READ statement at %C");
+	{
+	  gfc_error ("Expecting variable in READ statement at %C");
+	  m = MATCH_ERROR;
+	}
+
+      if (m == MATCH_YES && expr->expr_type == EXPR_CONSTANT)
+	{
+	  gfc_error ("Expecting variable or io-implied-do in READ statement "
+		   "at %L", &expr->where);
+	  m = MATCH_ERROR;
+	}
 
       if (m == MATCH_YES
 	  && expr->expr_type == EXPR_VARIABLE
@@ -3667,7 +3691,6 @@ match_io_element (io_kind k, gfc_code **cpp)
 		     &expr->where);
 	  m = MATCH_ERROR;
 	}
-
     }
   else
     {

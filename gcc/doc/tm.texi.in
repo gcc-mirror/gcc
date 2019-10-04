@@ -1709,11 +1709,14 @@ must be defined.  Modern ports should define @code{CALL_REALLY_USED_REGISTERS}.
 @cindex call-used register
 @cindex call-clobbered register
 @cindex call-saved register
+@hook TARGET_FNTYPE_ABI
+
+@hook TARGET_INSN_CALLEE_ABI
+
+@cindex call-used register
+@cindex call-clobbered register
+@cindex call-saved register
 @hook TARGET_HARD_REGNO_CALL_PART_CLOBBERED
-
-@hook TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS
-
-@hook TARGET_RETURN_CALL_WITH_MAX_CLOBBERS
 
 @hook TARGET_GET_MULTILIB_ABI_NAME
 

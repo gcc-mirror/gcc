@@ -694,6 +694,7 @@ enum stmt_vec_info_type {
   type_promotion_vec_info_type,
   type_demotion_vec_info_type,
   type_conversion_vec_info_type,
+  cycle_phi_info_type,
   lc_phi_info_type,
   loop_exit_ctrl_vec_info_type
 };
@@ -1649,7 +1650,8 @@ extern class loop *vect_transform_loop (loop_vec_info);
 extern opt_loop_vec_info vect_analyze_loop_form (class loop *,
 						 vec_info_shared *);
 extern bool vectorizable_live_operation (stmt_vec_info, gimple_stmt_iterator *,
-					 slp_tree, int, stmt_vec_info *,
+					 slp_tree, slp_instance, int,
+					 stmt_vec_info *,
 					 stmt_vector_for_cost *);
 extern bool vectorizable_reduction (stmt_vec_info, gimple_stmt_iterator *,
 				    stmt_vec_info *, slp_tree, slp_instance,
@@ -1657,6 +1659,10 @@ extern bool vectorizable_reduction (stmt_vec_info, gimple_stmt_iterator *,
 extern bool vectorizable_induction (stmt_vec_info, gimple_stmt_iterator *,
 				    stmt_vec_info *, slp_tree,
 				    stmt_vector_for_cost *);
+extern bool vect_transform_reduction (stmt_vec_info, gimple_stmt_iterator *,
+				      stmt_vec_info *, slp_tree);
+extern bool vect_transform_cycle_phi (stmt_vec_info, stmt_vec_info *,
+				      slp_tree, slp_instance);
 extern bool vectorizable_lc_phi (stmt_vec_info, stmt_vec_info *, slp_tree);
 extern bool vect_worthwhile_without_simd_p (vec_info *, tree_code);
 extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,

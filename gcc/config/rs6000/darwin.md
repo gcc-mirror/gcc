@@ -150,59 +150,19 @@ You should have received a copy of the GNU General Public License
    stfd %0,lo16(%2)(%1)"
   [(set_attr "type" "store")])
 
-;; Mach-O PIC trickery.
-(define_expand "macho_high"
-  [(set (match_operand 0 "")
-	(high (match_operand 1 "")))]
-  "TARGET_MACHO"
-{
-  if (TARGET_64BIT)
-    emit_insn (gen_macho_high_di (operands[0], operands[1]));
-  else
-    emit_insn (gen_macho_high_si (operands[0], operands[1]));
+;; Mach-O PIC.
 
-  DONE;
-})
-
-(define_insn "macho_high_si"
-  [(set (match_operand:SI 0 "gpc_reg_operand" "=b*r")
-	(high:SI (match_operand 1 "" "")))]
-  "TARGET_MACHO && ! TARGET_64BIT"
-  "lis %0,ha16(%1)")
-  
-
-(define_insn "macho_high_di"
-  [(set (match_operand:DI 0 "gpc_reg_operand" "=b*r")
-	(high:DI (match_operand 1 "" "")))]
-  "TARGET_MACHO && TARGET_64BIT"
+(define_insn "@macho_high_<mode>"
+  [(set (match_operand:P 0 "gpc_reg_operand" "=b*r")
+	(high:P (match_operand 1 "" "")))]
+  "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN)"
   "lis %0,ha16(%1)")
 
-(define_expand "macho_low"
-  [(set (match_operand 0 "")
-	(lo_sum (match_operand 1 "")
-		   (match_operand 2 "")))]
-   "TARGET_MACHO"
-{
-  if (TARGET_64BIT)
-    emit_insn (gen_macho_low_di (operands[0], operands[1], operands[2]));
-  else
-    emit_insn (gen_macho_low_si (operands[0], operands[1], operands[2]));
-
-  DONE;
-})
-
-(define_insn "macho_low_si"
-  [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
-	(lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+(define_insn "@macho_low_<mode>"
+  [(set (match_operand:P 0 "gpc_reg_operand" "=r")
+	(lo_sum:P (match_operand:P 1 "gpc_reg_operand" "b")
 		   (match_operand 2 "" "")))]
-   "TARGET_MACHO && ! TARGET_64BIT"
-   "la %0,lo16(%2)(%1)")
-
-(define_insn "macho_low_di"
-  [(set (match_operand:DI 0 "gpc_reg_operand" "=r")
-	(lo_sum:DI (match_operand:DI 1 "gpc_reg_operand" "b")
-		   (match_operand 2 "" "")))]
-   "TARGET_MACHO && TARGET_64BIT"
+   "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN)"
    "la %0,lo16(%2)(%1)")
 
 (define_split

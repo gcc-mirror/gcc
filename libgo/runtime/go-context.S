@@ -66,4 +66,8 @@ __go_makecontext:
 
 	ret
 
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.GNU-split-stack,"",@progbits
+	.section	.note.GNU-no-split-stack,"",@progbits
+
 #endif

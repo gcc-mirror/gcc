@@ -1372,6 +1372,7 @@ update_costs_from_allocno (ira_allocno_t allocno, int hard_regno,
 	     e.g. DImode for AREG on x86.  For such cases the
 	     register move cost will be maximal.  */
 	  mode = narrower_subreg_mode (mode, ALLOCNO_MODE (cp->second));
+	  ira_init_register_move_cost_if_necessary (mode);
 	  
 	  cost = (cp->second == allocno
 		  ? ira_register_move_cost[mode][rclass][aclass]
@@ -1650,7 +1651,7 @@ calculate_saved_nregs (int hard_regno, machine_mode mode)
   ira_assert (hard_regno >= 0);
   for (i = hard_regno_nregs (hard_regno, mode) - 1; i >= 0; i--)
     if (!allocated_hardreg_p[hard_regno + i]
-	&& !TEST_HARD_REG_BIT (call_used_or_fixed_regs, hard_regno + i)
+	&& !crtl->abi->clobbers_full_reg_p (hard_regno + i)
 	&& !LOCAL_REGNO (hard_regno + i))
       nregs++;
   return nregs;
@@ -2817,6 +2818,7 @@ allocno_copy_cost_saving (ira_allocno_t allocno, int hard_regno)
 	}
       else
 	gcc_unreachable ();
+      ira_init_register_move_cost_if_necessary (allocno_mode);
       cost += cp->freq * ira_register_move_cost[allocno_mode][rclass][rclass];
     }
   return cost;
@@ -4379,7 +4381,7 @@ allocno_reload_assign (ira_allocno_t a, HARD_REG_SET forbidden_regs)
       saved[i] = OBJECT_TOTAL_CONFLICT_HARD_REGS (obj);
       OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= forbidden_regs;
       if (! flag_caller_saves && ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
-	OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= call_used_or_fixed_regs;
+	OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= ira_need_caller_save_regs (a);
     }
   ALLOCNO_ASSIGNED_P (a) = false;
   aclass = ALLOCNO_CLASS (a);
@@ -4398,9 +4400,7 @@ allocno_reload_assign (ira_allocno_t a, HARD_REG_SET forbidden_regs)
 	       ? ALLOCNO_CLASS_COST (a)
 	       : ALLOCNO_HARD_REG_COSTS (a)[ira_class_hard_reg_index
 					    [aclass][hard_regno]]));
-      if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0
-	  && ira_hard_reg_set_intersection_p (hard_regno, ALLOCNO_MODE (a),
-					      call_used_or_fixed_regs))
+      if (ira_need_caller_save_p (a, hard_regno))
 	{
 	  ira_assert (flag_caller_saves);
 	  caller_save_needed = 1;
@@ -4687,16 +4687,16 @@ ira_mark_new_stack_slot (rtx x, int regno, poly_uint64 total_size)
    given IN and OUT for INSN.  Return also number points (through
    EXCESS_PRESSURE_LIVE_LENGTH) where the pseudo-register lives and
    the register pressure is high, number of references of the
-   pseudo-registers (through NREFS), number of callee-clobbered
-   hard-registers occupied by the pseudo-registers (through
-   CALL_USED_COUNT), and the first hard regno occupied by the
+   pseudo-registers (through NREFS), the number of psuedo registers
+   whose allocated register wouldn't need saving in the prologue
+   (through CALL_USED_COUNT), and the first hard regno occupied by the
    pseudo-registers (through FIRST_HARD_REGNO).  */
 static int
 calculate_spill_cost (int *regnos, rtx in, rtx out, rtx_insn *insn,
 		      int *excess_pressure_live_length,
 		      int *nrefs, int *call_used_count, int *first_hard_regno)
 {
-  int i, cost, regno, hard_regno, j, count, saved_cost, nregs;
+  int i, cost, regno, hard_regno, count, saved_cost;
   bool in_p, out_p;
   int length;
   ira_allocno_t a;
@@ -4713,11 +4713,8 @@ calculate_spill_cost (int *regnos, rtx in, rtx out, rtx_insn *insn,
       a = ira_regno_allocno_map[regno];
       length += ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a) / ALLOCNO_NUM_OBJECTS (a);
       cost += ALLOCNO_MEMORY_COST (a) - ALLOCNO_CLASS_COST (a);
-      nregs = hard_regno_nregs (hard_regno, ALLOCNO_MODE (a));
-      for (j = 0; j < nregs; j++)
-	if (! TEST_HARD_REG_BIT (call_used_or_fixed_regs, hard_regno + j))
-	  break;
-      if (j == nregs)
+      if (in_hard_reg_set_p (crtl->abi->full_reg_clobbers (),
+			     ALLOCNO_MODE (a), hard_regno))
 	count++;
       in_p = in && REG_P (in) && (int) REGNO (in) == hard_regno;
       out_p = out && REG_P (out) && (int) REGNO (out) == hard_regno;

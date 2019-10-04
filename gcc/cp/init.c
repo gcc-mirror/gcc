@@ -563,10 +563,9 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
       init = DECL_INITIAL (DECL_TI_TEMPLATE (member));
       location_t expr_loc
 	= cp_expr_loc_or_loc (init, DECL_SOURCE_LOCATION (member));
-      tree *slot;
       if (TREE_CODE (init) == DEFERRED_PARSE)
 	/* Unparsed.  */;
-      else if (nsdmi_inst && (slot = nsdmi_inst->get (member)))
+      else if (tree *slot = hash_map_safe_get (nsdmi_inst, member))
 	init = *slot;
       /* Check recursive instantiation.  */
       else if (DECL_INSTANTIATING_NSDMI_P (member))
@@ -611,11 +610,7 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 	  DECL_INSTANTIATING_NSDMI_P (member) = 0;
 
 	  if (init != error_mark_node)
-	    {
-	      if (!nsdmi_inst)
-		nsdmi_inst = tree_cache_map::create_ggc (37);
-	      nsdmi_inst->put (member, init);
-	    }
+	    hash_map_safe_put<hm_ggc> (nsdmi_inst, member, init);
 
 	  if (pushed)
 	    {
@@ -3759,7 +3754,8 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
       if (!build_expr_type_conversion (WANT_INT | WANT_ENUM, nelts, false))
         {
           if (complain & tf_error)
-            permerror (input_location, "size in array new must have integral type");
+	    permerror (cp_expr_loc_or_input_loc (nelts),
+		       "size in array new must have integral type");
           else
             return error_mark_node;
         }
@@ -3774,7 +3770,8 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
 	 less than zero. ... If the expression is a constant expression,
 	 the program is ill-fomed.  */
       if (TREE_CODE (cst_nelts) == INTEGER_CST
-	  && !valid_array_size_p (input_location, cst_nelts, NULL_TREE,
+	  && !valid_array_size_p (cp_expr_loc_or_input_loc (nelts),
+				  cst_nelts, NULL_TREE,
 				  complain & tf_error))
 	return error_mark_node;
 

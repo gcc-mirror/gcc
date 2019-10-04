@@ -214,19 +214,31 @@ namespace __parallel
 
   // Public interface
   template<typename _IIter1, typename _IIter2>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     equal(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2)
     {
+#if __cplusplus > 201703L
+      if (std::is_constant_evaluated())
+	return _GLIBCXX_STD_A::equal(__begin1, __end1, __begin2);
+#endif
+
       return __gnu_parallel::mismatch(__begin1, __end1, __begin2).first
               == __end1;
     }
 
   // Public interface
   template<typename _IIter1, typename _IIter2, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     equal(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2, 
           _Predicate __pred)
     {
+#if __cplusplus > 201703L
+      if (std::is_constant_evaluated())
+	return _GLIBCXX_STD_A::equal(__begin1, __end1, __begin2, __pred);
+#endif
+
       return __gnu_parallel::mismatch(__begin1, __end1, __begin2, __pred).first
               == __end1;
     }
@@ -286,9 +298,15 @@ namespace __parallel
     }
 
   template<typename _IIter1, typename _IIter2>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     equal(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2, _IIter2 __end2)
     {
+#if __cplusplus > 201703L
+      if (std::is_constant_evaluated())
+	return _GLIBCXX_STD_A::equal(__begin1, __end1, __begin2, __end2);
+#endif
+
       typedef __gnu_parallel::_EqualTo<
 	typename std::iterator_traits<_IIter1>::value_type,
 	typename std::iterator_traits<_IIter2>::value_type> _EqualTo;
@@ -299,15 +317,22 @@ namespace __parallel
     }
 
   template<typename _IIter1, typename _IIter2, typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     equal(_IIter1 __begin1, _IIter1 __end1,
 	  _IIter2 __begin2, _IIter2 __end2, _BinaryPredicate __binary_pred)
     {
+#if __cplusplus > 201703L
+      if (std::is_constant_evaluated())
+	return _GLIBCXX_STD_A::equal(__begin1, __end1, __begin2, __end2,
+				     __binary_pred);
+#endif
+
       return __equal_switch(__begin1, __end1, __begin2, __end2, __binary_pred,
 			    std::__iterator_category(__begin1),
 			    std::__iterator_category(__begin2));
     }
-#endif
+#endif // C++14
 
   // Sequential fallback
   template<typename _IIter1, typename _IIter2>
@@ -391,10 +416,17 @@ namespace __parallel
 
   // Public interface
   template<typename _IIter1, typename _IIter2>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     lexicographical_compare(_IIter1 __begin1, _IIter1 __end1,
                             _IIter2 __begin2, _IIter2 __end2)
     {
+#if __cplusplus > 201703L
+      if (std::is_constant_evaluated())
+	return _GLIBCXX_STD_A::lexicographical_compare(__begin1, __end1,
+						       __begin2, __end2);
+#endif
+
       typedef iterator_traits<_IIter1> _TraitsType1;
       typedef typename _TraitsType1::value_type _ValueType1;
       typedef typename _TraitsType1::iterator_category _IteratorCategory1;
@@ -411,11 +443,19 @@ namespace __parallel
 
   // Public interface
   template<typename _IIter1, typename _IIter2, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     lexicographical_compare(_IIter1 __begin1, _IIter1 __end1,
                             _IIter2 __begin2, _IIter2 __end2,
                             _Predicate __pred)
     {
+#if __cplusplus > 201703L
+      if (std::is_constant_evaluated())
+	return _GLIBCXX_STD_A::lexicographical_compare(__begin1, __end1,
+						       __begin2, __end2,
+						       __pred);
+#endif
+
       typedef iterator_traits<_IIter1> _TraitsType1;
       typedef typename _TraitsType1::iterator_category _IteratorCategory1;
 

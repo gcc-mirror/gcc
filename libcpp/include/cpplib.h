@@ -483,6 +483,9 @@ struct cpp_options
   /* Nonzero for C++2a __VA_OPT__ feature.  */
   unsigned char va_opt;
 
+  /* Nonzero for the '::' token.  */
+  unsigned char scope;
+
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
 

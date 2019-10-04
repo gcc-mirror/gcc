@@ -9809,19 +9809,17 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   tree vec_cmp_type;
   bool masked = false;
 
+  if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
+    return false;
+
   if (for_reduction && STMT_SLP_TYPE (stmt_info))
     return false;
 
   vect_reduction_type reduction_type
     = STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info);
-  if (reduction_type == TREE_CODE_REDUCTION)
+  if (!for_reduction)
     {
-      if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
-	return false;
-
-      if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def
-	  && !(STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle
-	       && for_reduction))
+      if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
 	return false;
 
       /* FORNOW: not yet supported.  */
@@ -10472,7 +10470,8 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
 static bool
 can_vectorize_live_stmts (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
-			  slp_tree slp_node, stmt_vec_info *vec_stmt,
+			  slp_tree slp_node, slp_instance slp_node_instance,
+			  stmt_vec_info *vec_stmt,
 			  stmt_vector_for_cost *cost_vec)
 {
   if (slp_node)
@@ -10482,13 +10481,15 @@ can_vectorize_live_stmts (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (slp_node), i, slp_stmt_info)
 	{
 	  if (STMT_VINFO_LIVE_P (slp_stmt_info)
-	      && !vectorizable_live_operation (slp_stmt_info, gsi, slp_node, i,
+	      && !vectorizable_live_operation (slp_stmt_info, gsi, slp_node,
+					       slp_node_instance, i,
 					       vec_stmt, cost_vec))
 	    return false;
 	}
     }
   else if (STMT_VINFO_LIVE_P (stmt_info)
-	   && !vectorizable_live_operation (stmt_info, gsi, slp_node, -1,
+	   && !vectorizable_live_operation (stmt_info, gsi, slp_node,
+					    slp_node_instance, -1,
 					    vec_stmt, cost_vec))
     return false;
 
@@ -10704,7 +10705,9 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
       need extra handling, except for vectorizable reductions.  */
   if (!bb_vinfo
       && STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type
-      && !can_vectorize_live_stmts (stmt_info, NULL, node, NULL, cost_vec))
+      && STMT_VINFO_TYPE (stmt_info) != lc_phi_info_type
+      && !can_vectorize_live_stmts (stmt_info, NULL, node, node_instance,
+				    NULL, cost_vec))
     return opt_result::failure_at (stmt_info->stmt,
 				   "not vectorized:"
 				   " live stmt not supported: %G",
@@ -10816,8 +10819,13 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       break;
 
     case reduc_vec_info_type:
-      done = vectorizable_reduction (stmt_info, gsi, &vec_stmt, slp_node,
-				     slp_node_instance, NULL);
+      done = vect_transform_reduction (stmt_info, gsi, &vec_stmt, slp_node);
+      gcc_assert (done);
+      break;
+
+    case cycle_phi_info_type:
+      done = vect_transform_cycle_phi (stmt_info, &vec_stmt, slp_node,
+				       slp_node_instance);
       gcc_assert (done);
       break;
 
@@ -10878,19 +10886,68 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  }
     }
 
-  /* Handle stmts whose DEF is used outside the loop-nest that is
-     being vectorized.  */
-  if (STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type)
-    {
-      done = can_vectorize_live_stmts (stmt_info, gsi, slp_node, &vec_stmt,
-				       NULL);
-      gcc_assert (done);
-    }
-
   if (vec_stmt)
     STMT_VINFO_VEC_STMT (stmt_info) = vec_stmt;
 
-  return is_store;
+  if (STMT_VINFO_TYPE (stmt_info) == store_vec_info_type)
+    return is_store;
+
+  /* If this stmt defines a value used on a backedge, update the
+     vectorized PHIs.  */
+  stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
+  if (!slp_node && STMT_VINFO_REDUC_DEF (orig_stmt_info)
+      && STMT_VINFO_REDUC_TYPE (orig_stmt_info) != FOLD_LEFT_REDUCTION
+      && (STMT_VINFO_REDUC_TYPE (orig_stmt_info) != COND_REDUCTION
+	  || (STMT_VINFO_VEC_REDUCTION_TYPE (orig_stmt_info)
+	      != EXTRACT_LAST_REDUCTION))
+      && is_a <gphi *> (STMT_VINFO_REDUC_DEF (orig_stmt_info)->stmt))
+    {
+      gphi *phi = as_a <gphi *> (STMT_VINFO_REDUC_DEF (orig_stmt_info)->stmt);
+      if (dominated_by_p (CDI_DOMINATORS,
+			  gimple_bb (orig_stmt_info->stmt), gimple_bb (phi)))
+	{
+	  edge e = loop_latch_edge (gimple_bb (phi)->loop_father);
+	  stmt_vec_info phi_info
+	      = STMT_VINFO_VEC_STMT (STMT_VINFO_REDUC_DEF (orig_stmt_info));
+	  stmt_vec_info vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
+	  do
+	    {
+	      add_phi_arg (as_a <gphi *> (phi_info->stmt),
+			   gimple_get_lhs (vec_stmt->stmt), e,
+			   gimple_phi_arg_location (phi, e->dest_idx));
+	      phi_info = STMT_VINFO_RELATED_STMT (phi_info);
+	      vec_stmt = STMT_VINFO_RELATED_STMT (vec_stmt);
+	    }
+	  while (phi_info);
+	  gcc_assert (!vec_stmt);
+	}
+    }
+  else if (slp_node && STMT_VINFO_REDUC_DEF (orig_stmt_info)
+	   /* Going back and forth via STMT_VINFO_REDUC_DEF gets us to the
+	      stmt with the reduction meta in case of reduction groups.  */
+	   && (STMT_VINFO_REDUC_TYPE
+	         (STMT_VINFO_REDUC_DEF (STMT_VINFO_REDUC_DEF (orig_stmt_info)))
+	       != FOLD_LEFT_REDUCTION)
+	   && slp_node != slp_node_instance->reduc_phis)
+    {
+      slp_tree phi_node = slp_node_instance->reduc_phis;
+      gphi *phi = as_a <gphi *> (SLP_TREE_SCALAR_STMTS (phi_node)[0]->stmt);
+      edge e = loop_latch_edge (gimple_bb (phi)->loop_father);
+      gcc_assert (SLP_TREE_VEC_STMTS (phi_node).length ()
+		  == SLP_TREE_VEC_STMTS (slp_node).length ());
+      for (unsigned i = 0; i < SLP_TREE_VEC_STMTS (phi_node).length (); ++i)
+	add_phi_arg (as_a <gphi *> (SLP_TREE_VEC_STMTS (phi_node)[i]->stmt),
+		     gimple_get_lhs (SLP_TREE_VEC_STMTS (slp_node)[i]->stmt),
+		     e, gimple_phi_arg_location (phi, e->dest_idx));
+    }
+
+  /* Handle stmts whose DEF is used outside the loop-nest that is
+     being vectorized.  */
+  done = can_vectorize_live_stmts (stmt_info, gsi, slp_node,
+				   slp_node_instance, &vec_stmt, NULL);
+  gcc_assert (done);
+
+  return false;
 }
 
 

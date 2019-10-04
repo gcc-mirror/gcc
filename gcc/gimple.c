@@ -1797,6 +1797,8 @@ gimple_get_lhs (const gimple *stmt)
     return gimple_assign_lhs (stmt);
   else if (code == GIMPLE_CALL)
     return gimple_call_lhs (stmt);
+  else if (code == GIMPLE_PHI)
+    return gimple_phi_result (stmt);
   else
     return NULL_TREE;
 }

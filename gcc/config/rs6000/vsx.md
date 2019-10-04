@@ -5544,3 +5544,48 @@
   operands[SFBOOL_TMP_VSX_DI] = gen_rtx_REG (DImode, regno_tmp_vsx);
   operands[SFBOOL_MTVSR_D_V4SF] = gen_rtx_REG (V4SFmode, regno_mtvsr_d);
 })
+
+;; Support signed/unsigned long long to float conversion vectorization.
+;; Note that any_float (pc) here is just for code attribute <su>.
+(define_expand "vec_pack<su>_float_v2di"
+  [(match_operand:V4SF 0 "vfloat_operand")
+   (match_operand:V2DI 1 "vint_operand")
+   (match_operand:V2DI 2 "vint_operand")
+   (any_float (pc))]
+  "TARGET_VSX"
+{
+  rtx r1 = gen_reg_rtx (V4SFmode);
+  rtx r2 = gen_reg_rtx (V4SFmode);
+  emit_insn (gen_vsx_xvcv<su>xdsp (r1, operands[1]));
+  emit_insn (gen_vsx_xvcv<su>xdsp (r2, operands[2]));
+  rs6000_expand_extract_even (operands[0], r1, r2);
+  DONE;
+})
+
+;; Support float to signed/unsigned long long conversion vectorization.
+;; Note that any_fix (pc) here is just for code attribute <su>.
+(define_expand "vec_unpack_<su>fix_trunc_hi_v4sf"
+  [(match_operand:V2DI 0 "vint_operand")
+   (match_operand:V4SF 1 "vfloat_operand")
+   (any_fix (pc))]
+  "TARGET_VSX"
+{
+  rtx reg = gen_reg_rtx (V4SFmode);
+  rs6000_expand_interleave (reg, operands[1], operands[1], BYTES_BIG_ENDIAN);
+  emit_insn (gen_vsx_xvcvsp<su>xds (operands[0], reg));
+  DONE;
+})
+
+;; Note that any_fix (pc) here is just for code attribute <su>.
+(define_expand "vec_unpack_<su>fix_trunc_lo_v4sf"
+  [(match_operand:V2DI 0 "vint_operand")
+   (match_operand:V4SF 1 "vfloat_operand")
+   (any_fix (pc))]
+  "TARGET_VSX"
+{
+  rtx reg = gen_reg_rtx (V4SFmode);
+  rs6000_expand_interleave (reg, operands[1], operands[1], !BYTES_BIG_ENDIAN);
+  emit_insn (gen_vsx_xvcvsp<su>xds (operands[0], reg));
+  DONE;
+})
+

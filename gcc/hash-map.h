@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
    removed.  Objects of hash_map type are copy-constructible but not
    assignable.  */
 
+const size_t default_hash_map_size = 13;
 template<typename KeyId, typename Value,
 	 typename Traits /* = simple_hashmap_traits<default_hash_traits<Key>,
 			                            Value> */>
@@ -129,7 +130,7 @@ class GTY((user)) hash_map
   };
 
 public:
-  explicit hash_map (size_t n = 13, bool ggc = false,
+  explicit hash_map (size_t n = default_hash_map_size, bool ggc = false,
 		     bool sanitize_eq_and_hash = true,
 		     bool gather_mem_stats = GATHER_STATISTICS
 		     CXX_MEM_STAT_INFO)
@@ -146,7 +147,7 @@ public:
 	       HASH_MAP_ORIGIN PASS_MEM_STAT) {}
 
   /* Create a hash_map in ggc memory.  */
-  static hash_map *create_ggc (size_t size,
+  static hash_map *create_ggc (size_t size = default_hash_map_size,
 			       bool gather_mem_stats = GATHER_STATISTICS
 			       CXX_MEM_STAT_INFO)
     {
@@ -325,6 +326,48 @@ static inline void
 gt_pch_nx (hash_map<K, V, H> *h, gt_pointer_operator op, void *cookie)
 {
   op (&h->m_table.m_entries, cookie);
+}
+
+enum hm_alloc { hm_heap = false, hm_ggc = true };
+template<bool ggc, typename K, typename V, typename H>
+inline hash_map<K,V,H> *
+hash_map_maybe_create (hash_map<K,V,H> *&h,
+		       size_t size = default_hash_map_size)
+{
+  if (!h)
+    {
+      if (ggc)
+	h = hash_map<K,V,H>::create_ggc (size);
+      else
+	h = new hash_map<K,V,H> (size);
+    }
+  return h;
+}
+
+/* Like h->get, but handles null h.  */
+template<typename K, typename V, typename H>
+inline V*
+hash_map_safe_get (hash_map<K,V,H> *h, const K& k)
+{
+  return h ? h->get (k) : NULL;
+}
+
+/* Like h->get, but handles null h.  */
+template<bool ggc, typename K, typename V, typename H>
+inline V&
+hash_map_safe_get_or_insert (hash_map<K,V,H> *&h, const K& k, bool *e = NULL,
+			     size_t size = default_hash_map_size)
+{
+  return hash_map_maybe_create<ggc> (h, size)->get_or_insert (k, e);
+}
+
+/* Like h->put, but handles null h.  */
+template<bool ggc, typename K, typename V, typename H>
+inline bool
+hash_map_safe_put (hash_map<K,V,H> *&h, const K& k, const V& v,
+		   size_t size = default_hash_map_size)
+{
+  return hash_map_maybe_create<ggc> (h, size)->put (k, v);
 }
 
 #endif

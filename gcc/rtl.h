@@ -36,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "hard-reg-set.h"
 
+class predefined_function_abi;
+
 /* Value used by some passes to "recognize" noop moves as valid
  instructions.  */
 #define NOOP_MOVE_INSN_CODE	INT_MAX
@@ -2677,7 +2679,7 @@ do {								        \
 
 /* For a SET rtx, SET_DEST is the place that is set
    and SET_SRC is the value it is set to.  */
-#define SET_DEST(RTX) XC3EXP (RTX, 0, SET, CLOBBER, CLOBBER_HIGH)
+#define SET_DEST(RTX) XC2EXP (RTX, 0, SET, CLOBBER)
 #define SET_SRC(RTX) XCEXP (RTX, 1, SET)
 #define SET_IS_RETURN_P(RTX)						\
   (RTL_FLAG_CHECK1 ("SET_IS_RETURN_P", (RTX), SET)->jump)
@@ -2957,6 +2959,15 @@ extern HOST_WIDE_INT get_stack_check_protect (void);
 
 /* In rtl.c */
 extern rtx rtx_alloc (RTX_CODE CXX_MEM_STAT_INFO);
+inline rtx
+rtx_init (rtx rt, RTX_CODE code)
+{
+  memset (rt, 0, RTX_HDR_SIZE);
+  PUT_CODE (rt, code);
+  return rt;
+}
+#define rtx_alloca(code) \
+  rtx_init ((rtx) alloca (RTX_CODE_SIZE ((code))), (code))
 extern rtx rtx_alloc_stat_v (RTX_CODE MEM_STAT_DECL, int);
 #define rtx_alloc_v(c, SZ) rtx_alloc_stat_v (c MEM_STAT_INFO, SZ)
 #define const_wide_int_alloc(NWORDS)				\
@@ -3401,7 +3412,8 @@ extern bool val_signbit_known_clear_p (machine_mode,
 				       unsigned HOST_WIDE_INT);
 
 /* In reginfo.c  */
-extern machine_mode choose_hard_reg_mode (unsigned int, unsigned int, bool);
+extern machine_mode choose_hard_reg_mode (unsigned int, unsigned int,
+					  const predefined_function_abi *);
 extern const HARD_REG_SET &simplifiable_subregs (const subreg_shape &);
 
 /* In emit-rtl.c  */
@@ -3438,6 +3450,7 @@ extern int rtx_unstable_p (const_rtx);
 extern bool rtx_varies_p (const_rtx, bool);
 extern bool rtx_addr_varies_p (const_rtx, bool);
 extern rtx get_call_rtx_from (const rtx_insn *);
+extern tree get_call_fndecl (const rtx_insn *);
 extern HOST_WIDE_INT get_integer_term (const_rtx);
 extern rtx get_related_value (const_rtx);
 extern bool offset_within_block_p (const_rtx, HOST_WIDE_INT);
@@ -3511,16 +3524,6 @@ extern rtx tablejump_casesi_pattern (const rtx_insn *insn);
 extern int computed_jump_p (const rtx_insn *);
 extern bool tls_referenced_p (const_rtx);
 extern bool contains_mem_rtx_p (rtx x);
-extern bool reg_is_clobbered_by_clobber_high (unsigned int, machine_mode,
-					      const_rtx);
-
-/* Convenient wrapper for reg_is_clobbered_by_clobber_high.  */
-inline bool
-reg_is_clobbered_by_clobber_high (const_rtx x, const_rtx clobber_high_op)
-{
-  return reg_is_clobbered_by_clobber_high (REGNO (x), GET_MODE (x),
-					   clobber_high_op);
-}
 
 /* Overload for refers_to_regno_p for checking a single register.  */
 inline bool
@@ -3823,7 +3826,10 @@ gen_rtx_INSN (machine_mode mode, rtx_insn *prev_insn, rtx_insn *next_insn,
 extern rtx gen_rtx_CONST_INT (machine_mode, HOST_WIDE_INT);
 extern rtx gen_rtx_CONST_VECTOR (machine_mode, rtvec);
 extern void set_mode_and_regno (rtx, machine_mode, unsigned int);
+extern rtx init_raw_REG (rtx, machine_mode, unsigned int);
 extern rtx gen_raw_REG (machine_mode, unsigned int);
+#define alloca_raw_REG(mode, regno) \
+  init_raw_REG (rtx_alloca (REG), (mode), (regno))
 extern rtx gen_rtx_REG (machine_mode, unsigned int);
 extern rtx gen_rtx_SUBREG (machine_mode, rtx, poly_uint64);
 extern rtx gen_rtx_MEM (machine_mode, rtx);
@@ -4314,7 +4320,6 @@ extern void vt_equate_reg_base_value (const_rtx, const_rtx);
 extern bool memory_modified_in_insn_p (const_rtx, const_rtx);
 extern bool may_be_sp_based_p (rtx);
 extern rtx gen_hard_reg_clobber (machine_mode, unsigned int);
-extern rtx gen_hard_reg_clobber_high (machine_mode, unsigned int);
 extern rtx get_reg_known_value (unsigned int);
 extern bool get_reg_known_equiv_p (unsigned int);
 extern rtx get_reg_base_value (unsigned int);
@@ -4389,14 +4394,11 @@ extern tree GTY(()) global_regs_decl[FIRST_PSEUDO_REGISTER];
    Available only for functions that has been already assembled.  */
 
 struct GTY(()) cgraph_rtl_info {
-   unsigned int preferred_incoming_stack_boundary;
+  unsigned int preferred_incoming_stack_boundary;
 
-  /* Call unsaved hard registers really used by the corresponding
-     function (including ones used by functions called by the
-     function).  */
+  /* Which registers the function clobbers, either directly or by
+     calling another function.  */
   HARD_REG_SET function_used_regs;
-  /* Set if function_used_regs is valid.  */
-  unsigned function_used_regs_valid: 1;
 };
 
 /* If loads from memories of mode MODE always sign or zero extend,

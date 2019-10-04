@@ -130,6 +130,7 @@
     UNSPEC_AUTIB1716
     UNSPEC_AUTIASP
     UNSPEC_AUTIBSP
+    UNSPEC_CALLEE_ABI
     UNSPEC_CASESI
     UNSPEC_CRC32B
     UNSPEC_CRC32CB
@@ -799,7 +800,7 @@
 
 (define_insn "simple_return"
   [(simple_return)]
-  "aarch64_use_simple_return_insn_p ()"
+  ""
   "ret"
   [(set_attr "type" "branch")]
 )
@@ -913,14 +914,15 @@
 ;; -------------------------------------------------------------------
 
 (define_expand "call"
-  [(parallel [(call (match_operand 0 "memory_operand")
-		    (match_operand 1 "general_operand"))
-	      (use (match_operand 2 "" ""))
-	      (clobber (reg:DI LR_REGNUM))])]
+  [(parallel
+     [(call (match_operand 0 "memory_operand")
+	    (match_operand 1 "general_operand"))
+      (unspec:DI [(match_operand 2 "const_int_operand")] UNSPEC_CALLEE_ABI)
+      (clobber (reg:DI LR_REGNUM))])]
   ""
   "
   {
-    aarch64_expand_call (NULL_RTX, operands[0], false);
+    aarch64_expand_call (NULL_RTX, operands[0], operands[2], false);
     DONE;
   }"
 )
@@ -928,6 +930,7 @@
 (define_insn "*call_insn"
   [(call (mem:DI (match_operand:DI 0 "aarch64_call_insn_operand" "r, Usf"))
 	 (match_operand 1 "" ""))
+   (unspec:DI [(match_operand:DI 2 "const_int_operand")] UNSPEC_CALLEE_ABI)
    (clobber (reg:DI LR_REGNUM))]
   ""
   "@
@@ -937,15 +940,16 @@
 )
 
 (define_expand "call_value"
-  [(parallel [(set (match_operand 0 "" "")
-		   (call (match_operand 1 "memory_operand")
-			 (match_operand 2 "general_operand")))
-	      (use (match_operand 3 "" ""))
-	      (clobber (reg:DI LR_REGNUM))])]
+  [(parallel
+     [(set (match_operand 0 "")
+	   (call (match_operand 1 "memory_operand")
+		 (match_operand 2 "general_operand")))
+     (unspec:DI [(match_operand 3 "const_int_operand")] UNSPEC_CALLEE_ABI)
+     (clobber (reg:DI LR_REGNUM))])]
   ""
   "
   {
-    aarch64_expand_call (operands[0], operands[1], false);
+    aarch64_expand_call (operands[0], operands[1], operands[3], false);
     DONE;
   }"
 )
@@ -954,6 +958,7 @@
   [(set (match_operand 0 "" "")
 	(call (mem:DI (match_operand:DI 1 "aarch64_call_insn_operand" "r, Usf"))
 		      (match_operand 2 "" "")))
+   (unspec:DI [(match_operand:DI 3 "const_int_operand")] UNSPEC_CALLEE_ABI)
    (clobber (reg:DI LR_REGNUM))]
   ""
   "@
@@ -963,33 +968,36 @@
 )
 
 (define_expand "sibcall"
-  [(parallel [(call (match_operand 0 "memory_operand")
-		    (match_operand 1 "general_operand"))
-	      (return)
-	      (use (match_operand 2 "" ""))])]
+  [(parallel
+     [(call (match_operand 0 "memory_operand")
+	    (match_operand 1 "general_operand"))
+      (unspec:DI [(match_operand 2 "const_int_operand")] UNSPEC_CALLEE_ABI)
+      (return)])]
   ""
   {
-    aarch64_expand_call (NULL_RTX, operands[0], true);
+    aarch64_expand_call (NULL_RTX, operands[0], operands[2], true);
     DONE;
   }
 )
 
 (define_expand "sibcall_value"
-  [(parallel [(set (match_operand 0 "" "")
-		   (call (match_operand 1 "memory_operand")
-			 (match_operand 2 "general_operand")))
-	      (return)
-	      (use (match_operand 3 "" ""))])]
+  [(parallel
+     [(set (match_operand 0 "")
+	   (call (match_operand 1 "memory_operand")
+		 (match_operand 2 "general_operand")))
+      (unspec:DI [(match_operand 3 "const_int_operand")] UNSPEC_CALLEE_ABI)
+      (return)])]
   ""
   {
-    aarch64_expand_call (operands[0], operands[1], true);
+    aarch64_expand_call (operands[0], operands[1], operands[3], true);
     DONE;
   }
 )
 
 (define_insn "*sibcall_insn"
   [(call (mem:DI (match_operand:DI 0 "aarch64_call_insn_operand" "Ucs, Usf"))
-	 (match_operand 1 "" ""))
+	 (match_operand 1 ""))
+   (unspec:DI [(match_operand:DI 2 "const_int_operand")] UNSPEC_CALLEE_ABI)
    (return)]
   "SIBLING_CALL_P (insn)"
   "@
@@ -999,10 +1007,11 @@
 )
 
 (define_insn "*sibcall_value_insn"
-  [(set (match_operand 0 "" "")
+  [(set (match_operand 0 "")
 	(call (mem:DI
 		(match_operand:DI 1 "aarch64_call_insn_operand" "Ucs, Usf"))
-	      (match_operand 2 "" "")))
+	      (match_operand 2 "")))
+   (unspec:DI [(match_operand:DI 3 "const_int_operand")] UNSPEC_CALLEE_ABI)
    (return)]
   "SIBLING_CALL_P (insn)"
   "@
@@ -1022,7 +1031,9 @@
 {
   int i;
 
-  emit_call_insn (gen_call (operands[0], const0_rtx, NULL));
+  /* Untyped calls always use the default ABI.  It's only possible to use
+     ABI variants if we know the type of the target function.  */
+  emit_call_insn (gen_call (operands[0], const0_rtx, const0_rtx));
 
   for (i = 0; i < XVECLEN (operands[2], 0); i++)
     {
@@ -6682,6 +6693,7 @@
 (define_expand "tlsgd_small_<mode>"
  [(parallel [(set (match_operand 0 "register_operand")
                   (call (mem:DI (match_dup 2)) (const_int 1)))
+	     (unspec:DI [(const_int 0)] UNSPEC_CALLEE_ABI)
 	     (unspec:DI [(match_operand:PTR 1 "aarch64_valid_symref")] UNSPEC_GOTSMALLTLS)
 	     (clobber (reg:DI LR_REGNUM))])]
  ""
@@ -6692,6 +6704,7 @@
 (define_insn "*tlsgd_small_<mode>"
   [(set (match_operand 0 "register_operand" "")
 	(call (mem:DI (match_operand:DI 2 "" "")) (const_int 1)))
+   (unspec:DI [(const_int 0)] UNSPEC_CALLEE_ABI)
    (unspec:DI [(match_operand:PTR 1 "aarch64_valid_symref" "S")] UNSPEC_GOTSMALLTLS)
    (clobber (reg:DI LR_REGNUM))
   ]
@@ -6792,7 +6805,12 @@
   "TARGET_TLS_DESC"
   {
     if (TARGET_SVE)
-      emit_insn (gen_tlsdesc_small_sve_<mode> (operands[0]));
+      {
+	rtx abi = gen_int_mode (aarch64_tlsdesc_abi_id (), DImode);
+	rtx_insn *call
+	  = emit_call_insn (gen_tlsdesc_small_sve_<mode> (operands[0], abi));
+	RTL_CONST_CALL_P (call) = 1;
+      }
     else
       emit_insn (gen_tlsdesc_small_advsimd_<mode> (operands[0]));
     DONE;
@@ -6814,67 +6832,20 @@
   [(set_attr "type" "call")
    (set_attr "length" "16")])
 
-;; For SVE, model tlsdesc calls as clobbering the lower 128 bits of
-;; all vector registers, and clobber all predicate registers, on
-;; top of the usual R0 and LR.
+;; For SVE, model tlsdesc calls as normal calls, with the callee ABI
+;; describing the extra call-preserved guarantees.  This would work
+;; for non-SVE too, but avoiding a call is probably better if we can.
 (define_insn "tlsdesc_small_sve_<mode>"
   [(set (reg:PTR R0_REGNUM)
-        (unspec:PTR [(match_operand 0 "aarch64_valid_symref" "S")]
-		    UNSPEC_TLSDESC))
+	(call (mem:DI (unspec:PTR
+			[(match_operand 0 "aarch64_valid_symref")]
+			UNSPEC_TLSDESC))
+	      (const_int 0)))
+   (unspec:DI [(match_operand:DI 1 "const_int_operand")] UNSPEC_CALLEE_ABI)
    (clobber (reg:DI LR_REGNUM))
-   (clobber (reg:CC CC_REGNUM))
-   (clobber_high (reg:TI V0_REGNUM))
-   (clobber_high (reg:TI V1_REGNUM))
-   (clobber_high (reg:TI V2_REGNUM))
-   (clobber_high (reg:TI V3_REGNUM))
-   (clobber_high (reg:TI V4_REGNUM))
-   (clobber_high (reg:TI V5_REGNUM))
-   (clobber_high (reg:TI V6_REGNUM))
-   (clobber_high (reg:TI V7_REGNUM))
-   (clobber_high (reg:TI V8_REGNUM))
-   (clobber_high (reg:TI V9_REGNUM))
-   (clobber_high (reg:TI V10_REGNUM))
-   (clobber_high (reg:TI V11_REGNUM))
-   (clobber_high (reg:TI V12_REGNUM))
-   (clobber_high (reg:TI V13_REGNUM))
-   (clobber_high (reg:TI V14_REGNUM))
-   (clobber_high (reg:TI V15_REGNUM))
-   (clobber_high (reg:TI V16_REGNUM))
-   (clobber_high (reg:TI V17_REGNUM))
-   (clobber_high (reg:TI V18_REGNUM))
-   (clobber_high (reg:TI V19_REGNUM))
-   (clobber_high (reg:TI V20_REGNUM))
-   (clobber_high (reg:TI V21_REGNUM))
-   (clobber_high (reg:TI V22_REGNUM))
-   (clobber_high (reg:TI V23_REGNUM))
-   (clobber_high (reg:TI V24_REGNUM))
-   (clobber_high (reg:TI V25_REGNUM))
-   (clobber_high (reg:TI V26_REGNUM))
-   (clobber_high (reg:TI V27_REGNUM))
-   (clobber_high (reg:TI V28_REGNUM))
-   (clobber_high (reg:TI V29_REGNUM))
-   (clobber_high (reg:TI V30_REGNUM))
-   (clobber_high (reg:TI V31_REGNUM))
-   (clobber (reg:VNx2BI P0_REGNUM))
-   (clobber (reg:VNx2BI P1_REGNUM))
-   (clobber (reg:VNx2BI P2_REGNUM))
-   (clobber (reg:VNx2BI P3_REGNUM))
-   (clobber (reg:VNx2BI P4_REGNUM))
-   (clobber (reg:VNx2BI P5_REGNUM))
-   (clobber (reg:VNx2BI P6_REGNUM))
-   (clobber (reg:VNx2BI P7_REGNUM))
-   (clobber (reg:VNx2BI P8_REGNUM))
-   (clobber (reg:VNx2BI P9_REGNUM))
-   (clobber (reg:VNx2BI P10_REGNUM))
-   (clobber (reg:VNx2BI P11_REGNUM))
-   (clobber (reg:VNx2BI P12_REGNUM))
-   (clobber (reg:VNx2BI P13_REGNUM))
-   (clobber (reg:VNx2BI P14_REGNUM))
-   (clobber (reg:VNx2BI P15_REGNUM))
-   (clobber (match_scratch:DI 1 "=r"))
-   (use (reg:DI FP_REGNUM))]
+   (clobber (match_scratch:DI 2 "=r"))]
   "TARGET_TLS_DESC && TARGET_SVE"
-  "adrp\\tx0, %A0\;ldr\\t%<w>1, [x0, #%L0]\;add\\t<w>0, <w>0, %L0\;.tlsdesccall\\t%0\;blr\\t%1"
+  "adrp\\tx0, %A0\;ldr\\t%<w>2, [x0, #%L0]\;add\\t<w>0, <w>0, %L0\;.tlsdesccall\\t%0\;blr\\t%2"
   [(set_attr "type" "call")
    (set_attr "length" "16")])
 

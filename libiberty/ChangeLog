@@ -1,3 +1,11 @@
+2019-10-03  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
+
+	* rust-demangle.c (looks_like_rust): Remove.
+	(rust_is_mangled): Don't check escapes.
+	(is_prefixed_hash): Allow 0-9a-f permutations.
+	(rust_demangle_sym): Don't bail on unknown escapes.
+	* testsuite/rust-demangle-expected: Update 'main::$99$' test.
+
 2019-09-03  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
 
 	* rust-demangle.c (unescape): Remove.

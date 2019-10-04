@@ -38,9 +38,9 @@ program failme
   call getcwd (s4, i) ! { dg-error "must be of kind" }
 
   call getenv (s1, t1)
-  call getenv (s1, t4) ! { dg-error "Type of argument" }
-  call getenv (s4, t1) ! { dg-error "Type of argument" }
-  call getenv (s4, t4) ! { dg-error "Type of argument" }
+  call getenv (s1, t4) ! { dg-error "'CHARACTER\\(20,4\\)' to 'CHARACTER\\(\\*\\)'" }
+  call getenv (s4, t1) ! { dg-error "'CHARACTER\\(20,4\\)' to 'CHARACTER\\(\\*\\)'" }
+  call getenv (s4, t4) ! { dg-error "'CHARACTER\\(20,4\\)' to 'CHARACTER\\(\\*\\)'" }
 
   call getarg (i, s1)
   call getarg (i, s4) ! { dg-error "must be of kind" }
@@ -115,8 +115,8 @@ program failme
 
   call system (s1)
   call system (s1, i)
-  call system (s4) ! { dg-error "Type of argument" }
-  call system (s4, i) ! { dg-error "Type of argument" }
+  call system (s4) ! { dg-error "'CHARACTER\\(20,4\\)' to 'CHARACTER\\(\\*\\)'" }
+  call system (s4, i) ! { dg-error "'CHARACTER\\(20,4\\)' to 'CHARACTER\\(\\*\\)'" }
 
   call ttynam (i, s1)
   call ttynam (i, s4) ! { dg-error "must be of kind" }

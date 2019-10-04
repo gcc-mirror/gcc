@@ -62,6 +62,73 @@ c_objc_common_init (void)
   return c_common_init ();
 }
 
+/* Return true if it's worth saying that TYPE1 is also known as TYPE2.  */
+
+static bool
+useful_aka_type_p (tree type1, tree type2)
+{
+  if (type1 == type2)
+    return false;
+
+  if (type1 == error_mark_node || type2 == error_mark_node)
+    return false;
+
+  if (TREE_CODE (type1) != TREE_CODE (type2))
+    return true;
+
+  if (typedef_variant_p (type1))
+    {
+      /* Saying that "foo" is also known as "struct foo" or
+	 "struct <anonymous>" is unlikely to be useful, since users of
+	 structure-like types would already know that they're structures.
+	 The same applies to unions and enums; in general, printing the
+	 tag is only useful if it has a different name.  */
+      tree_code code = TREE_CODE (type2);
+      tree id2 = TYPE_IDENTIFIER (type2);
+      if ((code == RECORD_TYPE || code == UNION_TYPE || code == ENUMERAL_TYPE)
+	  && (!id2 || TYPE_IDENTIFIER (type1) == id2))
+	return false;
+
+      return true;
+    }
+  else
+    {
+      switch (TREE_CODE (type1))
+	{
+	case POINTER_TYPE:
+	case REFERENCE_TYPE:
+	  return useful_aka_type_p (TREE_TYPE (type1), TREE_TYPE (type2));
+
+	case ARRAY_TYPE:
+	  return (useful_aka_type_p (TYPE_DOMAIN (type1), TYPE_DOMAIN (type2))
+		  || useful_aka_type_p (TREE_TYPE (type1), TREE_TYPE (type2)));
+
+	case FUNCTION_TYPE:
+	  {
+	    tree args1 = TYPE_ARG_TYPES (type1);
+	    tree args2 = TYPE_ARG_TYPES (type2);
+	    while (args1 != args2)
+	      {
+		/* Although this shouldn't happen, it seems to wrong to assert
+		   for it in a diagnostic routine.  */
+		if (!args1 || args1 == void_type_node)
+		  return true;
+		if (!args2 || args2 == void_type_node)
+		  return true;
+		if (useful_aka_type_p (TREE_VALUE (args1), TREE_VALUE (args2)))
+		  return true;
+		args1 = TREE_CHAIN (args1);
+		args2 = TREE_CHAIN (args2);
+	      }
+	    return useful_aka_type_p (TREE_TYPE (type1), TREE_TYPE (type2));
+	  }
+
+	default:
+	  return true;
+	}
+    }
+}
+
 /* Print T to CPP.  */
 
 static void
@@ -83,7 +150,7 @@ print_type (c_pretty_printer *cpp, tree t, bool *quoted)
      stripped version.  But sometimes the stripped version looks
      exactly the same, so we don't want it after all.  To avoid
      printing it in that case, we play ugly obstack games.  */
-  if (TYPE_CANONICAL (t) && t != TYPE_CANONICAL (t))
+  if (TYPE_CANONICAL (t) && useful_aka_type_p (t, TYPE_CANONICAL (t)))
     {
       c_pretty_printer cpp2;
       /* Print the stripped version into a temporary printer.  */

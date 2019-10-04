@@ -104,19 +104,19 @@ cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
 	{
 	  cgraph_node *callee = cgraph_node::get (decl);
 	  gcc_checking_assert (callee);
-	  new_edge = n->create_edge (callee, call_stmt, prof_count);
+	  new_edge = n->create_edge (callee, call_stmt, prof_count, true);
 	}
       else
 	{
 	  new_edge = n->create_indirect_edge (call_stmt,
 					      indirect_info->ecf_flags,
-					      prof_count, false);
+					      prof_count, true);
 	  *new_edge->indirect_info = *indirect_info;
 	}
     }
   else
     {
-      new_edge = n->create_edge (callee, call_stmt, prof_count);
+      new_edge = n->create_edge (callee, call_stmt, prof_count, true);
       if (indirect_info)
 	{
 	  new_edge->indirect_info

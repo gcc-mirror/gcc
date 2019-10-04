@@ -680,8 +680,10 @@ default_diagnostic_finalizer (diagnostic_context *context,
 			      diagnostic_info *diagnostic,
 			      diagnostic_t)
 {
+  char *saved_prefix = pp_take_prefix (context->printer);
+  pp_set_prefix (context->printer, NULL);
   diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
-  pp_destroy_prefix (context->printer);
+  pp_set_prefix (context->printer, saved_prefix);
   pp_flush (context->printer);
 }
 
@@ -828,6 +830,9 @@ print_parseable_fixits (pretty_printer *pp, rich_location *richloc)
   gcc_assert (pp);
   gcc_assert (richloc);
 
+  char *saved_prefix = pp_take_prefix (pp);
+  pp_set_prefix (pp, NULL);
+
   for (unsigned i = 0; i < richloc->get_num_fixit_hints (); i++)
     {
       const fixit_hint *hint = richloc->get_fixit_hint (i);
@@ -844,6 +849,8 @@ print_parseable_fixits (pretty_printer *pp, rich_location *richloc)
       print_escaped_string (pp, hint->get_string ());
       pp_newline (pp);
     }
+
+  pp_set_prefix (pp, saved_prefix);
 }
 
 /* Update the diag_class of DIAGNOSTIC based on its location

@@ -1048,8 +1048,6 @@ btoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
 	}
     }
 
-  *q = '\0';
-
   if (*n == 0)
     return "0";
 
@@ -1206,6 +1204,9 @@ write_b (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
   const char *p;
   char itoa_buf[GFC_BTOA_BUF_SIZE];
   GFC_UINTEGER_LARGEST n = 0;
+
+  /* Ensure we end up with a null terminated string.  */
+  memset(itoa_buf, '\0', GFC_BTOA_BUF_SIZE);
 
   if (len > (int) sizeof (GFC_UINTEGER_LARGEST))
     {

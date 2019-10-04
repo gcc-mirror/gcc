@@ -442,6 +442,7 @@ tree gfc_vptr_final_get (tree);
 tree gfc_vptr_deallocate_get (tree);
 void gfc_reset_vptr (stmtblock_t *, gfc_expr *);
 void gfc_reset_len (stmtblock_t *, gfc_expr *);
+tree gfc_get_class_from_expr (tree);
 tree gfc_get_vptr_from_expr (tree);
 tree gfc_get_class_array_ref (tree, tree, tree, bool);
 tree gfc_copy_class_to_class (tree, tree, tree, bool);
@@ -785,6 +786,7 @@ struct array_descr_info;
 bool gfc_get_array_descr_info (const_tree, struct array_descr_info *);
 
 /* In trans-openmp.c */
+bool gfc_omp_is_optional_argument (const_tree);
 bool gfc_omp_privatize_by_reference (const_tree);
 enum omp_clause_default_kind gfc_omp_predetermined_sharing (tree);
 tree gfc_omp_report_decl (tree);
@@ -998,6 +1000,7 @@ struct GTY(()) lang_decl {
   tree token, caf_offset;
   unsigned int scalar_allocatable : 1;
   unsigned int scalar_pointer : 1;
+  unsigned int optional_arg : 1;
 };
 
 
@@ -1012,6 +1015,8 @@ struct GTY(()) lang_decl {
   (DECL_LANG_SPECIFIC (node)->scalar_allocatable)
 #define GFC_DECL_SCALAR_POINTER(node) \
   (DECL_LANG_SPECIFIC (node)->scalar_pointer)
+#define GFC_DECL_OPTIONAL_ARGUMENT(node) \
+  (DECL_LANG_SPECIFIC (node)->optional_arg)
 #define GFC_DECL_GET_SCALAR_ALLOCATABLE(node) \
   (DECL_LANG_SPECIFIC (node) ? GFC_DECL_SCALAR_ALLOCATABLE (node) : 0)
 #define GFC_DECL_GET_SCALAR_POINTER(node) \

@@ -1,3 +1,1450 @@
+2019-10-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (inline_insns_single, inline_insns_auto): Fix typo.
+
+2019-10-04  Rafael Tsuha  <rafael.tsuha@usp.br>
+
+        * match.pd (sinh (x) / cosh (x)): New simplification rule.
+
+2019-10-04  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-ssa-forwprop.c (simplify_builtin_call): Set gimple call
+	fntype when switching to calling memcpy instead of memset.
+
+2019-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* hash-table.h (hash_table::empty_slow): Don't assign
+	size_t values to int variables.
+
+2019-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* expr.c (convert_mode_scalar): Remove shadowing local var.
+	(emit_block_move): Rename local vars.
+	(block_move_libcall_safe_for_call_parm): Remove shadowing local var.
+	(emit_push_insn): Rename local vars.
+	(expand_assignment): Fix wrong mode in assign_stack_temp.  Remove
+	shadowing local vars.
+	(store_constructor): Remove shadowing local vars.  Rename local var.
+	(store_field, expand_cond_expr_using_cmove,
+	expand_expr_real_2): Remove shadowing local vars.
+	(expand_expr_real_1,
+	do_store_flag): Remove shadowing local vars.  Rename local vars.
+
+2019-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* cgraph.h (FOR_EACH_ALIAS): Avoid shadowing the loop variable.
+
+2019-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* genmatch.c (commutate): Rename local var.
+	(lower_cond): Reuse local var.
+	(dt_node::gen, dt_node::gen_kids, dt_node::gen_kids_1,
+	dt_operand::gen, dt_operand::gen_gimple_expr,
+	dt_simplify::gen): Add a param.  Rename generated vars.
+	(decision_tree::insert_operand,
+	(capture_info::walk_match, capture_info::walk_result,
+	capture_info::walk_c_expr): Rename local vars.
+	(expr::gen_transform): Rename generated vars.
+	Use snprintf.  Rename local vars.
+	(capture::gen_transform, dt_operand::get_name,
+	dt_operand::gen_opname): Rename generated vars.
+	(write_predicate): Adjust call to gen_kids.
+	(parser::get_internal_capture_id): Rename generated vars.
+	(parser::parse_expr): Rename local vars.
+	(parser::parse_if): Remove local var.
+	(parser::parse_pattern, add_operator): Rename local vars.
+
+2019-10-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* builtins.def (DEF_C2X_BUILTIN): New macro.
+	(exp10, exp10f, exp10l, fabsd32, fabsd64, fabsd128, nand32)
+	(nand64, nand128, roundeven, roundevenf, roundevenl, strdup)
+	(strndup): Use DEF_C2X_BUILTIN.
+	* coretypes.h (enum function_class): Add function_c2x_misc.
+
+2019-10-04  Maya Rashish  <coypu@sdf.org>
+
+	* ira-color.c (update_costs_from_allocno): Call
+	ira_init_register_move_cost_if_necessary.
+
+2019-10-04  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.md (cpymemsi): Disable.
+	(movmd, movmd_internal_<mode>, movstr, movsd):
+	(movstr, movsd, stpcpy_internal_<mode>: Likewise.
+	(movmd splitter, movsd splitter): Likewise.
+
+	* range-op.cc (range_tests): Avoid two tests when ints and
+	shorts are the same size.
+
+2019-10-04  Richard Biener  <rguenther@suse.de>
+
+	PR lto/91968
+	* tree.c (find_decls_types_r): Do not remove LABEL_DECLs from
+	BLOCK_VARS.
+
+2019-10-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91982
+	* tree-vect-loop.c (vectorizable_live_operation): Also guard
+	against EXTRACT_LAST_REDUCTION.
+	* tree-vect-stmts.c (vect_transform_stmt): Likewise.
+
+2019-10-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	(value_range_from_overflowed_bounds): Rename from
+	adjust_overflow_bound.
+	(value_range_with_overflow): Rename from
+	create_range_with_overflow.
+	(create_possibly_reversed_range): Adjusted for above renames.
+	(operator_*::wi_fold): Same.
+	(cross_product_operator::wi_cross_productor): Same.
+
+2019-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* doc/invoke.texi (-Wshadow=global, -Wshadow=local,
+	-Wshadow=compatible-local): Fix description.
+	Add an example where -Wshadow=compatible-local does not
+	warn.
+
+2019-10-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.h (MAX_PCREL17F_OFFSET): Adjust.
+
+	* config/pa/pa.c (pa_output_call): Remove 64-bit sibcall sequence.
+	(pa_attr_length_call): Adjust length for 64-bit plabel sequence.
+
+2019-10-03  Aaron Sawdey <acsawdey@linux.ibm.com>
+
+	* expr.c (emit_block_move_hints): Slightly cleaner fix to
+	can_move_by_pieces issue.
+
+2019-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/87243
+	* config/darwin-driver.c (maybe_get_sysroot_from_sdkroot): New.
+	(darwin_driver_init): Use the sysroot provided by SDKROOT when that
+	is available and the user has not set one on the command line.
+
+2019-10-03  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	PR target/91769
+	* config/mips/mips.c (mips_split_move): Use reg_overlap_mentioned_p
+	instead of REGNO equality check on addr.reg.
+
+2019-10-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* params.def (PARAM_INLINE_HEURISTICS_HINT_PERCENT,
+	PARAM_INLINE_HEURISTICS_HINT_PERCENT_O2): New.
+	* doc/invoke.texi (inline-heuristics-hint-percent,
+	inline-heuristics-hint-percent-O2): Document.
+	* tree-inline.c (inline_insns_single, inline_insns_auto): Add new
+	hint attribute.
+	(can_inline_edge_by_limits_p): Use it.
+
+2019-10-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arm/arm.c (arm_print_value): Use real_to_decimal
+	to print CONST_DOUBLEs.
+
+2019-10-03  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* ipa-cp.c (ipa_cp_c_finalize): Release ipcp_transformation_sum.
+	* ipa-prop.c (ipcp_free_transformation_sum): New function.
+	* ipa-prop.h (ipcp_free_transformation_sum): Add declaration.
+
+2019-10-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (OBJS): Add range.o and range-op.o.
+	Remove wide-int-range.o.
+	* function-tests.c (test_ranges): New.
+	(function_tests_c_tests): Call test_ranges.
+	* ipa-cp.c (ipa_vr_operation_and_type_effects): Call
+	range_fold_unary_expr instead of extract_range_from_unary_expr.
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Same.
+	* range-op.cc: New file.
+	* range-op.h: New file.
+	* range.cc: New file.
+	* range.h: New file.
+	* selftest.h (range_tests): New prototype.
+	* ssa.h: Include range.h.
+	* tree-vrp.c (value_range_base::value_range_base): New
+	constructors.
+	(value_range_base::singleton_p): Do not call
+	ranges_from_anti_range until sure we will need to.
+	(value_range_base::type): Rename gcc_assert to
+	gcc_checking_assert.
+	(vrp_val_is_max): New argument.
+	(vrp_val_is_min): Same.
+	(wide_int_range_set_zero_nonzero_bits): Move from
+	wide-int-range.cc.
+	(extract_range_into_wide_ints): Remove.
+	(extract_range_from_multiplicative_op): Remove.
+	(extract_range_from_pointer_plus_expr): Abstract POINTER_PLUS code
+	from extract_range_from_binary_expr.
+	(extract_range_from_plus_minus_expr): Abstract PLUS/MINUS code
+	from extract_range_from_binary_expr.
+	(extract_range_from_binary_expr): Remove.
+	(normalize_for_range_ops): New.
+	(range_fold_binary_expr): New.
+	(range_fold_unary_expr): New.
+	(value_range_base::num_pairs): New.
+	(value_range_base::lower_bound): New.
+	(value_range_base::upper_bound): New.
+	(value_range_base::upper_bound): New.
+	(value_range_base::contains_p): New.
+	(value_range_base::invert): New.
+	(value_range_base::union_): New.
+	(value_range_base::intersect): New.
+	(range_compatible_p): New.
+	(value_range_base::operator==): New.
+	(determine_value_range_1): Call range_fold_*expr instead of
+	extract_range_from_*expr.
+	* tree-vrp.h (class value_range_base): Add new constructors.
+	Add methods for union_, intersect, operator==, contains_p,
+	num_pairs, lower_bound, upper_bound, invert.
+	(vrp_val_is_min): Add handle_pointers argument.
+	(vrp_val_is_max): Same.
+	(extract_range_from_unary_expr): Remove.
+	(extract_range_from_binary_expr): Remove.
+	(range_fold_unary_expr): New.
+	(range_fold_binary_expr): New.
+	* vr-values.c (vr_values::extract_range_from_binary_expr): Call
+	range_fold_binary_expr instead of extract_range_from_binary_expr.
+	(vr_values::extract_range_basic): Same.
+	(vr_values::extract_range_from_unary_expr): Call
+	range_fold_unary_expr instead of extract_range_from_unary_expr.
+	* wide-int-range.cc: Remove.
+	* wide-int-range.h: Remove.
+
+2019-10-02   Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (mem_operand_gpr): Use
+	SIGNED_16BIT_OFFSET_EXTRA_P macro.
+	(mem_operand_ds_form): Use SIGNED_16BIT_OFFSET_EXTRA_P macro.
+	(rs6000_mode_dependent_address): Use SIGNED_16BIT_OFFSET_EXTRA_P
+	macro.
+
+2019-10-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* ginclude/stdint-gcc.h [__STDC_WANT_IEC_60559_BFP_EXT__]: Change
+	condition on WIDTH macros to [__STDC_WANT_IEC_60559_BFP_EXT__ ||
+	(__STDC_VERSION__ && __STDC_VERSION__ > 201710L)].
+	* glimits.h: Likewise.
+
+2019-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/91976
+	* expr.c (emit_block_move_hints): Don't call can_move_by_pieces if
+	size is not CONST_INT_P, set pieces_ok to false in that case.  Simplify
+	CONST_INT_P (size) && pieces_ok to pieces_ok.  Formatting fix.
+
+2019-10-02  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/80936
+	* builtins.def (bcmp, bcopy, bzero): Declare nonnull.
+
+2019-10-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cgraph.c (cgraph_node::rtl_info): Use SET_HARD_REG_SET
+	instead of reg_class_contents[ALL_REGS].
+
+2019-09-30  Jason Merrill  <jason@redhat.com>
+
+	Add some hash_map_safe_* functions like vec_safe_*.
+	* hash-map.h (default_hash_map_size): New variable.
+	(create_ggc): Use it as default argument.
+	(hash_map_maybe_create, hash_map_safe_get)
+	(hash_map_safe_get_or_insert, hash_map_safe_put): New fns.
+
+2019-10-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cif-code.def (MAX_INLINE_INSNS_SINGLE_O2_LIMIT,
+	MAX_INLINE_INSNS_AUTO_O2_LIMIT): New.
+	* ipa-inline.c (inline_insns_single, inline_insns_auto): New functions.
+	(can_inline_edge_by_limits_p): Use it.
+	(big_speedup_p): Use PARAM_INLINE_MIN_SPEEDUP_O2.
+	(want_inline_small_function_p): Use O2 bounds.
+	(edge_badness): LIkewise.
+	* opts.c (default_options): Add OPT_finline_functions.
+	* params.def (PARAM_INLINE_MIN_SPEEDUP_O2,
+	PARAM_MAX_INLINE_INSNS_SINGLE_O2, PARAM_MAX_INLINE_INSNS_AUTO_O2):
+	New parameters.
+	* doc/invoke.texi (-finline-functions): Update documentation.
+	(max-inline-insns-single-O2, max-inline-insns-auto-O2,
+	inline-min-speedup-O2): Document.
+	(early-inlining-insns-O2): Simplify docs.
+
+2019-10-02  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/87047
+	* ifcvt.c (average_cost): New static function.  Use it...
+	(noce_process_if_block): ... here.
+
+2019-10-02  Aaron Sawdey <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000-protos.h (expand_block_move): Change prototype.
+	* config/rs6000/rs6000-string.c (expand_block_move): Add
+	might_overlap parm.
+	* config/rs6000/rs6000.md (movmemsi): Add new pattern.
+	(cpymemsi): Add might_overlap parm to expand_block_move() call.
+
+2019-10-02  Aaron Sawdey <acsawdey@linux.ibm.com>
+
+	* builtins.c (expand_builtin_memory_copy_args): Add might_overlap parm.
+	(expand_builtin_memcpy): Use might_overlap parm.
+	(expand_builtin_mempcpy_args): Use might_overlap parm.
+	(expand_builtin_memmove): Call expand_builtin_memory_copy_args.
+	(expand_builtin_memory_copy_args): Add might_overlap parm.
+	* expr.c (emit_block_move_via_cpymem): Rename to
+	emit_block_move_via_pattern, add might_overlap parm, use cpymem
+	or movmem optab as appropriate.
+	(emit_block_move_hints): Add might_overlap parm, do the right
+	thing for might_overlap==true.
+	* expr.h (emit_block_move_hints): Update prototype.
+
+2019-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-eh.h (unsplit_eh_edges): Declare.
+	* tree-eh.c (maybe_remove_unreachable_handlers): Detect more cases.
+	(unsplit_eh_edges): New function wrapping unsplit_all_eh.
+	* gimple-ssa-store-merging.c: Include cfganal.h cfgcleanup.h except.h.
+	(struct store_immediate_info): Add lp_nr field.
+	(store_immediate_info::store_immediate_info): Add NR2 parameter and
+	initialize lp_nr with it.
+	(struct merged_store_group): Add lp_nr and only_constants fields.
+	(merged_store_group::merged_store_group): Initialize them.
+	(merged_store_group::can_be_merged_into): Deal with them.
+	(pass_store_merging): Rename terminate_and_release_chain into
+	terminate_and_process_chain.
+	(pass_store_merging::terminate_and_process_all_chains): Adjust to above
+	renaming and remove useless assertions.
+	(pass_store_merging::terminate_all_aliasing_chains): Small tweak.
+	(stmts_may_clobber_ref_p): Be prepared for different basic blocks.
+	(imm_store_chain_info::coalesce_immediate_stores): Use only_constants
+	instead of always recomputing it and compare lp_nr.
+	(imm_store_chain_info::output_merged_store): If the group is in an
+	active EH region, register new stores if they can throw.  Moreover,
+	if the insertion has created new basic blocks, adjust the PHI nodes
+	of the post landing pad.
+	(imm_store_chain_info::output_merged_stores): If the original stores
+	are in an active EH region, deregister them.
+	(lhs_valid_for_store_merging_p): Prettify.
+	(adjust_bit_pos): New function extracted from...
+	(mem_valid_for_store_merging): ...here.  Use it for the base address
+	and also for the offset if it is the addition of a constant.
+	(lp_nr_for_store): New function.
+	(pass_store_merging::process_store): Change return type to bool.
+	Call lp_nr_for_store to initialize the store info.  Propagate the
+	return status of various called functions to the return value.
+	(store_valid_for_store_merging_p): New predicate.
+	(enum basic_block_status): New enumeration.
+	(get_status_for_store_merging): New function.
+	(pass_store_merging::execute): If the function can throw and catch
+	non-call exceptions, unsplit the EH edges on entry and clean up the
+	CFG on exit if something changed.  Call get_status_for_store_merging
+	for every basic block and keep the chains open across basic blocks
+	when possible.  Terminate and process open chains at the end, if any.
+
+2019-10-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* reginfo.c (globalize_reg): Fix shadowed variable in
+	function_abis walk.
+
+2019-10-02  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.c (symbol_table::create_edge): New parameter cloning_p,
+	do not compute some stuff when set.
+	(cgraph_node::create_edge): Likewise.
+	(cgraph_node::create_indirect_edge): Renamed last parameter to
+	coning_p and flipped its meaning, don't even calculate
+	inline_failed when set.
+	* cgraph.h (cgraph_node::create_edge): Add new parameter.
+	(symbol_table::::create_edge): Likewise.
+	(cgraph_node::create_indirect_edge): Rename last parameter, flip
+	the default value.
+	* cgraphclones.c (cgraph_edge::clone): Pass true cloning_p to all
+	call graph edge creating functions.
+
+2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR c++/91222
+	* ipa-devirt.c (warn_types_mismatch): Fix conditional on anonymous
+	namespace types.
+
+2019-10-02  Shahab Vahedi  <shahab@synopsys.com>
+
+	* config/arc/arc.h (ASM_SPEC): Pass -mcode-density.
+
+2019-10-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_transform_reduction): Declare.
+	* tree-vect-stmts.c (vect_transform_stmt): Use it.
+	* tree-vect-loop.c (vectorizable_reduction): Split out reduction
+	stmt transform to ...
+	(vect_transform_reduction): ... this.
+
+2019-10-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.c (lower_omp_target): Dereference optional argument
+	to work with the right pointer.
+
+2019-10-02  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* langhooks-def.h (LANG_HOOKS_OMP_IS_OPTIONAL_ARGUMENT): Default to
+	false.
+	(LANG_HOOKS_DECLS): Add LANG_HOOKS_OMP_IS_OPTIONAL_ARGUMENT.
+	* langhooks.h (omp_is_optional_argument): New hook.
+	* omp-general.c (omp_is_optional_argument): New.
+	* omp-general.h (omp_is_optional_argument): New declaration.
+	* omp-low.c (lower_omp_target): Create temporary for received value
+	and take the address for new_var if the original variable was a
+	DECL_BY_REFERENCE.  Use size of referenced object when a
+	pass-by-reference optional argument used as argument to firstprivate.
+
+2019-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91940
+	* tree-vect-patterns.c: Include tree-vector-builder.h and
+	vec-perm-indices.h.
+	(vect_recog_rotate_pattern): Also handle __builtin_bswap16, either by
+	unpromoting the argument back to uint16_t, or by converting into a
+	rotate, or into shifts plus ior.
+
+2019-10-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (stmt_vec_info_type::cycle_phi_info_type):
+	New.
+	(vect_transform_cycle_phi): Declare.
+	* tree-vect-stmts.c (vect_transform_stmt): Call
+	vect_transform_cycle_phi.
+	* tree-vect-loop.c (vectorizable_reduction): Split out
+	PHI transformation stage to ...
+	(vect_transform_cycle_phi): ... here.
+
+2019-10-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/91957
+	* lra-lives.c (make_hard_regno_dead): Don't record conflicts for
+	eliminable registers.
+	(make_hard_regno_live): Likewise, and don't make them live.
+
+2019-10-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (layout::print_gap_in_line_numbering):
+	Call pp_emit_prefix.
+	(layout::print_source_line): Likewise.
+	(layout::start_annotation_line): Likewise.
+	(diagnostic_show_locus): Remove call to temporarily clear the
+	prefix.
+	(selftest::test_one_liner_fixit_remove): Add test coverage for the
+	interaction of pp_set_prefix with rulers and fix-it hints.
+	* diagnostic.c (default_diagnostic_finalizer): Temporarily clear
+	prefix when calling diagnostic_show_locus, rather than destroying
+	it afterwards.
+	(print_parseable_fixits): Temporarily clear prefix.
+	* pretty-print.c (pp_format): Save and restore line_length, rather
+	than assuming it is zero.
+	(pp_output_formatted_text): Remove assertion that line_length is
+	zero.
+
+2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (nonoverlapping_component_refs_since_match_p):
+	Rename to ...
+	(nonoverlapping_refs_since_match_p): ... this; handle also
+	ARRAY_REFs.
+	(alias_stats): Update stats.
+	(dump_alias_stats): Likewise.
+	(cheap_array_ref_low_bound): New function.
+	(aliasing_matching_component_refs_p): Add partial_overlap
+	argument;
+	pass it to nonoverlapping_refs_since_match_p.
+	(aliasing_component_refs_walk): Update call of
+	aliasing_matching_component_refs_p
+	(nonoverlapping_array_refs_p): New function.
+	(decl_refs_may_alias_p, indirect_ref_may_alias_decl_p,
+	indirect_refs_may_alias_p): Update calls of
+	nonoverlapping_refs_since_match_p.
+
+2019-10-01  Maya Rashish  <coypu@sdf.org>
+
+	PR target/85401
+	* ira-color.c (allocno_copy_cost_saving): Call
+	ira_init_register_move_cost_if_necessary.
+
+2019-10-01  Maciej W. Rozycki  <macro@wdc.com>
+
+	* Makefile.in (gnat_install_lib): New variable.
+	* configure.ac: Substitute it.
+	* configure: Regenerate.
+
+2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/91222
+	* ipa-devirt.c (warn_types_mismatch): Do not ICE when anonymous type
+	is matched with non-C++ type
+
+2019-10-01  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* tree-if-conv.c (tree_if_conversion): Move call to ifcvt_local_dce
+	after local CSE.
+
+2019-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* doc/invoke.texi (early-inlining-insns-O2): Document.
+	(early-inlining-insns): Update.
+	* params.def (early-inlining-insns-O2): New bound.
+	(early-inlining-insns): Update docs.
+	* ipa-inline.c (want_early_inline_function_p): Use new bound.
+
+2019-10-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/88562
+	* config/sh/sh.c (sh_extending_set_of_reg::use_as_extended_reg): Use
+	sh_check_add_incdec_notes to preserve REG_INC notes when replacing
+	a memory access insn.
+
+2019-10-01  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-p8swap.c (rtx_is_swappable_p): Don't swap
+	vpmsumd.
+
+2019-10-01  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/77918
+	* config/s390/s390.c (s390_expand_vec_compare): Use
+	gen_vec_cmpordered and gen_vec_cmpunordered.
+	* config/s390/vector.md (vec_cmpuneq, vec_cmpltgt, vec_ordered,
+	vec_unordered): Delete.
+	(vec_ordered<mode>): Rename to vec_cmpordered<mode>.
+	(vec_unordered<mode>): Rename to vec_cmpunordered<mode>.
+	(VEC_CMP_EXPAND): New iterator for the generic dispatcher.
+	(vec_cmp<code>): Generic dispatcher.
+
+2019-10-01  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/77918
+	* config/s390/vector.md (V_HW): Add V1TI in order to make
+	vcond$a$b generate vcondv1tiv1tf.
+
+2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/91948
+	* ira-build.c (ira_create_allocno): Initialize
+	ALLOCNO_CROSSED_CALLS_ABIS.
+	* ira-color.c (allocno_reload_assign): Pass hard_regno rather
+	than regno to ira_need_caller_save_p.
+
+2019-10-01  Alexandre Oliva <oliva@adacore.com>
+
+	* config/i386/i386-options.c
+	(ix86_recompute_optlev_based_flags): New, moved out of...
+	(ix86_option_override_internal): ... this.  Call it.
+	(ix86_override_options_after_change): Call it here too.
+
+	PR debug/91507
+	* dwarf2out.c (override_type_for_decl_p): New.
+	(gen_variable_die): Use it.
+
+2019-10-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vectorizable_reduction): Move variables
+	to where they are used.
+
+2019-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* regrename.c (hide_operands): Use pc_rtx instead of cc0_rtx.
+	(build_def_use): Use PC instead of CC0 in a comment.
+
+2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl.def (CLOBBER_HIGH): Delete.
+	* doc/rtl.texi (clobber_high): Remove documentation.
+	* rtl.h (SET_DEST): Remove CLOBBER_HIGH from the list of codes.
+	(reg_is_clobbered_by_clobber_high): Delete.
+	(gen_hard_reg_clobber_high): Likewise.
+	* alias.c (record_set): Remove CLOBBER_HIGH handling.
+	* cfgexpand.c (expand_gimple_stmt): Likewise.
+	* combine-stack-adj.c (single_set_for_csa): Likewise.
+	* combine.c (find_single_use_1, set_nonzero_bits_and_sign_copies)
+	(can_combine_p, is_parallel_of_n_reg_sets, try_combine)
+	(record_dead_and_set_regs_1, reg_dead_at_p_1): Likewise.
+	* cse.c (invalidate_reg): Remove clobber_high parameter.
+	(invalidate): Update call accordingly.
+	(canonicalize_insn): Remove CLOBBER_HIGH handling.
+	(invalidate_from_clobbers, invalidate_from_sets_and_clobbers)
+	(count_reg_usage, insn_live_p): Likewise.
+	* cselib.h (cselib_invalidate_rtx): Remove sett argument.
+	* cselib.c (cselib_invalidate_regno, cselib_invalidate_rtx): Likewise.
+	(cselib_invalidate_rtx_note_stores): Update call accordingly.
+	(cselib_expand_value_rtx_1): Remove CLOBBER_HIGH handling.
+	(cselib_invalidate_regno, cselib_process_insn): Likewise.
+	* dce.c (deletable_insn_p, mark_nonreg_stores_1): Likewise.
+	(mark_nonreg_stores_2): Likewise.
+	* df-scan.c (df_find_hard_reg_defs, df_uses_record): Likewise.
+	(df_get_call_refs): Likewise.
+	* dwarf2out.c (mem_loc_descriptor): Likewise.
+	* emit-rtl.c (verify_rtx_sharing): Likewise.
+	(copy_insn_1, copy_rtx_if_shared_1): Likewise.
+	(hard_reg_clobbers_high, gen_hard_reg_clobber_high): Delete.
+	* genconfig.c (walk_insn_part): Remove CLOBBER_HIGH handling.
+	* genemit.c (gen_exp, gen_insn): Likewise.
+	* genrecog.c (validate_pattern, remove_clobbers): Likewise.
+	* haifa-sched.c (haifa_classify_rtx): Likewise.
+	* ira-build.c (create_insn_allocnos): Likewise.
+	* ira-costs.c (scan_one_insn): Likewise.
+	* ira.c (equiv_init_movable_p, memref_referenced_p): Likewise.
+	(rtx_moveable_p, interesting_dest_for_shprep): Likewise.
+	* jump.c (mark_jump_label_1): Likewise.
+	* lra-int.h (lra_insn_reg::clobber_high): Delete.
+	* lra-eliminations.c (lra_eliminate_regs_1): Remove CLOBBER_HIGH
+	handling.
+	(mark_not_eliminable): Likewise.
+	* lra-lives.c (process_bb_lives): Likewise.
+	* lra.c (new_insn_reg): Remove clobber_high parameter.
+	(collect_non_operand_hard_regs): Likewise.  Update call to new
+	insn_reg.  Remove CLOBBER_HIGH handling.
+	(lra_set_insn_recog_data): Remove CLOBBER_HIGH handling.  Update call
+	to collect_non_operand_hard_regs.
+	(add_regs_to_insn_regno_info): Remove CLOBBER_HIGH handling.
+	Update call to new_insn_reg.
+	(lra_update_insn_regno_info): Remove CLOBBER_HIGH handling.
+	* postreload.c (reload_cse_simplify, reload_combine_note_use)
+	(move2add_note_store): Likewise.
+	* print-rtl.c (print_pattern): Likewise.
+	* recog.c (store_data_bypass_p_1, store_data_bypass_p): Likewise.
+	(if_test_bypass_p): Likewise.
+	* regcprop.c (kill_clobbered_value, kill_set_value): Likewise.
+	* reginfo.c (reg_scan_mark_refs): Likewise.
+	* reload1.c (maybe_fix_stack_asms, eliminate_regs_1): Likewise.
+	(elimination_effects, mark_not_eliminable, scan_paradoxical_subregs)
+	(forget_old_reloads_1): Likewise.
+	* reorg.c (find_end_label, try_merge_delay_insns, redundant_insn)
+	(own_thread_p, fill_simple_delay_slots, fill_slots_from_thread)
+	(dbr_schedule): Likewise.
+	* resource.c (update_live_status, mark_referenced_resources)
+	(mark_set_resources): Likewise.
+	* rtl.c (copy_rtx): Likewise.
+	* rtlanal.c (reg_referenced_p, set_of_1, single_set_2, noop_move_p)
+	(note_pattern_stores): Likewise.
+	(reg_is_clobbered_by_clobber_high): Delete.
+	* sched-deps.c (sched_analyze_reg, sched_analyze_insn): Remove
+	CLOBBER_HIGH handling.
+
+2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/91452
+	* config/aarch64/aarch64.h (ARM_PCS_TLSDESC): New arm_pcs.
+	* config/aarch64/aarch64-protos.h (aarch64_tlsdesc_abi_id): Declare.
+	* config/aarch64/aarch64.c (aarch64_hard_regno_call_part_clobbered):
+	Handle ARM_PCS_TLSDESC.
+	(aarch64_tlsdesc_abi_id): New function.
+	* config/aarch64/aarch64.md (tlsdesc_small_sve_<mode>): Use a call
+	rtx instead of a list of clobbers and clobber_highs.
+	(tlsdesc_small_<mode>): Update accordingly.
+
+2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_expand_call): Take an
+	extra callee_abi argument.
+	* config/aarch64/aarch64.c (aarch64_expand_call): Likewise.
+	Insert a CALLEE_ABI unspec into the call pattern as the second
+	element in the PARALLEL.
+	(aarch64_simd_call_p): Delete.
+	(aarch64_insn_callee_abi): Get the arm_pcs of the callee from
+	the new CALLEE_ABI element of the PARALLEL.
+	(aarch64_init_cumulative_args): Get the arm_pcs of the callee
+	from the function type, if given.
+	(aarch64_function_arg_advance): Handle ARM_PCS_SIMD.
+	(aarch64_function_arg): Likewise.  Return the arm_pcs of the callee
+	when passed the function_arg_info end marker.
+	(aarch64_output_mi_thunk): Pass the arm_pcs of the callee as the
+	final argument of gen_sibcall.
+	* config/aarch64/aarch64.md (UNSPEC_CALLEE_ABI): New unspec.
+	(call): Make operand 2 a const_int_operand and pass it to expand_call.
+	Wrap it in an UNSPEC_CALLEE_ABI unspec for the dummy define_expand
+	pattern.
+	(call_value): Likewise operand 3.
+	(sibcall): Likewise operand 2.  Place the unspec before rather than
+	after the return.
+	(sibcall_value): Likewise operand 3.
+	(*call_insn, *call_value_insn): Include an UNSPEC_CALLEE_ABI.
+	(tlsgd_small_<mode>, *tlsgd_small_<mode>): Likewise.
+	(*sibcall_insn, *sibcall_value_insn): Likewise.  Remove empty
+	constraint strings.
+	(untyped_call): Pass const0_rtx as the callee ABI to gen_call.
+
+2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* regs.h (HARD_REGNO_CALLER_SAVE_MODE): Update call to
+	choose_hard_reg_mode.
+	* config/sparc/sparc.h (HARD_REGNO_CALLER_SAVE_MODE): Likewise.
+
+2019-10-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* doc/md.texi (vec_pack_trunc_@var{m}): Fix typo.
+	(vec_pack_sfix_trunc_@var{m}, vec_pack_ufix_trunc_@var{m}): Ditto.
+	(vec_packs_float_@var{m}, vec_packu_float_@var{m}): Ditto.
+
+2019-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (line_label::line_label): Initialize
+	m_has_vbar.
+	(line_label::comparator): Reverse the sort order by m_state_idx,
+	so that when the list is walked backwards the labels appear in
+	order of insertion into the rich_location.
+	(line_label::m_has_vbar): New field.
+	(layout::print_any_labels): When dealing with multiple labels at
+	the same line and column, only print vertical bars for the one
+	with the highest label_line.
+	(selftest::test_one_liner_labels): Update test for multiple labels
+	to expect the labels to be in the order of insertion into the
+	rich_location.  Add a test for many such labels, where the column
+	numbers are out-of-order relative to the insertion order.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/i386/i386.h (ix86_frame::expensive_p): New field.
+	(ix86_frame::expensive_count): Likewise.
+	* config/i386/i386.c (ix86_compute_frame_layout): Make the choice
+	of use_fast_prologue_epilogue robust against incidental changes
+	in function size.
+
+2019-09-30  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/77918
+	* config/s390/vector.md (vec_unordered<mode>): Call
+	gen_vec_ordered<mode>.
+
+2019-09-30  Yuliang Wang  <yuliang.wang@arm.com>
+
+	* config/aarch64/aarch64-sve.md (sdiv_pow2<mode>3):
+	New pattern for ASRD.
+	* config/aarch64/iterators.md (UNSPEC_ASRD): New unspec.
+	* internal-fn.def (IFN_DIV_POW2): New internal function.
+	* optabs.def (sdiv_pow2_optab): New optab.
+	* tree-vect-patterns.c (vect_recog_divmod_pattern):
+	Modify pattern to support new operation.
+	* doc/md.texi (sdiv_pow2$var{m3}): Documentation for the above.
+	* doc/sourcebuild.texi (vect_sdiv_pow2_si):
+	Document new target selector.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Use crtl->abi
+	to test whether we're compiling a vector PCS function and to test
+	whether the function needs to save a particular register.
+	Remove the vector PCS handling of df_set_regs_ever_live.
+	(aarch64_components_for_bb): Use crtl->abi to test whether
+	the function needs to save a particular register.
+	(aarch64_process_components): Use crtl->abi to test whether
+	we're compiling a vector PCS function.
+	(aarch64_expand_prologue, aarch64_expand_epilogue): Likewise.
+	(aarch64_epilogue_uses): Remove handling of vector PCS functions.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_use_simple_return_insn_p):
+	Delete.
+	* config/aarch64/aarch64.c (aarch64_components_for_bb): Check
+	whether the block calls a function that clobbers more registers
+	than the current function is allowed to.
+	(aarch64_use_simple_return_insn_p): Delete.
+	* config/aarch64/aarch64.md (simple_return): Remove condition.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* function-abi.h (function_abi_aggregator): New class.
+	* function-abi.cc (function_abi_aggregator::caller_save_regs): New
+	function.
+	* ira.c (update_equiv_regs_prescan): New function.  Call
+	set_paradoxical_subreg here rather than...
+	(update_equiv_regs): ...here.
+	(ira): Call update_equiv_regs_prescan.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* hard-reg-set.h (regs_invalidated_by_call): Only define if
+	IN_TARGET_CODE.
+	(call_used_or_fixed_regs): Likewise.
+	(call_used_or_fixed_reg_p): Likewise.
+	* reginfo.c (regs_invalidated_by_call): New macro.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* shrink-wrap.c: Include function-abi.h.
+	(requires_stack_frame_p): Use crtl->abi to test whether the
+	current function can use a register without saving it first.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* sel-sched-ir.h (_def::crosses_call): Replace with...
+	(_def::crossed_call_abis): ..this new field.
+	(def_list_add): Take a mask of ABIs instead of a crosses_call
+	boolean.
+	* sel-sched-ir.c (def_list_add): Likewise.  Update initialization
+	of _def accordingly.
+	* sel-sched.c: Include function-abi.h.
+	(hard_regs_data::regs_for_call_clobbered): Delete.
+	(reg_rename::crosses_call): Replace with...
+	(reg_rename::crossed_call_abis): ...this new field.
+	(fur_static_params::crosses_call): Replace with...
+	(fur_static_params::crossed_call_abis): ...this new field.
+	(init_regs_for_mode): Don't initialize sel_hrd.regs_for_call_clobbered.
+	(init_hard_regs_data): Use crtl->abi to test which registers the
+	current function would need to save before it uses them.
+	(mark_unavailable_hard_regs): Update handling of call-clobbered
+	registers, using call_clobbers_in_region to find out which registers
+	might be call-clobbered (but without taking -fipa-ra into account
+	for now).  Remove separate handling of partially call-clobbered
+	registers.
+	(verify_target_availability): Use crossed_call_abis instead of
+	crosses_call.
+	(get_spec_check_type_for_insn, find_used_regs): Likewise.
+	(fur_orig_expr_found, fur_on_enter, fur_orig_expr_not_found): Likewise.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* sched-deps.c (deps_analyze_insn): Use the ABI of the target
+	function to test whether a register is fully or partly clobbered.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtlanal.c: Include function-abi.h.
+	(reg_set_p): Use insn_callee_abi to get the ABI of the called
+	function and clobbers_reg_p to test whether the register
+	is call-clobbered.
+	(find_all_hard_reg_sets): When implicit is true, use insn_callee_abi
+	to get the ABI of the called function and full_reg_clobbers to
+	get the set of fully call-clobbered registers.  Warn about the
+	pitfalls of using this mode.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* reload.c: Include function-abi.h.
+	(find_equiv_reg): Use clobbers_reg_p to test whether either
+	of the equivalent registers is clobbered by a call.
+	* reload1.c: Include function-abi.h.
+	(reg_reloaded_call_part_clobbered): Delete.
+	(reload): Use crtl->abi to test which registers would need
+	saving in the prologue before use.
+	(find_reg): Likewise.
+	(emit_reload_insns): Remove code for reg_reloaded_call_part_clobbered.
+	(reload_as_needed): Likewise.  Use full_and_partial_reg_clobbers
+	instead of call_used_or_fixed_regs | reg_reloaded_call_part_clobbered.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* regrename.h (du_head::call_clobber_mask): New field.
+	(du_head::need_caller_save_reg): Replace with...
+	(du_head::call_abis): ...this new field.
+	* regrename.c: Include function-abi.h.
+	(call_clobbered_in_chain_p): New function.
+	(check_new_reg_p): Use crtl->abi when deciding whether a register
+	is free for use after RA.  Use call_clobbered_in_chain_p to test
+	whether a candidate register would be clobbered by a call.
+	(find_rename_reg): Don't add call-clobber conflicts here.
+	(rename_chains): Check call_abis instead of need_caller_save_reg.
+	(merge_chains): Update for changes to du_head.
+	(build_def_use): Use insn_callee_abi to get the ABI of the call insn
+	target.  Record the ABI identifier in call_abis and the set of
+	fully or partially clobbered registers in call_clobber_mask.
+	Add fully-clobbered registers to hard_conflicts here rather
+	than in find_rename_reg.
+	* config/aarch64/cortex-a57-fma-steering.c: Include function-abi.h.
+	(rename_single_chain): Check call_abis instead of need_caller_save_reg.
+	* config/aarch64/falkor-tag-collision-avoidance.c: Include
+	function-abi.h.
+	* config/c6x/c6x.c: Likewise.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* regcprop.c (copyprop_hardreg_forward_1): Use the recorded
+	mode of the register when deciding whether it is no longer
+	available after a call.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* recog.c: Include function-abi.h.
+	(peep2_find_free_register): Use crtl->abi when deciding whether
+	a register is free for use after RA.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* postreload-gcse.c: Include regs.h and function-abi.h.
+	(record_opr_changes): Use insn_callee_abi to get the ABI of the
+	call insn target.  Conservatively assume that partially-clobbered
+	registers are altered.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* postreload.c (reload_combine_recognize_pattern): Use crtl->abi
+	when deciding whether a register is free for use after RA.
+	(reload_combine): Remove unnecessary use of fixed_reg_set.
+	(reload_cse_move2add): Use insn_callee_abi to get the ABI of the
+	call insn target.  Use reg_mode when testing whether a register
+	is no longer available.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def (return_call_with_max_clobbers): Delete.
+	* doc/tm.texi.in (TARGET_RETURN_CALL_WITH_MAX_CLOBBERS): Delete.
+	* doc/tm.texi: Regenerate.
+	* config/aarch64/aarch64.c (aarch64_return_call_with_max_clobbers)
+	(TARGET_RETURN_CALL_WITH_MAX_CLOBBERS): Delete.
+	* lra-int.h (lra_reg::actual_call_used_reg_set): Delete.
+	(lra_reg::call_insn): Delete.
+	* lra.c: Include function-abi.h.
+	(initialize_lra_reg_info_element): Don't initialize the fields above.
+	(lra): Use crtl->abi to test whether the current function needs to
+	save a register in the prologue.  Remove special pre-inheritance
+	lra_create_live_ranges pass for flag_ipa_ra.
+	* lra-assigns.c: Include function-abi.h
+	(find_hard_regno_for_1): Use crtl->abi to test whether the current
+	function needs to save a register in the prologue.
+	(lra_assign): Assert that registers aren't allocated to a
+	conflicting register, rather than checking only for overlaps
+	with call_used_or_fixed_regs.  Do this even for flag_ipa_ra,
+	and for registers that are not live across a call.
+	* lra-constraints.c (last_call_for_abi): New variable.
+	(full_and_partial_call_clobbers): Likewise.
+	(setup_next_usage_insn): Remove the register from
+	full_and_partial_call_clobbers.
+	(need_for_call_save_p): Use call_clobbered_in_region_p to test
+	whether the register needs a caller save.
+	(need_for_split_p): Use full_and_partial_reg_clobbers instead
+	of call_used_or_fixed_regs.
+	(inherit_in_ebb): Initialize and maintain last_call_for_abi and
+	full_and_partial_call_clobbers.
+	* lra-lives.c (check_pseudos_live_through_calls): Replace
+	last_call_used_reg_set and call_insn arguments with an abi argument.
+	Remove handling of lra_reg::call_insn.  Use function_abi::mode_clobbers
+	as the set of conflicting registers.
+	(calls_have_same_clobbers_p): Delete.
+	(process_bb_lives): Track the ABI of the last call instead of an
+	insn/HARD_REG_SET pair.  Update calls to
+	check_pseudos_live_through_calls.  Use eh_edge_abi to calculate
+	the set of registers that could be clobbered by an EH edge.
+	Include partially-clobbered as well as fully-clobbered registers.
+	(lra_create_live_ranges_1): Don't initialize lra_reg::call_insn.
+	* lra-remat.c: Include function-abi.h.
+	(call_used_regs_arr_len, call_used_regs_arr): Delete.
+	(set_bb_regs): Use insn_callee_abi to get the set of call-clobbered
+	registers and bitmap_view to combine them into dead_regs.
+	(call_used_input_regno_present_p): Take a function_abi argument
+	and use it to test whether a register is call-clobbered.
+	(calculate_gen_cands): Use insn_callee_abi to get the ABI of the
+	call insn target.  Update tje call to call_used_input_regno_present_p.
+	(do_remat): Likewise.
+	(lra_remat): Remove the initialization of call_used_regs_arr_len
+	and call_used_regs_arr.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* loop-iv.c: Include regs.h and function-abi.h.
+	(simplify_using_initial_values): Use insn_callee_abi to get the
+	ABI of the call insn target.  Conservatively assume that
+	partially-clobbered registers are altered.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* function-abi.h (call_clobbers_in_region): Declare.
+	(call_clobbered_in_region_p): New function.
+	* function-abi.cc (call_clobbers_in_region): Likewise.
+	* ira-int.h: Include function-abi.h.
+	(ira_allocno::crossed_calls_abis): New field.
+	(ALLOCNO_CROSSED_CALLS_ABIS): New macro.
+	(ira_need_caller_save_regs): New function.
+	(ira_need_caller_save_p): Likewise.
+	* ira.c (setup_reg_renumber): Use ira_need_caller_save_p instead
+	of call_used_or_fixed_regs.
+	(do_reload): Use crtl->abi to test whether the current function
+	needs to save a register in the prologue.  Count registers that
+	need to be saved rather than registers that don't.
+	* ira-build.c (create_cap_allocno): Copy ALLOCNO_CROSSED_CALLS_ABIS.
+	Remove unnecessary | from ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS.
+	(propagate_allocno_info): Merge ALLOCNO_CROSSED_CALLS_ABIS too.
+	(propagate_some_info_from_allocno): Likewise.
+	(copy_info_to_removed_store_destinations): Likewise.
+	(ira_flattening): Say that ALLOCNO_CROSSED_CALLS_ABIS and
+	ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS are handled conservatively.
+	(ira_build): Use ira_need_caller_save_regs instead of
+	call_used_or_fixed_regs.
+	* ira-color.c (calculate_saved_nregs): Use crtl->abi to test
+	whether the current function would need to save a register
+	before using it.
+	(calculate_spill_cost): Likewise.
+	(allocno_reload_assign): Use ira_need_caller_save_regs and
+	ira_need_caller_save_p instead of call_used_or_fixed_regs.
+	* ira-conflicts.c (ira_build_conflicts): Use
+	ira_need_caller_save_regs rather than call_used_or_fixed_regs
+	as the set of call-clobbered registers.  Remove the
+	call_used_or_fixed_regs mask from the calculation of
+	temp_hard_reg_set and mask its use instead.  Remove special
+	handling of partially-clobbered registers.
+	* ira-costs.c (ira_tune_allocno_costs): Use ira_need_caller_save_p.
+	* ira-lives.c (process_bb_node_lives): Use mode_clobbers to
+	calculate the set of conflicting registers for calls that
+	can throw.  Record the ABIs of calls in ALLOCNO_CROSSED_CALLS_ABIS.
+	Use full_and_partial_reg_clobbers rather than full_reg_clobbers
+	for the calculation of ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS.
+	Use eh_edge_abi to calculate the set of registers that could
+	be clobbered by an EH edge.  Include partially-clobbered as
+	well as fully-clobbered registers.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* haifa-sched.c: Include function-abi.h.
+	(alloc_global_sched_pressure_data): Use crtl->abi to check whether
+	the function would need to save a register before using it.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcse.c: Include function-abi.h.
+	(compute_hash_table_work): Use insn_callee_abi to get the ABI of
+	the call insn target.  Invalidate partially call-clobbered
+	registers as well as fully call-clobbered ones.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* function.c (aggregate_value_p): Work out which ABI the
+	function is using before testing which registers are at least
+	partly preserved by a call.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* early-remat.c: Include regs.h and function-abi.h.
+	(early_remat::maybe_add_candidate): Don't check for call-clobbered
+	registers here.
+	(early_remat::restrict_remat_for_unavail_regs): New function.
+	(early_remat::restrict_remat_for_call): Likewise.
+	(early_remat::process_block): Before calling emit_remat_insns
+	for a previous call in the block, invalidate any candidates
+	that would clobber call-preserved registers.
+	(early_remat::emit_remat_insns_for_block): Likewise for the
+	final call in a block.  Do the same thing for live-in registers
+	when calling emit_remat_insns at the head of a block.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* df-scan.c (df_get_entry_block_def_set): Use crtl->abi to test
+	whether the current function needs to save at least part of a
+	register before using it.
+	(df_get_exit_block_use_set): Likewise for epilogue restores.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* df-problems.c: Include regs.h and function-abi.h.
+	(df_rd_problem_data): Rename sparse_invalidated_by_call to
+	sparse_invalidated_by_eh and dense_invalidated_by_call to
+	dense_invalidated_by_eh.
+	(df_print_bb_index): Update accordingly.
+	(df_rd_alloc, df_rd_start_dump, df_rd_confluence_n): Likewise.
+	(df_lr_confluence_n): Use eh_edge_abi to get the set of registers
+	that are clobbered by an EH edge.  Clobber partially-clobbered
+	registers as well as fully-clobbered ones.
+	(df_md_confluence_n): Likewise.
+	(df_rd_local_compute): Likewise.  Update for changes to
+	df_rd_problem_data.
+	* df-scan.c (df_scan_start_dump): Use eh_edge_abi to get the set
+	of registers that are clobbered by an EH edge.  Includde partially-
+	clobbered registers as well as fully-clobbered ones.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cselib.c (cselib_process_insn): If we know what mode a
+	register was set in, check whether it is clobbered in that
+	mode by a call.  Only fall back to reg_raw_mode if that fails.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cse.c: Include regs.h and function-abi.h.
+	(invalidate_for_call): Take the call insn as an argument.
+	Use insn_callee_abi to get the ABI of the call and invalidate
+	partially clobbered registers as well as fully clobbered ones.
+	(cse_insn): Update call accordingly.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* combine.c: Include function-abi.h.
+	(record_dead_and_set_regs): Use insn_callee_abi to get the ABI
+	of the target of call insns.  Invalidate partially-clobbered
+	registers as well as fully-clobbered ones.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cfgloopanal.c: Include regs.h and function-abi.h.
+	(init_set_costs): Use default_function_abi to test whether
+	a general register is call-clobbered.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cfgcleanup.c (old_insns_match_p): Compare the ABIs of calls
+	instead of the call-clobbered sets.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* caller-save.c (setup_save_areas): Remove redundant |s of
+	fixed_reg_set.
+	(save_call_clobbered_regs): Likewise.  Use the call ABI rather
+	than call_used_or_fixed_regs to decide whether a REG_RETURNED
+	value is useful.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl.h (predefined_function_abi): Declare.
+	(choose_hard_reg_mode): Take a pointer to a predefined_function_abi
+	instead of a boolean call_save flag.
+	* config/gcn/gcn.c (gcn_hard_regno_caller_save_mode): Update call
+	accordingly.
+	* config/i386/i386.h (HARD_REGNO_CALLER_SAVE_MODE): Likewise.
+	* config/ia64/ia64.h (HARD_REGNO_CALLER_SAVE_MODE): Likewise.
+	* config/mips/mips.c (mips_hard_regno_caller_save_mode): Likewise.
+	* config/msp430/msp430.h (HARD_REGNO_CALLER_SAVE_MODE): Likewise.
+	* config/rs6000/rs6000.h (HARD_REGNO_CALLER_SAVE_MODE): Likewise.
+	* config/sh/sh.c (sh_hard_regno_caller_save_mode): Likewise.
+	* reginfo.c (init_reg_modes_target): Likewise.
+	(choose_hard_reg_mode): Take a pointer to a predefined_function_abi
+	instead of a boolean call_save flag.
+	* targhooks.c: Include function-abi.h.
+	(default_dwarf_frame_reg_mode): Update call to choose_hard_reg_mode,
+	using eh_edge_abi to choose the mode.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def (hard_regno_call_part_clobbered): Take an ABI
+	identifier instead of an rtx_insn.
+	* doc/tm.texi: Regenerate.
+	* hooks.h (hook_bool_insn_uint_mode_false): Delete.
+	(hook_bool_uint_uint_mode_false): New function.
+	* hooks.c (hook_bool_insn_uint_mode_false): Delete.
+	(hook_bool_uint_uint_mode_false): New function.
+	* config/aarch64/aarch64.c (aarch64_hard_regno_call_part_clobbered):
+	Take an ABI identifier instead of an rtx_insn.
+	* config/avr/avr.c (avr_hard_regno_call_part_clobbered): Likewise.
+	* config/i386/i386.c (ix86_hard_regno_call_part_clobbered): Likewise.
+	* config/mips/mips.c (mips_hard_regno_call_part_clobbered): Likewise.
+	* config/pru/pru.c (pru_hard_regno_call_part_clobbered): Likewise.
+	* config/rs6000/rs6000.c (rs6000_hard_regno_call_part_clobbered):
+	Likewise.
+	* config/s390/s390.c (s390_hard_regno_call_part_clobbered): Likewise.
+	* cselib.c: Include function-abi.h.
+	(cselib_process_insn): Update call to
+	targetm.hard_regno_call_part_clobbered, using insn_callee_abi
+	to get the appropriate ABI identifier.
+	* function-abi.cc (predefined_function_abi::initialize): Update call
+	to targetm.hard_regno_call_part_clobbered.
+	* ira-conflicts.c (ira_build_conflicts): Likewise.
+	* ira-costs.c (ira_tune_allocno_costs): Likewise.
+	* lra-constraints.c: Include function-abi.h.
+	(need_for_call_save_p): Update call to
+	targetm.hard_regno_call_part_clobbered, using insn_callee_abi
+	to get the appropriate ABI identifier.
+	* lra-lives.c (check_pseudos_live_through_calls): Likewise.
+	* regcprop.c (copyprop_hardreg_forward_1): Update call
+	to targetm.hard_regno_call_part_clobbered.
+	* reginfo.c (choose_hard_reg_mode): Likewise.
+	* regrename.c (check_new_reg_p): Likewise.
+	* reload.c (find_equiv_reg): Likewise.
+	* reload1.c (emit_reload_insns): Likewise.
+	* sched-deps.c: Include function-abi.h.
+	(deps_analyze_insn): Update call to
+	targetm.hard_regno_call_part_clobbered, using insn_callee_abi
+	to get the appropriate ABI identifier.
+	* sel-sched.c (init_regs_for_mode, mark_unavailable_hard_regs): Update
+	call to targetm.hard_regno_call_part_clobbered.
+	* targhooks.c (default_dwarf_frame_reg_mode): Likewise.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/i386/i386.c: Include function-abi.h.
+	(ix86_avx_u128_mode_needed): Treat function calls as AVX_U128_ANY
+	if they preserve some 256-bit or 512-bit SSE registers.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def (insn_callee_abi): New hook.
+	(remove_extra_call_preserved_regs): Delete.
+	* doc/tm.texi.in (TARGET_INSN_CALLEE_ABI): New macro.
+	(TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS): Delete.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_remove_extra_call_preserved_regs): Delete.
+	* targhooks.c (default_remove_extra_call_preserved_regs): Delete.
+	* config/aarch64/aarch64.c (aarch64_simd_call_p): Constify the
+	insn argument.
+	(aarch64_remove_extra_call_preserved_regs): Delete.
+	(aarch64_insn_callee_abi): New function.
+	(TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS): Delete.
+	(TARGET_INSN_CALLEE_ABI): New macro.
+	* rtl.h (get_call_fndecl): Declare.
+	(cgraph_rtl_info): Fix formatting.  Tweak comment for
+	function_used_regs.  Remove function_used_regs_valid.
+	* rtlanal.c (get_call_fndecl): Moved from final.c
+	* function-abi.h (insn_callee_abi): Declare.
+	(target_function_abi_info): Mention insn_callee_abi.
+	* function-abi.cc (fndecl_abi): Handle flag_ipa_ra in a similar
+	way to get_call_reg_set_usage did.
+	(insn_callee_abi): New function.
+	* regs.h (get_call_reg_set_usage): Delete.
+	* final.c: Include function-abi.h.
+	(collect_fn_hard_reg_usage): Add fixed and stack registers to
+	function_used_regs before the main loop rather than afterwards.
+	Use insn_callee_abi instead of get_call_reg_set_usage.  Exit early
+	if function_used_regs ends up not being useful.
+	(get_call_fndecl): Move to rtlanal.c
+	(get_call_cgraph_rtl_info, get_call_reg_set_usage): Delete.
+	* caller-save.c: Include function-abi.h.
+	(setup_save_areas, save_call_clobbered_regs): Use insn_callee_abi
+	instead of get_call_reg_set_usage.
+	* cfgcleanup.c: Include function-abi.h.
+	(old_insns_match_p): Use insn_callee_abi instead of
+	get_call_reg_set_usage.
+	* cgraph.h (cgraph_node::rtl_info): Take a const_tree instead of
+	a tree.
+	* cgraph.c (cgraph_node::rtl_info): Likewise.  Initialize
+	function_used_regs.
+	* df-scan.c: Include function-abi.h.
+	(df_get_call_refs): Use insn_callee_abi instead of
+	get_call_reg_set_usage.
+	* ira-lives.c: Include function-abi.h.
+	(process_bb_node_lives): Use insn_callee_abi instead of
+	get_call_reg_set_usage.
+	* lra-lives.c: Include function-abi.h.
+	(process_bb_lives): Use insn_callee_abi instead of
+	get_call_reg_set_usage.
+	* postreload.c: Include function-abi.h.
+	(reload_combine): Use insn_callee_abi instead of
+	get_call_reg_set_usage.
+	* regcprop.c: Include function-abi.h.
+	(copyprop_hardreg_forward_1): Use insn_callee_abi instead of
+	get_call_reg_set_usage.
+	* resource.c: Include function-abi.h.
+	(mark_set_resources, mark_target_live_regs): Use insn_callee_abi
+	instead of get_call_reg_set_usage.
+	* var-tracking.c: Include function-abi.h.
+	(dataflow_set_clear_at_call): Use insn_callee_abi instead of
+	get_call_reg_set_usage.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* target.def (fntype_abi): New target hook.
+	* doc/tm.texi.in (TARGET_FNTYPE_ABI): Likewise.
+	* doc/tm.texi: Regenerate.
+	* target.h (predefined_function_abi): Declare.
+	* function-abi.cc (fntype_abi): Call targetm.calls.fntype_abi,
+	if defined.
+	* config/aarch64/aarch64.h (ARM_PCS_SIMD): New arm_pcs value.
+	* config/aarch64/aarch64.c: Include function-abi.h.
+	(aarch64_simd_abi, aarch64_fntype_abi): New functions.
+	(TARGET_FNTYPE_ABI): Define.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* Makefile.in (OBJS): Add function-abi.o.
+	(GTFILES): Add function-abi.h.
+	* function-abi.cc: New file.
+	* function-abi.h: Likewise.
+	* emit-rtl.h (rtl_data::abi): New field.
+	* function.c: Include function-abi.h.
+	(prepare_function_start): Initialize crtl->abi.
+	* read-rtl-function.c: Include regs.h and function-abi.h.
+	(read_rtl_function_body): Initialize crtl->abi.
+	(read_rtl_function_body_from_file_range): Likewise.
+	* reginfo.c: Include function-abi.h.
+	(init_reg_sets_1): Initialize default_function_abi.
+	(globalize_reg): Call add_full_reg_clobber for each predefined ABI
+	when making a register global.
+	* target-globals.h (this_target_function_abi_info): Declare.
+	(target_globals::function_abi_info): New field.
+	(restore_target_globals): Copy it.
+	* target-globals.c: Include function-abi.h.
+	(default_target_globals): Initialize the function_abi_info field.
+	(target_globals): Allocate it.
+	(save_target_globals): Free it.
+
+2019-09-30  Nick Clifton  <nickc@redhat.com>
+
+	PR target/85978
+	* config/frv/frv.c (frv_register_move_cost): Add break statements
+	to avoid falling through to the wrong cases.  Tidy code.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_hard_regno_call_part_clobbered):
+	For multi-registers modes, test how big each register part is.
+
+2019-09-30  Nick Clifton  <nickc@redhat.com>
+
+	PR target/59205
+	* config/iq2000/iq2000.c (iq2000_select_section): Delete.
+	(TARGET_ASM_SELECT_SECTION): Remove definition.
+	(TARGET_HAVE_SWITCHABLE_BSS_SECTIONS): Allow definition.
+
+2019-09-30  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* emit-rtl.c (init_raw_REG): New function.
+	(gen_raw_REG): Use init_raw_REG.
+	* gengenrtl.c (gendef): Emit init_* functions and alloca_*
+	macros.
+	* rtl.c (rtx_alloc_stat_v): Use rtx_init.
+	* rtl.h (rtx_init): New function.
+	(rtx_alloca): New function.
+	(init_raw_REG): New function.
+	(alloca_raw_REG): New macro.
+
+2019-09-30  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/predicates.md (pcrel_address): Delete predicate.
+	(pcrel_local_address): Replace pcrel_address predicate, use the
+	new function address_to_insn_form.
+	(pcrel_external_address): Replace with new implementation using
+	address_to_insn_form..
+	(prefixed_mem_operand): Delete predicate which is now unused.
+	(pcrel_external_mem_operand): Delete predicate which is now
+	unused.
+	* config/rs6000/rs6000-protos.h (enum insn_form): New
+	enumeration.
+	(enum non_prefixed_form): New enumeration.
+	(address_to_insn_form): New declaration.
+	(prefixed_load_p): New declaration.
+	(prefixed_store_p): New declaration.
+	(prefixed_paddi_p): New declaration.
+	(rs6000_asm_output_opcode): New declaration.
+	(rs6000_final_prescan_insn): Move declaration and update calling
+	signature.
+	(address_is_prefixed): New helper inline function.
+	* config/rs6000/rs6000.c(print_operand_address): Check for either
+	PC-relative local symbols or PC-relative external symbols.
+	(rs6000_emit_move): Support loading PC-relative addresses.
+	(mode_supports_prefixed_address_p): Delete, no longer used.
+	(rs6000_prefixed_address_mode_p): Delete, no longer used.
+	(address_to_insn_form): New function to decode an address format.
+	(reg_to_non_prefixed): New function to identify what the
+	non-prefixed memory instruction format is for a register.
+	(prefixed_load_p): New function to identify prefixed loads.
+	(prefixed_store_p): New function to identify prefixed stores.
+	(prefixed_paddi_p): New function to identify prefixed load
+	immediates.
+	(next_insn_prefixed_p): New static state variable.
+	(rs6000_final_prescan_insn): New function to determine if an insn
+	uses a prefixed instruction.
+	(rs6000_asm_output_opcode): New function to emit 'p' in front of a
+	prefixed instruction.
+	* config/rs6000/rs6000.h (FINAL_PRESCAN_INSN): New target hook.
+	(ASM_OUTPUT_OPCODE): New target hook.
+	* config/rs6000/rs6000.md (prefixed): New insn attribute for
+	prefixed instructions.
+	(prefixed_length): New insn attribute for the size of prefixed
+	instructions.
+	(non_prefixed_length): New insn attribute for the size of
+	non-prefixed instructions.
+	(pcrel_local_addr): New insn to load up a local PC-relative
+	address.
+	(pcrel_extern_addr): New insn to load up an external PC-relative
+	address.
+	(mov<mode>_64bit_dm): Split the alternatives for loading 0.0 to a
+	GPR and loading a 128-bit floating point type to a GPR.
+
+2019-09-30  Richard Biener  <rguenther@suse.de>
+
+	* gimple.c (gimple_get_lhs): For PHIs return the result.
+	* tree-vectorizer.h (vectorizable_live_operation): Also get the
+	SLP instance as argument.
+	* tree-vect-loop.c (vect_analyze_loop_operations): Also handle
+	double-reduction PHIs with vectorizable_lc_phi.
+	(vect_analyze_loop_operations): Adjust.
+	(vect_create_epilog_for_reduction): Remove all code not dealing
+	with reduction LC PHI or epilogue generation.
+	(vectorizable_live_operation): Call vect_create_epilog_for_reduction
+	for live stmts of reductions.
+	* tree-vect-stmts.c (vectorizable_condition): When !for_reduction
+	do not handle defs that are not vect_internal_def.
+	(can_vectorize_live_stmts): Adjust.
+	(vect_analyze_stmt): When the vectorized stmt defined a value
+	used on backedges adjust the backedge uses of vectorized PHIs.
+
+2019-09-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/91853
+	* tree-inline.c (force_value_to_type): New function.
+	(setup_one_parameter): Use force_value_to_type to convert type.
+	* tree-inline.c (force_value_to_type): Declare.
+	* ipa-param-manipulation.c (ipa_param_adjustments::modify_call): Deal
+	with register type mismatches.
+
+2019-09-30  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config.gcc: Use the secure-plt on FreeBSD 13 and upwards for
+	32-bit PowerPC.
+	Define TARGET_FREEBSD32_SECURE_PLT for 64-bit PowerPC.
+	* config/rs6000/t-freebsd64: Make use of the above define and build
+	the 32-bit libraries with secure-plt.
+
+2019-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91931
+	* config/i386/i386-expand.c (ix86_expand_adjust_ufix_to_sfix_si): Use
+	gen_int_mode instead of GEN_INT.
+
+2019-09-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (gen_macho_low): Amend to include the mode
+	argument.
+	(machopic_indirect_data_reference): Amend gen_macho_low call
+	to include mode argument
+	* config/rs6000/rs6000.c (emit_move): Likewise. Amend a comment.
+	* config/rs6000/darwin.md (@macho_low_<mode>): New, replaces
+	the macho_high expander and two define_insn entries.
+
+2019-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/90543
+	* optc-save-gen.awk: Fix up printing string option differences.
+
+2019-09-29  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost): Lower
+	vec_perm cost to 1 for non-Power7 VSX architectures.
+
+2019-09-29  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* config/rs6000/vsx.md (vec_pack[su]_float_v2di): New define_expand.
+	(vec_unpack_[su]fix_trunc_hi_v4sf): Likewise.
+	(vec_unpack_[su]fix_trunc_lo_v4sf): Likewise.
+
+2019-09-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (gen_macho_high): Amend to include the mode
+	argument.
+	(machopic_indirect_data_reference): Amend gen_macho_high call
+	to include mode argument.
+	(machopic_legitimize_pic_address): Likewise.
+	* config/rs6000/rs6000.c (rs6000_legitimize_address):
+	* config/rs6000/darwin.md (@macho_high_<mode>): New, replaces
+	the macho_high expander and two define_insn entries.
+
+2019-09-28  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/86805
+	* config/sh/sh.c (TARGET_HAVE_SPECULATION_SAFE_VALUE): Define.
+
+2019-09-28  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/80672
+	* config/sh/sh.c (parse_validate_atomic_model_option): Use
+	std::string::compare instead of std::string::find.
+
+2019-09-27  Maciej W. Rozycki  <macro@wdc.com>
+
+	* configure: Regenerate.
+
+2019-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91920
+	* gimplify.c (omp_default_clause): Predetermine DECL_IN_CONSTANT_POOL
+	variables as shared.
+
 2019-09-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/darwin.md (@macho_correct_pic_<mode>): New,

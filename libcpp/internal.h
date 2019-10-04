@@ -127,7 +127,7 @@ enum include_type
    IT_MAIN_ZERO,  /* main, start line zero  */
 
    IT_DIRECTIVE_HWM = IT_IMPORT + 1,  /* Directives below this.  */
-   IT_HEADER_HWM = IT_DEFAULT + 1,    /* Header files below this.  */
+   IT_HEADER_HWM = IT_DEFAULT + 1     /* Header files below this.  */
   };
 
 union utoken

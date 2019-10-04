@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // NB: parallel-mode uses TR1 bits...
-#undef _GLIBCXX_PARALLEL
+// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PARALLEL" } }
 
 #include <algorithm>
 #include <array>

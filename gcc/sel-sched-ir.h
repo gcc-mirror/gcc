@@ -188,12 +188,12 @@ struct _def
 {
   insn_t orig_insn;
 
-  /* FIXME: Get rid of CROSSES_CALL in each def, since if we're moving up
+  /* FIXME: Get rid of CROSSED_CALL_ABIS in each def, since if we're moving up
      rhs from two different places, but only one of the code motion paths
      crosses a call, we can't use any of the call_used_regs, no matter which
-     path or whether all paths crosses a call.  Thus we should move CROSSES_CALL
-     to static params.  */
-  bool crosses_call;
+     path or whether all paths crosses a call.  Thus we should move
+     CROSSED_CALL_ABIS to static params.  */
+  unsigned int crossed_call_abis;
 };
 typedef struct _def *def_t;
 
@@ -1510,7 +1510,7 @@ extern void flist_tail_init (flist_tail_t);
 
 extern fence_t flist_lookup (flist_t, insn_t);
 extern void flist_clear (flist_t *);
-extern void def_list_add (def_list_t *, insn_t, bool);
+extern void def_list_add (def_list_t *, insn_t, unsigned int);
 
 /* Target context functions.  */
 extern tc_t create_target_context (bool);

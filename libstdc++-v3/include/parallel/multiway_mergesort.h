@@ -264,19 +264,19 @@ namespace __gnu_parallel
       { __gnu_sequential::sort(__begin, __end, __comp); }
     };
 
-  template<bool __stable, typename Seq_RAIter,
+  template<bool __stable, typename _Seq_RAIter,
 	   typename _RAIter, typename _Compare,
-	   typename DiffType>
+	   typename _DiffType>
     struct __possibly_stable_multiway_merge
     { };
 
-  template<typename Seq_RAIter, typename _RAIter,
+  template<typename _Seq_RAIter, typename _RAIter,
 	   typename _Compare, typename _DiffType>
-    struct __possibly_stable_multiway_merge<true, Seq_RAIter,
+    struct __possibly_stable_multiway_merge<true, _Seq_RAIter,
 					    _RAIter, _Compare, _DiffType>
     {
-      void operator()(const Seq_RAIter& __seqs_begin,
-		      const Seq_RAIter& __seqs_end,
+      void operator()(const _Seq_RAIter& __seqs_begin,
+		      const _Seq_RAIter& __seqs_end,
 		      const _RAIter& __target,
 		      _Compare& __comp,
 		      _DiffType __length_am) const
@@ -284,13 +284,13 @@ namespace __gnu_parallel
 			      __length_am, __comp, sequential_tag()); }
     };
 
-  template<typename Seq_RAIter, typename _RAIter,
+  template<typename _Seq_RAIter, typename _RAIter,
 	   typename _Compare, typename _DiffType>
-    struct __possibly_stable_multiway_merge<false, Seq_RAIter,
+    struct __possibly_stable_multiway_merge<false, _Seq_RAIter,
 					    _RAIter, _Compare, _DiffType>
     {
-      void operator()(const Seq_RAIter& __seqs_begin,
-                      const Seq_RAIter& __seqs_end,
+      void operator()(const _Seq_RAIter& __seqs_begin,
+                      const _Seq_RAIter& __seqs_end,
                       const _RAIter& __target,
                       _Compare& __comp,
                       _DiffType __length_am) const

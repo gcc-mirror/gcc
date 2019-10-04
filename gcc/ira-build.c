@@ -504,6 +504,7 @@ ira_create_allocno (int regno, bool cap_p,
   ALLOCNO_CALL_FREQ (a) = 0;
   ALLOCNO_CALLS_CROSSED_NUM (a) = 0;
   ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a) = 0;
+  ALLOCNO_CROSSED_CALLS_ABIS (a) = 0;
   CLEAR_HARD_REG_SET (ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a));
 #ifdef STACK_REGS
   ALLOCNO_NO_STACK_REG_P (a) = false;
@@ -903,8 +904,9 @@ create_cap_allocno (ira_allocno_t a)
 
   ALLOCNO_CALLS_CROSSED_NUM (cap) = ALLOCNO_CALLS_CROSSED_NUM (a);
   ALLOCNO_CHEAP_CALLS_CROSSED_NUM (cap) = ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a);
+  ALLOCNO_CROSSED_CALLS_ABIS (cap) = ALLOCNO_CROSSED_CALLS_ABIS (a);
   ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (cap)
-    |= ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a);
+    = ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a);
   if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
     {
       fprintf (ira_dump_file, "    Creating cap ");
@@ -1872,11 +1874,6 @@ create_insn_allocnos (rtx x, rtx outer, bool output_p)
       create_insn_allocnos (XEXP (x, 0), NULL, true);
       return;
     }
-  else if (code == CLOBBER_HIGH)
-    {
-      gcc_assert (REG_P (XEXP (x, 0)) && HARD_REGISTER_P (XEXP (x, 0)));
-      return;
-    }
   else if (code == MEM)
     {
       create_insn_allocnos (XEXP (x, 0), NULL, false);
@@ -2032,6 +2029,8 @@ propagate_allocno_info (void)
 	    += ALLOCNO_CALLS_CROSSED_NUM (a);
 	  ALLOCNO_CHEAP_CALLS_CROSSED_NUM (parent_a)
 	    += ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a);
+	  ALLOCNO_CROSSED_CALLS_ABIS (parent_a)
+	    |= ALLOCNO_CROSSED_CALLS_ABIS (a);
 	  ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (parent_a)
 	    |= ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a);
 	  ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (parent_a)
@@ -2415,6 +2414,7 @@ propagate_some_info_from_allocno (ira_allocno_t a, ira_allocno_t from_a)
   ALLOCNO_CALLS_CROSSED_NUM (a) += ALLOCNO_CALLS_CROSSED_NUM (from_a);
   ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a)
     += ALLOCNO_CHEAP_CALLS_CROSSED_NUM (from_a);
+  ALLOCNO_CROSSED_CALLS_ABIS (a) |= ALLOCNO_CROSSED_CALLS_ABIS (from_a);
   ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a)
     |= ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (from_a);
 
@@ -3056,6 +3056,8 @@ copy_info_to_removed_store_destinations (int regno)
 	+= ALLOCNO_CALLS_CROSSED_NUM (a);
       ALLOCNO_CHEAP_CALLS_CROSSED_NUM (parent_a)
 	+= ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a);
+      ALLOCNO_CROSSED_CALLS_ABIS (parent_a)
+	|= ALLOCNO_CROSSED_CALLS_ABIS (a);
       ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (parent_a)
 	|= ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a);
       ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (parent_a)
@@ -3155,6 +3157,9 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 		-= ALLOCNO_CALLS_CROSSED_NUM (a);
 	      ALLOCNO_CHEAP_CALLS_CROSSED_NUM (parent_a)
 		-= ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a);
+	      /* Assume that ALLOCNO_CROSSED_CALLS_ABIS and
+		 ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS stay the same.
+		 We'd need to rebuild the IR to do better.  */
 	      ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (parent_a)
 		-= ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a);
 	      ira_assert (ALLOCNO_CALLS_CROSSED_NUM (parent_a) >= 0
@@ -3462,7 +3467,7 @@ ira_build (void)
 	 allocno crossing calls.  */
       FOR_EACH_ALLOCNO (a, ai)
 	if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
-	  ior_hard_reg_conflicts (a, call_used_or_fixed_regs);
+	  ior_hard_reg_conflicts (a, ira_need_caller_save_regs (a));
     }
   if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
     print_copies (ira_dump_file);

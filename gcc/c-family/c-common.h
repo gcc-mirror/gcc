@@ -1201,6 +1201,7 @@ extern void c_omp_split_clauses (location_t, enum tree_code, omp_clause_mask,
 				 tree, tree *);
 extern tree c_omp_declare_simd_clauses_to_numbers (tree, tree);
 extern void c_omp_declare_simd_clauses_to_decls (tree, tree);
+extern bool c_omp_predefined_variable (tree);
 extern enum omp_clause_default_kind c_omp_predetermined_sharing (tree);
 
 /* Return next tree in the chain for chain_next walking of tree nodes.  */
