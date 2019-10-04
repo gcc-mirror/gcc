@@ -249,6 +249,14 @@ Collect_export_references::expression(Expression** pexpr)
       return TRAVERSE_CONTINUE;
     }
 
+  const Named_object* nco = expr->named_constant();
+  if (nco != 0 && nco->package() == NULL)
+    {
+      const Named_constant *nc = nco->const_value();
+      Type::traverse(nc->type(), this);
+      return TRAVERSE_CONTINUE;
+    }
+
   return TRAVERSE_CONTINUE;
 }
 
@@ -320,6 +328,10 @@ Collect_export_references::type(Type* type)
   // unsafe.Pointer.  The void type is not itself exported, because
   // Pointer_type::do_export checks for it.
   if (type->is_void_type())
+    return TRAVERSE_SKIP_COMPONENTS;
+
+  // Skip the nil type, turns up in function bodies.
+  if (type->is_nil_type())
     return TRAVERSE_SKIP_COMPONENTS;
 
   // Skip abstract types.  We should never see these in real code,
