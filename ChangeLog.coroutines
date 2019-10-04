@@ -1,3 +1,12 @@
+2019-10-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	libstdc++-v3/
+	* include/experimental/coroutine (operator!=): New.
+	(operator<): New.
+	(operator>): New.
+	(operator<=): New.
+	(operator>=): New.
+
 2019-10-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	libstdc++-v3/
