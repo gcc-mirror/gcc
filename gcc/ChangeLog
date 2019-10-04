@@ -1,3 +1,10 @@
+2019-10-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91982
+	* tree-vect-loop.c (vectorizable_live_operation): Also guard
+	against EXTRACT_LAST_REDUCTION.
+	* tree-vect-stmts.c (vect_transform_stmt): Likewise.
+
 2019-10-04  Aldy Hernandez  <aldyh@redhat.com>
 
 	(value_range_from_overflowed_bounds): Rename from
