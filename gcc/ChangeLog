@@ -1,3 +1,7 @@
+2019-10-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (inline_insns_single, inline_insns_auto): Fix typo.
+
 2019-10-04  Rafael Tsuha  <rafael.tsuha@usp.br>
 
         * match.pd (sinh (x) / cosh (x)): New simplification rule.
