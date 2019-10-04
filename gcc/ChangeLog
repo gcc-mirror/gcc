@@ -1,3 +1,23 @@
+2019-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* genmatch.c (commutate): Rename local var.
+	(lower_cond): Reuse local var.
+	(dt_node::gen, dt_node::gen_kids, dt_node::gen_kids_1,
+	dt_operand::gen, dt_operand::gen_gimple_expr,
+	dt_simplify::gen): Add a param.  Rename generated vars.
+	(decision_tree::insert_operand,
+	(capture_info::walk_match, capture_info::walk_result,
+	capture_info::walk_c_expr): Rename local vars.
+	(expr::gen_transform): Rename generated vars.
+	Use snprintf.  Rename local vars.
+	(capture::gen_transform, dt_operand::get_name,
+	dt_operand::gen_opname): Rename generated vars.
+	(write_predicate): Adjust call to gen_kids.
+	(parser::get_internal_capture_id): Rename generated vars.
+	(parser::parse_expr): Rename local vars.
+	(parser::parse_if): Remove local var.
+	(parser::parse_pattern, add_operator): Rename local vars.
+
 2019-10-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* builtins.def (DEF_C2X_BUILTIN): New macro.
