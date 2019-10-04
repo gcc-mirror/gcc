@@ -1,6 +1,10 @@
 2019-10-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (trees_out:decl_node): Switchify, and move some checks
+	before template detection.
+
+	gcc/cp/
 	* module.cc (trees_in::tree_value): Rework merge_kind switching.
 	(trees_{in,out}::key_mergeable): Likewise.
 

@@ -6930,26 +6930,119 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return true;
     }
 
-  if (TREE_CODE (decl) == VAR_DECL && DECL_VTABLE_OR_VTT_P (decl))
+  if (!DECL_CONTEXT (decl))
+    // FIXME: When parms etc are streamed separately, is this reachable?
+    return true;
+
+  switch (TREE_CODE (decl))
     {
-      /* VTT or VTABLE, they are all on the vtables list.  */
-      tree ctx = CP_DECL_CONTEXT (decl);
-      tree vtable = CLASSTYPE_VTABLES (ctx);
-      for (unsigned ix = 0; ; vtable = DECL_CHAIN (vtable), ix++)
-	if (vtable == decl)
+    default:
+      break;
+
+    case PARM_DECL:  // FIXME: should only be explicit in the fn_parms_init
+    case RESULT_DECL: // Likewise?
+      return true;
+
+    case LABEL_DECL:
+      return true;
+
+    case TEMPLATE_DECL:
+      if (TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TEMPLATE_PARM)
+	return true; 	// FIXME: Likewise in tpl_header
+      break;
+
+    case CONST_DECL:
+    case FIELD_DECL:
+      {
+	if (streaming_p ())
+	  i (tt_data_member);
+
+	tree ctx = DECL_CONTEXT (decl);
+	tree_node (ctx);
+	tree name = DECL_NAME (decl);
+
+	if (TREE_CODE (decl) == CONST_DECL)
+	  gcc_checking_assert (TREE_CODE (ctx) == ENUMERAL_TYPE);
+
+	if (name && IDENTIFIER_ANON_P (name))
+	  name = NULL_TREE;
+
+	tree_node (name);
+	if (!name && streaming_p ())
 	  {
-	    gcc_checking_assert (DECL_VIRTUAL_P (decl));
-	    if (streaming_p ())
-	      {
-		u (tt_vtable);
-		u (ix);
-		dump (dumper::TREE)
-		  && dump ("Writing vtable %N[%u]", ctx, ix);
-	      }
-	    tree_node (ctx);
-	    return false;
+	    /* Anonymous enum members are not a thing!  */
+	    gcc_checking_assert (TREE_CODE (decl) == FIELD_DECL);
+
+	    unsigned ix = get_field_ident (ctx, decl);
+	    u (ix);
 	  }
-      gcc_unreachable ();
+
+	int tag = insert (decl);
+	if (streaming_p ())
+	  dump (dumper::TREE)
+	    && dump ("Wrote member:%d %C:%N", tag, TREE_CODE (decl), decl);
+	return false;
+      }
+      break;
+
+    case VAR_DECL:
+      if (DECL_VTABLE_OR_VTT_P (decl))
+	{
+	  /* VTT or VTABLE, they are all on the vtables list.  */
+	  tree ctx = CP_DECL_CONTEXT (decl);
+	  tree vtable = CLASSTYPE_VTABLES (ctx);
+	  for (unsigned ix = 0; ; vtable = DECL_CHAIN (vtable), ix++)
+	    if (vtable == decl)
+	      {
+		gcc_checking_assert (DECL_VIRTUAL_P (decl));
+		if (streaming_p ())
+		  {
+		    u (tt_vtable);
+		    u (ix);
+		    dump (dumper::TREE)
+		      && dump ("Writing vtable %N[%u]", ctx, ix);
+		  }
+		tree_node (ctx);
+		return false;
+	      }
+	  gcc_unreachable ();
+	}
+      break;
+
+    case TYPE_DECL:
+      if (decl == TYPE_STUB_DECL (TREE_TYPE (decl))
+	  && TREE_CODE (TREE_TYPE (decl)) == TYPENAME_TYPE)
+	{
+	  /* A type_decl of a typename.  */
+	  if (streaming_p ())
+	    i (tt_typename_decl);
+	  tree type = TREE_TYPE (decl);
+	  gcc_assert (CP_DECL_CONTEXT (decl) == TYPE_CONTEXT (type));
+	  tree_node (TYPE_CONTEXT (type));
+	  tree_node (DECL_NAME (decl));
+	  tree_node (TYPENAME_TYPE_FULLNAME (type));
+	  if (streaming_p ())
+	    {
+	      enum tag_types tag_type = none_type;
+	      if (TYPENAME_IS_ENUM_P (type))
+		tag_type = enum_type;
+	      else if (TYPENAME_IS_CLASS_P (type))
+		tag_type = class_type;
+	      u (int (tag_type));
+	    }
+
+	  int tag = insert (decl);
+	  if (streaming_p ())
+	    dump (dumper::TREE)
+	      && dump ("Wrote:%d typename decl %P", tag,
+		       TYPE_CONTEXT (type), DECL_NAME (decl));
+	  int type_tag = insert (type);
+	  if (streaming_p ())
+	    dump (dumper::TREE) && dump ("Wrote:%d typename type", type_tag);
+
+	  return false;
+	}
+      break;
     }
 
   if (DECL_THUNK_P (decl))
@@ -6974,46 +7067,20 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return false;
     }
 
-  if (TREE_CODE (decl) == TYPE_DECL
-      && decl == TYPE_STUB_DECL (TREE_TYPE (decl))
-      && TREE_CODE (TREE_TYPE (decl)) == TYPENAME_TYPE)
+  if (DECL_CLONED_FUNCTION_P (decl))
     {
-      /* A type_decl of a typename.  */
+      tree target = get_clone_target (decl);
       if (streaming_p ())
-	i (tt_typename_decl);
-      tree type = TREE_TYPE (decl);
-      tree_node (TYPE_CONTEXT (type));
-      tree_node (DECL_NAME (decl));
-      tree_node (TYPENAME_TYPE_FULLNAME (type));
-      if (streaming_p ())
-	{
-	  enum tag_types tag_type = none_type;
-	  if (TYPENAME_IS_ENUM_P (type))
-	    tag_type = enum_type;
-	  else if (TYPENAME_IS_CLASS_P (type))
-	    tag_type = class_type;
-	  u (int (tag_type));
-	}
+	i (tt_clone_ref);
 
+      tree_node (target);
+      tree_node (DECL_NAME (decl));
       int tag = insert (decl);
       if (streaming_p ())
 	dump (dumper::TREE)
-	  && dump ("Wrote:%d typename decl %P", tag,
-		   TYPE_CONTEXT (type), DECL_NAME (decl));
-      int type_tag = insert (type);
-      if (streaming_p ())
-	dump (dumper::TREE) && dump ("Wrote:%d typename type", type_tag);
-
+	  && dump ("Wrote:%d clone %N of %N", tag, DECL_NAME (decl), target);
       return false;
     }
-
-  if (TREE_CODE (decl) == PARM_DECL
-      || TREE_CODE (decl) == RESULT_DECL
-      || TREE_CODE (decl) == LABEL_DECL
-      || !DECL_CONTEXT (decl)
-      || (TREE_CODE (decl) == TEMPLATE_DECL &&
-	  TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TEMPLATE_PARM))
-    return true;
 
   int use_tpl = -1;
   tree ti = node_template_info (decl, use_tpl);
@@ -7036,21 +7103,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
       gcc_checking_assert (TREE_VISITED (decl));
       if (DECL_IMPLICIT_TYPEDEF_P (decl))
 	gcc_checking_assert (TREE_VISITED (TREE_TYPE (decl)));
-      return false;
-    }
-
-  if (DECL_CLONED_FUNCTION_P (decl))
-    {
-      tree target = get_clone_target (decl);
-      if (streaming_p ())
-	i (tt_clone_ref);
-
-      tree_node (target);
-      tree_node (DECL_NAME (decl));
-      int tag = insert (decl);
-      if (streaming_p ())
-	dump (dumper::TREE)
-	  && dump ("Wrote:%d clone %N of %N", tag, DECL_NAME (decl), target);
       return false;
     }
 
@@ -7093,36 +7145,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  gcc_checking_assert (decls);
 	}
 
-      return false;
-    }
-
-  if (TREE_CODE (decl) == CONST_DECL
-      || TREE_CODE (decl) == FIELD_DECL)
-    {
-      if (streaming_p ())
-	i (tt_data_member);
-
-      tree ctx = DECL_CONTEXT (decl);
-      tree_node (ctx);
-      tree name = DECL_NAME (decl);
-
-      if (!name || IDENTIFIER_ANON_P (name))
-	name = NULL_TREE;
-
-      tree_node (name);
-      if (!name && streaming_p ())
-	{
-	  /* Anonymous enum members are not a thing!  */
-	  gcc_checking_assert (TREE_CODE (decl) == FIELD_DECL);
-
-	  unsigned ix = get_field_ident (ctx, decl);
-	  u (ix);
-	}
-
-      int tag = insert (decl);
-      if (streaming_p ())
-	dump (dumper::TREE)
-	  && dump ("Wrote member:%d %C:%N", tag, TREE_CODE (decl), decl);
       return false;
     }
 
