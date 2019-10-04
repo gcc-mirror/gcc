@@ -10897,6 +10897,9 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
   if (!slp_node && STMT_VINFO_REDUC_DEF (orig_stmt_info)
       && STMT_VINFO_REDUC_TYPE (orig_stmt_info) != FOLD_LEFT_REDUCTION
+      && (STMT_VINFO_REDUC_TYPE (orig_stmt_info) != COND_REDUCTION
+	  || (STMT_VINFO_VEC_REDUCTION_TYPE (orig_stmt_info)
+	      != EXTRACT_LAST_REDUCTION))
       && is_a <gphi *> (STMT_VINFO_REDUC_DEF (orig_stmt_info)->stmt))
     {
       gphi *phi = as_a <gphi *> (STMT_VINFO_REDUC_DEF (orig_stmt_info)->stmt);

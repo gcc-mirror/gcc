@@ -7901,7 +7901,10 @@ vectorizable_live_operation (stmt_vec_info stmt_info,
 	return true;
       if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def)
 	{
-	  if (STMT_VINFO_REDUC_TYPE (stmt_info) == FOLD_LEFT_REDUCTION)
+	  if (STMT_VINFO_REDUC_TYPE (stmt_info) == FOLD_LEFT_REDUCTION
+	      || (STMT_VINFO_REDUC_TYPE (stmt_info) == COND_REDUCTION
+		  && (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+		      == EXTRACT_LAST_REDUCTION)))
 	    return true;
 	  if (slp_node)
 	    {
