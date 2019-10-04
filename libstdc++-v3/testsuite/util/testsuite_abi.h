@@ -22,7 +22,7 @@
 #include <stdexcept>
 #include <vector>
 #include <locale>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <cxxabi.h>
 
 // Encapsulates symbol characteristics.
@@ -65,7 +65,7 @@ struct symbol
 };
 
 // Map type between symbol names and full symbol info.
-typedef std::tr1::unordered_map<std::string, symbol> 	symbols;
+typedef std::unordered_map<std::string, symbol> 	symbols;
 
 
 // Check.

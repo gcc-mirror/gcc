@@ -1,5 +1,9 @@
 2019-10-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/util/testsuite_abi.h: Use std::unordered_map instead of
+	std::tr1::unordered_map.
+	* testsuite/util/testsuite_allocator.h: Likewise.
+
 	* include/tr1/hashtable.h: Add header for __gnu_cxx::__alloc_traits.
 
 	* include/tr1/hashtable.h (tr1::_Hashtable::_M_allocate_node): Use
