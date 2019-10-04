@@ -2751,34 +2751,40 @@ static char const *const walk_kind_name[] =
 enum merge_kind
 {
   MK_none,
+  MK_named = 0x2,	/* Found by CTX, NAME + maybe_arg types.  */
+  MK_implicit = 0x3,    /* Implicit member fn (cdtor/assop).  */
 
-  MK_named = 4,	/* Found by CTX, NAME + maybe_arg types.  */
-  MK_clone,	/* Found by CLONED, PREV.  */
-  MK_linkage,	/* Found by tdef name.  */
-  MK_enum,	/* Found by CTX, & 1stMemberNAME.  */
+  MK_indirect_mask = 0x4,
+  MK_clone = MK_indirect_mask,		/* Found by CLONED, PREV.  */
+  MK_linkage = MK_indirect_mask | 0x2,	/* Found by TYPEDEF name.  */
+  MK_enum = MK_indirect_mask | 0x3,	/* Found by CTX, & 1stMemberNAME.  */
 
   /* Template specialization kinds below. These are all found via
      primary template and specialization args.  */
-  MK_template_mask = 0x8,
-  MK_tmpl_decl_mask = 0x4,
-  MK_tmpl_tmpl_mask = 0x1,
-  MK_tmpl_both_mask = 0x2,
+  MK_template_mask = 0x8,  /* A template specialization.  */
+  MK_tmpl_decl_mask = 0x4, /* In the decl table (not the type table).  */
+  MK_tmpl_both_mask = 0x2, /* ... but also in the type table.  */
+  MK_tmpl_partial_mask = 0x2,  /* Partial type specialization.  */
+  MK_tmpl_tmpl_mask = 0x1, /* We want TEMPLATE_DECL.  */
+
+  MK_type_spec = MK_template_mask,
+  MK_type_tmpl_spec = MK_type_spec | MK_tmpl_tmpl_mask,
+  MK_type_partial_spec = MK_type_spec | MK_tmpl_partial_mask,
 
   MK_decl_spec = MK_template_mask | MK_tmpl_decl_mask,
   MK_decl_tmpl_spec = MK_decl_spec | MK_tmpl_tmpl_mask,
 
-  MK_type_spec = MK_template_mask,
-  MK_type_tmpl_spec = MK_type_spec | MK_tmpl_tmpl_mask,
-
-  MK_type_partial_spec = MK_type_spec | MK_tmpl_both_mask,
-
-  MK_lwm = 4,
   MK_hwm = 16
 };
+/* This is more than a debugging array.  NULLs are used to determine
+   an invalid merge_kind number.  */
 static char const *const merge_kind_name[MK_hwm] =
-  {"none", NULL, NULL, NULL, "named", "clone", "linkage", "enum",
-   "type spec", "type tmpl spec", "type partial spec", NULL,
-   "decl spec", "decl tmpl spec", "both spec", "both tmpl spec"};
+  {
+    "none", NULL, "named", "implicit",  /* 0...3  */
+    "clone", NULL, "linkage", "enum",   /* 4...7  */
+    "type spec", "type tmpl spec", "type partial spec", NULL, /* 8...11  */
+    "decl spec", "decl tmpl spec", "both spec", "both tmpl spec" /* 12...15  */
+  };
 
 /* Tree stream reader.  Note that reading a stream doesn't mark the
    read trees with TREE_VISITED.  Thus it's quite safe to have
@@ -9453,7 +9459,7 @@ trees_in::key_mergeable (tree decl, tree inner, tree,
   *fn_args = *r_type = NULL_TREE;
 
   unsigned i = u ();
-  if (i >= MK_hwm || i < MK_lwm)
+  if (i >= MK_hwm || !merge_kind_name[i] || i == MK_none)
     return MK_none;
   merge_kind mk = merge_kind (i);
 
