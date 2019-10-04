@@ -1,5 +1,19 @@
 2019-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	* expr.c (convert_mode_scalar): Remove shadowing local var.
+	(emit_block_move): Rename local vars.
+	(block_move_libcall_safe_for_call_parm): Remove shadowing local var.
+	(emit_push_insn): Rename local vars.
+	(expand_assignment): Fix wrong mode in assign_stack_temp.  Remove
+	shadowing local vars.
+	(store_constructor): Remove shadowing local vars.  Rename local var.
+	(store_field, expand_cond_expr_using_cmove,
+	expand_expr_real_2): Remove shadowing local vars.
+	(expand_expr_real_1,
+	do_store_flag): Remove shadowing local vars.  Rename local vars.
+
+2019-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
 	* cgraph.h (FOR_EACH_ALIAS): Avoid shadowing the loop variable.
 
 2019-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
