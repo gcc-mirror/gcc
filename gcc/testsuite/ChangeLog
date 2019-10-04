@@ -1,3 +1,8 @@
+2019-10-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-builtins-1.c, gcc.dg/c2x-builtins-1.c,
+	gcc.dg/dfp/c2x-builtins-dfp-1.c: New tests.
+
 2019-10-04  Mark Eggleston <mark.eggleston@codethink.com>
 
 	* gfortran.dg/auto_in_equiv_1.f90: Replaced.

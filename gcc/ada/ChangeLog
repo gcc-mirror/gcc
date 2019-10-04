@@ -1,3 +1,7 @@
+2019-10-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc-interface/utils.c (flag_isoc2x): New variable.
+
 2019-10-01  Maciej W. Rozycki  <macro@wdc.com>
 
 	* gcc-interface/Makefile.in (ADA_RTL_DSO_DIR): New variable.
