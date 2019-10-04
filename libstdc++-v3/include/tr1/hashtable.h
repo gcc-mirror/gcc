@@ -429,7 +429,9 @@ namespace tr1
       _Node* __n = _M_node_allocator.allocate(1);
       __try
 	{
-	  _M_get_Value_allocator().construct(&__n->_M_v, __v);
+	  _Value_allocator_type __a = _M_get_Value_allocator();
+	  typedef __gnu_cxx::__alloc_traits<_Value_allocator_type> _Traits;
+	  _Traits::construct(__a, &__n->_M_v, __v);
 	  __n->_M_next = 0;
 	  return __n;
 	}
@@ -449,7 +451,9 @@ namespace tr1
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
     _M_deallocate_node(_Node* __n)
     {
-      _M_get_Value_allocator().destroy(&__n->_M_v);
+      _Value_allocator_type __a = _M_get_Value_allocator();
+      typedef __gnu_cxx::__alloc_traits<_Value_allocator_type> _Traits;
+      _Traits::destroy(__a, &__n->_M_v);
       _M_node_allocator.deallocate(__n, 1);
     }
 

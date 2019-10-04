@@ -1,5 +1,9 @@
 2019-10-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/tr1/hashtable.h (tr1::_Hashtable::_M_allocate_node): Use
+	__gnu_cxx::__alloc_traits for allocator construct function.
+	(tr1::_Hashtable::_M_deallocate_node): Likewise for destroy function.
+
 	* include/precompiled/stdc++.h: Include <span> for C++20.
 	* testsuite/17_intro/names.cc: Do not define 'e' for C++20.
 
