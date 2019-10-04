@@ -53,7 +53,10 @@
 #endif
 // <queue> and <stack> defined data members called c
 #define d (
+#if __cplusplus <= 201703L
+// <numbers> defines std::numbers::e
 #define e (
+#endif
 #define f (
 #define g (
 #if __cplusplus >= 201402L
