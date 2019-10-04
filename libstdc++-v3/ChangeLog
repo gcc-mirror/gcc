@@ -1,3 +1,18 @@
+2019-10-04  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/forward_list
+	(_Sequence_traits<__debug::forward_list<>>::_S_size): Returns __dp_sign
+	distance when not empty.
+	* include/debug/list (_Sequence_traits<__debug::list<>>::_S_size):
+	Likewise.
+	* include/debug/helper_functions.h (__dp_sign_max_size): New
+	_Distance_precision enum entry.
+	(__valid_range_aux(_IIte, _IIte, _Distance_traits<>::__type,
+	__false_type)): Adapt.
+	* include/debug/safe_iterator.tcc
+	(_Safe_iterator<>::_M_get_distance_to(const _Safe_iterator&)): Review
+	distance computation.
+
 2019-10-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/81091
