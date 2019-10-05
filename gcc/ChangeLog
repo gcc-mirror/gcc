@@ -1,3 +1,11 @@
+2019-10-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/59888
+	* config/darwin.c (darwin_rodata_section): Add relocation flag,
+	choose const_data section for constants with relocations.
+	(machopic_select_section): Pass relocation flag to
+	darwin_rodata_section ().
+
 2019-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91734
