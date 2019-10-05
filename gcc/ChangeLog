@@ -1,3 +1,15 @@
+2019-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91734
+	* generic-match-head.c: Include fold-const-call.h.
+	* match.pd (sqrt(x) cmp c): Check the boundary value and
+	in case inexact computation of c*c affects comparison of the boundary,
+	turn LT_EXPR into LE_EXPR, GE_EXPR into GT_EXPR, LE_EXPR into LT_EXPR
+	or GT_EXPR into GE_EXPR.  Punt for sqrt comparisons against NaN and
+	for -frounding-math.  For c2, try the next smaller or larger floating
+	point constant depending on comparison code and if it has the same
+	sqrt as c2, use it instead of c2.
+
 2019-10-04  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/91977
