@@ -989,6 +989,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_constinit=201907");
 	  cpp_define (pfile, "__cpp_nontype_template_parameter_class=201806");
 	  cpp_define (pfile, "__cpp_impl_destroying_delete=201806");
+	  cpp_define (pfile, "__cpp_constexpr_dynamic_alloc=201907");
 	}
       if (flag_concepts)
 	cpp_define (pfile, "__cpp_concepts=201507");

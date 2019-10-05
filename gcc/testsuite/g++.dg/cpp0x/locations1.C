@@ -11,7 +11,7 @@ struct S
 {
   virtual S();  // { dg-error "3:constructors cannot be declared .virtual." }
   constexpr int s = 1;  // { dg-error "3:non-static data member .s. declared .constexpr." }
-  constexpr ~S();  // { dg-error "3:a destructor cannot be .constexpr." }
+  constexpr ~S();  // { dg-error "3:'constexpr' destructors only available with" "" { target c++17_down } }
 };
 
 typedef constexpr int my_int;  // { dg-error "9:.constexpr. cannot appear in a typedef declaration" }

@@ -1,3 +1,9 @@
+2019-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91369 - Implement P0784R7: constexpr new
+	* c-cppbuiltin.c (c_cpp_builtins): Predefine
+	__cpp_constexpr_dynamic_alloc=201907 for -std=c++2a.
+
 2019-10-04  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/82752
