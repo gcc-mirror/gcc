@@ -1,4 +1,4 @@
-! { dg-do compile }
+! { dg-do compile { target { i?86-*-* x86_64-*-* } } }
 ! { dg-options "-Wall" }
 ! Code contributed by Manfred Schwarb <manfred99 at gmx dot ch>
 ! PR fortran/91497
