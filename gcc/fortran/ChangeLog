@@ -1,3 +1,9 @@
+2019-10-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91785
+	* primary.c (gfc_match_varspec): Ensure an inquiry parameter has
+	it locus set.
+
 2019-10-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91864
