@@ -1,3 +1,12 @@
+2019-10-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91926
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Correct the
+	assignment of the attribute field to account correctly for an
+	assumed shape dummy. Assign separately to the gfc and cfi
+	descriptors since the atribute can be different. Add btanch to
+	correctly handle missing optional dummies.
+
 2019-10-04  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran.91959
@@ -65,7 +74,7 @@
 	character types are possible it can get the character length from
 	gfc_expr for character literals.
 	(gfc_dummy_typename): New functionfor gfc_typespec *, if no character
-	length is present the character type is assumed and the appropriate 
+	length is present the character type is assumed and the appropriate
 	string is return otherwise it calls gfc_typename for gfc_typespec *.
 	(gfc_typespec): for character types construct the type name with length
 	and kind (if it is not default kind).
