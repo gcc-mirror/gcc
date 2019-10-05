@@ -1,3 +1,8 @@
+2019-10-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91497
+	* gfortran.dg/pr91497.f90: Run on i?86-*-* and x86_64-*-* only.
+
 2019-10-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/91926
