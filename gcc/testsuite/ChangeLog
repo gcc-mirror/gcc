@@ -1,5 +1,23 @@
 2019-10-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/91369 - Implement P0784R7: constexpr new
+	* g++.dg/cpp0x/constexpr-delete2.C: Adjust expected diagnostics for
+	c++2a.
+	* g++.dg/cpp0x/locations1.C: Only expect constexpr ~S() diagnostics
+	in c++17_down, adjust expected wording.
+	* g++.dg/cpp1y/constexpr-new.C: Only expect diagnostics in c++17_down.
+	* g++.dg/cpp2a/constexpr-dtor1.C: New test.
+	* g++.dg/cpp2a/constexpr-dtor2.C: New test.
+	* g++.dg/cpp2a/constexpr-dtor3.C: New test.
+	* g++.dg/cpp2a/constexpr-new1.C: New test.
+	* g++.dg/cpp2a/constexpr-new2.C: New test.
+	* g++.dg/cpp2a/constexpr-new3.C: New test.
+	* g++.dg/cpp2a/constexpr-new4.C: New test.
+	* g++.dg/cpp2a/feat-cxx2a.C: Add __cpp_constinit and
+	__cpp_constexpr_dynamic_alloc tests.  Tweak __cpp_* tests for c++2a
+	features to use style like older features, including #ifdef test.
+	* g++.dg/ext/is_literal_type3.C: New test.
+
 	PR tree-optimization/91734
 	* gcc.dg/pr91734.c: New test.
 

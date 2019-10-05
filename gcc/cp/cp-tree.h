@@ -172,6 +172,9 @@ enum cp_tree_index
     CPTI_VALUE_IDENTIFIER,
     CPTI_FUN_IDENTIFIER,
     CPTI_CLOSURE_IDENTIFIER,
+    CPTI_HEAP_UNINIT_IDENTIFIER,
+    CPTI_HEAP_IDENTIFIER,
+    CPTI_HEAP_DELETED_IDENTIFIER,
 
     CPTI_LANG_NAME_C,
     CPTI_LANG_NAME_CPLUSPLUS,
@@ -310,6 +313,9 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define value_identifier		cp_global_trees[CPTI_VALUE_IDENTIFIER]
 #define fun_identifier			cp_global_trees[CPTI_FUN_IDENTIFIER]
 #define closure_identifier		cp_global_trees[CPTI_CLOSURE_IDENTIFIER]
+#define heap_uninit_identifier		cp_global_trees[CPTI_HEAP_UNINIT_IDENTIFIER]
+#define heap_identifier			cp_global_trees[CPTI_HEAP_IDENTIFIER]
+#define heap_deleted_identifier		cp_global_trees[CPTI_HEAP_DELETED_IDENTIFIER]
 #define lang_name_c			cp_global_trees[CPTI_LANG_NAME_C]
 #define lang_name_cplusplus		cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]
 
@@ -6342,6 +6348,7 @@ extern bool vbase_has_user_provided_move_assign (tree);
 extern tree default_init_uninitialized_part (tree);
 extern bool trivial_default_constructor_is_constexpr (tree);
 extern bool type_has_constexpr_default_constructor (tree);
+extern bool type_has_constexpr_destructor	(tree);
 extern bool type_has_virtual_destructor		(tree);
 extern bool classtype_has_move_assign_or_move_ctor_p (tree, bool user_declared);
 extern bool classtype_has_non_deleted_move_ctor (tree);
@@ -6648,6 +6655,7 @@ extern tree build_offset_ref			(tree, tree, bool,
 extern tree throw_bad_array_new_length		(void);
 extern bool type_has_new_extended_alignment	(tree);
 extern unsigned malloc_alignment		(void);
+extern tree build_new_constexpr_heap_type	(tree, tree, tree);
 extern tree build_new				(vec<tree, va_gc> **, tree, tree,
 						 vec<tree, va_gc> **, int,
                                                  tsubst_flags_t);
@@ -7747,6 +7755,7 @@ extern bool require_constant_expression (tree);
 extern bool require_rvalue_constant_expression (tree);
 extern bool require_potential_rvalue_constant_expression (tree);
 extern tree cxx_constant_value			(tree, tree = NULL_TREE);
+extern void cxx_constant_dtor			(tree, tree);
 extern tree cxx_constant_init			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE, bool = false);
 extern tree maybe_constant_init			(tree, tree = NULL_TREE, bool = false);

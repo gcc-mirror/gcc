@@ -206,6 +206,7 @@ static int empty_base_at_nonzero_offset_p (tree, tree, splay_tree);
 static tree end_of_base (tree);
 static tree get_vcall_index (tree, tree);
 static bool type_maybe_constexpr_default_constructor (tree);
+static bool type_maybe_constexpr_destructor (tree);
 static bool field_poverlapping_p (tree);
 
 /* Return a COND_EXPR that executes TRUE_STMT if this execution of the
@@ -5242,7 +5243,7 @@ type_has_constexpr_default_constructor (tree t)
    without forcing a lazy declaration (which might cause undesired
    instantiations).  */
 
-bool
+static bool
 type_maybe_constexpr_default_constructor (tree t)
 {
   if (CLASS_TYPE_P (t) && CLASSTYPE_LAZY_DEFAULT_CTOR (t)
@@ -5250,6 +5251,34 @@ type_maybe_constexpr_default_constructor (tree t)
     /* Assume it's constexpr.  */
     return true;
   return type_has_constexpr_default_constructor (t);
+}
+
+/* Returns true iff class T has a constexpr destructor.  */
+
+bool
+type_has_constexpr_destructor (tree t)
+{
+  tree fns;
+
+  if (CLASSTYPE_LAZY_DESTRUCTOR (t))
+    /* Non-trivial, we need to check subobject destructors.  */
+    lazily_declare_fn (sfk_destructor, t);
+  fns = CLASSTYPE_DESTRUCTOR (t);
+  return (fns && DECL_DECLARED_CONSTEXPR_P (fns));
+}
+
+/* Returns true iff class T has a constexpr destructor or has an
+   implicitly declared destructor that we can't tell if it's constexpr
+   without forcing a lazy declaration (which might cause undesired
+   instantiations).  */
+
+static bool
+type_maybe_constexpr_destructor (tree t)
+{
+  if (CLASS_TYPE_P (t) && CLASSTYPE_LAZY_DESTRUCTOR (t))
+    /* Assume it's constexpr.  */
+    return true;
+  return type_has_constexpr_destructor (t);
 }
 
 /* Returns true iff class TYPE has a virtual destructor.  */
@@ -5503,8 +5532,11 @@ finalize_literal_type_property (tree t)
 {
   tree fn;
 
-  if (cxx_dialect < cxx11
-      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
+  if (cxx_dialect < cxx11)
+    CLASSTYPE_LITERAL_P (t) = false;
+  else if (CLASSTYPE_LITERAL_P (t)
+	   && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
+	   && (cxx_dialect < cxx2a || !type_maybe_constexpr_destructor (t)))
     CLASSTYPE_LITERAL_P (t) = false;
   else if (CLASSTYPE_LITERAL_P (t) && LAMBDA_TYPE_P (t))
     CLASSTYPE_LITERAL_P (t) = (cxx_dialect >= cxx17);
@@ -5558,8 +5590,12 @@ explain_non_literal_class (tree t)
     inform (UNKNOWN_LOCATION,
 	    "  %qT is a closure type, which is only literal in "
 	    "C++17 and later", t);
-  else if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
+  else if (cxx_dialect < cxx2a && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     inform (UNKNOWN_LOCATION, "  %q+T has a non-trivial destructor", t);
+  else if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
+	   && !type_maybe_constexpr_destructor (t))
+    inform (UNKNOWN_LOCATION, "  %q+T does not have %<constexpr%> destructor",
+	    t);
   else if (CLASSTYPE_NON_AGGREGATE (t)
 	   && !TYPE_HAS_TRIVIAL_DFLT (t)
 	   && !LAMBDA_TYPE_P (t)

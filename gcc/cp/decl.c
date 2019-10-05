@@ -4146,6 +4146,9 @@ initialize_predefined_identifiers (void)
     {"value", &value_identifier, cik_normal},
     {"_FUN", &fun_identifier, cik_normal},
     {"__closure", &closure_identifier, cik_normal},
+    {"heap uninit", &heap_uninit_identifier, cik_normal},
+    {"heap ", &heap_identifier, cik_normal},
+    {"heap deleted", &heap_deleted_identifier, cik_normal},
     {NULL, NULL, cik_normal}
   };
 
@@ -7006,6 +7009,19 @@ notice_forced_label_r (tree *tp, int *walk_subtrees, void *)
   return NULL_TREE;
 }
 
+/* Return true if DECL has either a trivial destructor, or for C++2A
+   is constexpr and has a constexpr destructor.  */
+
+static bool
+decl_maybe_constant_destruction (tree decl, tree type)
+{
+  return (TYPE_HAS_TRIVIAL_DESTRUCTOR (type)
+	  || (cxx_dialect >= cxx2a
+	      && VAR_P (decl)
+	      && DECL_DECLARED_CONSTEXPR_P (decl)
+	      && type_has_constexpr_destructor (strip_array_types (type))));
+}
+
 /* Finish processing of a declaration;
    install its line number and initial value.
    If the length of an array type is not known before,
@@ -7430,7 +7446,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	    TREE_READONLY (decl) = 1;
 
 	  /* Likewise if it needs destruction.  */
-	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+	  if (!decl_maybe_constant_destruction (decl, type))
 	    TREE_READONLY (decl) = 0;
 	}
 
@@ -8312,6 +8328,13 @@ register_dtor_fn (tree decl)
   if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
     return void_node;
 
+  if (decl_maybe_constant_destruction (decl, type)
+      && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
+    {
+      cxx_maybe_build_cleanup (decl, tf_warning_or_error);
+      return void_node;
+    }
+
   /* If we're using "__cxa_atexit" (or "__cxa_thread_atexit" or
      "__aeabi_atexit"), and DECL is a class object, we can just pass the
      destructor to "__cxa_atexit"; we don't have to build a temporary
@@ -8429,7 +8452,7 @@ expand_static_init (tree decl, tree init)
   gcc_assert (TREE_STATIC (decl));
 
   /* Some variables require no dynamic initialization.  */
-  if (TYPE_HAS_TRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
+  if (decl_maybe_constant_destruction (decl, TREE_TYPE (decl)))
     {
       /* Make sure the destructor is callable.  */
       cxx_maybe_build_cleanup (decl, tf_warning_or_error);
@@ -12697,12 +12720,13 @@ grokdeclarator (const cp_declarator *declarator,
 			      "a destructor cannot be %<concept%>");
                     return error_mark_node;
                   }
-                if (constexpr_p)
-                  {
-                    error_at (declspecs->locations[ds_constexpr],
-			      "a destructor cannot be %<constexpr%>");
-                    return error_mark_node;
-                  }
+		if (constexpr_p && cxx_dialect < cxx2a)
+		  {
+		    error_at (declspecs->locations[ds_constexpr],
+			      "%<constexpr%> destructors only available"
+			      " with %<-std=c++2a%> or %<-std=gnu++2a%>");
+		    return error_mark_node;
+		  }
 	      }
 	    else if (sfk == sfk_constructor && friendp && !ctype)
 	      {
@@ -12739,10 +12763,11 @@ grokdeclarator (const cp_declarator *declarator,
 	      }
 
 	    /* Tell grokfndecl if it needs to set TREE_PUBLIC on the node.  */
-	    function_context = (ctype != NULL_TREE) ?
-	      decl_function_context (TYPE_MAIN_DECL (ctype)) : NULL_TREE;
-	    publicp = (! friendp || ! staticp)
-	      && function_context == NULL_TREE;
+	    function_context
+	      = (ctype != NULL_TREE
+		 ? decl_function_context (TYPE_MAIN_DECL (ctype)) : NULL_TREE);
+	    publicp = ((! friendp || ! staticp)
+		       && function_context == NULL_TREE);
 
 	    decl = grokfndecl (ctype, type,
 			       TREE_CODE (unqualified_id) != TEMPLATE_ID_EXPR
@@ -16742,6 +16767,9 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
 	cleanup = error_mark_node;
       else if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
 	/* Discard the call.  */;
+      else if (decl_maybe_constant_destruction (decl, type)
+	       && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
+	cxx_constant_dtor (call, decl);
       else if (cleanup)
 	cleanup = cp_build_compound_expr (cleanup, call, complain);
       else
