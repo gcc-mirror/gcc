@@ -1,3 +1,8 @@
+2019-10-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/47045
+	* decl.c (variable_decl): Do not search parent namespace for symbol.
+
 2019-10-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/91926
