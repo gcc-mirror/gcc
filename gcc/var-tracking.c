@@ -4902,9 +4902,10 @@ dataflow_set_clear_at_call (dataflow_set *set, rtx_insn *call_insn)
   unsigned int r;
   hard_reg_set_iterator hrsi;
 
-  function_abi callee_abi = insn_callee_abi (call_insn);
+  HARD_REG_SET callee_clobbers
+    = insn_callee_abi (call_insn).full_reg_clobbers ();
 
-  EXECUTE_IF_SET_IN_HARD_REG_SET (callee_abi.full_reg_clobbers (), 0, r, hrsi)
+  EXECUTE_IF_SET_IN_HARD_REG_SET (callee_clobbers, 0, r, hrsi)
     var_regno_delete (set, r);
 
   if (MAY_HAVE_DEBUG_BIND_INSNS)
