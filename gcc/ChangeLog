@@ -1,3 +1,8 @@
+2019-10-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* var-tracking.c (dataflow_set_clear_at_call): Hoist temporary
+	function result outside of EXECUTE_IF_SET_IN_HARD_REG_SET.
+
 2019-10-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.c (darwin_override_options): Adjust objective-c
