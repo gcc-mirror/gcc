@@ -1,3 +1,10 @@
+2019-10-06  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algo.h (copy_n): Add __glibcxx_requires_can_increment
+	debug checks.
+	* testsuite/25_algorithms/copy_n/debug/1_neg.cc: New.
+	* testsuite/25_algorithms/copy_n/debug/2_neg.cc: New.
+
 2019-10-04  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/forward_list
