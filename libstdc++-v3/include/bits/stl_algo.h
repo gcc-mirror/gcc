@@ -880,7 +880,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       return pair<_OutputIterator1, _OutputIterator2>(__out_true, __out_false);
     }
-#endif
+#endif // C++11
 
   template<typename _ForwardIterator, typename _Predicate>
     _GLIBCXX20_CONSTEXPR

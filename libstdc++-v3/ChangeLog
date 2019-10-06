@@ -1,5 +1,17 @@
 2019-10-06  François Dumont  <fdumont@gcc.gnu.org>
 
+	* include/bits/stl_algo.h
+	(__copy_n_a(_IIte, _Size, _OIte)): New.
+	(__copy_n_a(istreambuf_iterator<>, _Size, _CharT*)): New declaration.
+	(__copy_n(_IIte, _Size, _OIte, input_iterator_tag)): Adapt to use
+	latter.
+	* include/bits/streambuf_iterator.h (istreambuf_iterator<>): Declare
+	std::__copy_n_a friend.
+	(__copy_n_a(istreambuf_iterator<>, _Size, _CharT*)): New.
+	* testsuite/25_algorithms/copy_n/istreambuf_iterator/1.cc: New.
+	* testsuite/25_algorithms/copy_n/istreambuf_iterator/1_neg.cc: New.
+	* testsuite/25_algorithms/copy_n/istreambuf_iterator/2_neg.cc: New.
+
 	* include/bits/stl_iterator_base_types.h (__iterator_category_t): Define
 	for C++11.
 	(_RequireInputIte): Likewise and use __enable_if_t.
