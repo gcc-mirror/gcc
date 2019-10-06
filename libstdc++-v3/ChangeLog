@@ -1,5 +1,11 @@
 2019-10-06  François Dumont  <fdumont@gcc.gnu.org>
 
+	* include/bits/stl_iterator_base_types.h (__iterator_category_t): Define
+	for C++11.
+	(_RequireInputIte): Likewise and use __enable_if_t.
+	* include/std/numeric
+	(__is_random_access_iter): Use __iterator_category_t.
+
 	* include/bits/stl_algo.h (copy_n): Add __glibcxx_requires_can_increment
 	debug checks.
 	* testsuite/25_algorithms/copy_n/debug/1_neg.cc: New.
