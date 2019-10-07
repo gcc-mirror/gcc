@@ -3819,6 +3819,25 @@ can_compare_p (enum rtx_code code, machine_mode mode,
   return 0;
 }
 
+/* Return whether the backend can emit a vector comparison for code CODE,
+   comparing operands of mode CMP_OP_MODE and producing a result with
+   VALUE_MODE.  */
+
+bool
+can_vcond_compare_p (enum rtx_code code, machine_mode value_mode,
+		     machine_mode cmp_op_mode)
+{
+  enum insn_code icode;
+  bool unsigned_p = (code == LTU || code == LEU || code == GTU || code == GEU);
+  rtx reg1 = alloca_raw_REG (cmp_op_mode, LAST_VIRTUAL_REGISTER + 1);
+  rtx reg2 = alloca_raw_REG (cmp_op_mode, LAST_VIRTUAL_REGISTER + 2);
+  rtx test = alloca_rtx_fmt_ee (code, value_mode, reg1, reg2);
+
+  return (icode = get_vcond_icode (value_mode, cmp_op_mode, unsigned_p))
+	 != CODE_FOR_nothing
+	 && insn_operand_matches (icode, 3, test);
+}
+
 /* This function is called when we are going to emit a compare instruction that
    compares the values found in X and Y, using the rtl operator COMPARISON.
 

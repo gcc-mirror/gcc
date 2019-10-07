@@ -1,6 +1,16 @@
 2019-10-07  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR target/77918
+	* optabs-tree.c (vcond_icode_p): New function.
+	(vcond_eq_icode_p): Likewise.
+	(expand_vec_cond_expr_p): Use vcond_icode_p and
+	vcond_eq_icode_p.
+	* optabs.c (can_vcond_compare_p): New function.
+	* optabs.h (can_vcond_compare_p): Likewise.
+
+2019-10-07  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/77918
 	* gimple-expr.c (gimple_cond_get_ops_from_tree): Assert that the
 	caller passes a non-trapping condition.
 	(is_gimple_condexpr): Allow trapping conditions.
