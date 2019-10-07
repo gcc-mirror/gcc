@@ -83,7 +83,7 @@ struct GTY(()) machine_function
 };
 
 /* This is our init_machine_status, as set in
-   msp_option_override.  */
+   msp430_option_override.  */
 static struct machine_function *
 msp430_init_machine_status (void)
 {
@@ -2119,18 +2119,20 @@ msp430_file_end (void)
      construct a .MSP430.attributes section based on the options it is invoked
      with.  The values it reads from these directives are used for validating
      those options.  */
-  const char *msp_attr = ".mspabi_attribute";
+  const char *msp430_attr = ".mspabi_attribute";
   const char *gnu_attr = ".gnu_attribute";
 
   /* Emit .mspabi_attribute directive for OFBA_MSPABI_Tag_ISA.  */
-  fprintf (asm_out_file, "\t%s %d, %d\n", msp_attr, OFBA_MSPABI_Tag_ISA,
+  fprintf (asm_out_file, "\t%s %d, %d\n", msp430_attr, OFBA_MSPABI_Tag_ISA,
 	   msp430x ? OFBA_MSPABI_Val_ISA_MSP430X : OFBA_MSPABI_Val_ISA_MSP430);
   /* Emit .mspabi_attribute directive for OFBA_MSPABI_Tag_Code_Model.  */
-  fprintf (asm_out_file, "\t%s %d, %d\n", msp_attr, OFBA_MSPABI_Tag_Code_Model,
+  fprintf (asm_out_file, "\t%s %d, %d\n", msp430_attr,
+	   OFBA_MSPABI_Tag_Code_Model,
 	   TARGET_LARGE ? OFBA_MSPABI_Val_Model_Large
 	   : OFBA_MSPABI_Val_Model_Small);
   /* Emit .mspabi_attribute directive for OFBA_MSPABI_Tag_Data_Model.  */
-  fprintf (asm_out_file, "\t%s %d, %d\n", msp_attr, OFBA_MSPABI_Tag_Data_Model,
+  fprintf (asm_out_file, "\t%s %d, %d\n", msp430_attr,
+	   OFBA_MSPABI_Tag_Data_Model,
 	   TARGET_LARGE ? OFBA_MSPABI_Val_Model_Large
 	   : OFBA_MSPABI_Val_Model_Small);
 #ifdef HAVE_AS_MSPABI_ATTRIBUTE
@@ -2604,7 +2606,7 @@ msp430_expand_epilogue (int is_eh)
   else if (is_reentrant_func ())
     emit_insn (gen_enable_interrupts ());
 
-  emit_jump_insn (gen_msp_return ());
+  emit_jump_insn (gen_msp430_return ());
 }
 
 /* Implements EH_RETURN_STACKADJ_RTX.  Saved and used later in
