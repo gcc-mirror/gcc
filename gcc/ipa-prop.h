@@ -165,6 +165,7 @@ public:
   enum value_range_kind type;
   wide_int min;
   wide_int max;
+  bool nonzero_p (tree) const;
 };
 
 /* A jump function for a callsite represents the values passed as actual

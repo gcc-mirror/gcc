@@ -86,6 +86,7 @@ public:
 
   static bool supports_type_p (tree);
   value_range_base normalize_symbolics () const;
+  value_range_base normalize_addresses () const;
 
   static const unsigned int m_max_pairs = 2;
   bool contains_p (tree) const;
