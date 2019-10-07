@@ -1,6 +1,16 @@
 2019-10-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (enum trees_out::tags): Delete tag_mergeable,
+	tag_cloned.
+	(trees_out::mark_mergeable): Delete.
+	(trees_out::{insert,ref_node}): Adjust.
+	(trees_out::decl_node): Look at depset to determine mergeability.
+	(trees_out::key_mergeable): Adjust.
+	(trees_in::register_mergeable): Always reserve space.
+	(module_state::write_cluster): Don't mark mergeable here.
+
+	gcc/cp/
 	* module.cc (trees_in::get_odrness): Check if overrun.
 	(trees_in::read_class_def): Add overrun protection.
 	* name-lookup.c (name_search::search_adl): Tweak.

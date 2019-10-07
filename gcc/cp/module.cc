@@ -2752,8 +2752,11 @@ static char const *const walk_kind_name[] =
 enum merge_kind
 {
   MK_none,
+  MK_via_ctx = 0x1,	/* Found by CTX, NAME + maybe_arg types.  CTX
+			   determines deduping.  */
   MK_named = 0x2,	/* Found by CTX, NAME + maybe_arg types.  */
-  MK_implicit = 0x3,    /* Implicit member fn (cdtor/assop).  */
+  MK_implicit = 0x3,    /* Found by CTX, NAME + maybe_arg types.
+			   Implicit member fn (cdtor/assop).  */
 
   MK_indirect_mask = 0x4,
   MK_clone = MK_indirect_mask,		/* Found by CLONED, PREV.  */
@@ -2956,8 +2959,6 @@ public:
   {
     tag_backref = -1,	/* Upper bound on the backrefs.  */
     tag_forced = 0,	/* Write by value.  */
-    tag_mergeable,	/* Write by value with merge info.  */
-    tag_clone,		/* Write by value with clone info.  */
     tag_merging,  	/* Needed for logical error detection.  */
     tag_fixed		/* Lower bound on the fixed trees.  */
   };
@@ -2991,8 +2992,6 @@ private:
 public:
   /* Mark a node for by-value walking.  */
   void mark_node (tree);
-  /* Reset it for mergeableness.  */
-  void mark_mergeable (tree, int);
   /* Reset it for having been merged.  */
   void mark_merged (tree, int);
 
@@ -4632,16 +4631,6 @@ trees_out::mark_node (tree decl)
     }
 }
 
-/* Mark DECL as a mergeable node.  */
-
-void
-trees_out::mark_mergeable (tree decl, int tag = tag_mergeable)
-{
-  int *slot = tree_map.get (decl);
-  gcc_assert (slot && *slot == tag_forced);
-  *slot = tag;
-}
-
 /* Mark decl as a now-merged node.  */
 
 void
@@ -4657,22 +4646,15 @@ trees_out::mark_merged (tree decl, int tag)
 int
 trees_out::insert (tree t, walk_kind walk)
 {
-  gcc_checking_assert (walk == WK_normal || walk == WK_merging
-		       ? !TREE_VISITED (t)
-		       : walk == WK_mergeable || walk == WK_clone
-		       ? TREE_VISITED (t) : walk == WK_body);
+  gcc_checking_assert (walk != WK_normal || !TREE_VISITED (t));
   int tag = --ref_num;
-  if (walk != WK_mergeable && walk != WK_clone)
-    {
-      bool existed;
-      int &slot = tree_map.get_or_insert (t, &existed);
-      gcc_checking_assert (TREE_VISITED (t) == existed
-			   && (!existed
-			       || (walk == WK_body && slot == tag_forced)));
-      TREE_VISITED (t) = true;
-
-      slot = walk == WK_merging ? tag_merging : tag;
-    }
+  bool existed;
+  int &slot = tree_map.get_or_insert (t, &existed);
+  gcc_checking_assert (TREE_VISITED (t) == existed
+		       && (!existed
+			   || (walk >= WK_body && slot == tag_forced)));
+  TREE_VISITED (t) = true;
+  slot = walk > WK_body ? tag_merging : tag;
 
   return tag;
 }
@@ -6790,14 +6772,6 @@ trees_out::ref_node (tree t)
   if (val == tag_forced)
     /* An entry we should walk into.  */
     return WK_body;
-  else if (val == tag_mergeable
-	   || val == tag_clone)
-    {
-      gcc_assert (streaming_p ());
-      /* We're now merging this tag.  */
-      *val_ptr = tag_merging;
-      return walk_kind (val - tag_mergeable + WK_mergeable);
-    }
 
   const char *kind;
 
@@ -7418,7 +7392,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return false;
     }
 
-  if (ref == WK_body || ref == WK_mergeable || ref == WK_clone)
+  if (ref == WK_body)
     {
       if (!streaming_p ()
 	  && DECL_MAYBE_IN_CHARGE_CDTOR_P (decl))
@@ -7431,11 +7405,12 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	    dep_hash->add_clone (clone_decl, decl);
 	}
 
-      // FIXME: mergeableness should be a property of the depset
-      // referring to DECL  Decls that need a header (parms,
-      // template), should go via decl_value.  Other decls should not.
-      if (ref == WK_body)
+      depset *dep = dep_hash->find_entity (decl);
+      if (!dep || !dep->is_mergeable ())
 	return true;
+
+      ref = (dep->get_entity_kind () == depset::EK_CLONE
+	     ? WK_clone : WK_mergeable);
 
       gcc_checking_assert (TREE_CODE (STRIP_TEMPLATE (decl)) == FUNCTION_DECL
 			   || TREE_CODE (STRIP_TEMPLATE (decl)) == VAR_DECL
@@ -9562,7 +9537,7 @@ trees_out::key_mergeable (depset *dep)
   tree decl = dep->get_entity ();
   tree inner = STRIP_TEMPLATE (decl);
 
-  if (!streaming_p ())
+  if (dep_hash->for_mergeable && !streaming_p ())
     {
       /* When /determining/ mergeable ordering, there's an indirection.  */
       gcc_assert (dep->is_special ());
@@ -9896,8 +9871,10 @@ trees_in::register_mergeable (tree decl, tree existing)
   if (existing)
     any_deduping = true;
 
-  if (!mergeables.space (2))
-    return -1;
+  // FIXME: we have more mergeables than those we find?
+  // Perhaps this should be a map from existing->decl to avoid O(N)
+  // searching when there is duplication.
+  mergeables.reserve (2);
 
   mergeables.quick_push (reinterpret_cast<intptr_t> (decl));
   mergeables.quick_push (reinterpret_cast<intptr_t> (existing));
@@ -13867,11 +13844,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  tree decl = b->get_entity ();
 
 	  sec.mark_declaration (decl, b->has_defn ());
-	  if (b->is_mergeable ())
-	    // FIXME: Perhaps tree_value should interrogate the depset?
-	    sec.mark_mergeable (decl, b->get_entity_kind () == depset::EK_CLONE
-				? trees_out::tag_clone
-				: trees_out::tag_mergeable);
 	}
     }
 
