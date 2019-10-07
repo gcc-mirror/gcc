@@ -506,6 +506,9 @@ do {									\
    this will need to be modified similar to the x86 case.  */
 #define TARGET_FOLD_BUILTIN SUBTARGET_FOLD_BUILTIN
 
+/* First available SYMBOL flag bit for use by subtargets.  */
+#define SYMBOL_FLAG_SUBT_DEP (SYMBOL_FLAG_MACH_DEP)
+
 /* Use standard DWARF numbering for DWARF debugging information.  */
 #define RS6000_USE_DWARF_NUMBERING
 

@@ -1,3 +1,22 @@
+2019-10-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (machopic_symbol_defined_p): Use symbol flag
+	predicates instead of accessing bits directly.
+	(machopic_indirect_call_target): Likewise.
+	(machopic_output_indirection): Likewise.
+	(darwin_encode_section_info): Improve description.  Use renamed
+	symbol flags.  Use predicate macros for variables and functions.
+	* config/darwin.h:
+	Rename MACHO_SYMBOL_VARIABLE to MACHO_SYMBOL_FLAG_VARIABLE.
+	Rename MACHO_SYMBOL_DEFINED to MACHO_SYMBOL_FLAG_DEFINED.
+	Rename MACHO_SYMBOL_STATIC to MACHO_SYMBOL_FLAG_STATIC.
+	(MACHO_SYMBOL_VARIABLE_P): New.
+	(MACHO_SYMBOL_DEFINED_P):New.
+	(MACHO_SYMBOL_STATIC_P): New.
+	* config/i386/darwin.h (MACHO_SYMBOL_FLAG_VARIABLE): Delete.
+	(SYMBOL_FLAG_SUBT_DEP): New.
+	* config/rs6000/darwin.h (SYMBOL_FLAG_SUBT_DEP): New.
+
 2019-10-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/msp430.c (msp430_file_end): s/msp_/msp430_/
