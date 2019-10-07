@@ -1,3 +1,9 @@
+2019-10-07  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_floorceildf_32,
+	ix86_expand_rounddf_32): Reorder functions.
+	* config/i386/i386-protos.h: Update..
+
 2019-10-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config.in: Regenerate.
@@ -20,14 +26,14 @@
 	".lower" prefix if -m{code,data}-region=lower have been passed.
 	(msp430_output_aligned_decl_common): Emit common symbols when
 	-mdata-region=lower is passed unless TARGET_USE_LOWER_REGION_PREFIX is
-	set. 
+	set.
 	(TARGET_ASM_FILE_END): Define.
 	(msp430_file_end): New function.
 	(msp430_do_not_relax_short_jumps): Allow relaxation when
 	function will be in the lower region.
 	(msp430_op_not_in_high_mem): New function.
 	(msp430_print_operand): Check "msp430_op_not_in_high_mem" for
-	the 'X' operand selector. 
+	the 'X' operand selector.
 	Clarify comment for 'x' operand selector.
 	* config/msp430/msp430.h (LINK_SPEC): Propagate
 	-m{code,data}-region to the linker via spec function
@@ -74,9 +80,9 @@
 	(mdata-region=): Likewise.
 	(muse-lower-region-prefix): New option.
 	* config/msp430/t-msp430 (MULTILIB_OPTIONS): Add
-	mdata-region=none multilib. 
+	mdata-region=none multilib.
 	(MULTILIB_MATCHES): Set mdata-region={upper,either} to match
-	mdata-region=none multilib. 
+	mdata-region=none multilib.
 	MULTILIB_EXCEPTIONS: Remove.
 	MULTILIB_REQUIRED: Define.
 	* configure: Regenerate.
