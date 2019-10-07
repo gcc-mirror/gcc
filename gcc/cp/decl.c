@@ -12754,8 +12754,8 @@ grokdeclarator (const cp_declarator *declarator,
 		tree tmpl = TREE_OPERAND (unqualified_id, 0);
 		if (variable_template_p (tmpl))
 		  {
-		    error ("specialization of variable template %qD "
-			   "declared as function", tmpl);
+		    error_at (id_loc, "specialization of variable template "
+			      "%qD declared as function", tmpl);
 		    inform (DECL_SOURCE_LOCATION (tmpl),
 			    "variable template declared here");
 		    return error_mark_node;

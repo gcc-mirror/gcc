@@ -1608,7 +1608,8 @@ build_anon_union_vars (tree type, tree object)
      just give an error.  */
   if (TREE_CODE (type) != UNION_TYPE)
     {
-      error ("anonymous struct not inside named type");
+      error_at (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
+		"anonymous struct not inside named type");
       return error_mark_node;
     }
 
