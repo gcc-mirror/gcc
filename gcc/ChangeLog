@@ -1,3 +1,9 @@
+2019-10-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (value_range_base::singleton_p): Use
+	value_range_base::num_pairs instead of vrp_val_is* to check
+	if a range has one sub-range.
+
 2019-10-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* ira-lives.c (check_and_make_def_conflict): Handle cases in which
@@ -179,7 +185,7 @@
 
 2019-10-04  Aldy Hernandez  <aldyh@redhat.com>
 
-	(value_range_from_overflowed_bounds): Rename from
+	* range-op.o (value_range_from_overflowed_bounds): Rename from
 	adjust_overflow_bound.
 	(value_range_with_overflow): Rename from
 	create_range_with_overflow.
