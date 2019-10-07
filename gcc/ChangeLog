@@ -1,7 +1,3 @@
-2019-10-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
-
-	* config/msp430/msp430.md: Group zero_extend* insns together.
-
 2019-10-07  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.c (machopic_output_indirection): Don't put
