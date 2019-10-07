@@ -1441,8 +1441,9 @@
 
 ;; return true if OP is a vzeroupper pattern.
 (define_predicate "vzeroupper_pattern"
-  (and (match_code "unspec_volatile")
-       (match_test "XINT (op, 1) == UNSPECV_VZEROUPPER")))
+  (and (match_code "parallel")
+       (match_code "unspec_volatile" "a")
+       (match_test "XINT (XVECEXP (op, 0, 0), 1) == UNSPECV_VZEROUPPER")))
 
 ;; Return true if OP is an addsub vec_merge operation
 (define_predicate "addsub_vm_operator"

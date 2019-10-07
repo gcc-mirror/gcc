@@ -1757,6 +1757,68 @@ convert_scalars_to_vector (bool timode_p)
   return 0;
 }
 
+/* Modify the vzeroupper pattern in INSN so that it describes the effect
+   that the instruction has on the SSE registers.  LIVE_REGS are the set
+   of registers that are live across the instruction.
+
+   For a live register R we use:
+
+     (set (reg:V2DF R) (reg:V2DF R))
+
+   which preserves the low 128 bits but clobbers the upper bits.
+   For a dead register we just use:
+
+     (clobber (reg:V2DF R))
+
+   which invalidates any previous contents of R and stops R from becoming
+   live across the vzeroupper in future.  */
+
+static void
+ix86_add_reg_usage_to_vzeroupper (rtx_insn *insn, bitmap live_regs)
+{
+  rtx pattern = PATTERN (insn);
+  unsigned int nregs = TARGET_64BIT ? 16 : 8;
+  rtvec vec = rtvec_alloc (nregs + 1);
+  RTVEC_ELT (vec, 0) = XVECEXP (pattern, 0, 0);
+  for (unsigned int i = 0; i < nregs; ++i)
+    {
+      unsigned int regno = GET_SSE_REGNO (i);
+      rtx reg = gen_rtx_REG (V2DImode, regno);
+      if (bitmap_bit_p (live_regs, regno))
+	RTVEC_ELT (vec, i + 1) = gen_rtx_SET (reg, reg);
+      else
+	RTVEC_ELT (vec, i + 1) = gen_rtx_CLOBBER (VOIDmode, reg);
+    }
+  XVEC (pattern, 0) = vec;
+  df_insn_rescan (insn);
+}
+
+/* Walk the vzeroupper instructions in the function and annotate them
+   with the effect that they have on the SSE registers.  */
+
+static void
+ix86_add_reg_usage_to_vzerouppers (void)
+{
+  basic_block bb;
+  rtx_insn *insn;
+  auto_bitmap live_regs;
+
+  df_analyze ();
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      bitmap_copy (live_regs, df_get_live_out (bb));
+      df_simulate_initialize_backwards (bb, live_regs);
+      FOR_BB_INSNS_REVERSE (bb, insn)
+	{
+	  if (!NONDEBUG_INSN_P (insn))
+	    continue;
+	  if (vzeroupper_pattern (PATTERN (insn), VOIDmode))
+	    ix86_add_reg_usage_to_vzeroupper (insn, live_regs);
+	  df_simulate_one_insn_backwards (bb, insn, live_regs);
+	}
+    }
+}
+
 static unsigned int
 rest_of_handle_insert_vzeroupper (void)
 {
@@ -1773,6 +1835,7 @@ rest_of_handle_insert_vzeroupper (void)
 
   /* Call optimize_mode_switching.  */
   g->get_passes ()->execute_pass_mode_switching ();
+  ix86_add_reg_usage_to_vzerouppers ();
   return 0;
 }
 
