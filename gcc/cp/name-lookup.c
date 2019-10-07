@@ -1504,10 +1504,8 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 		  /* Add fns in the innermost namespace partition of the
 		     type.  */
 		  tree origin = get_originating_module_decl (TYPE_NAME (scope));
-
-		  unsigned mod = 0;
-		  if (origin && DECL_LANG_SPECIFIC (origin))
-		    mod = DECL_MODULE_ORIGIN (origin);
+		  unsigned mod = (DECL_LANG_SPECIFIC (origin)
+				  ? DECL_MODULE_ORIGIN (origin) : 0);
 
 		  /* If the module was in the inst path, we'll look at its
 		     namespace partition anyway.  */

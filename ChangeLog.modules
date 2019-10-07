@@ -1,6 +1,11 @@
 2019-10-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_in::get_odrness): Check if overrun.
+	(trees_in::read_class_def): Add overrun protection.
+	* name-lookup.c (name_search::search_adl): Tweak.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::core_vals): Stream
 	decl_non_common.result for using decls.
 	(trees_out::decl_node): USING_DECLS are done by value.

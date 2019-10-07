@@ -9946,6 +9946,9 @@ trees_in::get_dupness (tree decl)
 trees_in::odrness
 trees_in::get_odrness (tree decl, bool have_defn)
 {
+  if (get_overrun ())
+    return ODR_ignore;
+
   /* If there's no deduping going on, we want this one.  */
   if (!any_deduping)
     return ODR_new;
@@ -10356,21 +10359,27 @@ trees_in::read_class_def (tree defn, tree maybe_template)
       member_vec = tree_vec ();
       lambda = tree_node ();
 
-      unsigned nvbases = u ();
-      if (nvbases)
+      if (!get_overrun ())
 	{
-	  vec_alloc (vbase_vec, nvbases);
-	  for (tree child = binfo; child; child = TREE_CHAIN (child))
-	    if (BINFO_VIRTUAL_P (child))
-	      vbase_vec->quick_push (child);
+	  unsigned nvbases = u ();
+	  if (nvbases)
+	    {
+	      vec_alloc (vbase_vec, nvbases);
+	      for (tree child = binfo; child; child = TREE_CHAIN (child))
+		if (BINFO_VIRTUAL_P (child))
+		  vbase_vec->quick_push (child);
+	    }
 	}
 
-      int has_vptr = i ();
-      if (has_vptr)
+      if (!get_overrun ())
 	{
-	  pure_virts = tree_vec ();
-	  vcall_indices = tree_pair_vec ();
-	  key_method = tree_node ();
+	  int has_vptr = i ();
+	  if (has_vptr)
+	    {
+	      pure_virts = tree_vec ();
+	      vcall_indices = tree_pair_vec ();
+	      key_method = tree_node ();
+	    }
 	}
     }
 
@@ -10535,8 +10544,8 @@ trees_in::read_class_def (tree defn, tree maybe_template)
     fixup_type_variants (type);
 
   /* IS_FAKE_BASE_TYPE is inaccurate at this point, because if this is
-      the fake base, we've not hooked it into the containing class's
-      data structure yet.  Fortunately it has a unique name.  */
+     the fake base, we've not hooked it into the containing class's
+     data structure yet.  Fortunately it has a unique name.  */
   if (DECL_NAME (defn) != as_base_identifier
       && (!CLASSTYPE_TEMPLATE_INFO (type)
 	  || !uses_template_parms (TI_ARGS (CLASSTYPE_TEMPLATE_INFO (type)))))
@@ -10546,12 +10555,8 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 
   /* Now define all the members.  */
   while (tree member = tree_node ())
-    {
-      if (get_overrun ())
-	break;
-      if (!read_definition (member))
-	break;
-    }
+    if (!read_definition (member))
+      break;
 
   fields.release ();
 
@@ -17086,7 +17091,9 @@ get_import_bitmap ()
 
 /* Return the bitmap describing what modules are visible along the
    path of instantiation.  If we're not instantiation, this will be
-   the visible imports of the TU.  */
+   the visible imports of the TU.  *PATH_MAP_P is filled in with the
+   modules owning the instantiation path -- wee see the
+   module-linkage entities of those modules.  */
 // FIXME: Should we cache this?  smoosh it into tinst_level?
 
 bitmap
