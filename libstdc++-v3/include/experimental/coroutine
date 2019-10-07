@@ -37,6 +37,8 @@
 // It's possible that earlier versions would work, but they are untested.
 #if __cplusplus >= 201402L
 
+#include <functional>
+
 #include <bits/c++config.h>
 
 namespace std _GLIBCXX_VISIBILITY (default)

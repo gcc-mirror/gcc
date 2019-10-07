@@ -1,3 +1,8 @@
+2019-10-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	libstdc++-v3/
+	* include/experimental/coroutine: Include <functional>.
+
 2019-10-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	libstdc++-v3/
