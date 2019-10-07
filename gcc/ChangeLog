@@ -1,5 +1,9 @@
 2019-10-07  Aldy Hernandez  <aldyh@redhat.com>
 
+	* ipa-prop.c (ipa_vr::nonzero_p): Add TYPE_UNSIGNED check.
+
+2019-10-07  Aldy Hernandez  <aldyh@redhat.com>
+
 	* ipa-prop.c (ipa_vr::nonzero_p): New.
 	(ipcp_update_vr): Use nonzero_p instead of open-coding check for
 	non-zero range.
