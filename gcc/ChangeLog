@@ -1,3 +1,25 @@
+2019-10-07  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/77918
+	* gimple-expr.c (gimple_cond_get_ops_from_tree): Assert that the
+	caller passes a non-trapping condition.
+	(is_gimple_condexpr): Allow trapping conditions.
+	(is_gimple_condexpr_1): New helper function.
+	(is_gimple_condexpr_for_cond): New function, acts like old
+	is_gimple_condexpr.
+	* gimple-expr.h (is_gimple_condexpr_for_cond): New function.
+	* gimple.c (gimple_could_trap_p_1): Handle COND_EXPR and
+	VEC_COND_EXPR. Fix an issue with statements like i = (fp < 1.).
+	* gimplify.c (gimplify_cond_expr): Use
+	is_gimple_condexpr_for_cond.
+	(gimplify_expr): Allow is_gimple_condexpr_for_cond.
+	* tree-eh.c (operation_could_trap_p): Assert on COND_EXPR and
+	VEC_COND_EXPR.
+	(tree_could_trap_p): Handle COND_EXPR and VEC_COND_EXPR.
+	* tree-ssa-forwprop.c (forward_propagate_into_gimple_cond): Use
+	is_gimple_condexpr_for_cond, remove pointless tmp check
+	(forward_propagate_into_cond): Remove pointless tmp check.
+
 2019-10-07 Vladislav Ivanishin  <vlad@ispras.ru>
 
 	* gimple-iterator.h (gsi_next_nonvirtual_phi): Change the semantics to

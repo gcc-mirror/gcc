@@ -574,6 +574,7 @@ gimple_cond_get_ops_from_tree (tree cond, enum tree_code *code_p,
 	      || TREE_CODE (cond) == TRUTH_NOT_EXPR
 	      || is_gimple_min_invariant (cond)
 	      || SSA_VAR_P (cond));
+  gcc_checking_assert (!tree_could_throw_p (cond));
 
   extract_ops_from_tree (cond, code_p, lhs_p, rhs_p);
 
@@ -605,15 +606,31 @@ is_gimple_lvalue (tree t)
 	  || TREE_CODE (t) == BIT_FIELD_REF);
 }
 
-/*  Return true if T is a GIMPLE condition.  */
+/* Helper for is_gimple_condexpr and is_gimple_condexpr_for_cond.  */
+
+static bool
+is_gimple_condexpr_1 (tree t, bool allow_traps)
+{
+  return (is_gimple_val (t) || (COMPARISON_CLASS_P (t)
+				&& (allow_traps || !tree_could_throw_p (t))
+				&& is_gimple_val (TREE_OPERAND (t, 0))
+				&& is_gimple_val (TREE_OPERAND (t, 1))));
+}
+
+/* Return true if T is a GIMPLE condition.  */
 
 bool
 is_gimple_condexpr (tree t)
 {
-  return (is_gimple_val (t) || (COMPARISON_CLASS_P (t)
-				&& !tree_could_throw_p (t)
-				&& is_gimple_val (TREE_OPERAND (t, 0))
-				&& is_gimple_val (TREE_OPERAND (t, 1))));
+  return is_gimple_condexpr_1 (t, true);
+}
+
+/* Like is_gimple_condexpr, but does not allow T to trap.  */
+
+bool
+is_gimple_condexpr_for_cond (tree t)
+{
+  return is_gimple_condexpr_1 (t, false);
 }
 
 /* Return true if T is a gimple address.  */
