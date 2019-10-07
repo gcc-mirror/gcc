@@ -1,5 +1,13 @@
 2019-10-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* config/msp430/msp430.c (msp430_file_end): s/msp_/msp430_/
+	(msp430_expand_epilogue): Likewise.
+	* config/msp430/predicates.md: Likewise.
+	* config/msp430/msp430.md: Likewise.
+	Replace blocks of 8 spaces with tabs.
+
+2019-10-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* config/msp430/msp430-protos.h (msp430_split_addsi): New prototype.
 	* config/msp430/msp430.c (msp430_split_addsi): New.
 	* config/msp430/msp430.md: Call msp430_split_addsi () instead of using
