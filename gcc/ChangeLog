@@ -1,5 +1,14 @@
 2019-10-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* machmode.h (opt_mode): Mark constructors with CONSTEXPR.
+	(pod_mode): Mark operators likewise.
+	(scalar_int_mode): Mark non-default constructors and
+	operators with CONSTEXPR.
+	(scalar_float_mode, scalar_mode, complex_mode): Likewise.
+	(fixed_size_mode): Likewise.
+
+2019-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR target/91994
 	* config/i386/sse.md (avx_vzeroupper): Turn into a define_expand
 	and wrap the unspec_volatile in a parallel.
