@@ -1,3 +1,10 @@
+2019-10-07  Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/84487
+	* trans-decl.c (gfc_get_symbol_decl): For __def_init, set
+	DECL_ARTIFICAL and do not set TREE_READONLY.
+
 2019-09-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from mainline
