@@ -1,5 +1,13 @@
 2019-10-07 Vladislav Ivanishin  <vlad@ispras.ru>
 
+	* gimple-iterator.h (gsi_next_nonvirtual_phi): Change the semantics to
+	match that of other gsi_next_* functions.  Adjust the comment.
+	(gsi_start_nonvirtual_phis): New function.
+	* ipa-icf.c (sem_function::compare_phi_node): Update uses of
+	gsi_next_nonvirtual_phi accordingly.  (No functional change.)
+
+2019-10-07 Vladislav Ivanishin  <vlad@ispras.ru>
+
 	* doc/invoke.texi (-Wuninitialized): Don't mention the clobbered by
 	setjmp situation here.  Fix a verb's ending: "the exact variables or
 	elements for which there are warnings depends" -> "... depend".
