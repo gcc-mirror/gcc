@@ -1,3 +1,91 @@
+2019-10-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config.in: Regenerate.
+	* config/msp430/constraints.md: Fix docstring for "Ys" constraint.
+	Add new "Yx" constraint.
+	* config/msp430/driver-msp430.c (msp430_propagate_region_opt): New spec
+	function.
+	* config/msp430/msp430-protos.h (msp430_op_not_in_high_mem): New
+	prototype.
+	* config/msp430/msp430.c (msp430_option_override): Allow the lower
+	code/data region to be selected in the small memory model.
+	(msp430_section_attr): Don't warn if the "section" and "lower"
+	attributes are used together.
+	(msp430_handle_generic_attribute): Likewise.
+	(msp430_var_in_low_mem): New function.
+	(TARGET_ENCODE_SECTION_INFO): Define.
+	(msp430_encode_section_info): New function.
+	(gen_prefix): Return early in the small memory model.
+	Require TARGET_USE_LOWER_REGION_PREFIX to be set before adding the
+	".lower" prefix if -m{code,data}-region=lower have been passed.
+	(msp430_output_aligned_decl_common): Emit common symbols when
+	-mdata-region=lower is passed unless TARGET_USE_LOWER_REGION_PREFIX is
+	set. 
+	(TARGET_ASM_FILE_END): Define.
+	(msp430_file_end): New function.
+	(msp430_do_not_relax_short_jumps): Allow relaxation when
+	function will be in the lower region.
+	(msp430_op_not_in_high_mem): New function.
+	(msp430_print_operand): Check "msp430_op_not_in_high_mem" for
+	the 'X' operand selector. 
+	Clarify comment for 'x' operand selector.
+	* config/msp430/msp430.h (LINK_SPEC): Propagate
+	-m{code,data}-region to the linker via spec function
+	msp430_propagate_region_opt.
+	(msp430_propagate_region_opt): New prototype.
+	(EXTRA_SPEC_FUNCTIONS): Add msp430_propagate_region_opt.
+	(SYMBOL_FLAG_LOW_MEM): Define.
+	* config/msp430/msp430.md (addsipsi3): Add missing "%X" operand
+	selector.
+	(zero_extendqihi2): Fix operand number used by "%X" selector.
+	(zero_extendqisi2): Likewise.
+	(zero_extendhisi2): Likewise.
+	(movqi): Use "Yx" constraint in place of "%X" operand selector.
+	(movhi): Likewise.
+	(addqi3): Likewise.
+	(addhi3): Likewise.
+	(addsi3): Likewise.
+	(addhi3_cy): Likewise.
+	(addchi4_cy): Likewise.
+	(subqi3): Likewise.
+	(subhi3): Likewise.
+	(subsi3): Likewise.
+	(bic<mode>3): Likewise.
+	(and<mode>3): Likewise.
+	(ior<mode>3): Likewise.
+	(xor<mode>3): Likewise.
+	(slli_1): Add missing "%X" operand selector.
+	(slll_1): Likewise.
+	(slll_2): Likewise.
+	(srai_1): Likewise.
+	(sral_1): Likewise.
+	(sral_2): Likewise.
+	(srli_1): Likewise.
+	(srll_1): Likewise.
+	(cbranchqi4_real): Use "Yx" constraint in place of "%X" operand
+	selector.
+	(cbranchhi4_real): Likewise.
+	(cbranchqi4_reversed): Likewise.
+	(cbranchhi4_reversed): Likewise.
+	(*bitbranch<mode>4): Likewise.
+	(*bitbranch<mode>4_z): Remove unnecessary "%x" operand selector.
+	* config/msp430/msp430.opt (mcode-region=): Set default to
+	MSP430_REGION_LOWER. Improve docstring.
+	(mdata-region=): Likewise.
+	(muse-lower-region-prefix): New option.
+	* config/msp430/t-msp430 (MULTILIB_OPTIONS): Add
+	mdata-region=none multilib. 
+	(MULTILIB_MATCHES): Set mdata-region={upper,either} to match
+	mdata-region=none multilib. 
+	MULTILIB_EXCEPTIONS: Remove.
+	MULTILIB_REQUIRED: Define.
+	* configure: Regenerate.
+	* configure.ac: Define HAVE_AS_GNU_ATTRIBUTE and
+	HAVE_AS_MSPABI_ATTRIBUTE if GAS version >= 2.33.50.
+	* doc/extend.texi: Clarify comment for {upper,lower,either}
+	function attributes.
+	Add separate description for "lower" variable attribute.
+
 2019-10-07  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR target/77918

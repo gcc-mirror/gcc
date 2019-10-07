@@ -1,3 +1,16 @@
+2019-10-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/430x-insns.c: New test.
+	* gcc.target/msp430/data-attributes-2.c: Remove dg-warning
+	directives for conflicts between the "section" and "lower" attributes.
+	* gcc.target/msp430/msp430.exp
+	(check_effective_target_msp430_region_not_lower): New.
+	(check_effective_target_msp430_region_lower): New.
+	* gcc.target/msp430/object-attributes-430.c: New test.
+	* gcc.target/msp430/object-attributes-default.c: New test.
+	* gcc.target/msp430/object-attributes-mlarge-any-region.c: New test.
+	* gcc.target/msp430/object-attributes-mlarge.c: New test.
+
 2019-10-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/pr71801.c (uuidcache_init): Fix up size of d array.

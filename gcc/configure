@@ -27773,6 +27773,80 @@ fi
       as_fn_error $? "Requesting --with-nan= requires assembler support for -mnan=" "$LINENO" 5
     fi
     ;;
+    msp430-*-*)
+    # Earlier GAS versions generically support .gnu_attribute, but the
+    # msp430 assembler will not do anything with it.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .gnu_attribute support" >&5
+$as_echo_n "checking assembler for .gnu_attribute support... " >&6; }
+if ${gcc_cv_as_msp430_gnu_attribute+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_msp430_gnu_attribute=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 33 \) \* 1000 + 50`
+  then gcc_cv_as_msp430_gnu_attribute=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '.gnu_attribute 4,1' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_msp430_gnu_attribute=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_msp430_gnu_attribute" >&5
+$as_echo "$gcc_cv_as_msp430_gnu_attribute" >&6; }
+if test $gcc_cv_as_msp430_gnu_attribute = yes; then
+
+$as_echo "#define HAVE_AS_GNU_ATTRIBUTE 1" >>confdefs.h
+
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .mspabi_attribute support" >&5
+$as_echo_n "checking assembler for .mspabi_attribute support... " >&6; }
+if ${gcc_cv_as_msp430_mspabi_attribute+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_msp430_mspabi_attribute=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 33 \) \* 1000 + 50`
+  then gcc_cv_as_msp430_mspabi_attribute=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '.mspabi_attribute 4,1' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_msp430_mspabi_attribute=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_msp430_mspabi_attribute" >&5
+$as_echo "$gcc_cv_as_msp430_mspabi_attribute" >&6; }
+if test $gcc_cv_as_msp430_mspabi_attribute = yes; then
+
+$as_echo "#define HAVE_AS_MSPABI_ATTRIBUTE 1" >>confdefs.h
+
+fi
+
+    ;;
     riscv*-*-*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .attribute support" >&5
 $as_echo_n "checking assembler for .attribute support... " >&6; }

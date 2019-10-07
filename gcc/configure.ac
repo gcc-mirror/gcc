@@ -4949,6 +4949,20 @@ pointers into PC-relative form.])
 	[Requesting --with-nan= requires assembler support for -mnan=])
     fi
     ;;
+    msp430-*-*)
+    # Earlier GAS versions generically support .gnu_attribute, but the
+    # msp430 assembler will not do anything with it.
+    gcc_GAS_CHECK_FEATURE([.gnu_attribute support],
+      gcc_cv_as_msp430_gnu_attribute, [2,33,50],,
+      [.gnu_attribute 4,1],,
+      [AC_DEFINE(HAVE_AS_GNU_ATTRIBUTE, 1,
+	  [Define if your assembler supports .gnu_attribute.])])
+    gcc_GAS_CHECK_FEATURE([.mspabi_attribute support],
+      gcc_cv_as_msp430_mspabi_attribute, [2,33,50],,
+      [.mspabi_attribute 4,1],,
+      [AC_DEFINE(HAVE_AS_MSPABI_ATTRIBUTE, 1,
+	  [Define if your assembler supports .mspabi_attribute.])])
+    ;;
     riscv*-*-*)
     gcc_GAS_CHECK_FEATURE([.attribute support],
       gcc_cv_as_riscv_attribute, [2,32,0],,
