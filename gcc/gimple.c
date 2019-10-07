@@ -2149,10 +2149,22 @@ gimple_could_trap_p_1 (gimple *s, bool include_mem, bool include_stores)
       return false;
 
     case GIMPLE_ASSIGN:
-      t = gimple_expr_type (s);
       op = gimple_assign_rhs_code (s);
+
+      /* For COND_EXPR and VEC_COND_EXPR only the condition may trap.  */
+      if (op == COND_EXPR || op == VEC_COND_EXPR)
+	return tree_could_trap_p (gimple_assign_rhs1 (s));
+
+      /* For comparisons we need to check rhs operand types instead of rhs type
+         (which is BOOLEAN_TYPE).  */
+      if (TREE_CODE_CLASS (op) == tcc_comparison)
+	t = TREE_TYPE (gimple_assign_rhs1 (s));
+      else
+	t = gimple_expr_type (s);
+
       if (get_gimple_rhs_class (op) == GIMPLE_BINARY_RHS)
 	div = gimple_assign_rhs2 (s);
+
       return (operation_could_trap_p (op, FLOAT_TYPE_P (t),
 				      (INTEGRAL_TYPE_P (t)
 				       && TYPE_OVERFLOW_TRAPS (t)),
