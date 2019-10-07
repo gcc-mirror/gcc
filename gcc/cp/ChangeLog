@@ -1,3 +1,13 @@
+2019-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (resolve_args): Use cp_expr_loc_or_input_loc in one place.
+	* decl.c (grokdeclarator): Use id_loc in one place.
+	* decl2.c (build_anon_union_vars): Use DECL_SOURCE_LOCATION.
+	* parser.c (cp_parser_delete_expression): Fix the location of the
+	returned expression.
+	(cp_parser_throw_expression): Likewise.
+	* pt.c (determine_specialization): Use DECL_SOURCE_LOCATION.
+
 2019-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91369 - Implement P0784R7: constexpr new

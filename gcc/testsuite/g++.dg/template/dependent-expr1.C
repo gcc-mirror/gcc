@@ -19,11 +19,11 @@ namespace std
     Foo (sizeof (x));
     Foo (__alignof__ (I));
     Foo (__alignof__ (x));
-    Foo (x->~I ()); // { dg-error "" }
+    Foo (x->~I ()); // { dg-error "16:invalid" }
     //    Foo (typeid (I));
-    Foo (delete x); // { dg-error "" }
-    Foo (delete[] x); // { dg-error "" }
-    Foo (throw x); // { dg-error "" }
+    Foo (delete x); // { dg-error "10:invalid" }
+    Foo (delete[] x); // { dg-error "10:invalid" }
+    Foo (throw x); // { dg-error "10:invalid" }
   }
 
 }

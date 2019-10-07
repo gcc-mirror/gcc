@@ -1,3 +1,10 @@
+2019-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/not-a-function-template-1.C: New.
+	* g++.dg/template/crash107.C: Adjust expected location.
+	* g++.dg/template/dependent-expr1.C: Check locations.
+	* g++.dg/template/error17.C: Check location.
+
 2019-10-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/91994

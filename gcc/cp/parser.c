@@ -9014,6 +9014,7 @@ cp_parser_delete_expression (cp_parser* parser)
   bool global_scope_p;
   bool array_p;
   tree expression;
+  location_t start_loc = cp_lexer_peek_token (parser->lexer)->location;
 
   /* Look for the optional `::' operator.  */
   global_scope_p
@@ -9043,8 +9044,18 @@ cp_parser_delete_expression (cp_parser* parser)
   if (cp_parser_non_integral_constant_expression (parser, NIC_DEL))
     return error_mark_node;
 
-  return delete_sanity (expression, NULL_TREE, array_p, global_scope_p,
-			tf_warning_or_error);
+  /* Construct a location e.g.:
+       delete [ ] ptr
+       ^~~~~~~~~~~~~~
+     with caret == start at the start of the "delete" token, and
+     the end at the end of the final token we consumed.  */
+  location_t combined_loc = make_location (start_loc, start_loc,
+					   parser->lexer);
+  expression = delete_sanity (expression, NULL_TREE, array_p,
+			      global_scope_p, tf_warning_or_error);
+  protected_set_expr_location (expression, combined_loc);
+
+  return expression;
 }
 
 /* Returns 1 if TOKEN may start a cast-expression and isn't '++', '--',
@@ -25827,6 +25838,7 @@ cp_parser_throw_expression (cp_parser* parser)
 {
   tree expression;
   cp_token* token;
+  location_t start_loc = cp_lexer_peek_token (parser->lexer)->location;
 
   cp_parser_require_keyword (parser, RID_THROW, RT_THROW);
   token = cp_lexer_peek_token (parser->lexer);
@@ -25842,7 +25854,17 @@ cp_parser_throw_expression (cp_parser* parser)
   else
     expression = cp_parser_assignment_expression (parser);
 
-  return build_throw (expression);
+  /* Construct a location e.g.:
+       throw x
+       ^~~~~~~
+     with caret == start at the start of the "throw" token, and
+     the end at the end of the final token we consumed.  */
+  location_t combined_loc = make_location (start_loc, start_loc,
+					   parser->lexer);
+  expression = build_throw (expression);
+  protected_set_expr_location (expression, combined_loc);
+
+  return expression;
 }
 
 /* GNU Extensions */

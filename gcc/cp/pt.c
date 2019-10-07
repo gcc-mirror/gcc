@@ -2137,7 +2137,8 @@ determine_specialization (tree template_id,
 
   if (TREE_CODE (decl) == FUNCTION_DECL && !is_overloaded_fn (fns))
     {
-      error ("%qD is not a function template", fns);
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"%qD is not a function template", fns);
       return error_mark_node;
     }
   else if (VAR_P (decl) && !variable_template_p (fns))
@@ -2416,7 +2417,8 @@ determine_specialization (tree template_id,
       error ("template-id %qD for %q+D does not match any template "
 	     "declaration", template_id, decl);
       if (header_count && header_count != template_count + 1)
-	inform (input_location, "saw %d %<template<>%>, need %d for "
+	inform (DECL_SOURCE_LOCATION (decl),
+		"saw %d %<template<>%>, need %d for "
 		"specializing a member function template",
 		header_count, template_count + 1);
       else
