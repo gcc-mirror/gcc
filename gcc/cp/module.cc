@@ -6886,6 +6886,10 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return true;
     }
 
+  // FIXME: using decls should be findable by name -- why do we not
+  //  get there?
+  //  gcc_checking_assert (TREE_CODE (decl) != USING_DECL);
+
   if (!DECL_CONTEXT (decl))
     // FIXME: When parms etc are streamed separately, is this reachable?
     return true;
@@ -7123,10 +7127,15 @@ trees_out::decl_node (tree decl, walk_kind ref)
       return false;
     }
 
+  tree inst = get_instantiating_module_decl (decl);
+
   /* Everything left should be a thing that is in the entity table.
      Things that can be defined outside of their (original
      declaration) context.  */
-  // FIXME: *could* be in the entity table.  I don't get that right yet
+  // FIXME: *could* be in the entity table.  I don't get that right
+  // yet.  What about using_decls etc?  They should be like
+  // field_decls, but I moved that above, possibly unnecessarily
+  
   gcc_checking_assert (TREE_CODE (STRIP_TEMPLATE (decl)) == VAR_DECL
 		       || TREE_CODE (STRIP_TEMPLATE (decl)) == FUNCTION_DECL
 		       || TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL);
@@ -7134,6 +7143,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
   int use_tpl = -1;
   tree ti = node_template_info (decl, use_tpl);
   tree tpl = NULL_TREE;
+
   /* TI_TEMPLATE is not a TEMPLATE_DECL for (some) friends, because
      we matched a non-template.  */
   if (ti && TREE_CODE (TI_TEMPLATE (ti)) == TEMPLATE_DECL
@@ -7149,35 +7159,32 @@ trees_out::decl_node (tree decl, walk_kind ref)
 		     TREE_CODE (tpl), tpl, tpl);
 	}
       tree_node (tpl);
+
+      /* Streaming TPL caused us to visit DECL and maybe its type.  */
       gcc_checking_assert (TREE_VISITED (decl));
       if (DECL_IMPLICIT_TYPEDEF_P (decl))
 	gcc_checking_assert (TREE_VISITED (TREE_TYPE (decl)));
       return false;
     }
 
+  int origin = DECL_LANG_SPECIFIC (inst) ? DECL_MODULE_ORIGIN (inst) : 0;
+  if (origin)
+    origin = (*modules)[origin]->remap;
+  bool is_import = origin != 0;
   const char *kind = NULL;
-  int origin = -1;
+  depset *dep = NULL;
+
   if (use_tpl > 0)
     {
-      /* Some kind of specialization.   */
-      /* Not all specializations are in the table, so we have to query
-         it.  Those that are not there are findable by name, but a
-         specializations in that their definitions can be generated
-         anywhere -- we need to write them out if we did it.  */
-      // FIXME: Is is true that not all specializations are here, or
-      // was that a deduction from faulty manipulation of the table?
-      // Local specializations are not in the table.  We should know
-      // what they are implicitly (scope is function, or inner is
-      // not var/function/type)?
-      depset *dep;
+      /* Some kind of specialization.  Not all specializations are in
+         the table, so we have to query it.  Those that are not there
+         are findable by name, but a specializations in that their
+         definitions can be generated anywhere -- we need to write
+         them out if we did it.  */
       if (!streaming_p ())
 	{
 	  gcc_checking_assert (STRIP_TEMPLATE (decl)
 			       == get_instantiating_module_decl (decl));
-	  origin = get_instantiating_module (decl);
-	  if (origin)
-	    origin = (*modules)[origin]->remap;
-
 	  dep = dep_hash->add_dependency (decl, depset::EK_MAYBE_SPEC);
 	  /* We should always insert or find something.  */
 	  gcc_assert (dep && dep->is_import () == (origin != 0));
@@ -7206,13 +7213,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
     }
 
   {
-    /* Find the owning module and determine what to do.  */
-    origin = get_instantiating_module (decl);
-    if (origin)
-      origin = (*modules)[origin]->remap;
-
     tree ctx = CP_DECL_CONTEXT (decl);
-    bool is_import = origin != 0;
 
     if (TREE_CODE (ctx) == FUNCTION_DECL)
       {
@@ -7222,13 +7223,14 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  {
 	    /* We've found a voldemort type.  Add it as a
 	       dependency.  */
-	    depset *dep = dep_hash->add_dependency (decl, depset::EK_UNNAMED);
+	    dep = dep_hash->add_dependency (decl, depset::EK_UNNAMED);
 	    gcc_assert (dep->is_import () == is_import);
 	    kind = "unnamed";
 	    goto insert;
 	  }
 
 	/* Some internal entity of the function.  Do by value.  */
+	// FIXME: pass DEP to the value streamer
 	gcc_assert (!is_import);
 	return true;
       }
@@ -7321,6 +7323,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  }
 	else
 	  {
+	    // FIXME: Fields should get here
 	    ident = get_lookup_ident (ctx, name, origin, proxy);
 	    /* Make sure we can find it by name.  */
 	    gcc_checking_assert
