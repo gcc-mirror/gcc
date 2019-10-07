@@ -1,3 +1,7 @@
+2019-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/pr71801.c (uuidcache_init): Fix up size of d array.
+
 2019-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/diagnostic/not-a-function-template-1.C: New.
