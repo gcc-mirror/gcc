@@ -1120,6 +1120,7 @@ machopic_output_indirection (machopic_indirection **slot, FILE *asm_out_file)
       machopic_output_stub (asm_out_file, sym, stub);
     }
   else if (! indirect_data (symbol)
+	   && ! MACHO_SYMBOL_HIDDEN_VIS_P (symbol)
 	   && (machopic_symbol_defined_p (symbol)
 	       || SYMBOL_REF_LOCAL_P (symbol)))
     {
@@ -1236,6 +1237,12 @@ darwin_encode_section_info (tree decl, rtx rtl, int first)
   rtx sym_ref = XEXP (rtl, 0);
   if (VAR_P (decl))
     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_VARIABLE;
+
+  /* For Darwin, if we have specified visibility and it's not the default
+     that's counted 'hidden'.  */
+  if (DECL_VISIBILITY_SPECIFIED (decl)
+      && DECL_VISIBILITY (decl) != VISIBILITY_DEFAULT)
+     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_HIDDEN_VIS;
 
   if (!DECL_EXTERNAL (decl)
       && (!TREE_PUBLIC (decl) || !DECL_WEAK (decl))

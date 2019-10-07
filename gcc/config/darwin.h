@@ -828,6 +828,12 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
 #define MACHO_SYMBOL_DEFINED_P(RTX) \
   ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_DEFINED) != 0)
 
+/* Set on a symbol that has specified non-default visibility.  */
+
+#define MACHO_SYMBOL_FLAG_HIDDEN_VIS ((SYMBOL_FLAG_SUBT_DEP) << 3)
+#define MACHO_SYMBOL_HIDDEN_VIS_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_HIDDEN_VIS) != 0)
+
 /* Set on a symbol to indicate when fix-and-continue style code
    generation is being used and the symbol refers to a static symbol
    that should be rebound from new instances of a translation unit to
