@@ -1,3 +1,20 @@
+2019-10-07  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91532
+	* tree-if-conv.c: Include tree-ssa-dse.h.
+	(ifcvt_local_dce): Change param from bb to loop,
+	and call dse_classify_store.
+	(tree_if_conversion): Pass loop instead of loop->header as arg
+	to ifcvt_local_dce.
+	* tree-ssa-dse.c: Include tree-ssa-dse.h.
+	(delete_dead_or_redundant_assignment): Remove static qualifier from
+	declaration, and add prototype in tree-ssa-dse.h.
+	(dse_store_status): Move to tree-ssa-dse.h.
+	(dse_classify_store): Remove static qualifier and add new tree param
+	stop_at_vuse, and add prototype in tree-ssa-dse.h.
+	* tree-ssa-dse.h: New header.
+
 2019-10-07  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.c (machopic_output_indirection): Don't put
