@@ -47,5 +47,6 @@ void	msp430_split_movsi (rtx *);
 void    msp430_start_function (FILE *, const char *, tree);
 rtx	msp430_subreg (machine_mode, rtx, machine_mode, int);
 bool    msp430_use_f5_series_hwmult (void);
+bool msp430_op_not_in_high_mem (rtx op);
 
 #endif /* GCC_MSP430_PROTOS_H */

@@ -149,3 +149,16 @@ msp430_select_hwmult_lib (int argc ATTRIBUTE_UNUSED,
 
   return "-lmul_none";
 }
+
+/* Spec function.  Propagate -m{code,data}-region= to the linker, unless the
+   lower region has been specified without -muse-lower-region-prefix also being
+   used.  */
+const char *
+msp430_propagate_region_opt (int argc, const char **argv)
+{
+  if (strcmp (argv[0], "lower") != 0)
+    return argv[0];
+  else if ((argc == 2) && (strcmp (argv[1], "-muse-lower-region-prefix") == 0))
+    return argv[0]; /* argv[0] == "lower".  */
+  return "none";
+}

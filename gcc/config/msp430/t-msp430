@@ -28,17 +28,22 @@ msp430-devices.o: $(srcdir)/config/msp430/msp430-devices.c \
 
 # Enable multilibs:
 
-MULTILIB_OPTIONS    = mcpu=msp430 mlarge 
-MULTILIB_DIRNAMES   = 430          large
+MULTILIB_OPTIONS    = mcpu=msp430 mlarge  mdata-region=none
+MULTILIB_DIRNAMES   = 430	   large  full-memory-range
 
 # Match -mcpu=430
 MULTILIB_MATCHES    = mcpu?msp430=mcpu?430
+# These options are equivalent in terms of the multilib required for them
+MULTILIB_MATCHES   += mdata-region?none=mdata-region?upper
+MULTILIB_MATCHES   += mdata-region?none=mdata-region?either
 
 # The correct multilib for a given mmcu is selected without the need for
 # hard-coded data here, because DRIVER_SELF_SPECS will place the correct
 # -mcpu option for a given mcu onto the command line.
 
-MULTILIB_EXCEPTIONS = mcpu=msp430/mlarge
+MULTILIB_REQUIRED = mcpu=msp430
+MULTILIB_REQUIRED += mlarge
+MULTILIB_REQUIRED += mlarge/mdata-region=none
 
 
 MULTILIB_EXTRA_OPTS =

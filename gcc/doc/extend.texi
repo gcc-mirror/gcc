@@ -5206,7 +5206,7 @@ On the MSP430 target these attributes can be used to specify whether
 the function or variable should be placed into low memory, high
 memory, or the placement should be left to the linker to decide.  The
 attributes are only significant if compiling for the MSP430X
-architecture.
+architecture in the large memory model.
 
 The attributes work in conjunction with a linker script that has been
 augmented to specify where to place sections with a @code{.lower} and
@@ -7537,15 +7537,30 @@ value will be retained across resets.  The linker script being used to
 create the application should ensure that persistent data is correctly
 placed.
 
-@item lower
-@itemx upper
+@item upper
 @itemx either
-@cindex @code{lower} variable attribute, MSP430 
 @cindex @code{upper} variable attribute, MSP430 
 @cindex @code{either} variable attribute, MSP430 
 These attributes are the same as the MSP430 function attributes of the
 same name (@pxref{MSP430 Function Attributes}).  
-These attributes can be applied to both functions and variables.
+
+@item lower
+@cindex @code{lower} variable attribute, MSP430
+This option behaves mostly the same as the MSP430 function attribute of the
+same name (@pxref{MSP430 Function Attributes}), but it has some additional
+functionality.
+
+If @option{-mdata-region=}@{@code{upper,either,none}@} has been passed, or
+the @code{section} attribute is applied to a variable, the compiler will
+generate 430X instructions to handle it.  This is because the compiler has
+to assume that the variable could get placed in the upper memory region
+(above address 0xFFFF).  Marking the variable with the @code{lower} attribute
+informs the compiler that the variable will be placed in lower memory so it
+is safe to use 430 instructions to handle it.
+
+In the case of the @code{section} attribute, the section name given
+will be used, and the @code{.lower} prefix will not be added.
+
 @end table
 
 @node Nvidia PTX Variable Attributes
