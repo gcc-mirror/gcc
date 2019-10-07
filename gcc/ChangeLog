@@ -1,3 +1,12 @@
+2019-10-07  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	Backport from mainline
+	2019-10-01  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/91275
+	* config/rs6000/rs6000-p8swap.c (rtx_is_swappable_p): Don't swap
+	vpmsumd.
+
 2019-10-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline

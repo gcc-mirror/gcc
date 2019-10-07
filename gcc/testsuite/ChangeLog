@@ -1,3 +1,11 @@
+2019-10-07  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	Backport from mainline
+	2019-10-01  Bill Schmidt  <wschmdit@linux.ibm.com>
+
+	PR target/91275
+	* gcc.target/powerpc/pr91275.c: New.
+
 2019-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
