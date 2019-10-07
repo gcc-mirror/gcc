@@ -1,5 +1,25 @@
 2019-10-07  Aldy Hernandez  <aldyh@redhat.com>
 
+	* ipa-prop.c (ipa_vr::nonzero_p): New.
+	(ipcp_update_vr): Use nonzero_p instead of open-coding check for
+	non-zero range.
+	* ipa-prop.h (class ipa_vr): Add nonzero_p.
+	* tree-vrp.c (range_has_numeric_bounds_p): New.
+	(range_int_cst_p): Use range_has_numeric_bounds_p.
+	(get_range_op_handler): New.
+	(supported_types_p): New.
+	(defined_ranges_p): New.
+	(drop_undefines_to_varying): New.
+	(range_fold_binary_symbolics_p): New.
+	(range_fold_unary_symbolics_p): New.
+	(range_fold_unary_expr): Extract out into above functions.
+	(range_fold_binary_expr): Same.
+	(value_range_base::normalize_addresses): New.
+	(value_range_base::normalize_symbolics): Normalize addresses.
+	* tree-vrp.h (class value_range_base): Add normalize_addresses.
+
+2019-10-07  Aldy Hernandez  <aldyh@redhat.com>
+
 	* tree-vrp.c (value_range_base::singleton_p): Use
 	value_range_base::num_pairs instead of vrp_val_is* to check
 	if a range has one sub-range.
