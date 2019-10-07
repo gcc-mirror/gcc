@@ -587,6 +587,11 @@ class Expression
   boolean_constant_value(bool* val) const
   { return this->do_boolean_constant_value(val); }
 
+  // If this is a const reference expression, return the named
+  // object to which the expression refers, otherwise return NULL.
+  const Named_object*
+  named_constant() const;
+
   // This is called if the value of this expression is being
   // discarded.  This issues warnings about computed values being
   // unused.  This returns true if all is well, false if it issued an

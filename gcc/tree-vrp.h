@@ -35,14 +35,19 @@ enum value_range_kind
   VR_LAST
 };
 
-
 /* Range of values that can be associated with an SSA_NAME after VRP
    has executed.  */
 class GTY((for_user)) value_range_base
 {
+  friend void range_tests ();
 public:
   value_range_base ();
   value_range_base (value_range_kind, tree, tree);
+  value_range_base (tree, tree);
+  value_range_base (value_range_kind,
+		    tree type, const wide_int &, const wide_int &);
+  value_range_base (tree type, const wide_int &, const wide_int &);
+  value_range_base (tree type);
 
   void set (value_range_kind, tree, tree);
   void set (tree);
@@ -63,8 +68,10 @@ public:
 
   void union_ (const value_range_base *);
   void intersect (const value_range_base *);
+  void union_ (const value_range_base &);
+  void intersect (const value_range_base &);
 
-  bool operator== (const value_range_base &) const /* = delete */;
+  bool operator== (const value_range_base &) const;
   bool operator!= (const value_range_base &) const /* = delete */;
   bool equal_p (const value_range_base &) const;
 
@@ -79,6 +86,14 @@ public:
 
   static bool supports_type_p (tree);
   value_range_base normalize_symbolics () const;
+
+  static const unsigned int m_max_pairs = 2;
+  bool contains_p (tree) const;
+  unsigned num_pairs () const;
+  wide_int lower_bound (unsigned = 0) const;
+  wide_int upper_bound (unsigned) const;
+  wide_int upper_bound () const;
+  void invert ();
 
 protected:
   void check ();
@@ -281,21 +296,17 @@ extern bool range_int_cst_singleton_p (const value_range_base *);
 extern int compare_values (tree, tree);
 extern int compare_values_warnv (tree, tree, bool *);
 extern int operand_less_p (tree, tree);
-extern bool vrp_val_is_min (const_tree);
-extern bool vrp_val_is_max (const_tree);
+extern bool vrp_val_is_min (const_tree, bool handle_pointers = false);
+extern bool vrp_val_is_max (const_tree, bool handle_pointers = false);
 
 extern tree vrp_val_min (const_tree, bool handle_pointers = false);
 extern tree vrp_val_max (const_tree, bool handle_pointers = false);
 
-extern void extract_range_from_unary_expr (value_range_base *vr,
-					   enum tree_code code,
-					   tree type,
-					   const value_range_base *vr0_,
-					   tree op0_type);
-extern void extract_range_from_binary_expr (value_range_base *,
-					    enum tree_code,
-					    tree, const value_range_base *,
-					    const value_range_base *);
+void range_fold_unary_expr (value_range_base *, enum tree_code, tree type,
+			    const value_range_base *, tree op0_type);
+void range_fold_binary_expr (value_range_base *, enum tree_code, tree type,
+			     const value_range_base *,
+			     const value_range_base *);
 
 extern bool vrp_operand_equal_p (const_tree, const_tree);
 extern enum value_range_kind intersect_range_with_nonzero_bits

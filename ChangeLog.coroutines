@@ -1,5 +1,9 @@
 2019-10-07  Iain Sandoe  <iain@sandoe.co.uk>
 
+	Merge trunk r276647.
+
+2019-10-07  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/testsuite/
 	* g++.dg/coroutines/torture/gro_on_alloc_fail_0.C: Include
 	<new> when available.

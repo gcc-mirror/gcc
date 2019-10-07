@@ -3693,8 +3693,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform,
 	return true;
 
       gfc_error ("BOZ literal constant near %L cannot be assigned to a "
-		 "%qs variable", &rvalue->where, gfc_typename (&lvalue->ts));
-
+		 "%qs variable", &rvalue->where, gfc_typename (lvalue));
       return false;
     }
 
@@ -3726,7 +3725,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform,
       where = lvalue->where.lb ? &lvalue->where : &rvalue->where;
       gfc_error ("Incompatible types in DATA statement at %L; attempted "
 		 "conversion of %s to %s", where,
-		 gfc_typename (&rvalue->ts), gfc_typename (&lvalue->ts));
+		 gfc_typename (rvalue), gfc_typename (lvalue));
 
       return false;
     }
@@ -4139,8 +4138,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
       else if (!suppress_type_test)
 	gfc_error ("Different types in pointer assignment at %L; "
 		   "attempted assignment of %s to %s", &lvalue->where,
-		   gfc_typename (&rvalue->ts),
-		   gfc_typename (&lvalue->ts));
+		   gfc_typename (rvalue), gfc_typename (lvalue));
       return false;
     }
 

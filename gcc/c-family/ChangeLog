@@ -1,3 +1,41 @@
+2019-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91369 - Implement P0784R7: constexpr new
+	* c-cppbuiltin.c (c_cpp_builtins): Predefine
+	__cpp_constexpr_dynamic_alloc=201907 for -std=c++2a.
+
+2019-10-04  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/82752
+	* c-format.c (C_STD_VER): Handle C2x.
+	(C_STD_NAME): Likewise.
+	(strftime_flag_specs): Add 'O' modifier with 'p' flag.
+	(time_char_table): Use separate entry for 'B' and 'b', with 'O'
+	modifier allowed and 'p' flag.
+	* c-format.h (enum format_std_version): Add STD_C2X.
+	(struct format_char_info): Mention 'p' in comment on flags2.
+
+2019-10-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-opts.c (c_diagnostic_finalizer): Temporarily clear prefix when
+	calling diagnostic_show_locus, rather than destroying it afterwards.
+
+2019-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91925
+	* c-warn.c (check_alignment_of_packed_member): Ignore FIELD_DECLs
+	with NULL DECL_FIELD_OFFSET.
+
+2019-10-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-pretty-print.c (pp_c_specifier_qualifier_list): If a vector type
+	has a type name, use it in preference to the __vector syntax.
+
+2019-09-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-pretty-print.c (pp_c_parameter_type_list): Avoid printing
+	two spaces between a comma and "...".
+
 2019-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88203

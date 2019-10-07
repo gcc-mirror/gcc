@@ -579,9 +579,9 @@ Node::is_sink() const
   return false;
 }
 
-std::map<Named_object*, Node*> Node::objects;
-std::map<Expression*, Node*> Node::expressions;
-std::map<Statement*, Node*> Node::statements;
+Unordered_map(Named_object*, Node*) Node::objects;
+Unordered_map(Expression*, Node*) Node::expressions;
+Unordered_map(Statement*, Node*) Node::statements;
 std::vector<Node*> Node::indirects;
 
 // Make a object node or return a cached node for this object.
@@ -589,13 +589,12 @@ std::vector<Node*> Node::indirects;
 Node*
 Node::make_node(Named_object* no)
 {
-  if (Node::objects.find(no) != Node::objects.end())
-    return Node::objects[no];
-
-  Node* n = new Node(no);
-  std::pair<Named_object*, Node*> val(no, n);
-  Node::objects.insert(val);
-  return n;
+  std::pair<Named_object*, Node*> val(no, NULL);
+  std::pair<Unordered_map(Named_object*, Node*)::iterator, bool> ins =
+    Node::objects.insert(val);
+  if (ins.second)
+    ins.first->second = new Node(no);
+  return ins.first->second;
 }
 
 // Make an expression node or return a cached node for this expression.
@@ -603,13 +602,12 @@ Node::make_node(Named_object* no)
 Node*
 Node::make_node(Expression* e)
 {
-  if (Node::expressions.find(e) != Node::expressions.end())
-    return Node::expressions[e];
-
-  Node* n = new Node(e);
-  std::pair<Expression*, Node*> val(e, n);
-  Node::expressions.insert(val);
-  return n;
+  std::pair<Expression*, Node*> val(e, NULL);
+  std::pair<Unordered_map(Expression*, Node*)::iterator, bool> ins =
+    Node::expressions.insert(val);
+  if (ins.second)
+    ins.first->second = new Node(e);
+  return ins.first->second;
 }
 
 // Make a statement node or return a cached node for this statement.
@@ -617,13 +615,12 @@ Node::make_node(Expression* e)
 Node*
 Node::make_node(Statement* s)
 {
-  if (Node::statements.find(s) != Node::statements.end())
-    return Node::statements[s];
-
-  Node* n = new Node(s);
-  std::pair<Statement*, Node*> val(s, n);
-  Node::statements.insert(val);
-  return n;
+  std::pair<Statement*, Node*> val(s, NULL);
+  std::pair<Unordered_map(Statement*, Node*)::iterator, bool> ins =
+    Node::statements.insert(val);
+  if (ins.second)
+    ins.first->second = new Node(s);
+  return ins.first->second;
 }
 
 // Make an indirect node with given child.
@@ -1544,7 +1541,6 @@ Escape_analysis_assign::expression(Expression** pexpr)
 
   if (debug_level > 1)
     {
-      Node* n = Node::make_node(*pexpr);
       std::string fn_name = this->context_->current_function_name();
       go_debug((*pexpr)->location(), "[%d] %s esc: %s",
 	       this->context_->loop_depth(), fn_name.c_str(),
@@ -3447,19 +3443,22 @@ Gogo::reclaim_escape_nodes()
 void
 Node::reclaim_nodes()
 {
-  for (std::map<Named_object*, Node*>::iterator p = Node::objects.begin();
+  for (Unordered_map(Named_object*, Node*)::iterator p =
+	 Node::objects.begin();
        p != Node::objects.end();
        ++p)
     delete p->second;
   Node::objects.clear();
 
-  for (std::map<Expression*, Node*>::iterator p = Node::expressions.begin();
+  for (Unordered_map(Expression*, Node*)::iterator p =
+	 Node::expressions.begin();
        p != Node::expressions.end();
        ++p)
     delete p->second;
   Node::expressions.clear();
 
-  for (std::map<Statement*, Node*>::iterator p = Node::statements.begin();
+  for (Unordered_map(Statement*, Node*)::iterator p =
+	 Node::statements.begin();
        p != Node::statements.end();
        ++p)
     delete p->second;

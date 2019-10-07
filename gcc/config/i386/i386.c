@@ -95,6 +95,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "i386-builtins.h"
 #include "i386-expand.h"
 #include "i386-features.h"
+#include "function-abi.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -5876,7 +5877,14 @@ ix86_compute_frame_layout (void)
 	 case function is known to be outside hot spot (this is known with
 	 feedback only).  Weight the size of function by number of registers
 	 to save as it is cheap to use one or two push instructions but very
-	 slow to use many of them.  */
+	 slow to use many of them.
+
+	 Calling this hook multiple times with the same frame requirements
+	 must produce the same layout, since the RA might otherwise be
+	 unable to reach a fixed point or might fail its final sanity checks.
+	 This means that once we've assumed that a function does or doesn't
+	 have a particular size, we have to stick to that assumption
+	 regardless of how the function has changed since.  */
       if (count)
 	count = (count - 1) * FAST_PROLOGUE_INSN_COUNT;
       if (node->frequency < NODE_FREQUENCY_NORMAL
@@ -5884,8 +5892,14 @@ ix86_compute_frame_layout (void)
 	      && node->frequency < NODE_FREQUENCY_HOT))
 	m->use_fast_prologue_epilogue = false;
       else
-	m->use_fast_prologue_epilogue
-	   = !expensive_function_p (count);
+	{
+	  if (count != frame->expensive_count)
+	    {
+	      frame->expensive_count = count;
+	      frame->expensive_p = expensive_function_p (count);
+	    }
+	  m->use_fast_prologue_epilogue = !frame->expensive_p;
+	}
     }
 
   frame->save_regs_using_mov
@@ -13511,6 +13525,15 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
 	    }
 	}
 
+      /* If the function is known to preserve some SSE registers,
+	 RA and previous passes can legitimately rely on that for
+	 modes wider than 256 bits.  It's only safe to issue a
+	 vzeroupper if all SSE registers are clobbered.  */
+      const function_abi &abi = insn_callee_abi (insn);
+      if (!hard_reg_set_subset_p (reg_class_contents[ALL_SSE_REGS],
+				  abi.mode_clobbers (V4DImode)))
+	return AVX_U128_ANY;
+
       return AVX_U128_CLEAN;
     }
 
@@ -18784,8 +18807,8 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
    the low 16 bytes are saved.  */
 
 static bool
-ix86_hard_regno_call_part_clobbered (rtx_insn *insn ATTRIBUTE_UNUSED,
-				     unsigned int regno, machine_mode mode)
+ix86_hard_regno_call_part_clobbered (unsigned int, unsigned int regno,
+				     machine_mode mode)
 {
   return SSE_REGNO_P (regno) && GET_MODE_SIZE (mode) > 16;
 }

@@ -3234,6 +3234,10 @@ class Const_expression : public Expression
   named_object()
   { return this->constant_; }
 
+  const Named_object*
+  named_object() const
+  { return this->constant_; }
+
   // Check that the initializer does not refer to the constant itself.
   void
   check_for_init_loop();
@@ -4104,9 +4108,11 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
             x = mpz_get_ui(intval);
           else
             {
-              char* s = mpz_get_str(NULL, 16, intval);
+              char* ms = mpz_get_str(NULL, 16, intval);
               go_warning_at(loc, 0,
-                            "unicode code point 0x%s out of range in string", s);
+                            "unicode code point 0x%s out of range in string",
+                            ms);
+              free(ms);
               x = 0xfffd;
             }
 	  Lex::append_char(x, true, &s, loc);
@@ -8016,14 +8022,14 @@ Bound_method_expression::do_flatten(Gogo* gogo, Named_object*,
   Expression* ret = Expression::make_struct_composite_literal(st, vals, loc);
   ret = Expression::make_heap_expression(ret, loc);
 
-  Node* n = Node::make_node(this);
-  if ((n->encoding() & ESCAPE_MASK) == Node::ESCAPE_NONE)
+  Node* node = Node::make_node(this);
+  if ((node->encoding() & ESCAPE_MASK) == Node::ESCAPE_NONE)
     ret->heap_expression()->set_allocate_on_stack();
   else if (gogo->compiling_runtime()
 	   && gogo->package_name() == "runtime"
 	   && !saw_errors())
     go_error_at(loc, "%s escapes to heap, not allowed in runtime",
-                n->ast_format(gogo).c_str());
+                node->ast_format(gogo).c_str());
 
   // If necessary, check whether the expression or any embedded
   // pointers are nil.
@@ -8741,8 +8747,6 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
 				  Expression::make_nil(loc));
       else
 	{
-	  Numeric_constant nclen;
-	  unsigned long vlen;
 	  if (len_arg->numeric_constant_value(&nclen)
 	      && nclen.to_unsigned_long(&vlen) == Numeric_constant::NC_UL_VALID
 	      && vlen <= Map_type::bucket_size)
@@ -9053,8 +9057,7 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
           else
             {
               Type* int32_type = Type::lookup_integer_type("int32");
-              Expression* zero =
-                Expression::make_integer_ul(0, int32_type, loc);
+              zero = Expression::make_integer_ul(0, int32_type, loc);
               call = Runtime::make_call(Runtime::BUILTIN_MEMSET, loc, 3, a1,
                                         zero, a2);
             }
@@ -9064,15 +9067,12 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
               // For a slice containing pointers, growslice already zeroed
               // the memory. We only need to zero in non-growing case.
               // Note: growslice does not zero the memory in non-pointer case.
-              Expression* left =
-                Expression::make_temporary_reference(ntmp, loc);
-              left = Expression::make_cast(uint_type, left, loc);
-              Expression* right =
-                Expression::make_temporary_reference(c1tmp, loc);
-              right = Expression::make_cast(uint_type, right, loc);
-              Expression* cond =
-                Expression::make_binary(OPERATOR_GT, left, right, loc);
-              Expression* zero = Expression::make_integer_ul(0, int_type, loc);
+              ref = Expression::make_temporary_reference(ntmp, loc);
+              ref = Expression::make_cast(uint_type, ref, loc);
+              ref2 = Expression::make_temporary_reference(c1tmp, loc);
+              ref2 = Expression::make_cast(uint_type, ref2, loc);
+              cond = Expression::make_binary(OPERATOR_GT, ref, ref2, loc);
+              zero = Expression::make_integer_ul(0, int_type, loc);
               call = Expression::make_conditional(cond, call, zero, loc);
             }
         }
@@ -10877,9 +10877,7 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
   if (this->result_count() > 1 && this->call_temp_ == NULL)
     {
       Struct_field_list* sfl = new Struct_field_list();
-      Function_type* fntype = this->get_function_type();
       const Typed_identifier_list* results = fntype->results();
-      Location loc = this->location();
 
       int i = 0;
       char buf[20];
@@ -12295,10 +12293,10 @@ Call_expression::do_get_backend(Translate_context* context)
     }
   else
     {
-      Expression* first_arg;
-      fn = this->interface_method_function(interface_method, &first_arg,
+      Expression* arg0;
+      fn = this->interface_method_function(interface_method, &arg0,
                                            location);
-      fn_args[0] = first_arg->get_backend(context);
+      fn_args[0] = arg0->get_backend(context);
     }
 
   Bexpression* bclosure = NULL;
@@ -16453,11 +16451,11 @@ Composite_literal_expression::lower_array(Type* type)
       traverse_order = new std::vector<unsigned long>();
       traverse_order->reserve(v.size());
 
-      for (V::const_iterator p = v.begin(); p != v.end(); ++p)
+      for (V::const_iterator pv = v.begin(); pv != v.end(); ++pv)
 	{
-	  indexes->push_back(p->index);
-	  vals->push_back(p->expr);
-	  traverse_order->push_back(p->traversal_order);
+	  indexes->push_back(pv->index);
+	  vals->push_back(pv->expr);
+	  traverse_order->push_back(pv->traversal_order);
 	}
     }
 
@@ -16786,6 +16784,15 @@ Expression::is_local_variable() const
   const Named_object* no = ve->named_object();
   return (no->is_result_variable()
 	  || (no->is_variable() && !no->var_value()->is_global()));
+}
+
+const Named_object*
+Expression::named_constant() const
+{
+  if (this->classification() != EXPRESSION_CONST_REFERENCE)
+    return NULL;
+  const Const_expression* ce = static_cast<const Const_expression*>(this);
+  return ce->named_object();
 }
 
 // Class Type_guard_expression.
@@ -17771,9 +17778,9 @@ Interface_info_expression::do_type()
 
         Interface_type* itype = this->iface_->type()->interface_type();
 
-        Hashtable::const_iterator p = result_types.find(itype);
-        if (p != result_types.end())
-          return p->second;
+        Hashtable::const_iterator pr = result_types.find(itype);
+        if (pr != result_types.end())
+          return pr->second;
 
         Type* pdt = Type::make_type_descriptor_ptr_type();
         if (itype->is_empty())

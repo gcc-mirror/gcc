@@ -135,10 +135,11 @@ custom_diagnostic_finalizer (diagnostic_context *context,
   bool old_show_color = pp_show_color (context->printer);
   if (force_show_locus_color)
     pp_show_color (context->printer) = true;
+  char *saved_prefix = pp_take_prefix (context->printer);
+  pp_set_prefix (context->printer, NULL);
   diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
   pp_show_color (context->printer) = old_show_color;
-
-  pp_destroy_prefix (context->printer);
+  pp_set_prefix (context->printer, saved_prefix);
   pp_flush (context->printer);
 }
 

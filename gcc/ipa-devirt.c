@@ -986,20 +986,20 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
       || (type_with_linkage_p (TYPE_MAIN_VARIANT (t2))
 	  && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t2))))
     {
-      if (type_with_linkage_p (TYPE_MAIN_VARIANT (t1))
-	  && !type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t1)))
+      if (!type_with_linkage_p (TYPE_MAIN_VARIANT (t1))
+	  || !type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t1)))
 	{
 	  std::swap (t1, t2);
 	  std::swap (loc_t1, loc_t2);
 	}
-      gcc_assert (TYPE_NAME (t1) && TYPE_NAME (t2)
-		  && TREE_CODE (TYPE_NAME (t1)) == TYPE_DECL
-		  && TREE_CODE (TYPE_NAME (t2)) == TYPE_DECL);
+      gcc_assert (TYPE_NAME (t1)
+		  && TREE_CODE (TYPE_NAME (t1)) == TYPE_DECL);
       tree n1 = TYPE_NAME (t1);
-      tree n2 = TYPE_NAME (t2);
+      tree n2 = TYPE_NAME (t2) ? TYPE_NAME (t2) : NULL;
+
       if (TREE_CODE (n1) == TYPE_DECL)
 	n1 = DECL_NAME (n1);
-      if (TREE_CODE (n2) == TYPE_DECL)
+      if (n2 && TREE_CODE (n2) == TYPE_DECL)
 	n2 = DECL_NAME (n2);
       /* Most of the time, the type names will match, do not be unnecesarily
          verbose.  */

@@ -17,6 +17,7 @@
 
 // { dg-options "-std=gnu++17 -D_GLIBCXX_DEBUG" }
 // { dg-do compile { target c++17 } }
+// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PARALLEL" } }
 
 #include <debug/vector>
 static_assert(std::is_same_v<

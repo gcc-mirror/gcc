@@ -79,6 +79,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "gimple.h"
 #include "options.h"
+#include "function-abi.h"
 
 /* So we can assign to cfun in this file.  */
 #undef cfun
@@ -2119,10 +2120,17 @@ aggregate_value_p (const_tree exp, const_tree fntype)
   if (!REG_P (reg))
     return 0;
 
+  /* Use the default ABI if the type of the function isn't known.
+     The scheme for handling interoperability between different ABIs
+     requires us to be able to tell when we're calling a function with
+     a nondefault ABI.  */
+  const predefined_function_abi &abi = (fntype
+					? fntype_abi (fntype)
+					: default_function_abi);
   regno = REGNO (reg);
   nregs = hard_regno_nregs (regno, TYPE_MODE (type));
   for (i = 0; i < nregs; i++)
-    if (! call_used_or_fixed_reg_p (regno + i))
+    if (!fixed_regs[regno + i] && !abi.clobbers_full_reg_p (regno + i))
       return 1;
 
   return 0;
@@ -4826,6 +4834,12 @@ static void
 prepare_function_start (void)
 {
   gcc_assert (!get_last_insn ());
+
+  if (in_dummy_function)
+    crtl->abi = &default_function_abi;
+  else
+    crtl->abi = &fndecl_abi (cfun->decl).base_abi ();
+
   init_temp_slots ();
   init_emit ();
   init_varasm_status ();

@@ -97,8 +97,8 @@ struct noce_if_info
 
   /* An estimate of the original costs.  When optimizing for size, this is the
      combined cost of COND, JUMP and the costs for THEN_BB and ELSE_BB.
-     When optimizing for speed, we use the costs of COND plus the minimum of
-     the costs for THEN_BB and ELSE_BB, as computed in the next field.  */
+     When optimizing for speed, we use the costs of COND plus weighted average
+     of the costs for THEN_BB and ELSE_BB, as computed in the next field.  */
   unsigned int original_cost;
 
   /* Maximum permissible cost for the unconditional sequence we should

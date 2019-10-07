@@ -1898,41 +1898,47 @@ must be defined.  Modern ports should define @code{CALL_REALLY_USED_REGISTERS}.
 @cindex call-used register
 @cindex call-clobbered register
 @cindex call-saved register
-@deftypefn {Target Hook} bool TARGET_HARD_REGNO_CALL_PART_CLOBBERED (rtx_insn *@var{insn}, unsigned int @var{regno}, machine_mode @var{mode})
-This hook should return true if @var{regno} is partly call-saved and
-partly call-clobbered, and if a value of mode @var{mode} would be partly
-clobbered by call instruction @var{insn}.  If @var{insn} is NULL then it
-should return true if any call could partly clobber the register.
-For example, if the low 32 bits of @var{regno} are preserved across a call
-but higher bits are clobbered, this hook should return true for a 64-bit
-mode but false for a 32-bit mode.
+@deftypefn {Target Hook} {const predefined_function_abi &} TARGET_FNTYPE_ABI (const_tree @var{type})
+Return the ABI used by a function with type @var{type}; see the
+definition of @code{predefined_function_abi} for details of the ABI
+descriptor.  Targets only need to define this hook if they support
+interoperability between several ABIs in the same translation unit.
+@end deftypefn
+
+@deftypefn {Target Hook} {const predefined_function_abi &} TARGET_INSN_CALLEE_ABI (const rtx_insn *@var{insn})
+This hook returns a description of the ABI used by the target of
+call instruction @var{insn}; see the definition of
+@code{predefined_function_abi} for details of the ABI descriptor.
+Only the global function @code{insn_callee_abi} should call this hook
+directly.
+
+Targets only need to define this hook if they support
+interoperability between several ABIs in the same translation unit.
+@end deftypefn
+
+@cindex call-used register
+@cindex call-clobbered register
+@cindex call-saved register
+@deftypefn {Target Hook} bool TARGET_HARD_REGNO_CALL_PART_CLOBBERED (unsigned int @var{abi_id}, unsigned int @var{regno}, machine_mode @var{mode})
+ABIs usually specify that calls must preserve the full contents
+of a particular register, or that calls can alter any part of a
+particular register.  This information is captured by the target macro
+@code{CALL_REALLY_USED_REGISTERS}.  However, some ABIs specify that calls
+must preserve certain bits of a particular register but can alter others.
+This hook should return true if this applies to at least one of the
+registers in @samp{(reg:@var{mode} @var{regno})}, and if as a result the
+call would alter part of the @var{mode} value.  For example, if a call
+preserves the low 32 bits of a 64-bit hard register @var{regno} but can
+clobber the upper 32 bits, this hook should return true for a 64-bit mode
+but false for a 32-bit mode.
+
+The value of @var{abi_id} comes from the @code{predefined_function_abi}
+structure that describes the ABI of the call; see the definition of the
+structure for more details.  If (as is usual) the target uses the same ABI
+for all functions in a translation unit, @var{abi_id} is always 0.
 
 The default implementation returns false, which is correct
 for targets that don't have partly call-clobbered registers.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS (rtx_insn *@var{insn}, HARD_REG_SET *@var{used_regs})
-This hook removes registers from the set of call-clobbered registers
- in @var{used_regs} if, contrary to the default rules, something guarantees
- that @samp{insn} preserves those registers.  For example, some targets
- support variant ABIs in which functions preserve more registers than
- normal functions would.  Removing those extra registers from @var{used_regs}
- can lead to better register allocation.
- 
- The default implementation does nothing, which is always safe.
- Defining the hook is purely an optimization.
-@end deftypefn
-
-@deftypefn {Target Hook} {rtx_insn *} TARGET_RETURN_CALL_WITH_MAX_CLOBBERS (rtx_insn *@var{call_1}, rtx_insn *@var{call_2})
-This hook returns a pointer to the call that partially clobbers the
-most registers.  If a platform supports multiple ABIs where the registers
-that are partially clobbered may vary, this function compares two
-calls and returns a pointer to the one that clobbers the most registers.
-If both calls clobber the same registers, @var{call_1} must be returned.
-
-The registers clobbered in different ABIs must be a proper subset or
-superset of all other ABIs.  @var{call_1} must always be a call insn,
-call_2 may be NULL or a call insn.
 @end deftypefn
 
 @deftypefn {Target Hook} {const char *} TARGET_GET_MULTILIB_ABI_NAME (void)

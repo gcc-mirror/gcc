@@ -38,6 +38,8 @@ target = @target@
 prefix = @prefix@
 
 # Nonstandard autoconf-set variables.
+toolexecdir = @toolexecdir@
+toolexeclibdir = @toolexeclibdir@
 enable_shared = @enable_shared@
 
 LN_S=@LN_S@
@@ -88,6 +90,7 @@ LIBADA_FLAGS_TO_PASS = \
         "TRACE=$(TRACE)" \
         "MULTISUBDIR=$(MULTISUBDIR)" \
         "libsubdir=$(libsubdir)" \
+        "toolexeclibdir=$(toolexeclibdir)" \
         "objext=$(objext)" \
         "prefix=$(prefix)" \
         "exeext=.exeext.should.not.be.used " \

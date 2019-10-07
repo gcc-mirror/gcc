@@ -1251,12 +1251,13 @@ darwin_mark_decl_preserved (const char *name)
 }
 
 static section *
-darwin_rodata_section (int use_coal, bool zsize)
+darwin_rodata_section (int use_coal, bool zsize, int reloc)
 {
   return (use_coal
 	  ? darwin_sections[const_coal_section]
 	  : (zsize ? darwin_sections[zobj_const_section]
-		   : darwin_sections[const_section]));
+		   : reloc ? darwin_sections[const_data_section]
+			   : darwin_sections[const_section]));
 }
 
 static section *
@@ -1549,7 +1550,7 @@ machopic_select_section (tree decl,
 
     case SECCAT_RODATA:
     case SECCAT_SRODATA:
-      base_section = darwin_rodata_section (use_coal, zsize);
+      base_section = darwin_rodata_section (use_coal, zsize, reloc);
       break;
 
     case SECCAT_RODATA_MERGE_STR:
@@ -3151,13 +3152,14 @@ darwin_override_options (void)
   if (global_options_set.x_flag_objc_abi && flag_next_runtime)
     {
       if (TARGET_64BIT && global_options.x_flag_objc_abi < 2)
-	error_at (UNKNOWN_LOCATION, "%<-fobjc-abi-version%> >= 2 must be"
-				    " used for %<-m64%> targets with"
-				    " %<-fnext-runtime%>");
+	error_at (UNKNOWN_LOCATION, "%<-fobjc-abi-version%> must be greater"
+				    " than or equal to 2 for %<-m64%> targets"
+				    " with %<-fnext-runtime%>");
       if (!TARGET_64BIT && global_options.x_flag_objc_abi >= 2)
-	error_at (UNKNOWN_LOCATION, "%<-fobjc-abi-version%> >= 2 is not"
+	error_at (UNKNOWN_LOCATION, "%<-fobjc-abi-version%> %d is not"
 				    " supported on %<-m32%> targets with"
-				    " %<-fnext-runtime%>");
+				    " %<-fnext-runtime%>",
+				    global_options.x_flag_objc_abi);
     }
 
   /* Don't emit DWARF3/4 unless specifically selected.  This is a

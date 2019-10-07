@@ -10637,7 +10637,7 @@ sh_hard_regno_caller_save_mode (unsigned int regno, unsigned int nregs,
 	      && ((regno - FIRST_FP_REG) & 1) == 0)))
     return mode;
 
-  return choose_hard_reg_mode (regno, nregs, false);
+  return choose_hard_reg_mode (regno, nregs, NULL);
 }
 
 /* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
@@ -12068,9 +12068,11 @@ sh_extending_set_of_reg::use_as_extended_reg (rtx_insn* use_at_insn) const
 	rtx r = gen_reg_rtx (SImode);
 	rtx_insn* i0;
 	if (from_mode == QImode)
-	  i0 = emit_insn_after (gen_extendqisi2 (r, set_src), insn);
+	  i0 = sh_check_add_incdec_notes (
+			emit_insn_after (gen_extendqisi2 (r, set_src), insn));
 	else if (from_mode == HImode)
-	  i0 = emit_insn_after (gen_extendhisi2 (r, set_src), insn);
+	  i0 = sh_check_add_incdec_notes (
+			emit_insn_after (gen_extendhisi2 (r, set_src), insn));
 	else
 	  gcc_unreachable ();
 

@@ -11395,7 +11395,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      {
 		gcc_assert (is_gimple_omp_oacc (ctx->stmt));
 		if (omp_is_reference (new_var)
-		    && TREE_CODE (TREE_TYPE (new_var)) != POINTER_TYPE)
+		    && (TREE_CODE (TREE_TYPE (new_var)) != POINTER_TYPE
+		        || DECL_BY_REFERENCE (var)))
 		  {
 		    /* Create a local object to hold the instance
 		       value.  */
@@ -11869,7 +11870,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      var = build_fold_addr_expr (var);
 	    else
 	      {
-		if (omp_is_reference (ovar))
+		if (omp_is_reference (ovar) || omp_is_optional_argument (ovar))
 		  {
 		    type = TREE_TYPE (type);
 		    if (TREE_CODE (type) != ARRAY_TYPE

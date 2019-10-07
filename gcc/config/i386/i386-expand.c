@@ -1694,7 +1694,7 @@ ix86_expand_adjust_ufix_to_sfix_si (rtx val, rtx *xorp)
 				 OPTAB_DIRECT);
   else
     {
-      rtx two31 = GEN_INT (HOST_WIDE_INT_1U << 31);
+      rtx two31 = gen_int_mode (HOST_WIDE_INT_1U << 31, SImode);
       two31 = ix86_build_const_vector (intmode, 1, two31);
       *xorp = expand_simple_binop (intmode, AND,
 				   gen_lowpart (intmode, tmp[0]),

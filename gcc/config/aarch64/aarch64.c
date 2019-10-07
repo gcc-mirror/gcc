@@ -74,6 +74,7 @@
 #include "rtx-vector-builder.h"
 #include "intl.h"
 #include "expmed.h"
+#include "function-abi.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -1365,6 +1366,24 @@ svpattern_token (enum aarch64_svpattern pattern)
   gcc_unreachable ();
 }
 
+/* Return the descriptor of the SIMD ABI.  */
+
+static const predefined_function_abi &
+aarch64_simd_abi (void)
+{
+  predefined_function_abi &simd_abi = function_abis[ARM_PCS_SIMD];
+  if (!simd_abi.initialized_p ())
+    {
+      HARD_REG_SET full_reg_clobbers
+	= default_function_abi.full_reg_clobbers ();
+      for (int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	if (FP_SIMD_SAVED_REGNUM_P (regno))
+	  CLEAR_HARD_REG_BIT (full_reg_clobbers, regno);
+      simd_abi.initialize (ARM_PCS_SIMD, full_reg_clobbers);
+    }
+  return simd_abi;
+}
+
 /* Generate code to enable conditional branches in functions over 1 MiB.  */
 const char *
 aarch64_gen_far_branch (rtx * operands, int pos_label, const char * dest,
@@ -1810,6 +1829,16 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
   return false;
 }
 
+/* Implement TARGET_FNTYPE_ABI.  */
+
+static const predefined_function_abi &
+aarch64_fntype_abi (const_tree fntype)
+{
+  if (lookup_attribute ("aarch64_vector_pcs", TYPE_ATTRIBUTES (fntype)))
+    return aarch64_simd_abi ();
+  return default_function_abi;
+}
+
 /* Return true if this is a definition of a vectorized simd function.  */
 
 static bool
@@ -1843,43 +1872,17 @@ aarch64_reg_save_mode (tree fndecl, unsigned regno)
 	   : (aarch64_simd_decl_p (fndecl) ? E_TFmode : E_DFmode);
 }
 
-/* Return true if the instruction is a call to a SIMD function, false
-   if it is not a SIMD function or if we do not know anything about
-   the function.  */
+/* Implement TARGET_INSN_CALLEE_ABI.  */
 
-static bool
-aarch64_simd_call_p (rtx_insn *insn)
+const predefined_function_abi &
+aarch64_insn_callee_abi (const rtx_insn *insn)
 {
-  rtx symbol;
-  rtx call;
-  tree fndecl;
-
-  gcc_assert (CALL_P (insn));
-  call = get_call_rtx_from (insn);
-  symbol = XEXP (XEXP (call, 0), 0);
-  if (GET_CODE (symbol) != SYMBOL_REF)
-    return false;
-  fndecl = SYMBOL_REF_DECL (symbol);
-  if (!fndecl)
-    return false;
-
-  return aarch64_simd_decl_p (fndecl);
-}
-
-/* Implement TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS.  If INSN calls
-   a function that uses the SIMD ABI, take advantage of the extra
-   call-preserved registers that the ABI provides.  */
-
-void
-aarch64_remove_extra_call_preserved_regs (rtx_insn *insn,
-					  HARD_REG_SET *return_set)
-{
-  if (aarch64_simd_call_p (insn))
-    {
-      for (int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	if (FP_SIMD_SAVED_REGNUM_P (regno))
-	  CLEAR_HARD_REG_BIT (*return_set, regno);
-    }
+  rtx pat = PATTERN (insn);
+  gcc_assert (GET_CODE (pat) == PARALLEL);
+  rtx unspec = XVECEXP (pat, 0, 1);
+  gcc_assert (GET_CODE (unspec) == UNSPEC
+	      && XINT (unspec, 1) == UNSPEC_CALLEE_ABI);
+  return function_abis[INTVAL (XVECEXP (unspec, 0, 0))];
 }
 
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  The callee only saves
@@ -1887,25 +1890,21 @@ aarch64_remove_extra_call_preserved_regs (rtx_insn *insn,
    clobbers the top 64 bits when restoring the bottom 64 bits.  */
 
 static bool
-aarch64_hard_regno_call_part_clobbered (rtx_insn *insn, unsigned int regno,
+aarch64_hard_regno_call_part_clobbered (unsigned int abi_id,
+					unsigned int regno,
 					machine_mode mode)
 {
-  bool simd_p = insn && CALL_P (insn) && aarch64_simd_call_p (insn);
-  return FP_REGNUM_P (regno)
-	 && maybe_gt (GET_MODE_SIZE (mode), simd_p ? 16 : 8);
-}
-
-/* Implement TARGET_RETURN_CALL_WITH_MAX_CLOBBERS.  */
-
-rtx_insn *
-aarch64_return_call_with_max_clobbers (rtx_insn *call_1, rtx_insn *call_2)
-{
-  gcc_assert (CALL_P (call_1) && CALL_P (call_2));
-
-  if (!aarch64_simd_call_p (call_1) || aarch64_simd_call_p (call_2))
-    return call_1;
-  else
-    return call_2;
+  if (FP_REGNUM_P (regno))
+    {
+      poly_int64 per_register_size = GET_MODE_SIZE (mode);
+      unsigned int nregs = hard_regno_nregs (regno, mode);
+      if (nregs > 1)
+	per_register_size = exact_div (per_register_size, nregs);
+      if (abi_id == ARM_PCS_SIMD || abi_id == ARM_PCS_TLSDESC)
+	return maybe_gt (per_register_size, 16);
+      return maybe_gt (per_register_size, 8);
+    }
+  return false;
 }
 
 /* Implement REGMODE_NATURAL_SIZE.  */
@@ -4829,10 +4828,11 @@ static rtx
 aarch64_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
-  gcc_assert (pcum->pcs_variant == ARM_PCS_AAPCS64);
+  gcc_assert (pcum->pcs_variant == ARM_PCS_AAPCS64
+	      || pcum->pcs_variant == ARM_PCS_SIMD);
 
   if (arg.end_marker_p ())
-    return NULL_RTX;
+    return gen_int_mode (pcum->pcs_variant, DImode);
 
   aarch64_layout_arg (pcum_v, arg.mode, arg.type, arg.named);
   return pcum->aapcs_reg;
@@ -4840,16 +4840,19 @@ aarch64_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 
 void
 aarch64_init_cumulative_args (CUMULATIVE_ARGS *pcum,
-			   const_tree fntype ATTRIBUTE_UNUSED,
-			   rtx libname ATTRIBUTE_UNUSED,
-			   const_tree fndecl ATTRIBUTE_UNUSED,
-			   unsigned n_named ATTRIBUTE_UNUSED)
+			      const_tree fntype,
+			      rtx libname ATTRIBUTE_UNUSED,
+			      const_tree fndecl ATTRIBUTE_UNUSED,
+			      unsigned n_named ATTRIBUTE_UNUSED)
 {
   pcum->aapcs_ncrn = 0;
   pcum->aapcs_nvrn = 0;
   pcum->aapcs_nextncrn = 0;
   pcum->aapcs_nextnvrn = 0;
-  pcum->pcs_variant = ARM_PCS_AAPCS64;
+  if (fntype)
+    pcum->pcs_variant = (arm_pcs) fntype_abi (fntype).id ();
+  else
+    pcum->pcs_variant = ARM_PCS_AAPCS64;
   pcum->aapcs_reg = NULL_RTX;
   pcum->aapcs_arg_processed = false;
   pcum->aapcs_stack_words = 0;
@@ -4874,7 +4877,8 @@ aarch64_function_arg_advance (cumulative_args_t pcum_v,
 			      const function_arg_info &arg)
 {
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
-  if (pcum->pcs_variant == ARM_PCS_AAPCS64)
+  if (pcum->pcs_variant == ARM_PCS_AAPCS64
+      || pcum->pcs_variant == ARM_PCS_SIMD)
     {
       aarch64_layout_arg (pcum_v, arg.mode, arg.type, arg.named);
       gcc_assert ((pcum->aapcs_reg != NULL_RTX)
@@ -5316,7 +5320,7 @@ aarch64_layout_frame (void)
 {
   HOST_WIDE_INT offset = 0;
   int regno, last_fp_reg = INVALID_REGNUM;
-  bool simd_function = aarch64_simd_decl_p (cfun->decl);
+  bool simd_function = (crtl->abi->id () == ARM_PCS_SIMD);
 
   cfun->machine->frame.emit_frame_chain = aarch64_needs_frame_chain ();
 
@@ -5329,17 +5333,6 @@ aarch64_layout_frame (void)
 
   cfun->machine->frame.wb_candidate1 = INVALID_REGNUM;
   cfun->machine->frame.wb_candidate2 = INVALID_REGNUM;
-
-  /* If this is a non-leaf simd function with calls we assume that
-     at least one of those calls is to a non-simd function and thus
-     we must save V8 to V23 in the prologue.  */
-
-  if (simd_function && !crtl->is_leaf)
-    {
-      for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
-	if (FP_SIMD_SAVED_REGNUM_P (regno))
- 	  df_set_regs_ever_live (regno, true);
-    }
 
   /* First mark all the registers that really need to be saved...  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
@@ -5357,14 +5350,15 @@ aarch64_layout_frame (void)
   /* ... and any callee saved register that dataflow says is live.  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
     if (df_regs_ever_live_p (regno)
+	&& !fixed_regs[regno]
 	&& (regno == R30_REGNUM
-	    || !call_used_or_fixed_reg_p (regno)))
+	    || !crtl->abi->clobbers_full_reg_p (regno)))
       cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
     if (df_regs_ever_live_p (regno)
-	&& (!call_used_or_fixed_reg_p (regno)
-	    || (simd_function && FP_SIMD_SAVED_REGNUM_P (regno))))
+	&& !fixed_regs[regno]
+	&& !crtl->abi->clobbers_full_reg_p (regno))
       {
 	cfun->machine->frame.reg_offset[regno] = SLOT_REQUIRED;
 	last_fp_reg = regno;
@@ -5953,18 +5947,34 @@ aarch64_components_for_bb (basic_block bb)
   bitmap in = DF_LIVE_IN (bb);
   bitmap gen = &DF_LIVE_BB_INFO (bb)->gen;
   bitmap kill = &DF_LIVE_BB_INFO (bb)->kill;
-  bool simd_function = aarch64_simd_decl_p (cfun->decl);
 
   sbitmap components = sbitmap_alloc (LAST_SAVED_REGNUM + 1);
   bitmap_clear (components);
 
+  /* Clobbered registers don't generate values in any meaningful sense,
+     since nothing after the clobber can rely on their value.  And we can't
+     say that partially-clobbered registers are unconditionally killed,
+     because whether they're killed or not depends on the mode of the
+     value they're holding.  Thus partially call-clobbered registers
+     appear in neither the kill set nor the gen set.
+
+     Check manually for any calls that clobber more of a register than the
+     current function can.  */
+  function_abi_aggregator callee_abis;
+  rtx_insn *insn;
+  FOR_BB_INSNS (bb, insn)
+    if (CALL_P (insn))
+      callee_abis.note_callee_abi (insn_callee_abi (insn));
+  HARD_REG_SET extra_caller_saves = callee_abis.caller_save_regs (*crtl->abi);
+
   /* GPRs are used in a bb if they are in the IN, GEN, or KILL sets.  */
   for (unsigned regno = 0; regno <= LAST_SAVED_REGNUM; regno++)
-    if ((!call_used_or_fixed_reg_p (regno)
-	|| (simd_function && FP_SIMD_SAVED_REGNUM_P (regno)))
-       && (bitmap_bit_p (in, regno)
-	   || bitmap_bit_p (gen, regno)
-	   || bitmap_bit_p (kill, regno)))
+    if (!fixed_regs[regno]
+	&& !crtl->abi->clobbers_full_reg_p (regno)
+	&& (TEST_HARD_REG_BIT (extra_caller_saves, regno)
+	    || bitmap_bit_p (in, regno)
+	    || bitmap_bit_p (gen, regno)
+	    || bitmap_bit_p (kill, regno)))
       {
 	unsigned regno2, offset, offset2;
 	bitmap_set_bit (components, regno);
@@ -6065,7 +6075,7 @@ aarch64_process_components (sbitmap components, bool prologue_p)
 	 mergeable with the current one into a pair.  */
       if (!satisfies_constraint_Ump (mem)
 	  || GP_REGNUM_P (regno) != GP_REGNUM_P (regno2)
-	  || (aarch64_simd_decl_p (cfun->decl) && FP_REGNUM_P (regno))
+	  || (crtl->abi->id () == ARM_PCS_SIMD && FP_REGNUM_P (regno))
 	  || maybe_ne ((offset2 - cfun->machine->frame.reg_offset[regno]),
 		       GET_MODE_SIZE (mode)))
 	{
@@ -6397,8 +6407,6 @@ aarch64_epilogue_uses (int regno)
     {
       if (regno == LR_REGNUM)
 	return 1;
-      if (aarch64_simd_decl_p (cfun->decl) && FP_SIMD_SAVED_REGNUM_P (regno))
-	return 1;
     }
   return 0;
 }
@@ -6599,7 +6607,7 @@ aarch64_expand_prologue (void)
 
   aarch64_save_callee_saves (DImode, callee_offset, R0_REGNUM, R30_REGNUM,
 			     callee_adjust != 0 || emit_frame_chain);
-  if (aarch64_simd_decl_p (cfun->decl))
+  if (crtl->abi->id () == ARM_PCS_SIMD)
     aarch64_save_callee_saves (TFmode, callee_offset, V0_REGNUM, V31_REGNUM,
 			       callee_adjust != 0 || emit_frame_chain);
   else
@@ -6628,19 +6636,6 @@ aarch64_use_return_insn_p (void)
     return false;
 
   return known_eq (cfun->machine->frame.frame_size, 0);
-}
-
-/* Return false for non-leaf SIMD functions in order to avoid
-   shrink-wrapping them.  Doing this will lose the necessary
-   save/restore of FP registers.  */
-
-bool
-aarch64_use_simple_return_insn_p (void)
-{
-  if (aarch64_simd_decl_p (cfun->decl) && !crtl->is_leaf)
-    return false;
-
-  return true;
 }
 
 /* Generate the epilogue instructions for returning from a function.
@@ -6711,7 +6706,7 @@ aarch64_expand_epilogue (bool for_sibcall)
 
   aarch64_restore_callee_saves (DImode, callee_offset, R0_REGNUM, R30_REGNUM,
 				callee_adjust != 0, &cfi_ops);
-  if (aarch64_simd_decl_p (cfun->decl))
+  if (crtl->abi->id () == ARM_PCS_SIMD)
     aarch64_restore_callee_saves (TFmode, callee_offset, V0_REGNUM, V31_REGNUM,
 				  callee_adjust != 0, &cfi_ops);
   else
@@ -6912,7 +6907,8 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
     }
   funexp = XEXP (DECL_RTL (function), 0);
   funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
-  insn = emit_call_insn (gen_sibcall (funexp, const0_rtx, NULL_RTX));
+  rtx callee_abi = gen_int_mode (fndecl_abi (function).id (), DImode);
+  insn = emit_call_insn (gen_sibcall (funexp, const0_rtx, callee_abi));
   SIBLING_CALL_P (insn) = 1;
 
   insn = get_insns ();
@@ -7990,11 +7986,12 @@ aarch64_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
    RESULT is the register in which the result is returned.  It's NULL for
    "call" and "sibcall".
    MEM is the location of the function call.
+   CALLEE_ABI is a const_int that gives the arm_pcs of the callee.
    SIBCALL indicates whether this function call is normal call or sibling call.
    It will generate different pattern accordingly.  */
 
 void
-aarch64_expand_call (rtx result, rtx mem, bool sibcall)
+aarch64_expand_call (rtx result, rtx mem, rtx callee_abi, bool sibcall)
 {
   rtx call, callee, tmp;
   rtvec vec;
@@ -8024,7 +8021,11 @@ aarch64_expand_call (rtx result, rtx mem, bool sibcall)
   else
     tmp = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNUM));
 
-  vec = gen_rtvec (2, call, tmp);
+  gcc_assert (CONST_INT_P (callee_abi));
+  callee_abi = gen_rtx_UNSPEC (DImode, gen_rtvec (1, callee_abi),
+			       UNSPEC_CALLEE_ABI);
+
+  vec = gen_rtvec (3, call, callee_abi, tmp);
   call = gen_rtx_PARALLEL (VOIDmode, vec);
 
   aarch64_emit_call_insn (call);
@@ -13951,6 +13952,26 @@ aarch64_can_inline_p (tree caller, tree callee)
     return false;
 
   return true;
+}
+
+/* Return the ID of the TLDESC ABI, initializing the descriptor if hasn't
+   been already.  */
+
+unsigned int
+aarch64_tlsdesc_abi_id ()
+{
+  predefined_function_abi &tlsdesc_abi = function_abis[ARM_PCS_TLSDESC];
+  if (!tlsdesc_abi.initialized_p ())
+    {
+      HARD_REG_SET full_reg_clobbers;
+      CLEAR_HARD_REG_SET (full_reg_clobbers);
+      SET_HARD_REG_BIT (full_reg_clobbers, R0_REGNUM);
+      SET_HARD_REG_BIT (full_reg_clobbers, CC_REGNUM);
+      for (int regno = P0_REGNUM; regno <= P15_REGNUM; ++regno)
+	SET_HARD_REG_BIT (full_reg_clobbers, regno);
+      tlsdesc_abi.initialize (ARM_PCS_TLSDESC, full_reg_clobbers);
+    }
+  return tlsdesc_abi.id ();
 }
 
 /* Return true if SYMBOL_REF X binds locally.  */
@@ -20968,13 +20989,8 @@ aarch64_libgcc_floating_mode_supported_p
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
   aarch64_hard_regno_call_part_clobbered
 
-#undef TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS
-#define TARGET_REMOVE_EXTRA_CALL_PRESERVED_REGS \
-  aarch64_remove_extra_call_preserved_regs
-
-#undef TARGET_RETURN_CALL_WITH_MAX_CLOBBERS
-#define TARGET_RETURN_CALL_WITH_MAX_CLOBBERS \
-  aarch64_return_call_with_max_clobbers
+#undef TARGET_INSN_CALLEE_ABI
+#define TARGET_INSN_CALLEE_ABI aarch64_insn_callee_abi
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT aarch64_constant_alignment
@@ -21016,6 +21032,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_GET_MULTILIB_ABI_NAME
 #define TARGET_GET_MULTILIB_ABI_NAME aarch64_get_multilib_abi_name
+
+#undef TARGET_FNTYPE_ABI
+#define TARGET_FNTYPE_ABI aarch64_fntype_abi
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

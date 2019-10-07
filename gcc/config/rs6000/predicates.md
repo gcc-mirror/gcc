@@ -1625,82 +1625,7 @@
   return GET_CODE (op) == UNSPEC && XINT (op, 1) == UNSPEC_TOCREL;
 })
 
-;; Return true if the operand is a pc-relative address.
-(define_predicate "pcrel_address"
-  (match_code "label_ref,symbol_ref,const")
-{
-  if (!rs6000_pcrel_p (cfun))
-    return false;
-
-  if (GET_CODE (op) == CONST)
-    op = XEXP (op, 0);
-
-  /* Validate offset.  */
-  if (GET_CODE (op) == PLUS)
-    {
-      rtx op0 = XEXP (op, 0);
-      rtx op1 = XEXP (op, 1);
-
-      if (!CONST_INT_P (op1) || !SIGNED_34BIT_OFFSET_P (INTVAL (op1)))
-	return false;
-
-      op = op0;
-    }
-
-  if (LABEL_REF_P (op))
-    return true;
-
-  return (SYMBOL_REF_P (op) && SYMBOL_REF_LOCAL_P (op));
-})
-
-;; Return true if the operand is an external symbol whose address can be loaded
-;; into a register using:
-;;	PLD reg,label@pcrel@got
-;;
-;; The linker will either optimize this to either a PADDI if the label is
-;; defined locally in another module or a PLD of the address if the label is
-;; defined in another module.
-
-(define_predicate "pcrel_external_address"
-  (match_code "symbol_ref,const")
-{
-  if (!rs6000_pcrel_p (cfun))
-    return false;
-
-  if (GET_CODE (op) == CONST)
-    op = XEXP (op, 0);
-
-  /* Validate offset.  */
-  if (GET_CODE (op) == PLUS)
-    {
-      rtx op0 = XEXP (op, 0);
-      rtx op1 = XEXP (op, 1);
-
-      if (!CONST_INT_P (op1) || !SIGNED_34BIT_OFFSET_P (INTVAL (op1)))
-	return false;
-
-      op = op0;
-    }
-
-  return (SYMBOL_REF_P (op) && !SYMBOL_REF_LOCAL_P (op));
-})
-
-;; Return 1 if op is a prefixed memory operand.
-(define_predicate "prefixed_mem_operand"
-  (match_code "mem")
-{
-  return rs6000_prefixed_address_mode_p (XEXP (op, 0), GET_MODE (op));
-})
-
-;; Return 1 if op is a memory operand to an external variable when we
-;; support pc-relative addressing and the PCREL_OPT relocation to
-;; optimize references to it.
-(define_predicate "pcrel_external_mem_operand"
-  (match_code "mem")
-{
-  return pcrel_external_address (XEXP (op, 0), Pmode);
-})
-
+
 ;; Match the first insn (addis) in fusing the combination of addis and loads to
 ;; GPR registers on power8.
 (define_predicate "fusion_gpr_addis"
@@ -1857,3 +1782,28 @@
 
   return 0;
 })
+
+
+;; Return true if the operand is a PC-relative address of a local symbol or a
+;; label that can be used directly in a memory operation.
+(define_predicate "pcrel_local_address"
+  (match_code "label_ref,symbol_ref,const")
+{
+  enum insn_form iform = address_to_insn_form (op, mode, NON_PREFIXED_DEFAULT);
+  return iform == INSN_FORM_PCREL_LOCAL;
+})
+
+;; Return true if the operand is a PC-relative external symbol whose address
+;; can be loaded into a register.
+(define_predicate "pcrel_external_address"
+  (match_code "symbol_ref,const")
+{
+  enum insn_form iform = address_to_insn_form (op, mode, NON_PREFIXED_DEFAULT);
+  return iform == INSN_FORM_PCREL_EXTERNAL;
+})
+
+;; Return true if the address is PC-relative and the symbol is either local or
+;; external.
+(define_predicate "pcrel_local_or_external_address"
+  (ior (match_operand 0 "pcrel_local_address")
+       (match_operand 0 "pcrel_external_address")))

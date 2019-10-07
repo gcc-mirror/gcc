@@ -430,16 +430,34 @@
 
 // C++20 features
 
-#if __cpp_conditional_explicit != 201806
-# error "__cpp_conditional_explicit != 201806"
+#ifndef __cpp_conditional_explicit
+#  error "__cpp_conditional_explicit"
+#elif __cpp_conditional_explicit != 201806
+#  error "__cpp_conditional_explicit != 201806"
 #endif
 
-#if __cpp_nontype_template_parameter_class != 201806
-# error "__cpp_nontype_template_parameter_class != 201806"
+#ifndef __cpp_nontype_template_parameter_class
+#  error "__cpp_nontype_template_parameter_class"
+#elif __cpp_nontype_template_parameter_class != 201806
+#  error "__cpp_nontype_template_parameter_class != 201806"
 #endif
 
-#if __cpp_impl_destroying_delete != 201806
-# error "__cpp_impl_destroying_delete != 201806"
+#ifndef __cpp_impl_destroying_delete
+#  error "__cpp_impl_destroying_delete"
+#elif __cpp_impl_destroying_delete != 201806
+#  error "__cpp_impl_destroying_delete != 201806"
+#endif
+
+#ifndef __cpp_constinit
+#  error "__cpp_constinit"
+#elif __cpp_constinit != 201907
+#  error "__cpp_constinit != 201907"
+#endif
+
+#ifndef __cpp_constexpr_dynamic_alloc
+#  error "__cpp_constexpr_dynamic_alloc"
+#elif __cpp_constexpr_dynamic_alloc != 201907
+#  error "__cpp_constexpr_dynamic_alloc != 201907"
 #endif
 
 #ifdef __has_cpp_attribute
@@ -483,8 +501,6 @@
 #else
 #  error "__has_cpp_attribute"
 #endif
-
-// C++2A features:
 
 #ifndef __cpp_char8_t
 #  error "__cpp_char8_t"

@@ -27,3 +27,6 @@ MULTILIB_EXTRA_OPTS     = fPIC mstrict-align
 MULTILIB_EXCEPTIONS     =
 MULTILIB_OSDIRNAMES	= ../lib32
 
+SECURE_PLT = $(if $(filter TARGET_FREEBSD32_SECURE_PLT=1, $(tm_defines)),msecure-plt)
+
+MULTILIB_EXTRA_OPTS += $(SECURE_PLT)

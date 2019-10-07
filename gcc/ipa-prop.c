@@ -1921,8 +1921,8 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	      value_range_base tmpvr (type,
 				      wide_int_to_tree (TREE_TYPE (arg), min),
 				      wide_int_to_tree (TREE_TYPE (arg), max));
-	      extract_range_from_unary_expr (&resvr, NOP_EXPR, param_type,
-					     &tmpvr, TREE_TYPE (arg));
+	      range_fold_unary_expr (&resvr, NOP_EXPR, param_type,
+				     &tmpvr, TREE_TYPE (arg));
 	      if (!resvr.undefined_p () && !resvr.varying_p ())
 		ipa_set_jfunc_vr (jfunc, &resvr);
 	      else
@@ -3756,6 +3756,18 @@ ipcp_transformation_initialize (void)
     ipa_vr_hash_table = hash_table<ipa_vr_ggc_hash_traits>::create_ggc (37);
   if (ipcp_transformation_sum == NULL)
     ipcp_transformation_sum = ipcp_transformation_t::create_ggc (symtab);
+}
+
+/* Release the IPA CP transformation summary.  */
+
+void
+ipcp_free_transformation_sum (void)
+{
+  if (!ipcp_transformation_sum)
+    return;
+
+  ipcp_transformation_sum->release ();
+  ipcp_transformation_sum = NULL;
 }
 
 /* Set the aggregate replacements of NODE to be AGGVALS.  */

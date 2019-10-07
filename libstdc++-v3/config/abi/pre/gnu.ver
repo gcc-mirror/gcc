@@ -80,9 +80,8 @@ GLIBCXX_3.4 {
 #     std::domain_error::d*;
 #     std::domain_error::~d*;
       std::d[p-z]*;
-      std::e[a-q]*;
       std::error[^_]*;
-      std::e[s-z]*;
+      std::exception::*;
       std::gslice*;
       std::h[^a]*;
       std::i[a-m]*;

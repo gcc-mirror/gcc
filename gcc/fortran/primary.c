@@ -789,16 +789,17 @@ done:
   if (warn_conversion_extra)
     {
       mpfr_t r;
-      char *c, *p;
+      char *c1;
       bool did_break;
 
-      c = strchr (buffer, 'e');
-      if (c == NULL)
-	c = buffer + strlen(buffer);
+      c1 = strchr (buffer, 'e');
+      if (c1 == NULL)
+	c1 = buffer + strlen(buffer);
 
       did_break = false;
-      for (p = c - 1; p >= buffer; p--)
+      for (p = c1; p > buffer;)
 	{
+	  p--;
 	  if (*p == '.')
 	    continue;
 
@@ -2331,6 +2332,8 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 
       if (tmp && tmp->type == REF_INQUIRY)
 	{
+	  if (!primary->where.lb || !primary->where.nextc)
+	    primary->where = gfc_current_locus;
 	  gfc_simplify_expr (primary, 0);
 
 	  if (primary->expr_type == EXPR_CONSTANT)
@@ -3097,21 +3100,21 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	  && actual->expr->ts.type == BT_CHARACTER
 	  && actual->expr->expr_type == EXPR_CONSTANT)
 	{
-	  ptrdiff_t c, e;
+	  ptrdiff_t c, e1;
 	  c = gfc_mpz_get_hwi (this_comp->ts.u.cl->length->value.integer);
-	  e = actual->expr->value.character.length;
+	  e1 = actual->expr->value.character.length;
 
-	  if (c != e)
+	  if (c != e1)
 	    {
 	      ptrdiff_t i, to;
 	      gfc_char_t *dest;
 	      dest = gfc_get_wide_string (c + 1);
 
-	      to = e < c ? e : c;
+	      to = e1 < c ? e1 : c;
 	      for (i = 0; i < to; i++)
 		dest[i] = actual->expr->value.character.string[i];
 
-	      for (i = e; i < c; i++)
+	      for (i = e1; i < c; i++)
 		dest[i] = ' ';
 
 	      dest[c] = '\0';
@@ -3120,11 +3123,11 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	      actual->expr->value.character.length = c;
 	      actual->expr->value.character.string = dest;
 
-	      if (warn_line_truncation && c < e)
+	      if (warn_line_truncation && c < e1)
 		gfc_warning_now (OPT_Wcharacter_truncation,
 				 "CHARACTER expression will be truncated "
 				 "in constructor (%ld/%ld) at %L", (long int) c,
-				 (long int) e, &actual->expr->where);
+				 (long int) e1, &actual->expr->where);
 	    }
 	}
 

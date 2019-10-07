@@ -717,11 +717,11 @@ linemap_line_start (line_maps *set, linenum_type to_line,
 	  /* If the column number is ridiculous or we've allocated a huge
 	     number of location_ts, give up on column numbers
 	     (and on packed ranges).  */
-	  max_column_hint = 0;
+	  max_column_hint = 1;
 	  column_bits = 0;
 	  range_bits = 0;
 	  if (highest >= LINE_MAP_MAX_LOCATION)
-	    return 0;
+	    goto overflowed;
 	}
       else
 	{
@@ -735,6 +735,7 @@ linemap_line_start (line_maps *set, linenum_type to_line,
 	  max_column_hint = 1U << column_bits;
 	  column_bits += range_bits;
 	}
+
       /* Allocate the new line_map.  However, if the current map only has a
 	 single line we can sometimes just increase its column_bits instead. */
       if (line_delta < 0
@@ -765,8 +766,11 @@ linemap_line_start (line_maps *set, linenum_type to_line,
      macro tokens.  */
   if (r >= LINE_MAP_MAX_LOCATION)
     {
+    overflowed:
       /* Remember we overflowed.  */
       set->highest_line = set->highest_location = LINE_MAP_MAX_LOCATION - 1;
+      /* No column numbers!  */
+      set->max_column_hint = 1;
       return 0;
     }
 

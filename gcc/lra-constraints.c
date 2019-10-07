@@ -131,6 +131,7 @@
 #include "lra.h"
 #include "lra-int.h"
 #include "print-rtl.h"
+#include "function-abi.h"
 
 /* Value of LRA_CURR_RELOAD_NUM at the beginning of BB of the current
    insn.  Remember that LRA_CURR_RELOAD_NUM is the number of emitted
@@ -5146,6 +5147,14 @@ static int reloads_num;
 /* Number of calls passed so far in current EBB.  */
 static int calls_num;
 
+/* Index ID is the CALLS_NUM associated the last call we saw with
+   ABI identifier ID.  */
+static int last_call_for_abi[NUM_ABI_IDS];
+
+/* Which registers have been fully or partially clobbered by a call
+   since they were last used.  */
+static HARD_REG_SET full_and_partial_call_clobbers;
+
 /* Current reload pseudo check for validity of elements in
    USAGE_INSNS.	 */
 static int curr_usage_insns_check;
@@ -5189,6 +5198,10 @@ setup_next_usage_insn (int regno, rtx insn, int reloads_num, bool after_p)
   usage_insns[regno].reloads_num = reloads_num;
   usage_insns[regno].calls_num = calls_num;
   usage_insns[regno].after_p = after_p;
+  if (regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] >= 0)
+    remove_from_hard_reg_set (&full_and_partial_call_clobbers,
+			      PSEUDO_REGNO_MODE (regno),
+			      reg_renumber[regno]);
 }
 
 /* The function is used to form list REGNO usages which consists of
@@ -5434,16 +5447,19 @@ static inline bool
 need_for_call_save_p (int regno)
 {
   lra_assert (regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] >= 0);
-  return (usage_insns[regno].calls_num < calls_num
-	  && (overlaps_hard_reg_set_p
-	      ((flag_ipa_ra &&
-		! hard_reg_set_empty_p (lra_reg_info[regno].actual_call_used_reg_set))
-	       ? lra_reg_info[regno].actual_call_used_reg_set
-	       : call_used_or_fixed_regs,
-	       PSEUDO_REGNO_MODE (regno), reg_renumber[regno])
-	      || (targetm.hard_regno_call_part_clobbered
-		  (lra_reg_info[regno].call_insn,
-		   reg_renumber[regno], PSEUDO_REGNO_MODE (regno)))));
+  if (usage_insns[regno].calls_num < calls_num)
+    {
+      unsigned int abis = 0;
+      for (unsigned int i = 0; i < NUM_ABI_IDS; ++i)
+	if (last_call_for_abi[i] > usage_insns[regno].calls_num)
+	  abis |= 1 << i;
+      gcc_assert (abis);
+      if (call_clobbered_in_region_p (abis, full_and_partial_call_clobbers,
+				      PSEUDO_REGNO_MODE (regno),
+				      reg_renumber[regno]))
+	return true;
+    }
+  return false;
 }
 
 /* Global registers occurring in the current EBB.  */
@@ -5483,8 +5499,7 @@ need_for_split_p (HARD_REG_SET potential_reload_hard_regs, int regno)
 	      true) the assign pass assumes that all pseudos living
 	      through calls are assigned to call saved hard regs.  */
 	   && (regno >= FIRST_PSEUDO_REGISTER
-	       || ! TEST_HARD_REG_BIT (call_used_or_fixed_regs, regno)
-	       || usage_insns[regno].calls_num == calls_num)
+	       || !TEST_HARD_REG_BIT (full_and_partial_call_clobbers, regno))
 	   /* We need at least 2 reloads to make pseudo splitting
 	      profitable.  We should provide hard regno splitting in
 	      any case to solve 1st insn scheduling problem when
@@ -6236,6 +6251,9 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
   curr_usage_insns_check++;
   clear_invariants ();
   reloads_num = calls_num = 0;
+  for (unsigned int i = 0; i < NUM_ABI_IDS; ++i)
+    last_call_for_abi[i] = 0;
+  CLEAR_HARD_REG_SET (full_and_partial_call_clobbers);
   bitmap_clear (&check_only_regs);
   bitmap_clear (&invalid_invariant_regs);
   last_processed_bb = NULL;
@@ -6449,6 +6467,10 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	      int regno, hard_regno;
 
 	      calls_num++;
+	      function_abi callee_abi = insn_callee_abi (curr_insn);
+	      last_call_for_abi[callee_abi.id ()] = calls_num;
+	      full_and_partial_call_clobbers
+		|= callee_abi.full_and_partial_reg_clobbers ();
 	      if ((cheap = find_reg_note (curr_insn,
 					  REG_RETURNED, NULL_RTX)) != NULL_RTX
 		  && ((cheap = XEXP (cheap, 0)), true)
@@ -6458,7 +6480,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 		  /* If there are pending saves/restores, the
 		     optimization is not worth.	 */
 		  && usage_insns[regno].calls_num == calls_num - 1
-		  && TEST_HARD_REG_BIT (call_used_or_fixed_regs, hard_regno))
+		  && callee_abi.clobbers_reg_p (GET_MODE (cheap), hard_regno))
 		{
 		  /* Restore the pseudo from the call result as
 		     REG_RETURNED note says that the pseudo value is
@@ -6481,6 +6503,9 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 		      /* We don't need to save/restore of the pseudo from
 			 this call.	 */
 		      usage_insns[regno].calls_num = calls_num;
+		      remove_from_hard_reg_set
+			(&full_and_partial_call_clobbers,
+			 GET_MODE (cheap), hard_regno);
 		      bitmap_set_bit (&check_only_regs, regno);
 		    }
 		}

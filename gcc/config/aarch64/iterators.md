@@ -538,6 +538,7 @@
     UNSPEC_SMULHRS	; Used in aarch64-sve2.md.
     UNSPEC_UMULHS	; Used in aarch64-sve2.md.
     UNSPEC_UMULHRS	; Used in aarch64-sve2.md.
+    UNSPEC_ASRD		; Used in aarch64-sve.md.
 ])
 
 ;; ------------------------------------------------------------------

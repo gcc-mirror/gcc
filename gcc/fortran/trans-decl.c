@@ -1911,9 +1911,13 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   if (sym->attr.associate_var)
     GFC_DECL_ASSOCIATE_VAR_P (decl) = 1;
 
+  /* We no longer mark __def_init as read-only so it does not take up
+     space in the read-only section and dan go into the BSS instead,
+     see PR 84487.  Marking this as artificial means that OpenMP will
+     treat this as predetermined shared.  */
   if (sym->attr.vtab
       || (sym->name[0] == '_' && gfc_str_startswith (sym->name, "__def_init")))
-    TREE_READONLY (decl) = 1;
+    DECL_ARTIFICIAL (decl) = 1;
 
   return decl;
 }
@@ -2687,6 +2691,11 @@ create_function_arglist (gfc_symbol * sym)
 	  && (!f->sym->attr.proc_pointer
 	      && f->sym->attr.flavor != FL_PROCEDURE))
 	DECL_BY_REFERENCE (parm) = 1;
+      if (f->sym->attr.optional)
+	{
+	  gfc_allocate_lang_decl (parm);
+	  GFC_DECL_OPTIONAL_ARGUMENT (parm) = 1;
+	}
 
       gfc_finish_decl (parm);
       gfc_finish_decl_attrs (parm, &f->sym->attr);

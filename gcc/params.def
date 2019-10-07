@@ -51,8 +51,13 @@ DEFPARAM (PARAM_PREDICTABLE_BRANCH_OUTCOME,
 
 DEFPARAM (PARAM_INLINE_MIN_SPEEDUP,
 	  "inline-min-speedup",
+	  "The minimal estimated speedup allowing inliner to ignore inline-insns-single and inline-insns-auto with -O3 and -Ofast.",
+	  15, 0, 100)
+
+DEFPARAM (PARAM_INLINE_MIN_SPEEDUP_O2,
+	  "inline-min-speedup-O2",
 	  "The minimal estimated speedup allowing inliner to ignore inline-insns-single and inline-insns-auto.",
-	  15, 0, 0)
+	  30, 0, 100)
 
 /* The single function inlining limit. This is the maximum size
    of a function counted in internal gcc instructions (not in
@@ -67,8 +72,13 @@ DEFPARAM (PARAM_INLINE_MIN_SPEEDUP,
    gets decreased.  */
 DEFPARAM (PARAM_MAX_INLINE_INSNS_SINGLE,
 	  "max-inline-insns-single",
-	  "The maximum number of instructions in a single function eligible for inlining.",
+	  "The maximum number of instructions in a single function eligible for inlining with -O3 and -Ofast.",
 	  200, 0, 0)
+
+DEFPARAM (PARAM_MAX_INLINE_INSNS_SINGLE_O2,
+	  "max-inline-insns-single-O2",
+	  "The maximum number of instructions in a single function eligible for inlining.",
+	  30, 0, 0)
 
 /* The single function inlining limit for functions that are
    inlined by virtue of -finline-functions (-O3).
@@ -79,13 +89,28 @@ DEFPARAM (PARAM_MAX_INLINE_INSNS_SINGLE,
    The default value is 30.  */
 DEFPARAM (PARAM_MAX_INLINE_INSNS_AUTO,
 	  "max-inline-insns-auto",
-	  "The maximum number of instructions when automatically inlining.",
+	  "The maximum number of instructions when automatically inlining with -O3 and -Ofast.",
 	  30, 0, 0)
+
+DEFPARAM (PARAM_MAX_INLINE_INSNS_AUTO_O2,
+	  "max-inline-insns-auto-O2",
+	  "The maximum number of instructions when automatically inlining.",
+	  15, 0, 0)
 
 DEFPARAM (PARAM_MAX_INLINE_INSNS_SMALL,
 	  "max-inline-insns-small",
 	  "The maximum number of instructions when automatically inlining small functions.",
 	  0, 0, 0)
+
+DEFPARAM (PARAM_INLINE_HEURISTICS_HINT_PERCENT,
+	  "inline-heuristics-hint-percent",
+	  "The scale (in percents) applied to inline-insns-single and auto limits when heuristics hints that inlining is very profitable with -O3 and -Ofast.",
+	  1600, 100, 1000000)
+
+DEFPARAM (PARAM_INLINE_HEURISTICS_HINT_PERCENT_O2,
+	  "inline-heuristics-hint-percent-O2",
+	  "The scale (in percents) applied to inline-insns-single and auto limits when heuristics hints that inlining is very profitable.",
+	  200, 100, 1000000)
 
 DEFPARAM (PARAM_MAX_INLINE_INSNS_SIZE,
 	  "max-inline-insns-size",
@@ -233,8 +258,12 @@ DEFPARAM(PARAM_IPCP_UNIT_GROWTH,
 	 10, 0, 0)
 DEFPARAM(PARAM_EARLY_INLINING_INSNS,
 	 "early-inlining-insns",
-	 "Maximal estimated growth of function body caused by early inlining of single call.",
+	 "Maximal estimated growth of function body caused by early inlining of single call with -O3 and -Ofast.",
 	 14, 0, 0)
+DEFPARAM(PARAM_EARLY_INLINING_INSNS_O2,
+	 "early-inlining-insns-O2",
+	 "Maximal estimated growth of function body caused by early inlining of single call with -O1 and -O2.",
+	 6, 0, 0)
 DEFPARAM(PARAM_LARGE_STACK_FRAME,
 	 "large-stack-frame",
 	 "The size of stack frame to be considered large.",

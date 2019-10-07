@@ -1330,7 +1330,8 @@ gfc_check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 	  || !compare_type_characteristics (s2, s1))
 	{
 	  snprintf (errmsg, err_len, "Type mismatch in argument '%s' (%s/%s)",
-		    s1->name, gfc_typename (&s1->ts), gfc_typename (&s2->ts));
+		    s1->name, gfc_dummy_typename (&s1->ts),
+		    gfc_dummy_typename (&s2->ts));
 	  return false;
 	}
       if (!compare_rank (s1, s2))
@@ -2338,15 +2339,15 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 			       "and actual argument at %L (%s/%s).",
 			       &actual->where,
 			       &formal->declared_at,
-			       gfc_typename (&actual->ts),
-			       gfc_typename (&formal->ts));
+			       gfc_typename (actual),
+			       gfc_dummy_typename (&formal->ts));
 
 	      formal->error = 1;
 	    }
 	  else
 	    gfc_error_opt (0, "Type mismatch in argument %qs at %L; passed %s "
-			   "to %s", formal->name, where, gfc_typename (&actual->ts),
-			   gfc_typename (&formal->ts));
+			   "to %s", formal->name, where, gfc_typename (actual),
+			   gfc_dummy_typename (&formal->ts));
 	}
       return false;
     }

@@ -41,9 +41,12 @@ public:
   bitmap_head conflicts;
   /* Conflicts with untracked hard registers.  */
   HARD_REG_SET hard_conflicts;
+  /* Which registers are fully or partially clobbered by the calls that
+     the chain crosses.  */
+  HARD_REG_SET call_clobber_mask;
 
-  /* Nonzero if the chain crosses a call.  */
-  unsigned int need_caller_save_reg:1;
+  /* A bitmask of ABIs used by the calls that the chain crosses.  */
+  unsigned int call_abis : NUM_ABI_IDS;
   /* Nonzero if the register is used in a way that prevents renaming,
      such as the SET_DEST of a CALL_INSN or an asm operand that used
      to be a hard register.  */

@@ -1192,6 +1192,7 @@ pp_format (pretty_printer *pp, text_info *text)
   /* Set output to the argument obstack, and switch line-wrapping and
      prefixing off.  */
   buffer->obstack = &buffer->chunk_obstack;
+  const int old_line_length = buffer->line_length;
   old_wrapping_mode = pp_set_verbatim_wrapping (pp);
 
   /* Second phase.  Replace each formatter with the formatted text it
@@ -1412,7 +1413,7 @@ pp_format (pretty_printer *pp, text_info *text)
 
   /* Revert to normal obstack and wrapping mode.  */
   buffer->obstack = &buffer->formatted_obstack;
-  buffer->line_length = 0;
+  buffer->line_length = old_line_length;
   pp_wrapping_mode (pp) = old_wrapping_mode;
   pp_clear_state (pp);
 }
@@ -1427,7 +1428,6 @@ pp_output_formatted_text (pretty_printer *pp)
   const char **args = chunk_array->args;
 
   gcc_assert (buffer->obstack == &buffer->formatted_obstack);
-  gcc_assert (buffer->line_length == 0);
 
   /* This is a third phase, first 2 phases done in pp_format_args.
      Now we actually print it.  */

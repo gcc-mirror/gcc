@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgcleanup.h"
 #include "reload.h"
 #include "tree-pass.h"
+#include "function-abi.h"
 
 #ifndef STACK_POP_CODE
 #if STACK_GROWS_DOWNWARD
@@ -3227,7 +3228,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
 	      break;
 	    }
 	  /* And that we don't create an extra save/restore.  */
-	  if (! call_used_or_fixed_reg_p (regno + j)
+	  if (! crtl->abi->clobbers_full_reg_p (regno + j)
 	      && ! df_regs_ever_live_p (regno + j))
 	    {
 	      success = 0;
@@ -3725,8 +3726,7 @@ store_data_bypass_p_1 (rtx_insn *out_insn, rtx in_set)
     {
       rtx out_exp = XVECEXP (out_pat, 0, i);
 
-      if (GET_CODE (out_exp) == CLOBBER || GET_CODE (out_exp) == USE
-	  || GET_CODE (out_exp) == CLOBBER_HIGH)
+      if (GET_CODE (out_exp) == CLOBBER || GET_CODE (out_exp) == USE)
 	continue;
 
       gcc_assert (GET_CODE (out_exp) == SET);
@@ -3757,8 +3757,7 @@ store_data_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
     {
       rtx in_exp = XVECEXP (in_pat, 0, i);
 
-      if (GET_CODE (in_exp) == CLOBBER || GET_CODE (in_exp) == USE
-	  || GET_CODE (in_exp) == CLOBBER_HIGH)
+      if (GET_CODE (in_exp) == CLOBBER || GET_CODE (in_exp) == USE)
 	continue;
 
       gcc_assert (GET_CODE (in_exp) == SET);
@@ -3810,7 +3809,7 @@ if_test_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
 	{
 	  rtx exp = XVECEXP (out_pat, 0, i);
 
-	  if (GET_CODE (exp) == CLOBBER  || GET_CODE (exp) == CLOBBER_HIGH)
+	  if (GET_CODE (exp) == CLOBBER)
 	    continue;
 
 	  gcc_assert (GET_CODE (exp) == SET);

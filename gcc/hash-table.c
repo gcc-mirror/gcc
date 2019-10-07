@@ -78,7 +78,7 @@ struct prime_ent const prime_tab[] = {
 unsigned int hash_table_sanitize_eq_limit;
 
 /* The following function returns an index into the above table of the
-   nearest prime number which is greater than N, and near a power of two. */
+   nearest prime number which is at least N, and near a power of two. */
 
 unsigned int
 hash_table_higher_prime_index (unsigned long n)

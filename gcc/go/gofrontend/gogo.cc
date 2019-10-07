@@ -518,11 +518,11 @@ Gogo::import_package(const std::string& filename,
       else if (ln == ".")
 	{
 	  Bindings* bindings = package->bindings();
-	  for (Bindings::const_declarations_iterator p =
+	  for (Bindings::const_declarations_iterator pd =
 		 bindings->begin_declarations();
-	       p != bindings->end_declarations();
-	       ++p)
-	    this->add_dot_import_object(p->second);
+	       pd != bindings->end_declarations();
+	       ++pd)
+	    this->add_dot_import_object(pd->second);
           std::string dot_alias = "." + package->package_name();
           package->add_alias(dot_alias, location);
 	}
@@ -678,8 +678,8 @@ Gogo::recompute_init_priorities()
            pci != ii->precursors().end();
            ++pci)
         {
-          Import_init* ii = this->lookup_init(*pci);
-          nonroots.insert(ii);
+          Import_init* ii_init = this->lookup_init(*pci);
+          nonroots.insert(ii_init);
         }
     }
 
@@ -2613,11 +2613,11 @@ Gogo::define_global_names()
 	    {
 	      if (no->type_declaration_value()->has_methods())
 		{
-		  for (std::vector<Named_object*>::const_iterator p =
+		  for (std::vector<Named_object*>::const_iterator pm =
 			 no->type_declaration_value()->methods()->begin();
-		       p != no->type_declaration_value()->methods()->end();
-		       p++)
-		    go_error_at((*p)->location(),
+		       pm != no->type_declaration_value()->methods()->end();
+		       pm++)
+		    go_error_at((*pm)->location(),
 				"may not define methods on non-local type");
 		}
 	      no->set_type_value(global_no->type_value());
@@ -6550,8 +6550,8 @@ Function::build(Gogo* gogo, Named_object* named_function)
 
       // Build the backend representation for all the statements in the
       // function.
-      Translate_context context(gogo, named_function, NULL, NULL);
-      Bblock* code_block = this->block_->get_backend(&context);
+      Translate_context bcontext(gogo, named_function, NULL, NULL);
+      Bblock* code_block = this->block_->get_backend(&bcontext);
 
       // Initialize variables if necessary.
       Translate_context icontext(gogo, named_function, this->block_,
@@ -6608,8 +6608,8 @@ Function::build(Gogo* gogo, Named_object* named_function)
   // If we created a descriptor for the function, make sure we emit it.
   if (this->descriptor_ != NULL)
     {
-      Translate_context context(gogo, NULL, NULL, NULL);
-      this->descriptor_->get_backend(&context);
+      Translate_context dcontext(gogo, NULL, NULL, NULL);
+      this->descriptor_->get_backend(&dcontext);
     }
 }
 

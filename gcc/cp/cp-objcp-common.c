@@ -145,11 +145,9 @@ cp_get_debug_type (const_tree type)
   if (dtype)
     {
       tree ktype = CONST_CAST_TREE (type);
-      if (debug_type_map == NULL)
-	debug_type_map = tree_cache_map::create_ggc (512);
-      else if (tree *slot = debug_type_map->get (ktype))
+      if (tree *slot = hash_map_safe_get (debug_type_map, ktype))
 	return *slot;
-      debug_type_map->put (ktype, dtype);
+      hash_map_safe_put<hm_ggc> (debug_type_map, ktype, dtype);
     }
 
   return dtype;

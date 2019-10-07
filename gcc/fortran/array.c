@@ -1358,7 +1358,7 @@ check_element_type (gfc_expr *expr, bool convert)
 
   gfc_error ("Element in %s array constructor at %L is %s",
 	     gfc_typename (&constructor_ts), &expr->where,
-	     gfc_typename (&expr->ts));
+	     gfc_typename (expr));
 
   cons_state = CONS_BAD;
   return 1;

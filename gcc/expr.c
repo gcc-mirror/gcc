@@ -73,9 +73,10 @@ along with GCC; see the file COPYING3.  If not see
 int cse_not_expected;
 
 static bool block_move_libcall_safe_for_call_parm (void);
-static bool emit_block_move_via_cpymem (rtx, rtx, rtx, unsigned, unsigned, HOST_WIDE_INT,
-					unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
-					unsigned HOST_WIDE_INT);
+static bool emit_block_move_via_pattern (rtx, rtx, rtx, unsigned, unsigned, 
+					 HOST_WIDE_INT, unsigned HOST_WIDE_INT,
+					 unsigned HOST_WIDE_INT,
+					 unsigned HOST_WIDE_INT, bool);
 static void emit_block_move_via_loop (rtx, rtx, rtx, unsigned);
 static void clear_by_pieces (rtx, unsigned HOST_WIDE_INT, unsigned int);
 static rtx_insn *compress_float_constant (rtx, rtx);
@@ -559,7 +560,6 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 	}
       else
 	{
-	  scalar_mode intermediate;
 	  rtx tmp;
 	  int shift_amount;
 
@@ -1562,7 +1562,8 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 		       unsigned HOST_WIDE_INT min_size,
 		       unsigned HOST_WIDE_INT max_size,
 		       unsigned HOST_WIDE_INT probable_max_size,
-		       bool bail_out_libcall, bool *is_move_done)
+		       bool bail_out_libcall, bool *is_move_done,
+		       bool might_overlap)
 {
   int may_use_call;
   rtx retval = 0;
@@ -1622,13 +1623,31 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
       set_mem_size (y, const_size);
     }
 
-  if (CONST_INT_P (size) && can_move_by_pieces (INTVAL (size), align))
-    move_by_pieces (x, y, INTVAL (size), align, RETURN_BEGIN);
-  else if (emit_block_move_via_cpymem (x, y, size, align,
+  bool pieces_ok = CONST_INT_P (size)
+    && can_move_by_pieces (INTVAL (size), align);
+  bool pattern_ok = false;
+
+  if (!pieces_ok || might_overlap)
+    {
+      pattern_ok
+	= emit_block_move_via_pattern (x, y, size, align,
 				       expected_align, expected_size,
-				       min_size, max_size, probable_max_size))
+				       min_size, max_size, probable_max_size,
+				       might_overlap);
+      if (!pattern_ok && might_overlap)
+	{
+	  /* Do not try any of the other methods below as they are not safe
+	     for overlapping moves.  */
+	  *is_move_done = false;
+	  return retval;
+	}
+    }
+
+  if (pattern_ok)
     ;
-  else if (may_use_call
+  else if (pieces_ok)
+    move_by_pieces (x, y, INTVAL (size), align, RETURN_BEGIN);
+  else if (may_use_call && !might_overlap
 	   && ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (x))
 	   && ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (y)))
     {
@@ -1645,7 +1664,8 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
       retval = emit_block_copy_via_libcall (x, y, size,
 					    method == BLOCK_OP_TAILCALL);
     }
-
+  else if (might_overlap)
+    *is_move_done = false;
   else
     emit_block_move_via_loop (x, y, size, align);
 
@@ -1674,9 +1694,7 @@ emit_block_move (rtx x, rtx y, rtx size, enum block_op_methods method)
 static bool
 block_move_libcall_safe_for_call_parm (void)
 {
-#if defined (REG_PARM_STACK_SPACE)
   tree fn;
-#endif
 
   /* If arguments are pushed on the stack, then they're safe.  */
   if (PUSH_ARGS)
@@ -1699,7 +1717,7 @@ block_move_libcall_safe_for_call_parm (void)
   {
     CUMULATIVE_ARGS args_so_far_v;
     cumulative_args_t args_so_far;
-    tree fn, arg;
+    tree arg;
 
     fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
     INIT_CUMULATIVE_ARGS (args_so_far_v, TREE_TYPE (fn), NULL_RTX, 0, 3);
@@ -1721,15 +1739,26 @@ block_move_libcall_safe_for_call_parm (void)
   return true;
 }
 
-/* A subroutine of emit_block_move.  Expand a cpymem pattern;
-   return true if successful.  */
+/* A subroutine of emit_block_move.  Expand a cpymem or movmem pattern;
+   return true if successful.
+  
+   X is the destination of the copy or move.
+   Y is the source of the copy or move.
+   SIZE is the size of the block to be moved.
+
+   MIGHT_OVERLAP indicates this originated with expansion of a
+   builtin_memmove() and the source and destination blocks may
+   overlap.
+  */
 
 static bool
-emit_block_move_via_cpymem (rtx x, rtx y, rtx size, unsigned int align,
-			    unsigned int expected_align, HOST_WIDE_INT expected_size,
-			    unsigned HOST_WIDE_INT min_size,
-			    unsigned HOST_WIDE_INT max_size,
-			    unsigned HOST_WIDE_INT probable_max_size)
+emit_block_move_via_pattern (rtx x, rtx y, rtx size, unsigned int align,
+			     unsigned int expected_align,
+			     HOST_WIDE_INT expected_size,
+			     unsigned HOST_WIDE_INT min_size,
+			     unsigned HOST_WIDE_INT max_size,
+			     unsigned HOST_WIDE_INT probable_max_size,
+			     bool might_overlap)
 {
   if (expected_align < align)
     expected_align = align;
@@ -1752,7 +1781,11 @@ emit_block_move_via_cpymem (rtx x, rtx y, rtx size, unsigned int align,
   FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
     {
       scalar_int_mode mode = mode_iter.require ();
-      enum insn_code code = direct_optab_handler (cpymem_optab, mode);
+      enum insn_code code;
+      if (might_overlap)
+	code = direct_optab_handler (movmem_optab, mode);
+      else
+	code = direct_optab_handler (cpymem_optab, mode);
 
       if (code != CODE_FOR_nothing
 	  /* We don't need MODE to be narrower than BITS_PER_HOST_WIDE_INT
@@ -4446,16 +4479,16 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 	  /* Get the address of the stack space.
 	     In this case, we do not deal with EXTRA separately.
 	     A single stack adjust will do.  */
-	  poly_int64 offset;
+	  poly_int64 const_args_so_far;
 	  if (! args_addr)
 	    {
 	      temp = push_block (size, extra, where_pad == PAD_DOWNWARD);
 	      extra = 0;
 	    }
-	  else if (poly_int_rtx_p (args_so_far, &offset))
+	  else if (poly_int_rtx_p (args_so_far, &const_args_so_far))
 	    temp = memory_address (BLKmode,
 				   plus_constant (Pmode, args_addr,
-						  skip + offset));
+						  skip + const_args_so_far));
 	  else
 	    temp = memory_address (BLKmode,
 				   plus_constant (Pmode,
@@ -4530,8 +4563,8 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
     {
       /* Scalar partly in registers.  This case is only supported
 	 for fixed-wdth modes.  */
-      int size = GET_MODE_SIZE (mode).to_constant ();
-      size /= UNITS_PER_WORD;
+      int num_words = GET_MODE_SIZE (mode).to_constant ();
+      num_words /= UNITS_PER_WORD;
       int i;
       int not_stack;
       /* # bytes of start of argument
@@ -4578,7 +4611,7 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
       /* Loop over all the words allocated on the stack for this arg.  */
       /* We can do it by words, because any scalar bigger than a word
 	 has a size a multiple of a word.  */
-      for (i = size - 1; i >= not_stack; i--)
+      for (i = num_words - 1; i >= not_stack; i--)
 	if (i >= not_stack + offset)
 	  if (!emit_push_insn (operand_subword_force (x, i, mode),
 			  word_mode, NULL_TREE, NULL_RTX, align, 0, NULL_RTX,
@@ -5241,8 +5274,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		    }
 		  else
 		    {
-		      machine_mode to_mode
-			= GET_MODE_INNER (GET_MODE (to_rtx));
+		      to_mode = GET_MODE_INNER (to_mode);
 		      rtx from_real
 			= simplify_gen_subreg (to_mode, result,
 					       TYPE_MODE (TREE_TYPE (from)),
@@ -5261,7 +5293,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	  else
 	    {
 	    concat_store_slow:;
-	      rtx temp = assign_stack_temp (to_mode,
+	      rtx temp = assign_stack_temp (GET_MODE (to_rtx),
 					    GET_MODE_SIZE (GET_MODE (to_rtx)));
 	      write_complex_part (temp, XEXP (to_rtx, 0), false);
 	      write_complex_part (temp, XEXP (to_rtx, 1), true);
@@ -6425,7 +6457,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 		&& exp_size >= 0
 		&& bitpos + BITS_PER_WORD <= exp_size * BITS_PER_UNIT)
 	      {
-		tree type = TREE_TYPE (value);
+		type = TREE_TYPE (value);
 
 		if (TYPE_PRECISION (type) < BITS_PER_WORD)
 		  {
@@ -6502,7 +6534,6 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	else
 	  {
 	    unsigned HOST_WIDE_INT idx;
-	    tree index, value;
 	    HOST_WIDE_INT count = 0, zero_count = 0;
 	    need_to_clear = ! const_bounds_p;
 
@@ -6791,7 +6822,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    icode = convert_optab_handler (vec_init_optab, mode, emode);
 	    if (icode != CODE_FOR_nothing)
 	      {
-		unsigned int i, n = const_n_elts;
+		unsigned int n = const_n_elts;
 
 		if (emode != eltmode)
 		  {
@@ -6799,8 +6830,8 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 		    vec_vec_init_p = true;
 		  }
 		vector = rtvec_alloc (n);
-		for (i = 0; i < n; i++)
-		  RTVEC_ELT (vector, i) = CONST0_RTX (emode);
+		for (unsigned int k = 0; k < n; k++)
+		  RTVEC_ELT (vector, k) = CONST0_RTX (emode);
 	      }
 	  }
 
@@ -7121,7 +7152,7 @@ store_field (rtx target, poly_int64 bitsize, poly_int64 bitpos,
 	 word size, we need to load the value (see again store_bit_field).  */
       if (GET_MODE (temp) == BLKmode && known_le (bitsize, BITS_PER_WORD))
 	{
-	  scalar_int_mode temp_mode = smallest_int_mode_for_size (bitsize);
+	  temp_mode = smallest_int_mode_for_size (bitsize);
 	  temp = extract_bit_field (temp, bitsize, 0, 1, NULL_RTX, temp_mode,
 				    temp_mode, false, NULL);
 	}
@@ -8344,7 +8375,7 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
   if (TREE_CODE (treeop0) == SSA_NAME
       && (srcstmt = get_def_for_expr_class (treeop0, tcc_comparison)))
     {
-      tree type = TREE_TYPE (gimple_assign_rhs1 (srcstmt));
+      type = TREE_TYPE (gimple_assign_rhs1 (srcstmt));
       enum tree_code cmpcode = gimple_assign_rhs_code (srcstmt);
       op00 = expand_normal (gimple_assign_rhs1 (srcstmt));
       op01 = expand_normal (gimple_assign_rhs2 (srcstmt));
@@ -8354,7 +8385,7 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
     }
   else if (COMPARISON_CLASS_P (treeop0))
     {
-      tree type = TREE_TYPE (TREE_OPERAND (treeop0, 0));
+      type = TREE_TYPE (TREE_OPERAND (treeop0, 0));
       enum tree_code cmpcode = TREE_CODE (treeop0);
       op00 = expand_normal (TREE_OPERAND (treeop0, 0));
       op01 = expand_normal (TREE_OPERAND (treeop0, 1));
@@ -9648,7 +9679,6 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	tree oprnd0 = treeop0;
 	tree oprnd1 = treeop1;
 	tree oprnd2 = treeop2;
-	rtx op2;
 
 	expand_operands (oprnd0, oprnd1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
 	op2 = expand_normal (oprnd2);
@@ -9662,7 +9692,6 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	tree oprnd0 = treeop0;
 	tree oprnd1 = treeop1;
 	tree oprnd2 = treeop2;
-	rtx op2;
 
 	expand_operands (oprnd0, oprnd1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
 	op2 = expand_normal (oprnd2);
@@ -9676,7 +9705,6 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
         tree oprnd0 = treeop0;
         tree oprnd1 = treeop1;
         tree oprnd2 = treeop2;
-        rtx op2;
 
         this_optab = optab_for_tree_code (code, type, optab_default);
         expand_operands (oprnd0, oprnd1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
@@ -9766,8 +9794,8 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  bitsize = TYPE_PRECISION (TREE_TYPE (treeop1));
 	else
 	  bitsize = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (treeop1)));
-	rtx op0 = expand_normal (treeop0);
-	rtx op1 = expand_normal (treeop1);
+	op0 = expand_normal (treeop0);
+	op1 = expand_normal (treeop1);
 	rtx dst = gen_reg_rtx (mode);
 	emit_move_insn (dst, op0);
 	store_bit_field (dst, bitsize, bitpos, 0, 0,
@@ -9966,7 +9994,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	{
 	  rtx r;
 	  location_t saved_loc = curr_insn_location ();
-	  location_t loc = gimple_location (g);
+	  loc = gimple_location (g);
 	  if (loc != UNKNOWN_LOCATION)
 	    set_curr_insn_location (loc);
 	  ops.code = gimple_assign_rhs_code (g);
@@ -10165,9 +10193,9 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	   GET_MODE_PRECISION (TYPE_MODE (type)), we need to extend from
 	   the former to the latter according to the signedness of the
 	   type.  */
-	scalar_int_mode mode = SCALAR_INT_TYPE_MODE (type);
+	scalar_int_mode int_mode = SCALAR_INT_TYPE_MODE (type);
 	temp = immed_wide_int_const
-	  (wi::to_wide (exp, GET_MODE_PRECISION (mode)), mode);
+	  (wi::to_wide (exp, GET_MODE_PRECISION (int_mode)), int_mode);
 	return temp;
       }
 
@@ -10242,9 +10270,9 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
       /* Handle evaluating a complex constant in a CONCAT target.  */
       if (original_target && GET_CODE (original_target) == CONCAT)
 	{
-	  machine_mode mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
 	  rtx rtarg, itarg;
 
+	  mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
 	  rtarg = XEXP (original_target, 0);
 	  itarg = XEXP (original_target, 1);
 
@@ -10548,14 +10576,14 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		if (tree_fits_uhwi_p (index1)
 		    && compare_tree_int (index1, TREE_STRING_LENGTH (init)) < 0)
 		  {
-		    tree type = TREE_TYPE (TREE_TYPE (init));
-		    scalar_int_mode mode;
+		    tree char_type = TREE_TYPE (TREE_TYPE (init));
+		    scalar_int_mode char_mode;
 
-		    if (is_int_mode (TYPE_MODE (type), &mode)
-			&& GET_MODE_SIZE (mode) == 1)
+		    if (is_int_mode (TYPE_MODE (char_type), &char_mode)
+			&& GET_MODE_SIZE (char_mode) == 1)
 		      return gen_int_mode (TREE_STRING_POINTER (init)
 					   [TREE_INT_CST_LOW (index1)],
-					   mode);
+					   char_mode);
 		  }
 	      }
 	  }
@@ -10709,8 +10737,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 			rtx op = read_complex_part (op0, i != 0);
 			if (GET_CODE (op) == SUBREG)
 			  op = force_reg (GET_MODE (op), op);
-			rtx temp = gen_lowpart_common (GET_MODE_INNER (mode1),
-						       op);
+			temp = gen_lowpart_common (GET_MODE_INNER (mode1), op);
 			if (temp)
 			  op = temp;
 			else
@@ -12102,11 +12129,12 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
       && TREE_CODE (arg0) == SSA_NAME
       && TREE_CODE (arg1) == INTEGER_CST)
     {
-      enum tree_code code = maybe_optimize_mod_cmp (ops->code, &arg0, &arg1);
-      if (code != ops->code)
+      enum tree_code new_code = maybe_optimize_mod_cmp (ops->code,
+							&arg0, &arg1);
+      if (new_code != ops->code)
 	{
 	  struct separate_ops nops = *ops;
-	  nops.code = ops->code = code;
+	  nops.code = ops->code = new_code;
 	  nops.op0 = arg0;
 	  nops.op1 = arg1;
 	  nops.type = TREE_TYPE (arg0);
@@ -12209,7 +12237,7 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
 	  && integer_pow2p (gimple_assign_rhs2 (srcstmt)))
 	{
 	  enum tree_code tcode = code == NE ? NE_EXPR : EQ_EXPR;
-	  tree type = lang_hooks.types.type_for_mode (mode, unsignedp);
+	  type = lang_hooks.types.type_for_mode (mode, unsignedp);
 	  tree temp = fold_build2_loc (loc, BIT_AND_EXPR, TREE_TYPE (arg1),
 				       gimple_assign_rhs1 (srcstmt),
 				       gimple_assign_rhs2 (srcstmt));
