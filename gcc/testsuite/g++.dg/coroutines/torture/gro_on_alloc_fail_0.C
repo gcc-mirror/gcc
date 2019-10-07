@@ -11,8 +11,7 @@ namespace coro = std::experimental::coroutines_n4830;
 
 // check the code-gen for the failed alloc return.
 
-// avoid including headers, where possible.
-#if 0 && __has_include(<new>)
+#if __has_include(<new>)
 #  include <new>
 #else
 
