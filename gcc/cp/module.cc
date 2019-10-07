@@ -2700,7 +2700,8 @@ enum tree_tag {
   tt_null,		/* NULL_TREE.  */
   tt_fixed,		/* Fixed vector index.  */
 
-  tt_node,		/* New node.  */
+  tt_node,		/* By-value node.  */
+  tt_decl,		/* By-value mergeable decl.  */
 
   tt_id,  		/* Identifier node.  */
   tt_conv_id,		/* Conversion operator name.  */
@@ -2827,7 +2828,8 @@ private:
   tree tree_binfo ();
   bool tree_node_bools (tree);
   bool tree_node_vals (tree);
-  tree tree_value (walk_kind);
+  tree tree_value ();
+  tree decl_value (walk_kind);
 
 private:
   tree chained_decls ();  /* Follow DECL_CHAIN.  */
@@ -3010,12 +3012,11 @@ public:
     return dep_hash->is_for_mergeable ();
   }
 
-public:
-  void tree_value (tree, walk_kind ref);
-
 private:
   bool decl_node (tree, walk_kind ref);
   void type_node (tree);
+  void tree_value (tree);
+  void decl_value (tree, walk_kind ref);
 
  public:
   /* Serialize various definitions. */
@@ -6826,6 +6827,551 @@ trees_out::ref_node (tree t)
   return WK_none;
 }
 
+/* T is a decl node that must be written by value.  WALK indicates the
+   kind of by-valueness.  */
+
+void
+trees_out::decl_value (tree t, walk_kind walk)
+{
+  gcc_assert (walk != WK_normal && DECL_P (t));
+
+  /* We should never walk into a thunk by accident.  */
+  gcc_assert (walk == WK_body || !DECL_THUNK_P (t));
+
+  gcc_checking_assert (unsigned (walk - WK_body) <= (WK_clone - WK_body));
+
+  if (streaming_p ())
+    {
+      if (CHECKING_P && DECL_P (t))
+	{
+	  /* Never start in the middle of a template.  */
+	  int use_tpl = -1;
+	  if (tree ti = node_template_info (t, use_tpl))
+	    gcc_checking_assert (TREE_CODE (TI_TEMPLATE (ti)) == OVERLOAD
+				 || (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti))
+				     != t));
+	}
+
+      /* A new node -> tt_node, tt_mergeable or tt_clone.  */
+      unique++;
+      i (tt_decl);
+      u (walk);
+      u (TREE_CODE (t));
+      start (t);
+
+      if (walk == WK_mergeable && !state->is_header ())
+	{
+	  /* Tell the importer whether this is a global module entity,
+	     or a module entity.  This bool merges into the next block
+	     of bools.  Sneaky.  */
+	  bool is_mod = false;
+	  tree o = get_originating_module_decl (t);
+	  if (DECL_LANG_SPECIFIC (o))
+	    is_mod = DECL_MODULE_PURVIEW_P (o);
+	  b (is_mod);
+	}
+      tree_node_bools (t);
+    }
+
+  int tag = insert (t, walk);
+  if (streaming_p ())
+    dump (dumper::TREE)
+      && dump ("Writing:%d %C:%N%S", tag, TREE_CODE (t), t, t);
+
+  if (walk != WK_body)
+    walk = WK_merging;
+  // FIXME: If mergeable, mark function parms etc as mergeable too
+
+  tree inner = t;
+  int inner_tag = 0;
+
+  if (TREE_CODE (t) == TEMPLATE_DECL)
+    {
+      inner = DECL_TEMPLATE_RESULT (t);
+
+      if (streaming_p ())
+	{
+	  u (TREE_CODE (inner));
+	  start (inner);
+	  tree_node_bools (inner);
+	}
+
+      inner_tag = insert (inner, walk);
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Writing:%d %C:%N%S", inner_tag,
+		   TREE_CODE (inner), inner, inner);
+    }
+
+  tree type = NULL_TREE;
+  int type_tag = 0;
+  if (TREE_CODE (inner) == TYPE_DECL)
+    {
+      // FIXME: anon-structured type with typedef name?
+      type = TREE_TYPE (inner);
+      bool is_stub = ((TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM ? t : inner)
+		      == TYPE_STUB_DECL (type));
+
+      if (streaming_p ())
+	u (is_stub ? TREE_CODE (type) : 0);
+
+      if (is_stub)
+	{
+	  if (streaming_p ())
+	    {
+	      start (type);
+	      tree_node_bools (type);
+	    }
+
+	  type_tag = insert (type, walk);
+	  if (streaming_p ())
+	    dump (dumper::TREE)
+	      && dump ("Writing:%d %C:%N%S", type_tag,
+		       TREE_CODE (type), type, type);
+	}
+      else
+	/* Regular typedef.  */
+	type = NULL_TREE;
+      gcc_assert (!type || !DECL_ORIGINAL_TYPE (inner));
+    }
+
+  if (walk != WK_body)
+    {
+      /* Now write out the merging information, and then really
+	 install the tag values.  */
+      merge_kind mk = key_mergeable (dep_hash->find_entity (t));
+
+      dump (dumper::MERGE)
+	&& dump ("Wrote:%d's %s merge key %C:%N", tag,
+		 merge_kind_name[mk], TREE_CODE (t), t);
+
+      /* This is the point where the importer determines whether it
+	 really has a new decl or not.  So it is safe to refer to
+	 these nodes.  */
+      mark_merged (t, tag);
+      if (inner_tag != 0)
+	mark_merged (inner, inner_tag);
+      if (type_tag != 0)
+	mark_merged (type, type_tag);
+      if (TREE_CODE (inner) == FUNCTION_DECL)
+	fn_parms_fini (inner, t);
+    }
+
+  if (inner_tag != 0)
+    {
+      /* Template pieces.  */
+      tree_node (DECL_TEMPLATE_PARMS (t));
+      /* DECL_TEMPLATE_RESULT is inner, so no need to stream that.  */
+      tree_node_vals (t);
+    }
+
+  tree_node_vals (inner);
+
+  if (type)
+    tree_node_vals (type);
+
+  // FIXME: It'd be nice if there was a flag to tell us to go look for
+  // constraints.  Not a modules-specific problem though.
+  if (flag_concepts)
+    {
+      tree constraints = get_constraints (t);
+      tree_node (constraints);
+    }
+
+  if (TREE_CODE (inner) == TYPE_DECL
+      && DECL_ORIGINAL_TYPE (inner))
+    {
+      /* A typedef type.  */
+      int type_tag = insert (TREE_TYPE (inner));
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Cloned:%d typedef %C:%N", type_tag,
+		   TREE_CODE (TREE_TYPE (inner)), TREE_TYPE (inner));
+    }
+
+  if (streaming_p ())
+    dump (dumper::TREE) && dump ("Written decl:%d %C:%N", tag, TREE_CODE (t), t);
+}
+
+tree
+trees_in::decl_value (walk_kind walk)
+{
+  int tag = 0;
+  bool is_mod = false;
+
+  tree res = start (u ());
+  if (res)
+    {
+      if (walk == WK_mergeable && !state->is_header ())
+	/* See note in trees_out about where this bool is sequenced.  */
+	is_mod = b ();
+
+      if (!tree_node_bools (res))
+	res = NULL_TREE;
+    }
+  
+  /* Insert into map.  */
+  tag = insert (res);
+  if (res)
+    dump (dumper::TREE)
+      && dump ("Reading %s:%d %C", walk_kind_name[walk], tag, TREE_CODE (res));
+
+  tree inner = res;
+  int inner_tag = 0;
+  if (res && TREE_CODE (res) == TEMPLATE_DECL)
+    {
+      inner = start (u ());
+      if (inner)
+	{
+	  DECL_TEMPLATE_RESULT (res) = inner;
+
+	  if (!tree_node_bools (inner))
+	    res = NULL_TREE;
+	}
+      else
+	res = NULL_TREE;
+
+      inner_tag = insert (inner);
+      if (res)
+	dump (dumper::TREE)
+	  && dump ("Reading %s:%d %C", walk_kind_name[walk],
+		   inner_tag, TREE_CODE (inner));
+    }
+
+  tree type = NULL_TREE;
+  int type_tag = 0;
+  if (res && TREE_CODE (inner) == TYPE_DECL)
+    {
+      if (unsigned type_code = u ())
+	{
+	  type = start (type_code);
+	  if (type)
+	    {
+	      TREE_TYPE (inner) = type;
+	      TYPE_NAME (type) = inner;
+
+	      if (!tree_node_bools (type))
+		res = NULL_TREE;
+	    }
+	  else
+	    res = NULL_TREE;
+
+	  type_tag = insert (type);
+	  if (res)
+	    dump (dumper::TREE)
+	      && dump ("Reading %s:%d %C", walk_kind_name[walk], type_tag,
+		       TREE_CODE (type));
+	}
+    }
+
+  if (!res)
+    {
+    bail:
+      if (inner_tag != 0)
+	back_refs[~inner_tag] = NULL_TREE;
+      if (type_tag != 0)
+	back_refs[~type_tag] = NULL_TREE;
+      if (tag != 0)
+	back_refs[~tag] = NULL_TREE;
+      set_overrun ();
+      /* Bail.  */
+      return NULL_TREE;
+    }
+
+  int merge_slot = -1;
+  tree parms = NULL_TREE;
+  if (walk != WK_body)
+    {
+      /* Figure out if this decl is already known about.  */
+      tree container, key;
+      tree fn_args = NULL_TREE;
+      tree r_type = NULL_TREE;
+      int parm_tag = 0;
+
+      merge_kind mk = key_mergeable (res, inner, type,
+				     &container, &key, &fn_args, &r_type,
+				     &parm_tag);
+
+      if (mk & MK_template_mask)
+	{
+	  /* A specialization of some kind.  */
+	  DECL_NAME (res) = DECL_NAME (container);
+	  DECL_CONTEXT (res) = DECL_CONTEXT (container);
+	}
+      else
+	{
+	  if (!(mk & MK_indirect_mask))
+	    DECL_NAME (res) = key;
+	  DECL_CONTEXT (res) = FROB_CONTEXT (container);
+	}
+
+      if (inner_tag != 0)
+	{
+	  DECL_NAME (inner) = DECL_NAME (res);
+	  DECL_CONTEXT (inner) = DECL_CONTEXT (res);
+	}
+
+      const char *kind = "new";
+      tree existing = NULL_TREE;
+
+      if (mk & MK_template_mask)
+	{
+	  tree insert = res;
+	  if (mk & MK_tmpl_tmpl_mask)
+	    {
+	      if (!inner_tag)
+		goto bail;
+	      insert = inner;
+	    }
+	  bool is_decl = mk & MK_tmpl_decl_mask;
+	  if (!is_decl)
+	    {
+	      if (mk == MK_type_spec && inner_tag)
+		goto bail;
+	      insert = type;
+	    }
+
+	  existing = match_mergeable_specialization (is_decl, container, key,
+						     insert);
+
+	  if (!existing)
+	    {
+	      if (mk & MK_tmpl_decl_mask && mk & MK_tmpl_both_mask)
+		{} // FIXME: insert into type table
+	    }
+	  else if (mk & MK_tmpl_decl_mask)
+	    {
+	      /* A declaration specialization.  */
+	      if (mk & MK_tmpl_tmpl_mask)
+		if (tree ti = DECL_TEMPLATE_INFO (existing))
+		  {
+		    tree tmpl = TI_TEMPLATE (ti);
+		    if (DECL_TEMPLATE_RESULT (tmpl) == existing)
+		      existing = tmpl;
+		  }
+
+	      if (mk & MK_tmpl_both_mask)
+		{} // FIXME: check it's in the type table too
+	    }
+	  else
+	    {
+	      /* A type specialization.  */
+	      if (!(mk & MK_tmpl_tmpl_mask))
+		existing = TYPE_NAME (existing);
+	      else if (mk & MK_tmpl_partial_mask)
+		{
+		  /* A partial specialization.  */
+		  for (tree partial = DECL_TEMPLATE_SPECIALIZATIONS (container);
+		       partial; partial = TREE_CHAIN (partial))
+		    if (TREE_TYPE (partial) == existing)
+		      {
+			existing = TREE_VALUE (partial);
+			break;
+		      }
+		  gcc_assert (TREE_CODE (existing) == TEMPLATE_DECL);
+		}
+	      else
+		if (tree ti = CLASSTYPE_TEMPLATE_INFO (existing))
+		  {
+		    tree tmpl = TI_TEMPLATE (ti);
+		    if (DECL_TEMPLATE_RESULT (tmpl) == TYPE_NAME (existing))
+		      existing = tmpl;
+		  }
+	    }
+	}
+      else if (mk == MK_linkage)
+	{
+	  /* KEY will be the typedef.  We're its TREE_TYPE's TYPE_STUB_DECL.  */
+	  if (tree tdef_type = TREE_TYPE (key))
+	    existing = TYPE_STUB_DECL (tdef_type);
+	}
+      else if (mk == MK_clone)
+	{
+	  kind = "clone";
+	  /* Our merging is the same as that of the thing we cloned.  */
+	  if (get_dupness (get_instantiating_module_decl (container))
+	      == DUP_dup)
+	    /* The existing clone will be the one following KEY.  */
+	    existing = DECL_CHAIN (key);
+	  else
+	    {
+	      /* Chain us in.  */
+	      gcc_checking_assert (!DECL_CHAIN (key));
+	      DECL_CHAIN (key) = res;
+	      if (inner != res)
+		DECL_CHAIN (DECL_TEMPLATE_RESULT (key)) = inner;
+	    }
+	}
+      else
+	{
+	  if (is_mod && !(state->is_primary () || state->is_partition ()))
+	    /* This is a module-purview entity, and we're not loading part
+	       of the current module, so it must be unique.  */
+	    kind = "unique";
+	  else
+	    existing = match_mergeable_decl (res, container, key, is_mod,
+					     r_type, fn_args);
+	}
+
+      merge_slot = register_mergeable (res, existing);
+      if (merge_slot < 0)
+	goto bail;
+
+      if (existing)
+	{
+	  /* Install the existing decl into the back ref array.  */
+	  back_refs[~tag] = existing;
+	  if (inner_tag != 0)
+	    {
+	      existing = DECL_TEMPLATE_RESULT (existing);
+	      back_refs[~inner_tag] = existing;
+	    }
+
+	  if (type_tag != 0)
+	    back_refs[~type_tag] = TREE_TYPE (existing);
+
+	  kind = "matched";
+	}
+
+      if (parm_tag)
+	/* EXISTING is the template result (or NULL).  */
+	parms = fn_parms_fini (parm_tag, inner, existing);
+
+      dump (dumper::MERGE)
+	&& dump ("Read:%d's %s merge key (%s) %C:%N", tag,
+		 merge_kind_name[mk], kind, TREE_CODE (res), res);
+    }
+
+  if (inner_tag != 0)
+    {
+      /* Template pieces.  */
+      tree parms = tree_node ();
+      DECL_TEMPLATE_PARMS (res) = parms;
+
+      // FIXME: From push_template_decl_real, not sure how correct
+      // this is?
+      /* Give template template parms a DECL_CONTEXT of the template
+	 for which they are a parameter.  */
+      tree innermost = INNERMOST_TEMPLATE_PARMS (parms);
+      for (int i = TREE_VEC_LENGTH (innermost) - 1; i >= 0; --i)
+	{
+	  tree parm = TREE_VALUE (TREE_VEC_ELT (innermost, i));
+	  if (TREE_CODE (parm) == TEMPLATE_DECL)
+	    DECL_CONTEXT (parm) = res;
+	}
+
+      gcc_checking_assert (DECL_TEMPLATE_RESULT (res) == inner);
+      if (!tree_node_vals (res))
+	goto bail;
+    }
+
+  if (!tree_node_vals (inner))
+    goto bail;
+
+  if (type)
+    {
+      if (!tree_node_vals (type))
+	goto bail;
+
+      if (back_refs[~type_tag] == type)
+	{
+	  /* This is a new type.  */
+	  gcc_checking_assert (type == TYPE_MAIN_VARIANT (type));
+
+	  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
+	      || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
+	    {
+	      tree canon = canonical_type_parameter (type);
+	      TYPE_CANONICAL (type) = canon;
+	    }
+	}
+    }
+
+  tree constraints = NULL_TREE;
+  if (flag_concepts && DECL_P (res))
+    constraints  = tree_node ();
+
+  dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, TREE_CODE (res), res);
+
+  /* Regular typedefs will have a NULL TREE_TYPE at this point.  */
+  bool is_typedef = TREE_CODE (inner) == TYPE_DECL && !TREE_TYPE (inner);
+  if (is_typedef)
+    {
+      /* Frob it to be ready for cloning.  */
+      TREE_TYPE (inner) = DECL_ORIGINAL_TYPE (inner);
+      DECL_ORIGINAL_TYPE (inner) = NULL_TREE;
+    }
+
+  tree existing = back_refs[~tag];
+  if (existing == res)
+    {
+      /* A newly discovered node.  */
+      if (TREE_CODE (res) == FUNCTION_DECL && DECL_VIRTUAL_P (res))
+	/* Mark this identifier as naming a virtual function --
+	   lookup_overrides relies on this optimization.  */
+	IDENTIFIER_VIRTUAL_P (DECL_NAME (res)) = true;
+
+      if (constraints)
+	set_constraints (res, constraints);
+
+      if (TREE_CODE (res) == INTEGER_CST && !TREE_OVERFLOW (res))
+	{
+	  res = cache_integer_cst (res, true);
+	  back_refs[~tag] = res;
+	}
+
+      if (is_typedef)
+	set_underlying_type (inner);
+
+      if (inner_tag)
+	/* Set the TEMPLATE_DECL's type.  */
+	TREE_TYPE (res) = TREE_TYPE (inner);
+    }
+  else
+    {
+      /* RES is the to-be-discarded decl.  Its internal pointers will
+	 be to the EXISTING's structure.  Frob it to point to its
+	 own other structures, so loading its definition will alter
+	 it, and not the existing decl.  */
+      dump (dumper::MERGE) && dump ("Deduping %N", existing);
+
+      if (parms)
+	/* Restore the to-be-discarded parms.  */
+	DECL_ARGUMENTS (inner) = parms;
+
+      if (inner_tag != 0)
+	DECL_TEMPLATE_RESULT (res) = inner;
+
+      if (type)
+	{
+	  /* Point at the to-be-discarded type & decl.  */
+	  TYPE_NAME (type) = inner;
+	  TREE_TYPE (inner) = type;
+	}
+
+      if (inner_tag)
+	/* Set the TEMPLATE_DECL's type.  */
+	TREE_TYPE (res) = TREE_TYPE (inner);
+
+      if (!is_matching_decl (existing, res))
+	unmatched_mergeable (merge_slot);
+
+      /* And our result is the existing node.  */
+      res = existing;
+    }
+
+  if (is_typedef)
+    {
+      /* Insert the type into the array now.  */
+      tag = insert (TREE_TYPE (res));
+      dump (dumper::TREE)
+	&& dump ("Cloned:%d typedef %C:%N",
+		 tag, TREE_CODE (TREE_TYPE (res)), TREE_TYPE (res));
+    }
+
+  return res;
+}
+
 /* Reference DECL.  REF indicates the walk kind we are performing.
    Return true if we should write this decl by value.  */
 
@@ -6883,7 +7429,19 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	    dep_hash->add_clone (clone_decl, decl);
 	}
 
-      return true;
+      // FIXME: mergeableness should be a property of the depset
+      // referring to DECL  WK_body->tree_value WK_mergeable->decl_value
+      if (ref == WK_body)
+	return true;
+
+      gcc_checking_assert (TREE_CODE (STRIP_TEMPLATE (decl)) == FUNCTION_DECL
+			   || TREE_CODE (STRIP_TEMPLATE (decl)) == VAR_DECL
+			   || TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL);
+      gcc_checking_assert (ref == WK_clone
+			   || (get_instantiating_module_decl (decl)
+			       == STRIP_TEMPLATE (decl)));
+      decl_value (decl, ref);
+      return false;
     }
 
   // FIXME: using decls should be findable by name -- why do we not
@@ -7229,8 +7787,9 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	    goto insert;
 	  }
 
-	/* Some internal entity of the function.  Do by value.  */
-	// FIXME: pass DEP to the value streamer
+	/* Some (non-mergeable?) internal entity of the function.  Do
+	   by value.  */
+	// FIXME: pass DEP to the value streamer?
 	gcc_assert (!is_import);
 	return true;
       }
@@ -7647,22 +8206,14 @@ trees_out::type_node (tree type)
   return;
 }
 
-/* T is a node that must be written by value.  WALK indicates the kind
-   of by-valueness.  */
+/* T is a non-mergeable node that must be written by value.   */
 
 void
-trees_out::tree_value (tree t, walk_kind walk)
+trees_out::tree_value (tree t)
 {
-  /* We should never walk into a thunk by accident.  */
-  gcc_assert (walk == WK_body || !DECL_THUNK_P (t));
-
   /* We should never be writing a type by value.  tree_type should
      have streamed it, or we're going via its TYPE_DECL.  */
   gcc_assert (!TYPE_P (t));
-
-  if (walk == WK_normal)
-    walk = WK_body;
-  gcc_checking_assert (unsigned (walk - WK_body) <= (WK_clone - WK_body));
 
   if (streaming_p ())
     {
@@ -7679,32 +8230,16 @@ trees_out::tree_value (tree t, walk_kind walk)
       /* A new node -> tt_node, tt_mergeable or tt_clone.  */
       unique++;
       i (tt_node);
-      u (walk);
       u (TREE_CODE (t));
       start (t);
 
-      if (walk == WK_mergeable && !state->is_header ())
-	{
-	  /* Tell the importer whether this is a global module entity,
-	     or a module entity.  This bool merges into the next block
-	     of bools.  Sneaky.  */
-	  bool is_mod = false;
-	  tree o = get_originating_module_decl (t);
-	  if (DECL_LANG_SPECIFIC (o))
-	    is_mod = DECL_MODULE_PURVIEW_P (o);
-	  b (is_mod);
-	}
       tree_node_bools (t);
     }
 
-  int tag = insert (t, walk);
+  int tag = insert (t, WK_body);
   if (streaming_p ())
     dump (dumper::TREE)
-      && dump ("Writing:%d %C:%N%S", tag, TREE_CODE (t), t, t);
-
-  if (walk != WK_body)
-    walk = WK_merging;
-  // FIXME: If mergeable, mark function parms etc as mergeable too
+      && dump ("Writing tree:%d %C:%N%S", tag, TREE_CODE (t), t, t);
 
   tree inner = t;
   int inner_tag = 0;
@@ -7720,10 +8255,10 @@ trees_out::tree_value (tree t, walk_kind walk)
 	  tree_node_bools (inner);
 	}
 
-      inner_tag = insert (inner, walk);
+      inner_tag = insert (inner, WK_body);
       if (streaming_p ())
 	dump (dumper::TREE)
-	  && dump ("Writing:%d %C:%N%S", inner_tag,
+	  && dump ("Writing inner:%d %C:%N%S", inner_tag,
 		   TREE_CODE (inner), inner, inner);
     }
 
@@ -7747,38 +8282,16 @@ trees_out::tree_value (tree t, walk_kind walk)
 	      tree_node_bools (type);
 	    }
 
-	  type_tag = insert (type, walk);
+	  type_tag = insert (type, WK_body);
 	  if (streaming_p ())
 	    dump (dumper::TREE)
-	      && dump ("Writing:%d %C:%N%S", type_tag,
+	      && dump ("Writing type:%d %C:%N%S", type_tag,
 		       TREE_CODE (type), type, type);
 	}
       else
 	/* Regular typedef.  */
 	type = NULL_TREE;
       gcc_assert (!type || !DECL_ORIGINAL_TYPE (inner));
-    }
-
-  if (walk != WK_body)
-    {
-      /* Now write out the merging information, and then really
-	 install the tag values.  */
-      merge_kind mk = key_mergeable (dep_hash->find_entity (t));
-
-      dump (dumper::MERGE)
-	&& dump ("Wrote:%d's %s merge key %C:%N", tag,
-		 merge_kind_name[mk], TREE_CODE (t), t);
-
-      /* This is the point where the importer determines whether it
-	 really has a new decl or not.  So it is safe to refer to
-	 these nodes.  */
-      mark_merged (t, tag);
-      if (inner_tag != 0)
-	mark_merged (inner, inner_tag);
-      if (type_tag != 0)
-	mark_merged (type, type_tag);
-      if (TREE_CODE (inner) == FUNCTION_DECL)
-	fn_parms_fini (inner, t);
     }
 
   if (inner_tag != 0)
@@ -7814,31 +8327,23 @@ trees_out::tree_value (tree t, walk_kind walk)
     }
 
   if (streaming_p ())
-    dump (dumper::TREE) && dump ("Written:%d %C:%N", tag, TREE_CODE (t), t);
+    dump (dumper::TREE) && dump ("Written tree:%d %C:%N", tag, TREE_CODE (t), t);
 }
 
 tree
-trees_in::tree_value (walk_kind walk)
+trees_in::tree_value ()
 {
   int tag = 0;
-  bool is_mod = false;
 
   tree res = start (u ());
-  if (res)
-    {
-      if (walk == WK_mergeable && !state->is_header ())
-	/* See note in trees_out about where this bool is sequenced.  */
-	is_mod = b ();
+  if (res && !tree_node_bools (res))
+      res = NULL_TREE;
 
-      if (!tree_node_bools (res))
-	res = NULL_TREE;
-    }
-  
   /* Insert into map.  */
   tag = insert (res);
   if (res)
     dump (dumper::TREE)
-      && dump ("Reading %s:%d %C", walk_kind_name[walk], tag, TREE_CODE (res));
+      && dump ("Reading tree:%d %C", tag, TREE_CODE (res));
 
   tree inner = res;
   int inner_tag = 0;
@@ -7858,8 +8363,7 @@ trees_in::tree_value (walk_kind walk)
       inner_tag = insert (inner);
       if (res)
 	dump (dumper::TREE)
-	  && dump ("Reading %s:%d %C", walk_kind_name[walk],
-		   inner_tag, TREE_CODE (inner));
+	  && dump ("Reading inner:%d %C", inner_tag, TREE_CODE (inner));
     }
 
   tree type = NULL_TREE;
@@ -7883,8 +8387,7 @@ trees_in::tree_value (walk_kind walk)
 	  type_tag = insert (type);
 	  if (res)
 	    dump (dumper::TREE)
-	      && dump ("Reading %s:%d %C", walk_kind_name[walk], type_tag,
-		       TREE_CODE (type));
+	      && dump ("Reading type:%d %C", type_tag, TREE_CODE (type));
 	}
     }
 
@@ -7900,170 +8403,6 @@ trees_in::tree_value (walk_kind walk)
       set_overrun ();
       /* Bail.  */
       return NULL_TREE;
-    }
-
-  int merge_slot = -1;
-  tree parms = NULL_TREE;
-  if (walk != WK_body)
-    {
-      /* Figure out if this decl is already known about.  */
-      tree container, key;
-      tree fn_args = NULL_TREE;
-      tree r_type = NULL_TREE;
-      int parm_tag = 0;
-
-      merge_kind mk = key_mergeable (res, inner, type,
-				     &container, &key, &fn_args, &r_type,
-				     &parm_tag);
-
-      if (mk & MK_template_mask)
-	{
-	  /* A specialization of some kind.  */
-	  DECL_NAME (res) = DECL_NAME (container);
-	  DECL_CONTEXT (res) = DECL_CONTEXT (container);
-	}
-      else
-	{
-	  if (!(mk & MK_indirect_mask))
-	    DECL_NAME (res) = key;
-	  DECL_CONTEXT (res) = FROB_CONTEXT (container);
-	}
-
-      if (inner_tag != 0)
-	{
-	  DECL_NAME (inner) = DECL_NAME (res);
-	  DECL_CONTEXT (inner) = DECL_CONTEXT (res);
-	}
-
-      const char *kind = "new";
-      tree existing = NULL_TREE;
-
-      if (mk & MK_template_mask)
-	{
-	  tree insert = res;
-	  if (mk & MK_tmpl_tmpl_mask)
-	    {
-	      if (!inner_tag)
-		goto bail;
-	      insert = inner;
-	    }
-	  bool is_decl = mk & MK_tmpl_decl_mask;
-	  if (!is_decl)
-	    {
-	      if (mk == MK_type_spec && inner_tag)
-		goto bail;
-	      insert = type;
-	    }
-
-	  existing = match_mergeable_specialization (is_decl, container, key,
-						     insert);
-
-	  if (!existing)
-	    {
-	      if (mk & MK_tmpl_decl_mask && mk & MK_tmpl_both_mask)
-		{} // FIXME: insert into type table
-	    }
-	  else if (mk & MK_tmpl_decl_mask)
-	    {
-	      /* A declaration specialization.  */
-	      if (mk & MK_tmpl_tmpl_mask)
-		if (tree ti = DECL_TEMPLATE_INFO (existing))
-		  {
-		    tree tmpl = TI_TEMPLATE (ti);
-		    if (DECL_TEMPLATE_RESULT (tmpl) == existing)
-		      existing = tmpl;
-		  }
-
-	      if (mk & MK_tmpl_both_mask)
-		{} // FIXME: check it's in the type table too
-	    }
-	  else
-	    {
-	      /* A type specialization.  */
-	      if (!(mk & MK_tmpl_tmpl_mask))
-		existing = TYPE_NAME (existing);
-	      else if (mk & MK_tmpl_partial_mask)
-		{
-		  /* A partial specialization.  */
-		  for (tree partial = DECL_TEMPLATE_SPECIALIZATIONS (container);
-		       partial; partial = TREE_CHAIN (partial))
-		    if (TREE_TYPE (partial) == existing)
-		      {
-			existing = TREE_VALUE (partial);
-			break;
-		      }
-		  gcc_assert (TREE_CODE (existing) == TEMPLATE_DECL);
-		}
-	      else
-		if (tree ti = CLASSTYPE_TEMPLATE_INFO (existing))
-		  {
-		    tree tmpl = TI_TEMPLATE (ti);
-		    if (DECL_TEMPLATE_RESULT (tmpl) == TYPE_NAME (existing))
-		      existing = tmpl;
-		  }
-	    }
-	}
-      else if (mk == MK_linkage)
-	{
-	  /* KEY will be the typedef.  We're its TREE_TYPE's TYPE_STUB_DECL.  */
-	  if (tree tdef_type = TREE_TYPE (key))
-	    existing = TYPE_STUB_DECL (tdef_type);
-	}
-      else if (mk == MK_clone)
-	{
-	  kind = "clone";
-	  /* Our merging is the same as that of the thing we cloned.  */
-	  if (get_dupness (get_instantiating_module_decl (container))
-	      == DUP_dup)
-	    /* The existing clone will be the one following KEY.  */
-	    existing = DECL_CHAIN (key);
-	  else
-	    {
-	      /* Chain us in.  */
-	      gcc_checking_assert (!DECL_CHAIN (key));
-	      DECL_CHAIN (key) = res;
-	      if (inner != res)
-		DECL_CHAIN (DECL_TEMPLATE_RESULT (key)) = inner;
-	    }
-	}
-      else
-	{
-	  if (is_mod && !(state->is_primary () || state->is_partition ()))
-	    /* This is a module-purview entity, and we're not loading part
-	       of the current module, so it must be unique.  */
-	    kind = "unique";
-	  else
-	    existing = match_mergeable_decl (res, container, key, is_mod,
-					     r_type, fn_args);
-	}
-
-      merge_slot = register_mergeable (res, existing);
-      if (merge_slot < 0)
-	goto bail;
-
-      if (existing)
-	{
-	  /* Install the existing decl into the back ref array.  */
-	  back_refs[~tag] = existing;
-	  if (inner_tag != 0)
-	    {
-	      existing = DECL_TEMPLATE_RESULT (existing);
-	      back_refs[~inner_tag] = existing;
-	    }
-
-	  if (type_tag != 0)
-	    back_refs[~type_tag] = TREE_TYPE (existing);
-
-	  kind = "matched";
-	}
-
-      if (parm_tag)
-	/* EXISTING is the template result (or NULL).  */
-	parms = fn_parms_fini (parm_tag, inner, existing);
-
-      dump (dumper::MERGE)
-	&& dump ("Read:%d's %s merge key (%s) %C:%N", tag,
-		 merge_kind_name[mk], kind, TREE_CODE (res), res);
     }
 
   if (inner_tag != 0)
@@ -8115,7 +8454,7 @@ trees_in::tree_value (walk_kind walk)
   if (flag_concepts && DECL_P (res))
     constraints  = tree_node ();
 
-  dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, TREE_CODE (res), res);
+  dump (dumper::TREE) && dump ("Read tree:%d %C:%N", tag, TREE_CODE (res), res);
 
   /* Regular typedefs will have a NULL TREE_TYPE at this point.  */
   bool is_typedef = TREE_CODE (inner) == TYPE_DECL && !TREE_TYPE (inner);
@@ -8126,63 +8465,26 @@ trees_in::tree_value (walk_kind walk)
       DECL_ORIGINAL_TYPE (inner) = NULL_TREE;
     }
 
-  tree existing = back_refs[~tag];
-  if (existing == res)
+  if (TREE_CODE (res) == FUNCTION_DECL && DECL_VIRTUAL_P (res))
+    /* Mark this identifier as naming a virtual function --
+       lookup_overrides relies on this optimization.  */
+    IDENTIFIER_VIRTUAL_P (DECL_NAME (res)) = true;
+
+  if (constraints)
+    set_constraints (res, constraints);
+
+  if (TREE_CODE (res) == INTEGER_CST && !TREE_OVERFLOW (res))
     {
-      /* A newly discovered node.  */
-      if (TREE_CODE (res) == FUNCTION_DECL && DECL_VIRTUAL_P (res))
-	/* Mark this identifier as naming a virtual function --
-	   lookup_overrides relies on this optimization.  */
-	IDENTIFIER_VIRTUAL_P (DECL_NAME (res)) = true;
-
-      if (constraints)
-	set_constraints (res, constraints);
-
-      if (TREE_CODE (res) == INTEGER_CST && !TREE_OVERFLOW (res))
-	{
-	  res = cache_integer_cst (res, true);
-	  back_refs[~tag] = res;
-	}
-
-      if (is_typedef)
-	set_underlying_type (inner);
-
-      if (inner_tag)
-	/* Set the TEMPLATE_DECL's type.  */
-	TREE_TYPE (res) = TREE_TYPE (inner);
+      res = cache_integer_cst (res, true);
+      back_refs[~tag] = res;
     }
-  else
-    {
-      /* RES is the to-be-discarded decl.  Its internal pointers will
-	 be to the EXISTING's structure.  Frob it to point to its
-	 own other structures, so loading its definition will alter
-	 it, and not the existing decl.  */
-      dump (dumper::MERGE) && dump ("Deduping %N", existing);
 
-      if (parms)
-	/* Restore the to-be-discarded parms.  */
-	DECL_ARGUMENTS (inner) = parms;
+  if (is_typedef)
+    set_underlying_type (inner);
 
-      if (inner_tag != 0)
-	DECL_TEMPLATE_RESULT (res) = inner;
-
-      if (type)
-	{
-	  /* Point at the to-be-discarded type & decl.  */
-	  TYPE_NAME (type) = inner;
-	  TREE_TYPE (inner) = type;
-	}
-
-      if (inner_tag)
-	/* Set the TEMPLATE_DECL's type.  */
-	TREE_TYPE (res) = TREE_TYPE (inner);
-
-      if (!is_matching_decl (existing, res))
-	unmatched_mergeable (merge_slot);
-
-      /* And our result is the existing node.  */
-      res = existing;
-    }
+  if (inner_tag)
+    /* Set the TEMPLATE_DECL's type.  */
+    TREE_TYPE (res) = TREE_TYPE (inner);
 
   if (is_typedef)
     {
@@ -8291,7 +8593,7 @@ trees_out::tree_node (tree t)
     goto done;
 
   /* Otherwise by value */
-  tree_value (t, ref);
+  tree_value (t);
 
  done:
   /* And, breath out.  */
@@ -8344,13 +8646,18 @@ trees_in::tree_node ()
 
     case tt_node:
       /* A new node.  Stream it in.  */
+      res = tree_value ();
+      break;
+
+    case tt_decl:
+      /* A new decl.  Stream it in.  */
       {
 	unsigned kind = u ();
 
 	if (kind < WK_body || kind > WK_clone)
 	  set_overrun ();
 	else
-	  res = tree_value (walk_kind (kind));
+	  res = decl_value (walk_kind (kind));
       }
       break;
 

@@ -1,6 +1,14 @@
 2019-10-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (enum tree_tag): Add tt_decl.
+	(trees_{in,out}::decl_value): Broken out of ...
+	(trees_{in,out}::tree_value): ... here.  Deal with non mergeble
+	cases only.
+	(trees_in::tree_node): Add tt_decl.
+	(trees_out::decl_node): Call decl_value.
+
+	gcc/cp/
 	* module.cc (trees_out::decl_node): Refactor some instantiation
 	discovery.
 
