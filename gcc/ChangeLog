@@ -1,5 +1,13 @@
 2019-10-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* ira-lives.c (check_and_make_def_conflict): Handle cases in which
+	DEF is not a true earlyclobber but is tied to a specific input
+	operand, and so is effectively earlyclobber wrt inputs that have
+	different values.
+	(make_early_clobber_and_input_conflicts): Pass this case to the above.
+
+2019-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* machmode.h (opt_mode): Mark constructors with CONSTEXPR.
 	(pod_mode): Mark operators likewise.
 	(scalar_int_mode): Mark non-default constructors and
