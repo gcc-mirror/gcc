@@ -5117,6 +5117,7 @@ ipa_vr::nonzero_p (tree expr_type) const
 
   unsigned prec = TYPE_PRECISION (expr_type);
   return (type == VR_RANGE
+	  && TYPE_UNSIGNED (expr_type)
 	  && wi::eq_p (min, wi::one (prec))
 	  && wi::eq_p (max, wi::max_value (prec, TYPE_SIGN (expr_type))));
 }
