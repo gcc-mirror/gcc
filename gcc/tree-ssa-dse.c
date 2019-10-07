@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "alias.h"
 #include "tree-ssa-loop.h"
+#include "tree-ssa-dse.h"
 
 /* This file implements dead store elimination.
 
@@ -76,20 +77,12 @@ along with GCC; see the file COPYING3.  If not see
    fact, they are the same transformation applied to different views of
    the CFG.  */
 
-static void delete_dead_or_redundant_assignment (gimple_stmt_iterator *, const char *);
+void delete_dead_or_redundant_assignment (gimple_stmt_iterator *, const char *);
 static void delete_dead_or_redundant_call (gimple_stmt_iterator *, const char *);
 
 /* Bitmap of blocks that have had EH statements cleaned.  We should
    remove their dead edges eventually.  */
 static bitmap need_eh_cleanup;
-
-/* Return value from dse_classify_store */
-enum dse_store_status
-{
-  DSE_STORE_LIVE,
-  DSE_STORE_MAYBE_PARTIAL_DEAD,
-  DSE_STORE_DEAD
-};
 
 /* STMT is a statement that may write into memory.  Analyze it and
    initialize WRITE to describe how STMT affects memory.
@@ -662,10 +655,10 @@ dse_optimize_redundant_stores (gimple *stmt)
    if only clobber statements influenced the classification result.
    Returns the classification.  */
 
-static dse_store_status
+dse_store_status
 dse_classify_store (ao_ref *ref, gimple *stmt,
 		    bool byte_tracking_enabled, sbitmap live_bytes,
-		    bool *by_clobber_p = NULL)
+		    bool *by_clobber_p, tree stop_at_vuse)
 {
   gimple *temp;
   int cnt = 0;
@@ -701,6 +694,11 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	}
       else
 	defvar = gimple_vdef (temp);
+
+      /* If we're instructed to stop walking at region boundary, do so.  */
+      if (defvar == stop_at_vuse)
+	return DSE_STORE_LIVE;
+
       auto_vec<gimple *, 10> defs;
       gimple *phi_def = NULL;
       FOR_EACH_IMM_USE_STMT (use_stmt, ui, defvar)
@@ -901,7 +899,7 @@ delete_dead_or_redundant_call (gimple_stmt_iterator *gsi, const char *type)
 
 /* Delete a dead store at GSI, which is a gimple assignment. */
 
-static void
+void
 delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi, const char *type)
 {
   gimple *stmt = gsi_stmt (*gsi);
