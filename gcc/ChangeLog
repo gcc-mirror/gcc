@@ -1,3 +1,17 @@
+2019-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/91994
+	* config/i386/sse.md (avx_vzeroupper): Turn into a define_expand
+	and wrap the unspec_volatile in a parallel.
+	(*avx_vzeroupper): New define_insn.  Use a match_parallel around
+	the unspec_volatile.
+	* config/i386/predicates.md (vzeroupper_pattern): Expect the
+	unspec_volatile to be wrapped in a parallel.
+	* config/i386/i386-features.c (ix86_add_reg_usage_to_vzeroupper)
+	(ix86_add_reg_usage_to_vzerouppers): New functions.
+	(rest_of_handle_insert_vzeroupper): Use them to add register
+	usage information to the vzeroupper instructions.
+
 2019-10-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91975

@@ -1,3 +1,8 @@
+2019-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/91994
+	* gcc.target/i386/pr91994.c: New test.
+
 2019-10-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91975
