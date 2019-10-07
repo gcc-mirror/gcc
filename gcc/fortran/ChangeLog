@@ -1,3 +1,10 @@
+2019-10-07  Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/84487
+	* trans-decl.c (gfc_get_symbol_decl): For __def_init, set
+	DECL_ARTIFICAL and do not set TREE_READONLY.
+
 2019-10-05  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/47054
@@ -22,7 +29,7 @@
 	PR fortran/91864
 	* gcc/fortran/io.c (match_io_element): An inquiry parameter cannot be
 	read into.
-	* gcc/fortran/match.c (gfc_match_allocate): An inquiry parameter 
+	* gcc/fortran/match.c (gfc_match_allocate): An inquiry parameter
 	can be neither an allocate-object nor stat variable.
 	(gfc_match_deallocate): An inquiry parameter cannot be deallocated.
 
