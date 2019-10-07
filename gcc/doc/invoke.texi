@@ -5578,21 +5578,20 @@ either specify @option{-Wextra -Wunused} (note that @option{-Wall} implies
 @item -Wuninitialized
 @opindex Wuninitialized
 @opindex Wno-uninitialized
-Warn if an automatic variable is used without first being initialized
-or if a variable may be clobbered by a @code{setjmp} call. In C++,
-warn if a non-static reference or non-static @code{const} member
-appears in a class without constructors.
+Warn if an automatic variable is used without first being initialized.
+In C++, warn if a non-static reference or non-static @code{const}
+member appears in a class without constructors.
 
 If you want to warn about code that uses the uninitialized value of the
 variable in its own initializer, use the @option{-Winit-self} option.
 
-These warnings occur for individual uninitialized or clobbered
-elements of structure, union or array variables as well as for
-variables that are uninitialized or clobbered as a whole.  They do
-not occur for variables or elements declared @code{volatile}.  Because
-these warnings depend on optimization, the exact variables or elements
-for which there are warnings depends on the precise optimization
-options and version of GCC used.
+These warnings occur for individual uninitialized elements of
+structure, union or array variables as well as for variables that are
+uninitialized as a whole.  They do not occur for variables or elements
+declared @code{volatile}.  Because these warnings depend on
+optimization, the exact variables or elements for which there are
+warnings depend on the precise optimization options and version of GCC
+used.
 
 Note that there may be no warning about a variable that is used only
 to compute a value that itself is never used, because such

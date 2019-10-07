@@ -1,3 +1,9 @@
+2019-10-07 Vladislav Ivanishin  <vlad@ispras.ru>
+
+	* doc/invoke.texi (-Wuninitialized): Don't mention the clobbered by
+	setjmp situation here.  Fix a verb's ending: "the exact variables or
+	elements for which there are warnings depends" -> "... depend".
+
 2019-10-07  Aldy Hernandez  <aldyh@redhat.com>
 
 	* ipa-prop.c (ipa_vr::nonzero_p): Add TYPE_UNSIGNED check.
