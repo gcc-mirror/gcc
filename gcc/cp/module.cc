@@ -5799,7 +5799,8 @@ trees_out::core_vals (tree t)
       WT (t->function_decl.vindex);
       break;
 
-    case TYPE_DECL:
+    case TYPE_DECL: /* DECL_ORIGINAL_TYPE */
+    case USING_DECL: /* USING_DECL_SCOPE  */
       WT (t->decl_non_common.result);
       break;
 
@@ -6202,7 +6203,8 @@ trees_in::core_vals (tree t)
       }
       break;
 
-    case TYPE_DECL:
+    case TYPE_DECL: /* DECL_ORIGINAL_TYPE */
+    case USING_DECL: /* USING_DECL_SCOPE  */
       RT (t->decl_non_common.result);
       break;
 
@@ -7430,7 +7432,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	}
 
       // FIXME: mergeableness should be a property of the depset
-      // referring to DECL  WK_body->tree_value WK_mergeable->decl_value
+      // referring to DECL  Decls that need a header (parms,
+      // template), should go via decl_value.  Other decls should not.
       if (ref == WK_body)
 	return true;
 
@@ -7443,10 +7446,6 @@ trees_out::decl_node (tree decl, walk_kind ref)
       decl_value (decl, ref);
       return false;
     }
-
-  // FIXME: using decls should be findable by name -- why do we not
-  //  get there?
-  //  gcc_checking_assert (TREE_CODE (decl) != USING_DECL);
 
   if (!DECL_CONTEXT (decl))
     // FIXME: When parms etc are streamed separately, is this reachable?
@@ -7543,6 +7542,10 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	return false;
       }
       break;
+
+    case USING_DECL:
+      gcc_checking_assert (TREE_CODE (CP_DECL_CONTEXT (decl)) == FUNCTION_DECL);
+      return true;
 
     case VAR_DECL:
       if (DECL_VTABLE_OR_VTT_P (decl))

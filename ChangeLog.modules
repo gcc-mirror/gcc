@@ -1,6 +1,14 @@
 2019-10-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::core_vals): Stream
+	decl_non_common.result for using decls.
+	(trees_out::decl_node): USING_DECLS are done by value.
+	* name-lookup.c (finish_nonmember_using_decl): Set DECL_CONTEXT.
+	gcc/testsuite/
+	* g++.dg/modules/using-6_[ab].C: New.
+
+	gcc/cp/
 	* module.cc (enum tree_tag): Add tt_decl.
 	(trees_{in,out}::decl_value): Broken out of ...
 	(trees_{in,out}::tree_value): ... here.  Deal with non mergeble

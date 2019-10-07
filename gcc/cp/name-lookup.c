@@ -6562,6 +6562,7 @@ finish_nonmember_using_decl (tree scope, tree name)
     {
       tree using_decl = build_lang_decl (USING_DECL, name, NULL_TREE);
       USING_DECL_SCOPE (using_decl) = scope;
+      DECL_CONTEXT (using_decl) = current_function_decl;
       add_decl_expr (using_decl);
 
       cxx_binding *binding = find_local_binding (current_binding_level, name);
