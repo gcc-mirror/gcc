@@ -379,10 +379,7 @@ value_range_base::singleton_p (tree *result) const
 	    }
 	  return false;
 	}
-
-      /* An anti-range that includes an extreme, is just a range with
-	 one sub-range.  Use the one sub-range.  */
-      if (vrp_val_is_min (m_min, true) || vrp_val_is_max (m_max, true))
+      if (num_pairs () == 1)
 	{
 	  value_range_base vr0, vr1;
 	  ranges_from_anti_range (this, &vr0, &vr1, true);
