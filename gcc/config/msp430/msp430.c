@@ -2841,6 +2841,29 @@ msp430_subreg (machine_mode mode, rtx r, machine_mode omode, int byte)
   return rv;
 }
 
+int
+msp430_split_addsi (rtx *operands)
+{
+  operands[3] = msp430_subreg (HImode, operands[0], SImode, 0);
+  operands[4] = msp430_subreg (HImode, operands[1], SImode, 0);
+  operands[5] = msp430_subreg (HImode, operands[2], SImode, 0);
+  operands[6] = msp430_subreg (HImode, operands[0], SImode, 2);
+  operands[7] = msp430_subreg (HImode, operands[1], SImode, 2);
+  operands[8] = msp430_subreg (HImode, operands[2], SImode, 2);
+
+  /* BZ 64160: Do not use this splitter when the dest partially overlaps the
+     source.  */
+  if (reg_overlap_mentioned_p (operands[3], operands[7])
+      || reg_overlap_mentioned_p (operands[3], operands[8]))
+    return 1;
+
+  if (GET_CODE (operands[5]) == CONST_INT)
+    operands[9] = GEN_INT (INTVAL (operands[5]) & 0xffff);
+  else
+    operands[9] = gen_rtx_ZERO_EXTEND (SImode, operands[5]);
+  return 0;
+}
+
 /* Called by movsi_x to generate the HImode operands.  */
 void
 msp430_split_movsi (rtx *operands)
