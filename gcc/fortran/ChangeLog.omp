@@ -1,3 +1,17 @@
+2019-10-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline
+	2019-10-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* match.h (gfc_match_omp_eos_error): Renamed from gfc_match_omp_eos.
+	* openmp.c (gfc_match_omp_eos): Make static.
+	(gfc_match_omp_eos_error): New.
+	* parse.c (matchs, matchdo, matchds): Do as done for 'matcho' -
+	if error occurred after OpenMP/OpenACC directive matched, do not
+	try other directives.
+	(decode_oacc_directive, decode_omp_directive): Call new function
+	instead.
+
 2019-10-02  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline

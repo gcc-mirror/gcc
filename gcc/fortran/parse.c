@@ -672,15 +672,15 @@ decode_oacc_directive (void)
       match ("declare", gfc_match_oacc_declare, ST_OACC_DECLARE);
       break;
     case 'e':
-      matcha ("end atomic", gfc_match_omp_eos, ST_OACC_END_ATOMIC);
-      matcha ("end data", gfc_match_omp_eos, ST_OACC_END_DATA);
-      matcha ("end host_data", gfc_match_omp_eos, ST_OACC_END_HOST_DATA);
-      matcha ("end kernels loop", gfc_match_omp_eos, ST_OACC_END_KERNELS_LOOP);
-      matcha ("end kernels", gfc_match_omp_eos, ST_OACC_END_KERNELS);
-      matcha ("end loop", gfc_match_omp_eos, ST_OACC_END_LOOP);
-      matcha ("end parallel loop", gfc_match_omp_eos,
+      matcha ("end atomic", gfc_match_omp_eos_error, ST_OACC_END_ATOMIC);
+      matcha ("end data", gfc_match_omp_eos_error, ST_OACC_END_DATA);
+      matcha ("end host_data", gfc_match_omp_eos_error, ST_OACC_END_HOST_DATA);
+      matcha ("end kernels loop", gfc_match_omp_eos_error, ST_OACC_END_KERNELS_LOOP);
+      matcha ("end kernels", gfc_match_omp_eos_error, ST_OACC_END_KERNELS);
+      matcha ("end loop", gfc_match_omp_eos_error, ST_OACC_END_LOOP);
+      matcha ("end parallel loop", gfc_match_omp_eos_error,
 	      ST_OACC_END_PARALLEL_LOOP);
-      matcha ("end parallel", gfc_match_omp_eos, ST_OACC_END_PARALLEL);
+      matcha ("end parallel", gfc_match_omp_eos_error, ST_OACC_END_PARALLEL);
       matcha ("enter data", gfc_match_oacc_enter_data, ST_OACC_ENTER_DATA);
       matcha ("exit data", gfc_match_oacc_exit_data, ST_OACC_EXIT_DATA);
       break;
@@ -740,14 +740,17 @@ decode_oacc_directive (void)
    and if spec_only, goto do_spec_only without actually matching.  */
 #define matchs(keyword, subr, st)				\
     do {							\
+      match m2;							\
       if (spec_only && gfc_match (keyword) == MATCH_YES)	\
 	goto do_spec_only;					\
-      if (match_word_omp_simd (keyword, subr, &old_locus,	\
-			       &simd_matched) == MATCH_YES)	\
+      if ((m2 = match_word_omp_simd (keyword, subr, &old_locus,	\
+			       &simd_matched)) == MATCH_YES)	\
 	{							\
 	  ret = st;						\
 	  goto finish;						\
 	}							\
+      else if (m2 == MATCH_ERROR)				\
+	goto error_handling;					\
       else							\
 	undo_new_statement ();				  	\
     } while (0)
@@ -778,12 +781,15 @@ decode_oacc_directive (void)
 /* Like match, but set a flag simd_matched if keyword matched.  */
 #define matchds(keyword, subr, st)				\
     do {							\
-      if (match_word_omp_simd (keyword, subr, &old_locus,	\
-			       &simd_matched) == MATCH_YES)	\
+      match m2;							\
+      if ((m2 = match_word_omp_simd (keyword, subr, &old_locus,	\
+			       &simd_matched)) == MATCH_YES)	\
 	{							\
 	  ret = st;						\
 	  goto finish;						\
 	}							\
+      else if (m2 == MATCH_ERROR)				\
+	goto error_handling;					\
       else							\
 	undo_new_statement ();				  	\
     } while (0)
@@ -791,14 +797,17 @@ decode_oacc_directive (void)
 /* Like match, but don't match anything if not -fopenmp.  */
 #define matchdo(keyword, subr, st)				\
     do {							\
+      match m2;							\
       if (!flag_openmp)						\
 	;							\
-      else if (match_word (keyword, subr, &old_locus)		\
+      else if ((m2 = match_word (keyword, subr, &old_locus))	\
 	       == MATCH_YES)					\
 	{							\
 	  ret = st;						\
 	  goto finish;						\
 	}							\
+      else if (m2 == MATCH_ERROR)				\
+	goto error_handling;					\
       else							\
 	undo_new_statement ();				  	\
     } while (0)
@@ -891,63 +900,63 @@ decode_omp_directive (void)
       matcho ("do", gfc_match_omp_do, ST_OMP_DO);
       break;
     case 'e':
-      matcho ("end atomic", gfc_match_omp_eos, ST_OMP_END_ATOMIC);
+      matcho ("end atomic", gfc_match_omp_eos_error, ST_OMP_END_ATOMIC);
       matcho ("end critical", gfc_match_omp_end_critical, ST_OMP_END_CRITICAL);
-      matchs ("end distribute parallel do simd", gfc_match_omp_eos,
+      matchs ("end distribute parallel do simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_DISTRIBUTE_PARALLEL_DO_SIMD);
-      matcho ("end distribute parallel do", gfc_match_omp_eos,
+      matcho ("end distribute parallel do", gfc_match_omp_eos_error,
 	      ST_OMP_END_DISTRIBUTE_PARALLEL_DO);
-      matchs ("end distribute simd", gfc_match_omp_eos,
+      matchs ("end distribute simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_DISTRIBUTE_SIMD);
-      matcho ("end distribute", gfc_match_omp_eos, ST_OMP_END_DISTRIBUTE);
+      matcho ("end distribute", gfc_match_omp_eos_error, ST_OMP_END_DISTRIBUTE);
       matchs ("end do simd", gfc_match_omp_end_nowait, ST_OMP_END_DO_SIMD);
       matcho ("end do", gfc_match_omp_end_nowait, ST_OMP_END_DO);
-      matchs ("end simd", gfc_match_omp_eos, ST_OMP_END_SIMD);
-      matcho ("end master", gfc_match_omp_eos, ST_OMP_END_MASTER);
-      matchs ("end ordered", gfc_match_omp_eos, ST_OMP_END_ORDERED);
-      matchs ("end parallel do simd", gfc_match_omp_eos,
+      matchs ("end simd", gfc_match_omp_eos_error, ST_OMP_END_SIMD);
+      matcho ("end master", gfc_match_omp_eos_error, ST_OMP_END_MASTER);
+      matchs ("end ordered", gfc_match_omp_eos_error, ST_OMP_END_ORDERED);
+      matchs ("end parallel do simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_DO_SIMD);
-      matcho ("end parallel do", gfc_match_omp_eos, ST_OMP_END_PARALLEL_DO);
-      matcho ("end parallel sections", gfc_match_omp_eos,
+      matcho ("end parallel do", gfc_match_omp_eos_error, ST_OMP_END_PARALLEL_DO);
+      matcho ("end parallel sections", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_SECTIONS);
-      matcho ("end parallel workshare", gfc_match_omp_eos,
+      matcho ("end parallel workshare", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_WORKSHARE);
-      matcho ("end parallel", gfc_match_omp_eos, ST_OMP_END_PARALLEL);
+      matcho ("end parallel", gfc_match_omp_eos_error, ST_OMP_END_PARALLEL);
       matcho ("end sections", gfc_match_omp_end_nowait, ST_OMP_END_SECTIONS);
       matcho ("end single", gfc_match_omp_end_single, ST_OMP_END_SINGLE);
-      matcho ("end target data", gfc_match_omp_eos, ST_OMP_END_TARGET_DATA);
-      matchs ("end target parallel do simd", gfc_match_omp_eos,
+      matcho ("end target data", gfc_match_omp_eos_error, ST_OMP_END_TARGET_DATA);
+      matchs ("end target parallel do simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_TARGET_PARALLEL_DO_SIMD);
-      matcho ("end target parallel do", gfc_match_omp_eos,
+      matcho ("end target parallel do", gfc_match_omp_eos_error,
 	      ST_OMP_END_TARGET_PARALLEL_DO);
-      matcho ("end target parallel", gfc_match_omp_eos,
+      matcho ("end target parallel", gfc_match_omp_eos_error,
 	      ST_OMP_END_TARGET_PARALLEL);
-      matchs ("end target simd", gfc_match_omp_eos, ST_OMP_END_TARGET_SIMD);
+      matchs ("end target simd", gfc_match_omp_eos_error, ST_OMP_END_TARGET_SIMD);
       matchs ("end target teams distribute parallel do simd",
-	      gfc_match_omp_eos,
+	      gfc_match_omp_eos_error,
 	      ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD);
-      matcho ("end target teams distribute parallel do", gfc_match_omp_eos,
+      matcho ("end target teams distribute parallel do", gfc_match_omp_eos_error,
 	      ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO);
-      matchs ("end target teams distribute simd", gfc_match_omp_eos,
+      matchs ("end target teams distribute simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_SIMD);
-      matcho ("end target teams distribute", gfc_match_omp_eos,
+      matcho ("end target teams distribute", gfc_match_omp_eos_error,
 	      ST_OMP_END_TARGET_TEAMS_DISTRIBUTE);
-      matcho ("end target teams", gfc_match_omp_eos, ST_OMP_END_TARGET_TEAMS);
-      matcho ("end target", gfc_match_omp_eos, ST_OMP_END_TARGET);
-      matcho ("end taskgroup", gfc_match_omp_eos, ST_OMP_END_TASKGROUP);
-      matchs ("end taskloop simd", gfc_match_omp_eos,
+      matcho ("end target teams", gfc_match_omp_eos_error, ST_OMP_END_TARGET_TEAMS);
+      matcho ("end target", gfc_match_omp_eos_error, ST_OMP_END_TARGET);
+      matcho ("end taskgroup", gfc_match_omp_eos_error, ST_OMP_END_TASKGROUP);
+      matchs ("end taskloop simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_TASKLOOP_SIMD);
-      matcho ("end taskloop", gfc_match_omp_eos, ST_OMP_END_TASKLOOP);
-      matcho ("end task", gfc_match_omp_eos, ST_OMP_END_TASK);
-      matchs ("end teams distribute parallel do simd", gfc_match_omp_eos,
+      matcho ("end taskloop", gfc_match_omp_eos_error, ST_OMP_END_TASKLOOP);
+      matcho ("end task", gfc_match_omp_eos_error, ST_OMP_END_TASK);
+      matchs ("end teams distribute parallel do simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD);
-      matcho ("end teams distribute parallel do", gfc_match_omp_eos,
+      matcho ("end teams distribute parallel do", gfc_match_omp_eos_error,
 	      ST_OMP_END_TEAMS_DISTRIBUTE_PARALLEL_DO);
-      matchs ("end teams distribute simd", gfc_match_omp_eos,
+      matchs ("end teams distribute simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_TEAMS_DISTRIBUTE_SIMD);
-      matcho ("end teams distribute", gfc_match_omp_eos,
+      matcho ("end teams distribute", gfc_match_omp_eos_error,
 	      ST_OMP_END_TEAMS_DISTRIBUTE);
-      matcho ("end teams", gfc_match_omp_eos, ST_OMP_END_TEAMS);
+      matcho ("end teams", gfc_match_omp_eos_error, ST_OMP_END_TEAMS);
       matcho ("end workshare", gfc_match_omp_end_nowait,
 	      ST_OMP_END_WORKSHARE);
       break;
@@ -981,7 +990,7 @@ decode_omp_directive (void)
       break;
     case 's':
       matcho ("sections", gfc_match_omp_sections, ST_OMP_SECTIONS);
-      matcho ("section", gfc_match_omp_eos, ST_OMP_SECTION);
+      matcho ("section", gfc_match_omp_eos_error, ST_OMP_SECTION);
       matcho ("single", gfc_match_omp_single, ST_OMP_SINGLE);
       break;
     case 't':

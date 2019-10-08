@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Match an end of OpenMP directive.  End of OpenMP directive is optional
    whitespace, followed by '\n' or comment '!'.  */
 
-match
+static match
 gfc_match_omp_eos (void)
 {
   locus old_loc;
@@ -56,6 +56,17 @@ gfc_match_omp_eos (void)
   gfc_current_locus = old_loc;
   return MATCH_NO;
 }
+
+match
+gfc_match_omp_eos_error (void)
+{
+  if (gfc_match_omp_eos() == MATCH_YES)
+    return MATCH_YES;
+
+  gfc_error ("Unexpected junk at %C");
+  return MATCH_ERROR;
+}
+
 
 /* Free an omp_clauses structure.  */
 
