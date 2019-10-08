@@ -1,3 +1,7 @@
+2019-10-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* runtime/minimal.c: Revise.
+
 2019-10-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/91926
