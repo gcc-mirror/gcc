@@ -1,3 +1,8 @@
+2019-10-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92014
+	* gcc.dg/Wstringop-overflow-19.c: New test.
+
 2019-10-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91801

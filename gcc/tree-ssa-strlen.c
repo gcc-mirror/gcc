@@ -3741,13 +3741,16 @@ int ssa_name_limit_t::next_ssa_name (tree ssa_name)
   return 0;
 }
 
-/* Determine the minimum and maximum number of leading non-zero bytes
+/* Determines the minimum and maximum number of leading non-zero bytes
    in the representation of EXP and set LENRANGE[0] and LENRANGE[1]
-   to each.  Set LENRANGE[2] to the total number of bytes in
-   the representation.  Set *NULTREM if the representation contains
-   a zero byte, and set *ALLNUL if all the bytes are zero.  Avoid
-   recursing deeper than the limits in SNLIM allow.  Return true
-   on success and false otherwise.  */
+   to each.  Sets LENRANGE[2] to the total number of bytes in
+   the representation.  Sets *NULTREM if the representation contains
+   a zero byte, and sets *ALLNUL if all the bytes are zero.
+   OFFSET and NBYTES are the offset into the representation and
+   the size of the access to it determined from a MEM_REF or zero
+   for other expressions.
+   Avoid recursing deeper than the limits in SNLIM allow.
+   Returns true on success and false otherwise.  */
 
 static bool
 count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
@@ -3769,15 +3772,13 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
 	return false;
 
       len -= offset;
-      size -= offset;
-
-      if (size < nbytes)
-	return false;
 
       if (len < lenrange[0])
 	lenrange[0] = len;
       if (lenrange[1] < len)
 	lenrange[1] = len;
+      if (lenrange[2] < nbytes)
+	lenrange[2] = nbytes;
 
       if (!si->full_string_p)
 	*nulterm = false;
@@ -3843,6 +3844,9 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
 
   if (TREE_CODE (exp) == MEM_REF)
     {
+      if (nbytes)
+	return false;
+
       tree arg = TREE_OPERAND (exp, 0);
       tree off = TREE_OPERAND (exp, 1);
 
@@ -3910,8 +3914,10 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
 	  lenrange[0] = 0;
 	  prep = NULL;
 	}
-      else
+      else if (!nbytes)
 	nbytes = repsize;
+      else if (nbytes < repsize)
+	return false;
     }
 
   if (!nbytes)
