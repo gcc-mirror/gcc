@@ -1,6 +1,12 @@
 2019-10-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (enum merge_kind): Rename non->unique.
+	(trees_out::key_mergeable): Add decl parm.  Return MK_unique for
+	non-dep decls.
+	(trees_{out,out}::decl_value): Adjust.
+
+	gcc/cp/
 	* module.cc (struct nodel_decl_hash): New.
 	(duplicate_hash_map): New.
 	(trees_in::duplicates): New.

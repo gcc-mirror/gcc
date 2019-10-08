@@ -2746,7 +2746,7 @@ static char const *const walk_kind_name[] =
 
 enum merge_kind
 {
-  MK_none,
+  MK_unique,		/* Known unique.  */
   MK_via_ctx = 0x1,	/* Found by CTX, NAME + maybe_arg types.  CTX
 			   determines deduping.  */
   MK_named = 0x2,	/* Found by CTX, NAME + maybe_arg types.  */
@@ -2779,7 +2779,7 @@ enum merge_kind
    an invalid merge_kind number.  */
 static char const *const merge_kind_name[MK_hwm] =
   {
-    "none", NULL, "named", "implicit",  /* 0...3  */
+    "unique", NULL, "named", "implicit",  /* 0...3  */
     "clone", NULL, "linkage", "enum",   /* 4...7  */
     "type spec", "type tmpl spec", NULL, "type partial spec", /* 8...11  */
     "decl spec", "decl tmpl spec", "both spec", "both tmpl spec" /* 12...15  */
@@ -3006,7 +3006,7 @@ public:
 
 public:
   merge_kind get_merge_kind (depset *);
-  void key_mergeable (merge_kind, depset *);
+  void key_mergeable (merge_kind, depset *, tree decl);
 
 public:
   bool is_for_mergeable () const
@@ -6806,16 +6806,15 @@ trees_out::ref_node (tree t)
   return WK_none;
 }
 
-/* T is a decl node that must be written by value.  DEP is the decl's depset.  */
+/* DECL is a decl node that must be written by value.  DEP is the
+   decl's depset.  */
 
 void
-trees_out::decl_value (tree t, depset *dep)
+trees_out::decl_value (tree decl, depset *dep)
 {
-  gcc_assert (DECL_P (t) && !DECL_THUNK_P (t));
+  gcc_assert (DECL_P (decl) && !DECL_THUNK_P (decl));
 
   merge_kind mk = get_merge_kind (dep);
-
-  gcc_assert (mk != MK_none);
 
   if (streaming_p ())
     {
@@ -6823,45 +6822,45 @@ trees_out::decl_value (tree t, depset *dep)
 	{
 	  /* Never start in the middle of a template.  */
 	  int use_tpl = -1;
-	  if (tree ti = node_template_info (t, use_tpl))
+	  if (tree ti = node_template_info (decl, use_tpl))
 	    gcc_checking_assert (TREE_CODE (TI_TEMPLATE (ti)) == OVERLOAD
 				 || (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti))
-				     != t));
+				     != decl));
 	}
 
       /* A new node -> tt_node, tt_mergeable or tt_clone.  */
       unique++;
       i (tt_decl);
       u (mk);
-      u (TREE_CODE (t));
-      start (t);
+      u (TREE_CODE (decl));
+      start (decl);
 
-      if (mk != MK_none && !state->is_header ())
+      if (mk != MK_unique && !state->is_header ())
 	{
 	  /* Tell the importer whether this is a global module entity,
 	     or a module entity.  This bool merges into the next block
 	     of bools.  Sneaky.  */
-	  tree o = get_originating_module_decl (t);
+	  tree o = get_originating_module_decl (decl);
 	  bool is_mod = DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o);
 	  b (is_mod);
 	}
-      tree_node_bools (t);
+      tree_node_bools (decl);
     }
 
-  int tag = insert (t, WK_merge);
+  int tag = insert (decl, WK_merge);
   if (streaming_p ())
     dump (dumper::TREE)
       && dump ("Writing %s:%d %C:%N%S", merge_kind_name[mk], tag,
-	       TREE_CODE (t), t, t);
+	       TREE_CODE (decl), decl, decl);
 
   // FIXME: If mergeable, mark function parms etc as mergeable too
 
-  tree inner = t;
+  tree inner = decl;
   int inner_tag = 0;
 
-  if (TREE_CODE (t) == TEMPLATE_DECL)
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
-      inner = DECL_TEMPLATE_RESULT (t);
+      inner = DECL_TEMPLATE_RESULT (decl);
 
       if (streaming_p ())
 	{
@@ -6883,7 +6882,7 @@ trees_out::decl_value (tree t, depset *dep)
     {
       // FIXME: anon-structured type with typedef name?
       type = TREE_TYPE (inner);
-      bool is_stub = ((TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM ? t : inner)
+      bool is_stub = ((TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM ? decl : inner)
 		      == TYPE_STUB_DECL (type));
 
       if (streaming_p ())
@@ -6913,30 +6912,30 @@ trees_out::decl_value (tree t, depset *dep)
     {
       /* Now write out the merging information, and then really
 	 install the tag values.  */
-      key_mergeable (mk, dep);
+      key_mergeable (mk, dep, decl);
 
       dump (dumper::MERGE)
 	&& dump ("Wrote:%d's %s merge key %C:%N", tag,
-		 merge_kind_name[mk], TREE_CODE (t), t);
+		 merge_kind_name[mk], TREE_CODE (decl), decl);
 
       /* This is the point where the importer determines whether it
 	 really has a new decl or not.  So it is safe to refer to
 	 these nodes.  */
-      mark_merged (t, tag);
+      mark_merged (decl, tag);
       if (inner_tag != 0)
 	mark_merged (inner, inner_tag);
       if (type_tag != 0)
 	mark_merged (type, type_tag);
       if (TREE_CODE (inner) == FUNCTION_DECL)
-	fn_parms_fini (inner, t);
+	fn_parms_fini (inner, decl);
     }
 
   if (inner_tag != 0)
     {
       /* Template pieces.  */
-      tree_node (DECL_TEMPLATE_PARMS (t));
+      tree_node (DECL_TEMPLATE_PARMS (decl));
       /* DECL_TEMPLATE_RESULT is inner, so no need to stream that.  */
-      tree_node_vals (t);
+      tree_node_vals (decl);
     }
 
   tree_node_vals (inner);
@@ -6948,7 +6947,7 @@ trees_out::decl_value (tree t, depset *dep)
   // constraints.  Not a modules-specific problem though.
   if (flag_concepts)
     {
-      tree constraints = get_constraints (t);
+      tree constraints = get_constraints (decl);
       tree_node (constraints);
     }
 
@@ -6964,7 +6963,8 @@ trees_out::decl_value (tree t, depset *dep)
     }
 
   if (streaming_p ())
-    dump (dumper::TREE) && dump ("Written decl:%d %C:%N", tag, TREE_CODE (t), t);
+    dump (dumper::TREE) && dump ("Written decl:%d %C:%N", tag,
+				 TREE_CODE (decl), decl);
 }
 
 tree
@@ -6973,7 +6973,7 @@ trees_in::decl_value ()
   int tag = 0;
   bool is_mod = false;
   unsigned mk_u = u ();
-  if (mk_u >= MK_hwm || !merge_kind_name[mk_u] || mk_u == MK_none)
+  if (mk_u >= MK_hwm || !merge_kind_name[mk_u])
     {
       set_overrun ();
       return NULL_TREE;
@@ -6983,7 +6983,7 @@ trees_in::decl_value ()
   tree res = start (u ());
   if (res)
     {
-      if (mk != MK_none && !state->is_header ())
+      if (mk != MK_unique && !state->is_header ())
 	/* See note in trees_out about where this bool is sequenced.  */
 	is_mod = b ();
 
@@ -7056,7 +7056,7 @@ trees_in::decl_value ()
       /* Bail.  */
       return NULL_TREE;
     }
-  gcc_assert (mk != MK_none);
+
   tree parms = NULL_TREE;
   if (true)
     {
@@ -7181,6 +7181,8 @@ trees_in::decl_value ()
 		DECL_CHAIN (DECL_TEMPLATE_RESULT (key)) = inner;
 	    }
 	}
+      else if (mk == MK_unique)
+	kind = "unique";
       else
 	{
 	  if (is_mod && !(state->is_primary () || state->is_partition ()))
@@ -9516,10 +9518,15 @@ trees_in::fn_parms_fini (int tag, tree fn, tree existing)
   return parms;
 }
 
+/* DEP is the depset of some decl we're streaming by value.  Determine
+   the merging behaviour.  */
 
 merge_kind
 trees_out::get_merge_kind (depset *dep)
 {
+  if (!dep)
+    return MK_unique;
+
   tree decl = dep->get_entity ();
 
   if (dep_hash->for_mergeable && !streaming_p ())
@@ -9586,12 +9593,11 @@ trees_out::get_merge_kind (depset *dep)
 // FIXME: constraints probably need streaming too?
 
 void
-trees_out::key_mergeable (merge_kind mk, depset *dep)
+trees_out::key_mergeable (merge_kind mk, depset *dep, tree decl)
 {
-  tree decl = dep->get_entity ();
   tree inner = STRIP_TEMPLATE (decl);
 
-  if (dep_hash->for_mergeable && !streaming_p ())
+  if (dep && dep_hash->for_mergeable && !streaming_p ())
     {
       /* When /determining/ mergeable ordering, there's an indirection.  */
       gcc_assert (dep->is_special ());
@@ -9601,7 +9607,8 @@ trees_out::key_mergeable (merge_kind mk, depset *dep)
   if (streaming_p ())
     dump (dumper::MERGE)
       && dump ("Writing %s key for mergeable %s %C:%N", merge_kind_name[mk],
-	       dep->entity_kind_name (), TREE_CODE (decl), decl);
+	       dep ? dep->entity_kind_name () : "unique",
+	       TREE_CODE (decl), decl);
 
   /* Stream the context, even though it's only used to locate named
      decls -- other decls will still refer to it, and we want it
@@ -9624,7 +9631,7 @@ trees_out::key_mergeable (merge_kind mk, depset *dep)
     {
       /* Specializations are located via their originating template,
 	 and the set of template args they specialize.  */
-      gcc_checking_assert (dep->is_special ());
+      gcc_checking_assert (dep && dep->is_special ());
       spec_entry *entry = reinterpret_cast <spec_entry *> (dep->deps[0]);
       tree_node (entry->tmpl);
       tree_node (entry->args);
@@ -11483,7 +11490,7 @@ depset::hash::find_dependencies ()
 	      if (is_for_mergeable ())
 		{
 		  merge_kind mk = walker.get_merge_kind (current);
-		  walker.key_mergeable (mk, current);
+		  walker.key_mergeable (mk, current, decl);
 
 		  if (mk & MK_template_mask)
 		    /* We also want to make specializations of members
