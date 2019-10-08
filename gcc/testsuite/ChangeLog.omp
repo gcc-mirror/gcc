@@ -3,6 +3,13 @@
 	Backported from mainline
 	2019-10-08  Tobias Burnus  <tobias@codesourcery.com>
 
+	* testsuite/libgomp.fortran/target-simd.f90: New.
+
+2019-10-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline
+	2019-10-08  Tobias Burnus  <tobias@codesourcery.com>
+
 	* gfortran.dg/goacc/continuation-free-form.f95: Update dg-error.
 
 2019-10-02  Tobias Burnus  <tobias@codesourcery.com>

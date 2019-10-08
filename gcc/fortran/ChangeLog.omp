@@ -3,6 +3,13 @@
 	Backported from mainline
 	2019-10-08  Tobias Burnus  <tobias@codesourcery.com>
 
+	* parse.c (parse_executable): Add missing ST_OMP_TARGET_SIMD.
+
+2019-10-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from mainline
+	2019-10-08  Tobias Burnus  <tobias@codesourcery.com>
+
 	* match.h (gfc_match_omp_eos_error): Renamed from gfc_match_omp_eos.
 	* openmp.c (gfc_match_omp_eos): Make static.
 	(gfc_match_omp_eos_error): New.
