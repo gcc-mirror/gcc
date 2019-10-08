@@ -5501,7 +5501,7 @@ vect_supportable_shift (enum tree_code code, tree scalar_type)
    stmt to replace it, put it in VEC_STMT, and insert it at GSI.
    Return true if STMT_INFO is vectorizable in this way.  */
 
-bool
+static bool
 vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		    stmt_vec_info *vec_stmt, slp_tree slp_node,
 		    stmt_vector_for_cost *cost_vec)
@@ -9776,10 +9776,9 @@ vect_is_simple_cond (tree cond, vec_info *vinfo,
 
    Return true if STMT_INFO is vectorizable in this way.  */
 
-bool
+static bool
 vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
-			stmt_vec_info *vec_stmt, bool for_reduction,
-			int reduc_index,
+			stmt_vec_info *vec_stmt,
 			slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {
   vec_info *vinfo = stmt_info->vinfo;
@@ -9812,17 +9811,36 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
 
-  if (for_reduction && STMT_SLP_TYPE (stmt_info))
+  /* Is vectorizable conditional operation?  */
+  gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
+  if (!stmt)
     return false;
 
-  vect_reduction_type reduction_type
-    = STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info);
-  if (!for_reduction)
+  code = gimple_assign_rhs_code (stmt);
+  if (code != COND_EXPR)
+    return false;
+
+  stmt_vec_info reduc_info = NULL;
+  int reduc_index = -1;
+  vect_reduction_type reduction_type = TREE_CODE_REDUCTION;
+  bool for_reduction
+    = STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info)) != NULL;
+  if (for_reduction)
+    {
+      if (STMT_SLP_TYPE (stmt_info))
+	return false;
+      reduc_info = info_for_reduction (stmt_info);
+      reduction_type = STMT_VINFO_REDUC_TYPE (reduc_info);
+      reduc_index = STMT_VINFO_REDUC_IDX (stmt_info);
+      gcc_assert (reduction_type != EXTRACT_LAST_REDUCTION
+		  || reduc_index != -1);
+    }
+  else
     {
       if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
 	return false;
 
-      /* FORNOW: not yet supported.  */
+      /* FORNOW: only supported as part of a reduction.  */
       if (STMT_VINFO_LIVE_P (stmt_info))
 	{
 	  if (dump_enabled_p ())
@@ -9831,16 +9849,6 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  return false;
 	}
     }
-
-  /* Is vectorizable conditional operation?  */
-  gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
-  if (!stmt)
-    return false;
-
-  code = gimple_assign_rhs_code (stmt);
-
-  if (code != COND_EXPR)
-    return false;
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   tree vectype1 = NULL_TREE, vectype2 = NULL_TREE;
@@ -10665,12 +10673,10 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 	  || vectorizable_load (stmt_info, NULL, NULL, node, node_instance,
 				cost_vec)
 	  || vectorizable_store (stmt_info, NULL, NULL, node, cost_vec)
-	  || vectorizable_reduction (stmt_info, NULL, NULL, node,
-				     node_instance, cost_vec)
+	  || vectorizable_reduction (stmt_info, node, node_instance, cost_vec)
 	  || vectorizable_induction (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_shift (stmt_info, NULL, NULL, node, cost_vec)
-	  || vectorizable_condition (stmt_info, NULL, NULL, false, -1, node,
-				     cost_vec)
+	  || vectorizable_condition (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_comparison (stmt_info, NULL, NULL, node,
 				      cost_vec)
 	  || vectorizable_lc_phi (stmt_info, NULL, node));
@@ -10689,8 +10695,7 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 	      || vectorizable_load (stmt_info, NULL, NULL, node, node_instance,
 				    cost_vec)
 	      || vectorizable_store (stmt_info, NULL, NULL, node, cost_vec)
-	      || vectorizable_condition (stmt_info, NULL, NULL, false, -1, node,
-					 cost_vec)
+	      || vectorizable_condition (stmt_info, NULL, NULL, node, cost_vec)
 	      || vectorizable_comparison (stmt_info, NULL, NULL, node,
 					  cost_vec));
     }
@@ -10796,8 +10801,7 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       break;
 
     case condition_vec_info_type:
-      done = vectorizable_condition (stmt_info, gsi, &vec_stmt, false, -1,
-				     slp_node, NULL);
+      done = vectorizable_condition (stmt_info, gsi, &vec_stmt, slp_node, NULL);
       gcc_assert (done);
       break;
 
@@ -10895,20 +10899,22 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   /* If this stmt defines a value used on a backedge, update the
      vectorized PHIs.  */
   stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
-  if (!slp_node && STMT_VINFO_REDUC_DEF (orig_stmt_info)
-      && STMT_VINFO_REDUC_TYPE (orig_stmt_info) != FOLD_LEFT_REDUCTION
-      && (STMT_VINFO_REDUC_TYPE (orig_stmt_info) != COND_REDUCTION
-	  || (STMT_VINFO_VEC_REDUCTION_TYPE (orig_stmt_info)
-	      != EXTRACT_LAST_REDUCTION))
-      && is_a <gphi *> (STMT_VINFO_REDUC_DEF (orig_stmt_info)->stmt))
+  stmt_vec_info reduc_info;
+  if (STMT_VINFO_REDUC_DEF (orig_stmt_info)
+      && (reduc_info = info_for_reduction (orig_stmt_info))
+      && STMT_VINFO_REDUC_TYPE (reduc_info) != FOLD_LEFT_REDUCTION
+      && STMT_VINFO_REDUC_TYPE (reduc_info) != EXTRACT_LAST_REDUCTION)
     {
-      gphi *phi = as_a <gphi *> (STMT_VINFO_REDUC_DEF (orig_stmt_info)->stmt);
-      if (dominated_by_p (CDI_DOMINATORS,
-			  gimple_bb (orig_stmt_info->stmt), gimple_bb (phi)))
+      gphi *phi;
+      if (!slp_node
+	  && (phi = dyn_cast <gphi *>
+		      (STMT_VINFO_REDUC_DEF (orig_stmt_info)->stmt))
+	  && dominated_by_p (CDI_DOMINATORS,
+			     gimple_bb (orig_stmt_info->stmt), gimple_bb (phi)))
 	{
 	  edge e = loop_latch_edge (gimple_bb (phi)->loop_father);
 	  stmt_vec_info phi_info
-	      = STMT_VINFO_VEC_STMT (STMT_VINFO_REDUC_DEF (orig_stmt_info));
+	    = STMT_VINFO_VEC_STMT (STMT_VINFO_REDUC_DEF (orig_stmt_info));
 	  stmt_vec_info vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
 	  do
 	    {
@@ -10921,24 +10927,19 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  while (phi_info);
 	  gcc_assert (!vec_stmt);
 	}
-    }
-  else if (slp_node && STMT_VINFO_REDUC_DEF (orig_stmt_info)
-	   /* Going back and forth via STMT_VINFO_REDUC_DEF gets us to the
-	      stmt with the reduction meta in case of reduction groups.  */
-	   && (STMT_VINFO_REDUC_TYPE
-	         (STMT_VINFO_REDUC_DEF (STMT_VINFO_REDUC_DEF (orig_stmt_info)))
-	       != FOLD_LEFT_REDUCTION)
-	   && slp_node != slp_node_instance->reduc_phis)
-    {
-      slp_tree phi_node = slp_node_instance->reduc_phis;
-      gphi *phi = as_a <gphi *> (SLP_TREE_SCALAR_STMTS (phi_node)[0]->stmt);
-      edge e = loop_latch_edge (gimple_bb (phi)->loop_father);
-      gcc_assert (SLP_TREE_VEC_STMTS (phi_node).length ()
-		  == SLP_TREE_VEC_STMTS (slp_node).length ());
-      for (unsigned i = 0; i < SLP_TREE_VEC_STMTS (phi_node).length (); ++i)
-	add_phi_arg (as_a <gphi *> (SLP_TREE_VEC_STMTS (phi_node)[i]->stmt),
-		     gimple_get_lhs (SLP_TREE_VEC_STMTS (slp_node)[i]->stmt),
-		     e, gimple_phi_arg_location (phi, e->dest_idx));
+      else if (slp_node
+	       && slp_node != slp_node_instance->reduc_phis)
+	{
+	  slp_tree phi_node = slp_node_instance->reduc_phis;
+	  gphi *phi = as_a <gphi *> (SLP_TREE_SCALAR_STMTS (phi_node)[0]->stmt);
+	  edge e = loop_latch_edge (gimple_bb (phi)->loop_father);
+	  gcc_assert (SLP_TREE_VEC_STMTS (phi_node).length ()
+		      == SLP_TREE_VEC_STMTS (slp_node).length ());
+	  for (unsigned i = 0; i < SLP_TREE_VEC_STMTS (phi_node).length (); ++i)
+	    add_phi_arg (as_a <gphi *> (SLP_TREE_VEC_STMTS (phi_node)[i]->stmt),
+			 gimple_get_lhs (SLP_TREE_VEC_STMTS (slp_node)[i]->stmt),
+			 e, gimple_phi_arg_location (phi, e->dest_idx));
+	}
     }
 
   /* Handle stmts whose DEF is used outside the loop-nest that is

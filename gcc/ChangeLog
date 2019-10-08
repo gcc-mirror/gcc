@@ -1,3 +1,46 @@
+2019-10-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_stmt_vec_info::v_reduc_type): Remove.
+	(_stmt_vec_info::is_reduc_info): Add.
+	(STMT_VINFO_VEC_REDUCTION_TYPE): Remove.
+	(vectorizable_condition): Remove.
+	(vectorizable_shift): Likewise.
+	(vectorizable_reduction): Adjust.
+	(info_for_reduction): New.
+	* tree-vect-loop.c (vect_force_simple_reduction): Fold into...
+	(vect_analyze_scalar_cycles_1): ... here.
+	(vect_analyze_loop_operations): Adjust.
+	(needs_fold_left_reduction_p): Simplify for single caller.
+	(vect_is_simple_reduction): Likewise.  Remove stmt restriction
+	for nested cycles not part of double reductions.
+	(vect_model_reduction_cost): Pass in the reduction type.
+	(info_for_reduction): New function.
+	(vect_create_epilog_for_reduction): Use it, access reduction
+	meta off the stmt info it returns.  Use STMT_VINFO_REDUC_TYPE
+	instead of STMT_VINFO_VEC_REDUCTION_TYPE.
+	(vectorize_fold_left_reduction): Remove pointless assert.
+	(vectorizable_reduction): Analyze the full reduction when
+	visiting the outermost PHI.  Simplify.  Use STMT_VINFO_REDUC_TYPE
+	instead of STMT_VINFO_VEC_REDUCTION_TYPE.  Direct reduction
+	stmt code-generation to vectorizable_* in most cases.  Verify
+	code-generation only for cases handled by
+	vect_transform_reductuon.
+	(vect_transform_reduction): Use info_for_reduction to get at
+	reduction meta.  Simplify.
+	(vect_transform_cycle_phi): Likewise.
+	(vectorizable_live_operation): Likewise.
+	* tree-vect-patterns.c (vect_reassociating_reduction_p): Look
+	at the PHI node for STMT_VINFO_REDUC_TYPE.
+	* tree-vect-slp.c (vect_schedule_slp_instance): Remove no
+	longer necessary code.
+	* tree-vect-stmts.c (vectorizable_shift): Make static again.
+	(vectorizable_condition): Likewise.  Get at reduction related
+	info via info_for_reduction.
+	(vect_analyze_stmt): Adjust.
+	(vect_transform_stmt): Likewise.
+	* tree-vectorizer.c (vec_info::new_stmt_vec_info): Initialize
+	STMT_VINFO_REDUC_TYPE instead of STMT_VINFO_VEC_REDUCTION_TYPE.
+
 2019-10-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/invoke.texi (-ffp-int-builtin-inexact): Document

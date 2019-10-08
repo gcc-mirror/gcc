@@ -1,3 +1,12 @@
+2019-10-08  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/pr65947-1.c: Adjust.
+	* gcc.dg/vect/pr65947-13.c: Likewise.
+	* gcc.dg/vect/pr65947-14.c: Likewise.
+	* gcc.dg/vect/pr65947-4.c: Likewise.
+	* gcc.dg/vect/pr80631-1.c: Likewise.
+	* gcc.dg/vect/pr80631-2.c: Likewise.
+
 2019-10-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/goacc/continuation-free-form.f95: Update dg-error.
