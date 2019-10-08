@@ -1,3 +1,8 @@
+2019-10-08  Marek Polacek  <polacek@redhat.com>
+
+	DR 685 - Integral promotion of enum ignores fixed underlying type.
+	* g++.dg/cpp0x/scoped_enum9.C: New test.
+
 2019-10-08  Martin Sebor  <msebor@redhat.com>
 
 	PR tetsuite/92025
