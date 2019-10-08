@@ -1,3 +1,8 @@
+2019-10-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/torture/simd-abi-9.c: Require LP64 for
+	the function body test.
+
 2019-10-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/torture/builtin-fp-int-inexact-c2x.c: New test.
