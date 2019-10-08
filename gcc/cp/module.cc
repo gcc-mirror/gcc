@@ -6914,9 +6914,10 @@ trees_out::decl_value (tree decl, depset *dep)
 	 install the tag values.  */
       key_mergeable (mk, dep, decl);
 
-      dump (dumper::MERGE)
-	&& dump ("Wrote:%d's %s merge key %C:%N", tag,
-		 merge_kind_name[mk], TREE_CODE (decl), decl);
+      if (streaming_p ())
+	dump (dumper::MERGE)
+	  && dump ("Wrote:%d's %s merge key %C:%N", tag,
+		   merge_kind_name[mk], TREE_CODE (decl), decl);
 
       /* This is the point where the importer determines whether it
 	 really has a new decl or not.  So it is safe to refer to
@@ -17030,12 +17031,18 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
 char const *
 module_name (unsigned ix, bool header_ok)
 {
-  module_state *imp = (*modules)[ix];
+  if (modules)
+    {
+      module_state *imp = (*modules)[ix];
 
-  if (!imp->name)
-    imp = imp->parent;
+      if (!imp->name)
+	imp = imp->parent;
 
-  return header_ok || !imp->is_header () ? imp->get_flatname () : NULL;
+      if (header_ok || !imp->is_header ())
+	return imp->get_flatname ();
+    }
+
+  return NULL;
 }
 
 /* Return the bitmap describing what modules are imported.  Remember,

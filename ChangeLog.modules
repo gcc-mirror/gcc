@@ -1,6 +1,10 @@
 2019-10-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::decl_value): Check streaming before dump.
+	(module_name): Protect from not modules.
+
+	gcc/cp/
 	* module.cc (enum merge_kind): Rename non->unique.
 	(trees_out::key_mergeable): Add decl parm.  Return MK_unique for
 	non-dep decls.
