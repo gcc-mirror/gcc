@@ -1,3 +1,10 @@
+2019-10-08  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91994
+	* config/i386/i386.c (x86_avx_u128_mode_needed): Use SSE_REG
+	instead of ALL_SSE_REG to check if function call preserves some
+	256-bit SSE registers.
+
 2019-10-08  Tulio Magno Quites Machado Filho  <tuliom@linux.ibm.com>
 
 	* config.gcc: Move -L usage from LINK_OS_EXTRA_SPEC32 and
@@ -116,7 +123,7 @@
 
 	* config/i386/i386-expand.c (ix86_expand_floorceildf_32,
 	ix86_expand_rounddf_32): Reorder functions.
-	* config/i386/i386-protos.h: Update..
+	* config/i386/i386-protos.h: Update.
 
 2019-10-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
