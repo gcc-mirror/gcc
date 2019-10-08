@@ -1,3 +1,12 @@
+2019-10-08  Dmitrij Pochepko <dmitrij.pochepko@bell-sw.com>
+
+	PR tree-optimization/90836
+	* lib/target-supports.exp (check_effective_target_popcount)
+	(check_effective_target_popcountll): New effective targets.
+	* gcc.dg/tree-ssa/popcount4.c: New test.
+	* gcc.dg/tree-ssa/popcount4l.c: New test.
+	* gcc.dg/tree-ssa/popcount4ll.c: New test.
+
 2019-10-08  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/92014
