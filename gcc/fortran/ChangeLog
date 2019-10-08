@@ -153,7 +153,6 @@
 	(lang_decl): Add new optional_arg field.
 	(GFC_DECL_OPTIONAL_ARGUMENT): New macro.
 
->>>>>>> .r276463
 2019-10-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.c (gfc_diagnostic_starter): Clear the prefix before
