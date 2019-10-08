@@ -1,3 +1,8 @@
+2019-10-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/exceptions-test-0.C: New test.
+
 2019-10-07  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Merge trunk r276647.
