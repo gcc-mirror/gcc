@@ -215,7 +215,28 @@ os_error (const char *message)
   estr_write ("\n");
   exit_error (1);
 }
-iexport(os_error);
+iexport(os_error); /* TODO, DEPRECATED, ABI: Should not be exported
+		      anymore when bumping so version.  */
+
+
+/* Improved version of os_error with a printf style format string and
+   a locus.  */
+
+void
+os_error_at (const char *where, const char *message, ...)
+{
+  va_list ap;
+
+  recursion_check ();
+  estr_write (where);
+  estr_write (": ");
+  va_start (ap, message);
+  estr_vprintf (message, ap);
+  va_end (ap);
+  estr_write ("\n");
+  exit_error (1);
+}
+iexport(os_error_at);
 
 
 /* void runtime_error()-- These are errors associated with an
