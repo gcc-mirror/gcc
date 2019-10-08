@@ -1,5 +1,11 @@
 2019-10-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/Makefile.am (doc-html-docbook-regenerate): New target.
+	(${docbook_outdir}/html): Do not create unused 'html/ext' directory.
+	* doc/Makefile.in: Regenerate.
+	* doc/xml/manual/documentation_hacking.xml: Document new target.
+	* doc/html/*: Regenerate.
+
 	* doc/xml/manual/allocator.xml: Use archived copy of CUJ article.
 	* doc/html/*: Regenerate.
 
