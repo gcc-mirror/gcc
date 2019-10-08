@@ -1,6 +1,19 @@
 2019-10-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (struct nodel_decl_hash): New.
+	(duplicate_hash_map): New.
+	(trees_in::duplicates): New.
+	(trees_in::mergeables): Delete.
+	(trees_in::{,~}trees_in): Adjust.
+	(trees_in::{find,register,unmatched}_duplicate): New.
+	(trees_in::{reserve,register,unmcted}_mergeable): Delete.
+	(enum trees_in::dupness): Delete DUP_unique.
+	(trees_in::decl_value): Adjust duplicate registration.
+	(trees_in::get_dupness): Adjust.
+	(module_state::{read,write}_cluster): Don't stream mergeable count.
+
+	gcc/cp/
 	* module.cc (enum walk_kind): Rename body->value,
 	mergeable->merge.  Delete clone, merging.
 	(trees_in::decl_value): Drop walk_kind parm, read merge kind

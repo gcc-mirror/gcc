@@ -2785,6 +2785,18 @@ static char const *const merge_kind_name[MK_hwm] =
     "decl spec", "decl tmpl spec", "both spec", "both tmpl spec" /* 12...15  */
   };
 
+struct nodel_decl_hash : nodel_ptr_hash<tree_node>
+{
+  inline static hashval_t hash (const value_type decl)
+  {
+    return hashval_t (DECL_UID (decl));
+  }
+};
+
+typedef hash_map<tree,uintptr_t,
+		 simple_hashmap_traits<nodel_decl_hash,uintptr_t> >
+duplicate_hash_map;
+
 /* Tree stream reader.  Note that reading a stream doesn't mark the
    read trees with TREE_VISITED.  Thus it's quite safe to have
    multiple concurrent readers.  Which is good, because lazy
@@ -2795,10 +2807,8 @@ class trees_in : public bytes_in {
 private:
   module_state *state;		/* Module being imported.  */
   vec<tree> back_refs;		/* Back references.  */
-  vec<intptr_t> mergeables;	/* Mergeable decls & their originals.  */
+  duplicate_hash_map *duplicates;	/* Map from existings to duplicate.  */
   vec<tree> post_decls;		/* Decls to post process.  */
-  bool any_deduping;		/* There is at least one thing to
-				   dedup.  (optimizes searches).  */
 
 public:
   trees_in (module_state *);
@@ -2857,21 +2867,18 @@ public:
   bool key_mergeable (merge_kind, tree, tree, tree,
 		      tree *, tree *, tree *, tree *, int *);
 
+private:
+  uintptr_t *find_duplicate (tree existing);
+
 public:
-  void reserve_mergeable (unsigned len)
+  void register_duplicate (tree decl, tree existing);
+  void unmatched_duplicate (tree existing)
   {
-    /* We push both the existing decl and the duplicate.  */
-    mergeables.reserve (len * 2);
-  }
-  int register_mergeable (tree decl, tree existing);
-  void unmatched_mergeable (int index)
-  {
-    mergeables[index] |= 1;
+    *find_duplicate (existing) |= 1;
   }
 
   enum dupness
   {
-    DUP_unique,
     DUP_new,
     DUP_dup,
     DUP_bad
@@ -2904,17 +2911,17 @@ private:
 };
 
 trees_in::trees_in (module_state *state)
-  :parent (), state (state), any_deduping (false)
+  :parent (), state (state)
 {
+  duplicates = NULL;
   back_refs.create (500);
-  mergeables.create (0);
   post_decls.create (0);
 }
 
 trees_in::~trees_in ()
 {
+  delete (duplicates);
   back_refs.release ();
-  mergeables.release ();
   post_decls.release ();
 }
 
@@ -7050,7 +7057,6 @@ trees_in::decl_value ()
       return NULL_TREE;
     }
   gcc_assert (mk != MK_none);
-  int merge_slot = -1;
   tree parms = NULL_TREE;
   if (true)
     {
@@ -7186,13 +7192,10 @@ trees_in::decl_value ()
 					     r_type, fn_args);
 	}
 
-      merge_slot = register_mergeable (res, existing);
-      if (merge_slot < 0)
-	goto bail;
-
       if (existing)
 	{
 	  /* Install the existing decl into the back ref array.  */
+	  register_duplicate (res, existing);
 	  back_refs[~tag] = existing;
 	  if (inner_tag != 0)
 	    {
@@ -7327,7 +7330,7 @@ trees_in::decl_value ()
 	TREE_TYPE (res) = TREE_TYPE (inner);
 
       if (!is_matching_decl (existing, res))
-	unmatched_mergeable (merge_slot);
+	unmatched_duplicate (existing);
 
       /* And our result is the existing node.  */
       res = existing;
@@ -9858,59 +9861,44 @@ has_definition (tree decl)
   return false;
 }
 
-/* We're starting to read mergeable DECL.  EXISTING is the already
-   known node (which is NULL if DECL is new.  */
-
-int
-trees_in::register_mergeable (tree decl, tree existing)
+uintptr_t *
+trees_in::find_duplicate (tree existing)
 {
-  if (existing)
-    any_deduping = true;
+  if (!duplicates)
+    return NULL;
 
-  // FIXME: we have more mergeables than those we find?
-  // Perhaps this should be a map from existing->decl to avoid O(N)
-  // searching when there is duplication.
-  mergeables.reserve (2);
+  return duplicates->get (STRIP_TEMPLATE (existing));
+}
 
-  mergeables.quick_push (reinterpret_cast<intptr_t> (decl));
-  mergeables.quick_push (reinterpret_cast<intptr_t> (existing));
+/* We're starting to read duplicate DECL.  EXISTING is the already
+   known node.  */
 
-  return mergeables.length () - 1;
+void
+trees_in::register_duplicate (tree decl, tree existing)
+{
+  if (!duplicates)
+    duplicates = new duplicate_hash_map (40);
+
+  bool existed;
+  uintptr_t &slot =
+    duplicates->get_or_insert (STRIP_TEMPLATE (existing), &existed);
+  gcc_checking_assert (!existed);
+  slot = reinterpret_cast<uintptr_t> (STRIP_TEMPLATE (decl));
 }
 
 /* DECL is the controlling mergeable decl of some graph.  Did we find
    an existing decl, or is it a new decl?  */
 
 trees_in::dupness
-trees_in::get_dupness (tree decl)
+trees_in::get_dupness (tree maybe_existing)
 {
-  if (!CHECKING_P && !any_deduping)
-    return DUP_unique;
+  if (!CHECKING_P && !duplicates)
+    return DUP_new;
 
-  if (TREE_CODE (decl) == TEMPLATE_DECL)
-    decl = DECL_TEMPLATE_RESULT (decl);
+  if (uintptr_t *slot = find_duplicate (maybe_existing))
+    return *slot & 1 ? DUP_bad : DUP_dup;
 
-  for (unsigned ix = mergeables.length (); ix--;)
-    {
-      intptr_t slot = mergeables[ix];
-      if (tree val = reinterpret_cast<tree> (slot & ~intptr_t (1)))
-	{
-	  if (STRIP_TEMPLATE (val) == decl)
-	    {
-	      /* If IX is odd, we matched the existing decl, otherwise
-		 we matched the new decl.  */
-	      gcc_checking_assert (ix & 1 || !mergeables[ix + 1]);
-
-	      if (!(ix & 1))
-		return DUP_new;
-	      else
-		return slot & 1 ? DUP_bad : DUP_dup;
-	    }
-	}
-    }
-
-  /* We never registered this as a mergeable.  */
-  return DUP_unique;
+  return DUP_new;
 }
 
 /* DECL is an about-to-be defined decl.  Determine the ODR mergeness.
@@ -9923,7 +9911,7 @@ trees_in::get_odrness (tree decl, bool have_defn)
     return ODR_ignore;
 
   /* If there's no deduping going on, we want this one.  */
-  if (!any_deduping)
+  if (!duplicates)
     return ODR_new;
 
   tree owner = get_instantiating_module_decl (decl);
@@ -13701,7 +13689,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   bool refs_unnamed_p = false;
 
   /* Sort the cluster according to its mergeable entities.  */
-  unsigned mergeables = sort_mergeables (scc, size);
+  sort_mergeables (scc, size);
 
   if (dump (dumper::CLUSTER))
     {
@@ -13754,8 +13742,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   trees_out sec (to, this, table, scc[0]->section);
   sec.begin ();
-
-  sec.u (mergeables);
 
   if (refs_unnamed_p)
     /* We contain references to unnamed decls.  Seed those that are
@@ -14049,11 +14035,6 @@ module_state::read_cluster (unsigned snum)
 
   dump () && dump ("Reading section:%u", snum);
   dump.indent ();
-
-  unsigned mergeables = sec.u ();
-  dump (dumper::MERGE) && dump ("%d mergeable entities", mergeables);
-  if (mergeables)
-    sec.reserve_mergeable (mergeables);
 
   while (!sec.get_overrun () && sec.more_p ())
     {
