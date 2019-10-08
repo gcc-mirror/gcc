@@ -8911,7 +8911,9 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl,
   unsigned srcidx = !dstidx;
 
   tree dest = (*args)[dstidx];
-  if (!TREE_TYPE (dest) || !INDIRECT_TYPE_P (TREE_TYPE (dest)))
+  if (!TREE_TYPE (dest)
+      || (TREE_CODE (TREE_TYPE (dest)) != ARRAY_TYPE
+	  && !INDIRECT_TYPE_P (TREE_TYPE (dest))))
     return;
 
   tree srctype = NULL_TREE;
