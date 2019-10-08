@@ -1696,83 +1696,14 @@ machopic_select_section (tree decl,
       else
 	return base_section;
     }
-  /* c) legacy meta-data selection.  */
-  else if (TREE_CODE (decl) == VAR_DECL
+  else if (flag_next_runtime
+	   && VAR_P (decl)
 	   && DECL_NAME (decl)
 	   && TREE_CODE (DECL_NAME (decl)) == IDENTIFIER_NODE
 	   && IDENTIFIER_POINTER (DECL_NAME (decl))
-	   && flag_next_runtime
 	   && !strncmp (IDENTIFIER_POINTER (DECL_NAME (decl)), "_OBJC_", 6))
-    {
-      const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
-      static bool warned_objc_46 = false;
-      /* We shall assert that zero-sized objects are an error in ObjC
-         meta-data.  */
-      gcc_assert (tree_to_uhwi (DECL_SIZE_UNIT (decl)) != 0);
-
-      /* ??? This mechanism for determining the metadata section is
-	 broken when LTO is in use, since the frontend that generated
-	 the data is not identified.  We will keep the capability for
-	 the short term - in case any non-Objective-C programs are using
-	 it to place data in specified sections.  */
-      if (!warned_objc_46)
-	{
-	  location_t loc = DECL_SOURCE_LOCATION (decl);
-	  warning_at (loc, 0, "the use of _OBJC_-prefixed variable names"
-		      " to select meta-data sections is deprecated at 4.6"
-		      " and will be removed in 4.7");
-	  warned_objc_46 = true;
-	}
-
-      if (!strncmp (name, "_OBJC_CLASS_METHODS_", 20))
-        return darwin_sections[objc_cls_meth_section];
-      else if (!strncmp (name, "_OBJC_INSTANCE_METHODS_", 23))
-        return darwin_sections[objc_inst_meth_section];
-      else if (!strncmp (name, "_OBJC_CATEGORY_CLASS_METHODS_", 29))
-        return darwin_sections[objc_cat_cls_meth_section];
-      else if (!strncmp (name, "_OBJC_CATEGORY_INSTANCE_METHODS_", 32))
-        return darwin_sections[objc_cat_inst_meth_section];
-      else if (!strncmp (name, "_OBJC_CLASS_VARIABLES_", 22))
-        return darwin_sections[objc_class_vars_section];
-      else if (!strncmp (name, "_OBJC_INSTANCE_VARIABLES_", 25))
-        return darwin_sections[objc_instance_vars_section];
-      else if (!strncmp (name, "_OBJC_CLASS_PROTOCOLS_", 22))
-        return darwin_sections[objc_cat_cls_meth_section];
-      else if (!strncmp (name, "_OBJC_CLASS_NAME_", 17))
-        return darwin_sections[objc_class_names_section];
-      else if (!strncmp (name, "_OBJC_METH_VAR_NAME_", 20))
-        return darwin_sections[objc_meth_var_names_section];
-      else if (!strncmp (name, "_OBJC_METH_VAR_TYPE_", 20))
-        return darwin_sections[objc_meth_var_types_section];
-      else if (!strncmp (name, "_OBJC_CLASS_REFERENCES", 22))
-        return darwin_sections[objc_cls_refs_section];
-      else if (!strncmp (name, "_OBJC_CLASS_", 12))
-        return darwin_sections[objc_class_section];
-      else if (!strncmp (name, "_OBJC_METACLASS_", 16))
-        return darwin_sections[objc_meta_class_section];
-      else if (!strncmp (name, "_OBJC_CATEGORY_", 15))
-        return darwin_sections[objc_category_section];
-      else if (!strncmp (name, "_OBJC_SELECTOR_REFERENCES", 25))
-        return darwin_sections[objc_selector_refs_section];
-      else if (!strncmp (name, "_OBJC_SELECTOR_FIXUP", 20))
-        return darwin_sections[objc_selector_fixup_section];
-      else if (!strncmp (name, "_OBJC_SYMBOLS", 13))
-        return darwin_sections[objc_symbols_section];
-      else if (!strncmp (name, "_OBJC_MODULES", 13))
-        return darwin_sections[objc_module_info_section];
-      else if (!strncmp (name, "_OBJC_IMAGE_INFO", 16))
-        return darwin_sections[objc_image_info_section];
-      else if (!strncmp (name, "_OBJC_PROTOCOL_INSTANCE_METHODS_", 32))
-        return darwin_sections[objc_cat_inst_meth_section];
-      else if (!strncmp (name, "_OBJC_PROTOCOL_CLASS_METHODS_", 29))
-        return darwin_sections[objc_cat_cls_meth_section];
-      else if (!strncmp (name, "_OBJC_PROTOCOL_REFS_", 20))
-        return darwin_sections[objc_cat_cls_meth_section];
-      else if (!strncmp (name, "_OBJC_PROTOCOL_", 15))
-        return darwin_sections[objc_protocol_section];
-      else
-        return base_section;
-    }
+    /* c) legacy meta-data selection was deprecated at 4.6, removed now.  */
+    gcc_unreachable ();
 
   return base_section;
 }
