@@ -1,3 +1,8 @@
+2019-10-08  Martin Sebor  <msebor@redhat.com>
+
+	PR tetsuite/92025
+	* gcc.dg/Wstringop-overflow-12.c: Remove xfail.
+
 2019-10-08  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/pr65947-1.c: Adjust.
