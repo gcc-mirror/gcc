@@ -1,3 +1,9 @@
+2019-10-08  Tulio Magno Quites Machado Filho  <tuliom@linux.ibm.com>
+
+	* config.gcc: Move -L usage from LINK_OS_EXTRA_SPEC32 and
+	LINK_OS_EXTRA_SPEC64 to MD_STARTFILE_PREFIX and
+	MD_STARTFILE_PREFIX_1 when using --with-advance-toolchain.
+
 2019-10-08  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (_stmt_vec_info::v_reduc_type): Remove.
