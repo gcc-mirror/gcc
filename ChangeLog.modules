@@ -1,3 +1,21 @@
+2019-10-08  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (enum walk_kind): Rename body->value,
+	mergeable->merge.  Delete clone, merging.
+	(trees_in::decl_value): Drop walk_kind parm, read merge kind
+	early.
+	(trees_in::key_mergeable): Add merge_kind parm, return bool.
+	(trees_out::mark_node): Rename to ...
+	(trees_out::mark_by_value): ... here.
+	(trees_out::get_merge_kind): New, broken out of ...
+	(trees_out::key_mergeable): ... here.  Add merge_kind parm.
+	(trees_out::decl_value): Replace walk_kind parm with depset.
+	Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/scc-1.C: Adjust scan.
+	* g++.dg/modules/builtin-1_a.C: Adjust scan.
+
 2019-10-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
