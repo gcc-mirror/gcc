@@ -3957,17 +3957,6 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
   stmt_vec_info last_stmt_info = vect_find_last_scalar_stmt_in_slp (node);
   si = gsi_for_stmt (last_stmt_info->stmt);
 
-  /* Mark the first element of the reduction chain as reduction to properly
-     transform the node.  In the analysis phase only the last element of the
-     chain is marked as reduction.  */
-  if (!STMT_VINFO_GROUPED_ACCESS (stmt_info)
-      && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
-      && REDUC_GROUP_FIRST_ELEMENT (stmt_info) == stmt_info)
-    {
-      STMT_VINFO_DEF_TYPE (stmt_info) = vect_reduction_def;
-      STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
-    }
-
   /* Handle two-operation SLP nodes by vectorizing the group with
      both operations and then performing a merge.  */
   if (SLP_TREE_TWO_OPERATORS (node))
