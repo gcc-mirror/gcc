@@ -824,12 +824,13 @@ cgraph_edge::set_call_stmt (gcall *new_stmt, bool update_speculative)
 
 /* Allocate a cgraph_edge structure and fill it with data according to the
    parameters of which only CALLEE can be NULL (when creating an indirect call
-   edge).  */
+   edge).  CLONING_P should be set if properties that are copied from an
+   original edge should not be calculated.  */
 
 cgraph_edge *
 symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
 			   gcall *call_stmt, profile_count count,
-			   bool indir_unknown_callee)
+			   bool indir_unknown_callee, bool cloning_p)
 {
   cgraph_edge *edge;
 
@@ -862,8 +863,17 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
   edge->lto_stmt_uid = 0;
 
   edge->count = count;
-
   edge->call_stmt = call_stmt;
+  edge->indirect_info = NULL;
+  edge->indirect_inlining_edge = 0;
+  edge->speculative = false;
+  edge->indirect_unknown_callee = indir_unknown_callee;
+  if (call_stmt && caller->call_site_hash)
+    cgraph_add_edge_to_call_site_hash (edge);
+
+  if (cloning_p)
+    return edge;
+
   edge->can_throw_external
     = call_stmt ? stmt_can_throw_external (DECL_STRUCT_FUNCTION (caller->decl),
 					   call_stmt) : false;
@@ -881,10 +891,6 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
       edge->call_stmt_cannot_inline_p = false;
     }
 
-  edge->indirect_info = NULL;
-  edge->indirect_inlining_edge = 0;
-  edge->speculative = false;
-  edge->indirect_unknown_callee = indir_unknown_callee;
   if (opt_for_fn (edge->caller->decl, flag_devirtualize)
       && call_stmt && DECL_STRUCT_FUNCTION (caller->decl))
     edge->in_polymorphic_cdtor
@@ -892,22 +898,23 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
 				      caller->decl);
   else
     edge->in_polymorphic_cdtor = caller->thunk.thunk_p;
-  if (call_stmt && caller->call_site_hash)
-    cgraph_add_edge_to_call_site_hash (edge);
 
   return edge;
 }
 
-/* Create edge from a given function to CALLEE in the cgraph.  */
+/* Create edge from a given function to CALLEE in the cgraph.  CLONING_P should
+   be set if properties that are copied from an original edge should not be
+   calculated.  */
 
 cgraph_edge *
 cgraph_node::create_edge (cgraph_node *callee,
-			  gcall *call_stmt, profile_count count)
+			  gcall *call_stmt, profile_count count, bool cloning_p)
 {
   cgraph_edge *edge = symtab->create_edge (this, callee, call_stmt, count,
-					   false);
+					   false, cloning_p);
 
-  initialize_inline_failed (edge);
+  if (!cloning_p)
+    initialize_inline_failed (edge);
 
   edge->next_caller = callee->callers;
   if (callee->callers)
@@ -935,25 +942,28 @@ cgraph_allocate_init_indirect_info (void)
 
 /* Create an indirect edge with a yet-undetermined callee where the call
    statement destination is a formal parameter of the caller with index
-   PARAM_INDEX. */
+   PARAM_INDEX. CLONING_P should be set if properties that are copied from an
+   original edge should not be calculated and indirect_info structure should
+   not be calculated.  */
 
 cgraph_edge *
 cgraph_node::create_indirect_edge (gcall *call_stmt, int ecf_flags,
 				   profile_count count,
-				   bool compute_indirect_info)
+				   bool cloning_p)
 {
-  cgraph_edge *edge = symtab->create_edge (this, NULL, call_stmt,
-							    count, true);
+  cgraph_edge *edge = symtab->create_edge (this, NULL, call_stmt, count, true,
+					   cloning_p);
   tree target;
 
-  initialize_inline_failed (edge);
+  if (!cloning_p)
+    initialize_inline_failed (edge);
 
   edge->indirect_info = cgraph_allocate_init_indirect_info ();
   edge->indirect_info->ecf_flags = ecf_flags;
   edge->indirect_info->vptr_changed = true;
 
   /* Record polymorphic call info.  */
-  if (compute_indirect_info
+  if (!cloning_p
       && call_stmt
       && (target = gimple_call_fn (call_stmt))
       && virtual_method_call_p (target))
@@ -1856,7 +1866,7 @@ cgraph_node::rtl_info (const_tree decl)
   if (node->rtl == NULL)
     {
       node->rtl = ggc_cleared_alloc<cgraph_rtl_info> ();
-      node->rtl->function_used_regs = reg_class_contents[ALL_REGS];
+      SET_HARD_REG_SET (node->rtl->function_used_regs);
     }
   return node->rtl;
 }

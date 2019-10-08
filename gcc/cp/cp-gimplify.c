@@ -818,6 +818,21 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
     case CALL_EXPR:
       ret = GS_OK;
+      if (flag_strong_eval_order == 2
+	  && CALL_EXPR_FN (*expr_p)
+	  && cp_get_callee_fndecl_nofold (*expr_p) == NULL_TREE)
+	{
+	  enum gimplify_status t
+	    = gimplify_expr (&CALL_EXPR_FN (*expr_p), pre_p, NULL,
+			     is_gimple_call_addr, fb_rvalue);
+	  if (t == GS_ERROR)
+	    ret = GS_ERROR;
+	  else if (is_gimple_variable (CALL_EXPR_FN (*expr_p))
+		   && TREE_CODE (CALL_EXPR_FN (*expr_p)) != SSA_NAME)
+	    CALL_EXPR_FN (*expr_p)
+	      = get_initialized_tmp_var (CALL_EXPR_FN (*expr_p), pre_p,
+					 NULL);
+	}
       if (!CALL_EXPR_FN (*expr_p))
 	/* Internal function call.  */;
       else if (CALL_EXPR_REVERSE_ARGS (*expr_p))

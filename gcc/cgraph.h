@@ -648,8 +648,10 @@ symtab_node::checking_verify_symtab_nodes (void)
 }
 
 /* Walk all aliases for NODE.  */
-#define FOR_EACH_ALIAS(node, alias) \
-  for (unsigned x_i = 0; node->iterate_direct_aliases (x_i, alias); x_i++)
+#define FOR_EACH_ALIAS(NODE, ALIAS)				\
+  for (unsigned ALIAS##_iter_ = 0;				\
+       (NODE)->iterate_direct_aliases (ALIAS##_iter_, ALIAS);	\
+       ALIAS##_iter_++)
 
 /* This is the information that is put into the cgraph local structure
    to recover a function.  */
@@ -1161,14 +1163,15 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
   /* Create edge from a given function to CALLEE in the cgraph.  */
   cgraph_edge *create_edge (cgraph_node *callee,
-			    gcall *call_stmt, profile_count count);
+			    gcall *call_stmt, profile_count count,
+			    bool cloning_p = false);
 
   /* Create an indirect edge with a yet-undetermined callee where the call
      statement destination is a formal parameter of the caller with index
      PARAM_INDEX. */
   cgraph_edge *create_indirect_edge (gcall *call_stmt, int ecf_flags,
 				     profile_count count,
-				     bool compute_indirect_info = true);
+				     bool cloning_p = false);
 
   /* Like cgraph_create_edge walk the clone tree and update all clones sharing
    same function body.  If clones already have edge for OLD_STMT; only
@@ -2381,11 +2384,12 @@ private:
   inline cgraph_node * allocate_cgraph_symbol (void);
 
   /* Allocate a cgraph_edge structure and fill it with data according to the
-     parameters of which only CALLEE can be NULL (when creating an indirect call
-     edge).  */
+     parameters of which only CALLEE can be NULL (when creating an indirect
+     call edge).  CLONING_P should be set if properties that are copied from an
+     original edge should not be calculated.  */
   cgraph_edge *create_edge (cgraph_node *caller, cgraph_node *callee,
 			    gcall *call_stmt, profile_count count,
-			    bool indir_unknown_callee);
+			    bool indir_unknown_callee, bool cloning_p);
 
   /* Put the edge onto the free list.  */
   void free_edge (cgraph_edge *e);

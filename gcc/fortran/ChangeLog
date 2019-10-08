@@ -1,3 +1,159 @@
+2019-10-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/47045
+	* decl.c (variable_decl): Do not search parent namespace for symbol.
+
+2019-10-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91926
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Correct the
+	assignment of the attribute field to account correctly for an
+	assumed shape dummy. Assign separately to the gfc and cfi
+	descriptors since the atribute can be different. Add btanch to
+	correctly handle missing optional dummies.
+
+2019-10-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran.91959
+	* fortran/decl.c (variable_decl): Re-arrange code for matching %FILL.
+
+2019-10-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* error (error_print, gfc_format_decoder): Fix off-by one issue with %C.
+
+2019-10-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91497
+	* simplify.c (gfc_simplify_dble, simplify_intconv, gfc_simplify_real,
+	gfc_simplify_sngl): Disable -Wconversion and -Wconversion-extra
+	warnings for explicit conversion of literal constants.
+
+2019-10-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* primary.c (match_real_constant): Remove shadowing local vars.
+	Rename local vars.  Fix undefined behavior in loop termination.
+	(gfc_convert_to_structure_constructor): Rename local var.
+
+2019-10-03  Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/84487
+	* trans-decl.c (gfc_get_symbol_decl): For __def_init, set
+	DECL_ARTIFICAL and do not set TREE_READONLY.
+
+2019-10-03  Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* array.c (check_element_type): Call gfc_typename with the gfc_expr
+	"expr" instead of its gfc_typespec "ts".
+	* check.c (gfc_check_co_reduce): Call gfc_typename with the gfc_expr
+	"a" instead of its gfc_typespec "ts".
+	(gfc_check_co_reduce): Call gfc_typename with the gfc_expr "a" instead
+	 of its gfc_typespec "ts".
+	(gfc_check_eoshift): Call gfc_typename with the gfc_expr "array"
+	instead of its gfc_typespec ts.
+	(gfc_check_same_type_as): In two calls to gfc_typename use "a" and "b"
+	of type gfc_expr instead of the "ts" fields of "a" and "b"
+	* decl.c (variable_decl): Call gfc_typename with the gfc_expr
+	"initializer" instead of its gfc_typespec "ts".
+	* expr.c (gfc_check_assign): Use "rvalue" and "lvalue" of type gfc_expr
+	in calls to gfc_typename instead of their "ts" fields of type
+	gfc_typespec.
+	(gfc_check_pointer_assign): Use "rvalue" and "lvalue" of type gfc_expr
+	in calls to gfc_typename instead of their "ts" fields of type
+	gfc_typespec.
+	* gfortran.h: Add prototypes for gfc_dummy_typename and a new function
+	gfc_typename for gfc_expr *.
+	*interface.c (gfc_check_dummy_characteristics): Use gfc_dummy_typename
+	for the dummy variable.
+	(compare_parameter): Use gfc_dummy_typename for the formal argument.
+	Use "actual" of type gfc_expr in call to gfc_typename for the actual
+	argument.
+	* intrinsic.c (check_arglist): Use gfc_dummy_typename for the formal
+	argument. Use expressions of type gfc_expr from the argument list to
+	call gfc_typename.
+	(gfc_convert_type_warn): New local variable "is_char_constant" set if
+	the expression type is a character constant. At the "bad" label
+	determine source type name by calling gfc_typename with either "expr"
+	for character constants or "from_ts" and use that in the warning
+	messages instead of the original call to gfc_typename.
+	* misc.c (gfc_typename): New function for gfc_expr *, use for where
+	character types are possible it can get the character length from
+	gfc_expr for character literals.
+	(gfc_dummy_typename): New functionfor gfc_typespec *, if no character
+	length is present the character type is assumed and the appropriate
+	string is return otherwise it calls gfc_typename for gfc_typespec *.
+	(gfc_typespec): for character types construct the type name with length
+	and kind (if it is not default kind).
+
+2019-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91784
+	* simplify.c (gfc_convert_constant): Simplify expression if the
+	expression type is EXPR_OP.
+
+2019-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91785
+	* primary.c (gfc_match_varspec): Ensure an inquiry parameter has
+	it locus set.
+
+2019-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91942
+	* io.c (match_vtag): Check for non-NULL result->symtree.
+	(match_out_tag): Check for invalid constant due to inquiry parameter.
+	(match_filepos): Instead of a syntax error, go to cleanup to get better
+	error messages.
+
+2019-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91943
+	* match.c (gfc_match_call): BOZ cannot be an actual argument in
+	a subroutine reference.
+	* resolve.c (resolve_function): BOZ cannot be an actual argument in
+	a function reference.
+
+2019-10-01  Jan Hubicka  <jh@suse.cz>
+
+	* module.c (load_commons): Initialize flags to 0 to silence
+	-Wmaybe-uninitialized warning.
+	(read_module): Likewise for n and comp_name.
+
+2019-10-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_clauses): Handle OMP_LIST_USE_DEVICE_ADDR.
+	* gfortran.h (enum): Add OMP_LIST_USE_DEVICE_ADDR.
+	* openmp.c (omp_mask1): Likewise.
+	(gfc_match_omp_clauses): Match 'use_device_addr'.
+	(OMP_TARGET_DATA_CLAUSES): Add OMP_LIST_USE_DEVICE_ADDR.
+	(resolve_omp_clauses): Add it; add is_device_ptr checks.
+
+2019-10-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_clauses): Show a clause-parsing
+	error if none was rised before.
+	* parse.c (matcha, matcho): If error occurred after
+	OpenMP/OpenACC directive matched, do not try other directives.
+
+2019-10-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.c (gfc_omp_is_optional_argument): Fix coding
+	style.
+
+2019-10-02  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* f95-lang.c (LANG_HOOKS_OMP_IS_OPTIONAL_ARGUMENT): Define to
+	gfc_omp_is_optional_argument.
+	* trans-decl.c (create_function_arglist): Set
+	GFC_DECL_OPTIONAL_ARGUMENT in the generated decl if the parameter is
+	optional.
+	* trans-openmp.c (gfc_omp_is_optional_argument): New.
+	(gfc_omp_privatize_by_reference): Return true if the decl is an
+	optional pass-by-reference argument.
+	* trans.h (gfc_omp_is_optional_argument): New declaration.
+	(lang_decl): Add new optional_arg field.
+	(GFC_DECL_OPTIONAL_ARGUMENT): New macro.
+
+>>>>>>> .r276463
 2019-10-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.c (gfc_diagnostic_starter): Clear the prefix before

@@ -2441,6 +2441,7 @@ variable_decl (int elem)
   match m;
   bool t;
   gfc_symbol *sym;
+  char c;
 
   initializer = NULL;
   as = NULL;
@@ -2454,40 +2455,45 @@ variable_decl (int elem)
      name to be '%FILL' which gives it an anonymous (inaccessible) name.  */
   m = MATCH_NO;
   gfc_gobble_whitespace ();
-  if (gfc_peek_ascii_char () == '%')
+  c = gfc_peek_ascii_char ();
+  if (c == '%')
     {
-      gfc_next_ascii_char ();
+      gfc_next_ascii_char ();	/* Burn % character.  */
       m = gfc_match ("fill");
-    }
+      if (m == MATCH_YES)
+	{
+	  if (gfc_current_state () != COMP_STRUCTURE)
+	    {
+	      if (flag_dec_structure)
+		gfc_error ("%qs not allowed outside STRUCTURE at %C", "%FILL");
+	      else
+		gfc_error ("%qs at %C is a DEC extension, enable with "
+		       "%<-fdec-structure%>", "%FILL");
+	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
 
-  if (m != MATCH_YES)
+	  if (attr_seen)
+	    {
+	      gfc_error ("%qs entity cannot have attributes at %C", "%FILL");
+	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
+
+	  /* %FILL components are given invalid fortran names.  */
+	  snprintf (name, GFC_MAX_SYMBOL_LEN + 1, "%%FILL%u", fill_id++);
+	}
+      else
+	{
+	  gfc_error ("Invalid character %qc in variable name at %C", c);
+	  return MATCH_ERROR;
+	}
+    }
+  else
     {
       m = gfc_match_name (name);
       if (m != MATCH_YES)
 	goto cleanup;
-    }
-
-  else
-    {
-      m = MATCH_ERROR;
-      if (gfc_current_state () != COMP_STRUCTURE)
-	{
-	  if (flag_dec_structure)
-	    gfc_error ("%qs not allowed outside STRUCTURE at %C", "%FILL");
-	  else
-	    gfc_error ("%qs at %C is a DEC extension, enable with "
-		       "%<-fdec-structure%>", "%FILL");
-	  goto cleanup;
-	}
-
-      if (attr_seen)
-	{
-	  gfc_error ("%qs entity cannot have attributes at %C", "%FILL");
-	  goto cleanup;
-	}
-
-      /* %FILL components are given invalid fortran names.  */
-      snprintf (name, GFC_MAX_SYMBOL_LEN + 1, "%%FILL%u", fill_id++);
     }
 
   var_locus = gfc_current_locus;
@@ -2676,7 +2682,7 @@ variable_decl (int elem)
       then we want to set the type & bail out.  */
   if (flag_cray_pointer && !gfc_comp_struct (gfc_current_state ()))
     {
-      gfc_find_symbol (name, gfc_current_ns, 1, &sym);
+      gfc_find_symbol (name, gfc_current_ns, 0, &sym);
       if (sym != NULL && sym->attr.cray_pointee)
 	{
 	  m = MATCH_YES;
@@ -2908,7 +2914,7 @@ variable_decl (int elem)
     {
       gfc_error ("Incompatible initialization between a derived type "
 		 "entity and an entity with %qs type at %C",
-		  gfc_typename (&initializer->ts));
+		  gfc_typename (initializer));
       m = MATCH_ERROR;
       goto cleanup;
     }

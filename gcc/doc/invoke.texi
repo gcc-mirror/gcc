@@ -5578,21 +5578,20 @@ either specify @option{-Wextra -Wunused} (note that @option{-Wall} implies
 @item -Wuninitialized
 @opindex Wuninitialized
 @opindex Wno-uninitialized
-Warn if an automatic variable is used without first being initialized
-or if a variable may be clobbered by a @code{setjmp} call. In C++,
-warn if a non-static reference or non-static @code{const} member
-appears in a class without constructors.
+Warn if an automatic variable is used without first being initialized.
+In C++, warn if a non-static reference or non-static @code{const}
+member appears in a class without constructors.
 
 If you want to warn about code that uses the uninitialized value of the
 variable in its own initializer, use the @option{-Winit-self} option.
 
-These warnings occur for individual uninitialized or clobbered
-elements of structure, union or array variables as well as for
-variables that are uninitialized or clobbered as a whole.  They do
-not occur for variables or elements declared @code{volatile}.  Because
-these warnings depend on optimization, the exact variables or elements
-for which there are warnings depends on the precise optimization
-options and version of GCC used.
+These warnings occur for individual uninitialized elements of
+structure, union or array variables as well as for variables that are
+uninitialized as a whole.  They do not occur for variables or elements
+declared @code{volatile}.  Because these warnings depend on
+optimization, the exact variables or elements for which there are
+warnings depend on the precise optimization options and version of GCC
+used.
 
 Note that there may be no warning about a variable that is used only
 to compute a value that itself is never used, because such
@@ -6477,13 +6476,14 @@ Do not warn whenever a local variable shadows an instance variable in an
 Objective-C method.
 
 @item -Wshadow=global
-@opindex Wshadow=local
+@opindex Wshadow=global
 The default for @option{-Wshadow}. Warns for any (global) shadowing.
+This warning is enabled by @option{-Wshadow=global}.
 
 @item -Wshadow=local
 @opindex Wshadow=local
 Warn when a local variable shadows another local variable or parameter.
-This warning is enabled by @option{-Wshadow=global}.
+This warning is enabled by @option{-Wshadow=local}.
 
 @item -Wshadow=compatible-local
 @opindex Wshadow=compatible-local
@@ -6515,8 +6515,10 @@ in place of the other, type checking will catch that and emit an error or
 warning. So not warning (about shadowing) in this case will not lead to
 undetected bugs. Use of this flag instead of @option{-Wshadow=local} can
 possibly reduce the number of warnings triggered by intentional shadowing.
+Note that this does also mean that shadowing @code{const char *i} by
+@code{char *i} will not emit a warning.
 
-This warning is enabled by @option{-Wshadow=local}.
+This warning is enabled by @option{-Wshadow=compatible-local}.
 
 @item -Wlarger-than=@var{byte-size}
 @opindex Wlarger-than=
@@ -8346,6 +8348,7 @@ also turns on the following optimization flags:
 -ffinite-loops @gol
 -fgcse  -fgcse-lm  @gol
 -fhoist-adjacent-loads @gol
+-finline-functions @gol
 -finline-small-functions @gol
 -findirect-inlining @gol
 -fipa-bit-cp  -fipa-cp  -fipa-icf @gol
@@ -8379,7 +8382,6 @@ by @option{-O2} and also turns on the following optimization flags:
 
 @c Please keep the following list alphabetized!
 @gccoptlist{-fgcse-after-reload @gol
--finline-functions @gol
 -fipa-cp-clone
 -floop-interchange @gol
 -floop-unroll-and-jam @gol
@@ -8559,7 +8561,7 @@ If all calls to a given function are integrated, and the function is
 declared @code{static}, then the function is normally not output as
 assembler code in its own right.
 
-Enabled at levels @option{-O3}, @option{-Os}.  Also enabled
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.  Also enabled
 by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -finline-functions-called-once
@@ -10807,12 +10809,12 @@ Do not allow the built-in functions @code{ceil}, @code{floor},
 double} variants, to generate code that raises the ``inexact''
 floating-point exception for noninteger arguments.  ISO C99 and C11
 allow these functions to raise the ``inexact'' exception, but ISO/IEC
-TS 18661-1:2014, the C bindings to IEEE 754-2008, does not allow these
-functions to do so.
+TS 18661-1:2014, the C bindings to IEEE 754-2008, as integrated into
+ISO C2X, does not allow these functions to do so.
 
 The default is @option{-ffp-int-builtin-inexact}, allowing the
-exception to be raised.  This option does nothing unless
-@option{-ftrapping-math} is in effect.
+exception to be raised, unless C2X or a later C standard is selected.
+This option does nothing unless @option{-ftrapping-math} is in effect.
 
 Even if @option{-fno-fp-int-builtin-inexact} is used, if the functions
 generate a call to a library function then the ``inexact'' exception
@@ -11175,18 +11177,29 @@ when modulo scheduling a loop.  Larger values can exponentially increase
 compilation time.
 
 @item max-inline-insns-single
-Several parameters control the tree inliner used in GCC@.
-This number sets the maximum number of instructions (counted in GCC's
-internal representation) in a single function that the tree inliner
-considers for inlining.  This only affects functions declared
-inline and methods implemented in a class declaration (C++).
+@item max-inline-insns-single-O2
+Several parameters control the tree inliner used in GCC@.  This number sets the
+maximum number of instructions (counted in GCC's internal representation) in a
+single function that the tree inliner considers for inlining.  This only
+affects functions declared inline and methods implemented in a class
+declaration (C++). 
+
+For functions compiled with optimization levels
+@option{-O3} and @option{-Ofast} parameter @option{max-inline-insns-single} is
+applied. In other cases @option{max-inline-insns-single-O2} is applied.
+
 
 @item max-inline-insns-auto
+@item max-inline-insns-auto-O2
 When you use @option{-finline-functions} (included in @option{-O3}),
 a lot of functions that would otherwise not be considered for inlining
 by the compiler are investigated.  To those functions, a different
 (more restrictive) limit compared to functions declared inline can
 be applied.
+
+For functions compiled with optimization levels
+@option{-O3} and @option{-Ofast} parameter @option{max-inline-insns-auto} is
+applied. In other cases @option{max-inline-insns-auto-O2} is applied.
 
 @item max-inline-insns-small
 This is bound applied to calls which are considered relevant with
@@ -11204,16 +11217,33 @@ function prologue and epilogue.
 Extra time accounted by inliner for function overhead such as time needed to
 execute function prologue and epilogue
 
+@item inline-heuristics-hint-percent
+@item inline-heuristics-hint-percent-O2
+The scale (in percents) applied to @option{inline-insns-single},
+@option{inline-insns-single-O2}, @option{inline-insns-auto},
+@option{inline-insns-auto-O2} when inline heuristics hints that inlining is
+very profitable (will enable later optimizations).
+
+For functions compiled with optimization levels
+@option{-O3} and @option{-Ofast} parameter
+@option{inline-heuristics-hint-percent} is applied. In other cases
+@option{inline-heuristics-hint-percent-O2} is applied.
+
 @item uninlined-thunk-insns
 @item uninlined-thunk-time
 Same as @option{--param uninlined-function-insns} and
 @option{--param uninlined-function-time} but applied to function thunks
 
 @item inline-min-speedup
+@item inline-min-speedup-O2
 When estimated performance improvement of caller + callee runtime exceeds this
 threshold (in percent), the function can be inlined regardless of the limit on
 @option{--param max-inline-insns-single} and @option{--param
 max-inline-insns-auto}.
+
+For functions compiled with optimization levels
+@option{-O3} and @option{-Ofast} parameter @option{inline-min-speedup} is
+applied. In other cases @option{inline-min-speedup-O2} is applied.
 
 @item large-function-insns
 The limit specifying really large functions.  For functions larger than this
@@ -11291,17 +11321,14 @@ recursion depth can be guessed from the probability that function recurses
 via a given call expression.  This parameter limits inlining only to call
 expressions whose probability exceeds the given threshold (in percents).
 
+@item early-inlining-insns
 @item early-inlining-insns-O2
 Specify growth that the early inliner can make.  In effect it increases
 the amount of inlining for code having a large abstraction penalty.
-This is applied to functions compiled with @option{-O1} or @option{-O2}
-optimization levels.
 
-@item early-inlining-insns
-Specify growth that the early inliner can make.  In effect it increases
-the amount of inlining for code having a large abstraction penalty.
-This is applied to functions compiled with @option{-O3} or @option{-Ofast}
-optimization levels.
+For functions compiled with optimization levels
+@option{-O3} and @option{-Ofast} parameter @option{early-inlining-insns} is
+applied. In other cases @option{early-inlining-insns-O2} is applied.
 
 @item max-early-inliner-iterations
 Limit of iterations of the early inliner.  This basically bounds

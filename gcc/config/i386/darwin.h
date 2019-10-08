@@ -324,10 +324,8 @@ along with GCC; see the file COPYING3.  If not see
         }								\
     }
 
-/* This needs to move since i386 uses the first flag and other flags are
-   used in Mach-O.  */
-#undef MACHO_SYMBOL_FLAG_VARIABLE
-#define MACHO_SYMBOL_FLAG_VARIABLE ((SYMBOL_FLAG_MACH_DEP) << 3)
+/* First available SYMBOL flag bit for use by subtargets.  */
+#define SYMBOL_FLAG_SUBT_DEP (SYMBOL_FLAG_MACH_DEP << 5)
 
 #undef MACHOPIC_NL_SYMBOL_PTR_SECTION
 #define MACHOPIC_NL_SYMBOL_PTR_SECTION \

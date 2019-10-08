@@ -1,3 +1,151 @@
+2019-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (resolve_args): Use cp_expr_loc_or_input_loc in one place.
+	* decl.c (grokdeclarator): Use id_loc in one place.
+	* decl2.c (build_anon_union_vars): Use DECL_SOURCE_LOCATION.
+	* parser.c (cp_parser_delete_expression): Fix the location of the
+	returned expression.
+	(cp_parser_throw_expression): Likewise.
+	* pt.c (determine_specialization): Use DECL_SOURCE_LOCATION.
+
+2019-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91369 - Implement P0784R7: constexpr new
+	* cp-tree.h (enum cp_tree_index): Add CPTI_HEAP_UNINIT_IDENTIFIER,
+	CPTI_HEAP_IDENTIFIER and CPTI_HEAP_DELETED_IDENTIFIER.
+	(heap_uninit_identifier, heap_identifier, heap_deleted_identifier):
+	Define.
+	(type_has_constexpr_destructor, build_new_constexpr_heap_type,
+	cxx_constant_dtor): Declare.
+	* class.c (type_maybe_constexpr_default_constructor): Make static.
+	(type_maybe_constexpr_destructor, type_has_constexpr_destructor): New
+	functions.
+	(finalize_literal_type_property): For c++2a, don't clear
+	CLASSTYPE_LITERAL_P for types without trivial destructors unless they
+	have non-constexpr destructors.
+	(explain_non_literal_class): For c++2a, complain about non-constexpr
+	destructors rather than about non-trivial destructors.
+	* constexpr.c: Include stor-layout.h.
+	(struct constexpr_global_ctx): New type.
+	(struct constexpr_ctx): Add global field, remove values and
+	constexpr_ops_count.
+	(cxx_replaceable_global_alloc_fn): New inline function.
+	(cxx_eval_call_expression): For c++2a allow calls to replaceable
+	global allocation functions, for new return address of a heap uninit
+	var, for delete record its deletion.  Change ctx->values->{get,put} to
+	ctx->global->values.{get,put}.
+	(non_const_var_error): Add auto_diagnostic_group sentinel.  Emit
+	special diagnostics for heap variables.
+	(cxx_eval_store_expression): Change ctx->values->{get,put} to
+	ctx->global->values.{get,put}.
+	(cxx_eval_loop_expr): Initialize jump_target if NULL.  Change
+	new_ctx.values->remove to ctx->global->values.remove.
+	(cxx_eval_constant_expression): Change *ctx->constexpr_ops_count
+	to ctx->global->constexpr_ops_count.  Change ctx->values->{get,put} to
+	ctx->global->values.{get,put}.
+	<case NOP_EXPR>: Formatting fix.  On cast of replaceable global
+	allocation function to some pointer type, adjust the type of
+	the heap variable and change name from heap_uninit_identifier
+	to heap_identifier.
+	(find_heap_var_refs): New function.
+	(cxx_eval_outermost_constant_expr): Add constexpr_dtor argument,
+	handle evaluation of constexpr dtors and add tracking of heap
+	variables.  Use tf_no_cleanup for get_target_expr_with_sfinae.
+	(cxx_constant_value): Adjust cxx_eval_outermost_constant_expr caller.
+	(cxx_constant_dtor): New function.
+	(maybe_constant_value, fold_non_dependent_expr_template,
+	maybe_constant_init_1): Adjust cxx_eval_outermost_constant_expr
+	callers.
+	(potential_constant_expression_1): Ignore clobbers.  Allow
+	COND_EXPR_IS_VEC_DELETE for c++2a.
+	* decl.c (initialize_predefined_identifiers): Add heap identifiers.
+	(decl_maybe_constant_destruction): New function.
+	(cp_finish_decl): Don't clear TREE_READONLY for constexpr variables
+	with non-trivial, but constexpr destructors.
+	(register_dtor_fn): For constexpr variables with constexpr non-trivial
+	destructors call cxx_maybe_build_cleanup instead of adding destructor
+	calls at runtime.
+	(expand_static_init): For constexpr variables with constexpr
+	non-trivial destructors call cxx_maybe_build_cleanup.
+	(grokdeclarator): Allow constexpr destructors for c++2a.  Formatting
+	fix.
+	(cxx_maybe_build_cleanup): For constexpr variables with constexpr
+	non-trivial destructors call cxx_constant_dtor instead of adding
+	destructor calls at runtime.
+	* init.c: Include stor-layout.h.
+	(build_new_constexpr_heap_type, maybe_wrap_new_for_constexpr): New
+	functions.
+	(build_new_1): For c++2a and new[], add cast around the alloc call
+	to help constexpr evaluation figure out the type of the heap storage.
+	(build_vec_delete_1): Set DECL_INITIAL of tbase and emit a DECL_EXPR
+	for it instead of initializing an uninitialized variable.
+	* method.c: Include intl.h.
+	(SFK_CTOR_P, SFK_DTOR_P, SFK_ASSIGN_P, SFK_COPY_P, SFK_MOVE_P): Move
+	definitions earlier.
+	(process_subob_fn): Add sfk argument, adjust non-constexpr call
+	diagnostics based on it.
+	(walk_field_subobs): Formatting fixes.  Adjust process_subob_fn caller.
+	(synthesized_method_base_walk): Likewise.
+	(synthesized_method_walk): Set *constexpr_p to true for dtors in c++2a.
+	Fix up DR number in comment.
+	(implicitly_declare_fn): Formatting fix.
+	* typeck2.c (store_init_value): Don't call cp_fully_fold_init on
+	initializers of automatic non-constexpr variables in constexpr
+	functions.
+
+2019-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71504
+	* constexpr.c (cxx_fold_indirect_ref_1): New function.
+	(cxx_fold_indirect_ref): Use it.
+
+	PR c++/91974
+	* cp-gimplify.c (cp_gimplify_expr) <case CALL_EXPR>: For
+	-fstrong-eval-order ensure CALL_EXPR_FN side-effects are evaluated
+	before any arguments.  Additionally, ensure CALL_EXPR_FN that isn't
+	invariant nor OBJ_TYPE_REF nor SSA_NAME is forced into a temporary.
+
+2019-10-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* init.c (build_new): Use cp_expr_loc_or_input_loc in two places.
+	* name-lookup.c (do_pushdecl): Use DECL_SOURCE_LOCATION.
+	(push_class_level_binding_1): Likewise.
+	(set_decl_namespace): Likewise.
+
+2019-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* constexpr.c (cxx_eval_constant_expression) <case CLEANUP_STMT>: If
+	not skipping upon entry to body, run cleanup with the same *jump_target
+	as it started to run the cleanup even if the body returns, breaks or
+	continues.
+	(potential_constant_expression_1): Allow CLEANUP_STMT.
+
+	* constexpr.c (cxx_eval_store_expression): Formatting fix.  Handle
+	const_object_being_modified with array type.
+
+2019-10-02  Jason Merrill  <jason@redhat.com>
+
+	* typeck2.c (store_init_value): Only clear_cv_and_fold_caches if the
+	value is constant.
+
+2019-09-30  Jason Merrill  <jason@redhat.com>
+
+	Use hash_map_safe_* functions.
+	* constexpr.c (maybe_initialize_fundef_copies_table): Remove.
+	(get_fundef_copy): Use hash_map_safe_get_or_insert.
+	* cp-objcp-common.c (cp_get_debug_type): Use hash_map_safe_*.
+	* decl.c (store_decomp_type): Remove.
+	(cp_finish_decomp): Use hash_map_safe_put.
+	* init.c (get_nsdmi): Use hash_map_safe_*.
+	* pt.c (store_defaulted_ttp, lookup_defaulted_ttp): Remove.
+	(add_defaults_to_ttp): Use hash_map_safe_*.
+
+2019-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR c++/91606
+	* decl.c (build_ptrmemfunc_type): Mark pointer-to-member
+	fat pointer structure members as DECL_NONADDRESSABLE_P.
+
 2019-09-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91889 - follow-up fix for DR 2352.

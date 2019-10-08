@@ -185,12 +185,13 @@ range_operator::op2_range (value_range_base &r ATTRIBUTE_UNUSED,
 }
 
 
-// Called when there is either an overflow OR an underflow... which
-// means an anti range must be created to compensate.  This does not
-// cover the case where there are 2 possible overflows, or none.
+// Create and return a range from a pair of wide-ints that are known
+// to have overflowed (or underflowed).
 
 static value_range_base
-adjust_overflow_bound (tree type, const wide_int &wmin, const wide_int &wmax)
+value_range_from_overflowed_bounds (tree type,
+				    const wide_int &wmin,
+				    const wide_int &wmax)
 {
   const signop sgn = TYPE_SIGN (type);
   const unsigned int prec = TYPE_PRECISION (type);
@@ -216,15 +217,15 @@ adjust_overflow_bound (tree type, const wide_int &wmin, const wide_int &wmax)
   return value_range_base (VR_ANTI_RANGE, type, tmin, tmax);
 }
 
-// Given a newly calculated lbound and ubound, examine their
-// respective overflow bits to determine how to create a range.
-// Return said range.
+// Create and return a range from a pair of wide-ints.  MIN_OVF and
+// MAX_OVF describe any overflow that might have occurred while
+// calculating WMIN and WMAX respectively.
 
 static value_range_base
-create_range_with_overflow (tree type,
-			    const wide_int &wmin, const wide_int &wmax,
-			    wi::overflow_type min_ovf = wi::OVF_NONE,
-			    wi::overflow_type max_ovf = wi::OVF_NONE)
+value_range_with_overflow (tree type,
+			   const wide_int &wmin, const wide_int &wmax,
+			   wi::overflow_type min_ovf = wi::OVF_NONE,
+			   wi::overflow_type max_ovf = wi::OVF_NONE)
 {
   const signop sgn = TYPE_SIGN (type);
   const unsigned int prec = TYPE_PRECISION (type);
@@ -255,7 +256,7 @@ create_range_with_overflow (tree type,
 
       if ((min_ovf == wi::OVF_UNDERFLOW && max_ovf == wi::OVF_NONE)
 	  || (max_ovf == wi::OVF_OVERFLOW && min_ovf == wi::OVF_NONE))
-	return adjust_overflow_bound (type, wmin, wmax);
+	return value_range_from_overflowed_bounds (type, wmin, wmax);
 
       // Other underflow and/or overflow, drop to VR_VARYING.
       return value_range_base (type);
@@ -282,9 +283,9 @@ create_range_with_overflow (tree type,
     }
 }
 
-// Like above, but canonicalize the case where the bounds are swapped
-// and overflow may wrap.  In which case, we transform [10,5] into
-// [MIN,5][10,MAX].
+// Create and return a range from a pair of wide-ints.  Canonicalize
+// the case where the bounds are swapped.  In which case, we transform
+// [10,5] into [MIN,5][10,MAX].
 
 static inline value_range_base
 create_possibly_reversed_range (tree type,
@@ -293,7 +294,7 @@ create_possibly_reversed_range (tree type,
   signop s = TYPE_SIGN (type);
   // If the bounds are swapped, treat the result as if an overflow occured.
   if (wi::gt_p (new_lb, new_ub, s))
-    return adjust_overflow_bound (type, new_lb, new_ub);
+    return value_range_from_overflowed_bounds (type, new_lb, new_ub);
 
   // Otherwise its just a normal range.
   return value_range_base (type, new_lb, new_ub);
@@ -907,7 +908,7 @@ operator_plus::wi_fold (tree type,
   signop s = TYPE_SIGN (type);
   wide_int new_lb = wi::add (lh_lb, rh_lb, s, &ov_lb);
   wide_int new_ub = wi::add (lh_ub, rh_ub, s, &ov_ub);
-  return create_range_with_overflow (type, new_lb, new_ub, ov_lb, ov_ub);
+  return value_range_with_overflow (type, new_lb, new_ub, ov_lb, ov_ub);
 }
 
 bool
@@ -954,7 +955,7 @@ operator_minus::wi_fold (tree type,
   signop s = TYPE_SIGN (type);
   wide_int new_lb = wi::sub (lh_lb, rh_ub, s, &ov_lb);
   wide_int new_ub = wi::sub (lh_ub, rh_lb, s, &ov_ub);
-  return create_range_with_overflow (type, new_lb, new_ub, ov_lb, ov_ub);
+  return value_range_with_overflow (type, new_lb, new_ub, ov_lb, ov_ub);
 }
 
 bool
@@ -994,7 +995,7 @@ operator_min::wi_fold (tree type,
   signop s = TYPE_SIGN (type);
   wide_int new_lb = wi::min (lh_lb, rh_lb, s);
   wide_int new_ub = wi::min (lh_ub, rh_ub, s);
-  return create_range_with_overflow (type, new_lb, new_ub);
+  return value_range_with_overflow (type, new_lb, new_ub);
 }
 
 
@@ -1016,7 +1017,7 @@ operator_max::wi_fold (tree type,
   signop s = TYPE_SIGN (type);
   wide_int new_lb = wi::max (lh_lb, rh_lb, s);
   wide_int new_ub = wi::max (lh_ub, rh_ub, s);
-  return create_range_with_overflow (type, new_lb, new_ub);
+  return value_range_with_overflow (type, new_lb, new_ub);
 }
 
 
@@ -1087,7 +1088,7 @@ cross_product_operator::wi_cross_product (tree type,
   // Choose min and max from the ordered pairs.
   wide_int res_lb = wi::min (cp1, cp3, sign);
   wide_int res_ub = wi::max (cp2, cp4, sign);
-  return create_range_with_overflow (type, res_lb, res_ub);
+  return value_range_with_overflow (type, res_lb, res_ub);
 }
 
 
@@ -1832,7 +1833,7 @@ wi_optimize_and_or (value_range_base &r,
     }
   else
     gcc_unreachable ();
-  r = create_range_with_overflow (type, res_lb, res_ub);
+  r = value_range_with_overflow (type, res_lb, res_ub);
   return true;
 }
 
@@ -1932,7 +1933,7 @@ operator_bitwise_and::wi_fold (tree type,
   if (wi::gt_p (new_lb, new_ub,sign))
     return value_range_base (type);
 
-  return create_range_with_overflow (type, new_lb, new_ub);
+  return value_range_with_overflow (type, new_lb, new_ub);
 }
 
 bool
@@ -2070,7 +2071,7 @@ operator_bitwise_or::wi_fold (tree type,
   if (wi::gt_p (new_lb, new_ub,sign))
     return value_range_base (type);
 
-  return create_range_with_overflow (type, new_lb, new_ub);
+  return value_range_with_overflow (type, new_lb, new_ub);
 }
 
 bool
@@ -2132,7 +2133,7 @@ operator_bitwise_xor::wi_fold (tree type,
   // If the range has all positive or all negative values, the result
   // is better than VARYING.
   if (wi::lt_p (new_lb, 0, sign) || wi::ge_p (new_ub, 0, sign))
-    return create_range_with_overflow (type, new_lb, new_ub);
+    return value_range_with_overflow (type, new_lb, new_ub);
 
   return value_range_base (type);
 }
@@ -2186,7 +2187,7 @@ operator_trunc_mod::wi_fold (tree type,
     tmp = wi::zero (prec);
   new_ub = wi::min (new_ub, tmp, sign);
 
-  return create_range_with_overflow (type, new_lb, new_ub);
+  return value_range_with_overflow (type, new_lb, new_ub);
 }
 
 
@@ -2909,10 +2910,14 @@ range_tests ()
 
   // If a range is in any way outside of the range for the converted
   // to range, default to the range for the new type.
-  r1 = value_range_base (integer_zero_node, maxint);
-  range_cast (r1, short_integer_type_node);
-  ASSERT_TRUE (r1.lower_bound () == wi::to_wide (minshort)
-	       && r1.upper_bound() == wi::to_wide (maxshort));
+  if (TYPE_PRECISION (TREE_TYPE (maxint))
+      > TYPE_PRECISION (short_integer_type_node))
+    {
+      r1 = value_range_base (integer_zero_node, maxint);
+      range_cast (r1, short_integer_type_node);
+      ASSERT_TRUE (r1.lower_bound () == wi::to_wide (minshort)
+		   && r1.upper_bound() == wi::to_wide (maxshort));
+    }
 
   // (unsigned char)[-5,-1] => [251,255].
   r0 = rold = value_range_base (SCHAR (-5), SCHAR (-1));
@@ -3019,11 +3024,15 @@ range_tests ()
   // "NOT 0 at signed 32-bits" ==> [-MIN_32,-1][1, +MAX_32].  This is
   // is outside of the range of a smaller range, return the full
   // smaller range.
-  r0 = range_nonzero (integer_type_node);
-  range_cast (r0, short_integer_type_node);
-  r1 = value_range_base (TYPE_MIN_VALUE (short_integer_type_node),
-			 TYPE_MAX_VALUE (short_integer_type_node));
-  ASSERT_TRUE (r0 == r1);
+  if (TYPE_PRECISION (integer_type_node)
+      > TYPE_PRECISION (short_integer_type_node))
+    {
+      r0 = range_nonzero (integer_type_node);
+      range_cast (r0, short_integer_type_node);
+      r1 = value_range_base (TYPE_MIN_VALUE (short_integer_type_node),
+			     TYPE_MAX_VALUE (short_integer_type_node));
+      ASSERT_TRUE (r0 == r1);
+    }
 
   // Casting NONZERO from a narrower signed to a wider signed.
   //

@@ -7372,7 +7372,7 @@ mem_operand_gpr (rtx op, machine_mode mode)
        causes a wrap, so test only the low 16 bits.  */
     offset = ((offset & 0xffff) ^ 0x8000) - 0x8000;
 
-  return offset + 0x8000 < 0x10000u - extra;
+  return SIGNED_16BIT_OFFSET_EXTRA_P (offset, extra);
 }
 
 /* As above, but for DS-FORM VSX insns.  Unlike mem_operand_gpr,
@@ -7405,7 +7405,7 @@ mem_operand_ds_form (rtx op, machine_mode mode)
        causes a wrap, so test only the low 16 bits.  */
     offset = ((offset & 0xffff) ^ 0x8000) - 0x8000;
 
-  return offset + 0x8000 < 0x10000u - extra;
+  return SIGNED_16BIT_OFFSET_EXTRA_P (offset, extra);
 }
 
 /* Subroutines of rs6000_legitimize_address and rs6000_legitimate_address_p.  */
@@ -7754,8 +7754,7 @@ rs6000_legitimate_offset_address_p (machine_mode mode, rtx x,
       break;
     }
 
-  offset += 0x8000;
-  return offset < 0x10000 - extra;
+  return SIGNED_16BIT_OFFSET_EXTRA_P (offset, extra);
 }
 
 bool
@@ -8772,8 +8771,9 @@ rs6000_mode_dependent_address (const_rtx addr)
 	  && XEXP (addr, 0) != arg_pointer_rtx
 	  && CONST_INT_P (XEXP (addr, 1)))
 	{
-	  unsigned HOST_WIDE_INT val = INTVAL (XEXP (addr, 1));
-	  return val + 0x8000 >= 0x10000 - (TARGET_POWERPC64 ? 8 : 12);
+	  HOST_WIDE_INT val = INTVAL (XEXP (addr, 1));
+	  HOST_WIDE_INT extra = TARGET_POWERPC64 ? 8 : 12;
+	  return !SIGNED_16BIT_OFFSET_EXTRA_P (val, extra);
 	}
       break;
 

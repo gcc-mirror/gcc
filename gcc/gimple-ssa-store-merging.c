@@ -159,7 +159,10 @@
 #include "gimple-fold.h"
 #include "stor-layout.h"
 #include "timevar.h"
+#include "cfganal.h"
+#include "cfgcleanup.h"
 #include "tree-cfg.h"
+#include "except.h"
 #include "tree-eh.h"
 #include "target.h"
 #include "gimplify-me.h"
@@ -1375,13 +1378,15 @@ public:
   /* True if ops have been swapped and thus ops[1] represents
      rhs1 of BIT_{AND,IOR,XOR}_EXPR and ops[0] represents rhs2.  */
   bool ops_swapped_p;
+  /* The index number of the landing pad, or 0 if there is none.  */
+  int lp_nr;
   /* Operands.  For BIT_*_EXPR rhs_code both operands are used, otherwise
      just the first one.  */
   store_operand_info ops[2];
   store_immediate_info (unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
 			unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
 			gimple *, unsigned int, enum tree_code,
-			struct symbolic_number &, gimple *, bool,
+			struct symbolic_number &, gimple *, bool, int,
 			const store_operand_info &,
 			const store_operand_info &);
 };
@@ -1396,11 +1401,13 @@ store_immediate_info::store_immediate_info (unsigned HOST_WIDE_INT bs,
 					    struct symbolic_number &nr,
 					    gimple *ins_stmtp,
 					    bool bitnotp,
+					    int nr2,
 					    const store_operand_info &op0r,
 					    const store_operand_info &op1r)
   : bitsize (bs), bitpos (bp), bitregion_start (brs), bitregion_end (bre),
     stmt (st), order (ord), rhs_code (rhscode), n (nr),
-    ins_stmt (ins_stmtp), bit_not_p (bitnotp), ops_swapped_p (false)
+    ins_stmt (ins_stmtp), bit_not_p (bitnotp), ops_swapped_p (false),
+    lp_nr (nr2)
 #if __cplusplus >= 201103L
     , ops { op0r, op1r }
 {
@@ -1435,6 +1442,7 @@ public:
   bool bit_insertion;
   bool only_constants;
   unsigned int first_nonmergeable_order;
+  int lp_nr;
 
   auto_vec<store_immediate_info *> stores;
   /* We record the first and last original statements in the sequence because
@@ -1862,6 +1870,7 @@ merged_store_group::merged_store_group (store_immediate_info *info)
   bit_insertion = false;
   only_constants = info->rhs_code == INTEGER_CST;
   first_nonmergeable_order = ~0U;
+  lp_nr = info->lp_nr;
   unsigned HOST_WIDE_INT align_bitpos = 0;
   get_object_alignment_1 (gimple_assign_lhs (info->stmt),
 			  &align, &align_bitpos);
@@ -1902,6 +1911,9 @@ merged_store_group::can_be_merged_into (store_immediate_info *info)
 {
   /* Do not merge bswap patterns.  */
   if (info->rhs_code == LROTATE_EXPR)
+    return false;
+
+  if (info->lp_nr != lp_nr)
     return false;
 
   /* The canonical case.  */
@@ -2173,10 +2185,10 @@ private:
      decisions when going out of SSA).  */
   imm_store_chain_info *m_stores_head;
 
-  void process_store (gimple *);
-  bool terminate_and_process_all_chains ();
+  bool process_store (gimple *);
+  bool terminate_and_process_chain (imm_store_chain_info *);
   bool terminate_all_aliasing_chains (imm_store_chain_info **, gimple *);
-  bool terminate_and_release_chain (imm_store_chain_info *);
+  bool terminate_and_process_all_chains ();
 }; // class pass_store_merging
 
 /* Terminate and process all recorded chains.  Return true if any changes
@@ -2187,16 +2199,14 @@ pass_store_merging::terminate_and_process_all_chains ()
 {
   bool ret = false;
   while (m_stores_head)
-    ret |= terminate_and_release_chain (m_stores_head);
+    ret |= terminate_and_process_chain (m_stores_head);
   gcc_assert (m_stores.is_empty ());
-  gcc_assert (m_stores_head == NULL);
-
   return ret;
 }
 
 /* Terminate all chains that are affected by the statement STMT.
    CHAIN_INFO is the chain we should ignore from the checks if
-   non-NULL.  */
+   non-NULL.  Return true if any changes were made.  */
 
 bool
 pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
@@ -2233,8 +2243,7 @@ pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
 		  fprintf (dump_file, "stmt causes chain termination:\n");
 		  print_gimple_stmt (dump_file, stmt, 0);
 		}
-	      terminate_and_release_chain (cur);
-	      ret = true;
+	      ret |= terminate_and_process_chain (cur);
 	      break;
 	    }
 	}
@@ -2248,7 +2257,7 @@ pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
    entry is removed after the processing in any case.  */
 
 bool
-pass_store_merging::terminate_and_release_chain (imm_store_chain_info *chain_info)
+pass_store_merging::terminate_and_process_chain (imm_store_chain_info *chain_info)
 {
   bool ret = chain_info->terminate_and_process_chain ();
   m_stores.remove (chain_info->base_addr);
@@ -2257,9 +2266,9 @@ pass_store_merging::terminate_and_release_chain (imm_store_chain_info *chain_inf
 }
 
 /* Return true if stmts in between FIRST (inclusive) and LAST (exclusive)
-   may clobber REF.  FIRST and LAST must be in the same basic block and
-   have non-NULL vdef.  We want to be able to sink load of REF across
-   stores between FIRST and LAST, up to right before LAST.  */
+   may clobber REF.  FIRST and LAST must have non-NULL vdef.  We want to
+   be able to sink load of REF across stores between FIRST and LAST, up
+   to right before LAST.  */
 
 bool
 stmts_may_clobber_ref_p (gimple *first, gimple *last, tree ref)
@@ -2270,7 +2279,10 @@ stmts_may_clobber_ref_p (gimple *first, gimple *last, tree ref)
   tree vop = gimple_vdef (last);
   gimple *stmt;
 
-  gcc_checking_assert (gimple_bb (first) == gimple_bb (last));
+  /* Return true conservatively if the basic blocks are different.  */
+  if (gimple_bb (first) != gimple_bb (last))
+    return true;
+
   do
     {
       stmt = SSA_NAME_DEF_STMT (vop);
@@ -2286,6 +2298,7 @@ stmts_may_clobber_ref_p (gimple *first, gimple *last, tree ref)
       vop = gimple_vuse (stmt);
     }
   while (stmt != first);
+
   return false;
 }
 
@@ -2759,7 +2772,9 @@ imm_store_chain_info::coalesce_immediate_stores ()
 			 merged_store->start + merged_store->width - 1))
 	{
 	  /* Only allow overlapping stores of constants.  */
-	  if (info->rhs_code == INTEGER_CST && merged_store->only_constants)
+	  if (info->rhs_code == INTEGER_CST
+	      && merged_store->only_constants
+	      && info->lp_nr == merged_store->lp_nr)
 	    {
 	      unsigned int last_order
 		= MAX (merged_store->last_order, info->order);
@@ -4152,6 +4167,9 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
       gimple_set_vuse (stmt, new_vuse);
       gimple_seq_add_stmt_without_update (&seq, stmt);
 
+      if (group->lp_nr && stmt_could_throw_p (cfun, stmt))
+	add_stmt_to_eh_lp (stmt, group->lp_nr);
+
       tree new_vdef;
       if (i < split_stores.length () - 1)
 	new_vdef = make_ssa_name (gimple_vop (cfun), stmt);
@@ -4175,7 +4193,63 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
       if (dump_flags & TDF_DETAILS)
 	print_gimple_seq (dump_file, seq, 0, TDF_VOPS | TDF_MEMSYMS);
     }
-  gsi_insert_seq_after (&last_gsi, seq, GSI_SAME_STMT);
+
+  if (group->lp_nr > 0)
+    {
+      /* We're going to insert a sequence of (potentially) throwing stores
+	 into an active EH region.  This means that we're going to create
+	 new basic blocks with EH edges pointing to the post landing pad
+	 and, therefore, to have to update its PHI nodes, if any.  For the
+	 virtual PHI node, we're going to use the VDEFs created above, but
+	 for the other nodes, we need to record the original reaching defs.  */
+      eh_landing_pad lp = get_eh_landing_pad_from_number (group->lp_nr);
+      basic_block lp_bb = label_to_block (cfun, lp->post_landing_pad);
+      basic_block last_bb = gimple_bb (group->last_stmt);
+      edge last_edge = find_edge (last_bb, lp_bb);
+      auto_vec<tree, 16> last_defs;
+      gphi_iterator gpi;
+      for (gpi = gsi_start_phis (lp_bb); !gsi_end_p (gpi); gsi_next (&gpi))
+	{
+	  gphi *phi = gpi.phi ();
+	  tree last_def;
+	  if (virtual_operand_p (gimple_phi_result (phi)))
+	    last_def = NULL_TREE;
+	  else
+	    last_def = gimple_phi_arg_def (phi, last_edge->dest_idx);
+	  last_defs.safe_push (last_def);
+	}
+
+      /* Do the insertion.  Then, if new basic blocks have been created in the
+	 process, rewind the chain of VDEFs create above to walk the new basic
+	 blocks and update the corresponding arguments of the PHI nodes.  */
+      update_modified_stmts (seq);
+      if (gimple_find_sub_bbs (seq, &last_gsi))
+	while (last_vdef != gimple_vuse (group->last_stmt))
+	  {
+	    gimple *stmt = SSA_NAME_DEF_STMT (last_vdef);
+	    if (stmt_could_throw_p (cfun, stmt))
+	      {
+		edge new_edge = find_edge (gimple_bb (stmt), lp_bb);
+		unsigned int i;
+		for (gpi = gsi_start_phis (lp_bb), i = 0;
+		     !gsi_end_p (gpi);
+		     gsi_next (&gpi), i++)
+		  {
+		    gphi *phi = gpi.phi ();
+		    tree new_def;
+		    if (virtual_operand_p (gimple_phi_result (phi)))
+		      new_def = last_vdef;
+		    else
+		      new_def = last_defs[i];
+		    add_phi_arg (phi, new_def, new_edge, UNKNOWN_LOCATION);
+		  }
+	      }
+	    last_vdef = gimple_vuse (stmt);
+	  }
+    }
+  else
+    gsi_insert_seq_after (&last_gsi, seq, GSI_SAME_STMT);
+
   for (int j = 0; j < 2; ++j)
     if (load_seq[j])
       gsi_insert_seq_after (&load_gsi[j], load_seq[j], GSI_SAME_STMT);
@@ -4206,6 +4280,8 @@ imm_store_chain_info::output_merged_stores ()
 	      gimple *stmt = store->stmt;
 	      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
 	      gsi_remove (&gsi, true);
+	      if (store->lp_nr)
+		remove_stmt_from_eh_lp (stmt);
 	      if (stmt != merged_store->last_stmt)
 		{
 		  unlink_stmt_vdef (stmt);
@@ -4258,14 +4334,22 @@ imm_store_chain_info::terminate_and_process_chain ()
 static bool
 lhs_valid_for_store_merging_p (tree lhs)
 {
-  tree_code code = TREE_CODE (lhs);
-
-  if (code == ARRAY_REF || code == ARRAY_RANGE_REF || code == MEM_REF
-      || code == COMPONENT_REF || code == BIT_FIELD_REF
-      || DECL_P (lhs))
+  if (DECL_P (lhs))
     return true;
 
-  return false;
+  switch (TREE_CODE (lhs))
+    {
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+    case BIT_FIELD_REF:
+    case COMPONENT_REF:
+    case MEM_REF:
+      return true;
+    default:
+      return false;
+    }
+
+  gcc_unreachable ();
 }
 
 /* Return true if the tree RHS is a constant we want to consider
@@ -4284,6 +4368,40 @@ rhs_valid_for_store_merging_p (tree rhs)
     return true;
   return (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (rhs))).is_constant (&size)
 	  && native_encode_expr (rhs, NULL, size) != 0);
+}
+
+/* Adjust *PBITPOS, *PBITREGION_START and *PBITREGION_END by BYTE_OFF bytes
+   and return true on success or false on failure.  */
+
+static bool
+adjust_bit_pos (poly_offset_int byte_off,
+		poly_int64  *pbitpos,
+		poly_uint64 *pbitregion_start,
+		poly_uint64 *pbitregion_end)
+{
+  poly_offset_int bit_off = byte_off << LOG2_BITS_PER_UNIT;
+  bit_off += *pbitpos;
+
+  if (known_ge (bit_off, 0) && bit_off.to_shwi (pbitpos))
+    {
+      if (maybe_ne (*pbitregion_end, 0U))
+	{
+	  bit_off = byte_off << LOG2_BITS_PER_UNIT;
+	  bit_off += *pbitregion_start;
+	  if (bit_off.to_uhwi (pbitregion_start))
+	    {
+	      bit_off = byte_off << LOG2_BITS_PER_UNIT;
+	      bit_off += *pbitregion_end;
+	      if (!bit_off.to_uhwi (pbitregion_end))
+		*pbitregion_end = 0;
+	    }
+	  else
+	    *pbitregion_end = 0;
+	}
+      return true;
+    }
+  else
+    return false;
 }
 
 /* If MEM is a memory reference usable for store merging (either as
@@ -4330,27 +4448,8 @@ mem_valid_for_store_merging (tree mem, poly_uint64 *pbitsize,
      PR 23684 and this way we can catch more chains.  */
   else if (TREE_CODE (base_addr) == MEM_REF)
     {
-      poly_offset_int byte_off = mem_ref_offset (base_addr);
-      poly_offset_int bit_off = byte_off << LOG2_BITS_PER_UNIT;
-      bit_off += bitpos;
-      if (known_ge (bit_off, 0) && bit_off.to_shwi (&bitpos))
-	{
-	  if (maybe_ne (bitregion_end, 0U))
-	    {
-	      bit_off = byte_off << LOG2_BITS_PER_UNIT;
-	      bit_off += bitregion_start;
-	      if (bit_off.to_uhwi (&bitregion_start))
-		{
-		  bit_off = byte_off << LOG2_BITS_PER_UNIT;
-		  bit_off += bitregion_end;
-		  if (!bit_off.to_uhwi (&bitregion_end))
-		    bitregion_end = 0;
-		}
-	      else
-		bitregion_end = 0;
-	    }
-	}
-      else
+      if (!adjust_bit_pos (mem_ref_offset (base_addr), &bitpos,
+			   &bitregion_start, &bitregion_end))
 	return NULL_TREE;
       base_addr = TREE_OPERAND (base_addr, 0);
     }
@@ -4363,14 +4462,7 @@ mem_valid_for_store_merging (tree mem, poly_uint64 *pbitsize,
       base_addr = build_fold_addr_expr (base_addr);
     }
 
-  if (known_eq (bitregion_end, 0U))
-    {
-      bitregion_start = round_down_to_byte_boundary (bitpos);
-      bitregion_end = bitpos;
-      bitregion_end = round_up_to_byte_boundary (bitregion_end + bitsize);
-    }
-
-  if (offset != NULL_TREE)
+  if (offset)
     {
       /* If the access is variable offset then a base decl has to be
 	 address-taken to be able to emit pointer-based stores to it.
@@ -4378,12 +4470,24 @@ mem_valid_for_store_merging (tree mem, poly_uint64 *pbitsize,
 	 base up to the first variable part and then wrapping that inside
 	 a BIT_FIELD_REF.  */
       tree base = get_base_address (base_addr);
-      if (! base
-	  || (DECL_P (base) && ! TREE_ADDRESSABLE (base)))
+      if (!base || (DECL_P (base) && !TREE_ADDRESSABLE (base)))
 	return NULL_TREE;
+
+      /* Similarly to above for the base, remove constant from the offset.  */
+      if (TREE_CODE (offset) == PLUS_EXPR
+	  && TREE_CODE (TREE_OPERAND (offset, 1)) == INTEGER_CST
+	  && adjust_bit_pos (wi::to_poly_offset (TREE_OPERAND (offset, 1)),
+			     &bitpos, &bitregion_start, &bitregion_end))
+	offset = TREE_OPERAND (offset, 0);
 
       base_addr = build2 (POINTER_PLUS_EXPR, TREE_TYPE (base_addr),
 			  base_addr, offset);
+    }
+
+  if (known_eq (bitregion_end, 0U))
+    {
+      bitregion_start = round_down_to_byte_boundary (bitpos);
+      bitregion_end = round_up_to_byte_boundary (bitpos + bitsize);
     }
 
   *pbitsize = bitsize;
@@ -4448,10 +4552,24 @@ handled_load (gimple *stmt, store_operand_info *op,
   return false;
 }
 
-/* Record the store STMT for store merging optimization if it can be
-   optimized.  */
+/* Return the index number of the landing pad for STMT, if any.  */
 
-void
+static int
+lp_nr_for_store (gimple *stmt)
+{
+  if (!cfun->can_throw_non_call_exceptions || !cfun->eh)
+    return 0;
+
+  if (!stmt_could_throw_p (cfun, stmt))
+    return 0;
+
+  return lookup_stmt_eh_lp (stmt);
+}
+
+/* Record the store STMT for store merging optimization if it can be
+   optimized.  Return true if any changes were made.  */
+
+bool
 pass_store_merging::process_store (gimple *stmt)
 {
   tree lhs = gimple_assign_lhs (stmt);
@@ -4462,7 +4580,7 @@ pass_store_merging::process_store (gimple *stmt)
     = mem_valid_for_store_merging (lhs, &bitsize, &bitpos,
 				   &bitregion_start, &bitregion_end);
   if (known_eq (bitsize, 0U))
-    return;
+    return false;
 
   bool invalid = (base_addr == NULL_TREE
 		  || (maybe_gt (bitsize,
@@ -4604,15 +4722,13 @@ pass_store_merging::process_store (gimple *stmt)
       || !bitpos.is_constant (&const_bitpos)
       || !bitregion_start.is_constant (&const_bitregion_start)
       || !bitregion_end.is_constant (&const_bitregion_end))
-    {
-      terminate_all_aliasing_chains (NULL, stmt);
-      return;
-    }
+    return terminate_all_aliasing_chains (NULL, stmt);
 
   if (!ins_stmt)
     memset (&n, 0, sizeof (n));
 
   class imm_store_chain_info **chain_info = NULL;
+  bool ret = false;
   if (base_addr)
     chain_info = m_stores.get (base_addr);
 
@@ -4624,14 +4740,15 @@ pass_store_merging::process_store (gimple *stmt)
 				       const_bitregion_start,
 				       const_bitregion_end,
 				       stmt, ord, rhs_code, n, ins_stmt,
-				       bit_not_p, ops[0], ops[1]);
+				       bit_not_p, lp_nr_for_store (stmt),
+				       ops[0], ops[1]);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Recording immediate store from stmt:\n");
 	  print_gimple_stmt (dump_file, stmt, 0);
 	}
       (*chain_info)->m_store_info.safe_push (info);
-      terminate_all_aliasing_chains (chain_info, stmt);
+      ret |= terminate_all_aliasing_chains (chain_info, stmt);
       /* If we reach the limit of stores to merge in a chain terminate and
 	 process the chain now.  */
       if ((*chain_info)->m_store_info.length ()
@@ -4640,13 +4757,13 @@ pass_store_merging::process_store (gimple *stmt)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,
 		     "Reached maximum number of statements to merge:\n");
-	  terminate_and_release_chain (*chain_info);
+	  ret |= terminate_and_process_chain (*chain_info);
 	}
-      return;
+      return ret;
     }
 
   /* Store aliases any existing chain?  */
-  terminate_all_aliasing_chains (NULL, stmt);
+  ret |= terminate_all_aliasing_chains (NULL, stmt);
   /* Start a new chain.  */
   class imm_store_chain_info *new_chain
     = new imm_store_chain_info (m_stores_head, base_addr);
@@ -4654,7 +4771,8 @@ pass_store_merging::process_store (gimple *stmt)
 				   const_bitregion_start,
 				   const_bitregion_end,
 				   stmt, 0, rhs_code, n, ins_stmt,
-				   bit_not_p, ops[0], ops[1]);
+				   bit_not_p, lp_nr_for_store (stmt),
+				   ops[0], ops[1]);
   new_chain->m_store_info.safe_push (info);
   m_stores.put (base_addr, new_chain);
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4665,6 +4783,52 @@ pass_store_merging::process_store (gimple *stmt)
       print_generic_expr (dump_file, base_addr);
       fprintf (dump_file, "\n");
     }
+  return ret;
+}
+
+/* Return true if STMT is a store valid for store merging.  */
+
+static bool
+store_valid_for_store_merging_p (gimple *stmt)
+{
+  return gimple_assign_single_p (stmt)
+	 && gimple_vdef (stmt)
+	 && lhs_valid_for_store_merging_p (gimple_assign_lhs (stmt))
+	 && !gimple_has_volatile_ops (stmt);
+}
+
+enum basic_block_status { BB_INVALID, BB_VALID, BB_EXTENDED_VALID };
+
+/* Return the status of basic block BB wrt store merging.  */
+
+static enum basic_block_status
+get_status_for_store_merging (basic_block bb)
+{
+  unsigned int num_statements = 0;
+  gimple_stmt_iterator gsi;
+  edge e;
+
+  for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+
+      if (is_gimple_debug (stmt))
+	continue;
+
+      if (store_valid_for_store_merging_p (stmt) && ++num_statements >= 2)
+	break;
+    }
+
+  if (num_statements == 0)
+    return BB_INVALID;
+
+  if (cfun->can_throw_non_call_exceptions && cfun->eh
+      && store_valid_for_store_merging_p (gimple_seq_last_stmt (bb_seq (bb)))
+      && (e = find_fallthru_edge (bb->succs))
+      && e->dest == bb->next_bb)
+    return BB_EXTENDED_VALID;
+
+  return num_statements >= 2 ? BB_VALID : BB_INVALID;
 }
 
 /* Entry point for the pass.  Go over each basic block recording chains of
@@ -4677,26 +4841,28 @@ pass_store_merging::execute (function *fun)
 {
   basic_block bb;
   hash_set<gimple *> orig_stmts;
+  bool changed = false, open_chains = false;
+
+  /* If the function can throw and catch non-call exceptions, we'll be trying
+     to merge stores across different basic blocks so we need to first unsplit
+     the EH edges in order to streamline the CFG of the function.  */
+  if (cfun->can_throw_non_call_exceptions && cfun->eh)
+    unsplit_eh_edges ();
 
   calculate_dominance_info (CDI_DOMINATORS);
 
   FOR_EACH_BB_FN (bb, fun)
     {
+      const basic_block_status bb_status = get_status_for_store_merging (bb);
       gimple_stmt_iterator gsi;
-      unsigned HOST_WIDE_INT num_statements = 0;
-      /* Record the original statements so that we can keep track of
-	 statements emitted in this pass and not re-process new
-	 statements.  */
-      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  if (is_gimple_debug (gsi_stmt (gsi)))
-	    continue;
 
-	  if (++num_statements >= 2)
-	    break;
+      if (open_chains && (bb_status == BB_INVALID || !single_pred_p (bb)))
+	{
+	  changed |= terminate_and_process_all_chains ();
+	  open_chains = false;
 	}
 
-      if (num_statements < 2)
+      if (bb_status == BB_INVALID)
 	continue;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4715,19 +4881,37 @@ pass_store_merging::execute (function *fun)
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "Volatile access terminates "
 				    "all chains\n");
-	      terminate_and_process_all_chains ();
+	      changed |= terminate_and_process_all_chains ();
+	      open_chains = false;
 	      continue;
 	    }
 
-	  if (gimple_assign_single_p (stmt) && gimple_vdef (stmt)
-	      && !stmt_can_throw_internal (cfun, stmt)
-	      && lhs_valid_for_store_merging_p (gimple_assign_lhs (stmt)))
-	    process_store (stmt);
+	  if (store_valid_for_store_merging_p (stmt))
+	    changed |= process_store (stmt);
 	  else
-	    terminate_all_aliasing_chains (NULL, stmt);
+	    changed |= terminate_all_aliasing_chains (NULL, stmt);
 	}
-      terminate_and_process_all_chains ();
+
+      if (bb_status == BB_EXTENDED_VALID)
+	open_chains = true;
+      else
+	{
+	  changed |= terminate_and_process_all_chains ();
+	  open_chains = false;
+	}
     }
+
+  if (open_chains)
+    changed |= terminate_and_process_all_chains ();
+
+  /* If the function can throw and catch non-call exceptions and something
+     changed during the pass, then the CFG has (very likely) changed too.  */
+  if (cfun->can_throw_non_call_exceptions && cfun->eh && changed)
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      return TODO_cleanup_cfg;
+    }
+
   return 0;
 }
 

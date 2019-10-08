@@ -16122,7 +16122,12 @@ arm_print_value (FILE *f, rtx x)
       return;
 
     case CONST_DOUBLE:
-      fprintf (f, "<0x%lx,0x%lx>", (long)XWINT (x, 2), (long)XWINT (x, 3));
+      {
+	char fpstr[20];
+	real_to_decimal (fpstr, CONST_DOUBLE_REAL_VALUE (x),
+			 sizeof (fpstr), 0, 1);
+	fputs (fpstr, f);
+      }
       return;
 
     case CONST_VECTOR:

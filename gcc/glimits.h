@@ -123,8 +123,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define ULONG_LONG_MAX (LONG_LONG_MAX * 2ULL + 1ULL)
 #endif
 
-#ifdef __STDC_WANT_IEC_60559_BFP_EXT__
-/* TS 18661-1 widths of integer types.  */
+#if (defined __STDC_WANT_IEC_60559_BFP_EXT__ \
+     || (defined (__STDC_VERSION__) && __STDC_VERSION__ > 201710L))
+/* TS 18661-1 / C2X widths of integer types.  */
 # undef CHAR_WIDTH
 # define CHAR_WIDTH __SCHAR_WIDTH__
 # undef SCHAR_WIDTH

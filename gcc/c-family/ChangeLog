@@ -1,3 +1,25 @@
+2019-10-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-opts.c (c_common_post_options): Set
+	-fno-fp-int-builtin-inexact for C2X.
+
+2019-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91369 - Implement P0784R7: constexpr new
+	* c-cppbuiltin.c (c_cpp_builtins): Predefine
+	__cpp_constexpr_dynamic_alloc=201907 for -std=c++2a.
+
+2019-10-04  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/82752
+	* c-format.c (C_STD_VER): Handle C2x.
+	(C_STD_NAME): Likewise.
+	(strftime_flag_specs): Add 'O' modifier with 'p' flag.
+	(time_char_table): Use separate entry for 'B' and 'b', with 'O'
+	modifier allowed and 'p' flag.
+	* c-format.h (enum format_std_version): Add STD_C2X.
+	(struct format_char_info): Mention 'p' in comment on flags2.
+
 2019-10-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-opts.c (c_diagnostic_finalizer): Temporarily clear prefix when

@@ -10819,8 +10819,13 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       break;
 
     case reduc_vec_info_type:
-      done = vectorizable_reduction (stmt_info, gsi, &vec_stmt, slp_node,
-				     slp_node_instance, NULL);
+      done = vect_transform_reduction (stmt_info, gsi, &vec_stmt, slp_node);
+      gcc_assert (done);
+      break;
+
+    case cycle_phi_info_type:
+      done = vect_transform_cycle_phi (stmt_info, &vec_stmt, slp_node,
+				       slp_node_instance);
       gcc_assert (done);
       break;
 
@@ -10892,6 +10897,9 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
   if (!slp_node && STMT_VINFO_REDUC_DEF (orig_stmt_info)
       && STMT_VINFO_REDUC_TYPE (orig_stmt_info) != FOLD_LEFT_REDUCTION
+      && (STMT_VINFO_REDUC_TYPE (orig_stmt_info) != COND_REDUCTION
+	  || (STMT_VINFO_VEC_REDUCTION_TYPE (orig_stmt_info)
+	      != EXTRACT_LAST_REDUCTION))
       && is_a <gphi *> (STMT_VINFO_REDUC_DEF (orig_stmt_info)->stmt))
     {
       gphi *phi = as_a <gphi *> (STMT_VINFO_REDUC_DEF (orig_stmt_info)->stmt);

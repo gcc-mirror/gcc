@@ -4381,7 +4381,8 @@ resolve_args (vec<tree, va_gc> *args, tsubst_flags_t complain)
       else if (VOID_TYPE_P (TREE_TYPE (arg)))
 	{
 	  if (complain & tf_error)
-	    error ("invalid use of void expression");
+	    error_at (cp_expr_loc_or_input_loc (arg),
+		      "invalid use of void expression");
 	  return NULL;
 	}
       else if (invalid_nonstatic_memfn_p (EXPR_LOCATION (arg), arg, complain))

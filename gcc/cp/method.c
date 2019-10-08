@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "varasm.h"
 #include "toplev.h"
+#include "intl.h"
 #include "common/common-target.h"
 
 static void do_build_copy_assign (tree);
@@ -1237,12 +1238,24 @@ is_xible (enum tree_code code, tree to, tree from)
   return !!expr;
 }
 
+/* Categorize various special_function_kinds.  */
+#define SFK_CTOR_P(sfk) \
+  ((sfk) >= sfk_constructor && (sfk) <= sfk_move_constructor)
+#define SFK_DTOR_P(sfk) \
+  ((sfk) == sfk_destructor || (sfk) == sfk_virtual_destructor)
+#define SFK_ASSIGN_P(sfk) \
+  ((sfk) == sfk_copy_assignment || (sfk) == sfk_move_assignment)
+#define SFK_COPY_P(sfk) \
+  ((sfk) == sfk_copy_constructor || (sfk) == sfk_copy_assignment)
+#define SFK_MOVE_P(sfk) \
+  ((sfk) == sfk_move_constructor || (sfk) == sfk_move_assignment)
+
 /* Subroutine of synthesized_method_walk.  Update SPEC_P, TRIVIAL_P and
    DELETED_P or give an error message MSG with argument ARG.  */
 
 static void
-process_subob_fn (tree fn, tree *spec_p, bool *trivial_p,
-		  bool *deleted_p, bool *constexpr_p,
+process_subob_fn (tree fn, special_function_kind sfk, tree *spec_p,
+		  bool *trivial_p, bool *deleted_p, bool *constexpr_p,
 		  bool diag, tree arg, bool dtor_from_ctor = false)
 {
   if (!fn || fn == error_mark_node)
@@ -1283,23 +1296,14 @@ process_subob_fn (tree fn, tree *spec_p, bool *trivial_p,
       if (diag)
 	{
 	  inform (DECL_SOURCE_LOCATION (fn),
-		  "defaulted constructor calls non-%<constexpr%> %qD", fn);
+		  SFK_DTOR_P (sfk)
+		  ? G_("defaulted destructor calls non-%<constexpr%> %qD")
+		  : G_("defaulted constructor calls non-%<constexpr%> %qD"),
+		  fn);
 	  explain_invalid_constexpr_fn (fn);
 	}
     }
 }
-
-/* Categorize various special_function_kinds.  */
-#define SFK_CTOR_P(sfk) \
-  ((sfk) >= sfk_constructor && (sfk) <= sfk_move_constructor)
-#define SFK_DTOR_P(sfk) \
-  ((sfk) == sfk_destructor || (sfk) == sfk_virtual_destructor)
-#define SFK_ASSIGN_P(sfk) \
-  ((sfk) == sfk_copy_assignment || (sfk) == sfk_move_assignment)
-#define SFK_COPY_P(sfk) \
-  ((sfk) == sfk_copy_constructor || (sfk) == sfk_copy_assignment)
-#define SFK_MOVE_P(sfk) \
-  ((sfk) == sfk_move_constructor || (sfk) == sfk_move_assignment)
 
 /* Subroutine of synthesized_method_walk to allow recursion into anonymous
    aggregates.  If DTOR_FROM_CTOR is true, we're walking subobject destructors
@@ -1318,8 +1322,7 @@ walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
     {
       tree mem_type, argtype, rval;
 
-      if (TREE_CODE (field) != FIELD_DECL
-	  || DECL_ARTIFICIAL (field))
+      if (TREE_CODE (field) != FIELD_DECL || DECL_ARTIFICIAL (field))
 	continue;
 
       /* Variant members only affect deletedness.  In particular, they don't
@@ -1457,7 +1460,7 @@ walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
 
       rval = locate_fn_flags (mem_type, fnname, argtype, flags, complain);
 
-      process_subob_fn (rval, spec_p, trivial_p, deleted_p,
+      process_subob_fn (rval, sfk, spec_p, trivial_p, deleted_p,
 			constexpr_p, diag, field, dtor_from_ctor);
     }
 }
@@ -1510,23 +1513,23 @@ synthesized_method_base_walk (tree binfo, tree base_binfo,
       && DECL_CONTEXT (*inheriting_ctor) == DECL_CONTEXT (rval))
     *inheriting_ctor = DECL_CLONED_FUNCTION (rval);
 
-  process_subob_fn (rval, spec_p, trivial_p, deleted_p,
+  process_subob_fn (rval, sfk, spec_p, trivial_p, deleted_p,
 		    constexpr_p, diag, BINFO_TYPE (base_binfo));
-  if (SFK_CTOR_P (sfk) &&
-      (!BINFO_VIRTUAL_P (base_binfo)
-       || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo))))
+  if (SFK_CTOR_P (sfk)
+      && (!BINFO_VIRTUAL_P (base_binfo)
+	  || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo))))
     {
       /* In a constructor we also need to check the subobject
 	 destructors for cleanup of partially constructed objects.  */
       tree dtor = locate_fn_flags (base_binfo, complete_dtor_identifier,
 				   NULL_TREE, flags,
 				   diag ? tf_warning_or_error : tf_none);
-	  /* Note that we don't pass down trivial_p; the subobject
-	     destructors don't affect triviality of the constructor.  Nor
-	     do they affect constexpr-ness (a constant expression doesn't
-	     throw) or exception-specification (a throw from one of the
-	     dtors would be a double-fault).  */
-      process_subob_fn (dtor, NULL, NULL, deleted_p, NULL, false,
+      /* Note that we don't pass down trivial_p; the subobject
+	 destructors don't affect triviality of the constructor.  Nor
+	 do they affect constexpr-ness (a constant expression doesn't
+	 throw) or exception-specification (a throw from one of the
+	 dtors would be a double-fault).  */
+      process_subob_fn (dtor, sfk, NULL, NULL, deleted_p, NULL, false,
 			BINFO_TYPE (base_binfo), /*dtor_from_ctor*/true);
     }
 
@@ -1608,7 +1611,8 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	member is a constexpr function.  */
   if (constexpr_p)
     *constexpr_p = (SFK_CTOR_P (sfk)
-		    || (SFK_ASSIGN_P (sfk) && cxx_dialect >= cxx14));
+		    || (SFK_ASSIGN_P (sfk) && cxx_dialect >= cxx14)
+		    || (SFK_DTOR_P (sfk) && cxx_dialect >= cxx2a));
 
   bool expected_trivial = type_has_trivial_fn (ctype, sfk);
   if (trivial_p)
@@ -1704,8 +1708,8 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   else if (vec_safe_is_empty (vbases))
     /* No virtual bases to worry about.  */;
   else if (ABSTRACT_CLASS_TYPE_P (ctype) && cxx_dialect >= cxx14
-	   /* DR 1658 specifis that vbases of abstract classes are
-	      ignored for both ctors and dtors.  Except DR 2338
+	   /* DR 1658 specifies that vbases of abstract classes are
+	      ignored for both ctors and dtors.  Except DR 2336
 	      overrides that skipping when determing the eh-spec of a
 	      virtual destructor.  */
 	   && sfk != sfk_virtual_destructor)
@@ -2046,7 +2050,8 @@ implicitly_declare_fn (special_function_kind kind, tree type,
     constexpr_p = false;
   /* A trivial copy/move constructor is also a constexpr constructor,
      unless the class has virtual bases (7.1.5p4).  */
-  else if (trivial_p && cxx_dialect >= cxx11
+  else if (trivial_p
+	   && cxx_dialect >= cxx11
 	   && (kind == sfk_copy_constructor
 	       || kind == sfk_move_constructor)
 	   && !CLASSTYPE_VBASECLASSES (type))

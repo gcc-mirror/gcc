@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
+#include "stor-layout.h"
 
 static bool begin_init_stmts (tree *, tree *);
 static tree finish_init_stmts (bool, tree, tree);
@@ -563,10 +564,9 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
       init = DECL_INITIAL (DECL_TI_TEMPLATE (member));
       location_t expr_loc
 	= cp_expr_loc_or_loc (init, DECL_SOURCE_LOCATION (member));
-      tree *slot;
       if (TREE_CODE (init) == DEFERRED_PARSE)
 	/* Unparsed.  */;
-      else if (nsdmi_inst && (slot = nsdmi_inst->get (member)))
+      else if (tree *slot = hash_map_safe_get (nsdmi_inst, member))
 	init = *slot;
       /* Check recursive instantiation.  */
       else if (DECL_INSTANTIATING_NSDMI_P (member))
@@ -611,11 +611,7 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 	  DECL_INSTANTIATING_NSDMI_P (member) = 0;
 
 	  if (init != error_mark_node)
-	    {
-	      if (!nsdmi_inst)
-		nsdmi_inst = tree_cache_map::create_ggc (37);
-	      nsdmi_inst->put (member, init);
-	    }
+	    hash_map_safe_put<hm_ggc> (nsdmi_inst, member, init);
 
 	  if (pushed)
 	    {
@@ -2865,6 +2861,82 @@ std_placement_new_fn_p (tree alloc_fn)
   return false;
 }
 
+/* For element type ELT_TYPE, return the appropriate type of the heap object
+   containing such element(s).  COOKIE_SIZE is NULL or the size of cookie
+   in bytes.  FULL_SIZE is NULL if it is unknown how big the heap allocation
+   will be, otherwise size of the heap object.  If COOKIE_SIZE is NULL,
+   return array type ELT_TYPE[FULL_SIZE / sizeof(ELT_TYPE)], otherwise return
+   struct { size_t[COOKIE_SIZE/sizeof(size_t)]; ELT_TYPE[N]; }
+   where N is nothing (flexible array member) if FULL_SIZE is NULL, otherwise
+   it is computed such that the size of the struct fits into FULL_SIZE.  */
+
+tree
+build_new_constexpr_heap_type (tree elt_type, tree cookie_size, tree full_size)
+{
+  gcc_assert (cookie_size == NULL_TREE || tree_fits_uhwi_p (cookie_size));
+  gcc_assert (full_size == NULL_TREE || tree_fits_uhwi_p (full_size));
+  unsigned HOST_WIDE_INT csz = cookie_size ? tree_to_uhwi (cookie_size) : 0;
+  tree itype2 = NULL_TREE;
+  if (full_size)
+    {
+      unsigned HOST_WIDE_INT fsz = tree_to_uhwi (full_size);
+      gcc_assert (fsz >= csz);
+      fsz -= csz;
+      fsz /= int_size_in_bytes (elt_type);
+      itype2 = build_index_type (size_int (fsz - 1));
+      if (!cookie_size)
+	return build_cplus_array_type (elt_type, itype2);
+    }
+  else
+    gcc_assert (cookie_size);
+  csz /= int_size_in_bytes (sizetype);
+  tree itype1 = build_index_type (size_int (csz - 1));
+  tree atype1 = build_cplus_array_type (sizetype, itype1);
+  tree atype2 = build_cplus_array_type (elt_type, itype2);
+  tree rtype = cxx_make_type (RECORD_TYPE);
+  TYPE_NAME (rtype) = heap_identifier;
+  tree fld1 = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE, atype1);
+  tree fld2 = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE, atype2);
+  DECL_FIELD_CONTEXT (fld1) = rtype;
+  DECL_FIELD_CONTEXT (fld2) = rtype;
+  DECL_ARTIFICIAL (fld1) = true;
+  DECL_ARTIFICIAL (fld2) = true;
+  TYPE_FIELDS (rtype) = fld1;
+  DECL_CHAIN (fld1) = fld2;
+  layout_type (rtype);
+  return rtype;
+}
+
+/* Help the constexpr code to find the right type for the heap variable
+   by adding a NOP_EXPR around ALLOC_CALL if needed for cookie_size.
+   Return ALLOC_CALL or ALLOC_CALL cast to a pointer to
+   struct { size_t[cookie_size/sizeof(size_t)]; elt_type[]; }.  */
+
+static tree
+maybe_wrap_new_for_constexpr (tree alloc_call, tree elt_type, tree cookie_size)
+{
+  if (cxx_dialect < cxx2a)
+    return alloc_call;
+
+  if (current_function_decl != NULL_TREE
+      && !DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+    return alloc_call;
+  
+  tree call_expr = extract_call_expr (alloc_call);
+  if (call_expr == error_mark_node)
+    return alloc_call;
+
+  tree alloc_call_fndecl = cp_get_callee_fndecl_nofold (call_expr);
+  if (alloc_call_fndecl == NULL_TREE
+      || !IDENTIFIER_NEW_OP_P (DECL_NAME (alloc_call_fndecl))
+      || CP_DECL_CONTEXT (alloc_call_fndecl) != global_namespace)
+    return alloc_call;
+
+  tree rtype = build_new_constexpr_heap_type (elt_type, cookie_size,
+					      NULL_TREE);
+  return build_nop (build_pointer_type (rtype), alloc_call);
+}
+
 /* Generate code for a new-expression, including calling the "operator
    new" function, initializing the object, and, if an exception occurs
    during construction, cleaning up.  The arguments are as for
@@ -3332,6 +3404,10 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	}
     }
 
+  if (cookie_size)
+    alloc_call = maybe_wrap_new_for_constexpr (alloc_call, elt_type,
+					       cookie_size);
+
   /* In the simple case, we can stop now.  */
   pointer_type = build_pointer_type (type);
   if (!cookie_size && !is_initialized)
@@ -3759,7 +3835,8 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
       if (!build_expr_type_conversion (WANT_INT | WANT_ENUM, nelts, false))
         {
           if (complain & tf_error)
-            permerror (input_location, "size in array new must have integral type");
+	    permerror (cp_expr_loc_or_input_loc (nelts),
+		       "size in array new must have integral type");
           else
             return error_mark_node;
         }
@@ -3774,7 +3851,8 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
 	 less than zero. ... If the expression is a constant expression,
 	 the program is ill-fomed.  */
       if (TREE_CODE (cst_nelts) == INTEGER_CST
-	  && !valid_array_size_p (input_location, cst_nelts, NULL_TREE,
+	  && !valid_array_size_p (cp_expr_loc_or_input_loc (nelts),
+				  cst_nelts, NULL_TREE,
 				  complain & tf_error))
 	return error_mark_node;
 
@@ -3905,17 +3983,11 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 			     fold_convert (sizetype, maxindex));
 
   tbase = create_temporary_var (ptype);
-  tbase_init
-    = cp_build_modify_expr (input_location, tbase, NOP_EXPR,
-			    fold_build_pointer_plus_loc (input_location,
-							 fold_convert (ptype,
-								       base),
-							 virtual_size),
-			    complain);
-  if (tbase_init == error_mark_node)
-    return error_mark_node;
-  controller = build3 (BIND_EXPR, void_type_node, tbase,
-		       NULL_TREE, NULL_TREE);
+  DECL_INITIAL (tbase)
+    = fold_build_pointer_plus_loc (input_location, fold_convert (ptype, base),
+				   virtual_size);
+  tbase_init = build_stmt (input_location, DECL_EXPR, tbase);
+  controller = build3 (BIND_EXPR, void_type_node, tbase, NULL_TREE, NULL_TREE);
   TREE_SIDE_EFFECTS (controller) = 1;
 
   body = build1 (EXIT_EXPR, void_type_node,

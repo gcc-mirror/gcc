@@ -35,6 +35,7 @@ int main1 (int x) {
   /* Vectorizable: distance > number of iterations.  */
   for (i = 1; i < N; i++)
   {
+#pragma GCC unroll 0
     for (j = 0; j < N; j++)
     {
        *((int *)p + x + i + j) = *((int *)p + x + i + j + 5);

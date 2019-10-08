@@ -1,3 +1,86 @@
+2019-10-06  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algo.h
+	(__copy_n_a(_IIte, _Size, _OIte)): New.
+	(__copy_n_a(istreambuf_iterator<>, _Size, _CharT*)): New declaration.
+	(__copy_n(_IIte, _Size, _OIte, input_iterator_tag)): Adapt to use
+	latter.
+	* include/bits/streambuf_iterator.h (istreambuf_iterator<>): Declare
+	std::__copy_n_a friend.
+	(__copy_n_a(istreambuf_iterator<>, _Size, _CharT*)): New.
+	* testsuite/25_algorithms/copy_n/istreambuf_iterator/1.cc: New.
+	* testsuite/25_algorithms/copy_n/istreambuf_iterator/1_neg.cc: New.
+	* testsuite/25_algorithms/copy_n/istreambuf_iterator/2_neg.cc: New.
+
+	* include/bits/stl_iterator_base_types.h (__iterator_category_t): Define
+	for C++11.
+	(_RequireInputIte): Likewise and use __enable_if_t.
+	* include/std/numeric
+	(__is_random_access_iter): Use __iterator_category_t.
+
+	* include/bits/stl_algo.h (copy_n): Add __glibcxx_requires_can_increment
+	debug checks.
+	* testsuite/25_algorithms/copy_n/debug/1_neg.cc: New.
+	* testsuite/25_algorithms/copy_n/debug/2_neg.cc: New.
+
+2019-10-04  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/forward_list
+	(_Sequence_traits<__debug::forward_list<>>::_S_size): Returns __dp_sign
+	distance when not empty.
+	* include/debug/list (_Sequence_traits<__debug::list<>>::_S_size):
+	Likewise.
+	* include/debug/helper_functions.h (__dp_sign_max_size): New
+	_Distance_precision enum entry.
+	(__valid_range_aux(_IIte, _IIte, _Distance_traits<>::__type,
+	__false_type)): Adapt.
+	* include/debug/safe_iterator.tcc
+	(_Safe_iterator<>::_M_get_distance_to(const _Safe_iterator&)): Review
+	distance computation.
+
+2019-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81091
+	PR libstdc++/91947
+	* configure.ac: Use AC_SYS_LARGEFILE to enable 64-bit file APIs.
+	* config.h.in: Regenerate:
+	* configure: Regenerate:
+	* include/Makefile.am (${host_builddir}/largefile-config.h): New
+	target to generate config header for filesystem library.
+	(${host_builddir}/c++config.h): Rename macros for large file support.
+	* include/Makefile.in: Regenerate.
+	* src/c++17/fs_dir.cc: Include new config header.
+	* src/c++17/fs_ops.cc: Likewise.
+	(filesystem::file_size): Use uintmax_t for size.
+	* src/filesystem/dir.cc: Include new config header.
+	* src/filesystem/ops.cc: Likewise.
+	(experimental::filesystem::file_size): Use uintmax_t for size.
+
+	* testsuite/util/testsuite_abi.h: Use std::unordered_map instead of
+	std::tr1::unordered_map.
+	* testsuite/util/testsuite_allocator.h: Likewise.
+
+	* include/tr1/hashtable.h: Add header for __gnu_cxx::__alloc_traits.
+
+	* include/tr1/hashtable.h (tr1::_Hashtable::_M_allocate_node): Use
+	__gnu_cxx::__alloc_traits for allocator construct function.
+	(tr1::_Hashtable::_M_deallocate_node): Likewise for destroy function.
+
+	* include/precompiled/stdc++.h: Include <span> for C++20.
+	* testsuite/17_intro/names.cc: Do not define 'e' for C++20.
+
+2019-10-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* include/parallel/multiway_merge.h (_RAIter3): Replace _C by _Cp.
+
+2019-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Tighten up greedy wildcards.
+
+	* doc/xml/manual/parallel_mode.xml: Add caveat about support for
+	recent standards.
+	* doc/html/*: Regenerate.
+
 2019-10-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/algorithm (experimental::sample): Qualify call

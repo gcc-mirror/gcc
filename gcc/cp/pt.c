@@ -2137,7 +2137,8 @@ determine_specialization (tree template_id,
 
   if (TREE_CODE (decl) == FUNCTION_DECL && !is_overloaded_fn (fns))
     {
-      error ("%qD is not a function template", fns);
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"%qD is not a function template", fns);
       return error_mark_node;
     }
   else if (VAR_P (decl) && !variable_template_p (fns))
@@ -2416,7 +2417,8 @@ determine_specialization (tree template_id,
       error ("template-id %qD for %q+D does not match any template "
 	     "declaration", template_id, decl);
       if (header_count && header_count != template_count + 1)
-	inform (input_location, "saw %d %<template<>%>, need %d for "
+	inform (DECL_SOURCE_LOCATION (decl),
+		"saw %d %<template<>%>, need %d for "
 		"specializing a member function template",
 		header_count, template_count + 1);
       else
@@ -7357,21 +7359,6 @@ coerce_template_args_for_ttp (tree templ, tree arglist,
 /* A cache of template template parameters with match-all default
    arguments.  */
 static GTY((deletable)) hash_map<tree,tree> *defaulted_ttp_cache;
-static void
-store_defaulted_ttp (tree v, tree t)
-{
-  if (!defaulted_ttp_cache)
-    defaulted_ttp_cache = hash_map<tree,tree>::create_ggc (13);
-  defaulted_ttp_cache->put (v, t);
-}
-static tree
-lookup_defaulted_ttp (tree v)
-{
-  if (defaulted_ttp_cache)
-    if (tree *p = defaulted_ttp_cache->get (v))
-      return *p;
-  return NULL_TREE;
-}
 
 /* T is a bound template template-parameter.  Copy its arguments into default
    arguments of the template template-parameter's template parameters.  */
@@ -7379,8 +7366,8 @@ lookup_defaulted_ttp (tree v)
 static tree
 add_defaults_to_ttp (tree otmpl)
 {
-  if (tree c = lookup_defaulted_ttp (otmpl))
-    return c;
+  if (tree *c = hash_map_safe_get (defaulted_ttp_cache, otmpl))
+    return *c;
 
   tree ntmpl = copy_node (otmpl);
 
@@ -7410,7 +7397,7 @@ add_defaults_to_ttp (tree otmpl)
 	}
     }
 
-  store_defaulted_ttp (otmpl, ntmpl);
+  hash_map_safe_put<hm_ggc> (defaulted_ttp_cache, otmpl, ntmpl);
   return ntmpl;
 }
 

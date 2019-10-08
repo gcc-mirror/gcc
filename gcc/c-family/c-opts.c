@@ -826,6 +826,12 @@ c_common_post_options (const char **pfilename)
   else
     flag_permitted_flt_eval_methods = PERMITTED_FLT_EVAL_METHODS_C11;
 
+  /* C2X Annex F does not permit certain built-in functions to raise
+     "inexact".  */
+  if (flag_isoc2x
+      && !global_options_set.x_flag_fp_int_builtin_inexact)
+    flag_fp_int_builtin_inexact = 0;
+
   /* By default we use C99 inline semantics in GNU99 or C99 mode.  C99
      inline semantics are not supported in GNU89 or C89 mode.  */
   if (flag_gnu89_inline == -1)

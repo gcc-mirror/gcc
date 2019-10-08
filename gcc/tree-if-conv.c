@@ -120,6 +120,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "tree-ssa-sccvn.h"
 #include "tree-cfgcleanup.h"
+#include "tree-ssa-dse.h"
 
 /* Only handle PHIs with no more arguments unless we are asked to by
    simd pragma.  */
@@ -2873,7 +2874,7 @@ ifcvt_split_critical_edges (class loop *loop, bool aggressive_if_conv)
    loop vectorization.  */
 
 static void
-ifcvt_local_dce (basic_block bb)
+ifcvt_local_dce (class loop *loop)
 {
   gimple *stmt;
   gimple *stmt1;
@@ -2890,6 +2891,10 @@ ifcvt_local_dce (basic_block bb)
     replace_uses_by (name_pair->first, name_pair->second);
   redundant_ssa_names.release ();
 
+  /* The loop has a single BB only.  */
+  basic_block bb = loop->header;
+  tree latch_vdef = NULL_TREE;
+
   worklist.create (64);
   /* Consider all phi as live statements.  */
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -2897,6 +2902,8 @@ ifcvt_local_dce (basic_block bb)
       phi = gsi_stmt (gsi);
       gimple_set_plf (phi, GF_PLF_2, true);
       worklist.safe_push (phi);
+      if (virtual_operand_p (gimple_phi_result (phi)))
+	latch_vdef = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop));
     }
   /* Consider load/store statements, CALL and COND as live.  */
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -2960,6 +2967,19 @@ ifcvt_local_dce (basic_block bb)
   while (!gsi_end_p (gsi))
     {
       stmt = gsi_stmt (gsi);
+      if (gimple_store_p (stmt))
+	{
+	  tree lhs = gimple_get_lhs (stmt);
+	  ao_ref write;
+	  ao_ref_init (&write, lhs);
+
+          if (dse_classify_store (&write, stmt, false, NULL, NULL, latch_vdef)
+              == DSE_STORE_DEAD)
+            delete_dead_or_redundant_assignment (&gsi, "dead");
+	  gsi_next (&gsi);
+	  continue;
+	}
+
       if (gimple_plf (stmt, GF_PLF_2))
 	{
 	  gsi_next (&gsi);
@@ -3070,7 +3090,7 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   todo |= do_rpo_vn (cfun, loop_preheader_edge (loop), exit_bbs);
 
   /* Delete dead predicate computations.  */
-  ifcvt_local_dce (loop->header);
+  ifcvt_local_dce (loop);
   BITMAP_FREE (exit_bbs);
 
   todo |= TODO_cleanup_cfg;

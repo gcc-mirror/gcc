@@ -903,6 +903,11 @@ struct target_mem_desc {
    artificial pointer to "omp declare target link" object.  */
 #define REFCOUNT_LINK (~(uintptr_t) 1)
 
+/* Special offset values.  */
+#define OFFSET_INLINED (~(uintptr_t) 0)
+#define OFFSET_POINTER (~(uintptr_t) 1)
+#define OFFSET_STRUCT (~(uintptr_t) 2)
+
 struct splay_tree_key_s {
   /* Address of the host object.  */
   uintptr_t host_start;

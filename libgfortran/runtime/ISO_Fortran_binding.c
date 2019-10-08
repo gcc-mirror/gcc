@@ -63,7 +63,8 @@ cfi_desc_to_gfc_desc (gfc_array_void *d, CFI_cdesc_t **s_ptr)
   d->dtype.version = s->version;
   GFC_DESCRIPTOR_RANK (d) = (signed char)s->rank;
 
-  d->dtype.attribute = (signed short)s->attribute;
+  if (d->dtype.attribute == CFI_attribute_other)
+    return;
 
   if (s->rank)
     {

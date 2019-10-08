@@ -2189,11 +2189,22 @@ gfc_expr *
 gfc_simplify_dble (gfc_expr *e)
 {
   gfc_expr *result = NULL;
+  int tmp1, tmp2;
 
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
+  /* For explicit conversion, turn off -Wconversion and -Wconversion-extra
+     warnings.  */
+  tmp1 = warn_conversion;
+  tmp2 = warn_conversion_extra;
+  warn_conversion = warn_conversion_extra = 0;
+
   result = gfc_convert_constant (e, BT_REAL, gfc_default_double_kind);
+
+  warn_conversion = tmp1;
+  warn_conversion_extra = tmp2;
+
   if (result == &gfc_bad_expr)
     return &gfc_bad_expr;
 
@@ -3572,6 +3583,7 @@ static gfc_expr *
 simplify_intconv (gfc_expr *e, int kind, const char *name)
 {
   gfc_expr *result = NULL;
+  int tmp1, tmp2;
 
   /* Convert BOZ to integer, and return without range checking.  */
   if (e->ts.type == BT_BOZ)
@@ -3585,7 +3597,17 @@ simplify_intconv (gfc_expr *e, int kind, const char *name)
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
+  /* For explicit conversion, turn off -Wconversion and -Wconversion-extra
+     warnings.  */
+  tmp1 = warn_conversion;
+  tmp2 = warn_conversion_extra;
+  warn_conversion = warn_conversion_extra = 0;
+
   result = gfc_convert_constant (e, BT_INTEGER, kind);
+
+  warn_conversion = tmp1;
+  warn_conversion_extra = tmp2;
+
   if (result == &gfc_bad_expr)
     return &gfc_bad_expr;
 
@@ -6472,7 +6494,7 @@ gfc_expr *
 gfc_simplify_real (gfc_expr *e, gfc_expr *k)
 {
   gfc_expr *result = NULL;
-  int kind;
+  int kind, tmp1, tmp2;
 
   /* Convert BOZ to real, and return without range checking.  */
   if (e->ts.type == BT_BOZ)
@@ -6500,7 +6522,17 @@ gfc_simplify_real (gfc_expr *e, gfc_expr *k)
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
+  /* For explicit conversion, turn off -Wconversion and -Wconversion-extra
+     warnings.  */
+  tmp1 = warn_conversion;
+  tmp2 = warn_conversion_extra;
+  warn_conversion = warn_conversion_extra = 0;
+
   result = gfc_convert_constant (e, BT_REAL, kind);
+
+  warn_conversion = tmp1;
+  warn_conversion_extra = tmp2;
+
   if (result == &gfc_bad_expr)
     return &gfc_bad_expr;
 
@@ -7551,11 +7583,22 @@ gfc_expr *
 gfc_simplify_sngl (gfc_expr *a)
 {
   gfc_expr *result;
+  int tmp1, tmp2;
 
   if (a->expr_type != EXPR_CONSTANT)
     return NULL;
 
+  /* For explicit conversion, turn off -Wconversion and -Wconversion-extra
+     warnings.  */
+  tmp1 = warn_conversion;
+  tmp2 = warn_conversion_extra;
+  warn_conversion = warn_conversion_extra = 0;
+
   result = gfc_real2real (a, gfc_default_real_kind);
+
+  warn_conversion = tmp1;
+  warn_conversion_extra = tmp2;
+
   return range_check (result, "SNGL");
 }
 
@@ -8508,10 +8551,10 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
 	    {
 	      if (c->expr->expr_type == EXPR_ARRAY)
 		tmp = gfc_convert_constant (c->expr, type, kind);
-	      else if (c->expr->expr_type == EXPR_OP
-		       && c->expr->value.op.op == INTRINSIC_PARENTHESES)
+	      else if (c->expr->expr_type == EXPR_OP)
 		{
-		  gfc_simplify_expr (c->expr, 1);
+		  if (!gfc_simplify_expr (c->expr, 1))
+		    return &gfc_bad_expr;
 		  tmp = f (c->expr, kind);
 		}
 	      else

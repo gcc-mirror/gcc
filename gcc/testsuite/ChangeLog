@@ -1,3 +1,329 @@
+2019-10-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/torture/builtin-fp-int-inexact-c2x.c: New test.
+
+2019-10-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/430x-insns.c: New test.
+	* gcc.target/msp430/data-attributes-2.c: Remove dg-warning
+	directives for conflicts between the "section" and "lower" attributes.
+	* gcc.target/msp430/msp430.exp
+	(check_effective_target_msp430_region_not_lower): New.
+	(check_effective_target_msp430_region_lower): New.
+	* gcc.target/msp430/object-attributes-430.c: New test.
+	* gcc.target/msp430/object-attributes-default.c: New test.
+	* gcc.target/msp430/object-attributes-mlarge-any-region.c: New test.
+	* gcc.target/msp430/object-attributes-mlarge.c: New test.
+
+2019-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/pr71801.c (uuidcache_init): Fix up size of d array.
+
+2019-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/not-a-function-template-1.C: New.
+	* g++.dg/template/crash107.C: Adjust expected location.
+	* g++.dg/template/dependent-expr1.C: Check locations.
+	* g++.dg/template/error17.C: Check location.
+
+2019-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/91994
+	* gcc.target/i386/pr91994.c: New test.
+
+2019-10-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91975
+	* g++.dg/tree-ssa/ivopts-3.C: Adjust.
+	* gcc.dg/vect/vect-profile-1.c: Disable cunrolli.
+	* gcc.dg/vect/vect-double-reduc-6.c: Disable unrolling of
+	the innermost loop.
+	* gcc.dg/vect/vect-93.c: Likewise.
+	* gcc.dg/vect/vect-105.c: Likewise.
+	* gcc.dg/vect/pr79920.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-102.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-101.c: Likewise.
+	* gcc.dg/vect/pr83202-1.c: Operate on a larger array.
+	* gfortran.dg/vect/vect-8.f90: Likewise.
+	* gcc.dg/tree-ssa/cunroll-2.c: Scan early unrolling dump instead
+	of late one.
+
+2019-10-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/47045
+	* gfortran.dg/pr47054_1.f90: New test
+	* gfortran.dg/pr47054_2.f90: Ditto.
+
+2019-10-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91497
+	* gfortran.dg/pr91497.f90: Run on i?86-*-* and x86_64-*-* only.
+
+2019-10-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91926
+	* gfortran.dg/ISO_Fortran_binding_13.f90 : New test.
+	* gfortran.dg/ISO_Fortran_binding_13.c : Additional source.
+	* gfortran.dg/ISO_Fortran_binding_14.f90 : New test.
+
+2019-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91369 - Implement P0784R7: constexpr new
+	* g++.dg/cpp0x/constexpr-delete2.C: Adjust expected diagnostics for
+	c++2a.
+	* g++.dg/cpp0x/locations1.C: Only expect constexpr ~S() diagnostics
+	in c++17_down, adjust expected wording.
+	* g++.dg/cpp1y/constexpr-new.C: Only expect diagnostics in c++17_down.
+	* g++.dg/cpp2a/constexpr-dtor1.C: New test.
+	* g++.dg/cpp2a/constexpr-dtor2.C: New test.
+	* g++.dg/cpp2a/constexpr-dtor3.C: New test.
+	* g++.dg/cpp2a/constexpr-new1.C: New test.
+	* g++.dg/cpp2a/constexpr-new2.C: New test.
+	* g++.dg/cpp2a/constexpr-new3.C: New test.
+	* g++.dg/cpp2a/constexpr-new4.C: New test.
+	* g++.dg/cpp2a/feat-cxx2a.C: Add __cpp_constinit and
+	__cpp_constexpr_dynamic_alloc tests.  Tweak __cpp_* tests for c++2a
+	features to use style like older features, including #ifdef test.
+	* g++.dg/ext/is_literal_type3.C: New test.
+
+	PR tree-optimization/91734
+	* gcc.dg/pr91734.c: New test.
+
+2019-10-04  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/82752
+	* gcc.dg/format/c2x-strftime-1.c: New test.
+
+2019-10-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91977
+	* gcc.dg/Wstringop-overflow-18.c: New test.
+
+2019-10-04  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-17.c: New test.
+
+2019-10-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran.91959
+	* gfortran.dg/pr91959.f90: New test.
+
+2019-10-04  Rafael Tsuha  <rafael.tsuha@usp.br>
+
+        * gcc.dg/sinhovercosh-1.c: New test.
+
+2019-10-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-builtins-1.c, gcc.dg/c2x-builtins-1.c,
+	gcc.dg/dfp/c2x-builtins-dfp-1.c: New tests.
+
+2019-10-04  Mark Eggleston <mark.eggleston@codethink.com>
+
+	* gfortran.dg/auto_in_equiv_1.f90: Replaced.
+	* gfortran.dg/auto_in_equiv_2.f90: Replaced.
+	* gfortran.dg/auto_in_equiv_3.f90: Deleted.
+
+2019-10-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/torture/simd-abi-8.c: Use -mlittle-endian.
+	Check that there are no Q register saves or restores.
+
+2019-10-04  Richard Biener  <rguenther@suse.de>
+
+	* gcc.c-torture/execute/loop-3.c: Fix undefined behavior.
+
+2019-10-04  Yuliang Wang  <yuliang.wang@arm.com>
+
+	* gcc.target/aarch64/sve2/shracc_1.c: Tighten scan-assembler-nots
+	to avoid matching scalar code.
+
+2019-10-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/use_without_only_1.f90: Update column num in dg-warning.
+
+2019-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/71504
+	* g++.dg/cpp0x/constexpr-array21.C: New test.
+	* g++.dg/cpp1y/constexpr-array7.C: New test.
+	* g++.dg/cpp1z/constexpr-array1.C: New test.
+
+2019-10-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/71504
+	* g++.dg/cpp0x/constexpr-array20.C: New test.
+
+2019-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91974
+	* g++.dg/cpp1z/eval-order5.C: New test.
+
+2019-10-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91497
+	* gfortran.dg/pr91497.f90: New test.
+
+2019-10-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-ssa/pr61034.C: Add --param max-inline-insns-single-O2=200.
+
+2019-10-03  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	PR target/91769
+	* gcc.target/mips/pr91769.c: New test.
+
+2019-10-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/cpp0x/gen-attrs-67.C: Expect constructor priorities error
+	on any !init_priority target.
+
+2019-10-03  Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/84487
+	* gfortran.dg/typebound_call_22.f03: xfail.
+
+2019-10-03 Mark Eggleston <mark.eggleston@codethink.com>
+
+	* gfortran.dg/bad_operands.f90: New test.
+	* gfortran.dg/character mismatch.f90: New test.
+	* gfortran.dg/compare_interfaces.f90: New test.
+	* gfortran.dg/hollerith_to_char_parameter_1.f90: New test.
+	* gfortran.dg/hollerith_to_char_parameter_2.f90: New test.
+	* gfortran.dg/widechar_intrinsics_1.f90: Checked for specific character
+	type names instead of "Type of argument".
+	* gfortran.dg/widechar_intrinsics_2.f90: Checked for specific character
+	type names instead of "Type of argument".
+	* gfortran.dg/widechar_intrinsics_3.f90: Checked for specific character
+	type names instead of "Type of argument".
+
+2019-10-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/cr-decimal-dig-2.c: New test.
+	* gcc.dg/limits-width-2.c: New test.  Based on limits-width-1.c.
+	* gcc.dg/stdint-width-2.c: New test.  Based on stdint-width-1.c.
+
+2019-10-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/integral-array-size-1.C: New.
+	* g++.dg/cpp0x/alias-decl-1.C: Test location(s) too.
+	* g++.dg/init/new43.C: Likewise.
+	* g++.dg/lookup/friend12.C: Likewise.
+	* g++.dg/lookup/pr79766.C: Likewise.
+	* g++.dg/lookup/pr84375.C: Likewise.
+	* g++.dg/other/new-size-type.C: Likewise.
+
+2019-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/ext/constexpr-attr-cleanup1.C: New test.
+
+2019-10-02  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/80936
+	* gcc.dg/Wnonnull-2.c: New test.
+	* gcc.dg/Wnonnull-3.c: New test.
+	* gcc.dg/nonnull-3.c: Expect more warnings.
+
+2019-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91784
+	* gfortran.dg/pr91784.f90: New test.
+
+2019-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91785
+	* gfortran.dg/pr91785.f90: New test.
+
+2019-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91942
+	* gfortran.dg/pr91587.f90: Update dg-error regex.
+	* gfortran.dg/pr91942.f90: New test.
+
+2019-10-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91943
+	gfortran.dg/pr91943.f90
+
+2019-10-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-ssa/pr53844.C: Add -fno-inline-functions --param
+	max-inline-insns-single-O2=200.
+	* gcc.c-torture/execute/builtins/builtins.exp: Add
+	-fno-inline-functions to additional_flags.
+	* gcc.dg/ipa/inline-7.c: Add -fno-inline-functions.
+	* gcc.dg/optimize-bswapsi-5.c: Add -fno-inline-functions.
+	* gcc.dg/tree-ssa/ssa-thread-12.c: Add --param
+	early-inlining-insns-O2=14 -fno-inline-functions; revert previous
+	change.
+	* gcc.dg/winline-3.c: Use --param max-inline-insns-single-O2=1
+	--param inline-min-speedup-O2=100
+	instead of --param max-inline-insns-single=1 --param
+	inline-min-speedup=100
+
+2019-10-02  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/87047
+	* gcc.dg/pr87047.c: New test.
+
+2019-10-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR testsuite/91842
+	* gcc.dg/ipa/ipa-sra-19.c: Skip on powerpc.
+
+2019-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt82.adb: New test.
+	* gnat.dg/opt82_pkg.ads: New helper.
+
+2019-10-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/mips/call-clobbered-3.c: Remove skip for -Os.
+	* gcc.target/mips/call-clobbered-4.c: Delete.
+
+2019-10-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/is_device_ptr-1.f90: New.
+
+2019-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR c++/91606
+	* g++.dg/torture/pr91606.C: New testcase.
+
+2019-10-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/asyncwait-1.f95: Handle new error message.
+	* gfortran.dg/goacc/asyncwait-2.f95: Likewise.
+	* gfortran.dg/goacc/asyncwait-3.f95: Likewise.
+	* gfortran.dg/goacc/asyncwait-4.f95: Likewise.
+	* gfortran.dg/goacc/default-2.f: Likewise.
+	* gfortran.dg/goacc/enter-exit-data.f95: Likewise.
+	* gfortran.dg/goacc/if.f95: Likewise.
+	* gfortran.dg/goacc/list.f95: Likewise.
+	* gfortran.dg/goacc/literal.f95: Likewise.
+	* gfortran.dg/goacc/loop-2-kernels-tile.f95: Likewise.
+	* gfortran.dg/goacc/loop-2-parallel-tile.f95: Likewise.
+	* gfortran.dg/goacc/loop-7.f95: Likewise.
+	* gfortran.dg/goacc/parallel-kernels-clauses.f95: Likewise.
+	* gfortran.dg/goacc/routine-6.f90: Likewise.
+	* gfortran.dg/goacc/several-directives.f95: Likewise.
+	* gfortran.dg/goacc/sie.f95: Likewise.
+	* gfortran.dg/goacc/tile-1.f90: Likewise.
+	* gfortran.dg/goacc/update-if_present-2.f90: Likewise.
+	* gfortran.dg/gomp/declare-simd-1.f90: Likewise.
+	* gfortran.dg/gomp/pr29759.f90: Likewise.
+
+2019-10-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp/testsuite/libgomp.fortran/use_device_ptr-optional-1.f90: New.
+
+2019-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91940
+	* gcc.dg/vect/vect-bswap16.c: Add -msse4 on x86, run on all targets,
+	expect vectorized 1 loops message on both vect_bswap and sse4_runtime
+	targets.
+	* gcc.dg/vect/vect-bswap16a.c: New test.
+
 2019-10-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/asm-scope-1.c, gcc.dg/cpp/c11-scope-1.c,

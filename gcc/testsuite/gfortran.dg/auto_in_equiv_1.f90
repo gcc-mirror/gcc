@@ -1,36 +1,35 @@
-! { dg-do compile }
+! { dg-do run }
+! { dg-options "-fdec-static -frecursive" }
 
 ! Contributed by Mark Eggleston <mark.eggleston@codethink.com>
+!
+! Check automatic variables can be used in equivalence statements.
+! Any other variables that do not explicitly have the automatic
+! attribute will be given the automatic attribute.
+!
+! Check that variables are on the stack by incorporating the
+! equivalence in a recursive function.
+!
 program test
-  call suba(0)
-  call subb(0)
-  call suba(1)
+  integer :: f
+
+  f = factorial(5)
+  if (f.ne.120) stop 2
 
 contains
-  subroutine suba(option) 
-    integer, intent(in) :: option
-    integer, automatic :: a ! { dg-error "AUTOMATIC at \\(1\\) is a DEC extension" }
+  function factorial(n) result(f)
+    integer :: f
+    integer, intent(in) :: n
+    integer, automatic :: a
     integer :: b
-    integer :: c
-    equivalence (a, b)
-    if (option.eq.0) then
-      ! initialise a and c
-      a = 9
-      c = 99
-      if (a.ne.b) stop 1
-      if (loc(a).ne.loc(b)) stop 2
+    equivalence (a,b)
+
+    if (loc(a).ne.loc(b)) stop 1
+    b = n
+    if (a.eq.1) then
+      f = 1
     else
-      ! a should've been overwritten
-      if (a.eq.9) stop 3
+      f = a * factorial(b-1)
     end if
-  end subroutine suba
-
-  subroutine subb(dummy)
-    integer, intent(in) :: dummy
-    integer, automatic :: x ! { dg-error "AUTOMATIC at \\(1\\) is a DEC extension" }
-    integer :: y
-    x = 77
-    y = 7
-  end subroutine subb
-
+  end function
 end program test

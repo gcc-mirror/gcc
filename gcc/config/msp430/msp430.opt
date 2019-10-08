@@ -67,12 +67,16 @@ EnumValue
 Enum(msp430_hwmult_types) String(f5series) Value(MSP430_HWMULT_F5SERIES)
 
 mcode-region=
-Target Joined RejectNegative Report ToLower Var(msp430_code_region) Enum(msp430_regions) Init(MSP430_REGION_ANY)
-Specify whether functions should be placed into low or high memory.
+Target Joined RejectNegative Report ToLower Var(msp430_code_region) Enum(msp430_regions) Init(MSP430_REGION_LOWER)
+Specify whether functions should be placed into the lower or upper memory regions, or if they should be shuffled between the regions (either) for best fit (default: lower).
 
 mdata-region=
-Target Joined RejectNegative Report ToLower Var(msp430_data_region) Enum(msp430_regions) Init(MSP430_REGION_ANY)
-Specify whether variables should be placed into low or high memory.
+Target Joined RejectNegative Report ToLower Var(msp430_data_region) Enum(msp430_regions) Init(MSP430_REGION_LOWER)
+Specify whether variables should be placed into the lower or upper memory regions, or if they should be shuffled between the regions (either) for best fit (default: lower).
+
+muse-lower-region-prefix
+Target Mask(USE_LOWER_REGION_PREFIX) Report
+Add the .lower prefix to section names when compiling with -m{code,data}-region=lower (disabled by default).
 
 Enum
 Name(msp430_regions) Type(enum msp430_regions)

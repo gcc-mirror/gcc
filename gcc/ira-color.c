@@ -1372,6 +1372,7 @@ update_costs_from_allocno (ira_allocno_t allocno, int hard_regno,
 	     e.g. DImode for AREG on x86.  For such cases the
 	     register move cost will be maximal.  */
 	  mode = narrower_subreg_mode (mode, ALLOCNO_MODE (cp->second));
+	  ira_init_register_move_cost_if_necessary (mode);
 	  
 	  cost = (cp->second == allocno
 		  ? ira_register_move_cost[mode][rclass][aclass]

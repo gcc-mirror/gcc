@@ -108,7 +108,7 @@ subroutine subr4 (x)
 end subroutine subr4
 
 subroutine subr10 (x)
-  !$acc routine (subr10) device ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc routine (subr10) device ! { dg-error "Failed to match clause" }
   integer, intent(inout) :: x
   if (x < 1) then
      x = 1

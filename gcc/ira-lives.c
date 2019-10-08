@@ -633,9 +633,28 @@ check_and_make_def_use_conflict (rtx dreg, rtx orig_dreg,
 
 /* Check and make if necessary conflicts for definition DEF of class
    DEF_CL of the current insn with input operands.  Process only
-   constraints of alternative ALT.  */
+   constraints of alternative ALT.
+
+   One of three things is true when this function is called:
+
+   (1) DEF is an earlyclobber for alternative ALT.  Input operands then
+       conflict with DEF in ALT unless they explicitly match DEF via 0-9
+       constraints.
+
+   (2) DEF matches (via 0-9 constraints) an operand that is an
+       earlyclobber for alternative ALT.  Other input operands then
+       conflict with DEF in ALT.
+
+   (3) [FOR_TIE_P] Some input operand X matches DEF for alternative ALT.
+       Input operands with a different value from X then conflict with
+       DEF in ALT.
+
+   However, there's still a judgement call to make when deciding
+   whether a conflict in ALT is important enough to be reflected
+   in the pan-alternative allocno conflict set.  */
 static void
-check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
+check_and_make_def_conflict (int alt, int def, enum reg_class def_cl,
+			     bool for_tie_p)
 {
   int use, use_match;
   ira_allocno_t a;
@@ -669,14 +688,40 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
       if (use == def || recog_data.operand_type[use] == OP_OUT)
 	continue;
 
+      /* An earlyclobber on DEF doesn't apply to an input operand X if X
+	 explicitly matches DEF, but it applies to other input operands
+	 even if they happen to be the same value as X.
+
+	 In contrast, if an input operand X is tied to a non-earlyclobber
+	 DEF, there's no conflict with other input operands that have the
+	 same value as X.  */
+      if (op_alt[use].matches == def
+	  || (for_tie_p
+	      && rtx_equal_p (recog_data.operand[use],
+			      recog_data.operand[op_alt[def].matched])))
+	continue;
+
       if (op_alt[use].anything_ok)
 	use_cl = ALL_REGS;
       else
 	use_cl = op_alt[use].cl;
+      if (use_cl == NO_REGS)
+	continue;
+
+      /* If DEF is simply a tied operand, ignore cases in which this
+	 alternative requires USE to have a likely-spilled class.
+	 Adding a conflict would just constrain USE further if DEF
+	 happens to be allocated first.  */
+      if (for_tie_p && targetm.class_likely_spilled_p (use_cl))
+	continue;
 
       /* If there's any alternative that allows USE to match DEF, do not
 	 record a conflict.  If that causes us to create an invalid
-	 instruction due to the earlyclobber, reload must fix it up.  */
+	 instruction due to the earlyclobber, reload must fix it up.
+
+	 Likewise, if we're treating a tied DEF like a partial earlyclobber,
+	 do not record a conflict if there's another alternative in which
+	 DEF is neither tied nor earlyclobber.  */
       for (alt1 = 0; alt1 < recog_data.n_alternatives; alt1++)
 	{
 	  if (!TEST_BIT (preferred_alternatives, alt1))
@@ -691,6 +736,12 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
 		  && recog_data.constraints[use - 1][0] == '%'
 		  && op_alt1[use - 1].matches == def))
 	    break;
+	  if (for_tie_p
+	      && !op_alt1[def].earlyclobber
+	      && op_alt1[def].matched < 0
+	      && alternative_class (op_alt1, def) != NO_REGS
+	      && alternative_class (op_alt1, use) != NO_REGS)
+	    break;
 	}
 
       if (alt1 < recog_data.n_alternatives)
@@ -701,8 +752,7 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
 
       if ((use_match = op_alt[use].matches) >= 0)
 	{
-	  if (use_match == def)
-	    continue;
+	  gcc_checking_assert (use_match != def);
 
 	  if (op_alt[use_match].anything_ok)
 	    use_cl = ALL_REGS;
@@ -717,7 +767,11 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
 /* Make conflicts of early clobber pseudo registers of the current
    insn with its inputs.  Avoid introducing unnecessary conflicts by
    checking classes of the constraints and pseudos because otherwise
-   significant code degradation is possible for some targets.  */
+   significant code degradation is possible for some targets.
+
+   For these purposes, tying an input to an output makes that output act
+   like an earlyclobber for inputs with a different value, since the output
+   register then has a predetermined purpose on input to the instruction.  */
 static void
 make_early_clobber_and_input_conflicts (void)
 {
@@ -732,15 +786,19 @@ make_early_clobber_and_input_conflicts (void)
     if (TEST_BIT (preferred_alternatives, alt))
       for (def = 0; def < n_operands; def++)
 	{
-	  def_cl = NO_REGS;
-	  if (op_alt[def].earlyclobber)
+	  if (op_alt[def].anything_ok)
+	    def_cl = ALL_REGS;
+	  else
+	    def_cl = op_alt[def].cl;
+	  if (def_cl != NO_REGS)
 	    {
-	      if (op_alt[def].anything_ok)
-		def_cl = ALL_REGS;
-	      else
-		def_cl = op_alt[def].cl;
-	      check_and_make_def_conflict (alt, def, def_cl);
+	      if (op_alt[def].earlyclobber)
+		check_and_make_def_conflict (alt, def, def_cl, false);
+	      else if (op_alt[def].matched >= 0
+		       && !targetm.class_likely_spilled_p (def_cl))
+		check_and_make_def_conflict (alt, def, def_cl, true);
 	    }
+
 	  if ((def_match = op_alt[def].matches) >= 0
 	      && (op_alt[def_match].earlyclobber
 		  || op_alt[def].earlyclobber))
@@ -749,7 +807,7 @@ make_early_clobber_and_input_conflicts (void)
 		def_cl = ALL_REGS;
 	      else
 		def_cl = op_alt[def_match].cl;
-	      check_and_make_def_conflict (alt, def, def_cl);
+	      check_and_make_def_conflict (alt, def, def_cl, false);
 	    }
 	}
 }

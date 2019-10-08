@@ -1,3 +1,7 @@
+2019-10-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/fptr.c: Disable -Warray-bounds warning.
+
 2019-09-25  Richard Henderson  <richard.henderson@linaro.org>
 
 	* config.in, configure: Re-rebuild with stock autoconf 2.69,

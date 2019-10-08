@@ -76,7 +76,7 @@ along with GCC; see the file COPYING3.  If not see
    setting the second word in the .non_lazy_symbol_pointer data
    structure to symbol.  See indirect_data for the code that handles
    the extra indirection, and machopic_output_indirection and its use
-   of MACHO_SYMBOL_STATIC for the code that handles @code{static}
+   of MACHO_SYMBOL_FLAG_STATIC for the code that handles @code{static}
    symbol indirection.  */
 
 typedef struct GTY(()) cdtor_record {
@@ -249,7 +249,7 @@ name_needs_quotes (const char *name)
 int
 machopic_symbol_defined_p (rtx sym_ref)
 {
-  if (SYMBOL_REF_FLAGS (sym_ref) & MACHO_SYMBOL_FLAG_DEFINED)
+  if (MACHO_SYMBOL_DEFINED_P (sym_ref))
     return true;
 
   /* If a symbol references local and is not an extern to this
@@ -258,7 +258,7 @@ machopic_symbol_defined_p (rtx sym_ref)
     {
       /* If the symbol references a variable and the variable is a
 	 common symbol, then this symbol is not defined.  */
-      if (SYMBOL_REF_FLAGS (sym_ref) & MACHO_SYMBOL_FLAG_VARIABLE)
+      if (MACHO_SYMBOL_VARIABLE_P (sym_ref))
 	{
 	  tree decl = SYMBOL_REF_DECL (sym_ref);
 	  if (!decl)
@@ -797,8 +797,7 @@ machopic_indirect_call_target (rtx target)
 
   if (MACHOPIC_INDIRECT
       && GET_CODE (XEXP (target, 0)) == SYMBOL_REF
-      && !(SYMBOL_REF_FLAGS (XEXP (target, 0))
-	   & MACHO_SYMBOL_FLAG_DEFINED))
+      && ! MACHO_SYMBOL_DEFINED_P (XEXP (target, 0)))
     {
       rtx sym_ref = XEXP (target, 0);
       const char *stub_name = machopic_indirection_name (sym_ref,
@@ -1121,6 +1120,7 @@ machopic_output_indirection (machopic_indirection **slot, FILE *asm_out_file)
       machopic_output_stub (asm_out_file, sym, stub);
     }
   else if (! indirect_data (symbol)
+	   && ! MACHO_SYMBOL_HIDDEN_VIS_P (symbol)
 	   && (machopic_symbol_defined_p (symbol)
 	       || SYMBOL_REF_LOCAL_P (symbol)))
     {
@@ -1167,14 +1167,14 @@ machopic_output_indirection (machopic_indirection **slot, FILE *asm_out_file)
       assemble_name (asm_out_file, sym_name);
       fprintf (asm_out_file, "\n");
 
-      /* Variables that are marked with MACHO_SYMBOL_STATIC need to
+      /* Variables that are marked with MACHO_SYMBOL_FLAG_STATIC need to
 	 have their symbol name instead of 0 in the second entry of
 	 the non-lazy symbol pointer data structure when they are
 	 defined.  This allows the runtime to rebind newer instances
 	 of the translation unit with the original instance of the
 	 symbol.  */
 
-      if ((SYMBOL_REF_FLAGS (symbol) & MACHO_SYMBOL_STATIC)
+      if (MACHO_SYMBOL_STATIC_P (symbol)
 	  && machopic_symbol_defined_p (symbol))
 	init = gen_rtx_SYMBOL_REF (Pmode, sym_name);
 
@@ -1205,24 +1205,44 @@ machopic_operand_p (rtx op)
 	    && XINT (XEXP (op, 0), 1) == UNSPEC_MACHOPIC_OFFSET);
 }
 
-/* This function records whether a given name corresponds to a defined
-   or undefined function or variable, for machopic_classify_ident to
-   use later.  */
+/* This function:
+   computes and caches a series of flags that characterise the symbol's
+   properties that affect Mach-O code gen (including accidental cases
+   from older toolchains).
+
+   TODO:
+   Here we also need to do enough analysis to determine if a symbol's
+   name needs to be made linker-visible.  This is more tricky - since
+   it depends on whether we've previously seen a global weak definition
+   in the same section.
+   */
 
 void
-darwin_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
+darwin_encode_section_info (tree decl, rtx rtl, int first)
 {
-  rtx sym_ref;
-
-  /* Do the standard encoding things first.  */
-  default_encode_section_info (decl, rtl, first);
-
-  if (TREE_CODE (decl) != FUNCTION_DECL && TREE_CODE (decl) != VAR_DECL)
+  /* Careful not to prod global register variables.  */
+  if (!MEM_P (rtl))
     return;
 
-  sym_ref = XEXP (rtl, 0);
-  if (TREE_CODE (decl) == VAR_DECL)
+  /* Do the standard encoding things first; this sets:
+     SYMBOL_FLAG_FUNCTION,
+     SYMBOL_FLAG_LOCAL, (binds_local_p)
+     TLS_MODEL, SYMBOL_FLAG_SMALL
+     SYMBOL_FLAG_EXTERNAL.  */
+  default_encode_section_info (decl, rtl, first);
+
+  if (! VAR_OR_FUNCTION_DECL_P (decl))
+    return;
+
+  rtx sym_ref = XEXP (rtl, 0);
+  if (VAR_P (decl))
     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_VARIABLE;
+
+  /* For Darwin, if we have specified visibility and it's not the default
+     that's counted 'hidden'.  */
+  if (DECL_VISIBILITY_SPECIFIED (decl)
+      && DECL_VISIBILITY (decl) != VISIBILITY_DEFAULT)
+     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_HIDDEN_VIS;
 
   if (!DECL_EXTERNAL (decl)
       && (!TREE_PUBLIC (decl) || !DECL_WEAK (decl))
@@ -1234,7 +1254,7 @@ darwin_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_DEFINED;
 
   if (! TREE_PUBLIC (decl))
-    SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_STATIC;
+    SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_STATIC;
 }
 
 void
@@ -1251,12 +1271,13 @@ darwin_mark_decl_preserved (const char *name)
 }
 
 static section *
-darwin_rodata_section (int use_coal, bool zsize)
+darwin_rodata_section (int use_coal, bool zsize, int reloc)
 {
   return (use_coal
 	  ? darwin_sections[const_coal_section]
 	  : (zsize ? darwin_sections[zobj_const_section]
-		   : darwin_sections[const_section]));
+		   : reloc ? darwin_sections[const_data_section]
+			   : darwin_sections[const_section]));
 }
 
 static section *
@@ -1549,7 +1570,7 @@ machopic_select_section (tree decl,
 
     case SECCAT_RODATA:
     case SECCAT_SRODATA:
-      base_section = darwin_rodata_section (use_coal, zsize);
+      base_section = darwin_rodata_section (use_coal, zsize, reloc);
       break;
 
     case SECCAT_RODATA_MERGE_STR:
@@ -3151,13 +3172,14 @@ darwin_override_options (void)
   if (global_options_set.x_flag_objc_abi && flag_next_runtime)
     {
       if (TARGET_64BIT && global_options.x_flag_objc_abi < 2)
-	error_at (UNKNOWN_LOCATION, "%<-fobjc-abi-version%> >= 2 must be"
-				    " used for %<-m64%> targets with"
-				    " %<-fnext-runtime%>");
+	error_at (UNKNOWN_LOCATION, "%<-fobjc-abi-version%> must be greater"
+				    " than or equal to 2 for %<-m64%> targets"
+				    " with %<-fnext-runtime%>");
       if (!TARGET_64BIT && global_options.x_flag_objc_abi >= 2)
-	error_at (UNKNOWN_LOCATION, "%<-fobjc-abi-version%> >= 2 is not"
+	error_at (UNKNOWN_LOCATION, "%<-fobjc-abi-version%> %d is not"
 				    " supported on %<-m32%> targets with"
-				    " %<-fnext-runtime%>");
+				    " %<-fnext-runtime%>",
+				    global_options.x_flag_objc_abi);
     }
 
   /* Don't emit DWARF3/4 unless specifically selected.  This is a

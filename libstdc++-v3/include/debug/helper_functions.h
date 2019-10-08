@@ -50,10 +50,11 @@ namespace __gnu_debug
    */
   enum _Distance_precision
     {
-      __dp_none,	// Not even an iterator type
-      __dp_equality,	//< Can compare iterator equality, only
-      __dp_sign,	//< Can determine equality and ordering
-      __dp_exact	//< Can determine distance precisely
+      __dp_none,		// Not even an iterator type
+      __dp_equality,		//< Can compare iterator equality, only
+      __dp_sign,		//< Can determine equality and ordering
+      __dp_sign_max_size,	//< __dp_sign and gives max range size
+      __dp_exact		//< Can determine distance precisely
     };
 
   template<typename _Iterator,
@@ -176,6 +177,7 @@ namespace __gnu_debug
 	    return true;
 	  break;
 	case __dp_sign:
+	case __dp_sign_max_size:
 	case __dp_exact:
 	  return __dist.first >= 0;
 	}

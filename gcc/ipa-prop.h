@@ -165,6 +165,7 @@ public:
   enum value_range_kind type;
   wide_int min;
   wide_int max;
+  bool nonzero_p (tree) const;
 };
 
 /* A jump function for a callsite represents the values passed as actual
@@ -561,6 +562,7 @@ struct GTY(()) ipcp_transformation
 void ipa_set_node_agg_value_chain (struct cgraph_node *node,
 				   struct ipa_agg_replacement_value *aggvals);
 void ipcp_transformation_initialize (void);
+void ipcp_free_transformation_sum (void);
 
 /* ipa_edge_args stores information related to a callsite and particularly its
    arguments.  It can be accessed by the IPA_EDGE_REF macro.  */

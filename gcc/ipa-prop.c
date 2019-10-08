@@ -3758,6 +3758,18 @@ ipcp_transformation_initialize (void)
     ipcp_transformation_sum = ipcp_transformation_t::create_ggc (symtab);
 }
 
+/* Release the IPA CP transformation summary.  */
+
+void
+ipcp_free_transformation_sum (void)
+{
+  if (!ipcp_transformation_sum)
+    return;
+
+  ipcp_transformation_sum->release ();
+  ipcp_transformation_sum = NULL;
+}
+
 /* Set the aggregate replacements of NODE to be AGGVALS.  */
 
 void
@@ -5097,6 +5109,19 @@ ipcp_update_bits (struct cgraph_node *node)
     }
 }
 
+bool
+ipa_vr::nonzero_p (tree expr_type) const
+{
+  if (type == VR_ANTI_RANGE && wi::eq_p (min, 0) && wi::eq_p (max, 0))
+    return true;
+
+  unsigned prec = TYPE_PRECISION (expr_type);
+  return (type == VR_RANGE
+	  && TYPE_UNSIGNED (expr_type)
+	  && wi::eq_p (min, wi::one (prec))
+	  && wi::eq_p (max, wi::max_value (prec, TYPE_SIGN (expr_type))));
+}
+
 /* Update value range of formal parameters as described in
    ipcp_transformation.  */
 
@@ -5169,9 +5194,7 @@ ipcp_update_vr (struct cgraph_node *node)
 						      TYPE_SIGN (type)));
 	    }
 	  else if (POINTER_TYPE_P (TREE_TYPE (ddef))
-		   && vr[i].type == VR_ANTI_RANGE
-		   && wi::eq_p (vr[i].min, 0)
-		   && wi::eq_p (vr[i].max, 0))
+		   && vr[i].nonzero_p (TREE_TYPE (ddef)))
 	    {
 	      if (dump_file)
 		fprintf (dump_file, "Setting nonnull for %u\n", i);

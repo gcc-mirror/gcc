@@ -23,7 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "target.h"
 #include "insn-codes.h"
+#include "rtl.h"
 #include "tree.h"
+#include "memmodel.h"
+#include "optabs.h"
 #include "optabs-tree.h"
 #include "stor-layout.h"
 
@@ -329,6 +332,31 @@ expand_vec_cmp_expr_p (tree value_type, tree mask_type, enum tree_code code)
   return false;
 }
 
+/* Return true iff vcond_optab/vcondu_optab can handle a vector
+   comparison for code CODE, comparing operands of type CMP_OP_TYPE and
+   producing a result of type VALUE_TYPE.  */
+
+static bool
+vcond_icode_p (tree value_type, tree cmp_op_type, enum tree_code code)
+{
+  return can_vcond_compare_p (get_rtx_code (code, TYPE_UNSIGNED (cmp_op_type)),
+			      TYPE_MODE (value_type), TYPE_MODE (cmp_op_type));
+}
+
+/* Return true iff vcondeq_optab can handle a vector comparison for code CODE,
+   comparing operands of type CMP_OP_TYPE and producing a result of type
+   VALUE_TYPE.  */
+
+static bool
+vcond_eq_icode_p (tree value_type, tree cmp_op_type, enum tree_code code)
+{
+  if (code != EQ_EXPR && code != NE_EXPR)
+    return false;
+
+  return get_vcond_eq_icode (TYPE_MODE (value_type), TYPE_MODE (cmp_op_type))
+	 != CODE_FOR_nothing;
+}
+
 /* Return TRUE iff, appropriate vector insns are available
    for vector cond expr with vector type VALUE_TYPE and a comparison
    with operand vector types in CMP_OP_TYPE.  */
@@ -347,14 +375,13 @@ expand_vec_cond_expr_p (tree value_type, tree cmp_op_type, enum tree_code code)
       || maybe_ne (GET_MODE_NUNITS (value_mode), GET_MODE_NUNITS (cmp_op_mode)))
     return false;
 
-  if (get_vcond_icode (TYPE_MODE (value_type), TYPE_MODE (cmp_op_type),
-		       TYPE_UNSIGNED (cmp_op_type)) == CODE_FOR_nothing
-      && ((code != EQ_EXPR && code != NE_EXPR)
-	  || get_vcond_eq_icode (TYPE_MODE (value_type),
-				 TYPE_MODE (cmp_op_type)) == CODE_FOR_nothing))
+  if (TREE_CODE_CLASS (code) != tcc_comparison)
+    /* This may happen, for example, if code == SSA_NAME, in which case we
+       cannot be certain whether a vector insn is available.  */
     return false;
 
-  return true;
+  return vcond_icode_p (value_type, cmp_op_type, code)
+	 || vcond_eq_icode_p (value_type, cmp_op_type, code);
 }
 
 /* Use the current target and options to initialize

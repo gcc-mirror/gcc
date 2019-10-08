@@ -527,9 +527,10 @@ forward_propagate_into_gimple_cond (gcond *stmt)
   tmp = forward_propagate_into_comparison_1 (stmt, code,
 					     boolean_type_node,
 					     rhs1, rhs2);
-  if (tmp)
+  if (tmp
+      && is_gimple_condexpr_for_cond (tmp))
     {
-      if (dump_file && tmp)
+      if (dump_file)
 	{
 	  fprintf (dump_file, "  Replaced '");
 	  print_gimple_expr (dump_file, stmt, 0);
@@ -607,7 +608,7 @@ forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
   if (tmp
       && is_gimple_condexpr (tmp))
     {
-      if (dump_file && tmp)
+      if (dump_file)
 	{
 	  fprintf (dump_file, "  Replaced '");
 	  print_generic_expr (dump_file, cond);
@@ -1426,8 +1427,10 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 	      if (!is_gimple_val (ptr1))
 		ptr1 = force_gimple_operand_gsi (gsi_p, ptr1, true, NULL_TREE,
 						 true, GSI_SAME_STMT);
-	      gimple_call_set_fndecl (stmt2,
-				      builtin_decl_explicit (BUILT_IN_MEMCPY));
+	      tree fndecl = builtin_decl_explicit (BUILT_IN_MEMCPY);
+	      gimple_call_set_fndecl (stmt2, fndecl);
+	      gimple_call_set_fntype (as_a <gcall *> (stmt2),
+				      TREE_TYPE (fndecl));
 	      gimple_call_set_arg (stmt2, 0, ptr1);
 	      gimple_call_set_arg (stmt2, 1, new_str_cst);
 	      gimple_call_set_arg (stmt2, 2,
