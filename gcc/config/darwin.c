@@ -665,7 +665,7 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 	   /* some other cpu -- writeme!  */
 	   gcc_unreachable ();
 	}
-      else if (defined)
+      else if (defined && ! MACHO_SYMBOL_MUST_INDIRECT_P (orig))
 	{
 	  rtx offset = NULL;
 	  if (DARWIN_PPC || HAVE_lo_sum)
@@ -1120,6 +1120,7 @@ machopic_output_indirection (machopic_indirection **slot, FILE *asm_out_file)
       machopic_output_stub (asm_out_file, sym, stub);
     }
   else if (! indirect_data (symbol)
+	   && ! MACHO_SYMBOL_MUST_INDIRECT_P (symbol)
 	   && ! MACHO_SYMBOL_HIDDEN_VIS_P (symbol)
 	   && (machopic_symbol_defined_p (symbol)
 	       || SYMBOL_REF_LOCAL_P (symbol)))
@@ -1238,11 +1239,17 @@ darwin_encode_section_info (tree decl, rtx rtl, int first)
   if (VAR_P (decl))
     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_VARIABLE;
 
+  /* Only really common if there's no initialiser.  */
+  bool really_common_p = (DECL_COMMON (decl)
+			  && (DECL_INITIAL (decl) == NULL
+			      || (!in_lto_p
+				  && DECL_INITIAL (decl) == error_mark_node)));
+
   /* For Darwin, if we have specified visibility and it's not the default
      that's counted 'hidden'.  */
   if (DECL_VISIBILITY_SPECIFIED (decl)
       && DECL_VISIBILITY (decl) != VISIBILITY_DEFAULT)
-     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_HIDDEN_VIS;
+    SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_HIDDEN_VIS;
 
   if (!DECL_EXTERNAL (decl)
       && (!TREE_PUBLIC (decl) || !DECL_WEAK (decl))
@@ -1255,6 +1262,12 @@ darwin_encode_section_info (tree decl, rtx rtl, int first)
 
   if (! TREE_PUBLIC (decl))
     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_STATIC;
+
+  /* Short cut check for Darwin 'must indirect' rules.  */
+  if (really_common_p
+      || (DECL_WEAK (decl) && ! MACHO_SYMBOL_HIDDEN_VIS_P (sym_ref))
+      || lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
+     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_MUST_INDIRECT;
 }
 
 void
