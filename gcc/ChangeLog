@@ -1,5 +1,10 @@
 2019-10-08  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config/darwin.c (machopic_select_section): Remove dead code for
+	old Objective-C section selection method, replace with unreachable.
+
+2019-10-08  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* config/darwin.c (machopic_indirect_data_reference): Check for
 	required indirections before making direct access to defined
 	values.
