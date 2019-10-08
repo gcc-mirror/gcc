@@ -820,6 +820,15 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
 #define MACHO_SYMBOL_VARIABLE_P(RTX) \
   ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_VARIABLE) != 0)
 
+/* Set on a symbol that must be indirected, even when there is a
+   definition in the TU.  The ABI mandates that common symbols are so
+   indirected, as are weak.  If 'fix-and-continue' is operational then
+   data symbols might also be.  */
+
+#define MACHO_SYMBOL_FLAG_MUST_INDIRECT ((SYMBOL_FLAG_SUBT_DEP) << 1)
+#define MACHO_SYMBOL_MUST_INDIRECT_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_MUST_INDIRECT) != 0)
+
 /* Set on a symbol with SYMBOL_FLAG_FUNCTION or MACHO_SYMBOL_FLAG_VARIABLE
    to indicate that the function or variable is considered defined in this
    translation unit.  */

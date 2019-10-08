@@ -1,3 +1,14 @@
+2019-10-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (machopic_indirect_data_reference): Check for
+	required indirections before making direct access to defined
+	values.
+	(machopic_output_indirection): Place the indirected pointes for
+	required indirections into the non-lazy symbol pointers section.
+	(darwin_encode_section_info):
+	* config/darwin.h (MACHO_SYMBOL_FLAG_MUST_INDIRECT): New.
+	(MACHO_SYMBOL_MUST_INDIRECT_P): New.
+
 2019-10-08  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/91994
