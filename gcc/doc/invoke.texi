@@ -10809,12 +10809,12 @@ Do not allow the built-in functions @code{ceil}, @code{floor},
 double} variants, to generate code that raises the ``inexact''
 floating-point exception for noninteger arguments.  ISO C99 and C11
 allow these functions to raise the ``inexact'' exception, but ISO/IEC
-TS 18661-1:2014, the C bindings to IEEE 754-2008, does not allow these
-functions to do so.
+TS 18661-1:2014, the C bindings to IEEE 754-2008, as integrated into
+ISO C2X, does not allow these functions to do so.
 
 The default is @option{-ffp-int-builtin-inexact}, allowing the
-exception to be raised.  This option does nothing unless
-@option{-ftrapping-math} is in effect.
+exception to be raised, unless C2X or a later C standard is selected.
+This option does nothing unless @option{-ftrapping-math} is in effect.
 
 Even if @option{-fno-fp-int-builtin-inexact} is used, if the functions
 generate a call to a library function then the ``inexact'' exception
