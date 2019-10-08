@@ -1,3 +1,10 @@
+2019-10-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92026
+	PR middle-end/92014
+	* tree-ssa-strlen.c (count_nonzero_bytes): Avoid recursing for MEM_REF
+	again once nbytes has been set.  Set the access size when not yet set.
+
 2019-10-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.c (machopic_select_section): Remove dead code for
