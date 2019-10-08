@@ -1,5 +1,8 @@
 2019-10-08  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR fortran/68401
+        * runtime/minimal.c (os_error_at): New function.
+
 	* runtime/minimal.c: Revise.
 
 2019-10-05  Paul Thomas  <pault@gcc.gnu.org>
