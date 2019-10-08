@@ -1,3 +1,8 @@
+2019-10-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91801
+	* gfortran.dg/pr91801.f90: New test.
+
 2019-10-08  Marek Polacek  <polacek@redhat.com>
 
 	DR 685 - Integral promotion of enum ignores fixed underlying type.
