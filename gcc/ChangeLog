@@ -1,5 +1,10 @@
 2019-10-09  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config/darwin.c (darwin_override_options): Make the check for
+	Objective-C ABI version more specific for 64bit code.
+
+2019-10-09  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* config/darwin.c (machopic_indirect_data_reference): Set flag to
 	indicate that the new symbol is an indirection.
 	(machopic_indirect_call_target): Likewise.
