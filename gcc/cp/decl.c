@@ -13738,7 +13738,8 @@ grok_ctor_properties (const_tree ctype, const_tree decl)
 	 or implicitly defined), there's no need to worry about their
 	 existence.  Theoretically, they should never even be
 	 instantiated, but that's hard to forestall.  */
-      error ("invalid constructor; you probably meant %<%T (const %T&)%>",
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"invalid constructor; you probably meant %<%T (const %T&)%>",
 		ctype, ctype);
       return false;
     }

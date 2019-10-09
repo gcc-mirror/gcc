@@ -1,3 +1,26 @@
+2019-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-c++-common/Waddress-1.c: Test locations too.
+	* c-c++-common/Wpointer-compare-1.c: Likewise.
+	* c-c++-common/Wshift-count-negative-1.c: Likewise.
+	* c-c++-common/Wshift-count-overflow-1.c: Likewise.
+	* c-c++-common/Wshift-negative-value-1.c: Likewise.
+	* c-c++-common/Wshift-negative-value-2.c: Likewise.
+	* c-c++-common/Wshift-negative-value-5.c: Likewise.
+	* c-c++-common/pr48418.c: Likewise.
+	* c-c++-common/pr65830.c: Likewise.
+	* c-c++-common/pr69764.c: Likewise.
+	* g++.dg/cpp0x/constexpr-array-ptr10.C: Likewise.
+	* g++.dg/cpp0x/nullptr37.C: Likewise.
+	* g++.dg/template/crash126.C: Likewise.
+	* g++.dg/template/crash129.C: Likewise.
+	* g++.dg/warn/Wextra-3.C: Likewise.
+	* g++.dg/warn/Wfloat-equal-1.C: Likewise.
+	* g++.dg/warn/Wstring-literal-comparison-1.C: Likewise.
+	* g++.dg/warn/Wstring-literal-comparison-2.C: Likewise.
+	* g++.dg/warn/pointer-integer-comparison.C: Likewise.
+	* g++.old-deja/g++.jason/crash8.C: Likewise.
+
 2019-10-09  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/vect-outer-call-1.c: New testcase.
