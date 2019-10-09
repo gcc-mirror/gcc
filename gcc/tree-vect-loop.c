@@ -2756,10 +2756,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
   enum tree_code orig_code, code;
   tree op1, op2, op3 = NULL_TREE, op4 = NULL_TREE;
   tree type;
-  tree name;
   imm_use_iterator imm_iter;
   use_operand_p use_p;
-  bool phi_def;
 
   *double_reduc = false;
   STMT_VINFO_REDUC_TYPE (phi_info) = TREE_CODE_REDUCTION;
@@ -2791,44 +2789,24 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       phi_use_stmt = use_stmt;
     }
 
-  edge latch_e = loop_latch_edge (loop);
-  tree loop_arg = PHI_ARG_DEF_FROM_EDGE (phi, latch_e);
-  if (TREE_CODE (loop_arg) != SSA_NAME)
+  tree latch_def = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop));
+  if (TREE_CODE (latch_def) != SSA_NAME)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "reduction: not ssa_name: %T\n", loop_arg);
+			 "reduction: not ssa_name: %T\n", latch_def);
       return NULL;
     }
 
-  stmt_vec_info def_stmt_info = loop_info->lookup_def (loop_arg);
+  stmt_vec_info def_stmt_info = loop_info->lookup_def (latch_def);
   if (!def_stmt_info
       || !flow_bb_inside_loop_p (loop, gimple_bb (def_stmt_info->stmt)))
     return NULL;
 
-  if (gassign *def_stmt = dyn_cast <gassign *> (def_stmt_info->stmt))
-    {
-      name = gimple_assign_lhs (def_stmt);
-      phi_def = false;
-    }
-  else if (gphi *def_stmt = dyn_cast <gphi *> (def_stmt_info->stmt))
-    {
-      name = PHI_RESULT (def_stmt);
-      phi_def = true;
-    }
-  else
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "reduction: unhandled reduction operation: %G",
-			 def_stmt_info->stmt);
-      return NULL;
-    }
-
   unsigned nlatch_def_loop_uses = 0;
   auto_vec<gphi *, 3> lcphis;
   bool inner_loop_of_double_reduc = false;
-  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, name)
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, latch_def)
     {
       gimple *use_stmt = USE_STMT (use_p);
       if (is_gimple_debug (use_stmt))
@@ -2846,11 +2824,21 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 	}
     }
 
+  /* If we are vectorizing an inner reduction we are executing that
+     in the original order only in case we are not dealing with a
+     double reduction.  */
+  if (nested_in_vect_loop && !inner_loop_of_double_reduc)
+    {
+      if (dump_enabled_p ())
+	report_vect_op (MSG_NOTE, def_stmt_info->stmt,
+			"detected nested cycle: ");
+      return def_stmt_info;
+    }
+
   /* If this isn't a nested cycle or if the nested cycle reduction value
      is used ouside of the inner loop we cannot handle uses of the reduction
      value.  */
-  if ((!nested_in_vect_loop || inner_loop_of_double_reduc)
-      && (nlatch_def_loop_uses > 1 || nphi_def_loop_uses > 1))
+  if (nlatch_def_loop_uses > 1 || nphi_def_loop_uses > 1)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -2860,9 +2848,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 
   /* If DEF_STMT is a phi node itself, we expect it to have a single argument
      defined in the inner loop.  */
-  if (phi_def)
+  if (gphi *def_stmt = dyn_cast <gphi *> (def_stmt_info->stmt))
     {
-      gphi *def_stmt = as_a <gphi *> (def_stmt_info->stmt);
       op1 = PHI_ARG_DEF (def_stmt, 0);
 
       if (gimple_phi_num_args (def_stmt) != 1
@@ -2895,35 +2882,16 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       return NULL;
     }
 
-  /* If we are vectorizing an inner reduction we are executing that
-     in the original order only in case we are not dealing with a
-     double reduction.  */
-  bool check_reduction = true;
-  if (flow_loop_nested_p (vect_loop, loop))
-    {
-      gphi *lcphi;
-      unsigned i;
-      check_reduction = false;
-      FOR_EACH_VEC_ELT (lcphis, i, lcphi)
-	FOR_EACH_IMM_USE_FAST (use_p, imm_iter, gimple_phi_result (lcphi))
-	  {
-	    gimple *use_stmt = USE_STMT (use_p);
-	    if (is_gimple_debug (use_stmt))
-	      continue;
-	    if (! flow_bb_inside_loop_p (vect_loop, gimple_bb (use_stmt)))
-	      check_reduction = true;
-	  }
-    }
-
-  gassign *def_stmt = as_a <gassign *> (def_stmt_info->stmt);
-  code = orig_code = gimple_assign_rhs_code (def_stmt);
-
-  if (nested_in_vect_loop && !check_reduction)
+  gassign *def_stmt = dyn_cast <gassign *> (def_stmt_info->stmt);
+  if (!def_stmt)
     {
       if (dump_enabled_p ())
-	report_vect_op (MSG_NOTE, def_stmt, "detected nested cycle: ");
-      return def_stmt_info;
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "reduction: unhandled reduction operation: %G",
+			 def_stmt_info->stmt);
+      return NULL;
     }
+  code = orig_code = gimple_assign_rhs_code (def_stmt);
 
   /* We can handle "res -= x[i]", which is non-associative by
      simply rewriting this into "res += -x[i]".  Avoid changing
@@ -3018,8 +2986,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
      vectorizing an outer-loop: the inner-loop is executed sequentially,
      and therefore vectorizing reductions in the inner-loop during
      outer-loop vectorization is safe.  */
-  if (check_reduction
-      && STMT_VINFO_REDUC_TYPE (phi_info) == TREE_CODE_REDUCTION
+  if (STMT_VINFO_REDUC_TYPE (phi_info) == TREE_CODE_REDUCTION
       && needs_fold_left_reduction_p (type, code))
     STMT_VINFO_REDUC_TYPE (phi_info) = FOLD_LEFT_REDUCTION;
 
@@ -3066,9 +3033,9 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       return def_stmt_info;
     }
 
-  /* Look for the expression computing loop_arg from loop PHI result.  */
+  /* Look for the expression computing latch_def from loop PHI result.  */
   auto_vec<std::pair<ssa_op_iter, use_operand_p> > path;
-  if (check_reduction_path (vect_location, loop, phi, loop_arg, code,
+  if (check_reduction_path (vect_location, loop, phi, latch_def, code,
 			    path))
     {
       /* Try building an SLP reduction chain for which the additional

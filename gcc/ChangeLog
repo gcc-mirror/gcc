@@ -1,3 +1,8 @@
+2019-10-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_is_simple_reduction): Simplify and
+	allow stmts other than GIMPLE_ASSIGN in nested cycles.
+
 2019-10-08  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (_stmt_vec_info::reduc_vectype_in): New.
