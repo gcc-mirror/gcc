@@ -1,3 +1,10 @@
+2019-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/92028
+	* target.c (gomp_map_vars_internal): Readd the previous
+	GOMP_MAP_USE_DEVICE_PTR handling code in the first loop,
+	though do that just in the !not_found_cnt case.
+
 2019-10-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/target-simd.f90: New.
