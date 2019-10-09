@@ -1,3 +1,9 @@
+2019-10-09  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* pt.c (push_template_decl_real): Always set DECL_CHAIN for
+	non-pushed friends.
+
 2019-10-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
