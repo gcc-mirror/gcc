@@ -961,6 +961,12 @@ public:
      corresponding PHI.  */
   stmt_vec_info reduc_def;
 
+  /* The vector input type relevant for reduction vectorization.  */
+  tree reduc_vectype_in;
+
+  /* Whether we force a single cycle PHI during reduction vectorization.  */
+  bool force_single_cycle;
+
   /* Whether on this stmt reduction meta is recorded.  */
   bool is_reduc_info;
 
@@ -1050,6 +1056,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL(S) (S)->induc_cond_initial_val
 #define STMT_VINFO_REDUC_EPILOGUE_ADJUSTMENT(S) (S)->reduc_epilogue_adjustment
 #define STMT_VINFO_REDUC_IDX(S)		   (S)->reduc_idx
+#define STMT_VINFO_FORCE_SINGLE_CYCLE(S)   (S)->force_single_cycle
 
 #define STMT_VINFO_DR_WRT_VEC_LOOP(S)      (S)->dr_wrt_vec_loop
 #define STMT_VINFO_DR_BASE_ADDRESS(S)      (S)->dr_wrt_vec_loop.base_address
@@ -1083,6 +1090,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_REDUC_CODE(S)	(S)->reduc_code
 #define STMT_VINFO_REDUC_FN(S)		(S)->reduc_fn
 #define STMT_VINFO_REDUC_DEF(S)		(S)->reduc_def
+#define STMT_VINFO_REDUC_VECTYPE_IN(S)  (S)->reduc_vectype_in
 #define STMT_VINFO_SLP_VECT_ONLY(S)     (S)->slp_vect_only_p
 
 #define DR_GROUP_FIRST_ELEMENT(S) \

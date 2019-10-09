@@ -1,3 +1,14 @@
+2019-10-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_stmt_vec_info::reduc_vectype_in): New.
+	(_stmt_vec_info::force_single_cycle): Likewise.
+	(STMT_VINFO_FORCE_SINGLE_CYCLE): New.
+	(STMT_VINFO_REDUC_VECTYPE_IN): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): Set
+	STMT_VINFO_REDUC_VECTYPE_IN and STMT_VINFO_FORCE_SINGLE_CYCLE.
+	(vect_transform_reduction): Use them to remove redundant code.
+	(vect_transform_cycle_phi): Likewise.
+
 2019-10-08  Dmitrij Pochepko <dmitrij.pochepko@bell-sw.com>
 
 	PR tree-optimization/90836
