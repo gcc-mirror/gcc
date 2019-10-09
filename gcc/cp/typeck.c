@@ -4475,7 +4475,8 @@ cp_build_binary_op (const op_location_t &location,
       if (t != error_mark_node)
 	{
 	  if (complain & tf_error)
-	    permerror (input_location, "assuming cast to type %qT from overloaded function",
+	    permerror (location,
+		       "assuming cast to type %qT from overloaded function",
 		       TREE_TYPE (t));
 	  op0 = t;
 	}
@@ -4486,7 +4487,8 @@ cp_build_binary_op (const op_location_t &location,
       if (t != error_mark_node)
 	{
 	  if (complain & tf_error)
-	    permerror (input_location, "assuming cast to type %qT from overloaded function",
+	    permerror (location,
+		       "assuming cast to type %qT from overloaded function",
 		       TREE_TYPE (t));
 	  op1 = t;
 	}
@@ -4809,16 +4811,16 @@ cp_build_binary_op (const op_location_t &location,
 		{
 		  if ((complain & tf_warning)
 		      && c_inhibit_evaluation_warnings == 0)
-		    warning (OPT_Wshift_count_negative,
-			     "right shift count is negative");
+		    warning_at (location, OPT_Wshift_count_negative,
+				"right shift count is negative");
 		}
 	      else
 		{
 		  if (compare_tree_int (const_op1, TYPE_PRECISION (type0)) >= 0
 		      && (complain & tf_warning)
 		      && c_inhibit_evaluation_warnings == 0)
-		    warning (OPT_Wshift_count_overflow,
-			     "right shift count >= width of type");
+		    warning_at (location, OPT_Wshift_count_overflow,
+				"right shift count >= width of type");
 		}
 	    }
 	  /* Avoid converting op1 to result_type later.  */
@@ -4856,24 +4858,24 @@ cp_build_binary_op (const op_location_t &location,
 	      && tree_int_cst_sgn (const_op0) < 0
 	      && (complain & tf_warning)
 	      && c_inhibit_evaluation_warnings == 0)
-	    warning (OPT_Wshift_negative_value,
-		     "left shift of negative value");
+	    warning_at (location, OPT_Wshift_negative_value,
+			"left shift of negative value");
 	  if (TREE_CODE (const_op1) == INTEGER_CST)
 	    {
 	      if (tree_int_cst_lt (const_op1, integer_zero_node))
 		{
 		  if ((complain & tf_warning)
 		      && c_inhibit_evaluation_warnings == 0)
-		    warning (OPT_Wshift_count_negative,
-			     "left shift count is negative");
+		    warning_at (location, OPT_Wshift_count_negative,
+				"left shift count is negative");
 		}
 	      else if (compare_tree_int (const_op1,
 					 TYPE_PRECISION (type0)) >= 0)
 		{
 		  if ((complain & tf_warning)
 		      && c_inhibit_evaluation_warnings == 0)
-		    warning (OPT_Wshift_count_overflow,
-			     "left shift count >= width of type");
+		    warning_at (location, OPT_Wshift_count_overflow,
+				"left shift count >= width of type");
 		}
 	      else if (TREE_CODE (const_op0) == INTEGER_CST
 		       && (complain & tf_warning))
@@ -4920,8 +4922,9 @@ cp_build_binary_op (const op_location_t &location,
       if ((complain & tf_warning)
 	  && c_inhibit_evaluation_warnings == 0
 	  && (FLOAT_TYPE_P (type0) || FLOAT_TYPE_P (type1)))
-	warning (OPT_Wfloat_equal,
-		 "comparing floating-point with %<==%> or %<!=%> is unsafe");
+	warning_at (location, OPT_Wfloat_equal,
+		    "comparing floating-point with %<==%> "
+		    "or %<!=%> is unsafe");
       if (complain & tf_warning)
 	{
 	  tree stripped_orig_op0 = tree_strip_any_location_wrapper (orig_op0);
@@ -4930,8 +4933,9 @@ cp_build_binary_op (const op_location_t &location,
 	       && !integer_zerop (cp_fully_fold (op1)))
 	      || (TREE_CODE (stripped_orig_op1) == STRING_CST
 		  && !integer_zerop (cp_fully_fold (op0))))
-	    warning (OPT_Waddress, "comparison with string literal results "
-		     "in unspecified behavior");
+	    warning_at (location, OPT_Waddress,
+			"comparison with string literal results in "
+			"unspecified behavior");
 	}
 
       build_type = boolean_type_node;
@@ -4955,11 +4959,11 @@ cp_build_binary_op (const op_location_t &location,
 	  if (char_type_p (TREE_TYPE (orig_op1)))
 	    {
 	      auto_diagnostic_group d;
-	      if (warning (OPT_Wpointer_compare,
-			     "comparison between pointer and zero character "
-			     "constant"))
-		inform (input_location,
-			  "did you mean to dereference the pointer?");
+	      if (warning_at (location, OPT_Wpointer_compare,
+			      "comparison between pointer and zero character "
+			      "constant"))
+		inform (location,
+			"did you mean to dereference the pointer?");
 	    }
 	  warn_for_null_address (location, op0, complain);
 	}
@@ -4978,10 +4982,10 @@ cp_build_binary_op (const op_location_t &location,
 	  if (char_type_p (TREE_TYPE (orig_op0)))
 	    {
 	      auto_diagnostic_group d;
-	      if (warning (OPT_Wpointer_compare,
+	      if (warning_at (location, OPT_Wpointer_compare,
 			     "comparison between pointer and zero character "
 			     "constant"))
-		inform (input_location,
+		inform (location,
 			"did you mean to dereference the pointer?");
 	    }
 	  warn_for_null_address (location, op1, complain);
@@ -4996,8 +5000,9 @@ cp_build_binary_op (const op_location_t &location,
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  result_type = type0;
-	  if (complain & tf_error) 
-            permerror (input_location, "ISO C++ forbids comparison between pointer and integer");
+	  if (complain & tf_error)
+	    permerror (location, "ISO C++ forbids comparison between "
+		       "pointer and integer");
           else
             return error_mark_node;
 	}
@@ -5005,7 +5010,8 @@ cp_build_binary_op (const op_location_t &location,
 	{
 	  result_type = type1;
 	  if (complain & tf_error)
-	    permerror (input_location, "ISO C++ forbids comparison between pointer and integer");
+	    permerror (location, "ISO C++ forbids comparison between "
+		       "pointer and integer");
           else
             return error_mark_node;
 	}
@@ -5191,8 +5197,9 @@ cp_build_binary_op (const op_location_t &location,
 	  || TREE_CODE (orig_op1) == STRING_CST)
 	{
 	  if (complain & tf_warning)
-	    warning (OPT_Waddress, "comparison with string literal results "
-				   "in unspecified behavior");
+	    warning_at (location, OPT_Waddress,
+			"comparison with string literal results "
+			"in unspecified behavior");
 	}
 
       if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
@@ -5267,15 +5274,15 @@ cp_build_binary_op (const op_location_t &location,
 	{
 	  result_type = type0;
 	  if (extra_warnings && (complain & tf_warning))
-	    warning (OPT_Wextra,
-		     "ordered comparison of pointer with integer zero");
+	    warning_at (location, OPT_Wextra,
+			"ordered comparison of pointer with integer zero");
 	}
       else if (code1 == POINTER_TYPE && null_ptr_cst_p (orig_op0))
 	{
 	  result_type = type1;
 	  if (extra_warnings && (complain & tf_warning))
-	    warning (OPT_Wextra,
-		     "ordered comparison of pointer with integer zero");
+	    warning_at (location, OPT_Wextra,
+			"ordered comparison of pointer with integer zero");
 	}
       else if (null_ptr_cst_p (orig_op0) && null_ptr_cst_p (orig_op1))
 	/* One of the operands must be of nullptr_t type.  */
@@ -5284,16 +5291,18 @@ cp_build_binary_op (const op_location_t &location,
 	{
 	  result_type = type0;
 	  if (complain & tf_error)
-	    permerror (input_location, "ISO C++ forbids comparison between pointer and integer");
-          else
+	    permerror (location, "ISO C++ forbids comparison between "
+		       "pointer and integer");
+	  else
             return error_mark_node;
 	}
       else if (code0 == INTEGER_TYPE && code1 == POINTER_TYPE)
 	{
 	  result_type = type1;
 	  if (complain & tf_error)
-	    permerror (input_location, "ISO C++ forbids comparison between pointer and integer");
-          else
+	    permerror (location, "ISO C++ forbids comparison between "
+		       "pointer and integer");
+	  else
             return error_mark_node;
 	}
 
