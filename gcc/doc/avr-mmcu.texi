@@ -21,7 +21,7 @@
 @*@var{mcu}@tie{}= @code{ata5272}, @code{ata6616c}, @code{attiny13}, @code{attiny13a}, @code{attiny2313}, @code{attiny2313a}, @code{attiny24}, @code{attiny24a}, @code{attiny25}, @code{attiny261}, @code{attiny261a}, @code{attiny43u}, @code{attiny4313}, @code{attiny44}, @code{attiny44a}, @code{attiny441}, @code{attiny45}, @code{attiny461}, @code{attiny461a}, @code{attiny48}, @code{attiny828}, @code{attiny84}, @code{attiny84a}, @code{attiny841}, @code{attiny85}, @code{attiny861}, @code{attiny861a}, @code{attiny87}, @code{attiny88}, @code{at86rf401}.
 
 @item avr3
-``Classic'' devices with 16@tie{}KiB up to 64@tie{}KiB of  program memory.
+``Classic'' devices with 16@tie{}KiB up to 64@tie{}KiB of program memory.
 @*@var{mcu}@tie{}= @code{at43usb355}, @code{at76c711}.
 
 @item avr31
