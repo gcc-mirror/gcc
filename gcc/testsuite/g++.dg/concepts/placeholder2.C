@@ -1,8 +1,5 @@
-// { dg-do compile { target c++17 } }
+// { dg-do compile { target c++17_only } }
 // { dg-options "-fconcepts" }
-
-// Check argument deduction constraints.
-// TODO: We shoul have more of these...
 
 template<typename T>
 concept bool C1 = sizeof(T) == 0;
@@ -12,22 +9,16 @@ concept bool C2 = __is_same_as(T, U);
 
 
 template<typename T>
-concept bool D1()
-{
-  return requires (T t) { { t } -> C1; };
-}
+concept bool D1 = requires (T t) { { t } -> C1; };
 
 template<typename T>
-concept bool D2()
-{
-  return requires (T t) { { t } -> C2<void>; };
-}
+concept bool D2 = requires (T t) { { t } -> C2<void>; };
 
-void f1(D1) { }
-void f2(D2) { }
+void f1(auto D1) { } // OK: D1 is declared as a parameter
+void f2(auto D2) { } // OK: D2 is declared as a parameter
 
 int main()
 {
-  f1(0); // { dg-error "cannot call" }
-  f2(0); // { dg-error "cannot call" }
+  f1(0);
+  f2(0);
 }

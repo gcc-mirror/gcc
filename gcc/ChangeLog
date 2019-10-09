@@ -1,3 +1,7 @@
+2019-10-08  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi: Document -fconcepts-ts.
+
 2019-10-09  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_is_simple_reduction): Simplify and

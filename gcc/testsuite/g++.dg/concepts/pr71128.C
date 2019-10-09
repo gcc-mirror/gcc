@@ -1,5 +1,5 @@
-// { dg-do compile { target c++14 } }
-// { dg-additional-options "-fconcepts" }
+// { dg-do compile { target c++17_only } }
+// { dg-options "-fconcepts" }
 
 template<typename T>
 concept bool C() { return true; }

@@ -5523,7 +5523,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
          '!requires (T t) { ... }' which is not transformed into
          a constraint.  */
       if (!processing_template_decl)
-        return evaluate_constraint_expression (t, NULL_TREE);
+        return satisfy_constraint_expression (t);
       else
         *non_constant_p = true;
       return t;
@@ -5538,6 +5538,20 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case USING_STMT:
       r = void_node;
       break;
+
+    case TEMPLATE_ID_EXPR:
+      {
+        /* We can evaluate template-id that refers to a concept only if
+	   the template arguments are non-dependent.  */
+	if (!concept_definition_p (TREE_OPERAND (t, 0)))
+	  internal_error ("unexpected template-id %qE", t);
+
+	if (!processing_template_decl)
+	  return satisfy_constraint_expression (t);
+	else
+	  *non_constant_p = true;
+	return t;
+      }
 
     case ASM_EXPR:
       if (!ctx->quiet)
@@ -5980,13 +5994,15 @@ clear_cv_cache (void)
     cv_cache->empty ();
 }
 
-/* Dispose of the whole CV_CACHE and FOLD_CACHE.  */
+/* Dispose of the whole CV_CACHE, FOLD_CACHE, and satisfaction caches.  */
 
 void
-clear_cv_and_fold_caches (void)
+clear_cv_and_fold_caches (bool sat /*= true*/)
 {
   clear_cv_cache ();
   clear_fold_cache ();
+  if (sat)
+    clear_satisfaction_cache ();
 }
 
 /* Internal function handling expressions in templates for

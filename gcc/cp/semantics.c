@@ -1788,10 +1788,10 @@ finish_mem_initializers (tree mem_inits)
 
 /* Obfuscate EXPR if it looks like an id-expression or member access so
    that the call to finish_decltype in do_auto_deduction will give the
-   right result.  */
+   right result.  If EVEN_UNEVAL, do this even in unevaluated context.  */
 
 tree
-force_paren_expr (tree expr)
+force_paren_expr (tree expr, bool even_uneval)
 {
   /* This is only needed for decltype(auto) in C++14.  */
   if (cxx_dialect < cxx14)
@@ -1799,7 +1799,7 @@ force_paren_expr (tree expr)
 
   /* If we're in unevaluated context, we can't be deducing a
      return/initializer type, so we don't need to mess with this.  */
-  if (cp_unevaluated_operand)
+  if (cp_unevaluated_operand && !even_uneval)
     return expr;
 
   if (!DECL_P (tree_strip_any_location_wrapper (expr))
@@ -2588,6 +2588,27 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 				       : LOOKUP_NORMAL),
 				      /*fn_p=*/NULL,
 				      complain);
+    }
+  else if (concept_check_p (fn))
+    {
+      /* FN is actually a template-id referring to a concept definition.  */
+      tree id = unpack_concept_check (fn);
+      tree tmpl = TREE_OPERAND (id, 0);
+      tree args = TREE_OPERAND (id, 1);
+
+      if (!function_concept_p (tmpl))
+	{
+	  error_at (EXPR_LOC_OR_LOC (fn, input_location),
+		    "cannot call a concept as a function");
+	  return error_mark_node;
+	}
+
+      /* Ensure the result is wrapped as a call expression.  */
+      result = build_concept_check (tmpl, args, tf_warning_or_error);
+
+      /* Evaluate the check if it is non-dependent.   */
+      if (!uses_template_parms (args))
+	result = evaluate_concept_check (result, complain);
     }
   else if (is_overloaded_fn (fn))
     {
@@ -3833,9 +3854,10 @@ finish_id_expression_1 (tree id_expression,
       if (! error_operand_p (decl)
 	  && !dependent_p
 	  && integral_constant_expression_p
-	  && ! decl_constant_var_p (decl)
+	  && !decl_constant_var_p (decl)
 	  && TREE_CODE (decl) != CONST_DECL
-	  && ! builtin_valid_in_constant_expr_p (decl))
+	  && !builtin_valid_in_constant_expr_p (decl)
+	  && !concept_check_p (decl))
 	{
 	  if (!allow_non_integral_constant_expression_p)
 	    {
@@ -3851,11 +3873,22 @@ finish_id_expression_1 (tree id_expression,
 	decl = wrap;
       else if (TREE_CODE (decl) == TEMPLATE_ID_EXPR
 	       && !dependent_p
-	       && variable_template_p (TREE_OPERAND (decl, 0)))
+	       && variable_template_p (TREE_OPERAND (decl, 0))
+	       && !concept_check_p (decl))
 	{
 	  decl = finish_template_variable (decl);
 	  mark_used (decl);
 	  decl = convert_from_reference (decl);
+	}
+      else if (concept_check_p (decl))
+	{
+	  /* If this is a standard or variable concept check, potentially
+	     evaluate it. Function concepts need to be called as functions,
+	     so don't try evaluating them here.  */
+	  tree tmpl = TREE_OPERAND (decl, 0);
+	  tree args = TREE_OPERAND (decl, 1);
+	  if (!function_concept_p (tmpl) && !uses_template_parms (args))
+	    decl = evaluate_concept_check (decl, tf_warning_or_error);
 	}
       else if (scope)
 	{
@@ -3928,6 +3961,16 @@ finish_id_expression_1 (tree id_expression,
 	    }
 
 	  decl = baselink_for_fns (decl);
+	}
+      else if (concept_check_p (decl))
+	{
+	  /* If this is a standard or variable concept check, potentially
+	     evaluate it. Function concepts need to be called as functions,
+	     so don't try evaluating them here.  */
+	  tree tmpl = TREE_OPERAND (decl, 0);
+	  tree args = TREE_OPERAND (decl, 1);
+	  if (!function_concept_p (tmpl) && !uses_template_parms (args))
+	    decl = evaluate_concept_check (decl, tf_warning_or_error);
 	}
       else
 	{

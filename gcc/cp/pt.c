@@ -135,8 +135,6 @@ enum template_base_result {
   tbr_success
 };
 
-static void push_access_scope (tree);
-static void pop_access_scope (tree);
 static bool resolve_overloaded_unification (tree, tree, tree, tree,
 					    unification_kind_t, int,
 					    bool);
@@ -153,7 +151,6 @@ static tree coerce_innermost_template_parms (tree, tree, tree, tsubst_flags_t,
 					      bool, bool);
 static void tsubst_enum	(tree, tree, tree);
 static tree add_to_template_args (tree, tree);
-static tree add_outermost_template_args (tree, tree);
 static bool check_instantiated_args (tree, tree, tsubst_flags_t);
 static int check_non_deducible_conversion (tree, tree, int, int,
 					   struct conversion **, bool);
@@ -183,12 +180,9 @@ static int can_complete_type_without_circularity (tree);
 static tree get_bindings (tree, tree, tree, bool);
 static int template_decl_level (tree);
 static int check_cv_quals_for_unify (int, tree, tree);
-static void template_parm_level_and_index (tree, int*, int*);
 static int unify_pack_expansion (tree, tree, tree,
 				 tree, unification_kind_t, bool, bool);
 static tree copy_template_args (tree);
-static tree tsubst_template_arg (tree, tree, tsubst_flags_t, tree);
-static tree tsubst_template_args (tree, tree, tsubst_flags_t, tree);
 static tree tsubst_template_parms (tree, tree, tsubst_flags_t);
 static tree most_specialized_partial_spec (tree, tsubst_flags_t);
 static tree tsubst_aggr_type (tree, tree, tsubst_flags_t, tree, int);
@@ -232,7 +226,7 @@ static tree enclosing_instantiation_of (tree tctx);
    template, VAR_DECL for static member variable, or TYPE_DECL for
    alias template (needed by instantiate_decl).  */
 
-static void
+void
 push_access_scope (tree t)
 {
   gcc_assert (VAR_OR_FUNCTION_DECL_P (t)
@@ -255,7 +249,7 @@ push_access_scope (tree t)
 /* Restore the scope set up by push_access_scope.  T is the node we
    are processing.  */
 
-static void
+void
 pop_access_scope (tree t)
 {
   if (TREE_CODE (t) == FUNCTION_DECL)
@@ -582,7 +576,7 @@ add_to_template_args (tree args, tree extra_args)
    template arguments used to attain the full instantiation from the
    partial instantiation.  */
 
-static tree
+tree
 add_outermost_template_args (tree args, tree extra_args)
 {
   tree new_args;
@@ -3305,6 +3299,153 @@ comp_template_parms (const_tree parms1, const_tree parms2)
   return 1;
 }
 
+/* Returns true if two template parameters are declared with
+   equivalent constraints.  */
+
+static bool
+template_parameter_constraints_equivalent_p (const_tree parm1, const_tree parm2)
+{
+  tree req1 = TREE_TYPE (parm1);
+  tree req2 = TREE_TYPE (parm2);
+  if (!req1 != !req2)
+    return false;
+  if (req1)
+    return cp_tree_equal (req1, req2);
+  return true;
+}
+
+/* Returns true when two template parameters are equivalent.  */
+
+static bool
+template_parameters_equivalent_p (const_tree parm1, const_tree parm2)
+{
+  tree decl1 = TREE_VALUE (parm1);
+  tree decl2 = TREE_VALUE (parm2);
+
+  /* If either of the template parameters are invalid, assume
+     they match for the sake of error recovery. */
+  if (error_operand_p (decl1) || error_operand_p (decl2))
+    return true;
+
+  /* ... they declare parameters of the same kind.  */
+  if (TREE_CODE (decl1) != TREE_CODE (decl2))
+    return false;
+
+  /* ... one parameter was introduced by a parameter declaration, then
+     both are. This case arises as a result of eagerly rewriting declarations
+     during parsing.  */
+  if (DECL_VIRTUAL_P (decl1) != DECL_VIRTUAL_P (decl2))
+    return false;
+
+  /* ... if either declares a pack, they both do.  */
+  if (template_parameter_pack_p (decl1) != template_parameter_pack_p (decl2))
+    return false;
+
+  if (TREE_CODE (decl1) == PARM_DECL)
+    {
+      /* ... if they declare non-type parameters, the types are equivalent.  */
+      if (!same_type_p (TREE_TYPE (decl1), TREE_TYPE (decl2)))
+	return false;
+    }
+  else if (TREE_CODE (decl2) == TEMPLATE_DECL)
+    {
+      /* ... if they declare template template parameters, their template
+	 parameter lists are equivalent.  */
+      if (!template_heads_equivalent_p (decl1, decl2))
+	return false;
+    }
+
+  /* ... if they are declared with a qualified-concept name, they both
+     are, and those names are equivalent.  */
+  return template_parameter_constraints_equivalent_p (parm1, parm2);
+}
+
+/* Returns true if two template parameters lists are equivalent.
+   Two template parameter lists are equivalent if they have the
+   same length and their corresponding parameters are equivalent.
+
+   PARMS1 and PARMS2 are TREE_LISTs containing TREE_VECs: the
+   data structure returned by DECL_TEMPLATE_PARMS.
+
+   This is generally the same implementation as comp_template_parms
+   except that it also the concept names and arguments used to
+   introduce parameters.  */
+
+static bool
+template_parameter_lists_equivalent_p (const_tree parms1, const_tree parms2)
+{
+  if (parms1 == parms2)
+    return true;
+
+  const_tree p1 = parms1;
+  const_tree p2 = parms2;
+  while (p1 != NULL_TREE && p2 != NULL_TREE)
+    {
+      tree list1 = TREE_VALUE (p1);
+      tree list2 = TREE_VALUE (p2);
+
+      if (TREE_VEC_LENGTH (list1) != TREE_VEC_LENGTH (list2))
+	return 0;
+
+      for (int i = 0; i < TREE_VEC_LENGTH (list2); ++i)
+	{
+	  tree parm1 = TREE_VEC_ELT (list1, i);
+	  tree parm2 = TREE_VEC_ELT (list2, i);
+	  if (!template_parameters_equivalent_p (parm1, parm2))
+	    return false;
+	}
+
+      p1 = TREE_CHAIN (p1);
+      p2 = TREE_CHAIN (p2);
+    }
+
+  if ((p1 != NULL_TREE) != (p2 != NULL_TREE))
+    return false;
+
+  return true;
+}
+
+/* Return true if the requires-clause of the template parameter lists are
+   equivalent and false otherwise.  */
+static bool
+template_requirements_equivalent_p (const_tree parms1, const_tree parms2)
+{
+  tree req1 = TEMPLATE_PARMS_CONSTRAINTS (parms1);
+  tree req2 = TEMPLATE_PARMS_CONSTRAINTS (parms2);
+  if ((req1 != NULL_TREE) != (req2 != NULL_TREE))
+    return false;
+  if (!cp_tree_equal (req1, req2))
+    return false;
+  return true;
+}
+
+/* Returns true if two template heads are equivalent. 17.6.6.1p6:
+   Two template heads are equivalent if their template parameter
+   lists are equivalent and their requires clauses are equivalent.
+
+   In pre-C++20, this is equivalent to calling comp_template_parms
+   for the template parameters of TMPL1 and TMPL2.  */
+
+bool
+template_heads_equivalent_p (const_tree tmpl1, const_tree tmpl2)
+{
+  tree parms1 = DECL_TEMPLATE_PARMS (tmpl1);
+  tree parms2 = DECL_TEMPLATE_PARMS (tmpl2);
+
+  /* Don't change the matching rules for pre-C++20.  */
+  if (cxx_dialect < cxx2a)
+    return comp_template_parms (parms1, parms2);
+
+  /* ... have the same number of template parameters, and their
+     corresponding parameters are equivalent.  */
+  if (!template_parameter_lists_equivalent_p (parms1, parms2))
+    return false;
+
+  /* ... if either has a requires-clause, they both do and their
+     corresponding constraint-expressions are equivalent.  */
+  return template_requirements_equivalent_p (parms1, parms2);
+}
+
 /* Determine whether PARM is a parameter pack.  */
 
 bool
@@ -4572,7 +4713,7 @@ template_parm_to_arg (tree t)
 /* Given a single level of template parameters (a TREE_VEC), return it
    as a set of template arguments.  */
 
-static tree
+tree
 template_parms_level_to_args (tree parms)
 {
   tree a = copy_node (parms);
@@ -4590,7 +4731,7 @@ template_parms_level_to_args (tree parms)
    arguments.  The template parameters are represented as a TREE_VEC, in
    the form documented in cp-tree.h for template arguments.  */
 
-static tree
+tree
 template_parms_to_args (tree parms)
 {
   tree header;
@@ -4624,6 +4765,26 @@ static tree
 current_template_args (void)
 {
   return template_parms_to_args (current_template_parms);
+}
+
+/* Return the fully generic arguments for of TMPL, i.e. what
+   current_template_args would be while parsing it.  */
+
+tree
+generic_targs_for (tree tmpl)
+{
+  if (tmpl == NULL_TREE)
+    return NULL_TREE;
+  if (DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl)
+      || DECL_TEMPLATE_SPECIALIZATION (tmpl))
+    /* DECL_TEMPLATE_RESULT doesn't have the arguments we want.  For a template
+       template parameter, it has no TEMPLATE_INFO; for a partial
+       specialization, it has the arguments for the primary template, and we
+       want the arguments for the partial specialization.  */;
+  else if (tree result = DECL_TEMPLATE_RESULT (tmpl))
+    if (tree ti = get_template_info (result))
+      return TI_ARGS (ti);
+  return template_parms_to_args (DECL_TEMPLATE_PARMS (tmpl));
 }
 
 /* Update the declared TYPE by doing any lookups which were thought to be
@@ -4855,7 +5016,7 @@ process_partial_specialization (tree decl)
   if (comp_template_args (inner_args, INNERMOST_TEMPLATE_ARGS (main_args))
       && (!flag_concepts
 	  || !strictly_subsumes (current_template_constraints (),
-				 get_constraints (maintmpl))))
+				 inner_args, maintmpl)))
     {
       if (!flag_concepts)
         error ("partial specialization %q+D does not specialize "
@@ -5564,6 +5725,8 @@ push_template_decl_real (tree decl, bool is_friend)
 	gcc_assert (!DECL_ARTIFICIAL (decl));
       else if (VAR_P (decl))
 	/* C++14 variable template. */;
+      else if (TREE_CODE (decl) == CONCEPT_DECL)
+	/* C++2a concept definitions.  */;
       else
 	{
 	  error ("template declaration of %q#D", decl);
@@ -5966,6 +6129,19 @@ redeclare_class_template (tree type, tree parms, tree cons)
 	  return false;
 	}
 
+      /* The parameters can be declared to introduce different
+	 constraints.  */
+      tree p1 = TREE_VEC_ELT (tmpl_parms, i);
+      tree p2 = TREE_VEC_ELT (parms, i);
+      if (!template_parameter_constraints_equivalent_p (p1, p2))
+	{
+	  error ("declaration of template parameter %q+#D with different "
+		 "constraints", parm);
+	  inform (DECL_SOURCE_LOCATION (tmpl_parm),
+		  "original declaration appeared here");
+	  return false;
+	}
+
       if (tmpl_default != NULL_TREE && parm_default != NULL_TREE)
 	{
 	  /* We have in [temp.param]:
@@ -5999,13 +6175,18 @@ redeclare_class_template (tree type, tree parms, tree cons)
 	TEMPLATE_TYPE_PARM_FOR_CLASS (TREE_TYPE (parm)) = true;
     }
 
-  // Cannot redeclare a class template with a different set of constraints.
-  if (!equivalent_constraints (get_constraints (tmpl), cons))
+  tree ci = get_constraints (tmpl);
+  tree req1 = ci ? CI_TEMPLATE_REQS (ci) : NULL_TREE;
+  tree req2 = cons ? CI_TEMPLATE_REQS (cons) : NULL_TREE;
+
+  /* Two classes with different constraints declare different entities.  */
+  if (!cp_tree_equal (req1, req2))
     {
       error_at (input_location, "redeclaration %q#D with different "
                                 "constraints", tmpl);
       inform (DECL_SOURCE_LOCATION (tmpl),
               "original declaration appeared here");
+      return false;
     }
 
     return true;
@@ -6214,8 +6395,7 @@ get_underlying_template (tree tmpl)
 	      != num_innermost_template_parms (underlying)))
 	break;
 
-      tree alias_args = INNERMOST_TEMPLATE_ARGS
-	(template_parms_to_args (DECL_TEMPLATE_PARMS (tmpl)));
+      tree alias_args = INNERMOST_TEMPLATE_ARGS (generic_targs_for (tmpl));
       if (!comp_template_args (TI_ARGS (tinfo), alias_args))
 	break;
 
@@ -7322,14 +7502,7 @@ coerce_template_args_for_ttp (tree templ, tree arglist,
 
   tree outer = DECL_CONTEXT (templ);
   if (outer)
-    {
-      if (DECL_TEMPLATE_SPECIALIZATION (outer))
-	/* We want arguments for the partial specialization, not arguments for
-	   the primary template.  */
-	outer = template_parms_to_args (DECL_TEMPLATE_PARMS (outer));
-      else
-	outer = TI_ARGS (get_template_info (DECL_TEMPLATE_RESULT (outer)));
-    }
+    outer = generic_targs_for (outer);
   else if (current_template_parms)
     {
       /* This is an argument of the current template, so we haven't set
@@ -7787,8 +7960,6 @@ is_compatible_template_arg (tree parm, tree arg)
   if (parm_cons == NULL_TREE)
     return true;
 
-  tree arg_cons = get_constraints (arg);
-
   /* If the template parameter is constrained, we need to rewrite its
      constraints in terms of the ARG's template parameters. This ensures
      that all of the template parameter types will have the same depth.
@@ -7796,17 +7967,18 @@ is_compatible_template_arg (tree parm, tree arg)
      Note that this is only valid when coerce_template_template_parm is
      true for the innermost template parameters of PARM and ARG. In other
      words, because coercion is successful, this conversion will be valid.  */
+  tree new_args = NULL_TREE;
   if (parm_cons)
     {
-      tree args = template_parms_to_args (DECL_TEMPLATE_PARMS (arg));
-      parm_cons = tsubst_constraint_info (parm_cons,
-					  INNERMOST_TEMPLATE_ARGS (args),
+      tree aparms = DECL_INNERMOST_TEMPLATE_PARMS (arg);
+      new_args = template_parms_level_to_args (aparms);
+      parm_cons = tsubst_constraint_info (parm_cons, new_args,
 					  tf_none, NULL_TREE);
       if (parm_cons == error_mark_node)
         return false;
     }
 
-  return subsumes (parm_cons, arg_cons);
+  return weakly_subsumes (parm_cons, new_args, arg);
 }
 
 // Convert a placeholder argument into a binding to the original
@@ -8426,7 +8598,7 @@ coerce_template_parms (tree parms,
      template (DR 1430).  */
   else if (in_decl
 	   && (DECL_ALIAS_TEMPLATE_P (in_decl)
-	       || concept_template_p (in_decl))
+	       || concept_definition_p (in_decl))
 	   && variadic_args_p
 	   && nargs - variadic_args_p < nparms - variadic_p)
     {
@@ -8600,6 +8772,7 @@ coerce_template_parms (tree parms,
 
       if (arg == error_mark_node)
 	lost++;
+
       TREE_VEC_ELT (new_inner_args, arg_idx - pack_adjust) = arg;
     }
 
@@ -8617,6 +8790,32 @@ coerce_template_parms (tree parms,
       /* We had some pack expansion arguments that will only work if the packs
 	 are empty, but wait until instantiation time to complain.
 	 See variadic-ttp3.C.  */
+
+      /* Except that we can't provide empty packs to alias templates or
+         concepts when there are no corresponding parameters. Basically,
+         we can get here with this:
+
+             template<typename T> concept C = true;
+
+             template<typename... Args>
+	       requires C<Args...>
+             void f();
+
+         When parsing C<Args...>, we try to form a concept check of
+         C<?, Args...>. Without the extra check for substituting an empty
+         pack past the last parameter, we can accept the check as valid.
+
+         FIXME: This may be valid for alias templates (but I doubt it).
+
+         FIXME: The error could be better also.   */
+      if (in_decl && concept_definition_p (in_decl))
+	{
+	  if (complain & tf_error)
+	    error_at (location_of (TREE_VEC_ELT (args, arg_idx)),
+		      "too many arguments");
+	  return error_mark_node;
+	}
+
       int len = nparms + (nargs - arg_idx);
       tree args = make_tree_vec (len);
       int i = 0;
@@ -9452,7 +9651,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
           if (complain & tf_error)
             {
 	      auto_diagnostic_group d;
-              error ("template constraint failure");
+              error ("template constraint failure for %qD", gen_tmpl);
               diagnose_constraints (input_location, gen_tmpl, arglist);
             }
           return error_mark_node;
@@ -9785,13 +9984,12 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
 tree
 lookup_template_variable (tree templ, tree arglist)
 {
+  if (flag_concepts && variable_concept_p (templ))
+    return build_concept_check (templ, arglist, tf_none);
+
   /* The type of the expression is NULL_TREE since the template-id could refer
      to an explicit or partial specialization. */
-  tree type = NULL_TREE;
-  if (flag_concepts && variable_concept_p (templ))
-    /* Except that concepts are always bool.  */
-    type = boolean_type_node;
-  return build2 (TEMPLATE_ID_EXPR, type, templ, arglist);
+  return build2 (TEMPLATE_ID_EXPR, NULL_TREE, templ, arglist);
 }
 
 /* Instantiate a variable declaration from a TEMPLATE_ID_EXPR for use. */
@@ -9801,12 +9999,6 @@ finish_template_variable (tree var, tsubst_flags_t complain)
 {
   tree templ = TREE_OPERAND (var, 0);
   tree arglist = TREE_OPERAND (var, 1);
-
-  /* We never want to return a VAR_DECL for a variable concept, since they
-     aren't instantiated.  In a template, leave the TEMPLATE_ID_EXPR alone.  */
-  bool concept_p = flag_concepts && variable_concept_p (templ);
-  if (concept_p && processing_template_decl)
-    return var;
 
   tree tmpl_args = DECL_TI_ARGS (DECL_TEMPLATE_RESULT (templ));
   arglist = add_outermost_template_args (tmpl_args, arglist);
@@ -9826,19 +10018,6 @@ finish_template_variable (tree var, tsubst_flags_t complain)
 	  diagnose_constraints (location_of (var), templ, arglist);
 	}
       return error_mark_node;
-    }
-
-  /* If a template-id refers to a specialization of a variable
-     concept, then the expression is true if and only if the
-     concept's constraints are satisfied by the given template
-     arguments.
-
-     NOTE: This is an extension of Concepts Lite TS that
-     allows constraints to be used in expressions. */
-  if (concept_p)
-    {
-      tree decl = DECL_TEMPLATE_RESULT (templ);
-      return evaluate_variable_concept (decl, arglist);
     }
 
   return instantiate_template (templ, arglist, complain);
@@ -10041,6 +10220,26 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 	return error_mark_node;
       break;
 
+    case SCOPE_REF:
+      if (pfd->include_nondeduced_p)
+	WALK_SUBTREE (TREE_OPERAND (t, 0));
+      break;
+
+    case REQUIRES_EXPR:
+      {
+	if (!fn)
+	  return error_mark_node;
+
+	/* Recursively walk the type of each constraint variable.  */
+	tree p = TREE_OPERAND (t, 0);
+	while (p)
+	  {
+	    WALK_SUBTREE (TREE_TYPE (p));
+	    p = TREE_CHAIN (p);
+	  }
+      }
+      break;
+
     default:
       break;
     }
@@ -10102,6 +10301,119 @@ for_each_template_parm (tree t, tree_fn_t fn, void* data,
     }
 
   return result;
+}
+
+struct find_template_parameter_info
+{
+  explicit find_template_parameter_info (int d)
+    : max_depth (d)
+  {}
+
+  hash_set<tree> visited;
+  hash_set<tree> parms;
+  int max_depth;
+};
+
+/* Appends the declaration of T to the list in DATA.  */
+
+static int
+keep_template_parm (tree t, void* data)
+{
+  find_template_parameter_info *ftpi = (find_template_parameter_info*)data;
+
+  /* Template parameters declared within the expression are not part of
+     the parameter mapping. For example, in this concept:
+
+       template<typename T>
+       concept C = requires { <expr> } -> same_as<int>;
+
+     the return specifier same_as<int> declares a new decltype parameter
+     that must not be part of the parameter mapping. The same is true
+     for generic lambda parameters, lambda template parameters, etc.  */
+  int level;
+  int index;
+  template_parm_level_and_index (t, &level, &index);
+  if (level > ftpi->max_depth)
+    return 0;
+
+  /* Arguments like const T yield parameters like const T. This means that
+     a template-id like X<T, const T> would yield two distinct parameters:
+     T and const T. Adjust types to their unqualified versions.  */
+  if (TYPE_P (t))
+    t = TYPE_MAIN_VARIANT (t);
+  ftpi->parms.add (t);
+
+  return 0;
+}
+
+/* Ensure that we recursively examine certain terms that are not normally
+   visited in for_each_template_parm_r.  */
+
+static int
+any_template_parm_r (tree t, void *data)
+{
+  find_template_parameter_info *ftpi = (find_template_parameter_info*)data;
+
+#define WALK_SUBTREE(NODE)						\
+  do									\
+    {									\
+      for_each_template_parm (NODE, keep_template_parm, data,		\
+			      &ftpi->visited, true,			\
+			      any_template_parm_r);			\
+    }									\
+  while (0)
+
+  switch (TREE_CODE (t))
+    {
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case ENUMERAL_TYPE:
+      /* Search for template parameters in type aliases.  */
+      if (alias_template_specialization_p (t))
+	{
+	  tree tinfo = TYPE_ALIAS_TEMPLATE_INFO (t);
+	  WALK_SUBTREE (TI_ARGS (tinfo));
+        }
+      break;
+
+    case TEMPLATE_TYPE_PARM:
+      /* Type constraints of a placeholder type may contain parameters.  */
+      if (is_auto (t))
+	if (tree constr = PLACEHOLDER_TYPE_CONSTRAINTS (t))
+	  WALK_SUBTREE (constr);
+      break;
+
+    case TEMPLATE_ID_EXPR:
+      /* Search through references to variable templates.  */
+      WALK_SUBTREE (TREE_OPERAND (t, 0));
+      WALK_SUBTREE (TREE_OPERAND (t, 1));
+      break;
+
+    case CONSTRUCTOR:
+      if (TREE_TYPE (t))
+        WALK_SUBTREE (TREE_TYPE (t));
+      break;
+    default:
+      break;
+    }
+
+  /* Keep walking.  */
+  return 0;
+}
+
+/* Returns a list of unique template parameters found within T.  */
+
+tree
+find_template_parameters (tree t, int depth)
+{
+  find_template_parameter_info ftpi (depth);
+  for_each_template_parm (t, keep_template_parm, &ftpi, &ftpi.visited,
+			  /*include_nondeduced*/true, any_template_parm_r);
+  tree list = NULL_TREE;
+  for (hash_set<tree>::iterator iter = ftpi.parms.begin();
+       iter != ftpi.parms.end(); ++iter)
+    list = tree_cons (NULL_TREE, *iter, list);
+  return list;
 }
 
 /* Returns true if T depends on any template parameter.  */
@@ -10431,6 +10743,30 @@ tsubst_friend_function (tree decl, tree args)
       DECL_USE_TEMPLATE (DECL_TEMPLATE_RESULT (new_friend)) = 0;
       DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (new_friend))
 	= DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (decl));
+
+      /* Attach the template requirements to the new declaration
+         for declaration matching. We need to rebuild the requirements
+         so that parameter levels match.  */
+      if (tree ci = get_constraints (decl))
+	{
+	  tree parms = DECL_TEMPLATE_PARMS (new_friend);
+	  tree args = generic_targs_for (new_friend);
+	  tree treqs = tsubst_constraint (CI_TEMPLATE_REQS (ci), args,
+					  tf_warning_or_error, NULL_TREE);
+	  tree freqs = tsubst_constraint (CI_DECLARATOR_REQS (ci), args,
+					  tf_warning_or_error, NULL_TREE);
+
+	  /* Update the constraints -- these won't really be valid for
+	     checking, but that's not what we need them for. These ensure
+	     that the declared function can find the friend during
+	     declaration matching.  */
+	  tree new_ci = get_constraints (new_friend);
+	  CI_TEMPLATE_REQS (new_ci) = treqs;
+	  CI_DECLARATOR_REQS (new_ci) = freqs;
+
+	  /* Also update the template parameter list.  */
+	  TEMPLATE_PARMS_CONSTRAINTS (parms) = treqs;
+	}
     }
 
   /* The mangled name for the NEW_FRIEND is incorrect.  The function
@@ -11529,7 +11865,7 @@ instantiate_class_template (tree type)
   return ret;
 }
 
-static tree
+tree
 tsubst_template_arg (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 {
   tree r;
@@ -11547,6 +11883,7 @@ tsubst_template_arg (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       if (!(complain & tf_warning))
 	--c_inhibit_evaluation_warnings;
     }
+
   return r;
 }
 
@@ -11770,14 +12107,6 @@ gen_elem_of_pack_expansion_instantiation (tree pattern,
     t = tsubst_decl (pattern, args, complain);
   else if (pattern == error_mark_node)
     t = error_mark_node;
-  else if (constraint_p (pattern))
-    {
-      if (processing_template_decl)
-	t = tsubst_constraint (pattern, args, complain, in_decl);
-      else
-	t = (constraints_satisfied_p (pattern, args)
-	     ? boolean_true_node : boolean_false_node);
-    }
   else if (!TYPE_P (pattern))
     t = tsubst_expr (pattern, args, complain, in_decl,
 		     /*integral_constant_expression_p=*/false);
@@ -12257,7 +12586,6 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
         {
 	  int idx;
           template_parm_level_and_index (parm_pack, &level, &idx);
-
           if (level <= levels)
             arg_pack = TMPL_ARG (args, level, idx);
         }
@@ -12311,6 +12639,10 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	  /* We can't substitute for this parameter pack.  We use a flag as
 	     well as the missing_level counter because function parameter
 	     packs don't have a level.  */
+          if (!(processing_template_decl || is_auto (parm_pack)))
+	    {
+	      gcc_unreachable ();
+	    }
 	  gcc_assert (processing_template_decl || is_auto (parm_pack));
 	  unsubstituted_packs = true;
 	}
@@ -12519,9 +12851,33 @@ copy_template_args (tree t)
   return new_vec;
 }
 
+/* Substitute ARGS into the *_ARGUMENT_PACK orig_arg.  */
+
+tree
+tsubst_argument_pack (tree orig_arg, tree args, tsubst_flags_t complain,
+		      tree in_decl)
+{
+  /* Substitute into each of the arguments.  */
+  tree new_arg = TYPE_P (orig_arg)
+    ? cxx_make_type (TREE_CODE (orig_arg))
+    : make_node (TREE_CODE (orig_arg));
+
+  tree pack_args = tsubst_template_args (ARGUMENT_PACK_ARGS (orig_arg),
+					 args, complain, in_decl);
+  if (pack_args == error_mark_node)
+    new_arg = error_mark_node;
+  else
+    SET_ARGUMENT_PACK_ARGS (new_arg, pack_args);
+
+  if (TREE_CODE (new_arg) == NONTYPE_ARGUMENT_PACK)
+    TREE_CONSTANT (new_arg) = TREE_CONSTANT (orig_arg);
+
+  return new_arg;
+}
+
 /* Substitute ARGS into the vector or list of template arguments T.  */
 
-static tree
+tree
 tsubst_template_args (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 {
   tree orig_t = t;
@@ -12556,22 +12912,7 @@ tsubst_template_args (tree t, tree args, tsubst_flags_t complain, tree in_decl)
             expanded_len_adjust += TREE_VEC_LENGTH (new_arg) - 1;
         }
       else if (ARGUMENT_PACK_P (orig_arg))
-        {
-          /* Substitute into each of the arguments.  */
-          new_arg = TYPE_P (orig_arg)
-            ? cxx_make_type (TREE_CODE (orig_arg))
-            : make_node (TREE_CODE (orig_arg));
-
-	  tree pack_args = tsubst_template_args (ARGUMENT_PACK_ARGS (orig_arg),
-						 args, complain, in_decl);
-          if (pack_args == error_mark_node)
-            new_arg = error_mark_node;
-	  else
-	    SET_ARGUMENT_PACK_ARGS (new_arg, pack_args);
-
-          if (TREE_CODE (new_arg) == NONTYPE_ARGUMENT_PACK)
-	    TREE_CONSTANT (new_arg) = TREE_CONSTANT (orig_arg);
-        }
+	new_arg = tsubst_argument_pack (orig_arg, args, complain, in_decl);
       else
 	new_arg = tsubst_template_arg (orig_arg, args, complain, in_decl);
 
@@ -12704,6 +13045,7 @@ tsubst_template_parm (tree t, tree args, tsubst_flags_t complain)
 
   default_value = TREE_PURPOSE (t);
   parm_decl = TREE_VALUE (t);
+  tree constraint = TEMPLATE_PARM_CONSTRAINTS (t);
 
   parm_decl = tsubst (parm_decl, args, complain, NULL_TREE);
   if (TREE_CODE (parm_decl) == PARM_DECL
@@ -12711,8 +13053,11 @@ tsubst_template_parm (tree t, tree args, tsubst_flags_t complain)
     parm_decl = error_mark_node;
   default_value = tsubst_template_arg (default_value, args,
 				       complain, NULL_TREE);
+  constraint = tsubst_constraint (constraint, args, complain, NULL_TREE);
 
-  return build_tree_list (default_value, parm_decl);
+  tree r = build_tree_list (default_value, parm_decl);
+  TEMPLATE_PARM_CONSTRAINTS (r) = constraint;
+  return r;
 }
 
 /* Substitute the ARGS into the indicated aggregate (or enumeration)
@@ -13138,14 +13483,11 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
       && !grok_op_properties (r, /*complain=*/false))
     return error_mark_node;
 
-  /* When instantiating a constrained member, substitute
-     into the constraints to create a new constraint.  */
+  /* Associate the constraints directly with the instantiation. We
+     don't substitute through the constraints; that's only done when
+     they are checked.  */
   if (tree ci = get_constraints (t))
-    if (member)
-      {
-	ci = tsubst_constraint_info (ci, argvec, complain, NULL_TREE);
-	set_constraints (r, ci);
-      }
+    set_constraints (r, ci);
 
   if (DECL_FRIEND_P (t) && DECL_FRIEND_CONTEXT (t))
     SET_DECL_FRIEND_CONTEXT (r,
@@ -14001,6 +14343,17 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
   return r;
 }
 
+/* Substitute into the complete parameter type list PARMS.  */
+
+tree
+tsubst_function_parms (tree parms,
+		       tree args,
+		       tsubst_flags_t complain,
+		       tree in_decl)
+{
+  return tsubst_arg_types (parms, args, NULL_TREE, complain, in_decl);
+}
+
 /* Substitute into the ARG_TYPES of a function type.
    If END is a TREE_CHAIN, leave it and any following types
    un-substituted.  */
@@ -14565,6 +14918,14 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    if (code == TEMPLATE_TYPE_PARM)
 	      {
 		int quals;
+
+		/* When building concept checks for the purpose of
+		   deducing placeholders, we can end up with wildcards
+		   where types are expected. Adjust this to the deduced
+		   value.  */
+		if (TREE_CODE (arg) == WILDCARD_DECL)
+		  arg = TREE_TYPE (TREE_TYPE (arg));
+
 		gcc_assert (TYPE_P (arg));
 
 		quals = cp_type_quals (arg) | cp_type_quals (t);
@@ -14696,10 +15057,10 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
                 if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
 		  {
-		    /* Propagate constraints on placeholders.  */
+		    /* Propagate constraints on placeholders since they are
+		       only instantiated during satisfaction.  */
 		    if (tree constr = PLACEHOLDER_TYPE_CONSTRAINTS (t))
-		      PLACEHOLDER_TYPE_CONSTRAINTS (r)
-			= tsubst_constraint (constr, args, complain, in_decl);
+		      PLACEHOLDER_TYPE_CONSTRAINTS (r) = constr;
 		    else if (tree pl = CLASS_PLACEHOLDER_TEMPLATE (t))
 		      {
 			pl = tsubst_copy (pl, args, complain, in_decl);
@@ -18347,6 +18708,28 @@ tsubst_copy_and_build (tree t,
 	    RETURN (templ);
 	  }
 
+	if (concept_definition_p (templ))
+	  {
+	    tree check = build_concept_check (templ, targs, complain);
+	    if (check == error_mark_node)
+	      RETURN (error_mark_node);
+
+	    tree id = unpack_concept_check (check);
+
+	    /* If we built a function concept check, return the underlying
+	       template-id. So we can evaluate it as a function call.  */
+	    if (function_concept_p (TREE_OPERAND (id, 0)))
+	      RETURN (id);
+
+	    /* Evaluate the concept, if needed.  */
+	    tree args = TREE_OPERAND (id, 1);
+	    if (!uses_template_parms (args)
+		&& !processing_constraint_expression_p ())
+	      RETURN (evaluate_concept_check (check, complain));
+
+	    RETURN (check);
+	  }
+
 	if (variable_template_p (templ))
 	  RETURN (lookup_and_finish_template_variable (templ, targs, complain));
 
@@ -19110,6 +19493,25 @@ tsubst_copy_and_build (tree t,
 		       qualified_p ? LOOKUP_NONVIRTUAL : LOOKUP_NORMAL,
 		       /*fn_p=*/NULL,
 		       complain));
+	  }
+	else if (concept_check_p (function))
+	  {
+	    /* FUNCTION is a template-id referring to a concept definition.  */
+	    tree id = unpack_concept_check (function);
+	    tree tmpl = TREE_OPERAND (id, 0);
+	    tree args = TREE_OPERAND (id, 1);
+
+	    /* Calls to standard and variable concepts should have been
+	       previously diagnosed.  */
+	    gcc_assert (function_concept_p (tmpl));
+
+	    /* Ensure the result is wrapped as a call expression.  */
+	    ret = build_concept_check (tmpl, args, tf_warning_or_error);
+
+	    /* Possibly evaluate the check if it is non-dependent.   */
+	    if (!uses_template_parms (args)
+		&& !processing_constraint_expression_p ())
+	      ret = evaluate_concept_check (ret, complain);
 	  }
 	else
 	  ret = finish_call_expr (function, &call_args,
@@ -23202,10 +23604,11 @@ more_specialized_fn (tree pat1, tree pat2, int len)
      constrained template.  */
   if (!lose1 && !lose2)
     {
-      tree c1 = get_constraints (DECL_TEMPLATE_RESULT (pat1));
-      tree c2 = get_constraints (DECL_TEMPLATE_RESULT (pat2));
-      lose1 = !subsumes_constraints (c1, c2);
-      lose2 = !subsumes_constraints (c2, c1);
+      int winner = more_constrained (decl1, decl2);
+      if (winner > 0)
+	lose2 = true;
+      else if (winner < 0)
+	lose1 = true;
     }
 
   /* All things being equal, if the next argument is a pack expansion
@@ -23277,7 +23680,7 @@ more_specialized_partial_spec (tree tmpl, tree pat1, tree pat2)
   /* If both deductions succeed, the partial ordering selects the more
      constrained template.  */
   if (!winner && any_deductions)
-    return more_constrained (tmpl1, tmpl2);
+    winner = more_constrained (tmpl1, tmpl2);
 
   /* In the case of a tie where at least one of the templates
      has a parameter pack at the end, the template with the most
@@ -25712,7 +26115,7 @@ value_dependent_expression_p (tree expression)
       }
 
     case TEMPLATE_ID_EXPR:
-      return variable_concept_p (TREE_OPERAND (expression, 0));
+      return concept_definition_p (TREE_OPERAND (expression, 0));
 
     case CONSTRUCTOR:
       {
@@ -26112,14 +26515,14 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
       return *tp;
 
     case CALL_EXPR:
-      /* Treat calls to function concepts as dependent. */
-      if (function_concept_check_p (*tp))
+      /* Treat concept checks as dependent. */
+      if (concept_check_p (*tp))
         return *tp;
       break;
 
     case TEMPLATE_ID_EXPR:
-      /* And variable concepts.  */
-      if (variable_concept_p (TREE_OPERAND (*tp, 0)))
+      /* Treat concept checks as dependent.  */
+      if (concept_check_p (*tp))
 	return *tp;
       break;
 
@@ -26657,10 +27060,10 @@ build_non_dependent_expr (tree expr)
       /* Don't do this during nsdmi parsing as it can lead to
 	 unexpected recursive instantiations.  */
       && !parsing_nsdmi ()
-      /* Don't do this during concept expansion either and for
+      /* Don't do this during concept processing either and for
          the same reason.  */
-      && !expanding_concept ())
-    fold_non_dependent_expr (expr, tf_none);
+      && !processing_constraint_expression_p ())
+    fold_non_dependent_expr (expr);
 
   STRIP_ANY_LOCATION_WRAPPER (expr);
 
@@ -26755,8 +27158,7 @@ static tree
 make_auto_1 (tree name, bool set_canonical)
 {
   tree au = cxx_make_type (TEMPLATE_TYPE_PARM);
-  TYPE_NAME (au) = build_decl (input_location,
-			       TYPE_DECL, name, au);
+  TYPE_NAME (au) = build_decl (input_location, TYPE_DECL, name, au);
   TYPE_STUB_DECL (au) = TYPE_NAME (au);
   TEMPLATE_TYPE_PARM_INDEX (au) = build_template_parm_index
     (0, processing_template_decl + 1, processing_template_decl + 1,
@@ -26801,31 +27203,87 @@ template_placeholder_p (tree t)
   return is_auto (t) && CLASS_PLACEHOLDER_TEMPLATE (t);
 }
 
-/* Make a "constrained auto" type-specifier. This is an
-   auto type with constraints that must be associated after
-   deduction.  The constraint is formed from the given
-   CONC and its optional sequence of arguments, which are
-   non-null if written as partial-concept-id.  */
+/* Make a "constrained auto" type-specifier. This is an auto or
+  decltype(auto) type with constraints that must be associated after
+  deduction.  The constraint is formed from the given concept CON
+  and its optional sequence of template arguments ARGS.
 
-tree
-make_constrained_auto (tree con, tree args)
+  TYPE must be the result of make_auto_type or make_decltype_auto_type. */
+
+static tree
+make_constrained_placeholder_type (tree type, tree con, tree args)
 {
-  tree type = make_auto_1 (auto_identifier, false);
-
   /* Build the constraint. */
   tree tmpl = DECL_TI_TEMPLATE (con);
-  tree expr = VAR_P (con) ? tmpl : ovl_make (tmpl);
-  expr = build_concept_check (expr, type, args);
+  tree expr = tmpl;
+  if (TREE_CODE (con) == FUNCTION_DECL)
+    expr = ovl_make (tmpl);
+  expr = build_concept_check (expr, type, args, tf_warning_or_error);
 
-  tree constr = normalize_expression (expr);
-  PLACEHOLDER_TYPE_CONSTRAINTS (type) = constr;
+  PLACEHOLDER_TYPE_CONSTRAINTS (type) = expr;
 
   /* Our canonical type depends on the constraint.  */
   TYPE_CANONICAL (type) = canonical_type_parameter (type);
 
   /* Attach the constraint to the type declaration. */
-  tree decl = TYPE_NAME (type);
-  return decl;
+  return TYPE_NAME (type);
+}
+
+/* Make a "constrained auto" type-specifier.  */
+
+tree
+make_constrained_auto (tree con, tree args)
+{
+  tree type = make_auto_1 (auto_identifier, false);
+  return make_constrained_placeholder_type (type, con, args);
+}
+
+/* Make a "constrained decltype(auto)" type-specifier.  */
+
+tree
+make_constrained_decltype_auto (tree con, tree args)
+{
+  tree type = make_auto_1 (decltype_auto_identifier, false);
+  /* FIXME: I don't know why this isn't done in make_auto_1.  */
+  AUTO_IS_DECLTYPE (type) = true;
+  return make_constrained_placeholder_type (type, con, args);
+}
+
+/* Build and return a concept definition. Like other templates, the
+   CONCEPT_DECL node is wrapped by a TEMPLATE_DECL.  This returns the
+   the TEMPLATE_DECL. */
+
+tree
+finish_concept_definition (cp_expr id, tree init)
+{
+  gcc_assert (identifier_p (id));
+  gcc_assert (processing_template_decl);
+
+  location_t loc = id.get_location();
+
+  /* A concept-definition shall not have associated constraints.  */
+  if (TEMPLATE_PARMS_CONSTRAINTS (current_template_parms))
+    {
+      error_at (loc, "a concept cannot be constrained");
+      TEMPLATE_PARMS_CONSTRAINTS (current_template_parms) = NULL_TREE;
+    }
+
+  /* A concept-definition shall appear in namespace scope.  Templates
+     aren't allowed in block scope, so we only need to check for class
+     scope.  */
+  if (TYPE_P (current_scope()) || !DECL_NAMESPACE_SCOPE_P (current_scope ()))
+    {
+      error_at (loc, "concept %qE not in namespace scope", *id);
+      return error_mark_node;
+    }
+
+  /* Initially build the concept declaration; it's type is bool.  */
+  tree decl = build_lang_decl_loc (loc, CONCEPT_DECL, *id, boolean_type_node);
+  DECL_CONTEXT (decl) = current_scope ();
+  DECL_INITIAL (decl) = init;
+
+  /* Push the enclosing template.  */
+  return push_template_decl (decl);
 }
 
 /* Given type ARG, return std::initializer_list<ARG>.  */
@@ -27656,13 +28114,17 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 
   /* Check any placeholder constraints against the deduced type. */
   if (flag_concepts && !processing_template_decl)
-    if (tree constr = NON_ERROR (PLACEHOLDER_TYPE_CONSTRAINTS (auto_node)))
+    if (tree check = NON_ERROR (PLACEHOLDER_TYPE_CONSTRAINTS (auto_node)))
       {
         /* Use the deduced type to check the associated constraints. If we
            have a partial-concept-id, rebuild the argument list so that
            we check using the extra arguments. */
-        gcc_assert (TREE_CODE (constr) == CHECK_CONSTR);
-        tree cargs = CHECK_CONSTR_ARGS (constr);
+	check = unpack_concept_check (check);
+	gcc_assert (TREE_CODE (check) == TEMPLATE_ID_EXPR);
+	tree cdecl = TREE_OPERAND (check, 0);
+	if (OVL_P (cdecl))
+	  cdecl = OVL_FIRST (cdecl);
+        tree cargs = TREE_OPERAND (check, 1);
         if (TREE_VEC_LENGTH (cargs) > 1)
           {
             cargs = copy_node (cargs);
@@ -27670,7 +28132,11 @@ do_auto_deduction (tree type, tree init, tree auto_node,
           }
         else
           cargs = targs;
-        if (!constraints_satisfied_p (constr, cargs))
+
+	/* Rebuild the check using the deduced arguments.  */
+	check = build_concept_check (cdecl, cargs, tf_none);
+
+	if (!constraints_satisfied_p (check, cargs))
           {
             if (complain & tf_warning_or_error)
               {
@@ -27695,7 +28161,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
                            "placeholder constraints");
                     break;
                   }
-                diagnose_constraints (input_location, constr, targs);
+		diagnose_constraints (input_location, check, targs);
               }
             return error_mark_node;
           }
@@ -27936,6 +28402,23 @@ append_type_to_template_for_access_check (tree templ,
 					      scope, location);
 }
 
+/* Recursively walk over && expressions searching for EXPR. Return a reference
+   to that expression.  */
+
+static tree *find_template_requirement (tree *t, tree key)
+{
+  if (*t == key)
+    return t;
+  if (TREE_CODE (*t) == TRUTH_ANDIF_EXPR)
+    {
+      if (tree *p = find_template_requirement (&TREE_OPERAND (*t, 0), key))
+	return p;
+      if (tree *p = find_template_requirement (&TREE_OPERAND (*t, 1), key))
+	return p;
+    }
+  return 0;
+}
+
 /* Convert the generic type parameters in PARM that match the types given in the
    range [START_IDX, END_IDX) from the current_template_parms into generic type
    packs.  */
@@ -27957,9 +28440,8 @@ convert_generic_types_to_packs (tree parm, int start_idx, int end_idx)
       /* Create a distinct parameter pack type from the current parm and add it
 	 to the replacement args to tsubst below into the generic function
 	 parameter.  */
-
-      tree o = TREE_TYPE (TREE_VALUE
-			  (TREE_VEC_ELT (current, i)));
+      tree node = TREE_VEC_ELT (current, i);
+      tree o = TREE_TYPE (TREE_VALUE (node));
       tree t = copy_type (o);
       TEMPLATE_TYPE_PARM_INDEX (t)
 	= reduce_template_parm_level (TEMPLATE_TYPE_PARM_INDEX (o),
@@ -27970,7 +28452,26 @@ convert_generic_types_to_packs (tree parm, int start_idx, int end_idx)
       TEMPLATE_TYPE_PARAMETER_PACK (t) = true;
       TYPE_CANONICAL (t) = canonical_type_parameter (t);
       TREE_VEC_ELT (replacement, i) = t;
-      TREE_VALUE (TREE_VEC_ELT (current, i)) = TREE_CHAIN (t);
+
+      /* Replace the current template parameter with new pack.  */
+      TREE_VALUE (node) = TREE_CHAIN (t);
+
+      /* Surgically adjust the associated constraint of adjusted parameter
+         and it's corresponding contribution to the current template
+         requirements.  */
+      if (tree constr = TEMPLATE_PARM_CONSTRAINTS (node))
+	{
+	  tree id = unpack_concept_check (constr);
+	  TREE_VEC_ELT (TREE_OPERAND (id, 1), 0) = template_parm_to_arg (t);
+	  tree fold = finish_left_unary_fold_expr (constr, TRUTH_ANDIF_EXPR);
+	  TEMPLATE_PARM_CONSTRAINTS (node) = fold;
+
+	  /* If there was a constraint, we also need to replace that in
+	     the template requirements, which we've already built.  */
+	  tree *reqs = &TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
+	  reqs = find_template_requirement (reqs, constr);
+	  *reqs = fold;
+	}
     }
 
   for (int i = end_idx, e = TREE_VEC_LENGTH (current); i < e; ++i)
@@ -27987,27 +28488,6 @@ convert_generic_types_to_packs (tree parm, int start_idx, int end_idx)
   return tsubst (parm, replacement, tf_none, NULL_TREE);
 }
 
-/* Entries in the decl_constraint hash table. */
-struct GTY((for_user)) constr_entry
-{
-  tree decl;
-  tree ci;
-};
-
-/* Hashing function and equality for constraint entries. */
-struct constr_hasher : ggc_ptr_hash<constr_entry>
-{
-  static hashval_t hash (constr_entry *e)
-  {
-    return (hashval_t)DECL_UID (e->decl);
-  }
-
-  static bool equal (constr_entry *e1, constr_entry *e2)
-  {
-    return e1->decl == e2->decl;
-  }
-};
-
 /* A mapping from declarations to constraint information. Note that
    both templates and their underlying declarations are mapped to the
    same constraint information.
@@ -28015,7 +28495,7 @@ struct constr_hasher : ggc_ptr_hash<constr_entry>
    FIXME: This is defined in pt.c because garbage collection
    code is not being generated for constraint.cc. */
 
-static GTY (()) hash_table<constr_hasher> *decl_constraints;
+static GTY ((cache)) tree_cache_map *decl_constraints;
 
 /* Returns the template constraints of declaration T. If T is not
    constrained, return NULL_TREE. Note that T must be non-null. */
@@ -28025,14 +28505,15 @@ get_constraints (tree t)
 {
   if (!flag_concepts)
     return NULL_TREE;
+  if (!decl_constraints)
+    return NULL_TREE;
 
   gcc_assert (DECL_P (t));
   if (TREE_CODE (t) == TEMPLATE_DECL)
     t = DECL_TEMPLATE_RESULT (t);
-  constr_entry elt = { t, NULL_TREE };
-  constr_entry* found = decl_constraints->find (&elt);
+  tree* found = decl_constraints->get (t);
   if (found)
-    return found->ci;
+    return *found;
   else
     return NULL_TREE;
 }
@@ -28050,12 +28531,8 @@ set_constraints (tree t, tree ci)
   gcc_assert (t && flag_concepts);
   if (TREE_CODE (t) == TEMPLATE_DECL)
     t = DECL_TEMPLATE_RESULT (t);
-  gcc_assert (!get_constraints (t));
-  constr_entry elt = {t, ci};
-  constr_entry** slot = decl_constraints->find_slot (&elt, INSERT);
-  constr_entry* entry = ggc_alloc<constr_entry> ();
-  *entry = elt;
-  *slot = entry;
+  bool found = hash_map_safe_put<hm_ggc> (decl_constraints, t, ci);
+  gcc_assert (!found);
 }
 
 /* Remove the associated constraints of the declaration T.  */
@@ -28067,149 +28544,8 @@ remove_constraints (tree t)
   if (TREE_CODE (t) == TEMPLATE_DECL)
     t = DECL_TEMPLATE_RESULT (t);
 
-  constr_entry elt = {t, NULL_TREE};
-  constr_entry** slot = decl_constraints->find_slot (&elt, NO_INSERT);
-  if (slot)
-    decl_constraints->clear_slot (slot);
-}
-
-/* Memoized satisfaction results for declarations. This
-   maps the pair (constraint_info, arguments) to the result computed
-   by constraints_satisfied_p.  */
-
-struct GTY((for_user)) constraint_sat_entry
-{
-  tree ci;
-  tree args;
-  tree result;
-};
-
-/* Hashing function and equality for constraint entries. */
-
-struct constraint_sat_hasher : ggc_ptr_hash<constraint_sat_entry>
-{
-  static hashval_t hash (constraint_sat_entry *e)
-  {
-    hashval_t val = iterative_hash_object(e->ci, 0);
-    return iterative_hash_template_arg (e->args, val);
-  }
-
-  static bool equal (constraint_sat_entry *e1, constraint_sat_entry *e2)
-  {
-    return e1->ci == e2->ci && comp_template_args (e1->args, e2->args);
-  }
-};
-
-/* Memoized satisfaction results for concept checks. */
-
-struct GTY((for_user)) concept_spec_entry
-{
-  tree tmpl;
-  tree args;
-  tree result;
-};
-
-/* Hashing function and equality for constraint entries.  */
-
-struct concept_spec_hasher : ggc_ptr_hash<concept_spec_entry>
-{
-  static hashval_t hash (concept_spec_entry *e)
-  {
-    return hash_tmpl_and_args (e->tmpl, e->args);
-  }
-
-  static bool equal (concept_spec_entry *e1, concept_spec_entry *e2)
-  {
-    ++comparing_specializations;
-    bool eq = e1->tmpl == e2->tmpl && comp_template_args (e1->args, e2->args);
-    --comparing_specializations;
-    return eq;
-  }
-};
-
-static GTY (()) hash_table<constraint_sat_hasher> *constraint_memos;
-static GTY (()) hash_table<concept_spec_hasher> *concept_memos;
-
-/* Search for a memoized satisfaction result. Returns one of the
-   truth value nodes if previously memoized, or NULL_TREE otherwise.   */
-
-tree
-lookup_constraint_satisfaction (tree ci, tree args)
-{
-  constraint_sat_entry elt = { ci, args, NULL_TREE };
-  constraint_sat_entry* found = constraint_memos->find (&elt);
-  if (found)
-    return found->result;
-  else
-    return NULL_TREE;
-}
-
-/* Memoize the result of a satisfication test. Returns the saved result.  */
-
-tree
-memoize_constraint_satisfaction (tree ci, tree args, tree result)
-{
-  constraint_sat_entry elt = {ci, args, result};
-  constraint_sat_entry** slot = constraint_memos->find_slot (&elt, INSERT);
-  constraint_sat_entry* entry = ggc_alloc<constraint_sat_entry> ();
-  *entry = elt;
-  *slot = entry;
-  return result;
-}
-
-/* Search for a memoized satisfaction result for a concept. */
-
-tree
-lookup_concept_satisfaction (tree tmpl, tree args)
-{
-  concept_spec_entry elt = { tmpl, args, NULL_TREE };
-  concept_spec_entry* found = concept_memos->find (&elt);
-  if (found)
-    return found->result;
-  else
-    return NULL_TREE;
-}
-
-/* Memoize the result of a concept check. Returns the saved result.  */
-
-tree
-memoize_concept_satisfaction (tree tmpl, tree args, tree result)
-{
-  concept_spec_entry elt = {tmpl, args, result};
-  concept_spec_entry** slot = concept_memos->find_slot (&elt, INSERT);
-  concept_spec_entry* entry = ggc_alloc<concept_spec_entry> ();
-  *entry = elt;
-  *slot = entry;
-  return result;
-}
-
-static GTY (()) hash_table<concept_spec_hasher> *concept_expansions;
-
-/* Returns a prior concept specialization. This returns the substituted
-   and normalized constraints defined by the concept.  */
-
-tree
-get_concept_expansion (tree tmpl, tree args)
-{
-  concept_spec_entry elt = { tmpl, args, NULL_TREE };
-  concept_spec_entry* found = concept_expansions->find (&elt);
-  if (found)
-    return found->result;
-  else
-    return NULL_TREE;
-}
-
-/* Save a concept expansion for later.  */
-
-tree
-save_concept_expansion (tree tmpl, tree args, tree def)
-{
-  concept_spec_entry elt = {tmpl, args, def};
-  concept_spec_entry** slot = concept_expansions->find_slot (&elt, INSERT);
-  concept_spec_entry* entry = ggc_alloc<concept_spec_entry> ();
-  *entry = elt;
-  *slot = entry;
-  return def;
+  if (decl_constraints)
+    decl_constraints->remove (t);
 }
 
 static hashval_t
@@ -28306,12 +28642,10 @@ init_constraint_processing (void)
   if (!flag_concepts)
     return;
 
-  decl_constraints = hash_table<constr_hasher>::create_ggc(37);
-  constraint_memos = hash_table<constraint_sat_hasher>::create_ggc(37);
-  concept_memos = hash_table<concept_spec_hasher>::create_ggc(37);
-  concept_expansions = hash_table<concept_spec_hasher>::create_ggc(37);
   subsumption_table = hash_table<subsumption_hasher>::create_ggc(37);
 }
+
+GTY(()) tree current_failed_constraint;
 
 /* __integer_pack(N) in a pack expansion expands to a sequence of numbers from
    0..N-1.  */

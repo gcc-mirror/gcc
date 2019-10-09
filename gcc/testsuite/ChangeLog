@@ -1,3 +1,8 @@
+2019-10-08  Andrew Sutton  <asutton@lock3software.com>
+
+	* lib/target-supports.exp (check_effective_target_concepts): Check
+	for std=c++2a.
+
 2019-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* c-c++-common/Waddress-1.c: Test locations too.
