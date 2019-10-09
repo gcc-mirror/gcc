@@ -1,3 +1,10 @@
+2019-10-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR testsuite/91884
+	* testsuite/libgomp.fortran/fortran.exp: Conditionally
+	add -lquadmath.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Ditto.
+
 2019-10-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/92028
