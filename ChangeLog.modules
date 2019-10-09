@@ -1,6 +1,15 @@
 2019-10-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* class.c (maybe_add_class_template_decl_list): Don't check
+	template-id-expr friends.
+	* module.cc (friend_from_decl_list): Don't stray into primary
+	templates.
+	(trees_out::{write,mark}_class_def): Adjust local friend
+	detection.
+	(trees_in::read_class_def): Likewise.
+
+	gcc/cp/
 	* cp-tree.h (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P): New.
 	* module.cc (trees_{in,out}::core_vals): Stream local template
 	friend's DECL_CHAIN.

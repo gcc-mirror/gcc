@@ -4487,26 +4487,29 @@ maybe_strip_cmi_prefix (char *to)
 static tree
 friend_from_decl_list (tree frnd)
 {
+  tree res = frnd;
+
   if (TREE_CODE (frnd) != TEMPLATE_DECL)
     {
-      tree maybe_template = frnd;
-
+      tree tmpl = NULL_TREE;
       if (TYPE_P (frnd))
 	{
+	  res = TYPE_STUB_DECL (frnd);
 	  if (CLASSTYPE_TEMPLATE_INFO (frnd))
-	    maybe_template = CLASSTYPE_TI_TEMPLATE (frnd);
+	    tmpl = CLASSTYPE_TI_TEMPLATE (frnd);
 	}
-      else
+      else if (DECL_TEMPLATE_INFO (frnd))
 	{
-	  if (DECL_TEMPLATE_INFO (frnd))
-	    maybe_template = DECL_TI_TEMPLATE (frnd);
+	  tmpl = DECL_TI_TEMPLATE (frnd);
+	  if (TREE_CODE (tmpl) != TEMPLATE_DECL)
+	    tmpl = NULL_TREE;
 	}
 
-      if (TREE_CODE (maybe_template) == TEMPLATE_DECL)
-	frnd = maybe_template;
+      if (tmpl && DECL_TEMPLATE_RESULT (tmpl) == res)
+	res = tmpl;
     }
 
-  return frnd;
+  return res;
 }
 
 /* Instrumentation gathered writing bytes.  */
@@ -10170,15 +10173,10 @@ trees_out::write_class_def (tree defn)
 	  if (!TREE_PURPOSE (decls))
 	    if (tree frnd = friend_from_decl_list (decl))
 	      if (TREE_CODE (frnd) == TEMPLATE_DECL
-		  && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (frnd)
-		  /* We have to check DECL_CHAIN too, because we may
-		     be an instantiation and have the decl_list of the
-		     primary template.  */
-		  // FIXME: That seems wrong, because that means we
-		  // need some way of refering to the decl-list across
-		  // classes.
-		  && DECL_CHAIN (frnd) == type)
+		  && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (frnd))
 		{
+		  gcc_checking_assert (DECL_CHAIN (frnd) == type);
+
 		  bool has_def = has_definition (frnd);
 
 		  if (streaming_p ())
@@ -10294,8 +10292,7 @@ trees_out::mark_class_def (tree defn)
 	  else if (tree frnd = friend_from_decl_list (decl))
 	    {
 	      if (TREE_CODE (frnd) == TEMPLATE_DECL
-		   && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (frnd)
-		   && DECL_CHAIN (frnd) == type)
+		   && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (frnd))
 		/* A templated friend declaration that we own.  */
 		mark_declaration (frnd, has_definition (frnd));
 	      else if (DECL_TEMPLATE_INFO (frnd)
@@ -10457,8 +10454,7 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	  if (!purpose)
 	    if (tree frnd = friend_from_decl_list (decl))
 	      if (TREE_CODE (frnd) == TEMPLATE_DECL
-		  && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (frnd)
-		  && DECL_CHAIN (frnd) == type)
+		  && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (frnd))
 		if (u () != 0)
 		  if (!read_definition (frnd))
 		    break;

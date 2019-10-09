@@ -5802,10 +5802,10 @@ push_template_decl_real (tree decl, bool is_friend)
 	}
       else if (is_friend)
 	{
-	  gcc_checking_assert (!DECL_CHAIN (tmpl));
 	  /* Record this decl as belonging to the current class.  It's
 	     not chained onto anything else.  */
 	  DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (tmpl) = true;
+	  gcc_checking_assert (!DECL_CHAIN (tmpl));
 	  DECL_CHAIN (tmpl) = current_scope ();
 	}
     }
