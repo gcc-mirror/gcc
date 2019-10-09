@@ -1,3 +1,10 @@
+2019-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78552
+	* src/c++98/locale_init.cc (locale::classic()): Do not construct a new
+	locale object for every call.
+	(locale::_S_initialize_once()): Construct C locale here.
+
 2019-10-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/Makefile.am (doc-html-docbook-regenerate): New target.
