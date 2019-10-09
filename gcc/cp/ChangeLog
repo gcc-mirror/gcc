@@ -1,3 +1,11 @@
+2019-10-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92032 - DR 1601: Promotion of enum with fixed underlying	type.
+	* call.c (standard_conversion): When converting an enumeration with
+	a fixed underlying type to the underlying type, give it the cr_promotion
+	rank.
+	(compare_ics): Implement a tiebreaker as per CWG 1601.
+
 2019-10-08  Andrew Sutton  <asutton@lock3software.com>
 	    Jason Merrill  <jason@redhat.com>
 

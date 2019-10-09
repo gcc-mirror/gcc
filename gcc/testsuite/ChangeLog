@@ -1,3 +1,9 @@
+2019-10-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92032 - DR 1601: Promotion of enum with fixed underlying	type.
+	* g++.dg/cpp0x/scoped_enum10.C: New test.
+	* g++.dg/cpp0x/scoped_enum11.C: New test.
+
 2019-10-08  Andrew Sutton  <asutton@lock3software.com>
 
 	* lib/target-supports.exp (check_effective_target_concepts): Check
