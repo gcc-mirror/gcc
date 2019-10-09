@@ -1,5 +1,13 @@
 2019-10-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/91057
+	* src/c++98/locale.cc (locale::id::_M_id()) [__GTHREADS]: Use atomic
+	compare-exchange or double-checked lock to ensure only one thread sets
+	the _M_index variable.
+	[_GLIBCXX_LONG_DOUBLE_COMPAT]: Call find_ldbl_sync_facet to detect
+	facets that share another facet's ID.
+	[_GLIBCXX_LONG_DOUBLE_COMPAT] (find_ldbl_sync_facet): New function.
+
 	PR libstdc++/78552
 	* src/c++98/locale_init.cc (locale::classic()): Do not construct a new
 	locale object for every call.
