@@ -349,6 +349,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
 -Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing @gol
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
+-Wstring-compare @gol
 -Wstringop-overflow=@var{n}  -Wstringop-truncation  -Wsubobject-linkage @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]} @gol
 -Wsuggest-final-types @gol  -Wsuggest-final-methods  -Wsuggest-override @gol
@@ -4485,6 +4486,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wold-style-declaration @r{(C only)}  @gol
 -Woverride-init  @gol
 -Wsign-compare @r{(C only)} @gol
+-Wstring-compare @gol
 -Wredundant-move @r{(only for C++)}  @gol
 -Wtype-limits  @gol
 -Wuninitialized  @gol
@@ -5799,6 +5801,30 @@ highest warning level because this simplification applies to many
 comparisons, so this warning level gives a very large number of
 false positives.
 @end table
+
+@item -Wstring-compare
+@opindex Wstring-compare
+@opindex Wno-string-compare
+Warn for calls to @code{strcmp} and @code{strncmp} whose result is
+determined to be either zero or non-zero in tests for such equality
+owing to the length of one argument being greater than the size of
+the array the other argument is stored in (or the bound in the case
+of @code{strncmp}).  Such calls could be mistakes.  For example,
+the call to @code{strcmp} below is diagnosed because its result is
+necessarily non-zero irrespective of the contents of the array @code{a}.
+
+@smallexample
+extern char a[4];
+void f (char *d)
+@{
+  strcpy (d, "string");
+  @dots{}
+  if (0 == strcmp (a, d))   // cannot be true
+    puts ("a and d are the same");
+@}
+@end smallexample
+
+@option{-Wstring-compare} is enabled by @option{-Wextra}.
 
 @item -Wstringop-overflow
 @itemx -Wstringop-overflow=@var{type}

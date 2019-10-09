@@ -1,3 +1,24 @@
+2019-10-09  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90879
+	* builtins.c (check_access): Avoid using maxbound when null.
+	* calls.c (maybe_warn_nonstring_arg): Adjust to get_range_strlen change.
+	* doc/invoke.texi (-Wstring-compare): Document new warning option.
+	* gimple-fold.c (get_range_strlen_tree): Make setting maxbound
+	conditional.
+	(get_range_strlen): Overwrite initial maxbound when non-null.
+	* gimple-ssa-sprintf.c (get_string_length): Adjust to get_range_strlen
+	changes.
+	* tree-ssa-strlen.c (maybe_diag_stxncpy_trunc): Same.
+	(used_only_for_zero_equality): New function.
+	(handle_builtin_memcmp): Call it.
+	(determine_min_objsize): Return an integer instead of tree.
+	(get_len_or_size, strxcmp_eqz_result): New functions.
+	(maybe_warn_pointless_strcmp): New function.
+	(handle_builtin_string_cmp): Call it.  Fold zero-equality of strcmp
+	between a longer string and a smaller array.
+	(get_range_strlen_dynamic): Overwrite initial maxbound when non-null.
+
 2019-10-09  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.c (darwin_override_options): Make the check for

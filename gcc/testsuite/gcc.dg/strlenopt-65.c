@@ -1,16 +1,9 @@
 /* PRE tree-optimization/90626 - fold strcmp(a, b) == 0 to zero when
    one string length is exact and the other is unequal
    { dg-do compile }
-   { dg-options "-O2 -Wall -fdump-tree-optimized" } */
+   { dg-options "-O2 -Wall -Wno-string-compare -fdump-tree-optimized -ftrack-macro-expansion=0" } */
 
 #include "strlenopt.h"
-
-typedef __SIZE_TYPE__ size_t;
-
-extern void abort (void);
-extern void* memcpy (void *, const void *, size_t);
-extern int strcmp (const char *, const char *);
-extern int strncmp (const char *, const char *, size_t);
 
 #define CAT(x, y) x ## y
 #define CONCAT(x, y) CAT (x, y)
@@ -142,21 +135,45 @@ void test_strcmp_keep (const char *s, const char *t)
 #undef CMPFUNC
 #define CMPFUNC(a, b, dummy) strcmp (a, b)
 
-  KEEP ("1", "1", a, b, -1);
+  KEEP ("123", "123\0", a, b, /* bnd = */ -1);
+  KEEP ("123\0", "123", a, b, -1);
 
-  KEEP ("1\0", "1", a, b, -1);
-  KEEP ("1",   "1\0", a, b, -1);
+  {
+    char a[8], b[8];
+    sink (a, b);
+    strcpy (a, s);
+    strcpy (b, t);
+    TEST_KEEP (0 == strcmp (a, b));
+  }
+}
 
-  KEEP ("12\0", "12", a, b, -1);
-  KEEP ("12",   "12\0", a, b, -1);
 
-  KEEP ("111\0", "111", a, b, -1);
-  KEEP ("112", "112\0", a, b, -1);
+void test_strncmp_keep (const char *s, const char *t)
+{
+#undef CMPFUNC
+#define CMPFUNC(a, b, n) strncmp (a, b, n)
 
-  KEEP (s, t, a, b, -1);
+  KEEP ("1", "1", a, b, 2);
+
+  KEEP ("1\0", "1", a, b, 2);
+  KEEP ("1",   "1\0", a, b, 2);
+
+  KEEP ("12\0", "12", a, b, 2);
+  KEEP ("12",   "12\0", a, b, 2);
+
+  KEEP ("111\0", "111", a, b, 3);
+  KEEP ("112", "112\0", a, b, 3);
+
+  {
+    char a[8], b[8];
+    sink (a, b);
+    strcpy (a, s);
+    strcpy (b, t);
+    TEST_KEEP (0 == strncmp (a, b, sizeof a));
+  }
 }
 
 /* { dg-final { scan-tree-dump-times "call_in_true_branch_not_eliminated_" 0 "optimized" } }
 
-   { dg-final { scan-tree-dump-times "call_made_in_true_branch_on_line_1\[0-9\]\[0-9\]\[0-9\]" 8 "optimized" } }
-   { dg-final { scan-tree-dump-times "call_made_in_false_branch_on_line_1\[0-9\]\[0-9\]\[0-9\]" 8 "optimized" } } */
+   { dg-final { scan-tree-dump-times "call_made_in_true_branch_on_line_1\[0-9\]\[0-9\]\[0-9\]" 11 "optimized" } }
+   { dg-final { scan-tree-dump-times "call_made_in_false_branch_on_line_1\[0-9\]\[0-9\]\[0-9\]" 11 "optimized" } } */
