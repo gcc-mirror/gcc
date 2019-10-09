@@ -843,12 +843,19 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
 #define MACHO_SYMBOL_HIDDEN_VIS_P(RTX) \
   ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_HIDDEN_VIS) != 0)
 
+/* Set on a symbol that is a pic stub or symbol indirection (i.e. the
+   L_xxxxx${stub,non_lazy_ptr,lazy_ptr}.  */
+
+#define MACHO_SYMBOL_FLAG_INDIRECTION ((SYMBOL_FLAG_SUBT_DEP) << 5)
+#define MACHO_SYMBOL_INDIRECTION_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_INDIRECTION) != 0)
+
 /* Set on a symbol to indicate when fix-and-continue style code
    generation is being used and the symbol refers to a static symbol
    that should be rebound from new instances of a translation unit to
    the original instance of the data.  */
 
-#define MACHO_SYMBOL_FLAG_STATIC ((SYMBOL_FLAG_SUBT_DEP) << 5)
+#define MACHO_SYMBOL_FLAG_STATIC ((SYMBOL_FLAG_SUBT_DEP) << 6)
 #define MACHO_SYMBOL_STATIC_P(RTX) \
   ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_STATIC) != 0)
 
