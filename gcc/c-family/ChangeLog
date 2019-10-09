@@ -1,3 +1,17 @@
+2019-10-08  Andrew Sutton  <asutton@lock3software.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	Update the concepts implementation to conform to the C++20
+	specification, improve compile times, and generally clean up
+	the implementation.
+
+	* c-cppbuiltin.c (c_cpp_builtins): Use new feature test values for
+	concepts when -std=c++2a. Bump __cpp_concepts to 201907.
+	* c.opt: Add -Wconcepts-ts.
+	* c-opts.c (c_common_post_options): Warn when -fconcepts is used
+	with -std=c++2a. Disable warning for -fconcepts in C++20 mode.
+	(set_std_cxx2a): Enable concepts by default.
+
 2019-10-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-opts.c (c_common_post_options): Set

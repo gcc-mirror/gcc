@@ -1427,6 +1427,10 @@ fconcepts
 C++ ObjC++ Var(flag_concepts)
 Enable support for C++ concepts.
 
+fconcepts-ts
+C++ ObjC++ Var(flag_concepts_ts) Init(0)
+Enable certain features present in the Concepts TS.
+
 fcond-mismatch
 C ObjC C++ ObjC++
 Allow the arguments of the '?' operator to have different types.

@@ -1,4 +1,4 @@
-// { dg-do compile { target c++17 } }
+// { dg-do compile { target c++17_only } }
 // { dg-options "-fconcepts" }
 
 // Test that constraint satisfaction checks work even when
@@ -40,7 +40,7 @@ template <typename T>
 template <typename T>
   concept bool Concept()
   {
-    return requires( T t ) {
+    return requires( T t ) { // { dg-message "in requirements" }
       requires Float<decltype( project(t) )>();
     };
   }

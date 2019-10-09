@@ -8584,7 +8584,7 @@ proc check_effective_target_c++2a { } {
 
 # Check for C++ Concepts TS support, i.e. -fconcepts flag.
 proc check_effective_target_concepts { } {
-    return [check-flags { "" { } { -fconcepts } }]
+    return [check-flags { "" { } { -fconcepts -std=*2a } }]
 }
 
 # Return 1 if expensive testcases should be run.

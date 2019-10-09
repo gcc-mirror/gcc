@@ -992,7 +992,13 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_constexpr_dynamic_alloc=201907");
 	}
       if (flag_concepts)
-	cpp_define (pfile, "__cpp_concepts=201507");
+        {
+          if (cxx_dialect >= cxx2a)
+            /* FIXME: Update this to the value required by the IS.  */
+            cpp_define (pfile, "__cpp_concepts=201907");
+          else
+            cpp_define (pfile, "__cpp_concepts=201507");
+        }
       if (flag_tm)
 	/* Use a value smaller than the 201505 specified in
 	   the TS, since we don't yet support atomic_cancel.  */

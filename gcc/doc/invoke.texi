@@ -2512,14 +2512,17 @@ exhaustion is signalled by throwing @code{std::bad_alloc}.  See also
 @samp{new (nothrow)}.
 
 @item -fconcepts
+@itemx -fconcepts-ts
 @opindex fconcepts
-Enable support for the C++ Extensions for Concepts Technical
-Specification, ISO 19217 (2015), which allows code like
+@opindex fconcepts-ts
+Below @option{-std=c++2a}, @option{-fconcepts} enables support for the
+C++ Extensions for Concepts Technical Specification, ISO 19217 (2015).
 
-@smallexample
-template <class T> concept bool Addable = requires (T t) @{ t + t; @};
-template <Addable T> T add (T a, T b) @{ return a + b; @}
-@end smallexample
+With @option{-std=c++2a} and above, Concepts are part of the language
+standard, so @option{-fconcepts} defaults to on.  But the standard
+specification of Concepts differs significantly from the TS, so some
+constructs that were allowed in the TS but didn't make it into the
+standard can still be enabled by @option{-fconcepts-ts}.
 
 @item -fconstexpr-depth=@var{n}
 @opindex fconstexpr-depth
