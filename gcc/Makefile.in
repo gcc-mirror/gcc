@@ -1325,6 +1325,8 @@ OBJS = \
 	gimple-loop-versioning.o \
 	gimple-low.o \
 	gimple-pretty-print.o \
+	gimple-range.o \
+	gimple-range-gori.o \
 	gimple-ssa-backprop.o \
 	gimple-ssa-evrp.o \
 	gimple-ssa-evrp-analyze.o \
