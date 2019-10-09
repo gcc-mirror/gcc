@@ -1472,8 +1472,18 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 
       conv = build_conv (ck_std, to, conv);
 
-      /* Give this a better rank if it's a promotion.  */
-      if (same_type_p (to, type_promotes_to (from))
+      tree underlying_type = NULL_TREE;
+      if (TREE_CODE (from) == ENUMERAL_TYPE
+	  && ENUM_FIXED_UNDERLYING_TYPE_P (from))
+	underlying_type = ENUM_UNDERLYING_TYPE (from);
+
+      /* Give this a better rank if it's a promotion.
+
+	 To handle CWG 1601, also bump the rank if we are converting
+	 an enumeration with a fixed underlying type to the underlying
+	 type.  */
+      if ((same_type_p (to, type_promotes_to (from))
+	   || (underlying_type && same_type_p (to, underlying_type)))
 	  && next_conversion (conv)->rank <= cr_promotion)
 	conv->rank = cr_promotion;
     }
@@ -10470,6 +10480,31 @@ compare_ics (conversion *ics1, conversion *ics2)
 	      q2 ^= fquals;
 	    }
 	  return comp_cv_qualification (q2, q1);
+	}
+    }
+
+  /* [over.ics.rank]
+
+     Per CWG 1601:
+     -- A conversion that promotes an enumeration whose underlying type
+     is fixed to its underlying type is better than one that promotes to
+     the promoted underlying type, if the two are different.  */
+  if (ics1->rank == cr_promotion
+      && ics2->rank == cr_promotion
+      && UNSCOPED_ENUM_P (from_type1)
+      && ENUM_FIXED_UNDERLYING_TYPE_P (from_type1)
+      && same_type_p (from_type1, from_type2))
+    {
+      tree utype = ENUM_UNDERLYING_TYPE (from_type1);
+      tree prom = type_promotes_to (from_type1);
+      if (!same_type_p (utype, prom))
+	{
+	  if (same_type_p (to_type1, utype)
+	      && same_type_p (to_type2, prom))
+	    return 1;
+	  else if (same_type_p (to_type2, utype)
+		   && same_type_p (to_type1, prom))
+	    return -1;
 	}
     }
 
