@@ -1,5 +1,37 @@
 2019-10-09  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/91364 - P0388R4: Permit conversions to arrays of	unknown bound.
+	PR c++/69531 - DR 1307: Differently bounded array parameters.
+	PR c++/88128 - DR 330: Qual convs and pointers to arrays of pointers.
+	* g++.dg/conversion/qual1.C: New test.
+	* g++.dg/conversion/qual2.C: New test.
+	* g++.dg/conversion/qual3.C: New test.
+	* g++.dg/conversion/ref2.C: New test.
+	* g++.dg/conversion/ref3.C: New test.
+	* g++.dg/cpp0x/initlist-array3.C: Remove dg-error.
+	* g++.dg/cpp0x/initlist-array7.C: New test.
+	* g++.dg/cpp0x/initlist-array8.C: New test.
+	* g++.dg/cpp2a/array-conv1.C: New test.
+	* g++.dg/cpp2a/array-conv10.C: New test.
+	* g++.dg/cpp2a/array-conv11.C: New test.
+	* g++.dg/cpp2a/array-conv12.C: New test.
+	* g++.dg/cpp2a/array-conv13.C: New test.
+	* g++.dg/cpp2a/array-conv14.C: New test.
+	* g++.dg/cpp2a/array-conv15.C: New test.
+	* g++.dg/cpp2a/array-conv16.C: New test.
+	* g++.dg/cpp2a/array-conv17.C: New test.
+	* g++.dg/cpp2a/array-conv2.C: New test.
+	* g++.dg/cpp2a/array-conv3.C: New test.
+	* g++.dg/cpp2a/array-conv4.C: New test.
+	* g++.dg/cpp2a/array-conv5.C: New test.
+	* g++.dg/cpp2a/array-conv6.C: New test.
+	* g++.dg/cpp2a/array-conv7.C: New test.
+	* g++.dg/cpp2a/array-conv8.C: New test.
+	* g++.dg/cpp2a/array-conv9.C: New test.
+	* g++.old-deja/g++.bugs/900321_01.C: Adjust dg-error.
+
+2019-10-09  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/92032 - DR 1601: Promotion of enum with fixed underlying	type.
 	* g++.dg/cpp0x/scoped_enum10.C: New test.
 	* g++.dg/cpp0x/scoped_enum11.C: New test.

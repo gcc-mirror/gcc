@@ -20,7 +20,7 @@ void function_0 ()
 {
   // we miss the first two because typeck.c (comp_array_types) deems
   // it okay if one of the sizes is null
-  ptr_to_array_of_ints = ptr_to_array_of_3_ints;	// { dg-error "" } 
+  ptr_to_array_of_ints = ptr_to_array_of_3_ints;	// { dg-error "conversions to arrays" "" { target c++17_down } }
   ptr_to_array_of_3_ints = ptr_to_array_of_ints;	// { dg-error "" } 
 
   ptr_to_array_of_3_ints = ptr_to_array_of_5_ints;	// { dg-error "" } 
