@@ -1,3 +1,9 @@
+2019-10-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/92036
+	* testsuite/libgomp.oacc-c-c++-common/data-firstprivate-1.c: New
+	file.
+
 2019-10-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR testsuite/91884
