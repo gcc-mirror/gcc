@@ -5802,12 +5802,10 @@ push_template_decl_real (tree decl, bool is_friend)
 	}
       else if (is_friend)
 	{
-	  // FIXME: what does non-null CTX signify?
-	  // Presumably dependent contexts are in the same boat?
-	  gcc_checking_assert (!DECL_CHAIN (tmpl)
-			       && !DECL_CHAIN (decl));
+	  gcc_checking_assert (!DECL_CHAIN (tmpl));
 	  /* Record this decl as belonging to the current class.  It's
 	     not chained onto anything else.  */
+	  DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (tmpl) = true;
 	  DECL_CHAIN (tmpl) = current_scope ();
 	}
     }
@@ -10436,6 +10434,8 @@ tsubst_friend_function (tree decl, tree args)
     }
 
   new_friend = tsubst (decl, args, tf_warning_or_error, NULL_TREE);
+  if (new_friend == error_mark_node)
+    return error_mark_node;
 
   /* The NEW_FRIEND will look like an instantiation, to the
      compiler, but is not an instantiation from the point of view of
@@ -10447,12 +10447,11 @@ tsubst_friend_function (tree decl, tree args)
 
      Then, in S<int>, template <class U> void f(int, U) is not an
      instantiation of anything.  */
-  if (new_friend == error_mark_node)
-    return error_mark_node;
 
   DECL_USE_TEMPLATE (new_friend) = 0;
-  if (TREE_CODE (decl) == TEMPLATE_DECL)
+  if (TREE_CODE (new_friend) == TEMPLATE_DECL)
     {
+      DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (new_friend) = false;
       DECL_USE_TEMPLATE (DECL_TEMPLATE_RESULT (new_friend)) = 0;
       DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (new_friend))
 	= DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (decl));

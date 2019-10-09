@@ -515,6 +515,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_ANON_UNION_VAR_P (in a VAR_DECL)
       DECL_SELF_REFERENCE_P (in a TYPE_DECL)
       DECL_INVALID_OVERRIDER_P (in a FUNCTION_DECL)
+      DECL_UNINSTANIATED_TEMPLATE_FRIEND_P (in TEMPLATE_DECL)
    5: DECL_INTERFACE_KNOWN.
    6: DECL_THIS_STATIC (in VAR_DECL, FUNCTION_DECL or PARM_DECL)
       DECL_FIELD_IS_BASE (in FIELD_DECL)
@@ -3142,6 +3143,13 @@ struct GTY(()) lang_decl {
 #define DECL_FRIEND_P(NODE) \
   (DECL_LANG_SPECIFIC (TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK (NODE)) \
    ->u.base.friend_or_tls)
+
+/* True of a TEMPLATE_DECL that is a template class friend.  Such
+   decls are not pushed until instantiated (as they may depend on
+   parameters of the befriending class).  DECL_CHAIN is the
+   befriending class.  */
+#define DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P(NODE) \
+  (DECL_LANG_FLAG_4 (TEMPLATE_DECL_CHECK (NODE)))
 
 /* Nonzero if the thread-local variable was declared with __thread as
    opposed to thread_local.  */

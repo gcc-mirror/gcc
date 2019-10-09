@@ -5938,6 +5938,8 @@ trees_out::core_vals (tree t)
 	(TREE_VISITED (((lang_tree_node *)t)->template_decl.arguments));
       gcc_checking_assert
 	(TREE_VISITED (((lang_tree_node *)t)->template_decl.result));
+      if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (t))
+	WT (DECL_CHAIN (t));
       break;
 
     case TEMPLATE_INFO:
@@ -6330,6 +6332,8 @@ trees_in::core_vals (tree t)
       /* Streamed when reading the raw template decl itself.  */
       gcc_assert (((lang_tree_node *)t)->template_decl.arguments);
       gcc_assert (((lang_tree_node *)t)->template_decl.result);
+      if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (t))
+	RT (DECL_CHAIN (t));
       break;
 
     case TEMPLATE_INFO:
@@ -7442,8 +7446,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
       if (TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TEMPLATE_PARM)
 	return true; 	// FIXME: Likewise in tpl_header
 
-      if (DECL_CHAIN (decl)
-	  && RECORD_OR_UNION_CODE_P (TREE_CODE (DECL_CHAIN (decl))))
+      if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
 	{
 	  /* A (local template) friend of a template.  */
 	  if (streaming_p ())
@@ -10165,17 +10168,25 @@ trees_out::write_class_def (tree defn)
 	  tree_node (decl);
 	  tree_node (TREE_PURPOSE (decls));
 	  if (!TREE_PURPOSE (decls))
-	    if (tree frnd = friend_from_decl_list (TREE_VALUE (decls)))
-	      {
-		bool local_friend = frnd && TREE_CHAIN (frnd) == type;
-		bool has_def = local_friend && has_definition (frnd);
+	    if (tree frnd = friend_from_decl_list (decl))
+	      if (TREE_CODE (frnd) == TEMPLATE_DECL
+		  && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (frnd)
+		  /* We have to check DECL_CHAIN too, because we may
+		     be an instantiation and have the decl_list of the
+		     primary template.  */
+		  // FIXME: That seems wrong, because that means we
+		  // need some way of refering to the decl-list across
+		  // classes.
+		  && DECL_CHAIN (frnd) == type)
+		{
+		  bool has_def = has_definition (frnd);
 
-		if (streaming_p ())
-		  u (unsigned (local_friend) * 2 | unsigned (has_def));
+		  if (streaming_p ())
+		    u (has_def);
 
-		if (has_def)
-		  write_definition (frnd);
-	      }
+		  if (has_def)
+		    write_definition (frnd);
+		}
 	}
       /* End of decls.  */
       tree_node (NULL_TREE);
@@ -10282,12 +10293,15 @@ trees_out::mark_class_def (tree defn)
 	    }
 	  else if (tree frnd = friend_from_decl_list (decl))
 	    {
-	      /* A friend declaration.  If we're a template, and this
-		 friend is either a template or a dependent decl, it's
-		 local to us.  Such have their DECL_CHAIN set to the
-		 befriending type.  */
-	      if (DECL_CHAIN (frnd) == type)
+	      if (TREE_CODE (frnd) == TEMPLATE_DECL
+		   && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (frnd)
+		   && DECL_CHAIN (frnd) == type)
+		/* A templated friend declaration that we own.  */
 		mark_declaration (frnd, has_definition (frnd));
+	      else if (DECL_TEMPLATE_INFO (frnd)
+		       && TREE_CODE (DECL_TI_TEMPLATE (frnd)) != TEMPLATE_DECL)
+		/* A friend declared with a template-id.  */
+		mark_declaration (frnd, false);
 	    }
 	}
     }
@@ -10438,24 +10452,17 @@ trees_in::read_class_def (tree defn, tree maybe_template)
       while (tree decl = tree_node ())
 	{
 	  tree purpose = tree_node ();
+	  decl_list = tree_cons (purpose, decl, decl_list);
+
 	  if (!purpose)
 	    if (tree frnd = friend_from_decl_list (decl))
-	      {
-		unsigned local = u ();
-		bool local_friend = (local >> 1) & 1;
-		bool has_def = local & 1;
-
-		if (local_friend)
-		  {
-		    gcc_assert (!DECL_CHAIN (frnd));
-		    DECL_CHAIN (frnd) = type;
-		  }
-
-		if (has_def)
+	      if (TREE_CODE (frnd) == TEMPLATE_DECL
+		  && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (frnd)
+		  && DECL_CHAIN (frnd) == type)
+		if (u () != 0)
 		  if (!read_definition (frnd))
 		    break;
-	      }
-	  decl_list = tree_cons (purpose, decl, decl_list);
+
 	}
       decl_list = nreverse (decl_list);
 

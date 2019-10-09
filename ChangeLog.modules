@@ -1,6 +1,17 @@
 2019-10-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P): New.
+	* module.cc (trees_{in,out}::core_vals): Stream local template
+	friend's DECL_CHAIN.
+	(trees_out::decl_node): Use DECL_UNINSTANITATED_TEMPLATE_FRIEND_P.
+	(trees_out::{read,write,mark}_class_def): Adjust local template
+	friend streaming.
+	* pt.c (push_template_decl_real): Set
+	DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P.
+	(tsubst_friend_function): Clear D_U_T_F_P.
+
+	gcc/cp/
 	* pt.c (push_template_decl_real): Always set DECL_CHAIN for
 	non-pushed friends.
 
