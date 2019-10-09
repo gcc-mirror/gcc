@@ -47,6 +47,25 @@ along with GCC; see the file COPYING3.  If not see
 
 int ompws_flags;
 
+tree
+gfc_omp_array_data (tree decl)
+{
+  tree type = TREE_TYPE (decl);
+
+  if (TREE_CODE (type) == REFERENCE_TYPE || POINTER_TYPE_P (type))
+    type = TREE_TYPE (type);
+
+  if (!GFC_DESCRIPTOR_TYPE_P (type))
+    return NULL_TREE;
+
+  if (POINTER_TYPE_P (TREE_TYPE (decl)))
+    decl = build_fold_indirect_ref (decl);
+
+  decl = gfc_conv_descriptor_data_get (decl);
+  STRIP_NOPS (decl);
+  return decl;
+}
+
 /* True if OpenMP should privatize what this DECL points to rather
    than the DECL itself.  */
 

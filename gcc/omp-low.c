@@ -91,6 +91,8 @@ struct omp_context
   /* Map variables to fields in a structure that allows communication
      between sending and receiving threads.  */
   splay_tree field_map;
+  splay_tree array_data_map;
+  splay_tree present_map;
   splay_tree parm_map;
   tree record_type;
   tree sender_decl;
@@ -749,7 +751,9 @@ install_var_field (tree var, bool by_ref, int mask, omp_context *ctx,
   tree field, type, sfield = NULL_TREE;
   splay_tree_key key = (splay_tree_key) var;
 
-  if ((mask & 8) != 0)
+  if ((mask & 16) != 0)
+    key = (splay_tree_key) var;
+  else if ((mask & 8) != 0)
     {
       key = (splay_tree_key) &DECL_UID (var);
       gcc_checking_assert (key != (splay_tree_key) var);
@@ -783,14 +787,17 @@ install_var_field (tree var, bool by_ref, int mask, omp_context *ctx,
   else if ((mask & 3) == 1 && omp_is_reference (var))
     type = TREE_TYPE (type);
 
-  field = build_decl (DECL_SOURCE_LOCATION (var),
-		      FIELD_DECL, DECL_NAME (var), type);
+  if ((mask & 16) != 0)
+    field = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE, type);
+  else
+    field = build_decl (DECL_SOURCE_LOCATION (var),
+			FIELD_DECL, DECL_NAME (var), type);
 
   /* Remember what variable this field was created for.  This does have a
      side effect of making dwarf2out ignore this member, so for helpful
      debugging we clear it later in delete_omp_context.  */
   DECL_ABSTRACT_ORIGIN (field) = var;
-  if (type == TREE_TYPE (var))
+  if ((mask & 16) == 0 && type == TREE_TYPE (var))
     {
       SET_DECL_ALIGN (field, DECL_ALIGN (var));
       DECL_USER_ALIGN (field) = DECL_USER_ALIGN (var);
@@ -1154,6 +1161,10 @@ delete_omp_context (splay_tree_value value)
     splay_tree_delete (ctx->field_map);
   if (ctx->sfield_map)
     splay_tree_delete (ctx->sfield_map);
+  if (ctx->array_data_map)
+    splay_tree_delete (ctx->array_data_map);
+  if (ctx->present_map)
+    splay_tree_delete (ctx->present_map);
   if (ctx->parm_map)
     splay_tree_delete (ctx->parm_map);
 
@@ -1253,7 +1264,7 @@ static void
 scan_sharing_clauses (tree clauses, omp_context *ctx,
 		      bool base_pointers_restrict = false)
 {
-  tree c, decl;
+  tree c, decl, x;
   bool scan_array_reductions = false;
 
   for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
@@ -1425,7 +1436,30 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	  decl = OMP_CLAUSE_DECL (c);
-	  if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+          x = NULL;
+	  // Handle array descriptors
+	  if (TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE ||
+	      (omp_is_reference (decl)
+	       && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) == RECORD_TYPE))
+	    x = lang_hooks.types.omp_array_data (decl);
+
+	  if (x)
+	    {
+	      gcc_assert (!ctx->array_data_map
+			  || !splay_tree_lookup (ctx->array_data_map,
+					       (splay_tree_key) decl));
+	      if (!ctx->array_data_map)
+		ctx->array_data_map
+			= splay_tree_new (splay_tree_compare_pointers, 0, 0);
+
+	      splay_tree_insert (ctx->array_data_map, (splay_tree_key) decl,
+				 (splay_tree_value) x);
+
+	      install_var_field (x, false, 19, ctx);
+	      DECL_SOURCE_LOCATION (lookup_field (x, ctx))
+			= OMP_CLAUSE_LOCATION (c);
+	    }
+	  else if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
 	    install_var_field (decl, true, 3, ctx);
 	  else
 	    install_var_field (decl, false, 3, ctx);
@@ -10605,13 +10639,27 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
 	    ovar = OMP_CLAUSE_DECL (c);
 	    var = lookup_decl_in_outer_ctx (ovar, ctx);
-	    x = build_sender_ref (ovar, ctx);
+
+	    // For arrays with descriptor, use the pointer to the actual data
+	    splay_tree_node n = ctx->array_data_map
+				? splay_tree_lookup (ctx->array_data_map,
+						     (splay_tree_key) ovar)
+				: NULL;
+	    if (n)
+	      x = build_sender_ref ((tree) n->value, ctx);
+	    else
+	      x = build_sender_ref (ovar, ctx);
 	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_PTR)
 	      tkind = GOMP_MAP_USE_DEVICE_PTR;
 	    else
 	      tkind = GOMP_MAP_FIRSTPRIVATE_INT;
 	    type = TREE_TYPE (ovar);
-	    if (TREE_CODE (type) == ARRAY_TYPE)
+	    if (n)
+	      {
+		var = (tree) n->value;
+		gimplify_assign (x, var, &ilist);
+	      }
+	    else if (TREE_CODE (type) == ARRAY_TYPE)
 	      {
 		var = build_fold_addr_expr (var);
 		gimplify_assign (x, var, &ilist);
@@ -10629,11 +10677,24 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		      = create_artificial_label (UNKNOWN_LOCATION);
 		    opt_arg_label
 		      = create_artificial_label (UNKNOWN_LOCATION);
+
+		    tree present = create_tmp_var_raw (boolean_type_node,
+						       get_name (var));
+		    tree cond2 = fold_build2 (NE_EXPR, boolean_type_node,
+					      var, null_pointer_node);
+		    if (!ctx->present_map)
+		      ctx->present_map
+			= splay_tree_new (splay_tree_compare_pointers, 0, 0);
+
+		    splay_tree_insert (ctx->present_map, (splay_tree_key) var,
+				       (splay_tree_value) present);
+
 		    tree new_x = copy_node (x);
-		    gcond *cond = gimple_build_cond (EQ_EXPR, ovar,
-						     null_pointer_node,
-						     null_label,
-						     notnull_label);
+		    gcond *cond = gimple_build_cond_from_tree (present,
+							       notnull_label,
+							       null_label);
+		    gimple_add_tmp_var (present);
+		    gimplify_assign (present, cond2, &ilist);
 		    gimple_seq_add_stmt (&ilist, cond);
 		    gimple_seq_add_stmt (&ilist,
 					 gimple_build_label (null_label));
@@ -10815,11 +10876,54 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case OMP_CLAUSE_USE_DEVICE_PTR:
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
 	    var = OMP_CLAUSE_DECL (c);
+	    tree array_data = NULL;
+	    if (ctx->array_data_map)
+	      {
+		splay_tree_node n = splay_tree_lookup (ctx->array_data_map,
+						       (splay_tree_key) var);
+		if (n)
+		  array_data = (tree) n->value;
+	      }
+
 	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_PTR)
-	      x = build_sender_ref (var, ctx);
+	      x = build_sender_ref (array_data ? array_data : var, ctx);
 	    else
-	      x = build_receiver_ref (var, false, ctx);
-	    if (is_variable_sized (var))
+	      x = build_receiver_ref (array_data ? array_data : var, false, ctx);
+	    if (array_data)
+	      {
+		tree new_var = lookup_decl (var, ctx);
+		new_var = DECL_VALUE_EXPR (new_var);
+		if (omp_is_reference (var))
+		  {
+		    tree type = TREE_TYPE (TREE_TYPE (var));
+		    tree v = create_tmp_var_raw (type, get_name (var));
+		    gimple_add_tmp_var (v);
+		    TREE_ADDRESSABLE (v) = 1;
+		    tree x2 = build_fold_indirect_ref (var);
+		    gimplify_expr (&x2, &new_body, NULL, is_gimple_val, fb_rvalue);
+		    gimple_seq_add_stmt (&new_body, gimple_build_assign (v, x2));
+
+                    tree v2 = lang_hooks.types.omp_array_data (v);
+		    gcc_assert (v2);
+		    gimplify_expr (&x, &new_body, NULL, is_gimple_val, fb_rvalue);
+		    gimple_seq_add_stmt (&new_body,
+					 gimple_build_assign (v2, x));
+		    x = build_fold_addr_expr (v);
+		    gimple_seq_add_stmt (&new_body,
+					 gimple_build_assign (new_var, x));
+		  }
+		else
+		  {
+		    gimple_seq_add_stmt (&new_body,
+					 gimple_build_assign (new_var, var));
+		    new_var = lang_hooks.types.omp_array_data (new_var);
+		    gcc_assert (new_var);
+		    gimplify_expr (&x, &new_body, NULL, is_gimple_val, fb_rvalue);
+		    gimple_seq_add_stmt (&new_body,
+					 gimple_build_assign (new_var, x));
+		  }
+	      }
+	    else if (is_variable_sized (var))
 	      {
 		tree pvar = DECL_VALUE_EXPR (var);
 		gcc_assert (TREE_CODE (pvar) == INDIRECT_REF);
@@ -10870,10 +10974,12 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
 			    gimplify_expr (&x, &new_body, NULL, is_gimple_val,
 					   fb_rvalue);
-			    cond = gimple_build_cond (EQ_EXPR, x,
-						      null_pointer_node,
-						      null_label,
-						      notnull_label);
+			    splay_tree_node n_present
+				= splay_tree_lookup (ctx->present_map,
+						     (splay_tree_key) var);
+			    cond = gimple_build_cond_from_tree (
+					(tree) n_present->value,
+					notnull_label, null_label);
 			    gimple_seq_add_stmt (&new_body, cond);
 			    gimple_seq_add_stmt (&new_body, null_glabel);
 			    gimplify_assign (new_var, null_pointer_node,

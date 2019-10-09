@@ -1,3 +1,10 @@
+2019-10-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* f95-lang.c (LANG_HOOKS_OMP_ARRAY_DATA): Set to gfc_omp_array_data.
+	* trans-array.c (gfc_conv_descriptor_data_get): Handle ref types.
+	* trans-openmp.c (gfc_omp_array_data): New.
+	* trans.h (gfc_omp_array_data): Declare.
+
 2019-09-20  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.c (localize_reductions): Rewrite references for

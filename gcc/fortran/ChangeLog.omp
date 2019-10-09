@@ -1,3 +1,17 @@
+2019-10-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* hooks.c (hook_tree_tree_null): New.
+	* hooks.h (hook_tree_tree_null): Declare.
+	* langhooks-def.h (LANG_HOOKS_OMP_ARRAY_DATA): Define.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Use it.
+	* langhooks.h (lang_hooks_for_types): Add omp_array_data.
+	* omp-general.c (omp_is_optional_argument): Handle value+optional.
+	* omp-low.c (omp_context): Add array_data_map + present_map.
+	(install_var_field): Handle array descriptors.
+	(delete_omp_context): Free new maps.
+	(scan_sharing_clauses): Handle array descriptors.
+	(lower_omp_target): Ditto. Fix optional-arg present check.
+
 2019-10-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline

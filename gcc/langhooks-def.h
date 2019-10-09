@@ -188,6 +188,7 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
 #define LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES \
   lhd_omp_firstprivatize_type_sizes
 #define LANG_HOOKS_OMP_MAPPABLE_TYPE	lhd_omp_mappable_type
+#define LANG_HOOKS_OMP_ARRAY_DATA	hook_tree_tree_null
 #define LANG_HOOKS_TYPE_HASH_EQ		NULL
 #define LANG_HOOKS_COPY_LANG_QUALIFIERS NULL
 #define LANG_HOOKS_GET_ARRAY_DESCR_INFO	NULL
@@ -214,6 +215,7 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
   LANG_HOOKS_TYPE_MAX_SIZE, \
   LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES, \
   LANG_HOOKS_OMP_MAPPABLE_TYPE, \
+  LANG_HOOKS_OMP_ARRAY_DATA, \
   LANG_HOOKS_TYPE_HASH_EQ, \
   LANG_HOOKS_COPY_LANG_QUALIFIERS, \
   LANG_HOOKS_GET_ARRAY_DESCR_INFO, \

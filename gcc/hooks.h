@@ -106,6 +106,7 @@ extern HOST_WIDE_INT hook_hwi_void_0 (void);
 extern tree hook_tree_const_tree_null (const_tree);
 extern tree hook_tree_void_null (void);
 
+extern tree hook_tree_tree_null (tree);
 extern tree hook_tree_tree_tree_null (tree, tree);
 extern tree hook_tree_tree_tree_tree_null (tree, tree, tree);
 extern tree hook_tree_tree_int_treep_bool_null (tree, int, tree *, bool);

@@ -1,3 +1,9 @@
+2019-10-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/use_device_ptr1.f90: New.
+	* gfortran.dg/gomp/use_device_ptr2.f90: New.
+	* gfortran.dg/gomp/use_device_ptr3.f90: New.
+
 2019-10-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from mainline

@@ -112,6 +112,7 @@ static const struct attribute_spec gfc_attribute_table[] =
 #undef LANG_HOOKS_MARK_ADDRESSABLE
 #undef LANG_HOOKS_TYPE_FOR_MODE
 #undef LANG_HOOKS_TYPE_FOR_SIZE
+#undef LANG_HOOKS_OMP_ARRAY_DATA
 #undef LANG_HOOKS_INIT_TS
 #undef LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE
 #undef LANG_HOOKS_OMP_PREDETERMINED_SHARING
@@ -145,6 +146,7 @@ static const struct attribute_spec gfc_attribute_table[] =
 #define LANG_HOOKS_TYPE_FOR_MODE	gfc_type_for_mode
 #define LANG_HOOKS_TYPE_FOR_SIZE	gfc_type_for_size
 #define LANG_HOOKS_INIT_TS		gfc_init_ts
+#define LANG_HOOKS_OMP_ARRAY_DATA		gfc_omp_array_data
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE	gfc_omp_privatize_by_reference
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING	gfc_omp_predetermined_sharing
 #define LANG_HOOKS_OMP_REPORT_DECL		gfc_omp_report_decl

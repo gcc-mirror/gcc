@@ -117,6 +117,10 @@ struct lang_hooks_for_types
   /* Return true if TYPE is a mappable type.  */
   bool (*omp_mappable_type) (tree type);
 
+  /* Return a tree for of the actual data of an array descriptor - or
+     NULL_TREE if original tree is not an array descriptor.  */
+  tree (*omp_array_data) (tree);
+
   /* Return TRUE if TYPE1 and TYPE2 are identical for type hashing purposes.
      Called only after doing all language independent checks.
      At present, this function is only called when both TYPE1 and TYPE2 are

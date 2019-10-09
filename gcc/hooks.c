@@ -431,6 +431,12 @@ hook_tree_tree_int_treep_bool_null (tree, int, tree *, bool)
 }
 
 tree
+hook_tree_tree_null (tree)
+{
+  return NULL;
+}
+
+tree
 hook_tree_tree_tree_null (tree, tree)
 {
   return NULL;

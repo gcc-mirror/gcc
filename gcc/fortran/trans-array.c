@@ -142,6 +142,9 @@ gfc_conv_descriptor_data_get (tree desc)
   tree field, type, t;
 
   type = TREE_TYPE (desc);
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    type = TREE_TYPE (type);
+
   gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
 
   field = TYPE_FIELDS (type);
