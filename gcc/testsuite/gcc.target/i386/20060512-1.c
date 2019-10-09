@@ -7,11 +7,11 @@
 #include <emmintrin.h>
 
 #ifdef __x86_64__
-# define PUSH "pushq %rsi"
-# define POP "popq %rsi"
+# define REG "rcx"
+# define WIDTH "q"
 #else
-# define PUSH "pushl %esi"
-# define POP "popl %esi"
+# define REG "ecx"
+# define WIDTH "l"
 #endif
 
 __m128i __attribute__ ((__noinline__))
@@ -30,13 +30,15 @@ self_aligning_function (int x, int y)
 int g_1 = 20;
 int g_2 = 22;
 
-static void
+static void __attribute__ ((__optimize__ ("-fno-omit-frame-pointer")))
 sse2_test (void)
 {
   int result;
-  asm (PUSH);                  /* Misalign runtime stack.  */
+  register int __attribute__ ((__mode__ (__word__))) reg asm (REG);
+  asm volatile ("push" WIDTH "\t%0"  /* Disalign runtime stack.  */
+		: : "r" (reg) : "memory");
   result = self_aligning_function (g_1, g_2);
   if (result != 42)
     abort ();
-  asm (POP);
+  asm volatile ("pop" WIDTH "\t%0" : "=r" (reg));
 }
