@@ -1,5 +1,34 @@
 2019-10-09  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/91364 - P0388R4: Permit conversions to arrays of	unknown bound.
+	PR c++/69531 - DR 1307: Differently bounded array parameters.
+	PR c++/88128 - DR 330: Qual convs and pointers to arrays of pointers.
+	* call.c (build_array_conv): Build ck_identity at the beginning
+	of the conversion.
+	(standard_conversion): Pass bounds_none to comp_ptr_ttypes_const.
+	(maybe_warn_array_conv): New.
+	(convert_like_real): Call it.  Add an error message about converting
+	from arrays of unknown bounds.
+	(conv_get_original_expr): New.
+	(nelts_initialized_by_list_init): New.
+	(conv_binds_to_array_of_unknown_bound): New.
+	(compare_ics): Implement list-initialization ranking based on
+	array sizes, as specified in DR 1307 and P0388R.
+	* cp-tree.h (comp_ptr_ttypes_const): Adjust declaration.
+	(compare_bounds_t): New enum.
+	* typeck.c (comp_array_types): New bool and compare_bounds_t
+	parameters.  Use them.
+	(structural_comptypes): Adjust the call to comp_array_types.
+	(similar_type_p): Handle ARRAY_TYPE.
+	(build_const_cast_1): Pass bounds_none to comp_ptr_ttypes_const.
+	(comp_ptr_ttypes_real): Don't check cv-quals of ARRAY_TYPEs.  Use
+	comp_array_types to compare array types.  Look through arrays as per
+	DR 330.
+	(comp_ptr_ttypes_const): Use comp_array_types to compare array types.
+	Look through arrays as per DR 330.
+
+2019-10-09  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/92032 - DR 1601: Promotion of enum with fixed underlying	type.
 	* call.c (standard_conversion): When converting an enumeration with
 	a fixed underlying type to the underlying type, give it the cr_promotion

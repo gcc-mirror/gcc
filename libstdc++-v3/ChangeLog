@@ -1,3 +1,11 @@
+2019-10-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91364 - P0388R4: Permit conversions to arrays of	unknown bound.
+	PR c++/69531 - DR 1307: Differently bounded array parameters.
+	PR c++/88128 - DR 330: Qual convs and pointers to arrays of pointers.
+	* testsuite/23_containers/span/lwg3255.cc: Adjust test to match the
+	post-P0388R4 behavior.
+
 2019-10-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91057

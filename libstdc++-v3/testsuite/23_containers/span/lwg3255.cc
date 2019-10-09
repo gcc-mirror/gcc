@@ -28,8 +28,7 @@ using std::is_constructible_v;
 
 // LWG 3255 span's array constructor is too strict
 
-// FIXME: remove '!' from next line when P0388R4 is implemented:
-static_assert( ! is_constructible_v<span<const int* const>, array<int*, 2>> );
+static_assert( is_constructible_v<span<const int* const>, array<int*, 2>> );
 static_assert( is_constructible_v<span<const int>, array<const int, 4>> );
 
 static_assert( is_constructible_v<span<int, 1>, int(&)[1]> );

@@ -7372,6 +7372,10 @@ extern void cxx_print_error_function		(diagnostic_context *,
 						 struct diagnostic_info *);
 
 /* in typeck.c */
+/* Says how we should behave when comparing two arrays one of which
+   has unknown bounds.  */
+enum compare_bounds_t { bounds_none, bounds_either, bounds_first };
+
 extern bool cxx_mark_addressable		(tree, bool = false);
 extern int string_conv_p			(const_tree, const_tree, int);
 extern tree cp_truthvalue_conversion		(tree);
@@ -7462,7 +7466,7 @@ extern tree convert_for_initialization		(tree, tree, tree, int,
 						 impl_conv_rhs, tree, int,
                                                  tsubst_flags_t);
 extern int comp_ptr_ttypes			(tree, tree);
-extern bool comp_ptr_ttypes_const		(tree, tree);
+extern bool comp_ptr_ttypes_const		(tree, tree, compare_bounds_t);
 extern bool error_type_p			(const_tree);
 extern bool ptr_reasonably_similar		(const_tree, const_tree);
 extern tree build_ptrmemfunc			(tree, tree, int, bool,

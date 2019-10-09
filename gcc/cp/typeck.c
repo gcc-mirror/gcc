@@ -54,7 +54,7 @@ static tree rationalize_conditional_expr (enum tree_code, tree,
 					  tsubst_flags_t);
 static int comp_ptr_ttypes_real (tree, tree, int);
 static bool comp_except_types (tree, tree, bool);
-static bool comp_array_types (const_tree, const_tree, bool);
+static bool comp_array_types (const_tree, const_tree, compare_bounds_t, bool);
 static tree pointer_diff (location_t, tree, tree, tree, tsubst_flags_t, tree *);
 static tree get_delta_difference (tree, tree, bool, bool, tsubst_flags_t);
 static void casts_away_constness_r (tree *, tree *, tsubst_flags_t);
@@ -1084,11 +1084,15 @@ comp_except_specs (const_tree t1, const_tree t2, int exact)
   return exact == ce_derived || base == NULL_TREE || length == list_length (t1);
 }
 
-/* Compare the array types T1 and T2.  ALLOW_REDECLARATION is true if
-   [] can match [size].  */
+/* Compare the array types T1 and T2.  CB says how we should behave when
+   comparing array bounds: bounds_none doesn't allow dimensionless arrays,
+   bounds_either says than any array can be [], bounds_first means that
+   onlt T1 can be an array with unknown bounds.  STRICT is true if
+   qualifiers must match when comparing the types of the array elements.  */
 
 static bool
-comp_array_types (const_tree t1, const_tree t2, bool allow_redeclaration)
+comp_array_types (const_tree t1, const_tree t2, compare_bounds_t cb,
+		  bool strict)
 {
   tree d1;
   tree d2;
@@ -1098,7 +1102,9 @@ comp_array_types (const_tree t1, const_tree t2, bool allow_redeclaration)
     return true;
 
   /* The type of the array elements must be the same.  */
-  if (!same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+  if (strict
+      ? !same_type_p (TREE_TYPE (t1), TREE_TYPE (t2))
+      : !similar_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
     return false;
 
   d1 = TYPE_DOMAIN (t1);
@@ -1119,8 +1125,10 @@ comp_array_types (const_tree t1, const_tree t2, bool allow_redeclaration)
        declarations for an array object can specify
        array types that differ by the presence or absence of a major
        array bound (_dcl.array_).  */
-  if (!d1 || !d2)
-    return allow_redeclaration;
+  if (!d1 && d2)
+    return cb >= bounds_either;
+  else if (d1 && !d2)
+    return cb == bounds_either;
 
   /* Check that the dimensions are the same.  */
 
@@ -1368,7 +1376,9 @@ structural_comptypes (tree t1, tree t2, int strict)
 
     case ARRAY_TYPE:
       /* Target types must match incl. qualifiers.  */
-      if (!comp_array_types (t1, t2, !!(strict & COMPARE_REDECLARATION)))
+      if (!comp_array_types (t1, t2, ((strict & COMPARE_REDECLARATION)
+				      ? bounds_either : bounds_none),
+			     /*strict=*/true))
 	return false;
       break;
 
@@ -1549,10 +1559,10 @@ similar_type_p (tree type1, tree type2)
   if (same_type_ignoring_top_level_qualifiers_p (type1, type2))
     return true;
 
-  /* FIXME This ought to handle ARRAY_TYPEs too.  */
   if ((TYPE_PTR_P (type1) && TYPE_PTR_P (type2))
-      || (TYPE_PTRDATAMEM_P (type1) && TYPE_PTRDATAMEM_P (type2)))
-    return comp_ptr_ttypes_const (type1, type2);
+      || (TYPE_PTRDATAMEM_P (type1) && TYPE_PTRDATAMEM_P (type2))
+      || (TREE_CODE (type1) == ARRAY_TYPE && TREE_CODE (type2) == ARRAY_TYPE))
+    return comp_ptr_ttypes_const (type1, type2, bounds_either);
 
   return false;
 }
@@ -7867,7 +7877,7 @@ build_const_cast_1 (tree dst_type, tree expr, tsubst_flags_t complain,
 
   if (TYPE_PTR_P (src_type) || TYPE_PTRDATAMEM_P (src_type))
     {
-      if (comp_ptr_ttypes_const (dst_type, src_type))
+      if (comp_ptr_ttypes_const (dst_type, src_type, bounds_none))
 	{
 	  if (valid_p)
 	    {
@@ -9909,9 +9919,10 @@ comp_ptr_ttypes_real (tree to, tree from, int constp)
 			   TYPE_OFFSET_BASETYPE (to)))
 	return 0;
 
-      /* Const and volatile mean something different for function types,
-	 so the usual checks are not appropriate.  */
-      if (!FUNC_OR_METHOD_TYPE_P (to))
+      /* Const and volatile mean something different for function and
+	 array types, so the usual checks are not appropriate.  We'll
+	 check the array type elements in further iterations.  */
+      if (!FUNC_OR_METHOD_TYPE_P (to) && TREE_CODE (to) != ARRAY_TYPE)
 	{
 	  if (!at_least_as_qualified_p (to, from))
 	    return 0;
@@ -9930,7 +9941,17 @@ comp_ptr_ttypes_real (tree to, tree from, int constp)
       if (VECTOR_TYPE_P (to))
 	is_opaque_pointer = vector_targets_convertible_p (to, from);
 
-      if (!TYPE_PTR_P (to) && !TYPE_PTRDATAMEM_P (to))
+      /* P0388R4 allows a conversion from int[N] to int[] but not the
+	 other way round.  When both arrays have bounds but they do
+	 not match, then no conversion is possible.  */
+      if (TREE_CODE (to) == ARRAY_TYPE
+	  && !comp_array_types (to, from, bounds_first, /*strict=*/false))
+	return 0;
+
+      if (!TYPE_PTR_P (to)
+	  && !TYPE_PTRDATAMEM_P (to)
+	  /* CWG 330 says we need to look through arrays.  */
+	  && TREE_CODE (to) != ARRAY_TYPE)
 	return ((constp >= 0 || to_more_cv_qualified)
 		&& (is_opaque_pointer
 		    || same_type_ignoring_top_level_qualifiers_p (to, from)));
@@ -10033,10 +10054,10 @@ ptr_reasonably_similar (const_tree to, const_tree from)
 
 /* Return true if TO and FROM (both of which are POINTER_TYPEs or
    pointer-to-member types) are the same, ignoring cv-qualification at
-   all levels.  */
+   all levels.  CB says how we should behave when comparing array bounds.  */
 
 bool
-comp_ptr_ttypes_const (tree to, tree from)
+comp_ptr_ttypes_const (tree to, tree from, compare_bounds_t cb)
 {
   bool is_opaque_pointer = false;
 
@@ -10053,7 +10074,14 @@ comp_ptr_ttypes_const (tree to, tree from)
       if (VECTOR_TYPE_P (to))
 	is_opaque_pointer = vector_targets_convertible_p (to, from);
 
-      if (!TYPE_PTR_P (to))
+      if (TREE_CODE (to) == ARRAY_TYPE
+	  /* Ignore cv-qualification, but if we see e.g. int[3] and int[4],
+	     we must fail.  */
+	  && !comp_array_types (to, from, cb, /*strict=*/false))
+	return false;
+
+      /* CWG 330 says we need to look through arrays.  */
+      if (!TYPE_PTR_P (to) && TREE_CODE (to) != ARRAY_TYPE)
 	return (is_opaque_pointer
 		|| same_type_ignoring_top_level_qualifiers_p (to, from));
     }
