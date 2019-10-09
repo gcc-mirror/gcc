@@ -795,6 +795,12 @@ Wsizeof-array-argument
 C ObjC C++ ObjC++ Var(warn_sizeof_array_argument) Warning Init(1)
 Warn when sizeof is applied on a parameter declared as an array.
 
+Wstring-compare
+C ObjC C++ LTO ObjC++ Warning Var(warn_string_compare) Warning LangEnabledBy(C ObjC C++ ObjC++, Wextra)
+Warn about calls to strcmp and strncmp used in equality expressions that
+are necessarily true or false due to the length of one and size of the other
+argument.
+
 Wstringop-overflow
 C ObjC C++ LTO ObjC++ Warning Alias(Wstringop-overflow=, 2, 0)
 Warn about buffer overflow in string manipulation functions like memcpy

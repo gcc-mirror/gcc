@@ -1,3 +1,8 @@
+2019-10-09  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90879
+	* c.opt (-Wstring-compare): New option.
+
 2019-10-08  Andrew Sutton  <asutton@lock3software.com>
 	    Jason Merrill  <jason@redhat.com>
 

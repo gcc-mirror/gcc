@@ -1,3 +1,15 @@
+2019-10-09  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90879
+	* gcc.dg/Wstring-compare-2.c: New test.
+	* gcc.dg/Wstring-compare.c: New test.
+	* gcc.dg/strcmpopt_3.c: Scan the optmized dump instead of strlen.
+	* gcc.dg/strcmpopt_6.c: New test.
+	* gcc.dg/strlenopt-65.c: Remove uinnecessary declarations, add
+	test cases.
+	* gcc.dg/strlenopt-66.c: Run it.
+	* gcc.dg/strlenopt-68.c: New test.
+
 2019-10-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91364 - P0388R4: Permit conversions to arrays of	unknown bound.
