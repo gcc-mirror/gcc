@@ -11600,6 +11600,44 @@ static GTY(()) rtx morestack_ref;
 
 #define SPLIT_STACK_AVAILABLE 1024
 
+/* Emit the parmblock for __morestack into .rodata section.  It
+   consists of 3 pointer size entries:
+   - frame size
+   - size of stack arguments
+   - offset between parm block and __morestack return label  */
+
+void
+s390_output_split_stack_data (rtx parm_block, rtx call_done,
+			      rtx frame_size, rtx args_size)
+{
+  rtx ops[] = { parm_block, call_done };
+
+  switch_to_section (targetm.asm_out.function_rodata_section
+		     (current_function_decl));
+
+  if (TARGET_64BIT)
+    output_asm_insn (".align\t8", NULL);
+  else
+    output_asm_insn (".align\t4", NULL);
+
+  (*targetm.asm_out.internal_label) (asm_out_file, "L",
+				     CODE_LABEL_NUMBER (parm_block));
+  if (TARGET_64BIT)
+    {
+      output_asm_insn (".quad\t%0", &frame_size);
+      output_asm_insn (".quad\t%0", &args_size);
+      output_asm_insn (".quad\t%1-%0", ops);
+    }
+  else
+    {
+      output_asm_insn (".long\t%0", &frame_size);
+      output_asm_insn (".long\t%0", &args_size);
+      output_asm_insn (".long\t%1-%0", ops);
+    }
+
+  switch_to_section (current_function_section ());
+}
+
 /* Emit -fsplit-stack prologue, which goes before the regular function
    prologue.  */
 
@@ -11677,16 +11715,8 @@ s390_expand_split_stack_prologue (void)
 
   call_done = gen_label_rtx ();
   parm_base = gen_label_rtx ();
-
-  /* Emit the parameter block.  */
-  tmp = gen_split_stack_data (parm_base, call_done,
-			      GEN_INT (frame_size),
-			      GEN_INT (args_size));
-  insn = emit_insn (tmp);
-  add_reg_note (insn, REG_LABEL_OPERAND, call_done);
-  LABEL_NUSES (call_done)++;
-  add_reg_note (insn, REG_LABEL_OPERAND, parm_base);
   LABEL_NUSES (parm_base)++;
+  LABEL_NUSES (call_done)++;
 
   /* %r1 = litbase.  */
   insn = emit_move_insn (r1, gen_rtx_LABEL_REF (VOIDmode, parm_base));
@@ -11696,15 +11726,29 @@ s390_expand_split_stack_prologue (void)
   /* Now, we need to call __morestack.  It has very special calling
      conventions: it preserves param/return/static chain registers for
      calling main function body, and looks for its own parameters at %r1. */
+  if (cc != NULL)
+    tmp = gen_split_stack_cond_call (Pmode,
+				     morestack_ref,
+				     parm_base,
+				     call_done,
+				     GEN_INT (frame_size),
+				     GEN_INT (args_size),
+				     cc);
+  else
+    tmp = gen_split_stack_call (Pmode,
+				morestack_ref,
+				parm_base,
+				call_done,
+				GEN_INT (frame_size),
+				GEN_INT (args_size));
+
+  insn = emit_jump_insn (tmp);
+  JUMP_LABEL (insn) = call_done;
+  add_reg_note (insn, REG_LABEL_OPERAND, parm_base);
+  add_reg_note (insn, REG_LABEL_OPERAND, call_done);
 
   if (cc != NULL)
     {
-      tmp = gen_split_stack_cond_call (morestack_ref, cc, call_done);
-
-      insn = emit_jump_insn (tmp);
-      JUMP_LABEL (insn) = call_done;
-      LABEL_NUSES (call_done)++;
-
       /* Mark the jump as very unlikely to be taken.  */
       add_reg_br_prob_note (insn,
 			    profile_probability::very_unlikely ());
@@ -11720,10 +11764,6 @@ s390_expand_split_stack_prologue (void)
     }
   else
     {
-      tmp = gen_split_stack_call (morestack_ref, call_done);
-      insn = emit_jump_insn (tmp);
-      JUMP_LABEL (insn) = call_done;
-      LABEL_NUSES (call_done)++;
       emit_barrier ();
     }
 
