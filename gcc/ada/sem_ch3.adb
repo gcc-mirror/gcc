@@ -13456,8 +13456,8 @@ package body Sem_Ch3 is
             --  After expansion of discriminated task types, the value
             --  of the discriminant may be converted to a run-time type
             --  for restricted run-times. Propagate the value of the
-            --  discriminant ss well, so that e.g. the secondary stack
-            --  component has a static constraint. Necessry for LLVM.
+            --  discriminant as well, so that e.g. the secondary stack
+            --  component has a static constraint. Necessary for LLVM.
 
             elsif Nkind (Expr) = N_Type_Conversion
               and then Is_Discriminant (Expression (Expr))

@@ -9071,8 +9071,8 @@ package body Sem_Util is
             --  components are being gathered for an aggregate, in which case
             --  the caller must check Report_Errors.
             --
-            --  In Ada2020 the above rules are relaxed. A non-static governing
-            --  discriminant is ok as long as it has a static subtype and
+            --  In Ada 2020 the above rules are relaxed. A nonstatic governing
+            --  discriminant is OK as long as it has a static subtype and
             --  every value of that subtype (and there must be at least one)
             --  selects the same variant.
 

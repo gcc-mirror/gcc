@@ -13093,7 +13093,7 @@ package body Sem_Prag is
             --  Infer the type to use for a string literal or a concatentation
             --  of operands whose types can be inferred. For such expressions,
             --  returns the "narrowest" of the three predefined string types
-            --  that can represent the characters occuring in the expression.
+            --  that can represent the characters occurring in the expression.
             --  For other expressions, returns Empty.
 
             function Preferred_String_Type (Expr : Node_Id) return Entity_Id is

@@ -2927,7 +2927,7 @@ package body Sem_Ch12 is
       Set_Inner_Instances (Formal, New_Elmt_List);
 
       --  It is unclear that any aspects can apply to a formal package
-      --  declaration, given that they look like a hidden comformance
+      --  declaration, given that they look like a hidden conformance
       --  requirement on the corresponding actual. However, Abstract_State
       --  must be treated specially because it generates declarations that
       --  must appear before other declarations in the specification and

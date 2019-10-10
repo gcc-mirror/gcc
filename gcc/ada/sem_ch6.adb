@@ -4262,11 +4262,11 @@ package body Sem_Ch6 is
       --  object can then be used instead of the formal in case it is used
       --  in an actual to a call to a nested subprogram.
 
-      --  This method is used to suppliment our "small integer model" for
-      --  accessibility check generation (for more information see
+      --  This method is used to supplement our "small integer model" for
+      --  accessibility-check generation (for more information see
       --  Dynamic_Accessibility_Level).
 
-      --  Because we allow accesibility values greater than our expected value
+      --  Because we allow accessibility values greater than our expected value
       --  passing along the same extra accessibility formal as an actual
       --  to a nested subprogram becomes a problem because high values mean
       --  different things to the callee even though they are the same to the
