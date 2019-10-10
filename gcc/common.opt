@@ -1281,6 +1281,26 @@ Enum(diagnostic_color_rule) String(always) Value(DIAGNOSTICS_COLOR_YES)
 EnumValue
 Enum(diagnostic_color_rule) String(auto) Value(DIAGNOSTICS_COLOR_AUTO)
 
+fdiagnostics-urls=
+Driver Common Joined RejectNegative Var(flag_diagnostics_show_urls) Enum(diagnostic_url_rule) Init(DIAGNOSTICS_URL_AUTO)
+-fdiagnostics-urls=[never|always|auto]	Embed URLs in diagnostics.
+
+; Required for these enum values.
+SourceInclude
+diagnostic-url.h
+
+Enum
+Name(diagnostic_url_rule) Type(int)
+
+EnumValue
+Enum(diagnostic_url_rule) String(never) Value(DIAGNOSTICS_URL_NO)
+
+EnumValue
+Enum(diagnostic_url_rule) String(always) Value(DIAGNOSTICS_URL_YES)
+
+EnumValue
+Enum(diagnostic_url_rule) String(auto) Value(DIAGNOSTICS_URL_AUTO)
+
 fdiagnostics-format=
 Common Joined RejectNegative Enum(diagnostics_output_format)
 -fdiagnostics-format=[text|json] Select output format.

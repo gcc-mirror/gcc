@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backtrace.h"
 #include "diagnostic.h"
 #include "diagnostic-color.h"
+#include "diagnostic-url.h"
 #include "edit-context.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
@@ -244,6 +245,18 @@ diagnostic_color_init (diagnostic_context *context, int value /*= -1 */)
     }
   pp_show_color (context->printer)
     = colorize_init ((diagnostic_color_rule_t) value);
+}
+
+/* Initialize URL support within CONTEXT based on VALUE, handling "auto".  */
+
+void
+diagnostic_urls_init (diagnostic_context *context, int value /*= -1 */)
+{
+  if (value < 0)
+    value = DIAGNOSTICS_COLOR_DEFAULT;
+
+  context->printer->show_urls
+    = diagnostic_urls_enabled_p ((diagnostic_url_rule_t) value);
 }
 
 /* Do any cleaning up required after the last diagnostic is emitted.  */

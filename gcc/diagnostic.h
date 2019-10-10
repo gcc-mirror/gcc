@@ -331,6 +331,7 @@ diagnostic_override_option_index (diagnostic_info *info, int optidx)
 /* Diagnostic related functions.  */
 extern void diagnostic_initialize (diagnostic_context *, int);
 extern void diagnostic_color_init (diagnostic_context *, int value = -1);
+extern void diagnostic_urls_init (diagnostic_context *, int value = -1);
 extern void diagnostic_finish (diagnostic_context *);
 extern void diagnostic_report_current_module (diagnostic_context *, location_t);
 extern void diagnostic_show_locus (diagnostic_context *,

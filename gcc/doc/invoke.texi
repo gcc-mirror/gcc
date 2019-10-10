@@ -273,6 +273,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-fmessage-length=@var{n}  @gol
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
+-fdiagnostics-urls=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fdiagnostics-format=@r{[}text@r{|}json@r{]}  @gol
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret @gol
 -fno-diagnostics-show-labels  -fno-diagnostics-show-line-numbers @gol
@@ -3907,6 +3908,18 @@ SGR substring for inserted lines within generated patches.
 SGR substring for highlighting mismatching types within template
 arguments in the C++ frontend.
 @end table
+
+@item -fdiagnostics-urls[=@var{WHEN}]
+@opindex fdiagnostics-urls
+@cindex urls
+Use escape sequences to embed URLs in diagnostics.  For example, when
+@option{-fdiagnostics-show-option} emits text showing the command-line
+option controlling a diagnostic, embed a URL for documentation of that
+option.
+
+@var{WHEN} is @samp{never}, @samp{always}, or @samp{auto}.
+The default is @samp{auto}, which means to use URL escape sequences only
+when the standard error is a terminal.
 
 @item -fno-diagnostics-show-option
 @opindex fno-diagnostics-show-option
