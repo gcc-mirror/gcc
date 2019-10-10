@@ -1376,8 +1376,9 @@ cp_ensure_no_omp_declare_simd (cp_parser *parser)
 {
   if (parser->omp_declare_simd && !parser->omp_declare_simd->error_seen)
     {
-      error ("%<#pragma omp declare simd%> not immediately followed by "
-	     "function declaration or definition");
+      error ("%<#pragma omp declare %s%> not immediately followed by "
+	     "function declaration or definition",
+	     parser->omp_declare_simd->variant_p ? "variant" : "simd");
       parser->omp_declare_simd = NULL;
     }
 }
@@ -35878,8 +35879,8 @@ cp_parser_oacc_clause_async (cp_parser *parser, tree list)
 
 static tree
 cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
-			   const char *where, cp_token *pragma_tok,
-			   bool finish_p = true)
+			    const char *where, cp_token *pragma_tok,
+			    bool finish_p = true)
 {
   tree clauses = NULL;
   bool first = true;
@@ -36075,13 +36076,15 @@ cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
 }
 
 /* Parse all OpenMP clauses.  The set clauses allowed by the directive
-   is a bitmask in MASK.  Return the list of clauses found; the result
-   of clause default goes in *pdefault.  */
+   is a bitmask in MASK.  Return the list of clauses found.
+   FINISH_P set if finish_omp_clauses should be called.
+   NESTED_P set if clauses should be terminated by closing paren instead
+   of end of pragma.  */
 
 static tree
 cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 			   const char *where, cp_token *pragma_tok,
-			   bool finish_p = true)
+			   bool finish_p = true, bool nested_p = false)
 {
   tree clauses = NULL;
   bool first = true;
@@ -36095,6 +36098,9 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
       pragma_omp_clause c_kind;
       const char *c_name;
       tree prev = clauses;
+
+      if (nested_p && cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
+	break;
 
       if (!first && cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 	cp_lexer_consume_token (parser->lexer);
@@ -36415,7 +36421,8 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	}
     }
  saw_error:
-  cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+  if (!nested_p)
+    cp_parser_skip_to_pragma_eol (parser, pragma_tok);
   if (finish_p)
     {
       if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_UNIFORM)) != 0)
@@ -40241,7 +40248,8 @@ cp_parser_oacc_wait (cp_parser *parser, cp_token *pragma_tok)
 
 static void
 cp_parser_omp_declare_simd (cp_parser *parser, cp_token *pragma_tok,
-			    enum pragma_context context)
+			    enum pragma_context context,
+			    bool variant_p)
 {
   bool first_p = parser->omp_declare_simd == NULL;
   cp_omp_declare_simd_data data;
@@ -40249,11 +40257,21 @@ cp_parser_omp_declare_simd (cp_parser *parser, cp_token *pragma_tok,
     {
       data.error_seen = false;
       data.fndecl_seen = false;
+      data.variant_p = variant_p;
       data.tokens = vNULL;
       data.clauses = NULL_TREE;
       /* It is safe to take the address of a local variable; it will only be
 	 used while this scope is live.  */
       parser->omp_declare_simd = &data;
+    }
+  else if (parser->omp_declare_simd->variant_p != variant_p)
+    {
+      error_at (pragma_tok->location,
+		"%<#pragma omp declare %s%> followed by "
+		"%<#pragma omp declare %s%>",
+		parser->omp_declare_simd->variant_p ? "variant" : "simd",
+		parser->omp_declare_simd->variant_p ? "simd" : "variant");
+      parser->omp_declare_simd->error_seen = true;
     }
 
   /* Store away all pragma tokens.  */
@@ -40290,12 +40308,426 @@ cp_parser_omp_declare_simd (cp_parser *parser, cp_token *pragma_tok,
 	  && !parser->omp_declare_simd->error_seen
 	  && !parser->omp_declare_simd->fndecl_seen)
 	error_at (pragma_tok->location,
-		  "%<#pragma omp declare simd%> not immediately followed by "
-		  "function declaration or definition");
+		  "%<#pragma omp declare %s%> not immediately followed by "
+		  "function declaration or definition",
+		  parser->omp_declare_simd->variant_p ? "variant" : "simd");
       data.tokens.release ();
       parser->omp_declare_simd = NULL;
     }
 }
+
+static const char *const omp_construct_selectors[] = {
+  "simd", "target", "teams", "parallel", "for", NULL };
+static const char *const omp_device_selectors[] = {
+  "kind", "isa", "arch", NULL };
+static const char *const omp_implementation_selectors[] = {
+  "vendor", "extension", "atomic_default_mem_order", "unified_address",
+  "unified_shared_memory", "dynamic_allocators", "reverse_offload", NULL };
+static const char *const omp_user_selectors[] = {
+  "condition", NULL };
+
+/* OpenMP 5.0:
+
+   trait-selector:
+     trait-selector-name[([trait-score:]trait-property[,trait-property[,...]])]
+
+   trait-score:
+     score(score-expression)  */
+
+static tree
+cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p)
+{
+  tree ret = NULL_TREE;
+  do
+    {
+      tree selector;
+      if (cp_lexer_next_token_is (parser->lexer, CPP_KEYWORD)
+	  || cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	selector = cp_lexer_peek_token (parser->lexer)->u.value;
+      else
+	{
+	  cp_parser_error (parser, "expected trait selector name");
+	  return error_mark_node;
+	}
+
+      tree properties = NULL_TREE;
+      const char *const *selectors = NULL;
+      bool allow_score = true;
+      bool allow_user = false;
+      int property_limit = 0;
+      enum { CTX_PROPERTY_NONE, CTX_PROPERTY_USER, CTX_PROPERTY_IDLIST,
+	     CTX_PROPERTY_EXPR, CTX_PROPERTY_SIMD } property_kind
+	= CTX_PROPERTY_NONE;
+      switch (IDENTIFIER_POINTER (set)[0])
+	{
+	case 'c': /* construct */
+	  selectors = omp_construct_selectors;
+	  allow_score = false;
+	  property_limit = 1;
+	  property_kind = CTX_PROPERTY_SIMD;
+	  break;
+	case 'd': /* device */
+	  selectors = omp_device_selectors;
+	  allow_score = false;
+	  allow_user = true;
+	  property_limit = 3;
+	  property_kind = CTX_PROPERTY_IDLIST;
+	  break;
+	case 'i': /* implementation */
+	  selectors = omp_implementation_selectors;
+	  allow_user = true;
+	  property_limit = 3;
+	  property_kind = CTX_PROPERTY_IDLIST;
+	  break;
+	case 'u': /* user */
+	  selectors = omp_user_selectors;
+	  property_limit = 1;
+	  property_kind = CTX_PROPERTY_EXPR;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      for (int i = 0; ; i++)
+	{
+	  if (selectors[i] == NULL)
+	    {
+	      if (allow_user)
+		{
+		  property_kind = CTX_PROPERTY_USER;
+		  break;
+		}
+	      else
+		{
+		  error ("selector %qs not allowed for context selector "
+			 "set %qs", IDENTIFIER_POINTER (selector),
+			 IDENTIFIER_POINTER (set));
+		  cp_lexer_consume_token (parser->lexer);
+		  return error_mark_node;
+		}
+	    }
+	  if (i == property_limit)
+	    property_kind = CTX_PROPERTY_NONE;
+	  if (strcmp (selectors[i], IDENTIFIER_POINTER (selector)) == 0)
+	    break;
+	}
+
+      cp_lexer_consume_token (parser->lexer);
+
+      if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
+	{
+	  if (property_kind == CTX_PROPERTY_NONE)
+	    {
+	      error ("selector %qs does not accept any properties",
+		     IDENTIFIER_POINTER (selector));
+	      return error_mark_node;
+	    }
+
+	  matching_parens parens;
+	  parens.consume_open (parser);
+
+	  cp_token *token = cp_lexer_peek_token (parser->lexer);
+	  if (allow_score
+	      && cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+	      && strcmp (IDENTIFIER_POINTER (token->u.value), "score") == 0
+	      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_PAREN))
+	    {
+	      cp_lexer_save_tokens (parser->lexer);
+	      cp_lexer_consume_token (parser->lexer);
+	      cp_lexer_consume_token (parser->lexer);
+	      if (cp_parser_skip_to_closing_parenthesis (parser, false, false,
+							 true)
+		  && cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+		{
+		  cp_lexer_rollback_tokens (parser->lexer);
+		  cp_lexer_consume_token (parser->lexer);
+
+		  matching_parens parens2;
+		  parens2.require_open (parser);
+		  tree score = cp_parser_constant_expression (parser);
+		  if (!parens2.require_close (parser))
+		    cp_parser_skip_to_closing_parenthesis (parser, true,
+							   false, true);
+		  cp_parser_require (parser, CPP_COLON, RT_COLON);
+		  if (score != error_mark_node)
+		    {
+		      score = fold_non_dependent_expr (score);
+		      if (!value_dependent_expression_p (score)
+			  && (!INTEGRAL_TYPE_P (TREE_TYPE (score))
+			      || !tree_fits_shwi_p (score)))
+			error_at (token->location, "score argument must be "
+				  "constant integer expression");
+		      else
+			properties = tree_cons (get_identifier (" score"),
+						score, properties);
+		    }
+		}
+	      else
+		cp_lexer_rollback_tokens (parser->lexer);
+
+	      token = cp_lexer_peek_token (parser->lexer);
+	    }
+
+	  switch (property_kind)
+	    {
+	      tree t;
+	    case CTX_PROPERTY_USER:
+	      do
+		{
+		  t = cp_parser_constant_expression (parser);
+		  if (t != error_mark_node)
+		    {
+		      t = fold_non_dependent_expr (t);
+		      if (TREE_CODE (t) == STRING_CST)
+			properties = tree_cons (NULL_TREE, t, properties);
+		      else if (!value_dependent_expression_p (t)
+			       && (!INTEGRAL_TYPE_P (TREE_TYPE (t))
+				   || !tree_fits_shwi_p (t)))
+			error_at (token->location, "property must be "
+				  "constant integer expression or string "
+				  "literal");
+		      else
+			properties = tree_cons (NULL_TREE, t, properties);
+		    }
+
+		  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+		    cp_lexer_consume_token (parser->lexer);
+		  else
+		    break;
+		}
+	      while (1);
+	      break;
+	    case CTX_PROPERTY_IDLIST:
+	      do
+		{
+		  tree prop;
+		  if (cp_lexer_next_token_is (parser->lexer, CPP_KEYWORD)
+		      || cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+		    prop = cp_lexer_peek_token (parser->lexer)->u.value;
+		  else
+		    {
+		      cp_parser_error (parser, "expected identifier");
+		      return error_mark_node;
+		    }
+		  cp_lexer_consume_token (parser->lexer);
+
+		  properties = tree_cons (prop, NULL_TREE, properties);
+
+		  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+		    cp_lexer_consume_token (parser->lexer);
+		  else
+		    break;
+		}
+	      while (1);
+	      break;
+	    case CTX_PROPERTY_EXPR:
+	      t = cp_parser_constant_expression (parser);
+	      if (t != error_mark_node)
+		{
+		  t = fold_non_dependent_expr (t);
+		  if (!value_dependent_expression_p (t)
+		      && (!INTEGRAL_TYPE_P (TREE_TYPE (t))
+			  || !tree_fits_shwi_p (t)))
+		    error_at (token->location, "property must be "
+			      "constant integer expression");
+		  else
+		    properties = tree_cons (NULL_TREE, t, properties);
+		}
+	      break;
+	    case CTX_PROPERTY_SIMD:
+	      if (!has_parms_p)
+		{
+		  error_at (token->location, "properties for %<simd%> "
+			    "selector may not be specified in "
+			    "%<metadirective%>");
+		  return error_mark_node;
+		}
+	      tree c;
+	      c = cp_parser_omp_all_clauses (parser,
+					     OMP_DECLARE_SIMD_CLAUSE_MASK,
+					     "simd", NULL, true, true);
+	      properties = tree_cons (NULL_TREE, c, properties);
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+
+	  if (!parens.require_close (parser))
+	    cp_parser_skip_to_closing_parenthesis (parser, true, false, true);
+
+	  properties = nreverse (properties);
+	}
+      else if (property_kind == CTX_PROPERTY_IDLIST
+	       || property_kind == CTX_PROPERTY_EXPR)
+	{
+	  cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
+	  return error_mark_node;
+	}
+
+      ret = tree_cons (selector, properties, ret);
+
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	cp_lexer_consume_token (parser->lexer);
+      else
+	break;
+    }
+  while (1);
+
+  return nreverse (ret);
+}
+
+/* OpenMP 5.0:
+
+   trait-set-selector[,trait-set-selector[,...]]
+
+   trait-set-selector:
+     trait-set-selector-name = { trait-selector[, trait-selector[, ...]] }
+
+   trait-set-selector-name:
+     constructor
+     device
+     implementation
+     user  */
+
+static tree
+cp_parser_omp_context_selector_specification (cp_parser *parser,
+					      bool has_parms_p)
+{
+  tree ret = NULL_TREE;
+  do
+    {
+      const char *setp = "";
+      if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	setp
+	  = IDENTIFIER_POINTER (cp_lexer_peek_token (parser->lexer)->u.value);
+      switch (setp[0])
+	{
+	case 'c':
+	  if (strcmp (setp, "construct") == 0)
+	    setp = NULL;
+	  break;
+	case 'd':
+	  if (strcmp (setp, "device") == 0)
+	    setp = NULL;
+	  break;
+	case 'i':
+	  if (strcmp (setp, "implementation") == 0)
+	    setp = NULL;
+	  break;
+	case 'u':
+	  if (strcmp (setp, "user") == 0)
+	    setp = NULL;
+	  break;
+	default:
+	  break;
+	}
+      if (setp)
+	{
+	  cp_parser_error (parser, "expected %<construct%>, %<device%>, "
+				   "%<implementation%> or %<user%>");
+	  return error_mark_node;
+	}
+
+      tree set = cp_lexer_peek_token (parser->lexer)->u.value;
+      cp_lexer_consume_token (parser->lexer);
+
+      if (!cp_parser_require (parser, CPP_EQ, RT_EQ))
+	return error_mark_node;
+
+      matching_braces braces;
+      if (!braces.require_open (parser))
+	return error_mark_node;
+
+      tree selectors
+	= cp_parser_omp_context_selector (parser, set, has_parms_p);
+      if (selectors == error_mark_node)
+	{
+	  cp_parser_skip_to_closing_brace (parser);
+	  ret = error_mark_node;
+	}
+      else if (ret != error_mark_node)
+	ret = tree_cons (set, selectors, ret);
+
+      braces.require_close (parser);
+
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	cp_lexer_consume_token (parser->lexer);
+      else
+	break;
+    }
+  while (1);
+
+  if (ret == error_mark_node)
+    return ret;
+  return nreverse (ret);
+}
+
+/* Finalize #pragma omp declare variant after a fndecl has been parsed, and put
+   that into "omp declare variant" attribute.  */
+
+static tree
+cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
+			       tree attrs)
+{
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    {
+     fail:
+      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+      return attrs;
+    }
+
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  tree variant;
+  tree name = cp_parser_id_expression (parser, /*template_p=*/false,
+				       /*check_dependency_p=*/true,
+				       /*template_p=*/NULL,
+				       /*declarator_p=*/false,
+				       /*optional_p=*/false);
+  if (identifier_p (name))
+    variant = cp_parser_lookup_name_simple (parser, name, token->location);
+  else
+    variant = name;
+  if (variant == error_mark_node)
+    {
+      cp_parser_name_lookup_error (parser, name, variant, NLE_NULL,
+				   token->location);
+      variant = error_mark_node;
+    }
+
+  parens.require_close (parser);
+
+  const char *clause = "";
+  location_t match_loc = cp_lexer_peek_token (parser->lexer)->location;
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    clause = IDENTIFIER_POINTER (cp_lexer_peek_token (parser->lexer)->u.value);
+  if (strcmp (clause, "match"))
+    {
+      cp_parser_error (parser, "expected %<match%>");
+      goto fail;
+    }
+
+  cp_lexer_consume_token (parser->lexer);
+
+  if (!parens.require_open (parser))
+    goto fail;
+
+  tree ctx = cp_parser_omp_context_selector_specification (parser, true);
+  if (ctx == error_mark_node)
+    goto fail;
+  ctx = c_omp_check_context_selector (match_loc, ctx);
+  if (ctx != error_mark_node && variant != error_mark_node)
+    {
+      attrs = tree_cons (get_identifier ("omp declare variant"),
+			 build_tree_list (variant, ctx), attrs);
+      if (processing_template_decl)
+	ATTR_IS_DEPENDENT (attrs) = 1;
+    }
+
+  parens.require_close (parser);
+  cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+  return attrs;
+}
+
 
 /* Finalize #pragma omp declare simd clauses after direct declarator has
    been parsed, and put that into "omp declare simd" attribute.  */
@@ -40309,8 +40741,9 @@ cp_parser_late_parsing_omp_declare_simd (cp_parser *parser, tree attrs)
 
   if (!data->error_seen && data->fndecl_seen)
     {
-      error ("%<#pragma omp declare simd%> not immediately followed by "
-	     "a single function declaration or definition");
+      error ("%<#pragma omp declare %s%> not immediately followed by "
+	     "a single function declaration or definition",
+	     data->variant_p ? "variant" : "simd");
       data->error_seen = true;
     }
   if (data->error_seen)
@@ -40324,17 +40757,28 @@ cp_parser_late_parsing_omp_declare_simd (cp_parser *parser, tree attrs)
       parser->lexer->in_pragma = true;
       gcc_assert (cp_lexer_peek_token (parser->lexer)->type == CPP_PRAGMA);
       cp_token *pragma_tok = cp_lexer_consume_token (parser->lexer);
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      const char *kind = IDENTIFIER_POINTER (id);
       cp_lexer_consume_token (parser->lexer);
-      cl = cp_parser_omp_all_clauses (parser, OMP_DECLARE_SIMD_CLAUSE_MASK,
-				      "#pragma omp declare simd", pragma_tok);
+      if (strcmp (kind, "simd") == 0)
+	{
+	  cl = cp_parser_omp_all_clauses (parser, OMP_DECLARE_SIMD_CLAUSE_MASK,
+					  "#pragma omp declare simd",
+					  pragma_tok);
+	  if (cl)
+	    cl = tree_cons (NULL_TREE, cl, NULL_TREE);
+	  c = build_tree_list (get_identifier ("omp declare simd"), cl);
+	  TREE_CHAIN (c) = attrs;
+	  if (processing_template_decl)
+	    ATTR_IS_DEPENDENT (c) = 1;
+	  attrs = c;
+	}
+      else
+	{
+	  gcc_assert (strcmp (kind, "variant") == 0);
+	  attrs = cp_finish_omp_declare_variant (parser, pragma_tok, attrs);
+	}
       cp_parser_pop_lexer (parser);
-      if (cl)
-	cl = tree_cons (NULL_TREE, cl, NULL_TREE);
-      c = build_tree_list (get_identifier ("omp declare simd"), cl);
-      TREE_CHAIN (c) = attrs;
-      if (processing_template_decl)
-	ATTR_IS_DEPENDENT (c) = 1;
-      attrs = c;
     }
 
   data->fndecl_seen = true;
@@ -40898,7 +41342,10 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
    #pragma omp declare simd declare-simd-clauses[optseq] new-line
    #pragma omp declare reduction (reduction-id : typename-list : expression) \
       initializer-clause[opt] new-line
-   #pragma omp declare target new-line  */
+   #pragma omp declare target new-line
+
+   OpenMP 5.0
+   #pragma omp declare variant (identifier) match (context-selector)  */
 
 static bool
 cp_parser_omp_declare (cp_parser *parser, cp_token *pragma_tok,
@@ -40913,7 +41360,14 @@ cp_parser_omp_declare (cp_parser *parser, cp_token *pragma_tok,
 	{
 	  cp_lexer_consume_token (parser->lexer);
 	  cp_parser_omp_declare_simd (parser, pragma_tok,
-				      context);
+				      context, false);
+	  return true;
+	}
+      if (flag_openmp && strcmp (p, "variant") == 0)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_parser_omp_declare_simd (parser, pragma_tok,
+				      context, true);
 	  return true;
 	}
       cp_ensure_no_omp_declare_simd (parser);
@@ -40936,8 +41390,8 @@ cp_parser_omp_declare (cp_parser *parser, cp_token *pragma_tok,
 	  return false;
 	}
     }
-  cp_parser_error (parser, "expected %<simd%> or %<reduction%> "
-			   "or %<target%>");
+  cp_parser_error (parser, "expected %<simd%>, %<reduction%>, "
+			   "%<target%> or %<variant%>");
   cp_parser_require_pragma_eol (parser, pragma_tok);
   return false;
 }

@@ -202,10 +202,11 @@ struct GTY (()) cp_parser_context {
 };
 
 
-/* Helper data structure for parsing #pragma omp declare simd.  */
+/* Helper data structure for parsing #pragma omp declare {simd,variant}.  */
 struct cp_omp_declare_simd_data {
   bool error_seen; /* Set if error has been reported.  */
   bool fndecl_seen; /* Set if one fn decl/definition has been seen already.  */
+  bool variant_p; /* Set for #pragma omp declare variant.  */
   vec<cp_token_cache_ptr> tokens;
   tree clauses;
 };

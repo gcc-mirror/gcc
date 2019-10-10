@@ -140,6 +140,8 @@ static tree handle_warn_unused_attribute (tree *, tree, tree, int, bool *);
 static tree handle_returns_nonnull_attribute (tree *, tree, tree, int, bool *);
 static tree handle_omp_declare_simd_attribute (tree *, tree, tree, int,
 					       bool *);
+static tree handle_omp_declare_variant_attribute (tree *, tree, tree, int,
+						  bool *);
 static tree handle_simd_attribute (tree *, tree, tree, int, bool *);
 static tree handle_omp_declare_target_attribute (tree *, tree, tree, int,
 						 bool *);
@@ -442,6 +444,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_returns_nonnull_attribute, NULL },
   { "omp declare simd",       0, -1, true,  false, false, false,
 			      handle_omp_declare_simd_attribute, NULL },
+  { "omp declare variant",    0, -1, true,  false, false, false,
+			      handle_omp_declare_variant_attribute, NULL },
   { "simd",		      0, 1, true,  false, false, false,
 			      handle_simd_attribute, NULL },
   { "omp declare target",     0, -1, true, false, false, false,
@@ -3060,6 +3064,15 @@ handle_warn_unused_attribute (tree *node, tree name,
 
 static tree
 handle_omp_declare_simd_attribute (tree *, tree, tree, int, bool *)
+{
+  return NULL_TREE;
+}
+
+/* Handle an "omp declare variant" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_omp_declare_variant_attribute (tree *, tree, tree, int, bool *)
 {
   return NULL_TREE;
 }
