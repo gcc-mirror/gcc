@@ -1,4 +1,12 @@
-2019-10-10  Arnaud Charlet  <charlet@adacore.com>
+2019-10-10  Gary Dismukes  <dismukes@adacore.com>
 
-	* freeze.adb (Freeze_Subprogram): Ensure constructor is a C++
-	constructor.
+	* exp_ch7.adb (Check_Unnesting_In_Decls_Or_Stmts): When
+	encountering a loop at the top level of a package declaration
+	list (that is, within the declarations of a package spec or
+	body) that has nested subprograms, call Unnest_Loop to create a
+	new library-level procedure that will contain the loop, to allow
+	for proper handling of up-level references from within nested
+	subprograms, such as to loop parameters.
+	(Unnest_Loop): New procedure that takes a loop statement and
+	creates a new procedure body to enclose the loop statement,
+	along with generating a call to the procedure.
