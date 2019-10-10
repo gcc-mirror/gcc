@@ -1493,6 +1493,12 @@ package body Inline is
      (Spec_Id : Entity_Id;
       Body_Id : Entity_Id) return Boolean
    is
+      function Has_Formal_Or_Result_Of_Deep_Type
+        (Id : Entity_Id) return Boolean;
+      --  Returns true if the subprogram has at least one formal parameter or
+      --  a return type of a deep type: either an access type or a composite
+      --  type containing an access type.
+
       function Has_Formal_With_Discriminant_Dependent_Fields
         (Id : Entity_Id) return Boolean;
       --  Returns true if the subprogram has at least one formal parameter of
@@ -1517,6 +1523,104 @@ package body Inline is
       --  defined in SPARK RM 3.10. This is only a safe approximation, as the
       --  knowledge of the SPARK boundary is needed to determine exactly
       --  traversal functions.
+
+      ---------------------------------------
+      -- Has_Formal_Or_Result_Of_Deep_Type --
+      ---------------------------------------
+
+      function Has_Formal_Or_Result_Of_Deep_Type
+        (Id : Entity_Id) return Boolean
+      is
+         function Is_Deep (Typ : Entity_Id) return Boolean;
+         --  Return True if Typ is deep: either an access type or a composite
+         --  type containing an access type.
+
+         -------------
+         -- Is_Deep --
+         -------------
+
+         function Is_Deep (Typ : Entity_Id) return Boolean is
+         begin
+            case Type_Kind'(Ekind (Typ)) is
+               when Access_Kind =>
+                  return True;
+
+               when E_Array_Type
+                  | E_Array_Subtype
+               =>
+                  return Is_Deep (Component_Type (Typ));
+
+               when Record_Kind =>
+                  declare
+                     Comp : Entity_Id := First_Component_Or_Discriminant (Typ);
+                  begin
+                     while Present (Comp) loop
+                        if Is_Deep (Etype (Comp)) then
+                           return True;
+                        end if;
+                        Next_Component_Or_Discriminant (Comp);
+                     end loop;
+                  end;
+                  return False;
+
+               when Scalar_Kind
+                  | E_String_Literal_Subtype
+                  | Concurrent_Kind
+                  | Incomplete_Kind
+                  | E_Exception_Type
+                  | E_Subprogram_Type
+               =>
+                  return False;
+
+               when E_Private_Type
+                  | E_Private_Subtype
+                  | E_Limited_Private_Type
+                  | E_Limited_Private_Subtype
+               =>
+                  --  Conservatively consider that the type might be deep if
+                  --  its completion has not been seen yet.
+
+                  if No (Underlying_Type (Typ)) then
+                     return True;
+                  else
+                     return Is_Deep (Underlying_Type (Typ));
+                  end if;
+            end case;
+         end Is_Deep;
+
+         --  Local variables
+
+         Subp_Id    : constant Entity_Id := Ultimate_Alias (Id);
+         Formal     : Entity_Id;
+         Formal_Typ : Entity_Id;
+
+      --  Start of processing for Has_Formal_Or_Result_Of_Deep_Type
+
+      begin
+         --  Inspect all parameters of the subprogram looking for a formal
+         --  of a deep type.
+
+         Formal := First_Formal (Subp_Id);
+         while Present (Formal) loop
+            Formal_Typ := Etype (Formal);
+
+            if Is_Deep (Formal_Typ) then
+               return True;
+            end if;
+
+            Next_Formal (Formal);
+         end loop;
+
+         --  Check whether this is a function whose return type is deep
+
+         if Ekind (Subp_Id) = E_Function
+           and then Is_Deep (Etype (Subp_Id))
+         then
+            return True;
+         end if;
+
+         return False;
+      end Has_Formal_Or_Result_Of_Deep_Type;
 
       ---------------------------------------------------
       -- Has_Formal_With_Discriminant_Dependent_Fields --
@@ -1775,6 +1879,14 @@ package body Inline is
       --  packed arrays).
 
       elsif Has_Formal_With_Discriminant_Dependent_Fields (Id) then
+         return False;
+
+      --  Do not inline subprograms with a formal parameter or return type of
+      --  a deep type, as in that case inlining might generate code that
+      --  violates borrow-checking rules of SPARK 3.10 even if the original
+      --  code did not.
+
+      elsif Has_Formal_Or_Result_Of_Deep_Type (Id) then
          return False;
 
       --  Do not inline subprograms which may be traversal functions. Such
