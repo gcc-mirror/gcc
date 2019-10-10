@@ -364,20 +364,39 @@ package body Exp_Ch7 is
 
    procedure Check_Unnesting_Elaboration_Code (N : Node_Id);
    --  The statement part of a package body that is a compilation unit may
-   --  contain blocks that declare local subprograms. In Subprogram_Unnesting
+   --  contain blocks that declare local subprograms. In Subprogram_Unnesting_
    --  Mode such subprograms must be handled as nested inside the (implicit)
    --  elaboration procedure that executes that statement part. To handle
    --  properly uplevel references we construct that subprogram explicitly,
    --  to contain blocks and inner subprograms, The statement part becomes
    --  a call to this subprogram. This is only done if blocks are present
-   --  in the statement list of the body.
+   --  in the statement list of the body. (It would be nice to unify this
+   --  procedure with Check_Unnesting_In_Decls_Or_Stmts, if possible, since
+   --  they're doing very similar work, but are structured differently. ???)
 
-   procedure Check_Unnesting_In_Declarations (Decls : List_Id);
-   --  Similarly, the declarations in the package body may have created
-   --  blocks with nested subprograms. Such a block must be transformed into a
-   --  procedure followed by a call to it, so that unnesting can handle uplevel
-   --  references within these nested subprograms (typically generated
-   --  subprograms to handle finalization actions).
+   procedure Check_Unnesting_In_Decls_Or_Stmts (Decls_Or_Stmts : List_Id);
+   --  Similarly, the declarations or statements in library-level packages may
+   --  have created blocks blocks with nested subprograms. Such a block must be
+   --  transformed into a procedure followed by a call to it, so that unnesting
+   --  can handle uplevel references within these nested subprograms (typically
+   --  subprograms that handle finalization actions). This also applies to
+   --  nested packages, including instantiations, in which case it must
+   --  recursively process inner bodies.
+
+   procedure Check_Unnesting_In_Handlers (N : Node_Id);
+   --  Similarly, check for blocks with nested subprograms occurring within
+   --  a set of exception handlers associated with a package body N.
+
+   procedure Unnest_Block (Decl : Node_Id);
+   --  Blocks that contain nested subprograms with up-level references need to
+   --  create activation records for them. We do this by rewriting the block as
+   --  a procedure, followed by a call to it in the same declarative list, to
+   --  replicate the semantics of the original block.
+   --
+   --  A common source for such block is a transient block created for a
+   --  construct (declaration, assignment, etc.) that involves controlled
+   --  actions or secondary-stack management, in which case the nested
+   --  subprogram is a finalizer.
 
    procedure Check_Visibly_Controlled
      (Prim : Final_Primitives;
@@ -4020,27 +4039,39 @@ package body Exp_Ch7 is
    --------------------------------------
 
    procedure Check_Unnesting_Elaboration_Code (N : Node_Id) is
-      Loc       : constant Source_Ptr := Sloc (N);
-      First_Ent : Entity_Id := Empty;
-      Loop_Id   : Entity_Id := Empty;
+      Loc             : constant Source_Ptr := Sloc (N);
+      Block_Elab_Proc : Entity_Id           := Empty;
 
-      function First_Local_Scope (L : List_Id) return Entity_Id;
-      --  Find first entity in the elaboration code of the body that contains
-      --  or represents a subprogram body. A body can appear within a block or
-      --  a loop or can appear by itself if generated for an object declaration
-      --  that involves controlled actions. The first such entity encountered
-      --  is used to reset the scopes of all entities that become local to the
-      --  new elaboration procedure. This is needed for subsequent unnesting,
-      --  which depends on the scope links to determine the nesting level of
-      --  each subprogram.
+      procedure Set_Block_Elab_Proc;
+      --  Create a defining identifier for a procedure that will replace
+      --  a block with nested subprograms (unless it has already been created,
+      --  in which case this is a no-op).
+
+      procedure Set_Block_Elab_Proc is
+      begin
+         if No (Block_Elab_Proc) then
+            Block_Elab_Proc :=
+              Make_Defining_Identifier (Loc, Chars => New_Internal_Name ('I'));
+         end if;
+      end Set_Block_Elab_Proc;
+
+      procedure Reset_Scopes_To_Block_Elab_Proc (L : List_Id);
+      --  Find entities in the elaboration code of a library package body that
+      --  contain or represent a subprogram body. A body can appear within a
+      --  block or a loop or can appear by itself if generated for an object
+      --  declaration that involves controlled actions. The first such entity
+      --  forces creation of a new procedure entity (via Set_Block_Elab_Proc)
+      --  that will be used to reset the scopes of all entities that become
+      --  local to the new elaboration procedure. This is needed for subsequent
+      --  unnesting actions, which depend on proper setting of the Scope links
+      --  to determine the nesting level of each subprogram.
 
       -----------------------
       --  Find_Local_Scope --
       -----------------------
 
-      function First_Local_Scope (L : List_Id) return Entity_Id is
+      procedure Reset_Scopes_To_Block_Elab_Proc (L : List_Id) is
          Id   : Entity_Id;
-         Scop : Entity_Id;
          Stat : Node_Id;
 
       begin
@@ -4050,41 +4081,36 @@ package body Exp_Ch7 is
                when N_Block_Statement =>
                   Id := Entity (Identifier (Stat));
 
-                  if No (First_Ent) then
-                     First_Ent := Id;
-                  end if;
+                  --  The Scope of this block needs to be reset to the new
+                  --  procedure if the block contains nested subprograms.
 
                   if Present (Id) and then Contains_Subprogram (Id) then
-                     return Id;
+                     Set_Block_Elab_Proc;
+                     Set_Scope (Id, Block_Elab_Proc);
                   end if;
 
                when N_Loop_Statement =>
                   Id := Entity (Identifier (Stat));
 
-                  if No (First_Ent) then
-                     First_Ent := Id;
-                  end if;
-
-                  if Contains_Subprogram (Id) then
+                  if Present (Id) and then Contains_Subprogram (Id) then
                      if Scope (Id) = Current_Scope then
-                        Loop_Id := Id;
+                        Set_Block_Elab_Proc;
+                        Set_Scope (Id, Block_Elab_Proc);
                      end if;
-
-                     return Id;
                   end if;
+
+                  --  We traverse the loop's statements as well, which may
+                  --  include other block (etc.) statements that need to have
+                  --  their Scope set to Block_Elab_Proc. (Is this really the
+                  --  case, or do such nested blocks refer to the loop scope
+                  --  rather than the loop's enclosing scope???.)
+
+                  Reset_Scopes_To_Block_Elab_Proc (Statements (Stat));
 
                when N_If_Statement =>
-                  Scop := First_Local_Scope (Then_Statements (Stat));
+                  Reset_Scopes_To_Block_Elab_Proc (Then_Statements (Stat));
 
-                  if Present (Scop) then
-                     return Scop;
-                  end if;
-
-                  Scop := First_Local_Scope (Else_Statements (Stat));
-
-                  if Present (Scop) then
-                     return Scop;
-                  end if;
+                  Reset_Scopes_To_Block_Elab_Proc (Else_Statements (Stat));
 
                   declare
                      Elif : Node_Id;
@@ -4092,11 +4118,8 @@ package body Exp_Ch7 is
                   begin
                      Elif := First (Elsif_Parts (Stat));
                      while Present (Elif) loop
-                        Scop := First_Local_Scope (Statements (Elif));
-
-                        if Present (Scop) then
-                           return Scop;
-                        end if;
+                        Reset_Scopes_To_Block_Elab_Proc
+                          (Then_Statements (Elif));
 
                         Next (Elif);
                      end loop;
@@ -4109,24 +4132,19 @@ package body Exp_Ch7 is
                   begin
                      Alt := First (Alternatives (Stat));
                      while Present (Alt) loop
-                        Scop := First_Local_Scope (Statements (Alt));
-
-                        if Present (Scop) then
-                           return Scop;
-                        end if;
+                        Reset_Scopes_To_Block_Elab_Proc (Statements (Alt));
 
                         Next (Alt);
                      end loop;
                   end;
 
+               --  Reset the Scope of a subprogram occurring at the top level
+
                when N_Subprogram_Body =>
                   Id := Defining_Entity (Stat);
 
-                  if No (First_Ent) then
-                     First_Ent := Id;
-                  end if;
-
-                  return Id;
+                  Set_Block_Elab_Proc;
+                  Set_Scope (Id, Block_Elab_Proc);
 
                when others =>
                   null;
@@ -4134,67 +4152,52 @@ package body Exp_Ch7 is
 
             Next (Stat);
          end loop;
-
-         return Empty;
-      end First_Local_Scope;
+      end Reset_Scopes_To_Block_Elab_Proc;
 
       --  Local variables
 
       H_Seq     : constant Node_Id := Handled_Statement_Sequence (N);
       Elab_Body : Node_Id;
       Elab_Call : Node_Id;
-      Elab_Proc : Entity_Id;
-      Ent       : Entity_Id;
 
    --  Start of processing for Check_Unnesting_Elaboration_Code
 
    begin
-      if Unnest_Subprogram_Mode
-        and then Present (H_Seq)
-        and then Is_Compilation_Unit (Current_Scope)
-      then
-         Ent := First_Local_Scope (Statements (H_Seq));
+      if Present (H_Seq) then
+         Reset_Scopes_To_Block_Elab_Proc (Statements (H_Seq));
 
-         --  There msy be subprograms declared in the exception handlers
+         --  There may be subprograms declared in the exception handlers
          --  of the current body.
 
-         if No (Ent) and then Present (Exception_Handlers (H_Seq)) then
+         if Present (Exception_Handlers (H_Seq)) then
             declare
                Handler : Node_Id := First (Exception_Handlers (H_Seq));
             begin
                while Present (Handler) loop
-                  Ent := First_Local_Scope (Statements (Handler));
-                  if Present (Ent) then
-                     First_Ent := Ent;
-                     exit;
-                  end if;
+                  Reset_Scopes_To_Block_Elab_Proc (Statements (Handler));
 
                   Next (Handler);
                end loop;
             end;
          end if;
 
-         if Present (Ent) then
-            Elab_Proc :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('I'));
-
+         if Present (Block_Elab_Proc) then
             Elab_Body :=
               Make_Subprogram_Body (Loc,
                 Specification              =>
                   Make_Procedure_Specification (Loc,
-                    Defining_Unit_Name => Elab_Proc),
+                    Defining_Unit_Name => Block_Elab_Proc),
                 Declarations               => New_List,
                 Handled_Statement_Sequence =>
                   Relocate_Node (Handled_Statement_Sequence (N)));
 
             Elab_Call :=
               Make_Procedure_Call_Statement (Loc,
-                Name => New_Occurrence_Of (Elab_Proc, Loc));
+                Name => New_Occurrence_Of (Block_Elab_Proc, Loc));
 
             Append_To (Declarations (N), Elab_Body);
             Analyze (Elab_Body);
-            Set_Has_Nested_Subprogram (Elab_Proc);
+            Set_Has_Nested_Subprogram (Block_Elab_Proc);
 
             Set_Handled_Statement_Sequence (N,
               Make_Handled_Sequence_Of_Statements (Loc,
@@ -4202,85 +4205,81 @@ package body Exp_Ch7 is
 
             Analyze (Elab_Call);
 
-            --  The scope of all blocks and loops in the elaboration code is
-            --  now the constructed elaboration procedure. Nested subprograms
-            --  within those blocks will have activation records if they
-            --  contain references to entities in the enclosing block or
-            --  the package itself.
-
-            Ent := First_Ent;
-            while Present (Ent) loop
-               Set_Scope (Ent, Elab_Proc);
-               Next_Entity (Ent);
-            end loop;
-
-            if Present (Loop_Id) then
-               Set_Scope (Loop_Id, Elab_Proc);
-            end if;
+            --  Could we reset the scopes of entities associated with the new
+            --  procedure here via a loop over entities rather than doing it in
+            --  the recursive Reset_Scopes_To_Elab_Proc procedure???
          end if;
       end if;
    end Check_Unnesting_Elaboration_Code;
 
-   -------------------------------------
-   -- Check_Unnesting_In_Declarations --
-   -------------------------------------
+   ---------------------------------------
+   -- Check_Unnesting_In_Decls_Or_Stmts --
+   ---------------------------------------
 
-   procedure Check_Unnesting_In_Declarations (Decls : List_Id) is
-      Decl       : Node_Id;
-      Ent        : Entity_Id;
-      Loc        : Source_Ptr;
-      Local_Body : Node_Id;
-      Local_Call : Node_Id;
-      Local_Proc : Entity_Id;
+   procedure Check_Unnesting_In_Decls_Or_Stmts (Decls_Or_Stmts : List_Id) is
+      Decl_Or_Stmt : Node_Id;
 
    begin
-      Local_Call := Empty;
-
       if Unnest_Subprogram_Mode
-        and then Present (Decls)
-        and then Is_Compilation_Unit (Current_Scope)
+        and then Present (Decls_Or_Stmts)
       then
-         Decl := First (Decls);
-         while Present (Decl) loop
-            if Nkind (Decl) = N_Block_Statement
-               and then Contains_Subprogram (Entity (Identifier (Decl)))
+         Decl_Or_Stmt := First (Decls_Or_Stmts);
+         while Present (Decl_Or_Stmt) loop
+            if Nkind (Decl_Or_Stmt) = N_Block_Statement
+              and then Contains_Subprogram (Entity (Identifier (Decl_Or_Stmt)))
             then
-               Ent := First_Entity (Entity (Identifier (Decl)));
-               Loc := Sloc (Decl);
-               Local_Proc :=
-                 Make_Defining_Identifier (Loc,
-                   Chars => New_Internal_Name ('P'));
+               Unnest_Block (Decl_Or_Stmt);
 
-               Local_Body :=
-                 Make_Subprogram_Body (Loc,
-                   Specification              =>
-                     Make_Procedure_Specification (Loc,
-                       Defining_Unit_Name => Local_Proc),
-                       Declarations       => Declarations (Decl),
-                   Handled_Statement_Sequence =>
-                     Handled_Statement_Sequence (Decl));
+            elsif Nkind (Decl_Or_Stmt) = N_Package_Declaration
+              and then not Modify_Tree_For_C
+            then
+               Check_Unnesting_In_Decls_Or_Stmts
+                 (Visible_Declarations (Specification (Decl_Or_Stmt)));
+               Check_Unnesting_In_Decls_Or_Stmts
+                 (Private_Declarations (Specification (Decl_Or_Stmt)));
 
-               Rewrite (Decl, Local_Body);
-               Analyze (Decl);
-               Set_Has_Nested_Subprogram (Local_Proc);
-
-               Local_Call :=
-                 Make_Procedure_Call_Statement (Loc,
-                   Name => New_Occurrence_Of (Local_Proc, Loc));
-
-               Insert_After (Decl, Local_Call);
-               Analyze (Local_Call);
-
-               while Present (Ent) loop
-                  Set_Scope (Ent, Local_Proc);
-                  Next_Entity (Ent);
-               end loop;
+            elsif Nkind (Decl_Or_Stmt) = N_Package_Body
+              and then not Modify_Tree_For_C
+            then
+               Check_Unnesting_In_Decls_Or_Stmts (Declarations (Decl_Or_Stmt));
+               if Present (Statements
+                    (Handled_Statement_Sequence (Decl_Or_Stmt)))
+               then
+                  Check_Unnesting_In_Decls_Or_Stmts (Statements
+                    (Handled_Statement_Sequence (Decl_Or_Stmt)));
+                  Check_Unnesting_In_Handlers (Decl_Or_Stmt);
+               end if;
             end if;
 
-            Next (Decl);
+            Next (Decl_Or_Stmt);
          end loop;
       end if;
-   end Check_Unnesting_In_Declarations;
+   end Check_Unnesting_In_Decls_Or_Stmts;
+
+   ---------------------------------
+   -- Check_Unnesting_In_Handlers --
+   ---------------------------------
+
+   procedure Check_Unnesting_In_Handlers (N : Node_Id) is
+      Stmt_Seq : constant Node_Id := Handled_Statement_Sequence (N);
+
+   begin
+      if Present (Stmt_Seq)
+        and then Present (Exception_Handlers (Stmt_Seq))
+      then
+         declare
+            Handler : Node_Id := First (Exception_Handlers (Stmt_Seq));
+         begin
+            while Present (Handler) loop
+               if Present (Statements (Handler)) then
+                  Check_Unnesting_In_Decls_Or_Stmts (Statements (Handler));
+               end if;
+
+               Next (Handler);
+            end loop;
+         end;
+      end if;
+   end Check_Unnesting_In_Handlers;
 
    ------------------------------
    -- Check_Visibly_Controlled --
@@ -5036,8 +5035,20 @@ package body Exp_Ch7 is
          --  end of the body statements.
 
          Expand_Pragma_Initial_Condition (Spec_Id, N);
-         Check_Unnesting_Elaboration_Code (N);
-         Check_Unnesting_In_Declarations (Declarations (N));
+
+         --  If this is a library-level package and unnesting is enabled,
+         --  check for the presence of blocks with nested subprograms occurring
+         --  in elaboration code, and generate procedures to encapsulate the
+         --  blocks in case the nested subprograms make up-level references.
+
+         if Unnest_Subprogram_Mode
+           and then
+             Is_Library_Level_Entity (Current_Scope)
+         then
+            Check_Unnesting_Elaboration_Code (N);
+            Check_Unnesting_In_Decls_Or_Stmts (Declarations (N));
+            Check_Unnesting_In_Handlers (N);
+         end if;
 
          Pop_Scope;
       end if;
@@ -5196,8 +5207,17 @@ package body Exp_Ch7 is
          Set_Finalizer (Id, Fin_Id);
       end if;
 
-      Check_Unnesting_In_Declarations (Visible_Declarations (Spec));
-      Check_Unnesting_In_Declarations (Private_Declarations (Spec));
+      --  If this is a library-level package and unnesting is enabled,
+      --  check for the presence of blocks with nested subprograms occurring
+      --  in elaboration code, and generate procedures to encapsulate the
+      --  blocks in case the nested subprograms make up-level references.
+
+      if Unnest_Subprogram_Mode
+        and then Is_Library_Level_Entity (Current_Scope)
+      then
+         Check_Unnesting_In_Decls_Or_Stmts (Visible_Declarations (Spec));
+         Check_Unnesting_In_Decls_Or_Stmts (Private_Declarations (Spec));
+      end if;
    end Expand_N_Package_Declaration;
 
    ----------------------------
@@ -9179,6 +9199,62 @@ package body Exp_Ch7 is
    begin
       Store_Actions_In_Scope (Cleanup, L);
    end Store_Cleanup_Actions_In_Scope;
+
+   ------------------
+   -- Unnest_Block --
+   ------------------
+
+   procedure Unnest_Block (Decl : Node_Id) is
+      Loc        : constant Source_Ptr := Sloc (Decl);
+      Ent        : Entity_Id;
+      Local_Body : Node_Id;
+      Local_Call : Node_Id;
+      Local_Proc : Entity_Id;
+      Local_Scop : Entity_Id;
+
+   begin
+      Local_Scop := Entity (Identifier (Decl));
+      Ent := First_Entity (Local_Scop);
+
+      Local_Proc :=
+        Make_Defining_Identifier (Loc,
+          Chars => New_Internal_Name ('P'));
+
+      Local_Body :=
+        Make_Subprogram_Body (Loc,
+          Specification              =>
+            Make_Procedure_Specification (Loc,
+              Defining_Unit_Name => Local_Proc),
+              Declarations       => Declarations (Decl),
+          Handled_Statement_Sequence =>
+            Handled_Statement_Sequence (Decl));
+
+      Rewrite (Decl, Local_Body);
+      Analyze (Decl);
+      Set_Has_Nested_Subprogram (Local_Proc);
+
+      Local_Call :=
+        Make_Procedure_Call_Statement (Loc,
+          Name => New_Occurrence_Of (Local_Proc, Loc));
+
+      Insert_After (Decl, Local_Call);
+      Analyze (Local_Call);
+
+      --  The new subprogram has the same scope as the original block
+
+      Set_Scope (Local_Proc, Scope (Local_Scop));
+
+      --  And the entity list of the new procedure is that of the block
+
+      Set_First_Entity (Local_Proc, Ent);
+
+      --  Reset the scopes of all the entities to the new procedure
+
+      while Present (Ent) loop
+         Set_Scope (Ent, Local_Proc);
+         Next_Entity (Ent);
+      end loop;
+   end Unnest_Block;
 
    --------------------------------
    -- Wrap_Transient_Declaration --
