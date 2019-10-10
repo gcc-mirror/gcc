@@ -1,3 +1,32 @@
+2019-10-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87488
+	* common.opt (fdiagnostics-urls=): New option.
+	(diagnostic-url.h): Add SourceInclude.
+	(diagnostic_url_rule): New enum.
+	* diagnostic-color.c: Include "diagnostic-url.h".
+	(diagnostic_urls_enabled_p): New function.
+	* diagnostic-url.h: New file.
+	* diagnostic.c: Include "diagnostic-url.h".
+	(diagnostic_urls_init): New function.
+	* diagnostic.h (diagnostic_urls_init): New decl.
+	* doc/invoke.texi (Diagnostic Message Formatting Options): Add
+	-fdiagnostics-urls to the list.
+	(-fdiagnostics-urls): New option.
+	* gcc.c (driver_handle_option): Handle OPT_fdiagnostics_urls_.
+	(driver::global_initializations): Call diagnostic_urls_init.
+	* opts-global.c (init_options_once): Likewise.
+	* opts.c (common_handle_option): Handle OPT_fdiagnostics_urls_.
+	* pretty-print.c (pretty_printer::pretty_printer): Initialize
+	show_urls.
+	(pp_begin_url): New function.
+	(pp_end_url): New function.
+	(selftest::test_urls): New selftest.
+	(selftest::pretty_print_c_tests): Call it.
+	* pretty-print.h (pretty_printer::show_urls): New field.
+	(pp_begin_url): New decl.
+	(pp_end_url): New decl.
+
 2019-10-10  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/92022

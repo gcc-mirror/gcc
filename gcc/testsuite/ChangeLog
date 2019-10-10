@@ -1,3 +1,8 @@
+2019-10-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87488
+	* lib/prune.exp (TEST_ALWAYS_FLAGS): Add -fdiagnostics-urls=never.
+
 2019-10-10  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/92022
