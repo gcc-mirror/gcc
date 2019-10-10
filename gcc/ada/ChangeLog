@@ -1,5 +1,10 @@
-2019-10-10  Piotr Trojanek  <trojanek@adacore.com>
+2019-10-10  Patrick Bernardi  <bernardi@adacore.com>
 
-	* sem_prag.adb (Analyze_Global_In_Decl_Part): Simplify previous
-	test, just like in a recent commit we simplified a similar test
-	for Depends contract.
+	* bindgen.adb (System_Secondary_Stack_Package_In_Closure):
+	Renamed flag System_Secondary_Stack_Used to be clearer of what
+	it represents.
+	(Gen_Adainit): Refactor secondary stack related code to make it
+	clearer.
+	* rtsfind.adb (Load_RTU): Don't set Sec_Stack_Used flag here
+	(RTE): Set Sec_Stack_Used if the System.Secondary_Stack is
+	referenced, but not if we're ignoring ghost code.
