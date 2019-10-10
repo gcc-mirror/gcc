@@ -1,5 +1,6 @@
-2019-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+2019-10-10  Ed Schonberg  <schonberg@adacore.com>
 
-	* sem_ch3.adb (Analyze_Number_Declaration): Set
-	Debug_Info_Needed in the case where the expression is an integer
-	literal.
+	* sem_aggr.adb (Resolve_Array_Aggregate): Set properly the
+	Predicated_Parent link of an itype created for an aggregate, so
+	that the predicate_function of the parent can support proofs on
+	the object that it initializes.
