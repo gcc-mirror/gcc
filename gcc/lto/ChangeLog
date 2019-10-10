@@ -1,3 +1,7 @@
+2019-10-10  Richard Biener  <rguenther@suse.de>
+
+	* lto-common.c (unify_scc): Do not merge anonymous NAMESPACE_DECLs.
+
 2019-10-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* lto-lang.c (flag_isoc2x): New variable.
