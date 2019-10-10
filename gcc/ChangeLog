@@ -1,5 +1,33 @@
 2019-10-10  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* common/config/s390/s390-common.c (PF_ARCH13): Rename to...
+	(PF_Z15): ... this.
+	* config.gcc: Add z15 as option for --with-arch and --with-tune
+	configure switches.
+	* config/s390/s390-c.c (s390_resolve_overloaded_builtin): Add
+	error reporting for unsupported builtins.
+	* config/s390/s390-opts.h (enum processor_type): Rename
+	PROCESSOR_8561_ARCH13 to PROCESSOR_8561_Z15.
+	* config/s390/8561.md: Rename arch13 to z15 throughout the file.
+	* config/s390/driver-native.c (s390_host_detect_local_cpu):
+	Likewise.
+	* config/s390/s390-builtins.def: Likewise.
+	* config/s390/s390.c (processor_table): Add z15 as option and keep arch13 as alternative.
+	(s390_expand_builtin): Add missing check for unsupported builtins.
+	(s390_canonicalize_comparison): Rename TARGET_ARCH13 to TARGET_Z15.
+	(s390_rtx_costs): Likewise.
+	(s390_get_sched_attrmask): Rename arch13 to z15.
+	(s390_get_unit_mask): Likewise.
+	(s390_is_fpd): Likewise.
+	(s390_is_fxd): Likewise.
+	* config/s390/s390.h (enum processor_flags): Likewise.
+	* config/s390/s390.md: Likewise.
+	* config/s390/vector.md: Likewise.
+	* config/s390/vx-builtins.md: Likewise.
+	* config/s390/s390.opt: Add z15 to processor_type value.
+
+2019-10-10  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	PR target/91035
 	* config/s390/s390-protos.h (s390_output_split_stack_data): Add
 	prototype.
