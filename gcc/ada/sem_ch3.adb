@@ -3522,6 +3522,8 @@ package body Sem_Ch3 is
          Set_Etype     (Id, Universal_Integer);
          Set_Ekind     (Id, E_Named_Integer);
          Set_Is_Frozen (Id, True);
+
+         Set_Debug_Info_Needed (Id);
          return;
       end if;
 

@@ -1,5 +1,5 @@
-2019-10-10  Yannick Moy  <moy@adacore.com>
+2019-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Add subprograms
-	with deep parameter or result type as not candidates for
-	inlining.
+	* sem_ch3.adb (Analyze_Number_Declaration): Set
+	Debug_Info_Needed in the case where the expression is an integer
+	literal.
