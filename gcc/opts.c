@@ -3218,3 +3218,24 @@ option_name (diagnostic_context *context, int option_index,
   else
     return NULL;
 }
+
+/* Return malloced memory for a URL describing the option OPTION_INDEX
+   which enabled a diagnostic (context CONTEXT).  */
+
+char *
+get_option_url (diagnostic_context *, int option_index)
+{
+  if (option_index)
+    /* DOCUMENTATION_ROOT_URL should be supplied via -D by the Makefile
+       (see --with-documentation-root-url).
+
+       Expect an anchor of the form "index-Wfoo" e.g.
+       <a name="index-Wformat"></a>, and thus an id within
+       the URL of "#index-Wformat".  */
+    return concat (DOCUMENTATION_ROOT_URL,
+		   "Warning-Options.html",
+		   "#index", cl_options[option_index].opt_text,
+		   NULL);
+  else
+    return NULL;
+}

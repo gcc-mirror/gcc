@@ -4116,6 +4116,7 @@ might be printed in JSON form (after formatting) like this:
         ],
         "message": "this \u2018if\u2019 clause does not guard...",
         "option": "-Wmisleading-indentation",
+        "option_url": "https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wmisleading-indentation",
         "children": [
             @{
                 "kind": "note",

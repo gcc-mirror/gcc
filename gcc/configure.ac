@@ -960,6 +960,20 @@ AC_SUBST(CONFIGURE_SPECS)
 ACX_PKGVERSION([GCC])
 ACX_BUGURL([https://gcc.gnu.org/bugs/])
 
+# Allow overriding the default URL for documentation
+AC_ARG_WITH(documentation-root-url,
+    AS_HELP_STRING([--with-documentation-root-url=URL],
+                   [Root for documentation URLs]),
+    [case "$withval" in
+      yes) AC_MSG_ERROR([documentation root URL not specified]) ;;
+      no)  AC_MSG_ERROR([documentation root URL not specified]) ;;
+      *)   DOCUMENTATION_ROOT_URL="$withval"
+	   ;;
+     esac],
+     DOCUMENTATION_ROOT_URL="https://gcc.gnu.org/onlinedocs/gcc/"
+)
+AC_SUBST(DOCUMENTATION_ROOT_URL)
+
 # Sanity check enable_languages in case someone does not run the toplevel
 # configure # script.
 AC_ARG_ENABLE(languages,

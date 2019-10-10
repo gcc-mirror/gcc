@@ -8,6 +8,26 @@
 2019-10-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR 87488
+	* Makefile.in (CFLAGS-opts.o): Pass in DOCUMENTATION_ROOT_URL via
+	-D.
+	* configure.ac (--with-documentation-root-url): New option.
+	* configure: Regenerate.
+	* diagnostic-format-json.cc (json_end_diagnostic): If there is an
+	option URL, add it as a new string field of the diagnostic option.
+	* diagnostic.c (diagnostic_initialize): Initialize get_option_url.
+	(print_option_information): If get_option_url is non-NULL, call
+	it, and if the result is non-NULL, potentially emit an escape
+	sequence to markup the option text with the resulting URL.
+	* diagnostic.h (diagnostic_context::get_option_url): New callback.
+	* doc/invoke.texi (-fdiagnostics-format=): Add "option_url" to
+	example of JSON output.
+	* opts-diagnostic.h (get_option_url): New decl.
+	* opts.c (get_option_url): New function.
+	* toplev.c (general_init): Initialize the get_option_url callback.
+
+2019-10-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87488
 	* common.opt (fdiagnostics-urls=): New option.
 	(diagnostic-url.h): Add SourceInclude.
 	(diagnostic_url_rule): New enum.

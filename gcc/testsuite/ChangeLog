@@ -1,6 +1,17 @@
 2019-10-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR 87488
+	* c-c++-common/diagnostic-format-json-2.c: Expect an "option_url"
+	field.
+	* c-c++-common/diagnostic-format-json-3.c: Likewise.
+	* gfortran.dg/diagnostic-format-json-2.F90: Likewise.
+	* gfortran.dg/diagnostic-format-json-3.F90: Likewise.
+	* jit.dg/test-error-array-bounds.c (create_code): Ensure that
+	error messages don't contain escaped URLs.
+
+2019-10-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87488
 	* lib/prune.exp (TEST_ALWAYS_FLAGS): Add -fdiagnostics-urls=never.
 
 2019-10-10  Uroš Bizjak  <ubizjak@gmail.com>

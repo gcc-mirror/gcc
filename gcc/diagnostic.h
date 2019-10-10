@@ -194,6 +194,12 @@ struct diagnostic_context
      May be passed 0 as well as the index of a particular option.  */
   char *(*option_name) (diagnostic_context *, int, diagnostic_t, diagnostic_t);
 
+  /* Client hook to return a URL describing the option that controls
+     a diagnostic.  Returns malloced memory.  May return NULL if no URL
+     is available.  May be passed 0 as well as the index of a
+     particular option.  */
+  char *(*get_option_url) (diagnostic_context *, int);
+
   /* Auxiliary data for client.  */
   void *x_data;
 
