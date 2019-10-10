@@ -360,11 +360,11 @@ package body Sem_Ch13 is
       Num_CC : Natural;
 
    begin
-      --  Processing here used to depend on Ada version: the behavior was
-      --  changed by AI95-0133. However this AI is a Binding interpretation,
-      --  so we now implement it even in Ada 95 mode. The original behavior
-      --  from unamended Ada 95 is still available for compatibility under
-      --  debugging switch -gnatd.
+      --  The processing done here used to depend on the Ada version, but the
+      --  behavior has been changed by AI95-0133. However this AI is a Binding
+      --  Interpretation, so we now implement it even in Ada 95 mode. But the
+      --  original behavior from unamended Ada 95 is available for the sake of
+      --  compatibility under the debugging switch -gnatd.p in Ada 95 mode.
 
       if Ada_Version < Ada_2005 and then Debug_Flag_Dot_P then
          Adjust_Record_For_Reverse_Bit_Order_Ada_95 (R);
@@ -375,6 +375,11 @@ package body Sem_Ch13 is
       --  AI-133. This involves gathering all components which start at the
       --  same byte offset and processing them together. Same approach is still
       --  valid in later versions including Ada 2012.
+
+      --  Note that component clauses found on record types may be inherited,
+      --  in which case the layout of the component with such a clause still
+      --  has to be done at this point. Therefore, the processing done here
+      --  must exclusively rely on the Component_Clause of the component.
 
       --  This first loop through components does two things. First it deals
       --  with the case of components with component clauses whose length is
@@ -616,13 +621,19 @@ package body Sem_Ch13 is
                   Comp : constant Entity_Id := Comps (C);
                   CC   : constant Node_Id   := Component_Clause (Comp);
 
+                  FB   : constant Uint := Static_Integer (First_Bit (CC));
                   LB   : constant Uint := Static_Integer (Last_Bit (CC));
-                  NFB  : constant Uint := MSS - Uint_1 - LB;
-                  NLB  : constant Uint := NFB + Esize (Comp) - 1;
+                  NFB  : constant Uint := MSS - 1 - LB;
+                  NLB  : constant Uint := NFB + LB - FB;
                   Pos  : constant Uint := Static_Integer (Position (CC));
 
                begin
-                  if Warn_On_Reverse_Bit_Order then
+                  --  Do not warn for the artificial clause built for the tag
+                  --  in Check_Record_Representation_Clause if it is inherited.
+
+                  if Warn_On_Reverse_Bit_Order
+                    and then Chars (Comp) /= Name_uTag
+                  then
                      Error_Msg_Uint_1 := MSS;
                      Error_Msg_N
                        ("info: reverse bit order in machine scalar of "
@@ -642,8 +653,9 @@ package body Sem_Ch13 is
                   end if;
 
                   Set_Component_Bit_Offset (Comp, Pos * SSU + NFB);
-                  Set_Normalized_Position  (Comp, Pos + NFB / SSU);
+                  Set_Esize                (Comp, 1 + (NLB - NFB));
                   Set_Normalized_First_Bit (Comp, NFB mod SSU);
+                  Set_Normalized_Position  (Comp, Pos + NFB / SSU);
                end;
             end loop;
          end loop;
@@ -6937,7 +6949,6 @@ package body Sem_Ch13 is
       CC      : Node_Id;
       Comp    : Entity_Id;
       Fbit    : Uint;
-      Hbit    : Uint := Uint_0;
       Lbit    : Uint;
       Ocomp   : Entity_Id;
       Posit   : Uint;
@@ -7263,6 +7274,9 @@ package body Sem_Ch13 is
                         Set_Normalized_First_Bit (Comp, Fbit mod SSU);
                         Set_Normalized_Position  (Comp, Fbit / SSU);
 
+                        Set_Normalized_Position_Max
+                          (Comp, Normalized_Position (Comp));
+
                         if Warn_On_Overridden_Size
                           and then Has_Size_Clause (Etype (Comp))
                           and then RM_Size (Etype (Comp)) /= Esize (Comp)
@@ -7270,16 +7284,6 @@ package body Sem_Ch13 is
                            Error_Msg_NE
                              ("?S?component size overrides size clause for&",
                               Component_Name (CC), Etype (Comp));
-                        end if;
-
-                        --  This information is also set in the corresponding
-                        --  component of the base type, found by accessing the
-                        --  Original_Record_Component link if it is present.
-
-                        Ocomp := Original_Record_Component (Comp);
-
-                        if Hbit < Lbit then
-                           Hbit := Lbit;
                         end if;
 
                         Check_Size
@@ -7291,12 +7295,18 @@ package body Sem_Ch13 is
                         Set_Biased
                           (Comp, First_Node (CC), "component clause", Biased);
 
-                        if Present (Ocomp) then
+                        --  This information is also set in the corresponding
+                        --  component of the base type, found by accessing the
+                        --  Original_Record_Component link if it is present.
+
+                        Ocomp := Original_Record_Component (Comp);
+
+                        if Present (Ocomp) and then Ocomp /= Comp then
                            Set_Component_Clause     (Ocomp, CC);
                            Set_Component_Bit_Offset (Ocomp, Fbit);
+                           Set_Esize                (Ocomp, 1 + (Lbit - Fbit));
                            Set_Normalized_First_Bit (Ocomp, Fbit mod SSU);
                            Set_Normalized_Position  (Ocomp, Fbit / SSU);
-                           Set_Esize                (Ocomp, 1 + (Lbit - Fbit));
 
                            Set_Normalized_Position_Max
                              (Ocomp, Normalized_Position (Ocomp));
@@ -10616,7 +10626,7 @@ package body Sem_Ch13 is
              First_Bit => Make_Integer_Literal (Loc, Uint_0),
              Last_Bit  =>
                Make_Integer_Literal (Loc,
-                 UI_From_Int (System_Address_Size))));
+                 UI_From_Int (System_Address_Size - 1))));
 
          Ccount := Ccount + 1;
       end if;
