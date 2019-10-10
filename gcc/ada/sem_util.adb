@@ -6997,17 +6997,17 @@ package body Sem_Util is
       elsif Ekind_In (Dyn_Scop, E_Block, E_Loop, E_Return_Statement) then
          return Enclosing_Subprogram (Dyn_Scop);
 
-      elsif Ekind (Dyn_Scop) = E_Entry then
+      elsif Ekind_In (Dyn_Scop, E_Entry, E_Entry_Family) then
 
-         --  For a task entry, return the enclosing subprogram of the
-         --  task itself.
+         --  For a task entry or entry family, return the enclosing subprogram
+         --  of the task itself.
 
          if Ekind (Scope (Dyn_Scop)) = E_Task_Type then
             return Enclosing_Subprogram (Dyn_Scop);
 
-         --  A protected entry is rewritten as a protected procedure which is
-         --  the desired enclosing subprogram. This is relevant when unnesting
-         --  a procedure local to an entry body.
+         --  A protected entry or entry family is rewritten as a protected
+         --  procedure which is the desired enclosing subprogram. This is
+         --  relevant when unnesting a procedure local to an entry body.
 
          else
             return Protected_Body_Subprogram (Dyn_Scop);
