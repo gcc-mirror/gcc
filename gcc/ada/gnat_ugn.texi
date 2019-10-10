@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Sep 14, 2019
+GNAT User's Guide for Native Platforms , Oct 09, 2019
 
 AdaCore
 
@@ -682,12 +682,12 @@ material for the several revisions of the Ada language standard.
 implementation of Ada.
 
 @item 
-@cite{Using the GNAT Programming Studio}, which describes the GPS
+@cite{Using GNAT Studio}, which describes the GNAT Studio
 Integrated Development Environment.
 
 @item 
-@cite{GNAT Programming Studio Tutorial}, which introduces the
-main GPS features through examples.
+@cite{GNAT Studio Tutorial}, which introduces the
+main GNAT Studio features through examples.
 
 @item 
 @cite{Debugging with GDB},
@@ -897,11 +897,11 @@ the '\' character should be used instead.
 This chapter describes how to use GNAT's command line interface to build
 executable Ada programs.
 On most platforms a visually oriented Integrated Development Environment
-is also available, the GNAT Programming Studio (GPS).
-GPS offers a graphical "look and feel", support for development in
+is also available, the GNAT Programming Studio (GNAT Studio).
+GNAT Studio offers a graphical "look and feel", support for development in
 other programming languages, comprehensive browsing features, and
 many other capabilities.
-For information on GPS please refer to
+For information on GNAT Studio please refer to
 @cite{Using the GNAT Programming Studio}.
 
 @menu
@@ -10446,7 +10446,7 @@ e.adb:4:20: ";" should be "is"
 
 The first integer after the file name is the line number in the file,
 and the second integer is the column number within the line.
-@code{GPS} can parse the error messages
+@code{GNAT Studio} can parse the error messages
 and point to the referenced character.
 The following switches provide control over the error message
 format:
@@ -14110,7 +14110,7 @@ if any.
 
 @c end of switch description (leave this comment to ease automatic parsing for
 
-@c GPS
+@c GNAT Studio
 
 In the above rules, appearing in column one is always permitted, that is,
 counts as meeting either a requirement for a required preceding space,
@@ -19394,9 +19394,9 @@ variables, and more generally to report on the state of execution.
 
 This section describes how to initiate the debugger.
 
-The debugger can be launched from a @code{GPS} menu or
+The debugger can be launched from a @code{GNAT Studio} menu or
 directly from the command line. The description below covers the latter use.
-All the commands shown can be used in the @code{GPS} debug console window,
+All the commands shown can be used in the @code{GNAT Studio} debug console window,
 but there are usually more GUI-based ways to achieve the same effect.
 
 The command to run @code{GDB} is

@@ -8194,15 +8194,16 @@ package body Sem_Prag is
             Set_Convention_From_Pragma (E);
 
             --  Treat a pragma Import as an implicit body, and pragma import
-            --  as implicit reference (for navigation in GPS).
+            --  as implicit reference (for navigation in GNAT Studio).
 
             if Prag_Id = Pragma_Import then
                Generate_Reference (E, Id, 'b');
 
             --  For exported entities we restrict the generation of references
             --  to entities exported to foreign languages since entities
-            --  exported to Ada do not provide further information to GPS and
-            --  add undesired references to the output of the gnatxref tool.
+            --  exported to Ada do not provide further information to
+            --  GNAT Studio and add undesired references to the output of the
+            --  gnatxref tool.
 
             elsif Prag_Id = Pragma_Export
               and then Convention (E) /= Convention_Ada
