@@ -614,10 +614,17 @@ package body Sem_Aggr is
       if Has_Predicates (Typ) then
          Set_Has_Predicates (Itype);
 
+         --  If the base type has a predicate, capture the predicated parent
+         --  or the existing predicate function for SPARK use.
+
          if Present (Predicate_Function (Typ)) then
             Set_Predicate_Function (Itype, Predicate_Function (Typ));
-         else
+
+         elsif Is_Itype (Typ) then
             Set_Predicated_Parent (Itype, Predicated_Parent (Typ));
+
+         else
+            Set_Predicated_Parent (Itype, Typ);
          end if;
       end if;
 
