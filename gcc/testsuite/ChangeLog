@@ -1,3 +1,11 @@
+2019-10-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-float-dfp-1.c, gcc.dg/c2x-float-no-dfp-1.c,
+	gcc.dg/c2x-float-no-dfp-2.c, gcc.dg/dfp/c2x-float-dfp-1.c,
+	gcc.dg/dfp/c2x-float-dfp-2.c, gcc.dg/dfp/c2x-float-dfp-3.c,
+	gcc.dg/dfp/tr24732-float-dfp-1.c,
+	gcc.dg/dfp/ts18661-2-float-dfp-1.c: New tests.
+
 2019-10-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR 87488

@@ -1,3 +1,14 @@
+2019-10-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* ginclude/float.h [!__DEC32_MANT_DIG__]: Do not define DFP
+	macros.
+	[__STDC_WANT_IEC_60559_DFP_EXT__ || __STDC_VERSION__ > 201710L]:
+	Also define DFP macros for these conditions.
+	[!__STDC_WANT_DEC_FP__] (DEC32_SUBNORMAL_MIN, DEC64_SUBNORMAL_MIN,
+	DEC128_SUBNORMAL_MIN): Do not define.
+	[__STDC_WANT_IEC_60559_DFP_EXT__ || __STDC_VERSION__ > 201710L]
+	(DEC32_TRUE_MIN, DEC64_TRUE_MIN, DEC128_TRUE_MIN): New macros.
+
 2019-10-10  Xiong Hu Luo  <luoxhu@linux.ibm.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
