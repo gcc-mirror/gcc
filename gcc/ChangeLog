@@ -1,3 +1,11 @@
+2019-10-10  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/26241
+	* doc/lto.texi (IPA): Reference to the IPA passes.
+	* doc/passes.texi (Pass manager): Add node IPA passes and
+	  description for each IPA pass.
+
 2019-10-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-reference.c: Do not include splay-tree.h
