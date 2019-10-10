@@ -1,3 +1,11 @@
+2019-10-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/92037
+	* cgraph.c (symbol_table_test::symbol_table_test): Use ggc_alloc
+	rather than ggc_alloc_cleared to alloc symbol table.
+	* toplev.c (general_init): Likewise.
+	* cgraph.h (symbol_table): Explicitly construct every field.
+
 2019-10-10  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* common/config/s390/s390-common.c (PF_ARCH13): Rename to...
