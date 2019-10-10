@@ -600,7 +600,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
            (Element => Container.Elements (Position.Node)'Access,
             Control => (Controlled with TC))
          do
-            Lock (TC.all);
+            Busy (TC.all);
          end return;
       end;
    end Constant_Reference;
@@ -2291,7 +2291,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       TC : constant Tamper_Counts_Access := Container.TC'Unrestricted_Access;
    begin
       return R : constant Reference_Control_Type := (Controlled with TC) do
-         Lock (TC.all);
+         Busy (TC.all);
       end return;
    end Pseudo_Reference;
 
@@ -2490,7 +2490,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
            (Element => Container.Elements (Position.Node)'Access,
             Control => (Controlled with TC))
          do
-            Lock (TC.all);
+            Busy (TC.all);
          end return;
       end;
    end Reference;
