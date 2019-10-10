@@ -1,4 +1,4 @@
-2019-10-10  Gary Dismukes  <dismukes@adacore.com>
+2019-10-10  Arnaud Charlet  <charlet@adacore.com>
 
-	* libgnat/a-ststio.ads (File_Type): Apply pragma
-	Preelaborable_Initialization to the type.
+	* freeze.adb (Freeze_Subprogram): Ensure constructor is a C++
+	constructor.
