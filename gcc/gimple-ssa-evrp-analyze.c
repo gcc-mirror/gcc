@@ -182,6 +182,7 @@ evrp_range_analyzer::assert_value_ranges_are_equal
       fprintf (stderr, "\n");
       vr_values->dump_all_value_ranges (stderr);
       fprintf (stderr, "==============================================\n");
+      debug_function (current_function_decl, TDF_NONE);
       gcc_unreachable ();
     }
 }
