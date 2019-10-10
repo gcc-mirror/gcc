@@ -154,6 +154,17 @@ json_end_diagnostic (diagnostic_context *context, diagnostic_info *diagnostic,
       free (option_text);
     }
 
+  if (context->get_option_url)
+    {
+      char *option_url = context->get_option_url (context,
+						  diagnostic->option_index);
+      if (option_url)
+	{
+	  diag_obj->set ("option_url", new json::string (option_url));
+	  free (option_url);
+	}
+    }
+
   /* If we've already emitted a diagnostic within this auto_diagnostic_group,
      then add diag_obj to its "children" array.  */
   if (cur_group)
