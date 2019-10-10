@@ -1,3 +1,8 @@
+2019-10-10  Marek Polacek  <polacek@redhat.com>
+
+	* typeck.c (comp_ptr_ttypes_real): Change the return type to bool.
+	Use false instead of 0.
+
 2019-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.h (struct cp_omp_declare_simd_data): Add variant_p member.

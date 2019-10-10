@@ -52,7 +52,7 @@ static tree cp_pointer_int_sum (location_t, enum tree_code, tree, tree,
 				tsubst_flags_t);
 static tree rationalize_conditional_expr (enum tree_code, tree, 
 					  tsubst_flags_t);
-static int comp_ptr_ttypes_real (tree, tree, int);
+static bool comp_ptr_ttypes_real (tree, tree, int);
 static bool comp_except_types (tree, tree, bool);
 static bool comp_array_types (const_tree, const_tree, compare_bounds_t, bool);
 static tree pointer_diff (location_t, tree, tree, tree, tsubst_flags_t, tree *);
@@ -9903,7 +9903,7 @@ check_return_expr (tree retval, bool *no_warning)
    If CONSTP is positive, then all outer pointers have been
    const-qualified.  */
 
-static int
+static bool
 comp_ptr_ttypes_real (tree to, tree from, int constp)
 {
   bool to_more_cv_qualified = false;
@@ -9912,12 +9912,12 @@ comp_ptr_ttypes_real (tree to, tree from, int constp)
   for (; ; to = TREE_TYPE (to), from = TREE_TYPE (from))
     {
       if (TREE_CODE (to) != TREE_CODE (from))
-	return 0;
+	return false;
 
       if (TREE_CODE (from) == OFFSET_TYPE
 	  && !same_type_p (TYPE_OFFSET_BASETYPE (from),
 			   TYPE_OFFSET_BASETYPE (to)))
-	return 0;
+	return false;
 
       /* Const and volatile mean something different for function and
 	 array types, so the usual checks are not appropriate.  We'll
@@ -9925,12 +9925,12 @@ comp_ptr_ttypes_real (tree to, tree from, int constp)
       if (!FUNC_OR_METHOD_TYPE_P (to) && TREE_CODE (to) != ARRAY_TYPE)
 	{
 	  if (!at_least_as_qualified_p (to, from))
-	    return 0;
+	    return false;
 
 	  if (!at_least_as_qualified_p (from, to))
 	    {
 	      if (constp == 0)
-		return 0;
+		return false;
 	      to_more_cv_qualified = true;
 	    }
 
@@ -9946,7 +9946,7 @@ comp_ptr_ttypes_real (tree to, tree from, int constp)
 	 not match, then no conversion is possible.  */
       if (TREE_CODE (to) == ARRAY_TYPE
 	  && !comp_array_types (to, from, bounds_first, /*strict=*/false))
-	return 0;
+	return false;
 
       if (!TYPE_PTR_P (to)
 	  && !TYPE_PTRDATAMEM_P (to)
