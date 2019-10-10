@@ -1,3 +1,10 @@
+2019-10-10  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/77918
+	* config/s390/vector.md (vcond_comparison_operator): New
+	predicate.
+	(vcond<V_HW:mode><V_HW2:mode>): Use vcond_comparison_operator.
+
 2019-10-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR 87488
