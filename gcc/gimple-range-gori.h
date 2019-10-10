@@ -146,8 +146,9 @@ public:
       behavior.  */
   virtual ~gori_compute ();
   bool range_of_expr (value_range_base &r, tree expr, gimple *s = NULL);
-  virtual bool outgoing_edge_range_p (value_range_base &r, edge e, tree name,
-				      value_range_base *name_range = NULL);
+  virtual bool outgoing_edge_range_p
+				(value_range_base &r, edge e, tree name,
+				 const value_range_base *name_range = NULL);
 protected:
   virtual void range_of_ssa_name (value_range_base &, tree name,
 				  gimple *s = NULL);
@@ -155,32 +156,40 @@ protected:
   gori_map m_gori_map;
 private:
   value_range_base get_tree_range (tree expr, tree name,
-				   value_range_base *range_of_name);
+				   const value_range_base *range_of_name);
   bool compute_operand_range (value_range_base &r, gimple *s,
 			      const value_range_base &lhs,
-			      tree name, value_range_base *name_range = NULL);
+			      tree name,
+			      const value_range_base *name_range = NULL);
   bool compute_operand_range_switch (value_range_base &r, gswitch *s,
 				     const value_range_base &lhs,
-				     tree name, value_range_base *name_range);
+				     tree name,
+				     const value_range_base *name_range);
   bool compute_name_range_op (value_range_base &r, gimple *s,
 			      const value_range_base &lhs,
-			      tree name, value_range_base *name_range);
+			      tree name,
+			      const value_range_base *name_range);
   bool compute_operand_range_op (value_range_base &r, gimple *stmt,
 				 const value_range_base &lhs,
-				 tree name, value_range_base *name_range);
+				 tree name,
+				 const value_range_base *name_range);
   bool compute_operand1_range (value_range_base &r, gimple *s,
 			       const value_range_base &lhs,
-			       tree name, value_range_base *name_range);
+			       tree name,
+			       const value_range_base *name_range);
   bool compute_operand2_range (value_range_base &r, gimple *s,
 			       const value_range_base &lhs,
-			       tree name, value_range_base *name_range);
-  bool compute_operand1_and_operand2_range (value_range_base &r, gimple *s,
-					    const value_range_base &lhs,
-					    tree name,
-					    value_range_base *name_range);
+			       tree name,
+			       const value_range_base *name_range);
+  bool compute_operand1_and_operand2_range
+				(value_range_base &r, gimple *s,
+				 const value_range_base &lhs,
+				 tree name,
+				 const value_range_base *name_range);
   bool compute_logical_operands (value_range_base &r, gimple *s,
 				 const value_range_base &lhs,
-				 tree name, value_range_base *name_range);
+				 tree name,
+				 const value_range_base *name_range);
   bool logical_combine (value_range_base &r, enum tree_code code,
 			const value_range_base &lhs,
 		        const value_range_base &op1_true,

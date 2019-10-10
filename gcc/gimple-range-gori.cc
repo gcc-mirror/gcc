@@ -546,7 +546,7 @@ gori_compute::range_of_expr (value_range_base &r, tree expr, gimple *s)
 
 value_range_base
 gori_compute::get_tree_range (tree expr, tree name,
-			      value_range_base *range_of_name)
+			      const value_range_base *range_of_name)
 {
   value_range_base r;
   if (expr == name && range_of_name)
@@ -564,7 +564,8 @@ gori_compute::get_tree_range (tree expr, tree name,
 bool
 gori_compute::compute_name_range_op (value_range_base &r, gimple *s,
 				     const value_range_base &lhs,
-				     tree name, value_range_base *name_range)
+				     tree name,
+				     const value_range_base *name_range)
 {
   value_range_base op1_range, op2_range;
 
@@ -634,7 +635,8 @@ gori_compute::~gori_compute ()
 bool
 gori_compute::compute_operand_range (value_range_base &r, gimple *s,
 				     const value_range_base &lhs,
-				     tree name, value_range_base *name_range)
+				     tree name,
+				     const value_range_base *name_range)
 {
   if (gimple_range_handler (s))
     return compute_operand_range_op (r, s, lhs, name, name_range);
@@ -653,7 +655,7 @@ bool
 gori_compute::compute_operand_range_switch (value_range_base &r, gswitch *s,
 					    const value_range_base &lhs,
 					    tree name,
-					    value_range_base *name_range)
+					    const value_range_base *name_range)
 {
   tree op1 = gimple_switch_index (s);
 
@@ -713,7 +715,7 @@ bool
 gori_compute::compute_operand_range_op (value_range_base &r, gimple *stmt,
 					const value_range_base &lhs,
 					tree name,
-					value_range_base *name_range)
+					const value_range_base *name_range)
 {
   tree op1, op2;
   bool op1_in_chain, op2_in_chain;
@@ -877,7 +879,7 @@ bool
 gori_compute::compute_logical_operands (value_range_base &r, gimple *s,
 				        const value_range_base &lhs,
 					tree name,
-					value_range_base *name_range)
+					const value_range_base *name_range)
 {
   value_range_base op1_range, op2_range;
   tree op1, op2;
@@ -966,7 +968,7 @@ gori_compute::compute_logical_operands (value_range_base &r, gimple *s,
 bool
 gori_compute::compute_operand1_range (value_range_base &r, gimple *s,
 				      const value_range_base &lhs, tree name,
-				      value_range_base *name_range)
+				      const value_range_base *name_range)
 {
   value_range_base op1_range, op2_range;
   tree op1 = gimple_range_operand1 (s);
@@ -1008,7 +1010,7 @@ gori_compute::compute_operand1_range (value_range_base &r, gimple *s,
 bool
 gori_compute::compute_operand2_range (value_range_base &r, gimple *s,
 				      const value_range_base &lhs, tree name,
-				      value_range_base *name_range)
+				      const value_range_base *name_range)
 {
   value_range_base op1_range, op2_range;
   tree op1 = gimple_range_operand1 (s);
@@ -1043,7 +1045,7 @@ gori_compute::compute_operand1_and_operand2_range
 					 gimple *s,
 					 const value_range_base &lhs,
 					 tree name,
-					 value_range_base *name_range)
+					 const value_range_base *name_range)
 {
   value_range_base op_range;
 
@@ -1076,7 +1078,7 @@ gori_compute::has_edge_range_p (edge e, tree name)
 
 bool
 gori_compute::outgoing_edge_range_p (value_range_base &r, edge e, tree name,
-				     value_range_base *name_range)
+				     const value_range_base *name_range)
 {
   value_range_base lhs;
 
