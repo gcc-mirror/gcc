@@ -478,7 +478,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_LONG_DOUBLE_COMPAT
 namespace {
   inline locale::id*
-  find_ldbl_sync_facet(locale::id* __idp)
+  find_ldbl_sync_facet(const locale::id* __idp)
   {
 # define _GLIBCXX_SYNC_ID(facet, mangled) \
     if (__idp == &::mangled)		  \
@@ -494,6 +494,7 @@ namespace {
     _GLIBCXX_SYNC_ID (money_get<wchar_t>, _ZNSt9money_getIwSt19istreambuf_iteratorIwSt11char_traitsIwEEE2idE);
     _GLIBCXX_SYNC_ID (money_put<wchar_t>, _ZNSt9money_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE2idE);
 # endif
+    return 0;
   }
 } // namespace
 #endif
