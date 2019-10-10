@@ -893,7 +893,6 @@ package body Sem_Aggr is
 
    procedure Resolve_Aggregate (N : Node_Id; Typ : Entity_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
-      Pkind : constant Node_Kind  := Nkind (Parent (N));
 
       Aggr_Subtyp : Entity_Id;
       --  The actual aggregate subtype. This is not necessarily the same as Typ
@@ -1078,16 +1077,17 @@ package body Sem_Aggr is
             --  permit it, or the aggregate type is unconstrained, an OTHERS
             --  choice is not allowed (except that it is always allowed on the
             --  right-hand side of an assignment statement; in this case the
-            --  constrainedness of the type doesn't matter).
+            --  constrainedness of the type doesn't matter, because an array
+            --  object is always constrained).
 
             --  If expansion is disabled (generic context, or semantics-only
             --  mode) actual subtypes cannot be constructed, and the type of an
             --  object may be its unconstrained nominal type. However, if the
-            --  context is an assignment, we assume that OTHERS is allowed,
-            --  because the target of the assignment will have a constrained
-            --  subtype when fully compiled. Ditto if the context is an
-            --  initialization procedure where a component may have a predicate
-            --  function that carries the base type.
+            --  context is an assignment statement, OTHERS is allowed, because
+            --  the target of the assignment will have a constrained subtype
+            --  when fully compiled. Ditto if the context is an initialization
+            --  procedure where a component may have a predicate function that
+            --  carries the base type.
 
             --  Note that there is no node for Explicit_Actual_Parameter.
             --  To test for this context we therefore have to test for node
@@ -1101,24 +1101,26 @@ package body Sem_Aggr is
 
             Set_Etype (N, Aggr_Typ);  --  May be overridden later on
 
-            if Pkind = N_Assignment_Statement
+            if Nkind (Parent (N)) = N_Assignment_Statement
               or else Inside_Init_Proc
               or else (Is_Constrained (Typ)
-                        and then
-                          (Pkind = N_Parameter_Association     or else
-                           Pkind = N_Function_Call             or else
-                           Pkind = N_Procedure_Call_Statement  or else
-                           Pkind = N_Generic_Association       or else
-                           Pkind = N_Formal_Object_Declaration or else
-                           Pkind = N_Simple_Return_Statement   or else
-                           Pkind = N_Object_Declaration        or else
-                           Pkind = N_Component_Declaration     or else
-                           Pkind = N_Parameter_Specification   or else
-                           Pkind = N_Qualified_Expression      or else
-                           Pkind = N_Reference                 or else
-                           Pkind = N_Aggregate                 or else
-                           Pkind = N_Extension_Aggregate       or else
-                           Pkind = N_Component_Association))
+                        and then Nkind_In (Parent (N),
+                                           N_Parameter_Association,
+                                           N_Function_Call,
+                                           N_Procedure_Call_Statement,
+                                           N_Generic_Association,
+                                           N_Formal_Object_Declaration,
+                                           N_Simple_Return_Statement,
+                                           N_Object_Declaration,
+                                           N_Component_Declaration,
+                                           N_Parameter_Specification,
+                                           N_Qualified_Expression,
+                                           N_Reference,
+                                           N_Aggregate,
+                                           N_Extension_Aggregate,
+                                           N_Component_Association,
+                                           N_Case_Expression_Alternative,
+                                           N_If_Expression))
             then
                Aggr_Resolved :=
                  Resolve_Array_Aggregate
