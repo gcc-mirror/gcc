@@ -139,7 +139,12 @@ class gori_compute
 {
 public:
   gori_compute ();
-  ~gori_compute ();
+  /*  Destructor is virtual to silence:
+
+      warning: deleting object of polymorphic class type ‘vr_values’
+      which has non-virtual destructor might cause undefined
+      behavior.  */
+  virtual ~gori_compute ();
   bool range_of_expr (value_range_base &r, tree expr, gimple *s = NULL);
   virtual bool outgoing_edge_range_p (value_range_base &r, edge e, tree name,
 				      value_range_base *name_range = NULL);
