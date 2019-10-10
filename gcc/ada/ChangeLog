@@ -1,5 +1,6 @@
-2019-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+2019-10-10  Ed Schonberg  <schonberg@adacore.com>
 
-	* sem_ch6.adb (Set_Actual_Subtypes): Put the freeze node of the
-	actual subtype after its declaration when the type of the formal
-	has a predicate.
+	* sem_ch12.adb (Analyze_Formal_Package_Declaration): Propagate
+	an aspect specification for Abstract_State from generic package
+	to formal package, so that it is available when analyzing the
+	constructed formal.
