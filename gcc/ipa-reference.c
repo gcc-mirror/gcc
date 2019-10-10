@@ -46,7 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "data-streamer.h"
 #include "calls.h"
-#include "splay-tree.h"
 #include "ipa-utils.h"
 #include "ipa-reference.h"
 #include "symbol-summary.h"
@@ -92,9 +91,11 @@ struct ipa_reference_vars_info_d
 
 typedef struct ipa_reference_vars_info_d *ipa_reference_vars_info_t;
 
-/* This splay tree contains all of the static variables that are
+/* This map contains all of the static variables that are
    being considered by the compilation level alias analysis.  */
-static splay_tree reference_vars_to_consider;
+typedef hash_map<int_hash <unsigned int, -1U>, tree>
+	 reference_vars_to_consider_t;
+static reference_vars_to_consider_t *reference_vars_to_consider;
 
 /* Set of all interesting module statics.  A bit is set for every module
    static we are considering.  This is added to the local info when asm
@@ -272,9 +273,7 @@ is_proper_for_analysis (tree t)
 static const char *
 get_static_name (int index)
 {
-  splay_tree_node stn =
-    splay_tree_lookup (reference_vars_to_consider, index);
-  return fndecl_name ((tree)(stn->value));
+  return fndecl_name (*reference_vars_to_consider->get (index));
 }
 
 /* Dump a set of static vars to FILE.  */
@@ -416,7 +415,7 @@ ipa_init (void)
   ipa_init_p = true;
 
   if (dump_file)
-    reference_vars_to_consider = splay_tree_new (splay_tree_compare_ints, 0, 0);
+    reference_vars_to_consider = new reference_vars_to_consider_t(251);
 
   bitmap_obstack_initialize (&local_info_obstack);
   bitmap_obstack_initialize (&optimization_summary_obstack);
@@ -476,9 +475,8 @@ analyze_function (struct cgraph_node *fn)
 	  && bitmap_set_bit (all_module_statics, ipa_reference_var_uid (var)))
 	{
 	  if (dump_file)
-	    splay_tree_insert (reference_vars_to_consider,
-			       ipa_reference_var_uid (var),
-			       (splay_tree_value)var);
+	    reference_vars_to_consider->put (ipa_reference_var_uid (var),
+						var);
 	}
       switch (ref->use)
 	{
@@ -898,7 +896,7 @@ propagate (void)
     }
 
   if (dump_file)
-    splay_tree_delete (reference_vars_to_consider);
+    delete reference_vars_to_consider;
   reference_vars_to_consider = NULL;
   return remove_p ? TODO_remove_functions : 0;
 }
@@ -968,8 +966,7 @@ stream_out_bitmap (struct lto_simple_output_block *ob,
     return;
   EXECUTE_IF_AND_IN_BITMAP (bits, ltrans_statics, 0, index, bi)
     {
-      tree decl = (tree)splay_tree_lookup (reference_vars_to_consider,
-					   index)->value;
+      tree decl = *reference_vars_to_consider->get (index);
       lto_output_var_decl_index (ob->decl_state, ob->main_stream, decl);
     }
 }
@@ -987,7 +984,7 @@ ipa_reference_write_optimization_summary (void)
   auto_bitmap ltrans_statics;
   int i;
 
-  reference_vars_to_consider = splay_tree_new (splay_tree_compare_ints, 0, 0);
+  reference_vars_to_consider = new reference_vars_to_consider_t (251);
 
   /* See what variables we are interested in.  */
   for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
@@ -1001,9 +998,8 @@ ipa_reference_write_optimization_summary (void)
 	{
 	  tree decl = vnode->decl;
 	  bitmap_set_bit (ltrans_statics, ipa_reference_var_uid (decl));
-	  splay_tree_insert (reference_vars_to_consider,
-			     ipa_reference_var_uid (decl),
-			     (splay_tree_value)decl);
+	  reference_vars_to_consider->put
+		 (ipa_reference_var_uid (decl), decl);
 	  ltrans_statics_bitcount ++;
 	}
     }
@@ -1045,7 +1041,7 @@ ipa_reference_write_optimization_summary (void)
 	  }
       }
   lto_destroy_simple_output_block (ob);
-  splay_tree_delete (reference_vars_to_consider);
+  delete reference_vars_to_consider;
 }
 
 /* Deserialize the ipa info for lto.  */
