@@ -74,6 +74,8 @@ enum objc_runtime_tree_index
 
   OCTI_RT_META_CONST_STR,
 
+  OCTI_RT_META_IVAR_REF,
+
   OCTI_RT_META_MAX
 };
 
@@ -166,6 +168,8 @@ enum objc_runtime_tree_index
 #define meta_ehtype	objc_rt_trees[OCTI_RT_META_EHTYPE]
 
 #define meta_const_str	objc_rt_trees[OCTI_RT_META_CONST_STR]
+
+#define meta_ivar_ref	objc_rt_trees[OCTI_RT_META_IVAR_REF]
 
 #define OBJCMETA(DECL,VERS,KIND)					\
   if (VERS)								\
