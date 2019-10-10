@@ -1,42 +1,4 @@
-2019-10-10  Gary Dismukes  <dismukes@adacore.com>
+2019-10-10  Arnaud Charlet  <charlet@adacore.com>
 
-	* exp_ch7.adb (Check_Unnesting_Elaboration_Code): Various
-	cleanups.
-	(Set_Elab_Proc): New procedure to create the defining identifier
-	for a procedure created to encapsulate top-level blocks
-	occurring as a part of library package elaboration.
-	(First_Local_Scope): Function replaced by
-	Reset_Scopes_To_Elab_Proc.
-	(Reset_Scopes_To_Elab_Proc): New recursive procedure based on
-	First_Local_Scope, which it replaces, that is called to traverse
-	the statements of a library package body to locate top-level
-	blocks and determine whether they contain nested subprograms
-	that might address library-level objects of the package. Such
-	blocks (and loops) and certain top-level subprograms within the
-	statements will have their Scope reset here to match an
-	encapsulating procedure created by
-	Check_Unnesting_Elaboration_Code that will contain the
-	statements.
-	(Check_Unnesting_In_Decls_Or_Stmts): Code for handling blocks
-	factored out into Unnest_Block. Add handling for package
-	declarations and bodies, making recursive calls for
-	visible/private declarations, body declarations, statements, and
-	exception handlers. Also remove test for Is_Compilation_Unit:
-	caller tests for Is_Library_Level_Entity instead.  Also, this
-	proc's name was changed from Check_Unnesting_In_Declarations.
-	(Check_Unnesting_In_Handlers): New procedure to traverse a
-	sequence of exception handlers, calling
-	Check_Unnesting_In_Decls_Or_Stmts on the statements of each
-	handler.
-	(Expand_N_Package_Body): Call Check_Unnesting_* routines only
-	when Unnest_Subprogram_Mode is set and the current scope is a
-	library-level entity (which includes packages and instantiations
-	nested directly within a library unit).
-	(Expand_N_Package_Declaration): Call Check_Unnesting_* routines
-	only when Unnest_Subprogram_Mode is set and the current scope is
-	a library-level entity (which includes packages and
-	instantiations nested directly within a library unit).
-	(Unnest_Block): New procedure factored out of
-	Check_Unnesting_In_Decls_Or_Stmts, for creating a new procedure
-	to replace a block statement and resetting the Scope fields of
-	the block's top-level entities.
+	* gnat1drv.adb (Gnat1drv): Skip code generation when handling an
+	incomplete unit with -gnatceg.
