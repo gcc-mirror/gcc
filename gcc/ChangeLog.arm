@@ -1,0 +1,8 @@
+2019-10-10  Joey Ye  <joey.ye@arm.com>
+	Pickup patch rejected in trunk.
+	2019-09-11  Wilco Dijkstra  <wdijkstr@arm.com>
+
+
+	PR tree-optimization/80155
+	* common/config/arm/arm-common.c (arm_option_optimization_table):
+	Enable -fcode-hoisting with -Os.
