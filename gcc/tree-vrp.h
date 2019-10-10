@@ -72,7 +72,7 @@ public:
   void intersect (const value_range_base &);
 
   bool operator== (const value_range_base &) const;
-  bool operator!= (const value_range_base &) const /* = delete */;
+  bool operator!= (const value_range_base &r) const { return !(*this == r); }
   bool equal_p (const value_range_base &) const;
 
   /* Misc methods.  */
