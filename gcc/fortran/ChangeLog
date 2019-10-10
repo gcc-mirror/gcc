@@ -1,3 +1,8 @@
+2019-10-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.c (gfc_trans_omp_clauses): Actually pass use_device_addr
+	on to the middle end.
+
 2019-10-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91801
