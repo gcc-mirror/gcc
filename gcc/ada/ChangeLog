@@ -1,5 +1,4 @@
-2019-10-10  Bob Duff  <duff@adacore.com>
+2019-10-10  Vadim Godunko  <godunko@adacore.com>
 
-	* sem_prag.adb (Defer_Compile_Time_Warning_Error_To_BE): In
-	addition to saving the pragma for further processing, copy the
-	pragma into the main unit if necessary.
+	* libgnat/g-exptty.ads (TTY_Process_Descriptor): Set default
+	value for Process.
