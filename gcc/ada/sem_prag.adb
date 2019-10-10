@@ -18816,6 +18816,15 @@ package body Sem_Prag is
 
             Set_Has_Own_Invariants (Typ);
 
+            --  Set the Invariants_Ignored flag if that policy is in effect
+
+            Set_Invariants_Ignored (Typ,
+              Present (Check_Policy_List)
+                and then
+                  (Policy_In_Effect (Name_Invariant) = Name_Ignore
+                     and then
+                   Policy_In_Effect (Name_Type_Invariant) = Name_Ignore));
+
             --  If the invariant is class-wide, then it can be inherited by
             --  derived or interface implementing types. The type is said to
             --  have "inheritable" invariants.
