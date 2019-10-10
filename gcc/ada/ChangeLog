@@ -1,4 +1,5 @@
-2019-10-10  Vadim Godunko  <godunko@adacore.com>
+2019-10-10  Yannick Moy  <moy@adacore.com>
 
-	* libgnat/g-exptty.ads (TTY_Process_Descriptor): Set default
-	value for Process.
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Add subprograms
+	with deep parameter or result type as not candidates for
+	inlining.
