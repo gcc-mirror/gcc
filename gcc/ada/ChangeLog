@@ -1,5 +1,4 @@
-2019-10-10  Gary Dismukes  <dismukes@adacore.com>
+2019-10-10  Yannick Moy  <moy@adacore.com>
 
-	* exp_ch4.adb, sem_cat.adb, sem_ch12.adb, sem_ch3.adb,
-	sem_ch6.adb, sem_prag.adb, sem_util.adb, sem_util.ads: Minor
-	typo fixes.
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Do not peek
+	under private types whose completion is SPARK_Mode Off.
