@@ -1,6 +1,15 @@
-2019-10-10  Ed Schonberg  <schonberg@adacore.com>
+2019-10-10  Bob Duff  <duff@adacore.com>
 
-	* sem_cat.adb (Set_Categorization_From_Pragma): Do not modify
-	any visibility settings if there are no compilation_unit pragmas
-	following the package declaration. Add comments for future
-	cleanup.
+	* libgnat/a-cbdlli.adb, libgnat/a-cbhama.adb,
+	libgnat/a-cbhase.adb, libgnat/a-cbmutr.adb,
+	libgnat/a-cborma.adb, libgnat/a-cborse.adb,
+	libgnat/a-cdlili.adb, libgnat/a-cidlli.adb,
+	libgnat/a-cihama.adb, libgnat/a-cihase.adb,
+	libgnat/a-cimutr.adb, libgnat/a-ciorma.adb,
+	libgnat/a-ciorse.adb, libgnat/a-cobove.adb,
+	libgnat/a-cohama.adb, libgnat/a-cohase.adb,
+	libgnat/a-coinve.adb, libgnat/a-comutr.adb,
+	libgnat/a-conhel.adb, libgnat/a-convec.adb,
+	libgnat/a-coorma.adb, libgnat/a-coorse.adb (Reference,
+	Constant_Reference): Use Busy instead of Lock, so we forbid
+	tampering with cursors, rather than tampering with elements.
