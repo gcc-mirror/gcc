@@ -281,7 +281,7 @@
 #define B_HTM   (1 << 1)  /* Builtins requiring the transactional execution facility.  */
 #define B_VX    (1 << 2)  /* Builtins requiring the z13 vector extensions.  */
 #define B_VXE   (1 << 3)  /* Builtins requiring the z14 vector extensions.  */
-#define B_VXE2  (1 << 4)  /* Builtins requiring the arch13 vector extensions.  */
+#define B_VXE2  (1 << 4)  /* Builtins requiring the z15 vector extensions.  */
 #define B_DEP   (1 << 5)  /* Builtin has been deprecated and a warning should be issued.  */
 
 /* B_DEF defines a standard (not overloaded) builtin
