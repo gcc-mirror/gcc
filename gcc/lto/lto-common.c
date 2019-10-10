@@ -1646,11 +1646,13 @@ unify_scc (class data_in *data_in, unsigned from,
       tree t = streamer_tree_cache_get_tree (cache, from + i);
       scc->entries[i] = t;
       /* Do not merge SCCs with local entities inside them.  Also do
-	 not merge TRANSLATION_UNIT_DECLs and anonymous namespace types.  */
+	 not merge TRANSLATION_UNIT_DECLs and anonymous namespaces
+	 and types therein types.  */
       if (TREE_CODE (t) == TRANSLATION_UNIT_DECL
 	  || (VAR_OR_FUNCTION_DECL_P (t)
 	      && !(TREE_PUBLIC (t) || DECL_EXTERNAL (t)))
 	  || TREE_CODE (t) == LABEL_DECL
+	  || (TREE_CODE (t) == NAMESPACE_DECL && !DECL_NAME (t))
 	  || (TYPE_P (t)
 	      && type_with_linkage_p (TYPE_MAIN_VARIANT (t))
 	      && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t))))
