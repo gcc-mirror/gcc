@@ -12038,7 +12038,7 @@ package body Sem_Ch6 is
             --  predicate may come from an explicit aspect of be inherited.
 
             elsif Has_Predicates (T) then
-               Insert_List_Before_And_Analyze (Decl,
+               Insert_List_After_And_Analyze (Decl,
                  Freeze_Entity (Defining_Identifier (Decl), N));
             end if;
 
