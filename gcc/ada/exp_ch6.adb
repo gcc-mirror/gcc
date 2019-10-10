@@ -6895,7 +6895,12 @@ package body Exp_Ch6 is
       elsif Is_Thunk (Current_Scope) and then Is_Incomplete_Type (Exptyp) then
          return;
 
-      elsif not Requires_Transient_Scope (R_Type) then
+      --  A return statement from a Ghost function does not use the secondary
+      --  stack (or any other one).
+
+      elsif not Requires_Transient_Scope (R_Type)
+        or else Is_Ignored_Ghost_Entity (Scope_Id)
+      then
 
          --  Mutable records with variable-length components are not returned
          --  on the sec-stack, so we need to make sure that the back end will
