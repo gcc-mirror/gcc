@@ -1,3 +1,8 @@
+2019-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c: Lookup Objective C metadata and force indirection
+	for IVAR refs.
+
 2019-10-10  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000.c (quad_address_p): Add check for prefixed
