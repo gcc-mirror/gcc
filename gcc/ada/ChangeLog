@@ -1,7 +1,3 @@
 2019-10-10  Bob Duff  <duff@adacore.com>
 
-	* sem_aggr.adb (Resolve_Aggregate): Add missing cases in the
-	Others_Allowed => True case -- N_Case_Expression_Alternative and
-	N_If_Expression.  Use Nkind_In.
-	* atree.adb, atree.ads, sinfo.adb, sinfo.ads (Nkind_In): New
-	16-parameter version.
+	* treepr.ads, treepr.adb (ppar): New procedure.
