@@ -4546,9 +4546,15 @@ package body Sem_Warn is
       --  to capture the value. We are not going to capture any value, but
       --  the warning message depends on the same kind of conditions.
 
+      --  If the assignment appears as an out-parameter in a call within an
+      --  expression function it may be detected twice: once when expression
+      --  itself is analyzed, and once when the constructed body is analyzed.
+      --  We don't want to emit a spurious warning in this case.
+
       if Is_Assignable (Ent)
         and then not Is_Return_Object (Ent)
         and then Present (Last_Assignment (Ent))
+        and then Last_Assignment (Ent) /= N
         and then not Is_Imported (Ent)
         and then not Is_Exported (Ent)
         and then Safe_To_Capture_Value (N, Ent)
