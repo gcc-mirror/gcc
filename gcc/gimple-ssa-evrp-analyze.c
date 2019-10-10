@@ -155,6 +155,38 @@ all_uses_feed_or_dominated_by_stmt (tree name, gimple *stmt)
 }
 
 void
+evrp_range_analyzer::assert_value_ranges_are_equal
+				(tree name, edge e,
+				 const value_range_base *vr_old,
+				 const value_range_base *vr_new)
+{
+  // VRP couldn't get anything at all.
+  if (!vr_old)
+    return;
+
+  // VRP returned a symbolic but GORI could do better.
+  if (vr_old->symbolic_p () && !vr_new->symbolic_p ())
+    return;
+
+  if (*vr_old != *vr_new)
+    {
+      fprintf (stderr, "Different ranges on edge (%d -> %d) for SSA: ",
+	       e->src->index, e->dest->index);
+      print_generic_stmt (stderr, name, TDF_VOPS|TDF_MEMSYMS);
+      fprintf (stderr, "\tevrp: ");
+      vr_old->dump (stderr);
+      fprintf (stderr, "\n\tgori: ");
+      vr_new->dump (stderr);
+      fprintf (stderr, "\n\n");
+      dump_bb (stderr, e->src, 0, TDF_NONE);
+      fprintf (stderr, "\n");
+      vr_values->dump_all_value_ranges (stderr);
+      fprintf (stderr, "==============================================\n");
+      gcc_unreachable ();
+    }
+}
+
+void
 evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 {
   edge pred_e = single_pred_edge_ignoring_loop_edges (bb, false);
@@ -190,12 +222,27 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	  auto_vec<std::pair<tree, value_range *>, 8> vrs;
 	  for (unsigned i = 0; i < asserts.length (); ++i)
 	    {
+	      tree name;
+	      value_range_base vr_new;
+	      const value_range *name_range;
+	      // Calculate the same range with GORI.
+	      if (getenv("GORIME"))
+		{
+		  name = asserts[i].name;
+		  name_range = get_value_range (name);
+		  vr_values->outgoing_edge_range_p (vr_new, pred_e, name,
+						    name_range);
+		}
+
 	      value_range *vr = try_find_new_range (asserts[i].name,
 						    asserts[i].expr,
 						    asserts[i].comp_code,
 						    asserts[i].val);
 	      if (vr)
 		vrs.safe_push (std::make_pair (asserts[i].name, vr));
+
+	      if (getenv("GORIME"))
+		assert_value_ranges_are_equal (name, pred_e, vr, &vr_new);
 	    }
 
 	  /* If pred_e is really a fallthru we can record value ranges

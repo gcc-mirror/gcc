@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_VR_VALUES_H
 #define GCC_VR_VALUES_H
 
+#include "gimple-range-gori.h"
+
 /* The VR_VALUES class holds the current view of range information
    for all the SSA_NAMEs in the IL.
 
@@ -34,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
    gets attached to an SSA_NAME.  It's unclear how useful that global
    information will be in a world where we can compute context sensitive
    range information fast or perform on-demand queries.  */
-class vr_values
+class vr_values : public gori_compute
 {
  public:
   vr_values (void);
@@ -76,6 +78,7 @@ class vr_values
   void cleanup_edges_and_switches (void);
 
  private:
+  void range_of_ssa_name (value_range_base &r, tree op, gimple *stmt);
   value_range *get_lattice_entry (const_tree);
   bool vrp_stmt_computes_nonzero (gimple *);
   bool op_with_boolean_value_range_p (tree);

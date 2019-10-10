@@ -171,6 +171,14 @@ vr_values::get_value_range (const_tree var)
   return vr;
 }
 
+void
+vr_values::range_of_ssa_name (value_range_base &r, tree op,
+			      gimple *stmt ATTRIBUTE_UNUSED)
+{
+  r = *(get_value_range (op));
+  r = r.normalize_addresses ();
+}
+
 /* Set the lattice entry for DEF to VARYING.  */
 
 void
