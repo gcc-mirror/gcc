@@ -398,6 +398,14 @@ package body Exp_Ch7 is
    --  actions or secondary-stack management, in which case the nested
    --  subprogram is a finalizer.
 
+   procedure Unnest_Loop (Loop_Stmt : Node_Id);
+   --  Top-level Loops that contain nested subprograms with up-level references
+   --  need to have activation records. We do this by rewriting the loop as a
+   --  procedure containing the loop, followed by a call to the procedure in
+   --  the same library-level declarative list, to replicate the semantics of
+   --  the original loop. Such loops can occur due to aggregate expansions and
+   --  other constructs.
+
    procedure Check_Visibly_Controlled
      (Prim : Final_Primitives;
       Typ  : Entity_Id;
@@ -4229,6 +4237,23 @@ package body Exp_Ch7 is
               and then Contains_Subprogram (Entity (Identifier (Decl_Or_Stmt)))
             then
                Unnest_Block (Decl_Or_Stmt);
+
+            elsif Nkind (Decl_Or_Stmt) = N_Loop_Statement then
+               declare
+                  Id : constant Entity_Id :=
+                         Entity (Identifier (Decl_Or_Stmt));
+
+               begin
+                  --  When a top-level loop within declarations of a library
+                  --  package spec or body contains nested subprograms, we wrap
+                  --  it in a procedure to handle possible up-level references
+                  --  to entities associated with the loop (such as loop
+                  --  parameters).
+
+                  if Present (Id) and then Contains_Subprogram (Id) then
+                     Unnest_Loop (Decl_Or_Stmt);
+                  end if;
+               end;
 
             elsif Nkind (Decl_Or_Stmt) = N_Package_Declaration
               and then not Modify_Tree_For_C
@@ -9255,6 +9280,67 @@ package body Exp_Ch7 is
          Next_Entity (Ent);
       end loop;
    end Unnest_Block;
+
+   -----------------
+   -- Unnest_Loop --
+   -----------------
+
+   procedure Unnest_Loop (Loop_Stmt : Node_Id) is
+      Loc        : constant Source_Ptr := Sloc (Loop_Stmt);
+      Ent        : Entity_Id;
+      Local_Body : Node_Id;
+      Local_Call : Node_Id;
+      Local_Proc : Entity_Id;
+      Local_Scop : Entity_Id;
+      Loop_Copy  : constant Node_Id :=
+                     Relocate_Node (Loop_Stmt);
+   begin
+      Local_Scop := Entity (Identifier (Loop_Stmt));
+      Ent := First_Entity (Local_Scop);
+
+      Local_Proc :=
+        Make_Defining_Identifier (Loc,
+          Chars => New_Internal_Name ('P'));
+
+      Local_Body :=
+        Make_Subprogram_Body (Loc,
+          Specification              =>
+            Make_Procedure_Specification (Loc,
+              Defining_Unit_Name => Local_Proc),
+              Declarations       => Empty_List,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => New_List (Loop_Copy)));
+
+      Set_First_Real_Statement
+        (Handled_Statement_Sequence (Local_Body), Loop_Copy);
+
+      Rewrite (Loop_Stmt, Local_Body);
+      Analyze (Loop_Stmt);
+
+      Set_Has_Nested_Subprogram (Local_Proc);
+
+      Local_Call :=
+        Make_Procedure_Call_Statement (Loc,
+          Name => New_Occurrence_Of (Local_Proc, Loc));
+
+      Insert_After (Loop_Stmt, Local_Call);
+      Analyze (Local_Call);
+
+      --  New procedure has the same scope as the original loop, and the scope
+      --  of the loop is the new procedure.
+
+      Set_Scope (Local_Proc, Scope (Local_Scop));
+      Set_Scope (Local_Scop, Local_Proc);
+
+      --  The entity list of the new procedure is that of the loop
+
+      Set_First_Entity (Local_Proc, Ent);
+
+      --  Note that the entities associated with the loop don't need to have
+      --  their Scope fields reset, since they're still associated with the
+      --  same loop entity that now belongs to the copied loop statement.
+   end Unnest_Loop;
 
    --------------------------------
    -- Wrap_Transient_Declaration --
