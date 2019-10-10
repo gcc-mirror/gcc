@@ -1,4 +1,4 @@
-2019-10-10  Yannick Moy  <moy@adacore.com>
+2019-10-10  Gary Dismukes  <dismukes@adacore.com>
 
-	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Do not peek
-	under private types whose completion is SPARK_Mode Off.
+	* libgnat/a-ststio.ads (File_Type): Apply pragma
+	Preelaborable_Initialization to the type.
