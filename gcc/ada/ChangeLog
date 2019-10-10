@@ -1,6 +1,5 @@
 2019-10-10  Bob Duff  <duff@adacore.com>
 
-	* einfo.ads, einfo.adb (Invariants_Ignored): New flag on types.
-	This leaves just one unused flag.
-	* sem_prag.adb (Invariant): Set the flag if appropriate.
-	* exp_util.adb (Make_Invariant_Call): Check the flag.
+	* sem_prag.adb (Defer_Compile_Time_Warning_Error_To_BE): In
+	addition to saving the pragma for further processing, copy the
+	pragma into the main unit if necessary.

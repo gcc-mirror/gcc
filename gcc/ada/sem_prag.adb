@@ -32197,6 +32197,15 @@ package body Sem_Prag is
         (New_Val => CTWE_Entry'(Eloc  => Sloc (Arg1),
                                 Scope => Current_Scope,
                                 Prag  => N));
+
+      --  If the Boolean expression contains T'Size, and we're not in the main
+      --  unit being compiled, then we need to copy the pragma into the main
+      --  unit, because otherwise T'Size might never be computed, leaving it
+      --  as 0.
+
+      if not In_Extended_Main_Code_Unit (N) then
+         Insert_Library_Level_Action (New_Copy_Tree (N));
+      end if;
    end Defer_Compile_Time_Warning_Error_To_BE;
 
    ------------------------------------------
