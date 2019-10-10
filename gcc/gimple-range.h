@@ -29,10 +29,10 @@ along with GCC; see the file COPYING3.  If not see
 extern gimple_stmt_iterator gsi_outgoing_range_stmt (basic_block bb);
 // If BB ends with a range generating stmt, return that stmt.
 extern gimple *gimple_outgoing_range_stmt_p (basic_block bb);
-// if edge E has a constant range, return it and the range generating statement.
-// for conditonals its TRUE/FALSE, for switches its the possible cases.
+// If edge E has a constant range, return it and the range generating
+// statement.  for conditonals its TRUE/FALSE, for switches its the
+// possible cases.
 extern gimple *gimple_outgoing_edge_range_p (value_range_base &r, edge e);
-
 
 // These routines provide a GIMPLE interface to the range-ops code.
 extern tree gimple_range_operand1 (const gimple *s);
@@ -52,8 +52,8 @@ extern bool gimple_range_calc_op2 (const gimple *s, value_range_base &r,
 				   const value_range_base &op1_range);
 
 
-// Return the range_operator pointer for this statement.  This routine can
-// also be used to gate whether a routine is range-ops enabled.
+// Return the range_operator pointer for this statement.  This routine
+// can also be used to gate whether a routine is range-ops enabled.
 
 static inline range_operator *
 gimple_range_handler (const gimple *s)
@@ -62,7 +62,6 @@ gimple_range_handler (const gimple *s)
     return range_op_handler (gimple_expr_code (s), gimple_expr_type (s));
   return NULL;
 }
-
 
 // Return EXP if it is an SSA_NAME with a type supported by gimple ranges.
 
@@ -75,7 +74,6 @@ gimple_range_ssa_p (tree exp)
     return exp;
   return NULL_TREE;
 }
-
 
 // Return the legacy GCC global range for NAME if it has one, otherwise
 // return VARYING.

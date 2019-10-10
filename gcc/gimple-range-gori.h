@@ -21,24 +21,27 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_RANGE_GORI_H
 #define GCC_GIMPLE_RANGE_GORI_H
 
-/* RANGE_DEF_CHAIN is used to determine what ssa-names in a block can have range
-   information calculated for them, and what the dependencies on each other are.
+/* RANGE_DEF_CHAIN is used to determine what ssa-names in a block can
+   have range information calculated for them, and what the
+   dependencies on each other are.
 
-   Information for a basic block is calculated once and stored.  It is only
-   calculated the first time a query is made, so if no queries are made, there
-   is little overhead.
-   
-   The def_chain bitmap is indexed by ssa_name version.  Bits are set within
-   this bitmap to indicate ssa_names that are defined in the SAME block and used
-   to calculate this ssa_name.
+   Information for a basic block is calculated once and stored.  It is
+   only calculated the first time a query is made, so if no queries
+   are made, there is little overhead.
 
-   One import is maintained per def-chain.  An IMPORT is defined as an ssa-name
-   in the def chain which occurs outside the basic block. A change in the value
-   of this ssa-name can change the value of any name in the chain. 
+   The def_chain bitmap is indexed by ssa_name version.  Bits are set
+   within this bitmap to indicate ssa_names that are defined in the
+   SAME block and used to calculate this ssa_name.
 
-   If there is more than one import, or an ssa-Name originates WITHIN the same 
-   basic block but is defined by a statement that the range engine does not
-   know how to calculate, then there is no import for the entire chain.
+   One import is maintained per def-chain.  An IMPORT is defined as an
+   ssa-name in the def chain which occurs outside the basic block. A
+   change in the value of this ssa-name can change the value of any
+   name in the chain.
+
+   If there is more than one import, or an ssa-Name originates WITHIN
+   the same basic block but is defined by a statement that the range
+   engine does not know how to calculate, then there is no import for
+   the entire chain.
 
     <bb 2> :
       _1 = x_4(D) + -2;
@@ -51,19 +54,20 @@ along with GCC; see the file COPYING3.  If not see
     _2  : (import : x_4(D))  :_1  x_4(D)
     q_5  : (import : x_4(D))  :_1  _2  x_4(D)
 
-    This dump indicates the bits set in the def_chain vector and ther import, as
-    well as demonstrates the def_chain bits for the related ssa_names.
+    This dump indicates the bits set in the def_chain vector and ther
+    import, as well as demonstrates the def_chain bits for the related
+    ssa_names.
 
-    Checking the chain for _2 indicates that _1 and x_4 are used in its
-    evaluation, and with x_4 being an import.
+    Checking the chain for _2 indicates that _1 and x_4 are used in
+    its evaluation, and with x_4 being an import.
 
-    For the purpose of defining an import, PHI node defintions  are considered
-    imports as the dont really reside in the block, but rather are
-    accumulators of values from incoming edges.
-    
-    Def chains also only include statements which are valid gimple's so
-    a def chain will only span statements for which the range engine
-    implements operations.  */
+    For the purpose of defining an import, PHI node defintions are
+    considered imports as the dont really reside in the block, but
+    rather are accumulators of values from incoming edges.
+
+    Def chains also only include statements which are valid gimple's
+    so a def chain will only span statements for which the range
+    engine implements operations.  */
 
 
 class range_def_chain
@@ -82,25 +86,29 @@ private:
 };
 
 
-/* GORI_MAP is used to accumulate what ssa-names in a block can generate range
-   information, and provides tools for the block ranger to enable it to
-   efficiently calculate these ranges.
+/* GORI_MAP is used to accumulate what ssa-names in a block can
+   generate range information, and provides tools for the block ranger
+   to enable it to efficiently calculate these ranges.
+
    GORI stands for "Generates Outgoing Range Information."
 
    It utilizes the range_def_chain class to contruct def_chains.
-   information for a basic block is calculated once and stored. It is only
-   calculated the first time a query is made, so if no queries are made, there
-   is little overhead.
-   
+   information for a basic block is calculated once and stored. It is
+   only calculated the first time a query is made, so if no queries
+   are made, there is little overhead.
+
    2 bitmaps are maintained for each basic block:
+
    m_outgoing  : a set bit indicates a range can be generated for a name.
-   m_incoming  : a set bit means a this name come from outside the block and is
-	       used in the calculation of some outgoing range.
-   
-   Generally speaking, the m_outgoing vector is the union of the entire
-   def_chain of all ssa-names used in the last statement of the block which
-   generate ranges.  The m_incoming vector is the union of all the terminal
-   names of those def chains.  They act as a one-stop summary for the block.  */
+   m_incoming  : a set bit means a this name come from outside the
+	         block and is used in the calculation of some outgoing
+	         range.
+
+   Generally speaking, the m_outgoing vector is the union of the
+   entire def_chain of all ssa-names used in the last statement of the
+   block which generate ranges.  The m_incoming vector is the union of
+   all the terminal names of those def chains.  They act as a one-stop
+   summary for the block.  */
 
 class gori_map : public range_def_chain
 {
@@ -123,10 +131,11 @@ private:
   bitmap exports (basic_block bb);
 };
 
-// This class utilizes a GORI map to determine which SSA_NAMES can have ranges
-// calculated for them on outgoing edges from basic blocks.
+// This class utilizes a GORI map to determine which SSA_NAMES can
+// have ranges calculated for them on outgoing edges from basic
+// blocks.
 
-class gori_compute 
+class gori_compute
 {
 public:
   gori_compute ();
@@ -160,7 +169,7 @@ private:
   bool compute_operand2_range (value_range_base &r, gimple *s,
 			       const value_range_base &lhs,
 			       tree name, value_range_base *name_range);
-  bool compute_operand1_and_operand2_range (value_range_base &r, gimple *s, 
+  bool compute_operand1_and_operand2_range (value_range_base &r, gimple *s,
 					    const value_range_base &lhs,
 					    tree name,
 					    value_range_base *name_range);

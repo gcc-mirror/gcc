@@ -93,10 +93,10 @@ gimple_range_adjustment (const gimple *s, value_range_base &res)
 
 // ------------------------------------------------------------------------
 
-// This function will calculate the "constant" range on edge E from switch SW
-// returning it in R, and return the switch statement itself.
-// THis is currently not very efficent as the way we represent switches in
-// GIMPLE does not map well to this calculation.
+// This function will calculate the "constant" range on edge E from
+// switch SW returning it in R, and return the switch statement
+// itself.  THis is currently not very efficent as the way we
+// represent switches in GIMPLE does not map well to this calculation.
 
 static gimple *
 calc_single_range (value_range_base &r, gswitch *sw, edge e)
@@ -105,12 +105,13 @@ calc_single_range (value_range_base &r, gswitch *sw, edge e)
   lim = gimple_switch_num_labels (sw);
   tree type = TREE_TYPE (gimple_switch_index (sw));
 
-  // ADA and FORTRAN currently have cases where the index is 64 bits and the
-  // case arguments are 32 bit, causing a trap when we create a case_range.
-  // Until this is resolved (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87798)
-  // punt on these switches.  
-  // furthermore, cfamily fails during a bootstrap due to a signed index and
-  // unsigned cases.  so punting unless types_compatible_p () for now.
+  // ADA and FORTRAN currently have cases where the index is 64 bits
+  // and the case arguments are 32 bit, causing a trap when we create
+  // a case_range.  Until this is resolved
+  // (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87798) punt on
+  // these switches.  Furthermore, cfamily fails during a bootstrap
+  // due to a signed index and unsigned cases.  So punting unless
+  // types_compatible_p () for now.
   tree case_type = TREE_TYPE (CASE_LOW (gimple_switch_label (sw, 1)));
   if (lim > 1 && !types_compatible_p (type, case_type))
     return NULL;
@@ -177,8 +178,9 @@ gimple_outgoing_range_stmt_p (basic_block bb)
 }
 
 
-// Calculate the range forced on on edge E by control flow, return it in R.
-// Return the statment which defines the range, otherwise return NULL
+// Calculate the range forced on on edge E by control flow, return it
+// in R.  Return the statment which defines the range, otherwise
+// return NULL
 
 gimple *
 gimple_outgoing_edge_range_p (value_range_base &r, edge e)
@@ -211,8 +213,8 @@ gimple_outgoing_edge_range_p (value_range_base &r, edge e)
 
 
 
-// Fold this unary statement using R1 as operand1's range, returning the
-// result in RES.  Return false if the operation fails.
+// Fold this unary statement using R1 as operand1's range, returning
+// the result in RES.  Return false if the operation fails.
 
 bool
 gimple_range_fold (const gimple *s, value_range_base &res,
@@ -247,10 +249,9 @@ gimple_range_fold (const gimple *s, value_range_base &res,
 }
 
 
-// Return the first operand of this statement if it is a valid operand 
-// supported by ranges, otherwise return NULL_TREE. 
-// Special case is &(SSA_NAME expr), return the SSA_NAME instead of the ADDR
-// expr.
+// Return the first operand of this statement if it is a valid operand
+// supported by ranges, otherwise return NULL_TREE.  Special case is
+// &(SSA_NAME expr), return the SSA_NAME instead of the ADDR expr.
 
 tree
 gimple_range_operand1 (const gimple *s)
@@ -266,14 +267,15 @@ gimple_range_operand1 (const gimple *s)
 	  tree expr = gimple_assign_rhs1 (s);
 	  if (gimple_assign_rhs_code (s) == ADDR_EXPR)
 	    {
-	      // If the base address is an SSA_NAME, we return it here.
-	      // This allows processing of the range of that name, while the
-	      // rest of the expression is simply ignored.  The code in
-	      // range_ops will see the ADDR_EXPR and do the right thing.
+	      // If the base address is an SSA_NAME, we return it
+	      // here.  This allows processing of the range of that
+	      // name, while the rest of the expression is simply
+	      // ignored.  The code in range_ops will see the
+	      // ADDR_EXPR and do the right thing.
 	      tree base = get_base_address (TREE_OPERAND (expr, 0));
 	      if (base != NULL_TREE && TREE_CODE (base) == MEM_REF)
 	        {
-		  // If the base address is an SSA_NAME, return it. 
+		  // If the base address is an SSA_NAME, return it.
 		  tree b = TREE_OPERAND (base, 0);
 		  if (TREE_CODE (b) == SSA_NAME)
 		    return b;
@@ -310,43 +312,44 @@ gimple_range_operand2 (const gimple *s)
 
 
 
-// Calculate what we can determine of the range of this unary statement's
-// operand if the lhs of the expression has the range LHS_RANGE.  Return false
-// if nothing can be determined.
+// Calculate what we can determine of the range of this unary
+// statement's operand if the lhs of the expression has the range
+// LHS_RANGE.  Return false if nothing can be determined.
 
 bool
 gimple_range_calc_op1 (const gimple *s, value_range_base &r,
 		       const value_range_base &lhs_range)
-{  
+{
   value_range_base type_range;
   gcc_checking_assert (gimple_num_ops (s) < 3);
   // An empty range is viral, so return an empty range.
-  
+
   tree type = TREE_TYPE (gimple_range_operand1 (s));
   if (lhs_range.undefined_p ())
     {
       r.set_undefined ();
       return true;
     }
-  // Unary operations require the type of the first operand in the second range
-  // position.
+  // Unary operations require the type of the first operand in the
+  // second range position.
   type_range.set_varying (type);
   return gimple_range_handler (s)->op1_range (r, type, lhs_range, type_range);
 }
 
 
-// Calculate what we can determine of the range of this statement's first 
-// operand if the lhs of the expression has the range LHS_RANGE and the second
-// operand has the range OP2_RANGE.  Return false if nothing can be determined.
+// Calculate what we can determine of the range of this statement's
+// first operand if the lhs of the expression has the range LHS_RANGE
+// and the second operand has the range OP2_RANGE.  Return false if
+// nothing can be determined.
 
 bool
 gimple_range_calc_op1 (const gimple *s, value_range_base &r,
 		       const value_range_base &lhs_range,
 		       const value_range_base &op2_range)
-{  
+{
   // Unary operation are allowed to pass a range in for second operand
-  // as there are often additional restrictions beyond the type which can
-  // be imposed.  See operator_cast::op1_range.()
+  // as there are often additional restrictions beyond the type which
+  // can be imposed.  See operator_cast::op1_range.()
   tree type = TREE_TYPE (gimple_range_operand1 (s));
   // An empty range is viral, so return an empty range.
   if (op2_range.undefined_p () || lhs_range.undefined_p ())
@@ -358,15 +361,16 @@ gimple_range_calc_op1 (const gimple *s, value_range_base &r,
 }
 
 
-// Calculate what we can determine of the range of this statement's second
-// operand if the lhs of the expression has the range LHS_RANGE and the first
-// operand has the range OP1_RANGE.  Return false if nothing can be determined.
+// Calculate what we can determine of the range of this statement's
+// second operand if the lhs of the expression has the range LHS_RANGE
+// and the first operand has the range OP1_RANGE.  Return false if
+// nothing can be determined.
 
 bool
 gimple_range_calc_op2 (const gimple *s, value_range_base &r,
 		       const value_range_base &lhs_range,
 		       const value_range_base &op1_range)
-{  
+{
   tree type = TREE_TYPE (gimple_range_operand2 (s));
   // An empty range is viral, so return an empty range.
   if (op1_range.undefined_p () || lhs_range.undefined_p ())
