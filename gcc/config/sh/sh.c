@@ -958,11 +958,13 @@ sh_option_override (void)
   if (flag_unsafe_math_optimizations)
     {
       /* Enable fsca insn for SH4A if not otherwise specified by the user.  */
-      if (global_options_set.x_TARGET_FSCA == 0 && TARGET_SH4A_FP)
+      if (global_options_set.x_TARGET_FSCA == 0
+	  && (TARGET_SH4A_FP || TARGET_FPU_SH4_300))
 	TARGET_FSCA = 1;
 
       /* Enable fsrra insn for SH4A if not otherwise specified by the user.  */
-      if (global_options_set.x_TARGET_FSRRA == 0 && TARGET_SH4A_FP)
+      if (global_options_set.x_TARGET_FSRRA == 0
+	  && (TARGET_SH4A_FP || TARGET_FPU_SH4_300))
 	TARGET_FSRRA = 1;
     }
 
@@ -12490,7 +12492,7 @@ static void
 sh_emit_mode_set (int entity ATTRIBUTE_UNUSED, int mode,
 		  int prev_mode, HARD_REG_SET regs_live ATTRIBUTE_UNUSED)
 {
-  if ((TARGET_SH4A_FP || TARGET_SH4_300)
+  if ((TARGET_SH4A_FP || TARGET_FPU_SH4_300)
       && prev_mode != FP_MODE_NONE && prev_mode != mode)
     {
       emit_insn (gen_toggle_pr ());

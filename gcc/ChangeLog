@@ -1,3 +1,25 @@
+2019-10-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/88630
+	* config/sh/sh.h (TARGET_FPU_SH4_300): New macro.
+	* config/sh/sh.c (sh_option_override): Enable fsca and fsrra insns
+	also for TARGET_FPU_SH4_300.
+	(sh_emit_mode_set): Check for TARGET_FPU_SH4_300 instead of
+	TARGET_SH4_300.
+	* config/sh/sh.md (toggle_pr): Add TARGET_FPU_SH4_300 condition.
+	(negsf2): Expand to either negsf2_fpscr or negsf2_no_fpscr.
+	(*negsf2_i): Split into ...
+	(negsf2_fpscr, negsf2_no_fpscr): ... these new patterns.
+	(abssf2): Expand to either abssf2_fpsc or abssf2_no_fpsc.
+	(**abssf2_i): Split into ...
+	(abssf2_fpscr, abssf2_no_fpscr): ... these new patterns.
+	(negdf2): Expand to either negdf2_fpscr or negdf2_no_fpscr.
+	(*negdf2_i): Split into ...
+	(negdf2_fpscr, negdf2_no_fpscr): ... these new patterns.
+	(absdf2): Expand to either absdf2_fpscr or absdf2_no_fpsc.
+	(**abssf2_i): Split into ...
+	(absdf2_fpscr, absdf2_no_fpscr): ... these new patterns.
+
 2019-10-10  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/92046
