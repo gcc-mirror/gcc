@@ -593,15 +593,46 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
   TREE_CHECK(NODE,BOUND_TEMPLATE_TEMPLATE_PARM)
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
+
+/* Returns t iff the node can have a TEMPLATE_INFO field.  */
+
+inline tree
+template_info_decl_check (const_tree t, const char* f, int l, const char* fn)
+{
+  switch (TREE_CODE (t))
+    {
+    case VAR_DECL:
+    case FUNCTION_DECL:
+    case FIELD_DECL:
+    case TYPE_DECL:
+    case CONCEPT_DECL:
+    case TEMPLATE_DECL:
+      return const_cast<tree>(t);
+    default:
+      break;
+    }
+  tree_check_failed (t, f, l, fn,
+		     VAR_DECL, FUNCTION_DECL, FIELD_DECL, TYPE_DECL,
+		     CONCEPT_DECL, TEMPLATE_DECL, 0);
+  gcc_unreachable ();
+}
+
+#define TEMPLATE_INFO_DECL_CHECK(NODE) \
+  template_info_decl_check ((NODE), __FILE__, __LINE__, __FUNCTION__)
+
 #define THUNK_FUNCTION_CHECK(NODE) __extension__			\
 ({  __typeof (NODE) const __t = (NODE);					\
     if (TREE_CODE (__t) != FUNCTION_DECL || !__t->decl_common.lang_specific \
 	|| !__t->decl_common.lang_specific->u.fn.thunk_p)		\
       tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__, 0);	\
      __t; })
-#else
+
+#else /* ENABLE_TREE_CHECKING */
+
+#define TEMPLATE_INFO_DECL_CHECK(NODE) (NODE)
 #define THUNK_FUNCTION_CHECK(NODE) (NODE)
-#endif
+
+#endif /* ENABLE_TREE_CHECKING */
 
 /* Language-dependent contents of an identifier.  */
 
@@ -3347,33 +3378,6 @@ struct GTY(()) lang_decl {
 /* Nonzero for TEMPLATE_DECL means that it is a 'complex' alias template.  */
 #define TEMPLATE_DECL_COMPLEX_ALIAS_P(NODE) \
   DECL_LANG_FLAG_2 (TEMPLATE_DECL_CHECK (NODE))
-
-/* Returns t iff the node can have a TEMPLATE_INFO field.  */
-
-inline tree
-template_info_decl_check (const_tree t, const char* f, int l, const char* fn)
-{
-  switch (TREE_CODE (t))
-    {
-    case VAR_DECL:
-    case FUNCTION_DECL:
-    case FIELD_DECL:
-    case TYPE_DECL:
-    case CONCEPT_DECL:
-    case TEMPLATE_DECL:
-      return const_cast<tree>(t);
-    default:
-      break;
-    }
-  tree_check_failed (t, f, l, fn,
-                     VAR_DECL, FUNCTION_DECL, FIELD_DECL, TYPE_DECL,
-                     CONCEPT_DECL, TEMPLATE_DECL, 0);
-  gcc_unreachable ();
-}
-
-
-#define TEMPLATE_INFO_DECL_CHECK(NODE) \
-  template_info_decl_check ((NODE), __FILE__, __LINE__, __FUNCTION__)
 
 /* Nonzero for a type which is an alias for another type; i.e, a type
    which declaration was written 'using name-of-type =
