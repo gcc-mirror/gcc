@@ -2429,8 +2429,7 @@ package body Sem_Prag is
                --  Constant related checks
 
                elsif Ekind (Item_Id) = E_Constant
-                 and then
-                   not Is_Access_Type (Underlying_Type (Etype (Item_Id)))
+                 and then not Is_Access_Type (Etype (Item_Id))
                then
 
                   --  Unless it is of an access type, a constant is a read-only
