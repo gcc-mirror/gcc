@@ -1,3 +1,14 @@
+2019-10-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/92046
+	* opts.c (finish_options): Do not influence global --params
+	from options that are adjustable per function.
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Apply --param adjustment based on active cost-model.
+	* tree-ssa-phiopt.c (cond_if_else_store_replacement): Disable
+	further store-sinking when vectorization or if-conversion
+	are not enabled.
+
 2019-10-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/92037

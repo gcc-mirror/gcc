@@ -1123,24 +1123,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       && !opts_set->x_flag_reorder_functions)
     opts->x_flag_reorder_functions = 1;
 
-  /* Tune vectorization related parametees according to cost model.  */
-  if (opts->x_flag_vect_cost_model == VECT_COST_MODEL_CHEAP)
-    {
-      maybe_set_param_value (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS,
-            6, opts->x_param_values, opts_set->x_param_values);
-      maybe_set_param_value (PARAM_VECT_MAX_VERSION_FOR_ALIGNMENT_CHECKS,
-            0, opts->x_param_values, opts_set->x_param_values);
-      maybe_set_param_value (PARAM_VECT_MAX_PEELING_FOR_ALIGNMENT,
-            0, opts->x_param_values, opts_set->x_param_values);
-    }
-
-  /* Set PARAM_MAX_STORES_TO_SINK to 0 if either vectorization or if-conversion
-     is disabled.  */
-  if ((!opts->x_flag_tree_loop_vectorize && !opts->x_flag_tree_slp_vectorize)
-       || !opts->x_flag_tree_loop_if_convert)
-    maybe_set_param_value (PARAM_MAX_STORES_TO_SINK, 0,
-                           opts->x_param_values, opts_set->x_param_values);
-
   /* The -gsplit-dwarf option requires -ggnu-pubnames.  */
   if (opts->x_dwarf_split_debug_info)
     opts->x_debug_generate_pub_sections = 2;

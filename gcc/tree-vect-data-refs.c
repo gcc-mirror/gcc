@@ -2075,6 +2075,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
         {
           unsigned max_allowed_peel
             = PARAM_VALUE (PARAM_VECT_MAX_PEELING_FOR_ALIGNMENT);
+	  if (flag_vect_cost_model == VECT_COST_MODEL_CHEAP)
+	    max_allowed_peel = 0;
           if (max_allowed_peel != (unsigned)-1)
             {
               unsigned max_peel = npeel;
@@ -2168,15 +2170,16 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   /* (2) Versioning to force alignment.  */
 
   /* Try versioning if:
-     1) optimize loop for speed
+     1) optimize loop for speed and the cost-model is not cheap
      2) there is at least one unsupported misaligned data ref with an unknown
         misalignment, and
      3) all misaligned data refs with a known misalignment are supported, and
      4) the number of runtime alignment checks is within reason.  */
 
-  do_versioning =
-	optimize_loop_nest_for_speed_p (loop)
-	&& (!loop->inner); /* FORNOW */
+  do_versioning
+    = (optimize_loop_nest_for_speed_p (loop)
+       && !loop->inner /* FORNOW */
+       && flag_vect_cost_model > VECT_COST_MODEL_CHEAP);
 
   if (do_versioning)
     {
@@ -3641,13 +3644,15 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "improved number of alias checks from %d to %d\n",
 		     may_alias_ddrs.length (), count);
-  if ((int) count > PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS))
+  unsigned limit = PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS);
+  if (flag_simd_cost_model == VECT_COST_MODEL_CHEAP)
+    limit = default_param_value
+	      (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS) * 6 / 10;
+  if (count > limit)
     return opt_result::failure_at
       (vect_location,
-       "number of versioning for alias "
-       "run-time tests exceeds %d "
-       "(--param vect-max-version-for-alias-checks)\n",
-       PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS));
+       "number of versioning for alias run-time tests exceeds %d "
+       "(--param vect-max-version-for-alias-checks)\n", limit);
 
   return opt_result::success ();
 }
