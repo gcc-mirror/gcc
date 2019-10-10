@@ -1,8 +1,4 @@
-2019-10-10  Gary Dismukes  <dismukes@adacore.com>
+2019-10-10  Ed Schonberg  <schonberg@adacore.com>
 
-	* sem_util.adb (Enclosing_Subprogram): Handle the case of
-	E_Entry_Family, returning the entry family's associated
-	Protected_Body_Subprogram (as was already done for E_Entry).
-	* exp_ch9.adb (Expand_N_Accept_Statement): Call Reset_Scopes_To
-	on the block created for an accept statement to reset the scopes
-	of any local entities to the block scope.
+	* sem_warn.adb (Warn_On_Useless_Assignment): Do not warn if the
+	second assignment is at the same source position as the first.
