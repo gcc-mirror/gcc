@@ -1,4 +1,5 @@
-2019-10-10  Ed Schonberg  <schonberg@adacore.com>
+2019-10-10  Gary Dismukes  <dismukes@adacore.com>
 
-	* sem_warn.adb (Warn_On_Useless_Assignment): Do not warn if the
-	second assignment is at the same source position as the first.
+	* exp_ch4.adb, sem_cat.adb, sem_ch12.adb, sem_ch3.adb,
+	sem_ch6.adb, sem_prag.adb, sem_util.adb, sem_util.ads: Minor
+	typo fixes.
