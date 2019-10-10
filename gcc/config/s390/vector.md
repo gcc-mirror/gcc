@@ -70,7 +70,7 @@
 
 (define_mode_iterator V_128_NOSINGLE [V16QI V8HI V4SI V4SF V2DI V2DF])
 
-; 32 bit int<->fp vector conversion instructions are available since VXE2 (arch13).
+; 32 bit int<->fp vector conversion instructions are available since VXE2 (z15).
 (define_mode_iterator VX_VEC_CONV_BFP [V2DF (V4SF "TARGET_VXE2")])
 (define_mode_iterator VX_VEC_CONV_INT [V2DI (V4SI "TARGET_VXE2")])
 
