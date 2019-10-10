@@ -540,7 +540,7 @@ gori_compute::range_of_expr (value_range_base &r, tree expr, gimple *s)
 
 // Same as range_of_expr, but no statement option, and perform
 // substitution of NAME with RANGE_OF_NAME if expr happens to match
-// it.  Since there is no stateemnt, this enforces that ranges for
+// it.  Since there is no statement, this enforces that ranges for
 // ssa-names invoked wont go off and calculate a range in derived
 // bases.
 
