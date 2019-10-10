@@ -721,9 +721,15 @@ package body Sem_Cat is
       --  The purpose is to set categorization flags before analyzing the
       --  unit itself, so as to diagnose violations of categorization as
       --  we process each declaration, even though the pragma appears after
-      --  the unit.
+      --  the unit. This processing is only needsd if compilation unit
+      --  pragmas are present.
+      --  Note: this code may be incorrect in the unlikely case a child
+      --  genericc unit is instantiated as a child of its (non-generic)
+      --  parent, so that generic and insstance are siblings,
 
-      if Nkind (P) /= N_Compilation_Unit then
+      if Nkind (P) /= N_Compilation_Unit
+         or else No (First (Pragmas_After (Aux_Decls_Node (P))))
+      then
          return;
       end if;
 

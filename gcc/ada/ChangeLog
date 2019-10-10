@@ -1,10 +1,6 @@
-2019-10-10  Patrick Bernardi  <bernardi@adacore.com>
+2019-10-10  Ed Schonberg  <schonberg@adacore.com>
 
-	* bindgen.adb (System_Secondary_Stack_Package_In_Closure):
-	Renamed flag System_Secondary_Stack_Used to be clearer of what
-	it represents.
-	(Gen_Adainit): Refactor secondary stack related code to make it
-	clearer.
-	* rtsfind.adb (Load_RTU): Don't set Sec_Stack_Used flag here
-	(RTE): Set Sec_Stack_Used if the System.Secondary_Stack is
-	referenced, but not if we're ignoring ghost code.
+	* sem_cat.adb (Set_Categorization_From_Pragma): Do not modify
+	any visibility settings if there are no compilation_unit pragmas
+	following the package declaration. Add comments for future
+	cleanup.
