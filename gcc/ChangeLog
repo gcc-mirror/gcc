@@ -1,3 +1,16 @@
+2019-10-10  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (quad_address_p): Add check for prefixed
+	addresses.
+	(mem_operand_gpr): Add check for prefixed addresses.
+	(mem_operand_ds_form): Add check for prefixed addresses.
+	(rs6000_legitimate_offset_address_p): If we support prefixed
+	addresses, check for a 34-bit offset instead of 16-bit.
+	(rs6000_legitimate_address_p): Add check for prefixed addresses.
+	Do not allow load/store with update if the address is prefixed.
+	(rs6000_mode_dependent_address):  If we support prefixed
+	addresses, check for a 34-bit offset instead of 16-bit.
+
 2019-10-10  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR target/77918

@@ -7250,6 +7250,13 @@ quad_address_p (rtx addr, machine_mode mode, bool strict)
   if (VECTOR_MODE_P (mode) && !mode_supports_dq_form (mode))
     return false;
 
+  /* Is this a valid prefixed address?  If the bottom four bits of the offset
+     are non-zero, we could use a prefixed instruction (which does not have the
+     DQ-form constraint that the traditional instruction had) instead of
+     forcing the unaligned offset to a GPR.  */
+  if (address_is_prefixed (addr, mode, NON_PREFIXED_DQ))
+    return true;
+
   if (GET_CODE (addr) != PLUS)
     return false;
 
@@ -7351,6 +7358,13 @@ mem_operand_gpr (rtx op, machine_mode mode)
       && legitimate_indirect_address_p (XEXP (addr, 0), false))
     return true;
 
+  /* Allow prefixed instructions if supported.  If the bottom two bits of the
+     offset are non-zero, we could use a prefixed instruction (which does not
+     have the DS-form constraint that the traditional instruction had) instead
+     of forcing the unaligned offset to a GPR.  */
+  if (address_is_prefixed (addr, mode, NON_PREFIXED_DS))
+    return true;
+
   /* Don't allow non-offsettable addresses.  See PRs 83969 and 84279.  */
   if (!rs6000_offsettable_memref_p (op, mode, false))
     return false;
@@ -7384,6 +7398,13 @@ mem_operand_ds_form (rtx op, machine_mode mode)
   unsigned HOST_WIDE_INT offset;
   int extra;
   rtx addr = XEXP (op, 0);
+
+  /* Allow prefixed instructions if supported.  If the bottom two bits of the
+     offset are non-zero, we could use a prefixed instruction (which does not
+     have the DS-form constraint that the traditional instruction had) instead
+     of forcing the unaligned offset to a GPR.  */
+  if (address_is_prefixed (addr, mode, NON_PREFIXED_DS))
+    return true;
 
   if (!offsettable_address_p (false, mode, addr))
     return false;
@@ -7754,7 +7775,10 @@ rs6000_legitimate_offset_address_p (machine_mode mode, rtx x,
       break;
     }
 
-  return SIGNED_16BIT_OFFSET_EXTRA_P (offset, extra);
+  if (TARGET_PREFIXED_ADDR)
+    return SIGNED_34BIT_OFFSET_EXTRA_P (offset, extra);
+  else
+    return SIGNED_16BIT_OFFSET_EXTRA_P (offset, extra);
 }
 
 bool
@@ -8651,6 +8675,11 @@ rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict)
       && mode_supports_pre_incdec_p (mode)
       && legitimate_indirect_address_p (XEXP (x, 0), reg_ok_strict))
     return 1;
+
+  /* Handle prefixed addresses (PC-relative or 34-bit offset).  */
+  if (address_is_prefixed (x, mode, NON_PREFIXED_DEFAULT))
+    return 1;
+
   /* Handle restricted vector d-form offsets in ISA 3.0.  */
   if (quad_offset_p)
     {
@@ -8709,7 +8738,11 @@ rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict)
 	  || (!avoiding_indexed_address_p (mode)
 	      && legitimate_indexed_address_p (XEXP (x, 1), reg_ok_strict)))
       && rtx_equal_p (XEXP (XEXP (x, 1), 0), XEXP (x, 0)))
-    return 1;
+    {
+      /* There is no prefixed version of the load/store with update.  */
+      rtx addr = XEXP (x, 1);
+      return !address_is_prefixed (addr, mode, NON_PREFIXED_DEFAULT);
+    }
   if (reg_offset_p && !quad_offset_p
       && legitimate_lo_sum_address_p (mode, x, reg_ok_strict))
     return 1;
@@ -8773,7 +8806,10 @@ rs6000_mode_dependent_address (const_rtx addr)
 	{
 	  HOST_WIDE_INT val = INTVAL (XEXP (addr, 1));
 	  HOST_WIDE_INT extra = TARGET_POWERPC64 ? 8 : 12;
-	  return !SIGNED_16BIT_OFFSET_EXTRA_P (val, extra);
+	  if (TARGET_PREFIXED_ADDR)
+	    return !SIGNED_34BIT_OFFSET_EXTRA_P (val, extra);
+	  else
+	    return !SIGNED_16BIT_OFFSET_EXTRA_P (val, extra);
 	}
       break;
 
