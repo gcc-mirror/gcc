@@ -1151,10 +1151,16 @@ c_cpp_builtins (cpp_reader *pfile)
 				      csuffix, FLOATN_NX_TYPE_NODE (i));
     }
 
-  /* For decfloat.h.  */
-  builtin_define_decimal_float_constants ("DEC32", "DF", dfloat32_type_node);
-  builtin_define_decimal_float_constants ("DEC64", "DD", dfloat64_type_node);
-  builtin_define_decimal_float_constants ("DEC128", "DL", dfloat128_type_node);
+  /* For float.h.  */
+  if (targetm.decimal_float_supported_p ())
+    {
+      builtin_define_decimal_float_constants ("DEC32", "DF",
+					      dfloat32_type_node);
+      builtin_define_decimal_float_constants ("DEC64", "DD",
+					      dfloat64_type_node);
+      builtin_define_decimal_float_constants ("DEC128", "DL",
+					      dfloat128_type_node);
+    }
 
   /* For fixed-point fibt, ibit, max, min, and epsilon.  */
   if (targetm.fixed_point_supported_p ())

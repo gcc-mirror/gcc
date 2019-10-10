@@ -1,3 +1,8 @@
+2019-10-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Do not define macros for DFP
+	types if DFP not supported.
+
 2019-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (c_omp_check_context_selector,
