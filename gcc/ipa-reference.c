@@ -891,13 +891,12 @@ propagate (void)
 
   bitmap_obstack_release (&local_info_obstack);
 
-  if (ipa_ref_var_info_summaries == NULL)
+  if (ipa_ref_var_info_summaries != NULL)
     {
       delete ipa_ref_var_info_summaries;
       ipa_ref_var_info_summaries = NULL;
     }
 
-  ipa_ref_var_info_summaries = NULL;
   if (dump_file)
     splay_tree_delete (reference_vars_to_consider);
   reference_vars_to_consider = NULL;
