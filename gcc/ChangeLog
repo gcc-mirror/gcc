@@ -1,3 +1,17 @@
+2019-10-10  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/91035
+	* config/s390/s390-protos.h (s390_output_split_stack_data): Add
+	prototype.
+	* config/s390/s390.md (UNSPECV_SPLIT_STACK_DATA): Remove.
+	("split_stack_data", "split_stack_call")
+	("split_stack_call_<mode>", "split_stack_cond_call")
+	("split_stack_cond_call_<mode>"): Remove.
+	("@split_stack_call<mode>", "@split_stack_cond_call<mode>"): New
+	insn definition.
+	* config/s390/s390.c (s390_output_split_stack_data): New function.
+	(s390_expand_split_stack_prologue): Use the merged expander.
+
 2019-10-09  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/90879
