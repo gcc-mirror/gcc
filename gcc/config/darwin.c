@@ -1270,6 +1270,17 @@ darwin_encode_section_info (tree decl, rtx rtl, int first)
       || (DECL_WEAK (decl) && ! MACHO_SYMBOL_HIDDEN_VIS_P (sym_ref))
       || lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
      SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_MUST_INDIRECT;
+
+#if DARWIN_PPC
+  /* Objective C V2 (m64) IVAR offset refs from Apple GCC-4.x have an
+     indirection for m64 code on PPC.  Historically, these indirections
+     also appear in the .data section.  */
+  tree o2meta = lookup_attribute ("OBJC2META", DECL_ATTRIBUTES (decl));
+  o2meta = o2meta ? TREE_VALUE (o2meta) : NULL_TREE;
+
+  if (o2meta && strncmp (IDENTIFIER_POINTER (o2meta), "V2_IVRF",7) == 0)
+    SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_MUST_INDIRECT;
+#endif
 }
 
 void
