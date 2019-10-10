@@ -1,6 +1,10 @@
-2019-10-10  Ed Schonberg  <schonberg@adacore.com>
+2019-10-10  Anthony Leonardo Gracio  <leonardo@adacore.com>
 
-	* exp_ch6.adb (Expand_Simple_Function_Return_Statement): If the
-	function to which the return statement applies is an
-	Ignored_Ghost_Function, do not indicate that it uses the
-	secondary stack when the return type is unconstrained.
+	* doc/gnat_ugn/about_this_guide.rst,
+	doc/gnat_ugn/building_executable_programs_with_gnat.rst,
+	doc/gnat_ugn/getting_started_with_gnat.rst,
+	doc/gnat_ugn/gnat_and_program_execution.rst, errout.ads,
+	exp_ch3.adb, gnatls.adb, impunit.adb, lib-writ.ads, opt.ads,
+	sem_ch7.adb, sem_prag.adb, sem_res.adb, sem_warn.adb,
+	terminals.c: Replace GPS by GNAT Studio.
+	* gnat_ugn.texi: Regenerate.

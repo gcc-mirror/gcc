@@ -2377,7 +2377,7 @@ file) and have the following form:
 
 The first integer after the file name is the line number in the file,
 and the second integer is the column number within the line.
-``GPS`` can parse the error messages
+``GNAT Studio`` can parse the error messages
 and point to the referenced character.
 The following switches provide control over the error message
 format:
@@ -5139,7 +5139,7 @@ checks to be performed. The following checks are defined:
 
 
 .. end of switch description (leave this comment to ease automatic parsing for
-.. GPS
+.. GNAT Studio
 
 In the above rules, appearing in column one is always permitted, that is,
 counts as meeting either a requirement for a required preceding space,
