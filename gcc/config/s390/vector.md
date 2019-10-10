@@ -614,10 +614,30 @@
   operands[2] = GEN_INT (GET_MODE_NUNITS (<MODE>mode) - 1);
 })
 
+(define_predicate "vcond_comparison_operator"
+  (match_operand 0 "comparison_operator")
+{
+  if (!HONOR_NANS (GET_MODE (XEXP (op, 0)))
+      && !HONOR_NANS (GET_MODE (XEXP (op, 1))))
+    return true;
+  switch (GET_CODE (op))
+    {
+    case LE:
+    case LT:
+    case GE:
+    case GT:
+    case LTGT:
+      /* Signaling vector comparisons are supported only on z14+.  */
+      return TARGET_Z14;
+    default:
+      return true;
+    }
+})
+
 (define_expand "vcond<V_HW:mode><V_HW2:mode>"
   [(set (match_operand:V_HW 0 "register_operand" "")
 	(if_then_else:V_HW
-	 (match_operator 3 "comparison_operator"
+	 (match_operator 3 "vcond_comparison_operator"
 			 [(match_operand:V_HW2 4 "register_operand" "")
 			  (match_operand:V_HW2 5 "nonmemory_operand" "")])
 	 (match_operand:V_HW 1 "nonmemory_operand" "")
