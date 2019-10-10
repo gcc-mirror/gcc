@@ -3048,13 +3048,6 @@ struct GTY(()) lang_decl {
 #define DECL_HAS_VTT_PARM_P(NODE) \
   (LANG_DECL_FN_CHECK (NODE)->has_vtt_parm_p)
 
-/* Nonzero if NODE is a FUNCTION_DECL for which a VTT parameter is
-   required.  */
-#define DECL_NEEDS_VTT_PARM_P(NODE)			\
-  (CLASSTYPE_VBASECLASSES (DECL_CONTEXT (NODE))		\
-   && (DECL_BASE_CONSTRUCTOR_P (NODE)			\
-       || DECL_BASE_DESTRUCTOR_P (NODE)))
-
 /* Nonzero if NODE is a user-defined conversion operator.  */
 #define DECL_CONV_FN_P(NODE) IDENTIFIER_CONV_OP_P (DECL_NAME (NODE))
 
@@ -6481,6 +6474,7 @@ extern void check_abi_tags			(tree);
 extern tree missing_abi_tags			(tree);
 extern void fixup_type_variants			(tree);
 extern void fixup_attribute_variants		(tree);
+extern unsigned build_clones 			(tree, bool, bool);
 extern void clone_function_decl			(tree, bool, bool = false);
 extern void adjust_clone_args			(tree);
 extern void deduce_noexcept_on_destructor       (tree);
@@ -6846,7 +6840,7 @@ extern tree get_default_ctor			(tree);
 extern tree get_dtor				(tree, tsubst_flags_t);
 extern tree strip_inheriting_ctors		(tree);
 extern tree inherited_ctor_binfo		(tree);
-extern bool ctor_omit_inherited_parms		(tree);
+extern bool ctor_omit_inherited_parms		(tree, bool check_name = true);
 extern tree locate_ctor				(tree);
 extern tree implicitly_declare_fn               (special_function_kind, tree,
 						 bool, tree, tree);

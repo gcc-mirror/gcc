@@ -183,7 +183,7 @@ static void dfs_accumulate_vtbl_inits (tree, tree, tree, tree, tree,
 static void build_rtti_vtbl_entries (tree, vtbl_init_data *);
 static void build_vcall_and_vbase_vtbl_entries (tree, vtbl_init_data *);
 static void clone_constructors_and_destructors (tree);
-static tree build_clone (tree, tree);
+static tree build_clone (tree, tree, bool, bool);
 static void update_vtable_entry_for_fn (tree, tree, tree, tree *, unsigned);
 static void build_ctor_vtbl_group (tree, tree);
 static void build_vtt (tree);
@@ -4584,7 +4584,8 @@ check_methods (tree t)
    NAME.  */
 
 static tree
-build_clone (tree fn, tree name)
+build_clone (tree fn, tree name, bool need_vtt_parm_p,
+	     bool omit_inherited_parms_p)
 {
   /* Copy the function.  */
   tree clone = copy_decl (fn);
@@ -4602,7 +4603,8 @@ build_clone (tree fn, tree name)
   if (TREE_CODE (clone) == TEMPLATE_DECL)
     {
       tree fn_result = DECL_TEMPLATE_RESULT (fn);
-      tree result = build_clone (fn_result, name);
+      tree result = build_clone (fn_result, name,
+				 need_vtt_parm_p, omit_inherited_parms_p);
       DECL_TEMPLATE_RESULT (clone) = result;
 
       tree fn_ti = DECL_TEMPLATE_INFO (result);
@@ -4633,8 +4635,7 @@ build_clone (tree fn, tree name)
       DECL_VINDEX (clone) = NULL_TREE;
     }
 
-  bool ctor_omit_inherited_parms_p = ctor_omit_inherited_parms (clone);
-  if (ctor_omit_inherited_parms_p)
+  if (omit_inherited_parms_p)
     gcc_assert (DECL_HAS_IN_CHARGE_PARM_P (clone));
 
   /* If there was an in-charge parameter, drop it from the function
@@ -4648,13 +4649,12 @@ build_clone (tree fn, tree name)
       /* Skip the in-charge parameter.  */
       parmtypes = TREE_CHAIN (parmtypes);
       /* And the VTT parm, in a complete [cd]tor.  */
-      if (DECL_HAS_VTT_PARM_P (fn)
-	  && ! DECL_NEEDS_VTT_PARM_P (clone))
+      if (DECL_HAS_VTT_PARM_P (fn) && !need_vtt_parm_p)
 	parmtypes = TREE_CHAIN (parmtypes);
-      if (ctor_omit_inherited_parms_p)
+      if (omit_inherited_parms_p)
 	{
 	  /* If we're omitting inherited parms, that just leaves the VTT.  */
-	  gcc_assert (DECL_NEEDS_VTT_PARM_P (clone));
+	  gcc_assert (need_vtt_parm_p);
 	  parmtypes = tree_cons (NULL_TREE, vtt_parm_type, void_list_node);
 	}
       TREE_TYPE (clone)
@@ -4680,7 +4680,7 @@ build_clone (tree fn, tree name)
   /* And the VTT parm, in a complete [cd]tor.  */
   if (DECL_HAS_VTT_PARM_P (fn))
     {
-      if (DECL_NEEDS_VTT_PARM_P (clone))
+      if (need_vtt_parm_p)
 	DECL_HAS_VTT_PARM_P (clone) = 1;
       else
 	{
@@ -4692,7 +4692,7 @@ build_clone (tree fn, tree name)
 
   /* A base constructor inheriting from a virtual base doesn't get the
      arguments.  */
-  if (ctor_omit_inherited_parms_p)
+  if (omit_inherited_parms_p)
     DECL_CHAIN (DECL_CHAIN (DECL_ARGUMENTS (clone))) = NULL_TREE;
 
   for (tree parms = DECL_ARGUMENTS (clone); parms; parms = DECL_CHAIN (parms))
@@ -4708,32 +4708,19 @@ build_clone (tree fn, tree name)
   return clone;
 }
 
-/* Produce declarations for all appropriate clones of FN.  If
-   UPDATE_METHODS is true, the clones are added to the
-   CLASSTYPE_METHOD_VEC.  VIA_USING indicates whether these are
-   cloning decls brought in via using declarations (i.e. inheriting
-   ctors).  */
-
-void
-clone_function_decl (tree fn, bool update_methods, bool via_using)
+unsigned
+build_clones (tree fn, bool needs_vtt_parm_p, bool omit_inherited_parms_p)
 {
-  tree clone;
-
-  /* Avoid inappropriate cloning.  */
-  if (DECL_CHAIN (fn)
-      && DECL_CLONED_FUNCTION_P (DECL_CHAIN (fn)))
-    return;
+  unsigned count = 0;
 
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn))
     {
       /* For each constructor, we need two variants: an in-charge version
 	 and a not-in-charge version.  */
-      clone = build_clone (fn, complete_ctor_identifier);
-      if (update_methods)
-	add_method (DECL_CONTEXT (clone), clone, via_using);
-      clone = build_clone (fn, base_ctor_identifier);
-      if (update_methods)
-	add_method (DECL_CONTEXT (clone), clone, via_using);
+      build_clone (fn, complete_ctor_identifier, false, false);
+      build_clone (fn, base_ctor_identifier, needs_vtt_parm_p,
+		   omit_inherited_parms_p);
+      count += 2;
     }
   else
     {
@@ -4750,20 +4737,49 @@ clone_function_decl (tree fn, bool update_methods, bool via_using)
 	 destructor.  */
       if (DECL_VIRTUAL_P (fn))
 	{
-	  clone = build_clone (fn, deleting_dtor_identifier);
-	  if (update_methods)
-	    add_method (DECL_CONTEXT (clone), clone, via_using);
+	  build_clone (fn, deleting_dtor_identifier, false, false);
+	  count++;
 	}
-      clone = build_clone (fn, complete_dtor_identifier);
-      if (update_methods)
-	add_method (DECL_CONTEXT (clone), clone, via_using);
-      clone = build_clone (fn, base_dtor_identifier);
-      if (update_methods)
-	add_method (DECL_CONTEXT (clone), clone, via_using);
+      build_clone (fn, complete_dtor_identifier, false, false);
+      build_clone (fn, base_dtor_identifier, needs_vtt_parm_p, false);
+      count += 2;
     }
+
+  return count;
+}
+
+/* Produce declarations for all appropriate clones of FN.  If
+   UPDATE_METHODS is true, the clones are added to the
+   CLASSTYPE_METHOD_VEC.  VIA_USING indicates whether these are
+   cloning decls brought in via using declarations (i.e. inheriting
+   ctors).  */
+
+void
+clone_function_decl (tree fn, bool update_methods, bool via_using)
+{
+  /* Avoid inappropriate cloning.  */
+  if (DECL_CHAIN (fn)
+      && DECL_CLONED_FUNCTION_P (DECL_CHAIN (fn)))
+    return;
+
+  /* Base cdtors need a vtt parm if there are virtual bases.  */
+  bool needs_vtt_parm_p = CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fn));
+
+  /* Base ctor omits inherited parms it needs a vttparm and inherited
+     from a virtual nase ctor.  */
+  bool omit_inherited_parms_p = ctor_omit_inherited_parms (fn, false);
+
+  unsigned count = build_clones (fn, needs_vtt_parm_p, omit_inherited_parms_p);
 
   /* Note that this is an abstract function that is never emitted.  */
   DECL_ABSTRACT_P (fn) = true;
+
+  if (update_methods)
+    for (tree clone = fn; count--;)
+      {
+	clone = DECL_CHAIN (clone);
+	add_method (DECL_CONTEXT (clone), clone, via_using);
+      }
 }
 
 /* DECL is an in charge constructor, which is being defined. This will

@@ -1,3 +1,17 @@
+2019-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (DECL_NEEDS_VTT_PARM_P): Delete.
+	(build_clones): Declare.
+	(ctor_omit_inherited_parms): Add exact_name default parm.
+	* class.c (build_clone): Add need_vtt & omit_inherited parms, do
+	not calculate here.
+	(build_clones): New function.  Add need_vtt &
+	omit_inherited_parms.  Broken out of ...
+	(clone_function_decl): Call build_clones.  Add to method vec here.
+	* method.c (ctor_omit_inherited_parms): Add exact_name parm.
+	Detect any ctor or specific base ctor as specified.
+
 2019-10-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

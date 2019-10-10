@@ -552,21 +552,26 @@ inherited_ctor_binfo (tree fndecl)
    because it is a base clone of a ctor inherited from a virtual base.  */
 
 bool
-ctor_omit_inherited_parms (tree fn)
+ctor_omit_inherited_parms (tree fn, bool exact_name)
 {
   if (!flag_new_inheriting_ctors)
     /* We only optimize away the parameters in the new model.  */
     return false;
-  if (!DECL_BASE_CONSTRUCTOR_P (fn)
+
+  if (!(exact_name ? DECL_BASE_CONSTRUCTOR_P (fn)
+	: IDENTIFIER_CTOR_P (DECL_NAME (fn)))
       || !CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fn)))
     return false;
+
   if (FUNCTION_FIRST_USER_PARMTYPE (DECL_ORIGIN (fn)) == void_list_node)
     /* No user-declared parameters to omit.  */
     return false;
+
   tree binfo = inherited_ctor_binfo (fn);
   for (; binfo; binfo = BINFO_INHERITANCE_CHAIN (binfo))
     if (BINFO_VIRTUAL_P (binfo))
       return true;
+
   return false;
 }
 
