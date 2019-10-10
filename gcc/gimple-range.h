@@ -70,7 +70,7 @@ gimple_range_ssa_p (tree exp)
 {
   if (exp && TREE_CODE (exp) == SSA_NAME &&
       !SSA_NAME_IS_VIRTUAL_OPERAND (exp) &&
-      value_range_base::supports_type_p (exp))
+      value_range_base::supports_type_p (TREE_TYPE (exp)))
     return exp;
   return NULL_TREE;
 }
