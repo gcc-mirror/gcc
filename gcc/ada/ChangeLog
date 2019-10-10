@@ -1,12 +1,5 @@
 2019-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* sem_ch13.adb (Adjust_Record_For_Reverse_Bit_Order): Do not use
-	the Esize of the component to compute its layout, but only the
-	Component_Clause.  Do not issue a warning for the _Tag
-	component.  Also set the Esize of the component at the end of
-	the layout.
-	(Analyze_Record_Representation_Clause): Remove Hbit local
-	variable.  Lay out the Original_Record_Component only if it's
-	distinct from the component.
-	(Check_Record_Representation_Clause): Fix off-by-one bug for the
-	Last_Bit of the artificial clause built for the _Tag component.
+	* sem_ch6.adb (Set_Actual_Subtypes): Put the freeze node of the
+	actual subtype after its declaration when the type of the formal
+	has a predicate.
