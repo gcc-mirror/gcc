@@ -1,3 +1,7 @@
+2019-10-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-reference.c (propagate): Fix releasing of IPA summaries.
+
 2019-10-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.c: Lookup Objective C metadata and force indirection
