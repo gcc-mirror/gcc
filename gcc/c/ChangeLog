@@ -1,3 +1,18 @@
+2019-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_all_clauses): Add NESTED_P argument, if
+	true, terminate processing on closing paren and don't skip to end of
+	pragma line.
+	(c_parser_omp_declare_simd): Handle also declare variant.
+	(omp_construct_selectors, omp_device_selectors,
+	omp_implementation_selectors, omp_user_selectors): New variables.
+	(c_parser_omp_context_selector,
+	c_parser_omp_context_selector_specification,
+	c_finish_omp_declare_variant): New functions.
+	(c_finish_omp_declare_simd): Handle both declare simd and
+	declare variant.
+	(c_parser_omp_declare): Handle declare variant.
+
 2019-10-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-parser.c (c_parser_asm_statement): Handle CPP_SCOPE like two

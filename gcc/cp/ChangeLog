@@ -1,3 +1,21 @@
+2019-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.h (struct cp_omp_declare_simd_data): Add variant_p member.
+	* parser.c (cp_ensure_no_omp_declare_simd): Handle both declare simd
+	and declare variant.
+	(cp_parser_oacc_all_clauses): Formatting fix.
+	(cp_parser_omp_all_clauses): Add NESTED_P argument, if true, terminate
+	processing on closing paren and don't skip to end of pragma line.
+	(cp_parser_omp_declare_simd): Add VARIANT_P argument.  Handle also
+	declare variant.
+	(omp_construct_selectors, omp_device_selectors,
+	omp_implementation_selectors, omp_user_selectors): New variables.
+	(cp_parser_omp_context_selector,
+	cp_parser_omp_context_selector_specification,
+	cp_finish_omp_declare_variant): New functions.
+	(cp_parser_late_parsing_omp_declare_simd): Handle also declare variant.
+	(cp_parser_omp_declare): Handle declare variant.
+
 2019-10-09  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (template_info_decl_check): Check ENABLE_TREE_CHECKING.

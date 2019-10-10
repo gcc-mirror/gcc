@@ -1,3 +1,15 @@
+2019-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_omp_check_context_selector,
+	c_omp_get_context_selector): Declare.
+	* c-omp.c (c_omp_declare_simd_clauses_to_numbers): Fix spelling
+	in diagnostic message.
+	(c_omp_check_context_selector, c_omp_get_context_selector): New
+	functions.
+	* c-attribs.c (c_common_attribute_table): Add "omp declare variant"
+	attribute.
+	(handle_omp_declare_variant_attribute): New function.
+
 2019-10-09  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/90879
