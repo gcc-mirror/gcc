@@ -1582,6 +1582,20 @@ package body Inline is
 
                   if No (Underlying_Type (Typ)) then
                      return True;
+
+                  --  Do not peek under a private type if its completion has
+                  --  SPARK_Mode Off. In such a case, a deep type is considered
+                  --  by GNATprove to be not deep.
+
+                  elsif Present (Full_View (Typ))
+                    and then Present (SPARK_Pragma (Full_View (Typ)))
+                    and then Get_SPARK_Mode_From_Annotation
+                      (SPARK_Pragma (Full_View (Typ))) = Off
+                  then
+                     return False;
+
+                  --  Otherwise peek under the private type.
+
                   else
                      return Is_Deep (Underlying_Type (Typ));
                   end if;
