@@ -2925,6 +2925,41 @@ package body Sem_Ch12 is
       Set_Ekind  (Formal, E_Package);
       Set_Etype  (Formal, Standard_Void_Type);
       Set_Inner_Instances (Formal, New_Elmt_List);
+
+      --  It is unclear that any aspects can apply to a formal package
+      --  declaration, given that they look like a hidden comformance
+      --  requirement on the corresponding actual. However, Abstract_State
+      --  must be treated specially because it generates declarations that
+      --  must appear before other declarations in the specification and
+      --  must be analyzed at once.
+
+      if Present (Aspect_Specifications (Gen_Decl)) then
+         if No (Aspect_Specifications (N)) then
+            Set_Aspect_Specifications (N, New_List);
+            Set_Has_Aspects (N);
+         end if;
+
+         declare
+            ASN   : Node_Id := First (Aspect_Specifications (Gen_Decl));
+            New_A : Node_Id;
+
+         begin
+            while Present (ASN) loop
+               if Get_Aspect_Id (ASN) = Aspect_Abstract_State then
+                  New_A :=
+                    Copy_Generic_Node (ASN, Empty, Instantiating => True);
+                  Set_Entity (New_A, Formal);
+                  Set_Analyzed (New_A, False);
+                  Append (New_A, Aspect_Specifications (N));
+                  Analyze_Aspect_Specifications (N, Formal);
+                  exit;
+               end if;
+
+               Next (ASN);
+            end loop;
+         end;
+      end if;
+
       Push_Scope  (Formal);
 
       --  Manually set the SPARK_Mode from the context because the package
@@ -3023,6 +3058,9 @@ package body Sem_Ch12 is
 
    <<Leave>>
       if Has_Aspects (N) then
+         --  Unclear that any other aspects may appear here, snalyze them
+         --  for completion, given that the grammar allows their appearance.
+
          Analyze_Aspect_Specifications (N, Pack_Id);
       end if;
 
