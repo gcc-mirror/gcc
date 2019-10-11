@@ -1,3 +1,10 @@
+2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (annotate_value) <INTEGER_CST>: Really test the
+	sign of the value when deciding to build a NEGATE_EXPR.
+	<PLUS_EXPR>: Remove redundant line.
+	<BIT_AND_EXPR>: Do the negation here.
+
 2019-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Attribute_to_gnu): Test Can_Use_Internal_Rep
