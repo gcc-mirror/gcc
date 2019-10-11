@@ -1,5 +1,10 @@
 2019-10-11  Joseph Myers  <joseph@codesourcery.com>
 
+	* c.opt (Wc11-c2x-compat): Add CPP(cpp_warn_c11_c2x_compat)
+	CppReason(CPP_W_C11_C2X_COMPAT).
+
+2019-10-11  Joseph Myers  <joseph@codesourcery.com>
+
 	* c-common.c (c_common_reswords): Do not use D_EXT for _Decimal32,
 	_Decimal64 and _Decimal128.
 

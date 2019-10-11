@@ -480,6 +480,9 @@ struct cpp_options
   /* Nonzero for C++ 2014 Standard digit separators.  */
   unsigned char digit_separators;
 
+  /* Nonzero for C2X decimal floating-point constants.  */
+  unsigned char dfp_constants;
+
   /* Nonzero for C++2a __VA_OPT__ feature.  */
   unsigned char va_opt;
 
@@ -507,6 +510,9 @@ struct cpp_options
 
   /* True if warn about differences between C90 and C99.  */
   signed char cpp_warn_c90_c99_compat;
+
+  /* True if warn about differences between C11 and C2X.  */
+  signed char cpp_warn_c11_c2x_compat;
 
   /* True if warn about differences between C++98 and C++11.  */
   bool cpp_warn_cxx11_compat;
@@ -607,6 +613,7 @@ enum cpp_warning_reason {
   CPP_W_DATE_TIME,
   CPP_W_PEDANTIC,
   CPP_W_C90_C99_COMPAT,
+  CPP_W_C11_C2X_COMPAT,
   CPP_W_CXX11_COMPAT,
   CPP_W_EXPANSION_TO_DEFINED
 };
