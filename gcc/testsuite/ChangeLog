@@ -1,5 +1,10 @@
 2019-10-11  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/92070 - bogus error with -fchecking=2.
+	* g++.dg/expr/cond17.C: New test.
+
+2019-10-11  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/92049 - extra error with -fchecking=2.
 	* g++.dg/template/builtin2.C: New test.
 
