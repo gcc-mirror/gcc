@@ -315,6 +315,15 @@ esac
 # Set any OS-dependent and CPU-dependent bits.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host}" in
+  *-zephyr-elf*)
+    case "${host_cpu}" in
+      i[567]86)
+        abi_baseline_pair=i486-zephyr-elf
+        ;;
+      x86_64)
+        abi_baseline_pair=x86_64-zephyr-elf
+        ;;
+    esac
   *-*-linux* | *-*-uclinux*)
     case "${host_cpu}" in
       i[567]86)

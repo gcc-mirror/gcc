@@ -7897,6 +7897,7 @@ else
 
   case $target in
     powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux* | s390*-*-linux* | \
+    x86_64*-zephyr-* | \
     i?86*-*-elfiamcu | i?86*-*-gnu* | x86_64*-*-gnu* | \
     i?86*-*-mingw* | x86_64*-*-mingw* | \
     i?86*-*-cygwin* | x86_64*-*-cygwin*)
@@ -15431,7 +15432,7 @@ ia64-*-hpux*)
   rm -rf conftest*
   ;;
 
-x86_64-*kfreebsd*-gnu|x86_64-*linux*|powerpc*-*linux*| \
+x86_64-*kfreebsd*-gnu|x86_64-*linux*|x86_64-zephyr-*|powerpc*-*linux*| \
 s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
   # Find out which ABI we are using.
   echo 'int i;' > conftest.$ac_ext
@@ -15446,7 +15447,7 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 	  x86_64-*kfreebsd*-gnu)
 	    LD="${LD-ld} -m elf_i386_fbsd"
 	    ;;
-	  x86_64-*linux*)
+	  x86_64-*linux*|x86_64-zephyr-*)
 	    case `/usr/bin/file conftest.o` in
 	      *x86-64*)
 		LD="${LD-ld} -m elf32_x86_64"
@@ -15475,7 +15476,7 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 	  x86_64-*kfreebsd*-gnu)
 	    LD="${LD-ld} -m elf_x86_64_fbsd"
 	    ;;
-	  x86_64-*linux*)
+	  x86_64-*linux*|x86_64-zephyr-*)
 	    LD="${LD-ld} -m elf_x86_64"
 	    ;;
 	  powerpcle-*linux*)
@@ -23722,6 +23723,15 @@ else
         gcc_cv_as_flags=--x32
     ;;
   x86_64-*-linux*)
+        gcc_cv_as_flags=--64
+    ;;
+  i[34567]86-zephyr*)
+        gcc_cv_as_flags=--32
+    ;;
+  x86_64-zephyr-elfx32)
+        gcc_cv_as_flags=--x32
+    ;;
+  x86_64-zephyr*)
         gcc_cv_as_flags=--64
     ;;
   powerpc*-*-darwin*)

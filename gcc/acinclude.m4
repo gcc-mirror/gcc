@@ -460,6 +460,18 @@ AC_DEFUN([gcc_GAS_FLAGS],
     dnl Override the default, which may be incompatible.
     gcc_cv_as_flags=--64
     ;;
+  i[[34567]]86-zephyr*)
+    dnl Override the default, which may be incompatible.
+    gcc_cv_as_flags=--32
+    ;;
+  x86_64-zephyr-elfx32)
+    dnl Override the default, which may be incompatible.
+    gcc_cv_as_flags=--x32
+    ;;
+  x86_64-zephyr*)
+    dnl Override the default, which may be incompatible.
+    gcc_cv_as_flags=--64
+    ;;
   powerpc*-*-darwin*)
     dnl Always pass -arch ppc to assembler.
     gcc_cv_as_flags="-arch ppc"

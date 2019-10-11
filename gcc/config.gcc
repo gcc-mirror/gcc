@@ -1898,6 +1898,11 @@ i[34567]86-*-elfiamcu)
 i[34567]86-*-elf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h"
 	;;
+x86_64-zephyr-elf*)
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h"
+	tm_file="${tm_file} i386/zephyr64.h"
+	tmake_file="${tmake_file} i386/t-zephyr64"
+	;;
 x86_64-*-elf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h"
 	;;
