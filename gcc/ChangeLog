@@ -1,3 +1,20 @@
+2019-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gimple-streamer-out.c (output_gimple_stmt): Add explicit function
+	parameter.
+	* lto-streamer-out.c: Include tree-dfa.h.
+	(output_cfg): Do not use cfun.
+	(lto_prepare_function_for_streaming): New.
+	(output_function): Do not push cfun; do not initialize loop optimizer.
+	* lto-streamer.h (lto_prepare_function_for_streaming): Declare.
+	* passes.c (ipa_write_summaries): Use it.
+	(ipa_write_optimization_summaries): Do not modify bodies.
+	* tree-dfa.c (renumber_gimple_stmt_uids): Add function parameter.
+	* tree.dfa.h (renumber_gimple_stmt_uids): Update prototype.
+	* tree-ssa-dse.c (pass_dse::execute): Update use of
+	renumber_gimple_stmt_uids.
+	* tree-ssa-math-opts.c (pass_optimize_widening_mul::execute): Likewise.
+
 2019-10-11  Kewen Lin  <linkw@gcc.gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost): Lower
