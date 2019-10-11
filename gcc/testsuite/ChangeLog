@@ -1,3 +1,8 @@
+2019-10-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92050
+	* gfortran.dg/pr92050.f90: New.
+
 2019-10-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90883

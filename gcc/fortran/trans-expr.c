@@ -7031,8 +7031,11 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	gfc_allocate_lang_decl (result);
       GFC_DECL_SAVED_DESCRIPTOR (result) = parmse.expr;
       gfc_free_expr (class_expr);
-      gcc_assert (parmse.pre.head == NULL_TREE
-		  && parmse.post.head == NULL_TREE);
+      /* -fcheck= can add diagnostic code, which has to be placed before
+	 the call. */
+      if (parmse.pre.head != NULL)
+	  gfc_add_expr_to_block (&se->pre, parmse.pre.head);
+      gcc_assert (parmse.post.head == NULL_TREE);
     }
 
   /* Follow the function call with the argument post block.  */
