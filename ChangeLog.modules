@@ -1,6 +1,16 @@
 2019-10-11  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::core_vals): Don't stream function
+	parms here.
+	(trees_out::decl_value): Stream has_defn.
+	(trees_in::decl_value): Stream has_defn, adjust fn_parms_fini.
+	(trees_in::tree_value): Likewise.
+	(trees_{in,out}::fn_parms_init): Stream entire parms.
+	(trees::fn_parms_fini): Do nothing.
+	(trees_in::fn_parms_fini): Add has_defn, adjust.
+
+	gcc/cp/
 	* module.cc (enum walk_kind): Remove WK_merge.
 	(enum trees_out::tags): Remove tag_merging.
 	(trees_out::mark_merged): Delete.

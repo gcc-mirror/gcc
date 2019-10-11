@@ -2846,7 +2846,7 @@ public:
   bool tpl_header (tree);
   tree fn_arg_types ();
   int fn_parms_init (tree);
-  tree fn_parms_fini (int tag, tree fn, tree existing);
+  void fn_parms_fini (int tag, tree fn, tree existing, bool has_defn);
 
 public:
   /* Serialize various definitions. */
@@ -2995,7 +2995,7 @@ public:
   void tpl_header (tree);
   void fn_arg_types (tree);
   void fn_parms_init (tree);
-  void fn_parms_fini (tree fn, tree maybe_template);
+  void fn_parms_fini (tree) {}
 
 public:
   merge_kind get_merge_kind (depset *);
@@ -5763,7 +5763,6 @@ trees_out::core_vals (tree t)
 	    WU (DECL_UNCHECKED_FUNCTION_CODE (t));
 	}
 
-      chained_decls (t->function_decl.arguments);
       WT (t->function_decl.personality);
       WT (t->function_decl.function_specific_target);
       WT (t->function_decl.function_specific_optimization);
@@ -6168,7 +6167,6 @@ trees_in::core_vals (tree t)
 	    DECL_UNCHECKED_FUNCTION_CODE (t) = built_in_function (bltin);
 	  }
 
-	t->function_decl.arguments = chained_decls ();
 	RT (t->function_decl.personality);
 	RT (t->function_decl.function_specific_target);
 	RT (t->function_decl.function_specific_optimization);
@@ -6832,6 +6830,7 @@ trees_out::decl_value (tree decl, depset *dep)
 	  bool is_mod = DECL_LANG_SPECIFIC (o) && DECL_MODULE_PURVIEW_P (o);
 	  b (is_mod);
 	}
+      b (dep->has_defn ());
       tree_node_bools (decl);
     }
 
@@ -6906,7 +6905,7 @@ trees_out::decl_value (tree decl, depset *dep)
 	       merge_kind_name[mk], TREE_CODE (decl), decl);
 
   if (TREE_CODE (inner) == FUNCTION_DECL)
-    fn_parms_fini (inner, decl);
+    fn_parms_fini (inner);
 
   if (inner_tag != 0)
     {
@@ -6966,6 +6965,7 @@ trees_in::decl_value ()
 {
   int tag = 0;
   bool is_mod = false;
+  bool has_defn = false;
   unsigned mk_u = u ();
   if (mk_u >= MK_hwm || !merge_kind_name[mk_u])
     {
@@ -6980,6 +6980,8 @@ trees_in::decl_value ()
       if (mk != MK_unique && !state->is_header ())
 	/* See note in trees_out about where this bool is sequenced.  */
 	is_mod = b ();
+
+      has_defn = b ();
 
       if (!tree_node_bools (res))
 	res = NULL_TREE;
@@ -7051,7 +7053,6 @@ trees_in::decl_value ()
       return NULL_TREE;
     }
 
-  tree parms = NULL_TREE;
   if (true)
     {
       /* Figure out if this decl is already known about.  */
@@ -7190,7 +7191,7 @@ trees_in::decl_value ()
 
       if (parm_tag)
 	/* EXISTING is the template result (or NULL).  */
-	parms = fn_parms_fini (parm_tag, inner, existing);
+	fn_parms_fini (parm_tag, inner, existing, has_defn);
 
       dump (dumper::MERGE)
 	&& dump ("Read:%d's %s merge key (%s) %C:%N", tag,
@@ -7200,6 +7201,7 @@ trees_in::decl_value ()
   if (inner_tag != 0)
     {
       /* Template pieces.  */
+      // FIXME: should not be streamed like this
       tree parms = tree_node ();
       DECL_TEMPLATE_PARMS (res) = parms;
 
@@ -7290,10 +7292,6 @@ trees_in::decl_value ()
 	 own other structures, so loading its definition will alter
 	 it, and not the existing decl.  */
       dump (dumper::MERGE) && dump ("Deduping %N", existing);
-
-      if (parms)
-	/* Restore the to-be-discarded parms.  */
-	DECL_ARGUMENTS (inner) = parms;
 
       if (inner_tag != 0)
 	DECL_TEMPLATE_RESULT (res) = inner;
@@ -7411,7 +7409,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
     default:
       break;
 
-    case PARM_DECL:  // FIXME: should only be explicit in the fn_parms_init
+    case PARM_DECL:  // FIXME: should only be explicit in the
+		     // fn_parms_init
     case RESULT_DECL: // Likewise?
       return true;
 
@@ -8262,6 +8261,8 @@ trees_out::tree_value (tree t)
       tree_node_vals (t);
     }
 
+  if (TREE_CODE (inner) == FUNCTION_DECL)
+    fn_parms_init (inner);
   tree_node_vals (inner);
 
   if (type)
@@ -8313,7 +8314,7 @@ trees_in::tree_value ()
 
   tree res = start (u ());
   if (res && !tree_node_bools (res))
-      res = NULL_TREE;
+    res = NULL_TREE;
 
   /* Insert into map.  */
   tag = insert (res);
@@ -8404,6 +8405,10 @@ trees_in::tree_value ()
 	goto bail;
     }
 
+  int parm_tag = 0;
+  if (TREE_CODE (inner) == FUNCTION_DECL)
+    parm_tag = fn_parms_init (inner);
+
   if (!tree_node_vals (inner))
     goto bail;
 
@@ -8429,6 +8434,9 @@ trees_in::tree_value ()
   tree constraints = NULL_TREE;
   if (flag_concepts && DECL_P (res))
     constraints  = tree_node ();
+
+  if (TREE_CODE (inner) == FUNCTION_DECL)
+    fn_parms_fini (parm_tag, inner, NULL, false);
 
   dump (dumper::TREE) && dump ("Read tree:%d %C:%N", tag, TREE_CODE (res), res);
 
@@ -9369,72 +9377,34 @@ trees_in::fn_arg_types ()
 void
 trees_out::fn_parms_init (tree fn)
 {
-  unsigned ix = 0;
+  /* First init them.  */
+  int base_tag = ref_num - 1;
+  int ix = 0;
   for (tree parm = DECL_ARGUMENTS (fn);
        parm; parm = DECL_CHAIN (parm), ix++)
     {
-      gcc_checking_assert (TREE_CODE (parm) == PARM_DECL);
       if (streaming_p ())
 	{
 	  u (TREE_CODE (parm));
 	  start (parm);
 	  tree_node_bools (parm);
-	  if (DECL_LANG_SPECIFIC (parm))
-	    {
-	      u (DECL_PARM_INDEX (parm));
-	      /* Parm types that are pointers to fns will themselves
-		 contain parms, that could be referred to, but there's no
-		 function_decl to grab hold of them from.  So don't use
-		 late return type referring to them!  */
-	      u (DECL_PARM_LEVEL (parm));
-	    }
 	}
-
       int tag = insert (parm);
-      if (streaming_p ())
-	dump (dumper::TREE)
-	  && dump ("Writing:%d parm %u (%N) of %N",
-		   tag, ix, parm, fn);
+      gcc_checking_assert (base_tag - ix == tag);
     }
   /* Mark the end.  */
   if (streaming_p ())
     u (0);
 
+  /* Now stream their contents.  */
   ix = 0;
   for (tree parm = DECL_ARGUMENTS (fn);
        parm; parm = DECL_CHAIN (parm), ix++)
     {
-      /* Write the name for friendliness.  Write the type for tree
-	 comparisons.  */
-      tree_node (DECL_NAME (parm));
-      if (DECL_LANG_SPECIFIC (parm))
-	/* If there are no indices, then we cannot be checking the
-	   type either.  */
-	tree_node (TREE_TYPE (parm));
       if (streaming_p ())
 	dump (dumper::TREE)
-	  && dump ("Wrote details for parm %u (%N) of %N", ix, parm, fn);
-    }
-}
-
-/* Stream the remaining parm node data.  */
-
-void
-trees_out::fn_parms_fini (tree fn, tree maybe_template)
-{
-  if (streaming_p ())
-    {
-      depset *dep = dep_hash->find_entity (maybe_template);
-      u (dep->has_defn ());
-    }
-
-  unsigned ix = 0;
-  for (tree parm = DECL_ARGUMENTS (fn);
-       parm; parm = DECL_CHAIN (parm), ix++)
-    {
-      if (streaming_p ())
-	dump (dumper::TREE)
-	  && dump ("Writing contents for parm %u (%N) of %N", ix, parm, fn);
+	  && dump ("Writing parm:%d %u (%N) of %N",
+		   base_tag - ix, ix, parm, fn);
       tree_node_vals (parm);
     }
 }
@@ -9447,42 +9417,28 @@ trees_in::fn_parms_init (tree fn)
   int base_tag = ~(int)back_refs.length ();
 
   tree *parm_ptr = &DECL_ARGUMENTS (fn);
-  unsigned ix = 0;
-  while (int code = u ())
+  int ix = 0;
+  for (; int code = u (); ix++)
     {
-      if (code != PARM_DECL)
-	{
-	  set_overrun ();
-	  return 0;
-	}
-
       tree parm = start (code);
       if (!tree_node_bools (parm))
 	return 0;
 
-      if (DECL_LANG_SPECIFIC (parm))
-	{
-	  DECL_PARM_INDEX (parm) = u ();
-	  DECL_PARM_LEVEL (parm) = u ();
-	}
-
       int tag = insert (parm);
-      dump (dumper::TREE)
-	&& dump ("Reading:%d param %u of %N", tag, ix, fn);
+      gcc_checking_assert (base_tag - ix == tag);
       *parm_ptr = parm;
       parm_ptr = &DECL_CHAIN (parm);
-      ix++;
     }
 
   ix = 0;
   for (tree parm = DECL_ARGUMENTS (fn);
-       parm; parm = DECL_CHAIN (parm))
+       parm; parm = DECL_CHAIN (parm), ix++)
     {
-      DECL_NAME (parm) = tree_node ();
-      if (DECL_LANG_SPECIFIC (parm))
-	TREE_TYPE (parm) = tree_node ();
       dump (dumper::TREE)
-	&& dump ("Read details for parm %u (%N) of %N", ix, parm, fn);
+	&& dump ("Reading parm:%d %u (%N) of %N",
+		 base_tag - ix, ix, parm, fn);
+      if (!tree_node_vals (parm))
+	return 0;
     }
 
   return base_tag;
@@ -9491,19 +9447,14 @@ trees_in::fn_parms_init (tree fn)
 /* Read the remaining parm node data.  Replace with existing (if
    non-null) in the map.  */
 
-tree
-trees_in::fn_parms_fini (int tag, tree fn, tree existing)
+void
+trees_in::fn_parms_fini (int tag, tree fn, tree existing, bool is_defn)
 {
-  bool is_defn = u ();
   tree existing_parm = existing ? DECL_ARGUMENTS (existing) : NULL_TREE;
   tree parms = DECL_ARGUMENTS (fn);
   unsigned ix = 0;
   for (tree parm = parms; parm; parm = DECL_CHAIN (parm), ix++)
     {
-      dump (dumper::TREE)
-	&& dump ("Reading contents for parm %u (%N) of %N", ix, parm, fn);
-      gcc_checking_assert (back_refs[~tag] == parm);
-      tree_node_vals (parm);
       if (existing_parm)
 	{
 	  if (is_defn && !DECL_SAVED_TREE (existing))
@@ -9519,14 +9470,6 @@ trees_in::fn_parms_fini (int tag, tree fn, tree existing)
 	}
       tag--;
     }
-
-  /* When we read the values for FN, we'll overwrite its version of
-     the arguments with the existing version.  So return what we have
-     now.  */
-  if (!existing)
-    parms = NULL_TREE;
-
-  return parms;
 }
 
 /* DEP is the depset of some decl we're streaming by value.  Determine
