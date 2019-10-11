@@ -1,3 +1,11 @@
+2019-10-11  Jim Wilson  <jimw@sifive.com>
+
+	PR rtl-optimization/91860
+	* gcc.dg/pr91860-1.c: New testcase.
+	* gcc.dg/pr91860-2.c: New testcase.
+	* gcc.dg/pr91860-3.c: New testcase.
+	* gcc.dg/pr91860-4.c: New testcase.
+
 2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91649
