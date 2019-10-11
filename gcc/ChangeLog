@@ -1,3 +1,8 @@
+2019-10-11  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost): Lower
+	vec_promote_demote cost to 1 for non-Power7 VSX architectures.
+
 2019-10-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* ginclude/float.h [!__DEC32_MANT_DIG__]: Do not define DFP
