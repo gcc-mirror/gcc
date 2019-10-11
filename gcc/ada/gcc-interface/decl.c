@@ -6782,6 +6782,15 @@ elaborate_reference_1 (tree ref, void *data)
 		   elaborate_reference_1 (TREE_OPERAND (ref, 0), data),
 		   TREE_OPERAND (ref, 1), NULL_TREE);
 
+  /* If this is the displacement of a pointer, elaborate the pointer and then
+     displace the result.  The actual purpose here is to drop the location on
+     the expression, which may be problematic if replicated on references.  */
+  if (TREE_CODE (ref) == POINTER_PLUS_EXPR
+      && TREE_CODE (TREE_OPERAND (ref, 1)) == INTEGER_CST)
+    return build2 (POINTER_PLUS_EXPR, TREE_TYPE (ref),
+		   elaborate_reference_1 (TREE_OPERAND (ref, 0), data),
+		   TREE_OPERAND (ref, 1));
+
   sprintf (suffix, "EXP%d", ++er->n);
   return
     elaborate_expression_1 (ref, er->entity, suffix, er->definition, false);
@@ -7923,7 +7932,7 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
        && !(Is_Packed (gnat_record_type)
 	    ? has_non_packed_fixed_size_field
 	    : Optimize_Alignment_Space (gnat_record_type))
-       && !debug__debug_flag_dot_r);
+       && !Debug_Flag_Dot_R);
   const bool w_reorder
     = (Convention (gnat_record_type) == Convention_Ada
        && Warn_On_Questionable_Layout
