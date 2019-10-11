@@ -1,3 +1,12 @@
+2019-10-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/dfp/c11-keywords-1.c, gcc.dg/dfp/c11-keywords-2.c,
+	gcc.dg/dfp/c2x-keywords-1.c, gcc.dg/dfp/c2x-keywords-2.c: New
+	tests.
+	* gcc.dg/dfp/keywords-ignored-c99.c: Remove test.
+	* gcc.dg/dfp/constants-c99.c, gcc.dg/dfp/keywords-c89.c,
+	gcc.dg/dfp/keywords-c99.c: Use -pedantic-errors.
+
 2019-10-11  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/92050
