@@ -1,5 +1,60 @@
 2019-10-11  Ilya Leoshkevich  <iii@linux.ibm.com>
 
+	PR target/77918
+	* gcc.target/s390/s390.exp: Enable Fortran tests.
+	* gcc.target/s390/zvector/autovec-double-quiet-eq.c: New test.
+	* gcc.target/s390/zvector/autovec-double-quiet-ge.c: New test.
+	* gcc.target/s390/zvector/autovec-double-quiet-gt.c: New test.
+	* gcc.target/s390/zvector/autovec-double-quiet-le.c: New test.
+	* gcc.target/s390/zvector/autovec-double-quiet-lt.c: New test.
+	* gcc.target/s390/zvector/autovec-double-quiet-ordered.c: New test.
+	* gcc.target/s390/zvector/autovec-double-quiet-uneq.c: New test.
+	* gcc.target/s390/zvector/autovec-double-quiet-unordered.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-eq-z13-finite.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-eq-z13.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-eq.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-ge-z13-finite.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-ge-z13.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-ge.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-gt-z13-finite.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-gt-z13.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-gt.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-le-z13-finite.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-le-z13.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-le.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-lt-z13-finite.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-lt-z13.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-lt.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-ltgt-z13-finite.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-ltgt-z13.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-ltgt.c: New test.
+	* gcc.target/s390/zvector/autovec-double-smax-z13.F90: New test.
+	* gcc.target/s390/zvector/autovec-double-smax.F90: New test.
+	* gcc.target/s390/zvector/autovec-double-smin-z13.F90: New test.
+	* gcc.target/s390/zvector/autovec-double-smin.F90: New test.
+	* gcc.target/s390/zvector/autovec-float-quiet-eq.c: New test.
+	* gcc.target/s390/zvector/autovec-float-quiet-ge.c: New test.
+	* gcc.target/s390/zvector/autovec-float-quiet-gt.c: New test.
+	* gcc.target/s390/zvector/autovec-float-quiet-le.c: New test.
+	* gcc.target/s390/zvector/autovec-float-quiet-lt.c: New test.
+	* gcc.target/s390/zvector/autovec-float-quiet-ordered.c: New test.
+	* gcc.target/s390/zvector/autovec-float-quiet-uneq.c: New test.
+	* gcc.target/s390/zvector/autovec-float-quiet-unordered.c: New test.
+	* gcc.target/s390/zvector/autovec-float-signaling-eq.c: New test.
+	* gcc.target/s390/zvector/autovec-float-signaling-ge.c: New test.
+	* gcc.target/s390/zvector/autovec-float-signaling-gt.c: New test.
+	* gcc.target/s390/zvector/autovec-float-signaling-le.c: New test.
+	* gcc.target/s390/zvector/autovec-float-signaling-lt.c: New test.
+	* gcc.target/s390/zvector/autovec-float-signaling-ltgt.c: New test.
+	* gcc.target/s390/zvector/autovec-fortran.h: New test.
+	* gcc.target/s390/zvector/autovec-long-double-signaling-ge.c: New test.
+	* gcc.target/s390/zvector/autovec-long-double-signaling-gt.c: New test.
+	* gcc.target/s390/zvector/autovec-long-double-signaling-le.c: New test.
+	* gcc.target/s390/zvector/autovec-long-double-signaling-lt.c: New test.
+	* gcc.target/s390/zvector/autovec.h: New test.
+
+2019-10-11  Ilya Leoshkevich  <iii@linux.ibm.com>
+
 	* gcc.target/s390/vector/vec-scalar-cmp-1.c: Adjust
 	expectations.
 
