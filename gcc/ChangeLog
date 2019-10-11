@@ -1,3 +1,15 @@
+2019-10-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* langhooks-def.h (LANG_HOOKS_OMP_IS_ALLOCATABLE_OR_PTR): Define.
+	(LANG_HOOKS_DECLS): Add it.
+	* langhooks.h (lang_hooks_for_decls): Add omp_is_allocatable_or_ptr;
+	update comment for omp_is_optional_argument.
+	* omp-general.c (omp_is_allocatable_or_ptr): New.
+	* omp-general.h (omp_is_allocatable_or_ptr): Declare.
+	* omp-low.c (scan_sharing_clauses, lower_omp_target): Handle
+	Fortran's optional arguments and allocatable/pointer scalars
+	with use_device_addr.
+
 2019-10-11  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR target/77918

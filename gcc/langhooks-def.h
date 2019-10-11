@@ -236,6 +236,7 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
 #define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL lhd_warn_unused_global_decl
 #define LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS NULL
 #define LANG_HOOKS_DECL_OK_FOR_SIBCALL	lhd_decl_ok_for_sibcall
+#define LANG_HOOKS_OMP_IS_ALLOCATABLE_OR_PTR hook_bool_const_tree_false
 #define LANG_HOOKS_OMP_IS_OPTIONAL_ARGUMENT hook_bool_const_tree_false
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE hook_bool_const_tree_false
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING lhd_omp_predetermined_sharing
@@ -262,6 +263,7 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
   LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL, \
   LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS, \
   LANG_HOOKS_DECL_OK_FOR_SIBCALL, \
+  LANG_HOOKS_OMP_IS_ALLOCATABLE_OR_PTR, \
   LANG_HOOKS_OMP_IS_OPTIONAL_ARGUMENT, \
   LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE, \
   LANG_HOOKS_OMP_PREDETERMINED_SHARING, \

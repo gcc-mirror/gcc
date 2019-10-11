@@ -1,3 +1,14 @@
+2019-10-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* f95-lang.c (LANG_HOOKS_OMP_IS_ALLOCATABLE_OR_PTR): Re-define to
+	gfc_omp_is_allocatable_or_ptr.
+	* trans-decl.c (create_function_arglist): Set GFC_DECL_OPTIONAL_ARGUMENT
+	only if not passed by value.
+	* trans-openmp.c (gfc_omp_is_allocatable_or_ptr): New.
+	(gfc_trans_omp_clauses): For MAP, handle (present) optional arguments;
+	for target update, handle allocatable/pointer scalars.
+	* trans.h (gfc_omp_is_allocatable_or_ptr): Declare.
+
 2019-10-10  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-openmp.c (gfc_trans_omp_clauses): Actually pass use_device_addr
