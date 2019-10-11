@@ -1,5 +1,10 @@
 2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_field): Adjust again the packing
+	for a field without strict alignment and with an oversized clause.
+
+2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (annotate_value) <INTEGER_CST>: Really test the
 	sign of the value when deciding to build a NEGATE_EXPR.
 	<PLUS_EXPR>: Remove redundant line.

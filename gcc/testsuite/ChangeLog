@@ -1,3 +1,7 @@
+2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/size_clause4.ads: New test.
+
 2019-10-11  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR target/77918
