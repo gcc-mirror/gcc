@@ -1,3 +1,7 @@
+2019-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (lto_wpa_write_files): Prepare all bodies for streaming.
+
 2019-10-10  Richard Biener  <rguenther@suse.de>
 
 	* lto-common.c (unify_scc): Do not merge anonymous NAMESPACE_DECLs.
