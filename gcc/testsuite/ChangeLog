@@ -1,3 +1,11 @@
+2019-10-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/dfp/c11-constants-1.c, gcc.dg/dfp/c11-constants-2.c,
+	gcc.dg/dfp/c2x-constants-1.c, gcc.dg/dfp/c2x-constants-2.c: New
+	tests.
+	* gcc.dg/dfp/constants-pedantic.c: Use -std=gnu17 explicitly.
+	Update expected diagnostics.
+
 2019-10-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92070 - bogus error with -fchecking=2.
