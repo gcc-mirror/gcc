@@ -1,3 +1,10 @@
+2019-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/92066
+	PR tree-optimization/92046
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Fix bogus cost model check.
+
 2019-10-11  Tobias Burnus  <tobias@codesourcery.com>
 
 	* langhooks-def.h (LANG_HOOKS_OMP_IS_ALLOCATABLE_OR_PTR): Define.
