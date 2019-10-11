@@ -1,5 +1,11 @@
 2019-10-11  Tobias Burnus  <tobias@codesourcery.com>
 
+	PR fortran/92050
+	* trans-expr.c (gfc_conv_procedure_call): Handle code generated
+	by -fcheck=all.
+
+2019-10-11  Tobias Burnus  <tobias@codesourcery.com>
+
 	* f95-lang.c (LANG_HOOKS_OMP_IS_ALLOCATABLE_OR_PTR): Re-define to
 	gfc_omp_is_allocatable_or_ptr.
 	* trans-decl.c (create_function_arglist): Set GFC_DECL_OPTIONAL_ARGUMENT
