@@ -6819,7 +6819,8 @@ trees_out::ref_node (tree t)
 void
 trees_out::decl_value (tree decl, depset *dep)
 {
-  gcc_assert (DECL_P (decl) && !DECL_THUNK_P (decl));
+  gcc_assert (DECL_P (decl));
+  gcc_checking_assert (!DECL_THUNK_P (decl) && !DECL_CLONED_FUNCTION_P (decl));
 
   merge_kind mk = get_merge_kind (dep);
 
@@ -6835,7 +6836,7 @@ trees_out::decl_value (tree decl, depset *dep)
 				     != decl));
 	}
 
-      /* A new node -> tt_node, tt_mergeable or tt_clone.  */
+      /* A new node -> tt_decl.  */
       unique++;
       i (tt_decl);
       u (mk);
@@ -6968,6 +6969,22 @@ trees_out::decl_value (tree decl, depset *dep)
 	dump (dumper::TREE)
 	  && dump ("Cloned:%d typedef %C:%N", type_tag,
 		   TREE_CODE (TREE_TYPE (inner)), TREE_TYPE (inner));
+    }
+
+  if (streaming_p () && DECL_MAYBE_IN_CHARGE_CDTOR_P (inner))
+    {
+      bool cloned_p
+	= (DECL_CHAIN (inner) && DECL_CLONED_FUNCTION_P (DECL_CHAIN (inner)));
+      bool needs_vtt_parm_p
+	= (cloned_p && CLASSTYPE_VBASECLASSES (DECL_CONTEXT (inner)));
+      bool omit_inherited_parms_p
+	= (cloned_p && ctor_omit_inherited_parms (inner, false));
+      unsigned flags = (int (cloned_p) << 0
+			| int (needs_vtt_parm_p) << 1
+			| int (omit_inherited_parms_p) << 2);
+      u (flags);
+      dump (dumper::TREE) && dump ("CDTOR %N is %scloned",
+				   decl, cloned_p ? "" : "not ");
     }
 
   if (streaming_p ())
@@ -7289,7 +7306,8 @@ trees_in::decl_value ()
     }
 
   tree existing = back_refs[~tag];
-  if (existing == res)
+  bool is_new = existing == res;
+  if (is_new)
     {
       /* A newly discovered node.  */
       if (TREE_CODE (res) == FUNCTION_DECL && DECL_VIRTUAL_P (res))
@@ -7355,6 +7373,21 @@ trees_in::decl_value ()
 		 tag, TREE_CODE (TREE_TYPE (res)), TREE_TYPE (res));
     }
 
+  if (DECL_MAYBE_IN_CHARGE_CDTOR_P (res))
+    {
+      unsigned flags = u ();
+
+      if (is_new)
+	{
+	  gcc_checking_assert (!DECL_CHAIN (res));
+	  bool cloned_p = flags & 1;
+	  dump (dumper::TREE) && dump ("CDTOR %N is %scloned",
+				       res, cloned_p ? "" : "not ");
+	  if (cloned_p)
+	    build_clones (res, flags & 2, flags & 4);
+	}
+    }
+
   return res;
 }
 
@@ -7404,6 +7437,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 
   if (ref == WK_value)
     {
+#if 0
       if (!streaming_p ()
 	  && DECL_MAYBE_IN_CHARGE_CDTOR_P (decl))
 	{
@@ -7414,7 +7448,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	  FOR_EVERY_CLONE (clone_decl, decl)
 	    dep_hash->add_clone (clone_decl, decl);
 	}
-
+#endif
       depset *dep = dep_hash->find_entity (decl);
       if (!dep || !dep->is_mergeable ())
 	return true;
@@ -8197,7 +8231,10 @@ trees_out::tree_value (tree t)
 {
   /* We should never be writing a type by value.  tree_type should
      have streamed it, or we're going via its TYPE_DECL.  */
-  gcc_assert (!TYPE_P (t));
+  gcc_checking_assert (!TYPE_P (t));
+  /* Neither should we write clones by value.  They're recreated upon
+     stream in.  */
+  gcc_checking_assert (!(DECL_P (t) && DECL_CLONED_FUNCTION_P (t)));
 
   if (streaming_p ())
     {
@@ -8211,7 +8248,7 @@ trees_out::tree_value (tree t)
 				     != t));
 	}
 
-      /* A new node -> tt_node, tt_mergeable or tt_clone.  */
+      /* A new node -> tt_node.  */
       unique++;
       i (tt_node);
       u (TREE_CODE (t));
@@ -8308,6 +8345,22 @@ trees_out::tree_value (tree t)
 	dump (dumper::TREE)
 	  && dump ("Cloned:%d typedef %C:%N", type_tag,
 		   TREE_CODE (TREE_TYPE (inner)), TREE_TYPE (inner));
+    }
+
+  if (streaming_p () && DECL_P (inner) && DECL_MAYBE_IN_CHARGE_CDTOR_P (inner))
+    {
+      bool cloned_p
+	= (DECL_CHAIN (inner) && DECL_CLONED_FUNCTION_P (DECL_CHAIN (inner)));
+      bool needs_vtt_parm_p
+	= (cloned_p && CLASSTYPE_VBASECLASSES (DECL_CONTEXT (inner)));
+      bool omit_inherited_parms_p
+	= (cloned_p && ctor_omit_inherited_parms (inner, false));
+      unsigned flags = (int (cloned_p) << 0
+			| int (needs_vtt_parm_p) << 1
+			| int (omit_inherited_parms_p) << 1);
+      u (flags);
+      dump (dumper::TREE) && dump ("CDTOR %N is %scloned",
+				   t, cloned_p ? "" : "not ");
     }
 
   if (streaming_p ())
@@ -8477,6 +8530,18 @@ trees_in::tree_value ()
       dump (dumper::TREE)
 	&& dump ("Cloned:%d typedef %C:%N",
 		 tag, TREE_CODE (TREE_TYPE (res)), TREE_TYPE (res));
+    }
+
+  if (DECL_P (res) && DECL_MAYBE_IN_CHARGE_CDTOR_P (res))
+    {
+      unsigned flags = u ();
+
+      gcc_checking_assert (!DECL_CHAIN (res));
+      bool cloned_p = flags & 1;
+      dump (dumper::TREE) && dump ("CDTOR %N is %scloned",
+				   res, cloned_p ? "" : "not ");
+      if (cloned_p)
+	build_clones (res, flags & 2, flags & 4);
     }
 
   return res;
@@ -14274,13 +14339,22 @@ module_state::read_cluster (unsigned snum)
       cfun->language = ggc_cleared_alloc<language_function> ();
       cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
 
-      if (!abstract)
+      if (abstract)
+	;
+      else if (DECL_ABSTRACT_P (decl))
+	{
+	  bool cloned = maybe_clone_body (decl);
+	  if (!cloned)
+	    from ()->set_error ();
+	}
+      else
 	{
 	  if (DECL_COMDAT (decl))
 	    comdat_linkage (decl);
 	  note_vague_linkage_fn (decl);
 	  cgraph_node::finalize_function (decl, true);
 	}
+
     }
   cfun = old_cfun;
   current_function_decl = old_cfd;

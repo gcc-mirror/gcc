@@ -1,3 +1,12 @@
+2019-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	Reconstruct clones on stream in
+	gcc/cp/
+	* module.cc (trees_out::{decl,tree}_value): Write clone info.
+	(trees_in::{decl,tree}_value): Reconstruct clone.
+	(trees_out::decl_node): Do not depend on clones.
+	(module_state::read_cluster): Clone bodies.
+
 2019-10-10  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
