@@ -180,6 +180,52 @@ namespace std _GLIBCXX_VISIBILITY (default)
     }
   };
 
+  struct noop_coroutine_promise
+  {
+  };
+
+  void __dummy_resume_destroy () __attribute__ ((__weak__));
+  void __dummy_resume_destroy () {}
+
+  struct __noop_coro_frame
+  {
+    void (*__r) () = __dummy_resume_destroy;
+    void (*__d) () = __dummy_resume_destroy;
+    struct noop_coroutine_promise __p;
+  } __noop_coro_fr __attribute__ ((__weak__));
+
+  template <>
+  class coroutine_handle<noop_coroutine_promise> : public coroutine_handle<>
+  {
+    using _Promise = noop_coroutine_promise;
+
+  public:
+    constexpr explicit operator bool () const noexcept { return true; }
+    constexpr bool done () const noexcept { return false; }
+
+    void operator() () const noexcept {}
+    void resume () const noexcept {}
+    void destroy () const noexcept {}
+
+    _Promise &promise () const
+    {
+      return *static_cast<_Promise *> (
+	__builtin_coro_promise (this->__fr_ptr, __alignof(_Promise), false));
+    }
+
+  private:
+    friend coroutine_handle<noop_coroutine_promise> noop_coroutine () noexcept;
+
+    coroutine_handle () noexcept { this->__fr_ptr = (void *) &__noop_coro_fr; }
+  };
+
+  using noop_coroutine_handle = coroutine_handle<noop_coroutine_promise>;
+
+  inline noop_coroutine_handle noop_coroutine () noexcept
+  {
+    return noop_coroutine_handle ();
+  }
+
   // n4830 - 21.11.5 trivial awaitables
 
   struct suspend_always
