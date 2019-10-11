@@ -539,8 +539,7 @@ maybe_clone_body (tree fn)
 	update_cloned_parm (parm, clone_parm, first);
     }
 
-  // FIXME: Make modules compatible with aliasing cdtors.
-  bool can_alias = !modules_p () && can_alias_cdtor (fn);
+  bool can_alias = can_alias_cdtor (fn);
 
   /* If we decide to turn clones into thunks, they will branch to fn.
      Must have original function available to call.  */

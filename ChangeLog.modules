@@ -1,6 +1,9 @@
 2019-10-11  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* optimize.c (maybe_clone_body): Allow aliasing with modules.
+
+	gcc/cp/
 	* module.cc (enum depset::entity_kind): Remove EK_CLONE.
 	(depset::add_clone): Delete.
 	(enum merge_kind): Remove MK_clone.
