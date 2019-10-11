@@ -4781,10 +4781,11 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	  return 1;
 
       case vec_promote_demote:
-        if (TARGET_VSX)
-          return 4;
-        else
-          return 1;
+	/* Power7 has only one permute/pack unit, make it a bit expensive.  */
+	if (TARGET_VSX && rs6000_tune == PROCESSOR_POWER7)
+	  return 4;
+	else
+	  return 1;
 
       case cond_branch_taken:
         return 3;
