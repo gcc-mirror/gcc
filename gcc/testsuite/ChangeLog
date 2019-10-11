@@ -1,5 +1,12 @@
 2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/91715
+	* gfortran.dg/function_kinds_5.f90: Prune run-on error.
+	* gfortran.dg/pr85543.f90: Ditto.
+	* gfortran.dg/pr91715.f90: New test.
+
+2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/92018
 	* gfortran.dg/gnu_logical_2.f90: Update dg-error regex.
 	* gfortran.dg/pr81509_2.f90: Ditto.

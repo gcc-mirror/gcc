@@ -1,5 +1,11 @@
 2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/91715
+	* decl.c (gfc_match_prefix): If matching a type-spec returns an error,
+	it's an error so re-act correctly.
+
+2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/92018
 	* check.c (reset_boz): New function.
 	(illegal_boz_arg, boz_args_check, gfc_check_complex, gfc_check_float,
