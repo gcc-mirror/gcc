@@ -10959,8 +10959,9 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("decimal floating-point not supported "
 			   "for this target"));
-	      pedwarn (loc, OPT_Wpedantic,
-		       "ISO C does not support decimal floating-point");
+	      pedwarn_c11 (loc, OPT_Wpedantic,
+			   "ISO C does not support decimal floating-point "
+			   "before C2X");
 	      return specs;
 	    case RID_FRACT:
 	    case RID_ACCUM:

@@ -1,3 +1,7 @@
+2019-10-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (declspecs_add_type): Use pedwarn_c11 for DFP types.
+
 2019-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_all_clauses): Add NESTED_P argument, if
