@@ -1,3 +1,9 @@
+2019-10-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92049 - extra error with -fchecking=2.
+	* pt.c (build_non_dependent_expr): Call fold_non_dependent_expr
+	with tf_none.
+
 2019-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck.c (cp_build_binary_op): Do not handle RROTATE_EXPR and

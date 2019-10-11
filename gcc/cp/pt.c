@@ -27059,7 +27059,7 @@ build_non_dependent_expr (tree expr)
       /* Don't do this during concept processing either and for
          the same reason.  */
       && !processing_constraint_expression_p ())
-    fold_non_dependent_expr (expr);
+    fold_non_dependent_expr (expr, tf_none);
 
   STRIP_ANY_LOCATION_WRAPPER (expr);
 
