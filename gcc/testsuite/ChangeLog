@@ -1,3 +1,8 @@
+2019-10-11  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-scalar-cmp-1.c: Adjust
+	expectations.
+
 2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/array38.adb: New test.
