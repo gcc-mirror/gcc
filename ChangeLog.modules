@@ -1,5 +1,16 @@
 2019-10-11  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (enum depset::entity_kind): Remove EK_CLONE.
+	(depset::add_clone): Delete.
+	(enum merge_kind): Remove MK_clone.
+	(depset::entity_kind_name): Adjust.
+	(trees_in::decl_value): No merging for clones.
+	(trees_out::decl_node): Remove clone dependency.
+	(trees_out::get_merge_kind): No clone merging.
+	(trees_{in,out}::key_mergeable): Likewise.
+	(module_state::write_cluster): Never see a clone.
+
 	Reconstruct clones on stream in
 	gcc/cp/
 	* module.cc (trees_out::{decl,tree}_value): Write clone info.
