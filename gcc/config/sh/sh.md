@@ -9161,7 +9161,7 @@
 	(xor:SI (reg:SI FPSCR_REG) (const_int FPSCR_PR)))
    (set (reg:SI FPSCR_MODES_REG)
 	(unspec_volatile:SI [(const_int 0)] UNSPECV_FPSCR_MODES))]
-  "TARGET_SH4A_FP"
+  "TARGET_SH4A_FP || TARGET_FPU_SH4_300"
   "fpchg"
   [(set_attr "type" "fpscr_toggle")])
 
@@ -9389,14 +9389,30 @@
 (define_expand "negsf2"
   [(set (match_operand:SF 0 "fp_arith_reg_operand")
 	(neg:SF (match_operand:SF 1 "fp_arith_reg_operand")))]
-  "TARGET_SH2E")
+  "TARGET_FPU_ANY"
+{
+  if (TARGET_FPU_SH4_300)
+    emit_insn (gen_negsf2_fpscr (operands[0], operands[1]));
+  else
+    emit_insn (gen_negsf2_no_fpscr (operands[0], operands[1]));
+  DONE;
+})
 
-(define_insn "*negsf2_i"
+(define_insn "negsf2_no_fpscr"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
 	(neg:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")))]
-  "TARGET_SH2E"
+  "TARGET_FPU_ANY && !TARGET_FPU_SH4_300"
   "fneg	%0"
   [(set_attr "type" "fmove")])
+
+(define_insn "negsf2_fpscr"
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
+	(neg:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")))
+   (use (reg:SI FPSCR_MODES_REG))]
+  "TARGET_FPU_SH4_300"
+  "fneg	%0"
+  [(set_attr "type" "fmove")
+   (set_attr "fp_mode" "single")])
 
 (define_expand "sqrtsf2"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "")
@@ -9487,14 +9503,30 @@
 (define_expand "abssf2"
   [(set (match_operand:SF 0 "fp_arith_reg_operand")
 	(abs:SF (match_operand:SF 1 "fp_arith_reg_operand")))]
-  "TARGET_SH2E")
+  "TARGET_FPU_ANY"
+{
+  if (TARGET_FPU_SH4_300)
+    emit_insn (gen_abssf2_fpscr (operands[0], operands[1]));
+  else
+    emit_insn (gen_abssf2_no_fpscr (operands[0], operands[1]));
+  DONE;
+})
 
-(define_insn "*abssf2_i"
+(define_insn "abssf2_no_fpscr"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
 	(abs:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")))]
-  "TARGET_SH2E"
+  "TARGET_FPU_ANY && !TARGET_FPU_SH4_300"
   "fabs	%0"
   [(set_attr "type" "fmove")])
+
+(define_insn "abssf2_fpscr"
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
+	(abs:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")))
+   (use (reg:SI FPSCR_MODES_REG))]
+  "TARGET_FPU_SH4_300"
+  "fabs	%0"
+  [(set_attr "type" "fmove")
+   (set_attr "fp_mode" "single")])
 
 (define_expand "adddf3"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
@@ -9671,12 +9703,28 @@
 (define_expand "negdf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand")
 	(neg:DF (match_operand:DF 1 "fp_arith_reg_operand")))]
-  "TARGET_FPU_DOUBLE")
+  "TARGET_FPU_DOUBLE"
+{
+  if (TARGET_FPU_SH4_300)
+    emit_insn (gen_negdf2_fpscr (operands[0], operands[1]));
+  else
+    emit_insn (gen_negdf2_no_fpscr (operands[0], operands[1]));
+  DONE;
+})
 
-(define_insn "*negdf2_i"
+(define_insn "negdf2_fpscr"
+  [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
+	(neg:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")))
+   (use (reg:SI FPSCR_MODES_REG))]
+  "TARGET_FPU_SH4_300"
+  "fneg	%0"
+  [(set_attr "type" "fmove")
+   (set_attr "fp_mode" "double")])
+
+(define_insn "negdf2_no_fpscr"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
 	(neg:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")))]
-  "TARGET_FPU_DOUBLE"
+  "TARGET_FPU_DOUBLE && !TARGET_FPU_SH4_300"
   "fneg	%0"
   [(set_attr "type" "fmove")])
 
@@ -9702,14 +9750,30 @@
 (define_expand "absdf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand")
 	(abs:DF (match_operand:DF 1 "fp_arith_reg_operand")))]
-  "TARGET_FPU_DOUBLE")
+  "TARGET_FPU_DOUBLE"
+{
+  if (TARGET_FPU_SH4_300)
+    emit_insn (gen_absdf2_fpscr (operands[0], operands[1]));
+  else
+    emit_insn (gen_absdf2_no_fpscr (operands[0], operands[1]));
+  DONE;
+})
 
-(define_insn "*absdf2_i"
+(define_insn "absdf2_no_fpscr"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
 	(abs:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")))]
-  "TARGET_FPU_DOUBLE"
+  "TARGET_FPU_DOUBLE && !TARGET_FPU_SH4_300"
   "fabs	%0"
   [(set_attr "type" "fmove")])
+
+(define_insn "absdf2_fpscr"
+  [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
+	(abs:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")))
+   (use (reg:SI FPSCR_MODES_REG))]
+  "TARGET_FPU_SH4_300"
+  "fabs	%0"
+  [(set_attr "type" "fmove")
+   (set_attr "fp_mode" "double")])
 
 (define_expand "extendsfdf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
