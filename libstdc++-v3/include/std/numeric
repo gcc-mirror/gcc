@@ -230,8 +230,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// @{
 
   /// @cond undocumented
-  template<typename _It, typename _Traits = iterator_traits<_It>,
-	   typename _Cat = typename _Traits::iterator_category>
+  template<typename _It, typename _Cat = __iterator_category_t<_It>>
     using __is_random_access_iter
       = is_base_of<random_access_iterator_tag, _Cat>;
   /// @endcond

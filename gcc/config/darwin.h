@@ -812,21 +812,52 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
 #undef TARGET_ASM_MARK_DECL_PRESERVED
 #define TARGET_ASM_MARK_DECL_PRESERVED darwin_mark_decl_preserved
 
-/* Set on a symbol with SYMBOL_FLAG_FUNCTION or
-   MACHO_SYMBOL_FLAG_VARIABLE to indicate that the function or
-   variable has been defined in this translation unit.
-   When porting Mach-O to new architectures you need to make
-   sure these aren't clobbered by the backend.  */
+/* Any port using this header needs to define the first available
+   subtarget symbol bit: SYMBOL_FLAG_SUBT_DEP.  */
 
-#define MACHO_SYMBOL_FLAG_VARIABLE (SYMBOL_FLAG_MACH_DEP)
-#define MACHO_SYMBOL_FLAG_DEFINED ((SYMBOL_FLAG_MACH_DEP) << 1)
+/* Is a variable. */
+#define MACHO_SYMBOL_FLAG_VARIABLE (SYMBOL_FLAG_SUBT_DEP)
+#define MACHO_SYMBOL_VARIABLE_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_VARIABLE) != 0)
+
+/* Set on a symbol that must be indirected, even when there is a
+   definition in the TU.  The ABI mandates that common symbols are so
+   indirected, as are weak.  If 'fix-and-continue' is operational then
+   data symbols might also be.  */
+
+#define MACHO_SYMBOL_FLAG_MUST_INDIRECT ((SYMBOL_FLAG_SUBT_DEP) << 1)
+#define MACHO_SYMBOL_MUST_INDIRECT_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_MUST_INDIRECT) != 0)
+
+/* Set on a symbol with SYMBOL_FLAG_FUNCTION or MACHO_SYMBOL_FLAG_VARIABLE
+   to indicate that the function or variable is considered defined in this
+   translation unit.  */
+
+#define MACHO_SYMBOL_FLAG_DEFINED ((SYMBOL_FLAG_SUBT_DEP) << 2)
+#define MACHO_SYMBOL_DEFINED_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_DEFINED) != 0)
+
+/* Set on a symbol that has specified non-default visibility.  */
+
+#define MACHO_SYMBOL_FLAG_HIDDEN_VIS ((SYMBOL_FLAG_SUBT_DEP) << 3)
+#define MACHO_SYMBOL_HIDDEN_VIS_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_HIDDEN_VIS) != 0)
+
+/* Set on a symbol that is a pic stub or symbol indirection (i.e. the
+   L_xxxxx${stub,non_lazy_ptr,lazy_ptr}.  */
+
+#define MACHO_SYMBOL_FLAG_INDIRECTION ((SYMBOL_FLAG_SUBT_DEP) << 5)
+#define MACHO_SYMBOL_INDIRECTION_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_INDIRECTION) != 0)
 
 /* Set on a symbol to indicate when fix-and-continue style code
    generation is being used and the symbol refers to a static symbol
    that should be rebound from new instances of a translation unit to
    the original instance of the data.  */
 
-#define MACHO_SYMBOL_STATIC ((SYMBOL_FLAG_MACH_DEP) << 2)
+#define MACHO_SYMBOL_FLAG_STATIC ((SYMBOL_FLAG_SUBT_DEP) << 6)
+#define MACHO_SYMBOL_STATIC_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & MACHO_SYMBOL_FLAG_STATIC) != 0)
 
 /* Symbolic names for various things we might know about a symbol.  */
 

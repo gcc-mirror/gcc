@@ -6933,6 +6933,29 @@ proc check_effective_target_popcountl { } {
     } "" ]
 }
 
+# Return 1 if the target supports popcount on long long.
+
+proc check_effective_target_popcountll { } {
+    return [check_no_messages_and_pattern popcountll "!\\(call" rtl-expand {
+        int foo (long long b)
+          {
+            return __builtin_popcountll (b);
+          }
+    } "" ]
+}
+
+
+# Return 1 if the target supports popcount on int.
+
+proc check_effective_target_popcount { } {
+    return [check_no_messages_and_pattern popcount "!\\(call" rtl-expand {
+        int foo (int b)
+          {
+            return __builtin_popcount (b);
+          }
+    } "" ]
+}
+
 # Return 1 if the target supports atomic operations on "long long"
 # and can execute them.
 #
@@ -8561,7 +8584,7 @@ proc check_effective_target_c++2a { } {
 
 # Check for C++ Concepts TS support, i.e. -fconcepts flag.
 proc check_effective_target_concepts { } {
-    return [check-flags { "" { } { -fconcepts } }]
+    return [check-flags { "" { } { -fconcepts -std=*2a } }]
 }
 
 # Return 1 if expensive testcases should be run.

@@ -1,4 +1,4 @@
-// { dg-do compile { target c++17 } }
+// { dg-do compile { target c++17_only } }
 // { dg-options "-fconcepts" }
 
 template<typename T>
@@ -15,5 +15,3 @@ struct one_type { char x[4]; };
 
 // Constraints are checked even when decls are not instantiatied.
 S4<one_type>* x4b; // { dg-error "constraint|invalid" }
-
-int main() { }

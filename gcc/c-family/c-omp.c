@@ -2011,7 +2011,7 @@ c_omp_declare_simd_clauses_to_numbers (tree parms, tree clauses)
 	  if (arg == NULL_TREE)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
-			"%qD is not an function argument", decl);
+			"%qD is not a function argument", decl);
 	      continue;
 	    }
 	  OMP_CLAUSE_DECL (c) = build_int_cst (integer_type_node, idx);
@@ -2026,7 +2026,7 @@ c_omp_declare_simd_clauses_to_numbers (tree parms, tree clauses)
 	      if (arg == NULL_TREE)
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "%qD is not an function argument", decl);
+			    "%qD is not a function argument", decl);
 		  continue;
 		}
 	      OMP_CLAUSE_LINEAR_STEP (c)
@@ -2119,4 +2119,134 @@ c_omp_predetermined_sharing (tree decl)
     return OMP_CLAUSE_DEFAULT_SHARED;
 
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
+}
+
+/* Diagnose errors in an OpenMP context selector, return CTX if
+   it is correct or error_mark_node otherwise.  */
+
+tree
+c_omp_check_context_selector (location_t loc, tree ctx)
+{
+  /* Each trait-set-selector-name can only be specified once.
+     There are just 4 set names.  */
+  for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
+    for (tree t2 = TREE_CHAIN (t1); t2; t2 = TREE_CHAIN (t2))
+      if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+	{
+	  error_at (loc, "selector set %qs specified more than once",
+	  	    IDENTIFIER_POINTER (TREE_PURPOSE (t1)));
+	  return error_mark_node;
+	}
+  for (tree t = ctx; t; t = TREE_CHAIN (t))
+    {
+      /* Each trait-selector-name can only be specified once.  */
+      if (list_length (TREE_VALUE (t)) < 5)
+	{
+	  for (tree t1 = TREE_VALUE (t); t1; t1 = TREE_CHAIN (t1))
+	    for (tree t2 = TREE_CHAIN (t1); t2; t2 = TREE_CHAIN (t2))
+	      if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
+		{
+		  error_at (loc,
+			    "selector %qs specified more than once in set %qs",
+			    IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
+			    IDENTIFIER_POINTER (TREE_PURPOSE (t)));
+		  return error_mark_node;
+		}
+	}
+      else
+	{
+	  hash_set<tree> pset;
+	  for (tree t1 = TREE_VALUE (t); t1; t1 = TREE_CHAIN (t1))
+	    if (pset.add (TREE_PURPOSE (t1)))
+	      {
+		error_at (loc,
+			  "selector %qs specified more than once in set %qs",
+			  IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
+			  IDENTIFIER_POINTER (TREE_PURPOSE (t)));
+		return error_mark_node;
+	      }
+	}
+
+      static const char *const kind[] = {
+	"host", "nohost", "cpu", "gpu", "fpga", "any", NULL };
+      static const char *const vendor[] = {
+	"amd", "arm", "bsc", "cray", "fujitsu", "gnu", "ibm", "intel",
+	"llvm", "pgi", "ti", "unknown", NULL };
+      static const char *const extension[] = { NULL };
+      static const char *const atomic_default_mem_order[] = {
+	"seq_cst", "relaxed", "acq_rel", NULL };
+      struct known_properties { const char *set; const char *selector;
+				const char *const *props; };
+      known_properties props[] = {
+	{ "device", "kind", kind },
+	{ "implementation", "vendor", vendor },
+	{ "implementation", "extension", extension },
+	{ "implementation", "atomic_default_mem_order",
+	  atomic_default_mem_order } };
+      for (tree t1 = TREE_VALUE (t); t1; t1 = TREE_CHAIN (t1))
+	for (unsigned i = 0; i < ARRAY_SIZE (props); i++)
+	  if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
+					   props[i].selector)
+	      && !strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t)),
+					      props[i].set))
+	    for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
+	      for (unsigned j = 0; ; j++)
+		{
+		  if (props[i].props[j] == NULL)
+		    {
+		      if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				   " score"))
+			break;
+		      if (props[i].props == atomic_default_mem_order)
+			{
+			  error_at (loc,
+				    "incorrect property %qs of %qs selector",
+				    IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				    "atomic_default_mem_order");
+			  return error_mark_node;
+			}
+		      else
+			warning_at (loc, 0,
+				    "unknown property %qs of %qs selector",
+				    IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				    props[i].selector);
+		      break;
+		    }
+		  else if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				    props[i].props[j]))
+		    {
+		      if (props[i].props == atomic_default_mem_order
+			  && t2 != TREE_VALUE (t1))
+			{
+			  tree t3 = TREE_VALUE (t1);
+			  if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t3)),
+				       " score")
+			      && t2 == TREE_CHAIN (TREE_VALUE (t1)))
+			    break;
+			  error_at (loc,
+				    "%qs selector must have a single property",
+				    "atomic_default_mem_order");
+			  return error_mark_node;
+			}
+		      break;
+		    }
+		}
+    }
+  return ctx;
+}
+
+/* From context selector CTX, return trait-selector with name SEL in
+   trait-selector-set with name SET if any, or NULL_TREE if not found.  */
+
+tree
+c_omp_get_context_selector (tree ctx, const char *set, const char *sel)
+{
+  tree setid = get_identifier (set);
+  tree selid = get_identifier (sel);
+  for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
+    if (TREE_PURPOSE (t1) == setid)
+      for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
+	if (TREE_PURPOSE (t2) == selid)
+	  return t2;
+  return NULL_TREE;
 }

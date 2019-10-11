@@ -27,7 +27,7 @@ int __attribute__((lower,upper)) lu = 20; /* { dg-warning "ignoring attribute 'u
 int __attribute__((lower,either)) le = 20; /* { dg-warning "ignoring attribute 'either' because it conflicts with attribute 'lower'" } */
 int __attribute__((lower,persistent)) lp = 20; /* { dg-warning "ignoring attribute 'persistent' because it conflicts with attribute 'lower'" } */
 int __attribute__((lower,noinit)) ln; /* { dg-warning "ignoring attribute 'noinit' because it conflicts with attribute 'lower'" } */
-int __attribute__((lower,section(".data.foo"))) ls = 30; /* { dg-warning "ignoring attribute 'section' because it conflicts with attribute 'lower'" } */
+int __attribute__((lower,section(".data.foo"))) ls = 30;
 
 int __attribute__((upper)) u = 20;
 int __attribute__((upper,lower)) ul = 20; /* { dg-warning "ignoring attribute 'lower' because it conflicts with attribute 'upper'" } */
@@ -46,6 +46,6 @@ int __attribute__((either,section(".data.foo"))) es = 30; /* { dg-warning "ignor
 int __attribute__((section(".data.foo"))) s = 20;
 int __attribute__((section(".data.foo"),noinit)) sn; /* { dg-warning "ignoring attribute 'noinit' because it conflicts with attribute 'section'" } */
 int __attribute__((section(".data.foo"),persistent)) sp = 20; /* { dg-warning "ignoring attribute 'persistent' because it conflicts with attribute 'section'" } */
-int __attribute__((section(".data.foo"),lower)) sl = 2; /* { dg-warning "ignoring attribute 'lower' because it conflicts with attribute 'section'" } */
+int __attribute__((section(".data.foo"),lower)) sl = 2;
 int __attribute__((section(".data.foo"),upper)) su = 20; /* { dg-warning "ignoring attribute 'upper' because it conflicts with attribute 'section'" } */
 int __attribute__((section(".data.foo"),either)) se = 2; /* { dg-warning "ignoring attribute 'either' because it conflicts with attribute 'section'" } */

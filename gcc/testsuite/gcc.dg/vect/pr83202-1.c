@@ -1,9 +1,9 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_double } */
 
-void test(double data[8][8])
+void test(double data[16][16])
 {
-  for (int i = 0; i < 8; i++)
+  for (int i = 0; i < 16; i++)
     {
       for (int j = 0; j < i; j+=4)
 	{

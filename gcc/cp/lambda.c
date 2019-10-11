@@ -1040,9 +1040,9 @@ maybe_add_lambda_conv_op (tree type)
 
   bool const generic_lambda_p = generic_lambda_fn_p (callop);
 
-  if (!generic_lambda_p && DECL_INITIAL (callop) == NULL_TREE)
+  if (!generic_lambda_p && undeduced_auto_decl (callop))
     {
-      /* If the op() wasn't instantiated due to errors, give up.  */
+      /* If the op() wasn't deduced due to errors, give up.  */
       gcc_assert (errorcount || sorrycount);
       return;
     }

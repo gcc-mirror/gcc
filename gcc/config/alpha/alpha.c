@@ -8708,6 +8708,9 @@ alpha_handle_trap_shadows (void)
 		    case CODE_LABEL:
 		      goto close_shadow;
 
+		    case DEBUG_INSN:
+		      break;
+
 		    default:
 		      gcc_unreachable ();
 		    }

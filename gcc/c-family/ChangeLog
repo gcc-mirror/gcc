@@ -1,3 +1,61 @@
+2019-10-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Do not define macros for DFP
+	types if DFP not supported.
+
+2019-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_omp_check_context_selector,
+	c_omp_get_context_selector): Declare.
+	* c-omp.c (c_omp_declare_simd_clauses_to_numbers): Fix spelling
+	in diagnostic message.
+	(c_omp_check_context_selector, c_omp_get_context_selector): New
+	functions.
+	* c-attribs.c (c_common_attribute_table): Add "omp declare variant"
+	attribute.
+	(handle_omp_declare_variant_attribute): New function.
+
+2019-10-09  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90879
+	* c.opt (-Wstring-compare): New option.
+
+2019-10-08  Andrew Sutton  <asutton@lock3software.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	Update the concepts implementation to conform to the C++20
+	specification, improve compile times, and generally clean up
+	the implementation.
+
+	* c-cppbuiltin.c (c_cpp_builtins): Use new feature test values for
+	concepts when -std=c++2a. Bump __cpp_concepts to 201907.
+	* c.opt: Add -Wconcepts-ts.
+	* c-opts.c (c_common_post_options): Warn when -fconcepts is used
+	with -std=c++2a. Disable warning for -fconcepts in C++20 mode.
+	(set_std_cxx2a): Enable concepts by default.
+
+2019-10-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-opts.c (c_common_post_options): Set
+	-fno-fp-int-builtin-inexact for C2X.
+
+2019-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91369 - Implement P0784R7: constexpr new
+	* c-cppbuiltin.c (c_cpp_builtins): Predefine
+	__cpp_constexpr_dynamic_alloc=201907 for -std=c++2a.
+
+2019-10-04  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/82752
+	* c-format.c (C_STD_VER): Handle C2x.
+	(C_STD_NAME): Likewise.
+	(strftime_flag_specs): Add 'O' modifier with 'p' flag.
+	(time_char_table): Use separate entry for 'B' and 'b', with 'O'
+	modifier allowed and 'p' flag.
+	* c-format.h (enum format_std_version): Add STD_C2X.
+	(struct format_char_info): Mention 'p' in comment on flags2.
+
 2019-10-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-opts.c (c_diagnostic_finalizer): Temporarily clear prefix when

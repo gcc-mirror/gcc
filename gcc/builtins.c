@@ -3334,7 +3334,7 @@ check_access (tree exp, tree, tree, tree dstwrite,
 	  c_strlen_data lendata = { };
 	  get_range_strlen (srcstr, &lendata, /* eltsize = */ 1);
 	  range[0] = lendata.minlen;
-	  range[1] = lendata.maxbound;
+	  range[1] = lendata.maxbound ? lendata.maxbound : lendata.maxlen;
 	  if (range[0] && (!maxread || TREE_CODE (maxread) == INTEGER_CST))
 	    {
 	      if (maxread && tree_int_cst_le (maxread, range[0]))
@@ -3587,7 +3587,7 @@ compute_objsize (tree dest, int ostype, tree *pdecl /* = NULL */)
   /* Only the two least significant bits are meaningful.  */
   ostype &= 3;
 
-  if (compute_builtin_object_size (dest, ostype, &size))
+  if (compute_builtin_object_size (dest, ostype, &size, pdecl))
     return build_int_cst (sizetype, size);
 
   if (TREE_CODE (dest) == SSA_NAME)

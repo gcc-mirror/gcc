@@ -527,9 +527,10 @@ forward_propagate_into_gimple_cond (gcond *stmt)
   tmp = forward_propagate_into_comparison_1 (stmt, code,
 					     boolean_type_node,
 					     rhs1, rhs2);
-  if (tmp)
+  if (tmp
+      && is_gimple_condexpr_for_cond (tmp))
     {
-      if (dump_file && tmp)
+      if (dump_file)
 	{
 	  fprintf (dump_file, "  Replaced '");
 	  print_gimple_expr (dump_file, stmt, 0);
@@ -607,7 +608,7 @@ forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
   if (tmp
       && is_gimple_condexpr (tmp))
     {
-      if (dump_file && tmp)
+      if (dump_file)
 	{
 	  fprintf (dump_file, "  Replaced '");
 	  print_generic_expr (dump_file, cond);

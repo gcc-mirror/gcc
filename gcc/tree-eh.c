@@ -2523,6 +2523,10 @@ operation_could_trap_p (enum tree_code op, bool fp_operation, bool honor_trapv,
   bool honor_snans = fp_operation && flag_signaling_nans != 0;
   bool handled;
 
+  /* This function cannot tell whether or not COND_EXPR and VEC_COND_EXPR could
+     trap, because that depends on the respective condition op.  */
+  gcc_assert (op != COND_EXPR && op != VEC_COND_EXPR);
+
   if (TREE_CODE_CLASS (op) != tcc_comparison
       && TREE_CODE_CLASS (op) != tcc_unary
       && TREE_CODE_CLASS (op) != tcc_binary)
@@ -2609,6 +2613,10 @@ tree_could_trap_p (tree expr)
 
   if (!expr)
     return false;
+
+  /* For COND_EXPR and VEC_COND_EXPR only the condition may trap.  */
+  if (TREE_CODE (expr) == COND_EXPR || TREE_CODE (expr) == VEC_COND_EXPR)
+    expr = TREE_OPERAND (expr, 0);
 
   code = TREE_CODE (expr);
   t = TREE_TYPE (expr);

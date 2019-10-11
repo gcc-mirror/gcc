@@ -4,7 +4,7 @@ export module foo;
 // { dg-module-cmi foo }
 
 export template<typename T>
-requires !!sizeof (bool (T{}))
+requires (!!sizeof (bool (T{})))
 T f1 (T x)
 { return x; }
 

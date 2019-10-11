@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "omp-offload.h"
 #include "print-tree.h"
+#include "tree-dfa.h"
 
 
 static void lto_write_tree (struct output_block*, tree, bool);
@@ -1893,7 +1894,7 @@ output_cfg (struct output_block *ob, struct function *fn)
 
   streamer_write_hwi (ob, -1);
 
-  bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+  bb = ENTRY_BLOCK_PTR_FOR_FN (fn);
   while (bb->next_bb)
     {
       streamer_write_hwi (ob, bb->next_bb->index);
@@ -1901,9 +1902,6 @@ output_cfg (struct output_block *ob, struct function *fn)
     }
 
   streamer_write_hwi (ob, -1);
-
-  /* ???  The cfgloop interface is tied to cfun.  */
-  gcc_assert (cfun == fn);
 
   /* Output the number of loops.  */
   streamer_write_uhwi (ob, number_of_loops (fn));
@@ -2062,6 +2060,22 @@ collect_block_tree_leafs (tree root, vec<tree> &leafs)
       collect_block_tree_leafs (BLOCK_SUBBLOCKS (root), leafs);
 }
 
+/* This performs function body modifications that are needed for streaming
+   to work.  */
+
+void
+lto_prepare_function_for_streaming (struct cgraph_node *node)
+{
+  if (number_of_loops (DECL_STRUCT_FUNCTION (node->decl)))
+    {
+      push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+      loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+      loop_optimizer_finalize ();
+      pop_cfun ();
+    }
+  renumber_gimple_stmt_uids (DECL_STRUCT_FUNCTION (node->decl));
+}
+
 /* Output the body of function NODE->DECL.  */
 
 static void
@@ -2084,9 +2098,6 @@ output_function (struct cgraph_node *node)
   ob->symbol = node;
 
   gcc_assert (current_function_decl == NULL_TREE && cfun == NULL);
-
-  /* Set current_function_decl and cfun.  */
-  push_cfun (fn);
 
   /* Make string 0 be a NULL string.  */
   streamer_write_char_stream (ob->string_stream, 0);
@@ -2124,9 +2135,6 @@ output_function (struct cgraph_node *node)
      debug info.  */
   if (gimple_has_body_p (function))
     {
-      /* Fixup loops if required to match discovery done in the reader.  */
-      loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
-
       streamer_write_uhwi (ob, 1);
       output_struct_function_base (ob, fn);
 
@@ -2143,8 +2151,8 @@ output_function (struct cgraph_node *node)
 	 statement numbers.  We do not assign UIDs to PHIs here because
 	 virtual PHIs get re-computed on-the-fly which would make numbers
 	 inconsistent.  */
-      set_gimple_stmt_max_uid (cfun, 0);
-      FOR_ALL_BB_FN (bb, cfun)
+      set_gimple_stmt_max_uid (fn, 0);
+      FOR_ALL_BB_FN (bb, fn)
 	{
 	  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
 	       gsi_next (&gsi))
@@ -2153,25 +2161,25 @@ output_function (struct cgraph_node *node)
 
 	      /* Virtual PHIs are not going to be streamed.  */
 	      if (!virtual_operand_p (gimple_phi_result (stmt)))
-	        gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
+	        gimple_set_uid (stmt, inc_gimple_stmt_max_uid (fn));
 	    }
 	  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
 	       gsi_next (&gsi))
 	    {
 	      gimple *stmt = gsi_stmt (gsi);
-	      gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
+	      gimple_set_uid (stmt, inc_gimple_stmt_max_uid (fn));
 	    }
 	}
       /* To avoid keeping duplicate gimple IDs in the statements, renumber
 	 virtual phis now.  */
-      FOR_ALL_BB_FN (bb, cfun)
+      FOR_ALL_BB_FN (bb, fn)
 	{
 	  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
 	       gsi_next (&gsi))
 	    {
 	      gphi *stmt = gsi.phi ();
 	      if (virtual_operand_p (gimple_phi_result (stmt)))
-	        gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
+	        gimple_set_uid (stmt, inc_gimple_stmt_max_uid (fn));
 	    }
 	}
 
@@ -2183,9 +2191,6 @@ output_function (struct cgraph_node *node)
       streamer_write_record_start (ob, LTO_null);
 
       output_cfg (ob, fn);
-
-      loop_optimizer_finalize ();
-      pop_cfun ();
    }
   else
     streamer_write_uhwi (ob, 0);

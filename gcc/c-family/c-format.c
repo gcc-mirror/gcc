@@ -404,9 +404,11 @@ decode_format_attr (const_tree fntype, tree atname, tree args,
 /* The C standard version we are checking formats against when pedantic.  */
 #define C_STD_VER		((int) (c_dialect_cxx ()		   \
 				 ? CPLUSPLUS_STD_VER			   \
-				 : (flag_isoc99				   \
-				    ? STD_C99				   \
-				    : (flag_isoc94 ? STD_C94 : STD_C89))))
+				 : (flag_isoc2x				   \
+				    ? STD_C2X				   \
+				    : (flag_isoc99			   \
+				       ? STD_C99			   \
+				       : (flag_isoc94 ? STD_C94 : STD_C89)))))
 /* The name to give to the standard version we are warning about when
    pedantic.  FEATURE_VER is the version in which the feature warned out
    appeared, which is higher than C_STD_VER.  */
@@ -415,7 +417,9 @@ decode_format_attr (const_tree fntype, tree atname, tree args,
 				    : "ISO C++11")		\
 				 : ((FEATURE_VER) == STD_EXT	\
 				    ? "ISO C"			\
-				    : "ISO C90"))
+				    : ((FEATURE_VER) == STD_C2X	\
+				       ? "ISO C17"		\
+				       : "ISO C90")))
 /* Adjust a C standard version, which may be STD_C9L, to account for
    -Wno-long-long.  Returns other standard versions unchanged.  */
 #define ADJ_STD(VER)		((int) ((VER) == STD_C9L		      \
@@ -653,6 +657,7 @@ static const format_flag_spec strftime_flag_specs[] =
   { 'E', 0,   0, 0, N_("'E' modifier"), N_("the 'E' strftime modifier"),      STD_C99 },
   { 'O', 0,   0, 0, N_("'O' modifier"), N_("the 'O' strftime modifier"),      STD_C99 },
   { 'O', 'o', 0, 0, NULL,               N_("the 'O' modifier"),               STD_EXT },
+  { 'O', 'p', 0, 0, NULL,               N_("the 'O' modifier"),               STD_C2X },
   { 0, 0, 0, 0, NULL, NULL, STD_C89 }
 };
 
@@ -887,7 +892,8 @@ static const format_char_info scan_char_table[] =
 static const format_char_info time_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "ABZab",		0, STD_C89, NOLENGTHS, "^#",     "",   NULL },
+  { "AZa",		0, STD_C89, NOLENGTHS, "^#",     "",   NULL },
+  { "Bb",		0, STD_C89, NOLENGTHS, "O^#",    "p",  NULL },
   { "cx",		0, STD_C89, NOLENGTHS, "E",      "3",  NULL },
   { "HIMSUWdmw",	0, STD_C89, NOLENGTHS, "-_0Ow",  "",   NULL },
   { "j",		0, STD_C89, NOLENGTHS, "-_0Ow",  "o",  NULL },

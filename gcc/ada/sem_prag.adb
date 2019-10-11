@@ -2429,8 +2429,7 @@ package body Sem_Prag is
                --  Constant related checks
 
                elsif Ekind (Item_Id) = E_Constant
-                 and then
-                   not Is_Access_Type (Underlying_Type (Etype (Item_Id)))
+                 and then not Is_Access_Type (Etype (Item_Id))
                then
 
                   --  Unless it is of an access type, a constant is a read-only
@@ -8195,15 +8194,16 @@ package body Sem_Prag is
             Set_Convention_From_Pragma (E);
 
             --  Treat a pragma Import as an implicit body, and pragma import
-            --  as implicit reference (for navigation in GPS).
+            --  as implicit reference (for navigation in GNAT Studio).
 
             if Prag_Id = Pragma_Import then
                Generate_Reference (E, Id, 'b');
 
             --  For exported entities we restrict the generation of references
             --  to entities exported to foreign languages since entities
-            --  exported to Ada do not provide further information to GPS and
-            --  add undesired references to the output of the gnatxref tool.
+            --  exported to Ada do not provide further information to
+            --  GNAT Studio and add undesired references to the output of the
+            --  gnatxref tool.
 
             elsif Prag_Id = Pragma_Export
               and then Convention (E) /= Convention_Ada
@@ -13093,7 +13093,7 @@ package body Sem_Prag is
             --  Infer the type to use for a string literal or a concatentation
             --  of operands whose types can be inferred. For such expressions,
             --  returns the "narrowest" of the three predefined string types
-            --  that can represent the characters occuring in the expression.
+            --  that can represent the characters occurring in the expression.
             --  For other expressions, returns Empty.
 
             function Preferred_String_Type (Expr : Node_Id) return Entity_Id is
@@ -18815,6 +18815,15 @@ package body Sem_Prag is
             --  to have invariants of its "own".
 
             Set_Has_Own_Invariants (Typ);
+
+            --  Set the Invariants_Ignored flag if that policy is in effect
+
+            Set_Invariants_Ignored (Typ,
+              Present (Check_Policy_List)
+                and then
+                  (Policy_In_Effect (Name_Invariant) = Name_Ignore
+                     and then
+                   Policy_In_Effect (Name_Type_Invariant) = Name_Ignore));
 
             --  If the invariant is class-wide, then it can be inherited by
             --  derived or interface implementing types. The type is said to
@@ -32188,6 +32197,15 @@ package body Sem_Prag is
         (New_Val => CTWE_Entry'(Eloc  => Sloc (Arg1),
                                 Scope => Current_Scope,
                                 Prag  => N));
+
+      --  If the Boolean expression contains T'Size, and we're not in the main
+      --  unit being compiled, then we need to copy the pragma into the main
+      --  unit, because otherwise T'Size might never be computed, leaving it
+      --  as 0.
+
+      if not In_Extended_Main_Code_Unit (N) then
+         Insert_Library_Level_Action (New_Copy_Tree (N));
+      end if;
    end Defer_Compile_Time_Warning_Error_To_BE;
 
    ------------------------------------------

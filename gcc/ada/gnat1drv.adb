@@ -1412,10 +1412,24 @@ begin
 
       --  It is not an error to analyze in CodePeer mode a spec which requires
       --  a body, in order to generate SCIL for this spec.
-      --  Ditto for Generate_C_Code mode and generate a C header for a spec.
 
-      elsif CodePeer_Mode or Generate_C_Code then
+      elsif CodePeer_Mode then
          Back_End_Mode := Generate_Object;
+
+      --  Differentiate use of -gnatceg to generate a C header from an Ada spec
+      --  to the CCG case (standard.h found) where C code generation should
+      --  only be performed on full units.
+
+      elsif Generate_C_Code then
+         Name_Len := 10;
+         Name_Buffer (1 .. Name_Len) := "standard.h";
+
+         if Find_File (Name_Find, Osint.Source, Full_Name => True) = No_File
+         then
+            Back_End_Mode := Generate_Object;
+         else
+            Back_End_Mode := Skip;
+         end if;
 
       --  It is not an error to analyze in GNATprove mode a spec which requires
       --  a body, when the body is not available. During frame condition

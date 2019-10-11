@@ -1877,8 +1877,10 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "Successfully combined %u partial definitions\n", ndefs);
+      /* ???  If we track partial defs alias-set we could use that if it
+         is the same for all.  Use zero for now.  */
       return vn_reference_lookup_or_insert_for_pieces
-		(first_vuse, vr->set, vr->type, vr->operands, val);
+		(first_vuse, 0, vr->type, vr->operands, val);
     }
   else
     {
@@ -2331,9 +2333,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	}
     }
 
-  /* If we are looking for redundant stores do not create new hashtable
-     entries from aliasing defs with made up alias-sets.  */
-  if (*disambiguate_only > TR_TRANSLATE || !data->tbaa_p)
+  if (*disambiguate_only > TR_TRANSLATE)
     return (void *)-1;
 
   /* If we cannot constrain the size of the reference we cannot
@@ -2449,7 +2449,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		return (void *)-1;
 	    }
 	  return vn_reference_lookup_or_insert_for_pieces
-	           (vuse, vr->set, vr->type, vr->operands, val);
+	           (vuse, 0, vr->type, vr->operands, val);
 	}
       /* For now handle clearing memory with partial defs.  */
       else if (known_eq (ref->size, maxsize)
@@ -2499,7 +2499,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    {
 	      tree val = build_zero_cst (vr->type);
 	      return vn_reference_lookup_or_insert_for_pieces
-		  (vuse, vr->set, vr->type, vr->operands, val);
+		  (vuse, get_alias_set (lhs), vr->type, vr->operands, val);
 	    }
 	  else if (known_eq (ref->size, maxsize)
 		   && maxsize.is_constant (&maxsizei)
@@ -2614,7 +2614,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 
 		  if (val)
 		    return vn_reference_lookup_or_insert_for_pieces
-			(vuse, vr->set, vr->type, vr->operands, val);
+		      (vuse, get_alias_set (lhs), vr->type, vr->operands, val);
 		}
 	    }
 	  else if (ranges_known_overlap_p (offseti, maxsizei, offset2i, size2i))
@@ -2672,23 +2672,26 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	     according to endianness.  */
 	  && (! INTEGRAL_TYPE_P (vr->type)
 	      || known_eq (ref->size, TYPE_PRECISION (vr->type)))
-	  && multiple_p (ref->size, BITS_PER_UNIT)
-	  && (! INTEGRAL_TYPE_P (TREE_TYPE (def_rhs))
-	      || type_has_mode_precision_p (TREE_TYPE (def_rhs))))
+	  && multiple_p (ref->size, BITS_PER_UNIT))
 	{
-	  gimple_match_op op (gimple_match_cond::UNCOND,
-			      BIT_FIELD_REF, vr->type,
-			      vn_valueize (def_rhs),
-			      bitsize_int (ref->size),
-			      bitsize_int (offset - offset2));
-	  tree val = vn_nary_build_or_lookup (&op);
-	  if (val
-	      && (TREE_CODE (val) != SSA_NAME
-		  || ! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val)))
+	  if (known_eq (ref->size, size2))
+	    return vn_reference_lookup_or_insert_for_pieces
+		(vuse, get_alias_set (lhs), vr->type, vr->operands,
+		 SSA_VAL (def_rhs));
+	  else if (! INTEGRAL_TYPE_P (TREE_TYPE (def_rhs))
+		   || type_has_mode_precision_p (TREE_TYPE (def_rhs)))
 	    {
-	      vn_reference_t res = vn_reference_lookup_or_insert_for_pieces
-		  (vuse, vr->set, vr->type, vr->operands, val);
-	      return res;
+	      gimple_match_op op (gimple_match_cond::UNCOND,
+				  BIT_FIELD_REF, vr->type,
+				  vn_valueize (def_rhs),
+				  bitsize_int (ref->size),
+				  bitsize_int (offset - offset2));
+	      tree val = vn_nary_build_or_lookup (&op);
+	      if (val
+		  && (TREE_CODE (val) != SSA_NAME
+		      || ! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val)))
+		return vn_reference_lookup_or_insert_for_pieces
+		    (vuse, get_alias_set (lhs), vr->type, vr->operands, val);
 	    }
 	}
     }
@@ -2770,7 +2773,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	}
 
       /* Now re-write REF to be based on the rhs of the assignment.  */
-      copy_reference_ops_from_ref (gimple_assign_rhs1 (def_stmt), &rhs);
+      tree rhs1 = gimple_assign_rhs1 (def_stmt);
+      copy_reference_ops_from_ref (rhs1, &rhs);
 
       /* Apply an extra offset to the inner MEM_REF of the RHS.  */
       if (maybe_ne (extra_off, 0))
@@ -2806,7 +2810,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	{
 	  if (data->partial_defs.is_empty ())
 	    return vn_reference_lookup_or_insert_for_pieces
-		(vuse, vr->set, vr->type, vr->operands, val);
+	      (vuse, get_alias_set (rhs1), vr->type, vr->operands, val);
 	  /* This is the only interesting case for partial-def handling
 	     coming from targets that like to gimplify init-ctors as
 	     aggregate copies from constant data like aarch64 for
@@ -2829,7 +2833,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	return (void *)-1;
 
       /* Adjust *ref from the new operands.  */
-      if (!ao_ref_init_from_vn_reference (&r, vr->set, vr->type, vr->operands))
+      if (!ao_ref_init_from_vn_reference (&r, get_alias_set (rhs1),
+					  vr->type, vr->operands))
 	return (void *)-1;
       /* This can happen with bitfields.  */
       if (maybe_ne (ref->size, r.size))
@@ -2990,10 +2995,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       tree val = fully_constant_vn_reference_p (vr);
       if (val)
 	return vn_reference_lookup_or_insert_for_pieces
-		 (vuse, vr->set, vr->type, vr->operands, val);
+		 (vuse, 0, vr->type, vr->operands, val);
 
       /* Adjust *ref from the new operands.  */
-      if (!ao_ref_init_from_vn_reference (&r, vr->set, vr->type, vr->operands))
+      if (!ao_ref_init_from_vn_reference (&r, 0, vr->type, vr->operands))
 	return (void *)-1;
       /* This can happen with bitfields.  */
       if (maybe_ne (ref->size, r.size))
@@ -5539,8 +5544,48 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
       tree val;
       tree rhs = gimple_assign_rhs1 (stmt);
       vn_reference_t vnresult;
-      val = vn_reference_lookup (lhs, gimple_vuse (stmt), VN_WALKREWRITE,
-				 &vnresult, false);
+      /* ???  gcc.dg/torture/pr91445.c shows that we lookup a boolean
+         typed load of a byte known to be 0x11 as 1 so a store of
+	 a boolean 1 is detected as redundant.  Because of this we
+	 have to make sure to lookup with a ref where its size
+	 matches the precision.  */
+      tree lookup_lhs = lhs;
+      if (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	  && (TREE_CODE (lhs) != COMPONENT_REF
+	      || !DECL_BIT_FIELD_TYPE (TREE_OPERAND (lhs, 1)))
+	  && !type_has_mode_precision_p (TREE_TYPE (lhs)))
+	{
+	  if (TREE_CODE (lhs) == COMPONENT_REF
+	      || TREE_CODE (lhs) == MEM_REF)
+	    {
+	      tree ltype = build_nonstandard_integer_type
+				(TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (lhs))),
+				 TYPE_UNSIGNED (TREE_TYPE (lhs)));
+	      if (TREE_CODE (lhs) == COMPONENT_REF)
+		{
+		  tree foff = component_ref_field_offset (lhs);
+		  tree f = TREE_OPERAND (lhs, 1);
+		  if (!poly_int_tree_p (foff))
+		    lookup_lhs = NULL_TREE;
+		  else
+		    lookup_lhs = build3 (BIT_FIELD_REF, ltype,
+					 TREE_OPERAND (lhs, 0),
+					 TYPE_SIZE (TREE_TYPE (lhs)),
+					 bit_from_pos
+					   (foff, DECL_FIELD_BIT_OFFSET (f)));
+		}
+	      else
+		lookup_lhs = build2 (MEM_REF, ltype,
+				     TREE_OPERAND (lhs, 0),
+				     TREE_OPERAND (lhs, 1));
+	    }
+	  else
+	    lookup_lhs = NULL_TREE;
+	}
+      val = NULL_TREE;
+      if (lookup_lhs)
+	val = vn_reference_lookup (lookup_lhs, gimple_vuse (stmt), VN_WALK,
+				   &vnresult, false);
       if (TREE_CODE (rhs) == SSA_NAME)
 	rhs = VN_INFO (rhs)->valnum;
       if (val

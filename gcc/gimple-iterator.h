@@ -325,28 +325,31 @@ gsi_one_nondebug_before_end_p (gimple_stmt_iterator i)
   return gsi_end_p (i);
 }
 
-/* Iterates I statement iterator to the next non-virtual statement.  */
+/* Advance I statement iterator to the next non-virtual GIMPLE_PHI
+   statement.  */
 
 static inline void
 gsi_next_nonvirtual_phi (gphi_iterator *i)
 {
-  gphi *phi;
-
-  if (gsi_end_p (*i))
-    return;
-
-  phi = i->phi ();
-  gcc_assert (phi != NULL);
-
-  while (virtual_operand_p (gimple_phi_result (phi)))
+  do
     {
       gsi_next (i);
-
-      if (gsi_end_p (*i))
-	return;
-
-      phi = i->phi ();
     }
+  while (!gsi_end_p (*i) && virtual_operand_p (gimple_phi_result (i->phi ())));
+}
+
+/* Return a new iterator pointing to the first non-virtual phi statement in
+   basic block BB.  */
+
+static inline gphi_iterator
+gsi_start_nonvirtual_phis (basic_block bb)
+{
+  gphi_iterator i = gsi_start_phis (bb);
+
+  if (!gsi_end_p (i) && virtual_operand_p (gimple_phi_result (i.phi ())))
+    gsi_next_nonvirtual_phi (&i);
+
+  return i;
 }
 
 /* Return the basic block associated with this iterator.  */

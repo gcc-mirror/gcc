@@ -113,18 +113,22 @@ namespace __gnu_debug
     _Safe_iterator<_Iterator, _Sequence, _Category>::
     _M_get_distance_to(const _Safe_iterator& __rhs) const
     {
-      typedef typename _Distance_traits<_Iterator>::__type _Diff;
+      typedef typename _Distance_traits<_Iterator>::__type _Dist;
       typedef _Sequence_traits<_Sequence> _SeqTraits;
 
-      if (this->base() == __rhs.base())
-	return std::make_pair(0, __dp_exact);
+      _Dist __base_dist = __get_distance(this->base(), __rhs.base());
+      if (__base_dist.second == __dp_exact)
+	return __base_dist;
 
+      _Dist __seq_dist = _SeqTraits::_S_size(*this->_M_get_sequence());
       if (this->_M_is_before_begin())
 	{
 	  if (__rhs._M_is_begin())
 	    return std::make_pair(1, __dp_exact);
 
-	  return std::make_pair(1, __dp_sign);
+	  return __seq_dist.second == __dp_exact
+	    ? std::make_pair(__seq_dist.first + 1, __dp_exact)
+	    : __seq_dist;
 	}
 
       if (this->_M_is_begin())
@@ -133,30 +137,42 @@ namespace __gnu_debug
 	    return std::make_pair(-1, __dp_exact);
 
 	  if (__rhs._M_is_end())
-	    return _SeqTraits::_S_size(*this->_M_get_sequence());
+	    return __seq_dist;
 
-	  return std::make_pair(1, __dp_sign);
+	  return std::make_pair(__seq_dist.first,
+				__seq_dist.second == __dp_exact
+				? __dp_sign_max_size : __seq_dist.second);
 	}
 
       if (this->_M_is_end())
 	{
 	  if (__rhs._M_is_before_begin())
-	    return std::make_pair(-1, __dp_exact);
+	    return __seq_dist.second == __dp_exact
+	      ? std::make_pair(-__seq_dist.first - 1, __dp_exact)
+	      : std::make_pair(-__seq_dist.first, __dp_sign);
 
 	  if (__rhs._M_is_begin())
-	    {
-	      _Diff __diff = _SeqTraits::_S_size(*this->_M_get_sequence());
-	      return std::make_pair(-__diff.first, __diff.second);
-	    }
+	    return std::make_pair(-__seq_dist.first, __seq_dist.second);
 
-	  return std::make_pair(-1, __dp_sign);
+	  return std::make_pair(-__seq_dist.first,
+				__seq_dist.second == __dp_exact
+				? __dp_sign_max_size : __seq_dist.second);
 	}
 
-      if (__rhs._M_is_before_begin() || __rhs._M_is_begin())
-	return std::make_pair(-1, __dp_sign);
+      if (__rhs._M_is_before_begin())
+	return __seq_dist.second == __dp_exact
+	  ? std::make_pair(__seq_dist.first - 1, __dp_exact)
+	  : std::make_pair(-__seq_dist.first, __dp_sign);
+
+      if (__rhs._M_is_begin())
+	return std::make_pair(-__seq_dist.first,
+			      __seq_dist.second == __dp_exact
+			      ? __dp_sign_max_size : __seq_dist.second);
 
       if (__rhs._M_is_end())
-	return std::make_pair(1, __dp_sign);
+	return std::make_pair(__seq_dist.first,
+			      __seq_dist.second == __dp_exact
+			      ? __dp_sign_max_size : __seq_dist.second);
 
       return std::make_pair(1, __dp_equality);
     }

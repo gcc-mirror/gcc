@@ -6762,7 +6762,15 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
 
 	  gfc_extract_int (e, &order[i]);
 
-	  gcc_assert (order[i] >= 1 && order[i] <= rank);
+	  if (order[i] < 1 || order[i] > rank)
+	    {
+	      gfc_error ("Element with a value of %d in ORDER at %L must be "
+			 "in the range [1, ..., %d] for the RESHAPE intrinsic "
+			 "near %L", order[i], &order_exp->where, rank,
+			 &shape_exp->where);
+	      return &gfc_bad_expr;
+	    }
+
 	  order[i]--;
 	  if (x[order[i]] != 0)
 	    {

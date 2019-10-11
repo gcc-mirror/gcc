@@ -1,3 +1,32 @@
+2019-10-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/use_device_addr-1.f90: New.
+	* testsuite/libgomp.fortran/use_device_addr-2.f90: New.
+
+2019-10-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/92036
+	* testsuite/libgomp.oacc-c-c++-common/data-firstprivate-1.c: New
+	file.
+
+2019-10-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR testsuite/91884
+	* testsuite/libgomp.fortran/fortran.exp: Conditionally
+	add -lquadmath.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Ditto.
+
+2019-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/92028
+	* target.c (gomp_map_vars_internal): Readd the previous
+	GOMP_MAP_USE_DEVICE_PTR handling code in the first loop,
+	though do that just in the !not_found_cnt case.
+
+2019-10-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/target-simd.f90: New.
+
 2019-10-02  Julian Brown  <julian@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 

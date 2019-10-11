@@ -3835,7 +3835,7 @@ symbol_table_test::symbol_table_test ()
 {
   gcc_assert (saved_symtab == NULL);
   saved_symtab = symtab;
-  symtab = new (ggc_cleared_alloc <symbol_table> ()) symbol_table ();
+  symtab = new (ggc_alloc <symbol_table> ()) symbol_table ();
 }
 
 /* Destructor.  Restore the old value of symtab.  */

@@ -337,7 +337,7 @@ const struct s390_processor processor_table[] =
   { "zEC12",  "zEC12",  PROCESSOR_2827_ZEC12,  &zEC12_cost,  10 },
   { "z13",    "z13",    PROCESSOR_2964_Z13,    &zEC12_cost,  11 },
   { "z14",    "arch12", PROCESSOR_3906_Z14,    &zEC12_cost,  12 },
-  { "arch13", "",       PROCESSOR_8561_ARCH13, &zEC12_cost,  13 },
+  { "z15",    "arch13", PROCESSOR_8561_Z15,    &zEC12_cost,  13 },
   { "native", "",       PROCESSOR_NATIVE,      NULL,         0  }
 };
 
@@ -809,6 +809,12 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       if ((bflags & B_VXE) && !TARGET_VXE)
 	{
 	  error ("Builtin %qF requires z14 or higher.", fndecl);
+	  return const0_rtx;
+	}
+
+      if ((bflags & B_VXE2) && !TARGET_VXE2)
+	{
+	  error ("Builtin %qF requires z15 or higher.", fndecl);
 	  return const0_rtx;
 	}
     }
@@ -1376,6 +1382,7 @@ s390_match_ccmode_set (rtx set, machine_mode req_mode)
     case E_CCZ1mode:
     case E_CCSmode:
     case E_CCSRmode:
+    case E_CCSFPSmode:
     case E_CCUmode:
     case E_CCURmode:
     case E_CCOmode:
@@ -1559,6 +1566,12 @@ s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
 	    else
 	      return CCAPmode;
 	  }
+
+	/* Fall through.  */
+      case LTGT:
+	if (HONOR_NANS (op0) || HONOR_NANS (op1))
+	  return CCSFPSmode;
+
 	/* Fall through.  */
       case UNORDERED:
       case ORDERED:
@@ -1567,7 +1580,6 @@ s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
       case UNLT:
       case UNGE:
       case UNGT:
-      case LTGT:
 	if ((GET_CODE (op0) == SIGN_EXTEND || GET_CODE (op0) == ZERO_EXTEND)
 	    && GET_CODE (op1) != CONST_INT)
 	  return CCSRmode;
@@ -1796,7 +1808,7 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
     }
 
   /* ~a==b -> ~(a^b)==0   ~a!=b -> ~(a^b)!=0 */
-  if (TARGET_ARCH13
+  if (TARGET_Z15
       && (*code == EQ || *code == NE)
       && (GET_MODE (*op0) == DImode || GET_MODE (*op0) == SImode)
       && GET_CODE (*op0) == NOT)
@@ -1808,7 +1820,7 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
     }
 
   /* a&b == -1 -> ~a|~b == 0    a|b == -1 -> ~a&~b == 0  */
-  if (TARGET_ARCH13
+  if (TARGET_Z15
       && (*code == EQ || *code == NE)
       && (GET_CODE (*op0) == AND || GET_CODE (*op0) == IOR)
       && (GET_MODE (*op0) == DImode || GET_MODE (*op0) == SImode)
@@ -2082,6 +2094,7 @@ s390_branch_condition_mask (rtx code)
       break;
 
     case E_CCSmode:
+    case E_CCSFPSmode:
       switch (GET_CODE (code))
 	{
 	case EQ:	return CC0;
@@ -3582,7 +3595,7 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
 	/* It is a real IF-THEN-ELSE.  An additional move will be
 	   needed to implement that.  */
-	if (!TARGET_ARCH13
+	if (!TARGET_Z15
 	    && reload_completed
 	    && !rtx_equal_p (dst, then)
 	    && !rtx_equal_p (dst, els))
@@ -3604,7 +3617,7 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case IOR:
 
       /* nnrk, nngrk */
-      if (TARGET_ARCH13
+      if (TARGET_Z15
 	  && (mode == SImode || mode == DImode)
 	  && GET_CODE (XEXP (x, 0)) == NOT
 	  && GET_CODE (XEXP (x, 1)) == NOT)
@@ -3651,7 +3664,7 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
     case AND:
       /* nork, nogrk */
-      if (TARGET_ARCH13
+      if (TARGET_Z15
 	  && (mode == SImode || mode == DImode)
 	  && GET_CODE (XEXP (x, 0)) == NOT
 	  && GET_CODE (XEXP (x, 1)) == NOT)
@@ -3823,7 +3836,7 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
       *total = COSTS_N_INSNS (1);
 
       /* nxrk, nxgrk ~(a^b)==0 */
-      if (TARGET_ARCH13
+      if (TARGET_Z15
 	  && GET_CODE (XEXP (x, 0)) == NOT
 	  && XEXP (x, 1) == const0_rtx
 	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == XOR
@@ -3838,7 +3851,7 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	}
 
       /* nnrk, nngrk, nork, nogrk */
-      if (TARGET_ARCH13
+      if (TARGET_Z15
 	  && (GET_CODE (XEXP (x, 0)) == AND || GET_CODE (XEXP (x, 0)) == IOR)
 	  && XEXP (x, 1) == const0_rtx
 	  && (GET_MODE (XEXP (x, 0)) == SImode || GET_MODE (XEXP (x, 0)) == DImode)
@@ -6504,18 +6517,23 @@ s390_expand_vec_compare (rtx target, enum rtx_code cond,
 	{
 	  /* NE a != b -> !(a == b) */
 	case NE:   cond = EQ; neg_p = true;                break;
-	  /* UNGT a u> b -> !(b >= a) */
-	case UNGT: cond = GE; neg_p = true; swap_p = true; break;
-	  /* UNGE a u>= b -> !(b > a) */
-	case UNGE: cond = GT; neg_p = true; swap_p = true; break;
-	  /* LE: a <= b -> b >= a */
+	case UNGT:
+	  emit_insn (gen_vec_cmpungt (target, cmp_op1, cmp_op2));
+	  return;
+	case UNGE:
+	  emit_insn (gen_vec_cmpunge (target, cmp_op1, cmp_op2));
+	  return;
 	case LE:   cond = GE;               swap_p = true; break;
-	  /* UNLE: a u<= b -> !(a > b) */
-	case UNLE: cond = GT; neg_p = true;                break;
+	  /* UNLE: (a u<= b) -> (b u>= a).  */
+	case UNLE:
+	  emit_insn (gen_vec_cmpunge (target, cmp_op2, cmp_op1));
+	  return;
 	  /* LT: a < b -> b > a */
 	case LT:   cond = GT;               swap_p = true; break;
-	  /* UNLT: a u< b -> !(a >= b) */
-	case UNLT: cond = GE; neg_p = true;                break;
+	  /* UNLT: (a u< b) -> (b u> a).  */
+	case UNLT:
+	  emit_insn (gen_vec_cmpungt (target, cmp_op2, cmp_op1));
+	  return;
 	case UNEQ:
 	  emit_insn (gen_vec_cmpuneq (target, cmp_op1, cmp_op2));
 	  return;
@@ -6678,7 +6696,7 @@ s390_reverse_condition (machine_mode mode, enum rtx_code code)
 {
   /* Reversal of FP compares takes care -- an ordered compare
      becomes an unordered compare and vice versa.  */
-  if (mode == CCVFALLmode || mode == CCVFANYmode)
+  if (mode == CCVFALLmode || mode == CCVFANYmode || mode == CCSFPSmode)
     return reverse_condition_maybe_unordered (code);
   else if (mode == CCVIALLmode || mode == CCVIANYmode)
     return reverse_condition (code);
@@ -11600,6 +11618,44 @@ static GTY(()) rtx morestack_ref;
 
 #define SPLIT_STACK_AVAILABLE 1024
 
+/* Emit the parmblock for __morestack into .rodata section.  It
+   consists of 3 pointer size entries:
+   - frame size
+   - size of stack arguments
+   - offset between parm block and __morestack return label  */
+
+void
+s390_output_split_stack_data (rtx parm_block, rtx call_done,
+			      rtx frame_size, rtx args_size)
+{
+  rtx ops[] = { parm_block, call_done };
+
+  switch_to_section (targetm.asm_out.function_rodata_section
+		     (current_function_decl));
+
+  if (TARGET_64BIT)
+    output_asm_insn (".align\t8", NULL);
+  else
+    output_asm_insn (".align\t4", NULL);
+
+  (*targetm.asm_out.internal_label) (asm_out_file, "L",
+				     CODE_LABEL_NUMBER (parm_block));
+  if (TARGET_64BIT)
+    {
+      output_asm_insn (".quad\t%0", &frame_size);
+      output_asm_insn (".quad\t%0", &args_size);
+      output_asm_insn (".quad\t%1-%0", ops);
+    }
+  else
+    {
+      output_asm_insn (".long\t%0", &frame_size);
+      output_asm_insn (".long\t%0", &args_size);
+      output_asm_insn (".long\t%1-%0", ops);
+    }
+
+  switch_to_section (current_function_section ());
+}
+
 /* Emit -fsplit-stack prologue, which goes before the regular function
    prologue.  */
 
@@ -11677,16 +11733,8 @@ s390_expand_split_stack_prologue (void)
 
   call_done = gen_label_rtx ();
   parm_base = gen_label_rtx ();
-
-  /* Emit the parameter block.  */
-  tmp = gen_split_stack_data (parm_base, call_done,
-			      GEN_INT (frame_size),
-			      GEN_INT (args_size));
-  insn = emit_insn (tmp);
-  add_reg_note (insn, REG_LABEL_OPERAND, call_done);
-  LABEL_NUSES (call_done)++;
-  add_reg_note (insn, REG_LABEL_OPERAND, parm_base);
   LABEL_NUSES (parm_base)++;
+  LABEL_NUSES (call_done)++;
 
   /* %r1 = litbase.  */
   insn = emit_move_insn (r1, gen_rtx_LABEL_REF (VOIDmode, parm_base));
@@ -11696,15 +11744,29 @@ s390_expand_split_stack_prologue (void)
   /* Now, we need to call __morestack.  It has very special calling
      conventions: it preserves param/return/static chain registers for
      calling main function body, and looks for its own parameters at %r1. */
+  if (cc != NULL)
+    tmp = gen_split_stack_cond_call (Pmode,
+				     morestack_ref,
+				     parm_base,
+				     call_done,
+				     GEN_INT (frame_size),
+				     GEN_INT (args_size),
+				     cc);
+  else
+    tmp = gen_split_stack_call (Pmode,
+				morestack_ref,
+				parm_base,
+				call_done,
+				GEN_INT (frame_size),
+				GEN_INT (args_size));
+
+  insn = emit_jump_insn (tmp);
+  JUMP_LABEL (insn) = call_done;
+  add_reg_note (insn, REG_LABEL_OPERAND, parm_base);
+  add_reg_note (insn, REG_LABEL_OPERAND, call_done);
 
   if (cc != NULL)
     {
-      tmp = gen_split_stack_cond_call (morestack_ref, cc, call_done);
-
-      insn = emit_jump_insn (tmp);
-      JUMP_LABEL (insn) = call_done;
-      LABEL_NUSES (call_done)++;
-
       /* Mark the jump as very unlikely to be taken.  */
       add_reg_br_prob_note (insn,
 			    profile_probability::very_unlikely ());
@@ -11720,10 +11782,6 @@ s390_expand_split_stack_prologue (void)
     }
   else
     {
-      tmp = gen_split_stack_call (morestack_ref, call_done);
-      insn = emit_jump_insn (tmp);
-      JUMP_LABEL (insn) = call_done;
-      LABEL_NUSES (call_done)++;
       emit_barrier ();
     }
 
@@ -14488,16 +14546,16 @@ s390_get_sched_attrmask (rtx_insn *insn)
       if (get_attr_z14_groupoftwo (insn))
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
-    case PROCESSOR_8561_ARCH13:
-      if (get_attr_arch13_cracked (insn))
+    case PROCESSOR_8561_Z15:
+      if (get_attr_z15_cracked (insn))
 	mask |= S390_SCHED_ATTR_MASK_CRACKED;
-      if (get_attr_arch13_expanded (insn))
+      if (get_attr_z15_expanded (insn))
 	mask |= S390_SCHED_ATTR_MASK_EXPANDED;
-      if (get_attr_arch13_endgroup (insn))
+      if (get_attr_z15_endgroup (insn))
 	mask |= S390_SCHED_ATTR_MASK_ENDGROUP;
-      if (get_attr_arch13_groupalone (insn))
+      if (get_attr_z15_groupalone (insn))
 	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
-      if (get_attr_arch13_groupoftwo (insn))
+      if (get_attr_z15_groupoftwo (insn))
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
     default:
@@ -14535,15 +14593,15 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
       if (get_attr_z14_unit_vfu (insn))
 	mask |= 1 << 3;
       break;
-    case PROCESSOR_8561_ARCH13:
+    case PROCESSOR_8561_Z15:
       *units = 4;
-      if (get_attr_arch13_unit_lsu (insn))
+      if (get_attr_z15_unit_lsu (insn))
 	mask |= 1 << 0;
-      if (get_attr_arch13_unit_fxa (insn))
+      if (get_attr_z15_unit_fxa (insn))
 	mask |= 1 << 1;
-      if (get_attr_arch13_unit_fxb (insn))
+      if (get_attr_z15_unit_fxb (insn))
 	mask |= 1 << 2;
-      if (get_attr_arch13_unit_vfu (insn))
+      if (get_attr_z15_unit_vfu (insn))
 	mask |= 1 << 3;
       break;
     default:
@@ -14559,7 +14617,7 @@ s390_is_fpd (rtx_insn *insn)
     return false;
 
   return get_attr_z13_unit_fpd (insn) || get_attr_z14_unit_fpd (insn)
-    || get_attr_arch13_unit_fpd (insn);
+    || get_attr_z15_unit_fpd (insn);
 }
 
 static bool
@@ -14569,7 +14627,7 @@ s390_is_fxd (rtx_insn *insn)
     return false;
 
   return get_attr_z13_unit_fxd (insn) || get_attr_z14_unit_fxd (insn)
-    || get_attr_arch13_unit_fxd (insn);
+    || get_attr_z15_unit_fxd (insn);
 }
 
 /* Returns TRUE if INSN is a long-running instruction.  */

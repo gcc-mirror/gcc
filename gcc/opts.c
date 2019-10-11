@@ -1123,24 +1123,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       && !opts_set->x_flag_reorder_functions)
     opts->x_flag_reorder_functions = 1;
 
-  /* Tune vectorization related parametees according to cost model.  */
-  if (opts->x_flag_vect_cost_model == VECT_COST_MODEL_CHEAP)
-    {
-      maybe_set_param_value (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS,
-            6, opts->x_param_values, opts_set->x_param_values);
-      maybe_set_param_value (PARAM_VECT_MAX_VERSION_FOR_ALIGNMENT_CHECKS,
-            0, opts->x_param_values, opts_set->x_param_values);
-      maybe_set_param_value (PARAM_VECT_MAX_PEELING_FOR_ALIGNMENT,
-            0, opts->x_param_values, opts_set->x_param_values);
-    }
-
-  /* Set PARAM_MAX_STORES_TO_SINK to 0 if either vectorization or if-conversion
-     is disabled.  */
-  if ((!opts->x_flag_tree_loop_vectorize && !opts->x_flag_tree_slp_vectorize)
-       || !opts->x_flag_tree_loop_if_convert)
-    maybe_set_param_value (PARAM_MAX_STORES_TO_SINK, 0,
-                           opts->x_param_values, opts_set->x_param_values);
-
   /* The -gsplit-dwarf option requires -ggnu-pubnames.  */
   if (opts->x_dwarf_split_debug_info)
     opts->x_debug_generate_pub_sections = 2;
@@ -2492,6 +2474,10 @@ common_handle_option (struct gcc_options *opts,
       diagnostic_color_init (dc, value);
       break;
 
+    case OPT_fdiagnostics_urls_:
+      diagnostic_urls_init (dc, value);
+      break;
+
     case OPT_fdiagnostics_format_:
       diagnostic_output_format_init (dc,
 				     (enum diagnostics_output_format)value);
@@ -3229,6 +3215,27 @@ option_name (diagnostic_context *context, int option_index,
 	    || diag_kind == DK_WARNING)
 	   && context->warning_as_error_requested)
     return xstrdup (cl_options[OPT_Werror].opt_text);
+  else
+    return NULL;
+}
+
+/* Return malloced memory for a URL describing the option OPTION_INDEX
+   which enabled a diagnostic (context CONTEXT).  */
+
+char *
+get_option_url (diagnostic_context *, int option_index)
+{
+  if (option_index)
+    /* DOCUMENTATION_ROOT_URL should be supplied via -D by the Makefile
+       (see --with-documentation-root-url).
+
+       Expect an anchor of the form "index-Wfoo" e.g.
+       <a name="index-Wformat"></a>, and thus an id within
+       the URL of "#index-Wformat".  */
+    return concat (DOCUMENTATION_ROOT_URL,
+		   "Warning-Options.html",
+		   "#index", cl_options[option_index].opt_text,
+		   NULL);
   else
     return NULL;
 }

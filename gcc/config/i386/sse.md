@@ -19622,9 +19622,16 @@
    (set_attr "mode" "OI")])
 
 ;; Clear the upper 128bits of AVX registers, equivalent to a NOP
-;; if the upper 128bits are unused.
-(define_insn "avx_vzeroupper"
-  [(unspec_volatile [(const_int 0)] UNSPECV_VZEROUPPER)]
+;; if the upper 128bits are unused.  Initially we expand the instructions
+;; as though they had no effect on the SSE registers, but later add SETs and
+;; CLOBBERs to the PARALLEL to model the real effect.
+(define_expand "avx_vzeroupper"
+  [(parallel [(unspec_volatile [(const_int 0)] UNSPECV_VZEROUPPER)])]
+  "TARGET_AVX")
+
+(define_insn "*avx_vzeroupper"
+  [(match_parallel 0 "vzeroupper_pattern"
+     [(unspec_volatile [(const_int 0)] UNSPECV_VZEROUPPER)])]
   "TARGET_AVX"
   "vzeroupper"
   [(set_attr "type" "sse")

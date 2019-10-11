@@ -80,6 +80,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__copy_move_a2(istreambuf_iterator<_CharT2>,
 		       istreambuf_iterator<_CharT2>, _CharT2*);
 
+#if __cplusplus >= 201103L
+      template<typename _CharT2, typename _Size>
+	friend __enable_if_t<__is_char<_CharT2>::__value, _CharT2*>
+	__copy_n_a(istreambuf_iterator<_CharT2>, _Size, _CharT2*);
+#endif
+
       template<typename _CharT2>
 	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
 				    istreambuf_iterator<_CharT2> >::__type
@@ -366,6 +372,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       return __result;
     }
+
+#if __cplusplus >= 201103L
+  template<typename _CharT, typename _Size>
+    __enable_if_t<__is_char<_CharT>::__value, _CharT*>
+    __copy_n_a(istreambuf_iterator<_CharT> __it, _Size __n, _CharT* __result)
+    {
+      if (__n == 0)
+	return __result;
+
+      __glibcxx_requires_cond(__it._M_sbuf,
+			      _M_message(__gnu_debug::__msg_inc_istreambuf)
+			      ._M_iterator(__it));
+      _CharT* __beg = __result;
+      __result += __it._M_sbuf->sgetn(__beg, __n);
+      __glibcxx_requires_cond(__result - __beg == __n,
+			      _M_message(__gnu_debug::__msg_inc_istreambuf)
+			      ._M_iterator(__it));
+      return __result;
+    }
+#endif // C++11
 
   template<typename _CharT>
     typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,

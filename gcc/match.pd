@@ -3726,8 +3726,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (cmp { tem; } @1)))))
 
  /* Fold comparisons against built-in math functions.  */
- (if (flag_unsafe_math_optimizations
-      && ! flag_errno_math)
+ (if (flag_unsafe_math_optimizations && ! flag_errno_math)
   (for sq (SQRT)
    (simplify
     (cmp (sq @0) REAL_CST@1)
@@ -3762,56 +3761,108 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  if x is negative or NaN.  Due to -funsafe-math-optimizations,
 	  the results for other x follow from natural arithmetic.  */
        (cmp @0 @1)))
-     (if (cmp == GT_EXPR || cmp == GE_EXPR)
+     (if ((cmp == LT_EXPR
+	   || cmp == LE_EXPR
+	   || cmp == GT_EXPR
+	   || cmp == GE_EXPR)
+	  && !REAL_VALUE_ISNAN (TREE_REAL_CST (@1))
+	  /* Give up for -frounding-math.  */
+	  && !HONOR_SIGN_DEPENDENT_ROUNDING (TREE_TYPE (@0)))
       (with
        {
-         REAL_VALUE_TYPE c2;
+	 REAL_VALUE_TYPE c2;
+	 enum tree_code ncmp = cmp;
+	 const real_format *fmt
+	   = REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (@0)));
 	 real_arithmetic (&c2, MULT_EXPR,
 			  &TREE_REAL_CST (@1), &TREE_REAL_CST (@1));
-	 real_convert (&c2, TYPE_MODE (TREE_TYPE (@0)), &c2);
+	 real_convert (&c2, fmt, &c2);
+	 /* See PR91734: if c2 is inexact and sqrt(c2) < c (or sqrt(c2) >= c),
+	    then change LT_EXPR into LE_EXPR or GE_EXPR into GT_EXPR.  */
+	 if (!REAL_VALUE_ISINF (c2))
+	   {
+	     tree c3 = fold_const_call (CFN_SQRT, TREE_TYPE (@0),
+					build_real (TREE_TYPE (@0), c2));
+	     if (c3 == NULL_TREE || TREE_CODE (c3) != REAL_CST)
+	       ncmp = ERROR_MARK;
+	     else if ((cmp == LT_EXPR || cmp == GE_EXPR)
+		      && real_less (&TREE_REAL_CST (c3), &TREE_REAL_CST (@1)))
+	       ncmp = cmp == LT_EXPR ? LE_EXPR : GT_EXPR;
+	     else if ((cmp == LE_EXPR || cmp == GT_EXPR)
+		      && real_less (&TREE_REAL_CST (@1), &TREE_REAL_CST (c3)))
+	       ncmp = cmp == LE_EXPR ? LT_EXPR : GE_EXPR;
+	     else
+	       {
+		 /* With rounding to even, sqrt of up to 3 different values
+		    gives the same normal result, so in some cases c2 needs
+		    to be adjusted.  */
+		 REAL_VALUE_TYPE c2alt, tow;
+		 if (cmp == LT_EXPR || cmp == GE_EXPR)
+		   tow = dconst0;
+		 else
+		   real_inf (&tow);
+		 real_nextafter (&c2alt, fmt, &c2, &tow);
+		 real_convert (&c2alt, fmt, &c2alt);
+		 if (REAL_VALUE_ISINF (c2alt))
+		   ncmp = ERROR_MARK;
+		 else
+		   {
+		     c3 = fold_const_call (CFN_SQRT, TREE_TYPE (@0),
+					   build_real (TREE_TYPE (@0), c2alt));
+		     if (c3 == NULL_TREE || TREE_CODE (c3) != REAL_CST)
+		       ncmp = ERROR_MARK;
+		     else if (real_equal (&TREE_REAL_CST (c3),
+					  &TREE_REAL_CST (@1)))
+		       c2 = c2alt;
+		   }
+	       }
+	   }
        }
-       (if (REAL_VALUE_ISINF (c2))
-	/* sqrt(x) > y is x == +Inf, when y is very large.  */
-	(if (HONOR_INFINITIES (@0))
-	 (eq @0 { build_real (TREE_TYPE (@0), c2); })
-	 { constant_boolean_node (false, type); })
-	/* sqrt(x) > c is the same as x > c*c.  */
-	(cmp @0 { build_real (TREE_TYPE (@0), c2); }))))
-     (if (cmp == LT_EXPR || cmp == LE_EXPR)
-      (with
-       {
-       	 REAL_VALUE_TYPE c2;
-	 real_arithmetic (&c2, MULT_EXPR,
-			  &TREE_REAL_CST (@1), &TREE_REAL_CST (@1));
-	 real_convert (&c2, TYPE_MODE (TREE_TYPE (@0)), &c2);
-       }
-       (if (REAL_VALUE_ISINF (c2))
-        (switch
-	 /* sqrt(x) < y is always true, when y is a very large
-	    value and we don't care about NaNs or Infinities.  */
-	 (if (! HONOR_NANS (@0) && ! HONOR_INFINITIES (@0))
-	  { constant_boolean_node (true, type); })
-	 /* sqrt(x) < y is x != +Inf when y is very large and we
-	    don't care about NaNs.  */
-	 (if (! HONOR_NANS (@0))
-	  (ne @0 { build_real (TREE_TYPE (@0), c2); }))
-	 /* sqrt(x) < y is x >= 0 when y is very large and we
-	    don't care about Infinities.  */
-	 (if (! HONOR_INFINITIES (@0))
-	  (ge @0 { build_real (TREE_TYPE (@0), dconst0); }))
-	 /* sqrt(x) < y is x >= 0 && x != +Inf, when y is large.  */
-	 (if (GENERIC)
-	  (truth_andif
-	   (ge @0 { build_real (TREE_TYPE (@0), dconst0); })
-	   (ne @0 { build_real (TREE_TYPE (@0), c2); }))))
-	/* sqrt(x) < c is the same as x < c*c, if we ignore NaNs.  */
-	(if (! HONOR_NANS (@0))
-	 (cmp @0 { build_real (TREE_TYPE (@0), c2); })
-	 /* sqrt(x) < c is the same as x >= 0 && x < c*c.  */
-	 (if (GENERIC)
-	  (truth_andif
-	   (ge @0 { build_real (TREE_TYPE (@0), dconst0); })
-	   (cmp @0 { build_real (TREE_TYPE (@0), c2); })))))))))
+       (if (cmp == GT_EXPR || cmp == GE_EXPR)
+	(if (REAL_VALUE_ISINF (c2))
+	 /* sqrt(x) > y is x == +Inf, when y is very large.  */
+	 (if (HONOR_INFINITIES (@0))
+	  (eq @0 { build_real (TREE_TYPE (@0), c2); })
+	  { constant_boolean_node (false, type); })
+	 /* sqrt(x) > c is the same as x > c*c.  */
+	 (if (ncmp != ERROR_MARK)
+	  (if (ncmp == GE_EXPR)
+	   (ge @0 { build_real (TREE_TYPE (@0), c2); })
+	   (gt @0 { build_real (TREE_TYPE (@0), c2); }))))
+	/* else if (cmp == LT_EXPR || cmp == LE_EXPR)  */
+	(if (REAL_VALUE_ISINF (c2))
+	 (switch
+	  /* sqrt(x) < y is always true, when y is a very large
+	     value and we don't care about NaNs or Infinities.  */
+	  (if (! HONOR_NANS (@0) && ! HONOR_INFINITIES (@0))
+	   { constant_boolean_node (true, type); })
+	  /* sqrt(x) < y is x != +Inf when y is very large and we
+	     don't care about NaNs.  */
+	  (if (! HONOR_NANS (@0))
+	   (ne @0 { build_real (TREE_TYPE (@0), c2); }))
+	  /* sqrt(x) < y is x >= 0 when y is very large and we
+	     don't care about Infinities.  */
+	  (if (! HONOR_INFINITIES (@0))
+	   (ge @0 { build_real (TREE_TYPE (@0), dconst0); }))
+	  /* sqrt(x) < y is x >= 0 && x != +Inf, when y is large.  */
+	  (if (GENERIC)
+	   (truth_andif
+	    (ge @0 { build_real (TREE_TYPE (@0), dconst0); })
+	    (ne @0 { build_real (TREE_TYPE (@0), c2); }))))
+	 /* sqrt(x) < c is the same as x < c*c, if we ignore NaNs.  */
+	 (if (ncmp != ERROR_MARK && ! HONOR_NANS (@0))
+	  (if (ncmp == LT_EXPR)
+	   (lt @0 { build_real (TREE_TYPE (@0), c2); })
+	   (le @0 { build_real (TREE_TYPE (@0), c2); }))
+	  /* sqrt(x) < c is the same as x >= 0 && x < c*c.  */
+	  (if (ncmp != ERROR_MARK && GENERIC)
+	   (if (ncmp == LT_EXPR)
+	    (truth_andif
+	     (ge @0 { build_real (TREE_TYPE (@0), dconst0); })
+	     (lt @0 { build_real (TREE_TYPE (@0), c2); }))
+	    (truth_andif
+	     (ge @0 { build_real (TREE_TYPE (@0), dconst0); })
+	     (le @0 { build_real (TREE_TYPE (@0), c2); })))))))))))
    /* Transform sqrt(x) cmp sqrt(y) -> x cmp y.  */
    (simplify
     (cmp (sq @0) (sq @1))
@@ -5637,6 +5688,64 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (simplify
       (cmp (popcount @0) integer_zerop)
       (rep @0 { build_zero_cst (TREE_TYPE (@0)); }))))
+
+#if GIMPLE
+/* 64- and 32-bits branchless implementations of popcount are detected:
+
+   int popcount64c (uint64_t x)
+   {
+     x -= (x >> 1) & 0x5555555555555555ULL;
+     x = (x & 0x3333333333333333ULL) + ((x >> 2) & 0x3333333333333333ULL);
+     x = (x + (x >> 4)) & 0x0f0f0f0f0f0f0f0fULL;
+     return (x * 0x0101010101010101ULL) >> 56;
+   }
+
+   int popcount32c (uint32_t x)
+   {
+     x -= (x >> 1) & 0x55555555;
+     x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
+     x = (x + (x >> 4)) & 0x0f0f0f0f;
+     return (x * 0x01010101) >> 24;
+   }  */
+(simplify
+  (rshift
+    (mult
+      (bit_and
+	(plus:c
+	  (rshift @8 INTEGER_CST@5)
+	  (plus:c@8
+	    (bit_and @6 INTEGER_CST@7)
+	    (bit_and
+	      (rshift
+		(minus@6
+		  @0
+		  (bit_and
+		    (rshift @0 INTEGER_CST@4)
+		    INTEGER_CST@11))
+	      INTEGER_CST@10)
+	    INTEGER_CST@9)))
+	INTEGER_CST@3)
+      INTEGER_CST@2)
+    INTEGER_CST@1)
+  /* Check constants and optab.  */
+  (with
+     {
+       unsigned prec = TYPE_PRECISION (type);
+       int shift = 64 - prec;
+       const unsigned HOST_WIDE_INT c1 = 0x0101010101010101ULL >> shift,
+				    c2 = 0x0F0F0F0F0F0F0F0FULL >> shift,
+				    c3 = 0x3333333333333333ULL >> shift,
+				    c4 = 0x5555555555555555ULL >> shift;
+     }
+    (if (prec <= 64 && TYPE_UNSIGNED (type) && tree_to_uhwi (@4) == 1
+          && tree_to_uhwi (@10) == 2 && tree_to_uhwi (@5) == 4
+          && tree_to_uhwi (@1) == prec - 8 && tree_to_uhwi (@2) == c1
+          && tree_to_uhwi (@3) == c2 && tree_to_uhwi (@9) == c3
+          && tree_to_uhwi (@7) == c3 && tree_to_uhwi (@11) == c4
+          && direct_internal_fn_supported_p (IFN_POPCOUNT, type,
+	    OPTIMIZE_FOR_BOTH))
+        (convert (IFN_POPCOUNT:type @0)))))
+#endif
 
 /* Simplify:
 

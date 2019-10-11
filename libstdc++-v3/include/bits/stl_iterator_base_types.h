@@ -208,11 +208,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   //@}
 
 #if __cplusplus >= 201103L
+  template<typename _Iter>
+    using __iterator_category_t
+      = typename iterator_traits<_Iter>::iterator_category;
+
   template<typename _InIter>
-    using _RequireInputIter = typename
-      enable_if<is_convertible<typename
-		iterator_traits<_InIter>::iterator_category,
-			       input_iterator_tag>::value>::type;
+    using _RequireInputIter =
+      __enable_if_t<is_convertible<__iterator_category_t<_InIter>,
+				   input_iterator_tag>::value>;
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

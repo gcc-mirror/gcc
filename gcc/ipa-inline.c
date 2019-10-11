@@ -1186,7 +1186,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	     if (need_more_work)
 	       noninline_callee ();
 	   }
-	 Withhout panilizing this case, we usually inline noninline_callee
+	 Withhout penalizing this case, we usually inline noninline_callee
 	 into the inline_caller because overall_growth is small preventing
 	 further inlining of inline_caller.
 
@@ -1243,7 +1243,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	    overall_growth += 256 * 256 - 256;
 	  denominator *= overall_growth;
         }
-      denominator *= ipa_fn_summaries->get (caller)->self_size + growth;
+      denominator *= ipa_fn_summaries->get (caller)->size + growth;
 
       badness = - numerator / denominator;
 

@@ -2991,7 +2991,7 @@ package Sem_Util is
       function Choice_List_Intervals (Discrete_Choices : List_Id)
                                      return Discrete_Interval_List;
       --  Given a discrete choice list, returns the (unique) interval
-      --  list representing the chosen values..
+      --  list representing the chosen values.
 
       function Is_Subset (Subset, Of_Set : Discrete_Interval_List)
         return Boolean;

@@ -1,3 +1,272 @@
+2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (elaborate_reference_1): Specifically deal with
+	pointer displacement.
+
+	* gcc-interface/decl.c (components_to_record): Use proper name.
+
+	* gcc-interface/trans.c (Sloc_to_locus): Use standard types.
+
+2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_field): Adjust again the packing
+	for a field without strict alignment and with an oversized clause.
+
+2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (annotate_value) <INTEGER_CST>: Really test the
+	sign of the value when deciding to build a NEGATE_EXPR.
+	<PLUS_EXPR>: Remove redundant line.
+	<BIT_AND_EXPR>: Do the negation here.
+
+2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (Gigi_Equivalent_Type) <E_Array_Subtype>: New
+	case.  Return the base type if the subtype is not constrained.
+
+2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Named_{Integer|Real}>:
+	New case to deal with the definition of named numbers.
+	<E_Variable>: Minor tweaks.  Set DECL_IGNORED_P on the CONST_DECL
+	if a corresponding variable is built.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Integer_Literal>: Return
+	error_mark_node instead of aborting on overflow for named numbers.
+	<N_Number_Declaration>: Reuse the <N_Object_Declaration> case and
+	deal with error_mark_node specifically.
+	* gcc-interface/utils.c (create_var_decl): Do not set DECL_IGNORED_P
+	on CONST_DECLs.
+	(gnat_write_global_declarations): Output global constants.
+
+2019-10-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch7.adb (Check_Unnesting_In_Decls_Or_Stmts): When
+	encountering a loop at the top level of a package declaration
+	list (that is, within the declarations of a package spec or
+	body) that has nested subprograms, call Unnest_Loop to create a
+	new library-level procedure that will contain the loop, to allow
+	for proper handling of up-level references from within nested
+	subprograms, such as to loop parameters.
+	(Unnest_Loop): New procedure that takes a loop statement and
+	creates a new procedure body to enclose the loop statement,
+	along with generating a call to the procedure.
+
+2019-10-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* freeze.adb (Freeze_Subprogram): Ensure constructor is a C++
+	constructor.
+
+2019-10-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* libgnat/a-ststio.ads (File_Type): Apply pragma
+	Preelaborable_Initialization to the type.
+
+2019-10-10  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Do not peek
+	under private types whose completion is SPARK_Mode Off.
+
+2019-10-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch4.adb, sem_cat.adb, sem_ch12.adb, sem_ch3.adb,
+	sem_ch6.adb, sem_prag.adb, sem_util.adb, sem_util.ads: Minor
+	typo fixes.
+
+2019-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Warn_On_Useless_Assignment): Do not warn if the
+	second assignment is at the same source position as the first.
+
+2019-10-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb (Enclosing_Subprogram): Handle the case of
+	E_Entry_Family, returning the entry family's associated
+	Protected_Body_Subprogram (as was already done for E_Entry).
+	* exp_ch9.adb (Expand_N_Accept_Statement): Call Reset_Scopes_To
+	on the block created for an accept statement to reset the scopes
+	of any local entities to the block scope.
+
+2019-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Formal_Package_Declaration): Propagate
+	an aspect specification for Abstract_State from generic package
+	to formal package, so that it is available when analyzing the
+	constructed formal.
+
+2019-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch6.adb (Set_Actual_Subtypes): Put the freeze node of the
+	actual subtype after its declaration when the type of the formal
+	has a predicate.
+
+2019-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Adjust_Record_For_Reverse_Bit_Order): Do not use
+	the Esize of the component to compute its layout, but only the
+	Component_Clause.  Do not issue a warning for the _Tag
+	component.  Also set the Esize of the component at the end of
+	the layout.
+	(Analyze_Record_Representation_Clause): Remove Hbit local
+	variable.  Lay out the Original_Record_Component only if it's
+	distinct from the component.
+	(Check_Record_Representation_Clause): Fix off-by-one bug for the
+	Last_Bit of the artificial clause built for the _Tag component.
+
+2019-10-10  Bob Duff  <duff@adacore.com>
+
+	* treepr.ads, treepr.adb (ppar): New procedure.
+
+2019-10-10  Bob Duff  <duff@adacore.com>
+
+	* sem_aggr.adb (Resolve_Aggregate): Add missing cases in the
+	Others_Allowed => True case -- N_Case_Expression_Alternative and
+	N_If_Expression.  Use Nkind_In.
+	* atree.adb, atree.ads, sinfo.adb, sinfo.ads (Nkind_In): New
+	16-parameter version.
+
+2019-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Set properly the
+	Predicated_Parent link of an itype created for an aggregate, so
+	that the predicate_function of the parent can support proofs on
+	the object that it initializes.
+
+2019-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Analyze_Number_Declaration): Set
+	Debug_Info_Needed in the case where the expression is an integer
+	literal.
+
+2019-10-10  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Add subprograms
+	with deep parameter or result type as not candidates for
+	inlining.
+
+2019-10-10  Vadim Godunko  <godunko@adacore.com>
+
+	* libgnat/g-exptty.ads (TTY_Process_Descriptor): Set default
+	value for Process.
+
+2019-10-10  Bob Duff  <duff@adacore.com>
+
+	* sem_prag.adb (Defer_Compile_Time_Warning_Error_To_BE): In
+	addition to saving the pragma for further processing, copy the
+	pragma into the main unit if necessary.
+
+2019-10-10  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads, einfo.adb (Invariants_Ignored): New flag on types.
+	This leaves just one unused flag.
+	* sem_prag.adb (Invariant): Set the flag if appropriate.
+	* exp_util.adb (Make_Invariant_Call): Check the flag.
+
+2019-10-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Skip code generation when handling an
+	incomplete unit with -gnatceg.
+
+2019-10-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch7.adb (Check_Unnesting_Elaboration_Code): Various
+	cleanups.
+	(Set_Elab_Proc): New procedure to create the defining identifier
+	for a procedure created to encapsulate top-level blocks
+	occurring as a part of library package elaboration.
+	(First_Local_Scope): Function replaced by
+	Reset_Scopes_To_Elab_Proc.
+	(Reset_Scopes_To_Elab_Proc): New recursive procedure based on
+	First_Local_Scope, which it replaces, that is called to traverse
+	the statements of a library package body to locate top-level
+	blocks and determine whether they contain nested subprograms
+	that might address library-level objects of the package. Such
+	blocks (and loops) and certain top-level subprograms within the
+	statements will have their Scope reset here to match an
+	encapsulating procedure created by
+	Check_Unnesting_Elaboration_Code that will contain the
+	statements.
+	(Check_Unnesting_In_Decls_Or_Stmts): Code for handling blocks
+	factored out into Unnest_Block. Add handling for package
+	declarations and bodies, making recursive calls for
+	visible/private declarations, body declarations, statements, and
+	exception handlers. Also remove test for Is_Compilation_Unit:
+	caller tests for Is_Library_Level_Entity instead.  Also, this
+	proc's name was changed from Check_Unnesting_In_Declarations.
+	(Check_Unnesting_In_Handlers): New procedure to traverse a
+	sequence of exception handlers, calling
+	Check_Unnesting_In_Decls_Or_Stmts on the statements of each
+	handler.
+	(Expand_N_Package_Body): Call Check_Unnesting_* routines only
+	when Unnest_Subprogram_Mode is set and the current scope is a
+	library-level entity (which includes packages and instantiations
+	nested directly within a library unit).
+	(Expand_N_Package_Declaration): Call Check_Unnesting_* routines
+	only when Unnest_Subprogram_Mode is set and the current scope is
+	a library-level entity (which includes packages and
+	instantiations nested directly within a library unit).
+	(Unnest_Block): New procedure factored out of
+	Check_Unnesting_In_Decls_Or_Stmts, for creating a new procedure
+	to replace a block statement and resetting the Scope fields of
+	the block's top-level entities.
+
+2019-10-10  Anthony Leonardo Gracio  <leonardo@adacore.com>
+
+	* doc/gnat_ugn/about_this_guide.rst,
+	doc/gnat_ugn/building_executable_programs_with_gnat.rst,
+	doc/gnat_ugn/getting_started_with_gnat.rst,
+	doc/gnat_ugn/gnat_and_program_execution.rst, errout.ads,
+	exp_ch3.adb, gnatls.adb, impunit.adb, lib-writ.ads, opt.ads,
+	sem_ch7.adb, sem_prag.adb, sem_res.adb, sem_warn.adb,
+	terminals.c: Replace GPS by GNAT Studio.
+	* gnat_ugn.texi: Regenerate.
+
+2019-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return_Statement): If the
+	function to which the return statement applies is an
+	Ignored_Ghost_Function, do not indicate that it uses the
+	secondary stack when the return type is unconstrained.
+
+2019-10-10  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-cbdlli.adb, libgnat/a-cbhama.adb,
+	libgnat/a-cbhase.adb, libgnat/a-cbmutr.adb,
+	libgnat/a-cborma.adb, libgnat/a-cborse.adb,
+	libgnat/a-cdlili.adb, libgnat/a-cidlli.adb,
+	libgnat/a-cihama.adb, libgnat/a-cihase.adb,
+	libgnat/a-cimutr.adb, libgnat/a-ciorma.adb,
+	libgnat/a-ciorse.adb, libgnat/a-cobove.adb,
+	libgnat/a-cohama.adb, libgnat/a-cohase.adb,
+	libgnat/a-coinve.adb, libgnat/a-comutr.adb,
+	libgnat/a-conhel.adb, libgnat/a-convec.adb,
+	libgnat/a-coorma.adb, libgnat/a-coorse.adb (Reference,
+	Constant_Reference): Use Busy instead of Lock, so we forbid
+	tampering with cursors, rather than tampering with elements.
+
+2019-10-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_cat.adb (Set_Categorization_From_Pragma): Do not modify
+	any visibility settings if there are no compilation_unit pragmas
+	following the package declaration. Add comments for future
+	cleanup.
+
+2019-10-10  Patrick Bernardi  <bernardi@adacore.com>
+
+	* bindgen.adb (System_Secondary_Stack_Package_In_Closure):
+	Renamed flag System_Secondary_Stack_Used to be clearer of what
+	it represents.
+	(Gen_Adainit): Refactor secondary stack related code to make it
+	clearer.
+	* rtsfind.adb (Load_RTU): Don't set Sec_Stack_Used flag here
+	(RTE): Set Sec_Stack_Used if the System.Secondary_Stack is
+	referenced, but not if we're ignoring ghost code.
+
+2019-10-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Global_In_Decl_Part): Simplify previous
+	test, just like in a recent commit we simplified a similar test
+	for Depends contract.
+
 2019-10-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-interface/utils.c (flag_isoc2x): New variable.

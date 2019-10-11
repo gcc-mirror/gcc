@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "vec-perm-indices.h"
 #include "fold-const.h"
+#include "fold-const-call.h"
 #include "stor-layout.h"
 #include "tree-dfa.h"
 #include "builtins.h"

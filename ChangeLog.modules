@@ -1,5 +1,8 @@
 2019-10-11  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r276888.
+	Pull in c++20 concepts.
+
 	gcc/cp/
 	* module.cc (trees_{in,out}::core_vals): Don't stream function
 	parms here.

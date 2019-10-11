@@ -815,6 +815,7 @@ accel_dir_suffix
 real_target_noncanonical
 enable_as_accelerator
 gnat_install_lib
+DOCUMENTATION_ROOT_URL
 REPORT_BUGS_TEXI
 REPORT_BUGS_TO
 PKGVERSION
@@ -960,6 +961,7 @@ enable_gcov
 with_specs
 with_pkgversion
 with_bugurl
+with_documentation_root_url
 enable_languages
 with_multilib_list
 with_zstd
@@ -1788,6 +1790,8 @@ Optional Packages:
   --with-specs=SPECS      add SPECS to driver command-line processing
   --with-pkgversion=PKG   Use PKG in the version string in place of "GCC"
   --with-bugurl=URL       Direct users to URL to report a bug
+  --with-documentation-root-url=URL
+                          Root for documentation URLs
   --with-multilib-list    select multilibs (AArch64, SH and x86-64 only)
   --with-zstd=PATH        specify prefix directory for installed zstd library.
                           Equivalent to --with-zstd-include=PATH/include plus
@@ -7801,6 +7805,23 @@ fi
     ;;
   esac;
 
+
+
+
+# Allow overriding the default URL for documentation
+
+# Check whether --with-documentation-root-url was given.
+if test "${with_documentation_root_url+set}" = set; then :
+  withval=$with_documentation_root_url; case "$withval" in
+      yes) as_fn_error $? "documentation root URL not specified" "$LINENO" 5 ;;
+      no)  as_fn_error $? "documentation root URL not specified" "$LINENO" 5 ;;
+      *)   DOCUMENTATION_ROOT_URL="$withval"
+	   ;;
+     esac
+else
+  DOCUMENTATION_ROOT_URL="https://gcc.gnu.org/onlinedocs/gcc/"
+
+fi
 
 
 
@@ -19130,7 +19151,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18833 "configure"
+#line 18854 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19236,7 +19257,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18939 "configure"
+#line 18960 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -28072,6 +28093,80 @@ fi
        && test x$with_nan != x; then
       as_fn_error $? "Requesting --with-nan= requires assembler support for -mnan=" "$LINENO" 5
     fi
+    ;;
+    msp430-*-*)
+    # Earlier GAS versions generically support .gnu_attribute, but the
+    # msp430 assembler will not do anything with it.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .gnu_attribute support" >&5
+$as_echo_n "checking assembler for .gnu_attribute support... " >&6; }
+if ${gcc_cv_as_msp430_gnu_attribute+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_msp430_gnu_attribute=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 33 \) \* 1000 + 50`
+  then gcc_cv_as_msp430_gnu_attribute=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '.gnu_attribute 4,1' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_msp430_gnu_attribute=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_msp430_gnu_attribute" >&5
+$as_echo "$gcc_cv_as_msp430_gnu_attribute" >&6; }
+if test $gcc_cv_as_msp430_gnu_attribute = yes; then
+
+$as_echo "#define HAVE_AS_GNU_ATTRIBUTE 1" >>confdefs.h
+
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .mspabi_attribute support" >&5
+$as_echo_n "checking assembler for .mspabi_attribute support... " >&6; }
+if ${gcc_cv_as_msp430_mspabi_attribute+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_msp430_mspabi_attribute=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 33 \) \* 1000 + 50`
+  then gcc_cv_as_msp430_mspabi_attribute=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '.mspabi_attribute 4,1' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_msp430_mspabi_attribute=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_msp430_mspabi_attribute" >&5
+$as_echo "$gcc_cv_as_msp430_mspabi_attribute" >&6; }
+if test $gcc_cv_as_msp430_mspabi_attribute = yes; then
+
+$as_echo "#define HAVE_AS_MSPABI_ATTRIBUTE 1" >>confdefs.h
+
+fi
+
     ;;
     riscv*-*-*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .attribute support" >&5

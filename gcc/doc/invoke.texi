@@ -274,6 +274,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-fmessage-length=@var{n}  @gol
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
+-fdiagnostics-urls=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fdiagnostics-format=@r{[}text@r{|}json@r{]}  @gol
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret @gol
 -fno-diagnostics-show-labels  -fno-diagnostics-show-line-numbers @gol
@@ -350,6 +351,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
 -Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing @gol
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
+-Wstring-compare @gol
 -Wstringop-overflow=@var{n}  -Wstringop-truncation  -Wsubobject-linkage @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]} @gol
 -Wsuggest-final-types @gol  -Wsuggest-final-methods  -Wsuggest-override @gol
@@ -2513,14 +2515,17 @@ exhaustion is signalled by throwing @code{std::bad_alloc}.  See also
 @samp{new (nothrow)}.
 
 @item -fconcepts
+@itemx -fconcepts-ts
 @opindex fconcepts
-Enable support for the C++ Extensions for Concepts Technical
-Specification, ISO 19217 (2015), which allows code like
+@opindex fconcepts-ts
+Below @option{-std=c++2a}, @option{-fconcepts} enables support for the
+C++ Extensions for Concepts Technical Specification, ISO 19217 (2015).
 
-@smallexample
-template <class T> concept bool Addable = requires (T t) @{ t + t; @};
-template <Addable T> T add (T a, T b) @{ return a + b; @}
-@end smallexample
+With @option{-std=c++2a} and above, Concepts are part of the language
+standard, so @option{-fconcepts} defaults to on.  But the standard
+specification of Concepts differs significantly from the TS, so some
+constructs that were allowed in the TS but didn't make it into the
+standard can still be enabled by @option{-fconcepts-ts}.
 
 @item -fconstexpr-depth=@var{n}
 @opindex fconstexpr-depth
@@ -3950,6 +3955,18 @@ SGR substring for highlighting mismatching types within template
 arguments in the C++ frontend.
 @end table
 
+@item -fdiagnostics-urls[=@var{WHEN}]
+@opindex fdiagnostics-urls
+@cindex urls
+Use escape sequences to embed URLs in diagnostics.  For example, when
+@option{-fdiagnostics-show-option} emits text showing the command-line
+option controlling a diagnostic, embed a URL for documentation of that
+option.
+
+@var{WHEN} is @samp{never}, @samp{always}, or @samp{auto}.
+The default is @samp{auto}, which means to use URL escape sequences only
+when the standard error is a terminal.
+
 @item -fno-diagnostics-show-option
 @opindex fno-diagnostics-show-option
 @opindex fdiagnostics-show-option
@@ -4145,6 +4162,7 @@ might be printed in JSON form (after formatting) like this:
         ],
         "message": "this \u2018if\u2019 clause does not guard...",
         "option": "-Wmisleading-indentation",
+        "option_url": "https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wmisleading-indentation",
         "children": [
             @{
                 "kind": "note",
@@ -4528,6 +4546,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wold-style-declaration @r{(C only)}  @gol
 -Woverride-init  @gol
 -Wsign-compare @r{(C only)} @gol
+-Wstring-compare @gol
 -Wredundant-move @r{(only for C++)}  @gol
 -Wtype-limits  @gol
 -Wuninitialized  @gol
@@ -5624,21 +5643,20 @@ either specify @option{-Wextra -Wunused} (note that @option{-Wall} implies
 @item -Wuninitialized
 @opindex Wuninitialized
 @opindex Wno-uninitialized
-Warn if an automatic variable is used without first being initialized
-or if a variable may be clobbered by a @code{setjmp} call. In C++,
-warn if a non-static reference or non-static @code{const} member
-appears in a class without constructors.
+Warn if an automatic variable is used without first being initialized.
+In C++, warn if a non-static reference or non-static @code{const}
+member appears in a class without constructors.
 
 If you want to warn about code that uses the uninitialized value of the
 variable in its own initializer, use the @option{-Winit-self} option.
 
-These warnings occur for individual uninitialized or clobbered
-elements of structure, union or array variables as well as for
-variables that are uninitialized or clobbered as a whole.  They do
-not occur for variables or elements declared @code{volatile}.  Because
-these warnings depend on optimization, the exact variables or elements
-for which there are warnings depends on the precise optimization
-options and version of GCC used.
+These warnings occur for individual uninitialized elements of
+structure, union or array variables as well as for variables that are
+uninitialized as a whole.  They do not occur for variables or elements
+declared @code{volatile}.  Because these warnings depend on
+optimization, the exact variables or elements for which there are
+warnings depend on the precise optimization options and version of GCC
+used.
 
 Note that there may be no warning about a variable that is used only
 to compute a value that itself is never used, because such
@@ -5843,6 +5861,30 @@ highest warning level because this simplification applies to many
 comparisons, so this warning level gives a very large number of
 false positives.
 @end table
+
+@item -Wstring-compare
+@opindex Wstring-compare
+@opindex Wno-string-compare
+Warn for calls to @code{strcmp} and @code{strncmp} whose result is
+determined to be either zero or non-zero in tests for such equality
+owing to the length of one argument being greater than the size of
+the array the other argument is stored in (or the bound in the case
+of @code{strncmp}).  Such calls could be mistakes.  For example,
+the call to @code{strcmp} below is diagnosed because its result is
+necessarily non-zero irrespective of the contents of the array @code{a}.
+
+@smallexample
+extern char a[4];
+void f (char *d)
+@{
+  strcpy (d, "string");
+  @dots{}
+  if (0 == strcmp (a, d))   // cannot be true
+    puts ("a and d are the same");
+@}
+@end smallexample
+
+@option{-Wstring-compare} is enabled by @option{-Wextra}.
 
 @item -Wstringop-overflow
 @itemx -Wstringop-overflow=@var{type}
@@ -10856,12 +10898,12 @@ Do not allow the built-in functions @code{ceil}, @code{floor},
 double} variants, to generate code that raises the ``inexact''
 floating-point exception for noninteger arguments.  ISO C99 and C11
 allow these functions to raise the ``inexact'' exception, but ISO/IEC
-TS 18661-1:2014, the C bindings to IEEE 754-2008, does not allow these
-functions to do so.
+TS 18661-1:2014, the C bindings to IEEE 754-2008, as integrated into
+ISO C2X, does not allow these functions to do so.
 
 The default is @option{-ffp-int-builtin-inexact}, allowing the
-exception to be raised.  This option does nothing unless
-@option{-ftrapping-math} is in effect.
+exception to be raised, unless C2X or a later C standard is selected.
+This option does nothing unless @option{-ftrapping-math} is in effect.
 
 Even if @option{-fno-fp-int-builtin-inexact} is used, if the functions
 generate a call to a library function then the ``inexact'' exception

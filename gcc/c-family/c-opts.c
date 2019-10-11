@@ -839,6 +839,12 @@ c_common_post_options (const char **pfilename)
   else
     flag_permitted_flt_eval_methods = PERMITTED_FLT_EVAL_METHODS_C11;
 
+  /* C2X Annex F does not permit certain built-in functions to raise
+     "inexact".  */
+  if (flag_isoc2x
+      && !global_options_set.x_flag_fp_int_builtin_inexact)
+    flag_fp_int_builtin_inexact = 0;
+
   /* By default we use C99 inline semantics in GNU99 or C99 mode.  C99
      inline semantics are not supported in GNU89 or C89 mode.  */
   if (flag_gnu89_inline == -1)
@@ -1040,6 +1046,16 @@ c_common_post_options (const char **pfilename)
   /* Enable by default only for C++ and C++ with ObjC extensions.  */
   if (warn_return_type == -1 && c_dialect_cxx ())
     warn_return_type = 1;
+
+  /* C++2a is the final version of concepts. We still use -fconcepts
+     to know when concepts are enabled. Note that -fconcepts-ts can
+     be used to include additional features, although modified to
+     work with the standard.  */
+  if (cxx_dialect >= cxx2a)
+    flag_concepts = 1;
+  else if (flag_concepts)
+    /* For -std=c++17 -fconcepts, imply -fconcepts-ts.  */
+    flag_concepts_ts = 1;
 
   if (num_in_fnames > 1)
     error ("too many filenames given; type %<%s %s%> for usage",
@@ -1736,6 +1752,7 @@ set_std_cxx2a (int iso)
   flag_isoc94 = 1;
   flag_isoc99 = 1;
   flag_isoc11 = 1;
+  /* C++2a includes concepts. */
   cxx_dialect = cxx2a;
   lang_hooks.name = "GNU C++17"; /* Pretend C++17 until standardization.  */
 }

@@ -1241,7 +1241,8 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_USE_DEVICE_ADDR:
 	  decl = OMP_CLAUSE_DECL (c);
 	  if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
-	       && !omp_is_reference (decl))
+	       && !omp_is_reference (decl)
+	       && !omp_is_allocatable_or_ptr (decl))
 	      || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
 	    install_var_field (decl, true, 11, ctx);
 	  else
@@ -11483,7 +11484,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    DECL_HAS_VALUE_EXPR_P (new_var) = 1;
 	  }
 	else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
-		  && !omp_is_reference (var))
+		  && !omp_is_reference (var)
+		  && !omp_is_allocatable_or_ptr (var))
 		 || TREE_CODE (TREE_TYPE (var)) == ARRAY_TYPE)
 	  {
 	    tree new_var = lookup_decl (var, ctx);
@@ -11678,7 +11680,18 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		  }
 		else
 		  {
-		    var = build_fold_addr_expr (var);
+		    /* While MAP is handled explicitly by the FE,
+		       for 'target update', only the identified is passed.  */
+		    if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FROM
+			 || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TO)
+			&& (omp_is_allocatable_or_ptr (var)
+			    && omp_is_optional_argument (var)))
+		      var = build_fold_indirect_ref (var);
+		    else if ((OMP_CLAUSE_CODE (c) != OMP_CLAUSE_FROM
+			      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_TO)
+			     || (!omp_is_allocatable_or_ptr (var)
+				 && !omp_is_optional_argument (var)))
+		      var = build_fold_addr_expr (var);
 		    gimplify_assign (x, var, &ilist);
 		  }
 	      }
@@ -11865,16 +11878,22 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      }
 	    type = TREE_TYPE (ovar);
 	    if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
-		 && !omp_is_reference (ovar))
+		 && !omp_is_reference (ovar)
+		 && !omp_is_allocatable_or_ptr (ovar))
 		|| TREE_CODE (type) == ARRAY_TYPE)
 	      var = build_fold_addr_expr (var);
 	    else
 	      {
-		if (omp_is_reference (ovar) || omp_is_optional_argument (ovar))
+		if (omp_is_reference (ovar)
+		    || omp_is_optional_argument (ovar)
+		    || omp_is_allocatable_or_ptr (ovar))
 		  {
 		    type = TREE_TYPE (type);
 		    if (TREE_CODE (type) != ARRAY_TYPE
-			&& OMP_CLAUSE_CODE (c) != OMP_CLAUSE_USE_DEVICE_ADDR)
+			&& ((OMP_CLAUSE_CODE (c) != OMP_CLAUSE_USE_DEVICE_ADDR
+			    && !omp_is_allocatable_or_ptr (ovar))
+			   || (omp_is_reference (ovar)
+			       && omp_is_allocatable_or_ptr (ovar))))
 		      var = build_simple_mem_ref (var);
 		    var = fold_convert (TREE_TYPE (x), var);
 		  }
@@ -12045,7 +12064,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 				     gimple_build_assign (new_var, x));
 	      }
 	    else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
-		      && !omp_is_reference (var))
+		      && !omp_is_reference (var)
+		      && !omp_is_allocatable_or_ptr (var))
 		     || TREE_CODE (TREE_TYPE (var)) == ARRAY_TYPE)
 	      {
 		tree new_var = lookup_decl (var, ctx);
@@ -12065,7 +12085,9 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		  {
 		    type = TREE_TYPE (type);
 		    if (TREE_CODE (type) != ARRAY_TYPE
-			&& OMP_CLAUSE_CODE (c) != OMP_CLAUSE_USE_DEVICE_ADDR)
+			&& (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_USE_DEVICE_ADDR
+			    || (omp_is_reference (var)
+				&& omp_is_allocatable_or_ptr (var))))
 		      {
 			tree v = create_tmp_var_raw (type, get_name (var));
 			gimple_add_tmp_var (v);

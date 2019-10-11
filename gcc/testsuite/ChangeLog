@@ -1,3 +1,384 @@
+2019-10-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92050
+	* gfortran.dg/pr92050.f90: New.
+
+2019-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90883
+	PR tree-optimization/91091
+	* gcc.dg/torture/20191011-1.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-82.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-83.c: Likewise.
+	* gcc.dg/tree-ssa/redundant-assign-zero-1.c: Disable FRE.
+	* gcc.dg/tree-ssa/redundant-assign-zero-2.c: Likewise.
+
+2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/size_clause4.ads: New test.
+
+2019-10-11  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/77918
+	* gcc.target/s390/s390.exp: Enable Fortran tests.
+	* gcc.target/s390/zvector/autovec-double-quiet-eq.c: New test.
+	* gcc.target/s390/zvector/autovec-double-quiet-ge.c: New test.
+	* gcc.target/s390/zvector/autovec-double-quiet-gt.c: New test.
+	* gcc.target/s390/zvector/autovec-double-quiet-le.c: New test.
+	* gcc.target/s390/zvector/autovec-double-quiet-lt.c: New test.
+	* gcc.target/s390/zvector/autovec-double-quiet-ordered.c: New test.
+	* gcc.target/s390/zvector/autovec-double-quiet-uneq.c: New test.
+	* gcc.target/s390/zvector/autovec-double-quiet-unordered.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-eq-z13-finite.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-eq-z13.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-eq.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-ge-z13-finite.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-ge-z13.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-ge.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-gt-z13-finite.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-gt-z13.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-gt.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-le-z13-finite.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-le-z13.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-le.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-lt-z13-finite.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-lt-z13.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-lt.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-ltgt-z13-finite.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-ltgt-z13.c: New test.
+	* gcc.target/s390/zvector/autovec-double-signaling-ltgt.c: New test.
+	* gcc.target/s390/zvector/autovec-double-smax-z13.F90: New test.
+	* gcc.target/s390/zvector/autovec-double-smax.F90: New test.
+	* gcc.target/s390/zvector/autovec-double-smin-z13.F90: New test.
+	* gcc.target/s390/zvector/autovec-double-smin.F90: New test.
+	* gcc.target/s390/zvector/autovec-float-quiet-eq.c: New test.
+	* gcc.target/s390/zvector/autovec-float-quiet-ge.c: New test.
+	* gcc.target/s390/zvector/autovec-float-quiet-gt.c: New test.
+	* gcc.target/s390/zvector/autovec-float-quiet-le.c: New test.
+	* gcc.target/s390/zvector/autovec-float-quiet-lt.c: New test.
+	* gcc.target/s390/zvector/autovec-float-quiet-ordered.c: New test.
+	* gcc.target/s390/zvector/autovec-float-quiet-uneq.c: New test.
+	* gcc.target/s390/zvector/autovec-float-quiet-unordered.c: New test.
+	* gcc.target/s390/zvector/autovec-float-signaling-eq.c: New test.
+	* gcc.target/s390/zvector/autovec-float-signaling-ge.c: New test.
+	* gcc.target/s390/zvector/autovec-float-signaling-gt.c: New test.
+	* gcc.target/s390/zvector/autovec-float-signaling-le.c: New test.
+	* gcc.target/s390/zvector/autovec-float-signaling-lt.c: New test.
+	* gcc.target/s390/zvector/autovec-float-signaling-ltgt.c: New test.
+	* gcc.target/s390/zvector/autovec-fortran.h: New test.
+	* gcc.target/s390/zvector/autovec-long-double-signaling-ge.c: New test.
+	* gcc.target/s390/zvector/autovec-long-double-signaling-gt.c: New test.
+	* gcc.target/s390/zvector/autovec-long-double-signaling-le.c: New test.
+	* gcc.target/s390/zvector/autovec-long-double-signaling-lt.c: New test.
+	* gcc.target/s390/zvector/autovec.h: New test.
+
+2019-10-11  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-scalar-cmp-1.c: Adjust
+	expectations.
+
+2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array38.adb: New test.
+	* gnat.dg/array38_pkg.ad[sb]: New helper.
+
+2019-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91987
+	* g++.dg/cpp1z/eval-order6.C: New test.
+	* g++.dg/cpp1z/eval-order7.C: New test.
+	* g++.dg/cpp1z/eval-order8.C: New test.
+	* c-c++-common/gomp/pr91987.c: New test.
+
+2019-10-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-float-dfp-1.c, gcc.dg/c2x-float-no-dfp-1.c,
+	gcc.dg/c2x-float-no-dfp-2.c, gcc.dg/dfp/c2x-float-dfp-1.c,
+	gcc.dg/dfp/c2x-float-dfp-2.c, gcc.dg/dfp/c2x-float-dfp-3.c,
+	gcc.dg/dfp/tr24732-float-dfp-1.c,
+	gcc.dg/dfp/ts18661-2-float-dfp-1.c: New tests.
+
+2019-10-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87488
+	* c-c++-common/diagnostic-format-json-2.c: Expect an "option_url"
+	field.
+	* c-c++-common/diagnostic-format-json-3.c: Likewise.
+	* gfortran.dg/diagnostic-format-json-2.F90: Likewise.
+	* gfortran.dg/diagnostic-format-json-3.F90: Likewise.
+	* jit.dg/test-error-array-bounds.c (create_code): Ensure that
+	error messages don't contain escaped URLs.
+
+2019-10-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87488
+	* lib/prune.exp (TEST_ALWAYS_FLAGS): Add -fdiagnostics-urls=never.
+
+2019-10-10  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/92022
+	* g++.dg/pr92022.C: New test.
+
+2019-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/declare-variant-1.c: New test.
+	* c-c++-common/gomp/declare-variant-2.c: New test.
+	* c-c++-common/gomp/declare-variant-3.c: New test.
+	* g++.dg/gomp/this-1.C: Adjust for diagnostic message spelling fix.
+	* gcc.dg/gomp/declare-variant-1.c: New test.
+	* gcc.dg/gomp/declare-variant-2.c: New test.
+
+2019-10-09  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90879
+	* gcc.dg/Wstring-compare-2.c: New test.
+	* gcc.dg/Wstring-compare.c: New test.
+	* gcc.dg/strcmpopt_3.c: Scan the optmized dump instead of strlen.
+	* gcc.dg/strcmpopt_6.c: New test.
+	* gcc.dg/strlenopt-65.c: Remove uinnecessary declarations, add
+	test cases.
+	* gcc.dg/strlenopt-66.c: Run it.
+	* gcc.dg/strlenopt-68.c: New test.
+
+2019-10-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91364 - P0388R4: Permit conversions to arrays of	unknown bound.
+	PR c++/69531 - DR 1307: Differently bounded array parameters.
+	PR c++/88128 - DR 330: Qual convs and pointers to arrays of pointers.
+	* g++.dg/conversion/qual1.C: New test.
+	* g++.dg/conversion/qual2.C: New test.
+	* g++.dg/conversion/qual3.C: New test.
+	* g++.dg/conversion/ref2.C: New test.
+	* g++.dg/conversion/ref3.C: New test.
+	* g++.dg/cpp0x/initlist-array3.C: Remove dg-error.
+	* g++.dg/cpp0x/initlist-array7.C: New test.
+	* g++.dg/cpp0x/initlist-array8.C: New test.
+	* g++.dg/cpp2a/array-conv1.C: New test.
+	* g++.dg/cpp2a/array-conv10.C: New test.
+	* g++.dg/cpp2a/array-conv11.C: New test.
+	* g++.dg/cpp2a/array-conv12.C: New test.
+	* g++.dg/cpp2a/array-conv13.C: New test.
+	* g++.dg/cpp2a/array-conv14.C: New test.
+	* g++.dg/cpp2a/array-conv15.C: New test.
+	* g++.dg/cpp2a/array-conv16.C: New test.
+	* g++.dg/cpp2a/array-conv17.C: New test.
+	* g++.dg/cpp2a/array-conv2.C: New test.
+	* g++.dg/cpp2a/array-conv3.C: New test.
+	* g++.dg/cpp2a/array-conv4.C: New test.
+	* g++.dg/cpp2a/array-conv5.C: New test.
+	* g++.dg/cpp2a/array-conv6.C: New test.
+	* g++.dg/cpp2a/array-conv7.C: New test.
+	* g++.dg/cpp2a/array-conv8.C: New test.
+	* g++.dg/cpp2a/array-conv9.C: New test.
+	* g++.old-deja/g++.bugs/900321_01.C: Adjust dg-error.
+
+2019-10-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/92032 - DR 1601: Promotion of enum with fixed underlying	type.
+	* g++.dg/cpp0x/scoped_enum10.C: New test.
+	* g++.dg/cpp0x/scoped_enum11.C: New test.
+
+2019-10-08  Andrew Sutton  <asutton@lock3software.com>
+
+	* lib/target-supports.exp (check_effective_target_concepts): Check
+	for std=c++2a.
+
+2019-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-c++-common/Waddress-1.c: Test locations too.
+	* c-c++-common/Wpointer-compare-1.c: Likewise.
+	* c-c++-common/Wshift-count-negative-1.c: Likewise.
+	* c-c++-common/Wshift-count-overflow-1.c: Likewise.
+	* c-c++-common/Wshift-negative-value-1.c: Likewise.
+	* c-c++-common/Wshift-negative-value-2.c: Likewise.
+	* c-c++-common/Wshift-negative-value-5.c: Likewise.
+	* c-c++-common/pr48418.c: Likewise.
+	* c-c++-common/pr65830.c: Likewise.
+	* c-c++-common/pr69764.c: Likewise.
+	* g++.dg/cpp0x/constexpr-array-ptr10.C: Likewise.
+	* g++.dg/cpp0x/nullptr37.C: Likewise.
+	* g++.dg/template/crash126.C: Likewise.
+	* g++.dg/template/crash129.C: Likewise.
+	* g++.dg/warn/Wextra-3.C: Likewise.
+	* g++.dg/warn/Wfloat-equal-1.C: Likewise.
+	* g++.dg/warn/Wstring-literal-comparison-1.C: Likewise.
+	* g++.dg/warn/Wstring-literal-comparison-2.C: Likewise.
+	* g++.dg/warn/pointer-integer-comparison.C: Likewise.
+	* g++.old-deja/g++.jason/crash8.C: Likewise.
+
+2019-10-09  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-outer-call-1.c: New testcase.
+
+2019-10-08  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc.target/i386/20060512-1.c (sse2_test): Use a
+	call-clobbered register variable for stack-disaligning push
+	and pop.  Require a frame pointer.
+	* gcc.target/i386/20060512-3.c (sse2_test): Likewise.
+
+2019-10-08  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/92001
+	* g++.dg/Wclass-memaccess-5.C: New test.
+
+2019-10-08  Dmitrij Pochepko <dmitrij.pochepko@bell-sw.com>
+
+	PR tree-optimization/90836
+	* lib/target-supports.exp (check_effective_target_popcount)
+	(check_effective_target_popcountll): New effective targets.
+	* gcc.dg/tree-ssa/popcount4.c: New test.
+	* gcc.dg/tree-ssa/popcount4l.c: New test.
+	* gcc.dg/tree-ssa/popcount4ll.c: New test.
+
+2019-10-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92014
+	* gcc.dg/Wstringop-overflow-19.c: New test.
+
+2019-10-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91801
+	* gfortran.dg/pr91801.f90: New test.
+
+2019-10-08  Marek Polacek  <polacek@redhat.com>
+
+	DR 685 - Integral promotion of enum ignores fixed underlying type.
+	* g++.dg/cpp0x/scoped_enum9.C: New test.
+
+2019-10-08  Martin Sebor  <msebor@redhat.com>
+
+	PR tetsuite/92025
+	* gcc.dg/Wstringop-overflow-12.c: Remove xfail.
+
+2019-10-08  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/pr65947-1.c: Adjust.
+	* gcc.dg/vect/pr65947-13.c: Likewise.
+	* gcc.dg/vect/pr65947-14.c: Likewise.
+	* gcc.dg/vect/pr65947-4.c: Likewise.
+	* gcc.dg/vect/pr80631-1.c: Likewise.
+	* gcc.dg/vect/pr80631-2.c: Likewise.
+
+2019-10-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/continuation-free-form.f95: Update dg-error.
+
+2019-10-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/torture/simd-abi-9.c: Require LP64 for
+	the function body test.
+
+2019-10-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/torture/builtin-fp-int-inexact-c2x.c: New test.
+
+2019-10-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/430x-insns.c: New test.
+	* gcc.target/msp430/data-attributes-2.c: Remove dg-warning
+	directives for conflicts between the "section" and "lower" attributes.
+	* gcc.target/msp430/msp430.exp
+	(check_effective_target_msp430_region_not_lower): New.
+	(check_effective_target_msp430_region_lower): New.
+	* gcc.target/msp430/object-attributes-430.c: New test.
+	* gcc.target/msp430/object-attributes-default.c: New test.
+	* gcc.target/msp430/object-attributes-mlarge-any-region.c: New test.
+	* gcc.target/msp430/object-attributes-mlarge.c: New test.
+
+2019-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/pr71801.c (uuidcache_init): Fix up size of d array.
+
+2019-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/not-a-function-template-1.C: New.
+	* g++.dg/template/crash107.C: Adjust expected location.
+	* g++.dg/template/dependent-expr1.C: Check locations.
+	* g++.dg/template/error17.C: Check location.
+
+2019-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/91994
+	* gcc.target/i386/pr91994.c: New test.
+
+2019-10-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91975
+	* g++.dg/tree-ssa/ivopts-3.C: Adjust.
+	* gcc.dg/vect/vect-profile-1.c: Disable cunrolli.
+	* gcc.dg/vect/vect-double-reduc-6.c: Disable unrolling of
+	the innermost loop.
+	* gcc.dg/vect/vect-93.c: Likewise.
+	* gcc.dg/vect/vect-105.c: Likewise.
+	* gcc.dg/vect/pr79920.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-102.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-101.c: Likewise.
+	* gcc.dg/vect/pr83202-1.c: Operate on a larger array.
+	* gfortran.dg/vect/vect-8.f90: Likewise.
+	* gcc.dg/tree-ssa/cunroll-2.c: Scan early unrolling dump instead
+	of late one.
+
+2019-10-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/47045
+	* gfortran.dg/pr47054_1.f90: New test
+	* gfortran.dg/pr47054_2.f90: Ditto.
+
+2019-10-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91497
+	* gfortran.dg/pr91497.f90: Run on i?86-*-* and x86_64-*-* only.
+
+2019-10-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91926
+	* gfortran.dg/ISO_Fortran_binding_13.f90 : New test.
+	* gfortran.dg/ISO_Fortran_binding_13.c : Additional source.
+	* gfortran.dg/ISO_Fortran_binding_14.f90 : New test.
+
+2019-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91369 - Implement P0784R7: constexpr new
+	* g++.dg/cpp0x/constexpr-delete2.C: Adjust expected diagnostics for
+	c++2a.
+	* g++.dg/cpp0x/locations1.C: Only expect constexpr ~S() diagnostics
+	in c++17_down, adjust expected wording.
+	* g++.dg/cpp1y/constexpr-new.C: Only expect diagnostics in c++17_down.
+	* g++.dg/cpp2a/constexpr-dtor1.C: New test.
+	* g++.dg/cpp2a/constexpr-dtor2.C: New test.
+	* g++.dg/cpp2a/constexpr-dtor3.C: New test.
+	* g++.dg/cpp2a/constexpr-new1.C: New test.
+	* g++.dg/cpp2a/constexpr-new2.C: New test.
+	* g++.dg/cpp2a/constexpr-new3.C: New test.
+	* g++.dg/cpp2a/constexpr-new4.C: New test.
+	* g++.dg/cpp2a/feat-cxx2a.C: Add __cpp_constinit and
+	__cpp_constexpr_dynamic_alloc tests.  Tweak __cpp_* tests for c++2a
+	features to use style like older features, including #ifdef test.
+	* g++.dg/ext/is_literal_type3.C: New test.
+
+	PR tree-optimization/91734
+	* gcc.dg/pr91734.c: New test.
+
+2019-10-04  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/82752
+	* gcc.dg/format/c2x-strftime-1.c: New test.
+
+2019-10-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/91977
+	* gcc.dg/Wstringop-overflow-18.c: New test.
+
+2019-10-04  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-17.c: New test.
+
+2019-10-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran.91959
+	* gfortran.dg/pr91959.f90: New test.
+
 2019-10-04  Rafael Tsuha  <rafael.tsuha@usp.br>
 
         * gcc.dg/sinhovercosh-1.c: New test.

@@ -222,7 +222,14 @@ struct lang_hooks_for_decls
   /* True if this decl may be called via a sibcall.  */
   bool (*ok_for_sibcall) (const_tree);
 
-  /* True if OpenMP should treat DECL as a Fortran optional argument.  */
+  /* True if OpenMP should regard this DECL as being a scalar which has Fortran's
+     allocatable or pointer attribute.  */
+  bool (*omp_is_allocatable_or_ptr) (const_tree);
+
+  /* True if OpenMP should treat DECL as a Fortran optional argument;  note: for
+     arguments with VALUE attribute, the DECL is identical to nonoptional
+     arguments; hence, we return false here.  To check whether the variable is
+     present, use the DECL which is passed as hidden argument.  */
   bool (*omp_is_optional_argument) (const_tree);
 
   /* True if OpenMP should privatize what this DECL points to rather

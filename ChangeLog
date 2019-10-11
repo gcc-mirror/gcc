@@ -1,3 +1,8 @@
+2019-10-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* MAINTAINERS: Add back Trevor Smigiel; move into Write After
+	Approval section.
+
 2019-10-01  Frederik Harwath <frederik@codesourcery.com>
 
 	* MAINTAINERS: Add myself to Write After Approval

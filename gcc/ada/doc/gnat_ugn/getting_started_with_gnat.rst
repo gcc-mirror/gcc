@@ -9,11 +9,11 @@ Getting Started with GNAT
 This chapter describes how to use GNAT's command line interface to build
 executable Ada programs.
 On most platforms a visually oriented Integrated Development Environment
-is also available, the GNAT Programming Studio (GPS).
-GPS offers a graphical "look and feel", support for development in
+is also available, the GNAT Programming Studio (GNAT Studio).
+GNAT Studio offers a graphical "look and feel", support for development in
 other programming languages, comprehensive browsing features, and
 many other capabilities.
-For information on GPS please refer to
+For information on GNAT Studio please refer to
 :title:`Using the GNAT Programming Studio`.
 
 

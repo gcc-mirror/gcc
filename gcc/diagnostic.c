@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backtrace.h"
 #include "diagnostic.h"
 #include "diagnostic-color.h"
+#include "diagnostic-url.h"
 #include "edit-context.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
@@ -199,6 +200,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->option_enabled = NULL;
   context->option_state = NULL;
   context->option_name = NULL;
+  context->get_option_url = NULL;
   context->last_location = UNKNOWN_LOCATION;
   context->last_module = 0;
   context->x_data = NULL;
@@ -244,6 +246,18 @@ diagnostic_color_init (diagnostic_context *context, int value /*= -1 */)
     }
   pp_show_color (context->printer)
     = colorize_init ((diagnostic_color_rule_t) value);
+}
+
+/* Initialize URL support within CONTEXT based on VALUE, handling "auto".  */
+
+void
+diagnostic_urls_init (diagnostic_context *context, int value /*= -1 */)
+{
+  if (value < 0)
+    value = DIAGNOSTICS_COLOR_DEFAULT;
+
+  context->printer->show_urls
+    = diagnostic_urls_enabled_p ((diagnostic_url_rule_t) value);
 }
 
 /* Do any cleaning up required after the last diagnostic is emitted.  */
@@ -916,11 +930,22 @@ print_option_information (diagnostic_context *context,
 
   if (option_text)
     {
+      char *option_url = NULL;
+      if (context->get_option_url)
+	option_url = context->get_option_url (context,
+					      diagnostic->option_index);
       pretty_printer *pp = context->printer;
       pp_string (pp, " [");
       pp_string (pp, colorize_start (pp_show_color (pp),
 				     diagnostic_kind_color[diagnostic->kind]));
+      if (option_url)
+	pp_begin_url (pp, option_url);
       pp_string (pp, option_text);
+      if (option_url)
+	{
+	  pp_end_url (pp);
+	  free (option_url);
+	}
       pp_string (pp, colorize_stop (pp_show_color (pp)));
       pp_character (pp, ']');
       free (option_text);
