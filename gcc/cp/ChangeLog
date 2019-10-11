@@ -1,3 +1,11 @@
+2019-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (cp_build_binary_op): Do not handle RROTATE_EXPR and
+	LROTATE_EXPR.
+	* constexpr.c (cxx_eval_constant_expression): Likewise.
+	(potential_constant_expression_1): Likewise.
+	* pt.c (tsubst_copy): Likewise.
+
 2019-10-11  Jason Merrill  <jason@redhat.com>
 
 	* decl2.c (mark_used): Don't clobber DECL_SOURCE_LOCATION on

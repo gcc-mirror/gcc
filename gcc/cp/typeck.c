@@ -4899,35 +4899,6 @@ cp_build_binary_op (const op_location_t &location,
 	}
       break;
 
-    case RROTATE_EXPR:
-    case LROTATE_EXPR:
-      if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
-	{
-	  result_type = type0;
-	  if (TREE_CODE (op1) == INTEGER_CST)
-	    {
-	      if (tree_int_cst_lt (op1, integer_zero_node))
-		{
-		  if (complain & tf_warning)
-		    warning (0, (code == LROTATE_EXPR)
-			          ? G_("left rotate count is negative")
-   			          : G_("right rotate count is negative"));
-		}
-	      else if (compare_tree_int (op1, TYPE_PRECISION (type0)) >= 0)
-		{
-		  if (complain & tf_warning)
-		    warning (0, (code == LROTATE_EXPR) 
-                                  ? G_("left rotate count >= width of type")
-                                  : G_("right rotate count >= width of type"));
-		}
-	    }
-	  /* Convert the shift-count to an integer, regardless of
-	     size of value being shifted.  */
-	  if (TYPE_MAIN_VARIANT (TREE_TYPE (op1)) != integer_type_node)
-	    op1 = cp_convert (integer_type_node, op1, complain);
-	}
-      break;
-
     case EQ_EXPR:
     case NE_EXPR:
       if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
