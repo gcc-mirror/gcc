@@ -1,3 +1,8 @@
+2019-10-11  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm.h (HONOR_REG_ALLOC_ORDER): Set when optimizing for
+	size.
+
 2019-10-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* tree-vect-loop.c (vect_analyze_loop_operations): Adjust call to
