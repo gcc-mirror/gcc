@@ -3921,26 +3921,27 @@ bool
 gfc_check_findloc (gfc_actual_arglist *ap)
 {
   gfc_expr *a, *v, *m, *d, *k, *b;
+  bool a1, v1;
 
   a = ap->expr;
   if (!intrinsic_type_check (a, 0) || !array_check (a, 0))
     return false;
 
   v = ap->next->expr;
-  if (!scalar_check (v,1))
+  if (!intrinsic_type_check (v, 1) || !scalar_check (v,1))
     return false;
 
-  /* Check if the type is compatible.  */
+  /* Check if the type are both logical.  */
+  a1 = a->ts.type == BT_LOGICAL;
+  v1 = v->ts.type == BT_LOGICAL;
+  if ((a1 && !v1) || (!a1 && v1))
+    goto incompat;
 
-  if ((a->ts.type == BT_LOGICAL && v->ts.type != BT_LOGICAL)
-      || (a->ts.type != BT_LOGICAL && v->ts.type == BT_LOGICAL))
-    {
-      gfc_error ("Argument %qs of %qs intrinsic at %L must be in type "
-		 "conformance to argument %qs at %L",
-		 gfc_current_intrinsic_arg[0]->name,
-		 gfc_current_intrinsic, &a->where,
-		 gfc_current_intrinsic_arg[1]->name, &v->where);
-    }
+  /* Check if the type are both character.  */
+  a1 = a->ts.type == BT_CHARACTER;
+  v1 = v->ts.type == BT_CHARACTER;
+  if ((a1 && !v1) || (!a1 && v1))
+    goto incompat;
 	 
   d = ap->next->next->expr;
   m = ap->next->next->next->expr;
@@ -3988,6 +3989,14 @@ gfc_check_findloc (gfc_actual_arglist *ap)
     return false;
 
   return true;
+
+incompat:
+  gfc_error ("Argument %qs of %qs intrinsic at %L must be in type "
+	     "conformance to argument %qs at %L",
+	     gfc_current_intrinsic_arg[0]->name,
+	     gfc_current_intrinsic, &a->where,
+	     gfc_current_intrinsic_arg[1]->name, &v->where);
+  return false;
 }
 
 
