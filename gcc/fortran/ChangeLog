@@ -1,5 +1,19 @@
 2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/92018
+	* check.c (reset_boz): New function.
+	(illegal_boz_arg, boz_args_check, gfc_check_complex, gfc_check_float,
+	gfc_check_transfer): Use it.
+	(gfc_check_dshift): Use reset_boz, and re-arrange the checking to
+	help suppress possible run-on errors.
+	(gfc_check_and): Restore checks for valid argument types.  Use
+	reset_boz, and re-arrange the checking to help suppress possible
+	run-on errors.
+	* resolve.c (resolve_function): Actual arguments cannot be BOZ in
+	a function reference.
+
+2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/92019
 	* array.c (match_subscript): BOZ cannot be an array subscript.
 

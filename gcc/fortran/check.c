@@ -34,6 +34,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "constructor.h"
 #include "target-memory.h"
 
+
+/* Reset a BOZ to a zero value.  This is used to prevent run-on errors
+   from resolve.c(resolve_function).  */
+
+static void
+reset_boz (gfc_expr *x)
+{
+  /* Clear boz info.  */
+  x->boz.rdx = 0;
+  x->boz.len = 0;
+  free (x->boz.str);
+
+  x->ts.type = BT_INTEGER;
+  x->ts.kind = gfc_default_integer_kind;
+  mpz_init (x->value.integer);
+  mpz_set_ui (x->value.integer, 0);
+}
+
 /* A BOZ literal constant can appear in a limited number of contexts.
    gfc_invalid_boz() is a helper function to simplify error/warning
    generation.  gfortran accepts the nonstandard 'X' for 'Z', and gfortran
@@ -63,6 +81,7 @@ illegal_boz_arg (gfc_expr *x)
     {
       gfc_error ("BOZ literal constant at %L cannot be an actual argument "
 		 "to %qs", &x->where, gfc_current_intrinsic);
+      reset_boz (x);
       return true;
     }
 
@@ -79,6 +98,8 @@ boz_args_check(gfc_expr *i, gfc_expr *j)
       gfc_error ("Arguments of %qs at %L and %L cannot both be BOZ "
 		 "literal constants", gfc_current_intrinsic, &i->where,
 		 &j->where);
+      reset_boz (i);
+      reset_boz (j);
       return false;
 
     }
@@ -2399,7 +2420,10 @@ gfc_check_complex (gfc_expr *x, gfc_expr *y)
     {
       if (gfc_invalid_boz ("BOZ constant at %L cannot appear in the COMPLEX "
 			   "intrinsic subprogram", &x->where))
-	return false;
+	{
+	  reset_boz (x);
+	  return false;
+        }
       if (y->ts.type == BT_INTEGER && !gfc_boz2int (x, y->ts.kind))
 	return false;
       if (y->ts.type == BT_REAL && !gfc_boz2real (x, y->ts.kind))
@@ -2410,7 +2434,10 @@ gfc_check_complex (gfc_expr *x, gfc_expr *y)
     {
       if (gfc_invalid_boz ("BOZ constant at %L cannot appear in the COMPLEX "
 			   "intrinsic subprogram", &y->where))
-	return false;
+	{
+	  reset_boz (y);
+	  return false;
+	}
       if (x->ts.type == BT_INTEGER && !gfc_boz2int (y, x->ts.kind))
 	return false;
       if (x->ts.type == BT_REAL && !gfc_boz2real (y, x->ts.kind))
@@ -2674,20 +2701,32 @@ gfc_check_dshift (gfc_expr *i, gfc_expr *j, gfc_expr *shift)
   if (!boz_args_check (i, j))
     return false;
 
-  /* If i is BOZ and j is integer, convert i to type of j.  */
-  if (i->ts.type == BT_BOZ && j->ts.type == BT_INTEGER
-      && !gfc_boz2int (i, j->ts.kind))
-    return false;
+  /* If i is BOZ and j is integer, convert i to type of j.  If j is not
+     an integer, clear the BOZ; otherwise, check that i is an integer.  */
+  if (i->ts.type == BT_BOZ)
+    {
+      if (j->ts.type != BT_INTEGER)
+        reset_boz (i);
+      else if (!gfc_boz2int (i, j->ts.kind))
+	return false;
+    }
+  else if (!type_check (i, 0, BT_INTEGER))
+    {
+      if (j->ts.type == BT_BOZ)
+	reset_boz (j);
+      return false;
+    }
 
-  /* If j is BOZ and i is integer, convert j to type of i.  */
-  if (j->ts.type == BT_BOZ && i->ts.type == BT_INTEGER
-      && !gfc_boz2int (j, i->ts.kind))
-    return false;
-
-  if (!type_check (i, 0, BT_INTEGER))
-    return false;
-
-  if (!type_check (j, 1, BT_INTEGER))
+  /* If j is BOZ and i is integer, convert j to type of i.  If i is not
+     an integer, clear the BOZ; otherwise, check that i is an integer.  */
+  if (j->ts.type == BT_BOZ)
+    {
+      if (i->ts.type != BT_INTEGER)
+        reset_boz (j);
+      else if (!gfc_boz2int (j, i->ts.kind))
+	return false;
+    }
+  else if (!type_check (j, 1, BT_INTEGER))
     return false;
 
   if (!same_type_check (i, 0, j, 1))
@@ -2860,7 +2899,10 @@ gfc_check_float (gfc_expr *a)
     {
       if (gfc_invalid_boz ("BOZ literal constant at %L cannot appear in the "
 			   "FLOAT intrinsic subprogram", &a->where))
-	return false;
+	{
+	  reset_boz (a);
+	  return false;
+	}
       if (!gfc_boz2int (a, gfc_default_integer_kind))
 	return false;
     }
@@ -6126,7 +6168,11 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
   if (size != NULL)
     {
       if (!type_check (size, 2, BT_INTEGER))
-	return false;
+	{
+	  if (size->ts.type == BT_BOZ)
+	    reset_boz (size);
+	  return false;
+	}
 
       if (!scalar_check (size, 2))
 	return false;
@@ -7286,19 +7332,61 @@ gfc_check_system_sub (gfc_expr *cmd, gfc_expr *status)
 bool
 gfc_check_and (gfc_expr *i, gfc_expr *j)
 {
+  if (i->ts.type != BT_INTEGER
+      && i->ts.type != BT_LOGICAL
+      && i->ts.type != BT_BOZ)
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER, "
+                 "LOGICAL, or a BOZ literal constant",
+		 gfc_current_intrinsic_arg[0]->name,
+                 gfc_current_intrinsic, &i->where);
+      return false;
+    }
+
+  if (j->ts.type != BT_INTEGER
+      && j->ts.type != BT_LOGICAL
+      && j->ts.type != BT_BOZ)
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER, "
+                 "LOGICAL, or a BOZ literal constant",
+		 gfc_current_intrinsic_arg[1]->name,
+                 gfc_current_intrinsic, &j->where);
+      return false;
+    }
+
   /* i and j cannot both be BOZ literal constants.  */
   if (!boz_args_check (i, j))
     return false;
 
   /* If i is BOZ and j is integer, convert i to type of j.  */
-  if (i->ts.type == BT_BOZ && j->ts.type == BT_INTEGER
-      && !gfc_boz2int (i, j->ts.kind))
-    return false;
+  if (i->ts.type == BT_BOZ)
+    {
+      if (j->ts.type != BT_INTEGER)
+	{
+	  gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER",
+		     gfc_current_intrinsic_arg[1]->name,
+		     gfc_current_intrinsic, &j->where);
+	  reset_boz (i);
+	  return false;
+	}
+      if (!gfc_boz2int (i, j->ts.kind))
+	return false;
+    }
 
   /* If j is BOZ and i is integer, convert j to type of i.  */
-  if (j->ts.type == BT_BOZ && i->ts.type == BT_INTEGER
-      && !gfc_boz2int (j, i->ts.kind))
-    return false;
+  if (j->ts.type == BT_BOZ)
+    {
+      if (i->ts.type != BT_INTEGER)
+	{
+	  gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER",
+		     gfc_current_intrinsic_arg[0]->name,
+		     gfc_current_intrinsic, &j->where);
+	  reset_boz (j);
+	  return false;
+	}
+      if (!gfc_boz2int (j, i->ts.kind))
+	return false;
+    }
 
   if (!same_type_check (i, 0, j, 1, false))
     return false;
