@@ -1,5 +1,41 @@
 2019-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/92059
+	* include/tr2/dynamic_bitset (__dynamic_bitset_base): Define all
+	special member functions as defaulted. Add noexcept to most members.
+	(__dynamic_bitset_base(size_t, unsigned long long, const _Alloc&)):
+	Mask off unwanted bits in the __val parameter. Avoid undefined left
+	shifts.
+	(__dynamic_bitset_base::_M_assign): Remove.
+	(__dynamic_bitset_base::_M_do_reset): Use std::fill.
+	(__dynamic_bitset_base::_M_are_all_aux): Avoid integer promotion when
+	block_type has lower rank than int.
+	(dynamic_bitset): Add noexcept to most members. Use injected-class-name
+	in return types and parameter types.
+	(dynamic_bitset::_M_Nb): Add default member initializer.
+	(dynamic_bitset(), dynamic_bitset(const dynamic_bitset&)): Define as
+	defaulted.
+	(dynamic_bitset(dynamic_bitset&&)): Clear source object after move.
+	(dynamic_bitset::operator=(const dynamic_bitset&)): Define as
+	defaulted.
+	(dynamic_bitset::operator=(dynamic_bitset&&)): Add noexcept-specifier.
+	Define without using swap, to propagate allocator correctly.
+	(dynamic_bitset(const char*, const _Alloc&)): Use strlen.
+	(dynamic_bitset::_M_do_sanitize, dynamic_bitset::_M_do_fill): Use
+	casts to avoid unwanted integer promotions.
+	(dynamic_bitset::_M_copy_from_ptr): Rearrange template parameters and
+	add default template arguments and default argument to simplify usage.
+	(dynamic_bitset::_M_copy_from_string): Adjust call to _M_copy_from_ptr.
+	(operator==(const dynamic_bitset&, const dynamic_bitset&))
+	(operator<(const dynamic_bitset&, const dynamic_bitset&)): Use _M_Nb.
+	* include/tr2/dynamic_bitset.tcc (dynamic_bitset::_M_copy_from_ptr):
+	Adjust template parameters to match declaration.
+	* testsuite/tr2/dynamic_bitset/cmp.cc: New test.
+	* testsuite/tr2/dynamic_bitset/cons.cc: New test.
+	* testsuite/tr2/dynamic_bitset/copy.cc: New test.
+	* testsuite/tr2/dynamic_bitset/move.cc: New test.
+	* testsuite/tr2/dynamic_bitset/pr92059.cc: New test.
+
 	* include/bits/charconv.h (__to_chars_len): Avoid -Wsign-compare
 	warnings.
 
