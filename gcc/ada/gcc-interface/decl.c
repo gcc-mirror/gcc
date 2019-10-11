@@ -585,6 +585,29 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	gcc_unreachable ();
       }
 
+    case E_Named_Integer:
+    case E_Named_Real:
+      {
+	tree gnu_ext_name = NULL_TREE;
+
+	if (Is_Public (gnat_entity))
+	  gnu_ext_name = create_concat_name (gnat_entity, NULL);
+
+	/* All references are supposed to be folded in the front-end.  */
+	gcc_assert (definition && gnu_expr);
+
+	gnu_type = gnat_to_gnu_type (Etype (gnat_entity));
+	gnu_expr = convert (gnu_type, gnu_expr);
+
+	/* Build a CONST_DECL for debugging purposes exclusively.  */
+	gnu_decl
+	  = create_var_decl (gnu_entity_name, gnu_ext_name, gnu_type,
+			     gnu_expr, true, Is_Public (gnat_entity),
+			     false, false, false, artificial_p,
+			     debug_info_p, NULL, gnat_entity, true);
+      }
+      break;
+
     case E_Constant:
       /* Ignore constant definitions already marked with the error node.  See
 	 the N_Object_Declaration case of gnat_to_gnu for the rationale.  */
@@ -1519,18 +1542,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	/* If this is a constant and we are defining it or it generates a real
 	   symbol at the object level and we are referencing it, we may want
 	   or need to have a true variable to represent it:
-	     - if optimization isn't enabled, for debugging purposes,
 	     - if the constant is public and not overlaid on something else,
 	     - if its address is taken,
-	     - if either itself or its type is aliased.  */
+	     - if it is aliased,
+	     - if optimization isn't enabled, for debugging purposes.  */
 	if (TREE_CODE (gnu_decl) == CONST_DECL
 	    && (definition || Sloc (gnat_entity) > Standard_Location)
-	    && ((!optimize && debug_info_p)
-		|| (Is_Public (gnat_entity)
-		    && No (Address_Clause (gnat_entity)))
+	    && ((Is_Public (gnat_entity) && No (Address_Clause (gnat_entity)))
 		|| Address_Taken (gnat_entity)
 		|| Is_Aliased (gnat_entity)
-		|| Is_Aliased (gnat_type)))
+		|| (!optimize && debug_info_p)))
 	  {
 	    tree gnu_corr_var
 	      = create_var_decl (gnu_entity_name, gnu_ext_name, gnu_type,
@@ -1540,6 +1561,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				 attr_list, gnat_entity, false);
 
 	    SET_DECL_CONST_CORRESPONDING_VAR (gnu_decl, gnu_corr_var);
+	    DECL_IGNORED_P (gnu_decl) = 1;
 	  }
 
 	/* If this is a constant, even if we don't need a true variable, we

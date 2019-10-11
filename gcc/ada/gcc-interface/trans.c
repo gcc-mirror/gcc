@@ -6881,11 +6881,17 @@ gnat_to_gnu (Node_Id gnat_node)
 	gnu_result = UI_To_gnu (Intval (gnat_node), gnu_type);
 
 	/* If the result overflows (meaning it doesn't fit in its base type),
-	   abort.  We would like to check that the value is within the range
-	   of the subtype, but that causes problems with subtypes whose usage
-	   will raise Constraint_Error and with biased representation, so
-	   we don't.  */
-	gcc_assert (!TREE_OVERFLOW (gnu_result));
+	   abort, unless this is for a named number because that's not fatal.
+	   We would like to check that the value is within the range of the
+	   subtype, but that causes problems with subtypes whose usage will
+	   raise Constraint_Error and also with biased representation.  */
+	if (TREE_OVERFLOW (gnu_result))
+	  {
+	    if (Nkind (Parent (gnat_node)) == N_Number_Declaration)
+	      gnu_result = error_mark_node;
+	    else
+	      gcc_unreachable ();
+	  }
       }
       break;
 
@@ -7030,6 +7036,7 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Object_Declaration:
+    case N_Number_Declaration:
     case N_Exception_Declaration:
       gnat_temp = Defining_Entity (gnat_node);
       gnu_result = alloc_stmt_list ();
@@ -7052,8 +7059,15 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	  gnu_expr = gnat_to_gnu (Expression (gnat_node));
 
-	  if (type_annotate_only && TREE_CODE (gnu_expr) == ERROR_MARK)
-	    gnu_expr = NULL_TREE;
+	  if (TREE_CODE (gnu_expr) == ERROR_MARK)
+	    {
+	      /* If this is a named number for which we cannot manipulate
+		 the value, just skip the declaration altogether.  */
+	      if (kind == N_Number_Declaration)
+		break;
+	      else if (type_annotate_only)
+		gnu_expr = NULL_TREE;
+	    }
 	}
       else
 	gnu_expr = NULL_TREE;
@@ -7163,7 +7177,6 @@ gnat_to_gnu (Node_Id gnat_node)
       gnu_result = alloc_stmt_list ();
       break;
 
-    case N_Number_Declaration:
     case N_Package_Renaming_Declaration:
       /* These are fully handled in the front end.  */
       /* ??? For package renamings, find a way to use GENERIC namespaces so
