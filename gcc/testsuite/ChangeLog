@@ -1,3 +1,8 @@
+2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array38.adb: New test.
+	* gnat.dg/array38_pkg.ad[sb]: New helper.
+
 2019-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91987

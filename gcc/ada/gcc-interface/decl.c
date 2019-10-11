@@ -5026,6 +5026,11 @@ Gigi_Equivalent_Type (Entity_Id gnat_entity)
       gnat_equiv = Etype (gnat_entity);
       break;
 
+    case E_Array_Subtype:
+      if (!Is_Constrained (gnat_entity))
+	gnat_equiv = Etype (gnat_entity);
+      break;
+
     case E_Class_Wide_Type:
       gnat_equiv = Root_Type (gnat_entity);
       break;
