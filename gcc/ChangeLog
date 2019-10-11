@@ -1,3 +1,14 @@
+2019-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90883
+	PR tree-optimization/91091
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Use correct
+	alias-sets both for recording VN table entries and continuing
+	walking after translating through copies.  Handle same-sized
+	reads from SSA names by returning the plain SSA name.
+	(eliminate_dom_walker::eliminate_stmt): Properly handle
+	non-size precision stores in redundant store elimination.
+
 2019-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ggc-page.c (release_pages): Output statistics when !quiet_flag.

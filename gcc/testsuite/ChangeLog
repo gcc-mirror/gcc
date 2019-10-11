@@ -1,3 +1,13 @@
+2019-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90883
+	PR tree-optimization/91091
+	* gcc.dg/torture/20191011-1.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-82.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-83.c: Likewise.
+	* gcc.dg/tree-ssa/redundant-assign-zero-1.c: Disable FRE.
+	* gcc.dg/tree-ssa/redundant-assign-zero-2.c: Likewise.
+
 2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/size_clause4.ads: New test.
