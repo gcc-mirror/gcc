@@ -1,3 +1,17 @@
+2019-10-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* tree-vect-loop.c (vect_analyze_loop_operations): Adjust call to
+	vectorizable_live_operation.
+	(vectorizable_live_operation): Adjust parameters.
+	* tree-vect-stmts.c (vect_init_vector,
+	vect_gen_widened_results_half): Fix typo in function comment.
+	(can_vectorize_live_stmts): Adjust function comment.
+	Adjust parameters.  Adjust call to vectorizable_live_operation.
+	(vect_analyze_stmt): Adjust call to can_vectorize_live_stmts.
+	(vect_transform_stmt): Adjust function comment.  Adjust call to
+	can_vectorize_live_stmts.
+	* tree-vectorizer.h (vectorizable_live_operation): Adjust parameters.
+
 2019-10-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90883
