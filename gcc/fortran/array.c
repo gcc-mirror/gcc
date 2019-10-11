@@ -66,6 +66,7 @@ match_subscript (gfc_array_ref *ar, int init, bool match_star)
   match m = MATCH_ERROR;
   bool star = false;
   int i;
+  bool saw_boz = false;
 
   i = ar->dimen + ar->codimen;
 
@@ -90,6 +91,12 @@ match_subscript (gfc_array_ref *ar, int init, bool match_star)
     m = gfc_match_init_expr (&ar->start[i]);
   else if (!star)
     m = gfc_match_expr (&ar->start[i]);
+
+  if (ar->start[i] && ar->start[i]->ts.type == BT_BOZ)
+    {
+      gfc_error ("Invalid BOZ literal constant used in subscript at %C");
+      saw_boz = true;
+    }
 
   if (m == MATCH_NO)
     gfc_error ("Expected array subscript at %C");
@@ -117,6 +124,12 @@ end_element:
   else
     m = gfc_match_expr (&ar->end[i]);
 
+  if (ar->end[i] && ar->end[i]->ts.type == BT_BOZ)
+    {
+      gfc_error ("Invalid BOZ literal constant used in subscript at %C");
+      saw_boz = true;
+    }
+
   if (m == MATCH_ERROR)
     return MATCH_ERROR;
 
@@ -132,6 +145,12 @@ end_element:
       m = init ? gfc_match_init_expr (&ar->stride[i])
 	       : gfc_match_expr (&ar->stride[i]);
 
+      if (ar->stride[i] && ar->stride[i]->ts.type == BT_BOZ)
+	{
+	  gfc_error ("Invalid BOZ literal constant used in subscript at %C");
+	  saw_boz = true;
+	}
+
       if (m == MATCH_NO)
 	gfc_error ("Expected array subscript stride at %C");
       if (m != MATCH_YES)
@@ -142,7 +161,7 @@ matched:
   if (star)
     ar->dimen_type[i] = DIMEN_STAR;
 
-  return MATCH_YES;
+  return (saw_boz ? MATCH_ERROR : MATCH_YES);
 }
 
 
