@@ -1449,7 +1449,7 @@ vect_init_vector_1 (stmt_vec_info stmt_vinfo, gimple *new_stmt,
    Insert a new stmt (INIT_STMT) that initializes a new variable of type
    TYPE with the value VAL.  If TYPE is a vector type and VAL does not have
    vector type a vector with all elements equal to VAL is created first.
-   Place the initialization at BSI if it is not NULL.  Otherwise, place the
+   Place the initialization at GSI if it is not NULL.  Otherwise, place the
    initialization at the loop preheader.
    Return the DEF of INIT_STMT.
    It will be used in the vectorization of STMT_INFO.  */
@@ -4484,7 +4484,7 @@ vectorizable_simd_clone_call (stmt_vec_info stmt_info,
 
    Create a vector stmt whose code, type, number of arguments, and result
    variable are CODE, OP_TYPE, and VEC_DEST, and its arguments are
-   VEC_OPRND0 and VEC_OPRND1.  The new vector stmt is to be inserted at BSI.
+   VEC_OPRND0 and VEC_OPRND1.  The new vector stmt is to be inserted at GSI.
    In the case that CODE is a CALL_EXPR, this means that a call to DECL
    needs to be created (DECL is a function-decl of a target-builtin).
    STMT_INFO is the original scalar stmt that we are vectorizing.  */
@@ -10474,12 +10474,12 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 /* If SLP_NODE is nonnull, return true if vectorizable_live_operation
    can handle all live statements in the node.  Otherwise return true
    if STMT_INFO is not live or if vectorizable_live_operation can handle it.
-   GSI and VEC_STMT are as for vectorizable_live_operation.  */
+   GSI and VEC_STMT_P are as for vectorizable_live_operation.  */
 
 static bool
 can_vectorize_live_stmts (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			  slp_tree slp_node, slp_instance slp_node_instance,
-			  stmt_vec_info *vec_stmt,
+			  bool vec_stmt_p,
 			  stmt_vector_for_cost *cost_vec)
 {
   if (slp_node)
@@ -10491,14 +10491,14 @@ can_vectorize_live_stmts (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  if (STMT_VINFO_LIVE_P (slp_stmt_info)
 	      && !vectorizable_live_operation (slp_stmt_info, gsi, slp_node,
 					       slp_node_instance, i,
-					       vec_stmt, cost_vec))
+					       vec_stmt_p, cost_vec))
 	    return false;
 	}
     }
   else if (STMT_VINFO_LIVE_P (stmt_info)
 	   && !vectorizable_live_operation (stmt_info, gsi, slp_node,
 					    slp_node_instance, -1,
-					    vec_stmt, cost_vec))
+					    vec_stmt_p, cost_vec))
     return false;
 
   return true;
@@ -10712,7 +10712,7 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
       && STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type
       && STMT_VINFO_TYPE (stmt_info) != lc_phi_info_type
       && !can_vectorize_live_stmts (stmt_info, NULL, node, node_instance,
-				    NULL, cost_vec))
+				    false, cost_vec))
     return opt_result::failure_at (stmt_info->stmt,
 				   "not vectorized:"
 				   " live stmt not supported: %G",
@@ -10724,7 +10724,7 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 
 /* Function vect_transform_stmt.
 
-   Create a vectorized stmt to replace STMT_INFO, and insert it at BSI.  */
+   Create a vectorized stmt to replace STMT_INFO, and insert it at GSI.  */
 
 bool
 vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
@@ -10945,7 +10945,7 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   /* Handle stmts whose DEF is used outside the loop-nest that is
      being vectorized.  */
   done = can_vectorize_live_stmts (stmt_info, gsi, slp_node,
-				   slp_node_instance, &vec_stmt, NULL);
+				   slp_node_instance, true, NULL);
   gcc_assert (done);
 
   return false;

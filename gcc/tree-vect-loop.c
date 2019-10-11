@@ -1566,7 +1566,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 	      && STMT_VINFO_LIVE_P (stmt_info)
 	      && !PURE_SLP_STMT (stmt_info))
 	    ok = vectorizable_live_operation (stmt_info, NULL, NULL, NULL,
-					      -1, NULL, &cost_vec);
+					      -1, false, &cost_vec);
 
           if (!ok)
 	    return opt_result::failure_at (phi,
@@ -7628,9 +7628,9 @@ vectorizable_induction (stmt_vec_info stmt_info,
 
 bool
 vectorizable_live_operation (stmt_vec_info stmt_info,
-			     gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
+			     gimple_stmt_iterator *gsi,
 			     slp_tree slp_node, slp_instance slp_node_instance,
-			     int slp_index, stmt_vec_info *vec_stmt,
+			     int slp_index, bool vec_stmt_p,
 			     stmt_vector_for_cost *)
 {
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
@@ -7652,7 +7652,7 @@ vectorizable_live_operation (stmt_vec_info stmt_info,
      validity so just trigger the transform here.  */
   if (STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info)))
     {
-      if (!vec_stmt)
+      if (!vec_stmt_p)
 	return true;
       if (slp_node)
 	{
@@ -7721,7 +7721,7 @@ vectorizable_live_operation (stmt_vec_info stmt_info,
 	}
     }
 
-  if (!vec_stmt)
+  if (!vec_stmt_p)
     {
       /* No transformation required.  */
       if (LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
