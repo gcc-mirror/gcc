@@ -1,3 +1,21 @@
+2019-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91987
+	* decl2.c (grok_array_decl): For -fstrong-eval-order, when array ref
+	operands have been swapped and at least one operand has side-effects,
+	revert the swapping before calling build_array_ref.
+	* typeck.c (cp_build_array_ref): For non-ARRAY_TYPE array ref with
+	side-effects on the index operand, if -fstrong-eval-order use
+	save_expr around the array operand.
+	(cp_build_binary_op): For shifts with side-effects in the second
+	operand, wrap first operand into SAVE_EXPR and evaluate it before
+	the shift.
+	* semantics.c (handle_omp_array_sections_1): Temporarily disable
+	flag_strong_eval_order during OMP_CLAUSE_REDUCTION array section
+	processing.
+	* cp-gimplify.c (gimplify_to_rvalue): New function.
+	(cp_gimplify_expr): Use it.
+
 2019-10-10  Marek Polacek  <polacek@redhat.com>
 
 	* typeck.c (comp_ptr_ttypes_real): Change the return type to bool.

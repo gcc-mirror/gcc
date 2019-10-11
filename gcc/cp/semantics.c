@@ -5060,6 +5060,15 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
       TREE_PURPOSE (t) = lb;
       low_bound = lb;
     }
+  /* Temporarily disable -fstrong-eval-order for array reductions.
+     The SAVE_EXPR and COMPOUND_EXPR added if low_bound has side-effects
+     is something the middle-end can't cope with and more importantly,
+     it needs to be the actual base variable that is privatized, not some
+     temporary assigned previous value of it.  That, together with OpenMP
+     saying how many times the side-effects are evaluated is unspecified,
+     makes int *a, *b; ... reduction(+:a[a = b, 3:10]) really unspecified.  */
+  warning_sentinel s (flag_strong_eval_order,
+		      OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION);
   ret = grok_array_decl (OMP_CLAUSE_LOCATION (c), ret, low_bound, false);
   return ret;
 }
