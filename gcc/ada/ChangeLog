@@ -1,5 +1,12 @@
 2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (annotate_value) <INTEGER_CST>: Really test the
+	sign of the value when deciding to build a NEGATE_EXPR.
+	<PLUS_EXPR>: Remove redundant line.
+	<BIT_AND_EXPR>: Do the negation here.
+
+2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (Gigi_Equivalent_Type) <E_Array_Subtype>: New
 	case.  Return the base type if the subtype is not constrained.
 
