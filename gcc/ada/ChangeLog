@@ -1,5 +1,14 @@
 2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (elaborate_reference_1): Specifically deal with
+	pointer displacement.
+
+	* gcc-interface/decl.c (components_to_record): Use proper name.
+
+	* gcc-interface/trans.c (Sloc_to_locus): Use standard types.
+
+2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_field): Adjust again the packing
 	for a field without strict alignment and with an oversized clause.
 

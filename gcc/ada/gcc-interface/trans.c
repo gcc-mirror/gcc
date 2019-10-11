@@ -10848,8 +10848,8 @@ Sloc_to_locus (Source_Ptr Sloc, location_t *locus, bool clear_column,
     }
 
   Source_File_Index file = Get_Source_File_Index (Sloc);
-  Logical_Line_Number line = Get_Logical_Line_Number (Sloc);
-  Column_Number column = (clear_column ? 0 : Get_Column_Number (Sloc));
+  Line_Number_Type line = Get_Logical_Line_Number (Sloc);
+  Column_Number_Type column = (clear_column ? 0 : Get_Column_Number (Sloc));
   line_map_ordinary *map = LINEMAPS_ORDINARY_MAP_AT (line_table, file - 1);
 
   /* We can have zero if pragma Source_Reference is in effect.  */
