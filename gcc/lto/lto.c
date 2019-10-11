@@ -311,6 +311,7 @@ lto_wpa_write_files (void)
     if (gimple_has_body_p (node->decl))
       lto_prepare_function_for_streaming (node);
 
+  ggc_trim ();
   /* Generate a prefix for the LTRANS unit files.  */
   blen = strlen (ltrans_output_list);
   temp_filename = (char *) xmalloc (blen + sizeof ("2147483648.o"));

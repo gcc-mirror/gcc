@@ -1,3 +1,11 @@
+2019-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ggc-page.c (release_pages): Output statistics when !quiet_flag.
+	(ggc_collect): Dump later to not interfere with release_page dump.
+	(ggc_trim): New function.
+	* ggc-none.c (ggc_trim): New.
+	* ggc.h (ggc_trim): Declare.
+
 2019-10-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/92066
