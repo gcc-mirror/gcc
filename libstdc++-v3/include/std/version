@@ -153,6 +153,9 @@
 #define __cpp_lib_atomic_ref 201806L
 #define __cpp_lib_bind_front 201907L
 #define __cpp_lib_bounded_array_traits 201902L
+#if __cpp_concepts
+# define __cpp_lib_concepts 201806L
+#endif
 #define __cpp_lib_constexpr 201711L
 #define __cpp_lib_constexpr_algorithms 201806L
 #if __cpp_impl_destroying_delete

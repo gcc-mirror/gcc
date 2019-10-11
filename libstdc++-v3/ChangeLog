@@ -1,5 +1,59 @@
 2019-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Include <concepts>.
+	* include/std/concepts: New header for C++20.
+	* include/std/version (__cpp_lib_concepts): Define.
+	* scripts/create_testsuite_files: Look for test files in new std
+	directory.
+	* testsuite/libstdc++-dg/conformance.exp: Likewise.
+	* testsuite/std/concepts/concepts.callable/invocable.cc: New test.
+	* testsuite/std/concepts/concepts.callable/regular_invocable.cc: New
+	test.
+	* testsuite/std/concepts/concepts.callable/relation.cc: New test.
+	* testsuite/std/concepts/concepts.callable/strictweakorder.cc: New
+	test.
+	* testsuite/std/concepts/concepts.lang/concept.arithmetic/
+	floating_point.cc: New test.
+	* testsuite/std/concepts/concepts.lang/concept.arithmetic/integral.cc:
+	New test.
+	* testsuite/std/concepts/concepts.lang/concept.arithmetic/
+	signed_integral.cc: New test.
+	* testsuite/std/concepts/concepts.lang/concept.arithmetic/
+	unsigned_integral.cc: New test.
+	* testsuite/std/concepts/concepts.lang/concept.assignable/1.cc: New
+	test.
+	* testsuite/std/concepts/concepts.lang/concept.common/1.cc: New test.
+	* testsuite/std/concepts/concepts.lang/concept.commonref/1.cc: New
+	test.
+	* testsuite/std/concepts/concepts.lang/concept.constructible/1.cc:
+	New test.
+	* testsuite/std/concepts/concepts.lang/concept.convertible/1.cc:
+	New test.
+	* testsuite/std/concepts/concepts.lang/concept.copyconstructible/1.cc:
+	New test.
+	* testsuite/std/concepts/concepts.lang/concept.defaultconstructible/
+	1.cc: New test.
+	* testsuite/std/concepts/concepts.lang/concept.derived/1.cc:
+	New test.
+	* testsuite/std/concepts/concepts.lang/concept.destructible/1.cc:
+	New test.
+	* testsuite/std/concepts/concepts.lang/concept.moveconstructible/1.cc:
+	New test.
+	* testsuite/std/concepts/concepts.lang/concept.same/1.cc:
+	New test.
+	* testsuite/std/concepts/concepts.lang/concept.swappable/swap.cc:
+	New test.
+	* testsuite/std/concepts/concepts.lang/concept.swappable/swappable.cc:
+	New test.
+	* testsuite/std/concepts/concepts.lang/concept.swappable/
+	swappable_with.cc: New test.
+	* testsuite/std/concepts/concepts.object/copyable.cc: New test.
+	* testsuite/std/concepts/concepts.object/movable.cc: New test.
+	* testsuite/std/concepts/concepts.object/regular.cc: New test.
+	* testsuite/std/concepts/concepts.object/semiregular.cc: New test.
+
 	* include/std/type_traits (is_same): Replace partial specialization
 	by using __is_same_as built-in in primary template.
 	(is_same_v): Use __is_same_as built-in instead of instantiating the
