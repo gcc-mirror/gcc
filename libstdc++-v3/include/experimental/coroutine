@@ -107,43 +107,43 @@ namespace std _GLIBCXX_VISIBILITY (default)
   };
 
   // 4830 17.12.3.6 Comparison operators
-  constexpr bool
-  operator== (coroutine_handle<> __a, coroutine_handle<> __b) noexcept
+  constexpr bool operator== (coroutine_handle<> __a,
+			     coroutine_handle<> __b) noexcept
   {
     return __a.address () == __b.address ();
   }
 
   // We do not have spaceship yet, so this is...
   // TODO:
-  //constexpr strong_ordering
-  //operator<=> (coroutine_handle<> __a, coroutine_handle<> __b) noexcept;
+  // constexpr strong_ordering
+  // operator<=> (coroutine_handle<> __a, coroutine_handle<> __b) noexcept;
 
-  constexpr bool
-  operator!= (coroutine_handle<> __a, coroutine_handle<> __b) noexcept
+  constexpr bool operator!= (coroutine_handle<> __a,
+			     coroutine_handle<> __b) noexcept
   {
     return !(__a == __b);
   }
 
-  constexpr bool
-  operator< (coroutine_handle<> __a, coroutine_handle<> __b) noexcept
+  constexpr bool operator< (coroutine_handle<> __a,
+			    coroutine_handle<> __b) noexcept
   {
-    return less<void*>() (__a.address(), __b.address());
+    return less<void *> () (__a.address (), __b.address ());
   }
 
-  constexpr bool
-  operator> (coroutine_handle<> __a, coroutine_handle<> __b) noexcept
+  constexpr bool operator> (coroutine_handle<> __a,
+			    coroutine_handle<> __b) noexcept
   {
     return __b < __a;
   }
 
-  constexpr bool
-  operator<= (coroutine_handle<> __a, coroutine_handle<> __b) noexcept
+  constexpr bool operator<= (coroutine_handle<> __a,
+			     coroutine_handle<> __b) noexcept
   {
     return !(__a > __b);
   }
 
-  constexpr bool
-  operator>= (coroutine_handle<> __a, coroutine_handle<> __b) noexcept
+  constexpr bool operator>= (coroutine_handle<> __a,
+			     coroutine_handle<> __b) noexcept
   {
     return !(__a < __b);
   }

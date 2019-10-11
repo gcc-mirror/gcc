@@ -1,3 +1,8 @@
+2019-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	libstdc++-v3/
+	* include/experimental/coroutine: Fix long lines.
+
 2019-10-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/testsuite/
