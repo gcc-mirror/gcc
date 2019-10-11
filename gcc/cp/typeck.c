@@ -3560,6 +3560,10 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
   {
     tree ar = cp_default_conversion (array, complain);
     tree ind = cp_default_conversion (idx, complain);
+    tree first = NULL_TREE;
+
+    if (flag_strong_eval_order == 2 && TREE_SIDE_EFFECTS (ind))
+      ar = first = save_expr (ar);
 
     /* Put the integer in IND to simplify error checking.  */
     if (TREE_CODE (TREE_TYPE (ar)) == INTEGER_TYPE)
@@ -3583,11 +3587,10 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 
     warn_array_subscript_with_type_char (loc, idx);
 
-    ret = cp_build_indirect_ref (cp_build_binary_op (input_location,
-						     PLUS_EXPR, ar, ind,
-						     complain),
-                                 RO_ARRAY_INDEXING,
-                                 complain);
+    ret = cp_build_binary_op (input_location, PLUS_EXPR, ar, ind, complain);
+    if (first)
+      ret = build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (ret), first, ret);
+    ret = cp_build_indirect_ref (ret, RO_ARRAY_INDEXING, complain);
     protected_set_expr_location (ret, loc);
     if (non_lvalue)
       ret = non_lvalue_loc (loc, ret);
@@ -5574,6 +5577,17 @@ cp_build_binary_op (const op_location_t &location,
   if (build_type == NULL_TREE)
     build_type = result_type;
 
+  if (doing_shift
+      && flag_strong_eval_order == 2
+      && TREE_SIDE_EFFECTS (op1)
+      && !processing_template_decl)
+    {
+      /* In C++17, in both op0 << op1 and op0 >> op1 op0 is sequenced before
+	 op1, so if op1 has side-effects, use SAVE_EXPR around op0.  */
+      op0 = cp_save_expr (op0);
+      instrument_expr = op0;
+    }
+
   if (sanitize_flags_p ((SANITIZE_SHIFT
 			 | SANITIZE_DIVIDE | SANITIZE_FLOAT_DIVIDE))
       && current_function_decl != NULL_TREE
@@ -5585,6 +5599,7 @@ cp_build_binary_op (const op_location_t &location,
       op1 = cp_save_expr (op1);
       op0 = fold_non_dependent_expr (op0, complain);
       op1 = fold_non_dependent_expr (op1, complain);
+      tree instrument_expr1 = NULL_TREE;
       if (doing_div_or_mod
 	  && sanitize_flags_p (SANITIZE_DIVIDE | SANITIZE_FLOAT_DIVIDE))
 	{
@@ -5597,10 +5612,15 @@ cp_build_binary_op (const op_location_t &location,
 	    cop0 = cp_convert (orig_type, op0, complain);
 	  if (TREE_TYPE (cop1) != orig_type)
 	    cop1 = cp_convert (orig_type, op1, complain);
-	  instrument_expr = ubsan_instrument_division (location, cop0, cop1);
+	  instrument_expr1 = ubsan_instrument_division (location, cop0, cop1);
 	}
       else if (doing_shift && sanitize_flags_p (SANITIZE_SHIFT))
-	instrument_expr = ubsan_instrument_shift (location, code, op0, op1);
+	instrument_expr1 = ubsan_instrument_shift (location, code, op0, op1);
+      if (instrument_expr != NULL)
+	instrument_expr = add_stmt_to_compound (instrument_expr,
+						instrument_expr1);
+      else
+	instrument_expr = instrument_expr1;
     }
 
   result = build2_loc (location, resultcode, build_type, op0, op1);

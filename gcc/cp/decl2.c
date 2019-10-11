@@ -405,6 +405,7 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
   else
     {
       tree p1, p2, i1, i2;
+      bool swapped = false;
 
       /* Otherwise, create an ARRAY_REF for a pointer or array type.
 	 It is a little-known fact that, if `a' is an array and `i' is
@@ -431,7 +432,7 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
       if (p1 && i2)
 	array_expr = p1, index_exp = i2;
       else if (i1 && p2)
-	array_expr = p2, index_exp = i1;
+	swapped = true, array_expr = p2, index_exp = i1;
       else
 	{
 	  error_at (loc, "invalid types %<%T[%T]%> for array subscript",
@@ -447,7 +448,12 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
       else
 	array_expr = mark_lvalue_use_nonread (array_expr);
       index_exp = mark_rvalue_use (index_exp);
-      expr = build_array_ref (input_location, array_expr, index_exp);
+      if (swapped
+	  && flag_strong_eval_order == 2
+	  && (TREE_SIDE_EFFECTS (array_expr) || TREE_SIDE_EFFECTS (index_exp)))
+	expr = build_array_ref (input_location, index_exp, array_expr);
+      else
+	expr = build_array_ref (input_location, array_expr, index_exp);
     }
   if (processing_template_decl && expr != error_mark_node)
     {
