@@ -5680,6 +5680,7 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
 		}
 	      else if (CONST_SCALAR_INT_P (new_rtx)
 		       && (GET_CODE (x) == ZERO_EXTEND
+			   || GET_CODE (x) == SIGN_EXTEND
 			   || GET_CODE (x) == FLOAT
 			   || GET_CODE (x) == UNSIGNED_FLOAT))
 		{

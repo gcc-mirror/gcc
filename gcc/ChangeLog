@@ -1,3 +1,9 @@
+2019-10-11  Jim Wilson  <jimw@sifive.com>
+
+	PR rtl-optimization/91860
+	* combine.c (subst): If new_rtx is a constant, also check for
+	SIGN_EXTEND when deciding whether to call simplify_unary_operation.
+
 2019-10-11  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* expr.c (store_expr): Use rtx_to_poly_int64 rather than
