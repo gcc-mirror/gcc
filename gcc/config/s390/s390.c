@@ -1382,6 +1382,7 @@ s390_match_ccmode_set (rtx set, machine_mode req_mode)
     case E_CCZ1mode:
     case E_CCSmode:
     case E_CCSRmode:
+    case E_CCSFPSmode:
     case E_CCUmode:
     case E_CCURmode:
     case E_CCOmode:
@@ -1565,6 +1566,12 @@ s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
 	    else
 	      return CCAPmode;
 	  }
+
+	/* Fall through.  */
+      case LTGT:
+	if (HONOR_NANS (op0) || HONOR_NANS (op1))
+	  return CCSFPSmode;
+
 	/* Fall through.  */
       case UNORDERED:
       case ORDERED:
@@ -1573,7 +1580,6 @@ s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
       case UNLT:
       case UNGE:
       case UNGT:
-      case LTGT:
 	if ((GET_CODE (op0) == SIGN_EXTEND || GET_CODE (op0) == ZERO_EXTEND)
 	    && GET_CODE (op1) != CONST_INT)
 	  return CCSRmode;
@@ -2088,6 +2094,7 @@ s390_branch_condition_mask (rtx code)
       break;
 
     case E_CCSmode:
+    case E_CCSFPSmode:
       switch (GET_CODE (code))
 	{
 	case EQ:	return CC0;
@@ -6510,18 +6517,23 @@ s390_expand_vec_compare (rtx target, enum rtx_code cond,
 	{
 	  /* NE a != b -> !(a == b) */
 	case NE:   cond = EQ; neg_p = true;                break;
-	  /* UNGT a u> b -> !(b >= a) */
-	case UNGT: cond = GE; neg_p = true; swap_p = true; break;
-	  /* UNGE a u>= b -> !(b > a) */
-	case UNGE: cond = GT; neg_p = true; swap_p = true; break;
-	  /* LE: a <= b -> b >= a */
+	case UNGT:
+	  emit_insn (gen_vec_cmpungt (target, cmp_op1, cmp_op2));
+	  return;
+	case UNGE:
+	  emit_insn (gen_vec_cmpunge (target, cmp_op1, cmp_op2));
+	  return;
 	case LE:   cond = GE;               swap_p = true; break;
-	  /* UNLE: a u<= b -> !(a > b) */
-	case UNLE: cond = GT; neg_p = true;                break;
+	  /* UNLE: (a u<= b) -> (b u>= a).  */
+	case UNLE:
+	  emit_insn (gen_vec_cmpunge (target, cmp_op2, cmp_op1));
+	  return;
 	  /* LT: a < b -> b > a */
 	case LT:   cond = GT;               swap_p = true; break;
-	  /* UNLT: a u< b -> !(a >= b) */
-	case UNLT: cond = GE; neg_p = true;                break;
+	  /* UNLT: (a u< b) -> (b u> a).  */
+	case UNLT:
+	  emit_insn (gen_vec_cmpungt (target, cmp_op2, cmp_op1));
+	  return;
 	case UNEQ:
 	  emit_insn (gen_vec_cmpuneq (target, cmp_op1, cmp_op2));
 	  return;
@@ -6684,7 +6696,7 @@ s390_reverse_condition (machine_mode mode, enum rtx_code code)
 {
   /* Reversal of FP compares takes care -- an ordered compare
      becomes an unordered compare and vice versa.  */
-  if (mode == CCVFALLmode || mode == CCVFANYmode)
+  if (mode == CCVFALLmode || mode == CCVFANYmode || mode == CCSFPSmode)
     return reverse_condition_maybe_unordered (code);
   else if (mode == CCVIALLmode || mode == CCVIANYmode)
     return reverse_condition (code);

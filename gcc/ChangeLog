@@ -1,3 +1,50 @@
+2019-10-11  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/77918
+	* config/s390/2827.md: Add new opcodes.
+	* config/s390/2964.md: Likewise.
+	* config/s390/3906.md: Likewise.
+	* config/s390/8561.md: Likewise.
+	* config/s390/s390-builtins.def (s390_vfchesb): Use
+	the new vec_cmpgev4sf_quiet_nocc.
+	(s390_vfchedb): Use the new vec_cmpgev2df_quiet_nocc.
+	(s390_vfchsb): Use the new vec_cmpgtv4sf_quiet_nocc.
+	(s390_vfchdb): Use the new vec_cmpgtv2df_quiet_nocc.
+	(vec_cmplev4sf): Use the new vec_cmplev4sf_quiet_nocc.
+	(vec_cmplev2df): Use the new vec_cmplev2df_quiet_nocc.
+	(vec_cmpltv4sf): Use the new vec_cmpltv4sf_quiet_nocc.
+	(vec_cmpltv2df): Use the new vec_cmpltv2df_quiet_nocc.
+	* config/s390/s390-modes.def (CCSFPS): New mode.
+	* config/s390/s390.c (s390_match_ccmode_set): Support CCSFPS.
+	(s390_select_ccmode): Return CCSFPS for LT, LE, GT, GE and LTGT.
+	(s390_branch_condition_mask): Reuse CCS for CCSFPS.
+	(s390_expand_vec_compare): Use non-signaling patterns where
+	necessary.
+	(s390_reverse_condition): Support CCSFPS.
+	* config/s390/s390.md (*cmp<mode>_ccsfps): New pattern.
+	* config/s390/vector.md: (VFCMP_HW_OP): Remove.
+	(asm_fcmp_op): Likewise.
+	(*smaxv2df3_vx): Use pattern for quiet comparison.
+	(*sminv2df3_vx): Likewise.
+	(*vec_cmp<VFCMP_HW_OP:code><mode>_nocc): Remove.
+	(*vec_cmpeq<mode>_quiet_nocc): New pattern.
+	(vec_cmpgt<mode>_quiet_nocc): Likewise.
+	(vec_cmplt<mode>_quiet_nocc): New expander.
+	(vec_cmpge<mode>_quiet_nocc): New pattern.
+	(vec_cmple<mode>_quiet_nocc): New expander.
+	(*vec_cmpeq<mode>_signaling_nocc): New pattern.
+	(*vec_cmpgt<mode>_signaling_nocc): Likewise.
+	(*vec_cmpgt<mode>_signaling_finite_nocc): Likewise.
+	(*vec_cmpge<mode>_signaling_nocc): Likewise.
+	(*vec_cmpge<mode>_signaling_finite_nocc): Likewise.
+	(vec_cmpungt<mode>): New expander.
+	(vec_cmpunge<mode>): Likewise.
+	(vec_cmpuneq<mode>): Use quiet patterns.
+	(vec_cmpltgt<mode>): Allow only on z14+.
+	(vec_cmpordered<mode>): Use quiet patterns.
+	(vec_cmpunordered<mode>): Likewise.
+	(VEC_CMP_EXPAND): Add ungt and unge.
+
 2019-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gimple-streamer-out.c (output_gimple_stmt): Add explicit function
