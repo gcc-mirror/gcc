@@ -2737,7 +2737,6 @@ enum walk_kind {
   WK_normal,	/* Normal walk (by-name if possible).  */
 
   WK_value,	/* By-value walk.  */
-  WK_merge      /* By-value mergeable entity walk.  */
 };
 static char const *const walk_kind_name[] =
   {NULL, NULL, "body", "mergeable", "clone", NULL};
@@ -2958,7 +2957,6 @@ public:
   {
     tag_backref = -1,	/* Upper bound on the backrefs.  */
     tag_value = 0,	/* Write by value.  */
-    tag_merging,  	/* Needed for logical error detection.  */
     tag_fixed		/* Lower bound on the fixed trees.  */
   };
 
@@ -2991,8 +2989,6 @@ private:
 public:
   /* Mark a node for by-value walking.  */
   void mark_by_value (tree);
-  /* Reset it for having been merged.  */
-  void mark_merged (tree, int);
 
 public:
   void tree_node (tree);
@@ -4634,16 +4630,6 @@ trees_out::mark_by_value (tree decl)
     }
 }
 
-/* Mark decl as a now-merged node.  */
-
-void
-trees_out::mark_merged (tree decl, int tag)
-{
-  int *slot = tree_map.get (decl);
-  gcc_assert (slot && *slot == tag_merging);
-  *slot = tag;
-}
-
 /* Insert T into the map, return its tag number.    */
 
 int
@@ -4655,9 +4641,9 @@ trees_out::insert (tree t, walk_kind walk)
   int &slot = tree_map.get_or_insert (t, &existed);
   gcc_checking_assert (TREE_VISITED (t) == existed
 		       && (!existed
-			   || (walk >= WK_value && slot == tag_value)));
+			   || (walk == WK_value && slot == tag_value)));
   TREE_VISITED (t) = true;
-  slot = walk > WK_value ? tag_merging : tag;
+  slot = tag;
 
   return tag;
 }
@@ -6797,9 +6783,6 @@ trees_out::ref_node (tree t)
 	i (tt_fixed), u (val);
       kind = "fixed";
     }
-  else
-    /* We should never meet a node being merged.  */
-    gcc_unreachable ();
 
   if (streaming_p ())
     {
@@ -6852,7 +6835,7 @@ trees_out::decl_value (tree decl, depset *dep)
       tree_node_bools (decl);
     }
 
-  int tag = insert (decl, WK_merge);
+  int tag = insert (decl, WK_value);
   if (streaming_p ())
     dump (dumper::TREE)
       && dump ("Writing %s:%d %C:%N%S", merge_kind_name[mk], tag,
@@ -6874,7 +6857,7 @@ trees_out::decl_value (tree decl, depset *dep)
 	  tree_node_bools (inner);
 	}
 
-      inner_tag = insert (inner, WK_merge);
+      inner_tag = insert (inner, WK_value);
       if (streaming_p ())
 	dump (dumper::TREE)
 	  && dump ("Writing %s:%d %C:%N%S", merge_kind_name[mk], inner_tag,
@@ -6901,7 +6884,7 @@ trees_out::decl_value (tree decl, depset *dep)
 	      tree_node_bools (type);
 	    }
 
-	  type_tag = insert (type, WK_merge);
+	  type_tag = insert (type, WK_value);
 	  if (streaming_p ())
 	    dump (dumper::TREE)
 	      && dump ("Writing %s:%d %C:%N%S", merge_kind_name[mk], type_tag,
@@ -6913,28 +6896,17 @@ trees_out::decl_value (tree decl, depset *dep)
       gcc_assert (!type || !DECL_ORIGINAL_TYPE (inner));
     }
 
-  if (true)
-    {
-      /* Now write out the merging information, and then really
-	 install the tag values.  */
-      key_mergeable (mk, dep, decl);
+  /* Now write out the merging information, and then really
+     install the tag values.  */
+  key_mergeable (mk, dep, decl);
 
-      if (streaming_p ())
-	dump (dumper::MERGE)
-	  && dump ("Wrote:%d's %s merge key %C:%N", tag,
-		   merge_kind_name[mk], TREE_CODE (decl), decl);
+  if (streaming_p ())
+    dump (dumper::MERGE)
+      && dump ("Wrote:%d's %s merge key %C:%N", tag,
+	       merge_kind_name[mk], TREE_CODE (decl), decl);
 
-      /* This is the point where the importer determines whether it
-	 really has a new decl or not.  So it is safe to refer to
-	 these nodes.  */
-      mark_merged (decl, tag);
-      if (inner_tag != 0)
-	mark_merged (inner, inner_tag);
-      if (type_tag != 0)
-	mark_merged (type, type_tag);
-      if (TREE_CODE (inner) == FUNCTION_DECL)
-	fn_parms_fini (inner, decl);
-    }
+  if (TREE_CODE (inner) == FUNCTION_DECL)
+    fn_parms_fini (inner, decl);
 
   if (inner_tag != 0)
     {
