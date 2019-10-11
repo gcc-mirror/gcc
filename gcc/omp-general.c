@@ -48,6 +48,14 @@ omp_find_clause (tree clauses, enum omp_clause_code kind)
   return NULL_TREE;
 }
 
+/* True if OpenMP should regard this DECL as being a scalar which has Fortran's
+   allocatable or pointer attribute.  */
+bool
+omp_is_allocatable_or_ptr (tree decl)
+{
+  return lang_hooks.decls.omp_is_allocatable_or_ptr (decl);
+}
+
 /* Return true if DECL is a Fortran optional argument.  */
 
 bool
