@@ -1,5 +1,10 @@
 2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/91649
+	check.c (gfc_check_findloc): Additional checking for valid arguments
+
+2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/91715
 	* decl.c (gfc_match_prefix): If matching a type-spec returns an error,
 	it's an error so re-act correctly.
