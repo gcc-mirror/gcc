@@ -1,5 +1,10 @@
 2019-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/type_traits (is_same): Replace partial specialization
+	by using __is_same_as built-in in primary template.
+	(is_same_v): Use __is_same_as built-in instead of instantiating the
+	is_same trait.
+
 	PR libstdc++/92059
 	* include/tr2/dynamic_bitset (__dynamic_bitset_base): Define all
 	special member functions as defaulted. Add noexcept to most members.
