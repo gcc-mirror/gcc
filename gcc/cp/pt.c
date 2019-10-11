@@ -16308,8 +16308,6 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case TRUTH_OR_EXPR:
     case RSHIFT_EXPR:
     case LSHIFT_EXPR:
-    case RROTATE_EXPR:
-    case LROTATE_EXPR:
     case EQ_EXPR:
     case NE_EXPR:
     case MAX_EXPR:
@@ -18913,8 +18911,6 @@ tsubst_copy_and_build (tree t,
     case TRUTH_OR_EXPR:
     case RSHIFT_EXPR:
     case LSHIFT_EXPR:
-    case RROTATE_EXPR:
-    case LROTATE_EXPR:
     case EQ_EXPR:
     case NE_EXPR:
     case MAX_EXPR:
