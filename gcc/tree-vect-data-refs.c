@@ -2179,7 +2179,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   do_versioning
     = (optimize_loop_nest_for_speed_p (loop)
        && !loop->inner /* FORNOW */
-       && flag_vect_cost_model > VECT_COST_MODEL_CHEAP);
+       && flag_vect_cost_model != VECT_COST_MODEL_CHEAP);
 
   if (do_versioning)
     {
