@@ -2931,8 +2931,9 @@ darwin_file_end (void)
      }
 
   machopic_finish (asm_out_file);
-  if (lang_GNU_CXX ())
+  if (flag_apple_kext)
     {
+      /* These sections are only used for kernel code.  */
       switch_to_section (darwin_sections[constructor_section]);
       switch_to_section (darwin_sections[destructor_section]);
       ASM_OUTPUT_ALIGN (asm_out_file, 1);
