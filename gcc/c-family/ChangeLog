@@ -1,3 +1,16 @@
+2019-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_omp_mark_declare_variant,
+	c_omp_context_selector_matches): Declare.
+	* c-omp.c: Include attribs.h, gimplify.h, cgraph.h, symbol-summary.h
+	and hsa-common.h.
+	(c_omp_get_context_selector): Support second argument NULL.
+	(c_omp_mark_declare_variant, c_omp_context_selector_matches): New
+	functions.
+	* c-attribs.c (c_common_attribute_table): Remove "omp declare variant"
+	attribute, add "omp declare variant base" and
+	"omp declare variant variant" attributes.
+
 2019-10-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* c.opt (Wc11-c2x-compat): Add CPP(cpp_warn_c11_c2x_compat)

@@ -1,3 +1,12 @@
+2019-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/declare-variant-2.c: Adjust for error recovery
+	improvements.  Add new tests.
+	* c-c++-common/gomp/declare-variant-4.c: New test.
+	* c-c++-common/gomp/declare-variant-5.c: New test.
+	* c-c++-common/gomp/declare-variant-6.c: New test.
+	* c-c++-common/gomp/declare-variant-7.c: New test.
+
 2019-10-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/dfp/c11-constants-1.c, gcc.dg/dfp/c11-constants-2.c,

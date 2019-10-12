@@ -1,3 +1,10 @@
+2019-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_context_selector): Improve error recovery.
+	For simd properties, put them directly into TREE_VALUE.
+	(cp_finish_omp_declare_variant): Add "omp declare variant base"
+	attribute rather than "omp declare variant".
+
 2019-10-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/92049 - extra error with -fchecking=2.

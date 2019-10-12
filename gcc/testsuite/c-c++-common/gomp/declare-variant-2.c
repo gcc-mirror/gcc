@@ -1,3 +1,4 @@
+void f0 (void);
 void f1 (void);
 #pragma omp declare variant	/* { dg-error "expected '\\(' before end of line" } */
 void f2 (void);
@@ -34,7 +35,7 @@ void f17 (void);
 #pragma omp declare variant (f1) match(user={condition})	/* { dg-error "expected '\\(' before '\\\}' token" } */
 void f18 (void);
 #pragma omp declare variant (f1) match(user={condition(})	/* { dg-error "expected \[^\n\r]*expression before '\\\}' token" } */
-void f19 (void);						/* { dg-error "expected '\\)' before '\\\}' token" "" { target c++ } .-1 } */
+void f19 (void);
 #pragma omp declare variant (f1) match(user={condition()})	/* { dg-error "expected \[^\n\r]*expression before '\\)' token" } */
 void f20 (void);
 #pragma omp declare variant (f1) match(user={condition(f1)})	/* { dg-error "property must be constant integer expression" "" { target { c || c++11 } } } */
@@ -50,7 +51,7 @@ void f25 (void);						/* { dg-error "expected '\\\}' before end of line" "" { ta
 								/* { dg-error "expected '\\\}' before '\\(' token" "" { target c } .-2 } */
 #pragma omp declare variant (f1) match(construct={parallel(1)})	/* { dg-error "selector 'parallel' does not accept any properties" } */
 void f26 (void);							/* { dg-error "expected '\\\}' before '\\(' token" "" { target c } .-1 } */
-#pragma omp declare variant (f1) match(construct={simd(12)})	/* { dg-error "expected \[^\n\r]* clause before" } */
+#pragma omp declare variant (f0) match(construct={simd(12)})	/* { dg-error "expected \[^\n\r]* clause before" } */
 void f27 (void);						/* { dg-error "'\\)' before numeric constant" "" { target c++ } .-1 } */
 #pragma omp declare variant (f1) match(construct={parallel},construct={for})	/* { dg-error "selector set 'construct' specified more than once" } */
 void f28 (void);
@@ -120,3 +121,31 @@ void f58 (void);						/* { dg-error "expected '\\\}' before '\\(' token" "" { ta
 void f59 (void);						/* { dg-error "expected '\\\}' before '\\(' token" "" { target c } .-1 } */
 #pragma omp declare variant (f1) match(construct={parallel},foobar={bar})	/* { dg-error "expected 'construct', 'device', 'implementation' or 'user' before 'foobar'" } */
 void f60 (void);
+#pragma omp declare variant (f1) match(construct={parallel,parallel})	/* { dg-error "selector 'parallel' specified more than once in set 'construct'" } */
+void f61 (void);
+#pragma omp declare variant (f1) match(construct={target,parallel,for,simd,parallel})	/* { dg-error "selector 'parallel' specified more than once in set 'construct'" } */
+void f62 (void);
+#pragma omp declare variant (f1) match(construct={target,teams,teams})	/* { dg-error "selector 'teams' specified more than once in set 'construct'" } */
+void f63 (void);
+#pragma omp declare variant (f1) match(construct={single})	/* { dg-error "selector 'single' not allowed for context selector set 'construct'" } */
+void f64 (void);
+#pragma omp declare variant (f1) match(construct={taskgroup})	/* { dg-error "selector 'taskgroup' not allowed for context selector set 'construct'" } */
+void f65 (void);
+#pragma omp declare variant (f1) match(construct={do})	/* { dg-error "selector 'do' not allowed for context selector set 'construct'" } */
+void f66 (void);
+#pragma omp declare variant (f1) match(construct={threadprivate})	/* { dg-error "selector 'threadprivate' not allowed for context selector set 'construct'" } */
+void f67 (void);
+#pragma omp declare variant (f1) match(construct={critical})	/* { dg-error "selector 'critical' not allowed for context selector set 'construct'" } */
+void f68 (void);
+#pragma omp declare variant (f1) match(construct={task})	/* { dg-error "selector 'task' not allowed for context selector set 'construct'" } */
+void f69 (void);
+#pragma omp declare variant (f1) match(construct={taskloop})	/* { dg-error "selector 'taskloop' not allowed for context selector set 'construct'" } */
+void f70 (void);
+#pragma omp declare variant (f1) match(construct={sections})	/* { dg-error "selector 'sections' not allowed for context selector set 'construct'" } */
+void f71 (void);
+#pragma omp declare variant (f1) match(construct={section})	/* { dg-error "selector 'section' not allowed for context selector set 'construct'" } */
+void f72 (void);
+#pragma omp declare variant (f1) match(construct={workshare})	/* { dg-error "selector 'workshare' not allowed for context selector set 'construct'" } */
+void f73 (void);
+#pragma omp declare variant (f1) match(construct={requires})	/* { dg-error "selector 'requires' not allowed for context selector set 'construct'" } */
+void f74 (void);
