@@ -688,7 +688,7 @@ extern int may_call_alloca;
 
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE (TARGET_64BIT ? 72 : 52)
+#define TRAMPOLINE_SIZE (TARGET_64BIT ? 72 : 64)
 
 /* Alignment required by the trampoline.  */
 
