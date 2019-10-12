@@ -1,3 +1,14 @@
+2019-10-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/91995
+	* sem_ch8.adb (Chain_Use_Clause): Remove second argument in calls
+	to Defining_Entity.
+	* sem_elab.adb (Find_Unit_Entity): Likewise.  Deal with N_Subunit
+	here in lieu of in Defining_Entity.
+	* sem_util.ads (Defining_Entity): Remove 2nd and 3th parameters.
+	* sem_util.adb (Defining_Entity): Remove 2nd and 3th parameters,
+	and adjust accordingly.  Deal with N_Compilation_Unit.
+
 2019-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (elaborate_reference_1): Specifically deal with
