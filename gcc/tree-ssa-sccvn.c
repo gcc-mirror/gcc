@@ -5105,18 +5105,15 @@ vn_nary_may_trap (vn_nary_op_t nary)
 	  honor_nans = flag_trapping_math && !flag_finite_math_only;
 	  honor_snans = flag_signaling_nans != 0;
 	}
-      else if (INTEGRAL_TYPE_P (type)
-	       && TYPE_OVERFLOW_TRAPS (type))
+      else if (INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_TRAPS (type))
 	honor_trapv = true;
     }
   if (nary->length >= 2)
     rhs2 = nary->op[1];
   ret = operation_could_trap_helper_p (nary->opcode, fp_operation,
-				       honor_trapv,
-				       honor_nans, honor_snans, rhs2,
-				       &handled);
-  if (handled
-      && ret)
+				       honor_trapv, honor_nans, honor_snans,
+				       rhs2, &handled);
+  if (handled && ret)
     return true;
 
   for (i = 0; i < nary->length; ++i)

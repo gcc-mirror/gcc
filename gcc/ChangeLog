@@ -1,3 +1,14 @@
+2019-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/92063
+	* tree-eh.c (operation_could_trap_helper_p) <case COND_EXPR>
+	<case VEC_COND_EXPR>: Return false with *handled = false.
+	(tree_could_trap_p): For {,VEC_}COND_EXPR return false instead of
+	recursing on the first operand.
+	* fold-const.c (simple_operand_p_2): Use generic_expr_could_trap_p
+	instead of tree_could_trap_p.
+	* tree-ssa-sccvn.c (vn_nary_may_trap): Formatting fixes.
+
 2019-10-11  Jim Wilson  <jimw@sifive.com>
 
 	PR rtl-optimization/91860

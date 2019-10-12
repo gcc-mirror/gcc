@@ -1,5 +1,8 @@
 2019-10-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/92063
+	* gcc.c-torture/compile/pr92063.c: New test.
+
 	* c-c++-common/gomp/declare-variant-2.c: Adjust for error recovery
 	improvements.  Add new tests.
 	* c-c++-common/gomp/declare-variant-4.c: New test.
