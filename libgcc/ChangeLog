@@ -1,3 +1,12 @@
+2019-10-12  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/lib2funcs.S (__gcc_plt_call): Load branch target to %r21.
+	Load PIC register after branch target.  Fix white space.
+	* config/pa/milli64.S ($$dyncall): Separate LINUX and non LINUX
+	implementations.  Load PIC register after branch target.  Don't
+	clobber function pointer when it points to function descriptor.
+	Use nullification instead of branch in LINUX implementation.
+
 2019-10-03  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/fptr.c: Disable -Warray-bounds warning.
