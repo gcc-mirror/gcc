@@ -19219,6 +19219,8 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 		      else
 			properties = tree_cons (NULL_TREE, t, properties);
 		    }
+		  else
+		    return error_mark_node;
 
 		  if (c_parser_next_token_is (parser, CPP_COMMA))
 		    c_parser_consume_token (parser);
@@ -19263,6 +19265,8 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 		  else
 		    properties = tree_cons (NULL_TREE, t, properties);
 		}
+	      else
+		return error_mark_node;
 	      break;
 	    case CTX_PROPERTY_SIMD:
 	      if (parms == NULL_TREE)
@@ -19280,7 +19284,7 @@ c_parser_omp_context_selector (c_parser *parser, tree set, tree parms)
 							 == error_mark_node
 							 ? NULL_TREE : parms,
 							 c);
-	      properties = tree_cons (NULL_TREE, c, properties);
+	      properties = c;
 	      break;
 	    default:
 	      gcc_unreachable ();
@@ -19389,7 +19393,7 @@ c_parser_omp_context_selector_specification (c_parser *parser, tree parms)
 }
 
 /* Finalize #pragma omp declare variant after FNDECL has been parsed, and put
-   that into "omp declare variant" attribute.  */
+   that into "omp declare variant base" attribute.  */
 
 static void
 c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
@@ -19473,10 +19477,16 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
       if (variant != error_mark_node)
 	{
 	  C_DECL_USED (variant) = 1;
-	  tree attr = tree_cons (get_identifier ("omp declare variant"),
-				 build_tree_list (variant, ctx),
-				 DECL_ATTRIBUTES (fndecl));
-	  DECL_ATTRIBUTES (fndecl) = attr;
+	  tree construct = c_omp_get_context_selector (ctx, "construct", NULL);
+	  c_omp_mark_declare_variant (match_loc, variant, construct);
+	  if (c_omp_context_selector_matches (ctx))
+	    {
+	      tree attr
+		= tree_cons (get_identifier ("omp declare variant base"),
+			     build_tree_list (variant, ctx),
+			     DECL_ATTRIBUTES (fndecl));
+	      DECL_ATTRIBUTES (fndecl) = attr;
+	    }
 	}
     }
 
@@ -19486,7 +19496,7 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 
 /* Finalize #pragma omp declare simd or #pragma omp declare variant
    clauses after FNDECL has been parsed, and put that into "omp declare simd"
-   or "omp declare variant" attribute.  */
+   or "omp declare variant base" attribute.  */
 
 static void
 c_finish_omp_declare_simd (c_parser *parser, tree fndecl, tree parms,

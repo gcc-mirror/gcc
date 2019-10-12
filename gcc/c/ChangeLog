@@ -1,3 +1,12 @@
+2019-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_context_selector): Improve error recovery.
+	For simd properties, put them directly into TREE_VALUE.
+	(c_finish_omp_declare_variant): Call c_omp_mark_declare_variant.
+	If c_omp_context_selector_matches is 0, don't add attribute, otherwise
+	add "omp declare variant base" attribute rather than
+	"omp declare variant".
+
 2019-10-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (declspecs_add_type): Use pedwarn_c11 for DFP types.

@@ -444,7 +444,9 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_returns_nonnull_attribute, NULL },
   { "omp declare simd",       0, -1, true,  false, false, false,
 			      handle_omp_declare_simd_attribute, NULL },
-  { "omp declare variant",    0, -1, true,  false, false, false,
+  { "omp declare variant base", 0, -1, true,  false, false, false,
+			      handle_omp_declare_variant_attribute, NULL },
+  { "omp declare variant variant", 0, -1, true,  false, false, false,
 			      handle_omp_declare_variant_attribute, NULL },
   { "simd",		      0, 1, true,  false, false, false,
 			      handle_simd_attribute, NULL },
@@ -3068,7 +3070,7 @@ handle_omp_declare_simd_attribute (tree *, tree, tree, int, bool *)
   return NULL_TREE;
 }
 
-/* Handle an "omp declare variant" attribute; arguments as in
+/* Handle an "omp declare variant {base,variant}" attribute; arguments as in
    struct attribute_spec.handler.  */
 
 static tree
