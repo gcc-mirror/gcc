@@ -4256,16 +4256,14 @@ package body Sem_Ch8 is
 
       --  Common case for compilation unit
 
-      elsif Defining_Entity (N               => Parent (N),
-                             Empty_On_Errors => True) = Current_Scope
-      then
+      elsif Defining_Entity (Parent (N)) = Current_Scope then
          null;
 
       else
          --  If declaration appears in some other scope, it must be in some
          --  parent unit when compiling a child.
 
-         Pack := Defining_Entity (Parent (N), Empty_On_Errors => True);
+         Pack := Defining_Entity (Parent (N));
 
          if not In_Open_Scopes (Pack) then
             null;
