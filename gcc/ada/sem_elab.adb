@@ -5544,13 +5544,23 @@ package body Sem_Elab is
                                    N_Procedure_Instantiation)
         and then Nkind (Context) = N_Compilation_Unit
       then
-         return
-           Related_Instance (Defining_Entity (N, Concurrent_Subunit => True));
+         return Related_Instance (Defining_Entity (N));
+
+      --  The unit denotes a concurrent body acting as a subunit. Such bodies
+      --  are generally rewritten into null statements. The proper entity is
+      --  that of the "original node".
+
+      elsif Nkind (N) = N_Subunit
+        and then Nkind (Proper_Body (N)) = N_Null_Statement
+        and then Nkind_In (Original_Node (Proper_Body (N)), N_Protected_Body,
+                                                            N_Task_Body)
+      then
+         return Defining_Entity (Original_Node (Proper_Body (N)));
 
       --  Otherwise the proper entity is the defining entity
 
       else
-         return Defining_Entity (N, Concurrent_Subunit => True);
+         return Defining_Entity (N);
       end if;
    end Find_Unit_Entity;
 
