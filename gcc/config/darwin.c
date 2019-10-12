@@ -1188,7 +1188,7 @@ machopic_output_indirection (machopic_indirection **slot, FILE *asm_out_file)
   return 1;
 }
 
-void
+static void
 machopic_finish (FILE *asm_out_file)
 {
   if (machopic_indirections)
