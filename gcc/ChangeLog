@@ -1,3 +1,7 @@
+2019-10-13  Nathan Sidwell  <nathan@acm.org>
+
+	* gengtype-lex.l (CXX_KEYWORD): Add 'mutable'.
+
 2019-10-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/sourcebuild.texi (Test Directives, Add Options): Remove
