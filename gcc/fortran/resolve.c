@@ -10769,9 +10769,12 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 			"component in a PURE procedure",
 			&rhs->where);
 	  else
-	    gfc_error ("The impure variable at %L is assigned to "
-			"a derived type variable with a POINTER "
-			"component in a PURE procedure (12.6)",
+	  /* F2008, C1283 (4).  */
+	    gfc_error ("In a pure subprogram an INTENT(IN) dummy argument "
+			"shall not be used as the expr at %L of an intrinsic "
+			"assignment statement in which the variable is of a "
+			"derived type if the derived type has a pointer "
+			"component at any level of component selection.",
 			&rhs->where);
 	  return rval;
 	}
