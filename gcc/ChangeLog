@@ -1,3 +1,8 @@
+2019-10-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/sourcebuild.texi (Test Directives, Add Options): Remove
+	c99_runtime.
+
 2019-10-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-streamer-out.c (collect_block_tree_leafs): Renumber statements

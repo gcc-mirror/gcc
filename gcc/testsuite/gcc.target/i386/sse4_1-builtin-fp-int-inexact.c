@@ -1,7 +1,6 @@
 /* Test -fno-fp-int-builtin-inexact for SSE 4.1.  */
 /* { dg-do run } */
 /* { dg-options "-O2 -msse4.1 -mfpmath=sse -fno-fp-int-builtin-inexact" } */
-/* { dg-add-options c99_runtime } */
 /* { dg-require-effective-target fenv_exceptions } */
 /* { dg-require-effective-target sse4 } */
 

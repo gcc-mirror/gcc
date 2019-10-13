@@ -1,3 +1,47 @@
+2019-10-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (add_options_for_c99_runtime): Remove.
+	(check_effective_target_c99_runtime): Remove call to
+	add_options_for_c99_runtime.
+
+	* gcc.dg/builtins-18.c: Remove dg-add-options c99_runtime.
+	* gcc.dg/builtins-20.c: Likewise.
+	* gcc.dg/builtins-53.c: Likewise.
+	* gcc.dg/builtins-55.c: Likewise.
+	* gcc.dg/builtins-67.c: Likewise.
+	* gcc.dg/c99-tgmath-1.c: Likewise.
+	* gcc.dg/c99-tgmath-2.c: Likewise.
+	* gcc.dg/c99-tgmath-3.c: Likewise.
+	* gcc.dg/c99-tgmath-4.c: Likewise.
+	* gcc.dg/ipa/inline-8.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-5.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-7.c: Likewise.
+	* gcc.dg/nextafter-2.c: Likewise.
+	* gcc.dg/pr42427.c: Likewise.
+	* gcc.dg/pr78965.c: Likewise.
+	* gcc.dg/single-precision-constant.c: Likewise.
+	* gcc.dg/torture/builtin-convert-1.c: Likewise.
+	* gcc.dg/torture/builtin-convert-2.c: Likewise.
+	* gcc.dg/torture/builtin-convert-3.c: Likewise.
+	* gcc.dg/torture/builtin-convert-4.c: Likewise.
+	* gcc.dg/torture/builtin-fp-int-inexact.c: Likewise.
+	* gcc.dg/torture/builtin-fp-int-inexact-c2x.c: Likewise.
+	* gcc.dg/torture/builtin-integral-1.c: Likewise.
+	* gcc.dg/torture/builtin-power-1.c: Likewise.
+	* gcc.dg/tree-ssa/copy-sign-1.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-2.c: Likewise.
+	* gcc.dg/tree-ssa/mult-abs-2.c: Likewise.
+	* gcc.target/i386/387-builtin-fp-int-inexact.c: Likewise.
+	* gcc.target/i386/387-rint-inline-1.c: Likewise.
+	* gcc.target/i386/387-rint-inline-2.c: Likewise.
+	* gcc.target/i386/conversion.c: Likewise.
+	* gcc.target/i386/pr47312.c: Likewise.
+	* gcc.target/i386/sse2-builtin-fp-int-inexact.c: Likewise.
+	* gcc.target/i386/sse2-rint-inline-1.c: Likewise.
+	* gcc.target/i386/sse2-rint-inline-2.c: Likewise.
+	* gcc.target/i386/sse4_1-builtin-fp-int-inexact.c: Likewise.
+	* gcc.target/i386/sse4_1-rint-inline.c: Likewise.
+
 2019-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/92063
