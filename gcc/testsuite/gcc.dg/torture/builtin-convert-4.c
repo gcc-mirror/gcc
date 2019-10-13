@@ -7,7 +7,6 @@
 
 /* { dg-do compile } */
 /* { dg-options "-ftrapping-math -fdump-tree-original" } */
-/* { dg-add-options c99_runtime } */
 
 #include "../builtins-config.h"
 

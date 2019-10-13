@@ -7478,18 +7478,6 @@ proc check_effective_target_fd_truncate { } {
     return [check_runtime chsize $prog]
 }
 
-# Add to FLAGS all the target-specific flags needed to access the c99 runtime.
-
-proc add_options_for_c99_runtime { flags } {
-    if { [istarget *-*-solaris2*] } {
-	return "$flags -std=c99"
-    }
-    if { [istarget powerpc-*-darwin*] } {
-	return "$flags -mmacosx-version-min=10.3"
-    }
-    return $flags
-}
-
 # Add to FLAGS all the target-specific flags needed to enable
 # full IEEE compliance mode.
 
@@ -7571,8 +7559,7 @@ proc check_effective_target_c99_runtime { } {
 	    #error !HAVE_C99_RUNTIME
 	    #endif
 	}
-	check_no_compiler_messages_nocache c99_runtime assembly \
-	    $contents [add_options_for_c99_runtime ""]
+	check_no_compiler_messages_nocache c99_runtime assembly $contents
     }]
 }
 
