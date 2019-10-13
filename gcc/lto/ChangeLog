@@ -1,3 +1,7 @@
+2019-10-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (lto_wpa_write_files): Do not update bodies of clones.
+
 2019-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (lto_wpa_write_files): Call ggc_trim.
