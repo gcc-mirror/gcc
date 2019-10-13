@@ -1,3 +1,9 @@
+2019-10-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90297
+	* resolve.c (resolve_typebound_function): Remove code with no
+	functional effect.
+
 2019-10-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/92017

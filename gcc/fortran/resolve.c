@@ -6548,21 +6548,6 @@ resolve_typebound_function (gfc_expr* e)
   overridable = !e->value.compcall.tbp->non_overridable;
   if (expr && expr->ts.type == BT_CLASS && e->value.compcall.name)
     {
-      /* If the base_object is not a variable, the corresponding actual
-	 argument expression must be stored in e->base_expression so
-	 that the corresponding tree temporary can be used as the base
-	 object in gfc_conv_procedure_call.  */
-      if (expr->expr_type != EXPR_VARIABLE)
-	{
-	  gfc_actual_arglist *args;
-
-	  for (args= e->value.function.actual; args; args = args->next)
-	    {
-	      if (expr == args->expr)
-		expr = args->expr;
-	    }
-	}
-
       /* Since the typebound operators are generic, we have to ensure
 	 that any delays in resolution are corrected and that the vtab
 	 is present.  */
