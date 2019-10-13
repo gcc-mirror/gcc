@@ -1,3 +1,10 @@
+2019-10-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92017
+	* expr.c (simplify_parameter_variable): Set the character length
+	of the result expression from the original expression if
+	necessary.
+
 2019-10-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91649
