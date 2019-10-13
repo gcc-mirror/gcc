@@ -1,5 +1,11 @@
 2019-10-13  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config/darwin.c (machopic_indirection_name): Rework the
+	function to emit linker-visible symbols only for indirections
+	in the data section.  Clean up the code and update comments.
+
+2019-10-13  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* config/darwin.c (machopic_indirect_data_reference): Remove
 	redundant code.
 
