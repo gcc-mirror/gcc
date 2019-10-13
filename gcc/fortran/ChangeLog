@@ -1,3 +1,8 @@
+2019-10-13  Damian Rouson  <damain@sourceryinstitue.org>
+
+	PR fortran/91513
+	* resolve.c (resolve_ordinary_assign): Improved error message.
+
 2019-10-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/90297
