@@ -1,3 +1,9 @@
+2019-10-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (collect_block_tree_leafs): Renumber statements
+	so non-virutal are before virutals.
+	(output_function): Avoid body modifications.
+
 2019-10-12  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_output_call): Load descriptor address to register
