@@ -1,3 +1,8 @@
+2019-10-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/92017
+	* gfortran.dg/minmaxloc_14.f90: New test.
+
 2019-10-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/target-supports.exp (add_options_for_c99_runtime): Remove.
