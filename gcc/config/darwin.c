@@ -760,21 +760,6 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
   else if (GET_CODE (orig) == PLUS)
     {
       rtx base, result;
-      /* When the target is i386, this code prevents crashes due to the
-	compiler's ignorance on how to move the PIC base register to
-	other registers.  (The reload phase sometimes introduces such
-	insns.)  */
-      if (GET_CODE (XEXP (orig, 0)) == REG
-	   && REGNO (XEXP (orig, 0)) == PIC_OFFSET_TABLE_REGNUM
-	   /* Prevent the same register from being erroneously used
-	      as both the base and index registers.  */
-	   && (DARWIN_X86 && (GET_CODE (XEXP (orig, 1)) == CONST))
-	   && reg)
-	{
-	  emit_move_insn (reg, XEXP (orig, 0));
-	  XEXP (ptr_ref, 0) = reg;
-	  return ptr_ref;
-	}
 
       /* Legitimize both operands of the PLUS.  */
       base = machopic_indirect_data_reference (XEXP (orig, 0), reg);
