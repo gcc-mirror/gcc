@@ -495,7 +495,7 @@ indirection_hasher::equal (machopic_indirection *s, const char *k)
 /* Return the name of the non-lazy pointer (if STUB_P is false) or
    stub (if STUB_B is true) corresponding to the given name.
 
-  If we have a situation like:
+  PR71767 - If we have a situation like:
 
 global_weak_symbol:
   ....
@@ -504,36 +504,22 @@ Lnon_weak_local:
 
   ld64 will be unable to split this into two atoms (because the "L" makes
   the second symbol 'invisible').  This means that legitimate direct accesses
-  to the second symbol will appear to be non-allowed direct accesses to an
-  atom of type weak, global which are not allowed.
+  to the second symbol will appear to be direct accesses to an atom of type
+  weak, global which are not allowed.
 
-  To avoid this, we make the indirections have a leading 'l' (lower-case L)
-  which has a special meaning: linker can see this and use it to determine
-  atoms, but it is not placed into the final symbol table.
+  To avoid this, we make any data-section indirections have a leading 'l'
+  (lower-case L) which has a special meaning: linker can see this and use
+  it to determine  atoms, but it is not placed into the final symbol table.
 
-  The implementation here is somewhat heavy-handed in that it will also mark
-  indirections to the __IMPORT,__pointers section the same way which is
-  really unnecessary, since ld64 _can_ split those into atoms as they are
-  fixed size.  FIXME: determine if this is a penalty worth extra code to
-  fix.
-
+  Symbols in the non-lazy symbol pointers section (or stubs) do not have this
+  problem because ld64 already knows the size of each entry.
 */
 
 const char *
 machopic_indirection_name (rtx sym_ref, bool stub_p)
 {
-  char *buffer;
   const char *name = XSTR (sym_ref, 0);
-  size_t namelen = strlen (name);
-  machopic_indirection *p;
-  bool needs_quotes;
-  const char *suffix;
-  char L_or_l = 'L';
-  const char *prefix = user_label_prefix;
-  const char *quote = "";
-  tree id;
-
-  id = maybe_get_identifier (name);
+  tree id = maybe_get_identifier (name);
   if (id)
     {
       tree id_orig = id;
@@ -541,43 +527,47 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
       while (IDENTIFIER_TRANSPARENT_ALIAS (id))
 	id = TREE_CHAIN (id);
       if (id != id_orig)
-	{
-	  name = IDENTIFIER_POINTER (id);
-	  namelen = strlen (name);
-	}
+	name = IDENTIFIER_POINTER (id);
     }
 
+  const char *prefix = user_label_prefix;
+  /* If we are emitting the label 'verbatim' then omit the U_L_P and count
+     the name without the leading '*'.  */
   if (name[0] == '*')
     {
       prefix = "";
       ++name;
-      --namelen;
     }
 
-  needs_quotes = name_needs_quotes (name);
-  if (needs_quotes)
-    {
-      quote = "\"";
-    }
+  /* Here we are undoing a number of causes that placed some indirections
+     (apparently erroneously) into the .data section.  Specifically, some
+     symbols that are ABI mandated indirections and some hidden symbols
+     were being placed there - which cause difficulties with later
+     versions of ld64.  Iff (after these checks) some symbol still gets an
+     indirection in the data section, we want to adjust the indirection
+     name to be linker visible to deal with PR71767 (notes above).  */
+  bool nlsp_in_data_section =
+       ! MACHO_SYMBOL_MUST_INDIRECT_P (sym_ref)
+    && ! MACHO_SYMBOL_HIDDEN_VIS_P (sym_ref)
+    && (machopic_symbol_defined_p (sym_ref) || SYMBOL_REF_LOCAL_P (sym_ref))
+    && ! indirect_data (sym_ref);
 
-  if (stub_p)
-    suffix = STUB_SUFFIX;
-  else
-    {
-      suffix = NON_LAZY_POINTER_SUFFIX;
-      /* Let the linker see this.  */
-      L_or_l = 'l';
-    }
-
-  buffer = XALLOCAVEC (char, 2  /* strlen ("&L") or ("&l") */
-		   + strlen (prefix)
-		   + namelen
-		   + strlen (suffix)
-		   + 2 * strlen (quote)
-		   + 1 /* '\0' */);
+  const char *suffix = stub_p ? STUB_SUFFIX : NON_LAZY_POINTER_SUFFIX;
+  /* If the indirection is in the data section, let the linker see it.  */
+  char L_or_l = (!stub_p && nlsp_in_data_section) ? 'l' : 'L';
+  /* We have mangled symbols with spaces and punctuation which typically
+     need surrounding in quotes for the assembler to consume them.  */
+  const char *quote = name_needs_quotes (name) ? "\"" : "";
+  char *buffer = XALLOCAVEC (char, 2  /* strlen ("&L") or ("&l") */
+			     + strlen (prefix)
+			     + strlen (name)
+			     + strlen (suffix)
+			     + 2 * strlen (quote)
+			     + 1 /* '\0' */);
 
   /* Construct the name of the non-lazy pointer or stub.  */
-  sprintf (buffer, "&%s%c%s%s%s%s", quote, L_or_l, prefix, name, suffix, quote);
+  sprintf (buffer, "&%s%c%s%s%s%s", quote, L_or_l, prefix, name,
+	   suffix, quote);
 
   if (!machopic_indirections)
     machopic_indirections = hash_table<indirection_hasher>::create_ggc (37);
@@ -586,10 +576,9 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
     = machopic_indirections->find_slot_with_hash (buffer,
 						  htab_hash_string (buffer),
 						  INSERT);
+  machopic_indirection *p;
   if (*slot)
-    {
-      p = *slot;
-    }
+    p = *slot;
   else
     {
       p = ggc_alloc<machopic_indirection> ();
@@ -597,18 +586,7 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
       p->ptr_name = xstrdup (buffer);
       p->stub_p = stub_p;
       p->used = false;
-      /* Here we are undoing a number of causes that placed some indirections
-	 (apparently erroneously) into the .data section.  Specifically, some
-	 symbols that are ABI mandated indirections and some hidden symbols
-	 were being placed there - which cause difficulties with later
-	 versions of ld64.
-      */
-      p->nlsp_in_data_section =
-	   ! MACHO_SYMBOL_MUST_INDIRECT_P (sym_ref)
-	&& ! MACHO_SYMBOL_HIDDEN_VIS_P (sym_ref)
-	&& (machopic_symbol_defined_p (sym_ref)
-	    || SYMBOL_REF_LOCAL_P (sym_ref))
-	&& ! indirect_data (sym_ref);
+      p->nlsp_in_data_section = nlsp_in_data_section;
       *slot = p;
     }
 
