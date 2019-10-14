@@ -1,3 +1,8 @@
+2019-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* function-abi.h (expr_callee_abi): Declare.
+	* function-abi.cc (expr_callee_abi): New function.
+
 2019-10-14  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp.c (value_range_base::set): Normalize unsigned ~[0,0]
