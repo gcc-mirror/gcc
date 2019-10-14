@@ -379,8 +379,19 @@ do {                                                    \
 /* Always pass the SYMBOL_REF for direct calls to the expanders.  */
 #define NO_FUNCTION_CSE 1
 
-/* Profiling */
-#define FUNCTION_PROFILER(FILE,LABELNO) (abort (), 0)
+#define NO_PROFILE_COUNTERS 1
+
+/* Emit rtl for profiling.  Output assembler code to call "_mcount" for
+   profiling a function entry.  */
+#define PROFILE_HOOK(LABEL)						\
+  {									\
+    rtx fun;								\
+    fun = gen_rtx_SYMBOL_REF (Pmode, "_mcount");			\
+    emit_library_call (fun, LCT_NORMAL, VOIDmode);			\
+  }
+
+/* All the work is done in PROFILE_HOOK, but this is still required.  */
+#define FUNCTION_PROFILER(STREAM, LABELNO) do { } while (0)
 
 /* Dwarf 2 Support */
 #define DWARF2_DEBUGGING_INFO 1
