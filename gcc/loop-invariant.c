@@ -2276,9 +2276,13 @@ move_loop_invariants (void)
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
       curr_loop = loop;
-      /* move_single_loop_invariants for very large loops
-	 is time consuming and might need a lot of memory.  */
-      if (loop->num_nodes <= (unsigned) LOOP_INVARIANT_MAX_BBS_IN_LOOP)
+      /* move_single_loop_invariants for very large loops is time consuming
+	 and might need a lot of memory.  For -O1 only do loop invariant
+	 motion for very small loops.  */
+      unsigned max_bbs = LOOP_INVARIANT_MAX_BBS_IN_LOOP;
+      if (optimize < 2)
+	max_bbs /= 10;
+      if (loop->num_nodes <= max_bbs)
 	move_single_loop_invariants (loop);
     }
 
