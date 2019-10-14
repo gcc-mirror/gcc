@@ -2409,7 +2409,8 @@ mips_cannot_force_const_mem (machine_mode mode, rtx x)
      references, reload will consider forcing C into memory and using
      one of the instruction's memory alternatives.  Returning false
      here will force it to use an input reload instead.  */
-  if (CONST_INT_P (x) && mips_legitimate_constant_p (mode, x))
+  if ((CONST_INT_P (x) || GET_CODE (x) == CONST_VECTOR)
+      && mips_legitimate_constant_p (mode, x))
     return true;
 
   split_const (x, &base, &offset);
