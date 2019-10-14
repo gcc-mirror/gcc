@@ -1,5 +1,12 @@
 2019-10-16  Julian Brown  <julian@codesourcery.com>
 
+	* testsuite/libgomp.oacc-fortran/gangprivate-attrib-1.f90: Use
+	oaccdevlow dump and update scanned output.
+	* testsuite/libgomp.oacc-fortran/gangprivate-attrib-2.f90: Likewise.
+	Add missing atomic to force worker partitioning for test variable.
+
+2019-10-16  Julian Brown  <julian@codesourcery.com>
+
 	* testsuite/libgomp.oacc-c-c++-common/serial-dims.c: Support AMD GCN.
 
 2019-10-09  Tobias Burnus  <tobias@codesourcery.com>

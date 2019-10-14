@@ -6162,8 +6162,9 @@ memories.  A return value of NULL indicates that the target does not
 handle this VAR_DECL, and normal RTL expanding is resumed.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_GOACC_ADJUST_GANGPRIVATE_DECL (tree @var{var})
-Tweak variable declaration for a gang-private variable.
+@deftypefn {Target Hook} void TARGET_GOACC_ADJUST_PRIVATE_DECL (tree @var{var}, @var{int})
+Tweak variable declaration for a private variable at the specified
+parallelism level.
 @end deftypefn
 
 @deftypevr {Target Hook} bool TARGET_GOACC_WORKER_PARTITIONING

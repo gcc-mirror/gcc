@@ -713,19 +713,61 @@ find_partitioned_var_uses (parallel_g *par, unsigned outer_mask,
     }
 }
 
+/* Gang-private variables (typically placed in a GPU's shared memory) do not
+   need to be processed by the worker-propagation mechanism.  Populate the
+   GANGPRIVATE_VARS set with any such variables found in the current
+   function.  */
+
+static void
+find_gangprivate_vars (hash_set<tree> *gangprivate_vars)
+{
+  basic_block block;
+
+  FOR_EACH_BB_FN (block, cfun)
+    {
+      for (gimple_stmt_iterator gsi = gsi_start_bb (block);
+	   !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+
+	  if (gimple_call_internal_p (stmt, IFN_UNIQUE))
+	    {
+	      enum ifn_unique_kind k = ((enum ifn_unique_kind)
+		TREE_INT_CST_LOW (gimple_call_arg (stmt, 0)));
+	      if (k == IFN_UNIQUE_OACC_PRIVATE)
+		{
+		  HOST_WIDE_INT level
+		    = TREE_INT_CST_LOW (gimple_call_arg (stmt, 2));
+		  if (level != GOMP_DIM_GANG)
+		    continue;
+		  for (unsigned i = 3; i < gimple_call_num_args (stmt); i++)
+		    {
+		      tree arg = gimple_call_arg (stmt, i);
+		      gcc_assert (TREE_CODE (arg) == ADDR_EXPR);
+		      tree decl = TREE_OPERAND (arg, 0);
+		      gangprivate_vars->add (decl);
+		    }
+		}
+	    }
+	}
+    }
+}
+
 static void
 find_local_vars_to_propagate (parallel_g *par, unsigned outer_mask,
 			      hash_set<tree> *partitioned_var_uses,
+			      hash_set<tree> *gangprivate_vars,
 			      vec<propagation_set *> *prop_set)
 {
   unsigned mask = outer_mask | par->mask;
 
   if (par->inner)
     find_local_vars_to_propagate (par->inner, mask, partitioned_var_uses,
-				  prop_set);
+				  gangprivate_vars, prop_set);
   if (par->next)
     find_local_vars_to_propagate (par->next, outer_mask, partitioned_var_uses,
-				  prop_set);
+				  gangprivate_vars, prop_set);
 
   if (!(mask & GOMP_DIM_MASK (GOMP_DIM_WORKER)))
     {
@@ -747,8 +789,7 @@ find_local_vars_to_propagate (parallel_g *par, unsigned outer_mask,
 		      || is_global_var (var)
 		      || AGGREGATE_TYPE_P (TREE_TYPE (var))
 		      || !partitioned_var_uses->contains (var)
-		      || lookup_attribute ("oacc gangprivate",
-					   DECL_ATTRIBUTES (var)))
+		      || gangprivate_vars->contains (var))
 		    continue;
 
 		  if (stmt_may_clobber_ref_p (stmt, var))
@@ -1353,9 +1394,12 @@ oacc_do_neutering (void)
 			       &prop_set);
 
   hash_set<tree> partitioned_var_uses;
+  hash_set<tree> gangprivate_vars;
 
+  find_gangprivate_vars (&gangprivate_vars);
   find_partitioned_var_uses (par, mask, &partitioned_var_uses);
-  find_local_vars_to_propagate (par, mask, &partitioned_var_uses, &prop_set);
+  find_local_vars_to_propagate (par, mask, &partitioned_var_uses,
+				&gangprivate_vars, &prop_set);
 
   FOR_ALL_BB_FN (bb, cfun)
     {

@@ -39,7 +39,7 @@ extern rtx gcn_gen_undef (machine_mode);
 extern bool gcn_global_address_p (rtx);
 extern tree gcn_goacc_create_propagation_record (tree record_type, bool sender,
 						 const char *name);
-extern void gcn_goacc_adjust_gangprivate_decl (tree var);
+extern void gcn_goacc_adjust_private_decl (tree var, int level);
 extern void gcn_goacc_reduction (gcall *call);
 extern bool gcn_hard_regno_rename_ok (unsigned int from_reg,
 				      unsigned int to_reg);
