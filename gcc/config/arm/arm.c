@@ -8934,13 +8934,8 @@ arm_legitimize_address (rtx x, rtx orig_x, machine_mode mode)
 	return x;
     }
 
-  if (!TARGET_ARM)
-    {
-      /* TODO: legitimize_address for Thumb2.  */
-      if (TARGET_THUMB2)
-        return x;
-      return thumb_legitimize_address (x, orig_x, mode);
-    }
+  if (TARGET_THUMB1)
+    return thumb_legitimize_address (x, orig_x, mode);
 
   if (GET_CODE (x) == PLUS)
     {
